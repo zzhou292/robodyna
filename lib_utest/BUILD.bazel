@@ -4,6 +4,15 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_test")
 package(default_visibility = ["//visibility:public"])
 
 cuda_test(
+    name = "utest_reissner_shell_assembly",
+    size = "small",
+    srcs = ["utest_reissner_shell_assembly.cu"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/elements:reissner_shell_assembly", "@googletest//:gtest_main"],
+)
+
+cuda_test(
     name = "utest_planar_mesh_contact_cuda",
     size = "small",
     srcs = ["utest_planar_mesh_contact_cuda.cu"],

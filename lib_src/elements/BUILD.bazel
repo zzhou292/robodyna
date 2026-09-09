@@ -8,6 +8,24 @@ cc_library(
     hdrs = ["ReissnerFrame.h"],
 )
 
+cc_library(
+    name = "reissner_rotation",
+    hdrs = ["ReissnerRotation.h"],
+    deps = [":reissner_frame"],
+)
+
+cc_library(
+    name = "reissner_shell_force",
+    hdrs = ["ReissnerShellData.h", "ReissnerShellKinematics.h", "ReissnerShellForce.h"],
+    deps = [":reissner_rotation"],
+)
+
+cc_library(
+    name = "reissner_shell_assembly",
+    hdrs = ["ReissnerShellAssembly.h"],
+    deps = [":reissner_shell_force", "//lib_src/solvers:fe_nodal_state_view"],
+)
+
 cuda_library(
     name = "ANCF3243Data",
     srcs = ["ANCF3243Data.cu"],

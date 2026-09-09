@@ -1,0 +1,12 @@
+cmake_minimum_required(VERSION 3.18)
+project(TLReissnerElementTests LANGUAGES CXX CUDA)
+enable_testing()
+find_package(GTest REQUIRED)
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../../lib_src/elements" "tl-element-operations")
+add_executable(utest_reissner_shell_assembly "../utest_reissner_shell_assembly.cu")
+set_target_properties(utest_reissner_shell_assembly PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+target_compile_options(utest_reissner_shell_assembly PRIVATE
+  "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false>")
+target_link_libraries(utest_reissner_shell_assembly PRIVATE tl_reissner_shell GTest::gtest_main)
+add_test(NAME reissner_shell_assembly COMMAND utest_reissner_shell_assembly)
+set_tests_properties(reissner_shell_assembly PROPERTIES TIMEOUT 45 RUN_SERIAL TRUE PROCESSORS 1)
