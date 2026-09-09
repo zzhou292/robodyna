@@ -71,6 +71,45 @@ All output/scene operations are externally serialized. Configure this optional
 path explicitly; ordinary file-format and generic mesh tests stay independent
 of CUDA. The state/stepper tests belong to TL's existing unit-test workflow.
 
+## Finite Yaris mesh-wall normal-impact rig
+
+`case/NormalImpactCase` now closes the force-driven CUDA loop against the actual
+62-vertex/100-triangle canonical wall. A 0.1 m square mass patch spans the real
+stitched seam. TL's `PlanarMeshContact` evaluates finite triangle coverage and
+area-weighted normal forces; `FENodalState` owns accepted/trial positions,
+velocities and time. The app checks prepared penetration before commit and
+publishes accepted states through `NodalMeshOutput`. Chrono owns the output mesh
+and existing archive/OBJ serialization. No Chrono dynamics system is stepped.
+
+This is a contact/inertia rig, with supplied areal mass and no internal shell
+elasticity. It admits fixed-footprint normal motion, zero friction/damping and
+bounded penalty overlap. Nine TL contact tests and seven closed-loop app tests
+pass on CUDA, covering independent force/work/impulse oracles, real seam
+ownership, wall/patch refinement, finite-wall misses and failed-trial rollback.
+The 10 canonical reader tests preserve binary64 coordinates and uint64 IDs.
+This does not qualify oblique contact, CCD, folding, shells or a vehicle crash.
+
+Configure this optional case against the already built Chrono core:
+
+```sh
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/normal-impact-configure-rerun.json --max-rss-gib 1 --timeout 45 -- cmake -S crash-app -B crash-work/build/normal-impact -DCRASH_ENABLE_NORMAL_IMPACT=ON -DCRASH_CANONICAL_WALL="$PWD/crash-work/assets/yaris-wall/manifest.json" -DChrono_DIR="$PWD/crash-work/build/chrono-core/cmake" -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_ARCHITECTURES=120 -DCMAKE_BUILD_TYPE=RelWithDebInfo
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/normal-impact-build-rerun.json --max-rss-gib 2 --timeout 180 -- cmake --build crash-work/build/normal-impact --parallel 1
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/normal-impact-test-rerun.json --gpu 0 --max-rss-gib 1 --max-gpu-growth-gib 1 --timeout 60 -- ctest --test-dir crash-work/build/normal-impact --output-on-failure --parallel 1
+mkdir -p crash-work/runs
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/normal-impact-run-rerun.json --gpu 0 --max-rss-gib 1 --max-gpu-growth-gib 1 --timeout 60 -- crash-work/build/normal-impact/case/crash_normal_impact crash-work/assets/yaris-wall/manifest.json crash-work/runs/normal-impact-rerun
+```
+
+The CLI requires a **new** output directory and verifies the exact canonical
+manifest SHA256 with OpenSSL before parsing the same bytes. The case's count and
+archive-metadata guard selects the intended model; the CLI provides byte-level
+authentication. Its defaults run 140 fixed steps at 0.5 ms to 70 ms. The
+accepted interval CSV labels force at `t_n` separately from state at `t_(n+1)`;
+impulse and force work are logged once per successful commit. Existing Chrono
+JSON archives preserve coordinate bits and connectivity on readback. OBJ files
+use Chrono's visualization precision. The completed manifest is published only
+after the requested horizon and artifact checks; an incomplete run cannot claim
+success. Source wall friction is recorded but is outside this admitted law.
+
 ## Optional Reissner reference: finite bending objectivity failed
 
 `CRASH_ENABLE_CHRONO_REISSNER_CHECK=ON` builds seven headless GoogleTests against
