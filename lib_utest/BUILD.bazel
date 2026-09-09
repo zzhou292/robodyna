@@ -4,6 +4,23 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_test")
 package(default_visibility = ["//visibility:public"])
 
 cc_test(
+    name = "utest_q4_contact_integration",
+    size = "small",
+    srcs = ["utest_q4_contact_integration.cc", "q4_contact_integration_fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:q4_contact_integration", "@googletest//:gtest_main"],
+)
+
+cuda_test(
+    name = "utest_q4_contact_integration_cuda",
+    size = "small",
+    srcs = ["utest_q4_contact_integration_cuda.cu", "q4_contact_integration_fixture.h"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/collision:q4_contact_integration", "@googletest//:gtest_main"],
+)
+
+cc_test(
     name = "utest_planar_wall_geometry",
     size = "small",
     srcs = ["utest_planar_wall_geometry.cc"],

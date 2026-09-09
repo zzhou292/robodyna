@@ -52,6 +52,12 @@ cc_library(
     deps = [":surface_contact_primitives"],
 )
 
+cc_library(
+    name = "q4_contact_integration",
+    hdrs = ["Q4ContactBounds.h", "Q4ContactIntegrationTypes.h", "Q4ContactIntegration.h"],
+    deps = [":q4_surface_mapping"],
+)
+
 cuda_library(
     name = "hydroelastic_broadphase",
     srcs = ["HydroelasticBroadphase.cu"],

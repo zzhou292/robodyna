@@ -28,6 +28,10 @@ add_executable(utest_q4_surface_mapping "${TL_ROOT}/lib_utest/utest_q4_surface_m
 target_compile_options(utest_q4_surface_mapping PRIVATE -fno-fast-math -ffp-contract=off)
 tl_contact_test(utest_q4_surface_mapping)
 
+add_executable(utest_q4_contact_integration "${TL_ROOT}/lib_utest/utest_q4_contact_integration.cc")
+target_compile_options(utest_q4_contact_integration PRIVATE -fno-fast-math -ffp-contract=off)
+tl_contact_test(utest_q4_contact_integration)
+
 include("${TL_ROOT}/lib_src/collision/PlanarWallGeometry.cmake")
 add_executable(utest_planar_wall_geometry "${TL_ROOT}/lib_utest/utest_planar_wall_geometry.cc")
 target_link_libraries(utest_planar_wall_geometry PRIVATE tl_planar_wall_geometry)
@@ -67,6 +71,12 @@ if(TL_CONTACT_ENABLE_CUDA)
     "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false>")
   tl_contact_test(utest_q4_surface_mapping_cuda)
   set_tests_properties(utest_q4_surface_mapping_cuda PROPERTIES PROCESSORS 1)
+  add_executable(utest_q4_contact_integration_cuda "${TL_ROOT}/lib_utest/utest_q4_contact_integration_cuda.cu")
+  target_link_libraries(utest_q4_contact_integration_cuda PRIVATE CUDA::cudart)
+  target_compile_options(utest_q4_contact_integration_cuda PRIVATE
+    "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false>")
+  tl_contact_test(utest_q4_contact_integration_cuda)
+  set_tests_properties(utest_q4_contact_integration_cuda PROPERTIES PROCESSORS 1)
   add_executable(utest_cuda_runtime "${TL_ROOT}/lib_utest/utest_cuda_runtime.cu")
   target_link_libraries(utest_cuda_runtime PRIVATE CUDA::cudart)
   tl_contact_test(utest_cuda_runtime)
