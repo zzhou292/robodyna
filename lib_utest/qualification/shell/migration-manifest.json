@@ -1,0 +1,520 @@
+{
+  "captured_checkpoint_tests": {
+    "S1_gpu": 16,
+    "S2a_gpu": 13,
+    "S2b_gpu": 17,
+    "generator_after_migration": 10,
+    "generator_before_migration": 8,
+    "native_chvis3": 6
+  },
+  "donor_revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "files": [
+    {
+      "bytes": 2262,
+      "kind": "build-path-provenance-only",
+      "original_path": "crash-work/shell-spike/CMakeLists.txt",
+      "original_sha256": "a60d1ea4f31c23ec446e9ab63f33adb2457f2b23fb788e500cf6a07c36047a46",
+      "path": "operators/CMakeLists.txt",
+      "sha256": "2f11b419cefb5f2a738f28089e89394c0d285c87cb51f72df4855ca16449f268"
+    },
+    {
+      "bytes": 535,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-spike/ElasticFixture.cc",
+      "original_sha256": "493d262f94e3a3be003e2b1944e6318877267eeca3145859f91d62de99b87d8b",
+      "path": "operators/ElasticFixture.cc",
+      "sha256": "493d262f94e3a3be003e2b1944e6318877267eeca3145859f91d62de99b87d8b"
+    },
+    {
+      "bytes": 12974,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-spike/ElasticFixture.cu",
+      "original_sha256": "e0cb8862bc3e75b69967ca1b320fce16ba6290dd303cd743ff6799e536ac11d9",
+      "path": "operators/ElasticFixture.cu",
+      "sha256": "e0cb8862bc3e75b69967ca1b320fce16ba6290dd303cd743ff6799e536ac11d9"
+    },
+    {
+      "bytes": 2934,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-spike/ElasticFixture.h",
+      "original_sha256": "09409ec8db704ec306f709f77992527f64677d76dbde2fba0f606bd5f1e19b78",
+      "path": "operators/ElasticFixture.h",
+      "sha256": "09409ec8db704ec306f709f77992527f64677d76dbde2fba0f606bd5f1e19b78"
+    },
+    {
+      "bytes": 16122,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-spike/ElasticFixtureTest.cc",
+      "original_sha256": "9858709e1023cd204a2c2c45b80c2f9ffbe5768a6efe3f133c2ea8f059d4f5c7",
+      "path": "operators/ElasticFixtureTest.cc",
+      "sha256": "9858709e1023cd204a2c2c45b80c2f9ffbe5768a6efe3f133c2ea8f059d4f5c7"
+    },
+    {
+      "bytes": 2853,
+      "kind": "build-path-provenance-only",
+      "original_path": "crash-work/shell-spike/README.md",
+      "original_sha256": "608b85dfc4fc28ef3a2bd90a0aae9e55bc9c3e510ae1b3f8fa517974d98bff22",
+      "path": "operators/README.md",
+      "sha256": "47bbefc38291f86e9b87746a9df0fe847d5fe0120e72963dc50d9ca0d3150a3e"
+    },
+    {
+      "bytes": 14454,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-spike/ShellFixture.cu",
+      "original_sha256": "462505ab83beda6f16768488b4911ba5e2efae6b05630ed521260b742aa2d551",
+      "path": "operators/ShellFixture.cu",
+      "sha256": "462505ab83beda6f16768488b4911ba5e2efae6b05630ed521260b742aa2d551"
+    },
+    {
+      "bytes": 2375,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-spike/ShellFixture.h",
+      "original_sha256": "9c4dd776f018fa9b7f4a9daec62a65c2c8f8cc5efc43f34ab5fadf215d5a0006",
+      "path": "operators/ShellFixture.h",
+      "sha256": "9c4dd776f018fa9b7f4a9daec62a65c2c8f8cc5efc43f34ab5fadf215d5a0006"
+    },
+    {
+      "bytes": 16060,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-spike/ShellFixtureTest.cc",
+      "original_sha256": "0103f3c2a9c9f21622befe619d72fed2a301dd35c10d131383489fa4c9f7bd04",
+      "path": "operators/ShellFixtureTest.cc",
+      "sha256": "0103f3c2a9c9f21622befe619d72fed2a301dd35c10d131383489fa4c9f7bd04"
+    },
+    {
+      "bytes": 18833,
+      "kind": "build-path-provenance-only",
+      "original_path": "crash-work/shell-spike/generate_gauss3.py",
+      "original_sha256": "ffcb61dc8517c26b925df7c0ed1a88e5300c3e145451e034202e71fc2b6a2d4e",
+      "path": "operators/generate_gauss3.py",
+      "sha256": "b046685dd855581ffcbbe6d697974de62a8bc7d69f17fde5ced39d100f354316"
+    },
+    {
+      "bytes": 34283,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-spike/generated/LICENSE.md",
+      "original_sha256": "ad858d53cae05eed9531ecd4c467440803acffe34c69de7b88e03affc5b6a1bd",
+      "path": "operators/generated/LICENSE.md",
+      "sha256": "ad858d53cae05eed9531ecd4c467440803acffe34c69de7b88e03affc5b6a1bd"
+    },
+    {
+      "bytes": 41935,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-spike/generated/shell_strain_material_kernel_gauss3.cu",
+      "original_sha256": "353f782ecbe7ab4f932bf1cc3683fa96262317b9b386f674c37724846cab3bf6",
+      "path": "operators/generated/shell_strain_material_kernel_gauss3.cu",
+      "sha256": "353f782ecbe7ab4f932bf1cc3683fa96262317b9b386f674c37724846cab3bf6"
+    },
+    {
+      "bytes": 835,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-spike/generated/shell_thickness_gauss3.h",
+      "original_sha256": "56aa3e2e12508aaed92cc00b9fded52504969157672a9d10dcd495e0427fc7f9",
+      "path": "operators/generated/shell_thickness_gauss3.h",
+      "sha256": "56aa3e2e12508aaed92cc00b9fded52504969157672a9d10dcd495e0427fc7f9"
+    },
+    {
+      "bytes": 1362,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-spike/generated/transformation.patch",
+      "original_sha256": "40ac4f906c5e2ae6574648d5b0111ba479d0751a796aa1d8823144949ffa42c3",
+      "path": "operators/generated/transformation.patch",
+      "sha256": "40ac4f906c5e2ae6574648d5b0111ba479d0751a796aa1d8823144949ffa42c3"
+    },
+    {
+      "bytes": 1018,
+      "kind": "build-path-provenance-only",
+      "original_path": "crash-work/shell-hourglass-spike/CMakeLists.txt",
+      "original_sha256": "64d78ba770884955bd54ab70eb5a87c1ee777c3dbb9198cd1073e0ac27c16d37",
+      "path": "hourglass/CMakeLists.txt",
+      "sha256": "feb2ce2eca8ffa050ae11b0efde8ed784272bbe077566c62aee34ec74a43e6f7"
+    },
+    {
+      "bytes": 1932,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-spike/DonorLaunch.inc",
+      "original_sha256": "400959e90e19a9ef794473fb2aea7524afbca88450df2802d62b13923c08a5c0",
+      "path": "hourglass/DonorLaunch.inc",
+      "sha256": "400959e90e19a9ef794473fb2aea7524afbca88450df2802d62b13923c08a5c0"
+    },
+    {
+      "bytes": 12787,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-spike/HourglassFixture.cu",
+      "original_sha256": "a62eaca9b24f2cb9d603d0109320c95b1dcaa2366113d003a09ea48bbaef7a20",
+      "path": "hourglass/HourglassFixture.cu",
+      "sha256": "a62eaca9b24f2cb9d603d0109320c95b1dcaa2366113d003a09ea48bbaef7a20"
+    },
+    {
+      "bytes": 4227,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-spike/HourglassFixture.h",
+      "original_sha256": "a6286d0f7a9e01ef0a78173139dbac896899b9bb79d55357c1ea94df063dd967",
+      "path": "hourglass/HourglassFixture.h",
+      "sha256": "a6286d0f7a9e01ef0a78173139dbac896899b9bb79d55357c1ea94df063dd967"
+    },
+    {
+      "bytes": 24592,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-spike/HourglassFixtureTest.cc",
+      "original_sha256": "6380aa9eea3a4c02b81e6cbd8283f1671d1359a7eb2faab26e795b0724f956c4",
+      "path": "hourglass/HourglassFixtureTest.cc",
+      "sha256": "6380aa9eea3a4c02b81e6cbd8283f1671d1359a7eb2faab26e795b0724f956c4"
+    },
+    {
+      "bytes": 6786,
+      "kind": "build-path-provenance-only",
+      "original_path": "crash-work/shell-hourglass-spike/README.md",
+      "original_sha256": "0941a6aa7eaa5e72617d1c6a3b543e0e0cced04126007c6da804fa9cd3566d8b",
+      "path": "hourglass/README.md",
+      "sha256": "eeeeb071d661d60982583c1cfc8fb2bcafa0eb0d52f2f42bb2b852067091ca95"
+    },
+    {
+      "bytes": 501,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-spike/SlabFields.inc",
+      "original_sha256": "ee7fc946336f331eff40755b1ed61da49d2d292c14770ee106a2b3a0347a68ad",
+      "path": "hourglass/SlabFields.inc",
+      "sha256": "ee7fc946336f331eff40755b1ed61da49d2d292c14770ee106a2b3a0347a68ad"
+    },
+    {
+      "bytes": 2449,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/CMakeLists.txt",
+      "original_sha256": "45f7fc54a2c59c9c0138349ef610ed2c275e9879964875f3234585ccbafb8a3e",
+      "path": "native/chvis3/CMakeLists.txt",
+      "sha256": "45f7fc54a2c59c9c0138349ef610ed2c275e9879964875f3234585ccbafb8a3e"
+    },
+    {
+      "bytes": 2871,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/HourglassNative.cpp",
+      "original_sha256": "7435eff65f312055d0462affc2ce3a6860110cade0dcb82597113adbb539bce4",
+      "path": "native/chvis3/HourglassNative.cpp",
+      "sha256": "7435eff65f312055d0462affc2ce3a6860110cade0dcb82597113adbb539bce4"
+    },
+    {
+      "bytes": 1895,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/HourglassNative.h",
+      "original_sha256": "4ddc744a76eab3e09cf354391f93953f3be9f4e0500803734c52eb201947539c",
+      "path": "native/chvis3/HourglassNative.h",
+      "sha256": "4ddc744a76eab3e09cf354391f93953f3be9f4e0500803734c52eb201947539c"
+    },
+    {
+      "bytes": 5188,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/NativeHourglass.F",
+      "original_sha256": "49506903553e4459b03ade7721716196f8e76e8a5107934eced303c3bbb788bc",
+      "path": "native/chvis3/NativeHourglass.F",
+      "sha256": "49506903553e4459b03ade7721716196f8e76e8a5107934eced303c3bbb788bc"
+    },
+    {
+      "bytes": 6061,
+      "kind": "build-path-provenance-only",
+      "original_path": "crash-work/shell-hourglass-native/README.md",
+      "original_sha256": "62016c6caac4f00299ce1405f8c1c97a602e42af1e49b7357e98335214ddfcf2",
+      "path": "native/chvis3/README.md",
+      "sha256": "cff97cf9827a1b2a0fee36cfa3b108bec8311fcda5e9c5ed0c37fc1277717fc8"
+    },
+    {
+      "bytes": 34283,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/original/LICENSE.md",
+      "original_sha256": "ad858d53cae05eed9531ecd4c467440803acffe34c69de7b88e03affc5b6a1bd",
+      "path": "native/chvis3/original/LICENSE.md",
+      "sha256": "ad858d53cae05eed9531ecd4c467440803acffe34c69de7b88e03affc5b6a1bd"
+    },
+    {
+      "bytes": 86324,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/original/common_source/modules/constant_mod.F",
+      "original_sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865",
+      "path": "native/chvis3/original/common_source/modules/constant_mod.F",
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865"
+    },
+    {
+      "bytes": 105714,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/original/common_source/modules/elements/element_mod.F90",
+      "original_sha256": "5843cc5fa95989e876462c6b2370b4dadf577439b2eb07d725b69ac85c5c326e",
+      "path": "native/chvis3/original/common_source/modules/elements/element_mod.F90",
+      "sha256": "5843cc5fa95989e876462c6b2370b4dadf577439b2eb07d725b69ac85c5c326e"
+    },
+    {
+      "bytes": 4073,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/original/engine/share/includes/com04_c.inc",
+      "original_sha256": "5e848151056a669919bacdb52ae28938bd869978be6de8461f619e6d19585525",
+      "path": "native/chvis3/original/engine/share/includes/com04_c.inc",
+      "sha256": "5e848151056a669919bacdb52ae28938bd869978be6de8461f619e6d19585525"
+    },
+    {
+      "bytes": 2208,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/original/engine/share/includes/com06_c.inc",
+      "original_sha256": "2cbaca20f5a944c2a90ed55299928a0fae55abf242bfdc6fcedff244ddee5ad5",
+      "path": "native/chvis3/original/engine/share/includes/com06_c.inc",
+      "sha256": "2cbaca20f5a944c2a90ed55299928a0fae55abf242bfdc6fcedff244ddee5ad5"
+    },
+    {
+      "bytes": 3581,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/original/engine/share/includes/param_c.inc",
+      "original_sha256": "fdf61d11b957fc3415d8367e45722ffbbfcab7d5a630fc24f57a683ea3d54045",
+      "path": "native/chvis3/original/engine/share/includes/param_c.inc",
+      "sha256": "fdf61d11b957fc3415d8367e45722ffbbfcab7d5a630fc24f57a683ea3d54045"
+    },
+    {
+      "bytes": 1920,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/original/engine/share/includes/remesh_c.inc",
+      "original_sha256": "a78cd9813944003d08b9fb3743764d9386aa6151d79b22bc532573b602007865",
+      "path": "native/chvis3/original/engine/share/includes/remesh_c.inc",
+      "sha256": "a78cd9813944003d08b9fb3743764d9386aa6151d79b22bc532573b602007865"
+    },
+    {
+      "bytes": 1476,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/original/engine/share/includes/scr02_c.inc",
+      "original_sha256": "53a70351e6c9e46fb5ec08e199827df5129deec0dd81a06b8532c9bd3fceb8b2",
+      "path": "native/chvis3/original/engine/share/includes/scr02_c.inc",
+      "sha256": "53a70351e6c9e46fb5ec08e199827df5129deec0dd81a06b8532c9bd3fceb8b2"
+    },
+    {
+      "bytes": 1893,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/original/engine/share/includes/scr06_c.inc",
+      "original_sha256": "b739a1c8ea7cfad791682945c271d0d32a9f3fa080c4cdbd4dd813591a974c6d",
+      "path": "native/chvis3/original/engine/share/includes/scr06_c.inc",
+      "sha256": "b739a1c8ea7cfad791682945c271d0d32a9f3fa080c4cdbd4dd813591a974c6d"
+    },
+    {
+      "bytes": 3329,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/original/engine/share/includes/scr14_c.inc",
+      "original_sha256": "a7ec6a97dd3b5113a179d979d0d9ff66a4c8859415636feb5006f86c3939f57d",
+      "path": "native/chvis3/original/engine/share/includes/scr14_c.inc",
+      "sha256": "a7ec6a97dd3b5113a179d979d0d9ff66a4c8859415636feb5006f86c3939f57d"
+    },
+    {
+      "bytes": 3793,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/original/engine/share/includes/scr16_c.inc",
+      "original_sha256": "88451e40791ebb08e9bdd1990dbca40fad5f50328aef775d15a7437eaf95cf25",
+      "path": "native/chvis3/original/engine/share/includes/scr16_c.inc",
+      "sha256": "88451e40791ebb08e9bdd1990dbca40fad5f50328aef775d15a7437eaf95cf25"
+    },
+    {
+      "bytes": 2111,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/original/engine/share/includes/scr17_c.inc",
+      "original_sha256": "db56f0562b25b05803aba448236fa228c7ea6151e22000540e84d9ce2d9f80ee",
+      "path": "native/chvis3/original/engine/share/includes/scr17_c.inc",
+      "sha256": "db56f0562b25b05803aba448236fa228c7ea6151e22000540e84d9ce2d9f80ee"
+    },
+    {
+      "bytes": 2693,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/original/engine/share/includes/sms_c.inc",
+      "original_sha256": "f95904664529c1189a474640c20966e83bc1656ef4430c4dbad5be01c37e955a",
+      "path": "native/chvis3/original/engine/share/includes/sms_c.inc",
+      "sha256": "f95904664529c1189a474640c20966e83bc1656ef4430c4dbad5be01c37e955a"
+    },
+    {
+      "bytes": 1658,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/original/engine/share/r8/my_real.inc",
+      "original_sha256": "b2b61dbf62a940a49f92f8458e72e6c7ab92fbae48a72e5a7fce5d6d6bbaf8df",
+      "path": "native/chvis3/original/engine/share/r8/my_real.inc",
+      "sha256": "b2b61dbf62a940a49f92f8458e72e6c7ab92fbae48a72e5a7fce5d6d6bbaf8df"
+    },
+    {
+      "bytes": 1968,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/original/engine/share/spe_inc/comlock.inc",
+      "original_sha256": "470ae1ea6af07d8464cf0a36c65bbb40ba32d40b4e301097b0e33de390424aff",
+      "path": "native/chvis3/original/engine/share/spe_inc/comlock.inc",
+      "sha256": "470ae1ea6af07d8464cf0a36c65bbb40ba32d40b4e301097b0e33de390424aff"
+    },
+    {
+      "bytes": 12412,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/original/engine/share/spe_inc/constant.inc",
+      "original_sha256": "13af548603f08537f4eb5df2cf69b9564c932fe62c8c73cf95ecfe38ba308b36",
+      "path": "native/chvis3/original/engine/share/spe_inc/constant.inc",
+      "sha256": "13af548603f08537f4eb5df2cf69b9564c932fe62c8c73cf95ecfe38ba308b36"
+    },
+    {
+      "bytes": 3556,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/original/engine/share/spe_inc/hardware.inc",
+      "original_sha256": "10a8e3d40d430fd92ed33b2d1b6fda43262e8c4901340ee740db0f1479ee0b00",
+      "path": "native/chvis3/original/engine/share/spe_inc/hardware.inc",
+      "sha256": "10a8e3d40d430fd92ed33b2d1b6fda43262e8c4901340ee740db0f1479ee0b00"
+    },
+    {
+      "bytes": 1478,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/original/engine/share/spe_inc/implicit_f.inc",
+      "original_sha256": "336888d703e8eb082459dfd5f9ed8689b8374bcc6940ab2d53f0df91a0a39cf2",
+      "path": "native/chvis3/original/engine/share/spe_inc/implicit_f.inc",
+      "sha256": "336888d703e8eb082459dfd5f9ed8689b8374bcc6940ab2d53f0df91a0a39cf2"
+    },
+    {
+      "bytes": 3256,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/original/engine/share/spe_inc/mvsiz_p.inc",
+      "original_sha256": "8a0f587350f7738e0f40e375fc1b2c8cb775e4c7540d41762c427cd42724ced7",
+      "path": "native/chvis3/original/engine/share/spe_inc/mvsiz_p.inc",
+      "sha256": "8a0f587350f7738e0f40e375fc1b2c8cb775e4c7540d41762c427cd42724ced7"
+    },
+    {
+      "bytes": 2151,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/original/engine/share/spe_inc/tlock_c.inc",
+      "original_sha256": "c8f6f9a8405c173182acdf114060ec4a9a073e4886b6431da1a1f4fb145b33e4",
+      "path": "native/chvis3/original/engine/share/spe_inc/tlock_c.inc",
+      "sha256": "c8f6f9a8405c173182acdf114060ec4a9a073e4886b6431da1a1f4fb145b33e4"
+    },
+    {
+      "bytes": 14510,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/original/engine/source/elements/shell/coque/chvis3.F",
+      "original_sha256": "c39f092edcbb8d3fba1d590c77d6cdcefe8f5eccfaad666593240d2b2b7ca2d4",
+      "path": "native/chvis3/original/engine/source/elements/shell/coque/chvis3.F",
+      "sha256": "c39f092edcbb8d3fba1d590c77d6cdcefe8f5eccfaad666593240d2b2b7ca2d4"
+    },
+    {
+      "bytes": 11011,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/original/source-manifest.json",
+      "original_sha256": "853aaaa971281d4caf2d3e163ffd2780800332308dfe7d974a4a4847070f4c4c",
+      "path": "native/chvis3/original/source-manifest.json",
+      "sha256": "853aaaa971281d4caf2d3e163ffd2780800332308dfe7d974a4a4847070f4c4c"
+    },
+    {
+      "bytes": 9965,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/test_native.py",
+      "original_sha256": "5720d3c83547ebdf3fa24accf3b1df42fa907ba6ee0ad0d9399dad0d4ba99073",
+      "path": "native/chvis3/test_native.py",
+      "sha256": "5720d3c83547ebdf3fa24accf3b1df42fa907ba6ee0ad0d9399dad0d4ba99073"
+    },
+    {
+      "bytes": 1299,
+      "kind": "byte-identical",
+      "original_path": "crash-work/shell-hourglass-native/verify_sources.py",
+      "original_sha256": "bcf53f0305c6f63f0ef27158a7943042be6ba41aa1710342c833a929bf39ad6f",
+      "path": "native/chvis3/verify_sources.py",
+      "sha256": "bcf53f0305c6f63f0ef27158a7943042be6ba41aa1710342c833a929bf39ad6f"
+    },
+    {
+      "bytes": 34283,
+      "kind": "byte-identical",
+      "original_path": "crash-work/deps/openradioss-shell/LICENSE.md",
+      "original_sha256": "ad858d53cae05eed9531ecd4c467440803acffe34c69de7b88e03affc5b6a1bd",
+      "path": "reference/cuda/LICENSE.md",
+      "sha256": "ad858d53cae05eed9531ecd4c467440803acffe34c69de7b88e03affc5b6a1bd"
+    },
+    {
+      "bytes": 1569,
+      "kind": "byte-identical",
+      "original_path": "crash-work/deps/openradioss-shell/real_type.h",
+      "original_sha256": "057c418c48ad7e771f9dd125f2461104628631d6e6f80aa73f1ff910bdc01796",
+      "path": "reference/cuda/real_type.h",
+      "sha256": "057c418c48ad7e771f9dd125f2461104628631d6e6f80aa73f1ff910bdc01796"
+    },
+    {
+      "bytes": 30581,
+      "kind": "byte-identical",
+      "original_path": "crash-work/deps/openradioss-shell/shell_force_assembly_kernel.cu",
+      "original_sha256": "411db646e3070ade11ad217e68e6326f5e6604e3ede4e0402ebb4b03b0004ea8",
+      "path": "reference/cuda/shell_force_assembly_kernel.cu",
+      "sha256": "411db646e3070ade11ad217e68e6326f5e6604e3ede4e0402ebb4b03b0004ea8"
+    },
+    {
+      "bytes": 5804,
+      "kind": "byte-identical",
+      "original_path": "crash-work/deps/openradioss-shell/shell_force_assembly_kernel.h",
+      "original_sha256": "06f474d1c859391eef88013c914886a1da5d889fca8dcbe5d9fca7c10ef4a10c",
+      "path": "reference/cuda/shell_force_assembly_kernel.h",
+      "sha256": "06f474d1c859391eef88013c914886a1da5d889fca8dcbe5d9fca7c10ef4a10c"
+    },
+    {
+      "bytes": 23472,
+      "kind": "byte-identical",
+      "original_path": "crash-work/deps/openradioss-shell/shell_geometry_kernel.cu",
+      "original_sha256": "e5c8a9609aff7f42854062b30204645f9ba3d918b31d2aeb5cb40beab0d52430",
+      "path": "reference/cuda/shell_geometry_kernel.cu",
+      "sha256": "e5c8a9609aff7f42854062b30204645f9ba3d918b31d2aeb5cb40beab0d52430"
+    },
+    {
+      "bytes": 4173,
+      "kind": "byte-identical",
+      "original_path": "crash-work/deps/openradioss-shell/shell_geometry_kernel.h",
+      "original_sha256": "b429eb23b52f98d0cb347592f7cfb3ab936deb029b5cbe1d7cb7cab5cd96adf2",
+      "path": "reference/cuda/shell_geometry_kernel.h",
+      "sha256": "b429eb23b52f98d0cb347592f7cfb3ab936deb029b5cbe1d7cb7cab5cd96adf2"
+    },
+    {
+      "bytes": 41647,
+      "kind": "byte-identical",
+      "original_path": "crash-work/deps/openradioss-shell/shell_strain_material_kernel.cu",
+      "original_sha256": "13ebd98348f91919f5bf81f6d3932f5a19039504611608bc0e6d2194080fd0ba",
+      "path": "reference/cuda/shell_strain_material_kernel.cu",
+      "sha256": "13ebd98348f91919f5bf81f6d3932f5a19039504611608bc0e6d2194080fd0ba"
+    },
+    {
+      "bytes": 6168,
+      "kind": "byte-identical",
+      "original_path": "crash-work/deps/openradioss-shell/shell_strain_material_kernel.h",
+      "original_sha256": "c599a32b33c10bbf597565d26998713dc88716fe6b52757b148b1273a98bf830",
+      "path": "reference/cuda/shell_strain_material_kernel.h",
+      "sha256": "c599a32b33c10bbf597565d26998713dc88716fe6b52757b148b1273a98bf830"
+    },
+    {
+      "bytes": 4433,
+      "kind": "byte-identical",
+      "original_path": "crash-work/deps/openradioss-shell/source-manifest.json",
+      "original_sha256": "4d86922b5dbcadadc5995286fb81781b89040fe2ed83116d7d6a33bde814b394",
+      "path": "reference/cuda/source-manifest.json",
+      "sha256": "4d86922b5dbcadadc5995286fb81781b89040fe2ed83116d7d6a33bde814b394"
+    }
+  ],
+  "local_changes": "CMake module paths/options, README paths/scope, relocated generator defaults/metadata and migration fingerprint checks only; original and generated numerical source bytes preserved",
+  "new_integration_files": [
+    "CMakeLists.txt",
+    "README.md",
+    "migration-manifest.json",
+    "reference/cuda/README.md"
+  ],
+  "omitted_historical_utilities": [
+    {
+      "original_path": "crash-work/shell-hourglass-native/stage_sources.py",
+      "original_sha256": "d15ddf4b74f2a9de53e28e64102b8920b5bba680bea8f42bf6483c2f44862697",
+      "path": "native/chvis3/stage_sources.py",
+      "reason": "Historical network staging utility; exact staged originals already copied, no build dependency"
+    }
+  ],
+  "regenerated_metadata": [
+    {
+      "original_path": "crash-work/shell-spike/generated/SHA256SUMS",
+      "original_sha256": "43548d49e2eb594a18002a9cf80ee569a4157ef7e38a6bbe97e40ba72e6344bd",
+      "path": "operators/generated/SHA256SUMS",
+      "reason": "Regenerated metadata records relocated generator path/hash; existing generator verifies exact contents"
+    },
+    {
+      "original_path": "crash-work/shell-spike/generated/manifest.json",
+      "original_sha256": "2feb560eb3e4718456acee5c0d5dea382e57aa7bd01f4932e2caf4be1a802963",
+      "path": "operators/generated/manifest.json",
+      "reason": "Regenerated metadata records relocated generator path/hash; existing generator verifies exact contents"
+    }
+  ],
+  "reserved_separately_owned_directories": [
+    "persistent",
+    "native/phase"
+  ],
+  "schema_version": 1,
+  "scope": "Captured source migration only; numerical gate reproduction required before acceptance"
+}

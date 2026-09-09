@@ -1,0 +1,43 @@
+cmake_minimum_required(VERSION 3.22)
+project(tl_shell_qualification LANGUAGES CXX CUDA)
+
+# This is an opt-in qualification project, not a production/default TL target.
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CUDA_STANDARD 17)
+set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+option(TL_SHELL_ENABLE_NATIVE_ORACLES "Build the bounded native CHVIS3 oracle and GPU comparisons" OFF)
+option(TL_SHELL_ENABLE_PHASE_ORACLE "Build the separately audited native phase oracle" OFF)
+option(TL_SHELL_ENABLE_PERSISTENT "Build the evolving shell history qualification fixture" OFF)
+set(SHELL_QUALIFICATION_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+set(SHELL_REFERENCE_CUDA_DIR "${SHELL_QUALIFICATION_SOURCE_DIR}/reference/cuda")
+
+find_package(CUDAToolkit REQUIRED)
+find_package(GTest REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+set(SHELL_SOURCE_VERIFY_COMMAND "${Python3_EXECUTABLE}"
+  "${SHELL_QUALIFICATION_SOURCE_DIR}/operators/generate_gauss3.py" --verify)
+execute_process(COMMAND ${SHELL_SOURCE_VERIFY_COMMAND} RESULT_VARIABLE verified
+  OUTPUT_VARIABLE verify_output ERROR_VARIABLE verify_error)
+if(NOT verified EQUAL 0)
+  message(FATAL_ERROR "Shell qualification source verification failed:\n${verify_output}${verify_error}")
+endif()
+add_custom_target(verify_shell_sources COMMAND ${SHELL_SOURCE_VERIFY_COMMAND}
+  COMMENT "Verify pinned donor, exact Gauss adaptation and captured migration bytes" VERBATIM)
+
+enable_testing()
+add_subdirectory(operators)
+if(TL_SHELL_ENABLE_NATIVE_ORACLES OR TL_SHELL_ENABLE_PHASE_ORACLE)
+  enable_language(Fortran)
+  add_subdirectory(native/chvis3)
+endif()
+add_subdirectory(hourglass)
+if(TL_SHELL_ENABLE_PHASE_ORACLE)
+  if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/native/phase/CMakeLists.txt")
+    message(FATAL_ERROR "Native phase oracle has not been staged; no automatic fetch")
+  endif()
+  add_subdirectory(native/phase)
+endif()
+if(TL_SHELL_ENABLE_PERSISTENT)
+  add_subdirectory(persistent)
+endif()
