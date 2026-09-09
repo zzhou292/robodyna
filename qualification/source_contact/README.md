@@ -160,6 +160,20 @@ original triangles, using the isolated native starter frame and selected
 angle-weighted mass/inertia expressions. Its seven standalone native tests
 are retained in the owning TL reference package.
 
+The separate `ROBO_DYNA_SOURCE_T3_RATES` gate now passes two functions on all
+six original triangles, alongside the two unchanged startup regressions.
+`source_part_t3_rates_check.cpp` consumes the same authenticated readiness
+input and shared test-only source mapping. The complete native C3COOR3,
+C3EVEC3, C3DERI3, C3DEFO3 and C3CURV3 leaves produce the current geometry and
+eight rates from prescribed endpoint positions and midpoint velocities.
+Original coordinates and IDs remain unchanged; the independent long-double
+affine/angular oracle uses the frozen R2 dimensional budgets. Evidence is
+`crash-work/reports/t3-r2-source-{build,tests}-1.json` and
+`t3-r2-source-xml-1/`. The executable is
+`robo_dyna_source_part_t3_rates_check READINESS.json`. This qualifies prescribed
+rates only; material history, forces, a temporal owner and source MAT024/NIP3
+admission remain outside this T3 gate.
+
 `ROBO_DYNA_SOURCE_QEPH_GEOMETRY` passes three host functions on all 88 original
 quads. Startup matches the qualified native QEPH reference, with independent
 long-double diagonal-cross area and separate physical/area-added inertia

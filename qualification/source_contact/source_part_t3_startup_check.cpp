@@ -1,4 +1,4 @@
-#include "SourcePartContactFixture.h"
+#include "SourcePartT3ReferenceInput.h"
 #include "T3Reference.h"
 #include "T3StartupTestOracle.h"
 
@@ -13,21 +13,6 @@ namespace source=crash::qualification::source_contact;
 namespace native=tl::qualification::t3;
 std::filesystem::path readiness_path;
 
-native::ReferenceInput Input(const source::SourcePartContactFixture& fixture,unsigned p) {
-  native::ReferenceInput input;
-  const auto& parent=fixture.parents()[p];
-  for (unsigned n=0;n<3;++n) {
-    const auto index=parent.local_node_indices[n];
-    const auto x=fixture.positions().at(index);
-    input.position[n]={x.x,x.y,x.z}; input.node_ids[n]=fixture.nodes()[index].source_id;
-  }
-  // Exact authenticated converted bytes. No averaging/flattening or proxy
-  // nodal lumping is imported into the separate native startup experiment.
-  input.density=fixture.surface_mass().density_kg_m3;
-  input.thickness=fixture.surface_mass().thickness_m;
-  input.young_modulus=200e9; input.poisson_ratio=.3;
-  return input;
-}
 class SourcePartT3StartupCheck:public ::testing::Test {
  protected:
   source::SourcePartContactFixture fixture;
@@ -45,7 +30,7 @@ TEST_F(SourcePartT3StartupCheck, AllSixOriginalTrianglesUseNativeFrameAndSelecte
     SCOPED_TRACE(parent.source_id);
     ASSERT_EQ(parent.local_node_indices[3],parent.local_node_indices[2]);
     ASSERT_EQ(parent.raw_record[5],parent.raw_record[4]);
-    const auto input=Input(fixture,p); native::Reference reference;
+    const auto input=source::T3ReferenceInput(fixture,p); native::Reference reference;
     ASSERT_EQ(native::Initialize(input,reference),native::Status::kSuccess);
     native::test::Check(reference);
     EXPECT_EQ(reference.data().input.node_ids,input.node_ids);
@@ -72,7 +57,7 @@ TEST_F(SourcePartT3StartupCheck, AllSixContributionsAssembleOnceAtOriginalPhysic
   unsigned count=0;
   for (unsigned p=0;p<source::ParentCount;++p) {
     const auto& parent=fixture.parents()[p]; if (parent.arity!=3) continue;
-    const auto input=Input(fixture,p); native::Reference reference;
+    const auto input=source::T3ReferenceInput(fixture,p); native::Reference reference;
     ASSERT_EQ(native::Initialize(input,reference),native::Status::kSuccess);
     const auto independent=native::test::Independent(input);
     element_mass+=independent.mass; element_inertia+=independent.total; ++count;
