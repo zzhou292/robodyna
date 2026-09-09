@@ -15,8 +15,8 @@
   "ported_files": [
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
-      "bytes": 727,
-      "sha256": "1164a4ce5a44f4dbc5f76f25c6bae7cee46b411af8afa2250164f03ed390ddc6"
+      "bytes": 1416,
+      "sha256": "db4eab330f23c93f91a9204199a57ece1f41a39dfc96ab9f82c9bfe5788a895b"
     },
     {
       "path": "lib_src/elements/t3/CMakeLists.txt",
@@ -67,8 +67,8 @@
   "tests": [
     {
       "path": "lib_utest/qualification/t3/CMakeLists.txt",
-      "bytes": 2678,
-      "sha256": "6b2709e83f83a8ec4250b262ea767fac2d2fcb410cdf0f690e29122cd8b7b8aa"
+      "bytes": 3112,
+      "sha256": "38c752bb7b569d77e3a3aa2dd82d60dea09a5d8032b6fc57aeb6282785c4ba43"
     },
     {
       "path": "lib_utest/qualification/t3/README.md",
@@ -347,11 +347,19 @@
     }
   ],
   "build_registration_revision": {
-    "previous_manifest_sha256": "2d2ee6a9cfa0a1fbf641ea8fefd5a4e7837b6a32eb8e5b4487af0c58a9e3b166",
-    "reason": "Optional prescribed force-stage registration; startup/rates arithmetic, test cases and native source identities unchanged",
+    "previous_manifest_sha256": "9ff2ae68a763b7483ca43d0bf133a75c8956dadc8867155d4211dd5475bcaebe",
+    "reason": "Optional standalone resident T3 registration; prescribed startup/rates arithmetic and test cases unchanged",
     "changed_files": [
       "lib_src/elements/t3/BUILD.bazel",
       "lib_utest/qualification/t3/CMakeLists.txt"
-    ]
+    ],
+    "preceding_revision": {
+      "previous_manifest_sha256": "2d2ee6a9cfa0a1fbf641ea8fefd5a4e7837b6a32eb8e5b4487af0c58a9e3b166",
+      "reason": "Optional prescribed force-stage registration; startup/rates arithmetic, test cases and native source identities unchanged",
+      "changed_files": [
+        "lib_src/elements/t3/BUILD.bazel",
+        "lib_utest/qualification/t3/CMakeLists.txt"
+      ]
+    }
   }
 }

@@ -3,6 +3,12 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_library")
 
 package(default_visibility = ["//visibility:public"])
 
+cc_library(
+    name = "nodal_trial_identity",
+    hdrs = ["NodalTrialIdentity.h"],
+    deps = [":explicit_nodal_state"],
+)
+
 cuda_library(
     name = "explicit_nodal_state",
     srcs = ["FENodalState.cu", "ExplicitTranslationStep.cu", "ExplicitNodalStep.cu"],
