@@ -47,7 +47,7 @@ ReplayReport AcceptedReplay::Open(const std::filesystem::path& directory) {
                 bundle.info.triangle_count = bundle.topology.size();
                 candidate->current = Frame(bundle, 0, mesh);
             }
-            MatchTopology(bundle, *mesh); rd::CheckCouponFields(bundle, bundle.entries[i], *mesh);
+            MatchTopology(bundle, *mesh); rd::CheckFrameFields(bundle, bundle.entries[i], *mesh);
             for (const auto& position : mesh->GetCoordsVertices())
                 for (unsigned axis = 0; axis < 3; ++axis) {
                     bundle.info.bounds_min[axis] = std::min(bundle.info.bounds_min[axis], position[axis]);
@@ -58,7 +58,10 @@ ReplayReport AcceptedReplay::Open(const std::filesystem::path& directory) {
         for (unsigned axis = 0; axis < 3; ++axis)
             diameter = std::hypot(diameter, bundle.info.bounds_max[axis]-bundle.info.bounds_min[axis]);
         Require(std::isfinite(diameter) && diameter > 0, "Replay trajectory bounds are invalid");
-        if (bundle.inventory.count("canonical-wall.mesh.json")) candidate->wall = rd::ReadMesh(bundle, "canonical-wall.mesh.json");
+        if (bundle.inventory.count("canonical-wall.mesh.json")) {
+            candidate->wall = rd::ReadMesh(bundle, "canonical-wall.mesh.json");
+            if (bundle.info.kind == ReplayKind::GuidedPlate) rd::CheckGuidedWall(bundle, *candidate->wall);
+        }
         impl_ = std::move(candidate);
         return {ReplayStatus::Ok, "Completed accepted replay verified"};
     } catch (const std::exception& error) { return {ReplayStatus::InvalidBundle, error.what()}; }
@@ -70,7 +73,7 @@ ReplayReport AcceptedReplay::Load(std::size_t index) {
     try {
         const auto& bundle = impl_->bundle; const auto& entry = bundle.entries[index];
         const auto mesh = rd::ReadMesh(bundle, entry.mesh);
-        MatchTopology(bundle, *mesh); rd::CheckCouponFields(bundle, entry, *mesh);
+        MatchTopology(bundle, *mesh); rd::CheckFrameFields(bundle, entry, *mesh);
         impl_->current = Frame(bundle, index, mesh);
         return {ReplayStatus::Ok, "Accepted replay frame loaded"};
     } catch (const std::exception& error) { return {ReplayStatus::InvalidFrame, error.what()}; }

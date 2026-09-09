@@ -231,6 +231,10 @@ const GuidedPlateMetrics* GuidedPlateCase::metrics() const noexcept { return imp
 const ref::GuidedPlateModalReport* GuidedPlateCase::modal() const noexcept { return impl_?&impl_->modal:nullptr; }
 const ref::ElasticCouponData* GuidedPlateCase::model_data() const noexcept { return impl_?&impl_->model->shell().data():nullptr; }
 const ref::GuidedPlateData* GuidedPlateCase::guided_data() const noexcept { return impl_?&impl_->model->data():nullptr; }
+contact::Q4PlanarReferenceView GuidedPlateCase::contact_reference() const noexcept {
+    return impl_?impl_->model->contact_geometry().view():contact::Q4PlanarReferenceView{};
+}
+std::uint64_t GuidedPlateCase::diagnostic_stride() const noexcept { return impl_?impl_->audit_stride:0; }
 const visual::NodalMeshOutput* GuidedPlateCase::output() const noexcept { return impl_?&impl_->output:nullptr; }
 contact::PlanarWallView GuidedPlateCase::wall_mesh() const noexcept { return impl_?impl_->wall.view():contact::PlanarWallView{}; }
 const WallProvenance* GuidedPlateCase::wall_provenance() const noexcept { return impl_?&impl_->wall.provenance:nullptr; }

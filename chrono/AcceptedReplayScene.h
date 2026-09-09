@@ -20,9 +20,11 @@ struct ReplayStamp {
     std::uint64_t owner_id = 0, epoch = 0;
     double time = 0;
 };
+enum class ReplayVertical { Y, Z };
 struct ReplayCamera {
     std::array<double, 3> position{}, target{};
     double vertical_fov_degrees = 40;
+    ReplayVertical vertical = ReplayVertical::Z;
 };
 
 // Core-only presentation adapter for a previously validated AcceptedReplay.

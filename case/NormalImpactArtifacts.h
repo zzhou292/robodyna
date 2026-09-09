@@ -1,14 +1,11 @@
 #pragma once
 #include "NormalImpactCase.h"
+#include "CanonicalWallArtifacts.h"
 #include <cstddef>
 #include <memory>
 #include <string>
 
 namespace crash::case_data {
-// Reads at most 1 MiB and verifies the exact bytes with OpenSSL SHA256 before
-// returning them for CanonicalWall::Load. No second open/TOCTOU at the loader.
-std::string ReadPinnedWallManifest(const std::string& path);
-
 // Output-only application module. A new directory is required. Existing Chrono
 // OBJ is visualization precision; full-precision Chrono JSON archives are also
 // emitted and read back to check coordinate bits/connectivity before inventory.

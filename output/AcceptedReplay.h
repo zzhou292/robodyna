@@ -11,7 +11,7 @@ namespace chrono { class ChTriangleMeshConnected; }
 
 namespace crash::output {
 
-enum class ReplayKind { NormalImpact, ElasticCoupon };
+enum class ReplayKind { NormalImpact, ElasticCoupon, GuidedPlate };
 enum class ReplayStatus { Ok, InvalidBundle, NotInitialized, InvalidFrame };
 struct ReplayReport { ReplayStatus status; std::string diagnostic; };
 struct ReplayInfo {
@@ -22,7 +22,7 @@ struct ReplayInfo {
     std::size_t frame_count = 0, node_count = 0, triangle_count = 0;
     // Moving-surface bounds over every verified frame, excluding the wall.
     std::array<double, 3> bounds_min{}, bounds_max{};
-    // Present only when explicitly archived (the coupon schema). Old normal
+    // Present only when explicitly archived (the shell schemas). Old normal
     // impact meshes have no synthetic replacement run/topology/source IDs.
     std::uint64_t run_id = 0, topology_id = 0;
 };
@@ -41,6 +41,8 @@ struct ReplayFrame {
 // Geometry/record association is checked; this does not requalify the physical
 // interval ledger or authenticate original deck source ownership. Normal-impact
 // bundles require their archived canonical wall; coupon bundles have no wall.
+// Guided-plate bundles additionally bind complete endpoint fields and the exact
+// pinned original canonical wall. Derived wall variants use a separate contract.
 //
 // Preview caps: 1000 frames, 4096 vertices/8192 triangles per mesh, 32 MiB per
 // file and 256 MiB declared inventory. Only metadata, immutable connectivity,

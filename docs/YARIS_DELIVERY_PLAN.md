@@ -73,7 +73,12 @@ the eight existing B2 reference checks unchanged. The guided case proposes
 including the explicitly enabled partial-contact/retry test. First certified
 applied contact occurs at epoch 12,365 / 123.668550 ms. The tested prefix reaches
 1.354053 micrometers peak penetration; it does not cover the full impact.
-Next are accepted bundle support, the full h/h2/h4 impact and rendered playback.
+Accepted bundle support now passes seven writer and seven reader checks, with
+one added scene check and passing legacy output regressions. Six host wall
+transformation tests cover original/flipped/subdivided meshes, explicit derived
+provenance and prescribed-state contact invariance. Eleven study and six report
+IO tests also pass. Next are the full h/h2/h4 impact, wall-variant response
+checks and rendered playback.
 See the [guided plate implementation](../../planning/GUIDED_PLATE_IMPLEMENTATION.md).
 Parallel E1 passes 12 synthetic declaration tests and the original PID 2000157
 closure compilation; it does not yet supply geometry/mass/attachment admission.

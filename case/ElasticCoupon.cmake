@@ -7,8 +7,9 @@ target_link_libraries(robo_dyna_elastic_coupon_case PUBLIC
 target_include_directories(robo_dyna_elastic_coupon_case PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_compile_options(robo_dyna_elastic_coupon_case PRIVATE -fno-fast-math -ffp-contract=off)
 
+include(ShellPatchFields.cmake)
 add_library(robo_dyna_elastic_coupon_artifacts STATIC ElasticCouponArtifacts.cpp ElasticCouponFields.cpp)
-target_link_libraries(robo_dyna_elastic_coupon_artifacts PUBLIC robo_dyna_elastic_coupon_case PRIVATE robo_dyna_artifact_io)
+target_link_libraries(robo_dyna_elastic_coupon_artifacts PUBLIC robo_dyna_elastic_coupon_case PRIVATE robo_dyna_artifact_io robo_dyna_shell_patch_fields)
 add_executable(robo-dyna-coupon elastic_coupon_main.cpp)
 target_link_libraries(robo-dyna-coupon PRIVATE robo_dyna_elastic_coupon_artifacts)
 

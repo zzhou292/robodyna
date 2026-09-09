@@ -27,7 +27,7 @@ using output::WriteBytes;
 using output::WriteJson;
 namespace {
 namespace fs=std::filesystem;
-constexpr const char* ManifestPin="12500bf1512f1c06c9228cd319bf28d6087f62a40f294222f2fe38030b7d03c4";
+constexpr const char* ManifestPin=kCanonicalWallManifestSha256;
 Document Metrics(const ImpactMetrics& m) {
     Document doc;doc.SetObject();Integer(doc,"owner_id",m.stamp.owner_id);Integer(doc,"accepted_epoch",m.stamp.epoch);
     Integer(doc,"node_count",m.stamp.node_count);Number(doc,"accepted_time_s",m.stamp.time);Number(doc,"fixed_dt_s",m.stamp.fixed_dt);
@@ -35,40 +35,8 @@ Document Metrics(const ImpactMetrics& m) {
     Number(doc,"kinetic_energy_J",m.kinetic_energy);Number(doc,"elastic_energy_J",m.elastic_energy);Number(doc,"wall_impulse_Ns",m.wall_impulse);
     Number(doc,"contact_work_J",m.contact_work);Number(doc,"peak_penetration_m",m.peak_penetration);return doc;
 }
-void CheckCanonicalBinding(const CanonicalWall& wall,const std::string& bytes) {
-    // Authenticate the actual supplied geometry, not just an unrelated byte
-    // string. Reuse the same bounded loader; this is startup-only work.
-    CanonicalWall expected;std::istringstream input(bytes);
-    Require(expected.Load(input).status==WallStatus::Ok,"Pinned canonical input no longer satisfies its schema");
-    Require(wall.vertices().size()==expected.vertices().size()&&wall.triangles().size()==expected.triangles().size()&&
-        wall.source_quads().size()==expected.source_quads().size()&&wall.stitching().size()==expected.stitching().size(),"Wall does not match pinned source counts");
-    for(std::size_t i=0;i<wall.vertices().size();++i) {
-        const auto& a=wall.vertices()[i];const auto& b=expected.vertices()[i];
-        Require(a.vertex_index==b.vertex_index&&a.source_node_id==b.source_node_id&&a.assembled_source_node_id==b.assembled_source_node_id,"Wall node source binding differs from pinned input");
-        for(unsigned j=0;j<3;++j)Require(Bits(a.position_m[j])==Bits(b.position_m[j]),"Wall coordinates differ from pinned input");
-    }
-    for(std::size_t i=0;i<wall.triangles().size();++i) {
-        const auto& a=wall.triangles()[i];const auto& b=expected.triangles()[i];
-        Require(a.vertex_indices==b.vertex_indices&&a.source_node_ids==b.source_node_ids&&a.triangle_id==b.triangle_id&&
-            a.source_quad_id==b.source_quad_id&&a.assembled_source_quad_id==b.assembled_source_quad_id,"Wall triangle source binding differs from pinned input");
-    }
-    for(std::size_t i=0;i<wall.source_quads().size();++i) {
-        const auto& a=wall.source_quads()[i];const auto& b=expected.source_quads()[i];
-        Require(a.source_node_ids==b.source_node_ids&&a.source_quad_id==b.source_quad_id&&a.assembled_source_quad_id==b.assembled_source_quad_id&&
-            a.source_part_id==b.source_part_id&&a.assembled_source_part_id==b.assembled_source_part_id,"Wall quad source binding differs from pinned input");
-    }
-    for(std::size_t i=0;i<wall.stitching().size();++i) {
-        const auto& a=wall.stitching()[i];const auto& b=expected.stitching()[i];
-        Require(a.source_quad_id==b.source_quad_id&&a.source_edge==b.source_edge&&a.inserted_source_node_ids==b.inserted_source_node_ids,"Wall stitch source binding differs from pinned input");
-    }
-    Require(wall.reaction_groups().whole_wall_triangle_ids==expected.reaction_groups().whole_wall_triangle_ids&&
-        wall.reaction_groups().source_segment_set_1001_triangle_ids==expected.reaction_groups().source_segment_set_1001_triangle_ids,"Wall reaction binding differs from pinned input");
-}
-}  // namespace
+} // namespace
 
-std::string ReadPinnedWallManifest(const std::string& path) {
-    auto bytes=ReadBounded(path,1024*1024);Require(Sha256(bytes)==ManifestPin,"Canonical wall manifest SHA256 differs from the required pin");return bytes;
-}
 struct NormalImpactArtifacts::Impl {
     struct Artifact {std::string name,sha256;std::size_t bytes;};
     fs::path directory;
@@ -96,9 +64,10 @@ NormalImpactArtifacts::NormalImpactArtifacts(const std::string& path,const std::
     const CanonicalWall& wall,const NormalImpactConfig& config,double horizon,unsigned frame_every):impl_(std::make_unique<Impl>(path)) {
     auto& s=*impl_;s.config=config;s.horizon=horizon;s.frame_every=frame_every;
     Require(wall.loaded()&&Sha256(canonical_bytes)==ManifestPin,"Artifact input is not the verified canonical wall");
-    CheckCanonicalBinding(wall,canonical_bytes);
+    CheckCanonicalWallBinding(wall,canonical_bytes);
     Require(fs::create_directory(s.directory),"Output directory must be new; existing directories are never overwritten");
-    WriteBytes(s.directory/"canonical-wall.manifest.json",canonical_bytes);s.Inventory("canonical-wall.manifest.json");
+    WriteCanonicalWallArtifacts(s.directory,wall,canonical_bytes);
+    s.Inventory("canonical-wall.manifest.json");
     Document doc;doc.SetObject();String(doc,"schema","tlfea.normal_impact_configuration.v1");String(doc,"status","configured");
     String(doc,"scope","Translational mass-patch normal contact against the finite canonical Yaris wall mesh");
     Boolean(doc,"shell_model",false);Boolean(doc,"vehicle_model",false);Boolean(doc,"general_ccd",false);
@@ -113,10 +82,7 @@ NormalImpactArtifacts::NormalImpactArtifacts(const std::string& path,const std::
     String(doc,"obj_precision","Chrono default visualization precision; use mesh.json/canonical manifest for exact geometry");
     String(doc,"motion_scope","Fixed projected footprint and normal-only motion; admitted penalty overlap is bounded, not general CCD");
     WriteJson(s.directory/"configuration.json",doc);s.Inventory("configuration.json");
-    chrono::ChTriangleMeshConnected canonical_mesh;
-    for(const auto& v:wall.vertices())canonical_mesh.GetCoordsVertices().emplace_back(v.position_m[0],v.position_m[1],v.position_m[2]);
-    for(const auto& t:wall.triangles())canonical_mesh.GetIndicesVertices().emplace_back(t.vertex_indices[0],t.vertex_indices[1],t.vertex_indices[2]);
-    s.Mesh("canonical-wall",canonical_mesh);
+    s.Inventory("canonical-wall.mesh.json");s.Inventory("canonical-wall.obj");
     s.intervals.open(s.directory/"accepted-intervals.csv",std::ios::binary);s.frames.open(s.directory/"accepted-frames.csv",std::ios::binary);
     Require(bool(s.intervals)&&bool(s.frames),"Could not create accepted-state CSV files");
     s.intervals<<std::setprecision(std::numeric_limits<double>::max_digits10);

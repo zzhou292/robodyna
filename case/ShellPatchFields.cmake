@@ -1,0 +1,4 @@
+add_library(robo_dyna_shell_patch_fields STATIC ShellPatchFields.cpp)
+target_link_libraries(robo_dyna_shell_patch_fields PUBLIC
+  robo_dyna_elastic_coupon_reference crash_nodal_mesh_output PRIVATE robo_dyna_artifact_io)
+target_compile_options(robo_dyna_shell_patch_fields PRIVATE -fno-fast-math -ffp-contract=off)

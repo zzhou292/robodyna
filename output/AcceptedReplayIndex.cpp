@@ -145,12 +145,13 @@ Bundle ReadIndex(const std::filesystem::path& directory) {
     Bundle bundle; bundle.directory = directory;
     bundle.info.schema = Text(manifest, "schema");
     const bool coupon = bundle.info.schema == "robo_dyna.elastic_coupon_artifacts.v1";
-    Require(coupon || bundle.info.schema == "tlfea.normal_impact_artifacts.v1", "Unsupported replay artifact schema");
-    bundle.info.kind = coupon ? ReplayKind::ElasticCoupon : ReplayKind::NormalImpact;
+    const bool guided = bundle.info.schema == "robo_dyna.guided_plate_artifacts.v1";
+    Require(coupon || guided || bundle.info.schema == "tlfea.normal_impact_artifacts.v1", "Unsupported replay artifact schema");
+    bundle.info.kind = guided ? ReplayKind::GuidedPlate : coupon ? ReplayKind::ElasticCoupon : ReplayKind::NormalImpact;
     const auto& shell_model = Member(manifest, "shell_model"); const auto& vehicle_model = Member(manifest, "vehicle_model");
-    Require(shell_model.IsBool() && shell_model.GetBool() == coupon && vehicle_model.IsBool() && !vehicle_model.GetBool(),
+    Require(shell_model.IsBool() && shell_model.GetBool() == (coupon || guided) && vehicle_model.IsBool() && !vehicle_model.GetBool(),
             "Replay schema/model scope flags disagree");
-    bundle.info.scope = coupon ? "Synthetic elastic shell coupon" : "Translational mass patch against the canonical wall";
+    bundle.info.scope = guided ? "Synthetic guided elastic plate against the canonical wall" : coupon ? "Synthetic elastic shell coupon" : "Translational mass patch against the canonical wall";
     bundle.info.final_epoch = Unsigned(manifest, "accepted_epoch");
     bundle.info.final_time = Real(manifest, "accepted_time_s");
     Require(bundle.info.final_epoch && bundle.info.final_time > 0, "Replay completed horizon is invalid");
@@ -160,18 +161,18 @@ Bundle ReadIndex(const std::filesystem::path& directory) {
     Require(Unsigned(final, "accepted_epoch") == bundle.info.final_epoch &&
             Bits(Real(final, "accepted_time_s")) == Bits(bundle.info.final_time), "Final metrics disagree with replay manifest");
     const auto configuration = Json(VerifiedBytes(bundle, "configuration.json"));
-    const double dt = Real(configuration,coupon ? "fixed_dt_s" : "dt_s");
+    const double dt = Real(configuration,(coupon || guided) ? "fixed_dt_s" : "dt_s");
     const double horizon = Real(configuration,coupon ? "half_period_horizon_s" : "requested_horizon_s");
     Require(dt > 0 && horizon > 0, "Replay configured step/horizon must be positive");
     for (const auto& entry : bundle.entries) CheckTime(entry.time,entry.epoch*dt,dt,entry.epoch);
     CheckTime(bundle.info.final_time,horizon,dt,bundle.info.final_epoch);
-    if (coupon) {
-        Require(Text(configuration, "schema") == "robo_dyna.elastic_coupon_configuration.v1" &&
+    if (coupon || guided) {
+        Require(Text(configuration, "schema") == (guided ? "robo_dyna.guided_plate_configuration.v1" : "robo_dyna.elastic_coupon_configuration.v1") &&
                 Unsigned(configuration, "owner_id") == bundle.info.owner_id &&
                 Unsigned(configuration, "required_steps") == bundle.info.final_epoch &&
                 Unsigned(final, "saved_frames") == bundle.info.frame_count, "Coupon replay configuration association mismatch");
         bundle.info.run_id = Unsigned(configuration, "run_id"); bundle.info.topology_id = Unsigned(configuration, "topology_id");
-        Require(bundle.info.run_id && bundle.info.topology_id && !bundle.inventory.count("canonical-wall.mesh.json"),
+        Require(bundle.info.run_id && bundle.info.topology_id && (guided || !bundle.inventory.count("canonical-wall.mesh.json")),
                 "Coupon replay has invalid source IDs or an undeclared wall");
         const auto& vertices = Member(configuration, "vertex_binding");
         const auto& triangles = Member(configuration, "triangle_binding");
@@ -196,6 +197,9 @@ Bundle ReadIndex(const std::filesystem::path& directory) {
                 face[axis] = static_cast<int>(row[axis].GetUint64());
             }
             bundle.topology.push_back(face);
+            std::array<std::uint64_t,9> source{};
+            for (unsigned i = 0; i < 9; ++i) source[i] = row[i].GetUint64();
+            bundle.source_triangles.push_back(source);
         }
     } else {
         Require(Text(configuration, "schema") == "tlfea.normal_impact_configuration.v1" &&
@@ -203,6 +207,10 @@ Bundle ReadIndex(const std::filesystem::path& directory) {
                 "Normal-impact replay owner association or canonical wall is missing");
         bundle.info.node_count = Unsigned(final, "node_count");
         Require(bundle.info.node_count >= 3 && bundle.info.node_count <= kVertexCap, "Invalid normal-impact node count");
+    }
+    if (guided) {
+        bundle.fixed_dt = dt;
+        ReadGuidedConfiguration(bundle, configuration, final, manifest);
     }
     return bundle;
 }

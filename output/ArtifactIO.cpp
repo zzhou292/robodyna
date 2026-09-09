@@ -78,6 +78,19 @@ void Boolean(Document& doc, const char* name, bool value) {
     doc.AddMember(key, value, doc.GetAllocator());
 }
 
+Value FiniteArray(Document& doc, const double* values, std::size_t count) {
+    Require(values || !count, "Missing artifact array");
+    Value array(rapidjson::kArrayType);
+    for (std::size_t i=0;i<count;++i) {
+        Require(std::isfinite(values[i]),"Nonfinite artifact array");
+        array.PushBack(values[i],doc.GetAllocator());
+    }
+    return array;
+}
+void FiniteArray(Document& doc,const char* name,const double* values,std::size_t count) {
+    Value key(name,doc.GetAllocator()); doc.AddMember(key,FiniteArray(doc,values,count),doc.GetAllocator());
+}
+
 void WriteJson(const std::filesystem::path& path, const Document& doc) {
     Require(!std::filesystem::exists(path), "Refusing to overwrite an artifact");
     std::ofstream output(path, std::ios::binary);

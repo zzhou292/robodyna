@@ -72,6 +72,9 @@ class GuidedPlateCase {
     const reference::GuidedPlateModalReport* modal() const noexcept;
     const reference::ElasticCouponData* model_data() const noexcept;
     const reference::GuidedPlateData* guided_data() const noexcept;
+    // Immutable host preparation, including exact-coordinate area bounds.
+    tlfea::contact::Q4PlanarReferenceView contact_reference() const noexcept;
+    std::uint64_t diagnostic_stride() const noexcept;
     const visual::NodalMeshOutput* output() const noexcept;
     tlfea::contact::PlanarWallView wall_mesh() const noexcept;
     const WallProvenance* wall_provenance() const noexcept;

@@ -69,13 +69,15 @@ class ReplayOverlay : public chrono::vsg3d::ChGuiComponentVSG {
         const auto flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
                            ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
         if (ImGui::Begin("robo-dyna | accepted replay", nullptr, flags)) {
-            ImGui::TextUnformatted(info_.kind == crash::output::ReplayKind::NormalImpact
-                ? "Nondeforming normal-contact rig" : "Elastic Q4 coupon | physical scale");
+            ImGui::TextUnformatted(info_.kind == crash::output::ReplayKind::GuidedPlate
+                ? "Guided elastic Q4 plate | physical scale"
+                : info_.kind == crash::output::ReplayKind::NormalImpact
+                    ? "Nondeforming normal-contact rig" : "Elastic Q4 coupon | physical scale");
             const auto& stamp = *scene_.stamp();
             ImGui::Text("Accepted time: %.6f ms", stamp.time * 1000);
             ImGui::Text("Frame %zu / %zu   Epoch %llu", stamp.index + 1, info_.frame_count,
                         static_cast<unsigned long long>(stamp.epoch));
-            ImGui::TextUnformatted(info_.kind == crash::output::ReplayKind::NormalImpact
+            ImGui::TextUnformatted(info_.kind != crash::output::ReplayKind::ElasticCoupon
                 ? "Blue: moving surface   Gray wireframe: canonical wall"
                 : "Blue: accepted coupon surface | no wall");
             if (capture_) ImGui::TextUnformatted("Indexed PNG capture | fixed camera");
@@ -165,7 +167,8 @@ int main(int argc, char** argv) {
         visual->SetWindowPosition(60, 60);
         visual->SetWindowTitle("robo-dyna | accepted simulation replay");
         visual->SetBackgroundColor(chrono::ChColor(0.06f, 0.08f, 0.11f));
-        visual->SetCameraVertical(chrono::CameraVerticalDir::Z);
+        visual->SetCameraVertical(scene.camera()->vertical == crash::visual::ReplayVertical::Y
+            ? chrono::CameraVerticalDir::Y : chrono::CameraVerticalDir::Z);
         visual->AddCamera(Vector(scene.camera()->position), Vector(scene.camera()->target));
         visual->SetCameraAngleDeg(scene.camera()->vertical_fov_degrees);
         // Illuminate from the fixed camera side. The owning API clamps azimuth
@@ -174,9 +177,12 @@ int main(int argc, char** argv) {
         const double dx = camera.position[0] - camera.target[0];
         const double dy = camera.position[1] - camera.target[1];
         const double dz = camera.position[2] - camera.target[2];
-        double light_azimuth = std::atan2(dy, dx);
+        // Owning VSG uses (x,z) azimuth with reversed z for Y-up.
+        const bool y_up = camera.vertical == crash::visual::ReplayVertical::Y;
+        double light_azimuth = y_up ? std::atan2(-dz, dx) : std::atan2(dy, dx);
         if (light_azimuth < 0) light_azimuth += 2 * std::acos(-1.0);
-        const double light_elevation = std::atan2(dz, std::hypot(dx, dy));
+        const double light_elevation = y_up ? std::atan2(dy, std::hypot(dx, dz))
+                                           : std::atan2(dz, std::hypot(dx, dy));
         visual->SetLightIntensity(1.0f);
         visual->SetLightDirection(light_azimuth, light_elevation);
         visual->SetBaseGuiVisibility(false);
@@ -286,9 +292,10 @@ int main(int argc, char** argv) {
             crash::output::Boolean(manifest, "simulation_executed_by_viewer", false);
             crash::output::Boolean(manifest, "deformation_scaled", false);
             crash::output::Boolean(manifest, "wireframe", options.wireframe);
-            crash::output::String(manifest, "wall_display", info.kind == crash::output::ReplayKind::NormalImpact ? "gray_wireframe" : "none");
+            crash::output::String(manifest, "wall_display", info.kind != crash::output::ReplayKind::ElasticCoupon ? "gray_wireframe" : "none");
             Array(manifest, "camera_position", scene.camera()->position);
             Array(manifest, "camera_target", scene.camera()->target);
+            crash::output::String(manifest, "camera_vertical", scene.camera()->vertical == crash::visual::ReplayVertical::Y ? "Y" : "Z");
             crash::output::Number(manifest, "camera_vertical_fov_degrees", scene.camera()->vertical_fov_degrees);
             crash::output::String(manifest, "frame_index_sha256", crash::output::Sha256(index.str()));
             crash::output::WriteJson(capture_directory / "manifest.json", manifest);  // Completion marker is last.

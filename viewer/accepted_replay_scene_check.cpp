@@ -138,6 +138,31 @@ TEST(AcceptedReplayScene, FixedWallCopiedOnceAndKeptSeparateFromMovingSurface) {
     EXPECT_EQ(scene.Initialize(info, Frame(0, 0), wall).status, ReplaySceneStatus::AlreadyInitialized);
 }
 
+TEST(AcceptedReplayScene, GuidedPlateRequiresWallAndUsesFixedPhysicalSideView) {
+    auto info = Info(); info.kind = crash::output::ReplayKind::GuidedPlate;
+    info.bounds_min = {.045,-.1,-.05}; info.bounds_max = {.052,.1,.05};
+    auto initial = Mesh();
+    for (auto& p : initial->GetCoordsVertices()) p = {.045,p.x()-.1,p.y()};
+    auto wall = std::make_shared<chrono::ChTriangleMeshConnected>(*initial);
+    for (auto& p : wall->GetCoordsVertices()) p.x()=.05;
+    ReplayFrame first{0,9,0,0,initial}; AcceptedReplayScene scene;
+    EXPECT_EQ(scene.Initialize(info,first,{}).status,ReplaySceneStatus::InvalidFrame);
+    ASSERT_EQ(scene.Initialize(info,first,wall).status,ReplaySceneStatus::Ok);
+    const auto camera = *scene.camera();
+    EXPECT_EQ(camera.vertical,crash::visual::ReplayVertical::Y);
+    EXPECT_LT(camera.position[0],camera.target[0]);
+    EXPECT_LT(camera.position[2],camera.target[2]);
+    EXPECT_EQ(scene.moving_mesh()->GetCoordsVertices(),initial->GetCoordsVertices());
+    const auto fixed = scene.wall_mesh()->GetCoordsVertices(); const auto moving=scene.moving_mesh();
+    auto deformed=std::make_shared<chrono::ChTriangleMeshConnected>(*initial);
+    deformed->GetCoordsVertices()[1].x()=.049; deformed->GetCoordsVertices()[2].x()=.049;
+    ASSERT_EQ(scene.Publish({1,9,6,.01,deformed}).status,ReplaySceneStatus::Ok);
+    EXPECT_EQ(scene.moving_mesh(),moving); EXPECT_EQ(scene.wall_mesh()->GetCoordsVertices(),fixed);
+    EXPECT_EQ(scene.moving_mesh()->GetCoordsVertices(),deformed->GetCoordsVertices());
+    EXPECT_EQ(scene.camera()->position,camera.position); EXPECT_EQ(scene.camera()->target,camera.target);
+    EXPECT_EQ(scene.camera()->vertical,camera.vertical);
+}
+
 TEST(AcceptedReplayScene, DisplayRangeAndDegenerateGeometryFailBeforePublication) {
     AcceptedReplayScene scene;
     auto invalid = Frame(0, 0);

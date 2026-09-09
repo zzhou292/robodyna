@@ -25,6 +25,8 @@ void String(Document&, const char* name, const std::string& value);
 void Number(Document&, const char* name, double value);
 void Integer(Document&, const char* name, std::uint64_t value);
 void Boolean(Document&, const char* name, bool value);
+Value FiniteArray(Document&, const double* values, std::size_t count);
+void FiniteArray(Document&, const char* name, const double* values, std::size_t count);
 void WriteJson(const std::filesystem::path& path, const Document&);
 void WriteBytes(const std::filesystem::path& path, const std::string& bytes);
 

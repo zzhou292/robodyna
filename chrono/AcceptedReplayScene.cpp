@@ -93,7 +93,12 @@ bool MakeCamera(const output::ReplayInfo& info, ReplayCamera& camera) {
     // Fixed oblique view from the incident side of the -X-facing wall. Coupon
     // geometry is also visible from above. The full moving trajectory is framed;
     // a large fixed wall may extend beyond the image and is never rescaled.
-    const std::array<double, 3> direction = info.kind == output::ReplayKind::ElasticCoupon
+    // Guided geometry is the coupon posed into Y/Z. View along its width,
+    // from -X, with Y up to retain its physical normal travel in silhouette.
+    camera.vertical = info.kind == output::ReplayKind::GuidedPlate ? ReplayVertical::Y : ReplayVertical::Z;
+    const std::array<double, 3> direction = info.kind == output::ReplayKind::GuidedPlate
+        ? std::array<double, 3>{-0.18, -0.3, -1.25}
+        : info.kind == output::ReplayKind::ElasticCoupon
         ? std::array<double, 3>{-0.3, -1.25, 0.18}
         : std::array<double, 3>{-1.5, -1.25, 1.0};
     for (int i = 0; i < 3; ++i) {
@@ -123,9 +128,10 @@ ReplaySceneReport AcceptedReplayScene::Initialize(const output::ReplayInfo& info
         !std::isfinite(info.final_time) || info.final_time < frame.time ||
         frame.epoch > info.final_epoch || !info.frame_count || info.frame_count > 1000 ||
         (info.frame_count == 1 && (info.final_epoch != 0 || info.final_time != 0)) ||
-        (info.kind != output::ReplayKind::NormalImpact && info.kind != output::ReplayKind::ElasticCoupon) ||
+        (info.kind != output::ReplayKind::NormalImpact && info.kind != output::ReplayKind::ElasticCoupon &&
+         info.kind != output::ReplayKind::GuidedPlate) ||
         frame.mesh->GetCoordsVertices().size() != info.node_count || frame.mesh->GetIndicesVertices().size() != info.triangle_count ||
-        (info.kind == output::ReplayKind::NormalImpact) != static_cast<bool>(wall) ||
+        (info.kind != output::ReplayKind::ElasticCoupon) != static_cast<bool>(wall) ||
         !DisplayGeometry(frame.mesh->GetCoordsVertices(), frame.mesh->GetIndicesVertices()) ||
         (wall && !DisplayGeometry(wall->GetCoordsVertices(), wall->GetIndicesVertices())))
         return {ReplaySceneStatus::InvalidFrame, "Invalid validated replay geometry or metadata"};
