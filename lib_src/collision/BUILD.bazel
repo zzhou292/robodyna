@@ -58,6 +58,14 @@ cc_library(
     deps = [":q4_surface_mapping"],
 )
 
+cc_library(
+    name = "q4_planar_geometry",
+    srcs = ["Q4PlanarGeometry.cpp"],
+    hdrs = ["Q4PlanarGeometry.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":planar_wall_geometry", ":q4_contact_integration"],
+)
+
 cuda_library(
     name = "hydroelastic_broadphase",
     srcs = ["HydroelasticBroadphase.cu"],
