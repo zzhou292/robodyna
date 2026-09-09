@@ -15,6 +15,19 @@ if(CRASH_ENABLE_CHRONO_CHECK)
   set_tests_properties(chrono_wall_integration PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE)
 endif()
 
+if(CRASH_ENABLE_CHRONO_REISSNER_CHECK)
+  # FEA is a Chrono_core build option, not a find_package component. The test
+  # checks CHRONO_FEA in the selected build's ChConfig.h and links its real
+  # implementation. No copied formulation, dynamics, CUDA, or viewer target.
+  find_package(GTest REQUIRED)
+  add_executable(crash_chrono_reissner_reference_check reissner_reference_check.cpp)
+  target_compile_features(crash_chrono_reissner_reference_check PRIVATE cxx_std_17)
+  target_link_libraries(crash_chrono_reissner_reference_check PRIVATE Chrono::Chrono_core GTest::gtest_main)
+  add_test(NAME chrono_reissner_reference COMMAND crash_chrono_reissner_reference_check)
+  set_tests_properties(chrono_reissner_reference PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE PROCESSORS 1
+    ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1")
+endif()
+
 if(CRASH_ENABLE_CHRONO_SNAPSHOT_CHECK OR CRASH_ENABLE_TL_CHRONO_CHECK)
   set(CRASH_TL_FEA_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../Total-Lagrangian-FEA"
       CACHE PATH "TL-FEA source root providing the generic host nodal view")

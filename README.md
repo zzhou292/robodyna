@@ -41,6 +41,61 @@ and another backend cannot publish a new frame. The numerical fixture remains
 prescribed-motion qualification, with production rigid-motion behavior still
 open. The reusable adapter has no qualification-header/library dependency.
 
+## Optional Reissner reference: finite bending objectivity failed
+
+`CRASH_ENABLE_CHRONO_REISSNER_CHECK=ON` builds seven headless GoogleTests against
+the existing `ChElementShellReissner4`, with one Q4 and one centered elastic layer.
+They prescribe current node positions/directors, capture the neutral reference
+once, and evaluate internal forces directly. They never advance dynamics. The
+option defaults OFF and adds no dependency to the accepted-surface adapter.
+
+A separate Release core was built at `crash-work/build/chrono-fea-reference`
+from Chrono revision `0166ac8c376d0b63e75547b3662d60eefe6896ee`, with
+`CH_ENABLE_MODULE_FEA=ON`, FEA multiphysics and other optional modules OFF.
+The original working `chrono-core` build remains separate. The one-job build
+passed under the resource guard; its exact options are retained in the
+[configuration record](../crash-work/reports/chrono-fea-reference-configuration.json).
+No Chrono formulation source was changed or copied into the application.
+
+**Observed result: 6/7 tests passed.** Neutral/reference retention, stress-free
+finite rigid motion, analytic membrane traction/energy, small-curvature bending,
+membrane-prestress superposition, and the unrotated mixed force/energy work check
+passed. Finite rigid motion superposed on differential bending failed nine
+metrics. The original [log](../crash-work/reports/reissner-reference-tests-1.log)
+and [XML](../crash-work/reports/reissner-reference-tests-1.xml) retain all results:
+
+| Failed metric | Measured error | Declared limit |
+| --- | ---: | ---: |
+| World-force covariance | 0.0244689 N | 5.41994e-7 N |
+| World-couple covariance | 0.0216006 Nm | 9.62266e-7 Nm |
+| Elastic-energy invariance | 1.01055e-7 J | 7.46603e-11 J |
+
+Tolerances were fixed before execution: finite-transform comparisons use a
+2e-8 relative term with separately declared absolute floors. The infinitesimal
+bending and central-difference work checks have their own 2e-6 relative limits.
+No tolerance was relaxed after the failure. Strain/curvature invariance and
+post-rotation moment balance also failed; this is not a production oracle for
+finite bending or a validation of the CUDA crash path.
+
+The [source audit](../planning/ELEMENT_SELECTION.md) found a nonobjective
+matrix-average/rotation-vector conversion and omitted variation of the
+recomputed average frame in the force derivatives. Existing quaternion averaging
+and polar decomposition are possible diagnostic references, but replacing only
+the mean is not an established consistent force/tangent repair. Keep the six
+passing scopes narrow; no solver correction has been applied.
+
+To reproduce using the already built FEA core, from the workspace root:
+
+```sh
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/reissner-configure-rerun.json --lock crash-work/reports/workstation.lock --cpus 1 --max-rss-gib 0.5 --timeout 45 -- cmake -S crash-app -B crash-work/build/reissner-reference -DCRASH_ENABLE_CHRONO_REISSNER_CHECK=ON -DChrono_DIR="$PWD/crash-work/build/chrono-fea-reference/cmake" -DCMAKE_BUILD_TYPE=RelWithDebInfo
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/reissner-build-rerun.json --lock crash-work/reports/workstation.lock --cpus 1 --max-rss-gib 2 --timeout 120 -- cmake --build crash-work/build/reissner-reference --target crash_chrono_reissner_reference_check --parallel 1
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/reissner-tests-rerun.json --lock crash-work/reports/workstation.lock --cpus 1 --max-rss-gib 0.5 --timeout 45 -- crash-work/build/reissner-reference/chrono/crash_chrono_reissner_reference_check --gtest_output=xml:crash-work/reports/reissner-tests-rerun.xml
+```
+
+The unchanged test returns failure; it does not skip or mark the failed physical
+gate as an expected pass. CTest registers it as `chrono_reissner_reference`.
+The default application tests remain independent of this opt-in experiment.
+
 ## Original wall preparation
 
 The first implemented slice compiles the **original Yaris coarse V1l wall** into
