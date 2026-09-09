@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <cstring>
+#include <new>
 
 namespace tlfea::contact {
 namespace {
@@ -10,6 +11,14 @@ namespace detail=q4_planar_detail;
 using Code=Q4PlanarContactStatus;
 using detail::Storage;
 
+__global__ void ConstructSelectedLeaves(Storage* storage) {
+  // Non-allocating placement array construction establishes the selected type
+  // before any indexed scratch access. No array of the other backend exists.
+  if (storage->model.config.integration_backend == Q4PlanarIntegrationBackend::ScalarDyadicSquares)
+    ::new (storage->leaves) Q4IntegrationCell[MaxQ4IntegrationLeaves];
+  else if (storage->model.config.integration_backend == Q4PlanarIntegrationBackend::RectangularDyadic)
+    ::new (storage->leaves) Q4RectangularCell[MaxQ4IntegrationLeaves];
+}
 __global__ void MarkFailure(fea::NodalAssemblyView view,std::uint32_t node) {
   fea::RecordNodalAssemblyFailure(view,Status::kInvalidArgument,node);
 }
@@ -60,7 +69,8 @@ __global__ void EvaluatePrepared(Storage* storage,fea::NodalPreparedView view) {
   auto& s=*storage; s.control={};
   const auto& base=s.base.diagnostics;
   if (!base.valid || base.owner_id != view.owner_id || base.base_epoch != view.kinematics.base_epoch ||
-      base.attempt != view.attempt || base.configuration_id != s.model.config.configuration_id) {
+      base.attempt != view.attempt || base.configuration_id != s.model.config.configuration_id ||
+      base.integration_backend != s.model.config.integration_backend) {
     detail::Fail(s.control,Code::StaleAttempt); return;
   }
   // The owner guarantees immutable mass/masks and a stable accepted base during
@@ -75,7 +85,8 @@ bool Kinematics(const fea::DeviceNodalKinematicsView& view,const Q4PlanarContact
 }
 bool Identity(const Q4PlanarContactDiagnostics& a,const Q4PlanarContactDiagnostics& b) {
   return a.valid && b.valid && a.owner_id == b.owner_id && a.base_epoch == b.base_epoch && a.attempt == b.attempt &&
-         a.configuration_id == b.configuration_id && a.wall_binding_id == b.wall_binding_id && a.phase == b.phase;
+         a.configuration_id == b.configuration_id && a.wall_binding_id == b.wall_binding_id && a.phase == b.phase &&
+         a.integration_backend == b.integration_backend;
 }
 Q4PlanarContactReport Ok() { return {Code::Ok,"OK"}; }
 }
@@ -84,6 +95,12 @@ Q4PlanarContactReport Q4PlanarContact::Impl::Check(cudaError_t error) {
   if (error == cudaSuccess) return Ok();
   usable=false; has_base=false; has_results=false;
   return {Code::DeviceFailure,cudaGetErrorString(error)};
+}
+Q4PlanarContactReport Q4PlanarContact::Impl::ConstructLeaves() {
+  auto report=Check(cudaGetLastError()); if (report.status != Code::Ok) return report;
+  ConstructSelectedLeaves<<<1,1>>>(device);
+  report=Check(cudaGetLastError()); if (report.status != Code::Ok) return report;
+  return Check(cudaStreamSynchronize(nullptr));
 }
 Q4PlanarContactReport Q4PlanarContact::Impl::ReadControl(cudaStream_t stream) {
   auto report=Check(cudaGetLastError()); if (report.status != Code::Ok) return report;

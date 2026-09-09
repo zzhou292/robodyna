@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Q4PlanarContactStorage.h"
-#include "Q4ContactIntegration.h"
+#include "Q4PlanarContactBackend.h"
 
 namespace tlfea::contact::q4_planar_detail {
 using Interval=Q4IntegralInterval;
@@ -61,11 +61,14 @@ TL_SURFACE_HD inline bool Evaluate(Storage& storage,const tl::fea::DeviceNodalKi
   const auto& model=storage.model; auto& d=control.diagnostics;
   d.owner_id=model.config.owner.owner_id; d.base_epoch=state.base_epoch; d.attempt=attempt;
   d.configuration_id=model.config.configuration_id; d.wall_binding_id=model.config.wall_binding_id;
+  d.integration_backend=model.config.integration_backend;
   d.phase=phase; d.parent_count=model.parent_count; d.stiffness_rate_bound=model.stiffness.rate_bound;
   for (unsigned i=0;i<MaxIncidentNodes;++i) {
     storage.force[i]=0; storage.force_error[i]=0; storage.force_truth[i]={};
   }
-  for (auto& result:storage.result) result={};
+  for (auto& result:storage.result) {
+    result={}; result.integration_backend=model.config.integration_backend;
+  }
   const auto surface=Surface(model,state); const auto mass=Mass(model,state.base_epoch);
   Interval potential;
   for (unsigned p=0;p<model.parent_count;++p) {
@@ -76,8 +79,7 @@ TL_SURFACE_HD inline bool Evaluate(Storage& storage,const tl::fea::DeviceNodalKi
     auto& parent=storage.result[p]; parent.covered=prepared.covered;
     if (!prepared.covered) continue;
     ++d.covered_count;
-    control.integration=IntegrateQ4NormalContact(prepared.input,model.config.integration,
-        {storage.leaves,storage.heap,MaxQ4IntegrationLeaves,MaxQ4IntegrationLeaves},&parent.integration);
+    control.integration=IntegrateParent(prepared.input,model.config,storage.leaves,storage.heap,&parent);
     if (control.integration.status != Q4IntegrationStatus::Ok) return Fail(control,Code::IntegrationFailure,p);
     auto& integral=parent.integration;
     if (!ExpandArea(model.reference[p],&integral)) return Fail(control,Code::NonFiniteArithmetic,p);
@@ -90,6 +92,8 @@ TL_SURFACE_HD inline bool Evaluate(Storage& storage,const tl::fea::DeviceNodalKi
     }
     d.leaves+=integral.leaf_count; d.visited+=integral.visited;
     if (integral.deepest_leaf > d.deepest_leaf) d.deepest_leaf=integral.deepest_leaf;
+    if (parent.deepest_u > d.deepest_u) d.deepest_u=parent.deepest_u;
+    if (parent.deepest_v > d.deepest_v) d.deepest_v=parent.deepest_v;
     if (!q4_bounds::Add(d.active_area,integral.active_area,&d.active_area) ||
         !q4_bounds::Add(potential,{integral.potential.lower,integral.potential.upper},&potential))
       return Fail(control,Code::NonFiniteArithmetic,p);

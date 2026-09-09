@@ -11,6 +11,8 @@ namespace fixture=q4_planar_test;
 namespace sc=tlfea::contact;
 namespace fea=tl::fea;
 using Code=sc::Q4PlanarContactStatus;
+using Backend=sc::Q4PlanarIntegrationBackend;
+class Q4PlanarContactCUDA : public ::testing::TestWithParam<Backend> {};
 
 __global__ void Seed(fea::NodalAssemblyView view,double late=0) {
   for (unsigned n=0;n<6;++n) {
@@ -43,15 +45,38 @@ void SameNumerics(const sc::Q4PlanarContactDiagnostics& a,const sc::Q4PlanarCont
   EXPECT_EQ(a.potential.lower,b.potential.lower); EXPECT_EQ(a.potential.upper,b.potential.upper);
   EXPECT_EQ(a.surface_power,b.surface_power); EXPECT_EQ(a.active_area.lower,b.active_area.lower);
   EXPECT_EQ(a.active_area.upper,b.active_area.upper); EXPECT_EQ(a.leaves,b.leaves); EXPECT_EQ(a.visited,b.visited);
+  EXPECT_EQ(a.integration_backend,b.integration_backend); EXPECT_EQ(a.deepest_leaf,b.deepest_leaf);
+  EXPECT_EQ(a.deepest_u,b.deepest_u); EXPECT_EQ(a.deepest_v,b.deepest_v);
+}
+void CheckBackendMetadata(const sc::Q4PlanarContactDiagnostics& diagnostic,
+                          const std::array<sc::Q4PlanarParentResult,2>& parents,Backend backend) {
+  EXPECT_EQ(diagnostic.integration_backend,backend);
+  unsigned deepest_u=0,deepest_v=0,leaves=0,visited=0;
+  for(const auto& parent:parents) {
+    EXPECT_EQ(parent.integration_backend,backend);
+    if(!parent.covered) { EXPECT_EQ(parent.deepest_u,0u); EXPECT_EQ(parent.deepest_v,0u); continue; }
+    EXPECT_EQ(parent.integration.deepest_leaf,std::max(parent.deepest_u,parent.deepest_v));
+    EXPECT_LE(parent.deepest_u,sc::MaxQ4IntegrationDepth); EXPECT_LE(parent.deepest_v,sc::MaxQ4IntegrationDepth);
+    if(backend==Backend::ScalarDyadicSquares) {
+      EXPECT_EQ(parent.deepest_u,parent.integration.deepest_leaf); EXPECT_EQ(parent.deepest_v,parent.integration.deepest_leaf);
+    }
+    deepest_u=std::max(deepest_u,parent.deepest_u); deepest_v=std::max(deepest_v,parent.deepest_v);
+    leaves+=parent.integration.leaf_count; visited+=parent.integration.visited;
+  }
+  EXPECT_EQ(diagnostic.deepest_u,deepest_u); EXPECT_EQ(diagnostic.deepest_v,deepest_v);
+  EXPECT_EQ(diagnostic.deepest_leaf,std::max(deepest_u,deepest_v));
+  EXPECT_EQ(diagnostic.leaves,leaves); EXPECT_EQ(diagnostic.visited,visited);
 }
 }
 
-TEST(Q4PlanarContactCUDA, SharedPartialParentsAddActualForcesAndPreserveOtherComponents) {
-  test::Rig rig; const auto wall=fixture::Square(2); fea::FENodalState owner; sc::Q4PlanarContact batch;
+TEST_P(Q4PlanarContactCUDA, SharedPartialParentsAddActualForcesAndPreserveOtherComponents) {
+  test::Rig rig{GetParam()}; const auto wall=fixture::Square(2); fea::FENodalState owner; sc::Q4PlanarContact batch;
   rig.rotation_fixed[5]=0; rig.inverse_inertia[5]=2; rig.omega[17]=.5;
   ASSERT_NO_FATAL_FAILURE(Initialize(rig,owner,batch,wall));
   const auto state_allocation=owner.allocations(),allocation=batch.allocations();
-  EXPECT_EQ(allocation.device_allocations,1); EXPECT_LT(allocation.device_bytes,430*1024u);
+  const std::size_t extra=GetParam()==Backend::RectangularDyadic ? 32768u : 0u;
+  EXPECT_EQ(allocation.device_allocations,1); EXPECT_LT(allocation.device_bytes,430*1024u+extra);
+  EXPECT_LE(allocation.device_bytes,sc::MaxPlanarContactDeviceBytes);
   const auto accepted=test::Read(owner);
   fea::NodalTrialToken token; fea::NodalAssemblyView view;
   ASSERT_EQ(owner.BeginTrial(&token,&view).status,fea::NodalStatus::Ok);
@@ -61,6 +86,11 @@ TEST(Q4PlanarContactCUDA, SharedPartialParentsAddActualForcesAndPreserveOtherCom
   ASSERT_EQ(batch.Assemble(view,&diagnostic).status,Code::Ok);
   std::array<sc::Q4PlanarParentResult,2> result;
   ASSERT_EQ(batch.CopyParentResults(diagnostic,result.data(),2).status,Code::Ok);
+  CheckBackendMetadata(diagnostic,result,GetParam());
+  // Parent 1 is a half cut varying only in natural v. Rectangular refinement
+  // must preserve that axis identity; the scalar square splits both axes.
+  EXPECT_EQ(result[1].deepest_u,GetParam()==Backend::RectangularDyadic ? 0u : 1u);
+  EXPECT_EQ(result[1].deepest_v,1u);
   const auto actual=test::Forces(view);
   const auto contact=ContactForces(result);
   // Independent exact saddle/half-cut integration with shared physical nodes.
@@ -90,27 +120,37 @@ TEST(Q4PlanarContactCUDA, SharedPartialParentsAddActualForcesAndPreserveOtherCom
   EXPECT_EQ(owner.allocations().device_bytes,state_allocation.device_bytes);
 }
 
-TEST(Q4PlanarContactCUDA, CopiedGeometryMassAndWallBindingAreImmutableAcrossMeshVariants) {
+TEST_P(Q4PlanarContactCUDA, CopiedGeometryMassAndWallBindingAreImmutableAcrossMeshVariants) {
   sc::Q4PlanarContactDiagnostics first;
   for (unsigned variant=0;variant<4;++variant) {
-    test::Rig rig; auto wall=fixture::Square(variant); fea::FENodalState owner; sc::Q4PlanarContact batch;
-    ASSERT_NO_FATAL_FAILURE(Initialize(rig,owner,batch,wall));
-    const auto config=rig.config(owner);
+    test::Rig rig{GetParam()}; auto wall=fixture::Square(variant); fea::FENodalState owner; sc::Q4PlanarContact batch;
+    ASSERT_EQ(rig.Initialize(owner).status,fea::NodalStatus::Ok);
+    auto config=rig.config(owner); const auto original_config=config;
+    ASSERT_EQ(batch.Initialize(config,wall.view(),rig.surface(),rig.mass_for(owner)).status,Code::Ok);
+    config.integration_backend=test::OtherBackend(GetParam()); ++config.wall_binding_id; ++config.configuration_id;
     wall.vertices[0].position.y=100; rig.parents[1].feature_id=0;
     rig.x[5+6]=100; rig.inverse[5]=0; rig.fixed[5]=7;
     fea::NodalTrialToken token; fea::NodalAssemblyView view;
     ASSERT_EQ(owner.BeginTrial(&token,&view).status,fea::NodalStatus::Ok);
     sc::Q4PlanarContactDiagnostics d;
     ASSERT_EQ(batch.Assemble(view,&d).status,Code::Ok);
-    EXPECT_EQ(d.wall_binding_id,config.wall_binding_id); EXPECT_EQ(d.configuration_id,config.configuration_id);
+    EXPECT_EQ(d.wall_binding_id,original_config.wall_binding_id); EXPECT_EQ(d.configuration_id,original_config.configuration_id);
+    EXPECT_EQ(d.integration_backend,GetParam());
+    std::array<sc::Q4PlanarParentResult,2> result{};
+    result[0].integration.resultant.value=17; result[1].deepest_u=19; result[1].deepest_v=23;
+    const auto retained=result; auto tampered=d; tampered.integration_backend=test::OtherBackend(GetParam());
+    EXPECT_EQ(batch.CopyParentResults(tampered,result.data(),result.size()).status,Code::StaleAttempt);
+    test::Unchanged(result,retained);
+    ASSERT_EQ(batch.CopyParentResults(d,result.data(),result.size()).status,Code::Ok);
+    CheckBackendMetadata(d,result,GetParam());
     if (!variant) first=d; else SameNumerics(d,first);
     EXPECT_GT(d.stiffness_rate_bound,0);
     owner.Discard();
   }
 }
 
-TEST(Q4PlanarContactCUDA, TinyCornerMissedByRootGaussRetainsPositiveCertifiedParentOutput) {
-  test::Rig rig; constexpr double e=1./64;
+TEST_P(Q4PlanarContactCUDA, TinyCornerMissedByRootGaussRetainsPositiveCertifiedParentOutput) {
+  test::Rig rig{GetParam()}; constexpr double e=1./64;
   for (unsigned n=0;n<6;++n) rig.x[n]=fixture::Depth*(e-(rig.x[n+6]+1)-(rig.x[n+12]+.5));
   const auto wall=fixture::Square(); fea::FENodalState owner; sc::Q4PlanarContact batch;
   ASSERT_EQ(rig.Initialize(owner).status,fea::NodalStatus::Ok);
@@ -124,6 +164,7 @@ TEST(Q4PlanarContactCUDA, TinyCornerMissedByRootGaussRetainsPositiveCertifiedPar
   ASSERT_EQ(batch.Assemble(view,&d).status,Code::Ok);
   std::array<sc::Q4PlanarParentResult,2> result;
   ASSERT_EQ(batch.CopyParentResults(d,result.data(),2).status,Code::Ok);
+  CheckBackendMetadata(d,result,GetParam());
   const auto exact=q4_contact_test::Corner(e);
   EXPECT_GT(result[0].integration.resultant.value,0); EXPECT_GT(result[0].integration.leaf_count,1);
   for (unsigned n=0;n<4;++n)
@@ -134,8 +175,8 @@ TEST(Q4PlanarContactCUDA, TinyCornerMissedByRootGaussRetainsPositiveCertifiedPar
   owner.Discard();
 }
 
-TEST(Q4PlanarContactCUDA, ExactCoordinateAreaExpandsCertificatesAndCanRejectARawC2Budget) {
-  test::Rig rig;
+TEST_P(Q4PlanarContactCUDA, ExactCoordinateAreaExpandsCertificatesAndCanRejectARawC2Budget) {
+  test::Rig rig{GetParam()};
   for (unsigned n=0;n<6;++n) {
     rig.x[n]=fixture::Depth;
     rig.x[n+6]*=.3; rig.x[n+12]*=.7;
@@ -154,14 +195,15 @@ TEST(Q4PlanarContactCUDA, ExactCoordinateAreaExpandsCertificatesAndCanRejectARaw
   ASSERT_EQ(batch.Assemble(view,&base).status,Code::Ok);
   std::array<sc::Q4PlanarParentResult,2> expanded;
   ASSERT_EQ(batch.CopyParentResults(base,expanded.data(),expanded.size()).status,Code::Ok);
-  fixture::Scratch scratch;
+  CheckBackendMetadata(base,expanded,GetParam());
+  test::IntegrationScratch scratch{GetParam()};
   double raw_force_error=0,expanded_force_error=0;
   for (unsigned p=0;p<2;++p) {
     sc::Q4PreparedIntegration prepared;
     ASSERT_EQ(sc::PrepareQ4PlanarIntegration(geometry.view(),rig.surface(),rig.mass_for(owner),p,
         config.stiffness_per_area,config.maximum_penetration,view.attempt,&prepared),sc::PlanarContactStatus::Ok);
     sc::Q4IntegrationResult raw;
-    ASSERT_EQ(sc::IntegrateQ4NormalContact(prepared.input,config.integration,scratch.view(),&raw).status,
+    ASSERT_EQ(scratch.Integrate(prepared.input,config.integration,&raw).status,
               sc::Q4IntegrationStatus::Ok);
     const auto& reference=geometry.view().parents[p]; const auto& result=expanded[p].integration;
     // Independent fully active uniform-pressure oracle. Long double resolves
@@ -206,7 +248,7 @@ TEST(Q4PlanarContactCUDA, ExactCoordinateAreaExpandsCertificatesAndCanRejectARaw
     ASSERT_EQ(sc::PrepareQ4PlanarIntegration(geometry.view(),rig.surface(),rig.mass_for(owner),p,
         config.stiffness_per_area,config.maximum_penetration,view.attempt,&prepared),sc::PlanarContactStatus::Ok);
     sc::Q4IntegrationResult raw;
-    ASSERT_EQ(sc::IntegrateQ4NormalContact(prepared.input,config.integration,scratch.view(),&raw).status,
+    ASSERT_EQ(scratch.Integrate(prepared.input,config.integration,&raw).status,
               sc::Q4IntegrationStatus::Ok);
   }
   Seed<<<1,1,0,view.stream>>>(view); const auto force_before=test::Forces(view);
@@ -219,9 +261,9 @@ TEST(Q4PlanarContactCUDA, ExactCoordinateAreaExpandsCertificatesAndCanRejectARaw
   owner.Discard(); test::SameState(test::Read(owner),accepted);
 }
 
-TEST(Q4PlanarContactCUDA, LateSecondParentCapacityAndAdditiveOverflowNeverPublishPartialForces) {
+TEST_P(Q4PlanarContactCUDA, LateSecondParentCapacityAndAdditiveOverflowNeverPublishPartialForces) {
   for (unsigned kind=0;kind<2;++kind) {
-    test::Rig rig;
+    test::Rig rig{GetParam()};
     for (unsigned n=0;n<6;++n) rig.x[n]=kind ? 1 : fixture::Depth;
     if (!kind) rig.x[5]=-fixture::Depth;
     const auto wall=fixture::Square(); fea::FENodalState owner; sc::Q4PlanarContact batch;
@@ -252,8 +294,8 @@ TEST(Q4PlanarContactCUDA, LateSecondParentCapacityAndAdditiveOverflowNeverPublis
   }
 }
 
-TEST(Q4PlanarContactCUDA, ForeignDuplicateAndChangedActualMassRejectThenCleanRetryMatches) {
-  test::Rig rig; const auto wall=fixture::Square(); fea::FENodalState owner; sc::Q4PlanarContact batch;
+TEST_P(Q4PlanarContactCUDA, ForeignDuplicateAndChangedActualMassRejectThenCleanRetryMatches) {
+  test::Rig rig{GetParam()}; const auto wall=fixture::Square(); fea::FENodalState owner; sc::Q4PlanarContact batch;
   ASSERT_NO_FATAL_FAILURE(Initialize(rig,owner,batch,wall));
   DeviceArray inverse(6); ASSERT_EQ(inverse.status,cudaSuccess);
   ASSERT_EQ(cudaMemcpy(inverse.data,rig.inverse.data(),6*sizeof(double),cudaMemcpyHostToDevice),cudaSuccess);
@@ -280,12 +322,12 @@ TEST(Q4PlanarContactCUDA, ForeignDuplicateAndChangedActualMassRejectThenCleanRet
   }
 }
 
-TEST(Q4PlanarContactCUDA, RecoverableLaunchPoisonRejectsBeforeScatterAndRemainsAStickyContributorFailure) {
+TEST_P(Q4PlanarContactCUDA, RecoverableLaunchPoisonRejectsBeforeScatterAndRemainsAStickyContributorFailure) {
   // Exercise both first detection during Assemble and prior poisoning during
   // result readback. The invalid launch executes no kernel or invalid memory.
   for (unsigned poison_during_readback=0;poison_during_readback<2;++poison_during_readback) {
     SCOPED_TRACE(poison_during_readback);
-    test::Rig rig; const auto wall=fixture::Square(); fea::FENodalState owner; sc::Q4PlanarContact batch;
+    test::Rig rig{GetParam()}; const auto wall=fixture::Square(); fea::FENodalState owner; sc::Q4PlanarContact batch;
     ASSERT_NO_FATAL_FAILURE(Initialize(rig,owner,batch,wall));
     const auto accepted=test::Read(owner);
     fea::NodalTrialToken token; fea::NodalAssemblyView view;
@@ -321,8 +363,8 @@ TEST(Q4PlanarContactCUDA, RecoverableLaunchPoisonRejectsBeforeScatterAndRemainsA
   }
 }
 
-TEST(Q4PlanarContactCUDA, CandidateWorkUsesRetainedBaseForceAndHasSeparateContinuumBudget) {
-  test::Rig rig; const auto wall=fixture::Square(); fea::FENodalState owner; sc::Q4PlanarContact batch;
+TEST_P(Q4PlanarContactCUDA, CandidateWorkUsesRetainedBaseForceAndHasSeparateContinuumBudget) {
+  test::Rig rig{GetParam()}; const auto wall=fixture::Square(); fea::FENodalState owner; sc::Q4PlanarContact batch;
   ASSERT_NO_FATAL_FAILURE(Initialize(rig,owner,batch,wall));
   const auto accepted=test::Read(owner);
   const auto allocation=batch.allocations();
@@ -333,6 +375,7 @@ TEST(Q4PlanarContactCUDA, CandidateWorkUsesRetainedBaseForceAndHasSeparateContin
   ASSERT_EQ(batch.Assemble(view,&base).status,Code::Ok);
   std::array<sc::Q4PlanarParentResult,2> parent;
   ASSERT_EQ(batch.CopyParentResults(base,parent.data(),2).status,Code::Ok);
+  CheckBackendMetadata(base,parent,GetParam());
   const auto contact=ContactForces(parent);
   const auto force=test::Forces(view);
   ASSERT_EQ(owner.SealAssembly(token).status,fea::NodalStatus::Ok);
@@ -371,14 +414,15 @@ TEST(Q4PlanarContactCUDA, CandidateWorkUsesRetainedBaseForceAndHasSeparateContin
   EXPECT_GT(candidate.continuum_work_uncertainty,candidate.kinetic_midpoint_roundoff);
   EXPECT_EQ(batch.CopyParentResults(base,parent.data(),2).status,Code::StaleAttempt);
   ASSERT_EQ(batch.CopyParentResults(candidate,parent.data(),2).status,Code::Ok);
+  CheckBackendMetadata(candidate,parent,GetParam());
   // This contact-only, Gram-bounded admission probes a prepared transaction.
   // The coupled guided plate receives its own qualification and dynamics gate.
   owner.Discard(); test::SameState(test::Read(owner),accepted);
   EXPECT_EQ(batch.allocations().device_bytes,allocation.device_bytes);
 }
 
-TEST(Q4PlanarContactCUDA, RejectedCandidateInvalidatesScratchAndAcceptedReevaluationCanRetry) {
-  test::Rig rig; for (unsigned n=0;n<6;++n) rig.x[n]=.0999;
+TEST_P(Q4PlanarContactCUDA, RejectedCandidateInvalidatesScratchAndAcceptedReevaluationCanRetry) {
+  test::Rig rig{GetParam()}; for (unsigned n=0;n<6;++n) rig.x[n]=.0999;
   const auto wall=fixture::Square(); fea::FENodalState owner; sc::Q4PlanarContact batch;
   ASSERT_NO_FATAL_FAILURE(Initialize(rig,owner,batch,wall));
   const auto accepted=test::Read(owner); const auto allocation=batch.allocations();
@@ -399,12 +443,13 @@ TEST(Q4PlanarContactCUDA, RejectedCandidateInvalidatesScratchAndAcceptedReevalua
   ASSERT_EQ(owner.BeginTrial(&token,&view).status,fea::NodalStatus::Ok);
   ASSERT_EQ(batch.Assemble(view,&output).status,Code::Ok); SameNumerics(output,base);
   ASSERT_EQ(batch.CopyParentResults(output,result.data(),2).status,Code::Ok);
+  CheckBackendMetadata(output,result,GetParam());
   owner.Discard(); test::SameState(test::Read(owner),accepted);
   EXPECT_EQ(batch.allocations().device_bytes,allocation.device_bytes);
 }
 
-TEST(Q4PlanarContactCUDA, PreparedViewGeometryAndIdentityFailuresPreserveCallerOutput) {
-  test::Rig rig; const auto wall=fixture::Square(); fea::FENodalState owner; sc::Q4PlanarContact batch;
+TEST_P(Q4PlanarContactCUDA, PreparedViewGeometryAndIdentityFailuresPreserveCallerOutput) {
+  test::Rig rig{GetParam()}; const auto wall=fixture::Square(); fea::FENodalState owner; sc::Q4PlanarContact batch;
   ASSERT_NO_FATAL_FAILURE(Initialize(rig,owner,batch,wall));
   DeviceArray positions(18),velocities(18);
   ASSERT_EQ(positions.status,cudaSuccess); ASSERT_EQ(velocities.status,cudaSuccess);
@@ -436,11 +481,17 @@ TEST(Q4PlanarContactCUDA, PreparedViewGeometryAndIdentityFailuresPreserveCallerO
   }
 }
 
-TEST(Q4PlanarContactCUDA, StartupBudgetsAndOutsideOnlyClassificationAreExplicit) {
-  test::Rig rig; for (unsigned n=0;n<6;++n) rig.x[n+6]+=4;
+TEST_P(Q4PlanarContactCUDA, StartupBudgetsAndOutsideOnlyClassificationAreExplicit) {
+  test::Rig rig{GetParam()}; for (unsigned n=0;n<6;++n) rig.x[n+6]+=4;
   const auto wall=fixture::Square(); fea::FENodalState owner; sc::Q4PlanarContact batch;
   ASSERT_EQ(rig.Initialize(owner).status,fea::NodalStatus::Ok);
   auto config=rig.config(owner); config.max_device_bytes=1;
+  for(const auto invalid:{static_cast<Backend>(-1),static_cast<Backend>(2)}) {
+    config.integration_backend=invalid;
+    EXPECT_EQ(batch.Initialize(config,wall.view(),rig.surface(),rig.mass_for(owner)).status,Code::InvalidInput);
+    EXPECT_EQ(batch.allocations().device_bytes,0u); EXPECT_EQ(batch.allocations().device_allocations,0u);
+  }
+  config.integration_backend=GetParam();
   EXPECT_EQ(batch.Initialize(config,wall.view(),rig.surface(),rig.mass_for(owner)).status,Code::ResourceLimit);
   EXPECT_EQ(batch.allocations().device_bytes,0);
   config.max_device_bytes=sc::MaxPlanarContactDeviceBytes;
@@ -455,6 +506,42 @@ TEST(Q4PlanarContactCUDA, StartupBudgetsAndOutsideOnlyClassificationAreExplicit)
   std::array<sc::Q4PlanarParentResult,2> result{}; const auto original=result;
   EXPECT_EQ(batch.CopyParentResults(d,result.data(),1).status,Code::ResourceLimit); test::Unchanged(result,original);
   ASSERT_EQ(batch.CopyParentResults(d,result.data(),2).status,Code::Ok);
+  CheckBackendMetadata(d,result,GetParam());
   for (const auto& parent:result) { EXPECT_FALSE(parent.covered); EXPECT_FALSE(parent.integration.valid); }
   owner.Discard();
+}
+
+INSTANTIATE_TEST_SUITE_P(IntegrationBackends,Q4PlanarContactCUDA,
+    ::testing::Values(Backend::ScalarDyadicSquares,Backend::RectangularDyadic),
+    [](const ::testing::TestParamInfo<Backend>& value) {
+      return value.param==Backend::ScalarDyadicSquares ? "Scalar" : "Rectangular";
+    });
+
+TEST(Q4PlanarContactBackendCUDA, OnlySelectedScratchIsAllocatedWithExactDeclaredDifference) {
+  EXPECT_EQ(sc::Q4PlanarContactConfig{}.integration_backend,Backend::ScalarDyadicSquares);
+  test::Rig rig; fea::FENodalState owner; const auto wall=fixture::Square();
+  ASSERT_EQ(rig.Initialize(owner).status,fea::NodalStatus::Ok);
+  const auto accepted=test::Read(owner); const auto owner_allocation=owner.allocations();
+  std::array<std::size_t,2> bytes{};
+  for(unsigned variant=0;variant<2;++variant) {
+    auto config=rig.config(owner);
+    if(variant)config.integration_backend=Backend::RectangularDyadic;
+    sc::Q4PlanarContact selected;
+    ASSERT_EQ(selected.Initialize(config,wall.view(),rig.surface(),rig.mass_for(owner)).status,Code::Ok);
+    const auto allocation=selected.allocations(); bytes[variant]=allocation.device_bytes;
+    EXPECT_EQ(allocation.device_allocations,1u); EXPECT_LE(allocation.device_bytes,sc::MaxPlanarContactDeviceBytes);
+    const std::size_t extra=variant ? 32768u : 0u;
+    EXPECT_LT(allocation.device_bytes,430*1024u+extra);
+    // A tight caller cap rejects before publication and does not prevent retry
+    // using the exact selected footprint. No second backend tail is allocated.
+    sc::Q4PlanarContact retry; config.max_device_bytes=allocation.device_bytes-1;
+    EXPECT_EQ(retry.Initialize(config,wall.view(),rig.surface(),rig.mass_for(owner)).status,Code::ResourceLimit);
+    EXPECT_EQ(retry.allocations().device_bytes,0u); EXPECT_EQ(retry.allocations().device_allocations,0u);
+    config.max_device_bytes=allocation.device_bytes;
+    ASSERT_EQ(retry.Initialize(config,wall.view(),rig.surface(),rig.mass_for(owner)).status,Code::Ok);
+    EXPECT_EQ(retry.allocations().device_bytes,allocation.device_bytes); EXPECT_EQ(retry.allocations().device_allocations,1u);
+  }
+  ASSERT_GT(bytes[1],bytes[0]); EXPECT_EQ(bytes[1]-bytes[0],32768u);
+  EXPECT_EQ(owner.allocations().device_bytes,owner_allocation.device_bytes);
+  test::SameState(test::Read(owner),accepted);
 }

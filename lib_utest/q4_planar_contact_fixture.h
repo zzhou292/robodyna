@@ -1,20 +1,28 @@
 #pragma once
 
 #include "lib_src/collision/Q4PlanarContact.h"
+#include "lib_src/collision/Q4RectangularIntegration.h"
 #include "lib_src/solvers/ExplicitNodalStep.h"
 #include "lib_utest/q4_planar_geometry_fixture.h"
 
 #include <gtest/gtest.h>
 #include <array>
 #include <cstring>
+#include <vector>
 
 namespace q4_contact_batch_test {
 namespace sc=tlfea::contact;
 namespace fea=tl::fea;
 using Code=sc::Q4PlanarContactStatus;
+using Backend=sc::Q4PlanarIntegrationBackend;
 constexpr std::uint64_t ContactTestQualification=0x4334513450524f42ULL;
+inline Backend OtherBackend(Backend backend) {
+  return backend==Backend::ScalarDyadicSquares ? Backend::RectangularDyadic : Backend::ScalarDyadicSquares;
+}
 
 struct Rig : q4_planar_test::Pair {
+  explicit Rig(Backend backend=Backend::ScalarDyadicSquares):integration_backend(backend) {}
+  Backend integration_backend;
   std::array<double,18> position{};
   std::array<double,18> omega{};
   std::array<double,24> rotation{};
@@ -37,7 +45,31 @@ struct Rig : q4_planar_test::Pair {
     value.configuration_id=701; value.wall_binding_id=q4_planar_test::LargeId+801;
     value.stiffness_per_area=16; value.maximum_penetration=.1;
     value.integration={sc::MaxQ4IntegrationLeaves,sc::MaxQ4IntegrationDepth,sc::MaxQ4IntegrationVisits,1e-5,1e-7};
+    value.integration_backend=integration_backend;
     return value;
+  }
+};
+// Host oracle calls the selected independent C2 entry point. Allocate only its
+// leaf shape; these scratch buffers never alias the CUDA contributor's storage.
+struct IntegrationScratch {
+  Backend backend;
+  std::vector<sc::Q4IntegrationCell> scalar;
+  std::vector<sc::Q4RectangularCell> rectangular;
+  std::vector<std::uint32_t> heap;
+  explicit IntegrationScratch(Backend selected):backend(selected),
+      scalar(selected==Backend::ScalarDyadicSquares ? sc::MaxQ4IntegrationLeaves : 0),
+      rectangular(selected==Backend::RectangularDyadic ? sc::MaxQ4IntegrationLeaves : 0),
+      heap(sc::MaxQ4IntegrationLeaves) {}
+  sc::Q4IntegrationReport Integrate(const sc::Q4NormalIntegrationInput& input,
+      const sc::Q4IntegrationLimits& limits,sc::Q4IntegrationResult* output) {
+    if(backend==Backend::ScalarDyadicSquares)
+      return sc::IntegrateQ4NormalContact(input,limits,{scalar.data(),heap.data(),
+          sc::MaxQ4IntegrationLeaves,sc::MaxQ4IntegrationLeaves},output);
+    sc::Q4RectangularResult candidate;
+    const auto report=sc::IntegrateQ4NormalContactRectangular(input,limits,{rectangular.data(),heap.data(),
+        sc::MaxQ4IntegrationLeaves,sc::MaxQ4IntegrationLeaves},&candidate);
+    if(report.status==sc::Q4IntegrationStatus::Ok)*output=candidate.integration;
+    return report;
   }
 };
 struct Snapshot {

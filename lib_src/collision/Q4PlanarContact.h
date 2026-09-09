@@ -7,6 +7,10 @@
 
 namespace tlfea::contact {
 
+// Immutable execution selection. Rectangular refinement is opt-in staging;
+// selecting it does not qualify a new guided or vehicle trajectory.
+enum class Q4PlanarIntegrationBackend { ScalarDyadicSquares, RectangularDyadic };
+
 struct Q4PlanarContactConfig {
   tl::fea::NodalStamp owner;
   std::uint64_t configuration_id = 0, wall_binding_id = 0;
@@ -14,6 +18,7 @@ struct Q4PlanarContactConfig {
   double exposed_clearance = 1e-6;
   Q4IntegrationLimits integration;
   std::size_t max_device_bytes = MaxPlanarContactDeviceBytes;
+  Q4PlanarIntegrationBackend integration_backend = Q4PlanarIntegrationBackend::ScalarDyadicSquares;
 };
 enum class Q4PlanarContactStatus {
   Ok, InvalidInput, NotInitialized, ResourceLimit, WrongOwner, StaleAttempt,
@@ -35,6 +40,10 @@ struct Q4PlanarParentResult {
   // results retain C2's numerical values, with certificates expanded through
   // C3's area enclosure to the exact coordinate-derived reference measure.
   Q4IntegrationResult integration;
+  Q4PlanarIntegrationBackend integration_backend = Q4PlanarIntegrationBackend::ScalarDyadicSquares;
+  // Maximum depth per natural axis; both equal integration.deepest_leaf for
+  // scalar squares. Uncovered parents retain zero depths and invalid integral.
+  std::uint32_t deepest_u = 0, deepest_v = 0;
 };
 struct Q4PlanarContactDiagnostics {
   std::uint64_t owner_id = 0, base_epoch = 0, attempt = 0;
@@ -58,13 +67,17 @@ struct Q4PlanarContactDiagnostics {
   double force_coordinate_work = 0, force_coordinate_roundoff = 0;
   double conservative_force_coordinate_defect = 0;
   double continuum_work_uncertainty = 0, quadratic_work_upper = 0;
+  Q4PlanarIntegrationBackend integration_backend = Q4PlanarIntegrationBackend::ScalarDyadicSquares;
+  // Maxima across covered parents, not binary-tree path lengths.
+  std::uint32_t deepest_u = 0, deepest_v = 0;
 };
 
 // Finite-wall Q4 contribution, at most two parents/eight incident physical
 // nodes. Startup copies geometry, source identities, and incident inverse
 // masses/constraints; each Assemble checks those against the actual owner.
-// One caller-independent C2 scratch allocation is reused serially for parents
-// and base/candidate evaluation. Complete module device storage is <=1 MiB.
+// One selected C2 scratch array is reused serially for parents and base/candidate
+// evaluation. Common control/heap and selected leaves share a single allocation;
+// complete module device storage is <=1 MiB. No runtime backend fallback occurs.
 // The original checked wall metadata is retained on the host for source binding;
 // full footprint coverage plus fixed Y/Z removes per-Gauss wall searches.
 //

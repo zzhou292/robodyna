@@ -29,6 +29,24 @@ cc_test(
 )
 
 cc_test(
+    name = "utest_q4_rectangular_integration",
+    size = "small",
+    srcs = ["utest_q4_rectangular_integration.cc", "q4_rectangular_integration_fixture.h", "q4_contact_integration_fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:q4_rectangular_integration", "@googletest//:gtest_main"],
+    tags = ["manual"],
+)
+
+cuda_test(
+    name = "utest_q4_rectangular_integration_cuda",
+    size = "small",
+    srcs = ["utest_q4_rectangular_integration_cuda.cu", "q4_rectangular_integration_fixture.h", "q4_contact_integration_fixture.h"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu", "manual"],
+    deps = ["//lib_src/collision:q4_rectangular_integration", "@googletest//:gtest_main"],
+)
+
+cc_test(
     name = "utest_q4_contact_integration",
     size = "small",
     srcs = ["utest_q4_contact_integration.cc", "q4_contact_integration_fixture.h"],

@@ -59,6 +59,13 @@ cc_library(
 )
 
 cc_library(
+    name = "q4_rectangular_integration",
+    hdrs = ["Q4RectangularIntegrationTypes.h", "Q4RectangularIntegration.h"],
+    deps = [":q4_contact_integration"],
+    tags = ["manual"],  # Explicit opt-in qualification backend; scalar stays default.
+)
+
+cc_library(
     name = "q4_planar_geometry",
     srcs = ["Q4PlanarGeometry.cpp"],
     hdrs = ["Q4PlanarGeometry.h"],
@@ -75,9 +82,9 @@ cc_library(
 cuda_library(
     name = "q4_planar_contact_device",
     srcs = ["Q4PlanarContactDevice.cu"],
-    hdrs = ["Q4PlanarContact.h", "Q4PlanarContactStorage.h", "Q4PlanarContactDiagnostics.h"],
+    hdrs = ["Q4PlanarContact.h", "Q4PlanarContactStorage.h", "Q4PlanarContactDiagnostics.h", "Q4PlanarContactBackend.h"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
-    deps = [":q4_planar_stiffness", "//lib_src/solvers:explicit_nodal_state"],
+    deps = [":q4_planar_stiffness", ":q4_rectangular_integration", "//lib_src/solvers:explicit_nodal_state"],
 )
 
 cc_library(
