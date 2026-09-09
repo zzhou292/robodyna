@@ -1,5 +1,18 @@
 #include "PrescribedShellBatch.h"
 
+#if defined(TL_PRESCRIBED_FORCE_ANS_ROWS) && defined(TL_PRESCRIBED_FORCE_GAUSS_CONTRACT)
+#error "Select at most one qualification force operation per library"
+#endif
+#if defined(TL_PRESCRIBED_FORCE_GAUSS_CONTRACT)
+#include "ReissnerShellForceGaussContract.h"
+#define TL_PRESCRIBED_FORCE_KERNEL EvaluatePrescribedGaussContract
+#elif defined(TL_PRESCRIBED_FORCE_ANS_ROWS)
+#include "ReissnerShellForceAnsRows.h"
+#define TL_PRESCRIBED_FORCE_KERNEL EvaluatePrescribedAnsRows
+#else
+#define TL_PRESCRIBED_FORCE_KERNEL EvaluatePrescribed
+#endif
+
 #include <chrono>
 #include <cstdint>
 #include <cstring>
@@ -11,12 +24,20 @@ using Clock = std::chrono::steady_clock;
 double Milliseconds(Clock::time_point begin) {
   return std::chrono::duration<double, std::milli>(Clock::now() - begin).count();
 }
-__global__ void EvaluatePrescribed(const PrescribedInput* input, shell::ShellResult* result,
-                                   shell::ShellStatus* status, unsigned count) {
+__global__ void TL_PRESCRIBED_FORCE_KERNEL(const PrescribedInput* input, shell::ShellResult* result,
+                                          shell::ShellStatus* status, unsigned count) {
   const unsigned i = blockIdx.x * blockDim.x + threadIdx.x;
   if (i >= count) return;
+#if defined(TL_PRESCRIBED_FORCE_GAUSS_CONTRACT)
+  status[i] = reissner_gauss_contract::ComputeShellForceGaussContract(input[i].reference, input[i].section,
+                                                                   input[i].configuration, result[i]);
+#elif defined(TL_PRESCRIBED_FORCE_ANS_ROWS)
+  status[i] = reissner_ans_rows::ComputeShellForceAnsRows(input[i].reference, input[i].section,
+                                                        input[i].configuration, result[i]);
+#else
   status[i] = shell::ComputeShellForce(input[i].reference, input[i].section,
                                       input[i].configuration, result[i]);
+#endif
 }
 __global__ void ReduceStatuses(const shell::ShellStatus* status, unsigned* aggregate, unsigned count) {
   if (blockIdx.x || threadIdx.x) return;
@@ -40,6 +61,15 @@ bool Disjoint(const void* first, std::size_t first_size, const void* second, std
 
 bool PrescribedShellBatch::AdmittedCount(unsigned count) {
   return count == 2 || count == 8 || count == 32 || count == 128;
+}
+const char* PrescribedShellBatch::ForceOperationName() {
+#if defined(TL_PRESCRIBED_FORCE_GAUSS_CONTRACT)
+  return "gauss_contract";
+#elif defined(TL_PRESCRIBED_FORCE_ANS_ROWS)
+  return "ans_rows";
+#else
+  return "scalar";
+#endif
 }
 std::size_t PrescribedShellBatch::DeviceBytes(unsigned count) {
   if (!AdmittedCount(count)) return 0;
@@ -97,7 +127,7 @@ Report PrescribedShellBatch::Initialize(unsigned count) {
   P1_CUDA(cudaMemGetInfo(&value.after_owned_allocation.free_bytes, &value.after_owned_allocation.total_bytes));
   initialization_ = value;
   cudaFuncAttributes attributes{};
-  P1_CUDA(cudaFuncGetAttributes(&attributes, EvaluatePrescribed));
+  P1_CUDA(cudaFuncGetAttributes(&attributes, TL_PRESCRIBED_FORCE_KERNEL));
   auto& kernel = value.kernel;
   kernel.registers_per_thread = attributes.numRegs;
   kernel.local_bytes_per_thread = attributes.localSizeBytes;
@@ -113,7 +143,7 @@ Report PrescribedShellBatch::Initialize(unsigned count) {
   kernel.multiprocessors = properties.multiProcessorCount;
   kernel.maximum_threads_per_multiprocessor = properties.maxThreadsPerMultiProcessor;
   P1_CUDA(cudaOccupancyMaxActiveBlocksPerMultiprocessor(
-      &kernel.estimated_active_blocks_per_multiprocessor, EvaluatePrescribed, kThreadsPerBlock, 0));
+      &kernel.estimated_active_blocks_per_multiprocessor, TL_PRESCRIBED_FORCE_KERNEL, kThreadsPerBlock, 0));
   kernel.estimated_occupancy = static_cast<double>(kernel.estimated_active_blocks_per_multiprocessor * kThreadsPerBlock) /
                                properties.maxThreadsPerMultiProcessor;
   P1_CUDA(cudaMemGetInfo(&value.after_kernel_introspection.free_bytes, &value.after_kernel_introspection.total_bytes));
@@ -149,7 +179,7 @@ Report PrescribedShellBatch::EvaluateChecked(shell::ShellResult* output, unsigne
   const auto begin = Clock::now();
   P1_CUDA(cudaGetLastError());
   P1_CUDA(cudaEventRecord(event_start_, stream_));
-  EvaluatePrescribed<<<(count_ + kThreadsPerBlock - 1) / kThreadsPerBlock, kThreadsPerBlock, 0, stream_>>>(
+  TL_PRESCRIBED_FORCE_KERNEL<<<(count_ + kThreadsPerBlock - 1) / kThreadsPerBlock, kThreadsPerBlock, 0, stream_>>>(
       device_inputs_, device_results_, device_statuses_, count_);
   P1_CUDA(cudaGetLastError());
   P1_CUDA(cudaEventRecord(event_stop_, stream_));
@@ -185,3 +215,4 @@ Report PrescribedShellBatch::EvaluateChecked(shell::ShellResult* output, unsigne
 #undef P1_CUDA
 }
 }  // namespace tl::qualification::reissner_batch
+#undef TL_PRESCRIBED_FORCE_KERNEL

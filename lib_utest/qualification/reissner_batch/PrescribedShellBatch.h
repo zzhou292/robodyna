@@ -95,6 +95,9 @@ class PrescribedShellBatch {
   const shell::ShellStatus* LastElementStatuses() const { return have_statuses_ ? host_statuses_ : nullptr; }
   static bool AdmittedCount(unsigned count);
   static std::size_t DeviceBytes(unsigned count);
+  // Compile-time operation identity for evidence. Baseline and ANS libraries
+  // implement the same wrapper symbols and must never be linked together.
+  static const char* ForceOperationName();
 
  private:
   struct Aggregate { unsigned failures; unsigned first_failure; };

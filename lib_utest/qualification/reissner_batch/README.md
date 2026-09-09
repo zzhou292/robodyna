@@ -28,7 +28,7 @@ one element at a time; there is no second full host input batch.
 
 The external test composition is in
 `robo-dyna/chrono/reissner_prescribed_batch_check.cu`, using the existing
-`ReissnerShellCudaFixture.h`, actual Chrono `ReissnerReference`, and
+`ReissnerShellHostFixture.h`, actual Chrono `ReissnerReference`, and
 `CopyReissnerShellSetup`. It needs an FEA-enabled Chrono build containing the
 qualified coherent force path and `CH_REISSNER_CONSISTENT_FRAME_REFERENCE`.
 The core helper has no Chrono or GTest dependency. Its owning CMake target is
@@ -36,8 +36,9 @@ The core helper has no Chrono or GTest dependency. Its owning CMake target is
 `//lib_utest/qualification/reissner_batch:prescribed_reissner_batch`.
 `robo-dyna/chrono/PrescribedShellBatchChecks.cmake` composes the executable
 `robo_dyna_reissner_prescribed_batch_check` and a serial 120-second CTest entry.
-The external CMake composition is wired and built; this checkpoint does not
-claim a Bazel build of the P1 helper.
+The external CMake composition and the owning Bazel P1 library both built.
+Numerical integration tests ran through CMake; the Bazel invocation built this
+library and ran a separate planar-geometry test, not the P1 numerical suite.
 
 Per-process environment selection is immutable:
 
@@ -117,8 +118,90 @@ missed the in-process allocation interval and must not be treated as true peaks.
 The phase-specific `cudaMemGetInfo` samples are retained separately.
 
 The original cap/runtime-poison assertions checked energy and one timing field;
-the numerical late-failure test already checked complete bytes. A source-only
-follow-up strengthens all three using shared, nonzero byte snapshots. Its
-separate rebuild and 2-element rerun status belongs to the evidence summary;
-it changes no force kernel or existing timing samples. P2 remains a separate
-qualification-only scratch-layout experiment, with no production promotion.
+the numerical late-failure test already checked complete bytes. The follow-up
+strengthens all three using shared, nonzero byte snapshots; all five tests
+passed again at 2 elements. The separate immutable evidence is
+`crash-work/reports/prescribed-batch-p1-publication-summary-1.json`, with source
+pins TL `4de53e5` and robo-dyna `7b03804`. It changes no baseline force kernel
+or existing timing samples.
+
+## P2 stage-1 qualification and measurement
+
+The new ANS-only experiment is in `ReissnerShellForceAnsRows.h`. Production
+`ComputeShellForce` remains unchanged. The same bounded wrapper is compiled
+into separate scalar and ANS libraries, never linked together. CMake target
+`tl_prescribed_reissner_ans_rows_batch` and Bazel target
+`prescribed_reissner_ans_rows_batch` select ANS construction at compile time.
+`ForceOperationName()` labels and checks the selected implementation; no runtime
+mechanics switch is provided.
+
+`robo-dyna/chrono/ReissnerAnsRowsChecks.cmake` composes an 11-test parity
+executable and the separately linked ANS measurement executable. Measurement
+includes `ReissnerShellHostFixture.h`, which defines no CUDA kernels. The
+deliberate mixed parity kernel is confined to `ReissnerAnsRowsFixture.h`.
+Inspect each measurement binary with `cuobjdump` before interpreting memory:
+it must contain only its selected force kernel (`EvaluatePrescribed` or
+`EvaluatePrescribedAnsRows`), status reduction and the empty invalid-launch
+test kernel. The old P1 measurement included unused CUDA fixture kernels;
+its memory measurements remain observations of that complete original binary.
+
+The 11-test parity suite passed, followed by all five wrapper tests for both
+operations at 2 elements and separate measurement/parity tests at 8/32/128.
+The existing 10 setup, seven rotation and eight force tests also passed after
+fixture extraction. No new assembly rerun was selected by that CTest filter.
+The immutable report is `crash-work/reports/ans-rows-p2-stage1-summary-1.json`.
+It binds 25 source, 16 binary/build and 37 evidence files; each reference was
+rehashed after the report was created. This is an evidence snapshot rather
+than a hermetic compilation or signed execution record.
+
+Across the four capacities, clean scalar/ANS warm event medians are
+1.111168/1.052832, 1.109184/1.056352, 1.126272/1.073152 and
+1.140448/1.085440 ms. The 4.72–5.25% reductions describe nine warm samples
+per process; no repeated-process or normalized-clock speedup is established.
+Both kernels still use 255 registers. Compiler stack decreases by 16 bytes
+(9,392 to 9,376), while observed context-to-first-force device-wide growth
+decreases by 6 MiB (2,193,620,992 to 2,187,329,536 bytes). Explicit buffers
+are unchanged. Intended-only kernel inventories were verified for each binary.
+No traffic attribution, dynamics admission, production adoption, arbitrary
+finite-input overflow equivalence or Gauss contraction result is claimed.
+
+The 25 source and 16 binary/build inputs are preserved, together with the
+summary, in `crash-work/checkpoints/ans-rows-p2-stage1/manifest.json`. That
+create-only snapshot retains byte hashes before the shared wrapper changes.
+
+## P2 stage-2 qualified prescribed operation
+
+`ReissnerGaussContraction.h` builds 360-byte point kinematics and contracts the
+existing derivative blocks into a staged 24-entry force accumulator.
+`ReissnerShellForceGaussContract.h` reuses stage-1 ANS and the unchanged
+section/energy arithmetic. No Gauss `12x24` B array is built. Both existing
+force headers remain unchanged; the retained ANS derivative table also stays.
+
+Separate CMake target `tl_prescribed_reissner_gauss_contract_batch` and manual
+test-only Bazel target `prescribed_reissner_gauss_contract_batch` compile
+the wrapper with `TL_PRESCRIBED_FORCE_GAUSS_CONTRACT`. The reported operation
+is `gauss_contract`; its kernel is `EvaluatePrescribedGaussContract`. Selecting
+both variant defines fails compilation. Never link multiple wrapper libraries
+into one binary. The new app `ReissnerGaussContractChecks.cmake` composes 11
+point/full parity tests and a distinct measurement binary using the unchanged
+prescribed test. All eleven point/full tests and all five existing wrapper
+checks at two elements pass; the measurement/parity function also passes at
+8/32/128 in separate guarded processes. The owning CUDA library builds through
+Bazel. These are prescribed force checks, with no production dynamics promotion.
+
+The immutable workspace report is
+`crash-work/reports/gauss-contraction-p2-stage2-summary-1.json`; 44 source,
+binary/build and summary files are retained under
+`crash-work/checkpoints/gauss-contraction-p2-stage2/manifest.json`.
+Compiler stack is 6,544 bytes, versus 9,376 for stage 1; registers remain 255.
+Context-to-first-evaluation device-wide growth is 1,447,034,880 bytes for each
+size, 740,294,656 bytes below stage 1. Explicit owner buffers are unchanged;
+these observations do not identify the runtime allocation's ownership.
+
+Warm force-event medians for 2/8/32/128 elements are
+1.004672/1.005408/1.015456/1.024544 ms. Relative to the earlier stage-1 scalar
+processes, these are 9.36–10.16% lower; relative to ANS they are 4.57–5.61% lower.
+Separate-process observations are not interleaved controlled trials or a
+vehicle-throughput forecast. Finish the guided plate using its qualified
+production operation, then resolve the source-scale formulation/inertia gate
+in `planning/THIN_SHELL_EXECUTION_DECISION.md` before further optimization/P3.
