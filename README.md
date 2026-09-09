@@ -85,7 +85,9 @@ adapter only reads accepted state at the application's output cadence. It
 retains no source pointer between calls, and its host staging is preallocated.
 The current owner admits at most 64 physical nodes, supplied isotropic
 translational mass and optional world rotations with declared isotropic inertia.
-Rotational stepping currently admits only prescribed constant loads. The fixture is a force-driven triangular display mesh; it is not an
+This fixture uses the prescribed-constant-load rotational admission. Separate
+elastic and QEPH history gates are tracked in the [execution status](../planning/EXECUTION_STATUS.md).
+The fixture is a force-driven triangular display mesh; it is not an
 elastic shell, mesh contact case, graphical viewer or Yaris crash.
 
 From the workspace root, with the existing core-only Chrono build:
