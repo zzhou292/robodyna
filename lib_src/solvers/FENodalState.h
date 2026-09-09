@@ -34,7 +34,8 @@ struct NodalStateConfig {
   double fixed_dt = 1e-3, minimum_dt = 1e-12, timestep_safety = .8;
   // Both schemes initialize from physical, collocated v0/omega0. The staggered
   // scheme takes a half kick on its first accepted interval, then full kicks.
-  // It has a separate prescribed-load operation; no shell history is admitted.
+  // Separate operations require prescribed-load or case-qualified history
+  // admission; neither operation commits external material history.
   NodalTemporalScheme temporal_scheme = NodalTemporalScheme::VelocityFirst;
 };
 // Optional conventional-node degrees of freedom. Masks are immutable WORLD
@@ -136,6 +137,7 @@ class FENodalState;
 struct NodalStepAdmission;
 struct NodalValidationReceipt;
 struct NodalStaggeredPrescribedAdmission;
+struct NodalStaggeredHistoryAdmission;
 class NodalTrialToken {
   // Value authorization with no lifetime/storage ownership. Retained tokens
   // cannot authorize work after destruction, even if a new owner occupies the
@@ -144,6 +146,7 @@ class NodalTrialToken {
   friend NodalReport AdvanceTranslations(FENodalState&, const NodalTrialToken&);
   friend NodalReport AdvanceNodal(FENodalState&, const NodalTrialToken&, const NodalStepAdmission&);
   friend NodalReport AdvanceStaggeredPrescribed(FENodalState&, const NodalTrialToken&, const NodalStaggeredPrescribedAdmission&);
+  friend NodalReport AdvanceStaggeredHistory(FENodalState&, const NodalTrialToken&, const NodalStaggeredHistoryAdmission&);
   friend NodalReport CompleteNodalValidation(FENodalState&, const NodalTrialToken&, const NodalValidationReceipt&);
   std::uint64_t owner_id_ = 0, base_epoch_ = 0, attempt_ = 0;
 };
@@ -159,7 +162,8 @@ class NodalTrialToken {
 // Order: BeginTrial -> all additive contributors -> SealAssembly ->
 // AdvanceTranslations (legacy) or separately admitted AdvanceNodal -> Commit.
 // StaggeredHalfKickStart requires extended initialization and the distinct
-// AdvanceStaggeredPrescribed operation. CopyAccepted exports the stored velocity
+// AdvanceStaggeredPrescribed or restricted AdvanceStaggeredHistory operation.
+// CopyAccepted exports the stored velocity
 // with its explicit phase/time; it never reconstructs a collocated velocity.
 // Forces and bounds are trial SCRATCH, never
 // accepted force diagnostics. No external history participant is committed here.
@@ -205,6 +209,7 @@ class FENodalState {
   friend NodalReport AdvanceTranslations(FENodalState&, const NodalTrialToken&);
   friend NodalReport AdvanceNodal(FENodalState&, const NodalTrialToken&, const NodalStepAdmission&);
   friend NodalReport AdvanceStaggeredPrescribed(FENodalState&, const NodalTrialToken&, const NodalStaggeredPrescribedAdmission&);
+  friend NodalReport AdvanceStaggeredHistory(FENodalState&, const NodalTrialToken&, const NodalStaggeredHistoryAdmission&);
   friend NodalReport CompleteNodalValidation(FENodalState&, const NodalTrialToken&, const NodalValidationReceipt&);
   NodalReport InitializeImpl(const NodalStateConfig&, HostNodalKinematicsView,
                              const double* inverse_mass, const std::uint8_t* fixed,

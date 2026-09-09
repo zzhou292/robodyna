@@ -7,7 +7,8 @@ namespace tl::fea {
 enum class NodalStepAdmissionKind {
   Unspecified,
   PrescribedConstantLoads,
-  RestrictedElasticTrajectory
+  RestrictedElasticTrajectory,
+  RestrictedHistoryTrajectory  // Used only by AdvanceStaggeredHistory.
 };
 
 // Explicit coordinator declaration for THIS completed assembly. The owner can
@@ -20,7 +21,7 @@ enum class NodalStepAdmissionKind {
 // bound. The coordinator owns its numerical argument and candidate checks;
 // this declaration is not a general nonlinear stability theorem. That mode
 // requires an explicit validation receipt before Commit. Legacy translation
-// rows must be empty in both modes: a coupled system must not masquerade as
+// rows must be empty in every mode: a coupled system must not masquerade as
 // the unrelated frozen translational PSD proof.
 struct NodalStepAdmission {
   std::uint64_t owner_id = 0, base_epoch = 0, attempt = 0;
@@ -63,5 +64,20 @@ struct NodalStaggeredPrescribedAdmission {
 // Reuses the same owner, arithmetic, six allocations and reaction convention.
 NodalReport AdvanceStaggeredPrescribed(FENodalState&, const NodalTrialToken&,
                                       const NodalStaggeredPrescribedAdmission&);
+
+// Case-qualified fixed-step recurrence with state/history-dependent loads.
+// The case must qualify the complete history/velocity recurrence and candidate
+// envelope before choosing maximum_dt. No translational PSD row or stateless
+// elastic-rate formula establishes that argument. A nonzero qualification ID
+// and matching completed validation receipt are mandatory before Commit.
+// This operation advances only nodal trial state. The coordinator must stage
+// every material participant and publish it infallibly after owner Commit.
+struct NodalStaggeredHistoryAdmission {
+  std::uint64_t owner_id = 0, base_epoch = 0, attempt = 0;
+  double maximum_dt = 0, maximum_rotation_increment = 0;
+  std::uint64_t qualification_id = 0;
+};
+NodalReport AdvanceStaggeredHistory(FENodalState&, const NodalTrialToken&,
+                                   const NodalStaggeredHistoryAdmission&);
 
 }  // namespace tl::fea

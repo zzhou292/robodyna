@@ -1,4 +1,4 @@
-load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("@rules_cuda//cuda:defs.bzl", "cuda_test")
 
 package(default_visibility = ["//visibility:public"])
@@ -191,7 +191,23 @@ cuda_test(
     srcs = ["utest_nodal_temporal_cuda.cu"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
     tags = ["exclusive", "gpu"],
+    deps = [":nodal_temporal_fixture", "//lib_src/solvers:explicit_nodal_state", "@googletest//:gtest_main"],
+)
+
+cc_library(
+    name = "nodal_temporal_fixture",
+    testonly = True,
+    hdrs = ["qualification/nodal/NodalTemporalFixture.h"],
     deps = ["//lib_src/solvers:explicit_nodal_state", "@googletest//:gtest_main"],
+)
+
+cuda_test(
+    name = "utest_nodal_history_admission_cuda",
+    size = "small",
+    srcs = ["utest_nodal_history_admission_cuda.cu"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = [":nodal_temporal_fixture", "//lib_src/solvers:explicit_nodal_state", "@googletest//:gtest_main"],
 )
 
 cuda_test(

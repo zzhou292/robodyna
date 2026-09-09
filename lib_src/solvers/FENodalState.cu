@@ -307,7 +307,7 @@ NodalReport FENodalState::Commit(const NodalTrialToken& token) noexcept {
   if (!s.Matches(token.owner_id_, token.base_epoch_, token.attempt_))
     return s.Reject(NodalStatus::StaleTrial, "Trial token belongs to another owner or attempt");
   if (s.phase == Phase::AwaitingValidation)
-    return s.Reject(NodalStatus::MissingCandidateValidation, "Restricted elastic candidate requires completed validation");
+    return s.Reject(NodalStatus::MissingCandidateValidation, "Restricted candidate requires completed validation");
   if (s.phase != Phase::Ready) return s.Reject(NodalStatus::WrongPhase, "No completed valid advance");
   // A prepared-state validator may have queued work after the advance. Detect
   // its CUDA failure before publishing ANY reaction metadata or accepted slab.

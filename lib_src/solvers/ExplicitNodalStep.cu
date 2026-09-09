@@ -79,6 +79,16 @@ NodalReport AdvanceStaggeredPrescribed(FENodalState& owner, const NodalTrialToke
                                        NodalTemporalScheme::StaggeredHalfKickStart);
 }
 
+NodalReport AdvanceStaggeredHistory(FENodalState& owner, const NodalTrialToken& token,
+                                   const NodalStaggeredHistoryAdmission& admission) {
+  if (!owner.impl_) return {NodalStatus::NotInitialized, "Owner is not initialized"};
+  const NodalStepAdmission history{admission.owner_id,admission.base_epoch,admission.attempt,
+      admission.maximum_dt,admission.maximum_rotation_increment,
+      NodalStepAdmissionKind::RestrictedHistoryTrajectory,admission.qualification_id,0};
+  return owner.impl_->AdvanceSealedNodal(token.owner_id_,token.base_epoch_,token.attempt_,history,
+                                       NodalTemporalScheme::StaggeredHalfKickStart);
+}
+
 NodalReport FENodalState::Impl::AdvanceSealedNodal(
     std::uint64_t owner_id, std::uint64_t epoch, std::uint64_t attempt,
     const NodalStepAdmission& admission, NodalTemporalScheme expected_scheme) {
@@ -92,7 +102,11 @@ NodalReport FENodalState::Impl::AdvanceSealedNodal(
   if (!s.has_rotations)
     return s.Reject(NodalStatus::UnsupportedRotation, "AdvanceNodal requires extended nodal initialization");
   const bool elastic = admission.kind == NodalStepAdmissionKind::RestrictedElasticTrajectory;
-  if (admission.kind != NodalStepAdmissionKind::PrescribedConstantLoads && !elastic)
+  const bool history = admission.kind == NodalStepAdmissionKind::RestrictedHistoryTrajectory;
+  if ((history && expected_scheme != NodalTemporalScheme::StaggeredHalfKickStart) ||
+      (elastic && expected_scheme != NodalTemporalScheme::VelocityFirst))
+    return s.Reject(NodalStatus::UnsupportedTemporalScheme, "Restricted admission does not match this step operation");
+  if (admission.kind != NodalStepAdmissionKind::PrescribedConstantLoads && !elastic && !history)
     return s.Reject(NodalStatus::MissingStepAdmission, "Missing declared nodal step policy");
   if (admission.owner_id != s.stamp.owner_id || admission.base_epoch != s.stamp.epoch || admission.attempt != s.attempt)
     return s.Reject(NodalStatus::StaleTrial, "Step admission belongs to another owner or attempt");
@@ -116,6 +130,9 @@ NodalReport FENodalState::Impl::AdvanceSealedNodal(
       auto r = s.Reject(NodalStatus::StepTooLarge, "Fixed step exceeds the sampled elastic envelope");
       r.stable_dt = sampled_limit; return r;
     }
+  } else if (history) {
+    if (!admission.qualification_id || admission.stiffness_rate_envelope != 0)
+      return s.Reject(NodalStatus::MissingStepAdmission, "History recurrence requires its own qualification identity");
   } else if (admission.qualification_id || admission.stiffness_rate_envelope != 0) {
     return s.Reject(NodalStatus::InvalidInput, "Elastic qualification fields supplied for constant loads");
   }
@@ -124,8 +141,8 @@ NodalReport FENodalState::Impl::AdvanceSealedNodal(
       s.stamp.epoch, s.attempt);
   auto report = s.Check(cudaGetLastError()); if (report.status != NodalStatus::Ok) return report;
   report = s.SynchronizeControl(); if (report.status != NodalStatus::Ok) return report;
-  s.pending_qualification = elastic ? admission.qualification_id : 0;
-  s.phase = elastic ? Phase::AwaitingValidation : Phase::Ready;
+  s.pending_qualification = elastic || history ? admission.qualification_id : 0;
+  s.phase = elastic || history ? Phase::AwaitingValidation : Phase::Ready;
   return {NodalStatus::Ok, "OK"};
 }
 
