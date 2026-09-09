@@ -30,6 +30,12 @@ std::string_view Text(const io::Value& object,const char* name) {
     const auto& value=Member(object,name); io::Require(value.IsString(),"Invalid fixture text");
     return {value.GetString(),value.GetStringLength()};
 }
+double Positive(const io::Value& object,const char* name) {
+    const auto& value=Member(object,name);
+    io::Require(value.IsNumber() && std::isfinite(value.GetDouble()) && value.GetDouble()>0,
+                "Invalid positive source mass metadata");
+    return value.GetDouble();
+}
 } // namespace
 
 FixtureReport LoadPinnedSourcePartContact(const std::filesystem::path& path,SourcePartContactFixture* output) {
@@ -115,8 +121,29 @@ FixtureReport LoadPinnedSourcePartContact(const std::filesystem::path& path,Sour
         }
         io::Require(q4_count==Q4Count && t3_count==T3Count,"Incomplete source parent family coverage");
         for (bool used:incident) io::Require(used,"Unused source selection node");
+        const auto& audit=Member(document,"surface_mass_audit");
+        io::Require(Text(audit,"schema")=="robo-dyna.shell-surface-mass-audit.v1" &&
+                    Text(audit,"mass_interpretation")=="uniform rho*t midsurface lamina proxy" &&
+                    !Flag(document,"source_mass_equivalence_qualified") &&
+                    !Flag(audit,"source_mass_equivalence_qualified") && !Flag(audit,"simulation_ready") &&
+                    Flag(audit,"quadrature_converged") &&
+                    Unsigned(audit,"source_node_count")==NodeCount &&
+                    Unsigned(audit,"source_shell_count")==ParentCount,"Unexpected proxy mass scope");
+        auto& mass=candidate.surface_mass_;
+        mass.density_kg_m3=Positive(audit,"density_kg_m3"); mass.thickness_m=Positive(audit,"thickness_m");
+        mass.total_mass_kg=Positive(Member(Member(audit,"orders"),"16"),"mass_kg");
+        const auto& elements=Array(audit,"elements",ParentCount); std::array<bool,ParentCount> joined{};
+        for (const auto& element:elements.GetArray()) {
+            const auto source_id=Unsigned(element,"source_element_id");
+            std::size_t p=0;
+            while (p<ParentCount && candidate.parents_[p].source_id!=source_id) ++p;
+            io::Require(p<ParentCount && !joined[p] &&
+                        Unsigned(element,"arity")==candidate.parents_[p].arity,"Invalid source mass/parent join");
+            mass.parent_mass_kg[p]=Positive(Member(Member(element,"orders"),"16"),"mass_kg"); joined[p]=true;
+        }
+        for (bool found:joined) io::Require(found,"Missing source parent proxy mass");
         candidate.prepared_=true; *output=candidate;
-        return {FixtureStatus::Ok,"Pinned source geometry copied without modification; no mechanics admission"};
+        return {FixtureStatus::Ok,"Pinned source geometry and E2a proxy mass copied; no mechanics admission"};
     } catch (const std::exception& error) { return {FixtureStatus::InvalidFixture,error.what()}; }
 }
 

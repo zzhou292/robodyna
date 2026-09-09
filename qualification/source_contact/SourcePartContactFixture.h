@@ -28,6 +28,12 @@ struct SourceParentBinding {
     std::uint16_t blank_mask=0;
     std::uint8_t arity=0;
 };
+// Authenticated E2a uniform-midsurface proxy values, not an admitted mechanics
+// mass/lumping rule or source ELFORM2 equivalence. Array order matches parents().
+struct SourceSurfaceMassMetadata {
+    std::array<double,ParentCount> parent_mass_kg{};
+    double density_kg_m3=0,thickness_m=0,total_mass_kg=0;
+};
 enum class FixtureStatus { Ok,InvalidArgument,ReadFailure,HashMismatch,InvalidFixture };
 struct FixtureReport { FixtureStatus status; std::string diagnostic; };
 class SourcePartContactFixture;
@@ -45,6 +51,7 @@ class SourcePartContactFixture {
     const auto& nodes() const noexcept { return nodes_; }
     const auto& parents() const noexcept { return parents_; }
     const auto& coordinates() const noexcept { return coordinates_; }
+    const SourceSurfaceMassMetadata& surface_mass() const noexcept { return surface_mass_; }
     tlfea::contact::VectorView positions() const noexcept {
         return prepared_?tlfea::contact::VectorView{coordinates_.data(),NodeCount,3,1}:
                          tlfea::contact::VectorView{};
@@ -59,6 +66,7 @@ class SourcePartContactFixture {
     std::array<double,3*NodeCount> coordinates_{};
     std::array<SourceNodeBinding,NodeCount> nodes_{};
     std::array<SourceParentBinding,ParentCount> parents_{};
+    SourceSurfaceMassMetadata surface_mass_;
     bool prepared_=false;
     friend FixtureReport LoadPinnedSourcePartContact(const std::filesystem::path&,SourcePartContactFixture*);
 };

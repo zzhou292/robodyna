@@ -10,6 +10,7 @@ foreach(input ROBO_DYNA_SOURCE_PART_READINESS CRASH_CANONICAL_WALL)
 endforeach()
 include("${CRASH_TL_FEA_SOURCE_DIR}/lib_src/collision/SurfaceMaterialMeasure.cmake")
 include("${CRASH_TL_FEA_SOURCE_DIR}/lib_src/collision/Q4PlanarGeometry.cmake")
+include("${CRASH_TL_FEA_SOURCE_DIR}/lib_src/collision/Q4ParametricContact.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../../case/WallTessellationLibrary.cmake")
 add_library(robo_dyna_source_contact_fixture STATIC SourcePartContactFixture.cpp)
 target_include_directories(robo_dyna_source_contact_fixture PUBLIC
@@ -23,4 +24,13 @@ target_compile_options(robo_dyna_source_part_contact_check PRIVATE -fno-fast-mat
 add_test(NAME source_part_contact_geometry COMMAND robo_dyna_source_part_contact_check
   "${ROBO_DYNA_SOURCE_PART_READINESS}" "${CRASH_CANONICAL_WALL}")
 set_tests_properties(source_part_contact_geometry PROPERTIES TIMEOUT 60 RUN_SERIAL TRUE PROCESSORS 1
+  ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1")
+
+add_executable(robo_dyna_source_part_force_check source_part_force_check.cpp)
+target_link_libraries(robo_dyna_source_part_force_check PRIVATE robo_dyna_source_contact_fixture
+  tl_q4_parametric_contact robo_dyna_wall_tessellation robo_dyna_canonical_wall_artifacts GTest::gtest)
+target_compile_options(robo_dyna_source_part_force_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME source_part_contact_force COMMAND robo_dyna_source_part_force_check
+  "${ROBO_DYNA_SOURCE_PART_READINESS}" "${CRASH_CANONICAL_WALL}")
+set_tests_properties(source_part_contact_force PROPERTIES TIMEOUT 60 RUN_SERIAL TRUE PROCESSORS 1
   ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1")

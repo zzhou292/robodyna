@@ -117,6 +117,18 @@ TEST_F(SourcePartContactCheck, AuthenticatedCoordinatesAndEverySourceBindingSurv
     EXPECT_EQ(q4_count,fixture::Q4Count);
     EXPECT_EQ(triangles,(std::set<std::uint64_t>{NativeT3Ids.begin(),NativeT3Ids.end()}));
     EXPECT_EQ(node_ids.size(),fixture::NodeCount);EXPECT_EQ(parent_ids.size(),fixture::ParentCount);
+    const auto& audit=raw["surface_mass_audit"];
+    auto number=[](const io::Value& token) {return std::strtod(token.GetString(),nullptr);};
+    const auto& mass=data.surface_mass();
+    EXPECT_EQ(io::Bits(mass.density_kg_m3),io::Bits(number(audit["density_kg_m3"])));
+    EXPECT_EQ(io::Bits(mass.thickness_m),io::Bits(number(audit["thickness_m"])));
+    EXPECT_EQ(io::Bits(mass.total_mass_kg),io::Bits(number(audit["orders"]["16"]["mass_kg"])));
+    for (const auto& element:audit["elements"].GetArray()) {
+        const auto id=std::strtoull(element["source_element_id"].GetString(),nullptr,10);
+        unsigned p=0; while (p<fixture::ParentCount && data.parents()[p].source_id!=id) ++p;
+        ASSERT_LT(p,fixture::ParentCount);
+        EXPECT_EQ(io::Bits(mass.parent_mass_kg[p]),io::Bits(number(element["orders"]["16"]["mass_kg"])));
+    }
 }
 
 TEST_F(SourcePartContactCheck, EveryOriginalParentHasIntrinsicMeasureAndIndependentDensity) {
@@ -209,7 +221,7 @@ TEST_F(SourcePartContactCheck, ActualFiniteMeshWallCoversAllSourceSweptBoxesIncl
 
 TEST_F(SourcePartContactCheck, FailedReadHashAndTypedRequestsPreserveCompleteFixtureAndRetry) {
     const auto before=Bytes(data);const auto saved_coordinates=data.coordinates();
-    const auto saved_nodes=data.nodes();const auto saved_parents=data.parents();
+    const auto saved_nodes=data.nodes();const auto saved_parents=data.parents();const auto saved_mass=data.surface_mass();
     fixture::SourcePartContactFixture empty;ct::SurfaceQ4 quad;
     quad.feature_id=999;const auto old_quad=Bytes(quad);
     EXPECT_FALSE(empty.q4_parent(0,quad));EXPECT_EQ(Bytes(quad),old_quad);
@@ -236,6 +248,10 @@ TEST_F(SourcePartContactCheck, FailedReadHashAndTypedRequestsPreserveCompleteFix
     EXPECT_EQ(fixture::LoadPinnedSourcePartContact(readiness_path,&data).status,fixture::FixtureStatus::Ok);
     // Successful reload preserves physical fields, though padding is not an API.
     EXPECT_EQ(data.coordinates(),saved_coordinates);
+    EXPECT_EQ(data.surface_mass().parent_mass_kg,saved_mass.parent_mass_kg);
+    EXPECT_EQ(data.surface_mass().density_kg_m3,saved_mass.density_kg_m3);
+    EXPECT_EQ(data.surface_mass().thickness_m,saved_mass.thickness_m);
+    EXPECT_EQ(data.surface_mass().total_mass_kg,saved_mass.total_mass_kg);
     for (unsigned n=0;n<fixture::NodeCount;++n) {
         EXPECT_EQ(data.nodes()[n].source_id,saved_nodes[n].source_id);
         EXPECT_EQ(data.nodes()[n].canonical_index,saved_nodes[n].canonical_index);
