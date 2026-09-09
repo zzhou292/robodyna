@@ -93,11 +93,13 @@ bool MakeCamera(const output::ReplayInfo& info, ReplayCamera& camera) {
     // Fixed oblique view from the incident side of the -X-facing wall. Coupon
     // geometry is also visible from above. The full moving trajectory is framed;
     // a large fixed wall may extend beyond the image and is never rescaled.
-    // Guided geometry is the coupon posed into Y/Z. View along its width,
-    // from -X, with Y up to retain its physical normal travel in silhouette.
+    // Guided geometry is the coupon posed into Y/Z. A 45-degree X/Z view
+    // from incident -X exposes its surface while retaining normal travel:
+    // horizontal projection keeps sqrt(1/2) of both Z width and X motion.
+    // Y up and a small Y offset keep the long plate axis almost vertical.
     camera.vertical = info.kind == output::ReplayKind::GuidedPlate ? ReplayVertical::Y : ReplayVertical::Z;
     const std::array<double, 3> direction = info.kind == output::ReplayKind::GuidedPlate
-        ? std::array<double, 3>{-0.18, -0.3, -1.25}
+        ? std::array<double, 3>{-1.0, -0.15, -1.0}
         : info.kind == output::ReplayKind::ElasticCoupon
         ? std::array<double, 3>{-0.3, -1.25, 0.18}
         : std::array<double, 3>{-1.5, -1.25, 1.0};

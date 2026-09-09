@@ -1,4 +1,6 @@
-# Accepted coupon video evidence
+# Accepted replay video evidence
+
+## Elastic coupon R1
 
 The [elastic coupon MP4](../../crash-work/renders/elastic-coupon-video-r1-20260909/elastic-coupon.mp4)
 is a presentation of the accepted B2 trajectory: **81 frames, 10 FPS, 8.1 s,
@@ -47,3 +49,22 @@ This completes the small coupon's R1 video evidence. It does not qualify
 headless rendering, plate-wall contact, source-part rendering or the final
 deforming vehicle crash. Those remain separate gates in
 [RENDERING_ARCHITECTURE.md](../docs/RENDERING_ARCHITECTURE.md).
+
+## Guided plate R2
+
+The selected `penalty-margin-v1` h/2 archive now has a physical-scale Chrono
+[replay video](../../crash-work/renders/guided-plate-video-r2-20260909/guided-plate.mp4).
+It contains all 201 accepted images through 200 ms;
+25 presentation frames/s yields 8.04 s of playback. The simulation clock is
+shown in the overlay. Deformation is never scaled and the viewer executes no
+mechanics. This is a small elastic guided plate against a finite mesh wall.
+
+The [R2 checkpoint](../../crash-work/reports/replay-guided-r2-checkpoint-1.json) binds the input archive,
+exactly reproduced h/2 Study, passing h/2–h/4 and wall studies, failed coarse
+comparison, actual RTX 5090 capture, PNG hashes/CRCs/stamps, encode/probe/full
+decode, and root's decoded initial/peak/final visual review. The video is
+101,852 bytes, SHA-256
+`8ca0b6feba87abbb716608581fee3281bb0572ca1014af29545df186988aa73b`.
+The first complete capture had poor surface visibility; the first oblique
+capture received external SIGTERM after 143 frames. Both remain separate.
+A persistent-terminal retry completed at unchanged workstation limits.

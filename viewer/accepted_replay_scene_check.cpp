@@ -139,7 +139,7 @@ TEST(AcceptedReplayScene, FixedWallCopiedOnceAndKeptSeparateFromMovingSurface) {
     EXPECT_EQ(scene.Initialize(info, Frame(0, 0), wall).status, ReplaySceneStatus::AlreadyInitialized);
 }
 
-TEST(AcceptedReplayScene, GuidedPlateRequiresWallAndUsesFixedPhysicalSideView) {
+TEST(AcceptedReplayScene, GuidedPlateRequiresWallAndUsesFixedObliquePhysicalView) {
     // Experiment admission belongs to the reader; both accepted named
     // variants use identical physical-scale scene/publication operations.
     for(const char* name:{crash::output::guided_experiment_metadata::Original,
@@ -159,6 +159,19 @@ TEST(AcceptedReplayScene, GuidedPlateRequiresWallAndUsesFixedPhysicalSideView) {
     EXPECT_EQ(camera.vertical,crash::visual::ReplayVertical::Y);
     EXPECT_LT(camera.position[0],camera.target[0]);
     EXPECT_LT(camera.position[2],camera.target[2]);
+    // With Y up, the horizontal screen axis is perpendicular to the X/Z
+    // sightline. Independently require useful projection of both the plate's
+    // Z width and its much smaller physical X displacement; a grazing camera
+    // can retain the latter while hiding nearly the entire surface.
+    const double dx=camera.position[0]-camera.target[0];
+    const double dy=camera.position[1]-camera.target[1];
+    const double dz=camera.position[2]-camera.target[2];
+    const double horizontal_distance=std::hypot(dx,dz);
+    ASSERT_GT(horizontal_distance,0.);
+    EXPECT_GE(std::abs(dx)/horizontal_distance,.6); // projected unit Z width
+    EXPECT_GE(std::abs(dz)/horizontal_distance,.6); // projected unit X motion
+    EXPECT_LT(std::abs(dy)/horizontal_distance,.2); // near-vertical long axis
+    EXPECT_DOUBLE_EQ(camera.vertical_fov_degrees,40.);
     EXPECT_EQ(scene.moving_mesh()->GetCoordsVertices(),initial->GetCoordsVertices());
     const auto fixed = scene.wall_mesh()->GetCoordsVertices(); const auto moving=scene.moving_mesh();
     auto deformed=std::make_shared<chrono::ChTriangleMeshConnected>(*initial);
