@@ -3,6 +3,7 @@
 #include "ReissnerShellData.h"
 #include "ReissnerRotation.h"
 #include "../solvers/FENodalStateView.h"
+#include "../solvers/NodalForceAssembly.h"
 
 #if defined(__CUDACC__)
 #define TL_SHELL_HD __host__ __device__
@@ -23,26 +24,13 @@ enum class ShellAssemblyStatus { kSuccess, kInvalidView, kInvalidConnectivity, k
 // still discards whole trial assembly if any other contributor fails.
 TL_SHELL_HD inline ShellAssemblyStatus AccumulateShellForces(
     const std::size_t nodes[4], const ShellResult& result, DeviceNodalForceView view) {
-  if (!nodes || !view.node_count || !view.force_x || !view.force_y || !view.force_z ||
-      !view.couple_x || !view.couple_y || !view.couple_z) return ShellAssemblyStatus::kInvalidView;
-  double* arrays[6] = {view.force_x, view.force_y, view.force_z, view.couple_x, view.couple_y, view.couple_z};
-  for (unsigned component = 0; component < 6; ++component)
-    for (unsigned other = 0; other < component; ++other)
-      if (arrays[component] == arrays[other]) return ShellAssemblyStatus::kInvalidView;
-  double candidate[4][6];
-  for (unsigned n = 0; n < 4; ++n) {
-    if (nodes[n] >= view.node_count) return ShellAssemblyStatus::kInvalidConnectivity;
-    for (unsigned other = 0; other < n; ++other)
-      if (nodes[n] == nodes[other]) return ShellAssemblyStatus::kInvalidConnectivity;
-    for (unsigned c = 0; c < 6; ++c) {
-      const auto vector = c < 3 ? result.force[n] : result.couple[n];
-      candidate[n][c] = arrays[c][nodes[n]] + detail::Component(vector, c % 3);
-      if (!detail::Finite(candidate[n][c])) return ShellAssemblyStatus::kNonfiniteResult;
-    }
+  switch (AccumulateNodalForces<4>(nodes,result.force,result.couple,view)) {
+    case NodalForceAssemblyStatus::Success: return ShellAssemblyStatus::kSuccess;
+    case NodalForceAssemblyStatus::InvalidView: return ShellAssemblyStatus::kInvalidView;
+    case NodalForceAssemblyStatus::InvalidConnectivity: return ShellAssemblyStatus::kInvalidConnectivity;
+    case NodalForceAssemblyStatus::NonfiniteResult: return ShellAssemblyStatus::kNonfiniteResult;
   }
-  for (unsigned n = 0; n < 4; ++n)
-    for (unsigned c = 0; c < 6; ++c) arrays[c][nodes[n]] = candidate[n][c];
-  return ShellAssemblyStatus::kSuccess;
+  return ShellAssemblyStatus::kInvalidView;
 }
 }  // namespace tl::fea::reissner
 #undef TL_SHELL_HD

@@ -30,7 +30,7 @@ cc_library(
 cc_library(
     name = "reissner_shell_assembly",
     hdrs = ["ReissnerShellAssembly.h"],
-    deps = [":reissner_shell_force", "//lib_src/solvers:fe_nodal_state_view"],
+    deps = [":reissner_shell_force", "//lib_src/solvers:nodal_force_assembly"],
 )
 
 cuda_library(

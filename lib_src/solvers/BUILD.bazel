@@ -17,6 +17,12 @@ cc_library(
 )
 
 cc_library(
+    name = "nodal_force_assembly",
+    hdrs = ["NodalForceAssembly.h"],
+    deps = [":fe_nodal_state_view", "//lib_src/math:fixed3", "//lib_src/math:quaternion"],
+)
+
+cc_library(
     name = "explicit_step_stability",
     hdrs = ["ExplicitStepStability.h"],
     deps = [":fe_nodal_state_view", "//lib_src/collision:surface_contact_primitives"],

@@ -1,4 +1,5 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_cuda//cuda:defs.bzl", "cuda_library")
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
@@ -26,4 +27,15 @@ cc_library(
         "QephForceProjection.h", "QephStiffnessDiagnostics.h",
     ],
     deps = [":kinematics", "//lib_src/materials:shell_elastic_law1"],
+)
+
+cuda_library(
+    name = "batch",
+    srcs = [
+        "QephBatch.cu", "QephBatchOperations.cu", "QephBatchKernels.cu",
+        "QephBatchModel.cpp", "QephBatchIdentity.cpp", "QephBatchPublication.cpp",
+    ],
+    hdrs = ["QephBatch.h", "QephBatchStorage.h", "QephBatchDiagnostics.h"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    deps = [":force", "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_force_assembly"],
 )
