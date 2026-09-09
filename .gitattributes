@@ -1,0 +1,2 @@
+# Preserve SHA-pinned external keyword fixtures, including CRLF and field padding.
+tests/data/yaris-wall/*.key -text -whitespace
