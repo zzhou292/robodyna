@@ -1,7 +1,7 @@
 #include "QephCoupledFixture.h"
 
 namespace qeph_coupled_test {
-bool InitializeCoupled(Rig& r,double h) {
+bool InitializeCoupled(Rig& r,double h,std::uint64_t qualification,std::uint64_t configuration) {
   r.h=h; r.mass.fill(0); r.inertia.fill(0); r.physical.fill(0); r.added.fill(0);
   for(unsigned e=0;e<r.count;++e) {
     auto input=r.element[e].reference.input;
@@ -21,7 +21,7 @@ bool InitializeCoupled(Rig& r,double h) {
   for(unsigned n=0;n<r.n;++n) { r.inverse[n]=1/r.mass[n]; r.inverse_j[n]=1/r.inertia[n]; }
   if(!r.InitializeOwner()) return false;
   auto config=r.Config(q::BatchUsage::CoupledForces);
-  config.qualification_id=CoupledQualification; config.configuration_id=0x4251334d4f444531ULL;
+  config.qualification_id=qualification; config.configuration_id=configuration;
   const auto report=r.batch.Initialize(config,r.element.data());
   EXPECT_EQ(report.status,q::BatchStatus::Success)<<report.message;
   return report.status==q::BatchStatus::Success&&r.Bind();
@@ -39,7 +39,7 @@ Loads Applied(const Rig& r,double time) {
   auto load=Amplitude(r); const double factor=time<2*H0?1:(time<3*H0?0:-1);
   for(unsigned i=0;i<3*r.n;++i) { load.force[i]*=factor; load.couple[i]*=factor; } return load;
 }
-bool PrepareCoupled(Rig& r,const Loads& load,Prepared& p) {
+bool PrepareCoupled(Rig& r,const Loads& load,Prepared& p,std::uint64_t qualification) {
   fe::NodalAssemblyView v; auto code=r.owner.BeginTrial(&p.token,&v);
   EXPECT_EQ(code.status,fe::NodalStatus::Ok); if(code.status!=fe::NodalStatus::Ok) return false;
   const auto assembled=r.batch.AssembleAccepted(v);
@@ -60,7 +60,7 @@ bool PrepareCoupled(Rig& r,const Loads& load,Prepared& p) {
   }
   code=r.owner.SealAssembly(p.token); EXPECT_EQ(code.status,fe::NodalStatus::Ok);
   if(code.status!=fe::NodalStatus::Ok) return false;
-  code=fe::AdvanceStaggeredHistory(r.owner,p.token,{v.owner_id,v.accepted.base_epoch,v.attempt,r.h,1e-3,CoupledQualification});
+  code=fe::AdvanceStaggeredHistory(r.owner,p.token,{v.owner_id,v.accepted.base_epoch,v.attempt,r.h,1e-3,qualification});
   EXPECT_EQ(code.status,fe::NodalStatus::Ok)<<code.message; if(code.status!=fe::NodalStatus::Ok) return false;
   code=r.owner.BorrowPrepared(p.token,&p.view); EXPECT_EQ(code.status,fe::NodalStatus::Ok);
   if(code.status!=fe::NodalStatus::Ok) return false;

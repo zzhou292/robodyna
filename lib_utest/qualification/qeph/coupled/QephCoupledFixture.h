@@ -21,10 +21,11 @@ struct Prepared {
   Snapshot state;
   Loads assembled;
 };
-bool InitializeCoupled(Rig&,double h);
+bool InitializeCoupled(Rig&,double h,std::uint64_t qualification=CoupledQualification,
+                       std::uint64_t configuration=0x4251334d4f444531ULL);
 Loads Amplitude(const Rig&);
 Loads Applied(const Rig&,double base_time);
-bool PrepareCoupled(Rig&,const Loads&,Prepared&);
+bool PrepareCoupled(Rig&,const Loads&,Prepared&,std::uint64_t qualification=CoupledQualification);
 q::PrescribedInterval Interval(const Rig&,unsigned element,const Snapshot&,double base_time,std::uint64_t epoch);
 void OwnerAgreement(const Rig&,const Snapshot&,const Snapshot&);
 
