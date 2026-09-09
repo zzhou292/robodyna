@@ -22,7 +22,9 @@ cache, element history, time integrator, or zero-step initial-force operation.
 
 All adapted source retains OpenRadioss revision
 `a62b27e6baa555d222a580d6218867d0be4d70b5` and AGPL/Siemens provenance.
-The owning v2 manifest lists exact original file identities and transformations.
+The preserved v2 `kinematics-source-manifest.json` lists exact original file
+identities and transformations. The live v3 manifest adds Q3c force/history
+source without changing these qualified geometry/rate expressions or tests.
 
 | Owning header | Selected native work |
 | --- | --- |

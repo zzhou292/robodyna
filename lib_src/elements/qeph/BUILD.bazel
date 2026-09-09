@@ -16,3 +16,14 @@ cc_library(
     ],
     deps = [":startup"],
 )
+
+cc_library(
+    name = "force",
+    hdrs = [
+        "QephHistoryData.h", "QephHistory.h", "QephForceData.h", "QephForce.h",
+        "QephMaterial.h", "QephLaw1.h", "QephElasticForces.h",
+        "QephStabilizationState.h", "QephStabilizationForces.h",
+        "QephForceProjection.h", "QephStiffnessDiagnostics.h",
+    ],
+    deps = [":kinematics", "//lib_src/materials:shell_elastic_law1"],
+)

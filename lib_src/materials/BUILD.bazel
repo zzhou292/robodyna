@@ -13,6 +13,12 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
+    name = "shell_elastic_law1",
+    hdrs = ["ShellElasticLaw1.h"],
+    deps = ["//lib_src/math:quaternion"],
+)
+
+cc_library(
     name = "materials",
     hdrs = [
         "MaterialModel.cuh",

@@ -30,6 +30,13 @@ target_compile_options(qeph_kinematics_port_check PRIVATE -fno-fast-math -ffp-co
 add_test(NAME qeph_kinematics_port_check COMMAND qeph_kinematics_port_check)
 set_tests_properties(qeph_kinematics_port_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)
 
+add_executable(qeph_force_port_check QephForceTest.cpp)
+add_dependencies(qeph_force_port_check qeph_verify_port)
+target_link_libraries(qeph_force_port_check PRIVATE tl_qeph qeph_q1_native GTest::gtest_main)
+target_compile_options(qeph_force_port_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME qeph_force_port_check COMMAND qeph_force_port_check)
+set_tests_properties(qeph_force_port_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)
+
 if(TL_QEPH_ENABLE_CUDA)
   if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
     set(CMAKE_CUDA_ARCHITECTURES 120)
@@ -53,4 +60,13 @@ if(TL_QEPH_ENABLE_CUDA)
     "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>")
   add_test(NAME qeph_kinematics_port_cuda_check COMMAND qeph_kinematics_port_cuda_check)
   set_tests_properties(qeph_kinematics_port_cuda_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 45)
+
+  add_executable(qeph_force_port_cuda_check QephForceCudaTest.cu)
+  add_dependencies(qeph_force_port_cuda_check qeph_verify_port)
+  set_target_properties(qeph_force_port_cuda_check PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+  target_link_libraries(qeph_force_port_cuda_check PRIVATE tl_qeph qeph_q1_native CUDA::cudart GTest::gtest_main)
+  target_compile_options(qeph_force_port_cuda_check PRIVATE
+    "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>")
+  add_test(NAME qeph_force_port_cuda_check COMMAND qeph_force_port_cuda_check)
+  set_tests_properties(qeph_force_port_cuda_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 45)
 endif()

@@ -1,7 +1,7 @@
 {
-  "schema": "tl.qeph-prescribed-law1-port.v3",
+  "schema": "tl.qeph-startup-kinematics-port.v2",
   "donor_revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
-  "scope": "one-cell IREP0 QEPH startup, prescribed geometry/rates and centered LAW1 force/history host/device qualification; no owner, batch or dynamics",
+  "scope": "one-cell IREP0 QEPH startup and prescribed current geometry/rates host/device parity; no force, history, batch or dynamics",
   "native_reference_checkpoint": "qeph-q2-qualified-reference-1",
   "native_reference_tl_commit": "560b0ca",
   "native_source_manifest_sha256": "46d2759036e16558500c91a9d14dd225f203aa5d2abec81bb951ac1b956030be",
@@ -130,121 +130,6 @@
           "last_line": 445
         }
       ]
-    },
-    {
-      "path": "lib_utest/qualification/native/qeph/original/engine/source/elements/sh3n/coquedk/cncoef3.F",
-      "bytes": 41674,
-      "sha256": "9b8d5c29258b80366179baf1e70b631117fa056c7cd1a2503ff98e47d8f978e5",
-      "git_blob_sha1": "9fbff29d0c49a65ee9bc65b702acf04ca01d103a",
-      "ranges": [
-        {
-          "routine": "CNCOEF3B",
-          "first_line": 30,
-          "last_line": 287
-        }
-      ]
-    },
-    {
-      "path": "lib_utest/qualification/native/qeph/original/engine/source/elements/sh3n/coquedk/cndt3.F",
-      "bytes": 12054,
-      "sha256": "4ae20594cb1868ec0ef6d9ccb2aed816257862582ce292395e97cb767dfea404",
-      "git_blob_sha1": "652c459ee3cf93bdb4983e748ad5d2fd6b5ed672",
-      "ranges": [
-        {
-          "routine": "CNDT3",
-          "first_line": 35,
-          "last_line": 321
-        }
-      ]
-    },
-    {
-      "path": "lib_utest/qualification/native/qeph/original/engine/source/elements/shell/coquez/czfintce.F",
-      "bytes": 7612,
-      "sha256": "0434b6be6465bda892256a32d99e673d87f6db0bb91efe689aa0df98cd95bf02",
-      "git_blob_sha1": "2607bf862d14d0d8445ae4f9585299fdfe0508f1",
-      "ranges": [
-        {
-          "routine": "CZFINTCE",
-          "first_line": 30,
-          "last_line": 104
-        }
-      ]
-    },
-    {
-      "path": "lib_utest/qualification/native/qeph/original/engine/source/elements/shell/coquez/czfintn.F",
-      "bytes": 90687,
-      "sha256": "3656b0db9c04f1b5b757e00be05b82ec1e49ee82ace323e5a6751c12100e0988",
-      "git_blob_sha1": "83f9c2f3e3225f155b1a87d829b0e9067e73c50b",
-      "ranges": [
-        {
-          "routine": "CZFINTN1",
-          "first_line": 30,
-          "last_line": 494
-        }
-      ]
-    },
-    {
-      "path": "lib_utest/qualification/native/qeph/original/engine/source/elements/shell/coquez/czproj.F",
-      "bytes": 58607,
-      "sha256": "4427b64bae7965a8f52d7a44806f627fdab5c108913db5ae02b9addde6f43820",
-      "git_blob_sha1": "35b41be9faa075ad34d7bdc13f23aeaf178b1c6b",
-      "ranges": [
-        {
-          "routine": "CZPROJN",
-          "first_line": 881,
-          "last_line": 1472
-        }
-      ]
-    },
-    {
-      "path": "lib_utest/qualification/native/qeph/original/engine/source/elements/shell/coquez/czstra3.F",
-      "bytes": 5759,
-      "sha256": "c0e63e855ada8ea6ba02ec48ef4469133c630391c0423e22926cf87c5eb15409",
-      "git_blob_sha1": "2059ca57c36e1818d3976146a34dabfb70a1ff84",
-      "ranges": [
-        {
-          "routine": "CZSTRA3",
-          "first_line": 30,
-          "last_line": 144
-        }
-      ]
-    },
-    {
-      "path": "lib_utest/qualification/native/qeph/original/engine/source/materials/mat/mat001/sigeps01g.F",
-      "bytes": 9494,
-      "sha256": "087cdff78867e433493f901b8d93ddf4395ffe4ed78f5d0b7025f1df1d030dec",
-      "git_blob_sha1": "551a94e6945ef2c6dfd26fc1529b21675ef58abb",
-      "ranges": [
-        {
-          "routine": "SIGEPS01G",
-          "first_line": 29,
-          "last_line": 224
-        }
-      ]
-    },
-    {
-      "path": "lib_utest/qualification/native/qeph/original/common_source/modules/constant_mod.F",
-      "bytes": 86324,
-      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865",
-      "git_blob_sha1": "5f78c0a6769ac024deb6bba9d3037cd747f36837",
-      "ranges": [
-        {
-          "first_line": 617,
-          "last_line": 742
-        },
-        {
-          "first_line": 860,
-          "last_line": 868
-        },
-        {
-          "first_line": 942,
-          "last_line": 942
-        },
-        {
-          "first_line": 977,
-          "last_line": 977
-        }
-      ]
     }
   ],
   "ported_files": [
@@ -307,66 +192,6 @@
       "path": "lib_src/elements/qeph/QephKinematics.h",
       "bytes": 5216,
       "sha256": "3ebb15d7a38dbdf1bc327f1d2a4ed3c37d83b50fc0521c0bd7a94c14f1cced13"
-    },
-    {
-      "path": "lib_src/elements/qeph/QephElasticForces.h",
-      "bytes": 1717,
-      "sha256": "1a840c6af8c623d3c6f5e5766254de97a166788bbb8b38aadc0feb5008e66037"
-    },
-    {
-      "path": "lib_src/elements/qeph/QephForce.h",
-      "bytes": 3031,
-      "sha256": "7140ecfa7bf1a356910c99f340d5c44c6ace236be25656fce9589f9ddaf8f522"
-    },
-    {
-      "path": "lib_src/elements/qeph/QephForceData.h",
-      "bytes": 1072,
-      "sha256": "a1ecf7bf9f57044597bff04988fb62f2dc93a299b6bc700c7d3ba552fd6e74f4"
-    },
-    {
-      "path": "lib_src/elements/qeph/QephForceProjection.h",
-      "bytes": 3196,
-      "sha256": "482263ba09996dafd20bca44232bcf8130afbfb2cd5e0bbec49bfa0dccc3ff61"
-    },
-    {
-      "path": "lib_src/elements/qeph/QephHistory.h",
-      "bytes": 2874,
-      "sha256": "5ee6fa1b44b588c17350b6095d2a3c40c5bbbb94fb20aff9e1a3e88a1c648ef2"
-    },
-    {
-      "path": "lib_src/elements/qeph/QephHistoryData.h",
-      "bytes": 2000,
-      "sha256": "848c87e948e5abe1efabbf84b77912f4672e214fe9a8c4d00341b32841954820"
-    },
-    {
-      "path": "lib_src/elements/qeph/QephLaw1.h",
-      "bytes": 2661,
-      "sha256": "dc3fd8bf528c87445790e1a5b4c2b754d8370852689029e4c818a75902b2c149"
-    },
-    {
-      "path": "lib_src/elements/qeph/QephMaterial.h",
-      "bytes": 2587,
-      "sha256": "3acc296ab32d9a678f3de49ac1b5bf15c2ecd39653ab10a01a04f3b920fde20f"
-    },
-    {
-      "path": "lib_src/elements/qeph/QephStabilizationForces.h",
-      "bytes": 3550,
-      "sha256": "ded0128a521c7a906efa222edb96eab2872e64c1f110c2005ed47e0f2111de4d"
-    },
-    {
-      "path": "lib_src/elements/qeph/QephStabilizationState.h",
-      "bytes": 2255,
-      "sha256": "1513d23b608abe5c606b9605cacbc22a7c9988e8aced25079e9870b0fc815732"
-    },
-    {
-      "path": "lib_src/elements/qeph/QephStiffnessDiagnostics.h",
-      "bytes": 1678,
-      "sha256": "7c62acd02b1d3c3f6209c1a3d162a1ccea564c33632fe9a97596216dae44b6e1"
-    },
-    {
-      "path": "lib_src/materials/ShellElasticLaw1.h",
-      "bytes": 3424,
-      "sha256": "579bc554bbb82e33f612cb582e2bab4a4b572a493e15db9d3c582faa6db8be62"
     }
   ],
   "shared_and_native_dependencies": [
@@ -419,56 +244,6 @@
       "path": "lib_utest/qualification/native/qeph/QephReference.h",
       "bytes": 1241,
       "sha256": "387d15ab3977f975029d248c6b6f9f17ff1242cadf720256f397eeb7676366d9"
-    },
-    {
-      "path": "lib_utest/qualification/native/qeph/QephForceReference.h",
-      "bytes": 1733,
-      "sha256": "ddd8a4a34408e87ab4a0fd77ab6e73defa9fb3d70d51d9bb7bad1f1cb2258f97"
-    },
-    {
-      "path": "lib_utest/qualification/native/qeph/QephForceReference.cpp",
-      "bytes": 4505,
-      "sha256": "4535964f160dd514fdd7592bc1a1adcc25265728a2a5cb7fa371e0115e239b4d"
-    },
-    {
-      "path": "lib_utest/qualification/native/qeph/QephHistory.h",
-      "bytes": 2008,
-      "sha256": "e0adc73e85f19bc4d1813f2d2e60a932473eed3cabf6b6c1278305ee653ab88a"
-    },
-    {
-      "path": "lib_utest/qualification/native/qeph/QephHistory.cpp",
-      "bytes": 2448,
-      "sha256": "e3d5c542d85e4d5b9c44223b101fb88e908f71800c88afecaa1cee0fe3be5616"
-    },
-    {
-      "path": "lib_utest/qualification/native/qeph/QephNativeMaterial.F",
-      "bytes": 2999,
-      "sha256": "c8184b50d34abce5785b9392a0907c328bc92b25364ed32700f3857ec53df2c2"
-    },
-    {
-      "path": "lib_utest/qualification/native/qeph/QephNativeLaw1.F",
-      "bytes": 3733,
-      "sha256": "cddd8bbea6ebcbd6ed1e701bb153f928090f926eca64a91ca86d0d9e8de0e931"
-    },
-    {
-      "path": "lib_utest/qualification/native/qeph/QephNativeStiffness.F",
-      "bytes": 1681,
-      "sha256": "60651474e891231e588115c3a1d97348ab9dddeb5131450630353ec760123c9d"
-    },
-    {
-      "path": "lib_utest/qualification/native/qeph/QephNativeHistory.F",
-      "bytes": 1466,
-      "sha256": "5faf3fb45ea763fe7c1d375c7d49d5a805bd4d68b543505be0cd83c08e55b5c6"
-    },
-    {
-      "path": "lib_utest/qualification/native/qeph/NativeQephForce.F",
-      "bytes": 3996,
-      "sha256": "026378bc21260d26209ca972de1b196edbf7976455825622b34aa45d17564ed7"
-    },
-    {
-      "path": "lib_utest/qualification/native/qeph/NativeQephScatter.F",
-      "bytes": 2124,
-      "sha256": "2357e772db7a5a0c9fc00053feb87ae446b4e02eb4e573c41af9a633cd72c965"
     }
   ],
   "tests": [
@@ -501,21 +276,6 @@
       "path": "lib_utest/qualification/qeph/QephKinematicsCudaTest.cu",
       "bytes": 6945,
       "sha256": "d34e10b74ccabfe20f05dbafdc16c2de7181eb49576d22582c779825750d7d96"
-    },
-    {
-      "path": "lib_utest/qualification/qeph/QephForceFixture.h",
-      "bytes": 7860,
-      "sha256": "5f408c4473e3741c93c0563d8975cf0cf74ca2c0917a7766910608ccb5f78958"
-    },
-    {
-      "path": "lib_utest/qualification/qeph/QephForceTest.cpp",
-      "bytes": 16394,
-      "sha256": "195ca5ff0b242ba48b107bf3a2d914cfaad2d86c02249e251ef1ca0c3c0a15ec"
-    },
-    {
-      "path": "lib_utest/qualification/qeph/QephForceCudaTest.cu",
-      "bytes": 8151,
-      "sha256": "2c3f22327e94c38b2a0c271ead3a0c04b958943b7ad1e8a1805d8347a17a1465"
     }
   ],
   "transformations": [
@@ -534,14 +294,7 @@
     "Reference POD stays caller-immutable; bounded sane-field checks are not provenance authentication and do not repeat startup.",
     "Prescribed finite time must advance; sample_index is only a caller label. Failed operations preserve all public output bytes.",
     "Q1 exact planar rigid-rate truth retains O(h) transverse shear; no dynamics or zero-step initial-force claim.",
-    "Q3b first-run correction: explicitly promote native default-REAL32 literals 3.413,0.7071,0.78,0.22 to binary64 in characteristic length; MYREAL8 does not change literal kinds. Other selected raw literals are exactly representable, named constants retain their MYREAL8 source values.",
-    "Q3c reuses the unchanged private Q3b PrepareGeometry exactly once; returns pre-CNDT3 kinematics and separates material/stabilization/projection work.",
-    "Q3c ports the complete selected LAW1/CVIS1/ITHK0/ISROT0/IDRIL0 branch; no reachable callbacks or unselected plastic/layer behavior.",
-    "Shared materials/ShellElasticLaw1.h is only native PM elastic coefficients and centered SIGEPS01G point stress update; caller owns GS/THK08, strain packing, reported thickness, damping and work.",
-    "Native NODADT1/ALPE1 stiffness and DTEL are diagnostics only; no timestep admission or mass modification.",
-    "History retains all38 named native values plus exact ReferenceInput binding and explicit caller time/index; raw fixed arrays and trivial copies have no public serialized ABI.",
-    "Every operation stages complete output; finite reported THKN below EM30 is explicitly rejected before source MAX, preserving the Q2 wrapper domain.",
-    "Preserve named native constant expression order including ZEP06=ONE/TEN-FOUR/HUNDRED, ONEP414=ONEP41+FOUREM3, THREEP464=THREE+ZEP4+ZEP06+FOUREM3; no sqrt2/sqrt12 substitutions."
+    "Q3b first-run correction: explicitly promote native default-REAL32 literals 3.413,0.7071,0.78,0.22 to binary64 in characteristic length; MYREAL8 does not change literal kinds. Other selected raw literals are exactly representable, named constants retain their MYREAL8 source values."
   ],
   "domain": {
     "poisson_ratio": "0<=nu<.5",
@@ -711,70 +464,5 @@
     "checkpoint": "qeph-q3b-first-execution-1",
     "manifest_sha256": "4412beeaf91f95fc9aebec97cfac8a7a2b32d56b3fb37634000173ed3f915bb8",
     "observed": "native parity failed characteristic length on host/CUDA, corrected literal kinds without tolerance changes"
-  },
-  "kinematics_baseline": {
-    "manifest": {
-      "path": "lib_utest/qualification/qeph/kinematics-source-manifest.json",
-      "bytes": 17377,
-      "sha256": "9f87b38c6ed564489aa0cdb34390d38e87ca7bf28453c0f6521feaefc107b5b4"
-    },
-    "tl_commit": "8d94089",
-    "checkpoint": "qeph-q3b-geometry-rates-1",
-    "checkpoint_manifest_sha256": "e09eb8362e54e57fb5b6444138f479fa9d599a4e5db396b902a53a154bede313",
-    "status": "qualified 7 host and 3 CUDA; source equations and tests unchanged in Q3c"
-  },
-  "force_domain": {
-    "material": "centered isotropic LAW1,0<=nu<.5,positive finite E/rho/t",
-    "context": [
-      "ITHK0",
-      "CVIS1",
-      "DM=DN=(1/100+5/1000)",
-      "ISROT0",
-      "IDRIL0",
-      "NPT0",
-      "OFF1",
-      "NODADT1",
-      "ALPE1"
-    ],
-    "history": "finite38 values,reported thickness>0,active==1; exact bound input/time,next nonoverflowing sample",
-    "publication": "all base/input/output bytes unchanged on failure",
-    "reported_thickness": "predicted THKN>=EM30 required before unchanged MAX; effective force thickness remains reference t",
-    "readiness": false
-  },
-  "force_predeclared_tolerances": {
-    "coefficient": 2e-12,
-    "formula": "abs(actual-reference)<=coefficient*(dimension+abs(reference))",
-    "scales": "L=max current node0-relative distance,t=reference t,E=reference E,c=sqrt(E/max(rho,EM20))",
-    "stress": "E",
-    "bending_stress": "E*t/L",
-    "stabilization": "E; components2,3,8,9 E/L",
-    "strain_curvature": "first5 1,last3 1/L",
-    "thickness": "t",
-    "internal_work": "membrane E*t*L^2,bending E*t^3",
-    "viscous_work": "E*t*L^2",
-    "internal_force": "E*t*L",
-    "internal_couple": "E*t*L^2",
-    "stiffness": "STI E*t,STIR E*t*L^2",
-    "dt": "L/c",
-    "independent_native_q2": {
-      "relative": 2e-10,
-      "absolute": 2e-11,
-      "work_absolute_J": 2e-22
-    },
-    "covariance_coefficient": 2e-11,
-    "kinematics": "unchanged Q3b 80-field contract"
-  },
-  "force_test_domain": {
-    "status": "source frozen before first execution",
-    "host_functions": 9,
-    "cuda_functions": 3,
-    "parity_configurations_each": 432,
-    "histories": "zero + full prescribed38-field seed",
-    "geometries": "unchanged Q3b9 geometries x4 cyclic x2 transforms x3 patterns",
-    "independent": "8 physical strain/curvature modes at metre/10/20mm, physical moments, load-hold-reversal work,12HG persistence,static/IDRIL0,rigid characterization,balance,covariance,native CUPDTN3 sign/stiffness scatter",
-    "cuda_threads": 1,
-    "cuda_packet_cap_bytes": 8192,
-    "failure": "missing/foreign reference,stale time/index,overflow/nonadvancing time,nonfinite fields,late THKN rejection,complete byte preservation,retry",
-    "dynamics_qualified": false
   }
 }

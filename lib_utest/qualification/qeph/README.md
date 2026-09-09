@@ -16,8 +16,13 @@ functions at the original budgets. Its first run exposed a native literal-kind
 mismatch in characteristic length; preserving the native binary32 literals
 fixed that port defect without changing the donor or tolerances. The exact
 passed scope, reports and retained failure are in [KINEMATICS.md](KINEMATICS.md).
-The live v2 source manifest explicitly extends the preserved
-`startup-source-manifest.json`; Q3a's retained checkpoint remains immutable.
+Q3c's complete prescribed LAW1 force/history gate passed all nine host and
+three actual-CUDA functions on its first execution, with 432 parity
+configurations per backend at the frozen budgets. [FORCE.md](FORCE.md) records
+the bounded one-cell contract and actual reports. Resident history/force
+assembly and coupled dynamics remain separate, unqualified gates. The live v3
+manifest explicitly extends preserved `startup-source-manifest.json` and
+`kinematics-source-manifest.json`; qualified Q3a/Q3b checkpoints stay immutable.
 
 The owning API is `lib_src/elements/qeph/QephStartup.h`:
 `InitializeReference(const ReferenceInput&, ReferenceData&)`. It publishes only
@@ -84,7 +89,7 @@ is read-only and requires no compiler/GPU:
 python3 Total-Lagrangian-FEA/lib_utest/qualification/qeph/verify_sources.py
 ```
 
-The live verifier checks thirty-seven declared records plus the owning native verifier's
+The live verifier checks seventy declared records plus the owning native verifier's
 full original/extraction/include closure. Fortran-to-C++ changes are explicitly
 listed as a port, not falsely described as an exact textual transformation.
 The old classic-shell CUDA K1/K2/K3 kernels are not substituted: their geometry,

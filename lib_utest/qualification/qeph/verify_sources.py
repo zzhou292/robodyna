@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only check of Q3a/Q3b's declared port, tests, dependencies and native donor.
+"""Read-only check of Q3a/Q3b/Q3c port, tests, dependencies and native donor.
 
 Reuses the owning native extraction/include verifier. No download, generation,
 compiler, CUDA call or workspace mutation is performed.
@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 import runpy
 
-MANIFEST_SHA256 = "9f87b38c6ed564489aa0cdb34390d38e87ca7bf28453c0f6521feaefc107b5b4"
+MANIFEST_SHA256 = "36d1ac1b927d56495dd85020d059b88e03cac620d23a21fcbe8267f8b7b42e31"
 
 
 def verify():
@@ -25,10 +25,11 @@ def verify():
             hashlib.sha256((native / "source-manifest.json").read_bytes()).hexdigest() !=
             manifest["native_source_manifest_sha256"]):
         raise RuntimeError("Q3 native reference mismatch")
-    baseline = manifest["startup_baseline"]["manifest"]
-    baseline_bytes = (root / baseline["path"]).read_bytes()
-    if hashlib.sha256(baseline_bytes).hexdigest() != baseline["sha256"]:
-        raise RuntimeError("Historical Q3a manifest changed")
+    for stage in ("startup_baseline", "kinematics_baseline"):
+        baseline = manifest[stage]["manifest"]
+        baseline_bytes = (root / baseline["path"]).read_bytes()
+        if hashlib.sha256(baseline_bytes).hexdigest() != baseline["sha256"]:
+            raise RuntimeError("Historical Q3 manifest changed: " + stage)
     count = 0
     for group in ("ported_files", "shared_and_native_dependencies", "tests", "donor_routines"):
         for entry in manifest[group]:
