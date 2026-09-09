@@ -62,6 +62,12 @@ target_compile_options(utest_t3_contact_integration PRIVATE -fno-fast-math -ffp-
 tl_contact_test(utest_t3_contact_integration)
 
 include("${TL_ROOT}/lib_src/collision/Q4ParametricContact.cmake")
+include("${TL_ROOT}/lib_src/collision/NodalWallContact.cmake")
+add_executable(utest_nodal_wall_contact "${TL_ROOT}/lib_utest/utest_nodal_wall_contact.cc")
+target_link_libraries(utest_nodal_wall_contact PRIVATE tl_nodal_wall_contact)
+target_compile_options(utest_nodal_wall_contact PRIVATE -fno-fast-math -ffp-contract=off)
+tl_contact_test(utest_nodal_wall_contact)
+
 add_executable(utest_q4_parametric_contact "${TL_ROOT}/lib_utest/utest_q4_parametric_contact.cc")
 target_link_libraries(utest_q4_parametric_contact PRIVATE tl_q4_parametric_contact tl_q4_prescribed_planar_contact)
 target_compile_options(utest_q4_parametric_contact PRIVATE -fno-fast-math -ffp-contract=off)
