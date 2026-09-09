@@ -118,6 +118,26 @@ added later, and qualify normals at folds and on both shell sides.
 
 ## Cadence, playback and workstation budget
 
+The QEPH batch now retains accepted element history and force caches beside the
+existing TL nodal owner. Its next coupled coupon can reuse
+`chrono/AcceptedSurfaceMesh` without changing that adapter: it reads only
+accepted endpoint positions and source bindings, never velocities or material
+history. Reuse `output/MeshArchive`, `ArtifactIO`, the segmented CSV inventory
+and the existing VSG capture loop. Keep QEPH field serialization in its own
+small case/output module; `ShellPatchFields` currently encodes Reissner Gauss
+fields and conservative energy, so it is not a compatible QEPH field writer.
+
+Before recording that coupon, add a distinct accepted-bundle contract and
+reader branch with endpoint time, stored velocity time/phase, completed
+interval, native FOR/FOR_G/MOM/STRA/HOURG/THK and separate EINT/EVIS semantics.
+At startup there is no completed interval. Capture reads the jointly committed
+cache with the exact owner stamp and must never reevaluate history after a
+rejected trial. Test phase mismatch, stale material/owner association and
+readback failure before enabling replay. The existing coupon writer correctly
+rejects half-step timing; preserve that old schema and its regression tests.
+Geometry can show deformation as soon as coupled mechanics passes, with stress
+contours deferred until the matching accepted field contract passes.
+
 Publish only after a TL commit. Record actual accepted time even when output
 sampling skips solver epochs. A target output interval is separate from both
 the stable solver step and playback FPS; it never changes force integration.
