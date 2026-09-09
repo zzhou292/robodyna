@@ -547,10 +547,15 @@ endif()
 #-------------------------------------------------------------------------------
 
 list(PREPEND CHRONO_LIB_NAMES "Chrono_core")
-list(PREPEND CHRONO_LIB_NAMES "ChronoModels_robot")
 if (NOT CHRONO_STATIC)
   list(APPEND CHRONO_DLL_NAMES "Chrono_core.dll")
-  list(APPEND CHRONO_DLL_NAMES "ChronoModels_robot.dll")
+endif()
+
+if(@CH_ENABLE_MODULE_ROBOT_MODELS@)
+  list(PREPEND CHRONO_LIB_NAMES "ChronoModels_robot")
+  if (NOT CHRONO_STATIC)
+    list(APPEND CHRONO_DLL_NAMES "ChronoModels_robot.dll")
+  endif()
 endif()
 
 
