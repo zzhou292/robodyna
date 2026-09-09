@@ -203,7 +203,8 @@ ShellBatchReport ReissnerShellBatch::Assemble(const NodalAssemblyView& view, She
     return failure_channel.FailAssembly(view, {ShellBatchStatus::kNotInitialized, "Batch is not initialized"});
   }
   auto& s = *impl_; s.has_base = false; s.has_results = false;
-  if (!s.usable) return {ShellBatchStatus::kDeviceFailure, "CUDA batch is poisoned"};
+  if (!s.usable)
+    return s.FailAssembly(view, {ShellBatchStatus::kDeviceFailure, "CUDA batch is poisoned"});
   if (!output || !ValidKinematics(view.accepted, s.config) || !view.mass.inverse_mass || !view.mass.fixed ||
       !view.inverse_inertia || !view.translation_fixed_bits || !view.rotation_fixed || !view.bounds || !view.result ||
       view.forces.node_count != s.config.owner.node_count || view.mass.node_count != s.config.owner.node_count ||
@@ -214,10 +215,15 @@ ShellBatchReport ReissnerShellBatch::Assemble(const NodalAssemblyView& view, She
   if (!view.attempt || view.accepted.base_epoch != view.forces.base_epoch || view.accepted.base_epoch != view.mass.base_epoch ||
       view.accepted.base_epoch < s.last_epoch || view.attempt <= s.last_attempt)
     return s.FailAssembly(view, {ShellBatchStatus::kStaleTrial, "Assembly is stale or this batch already contributed"});
+  // A pending recoverable launch error must be detected before any force
+  // contribution is enqueued. A failed contributor cannot leave a sealable
+  // fresh assembly, including after this batch has already been poisoned.
+  auto pending = s.Check(cudaGetLastError());
+  if (pending.status != ShellBatchStatus::kSuccess) return s.FailAssembly(view, pending);
   s.last_epoch = view.accepted.base_epoch; s.last_attempt = view.attempt; s.last_stream = view.stream;
   AssembleBatch<<<1,1,0,view.stream>>>(s.device, view);
   auto report = s.ReadControl(view.stream);
-  if (report.status != ShellBatchStatus::kSuccess) return report;
+  if (report.status != ShellBatchStatus::kSuccess) return s.FailAssembly(view, report);
   s.has_base = true; s.has_results = true;
   *output = s.control.diagnostics; return Ok();
 }
