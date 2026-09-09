@@ -64,7 +64,7 @@ def _member(archive, name, cap):
     return info
 
 
-def compile_archive_part(archive_path, part_id=2000157):
+def _compile_archive_part(archive_path, part_id=2000157):
     """Return a fully staged report. No output files or physical state are made."""
     require(isinstance(part_id, int) and not isinstance(part_id, bool) and 0 < part_id < 2**63,
             'part ID must be a positive signed-64-bit integer')
@@ -104,7 +104,88 @@ def compile_archive_part(archive_path, part_id=2000157):
     sources += [ROOT / 'tools' / name for name in
                 ('compile_yaris_part.py', 'import_yaris_vehicle.py', 'import_yaris_wall.py')]
     report['generator_sources'] = {str(path.relative_to(ROOT)): file_sha256(path) for path in sources}
+    return declarations, report
+
+
+def compile_archive_part(archive_path, part_id=2000157):
+    """Existing E1 entry point and report schema remain unchanged."""
+    return _compile_archive_part(archive_path, part_id)[1]
+
+
+def compile_archive_readiness(archive_path, asset_dir, quadrature_path, part_id=2000157):
+    """Opt-in E2a composition; no attachment or physical-state admission."""
+    from .canonical_geometry import load_part_geometry, read_json
+    from .shell_mass import audit_shell_surface, load_quadrature
+
+    declarations, e1 = _compile_archive_part(archive_path, part_id)
+    reference = read_json(REFERENCE)
+    geometry = load_part_geometry(asset_dir, archive_path, declarations, reference)
+    quadrature = load_quadrature(quadrature_path)
+    mass = audit_shell_surface(geometry, declarations, quadrature)
+    attachments = dict(typed_closure_qualified=False, attachment_mechanics_implemented=False,
+                       tied_pairing_qualified=False, cut_boundary_supplied=False,
+                       scope='Read-only pinned source inventory; E2b typed closure remains pending')
+    if part_id == 2000157 and reference['archive_sha256'] == \
+            'aff8194c456726a678d6cc11f644316ca70f3d9b37c4db622726b7b2985b0451':
+        # Audited inventory facts only, bound to this exact source archive. These
+        # are not newly parsed constraints and never become mechanics inputs.
+        attachments.update(
+            known_nodal_rigid_groups=[dict(rigid_body_id=2200909 + i, node_set_id=2200909 + i,
+                                          source_file=VEHICLE, source_line=24808 + 9 * i,
+                                          node_set_line=24811 + 9 * i) for i in range(6)],
+            known_group_nodes=dict(total_unique=76, in_selected_part=20, external=56),
+            known_external_part_ids=[2000119, 2000120, 2000145, 2000165, 2000260],
+            known_tied_scope=dict(keyword='*CONTACT_TIED_SHELL_EDGE_TO_SURFACE', source_line=36,
+                                 source_file=VEHICLE, slave_part_set=2000002, master_part_set=2000001,
+                                 selected_part_is_master_set_member=True,
+                                 actual_pairing='unresolved; membership is not an attachment pair'),
+            unresolved=['nodal-rigid optional/default mechanics', 'neighbor transitive closure',
+                        'tied projection, tolerance and default semantics', 'added mass and setup transformations'])
+    else:
+        attachments['unresolved'] = ['all source attachment and interaction scopes for this selection']
+    report = dict(schema='robo-dyna.source-part-readiness.v1', simulation_ready=False,
+                  source_mass_equivalence_qualified=False, source_declarations=e1,
+                  geometry=asdict(geometry), surface_mass_audit=mass, attachments=attachments,
+                  selected_geometry_source_verified=True, geometry_modified=False, mechanics_capacity_changed=False)
+    paths = [Path(__file__), Path(__file__).with_name('canonical_geometry.py'),
+             Path(__file__).with_name('shell_mass.py'), ROOT / 'tools/compile_yaris_part.py']
+    report['readiness_generator_sources'] = {str(p.relative_to(ROOT)): file_sha256(p) for p in paths}
     return report
+
+
+def compile_archive_attachment_readiness(archive_path, asset_dir, quadrature_path, part_id=2000157):
+    """Explicit E2b v2 envelope; the E2a v1 API/inventory remains available.
+
+    Additional typed source coverage is separate from the earlier pinned facts.
+    This never upgrades the legacy inventory or source mechanics qualification.
+    """
+    from .canonical_geometry import load_part_geometry, read_json
+    from .attachments import compile_attachment_scope
+    from .source_blocks import scan_metadata, DECLARATION_FAMILIES, ATTACHMENT_FAMILIES
+
+    e2a = compile_archive_readiness(archive_path, asset_dir, quadrature_path, part_id)
+    reference = read_json(REFERENCE)
+    member = reference['archive_member_prefix'] + VEHICLE
+    with zipfile.ZipFile(archive_path) as archive:
+        _member(archive, member, MAX_SOURCE_BYTES)
+        with archive.open(member) as stream:
+            index = scan_metadata(stream, VEHICLE, families=DECLARATION_FAMILIES | ATTACHMENT_FAMILIES)
+    require(index.sha256 == reference['files'][VEHICLE]['sha256'], 'attachment source SHA256 mismatch')
+    # Reuse the typed declaration parser and source-authenticated geometry owner.
+    # No report dictionary is treated as a mutable substitute for typed input.
+    declarations = compile_part_declarations(index, part_id, UnitSystem('t', 'mm', 's', 1000., .001, 1.))
+    geometry = load_part_geometry(asset_dir, archive_path, declarations, reference)
+    attachment = compile_attachment_scope(index, geometry, asset_dir, archive_path, reference)
+    paths = [Path(__file__).parent / name for name in
+             ('_legacy.py', 'source_blocks.py', 'attachment_cards.py', 'attachments.py', 'canonical_incidence.py',
+              'canonical_geometry.py', 'yaris_part.py')]
+    paths += [ROOT / 'tools' / name for name in ('compile_yaris_part.py', 'import_yaris_vehicle.py', 'import_yaris_wall.py')]
+    return dict(schema='robo-dyna.source-part-readiness.v2',
+                scope='E2a plus typed original-include one-hop attachment inventory; no assembled closure or mechanics',
+                simulation_ready=False, geometry_modified=False, mechanics_capacity_changed=False,
+                source_mass_equivalence_qualified=False, full_attachment_closure_qualified=False,
+                e2a_readiness=e2a, typed_attachment_scope=asdict(attachment),
+                attachment_generator_sources={str(p.relative_to(ROOT)): file_sha256(p) for p in paths})
 
 
 def write_report(path, report):

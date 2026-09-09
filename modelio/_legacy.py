@@ -10,9 +10,10 @@ import sys
 _tools = str(Path(__file__).resolve().parents[1] / 'tools')
 sys.path.insert(0, _tools)
 try:
-    from import_yaris_vehicle import fields, file_sha256
+    from import_yaris_vehicle import fields, file_sha256, VehicleGeometry, scan as scan_vehicle, FIELDS
     from import_yaris_wall import WallImportError, require, sha256
 finally:
     sys.path.remove(_tools)
 
-__all__ = ['fields', 'file_sha256', 'WallImportError', 'require', 'sha256']
+__all__ = ['fields', 'file_sha256', 'WallImportError', 'require', 'sha256',
+           'VehicleGeometry', 'scan_vehicle', 'FIELDS']

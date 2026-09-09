@@ -69,8 +69,8 @@ Poisson ratio 0.3, C = 8,000 s⁻¹, P = 8 and supplied VP `0.0`. Both empty
 material data cards survive at source lines 3263 and 3265. The curve has
 46 points, from plastic strain 0 / stress 270 MPa to 0.3 / 362 MPa; only its
 blank offsets receive separately recorded zero defaults. The report still
-has `simulation_ready=false`; attachments and geometry/mass readiness are
-separate unfinished gates.
+has `simulation_ready=false`; E2a geometry and provisional mass readiness are
+qualified below, while typed attachments and all source mechanics remain open.
 
 To repeat after the shared workstation slot is released, use new report names:
 
@@ -89,6 +89,92 @@ Synthetic tests live in `tests/test_source_part_declarations.py`; use
 `python3 -m unittest discover -s robo-dyna/tests -p test_source_part_declarations.py`
 under the same CPU guard. No original assets are needed by those tests.
 
-The next separate gate must join the source geometry and attachment closure to
-an independent mass/center-of-mass/inertia ledger. Native T3s, warpage, plasticity,
-controls, contact and coupled dynamics still require explicit qualification.
+E2a passed bounded CPU qualification in `canonical_geometry.py` and
+`shell_mass.py`. `compile_archive_readiness` composes these
+with the existing E1 declaration compiler. The default declaration-only API,
+CLI and schema remain unchanged. Opt in by adding both `--canonical-assets`
+and `--quadrature` to `tools/compile_yaris_part.py`.
+
+The geometry loader caps the selection at 256 source shells / 512 nodes and
+aggregate canonical arrays at 64 MiB. It hashes the existing arrays and archive,
+checks compact indices against source IDs, then cross-checks selected values,
+physical source lines, repeated triangle slots and blank masks against the
+pinned original member. Omitting a triangle from self-consistently rehashed
+arrays still fails complete source-part coverage. It applies no transform.
+
+Mass is explicitly a uniform `rho*t*dA` midsurface lamina proxy. Native T3
+moments are exact; Q4 uses the actual bilinear map, a sufficient conditioned
+Jacobian certificate over the entire parameter square, and separate 4/8/16
+integrations. Both diagonal areas remain descriptive diagnostics. Each element
+and the aggregate must meet the fixed `1e-9` last-refinement budget. Two local
+passes preserve central moments even for a tiny element far from the common
+part anchor; aggregate inertia uses positive parallel-axis additions. Nonuniform
+or blank thickness, malformed connectivity, nonfinite/degenerate/ill-conditioned
+geometry and nonconvergence prevent a successful report.
+
+The actual Chrono quadrature donor passed orders 4/8 and failed order 16 at the
+predeclared `2e-12` independent Legendre residual gate. That failed run remains
+under `crash-work/reports/shell-quadrature-tests-1.*`. The accepted export
+uses existing Boost 1.74 for all three orders, retaining the measured Chrono
+failure and source/license hashes. No new root solver or relaxed budget was
+introduced. `load_quadrature` independently rechecks roots and polynomial
+moments; no rule is inferred from a claimed qualification flag alone.
+
+Passing tests are `tests/test_canonical_part_geometry.py` (eight synthetic source
+cases), `tests/test_shell_surface_mass.py` (15 numerical, failure and end-to-end
+composer cases), and six actual C++ quadrature/export cases. The mass suite
+requires `--quadrature PATH` or the environment variable
+`ROBO_DYNA_SURFACE_QUADRATURE`; absence fails instead of skipping the gate.
+Root-coordinated CPU execution uses the existing shared guard, one CPU and at
+most 1 GiB RSS. No solver or CUDA context is required by this layer.
+
+The original PID 2000157 audit retained **88 Q4 + six native T3 / 117 nodes**
+without flattening or transforming geometry. Its area is
+**0.019729915620722037 m²** and provisional lamina mass is
+**0.25654256843987483 kg**, with relative 8-to-16 mass refinement
+`4.327636662316166e-16`. The [typed readiness report](../../crash-work/reports/yaris-part-2000157-readiness-1.json)
+and [immutable evidence checkpoint](../../crash-work/reports/e2a-readiness-checkpoint-1.json)
+retain full COM/inertia, source-card/array coverage, rule provenance, test
+reports and source/build hashes. The
+[retained-file supplement](../../crash-work/checkpoints/e2a-readiness-1/manifest.json)
+preserves the exact mutable source/build entries. Reproduce with a new output path under the
+same guard:
+
+```bash
+python3 robo-dyna/tools/compile_yaris_part.py \
+  --source-archive crash-work/assets/yaris-vehicle/source_model.zip \
+  --canonical-assets crash-work/assets/yaris-vehicle \
+  --quadrature crash-work/reports/shell-surface-quadrature-2.json \
+  --part-id 2000157 \
+  --output crash-work/reports/yaris-part-2000157-readiness-repeat.json
+```
+
+E2a retains known source attachment inventory separately: six nodal-rigid groups
+touch 20 selected nodes and 56 external nodes across five neighboring parts;
+tied-contact master-set membership remains an unresolved pairing scope. These
+are pinned audit facts in the v1 report, not implemented constraints. Full closure,
+added masses, source mass/lumping/rotary equivalence and all mechanics remain
+blocked; successful readiness reports still say `simulation_ready=false`.
+See [the detailed source-part gate](../../planning/YARIS_SOURCE_PART_READINESS.md).
+
+E2b's first typed inventory passed 15 new cases plus the unchanged 35 E1/E2a
+cases. Add `--typed-attachments` to
+the E2a invocation to request the explicit v2 envelope. The v1 report and its
+historical inventory remain nested unchanged; a separate typed scope records
+literal list sets, complete nodal-rigid cards, tied part-set candidates and
+source-verified one-hop incidence. Optional/default constraint mechanics,
+unreferenced general/additive sets, all other attachment families and actual
+tie pairing remain unresolved. Referenced unknown operators fail. This path
+does not load neighboring part geometry, expand source transforms or change
+mechanics capacities. Tests are in `tests/test_source_attachments.py` and take
+the same qualified quadrature argument/environment setting as the mass suite.
+
+The [original v2 report](../../crash-work/reports/yaris-part-2000157-attachments-1.json)
+verified all six groups, 76 members (20 selected / 56 external), five neighbor
+PIDs, and source/canonical coverage of 173 union nodes / 182 incident elements.
+It passed in 5.266 s using one CPU and 102.41 MiB sampled peak RSS. The report
+uses 1,031,631 of the existing 1,048,576-byte cap; broader inventories must not
+silently overrun this format. The
+[retained checkpoint](../../crash-work/checkpoints/e2b-attachments-1/manifest.json)
+binds the source, tests and guard reports. Independent source review remains
+pending; no GPU, source mechanics or attachment load transfer was executed.

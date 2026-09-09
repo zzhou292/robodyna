@@ -12,6 +12,8 @@ from ._legacy import fields, require, sha256
 MAX_SOURCE_BYTES = 64 * 1024 * 1024
 MAX_METADATA_BYTES = 4 * 1024 * 1024
 MAX_LINE_BYTES = 4096
+DECLARATION_FAMILIES = frozenset(('part', 'section', 'material', 'curve'))
+ATTACHMENT_FAMILIES = frozenset(('node_set', 'part_set', 'nodal_rigid', 'tied_contact'))
 
 
 @dataclass(frozen=True)
@@ -38,6 +40,7 @@ class SourceIndex:
     source_bytes: int
     keyword_count: int
     entries: dict
+    retained_families: frozenset = DECLARATION_FAMILIES
 
     def one(self, family, identity):
         matches = self.entries.get((family, identity), [])
@@ -55,10 +58,22 @@ def _family(keyword):
         return 'material'
     if keyword == '*DEFINE_CURVE' or keyword.startswith('*DEFINE_CURVE_'):
         return 'curve'
+    if keyword.startswith('*SET_NODE_'):
+        return 'node_set'
+    if keyword.startswith('*SET_PART_'):
+        return 'part_set'
+    if keyword.startswith('*CONSTRAINED_NODAL_RIGID_BODY'):
+        return 'nodal_rigid'
+    if keyword.startswith('*CONTACT_TIED_SHELL_EDGE_TO_SURFACE'):
+        return 'tied_contact'
     return None
 
 
 def _identity(block, family):
+    # A non-ID contact card's first field is SSID, not its identity. Keeping
+    # location identity also prevents two contacts with the same SSID merging.
+    if family == 'tied_contact':
+        return block.first_line
     # PART has a mandatory title. The _TITLE suffix on other families adds one.
     index = int(family == 'part' or block.keyword.endswith('_TITLE'))
     require(len(block.cards) > index, f'{block.keyword}: missing identity card')
@@ -67,7 +82,15 @@ def _identity(block, family):
     return identity
 
 
-def scan_declarations(stream, filename):
+def scan_metadata(stream, filename, *, families):
+    """Explicit family retention; unknown variants stay in their ID namespace.
+
+    One SourceIndex represents one untransformed include instance. This scanner
+    never merges include instances or evaluates additive/general set operators.
+    """
+    families = frozenset(families)
+    require(families and families <= DECLARATION_FAMILIES | ATTACHMENT_FAMILIES,
+            'unsupported metadata family selection')
     entries, digest = {}, hashlib.sha256()
     size = retained = keyword_count = number = 0
     keyword = family = None
@@ -104,7 +127,8 @@ def scan_declarations(stream, filename):
             require(keyword != '*KEYWORD' or not keyword_count, 'duplicate *KEYWORD')
             keyword_count += 1
             require(keyword_count <= 10000, 'metadata keyword-count cap exceeded')
-            family = _family(keyword)
+            candidate = _family(keyword)
+            family = candidate if candidate in families else None
             raw_block, cards, first = [], [], number
             ended = keyword == '*END'
         else:
@@ -120,4 +144,9 @@ def scan_declarations(stream, filename):
             raw_block.append(raw)
     finish()
     require(ended, 'missing final *END')
-    return SourceIndex(filename, digest.hexdigest(), size, keyword_count, entries)
+    return SourceIndex(filename, digest.hexdigest(), size, keyword_count, entries, families)
+
+
+def scan_declarations(stream, filename):
+    """Original E1 family selection and public signature are unchanged."""
+    return scan_metadata(stream, filename, families=DECLARATION_FAMILIES)
