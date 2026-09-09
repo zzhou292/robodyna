@@ -35,6 +35,18 @@ TEST(GuidedPlateCli, LegacyFormsRemainScalarAndTyped) {
     EXPECT_EQ(command.kind,GuidedPlateCommandKind::CompareRefinement);EXPECT_EQ(command.coarse_study,"coarse");
     EXPECT_EQ(command.fine_study,"fine");EXPECT_EQ(command.refinement_report,"report");
 }
+TEST(GuidedPlateCli, ArchiveCadenceTracksPhysicalTimeUnderRefinement) {
+    for(const unsigned refinement:{1u,2u,4u}) {
+        const auto every=GuidedPlateArchiveFrameEvery(refinement);
+        EXPECT_EQ(every,100*refinement);
+        const std::uint64_t steps=19998*refinement;
+        EXPECT_EQ(1+steps/every+(steps%every!=0),201u);
+        EXPECT_EQ((steps/every)*every,19900*refinement);
+        EXPECT_EQ(steps-19900*refinement,98*refinement);
+    }
+    EXPECT_THROW(GuidedPlateArchiveFrameEvery(0),std::runtime_error);
+    EXPECT_THROW(GuidedPlateArchiveFrameEvery(8),std::runtime_error);
+}
 TEST(GuidedPlateCli, ExplicitTransformAndBackendDoNotCreateAutomaticRuns) {
     auto command=Parse({"guided","run","wall","study","4","--wall=subdivide","--wall-provenance=proof","--contact-integration=rectangular"});
     EXPECT_EQ(command.run.wall_kind,WallTessellationKind::UniformFour);EXPECT_EQ(command.run.config.refinement,4u);

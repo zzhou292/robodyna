@@ -2,12 +2,15 @@
 #include "ArtifactIO.h"
 #include "ContactIntegrationMetadata.h"
 #include "GuidedExperimentMetadata.h"
+#include "CsvLedgerSegments.h"
 #include "MeshArchive.h"
 #include "case/CanonicalWallArtifacts.h"
 #include "chrono/geometry/ChTriangleMeshConnected.h"
 #include <gtest/gtest.h>
 #include <cstdlib>
 #include <cmath>
+#include <iomanip>
+#include <limits>
 #include <sstream>
 #include <vector>
 
@@ -190,12 +193,70 @@ class GuidedBundle {
         auto final=Read("final-metrics.json"); String(final,experiment::Field,name);
         Integer(final,"qualification_id",experiment::Qualification(name)); Replace("final-metrics.json",final); Manifest();
     }
+    // Small-memory format fixture: conservative 1664-byte maximum rows force
+    // an actual two-file plan under the UNCHANGED 32MiB cap, but each manually
+    // written seven-column row is short. This is metadata/row validation, not
+    // an executed long physical trajectory or use of the segmented writer.
+    void Segmented(std::uint64_t intervals=21000) {
+        const double dt=1./static_cast<double>(intervals);
+        std::vector<double> time(intervals+1);
+        for(std::uint64_t e=1;e<=intervals;++e)time[e]=time[e-1]+dt;
+        const std::array<std::uint64_t,3> epochs{{0,intervals/2,intervals}};
+        const auto stem=[](std::uint64_t e) {
+            std::ostringstream out; out<<"accepted-"<<std::setw(6)<<std::setfill('0')<<e; return out.str();
+        };
+        std::ostringstream index; index<<std::setprecision(17)
+            <<"owner_id,accepted_epoch,accepted_time_s,json_mesh,obj_visualization\n";
+        for(unsigned i=0;i<3;++i) {
+            const auto epoch=epochs[i]; const auto old=Stem(i),now=stem(epoch);
+            auto fields=Read(old+".fields.json");
+            fields["accepted_epoch"].SetUint64(epoch); fields["accepted_time_s"].SetDouble(time[epoch]);
+            fields["fixed_dt_s"].SetDouble(dt);
+            fields["reaction_base_epoch"].SetUint64(epoch?epoch-1:0);
+            fields["reaction_time_s"].SetDouble(epoch?time[epoch-1]:0);
+            const auto base=i==1?epoch-1:epoch,attempt=i==2?epoch+2:epoch+1;
+            fields["element_evaluation_base_epoch"].SetUint64(base);
+            fields["contact_evaluation_base_epoch"].SetUint64(base);
+            fields["element_evaluation_attempt"].SetUint64(attempt);
+            fields["contact_evaluation_attempt"].SetUint64(attempt);
+            for(auto& parent:fields["contact_parents"].GetArray()) {
+                parent["base_epoch"].SetUint64(base); parent["attempt"].SetUint64(attempt);
+            }
+            if(now!=old) for(const char* suffix:{".mesh.json",".obj"})fs::rename(directory/(old+suffix),directory/(now+suffix));
+            fs::remove(directory/(old+".fields.json")); WriteJson(directory/(now+".fields.json"),fields);
+            index<<7<<','<<epoch<<','<<time[epoch]<<','<<now<<".mesh.json,"<<now<<".obj\n";
+        }
+        Replace("accepted-frames.csv",index.str());
+        std::array<CsvLedgerPlan,3> plans;
+        const std::array<const char*,3> names{{"accepted-intervals.csv","shell-intervals.csv","contact-intervals.csv"}};
+        const std::string header="owner_id,base_epoch,attempt,force_eval_time_s,accepted_epoch,accepted_time_s,value_J\n";
+        for(std::size_t ledger=0;ledger<3;++ledger) {
+            plans[ledger]=PlanCsvLedger(names[ledger],header,intervals,kCsvLedgerRowCap);
+            fs::remove(directory/names[ledger]);
+            for(const auto& segment:plans[ledger].segments) {
+                std::ostringstream rows; rows<<std::setprecision(17)<<header;
+                for(auto e=segment.first_epoch;e<=segment.last_epoch;++e)
+                    rows<<7<<','<<e-1<<','<<e+1<<','<<time[e-1]<<','<<e<<','<<time[e]<<','<<ledger+1<<'\n';
+                WriteBytes(directory/segment.file,rows.str());
+            }
+        }
+        auto config=Read("configuration.json"); config["required_steps"].SetUint64(intervals); config["fixed_dt_s"].SetDouble(dt);
+        AppendCsvLedgerSegments(config,plans.data(),plans.size()); Replace("configuration.json",config);
+        auto final=Read("final-metrics.json"); final["accepted_epoch"].SetUint64(intervals);
+        final["accepted_time_s"].SetDouble(time.back()); Replace("final-metrics.json",final); Manifest();
+    }
     void Manifest() {
         fs::remove(directory/"manifest.json"); Document d; d.SetObject();
-        String(d,"schema","robo_dyna.guided_plate_artifacts.v1"); String(d,"status","completed");
+        const auto config=Read("configuration.json"),final=Read("final-metrics.json");
+        String(d,"schema",config.HasMember(kCsvLedgerSegmentsField)?"robo_dyna.guided_plate_artifacts.v2":
+                                                                  "robo_dyna.guided_plate_artifacts.v1");
+        String(d,"status","completed");
         Boolean(d,"shell_model",true); Boolean(d,"vehicle_model",false); Boolean(d,"contact",true);
-        Integer(d,"owner_id",7); Integer(d,"accepted_epoch",10); Number(d,"accepted_time_s",1);
-        const auto config=Read("configuration.json");
+        Integer(d,"owner_id",7); Integer(d,"accepted_epoch",final["accepted_epoch"].GetUint64());
+        Number(d,"accepted_time_s",final["accepted_time_s"].GetDouble());
+        if(config.HasMember(kCsvLedgerSegmentsField))
+            d.AddMember(rapidjson::StringRef(kCsvLedgerSegmentsField),
+                        Value(config[kCsvLedgerSegmentsField],d.GetAllocator()),d.GetAllocator());
         if(config.HasMember(contact_metadata::BackendField))
             d.AddMember(rapidjson::StringRef(contact_metadata::BackendField),
                         Value(config[contact_metadata::BackendField],d.GetAllocator()),d.GetAllocator());
@@ -470,6 +531,200 @@ TEST(AcceptedReplayGuided, RehashedBackendAndAxisCorruptionRejectsWithoutReplaci
         EXPECT_EQ(replay.Open(f.directory).status,ReplayStatus::InvalidBundle);
         EXPECT_EQ(replay.frame()->mesh,frame.mesh); EXPECT_EQ(replay.frame()->epoch,frame.epoch); EXPECT_EQ(replay.wall(),wall);
     }
+}
+
+void ExpectRejectedPreservingReplay(AcceptedReplay& replay,const fs::path& directory) {
+    const auto frame=*replay.frame(); const auto wall=replay.wall(); const auto info=*replay.info();
+    const auto report=replay.Open(directory);
+    EXPECT_EQ(report.status,ReplayStatus::InvalidBundle)<<report.diagnostic;
+    EXPECT_EQ(replay.frame()->mesh,frame.mesh); EXPECT_EQ(replay.frame()->epoch,frame.epoch);
+    EXPECT_EQ(Bits(replay.frame()->time),Bits(frame.time)); EXPECT_EQ(replay.wall(),wall);
+    EXPECT_EQ(replay.info()->schema,info.schema); EXPECT_EQ(replay.info()->final_epoch,info.final_epoch);
+}
+
+TEST(AcceptedReplayGuided, SegmentedV2ReplaysExactRowsAndPreservesLegacyV1) {
+    GuidedBundle f; AcceptedReplay replay;
+    ASSERT_EQ(replay.Open(f.directory).status,ReplayStatus::Ok);
+    EXPECT_EQ(replay.info()->schema,"robo_dyna.guided_plate_artifacts.v1");
+    f.Segmented();
+    const auto report=replay.Open(f.directory); ASSERT_EQ(report.status,ReplayStatus::Ok)<<report.diagnostic;
+    EXPECT_EQ(replay.info()->schema,"robo_dyna.guided_plate_artifacts.v2");
+    EXPECT_EQ(replay.info()->frame_count,3u); EXPECT_EQ(replay.info()->final_epoch,21000u);
+    const auto config=f.Read("configuration.json");
+    const auto plans=ParseCsvLedgerSegments(config[kCsvLedgerSegmentsField]);
+    ASSERT_EQ(plans.size(),3u);
+    for(const auto& plan:plans) {
+        EXPECT_EQ(plan.segments.size(),2u);
+        EXPECT_LE(plan.segments.front().byte_cap,kArtifactFileCap);
+        EXPECT_LT(fs::file_size(f.directory/plan.segments.front().file),2u*1024*1024);
+    }
+    for(const unsigned i:{1u,2u,0u}) {
+        ASSERT_EQ(replay.Load(i).status,ReplayStatus::Ok);
+        EXPECT_EQ(replay.frame()->epoch,10500u*i);
+        EXPECT_EQ(replay.frame()->mesh->GetCoordsVertices(),GuidedBundle::Mesh(i).GetCoordsVertices());
+    }
+}
+
+TEST(AcceptedReplayGuided, SegmentedMetadataIsBoundedDeterministicAndRepeatedExactly) {
+    GuidedBundle f; f.Segmented(); AcceptedReplay replay;
+    ASSERT_EQ(replay.Open(f.directory).status,ReplayStatus::Ok); ASSERT_EQ(replay.Load(2).status,ReplayStatus::Ok);
+    const auto saved=f.Read("configuration.json");
+    for(unsigned fault=0;fault<16;++fault) {
+        Document config; config.CopyFrom(saved,config.GetAllocator());
+        auto& plans=config[kCsvLedgerSegmentsField]; auto& plan=plans[2]; auto& segment=plan["segments"][1];
+        switch(fault) {
+            case 2: plan["logical_file"].SetString("other.csv",config.GetAllocator()); break;
+            case 3: plan["interval_count"].SetUint64(20999); break;
+            case 4: plan["header_sha256"].SetString(std::string(64,'a').c_str(),config.GetAllocator()); break;
+            case 5: plan["column_count"].SetUint64(6); break;
+            case 6: plan["max_row_bytes"].SetUint64(kCsvLedgerRowCap+1); break;
+            case 7: segment["first_epoch"].SetUint64(segment["first_epoch"].GetUint64()-1); break;
+            case 8: segment["row_count"].SetUint64(segment["row_count"].GetUint64()-1); break;
+            case 9: segment["file"].SetString("../outside.csv",config.GetAllocator()); break;
+            case 10: segment["byte_cap"].SetUint64(kArtifactFileCap+1); break;
+            case 11: plan["logical_file"].SetString("accepted-intervals.csv",config.GetAllocator()); break;
+            case 12:
+                for(unsigned i=0;i<7;++i)plan["segments"].PushBack(Value(plan["segments"][0],config.GetAllocator()),config.GetAllocator());
+                break;
+            case 13: config.AddMember(rapidjson::StringRef(kCsvLedgerSegmentsField),Value(plans,config.GetAllocator()),config.GetAllocator()); break;
+        }
+        if(fault==1)config.RemoveMember(kCsvLedgerSegmentsField);
+        f.Replace("configuration.json",config); f.Manifest();
+        if(fault==0||fault==1||fault==14||fault==15) {
+            auto manifest=f.Read("manifest.json");
+            if(fault==0)manifest.RemoveMember(kCsvLedgerSegmentsField);
+            if(fault==1) {
+                manifest["schema"].SetString("robo_dyna.guided_plate_artifacts.v2",manifest.GetAllocator());
+                manifest.AddMember(rapidjson::StringRef(kCsvLedgerSegmentsField),
+                                  Value(saved[kCsvLedgerSegmentsField],manifest.GetAllocator()),manifest.GetAllocator());
+            }
+            if(fault==14)manifest[kCsvLedgerSegmentsField][0]["header_sha256"].SetString(std::string(64,'b').c_str(),manifest.GetAllocator());
+            if(fault==15)manifest["schema"].SetString("robo_dyna.guided_plate_artifacts.v1",manifest.GetAllocator());
+            f.Replace("manifest.json",manifest);
+        }
+        SCOPED_TRACE(fault); ExpectRejectedPreservingReplay(replay,f.directory);
+        f.Replace("configuration.json",saved); f.Manifest();
+    }
+    EXPECT_EQ(replay.Open(f.directory).status,ReplayStatus::Ok);
+}
+
+TEST(AcceptedReplayGuided, SegmentedActualLateRowsAreCheckedBeyondRehashedInventory) {
+    GuidedBundle f; f.Segmented(); AcceptedReplay replay;
+    ASSERT_EQ(replay.Open(f.directory).status,ReplayStatus::Ok); ASSERT_EQ(replay.Load(2).status,ReplayStatus::Ok);
+    const auto config=f.Read("configuration.json"); const auto plans=ParseCsvLedgerSegments(config[kCsvLedgerSegmentsField]);
+    const auto file=plans[2].segments.back().file;
+    const auto saved=ReadBounded(f.directory/file,kArtifactFileCap);
+    const auto start=saved.rfind('\n',saved.size()-2)+1;
+    const auto original_line=saved.substr(start,saved.size()-start-1);
+    for(unsigned fault=0;fault<16;++fault) {
+        std::array<std::string,7> fields; std::istringstream input(original_line);
+        for(auto& value:fields)ASSERT_TRUE(bool(std::getline(input,value,',')));
+        switch(fault) {
+            case 0: fields[0]="8"; break;
+            case 1: fields[1]="20998"; break;
+            case 2: fields[2]="0"; break;
+            case 3: fields[2]="21000"; break;
+            case 4: fields[4]="20999"; break;
+            case 5: fields[3]="nan"; break;
+            case 6: fields[5]="-1"; break;
+            case 7: fields[6]="inf"; break;
+            case 13: fields[6]=std::string(kCsvLedgerRowCap,'1'); break;
+            case 14: fields[4]="21000x"; break;
+        }
+        std::ostringstream row;
+        for(unsigned i=0;i<(fault==8?6u:7u);++i) { if(i)row<<','; row<<fields[i]; }
+        if(fault==9)row<<",2";
+        row<<'\n';
+        auto bytes=saved.substr(0,start)+row.str();
+        if(fault==10)bytes.pop_back();
+        if(fault==11)bytes+=original_line+'\n';
+        if(fault==12)bytes.replace(0,8,"owner_jd");
+        if(fault==15)bytes=saved.substr(0,start);
+        f.Replace(file,bytes); f.Manifest(); // Fresh hashes: row validation must find these defects.
+        SCOPED_TRACE(fault); ExpectRejectedPreservingReplay(replay,f.directory);
+        f.Replace(file,saved); f.Manifest();
+    }
+    EXPECT_EQ(replay.Open(f.directory).status,ReplayStatus::Ok);
+}
+
+TEST(AcceptedReplayGuided, SegmentedSavedEndpointAttemptsBindTheirActualPrecedingRows) {
+    GuidedBundle f; f.Segmented(); AcceptedReplay replay;
+    ASSERT_EQ(replay.Open(f.directory).status,ReplayStatus::Ok); ASSERT_EQ(replay.Load(2).status,ReplayStatus::Ok);
+    for(const auto& item:std::array<std::pair<const char*,std::uint64_t>,2>{{
+            {"accepted-010500.fields.json",10502},{"accepted-021000.fields.json",21001}}}) {
+        const auto saved=f.Read(item.first); auto changed=f.Read(item.first);
+        changed["element_evaluation_attempt"].SetUint64(item.second);
+        changed["contact_evaluation_attempt"].SetUint64(item.second);
+        for(auto& parent:changed["contact_parents"].GetArray())parent["attempt"].SetUint64(item.second);
+        f.Replace(item.first,changed); f.Manifest(); ExpectRejectedPreservingReplay(replay,f.directory);
+        f.Replace(item.first,saved); f.Manifest();
+    }
+    EXPECT_EQ(replay.Open(f.directory).status,ReplayStatus::Ok);
+}
+
+TEST(AcceptedReplayGuided, MatchingCorruptContributorStampsDoNotReplaceOwnerOrClockChecks) {
+    GuidedBundle f; f.Segmented(); AcceptedReplay replay;
+    ASSERT_EQ(replay.Open(f.directory).status,ReplayStatus::Ok); ASSERT_EQ(replay.Load(2).status,ReplayStatus::Ok);
+    const auto config=f.Read("configuration.json"); const auto plans=ParseCsvLedgerSegments(config[kCsvLedgerSegmentsField]);
+    std::array<std::string,3> saved;
+    for(unsigned i=0;i<3;++i)saved[i]=ReadBounded(f.directory/plans[i].segments.back().file,kArtifactFileCap);
+    for(unsigned fault=0;fault<5;++fault) {
+        for(unsigned ledger=0;ledger<3;++ledger) {
+            const auto start=saved[ledger].rfind('\n',saved[ledger].size()-2)+1;
+            std::istringstream input(saved[ledger].substr(start)); std::array<std::string,7> fields;
+            for(auto& value:fields)ASSERT_TRUE(bool(std::getline(input,value,',')));
+            if(fault==0)fields[0]="8";
+            if(fault==1)fields[1]="20998";
+            if(fault==2)fields[2]="21000";
+            if(fault==3)fields[3]="0.5";
+            if(fault==4)fields[5]="2";
+            std::ostringstream row;
+            for(unsigned i=0;i<6;++i) { if(i)row<<','; row<<fields[i]; }
+            row<<','<<ledger+1<<'\n';
+            f.Replace(plans[ledger].segments.back().file,saved[ledger].substr(0,start)+row.str());
+        }
+        f.Manifest(); SCOPED_TRACE(fault); ExpectRejectedPreservingReplay(replay,f.directory);
+        for(unsigned ledger=0;ledger<3;++ledger)f.Replace(plans[ledger].segments.back().file,saved[ledger]);
+        f.Manifest();
+    }
+    EXPECT_EQ(replay.Open(f.directory).status,ReplayStatus::Ok);
+}
+
+TEST(AcceptedReplayGuided, AuthenticatedHeaderStillRequiresTheFixedIdentityColumns) {
+    GuidedBundle f; f.Segmented(); AcceptedReplay replay;
+    ASSERT_EQ(replay.Open(f.directory).status,ReplayStatus::Ok);
+    const auto original=f.Read("configuration.json"); auto config=f.Read("configuration.json");
+    const auto plans=ParseCsvLedgerSegments(config[kCsvLedgerSegmentsField]);
+    std::vector<std::string> saved;
+    std::string header;
+    for(const auto& segment:plans[2].segments) {
+        saved.push_back(ReadBounded(f.directory/segment.file,kArtifactFileCap));
+        auto altered=saved.back(); altered.replace(0,8,"owner_jd");
+        header=altered.substr(0,altered.find('\n')+1); f.Replace(segment.file,altered);
+    }
+    // Same-length, valid generic header, rehashed consistently in both plans:
+    // only the guided identity-column contract must reject this alteration.
+    config[kCsvLedgerSegmentsField][2]["header_sha256"].SetString(Sha256(header).c_str(),config.GetAllocator());
+    f.Replace("configuration.json",config); f.Manifest(); ExpectRejectedPreservingReplay(replay,f.directory);
+    for(unsigned i=0;i<saved.size();++i)f.Replace(plans[2].segments[i].file,saved[i]);
+    f.Replace("configuration.json",original); f.Manifest();
+    EXPECT_EQ(replay.Open(f.directory).status,ReplayStatus::Ok);
+}
+
+TEST(AcceptedReplayGuided, SegmentedMissingExtraFilesAndFalseV2ScopeReject) {
+    GuidedBundle f; f.Segmented(); AcceptedReplay replay;
+    ASSERT_EQ(replay.Open(f.directory).status,ReplayStatus::Ok);
+    const auto config=f.Read("configuration.json"); const auto plans=ParseCsvLedgerSegments(config[kCsvLedgerSegmentsField]);
+    const auto file=plans[2].segments.back().file;
+    const auto saved=ReadBounded(f.directory/file,kArtifactFileCap);
+    fs::remove(f.directory/file); f.Manifest(); ExpectRejectedPreservingReplay(replay,f.directory);
+    WriteBytes(f.directory/file,saved); f.Manifest();
+    WriteBytes(f.directory/"contact-intervals-0002.csv","undeclared segment\n"); f.Manifest();
+    ExpectRejectedPreservingReplay(replay,f.directory);
+    fs::remove(f.directory/"contact-intervals-0002.csv"); f.Manifest();
+    EXPECT_EQ(replay.Open(f.directory).status,ReplayStatus::Ok);
+    GuidedBundle unsplit; unsplit.Segmented(10); // Valid metadata and rows, but no actual split.
+    ExpectRejectedPreservingReplay(replay,unsplit.directory);
 }
 
 TEST(AcceptedReplayGuided, ExplicitRetainedGuidedBundleUsesTheSameStrictValidation) {

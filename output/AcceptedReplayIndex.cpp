@@ -145,7 +145,8 @@ Bundle ReadIndex(const std::filesystem::path& directory) {
     Bundle bundle; bundle.directory = directory;
     bundle.info.schema = Text(manifest, "schema");
     const bool coupon = bundle.info.schema == "robo_dyna.elastic_coupon_artifacts.v1";
-    const bool guided = bundle.info.schema == "robo_dyna.guided_plate_artifacts.v1";
+    const bool guided = bundle.info.schema == "robo_dyna.guided_plate_artifacts.v1" ||
+                        bundle.info.schema == "robo_dyna.guided_plate_artifacts.v2";
     Require(coupon || guided || bundle.info.schema == "tlfea.normal_impact_artifacts.v1", "Unsupported replay artifact schema");
     bundle.info.kind = guided ? ReplayKind::GuidedPlate : coupon ? ReplayKind::ElasticCoupon : ReplayKind::NormalImpact;
     const auto& shell_model = Member(manifest, "shell_model"); const auto& vehicle_model = Member(manifest, "vehicle_model");
@@ -211,6 +212,7 @@ Bundle ReadIndex(const std::filesystem::path& directory) {
     if (guided) {
         bundle.fixed_dt = dt;
         ReadGuidedConfiguration(bundle, configuration, final, manifest);
+        CheckGuidedLedgers(bundle, configuration, manifest);
     }
     return bundle;
 }

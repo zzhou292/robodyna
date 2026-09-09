@@ -24,10 +24,11 @@ robo-dyna-guided compare COARSE-STUDY FINE-STUDY NEW-COMPARISON
 robo-dyna-guided compare-wall WALL-MANIFEST DERIVED-STUDY DERIVED-SIDECAR CANONICAL-STUDY CANONICAL-SIDECAR NEW-COMPARISON
 ```
 
-The new command, backend metadata and wall-comparison host checks pass, along
-with short actual CUDA case/writer checks. These examples do not establish completed variant
-trajectories. Consult the [contact execution review](../../planning/GUIDED_CONTACT_EXECUTION_REVIEW.md)
-for retained prescribed-profile evidence and the unresolved full-run gate.
+The named penalty-margin-v1 rectangular experiment completes 200 ms with rebound
+at h, h/2 and h/4. The h/2 versus h/4 comparison and both h/2 wall variants pass.
+The h versus h/2 artificial drilling-energy comparison remains failed. Consult
+the [active plan](../../planning/CURRENT_EXECUTION_PLAN.md) for retained evidence
+and the selected h/2 archive/rendering work.
 
 Run each invocation through the workspace resource guard and shared workstation
 lock. Each creates one case at one fixed timestep; no command automatically
@@ -38,8 +39,9 @@ existing externally serialized artifact utilities; it is not a multi-file atomic
 transaction. A write failure can retain incomplete files.
 
 `1`, `2` and `4` select the independent `h`, `h/2` and `h/4` experiments. The baseline
-archive records every accepted interval and fixed-cadence frames at every 100
-steps plus the final state. Refinement reports instead sample at exactly
+archive records every accepted interval and fixed-cadence frames at every
+`100*refinement` steps plus the final state, preserving 201 frames for the named
+experiment. Refinement reports instead sample at exactly
 `ceil(j*base_steps/200)*refinement` for `j=0..200`. Their schedules are explicit
 and independent. An occasional coincident sample/frame causes two captures of
 the same accepted state; neither advances mechanics. Captures never interpolate
@@ -66,7 +68,7 @@ remaining runnable for reproducibility. Arbitrary penalty doubles are rejected.
 The five reference-screen tests, named Case/receipt/output tests and strict
 reader tests pass. The revised base schedule is 19,998 steps through 200 ms.
 The original rectangular full-h attempt stopped safely at the penetration cap
-at 145.732 ms; the revised full trajectory is still pending. Use the same
+at 145.732 ms; the revised trajectories complete as described above. Use the same
 explicit experiment and backend on every member of a refinement or wall study.
 
 For an original-wall run that can participate in authenticated wall comparison,
@@ -135,5 +137,22 @@ identity does not claim that a completed trajectory exists.
 
 The wall transform helper authenticates the original source, retains explicit
 derived IDs and validates its complete finite mesh. Prescribed-state invariance
-tests pass for flipped pairs and subdivision; independent variant trajectories
-and the full impact/refinement/rendering gates remain pending.
+tests and actual h/2 response comparisons pass for flipped pairs and subdivision.
+Actual rendering of the selected h/2 remains a separate gate.
+
+Archives whose ledgers fit one file retain `guided_plate_artifacts.v1`.
+Larger ledgers use `guided_plate_artifacts.v2`, with identical
+`interval_ledger_segments` metadata in configuration and manifest. Each logical
+CSV has deterministic complete-row segments, repeated authenticated headers,
+inclusive accepted-epoch ranges and bounded row/file capacities. Every segment
+has its own inventory size and SHA-256. The 32 MiB per-file and 256 MiB aggregate
+limits remain unchanged. The named h/2 forecast is 164,552,257 bytes at 201 frames;
+its contact ledger splits after epoch 25,810. h/4 remains above the aggregate
+archive budget and can still produce its smaller Study/sidecar evidence.
+
+`CsvLedgerSegments` handles layout and metadata, `CsvLedgerWriter` handles
+create-only stream lifetime, and `AcceptedReplayLedgers` checks the actual saved
+rows. The v2 reader verifies all three contributors' owner/epoch/attempt/time
+identity, exact fixed-step recurrence and saved endpoint bindings, while keeping
+only the current segments in memory. These checks establish archive consistency,
+not a new physical accuracy claim. Legacy v1 replay retains its original rules.

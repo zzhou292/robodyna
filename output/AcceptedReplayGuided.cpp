@@ -174,6 +174,13 @@ void CheckGuidedFields(const Bundle& bundle, const Entry& entry, const chrono::C
             "Guided base reactions are not associated with the preceding accepted interval");
     const auto base=Unsigned(fields,"element_evaluation_base_epoch"), attempt=Unsigned(fields,"element_evaluation_attempt");
     const auto phase=Text(fields,"element_evaluation_phase"); Phase(entry,base,attempt,phase);
+    if(entry.interval_attempt) {
+        Require(Bits(reaction_time)==Bits(entry.interval_base_time),
+                "Guided reaction time differs from its actual preceding interval");
+        Require(phase=="prepared_candidate_subsequently_committed" ? attempt==entry.interval_attempt
+                                                                  : attempt>entry.interval_attempt,
+                "Guided endpoint attempt is not bound to its recorded interval or later accepted refresh");
+    }
     Require(Unsigned(fields,"contact_evaluation_base_epoch")==base &&
             Unsigned(fields,"contact_evaluation_attempt")==attempt && Text(fields,"contact_evaluation_phase")==phase,
             "Guided contributor endpoint phases disagree");

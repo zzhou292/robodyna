@@ -80,8 +80,7 @@ Document FinalMetrics(const GuidedPlateCase& run,std::size_t frame_count,double 
 } // namespace
 struct GuidedPlateArtifacts::Impl {
     fs::path directory; ArtifactInventory inventory;
-    std::array<std::ofstream,3> intervals; std::ofstream frames;
-    std::array<std::size_t,3> ledger_bytes{};
+    std::array<std::unique_ptr<CsvLedgerWriter>,3> intervals; std::ofstream frames;
     GuidedPlateOutputForecast forecast;
     tl::fea::NodalStamp last_interval;
     visual::Identity identity;
@@ -107,7 +106,7 @@ struct GuidedPlateArtifacts::Impl {
         const auto before=inventory.bytes(); inventory.Add(file,1024*1024);
         static_bytes+=inventory.bytes()-before; Require(static_bytes<=kGuidedStaticReserve,"Guided static artifact reserve exceeded");
     }
-    void Close() noexcept { for(auto& f:intervals)f.close(); frames.close(); }
+    void Close() noexcept { for(auto& f:intervals)if(f)f->Abort(); frames.close(); }
 };
 
 GuidedPlateArtifacts::GuidedPlateArtifacts(const std::string& path,const std::string& bytes,const CanonicalWall& wall,
@@ -126,17 +125,15 @@ GuidedPlateArtifacts::GuidedPlateArtifacts(const std::string& path,const std::st
     auto configuration=GuidedPlateConfiguration(run,frame_every,kCanonicalWallManifestSha256);
     Integer(configuration,"forecast_total_bytes",s.forecast.total_bytes); Integer(configuration,"forecast_frames",s.forecast.frames);
     Integer(configuration,"per_file_cap_bytes",kArtifactFileCap); Integer(configuration,"aggregate_cap_bytes",kArtifactTotalCap);
+    if(s.forecast.segmented)AppendCsvLedgerSegments(configuration,s.forecast.ledgers.data(),s.forecast.ledgers.size());
     // All input/source/size admission above precedes the first filesystem write.
     Require(fs::create_directory(s.directory),"Guided output directory must be new; existing output is preserved");
     WriteJson(s.directory/"configuration.json",configuration); s.AddStatic("configuration.json");
     WriteCanonicalWallArtifacts(s.directory,wall,bytes);
     for(const char* file:{"canonical-wall.manifest.json","canonical-wall.mesh.json","canonical-wall.obj"})s.AddStatic(file);
     const auto& headers=GuidedPlateIntervalHeaders();
-    for(unsigned n=0;n<3;++n) {
-        s.intervals[n].open(s.directory/kGuidedIntervalFiles[n],std::ios::binary);
-        Require(bool(s.intervals[n]),"Could not create guided contributor ledger");
-        s.intervals[n]<<headers[n]; Require(bool(s.intervals[n]),"Could not write guided ledger header"); s.ledger_bytes[n]=headers[n].size();
-    }
+    for(unsigned n=0;n<3;++n)
+        s.intervals[n]=std::make_unique<CsvLedgerWriter>(s.directory,headers[n],s.forecast.ledgers[n]);
     s.frames.open(s.directory/"accepted-frames.csv",std::ios::binary); Require(bool(s.frames),"Could not create guided accepted frame index");
     s.frames<<std::setprecision(17)<<"owner_id,accepted_epoch,accepted_time_s,json_mesh,obj_visualization\n";
     Require(bool(s.frames),"Could not write guided frame header");
@@ -149,11 +146,10 @@ void GuidedPlateArtifacts::RecordInterval(const tl::fea::NodalStamp& base,const 
         m.required_steps==s.required_steps,
         "Guided output interval is stale, skipped or closed");
     CheckInterval(base,m,s.backend,s.qualification); const auto rows=GuidedPlateIntervalRows(base,m);
-    for(unsigned n=0;n<3;++n)Require(s.ledger_bytes[n]<=s.forecast.ledger_bytes[n]&&
-        rows[n].size()<=s.forecast.ledger_bytes[n]-s.ledger_bytes[n],"Guided ledger exceeds admitted byte forecast");
+    for(unsigned n=0;n<3;++n)s.intervals[n]->CheckRow(m.stamp.epoch,rows[n]);
     try {
-        for(unsigned n=0;n<3;++n) {s.intervals[n]<<rows[n]; Require(bool(s.intervals[n]),"Guided interval write failed");}
-        for(unsigned n=0;n<3;++n)s.ledger_bytes[n]+=rows[n].size(); s.last_interval=m.stamp;
+        for(unsigned n=0;n<3;++n)s.intervals[n]->Append(m.stamp.epoch,rows[n]);
+        s.last_interval=m.stamp;
     } catch(...) {Fail("Guided accepted interval output failed"); throw;}
 }
 void GuidedPlateArtifacts::WriteFrame(GuidedPlateCase& run) {
@@ -176,7 +172,7 @@ void GuidedPlateArtifacts::WriteFrame(GuidedPlateCase& run) {
         s.inventory.Add(stem+".fields.json",kGuidedFieldFileCap);
         s.frames<<frame.stamp.owner_id<<','<<frame.stamp.epoch<<','<<frame.stamp.time<<','<<stem<<".mesh.json,"<<stem<<".obj\n";
         s.frames.flush(); Require(bool(s.frames),"Guided accepted frame index failed");
-        for(auto& ledger:s.intervals) {ledger.flush(); Require(bool(ledger),"Guided ledger flush failed");}
+        for(auto& ledger:s.intervals)ledger->Flush();
         s.last_frame_epoch=frame.stamp.epoch; ++s.frame_count;
     } catch(...) {Fail("Guided accepted frame output failed"); throw;}
 }
@@ -189,11 +185,16 @@ void GuidedPlateArtifacts::Finish(const GuidedPlateCase& run,double elapsed) {
         std::abs(m.stamp.time-s.horizon)<=8*roundoff*std::max(s.horizon,m.stamp.time),"Guided full admitted horizon or final frame is incomplete");
     auto final=FinalMetrics(run,s.frame_count,elapsed);
     try {
-        s.Close(); for(const auto& f:s.intervals)Require(!f.fail(),"Guided ledger close failed"); Require(!s.frames.fail(),"Guided frame index close failed");
-        for(unsigned n=0;n<3;++n)s.inventory.Add(kGuidedIntervalFiles[n],s.forecast.ledger_bytes[n]);
+        for(auto& ledger:s.intervals)ledger->Finish();
+        s.frames.close();Require(!s.frames.fail(),"Guided frame index close failed");
+        for(const auto& ledger:s.forecast.ledgers)
+            for(const auto& segment:ledger.segments)s.inventory.Add(segment.file,segment.byte_cap);
         s.AddStatic("accepted-frames.csv"); WriteJson(s.directory/"final-metrics.json",final); s.AddStatic("final-metrics.json");
         Require(s.inventory.bytes()<=s.forecast.total_bytes,"Guided completed output exceeds admitted aggregate forecast");
-        Document manifest; manifest.SetObject(); String(manifest,"schema","robo_dyna.guided_plate_artifacts.v1"); String(manifest,"status","completed");
+        Document manifest; manifest.SetObject();
+        String(manifest,"schema",s.forecast.segmented?"robo_dyna.guided_plate_artifacts.v2":"robo_dyna.guided_plate_artifacts.v1");
+        String(manifest,"status","completed");
+        if(s.forecast.segmented)AppendCsvLedgerSegments(manifest,s.forecast.ledgers.data(),s.forecast.ledgers.size());
         String(manifest,"scope","Synthetic guided elastic two-Q4 plate against the original canonical mesh wall");
         String(manifest,contact_metadata::BackendField,GuidedContactBackendName(s.backend));
         String(manifest,guided_experiment_metadata::Field,GuidedExperimentName(s.experiment));

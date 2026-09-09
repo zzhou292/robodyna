@@ -435,12 +435,76 @@ TEST(GuidedPlateArtifactForecast, EncodedFiniteExtremesFitTheDeclaredLayoutAndBy
     }
     EXPECT_EQ(forecast.total_bytes,total);EXPECT_LE(total,out::kArtifactTotalCap);
     EXPECT_THROW(ForecastGuidedPlateOutput(steps,1),std::runtime_error); // Frame capacity.
-    EXPECT_THROW(ForecastGuidedPlateOutput(2*steps,200),std::runtime_error); // Compact h/2 study, not these full ledgers.
+    const auto refined=ForecastGuidedPlateOutput(2*steps,200);
+    EXPECT_TRUE(refined.segmented);
+    EXPECT_EQ(refined.frames,201u);
     EXPECT_THROW(ForecastGuidedPlateOutput(0,100),std::runtime_error);
     EXPECT_THROW(ForecastGuidedPlateOutput(steps,0),std::runtime_error);
     EXPECT_THROW(ForecastGuidedPlateOutput(std::numeric_limits<std::uint64_t>::max(),100),std::runtime_error);
     values.shell.elastic_energy=std::numeric_limits<double>::infinity();
     EXPECT_THROW(GuidedPlateIntervalRows({},values),std::runtime_error);
+}
+
+TEST(GuidedPlateArtifactForecast, RefinedLedgerSegmentsFitExistingFileAndAggregateCaps) {
+    constexpr std::uint64_t steps=39996;
+    const auto forecast=ForecastGuidedPlateOutput(steps,200);
+    EXPECT_EQ(forecast.frames,201u);
+    EXPECT_TRUE(forecast.segmented);
+    EXPECT_EQ(forecast.total_bytes,164552257u);
+    EXPECT_LT(forecast.total_bytes,out::kArtifactTotalCap);
+    EXPECT_EQ(forecast.ledgers[0].segments.size(),1u);
+    EXPECT_EQ(forecast.ledgers[1].segments.size(),1u);
+    ASSERT_EQ(forecast.ledgers[2].segments.size(),2u);
+    EXPECT_EQ(forecast.ledgers[2].segments[0].last_epoch,25810u);
+    EXPECT_EQ(forecast.ledgers[2].segments[1].first_epoch,25811u);
+    EXPECT_EQ(forecast.ledgers[2].segments[1].last_epoch,steps);
+    EXPECT_EQ(forecast.ledgers[2].segments[1].file,"contact-intervals-0001.csv");
+    for(unsigned i=0;i<3;++i) {
+        const auto& plan=forecast.ledgers[i];
+        EXPECT_NO_THROW(out::ValidateCsvLedgerPlan(plan,GuidedPlateIntervalHeaders()[i]));
+        EXPECT_EQ(plan.total_bytes,forecast.ledger_bytes[i]);
+        for(const auto& segment:plan.segments)EXPECT_LE(segment.byte_cap,out::kArtifactFileCap);
+    }
+    // h/4 with 201 full-field frames still exceeds the unchanged total cap.
+    EXPECT_THROW(ForecastGuidedPlateOutput(79992,400),std::runtime_error);
+}
+
+TEST_F(GuidedPlateArtifactsCheck, RefinedActualPrefixPublishesBoundedPlansAndKeepsIncompleteStatus) {
+    GuidedPlateConfig config;
+    config.refinement=2;
+    config.experiment=ref::GuidedPlateExperiment::PenaltyMarginV1;
+    config.integration_backend=contact::Q4PlanarIntegrationBackend::RectangularDyadic;
+    GuidedPlateCase run;
+    auto report=run.Initialize(wall,config);
+    ASSERT_EQ(report.status,Code::Ok)<<report.diagnostic;
+    ASSERT_EQ(run.metrics()->required_steps,39996u);
+    TempRoot root;
+    const auto directory=root.path/"refined";
+    GuidedPlateArtifacts writer(directory.string(),bytes,wall,run,200);
+    auto configuration=Json(directory/"configuration.json");
+    ASSERT_TRUE(configuration.HasMember(out::kCsvLedgerSegmentsField));
+    const auto plans=out::ParseCsvLedgerSegments(configuration[out::kCsvLedgerSegmentsField]);
+    ASSERT_EQ(plans.size(),3u);
+    EXPECT_EQ(configuration["forecast_frames"].GetUint64(),201u);
+    EXPECT_EQ(configuration["forecast_total_bytes"].GetUint64(),164552257u);
+    EXPECT_EQ(plans[2].segments.size(),2u);
+    writer.WriteFrame(run);
+    const auto base=run.metrics()->stamp;
+    report=run.Step();
+    ASSERT_EQ(report.status,Code::Ok)<<report.diagnostic;
+    writer.RecordInterval(base,*run.metrics());
+    writer.WriteFrame(run);
+    const auto rows=GuidedPlateIntervalRows(base,*run.metrics());
+    for(unsigned i=0;i<3;++i) {
+        EXPECT_EQ(out::ReadBounded(directory/plans[i].logical_file,out::kArtifactFileCap),GuidedPlateIntervalHeaders()[i]+rows[i]);
+        EXPECT_NO_THROW(out::ValidateCsvLedgerPlan(plans[i],GuidedPlateIntervalHeaders()[i]));
+    }
+    EXPECT_FALSE(fs::exists(directory/"contact-intervals-0001.csv"));
+    EXPECT_THROW(writer.Finish(run,0),std::runtime_error);
+    EXPECT_FALSE(fs::exists(directory/"manifest.json"));
+    writer.Fail("Short refined writer qualification prefix");
+    EXPECT_TRUE(fs::exists(directory/"failure.json"));
+    EXPECT_THROW(writer.RecordInterval(base,*run.metrics()),std::runtime_error);
 }
 
 TEST_F(GuidedPlateArtifactsCheck, IncompleteFinishAndOutputFailurePreserveAcceptedStateAndCannotComplete) {

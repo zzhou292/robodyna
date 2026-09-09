@@ -103,18 +103,21 @@ GuidedPlateOutputForecast ForecastGuidedPlateOutput(std::uint64_t steps,unsigned
     Require(result.frames<=output::kArtifactFrameCap,"Guided output frame cap exceeded");
     result.total_bytes=kGuidedStaticReserve+result.frames*(kGuidedFieldFileCap+kGuidedMeshFileCap+kGuidedObjFileCap);
     const auto& headers=GuidedPlateIntervalHeaders();
+    std::size_t segment_count=0;
     for(unsigned n=0;n<3;++n) {
         const auto columns=1+std::count(headers[n].begin(),headers[n].end(),',');
         Require(columns<=kColumnCap&&headers[n].size()<=kHeaderCap,"Invalid guided ledger layout");
-        // steps<=1e6 and columns<=64 make this multiplication fit size_t on
-        // supported 64-bit hosts, but retain an explicit portable overflow gate.
         const std::size_t row=columns*(kNumericBytes+1);
-        Require(steps<=(std::numeric_limits<std::size_t>::max()-headers[n].size())/row,"Guided ledger forecast overflow");
-        result.ledger_bytes[n]=headers[n].size()+steps*row;
-        Require(result.ledger_bytes[n]<=output::kArtifactFileCap&&result.total_bytes<=output::kArtifactTotalCap&&
+        result.ledgers[n]=output::PlanCsvLedger(kGuidedIntervalFiles[n],headers[n],steps,row);
+        result.ledger_bytes[n]=result.ledgers[n].total_bytes;
+        segment_count+=result.ledgers[n].segments.size();
+        result.segmented=result.segmented||result.ledgers[n].segments.size()>1;
+        Require(result.total_bytes<=output::kArtifactTotalCap&&
                 result.ledger_bytes[n]<=output::kArtifactTotalCap-result.total_bytes,"Guided archive forecast exceeds byte caps");
         result.total_bytes+=result.ledger_bytes[n];
     }
+    // Configuration, three canonical wall files, frame index, final metrics.
+    Require(3*result.frames+segment_count+6<=output::kArtifactInventoryCap,"Guided archive inventory forecast exceeds capacity");
     return result;
 }
 } // namespace crash::case_data

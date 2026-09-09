@@ -35,6 +35,10 @@ void CheckRuntimeWall(const GuidedPlateCase& run,const WallTessellation& staged)
         "Runtime wall differs from the staged authenticated provenance transform");
 }
 } // namespace
+unsigned GuidedPlateArchiveFrameEvery(unsigned refinement) {
+    io::Require(refinement==1||refinement==2||refinement==4,"Refinement must be 1, 2 or 4");
+    return 100*refinement;
+}
 void CheckGuidedPlateRunOptions(const GuidedPlateRunOptions& options) {
     io::Require(!options.wall.empty()&&WallTessellationBindingId(options.wall_kind),"Invalid wall path or transform kind");
     io::Require(options.config.refinement==1||options.config.refinement==2||options.config.refinement==4,"Refinement must be 1, 2 or 4");
@@ -78,7 +82,7 @@ int RunGuidedPlate(const GuidedPlateRunOptions& options) {
         if(!PrepareGuidedStudyConfig(*run.metrics(),*run.model_data(),*run.guided_data(),run.contact_reference(),
                                     options.config.refinement,study_config,error)||
            !observer.Initialize(study_config,*run.metrics(),frame,error))throw std::runtime_error(error);
-        constexpr unsigned frame_every=100;
+        const unsigned frame_every=GuidedPlateArchiveFrameEvery(options.config.refinement);
         if(options.bundle) {
             artifacts=std::make_unique<GuidedPlateArtifacts>(options.bundle->string(),bytes,wall,run,frame_every);
             artifacts->WriteFrame(run);

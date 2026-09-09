@@ -12,6 +12,9 @@ struct GuidedPlateRunOptions {
     // the default; a candidate backend requires an explicit CLI option.
     GuidedPlateConfig config;
 };
+// Preserve the baseline physical archive cadence under allowed refinement;
+// the independent Study common-time schedule remains unchanged.
+unsigned GuidedPlateArchiveFrameEvery(unsigned refinement);
 // Semantic/path preflight only, no device/context/state initialization. Rejects
 // derived canonical bundles, missing provenance, existing outputs and aliases.
 void CheckGuidedPlateRunOptions(const GuidedPlateRunOptions&);

@@ -11,7 +11,14 @@ namespace crash::output::replay_detail {
 constexpr std::size_t kFileCap = 32*1024*1024, kTotalCap = 256*1024*1024;
 constexpr std::size_t kVertexCap = 4096, kTriangleCap = 8192, kFrameCap = 1000;
 struct Artifact { std::string hash; std::size_t bytes = 0; };
-struct Entry { std::uint64_t owner = 0, epoch = 0; double time = 0; std::string mesh, obj; };
+struct Entry {
+    std::uint64_t owner = 0, epoch = 0;
+    double time = 0;
+    std::string mesh, obj;
+    // v2 only: exact preceding interval, retained for <=1000 saved frames.
+    std::uint64_t interval_attempt=0;
+    double interval_base_time=0;
+};
 struct ContactParentBinding {
     std::uint64_t element = 0, face = 0, feature = 0;
     std::array<std::uint64_t,4> connectivity{};
@@ -43,6 +50,7 @@ std::shared_ptr<chrono::ChTriangleMeshConnected> ReadMesh(const Bundle&, const s
 void CheckFrameFields(const Bundle&, const Entry&, const chrono::ChTriangleMeshConnected&);
 void CheckPositionFields(const Value&, const chrono::ChTriangleMeshConnected&);
 void ReadGuidedConfiguration(Bundle&, const Document&, const Document&, const Document&);
+void CheckGuidedLedgers(Bundle&, const Document& configuration, const Document& manifest);
 void CheckGuidedFields(const Bundle&, const Entry&, const chrono::ChTriangleMeshConnected&);
 void CheckGuidedWall(const Bundle&, const chrono::ChTriangleMeshConnected&);
 }  // namespace crash::output::replay_detail
