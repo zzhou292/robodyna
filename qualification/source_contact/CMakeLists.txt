@@ -40,12 +40,15 @@ set_tests_properties(source_part_contact_force PROPERTIES TIMEOUT 60 RUN_SERIAL 
   ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1")
 
 option(ROBO_DYNA_SOURCE_CONTACT_CUDA "Require actual CUDA source-parent contact qualification" OFF)
-if(ROBO_DYNA_SOURCE_CONTACT_CUDA)
+option(ROBO_DYNA_SOURCE_NODAL_WALL "Qualify source nodal finite-wall contact and CUDA cost" OFF)
+if(ROBO_DYNA_SOURCE_CONTACT_CUDA OR ROBO_DYNA_SOURCE_NODAL_WALL)
   if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
     set(CMAKE_CUDA_ARCHITECTURES 120)
   endif()
   enable_language(CUDA)
   find_package(CUDAToolkit REQUIRED)
+endif()
+if(ROBO_DYNA_SOURCE_CONTACT_CUDA)
   add_executable(robo_dyna_source_part_contact_cuda_check
     SourceContactCudaFixture.cu source_part_contact_cuda_check.cpp)
   set_target_properties(robo_dyna_source_part_contact_cuda_check PROPERTIES
@@ -60,6 +63,10 @@ if(ROBO_DYNA_SOURCE_CONTACT_CUDA)
     "${ROBO_DYNA_SOURCE_PART_READINESS}" "${CRASH_CANONICAL_WALL}")
   set_tests_properties(source_part_contact_cuda PROPERTIES TIMEOUT 90 RUN_SERIAL TRUE PROCESSORS 1
     ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1")
+endif()
+
+if(ROBO_DYNA_SOURCE_NODAL_WALL)
+  include("${CMAKE_CURRENT_LIST_DIR}/SourceNodalWall.cmake")
 endif()
 
 # Optional native startup oracle; it consumes the existing authenticated source
