@@ -5,8 +5,8 @@
  * Email:   zzhou292@wisc.edu
  * File:    FEStateBuffer.h
  * Brief:   Unified state buffer abstraction for multi-element problems.
- *          Provides a consistent view of nodal coordinates, velocities,
- *          and forces across multiple element blocks without data copying.
+ *          Provides a consistent view of coordinates, velocities, and forces
+ *          in buffers managed by FEMultiElementProblem.
  *==============================================================
  *==============================================================*/
 
@@ -20,9 +20,12 @@
 // span multiple element blocks. Each block is assigned a contiguous slice
 // of the global buffers via BlockRange.
 //
-// No data copying occurs - element blocks read/write into their assigned
-// slices directly. The collision system writes forces to the unified buffer
-// and the solver coordinates position updates across all blocks.
+// FEMultiElementProblem owns these allocations. Existing element blocks keep
+// separate coordinate allocations; SyncPositionsToElements/FromElements copy
+// between those allocations and the ranges below. UpdateCollisionNodeBuffer
+// also copies positions into the collision layout. This struct is a pointer
+// view, not an owning allocation or a guarantee of zero-copy element binding.
+// Block concatenation does not identify shared physical nodes across blocks.
 struct FEStateBuffer {
   // Device pointers to unified coordinate buffers.
   // Layout: [block0_coefs, block1_coefs, ...]

@@ -33,8 +33,9 @@ struct GPU_FEAT10_Data;
 //
 // Usage:
 //   FEMultiElementProblem problem;
-//   int block0 = problem.AddElementBlock(std::move(ancf_data), TYPE_3243);
-//   int block1 = problem.AddElementBlock(std::move(t10_data), TYPE_T10);
+//   // ancf_data and t10_data are caller-owned objects that outlive problem use.
+//   int block0 = problem.AddElementBlock(ancf_data.get(), TYPE_3243);
+//   int block1 = problem.AddElementBlock(t10_data.get(), TYPE_T10);
 //   problem.Finalize();
 //   // Now state_.d_x12, etc. span both blocks
 //
@@ -50,7 +51,9 @@ class FEMultiElementProblem {
   FEMultiElementProblem& operator=(FEMultiElementProblem&&)      = delete;
 
   // Add an element block. Returns the block index (0-based).
-  // The problem takes ownership of the element data.
+  // The pointer is borrowed; the caller retains ownership and must keep the
+  // element alive while it is registered and used. The problem owns only its
+  // unified state allocations and does not delete the registered elements.
   // Must call Finalize() after adding all blocks.
   int AddElementBlock(ElementBase* element, ElementType type);
 
@@ -116,7 +119,7 @@ class FEMultiElementProblem {
 
  private:
   struct Block {
-    ElementBase* element;  // Owned pointer
+    ElementBase* element;  // Borrowed pointer; caller owns the element
     ElementType type;
     int coef_offset;  // Coefficient offset in unified buffer
     int n_coef;       // Number of coefficients in this block
