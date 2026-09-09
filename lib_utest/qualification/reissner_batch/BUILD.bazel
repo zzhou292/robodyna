@@ -1,0 +1,20 @@
+load("@rules_cuda//cuda:defs.bzl", "cuda_library")
+
+package(default_visibility = ["//visibility:public"])
+
+cuda_library(
+    name = "prescribed_reissner_batch",
+    testonly = True,
+    srcs = ["PrescribedShellBatch.cu"],
+    hdrs = ["PrescribedShellBatch.h"],
+    copts = [
+        "--std=c++17",
+        "--fmad=false",
+        "--prec-div=true",
+        "--prec-sqrt=true",
+        "--ftz=false",
+        "-Xcompiler=-fno-fast-math,-ffp-contract=off",
+    ],
+    tags = ["manual"],
+    deps = ["//lib_src/elements:reissner_shell_force"],
+)
