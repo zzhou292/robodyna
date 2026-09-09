@@ -26,7 +26,11 @@ the latter owns 6,216 device bytes and adds eight passing functions at TL
 scientific response records matching their preceding baseline. The source-part
 wall-contact cost gate and stateless contact contributor on the existing owner
 also pass. The vehicle is not running yet. Next are immutable mixed Q4/T3
-mass binding, joint publication and combined shell/contact admission. The
+mass binding and joint publication. Short shell/wall transactions now pass
+four CUDA functions at TL `1611802`, including both failure orders and retry;
+this is a 0.2384-microsecond preload check. Combined long-response and incoming
+impact admission remain open. The current device wall participant accepts Q4
+parents only, so mixed T3 contact needs an explicit admission extension. The
 [combined admission design](../../planning/QEPH_WALL_COUPLED_ADMISSION.md)
 separates short transaction checks, contact recurrence, incoming-velocity startup
 and impact/refinement; free-shell stability does not qualify wall impact. Plasticity,
