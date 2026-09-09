@@ -32,8 +32,11 @@ The isolated Chrono core+VSG build replayed 15 normal-contact rig frames and
 records source/image hashes, visual review and resource measurements. The
 [separate R1 video manifest](../../crash-work/renders/elastic-coupon-video-r1-20260909/manifest.json)
 binds an 81-frame, 8.1 s H.264 video to those exact accepted rows and records
-full-decode and decoded-image visual checks. These qualify the small fixtures;
-plate-wall, source-part and full-vehicle rendering remain later gates.
+full-decode and decoded-image visual checks. The selected guided plate now also
+has [R2 evidence](../../crash-work/reports/replay-guided-r2-checkpoint-1.json):
+201 accepted frames through 200 ms, with an oblique physical-scale camera and
+a fully decoded 8.04 s video. These qualify the small fixtures; source-part and
+full-vehicle rendering remain later gates.
 
 | Existing owner | Reuse and limit |
 | --- | --- |
@@ -56,8 +59,9 @@ before that separate gate.
    hashes, bounded Chrono JSON meshes and immutable topology. Shared `ArtifactIO`
    and `MeshArchive` utilities also serve both case writers. Validation streams
    the trajectory and computes camera bounds; playback retains the current
-   frame plus bounded staging. It is a geometry/provenance reader, not an audit
-   of the entire physics ledger.
+   frame plus bounded staging. Guided v2 archives also verify every segmented
+   ledger row and cross-ledger epoch/time continuity. Numerical work/energy
+   qualification remains with the Case and independent result audit.
 2. **AcceptedReplayScene** in `robo-dyna/chrono` owns fixed identity-frame visual
    carriers, the actual wall when supplied, camera/material configuration and
    one mutable shape per surface. It stages accepted coordinates and preserves
@@ -175,7 +179,7 @@ FFmpeg package only performs offline encoding; it is not linked into the CAE app
 | --- | --- | --- |
 | **R0: archived rig replay — passed** | All 15 accepted rows at 0–70 ms replayed with the real fixed wall. Reader/scene tests, image hashes, original timestamps and direct visual review passed. The original failed visual attempt is retained separately. | [Passing rig capture](../../crash-work/renders/normal-rig-r0-20260909-retry2/manifest.json), labelled a nondeforming contact rig. |
 | **R1: mutable deformation — passed for the coupon** | All 81 accepted coupon shapes replayed without rebinding or deformation scaling; no wall is present in this case. Six scene checks and three VSG lifecycle tests passed. First/middle/final decoded video frames preserve silhouette and timestamps. | [Coupon captures](../../crash-work/renders/elastic-coupon-r1-20260909/manifest.json) and [8.1 s video](../../crash-work/renders/elastic-coupon-video-r1-20260909/elastic-coupon.mp4), with separate hash/probe/full-decode provenance. Headless rendering remains unqualified. |
-| **R2: guided plate impact** — M5a.1 | Render real accepted plate-wall frames with nonuniform contact/bending and the same source-bound topology/units as diagnostics. Hide/show parts and wireframe are display-only. | Replayable plate impact and video, with accepted time linked to force/energy histories. |
+| **R2: guided plate impact — passed for selected h/2** — M5a.1 | All 201 accepted frames through 200 ms captured on RTX 5090. Exact source stamps, PNG hashes/CRCs, seven scene checks, full H.264 decode and decoded initial/peak/final visual review pass. Small elastic bending remains at physical scale. Failed view/interrupted capture are retained. | [Plate impact video](../../crash-work/renders/guided-plate-video-r2-20260909/guided-plate.mp4), linked to the numerically qualified h/2 Study and independent work/energy audit. |
 | **R3: source parts and capacity** — M7/M8 | Source IDs/material colors survive import, archive, replay and display partitioning. Benchmark representative batches, then original vehicle surface, measuring staging/render/readback time and owned/total memory. Test deterministic capacity rejection and cleanup. | Readable source-part rendering and bounded full-vehicle static/deformation playback qualification; no physics claim from prescribed motion. |
 | **R4: complete vehicle crash** — M9/M10 | Replay the accepted crash to 200 ms, including topology changes only after their gate. Verify frame coverage, wall placement, permanent deformation and complete video decode. A fixed camera and simulation-time overlay allow direct review. | The deliverable includes the result bundle, interactive replay instructions and a rendered vehicle-crash video. |
 
