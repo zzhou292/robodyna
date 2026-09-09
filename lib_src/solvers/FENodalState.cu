@@ -1,4 +1,5 @@
 #include "FENodalStateStorage.h"
+#include "NodalRotation.h"
 #include <atomic>
 #include <cmath>
 #include <cstring>
@@ -34,7 +35,7 @@ __global__ void ResetTrial(Control* c, std::uint64_t epoch, std::uint64_t attemp
 }
 __global__ void SealTrial(Control* c, const double* scratch, std::uint32_t n,
                           std::uint64_t epoch, std::uint64_t attempt,
-                          double safety, double minimum_dt, double h) {
+                          double safety, double minimum_dt, double h, bool rotations) {
   if (c->status != NodalStatus::Ok) return;
   if (c->assembly.base_epoch != epoch || c->assembly.attempt != attempt ||
       c->rows.base_epoch != epoch || c->rows.attempt != attempt) {
@@ -47,7 +48,7 @@ __global__ void SealTrial(Control* c, const double* scratch, std::uint32_t n,
     for (unsigned axis = 0; axis < 6; ++axis) {
       const double value = scratch[axis*n+i];
       if (!sc::IsFinite(value)) { c->status = NodalStatus::InvalidOutput; c->node = i; return; }
-      if (axis >= 3 && value != 0) { c->status = NodalStatus::UnsupportedRotation; c->node = i; return; }
+      if (!rotations && axis >= 3 && value != 0) { c->status = NodalStatus::UnsupportedRotation; c->node = i; return; }
     }
   }
   const auto status = stability::FinalizeRows(&c->rows, safety, minimum_dt, h, &c->limit);
@@ -100,31 +101,62 @@ bool FENodalState::Impl::Matches(std::uint64_t owner, std::uint64_t epoch, std::
 
 NodalReport FENodalState::Initialize(const NodalStateConfig& c, HostNodalKinematicsView in,
                                     const double* inverse_mass, const std::uint8_t* fixed) {
+  return InitializeImpl(c, in, inverse_mass, fixed, nullptr);
+}
+
+NodalReport FENodalState::Initialize(const NodalStateConfig& c, HostNodalKinematicsView in,
+                                    const double* inverse_mass, const NodalDofConfig& dofs) {
+  return InitializeImpl(c, in, inverse_mass, nullptr, &dofs);
+}
+
+NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKinematicsView in,
+                                        const double* inverse_mass, const std::uint8_t* fixed,
+                                        const NodalDofConfig* dofs) {
   if (impl_) return {NodalStatus::InvalidInput, "Owner already initialized"};
   if (!c.node_count || c.node_count > MaxTranslationNodes || !c.max_device_bytes ||
       c.max_device_bytes > MaxTranslationDeviceBytes)
-    return {NodalStatus::ResourceLimit, "Translation capacity exceeds admitted limits"};
-  if (in.node_count != c.node_count || !in.position_xyz || !in.velocity_xyz || !inverse_mass || !fixed ||
+    return {NodalStatus::ResourceLimit, "Nodal capacity exceeds admitted limits"};
+  const bool rotations = dofs != nullptr;
+  if (in.node_count != c.node_count || !in.position_xyz || !in.velocity_xyz || !inverse_mass ||
+      (rotations ? (!in.orientation_wxyz || !dofs->translation_fixed_bits || !dofs->rotation_fixed || !dofs->inverse_inertia) : !fixed) ||
       !std::isfinite(c.fixed_dt) || !std::isfinite(c.minimum_dt) || c.minimum_dt <= 0 ||
       c.fixed_dt < c.minimum_dt || !std::isfinite(c.timestep_safety) || c.timestep_safety <= 0 || c.timestep_safety >= 1)
     return {NodalStatus::InvalidInput, "Invalid kinematics, mass, or fixed-step configuration"};
+  if (!rotations && in.orientation_wxyz)
+    return {NodalStatus::UnsupportedRotation, "Orientations require extended nodal initialization"};
+  bool component_constraints = false;
   for (std::size_t i = 0; i < c.node_count; ++i) {
-    if (fixed[i] > 1 || !std::isfinite(inverse_mass[i]) || (fixed[i] ? inverse_mass[i] != 0 : inverse_mass[i] <= 0))
+    const unsigned bits = rotations ? dofs->translation_fixed_bits[i] : (fixed[i] ? 7 : 0);
+    if ((rotations ? bits > 7 : fixed[i] > 1) || !std::isfinite(inverse_mass[i]) ||
+        (bits == 7 ? inverse_mass[i] != 0 : inverse_mass[i] <= 0))
       return {NodalStatus::InvalidInput, "Invalid explicit mass or fixed mask", static_cast<std::uint32_t>(i)};
+    component_constraints |= bits != 0 && bits != 7;
+    if (rotations && (dofs->rotation_fixed[i] > 1 || !std::isfinite(dofs->inverse_inertia[i]) ||
+        (dofs->rotation_fixed[i] ? dofs->inverse_inertia[i] != 0 : dofs->inverse_inertia[i] <= 0) ||
+        !nodal_detail::UnitQuaternion(nodal_detail::ReadQuaternion(in.orientation_wxyz + 4*i))))
+      return {NodalStatus::InvalidInput, "Invalid isotropic inertia, rotation mask, or unit quaternion", static_cast<std::uint32_t>(i)};
     for (unsigned axis = 0; axis < 3; ++axis) {
       const auto j = 3*i+axis;
-      if (!std::isfinite(in.position_xyz[j]) || !std::isfinite(in.velocity_xyz[j]) || (fixed[i] && in.velocity_xyz[j] != 0))
+      if (!std::isfinite(in.position_xyz[j]) || !std::isfinite(in.velocity_xyz[j]) || ((bits & (1u << axis)) && in.velocity_xyz[j] != 0))
         return {NodalStatus::InvalidInput, "Invalid position or fixed-node velocity", static_cast<std::uint32_t>(i)};
-      if (in.angular_velocity_xyz && in.angular_velocity_xyz[j] != 0)
+      if (!rotations && in.angular_velocity_xyz && in.angular_velocity_xyz[j] != 0)
         return {NodalStatus::UnsupportedRotation, "Angular motion is not admitted", static_cast<std::uint32_t>(i)};
+      if (rotations && in.angular_velocity_xyz && (!std::isfinite(in.angular_velocity_xyz[j]) ||
+          (dofs->rotation_fixed[i] && in.angular_velocity_xyz[j] != 0)))
+        return {NodalStatus::InvalidInput, "Invalid angular or fixed-rotation velocity", static_cast<std::uint32_t>(i)};
     }
   }
   const auto n = c.node_count;
-  const std::size_t bytes = 24*n*sizeof(double) + n*sizeof(std::uint8_t) + sizeof(Control);
+  const std::size_t state_values = (rotations ? 19 : 6)*n;
+  const std::size_t inverse_values = (rotations ? 2 : 1)*n;
+  const std::size_t mask_bytes = (rotations ? 3 : 1)*n;
+  const std::size_t bytes = (2*state_values + 11*n + inverse_values)*sizeof(double) + mask_bytes + sizeof(Control);
   if (bytes > c.max_device_bytes) return {NodalStatus::ResourceLimit, "Device byte budget is insufficient"};
   try {
     auto next = std::make_unique<Impl>();
     next->config = c; next->stamp = {NewOwner(), 0, n, 0, c.fixed_dt};
+    next->has_rotations = rotations; next->has_component_constraints = component_constraints;
+    next->stamp.has_rotations = rotations; next->state_values = state_values;
     if (!next->stamp.owner_id) return {NodalStatus::HistoryLimit, "Owner identities exhausted"};
     auto report = next->Check(cudaStreamCreateWithFlags(&next->stream, cudaStreamNonBlocking));
     if (report.status != NodalStatus::Ok) return report;
@@ -133,19 +165,34 @@ NodalReport FENodalState::Initialize(const NodalStateConfig& c, HostNodalKinemat
       if (r.status == NodalStatus::Ok) { next->allocation.device_bytes += size; ++next->allocation.device_allocations; }
       return r;
     };
-    report = allocate(&next->accepted, 6*n*sizeof(double)); if (report.status != NodalStatus::Ok) return report;
-    report = allocate(&next->trial, 6*n*sizeof(double)); if (report.status != NodalStatus::Ok) return report;
+    report = allocate(&next->accepted, state_values*sizeof(double)); if (report.status != NodalStatus::Ok) return report;
+    report = allocate(&next->trial, state_values*sizeof(double)); if (report.status != NodalStatus::Ok) return report;
     report = allocate(&next->scratch, 11*n*sizeof(double)); if (report.status != NodalStatus::Ok) return report;
-    report = allocate(&next->inverse, n*sizeof(double)); if (report.status != NodalStatus::Ok) return report;
-    report = allocate(&next->fixed, n); if (report.status != NodalStatus::Ok) return report;
+    report = allocate(&next->inverse, inverse_values*sizeof(double)); if (report.status != NodalStatus::Ok) return report;
+    report = allocate(&next->fixed, mask_bytes); if (report.status != NodalStatus::Ok) return report;
     report = allocate(&next->control, sizeof(Control)); if (report.status != NodalStatus::Ok) return report;
     std::memcpy(next->staging.data(), in.position_xyz, 3*n*sizeof(double));
     std::memcpy(next->staging.data()+3*n, in.velocity_xyz, 3*n*sizeof(double));
-    report = next->Check(cudaMemcpyAsync(next->accepted, next->staging.data(), 6*n*sizeof(double), cudaMemcpyHostToDevice, next->stream));
+    if (rotations) {
+      if (in.angular_velocity_xyz) std::memcpy(next->staging.data()+6*n, in.angular_velocity_xyz, 3*n*sizeof(double));
+      std::memcpy(next->staging.data()+9*n, in.orientation_wxyz, 4*n*sizeof(double));
+    }
+    report = next->Check(cudaMemcpyAsync(next->accepted, next->staging.data(), state_values*sizeof(double), cudaMemcpyHostToDevice, next->stream));
     if (report.status != NodalStatus::Ok) return report;
     report = next->Check(cudaMemcpyAsync(next->inverse, inverse_mass, n*sizeof(double), cudaMemcpyHostToDevice, next->stream));
     if (report.status != NodalStatus::Ok) return report;
-    report = next->Check(cudaMemcpyAsync(next->fixed, fixed, n, cudaMemcpyHostToDevice, next->stream));
+    if (rotations) {
+      report = next->Check(cudaMemcpyAsync(next->inverse+n, dofs->inverse_inertia, n*sizeof(double), cudaMemcpyHostToDevice, next->stream));
+      if (report.status != NodalStatus::Ok) return report;
+    }
+    for (std::size_t i = 0; i < n; ++i) {
+      next->constraint_staging[i] = rotations ? (dofs->translation_fixed_bits[i] == 7) : fixed[i];
+      if (rotations) {
+        next->constraint_staging[n+i] = dofs->translation_fixed_bits[i];
+        next->constraint_staging[2*n+i] = dofs->rotation_fixed[i];
+      }
+    }
+    report = next->Check(cudaMemcpyAsync(next->fixed, next->constraint_staging.data(), mask_bytes, cudaMemcpyHostToDevice, next->stream));
     if (report.status != NodalStatus::Ok) return report;
     report = next->Check(cudaMemsetAsync(next->scratch, 0, 11*n*sizeof(double), next->stream));
     if (report.status != NodalStatus::Ok) return report;
@@ -171,7 +218,7 @@ NodalReport FENodalState::BeginTrial(NodalTrialToken* token, NodalAssemblyView* 
   if (!std::isfinite(s.candidate_time) || s.candidate_time <= s.stamp.time)
     return {NodalStatus::HistoryLimit, "Accepted clock cannot represent another step"};
   const auto n = s.config.node_count;
-  auto report = s.Check(cudaMemcpyAsync(s.trial, s.accepted, 6*n*sizeof(double), cudaMemcpyDeviceToDevice, s.stream));
+  auto report = s.Check(cudaMemcpyAsync(s.trial, s.accepted, s.state_values*sizeof(double), cudaMemcpyDeviceToDevice, s.stream));
   if (report.status != NodalStatus::Ok) return report;
   report = s.Check(cudaMemsetAsync(s.scratch, 0, 11*n*sizeof(double), s.stream));
   if (report.status != NodalStatus::Ok) return report;
@@ -179,12 +226,19 @@ NodalReport FENodalState::BeginTrial(NodalTrialToken* token, NodalAssemblyView* 
   report = s.Check(cudaGetLastError()); if (report.status != NodalStatus::Ok) return report;
   report = s.SynchronizeControl(); if (report.status != NodalStatus::Ok) return report;
   token->owner_id_ = s.stamp.owner_id; token->base_epoch_ = s.stamp.epoch; token->attempt_ = s.attempt;
-  view->accepted = {s.accepted, s.accepted+3*n, s.scratch+8*n, n, s.stamp.epoch};
-  view->mass = {s.inverse, s.fixed, static_cast<std::uint32_t>(n), s.stamp.epoch, sc::TranslationMassModel::kIsotropicLumped};
+  view->accepted = {s.accepted, s.accepted+3*n, s.has_rotations ? s.accepted+6*n : s.scratch+8*n, n, s.stamp.epoch,
+                    s.has_rotations ? s.accepted+9*n : nullptr};
+  view->mass = {s.inverse, s.fixed, static_cast<std::uint32_t>(n), s.stamp.epoch,
+                s.has_component_constraints ? sc::TranslationMassModel::kUnspecified : sc::TranslationMassModel::kIsotropicLumped};
   view->forces = {s.scratch, s.scratch+n, s.scratch+2*n, s.scratch+3*n, s.scratch+4*n, s.scratch+5*n, n, s.stamp.epoch};
   view->bounds = &s.control->rows; view->result = &s.control->assembly;
   view->stream = s.stream; view->attempt = s.attempt;
   view->owner_id = s.stamp.owner_id;
+  if (s.has_rotations) {
+    view->inverse_inertia = s.inverse+n;
+    view->translation_fixed_bits = s.fixed+n;
+    view->rotation_fixed = s.fixed+2*n;
+  }
   s.phase = Phase::Assembling; return Ok();
 }
 
@@ -197,7 +251,7 @@ NodalReport FENodalState::SealAssembly(const NodalTrialToken& token) {
   if (s.phase != Phase::Assembling) return s.Reject(NodalStatus::WrongPhase, "Assembly is not open");
   auto report = s.Check(cudaGetLastError()); if (report.status != NodalStatus::Ok) return report;
   SealTrial<<<1,1,0,s.stream>>>(s.control, s.scratch, static_cast<std::uint32_t>(s.config.node_count),
-      s.stamp.epoch, s.attempt, s.config.timestep_safety, s.config.minimum_dt, s.config.fixed_dt);
+      s.stamp.epoch, s.attempt, s.config.timestep_safety, s.config.minimum_dt, s.config.fixed_dt, s.has_rotations);
   report = s.Check(cudaGetLastError()); if (report.status != NodalStatus::Ok) return report;
   report = s.SynchronizeControl(); if (report.status != NodalStatus::Ok) return report;
   s.phase = Phase::Sealed; return Ok();
@@ -212,7 +266,8 @@ NodalReport FENodalState::BorrowPrepared(const NodalTrialToken& token, NodalPrep
     return s.Reject(NodalStatus::StaleTrial, "Prepared token belongs to another owner or attempt");
   if (s.phase != Phase::Ready) return s.Reject(NodalStatus::WrongPhase, "No completed valid advance");
   const auto n = s.config.node_count;
-  out->kinematics = {s.trial, s.trial+3*n, s.scratch+8*n, n, s.stamp.epoch};
+  out->kinematics = {s.trial, s.trial+3*n, s.has_rotations ? s.trial+6*n : s.scratch+8*n, n, s.stamp.epoch,
+                     s.has_rotations ? s.trial+9*n : nullptr};
   out->stream = s.stream; out->owner_id = s.stamp.owner_id;
   out->attempt = s.attempt; out->proposed_time = s.candidate_time;
   return Ok();
@@ -225,6 +280,14 @@ NodalReport FENodalState::Commit(const NodalTrialToken& token) noexcept {
   if (!s.Matches(token.owner_id_, token.base_epoch_, token.attempt_))
     return s.Reject(NodalStatus::StaleTrial, "Trial token belongs to another owner or attempt");
   if (s.phase != Phase::Ready) return s.Reject(NodalStatus::WrongPhase, "No completed valid advance");
+  // A prepared-state validator may have queued work after the advance. Detect
+  // its CUDA failure before publishing ANY reaction metadata or accepted slab.
+  // Numerical rejections still require the coordinator to discard explicitly.
+  auto report = s.Check(cudaGetLastError()); if (report.status != NodalStatus::Ok) return report;
+  report = s.Check(cudaStreamSynchronize(s.stream)); if (report.status != NodalStatus::Ok) return report;
+  if (s.has_rotations) {
+    s.stamp.reactions_valid = true; s.stamp.reaction_base_epoch = s.stamp.epoch; s.stamp.reaction_time = s.stamp.time;
+  }
   std::swap(s.accepted, s.trial); ++s.stamp.epoch; s.stamp.time = s.candidate_time;
   s.phase = Phase::Idle; return Ok();
 }
@@ -239,17 +302,33 @@ NodalReport FENodalState::CopyAccepted(NodalSnapshotBuffer out, NodalStamp* stam
   if (!stamp || !out.position_xyz || !out.velocity_xyz)
     return {NodalStatus::InvalidInput, "Missing host snapshot output"};
   if (out.capacity_nodes < s.config.node_count) return {NodalStatus::ResourceLimit, "Snapshot capacity is insufficient"};
-  const auto bytes = 3*s.config.node_count*sizeof(double);
-  if (Overlap(out.position_xyz, bytes, out.velocity_xyz, bytes) ||
-      Overlap(out.position_xyz, bytes, stamp, sizeof(*stamp)) || Overlap(out.velocity_xyz, bytes, stamp, sizeof(*stamp)))
-    return {NodalStatus::InvalidInput, "Snapshot outputs overlap or overflow their address range"};
-  auto report = s.Check(cudaMemcpyAsync(s.staging.data(), s.accepted, 2*bytes, cudaMemcpyDeviceToHost, s.stream));
+  if (!s.has_rotations && (out.orientation_wxyz || out.angular_velocity_xyz || out.reaction_force_xyz || out.reaction_couple_xyz))
+    return {NodalStatus::UnsupportedRotation, "Extended snapshot fields require extended nodal initialization"};
+  const auto n = s.config.node_count;
+  void* outputs[7] = {out.position_xyz, out.velocity_xyz, out.orientation_wxyz, out.angular_velocity_xyz,
+                     out.reaction_force_xyz, out.reaction_couple_xyz, stamp};
+  const std::size_t bytes[7] = {3*n*sizeof(double), 3*n*sizeof(double), 4*n*sizeof(double), 3*n*sizeof(double),
+                              3*n*sizeof(double), 3*n*sizeof(double), sizeof(*stamp)};
+  for (unsigned i = 0; i < 7; ++i) {
+    if (!outputs[i]) continue;
+    if (bytes[i] > UINTPTR_MAX - reinterpret_cast<std::uintptr_t>(outputs[i]))
+      return {NodalStatus::InvalidInput, "Snapshot output address range overflows"};
+    for (unsigned j = 0; j < i; ++j)
+      if (outputs[j] && Overlap(outputs[i], bytes[i], outputs[j], bytes[j]))
+        return {NodalStatus::InvalidInput, "Snapshot outputs overlap"};
+  }
+  auto report = s.Check(cudaMemcpyAsync(s.staging.data(), s.accepted, s.state_values*sizeof(double), cudaMemcpyDeviceToHost, s.stream));
   if (report.status != NodalStatus::Ok) return report;
   report = s.Check(cudaStreamSynchronize(s.stream)); if (report.status != NodalStatus::Ok) return report;
-  for (std::size_t i = 0; i < 6*s.config.node_count; ++i)
+  for (std::size_t i = 0; i < s.state_values; ++i)
     if (!std::isfinite(s.staging[i])) return s.Reject(NodalStatus::InvalidOutput, "Accepted readback is nonfinite");
-  std::memcpy(out.position_xyz, s.staging.data(), bytes);
-  std::memcpy(out.velocity_xyz, s.staging.data()+3*s.config.node_count, bytes);
+  if (s.has_rotations)
+    for (std::size_t i = 0; i < n; ++i)
+      if (!nodal_detail::UnitQuaternion(nodal_detail::ReadQuaternion(s.staging.data()+9*n+4*i)))
+        return s.Reject(NodalStatus::InvalidOutput, "Accepted quaternion readback is not unit", static_cast<std::uint32_t>(i));
+  const std::size_t offsets[6] = {0, 3*n, 9*n, 6*n, 13*n, 16*n};
+  for (unsigned i = 0; i < 6; ++i)
+    if (outputs[i]) std::memcpy(outputs[i], s.staging.data()+offsets[i], bytes[i]);
   *stamp = s.stamp; return Ok();
 }
 }  // namespace tl::fea

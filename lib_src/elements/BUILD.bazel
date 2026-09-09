@@ -6,6 +6,7 @@ package(default_visibility = ["//visibility:public"])
 cc_library(
     name = "reissner_frame",
     hdrs = ["ReissnerFrame.h"],
+    deps = ["//lib_src/math:quaternion"],
 )
 
 cc_library(
@@ -18,6 +19,12 @@ cc_library(
     name = "reissner_shell_force",
     hdrs = ["ReissnerShellData.h", "ReissnerShellKinematics.h", "ReissnerShellForce.h"],
     deps = [":reissner_rotation"],
+)
+
+cc_library(
+    name = "reissner_shell_mass",
+    hdrs = ["ReissnerShellMass.h"],
+    deps = [":reissner_shell_force"],
 )
 
 cc_library(

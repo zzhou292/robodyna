@@ -3,6 +3,23 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_test")
 
 package(default_visibility = ["//visibility:public"])
 
+cc_test(
+    name = "utest_reissner_shell_mass",
+    size = "small",
+    srcs = ["utest_reissner_shell_mass.cc"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/elements:reissner_shell_mass", "@googletest//:gtest_main"],
+)
+
+cuda_test(
+    name = "utest_nodal_rotation_cuda",
+    size = "small",
+    srcs = ["utest_nodal_rotation_cuda.cu"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/solvers:explicit_nodal_state", "@googletest//:gtest_main"],
+)
+
 cuda_test(
     name = "utest_reissner_shell_assembly",
     size = "small",

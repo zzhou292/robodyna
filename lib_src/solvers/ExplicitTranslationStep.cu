@@ -16,18 +16,8 @@ __global__ void Advance(nodal_detail::Control* control, const double* accepted,
     control->status = NodalStatus::StaleTrial; return;
   }
   for (std::uint32_t i = 0; i < n; ++i) {
-    for (unsigned axis = 0; axis < 3; ++axis) {
-      const auto j = 3*i+axis;
-      const double acceleration = fixed[i] ? 0 : inverse[i]*force[axis*n+i];
-      const double velocity = fixed[i] ? 0 : accepted[3*n+j]+h*acceleration;
-      const double position = fixed[i] ? accepted[j] : accepted[j]+h*velocity;
-      // Actual candidate writes happen before validation. Failure leaves these
-      // partial/nonfinite writes isolated from accepted storage and publication.
-      trial[3*n+j] = velocity; trial[j] = position;
-      if (!tlfea::contact::IsFinite(acceleration) || !tlfea::contact::IsFinite(velocity) ||
-          !tlfea::contact::IsFinite(position)) {
-        control->status = NodalStatus::InvalidOutput; control->node = i; return;
-      }
+    if (!nodal_detail::AdvanceTranslationNode(accepted, trial, force, inverse[i], fixed[i] ? 7 : 0, i, n, h)) {
+      control->status = NodalStatus::InvalidOutput; control->node = i; return;
     }
   }
 }
@@ -40,6 +30,8 @@ NodalReport AdvanceTranslations(FENodalState& owner, const NodalTrialToken& toke
   if (!s.Matches(token.owner_id_, token.base_epoch_, token.attempt_))
     return s.Reject(NodalStatus::StaleTrial, "Trial token belongs to another owner or attempt");
   if (s.phase != Phase::Sealed) return s.Reject(NodalStatus::WrongPhase, "Assembly has not been sealed");
+  if (s.has_rotations)
+    return s.Reject(NodalStatus::UnsupportedRotation, "Extended nodal state requires separately admitted AdvanceNodal");
   Advance<<<1,1,0,s.stream>>>(s.control, s.accepted, s.trial, s.scratch, s.inverse, s.fixed,
       static_cast<std::uint32_t>(s.config.node_count), s.config.fixed_dt, s.stamp.epoch, s.attempt);
   auto report = s.Check(cudaGetLastError()); if (report.status != NodalStatus::Ok) return report;

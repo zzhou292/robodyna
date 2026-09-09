@@ -3,7 +3,7 @@
 # pulled into this library. Bazel remains the repository-wide build.
 find_package(CUDAToolkit REQUIRED)
 get_filename_component(TL_NODAL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../.." ABSOLUTE)
-add_library(tl_explicit_nodal_state STATIC FENodalState.cu ExplicitTranslationStep.cu)
+add_library(tl_explicit_nodal_state STATIC FENodalState.cu ExplicitTranslationStep.cu ExplicitNodalStep.cu)
 target_compile_features(tl_explicit_nodal_state PUBLIC cxx_std_17)
 set_target_properties(tl_explicit_nodal_state PROPERTIES
   CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)

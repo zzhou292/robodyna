@@ -14,7 +14,7 @@ constexpr std::size_t MaxTranslationDeviceBytes = 1024 * 1024;
 enum class NodalStatus {
   Ok, InvalidInput, ResourceLimit, NotInitialized, WrongPhase, StaleTrial,
   ContributorFailure, InvalidOutput, UnsupportedRotation, StepTooLarge,
-  HistoryLimit, DeviceFailure
+  HistoryLimit, DeviceFailure, MissingStepAdmission
 };
 struct NodalReport {
   NodalStatus status = NodalStatus::InvalidInput;
@@ -27,10 +27,26 @@ struct NodalStateConfig {
   std::size_t max_device_bytes = MaxTranslationDeviceBytes;
   double fixed_dt = 1e-3, minimum_dt = 1e-12, timestep_safety = .8;
 };
+// Optional conventional-node degrees of freedom. Masks are immutable WORLD
+// constraints: bits 1/2/4 fix x/y/z translation, and rotation_fixed is 0 or 1.
+// Free rotations require positive isotropic inverse inertia; fixed rotations
+// require zero inverse inertia and initial angular velocity. This is an input
+// inertia declaration, not a shell mass formula or drilling-inertia choice.
+struct NodalDofConfig {
+  const std::uint8_t* translation_fixed_bits = nullptr;
+  const std::uint8_t* rotation_fixed = nullptr;
+  const double* inverse_inertia = nullptr;
+};
 struct NodalStamp {
   std::uint64_t owner_id = 0, epoch = 0;
   std::size_t node_count = 0;
   double time = 0, fixed_dt = 0;
+  bool has_rotations = false;
+  // Constraint reactions balance forces evaluated at this previous accepted
+  // state. They accompany the new endpoint; they are not endpoint force data.
+  bool reactions_valid = false;
+  std::uint64_t reaction_base_epoch = 0;
+  double reaction_time = 0;
 };
 struct NodalAllocationInfo {
   // Explicit module-owned cudaMalloc buffers; excludes CUDA runtime/driver
@@ -41,6 +57,12 @@ struct NodalSnapshotBuffer {
   double* position_xyz = nullptr;
   double* velocity_xyz = nullptr;
   std::size_t capacity_nodes = 0;
+  // Optional extended-owner readback. Each requested range is independently
+  // validated and staged. Legacy x/v-only output remains supported.
+  double* orientation_wxyz = nullptr;
+  double* angular_velocity_xyz = nullptr;
+  double* reaction_force_xyz = nullptr;
+  double* reaction_couple_xyz = nullptr;
 };
 
 // Sticky per-attempt failure reporting by one serialized device writer. The
@@ -60,6 +82,9 @@ struct NodalAssemblyView {
   cudaStream_t stream = nullptr;
   std::uint64_t attempt = 0;
   std::uint64_t owner_id = 0;  // Source association, not authentication of raw writes.
+  const double* inverse_inertia = nullptr;
+  const std::uint8_t* translation_fixed_bits = nullptr;
+  const std::uint8_t* rotation_fixed = nullptr;
 };
 // Read-only completed candidate for module admission checks before commit.
 // kinematics.base_epoch remains the ACCEPTED base epoch of this attempt.
@@ -82,23 +107,28 @@ TL_SURFACE_HD inline void RecordNodalAssemblyFailure(
 }
 
 class FENodalState;
+struct NodalStepAdmission;
 class NodalTrialToken {
   // Value authorization with no lifetime/storage ownership. Retained tokens
   // cannot authorize work after destruction, even if a new owner occupies the
   // same host address. Presenting such a stale value is a supported rejection.
   friend class FENodalState;
   friend NodalReport AdvanceTranslations(FENodalState&, const NodalTrialToken&);
+  friend NodalReport AdvanceNodal(FENodalState&, const NodalTrialToken&, const NodalStepAdmission&);
   std::uint64_t owner_id_ = 0, base_epoch_ = 0, attempt_ = 0;
 };
 
-// Sole owner of one shared PHYSICAL-node translation space. This is a TL state
+// Sole owner of one shared PHYSICAL-node space. This is a TL state
 // component, not another model/solver hierarchy or an ANCF coefficient adapter.
 // Startup copies immutable masses/constraints and allocates all module buffers.
-// Initial angular velocity may be absent or identically zero. Free nodes require
-// positive finite inverse mass; fixed nodes require zero inverse mass/velocity.
+// The legacy overload permits absent/zero angular velocity. The optional DOF
+// overload adds unit orientation, isotropic spin and world component constraints
+// in the SAME accepted/trial state; it does not qualify nonlinear shell dynamics.
+// Initialization inputs remain readable and stable until the call returns.
 //
 // Order: BeginTrial -> all additive contributors -> SealAssembly ->
-// AdvanceTranslations -> Commit. Forces and bounds are trial SCRATCH, never
+// AdvanceTranslations (legacy) or separately admitted AdvanceNodal -> Commit.
+// Forces and bounds are trial SCRATCH, never
 // accepted force diagnostics. No external history participant is committed here.
 // Calls and assembly writes are serialized; use only the returned stream. Views
 // expire at SealAssembly/Discard/the next BeginTrial and cannot outlive the owner.
@@ -116,23 +146,34 @@ class FENodalState {
   FENodalState& operator=(const FENodalState&) = delete;
   NodalReport Initialize(const NodalStateConfig&, HostNodalKinematicsView,
                          const double* inverse_mass, const std::uint8_t* fixed);
+  // Requires orientation_wxyz. All translation bits set require zero inverse
+  // mass; every other node requires positive inverse mass. Fixed components
+  // require zero initial velocity. Angular velocity may be absent (zero).
+  NodalReport Initialize(const NodalStateConfig&, HostNodalKinematicsView,
+                         const double* inverse_mass, const NodalDofConfig&);
   NodalReport BeginTrial(NodalTrialToken*, NodalAssemblyView*);
   NodalReport SealAssembly(const NodalTrialToken&);
-  // Only after AdvanceTranslations succeeds. Validators use the returned stream
+  // Only after the applicable advance succeeds. Validators use the returned stream
   // and finish before Commit; the coordinator must discard any rejected trial.
   // Views expire on Commit/Discard/next BeginTrial or owner destruction.
   NodalReport BorrowPrepared(const NodalTrialToken&, NodalPreparedView*);
+  // Drains the owner stream and checks pending CUDA errors before publication.
+  // The coordinator must still report/discard numerical validator rejections.
   NodalReport Commit(const NodalTrialToken&) noexcept;
   void Discard() noexcept;
   NodalStamp accepted() const noexcept;
   NodalAllocationInfo allocations() const noexcept;
   // Output ranges must be host-writable, sized and nonoverlapping. All validation
-  // and device readback finish in preallocated private staging before either
+  // and device readback finish in preallocated private staging before any
   // output range or stamp changes. Reading during a trial still exports accepted
-  // x/v only. The application associates owner_id with its run/topology identity.
+  // state only. The application associates owner_id with its run/topology identity.
   NodalReport CopyAccepted(NodalSnapshotBuffer, NodalStamp*);
  private:
   friend NodalReport AdvanceTranslations(FENodalState&, const NodalTrialToken&);
+  friend NodalReport AdvanceNodal(FENodalState&, const NodalTrialToken&, const NodalStepAdmission&);
+  NodalReport InitializeImpl(const NodalStateConfig&, HostNodalKinematicsView,
+                             const double* inverse_mass, const std::uint8_t* fixed,
+                             const NodalDofConfig*);
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };

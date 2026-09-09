@@ -43,6 +43,8 @@
 
 #pragma once
 
+#include "lib_src/math/Quaternion.h"
+
 #include <cfloat>
 #include <cmath>
 
@@ -57,9 +59,7 @@ namespace tl::fea::reissner {
 struct Vec3 {
   double x = 0, y = 0, z = 0;
 };
-struct Quaternion {
-  double w = 1, x = 0, y = 0, z = 0;
-};
+using Quaternion = tl::math::Quaternion;
 struct Matrix3 {
   double v[9]{};  // Row-major; default is the zero matrix.
 };
@@ -82,12 +82,7 @@ enum class Status {
 
 namespace detail {
 
-TL_REISSNER_HD inline bool Finite(double value) {
-  return value == value && value <= DBL_MAX && value >= -DBL_MAX;
-}
-TL_REISSNER_HD inline bool Finite(Quaternion q) {
-  return Finite(q.w) && Finite(q.x) && Finite(q.y) && Finite(q.z);
-}
+using tl::math::Finite;
 TL_REISSNER_HD inline bool Finite(const Matrix3& matrix) {
   for (unsigned i = 0; i < 9; ++i)
     if (!Finite(matrix.v[i])) return false;
@@ -98,24 +93,11 @@ TL_REISSNER_HD inline bool Finite(const SpinJacobian& matrices) {
     if (!Finite(matrices.node[n])) return false;
   return true;
 }
-TL_REISSNER_HD inline Quaternion Add(Quaternion a, Quaternion b) {
-  return {a.w + b.w, a.x + b.x, a.y + b.y, a.z + b.z};
-}
-TL_REISSNER_HD inline Quaternion Subtract(Quaternion a, Quaternion b) {
-  return {a.w - b.w, a.x - b.x, a.y - b.y, a.z - b.z};
-}
-TL_REISSNER_HD inline Quaternion Scale(Quaternion q, double scale) {
-  return {q.w * scale, q.x * scale, q.y * scale, q.z * scale};
-}
-TL_REISSNER_HD inline double Dot(Quaternion a, Quaternion b) {
-  return a.w * b.w + a.x * b.x + a.y * b.y + a.z * b.z;
-}
-TL_REISSNER_HD inline Quaternion Product(Quaternion a, Quaternion b) {
-  return {a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z,
-          a.w * b.x + a.x * b.w - a.z * b.y + a.y * b.z,
-          a.w * b.y + a.y * b.w + a.z * b.x - a.x * b.z,
-          a.w * b.z + a.z * b.w - a.y * b.x + a.x * b.y};
-}
+using tl::math::Add;
+using tl::math::Subtract;
+using tl::math::Scale;
+using tl::math::Dot;
+using tl::math::Product;
 TL_REISSNER_HD inline Matrix3 Rotation(Quaternion q) {
   const double ww = q.w * q.w, xx = q.x * q.x, yy = q.y * q.y, zz = q.z * q.z;
   const double wx = q.w * q.x, wy = q.w * q.y, wz = q.w * q.z;

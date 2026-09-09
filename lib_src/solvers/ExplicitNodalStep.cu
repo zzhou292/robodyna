@@ -1,0 +1,99 @@
+#include "ExplicitNodalStep.h"
+#include "FENodalStateStorage.h"
+#include "NodalRotation.h"
+
+namespace tl::fea {
+namespace {
+using nodal_detail::Phase;
+namespace sc = tlfea::contact;
+
+// Same bounded single-writer execution as the existing translational gate.
+// This operation consumes one sealed force assembly and owns no physical state.
+__global__ void Advance(nodal_detail::Control* control, const double* accepted,
+                        double* trial, const double* force, const double* inverse,
+                        const std::uint8_t* constraints, std::uint32_t n, double h,
+                        double maximum_angle, std::uint64_t epoch, std::uint64_t attempt) {
+  if (control->status != NodalStatus::Ok) return;
+  if (control->rows.base_epoch != epoch || control->rows.attempt != attempt ||
+      !stability::IsCurrentLimit(control->rows, control->limit) || control->limit.dt < h) {
+    control->status = NodalStatus::StaleTrial; return;
+  }
+  if (control->limit.has_stiffness_or_damping) {
+    control->status = NodalStatus::MissingStepAdmission; return;
+  }
+  for (std::uint32_t i = 0; i < n; ++i) {
+    if (!nodal_detail::AdvanceTranslationNode(accepted, trial, force, inverse[i], constraints[n+i],
+                                             i, n, h, trial+13*n)) {
+      control->status = NodalStatus::InvalidOutput; control->node = i; return;
+    }
+    const bool fixed_rotation = constraints[2*n+i] != 0;
+    double increment[3];
+    for (unsigned axis = 0; axis < 3; ++axis) {
+      const auto j = 3*i+axis;
+      const double couple = force[(3+axis)*n+i];
+      const double acceleration = fixed_rotation ? 0 : inverse[n+i]*couple;
+      const double omega = fixed_rotation ? 0 : accepted[6*n+j]+h*acceleration;
+      trial[6*n+j] = omega;
+      trial[16*n+j] = fixed_rotation ? -couple : 0;
+      increment[axis] = h*omega;
+      if (!sc::IsFinite(acceleration) || !sc::IsFinite(omega) || !sc::IsFinite(increment[axis])) {
+        control->status = NodalStatus::InvalidOutput; control->node = i; return;
+      }
+    }
+    const double angle = ::hypot(::hypot(increment[0], increment[1]), increment[2]);
+    if (!sc::IsFinite(angle) || angle > maximum_angle) {
+      // The force changes omega during this step; simple h rescaling is not a
+      // proven replacement limit. Report no stable_dt instead of the unrelated
+      // translation-only row result.
+      control->limit.dt = 0;
+      control->status = NodalStatus::StepTooLarge; control->node = i; return;
+    }
+    const auto initial = nodal_detail::ReadQuaternion(accepted+9*n+4*i);
+    tl::math::Quaternion candidate;
+    if (fixed_rotation) {
+      if (!nodal_detail::UnitQuaternion(initial)) {
+        control->status = NodalStatus::InvalidOutput; control->node = i; return;
+      }
+      candidate = initial;
+    } else if (!nodal_detail::IncrementWorldRotation(initial, increment, candidate)) {
+      control->status = NodalStatus::InvalidOutput; control->node = i; return;
+    }
+    auto* q = trial+9*n+4*i;
+    q[0] = candidate.w; q[1] = candidate.x; q[2] = candidate.y; q[3] = candidate.z;
+  }
+}
+}  // namespace
+
+NodalReport AdvanceNodal(FENodalState& owner, const NodalTrialToken& token, const NodalStepAdmission& admission) {
+  if (!owner.impl_) return {NodalStatus::NotInitialized, "Owner is not initialized"};
+  auto& s = *owner.impl_;
+  if (!s.usable) return {NodalStatus::DeviceFailure, "CUDA owner is poisoned"};
+  if (!s.Matches(token.owner_id_, token.base_epoch_, token.attempt_))
+    return s.Reject(NodalStatus::StaleTrial, "Trial token belongs to another owner or attempt");
+  if (s.phase != Phase::Sealed) return s.Reject(NodalStatus::WrongPhase, "Assembly has not been sealed");
+  if (!s.has_rotations)
+    return s.Reject(NodalStatus::UnsupportedRotation, "AdvanceNodal requires extended nodal initialization");
+  if (admission.kind != NodalStepAdmissionKind::PrescribedConstantLoads)
+    return s.Reject(NodalStatus::MissingStepAdmission, "Only separately declared prescribed constant loads are admitted");
+  if (admission.owner_id != s.stamp.owner_id || admission.base_epoch != s.stamp.epoch || admission.attempt != s.attempt)
+    return s.Reject(NodalStatus::StaleTrial, "Step admission belongs to another owner or attempt");
+  constexpr double pi = 3.14159265358979323846;
+  if (!std::isfinite(admission.maximum_dt) || admission.maximum_dt <= 0 ||
+      !std::isfinite(admission.maximum_rotation_increment) || admission.maximum_rotation_increment <= 0 ||
+      admission.maximum_rotation_increment >= pi)
+    return s.Reject(NodalStatus::InvalidInput, "Invalid explicit step or rotation increment bound");
+  if (admission.maximum_dt < s.config.fixed_dt) {
+    auto report = s.Reject(NodalStatus::StepTooLarge, "Fixed step exceeds explicit admission");
+    report.stable_dt = admission.maximum_dt;
+    return report;
+  }
+  Advance<<<1,1,0,s.stream>>>(s.control, s.accepted, s.trial, s.scratch, s.inverse, s.fixed,
+      static_cast<std::uint32_t>(s.config.node_count), s.config.fixed_dt, admission.maximum_rotation_increment,
+      s.stamp.epoch, s.attempt);
+  auto report = s.Check(cudaGetLastError()); if (report.status != NodalStatus::Ok) return report;
+  report = s.SynchronizeControl(); if (report.status != NodalStatus::Ok) return report;
+  s.phase = Phase::Ready;
+  return {NodalStatus::Ok, "OK"};
+}
+
+}  // namespace tl::fea

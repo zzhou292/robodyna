@@ -15,6 +15,7 @@ struct HostNodalKinematicsView {
   const double* velocity_xyz = nullptr;          // interleaved xyz, metres/s
   const double* angular_velocity_xyz = nullptr;  // interleaved xyz, radians/s
   std::size_t node_count = 0;
+  const double* orientation_wxyz = nullptr;      // Optional unit nodal quaternion.
 };
 
 struct DeviceNodalKinematicsView {
@@ -23,6 +24,7 @@ struct DeviceNodalKinematicsView {
   const double* angular_velocity_xyz = nullptr;
   std::size_t node_count = 0;
   std::uint64_t base_epoch = 0;
+  const double* orientation_wxyz = nullptr;
 };
 
 struct DeviceNodalForceView {

@@ -5,10 +5,10 @@ package(default_visibility = ["//visibility:public"])
 
 cuda_library(
     name = "explicit_nodal_state",
-    srcs = ["FENodalState.cu", "ExplicitTranslationStep.cu"],
-    hdrs = ["FENodalState.h", "FENodalStateStorage.h", "ExplicitTranslationStep.h"],
+    srcs = ["FENodalState.cu", "ExplicitTranslationStep.cu", "ExplicitNodalStep.cu"],
+    hdrs = ["FENodalState.h", "FENodalStateStorage.h", "ExplicitTranslationStep.h", "ExplicitNodalStep.h", "NodalRotation.h"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
-    deps = [":explicit_step_stability"],
+    deps = [":explicit_step_stability", "//lib_src/math:quaternion"],
 )
 
 cc_library(
