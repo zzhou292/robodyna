@@ -86,6 +86,17 @@ struct DeviceRotations {
     ~DeviceRotations() { if (values) cudaFree(values); }
 };
 
+__global__ void InvalidBatchLaunchInjection() {}
+
+void CopyForces(const fe::NodalAssemblyView& view, std::array<double,36>& output) {
+    const double* channels[] = {view.forces.force_x,view.forces.force_y,view.forces.force_z,
+                               view.forces.couple_x,view.forces.couple_y,view.forces.couple_z};
+    for (unsigned c=0;c<6;++c)
+        ASSERT_EQ(cudaMemcpyAsync(output.data()+6*c,channels[c],6*sizeof(double),
+                                  cudaMemcpyDeviceToHost,view.stream),cudaSuccess);
+    ASSERT_EQ(cudaStreamSynchronize(view.stream),cudaSuccess);
+}
+
 void Near(double actual, double expected) {
     EXPECT_NEAR(actual, expected, 1e-10 * (1 + std::abs(expected)));
 }
@@ -267,6 +278,48 @@ TEST_F(ReissnerShellBatchCuda, DuplicateAssemblyInvalidatesAttemptAndFreshAssemb
     EXPECT_GT(retry.base.attempt, trial.base.attempt);
     ASSERT_NO_FATAL_FAILURE(ExpectChrono(batch, retry.base, in.Configuration()));
     owner.Discard();
+}
+
+TEST_F(ReissnerShellBatchCuda, RecoverableLaunchPoisonPreventsScatterAndKeepsContributorFailureSticky) {
+    for (bool detect_during_readback : {false,true}) {
+        SCOPED_TRACE(detect_during_readback);
+        Input in(model); fe::FENodalState owner; shell::ReissnerShellBatch batch; Trial trial;
+        ASSERT_NO_FATAL_FAILURE(Initialize(owner,batch,in));
+        Snapshot before,after; ASSERT_NO_FATAL_FAILURE(Read(owner,before));
+        if (detect_during_readback) {
+            ASSERT_NO_FATAL_FAILURE(Begin(owner,batch,trial));
+            Results output{}; output[1].energy=-37; const auto saved=Bytes(output);
+            InvalidBatchLaunchInjection<<<1,0,0,trial.assembly.stream>>>();
+            const auto pending=cudaPeekAtLastError();
+            ASSERT_TRUE(pending==cudaErrorInvalidValue || pending==cudaErrorInvalidConfiguration);
+            EXPECT_EQ(batch.CopyElementResults(trial.base,output.data(),output.size()).status,
+                      shell::ShellBatchStatus::kDeviceFailure);
+            EXPECT_EQ(Bytes(output),saved); EXPECT_EQ(cudaPeekAtLastError(),cudaSuccess);
+            owner.Discard();
+        }
+        ASSERT_EQ(owner.BeginTrial(&trial.token,&trial.assembly).status,fe::NodalStatus::Ok);
+        // Preserve an existing participant's finite, nonzero forces/couples.
+        std::array<double,36> seeded{},actual{};
+        for (unsigned i=0;i<seeded.size();++i) seeded[i]=.125*(i+1);
+        double* channels[] = {trial.assembly.forces.force_x,trial.assembly.forces.force_y,
+            trial.assembly.forces.force_z,trial.assembly.forces.couple_x,
+            trial.assembly.forces.couple_y,trial.assembly.forces.couple_z};
+        for (unsigned c=0;c<6;++c)
+            ASSERT_EQ(cudaMemcpyAsync(channels[c],seeded.data()+6*c,6*sizeof(double),
+                                      cudaMemcpyHostToDevice,trial.assembly.stream),cudaSuccess);
+        ASSERT_EQ(cudaStreamSynchronize(trial.assembly.stream),cudaSuccess);
+        trial.base.elastic_energy=-113; const auto diagnostic=Bytes(trial.base);
+        if (!detect_during_readback) {
+            InvalidBatchLaunchInjection<<<1,0,0,trial.assembly.stream>>>();
+            const auto pending=cudaPeekAtLastError();
+            ASSERT_TRUE(pending==cudaErrorInvalidValue || pending==cudaErrorInvalidConfiguration);
+        }
+        EXPECT_EQ(batch.Assemble(trial.assembly,&trial.base).status,shell::ShellBatchStatus::kDeviceFailure);
+        EXPECT_EQ(cudaPeekAtLastError(),cudaSuccess); EXPECT_EQ(Bytes(trial.base),diagnostic);
+        ASSERT_NO_FATAL_FAILURE(CopyForces(trial.assembly,actual)); EXPECT_EQ(actual,seeded);
+        EXPECT_EQ(owner.SealAssembly(trial.token).status,fe::NodalStatus::ContributorFailure);
+        owner.Discard(); ASSERT_NO_FATAL_FAILURE(Read(owner,after)); SameSnapshot(before,after);
+    }
 }
 
 TEST_F(ReissnerShellBatchCuda, DeviceElementResultsMatchChronoAndRejectIncorrectOutputIdentity) {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ElasticCouponModel.h"
+#include "ShellPatchAudit.h"
 
 #include <array>
 #include <cstdint>
@@ -10,10 +10,10 @@ namespace crash::reference {
 // These are fixed pre-run experiment gates, not user-adjustable tolerances or
 // a general nonlinear stability certificate. FD amplitudes have different
 // units for translation and world rotation.
-inline constexpr double kCouponTranslationDifference = 1e-6 * ElasticCouponData::length;
-inline constexpr double kCouponRotationDifference = 1e-6;
-inline constexpr double kCouponDerivativeTolerance = 1e-5;
-inline constexpr double kCouponFrequencyRefinementTolerance = .005;
+inline constexpr double kCouponTranslationDifference = patch_audit::TranslationDifference;
+inline constexpr double kCouponRotationDifference = patch_audit::RotationDifference;
+inline constexpr double kCouponDerivativeTolerance = patch_audit::DerivativeTolerance;
+inline constexpr double kCouponFrequencyRefinementTolerance = patch_audit::FrequencyRefinementTolerance;
 
 struct ElasticCouponModalReport {
     std::array<double, kCouponFreeDofs> squared_frequency{};  // Sorted, rad^2/s^2.

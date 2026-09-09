@@ -176,5 +176,6 @@ It passed in 5.266 s using one CPU and 102.41 MiB sampled peak RSS. The report
 uses 1,031,631 of the existing 1,048,576-byte cap; broader inventories must not
 silently overrun this format. The
 [retained checkpoint](../../crash-work/checkpoints/e2b-attachments-1/manifest.json)
-binds the source, tests and guard reports. Independent source review remains
-pending; no GPU, source mechanics or attachment load transfer was executed.
+binds the source, tests and guard reports. Subsequent independent source review
+found no blocker within the literal one-hop scope and reverified all retained
+hashes. No GPU, source mechanics or attachment load transfer was executed.

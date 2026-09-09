@@ -1,7 +1,7 @@
 # Robo-dyna: Yaris delivery plan
 
-Updated 2026-09-09 after elastic refinement, actual replay/video, shared wall
-regressions and the first typed source-part declaration compilation. This is the
+Updated 2026-09-09 after finite Q4 wall coverage, CUDA contact transaction tests,
+prescribed batch measurements and the full source-part inventory. This is the
 active implementation backlog. The workspace
 [architecture and milestones](../../planning/YARIS_RIGID_WALL_DESIGN.md),
 [module contracts](../../planning/MODULAR_ARCHITECTURE.md) and
@@ -37,7 +37,10 @@ The [preceding live probe](../../crash-work/reports/yaris-progress-audit-1.json)
 records the imported model and saved contact rigs. Chrono is now `96af26597b`,
 with checked VSG worker lifecycle and unrelated third-party dirt preserved.
 The [actual R0/R1 checkpoint](../../crash-work/reports/vsg-r0-r1-runtime-checkpoint-1.json)
-records rendered rig and coupon frames. TL `f219ce9` retains shared wall geometry.
+records rendered rig and coupon frames. The
+[elastic/contact foundations checkpoint](../../crash-work/reports/elastic-contact-foundations-checkpoint.json)
+retains matching binaries, libraries and accepted evidence. TL `8f781ce`
+retains finite Q4 footprints; `4de53e5` retains measured prescribed batching.
 Historical failed native rigid-motion and unmodified Chrono/CCD experiments
 remain excluded from production qualification.
 
@@ -59,15 +62,35 @@ or collection of per-experiment production scripts.
 ## Immediate work packages
 
 C2 integration passes 13 host/five CUDA tests and Bazel, retained in TL
-`da4516b`. The current critical path is C3 finite-mesh invariance and C4
-CUDA transaction, followed by D's combined shell/contact admission and rendered
-impact. C1 and shared finite-wall validation already pass CMake/Bazel.
+`da4516b`. C3 passes nine finite-mesh host checks and Bazel. C4 now passes eleven
+CUDA transaction checks and five host contact-stiffness checks through CMake and
+Bazel, including error handling before force publication and exact-coordinate
+area certificates; TL commit `5dc521b` retains this contribution.
+D1 passes six guided reference tests and seven combined-admission tests, with
+the eight existing B2 reference checks unchanged. The guided case proposes
+19,997 steps through 0.2 s at approximately 10 microseconds per step. Its
+100-step coupled CUDA prefix and all six D2 transaction functions now pass,
+including the explicitly enabled partial-contact/retry test. First certified
+applied contact occurs at epoch 12,365 / 123.668550 ms. The tested prefix reaches
+1.354053 micrometers peak penetration; it does not cover the full impact.
+Next are accepted bundle support, the full h/h2/h4 impact and rendered playback.
+See the [guided plate implementation](../../planning/GUIDED_PLATE_IMPLEMENTATION.md).
 Parallel E1 passes 12 synthetic declaration tests and the original PID 2000157
 closure compilation; it does not yet supply geometry/mass/attachment admission.
-P0 measured ordinary two-Q4 steps near 4.265 ms and 2.292 GB device-wide growth
-at initialization despite 17,226 owned bytes. Explicit 2/8/32/128-element P1
-processes will measure unchanged prescribed force batching before capacity
-promotion. See the [scaling review](../../planning/YARIS_SHELL_SCALING_REVIEW.md).
+P1's separate 2/8/32/128-element processes measured the unchanged force operation:
+about 0.969–0.993 ms for force evaluation and 2.043 GiB context-to-evaluated
+device-memory growth, despite at most 645,640 explicitly owned bytes.
+Five qualification tests pass; these are prescribed forces, not vehicle steps.
+P2's ANS transverse-row optimization passes eleven new numerical checks and
+isolated batch measurements. It reduces the measured warm force-event medians
+by about 5%, with only 16 bytes less stack per thread and 6 MiB less observed
+device-memory growth. Immediate Gauss contraction now also passes eleven new
+CUDA parity checks and the same bounded wrapper tests. Its force stack is
+6,544 bytes, with 1,447,034,880 bytes of measured device-wide growth; event
+medians are 9.36–10.16% lower than the earlier scalar comparison. TL commit
+`9c9d4f1` retains both experiments; production dynamics remain unchanged.
+See the [stage-2 evidence](../../planning/SHELL_P2_GAUSS_CONTRACTION_DESIGN.md) and
+[scaling review](../../planning/YARIS_SHELL_SCALING_REVIEW.md).
 
 Package **A and the B1 state/mass foundation are complete within their stated scopes**.
 B2 has passing modal, CUDA batch, full half-period/refinement, output and
@@ -116,7 +139,24 @@ T3** elements, source ELFORM2/NIP3, 1.648 mm thickness and MAT024 inputs:
 density 7,890 kg/m3, E 200 GPa, Poisson ratio 0.3, yield 270 MPa, rate parameters
 C=8000/P=8 and hardening curve 2100270. See the saved
 [source part audit](../../crash-work/reports/yaris-element-roles.json).
-A sampled quad has 0.185-degree warp; this does not qualify the entire part.
+The complete 94-shell/117-node inventory has maximum Q4 warpage of **12.17
+degrees** for diagonal 0–2 and **12.56 degrees** for diagonal 1–3, substantially
+above the earlier single-quad sample. It has no shared-node structural neighbors,
+but six source nodal rigid groups connect 20 of its nodes to 56 external nodes
+across five neighboring parts. Membership in a large tied-contact master set
+is additional unresolved scope, not a resolved attachment pair. See the
+[source-part readiness plan](../../planning/YARIS_SOURCE_PART_READINESS.md).
+E2a now verifies every selected original source card and passes the complete
+geometry and lamina mass/COM/inertia audit. Its mass proxy is 0.2565425684 kg;
+23 geometry/mass/composer tests and six donor-quadrature checks pass. The
+[readiness checkpoint](../../crash-work/reports/e2a-readiness-checkpoint-1.json)
+retains the evidence. This proxy does not establish source ELFORM2 lumping or
+solver admission. E2b now adds typed, bounded one-hop attachment records:
+15 new tests pass, original incidence verifies 173 nodes/182 elements, and
+independent source review found no blocker within that scope. Six rigid
+groups and tied-set membership remain separate namespaces; no tied pairs,
+attachment mechanics or full closure are inferred. The retained v2 report
+fits the unchanged 1 MiB publication cap with only 16,945 bytes remaining.
 The later bumper PID 2000132 includes 69 triangles and a sampled 11-degree
 warped quad, so flattening the model is not an acceptable import assumption.
 
@@ -135,6 +175,27 @@ not disappear under that mapping. Record the intentional mesh-wall replacement
 of analytic source wall semantics and report each remaining unsupported field.
 
 ## Following milestones and promotion evidence
+
+**New gate immediately after the guided impact: source-scale shell formulation
+and inertia.** The current rotary step rule is
+`h <= 0.1*t/sqrt(12*G/rho)`. Substituting the source connector's 1.648 mm steel
+section yields about 15.24 ns, or at least 13.13 million steps for 200 ms,
+before any stricter limit. This is a calculation from the current policy,
+not a measured vehicle result. It exceeds the current startup step cap and
+cannot be addressed by the measured force-kernel improvements alone. The
+[source-bound decision and comparison gate](../../planning/THIN_SHELL_EXECUTION_DECISION.md)
+records independent arithmetic and the documented donor inertia policies.
+
+Use the completed guided case as an integration reference. Before promoting
+source-part dynamics or starting another Reissner microoptimization round,
+compare existing explicit crash-shell formulations and rotary-inertia policies
+from OpenRadioss and other already available donor code. Preserve physical and
+declared artificial inertia separately, reuse TL's owner/contact/output
+contracts, and require bending, membrane, rigid-motion, hourglass and timestep
+gates appropriate to the selected formulation. A source shell mapping remains
+explicit; neither a larger step nor different inertia may be introduced
+silently. The completed Gauss contraction experiment remains useful as
+reference/performance evidence; it does not change that ordering.
 
 | Milestone | Capability that must be added | Exit evidence |
 | --- | --- | --- |
@@ -173,8 +234,8 @@ per thread** in the saved `elastic-coupon-kernel-resources-1.log`. Their two-ele
 run takes roughly 4.3 ms per accepted step and adds about 2.6–2.7 GiB of device-wide
 memory while explicitly owning only 17 KiB. These measurements do not establish
 batch occupancy or identify all context/driver/stack allocation. The
-[scaling review](../../planning/YARIS_SHELL_SCALING_REVIEW.md) adds an immediate
-profiling gate, then prescribed 2/8/32/128-element measurements, scratch reduction
+[scaling review](../../planning/YARIS_SHELL_SCALING_REVIEW.md) records completed
+profiling and prescribed 2/8/32/128-element measurements; next are scratch reduction
 and deterministic shared-node assembly before source-part scaling. Keep existing
 force/energy oracles unchanged. Compute Sanitizer is not installed in the local
 CUDA toolkit, so no sanitizer-clean claim is made.
@@ -188,7 +249,8 @@ that fits the workstation reserves; no GPU speedup or calendar claim yet.
 Pinned glslang, VSG and its companion dependencies are now built in an isolated
 workspace prefix. A recorded one-line disabled-Assimp fallback include correction
 is retained separately from the original archive. The fresh Chrono core+VSG build
-is active; no rendered window or PNG is claimed until actual runtime inspection.
+is active. The actual rig and elastic coupon frames and the decoded coupon video
+have been inspected; the guided-impact and vehicle rendering gates remain open.
 
 All builds and runtime probes use `run_bounded.py` and the shared
 `crash-work/reports/workstation.lock`: at most two CPU affinity slots, one build

@@ -1,6 +1,6 @@
 find_package(GTest REQUIRED)
 find_package(Eigen3 REQUIRED NO_MODULE)
-add_library(robo_dyna_elastic_coupon_reference STATIC ElasticCouponModel.cpp ElasticCouponModal.cpp)
+add_library(robo_dyna_elastic_coupon_reference STATIC ElasticCouponModel.cpp ElasticCouponModal.cpp ShellPatchAudit.cpp)
 target_link_libraries(robo_dyna_elastic_coupon_reference PUBLIC robo_dyna_reissner_setup Eigen3::Eigen)
 target_compile_options(robo_dyna_elastic_coupon_reference PRIVATE -fno-fast-math -ffp-contract=off)
 

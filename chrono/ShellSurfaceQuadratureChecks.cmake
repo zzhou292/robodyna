@@ -1,0 +1,10 @@
+find_package(GTest REQUIRED)
+find_package(Boost 1.74 REQUIRED)
+add_executable(robo_dyna_shell_surface_quadrature_check shell_surface_quadrature_check.cpp)
+target_compile_features(robo_dyna_shell_surface_quadrature_check PRIVATE cxx_std_17)
+target_compile_options(robo_dyna_shell_surface_quadrature_check PRIVATE -fno-fast-math -ffp-contract=off)
+target_link_libraries(robo_dyna_shell_surface_quadrature_check PRIVATE
+  Chrono::Chrono_core robo_dyna_artifact_io Boost::headers GTest::gtest)
+add_test(NAME shell_surface_quadrature COMMAND robo_dyna_shell_surface_quadrature_check)
+set_tests_properties(shell_surface_quadrature PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE PROCESSORS 1
+  ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1")

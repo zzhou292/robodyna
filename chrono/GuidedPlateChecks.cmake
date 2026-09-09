@@ -1,0 +1,13 @@
+include("${CRASH_TL_FEA_SOURCE_DIR}/lib_src/collision/Q4PlanarGeometry.cmake")
+add_library(robo_dyna_guided_plate_reference STATIC GuidedPlateModel.cpp GuidedPlateModal.cpp)
+target_link_libraries(robo_dyna_guided_plate_reference PUBLIC
+  robo_dyna_elastic_coupon_reference tl_q4_planar_geometry)
+target_compile_options(robo_dyna_guided_plate_reference PRIVATE -fno-fast-math -ffp-contract=off)
+
+add_executable(robo_dyna_guided_plate_reference_check guided_plate_reference_check.cpp)
+target_link_libraries(robo_dyna_guided_plate_reference_check PRIVATE
+  robo_dyna_guided_plate_reference GTest::gtest_main)
+target_compile_options(robo_dyna_guided_plate_reference_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME guided_plate_reference COMMAND robo_dyna_guided_plate_reference_check)
+set_tests_properties(guided_plate_reference PROPERTIES TIMEOUT 60 RUN_SERIAL TRUE PROCESSORS 1
+  ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1")

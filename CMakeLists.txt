@@ -19,13 +19,23 @@ option(CRASH_ENABLE_CHRONO_REISSNER_CONSISTENT_CHECK "Build all-direction force 
 option(CRASH_ENABLE_TL_REISSNER_FRAME_CHECK "Build CUDA frame operation checks against the owning Chrono reference" OFF)
 option(ROBO_DYNA_ENABLE_SHELL_FORCE_CHECKS "Build complete prescribed CUDA Q4 force, setup and rotation checks" OFF)
 option(ROBO_DYNA_ENABLE_ELASTIC_COUPON "Build the bounded force-driven elastic CUDA coupon" OFF)
+option(ROBO_DYNA_ENABLE_GUIDED_PLATE_CHECKS "Build guided plate reference, admission and coupled CUDA checks" OFF)
+if(ROBO_DYNA_ENABLE_GUIDED_PLATE_CHECKS AND NOT ROBO_DYNA_ENABLE_ELASTIC_COUPON)
+  message(FATAL_ERROR "Guided plate checks currently require the existing elastic coupon foundations")
+endif()
 option(ROBO_DYNA_ENABLE_PRESCRIBED_BATCH_CHECKS "Build bounded resident prescribed Q4 batch qualification and timing" OFF)
+option(ROBO_DYNA_ENABLE_ANS_ROWS_CHECKS "Build isolated ANS-row parity and batch measurements" OFF)
+option(ROBO_DYNA_ENABLE_GAUSS_CONTRACTION_CHECKS "Build isolated Gauss contraction parity and measurements" OFF)
+if(ROBO_DYNA_ENABLE_GAUSS_CONTRACTION_CHECKS AND NOT ROBO_DYNA_ENABLE_ANS_ROWS_CHECKS)
+  message(FATAL_ERROR "Gauss contraction checks require the preceding ANS-row qualification targets")
+endif()
+option(ROBO_DYNA_ENABLE_SHELL_QUADRATURE_CHECKS "Qualify actual Chrono surface quadrature and export rules" OFF)
 option(ROBO_DYNA_ENABLE_COUPON_PROFILE "Build the bounded elastic coupon profiling executable" OFF)
 option(ROBO_DYNA_ENABLE_Q4_CONTACT_MAPPING_CHECKS "Build Q4 midsurface mapping checks against actual Chrono FEA interpolation" OFF)
 option(ROBO_DYNA_ENABLE_REPLAY "Build the optional accepted-result Chrono VSG viewer" OFF)
 option(ROBO_DYNA_ENABLE_REPLAY_CHECKS "Build the bounded accepted-result reader tests without CUDA/VSG" OFF)
 option(ROBO_DYNA_ENABLE_REPLAY_SCENE_CHECKS "Build the accepted replay scene tests without CUDA/VSG" OFF)
-if(CRASH_ENABLE_CHRONO_CHECK OR CRASH_ENABLE_CHRONO_SNAPSHOT_CHECK OR CRASH_ENABLE_TL_CHRONO_CHECK OR CRASH_ENABLE_CHRONO_REISSNER_CHECK OR CRASH_ENABLE_TL_NODAL_CHECK OR CRASH_ENABLE_NORMAL_IMPACT OR CRASH_ENABLE_CANONICAL_WALL_CHECK OR CRASH_ENABLE_REISSNER_FRAME_CHECK OR CRASH_ENABLE_CHRONO_REISSNER_CONSISTENT_CHECK OR CRASH_ENABLE_TL_REISSNER_FRAME_CHECK OR ROBO_DYNA_ENABLE_SHELL_FORCE_CHECKS OR ROBO_DYNA_ENABLE_ELASTIC_COUPON OR ROBO_DYNA_ENABLE_Q4_CONTACT_MAPPING_CHECKS OR ROBO_DYNA_ENABLE_PRESCRIBED_BATCH_CHECKS)
+if(CRASH_ENABLE_CHRONO_CHECK OR CRASH_ENABLE_CHRONO_SNAPSHOT_CHECK OR CRASH_ENABLE_TL_CHRONO_CHECK OR CRASH_ENABLE_CHRONO_REISSNER_CHECK OR CRASH_ENABLE_TL_NODAL_CHECK OR CRASH_ENABLE_NORMAL_IMPACT OR CRASH_ENABLE_CANONICAL_WALL_CHECK OR CRASH_ENABLE_REISSNER_FRAME_CHECK OR CRASH_ENABLE_CHRONO_REISSNER_CONSISTENT_CHECK OR CRASH_ENABLE_TL_REISSNER_FRAME_CHECK OR ROBO_DYNA_ENABLE_SHELL_FORCE_CHECKS OR ROBO_DYNA_ENABLE_ELASTIC_COUPON OR ROBO_DYNA_ENABLE_Q4_CONTACT_MAPPING_CHECKS OR ROBO_DYNA_ENABLE_PRESCRIBED_BATCH_CHECKS OR ROBO_DYNA_ENABLE_ANS_ROWS_CHECKS OR ROBO_DYNA_ENABLE_SHELL_QUADRATURE_CHECKS)
   enable_language(CXX)
   find_package(Chrono REQUIRED CONFIG)
   if(CRASH_ENABLE_NORMAL_IMPACT OR ROBO_DYNA_ENABLE_ELASTIC_COUPON)
@@ -41,7 +51,7 @@ if(ROBO_DYNA_ENABLE_REPLAY OR ROBO_DYNA_ENABLE_REPLAY_CHECKS OR ROBO_DYNA_ENABLE
     find_package(Chrono REQUIRED CONFIG)
   endif()
 endif()
-if(CRASH_ENABLE_NORMAL_IMPACT OR ROBO_DYNA_ENABLE_ELASTIC_COUPON OR ROBO_DYNA_ENABLE_REPLAY OR ROBO_DYNA_ENABLE_REPLAY_CHECKS)
+if(CRASH_ENABLE_NORMAL_IMPACT OR ROBO_DYNA_ENABLE_ELASTIC_COUPON OR ROBO_DYNA_ENABLE_REPLAY OR ROBO_DYNA_ENABLE_REPLAY_CHECKS OR ROBO_DYNA_ENABLE_SHELL_QUADRATURE_CHECKS)
   add_subdirectory(output)
 endif()
 if(CRASH_ENABLE_NORMAL_IMPACT OR CRASH_ENABLE_CANONICAL_WALL_CHECK OR ROBO_DYNA_ENABLE_ELASTIC_COUPON)
@@ -63,6 +73,26 @@ add_test(NAME source_part_declarations_unit
   COMMAND "${Python3_EXECUTABLE}" -B -m unittest discover
           -s "${CMAKE_CURRENT_SOURCE_DIR}/tests" -p "test_source_part_declarations.py" -v)
 set_tests_properties(source_part_declarations_unit PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE)
+
+add_test(NAME canonical_part_geometry_unit
+  COMMAND "${Python3_EXECUTABLE}" -B -m unittest discover
+          -s "${CMAKE_CURRENT_SOURCE_DIR}/tests" -p "test_canonical_part_geometry.py" -v)
+set_tests_properties(canonical_part_geometry_unit PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE)
+
+set(ROBO_DYNA_SURFACE_QUADRATURE "" CACHE FILEPATH "Qualified offline 4/8/16 shell-surface quadrature artifact")
+if(ROBO_DYNA_SURFACE_QUADRATURE)
+  if(NOT EXISTS "${ROBO_DYNA_SURFACE_QUADRATURE}")
+    message(FATAL_ERROR "Declared shell-surface quadrature artifact must exist")
+  endif()
+  add_test(NAME shell_surface_mass_unit
+    COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_shell_surface_mass.py"
+      --quadrature "${ROBO_DYNA_SURFACE_QUADRATURE}" -v)
+  set_tests_properties(shell_surface_mass_unit PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE)
+  add_test(NAME source_attachments_unit
+    COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_source_attachments.py"
+      --quadrature "${ROBO_DYNA_SURFACE_QUADRATURE}" -v)
+  set_tests_properties(source_attachments_unit PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE)
+endif()
 
 # Full-model data stays outside git. Supplying its prepared path registers an
 # explicit integration gate; missing assets fail rather than produce a skip.

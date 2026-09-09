@@ -1,4 +1,4 @@
-#include "ReissnerShellCudaFixture.h"
+#include "ReissnerShellHostFixture.h"
 #include "lib_utest/qualification/reissner_batch/PrescribedShellBatch.h"
 
 #include <cstdlib>
@@ -6,6 +6,10 @@
 #include <limits>
 #include <stdexcept>
 #include <vector>
+
+#ifndef ROBO_DYNA_PRESCRIBED_EXPECTED_OPERATION
+#define ROBO_DYNA_PRESCRIBED_EXPECTED_OPERATION "scalar"
+#endif
 
 namespace crash::qualification {
 namespace {
@@ -150,6 +154,8 @@ TEST(PrescribedShellBatch, CapacityAdmissionOccursBeforeAnyDeviceAllocation) {
 
 TEST(PrescribedShellBatch, SelectedResidentBatchMatchesActualChronoAndReportsMeasuredPhases) {
     const auto selected = Selected();
+    ASSERT_STREQ(p1::PrescribedShellBatch::ForceOperationName(), ROBO_DYNA_PRESCRIBED_EXPECTED_OPERATION);
+    RecordProperty("force_operation", p1::PrescribedShellBatch::ForceOperationName());
     ActualReference canonical(Neutral()), offset(OffsetRest()), aspect(AspectRest());
     std::array<ActualReference*, 3> references{{&canonical, &offset, &aspect}};
     std::array<p1::PrescribedInput, 3> setup;

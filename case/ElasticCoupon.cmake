@@ -1,8 +1,9 @@
 include("${CRASH_TL_FEA_SOURCE_DIR}/lib_src/elements/ReissnerShellBatch.cmake")
+include(ElasticShellEnvelope.cmake)
 
 add_library(robo_dyna_elastic_coupon_case STATIC ElasticCouponCase.cpp ElasticCouponAdmission.cpp)
 target_link_libraries(robo_dyna_elastic_coupon_case PUBLIC
-  robo_dyna_elastic_coupon_reference tl_reissner_shell_batch crash_nodal_mesh_output)
+  robo_dyna_elastic_coupon_reference tl_reissner_shell_batch crash_nodal_mesh_output robo_dyna_elastic_shell_envelope)
 target_include_directories(robo_dyna_elastic_coupon_case PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_compile_options(robo_dyna_elastic_coupon_case PRIVATE -fno-fast-math -ffp-contract=off)
 

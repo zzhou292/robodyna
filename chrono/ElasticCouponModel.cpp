@@ -1,6 +1,7 @@
 #include "ElasticCouponModel.h"
 
 #include "ReissnerShellSetup.h"
+#include "ShellPatchAudit.h"
 #include "elements/ReissnerShellForce.h"
 #include "math/Quaternion.h"
 #include "chrono/core/ChTypes.h"
@@ -95,7 +96,9 @@ struct ElasticCouponModel::Impl {
     std::array<std::shared_ptr<Node>, kCouponNodes> nodes;
     std::array<std::shared_ptr<Element>, kCouponElements> elements;
 
-    Impl() {
+    explicit Impl(const ElasticCouponPose& pose) {
+        if (!tlr::detail::Finite(pose.translation) || !tl::math::UnitQuaternion(pose.rotation))
+            throw std::invalid_argument("Coupon reference pose requires finite translation and a unit quaternion");
         // Follow Chrono demo_FEA_shellsReissner.cpp's mesh/node/layer ownership.
         // This system never advances; it exists only to initialize the donor.
         system.SetNumThreads(1, 1, 1);
@@ -104,6 +107,19 @@ struct ElasticCouponModel::Impl {
         system.Add(mesh);
         data.reference_configuration.position = {{{.1, .05, 0}, {0, .05, 0}, {0, -.05, 0},
                                                   {.1, -.05, 0}, {.2, .05, 0}, {.2, -.05, 0}}};
+        const auto q=pose.rotation;
+        const bool unchanged=q.w==1 && q.x==0 && q.y==0 && q.z==0 &&
+                             pose.translation.x==0 && pose.translation.y==0 && pose.translation.z==0;
+        if (!unchanged) for (std::size_t n=0;n<kCouponNodes;++n) {
+            const auto x=data.reference_configuration.position[n];
+            // Preserve the guided plate's exact paired Y/Z coordinates.
+            const auto rotated=q.w==.5 && q.x==.5 && q.y==.5 && q.z==.5
+                                   ? tlr::Vec3{x.z,x.x,x.y} : tlr::detail::Product(tlr::detail::Rotation(q),x);
+            data.reference_configuration.position[n]=tlr::detail::Add(rotated,pose.translation);
+            data.reference_configuration.rotation[n]=q;
+            if (!tlr::detail::Finite(data.reference_configuration.position[n]))
+                throw std::invalid_argument("Coupon reference pose overflows its coordinates");
+        }
         data.connectivity = {{{0, 1, 2, 3}, {4, 0, 3, 5}}};
         auto elasticity = chrono_types::make_shared<chrono::fea::ChElasticityReissnerIsothropic>(
             data.young_modulus, data.poisson_ratio, 5.0 / 6.0, .01);
@@ -154,7 +170,8 @@ struct ElasticCouponModel::Impl {
     }
 };
 
-ElasticCouponModel::ElasticCouponModel() : impl_(std::make_unique<Impl>()) {}
+ElasticCouponModel::ElasticCouponModel() : ElasticCouponModel(ElasticCouponPose{}) {}
+ElasticCouponModel::ElasticCouponModel(const ElasticCouponPose& pose) : impl_(std::make_unique<Impl>(pose)) {}
 ElasticCouponModel::~ElasticCouponModel() = default;
 const ElasticCouponData& ElasticCouponModel::data() const { return impl_->data; }
 
@@ -221,27 +238,8 @@ ElasticCouponStatus ApplyElasticCouponIncrement(const ElasticCouponConfiguration
                                                const std::array<double, kCouponFreeDofs>& increment,
                                                double scale, ElasticCouponConfiguration& output,
                                                std::string& diagnostic) {
-    if (!ValidConfiguration(base) || !std::isfinite(scale)) {
-        diagnostic = "Coupon increment requires a valid base and finite scale";
-        return ElasticCouponStatus::kInvalidConfiguration;
-    }
-    auto candidate = base;
-    for (std::size_t free = 0; free < kCouponFreeNodes.size(); ++free) {
-        const auto n = kCouponFreeNodes[free];
-        const tlr::Vec3 shift{scale * increment[6 * free], scale * increment[6 * free + 1],
-                             scale * increment[6 * free + 2]};
-        const double spin[3] = {scale * increment[6 * free + 3], scale * increment[6 * free + 4],
-                               scale * increment[6 * free + 5]};
-        candidate.position[n] = tlr::detail::Add(base.position[n], shift);
-        if (!tlr::detail::Finite(candidate.position[n]) ||
-            !tl::math::IncrementWorldRotation(base.rotation[n], spin, candidate.rotation[n])) {
-            diagnostic = "Coupon increment produced invalid translation or world rotation";
-            return ElasticCouponStatus::kInvalidConfiguration;
-        }
-    }
-    output = candidate;
-    diagnostic.clear();
-    return ElasticCouponStatus::kSuccess;
+    const auto layout=patch_audit::FullCouponLayout();
+    return patch_audit::ApplyIncrement(base,layout.data(),layout.size(),increment.data(),scale,output,diagnostic);
 }
 
 }  // namespace crash::reference

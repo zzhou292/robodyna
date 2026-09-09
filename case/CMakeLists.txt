@@ -1,5 +1,5 @@
 find_package(GTest REQUIRED)
-if(CRASH_ENABLE_NORMAL_IMPACT OR CRASH_ENABLE_CANONICAL_WALL_CHECK)
+if(CRASH_ENABLE_NORMAL_IMPACT OR CRASH_ENABLE_CANONICAL_WALL_CHECK OR ROBO_DYNA_ENABLE_GUIDED_PLATE_CHECKS)
 set(CRASH_CANONICAL_WALL "" CACHE FILEPATH "Prepared canonical Yaris wall manifest")
 if(NOT EXISTS "${CRASH_CANONICAL_WALL}")
   message(FATAL_ERROR "CRASH_CANONICAL_WALL must name the prepared manifest; no fetch or skipped gate")
@@ -38,4 +38,9 @@ endif()
 
 if(ROBO_DYNA_ENABLE_ELASTIC_COUPON)
   include(ElasticCoupon.cmake)
+endif()
+
+if(ROBO_DYNA_ENABLE_GUIDED_PLATE_CHECKS)
+  include(GuidedPlateAdmission.cmake)
+  include(GuidedPlate.cmake)
 endif()

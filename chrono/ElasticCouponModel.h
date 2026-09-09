@@ -50,6 +50,13 @@ struct ElasticCouponEvaluation {
     double bending_energy = 0;
 };
 
+// Immutable startup pose, applied before the donor's one Setup call. The exact
+// cyclic quaternion (.5,.5,.5,.5) uses coordinate permutation (x,y,z)->(z,x,y).
+struct ElasticCouponPose {
+    tl::fea::reissner::Quaternion rotation;
+    tl::fea::reissner::Vec3 translation;
+};
+
 enum class ElasticCouponStatus {
     kSuccess,
     kInvalidConfiguration,
@@ -70,6 +77,7 @@ enum class ElasticCouponStatus {
 class ElasticCouponModel {
   public:
     ElasticCouponModel();
+    explicit ElasticCouponModel(const ElasticCouponPose&);
     ~ElasticCouponModel();
     ElasticCouponModel(const ElasticCouponModel&) = delete;
     ElasticCouponModel& operator=(const ElasticCouponModel&) = delete;

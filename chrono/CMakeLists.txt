@@ -6,7 +6,7 @@ if(ROBO_DYNA_ENABLE_Q4_CONTACT_MAPPING_CHECKS)
   include(Q4ContactMappingChecks.cmake)
 endif()
 
-if(ROBO_DYNA_ENABLE_SHELL_FORCE_CHECKS OR ROBO_DYNA_ENABLE_ELASTIC_COUPON)
+if(ROBO_DYNA_ENABLE_SHELL_FORCE_CHECKS OR ROBO_DYNA_ENABLE_ELASTIC_COUPON OR ROBO_DYNA_ENABLE_ANS_ROWS_CHECKS)
   include(ReissnerSetup.cmake)
 endif()
 
@@ -135,6 +135,22 @@ if(ROBO_DYNA_ENABLE_ELASTIC_COUPON)
   include(ElasticCouponChecks.cmake)
 endif()
 
+if(ROBO_DYNA_ENABLE_GUIDED_PLATE_CHECKS)
+  include(GuidedPlateChecks.cmake)
+endif()
+
 if(ROBO_DYNA_ENABLE_PRESCRIBED_BATCH_CHECKS)
   include(PrescribedShellBatchChecks.cmake)
+endif()
+
+if(ROBO_DYNA_ENABLE_ANS_ROWS_CHECKS)
+  include(ReissnerAnsRowsChecks.cmake)
+endif()
+
+if(ROBO_DYNA_ENABLE_GAUSS_CONTRACTION_CHECKS)
+  include(ReissnerGaussContractChecks.cmake)
+endif()
+
+if(ROBO_DYNA_ENABLE_SHELL_QUADRATURE_CHECKS)
+  include(ShellSurfaceQuadratureChecks.cmake)
 endif()

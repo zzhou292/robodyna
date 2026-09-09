@@ -2,18 +2,14 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
-#include <iomanip>
-#include <sstream>
 
 namespace crash::case_data {
 namespace shell = tl::fea::reissner;
 std::string CouponLimitDiagnostic(const char* quantity,double measured,double limit) {
-    std::ostringstream message;
-    message<<quantity<<": measured="<<std::setprecision(17)<<measured<<", limit="<<limit;
-    return message.str();
+    return ShellLimitDiagnostic(quantity,measured,limit);
 }
 double CouponKineticEnergy(const shell::ShellBatchDiagnostics& d) {
-    return d.kinetic_translation+d.kinetic_physical_rotation+d.kinetic_artificial_drilling;
+    return ShellKineticEnergy(d);
 }
 bool CheckElasticCouponEnvelope(const shell::ShellBatchDiagnostics& d,
                                 const reference::ElasticCouponModalReport& modal, double initial_energy,
@@ -23,25 +19,7 @@ bool CheckElasticCouponEnvelope(const shell::ShellBatchDiagnostics& d,
        !std::isfinite(maximum_displacement) || maximum_displacement<=0 ||
        maximum_displacement>ElasticCouponLimits::displacement)
         return reject("Invalid coupon envelope request or unqualified diagnostics");
-    for(double value:{d.elastic_energy,d.bending_energy,d.kinetic_translation,d.kinetic_physical_rotation,
-                      d.kinetic_artificial_drilling,d.maximum_displacement,d.maximum_director_departure,
-                      d.maximum_pair_angle,d.maximum_membrane_strain,d.maximum_thickness_curvature})
-        if(!std::isfinite(value) || value<0) return reject("Nonfinite or negative coupon diagnostic");
-    if(d.maximum_displacement>maximum_displacement)
-        return reject(CouponLimitDiagnostic("Coupon displacement envelope exceeded",d.maximum_displacement,maximum_displacement));
-    if(d.maximum_director_departure>ElasticCouponLimits::director_departure ||
-       d.maximum_pair_angle>=ElasticCouponLimits::pair_angle)
-        return reject("Coupon director envelope exceeded");
-    if(d.maximum_membrane_strain>ElasticCouponLimits::strain ||
-       d.maximum_thickness_curvature>ElasticCouponLimits::thickness_curvature)
-        return reject("Coupon strain envelope exceeded");
-    if(!std::isfinite(d.minimum_signed_area_ratio) || !std::isfinite(d.minimum_area_norm_ratio) ||
-       !std::isfinite(d.maximum_area_norm_ratio) || !std::isfinite(d.minimum_display_triangle_area_ratio) ||
-       d.minimum_signed_area_ratio<ElasticCouponLimits::minimum_area_ratio ||
-       d.minimum_area_norm_ratio<ElasticCouponLimits::minimum_area_ratio ||
-       d.maximum_area_norm_ratio>ElasticCouponLimits::maximum_area_ratio ||
-       d.minimum_display_triangle_area_ratio<=1e-12)
-        return reject("Coupon area/orientation envelope exceeded");
+    if(!CheckElasticShellGeometry(d,maximum_displacement,error)) return false;
     const double kinetic=CouponKineticEnergy(d),total=kinetic+d.elastic_energy;
     if(!std::isfinite(total) || std::abs(total-initial_energy)>ElasticCouponLimits::energy_fraction*initial_energy)
         return reject(CouponLimitDiagnostic("Coupon relative total energy envelope exceeded",

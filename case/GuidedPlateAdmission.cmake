@@ -1,0 +1,10 @@
+add_library(robo_dyna_guided_plate_admission STATIC GuidedPlateAdmission.cpp)
+target_link_libraries(robo_dyna_guided_plate_admission PUBLIC
+  robo_dyna_elastic_shell_envelope robo_dyna_guided_plate_reference)
+target_compile_options(robo_dyna_guided_plate_admission PRIVATE -fno-fast-math -ffp-contract=off)
+add_executable(robo_dyna_guided_plate_admission_check guided_plate_admission_check.cpp)
+target_link_libraries(robo_dyna_guided_plate_admission_check PRIVATE
+  robo_dyna_guided_plate_admission GTest::gtest_main)
+target_compile_options(robo_dyna_guided_plate_admission_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME guided_plate_admission COMMAND robo_dyna_guided_plate_admission_check)
+set_tests_properties(guided_plate_admission PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE PROCESSORS 1)
