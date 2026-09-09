@@ -41,6 +41,36 @@ and another backend cannot publish a new frame. The numerical fixture remains
 prescribed-motion qualification, with production rigid-motion behavior still
 open. The reusable adapter has no qualification-header/library dependency.
 
+## Force-driven TL nodal output
+
+`chrono/NodalMeshOutput` binds the real TL `FENodalState` owner to the existing
+Chrono accepted-mesh adapter. Three actual CUDA integration tests pass: additive
+forces advance resident physical nodes; output cadence publishes only committed
+positions; a late numerical overflow preserves the last visible frame and a
+clean retry can publish; a different live owner cannot replace the bound mesh.
+Positions remain binary64 and source IDs remain integers above 2^53.
+
+The app links TL's production `tl_explicit_nodal_state` target and Chrono core.
+This path requires no shell-qualification library, Fortran, DEME or second
+dynamics clock. State ownership and fixed-step advancement live in TL; this
+adapter only reads accepted state at the application's output cadence. It
+retains no source pointer between calls, and its host staging is preallocated.
+The current owner admits at most 64 nodes and supplied isotropic translational
+mass. The fixture is a force-driven triangular display mesh; it is not an
+elastic shell, mesh contact case, graphical viewer or Yaris crash.
+
+From the workspace root, with the existing core-only Chrono build:
+
+```sh
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/nodal-output-configure-rerun.json --max-rss-gib 0.5 --timeout 45 -- cmake -S crash-app -B crash-work/build/nodal-output -DCRASH_ENABLE_TL_NODAL_CHECK=ON -DChrono_DIR="$PWD/crash-work/build/chrono-core/cmake" -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_ARCHITECTURES=120 -DCMAKE_BUILD_TYPE=RelWithDebInfo
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/nodal-output-build-rerun.json --max-rss-gib 2 --timeout 120 -- cmake --build crash-work/build/nodal-output --target crash_tl_nodal_output_check --parallel 1
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/nodal-output-tests-rerun.json --gpu 0 --max-rss-gib 1 --max-gpu-growth-gib 1 --timeout 45 -- ctest --test-dir crash-work/build/nodal-output -R '^tl_nodal_output_integration$' --output-on-failure --parallel 1
+```
+
+All output/scene operations are externally serialized. Configure this optional
+path explicitly; ordinary file-format and generic mesh tests stay independent
+of CUDA. The state/stepper tests belong to TL's existing unit-test workflow.
+
 ## Optional Reissner reference: finite bending objectivity failed
 
 `CRASH_ENABLE_CHRONO_REISSNER_CHECK=ON` builds seven headless GoogleTests against

@@ -28,7 +28,7 @@ if(CRASH_ENABLE_CHRONO_REISSNER_CHECK)
     ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1")
 endif()
 
-if(CRASH_ENABLE_CHRONO_SNAPSHOT_CHECK OR CRASH_ENABLE_TL_CHRONO_CHECK)
+if(CRASH_ENABLE_CHRONO_SNAPSHOT_CHECK OR CRASH_ENABLE_TL_CHRONO_CHECK OR CRASH_ENABLE_TL_NODAL_CHECK)
   set(CRASH_TL_FEA_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../Total-Lagrangian-FEA"
       CACHE PATH "TL-FEA source root providing the generic host nodal view")
   if(NOT EXISTS "${CRASH_TL_FEA_SOURCE_DIR}/lib_src/solvers/FENodalStateView.h")
@@ -43,6 +43,25 @@ if(CRASH_ENABLE_CHRONO_SNAPSHOT_CHECK OR CRASH_ENABLE_TL_CHRONO_CHECK)
   add_test(NAME chrono_snapshot_integration COMMAND crash_chrono_snapshot_check)
   set_tests_properties(chrono_snapshot_integration PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE PROCESSORS 1
     ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1")
+endif()
+
+if(CRASH_ENABLE_TL_NODAL_CHECK)
+  enable_language(CUDA)
+  find_package(GTest REQUIRED)
+  add_subdirectory("${CRASH_TL_FEA_SOURCE_DIR}/lib_src/solvers" "tl-explicit-nodal-state")
+  add_library(crash_nodal_mesh_output STATIC NodalMeshOutput.cpp)
+  target_link_libraries(crash_nodal_mesh_output PUBLIC crash_accepted_surface tl_explicit_nodal_state)
+  add_executable(crash_tl_nodal_output_check nodal_output_check.cu)
+  set_target_properties(crash_tl_nodal_output_check PROPERTIES
+    CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+  # Chrono/Eigen mesh inspection is host-only; test kernels use TL POD views.
+  target_compile_definitions(crash_tl_nodal_output_check PRIVATE EIGEN_NO_CUDA)
+  target_link_libraries(crash_tl_nodal_output_check PRIVATE crash_nodal_mesh_output GTest::gtest_main)
+  target_compile_options(crash_tl_nodal_output_check PRIVATE
+    "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false>")
+  add_test(NAME tl_nodal_output_integration COMMAND crash_tl_nodal_output_check)
+  set_tests_properties(tl_nodal_output_integration PROPERTIES
+    TIMEOUT 60 RUN_SERIAL TRUE PROCESSORS 1)
 endif()
 
 if(CRASH_ENABLE_TL_CHRONO_CHECK)

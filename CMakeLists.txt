@@ -11,7 +11,8 @@ option(CRASH_ENABLE_CHRONO_CHECK "Build the external Chrono wall integration che
 option(CRASH_ENABLE_CHRONO_SNAPSHOT_CHECK "Build the TL host-view to Chrono accepted-surface check" OFF)
 option(CRASH_ENABLE_TL_CHRONO_CHECK "Build the CUDA shell qualification to Chrono accepted-state test" OFF)
 option(CRASH_ENABLE_CHRONO_REISSNER_CHECK "Build the prescribed-configuration Reissner reference tests (requires FEA-enabled Chrono core)" OFF)
-if(CRASH_ENABLE_CHRONO_CHECK OR CRASH_ENABLE_CHRONO_SNAPSHOT_CHECK OR CRASH_ENABLE_TL_CHRONO_CHECK OR CRASH_ENABLE_CHRONO_REISSNER_CHECK)
+option(CRASH_ENABLE_TL_NODAL_CHECK "Build the force-driven TL physical-node state to Chrono output tests" OFF)
+if(CRASH_ENABLE_CHRONO_CHECK OR CRASH_ENABLE_CHRONO_SNAPSHOT_CHECK OR CRASH_ENABLE_TL_CHRONO_CHECK OR CRASH_ENABLE_CHRONO_REISSNER_CHECK OR CRASH_ENABLE_TL_NODAL_CHECK)
   add_subdirectory(chrono)
 endif()
 
