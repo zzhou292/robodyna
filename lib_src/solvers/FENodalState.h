@@ -59,6 +59,16 @@ struct NodalAssemblyView {
   NodalAssemblyResult* result = nullptr;
   cudaStream_t stream = nullptr;
   std::uint64_t attempt = 0;
+  std::uint64_t owner_id = 0;  // Source association, not authentication of raw writes.
+};
+// Read-only completed candidate for module admission checks before commit.
+// kinematics.base_epoch remains the ACCEPTED base epoch of this attempt.
+// This is never an accepted snapshot or authority to publish output.
+struct NodalPreparedView {
+  DeviceNodalKinematicsView kinematics;
+  cudaStream_t stream = nullptr;
+  std::uint64_t owner_id = 0, attempt = 0;
+  double proposed_time = 0;
 };
 TL_SURFACE_HD inline void RecordNodalAssemblyFailure(
     const NodalAssemblyView& view, tlfea::contact::Status status,
@@ -108,6 +118,10 @@ class FENodalState {
                          const double* inverse_mass, const std::uint8_t* fixed);
   NodalReport BeginTrial(NodalTrialToken*, NodalAssemblyView*);
   NodalReport SealAssembly(const NodalTrialToken&);
+  // Only after AdvanceTranslations succeeds. Validators use the returned stream
+  // and finish before Commit; the coordinator must discard any rejected trial.
+  // Views expire on Commit/Discard/next BeginTrial or owner destruction.
+  NodalReport BorrowPrepared(const NodalTrialToken&, NodalPreparedView*);
   NodalReport Commit(const NodalTrialToken&) noexcept;
   void Discard() noexcept;
   NodalStamp accepted() const noexcept;

@@ -13,6 +13,21 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 
 package(default_visibility = ["//visibility:public"])
 
+cuda_library(
+    name = "planar_mesh_contact_device",
+    srcs = ["PlanarMeshContactDevice.cu"],
+    hdrs = ["PlanarMeshContact.h", "PlanarMeshContactStorage.h"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    deps = [":surface_contact_primitives", "//lib_src/solvers:explicit_nodal_state"],
+)
+
+cc_library(
+    name = "planar_mesh_contact",
+    srcs = ["PlanarMeshContact.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":planar_mesh_contact_device"],
+)
+
 cc_library(
     name = "surface_contact_primitives",
     hdrs = [

@@ -89,6 +89,7 @@ TEST_F(NodalStepCuda, TwoContributorsDriveSharedMassesAndPreserveFixedNodes) {
   fe::FENodalState state; ASSERT_EQ(state.Initialize(Config(in,.1),in.view(),in.inverse.data(),in.fixed.data()).status, NS::Ok);
   fe::NodalTrialToken token; fe::NodalAssemblyView view;
   ASSERT_EQ(state.BeginTrial(&token,&view).status, NS::Ok);
+  EXPECT_EQ(view.owner_id,state.accepted().owner_id);
   for (double magnitude : {4.,6.}) {
     AddForce<<<1,1,0,view.stream>>>(view,0,{magnitude,0,0});
     AddForce<<<1,1,0,view.stream>>>(view,1,{-magnitude,0,0});
@@ -299,6 +300,46 @@ TEST_F(NodalStepCuda, SnapshotValidationNeverPartiallyPublishesAndTrialIsInvisib
   AddForce<<<1,1,0,view.stream>>>(view,0,{4,0,0}); ASSERT_EQ(state.SealAssembly(t).status,NS::Ok);
   ASSERT_EQ(fe::AdvanceTranslations(state,t).status,NS::Ok); out={}; ASSERT_TRUE(Read(state,&out)); ExpectSame(before,out);
   ASSERT_EQ(state.Commit(t).status,NS::Ok); ASSERT_TRUE(Read(state,&out)); EXPECT_GT(out.x[0],before.x[0]); EXPECT_EQ(out.stamp.epoch,1u);
+}
+
+TEST_F(NodalStepCuda, PreparedValidationViewCannotPublishOrReviveRejectedState) {
+  Initial in; fe::FENodalState state,other;
+  ASSERT_EQ(state.Initialize(Config(in,.1),in.view(),in.inverse.data(),in.fixed.data()).status,NS::Ok);
+  ASSERT_EQ(other.Initialize(Config(in,.1),in.view(),in.inverse.data(),in.fixed.data()).status,NS::Ok);
+  fe::NodalTrialToken token,foreign; fe::NodalAssemblyView assembly;
+  fe::NodalPreparedView prepared;
+  ASSERT_EQ(state.BeginTrial(&token,&assembly).status,NS::Ok);
+  EXPECT_EQ(state.BorrowPrepared(token,&prepared).status,NS::WrongPhase);
+  EXPECT_EQ(prepared.kinematics.position_xyz,nullptr);
+  ASSERT_EQ(state.BeginTrial(&token,&assembly).status,NS::Ok);
+  AddForce<<<1,1,0,assembly.stream>>>(assembly,0,{2,0,0});
+  ASSERT_EQ(state.SealAssembly(token).status,NS::Ok);
+  ASSERT_EQ(fe::AdvanceTranslations(state,token).status,NS::Ok);
+  ASSERT_EQ(state.BorrowPrepared(token,&prepared).status,NS::Ok);
+  EXPECT_EQ(prepared.owner_id,state.accepted().owner_id);
+  EXPECT_EQ(prepared.kinematics.base_epoch,0u);
+  EXPECT_DOUBLE_EQ(prepared.proposed_time,.1);
+  std::array<double,3> candidate{};
+  ASSERT_EQ(cudaMemcpyAsync(candidate.data(),prepared.kinematics.position_xyz,sizeof(candidate),cudaMemcpyDeviceToHost,prepared.stream),cudaSuccess);
+  ASSERT_EQ(cudaStreamSynchronize(prepared.stream),cudaSuccess);
+  EXPECT_NEAR(candidate[0],.02,1e-16);
+  Snapshot accepted; ASSERT_TRUE(Read(state,&accepted)); EXPECT_DOUBLE_EQ(accepted.x[0],0);
+  // A case validator rejects the otherwise numerically finite candidate.
+  state.Discard(); EXPECT_EQ(state.Commit(token).status,NS::WrongPhase);
+  EXPECT_EQ(state.BorrowPrepared(token,&prepared).status,NS::WrongPhase);
+  EXPECT_EQ(prepared.kinematics.position_xyz,nullptr);
+  ASSERT_TRUE(Read(state,&accepted)); EXPECT_EQ(accepted.stamp.epoch,0u); EXPECT_DOUBLE_EQ(accepted.x[0],0);
+  ASSERT_EQ(other.BeginTrial(&foreign,&assembly).status,NS::Ok);
+  ASSERT_EQ(state.BeginTrial(&token,&assembly).status,NS::Ok);
+  ASSERT_EQ(state.SealAssembly(token).status,NS::Ok); ASSERT_EQ(fe::AdvanceTranslations(state,token).status,NS::Ok);
+  EXPECT_EQ(state.BorrowPrepared(foreign,&prepared).status,NS::StaleTrial);
+  EXPECT_EQ(state.Commit(token).status,NS::WrongPhase);
+  ASSERT_EQ(state.BeginTrial(&token,&assembly).status,NS::Ok);
+  ASSERT_EQ(state.SealAssembly(token).status,NS::Ok); ASSERT_EQ(fe::AdvanceTranslations(state,token).status,NS::Ok);
+  ASSERT_EQ(state.BorrowPrepared(token,&prepared).status,NS::Ok);
+  ASSERT_EQ(state.Commit(token).status,NS::Ok);
+  EXPECT_EQ(state.BorrowPrepared(token,&prepared).status,NS::StaleTrial);
+  EXPECT_EQ(state.accepted().epoch,1u);
 }
 
 TEST_F(NodalStepCuda, ActualLaunchFailurePoisonsOnlyTheOwnerAndPreservesHostMetadata) {

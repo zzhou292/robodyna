@@ -74,6 +74,14 @@ if(TL_CONTACT_ENABLE_CUDA)
   tl_contact_test(utest_nodal_step_cuda)
   set_tests_properties(utest_nodal_step_cuda PROPERTIES PROCESSORS 1)
 
+  add_subdirectory("${TL_ROOT}/lib_src/collision" "tl-planar-mesh-contact")
+  add_executable(utest_planar_mesh_contact_cuda "${TL_ROOT}/lib_utest/utest_planar_mesh_contact_cuda.cu")
+  target_link_libraries(utest_planar_mesh_contact_cuda PRIVATE tl_planar_mesh_contact)
+  target_compile_options(utest_planar_mesh_contact_cuda PRIVATE
+    "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false>")
+  tl_contact_test(utest_planar_mesh_contact_cuda)
+  set_tests_properties(utest_planar_mesh_contact_cuda PROPERTIES PROCESSORS 1)
+
   add_library(tl_contact_broadphase STATIC
     "${TL_ROOT}/lib_src/collision/HydroelasticBroadphase.cu"
     "${TL_ROOT}/lib_utils/mesh_manager.cc")

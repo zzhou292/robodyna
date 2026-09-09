@@ -184,6 +184,7 @@ NodalReport FENodalState::BeginTrial(NodalTrialToken* token, NodalAssemblyView* 
   view->forces = {s.scratch, s.scratch+n, s.scratch+2*n, s.scratch+3*n, s.scratch+4*n, s.scratch+5*n, n, s.stamp.epoch};
   view->bounds = &s.control->rows; view->result = &s.control->assembly;
   view->stream = s.stream; view->attempt = s.attempt;
+  view->owner_id = s.stamp.owner_id;
   s.phase = Phase::Assembling; return Ok();
 }
 
@@ -201,6 +202,22 @@ NodalReport FENodalState::SealAssembly(const NodalTrialToken& token) {
   report = s.SynchronizeControl(); if (report.status != NodalStatus::Ok) return report;
   s.phase = Phase::Sealed; return Ok();
 }
+NodalReport FENodalState::BorrowPrepared(const NodalTrialToken& token, NodalPreparedView* out) {
+  if (out) *out = {};
+  if (!impl_) return {NodalStatus::NotInitialized, "Owner is not initialized"};
+  auto& s = *impl_;
+  if (!s.usable) return {NodalStatus::DeviceFailure, "CUDA owner is poisoned"};
+  if (!out) return s.Reject(NodalStatus::InvalidInput, "Missing prepared view output");
+  if (!s.Matches(token.owner_id_, token.base_epoch_, token.attempt_))
+    return s.Reject(NodalStatus::StaleTrial, "Prepared token belongs to another owner or attempt");
+  if (s.phase != Phase::Ready) return s.Reject(NodalStatus::WrongPhase, "No completed valid advance");
+  const auto n = s.config.node_count;
+  out->kinematics = {s.trial, s.trial+3*n, s.scratch+8*n, n, s.stamp.epoch};
+  out->stream = s.stream; out->owner_id = s.stamp.owner_id;
+  out->attempt = s.attempt; out->proposed_time = s.candidate_time;
+  return Ok();
+}
+
 NodalReport FENodalState::Commit(const NodalTrialToken& token) noexcept {
   if (!impl_) return {NodalStatus::NotInitialized, "Owner is not initialized"};
   auto& s = *impl_;
