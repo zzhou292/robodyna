@@ -1,0 +1,10 @@
+add_library(robo_dyna_wall_study_provenance STATIC WallStudyProvenance.cpp)
+target_link_libraries(robo_dyna_wall_study_provenance PUBLIC robo_dyna_wall_tessellation PRIVATE
+  robo_dyna_guided_plate_study_io robo_dyna_canonical_wall_artifacts robo_dyna_artifact_io)
+target_compile_options(robo_dyna_wall_study_provenance PRIVATE -fno-fast-math -ffp-contract=off)
+add_executable(robo_dyna_wall_study_provenance_check wall_study_provenance_check.cpp)
+target_link_libraries(robo_dyna_wall_study_provenance_check PRIVATE robo_dyna_wall_study_provenance
+  robo_dyna_guided_plate_study_io robo_dyna_canonical_wall_artifacts robo_dyna_artifact_io GTest::gtest)
+target_compile_options(robo_dyna_wall_study_provenance_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME wall_study_provenance COMMAND robo_dyna_wall_study_provenance_check "${CRASH_CANONICAL_WALL}")
+set_tests_properties(wall_study_provenance PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE PROCESSORS 1)

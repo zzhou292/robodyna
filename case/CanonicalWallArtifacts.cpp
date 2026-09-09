@@ -12,6 +12,12 @@ void CheckCanonicalWallBinding(const CanonicalWall& wall,const std::string& byte
     // string. Reuse the same bounded loader; this is startup-only work.
     CanonicalWall expected;std::istringstream input(bytes);
     Require(expected.Load(input).status==WallStatus::Ok,"Pinned canonical input no longer satisfies its schema");
+    const auto& source=wall.provenance();const auto& pinned_source=expected.provenance();
+    Require(source.wall_file==pinned_source.wall_file&&source.combine_file==pinned_source.combine_file&&
+        source.wall_sha256==pinned_source.wall_sha256&&source.combine_sha256==pinned_source.combine_sha256&&
+        source.model_archive_reference_sha256==pinned_source.model_archive_reference_sha256&&
+        source.generator_sha256==pinned_source.generator_sha256&&source.obj_sha256==pinned_source.obj_sha256,
+        "Wall source provenance differs from pinned input");
     Require(wall.vertices().size()==expected.vertices().size()&&wall.triangles().size()==expected.triangles().size()&&
         wall.source_quads().size()==expected.source_quads().size()&&wall.stitching().size()==expected.stitching().size(),"Wall does not match pinned source counts");
     for(std::size_t i=0;i<wall.vertices().size();++i) {

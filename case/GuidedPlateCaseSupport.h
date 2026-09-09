@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GuidedPlateCase.h"
+#include "GuidedPlateContactIdentity.h"
 
 namespace crash::case_data::guided_detail {
 namespace fea=tl::fea;
@@ -17,6 +18,10 @@ struct ContactWall {
     contact::PlanarWallView view() const noexcept;
 };
 bool CopyCanonicalWall(const CanonicalWall&,ContactWall&,std::string& diagnostic);
+// Publishes the actual derived C3 preparation only after original physical
+// parent/projection/area and full all-active stiffness table agree exactly.
+bool PrepareTessellatedContact(const WallTessellation&,const ref::GuidedPlateModel&,
+                              contact::Q4PlanarGeometry&,std::string& diagnostic);
 std::string Describe(const shell::ShellBatchReport&);
 std::string Describe(const contact::Q4PlanarContactReport&);
 visual::Binding SurfaceBinding(const fea::NodalStamp&,const ref::GuidedPlateData&);
@@ -35,10 +40,14 @@ struct TrialScope {
 };
 bool SameStamp(const fea::NodalStamp&,const fea::NodalStamp&);
 bool Matches(const shell::ShellBatchDiagnostics&,const contact::Q4PlanarContactDiagnostics&,
-             std::uint64_t owner,std::uint64_t epoch,std::uint64_t attempt,bool candidate);
+             std::uint64_t owner,std::uint64_t epoch,std::uint64_t attempt,bool candidate,std::uint64_t wall_binding,
+             contact::Q4PlanarIntegrationBackend);
 bool MatchesPrepared(const fea::NodalPreparedView&,const fea::NodalAssemblyView&,const fea::NodalStamp&);
 bool MatchesAcceptedResults(const shell::ShellBatchDiagnostics&,const contact::Q4PlanarContactDiagnostics&,
-                            const fea::NodalStamp&);
+                            const fea::NodalStamp&,std::uint64_t wall_binding,contact::Q4PlanarIntegrationBackend);
+bool MatchesContactParents(const std::array<contact::Q4PlanarParentResult,ref::kCouponElements>&,
+                          const std::array<contact::SurfaceQ4,ref::kCouponElements>&,
+                          const contact::Q4PlanarContactDiagnostics&,contact::Q4PlanarIntegrationBackend);
 cudaError_t ReadAuditConfiguration(const fea::NodalPreparedView&,ref::ElasticCouponConfiguration&);
 bool AccumulateInterval(const shell::ShellBatchDiagnostics&,const contact::Q4PlanarContactDiagnostics& base,
                         const contact::Q4PlanarContactDiagnostics& endpoint,GuidedPlateMetrics& next);

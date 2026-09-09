@@ -253,6 +253,41 @@ TEST_F(GuidedPlateArtifactsCheck, RejectedAttemptRefreshesBothEndpointAssociatio
         EXPECT_EQ(std::stoull(OneInterval(directory/file).at("attempt")),before.metrics.applied_contact.attempt);
 }
 
+TEST_F(GuidedPlateArtifactsCheck, RectangularExecutionMetadataIsBoundBeforeAnyAcceptedPublication) {
+    GuidedPlateConfig config; config.integration_backend=contact::Q4PlanarIntegrationBackend::RectangularDyadic;
+    GuidedPlateCase run; const auto initialized=run.Initialize(wall,config);
+    ASSERT_EQ(initialized.status,Code::Ok)<<initialized.diagnostic;
+    TempRoot root; const auto directory=root.path/"rectangular-prefix";
+    GuidedPlateArtifacts writer(directory.string(),bytes,wall,run,FrameEvery(run)); writer.WriteFrame(run);
+    const auto saved_config=Json(directory/"configuration.json");
+    EXPECT_STREQ(saved_config["contact_integration_backend"].GetString(),"dyadic-rectangles");
+    const auto base=run.metrics()->stamp; ASSERT_EQ(run.Step().status,Code::Ok);
+    const auto before=out::ReadBounded(directory/"contact-intervals.csv",1024*1024);
+    auto bad=*run.metrics(); bad.contact.integration_backend=contact::Q4PlanarIntegrationBackend::ScalarDyadicSquares;
+    EXPECT_THROW(writer.RecordInterval(base,bad),std::runtime_error);
+    EXPECT_EQ(out::ReadBounded(directory/"contact-intervals.csv",1024*1024),before);
+    bad=*run.metrics(); bad.applied_contact.integration_backend=contact::Q4PlanarIntegrationBackend::ScalarDyadicSquares;
+    EXPECT_THROW(writer.RecordInterval(base,bad),std::runtime_error);
+    ASSERT_NO_THROW(writer.RecordInterval(base,*run.metrics()));
+    ASSERT_NO_THROW(writer.WriteFrame(run));
+    Frame frame; ASSERT_EQ(run.Capture(frame).status,Code::Ok);
+    const auto fields=Json(directory/"accepted-000001.fields.json");
+    EXPECT_STREQ(fields["contact_integration_backend"].GetString(),"dyadic-rectangles");
+    for(unsigned p=0;p<2;++p) {
+        const auto& parent=fields["contact_parents"][p];
+        EXPECT_STREQ(parent["contact_integration_backend"].GetString(),"dyadic-rectangles");
+        EXPECT_EQ(parent["deepest_u"].GetUint(),frame.parent[p].deepest_u);
+        EXPECT_EQ(parent["deepest_v"].GetUint(),frame.parent[p].deepest_v);
+    }
+    auto altered=frame; altered.parent[1].integration_backend=contact::Q4PlanarIntegrationBackend::ScalarDyadicSquares;
+    EXPECT_THROW(GuidedPlateFrameFields(altered,*run.guided_data()),std::runtime_error);
+    altered=frame; ++altered.parent[1].deepest_u;
+    EXPECT_THROW(GuidedPlateFrameFields(altered,*run.guided_data()),std::runtime_error);
+    altered=frame; ++altered.contact_association.leaves;
+    EXPECT_THROW(GuidedPlateFrameFields(altered,*run.guided_data()),std::runtime_error);
+    EXPECT_FALSE(fs::exists(directory/"manifest.json")); // Prefix only, never a completed trajectory.
+}
+
 TEST_F(GuidedPlateArtifactsCheck, ForeignStaleSkippedAndDuplicateInputsCannotPublishRows) {
     GuidedPlateCase run,foreign;auto r=run.Initialize(wall);ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
     r=foreign.Initialize(wall);ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;

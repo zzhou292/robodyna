@@ -3,6 +3,7 @@ add_library(robo_dyna_guided_plate_case STATIC GuidedPlateCase.cpp GuidedPlateCa
 target_link_libraries(robo_dyna_guided_plate_case PUBLIC
   robo_dyna_guided_plate_admission crash_canonical_wall tl_reissner_shell_batch
   tl_q4_planar_contact crash_nodal_mesh_output)
+target_link_libraries(robo_dyna_guided_plate_case PUBLIC robo_dyna_wall_tessellation)
 target_compile_options(robo_dyna_guided_plate_case PRIVATE -fno-fast-math -ffp-contract=off)
 
 add_executable(robo_dyna_guided_plate_check guided_plate_case_check.cpp)

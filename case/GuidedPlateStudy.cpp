@@ -1,5 +1,6 @@
 #include "chrono/core/ChMatrix.h"
 #include "GuidedPlateStudyInternal.h"
+#include "GuidedPlateContactIdentity.h"
 #include "ShellPatchFields.h"
 #include "chrono/core/ChQuaternion.h"
 #include "chrono_thirdparty/rapidjson/stringbuffer.h"
@@ -25,6 +26,7 @@ bool PrepareGuidedStudyConfig(const GuidedPlateMetrics& m,const reference::Elast
     c.wall_binding_id=m.contact.wall_binding_id; c.base_steps=m.required_steps/refinement; c.refinement=refinement;
     c.fixed_dt=m.stamp.fixed_dt; c.horizon=reference::GuidedPlateData::requested_horizon;
     c.initial_energy=m.initial_energy; c.wall_x=view.wall_x;
+    c.integration_backend=m.contact.integration_backend;
     try {
         io::Document doc; doc.SetObject(); AppendShellReference(doc,model);
         io::Value offsets(rapidjson::kArrayType),parents(rapidjson::kArrayType),constraints(rapidjson::kArrayType);
@@ -83,7 +85,8 @@ bool TimeMatches(double time,double expected,double h,std::uint64_t epoch) {
 }
 bool ValidConfig(const GuidedStudyConfig& c) {
     std::uint64_t final=0;
-    if(!c.owner_id||!c.qualification_id||!c.wall_binding_id||!GuidedStudySampleEpoch(c,200,final)||
+    if(!c.owner_id||!c.qualification_id||!c.wall_binding_id||!ValidGuidedContactBackend(c.integration_backend)||
+       !GuidedStudySampleEpoch(c,200,final)||
        !std::isfinite(c.fixed_dt)||c.fixed_dt<=0||!std::isfinite(c.horizon)||c.horizon<=0||
        !std::isfinite(c.initial_energy)||c.initial_energy<=0||!std::isfinite(c.wall_x)||
        c.experiment_sha256.size()!=64||c.experiment_sha256.find_first_not_of("0123456789abcdef")!=std::string::npos||
@@ -127,7 +130,8 @@ bool Endpoint(const GuidedStudyConfig& c,const GuidedPlateMetrics& m,std::string
        !TimeMatches(t.time,t.epoch*c.fixed_dt,c.fixed_dt,t.epoch)||
        (candidate?(!t.reactions_valid||t.reaction_base_epoch!=base||t.reaction_time+c.fixed_dt!=t.time):
                   (t.reactions_valid||t.reaction_base_epoch||t.reaction_time!=0))||
-       !s.valid||!d.valid||s.owner_id!=c.owner_id||d.owner_id!=c.owner_id||s.configuration_id!=c.qualification_id||
+       !s.valid||!ValidGuidedContactPartition(d,c.integration_backend)||
+       s.owner_id!=c.owner_id||d.owner_id!=c.owner_id||s.configuration_id!=c.qualification_id||
        d.configuration_id!=c.qualification_id||d.wall_binding_id!=c.wall_binding_id||!s.attempt||d.attempt!=s.attempt||
        s.base_epoch!=base||d.base_epoch!=base||
        s.phase!=(candidate?shell::ShellBatchPhase::kPreparedCandidate:shell::ShellBatchPhase::kAcceptedBase)||
@@ -143,7 +147,8 @@ bool Endpoint(const GuidedStudyConfig& c,const GuidedPlateMetrics& m,std::string
        !Nonnegative(m.wall_impulse.x))return Reject(error,"Study endpoint ledger is inconsistent");
     if(candidate) {
         const auto& a=m.applied_contact;
-        if(!a.valid||a.owner_id!=c.owner_id||a.configuration_id!=c.qualification_id||a.wall_binding_id!=c.wall_binding_id||
+        if(!ValidGuidedContactPartition(a,c.integration_backend)||a.parent_count!=2||a.covered_count!=2||
+           a.owner_id!=c.owner_id||a.configuration_id!=c.qualification_id||a.wall_binding_id!=c.wall_binding_id||
            a.base_epoch!=base||a.attempt!=s.attempt||a.phase!=ct::Q4PlanarContactPhase::AcceptedBase||!Force(a,force))
             return Reject(error,"Study applied force is not the consumed interval base");
     } else if(m.wall_impulse.x!=0)return Reject(error,"Initial study impulse must be zero");
@@ -152,10 +157,16 @@ bool Endpoint(const GuidedStudyConfig& c,const GuidedPlateMetrics& m,std::string
 
 bool Sample(const GuidedStudyConfig& c,const GuidedPlateMetrics& m,const GuidedPlateFrame& f,
             GuidedStudySample& out,bool& partial,bool& unequal,std::string& error) {
+    // Captured metrics retain the consumed interval association even if the
+    // endpoint scratch below was refreshed under a newer attempt. Validate each
+    // identity without equating the refresh attempt to that consumed interval.
+    if(!Endpoint(c,f.metrics,error))return false;
     const auto& s=f.element_association;const auto& d=f.contact_association;
     const bool candidate=s.phase==shell::ShellBatchPhase::kPreparedCandidate;
     const auto base=candidate&&m.stamp.epoch?m.stamp.epoch-1:m.stamp.epoch;
-    if(!SameStamp(f.stamp,m.stamp)||!SameStamp(f.metrics.stamp,m.stamp)||!s.valid||!d.valid||!s.attempt||
+    if(!SameStamp(f.stamp,m.stamp)||!SameStamp(f.metrics.stamp,m.stamp)||!s.valid||
+       !ValidGuidedContactPartition(d,f.parent.data(),f.parent.size(),c.integration_backend)||
+       d.parent_count!=2||d.covered_count!=2||!s.attempt||
        s.owner_id!=c.owner_id||d.owner_id!=c.owner_id||s.configuration_id!=c.qualification_id||d.configuration_id!=c.qualification_id||
        d.wall_binding_id!=c.wall_binding_id||s.base_epoch!=base||d.base_epoch!=base||s.attempt!=d.attempt||
        (candidate?(!m.stamp.epoch||d.phase!=ct::Q4PlanarContactPhase::PreparedCandidate):
@@ -193,7 +204,7 @@ bool Sample(const GuidedStudyConfig& c,const GuidedPlateMetrics& m,const GuidedP
     bool p=false,u=false;
     for(unsigned e=0;e<2;++e) {
         const auto& saved=c.contact_reference[e];const auto& r=f.parent[e].integration;
-        if(!f.parent[e].covered||!r.valid||r.parent_element_id!=saved.parent.parent_element_id||r.feature_id!=saved.parent.feature_id||
+        if(!f.parent[e].covered||r.parent_element_id!=saved.parent.parent_element_id||r.feature_id!=saved.parent.feature_id||
            r.base_epoch!=base||r.attempt!=s.attempt||!bounds::Nonnegative(r.active_area))
             return Reject(error,"Study parent field identity/area is invalid");
         p=p||(r.active_area.lower>0&&r.active_area.upper<saved.area_enclosure.lower);

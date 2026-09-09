@@ -1,4 +1,5 @@
 #include "AcceptedReplayData.h"
+#include "ContactIntegrationMetadata.h"
 #include "case/CanonicalWallArtifacts.h"
 #include <algorithm>
 #include <cmath>
@@ -63,6 +64,26 @@ void ReadGuidedConfiguration(Bundle& bundle, const Document& config, const Docum
         Require(bundle.inventory.count(name), "Guided replay lacks a required contributor ledger or canonical wall artifact");
     bundle.qualification_id=Unsigned(config,"qualification_id");
     bundle.wall_binding_id=Unsigned(config,"wall_binding_id");
+    bundle.explicit_contact_backend=config.HasMember(contact_metadata::BackendField);
+    bundle.contact_integration_backend=contact_metadata::Backend(config);
+    Require(contact_metadata::Backend(final,bundle.explicit_contact_backend)==bundle.contact_integration_backend&&
+            contact_metadata::Backend(manifest,bundle.explicit_contact_backend)==bundle.contact_integration_backend,
+            "Guided final/configuration/manifest contact backends differ");
+    if(bundle.explicit_contact_backend||config.HasMember("contact_max_depth")) {
+        const auto depth=Unsigned(config,"contact_max_depth");
+        Require(depth<=16,"Guided contact depth cap exceeds the archive protocol");
+        bundle.contact_depth_limit=static_cast<unsigned>(depth);
+    }
+    if(bundle.explicit_contact_backend||config.HasMember("contact_max_leaves")) {
+        const auto leaves=Unsigned(config,"contact_max_leaves");
+        Require(leaves&&leaves<=4096,"Guided contact leaf cap exceeds the archive protocol");
+        bundle.contact_leaf_limit=static_cast<unsigned>(leaves);
+    }
+    if(bundle.explicit_contact_backend||config.HasMember("contact_max_visits")) {
+        const auto visits=Unsigned(config,"contact_max_visits");
+        Require(visits&&visits<=16384,"Guided contact visit cap exceeds the archive protocol");
+        bundle.contact_visit_limit=static_cast<unsigned>(visits);
+    }
     Require(bundle.qualification_id && bundle.wall_binding_id &&
             Text(config,"canonical_wall_manifest_sha256") == case_data::kCanonicalWallManifestSha256 &&
             bundle.inventory.at("canonical-wall.manifest.json").hash == case_data::kCanonicalWallManifestSha256,
@@ -102,6 +123,9 @@ void CheckGuidedFields(const Bundle& bundle, const Entry& entry, const chrono::C
             Unsigned(fields,"qualification_id")==bundle.qualification_id &&
             Unsigned(fields,"wall_binding_id")==bundle.wall_binding_id, "Guided field identity/time binding mismatch");
     CheckPositionFields(fields,mesh);
+    const auto backend=contact_metadata::Backend(fields,bundle.explicit_contact_backend);
+    Require(backend==bundle.contact_integration_backend,"Guided contact execution backend changed");
+    const bool explicit_backend=bundle.explicit_contact_backend||fields.HasMember(contact_metadata::BackendField);
     Array(Member(fields,"orientation_wxyz"),4*bundle.info.node_count);
     for (const char* name : {"velocity_xyz_m_per_s","omega_world_xyz_rad_per_s",
                              "reaction_force_xyz_N_at_base","reaction_couple_world_xyz_Nm_at_base"})
@@ -121,6 +145,7 @@ void CheckGuidedFields(const Bundle& bundle, const Entry& entry, const chrono::C
     const auto& elements=Member(fields,"elements"); const auto& parents=Member(fields,"contact_parents");
     Require(elements.IsArray() && elements.Size()==bundle.contact_parents.size() &&
             parents.IsArray() && parents.Size()==bundle.contact_parents.size(), "Guided contributor parent count mismatch");
+    std::array<unsigned,2> maximum_axes{};
     for (unsigned i=0;i<elements.Size();++i) {
         const auto& element=elements[i]; const auto& parent=parents[i]; const auto& binding=bundle.contact_parents[i];
         Require(Unsigned(element,"parent_element")==binding.element && Unsigned(parent,"parent_element")==binding.element &&
@@ -138,8 +163,21 @@ void CheckGuidedFields(const Bundle& bundle, const Entry& entry, const chrono::C
         for (const auto& value : Member(parent,"nodal_force_magnitude_N").GetArray()) Certificate(value);
         Certificate(Member(parent,"resultant_magnitude_N")); Certificate(Member(parent,"potential_J")); ActiveArea(parent);
         for (const char* name : {"leaf_count","visited","deepest_leaf"}) (void)Unsigned(parent,name);
+        const auto leaves=Unsigned(parent,"leaf_count"),visits=Unsigned(parent,"visited");
+        Require(leaves&&leaves<=bundle.contact_leaf_limit&&visits>=leaves&&visits<=bundle.contact_visit_limit,
+                "Guided parent integration counts exceed their declared limits");
+        Require(contact_metadata::Backend(parent,explicit_backend)==backend,"Guided parent integration backend changed");
+        const auto axes=contact_metadata::Axes(parent,backend,Unsigned(parent,"deepest_leaf"),bundle.contact_depth_limit,explicit_backend);
+        for(unsigned axis=0;axis<2;++axis)maximum_axes[axis]=std::max(maximum_axes[axis],axes[axis]);
     }
     const auto& contact=Member(fields,"contact_result");
+    Require(contact.IsObject(),"Guided aggregate contact result must be an object");
+    if(explicit_backend||contact.HasMember(contact_metadata::BackendField)||contact.HasMember("deepest_u")||
+       contact.HasMember("deepest_v")||contact.HasMember("deepest_leaf")) {
+        Require(contact_metadata::Backend(contact,explicit_backend)==backend,"Guided aggregate integration backend changed");
+        Require(contact_metadata::Axes(contact,backend,Unsigned(contact,"deepest_leaf"),bundle.contact_depth_limit,true)==maximum_axes,
+                "Guided aggregate depths disagree with the parent partitions");
+    }
     for (const char* name : {"wall_reaction_N","wall_moment_Nm","force_error_N","wall_moment_error_Nm"})
         Array(Member(contact,name),3);
     for (const char* name : {"force_error_N","wall_moment_error_Nm"})

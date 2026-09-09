@@ -76,9 +76,22 @@ applied contact occurs at epoch 12,365 / 123.668550 ms. The tested prefix reache
 Accepted bundle support now passes seven writer and seven reader checks, with
 one added scene check and passing legacy output regressions. Six host wall
 transformation tests cover original/flipped/subdivided meshes, explicit derived
-provenance and prescribed-state contact invariance. Eleven study and six report
-IO tests also pass. Next are the full h/h2/h4 impact, wall-variant response
-checks and rendered playback.
+provenance and prescribed-state contact invariance. Thirteen study, six report
+IO and three small derived-wall case tests pass. The first full-h attempt
+reached saved epoch 12,500 / 125.019 ms before the 240-second guard stopped it.
+No completed bundle, rebound or refinement is claimed. Prescribed profiling
+finds thousands of serial C2 leaves at partial contact, with about 168–402 ms
+per active-parent CUDA evaluation. The direction-selective dyadic candidate now
+passes twelve host/four CUDA functions and all three pinned saved-state profiles:
+both partial-contact states use eleven leaves, taking about 1.116/1.749 ms on
+the GPU with unchanged geometry and error/capacity budgets. Its opt-in C4 path
+passes all 23 owner-test executions (twelve distinct functions), with scalar
+remaining the default and one selected bounded allocation. Application backend
+identity, Study/report and accepted replay wiring are being tested before a
+new full h/h2/h4 impact, wall-response studies and rendering. The physical
+experiment identity remains unchanged; the integration backend is an explicit
+additional configuration identity, including recorded axis-depth conventions.
+See [the contact execution review](../../planning/GUIDED_CONTACT_EXECUTION_REVIEW.md).
 See the [guided plate implementation](../../planning/GUIDED_PLATE_IMPLEMENTATION.md).
 Parallel E1 passes 12 synthetic declaration tests and the original PID 2000157
 closure compilation; it does not yet supply geometry/mass/attachment admission.

@@ -26,6 +26,10 @@ struct Bundle {
     double fixed_dt = 0;
     std::uint64_t qualification_id = 0, wall_binding_id = 0;
     std::vector<ContactParentBinding> contact_parents;
+    std::string contact_integration_backend;
+    unsigned contact_depth_limit=16;
+    unsigned contact_leaf_limit=4096,contact_visit_limit=16384;
+    bool explicit_contact_backend=false;
 };
 Document Json(const std::string& bytes);
 const Value& Member(const Value&, const char* name);

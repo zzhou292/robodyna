@@ -6,7 +6,15 @@ target_compile_options(robo_dyna_wall_tessellation PRIVATE -fno-fast-math -ffp-c
 add_executable(robo_dyna_wall_tessellation_check wall_tessellation_check.cpp)
 target_include_directories(robo_dyna_wall_tessellation_check PRIVATE "${CRASH_TL_FEA_SOURCE_DIR}")
 target_link_libraries(robo_dyna_wall_tessellation_check PRIVATE robo_dyna_wall_tessellation
-  robo_dyna_guided_plate_admission robo_dyna_canonical_wall_artifacts robo_dyna_artifact_io GTest::gtest)
+  robo_dyna_guided_plate_reference robo_dyna_canonical_wall_artifacts robo_dyna_artifact_io GTest::gtest)
 target_compile_options(robo_dyna_wall_tessellation_check PRIVATE -fno-fast-math -ffp-contract=off)
 add_test(NAME wall_tessellation COMMAND robo_dyna_wall_tessellation_check "${CRASH_CANONICAL_WALL}")
 set_tests_properties(wall_tessellation PROPERTIES TIMEOUT 60 RUN_SERIAL TRUE PROCESSORS 1)
+
+add_executable(robo_dyna_guided_plate_wall_case_check guided_plate_wall_case_check.cpp)
+target_link_libraries(robo_dyna_guided_plate_wall_case_check PRIVATE robo_dyna_guided_plate_artifacts
+  robo_dyna_canonical_wall_artifacts robo_dyna_artifact_io GTest::gtest)
+target_compile_options(robo_dyna_guided_plate_wall_case_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME guided_plate_wall_case COMMAND robo_dyna_guided_plate_wall_case_check "${CRASH_CANONICAL_WALL}")
+set_tests_properties(guided_plate_wall_case PROPERTIES TIMEOUT 60 RUN_SERIAL TRUE PROCESSORS 1
+  ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1")

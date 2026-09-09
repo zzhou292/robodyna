@@ -1,4 +1,6 @@
 #include "GuidedPlateStudyIO.h"
+#include "GuidedPlateComparisonFields.h"
+#include "GuidedPlateContactProtocol.h"
 #include "output/ArtifactIO.h"
 #include "chrono_thirdparty/rapidjson/stringbuffer.h"
 #include "chrono_thirdparty/rapidjson/prettywriter.h"
@@ -31,6 +33,9 @@ Document Config(const GuidedStudyConfig& c) {
     io::Integer(d,"owner_id",c.owner_id);io::Integer(d,"qualification_id",c.qualification_id);
     io::Integer(d,"wall_binding_id",c.wall_binding_id);io::Integer(d,"base_steps",c.base_steps);
     io::Integer(d,"refinement",c.refinement);io::Number(d,"fixed_dt",c.fixed_dt);io::Number(d,"horizon",c.horizon);
+    const auto* backend=GuidedContactBackendName(c.integration_backend);
+    io::Require(backend&&io::contact_metadata::Known(backend),"Invalid contact integration backend");
+    io::String(d,io::contact_metadata::BackendField,backend);
     io::Number(d,"initial_energy",c.initial_energy);io::Number(d,"wall_x",c.wall_x);
     io::String(d,"experiment_sha256",c.experiment_sha256);
     Array(d,"reference_position",c.reference_position);Array(d,"reference_rotation",c.reference_rotation);
@@ -102,13 +107,7 @@ void WriteGuidedPlateComparison(const std::filesystem::path& path,const GuidedSt
     for(const auto* hash:{&coarse,&fine})io::Require(hash->size()==64&&hash->find_first_not_of("0123456789abcdef")==std::string::npos,
                                                  "Comparison requires report SHA256 bindings");
     Document d;d.SetObject();io::String(d,"schema","robo_dyna.guided_plate_comparison.v1");
-    io::String(d,"coarse_sha256",coarse);io::String(d,"fine_sha256",fine);io::Boolean(d,"passed",c.passed);
-    io::String(d,"diagnostic",c.diagnostic);
-    io::Number(d,"displacement_ratio",c.displacement_ratio);io::Number(d,"velocity_ratio",c.velocity_ratio);
-    io::Number(d,"rotation_ratio",c.rotation_ratio);io::Number(d,"force_ratio",c.force_ratio);
-    io::Number(d,"impulse_ratio",c.impulse_ratio);io::Number(d,"energy_ratio",c.energy_ratio);
-    io::Number(d,"event_ratio",c.event_ratio);io::Number(d,"penetration_ratio",c.penetration_ratio);
-    io::Boolean(d,"energy_envelopes",c.energy_envelopes);io::Boolean(d,"deforming_contact_evidence",c.deforming_contact_evidence);
-    io::Boolean(d,"events_complete",c.events_complete);WriteBounded(path,d);
+    io::String(d,"coarse_sha256",coarse);io::String(d,"fine_sha256",fine);
+    comparison_io::Append(d,c);WriteBounded(path,d);
 }
 } // namespace crash::case_data

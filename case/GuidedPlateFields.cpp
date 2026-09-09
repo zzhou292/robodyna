@@ -1,6 +1,8 @@
 #include "GuidedPlateFields.h"
 #include "CanonicalWallArtifacts.h"
 #include "ShellPatchFields.h"
+#include "GuidedPlateContactIdentity.h"
+#include "output/ContactIntegrationMetadata.h"
 #include "lib_src/collision/Q4ContactBounds.h"
 #include <cmath>
 
@@ -39,6 +41,8 @@ void CheckFrame(const GuidedPlateFrame& f) {
         ((candidate&&f.stamp.epoch&&c.phase==ct::Q4PlanarContactPhase::PreparedCandidate)||
          (!candidate&&s.phase==tl::fea::reissner::ShellBatchPhase::kAcceptedBase&&c.phase==ct::Q4PlanarContactPhase::AcceptedBase)),
         "Guided fields do not identify matching accepted endpoint evaluations");
+    Require(ValidGuidedContactPartition(c,c.integration_backend)&&
+        ValidGuidedContactPartition(f.metrics.contact,c.integration_backend),"Guided field contact backend or depths mismatch");
     Require(f.metrics.stamp.owner_id==f.stamp.owner_id && f.metrics.stamp.epoch==f.stamp.epoch &&
         f.metrics.stamp.node_count==f.stamp.node_count&&f.metrics.stamp.has_rotations==f.stamp.has_rotations&&
         Bits(f.metrics.stamp.time)==Bits(f.stamp.time)&&Bits(f.metrics.stamp.fixed_dt)==Bits(f.stamp.fixed_dt)&&
@@ -50,14 +54,17 @@ void CheckFrame(const GuidedPlateFrame& f) {
 }
 void AppendContact(Document& doc,const GuidedPlateFrame& f,const reference::GuidedPlateData& model) {
     const auto& d=f.contact_association;
-    Require(d.parent_count==model.parents.size()&&d.covered_count==model.parents.size(),"Missing guided covered parents");
+    Require(d.parent_count==model.parents.size()&&d.covered_count==model.parents.size()&&
+            ValidGuidedContactPartition(d,f.parent.data(),f.parent.size(),d.integration_backend),
+            "Missing guided covered parents or inconsistent contact partition");
     for(const auto error:{d.force_error,d.wall_moment_error})
         Require(error.x>=0&&error.y>=0&&error.z>=0,"Negative guided contact force/moment uncertainty");
     Value parents(rapidjson::kArrayType);
     for(unsigned p=0;p<model.parents.size();++p) {
         const auto& source=model.parents[p]; const auto& result=f.parent[p]; const auto& r=result.integration;
         Require(result.covered&&r.valid&&r.parent_element_id==source.parent_element_id&&r.feature_id==source.feature_id&&
-                r.base_epoch==d.base_epoch&&r.attempt==d.attempt,"Guided contact parent association mismatch");
+                r.base_epoch==d.base_epoch&&r.attempt==d.attempt&&ValidGuidedContactPartition(result,d.integration_backend),
+                "Guided contact parent association mismatch");
         Value item=ParentBinding(doc,source),force(rapidjson::kArrayType),couple(rapidjson::kArrayType),cert(rapidjson::kArrayType);
         item.AddMember("covered",result.covered,doc.GetAllocator()); item.AddMember("valid",r.valid,doc.GetAllocator());
         item.AddMember("base_epoch",Value().SetUint64(r.base_epoch),doc.GetAllocator());
@@ -74,10 +81,18 @@ void AppendContact(Document& doc,const GuidedPlateFrame& f,const reference::Guid
         item.AddMember("potential_J",Certificate(doc,r.potential),doc.GetAllocator());
         item.AddMember("active_area_m2",Interval(doc,r.active_area),doc.GetAllocator());
         item.AddMember("leaf_count",r.leaf_count,doc.GetAllocator()); item.AddMember("visited",r.visited,doc.GetAllocator());
-        item.AddMember("deepest_leaf",r.deepest_leaf,doc.GetAllocator()); parents.PushBack(item,doc.GetAllocator());
+        item.AddMember("deepest_leaf",r.deepest_leaf,doc.GetAllocator());
+        item.AddMember("deepest_u",result.deepest_u,doc.GetAllocator()); item.AddMember("deepest_v",result.deepest_v,doc.GetAllocator());
+        item.AddMember(rapidjson::StringRef(contact_metadata::BackendField),
+                       Value(GuidedContactBackendName(result.integration_backend),doc.GetAllocator()),doc.GetAllocator());
+        parents.PushBack(item,doc.GetAllocator());
     }
     doc.AddMember("contact_parents",parents,doc.GetAllocator());
     Value result(rapidjson::kObjectType);
+    result.AddMember(rapidjson::StringRef(contact_metadata::BackendField),
+                     Value(GuidedContactBackendName(d.integration_backend),doc.GetAllocator()),doc.GetAllocator());
+    result.AddMember("deepest_leaf",d.deepest_leaf,doc.GetAllocator());
+    result.AddMember("deepest_u",d.deepest_u,doc.GetAllocator()); result.AddMember("deepest_v",d.deepest_v,doc.GetAllocator());
     result.AddMember("wall_reaction_N",Vector(doc,d.wall_reaction),doc.GetAllocator());
     result.AddMember("wall_moment_Nm",Vector(doc,d.wall_moment),doc.GetAllocator());
     result.AddMember("force_error_N",Vector(doc,d.force_error),doc.GetAllocator());
@@ -116,6 +131,7 @@ Document GuidedPlateFrameFields(const GuidedPlateFrame& f,const reference::Guide
     FiniteArray(doc,"reaction_couple_world_xyz_Nm_at_base",f.reaction_couple.data(),f.reaction_couple.size());
     const auto& s=f.element_association; const auto& c=f.contact_association;
     Integer(doc,"qualification_id",s.configuration_id); Integer(doc,"wall_binding_id",c.wall_binding_id);
+    String(doc,contact_metadata::BackendField,GuidedContactBackendName(c.integration_backend));
     Integer(doc,"element_evaluation_base_epoch",s.base_epoch); Integer(doc,"element_evaluation_attempt",s.attempt);
     Integer(doc,"contact_evaluation_base_epoch",c.base_epoch); Integer(doc,"contact_evaluation_attempt",c.attempt);
     const char* phase=s.phase==tl::fea::reissner::ShellBatchPhase::kAcceptedBase?"accepted_base":"prepared_candidate_subsequently_committed";
@@ -141,6 +157,9 @@ Document GuidedPlateConfiguration(const GuidedPlateCase& run,unsigned frame_ever
     String(doc,"canonical_wall_manifest_sha256",canonical_sha);
     Integer(doc,"owner_id",b.identity.owner); Integer(doc,"run_id",b.identity.run); Integer(doc,"topology_id",b.identity.topology);
     Integer(doc,"qualification_id",kGuidedPlateQualification); Integer(doc,"wall_binding_id",g.wall_binding_id);
+    Require(ValidGuidedContactPartition(run.metrics()->contact,run.integration_backend()),"Guided configuration backend mismatch");
+    String(doc,contact_metadata::BackendField,GuidedContactBackendName(run.integration_backend()));
+    String(doc,"contact_depth_convention","Independent U/V resolution; deepest_leaf=max(U,V); scalar squares have U=V");
     Number(doc,"fixed_dt_s",run.metrics()->stamp.fixed_dt); Number(doc,"requested_horizon_s",m.horizon);
     Integer(doc,"required_steps",run.metrics()->required_steps); Integer(doc,"frame_every",frame_every);
     Require(m.step_count&&run.metrics()->required_steps%m.step_count==0&&run.diagnostic_stride(),"Invalid guided accepted schedule metadata");

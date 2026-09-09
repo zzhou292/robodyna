@@ -1,0 +1,30 @@
+# Application composition and CLI, after the independent Study/provenance modules.
+add_library(robo_dyna_guided_plate_wall_study_io STATIC GuidedPlateWallStudyIO.cpp)
+target_link_libraries(robo_dyna_guided_plate_wall_study_io PUBLIC robo_dyna_guided_plate_study_io
+  robo_dyna_wall_study_provenance PRIVATE robo_dyna_canonical_wall_artifacts robo_dyna_artifact_io)
+target_compile_options(robo_dyna_guided_plate_wall_study_io PRIVATE -fno-fast-math -ffp-contract=off)
+
+add_library(robo_dyna_guided_plate_run STATIC GuidedPlateRun.cpp)
+target_link_libraries(robo_dyna_guided_plate_run PUBLIC robo_dyna_guided_plate_case PRIVATE
+  robo_dyna_guided_plate_artifacts robo_dyna_guided_plate_study_io robo_dyna_wall_study_provenance
+  robo_dyna_canonical_wall_artifacts robo_dyna_artifact_io)
+target_compile_options(robo_dyna_guided_plate_run PRIVATE -fno-fast-math -ffp-contract=off)
+
+add_library(robo_dyna_guided_plate_cli STATIC GuidedPlateCli.cpp)
+target_link_libraries(robo_dyna_guided_plate_cli PUBLIC robo_dyna_guided_plate_run robo_dyna_guided_plate_wall_study_io
+  PRIVATE robo_dyna_guided_plate_study_io robo_dyna_artifact_io)
+target_compile_options(robo_dyna_guided_plate_cli PRIVATE -fno-fast-math -ffp-contract=off)
+add_executable(robo-dyna-guided guided_plate_main.cpp)
+target_link_libraries(robo-dyna-guided PRIVATE robo_dyna_guided_plate_cli)
+
+add_executable(robo_dyna_guided_plate_cli_check guided_plate_cli_check.cpp)
+target_link_libraries(robo_dyna_guided_plate_cli_check PRIVATE robo_dyna_guided_plate_cli GTest::gtest_main)
+target_compile_options(robo_dyna_guided_plate_cli_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME guided_plate_cli COMMAND robo_dyna_guided_plate_cli_check)
+set_tests_properties(guided_plate_cli PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE PROCESSORS 1)
+
+add_executable(robo_dyna_guided_plate_wall_study_io_check guided_plate_wall_study_io_check.cpp)
+target_link_libraries(robo_dyna_guided_plate_wall_study_io_check PRIVATE robo_dyna_guided_plate_cli GTest::gtest)
+target_compile_options(robo_dyna_guided_plate_wall_study_io_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME guided_plate_wall_study_io COMMAND robo_dyna_guided_plate_wall_study_io_check "${CRASH_CANONICAL_WALL}")
+set_tests_properties(guided_plate_wall_study_io PROPERTIES TIMEOUT 60 RUN_SERIAL TRUE PROCESSORS 1)

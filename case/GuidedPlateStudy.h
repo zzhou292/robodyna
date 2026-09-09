@@ -20,6 +20,9 @@ struct GuidedStudyConfig {
     std::array<double,24> reference_rotation{};
     std::array<tlfea::contact::PreparedQ4PlanarParent,2> contact_reference{};
     GuidedStudyInterval total_reference_area;
+    // Execution identity is separate from the physical experiment fingerprint.
+    tlfea::contact::Q4PlanarIntegrationBackend integration_backend =
+        tlfea::contact::Q4PlanarIntegrationBackend::ScalarDyadicSquares;
 };
 // Exactly ceil(j*base_steps/200)*refinement, without overflowing products.
 // The admitted base count is >=200, so all 201 epochs are distinct.
@@ -101,9 +104,18 @@ struct GuidedStudyComparison {
 };
 // Valid input with a failed numerical gate still publishes a comparison with
 // passed=false. Malformed/stale/mismatched input rejects and preserves output.
-// Owners differ; experiment/source tables and initial geometry must agree.
+// Owner IDs are process-local and may match across independent report files.
+// Physical experiment tables, initial geometry and execution backend must agree.
 // Read-only completed-record validation for bounded StudyIO. No fake comparison.
 bool ValidateGuidedPlateStudy(const GuidedStudyData&,std::string& diagnostic);
 bool CompareGuidedPlateStudies(const GuidedStudyData& coarse,const GuidedStudyData& fine,
                               GuidedStudyComparison& output,std::string& diagnostic);
+// Same-h wall response: distinct nonzero wall bindings, identical schedule and
+// physical experiment/initial configuration and backend. The canonical response supplies
+// the directed 5% scales. This function does not authenticate wall provenance:
+// callers must separately validate regenerated wall/source sidecars and exact
+// report-byte bindings. No sidecar/file I/O or new mechanics gate occurs here.
+// Malformed inputs preserve output; valid failed comparisons publish all ratios.
+bool CompareGuidedPlateWallStudies(const GuidedStudyData& derived,const GuidedStudyData& canonical,
+                                  GuidedStudyComparison& output,std::string& diagnostic);
 } // namespace crash::case_data

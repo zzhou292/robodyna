@@ -8,6 +8,10 @@
 namespace crash::case_data {
 enum class WallTessellationKind : std::uint8_t { Original=0, FlipConvexPairs=1, UniformFour=2 };
 const char* WallTessellationName(WallTessellationKind) noexcept;
+inline constexpr std::uint64_t kOriginalWallTessellationBinding=0x5941524953574131ULL;
+// Fixed experiment bindings, not source node/element IDs. Invalid kinds return
+// zero. Geometry/source authentication still requires the retained metadata.
+std::uint64_t WallTessellationBindingId(WallTessellationKind) noexcept;
 // These IDs are explicitly synthetic feature identifiers, not imported deck
 // node/element IDs. A derived mesh is identified by source SHA + transform +
 // mesh SHA, and requires a distinct owner wall binding in mechanical use.

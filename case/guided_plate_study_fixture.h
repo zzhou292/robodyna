@@ -43,6 +43,7 @@ inline GuidedPlateFrame Frame(const GuidedStudyConfig& c,std::uint64_t epoch,con
     auto& s=m.shell;s.valid=true;s.owner_id=c.owner_id;s.configuration_id=c.qualification_id;s.attempt=epoch+1;
     s.base_epoch=epoch?epoch-1:0;s.phase=epoch?sh::ShellBatchPhase::kPreparedCandidate:sh::ShellBatchPhase::kAcceptedBase;
     auto& d=m.contact;d.valid=true;d.owner_id=c.owner_id;d.configuration_id=c.qualification_id;d.wall_binding_id=c.wall_binding_id;
+    d.integration_backend=c.integration_backend;d.leaves=2;d.visited=2;
     d.attempt=s.attempt;d.base_epoch=s.base_epoch;d.phase=epoch?ct::Q4PlanarContactPhase::PreparedCandidate:ct::Q4PlanarContactPhase::AcceptedBase;
     d.parent_count=d.covered_count=2;
     const bool active=epoch>50*c.refinement&&epoch<=110*c.refinement;
@@ -68,7 +69,8 @@ inline GuidedPlateFrame Frame(const GuidedStudyConfig& c,std::uint64_t epoch,con
         const auto q=turn*reference;for(unsigned j=0;j<4;++j)f.rotation[4*n+j]=q[j];
     }
     for(unsigned e=0;e<2;++e) {
-        auto& p=f.parent[e];p.covered=true;auto& r=p.integration;r.valid=true;
+        auto& p=f.parent[e];p.covered=true;p.integration_backend=c.integration_backend;
+        auto& r=p.integration;r.valid=true;r.leaf_count=1;r.visited=1;
         r.feature_id=c.contact_reference[e].parent.feature_id;r.parent_element_id=c.contact_reference[e].parent.parent_element_id;
         r.base_epoch=s.base_epoch;r.attempt=s.attempt;r.active_area=active?GuidedStudyInterval{.002,.003}:GuidedStudyInterval{};
         for(unsigned n=0;n<4;++n) {const double force=active?.05*(n+1):0;r.force[n]=Cert(force,force,force);}

@@ -1,4 +1,5 @@
 #include "GuidedPlateCase.h"
+#include "GuidedPlateContactIdentity.h"
 #include "chrono/core/ChQuaternion.h"
 #include "chrono/geometry/ChTriangleMeshConnected.h"
 #include <gtest/gtest.h>
@@ -18,11 +19,15 @@ namespace contact=tlfea::contact;
 using Vec=chrono::ChVector3d;
 using Frame=GuidedPlateFrame;
 using Code=GuidedPlateStatus;
+using Backend=contact::Q4PlanarIntegrationBackend;
 std::string asset;
 
-class GuidedPlate : public ::testing::Test {
+class GuidedPlate : public ::testing::TestWithParam<Backend> {
   protected:
     CanonicalWall wall;
+    GuidedPlateConfig Config(unsigned refinement=1,unsigned intervals=20) const {
+        return {refinement,intervals,GetParam()};
+    }
     void SetUp() override {
         int devices=0; ASSERT_EQ(cudaGetDeviceCount(&devices),cudaSuccess); ASSERT_GT(devices,0);
         const auto loaded=wall.LoadFile(asset); ASSERT_EQ(loaded.status,WallStatus::Ok)<<loaded.message;
@@ -33,6 +38,11 @@ Vec Read(const std::array<double,3*ref::kCouponNodes>& value,std::size_t n) { re
 Vec ToVector(shell::Vec3 value) { return {value.x,value.y,value.z}; }
 Vec ToVector(contact::Vec3 value) { return {value.x,value.y,value.z}; }
 double Tip(const Frame& frame) { return .5*(frame.position[12]+frame.position[15]); }
+void ExpectBackend(const Frame& frame,Backend expected) {
+    EXPECT_TRUE(ValidGuidedContactPartition(frame.metrics.contact,expected));
+    if (frame.stamp.epoch) EXPECT_TRUE(ValidGuidedContactPartition(frame.metrics.applied_contact,expected));
+    EXPECT_TRUE(ValidGuidedContactPartition(frame.contact_association,frame.parent.data(),frame.parent.size(),expected));
+}
 void ExpectVector(const Vec& actual,const Vec& expected,double absolute,double relative=1e-9) {
     EXPECT_LE((actual-expected).Length(),absolute+relative*expected.Length());
 }
@@ -77,6 +87,9 @@ void ExpectAcceptedEqual(const Frame& a,const Frame& b,bool same_owner) {
     EXPECT_EQ(am.required_steps,bm.required_steps); EXPECT_EQ(am.full_state_audit_reads,bm.full_state_audit_reads);
     EXPECT_EQ(am.shell.base_epoch,bm.shell.base_epoch); EXPECT_EQ(am.shell.phase,bm.shell.phase);
     EXPECT_EQ(am.contact.wall_binding_id,bm.contact.wall_binding_id);
+    EXPECT_EQ(am.contact.integration_backend,bm.contact.integration_backend);
+    EXPECT_EQ(am.applied_contact.integration_backend,bm.applied_contact.integration_backend);
+    ExpectBackend(a,am.contact.integration_backend); ExpectBackend(b,am.contact.integration_backend);
     if (same_owner) {
         EXPECT_EQ(a.stamp.owner_id,b.stamp.owner_id); EXPECT_EQ(am.shell.attempt,bm.shell.attempt);
         EXPECT_EQ(am.contact.attempt,bm.contact.attempt); EXPECT_EQ(am.applied_contact.attempt,bm.applied_contact.attempt);
@@ -221,29 +234,42 @@ void CheckInterval(const Frame& before,const Frame& after,const ref::ElasticCoup
     EXPECT_NEAR(change,midpoint,after.metrics.work.kinetic_arithmetic_budget+1e-16);
 }
 
-TEST_F(GuidedPlate, InvalidLifecycleConfigurationAndStopRequestsPreservePublication) {
+TEST_P(GuidedPlate, InvalidLifecycleConfigurationAndStopRequestsPreservePublication) {
     GuidedPlateCase run; CanonicalWall empty; Frame sentinel; sentinel.position[0]=123;
     EXPECT_EQ(run.Step().status,Code::NotInitialized); EXPECT_EQ(run.Capture(sentinel).status,Code::NotInitialized);
-    EXPECT_EQ(sentinel.position[0],123); EXPECT_EQ(run.Initialize(empty).status,Code::InvalidInput);
+    EXPECT_EQ(sentinel.position[0],123); EXPECT_EQ(run.Initialize(empty,Config()).status,Code::InvalidInput);
     for (const GuidedPlateConfig config:{GuidedPlateConfig{0,20},{3,20},{1,0},{1,65}}) {
         EXPECT_EQ(run.Initialize(wall,config).status,Code::InvalidInput); EXPECT_EQ(run.metrics(),nullptr);
         EXPECT_EQ(run.output(),nullptr); EXPECT_EQ(run.state_allocations().device_bytes,0u);
         EXPECT_EQ(run.element_allocations().device_bytes,0u); EXPECT_EQ(run.contact_allocations().device_bytes,0u);
     }
-    auto r=run.Initialize(wall); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
+    auto config=Config(); config.integration_backend=static_cast<Backend>(2);
+    EXPECT_EQ(run.Initialize(wall,config).status,Code::InvalidInput);
+    EXPECT_EQ(run.metrics(),nullptr); EXPECT_EQ(run.state_allocations().device_bytes,0u);
+    config=Config(); auto r=run.Initialize(wall,config); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
+    config.integration_backend=GetParam()==Backend::ScalarDyadicSquares?Backend::RectangularDyadic:Backend::ScalarDyadicSquares;
+    EXPECT_EQ(run.integration_backend(),GetParam());
     Frame before,after; r=run.Capture(before); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
+    ExpectBackend(before,GetParam());
+    auto wrong=before.contact_association; wrong.integration_backend=config.integration_backend;
+    EXPECT_FALSE(ValidGuidedContactPartition(wrong,before.parent.data(),before.parent.size(),GetParam()));
+    auto parents=before.parent; ++parents[1].deepest_u;
+    EXPECT_FALSE(ValidGuidedContactPartition(before.contact_association,parents.data(),parents.size(),GetParam()));
+    parents=before.parent; ++parents[1].integration.visited;
+    EXPECT_FALSE(ValidGuidedContactPartition(before.contact_association,parents.data(),parents.size(),GetParam()));
     for (double limit:{0.,-.001,.005,std::numeric_limits<double>::quiet_NaN()})
         EXPECT_EQ(run.Step({limit}).status,Code::InvalidInput);
     r=run.Capture(after); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic; ExpectAcceptedEqual(after,before,true);
-    EXPECT_EQ(run.Initialize(wall).status,Code::AlreadyInitialized);
+    EXPECT_EQ(run.Initialize(wall,Config()).status,Code::AlreadyInitialized);
 }
 
-TEST_F(GuidedPlate, HundredActualStepsPreserveAllocationsGuidesAndAcceptedMeshCadence) {
+TEST_P(GuidedPlate, HundredActualStepsPreserveAllocationsGuidesAndAcceptedMeshCadence) {
     std::size_t free_before=0,total_before=0,free_initialized=0,total_initialized=0,free_after=0,total_after=0;
     ASSERT_EQ(cudaMemGetInfo(&free_before,&total_before),cudaSuccess);
-    GuidedPlateCase run; auto r=run.Initialize(wall); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
+    GuidedPlateCase run; auto r=run.Initialize(wall,Config()); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
     ASSERT_EQ(cudaMemGetInfo(&free_initialized,&total_initialized),cudaSuccess);
     Frame initial,after; r=run.Capture(initial); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
+    ExpectBackend(initial,GetParam()); EXPECT_EQ(run.integration_backend(),GetParam());
     const Allocations allocations(run); ASSERT_GT(run.metrics()->required_steps,100u);
     const auto source=run.wall_mesh(); ASSERT_EQ(source.vertex_count,62u); ASSERT_EQ(source.triangle_count,100u);
     EXPECT_EQ(run.wall_provenance()->wall_sha256,wall.provenance().wall_sha256);
@@ -253,6 +279,8 @@ TEST_F(GuidedPlate, HundredActualStepsPreserveAllocationsGuidesAndAcceptedMeshCa
         EXPECT_EQ(run.metrics()->stamp.epoch,step); EXPECT_EQ(run.metrics()->shell.base_epoch,step-1);
         EXPECT_EQ(run.metrics()->contact.base_epoch,step-1); EXPECT_EQ(run.metrics()->contact.attempt,run.metrics()->shell.attempt);
         EXPECT_EQ(run.metrics()->contact.wall_binding_id,kGuidedPlateWallBinding);
+        EXPECT_EQ(run.metrics()->contact.integration_backend,GetParam());
+        EXPECT_EQ(run.metrics()->applied_contact.integration_backend,GetParam());
         EXPECT_EQ(run.metrics()->shell.configuration_id,kGuidedPlateQualification);
         EXPECT_EQ(run.metrics()->contact.potential.value,0); EXPECT_EQ(run.metrics()->full_state_audit_reads,0u);
         EXPECT_EQ(run.output()->surface().frame()->epoch,0u);
@@ -260,6 +288,7 @@ TEST_F(GuidedPlate, HundredActualStepsPreserveAllocationsGuidesAndAcceptedMeshCa
     const double elapsed=std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();
     ASSERT_EQ(cudaMemGetInfo(&free_after,&total_after),cudaSuccess);
     r=run.Capture(after); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic; ExpectGuides(after,initial); allocations.Check(run);
+    ExpectBackend(after,GetParam());
     EXPECT_GT(Tip(after),Tip(initial)+1e-9); EXPECT_NE(after.rotation,initial.rotation);
     EXPECT_GT(after.metrics.work.kinetic_energy,0); EXPECT_LE(after.metrics.maximum_relative_energy_error,.01);
     EXPECT_NEAR(after.stamp.time,100*after.stamp.fixed_dt,1e-14);
@@ -281,11 +310,12 @@ TEST_F(GuidedPlate, HundredActualStepsPreserveAllocationsGuidesAndAcceptedMeshCa
     EXPECT_EQ(total_initialized,total_before); EXPECT_EQ(total_after,total_before);
     RecordProperty("device_total_bytes",std::to_string(total_after));
     RecordProperty("maximum_energy_error",Precise(after.metrics.maximum_relative_energy_error));
+    RecordProperty("contact_backend",GetParam()==Backend::ScalarDyadicSquares?"scalar":"rectangular");
 }
 
-TEST_F(GuidedPlate, LateRejectionRefreshesBothAcceptedResultsAndPreservesRetry) {
-    GuidedPlateCase run,clean; auto r=run.Initialize(wall); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
-    r=clean.Initialize(wall); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
+TEST_P(GuidedPlate, LateRejectionRefreshesBothAcceptedResultsAndPreservesRetry) {
+    GuidedPlateCase run,clean; auto r=run.Initialize(wall,Config()); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
+    r=clean.Initialize(wall,Config()); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
     for (unsigned step=0;step<4;++step) {
         r=run.Step(); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
         r=clean.Step(); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
@@ -310,8 +340,8 @@ TEST_F(GuidedPlate, LateRejectionRefreshesBothAcceptedResultsAndPreservesRetry) 
     allocations.Check(run);
 }
 
-TEST_F(GuidedPlate, CoupledImpulseGuideReactionsAndPhysicalArtificialEnergyUseOneMassSpace) {
-    GuidedPlateCase run; auto r=run.Initialize(wall); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
+TEST_P(GuidedPlate, CoupledImpulseGuideReactionsAndPhysicalArtificialEnergyUseOneMassSpace) {
+    GuidedPlateCase run; auto r=run.Initialize(wall,Config()); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
     Frame initial,before,after; r=run.Capture(initial); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic; before=initial;
     for (unsigned step=0;step<12;++step) {
         r=run.Step(); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
@@ -324,8 +354,8 @@ TEST_F(GuidedPlate, CoupledImpulseGuideReactionsAndPhysicalArtificialEnergyUseOn
     EXPECT_GT(energy.translation,0); EXPECT_GT(energy.physical,0);
 }
 
-TEST_F(GuidedPlate, FullStateOperatorReadOccursOnlyAtDeclaredAuditBoundary) {
-    GuidedPlateCase run; auto r=run.Initialize(wall,{1,64}); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
+TEST_P(GuidedPlate, FullStateOperatorReadOccursOnlyAtDeclaredAuditBoundary) {
+    GuidedPlateCase run; auto r=run.Initialize(wall,Config(1,64)); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
     const auto stride=(run.modal()->step_count+63)/64; ASSERT_LE(stride,2048u);
     for (std::uint64_t step=1;step<stride;++step) {
         r=run.Step(); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
@@ -340,9 +370,9 @@ TEST_F(GuidedPlate, FullStateOperatorReadOccursOnlyAtDeclaredAuditBoundary) {
 // Opt in only after the guarded 100-step cost gate. Stop at the first certified
 // nonzero applied contact, capped at 3/4 of the declared horizon (about 0.15s),
 // then exercise only one rejected/retried contact interval. This is not D3.
-TEST_F(GuidedPlate, DISABLED_FirstPartialContactKeepsBaseImpulseAndRollbackCorrect) {
-    GuidedPlateCase run,clean; auto r=run.Initialize(wall); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
-    r=clean.Initialize(wall); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
+TEST_P(GuidedPlate, DISABLED_FirstPartialContactKeepsBaseImpulseAndRollbackCorrect) {
+    GuidedPlateCase run,clean; auto r=run.Initialize(wall,Config()); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
+    r=clean.Initialize(wall,Config()); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
     const auto cap=3*run.metrics()->required_steps/4; bool found=false;
     const Allocations allocations(run); const auto start=std::chrono::steady_clock::now();
     for (std::uint64_t step=0;step<cap && !found;++step) {
@@ -373,6 +403,56 @@ TEST_F(GuidedPlate, DISABLED_FirstPartialContactKeepsBaseImpulseAndRollbackCorre
     RecordProperty("first_applied_contact_time",Precise(before.stamp.time));
     RecordProperty("first_contact_prefix_seconds",Precise(std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count()));
     RecordProperty("peak_penetration",Precise(after.metrics.peak_penetration));
+}
+
+INSTANTIATE_TEST_SUITE_P(ContactBackends,GuidedPlate,
+    ::testing::Values(Backend::ScalarDyadicSquares,Backend::RectangularDyadic),
+    [](const ::testing::TestParamInfo<Backend>& value) {
+        return value.param==Backend::ScalarDyadicSquares?"Scalar":"Rectangular";
+    });
+
+TEST(GuidedPlateBackend, SelectionPreservesInitialPhysicalExperimentAndOnlyChangesContactStorage) {
+    EXPECT_EQ(GuidedPlateConfig{}.integration_backend,Backend::ScalarDyadicSquares);
+    CanonicalWall wall; const auto loaded=wall.LoadFile(asset);
+    ASSERT_EQ(loaded.status,WallStatus::Ok)<<loaded.message;
+    GuidedPlateCase scalar,rectangular; GuidedPlateConfig config;
+    auto r=scalar.Initialize(wall,config); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
+    config.integration_backend=Backend::RectangularDyadic;
+    r=rectangular.Initialize(wall,config); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
+    Frame a,b; r=scalar.Capture(a); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
+    r=rectangular.Capture(b); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
+    ExpectBackend(a,Backend::ScalarDyadicSquares); ExpectBackend(b,Backend::RectangularDyadic);
+    EXPECT_EQ(a.position,b.position); EXPECT_EQ(a.rotation,b.rotation); EXPECT_EQ(a.velocity,b.velocity); EXPECT_EQ(a.omega,b.omega);
+    EXPECT_EQ(a.stamp.time,b.stamp.time); EXPECT_EQ(a.stamp.fixed_dt,b.stamp.fixed_dt);
+    EXPECT_EQ(a.metrics.initial_energy,b.metrics.initial_energy); EXPECT_EQ(a.metrics.required_steps,b.metrics.required_steps);
+    EXPECT_EQ(a.metrics.shell.configuration_id,kGuidedPlateQualification);
+    EXPECT_EQ(b.metrics.shell.configuration_id,kGuidedPlateQualification);
+    EXPECT_EQ(a.metrics.contact.configuration_id,b.metrics.contact.configuration_id);
+    EXPECT_EQ(a.metrics.contact.wall_binding_id,b.metrics.contact.wall_binding_id);
+    EXPECT_EQ(scalar.model_data()->connectivity,rectangular.model_data()->connectivity);
+    EXPECT_EQ(scalar.model_data()->inverse_mass,rectangular.model_data()->inverse_mass);
+    EXPECT_EQ(scalar.model_data()->inverse_isotropic_inertia,rectangular.model_data()->inverse_isotropic_inertia);
+    EXPECT_EQ(scalar.guided_data()->translation_fixed_bits,rectangular.guided_data()->translation_fixed_bits);
+    EXPECT_EQ(scalar.guided_data()->rotation_fixed,rectangular.guided_data()->rotation_fixed);
+    const auto& m=*scalar.modal(); const auto& n=*rectangular.modal();
+    EXPECT_EQ(m.squared_frequency,n.squared_frequency); EXPECT_EQ(m.initial_mode_increment,n.initial_mode_increment);
+    EXPECT_EQ(m.sampled_structural_operator_norm,n.sampled_structural_operator_norm);
+    EXPECT_EQ(m.contact_rate_bound,n.contact_rate_bound); EXPECT_EQ(m.combined_rate_envelope,n.combined_rate_envelope);
+    EXPECT_EQ(m.time_step,n.time_step); EXPECT_EQ(m.step_count,n.step_count); EXPECT_EQ(m.horizon,n.horizon);
+    EXPECT_EQ(scalar.state_allocations().device_bytes,rectangular.state_allocations().device_bytes);
+    EXPECT_EQ(scalar.element_allocations().device_bytes,rectangular.element_allocations().device_bytes);
+    EXPECT_EQ(rectangular.contact_allocations().device_bytes-scalar.contact_allocations().device_bytes,32768u);
+    EXPECT_EQ(rectangular.contact_allocations().device_allocations,1u);
+    // One separated interval verifies selection propagation; it is not an
+    // assertion of equal trajectories after different contact quadratures.
+    r=scalar.Step(); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
+    r=rectangular.Step(); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
+    r=scalar.Capture(a); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
+    r=rectangular.Capture(b); ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
+    ExpectBackend(a,Backend::ScalarDyadicSquares); ExpectBackend(b,Backend::RectangularDyadic);
+    EXPECT_EQ(a.position,b.position); EXPECT_EQ(a.rotation,b.rotation); EXPECT_EQ(a.velocity,b.velocity); EXPECT_EQ(a.omega,b.omega);
+    EXPECT_EQ(a.metrics.contact.potential.upper,0); EXPECT_EQ(b.metrics.contact.potential.upper,0);
+    EXPECT_EQ(WorkValues(a.metrics.work),WorkValues(b.metrics.work));
 }
 } // namespace
 

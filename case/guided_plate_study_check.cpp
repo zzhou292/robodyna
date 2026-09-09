@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <cmath>
+#include <cstring>
 #include <limits>
 
 namespace {
@@ -14,6 +15,10 @@ namespace sh=tl::fea::reissner;
 namespace ref=crash::reference;
 namespace fixture=crash::case_data::study_test;
 using namespace crash::case_data::study_test;
+using Backend=ct::Q4PlanarIntegrationBackend;
+template<class T> std::array<unsigned char,sizeof(T)> ObjectBytes(const T& value) {
+    std::array<unsigned char,sizeof(T)> bytes{};std::memcpy(bytes.data(),&value,sizeof(T));return bytes;
+}
 
 TEST(GuidedPlateStudy, ExactIntegerCommonScheduleHasNoDuplicatesOrChangedFailureOutput) {
     auto c=Config();c.base_steps=19997;
@@ -44,7 +49,15 @@ TEST(GuidedPlateStudy, ConfigurationReusesExactAreaAndSharedPhysicalReferenceFin
     ASSERT_TRUE(PrepareGuidedStudyConfig(f.metrics,model,guided,view,1,out,error))<<error;
     EXPECT_EQ(out.total_reference_area.lower,c.total_reference_area.lower);
     EXPECT_EQ(out.contact_reference[1].area_enclosure.upper,c.contact_reference[1].area_enclosure.upper);
-    const auto original=out.experiment_sha256;model.nodal_mass[5].artificial_drilling_inertia*=2;
+    const auto original=out.experiment_sha256;
+    EXPECT_EQ(out.integration_backend,Backend::ScalarDyadicSquares);
+    auto rectangular=f.metrics;rectangular.contact.integration_backend=Backend::RectangularDyadic;
+    ASSERT_TRUE(PrepareGuidedStudyConfig(rectangular,model,guided,view,1,out,error))<<error;
+    EXPECT_EQ(out.integration_backend,Backend::RectangularDyadic);EXPECT_EQ(out.experiment_sha256,original);
+    const auto retained=ObjectBytes(out);rectangular.contact.integration_backend=static_cast<Backend>(2);
+    EXPECT_FALSE(PrepareGuidedStudyConfig(rectangular,model,guided,view,1,out,error));
+    EXPECT_EQ(ObjectBytes(out),retained);EXPECT_EQ(out.experiment_sha256,original);
+    model.nodal_mass[5].artificial_drilling_inertia*=2;
     ASSERT_TRUE(PrepareGuidedStudyConfig(f.metrics,model,guided,view,1,out,error))<<error;
     EXPECT_NE(original,out.experiment_sha256);
     const auto preserved=out.experiment_sha256;view.parent_count=1;
@@ -165,6 +178,36 @@ TEST(GuidedPlateStudy, MeasuredGlobalCertificateCanFailForceFloorWithoutMalforme
     EXPECT_FALSE(result.passed);EXPECT_FALSE(result.deforming_contact_evidence);
 }
 
+TEST(GuidedPlateStudy, SubUlpUncertaintyCannotRoundAnExceededForceFloorIntoPassing) {
+    auto a=fixture::Run(1,7),b=fixture::Run(2,77);GuidedStudyComparison result;std::string error;
+    constexpr double floor=1e-5;
+    const double extra=.25*(std::nextafter(floor,std::numeric_limits<double>::infinity())-floor);
+    ASSERT_EQ(floor+extra,floor); // The previously rounded uncertainty sum lost this term.
+    ASSERT_GT(static_cast<long double>(floor)+extra,static_cast<long double>(floor));
+    a.samples[0].normal_wall_force.error=floor;b.samples[0].normal_wall_force.error=extra;
+    ASSERT_TRUE(CompareGuidedPlateStudies(a,b,result,error))<<error;
+    EXPECT_FALSE(result.passed);EXPECT_GT(result.force_ratio,1);EXPECT_TRUE(std::isfinite(result.force_ratio));
+    b.samples[0].normal_wall_force.error=0;
+    ASSERT_TRUE(CompareGuidedPlateStudies(a,b,result,error))<<error;
+    EXPECT_TRUE(result.passed)<<result.diagnostic;EXPECT_EQ(result.force_ratio,1);
+    a.samples[0].normal_wall_force.error=b.samples[0].normal_wall_force.error=std::numeric_limits<double>::max();
+    ASSERT_TRUE(CompareGuidedPlateStudies(a,b,result,error))<<error;
+    EXPECT_FALSE(result.passed);EXPECT_EQ(result.force_ratio,std::numeric_limits<double>::max());
+}
+
+TEST(GuidedPlateStudy, EventWidthAtStepFloorPassesButNextRepresentableWidthFails) {
+    auto a=fixture::Run(1,7),b=fixture::Run(2,77);GuidedStudyComparison result;std::string error;
+    // Synthetic observer summaries isolate the comparison boundary; this is
+    // not a claim that these earlier activation times came from the fixture.
+    const double floor=2*a.config.fixed_dt;
+    a.summary.activation={true,0,2,0,floor};b.summary.activation={true,0,4,0,floor};
+    ASSERT_TRUE(CompareGuidedPlateStudies(a,b,result,error))<<error;
+    EXPECT_TRUE(result.passed)<<result.diagnostic;EXPECT_EQ(result.event_ratio,1);
+    a.summary.activation.upper_time=std::nextafter(floor,std::numeric_limits<double>::infinity());
+    ASSERT_TRUE(CompareGuidedPlateStudies(a,b,result,error))<<error;
+    EXPECT_FALSE(result.passed);EXPECT_GT(result.event_ratio,1);
+}
+
 TEST(GuidedPlateStudy, MalformedOrDifferentExperimentPreservesComparisonOutput) {
     auto a=fixture::Run(1,7);const auto b=fixture::Run(2,77);GuidedStudyComparison result;result.force_ratio=123;result.passed=true;std::string error;
     a.config.experiment_sha256[0]='b';EXPECT_FALSE(CompareGuidedPlateStudies(a,b,result,error));
@@ -181,5 +224,87 @@ TEST(GuidedPlateStudy, MalformedOrDifferentExperimentPreservesComparisonOutput) 
     a=fixture::Run(1,7);a.samples[100].world_z_rotation[0]=.1;EXPECT_FALSE(ValidateGuidedPlateStudy(a,error));
     a=fixture::Run(1,7);a.summary.maximum_certified_energy_relative_error=0;EXPECT_FALSE(ValidateGuidedPlateStudy(a,error));
     a=fixture::Run(1,7);a.summary.maximum_penetration=0;EXPECT_FALSE(ValidateGuidedPlateStudy(a,error));
+}
+
+TEST(GuidedPlateStudy, BackendAndPartitionMismatchRejectBeforeInitializationAndPermitRetry) {
+    for(const auto backend:{Backend::ScalarDyadicSquares,Backend::RectangularDyadic}) {
+        auto c=Config();c.integration_backend=backend;const auto zero=Frame(c,0);
+        for(unsigned variant=0;variant<6;++variant) {
+            SCOPED_TRACE(variant);auto bad_config=c;auto bad=zero;GuidedPlateStudy recorder;std::string error;
+            if(variant==0)bad_config.integration_backend=static_cast<Backend>(2);
+            if(variant==1)bad.metrics.contact.integration_backend=backend==Backend::ScalarDyadicSquares ? Backend::RectangularDyadic : Backend::ScalarDyadicSquares;
+            if(variant==2)bad.contact_association.integration_backend=static_cast<Backend>(2);
+            if(variant==3)bad.parent[1].integration_backend=static_cast<Backend>(2);
+            if(variant==4)bad.metrics.contact.deepest_u=ct::MaxQ4IntegrationDepth+1;
+            if(variant==5)bad.parent[1].integration.leaf_count=0;
+            EXPECT_FALSE(recorder.Initialize(bad_config,bad.metrics,bad,error));EXPECT_EQ(recorder.data(),nullptr);
+            ASSERT_TRUE(recorder.Initialize(c,zero.metrics,zero,error))<<error;
+            EXPECT_EQ(recorder.data()->config.integration_backend,backend);EXPECT_EQ(recorder.data()->summary.accepted_epoch,0u);
+        }
+    }
+}
+
+TEST(GuidedPlateStudy, RejectedBackendDepthAndCaptureMetadataPreserveEntireAcceptedHistory) {
+    for(const auto backend:{Backend::ScalarDyadicSquares,Backend::RectangularDyadic}) {
+        auto c=Config();c.integration_backend=backend;const auto zero=Frame(c,0);const auto first=Frame(c,1,&zero);
+        GuidedPlateStudy recorder;std::string error;ASSERT_TRUE(recorder.Initialize(c,zero.metrics,zero,error));
+        ASSERT_TRUE(recorder.Record(first.metrics,&first,error));const auto before=ObjectBytes(*recorder.data());
+        const auto physical_hash=recorder.data()->config.experiment_sha256;const auto next=Frame(c,2,&first);
+        const auto other=backend==Backend::ScalarDyadicSquares ? Backend::RectangularDyadic : Backend::ScalarDyadicSquares;
+        for(unsigned variant=0;variant<18;++variant) {
+            SCOPED_TRACE(variant);auto metrics=next.metrics;auto frame=next;
+            if(variant==0)metrics.contact.integration_backend=other;
+            if(variant==1)metrics.applied_contact.integration_backend=other;
+            if(variant==2)frame.contact_association.integration_backend=other;
+            if(variant==3)frame.parent[1].integration_backend=other;
+            if(variant==4)frame.metrics.contact.integration_backend=other;
+            if(variant==5)frame.metrics.applied_contact.integration_backend=other;
+            if(variant==6)metrics.contact.deepest_u=17;
+            if(variant==7)metrics.applied_contact.deepest_u=17;
+            if(variant==8)frame.contact_association.deepest_v=17;
+            if(variant==9)frame.parent[1].deepest_v=17;
+            if(variant==10)metrics.contact.deepest_leaf=1;
+            if(variant==11)metrics.applied_contact.deepest_leaf=1;
+            if(variant==12)frame.parent[1].integration.deepest_leaf=1;
+            if(variant==13)frame.contact_association.visited=2*ct::MaxQ4IntegrationVisits+1;
+            if(variant==14)frame.parent[1].integration.leaf_count=0;
+            if(variant==15) {
+                auto& p=frame.parent[1];p.deepest_u=1;p.integration.deepest_leaf=1;
+                p.integration.leaf_count=2;p.integration.visited=3;
+            }
+            if(variant==16)metrics.contact.integration_backend=static_cast<Backend>(2);
+            if(variant==17)frame.parent[1].integration_backend=static_cast<Backend>(2);
+            EXPECT_FALSE(recorder.Record(metrics,&frame,error));EXPECT_FALSE(error.empty());
+            EXPECT_EQ(ObjectBytes(*recorder.data()),before);EXPECT_EQ(recorder.data()->config.experiment_sha256,physical_hash);
+        }
+        ASSERT_TRUE(recorder.Record(next.metrics,&next,error))<<error;
+        EXPECT_EQ(recorder.data()->summary.accepted_epoch,2u);EXPECT_EQ(recorder.data()->summary.sample_count,3u);
+        EXPECT_EQ(recorder.data()->samples[2].epoch,2u);
+    }
+}
+
+TEST(GuidedPlateStudy, RectangularReportsCompleteAndRefineOnlyWithinTheSameBackend) {
+    auto c=Config(1,1);c.integration_backend=Backend::RectangularDyadic;
+    const auto a=fixture::Run(c);c.refinement=2;c.fixed_dt*=.5;const auto b=fixture::Run(c);
+    GuidedStudyComparison result;std::string error;
+    ASSERT_TRUE(ValidateGuidedPlateStudy(a,error))<<error;
+    ASSERT_TRUE(CompareGuidedPlateStudies(a,b,result,error))<<error;EXPECT_TRUE(result.passed)<<result.diagnostic;
+    EXPECT_EQ(a.config.integration_backend,Backend::RectangularDyadic);
+    const auto retained=ObjectBytes(result);const auto diagnostic=result.diagnostic;
+    c.integration_backend=Backend::ScalarDyadicSquares;const auto scalar=fixture::Run(c);
+    EXPECT_EQ(scalar.config.experiment_sha256,b.config.experiment_sha256);
+    EXPECT_FALSE(CompareGuidedPlateStudies(a,scalar,result,error));
+    EXPECT_EQ(ObjectBytes(result),retained);EXPECT_EQ(result.diagnostic,diagnostic);
+    auto malformed=b;malformed.config.integration_backend=static_cast<Backend>(2);
+    EXPECT_FALSE(ValidateGuidedPlateStudy(malformed,error));
+    EXPECT_FALSE(CompareGuidedPlateStudies(a,malformed,result,error));
+    EXPECT_EQ(ObjectBytes(result),retained);EXPECT_EQ(result.diagnostic,diagnostic);
+    // A rectangular-only asymmetric partition is valid execution metadata.
+    const auto zero=Frame(a.config,0);auto first=Frame(a.config,1,&zero);GuidedPlateStudy observer;
+    for(auto& p:first.parent) {p.deepest_u=1;p.integration.deepest_leaf=1;p.integration.leaf_count=2;p.integration.visited=3;}
+    first.contact_association.deepest_u=1;first.contact_association.deepest_leaf=1;
+    first.contact_association.leaves=4;first.contact_association.visited=6;
+    ASSERT_TRUE(observer.Initialize(a.config,zero.metrics,zero,error));
+    ASSERT_TRUE(observer.Record(first.metrics,&first,error))<<error;
 }
 } // namespace

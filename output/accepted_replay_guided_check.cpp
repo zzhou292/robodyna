@@ -1,5 +1,6 @@
 #include "AcceptedReplay.h"
 #include "ArtifactIO.h"
+#include "ContactIntegrationMetadata.h"
 #include "MeshArchive.h"
 #include "case/CanonicalWallArtifacts.h"
 #include "chrono/geometry/ChTriangleMeshConnected.h"
@@ -144,11 +145,36 @@ class GuidedBundle {
     }
     void Replace(const std::string& file,const Document& d) { fs::remove(directory/file); WriteJson(directory/file,d); }
     void Replace(const std::string& file,const std::string& bytes) { fs::remove(directory/file); WriteBytes(directory/file,bytes); }
+    void Backend(const char* backend) {
+        auto config=Read("configuration.json"); String(config,contact_metadata::BackendField,backend);
+        Integer(config,"contact_max_depth",16); Integer(config,"contact_max_leaves",4096); Integer(config,"contact_max_visits",16384);
+        Replace("configuration.json",config);
+        for(unsigned i=0;i<3;++i) {
+            const auto file=Stem(i)+".fields.json"; auto d=Read(file);
+            String(d,contact_metadata::BackendField,backend);
+            const unsigned v=std::string_view(backend)==contact_metadata::Scalar?2:1;
+            for(auto& parent:d["contact_parents"].GetArray()) {
+                parent.AddMember(rapidjson::StringRef(contact_metadata::BackendField),Value(backend,d.GetAllocator()),d.GetAllocator());
+                parent["deepest_leaf"].SetUint(2);
+                parent.AddMember("deepest_u",2,d.GetAllocator()); parent.AddMember("deepest_v",v,d.GetAllocator());
+            }
+            auto& c=d["contact_result"];
+            c.AddMember(rapidjson::StringRef(contact_metadata::BackendField),Value(backend,d.GetAllocator()),d.GetAllocator());
+            c.AddMember("deepest_leaf",2,d.GetAllocator()); c.AddMember("deepest_u",2,d.GetAllocator()); c.AddMember("deepest_v",v,d.GetAllocator());
+            Replace(file,d);
+        }
+        auto final=Read("final-metrics.json"); String(final,contact_metadata::BackendField,backend); Replace("final-metrics.json",final);
+        Manifest();
+    }
     void Manifest() {
         fs::remove(directory/"manifest.json"); Document d; d.SetObject();
         String(d,"schema","robo_dyna.guided_plate_artifacts.v1"); String(d,"status","completed");
         Boolean(d,"shell_model",true); Boolean(d,"vehicle_model",false); Boolean(d,"contact",true);
         Integer(d,"owner_id",7); Integer(d,"accepted_epoch",10); Number(d,"accepted_time_s",1);
+        const auto config=Read("configuration.json");
+        if(config.HasMember(contact_metadata::BackendField))
+            d.AddMember(rapidjson::StringRef(contact_metadata::BackendField),
+                        Value(config[contact_metadata::BackendField],d.GetAllocator()),d.GetAllocator());
         Value inventory(rapidjson::kArrayType);
         for(const auto& file:fs::directory_iterator(directory)) {
             const auto name=file.path().filename().string(), bytes=ReadBounded(file.path(),32*1024*1024),hash=Sha256(bytes);
@@ -280,6 +306,54 @@ TEST(AcceptedReplayGuided, FailedLateLoadAndOpenPreservePublishedReaderAndAllowE
     EXPECT_EQ(replay.frame()->epoch,frame.epoch); EXPECT_EQ(replay.frame()->mesh,frame.mesh); EXPECT_EQ(replay.wall(),wall);
     f.Replace(name,bytes); ASSERT_EQ(replay.Load(2).status,ReplayStatus::Ok);
     EXPECT_EQ(replay.frame()->epoch,10u); f.Manifest(); EXPECT_EQ(replay.Open(f.directory).status,ReplayStatus::Ok);
+}
+
+TEST(AcceptedReplayGuided, ExplicitScalarAndRectangularPartitionsRemainReadable) {
+    for(const char* backend:{contact_metadata::Scalar,contact_metadata::Rectangular}) {
+        GuidedBundle f; f.Backend(backend); AcceptedReplay replay;
+        const auto open=replay.Open(f.directory); ASSERT_EQ(open.status,ReplayStatus::Ok)<<open.diagnostic;
+        for(unsigned i=0;i<3;++i)EXPECT_EQ(replay.Load(i).status,ReplayStatus::Ok);
+    }
+}
+
+TEST(AcceptedReplayGuided, RehashedBackendAndAxisCorruptionRejectsWithoutReplacingPublishedFrames) {
+    for(unsigned fault=0;fault<17;++fault) {
+        SCOPED_TRACE(fault); GuidedBundle f;
+        if(fault<10)f.Backend(contact_metadata::Rectangular);
+        AcceptedReplay replay;
+        ASSERT_EQ(replay.Open(f.directory).status,ReplayStatus::Ok); ASSERT_EQ(replay.Load(1).status,ReplayStatus::Ok);
+        const auto frame=*replay.frame(); const auto wall=replay.wall();
+        const std::string file=fault==0?"configuration.json":fault==9?"final-metrics.json":GuidedBundle::Stem(2)+".fields.json";
+        auto d=f.Read(file);
+        if(fault==0)d[contact_metadata::BackendField].SetString("unknown");
+        if(fault==1)d.RemoveMember(contact_metadata::BackendField);
+        if(fault==2)d["contact_parents"][1][contact_metadata::BackendField].SetString(contact_metadata::Scalar,d.GetAllocator());
+        if(fault==3)d["contact_parents"][1]["deepest_u"].SetUint(17);
+        if(fault==4)d["contact_parents"][1]["deepest_leaf"].SetUint(3);
+        if(fault==5)d["contact_result"]["deepest_v"].SetUint(0);
+        if(fault==6)d["contact_parents"][1].RemoveMember("deepest_u");
+        if(fault==7)String(d,contact_metadata::BackendField,contact_metadata::Rectangular);
+        if(fault==8)d["contact_parents"][1].AddMember("deepest_v",1,d.GetAllocator());
+        if(fault==9)d[contact_metadata::BackendField].SetString(contact_metadata::Scalar,d.GetAllocator());
+        if(fault==10)d["contact_result"].AddMember(rapidjson::StringRef(contact_metadata::BackendField),
+            Value(contact_metadata::Rectangular,d.GetAllocator()),d.GetAllocator());
+        if(fault==11) {
+            auto& c=d["contact_result"]; c.AddMember("deepest_leaf",0,d.GetAllocator());
+            c.AddMember("deepest_u",17,d.GetAllocator()); c.AddMember("deepest_v",0,d.GetAllocator());
+        }
+        if(fault==12)d["contact_parents"][1]["leaf_count"].SetUint(0);
+        if(fault==13)d["contact_parents"][1]["visited"].SetUint64(UINT64_MAX);
+        if(fault==16)d["contact_result"].SetInt(0);
+        if(fault==14||fault==15) {
+            auto config=f.Read("configuration.json");
+            if(fault==14) { Integer(config,"contact_max_depth",1); d["contact_parents"][1]["deepest_leaf"].SetUint(2); }
+            if(fault==15) { Integer(config,"contact_max_visits",1); d["contact_parents"][1]["visited"].SetUint(2); }
+            f.Replace("configuration.json",config);
+        }
+        f.Replace(file,d); f.Manifest();
+        EXPECT_EQ(replay.Open(f.directory).status,ReplayStatus::InvalidBundle);
+        EXPECT_EQ(replay.frame()->mesh,frame.mesh); EXPECT_EQ(replay.frame()->epoch,frame.epoch); EXPECT_EQ(replay.wall(),wall);
+    }
 }
 
 TEST(AcceptedReplayGuided, ExplicitRetainedGuidedBundleUsesTheSameStrictValidation) {

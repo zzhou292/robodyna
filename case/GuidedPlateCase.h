@@ -1,18 +1,21 @@
 #pragma once
 
 #include "CanonicalWall.h"
+#include "WallTessellation.h"
 #include "GuidedPlateAdmission.h"
 #include "chrono/NodalMeshOutput.h"
 #include <memory>
 
 namespace crash::case_data {
 inline constexpr std::uint64_t kGuidedPlateQualification = 0x4432475549444531ULL;
-inline constexpr std::uint64_t kGuidedPlateWallBinding = 0x5941524953574131ULL;
+inline constexpr std::uint64_t kGuidedPlateWallBinding = kOriginalWallTessellationBinding;
 inline constexpr std::size_t kGuidedPlateDeviceBudget = 1024 * 1024;
 
 struct GuidedPlateConfig {
     unsigned refinement = 1; // Independent fixed-step runs: 1, 2 or 4.
     unsigned diagnostic_intervals = 20;
+    tlfea::contact::Q4PlanarIntegrationBackend integration_backend =
+        tlfea::contact::Q4PlanarIntegrationBackend::ScalarDyadicSquares;
 };
 struct GuidedPlateStepRequest {
     // Tightening this attempt's stop envelope cannot change the experiment.
@@ -63,12 +66,21 @@ class GuidedPlateCase {
     GuidedPlateCase(const GuidedPlateCase&)=delete;
     GuidedPlateCase& operator=(const GuidedPlateCase&)=delete;
     GuidedPlateReport Initialize(const CanonicalWall&,const GuidedPlateConfig& = {});
+    // Authenticated, explicit wall-only experiment variant. Plate setup/pose,
+    // modal audit and initial state always use the ORIGINAL canonical wall.
+    // Runtime coverage/area/stiffness must agree exactly before state startup.
+    // Derived variants are not admitted by the canonical artifact writer.
+    GuidedPlateReport InitializeTessellated(const CanonicalWall&,const std::string& authenticated_source_bytes,
+                                           WallTessellationKind,const GuidedPlateConfig& = {});
     GuidedPlateReport Step(const GuidedPlateStepRequest& = {});
     // Both contributor results are staged before accepted publication. Stale
     // scratch is refreshed by assembling BOTH at accepted state and discarding
     // that temporary trial. Interval metrics, reactions and time never change.
     GuidedPlateReport Capture(GuidedPlateFrame&);
     const GuidedPlateMetrics* metrics() const noexcept;
+    // Immutable execution choice. Before successful initialization this returns
+    // the scalar default; metrics() must be nonnull to identify a live case.
+    tlfea::contact::Q4PlanarIntegrationBackend integration_backend() const noexcept;
     const reference::GuidedPlateModalReport* modal() const noexcept;
     const reference::ElasticCouponData* model_data() const noexcept;
     const reference::GuidedPlateData* guided_data() const noexcept;
@@ -78,11 +90,15 @@ class GuidedPlateCase {
     const visual::NodalMeshOutput* output() const noexcept;
     tlfea::contact::PlanarWallView wall_mesh() const noexcept;
     const WallProvenance* wall_provenance() const noexcept;
+    // Null for the legacy Initialize path; otherwise actual immutable runtime
+    // transform/source/mesh metadata, separate from original source provenance.
+    const WallTessellationMetadata* wall_tessellation() const noexcept;
     tl::fea::NodalAllocationInfo state_allocations() const noexcept;
     tl::fea::NodalAllocationInfo element_allocations() const noexcept;
     tl::fea::NodalAllocationInfo contact_allocations() const noexcept;
   private:
     struct Impl;
     std::unique_ptr<Impl> impl_;
+    GuidedPlateReport InitializeImpl(const CanonicalWall&,const GuidedPlateConfig&,std::unique_ptr<WallTessellation>);
 };
 } // namespace crash::case_data

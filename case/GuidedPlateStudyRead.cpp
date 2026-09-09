@@ -1,4 +1,5 @@
 #include "GuidedPlateStudyIO.h"
+#include "GuidedPlateContactProtocol.h"
 #include "output/ArtifactIO.h"
 #include <cmath>
 #include <limits>
@@ -54,6 +55,7 @@ GuidedStudyConfig Config(const Value& v) {
     GuidedStudyConfig c;c.owner_id=Integer(v,"owner_id");c.qualification_id=Integer(v,"qualification_id");
     c.wall_binding_id=Integer(v,"wall_binding_id");c.base_steps=Integer(v,"base_steps");c.refinement=Index(Member(v,"refinement"));
     c.fixed_dt=Number(v,"fixed_dt");c.horizon=Number(v,"horizon");c.initial_energy=Number(v,"initial_energy");
+    io::Require(ParseGuidedContactBackend(io::contact_metadata::Backend(v),c.integration_backend),"Unknown guided contact integration backend");
     c.wall_x=Number(v,"wall_x");c.experiment_sha256=String(v,"experiment_sha256");
     c.reference_position=Doubles<18>(v,"reference_position");c.reference_rotation=Doubles<24>(v,"reference_rotation");
     c.total_reference_area=Interval(v,"total_reference_area");const auto& parents=Array(v,"contact_reference",2);

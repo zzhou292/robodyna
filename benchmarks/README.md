@@ -93,3 +93,48 @@ P0 now has public-API measurements; internal kernel/event counters and a
 representative prescribed batch remain next. Consult
 [`YARIS_SHELL_SCALING_REVIEW.md`](../../planning/YARIS_SHELL_SCALING_REVIEW.md)
 for the separate P1/P2/P3 qualification boundaries.
+
+## Prescribed contact profile
+
+With guided plate checks and coupon profiling enabled, `robo-dyna-contact-profile`
+compares the selected C2 CPU/CUDA implementation on a SHA-pinned saved guided frame:
+
+```text
+robo-dyna-contact-profile WALL-MANIFEST FRAME EXPECTED-FRAME-SHA256 NEW-REPORT
+robo-dyna-contact-profile WALL-MANIFEST FRAME EXPECTED-FRAME-SHA256 NEW-REPORT --backend=rectangular
+```
+
+Run through the shared workstation guard. It loads original Chrono/C3 setup,
+validates saved x/v against the finite wall and uploads a small immutable
+prescribed input. It creates no physical owner, timestep or restart. Omitting
+the flag preserves the scalar baseline and its v1 report semantics. The explicit
+rectangular candidate keeps the same saved x/v, law, force/energy tolerances and
+leaf/visit/per-axis-depth caps; it neither flattens geometry nor snaps small gap
+differences to zero. There is no automatic backend or run-size selection.
+
+For the selected backend, CPU, CUDA and repeated finalization must match all
+integral results, certificates and axis-depth metadata. Candidate results are
+also compared with the original scalar **CPU** routine using both measured
+certificates, since their different partitions need not give identical rounded
+values. Total integration and a separate
+rerun of finalization on the retained leaves are measured, with one warm call
+and three recorded CUDA events. Scalar baseline inputs, source and executable
+are retained before any qualification-only integration change.
+
+The rectangular report uses `robo_dyna.q4_contact_rectangular_profile.v1` and
+records backend identity, scratch bytes, independent U/V depths, and
+active/mixed/inactive leaf counts. Leaf-kind counts are taken from the matching
+CPU partition outside timed work. The selected explicit GPU storage is bounded
+below 512 KiB; rectangular scratch is 442,368 bytes. Both compiled kernels reside
+in the executable, so device-wide runtime/driver memory cannot be attributed to
+the selected algorithm from those samples alone. The harness does not change
+CUDA stack limits.
+
+The three fixed saved states at epochs 12,000, 12,400 and 12,500 passed their
+prescribed CPU/CUDA/certificate checks; see the retained
+[profile summary](../../crash-work/reports/q4-rectangular-profile-summary-1.json),
+[rectangular checkpoint](../../crash-work/checkpoints/q4-contact-profile-rectangular-1/manifest.json)
+and [original scalar checkpoint](../../crash-work/checkpoints/q4-contact-profile-scalar-1/manifest.json).
+These results qualify the measured prescribed inputs. They do not establish a
+completed guided trajectory, response refinement, production default change or
+vehicle performance. Application/backend integration is qualified separately.

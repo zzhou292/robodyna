@@ -26,6 +26,44 @@ bool CopyCanonicalWall(const CanonicalWall& source,ContactWall& output,std::stri
                                  t.triangle_id,t.source_quad_id,t.assembled_source_quad_id});
     output=std::move(next); error.clear(); return true;
 }
+bool PrepareTessellatedContact(const WallTessellation& wall,const ref::GuidedPlateModel& model,
+                              contact::Q4PlanarGeometry& output,std::string& error) {
+    const auto& data=model.shell().data(); const auto& guided=model.data();
+    InitialState initial(data.reference_configuration);
+    const contact::Q4SurfaceView surface{{initial.x.data(),ref::kCouponNodes,3,1},
+        {initial.v.data(),ref::kCouponNodes,3,1},guided.parents.data(),ref::kCouponElements};
+    const contact::Q4FixedYZMassView mass{data.inverse_mass.data(),guided.translation_fixed_bits.data(),ref::kCouponNodes,0};
+    contact::Q4PlanarGeometry next;
+    const auto coverage=wall.CheckCoverage(surface,mass,guided.exposed_clearance,next);
+    if (coverage.status!=WallTessellationStatus::Ok) { error=coverage.diagnostic; return false; }
+    const auto original=model.contact_geometry().view(),derived=next.view();
+    auto interval=[](const contact::Q4IntegralInterval& a,const contact::Q4IntegralInterval& b) {
+        return a.lower==b.lower && a.upper==b.upper;
+    };
+    bool same=original.parent_count==derived.parent_count && original.global_node_count==derived.global_node_count &&
+        original.wall_x==derived.wall_x && original.wall_tolerance==derived.wall_tolerance;
+    for (unsigned p=0;same && p<original.parent_count;++p) {
+        const auto& a=original.parents[p]; const auto& b=derived.parents[p];
+        same=a.covered && b.covered && a.projected_area==b.projected_area && interval(a.area_enclosure,b.area_enclosure) &&
+            a.parent.feature_id==b.parent.feature_id && a.parent.parent_element_id==b.parent.parent_element_id &&
+            a.parent.parent_face_id==b.parent.parent_face_id && a.parent.half_thickness==b.parent.half_thickness;
+        for (unsigned n=0;same && n<4;++n)
+            same=a.parent.nodes[n]==b.parent.nodes[n] && a.reference_projection[n].x==b.reference_projection[n].x &&
+                a.reference_projection[n].y==b.reference_projection[n].y && a.reference_projection[n].z==b.reference_projection[n].z;
+    }
+    contact::Q4PlanarStiffness stiffness;
+    const auto& audited=model.contact_stiffness();
+    if (!same || contact::BuildQ4PlanarStiffness(derived,mass,guided.stiffness_per_area,&stiffness)!=contact::PlanarContactStatus::Ok ||
+        !stiffness.valid || !audited.valid || stiffness.count!=audited.count || stiffness.rate_bound!=audited.rate_bound) {
+        error="Derived wall changes the original physical Q4 preparation or contact rate"; return false;
+    }
+    for (unsigned i=0;i<stiffness.count;++i) {
+        same=same && stiffness.nodes[i]==audited.nodes[i] && stiffness.inverse_mass[i]==audited.inverse_mass[i];
+        for (unsigned j=0;j<stiffness.count;++j) same=same && interval(stiffness.entry[i][j],audited.entry[i][j]);
+    }
+    if (!same) { error="Derived wall changes the original all-active contact stiffness table"; return false; }
+    output=next; error.clear(); return true;
+}
 std::string Describe(const shell::ShellBatchReport& r) {
     return std::string(r.message)+"; shell_status="+std::to_string(static_cast<int>(r.status))+
         ", element="+std::to_string(r.element)+", node="+std::to_string(r.node)+
@@ -69,11 +107,12 @@ bool SameStamp(const fea::NodalStamp& a,const fea::NodalStamp& b) {
         a.reactions_valid==b.reactions_valid && a.reaction_base_epoch==b.reaction_base_epoch && a.reaction_time==b.reaction_time;
 }
 bool Matches(const shell::ShellBatchDiagnostics& s,const contact::Q4PlanarContactDiagnostics& c,
-             std::uint64_t owner,std::uint64_t epoch,std::uint64_t attempt,bool candidate) {
-    return s.valid && c.valid && owner && attempt && s.owner_id==owner && c.owner_id==owner &&
+             std::uint64_t owner,std::uint64_t epoch,std::uint64_t attempt,bool candidate,std::uint64_t wall_binding,
+             contact::Q4PlanarIntegrationBackend backend) {
+    return s.valid && ValidGuidedContactPartition(c,backend) && owner && attempt && s.owner_id==owner && c.owner_id==owner &&
         s.base_epoch==epoch && c.base_epoch==epoch && s.attempt==attempt && c.attempt==attempt &&
         s.configuration_id==kGuidedPlateQualification && c.configuration_id==kGuidedPlateQualification &&
-        c.wall_binding_id==kGuidedPlateWallBinding &&
+        wall_binding && c.wall_binding_id==wall_binding &&
         s.phase==(candidate?shell::ShellBatchPhase::kPreparedCandidate:shell::ShellBatchPhase::kAcceptedBase) &&
         c.phase==(candidate?contact::Q4PlanarContactPhase::PreparedCandidate:contact::Q4PlanarContactPhase::AcceptedBase);
 }
@@ -86,10 +125,22 @@ bool MatchesPrepared(const fea::NodalPreparedView& p,const fea::NodalAssemblyVie
         std::isfinite(p.proposed_time) && p.proposed_time==base.time+base.fixed_dt && p.proposed_time>base.time;
 }
 bool MatchesAcceptedResults(const shell::ShellBatchDiagnostics& s,const contact::Q4PlanarContactDiagnostics& c,
-                            const fea::NodalStamp& stamp) {
+                            const fea::NodalStamp& stamp,std::uint64_t wall_binding,contact::Q4PlanarIntegrationBackend backend) {
     const bool candidate=s.phase==shell::ShellBatchPhase::kPreparedCandidate;
     if (candidate && !stamp.epoch) return false;
-    return Matches(s,c,stamp.owner_id,candidate?stamp.epoch-1:stamp.epoch,s.attempt,candidate);
+    return Matches(s,c,stamp.owner_id,candidate?stamp.epoch-1:stamp.epoch,s.attempt,candidate,wall_binding,backend);
+}
+bool MatchesContactParents(const std::array<contact::Q4PlanarParentResult,ref::kCouponElements>& parents,
+                          const std::array<contact::SurfaceQ4,ref::kCouponElements>& source,
+                          const contact::Q4PlanarContactDiagnostics& d,contact::Q4PlanarIntegrationBackend backend) {
+    if (!ValidGuidedContactPartition(d,parents.data(),parents.size(),backend)) return false;
+    for (unsigned p=0;p<parents.size();++p) {
+        const auto& r=parents[p].integration;
+        if (!parents[p].covered || r.feature_id!=source[p].feature_id || r.parent_element_id!=source[p].parent_element_id ||
+            r.base_epoch!=d.base_epoch || r.attempt!=d.attempt) return false;
+        for (unsigned n=0;n<4;++n) if (r.nodal.nodes[n]!=source[p].nodes[n]) return false;
+    }
+    return true;
 }
 cudaError_t ReadAuditConfiguration(const fea::NodalPreparedView& prepared,ref::ElasticCouponConfiguration& output) {
     static_assert(sizeof(shell::Vec3)==3*sizeof(double) && sizeof(shell::Quaternion)==4*sizeof(double));
@@ -103,6 +154,8 @@ cudaError_t ReadAuditConfiguration(const fea::NodalPreparedView& prepared,ref::E
 }
 bool AccumulateInterval(const shell::ShellBatchDiagnostics& s,const contact::Q4PlanarContactDiagnostics& base,
                         const contact::Q4PlanarContactDiagnostics& endpoint,GuidedPlateMetrics& next) {
+    if (!ValidGuidedContactPartition(base,next.contact.integration_backend) ||
+        !ValidGuidedContactPartition(endpoint,next.contact.integration_backend)) return false;
     const double h=next.stamp.fixed_dt;
     next.shell=s; next.contact=endpoint; next.applied_contact=base;
     next.wall_impulse=contact::Add(next.wall_impulse,contact::Scale(base.wall_reaction,h));

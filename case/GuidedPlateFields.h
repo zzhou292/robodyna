@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GuidedPlateCase.h"
+#include "GuidedPlateContactProtocol.h"
 #include "output/ArtifactIO.h"
 
 namespace crash::case_data {

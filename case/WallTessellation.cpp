@@ -11,6 +11,14 @@ namespace ct=tlfea::contact;
 namespace detail=wall_tessellation_detail;
 using Status=WallTessellationStatus;
 using output::Require;
+std::uint64_t WallTessellationBindingId(WallTessellationKind kind) noexcept {
+    switch(kind) {
+        case WallTessellationKind::Original:return kOriginalWallTessellationBinding;
+        case WallTessellationKind::FlipConvexPairs:return 0x5941524953574132ULL;
+        case WallTessellationKind::UniformFour:return 0x5941524953574133ULL;
+    }
+    return 0;
+}
 const char* WallTessellationName(WallTessellationKind kind) noexcept {
     switch(kind) {
         case WallTessellationKind::Original:return "original";
