@@ -30,9 +30,9 @@ From the workspace root, build the generic six-check test using the existing
 Chrono core build and real TL nodal header, with no CUDA or Fortran requirement:
 
 ```sh
-python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/app-snapshot-configure.json --cpus 2 --max-rss-gib 1 --timeout 90 -- cmake -S robo-dyna -B crash-work/build/app-snapshot -DCRASH_ENABLE_CHRONO_SNAPSHOT_CHECK=ON -DChrono_DIR="$PWD/crash-work/build/chrono-core/cmake" -DCMAKE_BUILD_TYPE=RelWithDebInfo
-python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/app-snapshot-build.json --cpus 2 --max-rss-gib 2 --timeout 120 -- cmake --build crash-work/build/app-snapshot --target crash_chrono_snapshot_check --parallel 1
-python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/app-snapshot-test.json --cpus 1 --max-rss-gib 0.5 --timeout 30 -- ctest --test-dir crash-work/build/app-snapshot -R '^chrono_snapshot_integration$' --output-on-failure -j 1
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/app-snapshot-configure.json --cpus 2 --max-rss-gib 1 --timeout 90 -- cmake -S robo-dyna -B crash-work/build/robo-dyna-app-snapshot-rerun -DCRASH_ENABLE_CHRONO_SNAPSHOT_CHECK=ON -DChrono_DIR="$PWD/crash-work/build/chrono-core/cmake" -DCMAKE_BUILD_TYPE=RelWithDebInfo
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/app-snapshot-build.json --cpus 2 --max-rss-gib 2 --timeout 120 -- cmake --build crash-work/build/robo-dyna-app-snapshot-rerun --target crash_chrono_snapshot_check --parallel 1
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/app-snapshot-test.json --cpus 1 --max-rss-gib 0.5 --timeout 30 -- ctest --test-dir crash-work/build/robo-dyna-app-snapshot-rerun -R '^chrono_snapshot_integration$' --output-on-failure -j 1
 ```
 
 The separate opt-in `CRASH_ENABLE_TL_CHRONO_CHECK=ON` composes TL's existing
@@ -43,7 +43,7 @@ test. Add `-DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc` and the actual compat
 needs neither native oracle. Run the four tiny tests through the same guard:
 
 ```sh
-python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/app-tl-snapshot-test.json --cpus 2 --max-rss-gib 1 --timeout 60 --gpu 0 --max-gpu-growth-gib 1 -- ctest --test-dir crash-work/build/app-snapshot -R '^tl_chrono_snapshot_integration$' --output-on-failure -j 1
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/app-tl-snapshot-test.json --cpus 2 --max-rss-gib 1 --timeout 60 --gpu 0 --max-gpu-growth-gib 1 -- ctest --test-dir crash-work/build/robo-dyna-app-snapshot-rerun -R '^tl_chrono_snapshot_integration$' --output-on-failure -j 1
 ```
 
 These tests consume actual GPU shell `accepted()` states, keep source-owner
@@ -73,9 +73,9 @@ elastic shell, mesh contact case, graphical viewer or Yaris crash.
 From the workspace root, with the existing core-only Chrono build:
 
 ```sh
-python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/nodal-output-configure-rerun.json --max-rss-gib 0.5 --timeout 45 -- cmake -S robo-dyna -B crash-work/build/nodal-output -DCRASH_ENABLE_TL_NODAL_CHECK=ON -DChrono_DIR="$PWD/crash-work/build/chrono-core/cmake" -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_ARCHITECTURES=120 -DCMAKE_BUILD_TYPE=RelWithDebInfo
-python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/nodal-output-build-rerun.json --max-rss-gib 2 --timeout 120 -- cmake --build crash-work/build/nodal-output --target crash_tl_nodal_output_check --parallel 1
-python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/nodal-output-tests-rerun.json --gpu 0 --max-rss-gib 1 --max-gpu-growth-gib 1 --timeout 45 -- ctest --test-dir crash-work/build/nodal-output -R '^tl_nodal_output_integration$' --output-on-failure --parallel 1
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/nodal-output-configure-rerun.json --max-rss-gib 0.5 --timeout 45 -- cmake -S robo-dyna -B crash-work/build/robo-dyna-nodal-output-rerun -DCRASH_ENABLE_TL_NODAL_CHECK=ON -DChrono_DIR="$PWD/crash-work/build/chrono-core/cmake" -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_ARCHITECTURES=120 -DCMAKE_BUILD_TYPE=RelWithDebInfo
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/nodal-output-build-rerun.json --max-rss-gib 2 --timeout 120 -- cmake --build crash-work/build/robo-dyna-nodal-output-rerun --target crash_tl_nodal_output_check --parallel 1
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/nodal-output-tests-rerun.json --gpu 0 --max-rss-gib 1 --max-gpu-growth-gib 1 --timeout 45 -- ctest --test-dir crash-work/build/robo-dyna-nodal-output-rerun -R '^tl_nodal_output_integration$' --output-on-failure --parallel 1
 ```
 
 All output/scene operations are externally serialized. Configure this optional
@@ -103,11 +103,11 @@ This does not qualify oblique contact, CCD, folding, shells or a vehicle crash.
 Configure this optional case against the already built Chrono core:
 
 ```sh
-python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/normal-impact-configure-rerun.json --max-rss-gib 1 --timeout 45 -- cmake -S robo-dyna -B crash-work/build/normal-impact -DCRASH_ENABLE_NORMAL_IMPACT=ON -DCRASH_CANONICAL_WALL="$PWD/crash-work/assets/yaris-wall/manifest.json" -DChrono_DIR="$PWD/crash-work/build/chrono-core/cmake" -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_ARCHITECTURES=120 -DCMAKE_BUILD_TYPE=RelWithDebInfo
-python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/normal-impact-build-rerun.json --max-rss-gib 2 --timeout 180 -- cmake --build crash-work/build/normal-impact --parallel 1
-python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/normal-impact-test-rerun.json --gpu 0 --max-rss-gib 1 --max-gpu-growth-gib 1 --timeout 60 -- ctest --test-dir crash-work/build/normal-impact --output-on-failure --parallel 1
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/normal-impact-configure-rerun.json --max-rss-gib 1 --timeout 45 -- cmake -S robo-dyna -B crash-work/build/robo-dyna-normal-impact-rerun -DCRASH_ENABLE_NORMAL_IMPACT=ON -DCRASH_CANONICAL_WALL="$PWD/crash-work/assets/yaris-wall/manifest.json" -DChrono_DIR="$PWD/crash-work/build/chrono-core/cmake" -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_ARCHITECTURES=120 -DCMAKE_BUILD_TYPE=RelWithDebInfo
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/normal-impact-build-rerun.json --max-rss-gib 2 --timeout 180 -- cmake --build crash-work/build/robo-dyna-normal-impact-rerun --parallel 1
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/normal-impact-test-rerun.json --gpu 0 --max-rss-gib 1 --max-gpu-growth-gib 1 --timeout 60 -- ctest --test-dir crash-work/build/robo-dyna-normal-impact-rerun --output-on-failure --parallel 1
 mkdir -p crash-work/runs
-python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/normal-impact-run-rerun.json --gpu 0 --max-rss-gib 1 --max-gpu-growth-gib 1 --timeout 60 -- crash-work/build/normal-impact/case/robo-dyna crash-work/assets/yaris-wall/manifest.json crash-work/runs/normal-impact-rerun
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/normal-impact-run-rerun.json --gpu 0 --max-rss-gib 1 --max-gpu-growth-gib 1 --timeout 60 -- crash-work/build/robo-dyna-normal-impact-rerun/case/robo-dyna crash-work/assets/yaris-wall/manifest.json crash-work/runs/normal-impact-rerun
 ```
 
 The CLI requires a **new** output directory and verifies the exact canonical
@@ -170,9 +170,9 @@ original failure reports remain intact.
 To reproduce using the already built FEA core, from the workspace root:
 
 ```sh
-python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/reissner-configure-rerun.json --lock crash-work/reports/workstation.lock --cpus 1 --max-rss-gib 0.5 --timeout 45 -- cmake -S robo-dyna -B crash-work/build/reissner-baseline-regression -DCRASH_ENABLE_CHRONO_REISSNER_CHECK=ON -DChrono_DIR="$PWD/crash-work/build/chrono-fea-reference/cmake" -DCMAKE_BUILD_TYPE=RelWithDebInfo
-python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/reissner-build-rerun.json --lock crash-work/reports/workstation.lock --cpus 1 --max-rss-gib 2 --timeout 120 -- cmake --build crash-work/build/reissner-baseline-regression --target crash_chrono_reissner_reference_check --parallel 1
-python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/reissner-tests-rerun.json --lock crash-work/reports/workstation.lock --cpus 1 --max-rss-gib 0.5 --timeout 45 -- crash-work/build/reissner-baseline-regression/chrono/crash_chrono_reissner_reference_check --gtest_output=xml:crash-work/reports/reissner-tests-rerun.xml
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/reissner-configure-rerun.json --lock crash-work/reports/workstation.lock --cpus 1 --max-rss-gib 0.5 --timeout 45 -- cmake -S robo-dyna -B crash-work/build/robo-dyna-reissner-baseline-regression-rerun -DCRASH_ENABLE_CHRONO_REISSNER_CHECK=ON -DChrono_DIR="$PWD/crash-work/build/chrono-fea-reference/cmake" -DCMAKE_BUILD_TYPE=RelWithDebInfo
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/reissner-build-rerun.json --lock crash-work/reports/workstation.lock --cpus 1 --max-rss-gib 2 --timeout 120 -- cmake --build crash-work/build/robo-dyna-reissner-baseline-regression-rerun --target crash_chrono_reissner_reference_check --parallel 1
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/reissner-tests-rerun.json --lock crash-work/reports/workstation.lock --cpus 1 --max-rss-gib 0.5 --timeout 45 -- crash-work/build/robo-dyna-reissner-baseline-regression-rerun/chrono/crash_chrono_reissner_reference_check --gtest_output=xml:crash-work/reports/reissner-tests-rerun.xml
 ```
 
 The unchanged test returns failure; it does not skip or mark the failed physical
@@ -210,11 +210,11 @@ in `tests/data/yaris-wall/`. From the workspace root, regenerate with:
 
 ```sh
 python3 Total-Lagrangian-FEA/tools/run_bounded.py \
-  --report crash-work/assets/yaris-wall/import-run.json \
+  --report crash-work/reports/robo-dyna-wall-import-rerun.json \
   --lock crash-work/reports/workstation.lock --cpus 1 --max-rss-gib 0.25 --timeout 30 -- \
   python3 robo-dyna/tools/import_yaris_wall.py \
   --source-model robo-dyna/tests/data/yaris-wall \
-  --output crash-work/assets/yaris-wall
+  --output crash-work/assets/robo-dyna-wall-regenerated
 ```
 
 The two input files are SHA256-pinned to the inspected originals; the tool fails
@@ -239,6 +239,10 @@ python3 Total-Lagrangian-FEA/tools/run_bounded.py \
   --lock crash-work/reports/workstation.lock --cpus 1 --max-rss-gib 0.25 --timeout 30 -- \
   python3 -m unittest discover -s robo-dyna/tests -p 'test_yaris_wall.py' -v
 ```
+
+The preserved canonical wall remains in `crash-work/assets/yaris-wall`. New
+imports record the renamed generator and its current source hash; regenerate
+into the separate directory above to preserve the historical manifest.
 
 The same tests are registered with CMake/CTest:
 
