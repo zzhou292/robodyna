@@ -49,4 +49,19 @@ struct NodalValidationReceipt {
 NodalReport AdvanceNodal(FENodalState&, const NodalTrialToken&, const NodalStepAdmission&);
 NodalReport CompleteNodalValidation(FENodalState&, const NodalTrialToken&, const NodalValidationReceipt&);
 
+// Declares prescribed constant, state-independent WORLD loads for the new
+// staggered operation only. Excludes shell/contact/damping/history forces and
+// any donor-startup claim. There is deliberately no elastic/history admission.
+struct NodalStaggeredPrescribedAdmission {
+  std::uint64_t owner_id = 0, base_epoch = 0, attempt = 0;
+  double maximum_dt = 0;
+  double maximum_rotation_increment = 0;
+};
+// Initial physical v0/omega0 are collocated at t0=0. The first successful step
+// kicks by h/2, all later steps by h; every drift uses h. Failed trials do not
+// consume the initial half kick. Prepared velocity time is base_time+h/2.
+// Reuses the same owner, arithmetic, six allocations and reaction convention.
+NodalReport AdvanceStaggeredPrescribed(FENodalState&, const NodalTrialToken&,
+                                      const NodalStaggeredPrescribedAdmission&);
+
 }  // namespace tl::fea

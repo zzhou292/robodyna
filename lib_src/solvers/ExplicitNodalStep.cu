@@ -11,7 +11,7 @@ namespace sc = tlfea::contact;
 // This operation consumes one sealed force assembly and owns no physical state.
 __global__ void Advance(nodal_detail::Control* control, const double* accepted,
                         double* trial, const double* force, const double* inverse,
-                        const std::uint8_t* constraints, std::uint32_t n, double h,
+                        const std::uint8_t* constraints, std::uint32_t n, double h, double kick_dt,
                         double maximum_angle, std::uint64_t epoch, std::uint64_t attempt) {
   if (control->status != NodalStatus::Ok) return;
   if (control->rows.base_epoch != epoch || control->rows.attempt != attempt ||
@@ -22,8 +22,8 @@ __global__ void Advance(nodal_detail::Control* control, const double* accepted,
     control->status = NodalStatus::MissingStepAdmission; return;
   }
   for (std::uint32_t i = 0; i < n; ++i) {
-    if (!nodal_detail::AdvanceTranslationNode(accepted, trial, force, inverse[i], constraints[n+i],
-                                             i, n, h, trial+13*n)) {
+    if (!nodal_detail::AdvanceTranslationNodeWithKick(accepted, trial, force, inverse[i], constraints[n+i],
+                                                     i, n, h, kick_dt, trial+13*n)) {
       control->status = NodalStatus::InvalidOutput; control->node = i; return;
     }
     const bool fixed_rotation = constraints[2*n+i] != 0;
@@ -32,7 +32,7 @@ __global__ void Advance(nodal_detail::Control* control, const double* accepted,
       const auto j = 3*i+axis;
       const double couple = force[(3+axis)*n+i];
       const double acceleration = fixed_rotation ? 0 : inverse[n+i]*couple;
-      const double omega = fixed_rotation ? 0 : accepted[6*n+j]+h*acceleration;
+      const double omega = fixed_rotation ? 0 : accepted[6*n+j]+kick_dt*acceleration;
       trial[6*n+j] = omega;
       trial[16*n+j] = fixed_rotation ? -couple : 0;
       increment[axis] = h*omega;
@@ -66,11 +66,29 @@ __global__ void Advance(nodal_detail::Control* control, const double* accepted,
 
 NodalReport AdvanceNodal(FENodalState& owner, const NodalTrialToken& token, const NodalStepAdmission& admission) {
   if (!owner.impl_) return {NodalStatus::NotInitialized, "Owner is not initialized"};
-  auto& s = *owner.impl_;
+  return owner.impl_->AdvanceSealedNodal(token.owner_id_,token.base_epoch_,token.attempt_,admission,
+                                       NodalTemporalScheme::VelocityFirst);
+}
+
+NodalReport AdvanceStaggeredPrescribed(FENodalState& owner, const NodalTrialToken& token,
+                                      const NodalStaggeredPrescribedAdmission& admission) {
+  if (!owner.impl_) return {NodalStatus::NotInitialized, "Owner is not initialized"};
+  const NodalStepAdmission constant{admission.owner_id,admission.base_epoch,admission.attempt,
+      admission.maximum_dt,admission.maximum_rotation_increment,NodalStepAdmissionKind::PrescribedConstantLoads};
+  return owner.impl_->AdvanceSealedNodal(token.owner_id_,token.base_epoch_,token.attempt_,constant,
+                                       NodalTemporalScheme::StaggeredHalfKickStart);
+}
+
+NodalReport FENodalState::Impl::AdvanceSealedNodal(
+    std::uint64_t owner_id, std::uint64_t epoch, std::uint64_t attempt,
+    const NodalStepAdmission& admission, NodalTemporalScheme expected_scheme) {
+  auto& s = *this;
   if (!s.usable) return {NodalStatus::DeviceFailure, "CUDA owner is poisoned"};
-  if (!s.Matches(token.owner_id_, token.base_epoch_, token.attempt_))
+  if (!s.Matches(owner_id, epoch, attempt))
     return s.Reject(NodalStatus::StaleTrial, "Trial token belongs to another owner or attempt");
   if (s.phase != Phase::Sealed) return s.Reject(NodalStatus::WrongPhase, "Assembly has not been sealed");
+  if (s.config.temporal_scheme != expected_scheme)
+    return s.Reject(NodalStatus::UnsupportedTemporalScheme, "Step operation does not match the owner's temporal scheme");
   if (!s.has_rotations)
     return s.Reject(NodalStatus::UnsupportedRotation, "AdvanceNodal requires extended nodal initialization");
   const bool elastic = admission.kind == NodalStepAdmissionKind::RestrictedElasticTrajectory;
@@ -102,7 +120,7 @@ NodalReport AdvanceNodal(FENodalState& owner, const NodalTrialToken& token, cons
     return s.Reject(NodalStatus::InvalidInput, "Elastic qualification fields supplied for constant loads");
   }
   Advance<<<1,1,0,s.stream>>>(s.control, s.accepted, s.trial, s.scratch, s.inverse, s.fixed,
-      static_cast<std::uint32_t>(s.config.node_count), s.config.fixed_dt, admission.maximum_rotation_increment,
+      static_cast<std::uint32_t>(s.config.node_count), s.config.fixed_dt, s.candidate_kick_dt, admission.maximum_rotation_increment,
       s.stamp.epoch, s.attempt);
   auto report = s.Check(cudaGetLastError()); if (report.status != NodalStatus::Ok) return report;
   report = s.SynchronizeControl(); if (report.status != NodalStatus::Ok) return report;

@@ -18,15 +18,15 @@ struct Control {
 // rotational operations. Constraint bits are WORLD x/y/z; only trial buffers
 // are written. The caller records the first invalid node and discards a failed
 // attempt. reaction_xyz is optional, and records forces on the constrained node.
-TL_SURFACE_HD inline bool AdvanceTranslationNode(
+TL_SURFACE_HD inline bool AdvanceTranslationNodeWithKick(
     const double* accepted, double* trial, const double* force, double inverse_mass,
-    std::uint8_t fixed_bits, std::uint32_t node, std::uint32_t n, double h,
+    std::uint8_t fixed_bits, std::uint32_t node, std::uint32_t n, double h, double kick_dt,
     double* reaction_xyz = nullptr) {
   for (unsigned axis = 0; axis < 3; ++axis) {
     const auto j = 3*node+axis;
     const bool fixed = (fixed_bits & (1u << axis)) != 0;
     const double acceleration = fixed ? 0 : inverse_mass*force[axis*n+node];
-    const double velocity = fixed ? 0 : accepted[3*n+j]+h*acceleration;
+    const double velocity = fixed ? 0 : accepted[3*n+j]+kick_dt*acceleration;
     const double position = fixed ? accepted[j] : accepted[j]+h*velocity;
     trial[3*n+j] = velocity; trial[j] = position;
     if (reaction_xyz) reaction_xyz[j] = fixed ? -force[axis*n+node] : 0;
@@ -34,6 +34,12 @@ TL_SURFACE_HD inline bool AdvanceTranslationNode(
         !tlfea::contact::IsFinite(position)) return false;
   }
   return true;
+}
+TL_SURFACE_HD inline bool AdvanceTranslationNode(
+    const double* accepted, double* trial, const double* force, double inverse_mass,
+    std::uint8_t fixed_bits, std::uint32_t node, std::uint32_t n, double h,
+    double* reaction_xyz = nullptr) {
+  return AdvanceTranslationNodeWithKick(accepted,trial,force,inverse_mass,fixed_bits,node,n,h,h,reaction_xyz);
 }
 }  // namespace nodal_detail
 
@@ -44,12 +50,15 @@ struct FENodalState::Impl {
   NodalReport SynchronizeControl();
   NodalReport Reject(NodalStatus, const char*, std::uint32_t = UINT32_MAX);
   bool Matches(std::uint64_t owner, std::uint64_t epoch, std::uint64_t trial) const;
+  NodalReport AdvanceSealedNodal(std::uint64_t owner, std::uint64_t epoch, std::uint64_t trial,
+                                const NodalStepAdmission&, NodalTemporalScheme);
   NodalStateConfig config;
   NodalStamp stamp;
   NodalAllocationInfo allocation;
   std::uint64_t attempt = 0;
   std::uint64_t pending_qualification = 0;
   double candidate_time = 0;
+  double candidate_velocity_time = 0, candidate_kick_dt = 0;
   bool usable = true;
   bool has_rotations = false, has_component_constraints = false;
   std::size_t state_values = 0;

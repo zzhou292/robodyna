@@ -167,6 +167,12 @@ if(TL_CONTACT_ENABLE_CUDA)
   set_tests_properties(utest_step_stability_cuda PROPERTIES PROCESSORS 1)
 
   add_subdirectory("${TL_ROOT}/lib_src/solvers" "tl-explicit-nodal-state")
+  add_executable(utest_nodal_temporal_cuda "${TL_ROOT}/lib_utest/utest_nodal_temporal_cuda.cu")
+  target_link_libraries(utest_nodal_temporal_cuda PRIVATE tl_explicit_nodal_state)
+  target_compile_options(utest_nodal_temporal_cuda PRIVATE
+    "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false>")
+  tl_contact_test(utest_nodal_temporal_cuda)
+  set_tests_properties(utest_nodal_temporal_cuda PROPERTIES PROCESSORS 1)
   add_executable(utest_nodal_step_cuda "${TL_ROOT}/lib_utest/utest_nodal_step_cuda.cu")
   target_link_libraries(utest_nodal_step_cuda PRIVATE tl_explicit_nodal_state)
   target_compile_options(utest_nodal_step_cuda PRIVATE

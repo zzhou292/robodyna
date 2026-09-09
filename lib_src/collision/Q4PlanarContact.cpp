@@ -20,6 +20,7 @@ Q4PlanarContactReport Q4PlanarContact::Initialize(const Q4PlanarContactConfig& c
                                                 const Q4SurfaceView& surface,const Q4FixedYZMassView& mass) {
   if (impl_) return {Code::InvalidInput,"Q4 contact already initialized"};
   if (!q4_planar_detail::ValidBackend(config.integration_backend) ||
+      !tl::fea::IsCollocatedNodalTiming(config.owner.temporal_scheme,config.owner.velocity_phase) ||
       !config.owner.owner_id || !config.configuration_id || !config.wall_binding_id ||
       !std::isfinite(config.owner.time) || !std::isfinite(config.owner.fixed_dt) || config.owner.fixed_dt <= 0 ||
       !std::isfinite(config.stiffness_per_area) || config.stiffness_per_area <= 0 ||

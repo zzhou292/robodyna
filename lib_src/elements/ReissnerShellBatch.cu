@@ -97,6 +97,7 @@ bool SameIdentity(const ShellBatchDiagnostics& a, const ShellBatchDiagnostics& b
 ShellBatchReport BuildModel(const ReissnerShellBatchConfig& config, const ReissnerShellBatchElement* elements,
                             batch_detail::Model& model) {
   if (!elements || !config.owner.owner_id || !config.owner.has_rotations || !config.configuration_id ||
+      !IsCollocatedNodalTiming(config.owner.temporal_scheme,config.owner.velocity_phase) ||
       !std::isfinite(config.owner.fixed_dt) || config.owner.fixed_dt <= 0 || !std::isfinite(config.owner.time))
     return {ShellBatchStatus::kInvalidInput, "Batch requires an initialized rotational owner and immutable configuration identity"};
   if (!config.element_count || config.element_count > MaxReissnerShellBatchElements || !config.owner.node_count ||
@@ -205,7 +206,8 @@ ShellBatchReport ReissnerShellBatch::Assemble(const NodalAssemblyView& view, She
   auto& s = *impl_; s.has_base = false; s.has_results = false;
   if (!s.usable)
     return s.FailAssembly(view, {ShellBatchStatus::kDeviceFailure, "CUDA batch is poisoned"});
-  if (!output || !ValidKinematics(view.accepted, s.config) || !view.mass.inverse_mass || !view.mass.fixed ||
+  if (!output || !IsCollocatedNodalTiming(view.temporal_scheme,view.velocity_phase) ||
+      !ValidKinematics(view.accepted, s.config) || !view.mass.inverse_mass || !view.mass.fixed ||
       !view.inverse_inertia || !view.translation_fixed_bits || !view.rotation_fixed || !view.bounds || !view.result ||
       view.forces.node_count != s.config.owner.node_count || view.mass.node_count != s.config.owner.node_count ||
       !view.forces.force_x || !view.forces.force_y || !view.forces.force_z || !view.forces.couple_x || !view.forces.couple_y || !view.forces.couple_z)
@@ -232,7 +234,9 @@ ShellBatchReport ReissnerShellBatch::EvaluateCandidate(const NodalPreparedView& 
   if (!impl_) return {ShellBatchStatus::kNotInitialized, "Batch is not initialized"};
   auto& s = *impl_; s.has_results = false;
   if (!s.usable) return {ShellBatchStatus::kDeviceFailure, "CUDA batch is poisoned"};
-  if (!output || !ValidKinematics(view.kinematics, s.config) || !ValidKinematics(view.base_kinematics, s.config) ||
+  if (!output || !IsCollocatedNodalTiming(view.temporal_scheme,view.velocity_phase) ||
+      !IsCollocatedNodalTiming(view.temporal_scheme,view.base_velocity_phase) ||
+      !ValidKinematics(view.kinematics, s.config) || !ValidKinematics(view.base_kinematics, s.config) ||
       !std::isfinite(view.proposed_time) || view.proposed_time <= s.config.owner.time)
     return {ShellBatchStatus::kInvalidInput, "Invalid prepared/base owner views or diagnostic output"};
   if (view.owner_id != s.config.owner.owner_id) return {ShellBatchStatus::kWrongOwner, "Candidate belongs to another owner"};

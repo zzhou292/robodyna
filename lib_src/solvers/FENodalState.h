@@ -14,8 +14,14 @@ constexpr std::size_t MaxTranslationDeviceBytes = 1024 * 1024;
 enum class NodalStatus {
   Ok, InvalidInput, ResourceLimit, NotInitialized, WrongPhase, StaleTrial,
   ContributorFailure, InvalidOutput, UnsupportedRotation, StepTooLarge,
-  HistoryLimit, DeviceFailure, MissingStepAdmission, MissingCandidateValidation
+  HistoryLimit, DeviceFailure, MissingStepAdmission, MissingCandidateValidation,
+  UnsupportedTemporalScheme
 };
+enum class NodalTemporalScheme { VelocityFirst, StaggeredHalfKickStart };
+enum class NodalVelocityPhase { Collocated, PreviousMidpoint };
+constexpr bool IsCollocatedNodalTiming(NodalTemporalScheme scheme,NodalVelocityPhase phase) noexcept {
+  return scheme==NodalTemporalScheme::VelocityFirst && phase==NodalVelocityPhase::Collocated;
+}
 struct NodalReport {
   NodalStatus status = NodalStatus::InvalidInput;
   const char* message = "Invalid request";  // Static, allocation-free diagnostic.
@@ -26,6 +32,10 @@ struct NodalStateConfig {
   std::size_t node_count = 0;
   std::size_t max_device_bytes = MaxTranslationDeviceBytes;
   double fixed_dt = 1e-3, minimum_dt = 1e-12, timestep_safety = .8;
+  // Both schemes initialize from physical, collocated v0/omega0. The staggered
+  // scheme takes a half kick on its first accepted interval, then full kicks.
+  // It has a separate prescribed-load operation; no shell history is admitted.
+  NodalTemporalScheme temporal_scheme = NodalTemporalScheme::VelocityFirst;
 };
 // Optional conventional-node degrees of freedom. Masks are immutable WORLD
 // constraints: bits 1/2/4 fix x/y/z translation, and rotation_fixed is 0 or 1.
@@ -47,6 +57,12 @@ struct NodalStamp {
   bool reactions_valid = false;
   std::uint64_t reaction_base_epoch = 0;
   double reaction_time = 0;
+  NodalTemporalScheme temporal_scheme = NodalTemporalScheme::VelocityFirst;
+  NodalVelocityPhase velocity_phase = NodalVelocityPhase::Collocated;
+  double velocity_time = 0;
+  // Momentum changes span this kick duration, which is h/2 for the first
+  // staggered kick. It is distinct from the full physical interval duration h.
+  double reaction_kick_dt = 0;
 };
 struct NodalAllocationInfo {
   // Explicit module-owned cudaMalloc buffers; excludes CUDA runtime/driver
@@ -85,6 +101,9 @@ struct NodalAssemblyView {
   const double* inverse_inertia = nullptr;
   const std::uint8_t* translation_fixed_bits = nullptr;
   const std::uint8_t* rotation_fixed = nullptr;
+  NodalTemporalScheme temporal_scheme = NodalTemporalScheme::VelocityFirst;
+  NodalVelocityPhase velocity_phase = NodalVelocityPhase::Collocated;
+  double position_time = 0, velocity_time = 0;
 };
 // Read-only completed candidate for module admission checks before commit.
 // kinematics.base_epoch remains the ACCEPTED base epoch of this attempt.
@@ -97,6 +116,10 @@ struct NodalPreparedView {
   // Accepted base of this interval, borrowed with the same lifetime as the
   // candidate. Enables work/energy validators without duplicating nodal state.
   DeviceNodalKinematicsView base_kinematics;
+  NodalTemporalScheme temporal_scheme = NodalTemporalScheme::VelocityFirst;
+  NodalVelocityPhase velocity_phase = NodalVelocityPhase::Collocated;
+  NodalVelocityPhase base_velocity_phase = NodalVelocityPhase::Collocated;
+  double base_time = 0, velocity_time = 0, base_velocity_time = 0, kick_dt = 0;
 };
 TL_SURFACE_HD inline void RecordNodalAssemblyFailure(
     const NodalAssemblyView& view, tlfea::contact::Status status,
@@ -112,6 +135,7 @@ TL_SURFACE_HD inline void RecordNodalAssemblyFailure(
 class FENodalState;
 struct NodalStepAdmission;
 struct NodalValidationReceipt;
+struct NodalStaggeredPrescribedAdmission;
 class NodalTrialToken {
   // Value authorization with no lifetime/storage ownership. Retained tokens
   // cannot authorize work after destruction, even if a new owner occupies the
@@ -119,6 +143,7 @@ class NodalTrialToken {
   friend class FENodalState;
   friend NodalReport AdvanceTranslations(FENodalState&, const NodalTrialToken&);
   friend NodalReport AdvanceNodal(FENodalState&, const NodalTrialToken&, const NodalStepAdmission&);
+  friend NodalReport AdvanceStaggeredPrescribed(FENodalState&, const NodalTrialToken&, const NodalStaggeredPrescribedAdmission&);
   friend NodalReport CompleteNodalValidation(FENodalState&, const NodalTrialToken&, const NodalValidationReceipt&);
   std::uint64_t owner_id_ = 0, base_epoch_ = 0, attempt_ = 0;
 };
@@ -133,6 +158,9 @@ class NodalTrialToken {
 //
 // Order: BeginTrial -> all additive contributors -> SealAssembly ->
 // AdvanceTranslations (legacy) or separately admitted AdvanceNodal -> Commit.
+// StaggeredHalfKickStart requires extended initialization and the distinct
+// AdvanceStaggeredPrescribed operation. CopyAccepted exports the stored velocity
+// with its explicit phase/time; it never reconstructs a collocated velocity.
 // Forces and bounds are trial SCRATCH, never
 // accepted force diagnostics. No external history participant is committed here.
 // Calls and assembly writes are serialized; use only the returned stream. Views
@@ -176,6 +204,7 @@ class FENodalState {
  private:
   friend NodalReport AdvanceTranslations(FENodalState&, const NodalTrialToken&);
   friend NodalReport AdvanceNodal(FENodalState&, const NodalTrialToken&, const NodalStepAdmission&);
+  friend NodalReport AdvanceStaggeredPrescribed(FENodalState&, const NodalTrialToken&, const NodalStaggeredPrescribedAdmission&);
   friend NodalReport CompleteNodalValidation(FENodalState&, const NodalTrialToken&, const NodalValidationReceipt&);
   NodalReport InitializeImpl(const NodalStateConfig&, HostNodalKinematicsView,
                              const double* inverse_mass, const std::uint8_t* fixed,

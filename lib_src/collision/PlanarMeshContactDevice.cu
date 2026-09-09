@@ -196,7 +196,8 @@ PlanarContactReport PlanarMeshContact::Evaluate(const fea::NodalAssemblyView& vi
     return {status,message};
   };
   if (view.owner_id != s.config.owner_id) return reject(PStatus::WrongOwner,"Assembly belongs to another nodal owner");
-  if (!AssemblyPointers(view) || !view.attempt || view.accepted.node_count != s.config.global_node_count ||
+  if (!fea::IsCollocatedNodalTiming(view.temporal_scheme,view.velocity_phase) ||
+      !AssemblyPointers(view) || !view.attempt || view.accepted.node_count != s.config.global_node_count ||
       view.mass.node_count != s.config.global_node_count || view.forces.node_count != s.config.global_node_count ||
       view.mass.model != TranslationMassModel::kIsotropicLumped)
     return reject(PStatus::InvalidInput,"Invalid borrowed nodal assembly");
@@ -227,7 +228,9 @@ PlanarContactReport PlanarMeshContact::ValidatePrepared(const fea::NodalPrepared
   if (prepared.owner_id != s.config.owner_id) return reject(PStatus::WrongOwner,"Prepared state belongs to another owner");
   if (!d.valid || prepared.kinematics.base_epoch != d.base_epoch || prepared.attempt != d.attempt)
     return reject(PStatus::StaleAttempt,"Prepared state does not match a successful contact evaluation");
-  if (!prepared.kinematics.position_xyz || !prepared.kinematics.velocity_xyz ||
+  if (!fea::IsCollocatedNodalTiming(prepared.temporal_scheme,prepared.velocity_phase) ||
+      !fea::IsCollocatedNodalTiming(prepared.temporal_scheme,prepared.base_velocity_phase) ||
+      !prepared.kinematics.position_xyz || !prepared.kinematics.velocity_xyz ||
       prepared.kinematics.node_count != s.config.global_node_count || !IsFinite(prepared.proposed_time) || prepared.proposed_time <= 0)
     return reject(PStatus::InvalidInput,"Invalid borrowed prepared state");
   ValidateCandidate<<<1,1,0,prepared.stream>>>(prepared,s.nodes,s.node_count,s.points,s.point_count,s.wall_x,s.config.max_penetration_m,s.control);

@@ -126,7 +126,8 @@ Q4PlanarContactReport Q4PlanarContact::Assemble(const fea::NodalAssemblyView& vi
   }
   auto& s=*impl_; s.has_base=false; s.has_results=false;
   if (!s.usable) return s.FailAssembly(view,{Code::DeviceFailure,"Q4 contact CUDA storage is poisoned"});
-  if (!output || !Kinematics(view.accepted,s.config) || !view.mass.inverse_mass || !view.mass.fixed ||
+  if (!output || !fea::IsCollocatedNodalTiming(view.temporal_scheme,view.velocity_phase) ||
+      !Kinematics(view.accepted,s.config) || !view.mass.inverse_mass || !view.mass.fixed ||
       !view.translation_fixed_bits || !view.bounds || !view.result ||
       !view.forces.force_x || !view.forces.force_y || !view.forces.force_z ||
       !view.forces.couple_x || !view.forces.couple_y || !view.forces.couple_z ||
@@ -151,7 +152,9 @@ Q4PlanarContactReport Q4PlanarContact::EvaluateCandidate(const fea::NodalPrepare
   if (!impl_) return {Code::NotInitialized,"Q4 contact is not initialized"};
   auto& s=*impl_; s.has_results=false;
   if (!s.usable) return {Code::DeviceFailure,"Q4 contact CUDA storage is poisoned"};
-  if (!output || !Kinematics(view.kinematics,s.config) || !Kinematics(view.base_kinematics,s.config) ||
+  if (!output || !fea::IsCollocatedNodalTiming(view.temporal_scheme,view.velocity_phase) ||
+      !fea::IsCollocatedNodalTiming(view.temporal_scheme,view.base_velocity_phase) ||
+      !Kinematics(view.kinematics,s.config) || !Kinematics(view.base_kinematics,s.config) ||
       !std::isfinite(view.proposed_time) || view.proposed_time <= s.config.owner.time)
     return {Code::InvalidInput,"Invalid Q4 contact prepared/base/output view"};
   if (view.owner_id != s.config.owner.owner_id) return {Code::WrongOwner,"Q4 contact candidate belongs to another owner"};

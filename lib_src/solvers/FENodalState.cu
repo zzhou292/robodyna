@@ -117,11 +117,18 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
       c.max_device_bytes > MaxTranslationDeviceBytes)
     return {NodalStatus::ResourceLimit, "Nodal capacity exceeds admitted limits"};
   const bool rotations = dofs != nullptr;
+  const bool staggered = c.temporal_scheme == NodalTemporalScheme::StaggeredHalfKickStart;
+  if (c.temporal_scheme != NodalTemporalScheme::VelocityFirst && !staggered)
+    return {NodalStatus::UnsupportedTemporalScheme, "Unknown nodal temporal scheme"};
+  if (staggered && !rotations)
+    return {NodalStatus::UnsupportedTemporalScheme, "Staggered stepping requires extended nodal initialization"};
   if (in.node_count != c.node_count || !in.position_xyz || !in.velocity_xyz || !inverse_mass ||
       (rotations ? (!in.orientation_wxyz || !dofs->translation_fixed_bits || !dofs->rotation_fixed || !dofs->inverse_inertia) : !fixed) ||
       !std::isfinite(c.fixed_dt) || !std::isfinite(c.minimum_dt) || c.minimum_dt <= 0 ||
       c.fixed_dt < c.minimum_dt || !std::isfinite(c.timestep_safety) || c.timestep_safety <= 0 || c.timestep_safety >= 1)
     return {NodalStatus::InvalidInput, "Invalid kinematics, mass, or fixed-step configuration"};
+  if (staggered && (!(.5*c.fixed_dt > 0) || !(.5*c.fixed_dt < c.fixed_dt)))
+    return {NodalStatus::InvalidInput, "Initial half step is not representable"};
   if (!rotations && in.orientation_wxyz)
     return {NodalStatus::UnsupportedRotation, "Orientations require extended nodal initialization"};
   bool component_constraints = false;
@@ -155,6 +162,7 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
   try {
     auto next = std::make_unique<Impl>();
     next->config = c; next->stamp = {NewOwner(), 0, n, 0, c.fixed_dt};
+    next->stamp.temporal_scheme = c.temporal_scheme;
     next->has_rotations = rotations; next->has_component_constraints = component_constraints;
     next->stamp.has_rotations = rotations; next->state_values = state_values;
     if (!next->stamp.owner_id) return {NodalStatus::HistoryLimit, "Owner identities exhausted"};
@@ -217,6 +225,12 @@ NodalReport FENodalState::BeginTrial(NodalTrialToken* token, NodalAssemblyView* 
   s.candidate_time = s.stamp.time + s.config.fixed_dt;
   if (!std::isfinite(s.candidate_time) || s.candidate_time <= s.stamp.time)
     return {NodalStatus::HistoryLimit, "Accepted clock cannot represent another step"};
+  const bool staggered = s.config.temporal_scheme == NodalTemporalScheme::StaggeredHalfKickStart;
+  s.candidate_velocity_time = staggered ? s.stamp.time+.5*s.config.fixed_dt : s.candidate_time;
+  s.candidate_kick_dt = staggered && s.stamp.epoch == 0 ? .5*s.config.fixed_dt : s.config.fixed_dt;
+  if (staggered && (!std::isfinite(s.candidate_velocity_time) ||
+      !(s.candidate_velocity_time > s.stamp.time) || !(s.candidate_velocity_time < s.candidate_time)))
+    return {NodalStatus::HistoryLimit, "Accepted clock cannot represent the next midpoint"};
   const auto n = s.config.node_count;
   auto report = s.Check(cudaMemcpyAsync(s.trial, s.accepted, s.state_values*sizeof(double), cudaMemcpyDeviceToDevice, s.stream));
   if (report.status != NodalStatus::Ok) return report;
@@ -234,6 +248,9 @@ NodalReport FENodalState::BeginTrial(NodalTrialToken* token, NodalAssemblyView* 
   view->bounds = &s.control->rows; view->result = &s.control->assembly;
   view->stream = s.stream; view->attempt = s.attempt;
   view->owner_id = s.stamp.owner_id;
+  view->temporal_scheme = s.stamp.temporal_scheme;
+  view->velocity_phase = s.stamp.velocity_phase;
+  view->position_time = s.stamp.time; view->velocity_time = s.stamp.velocity_time;
   if (s.has_rotations) {
     view->inverse_inertia = s.inverse+n;
     view->translation_fixed_bits = s.fixed+n;
@@ -271,6 +288,12 @@ NodalReport FENodalState::BorrowPrepared(const NodalTrialToken& token, NodalPrep
                      s.has_rotations ? s.trial+9*n : nullptr};
   out->stream = s.stream; out->owner_id = s.stamp.owner_id;
   out->attempt = s.attempt; out->proposed_time = s.candidate_time;
+  out->temporal_scheme = s.stamp.temporal_scheme;
+  out->velocity_phase = s.config.temporal_scheme == NodalTemporalScheme::StaggeredHalfKickStart ?
+      NodalVelocityPhase::PreviousMidpoint : NodalVelocityPhase::Collocated;
+  out->base_velocity_phase = s.stamp.velocity_phase;
+  out->base_time = s.stamp.time; out->base_velocity_time = s.stamp.velocity_time;
+  out->velocity_time = s.candidate_velocity_time; out->kick_dt = s.candidate_kick_dt;
   out->base_kinematics = {s.accepted, s.accepted+3*n,
                           s.has_rotations ? s.accepted+6*n : s.scratch+8*n,
                           n, s.stamp.epoch, s.has_rotations ? s.accepted+9*n : nullptr};
@@ -293,8 +316,12 @@ NodalReport FENodalState::Commit(const NodalTrialToken& token) noexcept {
   report = s.Check(cudaStreamSynchronize(s.stream)); if (report.status != NodalStatus::Ok) return report;
   if (s.has_rotations) {
     s.stamp.reactions_valid = true; s.stamp.reaction_base_epoch = s.stamp.epoch; s.stamp.reaction_time = s.stamp.time;
+    s.stamp.reaction_kick_dt = s.candidate_kick_dt;
   }
   std::swap(s.accepted, s.trial); ++s.stamp.epoch; s.stamp.time = s.candidate_time;
+  s.stamp.velocity_time = s.candidate_velocity_time;
+  s.stamp.velocity_phase = s.config.temporal_scheme == NodalTemporalScheme::StaggeredHalfKickStart ?
+      NodalVelocityPhase::PreviousMidpoint : NodalVelocityPhase::Collocated;
   s.phase = Phase::Idle; return Ok();
 }
 void FENodalState::Discard() noexcept { if (impl_) impl_->phase = Phase::Idle; }

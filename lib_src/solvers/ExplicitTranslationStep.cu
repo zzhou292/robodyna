@@ -30,6 +30,8 @@ NodalReport AdvanceTranslations(FENodalState& owner, const NodalTrialToken& toke
   if (!s.Matches(token.owner_id_, token.base_epoch_, token.attempt_))
     return s.Reject(NodalStatus::StaleTrial, "Trial token belongs to another owner or attempt");
   if (s.phase != Phase::Sealed) return s.Reject(NodalStatus::WrongPhase, "Assembly has not been sealed");
+  if (s.config.temporal_scheme != NodalTemporalScheme::VelocityFirst)
+    return s.Reject(NodalStatus::UnsupportedTemporalScheme, "Legacy translation stepping requires collocated velocity-first state");
   if (s.has_rotations)
     return s.Reject(NodalStatus::UnsupportedRotation, "Extended nodal state requires separately admitted AdvanceNodal");
   Advance<<<1,1,0,s.stream>>>(s.control, s.accepted, s.trial, s.scratch, s.inverse, s.fixed,
