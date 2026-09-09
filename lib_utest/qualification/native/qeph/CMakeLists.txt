@@ -21,6 +21,11 @@ set(modules "${CMAKE_CURRENT_BINARY_DIR}/fortran-modules")
 file(MAKE_DIRECTORY "${modules}")
 get_filename_component(tl_root "${CMAKE_CURRENT_SOURCE_DIR}/../../../.." ABSOLUTE)
 set(native_sources NativeQephStartup.F NativeQephKinematics.F QephNativeGeometry.F
+  QephNativeHistory.F QephNativeMaterial.F QephNativeLaw1.F
+  QephNativeStiffness.F NativeQephForce.F NativeQephScatter.F
+  extracted/Cncoef3B.F extracted/Czstra3.F extracted/Sigeps01G.F
+  extracted/Czfintce.F extracted/Czfintn1.F extracted/Czprojn.F
+  extracted/Cndt3.F extracted/Cssp2a11.F extracted/Cupdtn3.F
   extracted/Cneveci.F extracted/StartSkew.F extracted/Cderii.F
   extracted/EngineSkew.F extracted/Czcorc.F extracted/Czcorp5.F
   extracted/Cortdir3.F extracted/A3invdpV.F extracted/Czdef.F
@@ -40,7 +45,8 @@ add_custom_target(qeph_q1_check_prepared
   COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/prepare_sources.py"
     --output "${prepared}" --check VERBATIM)
 list(TRANSFORM native_sources PREPEND "${prepared}/")
-add_library(qeph_q1_native STATIC QephReference.cpp QephGeometry.cpp ${native_sources})
+add_library(qeph_q1_native STATIC QephReference.cpp QephGeometry.cpp
+  QephHistory.cpp QephForceReference.cpp ${native_sources})
 add_dependencies(qeph_q1_native qeph_q1_verify_sources)
 add_dependencies(qeph_q1_native qeph_q1_check_prepared)
 set_target_properties(qeph_q1_native PROPERTIES Fortran_MODULE_DIRECTORY "${modules}")
@@ -53,6 +59,8 @@ target_compile_definitions(qeph_q1_native PRIVATE
 # Private native routines, real modules and COMMON blocks prevent accidental
 # symbol/context interposition with the earlier native shell qualifications.
 foreach(symbol CNEVECI CDERII CZCORC1 CZCORP5 CZCORP5X CORTDIR3 A3INVDP A3INVDP_V CZDEF
+               CNCOEF3B CZSTRA3 SIGEPS01G CZFINTCE CZFINTN1 CZPROJN CNDT3 CSSP2A11 CUPDTN3
+               LOCKMP COM04 COM01 IMPL2 SCR02 SCR07 SCR18 SCR18R SMS SMSR SMSDP UNITS
                PARAM PARIT SCR05 SCR17 COM08 COM08DP IMPL1 IMPL1_PRIVATE VECT01)
   string(TOLOWER "${symbol}" lower)
   target_compile_definitions(qeph_q1_native PRIVATE
@@ -76,4 +84,10 @@ if(QEPH_Q1_BUILD_TESTS)
   target_compile_options(qeph_kinematics_check PRIVATE -fno-fast-math -ffp-contract=off)
   add_test(NAME qeph_kinematics_check COMMAND qeph_kinematics_check)
   set_tests_properties(qeph_kinematics_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)
+
+  add_executable(qeph_force_check QephForceTest.cpp QephForceHistoryTest.cpp)
+  target_link_libraries(qeph_force_check PRIVATE qeph_q1_native GTest::gtest_main)
+  target_compile_options(qeph_force_check PRIVATE -fno-fast-math -ffp-contract=off)
+  add_test(NAME qeph_force_check COMMAND qeph_force_check)
+  set_tests_properties(qeph_force_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)
 endif()

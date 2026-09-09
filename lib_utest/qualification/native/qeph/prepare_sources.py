@@ -11,7 +11,7 @@ import json
 from pathlib import Path
 import re
 
-from verify_sources import verify
+from verify_sources import NATIVE_ADAPTERS, verify
 
 MODULES = ("constant_mod", "precision_mod", "element_mod", "elbufdef_mod")
 TOKEN = re.compile(r"\b(?:" + "|".join(MODULES) + r")\b", re.IGNORECASE)
@@ -21,7 +21,7 @@ def prepare(output, check=False):
     verify()
     root = Path(__file__).resolve().parent
     manifest = json.loads((root / "source-manifest.json").read_text())
-    paths = ["NativeQephStartup.F", "NativeQephKinematics.F", "QephNativeGeometry.F"]
+    paths = list(NATIVE_ADAPTERS)
     paths += [entry["path"] for entry in manifest["extractions"]]
     paths += ["original/" + entry["path"] for entry in manifest["sources"]
               if entry["path"].startswith("common_source/modules/")]

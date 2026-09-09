@@ -11,15 +11,14 @@ std::mutex& detail::NativeContext() noexcept {
   static std::mutex context;
   return context;
 }
-namespace {
-using Packet = std::array<double,12>;
-Packet Pack(const std::array<Vec3,4>& x) {
-  Packet packed{};
+std::array<double,12> detail::PackNodes(const std::array<Vec3,4>& x) noexcept {
+  std::array<double,12> packed{};
   for (unsigned i=0;i<4;++i) {
     packed[3*i]=x[i].x; packed[3*i+1]=x[i].y; packed[3*i+2]=x[i].z;
   }
   return packed;
 }
+namespace {
 bool Positive(double value) { return std::isfinite(value)&&value>0; }
 template<std::size_t N> bool Finite(const std::array<double,N>& a) {
   return std::all_of(a.begin(),a.end(),[](double x){return std::isfinite(x);});
@@ -39,7 +38,7 @@ Status Initialize(const ReferenceInput& input,Reference& output) noexcept {
       !detail::ValidGeometry(input.position)) return Status::kInvalidInput;
   for (unsigned i=0;i<4;++i) for (unsigned j=i+1;j<4;++j)
     if (input.node_ids[i]==input.node_ids[j]) return Status::kInvalidInput;
-  const auto x=Pack(input.position);
+  const auto x=detail::PackNodes(input.position);
   const double material[]{input.density,input.thickness,input.young_modulus};
   std::array<double,detail::kStartupValues> values{};
   try {
@@ -72,8 +71,8 @@ Status EvaluatePrescribed(const Reference& reference,const PrescribedInterval& i
       !detail::ValidGeometry(interval.position_endpoint)||
       !detail::Finite(interval.velocity_midpoint)||!detail::Finite(interval.omega_midpoint))
     return Status::kInvalidInput;
-  const auto x=Pack(interval.position_endpoint),v=Pack(interval.velocity_midpoint),
-             omega=Pack(interval.omega_midpoint);
+  const auto x=detail::PackNodes(interval.position_endpoint),v=detail::PackNodes(interval.velocity_midpoint),
+             omega=detail::PackNodes(interval.omega_midpoint);
   std::array<double,detail::kKinematicValues> values{};
   int planar=-1,status=-1;
   try {
@@ -83,8 +82,16 @@ Status EvaluatePrescribed(const Reference& reference,const PrescribedInterval& i
   } catch (...) { return Status::kNativeFailure; }
   if (status!=0||(planar!=0&&planar!=1)) return Status::kNativeFailure;
   if (!Finite(values)) return Status::kNonfiniteResult;
+  return detail::UnpackKinematics(values.data(),planar,interval,output);
+}
+
+Status detail::UnpackKinematics(const double* values,int planar,const PrescribedInterval& interval,
+                                Kinematics& output) noexcept {
+  if (planar!=0&&planar!=1) return Status::kNativeFailure;
+  for (unsigned i=0;i<kKinematicValues;++i)
+    if (!std::isfinite(values[i])) return Status::kNonfiniteResult;
   Kinematics candidate;
-  const double* p=values.data();
+  const double* p=values;
   Read(p,candidate.frame);
   candidate.area=*p++; candidate.reciprocal_area=*p++; candidate.characteristic_length=*p++;
   Read(p,candidate.nodal_factors);

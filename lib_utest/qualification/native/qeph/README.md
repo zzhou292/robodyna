@@ -1,9 +1,13 @@
-# QEPH native reference: Q1 startup and prescribed kinematics
+# QEPH native reference: startup, kinematics and elastic history
 
 This explicit opt-in host library calls complete pinned OpenRadioss routines.
-It is a one-element qualification oracle, without a solver process, CUDA state,
-time integration, stresses, material history or force production. Q2 must add
-the coherent native LAW1/stabilization/history path before a force port is judged.
+It is a one-element qualification oracle, without a solver process, CUDA state
+or time integrator. Q1 startup/kinematics is qualified within the limits below.
+Q2 now passes all twelve prescribed LAW1/stabilization/history/force tests, and
+all eleven Q1 regression tests pass. The 95 retained Q1 XML properties match
+the earlier qualified run exactly. This qualifies the bounded native reference
+chain, not a CUDA force port or dynamics. Reports are recorded in workspace
+`planning/QEPH_Q2_FINDINGS.md`.
 The native library compiles. First execution passed 10 of 11 tests: static geometry,
 covariance, affine rates and the analytic Z-spin case passed; the proposed
 all-component second-order general rigid-rate gate failed. Its source/binary
@@ -29,10 +33,10 @@ results reject publication; no coordinate flattening or repair is performed.
 
 ## Exact source reuse
 
-`source-manifest.json` pins 27 original files to OpenRadioss commit
+`source-manifest.json` now pins 55 original files (27 in the Q1 checkpoint) to OpenRadioss commit
 `a62b27e6baa555d222a580d6218867d0be4d70b5`, with SHA256 and upstream Git blob
 identities. `verify_sources.py` checks all originals and the exact inclusive
-routine ranges of nine extracted compilation units. Full original notices and
+routine ranges of 18 extracted compilation units (nine in Q1). Full original notices and
 AGPL-3.0-or-later license are retained under `original/`.
 `prepare_sources.py` changes only four complete module-name tokens in build-tree
 copies, making their private identities visible to CMake's dependency scanner.
@@ -70,6 +74,50 @@ shear-rate residual; the world-Z special case has a cubic residual. Static
 objectivity and faithful arithmetic do not certify temporal accuracy, bounded
 accumulated rigid-motion work, or a dynamics timestep.
 
+## Q2 prescribed force/history boundary
+
+`QephHistory.h` binds all history values to an exact fieldwise copy of the
+immutable Q1 reference. `QephForceReference.h` accepts a base History and one
+PrescribedInterval and stages a ForceTrial. The caller accepts the proposed
+history explicitly by value. No physical nodal state, allocator, clock or
+transaction is introduced. Native calls share the Q1 mutex and context.
+
+The native modules retain full CNCOEF3B, CZSTRA3, SIGEPS01G, CZFINTCE, CZFINTN1,
+CZPROJN and CNDT3 routines; CSSP2A11 closes native linkage. Small adapters pack
+only the fixed CMAIN3/MULAWGLC branch and its actual material/property defaults:
+centered LAW1, CVIS1, DM=DN=.015, SHF=5/6, ITHK0, ISROT0, IDRIL0. No alternate
+material, offset, damping switch, implicit path or reachable stub is admitted.
+The exact complete CUPDTN3 routine checks internal-to-RHS subtraction on four
+private test nodes; it does not add a production assembler.
+
+FOR total stress and FOR_G material stress remain separate. Prior total FOR
+contributes to native work before material-only FOR_G is restored; current DM
+stress is added once. MOM is stress-like Pa; physical bending moment per length
+is effective thickness squared times MOM. All twelve HOURG values, eight STRA
+values, reported thickness, both EINT components and viscous hourglass work
+persist together. Signed EINT is source work, not a conservative potential.
+Material/STRA shear order is YZ then ZX, whereas Q1 rates report XZ then YZ.
+
+Require matching reference, exact base time, next sample index, and a finite
+representably advancing endpoint time. Native deactivation, nonfinite results
+and a predicted reported THKN below source EM30 reject before publication.
+The original donor MAX expression is retained, but its repair domain is not
+admitted. Effective force thickness stays the reference thickness for ITHK0.
+This is a narrow prescribed reference contract, not native restart equivalence.
+Every failed call preserves base history and the complete caller output.
+
+Q2's twelve frozen tests cover eight independent elastic modes, physical
+force/couple virtual work, complete signed scatter and native stiffness/dt,
+planar/warped covariance and balance, full-history persistence, loading/holding/
+reversal, alternating modes and viscous work, inactive planar IDRIL0 normal
+spin, stale/foreign inputs and late-failure retry. Force/stress budgets are
+2e-11 absolute plus 2e-10 relative; covariance uses 2e-10 absolute; tiny work
+uses 2e-22 absolute plus 2e-10 relative. One explicitly seeded work subtraction
+uses 1e-17 absolute for cancellation against its .034 J baseline. Q1 tolerances
+are unchanged. General rigid force/work is recorded at h=.04/.02/.01 without
+reviving the failed general second-order rate assumption. CNDT3 stiffness and
+unscaled dt are diagnostics and do not authorize a TL timestep or source dynamics.
+
 ## Bounded standalone build
 
 Use the workstation guard externally; this project starts no resource jobs.
@@ -88,7 +136,8 @@ required; supply the existing GTest prefix if it is not discoverable.
 The example selects the already retained GNU 11.4.0 workspace compiler wrapper;
 it does not install or replace a system compiler.
 Target `qeph_q1_native` is a static reference library; `qeph_kinematics_check` is the
-small CPU-only GTest executable. No parent CMake or production solver is edited.
+small CPU-only Q1 GTest executable. `qeph_force_check` holds the separate Q2
+force/history tests (twelve passing functions). No parent CMake or production solver is edited.
 Existing native precision/includes/compiler controls are reused, with bounds
 checks, no fast math and no contraction. The arithmetic/covariance tolerances
 were frozen before first execution. Tests cover analytic geometry/mass, full

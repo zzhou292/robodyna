@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only check of pinned originals and complete unedited Q1 extracts.
+"""Read-only check of pinned originals and complete unedited Q1/Q2 extracts.
 
 Uses the existing native/phase verifier's SHA256 + Git-blob convention. No
 download, code generation, compiler invocation or source mutation occurs here.
@@ -7,9 +7,49 @@ download, code generation, compiler invocation or source mutation occurs here.
 import hashlib
 import json
 from pathlib import Path
+import re
 
 REVISION = "a62b27e6baa555d222a580d6218867d0be4d70b5"
-MANIFEST_SHA256 = "eacae6570282ec84b6811ab0704f77d30cb095a0d3f7a95d7dfd530d1d6cebc9"
+MANIFEST_SHA256 = "46d2759036e16558500c91a9d14dd225f203aa5d2abec81bb951ac1b956030be"
+
+
+NATIVE_ADAPTERS = (
+    "NativeQephStartup.F", "NativeQephKinematics.F", "QephNativeGeometry.F",
+    "QephNativeHistory.F", "QephNativeMaterial.F", "QephNativeLaw1.F",
+    "QephNativeStiffness.F", "NativeQephForce.F", "NativeQephScatter.F",
+)
+INCLUDE = re.compile(r'^\s*#\s*include\s*["<]([^">]+)[">]', re.MULTILINE)
+
+
+def verify_include_closure(root, manifest):
+    """Check recursive literal includes of compiled units, including arch branches.
+
+    Follow the owning CMake include search order. A found donor include must be
+    pinned in the manifest; unrelated full original material dispatch is not a
+    compiled root. This performs no preprocessing or compiler invocation.
+    """
+    original = root / "original"
+    directories = [original / relative for relative in (
+        "engine/share/spe_inc", "engine/share/includes", "engine/share/r8", "starter/share/includes")]
+    retained = {original / entry["path"] for entry in manifest["sources"]}
+    pending = [root / path for path in NATIVE_ADAPTERS]
+    pending += [root / entry["path"] for entry in manifest["extractions"]]
+    pending += [path for path in retained if "common_source/modules/" in str(path)]
+    visited = set()
+    while pending:
+        path = pending.pop()
+        if path in visited:
+            continue
+        visited.add(path)
+        for name in INCLUDE.findall(path.read_text(encoding="latin1")):
+            found = next((directory / name for directory in [path.parent] + directories
+                          if (directory / name).is_file()), None)
+            if found is None:
+                raise RuntimeError("Missing native include " + name + " from " + str(path.relative_to(root)))
+            if found not in retained:
+                raise RuntimeError("Unpinned native include: " + str(found.relative_to(root)))
+            pending.append(found)
+    return len(visited)
 
 
 def verify():
@@ -18,7 +58,7 @@ def verify():
     if hashlib.sha256(raw).hexdigest() != MANIFEST_SHA256:
         raise RuntimeError("Q1 source manifest changed")
     manifest = json.loads(raw)
-    if manifest["revision"] != REVISION or len(manifest["sources"]) != 27:
+    if manifest["revision"] != REVISION or len(manifest["sources"]) != 55:
         raise RuntimeError("Q1 revision or closure mismatch")
     for entry in manifest["sources"]:
         data = (root / "original" / entry["path"]).read_bytes()
@@ -34,7 +74,8 @@ def verify():
         actual = (root / entry["path"]).read_bytes()
         if actual != expected or hashlib.sha256(actual).hexdigest() != entry["sha256"]:
             raise RuntimeError("Q1 complete extraction changed: " + entry["path"])
-    return {"status": "passed", "revision": REVISION, "original_files": 27,
+    visited = verify_include_closure(root, manifest)
+    return {"recursive_include_files": visited, "status": "passed", "revision": REVISION, "original_files": 55,
             "complete_extraction_units": len(manifest["extractions"])}
 
 
