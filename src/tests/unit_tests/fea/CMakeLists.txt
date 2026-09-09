@@ -1,4 +1,5 @@
 set(TESTS
+    utest_FEA_ReissnerFrame
     utest_FEA_ANCFCable
     utest_FEA_ANCFbeam_3333
     utest_FEA_ANCFbeam_Twist

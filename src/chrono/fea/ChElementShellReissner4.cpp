@@ -21,13 +21,82 @@
 #include "chrono/fea/ChElementShellReissner4.h"
 #include "chrono/fea/ChRotUtils.h"
 
+#ifdef CH_REISSNER_CONSISTENT_FRAME_REFERENCE
+#include <stdexcept>
+
+#include "chrono/fea/ChReissnerFrame.h"
+#endif
+
 #define CHUSE_ANS
 ////#define CHUSE_EAS
 #define CHUSE_KGEOMETRIC
 ////#define CHSIMPLIFY_DROT
 
+#if defined(CH_REISSNER_CONSISTENT_FRAME_REFERENCE) && (defined(CHSIMPLIFY_DROT) || defined(CHUSE_EAS))
+#error "The consistent-frame force reference requires exact rotation derivatives and excludes EAS."
+#endif
+
 namespace chrono {
 namespace fea {
+
+#ifdef CH_REISSNER_CONSISTENT_FRAME_REFERENCE
+namespace {
+
+void RequireReferenceRotation(const ChMatrix33<>& frame) {
+    if (!frame.allFinite())
+        throw std::invalid_argument("Reissner force reference requires finite director frames");
+    const double determinant = frame.determinant();
+    const ChMatrix33<> orthogonality = frame.transpose() * frame - ChMatrix33<>(1);
+    if (!std::isfinite(determinant) || !orthogonality.allFinite() || std::abs(determinant - 1) > 1e-12 ||
+        orthogonality.cwiseAbs().maxCoeff() > 1e-12)
+        throw std::invalid_argument("Reissner force reference requires proper director frames");
+}
+
+// Force-reference admission only: callers must complete SetupInitial and keep
+// nodal state fixed throughout evaluation. This helper publishes no element
+// state. The fixed right director offsets do not change the WORLD nodal spin.
+ChReissnerMeanFrame CheckedReferenceMean(const std::vector<std::shared_ptr<ChNodeFEAxyzrot>>& nodes,
+                                       const ChMatrix33<> (&initial_frame)[4]) {
+    if (nodes.size() != 4)
+        throw std::invalid_argument("Reissner force reference requires four initialized nodes");
+    std::array<ChQuaterniond, 4> directors;
+    for (unsigned n = 0; n < 4; ++n) {
+        if (!nodes[n])
+            throw std::invalid_argument("Reissner force reference requires initialized nodes");
+        const auto& q = nodes[n]->GetRot();
+        for (unsigned component = 0; component < 4; ++component)
+            if (!std::isfinite(q.data()[component]))
+                throw std::invalid_argument("Reissner force reference received a nonfinite nodal quaternion");
+        if (!std::isfinite(q ^ q) || std::abs((q ^ q) - 1) > 1e-12)
+            throw std::invalid_argument("Reissner force reference requires unit nodal quaternions");
+        const auto& nodal_frame = nodes[n]->GetRotMat();
+        RequireReferenceRotation(nodal_frame);
+        if ((nodal_frame - ChMatrix33<>(q)).cwiseAbs().maxCoeff() > 1e-12)
+            throw std::invalid_argument("Reissner force reference nodal frame disagrees with its quaternion");
+        const auto& offset = initial_frame[n];
+        RequireReferenceRotation(offset);
+        directors[n] = q * offset.GetQuaternion();
+    }
+    ChReissnerMeanFrame mean;
+    if (ComputeReissnerMeanFrame(directors, mean) != ChReissnerFrameStatus::Success)
+        throw std::invalid_argument("Reissner force reference director mean is outside its finite unit-quaternion chart");
+    return mean;
+}
+
+void RequireReferenceVariation(ChReissnerFrameStatus status) {
+    if (status != ChReissnerFrameStatus::Success)
+        throw std::runtime_error("Reissner force reference could not form a finite complete frame variation");
+}
+
+void RequireForceOnlyFactors(double Kfactor, double Rfactor) {
+    // NaNs also compare unequal to zero. A mass-only request retains the legacy
+    // mass implementation; this option does not qualify that mass or dynamics.
+    if (Kfactor != 0 || Rfactor != 0)
+        throw std::logic_error("Reissner consistent-frame reference supports forces only; stiffness/damping tangents are unqualified");
+}
+
+}  // namespace
+#endif
 
 //--------------------------------------------------------------
 // utility functions
@@ -149,6 +218,22 @@ double ChElementShellReissner4::xi_n[ChElementShellReissner4::NUMNODES][2] = {{1
 double ChElementShellReissner4::xi_0[2] = {0., 0.};
 
 void ChElementShellReissner4::UpdateNodalAndAveragePosAndOrientation() {
+#ifdef CH_REISSNER_CONSISTENT_FRAME_REFERENCE
+    const auto mean = CheckedReferenceMean(m_nodes, iTa);
+    ChVector3d candidate_x[NUMNODES];
+    ChVector3d candidate_phi[NUMNODES];
+    for (int n = 0; n < NUMNODES; ++n) {
+        candidate_x[n] = m_nodes[n]->GetPos();
+        candidate_phi[n] = rotutils::VecRot(mean.frame.transpose() * m_nodes[n]->GetRotMat() * iTa[n]);
+        if (!candidate_x[n].eigen().allFinite() || !candidate_phi[n].eigen().allFinite())
+            throw std::invalid_argument("Reissner force reference received nonfinite nodal geometry");
+    }
+    T_overline = mean.frame;
+    for (int n = 0; n < NUMNODES; ++n) {
+        xa[n] = candidate_x[n];
+        phi_tilde_n[n] = candidate_phi[n];
+    }
+#else
     ChMatrix33<> Tn[NUMNODES];
     ChMatrix33<> T_avg;
     T_avg.setZero();
@@ -184,6 +269,7 @@ void ChElementShellReissner4::UpdateNodalAndAveragePosAndOrientation() {
         //    std::cout << "WARNING phi_tilde_n[" << i << "]=" <<  phi_tilde_n[i].Length()*CH_RAD_TO_DEG << "deg" <<
         //    std::endl;
     }
+#endif
 }
 
 void ChElementShellReissner4::ComputeInitialNodeOrientation() {
@@ -612,6 +698,9 @@ void ChElementShellReissner4::GetStateBlock(ChVectorDynamic<>& mD) {
 // ComputeInternalForces(), that updates inner data for the given node states.
 
 void ChElementShellReissner4::ComputeKRMmatricesGlobal(ChMatrixRef H, double Kfactor, double Rfactor, double Mfactor) {
+#ifdef CH_REISSNER_CONSISTENT_FRAME_REFERENCE
+    RequireForceOnlyFactors(Kfactor, Rfactor);
+#endif
     assert((H.rows() == 24) && (H.cols() == 24));
 
     // Calculate the mass matrix
@@ -688,7 +777,20 @@ void ChElementShellReissner4::ComputeMassMatrix() {
 // -----------------------------------------------------------------------------
 
 void ChElementShellReissner4::ComputeInternalForces(ChVectorDynamic<>& Fi) {
+#ifdef CH_REISSNER_CONSISTENT_FRAME_REFERENCE
+    if (Fi.size() != 24)
+        throw std::invalid_argument("Reissner force reference requires a 24-entry output");
+    // Staging protects caller forces through any admission, material or finite
+    // arithmetic failure. Internal diagnostic caches below are working state,
+    // not an accepted-history transaction: after a throw they must not be used
+    // until a subsequent successful force evaluation. No dynamics is admitted.
+    ChVectorN<double, 24> candidate_force;
+    candidate_force.setZero();
+    auto& force_output = candidate_force;
+#else
     Fi.setZero();
+    auto& force_output = Fi;
+#endif
 
     UpdateNodalAndAveragePosAndOrientation();
     InterpolateOrientation();
@@ -700,6 +802,12 @@ void ChElementShellReissner4::ComputeInternalForces(ChVectorDynamic<>& Fi) {
     */  //// TODO  EAS internal variables not yet implemented
 
     ComputeIPCurvature();
+#ifdef CH_REISSNER_CONSISTENT_FRAME_REFERENCE
+    // Raw Phi remains unchanged for ComputeIPCurvature. Its unweighted form is
+    // part of that construction; completed orientation derivatives already
+    // contain shape weights and must never be divided by N or weighted twice.
+    const auto mean = CheckedReferenceMean(m_nodes, iTa);
+#endif
     for (int i = 0; i < NUMIP; i++) {
         InterpDeriv(xa, L_alpha_beta_i[i], y_i_1[i], y_i_2[i]);
         eps_tilde_1_i[i] = T_i[i].transpose() * y_i_1[i] - eps_tilde_1_0_i[i];
@@ -713,9 +821,30 @@ void ChElementShellReissner4::ComputeInternalForces(ChVectorDynamic<>& Fi) {
         ChStarMatrix33<> mk_2_X(k_2_i[i]);
         ChMatrix33<> block;
 
+#ifdef CH_REISSNER_CONSISTENT_FRAME_REFERENCE
+        ChReissnerSpinJacobian frozen_orientation, frozen_curvature_1, frozen_curvature_2;
+        ChReissnerSpinJacobian orientation, curvature_1, curvature_2;
+        for (int n = 0; n < NUMNODES; ++n) {
+            frozen_orientation[n] = Phi_Delta_i[i][n] * LI[n](xi_i[i]);
+            frozen_curvature_1[n] = Kappa_delta_i_1[i][n];
+            frozen_curvature_2[n] = Kappa_delta_i_2[i][n];
+        }
+        RequireReferenceVariation(CorrectReissnerOrientationVariation(frozen_orientation, mean.spin, orientation));
+        RequireReferenceVariation(CorrectReissnerCurvatureVariation(k_1_i[i], frozen_curvature_1, mean.spin, curvature_1));
+        RequireReferenceVariation(CorrectReissnerCurvatureVariation(k_2_i[i], frozen_curvature_2, mean.spin, curvature_2));
+#endif
+
         // parte variabile di B_overline_i
         for (int n = 0; n < NUMNODES; n++) {
+#ifdef CH_REISSNER_CONSISTENT_FRAME_REFERENCE
+            const ChMatrix33<>& Phi_Delta_i_n_LI_i = orientation[n];
+            const ChMatrix33<>& Kappa_delta_1 = curvature_1[n];
+            const ChMatrix33<>& Kappa_delta_2 = curvature_2[n];
+#else
             ChMatrix33<> Phi_Delta_i_n_LI_i = Phi_Delta_i[i][n] * LI[n](xi_i[i]);
+            const ChMatrix33<>& Kappa_delta_1 = Kappa_delta_i_1[i][n];
+            const ChMatrix33<>& Kappa_delta_2 = Kappa_delta_i_2[i][n];
+#endif
 
             // delta epsilon_tilde_1_i
             block = T_i[i] * L_alpha_beta_i[i](n, 0);
@@ -736,12 +865,12 @@ void ChElementShellReissner4::ComputeInternalForces(ChVectorDynamic<>& Fi) {
             InterpDeriv(phi_tilde_n, L_alpha_beta_i[i], phi_tilde_1_i, phi_tilde_2_i);
 
             // delta k_tilde_1_i
-            block = T_i[i].transpose() * mk_1_X * Phi_Delta_i_n_LI_i + T_i[i].transpose() * Kappa_delta_i_1[i][n];
+            block = T_i[i].transpose() * mk_1_X * Phi_Delta_i_n_LI_i + T_i[i].transpose() * Kappa_delta_1;
             block = block * m_nodes[n]->GetRotMat();  //// NEEDED because rotations are body-relative
             B_overline_i[i].block(6, 3 + 6 * n, 3, 3) = block;
 
             // delta k_tilde_2_i
-            block = T_i[i].transpose() * mk_2_X * Phi_Delta_i_n_LI_i + T_i[i].transpose() * Kappa_delta_i_2[i][n];
+            block = T_i[i].transpose() * mk_2_X * Phi_Delta_i_n_LI_i + T_i[i].transpose() * Kappa_delta_2;
             block = block * m_nodes[n]->GetRotMat();  //// NEEDED because rotations are body-relative
             B_overline_i[i].block(9, 3 + 6 * n, 3, 3) = block;
 
@@ -754,11 +883,11 @@ void ChElementShellReissner4::ComputeInternalForces(ChVectorDynamic<>& Fi) {
             D_overline_i[i].block(3, 6 * n, 3, 3) = block;
 
             // delta k_1_i
-            block = Kappa_delta_i_1[i][n] * m_nodes[n]->GetRotMat();  //// NEEDED because rotations are body-relative
+            block = Kappa_delta_1 * m_nodes[n]->GetRotMat();  //// NEEDED because rotations are body-relative
             D_overline_i[i].block(6, 3 + 6 * n, 3, 3) = block;
 
             // delta k_2_i
-            block = Kappa_delta_i_2[i][n] * m_nodes[n]->GetRotMat();  //// NEEDED because rotations are body-relative
+            block = Kappa_delta_2 * m_nodes[n]->GetRotMat();  //// NEEDED because rotations are body-relative
             D_overline_i[i].block(9, 3 + 6 * n, 3, 3) = block;
 
             // phi_delta
@@ -786,8 +915,20 @@ void ChElementShellReissner4::ComputeInternalForces(ChVectorDynamic<>& Fi) {
         ChStarMatrix33<> myA_2_X(y_A_2);
         ChMatrix33<> block;
 
+#ifdef CH_REISSNER_CONSISTENT_FRAME_REFERENCE
+        ChReissnerSpinJacobian frozen_orientation, orientation;
+        for (int n = 0; n < NUMNODES; ++n)
+            frozen_orientation[n] = Phi_Delta_A[i][n] * LI[n](xi_A[i]);
+        RequireReferenceVariation(CorrectReissnerOrientationVariation(frozen_orientation, mean.spin, orientation));
+#endif
+
         for (int n = 0; n < NUMNODES; n++) {
+#ifdef CH_REISSNER_CONSISTENT_FRAME_REFERENCE
+            // Mean variation can contribute even at zero ANS shape weights.
+            const ChMatrix33<>& Phi_Delta_A_n_LI_i = orientation[n];
+#else
             ChMatrix33<> Phi_Delta_A_n_LI_i = Phi_Delta_A[i][n] * LI[n](xi_A[i]);
+#endif
 
             // delta epsilon_tilde_1_A
             block = T_A[i].transpose() * L_alpha_beta_A[i](n, 0);
@@ -908,13 +1049,13 @@ void ChElementShellReissner4::ComputeInternalForces(ChVectorDynamic<>& Fi) {
     ChVectorN<double, 24> rd;
     for (int i = 0; i < NUMIP; i++) {
         rd = (-alpha_i[i] * w_i[i]) * B_overline_i[i].transpose() * stress_i[i];
-        Fi.segment(0, 24) += rd;
+        force_output.segment(0, 24) += rd;
 
 #ifdef CHUSE_EAS
         double dCoef = 1.0;  //// TODO  autoset this
         ChVectorN<double, IDOFS> rbeta;
         rbeta = (-alpha_i[i] * w_i[i] / dCoef) * P_i[i].transpose() * stress_i[i];
-        Fi.segment(24, IDOFS) = rbeta;
+        force_output.segment(24, IDOFS) = rbeta;
 #endif
     }
 
@@ -965,8 +1106,13 @@ void ChElementShellReissner4::ComputeInternalForces(ChVectorDynamic<>& Fi) {
         stress_damp.segment(6, 3) = m1.eigen();
         stress_damp.segment(9, 3) = m2.eigen();
 
-        Fi.segment(0, 24) += (-alpha_i[i] * w_i[i]) * B_overline_i[i].transpose() * stress_damp;
+        force_output.segment(0, 24) += (-alpha_i[i] * w_i[i]) * B_overline_i[i].transpose() * stress_damp;
     }
+#ifdef CH_REISSNER_CONSISTENT_FRAME_REFERENCE
+    if (!candidate_force.allFinite())
+        throw std::runtime_error("Reissner force reference produced nonfinite forces");
+    Fi = candidate_force;
+#endif
 }
 
 // -----------------------------------------------------------------------------
@@ -974,6 +1120,10 @@ void ChElementShellReissner4::ComputeInternalForces(ChVectorDynamic<>& Fi) {
 // -----------------------------------------------------------------------------
 
 void ChElementShellReissner4::ComputeInternalJacobians(double Kfactor, double Rfactor) {
+#ifdef CH_REISSNER_CONSISTENT_FRAME_REFERENCE
+    RequireForceOnlyFactors(Kfactor, Rfactor);
+    m_JacobianMatrix.setZero();
+#else
     m_JacobianMatrix.setZero();
 
     // tangente
@@ -1056,6 +1206,7 @@ void ChElementShellReissner4::ComputeInternalJacobians(double Kfactor, double Rf
         Rm *= (alpha_i[i] * w_i[i] * dCoef * Rfactor);
         m_JacobianMatrix += Rm;
     }
+#endif
 }
 
 // -----------------------------------------------------------------------------

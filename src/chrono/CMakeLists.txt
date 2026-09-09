@@ -379,7 +379,9 @@ set(Chrono_fea_base_HEADERS
     fea/ChLoaderGravity.h
     fea/ChLoaderPressure.h
     fea/ChRotUtils.h
+    fea/ChReissnerFrame.h
     )
+list(APPEND Chrono_fea_base_SOURCES fea/ChReissnerFrame.cpp)
 source_group(fea FILES ${Chrono_fea_base_SOURCES} ${Chrono_fea_base_HEADERS})
 
 # FEA sub-groups
@@ -1710,6 +1712,13 @@ target_compile_definitions(Chrono_core PUBLIC
 target_compile_features(Chrono_core PUBLIC ${CHRONO_CXX_STANDARD})
 
 target_compile_definitions(Chrono_core PRIVATE $<$<COMPILE_LANGUAGE:CXX>:CH_API_COMPILE>)
+option(CH_REISSNER_CONSISTENT_FRAME_REFERENCE "Enable bounded Reissner orientation/force reference correction; stiffness and damping Jacobians unavailable" OFF)
+if(CH_REISSNER_CONSISTENT_FRAME_REFERENCE)
+    if(NOT CH_ENABLE_MODULE_FEA)
+        message(FATAL_ERROR "CH_REISSNER_CONSISTENT_FRAME_REFERENCE requires CH_ENABLE_MODULE_FEA")
+    endif()
+    target_compile_definitions(Chrono_core PUBLIC CH_REISSNER_CONSISTENT_FRAME_REFERENCE)
+endif()
 target_compile_definitions(Chrono_core PUBLIC $<$<COMPILE_LANGUAGE:CXX>:CH_IGNORE_DEPRECATED>)
 
 if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Windows")
