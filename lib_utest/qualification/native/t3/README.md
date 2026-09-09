@@ -1,7 +1,8 @@
 # Native T3 reference slice
 
-Source verified; **R1 startup passed seven standalone host functions and two
-authenticated source-six app functions** on 2026-09-09.
+Source verified; **R1 startup and R2 prescribed geometry/rates pass** on
+2026-09-09: seven startup plus seven rates standalone functions, and two
+startup plus two rates authenticated source-six app functions.
 This qualification directory complements the QEPH reference. It does not enter
 the production solver, add a dynamics clock, or establish source ELFORM2/MAT024
 equivalence. Three original physical nodes are retained.
@@ -13,8 +14,8 @@ with their [standalone XML](../../../../../crash-work/reports/t3-r1-host-xml-1/)
 and [source XML](../../../../../crash-work/reports/t3-r1-source-xml-1/).
 Both runs used the shared workstation guard and no GPU. This qualifies only the
 complete starter frame leaf and the explicitly selected source-expression
-adapters below. Engine geometry/rates, material force/history, CUDA and dynamics
-remain unexecuted for T3.
+adapters below. The later R2 evidence is recorded separately below. Material
+force/history, CUDA and dynamics remain unexecuted for T3.
 
 ## Source ownership and closure
 
@@ -153,3 +154,89 @@ The retrieved leaves resolve several boundaries for the later reference:
   component/work/history mapping is reviewed. C3DT3 uses DTFAC1(7), not index3.
 
 These are source findings, not qualification of a T3 force or dynamics path.
+
+## R2 prescribed geometry/rates: passed
+
+The corrected native build passes all seven new rates functions and seven
+unchanged startup regressions; the app build passes both rates functions and
+both startup regressions on the six original source triangles. Evidence is the
+[native report](../../../../../crash-work/reports/t3-r2-host-tests-1.json),
+[source report](../../../../../crash-work/reports/t3-r2-source-tests-1.json),
+[native XML](../../../../../crash-work/reports/t3-r2-host-xml-1/) and
+[source XML](../../../../../crash-work/reports/t3-r2-source-xml-1/).
+These are 14 standalone and four app executions, with nine new test functions
+relative to R1. Numerical budgets and native arithmetic were unchanged.
+
+The [first build](../../../../../crash-work/reports/t3-r2-build-1.json) failed
+because the authored initialized Fortran derived-type declaration omitted
+`::`; its later missing-member errors were consequences of that syntax error.
+The authored/prepared files and reports were preserved before correction in
+the [first-build checkpoint](../../../../../crash-work/checkpoints/t3-r2-first-build-failure-1/manifest.json).
+The sole source correction inserted that declaration separator. The
+[corrected build](../../../../../crash-work/reports/t3-r2-syntax-build-1.json)
+and subsequent tests passed. No original donor file, equation or tolerance
+changed, and no native numerical result is attributed to the failed build.
+
+`T3Kinematics.h/.cpp` exposes `EvaluatePrescribed(reference, interval, output)`.
+The reference remains immutable. The caller supplies three endpoint world
+positions, three midpoint world velocities/angular velocities, base time, h and
+sample index. No position, velocity, material history or clock is advanced.
+`T3NativeGeometry.F` composes the **complete unchanged** C3COOR3, engine
+C3EVEC3, C3DERI3, C3DEFO3 and C3CURV3 leaves. `NativeT3Kinematics.F` only binds
+and packs that shared engine work. R3 will use the same actual work arrays.
+
+The selected branch is ISH3N2/IFRAM_OLD1/IREP0/IDRAPE0/IGTYP1/ISMSTR-1,
+IRESP2, explicit IMPL_S0/IMP_LR0, OFF/OFFG1. C3COEF3 and material/shear-factor
+selection are outside this R2 operation. C3EVEC3's linked CLSKEW3 helper is
+unselected at IFRAM_OLD1; material directions are checked unchanged. The engine
+uses its own four native modules and renamed COMMON blocks, distinct from R1
+and QEPH. A single `NativeEngineContext` mutex must cover all future T3 engine
+calls. R1 geometry preflight/frame checks moved verbatim to `T3Geometry.cpp`;
+the existing startup API, arithmetic, tests and prepared receipt are preserved.
+
+Freeze these conditions **before the first R2 run**:
+
+- Current positions obey the existing R1 coordinate, edge and normalized-area
+  bounds. Before C3DERI3, the same native dot-product order must give
+  `Y3>THIRTY2*EM15`; its native floor expression remains present but inactive.
+  `EM15=ONE/EP15`, with EP15 formed from native integer products, is the actual
+  binary64 constant. No wall projection criterion is used.
+- Every velocity/angular component is finite. h is positive finite, h/4 must
+  remain positive, and `base < base+h/2 < base+h` must be representable and
+  finite. Sample index is nonzero. All native outputs are checked; late finite
+  input overflow rejects without publishing any caller field.
+- Active leaf arithmetic uses binary64 named ZERO/ONE/TWO/THREE/HALF/THIRD/
+  FOURTH constants. Their integer literals are exactly representable;
+  THIRD is native ONE/THREE and FOURTH is ONE/FOUR. No unsuffixed noninteger
+  source literal is silently promoted/replaced. No fast math, contraction,
+  OpenMP, floor repair or rescaled donor geometry is enabled.
+
+Output material order is XX,YY,XY,YZ,ZX,KXX,KYY,KXY. The first five raw values
+are m²/s; the last three are m/s. C3CURV3's nonuniform angular shear terms are
+included. `raw_rate/AREA` is a diagnostic only. R3 must call C3STRA3's h/AREA
+operation once on the raw private arrays, never reconstruct it from public
+normalized rates. Corrected VX13/VX23/VY12 and current PX1/PY1/PY2 remain
+distinct from the zero ISMSTR-1 startup derivative slots.
+
+Seven standalone test functions use independent long-double affine gradients
+and simplified local-triangle angular polynomials, all 18 input columns,
+world covariance, cyclic local-order checks, exact edge-on geometry and late
+failure/retry. Frozen arithmetic comparisons are
+`2e-12*(dimensional_scale+abs(expected))`; geometry uses 1/L/L², raw membrane/
+shear uses `L*V+L²*omega`, raw curvature uses `L*omega`, and normalized scales
+divide by area. Common-world covariance uses `2e-11` with declared fixture
+scales. Cutoff-neighborhood tests assert admission, not this accuracy throughout
+the entire conditioning domain. A consistent unit Z-spin with h=.04/.02/.01
+has normal-rate oracle `sin(h/2)-(h/2)*cos(h/2)^2`; the frozen halving ratio
+range [.12,.13] tests its cubic residual, not a general second-order dynamics
+claim. Finite-h instantaneous rigid velocities are not asserted exact nulls.
+
+The private geometry work is 85*MVSIZ binary64 values (87,720 bytes at129),
+with fixed bounded native scratch below1MiB. There are no element allocations.
+`T3_R2_BUILD=ON` includes `T3Engine.cmake`, `t3_r2_native` and optionally
+`t3_kinematics_check`. `prepare_sources.py --stage engine` prepares13 files
+with four module identifier mappings and a checked separate receipt. Its
+default startup mode still verifies the unchanged four-file R1 receipt.
+Two new app functions in `source_part_t3_rates_check.cpp` use the same
+authenticated source-six fixture and test-only input/oracle helpers. They do
+not consume MAT024, source NIP3 or a physical history/timestep admission.

@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Prepare only R1 sources with private constant-module names for CMake.
+"""Prepare selected T3 sources with private module names for CMake.
 
 Borrow exact qualified QEPH constants/includes; never edit the owning originals.
-Only the constant_mod identifier token changes, no arithmetic or precision.
+Default startup mode preserves the R1 receipt. Explicit engine mode renames
+the four complete native modules into a separate context; no arithmetic changes.
 This is source preparation, not a compiler or native runtime command.
 """
 import argparse
@@ -12,11 +13,10 @@ from pathlib import Path
 import re
 from verify_sources import verify
 
-TOKEN = re.compile(r"\bconstant_mod\b", re.IGNORECASE)
 PRIVATE_MODULE = "TL_T3_R1_CONSTANT_MOD"
 
 
-def prepare(output, check=False):
+def prepare(output, check=False, stage="startup"):
     verify()
     root = Path(__file__).resolve().parent
     manifest = json.loads((root / "source-manifest.json").read_text())
@@ -25,10 +25,26 @@ def prepare(output, check=False):
              "extracted/StarterC3evec3.F": "extracted/StarterC3evec3.F"}
     for source in ("common_source/modules/constant_mod.F", "engine/share/spe_inc/implicit_f.inc"):
         paths["original/" + source] = originals[source]
+    modules={"constant_mod": PRIVATE_MODULE}
+    schema="tl.t3-r1-prepared-sources.v1"
+    if stage=="engine":
+        routines={"C3COOR3","C3EVEC3","C3DERI3","C3DEFO3","C3CURV3","CLSKEW3"}
+        paths={name:name for name in ("T3NativeGeometry.F","NativeT3Kinematics.F")}
+        for entry in manifest["extractions"]:
+            if entry["routine"].upper() in routines and not entry["source"].startswith("starter/"):
+                paths["extracted/"+Path(entry["path"]).name]=entry["path"]
+        for source,owned in originals.items():
+            if source.startswith("common_source/modules/"):
+                paths["original/"+source]=owned
+        paths["original/engine/share/spe_inc/implicit_f.inc"]=originals["engine/share/spe_inc/implicit_f.inc"]
+        modules={name:"T3_ENGINE_"+name.upper() for name in
+                 ("constant_mod","precision_mod","element_mod","elbufdef_mod")}
+        schema="tl.t3-engine-prepared-sources.v1"
+    token=re.compile(r"\b(?:"+"|".join(modules)+r")\b",re.IGNORECASE)
     records = []
     for relative, owned_source in paths.items():
         original = (root / owned_source).read_bytes()
-        prepared = TOKEN.sub(PRIVATE_MODULE, original.decode("latin1")).encode("latin1")
+        prepared = token.sub(lambda m:modules[m.group().lower()],original.decode("latin1")).encode("latin1")
         path = output / relative
         if check:
             if not path.is_file() or path.read_bytes() != prepared:
@@ -40,8 +56,8 @@ def prepare(output, check=False):
                         "source_sha256": hashlib.sha256(original).hexdigest(),
                         "prepared_sha256": hashlib.sha256(prepared).hexdigest(),
                         "prepared_bytes": len(prepared)})
-    receipt = {"schema": "tl.t3-r1-prepared-sources.v1", "files": records,
-               "module_mapping": {"constant_mod": PRIVATE_MODULE},
+    receipt = {"schema": schema, "files": records,
+               "module_mapping": modules,
                "transformation": "case-insensitive whole-token module identifier rename only"}
     encoded = (json.dumps(receipt, indent=2) + "\n").encode()
     path = output / "prepared-sources.json"
@@ -57,5 +73,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--check", action="store_true")
+    parser.add_argument("--stage", choices=("startup","engine"), default="startup")
     args = parser.parse_args()
-    print(json.dumps(prepare(args.output.resolve(), args.check), sort_keys=True))
+    print(json.dumps(prepare(args.output.resolve(), args.check, args.stage), sort_keys=True))

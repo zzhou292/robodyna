@@ -45,7 +45,7 @@ add_custom_target(t3_r1_check_prepared
   COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_SOURCE_DIR}/prepare_sources.py"
     --output "${t3_prepared}" --check VERBATIM)
 
-add_library(t3_r1_native STATIC T3Reference.cpp
+add_library(t3_r1_native STATIC T3Reference.cpp T3Geometry.cpp
   "${t3_prepared}/NativeT3Startup.F"
   "${t3_prepared}/extracted/StarterC3evec3.F"
   "${t3_prepared}/original/common_source/modules/constant_mod.F")
@@ -74,4 +74,9 @@ if(T3_R1_BUILD_TESTS)
   add_test(NAME t3_startup_check COMMAND t3_startup_check)
   set_tests_properties(t3_startup_check PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE PROCESSORS 1
     ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1")
+endif()
+
+option(T3_R2_BUILD "Build the separately qualified native T3 geometry/rate slice" OFF)
+if(T3_R2_BUILD)
+  include("${CMAKE_CURRENT_SOURCE_DIR}/T3Engine.cmake")
 endif()
