@@ -24,6 +24,13 @@ endfunction()
 add_executable(utest_surface_contact "${TL_ROOT}/lib_utest/utest_surface_contact.cc")
 tl_contact_test(utest_surface_contact)
 
+add_executable(utest_step_stability "${TL_ROOT}/lib_utest/utest_step_stability.cc")
+target_link_libraries(utest_step_stability PRIVATE Eigen3::Eigen)
+target_compile_options(utest_step_stability PRIVATE -fno-fast-math -ffp-contract=off)
+tl_contact_test(utest_step_stability)
+set_tests_properties(utest_step_stability PROPERTIES PROCESSORS 1
+  ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1")
+
 add_executable(utest_surface_geometry "${TL_ROOT}/lib_utest/utest_surface_geometry.cc")
 tl_contact_test(utest_surface_geometry)
 
@@ -51,6 +58,13 @@ if(TL_CONTACT_ENABLE_CUDA)
   add_executable(utest_surface_contact_cuda "${TL_ROOT}/lib_utest/utest_surface_contact_cuda.cu")
   target_link_libraries(utest_surface_contact_cuda PRIVATE CUDA::cudart)
   tl_contact_test(utest_surface_contact_cuda)
+
+  add_executable(utest_step_stability_cuda "${TL_ROOT}/lib_utest/utest_step_stability_cuda.cu")
+  target_link_libraries(utest_step_stability_cuda PRIVATE CUDA::cudart)
+  target_compile_options(utest_step_stability_cuda PRIVATE
+    "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false>")
+  tl_contact_test(utest_step_stability_cuda)
+  set_tests_properties(utest_step_stability_cuda PROPERTIES PROCESSORS 1)
 
   add_library(tl_contact_broadphase STATIC
     "${TL_ROOT}/lib_src/collision/HydroelasticBroadphase.cu"

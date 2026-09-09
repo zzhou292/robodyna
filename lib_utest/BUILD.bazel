@@ -4,6 +4,32 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_test")
 package(default_visibility = ["//visibility:public"])
 
 cc_test(
+    name = "utest_step_stability",
+    size = "small",
+    srcs = ["utest_step_stability.cc"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        "//lib_src/collision:surface_contact_primitives",
+        "//lib_src/solvers:explicit_step_stability",
+        "@eigen//:eigen",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cuda_test(
+    name = "utest_step_stability_cuda",
+    size = "small",
+    srcs = ["utest_step_stability_cuda.cu"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = [
+        "//lib_src/collision:surface_contact_primitives",
+        "//lib_src/solvers:explicit_step_stability",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "utest_surface_geometry",
     size = "small",
     srcs = ["utest_surface_geometry.cc"],

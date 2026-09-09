@@ -4,6 +4,12 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_library")
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
+    name = "explicit_step_stability",
+    hdrs = ["ExplicitStepStability.h", "FENodalStateView.h"],
+    deps = ["//lib_src/collision:surface_contact_primitives"],
+)
+
+cc_library(
     name = "FEAT10ConstraintManager",
     hdrs = ["FEAT10ConstraintManager.h"],
     deps = ["//lib_src/constraints:FEAT10ConstraintManager"],

@@ -41,3 +41,31 @@ baseline with `ctest --test-dir crash-work/build/contact-cmake -R '^utest_3243$'
 mass assembly, not transient deformation or the selected conventional Yaris
 shell formulation. The legacy determinant assertion is not a complete
 positive-definiteness test.
+
+The shared contact-mass and fixed-step stability utilities live in
+`lib_src/collision/SurfaceContactMass.h` and
+`lib_src/solvers/ExplicitStepStability.h`. Their 13 CPU and two CUDA checks pass
+through this harness and Bazel. CPU expectations include independently
+scattered nodal impulses, assembled noncommuting stiffness/damping matrices,
+amplification eigenvalues, and long-double bound calculations. The CUDA tests
+use one block and one thread, less than 4 KiB explicit result storage, and the
+public physical-node force view to check one reset followed by additive loads.
+
+This first mass adapter admits isotropic lumped translations and explicit fixed
+nodes. It merges shared signed endpoint weights before squaring and rejects
+unknown, rotational, consistent, ANCF, and offset-shell mass contracts. The
+stability utility assembles conservative block-row bounds for frozen symmetric
+positive-semidefinite stiffness/damping and the fixed-step velocity-first
+update. Structural and contact contributions must share the same global rows;
+independent per-contact timestep minima do not establish system stability.
+
+These headers allocate nothing, own no accepted state, and require serialized
+row accumulation. Build them without fast-math, reassociation, contraction, or
+flush-to-zero; the test targets declare the required CPU/CUDA flags. Overflow,
+positive-term underflow, stale attempts and minimum-step failure reject the
+trial. After any failure, discard the complete force/bound assembly. A copied
+step limit must pass `IsCurrentLimit` against current sealed scratch before
+use. This utility is not a timestepper or a nonlinear shell/contact stability
+qualification. Run just its targets with the existing guard and
+`ctest --test-dir crash-work/build/contact-cmake -R '^utest_step_stability(_cuda)?$'
+--output-on-failure --parallel 1`.
