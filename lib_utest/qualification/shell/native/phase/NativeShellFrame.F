@@ -1,0 +1,59 @@
+C     Qualification adapter for the FULL unchanged CNVEC3/CORTDIR3 routines.
+C     Exact ELBUFDEF_MOD supplies layout; no replacement type or stub callee.
+      FUNCTION CRASH_SHELL_FRAME_NATIVE_IMPL(OR_N,OR_XIN,OR_OUT)
+     . RESULT(OR_STATUS) BIND(C,NAME="crash_shell_frame_native_impl")
+      USE ISO_C_BINDING, ONLY: C_INT,C_DOUBLE
+      USE, INTRINSIC :: IEEE_ARITHMETIC, ONLY: IEEE_IS_FINITE
+      USE ELBUFDEF_MOD, ONLY: ELBUF_STRUCT_
+      USE PRECISION_MOD, ONLY: WP
+#include "implicit_f.inc"
+#include "mvsiz_p.inc"
+#include "com01_c.inc"
+      INTEGER(C_INT),VALUE :: OR_N
+      INTEGER(C_INT) :: OR_STATUS
+      REAL(C_DOUBLE),INTENT(IN) :: OR_XIN(12,OR_N)
+      REAL(C_DOUBLE),INTENT(OUT) :: OR_OUT(13,OR_N)
+      TYPE(ELBUF_STRUCT_) :: OR_CONTEXT
+      DOUBLE PRECISION OR_X(MVSIZ,12),OR_FRAME(MVSIZ,9)
+      DOUBLE PRECISION OR_DIRA(2*MVSIZ),OR_DIRB(2*MVSIZ)
+      INTEGER OR_I
+      OR_STATUS=1
+      IF(OR_N<1.OR.OR_N>2.OR.OR_N>MVSIZ) RETURN
+      IF(WP/=C_DOUBLE.OR.KIND(ZERO)/=C_DOUBLE) RETURN
+C     CNVEC3 reads ISHFRAM; CORTDIR3 reads only IDRAPE when IREP=0.
+C     No layer/pointer access occurs in the exact admitted callee branch.
+      ISHFRAM=0
+      OR_CONTEXT%IDRAPE=0
+      OR_CONTEXT%IGTYP=1
+      OR_CONTEXT%NEL=MVSIZ
+      OR_CONTEXT%NLAY=1
+      OR_CONTEXT%NINTLAY=0
+      OR_CONTEXT%NPTR=1
+      OR_CONTEXT%NPTS=1
+      OR_CONTEXT%NPTT=3
+      OR_CONTEXT%IXFEM=0
+      OR_CONTEXT%NXEL=0
+      NULLIFY(OR_CONTEXT%BUFLY,OR_CONTEXT%INTLAY,OR_CONTEXT%XFEM,
+     .        OR_CONTEXT%NLOC,OR_CONTEXT%NLOCTS)
+      OR_X=ZERO
+      OR_X(1:OR_N,:)=TRANSPOSE(OR_XIN)
+      OR_FRAME=ZERO
+      OR_DIRA=17.25D0
+      OR_DIRB=-9.5D0
+      CALL CNVEC3(OR_CONTEXT,OR_DIRA,OR_DIRB,1,OR_N,0,1,1,
+     . OR_X(1,1),OR_X(1,4),OR_X(1,7),OR_X(1,10),
+     . OR_X(1,2),OR_X(1,5),OR_X(1,8),OR_X(1,11),
+     . OR_X(1,3),OR_X(1,6),OR_X(1,9),OR_X(1,12),
+     . OR_FRAME(1,1),OR_FRAME(1,2),OR_FRAME(1,3),
+     . OR_FRAME(1,4),OR_FRAME(1,5),OR_FRAME(1,6),
+     . OR_FRAME(1,7),OR_FRAME(1,8),OR_FRAME(1,9),MVSIZ)
+      OR_STATUS=2
+      IF(.NOT.ALL(IEEE_IS_FINITE(OR_FRAME(1:OR_N,:)))) RETURN
+      IF(ANY(OR_DIRA/=17.25D0).OR.ANY(OR_DIRB/=-9.5D0)) RETURN
+      DO OR_I=1,OR_N
+        OR_OUT(1:9,OR_I)=OR_FRAME(OR_I,:)
+        OR_OUT(10:13,OR_I)=(/OR_DIRA(1),OR_DIRA(2*MVSIZ),
+     .                       OR_DIRB(1),OR_DIRB(2*MVSIZ)/)
+      ENDDO
+      OR_STATUS=0
+      END

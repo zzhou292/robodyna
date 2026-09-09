@@ -1,0 +1,41 @@
+{
+  "files": [
+    {
+      "bytes": 71995,
+      "git_blob_sha1": "801e7590ca7f366cd5b2723ae9acfa6a089049cf",
+      "path": "common_source/modules/precision_mod.F90",
+      "retrieval": "pinned official raw HTTPS",
+      "sha256": "0846aee31622c4bfdc22895a5580bce7b6be216d392b8ba219be53dafe570201",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/common_source/modules/precision_mod.F90"
+    },
+    {
+      "bytes": 8170,
+      "git_blob_sha1": "80910f030576a59b9ccb12e21cbc3ff2f486cbc2",
+      "path": "engine/source/elements/shell/coque/cnvec3.F",
+      "retrieval": "existing exact staged source verified against its manifest",
+      "sha256": "36ef3dee87d10a7d0028806caed682b1d71c51dc6a851f20012daf261a405817",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/source/elements/shell/coque/cnvec3.F"
+    },
+    {
+      "bytes": 20325,
+      "git_blob_sha1": "ff9c4d37fbe26dd06d09f72678136a030a54d2bc",
+      "path": "engine/source/elements/shell/coque/cortdir3.F",
+      "retrieval": "existing exact staged source verified against its manifest",
+      "sha256": "c295e484a265e093ff7122a038418428742a4936ab2fcb164db7312e5b74d4e5",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/source/elements/shell/coque/cortdir3.F"
+    },
+    {
+      "bytes": 96028,
+      "git_blob_sha1": "4e56dc7f1a5e2cc7926476ebb56345e64b422c5a",
+      "path": "common_source/modules/mat_elem/elbufdef_mod.F90",
+      "retrieval": "existing exact staged source verified against its manifest",
+      "sha256": "4f3a0c66170f246b1d3bbf0129ade0694ac1c6aa227f9b5497ba58d50744a8e2",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/common_source/modules/mat_elem/elbufdef_mod.F90"
+    }
+  ],
+  "license": "LICENSE.md (existing identical upstream license in this original directory)",
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "schema_version": 1,
+  "scope": "Unchanged native CNVEC3 plus full CORTDIR3 and exact derived-type/precision modules. Runtime is restricted to ISHFRAM0 IREP0 IDRAPE0; no startup/property or production objectivity qualification.",
+  "total_bytes": 196518
+}

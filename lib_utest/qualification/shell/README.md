@@ -90,6 +90,14 @@ fixture. With both phase and persistent options enabled, its 12 GPU tests
 include two direct native phase comparisons. Details, ownership and remaining
 physical gates are in [persistent/README.md](persistent/README.md).
 
+The same optional native project now includes a separate current-frame oracle:
+the full unchanged CNVEC3/CORTDIR3 pair, real ELBUF type and precision module.
+Seven CPU tests pass for the explicit isotropic IREP0/IDRAPE0/ISHFRAM0 context,
+including independent frame geometry, native phase composition and overflow
+rollback. This closes the selected current-frame calculation. Composed rigid
+trajectories retain the known strain residual; full startup, material transport,
+Yaris formulation mapping and production objectivity remain unqualified.
+
 The persistent operator tests pass, including changing geometry, repeated
 stress/thickness history and rejection after each stage. Rigid secant-path
 diagnostics report nonzero stress/force/work with refinement; XML explicitly

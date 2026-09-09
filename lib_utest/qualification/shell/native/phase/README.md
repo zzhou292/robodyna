@@ -51,7 +51,9 @@ must serialize phase and CHVIS3 calls with each other. Each wrapper's private
 mutex only serializes calls to that one API; these are test-only libraries.
 
 CNVEC3 uses `ELBUFDEF_MOD` and unconditionally calls CORTDIR3 for material
-direction handling. That closure is intentionally not linked or stubbed.
+direction handling. The supplied-frame `shell_phase_native` target does not
+link that closure. The distinct current-frame target below now preserves it
+in full; no callee is stubbed.
 An independently chosen analytical frame can test rigid affine fields; the
 CUDA K1 frame can also be supplied for a cross-implementation phase comparison.
 The latter does not independently validate K1 frame construction.
@@ -61,3 +63,41 @@ this subdirectory. `shell_phase_native_analytic` invokes the standard-library
 Python/ctypes tests and writes `phase-native-tests.json` in the build directory.
 Tests and their runtime results remain separate: staging this source alone is
 not a qualification pass. The root coordinator owns bounded builds and runs.
+
+## Separate exact current-frame context
+
+`shell_frame_native` exposes `crash_shell_frame_native` in
+`ShellFrameNative.h`. It computes at most two current frames by compiling full
+unchanged CNVEC3 and CORTDIR3, with exact `ELBUFDEF_MOD` and `precision_mod`.
+`original/frame-source-manifest.json` pins these four additional source files;
+the original eleven-file phase manifest is unchanged. The verifier checks both.
+All frame Fortran sources define `MYREAL8`, and the adapter checks `WP` and the
+native constant kind against `C_DOUBLE` before entering the original routines.
+
+The context fixes `ISHFRAM=0`, `IREP=0`, `IDRAPE=0`, `IGTYP=1`, and one layer.
+The exact CORTDIR3 body reads IDRAPE and then has only IREP1..4 branches; for
+the admitted case it accesses no layer pointers and performs no writes.
+Consequently the wrapper can use the real native ELBUF type, explicitly set
+its read selector, null unused layer pointers, and check complete direction
+buffers against sentinels after the unchanged call. This is an evidenced
+inactive branch, not an invented COMMON/type layout or a no-op replacement.
+
+Input geometry is checked independently using scaled edges for finite values,
+planarity and convexity. Postconditions require a finite proper orthonormal
+frame and unchanged direction buffers. Both elements' outputs remain unchanged
+on any failure, including nonfinite arithmetic inside the donor. Calls to
+frame, phase and CHVIS3 remain externally serialized across their shared COMMON
+state. The original phase API still accepts a supplied frame; neither API
+silently changes that contract or evolves a director/history state.
+
+`shell_frame_native_analytic` runs seven tiny standard-library CPU tests. They
+compare the symmetric frame with an independent angular-bisector construction,
+proper rotations, distorted polygons, scale/translation covariance and distinct
+batch permutations; exercise invalid geometry and failure/retry publication;
+and compose the actual native frame with the existing native phase oracle.
+The finite rigid secant path retains the earlier source-derived residual as a
+strict diagnostic. A frame-context pass does not qualify production objectivity,
+prestress transport, native startup, or a Yaris formulation mapping.
+The JSON report explicitly records `production_objectivity_qualified=false`,
+`native_startup_qualified=false`, and `yaris_formulation_mapping_qualified=false`
+independently of whether these seven context tests pass.
