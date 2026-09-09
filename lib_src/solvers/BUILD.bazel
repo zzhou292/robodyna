@@ -3,6 +3,14 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_library")
 
 package(default_visibility = ["//visibility:public"])
 
+cuda_library(
+    name = "explicit_nodal_state",
+    srcs = ["FENodalState.cu", "ExplicitTranslationStep.cu"],
+    hdrs = ["FENodalState.h", "FENodalStateStorage.h", "ExplicitTranslationStep.h"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    deps = [":explicit_step_stability"],
+)
+
 cc_library(
     name = "explicit_step_stability",
     hdrs = ["ExplicitStepStability.h", "FENodalStateView.h"],

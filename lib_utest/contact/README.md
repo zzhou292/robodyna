@@ -69,3 +69,30 @@ use. This utility is not a timestepper or a nonlinear shell/contact stability
 qualification. Run just its targets with the existing guard and
 `ctest --test-dir crash-work/build/contact-cmake -R '^utest_step_stability(_cuda)?$'
 --output-on-failure --parallel 1`.
+
+The next physical-node state target is `tl_explicit_nodal_state`, defined in
+`lib_src/solvers/CMakeLists.txt` and the existing Bazel package. It has no test,
+shell donor, DEME, cuDSS or Chrono dependency. The state owner and the separate
+translation-step operation reuse the qualified nodal/mass/bounds contracts and
+the preallocated accepted/trial publication pattern. The update order follows
+Chrono's `ChTimestepperEulerSemiImplicit::Advance`, with checked trial state
+instead of direct publication. Legacy ANCF state/solver clients keep their
+existing interfaces.
+
+Its first admission scope is at most 64 physical nodes, one fixed timestep,
+explicit isotropic translational masses and fixed nodes. Contributors borrow
+the returned stream/views and add force and complete stability contributions
+after one reset. They must report every failure through the sticky assembly
+status; omitted contributions cannot be inferred from the force array. Seal,
+advance and commit are separate checked operations. Scratch forces are not an
+accepted diagnostic history. External material/contact history participants,
+rotational inertia, parallel scatter and nonlinear contact-switching safety
+remain separate integration gates. `utest_nodal_step_cuda` exercises the public
+owner and real force-driven updates. All 12 tests pass through CMake and Bazel,
+including continuous oscillator/damped-motion refinement, an independent
+discrete energy invariant, full-capacity free flight, late finite overflow,
+clean retry and CUDA launch-error poisoning. The original failed test run is
+retained: CUDA 13.2 reports `cudaErrorInvalidValue` for the zero-thread launch,
+so the error assertion now admits that documented argument error as well as
+`cudaErrorInvalidConfiguration`. Numerical expectations and runtime code were
+unchanged. The workspace execution checkpoint retains the detailed evidence.

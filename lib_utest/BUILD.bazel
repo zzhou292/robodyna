@@ -3,6 +3,18 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_test")
 
 package(default_visibility = ["//visibility:public"])
 
+cuda_test(
+    name = "utest_nodal_step_cuda",
+    size = "small",
+    srcs = ["utest_nodal_step_cuda.cu"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = [
+        "//lib_src/solvers:explicit_nodal_state",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_test(
     name = "utest_step_stability",
     size = "small",
