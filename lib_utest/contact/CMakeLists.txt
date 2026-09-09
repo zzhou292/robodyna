@@ -51,6 +51,11 @@ target_link_libraries(utest_q4_planar_geometry PRIVATE tl_q4_planar_geometry)
 target_compile_options(utest_q4_planar_geometry PRIVATE -fno-fast-math -ffp-contract=off)
 tl_contact_test(utest_q4_planar_geometry)
 
+add_executable(utest_q4_planar_sweep_geometry "${TL_ROOT}/lib_utest/utest_q4_planar_sweep_geometry.cc")
+target_link_libraries(utest_q4_planar_sweep_geometry PRIVATE tl_q4_planar_geometry)
+target_compile_options(utest_q4_planar_sweep_geometry PRIVATE -fno-fast-math -ffp-contract=off)
+tl_contact_test(utest_q4_planar_sweep_geometry)
+
 add_executable(utest_q4_planar_stiffness "${TL_ROOT}/lib_utest/utest_q4_planar_stiffness.cc")
 target_link_libraries(utest_q4_planar_stiffness PRIVATE tl_q4_planar_geometry Eigen3::Eigen)
 target_compile_options(utest_q4_planar_stiffness PRIVATE -fno-fast-math -ffp-contract=off)

@@ -67,8 +67,8 @@ cc_library(
 
 cc_library(
     name = "q4_planar_geometry",
-    srcs = ["Q4PlanarGeometry.cpp"],
-    hdrs = ["Q4PlanarGeometry.h"],
+    srcs = ["Q4PlanarGeometry.cpp", "Q4PlanarSweepGeometry.cpp"],
+    hdrs = ["Q4PlanarGeometry.h", "Q4PlanarSweepGeometry.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [":planar_wall_geometry", ":q4_contact_integration"],
 )
