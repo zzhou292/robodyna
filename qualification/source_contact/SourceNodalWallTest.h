@@ -142,6 +142,7 @@ class Check : public ::testing::Test {
         return index;
     }
     void Metadata() {
+        RecordProperty("face_query_backend","prepared-planar-wall-box-v1");
         RecordProperty("model",sc::NodalWallContactModel); RecordProperty("readiness_sha256",ReadinessSha256);
         RecordProperty("mass_policy",cf::MassPolicy); RecordProperty("source_mass_equivalence","false");
         RecordProperty("mechanics_or_owner_admission","false"); RecordProperty("native_q4",88); RecordProperty("native_t3",6);

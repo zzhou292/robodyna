@@ -1,5 +1,6 @@
 # Optional source-wall qualification and phase diagnosis; no production runner.
 include("${CRASH_TL_FEA_SOURCE_DIR}/lib_src/collision/NodalWallContact.cmake")
+include("${CRASH_TL_FEA_SOURCE_DIR}/lib_src/collision/PreparedPlanarWallQuery.cmake")
 add_library(robo_dyna_source_nodal_wall_fixture STATIC SourceNodalWallFixture.cpp)
 target_link_libraries(robo_dyna_source_nodal_wall_fixture PUBLIC
   robo_dyna_source_contact_force_fixture tl_nodal_wall_contact)
@@ -14,7 +15,7 @@ foreach(nodal_target IN ITEMS robo_dyna_source_part_nodal_wall_check robo_dyna_s
     CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
   target_link_libraries(${nodal_target} PRIVATE
     robo_dyna_source_nodal_wall_fixture robo_dyna_wall_tessellation
-    robo_dyna_canonical_wall_artifacts CUDA::cudart GTest::gtest)
+    robo_dyna_canonical_wall_artifacts tl_prepared_planar_wall_query CUDA::cudart GTest::gtest)
   target_compile_options(${nodal_target} PRIVATE
     "$<$<COMPILE_LANGUAGE:CXX>:-fno-fast-math;-ffp-contract=off>"
     "$<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr;--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>")

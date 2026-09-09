@@ -77,6 +77,38 @@ TEST_F(Check, ActualGpuLateFailureKeepsPublishedFieldsThenRetryAndCudaPoisonAreE
     ASSERT_EQ(device.Evaluate(input,output,report,timing),cudaSuccess); EXPECT_EQ(report.status,Status::OutsideWall); Unchanged(output,saved);
     input=good; input.share_slot[input.share_count-1]=input.share_slot[0];
     ASSERT_EQ(device.Evaluate(input,output,report,timing),cudaSuccess); EXPECT_EQ(report.status,Status::InvalidInput); Unchanged(output,saved);
+    // Deliberately corrupted raw packets exercise complete fallback, including
+    // a distant LAST face that must not disappear behind a prepared box.
+    for (unsigned variant=0;variant<3;++variant) {
+        input=good; auto& face=input.faces[input.face_count-1].geometry;
+        if (variant==0) face.vertices[1].y=std::numeric_limits<double>::quiet_NaN();
+        if (variant==1) face.vertices[2]=face.vertices[0];
+        if (variant==2) {
+            face.vertices[0]={input.config.wall_x,-1e308,0};
+            face.vertices[1]={input.config.wall_x,1e308,0};
+            face.vertices[2]={input.config.wall_x,1e308,1};
+        }
+        sc::PreparedPlanarWallQuery fallback;
+        ASSERT_EQ(fallback.Initialize(input.faces,input.face_count,input.wall_tolerance),sc::Status::kOk);
+        ASSERT_FALSE(fallback.filter_eligible());
+        Result host_failed=clean;
+        const auto host_before=Bytes(host_failed);
+        ASSERT_EQ(EvaluateHost(prepared,input,&host_failed).status,Status::OutsideWall);
+        Unchanged(host_failed,host_before);
+        ASSERT_EQ(device.Evaluate(input,output,report,timing),cudaSuccess);
+        EXPECT_EQ(report.status,Status::OutsideWall); Unchanged(output,saved);
+        ASSERT_EQ(device.Evaluate(good,output,report,timing),cudaSuccess); ASSERT_EQ(report.status,Status::Ok);
+        ASSERT_NO_FATAL_FAILURE(ExactResult(clean,output));
+    }
+    // A valid query displaced one represented X value from the prepared plane
+    // takes the original complete scan, without broadening the fast domain.
+    input=good; input.config.wall_x=std::nextafter(good.config.wall_x,HUGE_VAL);
+    Result off_plane_expected;
+    ASSERT_EQ(EvaluateHost(prepared,input,&off_plane_expected).status,Status::Ok);
+    ASSERT_EQ(device.Evaluate(input,output,report,timing),cudaSuccess); ASSERT_EQ(report.status,Status::Ok);
+    ASSERT_NO_FATAL_FAILURE(Compare(off_plane_expected,output));
+    ASSERT_EQ(device.Evaluate(good,output,report,timing),cudaSuccess); ASSERT_EQ(report.status,Status::Ok);
+    ASSERT_NO_FATAL_FAILURE(ExactResult(clean,output));
     input=good; unsigned positive=0;
     for (unsigned p=1;p<ParentCount;++p)
         if (clean.contact.parents[p].potential.lower>clean.contact.parents[positive].potential.lower) positive=p;

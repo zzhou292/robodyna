@@ -1,5 +1,6 @@
 #pragma once
 #include "SourceNodalWallFixture.h"
+#include "collision/PreparedPlanarWallQuery.h"
 #include <cuda_runtime.h>
 
 namespace crash::qualification::source_contact::nodal {
@@ -7,6 +8,7 @@ static_assert(Workers==sc::MaxNodalWallNodes && Workers==sc::MaxNodalWallParents
               NodeCount<=Workers && ParentCount<=Workers,"One block covers every staged row exactly once");
 struct Storage {
     Input input;
+    sc::PreparedPlanarWallQuery query;
     sc::NodalWallPointResult shares[MaxShares];
     Report node_report[Workers],parent_report[Workers],report;
     Result trial,published;

@@ -57,8 +57,7 @@ __global__ void EvaluateKernel(Storage* storage,ProfileClocks* clocks) {
         if constexpr (Profiled) clocks->query_begin[n]=clock64();
         unsigned owner=UINT32_MAX; sc::TrianglePointGeometry point;
         const auto x=position.at(n);
-        const auto query=sc::planar_detail::FindOwner({input.config.wall_x,x.y,x.z},input.faces,
-            input.face_count,input.wall_tolerance,&owner,&point);
+        const auto query=storage->query.FindOwner({input.config.wall_x,x.y,x.z},&owner,&point);
         if constexpr (Profiled) clocks->query_end[n]=clock64();
         if (query!=sc::Status::kOk || owner==UINT32_MAX) storage->node_report[n]={Status::OutsideWall,{},n};
         else {
@@ -167,7 +166,14 @@ cudaError_t Device::Evaluate(const Input& input,Result& output,Report& report,Ti
     if (status_!=cudaSuccess) return status_;
     auto error=cudaGetLastError(); if (error!=cudaSuccess) return Fail(error);
     const auto start=std::chrono::steady_clock::now();
+    sc::PreparedPlanarWallQuery query;
+    // Bind this upload's actual faces, including negative test packets. Invalid
+    // counts remain for the original device ValidInput rejection, without a
+    // host read beyond Input::faces. Ineligible geometry keeps the full scan.
+    if (input.face_count && input.face_count<=MaxFaces)
+        query.Initialize(input.faces,input.face_count,input.wall_tolerance);
     error=cudaMemcpy(&storage_->input,&input,sizeof(Input),cudaMemcpyHostToDevice); if (error!=cudaSuccess) return Fail(error);
+    error=cudaMemcpy(&storage_->query,&query,sizeof(query),cudaMemcpyHostToDevice); if (error!=cudaSuccess) return Fail(error);
     error=cudaEventRecord(begin_); if (error!=cudaSuccess) return Fail(error);
     EvaluateKernel<false><<<1,Workers>>>(storage_,nullptr);
     error=cudaGetLastError(); if (error!=cudaSuccess) return Fail(error);
@@ -216,7 +222,11 @@ cudaError_t Profiler::Evaluate(const Input& input,Result& output,Report& report,
     if (status_!=cudaSuccess) return status_;
     auto error=cudaGetLastError(); if (error!=cudaSuccess) return Fail(error);
     const auto start=std::chrono::steady_clock::now();
+    sc::PreparedPlanarWallQuery query;
+    if (input.face_count && input.face_count<=MaxFaces)
+        query.Initialize(input.faces,input.face_count,input.wall_tolerance);
     error=cudaMemcpy(&storage_->work.input,&input,sizeof(Input),cudaMemcpyHostToDevice); if (error!=cudaSuccess) return Fail(error);
+    error=cudaMemcpy(&storage_->work.query,&query,sizeof(query),cudaMemcpyHostToDevice); if (error!=cudaSuccess) return Fail(error);
     error=cudaEventRecord(begin_); if (error!=cudaSuccess) return Fail(error);
     EvaluateKernel<true><<<1,Workers>>>(&storage_->work,&storage_->clocks);
     error=cudaGetLastError(); if (error!=cudaSuccess) return Fail(error);
