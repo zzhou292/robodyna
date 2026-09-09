@@ -100,20 +100,14 @@ TL_SURFACE_HD inline bool WidthReady(const Interval totals[5],const Q4Integratio
       force_width <= limits.force_error && energy_width <= limits.energy_error;
 }
 
-TL_SURFACE_HD inline Status EstimateCell(const Q4NormalIntegrationInput& input,
-                                        const double parent_gap[4],const Q4IntegrationCell& cell,
-                                        double totals[5]) {
-  if (cell.kind == Q4IntegrationCellKind::Inactive) return Status::kOk;
-  const double side=::ldexp(1.0,-static_cast<int>(cell.depth));
-  const double weight=::ldexp(input.projected_area,-2*static_cast<int>(cell.depth)-2);
-  const double stiffness=input.stiffness_per_area*weight;
-  if (!IsFinite(weight) || weight <= 0 || !IsFinite(stiffness) || stiffness <= 0)
-    return Status::kNonFiniteResult;
-  const double abscissa=1/::sqrt(3.0);
+// Shared prescribed Gauss-point operation. Callers supply the already checked
+// weighted stiffness and accumulate samples in their declared deterministic
+// order. This is the original mapping/mass/law/JT arithmetic, extracted without
+// changing the scalar square integrator's sample order or error checks.
+TL_SURFACE_HD inline Status EstimateSample(const Q4NormalIntegrationInput& input,
+                                          const double parent_gap[4],double u,double v,
+                                          double stiffness,double totals[5]) {
   const auto& parent=input.surface.parents[input.parent_index];
-  for (unsigned sample=0;sample<4;++sample) {
-    const double u=-1+2*(cell.column+.5)*side + (sample&1 ? side*abscissa : -side*abscissa);
-    const double v=-1+2*(cell.row+.5)*side + (sample&2 ? side*abscissa : -side*abscissa);
     const Q4Point natural{input.parent_index,u,v};
     Q4PointKinematics point;
     auto status=EvaluateQ4Point(input.surface,natural,&point);
@@ -146,6 +140,24 @@ TL_SURFACE_HD inline Status EstimateCell(const Q4NormalIntegrationInput& input,
     }
     totals[4]+=response.elastic_energy;
     if (!IsFinite(totals[4]) || totals[4] < 0) return Status::kNonFiniteResult;
+  return Status::kOk;
+}
+
+TL_SURFACE_HD inline Status EstimateCell(const Q4NormalIntegrationInput& input,
+                                        const double parent_gap[4],const Q4IntegrationCell& cell,
+                                        double totals[5]) {
+  if (cell.kind == Q4IntegrationCellKind::Inactive) return Status::kOk;
+  const double side=::ldexp(1.0,-static_cast<int>(cell.depth));
+  const double weight=::ldexp(input.projected_area,-2*static_cast<int>(cell.depth)-2);
+  const double stiffness=input.stiffness_per_area*weight;
+  if (!IsFinite(weight) || weight <= 0 || !IsFinite(stiffness) || stiffness <= 0)
+    return Status::kNonFiniteResult;
+  const double abscissa=1/::sqrt(3.0);
+  for (unsigned sample=0;sample<4;++sample) {
+    const double u=-1+2*(cell.column+.5)*side + (sample&1 ? side*abscissa : -side*abscissa);
+    const double v=-1+2*(cell.row+.5)*side + (sample&2 ? side*abscissa : -side*abscissa);
+    const auto status=EstimateSample(input,parent_gap,u,v,stiffness,totals);
+    if (status != Status::kOk) return status;
   }
   return Status::kOk;
 }
