@@ -56,6 +56,14 @@ target_link_libraries(utest_q4_planar_sweep_geometry PRIVATE tl_q4_planar_geomet
 target_compile_options(utest_q4_planar_sweep_geometry PRIVATE -fno-fast-math -ffp-contract=off)
 tl_contact_test(utest_q4_planar_sweep_geometry)
 
+include("${TL_ROOT}/lib_src/collision/Q4PrescribedPlanarContact.cmake")
+foreach(check utest_q4_unrestricted_mass utest_q4_integral_measure utest_q4_prescribed_planar_contact)
+  add_executable(${check} "${TL_ROOT}/lib_utest/${check}.cc")
+  target_link_libraries(${check} PRIVATE tl_q4_prescribed_planar_contact)
+  target_compile_options(${check} PRIVATE -fno-fast-math -ffp-contract=off)
+  tl_contact_test(${check})
+endforeach()
+
 add_executable(utest_q4_planar_stiffness "${TL_ROOT}/lib_utest/utest_q4_planar_stiffness.cc")
 target_link_libraries(utest_q4_planar_stiffness PRIVATE tl_q4_planar_geometry Eigen3::Eigen)
 target_compile_options(utest_q4_planar_stiffness PRIVATE -fno-fast-math -ffp-contract=off)

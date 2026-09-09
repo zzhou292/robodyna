@@ -107,11 +107,20 @@ class Q4PlanarGeometry {
  public:
   PlanarContactReport Initialize(const PlanarWallGeometry& wall,const Q4SurfaceView& reference,
                                 const Q4FixedYZMassView& mass,double exposed_clearance);
+  // Geometric reference preparation only: finite reference positions/velocities,
+  // natural rectangular material measure, stable parents and finite-wall coverage.
+  // This does not impose or invent physical mass/constraints, and admits finite
+  // tangential reference velocity. Later adapters must validate their real mass
+  // and motion contracts. The legacy Initialize above retains its fixed-YZ gate.
+  PlanarContactReport InitializeReference(const PlanarWallGeometry& wall,const Q4SurfaceView& reference,
+                                         double exposed_clearance);
   bool initialized() const noexcept { return parent_count_ != 0; }
   Q4PlanarReferenceView view() const noexcept {
     return {parents_.data(),parent_count_,global_node_count_,wall_x_,wall_tolerance_};
   }
  private:
+  PlanarContactReport InitializeImpl(const PlanarWallGeometry& wall,const Q4SurfaceView& reference,
+                                    const Q4FixedYZMassView* mass,double exposed_clearance);
   std::array<PreparedQ4PlanarParent,MaxQ4PlanarParents> parents_{};
   std::uint32_t parent_count_ = 0,global_node_count_ = 0;
   double wall_x_ = 0,wall_tolerance_ = 0;

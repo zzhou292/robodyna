@@ -293,7 +293,7 @@ TEST(Q4PlanarSweepGeometry, LateSecondParentFailuresPreserveAllOutputAndPermitCl
     auto result=Seed(); const auto before=Bytes(result);
     const auto report=prepared.Check(base.surface(),candidate.surface(),&result);
     EXPECT_NE(report.status,PStatus::Ok);
-    if (fault != 5) EXPECT_EQ(report.sample,1u);
+    if (fault != 5) { EXPECT_EQ(report.sample,1u); }
     EXPECT_EQ(Bytes(result),before);
     ASSERT_EQ(prepared.Check(base.surface(),base.surface(),&result).status,PStatus::Ok);
     Same(result,clean);

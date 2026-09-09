@@ -83,12 +83,20 @@ PlanarContactReport ClassifyRectangle(const PlanarWallGeometry& wall,double clea
 
 PlanarContactReport Q4PlanarGeometry::Initialize(const PlanarWallGeometry& wall,const Q4SurfaceView& reference,
                                                const Q4FixedYZMassView& mass,double clearance) {
+  return InitializeImpl(wall,reference,&mass,clearance);
+}
+PlanarContactReport Q4PlanarGeometry::InitializeReference(const PlanarWallGeometry& wall,const Q4SurfaceView& reference,
+                                                       double clearance) {
+  return InitializeImpl(wall,reference,nullptr,clearance);
+}
+PlanarContactReport Q4PlanarGeometry::InitializeImpl(const PlanarWallGeometry& wall,const Q4SurfaceView& reference,
+                                                 const Q4FixedYZMassView* mass,double clearance) {
   if (initialized()) return Report(PStatus::InvalidInput,"Q4 planar geometry is already initialized");
   if (!wall.initialized()) return Report(PStatus::NotInitialized,"Finite wall has not been prepared");
   if (!reference.parent_count || reference.parent_count > MaxQ4PlanarParents)
     return Report(PStatus::ResourceLimit,"Q4 planar parent count is outside the two-parent gate");
   if (!reference.parents || !reference.positions.valid() || !reference.velocities.valid() ||
-      reference.positions.node_count != reference.velocities.node_count || mass.node_count != reference.positions.node_count ||
+      reference.positions.node_count != reference.velocities.node_count || (mass && mass->node_count != reference.positions.node_count) ||
       !IsFinite(clearance) || !(clearance > 8*wall.tolerance()))
     return Report(PStatus::InvalidInput,"Invalid Q4 views, mass extent or finite-wall clearance");
   std::array<PreparedQ4PlanarParent,MaxQ4PlanarParents> candidate{};
@@ -105,8 +113,15 @@ PlanarContactReport Q4PlanarGeometry::Initialize(const PlanarWallGeometry& wall,
   }
   const Q4PlanarReferenceView prepared{candidate.data(),reference.parent_count,reference.positions.node_count,
                                       wall.wall_x(),wall.tolerance()};
-  const auto motion=ValidateQ4PlanarMotion(prepared,reference,mass);
-  if (motion != PStatus::Ok) return Report(motion,"Q4 reference motion, mapping or component mass is unsupported");
+  if (mass) {
+    const auto motion=ValidateQ4PlanarMotion(prepared,reference,*mass);
+    if (motion != PStatus::Ok) return Report(motion,"Q4 reference motion, mapping or component mass is unsupported");
+  } else {
+    for (std::uint32_t p=0;p<reference.parent_count;++p)
+      for (const auto node:candidate[p].parent.nodes)
+        if (!IsFinite(reference.velocities.at(node)))
+          return Report(PStatus::InvalidInput,"Nonfinite geometric reference velocity",p);
+  }
   for (std::uint32_t p=0;p<reference.parent_count;++p) {
     const auto report=ClassifyRectangle(wall,clearance,p,&candidate[p]);
     if (report.status != PStatus::Ok) return report;

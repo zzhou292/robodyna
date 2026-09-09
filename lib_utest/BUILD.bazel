@@ -37,6 +37,30 @@ cc_test(
 )
 
 cc_test(
+    name = "utest_q4_unrestricted_mass",
+    size = "small",
+    srcs = ["utest_q4_unrestricted_mass.cc", "q4_prescribed_contact_fixture.h", "q4_planar_geometry_fixture.h", "q4_contact_integration_fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:q4_prescribed_planar_contact", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "utest_q4_integral_measure",
+    size = "small",
+    srcs = ["utest_q4_integral_measure.cc", "q4_prescribed_contact_fixture.h", "q4_planar_geometry_fixture.h", "q4_contact_integration_fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:q4_prescribed_planar_contact", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "utest_q4_prescribed_planar_contact",
+    size = "small",
+    srcs = ["utest_q4_prescribed_planar_contact.cc", "q4_prescribed_contact_fixture.h", "q4_planar_geometry_fixture.h", "q4_contact_integration_fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:q4_prescribed_planar_contact", "@googletest//:gtest_main"],
+)
+
+cc_test(
     name = "utest_q4_rectangular_integration",
     size = "small",
     srcs = ["utest_q4_rectangular_integration.cc", "q4_rectangular_integration_fixture.h", "q4_contact_integration_fixture.h"],

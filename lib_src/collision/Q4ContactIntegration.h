@@ -104,7 +104,8 @@ TL_SURFACE_HD inline bool WidthReady(const Interval totals[5],const Q4Integratio
 // weighted stiffness and accumulate samples in their declared deterministic
 // order. This is the original mapping/mass/law/JT arithmetic, extracted without
 // changing the scalar square integrator's sample order or error checks.
-TL_SURFACE_HD inline Status EstimateSample(const Q4NormalIntegrationInput& input,
+template<class Input>
+TL_SURFACE_HD inline Status EstimateSample(const Input& input,
                                           const double parent_gap[4],double u,double v,
                                           double stiffness,double totals[5]) {
   const auto& parent=input.surface.parents[input.parent_index];

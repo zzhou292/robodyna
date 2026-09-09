@@ -68,4 +68,25 @@ TL_SURFACE_HD inline Status BuildQ4NormalXJacobian(
   return Status::kOk;
 }
 
+// Genuine free-XYZ or fully fixed physical nodes. Use the owning isotropic
+// mass view directly; partial component constraints and generalized mass are
+// explicitly unsupported. The existing generic stencil owns sorting, mass
+// normalization and upward norm arithmetic. Its temporary output may be
+// cleared on failure, but every field of this operation's output is preserved.
+TL_SURFACE_HD inline Status BuildQ4NormalXJacobian(
+    const LumpedTranslationMassView& mass,const SurfaceQ4& parent,double u,double v,
+    std::uint64_t attempt,NormalJacobian* output) {
+  if (!output) return Status::kInvalidArgument;
+  auto status=q4_detail::ValidateParent(parent,mass.node_count);
+  if (status != Status::kOk) return status;
+  double shape[4]; status=EvaluateQ4Shape(u,v,shape);
+  if (status != Status::kOk) return status;
+  SignedNodeWeight weights[4];
+  for (unsigned n=0;n<4;++n) weights[n]={parent.nodes[n],shape[n]};
+  NormalJacobian staged;
+  status=BuildNormalJacobian(mass,weights,4,{-1,0,0},attempt,&staged);
+  if (status == Status::kOk) *output=staged;
+  return status;
+}
+
 }  // namespace tlfea::contact

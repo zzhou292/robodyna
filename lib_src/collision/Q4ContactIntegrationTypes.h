@@ -53,6 +53,21 @@ struct Q4NormalIntegrationInput {
   double max_penetration = 0;
 };
 
+// Distinct prescribed input, never a conversion into constrained C2 masses.
+// The actual physical nodes are free in XYZ or fully fixed; partial component
+// constraints are unsupported by LumpedTranslationMassView. The material
+// measure remains the immutable rectangular reference area. Moving projected
+// coverage/Jacobian safety belongs to CheckQ4PlanarSweep/the host adapter, not
+// to the raw integral. Keeping this POD distinct preserves the legacy API.
+struct Q4PrescribedNormalIntegrationInput {
+  Q4SurfaceView surface;
+  LumpedTranslationMassView mass;
+  std::uint32_t parent_index = 0;
+  std::uint64_t attempt = 0;
+  double wall_x = 0, projected_area = 0, stiffness_per_area = 0;
+  double max_penetration = 0;
+};
+
 enum class Q4IntegrationStatus : std::uint8_t {
   Ok, InvalidInput, UnsupportedInput, NonFiniteArithmetic, NoDynamicDofs,
   PenetrationLimit, LeafLimit, VisitLimit, DepthLimit, UnattainableAccuracy

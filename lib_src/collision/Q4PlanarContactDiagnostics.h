@@ -2,6 +2,7 @@
 
 #include "Q4PlanarContactStorage.h"
 #include "Q4PlanarContactBackend.h"
+#include "Q4IntegralMeasure.h"
 
 namespace tlfea::contact::q4_planar_detail {
 using Interval=Q4IntegralInterval;
@@ -37,18 +38,8 @@ TL_SURFACE_HD inline unsigned Incident(const Model& model,unsigned global) {
   for (unsigned i=0;i<model.stiffness.count;++i) if (model.stiffness.nodes[i] == global) return i;
   return static_cast<unsigned>(MaxIncidentNodes);
 }
-TL_SURFACE_HD inline bool ExpandCertificate(Interval ratio,Q4CertifiedIntegral* value) {
-  Interval truth;
-  return q4_bounds::MultiplyPositive({value->lower,value->upper},ratio,&truth) &&
-         q4_bounds::Certify(value->value,truth,value);
-}
 TL_SURFACE_HD inline bool ExpandArea(const PreparedQ4PlanarParent& reference,Q4IntegrationResult* result) {
-  Interval ratio{1,1};
-  if ((reference.area_enclosure.lower != reference.projected_area || reference.area_enclosure.upper != reference.projected_area) &&
-      !q4_bounds::DividePositive(reference.area_enclosure,reference.projected_area,&ratio)) return false;
-  for (auto& force:result->force) if (!ExpandCertificate(ratio,&force)) return false;
-  return ExpandCertificate(ratio,&result->resultant) && ExpandCertificate(ratio,&result->potential) &&
-         q4_bounds::MultiplyPositive(result->active_area,ratio,&result->active_area);
+  return ExpandQ4IntegralMeasure(reference.projected_area,reference.area_enclosure,result);
 }
 TL_SURFACE_HD inline bool Fail(Control& control,Code status,std::uint32_t parent=UINT32_MAX,std::uint32_t node=UINT32_MAX) {
   control.status=status; control.parent=parent; control.node=node; control.diagnostics.valid=false;

@@ -28,7 +28,8 @@ TL_SURFACE_HD inline bool Area(double parent,const Q4RectangularCell& cell,Inter
   return parent>0 && cell.u_depth<=MaxQ4IntegrationDepth && cell.v_depth<=MaxQ4IntegrationDepth &&
       q4_bounds::Scale({parent,parent},::ldexp(1.0,-static_cast<int>(cell.u_depth+cell.v_depth)),output);
 }
-TL_SURFACE_HD inline bool CellBounds(const Q4NormalIntegrationInput& input,const Interval parent_gap[4],
+template<class Input>
+TL_SURFACE_HD inline bool CellBounds(const Input& input,const Interval parent_gap[4],
                                      Q4RectangularCell* cell) {
   double shape[4][4]; Interval gap[4],area;
   if (!Corners(*cell,shape) || !Area(input.projected_area,*cell,&area)) return false;
@@ -97,7 +98,8 @@ TL_SURFACE_HD inline std::uint32_t Pop(Q4RectangularScratch scratch,const Q4Inte
   }
   scratch.heap[i]=last; return result;
 }
-TL_SURFACE_HD inline Status EstimateCell(const Q4NormalIntegrationInput& input,const double gap[4],
+template<class Input>
+TL_SURFACE_HD inline Status EstimateCell(const Input& input,const double gap[4],
                                         const Q4RectangularCell& cell,double totals[5]) {
   if (cell.bounds.kind==Q4IntegrationCellKind::Inactive) return Status::kOk;
   const double su=::ldexp(1.0,-static_cast<int>(cell.u_depth));
@@ -115,7 +117,8 @@ TL_SURFACE_HD inline Status EstimateCell(const Q4NormalIntegrationInput& input,c
   return Status::kOk;
 }
 
-TL_SURFACE_HD inline Q4IntegrationReport Finish(const Q4NormalIntegrationInput& input,
+template<class Input>
+TL_SURFACE_HD inline Q4IntegrationReport Finish(const Input& input,
     const Q4IntegrationLimits& limits,Q4RectangularScratch scratch,const Interval gap[4],
     const double nominal_gap[4],std::uint32_t count,std::uint32_t visited,Q4RectangularResult* output) {
   Q4RectangularResult candidate; auto& result=candidate.integration;
@@ -167,15 +170,13 @@ TL_SURFACE_HD inline Q4IntegrationReport Finish(const Q4NormalIntegrationInput& 
   *output=candidate;
   return {Q4IntegrationStatus::Ok,Status::kOk,UINT32_MAX,result.deepest_leaf,visited,count};
 }
-} // namespace q4_rectangular
-
-// Qualification-only binary dyadic refinement. The complete finite rectangular
-// footprint and supplied area remain C3 prerequisites, exactly as for scalar
-// C2. No tolerance/cap change, coordinate snap, new contact law or C4 selector.
-TL_SURFACE_HD inline Q4IntegrationReport IntegrateQ4NormalContactRectangular(
-    const Q4NormalIntegrationInput& input,const Q4IntegrationLimits& limits,
+// Shared implementation only. Public entry points keep their distinct mass
+// contracts; overload resolution selects the actual Q4 mass/Jacobian adapter.
+// No sample order, refinement priority, arithmetic or budget is changed here.
+template<class Input>
+TL_SURFACE_HD inline Q4IntegrationReport Integrate(
+    const Input& input,const Q4IntegrationLimits& limits,
     Q4RectangularScratch scratch,Q4RectangularResult* output) {
-  using namespace q4_rectangular;
   if (!output || !scratch.leaves || !scratch.heap || !limits.max_leaves ||
       limits.max_leaves>MaxQ4IntegrationLeaves || limits.max_leaves>scratch.leaf_capacity ||
       limits.max_leaves>scratch.heap_capacity || scratch.leaf_capacity>MaxQ4IntegrationLeaves ||
@@ -249,5 +250,23 @@ TL_SURFACE_HD inline Q4IntegrationReport IntegrateQ4NormalContactRectangular(
       }
     }
   }
+}
+} // namespace q4_rectangular
+
+// Legacy constrained C2 entry. The complete finite rectangular footprint and
+// supplied area remain C3 prerequisites. Scalar C2 remains a separate backend.
+TL_SURFACE_HD inline Q4IntegrationReport IntegrateQ4NormalContactRectangular(
+    const Q4NormalIntegrationInput& input,const Q4IntegrationLimits& limits,
+    Q4RectangularScratch scratch,Q4RectangularResult* output) {
+  return q4_rectangular::Integrate(input,limits,scratch,output);
+}
+
+// Prescribed free-XYZ/fully-fixed physical nodes with genuine lumped mass.
+// This raw operation owns no finite-wall or swept-geometry admission. Use the
+// host prescribed adapter for that contract. Exact same integral/core/budgets.
+TL_SURFACE_HD inline Q4IntegrationReport IntegrateQ4NormalContactRectangular(
+    const Q4PrescribedNormalIntegrationInput& input,const Q4IntegrationLimits& limits,
+    Q4RectangularScratch scratch,Q4RectangularResult* output) {
+  return q4_rectangular::Integrate(input,limits,scratch,output);
 }
 } // namespace tlfea::contact
