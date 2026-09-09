@@ -3,9 +3,15 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
+    name = "cuda_runtime_utils",
+    hdrs = ["cuda_runtime_utils.h"],
+)
+
+cc_library(
     name = "cuda_utils",
     hdrs = ["cuda_utils.h"],
     copts = ["--std=c++17"],
+    deps = [":cuda_runtime_utils"],
 )
 
 cc_library(

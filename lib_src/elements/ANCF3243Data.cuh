@@ -1,5 +1,4 @@
 #include <cuda_runtime.h>
-#include <cusparse.h>
 
 #include <Eigen/Dense>
 #include <cstring>
@@ -20,7 +19,7 @@
  *==============================================================*/
 
 #include "../../lib_utils/cpu_utils.h"
-#include "../../lib_utils/cuda_utils.h"
+#include "../../lib_utils/cuda_runtime_utils.h"
 #include "../../lib_utils/quadrature_utils.h"
 #include "../materials/MaterialModel.cuh"
 #include "ElementBase.h"

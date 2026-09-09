@@ -11,11 +11,12 @@ cuda_library(
         "ElementBase.h",
     ],
     copts = ["--std=c++17", "-O3", "--use_fast_math", "--extra-device-vectorization"],
-    linkopts = ["-lcusolver", "-lcublas", "-lcusparse"],
+    # cuda_library supplies the CUDA runtime transitively. This element does
+    # not invoke cuBLAS/cuSOLVER/cuSPARSE/cuDSS; those remain solver deps.
     deps = [
         "//lib_src/materials:materials",
         "//lib_utils:cpu_utils",
-        "//lib_utils:cuda_utils",
+        "//lib_utils:cuda_runtime_utils",
         "@eigen//:eigen",
     ],
 )
@@ -56,4 +57,3 @@ cuda_library(
         "@eigen//:eigen",
     ],
 )
-

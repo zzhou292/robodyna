@@ -59,13 +59,10 @@ cuda_test(
 
 cc_test(
     name = "utest_3243",
+    size = "small",
     srcs = ["utest_3243.cc"],
     copts = ["--std=c++17"],
-    linkopts = [
-        "-L/usr/local/cuda/lib64",
-        "-lcusparse",
-        "-lcudart",
-    ],
+    tags = ["exclusive", "gpu"],
     data = ["//:data_utest"],
     deps = [
         "//lib_src/elements:ANCF3243Data",

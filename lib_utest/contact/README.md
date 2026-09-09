@@ -30,3 +30,14 @@ The CUDA runtime fixture tests device allocation, a kernel, synchronization and
 readback. It does not establish an FE dynamics baseline. Surface-contact tests
 cover only their implemented interpolation/contact law; they do not qualify
 curved ANCF geometry, friction, CCD, or Yaris contact by implication.
+
+Configure with `-DTL_CONTACT_ENABLE_FE_BASELINE=ON` to additionally build the two
+existing ANCF3243 beam mass/reference regressions (`utest_3243`). This optional
+baseline uses the unchanged FE kernels and reference CSVs. Its runtime-only
+CUDA dependency has been separated from unused sparse/direct solver headers;
+cuDSS is still required by the actual direct-solver consumers. Run just this
+baseline with `ctest --test-dir crash-work/build/contact-cmake -R '^utest_3243$'
+--output-on-failure --parallel 1` through the same GPU guard. It checks existing
+mass assembly, not transient deformation or the selected conventional Yaris
+shell formulation. The legacy determinant assertion is not a complete
+positive-definiteness test.

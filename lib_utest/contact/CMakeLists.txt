@@ -5,6 +5,7 @@ project(TLSurfaceContactTests LANGUAGES CXX)
 # Use installed GTest/Eigen and compile the same source files, without building
 # DEME, cuDSS, the viewer, or a complete second solver backend.
 option(TL_CONTACT_ENABLE_CUDA "Build and require the CUDA contact tests" ON)
+option(TL_CONTACT_ENABLE_FE_BASELINE "Build the existing two tiny ANCF3243 mass regressions" OFF)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -59,4 +60,21 @@ if(TL_CONTACT_ENABLE_CUDA)
   add_executable(utest_surface_broadphase "${TL_ROOT}/lib_utest/utest_surface_broadphase.cu")
   target_link_libraries(utest_surface_broadphase PRIVATE tl_contact_broadphase)
   tl_contact_test(utest_surface_broadphase)
+
+  if(TL_CONTACT_ENABLE_FE_BASELINE)
+    # Reuse the existing FE implementation and reference tests unchanged.
+    # No direct solver or CUDA math-library dependency is used by this element.
+    add_library(tl_contact_ancf3243 STATIC
+      "${TL_ROOT}/lib_src/elements/ANCF3243Data.cu"
+      "${TL_ROOT}/lib_utils/mesh_utils.cc"
+      "${TL_ROOT}/lib_utils/csv_utils.cc")
+    target_include_directories(tl_contact_ancf3243 PUBLIC "${TL_ROOT}")
+    target_link_libraries(tl_contact_ancf3243 PUBLIC tl_contact_cpu_utils CUDA::cudart)
+    target_compile_options(tl_contact_ancf3243 PRIVATE
+      "$<$<COMPILE_LANGUAGE:CUDA>:-O3;--use_fast_math;--extra-device-vectorization>")
+    add_executable(utest_3243 "${TL_ROOT}/lib_utest/utest_3243.cc")
+    target_link_libraries(utest_3243 PRIVATE tl_contact_ancf3243)
+    tl_contact_test(utest_3243)
+    set_tests_properties(utest_3243 PROPERTIES WORKING_DIRECTORY "${TL_ROOT}")
+  endif()
 endif()
