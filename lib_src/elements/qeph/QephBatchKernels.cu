@@ -53,12 +53,8 @@ __global__ void Candidate(Storage* storage,const Slab* accepted,Slab* trial,Noda
   for(unsigned e=0;e<s.model.config.element_count;++e) {
     PrescribedInterval interval; interval.base_time=v.base_time; interval.dt=s.model.config.owner.fixed_dt;
     interval.sample_index=v.kinematics.base_epoch+1;
-    for(unsigned i=0;i<4;++i) {
-      const auto n=s.model.element[e].nodes[i];
-      interval.position_endpoint[i]=ReadVector(v.kinematics.position_xyz,n);
-      interval.velocity_midpoint[i]=ReadVector(v.kinematics.velocity_xyz,n);
-      interval.omega_midpoint[i]=ReadVector(v.kinematics.angular_velocity_xyz,n);
-    }
+    shell_batch_fields::Gather(s.model.element[e].nodes,v.kinematics,
+      interval.position_endpoint,interval.velocity_midpoint,interval.omega_midpoint);
     const auto status=EvaluateForce(s.model.element[e].reference,accepted->element[e].proposed_history,interval,trial->element[e]);
     if(status!=Status::kSuccess) {
       s.control.status=BatchStatus::ElementFailure; s.control.element=e; s.control.element_status=status; return;

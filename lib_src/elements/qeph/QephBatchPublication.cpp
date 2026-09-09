@@ -4,10 +4,7 @@
 
 namespace tl::fea::qeph {
 namespace {
-bool Disjoint(const void* a,std::size_t an,const void* b,std::size_t bn) {
-  const auto x=reinterpret_cast<std::uintptr_t>(a),y=reinterpret_cast<std::uintptr_t>(b);
-  return a&&b&&an<=UINTPTR_MAX-x&&bn<=UINTPTR_MAX-y&&(x+an<=y||y+bn<=x);
-}
+using trial_identity::Disjoint;
 BatchReport InvalidRead() { return {BatchStatus::InvalidInput,"QEPH readback output is missing, overlapping or overflowing"}; }
 }
 BatchReport QephBatch::CopyAcceptedResults(const NodalStamp& expected,ForceTrial* output,std::size_t capacity,

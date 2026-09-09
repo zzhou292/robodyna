@@ -37,5 +37,9 @@ cuda_library(
     ],
     hdrs = ["QephBatch.h", "QephBatchStorage.h", "QephBatchDiagnostics.h"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
-    deps = [":force", "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_force_assembly"],
+    deps = [
+        ":force", "//lib_src/elements:shell_batch_fields",
+        "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_force_assembly",
+        "//lib_src/solvers:nodal_trial_identity",
+    ],
 )

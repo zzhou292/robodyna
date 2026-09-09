@@ -1,14 +1,10 @@
 #pragma once
 #include "QephBatchStorage.h"
 #include "QephForce.h"
-#include "../../math/Quaternion.h"
+#include "../ShellBatchFields.h"
 
 namespace tl::fea::qeph::batch_detail {
-TL_QEPH_HD inline Vec3 ReadVector(const double* x,std::size_t n) { return {x[3*n],x[3*n+1],x[3*n+2]}; }
-TL_QEPH_HD inline double Dot(Vec3 a,Vec3 b) { return a.x*b.x+a.y*b.y+a.z*b.z; }
-TL_QEPH_HD inline Vec3 Difference(Vec3 a,Vec3 b) { return {a.x-b.x,a.y-b.y,a.z-b.z}; }
-TL_QEPH_HD inline Vec3 Mean(Vec3 a,Vec3 b) { return {(a.x+b.x)*.5,(a.y+b.y)*.5,(a.z+b.z)*.5}; }
-TL_QEPH_HD inline bool FiniteVector(Vec3 x) { return tl::math::Finite(x.x)&&tl::math::Finite(x.y)&&tl::math::Finite(x.z); }
+using namespace tl::fea::shell_batch_fields;
 
 // Actual global shared masses/J and one owner velocity per node. Physical and
 // added scalar partitions are explicitly isotropic (including drilling).
@@ -42,16 +38,9 @@ TL_QEPH_HD inline bool Measure(const Model& model,const Slab& base,const Slab& n
     for(unsigned c=0;c<5;++c) d.maximum_absolute_strain=::fmax(d.maximum_absolute_strain,::fabs(h.strain_curvature[c]));
     for(unsigned c=5;c<8;++c) d.maximum_thickness_curvature=::fmax(d.maximum_thickness_curvature,
       ::fabs(element.reference.input.thickness*h.strain_curvature[c]));
-    for(unsigned i=0;d.accepted_force_assembled&&i<4;++i) {
-      const auto n=element.nodes[i];
-      const auto v0=ReadVector(view.base_kinematics.velocity_xyz,n),v1=ReadVector(view.kinematics.velocity_xyz,n);
-      const auto w0=ReadVector(view.base_kinematics.angular_velocity_xyz,n),w1=ReadVector(view.kinematics.angular_velocity_xyz,n);
-      const auto dx=Difference(ReadVector(view.kinematics.position_xyz,n),ReadVector(view.base_kinematics.position_xyz,n));
-      // The owning update uses this exact world rotation-vector increment.
-      const Vec3 rotation{model.config.owner.fixed_dt*w1.x,model.config.owner.fixed_dt*w1.y,model.config.owner.fixed_dt*w1.z};
-      d.internal_kick_work-=view.kick_dt*(Dot(old.internal_force[i],Mean(v0,v1))+Dot(old.internal_couple[i],Mean(w0,w1)));
-      d.internal_drift_work-=Dot(old.internal_force[i],dx)+Dot(old.internal_couple[i],rotation);
-    }
+    if(d.accepted_force_assembled)
+      AccumulateInternalWork(element.nodes,old.internal_force,old.internal_couple,view,model.config.owner.fixed_dt,
+                             d.internal_kick_work,d.internal_drift_work);
   }
   const double finite[]={d.kinetic_translation,d.kinetic_rotation,d.kinetic_physical_isotropic,d.kinetic_added_isotropic,
     d.internal_work[0],d.internal_work[1],d.internal_work_increment[0],d.internal_work_increment[1],

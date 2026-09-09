@@ -1,5 +1,6 @@
 #pragma once
 #include "QephBatch.h"
+#include "../../solvers/NodalTrialIdentity.h"
 #include <array>
 #include <type_traits>
 
@@ -24,9 +25,9 @@ static_assert(sizeof(Storage)<=MaxBatchDeviceBytes,"Bounded QEPH batch allocatio
 
 BatchReport BuildModel(const QephBatchConfig&,const QephBatchElement*,Model&,Slab&);
 bool SameDiagnostics(const BatchDiagnostics&,const BatchDiagnostics&) noexcept;
-bool SameStamp(const NodalStamp&,const NodalStamp&) noexcept;
-bool SamePrepared(const NodalPreparedView&,const NodalPreparedView&) noexcept;
-bool ValidKinematics(const DeviceNodalKinematicsView&,std::size_t,std::uint64_t) noexcept;
+using trial_identity::SameStamp;
+using trial_identity::SamePrepared;
+using trial_identity::ValidKinematics;
 BatchDiagnostics InitialDiagnostics(const QephBatchConfig&);
 void LaunchAssembly(Storage*,const Slab*,NodalAssemblyView,bool initial);
 void LaunchCandidate(Storage*,const Slab*,Slab*,NodalPreparedView,BatchDiagnostics);
