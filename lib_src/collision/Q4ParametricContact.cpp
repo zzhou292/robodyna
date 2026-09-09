@@ -1,41 +1,30 @@
 #include "Q4ParametricContact.h"
 
-#include "Q4IntegralMeasure.h"
-#include "Q4RectangularIntegration.h"
+#include "PrescribedSurfaceContact.h"
 
 namespace tlfea::contact {
 namespace {
 using Code=Q4ParametricStatus;
-bool SameParent(const SurfaceQ4& a,const SurfaceQ4& b) {
-  if (a.feature_id != b.feature_id || a.parent_element_id != b.parent_element_id ||
-      a.parent_face_id != b.parent_face_id || a.half_thickness != b.half_thickness) return false;
-  for (unsigned n=0;n<4;++n) if (a.nodes[n] != b.nodes[n]) return false;
-  return true;
-}
 bool ViewMatches(const Q4SurfaceView& view,const Q4ParametricReference& reference) {
   if (!view.positions.valid() || !view.velocities.valid() || !view.parents ||
       view.positions.node_count != reference.node_count() || view.velocities.node_count != reference.node_count() ||
       view.parent_count != reference.parent_count()) return false;
   for (unsigned p=0;p<view.parent_count;++p)
-    if (!SameParent(view.parents[p],reference.parent(p).intrinsic.parent())) return false;
+    if (!q4_detail::SameParent(view.parents[p],reference.parent(p).intrinsic.parent())) return false;
   return true;
 }
-Q4ParametricReport NodeFailure(Q4ParametricReport report) {
-  report.mass_status=report.node.mass_status;
-  switch (report.node.status) {
-    case PrescribedNodeStatus::MassFailure:
-      report.status=Code::MassFailure; report.message="Invalid or unsupported physical nodal mass"; break;
-    case PrescribedNodeStatus::FixedMotion:
-      report.status=Code::FixedMotion; report.message="A fully fixed node moves in the prescribed interval"; break;
-    case PrescribedNodeStatus::PenetrationLimit:
-      report.status=Code::IntegrationFailure; report.message="Prescribed endpoint exceeds the penetration cap";
-      report.integration={Q4IntegrationStatus::PenetrationLimit,Status::kOutOfRange}; break;
-    case PrescribedNodeStatus::NonFiniteArithmetic:
-      report.status=Code::NonFiniteArithmetic; report.message="Unrepresentable prescribed normal gap"; break;
-    default:
-      report.status=Code::InvalidInput; report.message="Malformed prescribed endpoint data"; break;
+Code LegacyStatus(PrescribedSurfaceStatus status) {
+  switch (status) {
+    case PrescribedSurfaceStatus::Ok: return Code::Ok;
+    case PrescribedSurfaceStatus::InvalidInput: return Code::InvalidInput;
+    case PrescribedSurfaceStatus::ReferenceFailure: return Code::ReferenceFailure;
+    case PrescribedSurfaceStatus::GeometryFailure: return Code::GeometryFailure;
+    case PrescribedSurfaceStatus::MassFailure: return Code::MassFailure;
+    case PrescribedSurfaceStatus::FixedMotion: return Code::FixedMotion;
+    case PrescribedSurfaceStatus::IntegrationFailure: return Code::IntegrationFailure;
+    case PrescribedSurfaceStatus::NonFiniteArithmetic: return Code::NonFiniteArithmetic;
   }
-  return report;
+  return Code::InvalidInput;
 }
 } // namespace
 
@@ -82,52 +71,23 @@ Q4ParametricReport IntegrateQ4ParametricContact(
       !IsFinite(config.stiffness_per_area) || config.stiffness_per_area <= 0 ||
       !IsFinite(config.maximum_penetration) || config.maximum_penetration <= 0 ||
       !ViewMatches(base,reference) || !ViewMatches(endpoint,reference)) return report;
-  if (!wall.initialized()) {
-    report.status=Code::GeometryFailure; report.message="Finite wall has not been prepared";
-    report.geometry={PlanarContactStatus::NotInitialized,report.message}; return report;
-  }
-  if (mass.node_count != reference.node_count()) {
-    report.status=Code::MassFailure; report.message="Physical mass extent differs from reference node space"; return report;
-  }
-  Q4ParametricResult next; next.parent_count=reference.parent_count(); next.measure=config.measure;
-  // Complete every parent preflight before touching the caller's integration
-  // scratch. Shared physical nodes are checked consistently, never duplicated
-  // into independent dynamics nodes or merged into invented shape weights.
+  PrescribedSurfaceParent parents[MaxQ4PlanarParents];
   for (std::uint32_t p=0;p<reference.parent_count();++p) {
-    report.parent=p;
-    const auto& parent=reference.parent(p).intrinsic.parent();
-    NormalJacobian center;
-    report.mass_status=BuildQ4NormalXJacobian(mass,parent,0,0,attempt,&center);
-    if (report.mass_status != Status::kOk) {
-      report.status=Code::MassFailure; report.message="Invalid physical Q4 center normal stencil"; return report;
-    }
-    PrescribedParentInterval interval;
-    report.node=CheckPrescribedSurfaceInterval(base.positions,base.velocities,endpoint.positions,endpoint.velocities,
-                                              mass,parent.nodes,4,wall.wall_x(),config.maximum_penetration,&interval);
-    if (report.node.status != PrescribedNodeStatus::Ok) return NodeFailure(report);
-    report.geometry=CheckPlanarWallBox(wall,interval.physical,config.exposed_clearance,parent.feature_id,
-                                      PlanarWallBoxMode::ConservativeExpansion,&next.coverage[p]);
-    if (report.geometry.status != PlanarContactStatus::Ok) {
-      report.status=Code::GeometryFailure; report.message=report.geometry.message;
-      report.geometry.sample=p; return report;
-    }
+    parents[p].family=PrescribedSurfaceFamily::Q4CenterAreaUniformNatural;
+    parents[p].q4={&reference,p,&base.parents[p],&endpoint.parents[p]};
   }
-  for (std::uint32_t p=0;p<reference.parent_count();++p) {
-    report.parent=p; const auto& area=reference.parent(p).area;
-    const Q4PrescribedNormalIntegrationInput input{endpoint,mass,p,attempt,wall.wall_x(),area.value,
-                                                  config.stiffness_per_area,config.maximum_penetration};
-    report.integration=IntegrateQ4NormalContactRectangular(input,config.integration,scratch,&next.parents[p]);
-    if (report.integration.status != Q4IntegrationStatus::Ok) {
-      report.status=Code::IntegrationFailure; report.message="Prescribed parametric Q4 integral failed"; return report;
-    }
-    auto& integral=next.parents[p].integration;
-    if (!ExpandQ4IntegralMeasure(area.value,{area.lower,area.upper},&integral)) {
-      report.status=Code::NonFiniteArithmetic; report.message="Immutable center-area expansion failed"; return report;
-    }
-    if (!WithinQ4IntegralBudgets(integral,config.integration)) {
-      report.status=Code::IntegrationFailure; report.message="Center-area certificate exceeds unchanged integral budgets";
-      report.integration={Q4IntegrationStatus::UnattainableAccuracy,Status::kOutOfRange}; return report;
-    }
+  const PrescribedSurfaceInput input{base.positions,base.velocities,endpoint.positions,endpoint.velocities,
+                                     mass,parents,reference.parent_count()};
+  const PrescribedSurfaceConfig selected{config.stiffness_per_area,config.maximum_penetration,
+                                         config.exposed_clearance,config.integration,{}};
+  PrescribedSurfaceResult result;
+  const auto common=IntegratePrescribedSurfaceContact(wall,input,selected,attempt,scratch,&result);
+  report.status=LegacyStatus(common.status); report.message=common.message; report.parent=common.parent;
+  report.geometry=common.geometry; report.node=common.node; report.mass_status=common.mass_status; report.integration=common.q4;
+  if (report.status!=Code::Ok) return report;
+  Q4ParametricResult next; next.parent_count=result.parent_count; next.measure=config.measure;
+  for (std::uint32_t p=0;p<result.parent_count;++p) {
+    next.coverage[p]=result.parents[p].coverage; next.parents[p]=result.parents[p].q4;
   }
   next.valid=true; *output=next;
   report.status=Code::Ok; report.message="Prescribed uniform-natural center-area Q4 contact accepted";

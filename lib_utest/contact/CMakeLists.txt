@@ -67,6 +67,11 @@ target_link_libraries(utest_q4_parametric_contact PRIVATE tl_q4_parametric_conta
 target_compile_options(utest_q4_parametric_contact PRIVATE -fno-fast-math -ffp-contract=off)
 tl_contact_test(utest_q4_parametric_contact)
 
+add_executable(utest_prescribed_surface_contact "${TL_ROOT}/lib_utest/utest_prescribed_surface_contact.cc")
+target_link_libraries(utest_prescribed_surface_contact PRIVATE tl_q4_parametric_contact)
+target_compile_options(utest_prescribed_surface_contact PRIVATE -fno-fast-math -ffp-contract=off)
+tl_contact_test(utest_prescribed_surface_contact)
+
 include("${TL_ROOT}/lib_src/collision/Q4PlanarGeometry.cmake")
 add_executable(utest_q4_planar_geometry "${TL_ROOT}/lib_utest/utest_q4_planar_geometry.cc")
 target_link_libraries(utest_q4_planar_geometry PRIVATE tl_q4_planar_geometry)

@@ -216,7 +216,7 @@ TEST(Q4SurfaceMass, RejectsUnsupportedMasksInvalidMassAndMissingDynamicPoint) {
   auto bad=f; bad.inverse[f.parent.nodes[2]]=1;
   EXPECT_EQ(sc::BuildQ4NormalXJacobian(bad.mass(),bad.parent,.2,-.4,7,&output),sc::Status::kInvalidArgument); Same(output,before);
   EXPECT_EQ(sc::BuildQ4NormalXJacobian(f.mass(),f.parent,.2,-.4,0,&output),sc::Status::kInvalidArgument); Same(output,before);
-  EXPECT_EQ(sc::BuildQ4NormalXJacobian({},f.parent,.2,-.4,7,&output),sc::Status::kInvalidArgument); Same(output,before);
+  EXPECT_EQ(sc::BuildQ4NormalXJacobian(sc::Q4FixedYZMassView{},f.parent,.2,-.4,7,&output),sc::Status::kInvalidArgument); Same(output,before);
   EXPECT_EQ(sc::BuildQ4NormalXJacobian(f.mass(),{},.2,-.4,7,&output),sc::Status::kInvalidArgument); Same(output,before);
   EXPECT_EQ(sc::BuildQ4NormalXJacobian(f.mass(),f.parent,2,-.4,7,&output),sc::Status::kOutOfRange); Same(output,before);
   EXPECT_EQ(sc::BuildQ4NormalXJacobian(f.mass(),f.parent,.2,-.4,7,nullptr),sc::Status::kInvalidArgument);

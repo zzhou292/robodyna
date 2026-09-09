@@ -8,6 +8,11 @@ using Interval=Q4IntegralInterval;
 using Code=T3IntegrationStatus;
 namespace bounds=q4_bounds;
 
+TL_SURFACE_HD inline bool ValidLimits(const T3IntegrationLimits& limits) {
+  return !(!IsFinite(limits.force_error) || limits.force_error<=0 ||
+           !IsFinite(limits.energy_error) || limits.energy_error<=0);
+}
+
 struct Vertex { double shape[3]{},gap=0; Interval weight[3]{}; };
 struct Piece { Vertex vertex[3]; double fraction=0; Interval area_fraction; };
 struct Partition { Piece piece[2]; unsigned count=0; };
@@ -195,8 +200,7 @@ TL_SURFACE_HD inline T3IntegrationReport IntegrateT3NormalContact(
   if (!output || !input.reference || !input.attempt ||
       !IsFinite(input.wall_x) || !IsFinite(input.stiffness_per_area) || input.stiffness_per_area<=0 ||
       !IsFinite(input.max_penetration) || input.max_penetration<=0 ||
-      !IsFinite(limits.force_error) || limits.force_error<=0 ||
-      !IsFinite(limits.energy_error) || limits.energy_error<=0 ||
+      !ValidLimits(limits) ||
       !input.surface.positions.valid() || !input.surface.velocities.valid() ||
       input.surface.positions.node_count!=input.surface.velocities.node_count ||
       input.surface.positions.node_count!=input.mass.node_count ||

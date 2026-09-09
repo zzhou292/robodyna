@@ -3,6 +3,14 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_test")
 
 package(default_visibility = ["//visibility:public"])
 
+cc_test(
+    name = "utest_prescribed_surface_contact",
+    size = "small",
+    srcs = ["utest_prescribed_surface_contact.cc", "prescribed_surface_contact_fixture.h", "q4_prescribed_contact_fixture.h", "q4_planar_geometry_fixture.h", "q4_contact_integration_fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:q4_parametric_contact", "//lib_src/collision:q4_prescribed_planar_contact", "//lib_src/collision:t3_contact_integration", "@googletest//:gtest_main"],
+)
+
 cuda_test(
     name = "utest_parametric_contact_cuda",
     size = "small",

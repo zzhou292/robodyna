@@ -94,11 +94,24 @@ cc_library(
 )
 
 cc_library(
+    name = "q4_parametric_contact_types",
+    hdrs = ["Q4ParametricContact.h"],
+    deps = [":surface_material_measure", ":prescribed_surface_interval", ":q4_planar_geometry", ":q4_rectangular_integration"],
+)
+
+cc_library(
+    name = "prescribed_surface_contact",
+    srcs = ["PrescribedSurfaceContact.cpp"],
+    hdrs = ["PrescribedSurfaceContact.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":q4_parametric_contact_types", ":t3_contact_integration"],
+)
+
+cc_library(
     name = "q4_parametric_contact",
     srcs = ["Q4ParametricContact.cpp"],
-    hdrs = ["Q4ParametricContact.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
-    deps = [":surface_material_measure", ":prescribed_surface_interval", ":q4_planar_geometry", ":q4_rectangular_integration"],
+    deps = [":q4_parametric_contact_types", ":prescribed_surface_contact"],
 )
 
 cc_library(

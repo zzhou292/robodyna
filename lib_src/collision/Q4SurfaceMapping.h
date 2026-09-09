@@ -79,6 +79,12 @@ TL_SURFACE_HD inline Status EvaluateQ4Shape(double u, double v, double* output) 
 }
 
 namespace q4_detail {
+TL_SURFACE_HD inline bool SameParent(const SurfaceQ4& a,const SurfaceQ4& b) {
+  if (a.feature_id != b.feature_id || a.parent_element_id != b.parent_element_id ||
+      a.parent_face_id != b.parent_face_id || a.half_thickness != b.half_thickness) return false;
+  for (unsigned n=0;n<4;++n) if (a.nodes[n] != b.nodes[n]) return false;
+  return true;
+}
 TL_SURFACE_HD inline Status ValidateParent(const SurfaceQ4& parent, std::uint32_t node_count) {
   if (!node_count || !parent.feature_id || !parent.parent_element_id || !IsFinite(parent.half_thickness))
     return Status::kInvalidArgument;

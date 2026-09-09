@@ -9,6 +9,17 @@ using q4_bounds::Interval;
 using q4_integration::Failure;
 using q4_integration::FromStatus;
 
+// Owning resource/limit predicate, also used by bounded host composition to
+// preflight every selected parent before any contributor touches scratch.
+TL_SURFACE_HD inline bool ValidResources(const Q4IntegrationLimits& limits,Q4RectangularScratch scratch) {
+  return !(!scratch.leaves || !scratch.heap || !limits.max_leaves ||
+      limits.max_leaves>MaxQ4IntegrationLeaves || limits.max_leaves>scratch.leaf_capacity ||
+      limits.max_leaves>scratch.heap_capacity || scratch.leaf_capacity>MaxQ4IntegrationLeaves ||
+      scratch.heap_capacity>MaxQ4IntegrationLeaves || limits.max_depth>MaxQ4IntegrationDepth ||
+      !limits.max_visited || limits.max_visited>MaxQ4IntegrationVisits ||
+      !IsFinite(limits.force_error) || limits.force_error<=0 || !IsFinite(limits.energy_error) || limits.energy_error<=0);
+}
+
 TL_SURFACE_HD inline bool Corners(const Q4RectangularCell& cell,double shape[4][4]) {
   if (cell.u_depth>MaxQ4IntegrationDepth || cell.v_depth>MaxQ4IntegrationDepth ||
       cell.bounds.column>=(1u<<cell.u_depth) || cell.bounds.row>=(1u<<cell.v_depth) ||
@@ -177,12 +188,7 @@ template<class Input>
 TL_SURFACE_HD inline Q4IntegrationReport Integrate(
     const Input& input,const Q4IntegrationLimits& limits,
     Q4RectangularScratch scratch,Q4RectangularResult* output) {
-  if (!output || !scratch.leaves || !scratch.heap || !limits.max_leaves ||
-      limits.max_leaves>MaxQ4IntegrationLeaves || limits.max_leaves>scratch.leaf_capacity ||
-      limits.max_leaves>scratch.heap_capacity || scratch.leaf_capacity>MaxQ4IntegrationLeaves ||
-      scratch.heap_capacity>MaxQ4IntegrationLeaves || limits.max_depth>MaxQ4IntegrationDepth ||
-      !limits.max_visited || limits.max_visited>MaxQ4IntegrationVisits ||
-      !IsFinite(limits.force_error) || limits.force_error<=0 || !IsFinite(limits.energy_error) || limits.energy_error<=0 ||
+  if (!output || !ValidResources(limits,scratch) ||
       !IsFinite(input.wall_x) || !IsFinite(input.projected_area) || input.projected_area<=0 ||
       !IsFinite(input.stiffness_per_area) || input.stiffness_per_area<=0 ||
       !IsFinite(input.max_penetration) || input.max_penetration<=0 || input.mass.node_count!=input.surface.positions.node_count)
