@@ -28,6 +28,12 @@ add_executable(utest_q4_surface_mapping "${TL_ROOT}/lib_utest/utest_q4_surface_m
 target_compile_options(utest_q4_surface_mapping PRIVATE -fno-fast-math -ffp-contract=off)
 tl_contact_test(utest_q4_surface_mapping)
 
+include("${TL_ROOT}/lib_src/collision/PlanarWallGeometry.cmake")
+add_executable(utest_planar_wall_geometry "${TL_ROOT}/lib_utest/utest_planar_wall_geometry.cc")
+target_link_libraries(utest_planar_wall_geometry PRIVATE tl_planar_wall_geometry)
+target_compile_options(utest_planar_wall_geometry PRIVATE -fno-fast-math -ffp-contract=off)
+tl_contact_test(utest_planar_wall_geometry)
+
 add_executable(utest_step_stability "${TL_ROOT}/lib_utest/utest_step_stability.cc")
 target_link_libraries(utest_step_stability PRIVATE Eigen3::Eigen)
 target_compile_options(utest_step_stability PRIVATE -fno-fast-math -ffp-contract=off)

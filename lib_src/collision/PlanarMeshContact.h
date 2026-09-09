@@ -1,5 +1,6 @@
 #pragma once
 
+#include "PlanarContactTypes.h"
 #include "SurfaceContactGeometry.h"
 #include "lib_src/solvers/FENodalState.h"
 #include <cstddef>
@@ -8,23 +9,6 @@
 
 namespace tlfea::contact {
 constexpr std::uint32_t MaxPlanarSurfaceNodes = 25, MaxPlanarSurfaceTriangles = 32;
-constexpr std::uint32_t MaxPlanarWallVertices = 1024, MaxPlanarWallTriangles = 512;
-constexpr std::size_t MaxPlanarContactDeviceBytes = 1024 * 1024;
-
-struct PlanarWallVertex {
-  Vec3 position;
-  std::uint64_t source_node_id = 0, assembled_source_node_id = 0;
-};
-struct PlanarWallTriangle {
-  std::uint32_t nodes[3]{};
-  std::uint64_t triangle_id = 0, source_quad_id = 0, assembled_source_quad_id = 0;
-};
-struct PlanarWallView {
-  const PlanarWallVertex* vertices = nullptr;
-  std::uint32_t vertex_count = 0;
-  const PlanarWallTriangle* triangles = nullptr;
-  std::uint32_t triangle_count = 0;
-};
 struct PlanarSurfaceNode {
   std::uint32_t global_node = 0;
   Vec3 reference_position;
@@ -49,16 +33,6 @@ struct PlanarContactConfig {
   // triangles. Wholly outside patches have no depth constraint. Not CCD.
   double max_penetration_m = 0;
   std::size_t max_device_bytes = MaxPlanarContactDeviceBytes;
-};
-enum class PlanarContactStatus {
-  Ok, InvalidInput, ResourceLimit, UnsupportedGeometry, UnsupportedMotion,
-  AmbiguousBoundary, InvalidOutput, NotInitialized, WrongOwner, StaleAttempt,
-  DeviceFailure
-};
-struct PlanarContactReport {
-  PlanarContactStatus status = PlanarContactStatus::InvalidInput;
-  const char* message = "Invalid request";
-  std::uint32_t sample = UINT32_MAX;
 };
 struct PlanarContactSample {
   std::uint64_t surface_triangle_id = 0, wall_triangle_id = 0;

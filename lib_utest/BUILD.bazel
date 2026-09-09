@@ -4,6 +4,14 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_test")
 package(default_visibility = ["//visibility:public"])
 
 cc_test(
+    name = "utest_planar_wall_geometry",
+    size = "small",
+    srcs = ["utest_planar_wall_geometry.cc"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:planar_wall_geometry", "@googletest//:gtest_main"],
+)
+
+cc_test(
     name = "utest_q4_surface_mapping",
     size = "small",
     srcs = ["utest_q4_surface_mapping.cc"],
