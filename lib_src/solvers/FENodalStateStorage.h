@@ -5,7 +5,7 @@
 
 namespace tl::fea {
 namespace nodal_detail {
-enum class Phase { Idle, Assembling, Sealed, Ready };
+enum class Phase { Idle, Assembling, Sealed, AwaitingValidation, Ready };
 struct Control {
   stability::RowBounds rows;
   NodalAssemblyResult assembly;
@@ -48,6 +48,7 @@ struct FENodalState::Impl {
   NodalStamp stamp;
   NodalAllocationInfo allocation;
   std::uint64_t attempt = 0;
+  std::uint64_t pending_qualification = 0;
   double candidate_time = 0;
   bool usable = true;
   bool has_rotations = false, has_component_constraints = false;

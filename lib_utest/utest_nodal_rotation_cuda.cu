@@ -362,4 +362,53 @@ TEST_F(NodalRotationCuda, ValidatorLaunchFailurePoisonsBeforeCommitPublication) 
   Snapshot out; EXPECT_EQ(state.CopyAccepted(out.buffer(),&out.stamp).status,NS::DeviceFailure);
   EXPECT_EQ(cudaGetLastError(),cudaSuccess); // Commit consumed the launch error.
 }
+
+TEST_F(NodalRotationCuda, RestrictedElasticAdvanceCannotCommitBeforeCandidateReceipt) {
+  Initial in; in.h=.001; in.omega[2]=1;
+  fe::FENodalState state; ASSERT_EQ(in.Initialize(state).status,NS::Ok);
+  fe::NodalTrialToken token; fe::NodalAssemblyView view;
+  for(unsigned attempt=0;attempt<2;++attempt) {
+    ASSERT_EQ(state.BeginTrial(&token,&view).status,NS::Ok); ASSERT_EQ(state.SealAssembly(token).status,NS::Ok);
+    auto admission=Admission(state,view); admission.kind=fe::NodalStepAdmissionKind::RestrictedElasticTrajectory;
+    admission.qualification_id=17; admission.stiffness_rate_envelope=100;
+    ASSERT_EQ(fe::AdvanceNodal(state,token,admission).status,NS::Ok);
+    fe::NodalPreparedView prepared; ASSERT_EQ(state.BorrowPrepared(token,&prepared).status,NS::Ok);
+    EXPECT_EQ(prepared.base_kinematics.base_epoch,0u);
+    EXPECT_NE(prepared.base_kinematics.orientation_wxyz,prepared.kinematics.orientation_wxyz);
+    if(attempt==0) {
+      EXPECT_EQ(state.Commit(token).status,NS::MissingCandidateValidation); EXPECT_EQ(state.accepted().epoch,0u);
+    } else {
+      ASSERT_EQ(fe::CompleteNodalValidation(state,token,{view.owner_id,0,view.attempt,17,true}).status,NS::Ok);
+      ASSERT_EQ(state.Commit(token).status,NS::Ok); EXPECT_EQ(state.accepted().epoch,1u);
+    }
+  }
+}
+
+TEST_F(NodalRotationCuda, RestrictedPolicyRejectsBadEnvelopesAndStaleReceipts) {
+  Initial in; in.h=.001; fe::FENodalState state; ASSERT_EQ(in.Initialize(state).status,NS::Ok);
+  Snapshot before,after; ASSERT_TRUE(Read(state,before));
+  for(unsigned variant=0;variant<9;++variant) {
+    fe::NodalTrialToken token; fe::NodalAssemblyView view;
+    ASSERT_EQ(state.BeginTrial(&token,&view).status,NS::Ok); ASSERT_EQ(state.SealAssembly(token).status,NS::Ok);
+    auto a=Admission(state,view); a.kind=fe::NodalStepAdmissionKind::RestrictedElasticTrajectory;
+    a.qualification_id=17; a.stiffness_rate_envelope=100;
+    if(variant<4) {
+      if(variant==0) a.qualification_id=0;
+      if(variant==1) a.stiffness_rate_envelope=0;
+      if(variant==2) a.stiffness_rate_envelope=std::numeric_limits<double>::quiet_NaN();
+      if(variant==3) a.stiffness_rate_envelope=1e8;
+      EXPECT_NE(fe::AdvanceNodal(state,token,a).status,NS::Ok);
+    } else {
+      ASSERT_EQ(fe::AdvanceNodal(state,token,a).status,NS::Ok);
+      fe::NodalValidationReceipt receipt{view.owner_id,0,view.attempt,17,true};
+      if(variant==4) ++receipt.owner_id;
+      if(variant==5) ++receipt.base_epoch;
+      if(variant==6) ++receipt.attempt;
+      if(variant==7) ++receipt.qualification_id;
+      if(variant==8) receipt.passed=false;
+      EXPECT_NE(fe::CompleteNodalValidation(state,token,receipt).status,NS::Ok);
+    }
+    EXPECT_NE(state.Commit(token).status,NS::Ok); ASSERT_TRUE(Read(state,after)); ExpectSame(before,after);
+  }
+}
 }  // namespace

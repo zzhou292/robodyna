@@ -19,39 +19,11 @@
 
 namespace tl::fea::nodal_detail {
 
-// One shared startup/step/readback unit check. Invalid input is never repaired.
-TL_NODAL_ROTATION_HD inline bool UnitQuaternion(tl::math::Quaternion q) {
-  return tl::math::Finite(q) && ::fabs(tl::math::Dot(q, q) - 1) <= 1e-12;
-}
+using tl::math::UnitQuaternion;
+using tl::math::IncrementWorldRotation;
 
 TL_NODAL_ROTATION_HD inline tl::math::Quaternion ReadQuaternion(const double* q) {
   return {q[0], q[1], q[2], q[3]};
-}
-
-// Chrono ChQuaternion::SetFromRotVec, including its theta^2 <= 1e-30 branch,
-// followed by the equivalent WORLD increment from ChNodeFEAxyzrot.cpp:
-// q_new = dq_world * q_old (Chrono's node increment stores local omega).
-// Input/output are copied values. A candidate already within unit roundoff
-// tolerance is projected back to unit length; invalid input/output is rejected.
-// Increment-angle admission belongs to the step operation.
-TL_NODAL_ROTATION_HD inline bool IncrementWorldRotation(
-    tl::math::Quaternion initial, const double increment[3], tl::math::Quaternion& output) {
-  if (!UnitQuaternion(initial)) return false;
-  const double square = increment[0] * increment[0] + increment[1] * increment[1] + increment[2] * increment[2];
-  if (!tl::math::Finite(square) || square < 0) return false;
-  double scalar = 1, factor = .5;
-  if (square > 1e-30) {
-    const double angle = ::sqrt(square);
-    scalar = ::cos(.5 * angle);
-    factor = ::sin(.5 * angle) / angle;
-  }
-  const tl::math::Quaternion delta{scalar, factor * increment[0], factor * increment[1], factor * increment[2]};
-  const auto candidate = tl::math::Product(delta, initial);
-  if (!UnitQuaternion(candidate)) return false;
-  const auto normalized = tl::math::Scale(candidate, 1 / ::sqrt(tl::math::Dot(candidate, candidate)));
-  if (!UnitQuaternion(normalized)) return false;
-  output = normalized;
-  return true;
 }
 
 }  // namespace tl::fea::nodal_detail

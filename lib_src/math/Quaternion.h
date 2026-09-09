@@ -45,6 +45,7 @@
 // numerical changes. Independent of elements, state ownership and integration.
 #pragma once
 #include <cfloat>
+#include <cmath>
 #if defined(__CUDACC__)
 #define TL_MATH_HD __host__ __device__
 #else
@@ -78,5 +79,44 @@ TL_MATH_HD inline Quaternion Product(Quaternion a, Quaternion b) {
           a.w * b.y + a.y * b.w + a.z * b.x - a.x * b.z,
           a.w * b.z + a.z * b.w - a.y * b.x + a.x * b.y};
 }
+// Adapted from Project Chrono, Copyright (c) 2014 projectchrono.org.
+// BSD-3-Clause terms are reproduced above.
+// Sources: core/ChQuaternion.h SetFromRotVec and fea/ChNodeFEAxyzrot.cpp
+// NodeIntStateIncrement. Source SHA256, respectively:
+// b57b207950dc4d7ddc81c1d952bbcbb7d0db1b318f2919d51f87606acc06a9b7
+// 000f33dcf16ead8df210036d0a345c70b7031e3c23c1423f3e6dc8615575a577
+// Changes: fixed-size shared TL arithmetic, world rather than local spin,
+// explicit finite/unit admission and bounded candidate roundoff projection.
+// One shared startup/step/readback unit check. Invalid input is never repaired.
+TL_MATH_HD inline bool UnitQuaternion(Quaternion q) {
+  return Finite(q) && ::fabs(Dot(q, q) - 1) <= 1e-12;
+}
+
+// Chrono ChQuaternion::SetFromRotVec, including its theta^2 <= 1e-30 branch,
+// followed by the equivalent WORLD increment from ChNodeFEAxyzrot.cpp:
+// q_new = dq_world * q_old (Chrono's node increment stores local omega).
+// Input/output are copied values. A candidate already within unit roundoff
+// tolerance is projected back to unit length; invalid input/output is rejected.
+// Increment-angle admission belongs to the step operation.
+TL_MATH_HD inline bool IncrementWorldRotation(
+    Quaternion initial, const double increment[3], Quaternion& output) {
+  if (!UnitQuaternion(initial)) return false;
+  const double square = increment[0] * increment[0] + increment[1] * increment[1] + increment[2] * increment[2];
+  if (!Finite(square) || square < 0) return false;
+  double scalar = 1, factor = .5;
+  if (square > 1e-30) {
+    const double angle = ::sqrt(square);
+    scalar = ::cos(.5 * angle);
+    factor = ::sin(.5 * angle) / angle;
+  }
+  const Quaternion delta{scalar, factor * increment[0], factor * increment[1], factor * increment[2]};
+  const auto candidate = Product(delta, initial);
+  if (!UnitQuaternion(candidate)) return false;
+  const auto normalized = Scale(candidate, 1 / ::sqrt(Dot(candidate, candidate)));
+  if (!UnitQuaternion(normalized)) return false;
+  output = normalized;
+  return true;
+}
+
 }  // namespace tl::math
 #undef TL_MATH_HD

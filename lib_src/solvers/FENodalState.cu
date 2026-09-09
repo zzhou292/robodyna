@@ -208,7 +208,7 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
 NodalReport FENodalState::BeginTrial(NodalTrialToken* token, NodalAssemblyView* view) {
   if (token) *token = {}; if (view) *view = {};
   if (!impl_) return {NodalStatus::NotInitialized, "Owner is not initialized"};
-  auto& s = *impl_; s.phase = Phase::Idle;
+  auto& s = *impl_; s.phase = Phase::Idle; s.pending_qualification = 0;
   if (!s.usable) return {NodalStatus::DeviceFailure, "CUDA owner is poisoned"};
   if (!token || !view) return {NodalStatus::InvalidInput, "Missing trial output"};
   if (s.attempt == UINT64_MAX || s.stamp.epoch == UINT64_MAX)
@@ -264,12 +264,16 @@ NodalReport FENodalState::BorrowPrepared(const NodalTrialToken& token, NodalPrep
   if (!out) return s.Reject(NodalStatus::InvalidInput, "Missing prepared view output");
   if (!s.Matches(token.owner_id_, token.base_epoch_, token.attempt_))
     return s.Reject(NodalStatus::StaleTrial, "Prepared token belongs to another owner or attempt");
-  if (s.phase != Phase::Ready) return s.Reject(NodalStatus::WrongPhase, "No completed valid advance");
+  if (s.phase != Phase::Ready && s.phase != Phase::AwaitingValidation)
+    return s.Reject(NodalStatus::WrongPhase, "No completed valid advance");
   const auto n = s.config.node_count;
   out->kinematics = {s.trial, s.trial+3*n, s.has_rotations ? s.trial+6*n : s.scratch+8*n, n, s.stamp.epoch,
                      s.has_rotations ? s.trial+9*n : nullptr};
   out->stream = s.stream; out->owner_id = s.stamp.owner_id;
   out->attempt = s.attempt; out->proposed_time = s.candidate_time;
+  out->base_kinematics = {s.accepted, s.accepted+3*n,
+                          s.has_rotations ? s.accepted+6*n : s.scratch+8*n,
+                          n, s.stamp.epoch, s.has_rotations ? s.accepted+9*n : nullptr};
   return Ok();
 }
 
@@ -279,6 +283,8 @@ NodalReport FENodalState::Commit(const NodalTrialToken& token) noexcept {
   if (!s.usable) return {NodalStatus::DeviceFailure, "CUDA owner is poisoned"};
   if (!s.Matches(token.owner_id_, token.base_epoch_, token.attempt_))
     return s.Reject(NodalStatus::StaleTrial, "Trial token belongs to another owner or attempt");
+  if (s.phase == Phase::AwaitingValidation)
+    return s.Reject(NodalStatus::MissingCandidateValidation, "Restricted elastic candidate requires completed validation");
   if (s.phase != Phase::Ready) return s.Reject(NodalStatus::WrongPhase, "No completed valid advance");
   // A prepared-state validator may have queued work after the advance. Detect
   // its CUDA failure before publishing ANY reaction metadata or accepted slab.

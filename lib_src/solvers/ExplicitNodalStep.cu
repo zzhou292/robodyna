@@ -73,8 +73,9 @@ NodalReport AdvanceNodal(FENodalState& owner, const NodalTrialToken& token, cons
   if (s.phase != Phase::Sealed) return s.Reject(NodalStatus::WrongPhase, "Assembly has not been sealed");
   if (!s.has_rotations)
     return s.Reject(NodalStatus::UnsupportedRotation, "AdvanceNodal requires extended nodal initialization");
-  if (admission.kind != NodalStepAdmissionKind::PrescribedConstantLoads)
-    return s.Reject(NodalStatus::MissingStepAdmission, "Only separately declared prescribed constant loads are admitted");
+  const bool elastic = admission.kind == NodalStepAdmissionKind::RestrictedElasticTrajectory;
+  if (admission.kind != NodalStepAdmissionKind::PrescribedConstantLoads && !elastic)
+    return s.Reject(NodalStatus::MissingStepAdmission, "Missing declared nodal step policy");
   if (admission.owner_id != s.stamp.owner_id || admission.base_epoch != s.stamp.epoch || admission.attempt != s.attempt)
     return s.Reject(NodalStatus::StaleTrial, "Step admission belongs to another owner or attempt");
   constexpr double pi = 3.14159265358979323846;
@@ -87,13 +88,45 @@ NodalReport AdvanceNodal(FENodalState& owner, const NodalTrialToken& token, cons
     report.stable_dt = admission.maximum_dt;
     return report;
   }
+  if (elastic) {
+    if (!admission.qualification_id || !std::isfinite(admission.stiffness_rate_envelope) ||
+        admission.stiffness_rate_envelope <= 0)
+      return s.Reject(NodalStatus::MissingStepAdmission, "Restricted elasticity requires a qualified all-DOF envelope");
+    // Conservative experimental sampling margin, not the translation-row proof.
+    const double sampled_limit = .1 / std::sqrt(admission.stiffness_rate_envelope);
+    if (s.config.fixed_dt > sampled_limit) {
+      auto r = s.Reject(NodalStatus::StepTooLarge, "Fixed step exceeds the sampled elastic envelope");
+      r.stable_dt = sampled_limit; return r;
+    }
+  } else if (admission.qualification_id || admission.stiffness_rate_envelope != 0) {
+    return s.Reject(NodalStatus::InvalidInput, "Elastic qualification fields supplied for constant loads");
+  }
   Advance<<<1,1,0,s.stream>>>(s.control, s.accepted, s.trial, s.scratch, s.inverse, s.fixed,
       static_cast<std::uint32_t>(s.config.node_count), s.config.fixed_dt, admission.maximum_rotation_increment,
       s.stamp.epoch, s.attempt);
   auto report = s.Check(cudaGetLastError()); if (report.status != NodalStatus::Ok) return report;
   report = s.SynchronizeControl(); if (report.status != NodalStatus::Ok) return report;
-  s.phase = Phase::Ready;
+  s.pending_qualification = elastic ? admission.qualification_id : 0;
+  s.phase = elastic ? Phase::AwaitingValidation : Phase::Ready;
   return {NodalStatus::Ok, "OK"};
+}
+
+NodalReport CompleteNodalValidation(FENodalState& owner, const NodalTrialToken& token,
+                                    const NodalValidationReceipt& receipt) {
+  if (!owner.impl_) return {NodalStatus::NotInitialized, "Owner is not initialized"};
+  auto& s = *owner.impl_;
+  if (!s.usable) return {NodalStatus::DeviceFailure, "CUDA owner is poisoned"};
+  if (!s.Matches(token.owner_id_, token.base_epoch_, token.attempt_) ||
+      receipt.owner_id != s.stamp.owner_id || receipt.base_epoch != s.stamp.epoch || receipt.attempt != s.attempt)
+    return s.Reject(NodalStatus::StaleTrial, "Candidate receipt belongs to another owner or attempt");
+  if (s.phase != Phase::AwaitingValidation)
+    return s.Reject(NodalStatus::WrongPhase, "No candidate awaiting restricted validation");
+  if (!receipt.passed || !receipt.qualification_id || receipt.qualification_id != s.pending_qualification)
+    return s.Reject(NodalStatus::MissingCandidateValidation, "Missing or mismatched candidate qualification");
+  auto report = s.Check(cudaGetLastError()); if (report.status != NodalStatus::Ok) return report;
+  report = s.Check(cudaStreamSynchronize(s.stream)); if (report.status != NodalStatus::Ok) return report;
+  s.phase = Phase::Ready;
+  return {NodalStatus::Ok, "Candidate validation completed"};
 }
 
 }  // namespace tl::fea

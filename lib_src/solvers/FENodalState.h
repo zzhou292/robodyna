@@ -14,7 +14,7 @@ constexpr std::size_t MaxTranslationDeviceBytes = 1024 * 1024;
 enum class NodalStatus {
   Ok, InvalidInput, ResourceLimit, NotInitialized, WrongPhase, StaleTrial,
   ContributorFailure, InvalidOutput, UnsupportedRotation, StepTooLarge,
-  HistoryLimit, DeviceFailure, MissingStepAdmission
+  HistoryLimit, DeviceFailure, MissingStepAdmission, MissingCandidateValidation
 };
 struct NodalReport {
   NodalStatus status = NodalStatus::InvalidInput;
@@ -94,6 +94,9 @@ struct NodalPreparedView {
   cudaStream_t stream = nullptr;
   std::uint64_t owner_id = 0, attempt = 0;
   double proposed_time = 0;
+  // Accepted base of this interval, borrowed with the same lifetime as the
+  // candidate. Enables work/energy validators without duplicating nodal state.
+  DeviceNodalKinematicsView base_kinematics;
 };
 TL_SURFACE_HD inline void RecordNodalAssemblyFailure(
     const NodalAssemblyView& view, tlfea::contact::Status status,
@@ -108,6 +111,7 @@ TL_SURFACE_HD inline void RecordNodalAssemblyFailure(
 
 class FENodalState;
 struct NodalStepAdmission;
+struct NodalValidationReceipt;
 class NodalTrialToken {
   // Value authorization with no lifetime/storage ownership. Retained tokens
   // cannot authorize work after destruction, even if a new owner occupies the
@@ -115,6 +119,7 @@ class NodalTrialToken {
   friend class FENodalState;
   friend NodalReport AdvanceTranslations(FENodalState&, const NodalTrialToken&);
   friend NodalReport AdvanceNodal(FENodalState&, const NodalTrialToken&, const NodalStepAdmission&);
+  friend NodalReport CompleteNodalValidation(FENodalState&, const NodalTrialToken&, const NodalValidationReceipt&);
   std::uint64_t owner_id_ = 0, base_epoch_ = 0, attempt_ = 0;
 };
 
@@ -171,6 +176,7 @@ class FENodalState {
  private:
   friend NodalReport AdvanceTranslations(FENodalState&, const NodalTrialToken&);
   friend NodalReport AdvanceNodal(FENodalState&, const NodalTrialToken&, const NodalStepAdmission&);
+  friend NodalReport CompleteNodalValidation(FENodalState&, const NodalTrialToken&, const NodalValidationReceipt&);
   NodalReport InitializeImpl(const NodalStateConfig&, HostNodalKinematicsView,
                              const double* inverse_mass, const std::uint8_t* fixed,
                              const NodalDofConfig*);

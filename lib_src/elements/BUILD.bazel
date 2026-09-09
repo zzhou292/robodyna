@@ -34,6 +34,14 @@ cc_library(
 )
 
 cuda_library(
+    name = "reissner_shell_batch",
+    srcs = ["ReissnerShellBatch.cu"],
+    hdrs = ["ReissnerShellBatch.h", "ReissnerShellBatchStorage.h", "ReissnerShellBatchDiagnostics.h"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    deps = [":reissner_shell_assembly", ":reissner_shell_mass", "//lib_src/solvers:explicit_nodal_state"],
+)
+
+cuda_library(
     name = "ANCF3243Data",
     srcs = ["ANCF3243Data.cu"],
     hdrs = [
