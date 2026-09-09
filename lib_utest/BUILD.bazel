@@ -4,6 +4,23 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_test")
 package(default_visibility = ["//visibility:public"])
 
 cc_test(
+    name = "utest_q4_planar_stiffness",
+    size = "small",
+    srcs = ["utest_q4_planar_stiffness.cc", "q4_planar_geometry_fixture.h", "q4_contact_integration_fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:q4_planar_stiffness", "@eigen//:eigen", "@googletest//:gtest_main"],
+)
+
+cuda_test(
+    name = "utest_q4_planar_contact_cuda",
+    size = "small",
+    srcs = ["utest_q4_planar_contact_cuda.cu", "q4_planar_contact_fixture.h", "q4_planar_geometry_fixture.h", "q4_contact_integration_fixture.h"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/collision:q4_planar_contact", "@googletest//:gtest_main"],
+)
+
+cc_test(
     name = "utest_q4_planar_geometry",
     size = "small",
     srcs = ["utest_q4_planar_geometry.cc", "q4_planar_geometry_fixture.h", "q4_contact_integration_fixture.h"],

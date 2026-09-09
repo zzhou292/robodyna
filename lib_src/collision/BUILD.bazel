@@ -66,6 +66,27 @@ cc_library(
     deps = [":planar_wall_geometry", ":q4_contact_integration"],
 )
 
+cc_library(
+    name = "q4_planar_stiffness",
+    hdrs = ["Q4PlanarStiffness.h"],
+    deps = [":q4_planar_geometry"],
+)
+
+cuda_library(
+    name = "q4_planar_contact_device",
+    srcs = ["Q4PlanarContactDevice.cu"],
+    hdrs = ["Q4PlanarContact.h", "Q4PlanarContactStorage.h", "Q4PlanarContactDiagnostics.h"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+    deps = [":q4_planar_stiffness", "//lib_src/solvers:explicit_nodal_state"],
+)
+
+cc_library(
+    name = "q4_planar_contact",
+    srcs = ["Q4PlanarContact.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":q4_planar_contact_device"],
+)
+
 cuda_library(
     name = "hydroelastic_broadphase",
     srcs = ["HydroelasticBroadphase.cu"],

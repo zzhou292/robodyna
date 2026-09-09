@@ -44,6 +44,13 @@ target_link_libraries(utest_q4_planar_geometry PRIVATE tl_q4_planar_geometry)
 target_compile_options(utest_q4_planar_geometry PRIVATE -fno-fast-math -ffp-contract=off)
 tl_contact_test(utest_q4_planar_geometry)
 
+add_executable(utest_q4_planar_stiffness "${TL_ROOT}/lib_utest/utest_q4_planar_stiffness.cc")
+target_link_libraries(utest_q4_planar_stiffness PRIVATE tl_q4_planar_geometry Eigen3::Eigen)
+target_compile_options(utest_q4_planar_stiffness PRIVATE -fno-fast-math -ffp-contract=off)
+tl_contact_test(utest_q4_planar_stiffness)
+set_tests_properties(utest_q4_planar_stiffness PROPERTIES PROCESSORS 1
+  ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1")
+
 add_executable(utest_step_stability "${TL_ROOT}/lib_utest/utest_step_stability.cc")
 target_link_libraries(utest_step_stability PRIVATE Eigen3::Eigen)
 target_compile_options(utest_step_stability PRIVATE -fno-fast-math -ffp-contract=off)
@@ -114,6 +121,13 @@ if(TL_CONTACT_ENABLE_CUDA)
   set_tests_properties(utest_nodal_rotation_cuda PROPERTIES PROCESSORS 1)
 
   add_subdirectory("${TL_ROOT}/lib_src/collision" "tl-planar-mesh-contact")
+  include("${TL_ROOT}/lib_src/collision/Q4PlanarContact.cmake")
+  add_executable(utest_q4_planar_contact_cuda "${TL_ROOT}/lib_utest/utest_q4_planar_contact_cuda.cu")
+  target_link_libraries(utest_q4_planar_contact_cuda PRIVATE tl_q4_planar_contact)
+  target_compile_options(utest_q4_planar_contact_cuda PRIVATE
+    "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false>")
+  tl_contact_test(utest_q4_planar_contact_cuda)
+  set_tests_properties(utest_q4_planar_contact_cuda PROPERTIES PROCESSORS 1)
   add_executable(utest_planar_mesh_contact_cuda "${TL_ROOT}/lib_utest/utest_planar_mesh_contact_cuda.cu")
   target_link_libraries(utest_planar_mesh_contact_cuda PRIVATE tl_planar_mesh_contact)
   target_compile_options(utest_planar_mesh_contact_cuda PRIVATE
