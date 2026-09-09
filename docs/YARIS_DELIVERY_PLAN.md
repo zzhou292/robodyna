@@ -1,6 +1,6 @@
 # Robo-dyna: Yaris delivery plan
 
-Updated 2026-09-09 after the complete prescribed CUDA Q4 force gate. This is the
+Updated 2026-09-09 after the rotational-state and shell-inertia foundation gate. This is the
 active implementation backlog. The workspace
 [architecture and milestones](../../planning/YARIS_RIGID_WALL_DESIGN.md),
 [module contracts](../../planning/MODULAR_ARCHITECTURE.md) and
@@ -13,9 +13,9 @@ is LS-DYNA-like CAE functionality. No external production solver is introduced.
 
 **Current assessment: approximately 10–20% toward the vehicle deliverable.**
 This is an engineering judgment about integrated capabilities, with substantial
-uncertainty. Passing tests are not a completion ratio. Package A now adds a
-complete prescribed elastic Q4 force operation; rotary dynamics and an actual
-deforming trajectory remain the next mechanics gates.
+uncertainty. Passing tests are not a completion ratio. Package A supplies the prescribed elastic Q4 force operation. B1 now supplies
+optional rotational state, component constraints and independently checked shell
+mass/inertia. Coupled elastic dynamics and an actual deforming trajectory are next.
 
 ## Verified starting point
 
@@ -23,11 +23,13 @@ deforming trajectory remain the next mechanics gates.
 | --- | --- |
 | Original vehicle geometry | All 17 canonical arrays hash correctly: 393,165 nodes, 358,457 shells, 15,234 solids, 4,685 beams, 919 parts. The actual importer rejects simulation admission: `geometry-only model`. |
 | Finite mesh wall and accepted output | Both retained 70 ms runs verify all 37 artifacts each. Each contains 140 accepted CUDA steps and 15 Chrono mesh frames, using supplied mass and contact without shell elasticity. |
-| Shell arithmetic | Complete TL prescribed CUDA Q4 forces now pass eight integration tests, including all 24-DOF energy derivatives and two-element shared-node assembly. Ten setup, seven host/CUDA rotation and four assembly tests also pass. These 29 new checks bring the retained total to 305. |
+| Shell arithmetic | Complete TL prescribed CUDA Q4 forces now pass eight integration tests, including all 24-DOF energy derivatives and two-element shared-node assembly. Ten setup, seven host/CUDA rotation and four assembly tests also pass. These 29 checks preceded B1 and brought the retained total to 305 at that checkpoint. |
 | Application integration | The previous seven application CTest groups pass, including GPU nodal output and normal impact. Existing nodal/contact Bazel regressions remain passing; no force-driven shell trajectory or renderer yet. |
-| Dynamics and contact limits | State supports at most 64 translational nodes and rejects angular motion/couples. Contact supports 25 surface nodes/32 triangles, fixed Y/Z, zero offset/friction and a finite fixed footprint. |
+| Rotational foundation (B1) | Fourteen actual CUDA tests pass for isotropic spin/torque, world constraints, reactions and transaction failures; ten host mass/inertia tests pass. One added Chrono output test passes. Retained total: 330 distinct checks; reruns are not added. |
+| Dynamics and contact limits | One state owner supports at most 64 physical nodes, optional quaternions/world angular velocities and declared isotropic inertia. New rotational stepping admits only prescribed constant loads; no coupled shell/contact policy yet. Existing contact remains limited to 25 surface nodes/32 triangles, fixed Y/Z, zero offset/friction and a finite fixed footprint. |
 
-Evidence is indexed in the [Q4 force checkpoint](../../crash-work/reports/q4-force-checkpoint.json).
+Latest evidence is indexed in the [rotational foundation checkpoint](../../crash-work/reports/rotary-foundation-checkpoint.json);
+the [Q4 force checkpoint](../../crash-work/reports/q4-force-checkpoint.json) remains frozen.
 The [preceding live probe](../../crash-work/reports/yaris-progress-audit-1.json)
 records the imported model and saved contact rigs. Chrono remains `ab261d4baa`.
 Historical failed native rigid-motion and unmodified Chrono/CCD experiments
@@ -50,8 +52,8 @@ or collection of per-experiment production scripts.
 
 ## Immediate work packages
 
-Package **A is complete within its prescribed elastic rectangle scope**. B–F
-remain pending; mechanics B, contact C, source-model E and rendering F can
+Package **A and the B1 state/mass foundation are complete within their stated scopes**.
+B2–F remain pending; mechanics B2, contact C, source-model E and rendering F can
 proceed against separate module contracts.
 The first combined artifact depends on their applicable gates, not all Yaris
 semantics. Freeze fixture scales and tolerances before declaring a pass.
@@ -59,7 +61,8 @@ semantics. Freeze fixture scales and tolerances before declaring a pass.
 | Package | Implementation and dependency | Required tests and exit artifact |
 | --- | --- | --- |
 | **A — Complete prescribed CUDA Q4 forces** (M2 subset; **passed**) | TL `ReissnerShellData`, `ReissnerRotation`, `ReissnerShellKinematics`, `ReissnerShellForce` and `ReissnerShellAssembly`, plus the narrow `ReissnerShellSetup` host adapter. Actual Chrono setup and centered isotropic elastic section arithmetic; no new state owner. | All 29 new tests pass. CPU/CUDA strains, dimensionally scaled resultants, world forces/couples and energy; all 24-DOF energy derivatives; common finite rotation and initial-frame offsets; two actual Q4s sharing physical nodes; failed publication and clean retry. No mass, rotary stepping, tangent or source Yaris formulation is qualified by this gate. |
-| **B — Rotational state and elastic dynamics** (M3/M4a subset) | Extend the existing owner with optional quaternion/world angular velocity and force/couple assembly, per-component translational constraints, and declared rotary inertia. Separate stepping operation. Compose a no-contact elastic patch after A. Retain fixed-step velocity-first stepping for this first coupon. | Independent mass/thickness inertia integrals; arbitrary-axis spin/torque, quaternion norm and covariance; constraint reactions; shared-node mass counted once; late failure leaves all accepted state/output intact; nonuniform bending and h/h2/h4 refinement. Exit: accepted deforming patch frames with force, strain and energy histories. |
+| **B1 — Rotational state and shell inertia** (M3 subset; **passed**) | Extended `FENodalState`; separate `ExplicitNodalStep`; shared element-independent quaternion utility; `ReissnerShellMass` with separate physical/numerical inertia. Six startup device allocations in either state mode, one accepted/trial commit. | 14 CUDA nodal, 10 host mass and one added Chrono output checks pass. Arbitrary-axis and noncoaxial spin/torque, exact impulse/discrete work, world-axis constraints and base-time reactions, shared-node accounting, whole-state rejection/retry and validator CUDA failure before commit. **Prescribed constant loads only; no deforming shell trajectory.** |
+| **B2 — No-contact elastic dynamics** (M4a subset) | Compose two actual Q4s/six nodes with A+B1, a clamped short edge and a small modal initial bend. Add a separately qualified coupled admission; keep immutable rest geometry and declared inertia. Detailed [elastic coupon design](ELASTIC_COUPON_DESIGN.md). | All-DOF modal/finite-difference cross-checks, wave/rotary timestep scales, bounded candidate chart/geometry/energy envelope, nonuniform bending, h/h2/h4 and whole-step rollback. Exit: accepted deforming patch frames with force, strain, physical/artificial energy histories and actual rendering. The constant-load declaration cannot be used for shell forces. |
 | **C — Q4 contact against the finite wall** (Contact subset) | Independently qualify prescribed Q4 midsurface contact. Reuse finite wall triangle ownership and normal law; add physical parent IDs, parametric coordinates, Q4 interpolation and quadrature. Initially fixed projected footprint, zero offset and friction. Permit director rotation under that explicit contract. | Point position/velocity, resultant, moment and virtual work; smooth force/potential derivatives; fully active analytic fields; partial activation against independent refined integration; reversed wall diagonals, seams and subdivision; prepared-motion rejection and retry. Exit: force/scatter and partial-contact integration checkpoint. |
 | **D — Guided deforming mesh-wall plate** (**M5a.1**) | Compose A+B+C through public TL operations and accepted Chrono output. Constrain tangential translations for the declared fixed footprint; allow genuine nonuniform normal displacement and director rotation. Use the actual canonical finite wall. | Different contact activation times across the plate, measurable bending, wall reaction/impulse, structural/contact energy ledger, candidate chart/depth validation, h/h2/h4 and wall refinement, rejection after a previously accepted step. Exit: viewable accepted frames and complete diagnostics. This is a restricted intermediate gate; full M5a remains open. |
 | **E — Source-derived part readiness** (parallel M1 subset) | Compile typed sections, MAT024 inputs/curves, units/defaults, attachment closure and a mass/COM/inertia ledger for PID 2000157. Audit all its geometry and required connections before choosing a runnable extraction. | Exact IDs/topology, curve/rate units, unknown-option rejection, independent mass, no dropped triangles or attachments; explicit variant manifest for any cut boundary or elastic override. Exit: source-backed capability report and reproducible extraction, even if simulation remains blocked. |
@@ -158,6 +161,11 @@ initialization; report bytes/entity, total peak owned memory, milliseconds per
 accepted step, candidate counts and host/device transfers. Keep state resident
 between output frames. A larger-model run requires a measured memory forecast
 that fits the workstation reserves; no GPU speedup or calendar claim yet.
+
+The local rendering audit found a working Vulkan runtime but no Vulkan development
+headers or VSG packages. Prepare pinned dependencies in an isolated workspace
+prefix before the bounded R0 viewer build; reuse donor configure options without
+running its destructive install or unbounded build defaults.
 
 All builds and runtime probes use `run_bounded.py` and the shared
 `crash-work/reports/workstation.lock`: at most two CPU affinity slots, one build

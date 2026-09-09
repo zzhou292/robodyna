@@ -16,8 +16,10 @@ rotation, force and assembly checks. TL owns the small reusable operations;
 `chrono/ReissnerShellSetup` copies actual Chrono rest data and its elastic
 section matrix. Enable `ROBO_DYNA_ENABLE_SHELL_FORCE_CHECKS` against the qualified
 coherent Chrono core to build these optional checks. This gate supplies forces
-and energy for prescribed configurations; rotary dynamics, an evolving shell
-trajectory and graphical rendering remain subsequent work.
+and energy for prescribed configurations. The next B1 gate adds 14 CUDA nodal
+rotation/constraint checks, ten host shell mass/inertia checks and one accepted
+Chrono output check. Coupled shell dynamics and graphical rendering remain open;
+the [elastic coupon design](docs/ELASTIC_COUPON_DESIGN.md) defines the next case.
 
 TL-FEA owns CUDA mechanics, shared state and stepping. Robo-dyna owns model/case
 configuration, orchestration and results through Chrono infrastructure. The
@@ -68,19 +70,22 @@ open. The reusable adapter has no qualification-header/library dependency.
 ## Force-driven TL nodal output
 
 `chrono/NodalMeshOutput` binds the real TL `FENodalState` owner to the existing
-Chrono accepted-mesh adapter. Three actual CUDA integration tests pass: additive
+Chrono accepted-mesh adapter. Four actual CUDA integration tests pass: additive
 forces advance resident physical nodes; output cadence publishes only committed
 positions; a late numerical overflow preserves the last visible frame and a
 clean retry can publish; a different live owner cannot replace the bound mesh.
-Positions remain binary64 and source IDs remain integers above 2^53.
+The optional rotational owner uses the same bridge; rejected spin leaves the
+visible accepted frame unchanged. Positions remain binary64 and source IDs
+remain integers above 2^53.
 
 The app links TL's production `tl_explicit_nodal_state` target and Chrono core.
 This path requires no shell-qualification library, Fortran, DEME or second
 dynamics clock. State ownership and fixed-step advancement live in TL; this
 adapter only reads accepted state at the application's output cadence. It
 retains no source pointer between calls, and its host staging is preallocated.
-The current owner admits at most 64 nodes and supplied isotropic translational
-mass. The fixture is a force-driven triangular display mesh; it is not an
+The current owner admits at most 64 physical nodes, supplied isotropic
+translational mass and optional world rotations with declared isotropic inertia.
+Rotational stepping currently admits only prescribed constant loads. The fixture is a force-driven triangular display mesh; it is not an
 elastic shell, mesh contact case, graphical viewer or Yaris crash.
 
 From the workspace root, with the existing core-only Chrono build:

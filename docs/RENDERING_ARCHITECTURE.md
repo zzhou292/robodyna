@@ -148,6 +148,18 @@ affinity alone does not reduce thread creation. Inspect installed dependencies
 first; use the checked-out [VSG build guidance](../../chrono/doxygen/documentation/installation/module_vsg_installation.md)
 and pinned contributor script if a bounded separate VSG build is needed.
 
+The 2026-09-09 local dependency audit found the Vulkan loader/NVIDIA ICD, but
+no Vulkan development headers, `pkg-config vulkan` entry, VSG, vsgXchange or
+vsgImGui installations in the workspace and inspected local prefixes. R0
+therefore starts with dependency preparation in an isolated workspace prefix.
+The actual donor script is
+[`contrib/build-scripts/linux/buildVSG.sh`](../../chrono/contrib/build-scripts/linux/buildVSG.sh).
+Reuse its pinned configure options; do not run it unchanged: its defaults enable
+download/debug builds, delete the install prefix, use unbounded Ninja workers
+and can append to `.bashrc`. Build a bounded Release variant with one worker,
+preserve existing prefixes/settings, and record dependency revisions/licenses.
+The audit did not install anything or qualify an actual Vulkan window.
+
 ## Promotion gates and concrete artifacts
 
 | Gate | Required check | Exit artifact |

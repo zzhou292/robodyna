@@ -2,6 +2,7 @@
 // nodes carry explicit masses; no shell element, contact or Chrono dynamics.
 #include "NodalMeshOutput.h"
 #include "lib_src/solvers/ExplicitTranslationStep.h"
+#include "lib_src/solvers/ExplicitNodalStep.h"
 #include "chrono/geometry/ChTriangleMeshConnected.h"
 #include <gtest/gtest.h>
 #include <array>
@@ -21,6 +22,9 @@ __global__ void FiniteForceCausingAdvanceOverflow(fea::NodalAssemblyView view) {
     view.forces.force_x[0] = .25;  // Earlier candidate nodes move before failure.
     view.forces.force_x[1] = .5;
     view.forces.force_x[2] = 1.7e308;  // Finite force; inverse mass 4 overflows v'.
+}
+__global__ void CoupleCausingRotationLimit(fea::NodalAssemblyView view) {
+    view.forces.couple_z[2]=1e6;
 }
 
 struct Case {
@@ -138,5 +142,44 @@ TEST_F(NodalOutput, AnotherLiveSourceCannotReplaceTheBoundOwnersMesh) {
     EXPECT_GT(second.accepted().epoch,first.accepted().epoch);
     EXPECT_EQ(output.Publish(second).status,visual::Status::WrongOwner);
     CheckMesh(output,0,0);
+}
+
+TEST_F(NodalOutput, ExtendedRotationOwnerReusesAcceptedMeshBridgeAndRejectsFailedSpin) {
+    Case input;
+    std::array<double,12> q{{1,0,0,0, 1,0,0,0, 1,0,0,0}};
+    std::array<double,9> omega{{0,0,.2, 0,0,.2, 0,0,.2}};
+    std::array<double,3> inverse_inertia{{1,1,1}};
+    for(unsigned i=0;i<3;++i) input.v[3*i]=.2;
+    fea::FENodalState owner; fea::NodalStateConfig config; config.node_count=3; config.fixed_dt=.01;
+    ASSERT_EQ(owner.Initialize(config,{input.x.data(),input.v.data(),omega.data(),3,q.data()},input.inverse.data(),
+                              fea::NodalDofConfig{input.fixed.data(),input.fixed.data(),inverse_inertia.data()}).status,
+              fea::NodalStatus::Ok);
+    visual::NodalMeshOutput output;
+    ASSERT_EQ(output.Initialize(owner,Binding(owner)).status,visual::Status::Ok);
+    ASSERT_EQ(output.Publish(owner).status,visual::Status::Ok);
+    for(unsigned attempt=0;attempt<3;++attempt) {
+        fea::NodalTrialToken token; fea::NodalAssemblyView view;
+        ASSERT_EQ(owner.BeginTrial(&token,&view).status,fea::NodalStatus::Ok);
+        if(attempt==1) CoupleCausingRotationLimit<<<1,1,0,view.stream>>>(view);
+        ASSERT_EQ(owner.SealAssembly(token).status,fea::NodalStatus::Ok);
+        const fea::NodalStepAdmission admission{view.owner_id,view.accepted.base_epoch,view.attempt,.01,.1,
+                                               fea::NodalStepAdmissionKind::PrescribedConstantLoads};
+        const auto advance=fea::AdvanceNodal(owner,token,admission);
+        if(attempt==1) {
+            EXPECT_EQ(advance.status,fea::NodalStatus::StepTooLarge);
+            EXPECT_NE(owner.Commit(token).status,fea::NodalStatus::Ok);
+            EXPECT_EQ(output.Publish(owner).status,visual::Status::StaleFrame);
+            CheckMesh(output,.002,1);
+        } else {
+            ASSERT_EQ(advance.status,fea::NodalStatus::Ok);
+            EXPECT_EQ(output.Publish(owner).status,visual::Status::StaleFrame);
+            ASSERT_EQ(owner.Commit(token).status,fea::NodalStatus::Ok);
+            ASSERT_EQ(output.Publish(owner).status,visual::Status::Ok);
+            CheckMesh(output,attempt==0?.002:.004,attempt==0?1:2);
+        }
+    }
+    // Geometry remains sourced from accepted translations. Nodal rotations
+    // are not invented visual deformation or a second dynamics clock.
+    EXPECT_NEAR(output.surface().frame()->time,.02,1e-16);
 }
 }  // namespace
