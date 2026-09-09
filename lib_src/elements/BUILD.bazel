@@ -1,6 +1,12 @@
 load("@rules_cuda//cuda:defs.bzl", "cuda_library")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 
 package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "reissner_frame",
+    hdrs = ["ReissnerFrame.h"],
+)
 
 cuda_library(
     name = "ANCF3243Data",
