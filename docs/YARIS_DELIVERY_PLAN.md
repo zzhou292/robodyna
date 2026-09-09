@@ -13,15 +13,20 @@ The first vehicle deliverable remains the original **2010 Yaris coarse V1l at
 TL-FEA CUDA mechanics and Chrono infrastructure. Robo-dyna's longer-term goal
 is LS-DYNA-like CAE functionality. No external production solver is introduced.
 
-**Current assessment: approximately 10–20% toward the vehicle deliverable.**
+**Current assessment: approximately 25–30% toward the vehicle deliverable.**
 This is an engineering judgment about integrated capabilities, with substantial
-uncertainty. Passing tests are not a completion ratio. Package A supplies the prescribed elastic Q4 force operation. B1 now supplies
-optional rotational state, component constraints and independently checked shell
-mass/inertia. The coupled two-Q4 half-period, h/h2/h4 and accepted output/replay
-checks and actual physical-scale rendering/video now pass. The next integrated
-result is the guided deforming shell striking the finite mesh wall.
+uncertainty. Passing tests are not a completion ratio. The guided elastic plate
+has completed 200 ms with accepted output and inspected video. QEPH force/history,
+resident publication and a short nonzero coupled prefix pass; T3 startup/rates
+pass on CUDA, and the source-part finite-wall contact cost gate passes.
+The vehicle is not running yet. Next are longer QEPH response, complete T3
+force/history and contact binding to the same dynamics owner. Plasticity,
+connections, self-contact, connected capacity and vehicle output remain major
+work. The [current checkpoint](../../planning/EXECUTION_STATUS.md) records
+retained scope and limitations; the following tables preserve the earlier
+foundation and the broader implementation backlog.
 
-## Verified starting point
+## Historical verified starting point
 
 | Capability | Fresh evidence and practical boundary |
 | --- | --- |
@@ -32,7 +37,7 @@ result is the guided deforming shell striking the finite mesh wall.
 | Rotational foundation (B1) | Fourteen actual CUDA tests pass for isotropic spin/torque, world constraints, reactions and transaction failures; ten host mass/inertia tests pass. One added Chrono output test passes. Retained total: 330 distinct checks; reruns are not added. |
 | Dynamics and contact limits | One state owner supports at most 64 physical nodes, optional quaternions/world angular velocities and declared isotropic inertia. Rotational stepping now also admits a separately declared restricted elastic trajectory only after a matching candidate receipt; coupled contact remains unqualified. Existing contact remains limited to 25 surface nodes/32 triangles, fixed Y/Z, zero offset/friction and a finite fixed footprint. |
 
-Latest evidence is indexed in the [rotational foundation checkpoint](../../crash-work/reports/rotary-foundation-checkpoint.json);
+Foundation evidence is indexed in the [rotational foundation checkpoint](../../crash-work/reports/rotary-foundation-checkpoint.json);
 the [Q4 force checkpoint](../../crash-work/reports/q4-force-checkpoint.json) remains frozen.
 The [preceding live probe](../../crash-work/reports/yaris-progress-audit-1.json)
 records the imported model and saved contact rigs. Chrono is now `96af26597b`,
