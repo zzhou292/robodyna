@@ -18,8 +18,10 @@
 // Device / kernel functions for Broadphase
 
 // Kernel to compute AABB for each element
-__global__ void computeAABBKernel(Broadphase* bp, AABB* aabbs, int n_elems) {
-  int elem_idx = blockIdx.x * blockDim.x + threadIdx.x;
+__global__ void computeAABBKernel(Broadphase* bp, AABB* aabbs, int n_elems,
+                                 BroadphaseAABBOptions options,
+                                 int* invalidBounds) {
+  unsigned int elem_idx = blockIdx.x * blockDim.x + threadIdx.x;
   if (elem_idx >= n_elems)
     return;
 
@@ -32,13 +34,16 @@ __global__ void computeAABBKernel(Broadphase* bp, AABB* aabbs, int n_elems) {
                    bp->node_z(first_node_id));
   double3 max_pt = min_pt;
 
-  // Iterate through all nodes of the element
-  for (int i = 1; i < bp->nodesPerElement; i++) {
+  bool valid = true;
+  // Include both motion endpoints. The convex hull of a linear primitive
+  // undergoing linear nodal motion is bounded by these endpoint extrema.
+  for (int i = 0; i < bp->nodesPerElement; i++) {
     int node_id = bp->element_node(elem_idx, i);
 
     double x = bp->node_x(node_id);
     double y = bp->node_y(node_id);
     double z = bp->node_z(node_id);
+    valid = valid && isfinite(x) && isfinite(y) && isfinite(z);
 
     min_pt.x = fmin(min_pt.x, x);
     min_pt.y = fmin(min_pt.y, y);
@@ -47,6 +52,41 @@ __global__ void computeAABBKernel(Broadphase* bp, AABB* aabbs, int n_elems) {
     max_pt.x = fmax(max_pt.x, x);
     max_pt.y = fmax(max_pt.y, y);
     max_pt.z = fmax(max_pt.z, z);
+
+    if (options.d_endNodes) {
+      x = options.d_endNodes[node_id];
+      y = options.d_endNodes[node_id + bp->n_nodes];
+      z = options.d_endNodes[node_id + 2 * bp->n_nodes];
+      valid = valid && isfinite(x) && isfinite(y) && isfinite(z);
+      min_pt.x = fmin(min_pt.x, x);
+      min_pt.y = fmin(min_pt.y, y);
+      min_pt.z = fmin(min_pt.z, z);
+      max_pt.x = fmax(max_pt.x, x);
+      max_pt.y = fmax(max_pt.y, y);
+      max_pt.z = fmax(max_pt.z, z);
+    }
+  }
+
+  double inflation = options.inflation;
+  if (options.d_elementInflation) {
+    const double local = options.d_elementInflation[elem_idx];
+    valid = valid && isfinite(local) && local >= 0.0;
+    inflation = __dadd_ru(inflation, local);
+  }
+  valid = valid && isfinite(inflation);
+  // Directed rounding keeps the requested thickness conservative at large
+  // coordinate scales too; default zero inflation leaves node extrema intact.
+  min_pt.x = __dsub_rd(min_pt.x, inflation);
+  min_pt.y = __dsub_rd(min_pt.y, inflation);
+  min_pt.z = __dsub_rd(min_pt.z, inflation);
+  max_pt.x = __dadd_ru(max_pt.x, inflation);
+  max_pt.y = __dadd_ru(max_pt.y, inflation);
+  max_pt.z = __dadd_ru(max_pt.z, inflation);
+  valid = valid && isfinite(min_pt.x) && isfinite(min_pt.y) &&
+          isfinite(min_pt.z) && isfinite(max_pt.x) && isfinite(max_pt.y) &&
+          isfinite(max_pt.z);
+  if (!valid) {
+    atomicExch(invalidBounds, 1);
   }
 
   // Store AABB
@@ -59,7 +99,7 @@ __global__ void countSameMeshPairsKernel(const CollisionPair* pairs,
                                          int numPairs,
                                          const int* elementMeshIds,
                                          int* outCount) {
-  int idx = blockIdx.x * blockDim.x + threadIdx.x;
+  unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
   if (idx >= numPairs) {
     return;
   }
@@ -78,7 +118,7 @@ __global__ void countSameMeshPairsKernel(const CollisionPair* pairs,
 // Kernel to extract sort keys from AABBs
 __global__ void extractSortKeysKernel(const AABB* aabbs, double* keys,
                                       int* indices, int axis, int n) {
-  int idx = blockIdx.x * blockDim.x + threadIdx.x;
+  unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
   if (idx < n) {
     // Extract min value for the specified axis
     if (axis == 0) {
@@ -95,7 +135,7 @@ __global__ void extractSortKeysKernel(const AABB* aabbs, double* keys,
 // Kernel to reorder AABBs based on sorted indices
 __global__ void reorderAABBsKernel(const AABB* input, AABB* output,
                                    const int* indices, int n) {
-  int idx = blockIdx.x * blockDim.x + threadIdx.x;
+  unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
   if (idx < n) {
     output[idx] = input[indices[idx]];
   }
@@ -120,7 +160,7 @@ __device__ bool isNeighborPair(int idA, int idB,
   // Binary search
   int left = 0, right = numHashes - 1;
   while (left <= right) {
-    int mid = (left + right) / 2;
+    int mid = left + (right - left) / 2;
     if (neighborHashes[mid] == hash)
       return true;
     if (neighborHashes[mid] < hash)
@@ -131,23 +171,28 @@ __device__ bool isNeighborPair(int idA, int idB,
   return false;
 }
 
+__device__ double broadphaseAxisValue(const double3& p, int axis) {
+  return axis == 0 ? p.x : (axis == 1 ? p.y : p.z);
+}
+
 // Kernel to count potential collisions per element (with neighbor filtering)
 __global__ void countCollisionsKernel(const AABB* sortedAABBs,
-                                      int* collisionCounts, int n,
+                                      unsigned long long* collisionCounts, int n,
                                       const long long* neighborHashes,
                                       int numHashes, const int* elementMeshIds,
-                                      int enableSelfCollision) {
-  int i = blockIdx.x * blockDim.x + threadIdx.x;
+                                      int enableSelfCollision, int axis) {
+  unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
   if (i >= n)
     return;
 
   const AABB& Ai = sortedAABBs[i];
-  int count      = 0;
+  unsigned long long count = 0;
 
   for (int j = i + 1; j < n; ++j) {
     const AABB& Aj = sortedAABBs[j];
 
-    if (Aj.min.x > Ai.max.x)
+    if (broadphaseAxisValue(Aj.min, axis) >
+        broadphaseAxisValue(Ai.max, axis))
       break;
 
     bool overlapX = (Ai.min.x <= Aj.max.x && Aj.min.x <= Ai.max.x);
@@ -175,20 +220,21 @@ __global__ void countCollisionsKernel(const AABB* sortedAABBs,
 
 // Kernel to generate collision pairs (with neighbor filtering)
 __global__ void generateCollisionPairsKernel(
-    const AABB* sortedAABBs, const int* collisionOffsets,
+    const AABB* sortedAABBs, const unsigned long long* collisionOffsets,
     CollisionPair* collisionPairs, int n, const long long* neighborHashes,
-    int numHashes, const int* elementMeshIds, int enableSelfCollision) {
-  int i = blockIdx.x * blockDim.x + threadIdx.x;
+    int numHashes, const int* elementMeshIds, int enableSelfCollision, int axis) {
+  unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
   if (i >= n)
     return;
 
   const AABB& Ai = sortedAABBs[i];
-  int writeIdx   = collisionOffsets[i];
+  unsigned long long writeIdx = collisionOffsets[i];
 
   for (int j = i + 1; j < n; ++j) {
     const AABB& Aj = sortedAABBs[j];
 
-    if (Aj.min.x > Ai.max.x)
+    if (broadphaseAxisValue(Aj.min, axis) >
+        broadphaseAxisValue(Ai.max, axis))
       break;
 
     bool overlapX = (Ai.min.x <= Aj.max.x && Aj.min.x <= Ai.max.x);

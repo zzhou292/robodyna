@@ -46,7 +46,7 @@ All solvers operate within an augmented Lagrangian outer loop for constraint han
 | Dependency | Notes |
 |---|---|
 | CUDA Toolkit | Tested on CUDA 12.x |
-| Bazel 9 | Build system |
+| Bazel 9.2.0 | Pinned in `.bazelversion`; matching module lockfile |
 | Eigen 3.4 | Fetched automatically via Bzlmod |
 | cuDSS | Required for Newton solver; must be available in the system CUDA library path |
 | cuBLAS | Ships with CUDA Toolkit |
@@ -60,6 +60,12 @@ cd Total-Lagrangian-FEA
 ```
 
 ### Compile and run a demo
+
+For the resource-limited CUDA surface-contact development fixtures, see
+[the focused test instructions](lib_utest/contact/README.md). They include a
+two-CPU workstation guard and an offline CMake harness; CUDA 13.2 / `sm_120`
+has been exercised for these fixtures. This does not establish compatibility
+of every legacy solver or DEME target with that toolkit.
 
 ```bash
 # Build all targets (default CUDA archs: sm_75, sm_86)

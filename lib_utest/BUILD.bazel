@@ -1,6 +1,61 @@
 load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
 
 package(default_visibility = ["//visibility:public"])
+
+cc_test(
+    name = "utest_surface_geometry",
+    size = "small",
+    srcs = ["utest_surface_geometry.cc"],
+    deps = [
+        "//lib_src/collision:surface_contact_primitives",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "utest_surface_contact",
+    size = "small",
+    srcs = ["utest_surface_contact.cc"],
+    deps = [
+        "//lib_src/collision:surface_contact_primitives",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cuda_test(
+    name = "utest_cuda_runtime",
+    size = "small",
+    srcs = ["utest_cuda_runtime.cu"],
+    copts = ["--std=c++17"],
+    tags = ["exclusive", "gpu"],
+    deps = ["@googletest//:gtest_main"],
+)
+
+cuda_test(
+    name = "utest_surface_contact_cuda",
+    size = "small",
+    srcs = ["utest_surface_contact_cuda.cu"],
+    copts = ["--std=c++17"],
+    tags = ["exclusive", "gpu"],
+    deps = [
+        "//lib_src/collision:surface_contact_primitives",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cuda_test(
+    name = "utest_surface_broadphase",
+    size = "small",
+    srcs = ["utest_surface_broadphase.cu"],
+    copts = ["--std=c++17"],
+    tags = ["exclusive", "gpu"],
+    deps = [
+        "//lib_src/collision:hydroelastic_broadphase",
+        "@eigen//:eigen",
+        "@googletest//:gtest_main",
+    ],
+)
 
 cc_test(
     name = "utest_3243",

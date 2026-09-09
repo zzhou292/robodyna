@@ -13,15 +13,14 @@
 #pragma once
 
 #include <cuda_runtime.h>
-#include <cusparse.h>
 
 #include <Eigen/Dense>
+#include <cstddef>
 #include <iostream>
+#include <limits>
 #include <unordered_set>
 #include <vector>
 
-#include "../../lib_utils/cuda_utils.h"
-#include "../../lib_utils/quadrature_utils.h"
 #include "HydroelasticCollisionTypes.cuh"
 
 namespace ANCFCPUUtils {
@@ -34,6 +33,23 @@ struct AABB {
   double3 min;
   double3 max;
   int objectId;
+};
+
+// Opt-in bounds for linear surface primitives. All device buffers are borrowed,
+// in the same element/node order as Initialize(), and must remain alive until
+// the default CUDA stream finishes CreateAABB(). Inflation is a nonnegative
+// radius (e.g. shell half-thickness), not a full shell thickness.
+struct BroadphaseAABBOptions {
+  double inflation = 0.0;
+  const double* d_elementInflation = nullptr;  // added to uniform inflation
+  const double* d_endNodes = nullptr;  // optional 3*n_nodes, column-major
+};
+
+struct BroadphaseDetectionLimits {
+  unsigned long long maxPairs = std::numeric_limits<int>::max();
+  // Counts, offsets, CUB scan scratch and retained pair storage only. Mesh,
+  // neighbor map and sorting storage are not included in this budget.
+  size_t maxWorkspaceBytes = std::numeric_limits<size_t>::max();
 };
 
 // Hash function for pair (for CPU unordered_set)
@@ -110,6 +126,11 @@ struct Broadphase {
   AABB* d_sortedAABBs;   // Sorted AABBs
   void* d_tempStorage;   // Temporary storage for CUB
   size_t tempStorageBytes;
+  int sortedAxis;
+  bool aabbsReady;
+  bool sortedAABBsReady;
+  BroadphaseAABBOptions aabbOptions;
+  int* d_invalidBounds;
 
   // Collision detection data
   CollisionPair* d_collisionPairs;  // Device collision pairs
@@ -122,13 +143,15 @@ struct Broadphase {
 
   // Reused temporary buffers for collision pair generation (avoid per-step
   // malloc/free)
-  int* d_collisionCounts;
-  int* d_collisionOffsets;
-  int collisionCountCapacity;  // capacity in elements (not including the +1
-                               // slot)
+  // Widen the scan before checking the legacy int-sized output contract.
+  // n*(n-1)/2 fits in this type for every supported int-sized mesh.
+  unsigned long long* d_collisionCounts;
+  unsigned long long* d_collisionOffsets;
+  int collisionCountCapacity;  // includes the scan sentinel slot
   void* d_scanTempStorage;
   size_t scanTempStorageBytes;
   int collisionPairsCapacity;
+  BroadphaseDetectionLimits detectionLimits;
 
   bool verbose;
 
@@ -165,8 +188,20 @@ struct Broadphase {
   // Destroy/cleanup GPU resources
   void Destroy();
 
-  // Create/update AABBs from mesh data
+  // Create/update AABBs from mesh data. Defaults retain instantaneous node
+  // extrema. Optional endpoint union bounds straight-line nodal motion of
+  // linear primitives, NOT a curved ANCF interpolation/trajectory. Operations
+  // use the default CUDA stream; callers must order external-buffer writes.
+  // Nonfinite coordinates/inflation fail explicitly rather than losing pairs.
   void CreateAABB(bool copyToHost = false);
+
+  void SetAABBOptions(const BroadphaseAABBOptions& options);
+
+  // Limits cause std::length_error, never truncation. Observed CUDA API errors
+  // throw std::runtime_error. A thrown detection leaves numCollisions == 0 and
+  // an empty host result; raise the limit and retry the same sorted bounds.
+  void SetDetectionLimits(const BroadphaseDetectionLimits& limits);
+  size_t GetDetectionWorkspaceBytes() const;
 
   // Bind an externally-managed device node buffer (column-major, length
   // 3*n_nodes) to avoid per-step host->device copies. Caller owns the buffer
@@ -186,13 +221,17 @@ struct Broadphase {
   // Build neighbor connectivity map
   void BuildNeighborMap();
 
-  // Detect collisions using sweep and prune (with neighbor filtering)
+  // Detect collisions using sweep and prune (with neighbor filtering).
+  // With copyPairsToHost=false, the count is validated but pair fill remains
+  // enqueued on the default stream. The caller must order downstream reads
+  // and check completion for asynchronous execution failures. No global CUDA
+  // synchronization is added to this resident-data path.
   void DetectCollisions(bool copyPairsToHost = false);
 
   int CountSameMeshPairsDevice() const;
 
   const CollisionPair* GetCollisionPairsDevicePtr() const {
-    return d_collisionPairs;
+    return numCollisions == 0 ? nullptr : d_collisionPairs;
   }
 
   // Print collision pairs

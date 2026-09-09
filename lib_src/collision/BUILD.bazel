@@ -13,6 +13,15 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 
 package(default_visibility = ["//visibility:public"])
 
+cc_library(
+    name = "surface_contact_primitives",
+    hdrs = [
+        "SurfaceContactGeometry.h",
+        "SurfaceContactLaw.h",
+        "SurfaceContactTypes.h",
+    ],
+)
+
 cuda_library(
     name = "hydroelastic_broadphase",
     srcs = ["HydroelasticBroadphase.cu"],
