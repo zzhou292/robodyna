@@ -17,10 +17,11 @@ is LS-DYNA-like CAE functionality. No external production solver is introduced.
 This is an engineering judgment about integrated capabilities, with substantial
 uncertainty. Passing tests are not a completion ratio. The guided elastic plate
 has completed 200 ms with accepted output and inspected video. QEPH force/history,
-resident publication and a short nonzero coupled prefix pass; T3 startup/rates
-pass on CUDA, and the source-part finite-wall contact cost gate passes.
-The vehicle is not running yet. Next are longer QEPH response, complete T3
-force/history and contact binding to the same dynamics owner. Plasticity,
+resident publication, a short nonzero coupled prefix and the native full-recurrence
+screen pass. Complete prescribed T3 force/history passes on CUDA. The source-part
+wall-contact cost gate and stateless contact contributor on the existing owner
+also pass. The vehicle is not running yet. Next are sustained QEPH response,
+resident/mixed Q4-T3 publication and combined shell/contact admission. Plasticity,
 connections, self-contact, connected capacity and vehicle output remain major
 work. The [current checkpoint](../../planning/EXECUTION_STATUS.md) records
 retained scope and limitations; the following tables preserve the earlier
