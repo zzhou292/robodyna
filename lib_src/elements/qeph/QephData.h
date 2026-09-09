@@ -11,7 +11,7 @@ using Vec3 = tl::math::Vec3;
 using Matrix3 = tl::math::Matrix3;
 
 enum class Status {
-  kSuccess, kInvalidInput, kUnsupportedGeometry, kNonfiniteResult,
+  kSuccess, kInvalidInput, kUnsupportedGeometry, kNonfiniteResult, kInvalidReference,
 };
 
 // One cyclic native Q4, centered single isotropic section, SI units.

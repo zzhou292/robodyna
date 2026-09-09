@@ -1,0 +1,211 @@
+{
+  "schema": "tl.qeph-startup-port.v1",
+  "donor_revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "one-cell IREP0 QEPH startup host/device parity only; no force, history, batch or dynamics",
+  "native_reference_checkpoint": "qeph-q2-qualified-reference-1",
+  "native_reference_tl_commit": "560b0ca",
+  "native_source_manifest_sha256": "46d2759036e16558500c91a9d14dd225f203aa5d2abec81bb951ac1b956030be",
+  "donor_routines": [
+    {
+      "path": "lib_utest/qualification/native/qeph/original/starter/source/elements/shell/coqueba/cneveci.F",
+      "sha256": "3ef878d85af903ee6feab44274730e2f087c0fe6772d0f42074e1f31d363902d",
+      "git_blob_sha1": "a25c03ff8e2caa17a7eb6d49fa2002ca4845b993",
+      "ranges": [
+        {
+          "routine": "CNEVECI",
+          "first_line": 33,
+          "last_line": 94
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/starter/source/elements/shell/coque/clskew.F",
+      "sha256": "bcc967ccdf7853a684fce394c2705c3e83c0ef6718e75ee35955060b313d4944",
+      "git_blob_sha1": "816fe246ca805203da9f45851a5f67cff95a8713",
+      "ranges": [
+        {
+          "routine": "CLSKEW3",
+          "first_line": 32,
+          "last_line": 109
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/starter/source/elements/shell/coque/cderii.F",
+      "sha256": "a89895b580ffcc5ac109295b23d76aaa76b959eef8ef924efd8f8f0e2e09620a",
+      "git_blob_sha1": "fd8098eb61e7ecf968769807af18dbc6e903a62e",
+      "ranges": [
+        {
+          "routine": "CDERII",
+          "first_line": 31,
+          "last_line": 96
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/starter/source/elements/shell/coque/cinmas.F",
+      "sha256": "06a32031e4e0c9cdac68605a60d9fe4ef427d1548eac52499f6bef9d9912fe5e",
+      "git_blob_sha1": "faaf1c988e0be143bbe572e4d05da42298bc262f",
+      "ranges": [
+        {
+          "first_line": 851,
+          "last_line": 874
+        },
+        {
+          "first_line": 925,
+          "last_line": 932
+        },
+        {
+          "first_line": 1381,
+          "last_line": 1412
+        }
+      ]
+    }
+  ],
+  "ported_files": [
+    {
+      "path": "lib_src/elements/qeph/QephData.h",
+      "bytes": 1580,
+      "sha256": "176ac3da21455ad3be1f5d371b4f8b0898d53aa91735cd55bb23e34a239c2dff"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephStartupFrame.h",
+      "bytes": 4208,
+      "sha256": "794cee31915a4bdc4a1a33f6cd6e52df3af96346c043a06708549dfd394d437a"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephStartup.h",
+      "bytes": 3914,
+      "sha256": "04b3d00f8b4ef8347d563aa07712d077ad35ca27307d928a041d99eb1ddea7bf"
+    },
+    {
+      "path": "lib_src/elements/qeph/LICENSE.md",
+      "bytes": 34283,
+      "sha256": "ad858d53cae05eed9531ecd4c467440803acffe34c69de7b88e03affc5b6a1bd"
+    }
+  ],
+  "shared_and_native_dependencies": [
+    {
+      "path": "lib_src/math/Fixed3.h",
+      "bytes": 2924,
+      "sha256": "ab85903048860e3640e700a9b3a98d7cb792898f1f60621e74554145d200d7fb"
+    },
+    {
+      "path": "lib_src/math/Quaternion.h",
+      "bytes": 6145,
+      "sha256": "de1e9fc2150c7ee8b1d92a75b954b0343ea524d00e4f3da5ee540bf3c2bb81f1"
+    },
+    {
+      "path": "lib_src/elements/ReissnerFrame.h",
+      "bytes": 10621,
+      "sha256": "764090dab48e12b3deb732251867c51616ec2f90a222f2a53b79b315a74c0180"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/NativeQephStartup.F",
+      "bytes": 2343,
+      "sha256": "554528ff1eae15807a354db4cf01f168e69b88b70b20e91d2547c11e12fb908a"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/QephReference.cpp",
+      "bytes": 5207,
+      "sha256": "d09678dc65879a54cb6db1d0372c3446f2e653cf6fb41676133614dbdd67325f"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/QephReferenceTypes.h",
+      "bytes": 3337,
+      "sha256": "18f4587fc2dea12269c77893365226c74868b181cafbf324661873a44dd718bc"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/QephGeometry.cpp",
+      "bytes": 2293,
+      "sha256": "9e7152b1be1b381139246398c4b2e59a2755f6bcad1289e5ce1a47b7fd34df45"
+    }
+  ],
+  "tests": [
+    {
+      "path": "lib_utest/qualification/qeph/QephStartupFixture.h",
+      "bytes": 7419,
+      "sha256": "9bc4ebcdc1321d131d4091009f0fce2ee7a11d1c79fd0135db9e02edb5467a65"
+    },
+    {
+      "path": "lib_utest/qualification/qeph/QephStartupTest.cpp",
+      "bytes": 7146,
+      "sha256": "ab7ae02724d297cce78d62c2b080237f623ae0b668ce50b5043ecc9eec22a485"
+    },
+    {
+      "path": "lib_utest/qualification/qeph/QephStartupCudaTest.cu",
+      "bytes": 4690,
+      "sha256": "de3511aa77d8dc9ce196e524edb8d62d31aab69932ee42510908ea7c2b6bc4f4"
+    }
+  ],
+  "transformations": [
+    "One-cell scalar specialization of complete selected startup CNEVECI/CLSKEW3 IREP0/CDERII arithmetic; other IREP branches are unsupported, not approximated.",
+    "Unused X21 startup dead stores omitted; array loops reduce to one cell and raw fixed-size POD records.",
+    "Selected centered uniform CINMAS mass and native total-inertia expression retained; physical and area-added partitions remain separate diagnostics.",
+    "Binary64 sqrt, division and left-associated operations preserved; no rsqrt, fast math or fused multiply-add enabled for qualification.",
+    "Added finite/material/convexity/determinant-boundary checks and staged output; this is explicitly narrower than general native input acceptance.",
+    "Generic Vec3/Matrix3 records extracted with compatibility aliases; no Reissner chart or frame arithmetic moved."
+  ],
+  "domain": {
+    "poisson_ratio": "0<=nu<.5",
+    "positive_inputs": [
+      "rho_kg_m3",
+      "young_Pa",
+      "thickness_m"
+    ],
+    "determinant_floor_m2": 1e-20,
+    "determinant_exclusion_relative_epsilon": 64,
+    "normalized_corner_turn_floor_epsilon": 128,
+    "proper_frame_absolute": 1e-10,
+    "mass_and_each_inertia": "strictly positive finite binary64"
+  },
+  "predeclared_tolerances": {
+    "error_formula": "abs(actual-reference)<=2e-12*(dimension+abs(reference))",
+    "frame_dimension": 1,
+    "coordinate_and_derivative_dimension": "max original node0-relative vertex distance L",
+    "area_dimension": "L^2",
+    "mass_inertia_dimension": "that independent nonzero reference partition; never total inertia for physical partition"
+  },
+  "test_domain": {
+    "host_functions": 5,
+    "cuda_functions": 2,
+    "parity_cases_per_function": 72,
+    "representative_edges_m": [
+      0.01,
+      0.02
+    ],
+    "source_scale_thickness_m": 0.001648,
+    "source_scale_density_kg_m3": 7890,
+    "source_scale_young_Pa": 200000000000.0,
+    "source_scale_poisson": 0.3,
+    "source_geometry_authenticated": false,
+    "cuda_threads": 1,
+    "cuda_allocation_cap_bytes": 4096,
+    "threshold_adjacent_half_side_m": 2.5e-11,
+    "safe_threshold_multiplier": "1+512*DBL_EPSILON",
+    "independent_skew_configurations": 24,
+    "skew_vertices_xy": [
+      [
+        0,
+        0
+      ],
+      [
+        2,
+        0
+      ],
+      [
+        2.5,
+        1
+      ],
+      [
+        0.5,
+        1
+      ]
+    ],
+    "skew_scales_m": [
+      1,
+      0.005,
+      0.01
+    ]
+  }
+}

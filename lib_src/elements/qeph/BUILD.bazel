@@ -6,3 +6,13 @@ cc_library(
     hdrs = ["QephData.h", "QephStartupFrame.h", "QephStartup.h"],
     deps = ["//lib_src/math:fixed3", "//lib_src/math:quaternion"],
 )
+
+cc_library(
+    name = "kinematics",
+    hdrs = [
+        "QephKinematicsData.h", "QephGeometryWork.h", "QephCurrentFrame.h",
+        "QephVelocityCorrection.h", "QephProjectionInverse.h", "QephProjection.h",
+        "QephRates.h", "QephKinematics.h",
+    ],
+    deps = [":startup"],
+)
