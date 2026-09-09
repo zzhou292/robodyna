@@ -1,9 +1,14 @@
 # B2: first force-driven elastic shell coupon
 
-Proposal, 2026-09-09. **This coupled case has not been implemented or run.**
-The prescribed Q4 force checkpoint and **B1 mass/optional nodal-rotation
-foundation are qualified within their stated scopes**. This document specifies the next small
-executable case, with an explicit numerical envelope. It does not claim a
+Implemented and verified, 2026-09-09. **B2 passes the half-period h/h2/h4 study,
+accepted result/replay tests and actual Chrono rendering/video.** The final
+[accepted bundle](../../crash-work/runs/elastic-coupon-b2-20260909/manifest.json)
+contains 81 frames through 0.1878596958391254 s; the
+[video manifest](../../crash-work/renders/elastic-coupon-video-r1-20260909/manifest.json)
+records encoded and decoded evidence. TL mechanics are retained in `4728ced`;
+the coherent 19-group application regression set passes in
+`elastic-coupon-freeze-tests-1.json`. The numerical envelope below remains the
+declared scope. It does not claim a
 global nonlinear stability theorem, general shell dynamics or Yaris readiness.
 
 ## Deliver one observable bending trajectory
@@ -101,7 +106,8 @@ mass-scaled force Jacobian; do not erase its skew part and call the result a
 proved tangent. Record the largest sampled rate and recheck at saved diagnostic
 frames. The initial step proposal is the minimum of:
 
-- `0.1 / sqrt(maximum sampled mass-scaled stiffness norm)`;
+- `0.1 / sqrt(2 * maximum sampled mass-scaled stiffness norm)`, using the
+  same doubled envelope enforced by the restricted runtime admission;
 - `0.1 * shortest reference edge / c_membrane`, with
   `c_membrane=sqrt(E/(rho*(1-nu^2)))`;
 - `0.1 * t / sqrt(12*G/rho)`, with `G=E/(2*(1+nu))`, as an independent

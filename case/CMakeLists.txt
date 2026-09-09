@@ -1,4 +1,5 @@
 find_package(GTest REQUIRED)
+if(CRASH_ENABLE_NORMAL_IMPACT OR CRASH_ENABLE_CANONICAL_WALL_CHECK)
 set(CRASH_CANONICAL_WALL "" CACHE FILEPATH "Prepared canonical Yaris wall manifest")
 if(NOT EXISTS "${CRASH_CANONICAL_WALL}")
   message(FATAL_ERROR "CRASH_CANONICAL_WALL must name the prepared manifest; no fetch or skipped gate")
@@ -13,6 +14,8 @@ target_link_libraries(crash_canonical_wall_check PRIVATE crash_canonical_wall Ch
 add_test(NAME canonical_wall_reader COMMAND crash_canonical_wall_check "${CRASH_CANONICAL_WALL}")
 set_tests_properties(canonical_wall_reader PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE PROCESSORS 1)
 
+endif()
+
 if(CRASH_ENABLE_NORMAL_IMPACT)
   add_subdirectory("${CRASH_TL_FEA_SOURCE_DIR}/lib_src/collision" "tl-planar-mesh-contact")
   add_library(crash_normal_impact_case STATIC NormalImpactCase.cpp)
@@ -23,13 +26,16 @@ if(CRASH_ENABLE_NORMAL_IMPACT)
   add_test(NAME normal_impact_integration COMMAND crash_normal_impact_check "${CRASH_CANONICAL_WALL}")
   set_tests_properties(normal_impact_integration PROPERTIES TIMEOUT 60 RUN_SERIAL TRUE PROCESSORS 1
     ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1")
-  find_package(OpenSSL REQUIRED COMPONENTS Crypto)
   add_library(crash_normal_impact_artifacts STATIC NormalImpactArtifacts.cpp)
-  target_link_libraries(crash_normal_impact_artifacts PUBLIC crash_normal_impact_case PRIVATE OpenSSL::Crypto)
+  target_link_libraries(crash_normal_impact_artifacts PUBLIC crash_normal_impact_case PRIVATE robo_dyna_artifact_io)
   add_executable(robo-dyna normal_impact_main.cpp)
   target_link_libraries(robo-dyna PRIVATE crash_normal_impact_artifacts)
   add_executable(crash_normal_impact_artifacts_check normal_impact_artifacts_check.cpp)
   target_link_libraries(crash_normal_impact_artifacts_check PRIVATE crash_normal_impact_artifacts GTest::gtest)
   add_test(NAME normal_impact_artifacts COMMAND crash_normal_impact_artifacts_check "${CRASH_CANONICAL_WALL}")
   set_tests_properties(normal_impact_artifacts PROPERTIES TIMEOUT 60 RUN_SERIAL TRUE PROCESSORS 1)
+endif()
+
+if(ROBO_DYNA_ENABLE_ELASTIC_COUPON)
+  include(ElasticCoupon.cmake)
 endif()

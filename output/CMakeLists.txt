@@ -1,0 +1,28 @@
+find_package(OpenSSL REQUIRED COMPONENTS Crypto)
+add_library(robo_dyna_artifact_io STATIC ArtifactIO.cpp MeshArchive.cpp)
+target_link_libraries(robo_dyna_artifact_io PUBLIC Chrono::Chrono_core PRIVATE OpenSSL::Crypto)
+target_include_directories(robo_dyna_artifact_io PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
+target_compile_features(robo_dyna_artifact_io PUBLIC cxx_std_17)
+
+add_library(robo_dyna_accepted_replay STATIC AcceptedReplay.cpp AcceptedReplayIndex.cpp AcceptedReplayMesh.cpp)
+target_link_libraries(robo_dyna_accepted_replay PUBLIC robo_dyna_artifact_io)
+if(ROBO_DYNA_ENABLE_REPLAY_CHECKS OR ROBO_DYNA_ENABLE_ELASTIC_COUPON)
+  find_package(GTest REQUIRED)
+  add_executable(robo_dyna_accepted_replay_check accepted_replay_check.cpp)
+  target_link_libraries(robo_dyna_accepted_replay_check PRIVATE robo_dyna_accepted_replay GTest::gtest_main)
+  add_test(NAME accepted_replay COMMAND robo_dyna_accepted_replay_check
+    --gtest_filter=-AcceptedReplay.ExplicitRetainedBundlePassesTheSameValidation)
+  set_tests_properties(accepted_replay PROPERTIES TIMEOUT 60 RUN_SERIAL TRUE PROCESSORS 1)
+  foreach(kind NORMAL COUPON)
+    set(ROBO_DYNA_REPLAY_FIXTURE_${kind} "" CACHE PATH "Optional retained ${kind} accepted-result bundle")
+    if(ROBO_DYNA_REPLAY_FIXTURE_${kind})
+      if(NOT EXISTS "${ROBO_DYNA_REPLAY_FIXTURE_${kind}}/manifest.json")
+        message(FATAL_ERROR "Declared ${kind} replay fixture must have a completed manifest")
+      endif()
+      add_test(NAME accepted_replay_${kind} COMMAND robo_dyna_accepted_replay_check
+        --gtest_filter=AcceptedReplay.ExplicitRetainedBundlePassesTheSameValidation)
+      set_tests_properties(accepted_replay_${kind} PROPERTIES TIMEOUT 60 RUN_SERIAL TRUE PROCESSORS 1
+        ENVIRONMENT "ROBO_DYNA_REPLAY_FIXTURE=${ROBO_DYNA_REPLAY_FIXTURE_${kind}}")
+    endif()
+  endforeach()
+endif()

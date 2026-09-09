@@ -1,0 +1,37 @@
+include("${CRASH_TL_FEA_SOURCE_DIR}/lib_src/elements/ReissnerShellBatch.cmake")
+
+add_library(robo_dyna_elastic_coupon_case STATIC ElasticCouponCase.cpp ElasticCouponAdmission.cpp)
+target_link_libraries(robo_dyna_elastic_coupon_case PUBLIC
+  robo_dyna_elastic_coupon_reference tl_reissner_shell_batch crash_nodal_mesh_output)
+target_include_directories(robo_dyna_elastic_coupon_case PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
+target_compile_options(robo_dyna_elastic_coupon_case PRIVATE -fno-fast-math -ffp-contract=off)
+
+add_library(robo_dyna_elastic_coupon_artifacts STATIC ElasticCouponArtifacts.cpp ElasticCouponFields.cpp)
+target_link_libraries(robo_dyna_elastic_coupon_artifacts PUBLIC robo_dyna_elastic_coupon_case PRIVATE robo_dyna_artifact_io)
+add_executable(robo-dyna-coupon elastic_coupon_main.cpp)
+target_link_libraries(robo-dyna-coupon PRIVATE robo_dyna_elastic_coupon_artifacts)
+
+add_executable(robo_dyna_elastic_coupon_artifacts_check elastic_coupon_artifacts_check.cpp)
+target_link_libraries(robo_dyna_elastic_coupon_artifacts_check PRIVATE
+  robo_dyna_elastic_coupon_artifacts robo_dyna_artifact_io GTest::gtest_main)
+add_test(NAME elastic_coupon_artifacts COMMAND robo_dyna_elastic_coupon_artifacts_check)
+set_tests_properties(elastic_coupon_artifacts PROPERTIES TIMEOUT 60 RUN_SERIAL TRUE PROCESSORS 1
+  ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1")
+
+add_executable(robo_dyna_reissner_shell_batch_check ../chrono/reissner_shell_batch_check.cu)
+target_link_libraries(robo_dyna_reissner_shell_batch_check PRIVATE
+  robo_dyna_elastic_coupon_reference tl_reissner_shell_batch GTest::gtest_main)
+target_compile_definitions(robo_dyna_reissner_shell_batch_check PRIVATE EIGEN_NO_CUDA)
+set_target_properties(robo_dyna_reissner_shell_batch_check PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+target_compile_options(robo_dyna_reissner_shell_batch_check PRIVATE
+  "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false>")
+add_test(NAME reissner_shell_batch COMMAND robo_dyna_reissner_shell_batch_check)
+set_tests_properties(reissner_shell_batch PROPERTIES TIMEOUT 60 RUN_SERIAL TRUE PROCESSORS 1
+  ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1")
+
+add_executable(robo_dyna_elastic_coupon_check elastic_coupon_check.cpp)
+target_link_libraries(robo_dyna_elastic_coupon_check PRIVATE robo_dyna_elastic_coupon_case GTest::gtest_main)
+target_compile_options(robo_dyna_elastic_coupon_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME elastic_coupon_smoke COMMAND robo_dyna_elastic_coupon_check)
+set_tests_properties(elastic_coupon_smoke PROPERTIES TIMEOUT 60 RUN_SERIAL TRUE PROCESSORS 1
+  ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1")

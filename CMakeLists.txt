@@ -18,22 +18,50 @@ option(CRASH_ENABLE_REISSNER_FRAME_CHECK "Build focused tests of the owning Chro
 option(CRASH_ENABLE_CHRONO_REISSNER_CONSISTENT_CHECK "Build all-direction force tests requiring the opt-in consistent-frame Chrono reference core" OFF)
 option(CRASH_ENABLE_TL_REISSNER_FRAME_CHECK "Build CUDA frame operation checks against the owning Chrono reference" OFF)
 option(ROBO_DYNA_ENABLE_SHELL_FORCE_CHECKS "Build complete prescribed CUDA Q4 force, setup and rotation checks" OFF)
-if(CRASH_ENABLE_CHRONO_CHECK OR CRASH_ENABLE_CHRONO_SNAPSHOT_CHECK OR CRASH_ENABLE_TL_CHRONO_CHECK OR CRASH_ENABLE_CHRONO_REISSNER_CHECK OR CRASH_ENABLE_TL_NODAL_CHECK OR CRASH_ENABLE_NORMAL_IMPACT OR CRASH_ENABLE_CANONICAL_WALL_CHECK OR CRASH_ENABLE_REISSNER_FRAME_CHECK OR CRASH_ENABLE_CHRONO_REISSNER_CONSISTENT_CHECK OR CRASH_ENABLE_TL_REISSNER_FRAME_CHECK OR ROBO_DYNA_ENABLE_SHELL_FORCE_CHECKS)
+option(ROBO_DYNA_ENABLE_ELASTIC_COUPON "Build the bounded force-driven elastic CUDA coupon" OFF)
+option(ROBO_DYNA_ENABLE_COUPON_PROFILE "Build the bounded elastic coupon profiling executable" OFF)
+option(ROBO_DYNA_ENABLE_Q4_CONTACT_MAPPING_CHECKS "Build Q4 midsurface mapping checks against actual Chrono FEA interpolation" OFF)
+option(ROBO_DYNA_ENABLE_REPLAY "Build the optional accepted-result Chrono VSG viewer" OFF)
+option(ROBO_DYNA_ENABLE_REPLAY_CHECKS "Build the bounded accepted-result reader tests without CUDA/VSG" OFF)
+option(ROBO_DYNA_ENABLE_REPLAY_SCENE_CHECKS "Build the accepted replay scene tests without CUDA/VSG" OFF)
+if(CRASH_ENABLE_CHRONO_CHECK OR CRASH_ENABLE_CHRONO_SNAPSHOT_CHECK OR CRASH_ENABLE_TL_CHRONO_CHECK OR CRASH_ENABLE_CHRONO_REISSNER_CHECK OR CRASH_ENABLE_TL_NODAL_CHECK OR CRASH_ENABLE_NORMAL_IMPACT OR CRASH_ENABLE_CANONICAL_WALL_CHECK OR CRASH_ENABLE_REISSNER_FRAME_CHECK OR CRASH_ENABLE_CHRONO_REISSNER_CONSISTENT_CHECK OR CRASH_ENABLE_TL_REISSNER_FRAME_CHECK OR ROBO_DYNA_ENABLE_SHELL_FORCE_CHECKS OR ROBO_DYNA_ENABLE_ELASTIC_COUPON OR ROBO_DYNA_ENABLE_Q4_CONTACT_MAPPING_CHECKS)
   enable_language(CXX)
   find_package(Chrono REQUIRED CONFIG)
-  if(CRASH_ENABLE_NORMAL_IMPACT)
+  if(CRASH_ENABLE_NORMAL_IMPACT OR ROBO_DYNA_ENABLE_ELASTIC_COUPON)
     enable_language(CUDA)
   endif()
   add_subdirectory(chrono)
 endif()
-if(CRASH_ENABLE_NORMAL_IMPACT OR CRASH_ENABLE_CANONICAL_WALL_CHECK)
+if(ROBO_DYNA_ENABLE_REPLAY OR ROBO_DYNA_ENABLE_REPLAY_CHECKS OR ROBO_DYNA_ENABLE_REPLAY_SCENE_CHECKS)
+  enable_language(CXX)
+  if(ROBO_DYNA_ENABLE_REPLAY)
+    find_package(Chrono REQUIRED CONFIG COMPONENTS VSG)
+  else()
+    find_package(Chrono REQUIRED CONFIG)
+  endif()
+endif()
+if(CRASH_ENABLE_NORMAL_IMPACT OR ROBO_DYNA_ENABLE_ELASTIC_COUPON OR ROBO_DYNA_ENABLE_REPLAY OR ROBO_DYNA_ENABLE_REPLAY_CHECKS)
+  add_subdirectory(output)
+endif()
+if(CRASH_ENABLE_NORMAL_IMPACT OR CRASH_ENABLE_CANONICAL_WALL_CHECK OR ROBO_DYNA_ENABLE_ELASTIC_COUPON)
   add_subdirectory(case)
+endif()
+if(ROBO_DYNA_ENABLE_REPLAY OR ROBO_DYNA_ENABLE_REPLAY_SCENE_CHECKS)
+  add_subdirectory(viewer)
+endif()
+if(ROBO_DYNA_ENABLE_COUPON_PROFILE)
+  add_subdirectory(benchmarks)
 endif()
 
 add_test(NAME vehicle_geometry_unit
   COMMAND "${Python3_EXECUTABLE}" -B -m unittest discover
           -s "${CMAKE_CURRENT_SOURCE_DIR}/tests" -p "test_vehicle_geometry.py" -v)
 set_tests_properties(vehicle_geometry_unit PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE)
+
+add_test(NAME source_part_declarations_unit
+  COMMAND "${Python3_EXECUTABLE}" -B -m unittest discover
+          -s "${CMAKE_CURRENT_SOURCE_DIR}/tests" -p "test_source_part_declarations.py" -v)
+set_tests_properties(source_part_declarations_unit PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE)
 
 # Full-model data stays outside git. Supplying its prepared path registers an
 # explicit integration gate; missing assets fail rather than produce a skip.

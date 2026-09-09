@@ -1,74 +1,33 @@
 #include "NormalImpactArtifacts.h"
+#include "output/ArtifactIO.h"
+#include "output/MeshArchive.h"
 #include "chrono/geometry/ChTriangleMeshConnected.h"
-#include "chrono/serialization/ChArchiveJSON.h"
-#include "chrono_thirdparty/rapidjson/document.h"
-#include "chrono_thirdparty/rapidjson/ostreamwrapper.h"
-#include "chrono_thirdparty/rapidjson/prettywriter.h"
-#include <openssl/evp.h>
 #include <algorithm>
-#include <array>
 #include <cmath>
-#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <limits>
 #include <memory>
 #include <sstream>
-#include <stdexcept>
 #include <vector>
 
 namespace crash::case_data {
+using output::Bits;
+using output::Boolean;
+using output::Document;
+using output::Integer;
+using output::Number;
+using output::ReadBounded;
+using output::Require;
+using output::Sha256;
+using output::String;
+using output::Value;
+using output::WriteBytes;
+using output::WriteJson;
 namespace {
 namespace fs=std::filesystem;
 constexpr const char* ManifestPin="12500bf1512f1c06c9228cd319bf28d6087f62a40f294222f2fe38030b7d03c4";
-using Document=rapidjson::Document;
-using Value=rapidjson::Value;
-void Require(bool condition,const char* message) { if(!condition)throw std::runtime_error(message); }
-std::string ReadBounded(const fs::path& path,std::size_t cap) {
-    std::ifstream input(path,std::ios::binary);Require(bool(input),"Required artifact/input could not be opened");
-    std::string result;char chunk[4096];
-    while(input) {
-        input.read(chunk,sizeof(chunk));const auto count=input.gcount();
-        Require(count>=0&&static_cast<std::size_t>(count)<=cap-result.size(),"Artifact/input exceeds byte cap");
-        result.append(chunk,static_cast<std::size_t>(count));
-    }
-    Require(input.eof()&&!input.bad(),"Artifact/input read failed");return result;
-}
-std::string Sha256(const std::string& bytes) {
-    std::array<unsigned char,EVP_MAX_MD_SIZE> digest{};unsigned size=0;
-    std::unique_ptr<EVP_MD_CTX,decltype(&EVP_MD_CTX_free)> context(EVP_MD_CTX_new(),EVP_MD_CTX_free);
-    Require(bool(context)&&EVP_DigestInit_ex(context.get(),EVP_sha256(),nullptr)==1&&
-        EVP_DigestUpdate(context.get(),bytes.data(),bytes.size())==1&&EVP_DigestFinal_ex(context.get(),digest.data(),&size)==1&&size==32,
-        "OpenSSL SHA256 failed");
-    std::ostringstream text;text<<std::hex<<std::setfill('0');
-    for(unsigned i=0;i<size;++i)text<<std::setw(2)<<unsigned(digest[i]);return text.str();
-}
-void String(Document& doc,const char* name,const std::string& value) {
-    Value key(name,doc.GetAllocator()),text(value.c_str(),static_cast<rapidjson::SizeType>(value.size()),doc.GetAllocator());
-    doc.AddMember(key,text,doc.GetAllocator());
-}
-void Number(Document& doc,const char* name,double value) {
-    Require(std::isfinite(value),"Nonfinite artifact metric");Value key(name,doc.GetAllocator());doc.AddMember(key,value,doc.GetAllocator());
-}
-void Integer(Document& doc,const char* name,std::uint64_t value) {
-    Value key(name,doc.GetAllocator()),number;number.SetUint64(value);doc.AddMember(key,number,doc.GetAllocator());
-}
-void Boolean(Document& doc,const char* name,bool value) {
-    Value key(name,doc.GetAllocator());doc.AddMember(key,value,doc.GetAllocator());
-}
-void WriteJson(const fs::path& path,const Document& doc) {
-    Require(!fs::exists(path),"Refusing to overwrite an artifact");
-    std::ofstream output(path,std::ios::binary);Require(bool(output),"Could not create JSON artifact");
-    rapidjson::OStreamWrapper stream(output);rapidjson::PrettyWriter<rapidjson::OStreamWrapper> writer(stream);
-    Require(doc.Accept(writer),"JSON artifact serialization failed");output<<'\n';output.flush();Require(bool(output),"JSON artifact write failed");
-    output.close();Require(!output.fail(),"JSON artifact close failed");
-}
-void WriteBytes(const fs::path& path,const std::string& bytes) {
-    Require(!fs::exists(path),"Refusing to overwrite an artifact");std::ofstream output(path,std::ios::binary);
-    Require(bool(output),"Could not create input copy");output.write(bytes.data(),static_cast<std::streamsize>(bytes.size()));
-    output.flush();Require(bool(output),"Input copy write failed");output.close();Require(!output.fail(),"Input copy close failed");
-}
 Document Metrics(const ImpactMetrics& m) {
     Document doc;doc.SetObject();Integer(doc,"owner_id",m.stamp.owner_id);Integer(doc,"accepted_epoch",m.stamp.epoch);
     Integer(doc,"node_count",m.stamp.node_count);Number(doc,"accepted_time_s",m.stamp.time);Number(doc,"fixed_dt_s",m.stamp.fixed_dt);
@@ -76,7 +35,6 @@ Document Metrics(const ImpactMetrics& m) {
     Number(doc,"kinetic_energy_J",m.kinetic_energy);Number(doc,"elastic_energy_J",m.elastic_energy);Number(doc,"wall_impulse_Ns",m.wall_impulse);
     Number(doc,"contact_work_J",m.contact_work);Number(doc,"peak_penetration_m",m.peak_penetration);return doc;
 }
-std::uint64_t Bits(double value){std::uint64_t result;std::memcpy(&result,&value,sizeof(result));return result;}
 void CheckCanonicalBinding(const CanonicalWall& wall,const std::string& bytes) {
     // Authenticate the actual supplied geometry, not just an unrelated byte
     // string. Reuse the same bounded loader; this is startup-only work.
@@ -129,41 +87,7 @@ struct NormalImpactArtifacts::Impl {
         const auto bytes=ReadBounded(directory/name,32*1024*1024);artifacts.push_back({name,Sha256(bytes),bytes.size()});
     }
     void Mesh(const std::string& stem,const chrono::ChTriangleMeshConnected& source) {
-        const auto json=directory/(stem+".mesh.json"),obj=directory/(stem+".obj");
-        Require(!fs::exists(json)&&!fs::exists(obj),"Refusing to overwrite a mesh artifact");
-        {
-            std::ofstream output(json,std::ios::binary);Require(bool(output),"Could not create mesh archive");
-            {
-                // Existing Chrono full-precision output uses shortest-roundtrip
-                // std::to_chars(double); it preserves the source binary64 values.
-                chrono::ChTriangleMeshConnected mesh=source;chrono::ChArchiveOutJSON archive(output,true);
-                archive<<chrono::make_ChNameValue("mesh",mesh);
-            }
-            output.flush();Require(bool(output),"Mesh archive write failed");output.close();Require(!output.fail(),"Mesh archive close failed");
-        }
-        chrono::ChTriangleMeshConnected restored;
-        {
-            std::ifstream input(json,std::ios::binary);Require(bool(input),"Could not reopen mesh archive");
-            chrono::ChArchiveInJSON archive(input,true);archive>>chrono::make_ChNameValue("mesh",restored);
-        }
-        Require(restored.GetNumVertices()==source.GetNumVertices()&&restored.GetNumTriangles()==source.GetNumTriangles(),"Mesh archive count roundtrip failed");
-        const auto& original_vertices=source.GetCoordsVertices();const auto& restored_vertices=restored.GetCoordsVertices();
-        for(std::size_t i=0;i<original_vertices.size();++i)for(int axis=0;axis<3;++axis)
-            Require(Bits(original_vertices[i][axis])==Bits(restored_vertices[i][axis]),"Mesh archive lost binary64 coordinate bits");
-        const auto& original_faces=source.GetIndicesVertices();const auto& restored_faces=restored.GetIndicesVertices();
-        for(std::size_t i=0;i<original_faces.size();++i)for(int axis=0;axis<3;++axis)
-            Require(original_faces[i][axis]==restored_faces[i][axis],"Mesh archive changed topology");
-        Require(chrono::ChTriangleMeshConnected::WriteWavefront(obj.string(),std::vector<chrono::ChTriangleMeshConnected>{source}),"Chrono OBJ write failed");
-        // Its bool return only checks file opening in this checkout. Reload to
-        // reject truncated output; OBJ is deliberately marked visualization precision.
-        auto visual=chrono::ChTriangleMeshConnected::CreateFromWavefrontFile(obj.string(),false,false);
-        Require(bool(visual)&&visual->GetNumVertices()==source.GetNumVertices()&&visual->GetNumTriangles()==source.GetNumTriangles(),"OBJ output count validation failed");
-        for(std::size_t i=0;i<original_vertices.size();++i)for(int axis=0;axis<3;++axis) {
-            const double actual=visual->GetCoordsVertices()[i][axis],expected=original_vertices[i][axis];
-            Require(std::isfinite(actual)&&std::fabs(actual-expected)<=8e-6*std::max(1.,std::fabs(expected)),"OBJ visualization coordinate validation failed");
-        }
-        for(std::size_t i=0;i<original_faces.size();++i)for(int axis=0;axis<3;++axis)
-            Require(visual->GetIndicesVertices()[i][axis]==original_faces[i][axis],"OBJ output topology validation failed");
+        output::WriteMeshFiles(directory,stem,source);
         Inventory(stem+".mesh.json");Inventory(stem+".obj");
     }
 };

@@ -1,0 +1,274 @@
+{
+  "schema": "robo-dyna.vsg-dependency-lock.v1",
+  "audited_date": "2026-09-09",
+  "source_root": "crash-work/dependencies/vsg-r0",
+  "configured": false,
+  "built": false,
+  "gpu_executed": false,
+  "system_packages_installed": false,
+  "sources": [
+    {
+      "name": "glslang",
+      "repository": "https://github.com/KhronosGroup/glslang",
+      "tag": "16.1.0",
+      "commit": "b5782e52ee2f7b3e40bb9c80d15b47016e008bc9",
+      "metadata_url": "https://github.com/KhronosGroup/glslang.git",
+      "metadata_sha256": "b6b45bba3f2d60b947b3032251393f89f78b5eecb12ddaa8e070ce36e4f248a7",
+      "archive_url": "https://codeload.github.com/KhronosGroup/glslang/tar.gz/b5782e52ee2f7b3e40bb9c80d15b47016e008bc9",
+      "archive_path": "glslang/glslang-b5782e52ee2f7b3e40bb9c80d15b47016e008bc9.tar.gz",
+      "archive_sha256": "6c242598c332050bf3a3619d299594ca2909426935f2c86c69c7356b049347c7",
+      "archive_bytes": 4252039,
+      "expanded_bytes": 43408643,
+      "source_path": "glslang/source/glslang-b5782e52ee2f7b3e40bb9c80d15b47016e008bc9",
+      "licenses": [
+        {
+          "path": "glslang/source/glslang-b5782e52ee2f7b3e40bb9c80d15b47016e008bc9/LICENSE.txt",
+          "sha256": "17e70c676e1521ff3e4686f04a2053d93a7e28a33be8de7ec37ab0ff72feb677"
+        },
+        {
+          "path": "glslang/source/glslang-b5782e52ee2f7b3e40bb9c80d15b47016e008bc9/license-checker.cfg",
+          "sha256": "9bc9f672f477b34b7d1023a416616c00432c1e42db07f4a7143210144a87ef83"
+        }
+      ],
+      "built": false,
+      "configured": false
+    },
+    {
+      "name": "vsg",
+      "repository": "https://github.com/vsg-dev/VulkanSceneGraph",
+      "tag": "v1.1.15",
+      "commit": "599a8c5c61cbb993079261b2ada99bd843badf5b",
+      "metadata_url": "https://api.github.com/repos/vsg-dev/VulkanSceneGraph/commits/v1.1.15",
+      "metadata_sha256": "0fe981a74961af0c309c423c28299e91d44d74120485d31750066f1d937190ed",
+      "archive_url": "https://codeload.github.com/vsg-dev/VulkanSceneGraph/tar.gz/599a8c5c61cbb993079261b2ada99bd843badf5b",
+      "archive_path": "vsg/vsg-599a8c5c61cbb993079261b2ada99bd843badf5b.tar.gz",
+      "archive_sha256": "a11acb93c519db2cb8f45c6790e36862cbdd8a1d7dbc3cadac685358771b936c",
+      "archive_bytes": 1477515,
+      "expanded_bytes": 10218031,
+      "source_path": "vsg/source/VulkanSceneGraph-599a8c5c61cbb993079261b2ada99bd843badf5b",
+      "licenses": [
+        {
+          "path": "vsg/source/VulkanSceneGraph-599a8c5c61cbb993079261b2ada99bd843badf5b/LICENSE.Vulkan-Headers.md",
+          "sha256": "b6e7e5158a59b2027b1cf1842f1a1c2081625299580669b8246ab24e6feebe42"
+        },
+        {
+          "path": "vsg/source/VulkanSceneGraph-599a8c5c61cbb993079261b2ada99bd843badf5b/LICENSE.md",
+          "sha256": "c85a1319986eb8d791c00972e55162b42ec4251ed489c13a1955d5b81fb29061"
+        }
+      ],
+      "built": false,
+      "configured": false
+    },
+    {
+      "name": "vsgXchange",
+      "repository": "https://github.com/vsg-dev/vsgXchange",
+      "tag": "v1.1.12",
+      "commit": "63d27da61a7b0d82dcfe71a13bb1b17f03b9d125",
+      "metadata_url": "https://api.github.com/repos/vsg-dev/vsgXchange/commits/v1.1.12",
+      "metadata_sha256": "630ea9ae93a083d87db8ea2809ae8998d847a3c54b30d76ac1fae1c0d26be1df",
+      "archive_url": "https://codeload.github.com/vsg-dev/vsgXchange/tar.gz/63d27da61a7b0d82dcfe71a13bb1b17f03b9d125",
+      "archive_path": "vsgXchange/vsgXchange-63d27da61a7b0d82dcfe71a13bb1b17f03b9d125.tar.gz",
+      "archive_sha256": "373953523779bda4064df0b4d9c03fa9bcbb6bf5206c34fac28d38f58cac378d",
+      "archive_bytes": 206337,
+      "expanded_bytes": 1048212,
+      "source_path": "vsgXchange/source/vsgXchange-63d27da61a7b0d82dcfe71a13bb1b17f03b9d125",
+      "licenses": [
+        {
+          "path": "vsgXchange/source/vsgXchange-63d27da61a7b0d82dcfe71a13bb1b17f03b9d125/LICENSE.md",
+          "sha256": "2c69ec8d553dad77631dfb74cbfaf765d0c4e0a67ca635b1b4c09b30fff5a802"
+        }
+      ],
+      "built": false,
+      "configured": false
+    },
+    {
+      "name": "vsgImGui",
+      "repository": "https://github.com/vsg-dev/vsgImGui",
+      "tag": "v0.7.0",
+      "commit": "37ef59ffa78482ee50b96c17b03bf3e0fbf0f973",
+      "metadata_url": "https://github.com/vsg-dev/vsgImGui.git",
+      "metadata_sha256": "bfcd065c8c369f23ed351490d90398462b719a7304fda2a41407e76178bf96ac",
+      "archive_url": "https://codeload.github.com/vsg-dev/vsgImGui/tar.gz/37ef59ffa78482ee50b96c17b03bf3e0fbf0f973",
+      "archive_path": "vsgImGui/vsgImGui-37ef59ffa78482ee50b96c17b03bf3e0fbf0f973.tar.gz",
+      "archive_sha256": "d75fb5f851115c5a56665243073a51b8e19b1a199e28033935304769322a7736",
+      "archive_bytes": 132553,
+      "expanded_bytes": 502092,
+      "source_path": "vsgImGui/source/vsgImGui-37ef59ffa78482ee50b96c17b03bf3e0fbf0f973",
+      "licenses": [
+        {
+          "path": "vsgImGui/source/vsgImGui-37ef59ffa78482ee50b96c17b03bf3e0fbf0f973/LICENSE.md",
+          "sha256": "36edb0f29d790df460197f49601ee219655297c65a7932297f425b1b678e813e"
+        }
+      ],
+      "built": false,
+      "configured": false
+    },
+    {
+      "name": "imgui",
+      "repository": "https://github.com/ocornut/imgui",
+      "tag": "993fa347495860ed44b83574254ef2a317d0c14f",
+      "commit": "993fa347495860ed44b83574254ef2a317d0c14f",
+      "metadata_url": "gitlink in vsgImGui commit 37ef59ffa78482ee50b96c17b03bf3e0fbf0f973",
+      "metadata_sha256": "5a984a12f2bf7d27b310b9af6372faa4ead29ede9aa4f6bc8abe09cf4f363a0d",
+      "archive_url": "https://codeload.github.com/ocornut/imgui/tar.gz/993fa347495860ed44b83574254ef2a317d0c14f",
+      "archive_path": "imgui/imgui-993fa347495860ed44b83574254ef2a317d0c14f.tar.gz",
+      "archive_sha256": "a543367a7b45959d7ea21eeac808e26d3b2264ebc6d59b5046135791e97f4ca9",
+      "archive_bytes": 1793229,
+      "expanded_bytes": 6717100,
+      "source_path": "imgui/source/imgui-993fa347495860ed44b83574254ef2a317d0c14f",
+      "licenses": [
+        {
+          "path": "imgui/source/imgui-993fa347495860ed44b83574254ef2a317d0c14f/LICENSE.txt",
+          "sha256": "0ebf8feb061536bdebd7c6a365b64808ae3479048b1c44113e19037680c5f2be"
+        }
+      ],
+      "built": false,
+      "configured": false,
+      "assembled_at": "vsgImGui/source/vsgImGui-37ef59ffa78482ee50b96c17b03bf3e0fbf0f973/src/imgui"
+    },
+    {
+      "name": "implot",
+      "repository": "https://github.com/epezent/implot",
+      "tag": "f156599faefe316f7dd20fe6c783bf87c8bb6fd9",
+      "commit": "f156599faefe316f7dd20fe6c783bf87c8bb6fd9",
+      "metadata_url": "gitlink in vsgImGui commit 37ef59ffa78482ee50b96c17b03bf3e0fbf0f973",
+      "metadata_sha256": "5a984a12f2bf7d27b310b9af6372faa4ead29ede9aa4f6bc8abe09cf4f363a0d",
+      "archive_url": "https://codeload.github.com/epezent/implot/tar.gz/f156599faefe316f7dd20fe6c783bf87c8bb6fd9",
+      "archive_path": "implot/implot-f156599faefe316f7dd20fe6c783bf87c8bb6fd9.tar.gz",
+      "archive_sha256": "d779ce33326343724d1e0fa23d4960cc9acaf4af584bc0134e504e7717ccc4bb",
+      "archive_bytes": 140301,
+      "expanded_bytes": 682928,
+      "source_path": "implot/source/implot-f156599faefe316f7dd20fe6c783bf87c8bb6fd9",
+      "licenses": [
+        {
+          "path": "implot/source/implot-f156599faefe316f7dd20fe6c783bf87c8bb6fd9/LICENSE",
+          "sha256": "38bd30c2111fe7e3d8fb86d8607491239659eff1df1b1004b9a8349e20a91967"
+        }
+      ],
+      "built": false,
+      "configured": false,
+      "assembled_at": "vsgImGui/source/vsgImGui-37ef59ffa78482ee50b96c17b03bf3e0fbf0f973/src/implot"
+    }
+  ],
+  "ubuntu_development": {
+    "packages": [
+      {
+        "package": "libvulkan-dev",
+        "version": "1.3.204.1-2",
+        "architecture": "amd64",
+        "archive_url": "https://archive.ubuntu.com/ubuntu/pool/main/v/vulkan-loader/libvulkan-dev_1.3.204.1-2_amd64.deb",
+        "archive_bytes": 891678,
+        "archive_sha256": "a3c05680e2c95e82cc4309d46f44f35a71b3186133bc0962c723b28ab36ffd4f",
+        "archive_path": "ubuntu-dev/libvulkan-dev_1.3.204.1-2_amd64.deb",
+        "metadata_sha256": "84022bca1ac738becd18e863552734e7a1859488a3288a75aa3f940d2080b77b",
+        "copyright_path": "ubuntu-dev/sysroot/usr/share/doc/libvulkan-dev/copyright",
+        "copyright_sha256": "a573acac24c1e90c9382b8f7115ae3c840cc0ff31209c6b73d5ba68eca76a974",
+        "system_installed": false
+      },
+      {
+        "package": "libxcb1-dev",
+        "version": "1.14-3ubuntu3",
+        "architecture": "amd64",
+        "archive_url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxcb/libxcb1-dev_1.14-3ubuntu3_amd64.deb",
+        "archive_bytes": 86470,
+        "archive_sha256": "ca0c2bb04bd1e21a9087f03b28ff9f3aa8f77eb7294dc5be867bc9336c8bc9cc",
+        "archive_path": "ubuntu-dev/libxcb1-dev_1.14-3ubuntu3_amd64.deb",
+        "metadata_sha256": "7d8e3c995cefb04e37a370eb91bf07926a825d41fd121fe12b7ba01c01a2a22a",
+        "copyright_path": "ubuntu-dev/sysroot/usr/share/doc/libxcb1-dev/copyright",
+        "copyright_sha256": "4f7cb9db6bf6542f5417e3d674c780d3a5fd12291a54d63054fb576ee0cfae80",
+        "system_installed": false
+      },
+      {
+        "package": "libxau-dev",
+        "version": "1:1.0.9-1build5",
+        "architecture": "amd64",
+        "archive_url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxau/libxau-dev_1.0.9-1build5_amd64.deb",
+        "archive_bytes": 9724,
+        "archive_sha256": "887ee70a06f34e3e59e1df3abf93b801eea9f2d64090273bb1ebc721ff90303d",
+        "archive_path": "ubuntu-dev/libxau-dev_1.0.9-1build5_amd64.deb",
+        "metadata_sha256": "f3b1140854e3dd3af9475de261aba31832c4429b920c92b19cd925b374b00251",
+        "copyright_path": "ubuntu-dev/sysroot/usr/share/doc/libxau-dev/copyright",
+        "copyright_sha256": "118dd263a7b91c8f21c489f949bf13281dff9e766deea92b829dac4dce66601a",
+        "system_installed": false
+      },
+      {
+        "package": "libxdmcp-dev",
+        "version": "1:1.1.3-0ubuntu5",
+        "architecture": "amd64",
+        "archive_url": "https://archive.ubuntu.com/ubuntu/pool/main/libx/libxdmcp/libxdmcp-dev_1.1.3-0ubuntu5_amd64.deb",
+        "archive_bytes": 26506,
+        "archive_sha256": "bf239d4f40dbfdd96118ed1c2ec0c88b62a9fdbb8211a831f02803f09cf5352d",
+        "archive_path": "ubuntu-dev/libxdmcp-dev_1.1.3-0ubuntu5_amd64.deb",
+        "metadata_sha256": "e4d5795cd0a64b3c5a6ae4068215ddf07e771206ea7cd7865aca317728e95a26",
+        "copyright_path": "ubuntu-dev/sysroot/usr/share/doc/libxdmcp-dev/copyright",
+        "copyright_sha256": "1bcbb50f8603fe8b86d330bfa460b772ea04fbd3c70e4499f0768b5340b9fd6e",
+        "system_installed": false
+      },
+      {
+        "package": "libpthread-stubs0-dev",
+        "version": "0.4-1build2",
+        "architecture": "amd64",
+        "archive_url": "https://archive.ubuntu.com/ubuntu/pool/main/libp/libpthread-stubs/libpthread-stubs0-dev_0.4-1build2_amd64.deb",
+        "archive_bytes": 5516,
+        "archive_sha256": "0afcfe47686116f09f5d4acc38a71ec5642803b02280ead373fcefd3c8d43166",
+        "archive_path": "ubuntu-dev/libpthread-stubs0-dev_0.4-1build2_amd64.deb",
+        "metadata_sha256": "e7b60dee378e2d993120b9d09865d45d4578bcb687e60cc5276503fd0a2ecef7",
+        "copyright_path": "ubuntu-dev/sysroot/usr/share/doc/libpthread-stubs0-dev/copyright",
+        "copyright_sha256": "e45b85577d0f6883300ccfb004ab79e1a4f2cf3777b64eb989525115af400b5a",
+        "system_installed": false
+      },
+      {
+        "package": "x11proto-dev",
+        "version": "2021.5-1",
+        "architecture": "all",
+        "archive_url": "https://archive.ubuntu.com/ubuntu/pool/main/x/xorgproto/x11proto-dev_2021.5-1_all.deb",
+        "archive_bytes": 604434,
+        "archive_sha256": "7cb2471a23ea50e197cec019d0596840b6ddd714e8deb75e427472e820e83548",
+        "archive_path": "ubuntu-dev/x11proto-dev_2021.5-1_all.deb",
+        "metadata_sha256": "738af5c8a0abfd0ad7cda8d6d449482af15757928503d616e2eb02fa671ec0ef",
+        "copyright_path": "ubuntu-dev/sysroot/usr/share/doc/x11proto-dev/copyright",
+        "copyright_sha256": "7b40446cf2035abc6836c7a7f411ec79153dbf4530bce209e26aa2fd7c4dd55a",
+        "system_installed": false
+      }
+    ],
+    "runtime_forwarders": [
+      {
+        "path": "ubuntu-dev/sysroot/usr/lib/x86_64-linux-gnu/libvulkan.so.1",
+        "target": "/usr/lib/x86_64-linux-gnu/libvulkan.so.1.3.204",
+        "target_sha256": "f2c637267fc08e343f3d617252e1ddcaf035dc714728fbdc35ce9ebd8fc4a453"
+      },
+      {
+        "path": "ubuntu-dev/sysroot/usr/lib/x86_64-linux-gnu/libxcb.so.1.1.0",
+        "target": "/usr/lib/x86_64-linux-gnu/libxcb.so.1.1.0",
+        "target_sha256": "aabc489094abd96c876d1c989a2da8a8aa6d28f5a676c4a84dd6d0a0c34aec5d"
+      },
+      {
+        "path": "ubuntu-dev/sysroot/usr/lib/x86_64-linux-gnu/libXau.so.6.0.0",
+        "target": "/usr/lib/x86_64-linux-gnu/libXau.so.6.0.0",
+        "target_sha256": "98343a8324ea62ed75a13c923ed5dea96b7a8ad41aeba9f18126c4cbf7178064"
+      },
+      {
+        "path": "ubuntu-dev/sysroot/usr/lib/x86_64-linux-gnu/libXdmcp.so.6.0.0",
+        "target": "/usr/lib/x86_64-linux-gnu/libXdmcp.so.6.0.0",
+        "target_sha256": "1dc3ff1269a5ede69ef9a8ec2436d73fccbcd10531055b359292e0bde4e29b46"
+      }
+    ],
+    "note": "Development files extracted only; installed host runtime reused through workspace symlinks. No package installation or maintainer scripts."
+  },
+  "metadata_check": {
+    "pkg_config_versions": [
+      "1.3.204",
+      "1.14"
+    ],
+    "pkg_config_flags_without_allow_system_paths": "-lvulkan -lxcb",
+    "pkg_config_flags_with_allow_system_paths": "-I/home/jsonzhou/Desktop/chrono-work/crash-work/dependencies/vsg-r0/ubuntu-dev/sysroot/usr/include -L/home/jsonzhou/Desktop/chrono-work/crash-work/dependencies/vsg-r0/ubuntu-dev/sysroot/usr/lib/x86_64-linux-gnu -lvulkan -lxcb",
+    "required_environment": {
+      "PKG_CONFIG_ALLOW_SYSTEM_CFLAGS": "1",
+      "PKG_CONFIG_ALLOW_SYSTEM_LIBS": "1"
+    },
+    "cmake_version": "3.22.1",
+    "ninja_found": false,
+    "planned_generator": "Unix Makefiles"
+  },
+  "stage_only_archive_bytes": 9626302
+}
