@@ -141,7 +141,10 @@ bool ValidConfig(const GuidedStudyConfig& c) {
     return area.lower==c.total_reference_area.lower&&area.upper==c.total_reference_area.upper;
 }
 bool SameStamp(const tl::fea::NodalStamp& a,const tl::fea::NodalStamp& b) {
-    return a.owner_id==b.owner_id&&a.epoch==b.epoch&&a.node_count==b.node_count&&a.time==b.time&&a.fixed_dt==b.fixed_dt&&
+    return tl::fea::IsCollocatedNodalTiming(a.temporal_scheme,a.velocity_phase)&&
+           tl::fea::IsCollocatedNodalTiming(b.temporal_scheme,b.velocity_phase)&&a.velocity_time==b.velocity_time&&
+           a.reaction_kick_dt==b.reaction_kick_dt&&
+           a.owner_id==b.owner_id&&a.epoch==b.epoch&&a.node_count==b.node_count&&a.time==b.time&&a.fixed_dt==b.fixed_dt&&
            a.has_rotations==b.has_rotations&&a.reactions_valid==b.reactions_valid&&a.reaction_base_epoch==b.reaction_base_epoch&&a.reaction_time==b.reaction_time;
 }
 bool Force(const ct::Q4PlanarContactDiagnostics& d,GuidedStudyCertificate& out) {
@@ -153,7 +156,8 @@ bool Force(const ct::Q4PlanarContactDiagnostics& d,GuidedStudyCertificate& out) 
 bool Endpoint(const GuidedStudyConfig& c,const GuidedPlateMetrics& m,std::string& error) {
     const auto& t=m.stamp;const auto& s=m.shell;const auto& d=m.contact;
     const bool candidate=t.epoch!=0;const auto base=candidate?t.epoch-1:0;
-    if(t.owner_id!=c.owner_id||t.node_count!=6||!t.has_rotations||t.fixed_dt!=c.fixed_dt||
+    if(!tl::fea::IsCollocatedNodalTiming(t.temporal_scheme,t.velocity_phase)||
+       t.owner_id!=c.owner_id||t.node_count!=6||!t.has_rotations||t.fixed_dt!=c.fixed_dt||
        t.epoch>c.base_steps*c.refinement||m.required_steps!=c.base_steps*c.refinement||m.initial_energy!=c.initial_energy||
        !TimeMatches(t.time,t.epoch*c.fixed_dt,c.fixed_dt,t.epoch)||
        (candidate?(!t.reactions_valid||t.reaction_base_epoch!=base||t.reaction_time+c.fixed_dt!=t.time):

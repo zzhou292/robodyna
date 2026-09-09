@@ -102,7 +102,10 @@ InitialState::InitialState(const ref::ElasticCouponConfiguration& configuration)
     }
 }
 bool SameStamp(const fea::NodalStamp& a,const fea::NodalStamp& b) {
-    return a.owner_id==b.owner_id && a.epoch==b.epoch && a.node_count==b.node_count &&
+    return fea::IsCollocatedNodalTiming(a.temporal_scheme,a.velocity_phase) &&
+        fea::IsCollocatedNodalTiming(b.temporal_scheme,b.velocity_phase) &&
+        a.velocity_time==b.velocity_time && a.reaction_kick_dt==b.reaction_kick_dt &&
+        a.owner_id==b.owner_id && a.epoch==b.epoch && a.node_count==b.node_count &&
         a.time==b.time && a.fixed_dt==b.fixed_dt && a.has_rotations==b.has_rotations &&
         a.reactions_valid==b.reactions_valid && a.reaction_base_epoch==b.reaction_base_epoch && a.reaction_time==b.reaction_time;
 }
@@ -117,7 +120,11 @@ bool Matches(const shell::ShellBatchDiagnostics& s,const contact::Q4PlanarContac
         c.phase==(candidate?contact::Q4PlanarContactPhase::PreparedCandidate:contact::Q4PlanarContactPhase::AcceptedBase);
 }
 bool MatchesPrepared(const fea::NodalPreparedView& p,const fea::NodalAssemblyView& assembly,const fea::NodalStamp& base) {
-    return p.owner_id==base.owner_id && p.owner_id==assembly.owner_id && p.attempt==assembly.attempt &&
+    return fea::IsCollocatedNodalTiming(p.temporal_scheme,p.velocity_phase) &&
+        fea::IsCollocatedNodalTiming(p.temporal_scheme,p.base_velocity_phase) &&
+        fea::IsCollocatedNodalTiming(assembly.temporal_scheme,assembly.velocity_phase) &&
+        fea::IsCollocatedNodalTiming(base.temporal_scheme,base.velocity_phase) &&
+        p.owner_id==base.owner_id && p.owner_id==assembly.owner_id && p.attempt==assembly.attempt &&
         p.kinematics.base_epoch==base.epoch && p.base_kinematics.base_epoch==base.epoch &&
         assembly.accepted.base_epoch==base.epoch && p.stream==assembly.stream &&
         p.kinematics.node_count==base.node_count && p.base_kinematics.node_count==base.node_count &&

@@ -9,7 +9,9 @@ using namespace crash::output;
 Document CouponFrameFields(const ElasticCouponFrame& f) {
     const auto& a=f.element_association;
     using Phase=tl::fea::reissner::ShellBatchPhase;
-    Require(f.stamp.owner_id&&a.valid&&a.owner_id==f.stamp.owner_id&&a.configuration_id&&
+    Require(tl::fea::IsCollocatedNodalTiming(f.stamp.temporal_scheme,f.stamp.velocity_phase)&&
+            tl::fea::IsCollocatedNodalTiming(f.metrics.stamp.temporal_scheme,f.metrics.stamp.velocity_phase)&&
+            f.stamp.owner_id&&a.valid&&a.owner_id==f.stamp.owner_id&&a.configuration_id&&
             a.configuration_id==f.metrics.diagnostics.configuration_id&&a.attempt&&
             ((a.phase==Phase::kAcceptedBase&&a.base_epoch==f.stamp.epoch)||
              (a.phase==Phase::kPreparedCandidate&&f.stamp.epoch>0&&a.base_epoch==f.stamp.epoch-1)),

@@ -99,6 +99,30 @@ TEST_F(NodalOutput, ActualGpuForceMotionPublishesOnlyAcceptedOutputCadence) {
     EXPECT_EQ(owner.allocations().device_allocations,allocation.device_allocations);
 }
 
+TEST_F(NodalOutput, StaggeredOwnerCannotEnterCollocatedOutputEvenAtEpochZero) {
+    Case input; fea::FENodalState staggered,legacy;
+    const double q[]{1,0,0,0,1,0,0,0,1,0,0,0},inverse_inertia[]{.25,.25,.25};
+    fea::NodalStateConfig config; config.node_count=3;
+    config.temporal_scheme=fea::NodalTemporalScheme::StaggeredHalfKickStart;
+    ASSERT_EQ(staggered.Initialize(config,{input.x.data(),input.v.data(),nullptr,3,q},input.inverse.data(),
+        fea::NodalDofConfig{input.fixed.data(),input.fixed.data(),inverse_inertia}).status,fea::NodalStatus::Ok);
+    EXPECT_EQ(staggered.accepted().velocity_phase,fea::NodalVelocityPhase::Collocated);
+    visual::NodalMeshOutput output;
+    EXPECT_EQ(output.Initialize(staggered,Binding(staggered)).status,visual::Status::InvalidBinding);
+    EXPECT_EQ(output.surface().frame(),nullptr);
+    fea::NodalTrialToken token; fea::NodalAssemblyView view;
+    ASSERT_EQ(staggered.BeginTrial(&token,&view).status,fea::NodalStatus::Ok);
+    ASSERT_EQ(staggered.SealAssembly(token).status,fea::NodalStatus::Ok);
+    ASSERT_EQ(fea::AdvanceStaggeredPrescribed(staggered,token,
+        {view.owner_id,view.accepted.base_epoch,view.attempt,config.fixed_dt,1}).status,fea::NodalStatus::Ok);
+    ASSERT_EQ(staggered.Commit(token).status,fea::NodalStatus::Ok);
+    EXPECT_EQ(staggered.accepted().velocity_phase,fea::NodalVelocityPhase::PreviousMidpoint);
+    EXPECT_EQ(output.Initialize(staggered,Binding(staggered)).status,visual::Status::InvalidBinding);
+    ASSERT_EQ(input.Initialize(legacy).status,fea::NodalStatus::Ok);
+    ASSERT_EQ(output.Initialize(legacy,Binding(legacy)).status,visual::Status::Ok);
+    ASSERT_EQ(output.Publish(legacy).status,visual::Status::Ok); CheckMesh(output,0,0);
+}
+
 TEST_F(NodalOutput, LateAdvanceFailureCannotChangeVisibleFrameAndRetryCanPublish) {
     Case input; input.inverse={{4,4,4}};
     fea::FENodalState owner; ASSERT_EQ(input.Initialize(owner,1).status,fea::NodalStatus::Ok);

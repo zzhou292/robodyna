@@ -7,6 +7,8 @@ Report NodalMeshOutput::Initialize(const tl::fea::FENodalState& owner, const Bin
     const auto stamp = owner.accepted();
     if (!stamp.owner_id || !stamp.node_count)
         return {Status::InvalidBinding, "TL source is not initialized"};
+    if (!tl::fea::IsCollocatedNodalTiming(stamp.temporal_scheme,stamp.velocity_phase))
+        return {Status::InvalidBinding, "This output protocol requires collocated nodal velocity"};
     if (stamp.owner_id != binding.identity.owner)
         return {Status::WrongOwner, "Output binding does not identify this TL owner"};
     if (stamp.node_count != binding.tl_node_count || stamp.node_count > position_.size() / 3)
@@ -21,6 +23,8 @@ Report NodalMeshOutput::Initialize(const tl::fea::FENodalState& owner, const Bin
 Report NodalMeshOutput::Publish(tl::fea::FENodalState& owner) {
     if (!identity_.owner) return {Status::NotInitialized, "TL output is not bound"};
     const auto current = owner.accepted();
+    if (!tl::fea::IsCollocatedNodalTiming(current.temporal_scheme,current.velocity_phase))
+        return {Status::InvalidFrame, "This output protocol requires collocated nodal velocity"};
     if (current.owner_id != identity_.owner)
         return {Status::WrongOwner, "Snapshot source is a different TL owner"};
     if (current.node_count != node_count_)
@@ -34,7 +38,8 @@ Report NodalMeshOutput::Publish(tl::fea::FENodalState& owner) {
     const auto copied = owner.CopyAccepted({position_.data(), velocity_.data(), node_count_}, &stamp);
     if (copied.status != tl::fea::NodalStatus::Ok)
         return {Status::InvalidFrame, copied.message};
-    if (stamp.owner_id != identity_.owner || stamp.node_count != node_count_)
+    if (stamp.owner_id != identity_.owner || stamp.node_count != node_count_ ||
+        !tl::fea::IsCollocatedNodalTiming(stamp.temporal_scheme,stamp.velocity_phase))
         return {Status::InvalidFrame, "Accepted readback changed its source identity"};
     return surface_.Publish({position_.data(), velocity_.data(), nullptr, node_count_},
                             {identity_, stamp.epoch, stamp.time});

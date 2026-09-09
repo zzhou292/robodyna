@@ -91,6 +91,9 @@ const std::array<std::string,3>& GuidedPlateIntervalHeaders() {
     static const auto headers=Build({},GuidedPlateMetrics{},true); return headers;
 }
 std::array<std::string,3> GuidedPlateIntervalRows(const tl::fea::NodalStamp& base,const GuidedPlateMetrics& m) {
+    Require(tl::fea::IsCollocatedNodalTiming(base.temporal_scheme,base.velocity_phase)&&
+            tl::fea::IsCollocatedNodalTiming(m.stamp.temporal_scheme,m.stamp.velocity_phase),
+            "Guided interval schema requires collocated nodal velocity");
     // Integer-valued diagnostic counters remain exactly representable in this
     // bounded experiment; identity columns are always encoded as uint64.
     Require(m.last_operator_epoch<=1000000&&m.full_state_audit_reads<=1000000,"Guided audit counter output exceeds scope");

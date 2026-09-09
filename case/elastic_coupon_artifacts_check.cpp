@@ -248,7 +248,7 @@ TEST_F(ElasticCouponArtifactsCheck, FieldPhaseTracksAcceptedRecoveryAndRejectsIn
     EXPECT_EQ(recovered["element_evaluation_base_epoch"].GetUint64(), frame.stamp.epoch);
     EXPECT_EQ(recovered["reaction_base_epoch"].GetUint64(), frame.stamp.epoch - 1);
     EXPECT_THROW(CouponFrameFields(ElasticCouponFrame{}), std::runtime_error);
-    for (unsigned variant = 0; variant < 6; ++variant) {
+    for (unsigned variant = 0; variant < 10; ++variant) {
         auto invalid = frame;
         if (variant == 0) invalid.element_association.valid = false;
         if (variant == 1) ++invalid.element_association.owner_id;
@@ -256,6 +256,10 @@ TEST_F(ElasticCouponArtifactsCheck, FieldPhaseTracksAcceptedRecoveryAndRejectsIn
         if (variant == 3) invalid.element_association.phase = shell::ShellBatchPhase::kUnspecified;
         if (variant == 4) invalid.element[1].energy = std::numeric_limits<double>::quiet_NaN();
         if (variant == 5) invalid.element[1].bending_energy = std::numeric_limits<double>::infinity();
+        if (variant == 6) invalid.stamp.temporal_scheme = tl::fea::NodalTemporalScheme::StaggeredHalfKickStart;
+        if (variant == 7) invalid.stamp.velocity_phase = tl::fea::NodalVelocityPhase::PreviousMidpoint;
+        if (variant == 8) invalid.metrics.stamp.temporal_scheme = tl::fea::NodalTemporalScheme::StaggeredHalfKickStart;
+        if (variant == 9) invalid.metrics.stamp.velocity_phase = tl::fea::NodalVelocityPhase::PreviousMidpoint;
         EXPECT_THROW(CouponFrameFields(invalid), std::runtime_error) << "variant " << variant;
     }
     ExpectFields(recovered, frame);

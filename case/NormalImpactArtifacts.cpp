@@ -92,7 +92,9 @@ NormalImpactArtifacts::NormalImpactArtifacts(const std::string& path,const std::
 }
 NormalImpactArtifacts::~NormalImpactArtifacts()=default;
 void NormalImpactArtifacts::RecordInterval(const tl::fea::NodalStamp& begin,const ImpactMetrics& m,const tlfea::contact::PlanarContactDiagnostics& d) {
-    auto& s=*impl_;Require(!s.finished&&!s.failed&&s.have_frame&&d.valid&&d.owner_id==m.stamp.owner_id&&begin.owner_id==s.identity.owner&&m.stamp.owner_id==s.identity.owner&&
+    auto& s=*impl_;Require(tl::fea::IsCollocatedNodalTiming(begin.temporal_scheme,begin.velocity_phase)&&
+        tl::fea::IsCollocatedNodalTiming(m.stamp.temporal_scheme,m.stamp.velocity_phase)&&
+        !s.finished&&!s.failed&&s.have_frame&&d.valid&&d.owner_id==m.stamp.owner_id&&begin.owner_id==s.identity.owner&&m.stamp.owner_id==s.identity.owner&&
         begin.node_count==s.node_count&&m.stamp.node_count==s.node_count&&begin.fixed_dt==s.fixed_dt&&m.stamp.fixed_dt==s.fixed_dt&&
         d.base_epoch==begin.epoch&&m.stamp.epoch==begin.epoch+1&&begin.epoch==s.last_interval_epoch&&begin.time==s.last_interval_time&&m.stamp.time==begin.time+s.fixed_dt,
         "Interval diagnostics do not belong to this accepted step");
@@ -108,7 +110,8 @@ void NormalImpactArtifacts::RecordInterval(const tl::fea::NodalStamp& begin,cons
 }
 void NormalImpactArtifacts::WriteAcceptedFrame(const visual::NodalMeshOutput& output,const ImpactMetrics& metrics) {
     auto& s=*impl_;const auto& surface=output.surface();const auto* frame=surface.frame();const auto mesh=surface.mesh();
-    Require(!s.finished&&!s.failed&&frame&&mesh&&frame->identity.owner==metrics.stamp.owner_id&&frame->epoch==metrics.stamp.epoch&&frame->time==metrics.stamp.time&&
+    Require(tl::fea::IsCollocatedNodalTiming(metrics.stamp.temporal_scheme,metrics.stamp.velocity_phase)&&
+        !s.finished&&!s.failed&&frame&&mesh&&frame->identity.owner==metrics.stamp.owner_id&&frame->epoch==metrics.stamp.epoch&&frame->time==metrics.stamp.time&&
         (!s.have_frame||frame->epoch>s.last_frame_epoch),"Visible frame does not match the current accepted owner/time");
     if(s.have_frame)Require(frame->identity.owner==s.identity.owner&&frame->identity.run==s.identity.run&&frame->identity.topology==s.identity.topology&&
         metrics.stamp.node_count==s.node_count&&metrics.stamp.fixed_dt==s.fixed_dt,"Frame belongs to a different bound run/topology");

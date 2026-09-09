@@ -20,7 +20,9 @@ using namespace crash::output;
 namespace ct=tlfea::contact;
 namespace {
 bool SameOwner(const tl::fea::NodalStamp& a,const tl::fea::NodalStamp& b) {
-    return a.owner_id&&a.owner_id==b.owner_id&&a.node_count==b.node_count&&a.has_rotations&&b.has_rotations&&
+    return tl::fea::IsCollocatedNodalTiming(a.temporal_scheme,a.velocity_phase)&&
+           tl::fea::IsCollocatedNodalTiming(b.temporal_scheme,b.velocity_phase)&&
+           a.owner_id&&a.owner_id==b.owner_id&&a.node_count==b.node_count&&a.has_rotations&&b.has_rotations&&
            Bits(a.fixed_dt)==Bits(b.fixed_dt);
 }
 void CheckBoundWall(const GuidedPlateCase& run,const CanonicalWall& wall) {

@@ -27,7 +27,8 @@ struct ElasticCouponArtifacts::Impl {
         inventory.push_back({file,Sha256(bytes),bytes.size()});
     }
     void CheckOwner(const tl::fea::NodalStamp& stamp) const {
-        Require(stamp.owner_id==last_interval.owner_id && stamp.node_count==last_interval.node_count &&
+        Require(tl::fea::IsCollocatedNodalTiming(stamp.temporal_scheme,stamp.velocity_phase) &&
+                stamp.owner_id==last_interval.owner_id && stamp.node_count==last_interval.node_count &&
                 stamp.fixed_dt==last_interval.fixed_dt && stamp.has_rotations,"Coupon artifacts belong to a different owner/configuration");
     }
 };

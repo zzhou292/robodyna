@@ -105,6 +105,10 @@ TEST(GuidedPlateStudy, LateInvalidCaptureStaleOwnerAndMissingSamplePreserveRecor
     const auto next=Frame(c,2,&first);
     EXPECT_FALSE(recorder.Record(next.metrics,nullptr,error));
     auto bad=next;bad.metrics.stamp.owner_id=8;EXPECT_FALSE(recorder.Record(bad.metrics,&bad,error));
+    bad=next;bad.metrics.stamp.temporal_scheme=tl::fea::NodalTemporalScheme::StaggeredHalfKickStart;
+    EXPECT_FALSE(recorder.Record(bad.metrics,&bad,error));
+    bad=next;bad.stamp.velocity_phase=tl::fea::NodalVelocityPhase::PreviousMidpoint;
+    EXPECT_FALSE(recorder.Record(bad.metrics,&bad,error));
     bad=next;bad.parent[1].integration.force[3].error=-1;EXPECT_FALSE(recorder.Record(bad.metrics,&bad,error));
     bad=next;bad.rotation[23]=std::numeric_limits<double>::quiet_NaN();EXPECT_FALSE(recorder.Record(bad.metrics,&bad,error));
     bad=next;bad.metrics.contact.wall_reaction.x=bad.metrics.contact.force_error.x=std::numeric_limits<double>::max();

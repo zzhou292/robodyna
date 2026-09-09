@@ -83,11 +83,26 @@ TEST(NormalImpactArtifacts, TwoActualGpuIntervalsPreservePhaseBitsAndRejectAnoth
     cd::NormalImpactCase run,foreign;ASSERT_EQ(run.Initialize(wall,config).status,cd::ImpactStatus::Ok);
     ASSERT_NE(run.output(),nullptr);ASSERT_NE(run.metrics(),nullptr);
     const auto initial_positions=run.output()->surface().mesh()->GetCoordsVertices();
+    const auto reject_unsupported_timing=[&] {
+        const auto index_before=Read(output/"accepted-frames.csv");
+        const auto files_before=std::distance(fs::directory_iterator(output),fs::directory_iterator{});
+        for(unsigned variant=0;variant<2;++variant) {
+            auto invalid=*run.metrics();
+            if(variant==0)invalid.stamp.temporal_scheme=tl::fea::NodalTemporalScheme::StaggeredHalfKickStart;
+            else invalid.stamp.velocity_phase=tl::fea::NodalVelocityPhase::PreviousMidpoint;
+            EXPECT_THROW(artifacts.WriteAcceptedFrame(*run.output(),invalid),std::runtime_error)<<variant;
+            EXPECT_EQ(Read(output/"accepted-frames.csv"),index_before);
+            EXPECT_EQ(std::distance(fs::directory_iterator(output),fs::directory_iterator{}),files_before);
+        }
+    };
+    reject_unsupported_timing();
     artifacts.WriteAcceptedFrame(*run.output(),*run.metrics());
     const auto begin=run.metrics()->stamp;ASSERT_EQ(run.Step().status,cd::ImpactStatus::Ok);ASSERT_NE(run.last_interval(),nullptr);
     artifacts.RecordInterval(begin,*run.metrics(),*run.last_interval());
     EXPECT_THROW(artifacts.WriteAcceptedFrame(*run.output(),*run.metrics()),std::runtime_error); // Old visible epoch cannot label new state.
-    ASSERT_EQ(run.Publish().status,crash::visual::Status::Ok);artifacts.WriteAcceptedFrame(*run.output(),*run.metrics());
+    ASSERT_EQ(run.Publish().status,crash::visual::Status::Ok);
+    reject_unsupported_timing();
+    artifacts.WriteAcceptedFrame(*run.output(),*run.metrics());
     EXPECT_THROW(artifacts.Finish(run,0),std::runtime_error);EXPECT_FALSE(fs::exists(output/"manifest.json"));
 
     ASSERT_EQ(foreign.Initialize(wall,config).status,cd::ImpactStatus::Ok);
