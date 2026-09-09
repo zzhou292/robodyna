@@ -21,6 +21,7 @@ struct GuidedPlateCase::Impl {
     std::uint64_t wall_binding=kGuidedPlateWallBinding;
     std::unique_ptr<ref::GuidedPlateModel> model;
     ref::GuidedPlateModalReport modal;
+    ref::GuidedPlatePenaltyReport penalty;
     fea::FENodalState state;
     shell::ReissnerShellBatch elements;
     contact::Q4PlanarContact contact;
@@ -66,7 +67,7 @@ struct GuidedPlateCase::Impl {
             c=contact.Assemble(assembly,&refreshed_contact);
             if (c.status!=contact::Q4PlanarContactStatus::Ok) return Contact(c);
             if (!detail::Matches(refreshed_shell,refreshed_contact,assembly.owner_id,
-                                 assembly.accepted.base_epoch,assembly.attempt,false,wall_binding,backend))
+                                 assembly.accepted.base_epoch,assembly.attempt,false,wall_binding,backend,model->data().qualification_id))
                 return {Code::OutputFailure,"Refreshed guided results have mismatched accepted identities"};
             e=elements.CopyElementResults(refreshed_shell,frame.element.data(),frame.element.size());
             if (e.status!=shell::ShellBatchStatus::kSuccess) return Element(e);
@@ -77,7 +78,7 @@ struct GuidedPlateCase::Impl {
             if (e.status!=shell::ShellBatchStatus::kSuccess) return Element(e);
             if (c.status!=contact::Q4PlanarContactStatus::Ok) return Contact(c);
         }
-        if (!detail::MatchesAcceptedResults(element_association,contact_association,metrics.stamp,wall_binding,backend) ||
+        if (!detail::MatchesAcceptedResults(element_association,contact_association,metrics.stamp,wall_binding,backend,model->data().qualification_id) ||
             !detail::MatchesContactParents(frame.parent,model->data().parents,contact_association,backend))
             return {Code::OutputFailure,"Guided result scratch does not describe the accepted endpoint"};
         frame.element_association=element_association; frame.contact_association=contact_association;
@@ -103,10 +104,10 @@ GuidedPlateReport GuidedPlateCase::InitializeTessellated(const CanonicalWall& wa
 GuidedPlateReport GuidedPlateCase::InitializeImpl(const CanonicalWall& wall,const GuidedPlateConfig& config,
                                                  std::unique_ptr<WallTessellation> tessellation) {
     if (impl_) return {Code::AlreadyInitialized,"Guided plate is already initialized"};
-    if (!ValidGuidedContactBackend(config.integration_backend) ||
+    if (!ValidGuidedContactBackend(config.integration_backend) || !ref::FindGuidedPlateExperiment(config.experiment) ||
         (config.refinement!=1 && config.refinement!=2 && config.refinement!=4) ||
         !config.diagnostic_intervals || config.diagnostic_intervals>64)
-        return {Code::InvalidInput,"Invalid guided integration backend, fixed-step refinement or diagnostic cadence"};
+        return {Code::InvalidInput,"Invalid guided experiment, integration backend, fixed-step refinement or diagnostic cadence"};
     try {
         auto s=std::make_unique<Impl>(config.integration_backend); std::string error;
         if (!detail::CopyCanonicalWall(wall,s->wall,error)) return {Code::InvalidInput,error};
@@ -114,12 +115,14 @@ GuidedPlateReport GuidedPlateCase::InitializeImpl(const CanonicalWall& wall,cons
         if (s->tessellation) s->wall_binding=WallTessellationBindingId(s->tessellation->metadata()->kind);
         // Setup and modal audit ALWAYS use original canonical wall geometry.
         // Only the runtime wall/coverage and explicit binding vary.
-        s->model=std::make_unique<ref::GuidedPlateModel>(s->wall.view(),s->wall_binding);
+        s->model=std::make_unique<ref::GuidedPlateModel>(s->wall.view(),s->wall_binding,config.experiment);
         if (s->tessellation) {
             if (!detail::PrepareTessellatedContact(*s->tessellation,*s->model,s->runtime_reference,error))
                 return {Code::AdmissionFailure,error};
         } else s->runtime_reference=s->model->contact_geometry();
         if (ref::AuditGuidedPlate(*s->model,s->modal,error)!=ref::ElasticCouponStatus::kSuccess)
+            return {Code::AuditFailure,error};
+        if (ref::AuditGuidedPlatePenalty(*s->model,s->modal,s->penalty,error)!=ref::ElasticCouponStatus::kSuccess)
             return {Code::AuditFailure,error};
         if (!s->modal.step_count || s->modal.step_count>100000)
             return {Code::AdmissionFailure,"Guided horizon exceeds the initial base-step budget"};
@@ -132,13 +135,13 @@ GuidedPlateReport GuidedPlateCase::InitializeImpl(const CanonicalWall& wall,cons
         if (state.status!=fea::NodalStatus::Ok) return s->State(state);
         const auto elements=detail::ShellElements(data);
         shell::ReissnerShellBatchConfig element_config;
-        element_config.owner=s->state.accepted(); element_config.configuration_id=kGuidedPlateQualification;
+        element_config.owner=s->state.accepted(); element_config.configuration_id=guided.qualification_id;
         element_config.element_count=ref::kCouponElements;
         element_config.drilling_policy=shell::ShellDrillingInertiaPolicy::kEqualPhysicalTangential;
         auto element=s->elements.Initialize(element_config,elements.data());
         if (element.status!=shell::ShellBatchStatus::kSuccess) return s->Element(element);
         contact::Q4PlanarContactConfig contact_config;
-        contact_config.owner=s->state.accepted(); contact_config.configuration_id=kGuidedPlateQualification;
+        contact_config.owner=s->state.accepted(); contact_config.configuration_id=guided.qualification_id;
         contact_config.wall_binding_id=guided.wall_binding_id; contact_config.stiffness_per_area=guided.stiffness_per_area;
         contact_config.maximum_penetration=guided.maximum_penetration; contact_config.exposed_clearance=guided.exposed_clearance;
         contact_config.integration=guided.integration;
@@ -161,7 +164,7 @@ GuidedPlateReport GuidedPlateCase::InitializeImpl(const CanonicalWall& wall,cons
             collision=s->contact.Assemble(assembly,&s->metrics.contact);
             if (collision.status!=contact::Q4PlanarContactStatus::Ok) return s->Contact(collision);
             if (!detail::Matches(s->metrics.shell,s->metrics.contact,assembly.owner_id,assembly.accepted.base_epoch,assembly.attempt,
-                                 false,s->wall_binding,s->backend))
+                                 false,s->wall_binding,s->backend,guided.qualification_id))
                 return {Code::AdmissionFailure,"Initial guided contributor association mismatch"};
         }
         s->metrics.initial_energy=ShellKineticEnergy(s->metrics.shell)+s->metrics.shell.elastic_energy+s->metrics.contact.potential.value;
@@ -205,12 +208,12 @@ GuidedPlateReport GuidedPlateCase::Step(const GuidedPlateStepRequest& request) {
     if (element.status!=shell::ShellBatchStatus::kSuccess) return s.Element(element);
     auto collision=s.contact.Assemble(assembly,&base_contact);
     if (collision.status!=contact::Q4PlanarContactStatus::Ok) return s.Contact(collision);
-    if (!detail::Matches(base_shell,base_contact,assembly.owner_id,assembly.accepted.base_epoch,assembly.attempt,false,s.wall_binding,s.backend))
+    if (!detail::Matches(base_shell,base_contact,assembly.owner_id,assembly.accepted.base_epoch,assembly.attempt,false,s.wall_binding,s.backend,s.model->data().qualification_id))
         return {Code::AdmissionFailure,"Guided base contributor association mismatch"};
     state=s.state.SealAssembly(token); if (state.status!=fea::NodalStatus::Ok) return s.State(state);
     const fea::NodalStepAdmission admission{assembly.owner_id,assembly.accepted.base_epoch,assembly.attempt,
         s.modal.proposed_step_limit,ElasticShellLimits::rotation_increment,fea::NodalStepAdmissionKind::RestrictedElasticTrajectory,
-        kGuidedPlateQualification,s.modal.combined_rate_envelope};
+        s.model->data().qualification_id,s.modal.combined_rate_envelope};
     state=fea::AdvanceNodal(s.state,token,admission); if (state.status!=fea::NodalStatus::Ok) return s.State(state);
     fea::NodalPreparedView prepared;
     state=s.state.BorrowPrepared(token,&prepared); if (state.status!=fea::NodalStatus::Ok) return s.State(state);
@@ -220,7 +223,7 @@ GuidedPlateReport GuidedPlateCase::Step(const GuidedPlateStepRequest& request) {
     if (element.status!=shell::ShellBatchStatus::kSuccess) return s.Element(element);
     collision=s.contact.EvaluateCandidate(prepared,&candidate_contact);
     if (collision.status!=contact::Q4PlanarContactStatus::Ok) return s.Contact(collision);
-    if (!detail::Matches(candidate_shell,candidate_contact,prepared.owner_id,prepared.kinematics.base_epoch,prepared.attempt,true,s.wall_binding,s.backend))
+    if (!detail::Matches(candidate_shell,candidate_contact,prepared.owner_id,prepared.kinematics.base_epoch,prepared.attempt,true,s.wall_binding,s.backend,s.model->data().qualification_id))
         return {Code::AdmissionFailure,"Guided candidate contributor association mismatch"};
     auto next=s.metrics; std::string error;
     if (!CheckGuidedPlateEnvelope(candidate_shell,candidate_contact,s.modal,s.metrics.initial_energy,
@@ -240,7 +243,7 @@ GuidedPlateReport GuidedPlateCase::Step(const GuidedPlateStepRequest& request) {
     if (!detail::AccumulateInterval(candidate_shell,base_contact,candidate_contact,next))
         return {Code::AdmissionFailure,"Guided cumulative interval arithmetic is nonfinite"};
     GuidedPlateReport success{Code::Ok,"Accepted guided plate step"};
-    state=fea::CompleteNodalValidation(s.state,token,{prepared.owner_id,prepared.kinematics.base_epoch,prepared.attempt,kGuidedPlateQualification,true});
+    state=fea::CompleteNodalValidation(s.state,token,{prepared.owner_id,prepared.kinematics.base_epoch,prepared.attempt,s.model->data().qualification_id,true});
     if (state.status!=fea::NodalStatus::Ok) return s.State(state);
     state=s.state.Commit(token); if (state.status!=fea::NodalStatus::Ok) return s.State(state);
     next.stamp=s.state.accepted(); s.metrics=next;
@@ -267,6 +270,12 @@ GuidedPlateReport GuidedPlateCase::Capture(GuidedPlateFrame& output) {
 const GuidedPlateMetrics* GuidedPlateCase::metrics() const noexcept { return impl_?&impl_->metrics:nullptr; }
 contact::Q4PlanarIntegrationBackend GuidedPlateCase::integration_backend() const noexcept {
     return impl_?impl_->backend:contact::Q4PlanarIntegrationBackend::ScalarDyadicSquares;
+}
+ref::GuidedPlateExperiment GuidedPlateCase::experiment() const noexcept {
+    return impl_?impl_->model->data().experiment:ref::GuidedPlateExperiment::Original;
+}
+const ref::GuidedPlatePenaltyReport* GuidedPlateCase::penalty_audit() const noexcept {
+    return impl_?&impl_->penalty:nullptr;
 }
 const ref::GuidedPlateModalReport* GuidedPlateCase::modal() const noexcept { return impl_?&impl_->modal:nullptr; }
 const ref::ElasticCouponData* GuidedPlateCase::model_data() const noexcept { return impl_?&impl_->model->shell().data():nullptr; }

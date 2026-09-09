@@ -1,5 +1,6 @@
 #include "GuidedPlateRun.h"
 #include "GuidedPlateContactProtocol.h"
+#include "GuidedPlateExperimentProtocol.h"
 #include "GuidedPlateArtifacts.h"
 #include "GuidedPlateStudyIO.h"
 #include "WallStudyProvenance.h"
@@ -39,6 +40,7 @@ void CheckGuidedPlateRunOptions(const GuidedPlateRunOptions& options) {
     io::Require(options.config.refinement==1||options.config.refinement==2||options.config.refinement==4,"Refinement must be 1, 2 or 4");
     io::Require(options.config.diagnostic_intervals>0&&options.config.diagnostic_intervals<=64,"Invalid guided audit cadence");
     io::Require(ValidGuidedContactBackend(options.config.integration_backend),"Invalid contact integration backend");
+    io::Require(reference::FindGuidedPlateExperiment(options.config.experiment),"Invalid guided experiment");
     const bool derived=options.wall_kind!=WallTessellationKind::Original;
     io::Require(!derived||options.wall_provenance.has_value(),"Derived wall runs require an explicit new provenance sidecar");
     io::Require(!derived||!options.bundle.has_value(),"Derived walls cannot create a canonical guided replay bundle");
@@ -71,6 +73,7 @@ int RunGuidedPlate(const GuidedPlateRunOptions& options) {
             Check(run.InitializeTessellated(wall,bytes,options.wall_kind,options.config));CheckRuntimeWall(run,*provenance_wall);
         } else Check(run.Initialize(wall,options.config));
         io::Require(run.integration_backend()==options.config.integration_backend,"Initialized contact backend differs from request");
+        io::Require(run.experiment()==options.config.experiment,"Initialized guided experiment differs from request");
         GuidedPlateFrame frame;Check(run.Capture(frame));GuidedStudyConfig study_config;std::string error;
         if(!PrepareGuidedStudyConfig(*run.metrics(),*run.model_data(),*run.guided_data(),run.contact_reference(),
                                     options.config.refinement,study_config,error)||
@@ -104,6 +107,7 @@ int RunGuidedPlate(const GuidedPlateRunOptions& options) {
             io::Require(saved.config.owner_id==completed.config.owner_id&&saved.config.wall_binding_id==completed.config.wall_binding_id&&
                 saved.config.experiment_sha256==completed.config.experiment_sha256&&saved.summary.accepted_epoch==completed.summary.accepted_epoch&&
                 saved.config.integration_backend==completed.config.integration_backend&&
+                saved.config.experiment==completed.config.experiment&&saved.config.qualification_id==completed.config.qualification_id&&
                 io::Bits(saved.summary.accepted_time)==io::Bits(completed.summary.accepted_time),"Persisted Study identity differs from completed run");
             // Last output: no valid sidecar can precede completed numerical
             // evidence (and optional canonical bundle). Partial writes/failure
@@ -113,6 +117,7 @@ int RunGuidedPlate(const GuidedPlateRunOptions& options) {
         std::cout<<"Guided study completed in "<<elapsed<<" s; report "<<options.study
                  <<"; wall="<<WallTessellationName(options.wall_kind)
                  <<"; contact="<<GuidedContactBackendName(run.integration_backend())
+                 <<"; experiment="<<GuidedExperimentName(run.experiment())
                  <<"; separated rebound observed="<<completed.summary.separated_rebounding<<'\n';return 0;
     } catch(const std::exception& e) {if(artifacts)artifacts->Fail(e.what());throw;}
 }

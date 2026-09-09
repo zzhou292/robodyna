@@ -1,4 +1,5 @@
 #include "GuidedPlateAdmission.h"
+#include "GuidedPlateExperimentProtocol.h"
 #include "lib_src/collision/Q4ContactBounds.h"
 #include <algorithm>
 #include <cmath>
@@ -25,7 +26,8 @@ bool CheckGuidedPlateEnvelope(const shell::ShellBatchDiagnostics& d,
     if(!std::isfinite(initial_energy) || initial_energy<=0 || !c.valid || !d.valid ||
        !d.owner_id || !d.configuration_id || !d.attempt || !c.wall_binding_id ||
        d.owner_id!=c.owner_id || d.base_epoch!=c.base_epoch || d.attempt!=c.attempt ||
-       d.configuration_id!=c.configuration_id)
+       d.configuration_id!=c.configuration_id||!GuidedExperimentIdentity(modal.experiment,modal.qualification_id)||
+       d.configuration_id!=modal.qualification_id)
         return reject("Guided shell/contact diagnostics have invalid or mismatched identities");
     if(!CheckElasticShellGeometry(d,maximum_displacement,error)) return false;
     double required_rate=0;

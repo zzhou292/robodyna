@@ -76,7 +76,7 @@ std::string Describe(const contact::Q4PlanarContactReport& r) {
         ", integral_status="+std::to_string(static_cast<int>(r.integration.status));
 }
 visual::Binding SurfaceBinding(const fea::NodalStamp& owner,const ref::GuidedPlateData& data) {
-    visual::Binding result; result.identity={owner.owner_id,1,kGuidedPlateQualification};
+    visual::Binding result; result.identity={owner.owner_id,1,data.qualification_id};
     result.tl_node_count=ref::kCouponNodes;
     for (unsigned n=0;n<ref::kCouponNodes;++n) result.vertices.push_back({n,{3,1,n+1}});
     for (const auto& parent:data.parents) {
@@ -108,10 +108,10 @@ bool SameStamp(const fea::NodalStamp& a,const fea::NodalStamp& b) {
 }
 bool Matches(const shell::ShellBatchDiagnostics& s,const contact::Q4PlanarContactDiagnostics& c,
              std::uint64_t owner,std::uint64_t epoch,std::uint64_t attempt,bool candidate,std::uint64_t wall_binding,
-             contact::Q4PlanarIntegrationBackend backend) {
+             contact::Q4PlanarIntegrationBackend backend,std::uint64_t qualification) {
     return s.valid && ValidGuidedContactPartition(c,backend) && owner && attempt && s.owner_id==owner && c.owner_id==owner &&
         s.base_epoch==epoch && c.base_epoch==epoch && s.attempt==attempt && c.attempt==attempt &&
-        s.configuration_id==kGuidedPlateQualification && c.configuration_id==kGuidedPlateQualification &&
+        qualification && s.configuration_id==qualification && c.configuration_id==qualification &&
         wall_binding && c.wall_binding_id==wall_binding &&
         s.phase==(candidate?shell::ShellBatchPhase::kPreparedCandidate:shell::ShellBatchPhase::kAcceptedBase) &&
         c.phase==(candidate?contact::Q4PlanarContactPhase::PreparedCandidate:contact::Q4PlanarContactPhase::AcceptedBase);
@@ -125,10 +125,10 @@ bool MatchesPrepared(const fea::NodalPreparedView& p,const fea::NodalAssemblyVie
         std::isfinite(p.proposed_time) && p.proposed_time==base.time+base.fixed_dt && p.proposed_time>base.time;
 }
 bool MatchesAcceptedResults(const shell::ShellBatchDiagnostics& s,const contact::Q4PlanarContactDiagnostics& c,
-                            const fea::NodalStamp& stamp,std::uint64_t wall_binding,contact::Q4PlanarIntegrationBackend backend) {
+                            const fea::NodalStamp& stamp,std::uint64_t wall_binding,contact::Q4PlanarIntegrationBackend backend,std::uint64_t qualification) {
     const bool candidate=s.phase==shell::ShellBatchPhase::kPreparedCandidate;
     if (candidate && !stamp.epoch) return false;
-    return Matches(s,c,stamp.owner_id,candidate?stamp.epoch-1:stamp.epoch,s.attempt,candidate,wall_binding,backend);
+    return Matches(s,c,stamp.owner_id,candidate?stamp.epoch-1:stamp.epoch,s.attempt,candidate,wall_binding,backend,qualification);
 }
 bool MatchesContactParents(const std::array<contact::Q4PlanarParentResult,ref::kCouponElements>& parents,
                           const std::array<contact::SurfaceQ4,ref::kCouponElements>& source,

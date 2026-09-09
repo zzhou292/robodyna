@@ -2,7 +2,8 @@
 
 Updated 2026-09-09 after finite Q4 wall coverage, CUDA contact transaction tests,
 prescribed batch measurements and the full source-part inventory. This is the
-active implementation backlog. The workspace
+implementation backlog. The latest measured ordering is maintained in the workspace
+[active execution plan](../../planning/CURRENT_EXECUTION_PLAN.md). The workspace
 [architecture and milestones](../../planning/YARIS_RIGID_WALL_DESIGN.md),
 [module contracts](../../planning/MODULAR_ARCHITECTURE.md) and
 [test catalog](../../planning/YARIS_TEST_GATES.md) provide the detailed contracts.
@@ -87,10 +88,16 @@ both partial-contact states use eleven leaves, taking about 1.116/1.749 ms on
 the GPU with unchanged geometry and error/capacity budgets. Its opt-in C4 path
 passes all 23 owner-test executions (twelve distinct functions), with scalar
 remaining the default and one selected bounded allocation. Application backend
-identity, Study/report and accepted replay wiring are being tested before a
-new full h/h2/h4 impact, wall-response studies and rendering. The physical
-experiment identity remains unchanged; the integration backend is an explicit
-additional configuration identity, including recorded axis-depth conventions.
+identity, Study/report and accepted replay wiring now pass, as do both long
+first-contact checks. The rectangular full-h run then reached the unchanged
+0.5 mm penetration stop at 145.732 ms in 78.015 seconds, with peak energy error
+0.017925% and remaining inward kinetic energy. Its incomplete archive is
+preserved. A named penalty-margin-v1 experiment now precedes the next full
+h/h2/h4 impact, wall-response studies and rendering: higher stiffness is
+explicitly identified and must pass a nonlinear prescribed energy audit;
+absolute integration errors and stop limits remain unchanged. The original
+physical experiment remains reproducible. Backend choice stays an independent
+configuration identity, including recorded axis-depth conventions.
 See [the contact execution review](../../planning/GUIDED_CONTACT_EXECUTION_REVIEW.md).
 See the [guided plate implementation](../../planning/GUIDED_PLATE_IMPLEMENTATION.md).
 Parallel E1 passes 12 synthetic declaration tests and the original PID 2000157

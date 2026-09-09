@@ -1,6 +1,7 @@
 #include "chrono/core/ChMatrix.h"
 #include "GuidedPlateCli.h"
 #include "GuidedPlateContactProtocol.h"
+#include "GuidedPlateExperimentProtocol.h"
 #include "GuidedPlateStudyIO.h"
 #include "WallStudyProvenance.h"
 #include "CanonicalWallArtifacts.h"
@@ -168,6 +169,33 @@ TEST_F(GuidedPlateWallStudyIOCheck, BackendSerializationIsExplicitLegacyScalarAn
     auto invalid=fixture::Run(Config(Kind::Original));invalid.config.integration_backend=static_cast<Backend>(99);
     EXPECT_THROW(WriteGuidedPlateStudy(root.path/"invalid-enum.json",invalid),std::runtime_error);EXPECT_FALSE(fs::exists(root.path/"invalid-enum.json"));
 }
+TEST_F(GuidedPlateWallStudyIOCheck, NamedExperimentRoundTripAndSidecarRequireKnownMatchingIdentity) {
+    auto config=Config(Kind::FlipConvexPairs);config.experiment=crash::reference::GuidedPlateExperiment::PenaltyMarginV1;
+    config.qualification_id=crash::reference::kGuidedPenaltyMarginV1Experiment.qualification_id;
+    const auto paths=Paths("revised");Save(fixture::Run(config),Kind::FlipConvexPairs,paths.derived_study,paths.derived_provenance);
+    auto canonical_config=config;canonical_config.wall_binding_id=WallTessellationBindingId(Kind::Original);
+    Save(fixture::Run(canonical_config),Kind::Original,paths.canonical_study,paths.canonical_provenance);
+    const auto loaded=ReadGuidedPlateStudy(paths.derived_study);EXPECT_EQ(loaded.config.experiment,config.experiment);
+    EXPECT_EQ(loaded.config.qualification_id,config.qualification_id);
+    EXPECT_TRUE(CompareAndWriteGuidedPlateWallStudies(paths).passed);
+    EXPECT_STREQ(Json(Bytes(paths.report))["guided_experiment"].GetString(),"penalty-margin-v1");
+    for(unsigned fault=0;fault<6;++fault) {
+        auto doc=Json(Bytes(paths.derived_study));auto& c=doc["configuration"];
+        if(fault==0)c.RemoveMember("guided_experiment"); // Legacy omission only means original.
+        if(fault==1)c["guided_experiment"].SetString("other",doc.GetAllocator());
+        if(fault==2)c["guided_experiment"].SetUint(1);
+        if(fault==3)c["qualification_id"].SetUint64(kGuidedPlateQualification);
+        if(fault==4)c.AddMember("guided_experiment",io::Value("penalty-margin-v1",doc.GetAllocator()),doc.GetAllocator());
+        if(fault==5)c["guided_experiment"].SetString("original",doc.GetAllocator());
+        const auto p=root.path/("bad-experiment-"+std::to_string(fault)+".json");io::WriteJson(p,doc);
+        EXPECT_THROW(ReadGuidedPlateStudy(p),std::runtime_error);
+    }
+    const auto original=root.path/"original.json";WriteGuidedPlateStudy(original,fixture::Run(Config(Kind::Original)));
+    auto doc=Json(Bytes(original));doc["configuration"].RemoveMember("guided_experiment");
+    const auto legacy=root.path/"legacy-original.json";io::WriteJson(legacy,doc);
+    EXPECT_EQ(ReadGuidedPlateStudy(legacy).config.experiment,crash::reference::GuidedPlateExperiment::Original);
+}
+
 TEST_F(GuidedPlateWallStudyIOCheck, LegacyRefinementCommandRetainsSchemaHashesAndSharedFields) {
     GuidedPlateCommand command;command.kind=GuidedPlateCommandKind::CompareRefinement;
     command.coarse_study=root.path/"coarse.json";command.fine_study=root.path/"fine.json";command.refinement_report=root.path/"refinement.json";

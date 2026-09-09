@@ -1,6 +1,7 @@
 #include "chrono/core/ChMatrix.h"
 #include "GuidedPlateStudyInternal.h"
 #include "GuidedPlateContactIdentity.h"
+#include "GuidedPlateExperimentProtocol.h"
 #include "ShellPatchFields.h"
 #include "chrono/core/ChQuaternion.h"
 #include "chrono_thirdparty/rapidjson/stringbuffer.h"
@@ -22,7 +23,15 @@ bool PrepareGuidedStudyConfig(const GuidedPlateMetrics& m,const reference::Elast
     if(!refinement || m.required_steps%refinement || !view.parents || view.parent_count!=2 ||
        view.global_node_count!=6 || guided.wall_binding_id!=m.contact.wall_binding_id)
         return sd::Reject(error,"Study configuration has invalid refinement/reference identity");
-    GuidedStudyConfig c; c.owner_id=m.stamp.owner_id; c.qualification_id=m.shell.configuration_id;
+    GuidedStudyConfig c; c.owner_id=m.stamp.owner_id; c.qualification_id=m.shell.configuration_id;c.experiment=guided.experiment;
+    if(!GuidedExperimentIdentity(c.experiment,c.qualification_id)||guided.qualification_id!=c.qualification_id)
+        return sd::Reject(error,"Guided Study experiment and contributor qualification disagree");
+    const auto& spec=*reference::FindGuidedPlateExperiment(c.experiment);
+    if(guided.stiffness_per_area!=spec.stiffness_per_area||guided.target_penetration!=spec.target_penetration||
+       guided.maximum_penetration!=spec.maximum_penetration||guided.integration.force_error!=spec.force_error||
+       guided.integration.energy_error!=spec.energy_error||guided.integration.max_leaves!=sd::ct::MaxQ4IntegrationLeaves||
+       guided.integration.max_depth!=sd::ct::MaxQ4IntegrationDepth||guided.integration.max_visited!=sd::ct::MaxQ4IntegrationVisits)
+        return sd::Reject(error,"Guided named experiment stop or integration budget differs from its immutable spec");
     c.wall_binding_id=m.contact.wall_binding_id; c.base_steps=m.required_steps/refinement; c.refinement=refinement;
     c.fixed_dt=m.stamp.fixed_dt; c.horizon=reference::GuidedPlateData::requested_horizon;
     c.initial_energy=m.initial_energy; c.wall_x=view.wall_x;
@@ -65,6 +74,25 @@ bool PrepareGuidedStudyConfig(const GuidedPlateMetrics& m,const reference::Elast
         io::Number(doc,"wall_x",c.wall_x); io::Number(doc,"contact_stiffness",guided.stiffness_per_area);
         io::Number(doc,"contact_force_error",guided.integration.force_error);
         io::Number(doc,"contact_energy_error",guided.integration.energy_error);
+        // Preserve the original fingerprint byte sequence. The revised named
+        // experiment additionally binds its complete stop/budget declaration;
+        // these are experiment inputs, not a new numerical allowance.
+        if(c.experiment!=reference::GuidedPlateExperiment::Original) {
+            io::String(doc,"guided_experiment",GuidedExperimentName(c.experiment));
+            io::Integer(doc,"qualification_id",c.qualification_id);
+            io::Number(doc,"maximum_penetration",guided.maximum_penetration);
+            io::Number(doc,"penalty_target_penetration",guided.target_penetration);
+            io::Number(doc,"exposed_clearance",guided.exposed_clearance);
+            io::Number(doc,"initial_gap",guided.initial_gap);io::Number(doc,"initial_tip_displacement",guided.initial_tip_displacement);
+            io::Number(doc,"requested_horizon",guided.requested_horizon);
+            io::Integer(doc,"contact_max_leaves",guided.integration.max_leaves);io::Integer(doc,"contact_max_depth",guided.integration.max_depth);
+            io::Integer(doc,"contact_max_visits",guided.integration.max_visited);
+            io::Number(doc,"maximum_displacement",ElasticShellLimits::displacement);io::Number(doc,"energy_fraction",ElasticShellLimits::energy_fraction);
+            io::Number(doc,"director_departure",ElasticShellLimits::director_departure);io::Number(doc,"pair_angle",ElasticShellLimits::pair_angle);
+            io::Number(doc,"rotation_increment",ElasticShellLimits::rotation_increment);io::Number(doc,"strain",ElasticShellLimits::strain);
+            io::Number(doc,"thickness_curvature",ElasticShellLimits::thickness_curvature);
+            io::Number(doc,"minimum_area_ratio",ElasticShellLimits::minimum_area_ratio);io::Number(doc,"maximum_area_ratio",ElasticShellLimits::maximum_area_ratio);
+        }
         rapidjson::StringBuffer buffer; rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
         if(!doc.Accept(writer)) return sd::Reject(error,"Study immutable serialization failed");
         c.experiment_sha256=io::Sha256({buffer.GetString(),buffer.GetSize()});
@@ -85,7 +113,7 @@ bool TimeMatches(double time,double expected,double h,std::uint64_t epoch) {
 }
 bool ValidConfig(const GuidedStudyConfig& c) {
     std::uint64_t final=0;
-    if(!c.owner_id||!c.qualification_id||!c.wall_binding_id||!ValidGuidedContactBackend(c.integration_backend)||
+    if(!c.owner_id||!GuidedExperimentIdentity(c.experiment,c.qualification_id)||!c.wall_binding_id||!ValidGuidedContactBackend(c.integration_backend)||
        !GuidedStudySampleEpoch(c,200,final)||
        !std::isfinite(c.fixed_dt)||c.fixed_dt<=0||!std::isfinite(c.horizon)||c.horizon<=0||
        !std::isfinite(c.initial_energy)||c.initial_energy<=0||!std::isfinite(c.wall_x)||

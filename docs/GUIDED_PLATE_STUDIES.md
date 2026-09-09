@@ -19,7 +19,7 @@ same-step response comparison.
 With guided plate checks enabled, the executable supports:
 
 ```text
-robo-dyna-guided run WALL-MANIFEST NEW-STUDY-JSON 1|2|4 [NEW-ARCHIVE-DIRECTORY] [--wall=original|flip|subdivide] [--wall-provenance=NEW-SIDECAR] [--contact-integration=scalar|rectangular]
+robo-dyna-guided run WALL-MANIFEST NEW-STUDY-JSON 1|2|4 [NEW-ARCHIVE-DIRECTORY] [--wall=original|flip|subdivide] [--wall-provenance=NEW-SIDECAR] [--contact-integration=scalar|rectangular] [--experiment=original|penalty-margin-v1]
 robo-dyna-guided compare COARSE-STUDY FINE-STUDY NEW-COMPARISON
 robo-dyna-guided compare-wall WALL-MANIFEST DERIVED-STUDY DERIVED-SIDECAR CANONICAL-STUDY CANONICAL-SIDECAR NEW-COMPARISON
 ```
@@ -45,11 +45,29 @@ and independent. An occasional coincident sample/frame causes two captures of
 the same accepted state; neither advances mechanics. Captures never interpolate
 states to align these schedules.
 
-The default is `--wall=original --contact-integration=scalar`. The explicit
+The default is `--wall=original --contact-integration=scalar --experiment=original`. The explicit
 `--contact-integration=rectangular` option requests the separately qualified
 dyadic-rectangle implementation through the owning Case configuration. It does
 not change the contact law, tolerances, work accounting or leaf/visit/depth
 limits. Backend qualification and a successful full response remain separate.
+
+`--experiment=penalty-margin-v1` selects a reviewed physical experiment with
+penalty 400,000 N/m^3 and a fresh qualification ID. Original remains 100,000
+N/m^3. Geometry, mass, initial mode, the 0.5 mm penetration stop, 5e-7 N force
+error and original 1.2500000000000005e-12 J potential error are unchanged.
+Each setup recomputes contact stiffness and modal timestep admission. Before
+device allocation, actual Chrono/TL forces and certified contact integrals
+screen the initial modal path at 0.375 and 0.5 mm. The revised target must
+exceed the existing 1% energy envelope. This is a prescribed-path screen, not
+a global penetration guarantee; its values and represented-depth corrections
+are archived in configuration. Original records its insufficient capacity while
+remaining runnable for reproducibility. Arbitrary penalty doubles are rejected.
+
+The five reference-screen tests, named Case/receipt/output tests and strict
+reader tests pass. The revised base schedule is 19,998 steps through 200 ms.
+The original rectangular full-h attempt stopped safely at the penetration cap
+at 145.732 ms; the revised full trajectory is still pending. Use the same
+explicit experiment and backend on every member of a refinement or wall study.
 
 For an original-wall run that can participate in authenticated wall comparison,
 request its sidecar explicitly. The canonical replay archive remains optional:
@@ -107,6 +125,13 @@ types and duplicate fields are rejected. Wall comparisons record the backend
 explicitly; the unchanged refinement report binds it through the exact input
 Study hashes. The physical experiment fingerprint remains distinct from this
 execution choice.
+
+New Study/archive records also explicitly serialize `guided_experiment`.
+Missing legacy names resolve only to `original`; names and qualification IDs
+must agree. Readers reject changed named penalties, absolute budgets and caps.
+The original physical fingerprint serialization is preserved; the revised
+fingerprint additionally binds its complete stop/budget declaration. This
+identity does not claim that a completed trajectory exists.
 
 The wall transform helper authenticates the original source, retains explicit
 derived IDs and validates its complete finite mesh. Prescribed-state invariance

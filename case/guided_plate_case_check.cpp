@@ -454,6 +454,61 @@ TEST(GuidedPlateBackend, SelectionPreservesInitialPhysicalExperimentAndOnlyChang
     EXPECT_EQ(a.metrics.contact.potential.upper,0); EXPECT_EQ(b.metrics.contact.potential.upper,0);
     EXPECT_EQ(WorkValues(a.metrics.work),WorkValues(b.metrics.work));
 }
+TEST(GuidedPlateExperiment, RevisedPenaltyRecomputesAdmissionWithSameMassModeAndBoundedState) {
+    CanonicalWall wall;auto loaded=wall.LoadFile(asset);ASSERT_EQ(loaded.status,WallStatus::Ok)<<loaded.message;
+    GuidedPlateCase original,revised;GuidedPlateConfig config;config.integration_backend=Backend::RectangularDyadic;
+    auto report=original.Initialize(wall,config);ASSERT_EQ(report.status,Code::Ok)<<report.diagnostic;
+    config.experiment=ref::GuidedPlateExperiment::PenaltyMarginV1;
+    report=revised.Initialize(wall,config);ASSERT_EQ(report.status,Code::Ok)<<report.diagnostic;
+    Frame a,b;ASSERT_EQ(original.Capture(a).status,Code::Ok);ASSERT_EQ(revised.Capture(b).status,Code::Ok);
+    EXPECT_EQ(a.position,b.position);EXPECT_EQ(a.rotation,b.rotation);EXPECT_EQ(a.velocity,b.velocity);EXPECT_EQ(a.omega,b.omega);
+    EXPECT_EQ(original.model_data()->inverse_mass,revised.model_data()->inverse_mass);
+    EXPECT_EQ(original.model_data()->inverse_isotropic_inertia,revised.model_data()->inverse_isotropic_inertia);
+    EXPECT_EQ(original.model_data()->connectivity,revised.model_data()->connectivity);
+    EXPECT_EQ(original.guided_data()->translation_fixed_bits,revised.guided_data()->translation_fixed_bits);
+    EXPECT_EQ(original.guided_data()->rotation_fixed,revised.guided_data()->rotation_fixed);
+    EXPECT_EQ(original.modal()->squared_frequency,revised.modal()->squared_frequency);
+    EXPECT_EQ(original.modal()->initial_mode_increment,revised.modal()->initial_mode_increment);
+    EXPECT_EQ(original.modal()->sampled_structural_operator_norm,revised.modal()->sampled_structural_operator_norm);
+    EXPECT_EQ(original.metrics()->initial_energy,revised.metrics()->initial_energy);
+    EXPECT_NE(original.modal()->qualification_id,revised.modal()->qualification_id);
+    EXPECT_EQ(revised.modal()->qualification_id,ref::kGuidedPenaltyMarginV1Experiment.qualification_id);
+    EXPECT_EQ(revised.metrics()->shell.configuration_id,revised.modal()->qualification_id);
+    EXPECT_EQ(revised.metrics()->contact.configuration_id,revised.modal()->qualification_id);
+    EXPECT_EQ(revised.output()->surface().binding()->identity.topology,revised.modal()->qualification_id);
+    EXPECT_EQ(revised.guided_data()->stiffness_per_area,4*original.guided_data()->stiffness_per_area);
+    EXPECT_NEAR(revised.modal()->contact_rate_bound,4*original.modal()->contact_rate_bound,1e-11*revised.modal()->contact_rate_bound);
+    EXPECT_GT(revised.modal()->combined_rate_envelope,original.modal()->combined_rate_envelope);
+    EXPECT_EQ(revised.metrics()->contact.stiffness_rate_bound,revised.modal()->contact_rate_bound);
+    EXPECT_LE(b.stamp.fixed_dt,revised.modal()->proposed_step_limit);
+    EXPECT_EQ(revised.guided_data()->integration.force_error,original.guided_data()->integration.force_error);
+    EXPECT_EQ(revised.guided_data()->integration.energy_error,original.guided_data()->integration.energy_error);
+    EXPECT_EQ(revised.guided_data()->maximum_penetration,original.guided_data()->maximum_penetration);
+    EXPECT_EQ(revised.guided_data()->integration.max_leaves,original.guided_data()->integration.max_leaves);
+    EXPECT_FALSE(original.penalty_audit()->enforced);EXPECT_TRUE(revised.penalty_audit()->enforced);
+    EXPECT_TRUE(revised.penalty_audit()->target_sufficient);
+    EXPECT_GT(revised.penalty_audit()->sample[0].total_potential_lower,revised.penalty_audit()->admitted_energy_upper);
+    const Allocations allocations(revised);const auto before=b;
+    report=revised.Step();ASSERT_EQ(report.status,Code::Ok)<<report.diagnostic;
+    report=revised.Capture(b);ASSERT_EQ(report.status,Code::Ok)<<report.diagnostic;
+    CheckInterval(before,b,*revised.model_data());ExpectGuides(b,before);allocations.Check(revised);
+    EXPECT_EQ(b.metrics.shell.configuration_id,ref::kGuidedPenaltyMarginV1Experiment.qualification_id);
+    EXPECT_EQ(b.metrics.contact.configuration_id,b.metrics.shell.configuration_id);EXPECT_EQ(b.metrics.contact.potential.upper,0);
+    const auto accepted=b;report=revised.Step({.001});EXPECT_EQ(report.status,Code::AdmissionFailure);
+    report=revised.Capture(b);ASSERT_EQ(report.status,Code::Ok)<<report.diagnostic;ExpectAcceptedEqual(accepted,b,true);
+    report=revised.Step();ASSERT_EQ(report.status,Code::Ok)<<report.diagnostic;allocations.Check(revised);
+}
+TEST(GuidedPlateExperiment, InvalidSelectionPreservesUninitializedOutputAndAllowsNamedRetry) {
+    CanonicalWall wall;const auto loaded=wall.LoadFile(asset);ASSERT_EQ(loaded.status,WallStatus::Ok)<<loaded.message;
+    GuidedPlateCase run;GuidedPlateConfig config;config.experiment=static_cast<ref::GuidedPlateExperiment>(99);
+    const auto rejected=run.Initialize(wall,config);EXPECT_EQ(rejected.status,Code::InvalidInput);
+    EXPECT_FALSE(run.metrics());EXPECT_FALSE(run.penalty_audit());EXPECT_EQ(run.state_allocations().device_allocations,0u);
+    Frame frame;frame.position[0]=17;const auto before=frame;
+    EXPECT_EQ(run.Capture(frame).status,Code::NotInitialized);EXPECT_EQ(frame.position,before.position);
+    config.experiment=ref::GuidedPlateExperiment::PenaltyMarginV1;config.integration_backend=Backend::RectangularDyadic;
+    const auto initialized=run.Initialize(wall,config);ASSERT_EQ(initialized.status,Code::Ok)<<initialized.diagnostic;
+    EXPECT_EQ(run.experiment(),config.experiment);EXPECT_EQ(run.metrics()->stamp.epoch,0u);
+}
 } // namespace
 
 int main(int argc,char** argv) {

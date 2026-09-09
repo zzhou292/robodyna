@@ -1,5 +1,6 @@
 #include "GuidedPlateStudyIO.h"
 #include "GuidedPlateContactProtocol.h"
+#include "GuidedPlateExperimentProtocol.h"
 #include "output/ArtifactIO.h"
 #include <cmath>
 #include <limits>
@@ -53,6 +54,8 @@ GuidedStudyEvent Event(const Value& v,const char* key) {
 }
 GuidedStudyConfig Config(const Value& v) {
     GuidedStudyConfig c;c.owner_id=Integer(v,"owner_id");c.qualification_id=Integer(v,"qualification_id");
+    io::Require(ParseGuidedExperiment(io::guided_experiment_metadata::Name(v),c.experiment)&&
+        GuidedExperimentIdentity(c.experiment,c.qualification_id),"Guided experiment name and qualification disagree");
     c.wall_binding_id=Integer(v,"wall_binding_id");c.base_steps=Integer(v,"base_steps");c.refinement=Index(Member(v,"refinement"));
     c.fixed_dt=Number(v,"fixed_dt");c.horizon=Number(v,"horizon");c.initial_energy=Number(v,"initial_energy");
     io::Require(ParseGuidedContactBackend(io::contact_metadata::Backend(v),c.integration_backend),"Unknown guided contact integration backend");

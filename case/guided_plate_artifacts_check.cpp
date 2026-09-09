@@ -288,6 +288,44 @@ TEST_F(GuidedPlateArtifactsCheck, RectangularExecutionMetadataIsBoundBeforeAnyAc
     EXPECT_FALSE(fs::exists(directory/"manifest.json")); // Prefix only, never a completed trajectory.
 }
 
+TEST_F(GuidedPlateArtifactsCheck, NamedPenaltyExperimentBindsConfigurationScreenAndAcceptedFields) {
+    GuidedPlateCase run;GuidedPlateConfig config;config.integration_backend=contact::Q4PlanarIntegrationBackend::RectangularDyadic;
+    config.experiment=ref::GuidedPlateExperiment::PenaltyMarginV1;
+    auto initialized=run.Initialize(wall,config);ASSERT_EQ(initialized.status,Code::Ok)<<initialized.diagnostic;
+    TempRoot root;const auto directory=root.path/"named";
+    GuidedPlateArtifacts writer(directory.string(),bytes,wall,run,FrameEvery(run));writer.WriteFrame(run);
+    const auto configuration=Json(directory/"configuration.json");
+    EXPECT_STREQ(configuration["guided_experiment"].GetString(),"penalty-margin-v1");
+    EXPECT_EQ(configuration["qualification_id"].GetUint64(),ref::kGuidedPenaltyMarginV1Experiment.qualification_id);
+    EXPECT_EQ(configuration["penalty_per_area_N_per_m3"].GetDouble(),4e5);
+    EXPECT_EQ(configuration["maximum_penetration_m"].GetDouble(),.0005);
+    EXPECT_EQ(configuration["penalty_target_penetration_m"].GetDouble(),.000375);
+    EXPECT_EQ(configuration["contact_force_error_budget_N"].GetDouble(),ref::kGuidedOriginalForceError);
+    EXPECT_EQ(configuration["contact_potential_error_budget_J"].GetDouble(),ref::kGuidedOriginalEnergyError);
+    const auto& screen=configuration["startup_penalty_screen"];const auto& source=*run.penalty_audit();
+    EXPECT_TRUE(screen["enforced"].GetBool());EXPECT_TRUE(screen["target_sufficient"].GetBool());EXPECT_FALSE(screen["global_penetration_bound"].GetBool());
+    ASSERT_EQ(screen["samples"].Size(),2u);
+    for(unsigned i=0;i<2;++i) {
+        const auto& saved=screen["samples"][i];const auto& expected=source.sample[i];
+        EXPECT_EQ(saved["actual_penetration_m"].GetDouble(),expected.actual_penetration);
+        EXPECT_EQ(saved["total_potential_lower_J"].GetDouble(),expected.total_potential_lower);
+        EXPECT_EQ(saved["maximum_depth_m"][0u].GetDouble(),expected.maximum_depth.lower);
+        EXPECT_EQ(saved["maximum_depth_m"][1u].GetDouble(),expected.maximum_depth.upper);
+        EXPECT_EQ(saved["inward_scale_adjustments"].GetUint64(),expected.inward_scale_adjustments);
+        ExpectCertificate(saved["contact_potential_J"],expected.contact_potential);
+        EXPECT_EQ(saved["derivatives"][1u]["derivative_N"].GetDouble(),expected.derivative[1].derivative_N);
+    }
+    const auto base=run.metrics()->stamp;ASSERT_EQ(run.Step().status,Code::Ok);
+    auto wrong=*run.metrics();wrong.shell.configuration_id=wrong.contact.configuration_id=wrong.applied_contact.configuration_id=kGuidedPlateQualification;
+    EXPECT_THROW(writer.RecordInterval(base,wrong),std::runtime_error);writer.RecordInterval(base,*run.metrics());writer.WriteFrame(run);
+    Frame frame;ASSERT_EQ(run.Capture(frame).status,Code::Ok);auto fields=GuidedPlateFrameFields(frame,*run.guided_data());
+    EXPECT_STREQ(fields["guided_experiment"].GetString(),"penalty-margin-v1");ExpectFields(fields,frame,*run.guided_data());
+    frame.element_association.configuration_id=frame.contact_association.configuration_id=kGuidedPlateQualification;
+    EXPECT_THROW(GuidedPlateFrameFields(frame,*run.guided_data()),std::runtime_error);
+    EXPECT_THROW(writer.Finish(run,.1),std::runtime_error);EXPECT_FALSE(fs::exists(directory/"manifest.json"));
+    writer.Fail("Intentional short named-experiment test");
+}
+
 TEST_F(GuidedPlateArtifactsCheck, ForeignStaleSkippedAndDuplicateInputsCannotPublishRows) {
     GuidedPlateCase run,foreign;auto r=run.Initialize(wall);ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;
     r=foreign.Initialize(wall);ASSERT_EQ(r.status,Code::Ok)<<r.diagnostic;

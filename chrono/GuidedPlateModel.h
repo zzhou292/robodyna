@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ShellPatchAudit.h"
+#include "GuidedPlateExperiment.h"
 #include "collision/PlanarWallGeometry.h"
 #include "collision/Q4PlanarGeometry.h"
 #include "collision/Q4PlanarStiffness.h"
@@ -12,9 +13,12 @@ struct GuidedPlateData {
     static constexpr double initial_gap = .001;
     static constexpr double initial_tip_displacement = -.002;
     static constexpr double requested_horizon = .2;
-    static constexpr double stiffness_per_area = 1e5;
     static constexpr double maximum_penetration = .0005;
     static constexpr double exposed_clearance = 1e-6;
+    GuidedPlateExperiment experiment = GuidedPlateExperiment::Original;
+    std::uint64_t qualification_id = kGuidedOriginalExperiment.qualification_id;
+    double stiffness_per_area = kGuidedOriginalExperiment.stiffness_per_area;
+    double target_penetration = kGuidedOriginalExperiment.target_penetration;
     ElasticCouponPose pose;
     std::uint64_t wall_binding_id = 0;
     std::array<std::uint8_t,kCouponNodes> translation_fixed_bits{{6,7,7,6,6,6}};
@@ -33,7 +37,8 @@ struct GuidedPlateData {
 // or silent repositioning occurs. Invalid construction throws before publication.
 class GuidedPlateModel {
   public:
-    GuidedPlateModel(tlfea::contact::PlanarWallView wall,std::uint64_t wall_binding_id);
+    GuidedPlateModel(tlfea::contact::PlanarWallView wall,std::uint64_t wall_binding_id,
+                     GuidedPlateExperiment experiment=GuidedPlateExperiment::Original);
     ~GuidedPlateModel();
     GuidedPlateModel(const GuidedPlateModel&)=delete;
     GuidedPlateModel& operator=(const GuidedPlateModel&)=delete;

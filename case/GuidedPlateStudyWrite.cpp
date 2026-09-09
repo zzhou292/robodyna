@@ -1,6 +1,7 @@
 #include "GuidedPlateStudyIO.h"
 #include "GuidedPlateComparisonFields.h"
 #include "GuidedPlateContactProtocol.h"
+#include "GuidedPlateExperimentProtocol.h"
 #include "output/ArtifactIO.h"
 #include "chrono_thirdparty/rapidjson/stringbuffer.h"
 #include "chrono_thirdparty/rapidjson/prettywriter.h"
@@ -31,6 +32,7 @@ void Event(Document& d,const char* key,const GuidedStudyEvent& e) {
 Document Config(const GuidedStudyConfig& c) {
     Document d;d.SetObject();
     io::Integer(d,"owner_id",c.owner_id);io::Integer(d,"qualification_id",c.qualification_id);
+    io::String(d,io::guided_experiment_metadata::Field,GuidedExperimentName(c.experiment));
     io::Integer(d,"wall_binding_id",c.wall_binding_id);io::Integer(d,"base_steps",c.base_steps);
     io::Integer(d,"refinement",c.refinement);io::Number(d,"fixed_dt",c.fixed_dt);io::Number(d,"horizon",c.horizon);
     const auto* backend=GuidedContactBackendName(c.integration_backend);

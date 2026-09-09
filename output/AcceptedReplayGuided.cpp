@@ -1,5 +1,6 @@
 #include "AcceptedReplayData.h"
 #include "ContactIntegrationMetadata.h"
+#include "GuidedExperimentMetadata.h"
 #include "case/CanonicalWallArtifacts.h"
 #include <algorithm>
 #include <cmath>
@@ -54,6 +55,38 @@ void Phase(const Entry& entry, std::uint64_t base, std::uint64_t attempt, const 
             (phase == "prepared_candidate_subsequently_committed" && entry.epoch && base == entry.epoch-1)),
             "Guided endpoint field does not identify its accepted configuration");
 }
+void ExperimentRecord(const Value& object, const Bundle& bundle) {
+    Require(guided_experiment_metadata::Name(object,bundle.explicit_guided_experiment)==bundle.info.guided_experiment,
+            "Guided experiment differs between accepted artifacts");
+    if(object.HasMember("qualification_id"))
+        Require(Unsigned(object,"qualification_id")==bundle.qualification_id,"Guided experiment qualification changed");
+}
+void ExperimentScalar(const Value& config,const char* key,double expected,bool required) {
+    if(required||config.HasMember(key))
+        Require(Bits(Real(config,key))==Bits(expected),"Guided configuration contradicts its named experiment");
+}
+void ExperimentConfiguration(Bundle& bundle,const Value& config,const Value& final,const Value& manifest) {
+    namespace experiment=guided_experiment_metadata;
+    bundle.explicit_guided_experiment=config.HasMember(experiment::Field);
+    bundle.info.guided_experiment=experiment::Name(config);
+    Require(bundle.qualification_id==experiment::Qualification(bundle.info.guided_experiment),
+            "Guided qualification does not identify the named experiment");
+    const bool required=bundle.explicit_guided_experiment;
+    ExperimentScalar(config,"penalty_per_area_N_per_m3",experiment::Penalty(bundle.info.guided_experiment),required);
+    ExperimentScalar(config,"maximum_penetration_m",experiment::MaximumPenetration,required);
+    ExperimentScalar(config,"contact_force_error_budget_N",experiment::ForceError,required);
+    ExperimentScalar(config,"contact_potential_error_budget_J",experiment::PotentialError,required);
+    // Legacy archives did not include the target diagnostic. A named preset
+    // must retain both its target and its unchanged integration capacity.
+    ExperimentScalar(config,"penalty_target_penetration_m",experiment::TargetPenetration,required);
+    if(required)
+        Require(Unsigned(config,"contact_max_leaves")==experiment::MaxLeaves&&
+                Unsigned(config,"contact_max_visits")==experiment::MaxVisits&&
+                Unsigned(config,"contact_max_depth")==experiment::MaxDepth,
+                "Guided integration capacities contradict the named experiment");
+    for(const char* key:{"friction","damping","thickness_offset_m"}) ExperimentScalar(config,key,0,false);
+    ExperimentRecord(final,bundle); ExperimentRecord(manifest,bundle);
+}
 } // namespace
 
 void ReadGuidedConfiguration(Bundle& bundle, const Document& config, const Document& final, const Document& manifest) {
@@ -64,6 +97,7 @@ void ReadGuidedConfiguration(Bundle& bundle, const Document& config, const Docum
         Require(bundle.inventory.count(name), "Guided replay lacks a required contributor ledger or canonical wall artifact");
     bundle.qualification_id=Unsigned(config,"qualification_id");
     bundle.wall_binding_id=Unsigned(config,"wall_binding_id");
+    ExperimentConfiguration(bundle,config,final,manifest);
     bundle.explicit_contact_backend=config.HasMember(contact_metadata::BackendField);
     bundle.contact_integration_backend=contact_metadata::Backend(config);
     Require(contact_metadata::Backend(final,bundle.explicit_contact_backend)==bundle.contact_integration_backend&&
@@ -122,6 +156,7 @@ void CheckGuidedFields(const Bundle& bundle, const Entry& entry, const chrono::C
             Bits(Real(fields,"fixed_dt_s"))==Bits(bundle.fixed_dt) &&
             Unsigned(fields,"qualification_id")==bundle.qualification_id &&
             Unsigned(fields,"wall_binding_id")==bundle.wall_binding_id, "Guided field identity/time binding mismatch");
+    ExperimentRecord(fields,bundle);
     CheckPositionFields(fields,mesh);
     const auto backend=contact_metadata::Backend(fields,bundle.explicit_contact_backend);
     Require(backend==bundle.contact_integration_backend,"Guided contact execution backend changed");

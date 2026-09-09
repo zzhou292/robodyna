@@ -1,5 +1,6 @@
 #include "GuidedPlateCli.h"
 #include "GuidedPlateStudyIO.h"
+#include "GuidedPlateExperimentProtocol.h"
 #include "output/ArtifactIO.h"
 #include <iostream>
 #include <stdexcept>
@@ -7,10 +8,10 @@
 namespace crash::case_data {
 namespace io=output;
 namespace {
-constexpr const char* usage="Usage: robo-dyna-guided run WALL NEW-STUDY 1|2|4 [NEW-BUNDLE] [--wall=original|flip|subdivide] [--wall-provenance=NEW-SIDECAR] [--contact-integration=scalar|rectangular] | compare COARSE FINE NEW-REPORT | compare-wall WALL DERIVED-STUDY DERIVED-SIDECAR CANONICAL-STUDY CANONICAL-SIDECAR NEW-REPORT";
+constexpr const char* usage="Usage: robo-dyna-guided run WALL NEW-STUDY 1|2|4 [NEW-BUNDLE] [--wall=original|flip|subdivide] [--wall-provenance=NEW-SIDECAR] [--contact-integration=scalar|rectangular] [--experiment=original|penalty-margin-v1] | compare COARSE FINE NEW-REPORT | compare-wall WALL DERIVED-STUDY DERIVED-SIDECAR CANONICAL-STUDY CANONICAL-SIDECAR NEW-REPORT";
 }
 GuidedPlateCommand ParseGuidedPlateCommand(int argc,const char* const* argv) {
-    io::Require(argv&&argc>=2&&argc<=9,usage);
+    io::Require(argv&&argc>=2&&argc<=10,usage);
     for(int i=0;i<argc;++i)io::Require(argv[i]&&*argv[i],"Command arguments must be nonempty");
     GuidedPlateCommand out;const std::string command=argv[1];
     if(command=="compare") {
@@ -24,7 +25,7 @@ GuidedPlateCommand ParseGuidedPlateCommand(int argc,const char* const* argv) {
     io::Require(command=="run"&&argc>=5,usage);out.run.wall=argv[2];out.run.study=argv[3];
     const std::string refinement=argv[4];io::Require(refinement=="1"||refinement=="2"||refinement=="4","Refinement must be 1, 2 or 4");
     out.run.config.refinement=static_cast<unsigned>(refinement[0]-'0');
-    bool wall_seen=false,backend_seen=false;
+    bool wall_seen=false,backend_seen=false,experiment_seen=false;
     for(int i=5;i<argc;++i) {
         const std::string arg=argv[i];
         if(arg.rfind("--wall=",0)==0) {
@@ -41,6 +42,9 @@ GuidedPlateCommand ParseGuidedPlateCommand(int argc,const char* const* argv) {
             if(name=="scalar")out.run.config.integration_backend=tlfea::contact::Q4PlanarIntegrationBackend::ScalarDyadicSquares;
             else if(name=="rectangular")out.run.config.integration_backend=tlfea::contact::Q4PlanarIntegrationBackend::RectangularDyadic;
             else throw std::runtime_error("Unknown contact integration option");
+        } else if(arg.rfind("--experiment=",0)==0) {
+            io::Require(!experiment_seen,"Duplicate guided experiment option");experiment_seen=true;
+            io::Require(ParseGuidedExperiment(arg.substr(13),out.run.config.experiment),"Unknown guided experiment option");
         } else {
             io::Require(arg.rfind("--",0)!=0,"Unknown guided run option");
             io::Require(!out.run.bundle,"Only one optional bundle path is supported");out.run.bundle=arg;

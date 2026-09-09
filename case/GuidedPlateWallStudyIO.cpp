@@ -2,6 +2,7 @@
 #include "GuidedPlateStudyIO.h"
 #include "GuidedPlateComparisonFields.h"
 #include "GuidedPlateContactProtocol.h"
+#include "GuidedPlateExperimentProtocol.h"
 #include "WallStudyProvenance.h"
 #include "CanonicalWallArtifacts.h"
 #include "output/ArtifactIO.h"
@@ -48,6 +49,7 @@ GuidedStudyComparison CompareAndWriteGuidedPlateWallStudies(const GuidedPlateWal
     io::String(d,"source_manifest_sha256",canonical_proof.source_manifest_sha256);
     Identity(d,"derived",derived_proof,io::Sha256(derived_sidecar));Identity(d,"canonical",canonical_proof,io::Sha256(canonical_sidecar));
     io::Integer(d,"qualification_id",canonical.config.qualification_id);io::String(d,"experiment_sha256",canonical.config.experiment_sha256);
+    io::String(d,io::guided_experiment_metadata::Field,GuidedExperimentName(canonical.config.experiment));
     io::Integer(d,"base_steps",canonical.config.base_steps);io::Integer(d,"refinement",canonical.config.refinement);
     const auto* backend=GuidedContactBackendName(canonical.config.integration_backend);
     io::Require(backend&&io::contact_metadata::Known(backend),"Invalid comparison backend");

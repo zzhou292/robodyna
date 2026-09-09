@@ -40,7 +40,7 @@ void CheckBoundWall(const GuidedPlateCase& run,const CanonicalWall& wall) {
         for(unsigned n=0;n<3;++n)Require(a.nodes[n]==b.vertex_indices[n],"Guided run wall connectivity differs from authenticated input");
     }
 }
-void CheckInterval(const tl::fea::NodalStamp& base,const GuidedPlateMetrics& m,ct::Q4PlanarIntegrationBackend backend) {
+void CheckInterval(const tl::fea::NodalStamp& base,const GuidedPlateMetrics& m,ct::Q4PlanarIntegrationBackend backend,std::uint64_t qualification) {
     const auto& s=m.shell; const auto& c=m.contact; const auto& applied=m.applied_contact;
     Require(SameOwner(base,m.stamp)&&std::isfinite(base.time)&&base.time>=0&&m.stamp.epoch==base.epoch+1&&
         m.stamp.time==base.time+base.fixed_dt&&m.stamp.time>base.time&&m.stamp.reactions_valid&&
@@ -48,7 +48,7 @@ void CheckInterval(const tl::fea::NodalStamp& base,const GuidedPlateMetrics& m,c
         s.owner_id==base.owner_id&&c.owner_id==base.owner_id&&applied.owner_id==base.owner_id&&
         s.base_epoch==base.epoch&&c.base_epoch==base.epoch&&applied.base_epoch==base.epoch&&
         s.attempt&&s.attempt==c.attempt&&s.attempt==applied.attempt&&
-        s.configuration_id==kGuidedPlateQualification&&c.configuration_id==s.configuration_id&&applied.configuration_id==s.configuration_id&&
+        qualification&&s.configuration_id==qualification&&c.configuration_id==s.configuration_id&&applied.configuration_id==s.configuration_id&&
         c.wall_binding_id==kGuidedPlateWallBinding&&applied.wall_binding_id==c.wall_binding_id&&
         s.phase==tl::fea::reissner::ShellBatchPhase::kPreparedCandidate&&c.phase==ct::Q4PlanarContactPhase::PreparedCandidate&&
         applied.phase==ct::Q4PlanarContactPhase::AcceptedBase&&ValidGuidedContactPartition(c,backend)&&
@@ -56,6 +56,8 @@ void CheckInterval(const tl::fea::NodalStamp& base,const GuidedPlateMetrics& m,c
 }
 Document FinalMetrics(const GuidedPlateCase& run,std::size_t frame_count,double elapsed) {
     const auto& m=*run.metrics(); Document d; d.SetObject();
+    String(d,guided_experiment_metadata::Field,GuidedExperimentName(run.experiment()));
+    Integer(d,"qualification_id",run.guided_data()->qualification_id);
     String(d,contact_metadata::BackendField,GuidedContactBackendName(run.integration_backend()));
     Integer(d,"owner_id",m.stamp.owner_id); Integer(d,"accepted_epoch",m.stamp.epoch); Number(d,"accepted_time_s",m.stamp.time);
     Integer(d,"saved_frames",frame_count); Number(d,"elapsed_wall_seconds",elapsed); Number(d,"initial_energy_J",m.initial_energy);
@@ -87,13 +89,18 @@ struct GuidedPlateArtifacts::Impl {
     double horizon=0; std::size_t static_bytes=0;
     bool failed=false,finished=false;
     ct::Q4PlanarIntegrationBackend backend=ct::Q4PlanarIntegrationBackend::ScalarDyadicSquares;
+    reference::GuidedPlateExperiment experiment=reference::GuidedPlateExperiment::Original;
+    std::uint64_t qualification=0;
     explicit Impl(const std::string& path):directory(path),inventory(directory) {}
     void CheckRun(const GuidedPlateCase& run) const {
         Require(run.metrics()&&run.modal()&&run.guided_data()&&run.output()&&run.output()->surface().binding(),"Missing initialized guided output run");
         const auto& b=run.output()->surface().binding()->identity;
         Require(SameOwner(last_interval,run.metrics()->stamp)&&b.owner==identity.owner&&b.run==identity.run&&b.topology==identity.topology&&
             run.metrics()->required_steps==required_steps&&run.modal()->horizon==horizon&&run.guided_data()->wall_binding_id==kGuidedPlateWallBinding&&
-            run.integration_backend()==backend&&ValidGuidedContactPartition(run.metrics()->contact,backend),
+            run.integration_backend()==backend&&ValidGuidedContactPartition(run.metrics()->contact,backend)&&
+            run.experiment()==experiment&&GuidedExperimentIdentity(experiment,qualification)&&
+            run.guided_data()->qualification_id==qualification&&run.metrics()->shell.configuration_id==qualification&&
+            run.metrics()->contact.configuration_id==qualification,
             "Guided output belongs to a different owner/run/topology");
     }
     void AddStatic(const std::string& file) {
@@ -110,6 +117,8 @@ GuidedPlateArtifacts::GuidedPlateArtifacts(const std::string& path,const std::st
     s.last_interval=run.metrics()->stamp; s.required_steps=run.metrics()->required_steps; s.horizon=run.modal()->horizon;
     s.identity=run.output()->surface().binding()->identity;
     s.backend=run.integration_backend();
+    Require(run.guided_data(),"Guided experiment metadata is unavailable");
+    s.experiment=run.experiment();s.qualification=run.guided_data()->qualification_id;
     Require(s.last_interval.owner_id&&s.last_interval.epoch==0&&s.last_interval.time==0&&s.last_interval.fixed_dt>0&&
             std::isfinite(s.last_interval.fixed_dt)&&std::isfinite(s.horizon)&&s.horizon>0,"Guided output must start at its initial accepted state");
     s.CheckRun(run); CheckCanonicalWallBinding(wall,bytes); CheckBoundWall(run,wall);
@@ -139,7 +148,7 @@ void GuidedPlateArtifacts::RecordInterval(const tl::fea::NodalStamp& base,const 
         base.epoch==s.last_interval.epoch&&Bits(base.time)==Bits(s.last_interval.time)&&m.stamp.epoch<=s.required_steps&&
         m.required_steps==s.required_steps,
         "Guided output interval is stale, skipped or closed");
-    CheckInterval(base,m,s.backend); const auto rows=GuidedPlateIntervalRows(base,m);
+    CheckInterval(base,m,s.backend,s.qualification); const auto rows=GuidedPlateIntervalRows(base,m);
     for(unsigned n=0;n<3;++n)Require(s.ledger_bytes[n]<=s.forecast.ledger_bytes[n]&&
         rows[n].size()<=s.forecast.ledger_bytes[n]-s.ledger_bytes[n],"Guided ledger exceeds admitted byte forecast");
     try {
@@ -187,6 +196,8 @@ void GuidedPlateArtifacts::Finish(const GuidedPlateCase& run,double elapsed) {
         Document manifest; manifest.SetObject(); String(manifest,"schema","robo_dyna.guided_plate_artifacts.v1"); String(manifest,"status","completed");
         String(manifest,"scope","Synthetic guided elastic two-Q4 plate against the original canonical mesh wall");
         String(manifest,contact_metadata::BackendField,GuidedContactBackendName(s.backend));
+        String(manifest,guided_experiment_metadata::Field,GuidedExperimentName(s.experiment));
+        Integer(manifest,"qualification_id",s.qualification);
         Boolean(manifest,"shell_model",true); Boolean(manifest,"vehicle_model",false); Boolean(manifest,"contact",true);
         Integer(manifest,"owner_id",m.stamp.owner_id); Integer(manifest,"accepted_epoch",m.stamp.epoch); Number(manifest,"accepted_time_s",m.stamp.time);
         String(manifest,"completion_meaning","Admitted horizon committed and accepted artifacts verified; refinement and inspected rendering are separate gates");

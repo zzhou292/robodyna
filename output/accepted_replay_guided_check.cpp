@@ -1,6 +1,7 @@
 #include "AcceptedReplay.h"
 #include "ArtifactIO.h"
 #include "ContactIntegrationMetadata.h"
+#include "GuidedExperimentMetadata.h"
 #include "MeshArchive.h"
 #include "case/CanonicalWallArtifacts.h"
 #include "chrono/geometry/ChTriangleMeshConnected.h"
@@ -13,6 +14,7 @@
 namespace crash::output {
 namespace {
 namespace fs=std::filesystem;
+namespace experiment=guided_experiment_metadata;
 // Format/association fixture, not a new physical trajectory oracle. The wall
 // is the exact real canonical asset; synthetic moving fields deliberately have
 // simple independent values so identity/phase corruption is easy to isolate.
@@ -74,7 +76,11 @@ class GuidedBundle {
         Document d; d.SetObject(); String(d,"schema","robo_dyna.guided_plate_configuration.v1");
         Number(d,"fixed_dt_s",.1); Number(d,"requested_horizon_s",1); Integer(d,"required_steps",10);
         Integer(d,"owner_id",7); Integer(d,"run_id",13); Integer(d,"topology_id",17);
-        Integer(d,"qualification_id",19); Integer(d,"wall_binding_id",23);
+        Integer(d,"qualification_id",experiment::OriginalQualification); Integer(d,"wall_binding_id",23);
+        Number(d,"penalty_per_area_N_per_m3",experiment::Penalty(experiment::Original));
+        Number(d,"maximum_penetration_m",experiment::MaximumPenetration);
+        Number(d,"contact_force_error_budget_N",experiment::ForceError);
+        Number(d,"contact_potential_error_budget_J",experiment::PotentialError);
         String(d,"canonical_wall_manifest_sha256",case_data::kCanonicalWallManifestSha256);
         Value vertices(rapidjson::kArrayType),triangles(rapidjson::kArrayType),parents(rapidjson::kArrayType);
         for(unsigned n=0;n<6;++n) {
@@ -102,7 +108,7 @@ class GuidedBundle {
         Integer(d,"element_evaluation_base_epoch",base); Integer(d,"element_evaluation_attempt",attempt);
         Integer(d,"contact_evaluation_base_epoch",base); Integer(d,"contact_evaluation_attempt",attempt);
         String(d,"element_evaluation_phase",phase); String(d,"contact_evaluation_phase",phase);
-        Integer(d,"qualification_id",19); Integer(d,"wall_binding_id",23);
+        Integer(d,"qualification_id",experiment::OriginalQualification); Integer(d,"wall_binding_id",23);
         Value positions(rapidjson::kArrayType),rotations(rapidjson::kArrayType);
         for(const auto& p:mesh.GetCoordsVertices()) {
             for(unsigned j=0;j<3;++j)positions.PushBack(p[j],d.GetAllocator());
@@ -147,7 +153,9 @@ class GuidedBundle {
     void Replace(const std::string& file,const std::string& bytes) { fs::remove(directory/file); WriteBytes(directory/file,bytes); }
     void Backend(const char* backend) {
         auto config=Read("configuration.json"); String(config,contact_metadata::BackendField,backend);
-        Integer(config,"contact_max_depth",16); Integer(config,"contact_max_leaves",4096); Integer(config,"contact_max_visits",16384);
+        if(!config.HasMember("contact_max_depth"))Integer(config,"contact_max_depth",16);
+        if(!config.HasMember("contact_max_leaves"))Integer(config,"contact_max_leaves",4096);
+        if(!config.HasMember("contact_max_visits"))Integer(config,"contact_max_visits",16384);
         Replace("configuration.json",config);
         for(unsigned i=0;i<3;++i) {
             const auto file=Stem(i)+".fields.json"; auto d=Read(file);
@@ -166,6 +174,22 @@ class GuidedBundle {
         auto final=Read("final-metrics.json"); String(final,contact_metadata::BackendField,backend); Replace("final-metrics.json",final);
         Manifest();
     }
+    void Experiment(const char* name) {
+        auto config=Read("configuration.json"); String(config,experiment::Field,name);
+        config["qualification_id"].SetUint64(experiment::Qualification(name));
+        config["penalty_per_area_N_per_m3"].SetDouble(experiment::Penalty(name));
+        Number(config,"penalty_target_penetration_m",experiment::TargetPenetration);
+        if(!config.HasMember("contact_max_depth"))Integer(config,"contact_max_depth",experiment::MaxDepth);
+        if(!config.HasMember("contact_max_leaves"))Integer(config,"contact_max_leaves",experiment::MaxLeaves);
+        if(!config.HasMember("contact_max_visits"))Integer(config,"contact_max_visits",experiment::MaxVisits);
+        Replace("configuration.json",config);
+        for(unsigned i=0;i<3;++i) {
+            const auto file=Stem(i)+".fields.json"; auto d=Read(file);
+            String(d,experiment::Field,name); d["qualification_id"].SetUint64(experiment::Qualification(name)); Replace(file,d);
+        }
+        auto final=Read("final-metrics.json"); String(final,experiment::Field,name);
+        Integer(final,"qualification_id",experiment::Qualification(name)); Replace("final-metrics.json",final); Manifest();
+    }
     void Manifest() {
         fs::remove(directory/"manifest.json"); Document d; d.SetObject();
         String(d,"schema","robo_dyna.guided_plate_artifacts.v1"); String(d,"status","completed");
@@ -175,6 +199,10 @@ class GuidedBundle {
         if(config.HasMember(contact_metadata::BackendField))
             d.AddMember(rapidjson::StringRef(contact_metadata::BackendField),
                         Value(config[contact_metadata::BackendField],d.GetAllocator()),d.GetAllocator());
+        if(config.HasMember(experiment::Field)) {
+            d.AddMember(rapidjson::StringRef(experiment::Field),Value(config[experiment::Field],d.GetAllocator()),d.GetAllocator());
+            Integer(d,"qualification_id",config["qualification_id"].GetUint64());
+        }
         Value inventory(rapidjson::kArrayType);
         for(const auto& file:fs::directory_iterator(directory)) {
             const auto name=file.path().filename().string(), bytes=ReadBounded(file.path(),32*1024*1024),hash=Sha256(bytes);
@@ -199,6 +227,7 @@ TEST(AcceptedReplayGuided, OriginalWallAndCandidateOrRefreshedEndpointFramesAreB
     AcceptedReplay replay; const auto result=replay.Open(f.directory);
     ASSERT_EQ(result.status,ReplayStatus::Ok)<<result.diagnostic;
     EXPECT_EQ(replay.info()->kind,ReplayKind::GuidedPlate); EXPECT_EQ(replay.info()->run_id,13u);
+    EXPECT_EQ(replay.info()->guided_experiment,experiment::Original);
     EXPECT_EQ(replay.info()->topology_id,17u); ASSERT_TRUE(replay.wall());
     EXPECT_EQ(replay.wall()->GetCoordsVertices().size(),62u); EXPECT_EQ(replay.wall()->GetIndicesVertices().size(),100u);
     for(unsigned i:{2u,1u,0u}) {
@@ -314,6 +343,93 @@ TEST(AcceptedReplayGuided, ExplicitScalarAndRectangularPartitionsRemainReadable)
         const auto open=replay.Open(f.directory); ASSERT_EQ(open.status,ReplayStatus::Ok)<<open.diagnostic;
         for(unsigned i=0;i<3;++i)EXPECT_EQ(replay.Load(i).status,ReplayStatus::Ok);
     }
+}
+
+TEST(AcceptedReplayGuided, NamedExperimentsBindQualificationWithoutChangingReplayGeometry) {
+    for(const char* name:{experiment::Original,experiment::PenaltyMargin})
+        for(const char* backend:{contact_metadata::Scalar,contact_metadata::Rectangular}) {
+            SCOPED_TRACE(name);
+            SCOPED_TRACE(backend);
+            GuidedBundle f; f.Experiment(name); f.Backend(backend); AcceptedReplay replay;
+            const auto opened=replay.Open(f.directory); ASSERT_EQ(opened.status,ReplayStatus::Ok)<<opened.diagnostic;
+            EXPECT_EQ(replay.info()->guided_experiment,name);
+            for(unsigned i=0;i<3;++i) {
+                ASSERT_EQ(replay.Load(i).status,ReplayStatus::Ok);
+                EXPECT_EQ(replay.frame()->mesh->GetCoordsVertices(),GuidedBundle::Mesh(i).GetCoordsVertices());
+                EXPECT_EQ(Bits(replay.frame()->time),Bits(.5*i));
+            }
+        }
+    // An optional declaration on a legacy record must agree with its default.
+    GuidedBundle legacy; auto final=legacy.Read("final-metrics.json");
+    String(final,experiment::Field,experiment::Original); legacy.Replace("final-metrics.json",final); legacy.Manifest();
+    AcceptedReplay replay; ASSERT_EQ(replay.Open(legacy.directory).status,ReplayStatus::Ok);
+    EXPECT_EQ(replay.info()->guided_experiment,experiment::Original);
+}
+
+TEST(AcceptedReplayGuided, NamedExperimentCorruptionPreservesPreviouslyPublishedReplay) {
+    for(unsigned fault=0;fault<38;++fault) {
+        SCOPED_TRACE(fault); GuidedBundle f;
+        const bool legacy=fault>=23&&fault<=28;
+        if(!legacy)f.Experiment(experiment::PenaltyMargin);
+        AcceptedReplay replay; ASSERT_EQ(replay.Open(f.directory).status,ReplayStatus::Ok);
+        ASSERT_EQ(replay.Load(1).status,ReplayStatus::Ok);
+        const auto previous=*replay.frame(); const auto info=*replay.info(); const auto wall=replay.wall();
+        std::string file="configuration.json";
+        if((fault>=10&&fault<=13)||fault==25)file=GuidedBundle::Stem(2)+".fields.json";
+        if(fault==14||fault==15||fault==18||fault==21||fault==26)file="final-metrics.json";
+        if(fault==16||fault==17||fault==22||fault==27)file="manifest.json";
+        auto d=f.Read(file);
+        if(fault==0)d[experiment::Field].SetString("unknown");
+        if(fault==1)d[experiment::Field].SetUint(1);
+        if(fault==2||fault==13||fault==21||fault==22)String(d,experiment::Field,experiment::PenaltyMargin);
+        if(fault==3) {
+            constexpr char bad[]="penalty-margin-v1\0extra";
+            d[experiment::Field].SetString(bad,sizeof(bad)-1,d.GetAllocator());
+        }
+        if(fault==4||fault==12||fault==18)d["qualification_id"].SetUint64(experiment::OriginalQualification);
+        if(fault==5)d["penalty_per_area_N_per_m3"].SetDouble(1e5);
+        if(fault==6)d["maximum_penetration_m"].SetDouble(.001);
+        if(fault==7)d["contact_force_error_budget_N"].SetDouble(2e-6);
+        if(fault==8)d["contact_potential_error_budget_J"].SetDouble(2e-12);
+        if(fault==9)d.RemoveMember("contact_force_error_budget_N");
+        if(fault==10||fault==14||fault==16)d[experiment::Field].SetString(experiment::Original,d.GetAllocator());
+        if(fault==11||fault==15||fault==17||fault==20)d.RemoveMember(experiment::Field);
+        if(fault==19)d["penalty_target_penetration_m"].SetDouble(.001);
+        if(fault==23)d["qualification_id"].SetUint64(experiment::PenaltyMarginQualification);
+        if(fault==24)d["penalty_per_area_N_per_m3"].SetDouble(4e5);
+        if(fault==25||fault==26||fault==27)String(d,experiment::Field,experiment::PenaltyMargin);
+        if(fault==28)d["contact_force_error_budget_N"].SetString("NaN");
+        if(fault==29)d.RemoveMember("penalty_target_penetration_m");
+        if(fault==30)d["contact_max_leaves"].SetUint(2048);
+        if(fault==31)d["contact_max_visits"].SetUint(8192);
+        if(fault==32)d["contact_max_depth"].SetUint(15);
+        if(fault==33)Integer(d,"contact_max_leaves",experiment::MaxLeaves);
+        if(fault==34)Number(d,"penalty_per_area_N_per_m3",4e5);
+        if(fault==35)Integer(d,"qualification_id",experiment::PenaltyMarginQualification);
+        if(fault==36)Number(d,"contact_potential_error_budget_J",experiment::PotentialError);
+        if(fault==37)Number(d,"penalty_target_penetration_m",experiment::TargetPenetration);
+        f.Replace(file,d); if(file!="manifest.json")f.Manifest();
+        const auto rejected=replay.Open(f.directory);
+        EXPECT_EQ(rejected.status,ReplayStatus::InvalidBundle)<<rejected.diagnostic;
+        EXPECT_EQ(replay.info()->guided_experiment,info.guided_experiment);
+        EXPECT_EQ(replay.info()->owner_id,info.owner_id); EXPECT_EQ(replay.info()->final_epoch,info.final_epoch);
+        EXPECT_EQ(Bits(replay.info()->final_time),Bits(info.final_time));
+        EXPECT_EQ(replay.frame()->mesh,previous.mesh); EXPECT_EQ(replay.frame()->epoch,previous.epoch);
+        EXPECT_EQ(Bits(replay.frame()->time),Bits(previous.time)); EXPECT_EQ(replay.wall(),wall);
+    }
+}
+
+TEST(AcceptedReplayGuided, ExperimentProtocolRejectsUnknownOrRepeatedConsumedValues) {
+    Document legacy; legacy.SetObject(); EXPECT_EQ(experiment::Name(legacy),experiment::Original);
+    EXPECT_THROW(experiment::Name(legacy,true),std::runtime_error);
+    EXPECT_THROW(experiment::Qualification("unknown"),std::runtime_error);
+    EXPECT_THROW(experiment::Penalty("unknown"),std::runtime_error);
+    EXPECT_EQ(experiment::Qualification(experiment::Original),0x4432475549444531ULL);
+    EXPECT_EQ(experiment::Qualification(experiment::PenaltyMargin),0x4432475549444532ULL);
+    EXPECT_EQ(experiment::Penalty(experiment::Original),1e5); EXPECT_EQ(experiment::Penalty(experiment::PenaltyMargin),4e5);
+    String(legacy,experiment::Field,experiment::Original); String(legacy,experiment::Field,experiment::Original);
+    EXPECT_THROW(experiment::Name(legacy),std::runtime_error);
+    Document scalar; scalar.SetInt(0); EXPECT_THROW(experiment::Name(scalar),std::runtime_error);
 }
 
 TEST(AcceptedReplayGuided, RehashedBackendAndAxisCorruptionRejectsWithoutReplacingPublishedFrames) {

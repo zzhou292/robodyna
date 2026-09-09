@@ -3,11 +3,13 @@
 #include "CanonicalWall.h"
 #include "WallTessellation.h"
 #include "GuidedPlateAdmission.h"
+#include "chrono/GuidedPlateExperiment.h"
+#include "chrono/GuidedPlatePenaltyAudit.h"
 #include "chrono/NodalMeshOutput.h"
 #include <memory>
 
 namespace crash::case_data {
-inline constexpr std::uint64_t kGuidedPlateQualification = 0x4432475549444531ULL;
+inline constexpr std::uint64_t kGuidedPlateQualification = reference::kGuidedOriginalExperiment.qualification_id;
 inline constexpr std::uint64_t kGuidedPlateWallBinding = kOriginalWallTessellationBinding;
 inline constexpr std::size_t kGuidedPlateDeviceBudget = 1024 * 1024;
 
@@ -16,6 +18,7 @@ struct GuidedPlateConfig {
     unsigned diagnostic_intervals = 20;
     tlfea::contact::Q4PlanarIntegrationBackend integration_backend =
         tlfea::contact::Q4PlanarIntegrationBackend::ScalarDyadicSquares;
+    reference::GuidedPlateExperiment experiment = reference::GuidedPlateExperiment::Original;
 };
 struct GuidedPlateStepRequest {
     // Tightening this attempt's stop envelope cannot change the experiment.
@@ -81,6 +84,8 @@ class GuidedPlateCase {
     // Immutable execution choice. Before successful initialization this returns
     // the scalar default; metrics() must be nonnull to identify a live case.
     tlfea::contact::Q4PlanarIntegrationBackend integration_backend() const noexcept;
+    reference::GuidedPlateExperiment experiment() const noexcept;
+    const reference::GuidedPlatePenaltyReport* penalty_audit() const noexcept;
     const reference::GuidedPlateModalReport* modal() const noexcept;
     const reference::ElasticCouponData* model_data() const noexcept;
     const reference::GuidedPlateData* guided_data() const noexcept;

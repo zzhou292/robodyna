@@ -105,7 +105,10 @@ TEST(GuidedPlateWallStudy, ChangedPhysicalExperimentOrSchedulePreservesAllOutput
             auto config=d.config;config.refinement=2;config.fixed_dt=.0005;d=fixture::Run(config);
         }
         if(variant==15)d.config.horizon=std::nextafter(d.config.horizon,1.);
-        if(variant==16)++d.config.qualification_id;
+        if(variant==16) {
+            d.config.experiment=crash::reference::GuidedPlateExperiment::PenaltyMarginV1;
+            d.config.qualification_id=crash::reference::kGuidedPenaltyMarginV1Experiment.qualification_id;
+        }
         if(variant==17)std::swap(d.config.contact_reference[0].parent.nodes[0],d.config.contact_reference[0].parent.nodes[1]);
         if(variant==18)d.config.contact_reference[0].reference_projection[0].y=-0.;
         if(variant==19)d.samples.back().normal_velocity[1]=std::numeric_limits<double>::quiet_NaN();

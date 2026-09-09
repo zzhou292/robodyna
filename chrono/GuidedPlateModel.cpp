@@ -14,7 +14,11 @@ struct GuidedPlateModel::Impl {
     sc::Q4PlanarGeometry contact;
     sc::Q4PlanarStiffness stiffness;
 
-    Impl(sc::PlanarWallView input,std::uint64_t binding) {
+    Impl(sc::PlanarWallView input,std::uint64_t binding,GuidedPlateExperiment experiment) {
+        const auto* spec=FindGuidedPlateExperiment(experiment);
+        if (!spec) throw std::invalid_argument("Unknown guided plate experiment");
+        data.experiment=experiment; data.qualification_id=spec->qualification_id;
+        data.stiffness_per_area=spec->stiffness_per_area; data.target_penetration=spec->target_penetration;
         if (!binding) throw std::invalid_argument("Guided plate requires a stable wall binding identity");
         const auto wall_report=wall.Initialize(input);
         if (wall_report.status!=sc::PlanarContactStatus::Ok)
@@ -53,12 +57,12 @@ struct GuidedPlateModel::Impl {
         if (sc::BuildQ4PlanarStiffness(contact.view(),mass,data.stiffness_per_area,&stiffness)!=sc::PlanarContactStatus::Ok ||
             !std::isfinite(stiffness.rate_bound) || stiffness.rate_bound<=0)
             throw std::invalid_argument("Guided plate contact stiffness/mass bound is invalid");
-        const double area=.5*ElasticCouponData::length*ElasticCouponData::width;
-        data.integration.force_error=1e-6*data.stiffness_per_area*area*data.maximum_penetration;
-        data.integration.energy_error=5e-9*data.stiffness_per_area*area*data.maximum_penetration*data.maximum_penetration;
+        data.integration.force_error=spec->force_error;
+        data.integration.energy_error=spec->energy_error;
     }
 };
-GuidedPlateModel::GuidedPlateModel(sc::PlanarWallView wall,std::uint64_t binding) : impl_(std::make_unique<Impl>(wall,binding)) {}
+GuidedPlateModel::GuidedPlateModel(sc::PlanarWallView wall,std::uint64_t binding,GuidedPlateExperiment experiment)
+    : impl_(std::make_unique<Impl>(wall,binding,experiment)) {}
 GuidedPlateModel::~GuidedPlateModel()=default;
 const GuidedPlateData& GuidedPlateModel::data() const { return impl_->data; }
 const ElasticCouponModel& GuidedPlateModel::shell() const { return *impl_->shell; }

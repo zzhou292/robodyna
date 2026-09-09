@@ -23,6 +23,7 @@ struct GuidedStudyConfig {
     // Execution identity is separate from the physical experiment fingerprint.
     tlfea::contact::Q4PlanarIntegrationBackend integration_backend =
         tlfea::contact::Q4PlanarIntegrationBackend::ScalarDyadicSquares;
+    reference::GuidedPlateExperiment experiment = reference::GuidedPlateExperiment::Original;
 };
 // Exactly ceil(j*base_steps/200)*refinement, without overflowing products.
 // The admitted base count is >=200, so all 201 epochs are distinct.

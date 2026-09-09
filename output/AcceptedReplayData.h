@@ -30,6 +30,7 @@ struct Bundle {
     unsigned contact_depth_limit=16;
     unsigned contact_leaf_limit=4096,contact_visit_limit=16384;
     bool explicit_contact_backend=false;
+    bool explicit_guided_experiment=false;
 };
 Document Json(const std::string& bytes);
 const Value& Member(const Value&, const char* name);

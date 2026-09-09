@@ -4,6 +4,8 @@
 
 namespace crash::reference {
 struct GuidedPlateModalReport {
+    GuidedPlateExperiment experiment=GuidedPlateExperiment::Original;
+    std::uint64_t qualification_id=0;
     std::array<double,kGuidedPlateDofs> squared_frequency{};
     std::array<double,kGuidedPlateDofs> initial_mode_increment{};
     ElasticCouponConfiguration initial_configuration;

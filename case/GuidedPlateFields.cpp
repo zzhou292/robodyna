@@ -29,19 +29,20 @@ Value ParentBinding(Document& doc,const ct::SurfaceQ4& p) {
     for(auto n:p.nodes)nodes.PushBack(n,doc.GetAllocator());
     item.AddMember("connectivity_zero_based",nodes,doc.GetAllocator()); return item;
 }
-void CheckFrame(const GuidedPlateFrame& f) {
+void CheckFrame(const GuidedPlateFrame& f,const reference::GuidedPlateData& model) {
     const auto& s=f.element_association; const auto& c=f.contact_association;
     const bool candidate=s.phase==tl::fea::reissner::ShellBatchPhase::kPreparedCandidate;
     const auto base=candidate&&f.stamp.epoch?f.stamp.epoch-1:f.stamp.epoch;
     Require(f.stamp.owner_id && f.stamp.node_count==reference::kCouponNodes && f.stamp.has_rotations &&
         std::isfinite(f.stamp.fixed_dt)&&f.stamp.fixed_dt>0&&std::isfinite(f.stamp.time)&&f.stamp.time>=0&&s.valid&&c.valid&&s.attempt&&
         s.owner_id==f.stamp.owner_id && c.owner_id==s.owner_id && s.attempt==c.attempt &&
-        s.configuration_id==kGuidedPlateQualification && c.configuration_id==s.configuration_id &&
+        GuidedExperimentIdentity(model.experiment,model.qualification_id)&&s.configuration_id==model.qualification_id && c.configuration_id==s.configuration_id &&
         c.wall_binding_id==kGuidedPlateWallBinding && s.base_epoch==base && c.base_epoch==base &&
         ((candidate&&f.stamp.epoch&&c.phase==ct::Q4PlanarContactPhase::PreparedCandidate)||
          (!candidate&&s.phase==tl::fea::reissner::ShellBatchPhase::kAcceptedBase&&c.phase==ct::Q4PlanarContactPhase::AcceptedBase)),
         "Guided fields do not identify matching accepted endpoint evaluations");
-    Require(ValidGuidedContactPartition(c,c.integration_backend)&&
+    Require(f.metrics.shell.configuration_id==model.qualification_id&&f.metrics.contact.configuration_id==model.qualification_id&&
+        ValidGuidedContactPartition(c,c.integration_backend)&&
         ValidGuidedContactPartition(f.metrics.contact,c.integration_backend),"Guided field contact backend or depths mismatch");
     Require(f.metrics.stamp.owner_id==f.stamp.owner_id && f.metrics.stamp.epoch==f.stamp.epoch &&
         f.metrics.stamp.node_count==f.stamp.node_count&&f.metrics.stamp.has_rotations==f.stamp.has_rotations&&
@@ -117,10 +118,47 @@ void AppendContactReference(Document& doc,const GuidedPlateCase& run) {
     }
     doc.AddMember("contact_parent_binding",parents,doc.GetAllocator()); doc.AddMember("contact_reference_area",areas,doc.GetAllocator());
 }
+void AppendPenaltyAudit(Document& doc,const GuidedPlateCase& run) {
+    const auto* report=run.penalty_audit();
+    Require(report&&report->experiment==run.experiment()&&report->qualification_id==run.guided_data()->qualification_id&&
+        report->initial_energy==run.modal()->initial_elastic_energy&&
+        report->enforced==(run.experiment()==reference::GuidedPlateExperiment::PenaltyMarginV1)&&
+        (!report->enforced||report->target_sufficient),"Missing or mismatched startup penalty screen");
+    Document child;child.SetObject();
+    String(child,"scope","Prescribed initial-mode energy/force screen; not a global penetration bound or completed trajectory");
+    String(child,guided_experiment_metadata::Field,GuidedExperimentName(report->experiment));
+    Integer(child,"qualification_id",report->qualification_id);Boolean(child,"enforced",report->enforced);
+    Boolean(child,"target_sufficient",report->target_sufficient);Boolean(child,"global_penetration_bound",false);
+    Number(child,"initial_energy_J",report->initial_energy);Number(child,"admitted_energy_upper_J",report->admitted_energy_upper);
+    Value samples(rapidjson::kArrayType);
+    for(const auto& sample:report->sample) {
+        Document item;item.SetObject();Number(item,"requested_penetration_m",sample.requested_penetration);
+        Number(item,"actual_penetration_m",sample.actual_penetration);Number(item,"modal_scale",sample.modal_scale);
+        item.AddMember("maximum_depth_m",Interval(item,sample.maximum_depth),item.GetAllocator());
+        Integer(item,"inward_scale_adjustments",sample.inward_scale_adjustments);
+        Number(item,"shell_energy_tl_J",sample.shell_energy_tl);Number(item,"shell_energy_chrono_J",sample.shell_energy_chrono);
+        Number(item,"shell_energy_allowance_J",sample.shell_energy_allowance);
+        item.AddMember("contact_potential_J",Certificate(item,sample.contact_potential),item.GetAllocator());
+        item.AddMember("contact_resultant_N",Certificate(item,sample.contact_resultant),item.GetAllocator());
+        Number(item,"strip_potential_J",sample.strip_potential);Number(item,"strip_resultant_N",sample.strip_resultant);
+        Number(item,"strip_energy_allowance_J",sample.strip_energy_allowance);Number(item,"strip_force_allowance_N",sample.strip_force_allowance);
+        Number(item,"total_potential_lower_J",sample.total_potential_lower);Value derivatives(rapidjson::kArrayType);
+        for(const auto& derivative:sample.derivative) {
+            Document d;d.SetObject();Number(d,"step_m",derivative.step_m);Number(d,"derivative_N",derivative.derivative_N);
+            Number(d,"restoring_force_N",derivative.restoring_force_N);Number(d,"error_N",derivative.error_N);
+            Number(d,"contact_uncertainty_N",derivative.contact_uncertainty_N);Number(d,"allowance_N",derivative.allowance_N);
+            Boolean(d,"backward",derivative.backward);Value copy;copy.CopyFrom(d,item.GetAllocator());derivatives.PushBack(copy,item.GetAllocator());
+        }
+        item.AddMember("derivatives",derivatives,item.GetAllocator());Value copy;copy.CopyFrom(item,child.GetAllocator());samples.PushBack(copy,child.GetAllocator());
+    }
+    child.AddMember("samples",samples,child.GetAllocator());Value copy;copy.CopyFrom(child,doc.GetAllocator());
+    doc.AddMember("startup_penalty_screen",copy,doc.GetAllocator());
+}
 } // namespace
 
 Document GuidedPlateFrameFields(const GuidedPlateFrame& f,const reference::GuidedPlateData& model) {
-    CheckFrame(f); Document doc; doc.SetObject(); String(doc,"schema","robo_dyna.guided_plate_fields.v1");
+    CheckFrame(f,model); Document doc; doc.SetObject(); String(doc,"schema","robo_dyna.guided_plate_fields.v1");
+    String(doc,guided_experiment_metadata::Field,GuidedExperimentName(model.experiment));
     Integer(doc,"owner_id",f.stamp.owner_id); Integer(doc,"accepted_epoch",f.stamp.epoch);
     Number(doc,"accepted_time_s",f.stamp.time); Number(doc,"fixed_dt_s",f.stamp.fixed_dt);
     Boolean(doc,"reactions_valid",f.stamp.reactions_valid); Integer(doc,"reaction_base_epoch",f.stamp.reaction_base_epoch);
@@ -156,7 +194,11 @@ Document GuidedPlateConfiguration(const GuidedPlateCase& run,unsigned frame_ever
     String(doc,"inertia_policy","Physical tangential rho*t^3*A/12; equal numerical drilling gives total J*I");
     String(doc,"canonical_wall_manifest_sha256",canonical_sha);
     Integer(doc,"owner_id",b.identity.owner); Integer(doc,"run_id",b.identity.run); Integer(doc,"topology_id",b.identity.topology);
-    Integer(doc,"qualification_id",kGuidedPlateQualification); Integer(doc,"wall_binding_id",g.wall_binding_id);
+    Require(GuidedExperimentIdentity(g.experiment,g.qualification_id)&&run.experiment()==g.experiment&&
+        run.metrics()->shell.configuration_id==g.qualification_id&&run.metrics()->contact.configuration_id==g.qualification_id,
+        "Guided configuration experiment identity mismatch");
+    Integer(doc,"qualification_id",g.qualification_id); Integer(doc,"wall_binding_id",g.wall_binding_id);
+    String(doc,guided_experiment_metadata::Field,GuidedExperimentName(g.experiment));
     Require(ValidGuidedContactPartition(run.metrics()->contact,run.integration_backend()),"Guided configuration backend mismatch");
     String(doc,contact_metadata::BackendField,GuidedContactBackendName(run.integration_backend()));
     String(doc,"contact_depth_convention","Independent U/V resolution; deepest_leaf=max(U,V); scalar squares have U=V");
@@ -168,6 +210,7 @@ Document GuidedPlateConfiguration(const GuidedPlateCase& run,unsigned frame_ever
     Number(doc,"initial_energy_J",run.metrics()->initial_energy); Number(doc,"initial_tip_displacement_m",g.initial_tip_displacement);
     Number(doc,"initial_gap_m",g.initial_gap); Number(doc,"penalty_per_area_N_per_m3",g.stiffness_per_area);
     Number(doc,"maximum_penetration_m",g.maximum_penetration); Number(doc,"exposed_clearance_m",g.exposed_clearance);
+    Number(doc,"penalty_target_penetration_m",g.target_penetration);
     Number(doc,"friction",0); Number(doc,"damping",0); Number(doc,"thickness_offset_m",0);
     Number(doc,"contact_force_error_budget_N",g.integration.force_error); Number(doc,"contact_potential_error_budget_J",g.integration.energy_error);
     Integer(doc,"contact_max_leaves",g.integration.max_leaves); Integer(doc,"contact_max_depth",g.integration.max_depth);
@@ -201,6 +244,7 @@ Document GuidedPlateConfiguration(const GuidedPlateCase& run,unsigned frame_ever
     Number(doc,"maximum_area_ratio",ElasticShellLimits::maximum_area_ratio);
     String(doc,"field_phase","Endpoint shell/contact fields; reactions and applied wall impulse belong to the preceding accepted base interval");
     String(doc,"admission_scope","Restricted sampled and monitored spectral envelope; candidate geometry, energy and work gates; no general nonlinear theorem");
+    AppendPenaltyAudit(doc,run);
     return doc;
 }
 } // namespace crash::case_data

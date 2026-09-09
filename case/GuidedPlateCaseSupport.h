@@ -41,10 +41,10 @@ struct TrialScope {
 bool SameStamp(const fea::NodalStamp&,const fea::NodalStamp&);
 bool Matches(const shell::ShellBatchDiagnostics&,const contact::Q4PlanarContactDiagnostics&,
              std::uint64_t owner,std::uint64_t epoch,std::uint64_t attempt,bool candidate,std::uint64_t wall_binding,
-             contact::Q4PlanarIntegrationBackend);
+             contact::Q4PlanarIntegrationBackend,std::uint64_t qualification);
 bool MatchesPrepared(const fea::NodalPreparedView&,const fea::NodalAssemblyView&,const fea::NodalStamp&);
 bool MatchesAcceptedResults(const shell::ShellBatchDiagnostics&,const contact::Q4PlanarContactDiagnostics&,
-                            const fea::NodalStamp&,std::uint64_t wall_binding,contact::Q4PlanarIntegrationBackend);
+                            const fea::NodalStamp&,std::uint64_t wall_binding,contact::Q4PlanarIntegrationBackend,std::uint64_t qualification);
 bool MatchesContactParents(const std::array<contact::Q4PlanarParentResult,ref::kCouponElements>&,
                           const std::array<contact::SurfaceQ4,ref::kCouponElements>&,
                           const contact::Q4PlanarContactDiagnostics&,contact::Q4PlanarIntegrationBackend);

@@ -1,5 +1,6 @@
 #include "chrono/core/ChMatrix.h"
 #include "GuidedPlateCli.h"
+#include "GuidedPlateExperimentProtocol.h"
 #include "output/ArtifactIO.h"
 #include <gtest/gtest.h>
 #include <cstdlib>
@@ -27,6 +28,7 @@ TEST(GuidedPlateCli, LegacyFormsRemainScalarAndTyped) {
     auto command=Parse({"guided","run","wall","study","2"});
     EXPECT_EQ(command.kind,GuidedPlateCommandKind::Run);EXPECT_EQ(command.run.config.refinement,2u);
     EXPECT_EQ(command.run.config.integration_backend,Backend::ScalarDyadicSquares);
+    EXPECT_EQ(command.run.config.experiment,crash::reference::GuidedPlateExperiment::Original);
     EXPECT_EQ(command.run.wall_kind,WallTessellationKind::Original);EXPECT_FALSE(command.run.bundle);EXPECT_FALSE(command.run.wall_provenance);
     command=Parse({"guided","run","wall","study","1","bundle"});EXPECT_EQ(*command.run.bundle,"bundle");
     command=Parse({"guided","compare","coarse","fine","report"});
@@ -62,6 +64,19 @@ TEST(GuidedPlateCli, MissingAmbiguousOrUnknownOptionsRejectBeforeFilesystemOrDev
     EXPECT_THROW(Parse({"g","compare-wall","w","d","dp","c","cp"}),std::runtime_error);
     EXPECT_THROW(ParseGuidedPlateCommand(2,nullptr),std::runtime_error);
     const char* null_arg[]{"g",nullptr};EXPECT_THROW(ParseGuidedPlateCommand(2,null_arg),std::runtime_error);
+}
+TEST(GuidedPlateCli, NamedExperimentIsExplicitAndPreservesOriginalDefault) {
+    auto command=Parse({"g","run","w","s","1","bundle","--wall=original","--wall-provenance=p",
+        "--contact-integration=rectangular","--experiment=penalty-margin-v1"});
+    EXPECT_EQ(command.run.config.experiment,crash::reference::GuidedPlateExperiment::PenaltyMarginV1);
+    EXPECT_STREQ(GuidedExperimentName(command.run.config.experiment),"penalty-margin-v1");
+    EXPECT_EQ(command.run.config.integration_backend,Backend::RectangularDyadic);
+    for(const auto* flag:{"--experiment=","--experiment=400000","--experiment=other"})
+        EXPECT_THROW(Parse({"g","run","w","s","1",flag}),std::runtime_error);
+    EXPECT_THROW(Parse({"g","run","w","s","1","--experiment=original","--experiment=penalty-margin-v1"}),std::runtime_error);
+    Temp root;auto options=command.run;options.study=root.path/"study";options.bundle.reset();options.wall_provenance.reset();
+    options.config.experiment=static_cast<crash::reference::GuidedPlateExperiment>(99);
+    EXPECT_THROW(CheckGuidedPlateRunOptions(options),std::runtime_error);EXPECT_FALSE(fs::exists(options.study));
 }
 TEST(GuidedPlateCli, PreflightRejectsExistingAliasedAndDanglingOutputsWithoutInitializingCase) {
     Temp root;GuidedPlateRunOptions options;options.wall=root.path/"unread-wall";options.study=root.path/"study";

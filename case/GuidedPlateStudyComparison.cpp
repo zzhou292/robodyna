@@ -71,7 +71,7 @@ bool Valid(const GuidedStudyData& d) {
 }
 bool SamePhysicalExperiment(const GuidedStudyData& a,const GuidedStudyData& b) {
     const auto& c=a.config;const auto& f=b.config;
-    if(c.qualification_id!=f.qualification_id||c.experiment_sha256!=f.experiment_sha256||c.horizon!=f.horizon||
+    if(c.experiment!=f.experiment||c.qualification_id!=f.qualification_id||c.experiment_sha256!=f.experiment_sha256||c.horizon!=f.horizon||
        c.initial_energy!=f.initial_energy||output::Bits(c.wall_x)!=output::Bits(f.wall_x)||
        !SameBits(c.reference_position,f.reference_position)||!SameBits(c.reference_rotation,f.reference_rotation)||
        !SameBits(a.initial_position,b.initial_position)||!SameBits(a.initial_rotation,b.initial_rotation))return false;

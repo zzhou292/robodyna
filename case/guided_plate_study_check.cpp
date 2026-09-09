@@ -35,7 +35,8 @@ TEST(GuidedPlateStudy, ExactIntegerCommonScheduleHasNoDuplicatesOrChangedFailure
 
 TEST(GuidedPlateStudy, ConfigurationReusesExactAreaAndSharedPhysicalReferenceFingerprint) {
     const auto c=Config();const auto f=Frame(c,0);ref::ElasticCouponData model;ref::GuidedPlateData guided;
-    guided.wall_binding_id=c.wall_binding_id;guided.integration.force_error=1e-6;guided.integration.energy_error=1e-9;
+    guided.wall_binding_id=c.wall_binding_id;guided.integration.force_error=ref::kGuidedOriginalForceError;
+    guided.integration.energy_error=ref::kGuidedOriginalEnergyError;
     for(unsigned n=0;n<6;++n) {
         model.reference_configuration.position[n]={c.reference_position[3*n],c.reference_position[3*n+1],c.reference_position[3*n+2]};
         model.nodal_mass[n]={.01,1,.01,.01};
@@ -50,6 +51,24 @@ TEST(GuidedPlateStudy, ConfigurationReusesExactAreaAndSharedPhysicalReferenceFin
     EXPECT_EQ(out.total_reference_area.lower,c.total_reference_area.lower);
     EXPECT_EQ(out.contact_reference[1].area_enclosure.upper,c.contact_reference[1].area_enclosure.upper);
     const auto original=out.experiment_sha256;
+    auto revised_guided=guided;revised_guided.experiment=ref::GuidedPlateExperiment::PenaltyMarginV1;
+    revised_guided.qualification_id=ref::kGuidedPenaltyMarginV1Experiment.qualification_id;
+    revised_guided.stiffness_per_area=ref::kGuidedPenaltyMarginV1Experiment.stiffness_per_area;
+    auto revised_metrics=f.metrics;revised_metrics.shell.configuration_id=revised_metrics.contact.configuration_id=revised_guided.qualification_id;
+    GuidedStudyConfig revised;
+    ASSERT_TRUE(PrepareGuidedStudyConfig(revised_metrics,model,revised_guided,view,1,revised,error))<<error;
+    EXPECT_EQ(revised.experiment,revised_guided.experiment);EXPECT_NE(revised.experiment_sha256,original);
+    for(unsigned fault=0;fault<6;++fault) {
+        auto bad=revised_guided;
+        if(fault==0)bad.qualification_id=kGuidedPlateQualification;
+        if(fault==1)bad.stiffness_per_area*=2;
+        if(fault==2)bad.integration.force_error*=2;
+        if(fault==3)bad.integration.energy_error*=2;
+        if(fault==4)++bad.integration.max_leaves;
+        if(fault==5)bad.target_penetration=bad.maximum_penetration;
+        const auto preserved=revised.experiment_sha256;
+        EXPECT_FALSE(PrepareGuidedStudyConfig(revised_metrics,model,bad,view,1,revised,error));EXPECT_EQ(revised.experiment_sha256,preserved);
+    }
     EXPECT_EQ(out.integration_backend,Backend::ScalarDyadicSquares);
     auto rectangular=f.metrics;rectangular.contact.integration_backend=Backend::RectangularDyadic;
     ASSERT_TRUE(PrepareGuidedStudyConfig(rectangular,model,guided,view,1,out,error))<<error;
@@ -306,5 +325,17 @@ TEST(GuidedPlateStudy, RectangularReportsCompleteAndRefineOnlyWithinTheSameBacke
     first.contact_association.leaves=4;first.contact_association.visited=6;
     ASSERT_TRUE(observer.Initialize(a.config,zero.metrics,zero,error));
     ASSERT_TRUE(observer.Record(first.metrics,&first,error))<<error;
+}
+TEST(GuidedPlateStudy, KnownExperimentMismatchCannotPassEitherComparisonWithSameClaimedHash) {
+    const auto original=fixture::Run(Config());auto fine_config=Config(2);
+    fine_config.experiment=ref::GuidedPlateExperiment::PenaltyMarginV1;
+    fine_config.qualification_id=ref::kGuidedPenaltyMarginV1Experiment.qualification_id;
+    const auto fine=fixture::Run(fine_config);GuidedStudyComparison sentinel;sentinel.diagnostic="preserved";sentinel.force_ratio=17;
+    auto out=sentinel;std::string error;EXPECT_FALSE(CompareGuidedPlateStudies(original,fine,out,error));
+    EXPECT_EQ(out.diagnostic,sentinel.diagnostic);EXPECT_EQ(out.force_ratio,sentinel.force_ratio);
+    auto wall_config=fine_config;wall_config.refinement=1;wall_config.fixed_dt=.001;wall_config.wall_binding_id=24;
+    const auto wall=fixture::Run(wall_config);EXPECT_FALSE(CompareGuidedPlateWallStudies(wall,original,out,error));
+    EXPECT_EQ(out.diagnostic,sentinel.diagnostic);EXPECT_EQ(out.force_ratio,sentinel.force_ratio);
+    wall_config.qualification_id=kGuidedPlateQualification;EXPECT_THROW(fixture::Run(wall_config),std::runtime_error);
 }
 } // namespace

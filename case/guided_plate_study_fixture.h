@@ -21,7 +21,7 @@ inline GuidedStudyCertificate Cert(double value,double lower,double upper) {
     return {value,lower,upper,error};
 }
 inline GuidedStudyConfig Config(unsigned refinement=1,std::uint64_t owner=7) {
-    GuidedStudyConfig c;c.owner_id=owner;c.qualification_id=19;c.wall_binding_id=23;c.base_steps=200;c.refinement=refinement;
+    GuidedStudyConfig c;c.owner_id=owner;c.qualification_id=kGuidedPlateQualification;c.wall_binding_id=23;c.base_steps=200;c.refinement=refinement;
     c.fixed_dt=.001/refinement;c.horizon=.2;c.initial_energy=1;c.wall_x=.05;c.experiment_sha256=std::string(64,'a');
     const unsigned nodes[2][4]={{0,1,2,3},{4,0,3,5}};
     for(unsigned n=0;n<6;++n) {c.reference_position[3*n]=.04;c.reference_rotation[4*n]=1;}

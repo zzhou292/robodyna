@@ -41,6 +41,7 @@ void Event(const GuidedStudyEvent& actual,const GuidedStudyEvent& expected) {
 void SameStudy(const GuidedStudyData& a,const GuidedStudyData& b) {
     EXPECT_EQ(a.complete,b.complete);const auto& c=a.config;const auto& d=b.config;
     EXPECT_EQ(c.owner_id,d.owner_id);EXPECT_EQ(c.qualification_id,d.qualification_id);EXPECT_EQ(c.wall_binding_id,d.wall_binding_id);
+    EXPECT_EQ(c.experiment,d.experiment);
     EXPECT_EQ(c.base_steps,d.base_steps);EXPECT_EQ(c.refinement,d.refinement);EXPECT_EQ(c.experiment_sha256,d.experiment_sha256);
     Bits(c.fixed_dt,d.fixed_dt);Bits(c.horizon,d.horizon);Bits(c.initial_energy,d.initial_energy);Bits(c.wall_x,d.wall_x);
     Array(c.reference_position,d.reference_position);Array(c.reference_rotation,d.reference_rotation);Interval(c.total_reference_area,d.total_reference_area);
@@ -79,7 +80,8 @@ io::Document Parse(const std::string& bytes) {
 std::string Read(const fs::path& path){return io::ReadBounded(path,kGuidedStudyByteCap);}
 GuidedStudyData PreciseFixture() {
     auto config=fixture::Config(1,std::numeric_limits<std::uint64_t>::max()-1);
-    config.qualification_id=std::numeric_limits<std::uint64_t>::max()-3;
+    // Qualification is a named experiment ID; other source/owner IDs still
+    // exercise the full uint64 range without inventing an unknown experiment.
     config.wall_binding_id=std::numeric_limits<std::uint64_t>::max()-5;
     const double y[]{.12345678901234568,.02345678901234568,.02345678901234568,.12345678901234568,.22345678901234568,.22345678901234568};
     for(unsigned n=0;n<6;++n) {

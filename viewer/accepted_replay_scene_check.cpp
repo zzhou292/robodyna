@@ -1,5 +1,6 @@
 #include "chrono/AcceptedReplayScene.h"
 #include "output/AcceptedReplay.h"
+#include "output/GuidedExperimentMetadata.h"
 #include "chrono/assets/ChVisualShapeTriangleMesh.h"
 #include "chrono/assets/ChVisualModel.h"
 #include "chrono/geometry/ChTriangleMeshConnected.h"
@@ -139,7 +140,13 @@ TEST(AcceptedReplayScene, FixedWallCopiedOnceAndKeptSeparateFromMovingSurface) {
 }
 
 TEST(AcceptedReplayScene, GuidedPlateRequiresWallAndUsesFixedPhysicalSideView) {
+    // Experiment admission belongs to the reader; both accepted named
+    // variants use identical physical-scale scene/publication operations.
+    for(const char* name:{crash::output::guided_experiment_metadata::Original,
+                         crash::output::guided_experiment_metadata::PenaltyMargin}) {
+    SCOPED_TRACE(name);
     auto info = Info(); info.kind = crash::output::ReplayKind::GuidedPlate;
+    info.guided_experiment=name;
     info.bounds_min = {.045,-.1,-.05}; info.bounds_max = {.052,.1,.05};
     auto initial = Mesh();
     for (auto& p : initial->GetCoordsVertices()) p = {.045,p.x()-.1,p.y()};
@@ -161,6 +168,7 @@ TEST(AcceptedReplayScene, GuidedPlateRequiresWallAndUsesFixedPhysicalSideView) {
     EXPECT_EQ(scene.moving_mesh()->GetCoordsVertices(),deformed->GetCoordsVertices());
     EXPECT_EQ(scene.camera()->position,camera.position); EXPECT_EQ(scene.camera()->target,camera.target);
     EXPECT_EQ(scene.camera()->vertical,camera.vertical);
+    }
 }
 
 TEST(AcceptedReplayScene, DisplayRangeAndDegenerateGeometryFailBeforePublication) {

@@ -175,7 +175,7 @@ ContactSummary Contact(const PhysicalPatch& patch,const ct::Q4PlanarGeometry& ge
     for(unsigned p=0;p<2;++p) {
         ct::Q4PreparedIntegration prepared;
         const auto ready=ct::PrepareQ4PlanarIntegration(geometry.view(),patch.view(),patch.mass(),p,
-            ref::GuidedPlateData::stiffness_per_area,ref::GuidedPlateData::maximum_penetration,1,&prepared);
+            patch.model.data().stiffness_per_area,patch.model.data().maximum_penetration,1,&prepared);
         out::Require(ready==ct::PlanarContactStatus::Ok&&prepared.covered,"Prescribed test contact preparation failed");
         const auto integrated=ct::IntegrateQ4NormalContact(prepared.input,patch.model.data().integration,scratch.view(),&result.parent[p]);
         out::Require(integrated.status==ct::Q4IntegrationStatus::Ok,"Prescribed test contact integration failed");

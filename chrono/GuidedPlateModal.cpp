@@ -55,6 +55,8 @@ ElasticCouponStatus AuditGuidedPlate(const GuidedPlateModel& model,GuidedPlateMo
     auto status=audit::AuditReference<kGuidedPlateDofs>(shell,layout,spectrum,diagnostic);
     if (status!=Status::kSuccess) return status;
     GuidedPlateModalReport report;
+    report.experiment=model.data().experiment;
+    report.qualification_id=model.data().qualification_id;
     report.reference_symmetry_error=spectrum.symmetry_error;
     report.mass_scaled_derivative_refinement_error=spectrum.derivative_refinement_error;
     report.tl_derivative_relative_error=spectrum.tl_derivative_error;

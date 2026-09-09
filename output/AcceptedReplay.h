@@ -25,6 +25,9 @@ struct ReplayInfo {
     // Present only when explicitly archived (the shell schemas). Old normal
     // impact meshes have no synthetic replacement run/topology/source IDs.
     std::uint64_t run_id = 0, topology_id = 0;
+    // Validated guided name; empty for other replay kinds. Missing legacy
+    // guided metadata resolves to the original experiment only.
+    std::string guided_experiment;
 };
 struct ReplayFrame {
     std::size_t index = 0;

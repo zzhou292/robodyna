@@ -16,7 +16,8 @@ struct Fixture {
     static constexpr double initial_energy=.001;
     Fixture() {
         shell.owner_id=contact.owner_id=9; shell.base_epoch=contact.base_epoch=3;
-        shell.attempt=contact.attempt=7; shell.configuration_id=contact.configuration_id=11;
+        shell.attempt=contact.attempt=7;
+        shell.configuration_id=contact.configuration_id=modal.qualification_id=ref::kGuidedOriginalExperiment.qualification_id;
         contact.wall_binding_id=13; shell.valid=contact.valid=true;
         shell.phase=shell::ShellBatchPhase::kPreparedCandidate;
         contact.phase=contact::Q4PlanarContactPhase::PreparedCandidate;
@@ -118,5 +119,16 @@ TEST(GuidedPlateAdmission, CombinedRateMustEncloseTheExactSumRatherThanItsRounde
     EXPECT_FALSE(f.Check(out,why)); EXPECT_NE(why.find("rate envelope"),std::string::npos);
     f.modal.combined_rate_envelope=std::nextafter(1.,2.);
     EXPECT_TRUE(f.Check(out,why))<<why;
+}
+TEST(GuidedPlateAdmission, CrossExperimentModalCannotAuthorizeMatchingForeignContributors) {
+    Fixture f;app::GuidedPlateWorkReport out;out.total_energy=17;const auto before=out;std::string error;
+    f.modal.experiment=ref::GuidedPlateExperiment::PenaltyMarginV1;
+    f.modal.qualification_id=ref::kGuidedPenaltyMarginV1Experiment.qualification_id;
+    EXPECT_FALSE(f.Check(out,error));EXPECT_EQ(std::memcmp(&out,&before,sizeof(out)),0);
+    // Same numerical rate envelope is insufficient without the named identity.
+    f.shell.configuration_id=f.contact.configuration_id=f.modal.qualification_id;
+    EXPECT_TRUE(f.Check(out,error))<<error;
+    f.modal.experiment=ref::GuidedPlateExperiment::Original;
+    EXPECT_FALSE(f.Check(out,error));
 }
 }  // namespace

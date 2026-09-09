@@ -1,6 +1,7 @@
 #include "WallStudyProvenance.h"
 #include "CanonicalWallArtifacts.h"
 #include "GuidedPlateStudyIO.h"
+#include "GuidedPlateExperimentProtocol.h"
 #include "output/ArtifactIO.h"
 #include "chrono_thirdparty/rapidjson/stringbuffer.h"
 #include "chrono_thirdparty/rapidjson/prettywriter.h"
@@ -55,7 +56,7 @@ GuidedStudyData ValidateInputs(const CanonicalWall& original,const std::string& 
     io::Require(derived.initialized()&&m&&p&&m->source_manifest_sha256==kCanonicalWallManifestSha256&&
                 SourceTuple(*p)==SourceTuple(original.provenance()),"Wall-study source is not the authenticated original wall");
     auto study=ParseGuidedPlateStudy(study_bytes);const auto binding=WallTessellationBindingId(m->kind);
-    io::Require(binding&&study.config.wall_binding_id==binding&&study.config.qualification_id==kGuidedPlateQualification,
+    io::Require(binding&&study.config.wall_binding_id==binding&&GuidedExperimentIdentity(study.config.experiment,study.config.qualification_id),
                 "Study does not declare this fixed wall variant and guided qualification");
     CheckStudyFootprint(study,derived);return study;
 }
