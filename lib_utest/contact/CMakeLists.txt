@@ -56,6 +56,17 @@ target_link_libraries(utest_surface_material_measure PRIVATE tl_surface_material
 target_compile_options(utest_surface_material_measure PRIVATE -fno-fast-math -ffp-contract=off)
 tl_contact_test(utest_surface_material_measure)
 
+add_executable(utest_t3_contact_integration "${TL_ROOT}/lib_utest/utest_t3_contact_integration.cc")
+target_link_libraries(utest_t3_contact_integration PRIVATE tl_surface_material_measure)
+target_compile_options(utest_t3_contact_integration PRIVATE -fno-fast-math -ffp-contract=off)
+tl_contact_test(utest_t3_contact_integration)
+
+include("${TL_ROOT}/lib_src/collision/Q4ParametricContact.cmake")
+add_executable(utest_q4_parametric_contact "${TL_ROOT}/lib_utest/utest_q4_parametric_contact.cc")
+target_link_libraries(utest_q4_parametric_contact PRIVATE tl_q4_parametric_contact tl_q4_prescribed_planar_contact)
+target_compile_options(utest_q4_parametric_contact PRIVATE -fno-fast-math -ffp-contract=off)
+tl_contact_test(utest_q4_parametric_contact)
+
 include("${TL_ROOT}/lib_src/collision/Q4PlanarGeometry.cmake")
 add_executable(utest_q4_planar_geometry "${TL_ROOT}/lib_utest/utest_q4_planar_geometry.cc")
 target_link_libraries(utest_q4_planar_geometry PRIVATE tl_q4_planar_geometry)
@@ -109,6 +120,12 @@ if(TL_CONTACT_ENABLE_CUDA)
   find_package(CUDAToolkit REQUIRED)
   set(CMAKE_CUDA_STANDARD 17)
   set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+  add_executable(utest_parametric_contact_cuda "${TL_ROOT}/lib_utest/utest_parametric_contact_cuda.cu")
+  target_link_libraries(utest_parametric_contact_cuda PRIVATE tl_q4_parametric_contact CUDA::cudart)
+  target_compile_options(utest_parametric_contact_cuda PRIVATE
+    "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>")
+  tl_contact_test(utest_parametric_contact_cuda)
+  set_tests_properties(utest_parametric_contact_cuda PROPERTIES PROCESSORS 1)
   add_executable(utest_q4_surface_mapping_cuda "${TL_ROOT}/lib_utest/utest_q4_surface_mapping_cuda.cu")
   target_link_libraries(utest_q4_surface_mapping_cuda PRIVATE CUDA::cudart)
   target_compile_options(utest_q4_surface_mapping_cuda PRIVATE

@@ -11,6 +11,15 @@ TL_SURFACE_HD inline bool ExpandCertificate(Q4IntegralInterval ratio,Q4Certified
 }
 }  // namespace q4_measure_detail
 
+// The raw integral and any immutable-area expansion have already certified
+// finiteness. Apply the same unchanged absolute budgets at each adapter seam.
+TL_SURFACE_HD inline bool WithinQ4IntegralBudgets(const Q4IntegrationResult& result,
+                                                 const Q4IntegrationLimits& limits) {
+  if (result.resultant.error > limits.force_error || result.potential.error > limits.energy_error) return false;
+  for (const auto& force:result.force) if (force.error > limits.force_error) return false;
+  return true;
+}
+
 // Expand a valid integral's continuum bounds from its defined FP64 reference
 // measure to the corresponding exact-coordinate area enclosure. The rounded
 // estimate/forces are unchanged, and may lie outside the truth enclosure; their

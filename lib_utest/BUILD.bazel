@@ -3,6 +3,31 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_test")
 
 package(default_visibility = ["//visibility:public"])
 
+cuda_test(
+    name = "utest_parametric_contact_cuda",
+    size = "small",
+    srcs = ["utest_parametric_contact_cuda.cu", "parametric_contact_cuda_fixture.h"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/collision:q4_parametric_contact", "//lib_src/collision:t3_contact_integration", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "utest_t3_contact_integration",
+    size = "small",
+    srcs = ["utest_t3_contact_integration.cc"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:t3_contact_integration", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "utest_q4_parametric_contact",
+    size = "small",
+    srcs = ["utest_q4_parametric_contact.cc", "q4_prescribed_contact_fixture.h", "q4_planar_geometry_fixture.h", "q4_contact_integration_fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:q4_parametric_contact", "//lib_src/collision:q4_prescribed_planar_contact", "@googletest//:gtest_main"],
+)
+
 cc_test(
     name = "utest_surface_material_measure",
     size = "small",
