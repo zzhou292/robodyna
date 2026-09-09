@@ -59,6 +59,14 @@ cc_library(
 )
 
 cc_library(
+    name = "prepared_planar_wall_query",
+    srcs = ["PreparedPlanarWallQuery.cpp"],
+    hdrs = ["PreparedPlanarWallQuery.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":planar_wall_geometry", ":q4_contact_integration"],
+)
+
+cc_library(
     name = "surface_material_measure",
     srcs = ["SurfaceMaterialMeasure.cpp"],
     hdrs = ["SurfaceMaterialMeasure.h", "SurfaceMaterialBounds.h"],

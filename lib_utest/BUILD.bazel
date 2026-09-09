@@ -4,6 +4,14 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_test")
 package(default_visibility = ["//visibility:public"])
 
 cc_test(
+    name = "utest_prepared_planar_wall_query",
+    size = "small",
+    srcs = ["utest_prepared_planar_wall_query.cc"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:prepared_planar_wall_query", "@googletest//:gtest_main"],
+)
+
+cc_test(
     name = "utest_nodal_wall_contact",
     size = "small",
     srcs = ["utest_nodal_wall_contact.cc"],

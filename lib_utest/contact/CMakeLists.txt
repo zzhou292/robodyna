@@ -45,6 +45,12 @@ target_link_libraries(utest_planar_wall_geometry PRIVATE tl_planar_wall_geometry
 target_compile_options(utest_planar_wall_geometry PRIVATE -fno-fast-math -ffp-contract=off)
 tl_contact_test(utest_planar_wall_geometry)
 
+include("${TL_ROOT}/lib_src/collision/PreparedPlanarWallQuery.cmake")
+add_executable(utest_prepared_planar_wall_query "${TL_ROOT}/lib_utest/utest_prepared_planar_wall_query.cc")
+target_link_libraries(utest_prepared_planar_wall_query PRIVATE tl_prepared_planar_wall_query)
+target_compile_options(utest_prepared_planar_wall_query PRIVATE -fno-fast-math -ffp-contract=off)
+tl_contact_test(utest_prepared_planar_wall_query)
+
 add_executable(utest_planar_wall_box "${TL_ROOT}/lib_utest/utest_planar_wall_box.cc")
 target_link_libraries(utest_planar_wall_box PRIVATE tl_planar_wall_geometry)
 target_compile_options(utest_planar_wall_box PRIVATE -fno-fast-math -ffp-contract=off)
