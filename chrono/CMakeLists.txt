@@ -134,3 +134,7 @@ endif()
 if(ROBO_DYNA_ENABLE_ELASTIC_COUPON)
   include(ElasticCouponChecks.cmake)
 endif()
+
+if(ROBO_DYNA_ENABLE_PRESCRIBED_BATCH_CHECKS)
+  include(PrescribedShellBatchChecks.cmake)
+endif()

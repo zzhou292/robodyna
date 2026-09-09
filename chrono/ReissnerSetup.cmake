@@ -8,4 +8,3 @@ target_include_directories(robo_dyna_reissner_setup PUBLIC
 target_compile_features(robo_dyna_reissner_setup PUBLIC cxx_std_17)
 target_compile_options(robo_dyna_reissner_setup PRIVATE -fno-fast-math -ffp-contract=off)
 target_link_libraries(robo_dyna_reissner_setup PUBLIC tl_reissner_shell Chrono::Chrono_core)
-
