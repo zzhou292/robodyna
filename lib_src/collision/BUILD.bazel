@@ -125,9 +125,29 @@ cc_library(
 cc_library(
     name = "nodal_wall_contact",
     srcs = ["NodalWallContact.cpp", "NodalWallContactEvaluation.cpp"],
-    hdrs = ["NodalWallContact.h", "NodalWallContactPoint.h"],
+    hdrs = ["NodalWallContact.h", "NodalWallContactPoint.h", "NodalWallContactReduction.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [":q4_parametric_contact", "//lib_src/solvers:explicit_step_stability"],
+)
+
+cuda_library(
+    name = "nodal_wall_contact_device",
+    srcs = ["NodalWallContactDevice.cu"],
+    hdrs = [
+        "NodalWallContactDevice.h",
+        "NodalWallContactStorage.h",
+        "NodalWallContactDiagnostics.h",
+        "NodalWallContactKernels.cuh",
+    ],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+    deps = [":nodal_wall_contact", ":prepared_planar_wall_query", "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_force_assembly"],
+)
+
+cc_library(
+    name = "nodal_wall_contact_owner",
+    srcs = ["NodalWallContactModel.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":nodal_wall_contact_device"],
 )
 
 cc_library(

@@ -1,26 +1,13 @@
 #include "NodalWallContactPoint.h"
+#include "NodalWallContactReduction.h"
 
 namespace tlfea::contact {
 namespace {
-bool Sum(Q4CertifiedIntegral& a,const Q4CertifiedIntegral& b) {
-  Q4IntegralInterval truth;
-  return q4_bounds::Add({a.lower,a.upper},{b.lower,b.upper},&truth) &&
-      q4_bounds::Certify(a.value+b.value,truth,&a);
-}
+using nodal_wall_reduction::Sum;
+using nodal_wall_reduction::AddShare;
 unsigned NodeIndex(const NodalWallWeights& weights,unsigned node) {
   for (unsigned n=0;n<weights.node_count();++n) if (weights.node(n).node==node) return n;
   return weights.node_count();
-}
-bool AddShare(NodalWallPointResult& node,const NodalWallPointResult& share) {
-  if (!node.valid) { node=share; return true; }
-  if (node.node!=share.node || node.fixed!=share.fixed || node.base_epoch!=share.base_epoch ||
-      node.attempt!=share.attempt || !Sum(node.force,share.force) || !Sum(node.potential,share.potential) ||
-      !Sum(node.stiffness,share.stiffness)) return false;
-  if (!node.fixed) {
-    if (!node.row.valid || !share.row.valid || node.row.count!=1 || share.row.count!=1 ||
-        !q4_bounds::AddScalar(node.row.stiffness[0],share.row.stiffness[0],true,&node.row.stiffness[0])) return false;
-  }
-  return true;
 }
 } // namespace
 
