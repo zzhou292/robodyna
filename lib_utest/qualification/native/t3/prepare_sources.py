@@ -27,7 +27,7 @@ def prepare(output, check=False, stage="startup"):
         paths["original/" + source] = originals[source]
     modules={"constant_mod": PRIVATE_MODULE}
     schema="tl.t3-r1-prepared-sources.v1"
-    if stage=="engine":
+    if stage in ("engine","force"):
         routines={"C3COOR3","C3EVEC3","C3DERI3","C3DEFO3","C3CURV3","CLSKEW3"}
         paths={name:name for name in ("T3NativeGeometry.F","NativeT3Kinematics.F")}
         for entry in manifest["extractions"]:
@@ -40,6 +40,17 @@ def prepare(output, check=False, stage="startup"):
         modules={name:"T3_ENGINE_"+name.upper() for name in
                  ("constant_mod","precision_mod","element_mod","elbufdef_mod")}
         schema="tl.t3-engine-prepared-sources.v1"
+        if stage=="force":
+            routines={"C3COEF3","C3STRA3","C3DT3","C3SROTO3","C3FINT3",
+                      "C3FCUM3","C3MCUM3","C3UPDT3","SIGEPS01G","CSSP2A11"}
+            paths={name:name for name in ("T3NativeHistory.F","T3NativeMaterial.F",
+                "T3NativeLaw1.F","T3NativeStiffness.F","NativeT3Force.F","NativeT3Scatter.F")}
+            for entry in manifest["extractions"]:
+                if entry["routine"].upper() in routines:
+                    paths["extracted/"+Path(entry["path"]).name]=entry["path"]
+            source="engine/share/spe_inc/implicit_f.inc"
+            paths["original/"+source]=originals[source]
+            schema="tl.t3-force-prepared-sources.v1"
     token=re.compile(r"\b(?:"+"|".join(modules)+r")\b",re.IGNORECASE)
     records = []
     for relative, owned_source in paths.items():
@@ -73,6 +84,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--check", action="store_true")
-    parser.add_argument("--stage", choices=("startup","engine"), default="startup")
+    parser.add_argument("--stage", choices=("startup","engine","force"), default="startup")
     args = parser.parse_args()
     print(json.dumps(prepare(args.output.resolve(), args.check, args.stage), sort_keys=True))

@@ -1,8 +1,9 @@
 # Native T3 reference slice
 
-Source verified; **R1 startup and R2 prescribed geometry/rates pass** on
-2026-09-09: seven startup plus seven rates standalone functions, and two
-startup plus two rates authenticated source-six app functions.
+Source verified; **R1 startup, R2 prescribed geometry/rates and R3 prescribed
+force/history pass** on 2026-09-09: seven startup, seven rates and eight force
+standalone functions, plus two functions per stage on the authenticated six
+source triangles (28 executions, including 10 new R3 functions).
 This qualification directory complements the QEPH reference. It does not enter
 the production solver, add a dynamics clock, or establish source ELFORM2/MAT024
 equivalence. Three original physical nodes are retained.
@@ -14,8 +15,8 @@ with their [standalone XML](../../../../../crash-work/reports/t3-r1-host-xml-1/)
 and [source XML](../../../../../crash-work/reports/t3-r1-source-xml-1/).
 Both runs used the shared workstation guard and no GPU. This qualifies only the
 complete starter frame leaf and the explicitly selected source-expression
-adapters below. The later R2 evidence is recorded separately below. Material
-force/history, CUDA and dynamics remain unexecuted for T3.
+adapters below. The later R2/R3 evidence is recorded separately below. CUDA
+and dynamics remain unexecuted for T3.
 
 ## Source ownership and closure
 
@@ -153,7 +154,8 @@ The retrieved leaves resolve several boundaries for the later reference:
   exact common post-strain constitutive leaves/expressions may be shared after
   component/work/history mapping is reviewed. C3DT3 uses DTFAC1(7), not index3.
 
-These are source findings, not qualification of a T3 force or dynamics path.
+These source findings define the later R3 branch qualified below; they do not
+qualify T3 dynamics or other material branches.
 
 ## R2 prescribed geometry/rates: passed
 
@@ -240,3 +242,69 @@ default startup mode still verifies the unchanged four-file R1 receipt.
 Two new app functions in `source_part_t3_rates_check.cpp` use the same
 authenticated source-six fixture and test-only input/oracle helpers. They do
 not consume MAT024, source NIP3 or a physical history/timestep admission.
+
+## R3 prescribed native force/history: passed
+
+The corrected native build and all eight force functions pass, together with
+the unchanged seven startup and seven rates functions. All six app functions
+(two force, two startup and two rates) also pass using the original six source
+triangles. Evidence is the
+[native report](../../../../../crash-work/reports/t3-r3-host-tests-1.json),
+[source report](../../../../../crash-work/reports/t3-r3-source-tests-1.json),
+[native XML](../../../../../crash-work/reports/t3-r3-host-xml-1/) and
+[source XML](../../../../../crash-work/reports/t3-r3-source-xml-1/).
+Both numerical runs used the shared workstation guard, one CPU and no GPU.
+The frozen equations, numerical budgets and source data were unchanged.
+
+The [first build](../../../../../crash-work/reports/t3-r3-build-1.json) compiled
+the native library, then failed to compile one test declaration that used one
+`auto` deduction for byte arrays of different sizes. Before correction, the
+affected native test, the analogous uncompiled app test and configure/build
+reports were preserved in the
+[first-build checkpoint](../../../../../crash-work/checkpoints/t3-r3-first-build-failure-1/manifest.json).
+Only those test declarations were separated. The
+[corrected native build](../../../../../crash-work/reports/t3-r3-fixture-build-1.json)
+and [source build](../../../../../crash-work/reports/t3-r3-source-build-1.json)
+passed. No numerical execution is attributed to the failed build.
+
+The [R3 implementation contract](../../../../../planning/T3_NATIVE_FORCE_IMPLEMENTATION.md)
+froze branch, history, units, numerical budgets and exit gates before the
+first build/run. `T3ForceReference` returns a staged proposal using the same
+immutable Reference, prescribed interval and private engine context. Its
+26-value T3 history contains FOR/FOR_G/MOM/STRA/THK/EINT/EPSD/activity; no
+QEPH stabilization state or fictitious viscous-energy partition is introduced.
+The 92-double native result preserves all38 R2 observables before strain/time
+diagnostic mutation, then26 history values,18 world force/couple values and10
+diagnostics. Caller acceptance is a value copy, without a dynamics clock.
+
+The private geometry wrapper now separates frame/derivatives from rates so
+R3 inserts complete C3COEF3 in actual C3FORC3 source order. R2 still composes
+the same operations unchanged. Complete C3STRA3, SIGEPS01G, C3DT3, C3SROTO3,
+C3FINT3, C3FCUM3 and C3MCUM3 run under the fixed centered LAW1/ISH3N2 branch.
+Small PM, EPSD and MULAWGLC work/DM adapters retain explicit source provenance;
+they are not complete all-material-driver invocations. Complete C3UPDT3 is a
+separate test-only signed-scatter bridge. Native positive internal forces are
+subtracted from the nodal RHS, and C3DT3 index7 is a diagnostic only.
+
+`T3_R2_BUILD=ON,T3_R3_BUILD=ON` registers `t3_r3_native` and optional
+`t3_force_check` with eight standalone functions. The six authored
+Fortran units and ten complete leaves have a separate17-file prepared receipt
+(`prepare_sources.py --stage force`), borrowing SIGEPS01G/CSSP2A11 unchanged.
+R1 startup default preparation remains four files, and R2 remains13 files.
+All reached COMMON symbols use the same private T3_ENGINE prefix and mutex;
+new force modules consume the R2 modules instead of recompiling duplicate
+native constants/geometry. The operation's fixed native work/scratch budget
+is below1MiB; this native gate establishes no CUDA resource or throughput claim.
+
+Tests cover independent constitutive/rate/physical-moment and all18 fixed-
+resultant virtual-power columns; load/hold/reversal; world covariance; native
+drilling and finite-rigid distinctions; stiffness units and shared-node signed
+scatter; complete malformed-history rejection; and late thickness/force
+failure with retry. Two app functions add 48 source-six physical-mode checks,
+history hold/reversal/retry and exactly-once native signed contributions in
+the original117-node index space. This is a prescribed reference test, not a
+resident full-part mechanics owner or source MAT024/NIP3 equivalence. The
+existing14 standalone and four app startup/rates functions passed again after
+the private-stage refactor. A future HD T3
+port can reuse the already-qualified `ShellElasticLaw1` point helper; this
+native oracle remains independent of that production implementation.

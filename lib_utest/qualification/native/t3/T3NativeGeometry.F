@@ -8,6 +8,7 @@
 #include "mvsiz_p.inc"
       PRIVATE
       PUBLIC :: T3_GEOMETRY_,T3_PREPARE_GEOMETRY,T3_PACK_GEOMETRY
+      PUBLIC :: T3_PREPARE_FRAME,T3_PREPARE_RATES
       TYPE T3_GEOMETRY_
         MY_REAL :: F(MVSIZ,3,3)=ZERO,F0(MVSIZ,3,3)=ZERO,
      . XG(MVSIZ,3,3)=ZERO,V(MVSIZ,3,3)=ZERO,VR(MVSIZ,3,3)=ZERO,
@@ -21,6 +22,17 @@
       CONTAINS
 
       SUBROUTINE T3_PREPARE_GEOMETRY(X,V,VR,STEP,G,STATUS)
+      REAL(C_DOUBLE), INTENT(IN) :: X(3,3),V(3,3),VR(3,3),STEP
+      TYPE(T3_GEOMETRY_), INTENT(OUT) :: G
+      INTEGER(C_INT), INTENT(OUT) :: STATUS
+      CALL T3_PREPARE_FRAME(X,V,VR,STEP,G,STATUS)
+      IF(STATUS/=0) RETURN
+      CALL T3_PREPARE_RATES(G,STATUS)
+      END SUBROUTINE
+
+! R3 inserts the complete C3COEF3 between these two private stages, matching
+! C3FORC3. R2 still calls both consecutively, without arithmetic changes.
+      SUBROUTINE T3_PREPARE_FRAME(X,V,VR,STEP,G,STATUS)
       USE ELBUFDEF_MOD, ONLY: ELBUF_STRUCT_
       USE ELEMENT_MOD, ONLY: NIXTG
       USE, INTRINSIC :: IEEE_ARITHMETIC, ONLY: IEEE_IS_FINITE
@@ -103,6 +115,17 @@
      . G%F(1,1,2),G%F(1,2,2),G%F(1,3,2),
      . G%F(1,1,3),G%F(1,2,3),G%F(1,3,3))
       IF(G%LOCAL(1,2,2)/=RAW_Y3) RETURN
+      STATUS=0
+      END SUBROUTINE
+
+      SUBROUTINE T3_PREPARE_RATES(G,STATUS)
+      USE ELEMENT_MOD, ONLY: NIXTG
+      TYPE(T3_GEOMETRY_), INTENT(INOUT) :: G
+      INTEGER(C_INT), INTENT(OUT) :: STATUS
+      INTEGER IXTG(NIXTG,1)
+      IXTG=1
+      IXTG(2:4,1)=[1,2,3]
+      STATUS=1
 ! Keep the native quarter-step and ISH3N2 in-plane corrections. No copied
 ! equations are substituted for the complete donor leaf.
       CALL C3DEFO3(1,1,G%V(1,1,1),G%V(1,1,2),G%V(1,1,3),
