@@ -1,4 +1,15 @@
-# Crash application preparation and TL/Chrono integration
+# Robo-dyna
+
+Robo-dyna is a modular simulation project built from TL-FEA and Chrono, with
+LS-DYNA-like CAE functionality as the long-term goal. The first acceptance case
+is the original Yaris hitting a rigid triangle-mesh wall. Complete CUDA vehicle
+dynamics is still under development; current qualified cases and limits are
+listed in the [execution status](../planning/EXECUTION_STATUS.md).
+
+TL-FEA owns CUDA mechanics, shared state and stepping. Robo-dyna owns model/case
+configuration, orchestration and results through Chrono infrastructure. The
+canonical source directory is `robo-dyna/`; a legacy workspace path alias keeps
+existing build trees and frozen evidence usable. New builds use this directory.
 
 `chrono/AcceptedSurfaceMesh` connects accepted TL physical-node positions to
 Chrono core's mesh and visual-shape objects. TL remains the dynamics owner. The
@@ -19,7 +30,7 @@ From the workspace root, build the generic six-check test using the existing
 Chrono core build and real TL nodal header, with no CUDA or Fortran requirement:
 
 ```sh
-python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/app-snapshot-configure.json --cpus 2 --max-rss-gib 1 --timeout 90 -- cmake -S crash-app -B crash-work/build/app-snapshot -DCRASH_ENABLE_CHRONO_SNAPSHOT_CHECK=ON -DChrono_DIR="$PWD/crash-work/build/chrono-core/cmake" -DCMAKE_BUILD_TYPE=RelWithDebInfo
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/app-snapshot-configure.json --cpus 2 --max-rss-gib 1 --timeout 90 -- cmake -S robo-dyna -B crash-work/build/app-snapshot -DCRASH_ENABLE_CHRONO_SNAPSHOT_CHECK=ON -DChrono_DIR="$PWD/crash-work/build/chrono-core/cmake" -DCMAKE_BUILD_TYPE=RelWithDebInfo
 python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/app-snapshot-build.json --cpus 2 --max-rss-gib 2 --timeout 120 -- cmake --build crash-work/build/app-snapshot --target crash_chrono_snapshot_check --parallel 1
 python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/app-snapshot-test.json --cpus 1 --max-rss-gib 0.5 --timeout 30 -- ctest --test-dir crash-work/build/app-snapshot -R '^chrono_snapshot_integration$' --output-on-failure -j 1
 ```
@@ -62,7 +73,7 @@ elastic shell, mesh contact case, graphical viewer or Yaris crash.
 From the workspace root, with the existing core-only Chrono build:
 
 ```sh
-python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/nodal-output-configure-rerun.json --max-rss-gib 0.5 --timeout 45 -- cmake -S crash-app -B crash-work/build/nodal-output -DCRASH_ENABLE_TL_NODAL_CHECK=ON -DChrono_DIR="$PWD/crash-work/build/chrono-core/cmake" -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_ARCHITECTURES=120 -DCMAKE_BUILD_TYPE=RelWithDebInfo
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/nodal-output-configure-rerun.json --max-rss-gib 0.5 --timeout 45 -- cmake -S robo-dyna -B crash-work/build/nodal-output -DCRASH_ENABLE_TL_NODAL_CHECK=ON -DChrono_DIR="$PWD/crash-work/build/chrono-core/cmake" -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_ARCHITECTURES=120 -DCMAKE_BUILD_TYPE=RelWithDebInfo
 python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/nodal-output-build-rerun.json --max-rss-gib 2 --timeout 120 -- cmake --build crash-work/build/nodal-output --target crash_tl_nodal_output_check --parallel 1
 python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/nodal-output-tests-rerun.json --gpu 0 --max-rss-gib 1 --max-gpu-growth-gib 1 --timeout 45 -- ctest --test-dir crash-work/build/nodal-output -R '^tl_nodal_output_integration$' --output-on-failure --parallel 1
 ```
@@ -92,11 +103,11 @@ This does not qualify oblique contact, CCD, folding, shells or a vehicle crash.
 Configure this optional case against the already built Chrono core:
 
 ```sh
-python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/normal-impact-configure-rerun.json --max-rss-gib 1 --timeout 45 -- cmake -S crash-app -B crash-work/build/normal-impact -DCRASH_ENABLE_NORMAL_IMPACT=ON -DCRASH_CANONICAL_WALL="$PWD/crash-work/assets/yaris-wall/manifest.json" -DChrono_DIR="$PWD/crash-work/build/chrono-core/cmake" -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_ARCHITECTURES=120 -DCMAKE_BUILD_TYPE=RelWithDebInfo
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/normal-impact-configure-rerun.json --max-rss-gib 1 --timeout 45 -- cmake -S robo-dyna -B crash-work/build/normal-impact -DCRASH_ENABLE_NORMAL_IMPACT=ON -DCRASH_CANONICAL_WALL="$PWD/crash-work/assets/yaris-wall/manifest.json" -DChrono_DIR="$PWD/crash-work/build/chrono-core/cmake" -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_ARCHITECTURES=120 -DCMAKE_BUILD_TYPE=RelWithDebInfo
 python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/normal-impact-build-rerun.json --max-rss-gib 2 --timeout 180 -- cmake --build crash-work/build/normal-impact --parallel 1
 python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/normal-impact-test-rerun.json --gpu 0 --max-rss-gib 1 --max-gpu-growth-gib 1 --timeout 60 -- ctest --test-dir crash-work/build/normal-impact --output-on-failure --parallel 1
 mkdir -p crash-work/runs
-python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/normal-impact-run-rerun.json --gpu 0 --max-rss-gib 1 --max-gpu-growth-gib 1 --timeout 60 -- crash-work/build/normal-impact/case/crash_normal_impact crash-work/assets/yaris-wall/manifest.json crash-work/runs/normal-impact-rerun
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/normal-impact-run-rerun.json --gpu 0 --max-rss-gib 1 --max-gpu-growth-gib 1 --timeout 60 -- crash-work/build/normal-impact/case/robo-dyna crash-work/assets/yaris-wall/manifest.json crash-work/runs/normal-impact-rerun
 ```
 
 The CLI requires a **new** output directory and verifies the exact canonical
@@ -159,7 +170,7 @@ original failure reports remain intact.
 To reproduce using the already built FEA core, from the workspace root:
 
 ```sh
-python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/reissner-configure-rerun.json --lock crash-work/reports/workstation.lock --cpus 1 --max-rss-gib 0.5 --timeout 45 -- cmake -S crash-app -B crash-work/build/reissner-baseline-regression -DCRASH_ENABLE_CHRONO_REISSNER_CHECK=ON -DChrono_DIR="$PWD/crash-work/build/chrono-fea-reference/cmake" -DCMAKE_BUILD_TYPE=RelWithDebInfo
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/reissner-configure-rerun.json --lock crash-work/reports/workstation.lock --cpus 1 --max-rss-gib 0.5 --timeout 45 -- cmake -S robo-dyna -B crash-work/build/reissner-baseline-regression -DCRASH_ENABLE_CHRONO_REISSNER_CHECK=ON -DChrono_DIR="$PWD/crash-work/build/chrono-fea-reference/cmake" -DCMAKE_BUILD_TYPE=RelWithDebInfo
 python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/reissner-build-rerun.json --lock crash-work/reports/workstation.lock --cpus 1 --max-rss-gib 2 --timeout 120 -- cmake --build crash-work/build/reissner-baseline-regression --target crash_chrono_reissner_reference_check --parallel 1
 python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/reissner-tests-rerun.json --lock crash-work/reports/workstation.lock --cpus 1 --max-rss-gib 0.5 --timeout 45 -- crash-work/build/reissner-baseline-regression/chrono/crash_chrono_reissner_reference_check --gtest_output=xml:crash-work/reports/reissner-tests-rerun.xml
 ```
@@ -201,8 +212,8 @@ in `tests/data/yaris-wall/`. From the workspace root, regenerate with:
 python3 Total-Lagrangian-FEA/tools/run_bounded.py \
   --report crash-work/assets/yaris-wall/import-run.json \
   --lock crash-work/reports/workstation.lock --cpus 1 --max-rss-gib 0.25 --timeout 30 -- \
-  python3 crash-app/tools/import_yaris_wall.py \
-  --source-model crash-app/tests/data/yaris-wall \
+  python3 robo-dyna/tools/import_yaris_wall.py \
+  --source-model robo-dyna/tests/data/yaris-wall \
   --output crash-work/assets/yaris-wall
 ```
 
@@ -226,14 +237,14 @@ Run the small independent geometry/import tests from their pinned fixtures:
 python3 Total-Lagrangian-FEA/tools/run_bounded.py \
   --report crash-work/assets/yaris-wall/tests-run.json \
   --lock crash-work/reports/workstation.lock --cpus 1 --max-rss-gib 0.25 --timeout 30 -- \
-  python3 -m unittest discover -s crash-app/tests -p 'test_yaris_wall.py' -v
+  python3 -m unittest discover -s robo-dyna/tests -p 'test_yaris_wall.py' -v
 ```
 
 The same tests are registered with CMake/CTest:
 
 ```sh
-cmake -S crash-app -B crash-work/build/crash-app
-ctest --test-dir crash-work/build/crash-app --output-on-failure --parallel 1
+cmake -S robo-dyna -B crash-work/build/robo-dyna
+ctest --test-dir crash-work/build/robo-dyna --output-on-failure --parallel 1
 ```
 
 Use the shared `run_bounded.py` wrapper for these commands during coordinated
@@ -293,7 +304,7 @@ From the workspace root, prepare the canonical arrays without running a solver:
 python3 Total-Lagrangian-FEA/tools/run_bounded.py \
   --report crash-work/reports/yaris-vehicle-import.json \
   --lock crash-work/reports/workstation.lock --cpus 1 --max-rss-gib 1 --timeout 120 -- \
-  python3 -B crash-app/tools/import_yaris_vehicle.py \
+  python3 -B robo-dyna/tools/import_yaris_vehicle.py \
   --source-archive /tmp/chrono-yaris-plan/2010-toyota-yaris-coarse-v1l.zip \
   --output crash-work/assets/yaris-vehicle
 ```
@@ -340,14 +351,14 @@ After the core build and wall preparation, configure the application using:
 ```sh
 python3 Total-Lagrangian-FEA/tools/run_bounded.py \
   --report crash-work/reports/app-configure.json -- \
-  cmake -S crash-app -B crash-work/build/crash-app \
+  cmake -S robo-dyna -B crash-work/build/robo-dyna \
   -DCRASH_ENABLE_CHRONO_CHECK=ON \
   -DChrono_DIR="$PWD/crash-work/build/chrono-core/cmake" \
   -DCRASH_WALL_OBJ="$PWD/crash-work/assets/yaris-wall/wall.obj" \
   -DCRASH_YARIS_VEHICLE_ASSETS="$PWD/crash-work/assets/yaris-vehicle"
 ```
 
-Build with `cmake --build crash-work/build/crash-app --parallel 2` and run CTest
+Build with `cmake --build crash-work/build/robo-dyna --parallel 1` and run CTest
 with `--parallel 1`, both through the same resource guard. The test is named
 `chrono_wall_integration`. It verifies mesh/scene data and external library
 linkage, not a graphical window or vehicle crash.

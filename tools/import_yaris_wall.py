@@ -322,7 +322,7 @@ def compile_wall(wall_bytes, combine_bytes, verify_pins=True):
                     source=dict(wall_file='source/wall.key', wall_sha256=sha256(wall_bytes),
                                 combine_file='source/combine.key', combine_sha256=sha256(combine_bytes),
                                 model_archive_reference_sha256=ARCHIVE_SHA256),
-                    generator=dict(file='crash-app/tools/import_yaris_wall.py', sha256=sha256(Path(__file__).read_bytes())),
+                    generator=dict(file='robo-dyna/tools/import_yaris_wall.py', sha256=sha256(Path(__file__).read_bytes())),
                     transform=transform, source_length_unit='mm', output_length_unit='m', length_scale=MM_TO_M,
                     counts=dict(source_nodes=62, source_quads=46, collision_vertices=62, collision_triangles=100),
                     vertices=[dict(vertex_index=indices[n], source_node_id=n,

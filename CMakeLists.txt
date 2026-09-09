@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-project(CrashApplicationTools LANGUAGES NONE)
+project(RoboDyna LANGUAGES NONE)
 find_package(Python3 3.8 REQUIRED COMPONENTS Interpreter)
 enable_testing()
 add_test(NAME yaris_wall_import

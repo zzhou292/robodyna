@@ -34,7 +34,7 @@ before changing caller output. The legacy mass routine remains unqualified.
 From the workspace root, using that already-built core:
 
 ```sh
-python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/reissner-consistent-configure-rerun.json --max-rss-gib 1 --timeout 45 -- cmake -S crash-app -B crash-work/build/reissner-consistent -DCRASH_ENABLE_CHRONO_REISSNER_CONSISTENT_CHECK=ON -DChrono_DIR="$PWD/crash-work/build/chrono-fea-consistent/cmake" -DCMAKE_BUILD_TYPE=RelWithDebInfo
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/reissner-consistent-configure-rerun.json --max-rss-gib 1 --timeout 45 -- cmake -S robo-dyna -B crash-work/build/reissner-consistent -DCRASH_ENABLE_CHRONO_REISSNER_CONSISTENT_CHECK=ON -DChrono_DIR="$PWD/crash-work/build/chrono-fea-consistent/cmake" -DCMAKE_BUILD_TYPE=RelWithDebInfo
 python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/reissner-consistent-build-rerun.json --max-rss-gib 2 --timeout 120 -- cmake --build crash-work/build/reissner-consistent --target crash_chrono_reissner_reference_check --parallel 1
 python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/reissner-consistent-run-rerun.json --max-rss-gib 1 --timeout 45 -- crash-work/build/reissner-consistent/chrono/crash_chrono_reissner_reference_check --gtest_output=xml:crash-work/reports/reissner-consistent-tests-rerun.xml
 ```
@@ -56,7 +56,7 @@ against the Chrono helper and independent finite differences. This is a frame
 operation gate, not a complete CUDA element force or timestepper:
 
 ```sh
-python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/tl-reissner-frame-configure-rerun.json --max-rss-gib 1 --timeout 45 -- cmake -S crash-app -B crash-work/build/tl-reissner-frame -DCRASH_ENABLE_TL_REISSNER_FRAME_CHECK=ON -DChrono_DIR="$PWD/crash-work/build/chrono-fea-consistent/cmake" -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_ARCHITECTURES=120 -DCMAKE_BUILD_TYPE=RelWithDebInfo
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/tl-reissner-frame-configure-rerun.json --max-rss-gib 1 --timeout 45 -- cmake -S robo-dyna -B crash-work/build/tl-reissner-frame -DCRASH_ENABLE_TL_REISSNER_FRAME_CHECK=ON -DChrono_DIR="$PWD/crash-work/build/chrono-fea-consistent/cmake" -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_ARCHITECTURES=120 -DCMAKE_BUILD_TYPE=RelWithDebInfo
 python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/tl-reissner-frame-build-rerun.json --max-rss-gib 2 --timeout 180 -- cmake --build crash-work/build/tl-reissner-frame --target crash_tl_reissner_frame_check --parallel 1
 python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/tl-reissner-frame-run-rerun.json --gpu 0 --max-gpu-growth-gib 1 --max-rss-gib 1 --timeout 45 -- crash-work/build/tl-reissner-frame/chrono/crash_tl_reissner_frame_check --gtest_output=xml:crash-work/reports/tl-reissner-frame-tests-rerun.xml
 ```

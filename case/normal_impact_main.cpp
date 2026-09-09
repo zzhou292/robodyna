@@ -25,7 +25,7 @@ int main(int argc,char** argv) {
     namespace cd=crash::case_data;
     cd::NormalImpactCase run;std::unique_ptr<cd::NormalImpactArtifacts> artifacts;
     try {
-        if(argc<3)throw std::runtime_error("Usage: normal_impact canonical-manifest.json NEW-output-directory [--dt seconds] [--horizon seconds] [--frame-every steps] [--patch-divisions 1|2|4] [--refine-wall]");
+        if(argc<3)throw std::runtime_error("Usage: robo-dyna canonical-manifest.json NEW-output-directory [--dt seconds] [--horizon seconds] [--frame-every steps] [--patch-divisions 1|2|4] [--refine-wall]");
         cd::NormalImpactConfig config;double horizon=.07;unsigned frame_every=10;
         for(int i=3;i<argc;++i) {
             const std::string option=argv[i];if(option=="--refine-wall"){config.refine_wall=true;continue;}
