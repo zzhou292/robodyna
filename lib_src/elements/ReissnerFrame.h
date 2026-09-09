@@ -44,6 +44,7 @@
 #pragma once
 
 #include "lib_src/math/Quaternion.h"
+#include "lib_src/math/Fixed3.h"
 
 #include <cfloat>
 #include <cmath>
@@ -56,13 +57,9 @@
 
 namespace tl::fea::reissner {
 
-struct Vec3 {
-  double x = 0, y = 0, z = 0;
-};
+using Vec3 = tl::math::Vec3;
 using Quaternion = tl::math::Quaternion;
-struct Matrix3 {
-  double v[9]{};  // Row-major; default is the zero matrix.
-};
+using Matrix3 = tl::math::Matrix3;
 struct SpinJacobian {
   Matrix3 node[4]{};
 };

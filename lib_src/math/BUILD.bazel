@@ -1,3 +1,4 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 package(default_visibility = ["//visibility:public"])
 cc_library(name = "quaternion", hdrs = ["Quaternion.h"])
+cc_library(name = "fixed3", hdrs = ["Fixed3.h"])

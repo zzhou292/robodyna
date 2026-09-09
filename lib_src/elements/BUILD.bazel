@@ -6,7 +6,7 @@ package(default_visibility = ["//visibility:public"])
 cc_library(
     name = "reissner_frame",
     hdrs = ["ReissnerFrame.h"],
-    deps = ["//lib_src/math:quaternion"],
+    deps = ["//lib_src/math:quaternion", "//lib_src/math:fixed3"],
 )
 
 cc_library(
