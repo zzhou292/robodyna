@@ -3,6 +3,7 @@ project(TLQephQualification LANGUAGES CXX Fortran)
 option(TL_QEPH_ENABLE_CUDA "Build and require the actual QEPH device qualification" ON)
 option(TL_QEPH_ENABLE_BATCH "Build the bounded resident QEPH history/owner qualification" OFF)
 option(TL_QEPH_ENABLE_COUPLED "Build the short coupled QEPH recurrence qualification" OFF)
+option(TL_QEPH_ENABLE_FREE_RESPONSE_AUDIT "Build the native full-recurrence matrix audit" OFF)
 if(TL_QEPH_ENABLE_BATCH AND NOT TL_QEPH_ENABLE_CUDA)
   message(FATAL_ERROR "The resident QEPH batch qualification requires CUDA")
 endif()
@@ -23,6 +24,9 @@ add_custom_target(qeph_verify_port
 add_subdirectory("${TL_ROOT}/lib_src/elements/qeph" "tl-qeph")
 # Only this explicit qualification harness links the native Fortran reference.
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../native/qeph" "native-qeph")
+if(TL_QEPH_ENABLE_FREE_RESPONSE_AUDIT)
+  add_subdirectory(free_response)
+endif()
 
 add_executable(qeph_startup_check QephStartupTest.cpp)
 add_dependencies(qeph_startup_check qeph_verify_port)

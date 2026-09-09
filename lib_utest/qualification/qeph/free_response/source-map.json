@@ -1,0 +1,124 @@
+{
+  "schema": "tl.qeph-recurrence-audit-source-map.v1",
+  "scope": "Qualification-only native full-recurrence audit; no trajectory execution admission",
+  "native_upstream_revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "native_license": "AGPL-3.0-or-later",
+  "source_pin_complete_toolchain": false,
+  "inputs": [
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/CMakeLists.txt",
+      "bytes": 2575,
+      "sha256": "23d9ac2d66d2dd4443b73cf99d1c5c6e243a2f3247d19619d4f892520e40a03a"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/README.md",
+      "bytes": 3665,
+      "sha256": "39d9291843a58cc7b6e9c94b4d315418870747ff107f22076aa757ca11fbb866"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceAnalysis.cpp",
+      "bytes": 4545,
+      "sha256": "24a9c2dec362b884c8478a5212684dcbf190a7ced2338f19e278e11855a1cd5a"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceAudit.cpp",
+      "bytes": 2557,
+      "sha256": "972e0c2e43bb76b4a5a1ed132b1b410dbaa1c12fc32b588078595a70ca1e7278"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceAudit.h",
+      "bytes": 3112,
+      "sha256": "b7cc942316d07dcef171363c92a6d255833b77d5e12f9c907f918b0c5e7443ba"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceAuditTest.cpp",
+      "bytes": 7941,
+      "sha256": "933b9422dd217ef0d0760b0ce5407d560f4d09d7cf09ee79f0a3d8c183a83d8d"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceDictionary.cpp",
+      "bytes": 3296,
+      "sha256": "2a1c8b4ec7a61c63bd4d3304f31ed7fbbd7231065760e925902a00635cbec149"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceIdentity.cpp",
+      "bytes": 3178,
+      "sha256": "4bf6a7b318f283ce2753444c9c30d1552cff2cce7de3fd5f2d2cf5ffc74e1bfd"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceIdentity.h",
+      "bytes": 183,
+      "sha256": "cc54bf8122bcfd8e06bbe9a097d3682f66805c8ad7edb98ffbe4d2fcad736193"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceProbe.cpp",
+      "bytes": 6363,
+      "sha256": "2801e66c6715b18aaff36f807516ffd6164a28ea691c65d094f47521baa3170e"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceReport.cpp",
+      "bytes": 7897,
+      "sha256": "e8e1fc49813fbb15a8244637c3d8d1447a45bb4f7df8b015c7d3d802760e16d8"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceReport.h",
+      "bytes": 460,
+      "sha256": "9df1c73ddd38f1d3a1b810d3f8c1d219dfa96926ec7abe8a18cd9b678e72b3f7"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceReportTest.cpp",
+      "bytes": 3900,
+      "sha256": "c2c1207b485d404e998c8051ea567a20ce99a9156ccb7dbca14db6a617def320"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/recurrence_audit_main.cpp",
+      "bytes": 2328,
+      "sha256": "36527bc9e263eab045fe9aaa443b52a6c8a7dd73f5e5c9a3b705064d41a336fc"
+    },
+    {
+      "path": "planning/QEPH_FREE_RESPONSE_ADMISSION.md",
+      "bytes": 12236,
+      "sha256": "30c37d8b01c695fa6237e7f0a5d57c547cf41a42fe886d265fc587902239b23c"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/source-manifest.json",
+      "bytes": 19722,
+      "sha256": "46d2759036e16558500c91a9d14dd225f203aa5d2abec81bb951ac1b956030be"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephReference.h",
+      "bytes": 1241,
+      "sha256": "387d15ab3977f975029d248c6b6f9f17ff1242cadf720256f397eeb7676366d9"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephReferenceTypes.h",
+      "bytes": 3337,
+      "sha256": "18f4587fc2dea12269c77893365226c74868b181cafbf324661873a44dd718bc"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephForceReference.h",
+      "bytes": 1733,
+      "sha256": "ddd8a4a34408e87ab4a0fd77ab6e73defa9fb3d70d51d9bb7bad1f1cb2258f97"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephHistory.h",
+      "bytes": 2008,
+      "sha256": "e0adc73e85f19bc4d1813f2d2e60a932473eed3cabf6b6c1278305ee653ab88a"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/math/Quaternion.h",
+      "bytes": 6145,
+      "sha256": "de1e9fc2150c7ee8b1d92a75b954b0343ea524d00e4f3da5ee540bf3c2bb81f1"
+    },
+    {
+      "path": "robo-dyna/output/ArtifactIO.h",
+      "bytes": 1405,
+      "sha256": "ecc22a6c9e111390534fbe343f2cd4baa5f3c0813e66afb766018b4b1c67d823"
+    },
+    {
+      "path": "robo-dyna/output/ArtifactIO.cpp",
+      "bytes": 4619,
+      "sha256": "cc7e8caec0440a352e9f13aaec73614af2c0d30c6a4b4d8b550a9670b7b782dc"
+    }
+  ]
+}
