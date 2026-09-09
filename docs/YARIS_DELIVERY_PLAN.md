@@ -20,10 +20,13 @@ has completed 200 ms with accepted output and inspected video. QEPH force/histor
 resident publication, the native full-recurrence screen and sustained one/two-cell
 elastic response through 244.140625 microseconds pass, including h/h2/h4
 refinements and 86,016 native/CUDA element intervals. Complete prescribed T3
-force/history passes on CUDA. The source-part
+force/history and standalone resident history/publication now pass on CUDA;
+the latter owns 6,216 device bytes and adds eight passing functions at TL
+`e9e3e5f`. Shared shell utilities are adopted at `329f441`, with all six sustained
+scientific response records matching their preceding baseline. The source-part
 wall-contact cost gate and stateless contact contributor on the existing owner
-also pass. The vehicle is not running yet. Next are resident/mixed Q4-T3
-publication and combined shell/contact admission. The
+also pass. The vehicle is not running yet. Next are immutable mixed Q4/T3
+mass binding, joint publication and combined shell/contact admission. The
 [combined admission design](../../planning/QEPH_WALL_COUPLED_ADMISSION.md)
 separates short transaction checks, contact recurrence, incoming-velocity startup
 and impact/refinement; free-shell stability does not qualify wall impact. Plasticity,
