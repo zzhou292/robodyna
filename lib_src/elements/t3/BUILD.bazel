@@ -1,0 +1,14 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "startup",
+    hdrs = ["T3Data.h", "T3Geometry.h", "T3Startup.h"],
+    deps = ["//lib_src/math:fixed3", "//lib_src/math:quaternion"],
+)
+
+cc_library(
+    name = "kinematics",
+    hdrs = ["T3KinematicsData.h", "T3CurrentGeometry.h", "T3Rates.h", "T3Kinematics.h"],
+    deps = [":startup"],
+)

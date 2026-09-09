@@ -1,0 +1,349 @@
+{
+  "schema": "tl.t3-startup-rates-port.v1",
+  "donor_revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Bounded one-native-T3 startup and prescribed geometry/rates host/device port; no force/history, owner, contact, timestep or source MAT024/NIP3 claim",
+  "native_reference_tl_commit": "f605e70",
+  "native_reference_checkpoint": "t3-r3-native-force-history-1",
+  "native_source_manifest_sha256": "3f4891f6dab344de9c0c579b699e43e11b30a7359358170833395481e62c2e9f",
+  "transformations": [
+    "Scalar three-node fixed-array arithmetic; no MVSIZ scratch or COMMON state",
+    "Only selected IREP0/IFRAM_OLD1/ISH3N2/ISMSTR-1/IRESP2 branches; dead stores and inactive branches omitted",
+    "Identical starter/current frame shared; startup sqrt X2 and engine dot X2/Y2 retained separately",
+    "FP64 numerical preflight has explicit dimensionless 64epsilon bands; not native cutoff acceptance parity",
+    "Published results staged; no clamp, angle normalization, reference reset, constitutive or owner operation"
+  ],
+  "ported_files": [
+    {
+      "path": "lib_src/elements/t3/BUILD.bazel",
+      "bytes": 413,
+      "sha256": "25c4ca46f983c745e0236acddde4fb99e2c7ca5dea95e1ca5e50e2735cc15f3f"
+    },
+    {
+      "path": "lib_src/elements/t3/CMakeLists.txt",
+      "bytes": 279,
+      "sha256": "c6ef2dbfdf564703da528ebc7b3b16eb25eeee31c581eccc1d3677640813a151"
+    },
+    {
+      "path": "lib_src/elements/t3/LICENSE.md",
+      "bytes": 1118,
+      "sha256": "066f998cbff5693cd9ab96b392add4e34442d9b8cbc79cec4e8604d27ee0209d"
+    },
+    {
+      "path": "lib_src/elements/t3/T3CurrentGeometry.h",
+      "bytes": 1741,
+      "sha256": "8449bb4b51557eff43658994dcd0a9fc4cbed10bd58f6df22d2d2d6b6969ccb5"
+    },
+    {
+      "path": "lib_src/elements/t3/T3Data.h",
+      "bytes": 1434,
+      "sha256": "3e9a7b829442a585f0b2f51044716d8794a2f52c79d9cabfd7d9b362713d1ecd"
+    },
+    {
+      "path": "lib_src/elements/t3/T3Geometry.h",
+      "bytes": 4142,
+      "sha256": "aa2dfba58ba8bfcd69f1b8066b4d5133ecd26d4b5b123bdc718cf6915f8ad22a"
+    },
+    {
+      "path": "lib_src/elements/t3/T3Kinematics.h",
+      "bytes": 3201,
+      "sha256": "6426e348666fa7b0b9a0f553a83338fb9ef763fdc8b6ea8fb8d7cab521c69088"
+    },
+    {
+      "path": "lib_src/elements/t3/T3KinematicsData.h",
+      "bytes": 866,
+      "sha256": "aaa83bdab5f8ae8abf71c40cc95915180fb27df8c4a1c6ed18fd2748bb86ceff"
+    },
+    {
+      "path": "lib_src/elements/t3/T3Rates.h",
+      "bytes": 3256,
+      "sha256": "278ae425c31d865d2a1aba78bd1c9ceea85076c9eed441e8e81cc8c8d62345e1"
+    },
+    {
+      "path": "lib_src/elements/t3/T3Startup.h",
+      "bytes": 3417,
+      "sha256": "b5c2a9d2eb3bf9085b7b47d44636d44cb69ec676cb9b69dcb98a31909747acc7"
+    }
+  ],
+  "tests": [
+    {
+      "path": "lib_utest/qualification/t3/CMakeLists.txt",
+      "bytes": 2527,
+      "sha256": "ba8f4a82876d71aa0e06c47417e3f59d46154a6e90842512171b5aef3ed7fe0a"
+    },
+    {
+      "path": "lib_utest/qualification/t3/README.md",
+      "bytes": 5303,
+      "sha256": "a70dbc74ef5b8695516de938f3b75ef6a792d32c418c6f18bfb7ac3813d97098"
+    },
+    {
+      "path": "lib_utest/qualification/t3/T3KinematicsTest.cpp",
+      "bytes": 7495,
+      "sha256": "8719ceeea45a43e00da7a1f8f4285e78d3e2bfe8e5de494e9ce5aba7ce8a277a"
+    },
+    {
+      "path": "lib_utest/qualification/t3/T3PortCudaTest.cu",
+      "bytes": 5871,
+      "sha256": "0f5a170d1e5804e6c1fc32b366099d2e1b607ed67341eb501c1c8b1116b47e49"
+    },
+    {
+      "path": "lib_utest/qualification/t3/T3PortFixture.h",
+      "bytes": 8353,
+      "sha256": "80a7a08f4d2813a62f4fdd1e0ded78f4a0b37e6658f7fe21b1a1cdb9e2b7f8b4"
+    },
+    {
+      "path": "lib_utest/qualification/t3/T3StartupTest.cpp",
+      "bytes": 5409,
+      "sha256": "7d3b2799ce29afe5835d5f067336364202c84b60bbf3e667721411972d495cdf"
+    }
+  ],
+  "shared_and_native_dependencies": [
+    {
+      "path": "lib_src/math/Fixed3.h",
+      "bytes": 2924,
+      "sha256": "ab85903048860e3640e700a9b3a98d7cb792898f1f60621e74554145d200d7fb"
+    },
+    {
+      "path": "lib_src/math/Quaternion.h",
+      "bytes": 6145,
+      "sha256": "de1e9fc2150c7ee8b1d92a75b954b0343ea524d00e4f3da5ee540bf3c2bb81f1"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/CMakeLists.txt",
+      "bytes": 4509,
+      "sha256": "05a9acbe6beec67ae7393a367687b3498d0bcd5f901f47acd69b485b8301b846"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/NativeT3Bridge.h",
+      "bytes": 706,
+      "sha256": "cfe23afb928af9bbf2ece1844cbb0a9d9bf59011beb68fe39082e547d683141d"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/NativeT3Kinematics.F",
+      "bytes": 691,
+      "sha256": "768f3e434f1fcee6a8df9a9c9d7277f37b631a0522e2ce358abfaa4619c4d3cf"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/NativeT3Startup.F",
+      "bytes": 3765,
+      "sha256": "e7c5be17fb06c1cb040069314d099a5e2fe5d09741e36d37de9fc809d2459adf"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3Engine.cmake",
+      "bytes": 4189,
+      "sha256": "23a08801ff7afd6d8676a6e672baca9a4db49d7ea3e5ac90f7419c188b86e9f9"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3EngineContext.h",
+      "bytes": 819,
+      "sha256": "7dd754fb35bf94a933b668f05870d10cede5544f63c590ee602e454b8449ff4c"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3Geometry.cpp",
+      "bytes": 1832,
+      "sha256": "494956348e8b83675982f4c08d19aae6694f0433756e2ebd18db285b5bc22029"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3Geometry.h",
+      "bytes": 376,
+      "sha256": "4b6d5ea8e7292a74fa18f001cf31b4308d7b03219afc9b47b3cdad17ece23c1f"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3Kinematics.cpp",
+      "bytes": 3660,
+      "sha256": "3e092871c003124f200a16ab181a74af0b5fcbd296560fafe43c22c07ea0ce90"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3Kinematics.h",
+      "bytes": 2050,
+      "sha256": "f4c8100a3abf910a49802bbe14471e2258f7cb9f744c1dcabae69e60b2d466e4"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3KinematicsTest.cpp",
+      "bytes": 10200,
+      "sha256": "08899f1c3fc0c2c490beaaf77e7d0f45d03a64d6dbb0702af0a2234309ad656c"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3KinematicsTestOracle.h",
+      "bytes": 6492,
+      "sha256": "855c0af93b19140ca1a35786f7f4a38b8a1446963f24f13cc3e6cee532519293"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3NativeGeometry.F",
+      "bytes": 6731,
+      "sha256": "408482a2b62d1c286a63d82cc74b93956b27305b7b1615fd0058360bdd997fe5"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3Reference.cpp",
+      "bytes": 3635,
+      "sha256": "3d41b43fa0e4d86492eb9d2dd39ee957609b68f8ff8ea045277d21b06ebc12e0"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3Reference.h",
+      "bytes": 3493,
+      "sha256": "b7e80482c6a8d9f37f2b0039fa1ed7189784402021eb78a595ab34313301f11e"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3StartupTest.cpp",
+      "bytes": 8394,
+      "sha256": "29ec36d945c06cd76bc693e9ca264944f2c7fb30eca3f3c4826e3f78d513ac30"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3StartupTestOracle.h",
+      "bytes": 4409,
+      "sha256": "39b741ee1b75503cd3acd3ca9d818ed376d416506f884cbed4487fdbe152c32c"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/extracted/C3Coor3.F",
+      "bytes": 5946,
+      "sha256": "682293794929f7c476ccec6066109a9f5ab841cc1a2543c4d0cb0d4a40f1afb8"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/extracted/C3Curv3.F",
+      "bytes": 4820,
+      "sha256": "8fc710113390ef6b56209b03e230c48ce3c32322fd8cc8cb646bd77229d30423"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/extracted/C3Defo3.F",
+      "bytes": 5476,
+      "sha256": "fb252597aa6adcc5e7f518f356026920c2e0a3fbc43b28d9b91090fc2e9a2caa"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/extracted/C3Deri3.F",
+      "bytes": 5394,
+      "sha256": "0dad7998e9a4c2d1412e658e7454fff14bd19b483442e68f18a281715b5deb76"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/extracted/C3Evec3.F",
+      "bytes": 21374,
+      "sha256": "edd6b335a0c7ab5b7c6120584931dbb3fa84eca073d207391ef1da477a5e08c5"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/extracted/StarterC3evec3.F",
+      "bytes": 4140,
+      "sha256": "d5563d5702cc0bf822c9ab154cbf7fba5e817254281e2ae719ef4d8eb2deb4bf"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/prepare_sources.py",
+      "bytes": 4742,
+      "sha256": "3e9318257a91db97881eeb08fccf730018145e5adefebe7274171484083b4e65"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/source-manifest.json",
+      "bytes": 28358,
+      "sha256": "3f4891f6dab344de9c0c579b699e43e11b30a7359358170833395481e62c2e9f"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/verify_sources.py",
+      "bytes": 5662,
+      "sha256": "67aa47b575fea7ba31558ad4550cdc71323f8471a7e9d220e94b326fe451e482"
+    }
+  ],
+  "donor_routines": [
+    {
+      "path": "lib_utest/qualification/native/t3/original/starter/source/elements/sh3n/coque3n/c3evec3.F",
+      "bytes": 4882,
+      "sha256": "c73e6cf20803c6010dc21a03b2a5b9ca65c6346cd05c38d46fe6259e0cecffea",
+      "git_blob_sha1": "8464aa21828018746f7babd8594d2055900ecd86",
+      "ranges": [
+        {
+          "routine": "C3EVEC3",
+          "first_line": 35,
+          "last_line": 112
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/original/engine/source/elements/sh3n/coque3n/c3coor3.F",
+      "bytes": 13129,
+      "sha256": "dc1a3af9d60541a35974468bc7307a5dfdfa941ba215c09bb34e0e1b5ad11615",
+      "git_blob_sha1": "7d5ae470b833bf6d9d017cf421a0300c207ee24f",
+      "ranges": [
+        {
+          "routine": "C3COOR3",
+          "first_line": 31,
+          "last_line": 180
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/original/engine/source/elements/sh3n/coque3n/c3evec3.F",
+      "bytes": 30239,
+      "sha256": "32299c6e8ccfbd8c9a50a80296a112ef437311cfd2968661f07e5bb7e6ed604a",
+      "git_blob_sha1": "f672b13d0448f2872d1015d8e4d5f0c41c5c97e2",
+      "ranges": [
+        {
+          "routine": "C3EVEC3",
+          "first_line": 34,
+          "last_line": 516
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/original/engine/source/elements/sh3n/coque3n/c3deri3.F",
+      "bytes": 5752,
+      "sha256": "d414db14ccf2e41173f3abf0e24fb728c376924deeb9e142bcc054c7a50bf671",
+      "git_blob_sha1": "3bc568ce637d9d8d5c113df164df2005581ad041",
+      "ranges": [
+        {
+          "routine": "C3DERI3",
+          "first_line": 30,
+          "last_line": 141
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/original/engine/source/elements/sh3n/coque3n/c3defo3.F",
+      "bytes": 21008,
+      "sha256": "8f295457ee1bf33ddb4d1a66240f0c9ee0374dc899616c001a2a4f51934bc814",
+      "git_blob_sha1": "58de9509a6bbf9ab127cf8560ff98fa45f252784",
+      "ranges": [
+        {
+          "routine": "C3DEFO3",
+          "first_line": 32,
+          "last_line": 133
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/original/engine/source/elements/sh3n/coque3n/c3curv3.F",
+      "bytes": 5321,
+      "sha256": "3c0ea629778e1c08c3e33d453c60755e7f69628223d7ea6182b30f66384c3fa6",
+      "git_blob_sha1": "0c180cc660cae4ef658bad673e05d7ee5d8fcbb0",
+      "ranges": [
+        {
+          "routine": "C3CURV3",
+          "first_line": 32,
+          "last_line": 117
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/original/starter/source/elements/sh3n/coque3n/c3inmas.F",
+      "bytes": 76288,
+      "sha256": "17218f450465558b6858316022b8fd2584baabd9c775aba7ef2cf89b0a0958a8",
+      "git_blob_sha1": "9b93b8ecda3d10689a99b99d0d897f90505e8e28",
+      "selected_scope": "Selected ordinary uniform centered EM/XI/ACOS expressions as mapped by NativeT3Startup.F"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/original/starter/source/elements/sh3n/coque3n/c3derii.F",
+      "bytes": 12139,
+      "sha256": "cd8936f7f57e2043e07ac88b63f4f7c3ee01324cd9c111a778ec8fb201cdecc8",
+      "git_blob_sha1": "7c35b565663c5f0129c4772e0e90ea6e53dd0840",
+      "selected_scope": "Selected L and ISMSTR=-1 zero startup derivatives"
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/original/starter/source/elements/initia/spmd_msin.F",
+      "bytes": 19111,
+      "sha256": "555c8d2e41039c2e7f90df2c046d0add8412aceccc1c2a19cb818ff099d20ff8",
+      "git_blob_sha1": "026190303b0ea69cda76a475d7a28c35dcc727b1",
+      "selected_scope": "Selected zero-initialized nodal EM/XI times angle weight contributions"
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/common_source/modules/constant_mod.F",
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865",
+      "git_blob_sha1": "5f78c0a6769ac024deb6bba9d3037cd747f36837",
+      "selected_scope": "Named binary64 HALF/FOURTH/THIRD/PI/ONE_OVER_12/NINE_OVER_2/EM15"
+    }
+  ]
+}
