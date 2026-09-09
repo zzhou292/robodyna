@@ -8,7 +8,9 @@ add_test(NAME yaris_wall_import
 set_tests_properties(yaris_wall_import PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE)
 
 option(CRASH_ENABLE_CHRONO_CHECK "Build the external Chrono wall integration check" OFF)
-if(CRASH_ENABLE_CHRONO_CHECK)
+option(CRASH_ENABLE_CHRONO_SNAPSHOT_CHECK "Build the TL host-view to Chrono accepted-surface check" OFF)
+option(CRASH_ENABLE_TL_CHRONO_CHECK "Build the CUDA shell qualification to Chrono accepted-state test" OFF)
+if(CRASH_ENABLE_CHRONO_CHECK OR CRASH_ENABLE_CHRONO_SNAPSHOT_CHECK OR CRASH_ENABLE_TL_CHRONO_CHECK)
   add_subdirectory(chrono)
 endif()
 

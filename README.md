@@ -1,4 +1,47 @@
-# Crash application preparation
+# Crash application preparation and TL/Chrono integration
+
+`chrono/AcceptedSurfaceMesh` connects accepted TL physical-node positions to
+Chrono core's mesh and visual-shape objects. TL remains the dynamics owner. The
+adapter preserves double coordinates and integer source identities, keeps
+physical faces separate from their display triangles, and publishes a complete
+validated frame atomically. Rejected/stale/wrong-owner frames preserve the last
+published mesh. Mapped positions are copied; subsequent TL commits or destruction
+do not invalidate the visible coordinates. Calls and rendering must be serialized.
+
+The first binding is bounded to 4,096 display vertices and 8,192 triangles, with
+caller-selected lower limits. Topology remains fixed. This is a small preview
+integration gate; whole-vehicle capacity and VSG window/render behavior are
+separate work. The adapter does not validate the model's mechanics or advance
+physical time. Its mutable-shape path targets later VSG use; Irrlicht incremental
+connectivity updates are not qualified by these headless checks.
+
+From the workspace root, build the generic six-check test using the existing
+Chrono core build and real TL nodal header, with no CUDA or Fortran requirement:
+
+```sh
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/app-snapshot-configure.json --cpus 2 --max-rss-gib 1 --timeout 90 -- cmake -S crash-app -B crash-work/build/app-snapshot -DCRASH_ENABLE_CHRONO_SNAPSHOT_CHECK=ON -DChrono_DIR="$PWD/crash-work/build/chrono-core/cmake" -DCMAKE_BUILD_TYPE=RelWithDebInfo
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/app-snapshot-build.json --cpus 2 --max-rss-gib 2 --timeout 120 -- cmake --build crash-work/build/app-snapshot --target crash_chrono_snapshot_check --parallel 1
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/app-snapshot-test.json --cpus 1 --max-rss-gib 0.5 --timeout 30 -- ctest --test-dir crash-work/build/app-snapshot -R '^chrono_snapshot_integration$' --output-on-failure -j 1
+```
+
+The separate opt-in `CRASH_ENABLE_TL_CHRONO_CHECK=ON` composes TL's existing
+qualification CMake targets and links `persistent_shell` only into an integration
+test. Add `-DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc` and the actual compatible
+`-DCMAKE_CUDA_ARCHITECTURES=120` for this workstation, then build target
+`crash_tl_chrono_snapshot_check` with one job. Fortran remains optional; the bridge
+needs neither native oracle. Run the four tiny tests through the same guard:
+
+```sh
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/app-tl-snapshot-test.json --cpus 2 --max-rss-gib 1 --timeout 60 --gpu 0 --max-gpu-growth-gib 1 -- ctest --test-dir crash-work/build/app-snapshot -R '^tl_chrono_snapshot_integration$' --output-on-failure -j 1
+```
+
+These tests consume actual GPU shell `accepted()` states, keep source-owner
+identity in the test coordinator, and verify that uncommitted/rejected trials
+and another backend cannot publish a new frame. The numerical fixture remains
+prescribed-motion qualification, with production rigid-motion behavior still
+open. The reusable adapter has no qualification-header/library dependency.
+
+## Original wall preparation
 
 The first implemented slice compiles the **original Yaris coarse V1l wall** into
 an indexed fixed triangle mesh. It is a scoped wall preparation tool, not a
