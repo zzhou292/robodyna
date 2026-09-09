@@ -135,6 +135,10 @@ if(ROBO_DYNA_ENABLE_ELASTIC_COUPON)
   include(ElasticCouponChecks.cmake)
 endif()
 
+if(ROBO_DYNA_ENABLE_THIN_SHELL_SCREEN)
+  include(ThinShellScreen.cmake)
+endif()
+
 if(ROBO_DYNA_ENABLE_GUIDED_PLATE_CHECKS)
   include(GuidedPlateChecks.cmake)
 endif()

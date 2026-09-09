@@ -1,6 +1,7 @@
 #pragma once
 
 #include "elements/ReissnerShellMass.h"
+#include "ElasticCouponParameters.h"
 
 #include <array>
 #include <cstddef>
@@ -19,9 +20,10 @@ struct ElasticCouponConfiguration {
     std::array<tl::fea::reissner::Quaternion, kCouponNodes> rotation{};
 };
 
-// Fixed, declared synthetic fixture; this is not a general material/model input
-// format. The owning model publishes only a const reference after one Setup.
+// Immutable two-element reference data after one actual Chrono Setup.
 struct ElasticCouponData {
+    // Legacy B2/D default scales, retained for source compatibility. Actual
+    // parameterized setup values are available through model.parameters().
     static constexpr double length = .2;
     static constexpr double width = .1;
     static constexpr double thickness = .02;
@@ -78,11 +80,13 @@ class ElasticCouponModel {
   public:
     ElasticCouponModel();
     explicit ElasticCouponModel(const ElasticCouponPose&);
+    explicit ElasticCouponModel(const ElasticCouponParameters&,const ElasticCouponPose& = {});
     ~ElasticCouponModel();
     ElasticCouponModel(const ElasticCouponModel&) = delete;
     ElasticCouponModel& operator=(const ElasticCouponModel&) = delete;
 
     const ElasticCouponData& data() const;
+    const ElasticCouponParameters& parameters() const;
     ElasticCouponStatus EvaluateChrono(const ElasticCouponConfiguration& configuration,
                                       ElasticCouponEvaluation& output, std::string& diagnostic) const;
     ElasticCouponStatus EvaluateTL(const ElasticCouponConfiguration& configuration,

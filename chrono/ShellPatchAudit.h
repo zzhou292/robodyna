@@ -21,6 +21,21 @@ inline constexpr double RotationDifference = 1e-6;
 inline constexpr double DerivativeTolerance = 1e-5;
 inline constexpr double FrequencyRefinementTolerance = .005;
 
+struct PatchDifferenceSteps {
+    double translation_m=TranslationDifference;
+    double rotation_rad=RotationDifference;
+};
+// Diagonal mass for a prescribed reference audit, including constrained-node
+// positive physical contributions. This is not an owner or an inertia policy.
+// TOTAL isotropic rotary mass is explicit; physical/artificial ledgers remain
+// with its producer. Only coordinates named by the layout enter the spectrum.
+struct PatchNodalMass {
+    std::array<double,kCouponNodes> mass{},total_isotropic_inertia{};
+};
+// Existing TL thickness inertia plus equal numerical drilling yields J*I.
+// This helper preserves that original policy; it adds no area stabilization.
+PatchNodalMass DefaultPatchNodalMass(const ElasticCouponData&);
+
 Layout<kCouponFreeDofs> FullCouponLayout();
 ElasticCouponStatus Reject(const char* gate,double measured,double limit,std::string& diagnostic);
 // Staged publication, including invalid late entries; base/output may alias.
@@ -29,14 +44,23 @@ ElasticCouponStatus ApplyIncrement(const ElasticCouponConfiguration& base,const 
                                    ElasticCouponConfiguration& output,std::string& diagnostic);
 
 template<std::size_t N> Vector<N> InverseRootMass(const ElasticCouponData&,const Layout<N>&);
+// Invalid/nonpositive referenced mass or malformed layout returns all NaNs.
+template<std::size_t N> Vector<N> InverseRootMass(const PatchNodalMass&,const Layout<N>&);
 template<std::size_t N> Matrix<N> MassScale(const Matrix<N>&,const Vector<N>&);
 template<std::size_t N> double OperatorNorm(const Matrix<N>&);
 template<std::size_t N> ElasticCouponStatus DifferenceJacobian(
     const ElasticCouponModel&,const ElasticCouponConfiguration&,const Layout<N>&,ForceSource,double difference_scale,
     Matrix<N>& output,std::string& diagnostic);
+template<std::size_t N> ElasticCouponStatus DifferenceJacobian(
+    const ElasticCouponModel&,const ElasticCouponConfiguration&,const Layout<N>&,ForceSource,
+    const PatchDifferenceSteps&,double difference_scale,Matrix<N>& output,std::string& diagnostic);
 template<std::size_t N> ElasticCouponStatus DirectionalCrossCheck(
     const ElasticCouponModel&,const ElasticCouponConfiguration&,const Layout<N>&,
     const Matrix<N>& chrono_stiffness,const Vector<N>& inverse_root_mass,double& worst,std::string& diagnostic);
+template<std::size_t N> ElasticCouponStatus DirectionalCrossCheck(
+    const ElasticCouponModel&,const ElasticCouponConfiguration&,const Layout<N>&,
+    const Matrix<N>& chrono_stiffness,const Vector<N>& inverse_root_mass,const PatchDifferenceSteps&,
+    double& worst,std::string& diagnostic);
 
 template<std::size_t N> struct ReferenceSpectrum {
     Matrix<N> stiffness;
@@ -50,5 +74,8 @@ template<std::size_t N> struct ReferenceSpectrum {
 // eigen residual. Only stress-free spectral extraction symmetrizes its matrix.
 template<std::size_t N> ElasticCouponStatus AuditReference(
     const ElasticCouponModel&,const Layout<N>&,ReferenceSpectrum<N>& output,std::string& diagnostic);
+template<std::size_t N> ElasticCouponStatus AuditReference(
+    const ElasticCouponModel&,const Layout<N>&,const PatchNodalMass&,const PatchDifferenceSteps&,
+    ReferenceSpectrum<N>& output,std::string& diagnostic);
 
 }  // namespace crash::reference::patch_audit

@@ -90,13 +90,20 @@ tlr::ShellResult ReadChronoElement(Element& element, const ElasticCouponConfigur
 }  // namespace
 
 struct ElasticCouponModel::Impl {
+    const ElasticCouponParameters parameters;
     ElasticCouponData data;
     chrono::ChSystemSMC system;
     std::shared_ptr<chrono::fea::ChMesh> mesh;
     std::array<std::shared_ptr<Node>, kCouponNodes> nodes;
     std::array<std::shared_ptr<Element>, kCouponElements> elements;
 
-    explicit Impl(const ElasticCouponPose& pose) {
+    Impl(const ElasticCouponParameters& input,const ElasticCouponPose& pose) : parameters(input) {
+        for (double value:{parameters.length,parameters.width,parameters.thickness,parameters.young_modulus,
+                           parameters.density,parameters.shear_factor,parameters.torque_factor})
+            if (!std::isfinite(value)||value<=0)
+                throw std::invalid_argument("Coupon reference dimensions, stiffness factors and density must be finite and positive");
+        if (!std::isfinite(parameters.poisson_ratio)||parameters.poisson_ratio<=-1||parameters.poisson_ratio>=.5)
+            throw std::invalid_argument("Coupon reference Poisson ratio must lie strictly between -1 and 0.5");
         if (!tlr::detail::Finite(pose.translation) || !tl::math::UnitQuaternion(pose.rotation))
             throw std::invalid_argument("Coupon reference pose requires finite translation and a unit quaternion");
         // Follow Chrono demo_FEA_shellsReissner.cpp's mesh/node/layer ownership.
@@ -107,6 +114,13 @@ struct ElasticCouponModel::Impl {
         system.Add(mesh);
         data.reference_configuration.position = {{{.1, .05, 0}, {0, .05, 0}, {0, -.05, 0},
                                                   {.1, -.05, 0}, {.2, .05, 0}, {.2, -.05, 0}}};
+        // Preserve the original literal coordinates exactly on default paths.
+        if (parameters.length!=ElasticCouponData::length||parameters.width!=ElasticCouponData::width) {
+            const double x=.5*parameters.length,y=.5*parameters.width;
+            if (!(x>0&&y>0)) throw std::invalid_argument("Coupon half dimensions are unrepresentable");
+            data.reference_configuration.position={{{x,y,0},{0,y,0},{0,-y,0},
+                                                     {x,-y,0},{parameters.length,y,0},{parameters.length,-y,0}}};
+        }
         const auto q=pose.rotation;
         const bool unchanged=q.w==1 && q.x==0 && q.y==0 && q.z==0 &&
                              pose.translation.x==0 && pose.translation.y==0 && pose.translation.z==0;
@@ -122,9 +136,9 @@ struct ElasticCouponModel::Impl {
         }
         data.connectivity = {{{0, 1, 2, 3}, {4, 0, 3, 5}}};
         auto elasticity = chrono_types::make_shared<chrono::fea::ChElasticityReissnerIsothropic>(
-            data.young_modulus, data.poisson_ratio, 5.0 / 6.0, .01);
+            parameters.young_modulus,parameters.poisson_ratio,parameters.shear_factor,parameters.torque_factor);
         auto material = chrono_types::make_shared<chrono::fea::ChMaterialShellReissner>(elasticity);
-        material->SetDensity(data.density);
+        material->SetDensity(parameters.density);
         for (std::size_t n = 0; n < kCouponNodes; ++n) {
             nodes[n] = chrono_types::make_shared<Node>(chrono::ChFrame<>(
                 ChronoVector(data.reference_configuration.position[n]),
@@ -138,7 +152,7 @@ struct ElasticCouponModel::Impl {
             const auto& c = data.connectivity[e];
             elements[e] = chrono_types::make_shared<Element>();
             elements[e]->SetNodes(nodes[c[0]], nodes[c[1]], nodes[c[2]], nodes[c[3]]);
-            elements[e]->AddLayer(data.thickness, 0, material);
+            elements[e]->AddLayer(parameters.thickness, 0, material);
             mesh->AddElement(elements[e]);
         }
         system.Setup();  // Exactly once, before any current-configuration change.
@@ -165,15 +179,21 @@ struct ElasticCouponModel::Impl {
             if (!data.fixed[n]) {
                 data.inverse_mass[n] = 1 / mass.mass;
                 data.inverse_isotropic_inertia[n] = 1 / mass.physical_tangential_inertia;
+                if (!std::isfinite(data.inverse_mass[n]) || data.inverse_mass[n] <= 0 ||
+                    !std::isfinite(data.inverse_isotropic_inertia[n]) || data.inverse_isotropic_inertia[n] <= 0)
+                    throw std::runtime_error("Coupon assembled inverse mass or inertia is unrepresentable");
             }
         }
     }
 };
 
 ElasticCouponModel::ElasticCouponModel() : ElasticCouponModel(ElasticCouponPose{}) {}
-ElasticCouponModel::ElasticCouponModel(const ElasticCouponPose& pose) : impl_(std::make_unique<Impl>(pose)) {}
+ElasticCouponModel::ElasticCouponModel(const ElasticCouponPose& pose) : ElasticCouponModel(kElasticCouponDefaultParameters,pose) {}
+ElasticCouponModel::ElasticCouponModel(const ElasticCouponParameters& parameters,const ElasticCouponPose& pose)
+    : impl_(std::make_unique<Impl>(parameters,pose)) {}
 ElasticCouponModel::~ElasticCouponModel() = default;
 const ElasticCouponData& ElasticCouponModel::data() const { return impl_->data; }
+const ElasticCouponParameters& ElasticCouponModel::parameters() const { return impl_->parameters; }
 
 ElasticCouponStatus ElasticCouponModel::EvaluateChrono(const ElasticCouponConfiguration& configuration,
                                                        ElasticCouponEvaluation& output,

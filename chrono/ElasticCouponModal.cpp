@@ -60,6 +60,10 @@ ElasticCouponStatus MeasureElasticCouponOperatorNorm(const ElasticCouponModel& m
 
 ElasticCouponStatus AuditElasticCoupon(const ElasticCouponModel& model, ElasticCouponModalReport& output,
                                        std::string& diagnostic) {
+    if (!IsDefaultElasticCouponParameters(model.parameters())) {
+        diagnostic="B2 dynamics audit requires its original fixture parameters; use explicit reference audits for parameterized screens";
+        return Status::kInvalidConfiguration;
+    }
     const auto& data = model.data();
     const auto& neutral = data.reference_configuration;
     const auto layout = audit::FullCouponLayout();

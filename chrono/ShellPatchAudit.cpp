@@ -59,15 +59,34 @@ Status ApplyIncrement(const ElasticCouponConfiguration& base,const Coordinate* c
     output=candidate; diagnostic.clear(); return Status::kSuccess;
 }
 
+PatchNodalMass DefaultPatchNodalMass(const ElasticCouponData& data) {
+    PatchNodalMass result;
+    for (std::size_t n=0;n<kCouponNodes;++n) {
+        result.mass[n]=data.nodal_mass[n].mass;
+        result.total_isotropic_inertia[n]=data.nodal_mass[n].physical_tangential_inertia;
+    }
+    return result;
+}
 template<std::size_t N> Vector<N> InverseRootMass(const ElasticCouponData& data,const Layout<N>& layout) {
+    return InverseRootMass<N>(DefaultPatchNodalMass(data),layout);
+}
+template<std::size_t N> Vector<N> InverseRootMass(const PatchNodalMass& mass,const Layout<N>& layout) {
     Vector<N> result;
+    bool used[kCouponNodes][6]{};
     for (std::size_t i=0;i<N;++i) {
         const auto& coordinate=layout[i];
-        if (coordinate.node>=kCouponNodes || coordinate.component>=6) {
+        if (coordinate.node>=kCouponNodes || coordinate.component>=6 || used[coordinate.node][coordinate.component]) {
             result.setConstant(std::numeric_limits<double>::quiet_NaN()); return result;
         }
-        const auto& mass=data.nodal_mass[coordinate.node];
-        result(i)=1/std::sqrt(coordinate.component<3 ? mass.mass : mass.physical_tangential_inertia);
+        used[coordinate.node][coordinate.component]=true;
+        const double value=coordinate.component<3 ? mass.mass[coordinate.node] : mass.total_isotropic_inertia[coordinate.node];
+        if (!std::isfinite(value)||value<=0) {
+            result.setConstant(std::numeric_limits<double>::quiet_NaN()); return result;
+        }
+        result(i)=1/std::sqrt(value);
+        if (!std::isfinite(result(i))||result(i)<=0) {
+            result.setConstant(std::numeric_limits<double>::quiet_NaN()); return result;
+        }
     }
     return result;
 }
@@ -81,6 +100,16 @@ template<std::size_t N> double OperatorNorm(const Matrix<N>& matrix) {
     return decomposition.singularValues()(0);
 }
 namespace {
+bool ValidSteps(const PatchDifferenceSteps& steps) {
+    return std::isfinite(steps.translation_m)&&steps.translation_m>0&&std::isfinite(steps.rotation_rad)&&steps.rotation_rad>0;
+}
+bool ResolvedDifference(const ElasticCouponConfiguration& plus,const ElasticCouponConfiguration& minus,Coordinate coordinate) {
+    if (coordinate.component<3)
+        return tlr::detail::Component(plus.position[coordinate.node],coordinate.component)!=
+               tlr::detail::Component(minus.position[coordinate.node],coordinate.component);
+    const auto& a=plus.rotation[coordinate.node]; const auto& b=minus.rotation[coordinate.node];
+    return a.w!=b.w||a.x!=b.x||a.y!=b.y||a.z!=b.z;
+}
 template<std::size_t N> Status Forces(const ElasticCouponModel& model,const ElasticCouponConfiguration& configuration,
                                      const Layout<N>& layout,ForceSource source,Vector<N>& output,std::string& diagnostic) {
     ElasticCouponEvaluation evaluation;
@@ -113,19 +142,31 @@ template<std::size_t N> double RelativeError(const Matrix<N>& a,const Matrix<N>&
 template<std::size_t N> Status DifferenceJacobian(const ElasticCouponModel& model,const ElasticCouponConfiguration& base,
                                                  const Layout<N>& layout,ForceSource source,double difference_scale,
                                                  Matrix<N>& output,std::string& diagnostic) {
-    if (!std::isfinite(difference_scale) || difference_scale<=0) {
+    return DifferenceJacobian<N>(model,base,layout,source,PatchDifferenceSteps{},difference_scale,output,diagnostic);
+}
+template<std::size_t N> Status DifferenceJacobian(const ElasticCouponModel& model,const ElasticCouponConfiguration& base,
+                                                 const Layout<N>& layout,ForceSource source,const PatchDifferenceSteps& steps,
+                                                 double difference_scale,Matrix<N>& output,std::string& diagnostic) {
+    if (!std::isfinite(difference_scale) || difference_scale<=0 || !ValidSteps(steps) ||
+        (source!=ForceSource::Chrono&&source!=ForceSource::TL)) {
         diagnostic="Invalid shell-patch difference scale"; return Status::kInvalidConfiguration;
     }
     Matrix<N> candidate;
     for (std::size_t column=0;column<N;++column) {
         std::array<double,N> increment{};
-        const double delta=difference_scale*(layout[column].component<3 ? TranslationDifference : RotationDifference);
+        const double delta=difference_scale*(layout[column].component<3 ? steps.translation_m : steps.rotation_rad);
+        if (!std::isfinite(delta)||delta<=0||!std::isfinite(2*delta)) {
+            diagnostic="Unrepresentable shell-patch difference increment"; return Status::kInvalidConfiguration;
+        }
         increment[column]=delta;
         ElasticCouponConfiguration plus,minus;
         auto status=ApplyIncrement(base,layout.data(),N,increment.data(),1,plus,diagnostic);
         if (status!=Status::kSuccess) return status;
         status=ApplyIncrement(base,layout.data(),N,increment.data(),-1,minus,diagnostic);
         if (status!=Status::kSuccess) return status;
+        if (!ResolvedDifference(plus,minus,layout[column])) {
+            diagnostic="Shell-patch difference is unresolved at the supplied coordinates"; return Status::kInvalidConfiguration;
+        }
         Vector<N> force_plus,force_minus;
         status=Forces<N>(model,plus,layout,source,force_plus,diagnostic);
         if (status!=Status::kSuccess) return status;
@@ -139,8 +180,14 @@ template<std::size_t N> Status DifferenceJacobian(const ElasticCouponModel& mode
 template<std::size_t N> Status DirectionalCrossCheck(const ElasticCouponModel& model,const ElasticCouponConfiguration& base,
                                                    const Layout<N>& layout,const Matrix<N>& chrono_stiffness,
                                                    const Vector<N>& inverse_root_mass,double& worst,std::string& diagnostic) {
+    return DirectionalCrossCheck<N>(model,base,layout,chrono_stiffness,inverse_root_mass,PatchDifferenceSteps{},worst,diagnostic);
+}
+template<std::size_t N> Status DirectionalCrossCheck(const ElasticCouponModel& model,const ElasticCouponConfiguration& base,
+                                                   const Layout<N>& layout,const Matrix<N>& chrono_stiffness,
+                                                   const Vector<N>& inverse_root_mass,const PatchDifferenceSteps& steps,
+                                                   double& worst,std::string& diagnostic) {
     if (!std::isfinite(worst) || worst<0 || !chrono_stiffness.allFinite() ||
-        !inverse_root_mass.allFinite() || (inverse_root_mass.array()<=0).any()) {
+        !inverse_root_mass.allFinite() || (inverse_root_mass.array()<=0).any() || !ValidSteps(steps)) {
         diagnostic="Invalid shell-patch directional audit inputs";
         return Status::kInvalidConfiguration;
     }
@@ -150,7 +197,10 @@ template<std::size_t N> Status DirectionalCrossCheck(const ElasticCouponModel& m
         for (std::size_t c=0;c<N;++c) {
             const double sign=((c*(2*direction+1)+direction)%7<3) ? -1 : 1;
             increment[c]=sign*(1+.1*((c+direction)%3))*
-                         (layout[c].component<3 ? TranslationDifference : RotationDifference)*.5;
+                         (layout[c].component<3 ? steps.translation_m : steps.rotation_rad)*.5;
+            if (!std::isfinite(increment[c])||increment[c]==0) {
+                diagnostic="Unrepresentable shell-patch directional increment"; return Status::kInvalidConfiguration;
+            }
             delta(c)=increment[c];
         }
         ElasticCouponConfiguration plus,minus;
@@ -158,6 +208,9 @@ template<std::size_t N> Status DirectionalCrossCheck(const ElasticCouponModel& m
         if (status!=Status::kSuccess) return status;
         status=ApplyIncrement(base,layout.data(),N,increment.data(),-1,minus,diagnostic);
         if (status!=Status::kSuccess) return status;
+        for (std::size_t c=0;c<N;++c) if (!ResolvedDifference(plus,minus,layout[c])) {
+            diagnostic="Shell-patch directional difference is unresolved"; return Status::kInvalidConfiguration;
+        }
         Vector<N> force_plus,force_minus;
         status=Forces<N>(model,plus,layout,ForceSource::TL,force_plus,diagnostic);
         if (status!=Status::kSuccess) return status;
@@ -174,14 +227,22 @@ template<std::size_t N> Status DirectionalCrossCheck(const ElasticCouponModel& m
 }
 template<std::size_t N> Status AuditReference(const ElasticCouponModel& model,const Layout<N>& layout,
                                              ReferenceSpectrum<N>& output,std::string& diagnostic) {
+    return AuditReference<N>(model,layout,DefaultPatchNodalMass(model.data()),PatchDifferenceSteps{},output,diagnostic);
+}
+template<std::size_t N> Status AuditReference(const ElasticCouponModel& model,const Layout<N>& layout,
+                                             const PatchNodalMass& mass,const PatchDifferenceSteps& steps,
+                                             ReferenceSpectrum<N>& output,std::string& diagnostic) {
     const auto& neutral=model.data().reference_configuration;
-    ReferenceSpectrum<N> result; result.inverse_root_mass=InverseRootMass<N>(model.data(),layout);
+    ReferenceSpectrum<N> result; result.inverse_root_mass=InverseRootMass<N>(mass,layout);
+    if (!result.inverse_root_mass.allFinite() || (result.inverse_root_mass.array()<=0).any() || !ValidSteps(steps)) {
+        diagnostic="Invalid shell-patch audit mass, layout or difference steps"; return Status::kInvalidConfiguration;
+    }
     Matrix<N> coarse,fine,tl_fine;
-    auto status=DifferenceJacobian<N>(model,neutral,layout,ForceSource::Chrono,1,coarse,diagnostic);
+    auto status=DifferenceJacobian<N>(model,neutral,layout,ForceSource::Chrono,steps,1,coarse,diagnostic);
     if (status!=Status::kSuccess) return status;
-    status=DifferenceJacobian<N>(model,neutral,layout,ForceSource::Chrono,.5,fine,diagnostic);
+    status=DifferenceJacobian<N>(model,neutral,layout,ForceSource::Chrono,steps,.5,fine,diagnostic);
     if (status!=Status::kSuccess) return status;
-    status=DifferenceJacobian<N>(model,neutral,layout,ForceSource::TL,.5,tl_fine,diagnostic);
+    status=DifferenceJacobian<N>(model,neutral,layout,ForceSource::TL,steps,.5,tl_fine,diagnostic);
     if (status!=Status::kSuccess) return status;
     const Matrix<N> a_coarse=MassScale<N>(coarse,result.inverse_root_mass);
     const Matrix<N> a_fine=MassScale<N>(fine,result.inverse_root_mass);
@@ -221,11 +282,15 @@ template<std::size_t N> Status AuditReference(const ElasticCouponModel& model,co
 // order. D instantiates the same tools at exactly sixteen coordinates.
 #define INSTANTIATE_PATCH_AUDIT(N) \
 template Vector<N> InverseRootMass<N>(const ElasticCouponData&,const Layout<N>&); \
+template Vector<N> InverseRootMass<N>(const PatchNodalMass&,const Layout<N>&); \
 template Matrix<N> MassScale<N>(const Matrix<N>&,const Vector<N>&); \
 template double OperatorNorm<N>(const Matrix<N>&); \
 template Status DifferenceJacobian<N>(const ElasticCouponModel&,const ElasticCouponConfiguration&,const Layout<N>&,ForceSource,double,Matrix<N>&,std::string&); \
+template Status DifferenceJacobian<N>(const ElasticCouponModel&,const ElasticCouponConfiguration&,const Layout<N>&,ForceSource,const PatchDifferenceSteps&,double,Matrix<N>&,std::string&); \
 template Status DirectionalCrossCheck<N>(const ElasticCouponModel&,const ElasticCouponConfiguration&,const Layout<N>&,const Matrix<N>&,const Vector<N>&,double&,std::string&); \
-template Status AuditReference<N>(const ElasticCouponModel&,const Layout<N>&,ReferenceSpectrum<N>&,std::string&);
+template Status DirectionalCrossCheck<N>(const ElasticCouponModel&,const ElasticCouponConfiguration&,const Layout<N>&,const Matrix<N>&,const Vector<N>&,const PatchDifferenceSteps&,double&,std::string&); \
+template Status AuditReference<N>(const ElasticCouponModel&,const Layout<N>&,ReferenceSpectrum<N>&,std::string&); \
+template Status AuditReference<N>(const ElasticCouponModel&,const Layout<N>&,const PatchNodalMass&,const PatchDifferenceSteps&,ReferenceSpectrum<N>&,std::string&);
 INSTANTIATE_PATCH_AUDIT(16)
 INSTANTIATE_PATCH_AUDIT(24)
 #undef INSTANTIATE_PATCH_AUDIT
