@@ -1,4 +1,4 @@
-#include "SourcePartContactFixture.h"
+#include "SourceContactForceFixture.h"
 
 #include "case/CanonicalWallArtifacts.h"
 #include "case/WallTessellation.h"
@@ -24,14 +24,8 @@ namespace sc=tlfea::contact;
 namespace cw=crash::case_data;
 namespace io=crash::output;
 std::filesystem::path readiness_path,wall_path;
-constexpr double Stiffness=4e5,Depth=.00025,Cap=.0005,Clearance=1e-6;
-constexpr double ForceBudget=5e-7,EnergyBudget=1.2500000000000005e-12;
-constexpr const char* MassPolicy="qualification-e2a16-equal-native-node-lump";
-using Coordinates=std::array<double,3*sf::NodeCount>;
-
+using namespace sf::force;
 std::string Exact(double x) {std::ostringstream s;s<<std::setprecision(17)<<x;return s.str();}
-sc::VectorView View(const Coordinates& a) {return {a.data(),sf::NodeCount,3,1};}
-sc::Vec3 Cross(sc::Vec3 a,sc::Vec3 b) {return {a.y*b.z-a.z*b.y,a.z*b.x-a.x*b.z,a.x*b.y-a.y*b.x};}
 template<class T> auto Bytes(const T& value) {
     std::array<unsigned char,sizeof(T)> bytes;std::memcpy(bytes.data(),&value,sizeof(T));return bytes;
 }
@@ -62,171 +56,6 @@ void Same(sc::Q4CertifiedIntegral a,sc::Q4CertifiedIntegral b) {
     EXPECT_EQ(a.value,b.value);EXPECT_EQ(a.lower,b.lower);EXPECT_EQ(a.upper,b.upper);EXPECT_EQ(a.error,b.error);
 }
 
-// This is the explicitly chosen PRESCRIBED-TEST lumping of authenticated
-// per-parent midsurface proxy masses. It is neither a new production mass
-// operation nor the contact A0 measure, source solver mass or rotary inertia.
-struct FixtureMass {
-    std::array<double,sf::NodeCount> mass{},inverse{};
-    std::array<std::uint8_t,sf::NodeCount> fixed{};
-    bool Initialize(const sf::SourcePartContactFixture& source) {
-        FixtureMass next;
-        for (unsigned p=0;p<sf::ParentCount;++p) {
-            const auto& parent=source.parents()[p];
-            const double share=source.surface_mass().parent_mass_kg[p]/parent.arity;
-            if (!std::isfinite(share)||share<=0) return false;
-            for (unsigned n=0;n<parent.arity;++n) next.mass[parent.local_node_indices[n]]+=share;
-        }
-        for (unsigned n=0;n<sf::NodeCount;++n) {
-            if (!std::isfinite(next.mass[n])||next.mass[n]<=0) return false;
-            next.inverse[n]=1/next.mass[n];
-            if (!std::isfinite(next.inverse[n])||next.inverse[n]<=0) return false;
-        }
-        *this=next;return true;
-    }
-    sc::LumpedTranslationMassView view() const {
-        return {inverse.data(),fixed.data(),sf::NodeCount,17,sc::TranslationMassModel::kIsotropicLumped};
-    }
-};
-struct ParentForce {
-    std::uint64_t source_id=0,feature_id=0,base_epoch=0,attempt=0;
-    unsigned arity=0;
-    std::array<std::uint32_t,4> nodes{}; // Capacity only: native T3 uses exactly3.
-    std::array<sc::Vec3,4> force{};
-    std::array<sc::Q4CertifiedIntegral,4> magnitude{};
-    sc::Q4CertifiedIntegral area,resultant,potential;
-    sc::Q4IntegralInterval active_area;
-    unsigned cells=0,visits=0,depth_u=0,depth_v=0;
-    bool valid=false;
-};
-struct Aggregate {
-    std::array<ParentForce,sf::ParentCount> parents{};
-    std::array<sc::Vec3,sf::NodeCount> forces{};
-    sc::Vec3 wall_reaction,wall_moment;
-    double power=0;
-    bool valid=false;
-};
-struct Scratch {
-    std::array<sc::Q4RectangularCell,sc::MaxQ4IntegrationLeaves> cells;
-    std::array<std::uint32_t,sc::MaxQ4IntegrationLeaves> heap;
-    sc::Q4RectangularScratch view() {return {cells.data(),heap.data(),sc::MaxQ4IntegrationLeaves,sc::MaxQ4IntegrationLeaves};}
-};
-static_assert(sizeof(Scratch)+sizeof(Aggregate)+sizeof(sf::SourcePartContactFixture)<1024*1024,
-              "Source qualification storage must stay below1MiB excluding input parser/wall");
-
-struct Harness {
-    const sf::SourcePartContactFixture& source;
-    FixtureMass mass;
-    std::unique_ptr<Scratch> scratch=std::make_unique<Scratch>();
-    std::string diagnostic;
-    unsigned failed_parent=UINT32_MAX;
-    explicit Harness(const sf::SourcePartContactFixture& source):source(source) {}
-    bool EvaluateParent(unsigned,const Coordinates&,const Coordinates&,const Coordinates&,
-                        const sc::PlanarWallGeometry&,ParentForce*);
-    bool EvaluateAll(const Coordinates& base,const Coordinates& endpoint,const Coordinates& velocity,
-                     const sc::PlanarWallGeometry& wall,Aggregate* output) {
-        Aggregate next;
-        for (unsigned p=0;p<sf::ParentCount;++p) {
-            failed_parent=p;
-            if (!EvaluateParent(p,base,endpoint,velocity,wall,&next.parents[p])) return false;
-            const auto& parent=next.parents[p];next.wall_reaction.x+=parent.resultant.value;
-            for (unsigned n=0;n<parent.arity;++n) {
-                const auto node=parent.nodes[n];const auto force=parent.force[n];
-                next.forces[node]=sc::Add(next.forces[node],force);
-                next.wall_moment=sc::Subtract(next.wall_moment,Cross(View(endpoint).at(node),force));
-                next.power+=sc::Dot(View(velocity).at(node),force);
-            }
-        }
-        next.valid=true;*output=next;failed_parent=UINT32_MAX;return true;
-    }
-};
-
-// One original parent at a time through the owning finite-wall dispatcher.
-// No triangle preflight/coverage or force integration is copied into this test.
-bool Harness::EvaluateParent(unsigned p,const Coordinates& base,const Coordinates& endpoint,
-                             const Coordinates& velocity,const sc::PlanarWallGeometry& wall,ParentForce* output) {
-    diagnostic.clear();
-    if (!output || p>=sf::ParentCount) return false;
-    const auto& binding=source.parents()[p];
-    sc::Q4ParametricReference quad_reference;sc::T3MaterialMeasure triangle_reference;
-    sc::SurfaceQ4 quad;sc::SurfaceTriangle triangle;sc::PrescribedSurfaceParent request;
-    ParentForce next;next.arity=binding.arity;
-    if (binding.arity==4) {
-        if (!source.q4_parent(p,quad)) return false;
-        const auto prepared=quad_reference.Initialize(source.positions(),&quad,1);
-        if (prepared.status!=sc::Q4ParametricStatus::Ok) {diagnostic=prepared.message;return false;}
-        next.area=quad_reference.parent(0).area;
-        request.family=sc::PrescribedSurfaceFamily::Q4CenterAreaUniformNatural;
-        request.q4={&quad_reference,0,&quad,&quad};
-    } else {
-        if (!source.t3_parent(p,triangle)) return false;
-        if (sc::PrepareT3MaterialMeasure(source.positions(),triangle,&triangle_reference)!=sc::SurfaceMeasureStatus::Ok ||
-            !sc::q4_bounds::Certify(.5*triangle_reference.density().value,triangle_reference.area_enclosure(),&next.area)) {
-            diagnostic="Source native triangle reference preparation failed";return false;
-        }
-        request.family=sc::PrescribedSurfaceFamily::T3NativeLinear;
-        request.t3={&triangle_reference,&triangle,&triangle};
-    }
-    sc::PrescribedSurfaceConfig config;
-    config.stiffness_per_area=Stiffness;config.maximum_penetration=Cap;config.exposed_clearance=Clearance;
-    config.q4.force_error=ForceBudget;config.q4.energy_error=EnergyBudget;
-    config.t3={ForceBudget,EnergyBudget};
-    const sc::PrescribedSurfaceInput input{View(base),View(velocity),View(endpoint),View(velocity),mass.view(),&request,1};
-    sc::PrescribedSurfaceResult result;
-    const auto report=sc::IntegratePrescribedSurfaceContact(wall,input,config,31,scratch->view(),&result);
-    if (report.status!=sc::PrescribedSurfaceStatus::Ok) {
-        std::ostringstream message;message<<report.message<<"; source="<<binding.source_id
-            <<" status="<<static_cast<int>(report.status)<<" q4="<<static_cast<int>(report.q4.status)
-            <<" t3="<<static_cast<int>(report.t3.status);diagnostic=message.str();return false;
-    }
-    if (!result.valid || result.parent_count!=1 || result.parents[0].family!=request.family ||
-        !result.parents[0].coverage.covered) {diagnostic="Incomplete owning dispatcher result";return false;}
-    if (binding.arity==4) {
-        const auto& rectangular=result.parents[0].q4;const auto& integral=rectangular.integration;
-        for (unsigned n=0;n<4;++n) {
-            next.nodes[n]=integral.nodal.nodes[n];next.force[n]=integral.nodal.forces[n];next.magnitude[n]=integral.force[n];
-            const auto c=integral.nodal.couples[n];if (c.x!=0||c.y!=0||c.z!=0) return false;
-        }
-        next.source_id=integral.parent_element_id;next.feature_id=integral.feature_id;
-        next.base_epoch=integral.base_epoch;next.attempt=integral.attempt;
-        next.resultant=integral.resultant;next.potential=integral.potential;next.active_area=integral.active_area;
-        next.cells=integral.leaf_count;next.visits=integral.visited;
-        next.depth_u=rectangular.deepest_u;next.depth_v=rectangular.deepest_v;next.valid=integral.valid;
-    } else {
-        const auto& integral=result.parents[0].t3;
-        for (unsigned n=0;n<3;++n) {
-            next.nodes[n]=integral.nodal.nodes[n];next.force[n]=integral.nodal.forces[n];next.magnitude[n]=integral.force[n];
-        }
-        if (integral.parent_face_id!=triangle.parent_face_id) return false;
-        next.source_id=integral.parent_element_id;next.feature_id=integral.feature_id;
-        next.base_epoch=integral.base_epoch;next.attempt=integral.attempt;
-        next.resultant=integral.resultant;next.potential=integral.potential;next.active_area=integral.active_area;
-        next.cells=integral.subtriangle_count;next.visits=integral.sample_count;next.valid=integral.valid;
-    }
-    if (!next.valid) {diagnostic="Invalid native integration result";return false;}
-    *output=next;return true;
-}
-
-Coordinates Shift(const sf::SourcePartContactFixture& source,double translation) {
-    auto x=source.coordinates();
-    for (unsigned n=0;n<sf::NodeCount;++n) x[3*n]+=translation;
-    return x;
-}
-Coordinates Velocity(double translation) {
-    Coordinates v{};
-    // Explicit straight prescribed path over1second, not a solver clock/step.
-    for (unsigned n=0;n<sf::NodeCount;++n) v[3*n]=translation;
-    return v;
-}
-double ParentShift(const sf::SourcePartContactFixture& source,unsigned p,double wall_x) {
-    double maximum=-std::numeric_limits<double>::infinity();const auto& parent=source.parents()[p];
-    for (unsigned n=0;n<parent.arity;++n) maximum=std::max(maximum,source.positions().at(parent.local_node_indices[n]).x);
-    return (wall_x-maximum)+Depth;
-}
-double WholeShift(const sf::SourcePartContactFixture& source,double wall_x) {
-    double maximum=-std::numeric_limits<double>::infinity();
-    for (unsigned n=0;n<sf::NodeCount;++n) maximum=std::max(maximum,source.positions().at(n).x);
-    return (wall_x-maximum)+Depth;
-}
 void CheckParent(const sf::SourcePartContactFixture& source,unsigned p,const ParentForce& actual) {
     const auto& parent=source.parents()[p];ASSERT_TRUE(actual.valid);EXPECT_EQ(actual.arity,parent.arity);
     EXPECT_EQ(actual.source_id,parent.source_id);EXPECT_EQ(actual.feature_id,parent.source_id);

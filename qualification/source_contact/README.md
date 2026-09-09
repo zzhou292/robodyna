@@ -108,3 +108,46 @@ force target is `robo_dyna_source_part_force_check`, with the same fixture
 arguments shown above and an additional link to the owning prescribed-surface
 contact library. No dynamics, native shell-card equivalence or vehicle result
 follows from this prescribed-force gate.
+
+## Prescribed CUDA source gate (passed)
+
+`SourceContactForceFixture.h/.cpp` share the host fixture and mass/path helpers
+with `source_part_contact_cuda_check.cpp`. All four host functions and all 392
+saved diagnostic values remain unchanged after this extraction.
+`SourceContactCudaFixture.h/.cu` contain only the bounded qualification packet
+and two-worker launch of the existing TL primitives. Three actual GPU functions
+pass their first numerical execution in
+`crash-work/reports/source-contact-c5c4-cuda-tests-1.json/xml`.
+
+The two one-thread worker blocks reuse separate Q4 scratch regions. One startup
+allocation owns 1,522,464 device bytes; there is no allocation per parent. The
+test covers all 94 source parents, separated and independently translated into
+contact, original/flipped/subdivided finite-wall host preflight, one coherent
+whole-part profile, failed late parent preservation and exact fieldwise clean
+retry. CPU/GPU truth enclosures overlap at the unchanged budgets, with active
+area checks and all actual source identities. Returned contributions are reduced
+on the host; this does not qualify connected GPU force assembly or a transaction
+across parents. Native T3 exports its three translation forces, while Q4 direct
+couples are checked to be zero. The host fixture still owns finite mesh coverage.
+
+Maximum measured kernel event time is 4,360.626953 ms for the independent-parent
+profile; the coherent whole-part profile takes 444.561310 ms. These measurements
+make this small sequential-worker launch unsuitable as a production timestep.
+Keep it as reference evidence while a production execution/discretization choice
+is evaluated. No vehicle throughput claim follows from CUDA parity.
+
+The first CUDA compilation exceeded its original 6 GiB RSS guard. Keeping the
+large scalar integrators out of worker-loop expansion (`__noinline__` wrappers,
+no loop unrolling) reduced the next compile's sampled peak to 393,609,216 bytes.
+An unrelated test compile error assumed a T3 couple field that its force-only
+type does not contain; the test now respects that native interface. No numerical
+law or error tolerance changed. The successful run took 27.909 s under the
+external guard, with 180,219,904 bytes sampled peak RSS and at least 100.34 GiB
+available RAM. GPU context memory is additional to the explicit allocation.
+
+Enable `ROBO_DYNA_SOURCE_CONTACT_CUDA=ON` alongside the existing source-contact
+option and use target `robo_dyna_source_part_contact_cuda_check`. Missing CUDA
+is a failing required gate, never a skipped success. Keep FP64 contraction,
+fast math and flush-to-zero disabled, and serialize the run with the workstation
+guard. New heavy builds may use 12 GiB RSS under the user's 16 GB RAM ceiling;
+the numerical test retains its smaller 2 GiB cap.
