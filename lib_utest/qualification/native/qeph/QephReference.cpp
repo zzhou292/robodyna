@@ -7,8 +7,11 @@
 #include <mutex>
 
 namespace tl::qualification::qeph {
+std::mutex& detail::NativeContext() noexcept {
+  static std::mutex context;
+  return context;
+}
 namespace {
-std::mutex native_context;
 using Packet = std::array<double,12>;
 Packet Pack(const std::array<Vec3,4>& x) {
   Packet packed{};
@@ -40,7 +43,7 @@ Status Initialize(const ReferenceInput& input,Reference& output) noexcept {
   const double material[]{input.density,input.thickness,input.young_modulus};
   std::array<double,detail::kStartupValues> values{};
   try {
-    const std::lock_guard<std::mutex> lock(native_context);
+    const std::lock_guard<std::mutex> lock(detail::NativeContext());
     detail::qeph_q1_startup(x.data(),material,values.data());
   } catch (...) { return Status::kNativeFailure; }
   if (!Finite(values)) return Status::kNonfiniteResult;
@@ -74,7 +77,7 @@ Status EvaluatePrescribed(const Reference& reference,const PrescribedInterval& i
   std::array<double,detail::kKinematicValues> values{};
   int planar=-1,status=-1;
   try {
-    const std::lock_guard<std::mutex> lock(native_context);
+    const std::lock_guard<std::mutex> lock(detail::NativeContext());
     detail::qeph_q1_kinematics(x.data(),v.data(),omega.data(),
         &reference.data().input.thickness,&interval.dt,values.data(),&planar,&status);
   } catch (...) { return Status::kNativeFailure; }

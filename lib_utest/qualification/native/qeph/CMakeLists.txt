@@ -20,7 +20,7 @@ set(prepared "${CMAKE_CURRENT_BINARY_DIR}/prepared")
 set(modules "${CMAKE_CURRENT_BINARY_DIR}/fortran-modules")
 file(MAKE_DIRECTORY "${modules}")
 get_filename_component(tl_root "${CMAKE_CURRENT_SOURCE_DIR}/../../../.." ABSOLUTE)
-set(native_sources NativeQephStartup.F NativeQephKinematics.F
+set(native_sources NativeQephStartup.F NativeQephKinematics.F QephNativeGeometry.F
   extracted/Cneveci.F extracted/StartSkew.F extracted/Cderii.F
   extracted/EngineSkew.F extracted/Czcorc.F extracted/Czcorp5.F
   extracted/Cortdir3.F extracted/A3invdpV.F extracted/Czdef.F
