@@ -1,7 +1,7 @@
 # Robo-dyna: Yaris delivery plan
 
-Updated 2026-09-09 after live probes and independent mechanics, contact and model
-audits. This is the active implementation backlog. The workspace
+Updated 2026-09-09 after the complete prescribed CUDA Q4 force gate. This is the
+active implementation backlog. The workspace
 [architecture and milestones](../../planning/YARIS_RIGID_WALL_DESIGN.md),
 [module contracts](../../planning/MODULAR_ARCHITECTURE.md) and
 [test catalog](../../planning/YARIS_TEST_GATES.md) provide the detailed contracts.
@@ -13,8 +13,9 @@ is LS-DYNA-like CAE functionality. No external production solver is introduced.
 
 **Current assessment: approximately 10–20% toward the vehicle deliverable.**
 This is an engineering judgment about integrated capabilities, with substantial
-uncertainty. Passing tests are not a completion ratio. This audit adds evidence
-and corrects sequencing; it adds no new solver capability.
+uncertainty. Passing tests are not a completion ratio. Package A now adds a
+complete prescribed elastic Q4 force operation; rotary dynamics and an actual
+deforming trajectory remain the next mechanics gates.
 
 ## Verified starting point
 
@@ -22,12 +23,13 @@ and corrects sequencing; it adds no new solver capability.
 | --- | --- |
 | Original vehicle geometry | All 17 canonical arrays hash correctly: 393,165 nodes, 358,457 shells, 15,234 solids, 4,685 beams, 919 parts. The actual importer rejects simulation admission: `geometry-only model`. |
 | Finite mesh wall and accepted output | Both retained 70 ms runs verify all 37 artifacts each. Each contains 140 accepted CUDA steps and 15 Chrono mesh frames, using supplied mass and contact without shell elasticity. |
-| Shell arithmetic | Reran all 12 coherent Chrono CPU force tests and eight TL CUDA frame tests successfully. The complete force operation has not been ported to CUDA. |
-| Application integration | Seven current CTest groups pass, including GPU nodal output and normal impact. The retained total remains 276 distinct checks; reruns add no new cases. |
+| Shell arithmetic | Complete TL prescribed CUDA Q4 forces now pass eight integration tests, including all 24-DOF energy derivatives and two-element shared-node assembly. Ten setup, seven host/CUDA rotation and four assembly tests also pass. These 29 new checks bring the retained total to 305. |
+| Application integration | The previous seven application CTest groups pass, including GPU nodal output and normal impact. Existing nodal/contact Bazel regressions remain passing; no force-driven shell trajectory or renderer yet. |
 | Dynamics and contact limits | State supports at most 64 translational nodes and rejects angular motion/couples. Contact supports 25 surface nodes/32 triangles, fixed Y/Z, zero offset/friction and a finite fixed footprint. |
 
-Evidence is indexed in the [fresh probe report](../../crash-work/reports/yaris-progress-audit-1.json).
-Source baseline: TL `95f0d47`, Chrono `ab261d4baa`, robo-dyna `0222191`.
+Evidence is indexed in the [Q4 force checkpoint](../../crash-work/reports/q4-force-checkpoint.json).
+The [preceding live probe](../../crash-work/reports/yaris-progress-audit-1.json)
+records the imported model and saved contact rigs. Chrono remains `ab261d4baa`.
 Historical failed native rigid-motion and unmodified Chrono/CCD experiments
 remain excluded from production qualification.
 
@@ -48,18 +50,20 @@ or collection of per-experiment production scripts.
 
 ## Immediate work packages
 
-All packages below are **pending**. Mechanics packages A and B can be developed
-against agreed interfaces; contact C and source-model E can proceed independently.
+Package **A is complete within its prescribed elastic rectangle scope**. B–F
+remain pending; mechanics B, contact C, source-model E and rendering F can
+proceed against separate module contracts.
 The first combined artifact depends on their applicable gates, not all Yaris
 semantics. Freeze fixture scales and tolerances before declaring a pass.
 
 | Package | Implementation and dependency | Required tests and exit artifact |
 | --- | --- | --- |
-| **A — Complete prescribed CUDA Q4 forces** (M2 subset) | TL elements plus a narrow robo-dyna/Chrono rest-data adapter. Port the complete qualified mean-frame/curvature/ANS force operation, using actual Chrono setup and centered isotropic elastic section arithmetic. One Q4, then two with shared nodes. No dynamics prerequisite. | CPU/CUDA strains, resultants, world forces/couples and energy; all 24-DOF energy derivatives; common finite rotation, initial-frame offsets, noncoaxial motion; additive shared-node assembly; failed publication and clean retry. Exit: a pinned prescribed-force checkpoint. Follow the existing [S2c implementation detail](../../planning/SHELL_S2C_IMPLEMENTATION.md). |
+| **A — Complete prescribed CUDA Q4 forces** (M2 subset; **passed**) | TL `ReissnerShellData`, `ReissnerRotation`, `ReissnerShellKinematics`, `ReissnerShellForce` and `ReissnerShellAssembly`, plus the narrow `ReissnerShellSetup` host adapter. Actual Chrono setup and centered isotropic elastic section arithmetic; no new state owner. | All 29 new tests pass. CPU/CUDA strains, dimensionally scaled resultants, world forces/couples and energy; all 24-DOF energy derivatives; common finite rotation and initial-frame offsets; two actual Q4s sharing physical nodes; failed publication and clean retry. No mass, rotary stepping, tangent or source Yaris formulation is qualified by this gate. |
 | **B — Rotational state and elastic dynamics** (M3/M4a subset) | Extend the existing owner with optional quaternion/world angular velocity and force/couple assembly, per-component translational constraints, and declared rotary inertia. Separate stepping operation. Compose a no-contact elastic patch after A. Retain fixed-step velocity-first stepping for this first coupon. | Independent mass/thickness inertia integrals; arbitrary-axis spin/torque, quaternion norm and covariance; constraint reactions; shared-node mass counted once; late failure leaves all accepted state/output intact; nonuniform bending and h/h2/h4 refinement. Exit: accepted deforming patch frames with force, strain and energy histories. |
 | **C — Q4 contact against the finite wall** (Contact subset) | Independently qualify prescribed Q4 midsurface contact. Reuse finite wall triangle ownership and normal law; add physical parent IDs, parametric coordinates, Q4 interpolation and quadrature. Initially fixed projected footprint, zero offset and friction. Permit director rotation under that explicit contract. | Point position/velocity, resultant, moment and virtual work; smooth force/potential derivatives; fully active analytic fields; partial activation against independent refined integration; reversed wall diagonals, seams and subdivision; prepared-motion rejection and retry. Exit: force/scatter and partial-contact integration checkpoint. |
 | **D — Guided deforming mesh-wall plate** (**M5a.1**) | Compose A+B+C through public TL operations and accepted Chrono output. Constrain tangential translations for the declared fixed footprint; allow genuine nonuniform normal displacement and director rotation. Use the actual canonical finite wall. | Different contact activation times across the plate, measurable bending, wall reaction/impulse, structural/contact energy ledger, candidate chart/depth validation, h/h2/h4 and wall refinement, rejection after a previously accepted step. Exit: viewable accepted frames and complete diagnostics. This is a restricted intermediate gate; full M5a remains open. |
 | **E — Source-derived part readiness** (parallel M1 subset) | Compile typed sections, MAT024 inputs/curves, units/defaults, attachment closure and a mass/COM/inertia ledger for PID 2000157. Audit all its geometry and required connections before choosing a runnable extraction. | Exact IDs/topology, curve/rate units, unknown-option rejection, independent mass, no dropped triangles or attachments; explicit variant manifest for any cut boundary or elastic override. Exit: source-backed capability report and reproducible extraction, even if simulation remains blocked. |
+| **F — Accepted-result replay and rendering** (parallel output track) | Reuse Chrono VSG with a bounded result reader, scene adapter and thin optional replay executable. Extract shared archive/hash utilities from the existing output code; keep dynamics out of the viewer. | First replay/render the saved rig, then visibly render the actual elastic coupon and guided impact. Preserve source/part/time mapping and deformation normals; qualify multi-material shapes, capacity and any topology changes. The final delivery includes a rendered crashing/deforming vehicle video. See [R0–R4 rendering gates](RENDERING_ARCHITECTURE.md). |
 
 The current triangle-centroid/equal-three-node contact spring is not a qualified
 bilinear Q4 contact map. Display triangulation must not choose FE force weights.
@@ -141,6 +145,13 @@ MiB, but replicating Chrono's persistent B/D/G matrices at four points for every
 Q4 would consume approximately **8.77 GiB for those three caches alone**.
 Reuse their arithmetic with compact state and measured scratch. Whole-vehicle
 state, contact and output capacity must each be qualified.
+
+The first force-check kernel reports **255 registers and 9,104 bytes of stack
+per thread** in the saved `cuobjdump` report. Its one-thread correctness test
+does not establish batch occupancy, performance or total local-memory demand.
+Measure/tune execution layout before scaling; keep the qualified force/energy
+tests unchanged while doing so. Compute Sanitizer is not installed in the local
+CUDA toolkit, so no sanitizer-clean claim is made.
 
 Grow representative element/contact batches geometrically before actual full
 initialization; report bytes/entity, total peak owned memory, milliseconds per

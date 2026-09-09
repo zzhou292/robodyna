@@ -8,6 +8,16 @@ listed in the [execution status](../planning/EXECUTION_STATUS.md).
 
 The [active Yaris delivery plan](docs/YARIS_DELIVERY_PLAN.md) records the latest
 live probes, module ownership, next implementation packages and promotion tests.
+The [rendering architecture](docs/RENDERING_ARCHITECTURE.md) requires actual
+deformation playback and a vehicle-crash video as part of delivery.
+
+The complete prescribed elastic Q4 CUDA force gate now passes 29 new setup,
+rotation, force and assembly checks. TL owns the small reusable operations;
+`chrono/ReissnerShellSetup` copies actual Chrono rest data and its elastic
+section matrix. Enable `ROBO_DYNA_ENABLE_SHELL_FORCE_CHECKS` against the qualified
+coherent Chrono core to build these optional checks. This gate supplies forces
+and energy for prescribed configurations; rotary dynamics, an evolving shell
+trajectory and graphical rendering remain subsequent work.
 
 TL-FEA owns CUDA mechanics, shared state and stepping. Robo-dyna owns model/case
 configuration, orchestration and results through Chrono infrastructure. The

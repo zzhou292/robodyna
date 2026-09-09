@@ -2,6 +2,10 @@
 enable_language(CXX)
 find_package(Chrono REQUIRED CONFIG)
 
+if(ROBO_DYNA_ENABLE_SHELL_FORCE_CHECKS)
+  include(ReissnerChecks.cmake)
+endif()
+
 if(CRASH_ENABLE_TL_REISSNER_FRAME_CHECK)
   enable_language(CUDA)
   find_package(GTest REQUIRED)
