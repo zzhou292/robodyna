@@ -12,3 +12,13 @@ cc_library(
     hdrs = ["T3KinematicsData.h", "T3CurrentGeometry.h", "T3Rates.h", "T3Kinematics.h"],
     deps = [":startup"],
 )
+
+cc_library(
+    name = "force",
+    hdrs = [
+        "T3HistoryData.h", "T3History.h", "T3ForceData.h", "T3ForceConstants.h",
+        "T3Material.h", "T3Law1.h", "T3StiffnessDiagnostics.h",
+        "T3ForceProjection.h", "T3Force.h",
+    ],
+    deps = [":kinematics", "//lib_src/materials:shell_elastic_law1"],
+)

@@ -15,8 +15,8 @@
   "ported_files": [
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
-      "bytes": 413,
-      "sha256": "25c4ca46f983c745e0236acddde4fb99e2c7ca5dea95e1ca5e50e2735cc15f3f"
+      "bytes": 727,
+      "sha256": "1164a4ce5a44f4dbc5f76f25c6bae7cee46b411af8afa2250164f03ed390ddc6"
     },
     {
       "path": "lib_src/elements/t3/CMakeLists.txt",
@@ -67,8 +67,8 @@
   "tests": [
     {
       "path": "lib_utest/qualification/t3/CMakeLists.txt",
-      "bytes": 2527,
-      "sha256": "ba8f4a82876d71aa0e06c47417e3f59d46154a6e90842512171b5aef3ed7fe0a"
+      "bytes": 2678,
+      "sha256": "6b2709e83f83a8ec4250b262ea767fac2d2fcb410cdf0f690e29122cd8b7b8aa"
     },
     {
       "path": "lib_utest/qualification/t3/README.md",
@@ -345,5 +345,13 @@
       "git_blob_sha1": "5f78c0a6769ac024deb6bba9d3037cd747f36837",
       "selected_scope": "Named binary64 HALF/FOURTH/THIRD/PI/ONE_OVER_12/NINE_OVER_2/EM15"
     }
-  ]
+  ],
+  "build_registration_revision": {
+    "previous_manifest_sha256": "2d2ee6a9cfa0a1fbf641ea8fefd5a4e7837b6a32eb8e5b4487af0c58a9e3b166",
+    "reason": "Optional prescribed force-stage registration; startup/rates arithmetic, test cases and native source identities unchanged",
+    "changed_files": [
+      "lib_src/elements/t3/BUILD.bazel",
+      "lib_utest/qualification/t3/CMakeLists.txt"
+    ]
+  }
 }
