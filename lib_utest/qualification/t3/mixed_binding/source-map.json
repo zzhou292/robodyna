@@ -1,0 +1,145 @@
+{
+  "schema": "tl.shell-mixed-binding-source-map.v1",
+  "stage": "source-frozen-before-first-execution",
+  "scope": "One Q4/T3 immutable native mass/identity union, host only; local declared include/build inputs and pinned startup dependencies, no hermetic compiler image",
+  "test_functions": 8,
+  "host_execution_qualified": false,
+  "mixed_dynamics_qualified": false,
+  "prerequisites": [
+    "qeph-shared-helpers-1",
+    "t3-resident-batch-1"
+  ],
+  "input_count": 26,
+  "inputs": [
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/BUILD.bazel",
+      "bytes": 3308,
+      "sha256": "0d4cf69ca34ec44033a37e2c4e6b0a18fba8a5ef58924c96be771ceb0c941427"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/ShellBatchBinding.cmake",
+      "bytes": 490,
+      "sha256": "9af4259d33b3fcef51b33041b872b1eb48f6fa0799a426a3a60bdced0677c7ee"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/ShellBatchBinding.cpp",
+      "bytes": 7476,
+      "sha256": "46bb26289e3a1f086bbba21255c00d208843f4d70e013c4d9c0b6c127bfe428a"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/ShellBatchBinding.h",
+      "bytes": 5153,
+      "sha256": "50eec209adaa07a971c012c9699fe21b717bc47e3395bad78ea04ecfa2a911f6"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/CMakeLists.txt",
+      "bytes": 295,
+      "sha256": "79ca63799de009ff4e3945d381b38ba3e8b609c4973ac6a181a7654eeb738084"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephData.h",
+      "bytes": 1599,
+      "sha256": "49af97612d8b6fb58f8649401d9a454aa845250d2715fded9adbca9579dd9a5d"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephStartup.h",
+      "bytes": 3914,
+      "sha256": "04b3d00f8b4ef8347d563aa07712d077ad35ca27307d928a041d99eb1ddea7bf"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/qeph/QephStartupFrame.h",
+      "bytes": 4208,
+      "sha256": "794cee31915a4bdc4a1a33f6cd6e52df3af96346c043a06708549dfd394d437a"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/t3/CMakeLists.txt",
+      "bytes": 279,
+      "sha256": "c6ef2dbfdf564703da528ebc7b3b16eb25eeee31c581eccc1d3677640813a151"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/t3/T3Data.h",
+      "bytes": 1434,
+      "sha256": "3e9a7b829442a585f0b2f51044716d8794a2f52c79d9cabfd7d9b362713d1ecd"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/t3/T3Geometry.h",
+      "bytes": 4142,
+      "sha256": "aa2dfba58ba8bfcd69f1b8066b4d5133ecd26d4b5b123bdc718cf6915f8ad22a"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/t3/T3Startup.h",
+      "bytes": 3417,
+      "sha256": "b5c2a9d2eb3bf9085b7b47d44636d44cb69ec676cb9b69dcb98a31909747acc7"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/math/Fixed3.h",
+      "bytes": 2924,
+      "sha256": "ab85903048860e3640e700a9b3a98d7cb792898f1f60621e74554145d200d7fb"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/math/Quaternion.h",
+      "bytes": 6145,
+      "sha256": "de1e9fc2150c7ee8b1d92a75b954b0343ea524d00e4f3da5ee540bf3c2bb81f1"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/t3/T3Reference.h",
+      "bytes": 3493,
+      "sha256": "b7e80482c6a8d9f37f2b0039fa1ed7189784402021eb78a595ab34313301f11e"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/t3/T3StartupTestOracle.h",
+      "bytes": 4409,
+      "sha256": "39b741ee1b75503cd3acd3ca9d818ed376d416506f884cbed4487fdbe152c32c"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/source-manifest.json",
+      "bytes": 29410,
+      "sha256": "36d1ac1b927d56495dd85020d059b88e03cac620d23a21fcbe8267f8b7b42e31"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/t3/CMakeLists.txt",
+      "bytes": 3425,
+      "sha256": "71f2f25fbd4c2841b089888741d84d8578c12ca3899599eb8f5f728b149ba16e"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/t3/force-source-manifest.json",
+      "bytes": 18580,
+      "sha256": "c57073c0de93ebbaf0b47651c0be697c8488f89846a360be84faa778aea5c2a2"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/t3/mixed_binding/CMakeLists.txt",
+      "bytes": 585,
+      "sha256": "1af3ebe075375d132a5ed2c77d5e226144d140454bc58c8f98a36f53ac195c04"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/t3/mixed_binding/README.md",
+      "bytes": 6928,
+      "sha256": "112d20f8b93cdd076ad652680e2135b65833308658e639f16f897354a73fb33d"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/t3/mixed_binding/ShellBatchBindingFixture.h",
+      "bytes": 6854,
+      "sha256": "583450340fd3934ef4169f13fd4ea2037a4b48288d2f8d21263d8054d7afb713"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/t3/mixed_binding/ShellBatchBindingTest.cpp",
+      "bytes": 11456,
+      "sha256": "7ca534cfb53924c4c7970ebfd7b805811746ef13d723bfc6cca794d9d9882bbd"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/t3/source-manifest.json",
+      "bytes": 14293,
+      "sha256": "b2902698ca380bdae598b4bfa98e970b015d399e3d326809be51b1120863b292"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/t3/verify_force_sources.py",
+      "bytes": 1891,
+      "sha256": "0d4e0e163d6652931167ddbc034b1b5968d1daa52e8e955a56b8fcca2427133a"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/t3/verify_sources.py",
+      "bytes": 2001,
+      "sha256": "2381c04446b0a39587f5558dc8826bac55d8b041f5d88a5083f2c9a1a019525d"
+    }
+  ]
+}

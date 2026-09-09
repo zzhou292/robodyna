@@ -6,7 +6,7 @@
   "native_reference_checkpoint": "t3-r3-native-force-history-1",
   "startup_rates_tl_commit": "f5ceb29",
   "startup_rates_checkpoint": "t3-port-startup-rates-1",
-  "live_startup_manifest_sha256": "49229ccb83a563301aa963d3be58d2036d5efaf849d56eb511c65839369ca469",
+  "live_startup_manifest_sha256": "b2902698ca380bdae598b4bfa98e970b015d399e3d326809be51b1120863b292",
   "native_source_manifest_sha256": "3f4891f6dab344de9c0c579b699e43e11b30a7359358170833395481e62c2e9f",
   "transformations": [
     "Single three-node fixed-array selected source arithmetic; no MVSIZ or COMMON in production",
@@ -128,18 +128,18 @@
     },
     {
       "path": "lib_utest/qualification/t3/CMakeLists.txt",
-      "bytes": 3112,
-      "sha256": "38c752bb7b569d77e3a3aa2dd82d60dea09a5d8032b6fc57aeb6282785c4ba43"
+      "bytes": 3425,
+      "sha256": "71f2f25fbd4c2841b089888741d84d8578c12ca3899599eb8f5f728b149ba16e"
     },
     {
       "path": "lib_utest/qualification/t3/source-manifest.json",
-      "bytes": 13926,
-      "sha256": "49229ccb83a563301aa963d3be58d2036d5efaf849d56eb511c65839369ca469"
+      "bytes": 14293,
+      "sha256": "b2902698ca380bdae598b4bfa98e970b015d399e3d326809be51b1120863b292"
     },
     {
       "path": "lib_utest/qualification/t3/verify_sources.py",
       "bytes": 2001,
-      "sha256": "8d9b30095582ecf8691558d4ea378b4d57fb043b596b835741dbe14af6bc7c59"
+      "sha256": "2381c04446b0a39587f5558dc8826bac55d8b041f5d88a5083f2c9a1a019525d"
     },
     {
       "path": "lib_utest/qualification/t3/T3PortFixture.h",
@@ -476,13 +476,22 @@
     }
   ],
   "build_registration_revision": {
-    "previous_manifest_sha256": "b6f59f4849940286841bb985e80bcd187ce3b345b2a30d40c8850905e0b4e312",
-    "reason": "Optional standalone resident T3 registration; force/history arithmetic and test cases unchanged",
+    "previous_manifest_sha256": "8379de2cea92df9a16b960b8c3b851b11abf852a624f047e225e7445543d9573",
+    "reason": "Optional host mixed shell binding registration only; point startup/rates/force formulas and tests unchanged",
     "changed_files": [
-      "lib_src/elements/t3/BUILD.bazel",
       "lib_utest/qualification/t3/CMakeLists.txt",
       "lib_utest/qualification/t3/source-manifest.json",
       "lib_utest/qualification/t3/verify_sources.py"
-    ]
+    ],
+    "preceding_revision": {
+      "previous_manifest_sha256": "b6f59f4849940286841bb985e80bcd187ce3b345b2a30d40c8850905e0b4e312",
+      "reason": "Optional standalone resident T3 registration; force/history arithmetic and test cases unchanged",
+      "changed_files": [
+        "lib_src/elements/t3/BUILD.bazel",
+        "lib_utest/qualification/t3/CMakeLists.txt",
+        "lib_utest/qualification/t3/source-manifest.json",
+        "lib_utest/qualification/t3/verify_sources.py"
+      ]
+    }
   }
 }
