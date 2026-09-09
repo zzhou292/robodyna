@@ -110,7 +110,7 @@ use Chrono's visualization precision. The completed manifest is published only
 after the requested horizon and artifact checks; an incomplete run cannot claim
 success. Source wall friction is recorded but is outside this admitted law.
 
-## Optional Reissner reference: finite bending objectivity failed
+## Preserved unmodified Reissner reference: finite bending objectivity failed
 
 `CRASH_ENABLE_CHRONO_REISSNER_CHECK=ON` builds seven headless GoogleTests against
 the existing `ChElementShellReissner4`, with one Q4 and one centered elastic layer.
@@ -151,14 +151,17 @@ matrix-average/rotation-vector conversion and omitted variation of the
 recomputed average frame in the force derivatives. Existing quaternion averaging
 and polar decomposition are possible diagnostic references, but replacing only
 the mean is not an established consistent force/tangent repair. Keep the six
-passing scopes narrow; no solver correction has been applied.
+passing scopes narrow. This baseline contains no correction. The subsequent
+default-off consistent-force mode and its CPU/CUDA qualification are documented
+in [the Chrono integration notes](chrono/README.md); the baseline build and
+original failure reports remain intact.
 
 To reproduce using the already built FEA core, from the workspace root:
 
 ```sh
-python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/reissner-configure-rerun.json --lock crash-work/reports/workstation.lock --cpus 1 --max-rss-gib 0.5 --timeout 45 -- cmake -S crash-app -B crash-work/build/reissner-reference -DCRASH_ENABLE_CHRONO_REISSNER_CHECK=ON -DChrono_DIR="$PWD/crash-work/build/chrono-fea-reference/cmake" -DCMAKE_BUILD_TYPE=RelWithDebInfo
-python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/reissner-build-rerun.json --lock crash-work/reports/workstation.lock --cpus 1 --max-rss-gib 2 --timeout 120 -- cmake --build crash-work/build/reissner-reference --target crash_chrono_reissner_reference_check --parallel 1
-python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/reissner-tests-rerun.json --lock crash-work/reports/workstation.lock --cpus 1 --max-rss-gib 0.5 --timeout 45 -- crash-work/build/reissner-reference/chrono/crash_chrono_reissner_reference_check --gtest_output=xml:crash-work/reports/reissner-tests-rerun.xml
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/reissner-configure-rerun.json --lock crash-work/reports/workstation.lock --cpus 1 --max-rss-gib 0.5 --timeout 45 -- cmake -S crash-app -B crash-work/build/reissner-baseline-regression -DCRASH_ENABLE_CHRONO_REISSNER_CHECK=ON -DChrono_DIR="$PWD/crash-work/build/chrono-fea-reference/cmake" -DCMAKE_BUILD_TYPE=RelWithDebInfo
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/reissner-build-rerun.json --lock crash-work/reports/workstation.lock --cpus 1 --max-rss-gib 2 --timeout 120 -- cmake --build crash-work/build/reissner-baseline-regression --target crash_chrono_reissner_reference_check --parallel 1
+python3 Total-Lagrangian-FEA/tools/run_bounded.py --report crash-work/reports/reissner-tests-rerun.json --lock crash-work/reports/workstation.lock --cpus 1 --max-rss-gib 0.5 --timeout 45 -- crash-work/build/reissner-baseline-regression/chrono/crash_chrono_reissner_reference_check --gtest_output=xml:crash-work/reports/reissner-tests-rerun.xml
 ```
 
 The unchanged test returns failure; it does not skip or mark the failed physical
