@@ -1,4 +1,5 @@
 #include "Q4PlanarSweepGeometry.h"
+#include "PlanarWallBox.h"
 
 #include "Q4ContactBounds.h"
 
@@ -118,21 +119,11 @@ PlanarContactReport CheckJacobian(const Vec3 base[4],const Vec3 candidate[4],dou
 }
 PlanarContactReport CheckCoverage(const PlanarWallGeometry& wall,double clearance,std::uint32_t index,
                                   const Q4PlanarParentSweep& result) {
-  const auto lo=result.projected_minimum,hi=result.projected_maximum;
-  const Vec3 corner[4]={{lo.x,hi.y,hi.z},{lo.x,lo.y,hi.z},{lo.x,lo.y,lo.z},{lo.x,hi.y,lo.z}};
-  constexpr unsigned triangles[2][3]={{0,1,2},{0,2,3}};
-  for (const auto& nodes:triangles) {
-    TriangleGeometry triangle; triangle.face_id=result.parent.feature_id;
-    for (unsigned n=0;n<3;++n) {
-      triangle.vertices[n]=corner[nodes[n]];
-      triangle.vertex_ids[n]=nodes[n];  // Local box geometry keys, never source node identities.
-    }
-    bool covered=false;
-    auto report=wall.ClassifyTriangle(triangle,clearance,&covered);
-    if (report.status != PStatus::Ok) { report.sample=index; return report; }
-    if (!covered) return Report(PStatus::UnsupportedGeometry,"Swept projected box is outside the finite wall",index);
-  }
-  return Report(PStatus::Ok,"Swept projected box is wholly covered",index);
+  PlanarWallBoxCoverage covered;
+  auto report=CheckPlanarWallBox(wall,{result.projected_minimum,result.projected_maximum},clearance,
+                                 result.parent.feature_id,PlanarWallBoxMode::Exact,&covered);
+  report.sample=index;
+  return report;
 }
 }  // namespace
 

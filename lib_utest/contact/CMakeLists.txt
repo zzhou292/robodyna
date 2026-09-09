@@ -45,6 +45,17 @@ target_link_libraries(utest_planar_wall_geometry PRIVATE tl_planar_wall_geometry
 target_compile_options(utest_planar_wall_geometry PRIVATE -fno-fast-math -ffp-contract=off)
 tl_contact_test(utest_planar_wall_geometry)
 
+add_executable(utest_planar_wall_box "${TL_ROOT}/lib_utest/utest_planar_wall_box.cc")
+target_link_libraries(utest_planar_wall_box PRIVATE tl_planar_wall_geometry)
+target_compile_options(utest_planar_wall_box PRIVATE -fno-fast-math -ffp-contract=off)
+tl_contact_test(utest_planar_wall_box)
+
+include("${TL_ROOT}/lib_src/collision/SurfaceMaterialMeasure.cmake")
+add_executable(utest_surface_material_measure "${TL_ROOT}/lib_utest/utest_surface_material_measure.cc")
+target_link_libraries(utest_surface_material_measure PRIVATE tl_surface_material_measure)
+target_compile_options(utest_surface_material_measure PRIVATE -fno-fast-math -ffp-contract=off)
+tl_contact_test(utest_surface_material_measure)
+
 include("${TL_ROOT}/lib_src/collision/Q4PlanarGeometry.cmake")
 add_executable(utest_q4_planar_geometry "${TL_ROOT}/lib_utest/utest_q4_planar_geometry.cc")
 target_link_libraries(utest_q4_planar_geometry PRIVATE tl_q4_planar_geometry)

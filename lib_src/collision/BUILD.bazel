@@ -46,8 +46,8 @@ cc_library(
 
 cc_library(
     name = "planar_wall_geometry",
-    srcs = ["PlanarWallGeometry.cpp"],
-    hdrs = ["PlanarWallGeometry.h", "PlanarContactTypes.h"],
+    srcs = ["PlanarWallGeometry.cpp", "PlanarWallBox.cpp"],
+    hdrs = ["PlanarWallGeometry.h", "PlanarContactTypes.h", "PlanarWallBox.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [":surface_contact_primitives"],
 )
@@ -56,6 +56,14 @@ cc_library(
     name = "q4_contact_integration",
     hdrs = ["Q4ContactBounds.h", "Q4ContactIntegrationTypes.h", "Q4ContactIntegration.h", "Q4IntegralMeasure.h"],
     deps = [":q4_surface_mapping"],
+)
+
+cc_library(
+    name = "surface_material_measure",
+    srcs = ["SurfaceMaterialMeasure.cpp"],
+    hdrs = ["SurfaceMaterialMeasure.h", "SurfaceMaterialBounds.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":q4_contact_integration"],
 )
 
 cc_library(

@@ -4,6 +4,22 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_test")
 package(default_visibility = ["//visibility:public"])
 
 cc_test(
+    name = "utest_surface_material_measure",
+    size = "small",
+    srcs = ["utest_surface_material_measure.cc"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:surface_material_measure", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "utest_planar_wall_box",
+    size = "small",
+    srcs = ["utest_planar_wall_box.cc", "q4_planar_geometry_fixture.h", "q4_contact_integration_fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:q4_planar_geometry", "@googletest//:gtest_main"],
+)
+
+cc_test(
     name = "utest_q4_planar_stiffness",
     size = "small",
     srcs = ["utest_q4_planar_stiffness.cc", "q4_planar_geometry_fixture.h", "q4_contact_integration_fixture.h"],
