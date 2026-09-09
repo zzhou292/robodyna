@@ -6,6 +6,9 @@ is the original Yaris hitting a rigid triangle-mesh wall. Complete CUDA vehicle
 dynamics is still under development; current qualified cases and limits are
 listed in the [execution status](../planning/EXECUTION_STATUS.md).
 
+The [active Yaris delivery plan](docs/YARIS_DELIVERY_PLAN.md) records the latest
+live probes, module ownership, next implementation packages and promotion tests.
+
 TL-FEA owns CUDA mechanics, shared state and stepping. Robo-dyna owns model/case
 configuration, orchestration and results through Chrono infrastructure. The
 canonical source directory is `robo-dyna/`; a legacy workspace path alias keeps
