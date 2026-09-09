@@ -151,3 +151,35 @@ is a failing required gate, never a skipped success. Keep FP64 contraction,
 fast math and flush-to-zero disabled, and serialize the run with the workstation
 guard. New heavy builds may use 12 GiB RSS under the user's 16 GB RAM ceiling;
 the numerical test retains its smaller 2 GiB cap.
+
+## Native source-shell startup and Q4 rates
+
+The fixture also supports two explicitly enabled structural qualification
+operations. `ROBO_DYNA_SOURCE_T3_STARTUP` passes two functions on all six
+original triangles, using the isolated native starter frame and selected
+angle-weighted mass/inertia expressions. Its seven standalone native tests
+are retained in the owning TL reference package.
+
+`ROBO_DYNA_SOURCE_QEPH_GEOMETRY` passes three host functions on all 88 original
+quads. Startup matches the qualified native QEPH reference, with independent
+long-double diagonal-cross area and separate physical/area-added inertia
+checks. Contributions assemble once in the original 117-node space; nodes
+used only by T3 remain zero in this Q4-only sum. The Q4 subtotal is
+0.24790758675157906 kg and the chosen isotropic inertia subtotal is
+4.9789918392944437e-06 kg m². These are chosen QEPH startup quantities, not a
+full-part structural mass admission or source ELFORM2 equivalence.
+
+All 264 current-geometry/rate configurations (three existing prescribed patterns
+per quad) match all 80 native fields at the unchanged Q3a/Q3b dimensional
+2e-12 budgets. Source coordinates, density, thickness and IDs are unchanged;
+E=200 GPa and nu=.3 are explicitly supplied experiment metadata. MAT024 history,
+forces, source CUDA batches and dynamics are not established by this gate.
+The first build/run passes without repair or threshold changes; reports are
+`crash-work/reports/source-qeph-geometry-{configure,build,tests}-1.json` and
+`source-qeph-geometry-xml-1/`. The executable is
+`robo_dyna_source_part_qeph_geometry_check READINESS.json`.
+
+Both options reuse this exact authenticated fixture and enable the local GNU
+Fortran oracle only in qualification targets. Neither links Fortran into the
+production solver. Keep native T3 and QEPH context/module symbols private and
+retain their independent startup formulas and original native node counts.

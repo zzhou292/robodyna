@@ -80,3 +80,20 @@ if(ROBO_DYNA_SOURCE_T3_STARTUP)
   set_tests_properties(source_part_t3_startup PROPERTIES TIMEOUT 60 RUN_SERIAL TRUE PROCESSORS 1
     ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1")
 endif()
+
+if(ROBO_DYNA_SOURCE_QEPH_GEOMETRY)
+  enable_language(Fortran)
+  set(QEPH_Q1_BUILD_TESTS OFF)
+  add_subdirectory("${CRASH_TL_FEA_SOURCE_DIR}/lib_src/elements/qeph"
+    "${CMAKE_CURRENT_BINARY_DIR}/tl-qeph-source" EXCLUDE_FROM_ALL)
+  add_subdirectory("${CRASH_TL_FEA_SOURCE_DIR}/lib_utest/qualification/native/qeph"
+    "${CMAKE_CURRENT_BINARY_DIR}/native-qeph-source" EXCLUDE_FROM_ALL)
+  add_executable(robo_dyna_source_part_qeph_geometry_check source_part_qeph_geometry_check.cpp)
+  target_link_libraries(robo_dyna_source_part_qeph_geometry_check PRIVATE
+    robo_dyna_source_contact_fixture tl_qeph qeph_q1_native GTest::gtest)
+  target_compile_options(robo_dyna_source_part_qeph_geometry_check PRIVATE -fno-fast-math -ffp-contract=off)
+  add_test(NAME source_part_qeph_geometry COMMAND robo_dyna_source_part_qeph_geometry_check
+    "${ROBO_DYNA_SOURCE_PART_READINESS}")
+  set_tests_properties(source_part_qeph_geometry PROPERTIES TIMEOUT 60 RUN_SERIAL TRUE PROCESSORS 1
+    ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1")
+endif()
