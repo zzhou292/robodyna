@@ -231,6 +231,15 @@ class CH_VSG_API ChVisualSystemVSG : virtual public ChVisualSystem {
     /// Set window title (default: "").
     void SetWindowTitle(const std::string& title);
 
+    /// Set the number of background asset-loading workers (default: 16, allowed range: 1 through 64).
+    /// Call before the first Initialize() attempt, including one that fails. This does not limit Vulkan/driver threads.
+    /// Throws std::invalid_argument for an invalid count and std::logic_error after initialization has started.
+    /// Configuration and initialization must be externally serialized.
+    void SetLoadingThreadCount(int count);
+
+    /// Return the configured asset-loading worker count.
+    int GetLoadingThreadCount() const { return m_numThreads; }
+
     /// Set default output screen.
     void SetOutputScreen(int screenNum = 0);
 
@@ -675,6 +684,7 @@ class CH_VSG_API ChVisualSystemVSG : virtual public ChVisualSystem {
     std::string m_windows_title;
 
     int m_numThreads = 16;
+    bool m_loading_threads_locked = false;
     vsg::ref_ptr<vsg::OperationThreads> m_loadThreads;
 
     SkyMode m_sky_mode;

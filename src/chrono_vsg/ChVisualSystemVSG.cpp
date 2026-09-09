@@ -20,6 +20,7 @@
 #include <sstream>
 #include <iomanip>
 #include <filesystem>
+#include <stdexcept>
 
 #include "chrono/utils/ChUtils.h"
 #include "chrono/collision/bullet/ChCollisionUtilsBullet.h"
@@ -445,6 +446,14 @@ void ChVisualSystemVSG::EnableFullscreen(bool val) {
     m_use_fullscreen = val;
 }
 
+void ChVisualSystemVSG::SetLoadingThreadCount(int count) {
+    if (m_loading_threads_locked)
+        throw std::logic_error("ChVisualSystemVSG::SetLoadingThreadCount must be called before Initialize");
+    if (count < 1 || count > 64)
+        throw std::invalid_argument("ChVisualSystemVSG loading thread count must be between 1 and 64");
+    m_numThreads = count;
+}
+
 size_t ChVisualSystemVSG::AddGuiComponent(std::shared_ptr<ChGuiComponentVSG> gc) {
     gc->m_vsys = this;
     m_gui.push_back(gc);
@@ -675,6 +684,8 @@ void ChVisualSystemVSG::SetLightDirection(double azimuth, double elevation) {
 void ChVisualSystemVSG::Initialize() {
     if (m_initialized)
         return;
+
+    m_loading_threads_locked = true;
 
     // Let any plugins perform pre-initialization operations
     for (auto& plugin : m_plugins)
