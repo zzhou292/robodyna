@@ -174,6 +174,20 @@ affine/angular oracle uses the frozen R2 dimensional budgets. Evidence is
 rates only; material history, forces, a temporal owner and source MAT024/NIP3
 admission remain outside this T3 gate.
 
+`source_part_t3_force_check.cpp` passes two separate native R3 functions:
+48 material/force modes across the six original triangles, then
+load/hold/reversal, failed-sample retry and complete C3UPDT3 contributions mapped
+once to the original 117-node host space. It reuses the authenticated input and
+independent T3 rate/material/virtual-power oracles. Root registers the optional
+target with `t3_r3_native`; there is no Fortran production dependency or dynamics
+owner. The native branch is explicitly LAW1/NPT0/ISH3N2, with original geometry,
+density and thickness; original MAT024/NIP3 behavior remains unconsumed. The
+[source report](../../../crash-work/reports/t3-r3-source-tests-1.json) and
+[XML](../../../crash-work/reports/t3-r3-source-xml-1/) retain both new functions
+and all four startup/rates regressions. Together with the standalone native
+gate, all 28 executions pass; these are force/history checks, not CUDA T3
+mechanics or connected dynamics.
+
 `ROBO_DYNA_SOURCE_QEPH_GEOMETRY` passes three host functions on all 88 original
 quads. Startup matches the qualified native QEPH reference, with independent
 long-double diagonal-cross area and separate physical/area-added inertia
