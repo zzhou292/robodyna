@@ -25,8 +25,9 @@ the latter owns 6,216 device bytes and adds eight passing functions at TL
 `e9e3e5f`. Shared shell utilities are adopted at `329f441`, with all six sustained
 scientific response records matching their preceding baseline. The source-part
 wall-contact cost gate and stateless contact contributor on the existing owner
-also pass. The vehicle is not running yet. Next are immutable mixed Q4/T3
-mass binding and joint publication. Short shell/wall transactions now pass
+also pass. The vehicle is not running yet. Immutable mixed Q4/T3 mass and
+identity binding now passes eight host tests at TL `9be796a`; joining resident
+batches and joint publication remain next. Short shell/wall transactions pass
 four CUDA functions at TL `1611802`, including both failure orders and retry;
 this is a 0.2384-microsecond preload check. Combined long-response and incoming
 impact admission remain open. The current device wall participant accepts Q4
