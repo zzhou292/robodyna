@@ -1,0 +1,704 @@
+{
+  "schema": "tl.t3-native-source-inventory.v1",
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "origin": "https://github.com/OpenRadioss/OpenRadioss",
+  "scope": "Verified source inventory and selected complete native leaf closure. Only startup has a planned callable adapter; no engine or full starter execution asserted.",
+  "license": "AGPL-3.0-or-later",
+  "sources": [
+    {
+      "source": "LICENSE.md",
+      "path": "../qeph/original/LICENSE.md",
+      "bytes": 34283,
+      "sha256": "ad858d53cae05eed9531ecd4c467440803acffe34c69de7b88e03affc5b6a1bd",
+      "git_blob_sha1": "cba6f6a15a4cc3ba212e9e9059f7243e2d171090",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "common_source/modules/constant_mod.F",
+      "path": "../qeph/original/common_source/modules/constant_mod.F",
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865",
+      "git_blob_sha1": "5f78c0a6769ac024deb6bba9d3037cd747f36837",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "common_source/modules/elements/element_mod.F90",
+      "path": "../qeph/original/common_source/modules/elements/element_mod.F90",
+      "bytes": 105714,
+      "sha256": "5843cc5fa95989e876462c6b2370b4dadf577439b2eb07d725b69ac85c5c326e",
+      "git_blob_sha1": "b4ea870494bd11c5d139290e942ae8ae17fe7da2",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "common_source/modules/mat_elem/elbufdef_mod.F90",
+      "path": "../qeph/original/common_source/modules/mat_elem/elbufdef_mod.F90",
+      "bytes": 96028,
+      "sha256": "4f3a0c66170f246b1d3bbf0129ade0694ac1c6aa227f9b5497ba58d50744a8e2",
+      "git_blob_sha1": "4e56dc7f1a5e2cc7926476ebb56345e64b422c5a",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "common_source/modules/precision_mod.F90",
+      "path": "../qeph/original/common_source/modules/precision_mod.F90",
+      "bytes": 71995,
+      "sha256": "0846aee31622c4bfdc22895a5580bce7b6be216d392b8ba219be53dafe570201",
+      "git_blob_sha1": "801e7590ca7f366cd5b2723ae9acfa6a089049cf",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "engine/share/includes/com01_c.inc",
+      "path": "../qeph/original/engine/share/includes/com01_c.inc",
+      "bytes": 3697,
+      "sha256": "fe4d4bab0f0138427f7a16dc6ad46bfecac2543423787ee11d63b0a0456090df",
+      "git_blob_sha1": "0c4563aad5479d85ddd5da8f00e92a6702dfb3dd",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "engine/share/includes/com04_c.inc",
+      "path": "../qeph/original/engine/share/includes/com04_c.inc",
+      "bytes": 4073,
+      "sha256": "5e848151056a669919bacdb52ae28938bd869978be6de8461f619e6d19585525",
+      "git_blob_sha1": "626b9a3a62a756194032e5b872a413b5b22236f9",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "engine/share/includes/com08_c.inc",
+      "path": "../qeph/original/engine/share/includes/com08_c.inc",
+      "bytes": 1865,
+      "sha256": "10f98e71274a756d2e1345d29658c97a035c89c918257f20c2a164fbecfba496",
+      "git_blob_sha1": "527615007426bf007418321b9404b5fcf8639448",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "engine/share/includes/impl1_c.inc",
+      "path": "../qeph/original/engine/share/includes/impl1_c.inc",
+      "bytes": 3586,
+      "sha256": "c257001e6e818a85f2841d8aba25ef111773283752d8aea3fdbb58e8edd63112",
+      "git_blob_sha1": "bb1edcd216a156efe566d75d2227d88c0fbe77c3",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "engine/share/includes/param_c.inc",
+      "path": "../qeph/original/engine/share/includes/param_c.inc",
+      "bytes": 3581,
+      "sha256": "fdf61d11b957fc3415d8367e45722ffbbfcab7d5a630fc24f57a683ea3d54045",
+      "git_blob_sha1": "74dff9d9ecb44c2a0a0314b770356640d84dc2a6",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "engine/share/includes/scr02_c.inc",
+      "path": "../qeph/original/engine/share/includes/scr02_c.inc",
+      "bytes": 1476,
+      "sha256": "53a70351e6c9e46fb5ec08e199827df5129deec0dd81a06b8532c9bd3fceb8b2",
+      "git_blob_sha1": "321f2d031f000bbd9f33706fd8ce174baad6a9e9",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "engine/share/includes/scr05_c.inc",
+      "path": "../qeph/original/engine/share/includes/scr05_c.inc",
+      "bytes": 1594,
+      "sha256": "53a14b4a42266455432e4c7608b4ce34bee9b6dc120dbc055a3b1d7a76ff0c0b",
+      "git_blob_sha1": "edfdadbce0be47ede50bd6bbe398e14883c0542e",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "engine/share/includes/scr07_c.inc",
+      "path": "../qeph/original/engine/share/includes/scr07_c.inc",
+      "bytes": 1974,
+      "sha256": "f1e44adb3fc9d2332af0e5e18be5f3976b7e588580c49f04af7b6c0816310e37",
+      "git_blob_sha1": "7bd8a12f7e2441425ce7a604150e8e38d278405f",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "engine/share/includes/scr14_c.inc",
+      "path": "original/engine/share/includes/scr14_c.inc",
+      "bytes": 3329,
+      "sha256": "a7ec6a97dd3b5113a179d979d0d9ff66a4c8859415636feb5006f86c3939f57d",
+      "git_blob_sha1": "38f4bfbda090ec767a0511639207fa3d58ad5b77",
+      "retrieval": "official pinned HTTPS",
+      "shared_qeph_original": false
+    },
+    {
+      "source": "engine/share/includes/scr17_c.inc",
+      "path": "../qeph/original/engine/share/includes/scr17_c.inc",
+      "bytes": 2111,
+      "sha256": "db56f0562b25b05803aba448236fa228c7ea6151e22000540e84d9ce2d9f80ee",
+      "git_blob_sha1": "dfbf2b3224854b53b070fecc4924e1894a2841b5",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "engine/share/includes/scr18_c.inc",
+      "path": "../qeph/original/engine/share/includes/scr18_c.inc",
+      "bytes": 1790,
+      "sha256": "1cfc4b1f7898053279b77d03f25e62c47f8d62e4810777b6c6021cfcadbb255f",
+      "git_blob_sha1": "c8a9288f87c174debd9b5b47cbc31d8cf2674c0f",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "engine/share/includes/sms_c.inc",
+      "path": "../qeph/original/engine/share/includes/sms_c.inc",
+      "bytes": 2693,
+      "sha256": "f95904664529c1189a474640c20966e83bc1656ef4430c4dbad5be01c37e955a",
+      "git_blob_sha1": "3348f453cd4700251b57d40ead1764f2458adf8a",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "engine/share/includes/units_c.inc",
+      "path": "../qeph/original/engine/share/includes/units_c.inc",
+      "bytes": 2779,
+      "sha256": "c27320ffa81fd5bf362a0aa30903e2a302d68bb79aac94fc83fa46cc268dba89",
+      "git_blob_sha1": "49bd9730899b5e8fcd77adeabacb263c422f3ffe",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "engine/share/r8/my_real.inc",
+      "path": "../qeph/original/engine/share/r8/my_real.inc",
+      "bytes": 1658,
+      "sha256": "b2b61dbf62a940a49f92f8458e72e6c7ab92fbae48a72e5a7fce5d6d6bbaf8df",
+      "git_blob_sha1": "14e5c4b5b9167a30f165b726ada28047de9b411b",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "engine/share/spe_inc/comlock.inc",
+      "path": "../qeph/original/engine/share/spe_inc/comlock.inc",
+      "bytes": 1968,
+      "sha256": "470ae1ea6af07d8464cf0a36c65bbb40ba32d40b4e301097b0e33de390424aff",
+      "git_blob_sha1": "eea178e51ecbf9df13c12319e266ae42897237e6",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "engine/share/spe_inc/hardware.inc",
+      "path": "../qeph/original/engine/share/spe_inc/hardware.inc",
+      "bytes": 3556,
+      "sha256": "10a8e3d40d430fd92ed33b2d1b6fda43262e8c4901340ee740db0f1479ee0b00",
+      "git_blob_sha1": "40bedb84eaa3529c6a76f51d97d22575601ab37d",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "engine/share/spe_inc/implicit_f.inc",
+      "path": "../qeph/original/engine/share/spe_inc/implicit_f.inc",
+      "bytes": 1478,
+      "sha256": "336888d703e8eb082459dfd5f9ed8689b8374bcc6940ab2d53f0df91a0a39cf2",
+      "git_blob_sha1": "d54bff81213a4f7b53baa8422a0e8be20b338c17",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "engine/share/spe_inc/lockoff.inc",
+      "path": "../qeph/original/engine/share/spe_inc/lockoff.inc",
+      "bytes": 2239,
+      "sha256": "6bbf602b6b6c6a8eacecf1c6fb97ac8ff4c05a967f56b5b1aebf65ffe24af639",
+      "git_blob_sha1": "3a43222c4af0d7a2590718a5e74684d724029d9b",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "engine/share/spe_inc/lockon.inc",
+      "path": "../qeph/original/engine/share/spe_inc/lockon.inc",
+      "bytes": 2236,
+      "sha256": "9f3ca126afe6c73e6083bbcac4c5f9c9259ffd3edfb771ebc006c68ff15457bb",
+      "git_blob_sha1": "cddbcec07a0860890060eb997e0a7dffd489d4cb",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "engine/share/spe_inc/mvsiz_p.inc",
+      "path": "../qeph/original/engine/share/spe_inc/mvsiz_p.inc",
+      "bytes": 3256,
+      "sha256": "8a0f587350f7738e0f40e375fc1b2c8cb775e4c7540d41762c427cd42724ced7",
+      "git_blob_sha1": "ace2eaec18ff827b0889b681100fe18fc180bf7b",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "engine/share/spe_inc/tlock_c.inc",
+      "path": "../qeph/original/engine/share/spe_inc/tlock_c.inc",
+      "bytes": 2151,
+      "sha256": "c8f6f9a8405c173182acdf114060ec4a9a073e4886b6431da1a1f4fb145b33e4",
+      "git_blob_sha1": "54970dd5e6957cd477331971219ee59419ecd867",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "engine/share/spe_inc/vectorize.inc",
+      "path": "../qeph/original/engine/share/spe_inc/vectorize.inc",
+      "bytes": 1881,
+      "sha256": "67d75c7f52c1dc87facb732ef3ffd29502b9ea1972be228ed135e892f18f7153",
+      "git_blob_sha1": "9c884843281aeb95cd647d43dc0dc67ef0a3bdb5",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/c3coef3.F",
+      "path": "original/engine/source/elements/sh3n/coque3n/c3coef3.F",
+      "bytes": 6618,
+      "sha256": "35d43e70c21fc830659ae2f778ce0efefa9308bd71d2bd35bf27552e3e4ae046",
+      "git_blob_sha1": "ea36b962b077c40bc8c947058447b75c5e10d631",
+      "retrieval": "official pinned HTTPS",
+      "shared_qeph_original": false
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/c3coor3.F",
+      "path": "original/engine/source/elements/sh3n/coque3n/c3coor3.F",
+      "bytes": 13129,
+      "sha256": "dc1a3af9d60541a35974468bc7307a5dfdfa941ba215c09bb34e0e1b5ad11615",
+      "git_blob_sha1": "7d5ae470b833bf6d9d017cf421a0300c207ee24f",
+      "retrieval": "official pinned HTTPS",
+      "shared_qeph_original": false
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/c3curv3.F",
+      "path": "original/engine/source/elements/sh3n/coque3n/c3curv3.F",
+      "bytes": 5321,
+      "sha256": "3c0ea629778e1c08c3e33d453c60755e7f69628223d7ea6182b30f66384c3fa6",
+      "git_blob_sha1": "0c180cc660cae4ef658bad673e05d7ee5d8fcbb0",
+      "retrieval": "official pinned HTTPS",
+      "shared_qeph_original": false
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/c3defo3.F",
+      "path": "original/engine/source/elements/sh3n/coque3n/c3defo3.F",
+      "bytes": 21008,
+      "sha256": "8f295457ee1bf33ddb4d1a66240f0c9ee0374dc899616c001a2a4f51934bc814",
+      "git_blob_sha1": "58de9509a6bbf9ab127cf8560ff98fa45f252784",
+      "retrieval": "official pinned HTTPS",
+      "shared_qeph_original": false
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/c3deri3.F",
+      "path": "original/engine/source/elements/sh3n/coque3n/c3deri3.F",
+      "bytes": 5752,
+      "sha256": "d414db14ccf2e41173f3abf0e24fb728c376924deeb9e142bcc054c7a50bf671",
+      "git_blob_sha1": "3bc568ce637d9d8d5c113df164df2005581ad041",
+      "retrieval": "official pinned HTTPS",
+      "shared_qeph_original": false
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/c3dt3.F",
+      "path": "original/engine/source/elements/sh3n/coque3n/c3dt3.F",
+      "bytes": 11385,
+      "sha256": "a8dfdfad230aec3619854c11665d4d50a7be57a7012f8279109f90b20518f926",
+      "git_blob_sha1": "eb9875148193813fa6731d7b491fb697ce13eb9c",
+      "retrieval": "retained workspace source",
+      "shared_qeph_original": false
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/c3evec3.F",
+      "path": "original/engine/source/elements/sh3n/coque3n/c3evec3.F",
+      "bytes": 30239,
+      "sha256": "32299c6e8ccfbd8c9a50a80296a112ef437311cfd2968661f07e5bb7e6ed604a",
+      "git_blob_sha1": "f672b13d0448f2872d1015d8e4d5f0c41c5c97e2",
+      "retrieval": "official pinned HTTPS",
+      "shared_qeph_original": false
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/c3fcum3.F",
+      "path": "original/engine/source/elements/sh3n/coque3n/c3fcum3.F",
+      "bytes": 6021,
+      "sha256": "81fb103f64d079e5df1e4a58f1754098d3340bf4532d6f98bd92f2cf26fb5c7b",
+      "git_blob_sha1": "3998956ba3843278448f07ca89cefcf1e59cadf7",
+      "retrieval": "official pinned HTTPS",
+      "shared_qeph_original": false
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/c3fint3.F",
+      "path": "original/engine/source/elements/sh3n/coque3n/c3fint3.F",
+      "bytes": 9952,
+      "sha256": "6be7aef2cde7058e73b87f3e41a265e3aefcdc3abd17366e566173513cad0e99",
+      "git_blob_sha1": "28766b6799fca41b4e776f7cf692a63f10cad1f7",
+      "retrieval": "official pinned HTTPS",
+      "shared_qeph_original": false
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/c3forc3.F",
+      "path": "original/engine/source/elements/sh3n/coque3n/c3forc3.F",
+      "bytes": 36434,
+      "sha256": "311455e0ce9c40399f7651b5dbc3937725edd1494753c15b9975e0fcdf842b7f",
+      "git_blob_sha1": "c44556106f3347f455ed6af37cefc820fdbaf922",
+      "retrieval": "retained workspace source",
+      "shared_qeph_original": false
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/c3mcum3.F",
+      "path": "original/engine/source/elements/sh3n/coque3n/c3mcum3.F",
+      "bytes": 5726,
+      "sha256": "9ec4b0a7583a52c8083dd5287223cfd371a7e35d90f900574c7b9e9f3b783c47",
+      "git_blob_sha1": "f7552dd3bc776e9fb065dc9051127991ad7faad7",
+      "retrieval": "official pinned HTTPS",
+      "shared_qeph_original": false
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/c3stra3.F",
+      "path": "original/engine/source/elements/sh3n/coque3n/c3stra3.F",
+      "bytes": 6140,
+      "sha256": "89fa371f45da2f80efd9281f979f112353f4dbd4f3835569365f7cfe4e16fbe4",
+      "git_blob_sha1": "15e35c9f2f05d16e9c8ea6b5c1311c9f564551f3",
+      "retrieval": "official pinned HTTPS",
+      "shared_qeph_original": false
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/c3updt3.F",
+      "path": "original/engine/source/elements/sh3n/coque3n/c3updt3.F",
+      "bytes": 22910,
+      "sha256": "09ef59836fe603b482e01edf1fcdc54eb26f0a0d5b2c0860dd8e60e732e072fd",
+      "git_blob_sha1": "e12bbffec1f4b11c2289b5d1968861ae153c79e2",
+      "retrieval": "retained workspace source",
+      "shared_qeph_original": false
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/cssp2a11.F",
+      "path": "../qeph/original/engine/source/elements/sh3n/coque3n/cssp2a11.F",
+      "bytes": 3362,
+      "sha256": "78dcc1fdffb2da94b78ba4dc768a5714ec69f28f2aff6451c476b2ca5e3a83b5",
+      "git_blob_sha1": "0aea5bda75b4c592c182ad488e8a9684a5b671d7",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "engine/source/elements/sh3n/coquedk/cdkcoor3.F",
+      "path": "../qeph/original/engine/source/elements/sh3n/coquedk/cdkcoor3.F",
+      "bytes": 15570,
+      "sha256": "6be02f7e07db6c6f024fde19c8097068bf93959b61daff3d84661c65aea183ed",
+      "git_blob_sha1": "22daefba0d4b550ecd66d65f30fb0ccf24bf79dd",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "engine/source/materials/mat/mat001/sigeps01g.F",
+      "path": "../qeph/original/engine/source/materials/mat/mat001/sigeps01g.F",
+      "bytes": 9494,
+      "sha256": "087cdff78867e433493f901b8d93ddf4395ffe4ed78f5d0b7025f1df1d030dec",
+      "git_blob_sha1": "551a94e6945ef2c6dfd26fc1529b21675ef58abb",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "engine/source/materials/mat_share/cmain3.F",
+      "path": "../qeph/original/engine/source/materials/mat_share/cmain3.F",
+      "bytes": 20625,
+      "sha256": "948835a9ffea500d766769747fa1891c297751924ee1e2a62561a2cdd0e7a358",
+      "git_blob_sha1": "051c3e595deb093be56bb04968dc74a5351130a2",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "engine/source/materials/mat_share/mulawglc.F",
+      "path": "../qeph/original/engine/source/materials/mat_share/mulawglc.F",
+      "bytes": 25262,
+      "sha256": "e03099d16b22a99d9af716d3c1052c40059caddb508798e503d992feea43c301",
+      "git_blob_sha1": "83a4fbd8167e977c171bd5cef23c10a0bbf012a4",
+      "retrieval": "shared qualified QEPH original",
+      "shared_qeph_original": true
+    },
+    {
+      "source": "starter/source/elements/initia/spmd_msin.F",
+      "path": "original/starter/source/elements/initia/spmd_msin.F",
+      "bytes": 19111,
+      "sha256": "555c8d2e41039c2e7f90df2c046d0add8412aceccc1c2a19cb818ff099d20ff8",
+      "git_blob_sha1": "026190303b0ea69cda76a475d7a28c35dcc727b1",
+      "retrieval": "retained workspace source",
+      "shared_qeph_original": false
+    },
+    {
+      "source": "starter/source/elements/sh3n/coque3n/c3derii.F",
+      "path": "original/starter/source/elements/sh3n/coque3n/c3derii.F",
+      "bytes": 12139,
+      "sha256": "cd8936f7f57e2043e07ac88b63f4f7c3ee01324cd9c111a778ec8fb201cdecc8",
+      "git_blob_sha1": "7c35b565663c5f0129c4772e0e90ea6e53dd0840",
+      "retrieval": "retained workspace source",
+      "shared_qeph_original": false
+    },
+    {
+      "source": "starter/source/elements/sh3n/coque3n/c3evec3.F",
+      "path": "original/starter/source/elements/sh3n/coque3n/c3evec3.F",
+      "bytes": 4882,
+      "sha256": "c73e6cf20803c6010dc21a03b2a5b9ca65c6346cd05c38d46fe6259e0cecffea",
+      "git_blob_sha1": "8464aa21828018746f7babd8594d2055900ecd86",
+      "retrieval": "official pinned HTTPS",
+      "shared_qeph_original": false
+    },
+    {
+      "source": "starter/source/elements/sh3n/coque3n/c3init3.F",
+      "path": "original/starter/source/elements/sh3n/coque3n/c3init3.F",
+      "bytes": 36968,
+      "sha256": "a5c511b171521f907eab71c7f0f54cce3709cb917f31abf9e93a4d2ce2eee706",
+      "git_blob_sha1": "0c1386ea3ffe6fb2e573db25e9a0eb1bd83af480",
+      "retrieval": "retained workspace source",
+      "shared_qeph_original": false
+    },
+    {
+      "source": "starter/source/elements/sh3n/coque3n/c3inmas.F",
+      "path": "original/starter/source/elements/sh3n/coque3n/c3inmas.F",
+      "bytes": 76288,
+      "sha256": "17218f450465558b6858316022b8fd2584baabd9c775aba7ef2cf89b0a0958a8",
+      "git_blob_sha1": "9b93b8ecda3d10689a99b99d0d897f90505e8e28",
+      "retrieval": "retained workspace source",
+      "shared_qeph_original": false
+    }
+  ],
+  "source_bytes": 853651,
+  "extractions": [
+    {
+      "source": "starter/source/elements/sh3n/coque3n/c3evec3.F",
+      "path": "extracted/StarterC3evec3.F",
+      "routine": "C3EVEC3",
+      "first_line": 35,
+      "last_line": 112,
+      "sha256": "d5563d5702cc0bf822c9ab154cbf7fba5e817254281e2ae719ef4d8eb2deb4bf",
+      "shared_qeph_extract": false
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/c3coor3.F",
+      "path": "extracted/C3Coor3.F",
+      "routine": "C3COOR3",
+      "first_line": 31,
+      "last_line": 180,
+      "sha256": "682293794929f7c476ccec6066109a9f5ab841cc1a2543c4d0cb0d4a40f1afb8",
+      "shared_qeph_extract": false
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/c3evec3.F",
+      "path": "extracted/C3Evec3.F",
+      "routine": "C3EVEC3",
+      "first_line": 34,
+      "last_line": 516,
+      "sha256": "edd6b335a0c7ab5b7c6120584931dbb3fa84eca073d207391ef1da477a5e08c5",
+      "shared_qeph_extract": false
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/c3deri3.F",
+      "path": "extracted/C3Deri3.F",
+      "routine": "C3DERI3",
+      "first_line": 30,
+      "last_line": 141,
+      "sha256": "0dad7998e9a4c2d1412e658e7454fff14bd19b483442e68f18a281715b5deb76",
+      "shared_qeph_extract": false
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/c3coef3.F",
+      "path": "extracted/C3Coef3.F",
+      "routine": "C3COEF3",
+      "first_line": 30,
+      "last_line": 174,
+      "sha256": "ea3ce469ebfc44a1272c3f7eeec1fe3baf2c9eb0ec106f9e884b0cd5933283d2",
+      "shared_qeph_extract": false
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/c3defo3.F",
+      "path": "extracted/C3Defo3.F",
+      "routine": "C3DEFO3",
+      "first_line": 32,
+      "last_line": 133,
+      "sha256": "fb252597aa6adcc5e7f518f356026920c2e0a3fbc43b28d9b91090fc2e9a2caa",
+      "shared_qeph_extract": false
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/c3curv3.F",
+      "path": "extracted/C3Curv3.F",
+      "routine": "C3CURV3",
+      "first_line": 32,
+      "last_line": 117,
+      "sha256": "8fc710113390ef6b56209b03e230c48ce3c32322fd8cc8cb646bd77229d30423",
+      "shared_qeph_extract": false
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/c3stra3.F",
+      "path": "extracted/C3Stra3.F",
+      "routine": "C3STRA3",
+      "first_line": 30,
+      "last_line": 161,
+      "sha256": "539f9e3716b27749bb3d24956e581c2e6bb25063d9fcf2ee4f47b3e86f1fae9d",
+      "shared_qeph_extract": false
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/c3fint3.F",
+      "path": "extracted/C3Fint3.F",
+      "routine": "C3FINT3",
+      "first_line": 30,
+      "last_line": 117,
+      "sha256": "a753103a0cd7e9681b02746d1eb92ae8cd5bf25f1e83c6e42b073cd992e586fb",
+      "shared_qeph_extract": false
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/c3fcum3.F",
+      "path": "extracted/C3Fcum3.F",
+      "routine": "C3FCUM3",
+      "first_line": 30,
+      "last_line": 135,
+      "sha256": "54e3127486efe4e601a9f92b573e02f6df23f1782b2b48aaa8957b855c9439fc",
+      "shared_qeph_extract": false
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/c3mcum3.F",
+      "path": "extracted/C3Mcum3.F",
+      "routine": "C3MCUM3",
+      "first_line": 30,
+      "last_line": 78,
+      "sha256": "e2e0dfdc0cf4531dc620931580d7f2a1744315a92915d1f997a0718e9d24192f",
+      "shared_qeph_extract": false
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/c3dt3.F",
+      "path": "extracted/C3Dt3.F",
+      "routine": "C3DT3",
+      "first_line": 32,
+      "last_line": 309,
+      "sha256": "17a6d7fbdf2e34ccbab4f640742cb24643c3101e4e4cf2429641d35512f2ef85",
+      "shared_qeph_extract": false
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/c3updt3.F",
+      "path": "extracted/C3Updt3.F",
+      "routine": "C3UPDT3",
+      "first_line": 32,
+      "last_line": 396,
+      "sha256": "e5843d471750ab17aa16c61e2e58934bb401b95e163965caca4ba4c81dd02f49",
+      "shared_qeph_extract": false
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/c3evec3.F",
+      "path": "extracted/C3sroto3.F",
+      "routine": "C3SROTO3",
+      "first_line": 687,
+      "last_line": 749,
+      "sha256": "b3ef5ee422824567668f5d3a4a5234f1cca352c81ff070fa50f541e2e84faedc",
+      "shared_qeph_extract": false
+    },
+    {
+      "source": "engine/source/elements/sh3n/coquedk/cdkcoor3.F",
+      "path": "../qeph/extracted/EngineSkew.F",
+      "routine": "CLSKEW3",
+      "first_line": 304,
+      "last_line": 400,
+      "sha256": "300d3ad7b30e1bc4e083919f2dae575bf6e1c72741a65351ad613737100de745",
+      "shared_qeph_extract": true
+    },
+    {
+      "source": "engine/source/elements/sh3n/coque3n/cssp2a11.F",
+      "path": "../qeph/extracted/Cssp2a11.F",
+      "routine": "CSSP2A11",
+      "first_line": 32,
+      "last_line": 68,
+      "sha256": "ad2cd927175ddd38a5222d6cb1ae87741cd9af6ece2669a16174daf818e86cfc",
+      "shared_qeph_extract": true
+    },
+    {
+      "source": "engine/source/materials/mat/mat001/sigeps01g.F",
+      "path": "../qeph/extracted/Sigeps01G.F",
+      "routine": "SIGEPS01G",
+      "first_line": 29,
+      "last_line": 224,
+      "sha256": "a7e84632a387fd2cddbb83aed66ccfbf8ea48f27172b2b3fc11161f440070f41",
+      "shared_qeph_extract": true
+    }
+  ],
+  "startup_profile": {
+    "complete_native_routines": [
+      "extracted/StarterC3evec3.F"
+    ],
+    "borrowed_native_modules": [
+      "common_source/modules/constant_mod.F"
+    ],
+    "native_adapter": "NativeT3Startup.F",
+    "full_starter_driver_executed": false,
+    "selected_expression_sources": [
+      {
+        "source": "starter/source/elements/sh3n/coque3n/c3inmas.F",
+        "line_ranges": [
+          [
+            596,
+            599
+          ],
+          [
+            1112,
+            1118
+          ],
+          [
+            1136,
+            1148
+          ]
+        ],
+        "meaning": "uniform element mass/inertia and three unnormalized ACOS angle weights"
+      },
+      {
+        "source": "starter/source/elements/sh3n/coque3n/c3derii.F",
+        "line_ranges": [
+          [
+            106,
+            109
+          ],
+          [
+            151,
+            151
+          ],
+          [
+            289,
+            293
+          ]
+        ],
+        "meaning": "characteristic length and zero startup derivative slots for ISMSTR=-1; no nodal stiffness or timestep"
+      },
+      {
+        "source": "starter/source/elements/initia/spmd_msin.F",
+        "line_ranges": [
+          [
+            548,
+            560
+          ]
+        ],
+        "meaning": "one-element contributions to initially zero original physical node mass/inertia"
+      }
+    ],
+    "arithmetic_changes": "none inside retained complete leaf or selected expressions; explicit ACOS preflight and separate diagnostic inertia partitions added",
+    "declared_domain": {
+      "coordinate_component_abs_max_m": 1000000.0,
+      "edge_min_m": 1e-09,
+      "edge_max_m": 1000.0,
+      "minimum_edge_ratio": 1e-06,
+      "minimum_normalized_twice_area": 1e-06,
+      "acos_boundary_margin": 1e-12,
+      "proper_frame_tolerance": 5e-13
+    },
+    "comparison_budget": {
+      "relative_dimension_scaled": 2e-12,
+      "mass_inertia_dimension": "each independent positive partition magnitude"
+    },
+    "dynamics_admission": false
+  },
+  "selected_leaf_closure": {
+    "literal_call_targets": [
+      "C3EVEC3",
+      "CLSKEW3",
+      "CSSP2A11"
+    ],
+    "shared_constitutive_leaf": "SIGEPS01G",
+    "unexecuted_engine_scope": "complete retained T3 geometry/rate/force/timestep leaves; future branch adapter and history packet are not implemented",
+    "material_driver_scope": "CMAIN3/MULAWGLC are source context, not full callable roots",
+    "recursive_include_search": [
+      "engine/share/spe_inc",
+      "engine/share/includes",
+      "engine/share/r8",
+      "starter/share/includes"
+    ]
+  }
+}
