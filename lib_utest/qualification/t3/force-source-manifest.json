@@ -118,8 +118,8 @@
     },
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
-      "bytes": 1721,
-      "sha256": "20b94cce2919572db12894f7c32e986a919f9176c9a867c9cc80bda07bff4f05"
+      "bytes": 1785,
+      "sha256": "d2b2441167efc132b666f1bb1252a40de38a3040f2d7e3d9bfc0d1af6146d701"
     },
     {
       "path": "lib_src/elements/t3/CMakeLists.txt",
@@ -133,13 +133,13 @@
     },
     {
       "path": "lib_utest/qualification/t3/source-manifest.json",
-      "bytes": 15356,
-      "sha256": "e7463642e2428de1e0c4ca7f0f4738f07c268c357ff0fc50686435b3f5719628"
+      "bytes": 16039,
+      "sha256": "275d94da54caee98931541ba9d3037dd7edf8b90cceaa2a4a4c1856071a66865"
     },
     {
       "path": "lib_utest/qualification/t3/verify_sources.py",
       "bytes": 2001,
-      "sha256": "3fc9e4475cabbae6f3eb4b30c4528f4e52ae60216cbfd05b9695805389e019ea"
+      "sha256": "fed8d62ce24edfc1d17221d5c2f2f4917c310e4a9b3c6deb17f98eb5e0d6e259"
     },
     {
       "path": "lib_utest/qualification/t3/T3PortFixture.h",
@@ -476,62 +476,88 @@
     }
   ],
   "build_registration_revision": {
-    "previous_manifest_sha256": "95ca9995361c4053d8d44b22790ef20222c0c6c2f43026f6526486d230ebc35a",
-    "reason": "Additive tabulated material and resident plasticity build registration with explicit upstream build revision; LAW1 force/history sources, native recipes and tests unchanged",
+    "previous_manifest_sha256": "c992c39c158e040fdbce7f3a56291c497c6a7eb6c9e5b23b73ca2c585bc4025d",
+    "reason": "Add qualified native physical-coefficient admission dependency to resident batch registration; native donor, startup, rates and force arithmetic remain unchanged",
     "changed_files": [
       "lib_src/elements/t3/BUILD.bazel",
-      "lib_src/materials/BUILD.bazel",
       "lib_utest/qualification/t3/source-manifest.json",
       "lib_utest/qualification/t3/verify_sources.py"
     ],
     "previous_input_records": [
       {
-        "path": "lib_src/materials/BUILD.bazel",
-        "bytes": 833,
-        "sha256": "8e878071d34ad04f0922df0b865be643fca2c7b8188ba1d7db03259efd4e0b89"
-      },
-      {
         "path": "lib_src/elements/t3/BUILD.bazel",
-        "bytes": 1471,
-        "sha256": "083d4a2f527847daa1af20496a63da269bad98f37fa1f58028a6e257d79b6e1c"
+        "bytes": 1721,
+        "sha256": "20b94cce2919572db12894f7c32e986a919f9176c9a867c9cc80bda07bff4f05"
       },
       {
         "path": "lib_utest/qualification/t3/source-manifest.json",
-        "bytes": 14715,
-        "sha256": "6aa446c4bd7600a3ffd6c9cc0687926b1127a1d6e2bf0c874fbff1c41b2f6301"
+        "bytes": 15356,
+        "sha256": "e7463642e2428de1e0c4ca7f0f4738f07c268c357ff0fc50686435b3f5719628"
       },
       {
         "path": "lib_utest/qualification/t3/verify_sources.py",
         "bytes": 2001,
-        "sha256": "fcbbd824fc635a164f39d0ca4a1b1697bf80ab1c1f143f5436f854e2bb9d3e88"
+        "sha256": "3fc9e4475cabbae6f3eb4b30c4528f4e52ae60216cbfd05b9695805389e019ea"
       }
     ],
     "preceding_revision": {
-      "previous_manifest_sha256": "c57073c0de93ebbaf0b47651c0be697c8488f89846a360be84faa778aea5c2a2",
-      "reason": "Optional mixed Q4/T3 publication and shared binding registration; point formulas and native tests unchanged",
+      "previous_manifest_sha256": "95ca9995361c4053d8d44b22790ef20222c0c6c2f43026f6526486d230ebc35a",
+      "reason": "Additive tabulated material and resident plasticity build registration with explicit upstream build revision; LAW1 force/history sources, native recipes and tests unchanged",
       "changed_files": [
         "lib_src/elements/t3/BUILD.bazel",
-        "lib_utest/qualification/t3/CMakeLists.txt",
+        "lib_src/materials/BUILD.bazel",
         "lib_utest/qualification/t3/source-manifest.json",
         "lib_utest/qualification/t3/verify_sources.py"
       ],
+      "previous_input_records": [
+        {
+          "path": "lib_src/materials/BUILD.bazel",
+          "bytes": 833,
+          "sha256": "8e878071d34ad04f0922df0b865be643fca2c7b8188ba1d7db03259efd4e0b89"
+        },
+        {
+          "path": "lib_src/elements/t3/BUILD.bazel",
+          "bytes": 1471,
+          "sha256": "083d4a2f527847daa1af20496a63da269bad98f37fa1f58028a6e257d79b6e1c"
+        },
+        {
+          "path": "lib_utest/qualification/t3/source-manifest.json",
+          "bytes": 14715,
+          "sha256": "6aa446c4bd7600a3ffd6c9cc0687926b1127a1d6e2bf0c874fbff1c41b2f6301"
+        },
+        {
+          "path": "lib_utest/qualification/t3/verify_sources.py",
+          "bytes": 2001,
+          "sha256": "fcbbd824fc635a164f39d0ca4a1b1697bf80ab1c1f143f5436f854e2bb9d3e88"
+        }
+      ],
       "preceding_revision": {
-        "previous_manifest_sha256": "8379de2cea92df9a16b960b8c3b851b11abf852a624f047e225e7445543d9573",
-        "reason": "Optional host mixed shell binding registration only; point startup/rates/force formulas and tests unchanged",
+        "previous_manifest_sha256": "c57073c0de93ebbaf0b47651c0be697c8488f89846a360be84faa778aea5c2a2",
+        "reason": "Optional mixed Q4/T3 publication and shared binding registration; point formulas and native tests unchanged",
         "changed_files": [
+          "lib_src/elements/t3/BUILD.bazel",
           "lib_utest/qualification/t3/CMakeLists.txt",
           "lib_utest/qualification/t3/source-manifest.json",
           "lib_utest/qualification/t3/verify_sources.py"
         ],
         "preceding_revision": {
-          "previous_manifest_sha256": "b6f59f4849940286841bb985e80bcd187ce3b345b2a30d40c8850905e0b4e312",
-          "reason": "Optional standalone resident T3 registration; force/history arithmetic and test cases unchanged",
+          "previous_manifest_sha256": "8379de2cea92df9a16b960b8c3b851b11abf852a624f047e225e7445543d9573",
+          "reason": "Optional host mixed shell binding registration only; point startup/rates/force formulas and tests unchanged",
           "changed_files": [
-            "lib_src/elements/t3/BUILD.bazel",
             "lib_utest/qualification/t3/CMakeLists.txt",
             "lib_utest/qualification/t3/source-manifest.json",
             "lib_utest/qualification/t3/verify_sources.py"
-          ]
+          ],
+          "preceding_revision": {
+            "previous_manifest_sha256": "b6f59f4849940286841bb985e80bcd187ce3b345b2a30d40c8850905e0b4e312",
+            "reason": "Optional standalone resident T3 registration; force/history arithmetic and test cases unchanged",
+            "changed_files": [
+              "lib_src/elements/t3/BUILD.bazel",
+              "lib_utest/qualification/t3/CMakeLists.txt",
+              "lib_utest/qualification/t3/source-manifest.json",
+              "lib_utest/qualification/t3/verify_sources.py"
+            ]
+          }
         }
       }
     }
