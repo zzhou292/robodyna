@@ -20,6 +20,10 @@ Report SourceAssemblyWallCase::Initialize(const source_assembly::SourceAssemblyB
        b.source().data().identity.bytes!=other.source().data().identity.bytes)
         return Failure(Status::SourceMismatch,"Wall, material and group preparation must retain the same complete source");
     const auto n=s.node_count(),nq=s.qeph_count(),nt=s.t3_count();const auto& cap=config.storage;
+    if(config.observe_qeph_spin_node) {
+        const auto selected=observation::CheckQephSpinSource(b,config.observe_qeph_spin_node);
+        if(!selected)return Convert(selected);
+    }
     if(!n||n>cap.max_nodes||!nq||nq>cap.max_parents||!nt||nt>cap.max_parents-nq||
        n>cap.publication.max_nodes||n>cap.contact.counts.nodes||n>cap.contact.counts.global_nodes||
        nq+nt>cap.contact.counts.parents)
@@ -37,6 +41,8 @@ Report SourceAssemblyWallCase::Initialize(const source_assembly::SourceAssemblyB
     if(config.observe_force_stage&&(!budget.Append<double>(6*n,ignored)||
        !budget.Append<fe::NodalRigidGroupAccelerationSnapshot>(groups->group_count(),ignored)))
         return Failure(Status::ResourceLimit,"Force-stage capture payload exceeds its startup host byte budget");
+    if(config.observe_qeph_spin_node&&!budget.Append<observation::QephSpinObservation>(2,ignored))
+        return Failure(Status::ResourceLimit,"Spin probe payload exceeds its startup host byte budget");
     try {
         auto next=std::make_unique<Impl>(b,setup,config,budget.bytes(),timing_options);
         const auto report=next->Initialize();if(!report)return report;
@@ -76,6 +82,10 @@ ContactView SourceAssemblyWallCase::accepted_contact() const noexcept {
 }
 const observation::ForceStageSummary* SourceAssemblyWallCase::accepted_force_stage() const noexcept {
     return impl_&&impl_->accepted().has_force_stage?&impl_->accepted().force_stage:nullptr;
+}
+const observation::QephSpinObservation* SourceAssemblyWallCase::accepted_qeph_spin() const noexcept {
+    if(!impl_||!impl_->spin)return nullptr;
+    const auto& record=(*impl_->spin)[impl_->accepted_slot];return record.completed?&record:nullptr;
 }
 fe::NodalAllocationInfo SourceAssemblyWallCase::Impl::Allocations() const noexcept {
     fe::NodalAllocationInfo sum;

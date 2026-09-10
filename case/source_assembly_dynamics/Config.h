@@ -26,6 +26,8 @@ struct Config {
     StorageLimits storage;
     // Optional base-time observation from the existing native kick; no extra force evaluation.
     bool observe_force_stage=false;
+    // Optional complete incident QEPH force-stage probe for one ordinary source node.
+    std::uint64_t observe_qeph_spin_node=0;
 };
 enum class Status { Ok,InvalidInput,AlreadyInitialized,NotInitialized,ResourceLimit,
     SourceMismatch,ComponentFailure,DeviceFailure,EnvelopeFailure,ObservationFailure };

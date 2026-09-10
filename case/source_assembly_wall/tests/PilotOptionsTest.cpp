@@ -68,6 +68,20 @@ TEST(PilotOptions, ForceStageFlagIsExplicitOrderIndependentAndDoesNotAlterTheSte
     EXPECT_THROW(Parse({"--observe-force-stage","--observe-force-stage"}),std::invalid_argument);
     EXPECT_THROW(Parse({"--observe-force-stage","true"}),std::invalid_argument);
 }
+TEST(PilotOptions, SpinProbeIsNamedPairedBoundedAndDoesNotChangePhysicalStep) {
+    const auto a=Parse({"--spin-node","2181592","--spin-output","probe.jsonl","--spin-every","16"});
+    EXPECT_EQ(a.pilot.observe_qeph_spin_node,2181592u);EXPECT_EQ(a.spin_path,"probe.jsonl");EXPECT_EQ(a.spin_every,16u);
+    EXPECT_EQ(PilotFixedStep(a.pilot),PilotFixedStep(Parse().pilot));
+    EXPECT_EQ(Parse({"--spin-output","probe","--spin-node","2181592"}).spin_every,8u);
+    EXPECT_EQ(Parse().pilot.observe_qeph_spin_node,0u);EXPECT_TRUE(Parse().spin_path.empty());
+    EXPECT_THROW(Parse({"--spin-node","2181592"}),std::invalid_argument);
+    EXPECT_THROW(Parse({"--spin-output","probe"}),std::invalid_argument);
+    EXPECT_THROW(Parse({"--spin-every","16"}),std::invalid_argument);
+    EXPECT_THROW(Parse({"--spin-node","0","--spin-output","probe"}),std::invalid_argument);
+    EXPECT_THROW(Parse({"--spin-node","2181592","--spin-output","probe","--spin-every","129"}),std::invalid_argument);
+    EXPECT_THROW(Parse({"--spin-node","2181592","--spin-output","probe","--spin-node","2181592"}),std::invalid_argument);
+    EXPECT_THROW(Parse({"--spin-node","2181592","--spin-output","probe","--spin-output","other"}),std::invalid_argument);
+}
 TEST(PilotOptions, InvalidCountsNullArgumentsAndPartialInputFailBeforePublication) {
     EXPECT_THROW(ParseOptions(6,nullptr),std::invalid_argument);
     const char* args[]{"program","inventory","wall","0","1","archive"};

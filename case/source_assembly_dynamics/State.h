@@ -89,7 +89,9 @@ struct SourceAssemblyWallCase::Impl {
         :bindings(b),setup(w),config(c),sample{Sample(nodes(),groups(),quads(),triangles()),Sample(nodes(),groups(),quads(),triangles())},
          inverse_mass(nodes()),inverse_inertia(nodes()),free(nodes()),load_soa(6*nodes()),
          applied_force(3*nodes()),applied_couple(3*nodes()),wall_faces(w.placed_wall()->view().triangle_count),
-         force_capture(c.observe_force_stage,nodes(),groups()),host_bytes(host_bytes),timer(timing_options) {}
+         force_capture(c.observe_force_stage,nodes(),groups()),host_bytes(host_bytes),timer(timing_options) {
+        if(c.observe_qeph_spin_node)spin=std::make_unique<std::array<observation::QephSpinObservation,2>>();
+    }
     const source_assembly::SourceAssemblyBindings bindings;
     const source_assembly::SourceAssemblyWallSetup setup;
     const Config config;
@@ -105,6 +107,7 @@ struct SourceAssemblyWallCase::Impl {
     std::vector<double> load_soa,applied_force,applied_couple;
     std::vector<std::uint64_t> wall_faces;
     ForceStageWorkspace force_capture;
+    std::unique_ptr<std::array<observation::QephSpinObservation,2>> spin;
     std::size_t host_bytes=0;
     StepTimer timer;
     unsigned accepted_slot=0;
@@ -133,6 +136,7 @@ struct SourceAssemblyWallCase::Impl {
     Report CheckMotion();
     Report CaptureForceStage();
     Report CheckForceStage();
+    Report CheckQephSpin();
     Report Commit();
     void Discard() noexcept { owner.Discard();publication.DiscardTrial();qeph.DiscardTrial();t3.DiscardTrial();wall.DiscardTrial(); }
     Report Stop(Report r) noexcept {

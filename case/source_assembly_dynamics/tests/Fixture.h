@@ -13,6 +13,8 @@ struct SourceAssemblyDynamicsTestAccess {
     static std::array<std::uintptr_t,4> CaptureStorage(const SourceAssemblyWallCase&);
     static Report RejectForceStage(SourceAssemblyWallCase&,ForceFault);
     static Report RejectCaptureDevice(SourceAssemblyWallCase&);
+    static Report RejectSpin(SourceAssemblyWallCase&,bool bad_phase=false);
+
     static const Sample& Accepted(const SourceAssemblyWallCase& c) { return c.impl_->accepted(); }
     static Report RejectLate(SourceAssemblyWallCase& c,Fault fault) {
         auto& s=*c.impl_;auto r=s.Prepare();if(!r)return s.Stop(r);

@@ -3,6 +3,7 @@
 #include "StepTiming.h"
 #include "case/source_assembly_observation/SourceAssemblyObservation.h"
 #include "case/source_assembly_observation/SourceAssemblyForceStageKinetic.h"
+#include "case/source_assembly_observation/SourceAssemblyQephSpin.h"
 #include <memory>
 
 namespace crash::output::assembly { class SourceAssemblyAcceptedOutput; }
@@ -54,6 +55,8 @@ class SourceAssemblyWallCase {
     // Empty initially/off. A completed force-stage sample becomes visible only
     // with its enclosing common commit; the sample itself is at base_time.
     const source_assembly_observation::ForceStageSummary* accepted_force_stage() const noexcept;
+    // Actual base-time packets/loads, exposed only with their enclosing commit.
+    const source_assembly_observation::QephSpinObservation* accepted_qeph_spin() const noexcept;
     tl::fea::NodalAllocationInfo allocations() const noexcept;
     std::size_t host_payload_bytes() const noexcept;
   private:

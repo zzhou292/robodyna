@@ -96,7 +96,8 @@ Report SourceAssemblyWallCase::Impl::Check() {
     auto r=timer.Measure<StepStage::CheckShells>([&] {return CheckShells();});if(!r)return r;
     r=timer.Measure<StepStage::CheckContact>([&] {return CheckContact();});if(!r)return r;
     r=timer.Measure<StepStage::CheckMotion>([&] {return CheckMotion();});if(!r)return r;
-    return CheckForceStage();
+    r=CheckForceStage();if(!r)return r;
+    return CheckQephSpin();
 }
 Report SourceAssemblyWallCase::Impl::Commit() {
     auto& next=candidate();const auto& d=next.diagnostics.shells;
@@ -105,6 +106,9 @@ Report SourceAssemblyWallCase::Impl::Commit() {
     // Only infallible value updates and selection follow the sole owner/native
     // history publication. Contact keeps its completed candidate phase tag.
     next.diagnostics.stamp=owner.accepted();next.diagnostics.has_interval=true;
+    if(spin) {
+        auto& record=(*spin)[1-accepted_slot];record.enclosing=next.diagnostics.stamp;record.completed=true;
+    }
     next.group_stamp=next.diagnostics.stamp;
     next.diagnostics.shells.qeph.phase=q::BatchPhase::Accepted;
     next.diagnostics.shells.t3.phase=t::BatchPhase::Accepted;

@@ -9,6 +9,7 @@ include("${robo_wall_output_root}/case/source_assembly/SourceAssemblyBindings.cm
 set(CRASH_TL_FEA_SOURCE_DIR "${ROBO_DYNA_TL_ROOT}")
 add_subdirectory("${ROBO_DYNA_TL_ROOT}/lib_src/solvers" tl-owner)
 include("${CMAKE_CURRENT_LIST_DIR}/../SourceAssemblyWallArtifacts.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../QephSpinTrace.cmake")
 set(ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY "" CACHE FILEPATH "Frozen complete source inventory")
 set(ROBO_DYNA_SOURCE_ASSEMBLY_WALL "" CACHE FILEPATH "Frozen original finite wall")
 foreach(required IN ITEMS ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY ROBO_DYNA_SOURCE_ASSEMBLY_WALL)
@@ -16,8 +17,10 @@ foreach(required IN ITEMS ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY ROBO_DYNA_SOURCE_A
     message(FATAL_ERROR "Assembly wall artifact qualification requires explicit ${required}")
   endif()
 endforeach()
-add_executable(robo_dyna_source_assembly_wall_artifacts_check "${CMAKE_CURRENT_LIST_DIR}/../tests/SourceAssemblyWallArtifactsCudaTest.cpp")
-target_link_libraries(robo_dyna_source_assembly_wall_artifacts_check PRIVATE robo_dyna_source_assembly_wall_artifacts GTest::gtest_main CUDA::cudart)
+add_executable(robo_dyna_source_assembly_wall_artifacts_check
+  "${CMAKE_CURRENT_LIST_DIR}/../tests/SourceAssemblyWallArtifactsCudaTest.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/../tests/QephSpinTraceCudaTest.cpp")
+target_link_libraries(robo_dyna_source_assembly_wall_artifacts_check PRIVATE robo_dyna_source_assembly_wall_artifacts robo_dyna_source_assembly_spin_trace GTest::gtest_main CUDA::cudart)
 target_compile_options(robo_dyna_source_assembly_wall_artifacts_check PRIVATE -fno-fast-math -ffp-contract=off)
 add_test(NAME source_assembly_wall_artifacts COMMAND robo_dyna_source_assembly_wall_artifacts_check)
 set_tests_properties(source_assembly_wall_artifacts PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 600
