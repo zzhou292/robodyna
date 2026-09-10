@@ -1,4 +1,5 @@
 #include "State.h"
+#include "NativeGuardAttribution.h"
 #include "lib_src/elements/qeph/QephHistory.h"
 #include "lib_src/elements/t3/T3History.h"
 #include "lib_src/elements/sections/ShellLayeredJ2Work.h"
@@ -30,11 +31,20 @@ template<class D> Report Family(const D& d,const Config& c,const fe::NodalPrepar
        !std::isfinite(d.minimum_thickness_ratio)||d.minimum_thickness_ratio<e.minimum_thickness_ratio||
        !std::isfinite(d.minimum_native_dt)||!(d.minimum_native_dt>0)||
        c.fixed_dt>d.minimum_native_dt*e.maximum_native_dt_fraction)
-        return Failure(Status::EnvelopeFailure,"Native area/thickness/timestep diagnostic guard failed");
+        return Failure(Status::EnvelopeFailure,NativeMinimumGuardFailure);
     for(double x:{d.internal_work[0],d.internal_work[1],d.internal_work_increment[0],d.internal_work_increment[1],
                   d.internal_kick_work,d.internal_drift_work})
         if(!std::isfinite(x))return Failure(Status::EnvelopeFailure,"Native family work is nonfinite");
     return Success();
+}
+template<class D,class ParentAt> Report AttributeFamilyFailure(Report report,const D& d,const Config& c,
+    std::size_t count,ParentAt parent_at) {
+    if(report.status!=Status::EnvelopeFailure||report.message!=NativeMinimumGuardFailure)return report;
+    const auto& e=c.deformation;
+    const auto detail=AttributeNativeGuard({d.minimum_area_ratio,d.minimum_thickness_ratio,d.minimum_native_dt},
+        {e.minimum_area_ratio,e.minimum_thickness_ratio,c.fixed_dt,e.maximum_native_dt_fraction},count,parent_at);
+    report.message=detail.message;report.source_parent=detail.source;report.measured=detail.measured;report.limit=detail.limit;
+    return report;
 }
 struct Work {
     std::array<long double,3> sum{},magnitude{},increment{},increment_magnitude{};
@@ -106,9 +116,20 @@ template<class R,class F> Report Parent(const R& reference,const F& result,std::
 Report SourceAssemblyWallCase::Impl::CheckShells() {
     auto& next=candidate();const auto& old=accepted();auto& d=next.diagnostics;
     if(!d.shells.valid)return Failure(Status::ComponentFailure,"Missing joined native diagnostics");
-    auto r=Family(d.shells.qeph,config,prepared,*setup.settings());if(!r)return r;
-    r=Family(d.shells.t3,config,prepared,*setup.settings());if(!r)return r;
-    Work qw,tw;long double plastic_work=0;const auto& b=bindings.shells();
+    const auto& b=bindings.shells();
+    auto r=Family(d.shells.qeph,config,prepared,*setup.settings());
+    if(!r)return AttributeFamilyFailure(r,d.shells.qeph,config,quads(),[&](std::size_t i) {
+        const auto& f=next.parents.qeph[i];const auto& reference=b.qeph_reference(i);
+        return NativeGuardParent{b.qeph_source_id(i),{f.kinematics.area/reference.area,
+            f.proposed_history.data().thickness/reference.input.thickness,f.diagnostics.unscaled_element_dt}};
+    });
+    r=Family(d.shells.t3,config,prepared,*setup.settings());
+    if(!r)return AttributeFamilyFailure(r,d.shells.t3,config,triangles(),[&](std::size_t i) {
+        const auto& f=next.parents.t3[i];const auto& reference=b.t3_reference(i);
+        return NativeGuardParent{b.t3_source_id(i),{f.kinematics.area/reference.area,
+            f.proposed_history.data().thickness/reference.input.thickness,f.diagnostics.unscaled_element_dt}};
+    });
+    Work qw,tw;long double plastic_work=0;
     for(std::size_t e=0;e<quads();++e) {
         fe::sections::PointParameters material;
         if(!bindings.materials().Parameters(fe::ShellBindingFamily::Qeph,e,&material))

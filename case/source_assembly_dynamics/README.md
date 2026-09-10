@@ -118,3 +118,13 @@ point/parent field now compares bit-for-bit, with111,870 differing padding bytes
 separately recorded across128 intervals. No mechanics or tolerance changed.
 The independent actual writer gate passes all six cases, including optional
 committed observations through a rejected attempt and retry.
+
+On a rejected aggregate minimum-area, minimum-thickness or native-DTEL guard,
+`NativeGuardAttribution.h` identifies the first failing parent in the existing
+family source order using the already copied candidate packets. Area and
+thickness report their dimensionless ratio and floor; timestep rejection reports
+requested seconds and the allowed native-DTEL fraction in seconds. Invalid DTEL
+reports its raw value and the strict positive floor. A contradictory aggregate
+without a matching parent retains source ID zero rather than inventing an EID.
+The original guard comparisons, priority, status and accepted path are unchanged;
+this diagnostic performs no CUDA work and is only evaluated after rejection.
