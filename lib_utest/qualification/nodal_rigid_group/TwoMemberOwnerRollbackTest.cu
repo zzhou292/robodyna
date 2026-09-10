@@ -48,11 +48,21 @@ TEST_F(Cuda,TwoMemberLastGroupFailureAndRejectedValidationPreserveOneClockAndRet
 TEST_F(Cuda,TwoMemberNewSpinDomainLimitKeepsAcceptedOutputAndExactRetry) {
   Fixture f;fe::FENodalState owner,control;ASSERT_EQ(f.Initialize(owner).status,Code::Ok);
   ASSERT_EQ(f.Initialize(control).status,Code::Ok);
-  auto loads=f.Loads();loads.couple[21]=1;
+  // Choose the load from the actual regularized principal inertia. A fixed
+  // one-newton-metre couple can remain below this fixture's 0.2-radian limit.
+  const auto j=f.source.model.groups()[3].principal.inertia;
+  const double maximum_j=std::max({j.x,j.y,j.z});
+  const double torque=.4*maximum_j/(.5*f.input.h*f.input.h);
+  nt::Loads loads;loads.couple[21]=torque;
+  auto packet=f.source.Packet(3);packet.member[1].couple={torque,0,0};
+  const auto native=rt::NativeTwoPacket(packet,.001);
+  const auto w=native.primary.omega;
+  ASSERT_GT(f.input.h*std::sqrt(w.x*w.x+w.y*w.y+w.z*w.z),.2);
   fe::NodalTrialToken token;fe::NodalAssemblyView view;ASSERT_TRUE(nt::BeginLoad(owner,loads,token,view));
   ASSERT_EQ(owner.SealAssembly(token).status,Code::Ok);
   const auto report=fe::AdvanceStaggeredRigidGroups(owner,token,ro::Admission(owner,view));
-  EXPECT_EQ(report.status,Code::StepTooLarge);EXPECT_EQ(report.stable_dt,0);owner.Discard();SameOwners(owner,control);
+  EXPECT_EQ(report.status,Code::StepTooLarge);EXPECT_EQ(report.node,6u);
+  EXPECT_EQ(report.stable_dt,0);owner.Discard();SameOwners(owner,control);
   ASSERT_TRUE(ro::Step(owner,f.Loads()));ASSERT_TRUE(ro::Step(control,f.Loads()));SameOwners(owner,control);
 }
 } // namespace rigid_two_owner_test
