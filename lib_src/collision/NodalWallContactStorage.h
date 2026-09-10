@@ -5,9 +5,9 @@
 #include "NodalWallContactReduction.h"
 
 namespace tlfea::contact::nodal_wall_device_detail {
-constexpr unsigned OwnerNodes=tl::fea::MaxShellCollectionNodes,Workers=128;
-static_assert(MaxNodalWallDeviceNodes==OwnerNodes && MaxNodalWallDeviceParents==128 && Workers==128,
-              "One bounded worker block covers every compact node and parent");
+constexpr unsigned OwnerNodes=tl::fea::MaxShellCollectionNodes,Workers=64;
+static_assert(MaxNodalWallDeviceNodes==OwnerNodes && Workers>0 && Workers<=1024,
+              "One bounded worker block strides over every compact node and parent");
 static_assert(MaxNodalWallDeviceNodes<=MaxNodalWallNodes && MaxNodalWallDeviceParents<=MaxNodalWallParents,
               "Device collection remains within the qualified host law capacities");
 using Code=NodalWallDeviceStatus;

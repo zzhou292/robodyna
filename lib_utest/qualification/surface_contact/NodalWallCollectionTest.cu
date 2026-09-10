@@ -40,7 +40,8 @@ TEST(NodalWallCollection, CompleteCapacityNativeWeightsAndLateModelFaultsAreStag
   EXPECT_EQ(f->weights.node(127).node,127u);
   EXPECT_EQ(sizeof(detail::Model),105976u); EXPECT_EQ(sizeof(sc::NodalWallDeviceResults),79248u);
   EXPECT_EQ(sizeof(detail::Storage),471864u); EXPECT_LE(sizeof(detail::Storage),sc::MaxNodalWallDeviceBytes);
-  EXPECT_EQ(detail::Workers,128u); EXPECT_EQ(sc::MaxNodalWallDeviceBytes,512u*1024);
+  EXPECT_LT(detail::Workers,Nodes); // Exercise at least two compact-node iterations.
+  EXPECT_GT(detail::Workers,0u); EXPECT_EQ(sc::MaxNodalWallDeviceBytes,512u*1024);
   detail::Model model;
   auto prepare=[&](sc::NodalWallDeviceConfig c) { return detail::PrepareModel(c,f->wall.view(),f->weights,
       f->View(f->x),f->inverse.data(),f->fixed.data(),f->motion,&model); };

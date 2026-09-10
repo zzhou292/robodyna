@@ -1,6 +1,7 @@
 #include "NodalWallContact.h"
 #include "Q4ParametricContact.h"
 #include <algorithm>
+#include <new>
 
 namespace tlfea::contact {
 namespace {
@@ -18,11 +19,24 @@ bool Accumulate(Q4CertifiedIntegral& sum,Q4CertifiedIntegral value) {
 
 NodalWallReport NodalWallWeights::Initialize(std::uint32_t global_nodes,
     const NodalWallParentInput* input,std::uint32_t count) {
+  return Initialize(global_nodes,input,count,{MaxNodalWallParents,MaxNodalWallNodes,4*1024*1024});
+}
+NodalWallReport NodalWallWeights::Initialize(std::uint32_t global_nodes,
+    const NodalWallParentInput* input,std::uint32_t count,const NodalWallWeightLimits& limits) {
   using Code=NodalWallStatus;
   if (!global_nodes || !input || !count) return {};
-  if (global_nodes>MaxNodalWallNodes || count>MaxNodalWallParents)
+  if (!limits.max_nodes || !limits.max_parents || !limits.max_owned_bytes ||
+      limits.max_nodes>MaxNodalWallWeightNodes || limits.max_parents>MaxNodalWallWeightParents)
+    return {};
+  if (global_nodes>limits.max_nodes || count>limits.max_parents)
     return nodal_wall_detail::Report(Code::Capacity);
+  // Hard count bounds above make every product/sum below representable. Check
+  // the full owned payload before allocation or reading any borrowed parent.
+  const auto bytes=sizeof(*this)+decltype(parents_)::ExtraBytes(count)+decltype(nodes_)::ExtraBytes(global_nodes);
+  if (bytes>limits.max_owned_bytes) return nodal_wall_detail::Report(Code::Capacity);
+  try {
   NodalWallWeights next; next.global_node_count_=global_nodes; next.parent_count_=count;
+  next.parents_.Resize(count); next.nodes_.Resize(global_nodes);
   for (unsigned p=0;p<count;++p) {
     auto failure=nodal_wall_detail::Report(Code::InvalidReference); failure.parent=p;
     const auto& in=input[p]; auto& out=next.parents_[p];
@@ -53,7 +67,7 @@ NodalWallReport NodalWallWeights::Initialize(std::uint32_t global_nodes,
         !q4_bounds::Certify(out.area.value/out.arity,share,&out.share) ||
         !nodal_wall_detail::Certificate(out.share,true)) return failure;
   }
-  std::sort(next.parents_.begin(),next.parents_.begin()+count,Less);
+  std::sort(next.parents_.data(),next.parents_.data()+count,Less);
   for (unsigned p=0;p<count;++p) {
     const auto& parent=next.parents_[p];
     for (unsigned j=0;j<p;++j) {
@@ -80,5 +94,8 @@ NodalWallReport NodalWallWeights::Initialize(std::uint32_t global_nodes,
   }
   next.prepared_=true; *this=next;
   return nodal_wall_detail::Report(Code::Ok,Status::kOk);
+  } catch (const std::bad_alloc&) {
+    return nodal_wall_detail::Report(Code::Capacity);
+  }
 }
 } // namespace tlfea::contact

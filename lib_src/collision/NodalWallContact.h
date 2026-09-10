@@ -2,6 +2,7 @@
 
 #include "Q4ContactBounds.h"
 #include "lib_src/solvers/ExplicitStepStability.h"
+#include "lib_utils/BoundedStartupArray.h"
 #include <array>
 
 namespace tlfea::contact {
@@ -12,6 +13,13 @@ inline constexpr const char* NodalWallContactModel="reference-area-lumped-nodal-
 // Bounded prescribed operations only. These capacities do not change the
 // physical nodal owner's capacity or admit an owner, stream, clock or history.
 inline constexpr std::uint32_t MaxNodalWallParents=128,MaxNodalWallNodes=128;
+// Larger immutable weights are a host startup capability only. Neither the
+// prescribed result packet nor the CUDA contributor inherits these bounds.
+inline constexpr std::uint32_t MaxNodalWallWeightParents=1024,MaxNodalWallWeightNodes=2048;
+struct NodalWallWeightLimits {
+  std::uint32_t max_parents=MaxNodalWallWeightParents,max_nodes=MaxNodalWallWeightNodes;
+  std::size_t max_owned_bytes=4*1024*1024;
+};
 enum class NodalWallStatus {
   Ok,InvalidInput,InvalidReference,Capacity,DuplicateParent,MassFailure,
   FixedMotion,FixedPenetration,PenetrationLimit,NonFiniteArithmetic,Accuracy
@@ -41,11 +49,24 @@ struct NodalWallNodeWeight {
 };
 class NodalWallWeights {
  public:
+  NodalWallWeights()=default;
+  NodalWallWeights(const NodalWallWeights&)=default;
+  NodalWallWeights& operator=(const NodalWallWeights&)=default;
+  // Move-as-copy keeps prepared source handles readable, as with the legacy
+  // fixed-array value. Expanded immutable backing is shared without allocation.
+  NodalWallWeights(NodalWallWeights&& other) noexcept:NodalWallWeights(static_cast<const NodalWallWeights&>(other)) {}
+  NodalWallWeights& operator=(NodalWallWeights&& other) noexcept {
+    return *this=static_cast<const NodalWallWeights&>(other);
+  }
   // Sorted parent identity order makes the arithmetic independent of input
   // order. Parent records retain native connectivity; nodes are sorted by ID.
   // Unused global nodes are legal and absent from node(). Empty selection is
-  // invalid. Replacement is staged; no allocation and no writes on failure.
+  // invalid. Legacy initialization is allocation-free. Opt-in larger weights
+  // allocate only during staged startup. Replacement never writes on failure;
+  // copies own immutable backing and survive destruction of caller inputs.
   NodalWallReport Initialize(std::uint32_t global_node_count,const NodalWallParentInput*,std::uint32_t count);
+  NodalWallReport Initialize(std::uint32_t global_node_count,const NodalWallParentInput*,std::uint32_t count,
+      const NodalWallWeightLimits&);
   bool prepared() const { return prepared_; }
   std::uint32_t node_count() const { return node_count_; }
   std::uint32_t parent_count() const { return parent_count_; }
@@ -53,9 +74,12 @@ class NodalWallWeights {
   const NodalWallParentWeight& parent(unsigned i) const { return parents_[i]; }
   const NodalWallNodeWeight& node(unsigned i) const { return nodes_[i]; }
   Q4CertifiedIntegral total_area() const { return total_area_; }
+  std::size_t owned_payload_bytes() const noexcept {
+    return sizeof(*this)+parents_.backing_bytes()+nodes_.backing_bytes();
+  }
  private:
-  std::array<NodalWallParentWeight,MaxNodalWallParents> parents_{};
-  std::array<NodalWallNodeWeight,MaxNodalWallNodes> nodes_{};
+  tl::util::BoundedStartupArray<NodalWallParentWeight,MaxNodalWallParents> parents_;
+  tl::util::BoundedStartupArray<NodalWallNodeWeight,MaxNodalWallNodes> nodes_;
   Q4CertifiedIntegral total_area_;
   std::uint32_t node_count_=0,parent_count_=0,global_node_count_=0;
   bool prepared_=false;

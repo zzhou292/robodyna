@@ -20,6 +20,9 @@ NodalWallReport EvaluateNodalWallContact(const NodalWallWeights& weights,VectorV
       !IsFinite(config.parent_force_error) || config.parent_force_error<=0 ||
       !IsFinite(config.parent_energy_error) || config.parent_energy_error<=0) return {};
   if (!weights.prepared()) return Report(Code::InvalidReference);
+  if (weights.parent_count()>MaxNodalWallParents || weights.node_count()>MaxNodalWallNodes ||
+      weights.global_node_count()>MaxNodalWallNodes)
+    return Report(Code::Capacity);
   if (positions.node_count!=weights.global_node_count() || velocities.node_count!=positions.node_count ||
       mass.node_count!=positions.node_count) return Report(Code::InvalidInput);
   NodalWallResult next;

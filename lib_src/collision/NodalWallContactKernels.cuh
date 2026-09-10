@@ -5,7 +5,7 @@
 namespace tlfea::contact::nodal_wall_device_detail {
 namespace fea=tl::fea;
 // Avoid whole-result temporaries on one CUDA lane as the collection grows.
-// All 128 lanes call these helpers; arithmetic fields retain their owning
+// All worker lanes call these helpers; arithmetic fields retain their owning
 // default initialization and each record has exactly one writer.
 __device__ inline void ResetResult(NodalWallDeviceResults& result) {
   const unsigned lane=threadIdx.x;
@@ -47,16 +47,16 @@ __device__ inline void Evaluate(Storage& s,const fea::DeviceNodalKinematicsView&
   const auto lane=threadIdx.x;
   ResetResult(s.result);
   if (lane==0) s.result.diagnostics=identity;
-  if (lane<MaxNodalWallDeviceNodes) s.node_status[lane]={};
+  for (unsigned i=lane;i<MaxNodalWallDeviceNodes;i+=Workers) s.node_status[i]={};
   __syncthreads();
   if (s.control.status!=Code::Ok) return;
   const auto count=static_cast<std::uint32_t>(k.node_count); // Host binding checked <=128.
   const VectorView x{k.position_xyz,count,3,1},v{k.velocity_xyz,count,3,1};
   const LumpedTranslationMassView mass{s.model.inverse_mass,s.model.fixed,count,k.base_epoch,
                                       TranslationMassModel::kIsotropicLumped};
-  if (lane<s.model.node_count) {
-    const unsigned n=s.model.nodes[lane].node; const auto position=x.at(n),velocity=v.at(n);
-    auto& status=s.node_status[lane]; const auto initial=s.model.initial_position[n];
+  for (unsigned compact=lane;compact<s.model.node_count;compact+=Workers) {
+    const unsigned n=s.model.nodes[compact].node; const auto position=x.at(n),velocity=v.at(n);
+    auto& status=s.node_status[compact]; const auto initial=s.model.initial_position[n];
     if (!Inside(position,s.model.coverage.physical) || !IsFinite(velocity)) Fail(status,Code::GeometryFailure,n);
     else if (s.model.fixed[n] && (position.x!=initial.x || position.y!=initial.y || position.z!=initial.z))
       Fail(status,Code::GeometryFailure,n);
@@ -65,7 +65,7 @@ __device__ inline void Evaluate(Storage& s,const fea::DeviceNodalKinematicsView&
       if (s.model.query.FindOwner({s.model.config.law.wall_x,position.y,position.z},&face,&point)!=Status::kOk ||
           face==UINT32_MAX) Fail(status,Code::GeometryFailure,n);
       else {
-        s.result.wall_face[lane]=s.model.face_ids[face]; NodalWallPointResult node;
+        s.result.wall_face[compact]=s.model.face_ids[face]; NodalWallPointResult node;
         for (unsigned p=0;p<s.model.parent_count;++p) for (unsigned l=0;l<s.model.parents[p].arity;++l) {
           if (s.model.parents[p].nodes[l]!=n || status.status!=Code::Ok) continue;
           NodalWallPointResult share;
@@ -80,7 +80,7 @@ __device__ inline void Evaluate(Storage& s,const fea::DeviceNodalKinematicsView&
           node.wall_moment=geometry_detail::Cross(node.wall_point,node.wall_reaction);
           node.surface_power=Dot(node.force_world,velocity); node.local_velocity_first_timestep=0;
           if (!node.valid || !IsFinite(node.wall_moment) || !IsFinite(node.surface_power)) Fail(status,Code::NonFiniteArithmetic,n);
-          else s.result.nodes[lane]=node;
+          else s.result.nodes[compact]=node;
         }
       }
     }
