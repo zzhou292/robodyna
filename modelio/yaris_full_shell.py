@@ -25,7 +25,7 @@ def compile_full_shell_scope(archive_path,assets,tire_policy='retain_all'):
         'full_shell_connections.py','full_shell_materials.py','yaris_full_shell.py',
         '_legacy.py','canonical_geometry.py','canonical_incidence.py','source_blocks.py',
         'spotweld_cards.py','attachment_cards.py','yaris_part.py','keyword_cards.py',
-        'assembly_declarations.py','declarations.py','law44_declarations.py')]
+        'assembly_declarations.py','declarations.py','law44_declarations.py','law1_declarations.py')]
     names += ['tools/import_yaris_vehicle.py','tools/import_yaris_wall.py',
               'tools/compile_yaris_full_shell.py','models/yaris_coarse_v1l.json']
     return dict(schema='robo-dyna.full-shell-scope.v1',simulation_ready=False,
