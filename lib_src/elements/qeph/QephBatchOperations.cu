@@ -91,7 +91,8 @@ BatchReport QephBatch::EvaluateCandidate(const NodalPreparedView& v,BatchDiagnos
   d.base_velocity_time=v.base_velocity_time; d.kick_dt=v.kick_dt; d.phase=BatchPhase::Prepared;
   d.kinetic_available=!s.joined_binding.has_value();
   d.has_completed_interval=true; d.accepted_force_assembled=assembled; d.usage=s.config.usage;
-  batch_detail::LaunchCandidate(s.storage,s.accepted,s.trial,v,d);
+  batch_detail::LaunchCandidate(s.storage,s.accepted,s.trial,v,d,
+      s.plasticity?s.plasticity->device():nullptr,s.AcceptedSlabIndex());
   report=s.ReadControl(); if(report.status!=BatchStatus::Success) return report;
   s.candidate_diagnostics=s.control.diagnostics; s.candidate_view=v; s.pending=true;
   *output=s.candidate_diagnostics; return {BatchStatus::Success,"OK"};

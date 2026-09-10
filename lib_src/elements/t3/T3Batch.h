@@ -5,7 +5,8 @@
 #include "../../solvers/ExplicitNodalStep.h"
 #include <memory>
 
-namespace tl::fea { class ShellBatchBinding; class ShellBatchPublication; }
+namespace tl::fea { class ShellBatchBinding; class ShellBatchPublication;
+  struct ShellBatchPlasticityConfig; struct ShellBatchSectionState; }
 namespace tl::fea::t3 {
 constexpr std::size_t MaxBatchElements=MaxShellCollectionParents,MaxBatchNodes=MaxShellCollectionNodes;
 constexpr std::size_t MaxBatchDeviceBytes=1024*1024;
@@ -63,7 +64,8 @@ BatchReport CommitT3Trial(FENodalState&,const NodalTrialToken&,T3Batch&,
 
 // One resident immutable model and two element history/cache slabs; no nodal
 // state, clock, mechanics equations or timestep policy. Calls are serialized and
-// use the owner's stream. Exactly one allocation, no per-step allocation.
+// use the owner's stream. LAW1 has one device allocation; the opt-in plastic
+// section has one additional bounded allocation. No per-step allocation.
 // Initialize admits only epoch-zero staggered owner metadata. First assembly
 // verifies actual reference-at-rest x/v/omega, free m/J and unit q before binding.
 // Explicit uniform translation is CoupledForces only, with exact declared
@@ -91,6 +93,11 @@ class T3Batch {
   // Matching prescribed or coupled usage is enforced by the sole joined
   // coordinator. Startup may be rest or common translation; standalone Commit rejects it.
   BatchReport InitializeJoined(const T3BatchConfig&,const ShellBatchBinding&);
+  // Opt-in layered plasticity with explicit optional source rate settings.
+  // Deep-copies the declaration;
+  // caller config/curve storage may expire after Initialize returns.
+  BatchReport Initialize(const T3BatchConfig&,const T3BatchElement*,const ShellBatchPlasticityConfig&);
+  BatchReport InitializeJoined(const T3BatchConfig&,const ShellBatchBinding&,const ShellBatchPlasticityConfig&);
   // Raw supplied-view validation/assembly. Initial numerical binding retains
   // its source identity; actual owner association is checked separately before
   // the first standalone or joined publication. A forged raw view alone is
@@ -106,11 +113,15 @@ class T3Batch {
   BatchReport CopyAcceptedResults(const NodalStamp&,ForceTrial*,std::size_t capacity,
                                   BatchDiagnostics*);
   BatchReport CopyPreparedResults(const BatchDiagnostics&,ForceTrial*,std::size_t capacity);
+  BatchReport CopyAcceptedSectionHistory(const NodalStamp&,ShellBatchSectionState*,std::size_t capacity,
+                                        BatchDiagnostics*);
+  BatchReport CopyPreparedSectionHistory(const BatchDiagnostics&,ShellBatchSectionState*,std::size_t capacity);
   void DiscardTrial() noexcept;
   NodalAllocationInfo allocations() const noexcept;
  private:
   friend class ::tl::fea::ShellBatchPublication;
-  BatchReport InitializeImpl(const T3BatchConfig&,const T3BatchElement*,const ShellBatchBinding*);
+  BatchReport InitializeImpl(const T3BatchConfig&,const T3BatchElement*,const ShellBatchBinding*,
+                             const ShellBatchPlasticityConfig* plasticity=nullptr);
   BatchReport AssembleAcceptedImpl(FENodalState*,const NodalAssemblyView&);
   friend BatchReport CommitT3Trial(FENodalState&,const NodalTrialToken&,T3Batch&,
                                     const BatchDiagnostics&,const NodalValidationReceipt&) noexcept;

@@ -31,12 +31,18 @@ UpdateTabulatedShellPlasticity(const TabulatedShellPlasticityParameters& p,
   double yield = 0, hardening = 0;
   if (!tabulated_shell_detail::CurveValue(p.curve, accepted.plastic_strain, yield, hardening))
     return Status::InvalidCurve;
+  double filtered_rate = 0, rate_factor = 1;
+  const auto rate_status = tabulated_shell_detail::FilteredRate(p, accepted, input, filtered_rate, rate_factor);
+  if (rate_status != Status::Ok) return rate_status;
+  if (p.rate.enabled) { yield = yield * rate_factor; hardening = hardening * rate_factor; }
   // Preserve the donor's special virgin branch, including its finite-step
   // hardening behavior. The curve slope replaces E after accumulated PLA > 0.
   if (accepted.plastic_strain == 0) hardening = p.young_pa;
   yield = ::fmax(yield, 1.e-20);
+  if (!tl::math::Finite(yield) || !tl::math::Finite(hardening)) return Status::NonfiniteResult;
   TabulatedShellPlasticityResult trial;
   trial.history = accepted; trial.yield_before_pa = yield;
+  trial.history.filtered_rate_per_s = filtered_rate;
   auto& s = trial.history.stress;
   const auto& dx = input.strain_increment;
   s[0] = accepted.stress[0] + p.a11*dx[0] + p.a12*dx[1];

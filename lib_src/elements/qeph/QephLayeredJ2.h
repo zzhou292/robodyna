@@ -2,6 +2,7 @@
 // Selected OpenRadioss layered material composition, (C) 2026 Siemens.
 #pragma once
 #include "QephForce.h"
+#include "QephPlasticStabilization.h"
 #include "lib_src/elements/sections/ShellLayeredJ2Work.h"
 
 namespace tl::fea::qeph {
@@ -20,17 +21,11 @@ TL_QEPH_HD inline Status InitializeLayeredJ2History(const ReferenceData& r,
   LayeredJ2History candidate;
   const auto status=InitializeHistory(r,stamp,candidate.shell);
   if(status!=Status::kSuccess) return status;
-  sections::ShellLayeredJ2Input input;
-  input.reference_thickness=input.reported_thickness=r.input.thickness;
-  input.transverse_shear_modulus=p.shear_modulus*(5./6.);
-  sections::ShellLayeredJ2Result checked;
-  if(sections::UpdateShellLayeredJ2(p,candidate.section,input,checked)!=sections::PointStatus::Ok)
-    return Status::kInvalidInput;
+  if(!sections::ValidLayeredJ2Parameters(p)) return Status::kInvalidInput;
   output=candidate; return Status::kSuccess;
 }
-// Experimental policy: retain the existing elastic QEPH stabilization and
-// its existing work ledger. Point ETSE does not scale it. This is not the donor's
-// plastic stabilization branch; diagnostics must retain its contribution.
+// Native NPT3 plastic stabilization consumes the section mean/minimum ETSE
+// and the last material point's SIGY, with the existing total-work ledger.
 TL_QEPH_HD inline Status EvaluateLayeredJ2Force(const ReferenceData& r,const sections::PointParameters& parameters,
     const LayeredJ2History& accepted,
     const PrescribedInterval& interval,LayeredJ2ForceTrial& output) noexcept {
@@ -49,7 +44,9 @@ TL_QEPH_HD inline Status EvaluateLayeredJ2Force(const ReferenceData& r,const sec
   auto& candidate=staged.force;
   candidate.kinematics=geometry.values; // Before native CNDT3 length mutation.
   detail::MaterialWork material;
-  if(!detail::PrepareMaterial(r.input,geometry.values.area,interval.dt,material))
+  auto coefficients_input=r.input;
+  coefficients_input.thickness=base.data().thickness; // Source ITHICK=1; native mass stays fixed.
+  if(!detail::PrepareMaterial(coefficients_input,geometry.values.area,interval.dt,material))
     return Status::kNonfiniteResult;
   auto proposed=base.data();
   sections::ShellLayeredJ2Input section_input;
@@ -59,6 +56,7 @@ TL_QEPH_HD inline Status EvaluateLayeredJ2Force(const ReferenceData& r,const sec
   section_input.reference_thickness=material.thickness;
   section_input.reported_thickness=proposed.thickness;
   section_input.transverse_shear_modulus=material.gs;
+  section_input.dt=material.dt;
   sections::ShellLayeredJ2Result section;
   if(sections::UpdateShellLayeredJ2(parameters,accepted.section,section_input,section)!=sections::PointStatus::Ok)
     return Status::kNonfiniteResult;
@@ -73,6 +71,9 @@ TL_QEPH_HD inline Status EvaluateLayeredJ2Force(const ReferenceData& r,const sec
   detail::ElasticForces(geometry,material,proposed,local);
   detail::StabilizationWork stabilization;
   detail::UpdateStabilization(geometry,material,proposed,stabilization);
+  if(!detail::CorrectPlasticStabilization(material,section.diagnostics.mean_tangent_ratio,
+      section.diagnostics.minimum_tangent_ratio,section.diagnostics.last_point_yield_before_pa,
+      proposed,stabilization)) return Status::kNonfiniteResult;
   detail::StabilizationForces(geometry,material,proposed,stabilization,local);
   detail::ProjectForces(geometry,local,candidate.internal_force,candidate.internal_couple);
   auto& d=candidate.diagnostics;

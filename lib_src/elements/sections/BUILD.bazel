@@ -1,0 +1,9 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "shell_layered_j2",
+    hdrs = ["ShellLayeredJ2.h", "ShellLayeredJ2Work.h"],
+    deps = ["//lib_src/materials:tabulated_shell_plasticity"],
+)

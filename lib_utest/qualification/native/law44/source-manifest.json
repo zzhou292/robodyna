@@ -2,7 +2,7 @@
   "schema": "tl.law44-point-native-sources.v1",
   "upstream_revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
   "upstream": "https://github.com/OpenRadioss/OpenRadioss",
-  "scope": "Unmodified SIGEPS44C, VINTER and COQINI section tables, existing qualified native precision/constants/includes; explicit rate-independent tabulated plane-stress subset",
+  "scope": "Unmodified SIGEPS44C, VINTER and COQINI section tables, existing qualified native precision/constants/includes; explicit rate-off or filtered total-rate VP2 tabulated plane-stress subset",
   "sources": [
     {
       "path": "original/sigeps44c.F",

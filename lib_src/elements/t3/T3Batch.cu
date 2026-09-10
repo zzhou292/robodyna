@@ -39,7 +39,17 @@ BatchReport T3Batch::InitializeJoined(const T3BatchConfig& config,const ShellBat
   if(!binding.prepared()) return {BatchStatus::InvalidInput,"Mixed binding is not prepared"};
   return InitializeImpl(config,nullptr,&binding);
 }
-BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchElement* elements,const ShellBatchBinding* joined) {
+BatchReport T3Batch::Initialize(const T3BatchConfig& config,const T3BatchElement* elements,
+    const ShellBatchPlasticityConfig& plasticity) {
+  return InitializeImpl(config,elements,nullptr,&plasticity);
+}
+BatchReport T3Batch::InitializeJoined(const T3BatchConfig& config,const ShellBatchBinding& binding,
+    const ShellBatchPlasticityConfig& plasticity) {
+  if(!binding.prepared()) return {BatchStatus::InvalidInput,"Mixed binding is not prepared"};
+  return InitializeImpl(config,nullptr,&binding,&plasticity);
+}
+BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchElement* elements,
+    const ShellBatchBinding* joined,const ShellBatchPlasticityConfig* plasticity) {
   if(impl_) return {BatchStatus::InvalidInput,"T3 batch is already initialized"};
   // Startup staging is bounded and heap-backed; it is released after the one
   // resident device allocation is initialized. Per-step storage is unchanged.
@@ -53,6 +63,10 @@ BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchEle
   candidate->accepted_diagnostics=batch_detail::InitialDiagnostics(config,joined!=nullptr);
   if(joined) candidate->joined_binding.emplace(*joined);
   report=candidate->PendingError(); if(report.status!=BatchStatus::Success) return report;
+  if(plasticity) {
+    report=candidate->InitializePlasticity(*plasticity,initial->model);
+    if(report.status!=BatchStatus::Success) return report;
+  }
   report=candidate->Runtime(cudaMalloc(reinterpret_cast<void**>(&candidate->storage),sizeof(Storage)),"T3 allocation failed");
   if(report.status!=BatchStatus::Success) return report;
   report=candidate->Runtime(cudaMemcpy(candidate->storage,initial.get(),sizeof(Storage),cudaMemcpyHostToDevice),"T3 initialization copy failed");
@@ -62,6 +76,7 @@ BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchEle
 }
 void T3Batch::DiscardTrial() noexcept { if(impl_) impl_->Discard(); }
 NodalAllocationInfo T3Batch::allocations() const noexcept {
-  return impl_?NodalAllocationInfo{sizeof(Storage),1}:NodalAllocationInfo{};
+  return impl_?NodalAllocationInfo{sizeof(Storage)+(impl_->plasticity?sizeof(shell_batch_plasticity_detail::DeviceStorage):0),
+      impl_->plasticity?2u:1u}:NodalAllocationInfo{};
 }
 } // namespace tl::fea::t3

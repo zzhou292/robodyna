@@ -2,6 +2,7 @@
 #include "QephBatch.h"
 #include "../../solvers/NodalTrialIdentity.h"
 #include "../ShellBatchBinding.h"
+#include "../ShellBatchPlasticityStorage.h"
 #include <array>
 #include <optional>
 #include <utility>
@@ -34,7 +35,8 @@ using trial_identity::SamePrepared;
 using trial_identity::ValidKinematics;
 BatchDiagnostics InitialDiagnostics(const QephBatchConfig&,bool joined=false);
 void LaunchAssembly(Storage*,const Slab*,NodalAssemblyView,bool initial);
-void LaunchCandidate(Storage*,const Slab*,Slab*,NodalPreparedView,BatchDiagnostics);
+void LaunchCandidate(Storage*,const Slab*,Slab*,NodalPreparedView,BatchDiagnostics,
+                     shell_batch_plasticity_detail::DeviceStorage*,unsigned accepted_slab);
 void LaunchFailure(NodalAssemblyView);
 } // namespace tl::fea::qeph::batch_detail
 
@@ -44,6 +46,7 @@ struct QephBatch::Impl {
   NodalStamp accepted_stamp;
   std::optional<ShellBatchBinding> joined_binding; // Host-only immutable inventory.
   const ShellBatchPublication* publication_scope=nullptr; // One borrowed coordinator claim.
+  std::unique_ptr<shell_batch_plasticity_detail::HostStorage> plasticity;
   batch_detail::Storage* storage=nullptr;
   batch_detail::Slab* accepted=nullptr;
   batch_detail::Slab* trial=nullptr;
@@ -63,6 +66,8 @@ struct QephBatch::Impl {
   BatchReport PendingError() noexcept;
   BatchReport ReadControl();
   BatchReport ReadResults(const batch_detail::Slab*);
+  BatchReport InitializePlasticity(const ShellBatchPlasticityConfig&,const batch_detail::Model&);
+  unsigned AcceptedSlabIndex() const noexcept { return accepted==&storage->slab[0]?0u:1u; }
   void Discard() noexcept { pending=false; candidate_view={}; candidate_diagnostics={}; }
   // Infallible sole publication boundary, shared by standalone and joined paths.
   void Publish(const NodalStamp& stamp) noexcept {

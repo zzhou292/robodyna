@@ -1,10 +1,11 @@
-# Experimental rate-independent tabulated shell plasticity
+# Tabulated shell plasticity with explicit source rate settings
 
 This pure host/device material point adapts the plane-stress shell branch of
-OpenRadioss LAW44. It is a rate-independent experiment using the original
-plastic-strain/yield-stress table. It does **not** implement the source MAT024
-C/P/VP rate response, failure/deletion, kinematic hardening, nonlocal corrections,
-or complete LS-DYNA equivalence. The existing LAW1 path is unchanged.
+OpenRadioss LAW44. The default experiment is rate independent; the explicit
+optional branch applies filtered total-rate Cowper–Symonds scaling to the same
+plastic-strain/yield-stress table. Failure/deletion, kinematic hardening,
+nonlocal corrections and complete LS-DYNA equivalence remain outside this
+branch. The existing LAW1 path is unchanged.
 
 All donors are pinned at `a62b27e6baa555d222a580d6218867d0be4d70b5`:
 
@@ -20,17 +21,28 @@ The full OpenRadioss licensing notice is retained in
 belong only in the isolated qualification reference; production includes no
 Fortran entry point or second time integrator.
 
-The fixed branch is `MFUNC=1`, `CA=CB=0`, `YSCALE=1`, `CC=0`, `FISOKIN=0`,
-`OFF=1`, `INLOC=0`, with failure/tension limits inactive. Rate/filter inputs are
-omitted from the production API because they have no effect on this declared
-experiment. Native qualification must explicitly supply inactive rate settings;
-it must not rely on unresolved reader defaults.
+The common branch is `MFUNC=1`, `CA=CB=0`, `YSCALE=1`, `FISOKIN=0`,
+`OFF=1`, `INLOC=0`, with failure/tension limits inactive. The default has `CC=0`;
+all disabled rate declarations must have zero C/P/cutoff values. Enabling rate
+selects runtime `VFLAG=2, ISRATE=1` and requires explicit positive C, P and cutoff.
+It prepares `CC1=1/C`, `CP1=1/P`, and `PM9=2*pi*cutoff` in donor order. Every
+point updates its own accepted UVAR1 by
+`r = alpha*EPSD_PG + (1-alpha)*old_r`, `alpha=min(1,PM9*dt)`, then multiplies
+curve yield and nonvirgin curve slope by `1+(CC1*r)^CP1`. Virgin hardening stays
+exactly E. No rate history advances before a real accepted interval.
+
+For the original positive-LCSS, absent-LCSR Yaris declaration, converter C8000,
+P8, VP0 and ISMOOTH1 select this LAW44 branch; starter maps VP0 to runtime VP2.
+The direct converted model enters starter without an export/re-read; an absent
+Fcut is read as zero and the starter resolves it to 10000/s. The application
+must supply `{true,8000,8,10000}` explicitly. These source-reader choices are
+provenance, not implicit material defaults or claims about other MAT024 cards.
 
 `PrepareTabulatedShellPlasticity` validates a caller-owned immutable curve with
 2–1024 points, zero initial plastic strain, strictly increasing abscissae and
 positive nondecreasing stresses. It prepares the pinned elastic coefficients.
 `UpdateTabulatedShellPlasticity` consumes accepted stress and accumulated
-plastic strain, engineering strain increments and the element's actual
+plastic strain, filtered-rate history, engineering strain increments and the element's actual
 transverse shear modulus. It stages a result and publishes it only on success.
 Pointers must refer to storage accessible to the executing host or device.
 Prepared coefficients and curve values must remain immutable during use.
@@ -52,6 +64,19 @@ Elastic and plastic thickness-strain increments are reported separately so the
 section can preserve the two native additions to thickness. `tangent_ratio` is
 native ETSE, not a complete algorithmic tangent.
 
+The section computes native CZFORC3/C3FORC3 `EPSD_PG` from membrane and bending
+increments, accepted reported thickness, and `dt/max(dt*dt,1e-20)`; each point
+receives that same scalar. Source ITHICK=1 also makes the accepted reported
+thickness the next interval's force/coefficient/volume thickness. The adapters
+use a local coefficient-input copy, retaining original reference identity and
+native mass/J. Section weighted mean/minimum tangent and mean/last-point yield
+diagnostics remain distinct; native QEPH stabilization consumes the last-point
+yield, not a substituted weighted mean.
+For the admitted normal source E/nu, the shared elastic coefficient helper and
+LAW44 coefficient preparation agree exactly: the two G division expressions
+are binary scaling by two, and the A12 multiplication only reverses operands.
+The adapters retain that shared coefficient helper.
+
 `plastic_work_density` is the native MULAWC diagnostic
 `0.5*(old_equivalent_stress + new_equivalent_stress)*delta_plastic_strain` in
 J/m3. It is not total stress work or a guaranteed exact split into recoverable
@@ -61,5 +86,8 @@ and consistency with discrete resultant work, remain section responsibilities.
 Focused local tests cover invalid input and unchanged output, a late
 curve-domain failure with exact retry, and seven 64-increment cyclic sequences
 plus one rejected sequence on both host and device. The separate native point
-suite qualifies the material equations and original source curve. These tests
+suite qualifies the material equations and original source curve. Added rate
+tests cover independent filter rise/decay/saturation, shared section input with
+distinct point histories, invalid-input and late-layer atomicity, host/device
+cycles, joined material mismatch and mixed-family rejection/exact retry. These tests
 were written without a build/run; the integrating guarded run is required.

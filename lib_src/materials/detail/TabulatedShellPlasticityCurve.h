@@ -28,6 +28,12 @@ TL_TABULATED_SHELL_HD inline bool CurveValue(TabulatedShellPlasticityCurve c, do
 TL_TABULATED_SHELL_HD inline TabulatedShellPlasticityStatus
 PrepareTabulatedShellPlasticity(double young, double nu, double rho,
     TabulatedShellPlasticityCurve curve, TabulatedShellPlasticityParameters& output) noexcept {
+  return PrepareTabulatedShellPlasticity(young, nu, rho, curve, {}, output);
+}
+TL_TABULATED_SHELL_HD inline TabulatedShellPlasticityStatus
+PrepareTabulatedShellPlasticity(double young, double nu, double rho,
+    TabulatedShellPlasticityCurve curve, TabulatedShellPlasticityRate rate,
+    TabulatedShellPlasticityParameters& output) noexcept {
   using Status = TabulatedShellPlasticityStatus;
   if (!tl::math::Finite(young) || young <= 0 || !tl::math::Finite(nu) || nu < 0 || nu >= .5 ||
       !tl::math::Finite(rho) || rho <= 0) return Status::InvalidParameters;
@@ -46,6 +52,7 @@ PrepareTabulatedShellPlasticity(double young, double nu, double rho,
     }
   }
   TabulatedShellPlasticityParameters p;
+  if (!tabulated_shell_detail::PrepareRate(p, rate)) return Status::InvalidParameters;
   p.curve = curve; p.young_pa = young; p.poisson_ratio = nu; p.density_kg_m3 = rho;
   // Pinned HM_READ_MAT44 coefficient order; native sound speed is sqrt(A11/rho).
   p.shear_modulus = young / 2. / (1. + nu);

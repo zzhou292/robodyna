@@ -12,17 +12,21 @@ struct SequenceResult {
   TabulatedShellPlasticityStatus status = TabulatedShellPlasticityStatus::Ok;
   unsigned accepted_intervals = 0;
 };
-TL_POINT_TEST_HD inline SequenceResult RunSequence(unsigned case_id) {
+TL_POINT_TEST_HD inline SequenceResult RunSequence(unsigned case_id,bool rate_enabled=false) {
   const double curve_x[]{0, .1, .3}, curve_y[]{270e6, 340e6, 362e6};
   TabulatedShellPlasticityParameters p;
   SequenceResult result;
-  result.status = PrepareTabulatedShellPlasticity(200e9, .3, 7890, {curve_x, curve_y, 3}, p);
+  const TabulatedShellPlasticityRate rate=rate_enabled?TabulatedShellPlasticityRate{true,8000,8,10000}:
+      TabulatedShellPlasticityRate{};
+  result.status = PrepareTabulatedShellPlasticity(200e9, .3, 7890, {curve_x, curve_y, 3}, rate, p);
   if (result.status != TabulatedShellPlasticityStatus::Ok) return result;
   TabulatedShellPlasticityHistory base;
   for (unsigned step = 0; step < 64; ++step) {
     TabulatedShellPlasticityInput input;
     const double sign = (step/16)%2 == 0 ? 1. : -1.;
     input.transverse_shear_modulus = p.shear_modulus*5./6.;
+    input.dt=0x1p-24;
+    input.total_strain_rate_per_s=step<32?100.*(case_id+1):0.;
     input.strain_increment[0] = sign*(case_id + 1)*.0001;
     input.strain_increment[1] = -.3*input.strain_increment[0];
     input.strain_increment[2] = sign*case_id*.00003;

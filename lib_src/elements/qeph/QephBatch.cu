@@ -38,7 +38,17 @@ BatchReport QephBatch::InitializeJoined(const QephBatchConfig& config,const Shel
   if(!binding.prepared()) return {BatchStatus::InvalidInput,"Mixed binding is not prepared"};
   return InitializeImpl(config,nullptr,&binding);
 }
-BatchReport QephBatch::InitializeImpl(const QephBatchConfig& config,const QephBatchElement* elements,const ShellBatchBinding* joined) {
+BatchReport QephBatch::Initialize(const QephBatchConfig& config,const QephBatchElement* elements,
+    const ShellBatchPlasticityConfig& plasticity) {
+  return InitializeImpl(config,elements,nullptr,&plasticity);
+}
+BatchReport QephBatch::InitializeJoined(const QephBatchConfig& config,const ShellBatchBinding& binding,
+    const ShellBatchPlasticityConfig& plasticity) {
+  if(!binding.prepared()) return {BatchStatus::InvalidInput,"Mixed binding is not prepared"};
+  return InitializeImpl(config,nullptr,&binding,&plasticity);
+}
+BatchReport QephBatch::InitializeImpl(const QephBatchConfig& config,const QephBatchElement* elements,
+    const ShellBatchBinding* joined,const ShellBatchPlasticityConfig* plasticity) {
   if(impl_) return {BatchStatus::InvalidInput,"QEPH batch is already initialized"};
   // A bounded startup allocation avoids placing the complete 128-parent model
   // and two history slabs on the host stack. No allocation occurs per step.
@@ -52,6 +62,10 @@ BatchReport QephBatch::InitializeImpl(const QephBatchConfig& config,const QephBa
   candidate->accepted_diagnostics=batch_detail::InitialDiagnostics(config,joined!=nullptr);
   if(joined) candidate->joined_binding.emplace(*joined);
   report=candidate->PendingError(); if(report.status!=BatchStatus::Success) return report;
+  if(plasticity) {
+    report=candidate->InitializePlasticity(*plasticity,initial->model);
+    if(report.status!=BatchStatus::Success) return report;
+  }
   report=candidate->Runtime(cudaMalloc(reinterpret_cast<void**>(&candidate->storage),sizeof(Storage)),"QEPH allocation failed");
   if(report.status!=BatchStatus::Success) return report;
   report=candidate->Runtime(cudaMemcpy(candidate->storage,initial.get(),sizeof(Storage),cudaMemcpyHostToDevice),"QEPH initialization copy failed");
@@ -61,6 +75,7 @@ BatchReport QephBatch::InitializeImpl(const QephBatchConfig& config,const QephBa
 }
 void QephBatch::DiscardTrial() noexcept { if(impl_) impl_->Discard(); }
 NodalAllocationInfo QephBatch::allocations() const noexcept {
-  return impl_?NodalAllocationInfo{sizeof(Storage),1}:NodalAllocationInfo{};
+  return impl_?NodalAllocationInfo{sizeof(Storage)+(impl_->plasticity?sizeof(shell_batch_plasticity_detail::DeviceStorage):0),
+      impl_->plasticity?2u:1u}:NodalAllocationInfo{};
 }
 } // namespace tl::fea::qeph

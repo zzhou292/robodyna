@@ -1,12 +1,16 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-// OpenRadioss (C) 2026 Siemens, selected CZFINTN1 LAW1/NPT0 update.
-// All twelve states remain together; no plastic yield branch is admitted.
+// OpenRadioss (C) 2026 Siemens, common CZFINTN1 elastic increment and old work.
+// LAW1 uses it directly; layered plastic shells apply the separate native
+// yield correction before the existing force/work projection.
 #pragma once
 #include "QephHistoryData.h"
 #include "QephMaterial.h"
 
 namespace tl::fea::qeph::detail {
-struct StabilizationWork { double increment[6]{}; double bending_factor=0; };
+struct StabilizationWork {
+  double increment[6]{}, delta[12]{};
+  double bending_factor=0, membrane_loading=0, bending_loading=0;
+};
 TL_QEPH_HD inline void UpdateStabilization(const GeometryWork& g,const MaterialWork& m,
                                           HistoryValues& h,StabilizationWork& w) {
   using namespace force_constant;
@@ -28,8 +32,9 @@ TL_QEPH_HD inline void UpdateStabilization(const GeometryWork& g,const MaterialW
   const double esx=ss1*dhg[0]+ss2*dhg[1];
   const double old_work0=c5*(esx+.25*(sc5*dhg[4]+sc6*dhg[5]));
   const double emx=(sf1*dhg[2]-sf2*dhg[3])*w.bending_factor;
+  w.membrane_loading=esx; w.bending_loading=emx;
   const double old_work1=c5*emx;
-  double delta[12]{};
+  auto* delta=w.delta;
   delta[0]=c1m*cxx-c2m*cyy; delta[1]=c1m*cyy-c2m*cxx;
   delta[2]=c1m*bxx-c2m*byy; delta[3]=c1m*byy-c2m*bxx;
   delta[6]=c1m*cxxk-c2m*cyyk; delta[7]=c1m*cyyk-c2m*cxxk;
@@ -40,6 +45,7 @@ TL_QEPH_HD inline void UpdateStabilization(const GeometryWork& g,const MaterialW
   for(unsigned i=0;i<12;++i) vg[i]=vg[i]+delta[i];
   h.internal_work[0]=h.internal_work[0]+old_work0;
   h.internal_work[1]=h.internal_work[1]+old_work1;
-  // SIGY=EP30 is above ZEP9EP30: the complete source yield block is inactive.
+  // The LAW1 caller's SIGY=EP30 disables the source yield block. Plastic callers
+  // subsequently correct these twelve staged values with their section data.
 }
 } // namespace tl::fea::qeph::detail

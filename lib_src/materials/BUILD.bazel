@@ -23,6 +23,7 @@ cc_library(
     hdrs = [
         "TabulatedShellPlasticity.h",
         "detail/TabulatedShellPlasticityCurve.h",
+        "detail/TabulatedShellPlasticityRate.h",
         "detail/TabulatedShellPlasticityUpdate.h",
     ],
     deps = ["//lib_src/math:quaternion"],

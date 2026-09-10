@@ -1,0 +1,106 @@
+{
+  "schema": "tl.law44-rate-source-evidence.v1",
+  "upstream_revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "upstream": "https://github.com/OpenRadioss/OpenRadioss",
+  "scope": "Verified source evidence for the actual direct-import Yaris LAW44/VP2 filter mapping and selected shell-rate wrapper expressions. These files are audit evidence, not production or compiled dependencies. Unchanged SIGEPS44C and native constants remain pinned by source-manifest.json.",
+  "sources": [
+    {
+      "upstream_path": "reader/source/dyna2rad/dyna2rad/_private/convertmats.cxx",
+      "upstream_git_blob": "df933c97ba326cd12af9cf3569db436f624d1be1",
+      "sha256": "a2d54503fb38039f88b76d26950853ef39a0207dc368cc1f9deb390ced177b0f",
+      "bytes": 579108,
+      "role": "1462-1484: positive plain curve plus positive C/P selects LAW44; 6390-6490: LAW44 field mapping does not set Fcut"
+    },
+    {
+      "upstream_path": "reader/source/solver_interface/source/misc/cpp_lsd2rad_convertor.cpp",
+      "upstream_git_blob": "8fe75c92acf4960276d4086b30ec1e1e6d6710a7",
+      "sha256": "cd4764eb705d0fb9c11f4d647d365665304c4e71f7f2ab19f4d0b22e06a8473c",
+      "bytes": 7171,
+      "role": "121,162-176: direct conversion installs the same model, with no export and re-read"
+    },
+    {
+      "upstream_path": "reader/source/io/model_readers/radioss/radiossblk/radiossblk.cxx",
+      "upstream_git_blob": "d7987ca01589c6a0bce833fc4a6ed769785382f0",
+      "sha256": "232c2c8a20c53c0c43a992c5aae24c777c3153b598988232446b6f4f82fc06f7",
+      "bytes": 40310,
+      "role": "94,149-192,554-567,716-733: direct model subclasses ModelViewPO; getter delegates without defaults"
+    },
+    {
+      "upstream_path": "reader/source/cfgkernel/sdi/sdiModelViewPO.h",
+      "upstream_git_blob": "af666e0ba8405424f3c776ca04c86b18ca8e1ba6",
+      "sha256": "d59b8ba4fd997a7a6fa3927d14654277d52da09056cca8e1fb12f550dc12683a",
+      "bytes": 173611,
+      "role": "1470-1528,3111: attribute-backed object creation and absent attribute returns false"
+    },
+    {
+      "upstream_path": "reader/source/cfgkernel/HCDI/hcdi_mec_pre_object.cpp",
+      "upstream_git_blob": "1545fa524fbe3a0c059951fc071bb29eeec2d1fe",
+      "sha256": "296794c1e7b06133e32a4081f617a9fb558bbf73ff2fc69a1a73a57a0f115930",
+      "bytes": 22536,
+      "role": "34-37: direct MECPreObject construction"
+    },
+    {
+      "upstream_path": "reader/source/cfgkernel/HCDI/mec_pre_object.cpp",
+      "upstream_git_blob": "f69bbe84748101c86a5d426776986458ddb2e6ce",
+      "sha256": "b8c69ca5d35dcc24cff7f95efddc9152e1ca900a274433f596ea654a1ab092db",
+      "bytes": 129675,
+      "role": "152,269: constructor initializes empty attribute containers"
+    },
+    {
+      "upstream_path": "reader/source/solver_interface/source/cfg_reading/GlobalModelSdi.cpp",
+      "upstream_git_blob": "f7835f333f9f4e45695e5912e47e84127dcdf1f3",
+      "sha256": "69b44ddc38288a983dbd18acdc68cfd80b67020618dc390991cebb91ce2ff024",
+      "bytes": 123029,
+      "role": "Numeric getter delegates to RadiossblkGetValueDouble"
+    },
+    {
+      "upstream_path": "reader/source/solver_interface/source/cfg_reading/cpp_get_floatv.cpp",
+      "upstream_git_blob": "931658d8e1efe39eb1ead7b195372349bfea216b",
+      "sha256": "b47818b53bbf8a3587130b23601431065b078f5737fb6eac34cd597e6a4234be",
+      "bytes": 11737,
+      "role": "201-205: unavailable value is explicitly set to zero"
+    },
+    {
+      "upstream_path": "starter/source/devtools/hm_reader/hm_get_floatv.F",
+      "upstream_git_blob": "b9fa32ed6c159eaefb368e1d1e7101b9faddfbce",
+      "sha256": "a46e7d5432a1cfdd6d3d6836e25acd73b1b1f04c990fa6c5dac864cb4a026a28",
+      "bytes": 42634,
+      "role": "Fortran getter accepts the returned value and applies unit conversion"
+    },
+    {
+      "upstream_path": "starter/source/materials/mat/mat044/hm_read_mat44.F",
+      "upstream_git_blob": "e533fe9f250ccb1e53979cc4ddccded357e464cb",
+      "sha256": "79915c2f70251e92578385dcaa1ec085b020914851f83c5126e39d00affd58c1",
+      "bytes": 17325,
+      "role": "196-220,239-247: VP0 resolves to VP2, ISMOOTH1 and zero Fcut resolve to 10000/time, curve discards supplied A"
+    },
+    {
+      "upstream_path": "starter/source/materials/mat/hm_read_mat.F90",
+      "upstream_git_blob": "0839fdd59eae3a527efe66bf2dbd9b21930fd04a",
+      "sha256": "4d13977914f6619ad1b7f0afc10d11d53dddb13c7f6f61895ae9acaae543de2b",
+      "bytes": 79808,
+      "role": "1524-1528: actual native PI converts cutoff to angular frequency"
+    },
+    {
+      "upstream_path": "engine/source/materials/mat_share/mulawc.F90",
+      "upstream_git_blob": "f8ca5808fd2eebc76e64d28120b8ac6cb711b376",
+      "sha256": "778df028efcdb9e28e8b2cb9156a431937c06fa073260d2c002164b420848526",
+      "bytes": 165437,
+      "role": "696-701: ASRATE=min(1,PM9*dt); 2825-2845: point diagnostics and last-point SIGY output ownership"
+    },
+    {
+      "upstream_path": "engine/source/elements/shell/coquez/czforc3.F",
+      "upstream_git_blob": "72ab7f3fded22d05a06bc851d4542bdc069ac7ac",
+      "sha256": "0cbc96d2fc2e7dee1c5e2f5e6d3349618ba683015550a0184be177a5602515ab",
+      "bytes": 42687,
+      "role": "576-611,705-713: total equivalent rate uses accepted GBUF%THK; CMAIN3 and CZFINTN1 share caller SIGY"
+    },
+    {
+      "upstream_path": "engine/source/materials/mat_share/cmain3.F",
+      "upstream_git_blob": "051c3e595deb093be56bb04968dc74a5351130a2",
+      "sha256": "948835a9ffea500d766769747fa1891c297751924ee1e2a62561a2cdd0e7a358",
+      "bytes": 20625,
+      "role": "327-335: MULAWC directly receives caller SIGY"
+    }
+  ]
+}

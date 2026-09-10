@@ -19,19 +19,29 @@ struct TabulatedShellPlasticityCurve {
   const double* yield_stress_pa = nullptr;
   std::uint32_t count = 0;
 };
+// Explicit LAW44 VP=2, ISRATE=1 branch: filtered shell total strain rate.
+// Disabled declarations have zero scalar values; no hidden cutoff default.
+struct TabulatedShellPlasticityRate {
+  bool enabled = false;
+  double cowper_symonds_c_per_s = 0, cowper_symonds_p = 0, cutoff_hz = 0;
+};
 struct TabulatedShellPlasticityParameters {
   TabulatedShellPlasticityCurve curve{};
   double young_pa = 0, poisson_ratio = 0, density_kg_m3 = 0;
   double shear_modulus = 0, a11 = 0, a12 = 0, three_g = 0;
   double sound_speed = 0;
+  TabulatedShellPlasticityRate rate{};
+  double inverse_rate_c = 0, inverse_rate_p = 0, angular_cutoff_per_s = 0;
 };
 struct TabulatedShellPlasticityHistory {
   double stress[5]{}; // XX, YY, XY, YZ, ZX, Pa; transverse shear stays elastic.
   double plastic_strain = 0; // Accumulated equivalent plastic strain.
+  double filtered_rate_per_s = 0; // Native UVAR1, independently owned by each point.
 };
 struct TabulatedShellPlasticityInput {
   double strain_increment[5]{}; // XX, YY, engineering XY, YZ, ZX.
   double transverse_shear_modulus = 0; // Actual element/section GS, Pa.
+  double dt = 0, total_strain_rate_per_s = 0; // Required only when rate.enabled.
 };
 struct TabulatedShellPlasticityResult {
   TabulatedShellPlasticityHistory history{};
@@ -53,9 +63,13 @@ enum class TabulatedShellPlasticityStatus : std::uint8_t {
 TL_TABULATED_SHELL_HD inline TabulatedShellPlasticityStatus
 PrepareTabulatedShellPlasticity(double young, double nu, double rho,
     TabulatedShellPlasticityCurve curve, TabulatedShellPlasticityParameters& output) noexcept;
+TL_TABULATED_SHELL_HD inline TabulatedShellPlasticityStatus
+PrepareTabulatedShellPlasticity(double young, double nu, double rho,
+    TabulatedShellPlasticityCurve curve, TabulatedShellPlasticityRate rate,
+    TabulatedShellPlasticityParameters& output) noexcept;
 
-// Pure trial update. Rate dependence, failure, kinematic hardening and nonlocal
-// corrections are explicitly absent. Accepted history/output remain untouched
+// Pure trial update. Failure, kinematic hardening and nonlocal corrections are
+// explicitly absent. Accepted history/output remain untouched
 // on failure. No owner, allocation, time integration or stress-work ledger.
 TL_TABULATED_SHELL_HD inline TabulatedShellPlasticityStatus
 UpdateTabulatedShellPlasticity(const TabulatedShellPlasticityParameters& parameters,
@@ -64,6 +78,7 @@ UpdateTabulatedShellPlasticity(const TabulatedShellPlasticityParameters& paramet
     TabulatedShellPlasticityResult& output) noexcept;
 } // namespace tl::material
 
+#include "lib_src/materials/detail/TabulatedShellPlasticityRate.h"
 #include "lib_src/materials/detail/TabulatedShellPlasticityCurve.h"
 #include "lib_src/materials/detail/TabulatedShellPlasticityUpdate.h"
 #undef TL_TABULATED_SHELL_HD

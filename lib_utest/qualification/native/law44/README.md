@@ -8,13 +8,16 @@ hashes, including shared native precision support already retained by the
 QEPH qualification. Preparation changes symbol names only, to isolate Fortran
 modules, COMMON blocks and routines from the existing native references.
 
-The wrapper explicitly selects isotropic hardening, rate off (`CC=0`,
-`ISRATE=0`), local plane stress, unit yield scaling, and no failure. It retains
+The wrapper explicitly selects isotropic hardening, local plane stress, unit
+yield scaling, and no failure. Its default retains rate off (`CC=0`, `ISRATE=0`);
+an explicit `RateInput` enables filtered total-rate VP2. It retains
 the native virgin hardening slope, three evaluated Newton iterates, elastic
 transverse shear and left-segment interpolation at exact curve knots. The
-46-point SI fixture is original Yaris curve 2100270; its source declaration's
-Cowper-Symonds C/P rate effects are deliberately inactive. This is not complete
-MAT024 equivalence and does not resolve the source filter default. Both
+46-point SI fixture is original Yaris curve 2100270. The original five tests
+isolate rate-independent behavior; the four rate tests enable the actual
+C=8000/s, P=8 and resolved 10000 Hz cutoff. [RateReference.md](RateReference.md)
+records the direct-import source closure and the additional tests. This is not
+complete MAT024 equivalence. Both
 wrappers reject plastic strain outside the supplied curve; failure, kinematic
 hardening and nonlocal updates are outside the experiment.
 
@@ -45,6 +48,7 @@ Native COMMON initialization requires serial test use.
 The CMake directory can be included by the owning qualification build or
 configured standalone after the production point-law patch is present.
 It exports `law44_point_native` and, by default, the five-function
-`law44_point_native_check` executable / `law44_point_native` CTest entry.
+`law44_point_native_check` executable / `law44_point_native` CTest entry, plus
+`law44_rate_native_check` / `law44_rate_native` for the four rate functions.
 The root execution queue owns guarded configuration, compilation and testing.
 No runtime or test result is claimed by this source patch.

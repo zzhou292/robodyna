@@ -20,15 +20,11 @@ TL_T3_HD inline Status InitializeLayeredJ2History(const ReferenceData& r,
   LayeredJ2History candidate;
   const auto status=InitializeHistory(r,stamp,candidate.shell);
   if(status!=Status::kSuccess) return status;
-  sections::ShellLayeredJ2Input input;
-  input.reference_thickness=input.reported_thickness=r.input.thickness;
-  input.transverse_shear_modulus=p.shear_modulus*(5./6.);
-  sections::ShellLayeredJ2Result checked;
-  if(sections::UpdateShellLayeredJ2(p,candidate.section,input,checked)!=sections::PointStatus::Ok)
-    return Status::kInvalidInput;
+  if(!sections::ValidLayeredJ2Parameters(p)) return Status::kInvalidInput;
   output=candidate; return Status::kSuccess;
 }
-// Equivalent strain rate remains diagnostic; the point law is rate independent.
+// The optional source rate law consumes the same native total-rate scalar as
+// the family diagnostic, including its accepted reported-thickness dependency.
 TL_T3_HD inline Status EvaluateLayeredJ2Force(const ReferenceData& r,const sections::PointParameters& parameters,
     const LayeredJ2History& accepted,
     const PrescribedInterval& in,LayeredJ2ForceTrial& output) noexcept {
@@ -45,7 +41,9 @@ TL_T3_HD inline Status EvaluateLayeredJ2Force(const ReferenceData& r,const secti
   detail::GeometryWork geometry;
   status=detail::CurrentGeometry(in.position,longest,geometry); if(status!=Status::kSuccess) return status;
   detail::MaterialWork material;
-  if(!detail::PrepareMaterial(r.input,geometry.kinematics.area,material)) return Status::kNonfiniteResult;
+  auto coefficients_input=r.input;
+  coefficients_input.thickness=base.data().thickness; // Source ITHICK=1; native mass stays fixed.
+  if(!detail::PrepareMaterial(coefficients_input,geometry.kinematics.area,material)) return Status::kNonfiniteResult;
   status=detail::EvaluateRates(in,geometry); if(status!=Status::kSuccess) return status;
   auto& k=geometry.kinematics;
   k.base_time=in.base_time; k.position_time=in.base_time+in.dt; k.velocity_time=in.base_time+.5*in.dt;
@@ -60,6 +58,7 @@ TL_T3_HD inline Status EvaluateLayeredJ2Force(const ReferenceData& r,const secti
   section_input.reference_thickness=material.thickness;
   section_input.reported_thickness=proposed.thickness;
   section_input.transverse_shear_modulus=material.gs;
+  section_input.dt=in.dt;
   sections::ShellLayeredJ2Result section;
   if(sections::UpdateShellLayeredJ2(parameters,accepted.section,section_input,section)!=sections::PointStatus::Ok)
     return Status::kNonfiniteResult;

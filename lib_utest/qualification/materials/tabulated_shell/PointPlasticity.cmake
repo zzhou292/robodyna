@@ -1,6 +1,7 @@
 # Included by the integrating qualification project after CXX/CUDA and GTest.
 get_filename_component(tabulated_shell_tl_root "${CMAKE_CURRENT_LIST_DIR}/../../../.." ABSOLUTE)
-add_executable(tabulated_shell_input_check "${CMAKE_CURRENT_LIST_DIR}/PointInputTest.cpp")
+add_executable(tabulated_shell_input_check "${CMAKE_CURRENT_LIST_DIR}/PointInputTest.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/PointRateTest.cpp")
 target_compile_features(tabulated_shell_input_check PRIVATE cxx_std_17)
 target_include_directories(tabulated_shell_input_check PRIVATE "${tabulated_shell_tl_root}")
 target_link_libraries(tabulated_shell_input_check PRIVATE GTest::gtest_main)

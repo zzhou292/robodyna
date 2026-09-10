@@ -1,4 +1,5 @@
 #include "T3BatchDiagnostics.h"
+#include "T3LayeredJ2.h"
 #include "../../solvers/NodalForceAssembly.h"
 
 namespace tl::fea::t3::batch_detail {
@@ -58,7 +59,8 @@ __global__ void Assemble(Storage* storage,const Slab* accepted,NodalAssemblyView
   }
   if(s.control.status!=BatchStatus::Success) RecordNodalAssemblyFailure(v,sc::Status::kInvalidArgument,s.control.node);
 }
-__global__ void Candidate(Storage* storage,const Slab* accepted,Slab* trial,NodalPreparedView v,BatchDiagnostics identity) {
+__global__ void Candidate(Storage* storage,const Slab* accepted,Slab* trial,NodalPreparedView v,BatchDiagnostics identity,
+    shell_batch_plasticity_detail::DeviceStorage* plasticity,unsigned accepted_slab) {
   auto& s=*storage;
   __shared__ Status element_status[MaxBatchElements];
   const unsigned e=threadIdx.x;
@@ -71,7 +73,23 @@ __global__ void Candidate(Storage* storage,const Slab* accepted,Slab* trial,Noda
     interval.sample_index=v.kinematics.base_epoch+1;
     shell_batch_fields::Gather(s.model.element[e].nodes,v.kinematics,
       interval.position,interval.velocity,interval.angular_velocity);
-    element_status[e]=EvaluateForce(s.model.element[e].reference,accepted->element[e].proposed_history,interval,trial->element[e]);
+    if(!plasticity)
+      element_status[e]=EvaluateForce(s.model.element[e].reference,accepted->element[e].proposed_history,interval,trial->element[e]);
+    else {
+      const auto& old_section=plasticity->section[accepted_slab][e];
+      const LayeredJ2History base{accepted->element[e].proposed_history,old_section.history};
+      LayeredJ2ForceTrial candidate;
+      element_status[e]=EvaluateLayeredJ2Force(s.model.element[e].reference,plasticity->parameters[e],base,interval,candidate);
+      if(element_status[e]==Status::kSuccess) {
+        ShellBatchSectionState section;
+        section.history=candidate.proposed_section; section.diagnostics=candidate.section_diagnostics;
+        section.cumulative_plastic_work_J=old_section.cumulative_plastic_work_J+
+            candidate.section_diagnostics.plastic_work_density_increment*
+            base.shell.data().thickness*candidate.force.kinematics.area;
+        if(!tl::math::Finite(section.cumulative_plastic_work_J)) element_status[e]=Status::kNonfiniteResult;
+        else { trial->element[e]=candidate.force; plasticity->section[1u-accepted_slab][e]=section; }
+      }
+    }
   }
   __syncthreads();
   if(e!=0) return;
@@ -88,6 +106,9 @@ __global__ void Candidate(Storage* storage,const Slab* accepted,Slab* trial,Noda
 }
 }
 void LaunchAssembly(Storage* s,const Slab* a,NodalAssemblyView v,bool initial) { Assemble<<<1,1,0,v.stream>>>(s,a,v,initial); }
-void LaunchCandidate(Storage* s,const Slab* a,Slab* b,NodalPreparedView v,BatchDiagnostics d) { Candidate<<<1,MaxBatchElements,0,v.stream>>>(s,a,b,v,d); }
+void LaunchCandidate(Storage* s,const Slab* a,Slab* b,NodalPreparedView v,BatchDiagnostics d,
+    shell_batch_plasticity_detail::DeviceStorage* plasticity,unsigned accepted_slab) {
+  Candidate<<<1,MaxBatchElements,0,v.stream>>>(s,a,b,v,d,plasticity,accepted_slab);
+}
 void LaunchFailure(NodalAssemblyView v) { MarkFailure<<<1,1,0,v.stream>>>(v); }
 } // namespace tl::fea::t3::batch_detail

@@ -29,16 +29,24 @@ cc_library(
     deps = [":kinematics", "//lib_src/materials:shell_elastic_law1"],
 )
 
+cc_library(
+    name = "layered_j2",
+    hdrs = ["QephLayeredJ2.h", "QephPlasticStabilization.h"],
+    deps = [":force", "//lib_src/elements/sections:shell_layered_j2"],
+)
+
 cuda_library(
     name = "batch",
     srcs = [
         "QephBatch.cu", "QephBatchOperations.cu", "QephBatchKernels.cu",
         "QephBatchModel.cpp", "QephBatchIdentity.cpp", "QephBatchPublication.cpp",
+        "QephBatchPlasticity.cpp",
     ],
     hdrs = ["QephBatch.h", "QephBatchStorage.h", "QephBatchDiagnostics.h", "QephBatchStartup.h"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
     deps = [
-        ":force", "//lib_src/elements:shell_batch_fields",
+        ":force", ":layered_j2", "//lib_src/elements:shell_batch_fields",
+        "//lib_src/elements:shell_batch_plasticity_storage",
         "//lib_src/elements:shell_batch_joined_model",
         "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_force_assembly",
         "//lib_src/solvers:nodal_trial_identity",

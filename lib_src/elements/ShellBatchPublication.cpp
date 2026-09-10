@@ -85,6 +85,7 @@ struct ShellBatchPublication::Impl {
       t.config.element_count==t.joined_binding->t3_count()&&t.config.element_count>0&&
       q.config.configuration_id==t.config.configuration_id&&
       q.config.qualification_id==t.config.qualification_id&&same_usage&&
+      shell_batch_plasticity_detail::SameMaterialScope(q.plasticity,t.plasticity)&&
       shell_startup_detail::SameStartup(q.config.startup,t.config.startup)&&trial_identity::SameStamp(q.config.owner,t.config.owner)&&
       trial_identity::SameStamp(q.accepted_stamp,t.accepted_stamp)&&q.stream==t.stream;
   }

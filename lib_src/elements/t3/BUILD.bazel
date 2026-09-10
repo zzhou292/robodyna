@@ -24,16 +24,24 @@ cc_library(
     deps = [":kinematics", "//lib_src/materials:shell_elastic_law1"],
 )
 
+cc_library(
+    name = "layered_j2",
+    hdrs = ["T3LayeredJ2.h"],
+    deps = [":force", "//lib_src/elements/sections:shell_layered_j2"],
+)
+
 cuda_library(
     name = "batch",
     srcs = [
         "T3Batch.cu", "T3BatchOperations.cu", "T3BatchKernels.cu",
         "T3BatchModel.cpp", "T3BatchIdentity.cpp", "T3BatchPublication.cpp",
+        "T3BatchPlasticity.cpp",
     ],
     hdrs = ["T3Batch.h", "T3BatchStorage.h", "T3BatchDiagnostics.h"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
     deps = [
-        ":force", "//lib_src/elements:shell_batch_fields",
+        ":force", ":layered_j2", "//lib_src/elements:shell_batch_fields",
+        "//lib_src/elements:shell_batch_plasticity_storage",
         "//lib_src/elements:shell_batch_joined_model",
         "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_force_assembly",
         "//lib_src/solvers:nodal_trial_identity",

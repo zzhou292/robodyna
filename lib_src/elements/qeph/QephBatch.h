@@ -5,7 +5,8 @@
 #include "../../solvers/ExplicitNodalStep.h"
 #include <memory>
 
-namespace tl::fea { class ShellBatchBinding; class ShellBatchPublication; }
+namespace tl::fea { class ShellBatchBinding; class ShellBatchPublication;
+  struct ShellBatchPlasticityConfig; struct ShellBatchSectionState; }
 namespace tl::fea::qeph {
 constexpr std::size_t MaxBatchElements=MaxShellCollectionParents,MaxBatchNodes=MaxShellCollectionNodes;
 constexpr std::size_t MaxBatchDeviceBytes=1024*1024;
@@ -64,7 +65,8 @@ BatchReport CommitQephTrial(FENodalState&,const NodalTrialToken&,QephBatch&,
 
 // One resident immutable model and two element history/cache slabs; no nodal
 // state, clock, mechanics equations or timestep policy. Calls are serialized and
-// use the owner's stream. Exactly one allocation, no per-step allocation.
+// use the owner's stream. LAW1 has one device allocation; the opt-in plastic
+// section has one additional bounded allocation. No per-step allocation.
 // Initialize admits only epoch-zero staggered owner metadata. First assembly
 // verifies actual reference-at-rest x/v/omega, free m/J and unit q before binding.
 // Explicit ReferenceUniformTranslation is CoupledForces only:
@@ -95,6 +97,11 @@ class QephBatch {
   // Matching prescribed or coupled usage is enforced by the sole joined
   // coordinator. Startup may be rest or common translation; standalone Commit rejects it.
   BatchReport InitializeJoined(const QephBatchConfig&,const ShellBatchBinding&);
+  // Opt-in layered plasticity with explicit optional source rate settings.
+  // Deep-copies the declaration;
+  // caller config/curve storage may expire after Initialize returns.
+  BatchReport Initialize(const QephBatchConfig&,const QephBatchElement*,const ShellBatchPlasticityConfig&);
+  BatchReport InitializeJoined(const QephBatchConfig&,const ShellBatchBinding&,const ShellBatchPlasticityConfig&);
   // Raw supplied-view validation/assembly for rest or an already-bound batch.
   // First uniform-translation binding requires the live-owner overload below.
   // Initial numerical rest binding retains
@@ -114,11 +121,15 @@ class QephBatch {
   BatchReport CopyAcceptedResults(const NodalStamp&,ForceTrial*,std::size_t capacity,
                                   BatchDiagnostics*);
   BatchReport CopyPreparedResults(const BatchDiagnostics&,ForceTrial*,std::size_t capacity);
+  BatchReport CopyAcceptedSectionHistory(const NodalStamp&,ShellBatchSectionState*,std::size_t capacity,
+                                        BatchDiagnostics*);
+  BatchReport CopyPreparedSectionHistory(const BatchDiagnostics&,ShellBatchSectionState*,std::size_t capacity);
   void DiscardTrial() noexcept;
   NodalAllocationInfo allocations() const noexcept;
  private:
   friend class ::tl::fea::ShellBatchPublication;
-  BatchReport InitializeImpl(const QephBatchConfig&,const QephBatchElement*,const ShellBatchBinding*);
+  BatchReport InitializeImpl(const QephBatchConfig&,const QephBatchElement*,const ShellBatchBinding*,
+                             const ShellBatchPlasticityConfig* plasticity=nullptr);
   BatchReport AssembleAcceptedImpl(FENodalState*,const NodalAssemblyView&);
   friend BatchReport CommitQephTrial(FENodalState&,const NodalTrialToken&,QephBatch&,
                                     const BatchDiagnostics&,const NodalValidationReceipt&) noexcept;
