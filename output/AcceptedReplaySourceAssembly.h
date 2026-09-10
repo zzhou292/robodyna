@@ -15,6 +15,7 @@ struct AssemblyReplayData {
     source::SourceAssembly source;
     std::uint64_t instance=0,asset=0,requested_steps=0,frame_every=0;
     std::size_t group_count=0,member_count=0;
+    bool observe_force_stage=false;
     std::vector<std::array<double,4>> native_nodes;
     std::vector<bool> grouped_node;
     std::vector<std::size_t> contact_source_parent;
@@ -52,6 +53,12 @@ inline void AssemblyReduction(long double actual,long double expected,long doubl
 inline void AssemblyIds(const Value& a,const std::vector<source::SourceId>& ids) {
     AssemblyRow(a,ids.size());for(std::size_t i=0;i<ids.size();++i)Require(AssemblyId(a[i])==ids[i],"Assembly source ID sequence changed");
 }
+struct AssemblyKineticChannels {
+    std::array<double,6> ordinary{},members{};
+    std::array<double,14> groups{};
+};
+AssemblyKineticChannels CheckAssemblyKineticChannels(const Bundle&,const Value&);
+void CheckAssemblyForceStage(const Bundle&,const Entry&,const Value& frame);
 void CheckAssemblySurface(const Bundle&,const Value&);
 void ReadAssemblyDeclarations(Bundle&,const Value&);
 void ReadAssemblyGroups(Bundle&,const Value&);

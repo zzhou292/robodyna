@@ -70,6 +70,7 @@ void CheckFrame(const FrameView& v) {
     else Require(s.reactions_valid&&s.reaction_base_epoch+1==s.epoch&&s.time==s.reaction_time+s.fixed_dt&&
         s.velocity_time==s.reaction_time+.5*s.fixed_dt&&s.reaction_kick_dt==(s.epoch==1?.5*s.fixed_dt:s.fixed_dt),
         "Invalid accepted staggered interval stamp");
+    CheckForceStageFrame(v);
     const auto& settings=*v.setup->settings();Family(v.captured_shells->qeph,d.shells.qeph,s,settings);
     Family(v.captured_shells->t3,d.shells.t3,s,settings);
     Require(Bits(v.captured_shells->qeph.hourglass_viscous_work)==Bits(d.shells.qeph.hourglass_viscous_work)&&

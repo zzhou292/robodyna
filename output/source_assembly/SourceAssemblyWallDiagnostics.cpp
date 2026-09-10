@@ -1,5 +1,5 @@
 #include "SourceAssemblyWallFields.h"
-#include "WallFieldValues.h"
+#include "SourceAssemblyWallKineticChannels.h"
 
 namespace crash::output::assembly::wall_fields {
 namespace {
@@ -10,18 +10,9 @@ Document Phase(const tl::fea::rigid::ObservationPhase& p) {
         "stored_midpoint_with_lagged_frame":"unspecified");
     Number(d,"position_time_s",p.position_time);Number(d,"velocity_time_s",p.velocity_time);Number(d,"frame_time_s",p.frame_time);return d;
 }
-Value Member(Document& d,const tl::fea::rigid::MemberKineticChannels& c) {
-    return Values(d,{c.translation,c.native_rotation,c.physical_rotation,c.added_rotation,c.total,c.inertia_partition_residual});
-}
 Document Kinetic(const KineticSummary& k) {
     Document d;d.SetObject();Child(d,"phase",Phase(k.phase));
-    String(d,"member_columns","translation_J,native_rotation_J,physical_rotation_J,added_rotation_J,total_J,inertia_partition_residual_J");
-    Put(d,"ordinary_native_nodes",Member(d,k.ordinary));Put(d,"grouped_native_members",Member(d,k.grouped_members));
-    String(d,"aggregate_columns","translation_J,rotation_J,total_J,structural_translation_J,primary_translation_J,member_orbital_rotation_J,native_member_rotation_J,physical_member_rotation_J,added_member_rotation_J,primary_parallel_axis_rotation_J,primary_isotropic_rotation_J,principal_correction_rotation_J,decomposition_residual_J,decomposition_roundoff_budget_J");
-    const auto& g=k.groups;Put(d,"aggregate_groups",Values(d,{g.translation,g.rotation,g.total,g.structural_translation,g.primary_translation,
-        g.member_orbital_rotation,g.native_member_rotation,g.physical_member_rotation,g.added_member_rotation,
-        g.primary_parallel_axis_rotation,g.primary_isotropic_rotation,g.principal_correction_rotation,g.decomposition_residual,g.decomposition_roundoff_budget}));
-    Number(d,"native_total_J",k.native_total);Number(d,"effective_total_J",k.effective_total);
+    KineticChannels(d,k.ordinary,k.grouped_members,k.groups,k.native_total,k.effective_total);
     Number(d,"publication_residual_J",k.publication_residual);Number(d,"publication_roundoff_budget_J",k.publication_roundoff_budget);return d;
 }
 Value Work(Document& d,const tl::fea::rigid::KickWorkChannels& w) {return Values(d,{w.translation,w.rotation,w.total});}

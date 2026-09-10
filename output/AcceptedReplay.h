@@ -19,6 +19,7 @@ struct ReplayAssemblyInfo {
     std::uint64_t source_instance_id=0;
     std::string inventory_sha256,boundary_policy;
     std::size_t inventory_bytes=0,parents=0,qeph=0,t3=0,groups=0,members=0;
+    bool observe_force_stage=false;
     std::vector<std::uint64_t> part_ids,material_ids,section_ids,curve_ids;
 };
 struct ReplayInfo {

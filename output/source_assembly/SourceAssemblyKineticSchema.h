@@ -1,0 +1,6 @@
+#pragma once
+namespace crash::output::assembly {
+inline constexpr const char* KineticMemberColumns="translation_J,native_rotation_J,physical_rotation_J,added_rotation_J,total_J,inertia_partition_residual_J";
+inline constexpr const char* KineticAggregateColumns="translation_J,rotation_J,total_J,structural_translation_J,primary_translation_J,member_orbital_rotation_J,native_member_rotation_J,physical_member_rotation_J,added_member_rotation_J,primary_parallel_axis_rotation_J,primary_isotropic_rotation_J,principal_correction_rotation_J,decomposition_residual_J,decomposition_roundoff_budget_J";
+inline constexpr const char* ForceStageKind="native_force_stage_collocated";
+} // namespace crash::output::assembly

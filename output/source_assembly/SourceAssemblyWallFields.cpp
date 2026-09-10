@@ -16,7 +16,7 @@ Document SourceAssemblyWallFrameFields(const dynamics::SourceAssemblyWallCase& r
     Require(tl::fea::trial_identity::SameStamp(*output.nodal()->stamp(),run.owner()->accepted()),
         "Assembly output and live case identify different accepted states");
     return wall_fields::FrameDocument({output.mapping(),run.bindings(),run.setup(),output.nodal()->stamp(),output.nodal()->fields(),
-        output.qeph(),output.t3(),output.diagnostics(),run.diagnostics(),run.accepted_contact()});
+        output.qeph(),output.t3(),output.diagnostics(),run.diagnostics(),run.accepted_contact(),run.config()->observe_force_stage,run.accepted_force_stage()});
 }
 Document SourceAssemblyWallConfiguration(const dynamics::SourceAssemblyWallCase& run,const SourceAssemblySurface& surface,const WallArchiveRequest& request) {
     wall_fields::CheckCase(run);Require(!run.owner()->accepted().epoch,"Assembly archive begins at the physical initial state only");

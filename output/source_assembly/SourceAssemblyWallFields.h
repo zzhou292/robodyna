@@ -2,6 +2,7 @@
 #include "SourceAssemblyAcceptedOutput.h"
 #include "SourceAssemblyWallSchema.h"
 #include "case/source_assembly_dynamics/Case.h"
+#include "case/source_assembly_observation/SourceAssemblyForceStageKinetic.h"
 
 namespace crash::output::assembly {
 namespace dynamics=cases::source_assembly_dynamics;
@@ -25,8 +26,12 @@ struct FrameView {
     const tl::fea::ShellBatchDiagnostics* captured_shells=nullptr;
     const dynamics::Diagnostics* diagnostics=nullptr;
     dynamics::ContactView contact;
+    bool observe_force_stage=false;
+    const cases::source_assembly_observation::ForceStageSummary* force_stage=nullptr;
 };
 void CheckFrame(const FrameView&);
+void CheckForceStageFrame(const FrameView&);
+Document ForceStageDocument(const cases::source_assembly_observation::ForceStageSummary&);
 void CheckCase(const dynamics::SourceAssemblyWallCase&);
 Document FrameDocument(const FrameView&);
 Document StampDocument(const tl::fea::NodalStamp&);

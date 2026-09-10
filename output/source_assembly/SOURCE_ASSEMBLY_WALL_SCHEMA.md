@@ -72,6 +72,14 @@ Applied and reaction kick-work arrays name translation/rotation/total columns.
 Reaction work is recurrence consistency, not dissipation; effective residual is
 bookkeeping, not a collocated or independent physical-energy certificate.
 
+The optional force-stage extension is described in
+[`FORCE_STAGE_ARCHIVE.md`](FORCE_STAGE_ARCHIVE.md). Enabled configuration declares
+`observe_force_stage=true` and every frame includes `force_stage_kinetic`: null
+initially, then the completed force-stage observation belonging to that accepted
+interval. Disabled configuration and frames omit both keys. Existing v1 schema
+names, interval CSV columns, native work channels and byte reservations remain
+unchanged.
+
 `contact=null` only initially, reflecting certified separation rather than a
 fabricated candidate. Later it has
 `phase="prepared_candidate_of_accepted_interval"`, exact interval/source IDs,

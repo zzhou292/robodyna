@@ -13,7 +13,7 @@ struct Directory {
         std::vector<char> chars(pattern.begin(),pattern.end());chars.push_back(0);auto* made=::mkdtemp(chars.data());Require(made,"Output test directory failed");base=made;path=base/"archive";}
     ~Directory() {std::error_code e;std::filesystem::remove_all(base,e);}
 };
-Document ReadJson(const std::filesystem::path& path) {const auto bytes=ReadBounded(path,kArtifactFileCap);Document d;d.Parse(bytes.data(),bytes.size());Require(!d.HasParseError(),"Invalid test artifact JSON");return d;}
+Document ReadJson(const std::filesystem::path& path) {const auto bytes=ReadBounded(path,kArtifactFileCap);Document d;d.Parse<rapidjson::kParseFullPrecisionFlag>(bytes.data(),bytes.size());Require(!d.HasParseError(),"Invalid test artifact JSON");return d;}
 class SourceAssemblyWallArtifactLive:public ::testing::Test {
   protected:
     void SetUp() override {int devices=0;ASSERT_EQ(cudaGetDeviceCount(&devices),cudaSuccess);ASSERT_GT(devices,0);
@@ -101,5 +101,45 @@ TEST_F(SourceAssemblyWallArtifactLive, RejectedNextAttemptCanArchiveTheNewerUnsh
     EXPECT_EQ(frame["contact"]["attempt"].GetUint64(),before.wall.diagnostics.attempt);
     EXPECT_EQ(frame["diagnostics"]["shells"]["qeph"]["attempt"].GetUint64(),before.diagnostics.shells.qeph.attempt);
     const auto row=ReadBounded(dir.path/"accepted-intervals.csv",kArtifactFileCap);EXPECT_EQ(std::count(row.begin(),row.end(),'\n'),2);
+}
+TEST_F(SourceAssemblyWallArtifactLive, OptionalForceStageArchivesOnlyCommittedActualReadbacks) {
+    using Access=cases::source_assembly_dynamics::SourceAssemblyDynamicsTestAccess;
+    dynamics::SourceAssemblyWallCase observed;auto config=Configuration();config.observe_force_stage=true;
+    ASSERT_TRUE(observed.Initialize(prepared::WallAssembly(),PreparedWall(),config));
+    Directory dir;auto request=Request();request.steps=64;request.frame_every=32;
+    SourceAssemblyWallArtifacts writer(dir.path.string(),observed,request);writer.WriteFrame(observed);
+    EXPECT_EQ(observed.accepted_force_stage(),nullptr);
+    std::uint64_t attempt32=0;
+    for(unsigned i=0;i<64;++i) {
+        const auto base=observed.owner()->accepted();const auto step=observed.Step();ASSERT_TRUE(step)<<step.message;
+        ASSERT_NE(observed.accepted_force_stage(),nullptr);writer.RecordInterval(base,observed);
+        if(i==31) {
+            const auto before=*observed.accepted_force_stage();const auto stamp=observed.owner()->accepted();attempt32=before.attempt;
+            const auto rejected=Access::RejectLate(observed,Access::Fault::LastWallFace);
+            ASSERT_EQ(rejected.status,dynamics::Status::ComponentFailure)<<rejected.message;
+            ASSERT_NE(observed.accepted_force_stage(),nullptr);const auto& after=*observed.accepted_force_stage();
+            EXPECT_TRUE(fe::trial_identity::SameStamp(stamp,observed.owner()->accepted()));
+            EXPECT_EQ(after.attempt,before.attempt);EXPECT_EQ(after.enclosing_epoch,before.enclosing_epoch);
+            EXPECT_EQ(Bits(after.phase.force_time),Bits(before.phase.force_time));
+            EXPECT_EQ(Bits(after.native_total),Bits(before.native_total));
+            EXPECT_EQ(Bits(after.effective_total),Bits(before.effective_total));
+            EXPECT_EQ(Bits(after.replacement),Bits(before.replacement));
+        }
+        if((i+1)%32==0)writer.WriteFrame(observed);
+    }
+    writer.Finish(observed,0);
+    EXPECT_TRUE(ReadJson(dir.path/"configuration.json")["observe_force_stage"].GetBool());
+    EXPECT_TRUE(ReadJson(dir.path/"accepted-000000.fields.json")["force_stage_kinetic"].IsNull());
+    const auto retried=ReadJson(dir.path/"accepted-000032.fields.json");
+    EXPECT_EQ(retried["force_stage_kinetic"]["attempt"].GetUint64(),attempt32);
+    EXPECT_FALSE(std::filesystem::exists(dir.path/"accepted-000033.fields.json"));
+    const auto final=ReadJson(dir.path/"accepted-000064.fields.json");const auto& f=final["force_stage_kinetic"];
+    const auto& sample=*observed.accepted_force_stage();
+    EXPECT_EQ(f["base_epoch"].GetUint64(),63u);EXPECT_EQ(f["enclosing_epoch"].GetUint64(),64u);
+    EXPECT_EQ(f["attempt"].GetUint64(),sample.attempt);EXPECT_EQ(Bits(f["native_total_J"].GetDouble()),Bits(sample.native_total));
+    EXPECT_EQ(Bits(f["effective_total_J"].GetDouble()),Bits(sample.effective_total));
+    EXPECT_EQ(Bits(f["replacement_J"].GetDouble()),Bits(sample.replacement));
+    EXPECT_EQ(Bits(f["phase"]["force_time_s"].GetDouble()),Bits(sample.phase.force_time));
+    EXPECT_EQ(f["source"]["member_count"].GetUint64(),76u);
 }
 } // namespace crash::output::assembly::test

@@ -25,6 +25,7 @@ void ReadSourceAssemblyConfiguration(Bundle& b,const Document& c,const Document&
     for(const auto* v:{&c,&manifest,&final})Require(Unsigned(*v,"owner_id")==b.info.owner_id,"Assembly replay owner changed");
     Require(Unsigned(manifest,"run_id")==b.info.run_id&&Unsigned(manifest,"topology_id")==b.info.topology_id&&
         Unsigned(manifest,"source_instance_id")==a.instance,"Assembly replay manifest source binding changed");
+    if(c.HasMember("observe_force_stage")) {WallBool(c,"observe_force_stage",true);a.observe_force_stage=true;}
     WallBool(c,"shell_model",true);WallBool(c,"vehicle_model",false);WallBool(manifest,"contact",true);
     Require(Text(c,"units")=="SI; physical geometry scale 1"&&Text(c,"stress_frame")=="native_corotational_shell_axes",
         "Assembly replay physical scale or stress frame changed");
@@ -86,6 +87,7 @@ void ReadSourceAssemblyConfiguration(Bundle& b,const Document& c,const Document&
     for(const auto& file:expected_files)Require(b.inventory.count(file),"Assembly archive omits a required file");
     auto info=std::make_shared<ReplayAssemblyInfo>();info->source_instance_id=a.instance;info->inventory_sha256=s.identity.sha256;
     info->inventory_bytes=s.identity.bytes;info->boundary_policy=s.boundary.policy;info->parents=s.parents.size();
+    info->observe_force_stage=a.observe_force_stage;
     info->qeph=s.qeph_count;info->t3=s.t3_count;info->groups=a.group_count;info->members=a.member_count;
     for(const auto& p:s.parts)info->part_ids.push_back(p.id);
     for(const auto& m:s.materials)info->material_ids.push_back(m.id);

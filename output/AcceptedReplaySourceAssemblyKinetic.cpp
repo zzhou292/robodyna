@@ -9,31 +9,10 @@ void CheckKineticPhase(const Bundle& b,const Entry& e,const Value& v,bool before
     AssemblyEqual(Real(p,"velocity_time_s"),initial?0:before?e.interval_base_velocity_time:e.interval_base_time+.5*b.fixed_dt);
     AssemblyEqual(Real(p,"frame_time_s"),initial?0:before?e.interval_previous_base_time:e.interval_base_time);
 }
-std::array<double,6> MemberChannels(const Value& v,const char* key) {
-    const auto& row=WallNumbers(v,key,6);std::array<double,6> x{};
-    for(unsigned j=0;j<6;++j){x[j]=row[j].GetDouble();Require(j==5||x[j]>=0,"Invalid native kinetic magnitude");}
-    AssemblyNear(x[4],static_cast<long double>(x[0])+x[1]);
-    AssemblyReduction(x[5],static_cast<long double>(x[1])-x[2]-x[3],static_cast<long double>(x[1])+x[2]+x[3],256);
-    return x;
-}
 void CheckKinetic(const Bundle& b,const Entry& e,const Value& v,bool before,const Value* nodal) {
     CheckKineticPhase(b,e,v,before);
-    Require(Text(v,"member_columns")=="translation_J,native_rotation_J,physical_rotation_J,added_rotation_J,total_J,inertia_partition_residual_J"&&
-        Text(v,"aggregate_columns")=="translation_J,rotation_J,total_J,structural_translation_J,primary_translation_J,member_orbital_rotation_J,native_member_rotation_J,physical_member_rotation_J,added_member_rotation_J,primary_parallel_axis_rotation_J,primary_isotropic_rotation_J,principal_correction_rotation_J,decomposition_residual_J,decomposition_roundoff_budget_J",
-        "Assembly kinetic channel semantics changed");
-    const auto ordinary=MemberChannels(v,"ordinary_native_nodes"),members=MemberChannels(v,"grouped_native_members");
-    const auto& group=WallNumbers(v,"aggregate_groups",14);
-    for(unsigned j=0;j<14;++j)Require(j==12||group[j].GetDouble()>=0,"Invalid aggregate kinetic magnitude");
-    AssemblyNear(group[2].GetDouble(),static_cast<long double>(group[0].GetDouble())+group[1].GetDouble());
-    AssemblyNear(group[0].GetDouble(),static_cast<long double>(group[3].GetDouble())+group[4].GetDouble(),b.assembly->group_count);
-    long double decomposition=0;
-    for(unsigned j:{5u,6u,9u,10u,11u})decomposition+=group[j].GetDouble();
-    AssemblyReduction(group[12].GetDouble(),static_cast<long double>(group[1].GetDouble())-decomposition,
-        group[1].GetDouble()+decomposition,b.assembly->group_count);
-    AssemblyNear(group[6].GetDouble(),static_cast<long double>(group[7].GetDouble())+group[8].GetDouble(),b.assembly->member_count);
-    Require(std::abs(group[12].GetDouble())<=group[13].GetDouble(),"Aggregate kinetic decomposition budget exceeded");
-    AssemblyNear(Real(v,"native_total_J"),static_cast<long double>(ordinary[4])+members[4]);
-    AssemblyNear(Real(v,"effective_total_J"),static_cast<long double>(ordinary[4])+group[2].GetDouble());
+    const auto channels=CheckAssemblyKineticChannels(b,v);
+    const auto& ordinary=channels.ordinary;const auto& members=channels.members;
     const double budget=Real(v,"publication_roundoff_budget_J");
     Require(budget>=0&&std::abs(Real(v,"publication_residual_J"))<=budget,"Native publication kinetic budget exceeded");
     if(!nodal)return;

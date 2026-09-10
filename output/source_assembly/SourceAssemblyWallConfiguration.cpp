@@ -17,7 +17,9 @@ Document ConfigurationDocument(const cases::source_assembly::SourceAssemblyBindi
     const double horizon=static_cast<double>(r.steps)*c.fixed_dt;Require(std::isfinite(horizon)&&horizon>0,"Requested horizon cannot be represented");
     Document d;d.SetObject();String(d,"schema",WallConfigurationSchema);String(d,"kind",WallArtifactKind);
     String(d,"scope","Original six-part Yaris component, internal nodal rigid groups active, external connections explicitly released");
-    Boolean(d,"shell_model",true);Boolean(d,"vehicle_model",false);String(d,"units","SI; physical geometry scale 1");
+    Boolean(d,"shell_model",true);Boolean(d,"vehicle_model",false);
+    if(c.observe_force_stage)Boolean(d,"observe_force_stage",true);
+    String(d,"units","SI; physical geometry scale 1");
     Integer(d,"owner_id",surface.binding().identity.owner);Integer(d,"run_id",r.run_id);Integer(d,"topology_id",r.topology_id);
     Integer(d,"asset_id",r.asset_id);Integer(d,"source_instance_id",b.source_instance_id());
     Integer(d,"configuration_id",setup.settings()->configuration_id);Integer(d,"qualification_id",setup.settings()->qualification_id);

@@ -19,6 +19,11 @@ Document FrameDocument(const FrameView& v) {
     String(d,"stress_frame","native_corotational_shell_axes");
     String(d,"stress_semantics","Native three-thickness-point XX,YY,XY,YZ,ZX components in each current shell basis; not world-axis stress");
     Child(d,"sections",SectionFieldDocument(*v.surface,v.qeph,v.t3));Child(d,"diagnostics",DiagnosticsDocument(*v.diagnostics));
-    if(s.epoch)Child(d,"contact",ContactDocument(v));else Put(d,"contact",Value());return d;
+    if(s.epoch)Child(d,"contact",ContactDocument(v));else Put(d,"contact",Value());
+    if(v.observe_force_stage) {
+        if(s.epoch)Child(d,"force_stage_kinetic",ForceStageDocument(*v.force_stage));
+        else Put(d,"force_stage_kinetic",Value());
+    }
+    return d;
 }
 } // namespace crash::output::assembly::wall_fields
