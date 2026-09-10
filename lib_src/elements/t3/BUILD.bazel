@@ -34,6 +34,7 @@ cuda_library(
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
     deps = [
         ":force", "//lib_src/elements:shell_batch_fields",
+        "//lib_src/elements:shell_batch_joined_model",
         "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_force_assembly",
         "//lib_src/solvers:nodal_trial_identity",
     ],

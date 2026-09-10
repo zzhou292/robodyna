@@ -1,4 +1,4 @@
-#include "RecurrenceAudit.h"
+#include "RecurrenceNativeMap.h"
 #include "lib_src/math/Quaternion.h"
 #include <cmath>
 
@@ -44,12 +44,20 @@ bool SaneModel(const Model& m) {
   return true;
 }
 }
-bool NativeMap(const Model& m,double h,const Eigen::VectorXd& input,Eigen::VectorXd& output,std::string& error) {
+bool NativeMapWithUniformVelocity(const Model& m,double h,const Vec3& velocity,
+                                  const Eigen::VectorXd& input,Eigen::VectorXd& output,std::string& error) {
   if(!SaneModel(m)||input.size()!=static_cast<Eigen::Index>(m.dictionary.size())||
      !input.allFinite()||!std::isfinite(h)||h<=0||!std::isfinite(2*h)||h==2*h) {
     error="Malformed native recurrence operands"; return false;
   }
+  if(!std::isfinite(velocity.x)||!std::isfinite(velocity.y)||!std::isfinite(velocity.z)) {
+    error="Nonfinite native recurrence velocity baseline"; return false;
+  }
   State baseline=Rest(m),base=baseline;
+  // Skip even an addition by zero on the old path. Keep all reference/history
+  // packing and subsequent force, kick, drift and native calls unchanged.
+  if(velocity.x!=0||velocity.y!=0||velocity.z!=0)
+    for(unsigned n=0;n<m.nodes;++n) base.v[n]=velocity;
   for(unsigned i=0;i<m.dictionary.size();++i) Value(base,m.dictionary[i])+=input[i]*m.dictionary[i].scale;
   State next=base;
   std::array<Vec3,MaxNodes> force{},couple{};
@@ -95,6 +103,9 @@ bool NativeMap(const Model& m,double h,const Eigen::VectorXd& input,Eigen::Vecto
     result[i]=(Value(next,m.dictionary[i])-Value(baseline,m.dictionary[i]))/m.dictionary[i].scale;
   if(!result.allFinite()) { error="Nonfinite normalized native map output"; return false; }
   output=std::move(result); error.clear(); return true;
+}
+bool NativeMap(const Model& m,double h,const Eigen::VectorXd& input,Eigen::VectorXd& output,std::string& error) {
+  return NativeMapWithUniformVelocity(m,h,Vec3{},input,output,error);
 }
 MatrixProbe Differentiate(const Model& m,double h,double epsilon) {
   MatrixProbe p; p.amplitude=epsilon;

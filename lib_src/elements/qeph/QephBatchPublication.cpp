@@ -44,6 +44,17 @@ BatchReport CommitQephTrial(FENodalState& owner,const NodalTrialToken& token,Qep
   if(!s.bound||!s.pending||!batch_detail::SameDiagnostics(expected,s.candidate_diagnostics)||
      !batch_detail::SameStamp(owner.accepted(),s.accepted_stamp))
     return fail({BatchStatus::StaleTrial,"QEPH publication does not match the complete accepted/trial pair"});
+  // A supplied raw assembly view can validate foreign numeric buffers. Before
+  // the first publication, bind that initial source identity to this owner's
+  // actual immutable m/J/masks and accepted rest buffers. No CUDA error drain.
+  if(s.accepted_stamp.epoch==0) {
+    const auto binding=owner.ValidateAcceptedAssemblySources(s.initial_sources);
+    if(binding.status!=NodalStatus::Ok) {
+      if(binding.status==NodalStatus::DeviceFailure) s.usable=false;
+      return fail({binding.status==NodalStatus::DeviceFailure?BatchStatus::NodalFailure:BatchStatus::StaleTrial,
+                   binding.message,UINT32_MAX,UINT32_MAX,Status::kSuccess,binding.status});
+    }
+  }
   if(!receipt.passed||receipt.owner_id!=expected.owner_id||receipt.base_epoch!=expected.base_epoch||
      receipt.attempt!=expected.attempt||receipt.qualification_id!=s.config.qualification_id)
     return fail({BatchStatus::StaleTrial,"QEPH candidate receipt mismatch"});

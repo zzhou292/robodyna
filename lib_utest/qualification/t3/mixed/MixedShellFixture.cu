@@ -46,7 +46,7 @@ bool Rig::Bind() {
   EXPECT_EQ(tr.status,t::BatchStatus::Success)<<tr.message;
   owner.Discard(); qeph.DiscardTrial(); t3.DiscardTrial();
   if(qr.status!=q::BatchStatus::Success || tr.status!=t::BatchStatus::Success) return false;
-  const auto joined=publication.Initialize(qeph,t3);
+  const auto joined=publication.Initialize(owner,qeph,t3);
   EXPECT_EQ(joined.status,fe::ShellPublicationStatus::Success)<<joined.message;
   return joined.status==fe::ShellPublicationStatus::Success;
 }

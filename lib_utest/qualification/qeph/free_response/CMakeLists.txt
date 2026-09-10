@@ -1,7 +1,7 @@
 # Opt-in native qualification only. No production owner or CUDA dependency.
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 add_library(qeph_recurrence_audit_core STATIC RecurrenceDictionary.cpp RecurrenceProbe.cpp
-  RecurrenceIdentity.cpp RecurrenceAnalysis.cpp RecurrenceAudit.cpp)
+  RecurrenceIdentity.cpp RecurrenceAnalysis.cpp RecurrencePowerGram.cpp RecurrenceAudit.cpp)
 target_include_directories(qeph_recurrence_audit_core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_libraries(qeph_recurrence_audit_core PUBLIC qeph_q1_native Eigen3::Eigen)
 target_compile_features(qeph_recurrence_audit_core PUBLIC cxx_std_17)

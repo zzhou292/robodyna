@@ -1,5 +1,6 @@
 #include "FENodalStateStorage.h"
 #include "NodalRotation.h"
+#include "NodalTrialIdentity.h"
 #include <atomic>
 #include <cmath>
 #include <cstring>
@@ -213,6 +214,30 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
   } catch (const std::bad_alloc&) { return {NodalStatus::ResourceLimit, "Host state allocation failed"}; }
 }
 
+NodalAssemblyView FENodalState::Impl::AcceptedAssemblySources() const noexcept {
+  const auto n = config.node_count;
+  NodalAssemblyView view;
+  view.accepted = {accepted, accepted+3*n, has_rotations ? accepted+6*n : scratch+8*n, n, stamp.epoch,
+                   has_rotations ? accepted+9*n : nullptr};
+  view.mass = {inverse, fixed, static_cast<std::uint32_t>(n), stamp.epoch,
+               has_component_constraints ? sc::TranslationMassModel::kUnspecified : sc::TranslationMassModel::kIsotropicLumped};
+  view.stream = stream; view.owner_id = stamp.owner_id;
+  view.temporal_scheme = stamp.temporal_scheme; view.velocity_phase = stamp.velocity_phase;
+  view.position_time = stamp.time; view.velocity_time = stamp.velocity_time;
+  if (has_rotations) {
+    view.inverse_inertia = inverse+n; view.translation_fixed_bits = fixed+n; view.rotation_fixed = fixed+2*n;
+  }
+  return view;
+}
+NodalReport FENodalState::ValidateAcceptedAssemblySources(const NodalAssemblyView& retained) const noexcept {
+  if (!impl_) return {NodalStatus::NotInitialized, "Owner is not initialized"};
+  const auto& s = *impl_;
+  if (!s.usable) return {NodalStatus::DeviceFailure, "CUDA owner is poisoned"};
+  if (!trial_identity::SameAssemblySources(retained, s.AcceptedAssemblySources()))
+    return {NodalStatus::StaleTrial, "Assembly source identity differs from the actual accepted owner"};
+  return Ok();
+}
+
 NodalReport FENodalState::BeginTrial(NodalTrialToken* token, NodalAssemblyView* view) {
   if (token) *token = {}; if (view) *view = {};
   if (!impl_) return {NodalStatus::NotInitialized, "Owner is not initialized"};
@@ -240,22 +265,10 @@ NodalReport FENodalState::BeginTrial(NodalTrialToken* token, NodalAssemblyView* 
   report = s.Check(cudaGetLastError()); if (report.status != NodalStatus::Ok) return report;
   report = s.SynchronizeControl(); if (report.status != NodalStatus::Ok) return report;
   token->owner_id_ = s.stamp.owner_id; token->base_epoch_ = s.stamp.epoch; token->attempt_ = s.attempt;
-  view->accepted = {s.accepted, s.accepted+3*n, s.has_rotations ? s.accepted+6*n : s.scratch+8*n, n, s.stamp.epoch,
-                    s.has_rotations ? s.accepted+9*n : nullptr};
-  view->mass = {s.inverse, s.fixed, static_cast<std::uint32_t>(n), s.stamp.epoch,
-                s.has_component_constraints ? sc::TranslationMassModel::kUnspecified : sc::TranslationMassModel::kIsotropicLumped};
+  *view = s.AcceptedAssemblySources();
   view->forces = {s.scratch, s.scratch+n, s.scratch+2*n, s.scratch+3*n, s.scratch+4*n, s.scratch+5*n, n, s.stamp.epoch};
   view->bounds = &s.control->rows; view->result = &s.control->assembly;
-  view->stream = s.stream; view->attempt = s.attempt;
-  view->owner_id = s.stamp.owner_id;
-  view->temporal_scheme = s.stamp.temporal_scheme;
-  view->velocity_phase = s.stamp.velocity_phase;
-  view->position_time = s.stamp.time; view->velocity_time = s.stamp.velocity_time;
-  if (s.has_rotations) {
-    view->inverse_inertia = s.inverse+n;
-    view->translation_fixed_bits = s.fixed+n;
-    view->rotation_fixed = s.fixed+2*n;
-  }
+  view->attempt = s.attempt;
   s.phase = Phase::Assembling; return Ok();
 }
 

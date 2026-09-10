@@ -37,7 +37,7 @@ struct ShellPublicationReport {
 // coordinator (including destruction), and the owner must outlive its calls. It owns one bounded reusable kinetic scratch allocation and diagnostic
 // caches, not nodal state, an independent clock, material histories or a solver.
 // Calls are serialized on the sole owner's stream. No per-step allocation.
-// Every coordinator failure with an owner argument discards that nodal trial
+// Every Prepare/Commit failure discards that nodal trial
 // and BOTH material trials; all accepted results and caller outputs survive
 // numerical failure. A CUDA failure poisons the participants; readable-device
 // recovery is not promised. Raw fabricated device writes are not authenticated.
@@ -47,9 +47,10 @@ class ShellBatchPublication {
   ~ShellBatchPublication();
   ShellBatchPublication(const ShellBatchPublication&)=delete;
   ShellBatchPublication& operator=(const ShellBatchPublication&)=delete;
-  // Requires both initial rest caches already bound; claims one coordinator
-  // per participant. Duplicate attachment fails before allocation.
-  ShellPublicationReport Initialize(qeph::QephBatch&,t3::T3Batch&);
+  // Requires both initial rest caches already bound from this owner's actual
+  // source buffers; claims one coordinator per participant. Duplicate or
+  // foreign-source attachment fails before device allocation/publication.
+  ShellPublicationReport Initialize(FENodalState&,qeph::QephBatch&,t3::T3Batch&);
   // Preflight BOTH completed contributors against the actual owner token
   // before GPU measurement. Kinetic energy is reduced over the complete native
   // union exactly once at each base/endpoint, at the declared velocity times.

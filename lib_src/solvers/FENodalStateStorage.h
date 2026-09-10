@@ -50,6 +50,7 @@ struct FENodalState::Impl {
   NodalReport SynchronizeControl();
   NodalReport Reject(NodalStatus, const char*, std::uint32_t = UINT32_MAX);
   bool Matches(std::uint64_t owner, std::uint64_t epoch, std::uint64_t trial) const;
+  NodalAssemblyView AcceptedAssemblySources() const noexcept;
   NodalReport AdvanceSealedNodal(std::uint64_t owner, std::uint64_t epoch, std::uint64_t trial,
                                 const NodalStepAdmission&, NodalTemporalScheme);
   NodalStateConfig config;

@@ -67,7 +67,7 @@ TEST_F(MixedShellCuda,JoinedStartupRequiresCompleteUnionMassRestAndCommonImmutab
       EXPECT_EQ(bad.owner.SealAssembly(token).status,fe::NodalStatus::ContributorFailure); bad.Discard();
     }
     Snapshot after; ASSERT_TRUE(Read(bad.owner,after)); SameState(before,after);
-    EXPECT_NE(bad.publication.Initialize(bad.qeph,bad.t3).status,S::Success);
+    EXPECT_NE(bad.publication.Initialize(bad.owner,bad.qeph,bad.t3).status,S::Success);
     EXPECT_EQ(bad.publication.allocations().device_allocations,0u);
   }
   // Different E leaves native mass/rest identical, but must not be mistaken
@@ -88,9 +88,56 @@ TEST_F(MixedShellCuda,JoinedStartupRequiresCompleteUnionMassRestAndCommonImmutab
     ASSERT_EQ(alternate.AssembleAccepted(view).status,t::BatchStatus::Success);
     r.owner.Discard(); r.qeph.DiscardTrial(); alternate.DiscardTrial();
     fe::ShellBatchPublication rejected;
-    EXPECT_EQ(rejected.Initialize(r.qeph,alternate).status,S::InvalidInput);
+    EXPECT_EQ(rejected.Initialize(r.owner,r.qeph,alternate).status,S::InvalidInput);
     EXPECT_EQ(rejected.allocations().device_allocations,0u); EXPECT_EQ(r.owner.accepted().epoch,0u);
   }
+  // Plausible owner stamps and numerically valid foreign buffers can satisfy
+  // the raw assembly operation. They cannot authenticate the initial binding
+  // or its zero kinetic cache. Check either family separately and both at once.
+  for(unsigned kind=0;kind<4;++kind) {
+    SCOPED_TRACE(kind);
+    Rig r,foreign; ASSERT_TRUE(r.PrepareReference()); ASSERT_TRUE(foreign.Initialize());
+    if(kind==3) r.initial.inverse[4]*=2; // Forged mass would hide actual wrong m.
+    ASSERT_EQ(r.initial.Initialize(r.owner).status,fe::NodalStatus::Ok);
+    ASSERT_TRUE(r.InitializeParticipants());
+    Snapshot before; ASSERT_TRUE(Read(r.owner,before));
+    fe::NodalTrialToken token,foreign_token; fe::NodalAssemblyView view,foreign_view;
+    ASSERT_EQ(r.owner.BeginTrial(&token,&view).status,fe::NodalStatus::Ok);
+    ASSERT_EQ(foreign.owner.BeginTrial(&foreign_token,&foreign_view).status,fe::NodalStatus::Ok);
+    auto forged=view;
+    if(kind!=1) {
+      forged.mass=foreign_view.mass; forged.inverse_inertia=foreign_view.inverse_inertia;
+      forged.translation_fixed_bits=foreign_view.translation_fixed_bits;
+      forged.rotation_fixed=foreign_view.rotation_fixed;
+    }
+    if(kind==1||kind==2) forged.accepted=foreign_view.accepted;
+    const auto& qview=kind==1?view:forged;
+    const auto& tview=kind==0?view:forged;
+    ASSERT_EQ(r.qeph.AssembleAccepted(qview).status,q::BatchStatus::Success);
+    ASSERT_EQ(r.t3.AssembleAccepted(tview).status,t::BatchStatus::Success);
+    r.Discard(); foreign.Discard();
+    Staged cached; ASSERT_TRUE(Accepted(r,cached));
+    fe::ShellBatchDiagnostics output; output.valid=true; output.kinetic.translation=17;
+    const auto held=Bytes(output);
+    EXPECT_EQ(r.publication.Initialize(r.owner,r.qeph,r.t3).status,S::StaleTrial);
+    EXPECT_EQ(r.publication.allocations().device_allocations,0u);
+    EXPECT_EQ(r.publication.CopyAcceptedDiagnostics(r.owner.accepted(),&output).status,S::NotInitialized);
+    EXPECT_EQ(Bytes(output),held);
+    // A later genuine raw assembly does not overwrite the first binding
+    // record. Recovery needs fresh participants, not a replacement provenance.
+    if(kind!=3) {
+      ASSERT_EQ(r.owner.BeginTrial(&token,&view).status,fe::NodalStatus::Ok);
+      ASSERT_EQ(r.qeph.AssembleAccepted(view).status,q::BatchStatus::Success);
+      ASSERT_EQ(r.t3.AssembleAccepted(view).status,t::BatchStatus::Success);
+      r.Discard();
+    }
+    EXPECT_EQ(r.publication.Initialize(r.owner,r.qeph,r.t3).status,S::StaleTrial);
+    EXPECT_EQ(r.publication.allocations().device_allocations,0u);
+    Snapshot after; ASSERT_TRUE(Read(r.owner,after)); SameState(before,after);
+    Staged still; ASSERT_TRUE(Accepted(r,still)); ExactResults(cached,still);
+  }
+  Rig clean_retry; ASSERT_TRUE(clean_retry.Initialize()); ASSERT_TRUE(clean_retry.Bind());
+  EXPECT_EQ(clean_retry.owner.accepted().epoch,0u);
 }
 
 TEST_F(MixedShellCuda,MissingForeignAndOutputPreflightFailuresLeaveAllAcceptedOutputsIntact) {
@@ -144,7 +191,7 @@ TEST_F(MixedShellCuda,MissingForeignAndOutputPreflightFailuresLeaveAllAcceptedOu
 TEST_F(MixedShellCuda,StandaloneAndTamperedJointReceiptsCannotPublishOneFamily) {
   Rig r; ASSERT_TRUE(r.Initialize()); ASSERT_TRUE(r.Bind());
   fe::ShellBatchPublication duplicate;
-  EXPECT_EQ(duplicate.Initialize(r.qeph,r.t3).status,S::InvalidInput);
+  EXPECT_EQ(duplicate.Initialize(r.owner,r.qeph,r.t3).status,S::InvalidInput);
   EXPECT_EQ(duplicate.allocations().device_allocations,0u);
   Snapshot before; ASSERT_TRUE(Read(r.owner,before)); Staged cache; ASSERT_TRUE(Accepted(r,cache));
   fe::ShellBatchDiagnostics accepted;

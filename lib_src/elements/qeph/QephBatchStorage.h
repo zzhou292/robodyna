@@ -51,6 +51,10 @@ struct QephBatch::Impl {
   std::array<ForceTrial,MaxBatchElements> staging;
   BatchDiagnostics accepted_diagnostics,candidate_diagnostics;
   NodalPreparedView candidate_view;
+  // Saved only on first numerical rest/mass binding. Pointer identity is
+  // checked against the actual owner before its first history publication;
+  // this record never extends device-view lifetime or permits dereferencing.
+  NodalAssemblyView initial_sources;
   cudaStream_t stream=nullptr;
   std::uint64_t assembled_epoch=UINT64_MAX,assembled_attempt=0,last_candidate_attempt=0;
   bool usable=true,bound=false,pending=false;

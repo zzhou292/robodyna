@@ -59,6 +59,15 @@ struct ShellBatchPublication::Impl {
       t.config.usage==t3::BatchUsage::PrescribedFields&&trial_identity::SameStamp(q.config.owner,t.config.owner)&&
       trial_identity::SameStamp(q.accepted_stamp,t.accepted_stamp)&&q.stream==t.stream;
   }
+  ShellPublicationReport InitialSources(const FENodalState& owner) const noexcept {
+    for(const auto* source:{&qbatch->impl_->initial_sources,&tbatch->impl_->initial_sources}) {
+      const auto checked=owner.ValidateAcceptedAssemblySources(*source);
+      if(checked.status!=NodalStatus::Ok)
+        return {checked.status==NodalStatus::DeviceFailure?S::NodalFailure:S::StaleTrial,
+                checked.message,checked.status};
+    }
+    return Ok();
+  }
   ShellPublicationReport Preflight(FENodalState& owner,const NodalTrialToken& token,
       const qeph::BatchDiagnostics& qd,const t3::BatchDiagnostics& td,NodalPreparedView& authentic) noexcept {
     if(!usable||!qbatch->impl_->usable||!tbatch->impl_->usable) return {S::DeviceFailure,"Mixed shell participant is poisoned"};
@@ -72,6 +81,10 @@ struct ShellBatchPublication::Impl {
        !t3::batch_detail::SameDiagnostics(td,t.candidate_diagnostics)||
        !UnavailableKinetic(qd)||!UnavailableKinetic(td))
       return {S::StaleTrial,"Both complete typed candidates must match the accepted owner and immutable scope"};
+    if(q.accepted_stamp.epoch==0) {
+      const auto binding=InitialSources(owner);
+      if(binding.status!=S::Success) return binding;
+    }
     const auto nodal=owner.BorrowPrepared(token,&authentic);
     if(nodal.status!=NodalStatus::Ok) return Nodal(nodal);
     if(!trial_identity::SamePrepared(authentic,q.candidate_view)||
@@ -88,7 +101,7 @@ ShellBatchPublication::~ShellBatchPublication() {
   if(impl_->qbatch->impl_->publication_scope==this) impl_->qbatch->impl_->publication_scope=nullptr;
   if(impl_->tbatch->impl_->publication_scope==this) impl_->tbatch->impl_->publication_scope=nullptr;
 }
-ShellPublicationReport ShellBatchPublication::Initialize(qeph::QephBatch& q,t3::T3Batch& t) {
+ShellPublicationReport ShellBatchPublication::Initialize(FENodalState& owner,qeph::QephBatch& q,t3::T3Batch& t) {
   if(impl_) return {S::InvalidInput,"Mixed publication scope is already initialized"};
   if(!q.impl_||!t.impl_) return {S::NotInitialized,"Both shell participants must be initialized"};
   if(!q.impl_->joined_binding||!t.impl_->joined_binding) return {S::NotJoined,"Both shell participants must use InitializeJoined"};
@@ -98,6 +111,13 @@ ShellPublicationReport ShellBatchPublication::Initialize(qeph::QephBatch& q,t3::
   if(q.impl_->publication_scope||t.impl_->publication_scope||!next->SameScope()||!q.impl_->bound||!t.impl_->bound||q.impl_->pending||t.impl_->pending||
      q.impl_->accepted_stamp.epoch||!q.impl_->usable||!t.impl_->usable)
     return {S::InvalidInput,"Mixed initialization requires same-scope bound epoch-zero participants"};
+  if(!trial_identity::SameStamp(owner.accepted(),q.impl_->accepted_stamp))
+    return {S::StaleTrial,"Mixed initialization requires the actual accepted owner"};
+  const auto binding_check=next->InitialSources(owner);
+  if(binding_check.status!=S::Success) {
+    if(binding_check.nodal_status==NodalStatus::DeviceFailure) next->Poison();
+    return binding_check;
+  }
   shell_publication_detail::Storage initial;
   const auto& binding=*q.impl_->joined_binding; initial.model.node_count=binding.node_count();
   for(std::size_t n=0;n<binding.node_count();++n) {

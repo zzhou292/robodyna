@@ -23,6 +23,17 @@ inline bool SamePrepared(const NodalPreparedView& a,const NodalPreparedView& b) 
     a.temporal_scheme==b.temporal_scheme&&a.velocity_phase==b.velocity_phase&&a.base_velocity_phase==b.base_velocity_phase&&
     a.base_time==b.base_time&&a.velocity_time==b.velocity_time&&a.base_velocity_time==b.base_velocity_time&&a.kick_dt==b.kick_dt;
 }
+// Source identity only: a retained record is not permission to dereference an
+// expired view or reuse its attempt/force destinations. No device access.
+inline bool SameAssemblySources(const NodalAssemblyView& a,const NodalAssemblyView& b) noexcept {
+  return SameView(a.accepted,b.accepted)&&a.mass.inverse_mass==b.mass.inverse_mass&&
+    a.mass.fixed==b.mass.fixed&&a.mass.node_count==b.mass.node_count&&
+    a.mass.base_epoch==b.mass.base_epoch&&a.mass.model==b.mass.model&&
+    a.inverse_inertia==b.inverse_inertia&&a.translation_fixed_bits==b.translation_fixed_bits&&
+    a.rotation_fixed==b.rotation_fixed&&a.stream==b.stream&&a.owner_id==b.owner_id&&
+    a.temporal_scheme==b.temporal_scheme&&a.velocity_phase==b.velocity_phase&&
+    a.position_time==b.position_time&&a.velocity_time==b.velocity_time;
+}
 inline bool ValidKinematics(const DeviceNodalKinematicsView& v,std::size_t n,std::uint64_t epoch) noexcept {
   return v.node_count==n&&v.base_epoch==epoch&&v.position_xyz&&v.velocity_xyz&&
     v.angular_velocity_xyz&&v.orientation_wxyz;

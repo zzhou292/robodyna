@@ -5,14 +5,14 @@ package(default_visibility = ["//visibility:public"])
 
 cc_library(
     name = "nodal_trial_identity",
-    hdrs = ["NodalTrialIdentity.h"],
+    # Compatibility facade: identity is now also used inside the owning module.
     deps = [":explicit_nodal_state"],
 )
 
 cuda_library(
     name = "explicit_nodal_state",
     srcs = ["FENodalState.cu", "ExplicitTranslationStep.cu", "ExplicitNodalStep.cu"],
-    hdrs = ["FENodalState.h", "FENodalStateStorage.h", "ExplicitTranslationStep.h", "ExplicitNodalStep.h", "NodalRotation.h"],
+    hdrs = ["FENodalState.h", "FENodalStateStorage.h", "ExplicitTranslationStep.h", "ExplicitNodalStep.h", "NodalRotation.h", "NodalTrialIdentity.h"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
     deps = [":explicit_step_stability", "//lib_src/math:quaternion"],
 )

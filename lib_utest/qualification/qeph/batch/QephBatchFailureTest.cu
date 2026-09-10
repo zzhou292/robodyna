@@ -36,6 +36,59 @@ TEST_F(QephBatchCuda, InvalidStartupAndActualMassRestMismatchNeverAuthorizeIniti
   }
 }
 
+TEST_F(QephBatchCuda, SubstitutedInitialSourcesCannotAuthorizeActualOwnerPublication) {
+  for(unsigned kind=0;kind<5;++kind) {
+    SCOPED_TRACE(kind);
+    Rig bad(1),foreign(1);
+    if(kind==0) bad.inverse[2]*=2;
+    if(kind==1) bad.inverse_j[2]*=2;
+    if(kind==2) { bad.fixed[2]=1; bad.inverse_j[2]=0; }
+    if(kind==3) bad.x[0]+=.125;
+    if(kind==4) bad.zero[4]=.001;
+    ASSERT_TRUE(bad.Initialize()); ASSERT_TRUE(foreign.InitializeOwner());
+    Snapshot before; ASSERT_TRUE(Read(bad.owner,before));
+    fe::NodalTrialToken token,other_token; fe::NodalAssemblyView actual,other;
+    ASSERT_EQ(bad.owner.BeginTrial(&token,&actual).status,fe::NodalStatus::Ok);
+    ASSERT_EQ(foreign.owner.BeginTrial(&other_token,&other).status,fe::NodalStatus::Ok);
+    auto forged=actual;
+    if(kind==0) forged.mass.inverse_mass=other.mass.inverse_mass;
+    if(kind==1) forged.inverse_inertia=other.inverse_inertia;
+    if(kind==2) {
+      forged.mass=other.mass; forged.inverse_inertia=other.inverse_inertia;
+      forged.translation_fixed_bits=other.translation_fixed_bits; forged.rotation_fixed=other.rotation_fixed;
+    }
+    if(kind==3) forged.accepted.position_xyz=other.accepted.position_xyz;
+    if(kind==4) {
+      forged.accepted.velocity_xyz=other.accepted.velocity_xyz;
+      forged.accepted.angular_velocity_xyz=other.accepted.angular_velocity_xyz;
+    }
+    // The raw numerical validator really sees valid foreign source values.
+    // No accepted device buffers are mutated to construct the fault.
+    ASSERT_EQ(bad.batch.AssembleAccepted(forged).status,q::BatchStatus::Success);
+    EXPECT_EQ(bad.owner.ValidateAcceptedAssemblySources(actual).status,fe::NodalStatus::Ok);
+    EXPECT_EQ(bad.owner.ValidateAcceptedAssemblySources(forged).status,fe::NodalStatus::StaleTrial);
+    bad.owner.Discard(); bad.batch.DiscardTrial(); foreign.owner.Discard();
+    std::array<q::ForceTrial,4> accepted{},candidate{}; q::BatchDiagnostics initial,d;
+    ASSERT_TRUE(ReadAccepted(bad,accepted,initial));
+    const auto held=Bytes(accepted); const auto held_d=Bytes(initial);
+    fe::NodalPreparedView p;
+    ASSERT_TRUE(Prepare(bad,Loads{},token,p)); ASSERT_TRUE(Candidate(bad,p,d,candidate));
+    const auto candidate_bytes=Bytes(candidate); const auto diagnostic_bytes=Bytes(d);
+    const auto report=q::CommitQephTrial(bad.owner,token,bad.batch,d,Receipt(d));
+    EXPECT_EQ(report.status,q::BatchStatus::StaleTrial); EXPECT_EQ(report.nodal_status,fe::NodalStatus::StaleTrial);
+    EXPECT_EQ(Bytes(candidate),candidate_bytes); EXPECT_EQ(Bytes(d),diagnostic_bytes);
+    ASSERT_TRUE(ReadAccepted(bad,accepted,initial)); EXPECT_EQ(Bytes(accepted),held); EXPECT_EQ(Bytes(initial),held_d);
+    Snapshot after; ASSERT_TRUE(Read(bad.owner,after)); SameState(before,after);
+    EXPECT_EQ(bad.owner.Commit(token).status,fe::NodalStatus::WrongPhase);
+  }
+  // An authentic initial record survives discard/new attempt and permits the
+  // existing zero-load prescribed transaction without any new mechanics.
+  Rig clean(1); ASSERT_TRUE(clean.Initialize()); ASSERT_TRUE(clean.Bind());
+  fe::NodalTrialToken token; fe::NodalPreparedView p; q::BatchDiagnostics d; std::array<q::ForceTrial,4> result{};
+  ASSERT_TRUE(Prepare(clean,Loads{},token,p)); ASSERT_TRUE(Candidate(clean,p,d,result)); ASSERT_TRUE(Commit(clean,token,d));
+  EXPECT_EQ(clean.owner.accepted().epoch,1u);
+}
+
 TEST_F(QephBatchCuda, ForeignStaleAndTamperedPublicationPreservesAllAcceptedAndCallerBytes) {
   Rig rig(2),foreign(2); ASSERT_TRUE(rig.Initialize()); ASSERT_TRUE(rig.Bind());
   ASSERT_TRUE(foreign.Initialize()); ASSERT_TRUE(foreign.Bind());

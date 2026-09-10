@@ -79,6 +79,10 @@ class T3Batch {
   // Immutable joined scope; exactly one typed cell from the complete union.
   // First gate permits PrescribedFields only. Standalone Commit rejects it.
   BatchReport InitializeJoined(const T3BatchConfig&,const ShellBatchBinding&);
+  // Raw supplied-view validation/assembly. Initial numerical binding retains
+  // its source identity; actual owner association is checked separately before
+  // the first standalone or joined publication. A forged raw view alone is
+  // therefore not an owner/history publication authority.
   BatchReport AssembleAccepted(const NodalAssemblyView&);
   BatchReport EvaluateCandidate(const NodalPreparedView&,BatchDiagnostics*);
   // Output-cadence staged readback, never an evaluation/history advance. The

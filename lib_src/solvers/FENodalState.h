@@ -189,6 +189,14 @@ class FENodalState {
   NodalReport Initialize(const NodalStateConfig&, HostNodalKinematicsView,
                          const double* inverse_mass, const NodalDofConfig&);
   NodalReport BeginTrial(NodalTrialToken*, NodalAssemblyView*);
+  // Host-only comparison of a retained assembly SOURCE identity with this
+  // owner's current accepted buffers and immutable mass/constraint storage.
+  // It may inspect pointer values after that view expires, but never reads
+  // through them or restores access to the expired view. The source epoch and
+  // timing must still match the current accepted state. Attempts, force
+  // destinations and their contents are deliberately not validated. This
+  // neither grants assembly/commit authority nor consumes pending CUDA errors.
+  NodalReport ValidateAcceptedAssemblySources(const NodalAssemblyView&) const noexcept;
   NodalReport SealAssembly(const NodalTrialToken&);
   // Only after the applicable advance succeeds. Validators use the returned stream
   // and finish before Commit; the coordinator must discard any rejected trial.

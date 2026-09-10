@@ -6,7 +6,7 @@
   "native_reference_checkpoint": "t3-r3-native-force-history-1",
   "startup_rates_tl_commit": "f5ceb29",
   "startup_rates_checkpoint": "t3-port-startup-rates-1",
-  "live_startup_manifest_sha256": "b2902698ca380bdae598b4bfa98e970b015d399e3d326809be51b1120863b292",
+  "live_startup_manifest_sha256": "6aa446c4bd7600a3ffd6c9cc0687926b1127a1d6e2bf0c874fbff1c41b2f6301",
   "native_source_manifest_sha256": "3f4891f6dab344de9c0c579b699e43e11b30a7359358170833395481e62c2e9f",
   "transformations": [
     "Single three-node fixed-array selected source arithmetic; no MVSIZ or COMMON in production",
@@ -118,8 +118,8 @@
     },
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
-      "bytes": 1416,
-      "sha256": "db4eab330f23c93f91a9204199a57ece1f41a39dfc96ab9f82c9bfe5788a895b"
+      "bytes": 1471,
+      "sha256": "083d4a2f527847daa1af20496a63da269bad98f37fa1f58028a6e257d79b6e1c"
     },
     {
       "path": "lib_src/elements/t3/CMakeLists.txt",
@@ -128,18 +128,18 @@
     },
     {
       "path": "lib_utest/qualification/t3/CMakeLists.txt",
-      "bytes": 3425,
-      "sha256": "71f2f25fbd4c2841b089888741d84d8578c12ca3899599eb8f5f728b149ba16e"
+      "bytes": 3975,
+      "sha256": "6841eb77c4080b34380eee141b5e8475ef33aed5aadc1b7dd77b9b2ab5fe5030"
     },
     {
       "path": "lib_utest/qualification/t3/source-manifest.json",
-      "bytes": 14293,
-      "sha256": "b2902698ca380bdae598b4bfa98e970b015d399e3d326809be51b1120863b292"
+      "bytes": 14715,
+      "sha256": "6aa446c4bd7600a3ffd6c9cc0687926b1127a1d6e2bf0c874fbff1c41b2f6301"
     },
     {
       "path": "lib_utest/qualification/t3/verify_sources.py",
       "bytes": 2001,
-      "sha256": "2381c04446b0a39587f5558dc8826bac55d8b041f5d88a5083f2c9a1a019525d"
+      "sha256": "fcbbd824fc635a164f39d0ca4a1b1697bf80ab1c1f143f5436f854e2bb9d3e88"
     },
     {
       "path": "lib_utest/qualification/t3/T3PortFixture.h",
@@ -476,22 +476,32 @@
     }
   ],
   "build_registration_revision": {
-    "previous_manifest_sha256": "8379de2cea92df9a16b960b8c3b851b11abf852a624f047e225e7445543d9573",
-    "reason": "Optional host mixed shell binding registration only; point startup/rates/force formulas and tests unchanged",
+    "previous_manifest_sha256": "c57073c0de93ebbaf0b47651c0be697c8488f89846a360be84faa778aea5c2a2",
+    "reason": "Optional mixed Q4/T3 publication and shared binding registration; point formulas and native tests unchanged",
     "changed_files": [
+      "lib_src/elements/t3/BUILD.bazel",
       "lib_utest/qualification/t3/CMakeLists.txt",
       "lib_utest/qualification/t3/source-manifest.json",
       "lib_utest/qualification/t3/verify_sources.py"
     ],
     "preceding_revision": {
-      "previous_manifest_sha256": "b6f59f4849940286841bb985e80bcd187ce3b345b2a30d40c8850905e0b4e312",
-      "reason": "Optional standalone resident T3 registration; force/history arithmetic and test cases unchanged",
+      "previous_manifest_sha256": "8379de2cea92df9a16b960b8c3b851b11abf852a624f047e225e7445543d9573",
+      "reason": "Optional host mixed shell binding registration only; point startup/rates/force formulas and tests unchanged",
       "changed_files": [
-        "lib_src/elements/t3/BUILD.bazel",
         "lib_utest/qualification/t3/CMakeLists.txt",
         "lib_utest/qualification/t3/source-manifest.json",
         "lib_utest/qualification/t3/verify_sources.py"
-      ]
+      ],
+      "preceding_revision": {
+        "previous_manifest_sha256": "b6f59f4849940286841bb985e80bcd187ce3b345b2a30d40c8850905e0b4e312",
+        "reason": "Optional standalone resident T3 registration; force/history arithmetic and test cases unchanged",
+        "changed_files": [
+          "lib_src/elements/t3/BUILD.bazel",
+          "lib_utest/qualification/t3/CMakeLists.txt",
+          "lib_utest/qualification/t3/source-manifest.json",
+          "lib_utest/qualification/t3/verify_sources.py"
+        ]
+      }
     }
   }
 }

@@ -34,6 +34,7 @@ BatchReport T3Batch::AssembleAccepted(const NodalAssemblyView& v) {
   s.assembled_attempt=v.attempt; s.assembled_epoch=UINT64_MAX; s.stream=v.stream;
   batch_detail::LaunchAssembly(s.storage,s.accepted,v,!s.bound);
   report=s.ReadControl(); if(report.status!=BatchStatus::Success) return fail(report);
+  if(!s.bound) s.initial_sources=v;
   s.bound=true; s.assembled_epoch=a.epoch;
   return {BatchStatus::Success,"OK"};
 }

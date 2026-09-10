@@ -226,4 +226,67 @@ TEST_F(NodalTemporalCuda, FullCapacityUsesTheSameSixAllocationsAndTwoStateSlabs)
   Initial too_large; too_large.n=Capacity+1; fe::FENodalState rejected;
   EXPECT_EQ(too_large.Initialize(rejected).status,Code::ResourceLimit); EXPECT_EQ(rejected.allocations().device_allocations,0u);
 }
+
+TEST_F(NodalTemporalCuda, AcceptedSourceIdentityChecksAllInputsWithoutGrantingAccessOrDrainingCudaErrors) {
+  Initial in,other; in.n=other.n=2; other.inverse[0]*=2; other.inverse_inertia[0]*=2; other.x[0]=.5;
+  fe::FENodalState owner,foreign,uninitialized,legacy;
+  EXPECT_EQ(uninitialized.ValidateAcceptedAssemblySources({}).status,Code::NotInitialized);
+  ASSERT_EQ(in.Initialize(owner).status,Code::Ok); ASSERT_EQ(other.Initialize(foreign).status,Code::Ok);
+  ASSERT_EQ(in.Initialize(legacy,Scheme::VelocityFirst).status,Code::Ok);
+  const auto allocation=owner.allocations(); Snapshot initial; ASSERT_TRUE(Read(owner,initial));
+  fe::NodalTrialToken token,other_token,legacy_token; fe::NodalAssemblyView view,other_view,legacy_view;
+  ASSERT_EQ(owner.BeginTrial(&token,&view).status,Code::Ok);
+  ASSERT_EQ(foreign.BeginTrial(&other_token,&other_view).status,Code::Ok);
+  ASSERT_EQ(legacy.BeginTrial(&legacy_token,&legacy_view).status,Code::Ok);
+  EXPECT_EQ(legacy.ValidateAcceptedAssemblySources(legacy_view).status,Code::Ok); legacy.Discard();
+  for(unsigned kind=0;kind<20;++kind) {
+    SCOPED_TRACE(kind); auto bad=view;
+    if(kind==0) bad.mass.inverse_mass=other_view.mass.inverse_mass;
+    if(kind==1) bad.mass.fixed=other_view.mass.fixed;
+    if(kind==2) bad.inverse_inertia=other_view.inverse_inertia;
+    if(kind==3) bad.translation_fixed_bits=other_view.translation_fixed_bits;
+    if(kind==4) bad.rotation_fixed=other_view.rotation_fixed;
+    if(kind==5) bad.accepted.position_xyz=other_view.accepted.position_xyz;
+    if(kind==6) bad.accepted.velocity_xyz=other_view.accepted.velocity_xyz;
+    if(kind==7) bad.accepted.angular_velocity_xyz=other_view.accepted.angular_velocity_xyz;
+    if(kind==8) bad.accepted.orientation_wxyz=other_view.accepted.orientation_wxyz;
+    if(kind==9) bad.stream=other_view.stream;
+    if(kind==10) bad.owner_id=other_view.owner_id;
+    if(kind==11) ++bad.mass.node_count;
+    if(kind==12) ++bad.mass.base_epoch;
+    if(kind==13) bad.mass.model=tlfea::contact::TranslationMassModel::kUnspecified;
+    if(kind==14) ++bad.accepted.node_count;
+    if(kind==15) ++bad.accepted.base_epoch;
+    if(kind==16) bad.temporal_scheme=Scheme::VelocityFirst;
+    if(kind==17) bad.velocity_phase=Phase::PreviousMidpoint;
+    if(kind==18) bad.position_time+=1;
+    if(kind==19) bad.velocity_time+=1;
+    EXPECT_EQ(owner.ValidateAcceptedAssemblySources(bad).status,Code::StaleTrial);
+    EXPECT_EQ(owner.ValidateAcceptedAssemblySources(view).status,Code::Ok);
+  }
+  auto sources_only=view; sources_only.attempt=0; sources_only.forces={}; sources_only.bounds=nullptr; sources_only.result=nullptr;
+  EXPECT_EQ(owner.ValidateAcceptedAssemblySources(sources_only).status,Code::Ok);
+  // Validation is not attempt authority and cannot make an unadvanced trial
+  // ready. Identity comparison alone leaves the complete accepted state intact.
+  EXPECT_EQ(owner.Commit(token).status,Code::WrongPhase);
+  Snapshot held; ASSERT_TRUE(Read(owner,held)); SameState(initial,held);
+  owner.Discard(); foreign.Discard();
+  EXPECT_EQ(owner.ValidateAcceptedAssemblySources(view).status,Code::Ok);
+  fe::NodalAssemblyView current; fe::NodalPreparedView prepared;
+  ASSERT_TRUE(BeginLoad(owner,Loads{},token,current)); ASSERT_TRUE(Prepare(owner,token,current,prepared));
+  EXPECT_NE(view.attempt,current.attempt);
+  EXPECT_EQ(owner.ValidateAcceptedAssemblySources(view).status,Code::Ok); // Same accepted epoch, expired view identity only.
+  ASSERT_EQ(owner.Commit(token).status,Code::Ok);
+  EXPECT_EQ(owner.ValidateAcceptedAssemblySources(view).status,Code::StaleTrial);
+  ASSERT_TRUE(BeginLoad(owner,Loads{},token,current)); ASSERT_TRUE(Prepare(owner,token,current,prepared));
+  const auto stamp=owner.accepted(); ASSERT_EQ(cudaPeekAtLastError(),cudaSuccess);
+  Noop<<<1,0,0,current.stream>>>(); const auto pending=cudaPeekAtLastError();
+  ASSERT_TRUE(pending==cudaErrorInvalidConfiguration||pending==cudaErrorInvalidValue);
+  EXPECT_EQ(owner.ValidateAcceptedAssemblySources(current).status,Code::Ok);
+  EXPECT_EQ(cudaPeekAtLastError(),pending); // Predicate must leave the error for Commit.
+  EXPECT_EQ(owner.Commit(token).status,Code::DeviceFailure); SameStamp(owner.accepted(),stamp);
+  EXPECT_EQ(owner.ValidateAcceptedAssemblySources(current).status,Code::DeviceFailure);
+  EXPECT_EQ(owner.allocations().device_bytes,allocation.device_bytes);
+  EXPECT_EQ(owner.allocations().device_allocations,allocation.device_allocations);
+}
 } // namespace

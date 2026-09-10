@@ -38,7 +38,11 @@ per-step allocation or copied nodal/material state. The reusable
 Formulation force/history arithmetic stays in the already qualified ports.
 
 1. Initialize the sole owner and both joined participants; assemble/discard
-   both actual initial rest caches before initializing the coordinator.
+   both actual initial rest caches before `Initialize(owner,qeph,t3)`. The
+   coordinator checks the retained first successful assembly source identities
+   against the actual owner's immutable mass/masks and accepted kinematic
+   buffers before device allocation or zero-diagnostic publication. Later raw
+   assembly cannot replace these first-binding records.
 2. Advance one prescribed owner trial through the existing receipt-gated
    staggered operation. Evaluate both native material candidates from that
    same endpoint, in either order, then stage the typed result readbacks.
@@ -48,6 +52,8 @@ Formulation force/history arithmetic stays in the already qualified ports.
    measures base and endpoint translation, native total rotation and separate
    physical/area-added isotropic rotation exactly once over the union. Their
    timestamps remain the owner's collocated-start/previous-midpoint times.
+   At epoch zero, the retained initial source identities are also checked
+   again; this host-only comparison does not consume a pending CUDA error.
 4. The caller finishes independent work/geometry/native checks and any output
    preparation before `Commit`. Commit checks the complete measured result,
    both pending contributors, actual token/buffers, scope and receipt again.
@@ -56,7 +62,7 @@ Formulation force/history arithmetic stays in the already qualified ports.
    stamp/diagnostic assignments and scratch invalidation remain. No CUDA call,
    allocation, readback, numerical check or callback follows that boundary.
 
-Every coordinator failure with an owner argument discards the nodal trial and
+Every `Prepare`/`Commit` failure discards the nodal trial and
 both material trials. Standalone commit functions reject joined participants
 before any owner commit. An individual typed evaluation failure still requires
 the coordinator/caller to close the whole attempt; force assembly scratch is
@@ -102,6 +108,10 @@ Eight actual CUDA test functions are proposed:
 * Invalid joined counts/policies/capacity, owner mass/J/rest/free-mask faults,
   and geometry-identical different source inventories/configurations reject.
   Each family independently checks a bad node absent from its own cell.
+  Foreign initial mass or kinematic buffers with plausible metadata fail
+  coordinator authentication for either family, including a numerically valid
+  foreign mass that conceals the actual owner's incorrect mass. Reassembly
+  cannot replace the retained source record; fresh valid participants retry.
 * Missing contributor, wrong owner/stream, plausible metadata with foreign
   buffers, and null/overlapping precommit output preserve all accepted results.
 * Duplicate scope, standalone commits, stale/tampered global or typed data,
@@ -149,8 +159,22 @@ alternate qualification project is introduced.
 There are six existing owner allocations plus one per typed batch and one
 kinetic scratch allocation: **nine explicit allocations**. Both typed batches
 retain their 1 MiB ceilings; the kinetic scratch has a compile-time 1 KiB cap.
-Exact revised host ABI/allocation forecasts and actual device measurements are
-**pending root's probes**; the prior standalone T3 6,216-byte record is not a
-current allocation claim. Freeze those measurements and source maps before
-the first numerical execution. Old standalone QEPH/T3 batch, native force,
+The retained host ABI probe measured **14,832 B QEPH, 6,224 B T3 and 304 B
+publication storage**, each alignment 8: **21,360 B** across those three
+device allocations, plus the existing owner's six allocations. The evidence
+is `crash-work/checkpoints/robo-dyna-restart-20260910T0010Z/abi/measurements.json`
+and `crash-work/reports/mixed-shell-abi-build-1.json`. The new retained source
+identity records are host-only and do not alter those device storage types.
+Actual CUDA compilation/layout and allocation measurements are **pending**;
+the prior standalone T3 6,216-byte record is not a current allocation claim.
+Freeze the source map after shared registration and identity changes settle,
+before the first numerical execution. Old standalone QEPH/T3 batch, native force,
 owner timing and scoped QEPH response/contact regressions remain required.
+
+`prepare_source_map.py` lists the explicit linked/build inputs and recursive
+local C/C++ includes without hashes by default. After source review and shared
+registration settle, `--write` creates `source-map.json` once; `--check` compares
+the complete map and current input closure. The original/extracted native
+Fortran closure is delegated to the two pinned native manifests and owning
+verifiers. Compiler, CUDA, Fortran runtime, GTest and system headers remain
+explicit external dependencies; this map is not a hermetic toolchain image.

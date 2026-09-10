@@ -1,4 +1,5 @@
 #include "RecurrenceIdentity.h"
+#include "RecurrencePowerGram.h"
 #include <Eigen/Eigenvalues>
 #include <cmath>
 
@@ -7,20 +8,9 @@ bool PowerGram(const Eigen::MatrixXd& a,unsigned count,Eigen::MatrixXd& output,s
   if(a.rows()<1||a.rows()!=a.cols()||a.rows()>194||!a.allFinite()||count<1||count>32769) {
     error="Invalid finite-horizon Gram dimensions/count"; return false;
   }
-  Eigen::MatrixXd p=Eigen::MatrixXd::Identity(a.rows(),a.cols()),g=Eigen::MatrixXd::Zero(a.rows(),a.cols());
-  Eigen::MatrixXd block_p=a,block_g=p;
-  while(count) {
-    if(count&1u) {
-      g=(g+p.transpose()*block_g*p).eval(); p=(block_p*p).eval();
-      if(!p.allFinite()||!g.allFinite()) { error="Nonfinite accumulated power/Gram"; return false; }
-    }
-    count>>=1u;
-    if(count) {
-      block_g=(block_g+block_p.transpose()*block_g*block_p).eval(); block_p=(block_p*block_p).eval();
-      if(!block_p.allFinite()||!block_g.allFinite()) { error="Nonfinite binary power/Gram block"; return false; }
-    }
-  }
-  output=std::move(g); error.clear(); return true;
+  PowerGramBlock block;
+  if(!BuildPowerGramBlock(a,count,block,error)) return false;
+  output=std::move(block.gram); error.clear(); return true;
 }
 MapAnalysis Analyze(const Model& m,double h,const MatrixProbe& p) {
   MapAnalysis out;
