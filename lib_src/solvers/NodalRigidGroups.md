@@ -12,9 +12,11 @@ unchanged: no generated primary is inserted as another physical node.
 `NodalRigidGroupStorage` validates this association and owns the copied source
 properties, native regularization ledger and source-ordered member inventory.
 One immutable CUDA arena stores compact group ranges/principal inertias/masses,
-member indices/masses/J, and node membership flags. Capacity is 64 groups, 256
-members per group (at least two), and at most the owner's admitted physical-node count. All
-counts and the whole device payload are checked before device allocation.
+member indices/masses/J, and node membership flags. Default owner capacity is
+64 groups, 256 members per group (at least two), and at most the owner's admitted
+physical-node count. [Explicit vehicle limits](NodalRigidCapacity.md) admit
+1,024 groups / 8,192 members. Counts, retained rigid host payload and the whole
+device payload are checked before borrowed nodal reads or device allocation.
 Exactly two members use the [native finite-rotation branch](../constraints/NodalRigidTwoMemberStep.md);
 the complete model source-length conversion remains in the immutable device view.
 
@@ -24,7 +26,8 @@ group selector, separate clock, step counter, commit or mutable public device
 view. `BeginTrial` copies the full accepted slab; the existing owner pointer swap
 publishes physical nodes and group values together. The legacy six-allocation
 layout is unchanged without groups. Attached groups add one immutable allocation
-and their two state tails under the same 1 MiB total device cap. All host vectors
+and their two state tails under the same explicit total device cap (1 MiB by
+default, up to 256 MiB with explicit admission). All host vectors
 and diagnostic staging are sized at initialization; stepping/readback allocates
 no module storage. Runtime/driver allocations remain outside that established
 module accounting contract.

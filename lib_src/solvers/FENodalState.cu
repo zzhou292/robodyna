@@ -138,6 +138,22 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
     return {NodalStatus::InvalidInput, "Initial half step is not representable"};
   if (!rotations && in.orientation_wxyz)
     return {NodalStatus::UnsupportedRotation, "Orientations require extended nodal initialization"};
+  // Count and whole-owner byte admission precede borrowed nodal array reads.
+  // Source model access here is immutable metadata only; physical association
+  // and ordered per-node validity checks below retain their existing order.
+  const auto n = c.node_count;
+  nodal_detail::RigidStorageLayout rigid_layout;
+  if(groups) {
+    const auto report=nodal_detail::ForecastRigidStorage(*groups,c,rigid_layout);
+    if(report.status!=NodalStatus::Ok)return report;
+  }
+  const std::size_t group_values=groups?rigid::GroupStateValues*groups->group_count():0;
+  const nodal_detail::ForceStageCaptureLayout capture{n,groups?groups->group_count():0};
+  const std::size_t capture_values=c.capture_force_stage_accelerations?capture.values():0;
+  nodal_detail::StateLayout layout;
+  if(!layout.Initialize(n,rotations,group_values,rigid_layout.device_bytes,
+      capture_values,sizeof(Control),c.max_device_bytes))
+    return {NodalStatus::ResourceLimit,"Device byte budget or host staging extent is insufficient"};
   bool component_constraints = false;
   for (std::size_t i = 0; i < c.node_count; ++i) {
     const unsigned bits = rotations ? dofs->translation_fixed_bits[i] : (fixed[i] ? 7 : 0);
@@ -160,22 +176,14 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
         return {NodalStatus::InvalidInput, "Invalid angular or fixed-rotation velocity", static_cast<std::uint32_t>(i)};
     }
   }
-  const auto n = c.node_count;
   std::unique_ptr<nodal_detail::RigidStorage> rigid_groups;
   if(groups) {
     if(!rotations) return {NodalStatus::UnsupportedRotation,"Rigid groups require extended nodal state"};
     try {
-      auto report=nodal_detail::PrepareRigidStorage(*groups,c,in,inverse_mass,*dofs,rigid_groups);
+      auto report=nodal_detail::PrepareRigidStorage(*groups,c,in,inverse_mass,*dofs,rigid_layout,rigid_groups);
       if(report.status!=NodalStatus::Ok) return report;
     } catch(const std::bad_alloc&) { return {NodalStatus::ResourceLimit,"Rigid host storage allocation failed"}; }
   }
-  const std::size_t group_values=rigid_groups?rigid::GroupStateValues*rigid_groups->info.group_count:0;
-  const nodal_detail::ForceStageCaptureLayout capture{n,rigid_groups?rigid_groups->info.group_count:0};
-  const std::size_t capture_values=c.capture_force_stage_accelerations?capture.values():0;
-  nodal_detail::StateLayout layout;
-  if(!layout.Initialize(n,rotations,group_values,rigid_groups?rigid_groups->immutable_bytes:0,
-      capture_values,sizeof(Control),c.max_device_bytes))
-    return {NodalStatus::ResourceLimit,"Device byte budget or host staging extent is insufficient"};
   const auto state_values=layout.accepted.count,mask_bytes=layout.fixed.bytes;
   try {
     auto next = std::make_unique<Impl>();

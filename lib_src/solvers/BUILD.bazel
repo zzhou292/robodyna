@@ -10,6 +10,12 @@ cc_library(
 )
 
 cc_library(
+    name = "nodal_rigid_storage_layout",
+    hdrs = ["NodalRigidOwnerLimits.h", "NodalRigidStorageLayout.h"],
+    deps = [":nodal_state_layout", "//lib_src/constraints:nodal_rigid_group_step_math", "//lib_utils:bounded_arena"],
+)
+
+cc_library(
     name = "nodal_trial_identity",
     # Compatibility facade: identity is now also used inside the owning module.
     deps = [":explicit_nodal_state"],
@@ -28,7 +34,7 @@ cuda_library(
             "NodalNodeStep.h", "NodalRigidGroupStorage.h", "ExplicitNodalRigidStep.h", "NodalSnapshotRanges.h",
             "NodalForceStageSnapshot.h", "NodalForceStageCaptureLayout.h", "NodalForceStageSnapshotRanges.h"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
-    deps = [":explicit_step_stability", ":nodal_state_layout", "//lib_src/math:quaternion", "//lib_src/constraints:nodal_rigid_group_step_math"],
+    deps = [":explicit_step_stability", ":nodal_state_layout", ":nodal_rigid_storage_layout", "//lib_src/math:quaternion", "//lib_src/constraints:nodal_rigid_group_step_math"],
 )
 
 cc_library(

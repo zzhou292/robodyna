@@ -4,6 +4,7 @@
 #include "ExplicitStepStability.h"
 #include "NodalForceStageSnapshot.h"
 #include "NodalStateLimits.h"
+#include "NodalRigidOwnerLimits.h"
 #include "../constraints/NodalRigidGroupState.h"
 #include <cuda_runtime_api.h>
 #include <cstddef>
@@ -44,6 +45,8 @@ struct NodalStateConfig {
   // require explicit count AND sufficient byte limits; defaults remain 2048
   // nodes/1 MiB. All buffers remain active-sized with no per-step growth.
   std::size_t max_nodes = MaxNodalStateNodes;
+  // Independent opt-in group scope; default preserves the64-group owner.
+  NodalRigidOwnerLimits rigid_limits{};
 };
 // Optional conventional-node degrees of freedom. Masks are immutable WORLD
 // constraints: bits 1/2/4 fix x/y/z translation, and rotation_fixed is 0 or 1.

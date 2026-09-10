@@ -24,15 +24,23 @@ void RigidStorage::InitializeState(double* tail) const noexcept {
       {properties[g].center,initial_velocity,{},properties[g].principal.axes});
 }
 
-NodalReport PrepareRigidStorage(const NodalRigidGroupModel& model,const NodalStateConfig& config,
-    HostNodalKinematicsView input,const double* inverse_mass,const NodalDofConfig& dofs,
-    std::unique_ptr<RigidStorage>& output) {
+NodalReport ForecastRigidStorage(const NodalRigidGroupModel& model,const NodalStateConfig& config,
+    RigidStorageLayout& output) noexcept {
   if(!model.prepared()||model.global_node_count()!=config.node_count||!model.group_count())
     return {NodalStatus::InvalidInput,"Rigid model is not complete for this node inventory"};
   if(config.temporal_scheme!=NodalTemporalScheme::StaggeredHalfKickStart)
     return {NodalStatus::UnsupportedTemporalScheme,"Rigid groups require staggered physical initialization"};
-  if(model.group_count()>MaxOwnerRigidGroups||model.member_count()>config.node_count)
-    return {NodalStatus::ResourceLimit,"Rigid model exceeds owner group/member limits"};
+  RigidStorageLayout next;
+  if(!next.Initialize(config.node_count,model.group_count(),model.member_count(),config.rigid_limits,sizeof(RigidStorage)))
+    return {NodalStatus::ResourceLimit,"Rigid count or host payload exceeds explicit owner limits"};
+  for(std::size_t g=0;g<model.group_count();++g)
+    if(model.groups()[g].member_count<2||model.groups()[g].member_count>MaxOwnerRigidMembersPerGroup)
+      return {NodalStatus::ResourceLimit,"Rigid group requires 2 to 256 complete members"};
+  output=next;return {NodalStatus::Ok,"Rigid storage forecast prepared"};
+}
+NodalReport PrepareRigidStorage(const NodalRigidGroupModel& model,const NodalStateConfig& config,
+    HostNodalKinematicsView input,const double* inverse_mass,const NodalDofConfig& dofs,
+    const RigidStorageLayout& layout,std::unique_ptr<RigidStorage>& output) {
   auto next=std::make_unique<RigidStorage>();
   next->info={model.source_instance_id(),model.group_count(),model.member_count()};
   next->units=model.source_units();
@@ -43,8 +51,6 @@ NodalReport PrepareRigidStorage(const NodalRigidGroupModel& model,const NodalSta
   const auto first=model.members()[0].global_node;
   next->initial_velocity={input.velocity_xyz[3*first],input.velocity_xyz[3*first+1],input.velocity_xyz[3*first+2]};
   for(const auto& group:next->properties) {
-    if(group.member_count<2||group.member_count>MaxOwnerRigidMembersPerGroup)
-      return {NodalStatus::ResourceLimit,"Rigid group requires 2 to 256 complete members"};
     next->groups.push_back({static_cast<std::uint32_t>(group.member_offset),static_cast<std::uint32_t>(group.member_count),
                            group.total_mass_kg,group.principal.inertia});
   }
@@ -62,11 +68,14 @@ NodalReport PrepareRigidStorage(const NodalRigidGroupModel& model,const NodalSta
     next->member_nodes[i]=1;
     next->members.push_back({static_cast<std::uint32_t>(i),member.mass_kg,member.total_inertia_kg_m2});
   }
-  // Counts were bounded above; aligned native structs precede byte membership.
-  static_assert(sizeof(RigidGroupRange)%alignof(RigidMemberMetric)==0,"Aligned immutable member array");
-  next->members_offset=next->groups.size()*sizeof(RigidGroupRange);
-  next->nodes_offset=next->members_offset+next->members.size()*sizeof(RigidMemberMetric);
-  next->immutable_bytes=next->nodes_offset+next->member_nodes.size();
+  // Forecasted retained payload includes the source copies, compact metadata,
+  // membership mask and snapshots. No startup-only rigid array is allocated.
+  if(!RigidHostPayload(sizeof(RigidStorage),next->properties.capacity(),next->source_members.capacity(),
+      next->groups.capacity(),next->members.capacity(),next->member_nodes.capacity(),next->snapshots.capacity(),
+      config.rigid_limits.max_host_bytes,next->owned_host_bytes))
+    return {NodalStatus::ResourceLimit,"Actual rigid host capacities exceed payload budget"};
+  next->members_offset=layout.members.offset;next->nodes_offset=layout.node_mask.offset;
+  next->immutable_bytes=layout.device_bytes;
   output=std::move(next); return {NodalStatus::Ok,"Rigid startup association prepared"};
 }
 } // namespace tl::fea::nodal_detail

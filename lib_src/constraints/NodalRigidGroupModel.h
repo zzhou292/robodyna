@@ -25,6 +25,7 @@ struct NodalRigidGroupLimits {
   // Owned host payload including temporary identity-index storage, excluding
   // allocator metadata. No CUDA allocation or runtime capacity is changed.
   std::size_t max_host_bytes=8*1024*1024;
+  static constexpr NodalRigidGroupLimits Vehicle() noexcept {return {1024,8192,256,8*1024*1024};}
 };
 struct NodalRigidGroupModelInput {
   std::uint64_t source_instance_id=0;
