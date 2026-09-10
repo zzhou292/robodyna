@@ -187,3 +187,66 @@ silently overrun this format. The
 binds the source, tests and guard reports. Subsequent independent source review
 found no blocker within the literal one-hop scope and reverified all retained
 hashes. No GPU, source mechanics or attachment load transfer was executed.
+
+## Whole-part assembly inventory
+
+`tools/compile_yaris_assembly.py` composes the six complete parts surrounding
+PID 2000157 into `robo-dyna.source-assembly-inventory.v1`. It preserves 915
+original shells (804 Q4 and 111 native T3), 1,030 nodes, six MID/SECID pairs,
+two original hardening curves and exact parent-to-material/section bindings.
+No single-part parser, limit, frozen schema or source artifact is changed.
+The existing connector declaration compiler is reused solely to authenticate
+the pinned archive and units. Its PID 2000157 is not automatically included in
+requested geometry; an ELFORM 16-only selection remains valid.
+
+```bash
+python3 robo-dyna/tools/compile_yaris_assembly.py \
+  --source-archive crash-work/assets/yaris-vehicle/source_model.zip \
+  --canonical-assets crash-work/assets/yaris-vehicle \
+  --boundary-policy released_external_connections \
+  --output crash-work/reports/yaris-six-part-assembly-inventory-1.json
+```
+
+The explicit extraction policy retains every internal source connection and
+records deliberately released external interfaces for a future standalone
+component experiment. It assigns no constraints, reactions or added mass.
+Omitting this option leaves the boundary unassigned. Both modes retain the six
+internal nodal-rigid groups, four outgoing nodal-rigid groups and thirteen
+outgoing spotwelds, with 37 source-verified external nodes. The spotweld reader
+checks all 2,828 original records, including repeated records under a single
+keyword and late duplicate IDs. Actual tied pairs remain unresolved. Where
+exactly one tied side includes selected parts, every possible selected pair
+crosses the extraction boundary; the release policy records that scope as
+released without inventing projected pairs. The original six-part case has
+zero selected slave parts and five selected master parts. If both sides include
+selected parts, potential internal ties remain unresolved and are not silently
+released. No mode claims full vehicle closure or qualified pairing.
+
+Offline limits are explicit: eight parts, 1,024 shells, 2,048 structural nodes,
+64 nodal-rigid groups, 128 selected spotwelds and 256 frontier nodes. The reused
+frontier collector additionally requires a complete validation seed plus the
+frontier to fit its unchanged 512-node bound. JSON publication is create-only,
+after validation, with a 16 MiB byte cap. None of these limits change TL storage.
+
+`declarations` contains tables sorted by source ID. `parent_bindings` records
+source EID/PID/MID/SECID/curve/ELFORM, the corresponding table indices, element
+family and family index, and physical node indices. Owner node ordering is
+ascending source NID; parent ordering follows ascending PID and original
+canonical record order within each part. Original raw shell slots and source
+line/blank-mask data remain in `geometry.parts`, including each T3 repeated
+fourth slot. Material equality does not erase distinct source MID identities.
+
+The pinned ordinary MAT024 converter explicitly maps ELFORM 16 and ELFORM 2
+to the same QEPH/C0 policy. Source ELFORM 16 stays visible; this inventory does
+not claim LS-DYNA formulation equivalence or qualify assembly mechanics.
+Every report has `simulation_ready=false`, `mechanics_capacity_changed=false`
+and `full_attachment_closure_qualified=false`. Native structural mass/inertia
+remain pending shell startup. Other attachment families, added masses,
+assembled controls and general/self-contact remain outside this package.
+
+Modules separate source declaration admission, geometry composition, typed
+interfaces, record streaming, parent bindings and report/CLI publication.
+`source_assembly_unit` covers authored invalid inputs and rollback of host
+publication. With `CRASH_YARIS_VEHICLE_ASSETS` configured, CTest also registers
+`yaris_assembly_inventory`, checking the original 915-shell package and unchanged
+single-part output. Missing declared assets fail this integration test.

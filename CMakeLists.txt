@@ -123,6 +123,11 @@ add_test(NAME canonical_part_geometry_unit
           -s "${CMAKE_CURRENT_SOURCE_DIR}/tests" -p "test_canonical_part_geometry.py" -v)
 set_tests_properties(canonical_part_geometry_unit PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE)
 
+add_test(NAME source_assembly_unit
+  COMMAND "${Python3_EXECUTABLE}" -B -m unittest discover
+          -s "${CMAKE_CURRENT_SOURCE_DIR}/tests" -p "test_source_assembly.py" -v)
+set_tests_properties(source_assembly_unit PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE)
+
 set(ROBO_DYNA_SURFACE_QUADRATURE "" CACHE FILEPATH "Qualified offline 4/8/16 shell-surface quadrature artifact")
 if(ROBO_DYNA_SURFACE_QUADRATURE)
   if(NOT EXISTS "${ROBO_DYNA_SURFACE_QUADRATURE}")
@@ -146,5 +151,10 @@ if(CRASH_YARIS_VEHICLE_ASSETS)
     COMMAND "${Python3_EXECUTABLE}" -B -m unittest discover
             -s "${CMAKE_CURRENT_SOURCE_DIR}/tests" -p "test_yaris_vehicle_model.py" -v)
   set_tests_properties(yaris_vehicle_artifacts PROPERTIES TIMEOUT 120 RUN_SERIAL TRUE
+    ENVIRONMENT "YARIS_VEHICLE_ASSET_DIR=${CRASH_YARIS_VEHICLE_ASSETS}")
+  add_test(NAME yaris_assembly_inventory
+    COMMAND "${Python3_EXECUTABLE}" -B -m unittest discover
+            -s "${CMAKE_CURRENT_SOURCE_DIR}/tests" -p "test_yaris_assembly_model.py" -v)
+  set_tests_properties(yaris_assembly_inventory PROPERTIES TIMEOUT 120 RUN_SERIAL TRUE
     ENVIRONMENT "YARIS_VEHICLE_ASSET_DIR=${CRASH_YARIS_VEHICLE_ASSETS}")
 endif()
