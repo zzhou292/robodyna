@@ -1,7 +1,7 @@
 # Robo-dyna: Yaris delivery plan
 
-Updated 2026-09-10 after the four-step milestone, against robo-dyna `4b20345`
-and TL-FEA `fb801f1`.
+Updated 2026-09-10 for the full-shell milestone, against robo-dyna `118e1d7`
+and TL-FEA `a519f3a`.
 This is the concise delivery roadmap. The workspace
 [active execution plan](../../planning/CURRENT_EXECUTION_PLAN.md) tracks current
 runs and integration order; [execution status](../../planning/EXECUTION_STATUS.md)
@@ -84,6 +84,30 @@ startup/free flight and first contact precede that longer demo. The archive cap
 is now **2 GiB per run**; RAM stays at **20 GB**. The existing smaller component
 runs remain regression and diagnostic clients of those same modules.
 
+Full-source scope is now authenticated: omitting exactly the eight tire body/
+tread parts retains **349,645 shells / 359,785 nodes / 867 parts**. Vehicle-sized
+node storage, indexed shell binding, immutable material catalog and Chrono scene
+are merged and pass source-sized qualification. Stable original-PID colors are
+implemented; the inspected [colored component preview](../../crash-work/renders/source-seven-part-part-colors-1.mp4)
+reuses the prior seven-part simulation. It is not a full-shell run.
+
+Native analytic LAW44 and native two-member rigid dynamics are qualified.
+Actual original pure/mixed analytic source declarations now pass the V2 reader/
+binding tests; V1 archives retain their table-only contract. Explicit vehicle
+rigid owner capacity passes all eight focused root CPU/CUDA test groups, up to
+1,024 groups / 8,192 members, including full-node capture and rejection/retry.
+Native layered LAW1 point/NIP3 values pass seven root CPU/CUDA test groups with
+existing plasticity regressions. Layered elastic Q/T forces and vehicle resident
+Q/T capacity remain in progress. Binary frame and interval record foundations
+pass owning tests; static source/topology bundles and live full-shell output
+remain to be integrated.
+
+The [population design](../../planning/FULL_SHELL_POPULATION_ARCHITECTURE.md)
+keeps one complete batch per native formulation and selects the material law per
+parent. A material ID does not create another solver participant or another mass
+contribution. Remaining full-source physics includes mixed-law dispatch, failure,
+rigid-part and membrane roles, beam/tie load paths and contact for longer folding.
+
 User priority: **functionality first, performance afterward**. The next
 engineering objective is the full selected Yaris shell assembly with its
 required mechanics and contact. The existing seven-part impact through roughly
@@ -137,12 +161,13 @@ for these distinctions. See the
 | robo-dyna `modelio`, `case` and `output` | Authenticated source inventory, explicit policies/boundaries, immutable startup composition, thin execution loop, accepted archives and diagnostics. Reuse shared utilities; keep modules focused and source mappings complete. |
 | Chrono and robo-dyna replay adapters | Reuse mesh, geometry, scene and rendering infrastructure. Read accepted TL state at its recorded phase; replay does not run another dynamics solver. |
 
-The active binding, typed shell arenas and mesh-wall contact path now support
-explicitly bounded **1,024-parent / 2,048-node** collections, including the actual
-six- and seven-part inventories. Legacy defaults of 128 remain compatibility
-settings, not the current component limit. Each owner retains independent count
-and byte admission, preallocated stepping storage, failed-readback atomicity and
-last-entry rollback tests. This is not whole-vehicle capacity qualification.
+Resident typed shell arenas and mesh-wall contact still admit bounded
+**1,024-parent / 2,048-node** collections, including the actual six- and seven-part
+inventories. Vehicle-sized host binding/material catalogs and nodal/rigid owners
+are now separately qualified; those larger capacities do not imply resident or
+contact admission. Legacy defaults remain compatibility settings. Each owner
+retains independent count/byte admission, preallocated stepping storage,
+failed-readback atomicity and last-entry rollback tests.
 See [collection scaling](../../planning/SHELL_COLLECTION_SCALING.md) and
 [module contracts](../../planning/MODULAR_ARCHITECTURE.md).
 
