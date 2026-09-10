@@ -60,3 +60,19 @@ exact forecast/cap admission and failure preservation. A separate synthetic
 CSV-only test exercises the declared 8 MiB segmented-file boundary; it is not
 mechanical evidence. The existing scene suite includes the assembly kind's
 physical-scale, actual-wall and mutable native-color dispatch.
+
+## Qualified assembly replay checkpoint (2026-09-10)
+
+App57d6805 passes the owning Release reader/scene build and32 functions in three
+CTest groups (`source-assembly-replay-tests-1`). Appa8cdc88 strengthens the actual
+scene oracle: both the514-frame yielding connector and65-frame connected assembly
+stream through Chrono with independent archived coordinate bits, source EIDs,
+three-point plastic histories, fixed wall and face-color checks. All three
+selected scene functions pass (`source-assembly-actual-scene-tests-1`).
+
+The actual RTX5090 capture contains all65 accepted assembly frames through
+15.258789us. `crash-work/renders/source-assembly-wall-diagnostic-1.mp4` is a
+physical-scale integration diagnostic:6.5s presentation,10FPS,1280x720 H264,
+98,005B. All PNG hashes, video probe and full decode pass, and decoded initial/
+final images were inspected. Motion is barely visible at this microsecond
+horizon; the next visibly deforming connected-impact video remains separate.
