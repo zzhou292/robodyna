@@ -20,6 +20,14 @@ cc_library(
 )
 
 cc_library(
+    name = "nodal_rigid_part_topology",
+    srcs = ["NodalRigidPartTopology.cpp", "NodalRigidPartTopologyChecks.cpp"],
+    hdrs = ["NodalRigidPartTopology.h", "NodalRigidPartTopologyInternal.h"],
+    copts = ["-std=c++17"],
+    deps = ["//lib_utils:source_identity_index"],
+)
+
+cc_library(
     name = "nodal_rigid_group_step_math",
     hdrs = ["NodalRigidFrameStep.h", "NodalRigidTwoMemberStep.h", "NodalRigidFiniteVelocity.h", "NodalRigidGroupStepMath.h", "NodalRigidGroupState.h", "NodalRigidGroupCandidate.h", "NodalRigidAccelerationSink.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],

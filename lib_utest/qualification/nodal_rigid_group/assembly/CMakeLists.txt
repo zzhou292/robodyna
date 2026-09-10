@@ -1,4 +1,17 @@
 include("${tl_rigid_root}/lib_src/constraints/NodalRigidAssembly.cmake")
+include("${tl_rigid_root}/lib_src/constraints/NodalRigidPartTopology.cmake")
+execute_process(COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/topology_fixture/verify_fixture.py"
+  RESULT_VARIABLE rigid_topology_verify ERROR_VARIABLE rigid_topology_verify_error)
+if(NOT rigid_topology_verify EQUAL 0)
+  message(FATAL_ERROR "Pinned Yaris topology fixture verification failed: ${rigid_topology_verify_error}")
+endif()
+add_custom_target(nodal_rigid_topology_verify_fixture
+  COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/topology_fixture/verify_fixture.py" VERBATIM)
+add_executable(nodal_rigid_part_topology_check PartTopologyTest.cpp PartTopologyYarisTest.cpp)
+target_link_libraries(nodal_rigid_part_topology_check PRIVATE tl_nodal_rigid_part_topology GTest::gtest_main)
+add_dependencies(nodal_rigid_part_topology_check nodal_rigid_topology_verify_fixture)
+add_test(NAME nodal_rigid_part_topology_check COMMAND nodal_rigid_part_topology_check)
+set_tests_properties(nodal_rigid_part_topology_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)
 execute_process(COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/native/verify_sources.py"
   RESULT_VARIABLE rigid_assembly_verify ERROR_VARIABLE rigid_assembly_verify_error)
 if(NOT rigid_assembly_verify EQUAL 0)
