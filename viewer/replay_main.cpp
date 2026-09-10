@@ -79,7 +79,7 @@ Options Parse(int argc, char** argv) {
 struct Playback {
     bool paused = false, step = false, close = false;
 };
-void PlasticColorLegend(double maximum) {
+void PlasticColorLegend(double maximum, const crash::visual::ReplayScalarLegend* fields) {
     ImGui::TextUnformatted("Color: equivalent plastic strain (max layer per parent)");
     const auto blue=crash::visual::ReplayScalarColor(0);
     const auto yellow=crash::visual::ReplayScalarColor(.5);
@@ -88,6 +88,16 @@ void PlasticColorLegend(double maximum) {
     ImGui::TextColored(ImVec4(yellow.R,yellow.G,yellow.B,1),"%.4g%%",50*maximum);ImGui::SameLine();
     ImGui::TextColored(ImVec4(red.R,red.G,red.B,1),"%.4g%%",100*maximum);ImGui::SameLine();
     ImGui::TextUnformatted("| fixed scale for every accepted frame");
+    if (fields) {
+        using A = crash::output::ReplayScalarApplicability;
+        for (auto item : {std::pair<A,std::size_t>{A::NotApplicable,fields->not_applicable},
+                          {A::Unavailable,fields->unavailable}}) {
+            if (!item.second) continue;
+            const auto color=crash::visual::ReplayMissingScalarColor(item.first);
+            ImGui::TextColored(ImVec4(color.R,color.G,color.B,1),"%s: %zu parents",
+                              crash::visual::ReplayApplicabilityName(item.first),item.second);
+        }
+    }
 }
 void PartColorLegend(const crash::visual::AcceptedReplayScene& scene) {
     const auto& entries=*scene.part_legend();
@@ -143,7 +153,7 @@ class ReplayOverlay : public chrono::vsg3d::ChGuiComponentVSG {
                 if(info_.source_plasticity) {
                     ImGui::Text("Initial speed: %.3g m/s | deformation scale: 1x",info_.source_initial_speed_m_per_s);
                     if (scene_.color_mode()==crash::visual::ReplayColorMode::PlasticStrain)
-                        PlasticColorLegend(info_.plastic_strain_color_max);
+                        PlasticColorLegend(info_.plastic_strain_color_max, scene_.scalar_legend());
                     if(info_.kind==crash::output::ReplayKind::SourceAssemblyWall && info_.source_assembly) {
                         const auto& assembly=*info_.source_assembly;
                         ImGui::Text("%zu source parts | %zu shells | %zu internal rigid groups",

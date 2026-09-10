@@ -1,5 +1,6 @@
 #include "AcceptedReplayScene.h"
 #include "ReplayParentScalarColors.h"
+#include "ReplayDisplayGeometry.h"
 
 #include "output/AcceptedReplay.h"
 #include "chrono/assets/ChVisualShapeTriangleMesh.h"
@@ -18,42 +19,6 @@ namespace crash::visual {
 namespace {
 bool SourceWall(output::ReplayKind kind) {
     return kind==output::ReplayKind::SourcePartWall||kind==output::ReplayKind::SourceAssemblyWall;
-}
-bool Finite(const chrono::ChVector3d& p) {
-    return std::isfinite(p.x()) && std::isfinite(p.y()) && std::isfinite(p.z());
-}
-double RendererCoordinate(double value) {
-    // Materialize the binary32 storage used by the renderer before testing
-    // triangle collapse. The narrowing is part of this validation contract.
-    volatile float stored = static_cast<float>(value);
-    return stored;
-}
-bool DisplayGeometry(const std::vector<chrono::ChVector3d>& positions,
-                     const std::vector<chrono::ChVector3i>& triangles,
-                     ReplayGeometryLimits limits = {}) {
-    if (!limits.valid() || positions.empty() || positions.size() > limits.vertices ||
-        triangles.empty() || triangles.size() > limits.triangles) return false;
-    // VSG's rendering buffers are float, and its actual GetFaceNormals uses a
-    // binary64 cross product and length. Reject geometry those operations cannot
-    // represent, even if it was valid for a more general archive consumer.
-    for (const auto& p : positions)
-        if (!Finite(p) || !std::isfinite(static_cast<float>(p.x())) ||
-            !std::isfinite(static_cast<float>(p.y())) || !std::isfinite(static_cast<float>(p.z()))) return false;
-    for (const auto& t : triangles) {
-        for (int j = 0; j < 3; ++j)
-            if (t[j] < 0 || static_cast<std::size_t>(t[j]) >= positions.size()) return false;
-        const auto n = chrono::Vcross(positions[t[1]] - positions[t[0]], positions[t[2]] - positions[t[0]]);
-        const double length2 = n.Length2();
-        if (!Finite(n) || !std::isfinite(length2) || !(length2 > 0)) return false;
-        chrono::ChVector3d displayed[3];
-        for (int j = 0; j < 3; ++j) {
-            const auto& p = positions[t[j]];
-            displayed[j] = {RendererCoordinate(p.x()), RendererCoordinate(p.y()), RendererCoordinate(p.z())};
-        }
-        const auto displayed_normal = chrono::Vcross(displayed[1] - displayed[0], displayed[2] - displayed[0]);
-        if (!(displayed_normal.Length2() > 0)) return false;
-    }
-    return true;
 }
 std::shared_ptr<chrono::ChTriangleMeshConnected> CopyGeometry(const chrono::ChTriangleMeshConnected& source) {
     auto mesh = std::make_shared<chrono::ChTriangleMeshConnected>();
@@ -185,8 +150,8 @@ ReplaySceneReport AcceptedReplayScene::Initialize(const output::ReplayInfo& info
         frame.mesh->GetCoordsVertices().size() != info.node_count || frame.mesh->GetIndicesVertices().size() != info.triangle_count ||
         (info.kind == output::ReplayKind::NormalImpact || info.kind == output::ReplayKind::GuidedPlate ||
          SourceWall(info.kind)) != static_cast<bool>(wall) ||
-        !DisplayGeometry(frame.mesh->GetCoordsVertices(), frame.mesh->GetIndicesVertices(), limits) ||
-        (wall && !DisplayGeometry(wall->GetCoordsVertices(), wall->GetIndicesVertices())))
+        !CheckReplayDisplayGeometry(frame.mesh->GetCoordsVertices(), frame.mesh->GetIndicesVertices(), limits) ||
+        (wall && !CheckReplayDisplayGeometry(wall->GetCoordsVertices(), wall->GetIndicesVertices())))
         return {ReplaySceneStatus::InvalidFrame, "Invalid validated replay geometry or metadata"};
     try {
         auto next = std::make_unique<Impl>();
@@ -200,7 +165,10 @@ ReplaySceneReport AcceptedReplayScene::Initialize(const output::ReplayInfo& info
                !next->parent_colors.Initialize(info.triangle_source_parent,frame.parent_plastic_strain,
                     info.plastic_strain_color_max,next->moving->GetCoordsColors(), limits))
                 return {ReplaySceneStatus::InvalidFrame,"Invalid accepted plastic display association or fixed scale"};
-            for(const auto& parent:frame.parent_plastic_strain)if(parent.value!=0)
+            if (!next->parent_colors.legend().native)
+                return {ReplaySceneStatus::InvalidFrame,"Declared plastic replay has no native plastic values"};
+            for(const auto& parent:frame.parent_plastic_strain)
+                if(parent.applicability == output::ReplayScalarApplicability::NativeValue && parent.value!=0)
                 return {ReplaySceneStatus::InvalidFrame,"Initial accepted plastic display field is not zero"};
             next->staged_colors.resize(info.triangle_count);
         } else if(!frame.parent_plastic_strain.empty()||!info.triangle_source_parent.empty()||info.plastic_strain_color_max!=0)
@@ -249,7 +217,7 @@ ReplaySceneReport AcceptedReplayScene::Publish(const output::ReplayFrame& frame)
     if (state.deformation_scale != 1)
         for (std::size_t n = 0; n < state.staged.size(); ++n)
             state.staged[n] = state.reference[n] + state.deformation_scale * (state.staged[n] - state.reference[n]);
-    if (!DisplayGeometry(state.staged, state.moving->GetIndicesVertices(), state.limits))
+    if (!CheckReplayDisplayGeometry(state.staged, state.moving->GetIndicesVertices(), state.limits))
         return {ReplaySceneStatus::InvalidFrame, "Replay frame cannot be represented by renderer geometry"};
     if(state.info.source_plasticity) {
         if(!state.parent_colors.Stage(frame.parent_plastic_strain,state.staged_colors))
@@ -270,6 +238,9 @@ const ReplayStamp* AcceptedReplayScene::stamp() const noexcept { return impl_ ? 
 double AcceptedReplayScene::deformation_scale() const noexcept { return impl_ ? impl_->deformation_scale : 1; }
 ReplayColorMode AcceptedReplayScene::color_mode() const noexcept {
     return impl_ ? impl_->color_mode : ReplayColorMode::Automatic;
+}
+const ReplayScalarLegend* AcceptedReplayScene::scalar_legend() const noexcept {
+    return impl_ && impl_->info.source_plasticity ? &impl_->parent_colors.legend() : nullptr;
 }
 const std::vector<ReplayPartLegendEntry>* AcceptedReplayScene::part_legend() const noexcept {
     return impl_ && impl_->color_mode == ReplayColorMode::PartId ? &impl_->part_colors.legend() : nullptr;

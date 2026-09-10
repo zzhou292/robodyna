@@ -50,17 +50,22 @@ struct ReplayInfo {
     // source bindings. Empty for schemas without original part provenance.
     std::vector<std::uint64_t> triangle_source_part;
 };
+enum class ReplayScalarApplicability { NativeValue, NotApplicable, Unavailable };
 struct ReplayParentScalar {
     std::uint64_t source_parent = 0;
     double value = 0;
+    // Legacy values default to native. Non-native tags use an uninterpreted
+    // zero storage marker; it must never be rendered as zero plastic strain.
+    ReplayScalarApplicability applicability = ReplayScalarApplicability::NativeValue;
 };
 struct ReplayFrame {
     std::size_t index = 0;
     std::uint64_t owner_id = 0, epoch = 0;
     double time = 0;
     std::shared_ptr<const chrono::ChTriangleMeshConnected> mesh;
-    // Maximum accumulated equivalent plastic strain over the parent's three
-    // accepted layers. No interpolation between source parents or triangles.
+    // Maximum equivalent plastic strain over applicable stored native points
+    // (three layers in legacy source wall schemas). Explicit non-native tags
+    // are not zero strain. No interpolation between parents or triangles.
     std::vector<ReplayParentScalar> parent_plastic_strain;
 };
 

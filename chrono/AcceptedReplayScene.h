@@ -4,6 +4,7 @@
 #include "ReplayColorMode.h"
 #include "ReplayPartColors.h"
 #include "ReplayGeometryLimits.h"
+#include "ReplayScalarApplicability.h"
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -73,6 +74,7 @@ class AcceptedReplayScene {
     const ReplayCamera* camera() const noexcept;
     double deformation_scale() const noexcept;
     ReplayColorMode color_mode() const noexcept;
+    const ReplayScalarLegend* scalar_legend() const noexcept;
     const std::vector<ReplayPartLegendEntry>* part_legend() const noexcept;
     std::shared_ptr<const chrono::ChTriangleMeshConnected> moving_mesh() const noexcept;
     std::shared_ptr<const chrono::ChTriangleMeshConnected> wall_mesh() const noexcept;

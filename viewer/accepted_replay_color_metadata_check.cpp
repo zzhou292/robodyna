@@ -20,6 +20,7 @@ TEST(ReplayColorMetadata, PartManifestCarriesCompleteOriginalIdPaletteWithoutPla
         EXPECT_EQ(row[1].GetDouble(),legend[i].color.R);EXPECT_EQ(row[2].GetDouble(),legend[i].color.G);
         EXPECT_EQ(row[3].GetDouble(),legend[i].color.B);
     }
+    EXPECT_FALSE(document.HasMember("native_plastic_parent_count"));
     EXPECT_FALSE(document.HasMember("surface_color_min"));EXPECT_FALSE(document.HasMember("surface_color_max"));
 }
 TEST(ReplayColorMetadata, PlasticAndUniformModesKeepTheirActualQuantity) {
@@ -36,4 +37,20 @@ TEST(ReplayColorMetadata, PlasticAndUniformModesKeepTheirActualQuantity) {
     EXPECT_THROW(crash::viewer::AppendReplayColorMetadata(document,Info(),empty),std::runtime_error);
     EXPECT_TRUE(document.ObjectEmpty());
 }
+TEST(ReplayColorMetadata,MissingFieldsAreExplicitAndNeverAZeroStrainLegend) {
+    using A=crash::output::ReplayScalarApplicability;
+    for(auto missing:{A::NotApplicable,A::Unavailable}) {
+        auto first=Frame(0);first.parent_plastic_strain.front().applicability=missing;
+        AcceptedReplayScene scene;
+        ASSERT_EQ(scene.Initialize(Info(),first,first.mesh,false,1,ReplayView::IncidentSide,ReplayColorMode::PartId).status,ReplaySceneStatus::Ok);
+        crash::output::Document document;document.SetObject();
+        crash::viewer::AppendReplayColorMetadata(document,Info(),scene);
+        EXPECT_EQ(document["native_plastic_parent_count"].GetUint64(),1u);
+        EXPECT_EQ(document["plastic_not_applicable_parent_count"].GetUint64(),missing==A::NotApplicable?1u:0u);
+        EXPECT_EQ(document["plastic_unavailable_parent_count"].GetUint64(),missing==A::Unavailable?1u:0u);
+        EXPECT_STREQ(document["non_native_plastic_value_policy"].GetString(),"explicit applicability; no interpreted numeric value");
+        EXPECT_FALSE(document.HasMember("surface_color_min"));
+    }
+}
+
 } // namespace

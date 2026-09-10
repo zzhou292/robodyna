@@ -2,12 +2,9 @@
 # neither CUDA nor the TL/FEA/case targets are dependencies of these targets.
 find_package(Chrono REQUIRED CONFIG)
 
-add_library(robo_dyna_replay_scene STATIC ../chrono/AcceptedReplayScene.cpp ../chrono/ReplayPartColors.cpp)
-target_include_directories(robo_dyna_replay_scene PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_compile_features(robo_dyna_replay_scene PUBLIC cxx_std_17)
-target_link_libraries(robo_dyna_replay_scene PUBLIC Chrono::Chrono_core)
-set_source_files_properties(../chrono/ReplayPartColors.cpp PROPERTIES
-  COMPILE_OPTIONS "-fno-fast-math;-ffp-contract=off")
+if(NOT TARGET robo_dyna_replay_scene)
+  add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../chrono/replay" "${CMAKE_CURRENT_BINARY_DIR}/replay-core")
+endif()
 
 if(TARGET robo_dyna_artifact_io)
   add_library(robo_dyna_replay_color_metadata STATIC ReplayColorMetadata.cpp)
@@ -33,7 +30,7 @@ option(ROBO_DYNA_ENABLE_REPLAY_SCENE_CHECKS "Build core-only accepted replay sce
 if(ROBO_DYNA_ENABLE_REPLAY_SCENE_CHECKS)
   find_package(GTest REQUIRED)
   add_executable(robo_dyna_replay_scene_check accepted_replay_scene_check.cpp accepted_replay_view_check.cpp
-    accepted_replay_part_color_check.cpp accepted_replay_vehicle_scene_check.cpp)
+    accepted_replay_part_color_check.cpp accepted_replay_vehicle_scene_check.cpp accepted_replay_applicability_check.cpp)
   target_link_libraries(robo_dyna_replay_scene_check PRIVATE robo_dyna_replay_scene GTest::gtest_main)
   if(TARGET robo_dyna_accepted_replay)
     target_sources(robo_dyna_replay_scene_check PRIVATE accepted_plastic_replay_check.cpp)

@@ -34,5 +34,13 @@ void AppendReplayColorMetadata(output::Document& manifest, const output::ReplayI
         }
         manifest.AddMember("surface_color_legend",legend,manifest.GetAllocator());
     } else String(manifest,"surface_color_quantity","uniform moving-surface display color");
+    const auto* fields=scene.scalar_legend();
+    if (fields && (fields->not_applicable || fields->unavailable)) {
+        Integer(manifest,"native_plastic_parent_count",fields->native);
+        Integer(manifest,"plastic_not_applicable_parent_count",fields->not_applicable);
+        Integer(manifest,"plastic_unavailable_parent_count",fields->unavailable);
+        String(manifest,"non_native_plastic_value_policy","explicit applicability; no interpreted numeric value");
+        String(manifest,"plastic_missing_color_policy","not applicable: gray(0.48,0.50,0.52); unavailable: purple(0.72,0.30,0.74)");
+    }
 }
 } // namespace crash::viewer
