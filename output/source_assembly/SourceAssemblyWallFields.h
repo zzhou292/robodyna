@@ -32,6 +32,9 @@ struct FrameView {
     dynamics::ConnectorView connectors;
 };
 void CheckFrame(const FrameView&);
+void CheckContactPhase(const FrameView&);
+// Actual owner/case/capture association shared by JSON and binary producers.
+FrameView AcceptedFrameView(const dynamics::SourceAssemblyWallCase&,const SourceAssemblyAcceptedOutput&);
 void CheckForceStageFrame(const FrameView&);
 Document ForceStageDocument(const cases::source_assembly_observation::ForceStageSummary&,bool has_connectors=false);
 void CheckCase(const dynamics::SourceAssemblyWallCase&);
