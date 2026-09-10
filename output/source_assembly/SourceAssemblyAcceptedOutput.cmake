@@ -1,0 +1,11 @@
+include_guard(GLOBAL)
+include("${CMAKE_CURRENT_LIST_DIR}/SourceAssemblyOutput.cmake")
+include("${robo_assembly_output_root}/case/source_assembly/SourceAssemblyBindings.cmake")
+include("${robo_assembly_output_root}/chrono/NodalMeshOutput.cmake")
+if(NOT TARGET tl_shell_batch_publication)
+  message(FATAL_ERROR "Assembly accepted output requires the composing build's joined TL shell publication")
+endif()
+add_library(robo_dyna_source_assembly_accepted_output STATIC "${CMAKE_CURRENT_LIST_DIR}/SourceAssemblyAcceptedOutput.cpp")
+target_link_libraries(robo_dyna_source_assembly_accepted_output PUBLIC
+  robo_dyna_source_assembly_fields robo_dyna_source_assembly_bindings crash_nodal_mesh_output tl_shell_batch_publication)
+target_compile_options(robo_dyna_source_assembly_accepted_output PRIVATE -fno-fast-math -ffp-contract=off)

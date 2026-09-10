@@ -2,7 +2,9 @@
 
 #include "AcceptedSurfaceMesh.h"
 #include "lib_src/solvers/FENodalState.h"
+#include "NodalCaptureLimits.h"
 #include <array>
+#include <vector>
 
 namespace crash::visual {
 enum class NodalOutputTiming { CollocatedOnly, StaggeredHalfKick };
@@ -12,7 +14,7 @@ enum class NodalOutputTiming { CollocatedOnly, StaggeredHalfKick };
 // receives a live owner each time and checks the identity captured at setup, so
 // no owner pointer or borrowed device memory is retained between calls.
 // Setup/publication/rendering are externally serialized. Capture storage follows
-// the bounded TL owner's node limit. No shell-qualification library is linked.
+// an explicit startup node/host-byte limit (legacy default 128, opt-in 2048). No shell-qualification library is linked.
 // The two-argument Initialize preserves the collocated-only protocol. Staggered
 // output requires explicit opt-in and binds the owner's scheme, fixed dt, node
 // count and rotation availability. Positions/quaternions are accepted endpoint
@@ -30,20 +32,26 @@ class NodalMeshOutput {
  public:
   Report Initialize(const tl::fea::FENodalState&, const Binding&);
   Report Initialize(const tl::fea::FENodalState&, const Binding&, NodalOutputTiming);
+  Report Initialize(const tl::fea::FENodalState&, const Binding&, NodalOutputTiming, NodalCaptureLimits);
   Report Publish(tl::fea::FENodalState&);
+  std::size_t capture_bytes() const noexcept { return capture_bytes_; }
   const AcceptedSurfaceMesh& surface() const noexcept { return surface_; }
   const tl::fea::NodalStamp* stamp() const noexcept { return available_ ? &stamp_ : nullptr; }
   tl::fea::HostNodalKinematicsView fields() const noexcept;
  private:
   struct Capture {
-    std::array<double, tl::fea::MaxTranslationNodes * 3> position{}, velocity{}, omega{};
-    std::array<double, tl::fea::MaxTranslationNodes * 4> orientation{};
+    std::vector<double> values;
+    double* position() noexcept { return values.data(); }
+    double* velocity(std::size_t n) noexcept { return values.data() + 3*n; }
+    double* omega(std::size_t n) noexcept { return values.data() + 6*n; }
+    double* orientation(std::size_t n) noexcept { return values.data() + 9*n; }
   };
   AcceptedSurfaceMesh surface_;
   Identity identity_{};
   tl::fea::NodalStamp bound_{}, stamp_{};
   NodalOutputTiming timing_ = NodalOutputTiming::CollocatedOnly;
   std::array<Capture, 2> captures_{};
+  std::size_t capture_bytes_ = 0;
   unsigned published_ = 0;
   bool available_ = false;
 };
