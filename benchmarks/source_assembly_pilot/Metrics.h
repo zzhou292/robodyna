@@ -1,5 +1,6 @@
 #pragma once
-#include "output/AcceptedReplayValues.h"
+#include "output/ArtifactIO.h"
+#include <cmath>
 #include <array>
 #include <map>
 
