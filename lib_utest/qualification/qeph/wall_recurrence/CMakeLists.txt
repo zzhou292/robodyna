@@ -72,3 +72,18 @@ add_executable(qeph_wall_raw wall_raw_main.cpp)
 target_link_libraries(qeph_wall_raw PRIVATE qeph_wall_raw_report)
 target_compile_features(qeph_wall_raw PRIVATE cxx_std_17)
 target_compile_options(qeph_wall_raw PRIVATE -fno-fast-math -ffp-contract=off)
+
+# Reading authenticates one closed raw inventory; numerical decisions are a
+# separate consumer of the reconstructed model and physical samples.
+add_library(qeph_wall_raw_read STATIC
+  WallRawRead.cpp WallRawReadFields.cpp WallRawReadHeader.cpp
+  WallRawReadContact.cpp WallRawReadProbes.cpp)
+target_link_libraries(qeph_wall_raw_read PUBLIC qeph_wall_raw_report)
+target_compile_features(qeph_wall_raw_read PUBLIC cxx_std_17)
+target_compile_options(qeph_wall_raw_read PRIVATE -fno-fast-math -ffp-contract=off)
+add_executable(qeph_wall_raw_read_check WallRawReadTest.cpp WallRawReadTestFixture.cpp)
+target_link_libraries(qeph_wall_raw_read_check PRIVATE qeph_wall_raw_read GTest::gtest_main)
+target_compile_features(qeph_wall_raw_read_check PRIVATE cxx_std_17)
+target_compile_options(qeph_wall_raw_read_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME qeph_wall_raw_read_check COMMAND qeph_wall_raw_read_check)
+set_tests_properties(qeph_wall_raw_read_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)
