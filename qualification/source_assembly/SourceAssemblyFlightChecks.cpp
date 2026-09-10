@@ -55,7 +55,7 @@ void CheckSource(const Rig& r) {
     }
     EXPECT_EQ(nq,r.quads());EXPECT_EQ(nt,r.triangles());
 }
-void CheckFlight(const Rig& r,const Fields& a,const ShellFields& shells) {
+void CheckFlightMotion(const Rig& r,const Fields& a,const fe::ShellBatchDiagnostics& diagnostics) {
     const auto& d=r.bindings.source().data();const auto& b=r.bindings.shells();
     EXPECT_TRUE(fe::trial_identity::SameStamp(a.stamp,r.owner.accepted()));
     EXPECT_EQ(a.stamp.node_count,d.nodes.size());EXPECT_EQ(a.stamp.fixed_dt,TimeStep);
@@ -88,12 +88,15 @@ void CheckFlight(const Rig& r,const Fields& a,const ShellFields& shells) {
         EXPECT_LE(std::abs(a.orientation[4*n+axis]-(axis==0?1.L:0.L)),orientation_bound);
     const long double k0=.5L*total_mass*Speed*Speed,dv=std::sqrt(3.L)*velocity_bound;
     const long double allowance=total_mass*(Speed*dv+.5L*dv*dv)+1.5L*total_j*spin_bound*spin_bound+2e-12L*k0;
-    EXPECT_LE(std::abs(shells.diagnostics.kinetic.translation+shells.diagnostics.kinetic.rotation-k0),allowance);
+    EXPECT_LE(std::abs(diagnostics.kinetic.translation+diagnostics.kinetic.rotation-k0),allowance);
     const auto identity=[&](const auto& diag) {
         EXPECT_EQ(diag.owner_id,a.stamp.owner_id);EXPECT_EQ(diag.epoch,a.stamp.epoch);EXPECT_EQ(diag.time,a.stamp.time);
         EXPECT_EQ(diag.configuration_id,Configuration);EXPECT_EQ(diag.qualification_id,Qualification);EXPECT_FALSE(diag.kinetic_available);
     };
-    identity(shells.diagnostics.qeph);identity(shells.diagnostics.t3);
+    identity(diagnostics.qeph);identity(diagnostics.t3);
+}
+void CheckFlight(const Rig& r,const Fields& a,const ShellFields& shells) {
+    CheckFlightMotion(r,a,shells.diagnostics);
     for(const auto& h:shells.quad) {EXPECT_EQ(h.proposed_history.stamp().sample_index,a.stamp.epoch);EXPECT_EQ(h.proposed_history.stamp().time,a.stamp.time);}
     for(const auto& h:shells.triangle) {EXPECT_EQ(h.proposed_history.stamp().sample_index,a.stamp.epoch);EXPECT_EQ(h.proposed_history.stamp().time,a.stamp.time);}
     for(const auto* history:{&shells.qsection,&shells.tsection})for(const auto& h:*history) {

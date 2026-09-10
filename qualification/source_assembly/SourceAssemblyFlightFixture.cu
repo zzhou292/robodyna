@@ -1,4 +1,5 @@
 #include "SourceAssemblyFlightFixture.h"
+#include "SourceAssemblyFlightPackets.h"
 #include <cuda_runtime.h>
 
 namespace crash::qualification::source_assembly {
@@ -52,15 +53,6 @@ bool Rig::Initialize() {
     EXPECT_EQ(joined.status,fe::ShellPublicationStatus::Success)<<joined.message;
     return joined.status==fe::ShellPublicationStatus::Success;
 }
-bool Capture(Rig& r,Fields& state,ShellFields& shells) {
-    EXPECT_EQ(r.owner.CopyAccepted(state.buffer(),&state.stamp).status,fe::NodalStatus::Ok);
-    EXPECT_EQ(r.qeph.CopyAcceptedResults(state.stamp,shells.quad.data(),r.quads(),&shells.diagnostics.qeph).status,q::BatchStatus::Success);
-    EXPECT_EQ(r.t3.CopyAcceptedResults(state.stamp,shells.triangle.data(),r.triangles(),&shells.diagnostics.t3).status,t::BatchStatus::Success);
-    EXPECT_EQ(r.qeph.CopyAcceptedSectionHistory(state.stamp,shells.qsection.data(),r.quads(),&shells.diagnostics.qeph).status,q::BatchStatus::Success);
-    EXPECT_EQ(r.t3.CopyAcceptedSectionHistory(state.stamp,shells.tsection.data(),r.triangles(),&shells.diagnostics.t3).status,t::BatchStatus::Success);
-    EXPECT_EQ(r.publication.CopyAcceptedDiagnostics(state.stamp,&shells.diagnostics).status,fe::ShellPublicationStatus::Success);
-    return !::testing::Test::HasFailure();
-}
 bool Prepare(Rig& r,Prepared& p) {
     fe::NodalAssemblyView assembly;
     EXPECT_EQ(r.owner.BeginTrial(&p.token,&assembly).status,fe::NodalStatus::Ok);
@@ -83,29 +75,12 @@ bool Prepare(Rig& r,Prepared& p) {
     EXPECT_EQ(cudaMemcpyAsync(p.endpoint.orientation.data(),v.kinematics.orientation_wxyz,4*r.nodes()*sizeof(double),cudaMemcpyDeviceToHost,v.stream),cudaSuccess);
     EXPECT_EQ(cudaStreamSynchronize(v.stream),cudaSuccess);return !::testing::Test::HasFailure();
 }
-bool Evaluate(Rig& r,const Prepared& p,ShellFields& out) {
-    const auto qr=r.groups_attached?r.qeph.EvaluateCandidate(r.owner,p.token,p.view,&out.diagnostics.qeph):
-        r.qeph.EvaluateCandidate(p.view,&out.diagnostics.qeph);
-    const auto tr=r.groups_attached?r.t3.EvaluateCandidate(r.owner,p.token,p.view,&out.diagnostics.t3):
-        r.t3.EvaluateCandidate(p.view,&out.diagnostics.t3);
-    EXPECT_EQ(qr.status,q::BatchStatus::Success)<<qr.message<<" family_index="<<qr.element;
-    EXPECT_EQ(tr.status,t::BatchStatus::Success)<<tr.message<<" family_index="<<tr.element;
-    if(qr.status!=q::BatchStatus::Success||tr.status!=t::BatchStatus::Success)return false;
-    EXPECT_EQ(r.qeph.CopyPreparedResults(out.diagnostics.qeph,out.quad.data(),r.quads()).status,q::BatchStatus::Success);
-    EXPECT_EQ(r.t3.CopyPreparedResults(out.diagnostics.t3,out.triangle.data(),r.triangles()).status,t::BatchStatus::Success);
-    EXPECT_EQ(r.qeph.CopyPreparedSectionHistory(out.diagnostics.qeph,out.qsection.data(),r.quads()).status,q::BatchStatus::Success);
-    EXPECT_EQ(r.t3.CopyPreparedSectionHistory(out.diagnostics.t3,out.tsection.data(),r.triangles()).status,t::BatchStatus::Success);
-    fe::ShellBatchDiagnostics common;
-    const auto report=r.publication.Prepare(r.owner,p.token,out.diagnostics.qeph,out.diagnostics.t3,&common);
-    EXPECT_EQ(report.status,fe::ShellPublicationStatus::Success)<<report.message;
-    if(report.status==fe::ShellPublicationStatus::Success)out.diagnostics=common;
-    return !::testing::Test::HasFailure();
-}
-bool Publish(Rig& r,const Prepared& p,const ShellFields& out) {
-    const auto& d=out.diagnostics.qeph;
-    const auto report=r.publication.Commit(r.owner,p.token,out.diagnostics,{d.owner_id,d.base_epoch,d.attempt,d.qualification_id,true});
-    EXPECT_EQ(report.status,fe::ShellPublicationStatus::Success)<<report.message;return report.status==fe::ShellPublicationStatus::Success;
-}
+bool Capture(Rig& r,Fields& state,ShellFields& shells) { return packets::CapturePackets(r,state,shells); }
+bool Evaluate(Rig& r,const Prepared& p,ShellFields& shells) { return packets::EvaluatePackets(r,p,shells); }
+bool Publish(Rig& r,const Prepared& p,const ShellFields& shells) { return packets::PublishPackets(r,p,shells); }
+bool Capture(Rig& r,Fields& state,LayeredShellFields& shells) { return packets::CapturePackets(r,state,shells); }
+bool Evaluate(Rig& r,const Prepared& p,LayeredShellFields& shells) { return packets::EvaluatePackets(r,p,shells); }
+bool Publish(Rig& r,const Prepared& p,const LayeredShellFields& shells) { return packets::PublishPackets(r,p,shells); }
 void SameShells(const ShellFields& a,const ShellFields& b) {
     EXPECT_EQ(std::memcmp(a.quad.data(),b.quad.data(),a.quad.size()*sizeof(q::ForceTrial)),0);
     EXPECT_EQ(std::memcmp(a.triangle.data(),b.triangle.data(),a.triangle.size()*sizeof(t::ForceTrial)),0);

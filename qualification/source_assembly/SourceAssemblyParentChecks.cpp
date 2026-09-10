@@ -1,4 +1,6 @@
 #include "SourceAssemblyFlightFixture.h"
+#include "SourceAssemblyParentValues.h"
+#include "SourceAssemblyParentIntervals.h"
 #include "lib_src/elements/qeph/QephLayeredJ2.h"
 #include "lib_src/elements/t3/T3LayeredJ2.h"
 #include "lib_utest/qualification/qeph/QephForceFixture.h"
@@ -8,7 +10,6 @@ namespace crash::qualification::source_assembly {
 namespace {
 namespace qt=qeph_force_port_test;
 namespace tt=t3_force_port_test;
-tl::math::Vec3 Vector(const std::vector<double>& a,std::size_t n) {return {a[3*n],a[3*n+1],a[3*n+2]};}
 void Near(double a,double b) {
     ASSERT_TRUE(std::isfinite(a));ASSERT_TRUE(std::isfinite(b));
     EXPECT_LE(std::abs(a-b),2e-12*std::max({1.,std::abs(a),std::abs(b)}));
@@ -47,15 +48,15 @@ void Section(const fe::ShellBatchSectionState& actual,const fe::sections::ShellL
     Near(a.last_point_yield_before_pa,b.last_point_yield_before_pa);Near(actual.cumulative_plastic_work_J,expected_work);
 }
 }
+void CheckTriangleValues(const t::ReferenceData& r,const t::PrescribedInterval& in,const t::ForceTrial& a,const t::ForceTrial& b) {
+    Triangle(r,in,a,b);
+}
+void CheckPlasticSectionValues(const fe::ShellBatchSectionState& a,const fe::sections::ShellLayeredJ2History& b,
+    const fe::sections::ShellLayeredJ2Diagnostics& d,double work) { Section(a,b,d,work); }
 void CheckHostParents(const Rig& r,const Prepared& p,const ShellFields& accepted,const ShellFields& proposed) {
     const auto& b=r.bindings.shells();const auto& catalog=r.bindings.materials();
     for(std::size_t e=0;e<r.quads();++e) {
-        SCOPED_TRACE(b.qeph_source_id(e));q::PrescribedInterval in;
-        in.base_time=p.view.base_time;in.dt=TimeStep;in.sample_index=p.view.kinematics.base_epoch+1;
-        for(unsigned n=0;n<4;++n) {
-            const auto global=b.qeph_nodes(e)[n];in.position_endpoint[n]=Vector(p.endpoint.x,global);
-            in.velocity_midpoint[n]=Vector(p.endpoint.v,global);in.omega_midpoint[n]=Vector(p.endpoint.w,global);
-        }
+        SCOPED_TRACE(b.qeph_source_id(e));const auto in=QParentInterval(r,p,e);
         fe::sections::PointParameters parameters;ASSERT_TRUE(catalog.Parameters(fe::ShellBindingFamily::Qeph,e,&parameters));
         q::LayeredJ2ForceTrial expected;
         ASSERT_EQ(q::EvaluateLayeredJ2Force(b.qeph_reference(e),parameters,
@@ -67,12 +68,7 @@ void CheckHostParents(const Rig& r,const Prepared& p,const ShellFields& accepted
             accepted.quad[e].proposed_history.data().thickness*expected.force.kinematics.area);
     }
     for(std::size_t e=0;e<r.triangles();++e) {
-        SCOPED_TRACE(b.t3_source_id(e));t::PrescribedInterval in;
-        in.base_time=p.view.base_time;in.dt=TimeStep;in.sample_index=p.view.kinematics.base_epoch+1;
-        for(unsigned n=0;n<3;++n) {
-            const auto global=b.t3_nodes(e)[n];in.position[n]=Vector(p.endpoint.x,global);
-            in.velocity[n]=Vector(p.endpoint.v,global);in.angular_velocity[n]=Vector(p.endpoint.w,global);
-        }
+        SCOPED_TRACE(b.t3_source_id(e));const auto in=TParentInterval(r,p,e);
         fe::sections::PointParameters parameters;ASSERT_TRUE(catalog.Parameters(fe::ShellBindingFamily::T3,e,&parameters));
         t::LayeredJ2ForceTrial expected;
         ASSERT_EQ(t::EvaluateLayeredJ2Force(b.t3_reference(e),parameters,

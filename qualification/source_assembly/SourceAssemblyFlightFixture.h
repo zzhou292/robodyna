@@ -2,6 +2,7 @@
 #include "case/source_assembly/tests/SourceAssemblyBindingTestSupport.h"
 #include "case/shell_collection/ShellCollectionContactGeometry.h"
 #include "lib_src/elements/ShellBatchPublication.h"
+#include "lib_src/elements/ShellBatchLayeredSection.h"
 #include "lib_src/solvers/ExplicitNodalStep.h"
 #include "lib_src/solvers/ExplicitNodalRigidStep.h"
 #include "lib_src/solvers/ExplicitTranslationStep.h"
@@ -23,13 +24,15 @@ struct Fields {
     fe::NodalStamp stamp;
     fe::NodalSnapshotBuffer buffer() { return {x.data(),v.data(),x.size()/3,orientation.data(),w.data(),reaction.data(),couple.data()}; }
 };
-struct ShellFields {
-    ShellFields(std::size_t quads,std::size_t triangles):quad(quads),triangle(triangles),qsection(quads),tsection(triangles) {}
+template<class Section> struct BasicShellFields {
+    BasicShellFields(std::size_t quads,std::size_t triangles):quad(quads),triangle(triangles),qsection(quads),tsection(triangles) {}
     std::vector<q::ForceTrial> quad;
     std::vector<t::ForceTrial> triangle;
-    std::vector<fe::ShellBatchSectionState> qsection,tsection;
+    std::vector<Section> qsection,tsection;
     fe::ShellBatchDiagnostics diagnostics;
 };
+using ShellFields=BasicShellFields<fe::ShellBatchSectionState>;
+using LayeredShellFields=BasicShellFields<fe::ShellBatchLayeredSection>;
 struct Prepared {
     explicit Prepared(std::size_t nodes):endpoint(nodes) {}
     fe::NodalTrialToken token;
@@ -60,10 +63,17 @@ bool Capture(Rig&,Fields&,ShellFields&);
 bool Prepare(Rig&,Prepared&);
 bool Evaluate(Rig&,const Prepared&,ShellFields&);
 bool Publish(Rig&,const Prepared&,const ShellFields&);
+bool Capture(Rig&,Fields&,LayeredShellFields&);
+bool Evaluate(Rig&,const Prepared&,LayeredShellFields&);
+bool Publish(Rig&,const Prepared&,const LayeredShellFields&);
 void CheckSource(const Rig&);
 void CheckFlight(const Rig&,const Fields&,const ShellFields&);
+void CheckFlightMotion(const Rig&,const Fields&,const fe::ShellBatchDiagnostics&);
+void CheckFlight(const Rig&,const Fields&,const LayeredShellFields&);
 void CheckHostParents(const Rig&,const Prepared&,const ShellFields& accepted,const ShellFields& proposed);
 void SameShells(const ShellFields&,const ShellFields&);
+void SameShells(const LayeredShellFields&,const LayeredShellFields&);
+void CheckHostParents(const Rig&,const Prepared&,const LayeredShellFields&,const LayeredShellFields&);
 void SameFields(const Fields&,const Fields&);
 std::array<fe::NodalAllocationInfo,4> Allocations(const Rig&);
 void SameAllocations(const Rig&,const std::array<fe::NodalAllocationInfo,4>&);

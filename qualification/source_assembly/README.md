@@ -73,3 +73,30 @@ families. Retry reproduces the group state, nodal candidate and every shell
 result exactly. Allocation sizes/counts remain fixed. Kinetic diagnostics here
 are explicitly the raw native nodal sum; aggregate constrained-energy and
 loaded-contact trajectory validation are separate gates.
+
+The optional V3 slice uses complete original PID2000511 (149 shells/145 nodes)
+and PIDs2000064/2000157/2000511 (631 shells/683 nodes). Set
+`ROBO_DYNA_SOURCE_ELASTIC_INVENTORY` and
+`ROBO_DYNA_SOURCE_SECTION_MIXED_INVENTORY` to the frozen inventories identified
+by `modelio/source_assembly/tests/SectionTestSupport.h`. Both are host-qualified
+V3 sources; their external point-mass/joint nodes remain declared and released,
+with no extra selected owner nodes or mass. Neither source has an internal
+rigid group or spotweld to activate. The mixed selection contains LAW1, analytic
+LAW44 and tabulated LAW44 in both native shell families.
+
+Two parameterized `SourceLayeredFlight` functions reuse the same four-interval
+startup/advance/publication schedule and dimensional free-flight bounds.
+Every parent is checked against its direct host layered LAW1 or LAW44 adapter;
+this is storage/mapping qualification, not a new independent equation oracle.
+Readback uses `ShellBatchLayeredSection` typed availability. Exact retry compares
+all active section fields, excluding inactive union bytes; legacy plastic-only
+readback must reject without changing supplied outputs. Accepted nodes, shell
+forces and both complete section collections remain unchanged after a late
+common-admission rejection, then retry publishes the same values. Allocation
+counts/bytes must remain constant.
+
+Root's guarded CUDA gate is required. Author checks compile these test seams as
+host C++ only (CPU2,512MiB,3.60s,267212KiB peak); they do not establish CUDA
+execution. Run the existing target with all V1/V2 fixture flags as well so the
+shared qualification utility extraction is covered by its old tests. This slice
+does not enable a V3 wall case, accepted archive, impact, or deformation claim.

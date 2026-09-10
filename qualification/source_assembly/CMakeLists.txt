@@ -31,6 +31,7 @@ target_compile_options(robo_dyna_source_assembly_flight_check PRIVATE
 add_test(NAME source_assembly_flight COMMAND robo_dyna_source_assembly_flight_check)
 set_tests_properties(source_assembly_flight PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 180
   ENVIRONMENT "ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY=${ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY}")
+include("${CMAKE_CURRENT_LIST_DIR}/SourceLayeredFlight.cmake")
 
 set(ROBO_DYNA_SOURCE_ANALYTIC_INVENTORY "" CACHE FILEPATH "Frozen original analytic LAW44 part inventory")
 set(ROBO_DYNA_SOURCE_ANALYTIC_MIXED_INVENTORY "" CACHE FILEPATH "Frozen original mixed table/analytic inventory")
