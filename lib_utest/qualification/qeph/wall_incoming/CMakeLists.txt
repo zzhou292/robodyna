@@ -5,7 +5,9 @@ add_executable(qeph_wall_incoming_check
   WallIncomingFailure.cu WallIncomingTest.cu
   ../wall_coupled/WallCoupledFixture.cu
   ../wall_coupled/WallCoupledTransaction.cu
-  ../wall_coupled/WallCoupledLedger.cu)
+  ../wall_coupled/WallCoupledLedger.cu
+  ../wall_coupled/ScreenedWallFixture.cu
+  ../wall_coupled/ScreenedWallChecks.cu)
 target_link_libraries(qeph_wall_incoming_check PRIVATE
   qeph_coupled_fixture tl_nodal_wall_contact_device
   qeph_wall_recurrence_analysis GTest::gtest_main)
