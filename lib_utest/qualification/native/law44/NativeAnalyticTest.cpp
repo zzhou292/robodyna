@@ -46,6 +46,7 @@ TEST(Law44AnalyticNative, IndependentLoadHoldReverseHistoriesAndPhysicalThicknes
   for(const auto source:Sources) {
     auto oracle=Native(source); const auto p=Prepare(source); History accepted;
     double actual_thickness=.002,native_thickness=.002,total_work=0,reverse_flow=0,reset_difference=0;
+    double actual_excursion=0,native_excursion=0;
     unsigned plastic_steps=0; double rate_before_hold=0,rate_after_hold=0;
     for(unsigned step=0;step<1536;++step) {
       SCOPED_TRACE(source.mid);
@@ -66,6 +67,8 @@ TEST(Law44AnalyticNative, IndependentLoadHoldReverseHistoriesAndPhysicalThicknes
       actual_thickness=actual_thickness+result.elastic_thickness_strain*layer;
       actual_thickness=actual_thickness+result.plastic_thickness_strain*layer;
       Close(actual_thickness,expected.reported_thickness_m,2e-14);
+      actual_excursion=std::max(actual_excursion,std::abs(actual_thickness-.002));
+      native_excursion=std::max(native_excursion,std::abs(expected.reported_thickness_m-.002));
       if(step==639) rate_before_hold=expected.filtered_rate_per_s;
       if(step==767) rate_after_hold=expected.filtered_rate_per_s;
       if(step>1000) reverse_flow+=expected.plastic_increment;
@@ -80,7 +83,10 @@ TEST(Law44AnalyticNative, IndependentLoadHoldReverseHistoriesAndPhysicalThicknes
     }
     EXPECT_GT(plastic_steps,100u); EXPECT_GT(reverse_flow,.001); EXPECT_GT(total_work,0);
     EXPECT_LT(rate_after_hold,rate_before_hold*.01); EXPECT_GT(reset_difference,1e6);
-    EXPECT_GT(std::abs(actual_thickness-.002),1e-6);
+    // Reversal can return thickness close to its initial value. Require a real
+    // excursion during the trajectory, independently present in the native path.
+    EXPECT_GT(native_excursion,1e-6);
+    Close(actual_excursion,native_excursion,2e-14);
   }
 }
 TEST(Law44AnalyticNative, InvalidInputsAndVanishedNativeThicknessPreserveOutput) {
