@@ -55,10 +55,10 @@ the separately named catalog API enforces its explicit scratch budget. Appending
 the tag/count metadata changes the precisely charged inline host payload; it
 does not change old device layouts, numerical dispatch or curve storage.
 
-This host increment does **not** admit heterogeneous resident batches. Their
-typed history storage, per-parent dispatch and authenticated readback are a
-separate qualification gate. It also does not admit failure, glass, membrane or
-rigid source roles, or substitute fixed thickness for source ITHICK=1.
+The explicit mode is consumed by the existing joined QEPH/T3 initializer after
+the mixed resident gate described in [ShellMixedSections](ShellMixedSections.md).
+It does not admit failure, glass, membrane or rigid source roles, or substitute
+fixed thickness for source ITHICK=1.
 
 The catalog owns all declarations and samples after successful preparation.
 Returned `Parameters` values borrow the catalog's pool for host evaluation, so

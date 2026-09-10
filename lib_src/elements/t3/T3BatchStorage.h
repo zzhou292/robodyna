@@ -43,7 +43,8 @@ using trial_identity::ValidKinematics;
 BatchDiagnostics InitialDiagnostics(const T3BatchConfig&,bool joined=false);
 void LaunchAssembly(Storage*,const Slab*,NodalAssemblyView,bool initial);
 void LaunchCandidate(Storage*,const Slab*,Slab*,NodalPreparedView,BatchDiagnostics,
-                     shell_batch_plasticity_detail::DeviceStorage*,unsigned accepted_slab,std::size_t element_count);
+                     shell_batch_plasticity_detail::DeviceStorage*,unsigned accepted_slab,std::size_t element_count,
+                     shell_batch_plasticity_detail::MixedDeviceStorage*);
 void LaunchFailure(NodalAssemblyView);
 } // namespace tl::fea::t3::batch_detail
 

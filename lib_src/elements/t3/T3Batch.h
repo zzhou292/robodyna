@@ -7,7 +7,7 @@
 #include <memory>
 
 namespace tl::fea { class ShellBatchBinding; class ShellBatchPublication; class NodalMassBinding;
-  class ShellBatchPlasticityBinding; struct ShellBatchPlasticityConfig; struct ShellBatchSectionState; }
+  class ShellBatchPlasticityBinding; struct ShellBatchPlasticityConfig; struct ShellBatchSectionState; class ShellBatchLayeredSection; }
 namespace tl::fea::t3 {
 constexpr std::size_t MaxBatchElements=MaxShellCollectionParents,MaxBatchNodes=MaxShellCollectionNodes;
 constexpr std::size_t MaxBatchDeviceBytes=1024*1024;
@@ -127,6 +127,10 @@ class T3Batch {
   BatchReport CopyAcceptedResults(const NodalStamp&,ForceTrial*,std::size_t capacity,
                                   BatchDiagnostics*);
   BatchReport CopyPreparedResults(const BatchDiagnostics&,ForceTrial*,std::size_t capacity);
+  // Explicit catalog mode: law-tagged history; elastic values have no PLA/rate fields.
+  BatchReport CopyAcceptedLayeredSectionHistory(const NodalStamp&,ShellBatchLayeredSection*,
+      std::size_t capacity,BatchDiagnostics*);
+  BatchReport CopyPreparedLayeredSectionHistory(const BatchDiagnostics&,ShellBatchLayeredSection*,std::size_t capacity);
   BatchReport CopyAcceptedSectionHistory(const NodalStamp&,ShellBatchSectionState*,std::size_t capacity,
                                         BatchDiagnostics*);
   BatchReport CopyPreparedSectionHistory(const BatchDiagnostics&,ShellBatchSectionState*,std::size_t capacity);

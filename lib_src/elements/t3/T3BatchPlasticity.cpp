@@ -47,7 +47,7 @@ BatchReport T3Batch::CopyAcceptedSectionHistory(const NodalStamp& expected,Shell
   using trial_identity::Disjoint;
   if(!impl_) return {BatchStatus::NotInitialized,"T3 batch is not initialized"};
   auto& s=*impl_;
-  if(!s.plasticity) return {BatchStatus::InvalidInput,"T3 has no plastic section history"};
+  if(!s.plasticity||s.plasticity->heterogeneous_sections()) return {BatchStatus::InvalidInput,"T3 has no plastic section history"};
   if(!s.bound) return {BatchStatus::NotBound,"Initial T3 source binding is required"};
   if(!batch_detail::SameStamp(expected,s.accepted_stamp))
     return {BatchStatus::StaleTrial,"Accepted T3 section endpoint identity mismatch"};
@@ -67,7 +67,7 @@ BatchReport T3Batch::CopyPreparedSectionHistory(const BatchDiagnostics& expected
   using trial_identity::Disjoint;
   if(!impl_) return {BatchStatus::NotInitialized,"T3 batch is not initialized"};
   auto& s=*impl_;
-  if(!s.plasticity) return {BatchStatus::InvalidInput,"T3 has no plastic section history"};
+  if(!s.plasticity||s.plasticity->heterogeneous_sections()) return {BatchStatus::InvalidInput,"T3 has no plastic section history"};
   if(!s.bound) return {BatchStatus::NotBound,"Initial T3 source binding is required"};
   if(!s.pending||!batch_detail::SameDiagnostics(expected,s.candidate_diagnostics))
     return {BatchStatus::StaleTrial,"Prepared T3 section identity mismatch"};

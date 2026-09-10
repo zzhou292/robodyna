@@ -47,7 +47,7 @@ BatchReport QephBatch::CopyAcceptedSectionHistory(const NodalStamp& expected,She
   using trial_identity::Disjoint;
   if(!impl_) return {BatchStatus::NotInitialized,"QEPH batch is not initialized"};
   auto& s=*impl_;
-  if(!s.plasticity) return {BatchStatus::InvalidInput,"QEPH has no plastic section history"};
+  if(!s.plasticity||s.plasticity->heterogeneous_sections()) return {BatchStatus::InvalidInput,"QEPH has no plastic section history"};
   if(!s.bound) return {BatchStatus::NotBound,"Initial QEPH source binding is required"};
   if(!batch_detail::SameStamp(expected,s.accepted_stamp))
     return {BatchStatus::StaleTrial,"Accepted QEPH section endpoint identity mismatch"};
@@ -67,7 +67,7 @@ BatchReport QephBatch::CopyPreparedSectionHistory(const BatchDiagnostics& expect
   using trial_identity::Disjoint;
   if(!impl_) return {BatchStatus::NotInitialized,"QEPH batch is not initialized"};
   auto& s=*impl_;
-  if(!s.plasticity) return {BatchStatus::InvalidInput,"QEPH has no plastic section history"};
+  if(!s.plasticity||s.plasticity->heterogeneous_sections()) return {BatchStatus::InvalidInput,"QEPH has no plastic section history"};
   if(!s.bound) return {BatchStatus::NotBound,"Initial QEPH source binding is required"};
   if(!s.pending||!batch_detail::SameDiagnostics(expected,s.candidate_diagnostics))
     return {BatchStatus::StaleTrial,"Prepared QEPH section identity mismatch"};

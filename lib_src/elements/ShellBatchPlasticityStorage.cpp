@@ -1,4 +1,5 @@
 #include "ShellBatchPlasticityStorage.h"
+#include "ShellMixedSectionStorage.h"
 #include <cstring>
 #include <new>
 #include <stdexcept>
@@ -13,6 +14,7 @@ SetupReport Cuda(cudaError_t error,const char* message) noexcept {
   return {error==cudaSuccess?SetupStatus::Success:SetupStatus::DeviceFailure,message,error};
 }
 }
+HostStorage::HostStorage()=default;
 HostStorage::~HostStorage() { if(device_) cudaFree(device_); }
 bool HostStorage::Forecast(std::size_t count,std::size_t points,std::size_t catalog_bytes,
     std::size_t device_cap,std::size_t host_cap,Layout& output,std::size_t& host_bytes) noexcept {
@@ -27,7 +29,7 @@ bool HostStorage::Forecast(std::size_t count,std::size_t points,std::size_t cata
 }
 SetupReport HostStorage::Initialize(const ShellBatchPlasticityConfig& c,const ReferenceMaterial* references,
     std::size_t count,std::size_t maximum_extra_device_bytes,std::size_t maximum_extra_host_bytes) try {
-  if(device_||!references||!count||count>MaxVehicleShellResidentParents||!c.material_id||!c.curve_id||
+  if(device_||mixed_||!references||!count||count>MaxVehicleShellResidentParents||!c.material_id||!c.curve_id||
      !c.curve.plastic_strain||!c.curve.yield_stress_pa||c.curve.count<2||c.curve.count>MaxCurvePoints)
     return {SetupStatus::InvalidInput,"Plasticity requires explicit IDs, curve and bounded source references"};
   Layout layout; std::size_t host_bytes=0;

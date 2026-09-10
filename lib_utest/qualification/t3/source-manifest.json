@@ -15,8 +15,8 @@
   "ported_files": [
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
-      "bytes": 2143,
-      "sha256": "5a342aad8420677962b69df7b585c4d913475858724d07949fec43381f27bf30"
+      "bytes": 2210,
+      "sha256": "5ef040a5deb6024f761cbeabcbfe1c22e7958b40ed499ed8fc81aa29979dc690"
     },
     {
       "path": "lib_src/elements/t3/CMakeLists.txt",
@@ -440,6 +440,31 @@
       }
     ],
     "reason": "Compose vehicle startup registrations with the independently qualified layered LAW1 force registrations; donor and force arithmetic remain unchanged.",
+    "force_arithmetic_changed": false
+  },
+  "mixed_layered_resident_build_registration": {
+    "previous_manifest_sha256": "fcf394bb8ba495a657db3d6ff97d6a75661f2cbb3c01340ff79b7ddb0572508f",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 2143,
+        "sha256": "5a342aad8420677962b69df7b585c4d913475858724d07949fec43381f27bf30"
+      }
+    ],
+    "reason": "Register explicit mixed resident dispatch/readback; original T3 startup, integrated force and donor arithmetic remain unchanged.",
+    "force_arithmetic_changed": false
+  },
+  "mixed_layered_resident_merge_registration": {
+    "previous_manifest_sha256": "15eabcb6d869a4c34cd2cee4f78734243aae7e7bde7515b53f8aa0e533c619d1",
+    "author_commit": "0912f04cc88f11e8e4634d0bb83bdfe7b02e6291",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 2143,
+        "sha256": "5a342aad8420677962b69df7b585c4d913475858724d07949fec43381f27bf30"
+      }
+    ],
+    "reason": "Compose mixed resident registration with the independently qualified vehicle and layered LAW1 registrations; native donor, integrated startup and force arithmetic remain unchanged.",
     "force_arithmetic_changed": false
   }
 }

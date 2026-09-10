@@ -9,7 +9,8 @@ add_library(tl_t3_batch STATIC
   "${CMAKE_CURRENT_LIST_DIR}/T3BatchModel.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/T3BatchIdentity.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/T3BatchPublication.cpp"
-  "${CMAKE_CURRENT_LIST_DIR}/T3BatchPlasticity.cpp")
+  "${CMAKE_CURRENT_LIST_DIR}/T3BatchPlasticity.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/T3BatchSections.cpp")
 target_link_libraries(tl_t3_batch PUBLIC tl_shell_batch_plasticity)
 target_link_libraries(tl_t3_batch PUBLIC tl_t3 tl_explicit_nodal_state tl_shell_batch_binding)
 set_target_properties(tl_t3_batch PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)

@@ -95,8 +95,13 @@ BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchEle
       return {BatchStatus::InvalidInput,"Invalid plastic material identity/curve shape"};
     const auto points=plasticity?plasticity->curve.count:collection_plasticity->curve_point_count();
     Layout plastic_layout; std::size_t plastic_host_bytes=0;
-    if(!HostStorage::Forecast(config.element_count,points,catalog_bytes,
-         config.max_device_bytes-layout.bytes,host_cap,plastic_layout,plastic_host_bytes)||
+    const bool mixed=collection_plasticity&&collection_plasticity->heterogeneous_sections();
+    const bool forecast=mixed?
+      HostStorage::ForecastSections(config.element_count,points,catalog_bytes,
+        config.max_device_bytes-layout.bytes,host_cap,plastic_host_bytes):
+      HostStorage::Forecast(config.element_count,points,catalog_bytes,
+        config.max_device_bytes-layout.bytes,host_cap,plastic_layout,plastic_host_bytes);
+    if(!forecast||
        !host_budget.Append<unsigned char>(plastic_host_bytes,ignored)||
        !host_budget.Append<ReferenceMaterial>(config.element_count,ignored))
       return {BatchStatus::ResourceLimit,"T3 combined plasticity payload exceeds startup budgets"};

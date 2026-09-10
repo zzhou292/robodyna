@@ -3,7 +3,9 @@ if(NOT TARGET tl_shell_batch_plasticity)
   find_package(CUDAToolkit REQUIRED)
   add_library(tl_shell_batch_plasticity STATIC
     "${CMAKE_CURRENT_LIST_DIR}/ShellBatchPlasticityStorage.cpp"
-    "${CMAKE_CURRENT_LIST_DIR}/ShellBatchPlasticityCollectionStorage.cpp")
+    "${CMAKE_CURRENT_LIST_DIR}/ShellBatchPlasticityCollectionStorage.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/ShellMixedSectionStorage.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/ShellMixedSectionReadback.cpp")
   get_filename_component(shell_batch_plasticity_root "${CMAKE_CURRENT_LIST_DIR}/../.." ABSOLUTE)
   target_include_directories(tl_shell_batch_plasticity PUBLIC "${shell_batch_plasticity_root}")
   target_compile_features(tl_shell_batch_plasticity PUBLIC cxx_std_17)

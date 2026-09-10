@@ -40,12 +40,12 @@ cuda_library(
     srcs = [
         "QephBatch.cu", "QephBatchOperations.cu", "QephBatchKernels.cu",
         "QephBatchModel.cpp", "QephBatchIdentity.cpp", "QephBatchPublication.cpp",
-        "QephBatchPlasticity.cpp",
+        "QephBatchPlasticity.cpp", "QephBatchSections.cpp",
     ],
     hdrs = ["QephBatch.h", "QephBatchStorage.h", "QephBatchDiagnostics.h", "QephBatchStartup.h"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
     deps = [
-        ":force", ":layered_j2", "//lib_src/elements:shell_batch_fields",
+        ":force", ":layered_j2", ":layered_law1", "//lib_src/elements:shell_batch_fields",
         "//lib_src/elements:shell_batch_plasticity_storage",
         "//lib_src/elements:shell_batch_joined_model",
         "//lib_src/elements:shell_resident_startup_index", "//lib_src/elements:shell_resident_host_accounting",

@@ -74,8 +74,8 @@ cc_library(
 
 cuda_library(
     name = "shell_batch_plasticity_storage",
-    srcs = ["ShellBatchPlasticityStorage.cpp", "ShellBatchPlasticityCollectionStorage.cpp"],
-    hdrs = ["ShellBatchPlasticityStorage.h", "ShellPlasticArenaLayout.h"],
+    srcs = ["ShellBatchPlasticityStorage.cpp", "ShellBatchPlasticityCollectionStorage.cpp", "ShellMixedSectionStorage.cpp", "ShellMixedSectionReadback.cpp"],
+    hdrs = ["ShellBatchPlasticityStorage.h", "ShellPlasticArenaLayout.h", "ShellBatchLayeredSection.h", "ShellMixedSectionArenaLayout.h", "ShellMixedSectionStorage.h", "ShellLayeredSectionValues.h", "ShellBatchSectionAdvance.h"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
     deps = [":shell_batch_plasticity", ":shell_batch_plasticity_binding", ":shell_resident_storage", ":shell_resident_host_accounting", "//lib_utils:bounded_startup_array"],
 )
