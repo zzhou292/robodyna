@@ -3,6 +3,7 @@
 #include "NodalTrialIdentity.h"
 #include "NodalRigidGroupStorage.h"
 #include "NodalForceStageCaptureLayout.h"
+#include "NodalStateLayout.h"
 #include <atomic>
 #include <cmath>
 #include <cstring>
@@ -116,8 +117,9 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
                                         const double* inverse_mass, const std::uint8_t* fixed,
                                         const NodalDofConfig* dofs, const NodalRigidGroupModel* groups) {
   if (impl_) return {NodalStatus::InvalidInput, "Owner already initialized"};
-  if (!c.node_count || c.node_count > MaxNodalStateNodes || !c.max_device_bytes ||
-      c.max_device_bytes > MaxTranslationDeviceBytes)
+  if (!c.max_nodes || c.max_nodes > MaxActiveNodalStateNodes ||
+      !c.node_count || c.node_count > c.max_nodes || !c.max_device_bytes ||
+      c.max_device_bytes > MaxActiveNodalStateDeviceBytes)
     return {NodalStatus::ResourceLimit, "Nodal capacity exceeds admitted limits"};
   const bool rotations = dofs != nullptr;
   const bool staggered = c.temporal_scheme == NodalTemporalScheme::StaggeredHalfKickStart;
@@ -168,18 +170,13 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
     } catch(const std::bad_alloc&) { return {NodalStatus::ResourceLimit,"Rigid host storage allocation failed"}; }
   }
   const std::size_t group_values=rigid_groups?rigid::GroupStateValues*rigid_groups->info.group_count:0;
-  const std::size_t state_values = (rotations ? 19 : 6)*n+group_values;
-  const std::size_t inverse_values = (rotations ? 2 : 1)*n;
-  const std::size_t mask_bytes = (rotations ? 3 : 1)*n;
   const nodal_detail::ForceStageCaptureLayout capture{n,rigid_groups?rigid_groups->info.group_count:0};
   const std::size_t capture_values=c.capture_force_stage_accelerations?capture.values():0;
-  // Existing private host state staging is larger than the capture payload;
-  // prove that extent before allocating either host state or device scratch.
-  if(capture_values>state_values) return {NodalStatus::ResourceLimit,"Force-stage capture exceeds host staging extent"};
-  const std::size_t scratch_values=11*n+capture_values;
-  const std::size_t bytes = (2*state_values + scratch_values + inverse_values)*sizeof(double) + mask_bytes + sizeof(Control)+
-    (rigid_groups?rigid_groups->immutable_bytes:0);
-  if (bytes > c.max_device_bytes) return {NodalStatus::ResourceLimit, "Device byte budget is insufficient"};
+  nodal_detail::StateLayout layout;
+  if(!layout.Initialize(n,rotations,group_values,rigid_groups?rigid_groups->immutable_bytes:0,
+      capture_values,sizeof(Control),c.max_device_bytes))
+    return {NodalStatus::ResourceLimit,"Device byte budget or host staging extent is insufficient"};
+  const auto state_values=layout.accepted.count,mask_bytes=layout.fixed.bytes;
   try {
     auto next = std::make_unique<Impl>();
     next->rigid_groups=std::move(rigid_groups);
@@ -198,10 +195,10 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
       if (r.status == NodalStatus::Ok) { next->allocation.device_bytes += size; ++next->allocation.device_allocations; }
       return r;
     };
-    report = allocate(&next->accepted, state_values*sizeof(double)); if (report.status != NodalStatus::Ok) return report;
-    report = allocate(&next->trial, state_values*sizeof(double)); if (report.status != NodalStatus::Ok) return report;
-    report = allocate(&next->scratch, scratch_values*sizeof(double)); if (report.status != NodalStatus::Ok) return report;
-    report = allocate(&next->inverse, inverse_values*sizeof(double)); if (report.status != NodalStatus::Ok) return report;
+    report = allocate(&next->accepted, layout.accepted.bytes); if (report.status != NodalStatus::Ok) return report;
+    report = allocate(&next->trial, layout.trial.bytes); if (report.status != NodalStatus::Ok) return report;
+    report = allocate(&next->scratch, layout.scratch.bytes); if (report.status != NodalStatus::Ok) return report;
+    report = allocate(&next->inverse, layout.inverse.bytes); if (report.status != NodalStatus::Ok) return report;
     report = allocate(&next->fixed, mask_bytes); if (report.status != NodalStatus::Ok) return report;
     report = allocate(&next->control, sizeof(Control)); if (report.status != NodalStatus::Ok) return report;
     if(next->rigid_groups) {
@@ -234,7 +231,7 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
     }
     report = next->Check(cudaMemcpyAsync(next->fixed, next->constraint_staging.data(), mask_bytes, cudaMemcpyHostToDevice, next->stream));
     if (report.status != NodalStatus::Ok) return report;
-    report = next->Check(cudaMemsetAsync(next->scratch, 0, scratch_values*sizeof(double), next->stream));
+    report = next->Check(cudaMemsetAsync(next->scratch, 0, layout.scratch.bytes, next->stream));
     if (report.status != NodalStatus::Ok) return report;
     next->host_control.rows = {next->scratch+6*n, next->scratch+7*n, static_cast<std::uint32_t>(n), static_cast<std::uint32_t>(n)};
     report = next->Check(cudaMemcpyAsync(next->control, &next->host_control, sizeof(Control), cudaMemcpyHostToDevice, next->stream));

@@ -3,6 +3,7 @@
 #include "FENodalStateView.h"
 #include "ExplicitStepStability.h"
 #include "NodalForceStageSnapshot.h"
+#include "NodalStateLimits.h"
 #include "../constraints/NodalRigidGroupState.h"
 #include <cuda_runtime_api.h>
 #include <cstddef>
@@ -10,14 +11,6 @@
 #include <memory>
 
 namespace tl::fea {
-// Legacy contributor capacity. Existing shell/contact modules retain their own
-// qualified bounds; admitting a larger owner does not enlarge those modules.
-constexpr std::size_t MaxTranslationNodes = 128;
-// First connected-assembly owner bound. Device and host staging use active
-// counts, and the unchanged byte cap below still applies before allocation.
-constexpr std::size_t MaxNodalStateNodes = 2048;
-constexpr std::size_t MaxTranslationDeviceBytes = 1024 * 1024;
-
 enum class NodalStatus {
   Ok, InvalidInput, ResourceLimit, NotInitialized, WrongPhase, StaleTrial,
   ContributorFailure, InvalidOutput, UnsupportedRotation, StepTooLarge,
@@ -47,6 +40,10 @@ struct NodalStateConfig {
   // Optional transient A/AR capture. Requires fresh extended staggered startup
   // with attached plain rigid groups. Disabled preserves legacy allocations.
   bool capture_force_stage_accelerations = false;
+  // Appended for aggregate-initialization compatibility. Larger owner counts
+  // require explicit count AND sufficient byte limits; defaults remain 2048
+  // nodes/1 MiB. All buffers remain active-sized with no per-step growth.
+  std::size_t max_nodes = MaxNodalStateNodes;
 };
 // Optional conventional-node degrees of freedom. Masks are immutable WORLD
 // constraints: bits 1/2/4 fix x/y/z translation, and rotation_fixed is 0 or 1.

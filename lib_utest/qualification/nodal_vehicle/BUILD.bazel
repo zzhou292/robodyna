@@ -1,0 +1,17 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+cc_test(
+    name = "nodal_vehicle_layout_check",
+    size = "small",
+    srcs = ["LayoutTest.cpp"],
+    copts = ["-std=c++17"],
+    deps = ["//lib_src/solvers:nodal_state_layout", "@googletest//:gtest_main"],
+)
+cuda_test(
+    name = "nodal_vehicle_owner_check",
+    size = "medium",
+    srcs = ["VehicleOwnerFixture.h", "VehicleOwnerFixture.cu", "VehicleOwnerTest.cu"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/solvers:explicit_nodal_state", "@googletest//:gtest_main"],
+)

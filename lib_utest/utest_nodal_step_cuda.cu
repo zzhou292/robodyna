@@ -179,7 +179,7 @@ TEST_F(NodalStepCuda, InvalidStartupIsRejectedBeforeOwnerPublication) {
   auto c=good; c.node_count=fe::MaxNodalStateNodes+1; reject(c,NS::ResourceLimit);
   c=good; c.node_count=0; reject(c,NS::ResourceLimit);
   c=good; c.max_device_bytes=1; reject(c,NS::ResourceLimit);
-  c=good; c.max_device_bytes=fe::MaxTranslationDeviceBytes+1; reject(c,NS::ResourceLimit);
+  c=good; c.max_device_bytes=fe::MaxActiveNodalStateDeviceBytes+1; reject(c,NS::ResourceLimit);
   for (double h : {0.,-1.,std::numeric_limits<double>::infinity(),std::numeric_limits<double>::quiet_NaN()}) {
     c=good; c.fixed_dt=h; reject(c,NS::InvalidInput);
   }
