@@ -22,4 +22,9 @@ under the workspace reports record 83 passing functions in 13 affected groups.
 Host checks cover exact shared/sparse-node incidence, permutation invariance,
 all 3,549 actual-sized mixed-family slots, rebased pointers and capacity failures.
 CUDA checks retain last-node/parent rejection, rollback and stable allocations.
-Actual assembly archive parity and measured runtime remain the performance gate.
+Actual assembly parity now passes both128 and1024 intervals: all29/197 accepted
+mesh/OBJ/field/index/interval files match the earlier baseline exactly, including
+yielded native histories. Reports `source-assembly-wall-incidence-parity-1/2`
+retain file-level checks. The128-step inclusive stage timer falls from14.026 to
+7.705 seconds (1.820x), and the1024-step archive run from116.835 to64.698 seconds
+(1.806x). These are measured component runs, not vehicle-scale throughput.
