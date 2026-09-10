@@ -20,7 +20,6 @@
       UVAR=ZERO
       OFF=DBLE(ELEMENT)
       DFMAX=DAMAGE
-      TDEL=TOLD
       FOFF=ACTIVE
       NGL=17
       SIGNXX=STRESS(1)
@@ -36,5 +35,10 @@
       CALL SHELL_CONSTANT_FAILURE_REF(1,13,0,UPARAM,UVAR,TIME,NGL,1,1,1,
      . SIGNXX,SIGNYY,SIGNXY,SIGNYZ,SIGNZX,DPLAS,EPSP,TSTAR,OFF,FOFF,
      . DFMAX,TDEL)
-      VALUES=[DFMAX(1),TDEL(1),DBLE(FOFF(1))]
+! TDEL is INTENT(OUT) and defined only for a newly failed point. Carry the
+! caller's old timestamp explicitly otherwise; never read undefined output.
+      VALUES(1)=DFMAX(1)
+      VALUES(2)=TOLD
+      IF(ACTIVE==1 .AND. FOFF(1)==0) VALUES(2)=TDEL(1)
+      VALUES(3)=DBLE(FOFF(1))
       END SUBROUTINE

@@ -13,7 +13,9 @@ Preparation verifies exact original bytes and Git blobs, renames the leaf and
 removes its unused CRACKXFEM_MOD import. Existing qualified LAW44 native build
 infrastructure supplies precision, constants and includes. Logging uses the
 native routine's ordinary output units. No production C++ failure arithmetic
-is called by the oracle. The initial point branch excludes rate, temperature,
+is called by the oracle. Native TDEL is read only on a new point failure; its
+INTENT(OUT) contract leaves other entries undefined. Persistent timestamps are
+carried explicitly from caller history on every other branch. The initial point branch excludes rate, temperature,
 triaxiality-dependent fracture and element-level IFAIL_SH behavior.
 
 The source converter emits this as a separate /FAIL/JOHNSON model and clears
@@ -32,7 +34,7 @@ ctest --test-dir build/shell-constant-failure --parallel 1 --output-on-failure
 ```
 
 Three value, three native and one actual CUDA test pass in the guarded owning
-run `crash-work/reports/shell-constant-failure-tests-1.{json,xml}`. They cover
+run `crash-work/reports/shell-constant-failure-tests-2.{json,xml}`. They cover
 accumulated loading, hold/unloading, exact threshold, inactive flags, persistent
 first failure time, positive-overflow saturation and unchanged rejected output.
 The initial build exposed a missing declaration for the shared finite-value

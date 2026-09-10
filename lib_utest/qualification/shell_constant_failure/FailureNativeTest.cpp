@@ -3,7 +3,7 @@
 
 namespace failure_test {
 TEST(ConstantPlasticFailureNative, OriginalCriterionAccumulatesAcrossLoadHoldAndFailure) {
-  for (double threshold : {0.02, 0.25, 2.5, 3.5}) {
+  for (double threshold : {0.02, 0.25, 1., 2.5, 3.5}) {
     f::ConstantPlasticFailureHistory base;
     const f::ConstantPlasticFailureParameters p{threshold};
     unsigned epoch = 0;
