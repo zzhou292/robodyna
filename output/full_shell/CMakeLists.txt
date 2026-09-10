@@ -21,6 +21,7 @@ target_link_libraries(robo_dyna_interval_segments PUBLIC robo_dyna_full_shell_re
 target_compile_features(robo_dyna_interval_segments PUBLIC cxx_std_17)
 target_compile_options(robo_dyna_interval_segments PRIVATE -fno-fast-math -ffp-contract=off)
 option(ROBO_DYNA_FULL_SHELL_RECORD_TESTS "Build pure array/forecast/record contract checks" ON)
+add_subdirectory(static_bundle)
 if(ROBO_DYNA_FULL_SHELL_RECORD_TESTS)
   find_package(GTest REQUIRED)
   find_package(Python3 REQUIRED COMPONENTS Interpreter)

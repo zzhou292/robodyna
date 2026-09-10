@@ -1,27 +1,7 @@
 #include "IntervalTestSupport.h"
-#include <csignal>
-#include <sys/resource.h>
+#include "FileWriteLimit.h"
 
 namespace crash::output::full_shell::test {
-namespace {
-class FileSizeLimit {
-  public:
-    FileSizeLimit() {
-        Require(getrlimit(RLIMIT_FSIZE,&old_)==0,"Cannot inspect test file limit");
-        struct sigaction ignore{};ignore.sa_handler=SIG_IGN;sigemptyset(&ignore.sa_mask);
-        Require(sigaction(SIGXFSZ,&ignore,&signal_)==0,"Cannot stage test signal");
-        auto next=old_;next.rlim_cur=100;
-        if(setrlimit(RLIMIT_FSIZE,&next)!=0) {
-            sigaction(SIGXFSZ,&signal_,nullptr);
-            throw std::runtime_error("Cannot stage test file limit");
-        }
-    }
-    ~FileSizeLimit(){setrlimit(RLIMIT_FSIZE,&old_);sigaction(SIGXFSZ,&signal_,nullptr);}
-  private:
-    struct rlimit old_{};
-    struct sigaction signal_{};
-};
-}
 TEST(IntervalWriter,PreexistingLateDestinationAndPartialWritePoisonAreCreateOnly) {
     const auto c=Intervals();Directory dir;
     WriteBytes(dir.path/IntervalArrayName("blocked",2,false),"existing");
