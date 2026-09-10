@@ -65,6 +65,7 @@ cuda_library(
         ":shell_batch_binding", ":shell_batch_fields", ":shell_batch_startup",
         ":shell_batch_plasticity_storage", ":shell_resident_storage",
         "//lib_src/elements/qeph:batch", "//lib_src/elements/t3:batch",
+        "//lib_src/elements/type25:type25_batch",
         "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_trial_identity",
     ],
 )

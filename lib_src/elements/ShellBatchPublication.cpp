@@ -12,13 +12,22 @@ namespace {
 using S=ShellPublicationStatus;
 ShellPublicationReport Ok() noexcept { return {S::Success,"OK"}; }
 ShellPublicationReport Nodal(const NodalReport& r) noexcept { return {S::NodalFailure,r.message,r.status}; }
+ShellPublicationReport Connector(const type25::BatchReport& r) noexcept {
+  using B=type25::BatchStatus;
+  if(r.status==B::Success) return Ok();
+  if(r.status==B::DeviceFailure||r.status==B::Unusable) return {S::DeviceFailure,r.message,r.nodal_status};
+  if(r.status==B::NodalFailure) return {S::NodalFailure,r.message,r.nodal_status};
+  return {S::StaleTrial,r.message,r.nodal_status};
+}
 bool SameDouble(double a,double b) noexcept { return std::memcmp(&a,&b,sizeof(a))==0; }
 bool SameKinetic(const ShellBatchKinetic& a,const ShellBatchKinetic& b) noexcept {
   return SameDouble(a.translation,b.translation)&&SameDouble(a.rotation,b.rotation)&&
-    SameDouble(a.physical_isotropic,b.physical_isotropic)&&SameDouble(a.added_isotropic,b.added_isotropic);
+    SameDouble(a.physical_isotropic,b.physical_isotropic)&&SameDouble(a.added_isotropic,b.added_isotropic)&&
+    SameDouble(a.connector_translation,b.connector_translation)&&SameDouble(a.connector_rotation,b.connector_rotation);
 }
 bool SameDiagnostics(const ShellBatchDiagnostics& a,const ShellBatchDiagnostics& b) noexcept {
-  return a.valid==b.valid&&qeph::batch_detail::SameDiagnostics(a.qeph,b.qeph)&&
+  return a.valid==b.valid&&a.has_connector==b.has_connector&&
+    type25::batch_detail::SameDiagnostics(a.connector,b.connector)&&qeph::batch_detail::SameDiagnostics(a.qeph,b.qeph)&&
     t3::batch_detail::SameDiagnostics(a.t3,b.t3)&&SameKinetic(a.base_kinetic,b.base_kinetic)&&SameKinetic(a.kinetic,b.kinetic);
 }
 template<class D> bool UnavailableKinetic(const D& d) noexcept {
@@ -26,7 +35,8 @@ template<class D> bool UnavailableKinetic(const D& d) noexcept {
     d.kinetic_physical_isotropic==0&&d.kinetic_added_isotropic==0;
 }
 ShellPublicationReport InitialMovingKinetic(FENodalState& owner,const ShellBatchBinding& binding,
-    const ShellBatchStartup& startup,const NodalStamp& expected,ShellBatchKinetic& output) {
+    const NodalMassBinding* combined,const ShellBatchStartup& startup,
+    const NodalStamp& expected,ShellBatchKinetic& output) {
   // Initial assembly views have expired after caller Discard. Authenticate
   // those source identities separately, then obtain fresh actual owner fields
   // through its accepted-only readback contract; never dereference old views.
@@ -50,8 +60,17 @@ ShellPublicationReport InitialMovingKinetic(FENodalState& owner,const ShellBatch
     const tl::math::Vec3 position{x[3*n],x[3*n+1],x[3*n+2]},velocity{v[3*n],v[3*n+1],v[3*n+2]},omega{w[3*n],w[3*n+1],w[3*n+2]};
     if(!shell_startup_detail::MatchesInitialNode(startup,position,binding.nodes()[n].position,velocity,omega,orientation+4*n))
       return {S::InvalidInput,"Actual common initial state differs from the bound motion declaration"};
-    if(!shell_startup_detail::AddInitialTranslationKinetic(binding.nodes()[n].native.mass,velocity,measured.translation))
+    const auto mass=combined?combined->nodes()[n].coefficients.mass:binding.nodes()[n].native.mass;
+    if(!shell_startup_detail::AddInitialTranslationKinetic(mass,velocity,measured.translation))
       return {S::NonfiniteResult,"Measured common initial kinetic energy overflows"};
+    if(combined) {
+      const auto connector_mass=combined->nodes()[n].coefficients.connector_mass;
+      // The startup helper requires positive mass; ordinary nodes may carry
+      // exactly zero connector mass and contribute a known zero partition.
+      if(connector_mass>0&&!shell_startup_detail::AddInitialTranslationKinetic(
+          connector_mass,velocity,measured.connector_translation))
+        return {S::NonfiniteResult,"Measured connector initial kinetic energy overflows"};
+    }
   }
   output=measured; return Ok();
 }
@@ -60,6 +79,7 @@ ShellPublicationReport InitialMovingKinetic(FENodalState& owner,const ShellBatch
 struct ShellBatchPublication::Impl {
   qeph::QephBatch* qbatch=nullptr;
   t3::T3Batch* tbatch=nullptr;
+  type25::Batch* connector=nullptr;
   const ShellBatchPublication* scope=nullptr;
   shell_publication_detail::Storage* storage=nullptr;
   shell_publication_detail::Layout layout;
@@ -72,11 +92,13 @@ struct ShellBatchPublication::Impl {
     pending=false; candidate={}; candidate_view={};
     if(qbatch) qbatch->DiscardTrial();
     if(tbatch) tbatch->DiscardTrial();
+    if(connector) connector->DiscardTrial();
   }
   void Poison() noexcept {
     usable=false;
     if(qbatch&&qbatch->impl_) qbatch->impl_->usable=false;
     if(tbatch&&tbatch->impl_) tbatch->impl_->usable=false;
+    if(connector) connector->Poison();
     Discard();
   }
   ShellPublicationReport Runtime(cudaError_t error,const char* message) noexcept {
@@ -90,6 +112,8 @@ struct ShellBatchPublication::Impl {
       (q.config.usage==qeph::BatchUsage::CoupledForces&&t.config.usage==t3::BatchUsage::CoupledForces);
     return q.joined_binding&&t.joined_binding&&q.joined_binding->inventory()==t.joined_binding->inventory()&&
       ((!q.joined_mass&&!t.joined_mass)||(q.joined_mass&&t.joined_mass&&q.joined_mass->Matches(*t.joined_mass)))&&
+      bool(connector)==bool(q.joined_mass)&&
+      (!connector||q.config.usage==qeph::BatchUsage::CoupledForces)&&
       q.config.element_count==q.joined_binding->qeph_count()&&q.config.element_count>0&&
       t.config.element_count==t.joined_binding->t3_count()&&t.config.element_count>0&&
       q.config.configuration_id==t.config.configuration_id&&
@@ -108,11 +132,13 @@ struct ShellBatchPublication::Impl {
     return Ok();
   }
   ShellPublicationReport Preflight(FENodalState& owner,const NodalTrialToken& token,
-      const qeph::BatchDiagnostics& qd,const t3::BatchDiagnostics& td,NodalPreparedView& authentic) noexcept {
+      const qeph::BatchDiagnostics& qd,const t3::BatchDiagnostics& td,
+      const type25::BatchDiagnostics* cd,NodalPreparedView& authentic) noexcept {
     if(!usable||!qbatch->impl_->usable||!tbatch->impl_->usable) return {S::DeviceFailure,"Mixed shell participant is poisoned"};
     if(qbatch->impl_->publication_scope!=scope||tbatch->impl_->publication_scope!=scope)
       return {S::NotJoined,"Mixed participant belongs to a different publication scope"};
     if(!SameScope()) return {S::NotJoined,"Mixed shell participant inventories or immutable scopes differ"};
+    if(bool(connector)!=bool(cd)) return {S::NotJoined,"Complete connector candidate is required by this scope"};
     const auto& q=*qbatch->impl_; const auto& t=*tbatch->impl_;
     const bool coupled=q.config.usage==qeph::BatchUsage::CoupledForces;
     if(!q.bound||!t.bound||!q.pending||!t.pending||
@@ -131,6 +157,7 @@ struct ShellBatchPublication::Impl {
     if(!trial_identity::SamePrepared(authentic,q.candidate_view)||
        !trial_identity::SamePrepared(authentic,t.candidate_view))
       return {S::StaleTrial,"Mixed candidate views differ from the owner's actual prepared token"};
+    if(connector) return Connector(connector->PreflightPublication(owner,token,authentic,*cd,scope));
     return Ok();
   }
 };
@@ -141,22 +168,28 @@ ShellBatchPublication::~ShellBatchPublication() {
   // Borrowed participants must outlive this coordinator, including destruction.
   if(impl_->qbatch->impl_->publication_scope==this) impl_->qbatch->impl_->publication_scope=nullptr;
   if(impl_->tbatch->impl_->publication_scope==this) impl_->tbatch->impl_->publication_scope=nullptr;
+  if(impl_->connector) impl_->connector->ReleasePublication(this);
 }
 ShellPublicationReport ShellBatchPublication::Initialize(FENodalState& owner,qeph::QephBatch& q,t3::T3Batch& t,
+    const ShellPublicationLimits& limits) { return InitializeImpl(owner,q,t,nullptr,limits); }
+ShellPublicationReport ShellBatchPublication::Initialize(FENodalState& owner,qeph::QephBatch& q,t3::T3Batch& t,
+    type25::Batch& connector,const ShellPublicationLimits& limits) {
+  return InitializeImpl(owner,q,t,&connector,limits);
+}
+ShellPublicationReport ShellBatchPublication::InitializeImpl(FENodalState& owner,qeph::QephBatch& q,t3::T3Batch& t,
+    type25::Batch* connector,
     const ShellPublicationLimits& limits) try {
   if(impl_) return {S::InvalidInput,"Mixed publication scope is already initialized"};
   if(!q.impl_||!t.impl_) return {S::NotInitialized,"Both shell participants must be initialized"};
   if(!q.impl_->joined_binding||!t.impl_->joined_binding) return {S::NotJoined,"Both shell participants must use InitializeJoined"};
-  // Until a typed connector joins this transaction, augmented coefficients
-  // cannot be published by a shell-only coordinator.
-  if(q.impl_->joined_mass||t.impl_->joined_mass)
+  if(bool(q.impl_->joined_mass)!=bool(connector)||bool(t.impl_->joined_mass)!=bool(connector))
     return {S::NotJoined,"Combined nodal mass requires the connector publication participant"};
   const auto count=q.impl_->joined_binding->node_count();
   shell_publication_detail::Layout layout;
   if(!limits.max_nodes||limits.max_nodes>MaxShellResidentNodes||count>limits.max_nodes||
      !limits.max_device_bytes||limits.max_device_bytes>MaxShellResidentDeviceBytes||
      !limits.max_host_bytes||limits.max_host_bytes>MaxShellResidentHostBytes||
-     !layout.Initialize(count,limits.max_device_bytes))
+     !layout.Initialize(count,limits.max_device_bytes,connector!=nullptr))
     return {S::ResourceLimit,"Mixed publication active-node/device capacity exceeded"};
   util::BoundedArenaLayout host_budget(limits.max_host_bytes); util::ArenaRegion ignored;
   if(!host_budget.Append<unsigned char>(sizeof(Impl),ignored)||!host_budget.Append<unsigned char>(layout.bytes,ignored)||
@@ -164,7 +197,7 @@ ShellPublicationReport ShellBatchPublication::Initialize(FENodalState& owner,qep
     return {S::ResourceLimit,"Mixed publication startup payload exceeds host cap"};
   std::unique_ptr<Impl> next(new(std::nothrow) Impl);
   if(!next) return {S::ResourceLimit,"Mixed publication host allocation failed"};
-  next->qbatch=&q; next->tbatch=&t; next->scope=this; next->layout=layout;
+  next->qbatch=&q; next->tbatch=&t; next->connector=connector; next->scope=this; next->layout=layout;
   if(q.impl_->publication_scope||t.impl_->publication_scope||!next->SameScope()||!q.impl_->bound||!t.impl_->bound||q.impl_->pending||t.impl_->pending||
      q.impl_->accepted_stamp.epoch||!q.impl_->usable||!t.impl_->usable)
     return {S::InvalidInput,"Mixed initialization requires same-scope bound epoch-zero participants"};
@@ -177,9 +210,18 @@ ShellPublicationReport ShellBatchPublication::Initialize(FENodalState& owner,qep
   }
   if(!UnavailableKinetic(q.impl_->accepted_diagnostics)||!UnavailableKinetic(t.impl_->accepted_diagnostics))
     return {S::InvalidInput,"Joined initial participants must not publish duplicate kinetic energy"};
+  if(connector) {
+    const auto admitted=Connector(connector->PreflightAttach(owner.accepted(),*q.impl_->joined_mass,
+      q.impl_->config.configuration_id,q.impl_->config.qualification_id,q.impl_->config.startup,this));
+    if(admitted.status!=S::Success) return admitted;
+    const auto copied=Connector(connector->CopyAcceptedDiagnostics(owner.accepted(),&next->accepted.connector));
+    if(copied.status!=S::Success) return copied;
+    next->accepted.has_connector=true;
+  }
   ShellBatchKinetic initial_kinetic;
   if(q.impl_->config.startup.kind==ShellBatchStartupKind::ReferenceUniformTranslation) {
-    const auto measured=InitialMovingKinetic(owner,*q.impl_->joined_binding,q.impl_->config.startup,q.impl_->accepted_stamp,initial_kinetic);
+    const auto measured=InitialMovingKinetic(owner,*q.impl_->joined_binding,
+      q.impl_->joined_mass?&*q.impl_->joined_mass:nullptr,q.impl_->config.startup,q.impl_->accepted_stamp,initial_kinetic);
     if(measured.status!=S::Success) {
       if(measured.nodal_status==NodalStatus::DeviceFailure) next->Poison();
       return measured;
@@ -194,6 +236,12 @@ ShellPublicationReport ShellBatchPublication::Initialize(FENodalState& owner,qep
     const auto& mass=binding.nodes()[n].native;
     initial->model.mass[n]=mass.mass; initial->model.inertia[n]=mass.isotropic_inertia;
     initial->model.physical[n]=mass.physical_inertia; initial->model.added[n]=mass.added_inertia;
+    if(connector) {
+      const auto& combined=q.impl_->joined_mass->nodes()[n].coefficients;
+      initial->model.mass[n]=combined.mass; initial->model.inertia[n]=combined.isotropic_inertia;
+      initial->model.connector_mass[n]=combined.connector_mass;
+      initial->model.connector_inertia[n]=combined.connector_inertia;
+    }
   }
   auto r=next->Runtime(cudaGetLastError(),"Pending CUDA error before mixed publication initialization");
   if(r.status!=S::Success) return r;
@@ -208,11 +256,22 @@ ShellPublicationReport ShellBatchPublication::Initialize(FENodalState& owner,qep
   // moving K0 is measured once from fresh owner fields, without h=0 evaluation.
   next->accepted.valid=true;
   q.impl_->publication_scope=this; t.impl_->publication_scope=this;
+  if(connector) connector->AttachPublication(this);
   impl_=std::move(next); return Ok();
 } catch(const std::bad_alloc&) { return {S::ResourceLimit,"Mixed publication host allocation failed"}; }
   catch(const std::length_error&) { return {S::ResourceLimit,"Mixed publication host size overflow"}; }
 ShellPublicationReport ShellBatchPublication::Prepare(FENodalState& owner,const NodalTrialToken& token,
     const qeph::BatchDiagnostics& q,const t3::BatchDiagnostics& t,ShellBatchDiagnostics* output) {
+  return PrepareImpl(owner,token,q,t,nullptr,output);
+}
+ShellPublicationReport ShellBatchPublication::Prepare(FENodalState& owner,const NodalTrialToken& token,
+    const qeph::BatchDiagnostics& q,const t3::BatchDiagnostics& t,
+    const type25::BatchDiagnostics& connector,ShellBatchDiagnostics* output) {
+  return PrepareImpl(owner,token,q,t,&connector,output);
+}
+ShellPublicationReport ShellBatchPublication::PrepareImpl(FENodalState& owner,const NodalTrialToken& token,
+    const qeph::BatchDiagnostics& q,const t3::BatchDiagnostics& t,
+    const type25::BatchDiagnostics* connector,ShellBatchDiagnostics* output) {
   auto fail=[&](ShellPublicationReport r) {
     if(impl_&&(r.status==S::DeviceFailure||r.nodal_status==NodalStatus::DeviceFailure)) impl_->Poison();
     owner.Discard(); DiscardTrial(); return r;
@@ -220,10 +279,11 @@ ShellPublicationReport ShellBatchPublication::Prepare(FENodalState& owner,const 
   if(!impl_) return fail({S::NotInitialized,"Mixed publication scope is not initialized"});
   auto& s=*impl_; s.pending=false; s.candidate={}; s.candidate_view={};
   if(!trial_identity::Disjoint(output,sizeof(*output),&q,sizeof(q))||
-     !trial_identity::Disjoint(output,sizeof(*output),&t,sizeof(t)))
+     !trial_identity::Disjoint(output,sizeof(*output),&t,sizeof(t))||
+     (connector&&!trial_identity::Disjoint(output,sizeof(*output),connector,sizeof(*connector))))
     return fail({S::InvalidInput,"Mixed diagnostic output is missing or overlaps typed inputs"});
   NodalPreparedView authentic;
-  auto r=s.Preflight(owner,token,q,t,authentic); if(r.status!=S::Success) return fail(r);
+  auto r=s.Preflight(owner,token,q,t,connector,authentic); if(r.status!=S::Success) return fail(r);
   r=s.Runtime(cudaGetLastError(),"Pending CUDA error before mixed kinetic measurement");
   if(r.status!=S::Success) return fail(r);
   shell_publication_detail::LaunchMeasure(s.storage,authentic);
@@ -233,6 +293,7 @@ ShellPublicationReport ShellBatchPublication::Prepare(FENodalState& owner,const 
   r=s.Runtime(cudaStreamSynchronize(authentic.stream),"Mixed kinetic stream failed"); if(r.status!=S::Success) return fail(r);
   if(s.control.status!=S::Success) return fail({s.control.status,"Mixed native kinetic reduction is nonfinite"});
   ShellBatchDiagnostics next; next.qeph=q; next.t3=t;
+  if(connector) { next.connector=*connector; next.has_connector=true; }
   next.base_kinetic=s.control.base; next.kinetic=s.control.endpoint; next.valid=true;
   s.candidate=next; s.candidate_view=authentic; s.pending=true; *output=next;
   return Ok();
@@ -248,7 +309,8 @@ ShellPublicationReport ShellBatchPublication::Commit(FENodalState& owner,const N
   if(!s.pending||!SameDiagnostics(expected,s.candidate))
     return fail({S::StaleTrial,"Mixed publication does not match its measured complete candidate"});
   NodalPreparedView authentic;
-  auto r=s.Preflight(owner,token,expected.qeph,expected.t3,authentic); if(r.status!=S::Success) return fail(r);
+  auto r=s.Preflight(owner,token,expected.qeph,expected.t3,
+      expected.has_connector?&expected.connector:nullptr,authentic); if(r.status!=S::Success) return fail(r);
   if(!trial_identity::SamePrepared(authentic,s.candidate_view)||!receipt.passed||
      receipt.owner_id!=expected.qeph.owner_id||receipt.base_epoch!=expected.qeph.base_epoch||
      receipt.attempt!=expected.qeph.attempt||receipt.qualification_id!=expected.qeph.qualification_id)
@@ -265,8 +327,10 @@ ShellPublicationReport ShellBatchPublication::Commit(FENodalState& owner,const N
   // checks, callbacks or independently committing participant wrappers.
   const auto stamp=owner.accepted();
   s.qbatch->impl_->Publish(stamp); s.tbatch->impl_->Publish(stamp);
+  if(s.connector) s.connector->Publish(stamp);
   s.accepted=s.candidate;
   s.accepted.qeph.phase=qeph::BatchPhase::Accepted; s.accepted.t3.phase=t3::BatchPhase::Accepted;
+  if(s.connector) s.accepted.connector.phase=type25::BatchPhase::Accepted;
   s.pending=false; s.candidate={}; s.candidate_view={};
   return {S::Success,"Owner and both native material/cache slabs published"};
 }
@@ -281,6 +345,13 @@ ShellPublicationReport ShellBatchPublication::CopyAcceptedDiagnostics(const Noda
      !s.SameScope()||!trial_identity::SameStamp(expected,s.qbatch->impl_->accepted_stamp)||
      s.accepted.qeph.epoch!=expected.epoch||s.accepted.t3.epoch!=expected.epoch)
     return {S::StaleTrial,"Mixed accepted diagnostics belong to another endpoint"};
+  if(s.connector) {
+    type25::BatchDiagnostics actual;
+    const auto copied=Connector(s.connector->CopyAcceptedDiagnostics(expected,&actual));
+    if(copied.status!=S::Success) return copied;
+    if(!type25::batch_detail::SameDiagnostics(actual,s.accepted.connector))
+      return {S::StaleTrial,"Connector accepted diagnostics differ from common publication"};
+  }
   *output=s.accepted; return Ok();
 }
 void ShellBatchPublication::DiscardTrial() noexcept { if(impl_) impl_->Discard(); }

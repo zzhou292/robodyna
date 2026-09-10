@@ -2,6 +2,7 @@
 #pragma once
 #include "qeph/QephBatch.h"
 #include "t3/T3Batch.h"
+#include "type25/Type25Batch.h"
 #include <memory>
 
 namespace tl::fea {
@@ -14,12 +15,16 @@ struct ShellBatchKinetic {
   // Native isotropic partitions (including drilling). Total rotation uses
   // native TOTAL J and is never reconstructed by summing these partitions.
   double physical_isotropic=0,added_isotropic=0;
+  // Explicit TYPE25 property partitions. Totals above use the authoritative
+  // combined node coefficients, never a reconstruction from these subtotals.
+  double connector_translation=0,connector_rotation=0;
 };
 struct ShellBatchDiagnostics {
   qeph::BatchDiagnostics qeph;
   t3::BatchDiagnostics t3;
+  type25::BatchDiagnostics connector;
   ShellBatchKinetic base_kinetic,kinetic;
-  bool valid=false;
+  bool valid=false,has_connector=false;
 };
 enum class ShellPublicationStatus {
   Success,InvalidInput,NotInitialized,NotJoined,StaleTrial,ResourceLimit,
@@ -31,8 +36,9 @@ struct ShellPublicationReport {
   NodalStatus nodal_status=NodalStatus::Ok;
 };
 
-// Closed two-family publication scope: matching PrescribedFields or
-// CoupledForces usage. Coupled candidates require BOTH accepted caches to have
+// Closed shell publication scope: matching PrescribedFields or CoupledForces
+// usage, with an optional TYPE25 participant for joined CoupledForces only.
+// Coupled candidates require every accepted cache in this scope to have
 // contributed to this same owner's attempt. Both
 // batches must be initialized with the SAME complete immutable binding and
 // its exact nonzero family counts within their explicit resident limits,
@@ -42,12 +48,12 @@ struct ShellPublicationReport {
 // Startup is matching reference-rest or explicit uniform translation. This API does not select a
 // stable timestep or qualify a general mixed-shell/contact trajectory.
 //
-// This object borrows the batches; both batches must outlive the
+// This object borrows the batches; all attached batches must outlive the
 // coordinator (including destruction), and the owner must outlive its calls. It owns one bounded reusable kinetic scratch allocation and diagnostic
 // caches, not nodal state, an independent clock, material histories or a solver.
 // Calls are serialized on the sole owner's stream. No per-step allocation.
 // Every Prepare/Commit failure discards that nodal trial
-// and BOTH material trials; all accepted results and caller outputs survive
+// and all attached material trials; accepted results and caller outputs survive
 // numerical failure. A CUDA failure poisons the participants; readable-device
 // recovery is not promised. Raw fabricated device writes are not authenticated.
 class ShellBatchPublication {
@@ -64,23 +70,35 @@ class ShellBatchPublication {
   // base_kinetic stays zero because there is no completed interval.
   ShellPublicationReport Initialize(FENodalState&,qeph::QephBatch&,t3::T3Batch&,
       const ShellPublicationLimits& limits={});
-  // Preflight BOTH completed contributors against the actual owner token
+  // Combined M/J requires this complete third participant in the transaction.
+  // Its initial cache is already authenticated from the same owner's sources.
+  ShellPublicationReport Initialize(FENodalState&,qeph::QephBatch&,t3::T3Batch&,
+      type25::Batch&,const ShellPublicationLimits& limits={});
+  // Preflight all completed contributors against the actual owner token
   // before GPU measurement. Kinetic energy is reduced over the complete native
   // union exactly once at each base/endpoint, at the declared velocity times.
   // Typed family kinetic_available=false and all their kinetic fields are zero.
   ShellPublicationReport Prepare(FENodalState&,const NodalTrialToken&,
       const qeph::BatchDiagnostics&,const t3::BatchDiagnostics&,ShellBatchDiagnostics*);
-  // Repeat preflight of BOTH results, measured diagnostics and receipt; perform
-  // one owner commit followed only by two infallible slab publications. No CUDA
+  ShellPublicationReport Prepare(FENodalState&,const NodalTrialToken&,
+      const qeph::BatchDiagnostics&,const t3::BatchDiagnostics&,
+      const type25::BatchDiagnostics&,ShellBatchDiagnostics*);
+  // Repeat preflight of every result, measured diagnostics and receipt; perform
+  // one owner commit followed only by infallible slab publications. No CUDA
   // call, readback, allocation or other fallible operation follows owner success.
   ShellPublicationReport Commit(FENodalState&,const NodalTrialToken&,
       const ShellBatchDiagnostics&,const NodalValidationReceipt&) noexcept;
   ShellPublicationReport CopyAcceptedDiagnostics(const NodalStamp&,ShellBatchDiagnostics*) const noexcept;
-  // Discards coordinator and BOTH material scratch; caller still owns nodal
+  // Discards coordinator and every material scratch; caller still owns nodal
   // Discard when abandoning a trial outside Prepare/Commit.
   void DiscardTrial() noexcept;
   NodalAllocationInfo allocations() const noexcept;
  private:
+  ShellPublicationReport InitializeImpl(FENodalState&,qeph::QephBatch&,t3::T3Batch&,
+      type25::Batch*,const ShellPublicationLimits&);
+  ShellPublicationReport PrepareImpl(FENodalState&,const NodalTrialToken&,
+      const qeph::BatchDiagnostics&,const t3::BatchDiagnostics&,
+      const type25::BatchDiagnostics*,ShellBatchDiagnostics*);
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };

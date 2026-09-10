@@ -15,9 +15,14 @@ __device__ bool Measure(const Model& model,DeviceNodalKinematicsView view,ShellB
     out.rotation+=.5*model.inertia[n]*ww;
     out.physical_isotropic+=.5*model.physical[n]*ww;
     out.added_isotropic+=.5*model.added[n]*ww;
+    if(model.connector_mass) {
+      out.connector_translation+=.5*model.connector_mass[n]*vv;
+      out.connector_rotation+=.5*model.connector_inertia[n]*ww;
+    }
   }
   return tl::math::Finite(out.translation)&&tl::math::Finite(out.rotation)&&
-    tl::math::Finite(out.physical_isotropic)&&tl::math::Finite(out.added_isotropic);
+    tl::math::Finite(out.physical_isotropic)&&tl::math::Finite(out.added_isotropic)&&
+    tl::math::Finite(out.connector_translation)&&tl::math::Finite(out.connector_rotation);
 }
 __global__ void MeasurePrepared(Storage* storage,NodalPreparedView view) {
   Control next;
