@@ -63,12 +63,12 @@ __global__ void Candidate(Storage* storage,const Slab* accepted,Slab* trial,Noda
     shell_batch_plasticity_detail::DeviceStorage* plasticity,unsigned accepted_slab) {
   auto& s=*storage;
   __shared__ Status element_status[MaxBatchElements];
-  const unsigned e=threadIdx.x;
-  element_status[e]=Status::kSuccess;
-  if(e==0) { s.control={}; s.control.diagnostics=identity; }
-  // Native arithmetic is independent per parent. Each worker reads the same
-  // immutable model/accepted state and owns exactly one candidate history/cache.
-  if(e<s.model.config.element_count) {
+  const unsigned lane=threadIdx.x;
+  if(lane==0) { s.control={}; s.control.diagnostics=identity; }
+  // Each active parent has one writer. Worker count is independent of storage
+  // capacity; striding also covers a partial final group without extra padding.
+  for(unsigned e=lane;e<s.model.config.element_count;e+=blockDim.x) {
+    element_status[e]=Status::kSuccess;
     PrescribedInterval interval; interval.base_time=v.base_time; interval.dt=s.model.config.owner.fixed_dt;
     interval.sample_index=v.kinematics.base_epoch+1;
     shell_batch_fields::Gather(s.model.element[e].nodes,v.kinematics,
@@ -92,7 +92,7 @@ __global__ void Candidate(Storage* storage,const Slab* accepted,Slab* trial,Noda
     }
   }
   __syncthreads();
-  if(e!=0) return;
+  if(lane!=0) return;
   // Preserve the serial contract's first failing parent and reduction order.
   // A failed candidate never exposes partially evaluated higher-index cells.
   for(unsigned i=0;i<s.model.config.element_count;++i) {
@@ -108,7 +108,7 @@ __global__ void Candidate(Storage* storage,const Slab* accepted,Slab* trial,Noda
 void LaunchAssembly(Storage* s,const Slab* a,NodalAssemblyView v,bool initial) { Assemble<<<1,1,0,v.stream>>>(s,a,v,initial); }
 void LaunchCandidate(Storage* s,const Slab* a,Slab* b,NodalPreparedView v,BatchDiagnostics d,
     shell_batch_plasticity_detail::DeviceStorage* plasticity,unsigned accepted_slab) {
-  Candidate<<<1,MaxBatchElements,0,v.stream>>>(s,a,b,v,d,plasticity,accepted_slab);
+  Candidate<<<1,64,0,v.stream>>>(s,a,b,v,d,plasticity,accepted_slab);
 }
 void LaunchFailure(NodalAssemblyView v) { MarkFailure<<<1,1,0,v.stream>>>(v); }
 } // namespace tl::fea::t3::batch_detail

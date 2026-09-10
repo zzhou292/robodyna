@@ -25,13 +25,13 @@ bool Endpoint(const fe::NodalPreparedView& p,Snapshot& out) {
 Rig::~Rig() { if(device_loads) cudaFree(device_loads); }
 bool Rig::BuildReference() {
   const auto material=shell_binding_test::Edge();
-  for(unsigned y=0;y<9;++y) for(unsigned xnode=0;xnode<13;++xnode) {
-    const unsigned n=13*y+xnode; x[3*n]=xnode*.125; x[3*n+1]=y*.125; orientation[4*n]=1;
+  for(unsigned y=0;y<=Rows;++y) for(unsigned xnode=0;xnode<=Columns;++xnode) {
+    const unsigned n=(Columns+1)*y+xnode; x[3*n]=xnode*.125; x[3*n+1]=y*.125; orientation[4*n]=1;
   }
   unsigned qi=0,ti=0;
-  for(unsigned row=0;row<8;++row) for(unsigned col=0;col<12;++col) {
-    const unsigned n=13*row+col;
-    const std::array<std::size_t,4> corners{n,n+1,n+14,n+13};
+  for(unsigned row=0;row<Rows;++row) for(unsigned col=0;col<Columns;++col) {
+    const unsigned n=(Columns+1)*row+col;
+    const std::array<std::size_t,4> corners{n,n+1,n+Columns+2,n+Columns+1};
     if(qi<QCount) {
       auto& cell=qinput[qi]; cell.reference=material.qeph; cell.nodes=corners;
       cell.source_parent_id=1000+qi++;

@@ -89,7 +89,8 @@ void CheckReference(const Rig& r) {
   shell_binding_test::Near(r.binding.totals().mass,sum.mass);
   shell_binding_test::Near(r.binding.totals().isotropic_inertia,sum.total);
   EXPECT_EQ(r.binding.node_count(),Nodes); EXPECT_EQ(r.binding.qeph_count(),QCount); EXPECT_EQ(r.binding.t3_count(),TCount);
-  EXPECT_EQ(r.binding.nodes()[116].position.x,1.5); EXPECT_EQ(r.binding.nodes()[116].position.y,1);
+  EXPECT_EQ(r.binding.nodes()[Nodes-1].position.x,Columns*.125);
+  EXPECT_EQ(r.binding.nodes()[Nodes-1].position.y,Rows*.125);
 }
 bool NativeSequence::Initialize(const Rig& r) {
   for(unsigned e=0;e<QCount;++e) {

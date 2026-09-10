@@ -16,7 +16,13 @@ namespace to=t3_force_port_test;
 namespace temporal=tl_test::nodal_temporal;
 using CudaTest=temporal::NodalTemporalCuda;
 using shell_binding_test::Bytes;
-constexpr std::size_t Capacity=fe::MaxShellCollectionNodes,Nodes=117,QCount=88,TCount=16;
+constexpr std::size_t Capacity=fe::MaxShellCollectionNodes;
+#if defined(TL_RESIDENT_TRIANGLE_TAIL_FIXTURE)
+constexpr std::size_t Rows=8,Columns=9,QCount=32;
+#else
+constexpr std::size_t Rows=8,Columns=12,QCount=88;
+#endif
+constexpr std::size_t Nodes=(Rows+1)*(Columns+1),TCount=2*(Rows*Columns-QCount);
 constexpr double H=1./8192;
 constexpr long double EnergyScale=1e-6L;
 constexpr std::uint64_t Qualification=0x4d434f4c46444231ULL,Configuration=0x4d434f4c4d4f4431ULL;

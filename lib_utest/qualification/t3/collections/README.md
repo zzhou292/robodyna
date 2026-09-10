@@ -86,3 +86,21 @@ time and its inventory metadata are excluded. See
 passes h/h2/h4 comparison at 257 common times, including genuine chord-length
 change of about 0.277 mm. These results qualify this small experimental elastic
 part, not vehicle-scale throughput, source plasticity or impact.
+
+
+## Strided active-parent evaluation (2026-09-10)
+
+QEPH and T3 candidates now use 64 workers with active-parent striding, followed
+by the unchanged ascending status scan and numerical reduction. Storage and
+admission remain at their existing resident128 bounds; the launch no longer
+requires as many workers as the storage capacity. This is coverage preparation,
+not a throughput or larger-assembly admission claim.
+
+The existing 88-Q4/16-T3 fixture covers multiple QEPH iterations. The same
+fixture and native oracle are also compiled for32 Q4/80 T3/90 nodes, exercising
+the T3 tail with four forced/free steps and every native history/work comparison.
+Failure at T3 parent79 preserves all accepted state and exact clean retry.
+All four collection/mixed/T3 groups pass (`shell-stride-tests-1`), followed by
+the actual original-part plastic engine and resident plasticity tests
+(`shell-stride-plastic-tests-1`). Existing first/last simultaneous-failure tests
+continue to check deterministic lowest-parent diagnostics.
