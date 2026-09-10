@@ -1,6 +1,7 @@
 # Robo-dyna: Yaris delivery plan
 
-Updated 2026-09-10 against robo-dyna `23adb75` and TL-FEA `fb801f1`.
+Updated 2026-09-10 after the four-step milestone, against robo-dyna `4b20345`
+and TL-FEA `fb801f1`.
 This is the concise delivery roadmap. The workspace
 [active execution plan](../../planning/CURRENT_EXECUTION_PLAN.md) tracks current
 runs and integration order; [execution status](../../planning/EXECUTION_STATUS.md)
@@ -46,31 +47,39 @@ local spin or establish physical calibration. See the
 [layered rotation qualification](../../planning/LAYERED_NATIVE_ROTATION_QUALIFICATION.md)
 and [plasticity review](../../planning/PLASTICITY_CORRECTNESS_REVIEW.md).
 
-The next connected source increment is implemented: **seven complete parts /
+The connected source increment is implemented: **seven complete parts /
 959 shells / 1,093 nodes**, including the whole **63-node bracket PID 2000204**
 and original **spotweld WID 2101297**. The bracket adds 44 shells, rather than
 only the weld endpoint. The same six rigid groups remain active. Source-unit
 TYPE25 property resolution, native connector recurrence, combined nodal mass/
 inertia, resident history and joint publication have passed their owning gates.
-The actual seven-part smoke completes 64 intervals and three accepted frames;
-strict replay passes all frames plus twelve altered-archive cases. The affected
-32 legacy CUDA functions also pass. The short smoke's weld force is only at
-roundoff scale, so it establishes integration, not appreciable structural load
-transfer. See the [spotweld integration plan](../../planning/SOURCE_SPOTWELD_INTEGRATION.md).
+The seven-part impact completes **0.9765625 ms / 16,384 intervals at 4h**,
+with **104 frames / 560,717,430 bytes**. Maximum PLA is **2.650%**, plastic work
+**4.400 J**, and 120 shell parents have yielded. All frames authenticate in the
+owning reader; twelve altered-archive cases and 32 affected legacy CUDA functions
+also pass. The original weld has sampled peak force **638.34 N**, final force
+**475.89 N**, and remains active. Its attached 30-node bracket patch departs
+from free flight by up to **2.16649 mm**, while remaining elastic. The separate
+33-node source patch remains in exact free flight at every saved sample; neither
+bracket patch has saved wall contact. External vehicle supports remain released.
+The [independent load-transfer report](../../crash-work/reports/source-seven-part-load-transfer-final-1.md)
+records timing, signed work, source identities and the limits of sparse samples.
 
-**Running at this snapshot:** the seven-part **0.9765625 ms / 4h** impact.
-Its complete horizon, meaningful weld loading and seven-part video are not yet
-claimed. Here `h = 2^-26 s`; seven-part contact admits 4h and rejects 8h under its
-unchanged certificate. A stopped run must retain an explicitly labelled accepted
-prefix and its source-local reason.
+The [complete seven-part overview](../../crash-work/renders/source-seven-part-native-1ms-1.mp4)
+and [labelled detail view](../../crash-work/renders/source-seven-part-native-1ms-detail-1.mp4)
+pass image/hash, probe/full-decode and visual checks. The detail enlarges a crop
+of the same rendered image by 2x; physical deformation remains 1x, with original
+per-frame time and color legend retained. Here `h = 2^-26 s`; seven-part contact
+admits 4h and rejects 8h under its unchanged certificate. This completes the
+requested four-step milestone; the full vehicle deliverable remains outstanding.
 
 ## Current delivery cadence
 
 | Next milestone | Work and ownership | Exit evidence |
 | --- | --- | --- |
-| Finish the longer seven-part impact | Use the existing robo-dyna pilot, TL owner, native connector and accepted writer. Measure the original weld's force/couple, relative motion, signed work and failure state. | A complete requested bundle or honest accepted prefix; actual source load transfer distinguished from roundoff; all limits and source boundaries retained. If the weld remains effectively unloaded, use contact progression and the source load path to select the next experiment. |
-| Publish the connected result | Reuse strict accepted replay and Chrono rendering for the complete seven-part inventory. | Every saved frame authenticates; an inspected physical-scale incident/wall-side video shows the accepted response and identifies its physical horizon. A video does not replace mechanical evidence. |
-| Assess timestep sensitivity at useful physical times | Reuse the pilot comparator and selected smaller-step runs where local response or a new contact event requires them. | Report matching physical-time positions, native layer stress/PLA, cumulative work and complete interval contact events. Preserve phase distinctions, local extrema and unmatched terminal times; do not infer convergence from matching totals alone. |
+| Reduce measured step cost | Refresh the short profile for current seven-part/native-geometry execution, then parallelize wall preparation and source-ordered Q/T gather in their TL owners. Reuse timers and bounded arenas. | Exact accepted field/history/ledger parity, failure ordering, late rollback/retry and resource caps pass before a measured speedup is claimed. See the [performance plan](../../planning/PERFORMANCE_NEXT_INTEGRATION.md). |
+| Qualify connector-aware comparison | Extend the existing comparator with connector phase, relative motion, force/couple, signed work and combined M/J. Its current guard explicitly rejects seven-part archives because the old metrics are shell-only. | Meaningful positive/negative fixtures and actual seven-part comparisons pass without treating sparse force samples as exact impulse or mixing midpoint and endpoint values. |
+| Assess timestep sensitivity at useful physical times | Use the qualified connector-aware comparator and selected smaller-step runs where local response or a new contact event requires them. | Report matching physical-time positions, native layer stress/PLA, cumulative work and complete interval contact events. Preserve phase distinctions, local extrema and unmatched terminal times; do not infer convergence from matching totals alone. |
 | Extend toward longer connected crushing | Advance to roughly 2 ms, then 5 ms only while the admitted mechanical/contact domain remains valid. Add the next required complete source connection or contact capability when it becomes limiting. | Diagnosed source-local limits, accounted load paths, stable accepted histories and a new viewable result. Do not relax a guard merely to reach a longer duration or omit entities to fit capacity. |
 
 Independent source semantics, numerical review and reader work can proceed in
