@@ -62,6 +62,7 @@ void ReadSourceAssemblyConfiguration(Bundle& b,const Document& c,const Document&
     a.minimum_thickness_ratio=Real(limits,"minimum_thickness_ratio");a.maximum_thickness_ratio=Real(limits,"maximum_thickness_ratio");
     a.maximum_area_ratio=Real(limits,"maximum_area_ratio");a.maximum_rotation=Real(limits,"maximum_rotation_rad");
     a.maximum_displacement=Real(limits,"maximum_displacement_m");
+    ReadAssemblyRotationDomain(a,c);
     Require(a.minimum_thickness_ratio<=1&&a.maximum_thickness_ratio>=1&&a.maximum_area_ratio>=1,"Assembly deformation envelope changed");
     const auto& storage=Member(c,"storage_limits");Require(storage.IsObject(),"Assembly storage declarations missing");
     for(const char* key:{"max_nodes","max_parents","max_host_bytes","max_device_bytes","owner_device_bytes","qeph_device_bytes",

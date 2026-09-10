@@ -13,12 +13,13 @@ add_library(robo_dyna_accepted_replay STATIC AcceptedReplay.cpp AcceptedReplayIn
   AcceptedReplaySourceAssemblySections.cpp AcceptedReplaySourceAssemblyFields.cpp
   AcceptedReplaySourceAssemblyKineticChannels.cpp AcceptedReplaySourceAssemblyForceStage.cpp
   AcceptedReplaySourceAssemblyKinetic.cpp AcceptedReplaySourceAssemblyDiagnostics.cpp AcceptedReplaySourceAssemblyContact.cpp)
+target_sources(robo_dyna_accepted_replay PRIVATE AcceptedReplaySourceAssemblyRotation.cpp)
 target_link_libraries(robo_dyna_accepted_replay PUBLIC robo_dyna_artifact_io PRIVATE robo_dyna_canonical_wall_artifacts robo_dyna_source_assembly robo_dyna_source_assembly_wall_forecast)
 target_compile_options(robo_dyna_accepted_replay PRIVATE -fno-fast-math -ffp-contract=off)
 if(ROBO_DYNA_ENABLE_REPLAY_CHECKS OR ROBO_DYNA_ENABLE_ELASTIC_COUPON)
   find_package(GTest REQUIRED)
   add_executable(robo_dyna_accepted_replay_source_assembly_check accepted_replay_source_assembly_check.cpp
-    accepted_replay_source_assembly_force_stage_check.cpp)
+    accepted_replay_source_assembly_force_stage_check.cpp accepted_replay_source_assembly_rotation_check.cpp)
   target_link_libraries(robo_dyna_accepted_replay_source_assembly_check PRIVATE
     robo_dyna_accepted_replay robo_dyna_source_assembly GTest::gtest_main)
   set(ROBO_DYNA_SOURCE_ASSEMBLY_REPLAY_FIXTURE "" CACHE PATH "Completed actual grouped source-assembly wall archive")

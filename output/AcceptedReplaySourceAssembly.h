@@ -16,6 +16,7 @@ struct AssemblyReplayData {
     std::uint64_t instance=0,asset=0,requested_steps=0,frame_every=0;
     std::size_t group_count=0,member_count=0;
     bool observe_force_stage=false;
+    bool native_rotation_domain=false;
     std::vector<std::array<double,4>> native_nodes;
     std::vector<bool> grouped_node;
     std::vector<std::size_t> contact_source_parent;
@@ -57,6 +58,11 @@ struct AssemblyKineticChannels {
     std::array<double,6> ordinary{},members{};
     std::array<double,14> groups{};
 };
+inline double AssemblyQuaternionLimit(const AssemblyReplayData& a) {
+    return a.native_rotation_domain?std::acos(-1.):a.maximum_rotation;
+}
+void ReadAssemblyRotationDomain(AssemblyReplayData&,const Value&);
+void CheckAssemblyRotation(const Bundle&,const Entry&,const Value&,const Value*);
 AssemblyKineticChannels CheckAssemblyKineticChannels(const Bundle&,const Value&);
 void CheckAssemblyForceStage(const Bundle&,const Entry&,const Value& frame);
 void CheckAssemblySurface(const Bundle&,const Value&);

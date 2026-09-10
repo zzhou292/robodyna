@@ -27,7 +27,8 @@ void CheckAssemblyDiagnostics(const Bundle& b,const Entry& e,const Value& d,cons
     const auto& a=*b.assembly;WallBool(d,"has_interval",e.epoch!=0);
     for(const char* key:{"maximum_rotation_rad","maximum_area_ratio","maximum_thickness_ratio","maximum_plastic_strain","cumulative_plastic_work_J"})
         Require(Real(d,key)>=0,"Invalid assembly diagnostic magnitude");
-    Require(Real(d,"maximum_rotation_rad")<=a.maximum_rotation&&Real(d,"maximum_area_ratio")<=a.maximum_area_ratio&&
+    CheckAssemblyRotation(b,e,d,nodal);
+    Require(Real(d,"maximum_area_ratio")<=a.maximum_area_ratio&&
         Real(d,"maximum_thickness_ratio")<=a.maximum_thickness_ratio&&Unsigned(d,"yielded_points")<=3*a.source.data().parents.size()&&
         Unsigned(d,"yielded_parents")<=a.source.data().parents.size()&&Unsigned(d,"active_contact_nodes")<=b.info.node_count,
         "Assembly diagnostics exceed source/envelope counts");

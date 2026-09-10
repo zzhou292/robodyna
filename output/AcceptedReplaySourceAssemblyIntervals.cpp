@@ -45,7 +45,7 @@ void ReadAssemblyIntervals(Bundle& b,const Document& config,const Document& mani
             Require(v[25]<=b.wall_penetration_cap&&v[26]<=b.info.node_count&&std::floor(v[26])==v[26]&&
                 v[28]<=3*a.source.data().parents.size()&&std::floor(v[28])==v[28]&&
                 v[29]<=a.source.data().parents.size()&&std::floor(v[29])==v[29]&&
-                v[30]<=a.maximum_rotation&&v[31]<=a.maximum_area_ratio&&v[32]<=a.maximum_thickness_ratio&&
+                v[30]<=AssemblyQuaternionLimit(a)&&v[31]<=a.maximum_area_ratio&&v[32]<=a.maximum_thickness_ratio&&
                 v[27]>=previous_plastic&&v[5]>=previous_work,"Assembly interval count, envelope or plastic history changed");
             Require(std::abs(v[11])<=v[13]&&std::abs(v[12])<=v[13],"Assembly native recurrence/bookkeeping budget exceeded");
             if(v[26]>0) {if(!history[0])history[0]=epoch;history[1]=epoch;++history[2];}
