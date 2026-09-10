@@ -6,6 +6,7 @@ namespace wall_fields {
 void CheckCase(const dynamics::SourceAssemblyWallCase& run) {
     Require(run.initialized()&&run.owner()&&run.bindings()&&run.setup()&&run.config()&&run.diagnostics(),
         "Assembly wall archive requires the initialized live case");
+    CheckWallSourceSchema(run.bindings()->source().data().schema);
     Require(tl::fea::trial_identity::SameStamp(run.owner()->accepted(),run.diagnostics()->stamp),
         "Case observations do not identify its complete accepted owner stamp");
 }
@@ -24,6 +25,10 @@ Document SourceAssemblyWallConfiguration(const dynamics::SourceAssemblyWallCase&
     return wall_fields::ConfigurationDocument(*run.bindings(),*run.setup(),*run.config(),surface,request);
 }
 std::string SourceAssemblyWallInterval(const tl::fea::NodalStamp& base,const dynamics::SourceAssemblyWallCase& run) {
-    wall_fields::CheckCase(run);return wall_fields::IntervalRow(base,*run.diagnostics(),run.accepted_contact());
+    return interval::CsvRow(SourceAssemblyWallIntervalValues(base,run));
+}
+interval::Values SourceAssemblyWallIntervalValues(const tl::fea::NodalStamp& base,const dynamics::SourceAssemblyWallCase& run) {
+    wall_fields::CheckCase(run);
+    return wall_fields::IntervalValues(base,*run.diagnostics(),run.accepted_contact());
 }
 } // namespace crash::output::assembly

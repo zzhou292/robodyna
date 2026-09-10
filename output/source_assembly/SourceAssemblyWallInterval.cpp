@@ -1,11 +1,11 @@
 #include "SourceAssemblyWallFields.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
+#include <algorithm>
 #include <cmath>
-#include <iomanip>
-#include <sstream>
+#include <iterator>
 
 namespace crash::output::assembly::wall_fields {
-std::string IntervalRow(const tl::fea::NodalStamp& base,const dynamics::Diagnostics& d,dynamics::ContactView view) {
+interval::Values IntervalValues(const tl::fea::NodalStamp& base,const dynamics::Diagnostics& d,dynamics::ContactView view) {
     const auto& s=d.stamp;Require(d.has_interval&&view.diagnostics&&view.nodes&&view.parents&&view.wall_face&&
         base.owner_id&&base.owner_id==s.owner_id&&base.node_count==s.node_count&&base.has_rotations==s.has_rotations&&
         base.fixed_dt==s.fixed_dt&&base.temporal_scheme==s.temporal_scheme&&
@@ -19,6 +19,14 @@ std::string IntervalRow(const tl::fea::NodalStamp& base,const dynamics::Diagnost
         c.attempt==q.attempt&&c.attempt==t.attempt&&q.phase==tl::fea::qeph::BatchPhase::Accepted&&
         t.phase==tl::fea::t3::BatchPhase::Accepted&&q.epoch==s.epoch&&t.epoch==s.epoch&&
         q.has_completed_interval&&t.has_completed_interval,"Assembly ledger contact/material publication mismatch");
+    const auto same_family=[&](const auto& family) {
+        return family.valid&&family.owner_id==s.owner_id&&family.base_epoch==base.epoch&&
+            family.base_time==base.time&&family.base_velocity_time==base.velocity_time&&
+            family.time==s.time&&family.velocity_time==s.velocity_time&&family.kick_dt==s.reaction_kick_dt&&
+            family.configuration_id==c.configuration_id&&family.qualification_id==c.qualification_id;
+    };
+    Require(d.shells.valid&&same_family(q)&&same_family(t),
+        "Assembly interval family/common/contact stamp mismatch");
     const auto& m=d.motion;
     const double values[]{s.velocity_time,s.reaction_kick_dt,m.after.native_total,m.after.effective_total,
         d.native_internal_work,d.cumulative_plastic_work,m.native_delta,m.effective_delta,m.replacement_delta,
@@ -28,7 +36,15 @@ std::string IntervalRow(const tl::fea::NodalStamp& base,const dynamics::Diagnost
         c.maximum_penetration,double(d.active_contact_nodes),d.maximum_plastic_strain,double(d.yielded_points),double(d.yielded_parents),
         d.maximum_rotation,d.maximum_area_ratio,d.maximum_thickness_ratio};
     static_assert(sizeof(values)/sizeof(double)+6==WallIntervalColumns);
-    std::ostringstream row;row<<std::setprecision(17)<<base.owner_id<<','<<base.epoch<<','<<c.attempt<<','<<base.time<<','<<s.epoch<<','<<s.time;
-    for(double x:values) {Require(std::isfinite(x),"Nonfinite accepted interval diagnostic");row<<','<<x;}row<<'\n';return row.str();
+    interval::Values result;
+    result.integers={base.owner_id,base.epoch,c.attempt,s.epoch};
+    result.reals[interval::BaseTime]=base.time;
+    result.reals[interval::Time]=s.time;
+    std::copy(std::begin(values),std::end(values),result.reals.begin()+2);
+    interval::CheckFinite(result);
+    return result;
+}
+std::string IntervalRow(const tl::fea::NodalStamp& base,const dynamics::Diagnostics& d,dynamics::ContactView view) {
+    return interval::CsvRow(IntervalValues(base,d,view));
 }
 } // namespace crash::output::assembly::wall_fields

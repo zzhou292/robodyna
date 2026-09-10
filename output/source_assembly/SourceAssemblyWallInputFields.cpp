@@ -31,7 +31,9 @@ Document Group(const tl::fea::NodalRigidGroupModel& model,std::size_t index) {
 }
 }
 Document InputDocument(const cases::source_assembly::SourceAssemblyBindings& b) {
-    const auto& s=b.source().data();Document d;d.SetObject();
+    const auto& s=b.source().data();
+    CheckWallSourceSchema(s.schema);
+    Document d;d.SetObject();
     String(d,"inventory_file","source-assembly-inventory.json");String(d,"inventory_schema",s.schema);
     String(d,"inventory_sha256",s.identity.sha256);Integer(d,"inventory_bytes",s.identity.bytes);
     Integer(d,"node_count",s.nodes.size());Integer(d,"parent_count",s.parents.size());Integer(d,"qeph_count",s.qeph_count);Integer(d,"t3_count",s.t3_count);

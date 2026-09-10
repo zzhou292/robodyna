@@ -11,6 +11,17 @@ bool SameIdentity(const Identity& a, const Identity& b) noexcept {
         a.source_inventory_sha256 == b.source_inventory_sha256 && a.source_mapping_sha256 == b.source_mapping_sha256;
 }
 
+void CheckIdentity(const Identity& id) {
+    Require(id.owner&&id.run&&id.topology&&id.source_instance&&id.configuration&&id.qualification&&
+        id.source_inventory_bytes&&id.source_inventory_bytes<=TotalByteCap,"Invalid record source identity");
+    arrays::CheckHash(id.source_inventory_sha256);
+    arrays::CheckHash(id.source_mapping_sha256);
+}
+bool SameStamp(const FrameStamp& a,const FrameStamp& b) noexcept {
+    return a.epoch==b.epoch&&a.base_epoch==b.base_epoch&&a.attempt==b.attempt&&
+        Bits(a.time)==Bits(b.time)&&Bits(a.base_time)==Bits(b.base_time)&&
+        Bits(a.velocity_time)==Bits(b.velocity_time)&&Bits(a.kick_dt)==Bits(b.kick_dt);
+}
 struct Context::Data {
     Identity identity;
     std::size_t nodes=0,points=0;
@@ -27,10 +38,7 @@ Context Context::Create(Identity id, std::size_t nodes, const ParentPoints* pare
         limits.points <= 4194304 && limits.host_bytes && limits.host_bytes <= 512*1024*1024 &&
         nodes && nodes <= limits.nodes && count && count <= limits.parents && parents,
         "Record context count/capacity mismatch");
-    Require(id.owner && id.run && id.topology && id.source_instance && id.configuration && id.qualification &&
-        id.source_inventory_bytes && id.source_inventory_bytes <= TotalByteCap, "Invalid record source identity");
-    arrays::CheckHash(id.source_inventory_sha256);
-    arrays::CheckHash(id.source_mapping_sha256);
+    CheckIdentity(id);
     Require(std::isfinite(dt) && dt > 0 && std::isfinite(dt * .5) && dt * .5 > 0, "Invalid fixed record timestep");
     const auto positions = arrays::ByteCount({arrays::Scalar::Float64, nodes, 3, {}}, limits.arrays);
     // This conservative startup bound includes sorted ID validation scratch,
@@ -108,6 +116,10 @@ double Context::fixed_dt() const noexcept{return data_->fixed_dt;}
 const RecordLimits& Context::limits() const noexcept{return data_->limits;}
 
 void CheckStamp(const Context& context, const FrameStamp& s) {
+    CheckStamp(context.fixed_dt(),s);
+}
+void CheckStamp(double fixed_dt,const FrameStamp& s) {
+    Require(std::isfinite(fixed_dt)&&fixed_dt>0&&fixed_dt*.5>0,"Invalid fixed record timestep");
     Require(std::isfinite(s.time) && std::isfinite(s.base_time) && std::isfinite(s.velocity_time) &&
         std::isfinite(s.kick_dt) && s.time >= 0 && s.base_time >= 0 && s.velocity_time >= 0,
         "Invalid record phase values");
@@ -116,7 +128,7 @@ void CheckStamp(const Context& context, const FrameStamp& s) {
             Bits(s.velocity_time) == Bits(0.) && Bits(s.kick_dt) == Bits(0.), "Invalid initial record phase");
         return;
     }
-    const auto dt = context.fixed_dt();
+    const auto dt = fixed_dt;
     const double endpoint = s.base_time + dt, midpoint = s.base_time + .5 * dt;
     const double kick = s.epoch == 1 ? .5 * dt : dt;
     Require(s.base_epoch == s.epoch - 1 && s.attempt && s.time > s.base_time &&

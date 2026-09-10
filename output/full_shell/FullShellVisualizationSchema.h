@@ -1,5 +1,6 @@
 #pragma once
 #include "output/BoundedArrayIO.h"
+#include "IntervalValues.h"
 #include <memory>
 
 namespace crash::output::full_shell {
@@ -7,7 +8,7 @@ inline constexpr const char* FrameSchema="robo_dyna.full_shell_visualization_fra
 inline constexpr const char* ArchiveSchema="robo_dyna.full_shell_accepted_visualization.v1";
 inline constexpr std::size_t TotalByteCap=kArtifactMaximumTotalCap;
 inline constexpr std::size_t FrameMetadataByteCap=16*1024;
-inline constexpr std::size_t IntervalCoreBytes=39*8;
+inline constexpr std::size_t IntervalCoreBytes=interval::RowBytes;
 inline constexpr std::size_t StaticReserveBytes=192*1024*1024;
 struct RecordLimits {
     std::size_t nodes=1048576,parents=1048576,points=4194304;
@@ -28,6 +29,7 @@ struct Identity {
     std::string source_inventory_sha256,source_mapping_sha256;
 };
 bool SameIdentity(const Identity&,const Identity&) noexcept;
+void CheckIdentity(const Identity&);
 struct FrameStamp {
     std::uint64_t epoch=0,base_epoch=0,attempt=0;
     double time=0,base_time=0,velocity_time=0,kick_dt=0;
@@ -58,4 +60,6 @@ class Context {
     std::shared_ptr<const Data> data_;
 };
 void CheckStamp(const Context&,const FrameStamp&);
+void CheckStamp(double fixed_dt,const FrameStamp&);
+bool SameStamp(const FrameStamp&,const FrameStamp&) noexcept;
 } // namespace crash::output::full_shell

@@ -59,9 +59,10 @@ For 359,785 nodes and a conservative 3-point pool for 349,645 parents:
 
 The lower cadence is an explicit caller choice. No automatic field dropping,
 timestep increase, trajectory interpolation or compression assumption occurs.
-The 39-value/312-byte interval core is forecast here; binary interval segment
-serialization, bundle completion, source/topology documents, owner integration
-and reader/viewer dispatch remain separate next steps. The fixed-width core
+The 39-value/312-byte interval core now has shared typed values, bounded binary
+segments and staged sequence validation; see [INTERVAL_RECORDS.md](INTERVAL_RECORDS.md).
+Bundle completion, source/topology documents, owner integration and reader/viewer
+dispatch remain separate next steps. The fixed-width core
 represents the current accepted interval channels, not a claim that future
 connector/force-stage extensions cost no bytes.
 

@@ -42,9 +42,7 @@ FrameRecord ReadFrame(const std::filesystem::path& root,const Context& c,const R
     Require(bytes.size()==file.bytes&&Sha256(bytes)==file.sha256,"Frame metadata hash/size mismatch");
     auto doc=array_json::Parse(bytes,FrameMetadataByteCap);const auto description=ParseFrameDocument(c,doc);
     const auto& s=description.stamp;
-    Require(s.epoch==expected.epoch&&s.base_epoch==expected.base_epoch&&s.attempt==expected.attempt&&
-        Bits(s.time)==Bits(expected.time)&&Bits(s.base_time)==Bits(expected.base_time)&&
-        Bits(s.velocity_time)==Bits(expected.velocity_time)&&Bits(s.kick_dt)==Bits(expected.kick_dt),
+    Require(SameStamp(s,expected),
         "Frame does not match the expected accepted index phase");
     Require(file.file!=description.positions.file&&file.file!=description.plastic.file,"Frame metadata aliases a value array");
     FrameRecord frame{description.stamp,arrays::Read<double>(root,description.positions,c.limits().arrays),

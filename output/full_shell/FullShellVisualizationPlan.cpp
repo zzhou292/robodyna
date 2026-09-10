@@ -1,4 +1,5 @@
 #include "FullShellVisualizationPlan.h"
+#include "IntervalChunkPlan.h"
 #include <cmath>
 #include <set>
 
@@ -34,12 +35,11 @@ Plan PlanArchive(const PlanRequest& r) {
     Add(p.frame_bytes,r.extra_frame_bytes,r.total_byte_cap);
     Require(r.extra_frame_bytes<=r.file_byte_cap&&r.extra_interval_bytes<=r.file_byte_cap-IntervalCoreBytes,
         "Optional visualization record exceeds file capacity");
-    p.interval_row_bytes=IntervalCoreBytes+r.extra_interval_bytes;
-    p.rows_per_chunk=r.file_byte_cap/p.interval_row_bytes;
-    Require(p.rows_per_chunk,"Interval record cannot fit in a file");
-    p.interval_chunks=static_cast<std::size_t>(r.intervals/p.rows_per_chunk+(r.intervals%p.rows_per_chunk!=0));
-    Require(p.interval_chunks<=64,"Visualization interval segment capacity exceeded");
-    p.interval_bytes=Product(r.intervals,p.interval_row_bytes,r.total_byte_cap);
+    const auto chunks=interval::PlanChunks(r.intervals,r.file_byte_cap,r.total_byte_cap,r.extra_interval_bytes);
+    p.interval_row_bytes=chunks.row_bytes;
+    p.rows_per_chunk=chunks.rows_per_chunk;
+    p.interval_chunks=chunks.chunks;
+    p.interval_bytes=chunks.total_bytes;
     Require(!r.static_files.empty()&&r.static_files.size()<=kArtifactInventoryCap,"Missing/oversized static reservation");
     std::set<std::string> names;bool manifest=false,index=false,configuration=false;
     for(const auto& file:r.static_files) {

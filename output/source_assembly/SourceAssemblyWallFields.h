@@ -11,6 +11,7 @@ namespace dynamics=cases::source_assembly_dynamics;
 Document SourceAssemblyWallFrameFields(const dynamics::SourceAssemblyWallCase&,const SourceAssemblyAcceptedOutput&);
 Document SourceAssemblyWallConfiguration(const dynamics::SourceAssemblyWallCase&,const SourceAssemblySurface&,const WallArchiveRequest&);
 std::string SourceAssemblyWallInterval(const tl::fea::NodalStamp& base,const dynamics::SourceAssemblyWallCase&);
+interval::Values SourceAssemblyWallIntervalValues(const tl::fea::NodalStamp& base,const dynamics::SourceAssemblyWallCase&);
 
 namespace wall_fields {
 // Formatting-only host seam. These borrowed values cannot prove acceptance and
@@ -46,5 +47,6 @@ Document ConfigurationDocument(const cases::source_assembly::SourceAssemblyBindi
     const cases::source_assembly::SourceAssemblyWallSetup&,const dynamics::Config&,
     const SourceAssemblySurface&,const WallArchiveRequest&);
 std::string IntervalRow(const tl::fea::NodalStamp& base,const dynamics::Diagnostics&,dynamics::ContactView);
+interval::Values IntervalValues(const tl::fea::NodalStamp& base,const dynamics::Diagnostics&,dynamics::ContactView);
 } // namespace wall_fields
 } // namespace crash::output::assembly
