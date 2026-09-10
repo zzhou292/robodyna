@@ -1,5 +1,7 @@
 #include "SourceAssemblyWallFields.h"
 #include "SourceAssemblyWallKineticChannels.h"
+#include "case/source_assembly_dynamics/NativeRotation.h"
+#include <cmath>
 
 namespace crash::output::assembly::wall_fields {
 namespace {
@@ -35,7 +37,17 @@ template<class D> Document Family(const D& a) {
 }
 }
 Document DiagnosticsDocument(const dynamics::Diagnostics& a) {
+    Require(a.rotation_domain==dynamics::RotationDomain::NodalQuaternion||a.rotation_domain==dynamics::RotationDomain::NativeShellGeometryV1,
+        "Unknown diagnostic rotation domain");
     Document d;d.SetObject();Boolean(d,"has_interval",a.has_interval);
+    if(a.rotation_domain==dynamics::RotationDomain::NativeShellGeometryV1) {
+        for(double v:{a.maximum_native_frame_rotation,a.maximum_native_normal_rotation,a.maximum_rigid_member_rotation})
+            Require(std::isfinite(v)&&v>=0&&v<=dynamics::NativeRotationQualifiedBound,"Invalid native rotation diagnostic");
+        Document measured;measured.SetObject();
+        Number(measured,"maximum_frame_rotation_rad",a.maximum_native_frame_rotation);
+        Number(measured,"maximum_nodal_normal_rotation_rad",a.maximum_native_normal_rotation);
+        Number(measured,"maximum_rigid_member_rotation_rad",a.maximum_rigid_member_rotation);Child(d,"native_rotation_domain",measured);
+    }
     Number(d,"native_internal_work_J",a.native_internal_work);Number(d,"maximum_rotation_rad",a.maximum_rotation);
     Number(d,"maximum_area_ratio",a.maximum_area_ratio);Number(d,"maximum_thickness_ratio",a.maximum_thickness_ratio);
     Number(d,"maximum_plastic_strain",a.maximum_plastic_strain);Number(d,"cumulative_plastic_work_J",a.cumulative_plastic_work);

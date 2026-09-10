@@ -20,7 +20,7 @@ include("${robo_dynamics_root}/case/CanonicalWallArtifacts.cmake")
 add_executable(robo_dyna_source_assembly_dynamics_check
   tests/Fixture.cpp tests/WallCaseTest.cpp tests/WallRunTest.cpp tests/StepTimingTest.cpp
   tests/ForceStageAccess.cpp tests/ForceStageCaseTest.cpp tests/ForceStageFailureTest.cpp tests/ContactResultComparisonTest.cpp
-  tests/NativeGuardAttributionTest.cpp tests/QephSpinCaseTest.cpp
+  tests/NativeGuardAttributionTest.cpp tests/QephSpinCaseTest.cpp tests/NativeRotationTest.cpp tests/NativeRotationCaseTest.cpp
   "${ROBO_DYNA_TL_ROOT}/lib_utest/qualification/nodal_rigid_group/PreparedSnapshotCudaProbe.cpp"
   "${robo_dynamics_root}/qualification/source_assembly/SourceAssemblyFlightFixture.cu")
 # Test-only completed-transfer failure injection; never linked into production.

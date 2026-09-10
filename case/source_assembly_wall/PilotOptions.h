@@ -6,6 +6,7 @@ namespace crash::cases::source_assembly_wall {
 struct PilotOptions {
     unsigned refinement=1,step_multiple=1;
     bool observe_force_stage=false;
+    bool native_rotation_domain=false;
     std::uint64_t observe_qeph_spin_node=0;
     source_assembly_dynamics::StepTimingOptions timing;
 };

@@ -16,7 +16,7 @@ TEST(PilotOptions, DefaultsAndExistingRefinementRetainExactBinaryStep) {
     EXPECT_EQ(defaults.steps,128u);EXPECT_EQ(defaults.frame_every,1u);EXPECT_EQ(defaults.archive,"new-archive");
     EXPECT_EQ(defaults.pilot.refinement,1u);EXPECT_EQ(defaults.pilot.step_multiple,1u);
     EXPECT_FALSE(defaults.pilot.timing.enabled);EXPECT_TRUE(defaults.timing_path.empty());
-    EXPECT_FALSE(defaults.pilot.observe_force_stage);
+    EXPECT_FALSE(defaults.pilot.observe_force_stage);EXPECT_FALSE(defaults.pilot.native_rotation_domain);
     EXPECT_EQ(PilotFixedStep(Parse({"2"}).pilot),std::ldexp(1.,-27));
     EXPECT_EQ(PilotFixedStep(Parse({"4"}).pilot),std::ldexp(1.,-28));
 }
@@ -67,6 +67,14 @@ TEST(PilotOptions, ForceStageFlagIsExplicitOrderIndependentAndDoesNotAlterTheSte
     EXPECT_TRUE(Parse({"--observe-force-stage"}).pilot.observe_force_stage);
     EXPECT_THROW(Parse({"--observe-force-stage","--observe-force-stage"}),std::invalid_argument);
     EXPECT_THROW(Parse({"--observe-force-stage","true"}),std::invalid_argument);
+}
+TEST(PilotOptions, NativeRotationDomainIsExplicitOrderIndependentAndDoesNotChangeStep) {
+    const auto a=Parse({"--native-rotation-domain","--step-multiple","8"});
+    const auto b=Parse({"--step-multiple","8","--native-rotation-domain"});
+    EXPECT_TRUE(a.pilot.native_rotation_domain);EXPECT_TRUE(b.pilot.native_rotation_domain);
+    EXPECT_EQ(PilotFixedStep(a.pilot),std::ldexp(1.,-23));EXPECT_EQ(PilotFixedStep(a.pilot),PilotFixedStep(b.pilot));
+    EXPECT_THROW(Parse({"--native-rotation-domain","--native-rotation-domain"}),std::invalid_argument);
+    EXPECT_THROW(Parse({"--native-rotation-domain","true"}),std::invalid_argument);
 }
 TEST(PilotOptions, SpinProbeIsNamedPairedBoundedAndDoesNotChangePhysicalStep) {
     const auto a=Parse({"--spin-node","2181592","--spin-output","probe.jsonl","--spin-every","16"});

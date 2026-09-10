@@ -13,6 +13,8 @@ struct SourceAssemblyDynamicsTestAccess {
     static std::array<std::uintptr_t,4> CaptureStorage(const SourceAssemblyWallCase&);
     static Report RejectForceStage(SourceAssemblyWallCase&,ForceFault);
     static Report RejectCaptureDevice(SourceAssemblyWallCase&);
+    enum class RotationFault { OrdinaryQuaternion,RigidQuaternion,LastTriangleFrame };
+    static Report CheckRotationTrial(SourceAssemblyWallCase&,RotationFault);
     static Report RejectSpin(SourceAssemblyWallCase&,bool bad_phase=false);
 
     static const Sample& Accepted(const SourceAssemblyWallCase& c) { return c.impl_->accepted(); }

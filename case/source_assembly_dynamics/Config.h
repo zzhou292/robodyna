@@ -20,12 +20,14 @@ struct StorageLimits {
     tl::fea::ShellPublicationLimits publication{2048,128*1024,1024*1024};
     source_assembly::SourceAssemblyWallDeviceLimits contact{};
 };
+enum class RotationDomain : std::uint8_t { NodalQuaternion,NativeShellGeometryV1 };
 struct Config {
     double fixed_dt=0;
     DeformationLimits deformation;
     StorageLimits storage;
     // Optional base-time observation from the existing native kick; no extra force evaluation.
     bool observe_force_stage=false;
+    RotationDomain rotation_domain=RotationDomain::NodalQuaternion;
     // Optional complete incident QEPH force-stage probe for one ordinary source node.
     std::uint64_t observe_qeph_spin_node=0;
 };

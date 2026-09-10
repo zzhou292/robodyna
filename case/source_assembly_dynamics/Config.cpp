@@ -1,8 +1,11 @@
 #include "Config.h"
+#include "NativeRotation.h"
 #include <cmath>
 
 namespace crash::cases::source_assembly_dynamics {
 bool ValidConfig(const Config& c) noexcept {
+    if(c.rotation_domain!=RotationDomain::NodalQuaternion&&c.rotation_domain!=RotationDomain::NativeShellGeometryV1)return false;
+    if(c.rotation_domain==RotationDomain::NativeShellGeometryV1&&c.deformation.maximum_rotation>NativeRotationQualifiedBound)return false;
     const auto& d=c.deformation;const auto& s=c.storage;
     for(double x:{c.fixed_dt,d.maximum_displacement,d.maximum_rotation,d.maximum_rotation_increment,d.maximum_strain,
         d.maximum_thickness_curvature,d.minimum_area_ratio,d.maximum_area_ratio,

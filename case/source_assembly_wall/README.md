@@ -68,3 +68,9 @@ cmake -S case/source_assembly_wall/options -B /tmp/robo-dyna-pilot-options -DCMA
 cmake --build /tmp/robo-dyna-pilot-options --parallel 1
 ctest --test-dir /tmp/robo-dyna-pilot-options --output-on-failure
 ```
+
+The optional `--native-rotation-domain` selects the explicitly qualified
+source-native frame/normal guard while retaining the pilot's 1 rad geometric and
+rigid-group limits. It preserves all actual quaternion output and per-step
+rotation admission. See [the domain contract](../source_assembly_dynamics/NATIVE_ROTATION_DOMAIN.md)
+for native evidence and the mechanically consequential shared-node spin caveat.

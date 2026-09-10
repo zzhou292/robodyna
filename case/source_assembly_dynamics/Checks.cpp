@@ -161,20 +161,6 @@ Report SourceAssemblyWallCase::Impl::CheckShells() {
     d.cumulative_plastic_work=static_cast<double>(plastic_work);
     if(!std::isfinite(d.native_internal_work)||!Nonnegative(d.cumulative_plastic_work))
         return Failure(Status::EnvelopeFailure,"Complete native work reduction is nonfinite");
-    for(std::size_t n=0;n<nodes();++n) {
-        const auto* a=next.fields.orientation.data()+4*n;
-        if(!tl::math::UnitQuaternion({a[0],a[1],a[2],a[3]}))
-            return Failure(Status::EnvelopeFailure,"Native candidate orientation is not finite and unit",0,n);
-        const double rotation=2*std::atan2(std::hypot(std::hypot(a[1],a[2]),a[3]),std::abs(a[0]));
-        d.maximum_rotation=std::max(d.maximum_rotation,rotation);
-        for(unsigned axis=0;axis<3;++axis) {
-            const auto j=3*n+axis;
-            for(double value:{next.fields.x[j],next.fields.v[j],next.fields.w[j],next.fields.reaction[j],next.fields.couple[j]})
-                if(!std::isfinite(value))return Failure(Status::EnvelopeFailure,"Candidate motion/reaction field is nonfinite",0,n);
-        }
-    }
-    if(d.maximum_rotation>config.deformation.maximum_rotation)
-        return Failure(Status::EnvelopeFailure,"Source total orientation envelope exceeded",0,SIZE_MAX,d.maximum_rotation,config.deformation.maximum_rotation);
-    return Success();
+    return CheckRotations();
 }
 } // namespace crash::cases::source_assembly_dynamics

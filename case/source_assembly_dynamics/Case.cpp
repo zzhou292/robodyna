@@ -43,9 +43,17 @@ Report SourceAssemblyWallCase::Initialize(const source_assembly::SourceAssemblyB
         return Failure(Status::ResourceLimit,"Force-stage capture payload exceeds its startup host byte budget");
     if(config.observe_qeph_spin_node&&!budget.Append<observation::QephSpinObservation>(2,ignored))
         return Failure(Status::ResourceLimit,"Spin probe payload exceeds its startup host byte budget");
+    if(config.rotation_domain==RotationDomain::NativeShellGeometryV1&&
+       (!budget.Append<NativeRotationReferences>(1,ignored)||!budget.Append<NativeRotationReference>(nq+nt,ignored)||
+        !budget.Append<std::uint8_t>(n,ignored)))
+        return Failure(Status::ResourceLimit,"Source-native rotation reference exceeds its startup host budget");
     try {
         auto next=std::make_unique<Impl>(b,setup,config,budget.bytes(),timing_options);
+        if(config.rotation_domain==RotationDomain::NativeShellGeometryV1) {
+            const auto rotation=PrepareNativeRotation(b,config.fixed_dt,next->rotation_reference);if(!rotation)return rotation;
+        }
         const auto report=next->Initialize();if(!report)return report;
+        next->accepted().diagnostics.rotation_domain=config.rotation_domain;
         impl_=std::move(next);return Success();
     } catch(const std::bad_alloc&) { return Failure(Status::ResourceLimit,"Assembly startup host allocation failed"); }
 }

@@ -14,6 +14,8 @@ struct Diagnostics {
     source_assembly_observation::Summary motion;
     bool has_interval=false;
     double native_internal_work=0,maximum_rotation=0;
+    RotationDomain rotation_domain=RotationDomain::NodalQuaternion;
+    double maximum_native_frame_rotation=0,maximum_native_normal_rotation=0,maximum_rigid_member_rotation=0;
     double maximum_area_ratio=1,maximum_thickness_ratio=1;
     double maximum_plastic_strain=0,cumulative_plastic_work=0;
     std::size_t yielded_points=0,yielded_parents=0,active_contact_nodes=0;

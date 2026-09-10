@@ -1,6 +1,7 @@
 #pragma once
 #include "Case.h"
 #include "ForceStageWorkspace.h"
+#include "NativeRotation.h"
 #include "lib_src/elements/ShellBatchPlasticity.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
 #include <array>
@@ -108,6 +109,7 @@ struct SourceAssemblyWallCase::Impl {
     std::vector<std::uint64_t> wall_faces;
     ForceStageWorkspace force_capture;
     std::unique_ptr<std::array<observation::QephSpinObservation,2>> spin;
+    std::unique_ptr<const NativeRotationReferences> rotation_reference;
     std::size_t host_bytes=0;
     StepTimer timer;
     unsigned accepted_slot=0;
@@ -132,6 +134,7 @@ struct SourceAssemblyWallCase::Impl {
     Report Evaluate();
     Report Check();
     Report CheckShells();
+    Report CheckRotations();
     Report CheckContact();
     Report CheckMotion();
     Report CaptureForceStage();

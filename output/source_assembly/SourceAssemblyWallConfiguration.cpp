@@ -1,5 +1,6 @@
 #include "SourceAssemblyWallFields.h"
 #include "WallFieldValues.h"
+#include "case/source_assembly_dynamics/NativeRotation.h"
 #include "output/SurfaceBindingFields.h"
 #include <cmath>
 
@@ -13,12 +14,21 @@ Document ConfigurationDocument(const cases::source_assembly::SourceAssemblyBindi
         setup.bindings()->shells().inventory()==b.shells().inventory()&&surface.source().data().identity.sha256==b.source().data().identity.sha256&&
         surface.binding().identity.run==r.run_id&&surface.binding().identity.topology==r.topology_id,
         "Configuration must retain the complete prepared assembly and explicit run");
+    Require(c.rotation_domain==dynamics::RotationDomain::NodalQuaternion||
+        (c.rotation_domain==dynamics::RotationDomain::NativeShellGeometryV1&&std::isfinite(c.deformation.maximum_rotation)&&
+         c.deformation.maximum_rotation>0&&c.deformation.maximum_rotation<=dynamics::NativeRotationQualifiedBound),
+        "Unknown or unqualified source rotation domain");
     const auto plan=PlanWallArchive(r,b.source().data().identity.bytes,setup.placed_wall()->source_manifest()->size());
     const double horizon=static_cast<double>(r.steps)*c.fixed_dt;Require(std::isfinite(horizon)&&horizon>0,"Requested horizon cannot be represented");
     Document d;d.SetObject();String(d,"schema",WallConfigurationSchema);String(d,"kind",WallArtifactKind);
     String(d,"scope","Original six-part Yaris component, internal nodal rigid groups active, external connections explicitly released");
     Boolean(d,"shell_model",true);Boolean(d,"vehicle_model",false);
     if(c.observe_force_stage)Boolean(d,"observe_force_stage",true);
+    if(c.rotation_domain==dynamics::RotationDomain::NativeShellGeometryV1) {
+        Document policy;policy.SetObject();String(policy,"policy",dynamics::NativeRotationPolicy);
+        String(policy,"native_qualification_commit",dynamics::NativeRotationQualification);
+        Number(policy,"maximum_supported_rotation_rad",dynamics::NativeRotationQualifiedBound);Child(d,"rotation_domain",policy);
+    }
     String(d,"units","SI; physical geometry scale 1");
     Integer(d,"owner_id",surface.binding().identity.owner);Integer(d,"run_id",r.run_id);Integer(d,"topology_id",r.topology_id);
     Integer(d,"asset_id",r.asset_id);Integer(d,"source_instance_id",b.source_instance_id());
