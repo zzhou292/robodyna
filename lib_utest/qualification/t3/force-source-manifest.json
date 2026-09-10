@@ -118,8 +118,8 @@
     },
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
-      "bytes": 1785,
-      "sha256": "d2b2441167efc132b666f1bb1252a40de38a3040f2d7e3d9bfc0d1af6146d701"
+      "bytes": 1834,
+      "sha256": "1099a1c16dbba11a9e44b73f4dac56a64f519a3a332d065a71eadd7e2542f245"
     },
     {
       "path": "lib_src/elements/t3/CMakeLists.txt",
@@ -134,12 +134,12 @@
     {
       "path": "lib_utest/qualification/t3/source-manifest.json",
       "bytes": 16039,
-      "sha256": "275d94da54caee98931541ba9d3037dd7edf8b90cceaa2a4a4c1856071a66865"
+      "sha256": "75f290e57ce9b3f34ed9c4e6dcba8bad67289e4b8e551434d0b724ba3ee29a88"
     },
     {
       "path": "lib_utest/qualification/t3/verify_sources.py",
       "bytes": 2001,
-      "sha256": "fed8d62ce24edfc1d17221d5c2f2f4917c310e4a9b3c6deb17f98eb5e0d6e259"
+      "sha256": "f1a52a5e32bb0f56550f2b23ac83f8a0bf9d8c6919d262bf9c2d3222e6cc6a9a"
     },
     {
       "path": "lib_utest/qualification/t3/T3PortFixture.h",
