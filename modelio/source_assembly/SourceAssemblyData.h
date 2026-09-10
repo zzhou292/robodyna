@@ -125,10 +125,28 @@ struct ReleasedTiedScope {
     std::size_t source_line = 0;
     std::vector<SourceId> selected_master_parts, selected_slave_parts;
 };
+struct AuxiliaryPointMass {
+    SourceId source_element_id=0,source_node_id=0;
+    std::size_t source_block_line=0,source_card_index=0;
+    double supplied_mass_source=0,supplied_mass_kg=0;
+};
+struct AuxiliarySphericalJoint {
+    SourceId source_joint_id=0;
+    std::array<SourceId,2> source_node_ids{};
+    std::size_t source_block_line=0;
+};
+// Literal released evidence; no selected owner index or mass contribution.
+struct ReleasedAuxiliaryFrontier {
+    std::vector<SourceId> source_node_ids;
+    std::vector<SourceBlock> source_blocks;
+    std::vector<AuxiliaryPointMass> point_masses;
+    std::vector<AuxiliarySphericalJoint> spherical_joints;
+};
 struct ReleasedBoundary {
     std::string policy, interpretation, unresolved_tied_scope;
     std::vector<SourceId> nodal_rigid_ids, spotweld_ids, external_node_ids, external_part_ids;
     std::vector<ReleasedTiedScope> tied_scopes;
+    ReleasedAuxiliaryFrontier auxiliary;
 };
 struct SourceUnits {
     double mass_to_kg = 0, length_to_m = 0, time_to_s = 0;

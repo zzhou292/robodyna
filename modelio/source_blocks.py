@@ -14,6 +14,7 @@ MAX_METADATA_BYTES = 4 * 1024 * 1024
 MAX_LINE_BYTES = 4096
 DECLARATION_FAMILIES = frozenset(('part', 'section', 'material', 'curve'))
 ATTACHMENT_FAMILIES = frozenset(('node_set', 'part_set', 'nodal_rigid', 'tied_contact'))
+AUXILIARY_FAMILIES = frozenset(('point_mass', 'joint'))
 
 
 @dataclass(frozen=True)
@@ -50,6 +51,10 @@ class SourceIndex:
 
 
 def _family(keyword):
+    if keyword.startswith('*ELEMENT_MASS'):
+        return 'point_mass'
+    if keyword.startswith('*CONSTRAINED_JOINT_'):
+        return 'joint'
     if keyword == '*PART' or keyword.startswith('*PART_'):
         return 'part'
     if keyword.startswith('*SECTION_'):
@@ -72,7 +77,7 @@ def _family(keyword):
 def _identity(block, family):
     # A non-ID contact card's first field is SSID, not its identity. Keeping
     # location identity also prevents two contacts with the same SSID merging.
-    if family == 'tied_contact':
+    if family in ('tied_contact', 'point_mass', 'joint'):
         return block.first_line
     # PART has a mandatory title. The _TITLE suffix on other families adds one.
     index = int(family == 'part' or block.keyword.endswith('_TITLE'))
@@ -89,7 +94,7 @@ def scan_metadata(stream, filename, *, families):
     never merges include instances or evaluates additive/general set operators.
     """
     families = frozenset(families)
-    require(families and families <= DECLARATION_FAMILIES | ATTACHMENT_FAMILIES,
+    require(families and families <= DECLARATION_FAMILIES | ATTACHMENT_FAMILIES | AUXILIARY_FAMILIES,
             'unsupported metadata family selection')
     entries, digest = {}, hashlib.sha256()
     size = retained = keyword_count = number = 0

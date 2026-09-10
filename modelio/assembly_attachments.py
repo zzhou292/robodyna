@@ -7,7 +7,7 @@ from .canonical_incidence import load_incidence
 from .keyword_cards import parse_part
 
 
-def _frontier_incidence(asset_dir, archive_path, reference, geometry, frontier, limits):
+def _frontier_incidence(asset_dir, archive_path, reference, geometry, frontier, limits, allow_auxiliary=False):
     if not frontier:
         return None
     # Reuse the source-verified incidence collector within its existing 512-node
@@ -19,13 +19,14 @@ def _frontier_incidence(asset_dir, archive_path, reference, geometry, frontier, 
     incidence = load_incidence(asset_dir, archive_path, reference, seed, wanted, limits.incident_elements)
     elements = tuple(replace(e, touched_node_ids=tuple(n for n in e.touched_node_ids if n in frontier))
                      for e in incidence.elements if frontier.intersection(e.touched_node_ids))
-    require({n for e in elements for n in e.touched_node_ids} == frontier,
+    require(allow_auxiliary or {n for e in elements for n in e.touched_node_ids} == frontier,
             'frontier node lacks source structural incidence')
     return replace(incidence, nodes=tuple(n for n in incidence.nodes if n.source_id in frontier),
                    elements=elements)
 
 
-def compile_assembly_attachments(index, weld_inventory, geometry, asset_dir, archive_path, reference, limits):
+def compile_assembly_attachments(index, weld_inventory, geometry, asset_dir, archive_path, reference, limits,
+                                 auxiliary_units=None):
     selected = frozenset(geometry.source_node_ids)
     part_nodes = {p.part_id: frozenset(n.source_id for n in p.nodes) for p in geometry.parts}
     require(index.sha256 == weld_inventory.source_sha256 == geometry.parts[0].member_sha256,
@@ -86,10 +87,11 @@ def compile_assembly_attachments(index, weld_inventory, geometry, asset_dir, arc
                          candidate_pair_scope='may_include_internal_pairs' if selected_slave and selected_master
                                               else 'cross_boundary_only',
                          actual_pairing_qualified=False))
-    incidence = _frontier_incidence(asset_dir, archive_path, reference, geometry, frontier, limits)
+    incidence = _frontier_incidence(asset_dir, archive_path, reference, geometry, frontier, limits,
+                                    auxiliary_units is not None)
     external_parts = sorted({e.part_id for e in incidence.elements}) if incidence else []
     require(not set(external_parts).intersection(part_nodes), 'frontier node unexpectedly belongs to selected part')
-    return dict(nodal_rigid_groups=groups, spotwelds=welds, tied_candidates=tied,
+    result = dict(nodal_rigid_groups=groups, spotwelds=welds, tied_candidates=tied,
                 external_node_ids=sorted(frontier), external_parts=[asdict(parse_part(index.one('part', pid)))
                                                                  for pid in external_parts],
                 frontier_incidence=asdict(incidence) if incidence else None,
@@ -101,3 +103,8 @@ def compile_assembly_attachments(index, weld_inventory, geometry, asset_dir, arc
                             'nodal-rigid and spotweld optional/default mechanics and failure',
                             'other attachment families, point/added masses and assembled setup controls',
                             'general contact, transformed include instances and full vehicle closure'])
+    if auxiliary_units is not None:
+        from .assembly_auxiliary import auxiliary_frontier
+        structural = {n for e in incidence.elements for n in e.touched_node_ids} if incidence else set()
+        result['auxiliary_frontier'] = auxiliary_frontier(index, frontier - structural, auxiliary_units)
+    return result

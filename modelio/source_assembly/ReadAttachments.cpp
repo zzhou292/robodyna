@@ -171,5 +171,6 @@ void ReadAttachments(const Value& document, const ReadLimits& limits, Data& data
     std::vector<SourceId> frontier_ids;
     for (const auto& node : frontier_nodes.GetArray()) frontier_ids.push_back(Unsigned(node, "source_id"));
     Require(frontier_ids == retained.external_node_ids, "Released frontier node evidence changed");
+    ReadAuxiliaryFrontier(attachments,frontier,limits,data);
 }
 }  // namespace crash::modelio::assembly::reader

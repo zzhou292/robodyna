@@ -32,8 +32,10 @@ class AssemblySections(unittest.TestCase):
         old = self.f.compile_assembly(material_policy='law44_tabulated_or_linear')
         new = self.compile()
         self.assertEqual(new['schema'], 'robo-dyna.source-assembly-inventory.v3')
-        for key in ('counts', 'geometry', 'attachments', 'boundary', 'parent_bindings'):
+        for key in ('counts', 'geometry', 'boundary', 'parent_bindings'):
             self.assertEqual(old[key], new[key])
+        self.assertEqual(old['attachments'], {k:v for k,v in new['attachments'].items() if k!='auxiliary_frontier'})
+        self.assertEqual(new['attachments']['auxiliary_frontier']['source_node_ids'], [])
         for a, b in zip(old['declarations']['materials'], new['declarations']['materials']):
             self.assertEqual(b['material_law'], 'layered_law44')
             self.assertEqual(a, {k: v for k, v in b.items() if k != 'material_law'})

@@ -44,6 +44,20 @@ within the same native families. Selected internal groups and outgoing
 weld/tie declarations remain explicit; this is no vehicle load-path closure
 claim. Existing 1024-parent/2048-node host bounds suffice unchanged.
 
+The original arm's outgoing groups2200007/2200670 also contain external nodes
+2411580/2406582. These nodes have original point masses and spherical joints,
+and no shell/solid/beam incidence. V3 alone records
+`attachments.auxiliary_frontier` with policy
+`released_external_auxiliary_nodes_v1`: complete original source blocks,
+source-ordered mass card references, exact supplied tonne/SI mass values and
+joint endpoint identities. Coverage must equal the source-verified external
+nodes lacking structural incidence. Both mass and supported literal joint
+evidence are required; unknown or absent evidence still rejects the inventory.
+The two masses (EIDs2409487/2409471, 0.010001kg each) remain external and are
+never added to selected shell mass or owner nodes. Outgoing groups remain
+complete and explicitly released. This is source evidence, not joint runtime
+qualification. V1/V2 keep their original structural-frontier rejection.
+
 `robo_dyna_source_section_input_check` is owned by `SourceSectionChecks.cmake`.
 It requires explicit frozen elastic/mixed paths and existing V1/V2 fixtures.
 It checks complete native binding, typed availability, copy/move lifetime,

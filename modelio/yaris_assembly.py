@@ -16,7 +16,7 @@ from .assembly_attachments import compile_assembly_attachments
 from .assembly_bindings import compile_parent_bindings
 from .canonical_geometry import read_json
 from .source_blocks import (scan_metadata, DECLARATION_FAMILIES, ATTACHMENT_FAMILIES,
-                            MAX_SOURCE_BYTES)
+                            AUXILIARY_FAMILIES, MAX_SOURCE_BYTES)
 from .spotweld_cards import scan_spotwelds
 from .assembly_materials import MATERIAL_POLICIES, SECTION_SCHEMA
 
@@ -61,7 +61,8 @@ def compile_archive_assembly(archive_path, asset_dir, part_ids=YARIS_CONNECTOR_P
         yaris_part._member(archive, member, MAX_SOURCE_BYTES)
         with archive.open(member) as stream:
             index = scan_metadata(stream, yaris_part.VEHICLE,
-                                  families=DECLARATION_FAMILIES | ATTACHMENT_FAMILIES)
+                                  families=DECLARATION_FAMILIES | ATTACHMENT_FAMILIES |
+                                  (AUXILIARY_FAMILIES if allow_elastic else frozenset()))
         with archive.open(member) as stream:
             weld_inventory = scan_spotwelds(stream, yaris_part.VEHICLE)
     require(index.sha256 == weld_inventory.source_sha256 == reference['files'][yaris_part.VEHICLE]['sha256'],
@@ -69,7 +70,7 @@ def compile_archive_assembly(archive_path, asset_dir, part_ids=YARIS_CONNECTOR_P
     declarations = compile_assembly_declarations(index, part_ids, seed.units, limits, allow_linear, allow_elastic)
     geometry = load_assembly_geometry(asset_dir, archive_path, declarations, reference, limits)
     attachments = compile_assembly_attachments(index, weld_inventory, geometry, asset_dir,
-                                                archive_path, reference, limits)
+                                                archive_path, reference, limits, seed.units if allow_elastic else None)
     groups = attachments['nodal_rigid_groups']
     welds = attachments['spotwelds']
     external_ties = [dict(source_identity=t['contact']['source_identity'],
@@ -91,7 +92,8 @@ def compile_archive_assembly(archive_path, asset_dir, part_ids=YARIS_CONNECTOR_P
     names = ('assembly_declarations.py', 'assembly_geometry.py', 'assembly_attachments.py', 'assembly_bindings.py',
              'spotweld_cards.py', 'yaris_assembly.py', 'canonical_geometry.py', 'canonical_incidence.py',
              'source_blocks.py', 'attachment_cards.py', 'keyword_cards.py', 'declarations.py', '_legacy.py', 'yaris_part.py',
-             'assembly_law44.py', 'law44_declarations.py', 'assembly_materials.py', 'law1_declarations.py')
+             'assembly_law44.py', 'law44_declarations.py', 'assembly_materials.py', 'law1_declarations.py',
+             'assembly_auxiliary.py')
     generator = {'modelio/' + name: file_sha256(Path(__file__).with_name(name)) for name in names}
     for name in ('compile_yaris_assembly.py', 'compile_yaris_part.py', 'import_yaris_vehicle.py', 'import_yaris_wall.py'):
         generator['tools/' + name] = file_sha256(yaris_part.ROOT / 'tools' / name)

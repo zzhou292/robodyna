@@ -11,6 +11,7 @@ add_library(robo_dyna_source_assembly STATIC
   "${CMAKE_CURRENT_LIST_DIR}/ReadDeclarations.cpp" "${CMAKE_CURRENT_LIST_DIR}/ReadLaw44Material.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/ReadGeometry.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/ReadLaw1Material.cpp" "${CMAKE_CURRENT_LIST_DIR}/ReadMaterialPolicy.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/ReadAuxiliaryFrontier.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/ReadAttachments.cpp")
 target_include_directories(robo_dyna_source_assembly PUBLIC "${robo_assembly_root}" "${ROBO_DYNA_TL_ROOT}")
 target_link_libraries(robo_dyna_source_assembly PUBLIC robo_dyna_artifact_io)
