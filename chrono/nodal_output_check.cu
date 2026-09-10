@@ -6,6 +6,7 @@
 #include "chrono/geometry/ChTriangleMeshConnected.h"
 #include <gtest/gtest.h>
 #include <array>
+#include <cmath>
 #include <limits>
 
 namespace {
@@ -205,5 +206,162 @@ TEST_F(NodalOutput, ExtendedRotationOwnerReusesAcceptedMeshBridgeAndRejectsFaile
     // Geometry remains sourced from accepted translations. Nodal rotations
     // are not invented visual deformation or a second dynamics clock.
     EXPECT_NEAR(output.surface().frame()->time,.02,1e-16);
+}
+
+// These output tests use known prescribed loads, not coupled shell dynamics.
+struct StaggeredCase : Case {
+    std::array<double,12> q{{1,0,0,0, 1,0,0,0, 1,0,0,0}};
+    std::array<double,9> omega{{0,0,.2, 0,0,.2, 0,0,.2}};
+    std::array<double,3> inverse_inertia{{1,1,1}};
+    fea::NodalReport Initialize(fea::FENodalState& owner, double h = .01) const {
+        fea::NodalStateConfig config; config.node_count=3; config.fixed_dt=h;
+        config.temporal_scheme=fea::NodalTemporalScheme::StaggeredHalfKickStart;
+        return owner.Initialize(config,{x.data(),v.data(),omega.data(),3,q.data()},inverse.data(),
+            fea::NodalDofConfig{fixed.data(),fixed.data(),inverse_inertia.data()});
+    }
+};
+
+void SameStamp(const fea::NodalStamp& a, const fea::NodalStamp& b) {
+    EXPECT_EQ(a.owner_id,b.owner_id); EXPECT_EQ(a.epoch,b.epoch); EXPECT_EQ(a.node_count,b.node_count);
+    EXPECT_DOUBLE_EQ(a.time,b.time); EXPECT_DOUBLE_EQ(a.fixed_dt,b.fixed_dt);
+    EXPECT_EQ(a.has_rotations,b.has_rotations); EXPECT_EQ(a.reactions_valid,b.reactions_valid);
+    EXPECT_EQ(a.reaction_base_epoch,b.reaction_base_epoch); EXPECT_DOUBLE_EQ(a.reaction_time,b.reaction_time);
+    EXPECT_EQ(a.temporal_scheme,b.temporal_scheme); EXPECT_EQ(a.velocity_phase,b.velocity_phase);
+    EXPECT_DOUBLE_EQ(a.velocity_time,b.velocity_time); EXPECT_DOUBLE_EQ(a.reaction_kick_dt,b.reaction_kick_dt);
+}
+
+void CheckRawCapture(fea::FENodalState& owner, const visual::NodalMeshOutput& output) {
+    std::array<double,9> x{},v{},omega{}; std::array<double,12> q{}; fea::NodalStamp stamp;
+    ASSERT_EQ(owner.CopyAccepted({x.data(),v.data(),3,q.data(),omega.data()},&stamp).status,fea::NodalStatus::Ok);
+    ASSERT_NE(output.stamp(),nullptr);
+    SameStamp(*output.stamp(),stamp);
+    const auto fields=output.fields(); ASSERT_EQ(fields.node_count,3);
+    ASSERT_NE(fields.position_xyz,nullptr); ASSERT_NE(fields.velocity_xyz,nullptr);
+    ASSERT_NE(fields.orientation_wxyz,nullptr); ASSERT_NE(fields.angular_velocity_xyz,nullptr);
+    for(unsigned i=0;i<9;++i) {
+        EXPECT_DOUBLE_EQ(fields.position_xyz[i],x[i]); EXPECT_DOUBLE_EQ(fields.velocity_xyz[i],v[i]);
+        EXPECT_DOUBLE_EQ(fields.angular_velocity_xyz[i],omega[i]);
+    }
+    for(unsigned i=0;i<12;++i) EXPECT_DOUBLE_EQ(fields.orientation_wxyz[i],q[i]);
+    EXPECT_EQ(output.surface().frame()->epoch,stamp.epoch);
+    EXPECT_DOUBLE_EQ(output.surface().frame()->time,stamp.time);
+}
+
+TEST_F(NodalOutput, ExplicitStaggeredCaptureRetainsActualEndpointAndMidpointFields) {
+    StaggeredCase input; for(unsigned i=0;i<3;++i) input.v[3*i]=.2;
+    fea::FENodalState owner,legacy;
+    ASSERT_EQ(input.Initialize(owner).status,fea::NodalStatus::Ok);
+    const Case legacy_input; ASSERT_EQ(legacy_input.Initialize(legacy).status,fea::NodalStatus::Ok);
+    visual::NodalMeshOutput output;
+    EXPECT_EQ(output.Initialize(owner,Binding(owner),static_cast<visual::NodalOutputTiming>(99)).status,
+              visual::Status::InvalidBinding);
+    EXPECT_EQ(output.Initialize(legacy,Binding(legacy),visual::NodalOutputTiming::StaggeredHalfKick).status,
+              visual::Status::InvalidBinding);
+    EXPECT_EQ(output.surface().binding(),nullptr); EXPECT_EQ(output.stamp(),nullptr);
+    EXPECT_EQ(output.fields().node_count,0); EXPECT_EQ(output.fields().orientation_wxyz,nullptr);
+    ASSERT_EQ(output.Initialize(owner,Binding(owner),visual::NodalOutputTiming::StaggeredHalfKick).status,
+              visual::Status::Ok);
+    EXPECT_EQ(output.stamp(),nullptr); EXPECT_EQ(output.fields().position_xyz,nullptr);
+    ASSERT_EQ(output.Publish(owner).status,visual::Status::Ok);
+    ASSERT_NO_FATAL_FAILURE(CheckRawCapture(owner,output));
+    EXPECT_EQ(output.stamp()->velocity_phase,fea::NodalVelocityPhase::Collocated);
+    EXPECT_DOUBLE_EQ(output.stamp()->time,0); EXPECT_DOUBLE_EQ(output.stamp()->velocity_time,0);
+    EXPECT_DOUBLE_EQ(output.stamp()->reaction_kick_dt,0);
+    const auto allocations=owner.allocations();
+    for(std::uint64_t n=1;n<=5;++n) {
+        fea::NodalTrialToken token; fea::NodalAssemblyView view;
+        ASSERT_EQ(owner.BeginTrial(&token,&view).status,fea::NodalStatus::Ok);
+        AddAcceleration<<<1,1,0,view.stream>>>(view,2);
+        ASSERT_EQ(cudaGetLastError(),cudaSuccess);
+        ASSERT_EQ(owner.SealAssembly(token).status,fea::NodalStatus::Ok);
+        ASSERT_EQ(fea::AdvanceStaggeredPrescribed(owner,token,
+            {view.owner_id,view.accepted.base_epoch,view.attempt,.01,1}).status,fea::NodalStatus::Ok);
+        EXPECT_EQ(output.Publish(owner).status,visual::Status::StaleFrame);
+        EXPECT_EQ(output.stamp()->epoch,n-1);
+        ASSERT_EQ(owner.Commit(token).status,fea::NodalStatus::Ok);
+        ASSERT_EQ(output.Publish(owner).status,visual::Status::Ok);
+        ASSERT_NO_FATAL_FAILURE(CheckRawCapture(owner,output));
+        const auto& stamp=*output.stamp();
+        EXPECT_EQ(stamp.velocity_phase,fea::NodalVelocityPhase::PreviousMidpoint);
+        EXPECT_EQ(stamp.reaction_base_epoch,n-1);
+        EXPECT_DOUBLE_EQ(stamp.velocity_time,stamp.reaction_time+.005);
+        EXPECT_DOUBLE_EQ(stamp.reaction_kick_dt,n==1?.005:.01);
+        EXPECT_LT(stamp.velocity_time,stamp.time);
+        for(unsigned i=0;i<3;++i) {
+            // Actual raw v is at the midpoint. Endpoint reconstruction would
+            // add another .01 m/s and must not enter this capture.
+            EXPECT_NEAR(output.fields().velocity_xyz[3*i],.2+2*.01*(n-.5),2e-15);
+            EXPECT_NEAR(output.fields().position_xyz[3*i],.2*n*.01+n*n*.0001,2e-15);
+            EXPECT_NEAR(output.fields().orientation_wxyz[4*i],std::cos(.1*n*.01),2e-15);
+            EXPECT_NEAR(output.fields().orientation_wxyz[4*i+3],std::sin(.1*n*.01),2e-15);
+        }
+    }
+    EXPECT_EQ(owner.allocations().device_allocations,allocations.device_allocations);
+    EXPECT_EQ(owner.allocations().device_bytes,allocations.device_bytes);
+    // The unchanged default remains usable without rotation storage.
+    visual::NodalMeshOutput collocated;
+    ASSERT_EQ(collocated.Initialize(legacy,Binding(legacy)).status,visual::Status::Ok);
+    ASSERT_EQ(collocated.Publish(legacy).status,visual::Status::Ok);
+    EXPECT_NE(collocated.fields().position_xyz,nullptr); EXPECT_NE(collocated.fields().velocity_xyz,nullptr);
+    EXPECT_EQ(collocated.fields().orientation_wxyz,nullptr); EXPECT_EQ(collocated.fields().angular_velocity_xyz,nullptr);
+    EXPECT_FALSE(collocated.stamp()->has_rotations);
+    EXPECT_DOUBLE_EQ(collocated.stamp()->velocity_time,collocated.stamp()->time);
+}
+
+__global__ void RestoreSecondNode(fea::NodalAssemblyView view) {
+    if(blockIdx.x || threadIdx.x) return;
+    view.forces.force_y[1]=2/view.mass.inverse_mass[1];
+}
+
+TEST_F(NodalOutput, FailedMeshPublicationPreservesRawCaptureThenLaterAcceptedStateCanPublish) {
+    StaggeredCase input; input.v[4]=-1;
+    fea::FENodalState owner,other;
+    ASSERT_EQ(input.Initialize(owner,1).status,fea::NodalStatus::Ok);
+    ASSERT_EQ(input.Initialize(other,1).status,fea::NodalStatus::Ok);
+    visual::NodalMeshOutput output;
+    ASSERT_EQ(output.Initialize(owner,Binding(owner),visual::NodalOutputTiming::StaggeredHalfKick).status,
+              visual::Status::Ok);
+    ASSERT_EQ(output.Publish(owner).status,visual::Status::Ok);
+    const auto saved_stamp=*output.stamp(); const auto saved_fields=output.fields();
+    const auto saved_vertices=output.surface().mesh()->GetCoordsVertices();
+    EXPECT_EQ(output.Publish(other).status,visual::Status::WrongOwner);
+    for(unsigned step=1;step<=2;++step) {
+        fea::NodalTrialToken token; fea::NodalAssemblyView view;
+        ASSERT_EQ(owner.BeginTrial(&token,&view).status,fea::NodalStatus::Ok);
+        if(step==2) RestoreSecondNode<<<1,1,0,view.stream>>>(view);
+        ASSERT_EQ(cudaGetLastError(),cudaSuccess);
+        ASSERT_EQ(owner.SealAssembly(token).status,fea::NodalStatus::Ok);
+        ASSERT_EQ(fea::AdvanceStaggeredPrescribed(owner,token,
+            {view.owner_id,view.accepted.base_epoch,view.attempt,1,1}).status,fea::NodalStatus::Ok);
+        ASSERT_EQ(owner.Commit(token).status,fea::NodalStatus::Ok);
+        if(step==1) {
+            // A legitimate accepted owner state collapses the display triangle.
+            // The complete readback has succeeded before surface rejection.
+            EXPECT_EQ(output.Publish(owner).status,visual::Status::InvalidFrame);
+            EXPECT_EQ(output.Publish(owner).status,visual::Status::InvalidFrame);
+            SameStamp(*output.stamp(),saved_stamp);
+            EXPECT_EQ(output.fields().position_xyz,saved_fields.position_xyz);
+            EXPECT_EQ(output.fields().orientation_wxyz,saved_fields.orientation_wxyz);
+            for(unsigned i=0;i<9;++i) {
+                EXPECT_DOUBLE_EQ(output.fields().position_xyz[i],input.x[i]);
+                EXPECT_DOUBLE_EQ(output.fields().velocity_xyz[i],input.v[i]);
+                EXPECT_DOUBLE_EQ(output.fields().angular_velocity_xyz[i],input.omega[i]);
+            }
+            for(unsigned i=0;i<12;++i) EXPECT_DOUBLE_EQ(output.fields().orientation_wxyz[i],input.q[i]);
+            EXPECT_EQ(output.surface().frame()->epoch,0);
+            for(unsigned i=0;i<3;++i) {
+                const auto& actual=output.surface().mesh()->GetCoordsVertices()[i];
+                EXPECT_DOUBLE_EQ(actual.x(),saved_vertices[i].x());
+                EXPECT_DOUBLE_EQ(actual.y(),saved_vertices[i].y());
+                EXPECT_DOUBLE_EQ(actual.z(),saved_vertices[i].z());
+            }
+        } else {
+            ASSERT_EQ(output.Publish(owner).status,visual::Status::Ok);
+            ASSERT_NO_FATAL_FAILURE(CheckRawCapture(owner,output));
+            EXPECT_EQ(output.stamp()->epoch,2); EXPECT_DOUBLE_EQ(output.stamp()->time,2);
+            EXPECT_DOUBLE_EQ(output.stamp()->velocity_time,1.5);
+            EXPECT_DOUBLE_EQ(output.fields().position_xyz[4],1);
+        }
+    }
 }
 }  // namespace

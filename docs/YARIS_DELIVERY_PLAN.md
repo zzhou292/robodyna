@@ -14,67 +14,44 @@ TL-FEA CUDA mechanics and Chrono infrastructure. Robo-dyna's longer-term goal
 is LS-DYNA-like CAE functionality. No external production solver is introduced.
 
 **Current assessment: approximately 25–30% toward the vehicle deliverable.**
-This is an engineering judgment about integrated capabilities, with substantial
-uncertainty. Passing tests are not a completion ratio. The guided elastic plate
-has completed 200 ms with accepted output and inspected video. QEPH force/history,
-resident publication, the native full-recurrence screen and sustained one/two-cell
-elastic response through 244.140625 microseconds pass, including h/h2/h4
-refinements and 86,016 native/CUDA element intervals. Complete prescribed T3
-force/history and standalone resident history/publication now pass on CUDA;
-the latter owns 6,216 device bytes and adds eight passing functions at TL
-`e9e3e5f`. Shared shell utilities are adopted at `329f441`, with all six sustained
-scientific response records matching their preceding baseline. The source-part
-wall-contact cost gate and stateless contact contributor on the existing owner
-also pass. The vehicle is not running yet. Immutable mixed Q4/T3 mass and
-identity binding passes eight host tests at TL `9be796a`. Joint resident
-publication now passes eight CUDA functions and three actual-owner identity
-functions at `e215665`: one five-node union, one kinetic ledger, 20 native cell
-interval checks and 23,551 explicit device bytes across nine allocations.
-Ten native recurrence-helper tests also pass; all 36 prior native matrices and
-six sustained GPU response records preserve their scientific fields exactly.
-Mixed force-feedback dynamics remains open. Short shell/wall transactions pass
-four CUDA functions at TL `1611802`, including both failure orders and retry;
-this is a 0.2384-microsecond preload check. Combined long-response and incoming
-impact admission remain open. Native T3/mixed wall contact now passes five CUDA
-functions and 41 regressions at TL `3b25699`, including 16 contact-only intervals
-with native structural masses, distinct contact weights and late-failure retry.
-The contributor keeps one 99,384-byte allocation and its two-parent/eight-incident-
-node cap. Mixed shell force feedback remains the next composition gate. Eight full-state
-native contact model/probe host functions now pass at `1bef7cc`, followed by
-13 independently checked full-state stability-analysis utility functions at
-`08fb0c4` and seven incremental raw-capture/report functions at `842469b`.
-The retained total is 1,069 distinct passing functions. Explicit moving-startup
-CUDA is qualified at `c32e106`: five new and 41 retained unit functions pass,
-along with all six sustained GPU runs and both refinements. Scientific fields
-match the default-rest baseline exactly; QEPH adds only 32 B of startup metadata.
-The first snapshot-tail test failure is preserved and fixed without production
-or tolerance changes. All six full native wall jobs are now captured at `bd21204`:
-108 native matrices, 72 physical contact branches and 57,942 native cell intervals.
-The strict reader and one-job analysis now pass thirteen additional functions
-at `504b2be`/`5aef73c`. Four report and seven boost/selection functions now pass
-at `23f05a1`/`86c03ca`. All six actual full-state derived analyses pass at
-`6eb2f3a`, including every sampled timestep; maximum weighted mean gain is
-45.5463 below 64. The 522 derived artifacts retain exact source/runtime evidence.
-Five authenticated-reader and four selection-report functions also pass. The
-complete six-job/four-boost screen selects H0 at `386184b`. Actual incoming
-CUDA entry now passes at `e17950b`: three functions, 23 regressions, 2,412 native
-intervals and seven rejected-trial retries. One/two cells complete h/h2 prefixes
-through 13.3514 microseconds, retaining eight allocations and 116,028/116,850 B.
-Six longer default-rest runs and both refinements keep exact scientific parity.
-Full broadside compression, release, rebound and h/h2/h4 refinement are next,
-using the existing transaction and a separate wall-specific observation layer. The
-[combined admission design](../../planning/QEPH_WALL_COUPLED_ADMISSION.md)
-separates short transaction checks, contact recurrence, incoming-velocity startup
-and impact/refinement; free-shell stability does not qualify wall impact. Plasticity,
-connections, self-contact, connected capacity and vehicle output remain major
-work. The [current checkpoint](../../planning/EXECUTION_STATUS.md) records
-retained scope and limitations; the following tables preserve the earlier
-foundation and the broader implementation backlog.
+This is a capability-based engineering estimate, not a test-count or elapsed-time
+ratio. The vehicle is not running. The inspected guided elastic plate video
+remains the available deformation demonstration.
+
+The CUDA mechanics foundation now includes complete prescribed QEPH/T3 elastic
+force/history, actual native structural mass/inertia, one shared nodal owner,
+and atomic joint publication. Sustained one/two-cell free response passes.
+Full broadside finite-mesh wall response also passes all six runs and both
+h/h2/h4 comparisons through 244.140625 microseconds (86,016 native/CUDA cell
+intervals). TL source `b5811eb`, results `4e6dc1d`; the coarse synchronous
+energy residual is below 3.855e-7 of initial kinetic energy. This named fixture
+translates and rebounds rigidly and establishes no deforming vehicle result.
+
+Mixed Q4/T3 feedback now passes at TL `4650560`: after a finite pulse, both
+nonzero native force caches drive free steps on the same five-node owner.
+Three new CUDA functions and 42 affected regressions pass, including late
+failure in either family and exact retry. The production change preserves
+force/history arithmetic and allocation; no external solver runtime is added.
+
+Robo-dyna's accepted mesh adapter now explicitly handles staggered timing and
+retains actual endpoint x/q, midpoint v/omega and complete accepted stamp.
+Two new and five existing CUDA functions pass; failed mesh publication preserves
+all exposed fields. This prepares the rendering path without reconstructing
+or inventing missing physical fields. Case/archive integration remains next.
+
+The retained total is 1,092 distinct passing functions. Detailed historical
+results, limitations and exact logs live in the [execution checkpoint](../../planning/EXECUTION_STATUS.md).
+The next capacity work keeps one immutable shared binding, two typed element
+batches, one state owner/coordinator and the existing finite-wall contributor.
+Target 128 nodes/parents, then use all 117 original nodes and 94 original shell
+parents in an explicit elastic free-part experiment. Source MAT024, attachments,
+self-contact, beams/solids/connectors and full-vehicle output remain major gates.
+No source entity may be silently removed to satisfy a fixture limit.
 
 ## Current delivery cadence
 
-The user requested faster progress on 2026-09-09. Finish the current broadside
-rebound integration, then prioritize mixed Q4/T3 dynamics and the complete
+The user requested faster progress on 2026-09-09. Broadside rebound and short mixed
+force feedback pass; prioritize connected capacity and the complete
 117-node Yaris source part with accepted deformation output. Batch focused
 regressions at integration checkpoints and retain commits, logs and required
 input bindings. Additional fixture variants and report infrastructure are deferred
