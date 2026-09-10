@@ -17,8 +17,8 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::Initialize(
     const ShellBatchBinding& binding,const ShellBatchPlasticityBindingInput& input,
     const ShellHostBindingLimits& limits) noexcept {
   if(prepared_) return Error(Status::AlreadyInitialized,"Plasticity binding is immutable after preparation");
-  if(!binding.prepared()||!input.curves||!input.materials||!input.sections||!input.parents||
-     !input.curve_count||!input.material_count||!input.section_count||!input.parent_count)
+  if(!binding.prepared()||(input.curve_count&&!input.curves)||!input.materials||!input.sections||!input.parents||
+     !input.material_count||!input.section_count||!input.parent_count)
     return Error(Status::InvalidInput,"Complete prepared binding and explicit nonempty catalog ranges are required");
   for(auto count:{input.curve_count,input.material_count,input.section_count,input.parent_count})
     if(count>MaxShellHostParents||count>limits.max_parents)
@@ -88,15 +88,25 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::PrepareMaterials(
   std::array<bool,MaxShellHostParents> used{};
   for(std::size_t i=0;i<input.material_count;++i) {
     const auto& m=input.materials[i];
-    if(!m.material_id||!m.curve_id||Find(out.materials,i,m.material_id,
+    if(!m.material_id||Find(out.materials,i,m.material_id,
         [](const auto& x){return x.declaration.material_id;})!=NoShellBindingNode)
       return Error(Status::InvalidMaterial,"Missing or duplicate material ID",i);
+    auto& target=out.materials[i];
+    if(m.hardening==material::ShellPlasticityHardeningKind::LinearLaw44) {
+      if(m.curve_id||material::PrepareLinearLaw44ShellPlasticity(m.young_pa,m.poisson_ratio,m.density_kg_m3,
+          m.linear,m.rate,target.coefficients)!=sections::PointStatus::Ok)
+        return Error(Status::InvalidMaterial,"Analytic LAW44 requires no curve, valid SIGY/ETAN and positive source rate",i);
+      target.declaration=m; target.curve_index=NoShellBindingNode;
+      continue;
+    }
+    if(m.hardening!=material::ShellPlasticityHardeningKind::Tabulated||!m.curve_id||
+       m.linear.initial_yield_pa!=0||m.linear.tangent_modulus_pa!=0)
+      return Error(Status::InvalidMaterial,"Tabulated material requires a curve and no analytic declaration",i);
     const auto ci=Find(out.curves,out.curve_count,m.curve_id,[](const auto& x){return x.id;});
     if(ci==NoShellBindingNode) return Error(Status::InvalidMaterial,"Material references an absent curve",i);
     const auto& c=out.curves[ci];
     const material::TabulatedShellPlasticityCurve curve{out.curve_x.data()+c.offset,out.curve_y.data()+c.offset,
       static_cast<std::uint32_t>(c.count)};
-    auto& target=out.materials[i];
     if(material::PrepareTabulatedShellPlasticity(m.young_pa,m.poisson_ratio,m.density_kg_m3,
         curve,m.rate,target.coefficients)!=sections::PointStatus::Ok)
       return Error(Status::InvalidMaterial,"Material coefficients or rate declaration are invalid",i);

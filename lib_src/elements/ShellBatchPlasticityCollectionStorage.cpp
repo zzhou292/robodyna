@@ -30,6 +30,10 @@ SetupReport HostStorage::InitializeCollection(const ShellBatchPlasticityBinding&
   for(std::size_t e=0;e<count;++e) {
     if(!owned->Parameters(family,e,&initial->parameters[e]))
       return {SetupStatus::InvalidInput,"Complete catalog does not resolve a native family parent"};
+    if(initial->parameters[e].hardening==material::ShellPlasticityHardeningKind::LinearLaw44) {
+      offsets[e]=NoShellBindingNode; // There is no curve pointer to subtract or rebase.
+      continue;
+    }
     offsets[e]=static_cast<std::size_t>(initial->parameters[e].curve.plastic_strain-source.curve_x.data());
     if(offsets[e]>source.point_count||initial->parameters[e].curve.count>source.point_count-offsets[e])
       return {SetupStatus::InvalidInput,"Resolved material curve exceeds the owned pool"};
@@ -39,6 +43,7 @@ SetupReport HostStorage::InitializeCollection(const ShellBatchPlasticityBinding&
   if(error!=cudaSuccess) return {SetupStatus::DeviceFailure,"Optional plastic section allocation failed",error};
   const auto header=layout.Rebase(*initial,candidate);
   for(std::size_t e=0;e<count;++e) {
+    if(offsets[e]==NoShellBindingNode) continue;
     auto& curve=initial->parameters[e].curve;
     curve.plastic_strain=header.curve_x+offsets[e];
     curve.yield_stress_pa=header.curve_y+offsets[e];

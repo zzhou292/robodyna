@@ -25,6 +25,8 @@ cc_library(
         "detail/TabulatedShellPlasticityCurve.h",
         "detail/TabulatedShellPlasticityRate.h",
         "detail/TabulatedShellPlasticityUpdate.h",
+        "detail/Law44ElasticParameters.h",
+        "detail/Law44Hardening.h",
     ],
     deps = ["//lib_src/math:quaternion"],
 )

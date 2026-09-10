@@ -1,9 +1,19 @@
 #include "ResidentCollectionFixture.h"
 
 namespace resident_plasticity_test {
-bool InitializeCollection(Rig& r,fe::ShellBatchPlasticityBinding& oracle,
-    bool mismatch_other_family,bool legacy_triangle) {
+namespace {
+bool InitializeCollectionImpl(Rig& r,fe::ShellBatchPlasticityBinding& oracle,
+    bool mismatch_other_family,bool legacy_triangle,unsigned analytic) {
   plasticity_binding_test::Fixture f; r.input=f.geometry;
+  auto catalog=f.catalog();
+  if(analytic) {
+    for(unsigned i=analytic==2?0:1;i<2;++i) {
+      auto& material=f.materials[i]; material.curve_id=0;
+      material.hardening=tl::material::ShellPlasticityHardeningKind::LinearLaw44;
+      material.linear={i?5400.:2700.,i?30000.:20000.}; material.rate={true,8000,8,10000};
+    }
+    catalog.curve_count=analytic==2?0:1; if(!catalog.curve_count) catalog.curves=nullptr;
+  }
   const auto bound=r.binding.Initialize(f.collection());
   EXPECT_EQ(bound.status,fe::ShellBindingStatus::Success)<<bound.message;
   if(bound.status!=fe::ShellBindingStatus::Success) return false;
@@ -15,7 +25,7 @@ bool InitializeCollection(Rig& r,fe::ShellBatchPlasticityBinding& oracle,
   }
   const auto state=r.initial.Initialize(r.owner);
   EXPECT_EQ(state.status,fe::NodalStatus::Ok); if(state.status!=fe::NodalStatus::Ok) return false;
-  const auto declaration=oracle.Initialize(r.binding,f.catalog());
+  const auto declaration=oracle.Initialize(r.binding,catalog);
   EXPECT_EQ(declaration.status,fe::ShellPlasticityBindingStatus::Success)<<declaration.message;
   if(declaration.status!=fe::ShellPlasticityBindingStatus::Success) return false;
   // Even the temporary catalog disappears after setup. Batch scope and device
@@ -27,7 +37,7 @@ bool InitializeCollection(Rig& r,fe::ShellBatchPlasticityBinding& oracle,
   EXPECT_EQ(qr.status,q::BatchStatus::Success)<<qr.message; if(qr.status!=q::BatchStatus::Success) return false;
   if(mismatch_other_family) f.yq[1]+=1; // T3's own material remains identical.
   fe::ShellBatchPlasticityBinding second;
-  const auto second_report=second.Initialize(r.binding,f.catalog());
+  const auto second_report=second.Initialize(r.binding,catalog);
   EXPECT_EQ(second_report.status,fe::ShellPlasticityBindingStatus::Success);
   if(second_report.status!=fe::ShellPlasticityBindingStatus::Success) return false;
   t::T3BatchConfig tc; tc.owner=r.owner.accepted(); tc.element_count=1;
@@ -39,6 +49,14 @@ bool InitializeCollection(Rig& r,fe::ShellBatchPlasticityBinding& oracle,
   for(double& value:f.yq) value=-1;
   for(double& value:f.yt) value=-1;
   return tr.status==t::BatchStatus::Success;
+}
+}
+bool InitializeCollection(Rig& r,fe::ShellBatchPlasticityBinding& oracle,
+    bool mismatch_other_family,bool legacy_triangle) {
+  return InitializeCollectionImpl(r,oracle,mismatch_other_family,legacy_triangle,0);
+}
+bool InitializeAnalyticCollection(Rig& r,fe::ShellBatchPlasticityBinding& oracle,bool all) {
+  return InitializeCollectionImpl(r,oracle,false,false,all?2:1);
 }
 bool AssembleCollectionForBinding(Rig& r) {
   fe::NodalTrialToken token; fe::NodalAssemblyView view;

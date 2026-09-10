@@ -7,6 +7,7 @@ add_executable(resident_plasticity_check
   "${CMAKE_CURRENT_LIST_DIR}/ResidentRateTest.cu"
   "${CMAKE_CURRENT_LIST_DIR}/ResidentCollectionFixture.cu"
   "${CMAKE_CURRENT_LIST_DIR}/ResidentCollectionPlasticityTest.cu"
+  "${CMAKE_CURRENT_LIST_DIR}/ResidentAnalyticPlasticityTest.cu"
   "${CMAKE_CURRENT_LIST_DIR}/../t3/mixed/MixedShellFixture.cu")
 target_include_directories(resident_plasticity_check PRIVATE "${resident_plasticity_tl_root}")
 target_link_libraries(resident_plasticity_check PRIVATE tl_shell_batch_publication

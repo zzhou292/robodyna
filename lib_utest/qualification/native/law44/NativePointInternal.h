@@ -6,6 +6,19 @@
 namespace tl::qualification::law44::detail {
 bool EvaluateValues(const Input&,bool physical,double layer,double thickness,
                     std::array<double,13>&);
+inline bool ValidCommonInput(const Input& in) {
+    if(!std::isfinite(in.young)||in.young<=0||!std::isfinite(in.poisson)||in.poisson<0||in.poisson>=.5||
+       !std::isfinite(in.density)||in.density<=0||!std::isfinite(in.transverse_shear_modulus)||
+       in.transverse_shear_modulus<=0||!std::isfinite(in.accepted_plastic_strain)||in.accepted_plastic_strain<0) return false;
+    for(double x:in.accepted_stress) if(!std::isfinite(x)) return false;
+    for(double x:in.strain_increment) if(!std::isfinite(x)) return false;
+    const auto& r=in.rate;
+    for(double x:{r.coefficient_per_s,r.exponent,r.total_shell_rate_per_s,r.filter_coefficient,r.accepted_filtered_rate_per_s})
+        if(!std::isfinite(x)||x<0) return false;
+    if(r.filter_coefficient>1) return false;
+    return r.active?(r.coefficient_per_s>0&&r.exponent>0):
+        (r.coefficient_per_s==0&&r.exponent==0&&r.total_shell_rate_per_s==0&&r.accepted_filtered_rate_per_s==0);
+}
 inline double Equivalent(const std::array<double,5>& s) {
     const long double x=s[0],y=s[1],xy=s[2];
     return static_cast<double>(std::sqrt(x*x+y*y-x*y+3*xy*xy));

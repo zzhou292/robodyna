@@ -25,6 +25,12 @@ struct TabulatedShellPlasticityRate {
   bool enabled = false;
   double cowper_symonds_c_per_s = 0, cowper_symonds_p = 0, cutoff_hz = 0;
 };
+enum class ShellPlasticityHardeningKind : std::uint8_t { Tabulated, LinearLaw44 };
+// Original MAT024 LCSS=0, blank inline points. ETAN is the uniaxial tangent,
+// not the native plastic hardening modulus. Only positive-C/P VP2 is admitted.
+struct Law44LinearHardening {
+  double initial_yield_pa = 0, tangent_modulus_pa = 0;
+};
 struct TabulatedShellPlasticityParameters {
   TabulatedShellPlasticityCurve curve{};
   double young_pa = 0, poisson_ratio = 0, density_kg_m3 = 0;
@@ -32,6 +38,11 @@ struct TabulatedShellPlasticityParameters {
   double sound_speed = 0;
   TabulatedShellPlasticityRate rate{};
   double inverse_rate_c = 0, inverse_rate_p = 0, angular_cutoff_per_s = 0;
+  // Trailing fields retain prior positional aggregate initialization. Existing
+  // tabulated preparation leaves these zero/default; no history layout changes.
+  ShellPlasticityHardeningKind hardening = ShellPlasticityHardeningKind::Tabulated;
+  Law44LinearHardening linear{};
+  double plastic_hardening_pa = 0;
 };
 struct TabulatedShellPlasticityHistory {
   double stress[5]{}; // XX, YY, XY, YZ, ZX, Pa; transverse shear stays elastic.
@@ -57,7 +68,7 @@ struct TabulatedShellPlasticityResult {
 };
 enum class TabulatedShellPlasticityStatus : std::uint8_t {
   Ok, InvalidParameters, InvalidCurve, InvalidHistory, InvalidIncrement,
-  CurveDomainExceeded, NonfiniteResult
+  CurveDomainExceeded, NonfiniteResult, HardeningDomainExceeded
 };
 
 TL_TABULATED_SHELL_HD inline TabulatedShellPlasticityStatus
@@ -67,6 +78,17 @@ TL_TABULATED_SHELL_HD inline TabulatedShellPlasticityStatus
 PrepareTabulatedShellPlasticity(double young, double nu, double rho,
     TabulatedShellPlasticityCurve curve, TabulatedShellPlasticityRate rate,
     TabulatedShellPlasticityParameters& output) noexcept;
+TL_TABULATED_SHELL_HD inline TabulatedShellPlasticityStatus
+PrepareLinearLaw44ShellPlasticity(double young, double nu, double rho,
+    Law44LinearHardening linear, TabulatedShellPlasticityRate rate,
+    TabulatedShellPlasticityParameters& output) noexcept;
+
+// Common LAW44 recurrence, with independently selected immutable hardening.
+TL_TABULATED_SHELL_HD inline TabulatedShellPlasticityStatus
+UpdateLaw44ShellPlasticity(const TabulatedShellPlasticityParameters& parameters,
+    const TabulatedShellPlasticityHistory& accepted,
+    const TabulatedShellPlasticityInput& input,
+    TabulatedShellPlasticityResult& output) noexcept;
 
 // Pure trial update. Failure, kinematic hardening and nonlocal corrections are
 // explicitly absent. Accepted history/output remain untouched
@@ -79,6 +101,8 @@ UpdateTabulatedShellPlasticity(const TabulatedShellPlasticityParameters& paramet
 } // namespace tl::material
 
 #include "lib_src/materials/detail/TabulatedShellPlasticityRate.h"
+#include "lib_src/materials/detail/Law44ElasticParameters.h"
 #include "lib_src/materials/detail/TabulatedShellPlasticityCurve.h"
+#include "lib_src/materials/detail/Law44Hardening.h"
 #include "lib_src/materials/detail/TabulatedShellPlasticityUpdate.h"
 #undef TL_TABULATED_SHELL_HD

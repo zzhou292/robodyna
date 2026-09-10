@@ -10,7 +10,7 @@ TL_TABULATED_SHELL_HD inline double EquivalentStress(const double (&s)[5]) noexc
 } // namespace tabulated_shell_detail
 
 TL_TABULATED_SHELL_HD inline TabulatedShellPlasticityStatus
-UpdateTabulatedShellPlasticity(const TabulatedShellPlasticityParameters& p,
+UpdateLaw44ShellPlasticity(const TabulatedShellPlasticityParameters& p,
     const TabulatedShellPlasticityHistory& accepted, const TabulatedShellPlasticityInput& input,
     TabulatedShellPlasticityResult& output) noexcept {
   using Status = TabulatedShellPlasticityStatus;
@@ -19,18 +19,19 @@ UpdateTabulatedShellPlasticity(const TabulatedShellPlasticityParameters& p,
       p.shear_modulus <= 0 || !tl::math::Finite(p.a11) || p.a11 <= 0 ||
       !tl::math::Finite(p.a12) || p.a12 < 0 || !tl::math::Finite(p.three_g) || p.three_g <= 0)
     return Status::InvalidParameters;
-  if (!tabulated_shell_detail::CurveShape(p.curve)) return Status::InvalidCurve;
+  const auto hardening_status=tabulated_shell_detail::ValidHardening(p);
+  if(hardening_status!=Status::Ok) return hardening_status;
   if (!tl::math::Finite(accepted.plastic_strain) || accepted.plastic_strain < 0)
     return Status::InvalidHistory;
   for (double s : accepted.stress) if (!tl::math::Finite(s)) return Status::InvalidHistory;
-  if (accepted.plastic_strain > p.curve.plastic_strain[p.curve.count - 1])
-    return Status::CurveDomainExceeded;
+  if (!tabulated_shell_detail::HardeningDomain(p,accepted.plastic_strain))
+    return p.hardening==ShellPlasticityHardeningKind::Tabulated?Status::CurveDomainExceeded:Status::HardeningDomainExceeded;
   if (!tl::math::Finite(input.transverse_shear_modulus) || input.transverse_shear_modulus <= 0)
     return Status::InvalidIncrement;
   for (double x : input.strain_increment) if (!tl::math::Finite(x)) return Status::InvalidIncrement;
   double yield = 0, hardening = 0;
-  if (!tabulated_shell_detail::CurveValue(p.curve, accepted.plastic_strain, yield, hardening))
-    return Status::InvalidCurve;
+  if (!tabulated_shell_detail::HardeningValue(p, accepted.plastic_strain, yield, hardening))
+    return p.hardening==ShellPlasticityHardeningKind::Tabulated?Status::InvalidCurve:Status::NonfiniteResult;
   double filtered_rate = 0, rate_factor = 1;
   const auto rate_status = tabulated_shell_detail::FilteredRate(p, accepted, input, filtered_rate, rate_factor);
   if (rate_status != Status::Ok) return rate_status;
@@ -88,8 +89,8 @@ UpdateTabulatedShellPlasticity(const TabulatedShellPlasticityParameters& p,
     trial.plastic_thickness_strain = -nu31*dr*s1/p.young_pa;
   }
   if (!tl::math::Finite(trial.history.plastic_strain)) return Status::NonfiniteResult;
-  if (trial.history.plastic_strain > p.curve.plastic_strain[p.curve.count - 1])
-    return Status::CurveDomainExceeded;
+  if (!tabulated_shell_detail::HardeningDomain(p,trial.history.plastic_strain))
+    return p.hardening==ShellPlasticityHardeningKind::Tabulated?Status::CurveDomainExceeded:Status::HardeningDomainExceeded;
   trial.equivalent_stress_pa = tabulated_shell_detail::EquivalentStress(s);
   trial.plastic_work_density = .5*(tabulated_shell_detail::EquivalentStress(accepted.stress) +
       trial.equivalent_stress_pa)*trial.plastic_increment;
@@ -100,5 +101,12 @@ UpdateTabulatedShellPlasticity(const TabulatedShellPlasticityParameters& p,
       !tl::math::Finite(trial.plastic_work_density)) return Status::NonfiniteResult;
   output = trial;
   return Status::Ok;
+}
+TL_TABULATED_SHELL_HD inline TabulatedShellPlasticityStatus
+UpdateTabulatedShellPlasticity(const TabulatedShellPlasticityParameters& p,
+    const TabulatedShellPlasticityHistory& accepted,const TabulatedShellPlasticityInput& input,
+    TabulatedShellPlasticityResult& output) noexcept {
+  if(p.hardening!=ShellPlasticityHardeningKind::Tabulated) return TabulatedShellPlasticityStatus::InvalidParameters;
+  return UpdateLaw44ShellPlasticity(p,accepted,input,output);
 }
 } // namespace tl::material

@@ -35,8 +35,7 @@ PrepareTabulatedShellPlasticity(double young, double nu, double rho,
     TabulatedShellPlasticityCurve curve, TabulatedShellPlasticityRate rate,
     TabulatedShellPlasticityParameters& output) noexcept {
   using Status = TabulatedShellPlasticityStatus;
-  if (!tl::math::Finite(young) || young <= 0 || !tl::math::Finite(nu) || nu < 0 || nu >= .5 ||
-      !tl::math::Finite(rho) || rho <= 0) return Status::InvalidParameters;
+  if (!tabulated_shell_detail::ValidElasticInput(young,nu,rho)) return Status::InvalidParameters;
   if (!tabulated_shell_detail::CurveShape(curve) || curve.plastic_strain[0] != 0)
     return Status::InvalidCurve;
   for (std::uint32_t i = 0; i < curve.count; ++i) {
@@ -53,15 +52,8 @@ PrepareTabulatedShellPlasticity(double young, double nu, double rho,
   }
   TabulatedShellPlasticityParameters p;
   if (!tabulated_shell_detail::PrepareRate(p, rate)) return Status::InvalidParameters;
-  p.curve = curve; p.young_pa = young; p.poisson_ratio = nu; p.density_kg_m3 = rho;
-  // Pinned HM_READ_MAT44 coefficient order; native sound speed is sqrt(A11/rho).
-  p.shear_modulus = young / 2. / (1. + nu);
-  p.a11 = young / (1. - nu * nu); p.a12 = p.a11 * nu;
-  p.three_g = 3. * p.shear_modulus; p.sound_speed = ::sqrt(p.a11 / rho);
-  if (!tl::math::Finite(p.shear_modulus) || p.shear_modulus <= 0 ||
-      !tl::math::Finite(p.a11) || p.a11 <= 0 || !tl::math::Finite(p.a12) ||
-      !tl::math::Finite(p.three_g) || p.three_g <= 0 ||
-      !tl::math::Finite(p.sound_speed) || p.sound_speed <= 0) return Status::InvalidParameters;
+  p.curve = curve;
+  if (!tabulated_shell_detail::PrepareElastic(young,nu,rho,p)) return Status::InvalidParameters;
   output = p;
   return Status::Ok;
 }

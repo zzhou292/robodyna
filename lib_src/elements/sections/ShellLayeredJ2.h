@@ -92,7 +92,7 @@ TL_SHELL_SECTION_HD inline PointStatus UpdateShellLayeredJ2(const PointParameter
       point_input.strain_increment[c]=in.strain_curvature_increment[c]+z*in.strain_curvature_increment[c+5];
     for(unsigned c=3;c<5;++c) point_input.strain_increment[c]=in.strain_curvature_increment[c];
     tl::material::TabulatedShellPlasticityResult point;
-    const auto status=tl::material::UpdateTabulatedShellPlasticity(p,accepted.point[layer],point_input,point);
+    const auto status=tl::material::UpdateLaw44ShellPlasticity(p,accepted.point[layer],point_input,point);
     if(status!=PointStatus::Ok) return status;
     candidate.history.point[layer]=point.history;
     const double weight=LayerForceWeight(layer),layer_thickness=weight*in.reference_thickness;

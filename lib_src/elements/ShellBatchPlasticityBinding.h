@@ -12,6 +12,10 @@ struct ShellPlasticityMaterialInput {
   std::uint64_t material_id=0,curve_id=0;
   double young_pa=0,poisson_ratio=0,density_kg_m3=0;
   material::TabulatedShellPlasticityRate rate;
+  // Trailing tagged declaration preserves older positional aggregates.
+  // LinearLaw44 requires curve_id=0 and owns its source SIGY/ETAN values.
+  material::ShellPlasticityHardeningKind hardening=material::ShellPlasticityHardeningKind::Tabulated;
+  material::Law44LinearHardening linear{};
 };
 struct ShellPlasticitySectionInput {
   std::uint64_t section_id=0;

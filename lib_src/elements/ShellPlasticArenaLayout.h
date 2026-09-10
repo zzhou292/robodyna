@@ -16,7 +16,7 @@ struct Layout {
   util::ArenaRegion header,curve_x,curve_y,parameters,section[2];
   std::size_t bytes=0;
   bool Initialize(std::size_t count,std::size_t points,std::size_t cap) noexcept {
-    if(!count||count>MaxShellResidentParents||points<2||points>MaxShellPlasticityCurvePoints) return false;
+    if(!count||count>MaxShellResidentParents||points==1||points>MaxShellPlasticityCurvePoints) return false;
     Layout next; util::BoundedArenaLayout layout(cap);
     if(!layout.Append<DeviceStorage>(1,next.header)||!layout.Append<double>(points,next.curve_x)||
        !layout.Append<double>(points,next.curve_y)||!layout.Append<sections::PointParameters>(count,next.parameters)||
@@ -25,14 +25,17 @@ struct Layout {
   }
   DeviceStorage* Construct(util::HostArena& arena) const noexcept {
     auto* output=arena.Construct<DeviceStorage>(header); if(!output) return nullptr;
-    output->curve_x=arena.Construct<double>(curve_x); output->curve_y=arena.Construct<double>(curve_y);
+    output->curve_x=curve_x.count?arena.Construct<double>(curve_x):nullptr;
+    output->curve_y=curve_y.count?arena.Construct<double>(curve_y):nullptr;
     output->parameters=arena.Construct<sections::PointParameters>(parameters);
     for(unsigned i=0;i<2;++i) output->section[i]=arena.Construct<ShellBatchSectionState>(section[i]);
-    return output->curve_x&&output->curve_y&&output->parameters&&output->section[0]&&output->section[1]?output:nullptr;
+    return (!curve_x.count||(output->curve_x&&output->curve_y))&&
+      output->parameters&&output->section[0]&&output->section[1]?output:nullptr;
   }
   DeviceStorage Rebase(const DeviceStorage& host,void* device) const noexcept {
     DeviceStorage result=host;
-    result.curve_x=util::ArenaPointer<double>(device,curve_x); result.curve_y=util::ArenaPointer<double>(device,curve_y);
+    result.curve_x=curve_x.count?util::ArenaPointer<double>(device,curve_x):nullptr;
+    result.curve_y=curve_y.count?util::ArenaPointer<double>(device,curve_y):nullptr;
     result.parameters=util::ArenaPointer<sections::PointParameters>(device,parameters);
     for(unsigned i=0;i<2;++i) result.section[i]=util::ArenaPointer<ShellBatchSectionState>(device,section[i]);
     return result;

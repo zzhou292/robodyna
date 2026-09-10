@@ -94,3 +94,10 @@ integrated source-rate plasticity gates passed in the workspace's
 [36-group delivery run](../../../crash-work/reports/plastic-delivery-tests-1.log).
 This records the completed bounded branch; broader element/folding qualification
 remains separate.
+
+## Analytic companion
+
+The existing table API and supported table behavior remain available. The
+optional [LAW44 analytic hardening](Law44AnalyticHardening.md) uses the same point
+recurrence with an explicit tagged source SIGY/ETAN declaration; it adds no
+synthetic table or separate history owner.

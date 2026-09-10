@@ -22,8 +22,8 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
 add_custom_target(law44_point_verify_sources
   COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_SOURCE_DIR}/prepare_sources.py"
     --output "${prepared}" --check VERBATIM)
-add_library(law44_point_native STATIC NativePoint.cpp NativePointEvaluation.cpp NativePhysicalThickness.cpp
-  NativePoint.F NativeSection.F NativeRate.F
+add_library(law44_point_native STATIC NativePoint.cpp NativePointEvaluation.cpp NativePhysicalThickness.cpp NativeAnalytic.cpp
+  NativePoint.F NativeSection.F NativeRate.F NativeAnalytic.F
   "${prepared}/Sigeps44c.F" "${prepared}/Vinter.F"
   "${prepared}/Coqini.F"
   "${prepared}/Constant.F" "${prepared}/Precision.F90")
@@ -41,6 +41,11 @@ target_include_directories(law44_point_native PUBLIC "${CMAKE_CURRENT_SOURCE_DIR
 if(LAW44_POINT_BUILD_TESTS)
   enable_testing()
   find_package(GTest REQUIRED)
+  add_executable(law44_analytic_native_check NativeAnalyticTest.cpp NativeAnalyticSectionTest.cpp)
+  target_link_libraries(law44_analytic_native_check PRIVATE law44_point_native GTest::gtest_main)
+  target_compile_options(law44_analytic_native_check PRIVATE -fno-fast-math -ffp-contract=off)
+  add_test(NAME law44_analytic_native COMMAND law44_analytic_native_check)
+  set_tests_properties(law44_analytic_native PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE PROCESSORS 1)
   add_executable(law44_point_native_check NativePointTest.cpp NativePhysicalThicknessTest.cpp)
   target_link_libraries(law44_point_native_check PRIVATE law44_point_native GTest::gtest_main)
   target_compile_options(law44_point_native_check PRIVATE -fno-fast-math -ffp-contract=off)

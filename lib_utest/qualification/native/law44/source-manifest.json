@@ -2,7 +2,7 @@
   "schema": "tl.law44-point-native-sources.v1",
   "upstream_revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
   "upstream": "https://github.com/OpenRadioss/OpenRadioss",
-  "scope": "Unmodified SIGEPS44C, VINTER and COQINI section tables, existing qualified native precision/constants/includes; explicit rate-off or filtered total-rate VP2 tabulated plane-stress subset",
+  "scope": "Unmodified SIGEPS44C/VINTER/COQINI with tabulated or native linear-hardening MFUNC0 plane stress; analytic admission is positive-C/P filtered VP2, no failure; complete converter/starter retained as source contract.",
   "sources": [
     {
       "path": "original/sigeps44c.F",
@@ -71,6 +71,20 @@
       "sha256": "f1f29a906eade4ce25a43bc7d85c61271eeb1f449e30614c7b09f11ee3c1de8e",
       "upstream_path": "engine/share/includes/com20_c.inc",
       "upstream_git_blob": "abebf707d2b8699c05a0f5082118d7de5f94966c"
+    },
+    {
+      "path": "original/convertmats.cxx",
+      "sha256": "a2d54503fb38039f88b76d26950853ef39a0207dc368cc1f9deb390ced177b0f",
+      "bytes": 579108,
+      "upstream_path": "reader/source/dyna2rad/dyna2rad/_private/convertmats.cxx",
+      "upstream_git_blob": "df933c97ba326cd12af9cf3569db436f624d1be1"
+    },
+    {
+      "path": "original/hm_read_mat44.F",
+      "sha256": "79915c2f70251e92578385dcaa1ec085b020914851f83c5126e39d00affd58c1",
+      "bytes": 17325,
+      "upstream_path": "starter/source/materials/mat/mat044/hm_read_mat44.F",
+      "upstream_git_blob": "e533fe9f250ccb1e53979cc4ddccded357e464cb"
     }
   ]
 }
