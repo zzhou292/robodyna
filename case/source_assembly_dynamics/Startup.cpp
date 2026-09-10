@@ -75,7 +75,7 @@ Report SourceAssemblyWallCase::Impl::Initialize() {
     const auto made=setup.MakeDeviceConfig(initial.diagnostics.stamp,&wc,config.storage.contact);
     if(!made)return Failure(Status::SourceMismatch,made.message);
     r=Convert(wall.Initialize(wc,setup.placed_wall()->view(),*setup.source_geometry()->weights(),
-        {initial.fields.x.data(),nodes(),3,1},inverse_mass.data(),free.data(),setup.certificate()->coverage.physical));if(!r)return r;
+        {initial.fields.x.data(),static_cast<std::uint32_t>(nodes()),3,1},inverse_mass.data(),free.data(),setup.certificate()->coverage.physical));if(!r)return r;
     const auto rate=wall_penalty::CheckContactStep(config.fixed_dt,wall.stiffness_rate_bound(),
         settings.maximum_step_rate,&contact_step_rate_upper);
     if(!rate)return Failure(Status::EnvelopeFailure,rate.message,0,rate.node,contact_step_rate_upper,settings.maximum_step_rate);

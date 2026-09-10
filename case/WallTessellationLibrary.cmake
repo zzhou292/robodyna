@@ -1,5 +1,7 @@
 include_guard(GLOBAL)
 # Shared host wall preparation; callers opt into their own checks/cases.
+include("${CRASH_TL_FEA_SOURCE_DIR}/lib_src/collision/Q4PlanarGeometry.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/CanonicalWallArtifacts.cmake")
 add_library(robo_dyna_wall_tessellation STATIC
   "${CMAKE_CURRENT_LIST_DIR}/WallTessellation.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/WallTessellationGeometry.cpp")
