@@ -11,6 +11,9 @@ struct ShellContactGeometryLimits {
     // native-area preparation. Allocator bookkeeping is outside this ledger.
     std::size_t max_startup_bytes=32*1024*1024;
     tlfea::contact::NodalWallWeightLimits weights{};
+    static constexpr ShellContactGeometryLimits Vehicle() noexcept {
+        return {2ULL*1024*1024*1024,tlfea::contact::NodalWallWeightLimits::Vehicle()};
+    }
 };
 struct ShellContactParent {
     tl::fea::ShellBindingFamily family=tl::fea::ShellBindingFamily::None;

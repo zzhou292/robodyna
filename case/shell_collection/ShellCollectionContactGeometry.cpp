@@ -23,17 +23,28 @@ ShellContactGeometryReport ShellCollectionContactGeometry::Initialize(
     const fe::ShellBatchBinding& binding,const ShellContactGeometryLimits& limits) {
     if(impl_||!binding.prepared()) return {Code::InvalidInput,"Fresh geometry and a complete native binding are required"};
     const auto q=binding.qeph_count(),t=binding.t3_count(),n=binding.node_count(),p=q+t;
-    if(!n||n>sc::MaxNodalWallWeightNodes||!p||p>sc::MaxNodalWallWeightParents||
+    const bool vehicle=limits.weights.profile==sc::NodalWallWeightProfile::Vehicle;
+    if(!vehicle&&limits.weights.profile!=sc::NodalWallWeightProfile::Legacy)
+        return {Code::InvalidInput,"Unknown shell contact weight profile"};
+    const auto maximum_nodes=vehicle?sc::MaxVehicleWallWeightNodes:sc::MaxNodalWallWeightNodes;
+    const auto maximum_parents=vehicle?sc::MaxVehicleWallWeightParents:sc::MaxNodalWallWeightParents;
+    const std::size_t maximum_startup=vehicle?ShellContactGeometryLimits::Vehicle().max_startup_bytes:32*1024*1024;
+    if(!n||n>maximum_nodes||!p||p>maximum_parents||
        n>limits.weights.max_nodes||p>limits.weights.max_parents||
-       !limits.max_startup_bytes||limits.max_startup_bytes>32*1024*1024)
+       (vehicle&&(limits.weights.max_nodes>maximum_nodes||limits.weights.max_parents>maximum_parents))||
+       !limits.max_startup_bytes||limits.max_startup_bytes>maximum_startup)
         return {Code::ResourceLimit,"Shell contact startup exceeds explicit collection limits"};
-    // Counts have passed the small hard bounds, so this sum cannot overflow.
+    // Counts passed profile hard bounds, so this sum cannot overflow. Keep the
+    // conservative legacy ledger; Vehicle also reserves transient weight indexes.
     // Charge the complete allowed weights payload, including its inline arrays.
-    if(!limits.weights.max_owned_bytes||limits.weights.max_owned_bytes>4*1024*1024)
+    const auto maximum_weights=vehicle?sc::MaxVehicleWallWeightOwnedBytes:4*1024*1024;
+    if(!limits.weights.max_owned_bytes||limits.weights.max_owned_bytes>maximum_weights||
+       (vehicle&&(!limits.weights.max_startup_bytes||limits.weights.max_startup_bytes>sc::MaxVehicleWallWeightScratchBytes)))
         return {Code::ResourceLimit,"Invalid immutable contact weight payload budget"};
     const auto payload=sizeof(Impl)+binding.host_bytes()+3*n*sizeof(double)+p*sizeof(ShellContactParent)+
         q*sizeof(sc::Q4ParametricReference)+t*sizeof(sc::T3MaterialMeasure)+
-        p*sizeof(sc::NodalWallParentInput)+limits.weights.max_owned_bytes;
+        p*sizeof(sc::NodalWallParentInput)+limits.weights.max_owned_bytes+
+        (vehicle?limits.weights.max_startup_bytes:0);
     if(payload>limits.max_startup_bytes)
         return {Code::ResourceLimit,"Shell contact peak startup payload exceeds its byte budget"};
     try {
