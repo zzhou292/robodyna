@@ -14,6 +14,33 @@ inline double Scalar(const Value& value) {
     Require(value.IsNumber()&&std::isfinite(value.GetDouble()),"Nonfinite plastic comparison scalar");
     return value.GetDouble();
 }
+struct NumericalResponse {
+    double hourglass_viscous_work=0,viscous_fraction_of_initial_kinetic=0;
+    double carried_rotation_total=0,carried_rotation_physical=0,carried_rotation_added=0;
+    double carried_velocity_time=0;
+};
+// Per-run diagnostics. Carried rotational energies refer to the explicitly
+// reported midpoint time; they are not a common-endpoint comparison channel.
+inline NumericalResponse ReadNumericalResponse(const Value& final,double initial_kinetic) {
+    Require(std::isfinite(initial_kinetic)&&initial_kinetic>0,"Invalid numerical-work reference energy");
+    const auto& qeph=wc::Field(final,"qeph");
+    const auto& kinetic=wc::Field(final,"carried_kinetic");
+    NumericalResponse r;
+    r.hourglass_viscous_work=wc::Real(qeph,"hourglass_viscous_work_J");
+    r.carried_velocity_time=wc::Real(qeph,"velocity_time_s");
+    r.carried_rotation_total=wc::Real(kinetic,"rotation_total_J");
+    r.carried_rotation_physical=wc::Real(kinetic,"rotation_physical_isotropic_J");
+    r.carried_rotation_added=wc::Real(kinetic,"rotation_added_isotropic_J");
+    Require(r.hourglass_viscous_work>=0&&r.carried_rotation_total>=0&&
+        r.carried_rotation_physical>=0&&r.carried_rotation_added>=0&&r.carried_velocity_time>=0,
+        "Negative numerical-work or carried-rotation diagnostic");
+    const long double sum=static_cast<long double>(r.carried_rotation_physical)+r.carried_rotation_added;
+    const auto roundoff=512*std::numeric_limits<double>::epsilon()*(sum+r.carried_rotation_total);
+    Require(std::abs(sum-r.carried_rotation_total)<=roundoff,"Carried native inertia energy partitions disagree");
+    r.viscous_fraction_of_initial_kinetic=r.hourglass_viscous_work/initial_kinetic;
+    Require(std::isfinite(r.viscous_fraction_of_initial_kinetic),"Nonfinite numerical-work energy ratio");
+    return r;
+}
 inline std::array<double,2> PlasticDifference(const Value& a,const Value& b) {
     const auto& x=wc::Field(a,"plastic_sections");const auto& y=wc::Field(b,"plastic_sections");
     Require(x.IsArray()&&y.IsArray()&&x.Size()==94&&y.Size()==94,"Incomplete plastic comparison sections");

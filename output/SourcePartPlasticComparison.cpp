@@ -43,6 +43,15 @@ Value RunSummary(Document& report,const pc::Run& run) {
     out.AddMember("final_yielded_points",o.final_yielded_points,a);
     out.AddMember("final_yielded_parents",o.final_yielded_parents,a);
     out.AddMember("accumulated_plastic_history_observed",o.final_maximum_plastic_strain>0&&o.final_plastic_work>0,a);
+    const auto numerical=pc::ReadNumericalResponse(run.final,run.initial_kinetic);
+    Value work(rapidjson::kObjectType);
+    work.AddMember("hourglass_viscous_work_J",numerical.hourglass_viscous_work,a);
+    work.AddMember("hourglass_viscous_fraction_of_initial_kinetic",numerical.viscous_fraction_of_initial_kinetic,a);
+    work.AddMember("carried_rotation_total_J",numerical.carried_rotation_total,a);
+    work.AddMember("carried_rotation_physical_isotropic_J",numerical.carried_rotation_physical,a);
+    work.AddMember("carried_rotation_added_isotropic_J",numerical.carried_rotation_added,a);
+    work.AddMember("carried_velocity_time_s",numerical.carried_velocity_time,a);
+    out.AddMember("final_numerical_response",work,a);
     return out;
 }
 }
@@ -100,6 +109,7 @@ Document CompareSourcePartPlastic(const std::array<std::filesystem::path,2>& dir
     String(report,"kinematic_statistic","Per-sample maximum nodal vector norm and sign-invariant quaternion rotation distance; velocity and angular velocity use synchronized endpoint fields");
     String(report,"plastic_statistic","Per-sample maximum difference over corresponding 94-by-3 point PLA and 94 cumulative parent work values; RMS is over these sampled maxima");
     String(report,"energy_policy","Ksync + native EINT/EVIS + contact potential - K0; point plastic work is a separate diagnostic already represented in native work");
+    String(report,"numerical_response_policy","Native hourglass viscous work excludes recoverable stabilization work; native added-isotropic rotational energy is reported separately at each run's carried velocity time. Small balance error and timestep sensitivity alone do not qualify spatial stabilization or added-inertia response");
     String(report,"unloading_scope","Accumulated plastic strain records irreversible material history. Separated rebound and changing chord lengths do not establish a stress-free final shape; elastic vibration may remain");
     String(report,"rebound_policy","All accepted intervals are inspected; terminal strictly-separated run of at least 128H, zero certified force/potential and negative carried COM upper bound; later recontact resets it");
     Boolean(report,"all_accepted_intervals_satisfy_declared_energy_bound",true);

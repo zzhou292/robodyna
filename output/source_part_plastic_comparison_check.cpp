@@ -3,6 +3,30 @@
 
 namespace crash::output::plastic_comparison {
 namespace {
+TEST(SourcePlasticSensitivity, SeparatesNumericalViscousWorkAndCarriedAddedInertiaWithTheirTiming) {
+    Document final; final.Parse(R"({"qeph":{"hourglass_viscous_work_J":2.5,"velocity_time_s":0.0078},
+        "carried_kinetic":{"rotation_total_J":0.4,"rotation_physical_isotropic_J":0.1,
+        "rotation_added_isotropic_J":0.3}})");
+    const auto before=wc::Encode(final);
+    const auto r=ReadNumericalResponse(final,8.);
+    EXPECT_DOUBLE_EQ(r.hourglass_viscous_work,2.5);
+    EXPECT_DOUBLE_EQ(r.viscous_fraction_of_initial_kinetic,.3125);
+    EXPECT_DOUBLE_EQ(r.carried_rotation_total,.4);
+    EXPECT_DOUBLE_EQ(r.carried_rotation_physical,.1);
+    EXPECT_DOUBLE_EQ(r.carried_rotation_added,.3);
+    EXPECT_DOUBLE_EQ(r.carried_velocity_time,.0078);
+    EXPECT_THROW(ReadNumericalResponse(final,0),std::runtime_error);
+    for(unsigned variant=0;variant<4;++variant) {
+        auto changed=test::Copy(final);
+        if(variant==0)changed["qeph"].RemoveMember("hourglass_viscous_work_J");
+        if(variant==1)changed["qeph"]["hourglass_viscous_work_J"].SetDouble(-.1);
+        if(variant==2)changed["carried_kinetic"]["rotation_added_isotropic_J"].SetDouble(.2);
+        if(variant==3)changed["qeph"]["velocity_time_s"].SetDouble(-.1);
+        EXPECT_THROW(ReadNumericalResponse(changed,8.),std::runtime_error);
+    }
+    EXPECT_EQ(wc::Encode(final),before);
+}
+
 TEST(SourcePlasticSensitivity, MatchesPhysicalInputsWhileAllowingOnlyResolutionDerivedChanges) {
     const auto coarse=test::Configuration(),fine=test::Configuration(true);
     const auto before_coarse=wc::Encode(coarse),before_fine=wc::Encode(fine);
