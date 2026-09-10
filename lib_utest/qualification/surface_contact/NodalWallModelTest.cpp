@@ -20,6 +20,17 @@ TEST(NodalWallModel, BindsWholeReferenceMeasureAndGlobalNodesWithoutAllocatingOw
     EXPECT_EQ(model.model().parents[p].parent_element_id,permuted.model().parents[p].parent_element_id);
     Same(model.model().parents[p].area,permuted.model().parents[p].area); Same(model.model().parents[p].share,permuted.model().parents[p].share);
   }
+  // Explicit shared-node oracle remains compact even with sparse owner capacity.
+  const unsigned offsets[]{0,1,2,4,6,7,8};
+  const unsigned slots[]{1,2,0,5,3,6,4,7};
+  for(unsigned i=0;i<7;++i) {
+    EXPECT_EQ(model.model().incident_offsets[i],offsets[i]);
+    EXPECT_EQ(permuted.model().incident_offsets[i],offsets[i]);
+  }
+  for(unsigned i=0;i<8;++i) {
+    EXPECT_EQ(model.model().incident_slots[i],slots[i]);
+    EXPECT_EQ(permuted.model().incident_slots[i],slots[i]);
+  }
 }
 TEST(NodalWallModel, InvalidIdentityMassAndCapsPreserveEveryPreparedByte) {
   Fixture f; ASSERT_TRUE(f.Prepare()); detail::PreparedModel out;

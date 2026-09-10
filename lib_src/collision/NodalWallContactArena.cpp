@@ -22,7 +22,9 @@ bool BuildArenaLayout(std::size_t p,std::size_t n,std::size_t g,std::size_t cap,
       !cap||cap>MaxActiveNodalWallDeviceBytes) return false;
   ArenaLayout next; tl::util::BoundedArenaLayout b(cap);
   if(!b.Append<Storage>(1,next.header)||!b.Append<NodalWallParentWeight>(p,next.parents)||
-      !b.Append<NodalWallNodeWeight>(n,next.nodes)||!b.Append<Vec3>(g,next.positions)||
+      !b.Append<NodalWallNodeWeight>(n,next.nodes)||
+      !b.Append<std::uint32_t>(n+1,next.incident_offsets)||!b.Append<std::uint32_t>(4*p,next.incident_slots)||
+      !b.Append<Vec3>(g,next.positions)||
       !b.Append<double>(g,next.inverse)||!b.Append<std::uint8_t>(g,next.fixed)||
       !b.Append<Control>(n,next.status)||!b.Append<NodalWallPointResult>(4*p,next.shares)||
       !b.Append<double>(6*g,next.force)||!b.Append<double>(n,next.error)||
@@ -46,11 +48,13 @@ bool PreparedModel::Initialize(const ArenaLayout& layout) {
   auto& m=s->model;
   m.parents=a->Construct<NodalWallParentWeight>(layout.parents);
   m.nodes=a->Construct<NodalWallNodeWeight>(layout.nodes);
+  m.incident_offsets=a->Construct<std::uint32_t>(layout.incident_offsets);
+  m.incident_slots=a->Construct<std::uint32_t>(layout.incident_slots);
   m.initial_position=a->Construct<Vec3>(layout.positions);
   m.inverse_mass=a->Construct<double>(layout.inverse); m.fixed=a->Construct<std::uint8_t>(layout.fixed);
   s->node_status=a->Construct<Control>(layout.status); s->shares=a->Construct<NodalWallPointResult>(layout.shares);
   s->staged_force=a->Construct<double>(layout.force); s->addition_error=a->Construct<double>(layout.error);
-  if(!m.parents||!m.nodes||!m.initial_position||!m.inverse_mass||!m.fixed||!s->node_status||!s->shares||
+  if(!m.parents||!m.nodes||!m.incident_offsets||!m.incident_slots||!m.initial_position||!m.inverse_mass||!m.fixed||!s->node_status||!s->shares||
       !s->staged_force||!s->addition_error||!ConstructResult(*a,layout.base,s->base)||
       !ConstructResult(*a,layout.result,s->result)) return false;
   layout_=layout; arena_=std::move(a); return true;
@@ -59,6 +63,8 @@ Storage PreparedModel::Rebase(void* base) const noexcept {
   Storage s=storage(); auto& m=s.model; const auto& l=layout_;
   m.parents=tl::util::ArenaPointer<NodalWallParentWeight>(base,l.parents);
   m.nodes=tl::util::ArenaPointer<NodalWallNodeWeight>(base,l.nodes);
+  m.incident_offsets=tl::util::ArenaPointer<std::uint32_t>(base,l.incident_offsets);
+  m.incident_slots=tl::util::ArenaPointer<std::uint32_t>(base,l.incident_slots);
   m.initial_position=tl::util::ArenaPointer<Vec3>(base,l.positions);
   m.inverse_mass=tl::util::ArenaPointer<double>(base,l.inverse);
   m.fixed=tl::util::ArenaPointer<std::uint8_t>(base,l.fixed);

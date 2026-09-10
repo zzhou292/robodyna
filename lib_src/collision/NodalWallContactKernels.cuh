@@ -70,8 +70,11 @@ __device__ inline void Evaluate(Storage& s,const fea::DeviceNodalKinematicsView&
           face==UINT32_MAX) Fail(status,Code::GeometryFailure,n);
       else {
         s.result.wall_face[compact]=s.model.face_ids[face]; NodalWallPointResult node;
-        for (unsigned p=0;p<s.model.parent_count;++p) for (unsigned l=0;l<s.model.parents[p].arity;++l) {
-          if (s.model.parents[p].nodes[l]!=n || status.status!=Code::Ok) continue;
+        // Immutable source incidence avoids scanning all parents per node.
+        // Stored slots retain the original p/l order and omit T3 padding.
+        for (unsigned i=s.model.incident_offsets[compact];i<s.model.incident_offsets[compact+1];++i) {
+          if (status.status!=Code::Ok) break;
+          const unsigned slot=s.model.incident_slots[i],p=slot/4,l=slot%4;
           NodalWallPointResult share;
           const auto code=EvaluateNodalWallPoint({n,s.model.parents[p].share},position,velocity,
                                                 mass,s.model.config.law,identity.attempt,&share);

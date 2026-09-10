@@ -54,7 +54,9 @@ NodalWallDeviceReport PrepareModel(const NodalWallDeviceConfig& c,PlanarWallView
         return {Code::InvalidInput,"Contact parent must have its exact native Q4/4 or T3/3 family and arity",UINT32_MAX,p};
       next.parents[p]=parent;
     }
+    unsigned incident_count=0;
     for (unsigned i=0;i<next.node_count;++i) {
+      next.incident_offsets[i]=incident_count;
       const auto node=weights.node(i).node; next.nodes[i]=weights.node(i);
       if (node>=owner.node_count || (masks[node]!=0 && masks[node]!=7) ||
           !IsFinite(inverse[node]) || (masks[node]==7 ? inverse[node]!=0 : inverse[node]<=0))
@@ -69,6 +71,11 @@ NodalWallDeviceReport PrepareModel(const NodalWallDeviceConfig& c,PlanarWallView
                                          TranslationMassModel::kIsotropicLumped};
       for (unsigned p=0;p<next.parent_count;++p) for (unsigned l=0;l<next.parents[p].arity;++l) {
         if (next.parents[p].nodes[l]!=node) continue;
+        // Reuse the admitted source traversal once at startup. This preserves
+        // the exact parent/local order of every later directed node reduction.
+        if (incident_count>=4*next.parent_count)
+          return {Code::InvalidInput,"Contact incidence exceeds its complete arena",node,p};
+        next.incident_slots[incident_count++]=4*p+l;
         NodalWallPointResult value;
         const auto report=EvaluateNodalWallPoint({node,next.parents[p].share},x.at(node),{},mass,law,1,&value);
         if (report.status!=NodalWallStatus::Ok)
@@ -78,6 +85,11 @@ NodalWallDeviceReport PrepareModel(const NodalWallDeviceConfig& c,PlanarWallView
       }
       if (rate>next.rate) next.rate=rate;
     }
+    next.incident_offsets[next.node_count]=incident_count;
+    unsigned expected_incidence=0;
+    for(unsigned p=0;p<next.parent_count;++p) expected_incidence+=next.parents[p].arity;
+    if(incident_count!=expected_incidence)
+      return {Code::InvalidInput,"Contact compact nodes do not cover every native parent share"};
     next.prepared=true; *output=std::move(staged);
     return {Code::Ok,"OK"};
   } catch (const std::bad_alloc&) {

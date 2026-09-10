@@ -6,7 +6,7 @@ namespace tlfea::contact::nodal_wall_device_detail {
 using tl::util::ArenaRegion;
 struct ResultRegions { ArenaRegion parents,nodes,wall_face; };
 struct ArenaLayout {
-  ArenaRegion header,parents,nodes,positions,inverse,fixed,status,shares,force,error;
+  ArenaRegion header,parents,nodes,incident_offsets,incident_slots,positions,inverse,fixed,status,shares,force,error;
   ResultRegions base,result;
   std::size_t bytes=0;
   std::size_t parent_count=0,node_count=0,global_count=0;

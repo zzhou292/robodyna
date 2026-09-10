@@ -15,12 +15,13 @@ TEST(NodalWallArena, ExactAlignedRegionsHardBoundsOverflowAndByteFailuresAreAtom
     const auto cap=fault==5?l.bytes-1:fault==6?SIZE_MAX:sc::MaxActiveNodalWallDeviceBytes;
     EXPECT_FALSE(detail::BuildArenaLayout(p,n,g,cap,l)); EXPECT_EQ(Bytes(l),saved);
   }
-  const tl::util::ArenaRegion regions[]{l.header,l.parents,l.nodes,l.positions,l.inverse,l.fixed,l.status,l.shares,
+  const tl::util::ArenaRegion regions[]{l.header,l.parents,l.nodes,l.incident_offsets,l.incident_slots,l.positions,l.inverse,l.fixed,l.status,l.shares,
       l.force,l.error,l.base.parents,l.base.nodes,l.base.wall_face,l.result.parents,l.result.nodes,l.result.wall_face};
   std::size_t end=0;
   for(const auto& r:regions) { EXPECT_GE(r.offset,end); EXPECT_LE(r.offset+r.bytes,l.bytes); end=r.offset+r.bytes; }
   EXPECT_EQ(end,l.bytes); EXPECT_EQ(l.force.count,6*Nodes); EXPECT_EQ(l.shares.count,4*Parents);
   EXPECT_EQ(l.result.parents.count,Parents); EXPECT_EQ(l.result.nodes.count,Nodes);
+  EXPECT_EQ(l.incident_offsets.count,Nodes+1); EXPECT_EQ(l.incident_slots.count,4*Parents);
   EXPECT_TRUE(detail::BuildArenaLayout(1024,2048,2048,sc::MaxActiveNodalWallDeviceBytes,l));
   RecordProperty("maximum_layout_bytes",std::to_string(l.bytes));
 }
@@ -53,11 +54,32 @@ TEST(NodalWallArena, CompleteNativePreparedModelRebasesEveryPointerAndPreservesL
     EXPECT_EQ(static_cast<const unsigned char*>(actual)-static_cast<const unsigned char*>(remote.data()),
               static_cast<const unsigned char*>(host)-static_cast<const unsigned char*>(out.data())); };
   rebased(shadow.model.parents,h.model.parents); rebased(shadow.model.nodes,h.model.nodes);
+  rebased(shadow.model.incident_offsets,h.model.incident_offsets);
+  rebased(shadow.model.incident_slots,h.model.incident_slots);
   rebased(shadow.model.initial_position,h.model.initial_position); rebased(shadow.model.inverse_mass,h.model.inverse_mass);
   rebased(shadow.model.fixed,h.model.fixed); rebased(shadow.node_status,h.node_status); rebased(shadow.shares,h.shares);
   rebased(shadow.staged_force,h.staged_force); rebased(shadow.addition_error,h.addition_error);
   rebased(shadow.base.parents,h.base.parents); rebased(shadow.base.nodes,h.base.nodes); rebased(shadow.base.wall_face,h.base.wall_face);
   rebased(shadow.result.parents,h.result.parents); rebased(shadow.result.nodes,h.result.nodes); rebased(shadow.result.wall_face,h.result.wall_face);
+  // Every native Q4/T3 incidence occurs once, belongs to the compact node,
+  // and preserves the canonical parent/local ordering. T3 padding is absent.
+  const auto& model=out.model();
+  EXPECT_EQ(model.incident_offsets[0],0u);
+  EXPECT_EQ(model.incident_offsets[Nodes],4*Quads+3*Triangles);
+  std::vector<bool> seen(4*Parents,false);
+  for(unsigned i=0;i<Nodes;++i) {
+    ASSERT_LT(model.incident_offsets[i],model.incident_offsets[i+1]);
+    ASSERT_LE(model.incident_offsets[i+1],4*Quads+3*Triangles);
+    for(unsigned j=model.incident_offsets[i];j<model.incident_offsets[i+1];++j) {
+      const unsigned slot=model.incident_slots[j],p=slot/4,local=slot%4;
+      ASSERT_LT(p,Parents);ASSERT_LT(local,model.parents[p].arity);
+      EXPECT_EQ(model.parents[p].nodes[local],model.nodes[i].node);
+      EXPECT_FALSE(seen[slot]);seen[slot]=true;
+      if(j>model.incident_offsets[i])EXPECT_LT(model.incident_slots[j-1],slot);
+    }
+  }
+  for(unsigned p=0;p<Parents;++p)for(unsigned local=0;local<4;++local)
+    EXPECT_EQ(seen[4*p+local],local<model.parents[p].arity);
   EXPECT_TRUE(shadow.model.query.prepared()); EXPECT_EQ(shadow.model.rate,h.model.rate);
   RecordProperty("active_device_bytes",std::to_string(out.layout().bytes));
   RecordProperty("host_admission_bytes",std::to_string(detail::HostPreparationBytes(out.layout())));

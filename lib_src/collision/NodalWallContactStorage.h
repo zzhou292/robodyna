@@ -17,6 +17,9 @@ struct Model {
   PlanarWallBoxCoverage coverage;
   NodalWallParentWeight* parents=nullptr;
   NodalWallNodeWeight* nodes=nullptr;
+  // Compact-node incidence in original parent/local order; slots index shares.
+  std::uint32_t* incident_offsets=nullptr;
+  std::uint32_t* incident_slots=nullptr;
   Vec3* initial_position=nullptr;
   double* inverse_mass=nullptr;
   double rate=0;
