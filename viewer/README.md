@@ -72,19 +72,19 @@ or vehicle-crash claim.
 
 
 The source-assembly wall-side checkpoint now passes the owning Release/VSG
-build and18 scene/view functions (`replay-wall-side-scene-tests-1`); the optional
+build and 18 scene/view functions (`replay-wall-side-scene-tests-1`); the optional
 original single-part fixture was not supplied and its one function was skipped.
-The actual35-frame connected assembly is checked against recorded native parent
+The actual 35-frame connected assembly is checked against recorded native parent
 colors and physical geometry. The four new view functions preserve the default
 camera exactly, reject unsupported views, and keep complete meshes/colors when
 viewing from the opposite side.
 
-The actual RTX5090 capture `source-assembly-wall-side-1` uses physical scale1,
-35 frames,1280x720 at5FPS. Its MP4 is7.000s/168879B,
+The actual RTX 5090 capture `source-assembly-wall-side-1` uses physical scale 1,
+35 frames,1280x720 at 5 FPS. Its MP4 is 7.000 s / 168879 B,
 SHA256 `a0aa0387ec6d1325d3b5ef8723f014fc1b050b87616c503734d36097d051c410`.
 All capture-index/PNG hashes, video frame count and full error decode pass;
 initial/final PNGs and the decoded final frame were inspected. Source time is
-only0.5130767822ms: the accepted prefix stopped at the existing nodal rotation
+only 0.5130767822 ms: the accepted prefix stopped at the existing nodal rotation
 envelope, and the overlay/manifest retain that limit. The view exposes local
 plasticity more clearly, but does not magnify deformation or complete the
 requested dynamics horizon. Detailed validation is retained in workspace report
