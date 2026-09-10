@@ -143,6 +143,26 @@ TEST(AcceptedReplaySevenPart,CompleteActualBundleStreams959ParentsAnd1093Nodes) 
     rounded.Replace(file,fields);rounded.Rehash(file);AcceptedReplay roundoff;
     const auto agreed=roundoff.Open(rounded.directory);EXPECT_EQ(agreed.status,ReplayStatus::Ok)<<agreed.diagnostic;
 }
+TEST(AcceptedReplaySevenPart,DoubledArchiveAllowancePreservesOldBundlesAndRejectsOverBudget) {
+    if(Actual().empty())GTEST_SKIP()<<"No completed actual seven-part connector archive supplied";
+    AcceptedReplay original;const auto opened=original.Open(Actual());
+    ASSERT_EQ(opened.status,ReplayStatus::Ok)<<opened.diagnostic;
+    test_support::ModifiedReplayBundle copy(Actual());auto configuration=copy.Read("configuration.json");
+    configuration["archive_byte_cap"].SetUint64(std::uint64_t{2}*1024*1024*1024);
+    copy.Replace("configuration.json",configuration);copy.Rehash("configuration.json");
+    AcceptedReplay doubled;const auto accepted=doubled.Open(copy.directory);
+    ASSERT_EQ(accepted.status,ReplayStatus::Ok)<<accepted.diagnostic;
+    ASSERT_EQ(doubled.Load(doubled.info()->frame_count-1).status,ReplayStatus::Ok);
+    EXPECT_EQ(doubled.frame()->epoch,original.info()->final_epoch);
+    configuration["archive_byte_cap"].SetUint64(std::uint64_t{2}*1024*1024*1024+1);
+    copy.Replace("configuration.json",configuration);copy.Rehash("configuration.json");
+    AcceptedReplay excessive;const auto rejected=excessive.Open(copy.directory);
+    EXPECT_NE(rejected.status,ReplayStatus::Ok);
+    EXPECT_NE(rejected.diagnostic.find("explicit output caps changed"),std::string::npos);
+    configuration["archive_byte_cap"].SetUint64(configuration["forecast_bytes"].GetUint64()-1);
+    copy.Replace("configuration.json",configuration);copy.Rehash("configuration.json");
+    AcceptedReplay insufficient;EXPECT_NE(insufficient.Open(copy.directory).status,ReplayStatus::Ok);
+}
 TEST(AcceptedReplaySevenPart,RehashedActualConnectorSourceAndAcceptedRecordsCannotChange) {
     if(Actual().empty())GTEST_SKIP()<<"No completed actual seven-part connector archive supplied";
     AcceptedReplay original;const auto opened=original.Open(Actual());

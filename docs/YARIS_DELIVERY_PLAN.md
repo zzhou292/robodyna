@@ -75,8 +75,17 @@ requested four-step milestone; the full vehicle deliverable remains outstanding.
 
 ## Current delivery cadence
 
+The next major user milestone is now the **full original Yaris shell assembly
+impact**, with tires optional, longer physical deformation and stable colors
+per source part. The [full-shell execution plan](../../planning/FULL_YARIS_SHELL_DEMO.md)
+sets the source-driven module and test sequence. Initial physical target: 20 ms
+at source 35 mph, then 50 ms as the admitted contact/mechanics permit. Whole-shell
+startup/free flight and first contact precede that longer demo. The archive cap
+is now **2 GiB per run**; RAM stays at **20 GB**. The existing smaller component
+runs remain regression and diagnostic clients of those same modules.
+
 User priority: **functionality first, performance afterward**. The next
-engineering objective is a larger connected Yaris front structure with its
+engineering objective is the full selected Yaris shell assembly with its
 required mechanics and contact. The existing seven-part impact through roughly
 2 ms remains a video/diagnostic checkpoint, without delaying source integration.
 Run source/connection integration, needed contact, and independent correctness/
@@ -84,10 +93,10 @@ replay work in parallel. Profiling and throughput optimization are deferred.
 
 | Next milestone | Work and ownership | Exit evidence |
 | --- | --- | --- |
-| Integrate the next vehicle load path | Audit and integrate the next complete original attachment toward the front structure, including actual connections, released supports and required mechanics. Reuse TL shell, rigid-group and TYPE25 contributors through the same CUDA owner. | Authenticated source selection, correct source units and combined mass/inertia, physically loaded connection tests and shared-step rejection/retry. |
-| Admit the larger source assembly | Extend node/shell/connector/contact/output capacities only as needed by the selected source. The current case uses 959 of 1,024 qualified shell slots. | Complete source coverage, bounded storage, meaningful capacity/rejection tests and measured memory within the existing workstation allowance. |
+| Compile the full shell and its load paths | Audit every retained original shell, material/section and connection, including explicit tire/nonshell exclusions and released interfaces. Reuse TL shell, rigid-group and TYPE25 contributors and add required beam/tie/material branches through the same CUDA owner. | Authenticated complete source selection, correct units and combined mass/inertia, loaded connection tests and shared-step rejection/retry. |
+| Admit the full selected shell assembly | Extend node/shell/connector/contact/output capacities to actual source counts. The current component uses 959 of 1,024 qualified shell slots; larger owner and contributor gates are independent. | Complete source coverage, bounded storage, meaningful capacity/rejection tests and measured memory within the existing workstation allowance; full-shell free flight. |
 | Support the needed folding contact | Implement required self-contact, feature/edge handling, thickness and friction in TL collision modules, reusing existing geometry/query/law utilities. | Loaded shell/contact cases, force/moment balance, crossing/sliding tests and failed-step preservation before assembly integration. |
-| Extend and visualize connected crushing | Advance the existing case toward 2 ms and grow the source-connected assembly; target 5 ms after the required mechanics/contact domain is qualified. | Accounted load paths, stable accepted histories, force/plasticity diagnostics and inspected physical-scale videos. |
+| Extend and visualize full-shell crushing | Integrate whole-shell first contact, then progress through 5 ms toward a 20 ms source-speed impact and later 50 ms. Keep smaller cases as targeted integration/regression checks. | Accounted load paths, stable accepted histories, force/plasticity diagnostics and inspected physical-scale videos with distinct part colors. |
 | Verify alongside implementation | Extend the existing comparator with connector phase, motion, force/couple, signed work and combined M/J. Use selected smaller-step runs where a changed mechanism or unresolved response requires them. | Meaningful positive/negative fixtures and matching-time comparisons without mixing phases or inferring convergence from matching totals alone. Until qualified, the current comparator rejects seven-part archives. |
 
 The [performance backlog](../../planning/PERFORMANCE_NEXT_INTEGRATION.md) remains
