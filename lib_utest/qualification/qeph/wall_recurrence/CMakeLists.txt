@@ -132,3 +132,18 @@ target_compile_features(qeph_wall_screen_selection_check PRIVATE cxx_std_17)
 target_compile_options(qeph_wall_screen_selection_check PRIVATE -fno-fast-math -ffp-contract=off)
 add_test(NAME qeph_wall_screen_selection_check COMMAND qeph_wall_screen_selection_check)
 set_tests_properties(qeph_wall_screen_selection_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)
+
+# Read one authenticated derived archive into compact selection operands.
+# Reconstruction reuses owning model/numeric checks without repeated solves.
+add_library(qeph_wall_derived_read STATIC
+  WallDerivedRead.cpp WallDerivedReadContext.cpp WallDerivedReadInventory.cpp
+  WallDerivedReadNumerics.cpp WallDerivedReadAmplitude.cpp WallDerivedReadChecks.cpp)
+target_link_libraries(qeph_wall_derived_read PUBLIC qeph_wall_job_report qeph_wall_screen_selection)
+target_compile_features(qeph_wall_derived_read PUBLIC cxx_std_17)
+target_compile_options(qeph_wall_derived_read PRIVATE -fno-fast-math -ffp-contract=off)
+add_executable(qeph_wall_derived_read_check WallDerivedReadTest.cpp WallDerivedReadTestFixture.cpp)
+target_link_libraries(qeph_wall_derived_read_check PRIVATE qeph_wall_derived_read GTest::gtest_main)
+target_compile_features(qeph_wall_derived_read_check PRIVATE cxx_std_17)
+target_compile_options(qeph_wall_derived_read_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME qeph_wall_derived_read_check COMMAND qeph_wall_derived_read_check)
+set_tests_properties(qeph_wall_derived_read_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)
