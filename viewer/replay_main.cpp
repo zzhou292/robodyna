@@ -121,9 +121,12 @@ class ReplayOverlay : public chrono::vsg3d::ChGuiComponentVSG {
                 if(info_.source_plasticity) {
                     ImGui::Text("Initial speed: %.3g m/s | deformation scale: 1x",info_.source_initial_speed_m_per_s);
                     PlasticColorLegend(info_.plastic_strain_color_max);
-                    ImGui::TextUnformatted(info_.kind==crash::output::ReplayKind::SourceAssemblyWall
-                        ? "Six internal rigid groups active; external connections released"
-                        : "Isolated source part; vehicle attachments not included");
+                    if(info_.kind==crash::output::ReplayKind::SourceAssemblyWall && info_.source_assembly) {
+                        const auto& assembly=*info_.source_assembly;
+                        ImGui::Text("%zu source parts | %zu shells | %zu internal rigid groups",
+                                    assembly.part_ids.size(),assembly.parents,assembly.groups);
+                        ImGui::TextUnformatted("External connections released");
+                    } else ImGui::TextUnformatted("Isolated source part; vehicle attachments not included");
                 } else ImGui::TextUnformatted("Experimental LAW1; source attachments unapplied");
                 if(!info_.horizon_complete)ImGui::TextUnformatted("Accepted prefix only | requested horizon stopped early");
             }
