@@ -31,7 +31,8 @@ Report SourceAssemblyWallCase::Impl::Initialize() {
         const double x[]{native.position.x,native.position.y,native.position.z};
         for(unsigned a=0;a<3;++a) {initial.fields.x[3*n+a]=x[a];initial.fields.v[3*n+a]=velocity[a];}
         initial.fields.orientation[4*n]=1;
-        inverse_mass[n]=1/native.native.mass;inverse_inertia[n]=1/native.native.isotropic_inertia;
+        const auto coefficients=bindings.coefficients(n);
+        inverse_mass[n]=1/coefficients.mass;inverse_inertia[n]=1/coefficients.isotropic_inertia;
     }
     fe::NodalStateConfig nc;nc.node_count=nodes();nc.fixed_dt=config.fixed_dt;
     nc.capture_force_stage_accelerations=config.observe_force_stage;
@@ -46,19 +47,24 @@ Report SourceAssemblyWallCase::Impl::Initialize() {
     t::T3BatchConfig tc;tc.owner=qc.owner;tc.element_count=triangles();
     tc.configuration_id=qc.configuration_id;tc.qualification_id=qc.qualification_id;tc.usage=t::BatchUsage::CoupledForces;
     tc.max_device_bytes=config.storage.t3_device_bytes;tc.storage_limits=qc.storage_limits;tc.startup=qc.startup;
-    r=QReport(qeph.InitializeJoined(qc,b,bindings.materials()));if(!r)return r;
-    r=TReport(t3.InitializeJoined(tc,b,bindings.materials()));if(!r)return r;
+    const auto* mass=bindings.combined_mass();
+    r=QReport(mass?qeph.InitializeJoined(qc,b,bindings.materials(),*mass):qeph.InitializeJoined(qc,b,bindings.materials()));if(!r)return r;
+    r=TReport(mass?t3.InitializeJoined(tc,b,bindings.materials(),*mass):t3.InitializeJoined(tc,b,bindings.materials()));if(!r)return r;
+    r=InitializeConnector();if(!r)return r;
     fe::NodalTrialToken initial_token;fe::NodalAssemblyView initial_view;
     r=Convert(owner.BeginTrial(&initial_token,&initial_view));if(!r)return r;
     r=QReport(qeph.AssembleAccepted(owner,initial_view));if(!r)return Stop(r);
     r=TReport(t3.AssembleAccepted(owner,initial_view));if(!r)return Stop(r);
+    r=AssembleConnector(initial_view);if(!r)return Stop(r);
     Discard();
-    r=Convert(publication.Initialize(owner,qeph,t3,config.storage.publication));if(!r)return r;
+    r=Convert(connector?publication.Initialize(owner,qeph,t3,connector->batch,config.storage.publication):
+                        publication.Initialize(owner,qeph,t3,config.storage.publication));if(!r)return r;
     r=Convert(owner.CopyAccepted(initial.fields.buffer(),&initial.diagnostics.stamp));if(!r)return r;
     r=Convert(owner.CopyAcceptedRigidGroups({initial.fields.groups.data(),groups()},&initial.group_stamp));if(!r)return r;
     if(!fe::trial_identity::SameStamp(initial.group_stamp,initial.diagnostics.stamp))
         return Failure(Status::ComponentFailure,"Initial source group and nodal stamps disagree");
     r=Convert(publication.CopyAcceptedDiagnostics(initial.diagnostics.stamp,&initial.diagnostics.shells));if(!r)return r;
+    r=ReadInitialConnector();if(!r)return r;
     r=QReport(qeph.CopyAcceptedResults(initial.diagnostics.stamp,initial.parents.qeph.data(),quads(),&initial.diagnostics.shells.qeph));if(!r)return r;
     r=TReport(t3.CopyAcceptedResults(initial.diagnostics.stamp,initial.parents.t3.data(),triangles(),&initial.diagnostics.shells.t3));if(!r)return r;
     r=QReport(qeph.CopyAcceptedSectionHistory(initial.diagnostics.stamp,initial.parents.qsection.data(),quads(),&initial.diagnostics.shells.qeph));if(!r)return r;

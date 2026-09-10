@@ -5,6 +5,9 @@
 #include <cstdint>
 
 namespace crash::cases::source_assembly_dynamics {
+struct ConnectorStorageLimits {
+    std::size_t max_connections=1024,max_device_bytes=2*1024*1024,max_host_bytes=8*1024*1024;
+};
 struct DeformationLimits {
     double maximum_displacement=0,maximum_rotation=0,maximum_rotation_increment=0;
     double maximum_strain=0,maximum_thickness_curvature=0;
@@ -19,6 +22,7 @@ struct StorageLimits {
     std::size_t owner_device_bytes=1024*1024,qeph_device_bytes=4*1024*1024,t3_device_bytes=4*1024*1024;
     tl::fea::ShellPublicationLimits publication{2048,128*1024,1024*1024};
     source_assembly::SourceAssemblyWallDeviceLimits contact{};
+    ConnectorStorageLimits connector;
 };
 enum class RotationDomain : std::uint8_t { NodalQuaternion,NativeShellGeometryV1 };
 struct Config {

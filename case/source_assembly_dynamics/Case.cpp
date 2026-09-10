@@ -20,6 +20,22 @@ Report SourceAssemblyWallCase::Initialize(const source_assembly::SourceAssemblyB
        b.source().data().identity.bytes!=other.source().data().identity.bytes)
         return Failure(Status::SourceMismatch,"Wall, material and group preparation must retain the same complete source");
     const auto n=s.node_count(),nq=s.qeph_count(),nt=s.t3_count();const auto& cap=config.storage;
+    const auto* connectors=b.connectors();const auto* other_connectors=other.connectors();
+    if(bool(connectors)!=bool(other_connectors)||bool(b.combined_mass())!=bool(connectors)||
+       (connectors&&(!other.combined_mass()||!connectors->Matches(*other_connectors)||
+                    !b.combined_mass()->Matches(*other.combined_mass()))))
+        return Failure(Status::SourceMismatch,"Wall setup and dynamics retain different complete connector bindings");
+    if(connectors) {
+        const auto& limits=cap.connector;
+        if(!limits.max_connections||limits.max_connections>1024||connectors->connection_count()>limits.max_connections||
+           !limits.max_device_bytes||limits.max_device_bytes>2*1024*1024||
+           !limits.max_host_bytes||limits.max_host_bytes>8*1024*1024)
+            return Failure(Status::ResourceLimit,"Source connectors exceed their explicit resident budget");
+        const auto reserved=cap.owner_device_bytes+cap.qeph_device_bytes+cap.t3_device_bytes+
+            cap.publication.max_device_bytes+cap.contact.max_device_bytes;
+        if(reserved>cap.max_device_bytes||limits.max_device_bytes>cap.max_device_bytes-reserved)
+            return Failure(Status::ResourceLimit,"Source connector reserve exceeds the total device budget");
+    }
     if(config.observe_qeph_spin_node) {
         const auto selected=observation::CheckQephSpinSource(b,config.observe_qeph_spin_node);
         if(!selected)return Convert(selected);
@@ -47,6 +63,10 @@ Report SourceAssemblyWallCase::Initialize(const source_assembly::SourceAssemblyB
        (!budget.Append<NativeRotationReferences>(1,ignored)||!budget.Append<NativeRotationReference>(nq+nt,ignored)||
         !budget.Append<std::uint8_t>(n,ignored)))
         return Failure(Status::ResourceLimit,"Source-native rotation reference exceeds its startup host budget");
+    if(connectors&&(!budget.Append<ConnectorWorkspace>(1,ignored)||
+       !budget.Append<fe::type25::Evaluation>(2*connectors->connection_count(),ignored)||
+       !budget.Append<std::uint8_t>(cap.connector.max_host_bytes,ignored)))
+        return Failure(Status::ResourceLimit,"Connector captures and resident host reserve exceed the total host budget");
     try {
         auto next=std::make_unique<Impl>(b,setup,config,budget.bytes(),timing_options);
         if(config.rotation_domain==RotationDomain::NativeShellGeometryV1) {
@@ -88,6 +108,11 @@ const Diagnostics* SourceAssemblyWallCase::diagnostics() const noexcept { return
 ContactView SourceAssemblyWallCase::accepted_contact() const noexcept {
     return impl_&&impl_->accepted().diagnostics.has_interval?impl_->accepted().wall.view():ContactView{};
 }
+ConnectorView SourceAssemblyWallCase::accepted_connectors() const noexcept {
+    if(!impl_||!impl_->connector)return {};
+    const auto& values=impl_->connector->results[impl_->accepted_slot];
+    return {&impl_->accepted().diagnostics.shells.connector,values.data(),values.size()};
+}
 const observation::ForceStageSummary* SourceAssemblyWallCase::accepted_force_stage() const noexcept {
     return impl_&&impl_->accepted().has_force_stage?&impl_->accepted().force_stage:nullptr;
 }
@@ -100,6 +125,7 @@ fe::NodalAllocationInfo SourceAssemblyWallCase::Impl::Allocations() const noexce
     for(const auto a:{owner.allocations(),qeph.allocations(),t3.allocations(),publication.allocations(),wall.allocations()}) {
         sum.device_bytes+=a.device_bytes;sum.device_allocations+=a.device_allocations;
     }
+    if(connector) {const auto a=connector->batch.allocations();sum.device_bytes+=a.device_bytes;sum.device_allocations+=a.device_allocations;}
     return sum;
 }
 fe::NodalAllocationInfo SourceAssemblyWallCase::allocations() const noexcept { return impl_?impl_->Allocations():fe::NodalAllocationInfo{}; }

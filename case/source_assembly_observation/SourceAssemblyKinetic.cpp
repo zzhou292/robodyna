@@ -24,14 +24,16 @@ Report ObserveKinetic(const SourceAssemblyBindings& b,fe::HostNodalKinematicsVie
     }
     NativeKineticSums free{},all{};
     for(std::size_t n=0;n<v.node_count;++n) {
-        const auto report=AddNativeMotion(b.shells().nodes()[n].native,Motion(v,n),n,all,membership[n]?nullptr:&free);
+        const auto report=AddNativeMotion(b.coefficients(n),Motion(v,n),n,all,membership[n]?nullptr:&free);
         if(!report) return report;
     }
     auto& ordinary=next.ordinary; AssignNative(free,ordinary);
+    next.connector={static_cast<double>(free[4]),static_cast<double>(free[5])};
     next.native_total=ordinary.total+next.grouped_members.total;
     next.effective_total=ordinary.total+next.groups.total;
-    const double supplied[]{published.translation,published.rotation,published.physical_isotropic,published.added_isotropic};
-    for(unsigned c=0;c<4;++c) {
+    const double supplied[]{published.translation,published.rotation,published.physical_isotropic,published.added_isotropic,
+                            published.connector_translation,published.connector_rotation};
+    for(unsigned c=0;c<6;++c) {
         // Independent long-double physical-node sum versus native ordered binary64
         // reduction. This only checks bookkeeping, not the model's physical energy.
         const long double residual=all[c]-supplied[c];

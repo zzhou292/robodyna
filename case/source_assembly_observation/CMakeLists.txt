@@ -27,3 +27,15 @@ target_compile_options(robo_dyna_source_assembly_spin_fields_check PRIVATE -fno-
 add_test(NAME source_assembly_spin_fields COMMAND robo_dyna_source_assembly_spin_fields_check)
 set_tests_properties(source_assembly_spin_fields PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60
   ENVIRONMENT "ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY=${ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY}")
+set(ROBO_DYNA_SOURCE_BRACKET_INVENTORY "" CACHE FILEPATH "Frozen authenticated seven-part source inventory")
+if(ROBO_DYNA_SOURCE_BRACKET_INVENTORY)
+  if(NOT EXISTS "${ROBO_DYNA_SOURCE_BRACKET_INVENTORY}")
+    message(FATAL_ERROR "The explicit bracket observation fixture is missing")
+  endif()
+  add_executable(robo_dyna_source_bracket_observation_check tests/SourceBracketObservationTest.cpp)
+  target_link_libraries(robo_dyna_source_bracket_observation_check PRIVATE robo_dyna_source_assembly_observation GTest::gtest_main)
+  target_compile_options(robo_dyna_source_bracket_observation_check PRIVATE -fno-fast-math -ffp-contract=off)
+  add_test(NAME source_bracket_observation COMMAND robo_dyna_source_bracket_observation_check)
+  set_tests_properties(source_bracket_observation PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60
+    ENVIRONMENT "ROBO_DYNA_SOURCE_BRACKET_INVENTORY=${ROBO_DYNA_SOURCE_BRACKET_INVENTORY}")
+endif()

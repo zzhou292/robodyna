@@ -2,6 +2,7 @@
 #include "Case.h"
 #include "ForceStageWorkspace.h"
 #include "NativeRotation.h"
+#include "ConnectorWorkspace.h"
 #include "lib_src/elements/ShellBatchPlasticity.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
 #include <array>
@@ -92,6 +93,7 @@ struct SourceAssemblyWallCase::Impl {
          applied_force(3*nodes()),applied_couple(3*nodes()),wall_faces(w.placed_wall()->view().triangle_count),
          force_capture(c.observe_force_stage,nodes(),groups()),host_bytes(host_bytes),timer(timing_options) {
         if(c.observe_qeph_spin_node)spin=std::make_unique<std::array<observation::QephSpinObservation,2>>();
+        if(b.connectors())connector=std::make_unique<ConnectorWorkspace>(b.connectors()->connection_count());
     }
     const source_assembly::SourceAssemblyBindings bindings;
     const source_assembly::SourceAssemblyWallSetup setup;
@@ -100,6 +102,7 @@ struct SourceAssemblyWallCase::Impl {
     fe::FENodalState owner;
     q::QephBatch qeph;
     t::T3Batch t3;
+    std::unique_ptr<ConnectorWorkspace> connector;
     fe::ShellBatchPublication publication;
     contact::NodalWallContactDevice wall;
     std::array<Sample,2> sample;
@@ -130,6 +133,12 @@ struct SourceAssemblyWallCase::Impl {
     Report TReport(const t::BatchReport& r) const noexcept { return BatchReport(r,
         r.element<triangles()?bindings.shells().t3_source_id(r.element):0); }
     Report Initialize();
+    Report InitializeConnector();
+    Report ReadInitialConnector();
+    Report AssembleConnector(const fe::NodalAssemblyView&);
+    Report EvaluateConnector();
+    Report CheckConnector();
+    Report PreparePublication(fe::ShellBatchDiagnostics&);
     Report Prepare();
     Report Evaluate();
     Report Check();
@@ -141,7 +150,10 @@ struct SourceAssemblyWallCase::Impl {
     Report CheckForceStage();
     Report CheckQephSpin();
     Report Commit();
-    void Discard() noexcept { owner.Discard();publication.DiscardTrial();qeph.DiscardTrial();t3.DiscardTrial();wall.DiscardTrial(); }
+    void Discard() noexcept {
+        owner.Discard();publication.DiscardTrial();qeph.DiscardTrial();t3.DiscardTrial();wall.DiscardTrial();
+        if(connector)connector->batch.DiscardTrial();
+    }
     Report Stop(Report r) noexcept {
         timer.Measure<StepStage::DiscardTrial>([&] {Discard();return Success();});
         if(r.status==Status::DeviceFailure)poisoned=true;return r;

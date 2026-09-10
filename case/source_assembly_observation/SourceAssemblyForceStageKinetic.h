@@ -24,6 +24,7 @@ struct ForceStageSummary {
     double enclosing_time=0;
     rigid::MemberKineticChannels ordinary,grouped_members;
     rigid::AggregateKineticChannels groups;
+    ConnectorKineticChannels connector;
     double native_total=0,effective_total=0;
     // Sum group replacements directly; never subtract whole-assembly totals.
     double replacement=0;

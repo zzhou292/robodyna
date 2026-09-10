@@ -26,8 +26,8 @@ inline bool Finite(const rigid::AggregateKineticChannels& value) noexcept {
     for(auto field:AggregateFields) if(!std::isfinite(value.*field)) return false;
     return true;
 }
-using NativeKineticSums=std::array<long double,4>;
-inline Report AddNativeMotion(const fe::ShellBindingMass& m,rigid::MemberMotion motion,std::size_t node,
+using NativeKineticSums=std::array<long double,6>;
+inline Report AddNativeMotion(const fe::NodalMassPartitions& m,rigid::MemberMotion motion,std::size_t node,
                               NativeKineticSums& all,NativeKineticSums* ordinary=nullptr) noexcept {
     for(unsigned a=0;a<3;++a) {
         const long double speed=a==0?motion.velocity.x:a==1?motion.velocity.y:motion.velocity.z;
@@ -35,14 +35,15 @@ inline Report AddNativeMotion(const fe::ShellBindingMass& m,rigid::MemberMotion 
         if(!std::isfinite(speed) || !std::isfinite(omega))
             return {Status::NonfiniteResult,"Nonfinite nodal motion",SIZE_MAX,node,a};
         const long double values[]{.5L*m.mass*speed*speed,.5L*m.isotropic_inertia*omega*omega,
-                                  .5L*m.physical_inertia*omega*omega,.5L*m.added_inertia*omega*omega};
-        for(unsigned c=0;c<4;++c) {all[c]+=values[c]; if(ordinary) (*ordinary)[c]+=values[c];}
+                                  .5L*m.shell.physical_inertia*omega*omega,.5L*m.shell.added_inertia*omega*omega,
+                                  .5L*m.connector_mass*speed*speed,.5L*m.connector_inertia*omega*omega};
+        for(unsigned c=0;c<6;++c) {all[c]+=values[c]; if(ordinary) (*ordinary)[c]+=values[c];}
     }
     return Success();
 }
 inline void AssignNative(const NativeKineticSums& sum,rigid::MemberKineticChannels& out) noexcept {
     out.translation=sum[0]; out.native_rotation=sum[1];
     out.physical_rotation=sum[2]; out.added_rotation=sum[3];
-    out.total=sum[0]+sum[1]; out.inertia_partition_residual=sum[1]-sum[2]-sum[3];
+    out.total=sum[0]+sum[1]; out.inertia_partition_residual=(sum[1]-sum[2]-sum[3])-sum[5];
 }
 } // namespace crash::cases::source_assembly_observation::detail

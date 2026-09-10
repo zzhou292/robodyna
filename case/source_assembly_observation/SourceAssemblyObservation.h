@@ -19,10 +19,16 @@ struct Report {
     double residual = 0, roundoff_budget = 0;
     explicit operator bool() const noexcept { return status == Status::Ok; }
 };
+struct ConnectorKineticChannels {
+    // These contributions are already included in ordinary translation/native
+    // rotation. They are not shell physical J or artificial drilling J.
+    double translation=0,rotation=0;
+};
 struct KineticSummary {
     rigid::ObservationPhase phase;
     rigid::MemberKineticChannels ordinary, grouped_members;
     rigid::AggregateKineticChannels groups;
+    ConnectorKineticChannels connector;
     // Accumulate the disjoint ordinary-node and group partitions directly.
     // Native TOTAL J is authoritative; physical/added values are diagnostics.
     double native_total = 0, effective_total = 0;

@@ -18,22 +18,24 @@ struct Fields {
 inline fe::ShellBatchKinetic Kinetic(const SourceAssemblyBindings& b,const Fields& f) {
     fe::ShellBatchKinetic sum;
     for(std::size_t n=0;n<b.shells().node_count();++n) {
-        const auto& m=b.shells().nodes()[n].native;
+        const auto m=b.coefficients(n);
         for(unsigned a=0;a<3;++a) {
             const double v=f.v[3*n+a],w=f.w[3*n+a];
             sum.translation+=.5*m.mass*v*v; sum.rotation+=.5*m.isotropic_inertia*w*w;
-            sum.physical_isotropic+=.5*m.physical_inertia*w*w; sum.added_isotropic+=.5*m.added_inertia*w*w;
+            sum.physical_isotropic+=.5*m.shell.physical_inertia*w*w; sum.added_isotropic+=.5*m.shell.added_inertia*w*w;
+            sum.connector_translation+=.5*m.connector_mass*v*v;sum.connector_rotation+=.5*m.connector_inertia*w*w;
         }
     }
     return sum;
 }
 struct Fixture {
-    SourceAssemblyBindings bindings=SourceAssemblyBindings::Prepare(source_assembly::test::Load(),source_assembly::test::Options());
+    SourceAssemblyBindings bindings;
     Fields old{bindings.shells().node_count()},next{bindings.shells().node_count()};
     std::vector<fe::NodalRigidGroupSnapshot> old_groups,next_groups;
     std::vector<double> force=std::vector<double>(old.v.size()),couple=force,reaction=force,reaction_couple=force;
     fe::NodalStamp stamp;
-    Fixture() {
+    Fixture():Fixture(SourceAssemblyBindings::Prepare(source_assembly::test::Load(),source_assembly::test::Options())) {}
+    explicit Fixture(const SourceAssemblyBindings& b):bindings(b) {
         const auto& model=*bindings.rigid_groups();
         for(std::size_t n=0;n<old.v.size()/3;++n) old.v[3*n]=next.v[3*n]=8;
         for(std::size_t g=0;g<model.group_count();++g) {

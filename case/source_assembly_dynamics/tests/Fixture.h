@@ -16,6 +16,8 @@ struct SourceAssemblyDynamicsTestAccess {
     enum class RotationFault { OrdinaryQuaternion,RigidQuaternion,LastTriangleFrame };
     static Report CheckRotationTrial(SourceAssemblyWallCase&,RotationFault);
     static Report RejectSpin(SourceAssemblyWallCase&,bool bad_phase=false);
+    enum class ConnectorFault { Work,Phase,LastForce };
+    static Report RejectConnector(SourceAssemblyWallCase&,ConnectorFault);
 
     static const Sample& Accepted(const SourceAssemblyWallCase& c) { return c.impl_->accepted(); }
     static Report RejectLate(SourceAssemblyWallCase& c,Fault fault) {

@@ -24,7 +24,7 @@ Report ObserveNativeKick(const Input& in,const detail::Membership& members,Nativ
     // actual loads. The per-DOF budget includes binary64 endpoint rounding,
     // including sub-ULP kicks and zero-average reversals. No state is advanced.
     for(std::size_t n=0;n<in.before.node_count;++n) {
-        const auto& m=in.bindings->shells().nodes()[n].native;
+        const auto m=in.bindings->coefficients(n);
         for(unsigned dof=0;dof<6;++dof) {
             const bool rotation=dof>=3; const auto index=3*n+dof%3;
             const long double coefficient=rotation ? m.isotropic_inertia : m.mass;

@@ -43,10 +43,11 @@ Report Ordinary(const ForceStageInput& in,const detail::Membership& members,Forc
                                                          detail::Vector(in.angular_acceleration_xyz,n)};
         if(!rigid::force_stage_detail::Collocate(detail::Motion(in.before,n),acceleration,half,collocated))
             return {Status::NonfiniteResult,"Nonfinite ordinary force-stage motion",SIZE_MAX,n};
-        const auto report=detail::AddNativeMotion(in.bindings->shells().nodes()[n].native,collocated,n,sum);
+        const auto report=detail::AddNativeMotion(in.bindings->coefficients(n),collocated,n,sum);
         if(!report) return report;
     }
     detail::AssignNative(sum,next.ordinary);
+    next.connector={static_cast<double>(sum[4]),static_cast<double>(sum[5])};
     return detail::Success();
 }
 }
@@ -62,7 +63,8 @@ Report ObserveForceStage(const ForceStageInput& input,ForceStageSummary* output)
     next.native_total=next.ordinary.total+next.grouped_members.total;
     next.effective_total=next.ordinary.total+next.groups.total;
     if(!detail::Finite(next.ordinary) || !detail::Finite(next.grouped_members) || !detail::Finite(next.groups) ||
-       !std::isfinite(next.native_total) || !std::isfinite(next.effective_total) || !std::isfinite(next.replacement))
+       !std::isfinite(next.native_total) || !std::isfinite(next.effective_total) || !std::isfinite(next.replacement)||
+       !std::isfinite(next.connector.translation)||!std::isfinite(next.connector.rotation))
         return {Status::NonfiniteResult,"Force-stage kinetic reduction overflows"};
     *output=next;
     return detail::Success();

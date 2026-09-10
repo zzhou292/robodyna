@@ -29,6 +29,11 @@ struct ContactView {
     const std::uint64_t* wall_face=nullptr;
     std::size_t parent_count=0,node_count=0;
 };
+struct ConnectorView {
+    const tl::fea::type25::BatchDiagnostics* diagnostics=nullptr;
+    const tl::fea::type25::Evaluation* elements=nullptr;
+    std::size_t count=0;
+};
 // One app coordinator over the existing TL owner, grouped recurrence, two
 // native material batches, contact contributor and joined publication. Calls
 // serialize on the owner's stream. All candidate readback/observations precede
@@ -54,6 +59,7 @@ class SourceAssemblyWallCase {
     const Diagnostics* diagnostics() const noexcept;
     // No contact candidate exists at epoch zero: this view is empty then.
     ContactView accepted_contact() const noexcept;
+    ConnectorView accepted_connectors() const noexcept;
     // Empty initially/off. A completed force-stage sample becomes visible only
     // with its enclosing common commit; the sample itself is at base_time.
     const source_assembly_observation::ForceStageSummary* accepted_force_stage() const noexcept;

@@ -1,20 +1,7 @@
-#include "SourceAssemblyBindingTestSupport.h"
+#include "SourceBracketTestSupport.h"
 #include "case/source_assembly/SourceAssemblyInitialKinetic.h"
 
 namespace crash::cases::source_assembly::test {
-namespace {
-SourceAssemblyBindingOptions BracketOptions() {
-    auto value=Options();
-    value.spotweld=source::SpotweldDeclaration{
-        source::SpotweldPolicy::OpenRadiossTonneMillimetreSecondDirectImport,383348001108};
-    return value;
-}
-source::SourceAssembly BracketSource() {
-    const auto* path=std::getenv("ROBO_DYNA_SOURCE_BRACKET_INVENTORY");
-    output::Require(path&&*path,"Explicit bracket source inventory required");
-    return source::SourceAssembly::Read(path,source::PinnedYarisSevenPartInventory());
-}
-}
 TEST(SourceBracketComposition, CompleteSourceUsesExactlyOnceNativeEndpointContributions) {
     const auto b=SourceAssemblyBindings::Prepare(BracketSource(),BracketOptions());
     ASSERT_NE(b.connectors(),nullptr);ASSERT_NE(b.combined_mass(),nullptr);

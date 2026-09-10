@@ -34,3 +34,12 @@ target_compile_options(robo_dyna_source_assembly_dynamics_check PRIVATE
 add_test(NAME source_assembly_dynamics COMMAND robo_dyna_source_assembly_dynamics_check)
 set_tests_properties(source_assembly_dynamics PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 600
   ENVIRONMENT "ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY=${ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY};ROBO_DYNA_SOURCE_ASSEMBLY_WALL=${ROBO_DYNA_SOURCE_ASSEMBLY_WALL}")
+set(ROBO_DYNA_SOURCE_BRACKET_INVENTORY "" CACHE FILEPATH "Frozen authenticated seven-part source inventory")
+if(ROBO_DYNA_SOURCE_BRACKET_INVENTORY)
+  if(NOT EXISTS "${ROBO_DYNA_SOURCE_BRACKET_INVENTORY}")
+    message(FATAL_ERROR "The explicit bracket dynamics fixture is missing")
+  endif()
+  target_sources(robo_dyna_source_assembly_dynamics_check PRIVATE tests/ConnectorAccess.cpp tests/SourceBracketCaseTest.cpp)
+  set_property(TEST source_assembly_dynamics APPEND PROPERTY ENVIRONMENT
+    "ROBO_DYNA_SOURCE_BRACKET_INVENTORY=${ROBO_DYNA_SOURCE_BRACKET_INVENTORY}")
+endif()

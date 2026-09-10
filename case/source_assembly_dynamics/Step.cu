@@ -38,6 +38,7 @@ Report SourceAssemblyWallCase::Impl::Prepare() {
     auto r=timer.Measure<StepStage::BeginTrial>([&] {return Convert(owner.BeginTrial(&token,&assembly));});if(!r)return r;
     r=timer.Measure<StepStage::AssembleQeph>([&] {return QReport(qeph.AssembleAccepted(owner,assembly));});if(!r)return r;
     r=timer.Measure<StepStage::AssembleT3>([&] {return TReport(t3.AssembleAccepted(owner,assembly));});if(!r)return r;
+    r=AssembleConnector(assembly);if(!r)return r;
     // Contact is last so its certificate includes the actual preceding native
     // shell-force additions. Keep this order when observing applied work.
     r=timer.Measure<StepStage::AssembleWall>([&] {return Convert(wall.AssembleAccepted(owner,assembly,&base_contact));});if(!r)return r;
@@ -75,11 +76,12 @@ Report SourceAssemblyWallCase::Impl::Evaluate() {
     r=timer.Measure<StepStage::ReadT3Results>([&] {return TReport(t3.CopyPreparedResults(d.t3,next.parents.t3.data(),triangles()));});if(!r)return r;
     r=timer.Measure<StepStage::ReadQephSections>([&] {return QReport(qeph.CopyPreparedSectionHistory(d.qeph,next.parents.qsection.data(),quads()));});if(!r)return r;
     r=timer.Measure<StepStage::ReadT3Sections>([&] {return TReport(t3.CopyPreparedSectionHistory(d.t3,next.parents.tsection.data(),triangles()));});if(!r)return r;
+    r=EvaluateConnector();if(!r)return r;
     contact::NodalWallDiagnostics contact_diagnostics;
     r=timer.Measure<StepStage::EvaluateWall>([&] {return Convert(wall.EvaluateCandidate(owner,token,prepared,&contact_diagnostics));});if(!r)return r;
     r=timer.Measure<StepStage::ReadWallResults>([&] {return Convert(wall.CopyResults(contact_diagnostics,next.wall.buffer()));});if(!r)return r;
     fe::ShellBatchDiagnostics common;
-    r=timer.Measure<StepStage::PreparePublication>([&] {return Convert(publication.Prepare(owner,token,d.qeph,d.t3,&common));});if(!r)return r;
+    r=timer.Measure<StepStage::PreparePublication>([&] {return PreparePublication(common);});if(!r)return r;
     d=common;return Success();
 }
 Report SourceAssemblyWallCase::Impl::CheckMotion() {
@@ -94,6 +96,7 @@ Report SourceAssemblyWallCase::Impl::CheckMotion() {
 }
 Report SourceAssemblyWallCase::Impl::Check() {
     auto r=timer.Measure<StepStage::CheckShells>([&] {return CheckShells();});if(!r)return r;
+    r=CheckConnector();if(!r)return r;
     r=timer.Measure<StepStage::CheckContact>([&] {return CheckContact();});if(!r)return r;
     r=timer.Measure<StepStage::CheckMotion>([&] {return CheckMotion();});if(!r)return r;
     r=CheckForceStage();if(!r)return r;
@@ -112,6 +115,7 @@ Report SourceAssemblyWallCase::Impl::Commit() {
     next.group_stamp=next.diagnostics.stamp;
     next.diagnostics.shells.qeph.phase=q::BatchPhase::Accepted;
     next.diagnostics.shells.t3.phase=t::BatchPhase::Accepted;
+    if(connector)next.diagnostics.shells.connector.phase=fe::type25::BatchPhase::Accepted;
     accepted_slot=1-accepted_slot;
     return Success();
 }

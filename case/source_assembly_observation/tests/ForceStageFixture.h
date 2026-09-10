@@ -6,7 +6,9 @@ namespace crash::cases::source_assembly_observation::test {
 struct ForceFixture : Fixture {
     Fields acceleration{stamp.node_count};
     std::vector<fe::NodalRigidGroupAccelerationSnapshot> group_acceleration;
-    ForceFixture() {
+    ForceFixture() { Initialize(); }
+    explicit ForceFixture(const SourceAssemblyBindings& b):Fixture(b) { Initialize(); }
+    void Initialize() {
         for(std::size_t n=0;n<stamp.node_count;++n) {
             acceleration.v[3*n]=1e7*(1+n%7); acceleration.v[3*n+1]=-2e7; acceleration.v[3*n+2]=3e7;
             acceleration.w[3*n]=2e7; acceleration.w[3*n+1]=1e7*(1+n%3); acceleration.w[3*n+2]=-1e7;
