@@ -1,6 +1,7 @@
 #pragma once
 #include "WallRawReport.h"
 #include <charconv>
+#include <cmath>
 #include <string_view>
 #include <utility>
 
@@ -34,6 +35,35 @@ inline std::string Text(const io::Value& object,const char* name) {
 inline fs::path Path(std::string_view value) {
   io::Require(!value.empty()&&value.size()<=4096,"Missing or oversized path argument");
   return fs::path(value);
+}
+struct RawInput {
+  fs::path directory;
+  unsigned cells=0;
+  double normal_velocity=0;
+  std::string index_sha256,provenance_sha256;
+  std::size_t bytes=0;
+};
+// The analysis and selection commands consume the same six-field raw binding.
+// A JSON double preserves negative-zero information that integer parsing loses.
+inline RawInput ParseRawInput(const io::Value& raw) {
+  io::Require(raw.IsObject()&&raw.MemberCount()==6&&raw.HasMember("directory")&&raw.HasMember("cells")&&
+    raw.HasMember("normal_velocity_m_s")&&raw.HasMember("index_sha256")&&
+    raw.HasMember("provenance_sha256")&&raw.HasMember("bytes"),"Raw binding requires exactly its declared fields");
+  io::Require(raw["cells"].IsUint()&&(raw["cells"].GetUint()==1||raw["cells"].GetUint()==2),
+    "Raw cells must be the JSON unsigned integer 1 or 2");
+  io::Require(raw["normal_velocity_m_s"].IsDouble(),"Raw normal velocity must be a JSON double -8.0, 0.0 or 8.0");
+  const auto velocity=raw["normal_velocity_m_s"].GetDouble();
+  io::Require(std::isfinite(velocity)&&FrozenVelocity(velocity)&&!(velocity==0&&std::signbit(velocity)),
+    "Raw normal velocity is outside the frozen tuple or is negative zero");
+  io::Require(raw["bytes"].IsUint64()&&raw["bytes"].GetUint64()>0&&raw["bytes"].GetUint64()<=ScreenSetByteCap,
+    "Raw bytes must be a positive bounded JSON unsigned integer");
+  RawInput result; result.cells=raw["cells"].GetUint(); result.normal_velocity=velocity;
+  result.index_sha256=Text(raw,"index_sha256"); result.provenance_sha256=Text(raw,"provenance_sha256");
+  io::Require(Hash(result.index_sha256)&&Hash(result.provenance_sha256),"Raw hashes must be 64 lowercase hexadecimal characters");
+  result.bytes=static_cast<std::size_t>(raw["bytes"].GetUint64());
+  const auto path=Path(Text(raw,"directory"));
+  io::Require(fs::is_directory(fs::symlink_status(path)),"Raw input must be a real directory");
+  result.directory=fs::canonical(path); return result;
 }
 inline void NewDirectory(const fs::path& destination) {
   io::Require(!fs::exists(fs::symlink_status(destination)),"Output directory must be new, including absent symlinks");
