@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "ShellBatchBinding.h"
+#include "ShellBindingIdentityIndex.h"
 #include "qeph/QephStartup.h"
 #include "t3/T3Startup.h"
 #include <cstring>
@@ -7,6 +8,7 @@
 
 namespace tl::fea {
 namespace {
+using namespace shell_binding_detail;
 static_assert(sizeof(double)==sizeof(std::uint64_t)&&std::numeric_limits<double>::is_iec559,
               "Shell inventory requires the qualified binary64 representation");
 static_assert(sizeof(std::size_t)<=sizeof(std::uint64_t),"Global indices fit the identity words");
@@ -41,7 +43,7 @@ ShellBindingReport CheckConnectivity(const std::array<std::size_t,N>& indices,
 template<class Input,std::size_t N>
 ShellBindingReport RegisterNodes(const Input& input,const std::array<std::size_t,N>& indices,
     ShellBindingFamily family,ShellBindingNode* nodes,
-    bool* seen,std::size_t node_count) noexcept {
+    bool* seen,const NodeIdentityIndex& identities,std::size_t first_occurrence) noexcept {
   for(std::size_t i=0;i<N;++i) {
     const auto n=indices[i];
     const std::uint64_t id=input.node_ids[i]; // Widen QEPH, preserve all T3 bits.
@@ -51,9 +53,8 @@ ShellBindingReport RegisterNodes(const Input& input,const std::array<std::size_t
       if(!SamePosition(nodes[n].position,input.position[i]))
         return Error(ShellBindingStatus::PositionMismatch,"Shared coordinate bits differ",family,i,n);
     } else {
-      for(std::size_t other=0;other<node_count;++other)
-        if(seen[other]&&nodes[other].source_id==id)
-          return Error(ShellBindingStatus::IdentityMismatch,"Source ID maps to distinct global nodes",family,i,n);
+      if(identities.First(id)!=first_occurrence+i)
+        return Error(ShellBindingStatus::IdentityMismatch,"Source ID maps to distinct global nodes",family,i,n);
       nodes[n].source_id=id; nodes[n].position=input.position[i]; seen[n]=true;
     }
   }
@@ -161,14 +162,17 @@ ShellBindingReport ShellBatchBinding::InitializeImpl(const ShellBatchCollectionI
   if(prepared_) return Error(ShellBindingStatus::AlreadyInitialized,"Shell binding is immutable after initialization");
   // Check counts before arithmetic or borrowed-range access. No caller storage
   // is read for a null/mismatched/oversized range.
-  if(input.node_count<3||input.node_count>MaxShellHostNodes||
-     input.qeph_count>MaxShellHostParents||input.t3_count>MaxShellHostParents||
+  const bool vehicle=limits.max_parents>MaxShellHostParents||limits.max_nodes>MaxShellHostNodes;
+  const auto parent_bound=vehicle?MaxVehicleShellBindingParents:MaxShellHostParents;
+  const auto node_bound=vehicle?MaxVehicleShellBindingNodes:MaxShellHostNodes;
+  if(input.node_count<3||input.node_count>node_bound||
+     input.qeph_count>parent_bound||input.t3_count>parent_bound||
      input.qeph_count+input.t3_count==0||
-     input.qeph_count+input.t3_count>MaxShellHostParents||
+     input.qeph_count+input.t3_count>parent_bound||
      (input.qeph_count==0)!=(input.qeph==nullptr)||
      (input.t3_count==0)!=(input.t3==nullptr))
     return Error(ShellBindingStatus::InvalidInput,"Invalid bounded typed collection ranges or node count");
-  if(limits.max_parents>MaxShellHostParents||limits.max_nodes>MaxShellHostNodes||
+  if(limits.max_parents>MaxVehicleShellBindingParents||limits.max_nodes>MaxVehicleShellBindingNodes||
      input.node_count>limits.max_nodes||input.qeph_count+input.t3_count>limits.max_parents)
     return Error(expanded?ShellBindingStatus::ResourceLimit:ShellBindingStatus::InvalidInput,
                  "Collection exceeds host admission limits");
@@ -178,6 +182,10 @@ ShellBindingReport ShellBatchBinding::InitializeImpl(const ShellBatchCollectionI
     decltype(data_.inventory.words_)::ExtraBytes(words);
   if(bytes>limits.max_owned_bytes)
     return Error(ShellBindingStatus::ResourceLimit,"Owned host binding exceeds byte admission");
+  if(limits.max_owned_bytes>MaxVehicleShellBindingOwnedBytes||
+     limits.max_startup_scratch_bytes>MaxVehicleShellBindingScratchBytes||
+     ScratchBytes(input.qeph_count,input.t3_count,input.node_count,legacy)>limits.max_startup_scratch_bytes)
+    return Error(ShellBindingStatus::ResourceLimit,"Host binding exceeds bounded startup scratch or byte limits");
   try { return Build(input,legacy); }
   catch(const std::bad_alloc&) {
     return Error(ShellBindingStatus::ResourceLimit,"Host binding startup allocation failed");
@@ -187,14 +195,15 @@ ShellBindingReport ShellBatchBinding::Build(const ShellBatchCollectionInput& inp
   auto at=[](ShellBindingReport report,std::size_t parent) {
     report.parent_index=parent; return report;
   };
-  std::array<std::uint64_t,MaxShellHostParents> parent_ids{};
-  std::size_t id_count=0;
-  auto parent_identity=[&](std::uint64_t id,ShellBindingFamily family) {
+  ParentIdentityIndex parent_ids;
+  if(!legacy) parent_ids.Prepare(input.qeph_count+input.t3_count,[&](std::size_t i) {
+    return i<input.qeph_count?input.qeph[i].source_parent_id:input.t3[i-input.qeph_count].source_parent_id;
+  });
+  auto parent_identity=[&](std::uint64_t id,ShellBindingFamily family,std::size_t occurrence) {
     if(!legacy) {
       if(id==0) return Error(ShellBindingStatus::InvalidParentIdentity,"Collection parent ID is zero",family);
-      for(std::size_t i=0;i<id_count;++i) if(parent_ids[i]==id)
+      if(parent_ids.First(id)!=occurrence)
         return Error(ShellBindingStatus::InvalidParentIdentity,"Collection parent ID is repeated",family);
-      parent_ids[id_count++]=id;
     }
     return ShellBindingReport{};
   };
@@ -203,13 +212,13 @@ ShellBindingReport ShellBatchBinding::Build(const ShellBatchCollectionInput& inp
   for(std::size_t i=0;i<input.qeph_count;++i) {
     auto report=CheckConnectivity(input.qeph[i].nodes,input.node_count,ShellBindingFamily::Qeph);
     if(report.status!=ShellBindingStatus::Success) return at(report,i);
-    report=parent_identity(input.qeph[i].source_parent_id,ShellBindingFamily::Qeph);
+    report=parent_identity(input.qeph[i].source_parent_id,ShellBindingFamily::Qeph,i);
     if(report.status!=ShellBindingStatus::Success) return at(report,i);
   }
   for(std::size_t i=0;i<input.t3_count;++i) {
     auto report=CheckConnectivity(input.t3[i].nodes,input.node_count,ShellBindingFamily::T3);
     if(report.status!=ShellBindingStatus::Success) return at(report,i);
-    report=parent_identity(input.t3[i].source_parent_id,ShellBindingFamily::T3);
+    report=parent_identity(input.t3[i].source_parent_id,ShellBindingFamily::T3,input.qeph_count+i);
     if(report.status!=ShellBindingStatus::Success) return at(report,i);
   }
   Data next;
@@ -235,15 +244,23 @@ ShellBindingReport ShellBatchBinding::Build(const ShellBatchCollectionInput& inp
     }
     parent.nodes=input.t3[i].nodes; parent.source_id=input.t3[i].source_parent_id;
   }
-  std::array<bool,MaxShellHostNodes> seen{};
+  NodeSeen seen; seen.Resize(next.node_count);
+  NodeIdentityIndex node_ids;
+  node_ids.Prepare(4*next.qeph_count+3*next.t3_count,[&](std::size_t i)->std::uint64_t {
+    if(i<4*next.qeph_count) return next.qeph[i/4].reference.input.node_ids[i%4];
+    const auto t=i-4*next.qeph_count;
+    return next.t3[t/3].reference.input.node_ids[t%3];
+  });
   for(std::size_t i=0;i<next.qeph_count;++i) {
     const auto& parent=next.qeph[i];
-    const auto report=RegisterNodes(parent.reference.input,parent.nodes,ShellBindingFamily::Qeph,next.nodes.data(),seen.data(),next.node_count);
+    const auto report=RegisterNodes(parent.reference.input,parent.nodes,ShellBindingFamily::Qeph,
+        next.nodes.data(),seen.data(),node_ids,4*i);
     if(report.status!=ShellBindingStatus::Success) return at(report,i);
   }
   for(std::size_t i=0;i<next.t3_count;++i) {
     const auto& parent=next.t3[i];
-    const auto report=RegisterNodes(parent.reference.input,parent.nodes,ShellBindingFamily::T3,next.nodes.data(),seen.data(),next.node_count);
+    const auto report=RegisterNodes(parent.reference.input,parent.nodes,ShellBindingFamily::T3,
+        next.nodes.data(),seen.data(),node_ids,4*next.qeph_count+3*i);
     if(report.status!=ShellBindingStatus::Success) return at(report,i);
   }
   for(std::size_t n=0;n<next.node_count;++n) if(!seen[n])

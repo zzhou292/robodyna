@@ -123,6 +123,9 @@ class ShellBatchInventory {
 // All failures preserve this object's bytes; successful preparation copies all
 // inputs. Default admission uses allocation-free inline storage. Explicit host
 // limits permit startup-only owned allocation; publication/copies allocate nothing.
+// Vehicle() opts into binding-only 524288-parent/node capacity. The existing
+// catalog and device participants require independent admission. Startup scratch
+// is bounded separately and released before Initialize returns.
 // No constraints, clock or dynamics policy are added.
 class ShellBatchBinding {
  public:
