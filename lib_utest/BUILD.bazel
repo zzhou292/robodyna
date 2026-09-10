@@ -485,3 +485,22 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+# Shared immutable mixed-shell startup fixture. Its analytic oracle and native
+# reference declarations are test-only headers; no donor implementation links.
+cc_library(
+    name = "shell_batch_binding_test_fixture",
+    testonly = True,
+    hdrs = [
+        "qualification/t3/mixed_binding/ShellBatchBindingFixture.h",
+        "qualification/native/t3/T3StartupTestOracle.h",
+        "qualification/native/t3/T3Reference.h",
+    ],
+    deps = [
+        "//lib_src/elements:shell_batch_binding",
+        "//lib_src/elements/qeph:startup",
+        "//lib_src/elements/t3:startup",
+        "//lib_src/math:fixed3",
+        "@googletest//:gtest_main",
+    ],
+)

@@ -26,7 +26,8 @@ cuda_library(
         "Type25Batch.h", "Type25BatchStorage.h", "Type25BatchArena.h",
         "Type25BatchIdentity.h", "Type25BatchMeasure.h",
     ],
-    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false",
+             "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
     deps = [
         ":type25_math", ":type25_model", "//lib_src/assembly:nodal_mass_binding",
         "//lib_src/elements:shell_batch_fields", "//lib_src/elements:shell_batch_startup",
