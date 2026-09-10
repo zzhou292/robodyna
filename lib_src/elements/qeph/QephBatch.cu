@@ -32,14 +32,24 @@ BatchReport QephBatch::Impl::ReadResults(const batch_detail::Slab* source) {
 QephBatch::QephBatch()=default;
 QephBatch::~QephBatch()=default;
 BatchReport QephBatch::Initialize(const QephBatchConfig& config,const QephBatchElement* elements) {
+  return InitializeImpl(config,elements,nullptr);
+}
+BatchReport QephBatch::InitializeJoined(const QephBatchConfig& config,const ShellBatchBinding& binding) {
+  if(!binding.prepared()) return {BatchStatus::InvalidInput,"Mixed binding is not prepared"};
+  QephBatchElement element; element.reference=binding.qeph_reference();
+  for(unsigned i=0;i<4;++i) element.nodes[i]=binding.qeph_nodes()[i];
+  return InitializeImpl(config,&element,&binding);
+}
+BatchReport QephBatch::InitializeImpl(const QephBatchConfig& config,const QephBatchElement* elements,const ShellBatchBinding* joined) {
   if(impl_) return {BatchStatus::InvalidInput,"QEPH batch is already initialized"};
   Storage initial{};
-  auto report=batch_detail::BuildModel(config,elements,initial.model,initial.slab[0]);
+  auto report=batch_detail::BuildModel(config,elements,initial.model,initial.slab[0],joined);
   if(report.status!=BatchStatus::Success) return report;
   std::unique_ptr<Impl> candidate(new(std::nothrow) Impl);
   if(!candidate) return {BatchStatus::ResourceLimit,"QEPH host allocation failed"};
   candidate->config=config; candidate->accepted_stamp=config.owner;
-  candidate->accepted_diagnostics=batch_detail::InitialDiagnostics(config);
+  candidate->accepted_diagnostics=batch_detail::InitialDiagnostics(config,joined!=nullptr);
+  if(joined) candidate->joined_binding.emplace(*joined);
   report=candidate->PendingError(); if(report.status!=BatchStatus::Success) return report;
   report=candidate->Runtime(cudaMalloc(reinterpret_cast<void**>(&candidate->storage),sizeof(Storage)),"QEPH allocation failed");
   if(report.status!=BatchStatus::Success) return report;

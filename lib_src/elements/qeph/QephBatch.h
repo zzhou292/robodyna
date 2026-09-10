@@ -3,6 +3,7 @@
 #include "../../solvers/ExplicitNodalStep.h"
 #include <memory>
 
+namespace tl::fea { class ShellBatchBinding; class ShellBatchPublication; }
 namespace tl::fea::qeph {
 constexpr std::size_t MaxBatchElements=4,MaxBatchNodes=16,MaxBatchDeviceBytes=1024*1024;
 struct QephBatchElement { ReferenceData reference; std::size_t nodes[4]{}; };
@@ -33,6 +34,9 @@ struct BatchDiagnostics {
   double time=0,base_time=0,velocity_time=0,base_velocity_time=0,kick_dt=0;
   BatchPhase phase=BatchPhase::Unspecified;
   bool valid=false,has_completed_interval=false,accepted_force_assembled=false;
+  // Joined participants expose no whole-owner or partial-family kinetic sum.
+  // When false, all four kinetic fields are zero; use ShellBatchPublication.
+  bool kinetic_available=true;
   BatchUsage usage=BatchUsage::Unspecified;
   double kinetic_translation=0,kinetic_rotation=0;
   // Scalar isotropic partitions include drilling; do not label as pure physical
@@ -73,6 +77,9 @@ class QephBatch {
   QephBatch(const QephBatch&)=delete;
   QephBatch& operator=(const QephBatch&)=delete;
   BatchReport Initialize(const QephBatchConfig&,const QephBatchElement*);
+  // Immutable joined scope; exactly one typed cell from the complete union.
+  // First gate permits PrescribedFields only. Standalone Commit rejects it.
+  BatchReport InitializeJoined(const QephBatchConfig&,const ShellBatchBinding&);
   BatchReport AssembleAccepted(const NodalAssemblyView&);
   BatchReport EvaluateCandidate(const NodalPreparedView&,BatchDiagnostics*);
   // Output-cadence staged readback, never an evaluation/history advance. The
@@ -84,6 +91,8 @@ class QephBatch {
   void DiscardTrial() noexcept;
   NodalAllocationInfo allocations() const noexcept;
  private:
+  friend class ::tl::fea::ShellBatchPublication;
+  BatchReport InitializeImpl(const QephBatchConfig&,const QephBatchElement*,const ShellBatchBinding*);
   friend BatchReport CommitQephTrial(FENodalState&,const NodalTrialToken&,QephBatch&,
                                     const BatchDiagnostics&,const NodalValidationReceipt&) noexcept;
   struct Impl; std::unique_ptr<Impl> impl_;

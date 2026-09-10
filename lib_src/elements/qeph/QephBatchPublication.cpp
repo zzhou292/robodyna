@@ -39,6 +39,7 @@ BatchReport CommitQephTrial(FENodalState& owner,const NodalTrialToken& token,Qep
   auto fail=[&](BatchReport r) { owner.Discard(); batch.DiscardTrial(); return r; };
   if(!batch.impl_) return fail({BatchStatus::NotInitialized,"QEPH batch is not initialized"});
   auto& s=*batch.impl_;
+  if(s.joined_binding) return fail({BatchStatus::InvalidInput,"Joined shell participant requires two-family publication"});
   if(!s.usable) return fail({BatchStatus::DeviceFailure,"CUDA QEPH batch is poisoned"});
   if(!s.bound||!s.pending||!batch_detail::SameDiagnostics(expected,s.candidate_diagnostics)||
      !batch_detail::SameStamp(owner.accepted(),s.accepted_stamp))
@@ -62,9 +63,7 @@ BatchReport CommitQephTrial(FENodalState& owner,const NodalTrialToken& token,Qep
   }
   // Sole post-owner publication boundary: no allocation, CUDA, rejection,
   // callbacks, output observers or new mechanics may be added below this line.
-  std::swap(s.accepted,s.trial);
-  s.accepted_stamp=owner.accepted(); s.accepted_diagnostics=s.candidate_diagnostics;
-  s.accepted_diagnostics.phase=BatchPhase::Accepted; s.Discard();
+  s.Publish(owner.accepted());
   return {BatchStatus::Success,"Owner and QEPH material/cache published"};
 }
 } // namespace tl::fea::qeph

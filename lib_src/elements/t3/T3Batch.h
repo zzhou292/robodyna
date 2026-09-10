@@ -3,6 +3,7 @@
 #include "../../solvers/ExplicitNodalStep.h"
 #include <memory>
 
+namespace tl::fea { class ShellBatchBinding; class ShellBatchPublication; }
 namespace tl::fea::t3 {
 constexpr std::size_t MaxBatchElements=2,MaxBatchNodes=16,MaxBatchDeviceBytes=1024*1024;
 struct T3BatchElement { ReferenceData reference; std::size_t nodes[3]{}; };
@@ -33,6 +34,9 @@ struct BatchDiagnostics {
   double time=0,base_time=0,velocity_time=0,base_velocity_time=0,kick_dt=0;
   BatchPhase phase=BatchPhase::Unspecified;
   bool valid=false,has_completed_interval=false,accepted_force_assembled=false;
+  // Joined participants expose no whole-owner or partial-family kinetic sum.
+  // When false, all four kinetic fields are zero; use ShellBatchPublication.
+  bool kinetic_available=true;
   BatchUsage usage=BatchUsage::Unspecified;
   double kinetic_translation=0,kinetic_rotation=0;
   // Scalar isotropic partitions include drilling; do not label as pure physical
@@ -51,7 +55,6 @@ class T3Batch;
 BatchReport CommitT3Trial(FENodalState&,const NodalTrialToken&,T3Batch&,
                            const BatchDiagnostics&,const NodalValidationReceipt&) noexcept;
 
-// Standalone participant only; no joined QEPH/T3 publication is admitted.
 // One resident immutable model and two element history/cache slabs; no nodal
 // state, clock, mechanics equations or timestep policy. Calls are serialized and
 // use the owner's stream. Exactly one allocation, no per-step allocation.
@@ -73,6 +76,9 @@ class T3Batch {
   T3Batch(const T3Batch&)=delete;
   T3Batch& operator=(const T3Batch&)=delete;
   BatchReport Initialize(const T3BatchConfig&,const T3BatchElement*);
+  // Immutable joined scope; exactly one typed cell from the complete union.
+  // First gate permits PrescribedFields only. Standalone Commit rejects it.
+  BatchReport InitializeJoined(const T3BatchConfig&,const ShellBatchBinding&);
   BatchReport AssembleAccepted(const NodalAssemblyView&);
   BatchReport EvaluateCandidate(const NodalPreparedView&,BatchDiagnostics*);
   // Output-cadence staged readback, never an evaluation/history advance. The
@@ -84,6 +90,8 @@ class T3Batch {
   void DiscardTrial() noexcept;
   NodalAllocationInfo allocations() const noexcept;
  private:
+  friend class ::tl::fea::ShellBatchPublication;
+  BatchReport InitializeImpl(const T3BatchConfig&,const T3BatchElement*,const ShellBatchBinding*);
   friend BatchReport CommitT3Trial(FENodalState&,const NodalTrialToken&,T3Batch&,
                                     const BatchDiagnostics&,const NodalValidationReceipt&) noexcept;
   struct Impl; std::unique_ptr<Impl> impl_;

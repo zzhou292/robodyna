@@ -7,7 +7,7 @@ bool SameDiagnostics(const BatchDiagnostics& a,const BatchDiagnostics& b) noexce
 #define SAME_DOUBLE(field) if(!detail::SameHistoryBits(a.field,b.field)) return false
   SAME_VALUE(owner_id); SAME_VALUE(configuration_id); SAME_VALUE(qualification_id);
   SAME_VALUE(epoch); SAME_VALUE(base_epoch); SAME_VALUE(attempt); SAME_VALUE(phase);
-  SAME_VALUE(valid); SAME_VALUE(has_completed_interval); SAME_VALUE(accepted_force_assembled); SAME_VALUE(usage);
+  SAME_VALUE(valid); SAME_VALUE(has_completed_interval); SAME_VALUE(accepted_force_assembled); SAME_VALUE(usage); SAME_VALUE(kinetic_available);
   SAME_DOUBLE(time); SAME_DOUBLE(base_time); SAME_DOUBLE(velocity_time); SAME_DOUBLE(base_velocity_time); SAME_DOUBLE(kick_dt);
   SAME_DOUBLE(kinetic_translation); SAME_DOUBLE(kinetic_rotation);
   SAME_DOUBLE(kinetic_physical_isotropic); SAME_DOUBLE(kinetic_added_isotropic);

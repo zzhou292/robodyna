@@ -40,6 +40,7 @@ BatchReport CommitT3Trial(FENodalState& owner,const NodalTrialToken& token,T3Bat
   auto fail=[&](BatchReport r) { owner.Discard(); batch.DiscardTrial(); return r; };
   if(!batch.impl_) return fail({BatchStatus::NotInitialized,"T3 batch is not initialized"});
   auto& s=*batch.impl_;
+  if(s.joined_binding) return fail({BatchStatus::InvalidInput,"Joined shell participant requires two-family publication"});
   if(!s.usable) return fail({BatchStatus::DeviceFailure,"CUDA T3 batch is poisoned"});
   if(!s.bound||!s.pending||!batch_detail::SameDiagnostics(expected,s.candidate_diagnostics)||
      !batch_detail::SameStamp(owner.accepted(),s.accepted_stamp))
@@ -63,9 +64,7 @@ BatchReport CommitT3Trial(FENodalState& owner,const NodalTrialToken& token,T3Bat
   }
   // Sole post-owner publication boundary: no allocation, CUDA, rejection,
   // callbacks, output observers or new mechanics may be added below this line.
-  std::swap(s.accepted,s.trial);
-  s.accepted_stamp=owner.accepted(); s.accepted_diagnostics=s.candidate_diagnostics;
-  s.accepted_diagnostics.phase=BatchPhase::Accepted; s.Discard();
+  s.Publish(owner.accepted());
   return {BatchStatus::Success,"Owner and T3 material/cache published"};
 }
 } // namespace tl::fea::t3

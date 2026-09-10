@@ -11,11 +11,14 @@ using namespace tl::fea::shell_batch_fields;
 TL_QEPH_HD inline bool Measure(const Model& model,const Slab& base,const Slab& next,
                               const NodalPreparedView& view,Control& out) {
   auto& d=out.diagnostics;
+  if(d.kinetic_available==model.joined) return false;
   for(unsigned n=0;n<model.config.owner.node_count;++n) {
     const auto v=ReadVector(view.kinematics.velocity_xyz,n),w=ReadVector(view.kinematics.angular_velocity_xyz,n);
-    const double vv=Dot(v,v),ww=Dot(w,w);
-    d.kinetic_translation+=.5*model.mass[n]*vv; d.kinetic_rotation+=.5*model.inertia[n]*ww;
-    d.kinetic_physical_isotropic+=.5*model.physical[n]*ww; d.kinetic_added_isotropic+=.5*model.added[n]*ww;
+    if(d.kinetic_available) {
+      const double vv=Dot(v,v),ww=Dot(w,w);
+      d.kinetic_translation+=.5*model.mass[n]*vv; d.kinetic_rotation+=.5*model.inertia[n]*ww;
+      d.kinetic_physical_isotropic+=.5*model.physical[n]*ww; d.kinetic_added_isotropic+=.5*model.added[n]*ww;
+    }
     const auto dx=Difference(ReadVector(view.kinematics.position_xyz,n),model.initial_position[n]);
     const double length=::hypot(::hypot(dx.x,dx.y),dx.z);
     if(!tl::math::Finite(length)) return false;

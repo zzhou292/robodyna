@@ -1,6 +1,7 @@
 #include "T3BatchStorage.h"
 #include "T3Startup.h"
 #include "T3History.h"
+#include "../ShellBatchJoinedModel.h"
 #include <cmath>
 
 namespace tl::fea::t3::batch_detail {
@@ -28,7 +29,7 @@ bool SameReference(const ReferenceData& a,const ReferenceData& b) {
 }
 }
 
-BatchReport BuildModel(const T3BatchConfig& c,const T3BatchElement* input,Model& output,Slab& startup) {
+BatchReport BuildModel(const T3BatchConfig& c,const T3BatchElement* input,Model& output,Slab& startup,const ShellBatchBinding* joined) {
   const auto& o=c.owner;
   if(!input||!o.owner_id||!o.has_rotations||o.epoch||o.time!=0||o.velocity_time!=0||
      o.reactions_valid||!std::isfinite(o.fixed_dt)||o.fixed_dt<=0||
@@ -39,6 +40,9 @@ BatchReport BuildModel(const T3BatchConfig& c,const T3BatchElement* input,Model&
   if(!c.element_count||c.element_count>MaxBatchElements||!o.node_count||o.node_count>MaxBatchNodes||
      !c.max_device_bytes||c.max_device_bytes>MaxBatchDeviceBytes||sizeof(Storage)>c.max_device_bytes)
     return {BatchStatus::ResourceLimit,"T3 element/node/allocation capacity exceeded"};
+  if(joined&&(!joined->prepared()||c.element_count!=1||o.node_count!=joined->node_count()||
+     c.usage!=BatchUsage::PrescribedFields))
+    return {BatchStatus::InvalidInput,"Joined scope requires one prescribed element from the complete union"};
   Model model{}; Slab initial{}; model.config=c;
   bool seen[MaxBatchNodes]{}; std::uint64_t ids[MaxBatchNodes]{};
   for(unsigned e=0;e<c.element_count;++e) {
@@ -75,16 +79,17 @@ BatchReport BuildModel(const T3BatchConfig& c,const T3BatchElement* input,Model&
     const auto history=InitializeHistory(element.reference,{0,0},initial.element[e].proposed_history);
     if(history!=Status::kSuccess) return {BatchStatus::ElementFailure,"Cannot initialize T3 history",e,UINT32_MAX,history};
   }
+  if(joined) shell_batch_detail::ApplyJoinedMass(*joined,model);
   for(unsigned n=0;n<o.node_count;++n)
-    if(!seen[n]||!detail::Positive(model.mass[n])||!detail::Positive(model.inertia[n])||
+    if((!joined&&!seen[n])||!detail::Positive(model.mass[n])||!detail::Positive(model.inertia[n])||
        !detail::Positive(model.physical[n])||!detail::Positive(model.added[n]))
       return {BatchStatus::InvalidMass,"Uncovered node or invalid assembled native mass/inertia",UINT32_MAX,n};
   output=model; startup=initial;
   return {BatchStatus::Success,"OK"};
 }
-BatchDiagnostics InitialDiagnostics(const T3BatchConfig& c) {
+BatchDiagnostics InitialDiagnostics(const T3BatchConfig& c,bool joined) {
   BatchDiagnostics d; d.owner_id=c.owner.owner_id; d.configuration_id=c.configuration_id;
   d.qualification_id=c.qualification_id; d.phase=BatchPhase::Accepted; d.usage=c.usage; d.valid=true;
-  return d;
+  d.kinetic_available=!joined; return d;
 }
 } // namespace tl::fea::t3::batch_detail

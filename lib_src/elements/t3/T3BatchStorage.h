@@ -1,7 +1,10 @@
 #pragma once
 #include "T3Batch.h"
 #include "../../solvers/NodalTrialIdentity.h"
+#include "../ShellBatchBinding.h"
 #include <array>
+#include <optional>
+#include <utility>
 #include <type_traits>
 
 namespace tl::fea::t3::batch_detail {
@@ -11,6 +14,7 @@ struct Model {
   Vec3 initial_position[MaxBatchNodes]{};
   double mass[MaxBatchNodes]{},inertia[MaxBatchNodes]{};
   double physical[MaxBatchNodes]{},added[MaxBatchNodes]{};
+  bool joined=false;
 };
 struct Slab { ForceTrial element[MaxBatchElements]; };
 struct Control {
@@ -22,18 +26,17 @@ struct Control {
 struct Storage { Model model; Slab slab[2]; Control control; };
 static_assert(std::is_trivially_copyable<Storage>::value,"Resident records require value-copy storage");
 static_assert(sizeof(Storage)<=MaxBatchDeviceBytes,"Bounded T3 batch allocation");
-// Root's host declaration probe t3-batch-abi-probe-1: CUDA compilation must
-// independently agree before claiming the corresponding device allocation.
-static_assert(sizeof(Model)==2064&&sizeof(Slab)==1952&&sizeof(Control)==248&&
-    sizeof(Storage)==6216&&sizeof(ForceTrial)==976&&sizeof(BatchDiagnostics)==232&&alignof(Storage)==8,
-    "Reviewed 64-bit T3 batch ABI; diagnose layout drift before allocation");
+// Prior standalone ABI was Storage6216B. The joined model flag changes live
+// storage layout; root must measure and retain the new host/CUDA allocation
+// before promotion. Native result size and alignment stay independently fixed.
+static_assert(sizeof(ForceTrial)==976&&alignof(Storage)==8,"Qualified native T3 record layout");
 
-BatchReport BuildModel(const T3BatchConfig&,const T3BatchElement*,Model&,Slab&);
+BatchReport BuildModel(const T3BatchConfig&,const T3BatchElement*,Model&,Slab&,const ShellBatchBinding* joined=nullptr);
 bool SameDiagnostics(const BatchDiagnostics&,const BatchDiagnostics&) noexcept;
 using trial_identity::SameStamp;
 using trial_identity::SamePrepared;
 using trial_identity::ValidKinematics;
-BatchDiagnostics InitialDiagnostics(const T3BatchConfig&);
+BatchDiagnostics InitialDiagnostics(const T3BatchConfig&,bool joined=false);
 void LaunchAssembly(Storage*,const Slab*,NodalAssemblyView,bool initial);
 void LaunchCandidate(Storage*,const Slab*,Slab*,NodalPreparedView,BatchDiagnostics);
 void LaunchFailure(NodalAssemblyView);
@@ -43,6 +46,8 @@ namespace tl::fea::t3 {
 struct T3Batch::Impl {
   T3BatchConfig config;
   NodalStamp accepted_stamp;
+  std::optional<ShellBatchBinding> joined_binding; // Host-only immutable inventory.
+  const ShellBatchPublication* publication_scope=nullptr; // One borrowed coordinator claim.
   batch_detail::Storage* storage=nullptr;
   batch_detail::Slab* accepted=nullptr;
   batch_detail::Slab* trial=nullptr;
@@ -59,5 +64,10 @@ struct T3Batch::Impl {
   BatchReport ReadControl();
   BatchReport ReadResults(const batch_detail::Slab*);
   void Discard() noexcept { pending=false; candidate_view={}; candidate_diagnostics={}; }
+  // Infallible sole publication boundary, shared by standalone and joined paths.
+  void Publish(const NodalStamp& stamp) noexcept {
+    std::swap(accepted,trial); accepted_stamp=stamp; accepted_diagnostics=candidate_diagnostics;
+    accepted_diagnostics.phase=BatchPhase::Accepted; Discard();
+  }
 };
 } // namespace tl::fea::t3
