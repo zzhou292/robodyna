@@ -9,7 +9,8 @@ if(NOT EXISTS "${ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY}")
   message(FATAL_ERROR "Observation checks require the authenticated source inventory")
 endif()
 add_executable(robo_dyna_source_assembly_observation_check
-  tests/SourceAssemblyKineticTest.cpp tests/SourceAssemblyKickTest.cpp)
+  tests/SourceAssemblyKineticTest.cpp tests/SourceAssemblyKickTest.cpp
+  tests/SourceAssemblyForceStageTest.cpp tests/SourceAssemblyForceStageFailureTest.cpp)
 target_link_libraries(robo_dyna_source_assembly_observation_check PRIVATE
   robo_dyna_source_assembly_observation GTest::gtest_main)
 target_compile_options(robo_dyna_source_assembly_observation_check PRIVATE -fno-fast-math -ffp-contract=off)

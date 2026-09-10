@@ -14,20 +14,7 @@ Report CheckInput(const Input& in,Summary* out,rigid::ObservationPhase& before,
     const auto bytes=3*in.before.node_count*sizeof(double);
     for(const auto* values:{in.applied_force_xyz,in.applied_couple_xyz,in.reaction_force_xyz,in.reaction_couple_xyz})
         if(!detail::Range(values,bytes,out,sizeof(*out))) return {Status::InvalidInput,"Missing or overlapping kick loads"};
-    const auto& base=in.base; const auto& p=in.prepared;
-    if(base.node_count!=in.before.node_count || !detail::Scope(*in.bindings,base.rigid_groups) ||
-       !detail::Scope(*in.bindings,p.rigid_groups) || p.owner_id!=base.owner_id || !p.attempt ||
-       p.kinematics.node_count!=base.node_count || p.base_kinematics.node_count!=base.node_count ||
-       p.kinematics.base_epoch!=base.epoch || p.base_kinematics.base_epoch!=base.epoch)
-        return {Status::WrongIdentity,"Candidate source/owner observation differs"};
-    auto report=detail::AcceptedPhase(base,before); if(!report) return report;
-    if(p.temporal_scheme!=base.temporal_scheme || p.base_velocity_phase!=base.velocity_phase ||
-       p.velocity_phase!=fe::NodalVelocityPhase::PreviousMidpoint || p.base_time!=base.time ||
-       p.base_velocity_time!=base.velocity_time || p.proposed_time!=base.time+base.fixed_dt ||
-       p.velocity_time!=base.time+.5*base.fixed_dt || p.kick_dt!=(base.epoch ? base.fixed_dt : .5*base.fixed_dt))
-        return {Status::InvalidPhase,"Candidate phase differs from the owner schedule"};
-    after={rigid::ObservationPhaseKind::StoredMidpointWithLaggedFrame,p.proposed_time,p.velocity_time,p.base_time};
-    return detail::Success();
+    return detail::CheckPrepared(*in.bindings,in.base,in.prepared,in.before.node_count,before,after);
 }
 struct NativeKick {
     long double delta=0,ordinary_delta=0,applied[2]{},reaction[2]{},budget=0;

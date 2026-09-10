@@ -29,6 +29,9 @@ Report CheckFrame(const SourceAssemblyBindings&, fe::HostNodalKinematicsView,
                   const fe::NodalRigidGroupSnapshot*, std::size_t,
                   const void* output, std::size_t output_bytes) noexcept;
 Report AcceptedPhase(const fe::NodalStamp&, rigid::ObservationPhase&) noexcept;
+Report CheckPrepared(const SourceAssemblyBindings&,const fe::NodalStamp&,
+                     const fe::NodalPreparedView&,std::size_t nodes,
+                     rigid::ObservationPhase& before,rigid::ObservationPhase& after) noexcept;
 Report ObserveKinetic(const SourceAssemblyBindings&, fe::HostNodalKinematicsView,
                       const fe::NodalRigidGroupSnapshot*, rigid::ObservationPhase,
                       const fe::ShellBatchKinetic&, KineticSummary&, Membership&) noexcept;

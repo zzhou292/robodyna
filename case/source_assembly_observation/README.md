@@ -39,3 +39,39 @@ rollback and small group correction under large ordinary work. Supplied-motion
 mapping fixtures are explicitly value tests, not claimed accepted trajectories.
 The new case's actual loaded CUDA gate must still supply these observations
 from its authenticated owner before common publication.
+
+`ObserveForceStage` is a separate pure adapter in
+`SourceAssemblyForceStageKinetic.h`. Supply the actual accepted nodal stamp and
+pre-kick V/VR, accepted group readback/stamp, prepared group readback/identity,
+and typed nodal/group A/AR from `CopyPreparedForceStage`. It requires both
+prepared readback identities to equal the canonical owner candidate completely,
+including source scope, device pointer identities, stream, attempt and phase.
+All active counts and source group order must match the immutable binding.
+Device pointer values are compared only; no CUDA operations occur here.
+Host nodal x/q are unused and may be null.
+
+The force-stage summary observes `prepared.base_time`, using DT1=0 initially
+and DT1=h afterward, actual A/AR at DT1/2, pre-kick member/primary V/VR and the
+prepared group's updated principal frame. It retains base epoch, attempt and
+the enclosing candidate epoch/time separately. Native/effective totals add
+disjoint ordinary nodes and native-member/aggregate groups, respectively.
+Group replacement is summed directly, so large ordinary energy cannot erase
+it by whole-assembly subtraction. Native TOTAL J, generated primary mass and
+all regularization channels retain TL's qualified metric and once-only counting.
+
+Shared source/phase checks, channel additions and native scalar sums serve both
+adapters with the old arithmetic order preserved. Temporary arrays remain
+bounded by 256 group members and 2,048 global nodes; no storage owner or step
+allocation is introduced. Every inspected input/output overlap, incomplete or
+false readback association, and late nonfinite/overflow result rejects without
+altering caller inputs or output. The pure adapter cannot prove that plausible
+numbers came from the stated live owner; that authentication belongs to the
+caller, which must use the actual readbacks. Host fixtures explicitly test value
+mapping, not a live trajectory.
+
+No force-stage channel is compared to the existing midpoint publication kinetic
+value. This adapter supplies no energy admission tolerance, hidden force
+evaluation, case policy, accepted-output record or archive schema. The caller
+may publish a staged summary only with its enclosing common owner/material
+commit. A stopped run has no force-stage sample at its final endpoint unless a
+subsequent ordinary force stage was actually executed.

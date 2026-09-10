@@ -3,6 +3,9 @@ include("${CMAKE_CURRENT_LIST_DIR}/../source_assembly/SourceAssemblyBindings.cma
 include("${ROBO_DYNA_TL_ROOT}/lib_src/constraints/NodalRigidObservation.cmake")
 find_package(CUDAToolkit REQUIRED)
 add_library(robo_dyna_source_assembly_observation STATIC
+  "${CMAKE_CURRENT_LIST_DIR}/SourceAssemblyObservationIdentity.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/SourceAssemblyForceStageChecks.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/SourceAssemblyForceStageKinetic.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/SourceAssemblyKinetic.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/SourceAssemblyKick.cpp")
 target_link_libraries(robo_dyna_source_assembly_observation PUBLIC
