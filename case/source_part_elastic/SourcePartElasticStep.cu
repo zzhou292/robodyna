@@ -30,8 +30,10 @@ Report SourcePartElasticCase::Impl::Prepare() {
     fe::NodalAssemblyView assembly;
     auto nr=owner.BeginTrial(&token,&assembly);
     if(nr.status!=fe::NodalStatus::Ok) return Failure(Status::ComponentFailure,nr.message);
-    AddPulse<<<1,128,0,assembly.stream>>>(assembly,device_pulse,PulseScale(stamp.time,config.pulse_duration));
-    if(cudaGetLastError()!=cudaSuccess) return Failure(Status::DeviceFailure,"Pulse contributor launch failed");
+    if(config.experiment==Experiment::ElasticPulse) {
+        AddPulse<<<1,128,0,assembly.stream>>>(assembly,device_pulse,PulseScale(stamp.time,config.pulse_duration));
+        if(cudaGetLastError()!=cudaSuccess) return Failure(Status::DeviceFailure,"Pulse contributor launch failed");
+    }
     const auto qr=qeph.AssembleAccepted(assembly);
     if(qr.status!=q::BatchStatus::Success) return Failure(Status::ComponentFailure,qr.message,0,0,
         qr.element<source::Q4Count?binding.qeph_source_id(qr.element):0);

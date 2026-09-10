@@ -3,7 +3,7 @@ include("${CRASH_TL_FEA_SOURCE_DIR}/lib_src/elements/qeph/QephBatch.cmake")
 include("${CRASH_TL_FEA_SOURCE_DIR}/lib_src/elements/t3/T3Batch.cmake")
 include("${CRASH_TL_FEA_SOURCE_DIR}/lib_src/elements/ShellBatchPublication.cmake")
 add_library(robo_dyna_source_part_elastic_case STATIC
-  SourcePartElasticCase.cpp SourcePartElasticInitialize.cpp
+  SourcePartElasticCase.cpp SourcePartElasticInitialize.cpp SourcePartElasticLoading.cpp
   SourcePartElasticStep.cu SourcePartElasticObservation.cpp SourcePartElasticPilot.cpp)
 target_link_libraries(robo_dyna_source_part_elastic_case PUBLIC
   robo_dyna_source_shell_collection tl_shell_batch_publication)
@@ -35,9 +35,9 @@ if(TARGET qeph_q1_native AND TARGET t3_r3_native)
   enable_language(Fortran)
   find_package(GTest REQUIRED)
   add_executable(robo_dyna_source_part_elastic_check
-    source_part_elastic_check.cu SourcePartElasticNativeOracle.cpp)
+    source_part_elastic_check.cu source_part_uniform_flight_check.cu SourcePartElasticNativeOracle.cpp)
   target_link_libraries(robo_dyna_source_part_elastic_check PRIVATE
-    robo_dyna_source_part_elastic_case qeph_q1_native t3_r3_native GTest::gtest)
+    robo_dyna_source_part_elastic_artifacts qeph_q1_native t3_r3_native GTest::gtest)
   set_target_properties(robo_dyna_source_part_elastic_check PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
   target_compile_options(robo_dyna_source_part_elastic_check PRIVATE
     "$<$<COMPILE_LANGUAGE:CXX>:-fno-fast-math;-ffp-contract=off>"

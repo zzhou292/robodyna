@@ -31,6 +31,7 @@ struct SourcePartElasticArtifacts::Impl {
 SourcePartElasticArtifacts::SourcePartElasticArtifacts(const std::string& path,SourcePartElasticCase& run,
     std::uint64_t steps,unsigned frame_every,std::uint64_t run_id,std::uint64_t topology_id):impl_(std::make_unique<Impl>(path)) {
     auto& s=*impl_; Require(run.initialized()&&steps&&frame_every,"Source artifacts need an initialized run and positive horizon/cadence");
+    Require(run.config().experiment==Experiment::ElasticPulse,"The source pulse archive schema does not support uniform-flight experiments");
     Snapshot initial; const auto captured=run.Capture(&initial); Require(bool(captured),captured.message);
     s.last=initial.stamp; s.steps=steps;
     Require(s.last.epoch==0&&s.last.time==0&&SameOwner(s.last,s.last),"Source output must start at reference epoch zero");

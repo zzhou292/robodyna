@@ -8,7 +8,7 @@ elasticity. Source MAT024 behavior and the part's original attachments are not
 implemented by this free-part experiment.
 
 The physical tuple and promotion criteria are frozen in
-[`planning/SOURCE_PART_ELASTIC_PILOT.md`](../../../planning/SOURCE_PART_ELASTIC_PILOT.md).
+[`planning/SOURCE_PART_ELASTIC_PILOT.md`](../../../../planning/SOURCE_PART_ELASTIC_PILOT.md).
 `SourcePartElasticPilot.cpp` supplies that configuration to runners and tests.
 
 - `SourcePartElasticInitialize.cpp` constructs immutable native mass/inertia,

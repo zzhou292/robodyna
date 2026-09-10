@@ -5,14 +5,21 @@
 
 namespace crash::cases::source_part_elastic {
 bool ValidConfig(const Config& c) noexcept {
-    for(double v : {c.dt,c.pulse_duration,c.acceleration,c.maximum_displacement,c.maximum_rotation,
+    if(c.experiment!=Experiment::ElasticPulse&&c.experiment!=Experiment::UniformFlight) return false;
+    for(double v : {c.dt,c.maximum_displacement,c.maximum_rotation,
                     c.maximum_strain,c.maximum_thickness_curvature,c.minimum_area_ratio,c.maximum_area_ratio,
                     c.minimum_thickness_ratio,c.maximum_thickness_ratio,c.maximum_energy_residual,
                     c.maximum_native_dt_fraction,c.relative_energy_residual})
         if(!std::isfinite(v)||v<=0) return false;
+    for(double v:c.initial_velocity) if(!std::isfinite(v)) return false;
+    if(c.experiment==Experiment::ElasticPulse) {
+        if(!std::isfinite(c.pulse_duration)||c.pulse_duration<=0||!std::isfinite(c.acceleration)||c.acceleration<=0||
+           c.dt>c.pulse_duration||c.initial_velocity[0]!=0||c.initial_velocity[1]!=0||c.initial_velocity[2]!=0) return false;
+    } else if(c.pulse_duration!=0||c.acceleration!=0||c.spatial_axis!=0||c.direction!=std::array<double,3>{0,0,1}||
+              (c.initial_velocity[0]==0&&c.initial_velocity[1]==0&&c.initial_velocity[2]==0)) return false;
     double norm=0;
     for(double v:c.direction) { if(!std::isfinite(v)) return false; norm+=v*v; }
-    return std::abs(norm-1)<=8e-16 && c.spatial_axis<3 && c.dt<=c.pulse_duration &&
+    return std::abs(norm-1)<=8e-16 && c.spatial_axis<3 &&
         c.dt>=1e-12 && c.minimum_area_ratio<=1 && c.maximum_area_ratio>=1 &&
         c.minimum_thickness_ratio<=1 && c.maximum_thickness_ratio>=1 &&
         c.minimum_area_ratio<c.maximum_area_ratio &&
@@ -77,6 +84,7 @@ const source::SourceShellCollection& SourcePartElasticCase::collection() const n
 const fe::ShellBatchBinding& SourcePartElasticCase::binding() const noexcept { return impl_->binding; }
 const Config& SourcePartElasticCase::config() const noexcept { return impl_->config; }
 const Diagnostics& SourcePartElasticCase::diagnostics() const noexcept { return impl_->accepted.diagnostics; }
+double SourcePartElasticCase::initial_kinetic_energy() const noexcept { return impl_->initial_kinetic; }
 fe::NodalAllocationInfo SourcePartElasticCase::allocations() const noexcept {
     fe::NodalAllocationInfo result;
     for(auto a:{impl_->owner.allocations(),impl_->qeph.allocations(),impl_->t3.allocations(),impl_->publication.allocations()}) {

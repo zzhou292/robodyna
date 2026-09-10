@@ -13,7 +13,10 @@ inline constexpr std::size_t NodeCount = source::NodeCount;
 // thickness and parent identity are immutable; source MAT024 and attachments
 // are retained as unapplied input metadata. The existing source adapter declares
 // LAW1 E=200 GPa, nu=.3. None of these limits is a vehicle admission.
+enum class Experiment { ElasticPulse,UniformFlight };
 struct Config {
+    Experiment experiment = Experiment::ElasticPulse;
+    std::array<double,3> initial_velocity{};
     double dt = 0, pulse_duration = 0, acceleration = 0;
     unsigned spatial_axis = 0;
     std::array<double,3> direction{0,0,1};
@@ -46,7 +49,7 @@ struct Diagnostics {
     double kinetic_work_allowance = 0;   // Arithmetic roundoff, not a physical tolerance.
     double synchronized_kinetic = 0;     // Reconstructed endpoint v/omega, total native J.
     double total_internal_work = 0;      // Native EINT(0)+EINT(1)+QEPH EVIS, counted once.
-    double energy_residual = 0;          // Ksync + native work - external drift work; K0=0.
+    double energy_residual = 0;          // Ksync + native work - external drift work - initial K0.
     double max_relative_displacement = 0; // Translation removed using native mass centroid.
     double maximum_chord_change = 0;     // Capture-only pairwise length change; zero in step diagnostics.
     double maximum_rotation = 0;
@@ -87,6 +90,7 @@ class SourcePartElasticCase {
     const tl::fea::ShellBatchBinding& binding() const noexcept;
     const Config& config() const noexcept;
     const Diagnostics& diagnostics() const noexcept;
+    double initial_kinetic_energy() const noexcept;
     tl::fea::NodalAllocationInfo allocations() const noexcept;
   private:
     struct Impl;

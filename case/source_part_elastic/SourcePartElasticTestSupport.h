@@ -10,6 +10,7 @@ struct SourcePartElasticTestAccess {
     static auto& Internal(SourcePartElasticCase& c) { return *c.impl_; }
 };
 namespace test {
+const std::filesystem::path& SourceReadinessPath();
 namespace qn=tl::qualification::qeph;
 namespace tn=tl::qualification::t3;
 struct NativeSequence {

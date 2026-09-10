@@ -26,9 +26,11 @@ struct SourcePartElasticCase::Impl {
     fe::NodalTrialToken token;
     fe::NodalPreparedView prepared;
     double* device_pulse = nullptr;
+    double initial_kinetic = 0;
     bool initialized = false;
     ~Impl();
     Report Initialize(const source::SourcePartContactFixture&,const Config&);
+    Report InitializeLoading();
     Report Prepare();
     Report Evaluate();
     Report Observe();

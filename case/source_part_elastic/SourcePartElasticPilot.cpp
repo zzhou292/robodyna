@@ -26,4 +26,13 @@ Config PilotConfig(unsigned refinement) {
     c.qualification_id=0x535045454c413031ULL;
     return c;
 }
+Config UniformFlightConfig(unsigned refinement) {
+    auto c=PilotConfig(refinement);
+    c.experiment=Experiment::UniformFlight;
+    c.initial_velocity={1,0,0};
+    c.pulse_duration=0; c.acceleration=0; c.spatial_axis=0; c.direction={0,0,1};
+    c.configuration_id=0x535055464c543031ULL;
+    c.qualification_id=0x5350554e41543031ULL;
+    return c;
+}
 }

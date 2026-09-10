@@ -159,6 +159,8 @@ Report SourcePartElasticCase::Impl::Observe() {
     if(!std::isfinite(out.kinetic_work_residual)||std::abs(out.kinetic_work_residual)>allowance)
         return Failure(Status::EnvelopeFailure,"Complete discrete kinetic-work identity failed",out.kinetic_work_residual,out.kinetic_work_allowance);
     out.energy_residual=static_cast<double>(kinetic+out.total_internal_work-out.external_drift_work);
+    if(config.experiment==Experiment::UniformFlight)
+        out.energy_residual=static_cast<double>(kinetic+out.total_internal_work-initial_kinetic);
     const double energy_allowance=config.maximum_energy_residual+config.relative_energy_residual*out.absolute_external_drift_work;
     if(!std::isfinite(out.energy_residual)||!std::isfinite(energy_allowance)||std::abs(out.energy_residual)>energy_allowance)
         return Failure(Status::EnvelopeFailure,"Synchronized source-part energy envelope exceeded",out.energy_residual,energy_allowance);

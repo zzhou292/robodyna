@@ -122,6 +122,7 @@ TEST_F(SourcePartElastic, LateT3AndObservationFailuresPreserveAcceptedStateAndRe
     ASSERT_NO_FATAL_FAILURE(ReadResults(clean,*clean_results)); SameResults(*observed,*clean_results);
 }
 } // namespace
+const std::filesystem::path& SourceReadinessPath() { return readiness; }
 } // namespace crash::cases::source_part_elastic::test
 int main(int argc,char** argv) {
     ::testing::InitGoogleTest(&argc,argv);
