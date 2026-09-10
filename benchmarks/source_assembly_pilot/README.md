@@ -96,3 +96,29 @@ The failed build report is retained. The actual short three-run comparison and
 the0.122ms4h/8h comparison are recorded in
 `source-assembly-short-pilot-comparison-1.json` and
 `source-assembly-medium-pilot-comparison-1.json` under workspace reports.
+
+## Longer accepted-prefix response checkpoint
+
+The 8h/4h runs request0.9765625ms with identical source physics and existing
+numerical guards. Both stop at the total nodal orientation envelope: accepted
+8h epoch4304/time0.5130767822ms,4h epoch8606/time0.5129575729ms. Each complete
+archive contains35 accepted frames; neither completes its requested horizon.
+The owning CLI reports34 exact common samples through0.5035400391ms in
+`source-assembly-long-pilot-comparison-1.json`, with unmatched terminal flags.
+Maximum x difference10.219um, q distance0.0014364rad, point PLA3.79225e-5,
+and cumulative plastic-work difference0.001169586J are response diagnostics.
+There is one saved node-active-set mismatch; matching earlier active sets did
+not prove matching continuous contact events. No interpolation or convergence
+admission is performed.
+
+Independent source audit confirms nodal q is an endpoint field for ordinary and
+rigid-member nodes: both drift by full h using the newly kicked midpoint spin
+before the common accepted slab publication. Group principal axes alone retain
+their separately declared lagged phase. The existing64-step native group owner
+test independently checks this member-quaternion recurrence.
+
+The limiting source node2181592 is ordinary and belongs to QEPH parents2214871
+and2214872. Native geometric reconstruction indicates a localized drilling-like
+spin; a1rad total quaternion angle is not itself a1rad geometrical bend. The
+workspace native rotation qualification plan owns the next mechanics gate.
+Do not widen guards, zero spin, or add guessed stiffness from this observation.
