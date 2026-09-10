@@ -1,6 +1,7 @@
 #include "SourceAssemblyWallFieldTestSupport.h"
 #include "output/source_assembly/SourceAssemblyWallArtifacts.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
+#include "case/source_assembly_dynamics/tests/Fixture.h"
 #include <cuda_runtime_api.h>
 #include <cstdlib>
 
@@ -62,5 +63,43 @@ TEST_F(SourceAssemblyWallArtifactLive, ForecastFailureLeavesDirectoryAbsentAndOw
     EXPECT_THROW(SourceAssemblyWallArtifacts(dir.path.string(),run,r),std::runtime_error);
     EXPECT_FALSE(std::filesystem::exists(dir.path));EXPECT_TRUE(fe::trial_identity::SameStamp(stamp,run.owner()->accepted()));
     EXPECT_EQ(run.allocations().device_bytes,allocation.device_bytes);EXPECT_EQ(run.allocations().device_allocations,allocation.device_allocations);
+}
+TEST_F(SourceAssemblyWallArtifactLive, RejectedNextAttemptCanArchiveTheNewerUnshownAcceptedPrefix) {
+    using Access=cases::source_assembly_dynamics::SourceAssemblyDynamicsTestAccess;
+    Directory dir;auto r=Request();r.steps=4;r.frame_every=2;
+    SourceAssemblyWallArtifacts writer(dir.path.string(),run,r);writer.WriteFrame(run); // Visible/archive epoch0 only.
+    const auto base=run.owner()->accepted();ASSERT_TRUE(run.Step());writer.RecordInterval(base,run);
+    const auto before=Access::Accepted(run);const auto stamp=run.owner()->accepted();ASSERT_EQ(stamp.epoch,1u);
+    const auto allocation=run.allocations();const auto host=run.host_payload_bytes();
+    const auto rejected=Access::RejectLate(run,Access::Fault::LastWallFace); // Both material histories and owner candidate2 were prepared.
+    ASSERT_EQ(rejected.status,dynamics::Status::ComponentFailure)<<rejected.message;
+    auto exact=[](const auto& a,const auto& b) {
+        ASSERT_EQ(a.size(),b.size());EXPECT_EQ(std::memcmp(a.data(),b.data(),a.size()*sizeof(a[0])),0);
+    };
+    auto unchanged=[&] {
+        const auto& now=Access::Accepted(run);EXPECT_TRUE(fe::trial_identity::SameStamp(stamp,run.owner()->accepted()));
+        exact(before.fields.x,now.fields.x);exact(before.fields.v,now.fields.v);exact(before.fields.w,now.fields.w);
+        exact(before.fields.orientation,now.fields.orientation);exact(before.fields.reaction,now.fields.reaction);
+        exact(before.fields.couple,now.fields.couple);exact(before.fields.groups,now.fields.groups);
+        exact(before.parents.qeph,now.parents.qeph);exact(before.parents.t3,now.parents.t3);
+        exact(before.parents.qsection,now.parents.qsection);exact(before.parents.tsection,now.parents.tsection);
+        exact(before.wall.parents,now.wall.parents);exact(before.wall.nodes,now.wall.nodes);exact(before.wall.wall_face,now.wall.wall_face);
+        EXPECT_EQ(std::memcmp(&before.diagnostics,&now.diagnostics,sizeof(before.diagnostics)),0);
+        EXPECT_EQ(std::memcmp(&before.wall.diagnostics,&now.wall.diagnostics,sizeof(before.wall.diagnostics)),0);
+        EXPECT_EQ(before.qwork_magnitude,now.qwork_magnitude);EXPECT_EQ(before.twork_magnitude,now.twork_magnitude);
+        EXPECT_EQ(run.allocations().device_bytes,allocation.device_bytes);EXPECT_EQ(run.allocations().device_allocations,allocation.device_allocations);
+        EXPECT_EQ(run.host_payload_bytes(),host);
+    };
+    unchanged();EXPECT_NO_THROW(writer.WriteFrame(run)); // Fresh accepted readback, never the discarded candidate or a raw host fallback.
+    EXPECT_NO_THROW(writer.FinishPrefix(run,0,"Numerical rejection of the next attempted interval"));unchanged();
+    const auto manifest=ReadJson(dir.path/"manifest.json");EXPECT_FALSE(manifest["horizon_complete"].GetBool());
+    EXPECT_EQ(manifest["accepted_epoch"].GetUint64(),1u);EXPECT_EQ(manifest["saved_frames"].GetUint64(),2u);
+    EXPECT_EQ(ParseCsvLedgerSegments(manifest[kCsvLedgerSegmentsField])[0].interval_count,1u);
+    EXPECT_FALSE(std::filesystem::exists(dir.path/"accepted-000002.fields.json"));
+    const auto index=ReadBounded(dir.path/"accepted-frames.csv",WallFrameIndexBytes);EXPECT_EQ(std::count(index.begin(),index.end(),'\n'),3);
+    const auto frame=ReadJson(dir.path/"accepted-000001.fields.json");EXPECT_EQ(frame["accepted_epoch"].GetUint64(),1u);
+    EXPECT_EQ(frame["contact"]["attempt"].GetUint64(),before.wall.diagnostics.attempt);
+    EXPECT_EQ(frame["diagnostics"]["shells"]["qeph"]["attempt"].GetUint64(),before.diagnostics.shells.qeph.attempt);
+    const auto row=ReadBounded(dir.path/"accepted-intervals.csv",kArtifactFileCap);EXPECT_EQ(std::count(row.begin(),row.end(),'\n'),2);
 }
 } // namespace crash::output::assembly::test
