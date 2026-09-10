@@ -64,3 +64,12 @@ It checks complete native binding, typed availability, copy/move lifetime,
 source-unit/card-bit and late parent corruption, host budget retry, and closed
 wall/archive admission. The Python `test_assembly_sections` suite also checks
 literal negative-zero retention and complete geometry/frontier preservation.
+
+Frozen fixture identities are in `tests/SectionTestSupport.h`:
+the arm has149parents/145nodes and285286bytes; the mixed selection has
+631parents/683nodes and1401653bytes. Their two original external point masses
+remain outside both selected node sets. Six owning C++ functions pass against
+these actual artifacts, including25 material/mapping/auxiliary corruption
+cases; the existing15 V1 and3 V2 functions also pass. The focused Python suite
+has21 functions. These are host qualification results, not GPU trajectory
+evidence.
