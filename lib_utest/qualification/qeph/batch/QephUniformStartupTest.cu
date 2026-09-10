@@ -148,7 +148,7 @@ TEST_F(QephBatchCuda, UniformStartupFirstHalfKickAndZeroForceFlightMatchNative) 
   }
 }
 
-TEST_F(QephBatchCuda, UniformStartupMetadataOverflowAndJoinedScopeRejectBeforeAllocation) {
+TEST_F(QephBatchCuda, UniformStartupMetadataOverflowAndPrescribedScopeRejectBeforeAllocation) {
   UniformRig r(2); ASSERT_TRUE(r.Owner());
   for(unsigned fault=0;fault<5;++fault) {
     SCOPED_TRACE(fault); auto config=r.Config(); q::QephBatch batch;
@@ -178,8 +178,9 @@ TEST_F(QephBatchCuda, UniformStartupMetadataOverflowAndJoinedScopeRejectBeforeAl
   auto config=r.Config(); config.owner=owner.accepted(); config.element_count=1;
   for(auto usage:{q::BatchUsage::PrescribedFields,q::BatchUsage::CoupledForces}) {
     config.usage=usage; q::QephBatch joined;
-    EXPECT_EQ(joined.InitializeJoined(config,binding).status,q::BatchStatus::InvalidInput);
-    EXPECT_EQ(joined.allocations().device_allocations,0u);
+    EXPECT_EQ(joined.InitializeJoined(config,binding).status,usage==q::BatchUsage::PrescribedFields?
+        q::BatchStatus::InvalidInput:q::BatchStatus::Success);
+    EXPECT_EQ(joined.allocations().device_allocations,usage==q::BatchUsage::PrescribedFields?0u:1u);
   }
   config.startup={}; config.usage=q::BatchUsage::PrescribedFields; q::QephBatch legacy;
   ASSERT_EQ(legacy.InitializeJoined(config,binding).status,q::BatchStatus::Success);

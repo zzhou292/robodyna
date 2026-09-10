@@ -37,6 +37,8 @@ BatchReport BuildModel(const T3BatchConfig& c,const T3BatchElement* input,Model&
      o.velocity_phase!=NodalVelocityPhase::Collocated||!c.configuration_id||!c.qualification_id||
      (c.usage!=BatchUsage::PrescribedFields&&c.usage!=BatchUsage::CoupledForces))
     return {BatchStatus::InvalidInput,"Batch requires explicit usage and an epoch-zero staggered rotational owner"};
+  if(!shell_startup_detail::ValidStartup(c.startup,c.usage==BatchUsage::CoupledForces))
+    return {BatchStatus::InvalidInput,"Invalid or unsupported T3 initial motion declaration"};
   if(!c.element_count||c.element_count>MaxBatchElements||!o.node_count||o.node_count>MaxBatchNodes||
      !c.max_device_bytes||c.max_device_bytes>MaxBatchDeviceBytes||sizeof(Storage)>c.max_device_bytes)
     return {BatchStatus::ResourceLimit,"T3 element/node/allocation capacity exceeded"};
@@ -89,6 +91,12 @@ BatchReport BuildModel(const T3BatchConfig& c,const T3BatchElement* input,Model&
     if((!joined&&!seen[n])||!detail::Positive(model.mass[n])||!detail::Positive(model.inertia[n])||
        !detail::Positive(model.physical[n])||!detail::Positive(model.added[n]))
       return {BatchStatus::InvalidMass,"Uncovered node or invalid assembled native mass/inertia",UINT32_MAX,n};
+  if(c.startup.kind==BatchStartupKind::ReferenceUniformTranslation) {
+    double kinetic=0;
+    for(unsigned n=0;n<o.node_count;++n)
+      if(!shell_startup_detail::AddInitialTranslationKinetic(model.mass[n],c.startup.uniform_velocity,kinetic))
+        return {BatchStatus::NonfiniteResult,"Declared initial translation kinetic energy overflows",UINT32_MAX,n};
+  }
   output=model; startup=initial;
   return {BatchStatus::Success,"OK"};
 }

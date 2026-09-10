@@ -1,6 +1,7 @@
 #pragma once
 #include "T3ForceData.h"
 #include "../ShellCollectionLimits.h"
+#include "../ShellBatchStartup.h"
 #include "../../solvers/ExplicitNodalStep.h"
 #include <memory>
 
@@ -10,11 +11,14 @@ constexpr std::size_t MaxBatchElements=MaxShellCollectionParents,MaxBatchNodes=M
 constexpr std::size_t MaxBatchDeviceBytes=1024*1024;
 struct T3BatchElement { ReferenceData reference; std::size_t nodes[3]{}; };
 enum class BatchUsage { Unspecified,PrescribedFields,CoupledForces };
+using BatchStartupKind=ShellBatchStartupKind;
+using BatchStartup=ShellBatchStartup;
 struct T3BatchConfig {
   NodalStamp owner;
   std::uint64_t configuration_id=0,qualification_id=0;
   std::size_t element_count=0,max_device_bytes=MaxBatchDeviceBytes;
   BatchUsage usage=BatchUsage::Unspecified;
+  BatchStartup startup;
 };
 enum class BatchStatus {
   Success,InvalidInput,NotInitialized,NotBound,ResourceLimit,WrongOwner,StaleTrial,
@@ -62,6 +66,10 @@ BatchReport CommitT3Trial(FENodalState&,const NodalTrialToken&,T3Batch&,
 // use the owner's stream. Exactly one allocation, no per-step allocation.
 // Initialize admits only epoch-zero staggered owner metadata. First assembly
 // verifies actual reference-at-rest x/v/omega, free m/J and unit q before binding.
+// Explicit uniform translation is CoupledForces only, with exact declared
+// common v, reference x, zero omega and identity q. Initial history/cache stays
+// zero; no dt0 force runs. First moving assembly requires live-owner source
+// authentication. Joined kinetic belongs only to the common coordinator.
 // Failed contributions are sticky when valid failure channels exist; otherwise
 // caller must discard after ANY failure. Initial readback requires this binding.
 // EvaluateCandidate always starts from accepted history. It can follow a
@@ -81,13 +89,16 @@ class T3Batch {
   // Immutable joined scope; every T3 cell from the complete collection.
   // Both families must be present; config.element_count must match exactly.
   // Matching prescribed or coupled usage is enforced by the sole joined
-  // coordinator. Startup remains reference-at-rest; standalone Commit rejects it.
+  // coordinator. Startup may be rest or common translation; standalone Commit rejects it.
   BatchReport InitializeJoined(const T3BatchConfig&,const ShellBatchBinding&);
   // Raw supplied-view validation/assembly. Initial numerical binding retains
   // its source identity; actual owner association is checked separately before
   // the first standalone or joined publication. A forged raw view alone is
   // therefore not an owner/history publication authority.
+  // First moving startup requires the live-owner overload; after binding either
+  // form consumes the same accepted cache and existing attempt contract.
   BatchReport AssembleAccepted(const NodalAssemblyView&);
+  BatchReport AssembleAccepted(FENodalState&,const NodalAssemblyView&);
   BatchReport EvaluateCandidate(const NodalPreparedView&,BatchDiagnostics*);
   // Output-cadence staged readback, never an evaluation/history advance. The
   // accepted slab remains readable after numerical rejection/discard. All output
@@ -100,6 +111,7 @@ class T3Batch {
  private:
   friend class ::tl::fea::ShellBatchPublication;
   BatchReport InitializeImpl(const T3BatchConfig&,const T3BatchElement*,const ShellBatchBinding*);
+  BatchReport AssembleAcceptedImpl(FENodalState*,const NodalAssemblyView&);
   friend BatchReport CommitT3Trial(FENodalState&,const NodalTrialToken&,T3Batch&,
                                     const BatchDiagnostics&,const NodalValidationReceipt&) noexcept;
   struct Impl; std::unique_ptr<Impl> impl_;

@@ -35,7 +35,7 @@ struct ShellPublicationReport {
 // owner/configuration/qualification/usage, then perform initial rest/mass
 // binding. The caller may evaluate QEPH and T3 in either order from the same
 // authentic prepared token. Neither joined batch can publish by itself.
-// Startup remains reference-at-rest. This transaction API does not select a
+// Startup is matching reference-rest or explicit uniform translation. This API does not select a
 // stable timestep or qualify a general mixed-shell/contact trajectory.
 //
 // This object borrows the batches; both batches must outlive the
@@ -52,9 +52,12 @@ class ShellBatchPublication {
   ~ShellBatchPublication();
   ShellBatchPublication(const ShellBatchPublication&)=delete;
   ShellBatchPublication& operator=(const ShellBatchPublication&)=delete;
-  // Requires both initial rest caches already bound from this owner's actual
+  // Requires both initial zero-stress caches already bound from this owner's actual
   // source buffers; claims one coordinator per participant. Duplicate or
   // foreign-source attachment fails before device allocation/publication.
+  // Moving startup measures common K0 once from fresh CopyAccepted fields in
+  // native node order. Family kinetic stays unavailable/zero, and epoch-zero
+  // base_kinetic stays zero because there is no completed interval.
   ShellPublicationReport Initialize(FENodalState&,qeph::QephBatch&,t3::T3Batch&);
   // Preflight BOTH completed contributors against the actual owner token
   // before GPU measurement. Kinetic energy is reduced over the complete native

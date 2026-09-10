@@ -21,9 +21,7 @@ __device__ bool ValidateNodes(Storage& s,NodalAssemblyView v,bool initial) {
       s.control.status=BatchStatus::InvalidInput; s.control.node=n; return false;
     }
     const auto ref=s.model.initial_position[n];
-    if(initial&&(!detail::SameHistoryBits(x.x,ref.x)||!detail::SameHistoryBits(x.y,ref.y)||
-       !detail::SameHistoryBits(x.z,ref.z)||velocity.x!=0||velocity.y!=0||velocity.z!=0||
-       omega.x!=0||omega.y!=0||omega.z!=0)) {
+    if(initial&&!shell_startup_detail::MatchesInitialNode(s.model.config.startup,x,ref,velocity,omega,q)) {
       s.control.status=BatchStatus::InvalidInput; s.control.node=n; return false;
     }
   }
@@ -44,6 +42,18 @@ __global__ void Assemble(Storage* storage,const Slab* accepted,NodalAssemblyView
       }
       if(AccumulateNodalForces<3>(s.model.element[e].nodes,result.internal_force,result.internal_couple,v.forces,-1)
          !=NodalForceAssemblyStatus::Success) { s.control.status=BatchStatus::AssemblyFailure; s.control.element=e; break; }
+    }
+    if(s.control.status==BatchStatus::Success&&initial&&!s.model.joined&&
+       s.model.config.startup.kind==BatchStartupKind::ReferenceUniformTranslation) {
+      double kinetic=0;
+      for(unsigned n=0;n<s.model.config.owner.node_count;++n)
+        if(!shell_startup_detail::AddInitialTranslationKinetic(s.model.mass[n],ReadVector(v.accepted.velocity_xyz,n),kinetic)) {
+          s.control.status=BatchStatus::NonfiniteResult; s.control.node=n; break;
+        }
+      if(s.control.status==BatchStatus::Success) {
+        s.control.diagnostics.kinetic_translation=kinetic;
+        s.control.diagnostics.valid=true;
+      }
     }
   }
   if(s.control.status!=BatchStatus::Success) RecordNodalAssemblyFailure(v,sc::Status::kInvalidArgument,s.control.node);

@@ -2,6 +2,8 @@
 #include "ShellBatchPublicationStorage.h"
 #include "qeph/QephBatchStorage.h"
 #include "t3/T3BatchStorage.h"
+#include "ShellBatchStartup.h"
+#include <array>
 #include <cstring>
 #include <new>
 
@@ -22,6 +24,29 @@ bool SameDiagnostics(const ShellBatchDiagnostics& a,const ShellBatchDiagnostics&
 template<class D> bool UnavailableKinetic(const D& d) noexcept {
   return !d.kinetic_available&&d.kinetic_translation==0&&d.kinetic_rotation==0&&
     d.kinetic_physical_isotropic==0&&d.kinetic_added_isotropic==0;
+}
+ShellPublicationReport InitialMovingKinetic(FENodalState& owner,const ShellBatchBinding& binding,
+    const ShellBatchStartup& startup,const NodalStamp& expected,ShellBatchKinetic& output) {
+  // Initial assembly views have expired after caller Discard. Authenticate
+  // those source identities separately, then obtain fresh actual owner fields
+  // through its accepted-only readback contract; never dereference old views.
+  std::array<double,3*MaxShellCollectionNodes> x{},v{},w{};
+  std::array<double,4*MaxShellCollectionNodes> orientation{};
+  NodalStamp stamp;
+  const auto copied=owner.CopyAccepted({x.data(),v.data(),MaxShellCollectionNodes,orientation.data(),w.data()},&stamp);
+  if(copied.status!=NodalStatus::Ok) return Nodal(copied);
+  if(!trial_identity::SameStamp(stamp,expected)||stamp.epoch||stamp.time!=0||stamp.velocity_time!=0||stamp.node_count!=binding.node_count()||
+     stamp.temporal_scheme!=NodalTemporalScheme::StaggeredHalfKickStart||stamp.velocity_phase!=NodalVelocityPhase::Collocated)
+    return {S::StaleTrial,"Common initial kinetic requires the actual epoch-zero physical owner"};
+  ShellBatchKinetic measured;
+  for(std::size_t n=0;n<binding.node_count();++n) {
+    const tl::math::Vec3 position{x[3*n],x[3*n+1],x[3*n+2]},velocity{v[3*n],v[3*n+1],v[3*n+2]},omega{w[3*n],w[3*n+1],w[3*n+2]};
+    if(!shell_startup_detail::MatchesInitialNode(startup,position,binding.nodes()[n].position,velocity,omega,orientation.data()+4*n))
+      return {S::InvalidInput,"Actual common initial state differs from the bound motion declaration"};
+    if(!shell_startup_detail::AddInitialTranslationKinetic(binding.nodes()[n].native.mass,velocity,measured.translation))
+      return {S::NonfiniteResult,"Measured common initial kinetic energy overflows"};
+  }
+  output=measured; return Ok();
 }
 } // namespace
 
@@ -59,7 +84,8 @@ struct ShellBatchPublication::Impl {
       q.config.element_count==q.joined_binding->qeph_count()&&q.config.element_count>0&&
       t.config.element_count==t.joined_binding->t3_count()&&t.config.element_count>0&&
       q.config.configuration_id==t.config.configuration_id&&
-      q.config.qualification_id==t.config.qualification_id&&same_usage&&trial_identity::SameStamp(q.config.owner,t.config.owner)&&
+      q.config.qualification_id==t.config.qualification_id&&same_usage&&
+      shell_startup_detail::SameStartup(q.config.startup,t.config.startup)&&trial_identity::SameStamp(q.config.owner,t.config.owner)&&
       trial_identity::SameStamp(q.accepted_stamp,t.accepted_stamp)&&q.stream==t.stream;
   }
   ShellPublicationReport InitialSources(const FENodalState& owner) const noexcept {
@@ -123,6 +149,16 @@ ShellPublicationReport ShellBatchPublication::Initialize(FENodalState& owner,qep
     if(binding_check.nodal_status==NodalStatus::DeviceFailure) next->Poison();
     return binding_check;
   }
+  if(!UnavailableKinetic(q.impl_->accepted_diagnostics)||!UnavailableKinetic(t.impl_->accepted_diagnostics))
+    return {S::InvalidInput,"Joined initial participants must not publish duplicate kinetic energy"};
+  ShellBatchKinetic initial_kinetic;
+  if(q.impl_->config.startup.kind==ShellBatchStartupKind::ReferenceUniformTranslation) {
+    const auto measured=InitialMovingKinetic(owner,*q.impl_->joined_binding,q.impl_->config.startup,q.impl_->accepted_stamp,initial_kinetic);
+    if(measured.status!=S::Success) {
+      if(measured.nodal_status==NodalStatus::DeviceFailure) next->Poison();
+      return measured;
+    }
+  }
   shell_publication_detail::Storage initial;
   const auto& binding=*q.impl_->joined_binding; initial.model.node_count=binding.node_count();
   for(std::size_t n=0;n<binding.node_count();++n) {
@@ -137,7 +173,10 @@ ShellPublicationReport ShellBatchPublication::Initialize(FENodalState& owner,qep
   r=next->Runtime(cudaMemcpy(next->storage,&initial,sizeof(initial),cudaMemcpyHostToDevice),"Mixed kinetic initialization failed");
   if(r.status!=S::Success) return r;
   next->accepted.qeph=q.impl_->accepted_diagnostics; next->accepted.t3=t.impl_->accepted_diagnostics;
-  next->accepted.valid=true; // Known zero actual rest state; no h=0 evaluation.
+  next->accepted.kinetic=initial_kinetic;
+  // Epoch zero has no completed interval/base kinetic. Rest remains known zero;
+  // moving K0 is measured once from fresh owner fields, without h=0 evaluation.
+  next->accepted.valid=true;
   q.impl_->publication_scope=this; t.impl_->publication_scope=this;
   impl_=std::move(next); return Ok();
 }

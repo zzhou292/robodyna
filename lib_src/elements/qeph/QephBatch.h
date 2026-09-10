@@ -1,6 +1,7 @@
 #pragma once
 #include "QephForceData.h"
 #include "../ShellCollectionLimits.h"
+#include "../ShellBatchStartup.h"
 #include "../../solvers/ExplicitNodalStep.h"
 #include <memory>
 
@@ -10,12 +11,8 @@ constexpr std::size_t MaxBatchElements=MaxShellCollectionParents,MaxBatchNodes=M
 constexpr std::size_t MaxBatchDeviceBytes=1024*1024;
 struct QephBatchElement { ReferenceData reference; std::size_t nodes[4]{}; };
 enum class BatchUsage { Unspecified,PrescribedFields,CoupledForces };
-enum class BatchStartupKind { ReferenceRest,ReferenceUniformTranslation };
-struct BatchStartup {
-  BatchStartupKind kind=BatchStartupKind::ReferenceRest;
-  // Physical common WORLD velocity, m/s. The rest kind requires zero.
-  Vec3 uniform_velocity{};
-};
+using BatchStartupKind=ShellBatchStartupKind;
+using BatchStartup=ShellBatchStartup;
 struct QephBatchConfig {
   NodalStamp owner;
   std::uint64_t configuration_id=0,qualification_id=0;
@@ -70,13 +67,13 @@ BatchReport CommitQephTrial(FENodalState&,const NodalTrialToken&,QephBatch&,
 // use the owner's stream. Exactly one allocation, no per-step allocation.
 // Initialize admits only epoch-zero staggered owner metadata. First assembly
 // verifies actual reference-at-rest x/v/omega, free m/J and unit q before binding.
-// Explicit ReferenceUniformTranslation is standalone CoupledForces only:
+// Explicit ReferenceUniformTranslation is CoupledForces only:
 // reference x, bit-identical declared common v, omega=0 and identity q. It uses
 // known zero initial stress/history/cache, never a dt=0 force operation. This
 // startup data contract supplies no recurrence or arbitrary-pose qualification.
 // Actual initial kinetic energy is published only after live-owner source
 // authentication and successful first assembly/readback. Joined participants
-// retain the default rest-only scope.
+// retain unavailable/zero family kinetic; the coordinator owns common K0.
 // Failed contributions are sticky when valid failure channels exist; otherwise
 // caller must discard after ANY failure. Initial readback requires this binding.
 // EvaluateCandidate always starts from accepted history. It can follow a
@@ -96,7 +93,7 @@ class QephBatch {
   // Immutable joined scope; every QEPH cell from the complete collection.
   // Both families must be present; config.element_count must match exactly.
   // Matching prescribed or coupled usage is enforced by the sole joined
-  // coordinator. Startup remains reference-at-rest; standalone Commit rejects it.
+  // coordinator. Startup may be rest or common translation; standalone Commit rejects it.
   BatchReport InitializeJoined(const QephBatchConfig&,const ShellBatchBinding&);
   // Raw supplied-view validation/assembly for rest or an already-bound batch.
   // First uniform-translation binding requires the live-owner overload below.

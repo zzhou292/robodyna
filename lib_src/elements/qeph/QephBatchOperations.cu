@@ -49,7 +49,7 @@ BatchReport QephBatch::AssembleAcceptedImpl(FENodalState* owner,const NodalAssem
   batch_detail::LaunchAssembly(s.storage,s.accepted,v,!s.bound);
   report=s.ReadControl(); if(report.status!=BatchStatus::Success) return fail(report);
   if(!s.bound) {
-    if(s.config.startup.kind==BatchStartupKind::ReferenceUniformTranslation) {
+    if(s.config.startup.kind==BatchStartupKind::ReferenceUniformTranslation&&!s.joined_binding) {
       const auto& measured=s.control.diagnostics;
       if(!measured.valid||!std::isfinite(measured.kinetic_translation)||measured.kinetic_translation<0||
          measured.kinetic_rotation!=0||measured.kinetic_physical_isotropic!=0||measured.kinetic_added_isotropic!=0)
@@ -70,7 +70,7 @@ BatchReport QephBatch::EvaluateCandidate(const NodalPreparedView& v,BatchDiagnos
   if(!impl_) return {BatchStatus::NotInitialized,"QEPH batch is not initialized"};
   auto& s=*impl_; s.Discard();
   auto report=s.PendingError(); if(report.status!=BatchStatus::Success) return report;
-  if(!s.bound) return {BatchStatus::NotBound,"Initial reference-at-rest mass binding is required"};
+  if(!s.bound) return {BatchStatus::NotBound,"Initial reference/motion and mass binding is required"};
   if(!output) return {BatchStatus::InvalidInput,"Missing QEPH diagnostic output"};
   const auto& a=s.accepted_stamp; const auto n=a.node_count; const auto h=a.fixed_dt;
   if(v.owner_id!=a.owner_id) return {BatchStatus::WrongOwner,"QEPH candidate belongs to another owner"};

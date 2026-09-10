@@ -22,22 +22,8 @@ __device__ bool ValidateNodes(Storage& s,NodalAssemblyView v,bool initial) {
       s.control.status=BatchStatus::InvalidInput; s.control.node=n; return false;
     }
     const auto ref=s.model.initial_position[n];
-    if(initial) {
-      if(s.model.config.startup.kind==BatchStartupKind::ReferenceRest) {
-        if(!detail::SameHistoryBits(x.x,ref.x)||!detail::SameHistoryBits(x.y,ref.y)||
-           !detail::SameHistoryBits(x.z,ref.z)||velocity.x!=0||velocity.y!=0||velocity.z!=0||
-           omega.x!=0||omega.y!=0||omega.z!=0) {
-          s.control.status=BatchStatus::InvalidInput; s.control.node=n; return false;
-        }
-      } else {
-        const auto declared=s.model.config.startup.uniform_velocity;
-        if(!detail::SameHistoryBits(x.x,ref.x)||!detail::SameHistoryBits(x.y,ref.y)||
-           !detail::SameHistoryBits(x.z,ref.z)||!detail::SameHistoryBits(velocity.x,declared.x)||
-           !detail::SameHistoryBits(velocity.y,declared.y)||!detail::SameHistoryBits(velocity.z,declared.z)||
-           omega.x!=0||omega.y!=0||omega.z!=0||q[0]!=1||q[1]!=0||q[2]!=0||q[3]!=0) {
-          s.control.status=BatchStatus::InvalidInput; s.control.node=n; return false;
-        }
-      }
+    if(initial&&!shell_startup_detail::MatchesInitialNode(s.model.config.startup,x,ref,velocity,omega,q)) {
+      s.control.status=BatchStatus::InvalidInput; s.control.node=n; return false;
     }
   }
   return true;
@@ -58,7 +44,7 @@ __global__ void Assemble(Storage* storage,const Slab* accepted,NodalAssemblyView
       if(AccumulateNodalForces<4>(s.model.element[e].nodes,result.internal_force,result.internal_couple,v.forces,-1)
          !=NodalForceAssemblyStatus::Success) { s.control.status=BatchStatus::AssemblyFailure; s.control.element=e; break; }
     }
-    if(s.control.status==BatchStatus::Success&&initial&&
+    if(s.control.status==BatchStatus::Success&&initial&&!s.model.joined&&
        s.model.config.startup.kind==BatchStartupKind::ReferenceUniformTranslation) {
       double kinetic=0;
       for(unsigned n=0;n<s.model.config.owner.node_count;++n)
