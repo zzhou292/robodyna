@@ -71,3 +71,23 @@ active storage change (`active-shell-legacy-tests-1`). The owning Bazel arena,
 QEPH/T3 and common publication targets build in
 `active-storage-owner-owning-bazel-1`. Larger grouped dynamics remains a
 separate qualification.
+
+## Multi-block candidate evaluation (2026-09-10)
+
+TL34dadf3 evaluates independent QEPH/T3 parents in64-thread blocks, followed by a
+single same-stream finalizer that retains the original first-failure scan and
+ordered diagnostics. It adds no state, arena or per-step allocation and changes
+no element, material or force-scatter arithmetic. All7 focused host/CUDA
+functions pass, including simultaneous63/64/final-parent failures for elastic
+and plastic paths, complete accepted preservation and exact retry. Owning Q/T
+Bazel batch targets build. Independent review found no blocker.
+
+On the actual804-QEPH/111-T3 Yaris assembly, the128-step and1024-step trajectories
+have byte-identical accepted meshes, OBJ files, plastic fields and complete
+interval/index ledgers relative to their retained baselines. Reports:
+`crash-work/reports/shell-candidate-grid-tests-1.json`,
+`source-assembly-candidate-grid-parity-1.json` and
+`source-assembly-candidate-grid-parity-2.json`. The yielding1024-step run takes
+115.170s versus116.835s, and the128-step run14.354s versus14.561s. These single-run
+differences do not establish a material speedup. Optional component-stage timing
+is the next measurement; CUDA API wall time alone does not identify kernel cost.
