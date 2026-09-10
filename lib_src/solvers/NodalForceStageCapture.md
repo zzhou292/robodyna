@@ -48,3 +48,7 @@ native functions include64 force-stage packets. Guarded reports are
 `force-stage-capture-functions-1/`. Independent read-only review found no
 remaining blocker. App observation composition and its live case gate remain
 separate; this does not establish a physical energy acceptance tolerance.
+
+The two owning capture Bazel targets and both modified Q/T batch targets also
+build (`force-stage-capture-owning-bazel-1`). One misleading-indentation warning
+in a test was split into separate lines afterward; test arithmetic is unchanged.

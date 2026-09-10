@@ -19,7 +19,8 @@ TEST(ForceStageCapturePacket,DisabledSinkLeavesCapturePayloadUntouchedAndEnabled
   EXPECT_EQ(p.accelerations,old);EXPECT_EQ(p.primary,group);
   for(unsigned missing=0;missing<4;++missing) {
     auto sink=p.sink();if(missing==0)sink.node=nullptr;if(missing==1)sink.node_rotation=nullptr;
-    if(missing==2)sink.group=nullptr;if(missing==3)sink.group_rotation=nullptr;
+    if(missing==2)sink.group=nullptr;
+    if(missing==3)sink.group_rotation=nullptr;
     EXPECT_EQ(rigid::PrepareGroupCandidate<true>(p.view(),0,p.accepted.data(),p.captured.data(),p.loads.data(),PacketNodes,input.body.durations,sink).status,
       rigid::StepStatus::InvalidInput);
     EXPECT_EQ(p.captured,p.accepted);EXPECT_EQ(p.accelerations,old);EXPECT_EQ(p.primary,group);
