@@ -2,6 +2,7 @@
 
 #include "FENodalStateView.h"
 #include "ExplicitStepStability.h"
+#include "../constraints/NodalRigidGroupState.h"
 #include <cuda_runtime_api.h>
 #include <cstddef>
 #include <cstdint>
@@ -69,6 +70,7 @@ struct NodalStamp {
   // Momentum changes span this kick duration, which is h/2 for the first
   // staggered kick. It is distinct from the full physical interval duration h.
   double reaction_kick_dt = 0;
+  NodalRigidGroupInfo rigid_groups{}; // Immutable source association, no extra state owner.
 };
 struct NodalAllocationInfo {
   // Explicit module-owned cudaMalloc buffers; excludes CUDA runtime/driver
@@ -110,6 +112,7 @@ struct NodalAssemblyView {
   NodalTemporalScheme temporal_scheme = NodalTemporalScheme::VelocityFirst;
   NodalVelocityPhase velocity_phase = NodalVelocityPhase::Collocated;
   double position_time = 0, velocity_time = 0;
+  NodalRigidGroupInfo rigid_groups{};
 };
 // Read-only completed candidate for module admission checks before commit.
 // kinematics.base_epoch remains the ACCEPTED base epoch of this attempt.
@@ -126,6 +129,7 @@ struct NodalPreparedView {
   NodalVelocityPhase velocity_phase = NodalVelocityPhase::Collocated;
   NodalVelocityPhase base_velocity_phase = NodalVelocityPhase::Collocated;
   double base_time = 0, velocity_time = 0, base_velocity_time = 0, kick_dt = 0;
+  NodalRigidGroupInfo rigid_groups{};
 };
 TL_SURFACE_HD inline void RecordNodalAssemblyFailure(
     const NodalAssemblyView& view, tlfea::contact::Status status,
@@ -139,6 +143,7 @@ TL_SURFACE_HD inline void RecordNodalAssemblyFailure(
 }
 
 class FENodalState;
+class NodalRigidGroupModel;
 struct NodalStepAdmission;
 struct NodalValidationReceipt;
 struct NodalStaggeredPrescribedAdmission;
@@ -152,6 +157,7 @@ class NodalTrialToken {
   friend NodalReport AdvanceNodal(FENodalState&, const NodalTrialToken&, const NodalStepAdmission&);
   friend NodalReport AdvanceStaggeredPrescribed(FENodalState&, const NodalTrialToken&, const NodalStaggeredPrescribedAdmission&);
   friend NodalReport AdvanceStaggeredHistory(FENodalState&, const NodalTrialToken&, const NodalStaggeredHistoryAdmission&);
+  friend NodalReport AdvanceStaggeredRigidGroups(FENodalState&, const NodalTrialToken&, const NodalStaggeredHistoryAdmission&);
   friend NodalReport CompleteNodalValidation(FENodalState&, const NodalTrialToken&, const NodalValidationReceipt&);
   std::uint64_t owner_id_ = 0, base_epoch_ = 0, attempt_ = 0;
 };
@@ -168,6 +174,8 @@ class NodalTrialToken {
 // AdvanceTranslations (legacy) or separately admitted AdvanceNodal -> Commit.
 // StaggeredHalfKickStart requires extended initialization and the distinct
 // AdvanceStaggeredPrescribed or restricted AdvanceStaggeredHistory operation.
+// Attached rigid groups instead require AdvanceStaggeredRigidGroups and its
+// validation receipt; their state shares this owner's slab and publication.
 // CopyAccepted exports the stored velocity
 // with its explicit phase/time; it never reconstructs a collocated velocity.
 // Forces and bounds are trial SCRATCH, never
@@ -193,6 +201,13 @@ class FENodalState {
   // require zero initial velocity. Angular velocity may be absent (zero).
   NodalReport Initialize(const NodalStateConfig&, HostNodalKinematicsView,
                          const double* inverse_mass, const NodalDofConfig&);
+  // Optional plain rigid groups: exact reference/mass/J association, free
+  // member DOFs, uniform member translation and zero initial spin. Copies the
+  // immutable model and appends group history to the same accepted/trial slabs.
+  // Requires the dedicated staggered rigid-group advance and validation receipt.
+  NodalReport Initialize(const NodalStateConfig&, HostNodalKinematicsView,
+                         const double* inverse_mass, const NodalDofConfig&,
+                         const NodalRigidGroupModel&);
   NodalReport BeginTrial(NodalTrialToken*, NodalAssemblyView*);
   // Host-only comparison of a retained assembly SOURCE identity with this
   // owner's current accepted buffers and immutable mass/constraint storage.
@@ -218,15 +233,24 @@ class FENodalState {
   // output range or stamp changes. Reading during a trial still exports accepted
   // state only. The application associates owner_id with its run/topology identity.
   NodalReport CopyAccepted(NodalSnapshotBuffer, NodalStamp*);
+  NodalRigidGroupInfo rigid_groups() const noexcept;
+  // Failure-atomic readback, with the SAME accepted owner stamp. The frame's
+  // force-stage time is stamp.reaction_time after a step, stamp.time at startup.
+  NodalReport CopyAcceptedRigidGroups(NodalRigidGroupSnapshotBuffer, NodalStamp*);
+  // Candidate readback for validators; buffers and prepared timing publish
+  // together only after all validation/readback succeeds. Output ranges must
+  // also be disjoint from the token. No mutable group view is exported.
+  NodalReport CopyPreparedRigidGroups(const NodalTrialToken&,NodalRigidGroupSnapshotBuffer,NodalPreparedView*);
  private:
   friend NodalReport AdvanceTranslations(FENodalState&, const NodalTrialToken&);
   friend NodalReport AdvanceNodal(FENodalState&, const NodalTrialToken&, const NodalStepAdmission&);
   friend NodalReport AdvanceStaggeredPrescribed(FENodalState&, const NodalTrialToken&, const NodalStaggeredPrescribedAdmission&);
   friend NodalReport AdvanceStaggeredHistory(FENodalState&, const NodalTrialToken&, const NodalStaggeredHistoryAdmission&);
+  friend NodalReport AdvanceStaggeredRigidGroups(FENodalState&, const NodalTrialToken&, const NodalStaggeredHistoryAdmission&);
   friend NodalReport CompleteNodalValidation(FENodalState&, const NodalTrialToken&, const NodalValidationReceipt&);
   NodalReport InitializeImpl(const NodalStateConfig&, HostNodalKinematicsView,
                              const double* inverse_mass, const std::uint8_t* fixed,
-                             const NodalDofConfig*);
+                             const NodalDofConfig*, const NodalRigidGroupModel* = nullptr);
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };

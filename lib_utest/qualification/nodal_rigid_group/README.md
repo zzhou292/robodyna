@@ -1,8 +1,10 @@
-# Nodal-rigid startup and stateless mathematics
+# Nodal-rigid startup, recurrence packets and owner qualification
 
-This module prepares disjoint, fully supplied source nodal-rigid groups and
-evaluates force/moment transfer and anisotropic angular acceleration. It has no
-runtime state owner, clock, constraint projection or accepted trajectory.
+The startup model prepares disjoint, fully supplied source nodal-rigid groups.
+Pure packets evaluate force/moment transfer, anisotropic angular acceleration,
+principal-frame recurrence and member drift. The optional owner adapter now
+composes those packets with the existing physical-node accepted/trial slabs.
+See `lib_src/solvers/NodalRigidGroups.md` for its API, phase and limited scope.
 
 `NodalRigidGroupModel` copies source IDs, global indices, coordinate bits and
 all native mass/inertia values into active-size host storage. The admitted
@@ -31,10 +33,11 @@ any future physical energy/mass reporting.
 reduction includes each member couple and its force's moment arm. Angular
 acceleration includes anisotropic Euler terms in a supplied current principal
 frame. It does not update that frame or choose its temporal phase. Thus no
-claim is made about native `ROTBMR`, `RGBODV`, first half kick, finite-rotation
-drift or transaction publication. Those remain the next integration gate.
+claim is made by the stateless-math tests about native `ROTBMR`, `RGBODV`, first
+half kick, finite-rotation drift or transaction publication. Separate packet,
+phase and owner gates below cover those additional responsibilities.
 
-The native directory retains six complete pinned original files and fourteen
+The native directory retains eight complete pinned original files and seventeen
 byte-exact arithmetic fragments. `verify_sources.py` checks source SHA-256,
 Git blob identities and exact source line extraction. The Fortran wrapper
 supplies bounded input packets around original inertia, correction, force
@@ -73,7 +76,7 @@ The separate pure recurrence packet targets are `nodal_rigid_step_check`,
 frame/gyro/member acceleration/kick/drift arithmetic with explicit duration
 inputs, including a proposed TL half-kick packet. They do not integrate an
 owner, qualify donor engine startup timing, or publish a constrained trajectory.
-See `lib_src/constraints/NodalRigidGroupStepMath.md` for that scope. All 12 new packet tests pass alongside the 21 startup/stateless tests in six
+See `lib_src/constraints/NodalRigidGroupStepMath.md` for that scope. All 12 initial packet tests pass alongside the 21 startup/stateless tests in six
 host/native/CUDA targets on the RTX 5090 (2026-09-10). The owning Bazel targets
 also build. Workspace evidence:
 `crash-work/reports/nodal-rigid-step-{configure,build,tests}-1` and
@@ -87,3 +90,23 @@ an extended intermediate-overflow regression. Evidence:
 `crash-work/reports/nodal-rigid-cancellation-{build,tests}-1` and
 `nodal-rigid-cancellation-owning-bazel-1`. Earlier summaries saying37 included
 the extended existing test as a new case; retained GTest output confirms36.
+
+The new `nodal_rigid_phase_native_check` retains source fresh duration and kick
+statements with a separately authored fixed-step selector. It checks unequal
+durations and 32 evolving force/frame/member packets, including sensitivity to a
+wrong first full kick and premature frame update. Source scheduling context is
+recorded in the workspace `planning/NODAL_RIGID_STARTUP_PHASE.md`. Wrapper parity
+does not establish execution of the full native engine.
+
+Configure `TL_NODAL_RIGID_OWNER_CHECKS=ON` for `nodal_rigid_owner_check` and
+`nodal_rigid_owner_native_check`. The former checks initialization, budgets,
+immutable diagnostics, bypass rejection, first/later rollback, final-member
+second-group overflow, new-spin bounds, and sparse source membership at node
+2047. The latter compares 64 actual CUDA owner steps against the independent
+native schedule and native force/frame/member arithmetic, with two groups,
+changing/off loads, force/couple reactions and an ordinary free node. All group
+values publish through the sole nodal slab swap. The owning Bazel CUDA target
+is `//lib_utest/qualification/nodal_rigid_group:nodal_rigid_owner_check`; native
+Fortran comparisons use CMake. These new runtime gates must pass before R3a is
+treated as qualified. This change does not admit shell/contact coupling or
+aggregate rigid-group energy reporting.

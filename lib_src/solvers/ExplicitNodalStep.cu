@@ -1,6 +1,6 @@
 #include "ExplicitNodalStep.h"
 #include "FENodalStateStorage.h"
-#include "NodalRotation.h"
+#include "NodalNodeStep.h"
 
 namespace tl::fea {
 namespace {
@@ -22,44 +22,11 @@ __global__ void Advance(nodal_detail::Control* control, const double* accepted,
     control->status = NodalStatus::MissingStepAdmission; return;
   }
   for (std::uint32_t i = 0; i < n; ++i) {
-    if (!nodal_detail::AdvanceTranslationNodeWithKick(accepted, trial, force, inverse[i], constraints[n+i],
-                                                     i, n, h, kick_dt, trial+13*n)) {
-      control->status = NodalStatus::InvalidOutput; control->node = i; return;
+    const auto status=nodal_detail::AdvanceOrdinaryNode(accepted,trial,force,inverse,constraints,i,n,h,kick_dt,maximum_angle);
+    if(status!=NodalStatus::Ok) {
+      if(status==NodalStatus::StepTooLarge) control->limit.dt=0;
+      control->status=status; control->node=i; return;
     }
-    const bool fixed_rotation = constraints[2*n+i] != 0;
-    double increment[3];
-    for (unsigned axis = 0; axis < 3; ++axis) {
-      const auto j = 3*i+axis;
-      const double couple = force[(3+axis)*n+i];
-      const double acceleration = fixed_rotation ? 0 : inverse[n+i]*couple;
-      const double omega = fixed_rotation ? 0 : accepted[6*n+j]+kick_dt*acceleration;
-      trial[6*n+j] = omega;
-      trial[16*n+j] = fixed_rotation ? -couple : 0;
-      increment[axis] = h*omega;
-      if (!sc::IsFinite(acceleration) || !sc::IsFinite(omega) || !sc::IsFinite(increment[axis])) {
-        control->status = NodalStatus::InvalidOutput; control->node = i; return;
-      }
-    }
-    const double angle = ::hypot(::hypot(increment[0], increment[1]), increment[2]);
-    if (!sc::IsFinite(angle) || angle > maximum_angle) {
-      // The force changes omega during this step; simple h rescaling is not a
-      // proven replacement limit. Report no stable_dt instead of the unrelated
-      // translation-only row result.
-      control->limit.dt = 0;
-      control->status = NodalStatus::StepTooLarge; control->node = i; return;
-    }
-    const auto initial = nodal_detail::ReadQuaternion(accepted+9*n+4*i);
-    tl::math::Quaternion candidate;
-    if (fixed_rotation) {
-      if (!nodal_detail::UnitQuaternion(initial)) {
-        control->status = NodalStatus::InvalidOutput; control->node = i; return;
-      }
-      candidate = initial;
-    } else if (!nodal_detail::IncrementWorldRotation(initial, increment, candidate)) {
-      control->status = NodalStatus::InvalidOutput; control->node = i; return;
-    }
-    auto* q = trial+9*n+4*i;
-    q[0] = candidate.w; q[1] = candidate.x; q[2] = candidate.y; q[3] = candidate.z;
   }
 }
 }  // namespace
@@ -91,18 +58,22 @@ NodalReport AdvanceStaggeredHistory(FENodalState& owner, const NodalTrialToken& 
 
 NodalReport FENodalState::Impl::AdvanceSealedNodal(
     std::uint64_t owner_id, std::uint64_t epoch, std::uint64_t attempt,
-    const NodalStepAdmission& admission, NodalTemporalScheme expected_scheme) {
+    const NodalStepAdmission& admission, NodalTemporalScheme expected_scheme, bool with_rigid_groups) {
   auto& s = *this;
   if (!s.usable) return {NodalStatus::DeviceFailure, "CUDA owner is poisoned"};
   if (!s.Matches(owner_id, epoch, attempt))
     return s.Reject(NodalStatus::StaleTrial, "Trial token belongs to another owner or attempt");
   if (s.phase != Phase::Sealed) return s.Reject(NodalStatus::WrongPhase, "Assembly has not been sealed");
+  if(bool(s.rigid_groups)!=with_rigid_groups)
+    return s.Reject(NodalStatus::MissingStepAdmission,"Attached rigid groups require their dedicated advance operation");
   if (s.config.temporal_scheme != expected_scheme)
     return s.Reject(NodalStatus::UnsupportedTemporalScheme, "Step operation does not match the owner's temporal scheme");
   if (!s.has_rotations)
     return s.Reject(NodalStatus::UnsupportedRotation, "AdvanceNodal requires extended nodal initialization");
   const bool elastic = admission.kind == NodalStepAdmissionKind::RestrictedElasticTrajectory;
   const bool history = admission.kind == NodalStepAdmissionKind::RestrictedHistoryTrajectory;
+  if(with_rigid_groups&&!history)
+    return s.Reject(NodalStatus::MissingStepAdmission,"Rigid recurrence requires case-qualified history admission");
   if ((history && expected_scheme != NodalTemporalScheme::StaggeredHalfKickStart) ||
       (elastic && expected_scheme != NodalTemporalScheme::VelocityFirst))
     return s.Reject(NodalStatus::UnsupportedTemporalScheme, "Restricted admission does not match this step operation");
@@ -136,10 +107,15 @@ NodalReport FENodalState::Impl::AdvanceSealedNodal(
   } else if (admission.qualification_id || admission.stiffness_rate_envelope != 0) {
     return s.Reject(NodalStatus::InvalidInput, "Elastic qualification fields supplied for constant loads");
   }
-  Advance<<<1,1,0,s.stream>>>(s.control, s.accepted, s.trial, s.scratch, s.inverse, s.fixed,
-      static_cast<std::uint32_t>(s.config.node_count), s.config.fixed_dt, s.candidate_kick_dt, admission.maximum_rotation_increment,
-      s.stamp.epoch, s.attempt);
-  auto report = s.Check(cudaGetLastError()); if (report.status != NodalStatus::Ok) return report;
+  cudaError_t error;
+  if(with_rigid_groups) error=s.LaunchRigidAdvance(admission.maximum_rotation_increment);
+  else {
+    Advance<<<1,1,0,s.stream>>>(s.control, s.accepted, s.trial, s.scratch, s.inverse, s.fixed,
+        static_cast<std::uint32_t>(s.config.node_count), s.config.fixed_dt, s.candidate_kick_dt, admission.maximum_rotation_increment,
+        s.stamp.epoch, s.attempt);
+    error=cudaGetLastError();
+  }
+  auto report = s.Check(error); if (report.status != NodalStatus::Ok) return report;
   report = s.SynchronizeControl(); if (report.status != NodalStatus::Ok) return report;
   s.pending_qualification = elastic || history ? admission.qualification_id : 0;
   s.phase = elastic || history ? Phase::AwaitingValidation : Phase::Ready;

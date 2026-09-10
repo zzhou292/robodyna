@@ -25,8 +25,9 @@ physical interval h on startup. Kick energy and drift work are distinct ledgers.
 Commit publishes all timing fields only after the normal CUDA error checks
 and stream completion. Discard and failed commit preserve the accepted stamp.
 
-There is no added device allocation, state slab, history cache or second clock.
-The owner remains bounded to 64 nodes, two state slabs and six allocations.
+The T1 timing increment added no device allocation, state slab, history cache
+or second clock. Its original qualification used the then-64-node owner,
+two state slabs and six allocations.
 Legacy shell/contact/output consumers reject the new scheme, including its
 collocated epoch zero, until their own sampling/output contracts are extended.
 Existing archive schemas therefore keep their original interpretation.
@@ -73,3 +74,11 @@ The first execution remains in `nodal-t2-first-execution-1`. Corrected runtime
 reports are `nodal-t2-fixture-{build,tests}-1.json`, the initial regression XML
 is `nodal-t2-owner-xml-1`, and `nodal-t2-bazel-1.json` records the owning builds.
 This gate does not qualify a QEPH coupon or joint material publication.
+
+The current owner admits active storage for up to 2048 physical nodes under
+the unchanged 1 MiB module device cap. Legacy contributors retain their own
+smaller bounds. Optional rigid groups use `AdvanceStaggeredRigidGroups` and
+the same accepted epoch, kick timing and validation receipt. Their values are
+tails of the two existing slabs; one extra immutable metadata arena brings an
+attached owner's allocation count to seven. See `NodalRigidGroups.md` for the
+native lagged principal-frame phase, readback, limits and qualification scope.

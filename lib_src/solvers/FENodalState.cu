@@ -1,6 +1,7 @@
 #include "FENodalStateStorage.h"
 #include "NodalRotation.h"
 #include "NodalTrialIdentity.h"
+#include "NodalRigidGroupStorage.h"
 #include <atomic>
 #include <cmath>
 #include <cstring>
@@ -110,9 +111,14 @@ NodalReport FENodalState::Initialize(const NodalStateConfig& c, HostNodalKinemat
   return InitializeImpl(c, in, inverse_mass, nullptr, &dofs);
 }
 
+NodalReport FENodalState::Initialize(const NodalStateConfig& c, HostNodalKinematicsView in,
+    const double* inverse_mass, const NodalDofConfig& dofs, const NodalRigidGroupModel& groups) {
+  return InitializeImpl(c,in,inverse_mass,nullptr,&dofs,&groups);
+}
+
 NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKinematicsView in,
                                         const double* inverse_mass, const std::uint8_t* fixed,
-                                        const NodalDofConfig* dofs) {
+                                        const NodalDofConfig* dofs, const NodalRigidGroupModel* groups) {
   if (impl_) return {NodalStatus::InvalidInput, "Owner already initialized"};
   if (!c.node_count || c.node_count > MaxNodalStateNodes || !c.max_device_bytes ||
       c.max_device_bytes > MaxTranslationDeviceBytes)
@@ -155,16 +161,28 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
     }
   }
   const auto n = c.node_count;
-  const std::size_t state_values = (rotations ? 19 : 6)*n;
+  std::unique_ptr<nodal_detail::RigidStorage> rigid_groups;
+  if(groups) {
+    if(!rotations) return {NodalStatus::UnsupportedRotation,"Rigid groups require extended nodal state"};
+    try {
+      auto report=nodal_detail::PrepareRigidStorage(*groups,c,in,inverse_mass,*dofs,rigid_groups);
+      if(report.status!=NodalStatus::Ok) return report;
+    } catch(const std::bad_alloc&) { return {NodalStatus::ResourceLimit,"Rigid host storage allocation failed"}; }
+  }
+  const std::size_t group_values=rigid_groups?rigid::GroupStateValues*rigid_groups->info.group_count:0;
+  const std::size_t state_values = (rotations ? 19 : 6)*n+group_values;
   const std::size_t inverse_values = (rotations ? 2 : 1)*n;
   const std::size_t mask_bytes = (rotations ? 3 : 1)*n;
-  const std::size_t bytes = (2*state_values + 11*n + inverse_values)*sizeof(double) + mask_bytes + sizeof(Control);
+  const std::size_t bytes = (2*state_values + 11*n + inverse_values)*sizeof(double) + mask_bytes + sizeof(Control)+
+    (rigid_groups?rigid_groups->immutable_bytes:0);
   if (bytes > c.max_device_bytes) return {NodalStatus::ResourceLimit, "Device byte budget is insufficient"};
   try {
     auto next = std::make_unique<Impl>();
+    next->rigid_groups=std::move(rigid_groups);
     next->staging.resize(state_values,0.);
     next->constraint_staging.resize(mask_bytes,0);
     next->config = c; next->stamp = {NewOwner(), 0, n, 0, c.fixed_dt};
+    if(next->rigid_groups) next->stamp.rigid_groups=next->rigid_groups->info;
     next->stamp.temporal_scheme = c.temporal_scheme;
     next->has_rotations = rotations; next->has_component_constraints = component_constraints;
     next->stamp.has_rotations = rotations; next->state_values = state_values;
@@ -182,12 +200,19 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
     report = allocate(&next->inverse, inverse_values*sizeof(double)); if (report.status != NodalStatus::Ok) return report;
     report = allocate(&next->fixed, mask_bytes); if (report.status != NodalStatus::Ok) return report;
     report = allocate(&next->control, sizeof(Control)); if (report.status != NodalStatus::Ok) return report;
+    if(next->rigid_groups) {
+      report=next->Check(next->rigid_groups->Upload(next->stream));
+      if(report.status!=NodalStatus::Ok) return report;
+      next->allocation.device_bytes+=next->rigid_groups->immutable_bytes;
+      ++next->allocation.device_allocations;
+    }
     std::memcpy(next->staging.data(), in.position_xyz, 3*n*sizeof(double));
     std::memcpy(next->staging.data()+3*n, in.velocity_xyz, 3*n*sizeof(double));
     if (rotations) {
       if (in.angular_velocity_xyz) std::memcpy(next->staging.data()+6*n, in.angular_velocity_xyz, 3*n*sizeof(double));
       std::memcpy(next->staging.data()+9*n, in.orientation_wxyz, 4*n*sizeof(double));
     }
+    if(next->rigid_groups) next->rigid_groups->InitializeState(next->staging.data()+19*n);
     report = next->Check(cudaMemcpyAsync(next->accepted, next->staging.data(), state_values*sizeof(double), cudaMemcpyHostToDevice, next->stream));
     if (report.status != NodalStatus::Ok) return report;
     report = next->Check(cudaMemcpyAsync(next->inverse, inverse_mass, n*sizeof(double), cudaMemcpyHostToDevice, next->stream));
@@ -222,10 +247,11 @@ NodalAssemblyView FENodalState::Impl::AcceptedAssemblySources() const noexcept {
   view.accepted = {accepted, accepted+3*n, has_rotations ? accepted+6*n : scratch+8*n, n, stamp.epoch,
                    has_rotations ? accepted+9*n : nullptr};
   view.mass = {inverse, fixed, static_cast<std::uint32_t>(n), stamp.epoch,
-               has_component_constraints ? sc::TranslationMassModel::kUnspecified : sc::TranslationMassModel::kIsotropicLumped};
+               has_component_constraints || rigid_groups ? sc::TranslationMassModel::kUnspecified : sc::TranslationMassModel::kIsotropicLumped};
   view.stream = stream; view.owner_id = stamp.owner_id;
   view.temporal_scheme = stamp.temporal_scheme; view.velocity_phase = stamp.velocity_phase;
   view.position_time = stamp.time; view.velocity_time = stamp.velocity_time;
+  view.rigid_groups=stamp.rigid_groups;
   if (has_rotations) {
     view.inverse_inertia = inverse+n; view.translation_fixed_bits = fixed+n; view.rotation_fixed = fixed+2*n;
   }
@@ -309,6 +335,7 @@ NodalReport FENodalState::BorrowPrepared(const NodalTrialToken& token, NodalPrep
   out->base_velocity_phase = s.stamp.velocity_phase;
   out->base_time = s.stamp.time; out->base_velocity_time = s.stamp.velocity_time;
   out->velocity_time = s.candidate_velocity_time; out->kick_dt = s.candidate_kick_dt;
+  out->rigid_groups=s.stamp.rigid_groups;
   out->base_kinematics = {s.accepted, s.accepted+3*n,
                           s.has_rotations ? s.accepted+6*n : s.scratch+8*n,
                           n, s.stamp.epoch, s.has_rotations ? s.accepted+9*n : nullptr};

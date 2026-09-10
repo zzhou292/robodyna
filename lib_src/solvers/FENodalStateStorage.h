@@ -5,6 +5,7 @@
 
 namespace tl::fea {
 namespace nodal_detail {
+struct RigidStorage;
 enum class Phase { Idle, Assembling, Sealed, AwaitingValidation, Ready };
 struct Control {
   stability::RowBounds rows;
@@ -43,7 +44,9 @@ TL_SURFACE_HD inline bool AdvanceTranslationNode(
 }
 }  // namespace nodal_detail
 
-// Private runtime storage, shared only with the non-owning advance operation.
+// Private runtime storage shared by the non-owning advance operations. Optional
+// rigid history is an 18-double/group tail of both existing state slabs; one
+// accepted/trial swap publishes the physical nodes and groups together.
 struct FENodalState::Impl {
   ~Impl();
   NodalReport Check(cudaError_t);
@@ -52,7 +55,9 @@ struct FENodalState::Impl {
   bool Matches(std::uint64_t owner, std::uint64_t epoch, std::uint64_t trial) const;
   NodalAssemblyView AcceptedAssemblySources() const noexcept;
   NodalReport AdvanceSealedNodal(std::uint64_t owner, std::uint64_t epoch, std::uint64_t trial,
-                                const NodalStepAdmission&, NodalTemporalScheme);
+                                const NodalStepAdmission&, NodalTemporalScheme, bool with_rigid_groups=false);
+  cudaError_t LaunchRigidAdvance(double maximum_angle);
+  NodalReport StageRigidSnapshot(const double* state);
   NodalStateConfig config;
   NodalStamp stamp;
   NodalAllocationInfo allocation;
@@ -73,5 +78,6 @@ struct FENodalState::Impl {
   // No allocation or host vector growth after startup.
   std::vector<double> staging;
   std::vector<std::uint8_t> constraint_staging;
+  std::unique_ptr<nodal_detail::RigidStorage> rigid_groups;
 };
 }  // namespace tl::fea

@@ -43,6 +43,20 @@
       "size": 4415,
       "sha256": "c764653f86e1261310ffa898b00a40a76e3773e15da90b760f938d0d40fbe404",
       "git_blob_sha1": "d4501a3a9ffb5b064e0e57f521290acd4f158e96"
+    },
+    {
+      "path": "original/starter/source/starter/contrl.F",
+      "upstream_path": "starter/source/starter/contrl.F",
+      "size": 88353,
+      "sha256": "087905ea2f6d143182c9254da8161c7b8e5cfdfefbea7496ed8c4b722240d5d2",
+      "git_blob_sha1": "87f43945d400978cf6525c77cfa606b69bed147b"
+    },
+    {
+      "path": "original/engine/source/engine/resol.F",
+      "upstream_path": "engine/source/engine/resol.F",
+      "size": 509220,
+      "sha256": "0830995908a9bcfe3cad10c7db154f3c5023958529ece366d8019c2c7f6525c0",
+      "git_blob_sha1": "b21114a17ddfefb59e2b694ec98c18fe20985ac0"
     }
   ],
   "fragments": [
@@ -143,6 +157,27 @@
       "first_line": 92,
       "last_line": 102,
       "sha256": "a23217e1130d1cdef15fc5fcb3d31b0db8794a8e40c92f5c921eca34daf87d7c"
+    },
+    {
+      "path": "extracted/FreshDurations.inc",
+      "source": "original/starter/source/starter/contrl.F",
+      "first_line": 1128,
+      "last_line": 1130,
+      "sha256": "e097daa80461bc8504942a531ad644932068945be87683cefbee295a8dd0ffea"
+    },
+    {
+      "path": "extracted/PreviousDrift.inc",
+      "source": "original/engine/source/engine/resol.F",
+      "first_line": 2715,
+      "last_line": 2716,
+      "sha256": "d46333adb6b7fe4d0f51a3cf8d5b21d17bb4d0066cf565ead0b4d9311dccdd09"
+    },
+    {
+      "path": "extracted/KickDuration.inc",
+      "source": "original/engine/source/engine/resol.F",
+      "first_line": 6453,
+      "last_line": 6457,
+      "sha256": "938ef5a60fae408992123602ee2fedb47d0b027a4c8fbadc5a41dbc1526be83c"
     }
   ],
   "interpretation": "Original complete files plus exact contiguous arithmetic fragments; wrapper context is separately authored. Eigen principal axes are equivalent tensor algebra, not native VALPR bit parity."
