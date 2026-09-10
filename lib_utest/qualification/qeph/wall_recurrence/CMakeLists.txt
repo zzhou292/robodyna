@@ -100,3 +100,22 @@ target_compile_features(qeph_wall_job_analysis_check PRIVATE cxx_std_17)
 target_compile_options(qeph_wall_job_analysis_check PRIVATE -fno-fast-math -ffp-contract=off)
 add_test(NAME qeph_wall_job_analysis_check COMMAND qeph_wall_job_analysis_check)
 set_tests_properties(qeph_wall_job_analysis_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)
+
+# Derived evidence reuses raw artifact IO; command preflight is shared by the
+# capture and analysis entry points. Neither owns production mechanics state.
+add_library(qeph_wall_job_report STATIC
+  WallJobReport.cpp WallJobReportWriter.cpp WallJobReportInventory.cpp
+  WallJobJsonNumerics.cpp WallJobJsonContext.cpp WallJobJsonAmplitude.cpp WallJobJsonChecks.cpp)
+target_link_libraries(qeph_wall_job_report PUBLIC qeph_wall_job_analysis qeph_wall_raw_read)
+target_compile_features(qeph_wall_job_report PUBLIC cxx_std_17)
+target_compile_options(qeph_wall_job_report PRIVATE -fno-fast-math -ffp-contract=off)
+add_executable(qeph_wall_job_report_check WallJobReportTest.cpp)
+target_link_libraries(qeph_wall_job_report_check PRIVATE qeph_wall_job_report GTest::gtest_main)
+target_compile_features(qeph_wall_job_report_check PRIVATE cxx_std_17)
+target_compile_options(qeph_wall_job_report_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME qeph_wall_job_report_check COMMAND qeph_wall_job_report_check)
+set_tests_properties(qeph_wall_job_report_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)
+add_executable(qeph_wall_analysis wall_analysis_main.cpp)
+target_link_libraries(qeph_wall_analysis PRIVATE qeph_wall_job_report)
+target_compile_features(qeph_wall_analysis PRIVATE cxx_std_17)
+target_compile_options(qeph_wall_analysis PRIVATE -fno-fast-math -ffp-contract=off)
