@@ -575,5 +575,5 @@ cc_library(
         "qualification/t3/T3ForcePortFixture.h",
         "qualification/t3/T3PortFixture.h",
     ],
-    deps = ["//lib_src/elements/qeph:layered_j2", "//lib_src/elements/t3:layered_j2", "@googletest//:gtest_main"],
+    deps = ["//lib_src/elements:reissner_frame", "//lib_src/elements/qeph:layered_j2", "//lib_src/elements/t3:layered_j2", "@googletest//:gtest_main"],
 )
