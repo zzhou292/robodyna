@@ -1,5 +1,27 @@
 #include "AnalysisInternal.h"
+#include <map>
 namespace crash::benchmarks::assembly_spin {
+void CheckSharedMotion(const Context& c,const Value& row) {
+    const char* key[]{"position_endpoint_xyz_m","velocity_previous_midpoint_xyz_m_s","omega_previous_midpoint_xyz_rad_s"};
+    const char* selected_key[]{"position_endpoint_m","velocity_previous_midpoint_m_s","omega_previous_midpoint_rad_s"};
+    for(bool next:{false,true}) {
+        std::map<std::size_t,std::array<double,9>> seen;
+        const auto& packet=json::Array(row,next?"enclosing_candidate_parents":"parents",c.parents.size(),c.parents.size());
+        for(std::size_t p=0;p<c.parents.size();++p)for(unsigned local=0;local<4;++local) {
+            const auto index=c.parents[p].parent->nodes[local];std::array<double,9> value{};
+            for(unsigned kind=0;kind<3;++kind) {
+                const auto& array=Numbers(packet[static_cast<unsigned>(p)],key[kind],12);
+                for(unsigned axis=0;axis<3;++axis)value[3*kind+axis]=json::Real(array[3*local+axis]);
+                if(!next&&index==c.global_node) {
+                    const auto& selected=Numbers(row,selected_key[kind],3);
+                    for(unsigned axis=0;axis<3;++axis)json::Same(value[3*kind+axis],json::Real(selected[axis]));
+                }
+            }
+            const auto [it,inserted]=seen.emplace(index,value);
+            if(!inserted)for(unsigned i=0;i<9;++i)json::Same(value[i],it->second[i]);
+        }
+    }
+}
 void CheckParent(const Context& c,const ParentSource& selected,const Value& row,std::uint64_t epoch,double time,double origin) {
     const auto& p=*selected.parent;
     Require(json::Unsigned(row,"source_element_id")==p.source_id&&json::Unsigned(row,"source_part_id")==p.part_id&&

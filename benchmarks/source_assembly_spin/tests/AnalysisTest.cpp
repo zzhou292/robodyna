@@ -50,6 +50,9 @@ TEST(SourceSpinAnalysis, CompleteSourceAndPhaseAreCheckedBeforeNativeInterpretat
     EXPECT_THROW(f.Run("wrong-source.jsonl"),std::runtime_error);c["source_curve_id"].SetUint64(curve);
     auto& stamp=f.row["enclosing_accepted_stamp"];stamp["reaction_time"].SetDouble(1e-8);
     EXPECT_THROW(f.Run("wrong-phase.jsonl"),std::runtime_error);stamp["reaction_time"].SetDouble(0);
+    c["position_endpoint_xyz_m"][0u].SetDouble(c["position_endpoint_xyz_m"][0u].GetDouble()+1e-8);
+    EXPECT_THROW(f.Run("split-shared-node.jsonl"),std::runtime_error);
+    c["position_endpoint_xyz_m"][0u].SetDouble(f.row["enclosing_candidate_parents"][0u]["position_endpoint_xyz_m"][3u].GetDouble());
     c["retained_kinematics"]["origin_endpoint_epoch"].SetUint64(2);
     EXPECT_THROW(f.Run("wrong-origin.jsonl"),std::runtime_error);
 }

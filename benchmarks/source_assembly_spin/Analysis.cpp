@@ -18,7 +18,7 @@ Document Analyze(const std::filesystem::path& inventory,const std::filesystem::p
     while(offset<bytes.size()) {
         const auto newline=bytes.find('\n',offset);Require(newline!=std::string::npos,"Spin trace row is unterminated");
         auto row=Parse(bytes.data()+offset,newline-offset);const auto kind=json::Text(row,"record");
-        if(!header) {context.Header(row);header=true;output::Integer(result,"source_node_id",context.source_node);
+        if(!header) {context.Header(row);Require(bytes.size()<=json::Unsigned(row,"forecast_bytes"),"Spin bytes exceed their admitted forecast");header=true;output::Integer(result,"source_node_id",context.source_node);
             output::Integer(result,"source_instance_id",context.source_instance);output::Number(result,"fixed_dt_s",context.dt);}
         else if(kind=="accepted_force_stage") {
             Require(!complete&&row_count<MaxRows,"Spin observation count exceeds bounded complete trace");
@@ -38,6 +38,7 @@ Document Analyze(const std::filesystem::path& inventory,const std::filesystem::p
                 json::Unsigned(row,"global_node")==context.global_node&&json::Unsigned(row,"complete_incident_qeph_parent_count")==context.parents.size()&&
                 json::Unsigned(row,"incident_t3_parent_count")==0,"Spin row source/count scope differs");
             json::TextIs(row,"phase","retained_accepted_force_at_base_time_with_carried_midpoint_motion");
+            CheckSharedMotion(context,row);
             const auto& parents=json::Array(row,"parents",context.parents.size(),context.parents.size());
             const auto& candidates=json::Array(row,"enclosing_candidate_parents",context.parents.size(),context.parents.size());
             std::array<double,4> now{};Array(row,"native",now);

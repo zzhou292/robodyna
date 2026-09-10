@@ -28,6 +28,7 @@ struct Context {
     void Header(const Value&);
     void Stamp(const Value&,std::uint64_t epoch) const;
 };
+void CheckSharedMotion(const Context&,const Value&);
 void CheckParent(const Context&,const ParentSource&,const Value&,std::uint64_t epoch,double time,double origin);
 layered::QephHistory History(const native::Reference&,const Value&);
 native::PrescribedInterval Interval(const Value&,double dt);
