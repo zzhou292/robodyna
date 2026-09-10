@@ -2,6 +2,9 @@
 #include "../LayeredJ2CovarianceFixture.h"
 #include "../../t3/T3ForcePortFixture.h"
 #include "NativeLayeredReference.h"
+#include <sstream>
+#include <iomanip>
+#include <string>
 
 namespace layered_j2_test::recurrence {
 namespace cv=covariance;
@@ -10,6 +13,10 @@ namespace nq=tl::qualification::qeph;
 namespace nt=tl::qualification::t3;
 using tl::math::Vec3;
 constexpr double BaseDt=0x1p-20;
+inline void RecordNumber(const std::string& name,double value) {
+  std::ostringstream text;text<<std::setprecision(17)<<value;
+  ::testing::Test::RecordProperty(name,text.str());
+}
 inline oracle::Law44 Law(bool rate=true) {
   return {tl::qualification::law44::YarisPlasticStrain.data(),tl::qualification::law44::YarisYieldStress.data(),
     tl::qualification::law44::YarisPlasticStrain.size(),rate?cv::source::SourceC:0,
@@ -26,6 +33,7 @@ inline double Dot(Vec3 a,Vec3 b) {return a.x*b.x+a.y*b.y+a.z*b.z;}
 struct Path {
   bool rotating=false;
   unsigned refinement=1,step=0;
+  double angular_speed=1800;
   double dt() const {return BaseDt/refinement;}
   double time() const {return step*dt();}
   static double Amplitude(double time) {
@@ -35,8 +43,8 @@ struct Path {
   }
   static double Rate(double time) {return time<80*BaseDt?1:time<96*BaseDt?0:-1;}
   static Vec3 Axis() {const double n=std::sqrt(14.);return {1/n,-2/n,3/n};}
-  double Angle(double time) const {return rotating?1800*std::max(0.,time-64*BaseDt):0.;}
-  Vec3 Spin(double time) const {return Scale(Axis(),rotating&&time>64*BaseDt?1800:0);}
+  double Angle(double time) const {return rotating?angular_speed*std::max(0.,time-64*BaseDt):0.;}
+  Vec3 Spin(double time) const {return Scale(Axis(),rotating&&time>64*BaseDt?angular_speed:0);}
   Vec3 Rotate(Vec3 x,double time) const {
     const auto a=Axis();const double angle=Angle(time),c=std::cos(angle),s=std::sin(angle);
     return Add(Add(Scale(x,c),Scale(Cross(a,x),s)),Scale(a,Dot(a,x)*(1-c)));

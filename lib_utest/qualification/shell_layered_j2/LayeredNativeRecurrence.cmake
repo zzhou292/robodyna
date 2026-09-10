@@ -62,7 +62,7 @@ target_include_directories(shell_layered_native_reference PUBLIC "${TL_ROOT}" "$
 target_compile_features(shell_layered_native_reference PUBLIC cxx_std_17)
 target_compile_options(shell_layered_native_reference PRIVATE -fno-fast-math -ffp-contract=off)
 add_executable(shell_layered_native_recurrence_check
-  "${lr_source}/LayeredNativeRecurrenceTest.cpp" "${lr_source}/LayeredNativeControlTest.cpp")
+  "${lr_source}/LayeredNativeRecurrenceTest.cpp" "${lr_source}/LayeredNativeControlTest.cpp" "${lr_source}/YarisLocalizedSpinTest.cpp")
 target_link_libraries(shell_layered_native_recurrence_check PRIVATE shell_layered_native_reference GTest::gtest_main)
 target_compile_options(shell_layered_native_recurrence_check PRIVATE -fno-fast-math -ffp-contract=off)
 add_test(NAME shell_layered_native_recurrence_check COMMAND shell_layered_native_recurrence_check)

@@ -98,3 +98,8 @@ at 108288 KiB and the two-function test compilation at 284560 KiB, under a
 512 MiB address-space limit. The first QEPH attempt caught a new wrapper NEL/MTN
 call-slot typo, fixed in this wrapper; failed evidence is preserved separately.
 No production mechanics or tolerance was changed to obtain the pass.
+
+[Large rotation and localized source-parent spin](LargeRotationQualification.md)
+extends the prescribed recurrence past one radian and distinguishes each
+warped parent's own-normal direction from a common shared-node spin axis. It
+also documents the separate native element-rate and LAW44 point-filter branches.

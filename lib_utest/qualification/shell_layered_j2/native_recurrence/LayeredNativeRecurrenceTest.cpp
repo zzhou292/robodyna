@@ -2,8 +2,8 @@
 
 namespace layered_j2_test::recurrence {
 namespace {
-struct Scenario {bool rotate;unsigned refinement;bool rate;};
-constexpr Scenario Scenarios[]{{false,1,false},{false,1,true},{false,2,true},{true,1,true},{true,2,true}};
+struct Scenario {bool rotate;unsigned refinement;bool rate;double angular_speed=1800;};
+constexpr Scenario Scenarios[]{{false,1,false},{false,1,true},{false,2,true},{true,1,true},{true,2,true},{true,1,true,18000},{true,2,true,18000}};
 void Yielded(const sec::ShellLayeredJ2History& h,bool rate) {
   if(rate) {cv::Yielded(h);return;}
   EXPECT_GT(std::max(h.point[0].plastic_strain,h.point[2].plastic_strain),1e-3);
@@ -14,11 +14,12 @@ void Yielded(const sec::ShellLayeredJ2History& h,bool rate) {
 
 TEST(ShellLayeredNativeRecurrence,QephIndependentYieldedRotationAndUnloadingHistories) {
   for(const auto scenario:Scenarios) {
-    const auto [rotate,refinement,rate]=scenario;
+    const auto [rotate,refinement,rate,angular_speed]=scenario;
     const auto material=cv::source::Prepare(rate);
     SCOPED_TRACE(rotate);
     SCOPED_TRACE(refinement);
     SCOPED_TRACE(rate);
+    SCOPED_TRACE(angular_speed);
     auto input=qeph_startup_test::Case(5);cv::SourceMaterial(input,material);
     q::ReferenceData r;nq::Reference nr;
     ASSERT_EQ(q::InitializeReference(input,r),q::Status::kSuccess);
@@ -26,7 +27,7 @@ TEST(ShellLayeredNativeRecurrence,QephIndependentYieldedRotationAndUnloadingHist
     q::LayeredJ2History accepted;oracle::QephHistory native;
     ASSERT_EQ(q::InitializeLayeredJ2History(r,material,{},accepted),q::Status::kSuccess);
     ASSERT_EQ(nq::InitializeHistory(nr,{},native.shell),nq::Status::kSuccess);
-    Path path{rotate,refinement};double plastic_work=0,preload_pla=0,preload_stress=0;
+    Path path{rotate,refinement};path.angular_speed=angular_speed;double plastic_work=0,preload_pla=0,preload_stress=0;
     for(;path.step<160*refinement;++path.step) {
       SCOPED_TRACE(path.step);
       const auto in=path.Interval(input);q::LayeredJ2ForceTrial actual;oracle::QephTrial expected;
@@ -46,6 +47,7 @@ TEST(ShellLayeredNativeRecurrence,QephIndependentYieldedRotationAndUnloadingHist
         EXPECT_NE(native.shell.data().thickness,input.thickness);
       }
     }
+    if(angular_speed>1800) {EXPECT_GT(path.Angle(path.time()),1.6);RecordNumber("large_rotation_rad",path.Angle(path.time()));}
     EXPECT_GT(plastic_work,1e-4);EXPECT_GE(native.points[0][5]+native.points[2][5],preload_pla);
     EXPECT_GT(std::abs(native.points[0][0]-preload_stress),1e7);
     double hg=0;for(double h:native.shell.data().stabilization) hg+=std::abs(h);
@@ -54,11 +56,12 @@ TEST(ShellLayeredNativeRecurrence,QephIndependentYieldedRotationAndUnloadingHist
 }
 TEST(ShellLayeredNativeRecurrence,T3IndependentYieldedRotationAndUnloadingHistories) {
   for(const auto scenario:Scenarios) {
-    const auto [rotate,refinement,rate]=scenario;
+    const auto [rotate,refinement,rate,angular_speed]=scenario;
     const auto material=cv::source::Prepare(rate);
     SCOPED_TRACE(rotate);
     SCOPED_TRACE(refinement);
     SCOPED_TRACE(rate);
+    SCOPED_TRACE(angular_speed);
     auto input=t3_port_test::Triangle(.02,1);cv::SourceMaterial(input,material);
     t::ReferenceData r;nt::Reference nr;
     ASSERT_EQ(t::InitializeReference(input,r),t::Status::kSuccess);
@@ -66,13 +69,16 @@ TEST(ShellLayeredNativeRecurrence,T3IndependentYieldedRotationAndUnloadingHistor
     t::LayeredJ2History accepted;oracle::T3History native;
     ASSERT_EQ(t::InitializeLayeredJ2History(r,material,{},accepted),t::Status::kSuccess);
     ASSERT_EQ(nt::InitializeHistory(nr,{},native.shell),nt::Status::kSuccess);
-    Path path{rotate,refinement};double plastic_work=0,preload_stress=0;
+    Path path{rotate,refinement};path.angular_speed=angular_speed;double plastic_work=0,preload_stress=0;
     for(;path.step<160*refinement;++path.step) {
       SCOPED_TRACE(path.step);
       const auto in=path.Interval(input);t::LayeredJ2ForceTrial actual;oracle::T3Trial expected;
       ASSERT_EQ(t::EvaluateLayeredJ2Force(r,material,accepted,in,actual),t::Status::kSuccess);
       ASSERT_EQ(oracle::Evaluate(nr,native,t3_port_test::Native(in),Law(rate),expected),nt::Status::kSuccess);
       t3_force_port_test::Agreement(r,in,actual.force,expected.shell,cv::Tolerance);
+      EXPECT_DOUBLE_EQ(expected.shell.proposed_history.data().equivalent_strain_rate,
+                       expected.section.total_shell_rate_per_s);
+      if(rate&&path.step==0) EXPECT_NE(expected.points[0][6],expected.section.total_shell_rate_per_s);
       Sections(actual.proposed_section,expected.points);
       Diagnostics(actual.section_diagnostics,expected.section,expected.shell.kinematics.area,
                   expected.shell.diagnostics.effective_thickness);
@@ -85,6 +91,7 @@ TEST(ShellLayeredNativeRecurrence,T3IndependentYieldedRotationAndUnloadingHistor
         EXPECT_NE(native.shell.data().thickness,input.thickness);
       }
     }
+    if(angular_speed>1800) {EXPECT_GT(path.Angle(path.time()),1.6);RecordNumber("large_rotation_rad",path.Angle(path.time()));}
     EXPECT_GT(plastic_work,1e-4);EXPECT_GT(std::abs(native.points[0][0]-preload_stress),1e7);
   }
 }
