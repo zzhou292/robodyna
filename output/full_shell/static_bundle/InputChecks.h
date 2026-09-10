@@ -5,6 +5,7 @@
 namespace crash::output::full_shell::source::detail {
 const Value& Field(const Value&, const char*);
 std::string ReadFile(const std::filesystem::path&, const RecordFile&, std::size_t cap);
+std::size_t SourceReadBudget(const SourceInputs&, SourceLimits);
 void AddBytes(std::size_t&, std::size_t, std::size_t cap);
 void ReadCatalog(CanonicalData&, const Value&);
 void ReadScope(CanonicalData&, const Value&, const Value& canonical);

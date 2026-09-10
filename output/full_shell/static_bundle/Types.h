@@ -60,6 +60,9 @@ const PartDeclaration& FindPart(const CanonicalData&, std::uint64_t id);
 class CanonicalSource {
   public:
     static CanonicalSource Read(const SourceInputs&, SourceLimits = {});
+    // Same source/catalog authority, with complete original member bytes supplied
+    // by the bounded chunk reader. Size/hash are checked before interpretation.
+    static CanonicalSource ReadWithMemberBytes(const SourceInputs&, const std::string&, SourceLimits = {});
     CanonicalSource(const CanonicalSource&) noexcept = default;
     CanonicalSource(CanonicalSource&& other) noexcept : data_(other.data_) {}
     CanonicalSource& operator=(const CanonicalSource&) = delete;

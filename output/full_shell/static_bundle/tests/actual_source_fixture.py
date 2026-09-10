@@ -8,7 +8,8 @@ import sys
 import tempfile
 import zipfile
 
-canonical, scope, binary = map(Path, sys.argv[1:])
+canonical, scope, binary = map(Path, sys.argv[1:4])
+test_filter = sys.argv[4] if len(sys.argv) > 4 else "SourceMappingActual.*"
 with tempfile.TemporaryDirectory(prefix="robo-static-source-") as temporary:
     member = Path(temporary) / "yaris-coarse-v1l.key"
     digest, size = hashlib.sha256(), 0
@@ -26,5 +27,5 @@ with tempfile.TemporaryDirectory(prefix="robo-static-source-") as temporary:
     if size != 42846753 or digest.hexdigest() != "67208317e6c8eb1dd43b80001508915ccaace7bc0a745e1aa5a3b33f394df301":
         raise RuntimeError("Original source fixture bytes differ")
     env = dict(os.environ, ROBO_STATIC_CANONICAL=str(canonical), ROBO_STATIC_SCOPE=str(scope), ROBO_STATIC_MEMBER=str(member))
-    result = subprocess.run([str(binary), "--gtest_filter=SourceMappingActual.*"], env=env)
+    result = subprocess.run([str(binary), "--gtest_filter=" + test_filter], env=env)
     raise SystemExit(result.returncode)

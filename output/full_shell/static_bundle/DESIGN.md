@@ -1,10 +1,11 @@
 # Full-shell static bundle design
 
-The immutable canonical/source mapping and mapping-only record slice is now
-implemented. The source-copy/key-chunk layer and complete self-contained static
-bundle remain the next separate increment. See README.md for qualified scope.
+The immutable canonical/source mapping and mapping-only record slice is
+implemented, followed by the separate bounded source-copy/key-chunk layer.
+See README.md and SOURCE_BUNDLE.md for qualified static-only scope.
 
-Base app: `118e1d7`; isolated worktree `crash-work/worktrees/full-shell-static-bundle`.
+Mapping base: `118e1d7`; source-copy base: frozen mapping `576861d`.
+Separate source-copy worktree: `crash-work/worktrees/full-shell-source-copy`.
 This is topology/source I/O, not mechanics admission or a completed simulation publisher.
 
 ## Ownership

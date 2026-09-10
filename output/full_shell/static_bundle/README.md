@@ -1,10 +1,11 @@
 # Full-shell source mapping foundation
 
-This first static slice authenticates canonical source data and writes/reads an
-immutable topology mapping. It does not publish a complete simulation/source
-bundle, assign native formulations, own nodal state, or add replay dispatch.
-The later source-copy layer must chunk the original vehicle key and publish
-all source evidence before a full accepted archive can be self-contained.
+This layer authenticates canonical source data and writes/reads an immutable
+topology mapping. The layered `SourceBundle` also carries the original source
+key, all 17 arrays and original metadata in a bounded static package. It does
+not publish a completed simulation, assign native formulations, own nodal state,
+or add replay dispatch. See [SOURCE_BUNDLE.md](SOURCE_BUNDLE.md) for the separate
+static-only schema and exact measured payload.
 
 `CanonicalSource::Read` requires explicit expected byte counts/SHA256 for the
 canonical manifest, source-scope report and original extracted source member,
@@ -76,8 +77,9 @@ and 2,632,394-byte canonical manifest plus mapping payload total 144,409,535
 bytes before mapping metadata and other static obligations. The final publisher
 must measure every file/reservation against the 192 MiB static budget and shared
 2 GiB full-run forecast. A reserve is not proof that source/configuration/wall
-and completion metadata are exhaustive. The key still needs a 33,554,432 plus
-9,292,321-byte source-chunk layer; that layer is not implemented here.
+and completion metadata are exhaustive. The source-copy layer writes the key as
+33,554,432 plus 9,292,321 bytes and measures both mapping and bundle descriptors.
+The exact qualified static bundle is 144,417,279 bytes across 31 files.
 
 The host budget preflights source/array/metadata payloads and conservative
 working copies. Independent author checks are restricted to one CPU and a
