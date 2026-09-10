@@ -75,12 +75,26 @@ requested four-step milestone; the full vehicle deliverable remains outstanding.
 
 ## Current delivery cadence
 
+The next visible delivery is the existing seven-part impact through roughly
+2 ms, accompanied by a physical-scale video and weld-load/relative-motion
+plots. Run three bounded tracks in parallel: measured performance improvements,
+connector-aware comparison, and selection of the next complete original vehicle
+attachment. Source load-path planning should proceed while performance work is
+underway; optimization is not an open-ended prerequisite for mechanics progress.
+
 | Next milestone | Work and ownership | Exit evidence |
 | --- | --- | --- |
 | Reduce measured step cost | Refresh the short profile for current seven-part/native-geometry execution, then parallelize wall preparation and source-ordered Q/T gather in their TL owners. Reuse timers and bounded arenas. | Exact accepted field/history/ledger parity, failure ordering, late rollback/retry and resource caps pass before a measured speedup is claimed. See the [performance plan](../../planning/PERFORMANCE_NEXT_INTEGRATION.md). |
 | Qualify connector-aware comparison | Extend the existing comparator with connector phase, relative motion, force/couple, signed work and combined M/J. Its current guard explicitly rejects seven-part archives because the old metrics are shell-only. | Meaningful positive/negative fixtures and actual seven-part comparisons pass without treating sparse force samples as exact impulse or mixing midpoint and endpoint values. |
+| Select the next vehicle load path | Audit the next complete source attachment toward the front structure in parallel, including original connections, released supports, required mechanics and likely shell interactions. | Authenticated source selection with explicit interfaces and measured node/shell/connector/contact/output capacity needs. The current case uses 959 of 1,024 qualified shell slots; source growth needs new capacity qualification. |
 | Assess timestep sensitivity at useful physical times | Use the qualified connector-aware comparator and selected smaller-step runs where local response or a new contact event requires them. | Report matching physical-time positions, native layer stress/PLA, cumulative work and complete interval contact events. Preserve phase distinctions, local extrema and unmatched terminal times; do not infer convergence from matching totals alone. |
 | Extend toward longer connected crushing | Advance to roughly 2 ms, then 5 ms only while the admitted mechanical/contact domain remains valid. Add the next required complete source connection or contact capability when it becomes limiting. | Diagnosed source-local limits, accounted load paths, stable accepted histories and a new viewable result. Do not relax a guard merely to reach a longer duration or omit entities to fit capacity. |
+
+The 5 ms target requires an explicit geometry/contact-domain extension: at
+8 m/s, the free source patch travels 40 mm, beyond the current 20 mm displacement
+bound. Inspect impending self-contact and finite-wall coverage before qualifying
+that extension. Preserve the isolated source patch until its real connection is
+restored, and retain the existing workstation memory envelope as capacity grows.
 
 Independent source semantics, numerical review and reader work can proceed in
 parallel. Serialize heavy builds, simulations and rendering. Preserve concise
