@@ -74,7 +74,7 @@ void ReadAttachments(const Value& document, const ReadLimits& limits, Data& data
     const auto& attachments = Member(document, "attachments");
     Flag(attachments, "attachment_mechanics_implemented", false); Flag(attachments, "full_attachment_closure_qualified", false);
     Flag(attachments, "literal_nodal_rigid_and_spotweld_frontier_validated", true);
-    std::set<SourceId> group_ids, node_set_ids, internal_members, outgoing_groups, outgoing_welds, all_external;
+    std::set<SourceId> group_ids, node_set_ids, internal_members, outgoing_groups, weld_ids, outgoing_welds, all_external;
     for (const auto& value : Array(attachments, "nodal_rigid_groups", limits.groups).GetArray()) {
         NodalRigidGroup group;
         const auto classification = Text(value, "classification");
@@ -110,23 +110,32 @@ void ReadAttachments(const Value& document, const ReadLimits& limits, Data& data
         data.nodal_rigid_groups.push_back(std::move(group));
     }
     for (const auto& value : Array(attachments, "spotwelds", limits.spotwelds).GetArray()) {
-        TextIs(value, "classification", "outgoing");
+        const auto classification = Text(value, "classification");
+        Require(classification == "internal" || classification == "outgoing", "Unsupported spotweld classification");
+        const bool internal = classification == "internal";
         const auto& weld = Member(value, "weld");
-        ReleasedSpotweld output;
+        Spotweld output;
         output.id = Unsigned(weld, "identity"); output.filename = Text(weld, "filename");
         output.keyword_line = Unsigned(weld, "keyword_line", SIZE_MAX); Flag(weld, "mechanics_qualified", false);
-        const auto nodes = Ids(Member(weld, "node_ids"), 2); Require(nodes.size() == 2, "Spotweld needs two source nodes");
+        const auto nodes = Ids(Member(weld, "node_ids"), 2);
+        Require(nodes.size() == 2 && nodes[0] != nodes[1], "Spotweld needs two distinct source nodes");
         output.node_ids = {nodes[0], nodes[1]}; output.cards = AttachmentCards(weld, 2);
-        Require(output.id && output.keyword_line && outgoing_welds.insert(output.id).second && output.cards.size() == 2 &&
+        Require(output.id && output.keyword_line && weld_ids.insert(output.id).second && output.cards.size() == 2 &&
             output.cards[0].blank_mask == 254 && output.cards[1].blank_mask == 252 &&
             FieldId(output.cards[0].fields[0]) == output.id && FieldId(output.cards[1].fields[0]) == nodes[0] &&
             FieldId(output.cards[1].fields[1]) == nodes[1], "Unsupported/repeated source spotweld record");
         output.external_nodes = Ids(Member(value, "external_node_ids"), limits.external_nodes, true);
         output.selected_membership = Membership(value, limits, data);
         CheckMembers(nodes, output.external_nodes, output.selected_membership, data);
-        Require(!output.external_nodes.empty(), "Outgoing spotweld must cross selected boundary");
+        Require(internal == output.external_nodes.empty(), "Spotweld classification disagrees with complete membership");
         all_external.insert(output.external_nodes.begin(), output.external_nodes.end());
-        data.released_spotwelds.push_back(std::move(output));
+        if (internal) {
+            const std::array<std::size_t, 2> indices{NodeIndex(data, nodes[0]), NodeIndex(data, nodes[1])};
+            data.internal_spotwelds.push_back({std::move(output), indices});
+        } else {
+            outgoing_welds.insert(output.id);
+            data.released_spotwelds.push_back(std::move(output));
+        }
     }
     const auto& boundary = Member(document, "boundary"); auto& retained = data.boundary;
     TextIs(boundary, "policy", "released_external_connections"); retained.policy = Text(boundary, "policy");
@@ -140,7 +149,7 @@ void ReadAttachments(const Value& document, const ReadLimits& limits, Data& data
     retained.external_node_ids = Ids(Member(attachments, "external_node_ids"), limits.external_nodes, true);
     Require(std::vector<SourceId>(all_external.begin(), all_external.end()) == retained.external_node_ids,
         "Released external-node inventory changed");
-    for (const auto& part : Array(attachments, "external_parts", limits.parts).GetArray()) {
+    for (const auto& part : Array(attachments, "external_parts", limits.external_parts).GetArray()) {
         const auto id = Unsigned(part, "part_id");
         Require(id && (retained.external_part_ids.empty() || id > retained.external_part_ids.back()) &&
             std::none_of(data.parts.begin(), data.parts.end(), [=](const auto& p) { return p.id == id; }),

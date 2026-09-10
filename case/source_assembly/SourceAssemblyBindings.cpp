@@ -39,6 +39,9 @@ SourceAssemblyBindings SourceAssemblyBindings::Prepare(const source::SourceAssem
     const auto& data=source.data();
     if(data.boundary.policy!="released_external_connections")
         throw SourceAssemblyBindingError(SourceAssemblyBindingStage::Input,0,"Assembly startup requires the explicit released external boundary");
+    if(!data.internal_spotwelds.empty())
+        throw SourceAssemblyBindingError(SourceAssemblyBindingStage::Input,0,
+            "Internal source spotweld requires a qualified connector contribution at startup");
     auto next=std::make_shared<Impl>(source,options);
     const source::SourceAssemblyShellInput shell_input(source);
     const auto shell_report=next->shells.Initialize(shell_input.input(),options.shell_limits);

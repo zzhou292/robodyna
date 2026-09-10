@@ -11,7 +11,8 @@ void CheckLimits(const ReadLimits& limit) {
         limit.parents && limit.parents <= maximum.parents && limit.parts && limit.parts <= maximum.parts &&
         limit.tables && limit.tables <= maximum.tables && limit.curve_points >= 2 && limit.curve_points <= maximum.curve_points &&
         limit.groups && limit.groups <= maximum.groups && limit.group_members >= 3 && limit.group_members <= maximum.group_members &&
-        limit.external_nodes && limit.external_nodes <= maximum.external_nodes && limit.spotwelds && limit.spotwelds <= maximum.spotwelds,
+        limit.external_nodes && limit.external_nodes <= maximum.external_nodes && limit.spotwelds && limit.spotwelds <= maximum.spotwelds &&
+        limit.external_parts && limit.external_parts <= maximum.external_parts,
         "Source assembly limits exceed the bounded reader domain");
 }
 void CheckIdentity(const ArtifactIdentity& expected,const ReadLimits& limits) {
@@ -56,7 +57,8 @@ void CheckCounts(const Value& document, const Data& data) {
     count("q4", data.qeph_count); count("native_t3", data.t3_count);
     const auto internal = std::count_if(data.nodal_rigid_groups.begin(), data.nodal_rigid_groups.end(), [](const auto& g) { return g.internal; });
     count("internal_nodal_rigid_groups", internal); count("outgoing_nodal_rigid_groups", data.nodal_rigid_groups.size() - internal);
-    count("internal_spotwelds", 0); count("outgoing_spotwelds", data.released_spotwelds.size());
+    count("internal_spotwelds", data.internal_spotwelds.size());
+    count("outgoing_spotwelds", data.released_spotwelds.size());
     count("external_nodes", data.boundary.external_node_ids.size());
     count("shared_nodes", reader::Member(reader::Member(document, "geometry"), "shared_node_ids").Size());
     std::vector<bool> materials(data.materials.size()), sections(data.sections.size()), curves(data.curves.size());

@@ -13,11 +13,15 @@ struct ArtifactIdentity { std::size_t bytes = 0; std::string sha256; };
 inline ArtifactIdentity PinnedYarisSixPartInventory() {
     return {1731843, "afbc9cc6b9cbbceec766e1aa106b548fcc7468ce1a0d902d5d7b69afb1873d00"};
 }
+inline ArtifactIdentity PinnedYarisSevenPartInventory() {
+    return {1865263, "5ca793e0a2602585f5f789652a9af4d3918e27fd8c029aaad924f792922a797e"};
+}
 inline constexpr const char* InventorySchema = "robo-dyna.source-assembly-inventory.v1";
 struct ReadLimits {
     std::size_t bytes = 4 * 1024 * 1024, nodes = 2048, parents = 1024, parts = 8;
     std::size_t tables = 8, curve_points = 1024, groups = 64, group_members = 256; // curve_points is the TOTAL pool.
     std::size_t external_nodes = 256, spotwelds = 128;
+    std::size_t external_parts = 32; // Frontier declarations are not active parts.
 };
 struct SourceBlock {
     std::string filename, keyword, raw_text, sha256;
@@ -94,7 +98,8 @@ struct NodalRigidGroup {
     std::vector<std::size_t> selected_global_nodes;
     std::vector<PartMembership> selected_membership;
 };
-struct ReleasedSpotweld {
+// Literal source record only; resolving a record does not supply its mechanics.
+struct Spotweld {
     SourceId id = 0;
     std::array<SourceId, 2> node_ids{};
     std::string filename;
@@ -102,6 +107,11 @@ struct ReleasedSpotweld {
     std::vector<RawAttachmentCard> cards;
     std::vector<SourceId> external_nodes;
     std::vector<PartMembership> selected_membership;
+};
+using ReleasedSpotweld = Spotweld;
+struct InternalSpotweld {
+    Spotweld record;
+    std::array<std::size_t, 2> nodes{};  // Complete selected endpoint order.
 };
 struct ReleasedTiedScope {
     std::string filename, reason;
@@ -131,6 +141,7 @@ struct Data {
     std::vector<Curve> curves;
     std::vector<NodalRigidGroup> nodal_rigid_groups;
     std::vector<ReleasedSpotweld> released_spotwelds;
+    std::vector<InternalSpotweld> internal_spotwelds;
     ReleasedBoundary boundary;
     std::size_t qeph_count = 0, t3_count = 0;
 };

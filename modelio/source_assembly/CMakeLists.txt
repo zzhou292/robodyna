@@ -18,3 +18,16 @@ target_compile_options(robo_dyna_source_assembly_input_check PRIVATE -fno-fast-m
 add_test(NAME source_assembly_input COMMAND robo_dyna_source_assembly_input_check)
 set_tests_properties(source_assembly_input PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120
   ENVIRONMENT "ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY=${ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY}")
+set(ROBO_DYNA_SOURCE_BRACKET_INVENTORY "" CACHE FILEPATH "Optional frozen original seven-part bracket inventory")
+if(ROBO_DYNA_SOURCE_BRACKET_INVENTORY)
+  if(NOT EXISTS "${ROBO_DYNA_SOURCE_BRACKET_INVENTORY}")
+    message(FATAL_ERROR "Declared bracket inventory is missing")
+  endif()
+  add_executable(robo_dyna_source_bracket_input_check tests/SourceBracketInputTest.cpp)
+  target_link_libraries(robo_dyna_source_bracket_input_check PRIVATE
+    robo_dyna_source_assembly_shell_input robo_dyna_source_assembly_material_input GTest::gtest_main)
+  target_compile_options(robo_dyna_source_bracket_input_check PRIVATE -fno-fast-math -ffp-contract=off)
+  add_test(NAME source_bracket_input COMMAND robo_dyna_source_bracket_input_check)
+  set_tests_properties(source_bracket_input PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120
+    ENVIRONMENT "ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY=${ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY};ROBO_DYNA_SOURCE_BRACKET_INVENTORY=${ROBO_DYNA_SOURCE_BRACKET_INVENTORY}")
+endif()

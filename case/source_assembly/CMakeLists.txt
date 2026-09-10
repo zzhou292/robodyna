@@ -21,3 +21,15 @@ add_test(NAME source_assembly_bindings COMMAND robo_dyna_source_assembly_binding
 set_tests_properties(source_assembly_bindings PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120
   ENVIRONMENT "ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY=${ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY}")
 include("${CMAKE_CURRENT_LIST_DIR}/SourceAssemblyWallChecks.cmake")
+set(ROBO_DYNA_SOURCE_BRACKET_INVENTORY "" CACHE FILEPATH "Frozen authenticated seven-part Yaris inventory")
+if(ROBO_DYNA_SOURCE_BRACKET_INVENTORY)
+  if(NOT EXISTS "${ROBO_DYNA_SOURCE_BRACKET_INVENTORY}")
+    message(FATAL_ERROR "The explicit bracket inventory is missing")
+  endif()
+  add_executable(robo_dyna_source_bracket_binding_check tests/SourceBracketBindingTest.cpp)
+  target_link_libraries(robo_dyna_source_bracket_binding_check PRIVATE
+    robo_dyna_source_assembly_bindings GTest::gtest_main)
+  add_test(NAME source_bracket_binding COMMAND robo_dyna_source_bracket_binding_check)
+  set_tests_properties(source_bracket_binding PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120
+    ENVIRONMENT "ROBO_DYNA_SOURCE_BRACKET_INVENTORY=${ROBO_DYNA_SOURCE_BRACKET_INVENTORY}")
+endif()
