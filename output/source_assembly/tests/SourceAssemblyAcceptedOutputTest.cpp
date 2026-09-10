@@ -42,45 +42,48 @@ void Check(SourceAssemblyAcceptedOutput& output,flight::Rig& rig) {
 }
 }
 TEST_F(SourceAssemblyAcceptedOutputCheck, ActualFullSourceAcceptedFieldsExcludeCompletedAndRejectedCandidates) {
-    RecordProperty("scope","Actual source accepted-output/free-flight contract; internal groups inactive; no wall trajectory or video");
-    auto rig=std::make_unique<flight::Rig>(source::test::Load());ASSERT_TRUE(rig->Initialize());
-    const auto allocations=flight::Allocations(*rig);SourceAssemblyAcceptedOutput output;
-    const visual::Identity identity{rig->owner.accepted().owner_id,7,19};
-    ASSERT_EQ(output.Initialize(rig->owner,rig->bindings,identity,5).status,visual::Status::Ok);
-    EXPECT_EQ(output.nodal()->stamp(),nullptr);EXPECT_EQ(output.qeph().values,nullptr);EXPECT_EQ(output.parent_scalars(),nullptr);
-    ASSERT_EQ(output.Publish(rig->owner,rig->qeph,rig->t3,rig->publication).status,visual::Status::Ok);Check(output,*rig);
-    const auto bytes=output.section_host_bytes(),nodal_bytes=output.nodal()->capture_bytes();
-    const auto* first_nodes=output.nodal()->fields().position_xyz;const auto* first_sections=output.qeph().values;
-    for(unsigned step=0;step<3;++step) {
-        flight::Prepared candidate(rig->nodes());flight::ShellFields proposed(rig->quads(),rig->triangles());
-        ASSERT_TRUE(flight::Prepare(*rig,candidate));ASSERT_TRUE(flight::Evaluate(*rig,candidate,proposed));
-        const auto stamp=*output.nodal()->stamp();const auto* held=output.qeph().values;
-        EXPECT_EQ(output.Publish(rig->owner,rig->qeph,rig->t3,rig->publication).status,visual::Status::StaleFrame);
-        EXPECT_EQ(output.qeph().values,held);EXPECT_TRUE(fe::trial_identity::SameStamp(*output.nodal()->stamp(),stamp));
-        if(step==0) {
-            const auto& d=proposed.diagnostics.qeph;
-            EXPECT_EQ(rig->publication.Commit(rig->owner,candidate.token,proposed.diagnostics,
-                {d.owner_id,d.base_epoch,d.attempt,d.qualification_id,false}).status,fe::ShellPublicationStatus::StaleTrial);
-            EXPECT_EQ(output.Publish(rig->owner,rig->qeph,rig->t3,rig->publication).status,visual::Status::StaleFrame);Check(output,*rig);
-            ASSERT_TRUE(flight::Prepare(*rig,candidate));ASSERT_TRUE(flight::Evaluate(*rig,candidate,proposed));
-        }
-        ASSERT_TRUE(flight::Publish(*rig,candidate,proposed));
-        if(step==0) {
-            fe::t3::T3Batch missing;
-            EXPECT_EQ(output.Publish(rig->owner,rig->qeph,missing,rig->publication).status,visual::Status::InvalidFrame);
-            EXPECT_EQ(output.qeph().values,held);EXPECT_TRUE(fe::trial_identity::SameStamp(*output.nodal()->stamp(),stamp));
-            EXPECT_EQ(output.nodal()->fields().position_xyz,first_nodes);
-        }
+    RecordProperty("scope","Actual source accepted-output/free-flight contract with internal groups inactive and active; no wall trajectory or video");
+    for(bool grouped:{false,true}) {
+        SCOPED_TRACE(grouped ? "six internal groups active" : "groups inactive");
+        auto rig=std::make_unique<flight::Rig>(source::test::Load(),grouped);ASSERT_TRUE(rig->Initialize());
+        const auto allocations=flight::Allocations(*rig);SourceAssemblyAcceptedOutput output;
+        const visual::Identity identity{rig->owner.accepted().owner_id,7,19};
+        ASSERT_EQ(output.Initialize(rig->owner,rig->bindings,identity,5).status,visual::Status::Ok);
+        EXPECT_EQ(output.nodal()->stamp(),nullptr);EXPECT_EQ(output.qeph().values,nullptr);EXPECT_EQ(output.parent_scalars(),nullptr);
         ASSERT_EQ(output.Publish(rig->owner,rig->qeph,rig->t3,rig->publication).status,visual::Status::Ok);Check(output,*rig);
-        EXPECT_EQ(output.nodal()->stamp()->epoch,step+1u);EXPECT_EQ(output.section_host_bytes(),bytes);
-        EXPECT_EQ(output.nodal()->capture_bytes(),nodal_bytes);flight::SameAllocations(*rig,allocations);
-        if(step==1) {
-            EXPECT_EQ(output.nodal()->fields().position_xyz,first_nodes);EXPECT_EQ(output.qeph().values,first_sections);
+        const auto bytes=output.section_host_bytes(),nodal_bytes=output.nodal()->capture_bytes();
+        const auto* first_nodes=output.nodal()->fields().position_xyz;const auto* first_sections=output.qeph().values;
+        for(unsigned step=0;step<3;++step) {
+            flight::Prepared candidate(rig->nodes());flight::ShellFields proposed(rig->quads(),rig->triangles());
+            ASSERT_TRUE(flight::Prepare(*rig,candidate));ASSERT_TRUE(flight::Evaluate(*rig,candidate,proposed));
+            const auto stamp=*output.nodal()->stamp();const auto* held=output.qeph().values;
+            EXPECT_EQ(output.Publish(rig->owner,rig->qeph,rig->t3,rig->publication).status,visual::Status::StaleFrame);
+            EXPECT_EQ(output.qeph().values,held);EXPECT_TRUE(fe::trial_identity::SameStamp(*output.nodal()->stamp(),stamp));
+            if(step==0) {
+                const auto& d=proposed.diagnostics.qeph;
+                EXPECT_EQ(rig->publication.Commit(rig->owner,candidate.token,proposed.diagnostics,
+                    {d.owner_id,d.base_epoch,d.attempt,d.qualification_id,false}).status,fe::ShellPublicationStatus::StaleTrial);
+                EXPECT_EQ(output.Publish(rig->owner,rig->qeph,rig->t3,rig->publication).status,visual::Status::StaleFrame);Check(output,*rig);
+                ASSERT_TRUE(flight::Prepare(*rig,candidate));ASSERT_TRUE(flight::Evaluate(*rig,candidate,proposed));
+            }
+            ASSERT_TRUE(flight::Publish(*rig,candidate,proposed));
+            if(step==0) {
+                fe::t3::T3Batch missing;
+                EXPECT_EQ(output.Publish(rig->owner,rig->qeph,missing,rig->publication).status,visual::Status::InvalidFrame);
+                EXPECT_EQ(output.qeph().values,held);EXPECT_TRUE(fe::trial_identity::SameStamp(*output.nodal()->stamp(),stamp));
+                EXPECT_EQ(output.nodal()->fields().position_xyz,first_nodes);
+            }
+            ASSERT_EQ(output.Publish(rig->owner,rig->qeph,rig->t3,rig->publication).status,visual::Status::Ok);Check(output,*rig);
+            EXPECT_EQ(output.nodal()->stamp()->epoch,step+1u);EXPECT_EQ(output.section_host_bytes(),bytes);
+            EXPECT_EQ(output.nodal()->capture_bytes(),nodal_bytes);flight::SameAllocations(*rig,allocations);
+            if(step==1) {
+                EXPECT_EQ(output.nodal()->fields().position_xyz,first_nodes);EXPECT_EQ(output.qeph().values,first_sections);
+            }
         }
+        fe::FENodalState foreign;const auto* fields=output.qeph().values;
+        EXPECT_EQ(output.Publish(foreign,rig->qeph,rig->t3,rig->publication).status,visual::Status::WrongOwner);
+        EXPECT_EQ(output.qeph().values,fields);EXPECT_EQ(output.nodal()->stamp()->epoch,3u);
     }
-    fe::FENodalState foreign;const auto* fields=output.qeph().values;
-    EXPECT_EQ(output.Publish(foreign,rig->qeph,rig->t3,rig->publication).status,visual::Status::WrongOwner);
-    EXPECT_EQ(output.qeph().values,fields);EXPECT_EQ(output.nodal()->stamp()->epoch,3u);
 }
 TEST_F(SourceAssemblyAcceptedOutputCheck, ExplicitCaptureCapsRejectBeforePublishingAndAllowCompleteRetry) {
     auto rig=std::make_unique<flight::Rig>(source::test::Load());ASSERT_TRUE(rig->Initialize());

@@ -87,11 +87,13 @@ actual-source GPU cases. It compares complete accepted nodal and family fields,
 source references, native thickness/diagnostics, completed and rejected candidate
 exclusion, late missing-family failure, exact one-byte-short limits, retry,
 retained allocation counts and the same two reusable output addresses. It uses
-three very short uniform-translation intervals with **internal groups inactive**;
-this is accepted-output/free-flight qualification, not a connected crash demo.
+three very short uniform-translation intervals in both the inactive-group scope
+and with **all six internal groups active**. All ten host/GPU functions pass in
+`source-assembly-output-tests-1`; this is accepted-output/free-flight
+qualification, not a connected crash demo.
 
-The root coordinator owns full build/GPU qualification and the legacy
-`tl_nodal_output_integration` regression after this handoff.
+The root coordinator owns the legacy `tl_nodal_output_integration` regression
+after this shared active-capture change.
 
 ## Next replay gate
 
