@@ -151,3 +151,8 @@ if(ROBO_DYNA_SOURCE_QEPH_GEOMETRY)
   set_tests_properties(source_part_qeph_geometry PROPERTIES TIMEOUT 60 RUN_SERIAL TRUE PROCESSORS 1
     ENVIRONMENT "OMP_NUM_THREADS=1;OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1")
 endif()
+
+option(ROBO_DYNA_SOURCE_PART_WALL_GEOMETRY "Check mass-independent source contact geometry and explicit placed original wall" OFF)
+if(ROBO_DYNA_SOURCE_PART_WALL_GEOMETRY)
+  include("${CMAKE_CURRENT_LIST_DIR}/../../case/source_part_wall/SourcePartWallGeometryChecks.cmake")
+endif()

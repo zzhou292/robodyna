@@ -1,53 +1,27 @@
 #include "SourceNodalWallFixture.h"
+#include "case/source_part_wall/SourcePartContactGeometry.h"
 #include "collision/PrescribedSurfaceInterval.h"
 #include <algorithm>
 
 namespace crash::qualification::source_contact::nodal {
 struct PreparedSource::Data {
-    std::array<sc::Q4ParametricReference,ParentCount> quad;
-    std::array<sc::T3MaterialMeasure,ParentCount> triangle;
-    std::array<sc::NodalWallParentInput,ParentCount> inputs{};
-    sc::NodalWallWeights weights;
+    cases::source_part_wall::SourcePartContactGeometry geometry;
     cf::FixtureMass mass;
 };
 PreparedSource::PreparedSource()=default;
 PreparedSource::~PreparedSource()=default;
 bool PreparedSource::prepared() const noexcept { return data_!=nullptr; }
-const sc::NodalWallWeights& PreparedSource::weights() const { return data_->weights; }
+const sc::NodalWallWeights& PreparedSource::weights() const { return *data_->geometry.weights(); }
 const cf::FixtureMass& PreparedSource::mass() const { return data_->mass; }
 bool PreparedSource::ParentWeights(unsigned source_parent,sc::NodalWallWeights* output) const {
-    return data_ && output && source_parent<ParentCount &&
-        output->Initialize(NodeCount,&data_->inputs[source_parent],1).status==sc::NodalWallStatus::Ok;
+    return data_ && data_->geometry.ParentWeights(source_parent,output);
 }
 bool PreparedSource::Initialize(const SourcePartContactFixture& source,std::string& diagnostic) {
     diagnostic.clear();
     if (data_ || !source.prepared()) { diagnostic="Source preparation requires a fresh object and authenticated input"; return false; }
     auto next=std::make_unique<Data>();
     if (!next->mass.Initialize(source)) { diagnostic="Chosen source fixture mass failed"; return false; }
-    for (unsigned p=0;p<ParentCount;++p) {
-        if (source.parents()[p].arity==4) {
-            sc::SurfaceQ4 parent;
-            if (!source.q4_parent(p,parent) ||
-                next->quad[p].Initialize(source.positions(),&parent,1).status!=sc::Q4ParametricStatus::Ok) {
-                diagnostic="Original Q4 immutable area failed"; return false;
-            }
-            next->inputs[p]={&next->quad[p],0,nullptr};
-        } else {
-            sc::SurfaceTriangle parent;
-            if (!source.t3_parent(p,parent) ||
-                sc::PrepareT3MaterialMeasure(source.positions(),parent,&next->triangle[p])!=sc::SurfaceMeasureStatus::Ok) {
-                diagnostic="Original native T3 immutable area failed"; return false;
-            }
-            next->inputs[p]={nullptr,0,&next->triangle[p]};
-        }
-    }
-    if (next->weights.Initialize(NodeCount,next->inputs.data(),ParentCount).status!=sc::NodalWallStatus::Ok ||
-        next->weights.node_count()!=NodeCount || next->weights.parent_count()!=ParentCount) {
-        diagnostic="Source nodal contact weights failed or omitted a physical node"; return false;
-    }
-    for (unsigned n=0;n<NodeCount;++n) if (next->weights.node(n).node!=n) {
-        diagnostic="Source dense node order changed"; return false;
-    }
+    if (!next->geometry.Initialize(source,diagnostic)) return false;
     data_=std::move(next); return true;
 }
 

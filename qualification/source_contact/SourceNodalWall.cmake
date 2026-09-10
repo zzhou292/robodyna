@@ -1,10 +1,6 @@
 # Optional source-wall qualification and phase diagnosis; no production runner.
-include("${CRASH_TL_FEA_SOURCE_DIR}/lib_src/collision/NodalWallContact.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/SourceNodalWallFixtureLibrary.cmake")
 include("${CRASH_TL_FEA_SOURCE_DIR}/lib_src/collision/PreparedPlanarWallQuery.cmake")
-add_library(robo_dyna_source_nodal_wall_fixture STATIC SourceNodalWallFixture.cpp)
-target_link_libraries(robo_dyna_source_nodal_wall_fixture PUBLIC
-  robo_dyna_source_contact_force_fixture tl_nodal_wall_contact)
-target_compile_options(robo_dyna_source_nodal_wall_fixture PRIVATE -fno-fast-math -ffp-contract=off)
 add_executable(robo_dyna_source_part_nodal_wall_check
   SourceNodalWallCuda.cu SourceContactCudaFixture.cu source_part_nodal_wall_check.cpp
   source_part_nodal_wall_cuda_check.cpp source_part_nodal_wall_cost_check.cpp)
