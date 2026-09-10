@@ -2,6 +2,8 @@
 #include "ShellBatchBinding.h"
 #include "ShellBatchPlasticity.h"
 #include "ShellPlasticityCatalogLimits.h"
+#include "ShellSectionLaw.h"
+#include "lib_src/materials/ShellElasticLaw1Point.h"
 
 namespace tl::fea {
 inline constexpr std::size_t MaxShellPlasticityCurvePoints=1024;
@@ -17,6 +19,8 @@ struct ShellPlasticityMaterialInput {
   // LinearLaw44 requires curve_id=0 and owns its source SIGY/ETAN values.
   material::ShellPlasticityHardeningKind hardening=material::ShellPlasticityHardeningKind::Tabulated;
   material::Law44LinearHardening linear{};
+  // Trailing default preserves existing positional LAW44 declarations.
+  ShellSectionLaw law=ShellSectionLaw::LayeredLaw44Nip3;
 };
 struct ShellPlasticitySectionInput {
   std::uint64_t section_id=0;
@@ -69,6 +73,11 @@ class ShellBatchPlasticityBinding {
   // their original bounds, including rejection of ShellHostBindingLimits::Vehicle().
   ShellPlasticityBindingReport InitializeCatalog(const ShellBatchBinding&,
       const ShellBatchPlasticityBindingInput&,const ShellPlasticityCatalogLimits&) noexcept;
+  // Explicit heterogeneous NIP3 mode. Legacy initializers remain LAW44-only.
+  ShellPlasticityBindingReport InitializeSections(const ShellBatchBinding&,
+      const ShellBatchPlasticityBindingInput&,const ShellHostBindingLimits& = {}) noexcept;
+  ShellPlasticityBindingReport InitializeSectionCatalog(const ShellBatchBinding&,
+      const ShellBatchPlasticityBindingInput&,const ShellPlasticityCatalogLimits&) noexcept;
   // Includes complete inventory backing, even when shared with the binding.
   std::size_t host_bytes() const noexcept;
   std::size_t startup_scratch_bytes() const noexcept;
@@ -85,6 +94,11 @@ class ShellBatchPlasticityBinding {
   // Caller keeps this catalog alive while using the returned host curve view.
   // Failure leaves output untouched; invalid family/index never selects zero.
   bool Parameters(ShellBindingFamily,std::size_t family_index,sections::PointParameters* output) const noexcept;
+  bool ElasticParameters(ShellBindingFamily,std::size_t family_index,
+      material::ShellElasticLaw1PointParameters* output) const noexcept;
+  bool Law(ShellBindingFamily,std::size_t family_index,ShellSectionLaw* output) const noexcept;
+  bool Counts(ShellBindingFamily,ShellSectionCounts* output) const noexcept;
+  bool heterogeneous_sections() const noexcept { return prepared_&&data_.heterogeneous; }
  private:
   struct Curve { std::uint64_t id=0; std::size_t offset=0,count=0; };
   struct Material {
@@ -106,9 +120,14 @@ class ShellBatchPlasticityBinding {
     std::array<double,MaxShellPlasticityCurvePoints> curve_x{},curve_y{};
     std::size_t curve_count=0,material_count=0,section_count=0,parent_count=0,point_count=0;
     std::size_t qeph_count=0,t3_count=0;
+    ShellSectionCounts qeph_laws{},t3_laws{};
+    bool heterogeneous=false;
   } data_;
   bool prepared_=false;
-  ShellPlasticityBindingReport Build(const ShellBatchBinding&,const ShellBatchPlasticityBindingInput&);
+  ShellPlasticityBindingReport InitializeCatalogImpl(const ShellBatchBinding&,const ShellBatchPlasticityBindingInput&,
+      const ShellPlasticityCatalogLimits&,bool heterogeneous) noexcept;
+  ShellPlasticityBindingReport Build(const ShellBatchBinding&,const ShellBatchPlasticityBindingInput&,bool heterogeneous);
+  const Material* ParentMaterial(ShellBindingFamily,std::size_t family_index) const noexcept;
   static ShellPlasticityBindingReport CopyCurves(const ShellBatchPlasticityBindingInput&,Data&) noexcept;
   static ShellPlasticityBindingReport PrepareMaterials(const ShellBatchPlasticityBindingInput&,Data&) noexcept;
   static ShellPlasticityBindingReport CopySections(const ShellBatchPlasticityBindingInput&,Data&) noexcept;

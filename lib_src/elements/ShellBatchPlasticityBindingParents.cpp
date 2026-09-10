@@ -44,6 +44,8 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::BindParents(const Shel
       shell_plasticity_binding_detail::Matches(binding.t3_reference(p.family_index).input,m,s);
     if(!matches) return Error(Status::IdentityMismatch,"Parent material/thickness bits differ from its native reference",i,p.family);
     out.parents[i]={p,mi,si}; (q?out.qeph_parent:out.t3_parent)[p.family_index]=i;
+    auto& laws=q?out.qeph_laws:out.t3_laws;
+    if(m.law==ShellSectionLaw::LayeredLaw1Nip3) ++laws.law1; else ++laws.law44;
     seen[p.family_index]=true; materials[mi]=true; sections[si]=true;
   }
   for(std::size_t i=0;i<out.qeph_count;++i) if(!qseen[i]) return Error(Status::InvalidParent,"Missing QEPH parent",i,ShellBindingFamily::Qeph);

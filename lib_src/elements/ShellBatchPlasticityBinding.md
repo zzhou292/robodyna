@@ -30,6 +30,36 @@ Source ELFORM and deck-unit conversion belong to the application import layer.
 The catalog validates declared native family assignments; it does not infer an
 element family from an LS-DYNA formulation number or change source connectivity.
 
+### Explicit layered elastic/plastic declarations
+
+`ShellBatchSectionBinding.h` provides neutral aliases for the same immutable
+catalog. `InitializeSections(binding,input)` and
+`InitializeSectionCatalog(binding,input,limits)` explicitly enable per-parent
+`ShellSectionLaw::LayeredLaw1Nip3` alongside `LayeredLaw44Nip3`. The latter remains
+the trailing material tag's default, preserving existing positional declarations.
+The two original initialization APIs still reject elastic declarations.
+
+LAW1 requires original E/nu/rho, homogeneous physical thickness and NIP3. Its
+unused curve ID, rate and linear-hardening fields must have their canonical
+default values; they are not silently ignored. `ElasticParameters` exposes only
+the qualified elastic coefficients. `Parameters` exposes only LAW44 coefficients,
+and leaves its output untouched for an elastic parent. `Law` and family `Counts`
+give explicit availability without fabricated plastic strain, rate or yield
+values. Elastic coefficients are prepared from owned declarations when queried
+at host startup; this API does not install a per-step preparation path.
+
+Scope equality includes the explicit mode and each law tag as well as the full
+existing source inventory and ordered assignments. Copies/moves retain the same
+ownership rules. Small-mode limits preserve the older binding scratch treatment;
+the separately named catalog API enforces its explicit scratch budget. Appending
+the tag/count metadata changes the precisely charged inline host payload; it
+does not change old device layouts, numerical dispatch or curve storage.
+
+This host increment does **not** admit heterogeneous resident batches. Their
+typed history storage, per-parent dispatch and authenticated readback are a
+separate qualification gate. It also does not admit failure, glass, membrane or
+rigid source roles, or substitute fixed thickness for source ITHICK=1.
+
 The catalog owns all declarations and samples after successful preparation.
 Returned `Parameters` values borrow the catalog's pool for host evaluation, so
 that catalog must remain alive while those values are used. Stored coefficients
@@ -94,6 +124,10 @@ not evidence that a complete vehicle can be advanced or contacted on the GPU.
 materials within and across families, declaration ownership through copy/move,
 missing/duplicate/unreferenced IDs, native material/thickness mismatch, a late
 invalid curve, exact scope comparison, and the total curve-pool boundary.
+Five `ShellSectionBinding` cases additionally cover elastic/table and
+elastic/analytic owned catalogs, typed availability, explicit-mode scope,
+late invalid/mismatched source coefficients, legacy rejection, count preflight,
+exact byte/scratch limits and successful retry after rejection.
 
 `resident_plasticity_check` additionally exercises two actual CUDA participants
 with distinct materials/curves and rate settings through load/hold/reversal,

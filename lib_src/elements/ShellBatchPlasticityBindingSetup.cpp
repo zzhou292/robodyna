@@ -38,6 +38,11 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::Initialize(
 ShellPlasticityBindingReport ShellBatchPlasticityBinding::InitializeCatalog(
     const ShellBatchBinding& binding,const ShellBatchPlasticityBindingInput& input,
     const ShellPlasticityCatalogLimits& limits) noexcept {
+  return InitializeCatalogImpl(binding,input,limits,false);
+}
+ShellPlasticityBindingReport ShellBatchPlasticityBinding::InitializeCatalogImpl(
+    const ShellBatchBinding& binding,const ShellBatchPlasticityBindingInput& input,
+    const ShellPlasticityCatalogLimits& limits,bool heterogeneous) noexcept {
   if(prepared_) return Error(Status::AlreadyInitialized,"Plasticity binding is immutable after preparation");
   if(!binding.prepared()||(input.curve_count&&!input.curves)||!input.materials||!input.sections||!input.parents||
      !input.material_count||!input.section_count||!input.parent_count)
@@ -75,12 +80,13 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::InitializeCatalog(
       return Error(Status::ResourceLimit,"Complete plasticity curve pool exceeds 1024 points",i);
     points+=c.curve.count;
   }
-  try { return Build(binding,input); }
+  try { return Build(binding,input,heterogeneous); }
   catch(const std::bad_alloc&) { return Error(Status::ResourceLimit,"Plasticity catalog startup allocation failed"); }
 }
 ShellPlasticityBindingReport ShellBatchPlasticityBinding::Build(
-    const ShellBatchBinding& binding,const ShellBatchPlasticityBindingInput& input) {
+    const ShellBatchBinding& binding,const ShellBatchPlasticityBindingInput& input,bool heterogeneous) {
   Data staged;
+  staged.heterogeneous=heterogeneous;
   staged.curves.Resize(input.curve_count); staged.materials.Resize(input.material_count);
   staged.sections.Resize(input.section_count); staged.parents.Resize(input.parent_count);
   staged.qeph_parent.Resize(binding.qeph_count()); staged.t3_parent.Resize(binding.t3_count());
@@ -121,6 +127,18 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::PrepareMaterials(
         [](const auto& x){return x.declaration.material_id;})!=NoShellBindingNode)
       return Error(Status::InvalidMaterial,"Missing or duplicate material ID",i);
     auto& target=out.materials[i];
+    if(m.law==ShellSectionLaw::LayeredLaw1Nip3) {
+      material::ShellElasticLaw1PointParameters elastic;
+      if(!out.heterogeneous||m.curve_id||m.hardening!=material::ShellPlasticityHardeningKind::Tabulated||
+         !Same(m.rate,material::TabulatedShellPlasticityRate{})||
+         !Same(m.linear.initial_yield_pa,0.)||!Same(m.linear.tangent_modulus_pa,0.)||
+         !material::PrepareShellElasticLaw1Point(m.young_pa,m.poisson_ratio,m.density_kg_m3,elastic))
+        return Error(Status::InvalidMaterial,"Layered LAW1 requires explicit section mode, elastic coefficients and no plastic controls",i);
+      target.declaration=m;target.curve_index=NoShellBindingNode;
+      continue;
+    }
+    if(m.law!=ShellSectionLaw::LayeredLaw44Nip3)
+      return Error(Status::InvalidMaterial,"Unknown layered shell material law",i);
     if(m.hardening==material::ShellPlasticityHardeningKind::LinearLaw44) {
       if(m.curve_id||material::PrepareLinearLaw44ShellPlasticity(m.young_pa,m.poisson_ratio,m.density_kg_m3,
           m.linear,m.rate,target.coefficients)!=sections::PointStatus::Ok)

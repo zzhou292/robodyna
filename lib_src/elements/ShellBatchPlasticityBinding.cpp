@@ -8,16 +8,21 @@ bool ShellBatchPlasticityBinding::Matches(const ShellBatchBinding& binding) cons
 const ShellPlasticityParentInput* ShellBatchPlasticityBinding::parent(std::size_t index) const noexcept {
   return prepared_&&index<data_.parent_count?&data_.parents[index].declaration:nullptr;
 }
+const ShellBatchPlasticityBinding::Material* ShellBatchPlasticityBinding::ParentMaterial(
+    ShellBindingFamily family,std::size_t index) const noexcept {
+  if(!prepared_||(family!=ShellBindingFamily::Qeph&&family!=ShellBindingFamily::T3)) return nullptr;
+  const bool q=family==ShellBindingFamily::Qeph;
+  if(index>=(q?data_.qeph_count:data_.t3_count)) return nullptr;
+  const auto& parent=data_.parents[(q?data_.qeph_parent:data_.t3_parent)[index]];
+  return &data_.materials[parent.material_index];
+}
 bool ShellBatchPlasticityBinding::Parameters(ShellBindingFamily family,std::size_t index,
     sections::PointParameters* output) const noexcept {
-  if(!prepared_||!output||(family!=ShellBindingFamily::Qeph&&family!=ShellBindingFamily::T3)) return false;
-  const bool q=family==ShellBindingFamily::Qeph;
-  if(index>=(q?data_.qeph_count:data_.t3_count)) return false;
-  const auto& parent=data_.parents[(q?data_.qeph_parent:data_.t3_parent)[index]];
-  const auto& material=data_.materials[parent.material_index];
-  auto result=material.coefficients;
+  const auto* material=ParentMaterial(family,index);
+  if(!output||!material||material->declaration.law!=ShellSectionLaw::LayeredLaw44Nip3) return false;
+  auto result=material->coefficients;
   if(result.hardening==material::ShellPlasticityHardeningKind::Tabulated) {
-    const auto& curve=data_.curves[material.curve_index];
+    const auto& curve=data_.curves[material->curve_index];
     result.curve={data_.curve_x.data()+curve.offset,data_.curve_y.data()+curve.offset,
       static_cast<std::uint32_t>(curve.count)};
   }
@@ -27,7 +32,8 @@ bool ShellBatchPlasticityBinding::SameScope(const ShellBatchPlasticityBinding& o
   const auto& a=data_; const auto& b=other.data_;
   if(!prepared_||!other.prepared_||a.inventory!=b.inventory||a.curve_count!=b.curve_count||
       a.material_count!=b.material_count||a.section_count!=b.section_count||a.parent_count!=b.parent_count||
-      a.point_count!=b.point_count||a.qeph_count!=b.qeph_count||a.t3_count!=b.t3_count) return false;
+      a.point_count!=b.point_count||a.qeph_count!=b.qeph_count||a.t3_count!=b.t3_count||
+      a.heterogeneous!=b.heterogeneous) return false;
   for(std::size_t i=0;i<a.curve_count;++i)
     if(a.curves[i].id!=b.curves[i].id||a.curves[i].offset!=b.curves[i].offset||a.curves[i].count!=b.curves[i].count) return false;
   for(std::size_t i=0;i<a.point_count;++i)
@@ -37,7 +43,7 @@ bool ShellBatchPlasticityBinding::SameScope(const ShellBatchPlasticityBinding& o
     const auto& m=x.declaration; const auto& n=y.declaration;
     if(x.curve_index!=y.curve_index||m.material_id!=n.material_id||m.curve_id!=n.curve_id||
         !Same(m.young_pa,n.young_pa)||!Same(m.poisson_ratio,n.poisson_ratio)||
-        !Same(m.density_kg_m3,n.density_kg_m3)||!Same(m.rate,n.rate)||m.hardening!=n.hardening||
+        !Same(m.density_kg_m3,n.density_kg_m3)||!Same(m.rate,n.rate)||m.hardening!=n.hardening||m.law!=n.law||
         !Same(m.linear.initial_yield_pa,n.linear.initial_yield_pa)||
         !Same(m.linear.tangent_modulus_pa,n.linear.tangent_modulus_pa)) return false;
   }
