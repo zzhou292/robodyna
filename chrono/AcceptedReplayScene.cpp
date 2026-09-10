@@ -22,9 +22,17 @@ bool SourceWall(output::ReplayKind kind) {
 bool Finite(const chrono::ChVector3d& p) {
     return std::isfinite(p.x()) && std::isfinite(p.y()) && std::isfinite(p.z());
 }
+double RendererCoordinate(double value) {
+    // Materialize the binary32 storage used by the renderer before testing
+    // triangle collapse. The narrowing is part of this validation contract.
+    volatile float stored = static_cast<float>(value);
+    return stored;
+}
 bool DisplayGeometry(const std::vector<chrono::ChVector3d>& positions,
-                     const std::vector<chrono::ChVector3i>& triangles) {
-    if (positions.empty() || positions.size() > 4096 || triangles.empty() || triangles.size() > 8192) return false;
+                     const std::vector<chrono::ChVector3i>& triangles,
+                     ReplayGeometryLimits limits = {}) {
+    if (!limits.valid() || positions.empty() || positions.size() > limits.vertices ||
+        triangles.empty() || triangles.size() > limits.triangles) return false;
     // VSG's rendering buffers are float, and its actual GetFaceNormals uses a
     // binary64 cross product and length. Reject geometry those operations cannot
     // represent, even if it was valid for a more general archive consumer.
@@ -40,7 +48,7 @@ bool DisplayGeometry(const std::vector<chrono::ChVector3d>& positions,
         chrono::ChVector3d displayed[3];
         for (int j = 0; j < 3; ++j) {
             const auto& p = positions[t[j]];
-            displayed[j] = {static_cast<float>(p.x()), static_cast<float>(p.y()), static_cast<float>(p.z())};
+            displayed[j] = {RendererCoordinate(p.x()), RendererCoordinate(p.y()), RendererCoordinate(p.z())};
         }
         const auto displayed_normal = chrono::Vcross(displayed[1] - displayed[0], displayed[2] - displayed[0]);
         if (!(displayed_normal.Length2() > 0)) return false;
@@ -134,6 +142,7 @@ struct AcceptedReplayScene::Impl {
     ReplayParentScalarColors parent_colors;
     ReplayPartColors part_colors;
     ReplayColorMode color_mode = ReplayColorMode::Uniform;
+    ReplayGeometryLimits limits;
     std::vector<chrono::ChColor> staged_colors;
     double deformation_scale = 1;
     ReplayStamp stamp;
@@ -144,8 +153,15 @@ AcceptedReplayScene::~AcceptedReplayScene() = default;
 
 ReplaySceneReport AcceptedReplayScene::Initialize(const output::ReplayInfo& info, const output::ReplayFrame& frame,
                                                 std::shared_ptr<const chrono::ChTriangleMeshConnected> wall, bool wireframe,
-                                                double deformation_scale, ReplayView view, ReplayColorMode colors) {
+                                                double deformation_scale, ReplayView view, ReplayColorMode colors,
+                                                ReplayGeometryLimits limits) {
     if (impl_) return {ReplaySceneStatus::AlreadyInitialized, "Replay scene already initialized"};
+    if (!limits.valid()) return {ReplaySceneStatus::ResourceLimit, "Invalid explicit replay geometry capacity"};
+    if (info.triangle_source_part.size() > limits.triangles ||
+        (!info.triangle_source_part.empty() && info.triangle_source_part.size() != info.triangle_count) ||
+        info.triangle_source_parent.size() > limits.triangles ||
+        frame.parent_plastic_strain.size() > limits.parents)
+        return {ReplaySceneStatus::InvalidFrame, "Replay source associations exceed geometry capacity"};
     if (!ReplayColorModeName(colors)) return {ReplaySceneStatus::InvalidFrame, "Invalid replay color mode"};
     if (colors == ReplayColorMode::Automatic)
         colors = info.source_plasticity ? ReplayColorMode::PlasticStrain : ReplayColorMode::Uniform;
@@ -169,7 +185,7 @@ ReplaySceneReport AcceptedReplayScene::Initialize(const output::ReplayInfo& info
         frame.mesh->GetCoordsVertices().size() != info.node_count || frame.mesh->GetIndicesVertices().size() != info.triangle_count ||
         (info.kind == output::ReplayKind::NormalImpact || info.kind == output::ReplayKind::GuidedPlate ||
          SourceWall(info.kind)) != static_cast<bool>(wall) ||
-        !DisplayGeometry(frame.mesh->GetCoordsVertices(), frame.mesh->GetIndicesVertices()) ||
+        !DisplayGeometry(frame.mesh->GetCoordsVertices(), frame.mesh->GetIndicesVertices(), limits) ||
         (wall && !DisplayGeometry(wall->GetCoordsVertices(), wall->GetIndicesVertices())))
         return {ReplaySceneStatus::InvalidFrame, "Invalid validated replay geometry or metadata"};
     try {
@@ -177,11 +193,12 @@ ReplaySceneReport AcceptedReplayScene::Initialize(const output::ReplayInfo& info
         if (!MakeCamera(info, view, next->camera)) return {ReplaySceneStatus::InvalidFrame, "Invalid replay trajectory bounds"};
         next->info = info;
         next->color_mode = colors;
+        next->limits = limits;
         next->moving = CopyGeometry(*frame.mesh);
         if(info.source_plasticity) {
             if(!SourceWall(info.kind)||info.triangle_source_parent.size()!=info.triangle_count||
                !next->parent_colors.Initialize(info.triangle_source_parent,frame.parent_plastic_strain,
-                    info.plastic_strain_color_max,next->moving->GetCoordsColors()))
+                    info.plastic_strain_color_max,next->moving->GetCoordsColors(), limits))
                 return {ReplaySceneStatus::InvalidFrame,"Invalid accepted plastic display association or fixed scale"};
             for(const auto& parent:frame.parent_plastic_strain)if(parent.value!=0)
                 return {ReplaySceneStatus::InvalidFrame,"Initial accepted plastic display field is not zero"};
@@ -232,7 +249,7 @@ ReplaySceneReport AcceptedReplayScene::Publish(const output::ReplayFrame& frame)
     if (state.deformation_scale != 1)
         for (std::size_t n = 0; n < state.staged.size(); ++n)
             state.staged[n] = state.reference[n] + state.deformation_scale * (state.staged[n] - state.reference[n]);
-    if (!DisplayGeometry(state.staged, state.moving->GetIndicesVertices()))
+    if (!DisplayGeometry(state.staged, state.moving->GetIndicesVertices(), state.limits))
         return {ReplaySceneStatus::InvalidFrame, "Replay frame cannot be represented by renderer geometry"};
     if(state.info.source_plasticity) {
         if(!state.parent_colors.Stage(frame.parent_plastic_strain,state.staged_colors))

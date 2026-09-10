@@ -10,6 +10,17 @@ The guided plate uses a fixed oblique camera from incident −X, with Y up and e
 
 ## Build and source checks
 
+`AcceptedReplayScene::Initialize` retains its small default geometry limits and
+accepts an explicit trailing `ReplayGeometryLimits::Vehicle()` for up to 524,288
+vertices/parents and 1,048,576 triangles. The fixed wall keeps its default limits.
+This opt-in covers scene storage and plastic/PID color associations; it does not
+admit a new archive schema or qualify vehicle mechanics. The source-sized scene
+fixture uses synthetic geometry at 359,785 nodes / 677,989 triangles and checks
+both color modes, actual Chrono normals, late failure preservation and retry.
+These are container count bounds, not a complete VSG memory forecast; actual
+rendering still runs under the workstation guard. The reader remains a separate
+capacity and source-authentication gate.
+
 The root CMake options are `ROBO_DYNA_ENABLE_REPLAY` and `ROBO_DYNA_ENABLE_REPLAY_SCENE_CHECKS`. The scene checks require only Chrono core and GTest. The viewer additionally requires an isolated Chrono build with VSG enabled and the pinned dependencies; the exported target is `Chrono::Chrono_vsg` (`Chrono::vsg` is only the in-tree alias). No CUDA compiler, FEA module or mechanics qualification target is a viewer dependency.
 
 The coordinator wraps each configure/build with `Total-Lagrangian-FEA/tools/run_bounded.py`, `crash-work/reports/workstation.lock`, one build job, at most two affinity CPUs, and the agreed RAM reserve. Root CMake adds the accepted-reader target before this viewer directory. Use the Vulkan/pkg-config environment documented in [DEPENDENCIES.md](DEPENDENCIES.md).

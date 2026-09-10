@@ -1,6 +1,7 @@
 #pragma once
 
 #include "output/AcceptedReplay.h"
+#include "ReplayGeometryLimits.h"
 #include "chrono/assets/ChColor.h"
 #include <algorithm>
 #include <cmath>
@@ -27,9 +28,9 @@ class ReplayParentScalarColors {
   public:
     bool Initialize(const std::vector<std::uint64_t>& triangle_parents,
                     const std::vector<output::ReplayParentScalar>& field, double maximum,
-                    std::vector<chrono::ChColor>& colors) {
-        if (!std::isfinite(maximum) || maximum <= 0 || triangle_parents.empty() || triangle_parents.size() > 8192 ||
-            field.empty() || field.size() > 4096) return false;
+                    std::vector<chrono::ChColor>& colors, ReplayGeometryLimits limits = {}) {
+        if (!limits.valid() || !std::isfinite(maximum) || maximum <= 0 || triangle_parents.empty() ||
+            triangle_parents.size() > limits.triangles || field.empty() || field.size() > limits.parents) return false;
         ReplayParentScalarColors next;
         next.maximum_ = maximum;
         std::map<std::uint64_t, std::size_t> parent_index;

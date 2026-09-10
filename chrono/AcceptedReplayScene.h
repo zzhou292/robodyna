@@ -3,6 +3,7 @@
 #include "ReplayView.h"
 #include "ReplayColorMode.h"
 #include "ReplayPartColors.h"
+#include "ReplayGeometryLimits.h"
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -50,7 +51,10 @@ class AcceptedReplayScene {
                                 std::shared_ptr<const chrono::ChTriangleMeshConnected> wall,
                                 bool wireframe = false, double deformation_scale = 1,
                                 ReplayView view = ReplayView::IncidentSide,
-                                ReplayColorMode colors = ReplayColorMode::Automatic);
+                                ReplayColorMode colors = ReplayColorMode::Automatic,
+                                ReplayGeometryLimits limits = {});
+    // Vehicle geometry requires an explicit capacity opt-in. Archive and solver
+    // admission remain separate. The fixed wall retains the small default caps.
     // WallSide is supported by SourcePartWall and SourceAssemblyWall, whose
     // placed wall has its incident normal along -X. It reflects the camera's
     // X offset about the trajectory target; all accepted geometry is retained.
