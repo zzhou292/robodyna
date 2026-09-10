@@ -1,0 +1,30 @@
+cmake_minimum_required(VERSION 3.18)
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+  project(RoboDynaFullShellRecords LANGUAGES CXX)
+  find_package(Chrono REQUIRED CONFIG)
+  enable_testing()
+endif()
+if(NOT TARGET robo_dyna_bounded_array_io)
+  add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../arrays" "${CMAKE_CURRENT_BINARY_DIR}/arrays")
+endif()
+add_library(robo_dyna_full_shell_records STATIC FullShellVisualizationSchema.cpp FullShellVisualizationPlan.cpp
+  FullShellFrameDescription.cpp FullShellVisualizationRecords.cpp)
+target_link_libraries(robo_dyna_full_shell_records PUBLIC robo_dyna_bounded_array_io)
+target_compile_features(robo_dyna_full_shell_records PUBLIC cxx_std_17)
+target_compile_options(robo_dyna_full_shell_records PRIVATE -fno-fast-math -ffp-contract=off)
+option(ROBO_DYNA_FULL_SHELL_RECORD_TESTS "Build pure array/forecast/record contract checks" ON)
+if(ROBO_DYNA_FULL_SHELL_RECORD_TESTS)
+  find_package(GTest REQUIRED)
+  find_package(Python3 REQUIRED COMPONENTS Interpreter)
+  add_executable(robo_dyna_full_shell_record_check tests/BoundedArrayTest.cpp
+    tests/FullShellPlanTest.cpp tests/FullShellRecordTest.cpp)
+  target_link_libraries(robo_dyna_full_shell_record_check PRIVATE robo_dyna_full_shell_records GTest::gtest_main)
+  target_compile_options(robo_dyna_full_shell_record_check PRIVATE -fno-fast-math -ffp-contract=off)
+  add_test(NAME full_shell_visualization_records COMMAND robo_dyna_full_shell_record_check
+    --gtest_filter=-BoundedArrays.CanonicalImporterInteroperability)
+  set_tests_properties(full_shell_visualization_records PROPERTIES TIMEOUT 60 RUN_SERIAL TRUE PROCESSORS 1)
+  add_test(NAME full_shell_canonical_array_compatibility COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_LIST_DIR}/tests/canonical_array_compatibility.py"
+    "${CMAKE_CURRENT_LIST_DIR}/../.." "$<TARGET_FILE:robo_dyna_full_shell_record_check>")
+  set_tests_properties(full_shell_canonical_array_compatibility PROPERTIES TIMEOUT 60 RUN_SERIAL TRUE PROCESSORS 1)
+endif()
