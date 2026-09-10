@@ -74,15 +74,28 @@ __global__ void Assemble(Storage* storage,const Slab* accepted,NodalAssemblyView
   if(s.control.status!=BatchStatus::Success) RecordNodalAssemblyFailure(v,sc::Status::kInvalidArgument,s.control.node);
 }
 __global__ void Candidate(Storage* storage,const Slab* accepted,Slab* trial,NodalPreparedView v,BatchDiagnostics identity) {
-  auto& s=*storage; s.control={}; s.control.diagnostics=identity;
-  for(unsigned e=0;e<s.model.config.element_count;++e) {
+  auto& s=*storage;
+  __shared__ Status element_status[MaxBatchElements];
+  const unsigned e=threadIdx.x;
+  element_status[e]=Status::kSuccess;
+  if(e==0) { s.control={}; s.control.diagnostics=identity; }
+  // Native arithmetic is independent per parent. Each worker reads the same
+  // immutable model/accepted state and owns exactly one candidate history/cache.
+  if(e<s.model.config.element_count) {
     PrescribedInterval interval; interval.base_time=v.base_time; interval.dt=s.model.config.owner.fixed_dt;
     interval.sample_index=v.kinematics.base_epoch+1;
     shell_batch_fields::Gather(s.model.element[e].nodes,v.kinematics,
       interval.position_endpoint,interval.velocity_midpoint,interval.omega_midpoint);
-    const auto status=EvaluateForce(s.model.element[e].reference,accepted->element[e].proposed_history,interval,trial->element[e]);
+    element_status[e]=EvaluateForce(s.model.element[e].reference,accepted->element[e].proposed_history,interval,trial->element[e]);
+  }
+  __syncthreads();
+  if(e!=0) return;
+  // Preserve the serial contract's first failing parent and reduction order.
+  // A failed candidate never exposes partially evaluated higher-index cells.
+  for(unsigned i=0;i<s.model.config.element_count;++i) {
+    const auto status=element_status[i];
     if(status!=Status::kSuccess) {
-      s.control.status=BatchStatus::ElementFailure; s.control.element=e; s.control.element_status=status; return;
+      s.control.status=BatchStatus::ElementFailure; s.control.element=i; s.control.element_status=status; return;
     }
   }
   if(!Measure(s.model,*accepted,*trial,v,s.control)) { s.control.status=BatchStatus::NonfiniteResult; return; }
@@ -90,6 +103,6 @@ __global__ void Candidate(Storage* storage,const Slab* accepted,Slab* trial,Noda
 }
 }
 void LaunchAssembly(Storage* s,const Slab* a,NodalAssemblyView v,bool initial) { Assemble<<<1,1,0,v.stream>>>(s,a,v,initial); }
-void LaunchCandidate(Storage* s,const Slab* a,Slab* b,NodalPreparedView v,BatchDiagnostics d) { Candidate<<<1,1,0,v.stream>>>(s,a,b,v,d); }
+void LaunchCandidate(Storage* s,const Slab* a,Slab* b,NodalPreparedView v,BatchDiagnostics d) { Candidate<<<1,MaxBatchElements,0,v.stream>>>(s,a,b,v,d); }
 void LaunchFailure(NodalAssemblyView v) { MarkFailure<<<1,1,0,v.stream>>>(v); }
 } // namespace tl::fea::qeph::batch_detail

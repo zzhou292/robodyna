@@ -204,4 +204,78 @@ TEST_F(CudaTest, FinalParentFailureInEitherFamilyPreservesEveryHistoryAndExactRe
   SameState(actual,truth,false); EXPECT_EQ(actual.stamp.epoch,2u); SameAllocations(*r,allocations);
   RecordProperty("native_qeph_intervals",4*QCount); RecordProperty("native_t3_intervals",4*TCount);
 }
+
+TEST_F(CudaTest, SimultaneousFirstAndLastParentFailuresSelectFirstAndRetryDeterministically) {
+  auto r=std::make_unique<Rig>(),clean=std::make_unique<Rig>();
+  auto native=std::make_unique<NativeSequence>(),other=std::make_unique<NativeSequence>();
+  ASSERT_TRUE(r->Initialize()); ASSERT_TRUE(clean->Initialize());
+  ASSERT_TRUE(native->Initialize(*r)); ASSERT_TRUE(other->Initialize(*clean));
+  ASSERT_TRUE(Prime(*r,*native)); ASSERT_TRUE(Prime(*clean,*other));
+  Snapshot before; ASSERT_TRUE(Read(r->owner,before));
+  auto cache=std::make_unique<Staged>(),unavailable=std::make_unique<Staged>();
+  ASSERT_TRUE(Accepted(*r,*cache));
+  const auto allocations=Allocations(*r);
+  for(unsigned family=0;family<2;++family) for(unsigned repetition=0;repetition<4;++repetition) {
+    SCOPED_TRACE(family);
+    SCOPED_TRACE(repetition);
+    Prepared p; ASSERT_TRUE(Prepare(*r,{},*cache,p));
+    auto qd=cache->diagnostics.qeph; auto td=cache->diagnostics.t3;
+    auto move=[&](std::size_t target,std::size_t source) {
+      SetPosition<<<1,1,0,p.view.stream>>>(const_cast<double*>(p.view.kinematics.position_xyz),target,
+        {p.endpoint.x[3*source],p.endpoint.x[3*source+1],p.endpoint.x[3*source+2]});
+    };
+    *unavailable=*cache;
+    if(!family) {
+      ASSERT_EQ(r->t3.EvaluateCandidate(p.view,&td).status,t::BatchStatus::Success);
+      const auto& low=r->binding.qeph_nodes(0); const auto& high=r->binding.qeph_nodes(QCount-1);
+      move(low[0],low[1]); move(high[2],high[1]);
+      ASSERT_EQ(cudaStreamSynchronize(p.view.stream),cudaSuccess);
+      auto first=QInterval(*r,0,p),last=QInterval(*r,QCount-1,p);
+      first.position_endpoint[0]=first.position_endpoint[1];
+      last.position_endpoint[2]=last.position_endpoint[1];
+      q::ForceTrial ignored;
+      const auto expected=q::EvaluateForce(r->binding.qeph_reference(0),cache->qeph[0].proposed_history,first,ignored);
+      ASSERT_NE(expected,q::Status::kSuccess);
+      ASSERT_NE(q::EvaluateForce(r->binding.qeph_reference(QCount-1),cache->qeph.back().proposed_history,last,ignored),q::Status::kSuccess);
+      const auto held=Bytes(qd);
+      const auto report=r->qeph.EvaluateCandidate(p.view,&qd);
+      EXPECT_EQ(report.status,q::BatchStatus::ElementFailure); EXPECT_EQ(report.element,0u);
+      EXPECT_EQ(report.element_status,expected); EXPECT_EQ(Bytes(qd),held);
+      EXPECT_NE(r->qeph.CopyPreparedResults(qd,unavailable->qeph.data(),QCount).status,q::BatchStatus::Success);
+    } else {
+      ASSERT_EQ(r->qeph.EvaluateCandidate(p.view,&qd).status,q::BatchStatus::Success);
+      const auto& low=r->binding.t3_nodes(0); const auto& high=r->binding.t3_nodes(TCount-1);
+      move(low[1],low[0]); move(high[1],high[2]);
+      ASSERT_EQ(cudaStreamSynchronize(p.view.stream),cudaSuccess);
+      auto first=TInterval(*r,0,p),last=TInterval(*r,TCount-1,p);
+      first.position[1]=first.position[0]; last.position[1]=last.position[2];
+      t::ForceTrial ignored;
+      const auto expected=t::EvaluateForce(r->binding.t3_reference(0),cache->t3[0].proposed_history,first,ignored);
+      ASSERT_NE(expected,t::Status::kSuccess);
+      ASSERT_NE(t::EvaluateForce(r->binding.t3_reference(TCount-1),cache->t3.back().proposed_history,last,ignored),t::Status::kSuccess);
+      const auto held=Bytes(td);
+      const auto report=r->t3.EvaluateCandidate(p.view,&td);
+      EXPECT_EQ(report.status,t::BatchStatus::ElementFailure); EXPECT_EQ(report.element,0u);
+      EXPECT_EQ(report.element_status,expected); EXPECT_EQ(Bytes(td),held);
+      EXPECT_NE(r->t3.CopyPreparedResults(td,unavailable->t3.data(),TCount).status,t::BatchStatus::Success);
+    }
+    ExactResults(*cache,*unavailable);
+    auto common=cache->diagnostics; const auto held=Bytes(common);
+    EXPECT_EQ(r->publication.Prepare(r->owner,p.token,qd,td,&common).status,S::StaleTrial);
+    EXPECT_EQ(Bytes(common),held);
+    ASSERT_NO_FATAL_FAILURE(Preserved(*r,before,*cache));
+    SameAllocations(*r,allocations);
+  }
+  Prepared retry,reference; auto next=std::make_unique<Staged>(),expected=std::make_unique<Staged>();
+  auto clean_cache=std::make_unique<Staged>(); ASSERT_TRUE(Accepted(*clean,*clean_cache));
+  ASSERT_TRUE(Prepare(*r,{},*cache,retry)); ASSERT_TRUE(Evaluate(*r,retry,*next,true));
+  ASSERT_TRUE(Prepare(*clean,{},*clean_cache,reference)); ASSERT_TRUE(Evaluate(*clean,reference,*expected));
+  SameState(retry.endpoint,reference.endpoint); ExactResults(*next,*expected);
+  ASSERT_TRUE(native->Check(*r,retry,*next)); ASSERT_TRUE(other->Check(*clean,reference,*expected));
+  ASSERT_TRUE(Publish(*r,retry,*next)); ASSERT_TRUE(Publish(*clean,reference,*expected));
+  Snapshot actual,truth; ASSERT_TRUE(Read(r->owner,actual)); ASSERT_TRUE(Read(clean->owner,truth));
+  SameState(actual,truth,false); SameAllocations(*r,allocations);
+  RecordProperty("simultaneous_failure_attempts",8);
+  RecordProperty("native_qeph_intervals",4*QCount); RecordProperty("native_t3_intervals",4*TCount);
+}
 } // namespace resident_collection_test

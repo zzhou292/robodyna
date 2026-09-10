@@ -4,7 +4,8 @@ This gate expands fixed resident capacity, not mechanics or temporal
 admission. All three new CUDA functions and 20 existing mixed/T3 functions pass. The sole nodal owner admits at most 128 nodes; each typed batch uses
 the shared 128-parent/128-node limits and one bounded device allocation with two
 history/cache slabs. A joined binding admits at most 128 parents **in total** and
-both families must be present. The existing serial arithmetic/order is retained.
+both families must be present. Each parent's arithmetic, force assembly order
+and diagnostic reduction order are retained.
 The publication coordinator reduces global native kinetic energy exactly once.
 No production allocation occurs after startup. Actual allocation bytes are test
 properties and must be measured by the first serialized host/CUDA build/run.
@@ -60,3 +61,28 @@ The enlarged owner also passes all seven accepted Chrono output functions in
 all scientific fields exactly, with only changed allocation/runtime metadata
 excluded; see `wall_response/RESULTS.md`. No original-source dynamics or video
 is implied by these capacity and compatibility results.
+
+## Parallel candidate evaluation
+
+Each QEPH/T3 candidate now evaluates one parent per CUDA thread in a single
+128-thread block. A shared status array and an ascending serial scan preserve
+the lowest failing parent and existing diagnostic reduction order. Assembly
+remains deterministic, and failed candidates never publish accepted histories.
+This adds no device allocation and does not change the per-parent force math.
+
+One additional collection test exercises simultaneous first/last parent failures
+in both families, preserved accepted state and exact retry. It passes with all
+23 existing mixed/T3 functions and 20 affected QEPH/contact functions. Both
+owning Bazel batch targets and the actual source-part native gate also pass.
+Reports are `parallel-shell-candidates-tests-1`, `parallel-shell-qeph-tests-1`,
+`parallel-shell-bazel-1` and `parallel-shell-source-native-1` under
+`crash-work/reports/`.
+
+For the complete original 117-node/94-parent elastic source experiment, the
+parallel run takes 99.327 s versus 331.503 s for the serial baseline (3.337x).
+All 778 scientific files, totaling 42,954,314 bytes, match exactly. Only elapsed
+time and its inventory metadata are excluded. See
+`source-part-elastic-parallel-parity-1.json`. The same physical experiment also
+passes h/h2/h4 comparison at 257 common times, including genuine chord-length
+change of about 0.277 mm. These results qualify this small experimental elastic
+part, not vehicle-scale throughput, source plasticity or impact.
