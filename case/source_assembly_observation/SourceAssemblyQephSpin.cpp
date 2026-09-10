@@ -49,11 +49,11 @@ Report spin_detail::Parent(const QephSpinInput& in,const modelio::assembly::Pare
     if(!epoch)return detail::Success();
     if(k.sample_index!=epoch||k.base_time!=(candidate?in.base.time:in.base.reaction_time)||k.dt!=in.base.fixed_dt)
         return {Status::WrongIdentity,"Spin retained rate packet has a different originating interval"};
-    if(!Finite(k.frame.v)||!Finite(k.projection_inverse)||!Finite(k.projected_omega)||!Finite(k.regular_rate)||!Finite(k.hourglass_rate))
+    if(!Finite(k.frame.v)||!Finite(k.nodal_factors)||!Finite(k.projection_inverse)||!Finite(k.projected_omega)||!Finite(k.regular_rate)||!Finite(k.hourglass_rate))
         return {Status::NonfiniteResult,"Spin native kinematics contains nonfinite entries"};
     for(unsigned l=0;l<4;++l)if(!Finite(k.local_position[l])||!Finite(k.local_normals[l])||!Finite(k.projection_columns[l]))
         return {Status::NonfiniteResult,"Spin native geometry contains nonfinite entries"};
-    for(double value:{k.area,k.raw_warpage_abs,k.effective_warpage})
+    for(double value:{k.area,k.reciprocal_area,k.characteristic_length,k.raw_warpage_abs,k.effective_warpage})
         if(!std::isfinite(value))return {Status::NonfiniteResult,"Spin force/geometry diagnostic is nonfinite"};
     out.native_normal=World(k.frame,k.local_normals[local]);
     const auto w=out.omega[local],c=force.internal_couple[local],n=out.native_normal;

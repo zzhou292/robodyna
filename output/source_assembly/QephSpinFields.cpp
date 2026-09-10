@@ -32,6 +32,8 @@ Document Parent(const cases::source_assembly_observation::QephSpinParent& p) {
     if(p.has_native_kinematics) {
         Number(rates,"origin_base_time_s",k.base_time);Number(rates,"origin_dt_s",k.dt);Integer(rates,"origin_endpoint_epoch",k.sample_index);
         FiniteArray(rates,"frame_columns_row_major",k.frame.v,9);Vectors(rates,"local_position_m",k.local_position);Vectors(rates,"local_normals",k.local_normals);
+        Number(rates,"reciprocal_area_per_m2",k.reciprocal_area);Number(rates,"characteristic_length_m",k.characteristic_length);
+        FiniteArray(rates,"nodal_factors",k.nodal_factors,2);
         Number(rates,"area_m2",k.area);Number(rates,"raw_warpage_abs_m",k.raw_warpage_abs);Number(rates,"effective_warpage_m",k.effective_warpage);
         Boolean(rates,"planar",k.planar);FiniteArray(rates,"projected_omega_rad_s",k.projected_omega,8);
         FiniteArray(rates,"regular_rate_native",k.regular_rate,8);FiniteArray(rates,"hourglass_rate_native",k.hourglass_rate,6);
