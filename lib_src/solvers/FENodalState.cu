@@ -23,11 +23,6 @@ std::uint64_t NewOwner() {
   }
   return 0;
 }
-bool Overlap(const void* a, std::size_t an, const void* b, std::size_t bn) {
-  const auto x = reinterpret_cast<std::uintptr_t>(a), y = reinterpret_cast<std::uintptr_t>(b);
-  if (an > UINTPTR_MAX - x || bn > UINTPTR_MAX - y) return true;
-  return x < y + bn && y < x + an;
-}
 __global__ void ResetTrial(Control* c, std::uint64_t epoch, std::uint64_t attempt) {
   c->assembly = {};
   c->assembly.base_epoch = epoch; c->assembly.attempt = attempt;
@@ -370,40 +365,4 @@ void FENodalState::Discard() noexcept { if (impl_) impl_->phase = Phase::Idle; }
 NodalStamp FENodalState::accepted() const noexcept { return impl_ ? impl_->stamp : NodalStamp{}; }
 NodalAllocationInfo FENodalState::allocations() const noexcept { return impl_ ? impl_->allocation : NodalAllocationInfo{}; }
 
-NodalReport FENodalState::CopyAccepted(NodalSnapshotBuffer out, NodalStamp* stamp) {
-  if (!impl_) return {NodalStatus::NotInitialized, "Owner is not initialized"};
-  auto& s = *impl_;
-  if (!s.usable) return {NodalStatus::DeviceFailure, "CUDA owner is poisoned"};
-  if (!stamp || !out.position_xyz || !out.velocity_xyz)
-    return {NodalStatus::InvalidInput, "Missing host snapshot output"};
-  if (out.capacity_nodes < s.config.node_count) return {NodalStatus::ResourceLimit, "Snapshot capacity is insufficient"};
-  if (!s.has_rotations && (out.orientation_wxyz || out.angular_velocity_xyz || out.reaction_force_xyz || out.reaction_couple_xyz))
-    return {NodalStatus::UnsupportedRotation, "Extended snapshot fields require extended nodal initialization"};
-  const auto n = s.config.node_count;
-  void* outputs[7] = {out.position_xyz, out.velocity_xyz, out.orientation_wxyz, out.angular_velocity_xyz,
-                     out.reaction_force_xyz, out.reaction_couple_xyz, stamp};
-  const std::size_t bytes[7] = {3*n*sizeof(double), 3*n*sizeof(double), 4*n*sizeof(double), 3*n*sizeof(double),
-                              3*n*sizeof(double), 3*n*sizeof(double), sizeof(*stamp)};
-  for (unsigned i = 0; i < 7; ++i) {
-    if (!outputs[i]) continue;
-    if (bytes[i] > UINTPTR_MAX - reinterpret_cast<std::uintptr_t>(outputs[i]))
-      return {NodalStatus::InvalidInput, "Snapshot output address range overflows"};
-    for (unsigned j = 0; j < i; ++j)
-      if (outputs[j] && Overlap(outputs[i], bytes[i], outputs[j], bytes[j]))
-        return {NodalStatus::InvalidInput, "Snapshot outputs overlap"};
-  }
-  auto report = s.Check(cudaMemcpyAsync(s.staging.data(), s.accepted, s.state_values*sizeof(double), cudaMemcpyDeviceToHost, s.stream));
-  if (report.status != NodalStatus::Ok) return report;
-  report = s.Check(cudaStreamSynchronize(s.stream)); if (report.status != NodalStatus::Ok) return report;
-  for (std::size_t i = 0; i < s.state_values; ++i)
-    if (!std::isfinite(s.staging[i])) return s.Reject(NodalStatus::InvalidOutput, "Accepted readback is nonfinite");
-  if (s.has_rotations)
-    for (std::size_t i = 0; i < n; ++i)
-      if (!nodal_detail::UnitQuaternion(nodal_detail::ReadQuaternion(s.staging.data()+9*n+4*i)))
-        return s.Reject(NodalStatus::InvalidOutput, "Accepted quaternion readback is not unit", static_cast<std::uint32_t>(i));
-  const std::size_t offsets[6] = {0, 3*n, 9*n, 6*n, 13*n, 16*n};
-  for (unsigned i = 0; i < 6; ++i)
-    if (outputs[i]) std::memcpy(outputs[i], s.staging.data()+offsets[i], bytes[i]);
-  *stamp = s.stamp; return Ok();
-}
 }  // namespace tl::fea

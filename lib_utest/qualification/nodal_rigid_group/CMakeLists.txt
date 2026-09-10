@@ -101,7 +101,11 @@ if(TL_NODAL_RIGID_OWNER_CHECKS)
   target_link_libraries(nodal_rigid_owner_check PRIVATE tl_explicit_nodal_state GTest::gtest_main)
   add_executable(nodal_rigid_owner_native_check GroupOwnerNativeTest.cu GroupPhaseNativeFixture.cpp GroupStepNativeFixture.cpp)
   target_link_libraries(nodal_rigid_owner_native_check PRIVATE tl_explicit_nodal_state nodal_rigid_native GTest::gtest_main)
-  foreach(target nodal_rigid_owner_check nodal_rigid_owner_native_check)
+  add_executable(nodal_prepared_snapshot_check PreparedSnapshotTest.cu PreparedSnapshotRejectionTest.cu
+    PreparedSnapshotCapacityTest.cu PreparedSnapshotFaultTest.cu PreparedSnapshotCudaProbe.cpp)
+  target_link_libraries(nodal_prepared_snapshot_check PRIVATE tl_explicit_nodal_state GTest::gtest_main)
+  target_link_options(nodal_prepared_snapshot_check PRIVATE "LINKER:--wrap=cudaMemcpyAsync")
+  foreach(target nodal_rigid_owner_check nodal_rigid_owner_native_check nodal_prepared_snapshot_check)
     set_target_properties(${target} PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED ON)
     target_compile_options(${target} PRIVATE
       "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>"

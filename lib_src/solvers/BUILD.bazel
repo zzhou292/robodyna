@@ -17,9 +17,9 @@ cc_library(
 
 cuda_library(
     name = "explicit_nodal_state",
-    srcs = ["FENodalState.cu", "ExplicitTranslationStep.cu", "ExplicitNodalStep.cu", "NodalRigidGroupStorage.cu", "ExplicitNodalRigidStep.cu"],
+    srcs = ["FENodalState.cu", "FENodalSnapshotReadback.cu", "ExplicitTranslationStep.cu", "ExplicitNodalStep.cu", "NodalRigidGroupStorage.cu", "ExplicitNodalRigidStep.cu"],
     hdrs = ["FENodalState.h", "FENodalStateStorage.h", "ExplicitTranslationStep.h", "ExplicitNodalStep.h", "NodalRotation.h", "NodalTrialIdentity.h",
-            "NodalNodeStep.h", "NodalRigidGroupStorage.h", "ExplicitNodalRigidStep.h"],
+            "NodalNodeStep.h", "NodalRigidGroupStorage.h", "ExplicitNodalRigidStep.h", "NodalSnapshotRanges.h"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
     deps = [":explicit_step_stability", "//lib_src/math:quaternion", "//lib_src/constraints:nodal_rigid_group_step_math"],
 )

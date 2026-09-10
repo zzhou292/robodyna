@@ -233,6 +233,16 @@ class FENodalState {
   // output range or stamp changes. Reading during a trial still exports accepted
   // state only. The application associates owner_id with its run/topology identity.
   NodalReport CopyAccepted(NodalSnapshotBuffer, NodalStamp*);
+  // Candidate motion and actual constraint reaction F/C, for validation before
+  // publication. Uses the same optional fields, active capacity and private
+  // staging as CopyAccepted. Every output, including the prepared identity, is
+  // unchanged on failure and must be disjoint from the input token. No mutable
+  // device storage is exposed. Ready and AwaitingValidation phases are allowed;
+  // this readback does not validate or commit the candidate. Reaction F/C belong
+  // to prepared.base_time/base_kinematics.base_epoch and prepared.kick_dt; x/q
+  // are at proposed_time, v/omega at velocity_time. The returned prepared view
+  // has BorrowPrepared's lifetime. Calls are serialized with owner operations.
+  NodalReport CopyPrepared(const NodalTrialToken&, NodalSnapshotBuffer, NodalPreparedView*);
   NodalRigidGroupInfo rigid_groups() const noexcept;
   // Failure-atomic readback, with the SAME accepted owner stamp. The frame's
   // force-stage time is stamp.reaction_time after a step, stamp.time at startup.

@@ -58,6 +58,7 @@ struct FENodalState::Impl {
                                 const NodalStepAdmission&, NodalTemporalScheme, bool with_rigid_groups=false);
   cudaError_t LaunchRigidAdvance(double maximum_angle);
   NodalReport StageRigidSnapshot(const double* state);
+  NodalReport StageNodalSnapshot(const double* state, bool prepared);
   NodalStateConfig config;
   NodalStamp stamp;
   NodalAllocationInfo allocation;

@@ -16,6 +16,18 @@ cc_test(
 )
 
 cuda_test(
+    name = "nodal_prepared_snapshot_check",
+    size = "small",
+    srcs = ["PreparedSnapshotTest.cu", "PreparedSnapshotRejectionTest.cu", "PreparedSnapshotCapacityTest.cu",
+            "PreparedSnapshotFaultTest.cu", "PreparedSnapshotCudaProbe.cpp", "PreparedSnapshotCudaProbe.h",
+            "PreparedSnapshotFixture.h", "GroupOwnerFixture.h", "GroupStepTestSupport.h", "GroupTestSupport.h"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    linkopts = ["-Wl,--wrap=cudaMemcpyAsync"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/solvers:explicit_nodal_state", "//lib_utest:nodal_temporal_fixture", "@googletest//:gtest_main"],
+)
+
+cuda_test(
     name = "nodal_rigid_owner_check",
     size = "small",
     srcs = ["GroupOwnerStartupTest.cu", "GroupOwnerRollbackTest.cu", "GroupOwnerCapacityTest.cu", "GroupOwnerFixture.h",
