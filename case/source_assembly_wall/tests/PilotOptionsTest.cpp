@@ -16,6 +16,7 @@ TEST(PilotOptions, DefaultsAndExistingRefinementRetainExactBinaryStep) {
     EXPECT_EQ(defaults.steps,128u);EXPECT_EQ(defaults.frame_every,1u);EXPECT_EQ(defaults.archive,"new-archive");
     EXPECT_EQ(defaults.pilot.refinement,1u);EXPECT_EQ(defaults.pilot.step_multiple,1u);
     EXPECT_FALSE(defaults.pilot.timing.enabled);EXPECT_TRUE(defaults.timing_path.empty());
+    EXPECT_FALSE(defaults.pilot.observe_force_stage);
     EXPECT_EQ(PilotFixedStep(Parse({"2"}).pilot),std::ldexp(1.,-27));
     EXPECT_EQ(PilotFixedStep(Parse({"4"}).pilot),std::ldexp(1.,-28));
 }
@@ -56,6 +57,16 @@ TEST(PilotOptions, RejectsMissingRepeatedUnknownOrMalformedNamedOptions) {
         EXPECT_THROW(Parse({"--step-multiple",value}),std::invalid_argument);
     EXPECT_THROW(Parse({"3"}),std::invalid_argument);
     EXPECT_THROW(Parse({"--step-multiple","8","2"}),std::invalid_argument);
+}
+TEST(PilotOptions, ForceStageFlagIsExplicitOrderIndependentAndDoesNotAlterTheStep) {
+    const auto a=Parse({"--observe-force-stage","--step-multiple","8","--stage-timing","timing.json"});
+    const auto b=Parse({"--step-multiple","8","--stage-timing","timing.json","--observe-force-stage"});
+    EXPECT_TRUE(a.pilot.observe_force_stage);EXPECT_TRUE(b.pilot.observe_force_stage);
+    EXPECT_EQ(PilotFixedStep(a.pilot),std::ldexp(1.,-23));
+    EXPECT_EQ(PilotFixedStep(a.pilot),PilotFixedStep(b.pilot));
+    EXPECT_TRUE(Parse({"--observe-force-stage"}).pilot.observe_force_stage);
+    EXPECT_THROW(Parse({"--observe-force-stage","--observe-force-stage"}),std::invalid_argument);
+    EXPECT_THROW(Parse({"--observe-force-stage","true"}),std::invalid_argument);
 }
 TEST(PilotOptions, InvalidCountsNullArgumentsAndPartialInputFailBeforePublication) {
     EXPECT_THROW(ParseOptions(6,nullptr),std::invalid_argument);

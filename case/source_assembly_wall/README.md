@@ -17,7 +17,7 @@ Build this directory with explicit `ROBO_DYNA_TL_ROOT`, `Chrono_DIR` and CUDA
 architecture. Run only under the workstation guard:
 
 ```
-robo_dyna_source_assembly_wall INVENTORY WALL STEPS FRAME_EVERY NEW_DIR [REFINEMENT_1_2_4] [--stage-timing NEW_JSON] [--step-multiple 1_2_4_8]
+robo_dyna_source_assembly_wall INVENTORY WALL STEPS FRAME_EVERY NEW_DIR [REFINEMENT_1_2_4] [--stage-timing NEW_JSON] [--step-multiple 1_2_4_8] [--observe-force-stage]
 ```
 
 At the base step, 1024 intervals span 15.26 microseconds. That is integration and
@@ -49,6 +49,13 @@ Both default to one. Named options may appear in either order after the optional
 positional refinement; missing, unknown or repeated options fail before startup.
 `PilotOptions` carries these execution choices into the existing pilot setup.
 The exact resulting `fixed_dt` is already recorded in configuration output.
+
+`--observe-force-stage` explicitly enables the case's existing acceleration
+capture and source-partition kinetic observation before common publication.
+It does not change the step or evaluate forces again. The observation refers to
+the interval's force time, which differs from both carried half-step velocity
+time and the newly accepted configuration time. It provides no global energy
+acceptance threshold. Capture is disabled by default.
 
 This changes the requested step only: native element, contact-rate, deformation,
 source and resource checks remain in force. A multiplier's acceptance by the

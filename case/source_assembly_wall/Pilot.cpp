@@ -6,6 +6,7 @@
 namespace crash::cases::source_assembly_wall {
 source_assembly_dynamics::Config PilotConfig(const PilotOptions& options) {
     source_assembly_dynamics::Config config;config.fixed_dt=PilotFixedStep(options);
+    config.observe_force_stage=options.observe_force_stage;
     auto& d=config.deformation;
     d.maximum_displacement=.02;d.maximum_rotation=1;d.maximum_rotation_increment=1;
     d.maximum_strain=.2;d.maximum_thickness_curvature=.2;

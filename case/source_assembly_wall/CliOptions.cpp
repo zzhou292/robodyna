@@ -6,7 +6,7 @@
 namespace crash::cases::source_assembly_wall {
 namespace {
 constexpr const char* Usage="usage: robo_dyna_source_assembly_wall INVENTORY WALL STEPS FRAME_EVERY NEW_DIR "
-    "[REFINEMENT_1_2_4] [--stage-timing NEW_JSON] [--step-multiple 1_2_4_8]";
+    "[REFINEMENT_1_2_4] [--stage-timing NEW_JSON] [--step-multiple 1_2_4_8] [--observe-force-stage]";
 std::uint64_t Count(std::string_view value,std::uint64_t maximum) {
     std::uint64_t count=0;
     const auto parsed=std::from_chars(value.data(),value.data()+value.size(),count);
@@ -26,6 +26,10 @@ CliOptions ParseOptions(int argc,const char* const* argv) {
     bool saw_multiple=false;
     while(i<argc) {
         const std::string_view option=argv[i++];
+        if(option=="--observe-force-stage") {
+            if(next.pilot.observe_force_stage)throw std::invalid_argument("Repeated force-stage option");
+            next.pilot.observe_force_stage=true;continue;
+        }
         if(i==argc||std::string_view(argv[i]).substr(0,2)=="--")
             throw std::invalid_argument("Missing assembly option value");
         if(option=="--stage-timing"&&next.timing_path.empty()) {
