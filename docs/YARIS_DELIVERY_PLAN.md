@@ -30,13 +30,16 @@ identity binding passes eight host tests at TL `9be796a`. Joint resident
 publication now passes eight CUDA functions and three actual-owner identity
 functions at `e215665`: one five-node union, one kinetic ledger, 20 native cell
 interval checks and 23,551 explicit device bytes across nine allocations.
-Ten native recurrence-helper tests also pass; all36 prior native matrices and
+Ten native recurrence-helper tests also pass; all 36 prior native matrices and
 six sustained GPU response records preserve their scientific fields exactly.
 Mixed force-feedback dynamics remains open. Short shell/wall transactions pass
 four CUDA functions at TL `1611802`, including both failure orders and retry;
 this is a 0.2384-microsecond preload check. Combined long-response and incoming
-impact admission remain open. The current device wall participant accepts Q4
-parents only, so mixed T3 contact needs an explicit admission extension. The
+impact admission remain open. Native T3/mixed wall contact now passes five CUDA
+functions and 41 regressions at TL `3b25699`, including 16 contact-only intervals
+with native structural masses, distinct contact weights and late-failure retry.
+The contributor keeps one 99,384-byte allocation and its two-parent/eight-incident-
+node cap. Mixed shell force feedback remains the next composition gate. The
 [combined admission design](../../planning/QEPH_WALL_COUPLED_ADMISSION.md)
 separates short transaction checks, contact recurrence, incoming-velocity startup
 and impact/refinement; free-shell stability does not qualify wall impact. Plasticity,
