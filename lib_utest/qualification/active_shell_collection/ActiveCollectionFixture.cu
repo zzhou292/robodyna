@@ -38,10 +38,10 @@ Rig::Rig() {
   relocate(QCount-1,1024);
 }
 bool Rig::BuildReference() {
-  const auto geometry=binding.Initialize(source.geometry());
+  const auto geometry=binding.Initialize(source.geometry(),fe::ShellHostBindingLimits{});
   EXPECT_EQ(geometry.status,fe::ShellBindingStatus::Success)<<geometry.message;
   if(geometry.status!=fe::ShellBindingStatus::Success) return false;
-  const auto material=catalog.Initialize(binding,source.catalog());
+  const auto material=catalog.Initialize(binding,source.catalog(),fe::ShellHostBindingLimits{});
   EXPECT_EQ(material.status,fe::ShellPlasticityBindingStatus::Success)<<material.message;
   if(material.status!=fe::ShellPlasticityBindingStatus::Success) return false;
   for(std::size_t n=0;n<NodeCount;++n) {
@@ -76,8 +76,10 @@ bool Rig::Initialize(bool with_plastic) {
   if(qr.status!=q::BatchStatus::Success||tr.status!=t::BatchStatus::Success) return false;
   fe::NodalTrialToken token; fe::NodalAssemblyView view;
   EXPECT_EQ(owner.BeginTrial(&token,&view).status,fe::NodalStatus::Ok);
-  EXPECT_EQ(qeph.AssembleAccepted(view).status,q::BatchStatus::Success);
-  EXPECT_EQ(t3.AssembleAccepted(view).status,t::BatchStatus::Success); Discard();
+  const auto bound_q=qeph.AssembleAccepted(owner,view);
+  EXPECT_EQ(bound_q.status,q::BatchStatus::Success)<<bound_q.message;
+  const auto bound_t=t3.AssembleAccepted(owner,view);
+  EXPECT_EQ(bound_t.status,t::BatchStatus::Success)<<bound_t.message; Discard();
   if(::testing::Test::HasFailure()) return false;
   fe::ShellPublicationLimits limits; limits.max_nodes=2048;
   const auto joined=publication.Initialize(owner,qeph,t3,limits);

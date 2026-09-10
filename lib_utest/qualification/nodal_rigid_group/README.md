@@ -78,3 +78,12 @@ host/native/CUDA targets on the RTX 5090 (2026-09-10). The owning Bazel targets
 also build. Workspace evidence:
 `crash-work/reports/nodal-rigid-step-{configure,build,tests}-1` and
 `nodal-rigid-step-owning-bazel-1`. No owner integration is claimed.
+
+The independent recurrence review subsequently found a floating-point grouping
+difference when large lever-arm moments nearly cancel a small applied couple.
+TLf4e9a03 preserves the native left-associated expressions on all three axes.
+All36 rigid functions now pass, including three new cancellation tests and
+an extended intermediate-overflow regression. Evidence:
+`crash-work/reports/nodal-rigid-cancellation-{build,tests}-1` and
+`nodal-rigid-cancellation-owning-bazel-1`. Earlier summaries saying37 included
+the extended existing test as a new case; retained GTest output confirms36.

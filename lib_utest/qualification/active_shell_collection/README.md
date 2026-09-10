@@ -56,3 +56,12 @@ required; no successful skip exists. Use the workstation's serialized resource
 guard and do not run simultaneously with another CUDA/native build or GPU job.
 Implementation authors did not execute compilation or tests; qualification is a
 separate handoff gate and must be recorded by the composing build owner.
+
+The standalone build and all six tests pass on the RTX5090 (2026-09-10):
+`crash-work/reports/active-shell-storage-configure-1`,
+`active-shell-storage-build-{1,2,3}`, and `active-shell-storage-tests-3`.
+The first two retained test attempts exposed missing fixture setup: explicit
+large host geometry admission and the live-owner overload required to bind
+uniform initial translation. Those fixture calls were corrected; production
+arithmetic/storage did not change. Existing legacy suite qualification follows
+separately.
