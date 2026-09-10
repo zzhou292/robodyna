@@ -1,6 +1,7 @@
 #include "QephBatchStorage.h"
 #include "QephStartup.h"
 #include "QephHistory.h"
+#include "QephBatchStartup.h"
 #include "../ShellBatchJoinedModel.h"
 #include <cmath>
 
@@ -29,6 +30,8 @@ BatchReport BuildModel(const QephBatchConfig& c,const QephBatchElement* input,Mo
      o.velocity_phase!=NodalVelocityPhase::Collocated||!c.configuration_id||!c.qualification_id||
      (c.usage!=BatchUsage::PrescribedFields&&c.usage!=BatchUsage::CoupledForces))
     return {BatchStatus::InvalidInput,"Batch requires explicit usage and an epoch-zero staggered rotational owner"};
+  if(!ValidStartup(c,joined!=nullptr))
+    return {BatchStatus::InvalidInput,"Invalid or unsupported QEPH initial motion declaration"};
   if(!c.element_count||c.element_count>MaxBatchElements||!o.node_count||o.node_count>MaxBatchNodes||
      !c.max_device_bytes||c.max_device_bytes>MaxBatchDeviceBytes||sizeof(Storage)>c.max_device_bytes)
     return {BatchStatus::ResourceLimit,"QEPH element/node/allocation capacity exceeded"};
@@ -67,6 +70,12 @@ BatchReport BuildModel(const QephBatchConfig& c,const QephBatchElement* input,Mo
     if((!joined&&!seen[n])||!detail::Positive(model.mass[n])||!detail::Positive(model.inertia[n])||
        !detail::Positive(model.physical[n])||!detail::Positive(model.added[n]))
       return {BatchStatus::InvalidMass,"Uncovered node or invalid assembled native mass/inertia",UINT32_MAX,n};
+  if(c.startup.kind==BatchStartupKind::ReferenceUniformTranslation) {
+    double kinetic=0;
+    for(unsigned n=0;n<o.node_count;++n)
+      if(!AddInitialTranslationKinetic(model.mass[n],c.startup.uniform_velocity,kinetic))
+        return {BatchStatus::NonfiniteResult,"Declared initial translation kinetic energy overflows",UINT32_MAX,n};
+  }
   return {BatchStatus::Success,"OK"};
 }
 BatchDiagnostics InitialDiagnostics(const QephBatchConfig& c,bool joined) {

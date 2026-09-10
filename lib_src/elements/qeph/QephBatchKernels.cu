@@ -1,4 +1,5 @@
 #include "QephBatchDiagnostics.h"
+#include "QephBatchStartup.h"
 #include "../../solvers/NodalForceAssembly.h"
 
 namespace tl::fea::qeph::batch_detail {
@@ -21,10 +22,22 @@ __device__ bool ValidateNodes(Storage& s,NodalAssemblyView v,bool initial) {
       s.control.status=BatchStatus::InvalidInput; s.control.node=n; return false;
     }
     const auto ref=s.model.initial_position[n];
-    if(initial&&(!detail::SameHistoryBits(x.x,ref.x)||!detail::SameHistoryBits(x.y,ref.y)||
-       !detail::SameHistoryBits(x.z,ref.z)||velocity.x!=0||velocity.y!=0||velocity.z!=0||
-       omega.x!=0||omega.y!=0||omega.z!=0)) {
-      s.control.status=BatchStatus::InvalidInput; s.control.node=n; return false;
+    if(initial) {
+      if(s.model.config.startup.kind==BatchStartupKind::ReferenceRest) {
+        if(!detail::SameHistoryBits(x.x,ref.x)||!detail::SameHistoryBits(x.y,ref.y)||
+           !detail::SameHistoryBits(x.z,ref.z)||velocity.x!=0||velocity.y!=0||velocity.z!=0||
+           omega.x!=0||omega.y!=0||omega.z!=0) {
+          s.control.status=BatchStatus::InvalidInput; s.control.node=n; return false;
+        }
+      } else {
+        const auto declared=s.model.config.startup.uniform_velocity;
+        if(!detail::SameHistoryBits(x.x,ref.x)||!detail::SameHistoryBits(x.y,ref.y)||
+           !detail::SameHistoryBits(x.z,ref.z)||!detail::SameHistoryBits(velocity.x,declared.x)||
+           !detail::SameHistoryBits(velocity.y,declared.y)||!detail::SameHistoryBits(velocity.z,declared.z)||
+           omega.x!=0||omega.y!=0||omega.z!=0||q[0]!=1||q[1]!=0||q[2]!=0||q[3]!=0) {
+          s.control.status=BatchStatus::InvalidInput; s.control.node=n; return false;
+        }
+      }
     }
   }
   return true;
@@ -44,6 +57,18 @@ __global__ void Assemble(Storage* storage,const Slab* accepted,NodalAssemblyView
       }
       if(AccumulateNodalForces<4>(s.model.element[e].nodes,result.internal_force,result.internal_couple,v.forces,-1)
          !=NodalForceAssemblyStatus::Success) { s.control.status=BatchStatus::AssemblyFailure; s.control.element=e; break; }
+    }
+    if(s.control.status==BatchStatus::Success&&initial&&
+       s.model.config.startup.kind==BatchStartupKind::ReferenceUniformTranslation) {
+      double kinetic=0;
+      for(unsigned n=0;n<s.model.config.owner.node_count;++n)
+        if(!AddInitialTranslationKinetic(s.model.mass[n],ReadVector(v.accepted.velocity_xyz,n),kinetic)) {
+          s.control.status=BatchStatus::NonfiniteResult; s.control.node=n; break;
+        }
+      if(s.control.status==BatchStatus::Success) {
+        s.control.diagnostics.kinetic_translation=kinetic;
+        s.control.diagnostics.valid=true;
+      }
     }
   }
   if(s.control.status!=BatchStatus::Success) RecordNodalAssemblyFailure(v,sc::Status::kInvalidArgument,s.control.node);

@@ -8,11 +8,18 @@ namespace tl::fea::qeph {
 constexpr std::size_t MaxBatchElements=4,MaxBatchNodes=16,MaxBatchDeviceBytes=1024*1024;
 struct QephBatchElement { ReferenceData reference; std::size_t nodes[4]{}; };
 enum class BatchUsage { Unspecified,PrescribedFields,CoupledForces };
+enum class BatchStartupKind { ReferenceRest,ReferenceUniformTranslation };
+struct BatchStartup {
+  BatchStartupKind kind=BatchStartupKind::ReferenceRest;
+  // Physical common WORLD velocity, m/s. The rest kind requires zero.
+  Vec3 uniform_velocity{};
+};
 struct QephBatchConfig {
   NodalStamp owner;
   std::uint64_t configuration_id=0,qualification_id=0;
   std::size_t element_count=0,max_device_bytes=MaxBatchDeviceBytes;
   BatchUsage usage=BatchUsage::Unspecified;
+  BatchStartup startup;
 };
 enum class BatchStatus {
   Success,InvalidInput,NotInitialized,NotBound,ResourceLimit,WrongOwner,StaleTrial,
@@ -61,6 +68,13 @@ BatchReport CommitQephTrial(FENodalState&,const NodalTrialToken&,QephBatch&,
 // use the owner's stream. Exactly one allocation, no per-step allocation.
 // Initialize admits only epoch-zero staggered owner metadata. First assembly
 // verifies actual reference-at-rest x/v/omega, free m/J and unit q before binding.
+// Explicit ReferenceUniformTranslation is standalone CoupledForces only:
+// reference x, bit-identical declared common v, omega=0 and identity q. It uses
+// known zero initial stress/history/cache, never a dt=0 force operation. This
+// startup data contract supplies no recurrence or arbitrary-pose qualification.
+// Actual initial kinetic energy is published only after live-owner source
+// authentication and successful first assembly/readback. Joined participants
+// retain the default rest-only scope.
 // Failed contributions are sticky when valid failure channels exist; otherwise
 // caller must discard after ANY failure. Initial readback requires this binding.
 // EvaluateCandidate always starts from accepted history. It can follow a
@@ -80,11 +94,18 @@ class QephBatch {
   // Immutable joined scope; exactly one typed cell from the complete union.
   // First gate permits PrescribedFields only. Standalone Commit rejects it.
   BatchReport InitializeJoined(const QephBatchConfig&,const ShellBatchBinding&);
-  // Raw supplied-view validation/assembly. Initial numerical binding retains
+  // Raw supplied-view validation/assembly for rest or an already-bound batch.
+  // First uniform-translation binding requires the live-owner overload below.
+  // Initial numerical rest binding retains
   // its source identity; actual owner association is checked separately before
   // the first standalone or joined publication. A forged raw view alone is
   // therefore not an owner/history publication authority.
   BatchReport AssembleAccepted(const NodalAssemblyView&);
+  // On first uniform binding, authenticate SOURCE pointer identity against the
+  // live owner before measuring/publishing K0. The predicate does not consume
+  // CUDA errors, dereference expired views or authorize force destinations.
+  // No owner reference is retained. Other binding/assembly behavior is shared.
+  BatchReport AssembleAccepted(FENodalState&,const NodalAssemblyView&);
   BatchReport EvaluateCandidate(const NodalPreparedView&,BatchDiagnostics*);
   // Output-cadence staged readback, never an evaluation/history advance. The
   // accepted slab remains readable after numerical rejection/discard. All output
@@ -97,6 +118,7 @@ class QephBatch {
  private:
   friend class ::tl::fea::ShellBatchPublication;
   BatchReport InitializeImpl(const QephBatchConfig&,const QephBatchElement*,const ShellBatchBinding*);
+  BatchReport AssembleAcceptedImpl(FENodalState*,const NodalAssemblyView&);
   friend BatchReport CommitQephTrial(FENodalState&,const NodalTrialToken&,QephBatch&,
                                     const BatchDiagnostics&,const NodalValidationReceipt&) noexcept;
   struct Impl; std::unique_ptr<Impl> impl_;

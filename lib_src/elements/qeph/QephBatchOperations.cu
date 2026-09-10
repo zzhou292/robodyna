@@ -15,6 +15,12 @@ BatchReport MarkRejected(const NodalAssemblyView& view,BatchReport report) {
 }
 }
 BatchReport QephBatch::AssembleAccepted(const NodalAssemblyView& v) {
+  return AssembleAcceptedImpl(nullptr,v);
+}
+BatchReport QephBatch::AssembleAccepted(FENodalState& owner,const NodalAssemblyView& v) {
+  return AssembleAcceptedImpl(&owner,v);
+}
+BatchReport QephBatch::AssembleAcceptedImpl(FENodalState* owner,const NodalAssemblyView& v) {
   if(!impl_) return MarkRejected(v,{BatchStatus::NotInitialized,"QEPH batch is not initialized"});
   auto& s=*impl_; s.Discard();
   auto fail=[&](BatchReport r) { const auto marked=MarkRejected(v,r); if(marked.status==BatchStatus::DeviceFailure) s.usable=false; return marked; };
@@ -30,10 +36,33 @@ BatchReport QephBatch::AssembleAccepted(const NodalAssemblyView& v) {
      v.velocity_time!=a.velocity_time||!v.attempt||v.attempt<=s.assembled_attempt||
      (s.bound&&v.stream!=s.stream))
     return fail({BatchStatus::StaleTrial,"QEPH assembly phase/attempt/cache mismatch"});
+  if(!s.bound&&s.config.startup.kind==BatchStartupKind::ReferenceUniformTranslation) {
+    if(!owner) return fail({BatchStatus::InvalidInput,"Initial uniform translation requires live-owner source authentication"});
+    const auto binding=owner->ValidateAcceptedAssemblySources(v);
+    if(binding.status!=NodalStatus::Ok) {
+      if(binding.status==NodalStatus::DeviceFailure) s.usable=false;
+      return fail({binding.status==NodalStatus::DeviceFailure?BatchStatus::NodalFailure:BatchStatus::StaleTrial,
+                   binding.message,UINT32_MAX,UINT32_MAX,Status::kSuccess,binding.status});
+    }
+  }
   s.assembled_attempt=v.attempt; s.assembled_epoch=UINT64_MAX; s.stream=v.stream;
   batch_detail::LaunchAssembly(s.storage,s.accepted,v,!s.bound);
   report=s.ReadControl(); if(report.status!=BatchStatus::Success) return fail(report);
-  if(!s.bound) s.initial_sources=v;
+  if(!s.bound) {
+    if(s.config.startup.kind==BatchStartupKind::ReferenceUniformTranslation) {
+      const auto& measured=s.control.diagnostics;
+      if(!measured.valid||!std::isfinite(measured.kinetic_translation)||measured.kinetic_translation<0||
+         measured.kinetic_rotation!=0||measured.kinetic_physical_isotropic!=0||measured.kinetic_added_isotropic!=0)
+        return fail({BatchStatus::NonfiniteResult,"Incomplete measured initial kinetic diagnostics"});
+      // All validation, scatter and fallible readback have succeeded. Preserve
+      // the original zero-interval identity; no initial history/force call.
+      s.accepted_diagnostics.kinetic_translation=measured.kinetic_translation;
+      s.accepted_diagnostics.kinetic_rotation=measured.kinetic_rotation;
+      s.accepted_diagnostics.kinetic_physical_isotropic=measured.kinetic_physical_isotropic;
+      s.accepted_diagnostics.kinetic_added_isotropic=measured.kinetic_added_isotropic;
+    }
+    s.initial_sources=v;
+  }
   s.bound=true; s.assembled_epoch=a.epoch;
   return {BatchStatus::Success,"OK"};
 }

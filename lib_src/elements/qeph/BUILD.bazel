@@ -35,7 +35,7 @@ cuda_library(
         "QephBatch.cu", "QephBatchOperations.cu", "QephBatchKernels.cu",
         "QephBatchModel.cpp", "QephBatchIdentity.cpp", "QephBatchPublication.cpp",
     ],
-    hdrs = ["QephBatch.h", "QephBatchStorage.h", "QephBatchDiagnostics.h"],
+    hdrs = ["QephBatch.h", "QephBatchStorage.h", "QephBatchDiagnostics.h", "QephBatchStartup.h"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
     deps = [
         ":force", "//lib_src/elements:shell_batch_fields",
