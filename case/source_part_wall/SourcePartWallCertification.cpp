@@ -1,9 +1,18 @@
 #include "SourcePartWallCertification.h"
-#include "collision/Q4ContactBounds.h"
+#include "case/wall_penalty/WallPenaltyCertification.h"
+#include "case/wall_penalty/UniformTranslationKinetic.h"
 #include <cmath>
 
 namespace crash::cases::source_part_wall {
-namespace qb=contact::q4_bounds;
+namespace penalty=wall_penalty;
+namespace {
+SourcePartWallReport Convert(penalty::PenaltyReport report) {
+    using S=penalty::PenaltyStatus;using D=SourcePartWallStatus;
+    const auto status=report.status==S::Ok?D::Ok:report.status==S::InvalidInput?D::InvalidInput:
+        report.status==S::StepLimit?D::StepLimit:D::CertificateFailure;
+    return {status,report.message,report.node};
+}
+} // namespace
 namespace detail {
 bool ValidWallSettings(const SourcePartWallSettings& s) noexcept {
     for(double value:{s.initial_velocity[0],s.leading_gap,s.area_floor,s.design_penetration,s.penetration_cap,
@@ -19,57 +28,32 @@ SourcePartWallReport CertifyWallPenalty(const tl::fea::ShellBatchBinding& bindin
     if(!output||!binding.prepared()||!weights.prepared()||!ValidWallSettings(settings)||
        binding.node_count()!=source::NodeCount||weights.node_count()!=source::NodeCount)
         return {Code::InvalidInput,"Penalty certificate requires the entire prepared original native union"};
-    SourcePartWallCertificate next;next.minimum_nodal_area_lower=HUGE_VAL;
-    for(unsigned n=0;n<source::NodeCount;++n) {
-        const auto& area=weights.node(n);
-        if(area.node!=n||!contact::nodal_wall_detail::Certificate(area.area,true)||area.area.lower<settings.area_floor)
-            return {Code::CertificateFailure,"An assembled unique-node area does not certify the declared floor",n};
-        if(area.area.lower<next.minimum_nodal_area_lower) {next.minimum_nodal_area_lower=area.area.lower;next.minimum_area_node=n;}
-    }
-    qb::Interval speed2,energy;double nominal=0;
-    const double speed=settings.initial_velocity[0];
-    if(!qb::MultiplyPositive({speed,speed},{speed,speed},&speed2))
+    // Retain the legacy area-before-energy failure order as well as its exact
+    // nominal native-node reduction; the source-neutral utility owns the math.
+    penalty::AreaFloorCertificate area;
+    const auto checked=penalty::CertifyAreaFloor(weights,source::NodeCount,settings.area_floor,&area);
+    if(!checked)return Convert(checked);
+    penalty::UniformTranslationKinetic energy;
+    if(!penalty::BeginUniformTranslation(settings.initial_velocity[0],&energy))
         return {Code::CertificateFailure,"Initial speed square cannot be enclosed"};
-    for(unsigned n=0;n<source::NodeCount;++n) {
-        const double mass=binding.nodes()[n].native.mass;qb::Interval term;
-        if(!std::isfinite(mass)||mass<=0||!qb::Scale(speed2,mass,&term)||!qb::Scale(term,.5,&term)||!qb::Add(energy,term,&energy))
+    for(unsigned n=0;n<source::NodeCount;++n)
+        if(!penalty::AddTranslationMass(binding.nodes()[n].native.mass,&energy))
             return {Code::CertificateFailure,"Native initial kinetic reduction cannot be enclosed",n};
-        nominal+=.5*mass*(speed*speed);
-        if(!std::isfinite(nominal))return {Code::CertificateFailure,"Native initial kinetic value overflow",n};
-    }
-    if(!qb::Certify(nominal,energy,&next.native_initial_kinetic)||energy.lower<=0||
-       !qb::MultiplyScalar(energy.upper,settings.kinetic_budget_factor,true,&next.kinetic_budget_upper))
+    SourcePartWallCertificate next;
+    if(!penalty::FinishUniformTranslation(energy,&next.native_initial_kinetic))
         return {Code::CertificateFailure,"Initial kinetic budget cannot be enclosed"};
-    qb::Interval depth2,factor,quotient,proof;
-    if(!qb::MultiplyPositive({settings.design_penetration,settings.design_penetration},
-                            {settings.design_penetration,settings.design_penetration},&depth2)||
-       !qb::Scale(depth2,settings.area_floor,&factor)||!qb::Scale(factor,.5,&factor)||factor.lower<=0||
-       !qb::DividePositive({next.kinetic_budget_upper,next.kinetic_budget_upper},factor.lower,&quotient))
-        return {Code::CertificateFailure,"Penetration design denominator cannot be enclosed"};
-    next.stiffness_per_area=quotient.upper;
-    // Directed quotient plus a bounded upward ULP walk closes any remaining
-    // lower-product rounding. This is certification of the same fixed energy
-    // inequality, not a response-dependent change to physics or tolerance.
-    for(unsigned step=0;step<=64;++step) {
-        if(!qb::Scale(factor,next.stiffness_per_area,&proof))break;
-        if(proof.lower>=next.kinetic_budget_upper) {
-            next.design_potential_lower=proof.lower;next.kappa_upward_steps=step;*output=next;
-            return {Code::Ok,"Individual-node area floor and penalty energy inequality certified"};
-        }
-        next.stiffness_per_area=std::nextafter(next.stiffness_per_area,HUGE_VAL);
-        if(!std::isfinite(next.stiffness_per_area))break;
-    }
-    return {Code::CertificateFailure,"Upward penalty selection did not close its lower-bound proof"};
+    penalty::PenaltyCertificate certified;
+    const auto report=penalty::CertifyPenalty(weights,source::NodeCount,
+        {next.native_initial_kinetic,penalty::InitialKineticMetric::NativePhysicalNodes},
+        {settings.area_floor,settings.design_penetration,settings.penetration_cap,settings.kinetic_budget_factor},&certified);
+    if(!report)return Convert(report);
+    next.kinetic_budget_upper=certified.kinetic_budget_upper;next.stiffness_per_area=certified.stiffness_per_area;
+    next.design_potential_lower=certified.design_potential_lower;
+    next.minimum_nodal_area_lower=certified.minimum_nodal_area_lower;next.minimum_area_node=certified.minimum_area_node;
+    next.kappa_upward_steps=certified.kappa_upward_steps;*output=next;return Convert(report);
 }
 } // namespace detail
 SourcePartWallReport CheckSourcePartContactStep(double dt,double rate,double limit,double* upper) {
-    using Code=SourcePartWallStatus;
-    if(!upper||!std::isfinite(dt)||dt<=0||!std::isfinite(rate)||rate<=0||!std::isfinite(limit)||limit<=0||limit>.125)
-        return {Code::InvalidInput,"Invalid contact-only stiffness guard input"};
-    double root=0,next=0;
-    if(!qb::Round(std::sqrt(rate),true,&root)||!qb::MultiplyScalar(dt,root,true,&next))
-        return {Code::CertificateFailure,"Contact stiffness guard cannot be enclosed"};
-    if(next>limit)return {Code::StepLimit,"Declared h*sqrt(contact stiffness rate) exceeds its frozen guard"};
-    *upper=next;return {Code::Ok,"Contact-only stiffness guard certified"};
+    return Convert(penalty::CheckContactStep(dt,rate,limit,upper));
 }
 } // namespace crash::cases::source_part_wall

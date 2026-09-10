@@ -1,7 +1,7 @@
 #include "SourcePartWallSetup.h"
 #include "SourcePartWallCertification.h"
 #include "qualification/source_contact/SourceShellCollection.h"
-#include "collision/Q4ContactBounds.h"
+#include "case/wall_penalty/WallPlacementBounds.h"
 #include <cmath>
 #include <cstring>
 #include <new>
@@ -9,7 +9,7 @@
 namespace crash::cases::source_part_wall {
 namespace {
 using Code=SourcePartWallStatus;
-namespace qb=contact::q4_bounds;
+
 bool SameBits(double a,double b) noexcept {
     std::uint64_t x=0,y=0;std::memcpy(&x,&a,sizeof(x));std::memcpy(&y,&b,sizeof(y));return x==y;
 }
@@ -85,15 +85,12 @@ SourcePartWallReport SourcePartWallSetup::Initialize(const source::SourcePartCon
            next->wall.Initialize(canonical,bytes,translation_x).status!=case_data::PlacedWallStatus::Ok)
             return {Code::GeometryFailure,"Authenticated canonical wall could not be placed by its declared X translation"};
         const double actual_wall_x=next->wall.geometry()->wall_x();
-        if(!qb::Difference(actual_wall_x,bounds[1].x,&certificate.leading_gap)||certificate.leading_gap.lower<=0)
+        if(!wall_penalty::EncloseLeadingGap(actual_wall_x,bounds[1].x,&certificate.leading_gap))
             return {Code::CertificateFailure,"Actual represented wall does not certify a strictly positive leading gap"};
-        auto minimum=bounds[0],maximum=bounds[1];
-        if(!qb::AddScalar(minimum.y,-settings.motion_margin,false,&minimum.y)||
-           !qb::AddScalar(minimum.z,-settings.motion_margin,false,&minimum.z)||
-           !qb::AddScalar(maximum.y,settings.motion_margin,true,&maximum.y)||
-           !qb::AddScalar(maximum.z,settings.motion_margin,true,&maximum.z))
+        contact::PlanarWallBox motion;
+        if(!wall_penalty::ExpandProjectedMotion(bounds,settings.motion_margin,&motion))
             return {Code::CertificateFailure,"Projected motion envelope cannot be rounded outward"};
-        if(next->source_geometry.CheckWallCoverage(*next->wall.geometry(),minimum,maximum,
+        if(next->source_geometry.CheckWallCoverage(*next->wall.geometry(),motion.minimum,motion.maximum,
             settings.exposed_clearance,settings.wall_binding_id,&certificate.coverage).status!=contact::PlanarContactStatus::Ok)
             return {Code::GeometryFailure,"Entire projected source motion envelope is not covered by the placed finite mesh"};
         data_=std::move(next);return {Code::Ok,"Source wall geometry, native K0 and penalty design certified"};

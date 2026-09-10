@@ -24,4 +24,59 @@ principal-inertia correction, while native shell added inertia and generated
 primary regularizers remain explicit ledger channels. Evidence:
 `crash-work/reports/source-assembly-startup-{configure,build,tests}-1`; the
 GTest XML records the full per-part and per-group M/J channels.
-This is immutable host startup evidence; connected dynamics is not yet running.
+This is immutable host startup evidence; it does not qualify a connected crash trajectory.
+
+## Complete assembly wall preparation
+
+`SourceAssemblyWallSetup` retains authenticated bindings, all 915 parents and
+1030 native nodes, the six complete internal groups, and an explicitly declared
+`ReleasedExternalConnections` boundary. It owns the original finite wall and its
+declared X placement through immutable shared handles. Copy and move construction
+preserve both handles; assignment is disabled. The setup owns no nodal state,
+inverse mass array, clock, force evaluation or simulation driver.
+
+The bounded startup supports uniform positive X velocity and zero spin. Its
+initial kinetic certificate names two distinct metrics: all original native
+nodes, and ordinary native nodes plus each complete group's total mass once.
+The latter includes the native generated primary through the group's existing
+mass property; the primary is never added a second time. Per-group native and
+aggregate energy enclosures and the generated-primary mass ledger remain
+available for inspection. At 8 m/s the nominal native and aggregate energies
+are respectively 57.670108166897002 J and 57.670108166896981 J; their small
+reduction-order difference does not change their physical scope.
+
+The source-neutral `case/wall_penalty` target owns uniform translation energy,
+directed penalty certification, represented gap and projected motion bounds.
+The old source-part setup delegates to these same utilities while retaining
+its public API, original native-node reduction order and fixed penalty design.
+The complete assembly's minimum certified nodal area is
+1.6918079278568485e-5 m². Its default area floor of 1e-5 m², 1.5 mm design
+penetration and 1.10 energy factor produce a fixed stiffness per area of
+5.6388550207634268e12 at 8 m/s. This initial energy inequality and the separate
+native-mass contact rate diagnostic do not certify a coupled constrained
+timestep or reconstruct time-staggered kinetic energy.
+
+Wall coverage uses the placed mesh's exact X plane for both physical motion-box
+X endpoints, with outward-rounded Y/Z margins. The represented leading gap must
+remain strictly positive. Initial gap is explicit: the host test uses 5 µm to
+permit a later short contact smoke, while the default remains 20 mm. The wall's
+62 source vertices and 100 contact triangles remain associated with their
+original source IDs; source shell coordinates are never translated or omitted.
+
+`MakeDeviceConfig` exports the certified law and geometry scope after checking
+a complete fresh stamp and exact rigid-group descriptor. This is a declaration
+check, not live-owner authentication. TL retains allocation-fit admission,
+native coefficient validation and live owner/token authentication. The owning
+CMake include is `SourceAssemblyWallSetup.cmake`, with target
+`robo_dyna_source_assembly_wall_setup`.
+
+Author qualification passed seven complete assembly/shared-value host tests
+and three existing source-part setup regressions. Coverage includes source and
+boundary preservation, both energy scopes, finite mesh coverage, owned
+lifetimes, malformed/late limits, failure-preserving publication and config
+scope/alias rejection. The checks reused qualified host libraries under one
+affinity CPU and a 512 MiB virtual-address cap; peak child RSS was 265096 KiB
+for the assembly gate and 251764 KiB for the part regression. XML evidence is
+`/tmp/source-assembly-wall-setup-check.xml` and
+`/tmp/source-part-wall-shared-certification-check.xml`. Owning CMake and CUDA
+integration qualification remain separate; this gate runs no GPU trajectory.

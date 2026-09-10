@@ -9,10 +9,13 @@ if(ROBO_DYNA_SOURCE_ASSEMBLY_WALL)
   # Existing wall adapters use this established TL include-root name.
   set(CRASH_TL_FEA_SOURCE_DIR "${ROBO_DYNA_TL_ROOT}")
   include("${CMAKE_CURRENT_LIST_DIR}/../PlacedCanonicalWall.cmake")
-  add_executable(robo_dyna_source_assembly_wall_check tests/SourceAssemblyWallTest.cpp)
+  include("${CMAKE_CURRENT_LIST_DIR}/SourceAssemblyWallSetup.cmake")
+  add_executable(robo_dyna_source_assembly_wall_check tests/SourceAssemblyWallTest.cpp
+    tests/SourceAssemblyWallSetupTest.cpp tests/SourceAssemblyWallConfigTest.cpp
+    "${CMAKE_CURRENT_LIST_DIR}/../wall_penalty/WallPenaltyValueTest.cpp")
   target_link_libraries(robo_dyna_source_assembly_wall_check PRIVATE robo_dyna_source_assembly_bindings
     robo_dyna_shell_collection_contact_geometry robo_dyna_placed_canonical_wall
-    robo_dyna_canonical_wall_artifacts GTest::gtest_main)
+    robo_dyna_canonical_wall_artifacts robo_dyna_source_assembly_wall_setup GTest::gtest_main)
   target_compile_options(robo_dyna_source_assembly_wall_check PRIVATE -fno-fast-math -ffp-contract=off)
   add_test(NAME source_assembly_wall COMMAND robo_dyna_source_assembly_wall_check)
   set_tests_properties(source_assembly_wall PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120
