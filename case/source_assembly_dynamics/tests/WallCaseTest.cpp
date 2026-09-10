@@ -3,6 +3,23 @@
 #include <cstring>
 
 namespace crash::cases::source_assembly_dynamics::test {
+TEST(SourceAssemblyReportCheck, NestedNodalFailureRetainsDeviceAndResourceStatus) {
+    using Publication=fe::ShellPublicationStatus;
+    EXPECT_EQ(Convert(fe::ShellPublicationReport{Publication::NodalFailure,"device",fe::NodalStatus::DeviceFailure}).status,
+              Status::DeviceFailure);
+    EXPECT_EQ(Convert(fe::ShellPublicationReport{Publication::DeviceFailure,"direct"}).status,Status::DeviceFailure);
+    EXPECT_EQ(Convert(fe::ShellPublicationReport{Publication::NodalFailure,"capacity",fe::NodalStatus::ResourceLimit}).status,
+              Status::ResourceLimit);
+    EXPECT_EQ(Convert(fe::ShellPublicationReport{Publication::NodalFailure,"phase",fe::NodalStatus::WrongPhase}).status,
+              Status::ComponentFailure);
+    q::BatchReport quad;quad.status=q::BatchStatus::NodalFailure;quad.nodal_status=fe::NodalStatus::DeviceFailure;
+    t::BatchReport triangle;triangle.status=t::BatchStatus::NodalFailure;triangle.nodal_status=fe::NodalStatus::DeviceFailure;
+    EXPECT_EQ(BatchReport(quad).status,Status::DeviceFailure);
+    EXPECT_EQ(BatchReport(triangle).status,Status::DeviceFailure);
+    quad.nodal_status=fe::NodalStatus::ResourceLimit;triangle.nodal_status=fe::NodalStatus::ResourceLimit;
+    EXPECT_EQ(BatchReport(quad).status,Status::ResourceLimit);
+    EXPECT_EQ(BatchReport(triangle).status,Status::ResourceLimit);
+}
 TEST_F(SourceAssemblyDynamicsCheck, ActualStartupAndExactBudgetsRejectWithoutPublishing) {
     const auto bindings=source::SourceAssemblyBindings::Prepare(source::test::Load(),source::test::Options());
     const auto setup=PrepareWall(bindings);const auto config=SmokeConfig();SourceAssemblyWallCase run;

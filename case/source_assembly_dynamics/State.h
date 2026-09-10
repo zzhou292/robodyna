@@ -19,10 +19,17 @@ inline Report Convert(const fe::NodalReport& r) noexcept {
     return Failure(r.status==fe::NodalStatus::DeviceFailure?Status::DeviceFailure:
         r.status==fe::NodalStatus::ResourceLimit?Status::ResourceLimit:Status::ComponentFailure,r.message,0,r.node);
 }
+template<class R> Status ParticipantFailureStatus(const R& r) noexcept {
+    using S=decltype(r.status);
+    if(r.status==S::DeviceFailure||(r.status==S::NodalFailure&&r.nodal_status==fe::NodalStatus::DeviceFailure))
+        return Status::DeviceFailure;
+    if(r.status==S::ResourceLimit||(r.status==S::NodalFailure&&r.nodal_status==fe::NodalStatus::ResourceLimit))
+        return Status::ResourceLimit;
+    return Status::ComponentFailure;
+}
 template<class R> Report BatchReport(const R& r,std::uint64_t source_parent=0) noexcept {
     if(r.status==decltype(r.status)::Success)return Success();
-    return Failure(r.status==decltype(r.status)::DeviceFailure?Status::DeviceFailure:
-        r.status==decltype(r.status)::ResourceLimit?Status::ResourceLimit:Status::ComponentFailure,r.message,source_parent,r.node);
+    return Failure(ParticipantFailureStatus(r),r.message,source_parent,r.node);
 }
 inline Report Convert(const contact::NodalWallDeviceReport& r) noexcept {
     if(r.status==contact::NodalWallDeviceStatus::Ok)return Success();
@@ -31,8 +38,7 @@ inline Report Convert(const contact::NodalWallDeviceReport& r) noexcept {
 }
 inline Report Convert(const fe::ShellPublicationReport& r) noexcept {
     if(r.status==fe::ShellPublicationStatus::Success)return Success();
-    return Failure(r.status==fe::ShellPublicationStatus::DeviceFailure?Status::DeviceFailure:
-        r.status==fe::ShellPublicationStatus::ResourceLimit?Status::ResourceLimit:Status::ComponentFailure,r.message);
+    return Failure(ParticipantFailureStatus(r),r.message);
 }
 inline Report Convert(const observation::Report& r) noexcept {
     return r?Success():Failure(Status::ObservationFailure,r.message,0,r.node,r.residual,r.roundoff_budget);
