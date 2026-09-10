@@ -1,5 +1,8 @@
 #include "AcceptedReplayData.h"
 #include "SourcePartWallArtifactSchema.h"
+#include "AcceptedReplaySourceAssembly.h"
+#include "AcceptedReplayCsv.h"
+#include "source_assembly/SourceAssemblyWallSchema.h"
 #include <algorithm>
 #include <charconv>
 #include <cmath>
@@ -30,12 +33,6 @@ bool Basename(const std::string& name) {
               c == '-' || c == '_' || c == '.')) return false;
     return true;
 }
-template <class T> T CsvNumber(const std::string& text) {
-    T result{};
-    const auto parsed = std::from_chars(text.data(), text.data() + text.size(), result);
-    Require(parsed.ec == std::errc{} && parsed.ptr == text.data() + text.size(), "Invalid replay CSV number");
-    return result;
-}
 void CheckTime(double actual, double expected, double dt, std::uint64_t epoch) {
     // Repeated accepted t += h accumulates rounding; archived endpoints need
     // not equal epoch*h bitwise. Bound that accumulation, not an arbitrary
@@ -49,7 +46,8 @@ void ReadInventory(Bundle& bundle, const Document& manifest) {
     const auto& inventory = Member(manifest, "artifacts");
     Require(inventory.IsArray() && inventory.Size() && inventory.Size() <= 3*kFrameCap + 16,
             "Invalid replay inventory size");
-    std::size_t total = 0;
+    std::size_t total = bundle.info.kind==ReplayKind::SourceAssemblyWall?bundle.manifest_bytes:0;
+    Require(total<=bundle.total_cap,"Replay manifest exceeds total byte cap");
     for (const auto& item : inventory.GetArray()) {
         const auto name = Text(item, "file"), hash = Text(item, "sha256");
         const auto bytes = Unsigned(item, "bytes");
@@ -76,8 +74,8 @@ void ReadFrames(Bundle& bundle) {
         std::istringstream row(line);
         for (auto& column : columns) Require(bool(std::getline(row, column, ',')) && !column.empty(), "Incomplete frame row");
         Require(row.eof(), "Extra frame index column");
-        Entry entry{CsvNumber<std::uint64_t>(columns[0]), CsvNumber<std::uint64_t>(columns[1]),
-                    CsvNumber<double>(columns[2]), columns[3], columns[4]};
+        Entry entry{ReplayCsvNumber<std::uint64_t>(columns[0]), ReplayCsvNumber<std::uint64_t>(columns[1]),
+                    ReplayCsvNumber<double>(columns[2]), columns[3], columns[4]};
         Require(entry.owner && std::isfinite(entry.time) && entry.time >= 0, "Invalid accepted owner/time");
         std::ostringstream stem; stem << "accepted-" << std::setw(6) << std::setfill('0') << entry.epoch;
         Require(entry.mesh == stem.str()+".mesh.json" && entry.obj == stem.str()+".obj" &&
@@ -143,9 +141,10 @@ Bundle ReadIndex(const std::filesystem::path& directory) {
             "Replay bundle reports incomplete output");
     Require(std::filesystem::symlink_status(directory/"manifest.json").type() == std::filesystem::file_type::regular,
             "Replay requires a regular completed manifest");
-    const auto manifest = Json(ReadBounded(directory/"manifest.json", 1024*1024));
+    const auto manifest_bytes=ReadBounded(directory/"manifest.json",1024*1024);
+    const auto manifest = Json(manifest_bytes);
     Require(Text(manifest, "status") == "completed", "Replay manifest is not completed");
-    Bundle bundle; bundle.directory = directory;
+    Bundle bundle; bundle.directory = directory;bundle.manifest_bytes=manifest_bytes.size();
     bundle.info.schema = Text(manifest, "schema");
     const bool coupon = bundle.info.schema == "robo_dyna.elastic_coupon_artifacts.v1";
     const bool guided = bundle.info.schema == "robo_dyna.guided_plate_artifacts.v1" ||
@@ -153,14 +152,16 @@ Bundle ReadIndex(const std::filesystem::path& directory) {
     const bool source_part = bundle.info.schema == "robo_dyna.source_part_elastic_artifacts.v1";
     const bool plastic_wall = bundle.info.schema == "robo_dyna.source_part_wall_artifacts.v2";
     const bool source_wall = plastic_wall || bundle.info.schema == "robo_dyna.source_part_wall_artifacts.v1";
-    bundle.info.source_plasticity=plastic_wall;
+    const bool assembly_wall=bundle.info.schema==assembly::WallArtifactSchema;
+    bundle.info.source_plasticity=plastic_wall||assembly_wall;
+    if(assembly_wall)bundle.total_cap=kArtifactExtendedTotalCap;
     if(plastic_wall) bundle.total_cap=SourcePartPlasticWallTotalCap;
-    Require(coupon || guided || source_part || source_wall || bundle.info.schema == "tlfea.normal_impact_artifacts.v1", "Unsupported replay artifact schema");
-    bundle.info.kind = source_wall ? ReplayKind::SourcePartWall : source_part ? ReplayKind::SourcePartElastic : guided ? ReplayKind::GuidedPlate : coupon ? ReplayKind::ElasticCoupon : ReplayKind::NormalImpact;
+    Require(assembly_wall || coupon || guided || source_part || source_wall || bundle.info.schema == "tlfea.normal_impact_artifacts.v1", "Unsupported replay artifact schema");
+    bundle.info.kind = assembly_wall ? ReplayKind::SourceAssemblyWall : source_wall ? ReplayKind::SourcePartWall : source_part ? ReplayKind::SourcePartElastic : guided ? ReplayKind::GuidedPlate : coupon ? ReplayKind::ElasticCoupon : ReplayKind::NormalImpact;
     const auto& shell_model = Member(manifest, "shell_model"); const auto& vehicle_model = Member(manifest, "vehicle_model");
-    Require(shell_model.IsBool() && shell_model.GetBool() == (coupon || guided || source_part || source_wall) && vehicle_model.IsBool() && !vehicle_model.GetBool(),
+    Require(shell_model.IsBool() && shell_model.GetBool() == (coupon || guided || source_part || source_wall || assembly_wall) && vehicle_model.IsBool() && !vehicle_model.GetBool(),
             "Replay schema/model scope flags disagree");
-    bundle.info.scope = plastic_wall ? "Original Yaris part 2000157; plastic mesh-wall impact at physical scale" : source_wall ? "Original Yaris part 2000157; elastic mesh-wall impact at physical scale" : source_part ? "Original Yaris part 2000157; experimental elastic pulse and free response" : guided ? "Synthetic guided elastic plate against the canonical wall" : coupon ? "Synthetic elastic shell coupon" : "Translational mass patch against the canonical wall";
+    bundle.info.scope = assembly_wall ? "Original six-part Yaris component; internal groups active, external connections released; physical scale" : plastic_wall ? "Original Yaris part 2000157; plastic mesh-wall impact at physical scale" : source_wall ? "Original Yaris part 2000157; elastic mesh-wall impact at physical scale" : source_part ? "Original Yaris part 2000157; experimental elastic pulse and free response" : guided ? "Synthetic guided elastic plate against the canonical wall" : coupon ? "Synthetic elastic shell coupon" : "Translational mass patch against the canonical wall";
     bundle.info.final_epoch = Unsigned(manifest, "accepted_epoch");
     bundle.info.final_time = Real(manifest, "accepted_time_s");
     Require(bundle.info.final_epoch && bundle.info.final_time > 0, "Replay completed horizon is invalid");
@@ -170,10 +171,14 @@ Bundle ReadIndex(const std::filesystem::path& directory) {
     Require(Unsigned(final, "accepted_epoch") == bundle.info.final_epoch &&
             Bits(Real(final, "accepted_time_s")) == Bits(bundle.info.final_time), "Final metrics disagree with replay manifest");
     const auto configuration = Json(VerifiedBytes(bundle, "configuration.json"));
-    const double dt = Real(configuration,(coupon || guided || source_part || source_wall) ? "fixed_dt_s" : "dt_s");
+    const double dt = Real(configuration,(coupon || guided || source_part || source_wall || assembly_wall) ? "fixed_dt_s" : "dt_s");
     const double horizon = Real(configuration,coupon ? "half_period_horizon_s" : "requested_horizon_s");
     Require(dt > 0 && horizon > 0, "Replay configured step/horizon must be positive");
     for (const auto& entry : bundle.entries) CheckTime(entry.time,entry.epoch*dt,dt,entry.epoch);
+    if(assembly_wall) {
+        CheckTime(std::min(bundle.info.final_time,horizon),bundle.info.final_time,dt,bundle.info.final_epoch);
+        bundle.fixed_dt=dt;ReadSourceAssemblyConfiguration(bundle,configuration,final,manifest);return bundle;
+    }
     if(source_wall) Require(bundle.info.final_time<=horizon,"Wall accepted prefix exceeds its requested horizon");
     else CheckTime(bundle.info.final_time,horizon,dt,bundle.info.final_epoch);
     if(source_wall) {bundle.fixed_dt=dt;ReadSourcePartWallConfiguration(bundle,configuration,final,manifest);return bundle;}

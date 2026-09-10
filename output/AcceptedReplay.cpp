@@ -1,4 +1,5 @@
 #include "AcceptedReplayData.h"
+#include "AcceptedReplaySourceAssembly.h"
 #include <algorithm>
 #include <cmath>
 #include <exception>
@@ -18,7 +19,8 @@ ReplayFrame Frame(const rd::Bundle& bundle, std::size_t index,
                   const std::shared_ptr<const chrono::ChTriangleMeshConnected>& mesh) {
     const auto& entry = bundle.entries[index];
     ReplayFrame frame{index, entry.owner, entry.epoch, entry.time, mesh};
-    if(bundle.info.source_plasticity)frame.parent_plastic_strain=rd::ReadSourcePartPlasticDisplay(bundle,entry);
+    if(bundle.info.kind==ReplayKind::SourceAssemblyWall)frame.parent_plastic_strain=rd::ReadSourceAssemblyDisplay(bundle,entry);
+    else if(bundle.info.source_plasticity)frame.parent_plastic_strain=rd::ReadSourcePartPlasticDisplay(bundle,entry);
     return frame;
 }
 }  // namespace
@@ -37,7 +39,7 @@ ReplayReport AcceptedReplay::Open(const std::filesystem::path& directory) {
         candidate->bundle = rd::ReadIndex(directory);
         auto& bundle = candidate->bundle;
         if(bundle.info.source_plasticity) {
-            bundle.info.plastic_strain_color_max=std::max(.001,bundle.plastic_final_values[0]);
+            bundle.info.plastic_strain_color_max=std::max(.001,bundle.assembly?bundle.assembly->maximum_plastic:bundle.plastic_final_values[0]);
             const auto& v=bundle.source_initial_velocity;
             bundle.info.source_initial_speed_m_per_s=std::hypot(v[0],v[1],v[2]);
             for(const auto& triangle:bundle.source_triangles)
@@ -67,8 +69,8 @@ ReplayReport AcceptedReplay::Open(const std::filesystem::path& directory) {
         for (unsigned axis = 0; axis < 3; ++axis)
             diameter = std::hypot(diameter, bundle.info.bounds_max[axis]-bundle.info.bounds_min[axis]);
         Require(std::isfinite(diameter) && diameter > 0, "Replay trajectory bounds are invalid");
-        if(bundle.info.kind==ReplayKind::SourcePartWall) candidate->wall=rd::ReadMesh(bundle,"placed-wall.mesh.json");
-        if (bundle.inventory.count("canonical-wall.mesh.json")) {
+        if(bundle.info.kind==ReplayKind::SourcePartWall||bundle.info.kind==ReplayKind::SourceAssemblyWall) candidate->wall=rd::ReadMesh(bundle,"placed-wall.mesh.json");
+        else if (bundle.inventory.count("canonical-wall.mesh.json")) {
             candidate->wall = rd::ReadMesh(bundle, "canonical-wall.mesh.json");
             if (bundle.info.kind == ReplayKind::GuidedPlate) rd::CheckGuidedWall(bundle, *candidate->wall);
         }

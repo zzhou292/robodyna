@@ -16,6 +16,9 @@
 
 namespace crash::visual {
 namespace {
+bool SourceWall(output::ReplayKind kind) {
+    return kind==output::ReplayKind::SourcePartWall||kind==output::ReplayKind::SourceAssemblyWall;
+}
 bool Finite(const chrono::ChVector3d& p) {
     return std::isfinite(p.x()) && std::isfinite(p.y()) && std::isfinite(p.z());
 }
@@ -102,7 +105,7 @@ bool MakeCamera(const output::ReplayInfo& info, ReplayCamera& camera) {
     // horizontal projection keeps sqrt(1/2) of both Z width and X motion.
     // Y up and a small Y offset keep the long plate axis almost vertical.
     camera.vertical = info.kind == output::ReplayKind::GuidedPlate ? ReplayVertical::Y : ReplayVertical::Z;
-    const std::array<double, 3> direction = info.kind == output::ReplayKind::SourcePartWall
+    const std::array<double, 3> direction = SourceWall(info.kind)
         ? std::array<double, 3>{-1.0, -1.0, 0.15}
         : info.kind == output::ReplayKind::GuidedPlate
         ? std::array<double, 3>{-1.0, -0.15, -1.0}
@@ -112,7 +115,7 @@ bool MakeCamera(const output::ReplayInfo& info, ReplayCamera& camera) {
     for (int i = 0; i < 3; ++i) {
         // Close incident-side source view: the whole original part and nearby
         // actual wall remain visible; no geometry or deformation is scaled.
-        const double distance=info.kind==output::ReplayKind::SourcePartWall?1.25:1.6;
+        const double distance=SourceWall(info.kind)?1.25:1.6;
         camera.position[i] = camera.target[i] + distance * diagonal * direction[i];
         if (!std::isfinite(camera.position[i])) return false;
     }
@@ -146,10 +149,10 @@ ReplaySceneReport AcceptedReplayScene::Initialize(const output::ReplayInfo& info
         (info.frame_count == 1 && (info.final_epoch != 0 || info.final_time != 0)) ||
         (info.kind != output::ReplayKind::NormalImpact && info.kind != output::ReplayKind::ElasticCoupon &&
          info.kind != output::ReplayKind::GuidedPlate && info.kind != output::ReplayKind::SourcePartElastic &&
-         info.kind != output::ReplayKind::SourcePartWall) ||
+         !SourceWall(info.kind)) ||
         frame.mesh->GetCoordsVertices().size() != info.node_count || frame.mesh->GetIndicesVertices().size() != info.triangle_count ||
         (info.kind == output::ReplayKind::NormalImpact || info.kind == output::ReplayKind::GuidedPlate ||
-         info.kind == output::ReplayKind::SourcePartWall) != static_cast<bool>(wall) ||
+         SourceWall(info.kind)) != static_cast<bool>(wall) ||
         !DisplayGeometry(frame.mesh->GetCoordsVertices(), frame.mesh->GetIndicesVertices()) ||
         (wall && !DisplayGeometry(wall->GetCoordsVertices(), wall->GetIndicesVertices())))
         return {ReplaySceneStatus::InvalidFrame, "Invalid validated replay geometry or metadata"};
@@ -159,7 +162,7 @@ ReplaySceneReport AcceptedReplayScene::Initialize(const output::ReplayInfo& info
         next->info = info;
         next->moving = CopyGeometry(*frame.mesh);
         if(info.source_plasticity) {
-            if(info.kind!=output::ReplayKind::SourcePartWall||info.triangle_source_parent.size()!=info.triangle_count||
+            if(!SourceWall(info.kind)||info.triangle_source_parent.size()!=info.triangle_count||
                !next->parent_colors.Initialize(info.triangle_source_parent,frame.parent_plastic_strain,
                     info.plastic_strain_color_max,next->moving->GetCoordsColors()))
                 return {ReplaySceneStatus::InvalidFrame,"Invalid accepted plastic display association or fixed scale"};
@@ -181,7 +184,7 @@ ReplaySceneReport AcceptedReplayScene::Initialize(const output::ReplayInfo& info
                 MakeShape(CopyGeometry(*frame.mesh), false, true)));
         if (wall) {
             next->wall = CopyGeometry(*wall);
-            next->system.AddBody(Carrier(info.kind==output::ReplayKind::SourcePartWall?"placed original fixed wall":"canonical fixed wall",
+            next->system.AddBody(Carrier(SourceWall(info.kind)?"placed original fixed wall":"canonical fixed wall",
                 MakeShape(next->wall, false, true)));
         }
         next->stamp = {frame.index, frame.owner_id, frame.epoch, frame.time};

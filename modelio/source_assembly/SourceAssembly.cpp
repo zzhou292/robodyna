@@ -14,6 +14,11 @@ void CheckLimits(const ReadLimits& limit) {
         limit.external_nodes && limit.external_nodes <= maximum.external_nodes && limit.spotwelds && limit.spotwelds <= maximum.spotwelds,
         "Source assembly limits exceed the bounded reader domain");
 }
+void CheckIdentity(const ArtifactIdentity& expected,const ReadLimits& limits) {
+    reader::Require(expected.bytes && expected.bytes <= limits.bytes && expected.sha256.size() == 64 &&
+        std::all_of(expected.sha256.begin(), expected.sha256.end(), [](char c) { return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f'); }),
+        "Source assembly requires explicit expected content identity within read cap");
+}
 void ReadScope(const Value& document, Data& data) {
     TextIs(document, "schema", InventorySchema); data.schema = Text(document, "schema");
     for (const auto* key : {"simulation_ready", "geometry_modified", "mechanics_capacity_changed",
@@ -64,13 +69,16 @@ void CheckCounts(const Value& document, const Data& data) {
 }  // namespace
 SourceAssembly SourceAssembly::Read(const std::filesystem::path& path, const ArtifactIdentity& expected, ReadLimits limits) {
     CheckLimits(limits);
-    reader::Require(expected.bytes && expected.bytes <= limits.bytes && expected.sha256.size() == 64 &&
-        std::all_of(expected.sha256.begin(), expected.sha256.end(), [](char c) { return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f'); }),
-        "Source assembly requires explicit expected content identity within read cap");
-    auto candidate = std::make_shared<Data>();
-    candidate->authenticated_bytes = output::ReadBounded(path, expected.bytes);
-    reader::Require(candidate->authenticated_bytes.size() == expected.bytes && output::Sha256(candidate->authenticated_bytes) == expected.sha256,
+    CheckIdentity(expected,limits);
+    return ReadBytes(output::ReadBounded(path, expected.bytes), expected, limits);
+}
+SourceAssembly SourceAssembly::ReadBytes(const std::string& bytes, const ArtifactIdentity& expected, ReadLimits limits) {
+    CheckLimits(limits);
+    CheckIdentity(expected,limits);
+    reader::Require(bytes.size() == expected.bytes && output::Sha256(bytes) == expected.sha256,
                     "Source assembly content authentication failed");
+    auto candidate = std::make_shared<Data>();
+    candidate->authenticated_bytes = bytes;
     candidate->identity = expected;
     output::Document document;
     document.Parse<rapidjson::kParseFullPrecisionFlag | rapidjson::kParseIterativeFlag | rapidjson::kParseValidateEncodingFlag>(

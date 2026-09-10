@@ -1,15 +1,10 @@
 #include "AcceptedReplaySourcePartWall.h"
 #include "SourcePartWallArtifactSchema.h"
 #include "CsvLedgerSegments.h"
+#include "AcceptedReplayCsv.h"
 #include <charconv>
 #include <sstream>
 namespace crash::output::replay_detail {
-namespace {
-template<class T> T Csv(const std::string& text) {
-    T value{};const auto p=std::from_chars(text.data(),text.data()+text.size(),value);
-    Require(p.ec==std::errc{}&&p.ptr==text.data()+text.size(),"Malformed wall interval number");return value;
-}
-}
 void ReadSourcePartWallIntervals(Bundle& b,const Document& config,const Document& manifest) {
     const auto planned=ParseCsvLedgerSegments(Member(config,kCsvLedgerSegmentsField));
     const auto completed=ParseCsvLedgerSegments(Member(manifest,kCsvLedgerSegmentsField));
@@ -26,10 +21,10 @@ void ReadSourcePartWallIntervals(Bundle& b,const Document& config,const Document
         while(std::getline(input,line)) {
             std::array<std::string,SourcePartWallIntervalColumns> columns;std::istringstream row(line);
             for(auto& text:columns)Require(bool(std::getline(row,text,','))&&!text.empty(),"Incomplete wall interval");Require(row.eof(),"Extra wall interval column");
-            const auto owner=Csv<std::uint64_t>(columns[0]),base=Csv<std::uint64_t>(columns[1]);
-            const auto attempt=Csv<std::uint64_t>(columns[2]),epoch=Csv<std::uint64_t>(columns[4]);
-            const auto base_time=Csv<double>(columns[3]),time=Csv<double>(columns[5]);std::array<double,28> values{};
-            for(unsigned i=6;i<columns.size();++i){values[i-6]=Csv<double>(columns[i]);Require(std::isfinite(values[i-6]),"Nonfinite wall interval");}
+            const auto owner=ReplayCsvNumber<std::uint64_t>(columns[0]),base=ReplayCsvNumber<std::uint64_t>(columns[1]);
+            const auto attempt=ReplayCsvNumber<std::uint64_t>(columns[2]),epoch=ReplayCsvNumber<std::uint64_t>(columns[4]);
+            const auto base_time=ReplayCsvNumber<double>(columns[3]),time=ReplayCsvNumber<double>(columns[5]);std::array<double,28> values{};
+            for(unsigned i=6;i<columns.size();++i){values[i-6]=ReplayCsvNumber<double>(columns[i]);Require(std::isfinite(values[i-6]),"Nonfinite wall interval");}
             Require(owner==b.info.owner_id&&base==previous&&epoch==base+1&&attempt>last_attempt&&Bits(base_time)==Bits(previous_time)&&
                 Bits(time)==Bits(base_time+b.fixed_dt)&&Bits(values[0])==Bits(base_time+.5*b.fixed_dt)&&
                 Bits(values[1])==Bits(base==0?.5*b.fixed_dt:b.fixed_dt),"Wall interval owner, phase or attempt mismatch");

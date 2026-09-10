@@ -78,4 +78,16 @@ TEST(SourceAssemblyReader,CopiesShareImmutableEvidenceAndSurviveSourceMove) {
     EXPECT_EQ(copy.data().identity.sha256, PinnedYarisSixPartInventory().sha256);
     EXPECT_THROW(original.data(), std::runtime_error);
 }
+TEST(SourceAssemblyReader,AuthenticatedBytesHaveTheSameImmutableContractAsPath) {
+    const auto bytes=FixtureBytes();const auto parsed=SourceAssembly::ReadBytes(bytes,PinnedYarisSixPartInventory());
+    const auto path=Load();EXPECT_EQ(parsed.data().authenticated_bytes,path.data().authenticated_bytes);
+    EXPECT_EQ(parsed.data().parents.back().source_id,path.data().parents.back().source_id);
+    EXPECT_THROW(SourceAssembly::ReadBytes(bytes+" ",PinnedYarisSixPartInventory()),std::runtime_error);
+    auto identity=PinnedYarisSixPartInventory();identity.sha256[0]=identity.sha256[0]=='0'?'1':'0';
+    EXPECT_THROW(SourceAssembly::ReadBytes(bytes,identity),std::runtime_error);
+    const std::string malformed="{";identity={malformed.size(),output::Sha256(malformed)};
+    EXPECT_THROW(SourceAssembly::ReadBytes(malformed,identity),std::runtime_error);
+    ReadLimits cap;cap.bytes=bytes.size()-1;
+    EXPECT_THROW(SourceAssembly::ReadBytes(bytes,PinnedYarisSixPartInventory(),cap),std::runtime_error);
+}
 }  // namespace crash::modelio::assembly::test

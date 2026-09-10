@@ -85,7 +85,9 @@ class ReplayOverlay : public chrono::vsg3d::ChGuiComponentVSG {
         const auto flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
                            ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
         if (ImGui::Begin("robo-dyna | accepted replay", nullptr, flags)) {
-            ImGui::TextUnformatted(info_.kind == crash::output::ReplayKind::SourcePartWall
+            ImGui::TextUnformatted(info_.kind == crash::output::ReplayKind::SourceAssemblyWall
+                ? "Yaris six-part component | mesh-wall impact | physical scale"
+                : info_.kind == crash::output::ReplayKind::SourcePartWall
                 ? "Yaris part 2000157 | mesh-wall impact | physical scale"
                 : info_.kind == crash::output::ReplayKind::SourcePartElastic
                 ? "Yaris part 2000157 | elastic Q4/T3"
@@ -101,18 +103,20 @@ class ReplayOverlay : public chrono::vsg3d::ChGuiComponentVSG {
             ImGui::Text("Accepted time: %.6f ms", stamp.time * 1000);
             ImGui::Text("Frame %zu / %zu   Epoch %llu", stamp.index + 1, info_.frame_count,
                         static_cast<unsigned long long>(stamp.epoch));
-            ImGui::TextUnformatted(info_.kind == crash::output::ReplayKind::SourcePartWall
+            ImGui::TextUnformatted((info_.kind == crash::output::ReplayKind::SourcePartWall || info_.kind == crash::output::ReplayKind::SourceAssemblyWall)
                 ? (info_.source_plasticity?"Gray wireframe: original mesh wall":"Blue: original elastic part | Gray: placed original mesh wall")
                 : info_.kind == crash::output::ReplayKind::SourcePartElastic
                 ? "Free part; experimental LAW1; attachments unapplied"
                 : info_.kind != crash::output::ReplayKind::ElasticCoupon
                 ? "Blue: moving surface   Gray wireframe: canonical wall"
                 : "Blue: accepted coupon surface | no wall");
-            if(info_.kind==crash::output::ReplayKind::SourcePartWall) {
+            if(info_.kind==crash::output::ReplayKind::SourcePartWall || info_.kind==crash::output::ReplayKind::SourceAssemblyWall) {
                 if(info_.source_plasticity) {
                     ImGui::Text("Initial speed: %.3g m/s | deformation scale: 1x",info_.source_initial_speed_m_per_s);
                     PlasticColorLegend(info_.plastic_strain_color_max);
-                    ImGui::TextUnformatted("Isolated source part; vehicle attachments not included");
+                    ImGui::TextUnformatted(info_.kind==crash::output::ReplayKind::SourceAssemblyWall
+                        ? "Six internal rigid groups active; external connections released"
+                        : "Isolated source part; vehicle attachments not included");
                 } else ImGui::TextUnformatted("Experimental LAW1; source attachments unapplied");
                 if(!info_.horizon_complete)ImGui::TextUnformatted("Accepted prefix only | requested horizon stopped early");
             }
@@ -326,8 +330,27 @@ int main(int argc, char** argv) {
             crash::output::String(manifest, "input_schema", info.schema);
             crash::output::String(manifest, "input_scope", info.scope);
             if(info.source_plasticity) {
-                crash::output::String(manifest,"material_model",info.material_model);
-                crash::output::String(manifest,"material_policy",info.material_policy);
+                if(info.source_assembly) {
+                    const auto& a=*info.source_assembly;crash::output::Document source;source.SetObject();
+                    crash::output::Integer(source,"source_instance_id",a.source_instance_id);
+                    crash::output::String(source,"inventory_sha256",a.inventory_sha256);
+                    crash::output::Integer(source,"inventory_bytes",a.inventory_bytes);
+                    crash::output::String(source,"boundary_policy",a.boundary_policy);
+                    crash::output::Integer(source,"parent_count",a.parents);crash::output::Integer(source,"qeph_count",a.qeph);
+                    crash::output::Integer(source,"t3_count",a.t3);crash::output::Integer(source,"group_count",a.groups);
+                    crash::output::Integer(source,"member_count",a.members);
+                    const auto ids=[&](const char* key,const auto& list) {
+                        crash::output::Value values(rapidjson::kArrayType);
+                        for(auto id:list)values.PushBack(crash::output::Value().SetUint64(id),source.GetAllocator());
+                        source.AddMember(crash::output::Value(key,source.GetAllocator()),values,source.GetAllocator());
+                    };
+                    ids("part_ids",a.part_ids);ids("material_ids",a.material_ids);ids("section_ids",a.section_ids);ids("curve_ids",a.curve_ids);
+                    crash::output::Value value;value.CopyFrom(source,manifest.GetAllocator());
+                    manifest.AddMember("source_assembly",value,manifest.GetAllocator());
+                } else {
+                    crash::output::String(manifest,"material_model",info.material_model);
+                    crash::output::String(manifest,"material_policy",info.material_policy);
+                }
                 crash::output::String(manifest,"surface_color_quantity","maximum accepted layer equivalent plastic strain per original source parent");
                 crash::output::String(manifest,"surface_color_palette","piecewise linear blue(0.12,0.64,0.94), yellow(0.98,0.84,0.16), red(0.90,0.12,0.10)");
                 crash::output::String(manifest,"surface_color_scale_policy","fixed 0..max(0.001, accepted final maximum plastic strain); endpoint saturation; no frame autoscale");
@@ -362,7 +385,7 @@ int main(int argc, char** argv) {
             crash::output::String(manifest, "deformation_display_law", "X0 + scale*(accepted_X-X0)");
             crash::output::Boolean(manifest, "wireframe", options.wireframe);
             crash::output::String(manifest, "wall_display", reader.wall() ? "gray_wireframe" : "none");
-            if(info.kind==crash::output::ReplayKind::SourcePartWall) {
+            if(info.kind==crash::output::ReplayKind::SourcePartWall || info.kind==crash::output::ReplayKind::SourceAssemblyWall) {
                 crash::output::Boolean(manifest,"input_horizon_complete",info.horizon_complete);
                 crash::output::String(manifest,"input_stop_reason",info.stop_reason);
                 crash::output::String(manifest,"wall_geometry","actual placed original canonical mesh; original source and X transform archived separately");

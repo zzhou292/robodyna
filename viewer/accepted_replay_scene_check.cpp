@@ -252,6 +252,20 @@ TEST(AcceptedReplayScene, SourceWallRequiresActualMeshAndKeepsPhysicalScaleWithI
     EXPECT_EQ(scene.wall_mesh(),fixed);EXPECT_EQ(scene.wall_mesh()->GetCoordsVertices(),coordinates);
 }
 
+TEST(AcceptedReplayScene, AssemblyKindReusesActualWallAndNativeParentColorPath) {
+    auto info=PlasticInfo();info.kind=crash::output::ReplayKind::SourceAssemblyWall;
+    const auto initial=PlasticFrame(0,0,0,0);const auto wall=Mesh();AcceptedReplayScene scene;
+    EXPECT_EQ(scene.Initialize(info,initial,{},false,1).status,ReplaySceneStatus::InvalidFrame);
+    EXPECT_EQ(scene.Initialize(info,initial,wall,false,2).status,ReplaySceneStatus::InvalidFrame);
+    ASSERT_EQ(scene.Initialize(info,initial,wall).status,ReplaySceneStatus::Ok);
+    const auto shape=scene.moving_shape();const auto next=PlasticFrame(1,.002,.01,.02);
+    ASSERT_EQ(scene.Publish(next).status,ReplaySceneStatus::Ok);
+    EXPECT_EQ(scene.moving_shape(),shape);EXPECT_EQ(scene.moving_mesh()->GetCoordsVertices(),next.mesh->GetCoordsVertices());
+    EXPECT_EQ(scene.wall_mesh()->GetCoordsVertices(),wall->GetCoordsVertices());EXPECT_EQ(scene.deformation_scale(),1);
+    EXPECT_LT(scene.camera()->position[0],scene.camera()->target[0]);
+    EXPECT_EQ(scene.system().GetBodies()[1]->GetName(),"placed original fixed wall");
+}
+
 TEST(AcceptedReplayScene, AcceptedParentColorsUseExistingMutablePathAndKeepPhysicalCoordinates) {
     AcceptedReplayScene scene;const auto initial=PlasticFrame(0,0,0,0);const auto wall=Mesh();
     ASSERT_EQ(scene.Initialize(PlasticInfo(),initial,wall).status,ReplaySceneStatus::Ok);

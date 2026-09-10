@@ -11,6 +11,7 @@ namespace crash::modelio::assembly {
 class SourceAssembly {
   public:
     static SourceAssembly Read(const std::filesystem::path&, const ArtifactIdentity&, ReadLimits = {});
+    static SourceAssembly ReadBytes(const std::string&, const ArtifactIdentity&, ReadLimits = {});
     const Data& data() const;
   private:
     explicit SourceAssembly(std::shared_ptr<const Data> data) : data_(std::move(data)) {}

@@ -12,9 +12,15 @@ namespace chrono { class ChTriangleMeshConnected; }
 
 namespace crash::output {
 
-enum class ReplayKind { NormalImpact, ElasticCoupon, GuidedPlate, SourcePartElastic, SourcePartWall };
+enum class ReplayKind { NormalImpact, ElasticCoupon, GuidedPlate, SourcePartElastic, SourcePartWall, SourceAssemblyWall };
 enum class ReplayStatus { Ok, InvalidBundle, NotInitialized, InvalidFrame };
 struct ReplayReport { ReplayStatus status; std::string diagnostic; };
+struct ReplayAssemblyInfo {
+    std::uint64_t source_instance_id=0;
+    std::string inventory_sha256,boundary_policy;
+    std::size_t inventory_bytes=0,parents=0,qeph=0,t3=0,groups=0,members=0;
+    std::vector<std::uint64_t> part_ids,material_ids,section_ids,curve_ids;
+};
 struct ReplayInfo {
     ReplayKind kind = ReplayKind::NormalImpact;
     std::string schema, scope;
@@ -32,7 +38,8 @@ struct ReplayInfo {
     bool horizon_complete=true; // Explicit wall accepted prefixes may stop early.
     std::string stop_reason;
     bool source_plasticity=false;
-    std::string material_model, material_policy;
+    std::string material_model, material_policy; // Single-part schemas only.
+    std::shared_ptr<const ReplayAssemblyInfo> source_assembly;
     // Display metadata only. Plastic wall replay keeps one fixed color scale
     // for the complete accepted prefix; values are dimensionless, not percent.
     double plastic_strain_color_max = 0;
@@ -59,13 +66,14 @@ struct ReplayFrame {
 // requested file bytes before publishing one frame. Failures preserve the last
 // complete reader state. Caller serializes calls and must not mutate the bundle.
 // Geometry/record association is checked; this does not requalify the physical
-// interval ledger or authenticate original deck source ownership. Normal-impact
+// interval mechanics. Assembly replay additionally authenticates the pinned original
+// inventory and its complete source declarations; ownership is not inferred. Normal-impact
 // bundles require their archived canonical wall; coupon bundles have no wall.
 // Guided-plate bundles additionally bind complete endpoint fields and the exact
 // pinned original canonical wall. Derived wall variants use a separate contract.
 //
 // Preview caps: 1000 frames, 4096 vertices/8192 triangles per mesh, 32 MiB per
-// file and 256 MiB declared inventory (1 GiB for explicit plastic wall v2). Only metadata, immutable connectivity,
+// file and 256 MiB declared inventory (1 GiB for explicit plastic wall v2 or assembly wall v1). Only metadata, immutable connectivity,
 // the current mesh, optional wall and temporary staging are retained. Callers
 // should release old frame.mesh handles rather than accumulating a whole run.
 class AcceptedReplay {

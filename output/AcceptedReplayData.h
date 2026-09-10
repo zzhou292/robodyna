@@ -18,16 +18,21 @@ struct Entry {
     // v2 only: exact preceding interval, retained for <=1000 saved frames.
     std::uint64_t interval_attempt=0;
     double interval_base_time=0;
+    double interval_base_velocity_time=0,interval_previous_base_time=0;
+    double interval_base_wall_potential=0;
+    std::array<std::uint64_t,3> interval_contact_history{};
     std::array<double,28> wall_interval_values{}; // Wall columns 6..33, saved frames only.
 };
 struct ContactParentBinding {
     std::uint64_t element = 0, face = 0, feature = 0;
     std::array<std::uint64_t,4> connectivity{};
 };
+struct AssemblyReplayData;
 struct Bundle {
+    std::shared_ptr<AssemblyReplayData> assembly;
     std::filesystem::path directory;
     ReplayInfo info;
-    std::size_t total_cap=kTotalCap;
+    std::size_t total_cap=kTotalCap,manifest_bytes=0;
     double plastic_curve_maximum=0;
     double plastic_initial_thickness=0,plastic_min_thickness_ratio=0,plastic_max_thickness_ratio=0;
     std::array<double,3> plastic_final_values{};

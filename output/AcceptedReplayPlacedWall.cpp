@@ -1,4 +1,4 @@
-#include "AcceptedReplaySourcePartWall.h"
+#include "AcceptedReplaySourceAssembly.h"
 #include "case/CanonicalWallArtifacts.h"
 #include <algorithm>
 #include <sstream>
@@ -16,7 +16,7 @@ std::string OriginalMeshIdentity(const case_data::CanonicalWall& wall) {
     return Sha256(bytes);
 }
 }
-void CheckPlacedSourcePartWall(Bundle& b,const Document& configuration) {
+void CheckPlacedWall(Bundle& b,const Value& setup,const std::array<double,3>& minimum,const std::array<double,3>& maximum) {
     const auto bytes=VerifiedBytes(b,"original-canonical-wall.manifest.json");std::istringstream input(bytes);case_data::CanonicalWall original;
     const auto report=original.Load(input);Require(report.status==case_data::WallStatus::Ok,report.message);case_data::CheckCanonicalWallBinding(original,bytes);
     const auto p=Json(VerifiedBytes(b,"placed-wall-placement.json"));const auto mesh=ReadMesh(b,"placed-wall.mesh.json");
@@ -47,11 +47,6 @@ void CheckPlacedSourcePartWall(Bundle& b,const Document& configuration) {
             mesh->GetIndicesVertices()[t][j]==int(source.vertex_indices[j]),"Placed wall source connectivity changed");
         b.wall_faces.push_back(source.triangle_id);
     }
-    const auto& setup=Member(configuration,"wall_setup");const auto& nodes=WallArray(configuration,"reference_nodes",117);
-    std::array<double,3> minimum{},maximum{};const auto& first=WallNumbers(nodes[0],"reference_xyz_m",3);
-    for(unsigned j=0;j<3;++j)minimum[j]=maximum[j]=first[j].GetDouble();
-    for(const auto& node:nodes.GetArray()) {const auto& x=WallNumbers(node,"reference_xyz_m",3);
-        for(unsigned j=0;j<3;++j){minimum[j]=std::min(minimum[j],x[j].GetDouble());maximum[j]=std::max(maximum[j],x[j].GetDouble());}}
     Require(Bits(shift)==Bits((maximum[0]+Real(setup,"declared_leading_gap_m"))-.05),"Placed wall does not implement the declared original-source leading gap");
     const auto& gap=WallNumbers(setup,"actual_leading_gap_interval_m",2);const long double actual_gap=static_cast<long double>(wall_x)-maximum[0];
     Require(gap[0].GetDouble()>0&&gap[0].GetDouble()<=actual_gap&&gap[1].GetDouble()>=actual_gap,"Placed wall actual gap certificate changed");
@@ -65,5 +60,15 @@ void CheckPlacedSourcePartWall(Bundle& b,const Document& configuration) {
         qhigh[j].GetDouble()>=high[j].GetDouble()&&qlow[j].GetDouble()>=bounds[0][j]&&qhigh[j].GetDouble()<=bounds[1][j],
         "Archived projected source envelope or finite wall bounds disagree");
     b.wall_x=wall_x;
+    if(b.assembly)b.assembly->wall=mesh;
 }
+void CheckPlacedSourcePartWall(Bundle& b,const Document& configuration) {
+    const auto& setup=Member(configuration,"wall_setup");const auto& nodes=WallArray(configuration,"reference_nodes",117);
+    std::array<double,3> minimum{},maximum{};const auto& first=WallNumbers(nodes[0],"reference_xyz_m",3);
+    for(unsigned j=0;j<3;++j)minimum[j]=maximum[j]=first[j].GetDouble();
+    for(const auto& node:nodes.GetArray()) {const auto& x=WallNumbers(node,"reference_xyz_m",3);
+        for(unsigned j=0;j<3;++j){minimum[j]=std::min(minimum[j],x[j].GetDouble());maximum[j]=std::max(maximum[j],x[j].GetDouble());}}
+    CheckPlacedWall(b,setup,minimum,maximum);
+}
+
 }

@@ -1,4 +1,5 @@
 #include "AcceptedReplayData.h"
+#include "AcceptedReplaySourceAssembly.h"
 #include "chrono/serialization/ChArchiveJSON.h"
 #include <cmath>
 #include <set>
@@ -91,6 +92,7 @@ void CheckPositionFields(const Value& fields, const chrono::ChTriangleMeshConnec
         }
 }
 void CheckFrameFields(const Bundle& bundle, const Entry& entry, const chrono::ChTriangleMeshConnected& mesh) {
+    if (bundle.info.kind == ReplayKind::SourceAssemblyWall) { CheckSourceAssemblyFields(bundle, entry, mesh); return; }
     if (bundle.info.kind == ReplayKind::SourcePartWall) { CheckSourcePartWallFields(bundle, entry, mesh); return; }
     if (bundle.info.kind == ReplayKind::SourcePartElastic) { CheckSourcePartFields(bundle, entry, mesh); return; }
     if (bundle.info.kind == ReplayKind::GuidedPlate) { CheckGuidedFields(bundle, entry, mesh); return; }
