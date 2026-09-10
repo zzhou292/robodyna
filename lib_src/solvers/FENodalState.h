@@ -221,6 +221,10 @@ class FENodalState {
   // destinations and their contents are deliberately not validated. This
   // neither grants assembly/commit authority nor consumes pending CUDA errors.
   NodalReport ValidateAcceptedAssemblySources(const NodalAssemblyView&) const noexcept;
+  // Read-only startup predicate over this actual owner's immutable membership.
+  // Count/range validation precedes member lookup. No CUDA call, allocation,
+  // phase change or force/publication authority; queries may repeat indices.
+  NodalReport ValidateNonRigidNodes(const std::size_t*,std::size_t count) const noexcept;
   NodalReport SealAssembly(const NodalTrialToken&);
   // Only after the applicable advance succeeds. Validators use the returned stream
   // and finish before Commit; the coordinator must discard any rejected trial.

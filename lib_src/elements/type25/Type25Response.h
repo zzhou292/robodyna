@@ -48,7 +48,7 @@ TL_TYPE25_HD inline Status Response(const Property& p,const History& accepted,do
   }
   next.local_force_N={force[0],force[1]*shear.sine,force[1]*shear.cosine};
   next.local_couple_Nm={force[2],force[3]*bend.sine,force[3]*bend.cosine};
-  next.failure_criterion=accepted.failure_criterion<1?::fmin(criterion,1):1;
+  next.failure_criterion=accepted.failure_criterion<1?::fmin(criterion,1.0):1;
   next.active=accepted.active;
   // Native coupled failure happens AFTER this evaluation's forces/work. The
   // newly failed force cache is retained; OFF zeros the following evaluation.

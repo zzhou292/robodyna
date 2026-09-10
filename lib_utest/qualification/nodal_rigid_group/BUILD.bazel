@@ -51,7 +51,7 @@ cuda_test(
 cuda_test(
     name = "nodal_rigid_owner_check",
     size = "small",
-    srcs = ["GroupOwnerStartupTest.cu", "GroupOwnerRollbackTest.cu", "GroupOwnerCapacityTest.cu", "GroupOwnerFixture.h",
+    srcs = ["GroupOwnerStartupTest.cu", "GroupOwnerRollbackTest.cu", "GroupOwnerCapacityTest.cu", "NonRigidNodeQueryTest.cu", "GroupOwnerFixture.h",
             "GroupStepTestSupport.h", "GroupTestSupport.h"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
     tags = ["exclusive", "gpu"],

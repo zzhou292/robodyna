@@ -125,7 +125,7 @@ endif()
 
 if(TL_NODAL_RIGID_OWNER_CHECKS)
   add_subdirectory("${tl_rigid_root}/lib_src/solvers" "${CMAKE_CURRENT_BINARY_DIR}/nodal_owner")
-  add_executable(nodal_rigid_owner_check GroupOwnerStartupTest.cu GroupOwnerRollbackTest.cu GroupOwnerCapacityTest.cu)
+  add_executable(nodal_rigid_owner_check GroupOwnerStartupTest.cu GroupOwnerRollbackTest.cu GroupOwnerCapacityTest.cu NonRigidNodeQueryTest.cu)
   target_link_libraries(nodal_rigid_owner_check PRIVATE tl_explicit_nodal_state GTest::gtest_main)
   add_executable(nodal_rigid_owner_native_check GroupOwnerNativeTest.cu GroupPhaseNativeFixture.cpp GroupStepNativeFixture.cpp)
   target_link_libraries(nodal_rigid_owner_native_check PRIVATE tl_explicit_nodal_state nodal_rigid_native GTest::gtest_main)
