@@ -77,3 +77,11 @@ The source Yaris census is 22 original primitive bodies/regularizers and two
 disjoint merges producing 20 roots. Its 54 auxiliary mass nodes, other source
 coefficients, exact source closure, and eventual owner admission remain separate
 requirements. Passing these packets cannot establish a complete vehicle model.
+
+
+Root integration is TL `9c0755a`. CMake/native gates pass seven new functions
+and31 existing rigid startup/step functions. Owning Bazel builds and its four
+value functions pass. See `crash-work/reports/rigid-part-assembly-tests-1` and
+`rigid-part-assembly-bazel-{build,tests}-1`. The shared finalizer also participates
+in the passing actual six/seven-part CUDA binary capture gate
+`component-binary-frame-tests-1`. Raw body values do not admit new source bodies.

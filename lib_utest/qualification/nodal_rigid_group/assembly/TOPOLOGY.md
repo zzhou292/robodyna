@@ -53,3 +53,10 @@ every original coefficient producer (including auxiliary nodes), compute the
 actual owner with matching source identity and supported membership limits.
 The full vehicle's joints, discrete elements and other source load paths are
 not released by this topology model.
+
+
+Root integration is TL `72f1873`. The owning CMake and Bazel executables each
+pass all five functions, and the fixture regenerates exactly from authenticated
+scope-10 and the rigid source audit. Reports:
+`crash-work/reports/rigid-part-topology-{tests,fixture,bazel-tests}-1`.
+This validates source topology, not assembled coefficients or CUDA owner admission.
