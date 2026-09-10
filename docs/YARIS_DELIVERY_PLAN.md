@@ -1,7 +1,7 @@
 # Robo-dyna: Yaris delivery plan
 
-Updated 2026-09-10 for the full-shell milestone, against robo-dyna `0b6cb2a`
-and TL-FEA `a834700`.
+Updated 2026-09-10 for the full-shell milestone, against robo-dyna `a682637`
+and TL-FEA `9c0755a`.
 This is the concise delivery roadmap. The workspace
 [active execution plan](../../planning/CURRENT_EXECUTION_PLAN.md) tracks current
 runs and integration order; [execution status](../../planning/EXECUTION_STATUS.md)
@@ -12,7 +12,8 @@ The first vehicle deliverable remains the original **2010 Yaris coarse V1l at
 deformation archives and an inspected video. The longer-term product direction
 is LS-DYNA-like CAE functionality. The full vehicle is not running.
 
-**Current engineering estimate: about 30% toward that vehicle deliverable.**
+**Prior engineering estimate: about 30% toward that vehicle deliverable.**
+This older estimate has not been recalibrated for the new full-shell milestone.
 This reflects implemented capabilities and remaining model coverage, not test
 counts, code volume or the fraction of the requested physical duration. It is
 not an estimate of coverage of all LS-DYNA functionality.
@@ -101,24 +102,36 @@ Vehicle Q/T resident storage passes eleven host/CUDA functions at all 328,344
 quads /21,301 triangles /359,785 nodes. The corresponding mesh-wall owner passes
 nine host/CUDA functions. These synthetic capacity/transaction tests preserve
 legacy profiles; they do not establish original-vehicle mechanics admission.
-Mixed host material tags are merged; per-parent resident dispatch is undergoing
-root native/CUDA qualification. Original elastic source candidates cover 27,177
-retained shells. V3 source integration is resolving auxiliary external node
-roles before original fixture qualification; no V3 wall/archive is admitted yet.
+Mixed host tags and per-parent resident LAW1/LAW44 dispatch are qualified.
+Original V3 elastic/mixed fixtures pass24 host and eight actual CUDA functions,
+including earlier source regressions. The elastic population covers27,177 retained
+shells; these fixture gates do not admit a whole-population wall/archive run.
+
+The separate constant-plastic-strain failure leaf passes seven native CPU/CUDA
+functions and three owning Bazel value functions. Parent failure/removal semantics
+remain the next failure block. Ordered rigid PART/extra-node raw startup and
+Iflag2 merges are integrated at TL `9c0755a`:seven new value/native functions and
+31 legacy rigid startup/step functions pass. Source topology, final combined
+coefficients and rigid-part owner admission remain separate.
 
 Binary frame/interval records and the complete static source/mapping bundle are
 qualified. The static bundle passes 35 root host tests and measures 144,417,279 B
 across 31 files, preserving the complete original key and canonical arrays.
 Wall/configuration/run metadata remain separate budget obligations under 2 GiB.
-Live full-shell publication and complete run reader/replay remain to be integrated;
-Chrono's existing indexed scene and PID colors are reused. The adapter preserves
-explicit unavailable plastic fields rather than inventing zero plastic strain.
+The neutral complete-frame Chrono adapter passes eight host functions and all35
+shared scene functions, including actual component archives. Native, inapplicable
+and unavailable plastic fields have explicit types. Live component binary capture
+and parity is under root qualification; full-shell run publication and complete
+run reader/replay remain to be integrated.
 
 The [population design](../../planning/FULL_SHELL_POPULATION_ARCHITECTURE.md)
 keeps one complete batch per native formulation and selects the material law per
 parent. A material ID does not create another solver participant or another mass
-contribution. Remaining full-source physics includes mixed-law dispatch, failure,
-rigid-part and membrane roles, beam/tie load paths and contact for longer folding.
+contribution. Remaining full-source physics includes failure/glass, rigid-part and membrane
+roles, beam/tie load paths and contact for longer folding. The new immutable
+[vehicle source plan](../../planning/FULL_VEHICLE_SOURCE_BINDING.md) will retain
+all349,645 parents while exposing278,301 supported declarations and71,344
+shells with explicit unresolved roles. Declaration coverage is not runtime admission.
 
 User priority: **functionality first, performance afterward**. The next
 engineering objective is the full selected Yaris shell assembly with its
