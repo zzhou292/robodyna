@@ -2,6 +2,7 @@
 // Adapted from OpenRadioss (C) 2026 Siemens; see qualification/shell_layered_j2/README.md.
 #pragma once
 #include "lib_src/materials/TabulatedShellPlasticity.h"
+#include "ShellNip3.h"
 
 #if defined(__CUDACC__)
 #define TL_SHELL_SECTION_HD __host__ __device__
@@ -12,13 +13,6 @@
 namespace tl::fea::sections {
 using PointParameters=tl::material::TabulatedShellPlasticityParameters;
 using PointStatus=tl::material::TabulatedShellPlasticityStatus;
-// Ordinary centered NIP=3 shell section. The donor uses separate force and
-// moment tables: WM is deliberately NOT WF*Z or an exact 1/12.
-TL_SHELL_SECTION_HD inline double LayerPosition(unsigned i) noexcept { return .5*(static_cast<double>(i)-1.); }
-TL_SHELL_SECTION_HD inline double LayerForceWeight(unsigned i) noexcept { return i==1?.5:.25; }
-TL_SHELL_SECTION_HD inline double LayerMomentWeight(unsigned i) noexcept {
-  return (static_cast<double>(i)-1.)*static_cast<double>(0.0833333f);
-}
 struct ShellLayeredJ2History { tl::material::TabulatedShellPlasticityHistory point[3]{}; };
 struct ShellLayeredJ2Input {
   double strain_curvature_increment[8]{}; // XX,YY,engineering XY,YZ,ZX,KXX,KYY,KXY.
@@ -55,12 +49,7 @@ struct ShellLayeredJ2Result {
 // ordered accumulation here and at admission binds sidecar stress to the shell.
 TL_SHELL_SECTION_HD inline void LayeredJ2Resultants(const ShellLayeredJ2History& h,
     double (&force)[5],double (&moment)[3]) noexcept {
-  for(double& x:force) x=0;
-  for(double& x:moment) x=0;
-  for(unsigned p=0;p<3;++p) {
-    for(unsigned c=0;c<5;++c) force[c]=force[c]+LayerForceWeight(p)*h.point[p].stress[c];
-    for(unsigned c=0;c<3;++c) moment[c]=moment[c]+LayerMomentWeight(p)*h.point[p].stress[c];
-  }
+  Nip3Resultants(h.point,force,moment);
 }
 
 // The effective force thickness stays fixed within this interval. The point
@@ -87,10 +76,7 @@ TL_SHELL_SECTION_HD inline PointStatus UpdateShellLayeredJ2(const PointParameter
     tl::material::TabulatedShellPlasticityInput point_input;
     point_input.transverse_shear_modulus=in.transverse_shear_modulus;
     point_input.dt=in.dt; point_input.total_strain_rate_per_s=total_rate;
-    const double z=LayerPosition(layer)*in.reference_thickness;
-    for(unsigned c=0;c<3;++c)
-      point_input.strain_increment[c]=in.strain_curvature_increment[c]+z*in.strain_curvature_increment[c+5];
-    for(unsigned c=3;c<5;++c) point_input.strain_increment[c]=in.strain_curvature_increment[c];
+    Nip3LayerIncrement(in,layer,point_input.strain_increment);
     tl::material::TabulatedShellPlasticityResult point;
     const auto status=tl::material::UpdateLaw44ShellPlasticity(p,accepted.point[layer],point_input,point);
     if(status!=PointStatus::Ok) return status;

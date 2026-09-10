@@ -113,8 +113,8 @@
     },
     {
       "path": "lib_src/materials/BUILD.bazel",
-      "bytes": 1217,
-      "sha256": "949967c732d285dd1c0123c1631ef549e8a50173cf90a5b23ca79b84dec48039"
+      "bytes": 1347,
+      "sha256": "10e5728b4dd84d4c4f7a8fc71ed56df7010cee5bdc845e3ae600280eedbddb67"
     },
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
@@ -572,6 +572,17 @@
     },
     "reason": "Register the two analytic LAW44 helper headers in the existing material target; all force donor, arithmetic and test dependencies remain byte-identical.",
     "implementation_commit": "7906cbb",
+    "force_arithmetic_changed": false
+  },
+  "layered_law1_build_registration": {
+    "previous_manifest_sha256": "696f3b4dcb37b84b0e1237a3b8f1a4e7c19aaa9ca163d315d5156d6a57d5ef3b",
+    "changed_path": "lib_src/materials/BUILD.bazel",
+    "previous_entry": {
+      "path": "lib_src/materials/BUILD.bazel",
+      "bytes": 1217,
+      "sha256": "949967c732d285dd1c0123c1631ef549e8a50173cf90a5b23ca79b84dec48039"
+    },
+    "reason": "Register the distinct elastic SIGEPS01C point target; existing LAW1 global and T3 force donor, arithmetic and tests remain unchanged.",
     "force_arithmetic_changed": false
   }
 }

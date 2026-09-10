@@ -19,6 +19,12 @@ cc_library(
 )
 
 cc_library(
+    name = "shell_elastic_law1_point",
+    hdrs = ["ShellElasticLaw1Point.h"],
+    deps = [":shell_elastic_law1"],
+)
+
+cc_library(
     name = "tabulated_shell_plasticity",
     hdrs = [
         "TabulatedShellPlasticity.h",

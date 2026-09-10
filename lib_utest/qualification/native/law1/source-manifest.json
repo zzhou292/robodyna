@@ -1,0 +1,82 @@
+{
+  "schema": "tl.native-layered-law1.v1",
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "license": "AGPL-3.0-or-later",
+  "sources": [
+    {
+      "path": "original/sigeps01c.F",
+      "upstream_path": "engine/source/materials/mat/mat001/sigeps01c.F",
+      "bytes": 6250,
+      "sha256": "66768b206bfd5110b9babc24679c1d0614fd39ecb30b3241442998f6a41353b7",
+      "git_blob": "e0e585dbe7c509fa5c6eb7d15155226e09ad31c0"
+    },
+    {
+      "path": "../qeph/original/starter/source/materials/mat/mat001/hm_read_mat01.F",
+      "upstream_path": "starter/source/materials/mat/mat001/hm_read_mat01.F",
+      "bytes": 7311,
+      "sha256": "f1510ebddf4960a6105da5a8898156af6f61aa78165a47a895008227465be746"
+    },
+    {
+      "path": "../qeph/original/engine/share/includes/param_c.inc",
+      "upstream_path": "engine/share/includes/param_c.inc",
+      "bytes": 3581,
+      "sha256": "fdf61d11b957fc3415d8367e45722ffbbfcab7d5a630fc24f57a683ea3d54045"
+    },
+    {
+      "path": "../../shell_layered_j2/native_recurrence/original/mulawc.F90",
+      "upstream_path": "engine/source/materials/mat_share/mulawc.F90",
+      "bytes": 165437,
+      "sha256": "778df028efcdb9e28e8b2cb9156a431937c06fa073260d2c002164b420848526"
+    }
+  ],
+  "fragments": [
+    {
+      "file": "Law1Coefficients.inc",
+      "source": "../qeph/original/starter/source/materials/mat/mat001/hm_read_mat01.F",
+      "ranges": [
+        [
+          117,
+          134
+        ]
+      ],
+      "bytes": 378,
+      "sha256": "2394c5fed8de8110fd467285059e681855107ee67cd8252986cb7553a1c9259a"
+    },
+    {
+      "file": "LayerThickness.inc",
+      "source": "../../shell_layered_j2/native_recurrence/original/mulawc.F90",
+      "ranges": [
+        [
+          767,
+          767
+        ]
+      ],
+      "bytes": 65,
+      "sha256": "ff5731ba5e433b308dec25b78144438a085a9a1c8ae04aa6634f8a7cdb9e45f3"
+    },
+    {
+      "file": "LayerStrain.inc",
+      "source": "../../shell_layered_j2/native_recurrence/original/mulawc.F90",
+      "ranges": [
+        [
+          850,
+          855
+        ]
+      ],
+      "bytes": 239,
+      "sha256": "dcd8b764ebe1fe7082773bc9e4716bb197763e265a2e48b31c1c677c617cae64"
+    },
+    {
+      "file": "LayerResultants.inc",
+      "source": "../../shell_layered_j2/native_recurrence/original/mulawc.F90",
+      "ranges": [
+        [
+          2657,
+          2664
+        ]
+      ],
+      "bytes": 663,
+      "sha256": "a07f60da2259a018e59f85cfadf602a6a28f1220591ac45936588653edae9562"
+    }
+  ]
+}
