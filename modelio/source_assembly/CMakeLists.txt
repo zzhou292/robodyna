@@ -30,4 +30,12 @@ if(ROBO_DYNA_SOURCE_BRACKET_INVENTORY)
   add_test(NAME source_bracket_input COMMAND robo_dyna_source_bracket_input_check)
   set_tests_properties(source_bracket_input PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120
     ENVIRONMENT "ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY=${ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY};ROBO_DYNA_SOURCE_BRACKET_INVENTORY=${ROBO_DYNA_SOURCE_BRACKET_INVENTORY}")
+  include("${CMAKE_CURRENT_LIST_DIR}/SourceAssemblySpotweldInput.cmake")
+  add_executable(robo_dyna_source_bracket_spotweld_check tests/SourceBracketSpotweldTest.cpp)
+  target_link_libraries(robo_dyna_source_bracket_spotweld_check PRIVATE
+    robo_dyna_source_assembly_spotweld_input GTest::gtest_main)
+  target_compile_options(robo_dyna_source_bracket_spotweld_check PRIVATE -fno-fast-math -ffp-contract=off)
+  add_test(NAME source_bracket_spotweld COMMAND robo_dyna_source_bracket_spotweld_check)
+  set_tests_properties(source_bracket_spotweld PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120
+    ENVIRONMENT "ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY=${ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY};ROBO_DYNA_SOURCE_BRACKET_INVENTORY=${ROBO_DYNA_SOURCE_BRACKET_INVENTORY}")
 endif()
