@@ -26,10 +26,13 @@ if(ROBO_DYNA_SOURCE_BRACKET_INVENTORY)
   if(NOT EXISTS "${ROBO_DYNA_SOURCE_BRACKET_INVENTORY}")
     message(FATAL_ERROR "The explicit bracket inventory is missing")
   endif()
-  add_executable(robo_dyna_source_bracket_binding_check tests/SourceBracketBindingTest.cpp)
+  include("${CMAKE_CURRENT_LIST_DIR}/SourceAssemblyInitialKinetic.cmake")
+  add_executable(robo_dyna_source_bracket_binding_check tests/SourceBracketBindingTest.cpp
+    tests/SourceBracketCompositionTest.cpp)
   target_link_libraries(robo_dyna_source_bracket_binding_check PRIVATE
-    robo_dyna_source_assembly_bindings GTest::gtest_main)
+    robo_dyna_source_assembly_bindings robo_dyna_source_assembly_initial_kinetic GTest::gtest_main)
+  target_compile_options(robo_dyna_source_bracket_binding_check PRIVATE -fno-fast-math -ffp-contract=off)
   add_test(NAME source_bracket_binding COMMAND robo_dyna_source_bracket_binding_check)
   set_tests_properties(source_bracket_binding PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120
-    ENVIRONMENT "ROBO_DYNA_SOURCE_BRACKET_INVENTORY=${ROBO_DYNA_SOURCE_BRACKET_INVENTORY}")
+    ENVIRONMENT "ROBO_DYNA_SOURCE_BRACKET_INVENTORY=${ROBO_DYNA_SOURCE_BRACKET_INVENTORY};ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY=${ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY}")
 endif()

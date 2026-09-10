@@ -1,7 +1,7 @@
 #include "SourceAssemblyBindingTestSupport.h"
 
 namespace crash::cases::source_assembly::test {
-TEST(SourceBracketBindings, UnimplementedInternalWeldCannotBecomeReleasedFreeFlight) {
+TEST(SourceBracketBindings, UndeclaredInternalWeldCannotBecomeReleasedFreeFlight) {
     const auto* path=std::getenv("ROBO_DYNA_SOURCE_BRACKET_INVENTORY");
     ASSERT_NE(path,nullptr);
     const auto source_model=source::SourceAssembly::Read(path,source::PinnedYarisSevenPartInventory());

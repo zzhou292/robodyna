@@ -1,8 +1,12 @@
 #pragma once
 #include "modelio/source_assembly/SourceAssemblyMaterialInput.h"
 #include "modelio/source_assembly/SourceAssemblyShellInput.h"
+#include "modelio/source_assembly/SourceAssemblySpotweldInput.h"
+#include "lib_src/assembly/NodalMassBinding.h"
+#include "lib_src/elements/type25/Type25Model.h"
 #include "lib_src/constraints/NodalRigidGroupModel.h"
 #include <memory>
+#include <optional>
 #include <stdexcept>
 
 namespace crash::cases::source_assembly {
@@ -14,8 +18,11 @@ struct SourceAssemblyBindingOptions {
     source::MaterialRatePolicy material_rate_policy;
     tl::fea::ShellHostBindingLimits shell_limits{}, material_limits{};
     tl::fea::NodalRigidGroupLimits rigid_limits{};
+    std::optional<source::SpotweldDeclaration> spotweld;
+    tl::fea::type25::ModelLimits connector_limits{};
+    tl::fea::NodalMassLimits mass_limits{};
 };
-enum class SourceAssemblyBindingStage { Input, Shells, Materials, RigidGroups };
+enum class SourceAssemblyBindingStage { Input, Shells, Materials, RigidGroups, Connectors, CombinedMass };
 class SourceAssemblyBindingError : public std::runtime_error {
   public:
     SourceAssemblyBindingError(SourceAssemblyBindingStage stage, unsigned status, std::string message,
@@ -54,6 +61,12 @@ class SourceAssemblyBindings {
     // Null only when the source declares no internal rigid groups. External
     // groups/welds/ties remain explicitly released in source().data().boundary.
     const tl::fea::NodalRigidGroupModel* rigid_groups() const noexcept;
+    // Null for the unchanged shell-only source scope. Connector coefficients
+    // remain separate from shell physical/added J in every returned partition.
+    const tl::fea::type25::Model* connectors() const noexcept;
+    const tl::fea::NodalMassBinding* combined_mass() const noexcept;
+    const source::SpotweldDeclaration* spotweld_declaration() const noexcept;
+    tl::fea::NodalMassPartitions coefficients(std::size_t node) const noexcept;
   private:
     struct Impl;
     explicit SourceAssemblyBindings(std::shared_ptr<const Impl> impl): impl_(std::move(impl)) {}

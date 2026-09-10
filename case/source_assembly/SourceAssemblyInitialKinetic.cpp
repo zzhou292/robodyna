@@ -61,7 +61,7 @@ InitialKineticReport EncloseSourceAssemblyInitialKinetic(const SourceAssemblyBin
         }
         if(next.member_nodes!=model->member_count())return {Code::InvalidInput,"Group ledger does not cover every source member"};
         for(std::size_t n=0;n<count;++n) {
-            const double mass=shells.nodes()[n].native.mass;
+            const double mass=assembly.coefficients(n).mass;
             if(!wp::AddTranslationMass(mass,&native))return {Code::CertificateFailure,"Native initial kinetic sum cannot be enclosed",n};
             if(!member_nodes[n]) {
                 if(!wp::AddTranslationMass(mass,&aggregate))return {Code::CertificateFailure,"Ordinary-node kinetic sum cannot be enclosed",n};
