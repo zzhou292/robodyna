@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.18)
 project(RoboDyna LANGUAGES NONE)
 option(ROBO_DYNA_ENABLE_SOURCE_ASSEMBLY_INPUT_CHECKS "Build authenticated assembly declaration and TL startup-input checks without dynamics" OFF)
+option(ROBO_DYNA_ENABLE_SOURCE_ASSEMBLY_STARTUP_CHECKS "Build complete source assembly shell/material/rigid startup without dynamics" OFF)
 find_package(Python3 3.8 REQUIRED COMPONENTS Interpreter)
 enable_testing()
 add_test(NAME yaris_wall_import
@@ -164,4 +165,10 @@ if(ROBO_DYNA_ENABLE_SOURCE_ASSEMBLY_INPUT_CHECKS)
   enable_language(CXX)
   find_package(Chrono REQUIRED CONFIG)
   add_subdirectory(modelio/source_assembly)
+endif()
+
+if(ROBO_DYNA_ENABLE_SOURCE_ASSEMBLY_STARTUP_CHECKS)
+  enable_language(CXX)
+  find_package(Chrono REQUIRED CONFIG)
+  add_subdirectory(case/source_assembly)
 endif()
