@@ -36,6 +36,16 @@ template<class T> void Unchanged(const T& object,const std::array<unsigned char,
 void Same(sc::Q4CertifiedIntegral a,sc::Q4CertifiedIntegral b) {
   EXPECT_EQ(a.value,b.value); EXPECT_EQ(a.lower,b.lower); EXPECT_EQ(a.upper,b.upper); EXPECT_EQ(a.error,b.error);
 }
+void Unchanged(const sc::NodalWallWeights& actual,const sc::NodalWallWeights& saved) {
+  // The active-capacity container owns shared immutable backing. Compare its
+  // complete public contents, not the representation of ownership handles.
+  ASSERT_EQ(actual.prepared(),saved.prepared());
+  ASSERT_EQ(actual.global_node_count(),saved.global_node_count());
+  ASSERT_EQ(actual.parent_count(),saved.parent_count()); ASSERT_EQ(actual.node_count(),saved.node_count());
+  EXPECT_EQ(actual.owned_payload_bytes(),saved.owned_payload_bytes()); Same(actual.total_area(),saved.total_area());
+  for(unsigned p=0;p<actual.parent_count();++p) EXPECT_EQ(Bytes(actual.parent(p)),Bytes(saved.parent(p)));
+  for(unsigned n=0;n<actual.node_count();++n) EXPECT_EQ(Bytes(actual.node(n)),Bytes(saved.node(n)));
+}
 void Overlap(sc::Q4CertifiedIntegral a,sc::Q4CertifiedIntegral b) {
   EXPECT_LE(a.lower,b.upper); EXPECT_LE(b.lower,a.upper);
   EXPECT_LE(std::abs(static_cast<long double>(a.value)-b.value),static_cast<long double>(a.error)+b.error);
@@ -138,7 +148,7 @@ TEST(NodalWallContact, ImmutableNativeParentSharesAndSortedSourceIdentity) {
   Encloses(f.weights.total_area(),3);
   const unsigned ids[]{0,1,2,4,5}; const long double areas[]{5.L/6,5.L/6,1.L/3,.5,.5};
   for (unsigned n=0;n<5;++n) { EXPECT_EQ(f.weights.node(n).node,ids[n]); Encloses(f.weights.node(n).area,areas[n]); }
-  const auto saved=Bytes(f.weights);
+  const auto saved=f.weights;
   const sc::NodalWallParentInput reordered[2]{{nullptr,0,&f.t3},{&f.q4,0,nullptr}};
   sc::NodalWallWeights other; ASSERT_EQ(other.Initialize(6,reordered,2).status,Code::Ok);
   for (unsigned n=0;n<5;++n) Same(other.node(n).area,f.weights.node(n).area);
