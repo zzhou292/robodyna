@@ -18,7 +18,7 @@ TEST_F(Cuda,PreparedReadbackCoversMaximumOwnerCountIncludingFinalConstrainedReac
   const auto n=fe::MaxNodalStateNodes;ActiveFields initial(n),candidate(n),accepted(n);
   std::vector<double> inverse(n,1),inertia(n,1);std::vector<std::uint8_t> fixed(n),rotation_fixed(n);
   for(std::size_t i=0;i<n;++i) initial.q[4*i]=1;
-  fixed.back()=7;rotation_fixed.back()=1;
+  fixed.back()=7;rotation_fixed.back()=1;inverse.back()=0;inertia.back()=0;
   fe::FENodalState owner;fe::NodalStateConfig config;config.node_count=n;config.fixed_dt=1./1024;
   config.temporal_scheme=fe::NodalTemporalScheme::StaggeredHalfKickStart;
   ASSERT_EQ(owner.Initialize(config,{initial.x.data(),initial.v.data(),initial.w.data(),n,initial.q.data()},

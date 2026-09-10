@@ -47,5 +47,8 @@ retry, all output/token aliases, stale/wrong/unprepared tokens, null/overflow/
 short ranges, legacy x/v-only output, 2048-node final constrained reactions,
 late nonfinite reaction and nonunit quaternion rejection, and a linker-injected
 CUDA copy error after private staging has completed. The injection is confined
-to the qualification executable; production has no test hook. Runtime results
-must come from the guarded qualification run, not host syntax checks.
+to the qualification executable; production has no test hook. All nine CUDA functions pass in `nodal-prepared-snapshot-tests-2`. The first
+run passed eight and exposed a maximum-capacity fixture that assigned nonzero
+inverse M/J to a fully fixed node; the fixture now obeys the unchanged owner
+contract. All 63 existing rigid/observation functions pass in the preceding
+`nodal-prepared-snapshot-tests-1`. Production readback needed no correction.
