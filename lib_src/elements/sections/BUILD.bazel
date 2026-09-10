@@ -5,7 +5,7 @@ package(default_visibility = ["//visibility:public"])
 cc_library(
     name = "shell_layered_j2",
     hdrs = ["ShellLayeredJ2.h", "ShellLayeredJ2Work.h"],
-    deps = [":shell_nip3", "//lib_src/materials:tabulated_shell_plasticity"],
+    deps = [":shell_nip3", ":shell_layered_work", "//lib_src/materials:tabulated_shell_plasticity"],
 )
 
 cc_library(
@@ -16,4 +16,10 @@ cc_library(
     name = "shell_layered_law1",
     hdrs = ["ShellLayeredLaw1.h"],
     deps = [":shell_nip3", "//lib_src/materials:shell_elastic_law1_point"],
+)
+
+cc_library(
+    name = "shell_layered_work",
+    hdrs = ["ShellLayeredWork.h"],
+    deps = [":shell_nip3", "//lib_src/math:quaternion"],
 )

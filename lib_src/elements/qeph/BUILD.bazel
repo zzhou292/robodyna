@@ -54,3 +54,9 @@ cuda_library(
         "//lib_src/solvers:nodal_native_physical_coefficients",
     ],
 )
+
+cc_library(
+    name = "layered_law1",
+    hdrs = ["QephLayeredLaw1.h"],
+    deps = [":force", "//lib_src/elements/sections:shell_layered_law1", "//lib_src/elements/sections:shell_layered_work"],
+)

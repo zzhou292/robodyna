@@ -1,0 +1,32 @@
+{
+  "schema": "tl.native-layered-law1-force.v1",
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "license": "AGPL-3.0-or-later",
+  "sources": [
+    {
+      "path": "original/czforc3.F",
+      "upstream_path": "engine/source/elements/shell/coquez/czforc3.F",
+      "bytes": 42687,
+      "sha256": "0cbc96d2fc2e7dee1c5e2f5e6d3349618ba683015550a0184be177a5602515ab",
+      "git_blob": "72ab7f3fded22d05a06bc851d4542bdc069ac7ac"
+    }
+  ],
+  "scope": {
+    "elastic_stabilization_default_lines": [
+      384,
+      390
+    ],
+    "point_and_section_owner": "../../native/law1/source-manifest.json",
+    "native_geometry_force_owners": [
+      "../../native/qeph/source-manifest.json",
+      "../../native/t3/source-manifest.json"
+    ],
+    "native_work_fragments_owner": "../../shell_layered_j2/native_recurrence/source-manifest.json",
+    "material": 1,
+    "nip": 3,
+    "ithick": 1,
+    "ismstr": 2,
+    "off": 1,
+    "engine_recurrence": false
+  }
+}

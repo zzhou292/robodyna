@@ -118,8 +118,8 @@
     },
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
-      "bytes": 1834,
-      "sha256": "1099a1c16dbba11a9e44b73f4dac56a64f519a3a332d065a71eadd7e2542f245"
+      "bytes": 2031,
+      "sha256": "660deb85599bfb85bff6bcc723bec7f43b0a229ccc0da22e5e4d7045f96f84ec"
     },
     {
       "path": "lib_src/elements/t3/CMakeLists.txt",
@@ -133,13 +133,13 @@
     },
     {
       "path": "lib_utest/qualification/t3/source-manifest.json",
-      "bytes": 16039,
-      "sha256": "75f290e57ce9b3f34ed9c4e6dcba8bad67289e4b8e551434d0b724ba3ee29a88"
+      "bytes": 16551,
+      "sha256": "dabe887f9885f4b9d77ebe6b054cf3c2d7d504a1a7d642c7cadf9cbd7ebd21bf"
     },
     {
       "path": "lib_utest/qualification/t3/verify_sources.py",
       "bytes": 2001,
-      "sha256": "f1a52a5e32bb0f56550f2b23ac83f8a0bf9d8c6919d262bf9c2d3222e6cc6a9a"
+      "sha256": "fd9647fd6989c97937c86d6d3b740279ef4a86997b08dd5735498d3705711305"
     },
     {
       "path": "lib_utest/qualification/t3/T3PortFixture.h",
@@ -583,6 +583,28 @@
       "sha256": "949967c732d285dd1c0123c1631ef549e8a50173cf90a5b23ca79b84dec48039"
     },
     "reason": "Register the distinct elastic SIGEPS01C point target; existing LAW1 global and T3 force donor, arithmetic and tests remain unchanged.",
+    "force_arithmetic_changed": false
+  },
+  "layered_law1_force_build_registration": {
+    "previous_manifest_sha256": "19aef934829c7434cb8eb00b71e91c5cf05ee2d49d09f20d9dfacf03fce5c623",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 1834,
+        "sha256": "1099a1c16dbba11a9e44b73f4dac56a64f519a3a332d065a71eadd7e2542f245"
+      },
+      {
+        "path": "lib_utest/qualification/t3/source-manifest.json",
+        "bytes": 16039,
+        "sha256": "75f290e57ce9b3f34ed9c4e6dcba8bad67289e4b8e551434d0b724ba3ee29a88"
+      },
+      {
+        "path": "lib_utest/qualification/t3/verify_sources.py",
+        "bytes": 2001,
+        "sha256": "f1a52a5e32bb0f56550f2b23ac83f8a0bf9d8c6919d262bf9c2d3222e6cc6a9a"
+      }
+    ],
+    "reason": "Add separate NIP3 LAW1 force target; existing T3 startup/global force/native arithmetic unchanged.",
     "force_arithmetic_changed": false
   }
 }

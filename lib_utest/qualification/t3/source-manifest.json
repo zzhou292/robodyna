@@ -15,8 +15,8 @@
   "ported_files": [
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
-      "bytes": 1834,
-      "sha256": "1099a1c16dbba11a9e44b73f4dac56a64f519a3a332d065a71eadd7e2542f245"
+      "bytes": 2031,
+      "sha256": "660deb85599bfb85bff6bcc723bec7f43b0a229ccc0da22e5e4d7045f96f84ec"
     },
     {
       "path": "lib_src/elements/t3/CMakeLists.txt",
@@ -404,5 +404,17 @@
         }
       }
     }
+  },
+  "layered_law1_force_build_registration": {
+    "previous_manifest_sha256": "75f290e57ce9b3f34ed9c4e6dcba8bad67289e4b8e551434d0b724ba3ee29a88",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 1834,
+        "sha256": "1099a1c16dbba11a9e44b73f4dac56a64f519a3a332d065a71eadd7e2542f245"
+      }
+    ],
+    "reason": "Add separate NIP3 LAW1 force target; existing T3 startup/global force/native arithmetic unchanged.",
+    "force_arithmetic_changed": false
   }
 }

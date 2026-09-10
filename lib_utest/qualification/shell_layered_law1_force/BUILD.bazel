@@ -1,0 +1,12 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "shell_layered_law1_force_value_check",
+    srcs = ["Law1ForceValueTest.cpp", "Law1ForceTestSupport.h", "native/NativeLaw1Reference.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        "//lib_utest:layered_shell_force_test_fixture",
+        "//lib_src/elements/qeph:layered_law1",
+        "//lib_src/elements/t3:layered_law1",
+        "@googletest//:gtest_main",
+    ],
+)

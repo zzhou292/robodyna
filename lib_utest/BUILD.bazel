@@ -545,3 +545,35 @@ cc_test(
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [":shell_batch_binding_test_fixture", "//lib_src/elements:shell_batch_plasticity_binding", "@googletest//:gtest_main"],
 )
+
+# Reuse the native recurrence geometry/path and comparison declarations in new laws.
+cc_library(
+    name = "layered_shell_force_test_fixture",
+    testonly = True,
+    hdrs = [
+        "qualification/native/law44/NativePoint.h",
+        "qualification/native/law44/NativeRateTestSupport.h",
+        "qualification/native/law44/YarisCurveFixture.h",
+        "qualification/native/qeph/QephForceReference.h",
+        "qualification/native/qeph/QephHistory.h",
+        "qualification/native/qeph/QephReference.h",
+        "qualification/native/qeph/QephReferenceTypes.h",
+        "qualification/native/t3/T3ForceReference.h",
+        "qualification/native/t3/T3ForceTestOracle.h",
+        "qualification/native/t3/T3History.h",
+        "qualification/native/t3/T3Kinematics.h",
+        "qualification/native/t3/T3KinematicsTestOracle.h",
+        "qualification/native/t3/T3Reference.h",
+        "qualification/native/t3/T3StartupTestOracle.h",
+        "qualification/qeph/QephForceFixture.h",
+        "qualification/qeph/QephKinematicsFixture.h",
+        "qualification/qeph/QephStartupFixture.h",
+        "qualification/shell_layered_j2/LayeredJ2CovarianceFixture.h",
+        "qualification/shell_layered_j2/LayeredJ2Fixture.h",
+        "qualification/shell_layered_j2/native_recurrence/LayeredNativePath.h",
+        "qualification/shell_layered_j2/native_recurrence/NativeLayeredReference.h",
+        "qualification/t3/T3ForcePortFixture.h",
+        "qualification/t3/T3PortFixture.h",
+    ],
+    deps = ["//lib_src/elements/qeph:layered_j2", "//lib_src/elements/t3:layered_j2", "@googletest//:gtest_main"],
+)
