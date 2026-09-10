@@ -3,6 +3,7 @@
 #include "QephHistory.h"
 #include "QephBatchStartup.h"
 #include "../ShellBatchJoinedModel.h"
+#include "lib_src/solvers/NodalNativePhysicalCoefficients.h"
 #include <cmath>
 #include <new>
 
@@ -25,6 +26,9 @@ bool SameReference(const ReferenceData& a,const ReferenceData& b) {
 
 BatchReport BuildModel(const QephBatchConfig& c,const QephBatchElement* input,Model& model,Slab& initial,const ShellBatchBinding* joined) {
   const auto& o=c.owner;
+  if(!native_physical_coefficients::ValidScope(o.rigid_groups,o.node_count)||
+     (!native_physical_coefficients::Empty(o.rigid_groups)&&(!joined||c.usage!=BatchUsage::CoupledForces)))
+    return {BatchStatus::InvalidInput,"Rigid groups require complete scope and joined coupled shell publication"};
   if((!input&&!joined)||!o.owner_id||!o.has_rotations||o.epoch||o.time!=0||o.velocity_time!=0||
      o.reactions_valid||!std::isfinite(o.fixed_dt)||o.fixed_dt<=0||
      o.temporal_scheme!=NodalTemporalScheme::StaggeredHalfKickStart||

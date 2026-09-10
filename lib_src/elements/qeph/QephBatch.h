@@ -113,6 +113,8 @@ class QephBatch {
   // its source identity; actual owner association is checked separately before
   // the first standalone or joined publication. A forged raw view alone is
   // therefore not an owner/history publication authority.
+  // Raw grouped views reject. Grouped rest and moving startup, and every
+  // later grouped assembly, require the actual live-owner overload.
   BatchReport AssembleAccepted(const NodalAssemblyView&);
   // On first uniform binding, authenticate SOURCE pointer identity against the
   // live owner before measuring/publishing K0. The predicate does not consume
@@ -120,6 +122,8 @@ class QephBatch {
   // No owner reference is retained. Other binding/assembly behavior is shared.
   BatchReport AssembleAccepted(FENodalState&,const NodalAssemblyView&);
   BatchReport EvaluateCandidate(const NodalPreparedView&,BatchDiagnostics*);
+  // Required for rigid-group coupling: authenticate the common owner token.
+  BatchReport EvaluateCandidate(FENodalState&,const NodalTrialToken&,const NodalPreparedView&,BatchDiagnostics*);
   // Output-cadence staged readback, never an evaluation/history advance. The
   // accepted slab remains readable after numerical rejection/discard. All output
   // ranges must be host writable, disjoint and not overlap this batch's storage.
@@ -137,6 +141,7 @@ class QephBatch {
                              const ShellBatchPlasticityConfig* plasticity=nullptr,
                              const ShellBatchPlasticityBinding* collection_plasticity=nullptr);
   BatchReport AssembleAcceptedImpl(FENodalState*,const NodalAssemblyView&);
+  BatchReport EvaluateCandidateImpl(FENodalState*,const NodalTrialToken*,const NodalPreparedView&,BatchDiagnostics*);
   friend BatchReport CommitQephTrial(FENodalState&,const NodalTrialToken&,QephBatch&,
                                     const BatchDiagnostics&,const NodalValidationReceipt&) noexcept;
   struct Impl; std::unique_ptr<Impl> impl_;

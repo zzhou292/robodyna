@@ -106,7 +106,12 @@ class NodalWallContactDevice {
       const NodalWallWeights&,VectorView initial_positions,const double* inverse_mass,
       const std::uint8_t* translation_fixed_bits,PlanarWallBox admitted_motion);
   NodalWallDeviceReport AssembleAccepted(const tl::fea::NodalAssemblyView&,NodalWallDiagnostics*);
+  // Rigid-group coupling requires these live-owner/token overloads. Raw
+  // grouped views reject; native mass rates remain local diagnostics only.
+  NodalWallDeviceReport AssembleAccepted(tl::fea::FENodalState&,const tl::fea::NodalAssemblyView&,NodalWallDiagnostics*);
   NodalWallDeviceReport EvaluateCandidate(const tl::fea::NodalPreparedView&,NodalWallDiagnostics*);
+  NodalWallDeviceReport EvaluateCandidate(tl::fea::FENodalState&,const tl::fea::NodalTrialToken&,
+      const tl::fea::NodalPreparedView&,NodalWallDiagnostics*);
   NodalWallDeviceReport CopyResults(const NodalWallDiagnostics&,NodalWallDeviceResults*);
   NodalWallDeviceReport CopyResults(const NodalWallDiagnostics&,const NodalWallDeviceResultView&);
   void DiscardTrial() noexcept;
@@ -114,5 +119,8 @@ class NodalWallContactDevice {
   double stiffness_rate_bound() const noexcept;
  private:
   struct Impl; std::unique_ptr<Impl> impl_;
+  NodalWallDeviceReport AssembleAcceptedImpl(tl::fea::FENodalState*,const tl::fea::NodalAssemblyView&,NodalWallDiagnostics*);
+  NodalWallDeviceReport EvaluateCandidateImpl(tl::fea::FENodalState*,const tl::fea::NodalTrialToken*,
+      const tl::fea::NodalPreparedView&,NodalWallDiagnostics*);
 };
 } // namespace tlfea::contact

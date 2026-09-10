@@ -1,5 +1,6 @@
 // Lifecycle adapted from the qualified QEPH participant; no force equations.
 #include "T3BatchStorage.h"
+#include "lib_src/solvers/NodalNativePhysicalCoefficients.h"
 #include <cmath>
 
 namespace tl::fea::t3 {
@@ -27,7 +28,23 @@ BatchReport T3Batch::AssembleAcceptedImpl(FENodalState* owner,const NodalAssembl
   auto fail=[&](BatchReport r) { const auto marked=MarkRejected(v,r); if(marked.status==BatchStatus::DeviceFailure) s.usable=false; return marked; };
   auto report=s.PendingError(); if(report.status!=BatchStatus::Success) return fail(report);
   const auto& a=s.accepted_stamp; const auto n=a.node_count;
-  if(v.owner_id!=a.owner_id) return fail({BatchStatus::WrongOwner,"T3 assembly belongs to another owner"});
+  // Reject unauthenticated constraint views before touching borrowed loads.
+  const bool grouped=!native_physical_coefficients::Empty(a.rigid_groups);
+  if(!native_physical_coefficients::SameScope(a.rigid_groups,v.rigid_groups))
+    return {BatchStatus::StaleTrial,"Shell assembly rigid-group scope mismatch"};
+  if(v.owner_id!=a.owner_id) {
+    const BatchReport wrong{BatchStatus::WrongOwner,"Shell assembly belongs to another owner"};
+    return grouped?wrong:fail(wrong);
+  }
+  if(grouped) {
+    if(!owner) return {BatchStatus::InvalidInput,"Rigid-group assembly requires a live owner"};
+    const auto binding=native_physical_coefficients::AuthenticateAccepted(*owner,a,v);
+    if(binding.status!=NodalStatus::Ok) {
+      if(binding.status==NodalStatus::DeviceFailure) s.usable=false;
+      return {binding.status==NodalStatus::DeviceFailure?BatchStatus::NodalFailure:BatchStatus::StaleTrial,
+              binding.message,UINT32_MAX,UINT32_MAX,Status::kSuccess,binding.status};
+    }
+  }
   if(!batch_detail::ValidKinematics(v.accepted,n,a.epoch)||v.forces.node_count!=n||v.mass.node_count!=n||
      v.forces.base_epoch!=a.epoch||v.mass.base_epoch!=a.epoch||!v.mass.inverse_mass||!v.mass.fixed||
      !v.inverse_inertia||!v.translation_fixed_bits||!v.rotation_fixed||!v.bounds||!v.result||
@@ -37,7 +54,7 @@ BatchReport T3Batch::AssembleAcceptedImpl(FENodalState* owner,const NodalAssembl
      v.velocity_time!=a.velocity_time||!v.attempt||v.attempt<=s.assembled_attempt||
      (s.bound&&v.stream!=s.stream))
     return fail({BatchStatus::StaleTrial,"T3 assembly phase/attempt/cache mismatch"});
-  if(!s.bound&&s.config.startup.kind==BatchStartupKind::ReferenceUniformTranslation) {
+  if(!grouped&&!s.bound&&s.config.startup.kind==BatchStartupKind::ReferenceUniformTranslation) {
     if(!owner) return fail({BatchStatus::InvalidInput,"Initial uniform translation requires live-owner source authentication"});
     const auto binding=owner->ValidateAcceptedAssemblySources(v);
     if(binding.status!=NodalStatus::Ok) {
@@ -63,6 +80,14 @@ BatchReport T3Batch::AssembleAcceptedImpl(FENodalState* owner,const NodalAssembl
   return {BatchStatus::Success,"OK"};
 }
 BatchReport T3Batch::EvaluateCandidate(const NodalPreparedView& v,BatchDiagnostics* output) {
+  return EvaluateCandidateImpl(nullptr,nullptr,v,output);
+}
+BatchReport T3Batch::EvaluateCandidate(FENodalState& owner,const NodalTrialToken& token,
+                                         const NodalPreparedView& v,BatchDiagnostics* output) {
+  return EvaluateCandidateImpl(&owner,&token,v,output);
+}
+BatchReport T3Batch::EvaluateCandidateImpl(FENodalState* owner,const NodalTrialToken* token,
+                                             const NodalPreparedView& v,BatchDiagnostics* output) {
   if(!impl_) return {BatchStatus::NotInitialized,"T3 batch is not initialized"};
   auto& s=*impl_; s.Discard();
   auto report=s.PendingError(); if(report.status!=BatchStatus::Success) return report;
@@ -70,6 +95,22 @@ BatchReport T3Batch::EvaluateCandidate(const NodalPreparedView& v,BatchDiagnosti
   if(!output) return {BatchStatus::InvalidInput,"Missing T3 diagnostic output"};
   const auto& a=s.accepted_stamp; const auto n=a.node_count; const auto h=a.fixed_dt;
   if(v.owner_id!=a.owner_id) return {BatchStatus::WrongOwner,"T3 candidate belongs to another owner"};
+  if(!native_physical_coefficients::SameScope(a.rigid_groups,v.rigid_groups))
+    return {BatchStatus::StaleTrial,"Shell candidate rigid-group scope mismatch"};
+  if(!native_physical_coefficients::Empty(a.rigid_groups)&&(!owner||!token))
+    return {BatchStatus::InvalidInput,"Rigid-group candidate requires the live owner and common token"};
+  if(owner&&token) {
+    const auto authenticated=native_physical_coefficients::AuthenticatePrepared(*owner,*token,a,v);
+    if(authenticated.status!=NodalStatus::Ok) {
+      if(authenticated.status==NodalStatus::DeviceFailure) s.usable=false;
+      return {authenticated.status==NodalStatus::DeviceFailure?BatchStatus::NodalFailure:BatchStatus::StaleTrial,
+              authenticated.message,UINT32_MAX,UINT32_MAX,Status::kSuccess,authenticated.status};
+    }
+    if(!trial_identity::Disjoint(output,sizeof(*output),token,sizeof(*token))||
+       !trial_identity::Disjoint(output,sizeof(*output),&v,sizeof(v))||
+       !trial_identity::Disjoint(output,sizeof(*output),owner,sizeof(*owner)))
+      return {BatchStatus::InvalidInput,"Shell diagnostic output aliases authentication input"};
+  }
   if(!batch_detail::ValidKinematics(v.kinematics,n,a.epoch)||!batch_detail::ValidKinematics(v.base_kinematics,n,a.epoch)||
      v.temporal_scheme!=a.temporal_scheme||v.base_velocity_phase!=a.velocity_phase||
      v.velocity_phase!=NodalVelocityPhase::PreviousMidpoint||v.base_time!=a.time||

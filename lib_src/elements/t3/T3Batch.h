@@ -109,9 +109,13 @@ class T3Batch {
   // therefore not an owner/history publication authority.
   // First moving startup requires the live-owner overload; after binding either
   // form consumes the same accepted cache and existing attempt contract.
+  // Raw grouped views reject. Grouped rest and moving startup, and every
+  // later grouped assembly, require the actual live-owner overload.
   BatchReport AssembleAccepted(const NodalAssemblyView&);
   BatchReport AssembleAccepted(FENodalState&,const NodalAssemblyView&);
   BatchReport EvaluateCandidate(const NodalPreparedView&,BatchDiagnostics*);
+  // Required for rigid-group coupling: authenticate the common owner token.
+  BatchReport EvaluateCandidate(FENodalState&,const NodalTrialToken&,const NodalPreparedView&,BatchDiagnostics*);
   // Output-cadence staged readback, never an evaluation/history advance. The
   // accepted slab remains readable after numerical rejection/discard. All output
   // ranges must be host writable, disjoint and not overlap this batch's storage.
@@ -129,6 +133,7 @@ class T3Batch {
                              const ShellBatchPlasticityConfig* plasticity=nullptr,
                              const ShellBatchPlasticityBinding* collection_plasticity=nullptr);
   BatchReport AssembleAcceptedImpl(FENodalState*,const NodalAssemblyView&);
+  BatchReport EvaluateCandidateImpl(FENodalState*,const NodalTrialToken*,const NodalPreparedView&,BatchDiagnostics*);
   friend BatchReport CommitT3Trial(FENodalState&,const NodalTrialToken&,T3Batch&,
                                     const BatchDiagnostics&,const NodalValidationReceipt&) noexcept;
   struct Impl; std::unique_ptr<Impl> impl_;

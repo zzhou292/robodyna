@@ -8,6 +8,7 @@ namespace tlfea::contact {
 namespace {
 namespace d=nodal_wall_device_detail;
 namespace fea=tl::fea;
+namespace native=fea::native_physical_coefficients;
 using Code=NodalWallDeviceStatus;
 __global__ void MarkFailure(fea::NodalAssemblyView v,unsigned node) { fea::RecordNodalAssemblyFailure(v,Status::kInvalidArgument,node); }
 __global__ void Assemble(d::Storage* storage,fea::NodalAssemblyView v,NodalWallDiagnostics identity) {
@@ -89,12 +90,41 @@ NodalWallDeviceReport NodalWallContactDevice::Impl::FailAssembly(const fea::Noda
   return r;
 }
 NodalWallDeviceReport NodalWallContactDevice::AssembleAccepted(const fea::NodalAssemblyView& v,NodalWallDiagnostics* output) {
+  return AssembleAcceptedImpl(nullptr,v,output);
+}
+NodalWallDeviceReport NodalWallContactDevice::AssembleAccepted(fea::FENodalState& owner,
+    const fea::NodalAssemblyView& v,NodalWallDiagnostics* output) {
+  return AssembleAcceptedImpl(&owner,v,output);
+}
+NodalWallDeviceReport NodalWallContactDevice::AssembleAcceptedImpl(fea::FENodalState* owner,
+    const fea::NodalAssemblyView& v,NodalWallDiagnostics* output) {
   if (!impl_) { Impl empty; return empty.FailAssembly(v,{Code::NotInitialized,"Nodal wall is not initialized"}); }
   auto& s=*impl_; s.has_base=false; s.has_results=false;
   auto fail=[&](NodalWallDeviceReport r) { return s.FailAssembly(v,r); };
   if (!s.usable) return fail({Code::DeviceFailure,"Nodal wall CUDA storage is poisoned"});
   const auto n=s.config.owner.node_count; const auto epoch=v.accepted.base_epoch;
-  if (v.owner_id!=s.config.owner.owner_id) return fail({Code::WrongOwner,"Wrong nodal owner"});
+  const bool grouped=!native::Empty(s.config.owner.rigid_groups);
+  if (!native::SameScope(s.config.owner.rigid_groups,v.rigid_groups))
+    return {Code::StaleAttempt,"Contact assembly rigid-group scope mismatch"};
+  if (v.owner_id!=s.config.owner.owner_id) {
+    const NodalWallDeviceReport wrong{Code::WrongOwner,"Wrong nodal owner"};
+    return grouped?wrong:fail(wrong);
+  }
+  if (grouped&&!owner) return {Code::InvalidInput,"Rigid-group contact assembly requires a live owner"};
+  if (owner) {
+    const auto stamp=owner->accepted();
+    if (!native::SameOwnerScope(s.config.owner,stamp)||
+        (epoch==0&&!fea::trial_identity::SameStamp(s.config.owner,stamp)))
+      return {Code::StaleAttempt,"Contact does not match the configured live owner scope"};
+    const auto authenticated=native::AuthenticateAccepted(*owner,stamp,v);
+    if (authenticated.status!=fea::NodalStatus::Ok) {
+      if (authenticated.status==fea::NodalStatus::DeviceFailure) s.usable=false;
+      return {authenticated.status==fea::NodalStatus::DeviceFailure?Code::DeviceFailure:Code::StaleAttempt,
+              authenticated.message};
+    }
+    if (!Disjoint(output,sizeof(*output),owner,sizeof(*owner)))
+      return fail({Code::InvalidInput,"Contact diagnostic output aliases its owner"});
+  }
   if (!Disjoint(output,sizeof(*output),&v,sizeof(v)) || !Kinematics(v.accepted,n,epoch) || v.forces.node_count!=n || v.mass.node_count!=n ||
       v.forces.base_epoch!=epoch || v.mass.base_epoch!=epoch || !v.mass.inverse_mass || !v.mass.fixed ||
       !v.translation_fixed_bits || !v.result || !v.bounds || !OutputView(v,n) ||
@@ -120,15 +150,40 @@ NodalWallDeviceReport NodalWallContactDevice::AssembleAccepted(const fea::NodalA
   r=s.Check(cudaMemcpyAsync(&next,s.DeviceDiagnostics(),sizeof(next),cudaMemcpyDeviceToHost,v.stream));
   if (r.status!=Code::Ok) return fail(r);
   r=s.Check(cudaStreamSynchronize(v.stream)); if (r.status!=Code::Ok) return fail(r);
+  if (owner) s.base_stamp=owner->accepted();
   s.has_base=true; s.has_results=true; s.available=next; *output=next;
   return {Code::Ok,"Accepted contact force assembled"};
 }
 NodalWallDeviceReport NodalWallContactDevice::EvaluateCandidate(const fea::NodalPreparedView& v,NodalWallDiagnostics* output) {
+  return EvaluateCandidateImpl(nullptr,nullptr,v,output);
+}
+NodalWallDeviceReport NodalWallContactDevice::EvaluateCandidate(fea::FENodalState& owner,
+    const fea::NodalTrialToken& token,const fea::NodalPreparedView& v,NodalWallDiagnostics* output) {
+  return EvaluateCandidateImpl(&owner,&token,v,output);
+}
+NodalWallDeviceReport NodalWallContactDevice::EvaluateCandidateImpl(fea::FENodalState* owner,
+    const fea::NodalTrialToken* token,const fea::NodalPreparedView& v,NodalWallDiagnostics* output) {
   if (!impl_) return {Code::NotInitialized,"Nodal wall is not initialized"};
   auto& s=*impl_; s.has_results=false;
   if (!s.usable) return {Code::DeviceFailure,"Nodal wall CUDA storage is poisoned"};
   const auto& b=s.base_view; const double h=s.config.owner.fixed_dt;
   if (v.owner_id!=s.config.owner.owner_id) return {Code::WrongOwner,"Wrong candidate owner"};
+  if (!native::SameScope(s.config.owner.rigid_groups,v.rigid_groups))
+    return {Code::StaleAttempt,"Contact candidate rigid-group scope mismatch"};
+  if (!native::Empty(s.config.owner.rigid_groups)&&(!owner||!token))
+    return {Code::InvalidInput,"Rigid-group contact candidate requires the live owner and common token"};
+  if (owner&&token) {
+    if (!s.has_base) return {Code::StaleAttempt,"Missing authenticated contact assembly"};
+    const auto authenticated=native::AuthenticatePrepared(*owner,*token,s.base_stamp,v);
+    if (authenticated.status!=fea::NodalStatus::Ok) {
+      if (authenticated.status==fea::NodalStatus::DeviceFailure) s.usable=false;
+      return {authenticated.status==fea::NodalStatus::DeviceFailure?Code::DeviceFailure:Code::StaleAttempt,
+              authenticated.message};
+    }
+    if (!Disjoint(output,sizeof(*output),token,sizeof(*token))||
+        !Disjoint(output,sizeof(*output),owner,sizeof(*owner)))
+      return {Code::InvalidInput,"Contact diagnostic output aliases authentication input"};
+  }
   if (!Disjoint(output,sizeof(*output),&v,sizeof(v)) || !s.has_base || !SameView(v.base_kinematics,b.accepted) ||
       !Kinematics(v.kinematics,s.config.owner.node_count,s.last_epoch) || v.attempt!=s.last_attempt ||
       v.attempt<=s.last_candidate_attempt || v.stream!=s.stream ||

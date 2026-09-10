@@ -1,4 +1,5 @@
 #include "NodalWallContactState.h"
+#include "lib_src/solvers/NodalNativePhysicalCoefficients.h"
 #include <cmath>
 #include <new>
 
@@ -8,6 +9,8 @@ NodalWallDeviceReport PrepareModel(const NodalWallDeviceConfig& c,PlanarWallView
     PlanarWallBox motion,PreparedModel* output) {
   using fea=tl::fea::NodalTemporalScheme;
   const auto& owner=c.owner; const auto& law=c.law;
+  if (!tl::fea::native_physical_coefficients::ValidScope(owner.rigid_groups,owner.node_count))
+    return {Code::InvalidInput,"Incomplete rigid-group contact scope"};
   if (!output || !x.valid() || !inverse || !masks || !weights.prepared() || !owner.owner_id ||
       !c.configuration_id || !c.qualification_id || !c.wall_binding_id || !owner.has_rotations ||
       owner.temporal_scheme!=fea::StaggeredHalfKickStart ||
@@ -60,6 +63,8 @@ NodalWallDeviceReport PrepareModel(const NodalWallDeviceConfig& c,PlanarWallView
       if (!Inside(x.at(node),next.coverage.physical))
         return {Code::GeometryFailure,"An initial incident node is outside the admitted motion envelope",node};
       double rate=0;
+      // Local native-mass row diagnostic; never a constrained inverse or
+      // admission to the legacy translation PSD stability proof.
       const LumpedTranslationMassView mass{next.inverse_mass,next.fixed,static_cast<std::uint32_t>(owner.node_count),0,
                                          TranslationMassModel::kIsotropicLumped};
       for (unsigned p=0;p<next.parent_count;++p) for (unsigned l=0;l<next.parents[p].arity;++l) {

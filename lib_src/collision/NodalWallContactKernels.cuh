@@ -1,6 +1,7 @@
 #pragma once
 #include "NodalWallContactDiagnostics.h"
 #include "lib_src/solvers/NodalForceAssembly.h"
+#include "lib_src/solvers/NodalNativePhysicalCoefficients.h"
 
 namespace tlfea::contact::nodal_wall_device_detail {
 namespace fea=tl::fea;
@@ -28,7 +29,8 @@ __device__ inline bool ValidateAssembly(Storage& s,const fea::NodalAssemblyView&
       v.bounds->base_epoch!=v.accepted.base_epoch || v.bounds->attempt!=v.attempt ||
       !v.bounds->initialized || !v.bounds->valid || v.bounds->sealed || v.result->status!=Status::kOk)
     return Fail(s.control,Code::AssemblyFailure);
-  if (v.mass.model!=TranslationMassModel::kIsotropicLumped) return Fail(s.control,Code::InvalidMass);
+  if (!fea::native_physical_coefficients::Admitted(s.model.config.owner.rigid_groups,v.rigid_groups,
+      v.mass.model,s.model.config.owner.node_count)) return Fail(s.control,Code::InvalidMass);
   for (unsigned i=0;i<s.model.node_count;++i) {
     const auto n=s.model.nodes[i].node;
     if (v.mass.inverse_mass[n]!=s.model.inverse_mass[n] || v.mass.fixed[n]!=s.model.fixed[n] ||
@@ -52,6 +54,8 @@ __device__ inline void Evaluate(Storage& s,const fea::DeviceNodalKinematicsView&
   if (s.control.status!=Code::Ok) return;
   const auto count=static_cast<std::uint32_t>(k.node_count); // Active host binding checked the complete owner extent.
   const VectorView x{k.position_xyz,count,3,1},v{k.velocity_xyz,count,3,1};
+  // Evaluate the local law with native physical coefficients. For a rigid
+  // group its rate is diagnostic, not the response of the coupled system.
   const LumpedTranslationMassView mass{s.model.inverse_mass,s.model.fixed,count,k.base_epoch,
                                       TranslationMassModel::kIsotropicLumped};
   for (unsigned compact=lane;compact<s.model.node_count;compact+=Workers) {

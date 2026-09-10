@@ -1,6 +1,7 @@
 #include "T3BatchDiagnostics.h"
 #include "T3LayeredJ2.h"
 #include "../../solvers/NodalForceAssembly.h"
+#include "../../solvers/NodalNativePhysicalCoefficients.h"
 
 namespace tl::fea::t3::batch_detail {
 namespace {
@@ -8,7 +9,8 @@ namespace sc=tlfea::contact;
 __global__ void MarkFailure(NodalAssemblyView view) { RecordNodalAssemblyFailure(view,sc::Status::kInvalidArgument); }
 
 __device__ bool ValidateNodes(Storage& s,NodalAssemblyView v,bool initial) {
-  if(v.mass.model!=sc::TranslationMassModel::kIsotropicLumped) { s.control.status=BatchStatus::InvalidMass; return false; }
+  if(!native_physical_coefficients::Admitted(s.model.config.owner.rigid_groups,v.rigid_groups,
+      v.mass.model,s.model.config.owner.node_count)) { s.control.status=BatchStatus::InvalidMass; return false; }
   for(unsigned n=0;n<s.model.config.owner.node_count;++n) {
     const double im=v.mass.inverse_mass[n],ij=v.inverse_inertia[n];
     if(v.mass.fixed[n]||v.translation_fixed_bits[n]||v.rotation_fixed[n]||

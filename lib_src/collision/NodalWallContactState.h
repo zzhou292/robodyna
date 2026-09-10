@@ -11,6 +11,7 @@ struct NodalWallContactDevice::Impl {
   nodal_wall_device_detail::Control control;
   NodalWallDiagnostics available;
   tl::fea::NodalAssemblyView base_view;
+  tl::fea::NodalStamp base_stamp; // Authenticated accepted scope; no owner retained.
   double rate=0;
   std::uint64_t last_epoch=0,last_attempt=0,last_candidate_attempt=0;
   cudaStream_t stream=nullptr;
