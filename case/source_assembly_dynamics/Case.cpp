@@ -34,6 +34,9 @@ Report SourceAssemblyWallCase::Initialize(const source_assembly::SourceAssemblyB
        !budget.Append<contact::NodalWallPointResult>(2*n,ignored)||
        !budget.Append<std::uint64_t>(2*n+setup.placed_wall()->view().triangle_count,ignored))
         return Failure(Status::ResourceLimit,"Assembly host observation payload exceeds its startup byte budget");
+    if(config.observe_force_stage&&(!budget.Append<double>(6*n,ignored)||
+       !budget.Append<fe::NodalRigidGroupAccelerationSnapshot>(groups->group_count(),ignored)))
+        return Failure(Status::ResourceLimit,"Force-stage capture payload exceeds its startup host byte budget");
     try {
         auto next=std::make_unique<Impl>(b,setup,config,budget.bytes(),timing_options);
         const auto report=next->Initialize();if(!report)return report;
@@ -70,6 +73,9 @@ const Config* SourceAssemblyWallCase::config() const noexcept { return impl_?&im
 const Diagnostics* SourceAssemblyWallCase::diagnostics() const noexcept { return impl_?&impl_->accepted().diagnostics:nullptr; }
 ContactView SourceAssemblyWallCase::accepted_contact() const noexcept {
     return impl_&&impl_->accepted().diagnostics.has_interval?impl_->accepted().wall.view():ContactView{};
+}
+const observation::ForceStageSummary* SourceAssemblyWallCase::accepted_force_stage() const noexcept {
+    return impl_&&impl_->accepted().has_force_stage?&impl_->accepted().force_stage:nullptr;
 }
 fe::NodalAllocationInfo SourceAssemblyWallCase::Impl::Allocations() const noexcept {
     fe::NodalAllocationInfo sum;

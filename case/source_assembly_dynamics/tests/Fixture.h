@@ -8,6 +8,11 @@
 namespace crash::cases::source_assembly_dynamics {
 struct SourceAssemblyDynamicsTestAccess {
     enum class Fault { LastWallFace,AppliedLoad };
+    enum class ForceFault { LastNode,LastGroup,CaptureIdentity,GroupIdentity,CaptureAssociation };
+    static observation::ForceStageInput CapturedInput(const SourceAssemblyWallCase&,const Sample& before);
+    static std::array<std::uintptr_t,4> CaptureStorage(const SourceAssemblyWallCase&);
+    static Report RejectForceStage(SourceAssemblyWallCase&,ForceFault);
+    static Report RejectCaptureDevice(SourceAssemblyWallCase&);
     static const Sample& Accepted(const SourceAssemblyWallCase& c) { return c.impl_->accepted(); }
     static Report RejectLate(SourceAssemblyWallCase& c,Fault fault) {
         auto& s=*c.impl_;auto r=s.Prepare();if(!r)return s.Stop(r);

@@ -2,6 +2,7 @@
 #include "Config.h"
 #include "StepTiming.h"
 #include "case/source_assembly_observation/SourceAssemblyObservation.h"
+#include "case/source_assembly_observation/SourceAssemblyForceStageKinetic.h"
 #include <memory>
 
 namespace crash::output::assembly { class SourceAssemblyAcceptedOutput; }
@@ -50,6 +51,9 @@ class SourceAssemblyWallCase {
     const Diagnostics* diagnostics() const noexcept;
     // No contact candidate exists at epoch zero: this view is empty then.
     ContactView accepted_contact() const noexcept;
+    // Empty initially/off. A completed force-stage sample becomes visible only
+    // with its enclosing common commit; the sample itself is at base_time.
+    const source_assembly_observation::ForceStageSummary* accepted_force_stage() const noexcept;
     tl::fea::NodalAllocationInfo allocations() const noexcept;
     std::size_t host_payload_bytes() const noexcept;
   private:

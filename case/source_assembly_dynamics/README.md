@@ -69,3 +69,46 @@ The 1024-step case takes 110.767 s including its checks and saved-output probes.
 This measured throughput requires profiling before a millisecond-scale run.
 The initial build exposed a missing shared wall-geometry CMake dependency,
 fixed in the owning `WallTessellationLibrary.cmake`; rebuild passes.
+
+
+`Config::observe_force_stage` is an explicit default-off observation option.
+Enabled startup asks the existing TL owner to retain the actual native kick's
+node and generated-primary A/AR. `ForceStage.cpp` reads them after the prepared
+nodal/group snapshots, retains both separately returned prepared identities,
+and uses the previous accepted motion with the prepared group axes in the
+qualified pure `ObserveForceStage` adapter. It adds no force call or integrator
+clock. `CheckForceStage` is the final candidate check before the same common
+commit. These extra optional operations are included in inclusive step timing;
+the existing per-operation timing schema is unchanged.
+
+`accepted_force_stage()` is null initially and whenever the option is off. Once
+a step commits it returns the completed base-time sample with its base epoch,
+attempt, enclosing accepted epoch/time and full source-group descriptor. The
+ordinary native, grouped native and effective aggregate channels retain their
+explicit phase and count each generated primary once. They are separate from
+the stored midpoint kinetic channels. No native-work/potential composition,
+energy acceptance threshold or synchronized energy-balance claim is added here.
+The returned pointer follows the existing accepted-view lifetime. Rejection
+keeps the prior summary visible; a CUDA failure preserves that accepted record
+but poisons further advancement.
+
+The case preallocates one `6*n` double capture buffer and `g` typed source-bearing
+group rows only when enabled, inside the existing explicit host byte cap. For
+1030 nodes and six groups this is 49,872 additional host payload bytes and the
+owner adds exactly 49,728 device bytes without another device allocation. Fixed
+inline summary/identity/vector descriptors are included in `sizeof(Impl)` even
+when disabled. Consequently an older archive's `engine_host_payload_bytes`
+metric changes truthfully with this implementation; this is not a mechanics
+change. There are no additional capture calls or dynamic capture payload when
+off, and no per-step container growth when on.
+
+The new actual-source qualification cases cover exact optional byte admission,
+128 baseline intervals of enabled/disabled nodal/section/contact parity,
+first/later force-stage chronology and an independent world-tensor collocation
+oracle, late node/group/identity rejection with exact retry, and a completed
+capture transfer followed by a CUDA error. The last case uses the existing TL
+qualification-only linker probe, never a production failure hook. Its correct
+outcome is a poisoned case, not retry. The 128-interval scope establishes
+contact and material-history parity without asserting first yield. These new
+CUDA cases require the root's guarded runtime qualification; host syntax alone
+is not numerical or GPU evidence.

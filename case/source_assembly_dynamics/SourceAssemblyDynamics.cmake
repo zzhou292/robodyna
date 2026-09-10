@@ -14,7 +14,8 @@ include("${robo_assembly_dynamics_root}/output/source_assembly/SourceAssemblyAcc
 add_library(robo_dyna_source_assembly_dynamics STATIC
   "${CMAKE_CURRENT_LIST_DIR}/Case.cpp" "${CMAKE_CURRENT_LIST_DIR}/Config.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/Startup.cpp" "${CMAKE_CURRENT_LIST_DIR}/Step.cu"
-  "${CMAKE_CURRENT_LIST_DIR}/Checks.cpp" "${CMAKE_CURRENT_LIST_DIR}/ContactChecks.cpp")
+  "${CMAKE_CURRENT_LIST_DIR}/Checks.cpp" "${CMAKE_CURRENT_LIST_DIR}/ContactChecks.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/ForceStage.cpp")
 target_link_libraries(robo_dyna_source_assembly_dynamics PUBLIC
   robo_dyna_stage_timing robo_dyna_source_assembly_wall_setup robo_dyna_source_assembly_observation
   robo_dyna_source_assembly_accepted_output tl_shell_batch_publication tl_nodal_wall_contact_device)

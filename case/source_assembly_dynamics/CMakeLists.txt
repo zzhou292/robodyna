@@ -19,7 +19,11 @@ endforeach()
 include("${robo_dynamics_root}/case/CanonicalWallArtifacts.cmake")
 add_executable(robo_dyna_source_assembly_dynamics_check
   tests/Fixture.cpp tests/WallCaseTest.cpp tests/WallRunTest.cpp tests/StepTimingTest.cpp
+  tests/ForceStageAccess.cpp tests/ForceStageCaseTest.cpp tests/ForceStageFailureTest.cpp
+  "${ROBO_DYNA_TL_ROOT}/lib_utest/qualification/nodal_rigid_group/PreparedSnapshotCudaProbe.cpp"
   "${robo_dynamics_root}/qualification/source_assembly/SourceAssemblyFlightFixture.cu")
+# Test-only completed-transfer failure injection; never linked into production.
+target_link_options(robo_dyna_source_assembly_dynamics_check PRIVATE "-Wl,--wrap=cudaMemcpyAsync")
 target_link_libraries(robo_dyna_source_assembly_dynamics_check PRIVATE robo_dyna_source_assembly_dynamics
   robo_dyna_canonical_wall_artifacts GTest::gtest_main CUDA::cudart)
 set_target_properties(robo_dyna_source_assembly_dynamics_check PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)

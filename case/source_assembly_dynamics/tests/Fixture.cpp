@@ -39,6 +39,10 @@ void SameParents(const ParentFields& a,const ParentFields& b) {
 }
 void SameAccepted(const Sample& a,const Sample& b) {
     SameFields(a.fields,b.fields);SameParents(a.parents,b.parents);
+    EXPECT_TRUE(fe::trial_identity::SameStamp(a.group_stamp,b.group_stamp));
+    EXPECT_EQ(a.has_force_stage,b.has_force_stage);
+    if(a.has_force_stage&&b.has_force_stage)
+        EXPECT_EQ(std::memcmp(&a.force_stage,&b.force_stage,sizeof(observation::ForceStageSummary)),0);
     EXPECT_EQ(std::memcmp(&a.diagnostics,&b.diagnostics,sizeof(Diagnostics)),0);
     EXPECT_EQ(std::memcmp(&a.wall.diagnostics,&b.wall.diagnostics,sizeof(contact::NodalWallDiagnostics)),0);
     EXPECT_EQ(std::memcmp(a.wall.parents.data(),b.wall.parents.data(),a.wall.parents.size()*sizeof(contact::NodalWallParentResult)),0);

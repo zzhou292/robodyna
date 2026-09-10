@@ -24,6 +24,8 @@ struct Config {
     double fixed_dt=0;
     DeformationLimits deformation;
     StorageLimits storage;
+    // Optional base-time observation from the existing native kick; no extra force evaluation.
+    bool observe_force_stage=false;
 };
 enum class Status { Ok,InvalidInput,AlreadyInitialized,NotInitialized,ResourceLimit,
     SourceMismatch,ComponentFailure,DeviceFailure,EnvelopeFailure,ObservationFailure };

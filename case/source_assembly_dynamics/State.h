@@ -1,5 +1,6 @@
 #pragma once
 #include "Case.h"
+#include "ForceStageWorkspace.h"
 #include "lib_src/elements/ShellBatchPlasticity.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
 #include <array>
@@ -75,6 +76,11 @@ struct Sample {
     ParentFields parents;
     ContactFields wall;
     Diagnostics diagnostics;
+    // Startup retains the actual accepted group readback identity. Later this
+    // associates verified prepared groups with their sole successful commit.
+    fe::NodalStamp group_stamp;
+    bool has_force_stage=false;
+    observation::ForceStageSummary force_stage;
     std::array<long double,3> qwork_magnitude{},twork_magnitude{};
 };
 struct SourceAssemblyWallCase::Impl {
@@ -82,7 +88,8 @@ struct SourceAssemblyWallCase::Impl {
          const Config& c,std::size_t host_bytes,StepTimingOptions timing_options)
         :bindings(b),setup(w),config(c),sample{Sample(nodes(),groups(),quads(),triangles()),Sample(nodes(),groups(),quads(),triangles())},
          inverse_mass(nodes()),inverse_inertia(nodes()),free(nodes()),load_soa(6*nodes()),
-         applied_force(3*nodes()),applied_couple(3*nodes()),wall_faces(w.placed_wall()->view().triangle_count),host_bytes(host_bytes),timer(timing_options) {}
+         applied_force(3*nodes()),applied_couple(3*nodes()),wall_faces(w.placed_wall()->view().triangle_count),
+         force_capture(c.observe_force_stage,nodes(),groups()),host_bytes(host_bytes),timer(timing_options) {}
     const source_assembly::SourceAssemblyBindings bindings;
     const source_assembly::SourceAssemblyWallSetup setup;
     const Config config;
@@ -97,11 +104,12 @@ struct SourceAssemblyWallCase::Impl {
     std::vector<std::uint8_t> free;
     std::vector<double> load_soa,applied_force,applied_couple;
     std::vector<std::uint64_t> wall_faces;
+    ForceStageWorkspace force_capture;
     std::size_t host_bytes=0;
     StepTimer timer;
     unsigned accepted_slot=0;
     fe::NodalTrialToken token;
-    fe::NodalPreparedView prepared;
+    fe::NodalPreparedView prepared,group_prepared;
     contact::NodalWallDiagnostics base_contact;
     double contact_step_rate_upper=0;
     bool poisoned=false;
@@ -123,6 +131,8 @@ struct SourceAssemblyWallCase::Impl {
     Report CheckShells();
     Report CheckContact();
     Report CheckMotion();
+    Report CaptureForceStage();
+    Report CheckForceStage();
     Report Commit();
     void Discard() noexcept { owner.Discard();publication.DiscardTrial();qeph.DiscardTrial();t3.DiscardTrial();wall.DiscardTrial(); }
     Report Stop(Report r) noexcept {

@@ -32,7 +32,8 @@ Report SourceAssemblyWallCase::Impl::Prepare() {
     const auto stamp=owner.accepted();const auto& old=accepted().diagnostics;
     if(!fe::trial_identity::SameStamp(stamp,old.stamp))
         return Failure(Status::ComponentFailure,"Owner changed outside its assembly wall case");
-    candidate().diagnostics={};prepared={};base_contact={};
+    candidate().diagnostics={};candidate().has_force_stage=false;
+    prepared={};group_prepared={};force_capture.prepared={};base_contact={};
     fe::NodalAssemblyView assembly;
     auto r=timer.Measure<StepStage::BeginTrial>([&] {return Convert(owner.BeginTrial(&token,&assembly));});if(!r)return r;
     r=timer.Measure<StepStage::AssembleQeph>([&] {return QReport(qeph.AssembleAccepted(owner,assembly));});if(!r)return r;
@@ -59,13 +60,12 @@ Report SourceAssemblyWallCase::Impl::Prepare() {
         config.fixed_dt,config.deformation.maximum_rotation_increment,setup.settings()->qualification_id};
     r=timer.Measure<StepStage::AdvanceOwner>([&] {return Convert(fe::AdvanceStaggeredRigidGroups(owner,token,admission));});if(!r)return r;
     r=timer.Measure<StepStage::ReadPreparedNodes>([&] {return Convert(owner.CopyPrepared(token,candidate().fields.buffer(),&prepared));});if(!r)return r;
-    fe::NodalPreparedView group_view;
     r=timer.Measure<StepStage::ReadPreparedGroups>([&] {
-        return Convert(owner.CopyPreparedRigidGroups(token,{candidate().fields.groups.data(),groups()},&group_view));
+        return Convert(owner.CopyPreparedRigidGroups(token,{candidate().fields.groups.data(),groups()},&group_prepared));
     });if(!r)return r;
-    if(!fe::trial_identity::SamePrepared(prepared,group_view))
+    if(!fe::trial_identity::SamePrepared(prepared,group_prepared))
         return Failure(Status::ComponentFailure,"Candidate nodal/reaction/group readbacks identify different prepared states");
-    return Success();
+    return CaptureForceStage();
 }
 Report SourceAssemblyWallCase::Impl::Evaluate() {
     auto& next=candidate();auto& d=next.diagnostics.shells;
@@ -95,7 +95,8 @@ Report SourceAssemblyWallCase::Impl::CheckMotion() {
 Report SourceAssemblyWallCase::Impl::Check() {
     auto r=timer.Measure<StepStage::CheckShells>([&] {return CheckShells();});if(!r)return r;
     r=timer.Measure<StepStage::CheckContact>([&] {return CheckContact();});if(!r)return r;
-    return timer.Measure<StepStage::CheckMotion>([&] {return CheckMotion();});
+    r=timer.Measure<StepStage::CheckMotion>([&] {return CheckMotion();});if(!r)return r;
+    return CheckForceStage();
 }
 Report SourceAssemblyWallCase::Impl::Commit() {
     auto& next=candidate();const auto& d=next.diagnostics.shells;
@@ -104,6 +105,7 @@ Report SourceAssemblyWallCase::Impl::Commit() {
     // Only infallible value updates and selection follow the sole owner/native
     // history publication. Contact keeps its completed candidate phase tag.
     next.diagnostics.stamp=owner.accepted();next.diagnostics.has_interval=true;
+    next.group_stamp=next.diagnostics.stamp;
     next.diagnostics.shells.qeph.phase=q::BatchPhase::Accepted;
     next.diagnostics.shells.t3.phase=t::BatchPhase::Accepted;
     accepted_slot=1-accepted_slot;

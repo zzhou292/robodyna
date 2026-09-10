@@ -34,6 +34,7 @@ Report SourceAssemblyWallCase::Impl::Initialize() {
         inverse_mass[n]=1/native.native.mass;inverse_inertia[n]=1/native.native.isotropic_inertia;
     }
     fe::NodalStateConfig nc;nc.node_count=nodes();nc.fixed_dt=config.fixed_dt;
+    nc.capture_force_stage_accelerations=config.observe_force_stage;
     nc.max_device_bytes=config.storage.owner_device_bytes;nc.temporal_scheme=fe::NodalTemporalScheme::StaggeredHalfKickStart;
     auto r=Convert(owner.Initialize(nc,initial.fields.view(),inverse_mass.data(),
         {free.data(),free.data(),inverse_inertia.data()},*bindings.rigid_groups()));if(!r)return r;
@@ -54,9 +55,8 @@ Report SourceAssemblyWallCase::Impl::Initialize() {
     Discard();
     r=Convert(publication.Initialize(owner,qeph,t3,config.storage.publication));if(!r)return r;
     r=Convert(owner.CopyAccepted(initial.fields.buffer(),&initial.diagnostics.stamp));if(!r)return r;
-    fe::NodalStamp group_stamp;
-    r=Convert(owner.CopyAcceptedRigidGroups({initial.fields.groups.data(),groups()},&group_stamp));if(!r)return r;
-    if(!fe::trial_identity::SameStamp(group_stamp,initial.diagnostics.stamp))
+    r=Convert(owner.CopyAcceptedRigidGroups({initial.fields.groups.data(),groups()},&initial.group_stamp));if(!r)return r;
+    if(!fe::trial_identity::SameStamp(initial.group_stamp,initial.diagnostics.stamp))
         return Failure(Status::ComponentFailure,"Initial source group and nodal stamps disagree");
     r=Convert(publication.CopyAcceptedDiagnostics(initial.diagnostics.stamp,&initial.diagnostics.shells));if(!r)return r;
     r=QReport(qeph.CopyAcceptedResults(initial.diagnostics.stamp,initial.parents.qeph.data(),quads(),&initial.diagnostics.shells.qeph));if(!r)return r;
