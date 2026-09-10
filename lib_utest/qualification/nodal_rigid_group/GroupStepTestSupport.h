@@ -32,6 +32,22 @@ inline Input Fixture(rigid::StepDurations durations={1./128,1./128,1./128}) {
   }
   return input;
 }
+inline Input CancellationFixture() {
+  // Four equal masses at tetrahedral offsets give diagonal principal inertia:
+  // 4 * (.1 kg * (.01^2 + .01^2) m^2 + 5e-6 kg*m^2) = 1e-4 kg*m^2.
+  // The first force is parallel to its arm. Each native moment component still
+  // rounds C + 100 before subtracting 100; the residual matters at this small J.
+  Input input;
+  input.body.previous_frame={{{1,0,0,0,1,0,0,0,1}},{1e-4,1e-4,1e-4}};
+  input.body.mass=.4; input.body.durations={0,1e-6,1e-6};
+  const Vec3 position[]{{.01,.01,.01},{.01,-.01,-.01},{-.01,.01,-.01},{-.01,-.01,.01}};
+  for(unsigned i=0;i<Count;++i) {
+    input.member[i].position=position[i]; input.member[i].mass=.1; input.member[i].inertia=5e-6;
+  }
+  input.member[0].force={10000,10000,10000};
+  input.member[0].couple={1e-8,-2e-8,3e-8};
+  return input;
+}
 RIGID_TEST_HD inline rigid::StepStatus EvaluatePacket(const Input& input,Trial& output) {
   Vec3 positions[Count],forces[Count],couples[Count];
   for(unsigned i=0;i<Count;++i) { positions[i]=input.member[i].position;

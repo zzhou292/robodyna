@@ -1,6 +1,14 @@
 #include "GroupStepNativeFixture.h"
 
 namespace rigid_step_test {
+TEST(NodalRigidGroupStepNative,CancellationSensitiveWrenchAndSmallInertiaMatchCompleteNativePacket) {
+  const auto input=CancellationFixture(); Trial actual;
+  ASSERT_EQ(EvaluatePacket(input,actual),rigid::StepStatus::Success);
+  const auto reference=NativePacket(input); Agreement(actual,reference);
+  for(unsigned a=0;a<3;++a)
+    EXPECT_GT(std::abs(Get(input.member[0].couple,a)/1e-4-
+                       Get(reference.primary.angular_acceleration,a)),2e-12);
+}
 TEST(NodalRigidGroupStepNative,FrameMatchesOriginalZeroTinyBoundaryAndFiniteRotationBranches) {
   const auto frame=DenseFrame().axes;
   for(const auto omega:{Vec3{},Vec3{.36,.48,.8},Vec3{-.7,1.2,.4}})

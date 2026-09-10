@@ -72,6 +72,12 @@ TEST(NodalRigidGroupMath,LateFailuresAndOverflowPreserveCallerOutputs) {
   f[2]={0,std::numeric_limits<double>::max(),0}; x[2]={2,0,0};
   EXPECT_EQ(rigid::AggregateWrench({},x,f,c,3,output),rigid::MathStatus::NonfiniteResult);
   Near(output.force,saved.force,0); Near(output.couple,saved.couple,0);
+  // Source-ordered moment arithmetic overflows before subtraction even though
+  // C + Cross(r,F) would stay finite. Reject the last member without publication.
+  x[2]={0,1,1}; f[2]={0,std::numeric_limits<double>::max(),std::numeric_limits<double>::max()};
+  c[2]={std::numeric_limits<double>::max(),0,0};
+  EXPECT_EQ(rigid::AggregateWrench({},x,f,c,3,output),rigid::MathStatus::NonfiniteResult);
+  Near(output.force,saved.force,0); Near(output.couple,saved.couple,0);
   auto frame=Frame(); frame.axes.v[0]=1;
   Vec3 result{11,12,13};
   EXPECT_EQ(rigid::AngularAcceleration(frame,{1,2,3},{4,5,6},result),rigid::MathStatus::InvalidInput);

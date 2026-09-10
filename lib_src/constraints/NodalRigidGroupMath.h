@@ -86,7 +86,12 @@ TL_RIGID_HD inline MathStatus AggregateWrench(Vec3 center,const Vec3* positions,
     if(!detail::Finite(positions[i])||!detail::Finite(forces[i])||!detail::Finite(couples[i]))
       return MathStatus::InvalidInput;
     const auto arm=detail::Subtract(positions[i],center);
-    const auto moment=detail::Add(couples[i],detail::Cross(arm,forces[i]));
+    // Retain RGBODFP's left-associated C + r_y*F_z - r_z*F_y.
+    // Forming C + Cross(r,F) changes cancellation before small-J division.
+    const auto f=forces[i],c=couples[i];
+    const Vec3 moment{(c.x+arm.y*f.z)-arm.z*f.y,
+                      (c.y+arm.z*f.x)-arm.x*f.z,
+                      (c.z+arm.x*f.y)-arm.y*f.x};
     next.force=detail::Add(next.force,forces[i]); next.couple=detail::Add(next.couple,moment);
     if(!detail::Finite(arm)||!detail::Finite(moment)||!detail::Finite(next.force)||!detail::Finite(next.couple))
       return MathStatus::NonfiniteResult;

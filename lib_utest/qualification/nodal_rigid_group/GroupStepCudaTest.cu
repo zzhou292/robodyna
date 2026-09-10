@@ -22,6 +22,16 @@ class DevicePacket {
   Packet* pointer_=nullptr;
 };
 }
+TEST(NodalRigidGroupStepCuda,CancellationSensitiveWrenchAndSmallInertiaMatchHostPacket) {
+  DevicePacket device; ASSERT_EQ(device.Allocate(),cudaSuccess);
+  Packet packet; packet.input=CancellationFixture(); Trial expected;
+  ASSERT_EQ(EvaluatePacket(packet.input,expected),rigid::StepStatus::Success);
+  ASSERT_EQ(device.Run(packet),cudaSuccess); ASSERT_EQ(packet.status,rigid::StepStatus::Success);
+  Agreement(packet.output,expected);
+  for(unsigned a=0;a<3;++a)
+    EXPECT_GT(std::abs(Get(packet.input.member[0].couple,a)/1e-4-
+                       Get(packet.output.primary.angular_acceleration,a)),2e-12);
+}
 TEST(NodalRigidGroupStepCuda,CompleteFourMemberPacketMatchesHostAcrossDurationsAndSpinBranches) {
   DevicePacket device; ASSERT_EQ(device.Allocate(),cudaSuccess);
   for(const auto d:{rigid::StepDurations{0,1./256,1./128},rigid::StepDurations{1./256,3./512,1./128},

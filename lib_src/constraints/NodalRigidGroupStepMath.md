@@ -8,7 +8,11 @@ or authenticate a source model. Every function leaves its output unchanged
 when validation or arithmetic fails.
 
 The caller first supplies the complete force/couple wrench through the existing
-`AggregateWrench`. `EvaluatePrimaryStep` saves angular velocity expressed in
+`AggregateWrench`, retaining each native left-associated `C + r_y*F_z - r_z*F_y`
+moment expression before reducing members in source order. A four-member,
+small-inertia qualification checks cancellation in all three moment components
+against the native complete packet and on CUDA. `EvaluatePrimaryStep` saves
+angular velocity expressed in
 the previous principal frame, applies native `ROTBMR` with `previous_drift_dt`,
 then uses that saved velocity and the newly transformed torque for Euler's
 anisotropic equations. The primary proxy-J multiply/divide is algebraically

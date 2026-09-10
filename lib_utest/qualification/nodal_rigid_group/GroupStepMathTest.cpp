@@ -2,6 +2,18 @@
 #include <limits>
 
 namespace rigid_step_test {
+TEST(NodalRigidGroupStepMath,SmallInertiaRetainsNativeMomentCancellationInEveryAxis) {
+  const auto input=CancellationFixture(); Trial actual;
+  ASSERT_EQ(EvaluatePacket(input,actual),rigid::StepStatus::Success);
+  // Independently frozen binary64 results of native (C + 100) - 100. The
+  // mathematically simplified C + (100 - 100) fails this gate after J division.
+  const Vec3 native_moment{9.999993721976352e-9,-2.000000165480742e-8,2.999999537678377e-8};
+  for(unsigned a=0;a<3;++a) {
+    const double expected=Get(native_moment,a)/1e-4;
+    Agreement(Get(actual.primary.angular_acceleration,a),expected);
+    EXPECT_GT(std::abs(Get(input.member[0].couple,a)/1e-4-expected),2e-12);
+  }
+}
 TEST(NodalRigidGroupStepMath,SphericalPrimaryMatchesIndependentKickDriftForDistinctDurations) {
   for(const auto d:{rigid::StepDurations{0,1./256,1./128},
       rigid::StepDurations{1./128,1./128,1./128},rigid::StepDurations{1./256,3./512,1./128}}) {
