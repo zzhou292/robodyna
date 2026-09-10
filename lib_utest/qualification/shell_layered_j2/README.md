@@ -1,4 +1,4 @@
-# Three-point tabulated shell section (experimental P1)
+# Three-point tabulated shell section
 
 This opt-in TL value path composes the shared tabulated plane-stress point law
 with the existing QEPH and T3 prescribed force operations. It adds no owner,
@@ -8,7 +8,7 @@ clock, contact law, allocation, or commit. Existing LAW1 files and native
 ## Composition and publication
 
 - `elements/sections/ShellLayeredJ2.h` owns three point histories, integration,
-  and section diagnostics. Inputs use material order XX, YY, engineering XY,
+  and section diagnostics, including optional per-point source rate history. Inputs use material order XX, YY, engineering XY,
   YZ, ZX, KXX, KYY, KXY. `ShellLayeredJ2Work.h` applies the existing generalized
   stress work and instantaneous membrane viscosity once.
 - `qeph/QephLayeredJ2.h` and `t3/T3LayeredJ2.h` reuse each family's geometry,
@@ -37,24 +37,47 @@ that value by a small, intentional relative error below 6e-7.
 For each point, the in-plane strain increment is membrane plus
 `position * reference_thickness * curvature`; transverse shears share actual
 GS. Integrated FOR is `sum(WF*stress)`, MOM is `sum(WM*stress)`, both stored in
-Pa. Existing projections multiply them by reference thickness and its square.
-Reported thickness starts at its previously accepted value, then receives each
-point's elastic and plastic thickness additions separately, each multiplied
-by `WF*reference_thickness`. Force thickness remains fixed (ITHK0 experiment).
+Pa. Existing projections multiply them by the interval's effective force
+thickness and its square. The source ITHICK=1 adapters use accepted reported
+thickness for that effective thickness, coefficient preparation and layer
+positions. Reported thickness starts at its previously accepted value, then
+receives each point's elastic and plastic thickness additions separately, each
+multiplied by `WF*effective_thickness`. The original reference identity and
+native structural mass/J remain unchanged. The section's legacy input name
+`reference_thickness` means this interval's effective force thickness; it does
+not require the original startup thickness.
 
 `plastic_work_density_increment` is the WF-weighted native point diagnostic
 in J/m3, not total work or an additional energy term. Multiplying it by actual
-current shell area and fixed reference thickness gives its per-element joule
+current shell area and accepted effective thickness gives its per-element joule
 increment. Existing generalized old/new stress work remains the total work
-ledger. Maximum/mean plastic strain and minimum point tangent ratio are
-additional diagnostics; they do not alter the fixed elastic stability bound.
+ledger. Maximum/mean plastic strain, mean/minimum point tangent ratio and
+mean/last-point pre-update yield are distinct diagnostics. The elastic native
+stiffness estimate remains the stability bound; no softened timestep is used.
 
-**QEPH stabilization policy: retained elastic stabilization.** Its existing
-state update, force contribution and work accounting are preserved. ETSE is
-reported but does not scale stabilization. This experiment does not implement
-native plastic stabilization, rate dependence, failure/deletion, thickness
-feedback into mass/force geometry, or a restart reader. T3 has no QEPH
-stabilization; its equivalent strain rate remains a diagnostic only.
+**QEPH stabilization uses the native NPT3 plastic correction.** After the common
+elastic increment, `QephPlasticStabilization.h` applies CZFINTN1's mean/minimum
+ETSE correction, global section yield criterion and unloading logic. It uses
+the last material point's SIGY, matching the source caller output; the weighted
+mean yield is a separate diagnostic. Corrected stabilization is projected into
+forces and work once. Elastic stabilization work remains in generalized
+internal work, while the native TESY/EVIS(8) viscous contribution remains in
+the separate `hourglass_viscous_work` channel. T3 has no QEPH stabilization.
+
+The optional rate branch uses the shared LAW44-derived point law. The source
+Yaris configuration explicitly enables Cowper–Symonds C=8000/s, P=8 and the
+pinned direct-import cutoff of 10000 Hz. The section computes the native total
+equivalent rate from membrane/bending increments and accepted reported
+thickness. Each point receives that scalar and carries its own filtered-rate
+history. Neither a filter nor a material history advances at initialization.
+See [RateReference.md](../native/law44/RateReference.md) for the exact default
+resolution and source evidence. Explicit rate-off experiments remain available.
+
+Failure/deletion, curve extrapolation, kinematic hardening, arbitrary MAT024
+options, self-contact/severe-folding qualification and restart remain outside
+this branch. Full native layered-element recurrence and time-dependent
+prestressed-rotation qualification are follow-up gates; this section is not a
+claim of complete LS-DYNA or OpenRadioss equivalence.
 
 ## Donor mapping and scope
 
@@ -65,7 +88,7 @@ qualification. Exact byte identities for the bounded source inspection:
 |---|---|---|
 | `coqini.F` | `610d39a9c2280e5fdd2a0a0c58586e17d20fcb96c4c54bda47d8eec8fcd0d769` | COQINI Z0/WF and separate COQINI_WM, NIP3 |
 | `layini.F` | `744be8fb1910479bd5d29c3e0f6e421195a09b24c3e19991969a1516000da7c3` | TYPE1/9 section weights and positions, lines 244–257 |
-| `mulawc.F90` | `778df028efcdb9e28e8b2cb9156a431937c06fa073260d2c002164b420848526` | Fixed THK0 layer strains; THKLY/WMC integration, lines 765–811 and 2657–2664; generalized work, lines 3046–3093 |
+| `mulawc.F90` | `778df028efcdb9e28e8b2cb9156a431937c06fa073260d2c002164b420848526` | Interval THK0 layer strains; THKLY/WMC integration, lines 765–811 and 2657–2664; generalized work, lines 3046–3093 |
 
 Point arithmetic and two thickness contributions are owned by
 `materials/TabulatedShellPlasticity.md` and `qualification/native/law44`.
@@ -85,8 +108,25 @@ through two plastic intervals, compares host/device results, and verifies a
 late third-point failure and clean retry. Its sole device packet is below
 16 KiB; it starts no dynamics or full source-part simulation.
 
-After integrating the separate point/native dependencies, root can configure
-this directory directly, or add it to the existing qualification build.
-`TL_SHELL_LAYERED_J2_ENABLE_CUDA=OFF` selects only host checks. No test results
-are claimed by this source increment; the workstation's serialized build/run
+The separate native rate suite carries three native point histories and its
+own thickness through 1664 loading/hold/reverse intervals. A native CZFINTN1
+wrapper checks plastic/global-yield stabilization, elastic unloading and the
+high-yield sentinel. Resident mixed-family tests cover common publication,
+late rejection/exact retry and immutable material/rate scope.
+
+The added covariance tests preload actual source-curve yielding, rebind those
+local histories under a constant world rotation/translation, then independently
+carry both paths through loading, hold and reversal. They reuse the existing
+2e-11 covariance coefficient and dimensional force/history scales. Planar,
+warped and skewed QEPH plus three T3 shapes check rotated forces/couples,
+unchanged local stress/PLA/filter histories, evolving thickness, work and exact
+section/resultant association. These are constant-frame covariance tests;
+they do not substitute for a time-dependent rigid-spin or complete native
+layered-element recurrence test.
+
+The integrated pre-covariance build passed all 36 CTest groups in
+[plastic-delivery-tests-1.log](../../../../crash-work/reports/plastic-delivery-tests-1.log).
+The new covariance tests require a subsequent guarded run. This directory can
+also be configured directly; `TL_SHELL_LAYERED_J2_ENABLE_CUDA=OFF` selects only
+host checks. The workstation's serialized build/run
 owner performs execution and records evidence.

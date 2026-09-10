@@ -89,5 +89,8 @@ plus one rejected sequence on both host and device. The separate native point
 suite qualifies the material equations and original source curve. Added rate
 tests cover independent filter rise/decay/saturation, shared section input with
 distinct point histories, invalid-input and late-layer atomicity, host/device
-cycles, joined material mismatch and mixed-family rejection/exact retry. These tests
-were written without a build/run; the integrating guarded run is required.
+cycles, joined material mismatch and mixed-family rejection/exact retry. The
+integrated source-rate plasticity gates passed in the workspace's
+[36-group delivery run](../../../crash-work/reports/plastic-delivery-tests-1.log).
+This records the completed bounded branch; broader element/folding qualification
+remains separate.
