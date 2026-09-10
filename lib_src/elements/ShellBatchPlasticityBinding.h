@@ -53,10 +53,15 @@ namespace shell_batch_plasticity_detail { class HostStorage; }
 class ShellBatchPlasticityBinding {
  public:
   ShellBatchPlasticityBinding()=default;
-  ShellBatchPlasticityBinding(const ShellBatchPlasticityBinding&)=default;
-  ShellBatchPlasticityBinding(ShellBatchPlasticityBinding&&)=default;
+  ShellBatchPlasticityBinding(const ShellBatchPlasticityBinding&) noexcept=default;
+  ShellBatchPlasticityBinding(ShellBatchPlasticityBinding&& other) noexcept
+      :ShellBatchPlasticityBinding(static_cast<const ShellBatchPlasticityBinding&>(other)) {}
   ShellBatchPlasticityBinding& operator=(const ShellBatchPlasticityBinding&)=delete;
   ShellPlasticityBindingReport Initialize(const ShellBatchBinding&,const ShellBatchPlasticityBindingInput&) noexcept;
+  ShellPlasticityBindingReport Initialize(const ShellBatchBinding&,const ShellBatchPlasticityBindingInput&,
+      const ShellHostBindingLimits&) noexcept;
+  // Includes complete inventory backing, even when shared with the binding.
+  std::size_t host_bytes() const noexcept;
   bool prepared() const noexcept { return prepared_; }
   bool Matches(const ShellBatchBinding&) const noexcept;
   bool SameScope(const ShellBatchPlasticityBinding&) const noexcept;
@@ -83,16 +88,17 @@ class ShellBatchPlasticityBinding {
   };
   struct Data {
     ShellBatchInventory inventory;
-    std::array<Curve,MaxShellCollectionParents> curves{};
-    std::array<Material,MaxShellCollectionParents> materials{};
-    std::array<ShellPlasticitySectionInput,MaxShellCollectionParents> sections{};
-    std::array<Parent,MaxShellCollectionParents> parents{};
-    std::array<std::size_t,MaxShellCollectionParents> qeph_parent{},t3_parent{};
+    tl::util::BoundedStartupArray<Curve,MaxShellCollectionParents> curves;
+    tl::util::BoundedStartupArray<Material,MaxShellCollectionParents> materials;
+    tl::util::BoundedStartupArray<ShellPlasticitySectionInput,MaxShellCollectionParents> sections;
+    tl::util::BoundedStartupArray<Parent,MaxShellCollectionParents> parents;
+    tl::util::BoundedStartupArray<std::size_t,MaxShellCollectionParents> qeph_parent,t3_parent;
     std::array<double,MaxShellPlasticityCurvePoints> curve_x{},curve_y{};
     std::size_t curve_count=0,material_count=0,section_count=0,parent_count=0,point_count=0;
     std::size_t qeph_count=0,t3_count=0;
   } data_;
   bool prepared_=false;
+  ShellPlasticityBindingReport Build(const ShellBatchBinding&,const ShellBatchPlasticityBindingInput&);
   static ShellPlasticityBindingReport CopyCurves(const ShellBatchPlasticityBindingInput&,Data&) noexcept;
   static ShellPlasticityBindingReport PrepareMaterials(const ShellBatchPlasticityBindingInput&,Data&) noexcept;
   static ShellPlasticityBindingReport CopySections(const ShellBatchPlasticityBindingInput&,Data&) noexcept;

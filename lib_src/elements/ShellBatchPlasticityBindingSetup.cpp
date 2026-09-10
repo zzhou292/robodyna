@@ -1,18 +1,41 @@
 #include "ShellBatchPlasticityBindingInternal.h"
+#include <new>
 
 namespace tl::fea {
 using namespace shell_plasticity_binding_detail;
 
 ShellPlasticityBindingReport ShellBatchPlasticityBinding::Initialize(
     const ShellBatchBinding& binding,const ShellBatchPlasticityBindingInput& input) noexcept {
+  return Initialize(binding,input,ShellHostBindingLimits{});
+}
+std::size_t ShellBatchPlasticityBinding::host_bytes() const noexcept {
+  return sizeof(*this)+data_.inventory.backing_bytes()+data_.curves.backing_bytes()+
+    data_.materials.backing_bytes()+data_.sections.backing_bytes()+data_.parents.backing_bytes()+
+    data_.qeph_parent.backing_bytes()+data_.t3_parent.backing_bytes();
+}
+ShellPlasticityBindingReport ShellBatchPlasticityBinding::Initialize(
+    const ShellBatchBinding& binding,const ShellBatchPlasticityBindingInput& input,
+    const ShellHostBindingLimits& limits) noexcept {
   if(prepared_) return Error(Status::AlreadyInitialized,"Plasticity binding is immutable after preparation");
   if(!binding.prepared()||!input.curves||!input.materials||!input.sections||!input.parents||
      !input.curve_count||!input.material_count||!input.section_count||!input.parent_count)
     return Error(Status::InvalidInput,"Complete prepared binding and explicit nonempty catalog ranges are required");
   for(auto count:{input.curve_count,input.material_count,input.section_count,input.parent_count})
-    if(count>MaxShellCollectionParents) return Error(Status::ResourceLimit,"Plasticity catalog exceeds the existing parent capacity");
+    if(count>MaxShellHostParents||count>limits.max_parents)
+      return Error(Status::ResourceLimit,"Plasticity catalog exceeds host parent admission");
+  if(limits.max_parents>MaxShellHostParents||limits.max_nodes>MaxShellHostNodes||binding.node_count()>limits.max_nodes)
+    return Error(Status::ResourceLimit,"Plasticity catalog exceeds host node admission");
   if(input.parent_count!=binding.qeph_count()+binding.t3_count())
     return Error(Status::InvalidParent,"Plasticity mapping must cover every native collection parent");
+  const auto bytes=sizeof(*this)+binding.inventory().backing_bytes()+
+    decltype(data_.curves)::ExtraBytes(input.curve_count)+
+    decltype(data_.materials)::ExtraBytes(input.material_count)+
+    decltype(data_.sections)::ExtraBytes(input.section_count)+
+    decltype(data_.parents)::ExtraBytes(input.parent_count)+
+    decltype(data_.qeph_parent)::ExtraBytes(binding.qeph_count())+
+    decltype(data_.t3_parent)::ExtraBytes(binding.t3_count());
+  if(bytes>limits.max_owned_bytes)
+    return Error(Status::ResourceLimit,"Owned host plasticity catalog exceeds byte admission");
   // All range counts and the TOTAL pool size are checked before any curve copy.
   std::size_t points=0;
   for(std::size_t i=0;i<input.curve_count;++i) {
@@ -23,7 +46,15 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::Initialize(
       return Error(Status::ResourceLimit,"Complete plasticity curve pool exceeds 1024 points",i);
     points+=c.curve.count;
   }
+  try { return Build(binding,input); }
+  catch(const std::bad_alloc&) { return Error(Status::ResourceLimit,"Plasticity catalog startup allocation failed"); }
+}
+ShellPlasticityBindingReport ShellBatchPlasticityBinding::Build(
+    const ShellBatchBinding& binding,const ShellBatchPlasticityBindingInput& input) {
   Data staged;
+  staged.curves.Resize(input.curve_count); staged.materials.Resize(input.material_count);
+  staged.sections.Resize(input.section_count); staged.parents.Resize(input.parent_count);
+  staged.qeph_parent.Resize(binding.qeph_count()); staged.t3_parent.Resize(binding.t3_count());
   staged.inventory=binding.inventory(); staged.qeph_count=binding.qeph_count(); staged.t3_count=binding.t3_count();
   auto report=CopyCurves(input,staged);
   if(report.status==Status::Success) report=PrepareMaterials(input,staged);
@@ -54,7 +85,7 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::CopyCurves(
 
 ShellPlasticityBindingReport ShellBatchPlasticityBinding::PrepareMaterials(
     const ShellBatchPlasticityBindingInput& input,Data& out) noexcept {
-  std::array<bool,MaxShellCollectionParents> used{};
+  std::array<bool,MaxShellHostParents> used{};
   for(std::size_t i=0;i<input.material_count;++i) {
     const auto& m=input.materials[i];
     if(!m.material_id||!m.curve_id||Find(out.materials,i,m.material_id,
@@ -91,7 +122,7 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::CopySections(
 
 ShellPlasticityBindingReport ShellBatchPlasticityBinding::BindParents(const ShellBatchBinding& binding,
     const ShellBatchPlasticityBindingInput& input,Data& out) noexcept {
-  std::array<bool,MaxShellCollectionParents> qseen{},tseen{},materials{},sections{};
+  std::array<bool,MaxShellHostParents> qseen{},tseen{},materials{},sections{};
   for(std::size_t i=0;i<input.parent_count;++i) {
     const auto& p=input.parents[i];
     if(!p.source_parent_id||!p.source_part_id||!p.material_id||!p.section_id||

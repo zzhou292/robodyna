@@ -3,6 +3,7 @@
 #include "qeph/QephStartup.h"
 #include "t3/T3Startup.h"
 #include <cstring>
+#include <new>
 
 namespace tl::fea {
 namespace {
@@ -39,8 +40,8 @@ ShellBindingReport CheckConnectivity(const std::array<std::size_t,N>& indices,
 }
 template<class Input,std::size_t N>
 ShellBindingReport RegisterNodes(const Input& input,const std::array<std::size_t,N>& indices,
-    ShellBindingFamily family,std::array<ShellBindingNode,MaxShellCollectionNodes>& nodes,
-    std::array<bool,MaxShellCollectionNodes>& seen) noexcept {
+    ShellBindingFamily family,ShellBindingNode* nodes,
+    bool* seen,std::size_t node_count) noexcept {
   for(std::size_t i=0;i<N;++i) {
     const auto n=indices[i];
     const std::uint64_t id=input.node_ids[i]; // Widen QEPH, preserve all T3 bits.
@@ -50,7 +51,7 @@ ShellBindingReport RegisterNodes(const Input& input,const std::array<std::size_t
       if(!SamePosition(nodes[n].position,input.position[i]))
         return Error(ShellBindingStatus::PositionMismatch,"Shared coordinate bits differ",family,i,n);
     } else {
-      for(std::size_t other=0;other<MaxShellCollectionNodes;++other)
+      for(std::size_t other=0;other<node_count;++other)
         if(seen[other]&&nodes[other].source_id==id)
           return Error(ShellBindingStatus::IdentityMismatch,"Source ID maps to distinct global nodes",family,i,n);
       nodes[n].source_id=id; nodes[n].position=input.position[i]; seen[n]=true;
@@ -71,7 +72,7 @@ bool AddMass(ShellBindingMass& sum,const ShellBindingMass& term) noexcept {
 }
 template<class Reference,std::size_t N>
 ShellBindingReport Accumulate(const Reference& reference,const std::array<std::size_t,N>& indices,
-    ShellBindingFamily family,std::array<ShellBindingNode,MaxShellCollectionNodes>& nodes,
+    ShellBindingFamily family,ShellBindingNode* nodes,
     ShellBindingMass& totals) noexcept {
   for(std::size_t i=0;i<N;++i) {
     const ShellBindingMass term{reference.nodal_mass[i],reference.isotropic_inertia[i],
@@ -82,8 +83,8 @@ ShellBindingReport Accumulate(const Reference& reference,const std::array<std::s
   }
   return {};
 }
-template<class Input,std::size_t N>
-void AppendInventory(std::array<std::uint64_t,ShellBatchInventory::Capacity>& words,
+template<class Input,std::size_t N,class Words>
+void AppendInventory(Words& words,
     std::size_t& cursor,std::uint64_t family,const Input& input,
     const std::array<std::size_t,N>& indices,std::uint64_t source_id,bool legacy) noexcept {
   words[cursor++]=family; words[cursor++]=N;
@@ -139,27 +140,54 @@ ShellBindingReport ShellBatchBinding::Initialize(const ShellBatchBindingInput& i
     return Error(ShellBindingStatus::InvalidInput,"One Q4 and one T3 require 4 to 7 covered nodes");
   const ShellQephBindingInput q{input.qeph,input.qeph_nodes,0};
   const ShellT3BindingInput t{input.t3,input.t3_nodes,0};
-  return InitializeImpl({&q,&t,1,1,input.node_count},true);
+  return InitializeImpl({&q,&t,1,1,input.node_count},true,
+      {MaxShellCollectionParents,MaxShellCollectionNodes,4*1024*1024},false);
 }
 ShellBindingReport ShellBatchBinding::Initialize(const ShellBatchCollectionInput& input) noexcept {
-  return InitializeImpl(input,false);
+  return InitializeImpl(input,false,
+      {MaxShellCollectionParents,MaxShellCollectionNodes,4*1024*1024},false);
 }
 
-ShellBindingReport ShellBatchBinding::InitializeImpl(const ShellBatchCollectionInput& input,bool legacy) noexcept {
+ShellBindingReport ShellBatchBinding::Initialize(const ShellBatchCollectionInput& input,
+    const ShellHostBindingLimits& limits) noexcept {
+  return InitializeImpl(input,false,limits,true);
+}
+std::size_t ShellBatchBinding::host_bytes() const noexcept {
+  return sizeof(*this)+data_.qeph.backing_bytes()+data_.t3.backing_bytes()+
+    data_.nodes.backing_bytes()+data_.inventory.backing_bytes();
+}
+ShellBindingReport ShellBatchBinding::InitializeImpl(const ShellBatchCollectionInput& input,bool legacy,
+    const ShellHostBindingLimits& limits,bool expanded) noexcept {
   if(prepared_) return Error(ShellBindingStatus::AlreadyInitialized,"Shell binding is immutable after initialization");
   // Check counts before arithmetic or borrowed-range access. No caller storage
   // is read for a null/mismatched/oversized range.
-  if(input.node_count<3||input.node_count>MaxShellCollectionNodes||
-     input.qeph_count>MaxShellCollectionParents||input.t3_count>MaxShellCollectionParents||
+  if(input.node_count<3||input.node_count>MaxShellHostNodes||
+     input.qeph_count>MaxShellHostParents||input.t3_count>MaxShellHostParents||
      input.qeph_count+input.t3_count==0||
-     input.qeph_count+input.t3_count>MaxShellCollectionParents||
+     input.qeph_count+input.t3_count>MaxShellHostParents||
      (input.qeph_count==0)!=(input.qeph==nullptr)||
      (input.t3_count==0)!=(input.t3==nullptr))
     return Error(ShellBindingStatus::InvalidInput,"Invalid bounded typed collection ranges or node count");
+  if(limits.max_parents>MaxShellHostParents||limits.max_nodes>MaxShellHostNodes||
+     input.node_count>limits.max_nodes||input.qeph_count+input.t3_count>limits.max_parents)
+    return Error(expanded?ShellBindingStatus::ResourceLimit:ShellBindingStatus::InvalidInput,
+                 "Collection exceeds host admission limits");
+  const auto words=legacy?ShellBatchInventory::WordCount:4+27*input.qeph_count+22*input.t3_count;
+  const auto bytes=sizeof(*this)+decltype(data_.qeph)::ExtraBytes(input.qeph_count)+
+    decltype(data_.t3)::ExtraBytes(input.t3_count)+decltype(data_.nodes)::ExtraBytes(input.node_count)+
+    decltype(data_.inventory.words_)::ExtraBytes(words);
+  if(bytes>limits.max_owned_bytes)
+    return Error(ShellBindingStatus::ResourceLimit,"Owned host binding exceeds byte admission");
+  try { return Build(input,legacy); }
+  catch(const std::bad_alloc&) {
+    return Error(ShellBindingStatus::ResourceLimit,"Host binding startup allocation failed");
+  }
+}
+ShellBindingReport ShellBatchBinding::Build(const ShellBatchCollectionInput& input,bool legacy) {
   auto at=[](ShellBindingReport report,std::size_t parent) {
     report.parent_index=parent; return report;
   };
-  std::array<std::uint64_t,MaxShellCollectionParents> parent_ids{};
+  std::array<std::uint64_t,MaxShellHostParents> parent_ids{};
   std::size_t id_count=0;
   auto parent_identity=[&](std::uint64_t id,ShellBindingFamily family) {
     if(!legacy) {
@@ -185,6 +213,9 @@ ShellBindingReport ShellBatchBinding::InitializeImpl(const ShellBatchCollectionI
     if(report.status!=ShellBindingStatus::Success) return at(report,i);
   }
   Data next;
+  next.qeph.Resize(input.qeph_count); next.t3.Resize(input.t3_count);
+  next.nodes.Resize(input.node_count);
+  next.inventory.words_.Resize(legacy?ShellBatchInventory::WordCount:4+27*input.qeph_count+22*input.t3_count);
   next.qeph_count=input.qeph_count; next.t3_count=input.t3_count; next.node_count=input.node_count;
   for(std::size_t i=0;i<input.qeph_count;++i) {
     auto& parent=next.qeph[i];
@@ -204,15 +235,15 @@ ShellBindingReport ShellBatchBinding::InitializeImpl(const ShellBatchCollectionI
     }
     parent.nodes=input.t3[i].nodes; parent.source_id=input.t3[i].source_parent_id;
   }
-  std::array<bool,MaxShellCollectionNodes> seen{};
+  std::array<bool,MaxShellHostNodes> seen{};
   for(std::size_t i=0;i<next.qeph_count;++i) {
     const auto& parent=next.qeph[i];
-    const auto report=RegisterNodes(parent.reference.input,parent.nodes,ShellBindingFamily::Qeph,next.nodes,seen);
+    const auto report=RegisterNodes(parent.reference.input,parent.nodes,ShellBindingFamily::Qeph,next.nodes.data(),seen.data(),next.node_count);
     if(report.status!=ShellBindingStatus::Success) return at(report,i);
   }
   for(std::size_t i=0;i<next.t3_count;++i) {
     const auto& parent=next.t3[i];
-    const auto report=RegisterNodes(parent.reference.input,parent.nodes,ShellBindingFamily::T3,next.nodes,seen);
+    const auto report=RegisterNodes(parent.reference.input,parent.nodes,ShellBindingFamily::T3,next.nodes.data(),seen.data(),next.node_count);
     if(report.status!=ShellBindingStatus::Success) return at(report,i);
   }
   for(std::size_t n=0;n<next.node_count;++n) if(!seen[n])
@@ -220,12 +251,12 @@ ShellBindingReport ShellBatchBinding::InitializeImpl(const ShellBatchCollectionI
                  ShellBindingFamily::None,NoShellBindingNode,n);
   for(std::size_t i=0;i<next.qeph_count;++i) {
     const auto& parent=next.qeph[i];
-    const auto report=Accumulate(parent.reference,parent.nodes,ShellBindingFamily::Qeph,next.nodes,next.totals);
+    const auto report=Accumulate(parent.reference,parent.nodes,ShellBindingFamily::Qeph,next.nodes.data(),next.totals);
     if(report.status!=ShellBindingStatus::Success) return at(report,i);
   }
   for(std::size_t i=0;i<next.t3_count;++i) {
     const auto& parent=next.t3[i];
-    const auto report=Accumulate(parent.reference,parent.nodes,ShellBindingFamily::T3,next.nodes,next.totals);
+    const auto report=Accumulate(parent.reference,parent.nodes,ShellBindingFamily::T3,next.nodes.data(),next.totals);
     if(report.status!=ShellBindingStatus::Success) return at(report,i);
   }
   static_assert(ShellBatchInventory::WordCount==2+(2+5*4+4)+(2+5*3+4),"Original pair inventory");

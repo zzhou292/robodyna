@@ -1,0 +1,13 @@
+# Bounded host shell collections
+
+This CPU-only target qualifies immutable startup at 804 Q4 / 111 T3 / 1030 nodes, six materials/sections, two curves and all 915 mappings. The fixture is synthetic and makes no authenticated vehicle dynamics claim. Both pure families also reach the independent 1024-parent bound; a 129-declaration T3 catalog covers every expanded table and family lookup allocation.
+
+Use `binding.Initialize(collection, ShellHostBindingLimits{})` for explicit larger host admission. Default collection initialization still admits only 128 parents/nodes; the original pair remains 4..7 nodes and 49 identity words. Catalog admission follows the complete binding and accepts its own optional limits. The resident shell/contact constants and layouts remain unchanged.
+
+`nodes()` is a read-only contiguous view. Its inline form retains 128 zero-padded entries for existing callers; its expanded form contains the allocated active node extent. Prefer `active_nodes()` to iterate exactly `node_count()` in either form. Reference and parent accessors retain their checked empty-result behavior. Binding and catalog move construction deliberately copies immutable handles, leaving the source usable; assignment remains deleted.
+
+`host_bytes()` counts the inline object and each full backing array, including identity storage, plus a 64-byte reservation for each shared control allocation. A shared inventory is charged in full to each catalog/handle; this is a conservative object admission budget, not process RSS or a claim about allocator bookkeeping. The six-part synthetic geometry reports 884888 bytes; its catalog reports 347776 bytes. Curve coefficients contain no retained borrowed pointers. No per-step allocation or additional mechanics owner is introduced.
+
+Coverage includes complete native mass/J reduction and independent analytic checks, late identity/reference/curve/material failures, byte and count admission before poisoned borrowed pointers, every dynamic allocation failure, copy/move/input destruction, complete inventory/scope comparisons, and allocation-free legacy startup/copies. The fault injector is confined to this host test executable.
+
+The qualification CMake fragment is included by the existing plasticity-binding suite. Initial direct host gate also linked the existing pair, 94-parent collection and plasticity catalog suites into one executable: 37/37 passed. One affinity CPU and 512 MiB virtual-address cap; compile 5.19 seconds / 278612 KiB peak RSS; execution 0.09 seconds / 9540 KiB peak RSS. No CUDA runtime or GPU was used. Root integrated CUDA/Bazel and source output gates remain separate.

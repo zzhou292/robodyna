@@ -4,6 +4,8 @@
 #pragma once
 
 #include "ShellCollectionLimits.h"
+#include "ShellHostBindingLimits.h"
+#include "../../lib_utils/BoundedStartupArray.h"
 #include "qeph/QephData.h"
 #include "t3/T3Data.h"
 #include <array>
@@ -19,7 +21,7 @@ enum class ShellBindingFamily { None,Qeph,T3 };
 enum class ShellBindingStatus {
   Success,AlreadyInitialized,InvalidInput,InvalidConnectivity,
   InvalidQephReference,InvalidT3Reference,IdentityMismatch,PositionMismatch,
-  NonfiniteMass,InvalidParentIdentity,
+  NonfiniteMass,InvalidParentIdentity,ResourceLimit,
 };
 struct ShellBindingReport {
   ShellBindingStatus status=ShellBindingStatus::Success;
@@ -80,8 +82,13 @@ struct ShellBindingNode {
 // these words confer neither nodal-owner nor publication authority.
 class ShellBatchInventory {
  public:
+  ShellBatchInventory()=default;
+  ShellBatchInventory(const ShellBatchInventory&) noexcept=default;
+  ShellBatchInventory(ShellBatchInventory&& other) noexcept
+      :ShellBatchInventory(static_cast<const ShellBatchInventory&>(other)) {}
+  ShellBatchInventory& operator=(const ShellBatchInventory&) noexcept=default;
   static constexpr std::size_t WordCount=49; // Unchanged legacy pair encoding.
-  static constexpr std::size_t Capacity=4+27*MaxShellCollectionParents;
+  static constexpr std::size_t Capacity=4+27*MaxShellCollectionParents; // Inline capacity only.
   class WordView {
    public:
     const std::uint64_t* data() const noexcept { return data_; }
@@ -97,11 +104,14 @@ class ShellBatchInventory {
   };
   WordView words() const noexcept { return {words_.data(),word_count_}; }
   bool operator==(const ShellBatchInventory& other) const noexcept {
-    return word_count_==other.word_count_&&words_==other.words_;
+    if(word_count_!=other.word_count_) return false;
+    for(std::size_t i=0;i<word_count_;++i) if(words_[i]!=other.words_[i]) return false;
+    return true;
   }
+  std::size_t backing_bytes() const noexcept { return words_.backing_bytes(); }
   bool operator!=(const ShellBatchInventory& other) const noexcept { return !(*this==other); }
  private:
-  std::array<std::uint64_t,Capacity> words_{}; // Unused words always zero.
+  tl::util::BoundedStartupArray<std::uint64_t,Capacity> words_; // Unused words always zero.
   std::size_t word_count_=0;
   friend class ShellBatchBinding;
 };
@@ -111,15 +121,24 @@ class ShellBatchInventory {
 // including signed zero. Contributions are reduced QEPH then T3, in input
 // parent/local order, with no normalization or total-inertia recombination.
 // All failures preserve this object's bytes; successful preparation copies all
-// inputs. Fixed storage, no allocation, constraints, clock or dynamics policy.
+// inputs. Default admission uses allocation-free inline storage. Explicit host
+// limits permit startup-only owned allocation; publication/copies allocate nothing.
+// No constraints, clock or dynamics policy are added.
 class ShellBatchBinding {
  public:
   ShellBatchBinding()=default;
-  ShellBatchBinding(const ShellBatchBinding&)=default;
+  ShellBatchBinding(const ShellBatchBinding&) noexcept=default;
+  // Moving an immutable published handle also leaves the source usable.
+  ShellBatchBinding(ShellBatchBinding&& other) noexcept
+      :ShellBatchBinding(static_cast<const ShellBatchBinding&>(other)) {}
   ShellBatchBinding& operator=(const ShellBatchBinding&)=delete;
   // Preserves the exact original pair inventory and 4..7-node input contract.
   ShellBindingReport Initialize(const ShellBatchBindingInput& input) noexcept;
   ShellBindingReport Initialize(const ShellBatchCollectionInput& input) noexcept;
+  ShellBindingReport Initialize(const ShellBatchCollectionInput&,const ShellHostBindingLimits&) noexcept;
+  // Inline object + complete owned backing + reserved shared-control bytes.
+  // Shared backing is charged in full per handle; this is not process RSS.
+  std::size_t host_bytes() const noexcept;
   bool prepared() const noexcept { return prepared_; }
   std::size_t node_count() const noexcept { return data_.node_count; }
   std::size_t qeph_count() const noexcept { return data_.qeph_count; }
@@ -138,7 +157,11 @@ class ShellBatchBinding {
   const t3::ReferenceData& t3_reference() const noexcept;
   const std::array<std::size_t,4>& qeph_nodes() const noexcept;
   const std::array<std::size_t,3>& t3_nodes() const noexcept;
-  const std::array<ShellBindingNode,MaxShellCollectionNodes>& nodes() const noexcept { return data_.nodes; }
+  using NodeView=tl::util::ConstView<ShellBindingNode>;
+  // Inline storage retains 128 zero-padded entries for compatibility. Expanded
+  // storage exposes its active extent; iterate active_nodes() for either form.
+  NodeView nodes() const noexcept { return {data_.nodes.data(),data_.nodes.size()}; }
+  NodeView active_nodes() const noexcept { return {data_.nodes.data(),node_count()}; }
   const ShellBindingMass& totals() const noexcept { return data_.totals; }
   const ShellBatchInventory& inventory() const noexcept { return data_.inventory; }
  private:
@@ -148,14 +171,16 @@ class ShellBatchBinding {
     std::uint64_t source_id=0;
   };
   struct Data {
-    std::array<Parent<qeph::ReferenceData,4>,MaxShellCollectionParents> qeph{};
-    std::array<Parent<t3::ReferenceData,3>,MaxShellCollectionParents> t3{};
-    std::array<ShellBindingNode,MaxShellCollectionNodes> nodes{};
+    tl::util::BoundedStartupArray<Parent<qeph::ReferenceData,4>,MaxShellCollectionParents> qeph;
+    tl::util::BoundedStartupArray<Parent<t3::ReferenceData,3>,MaxShellCollectionParents> t3;
+    tl::util::BoundedStartupArray<ShellBindingNode,MaxShellCollectionNodes> nodes;
     ShellBindingMass totals;
     ShellBatchInventory inventory;
     std::size_t qeph_count=0,t3_count=0,node_count=0;
   } data_;
-  ShellBindingReport InitializeImpl(const ShellBatchCollectionInput&,bool legacy) noexcept;
+  ShellBindingReport InitializeImpl(const ShellBatchCollectionInput&,bool legacy,
+      const ShellHostBindingLimits&,bool expanded) noexcept;
+  ShellBindingReport Build(const ShellBatchCollectionInput&,bool legacy);
   bool prepared_=false;
 };
 } // namespace tl::fea

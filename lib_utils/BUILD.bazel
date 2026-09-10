@@ -96,3 +96,8 @@ cc_library(
     copts = ["--std=c++17"],
     deps = ["//lib_src/collision:collision_system_interface"],
 )
+
+cc_library(
+    name = "bounded_startup_array",
+    hdrs = ["BoundedStartupArray.h"],
+)

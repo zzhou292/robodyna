@@ -17,9 +17,9 @@ cc_library(
 cc_library(
     name = "shell_batch_binding",
     srcs = ["ShellBatchBinding.cpp"],
-    hdrs = ["ShellBatchBinding.h"],
+    hdrs = ["ShellBatchBinding.h", "ShellHostBindingLimits.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
-    deps = [":shell_collection_limits", "//lib_src/elements/qeph:startup", "//lib_src/elements/t3:startup"],
+    deps = [":shell_collection_limits", "//lib_utils:bounded_startup_array", "//lib_src/elements/qeph:startup", "//lib_src/elements/t3:startup"],
 )
 
 cc_library(
