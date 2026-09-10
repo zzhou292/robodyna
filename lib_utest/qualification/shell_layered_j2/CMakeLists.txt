@@ -25,3 +25,5 @@ if(TL_SHELL_LAYERED_J2_ENABLE_CUDA)
   add_test(NAME shell_layered_j2_cuda_check COMMAND shell_layered_j2_cuda_check)
   set_tests_properties(shell_layered_j2_cuda_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)
 endif()
+
+include("${CMAKE_CURRENT_SOURCE_DIR}/LayeredNativeRecurrence.cmake")

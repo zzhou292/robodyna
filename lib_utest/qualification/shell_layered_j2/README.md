@@ -126,7 +126,13 @@ layered-element recurrence test.
 
 The integrated pre-covariance build passed all 36 CTest groups in
 [plastic-delivery-tests-1.log](../../../../crash-work/reports/plastic-delivery-tests-1.log).
-The new covariance tests require a subsequent guarded run. This directory can
-also be configured directly; `TL_SHELL_LAYERED_J2_ENABLE_CUDA=OFF` selects only
+Both host covariance functions also pass in the bounded native recurrence
+build described below. This directory can be configured directly; `TL_SHELL_LAYERED_J2_ENABLE_CUDA=OFF` selects only
 host checks. The workstation's serialized build/run
 owner performs execution and records evidence.
+
+The optional [independent native recurrence](native_recurrence/README.md) now
+composes complete native QEPH/T3 leaves with NIP3 physical LAW44 thickness,
+stabilization and signed work. Its prescribed yielded rotation/unload gate
+carries separate native histories; the earlier constant-transform covariance
+checks remain a distinct qualification.
