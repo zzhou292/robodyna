@@ -1,6 +1,7 @@
 #pragma once
 #include "ShellBatchBinding.h"
 #include "ShellBatchPlasticity.h"
+#include "ShellPlasticityCatalogLimits.h"
 
 namespace tl::fea {
 inline constexpr std::size_t MaxShellPlasticityCurvePoints=1024;
@@ -64,8 +65,13 @@ class ShellBatchPlasticityBinding {
   ShellPlasticityBindingReport Initialize(const ShellBatchBinding&,const ShellBatchPlasticityBindingInput&) noexcept;
   ShellPlasticityBindingReport Initialize(const ShellBatchBinding&,const ShellBatchPlasticityBindingInput&,
       const ShellHostBindingLimits&) noexcept;
+  // Explicit host-only vehicle admission. Legacy Initialize overloads retain
+  // their original bounds, including rejection of ShellHostBindingLimits::Vehicle().
+  ShellPlasticityBindingReport InitializeCatalog(const ShellBatchBinding&,
+      const ShellBatchPlasticityBindingInput&,const ShellPlasticityCatalogLimits&) noexcept;
   // Includes complete inventory backing, even when shared with the binding.
   std::size_t host_bytes() const noexcept;
+  std::size_t startup_scratch_bytes() const noexcept;
   bool prepared() const noexcept { return prepared_; }
   bool Matches(const ShellBatchBinding&) const noexcept;
   bool SameScope(const ShellBatchPlasticityBinding&) const noexcept;
@@ -106,7 +112,7 @@ class ShellBatchPlasticityBinding {
   static ShellPlasticityBindingReport CopyCurves(const ShellBatchPlasticityBindingInput&,Data&) noexcept;
   static ShellPlasticityBindingReport PrepareMaterials(const ShellBatchPlasticityBindingInput&,Data&) noexcept;
   static ShellPlasticityBindingReport CopySections(const ShellBatchPlasticityBindingInput&,Data&) noexcept;
-  static ShellPlasticityBindingReport BindParents(const ShellBatchBinding&,const ShellBatchPlasticityBindingInput&,Data&) noexcept;
+  static ShellPlasticityBindingReport BindParents(const ShellBatchBinding&,const ShellBatchPlasticityBindingInput&,Data&);
   friend class shell_batch_plasticity_detail::HostStorage;
 };
 static_assert(sizeof(ShellBatchPlasticityBinding)<128*1024,"Bounded host-only material catalog");

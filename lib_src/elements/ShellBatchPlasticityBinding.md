@@ -10,7 +10,9 @@ slabs, accepted/trial selection and the nodal publication boundary are unchanged
 
 1. Prepare the native `ShellBatchBinding` from explicit QEPH/T3 collections.
 2. Supply curve declarations (source curve ID and samples), material declarations
-   (MID, curve ID, E, nu, density and optional native rate settings), and section
+   (MID, curve ID, E, nu, density and optional native rate settings), or the explicit
+   analytic LAW44 SIGY/ETAN declaration with no curve (see
+   [Law44AnalyticHardening](../materials/Law44AnalyticHardening.md)), and section
    declarations (SECID, homogeneous parent thickness and NIP3).
 3. Supply every parent in the application's source order with its exact source
    EID, PID, MID, SECID, native family and family index. The catalog retains this
@@ -45,12 +47,46 @@ family's materials alone. Legacy single-material scope comparisons retain their
 existing rules; legacy and collection declarations cannot be mixed in one joined
 publication.
 
-This change admits at most the existing 128 native parents and 1024 curve points
-total. It does not increase shell/contact capacity. Device allocation count and
-size remain exactly those of the existing plastic path: one legacy family slab
-and one optional plastic slab. Curve copies and host catalog allocations happen
-only at initialization. Every step uses the existing parameter array and common
-accepted/trial index, without allocation or an additional clock.
+Legacy `Initialize` admits 1024 parents/2048 nodes with the existing host limits.
+Passing `ShellHostBindingLimits::Vehicle()` to that API still rejects before
+borrowed ranges or fixed validation storage are accessed. Vehicle catalog setup
+must explicitly call:
+
+```cpp
+catalog.InitializeCatalog(binding, input, ShellPlasticityCatalogLimits::Vehicle());
+```
+
+The separate host-only limits admit up to 524288 parents and nodes, with 1024
+materials and sections and an unchanged **1024-point total curve pool**. The
+vehicle profile supplies 256 MiB owned and 32 MiB transient startup payload
+budgets. These byte values are profile defaults, not hard ceilings; legacy
+`max_owned_bytes` semantics stay unchanged. The caller may choose tighter budgets;
+counts and required bytes are
+validated before declarations are read or storage is allocated. The default
+named limits retain 1024/2048 and 4 MiB owned admission. None of these constants
+or APIs enlarge resident shell/contact arenas or admit unsupported mechanics.
+
+`host_bytes()` includes every retained array, the complete authenticated inventory
+backing, and inline storage. `startup_scratch_bytes()` additionally reports the
+transient inline staging object and source-identity/seen backing needed during
+initialization; retained backing is charged once to the owned budget. Shared
+array control payload is reserved by the existing `BoundedStartupArray` contract;
+allocator metadata, sort stack and whole-process RSS remain external resources.
+Copies/moves allocate nothing and continue sharing immutable dynamic arrays;
+returned table curves rebind to each object's inline pool, and analytic parameters
+keep null curve pointers.
+
+The temporary PID index maps each PID to its first input occurrence; parent
+validation still runs in original source order. A conflict compares against that
+previously accepted first assignment. Material/section indexes map IDs to original
+declaration indexes. Thus parent startup is O(P log P + P log D), instead of the
+old O(P² + P D), with original first-failure order and exact native coefficient
+bit checks. Definition checks retain their bounded D≤1024 loops. Legacy-size
+scratch remains inline, preserving allocation-free startup for ≤128 parents.
+
+Device histories, accepted/trial publication, the step clock and resident material
+updates are unchanged. This catalog capacity is a host preparation capability,
+not evidence that a complete vehicle can be advanced or contacted on the GPU.
 
 ## Qualification
 
@@ -67,3 +103,13 @@ It checks full-catalog mismatch rejection, legacy/catalog mixing rejection and
 unchanged allocation accounting. These are prescribed-history integration tests;
 the separate native point/section/element qualification and physical dynamics
 gates remain responsible for numerical and response accuracy.
+
+`vehicle_plasticity_catalog_small` covers explicit caps before borrowed reads,
+first source-order failure, exact native bits, late failure/retry, every transient
+and retained allocation failure, 1024 definitions, mixed and all-analytic ownership,
+and zero curve pools. `vehicle_plasticity_catalog_source_size` uses synthetic
+native geometry at 349645 parents/359785 nodes with 875 definitions, inspects every
+parent mapping and parameter, and rejects/retries a last-parent error. Parent and
+node counts come from the selected no-tire source inventory; the 875 synthetic
+definitions exercise declaration capacity. The fixture is **not** an original
+Yaris material/model import or a vehicle mechanics qualification.

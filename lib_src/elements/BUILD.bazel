@@ -21,11 +21,23 @@ cc_library(
 )
 
 cc_library(
+    name = "shell_binding_identity_index",
+    visibility = ["//visibility:private"],
+    hdrs = ["ShellBindingIdentityIndex.h"],
+    deps = [":shell_host_binding_limits", "//lib_utils:bounded_startup_array"],
+)
+
+cc_library(
+    name = "shell_host_binding_limits",
+    hdrs = ["ShellHostBindingLimits.h"],
+)
+
+cc_library(
     name = "shell_batch_binding",
-    srcs = ["ShellBatchBinding.cpp", "ShellBindingIdentityIndex.h"],
-    hdrs = ["ShellBatchBinding.h", "ShellHostBindingLimits.h"],
+    srcs = ["ShellBatchBinding.cpp"],
+    hdrs = ["ShellBatchBinding.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
-    deps = [":shell_collection_limits", "//lib_utils:bounded_startup_array", "//lib_src/elements/qeph:startup", "//lib_src/elements/t3:startup"],
+    deps = [":shell_collection_limits", ":shell_host_binding_limits", ":shell_binding_identity_index", "//lib_utils:bounded_startup_array", "//lib_src/elements/qeph:startup", "//lib_src/elements/t3:startup"],
 )
 
 cc_library(
@@ -42,10 +54,10 @@ cc_library(
 
 cc_library(
     name = "shell_batch_plasticity_binding",
-    srcs = ["ShellBatchPlasticityBinding.cpp", "ShellBatchPlasticityBindingSetup.cpp"],
-    hdrs = ["ShellBatchPlasticityBinding.h", "ShellBatchPlasticityBindingInternal.h"],
+    srcs = ["ShellBatchPlasticityBinding.cpp", "ShellBatchPlasticityBindingSetup.cpp", "ShellBatchPlasticityBindingParents.cpp", "ShellPlasticityCatalogScratch.h"],
+    hdrs = ["ShellBatchPlasticityBinding.h", "ShellBatchPlasticityBindingInternal.h", "ShellPlasticityCatalogLimits.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
-    deps = [":shell_batch_binding", ":shell_batch_plasticity"],
+    deps = [":shell_batch_binding", ":shell_batch_plasticity", ":shell_binding_identity_index", "//lib_utils:bounded_startup_array"],
 )
 
 cuda_library(

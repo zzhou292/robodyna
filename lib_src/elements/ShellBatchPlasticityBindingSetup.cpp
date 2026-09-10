@@ -1,4 +1,5 @@
 #include "ShellBatchPlasticityBindingInternal.h"
+#include "ShellPlasticityCatalogScratch.h"
 #include <new>
 
 namespace tl::fea {
@@ -13,6 +14,9 @@ std::size_t ShellBatchPlasticityBinding::host_bytes() const noexcept {
     data_.materials.backing_bytes()+data_.sections.backing_bytes()+data_.parents.backing_bytes()+
     data_.qeph_parent.backing_bytes()+data_.t3_parent.backing_bytes();
 }
+std::size_t ShellBatchPlasticityBinding::startup_scratch_bytes() const noexcept {
+  return prepared_?sizeof(Data)+CatalogScratch::Bytes(data_.parent_count,data_.qeph_count,data_.t3_count):0;
+}
 ShellPlasticityBindingReport ShellBatchPlasticityBinding::Initialize(
     const ShellBatchBinding& binding,const ShellBatchPlasticityBindingInput& input,
     const ShellHostBindingLimits& limits) noexcept {
@@ -25,6 +29,26 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::Initialize(
       return Error(Status::ResourceLimit,"Plasticity catalog exceeds host parent admission");
   if(limits.max_parents>MaxShellHostParents||limits.max_nodes>MaxShellHostNodes||binding.node_count()>limits.max_nodes)
     return Error(Status::ResourceLimit,"Plasticity catalog exceeds host node admission");
+  // This legacy overload historically ignored the newer binding scratch cap.
+  // Preserve that behavior; explicit catalog scratch admission belongs to the
+  // named API. Counts/limits above reject vehicle bindings before fixed scratch.
+  return InitializeCatalog(binding,input,{limits.max_parents,limits.max_nodes,
+    limits.max_parents,limits.max_owned_bytes,MaxVehiclePlasticityCatalogScratchBytes});
+}
+ShellPlasticityBindingReport ShellBatchPlasticityBinding::InitializeCatalog(
+    const ShellBatchBinding& binding,const ShellBatchPlasticityBindingInput& input,
+    const ShellPlasticityCatalogLimits& limits) noexcept {
+  if(prepared_) return Error(Status::AlreadyInitialized,"Plasticity binding is immutable after preparation");
+  if(!binding.prepared()||(input.curve_count&&!input.curves)||!input.materials||!input.sections||!input.parents||
+     !input.material_count||!input.section_count||!input.parent_count)
+    return Error(Status::InvalidInput,"Complete prepared binding and explicit nonempty catalog ranges are required");
+  if(limits.max_parents>MaxVehiclePlasticityCatalogParents||limits.max_nodes>MaxVehiclePlasticityCatalogNodes||
+     limits.max_definitions>MaxPlasticityCatalogDefinitions||
+     input.parent_count>limits.max_parents||binding.node_count()>limits.max_nodes)
+    return Error(Status::ResourceLimit,"Plasticity catalog exceeds explicit host admission");
+  for(auto count:{input.curve_count,input.material_count,input.section_count})
+    if(count>limits.max_definitions)
+      return Error(Status::ResourceLimit,"Plasticity catalog exceeds definition admission");
   if(input.parent_count!=binding.qeph_count()+binding.t3_count())
     return Error(Status::InvalidParent,"Plasticity mapping must cover every native collection parent");
   const auto bytes=sizeof(*this)+binding.inventory().backing_bytes()+
@@ -36,6 +60,11 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::Initialize(
     decltype(data_.t3_parent)::ExtraBytes(binding.t3_count());
   if(bytes>limits.max_owned_bytes)
     return Error(Status::ResourceLimit,"Owned host plasticity catalog exceeds byte admission");
+  // Bounds above limit every multiplication/addition to <256 MiB. The staging
+  // object and private temporary indexes are separate from retained backing.
+  const auto scratch=sizeof(Data)+CatalogScratch::Bytes(input.parent_count,binding.qeph_count(),binding.t3_count());
+  if(scratch>limits.max_startup_scratch_bytes)
+    return Error(Status::ResourceLimit,"Plasticity catalog startup scratch exceeds byte admission");
   // All range counts and the TOTAL pool size are checked before any curve copy.
   std::size_t points=0;
   for(std::size_t i=0;i<input.curve_count;++i) {
@@ -85,7 +114,7 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::CopyCurves(
 
 ShellPlasticityBindingReport ShellBatchPlasticityBinding::PrepareMaterials(
     const ShellBatchPlasticityBindingInput& input,Data& out) noexcept {
-  std::array<bool,MaxShellHostParents> used{};
+  std::array<bool,MaxPlasticityCatalogDefinitions> used{};
   for(std::size_t i=0;i<input.material_count;++i) {
     const auto& m=input.materials[i];
     if(!m.material_id||Find(out.materials,i,m.material_id,
@@ -130,42 +159,4 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::CopySections(
   out.section_count=input.section_count; return {};
 }
 
-ShellPlasticityBindingReport ShellBatchPlasticityBinding::BindParents(const ShellBatchBinding& binding,
-    const ShellBatchPlasticityBindingInput& input,Data& out) noexcept {
-  std::array<bool,MaxShellHostParents> qseen{},tseen{},materials{},sections{};
-  for(std::size_t i=0;i<input.parent_count;++i) {
-    const auto& p=input.parents[i];
-    if(!p.source_parent_id||!p.source_part_id||!p.material_id||!p.section_id||
-       (p.family!=ShellBindingFamily::Qeph&&p.family!=ShellBindingFamily::T3))
-      return Error(Status::InvalidParent,"Explicit source parent/part/material/section IDs and family are required",i,p.family);
-    const bool q=p.family==ShellBindingFamily::Qeph;
-    const auto count=q?binding.qeph_count():binding.t3_count();
-    auto& seen=q?qseen:tseen;
-    if(p.family_index>=count||seen[p.family_index])
-      return Error(Status::InvalidParent,"Repeated or out-of-range native family parent index",i,p.family);
-    const auto source_id=q?binding.qeph_source_id(p.family_index):binding.t3_source_id(p.family_index);
-    if(p.source_parent_id!=source_id)
-      return Error(Status::IdentityMismatch,"Source parent ID differs from the exact native family order",i,p.family);
-    for(std::size_t prior=0;prior<i;++prior) {
-      const auto& old=out.parents[prior].declaration;
-      if(old.source_part_id==p.source_part_id&&(old.material_id!=p.material_id||old.section_id!=p.section_id))
-        return Error(Status::IdentityMismatch,"One source part cannot have conflicting material/section assignments",i,p.family);
-    }
-    const auto mi=Find(out.materials,out.material_count,p.material_id,[](const auto& x){return x.declaration.material_id;});
-    const auto si=Find(out.sections,out.section_count,p.section_id,[](const auto& x){return x.section_id;});
-    if(mi==NoShellBindingNode||si==NoShellBindingNode)
-      return Error(Status::InvalidParent,"Parent references an absent material or section",i,p.family);
-    const auto& m=out.materials[mi].declaration; const auto& s=out.sections[si];
-    const bool matches=q? shell_plasticity_binding_detail::Matches(binding.qeph_reference(p.family_index).input,m,s):
-      shell_plasticity_binding_detail::Matches(binding.t3_reference(p.family_index).input,m,s);
-    if(!matches) return Error(Status::IdentityMismatch,"Parent material/thickness bits differ from its native reference",i,p.family);
-    out.parents[i]={p,mi,si}; (q?out.qeph_parent:out.t3_parent)[p.family_index]=i;
-    seen[p.family_index]=true; materials[mi]=true; sections[si]=true;
-  }
-  for(std::size_t i=0;i<out.qeph_count;++i) if(!qseen[i]) return Error(Status::InvalidParent,"Missing QEPH parent",i,ShellBindingFamily::Qeph);
-  for(std::size_t i=0;i<out.t3_count;++i) if(!tseen[i]) return Error(Status::InvalidParent,"Missing T3 parent",i,ShellBindingFamily::T3);
-  for(std::size_t i=0;i<out.material_count;++i) if(!materials[i]) return Error(Status::UnreferencedDeclaration,"Unreferenced material",i);
-  for(std::size_t i=0;i<out.section_count;++i) if(!sections[i]) return Error(Status::UnreferencedDeclaration,"Unreferenced section",i);
-  out.parent_count=input.parent_count; return {};
-}
 } // namespace tl::fea

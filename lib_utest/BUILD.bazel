@@ -504,3 +504,31 @@ cc_library(
         "@googletest//:gtest_main",
     ],
 )
+
+# Explicit host-only vehicle catalog qualification; no resident CUDA dependency.
+cc_test(
+    name = "vehicle_plasticity_catalog_small",
+    srcs = [
+        "qualification/vehicle_plasticity_catalog/VehicleCatalogAdmissionTest.cpp",
+        "qualification/vehicle_plasticity_catalog/VehicleCatalogFixture.h",
+        "qualification/vehicle_shell_host/VehicleShellFixture.h",
+        "qualification/host_shell_collection/AllocationFailure.cpp",
+        "qualification/host_shell_collection/AllocationFailure.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":shell_batch_binding_test_fixture", "//lib_src/elements:shell_batch_plasticity_binding", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "vehicle_plasticity_catalog_source_size",
+    size = "large",
+    tags = ["exclusive", "manual"],
+    srcs = [
+        "qualification/vehicle_plasticity_catalog/VehicleCatalogSourceSizeTest.cpp",
+        "qualification/vehicle_plasticity_catalog/VehicleCatalogFixture.h",
+        "qualification/vehicle_shell_host/VehicleShellFixture.h",
+        "qualification/host_shell_collection/AllocationFailure.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":shell_batch_binding_test_fixture", "//lib_src/elements:shell_batch_plasticity_binding", "@googletest//:gtest_main"],
+)
