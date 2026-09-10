@@ -59,4 +59,11 @@ Bazel owns production target `//lib_src/constraints:nodal_rigid_group` and host
 test target `//lib_utest/qualification/nodal_rigid_group:nodal_rigid_group_check`.
 Native Fortran and optional CUDA packet checks use the standalone CMake target.
 Use the workspace resource guard for all actual builds and numerical jobs.
-This implementation handoff has not run a compiler or GPU job.
+All 21 functions pass across the host, native and CUDA test targets on the
+RTX 5090 (2026-09-10). The owning production and host-test Bazel targets build.
+Workspace evidence: `crash-work/reports/nodal-rigid-startup-{configure,build,tests}-1`
+and `nodal-rigid-startup-owning-bazel-1`. The independent review caught an omitted
+native x-force assignment in the initial oracle extraction; the qualified
+fragment includes lines 122–130, with the original source pin unchanged.
+These gates qualify startup/stateless math only; constrained recurrence and
+its common nodal publication remain separate integration work.
