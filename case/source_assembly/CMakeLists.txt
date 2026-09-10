@@ -20,3 +20,4 @@ target_compile_options(robo_dyna_source_assembly_bindings_check PRIVATE -fno-fas
 add_test(NAME source_assembly_bindings COMMAND robo_dyna_source_assembly_bindings_check)
 set_tests_properties(source_assembly_bindings PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120
   ENVIRONMENT "ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY=${ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY}")
+include("${CMAKE_CURRENT_LIST_DIR}/SourceAssemblyWallChecks.cmake")

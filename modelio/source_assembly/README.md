@@ -62,9 +62,9 @@ from adapter may only be destroyed; source `data()` rejects a moved-from handle.
 
 Owning targets are `robo_dyna_source_assembly`,
 `robo_dyna_source_assembly_shell_input` and
-`robo_dyna_source_assembly_material_input`. They share ArtifactIO directly;
-the standalone configuration compiles that existing source if its owning
-target is absent. The opt-in test target is
+`robo_dyna_source_assembly_material_input`. They share the same `output/ArtifactIO.cmake` owning target in production
+and standalone builds; there is no separately defined reader copy of the
+artifact library. The opt-in test target is
 `robo_dyna_source_assembly_input_check` with 14 host test cases. The root option
 is `ROBO_DYNA_ENABLE_SOURCE_ASSEMBLY_INPUT_CHECKS=ON`; standalone configuration:
 

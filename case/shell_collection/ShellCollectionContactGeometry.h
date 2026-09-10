@@ -1,6 +1,7 @@
 #pragma once
 #include "lib_src/elements/ShellBatchBinding.h"
 #include "lib_src/collision/NodalWallContact.h"
+#include "lib_src/collision/PlanarWallBox.h"
 #include <array>
 #include <memory>
 
@@ -41,6 +42,12 @@ class ShellCollectionContactGeometry {
     const tlfea::contact::NodalWallWeights* weights() const noexcept;
     tlfea::contact::VectorView positions() const noexcept;
     std::array<tlfea::contact::Vec3,2> reference_bounds() const noexcept;
+    // The declared world box must contain the full reference collection. Both
+    // X endpoints are projected onto the actual finite mesh plane; its exposed
+    // edges and holes remain checked by the existing TL coverage operation.
+    tlfea::contact::PlanarContactReport CheckWallCoverage(const tlfea::contact::PlanarWallGeometry&,
+        tlfea::contact::PlanarWallBox motion,double exposed_clearance,std::uint64_t binding_id,
+        tlfea::contact::PlanarWallBoxCoverage*) const;
     const ShellContactParent* parent_from_weight(std::size_t) const noexcept;
     std::size_t startup_payload_bytes() const noexcept;
   private:

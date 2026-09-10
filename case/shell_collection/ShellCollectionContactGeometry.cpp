@@ -90,6 +90,19 @@ sc::VectorView ShellCollectionContactGeometry::positions() const noexcept {
 std::array<sc::Vec3,2> ShellCollectionContactGeometry::reference_bounds() const noexcept {
     return impl_?impl_->bounds:std::array<sc::Vec3,2>{};
 }
+sc::PlanarContactReport ShellCollectionContactGeometry::CheckWallCoverage(const sc::PlanarWallGeometry& wall,
+    sc::PlanarWallBox motion,double clearance,std::uint64_t id,sc::PlanarWallBoxCoverage* output) const {
+    using Status=sc::PlanarContactStatus;
+    if(!impl_||!wall.initialized())return {Status::NotInitialized,"Shell collection or finite wall is not prepared"};
+    const auto lo=motion.minimum,hi=motion.maximum;
+    if(!output||!id||!sc::IsFinite(lo)||!sc::IsFinite(hi)||
+       lo.x>impl_->bounds[0].x||lo.y>impl_->bounds[0].y||lo.z>impl_->bounds[0].z||
+       hi.x<impl_->bounds[1].x||hi.y<impl_->bounds[1].y||hi.z<impl_->bounds[1].z)
+        return {Status::InvalidInput,"Motion envelope must contain the complete native shell collection"};
+    const double x=wall.wall_x();
+    return sc::CheckPlanarWallBox(wall,{{x,lo.y,lo.z},{x,hi.y,hi.z}},clearance,id,
+        sc::PlanarWallBoxMode::ConservativeExpansion,output);
+}
 const ShellContactParent* ShellCollectionContactGeometry::parent_from_weight(std::size_t i) const noexcept {
     return impl_&&i<impl_->parents.size()?&impl_->parents[i]:nullptr;
 }

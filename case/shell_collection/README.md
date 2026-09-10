@@ -34,3 +34,14 @@ The actual 915-parent/1,030-node geometry has total reference contact area
 startup payload budget is 6,212,240 bytes. Wall placement must use these complete
 assembly bounds. This host geometry gate does not initialize a CUDA contact
 owner or establish finite-wall coverage for a future trajectory.
+
+`CheckWallCoverage` requires a motion box containing the complete collection
+and projects both X endpoints onto the actual mesh plane before reusing TL
+finite-edge/hole coverage. The actual original wall (62 vertices,100 triangles)
+passes coverage with a20mm leading gap and10mm projected margin for this
+assembly. Its represented X is-0.15174557m; source Y/Z, connectivity and IDs
+remain unchanged. Invalid outside/incomplete envelopes preserve the prior
+certificate. `source-assembly-wall-{configure,build,tests}-1` passes both CTest
+groups (nine functions); this certifies the declared envelope, not future
+trajectory containment. ArtifactIO now has one shared owning CMake definition
+used by the reader, wall adapters and production output.

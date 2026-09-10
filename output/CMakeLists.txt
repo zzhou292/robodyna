@@ -1,9 +1,4 @@
-find_package(OpenSSL REQUIRED COMPONENTS Crypto)
-add_library(robo_dyna_artifact_io STATIC ArtifactIO.cpp ArtifactInventory.cpp MeshArchive.cpp SurfaceBindingFields.cpp
-  CsvLedgerSegments.cpp CsvLedgerWriter.cpp)
-target_link_libraries(robo_dyna_artifact_io PUBLIC Chrono::Chrono_core PRIVATE OpenSSL::Crypto)
-target_include_directories(robo_dyna_artifact_io PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
-target_compile_features(robo_dyna_artifact_io PUBLIC cxx_std_17)
+include("${CMAKE_CURRENT_LIST_DIR}/ArtifactIO.cmake")
 
 include("${CMAKE_CURRENT_LIST_DIR}/../case/CanonicalWall.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../case/CanonicalWallArtifacts.cmake")
