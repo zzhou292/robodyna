@@ -92,7 +92,7 @@ class ReplayOverlay : public chrono::vsg3d::ChGuiComponentVSG {
                            ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
         if (ImGui::Begin("robo-dyna | accepted replay", nullptr, flags)) {
             ImGui::TextUnformatted(info_.kind == crash::output::ReplayKind::SourceAssemblyWall
-                ? "Yaris six-part component | mesh-wall impact | physical scale"
+                ? "Yaris component assembly | mesh-wall impact | physical scale"
                 : info_.kind == crash::output::ReplayKind::SourcePartWall
                 ? "Yaris part 2000157 | mesh-wall impact | physical scale"
                 : info_.kind == crash::output::ReplayKind::SourcePartElastic
