@@ -1,6 +1,7 @@
 # One mixed participant gate in the existing T3 qualification project.
 add_executable(mixed_shell_batch_check
-  MixedShellFixture.cu MixedShellLedger.cu MixedShellStateTest.cu MixedShellFailureTest.cu)
+  MixedShellFixture.cu MixedShellLedger.cu MixedShellStateTest.cu MixedShellFailureTest.cu
+  MixedShellFeedbackFixture.cu MixedShellFeedbackTest.cu)
 target_link_libraries(mixed_shell_batch_check PRIVATE
   tl_shell_batch_publication qeph_q1_native t3_r3_native CUDA::cudart GTest::gtest_main)
 set_target_properties(mixed_shell_batch_check PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)

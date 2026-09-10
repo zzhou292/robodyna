@@ -27,11 +27,15 @@ struct ShellPublicationReport {
   NodalStatus nodal_status=NodalStatus::Ok;
 };
 
-// Closed two-family publication scope, initially PrescribedFields only. Both
+// Closed two-family publication scope: matching PrescribedFields or
+// CoupledForces usage. Coupled candidates require BOTH accepted caches to have
+// contributed to this same owner's attempt. Both
 // batches must be initialized with the SAME complete immutable binding and
 // owner/configuration/qualification/usage, then perform initial rest/mass
 // binding. The caller may evaluate QEPH and T3 in either order from the same
 // authentic prepared token. Neither joined batch can publish by itself.
+// Startup remains reference-at-rest. This transaction API does not select a
+// stable timestep or qualify a general mixed-shell/contact trajectory.
 //
 // This object borrows the batches; both batches must outlive the
 // coordinator (including destruction), and the owner must outlive its calls. It owns one bounded reusable kinetic scratch allocation and diagnostic

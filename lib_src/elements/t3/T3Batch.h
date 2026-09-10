@@ -77,7 +77,8 @@ class T3Batch {
   T3Batch& operator=(const T3Batch&)=delete;
   BatchReport Initialize(const T3BatchConfig&,const T3BatchElement*);
   // Immutable joined scope; exactly one typed cell from the complete union.
-  // First gate permits PrescribedFields only. Standalone Commit rejects it.
+  // Matching prescribed or coupled usage is enforced by the sole joined
+  // coordinator. Startup remains reference-at-rest; standalone Commit rejects it.
   BatchReport InitializeJoined(const T3BatchConfig&,const ShellBatchBinding&);
   // Raw supplied-view validation/assembly. Initial numerical binding retains
   // its source identity; actual owner association is checked separately before

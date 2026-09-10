@@ -35,9 +35,8 @@ BatchReport BuildModel(const QephBatchConfig& c,const QephBatchElement* input,Mo
   if(!c.element_count||c.element_count>MaxBatchElements||!o.node_count||o.node_count>MaxBatchNodes||
      !c.max_device_bytes||c.max_device_bytes>MaxBatchDeviceBytes||sizeof(Storage)>c.max_device_bytes)
     return {BatchStatus::ResourceLimit,"QEPH element/node/allocation capacity exceeded"};
-  if(joined&&(!joined->prepared()||c.element_count!=1||o.node_count!=joined->node_count()||
-     c.usage!=BatchUsage::PrescribedFields))
-    return {BatchStatus::InvalidInput,"Joined scope requires one prescribed element from the complete union"};
+  if(joined&&(!joined->prepared()||c.element_count!=1||o.node_count!=joined->node_count()))
+    return {BatchStatus::InvalidInput,"Joined scope requires one element from the complete union"};
   model.config=c;
   bool seen[MaxBatchNodes]{}; std::uint32_t ids[MaxBatchNodes]{};
   for(unsigned e=0;e<c.element_count;++e) {

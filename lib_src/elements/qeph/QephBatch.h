@@ -92,7 +92,8 @@ class QephBatch {
   QephBatch& operator=(const QephBatch&)=delete;
   BatchReport Initialize(const QephBatchConfig&,const QephBatchElement*);
   // Immutable joined scope; exactly one typed cell from the complete union.
-  // First gate permits PrescribedFields only. Standalone Commit rejects it.
+  // Matching prescribed or coupled usage is enforced by the sole joined
+  // coordinator. Startup remains reference-at-rest; standalone Commit rejects it.
   BatchReport InitializeJoined(const QephBatchConfig&,const ShellBatchBinding&);
   // Raw supplied-view validation/assembly for rest or an already-bound batch.
   // First uniform-translation binding requires the live-owner overload below.

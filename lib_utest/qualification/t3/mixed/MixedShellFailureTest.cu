@@ -37,7 +37,7 @@ TEST_F(MixedShellCuda,JoinedStartupRequiresCompleteUnionMassRestAndCommonImmutab
     q::QephBatch qbad; t::T3Batch tbad; auto qc=QConfig(base); auto tc=TConfig(base);
     if(kind==0) { qc.element_count=2; tc.element_count=2; }
     if(kind==1) { qc.owner.node_count=4; tc.owner.node_count=4; }
-    if(kind==2) { qc.usage=q::BatchUsage::CoupledForces; tc.usage=t::BatchUsage::CoupledForces; }
+    if(kind==2) { qc.usage=q::BatchUsage::Unspecified; tc.usage=t::BatchUsage::Unspecified; }
     if(kind==3) { qc.max_device_bytes=1; tc.max_device_bytes=1; }
     EXPECT_NE(qbad.InitializeJoined(qc,base.binding).status,q::BatchStatus::Success);
     EXPECT_NE(tbad.InitializeJoined(tc,base.binding).status,t::BatchStatus::Success);
