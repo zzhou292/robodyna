@@ -169,6 +169,8 @@ TEST(AcceptedReplaySevenPart,RehashedActualConnectorSourceAndAcceptedRecordsCann
                 // across independent reductions; a relative change must still
                 // reject even far below any ordinary absolute tolerance.
                 value.SetDouble(value.GetDouble()>0?value.GetDouble()*1.000001:1e-151);
+                final["diagnostics"].CopyFrom(d["diagnostics"],final.GetAllocator());
+                b.Replace("final-metrics.json",final);b.Rehash("final-metrics.json");
             }
             if(fault==11) {
                 file=b.Frame(0);d=b.Read(file);
@@ -177,6 +179,7 @@ TEST(AcceptedReplaySevenPart,RehashedActualConnectorSourceAndAcceptedRecordsCann
         }
         b.Replace(file,d);b.Rehash(file);AcceptedReplay reader;const auto r=reader.Open(b.directory);
         EXPECT_EQ(r.status,ReplayStatus::InvalidBundle)<<fault<<" "<<r.diagnostic;
+        if(fault==9||fault==10)EXPECT_EQ(r.diagnostic,"Assembly replay signed diagnostic reduction disagrees");
     }
 }
 }
