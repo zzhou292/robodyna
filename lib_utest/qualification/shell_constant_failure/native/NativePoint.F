@@ -1,0 +1,40 @@
+! SPDX-License-Identifier: AGPL-3.0-or-later
+! Test-only driver of the complete original failure routine. No C++ mechanics.
+      SUBROUTINE CONSTANT_FAILURE_NATIVE(D1,DAMAGE,TOLD,ACTIVE,ELEMENT,
+     .                                  DPLA,TIME,STRESS,VALUES)
+     . BIND(C,NAME='constant_failure_native')
+      USE ISO_C_BINDING,ONLY:C_DOUBLE,C_INT
+#include "implicit_f.inc"
+#include "units_c.inc"
+      REAL(C_DOUBLE),VALUE::D1,DAMAGE,TOLD,DPLA,TIME
+      INTEGER(C_INT),VALUE::ACTIVE,ELEMENT
+      REAL(C_DOUBLE),INTENT(IN)::STRESS(5)
+      REAL(C_DOUBLE),INTENT(OUT)::VALUES(3)
+      MY_REAL UPARAM(13),UVAR(1,1),OFF(1),DFMAX(1),TDEL(1),
+     . SIGNXX(1),SIGNYY(1),SIGNXY(1),SIGNYZ(1),SIGNZX(1),
+     . DPLAS(1),EPSP(1),TSTAR(1)
+      INTEGER FOFF(1),NGL(1)
+      UPARAM=ZERO
+      UPARAM(1)=D1
+      UPARAM(6)=ONE
+      UVAR=ZERO
+      OFF=DBLE(ELEMENT)
+      DFMAX=DAMAGE
+      TDEL=TOLD
+      FOFF=ACTIVE
+      NGL=17
+      SIGNXX=STRESS(1)
+      SIGNYY=STRESS(2)
+      SIGNXY=STRESS(3)
+      SIGNYZ=STRESS(4)
+      SIGNZX=STRESS(5)
+      DPLAS=DPLA
+      EPSP=ZERO
+      TSTAR=ZERO
+      IOUT=6
+      ISTDO=6
+      CALL SHELL_CONSTANT_FAILURE_REF(1,13,0,UPARAM,UVAR,TIME,NGL,1,1,1,
+     . SIGNXX,SIGNYY,SIGNXY,SIGNYZ,SIGNZX,DPLAS,EPSP,TSTAR,OFF,FOFF,
+     . DFMAX,TDEL)
+      VALUES=[DFMAX(1),TDEL(1),DBLE(FOFF(1))]
+      END SUBROUTINE
