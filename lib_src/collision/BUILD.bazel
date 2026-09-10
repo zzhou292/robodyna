@@ -136,16 +136,19 @@ cuda_library(
     hdrs = [
         "NodalWallContactDevice.h",
         "NodalWallContactStorage.h",
+        "NodalWallContactArena.h",
+        "NodalWallContactState.h",
+        "NodalWallContactResultIO.h",
         "NodalWallContactDiagnostics.h",
         "NodalWallContactKernels.cuh",
     ],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
-    deps = [":nodal_wall_contact", ":prepared_planar_wall_query", "//lib_src/elements:shell_collection_limits", "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_force_assembly"],
+    deps = [":nodal_wall_contact", ":prepared_planar_wall_query", "//lib_src/elements:shell_collection_limits", "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_force_assembly", "//lib_utils:bounded_arena"],
 )
 
 cc_library(
     name = "nodal_wall_contact_owner",
-    srcs = ["NodalWallContactModel.cpp"],
+    srcs = ["NodalWallContactModel.cpp", "NodalWallContactArena.cpp", "NodalWallContactReadback.cpp"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [":nodal_wall_contact_device"],
 )

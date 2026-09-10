@@ -11,7 +11,8 @@ TEST(NodalWallOwnerCuda, ActualOwnerMatchesHostSharesFiniteFacesAndAdditiveAssem
     ASSERT_TRUE(f.Prepare(variant==3)); fe::FENodalState owner; ASSERT_TRUE(f.Owner(owner));
     sc::NodalWallContactDevice contact; ASSERT_TRUE(f.Bind(owner,contact,f.Config()));
     EXPECT_EQ(contact.allocations().device_allocations,1u);
-    EXPECT_EQ(contact.allocations().device_bytes,sizeof(detail::Storage));
+    EXPECT_GT(contact.allocations().device_bytes,sizeof(detail::Storage));
+    EXPECT_LE(contact.allocations().device_bytes,sc::MaxNodalWallDeviceBytes);
     EXPECT_EQ(owner.allocations().device_allocations,6u);
     fe::NodalTrialToken token; fe::NodalAssemblyView v;
     ASSERT_EQ(owner.BeginTrial(&token,&v).status,fe::NodalStatus::Ok);

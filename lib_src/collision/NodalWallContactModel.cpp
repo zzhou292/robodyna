@@ -1,11 +1,11 @@
-#include "NodalWallContactStorage.h"
+#include "NodalWallContactState.h"
 #include <cmath>
 #include <new>
 
 namespace tlfea::contact::nodal_wall_device_detail {
 NodalWallDeviceReport PrepareModel(const NodalWallDeviceConfig& c,PlanarWallView source,
     const NodalWallWeights& weights,VectorView x,const double* inverse,const std::uint8_t* masks,
-    PlanarWallBox motion,Model* output) {
+    PlanarWallBox motion,PreparedModel* output) {
   using fea=tl::fea::NodalTemporalScheme;
   const auto& owner=c.owner; const auto& law=c.law;
   if (!output || !x.valid() || !inverse || !masks || !weights.prepared() || !owner.owner_id ||
@@ -20,13 +20,19 @@ NodalWallDeviceReport PrepareModel(const NodalWallDeviceConfig& c,PlanarWallView
       !IsFinite(law.parent_energy_error) || law.parent_energy_error<=0 ||
       !IsFinite(c.exposed_clearance) || c.exposed_clearance<=0)
     return {Code::InvalidInput,"Invalid initial owner, prepared weights or physical declaration"};
-  if (!owner.node_count || owner.node_count>OwnerNodes || owner.node_count>tl::fea::MaxTranslationNodes || !weights.node_count() ||
-      weights.node_count()>MaxNodalWallDeviceNodes || !weights.parent_count() ||
-      weights.parent_count()>MaxNodalWallDeviceParents || !c.max_device_bytes ||
-      c.max_device_bytes>MaxNodalWallDeviceBytes || c.max_device_bytes<sizeof(Storage))
-    return {Code::ResourceLimit,"Nodal contact exceeds its fixed complete storage or topology cap"};
+  ArenaLayout layout; const auto& limits=c.limits;
+  if (!limits.parents || limits.parents>MaxActiveNodalWallDeviceParents || !limits.nodes ||
+      limits.nodes>MaxActiveNodalWallDeviceNodes || !limits.global_nodes || limits.global_nodes>MaxActiveNodalWallDeviceNodes ||
+      owner.node_count>limits.global_nodes || weights.node_count()>limits.nodes || weights.parent_count()>limits.parents ||
+      !c.max_host_bytes || c.max_host_bytes>MaxNodalWallHostBytes ||
+      !BuildArenaLayout(weights.parent_count(),weights.node_count(),owner.node_count,c.max_device_bytes,layout) ||
+      HostPreparationBytes(layout)>c.max_host_bytes)
+    return {Code::ResourceLimit,"Nodal contact exceeds its admitted count or complete arena byte budget"};
   try {
-    Model next; next.config=c; next.node_count=weights.node_count(); next.parent_count=weights.parent_count();
+    PreparedModel staged;
+    if(!staged.Initialize(layout)) return {Code::ResourceLimit,"Contact host arena allocation failed"};
+    auto& next=staged.model(); next.config=c;
+    next.node_count=weights.node_count(); next.parent_count=weights.parent_count();
     PlanarWallGeometry wall;
     const auto wall_report=wall.Initialize(source);
     if (wall_report.status!=PlanarContactStatus::Ok || wall.wall_x()!=law.wall_x)
@@ -67,7 +73,7 @@ NodalWallDeviceReport PrepareModel(const NodalWallDeviceConfig& c,PlanarWallView
       }
       if (rate>next.rate) next.rate=rate;
     }
-    next.prepared=true; *output=next;
+    next.prepared=true; *output=std::move(staged);
     return {Code::Ok,"OK"};
   } catch (const std::bad_alloc&) {
     return {Code::ResourceLimit,"Bounded host wall preparation allocation failed"};
@@ -84,14 +90,18 @@ NodalWallDeviceReport NodalWallContactDevice::Initialize(const NodalWallDeviceCo
   using namespace nodal_wall_device_detail;
   if (impl_) return {Code::InvalidInput,"Nodal wall contributor is already initialized"};
   try {
-    auto storage=std::make_unique<Storage>();
-    auto report=PrepareModel(config,wall,weights,x,inverse,masks,motion,&storage->model);
+    PreparedModel storage;
+    auto report=PrepareModel(config,wall,weights,x,inverse,masks,motion,&storage);
     if (report.status!=Code::Ok) return report;
-    auto next=std::make_unique<Impl>(); next->config=config; next->rate=storage->model.rate;
+    auto next=std::make_unique<Impl>(); next->config=config; next->rate=storage.model().rate;
+    next->prepared=std::move(storage); const auto bytes=next->prepared.layout().bytes;
     report=next->Check(cudaGetLastError()); if (report.status!=Code::Ok) return report;
-    report=next->Check(cudaMalloc(reinterpret_cast<void**>(&next->device),sizeof(Storage)));
+    report=next->Check(cudaMalloc(reinterpret_cast<void**>(&next->device),bytes));
     if (report.status!=Code::Ok) return report;
-    report=next->Check(cudaMemcpy(next->device,storage.get(),sizeof(Storage),cudaMemcpyHostToDevice));
+    next->device_shadow=next->prepared.Rebase(next->device);
+    report=next->Check(cudaMemcpy(next->device,next->prepared.data(),bytes,cudaMemcpyHostToDevice));
+    if (report.status!=Code::Ok) return report;
+    report=next->Check(cudaMemcpy(next->device,&next->device_shadow,sizeof(Storage),cudaMemcpyHostToDevice));
     if (report.status!=Code::Ok) return report;
     impl_=std::move(next); return {Code::Ok,"Nodal wall contributor initialized"};
   } catch (const std::bad_alloc&) { return {Code::ResourceLimit,"Host contact staging allocation failed"}; }
@@ -100,7 +110,7 @@ void NodalWallContactDevice::DiscardTrial() noexcept {
   if (impl_) { impl_->has_base=false; impl_->has_results=false; }
 }
 tl::fea::NodalAllocationInfo NodalWallContactDevice::allocations() const noexcept {
-  return impl_ ? tl::fea::NodalAllocationInfo{sizeof(nodal_wall_device_detail::Storage),1} : tl::fea::NodalAllocationInfo{};
+  return impl_ ? tl::fea::NodalAllocationInfo{impl_->prepared.layout().bytes,1} : tl::fea::NodalAllocationInfo{};
 }
 double NodalWallContactDevice::stiffness_rate_bound() const noexcept { return impl_?impl_->rate:0; }
 } // namespace tlfea::contact

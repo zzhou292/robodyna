@@ -1,5 +1,5 @@
 #pragma once
-#include "lib_src/collision/NodalWallContactStorage.h"
+#include "lib_src/collision/NodalWallContactArena.h"
 #include "lib_src/collision/Q4ParametricContact.h"
 #include "lib_src/solvers/ExplicitNodalStep.h"
 #include "lib_utest/q4_planar_geometry_fixture.h"
@@ -56,7 +56,7 @@ struct Fixture {
     sc::NodalWallDeviceConfig c; c.owner=stamp; c.configuration_id=991; c.qualification_id=UnitQualification;
     c.wall_binding_id=771; c.law={0,16,.5,ForceBudget,EnergyBudget}; return c;
   }
-  sc::NodalWallDeviceReport Model(detail::Model* out,sc::NodalWallDeviceConfig config) const {
+  sc::NodalWallDeviceReport Model(detail::PreparedModel* out,sc::NodalWallDeviceConfig config) const {
     return detail::PrepareModel(config,wall.view(),weights,View(x),inverse.data(),fixed.data(),motion,out);
   }
   bool Owner(fe::FENodalState& owner,double h=Step) const {

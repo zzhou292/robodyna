@@ -7,6 +7,8 @@ include("${CMAKE_CURRENT_LIST_DIR}/NodalWallContact.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/PreparedPlanarWallQuery.cmake")
 add_library(tl_nodal_wall_contact_device STATIC
   "${CMAKE_CURRENT_LIST_DIR}/NodalWallContactModel.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/NodalWallContactArena.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/NodalWallContactReadback.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/NodalWallContactDevice.cu")
 target_compile_features(tl_nodal_wall_contact_device PUBLIC cxx_std_17)
 set_target_properties(tl_nodal_wall_contact_device PROPERTIES

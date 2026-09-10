@@ -1,43 +1,11 @@
-#include "NodalWallOwnerFixture.h"
+#include "NodalWallCapacitySource.h"
 #include <vector>
 
 namespace {
 namespace sc=tlfea::contact;
 using nodal_wall_owner_test::Bytes;
 using nodal_wall_owner_test::Same;
-constexpr unsigned Nodes=1030,Quads=804,Triangles=111,Parents=Quads+Triangles;
-constexpr std::uint64_t FirstId=std::uint64_t{1}<<54;
-constexpr long double SquareArea=1.L/64;
-struct Source {
-  std::vector<double> x=std::vector<double>(3*Nodes);
-  std::vector<sc::Q4ParametricReference> q=std::vector<sc::Q4ParametricReference>(Quads);
-  std::vector<sc::T3MaterialMeasure> t=std::vector<sc::T3MaterialMeasure>(Triangles);
-  std::vector<sc::NodalWallParentInput> input=std::vector<sc::NodalWallParentInput>(Parents);
-  sc::VectorView positions() const { return {x.data(),Nodes,3,1}; }
-  bool Prepare() {
-    for(unsigned n=0;n<Nodes;++n) { x[3*n+1]=(n%10)*.125; x[3*n+2]=(n/10)*.125; }
-    for(unsigned p=0;p<Quads;++p) {
-      const unsigned n=10*(p/9)+p%9;
-      sc::SurfaceQ4 parent;
-      parent.nodes[0]=n; parent.nodes[1]=n+1; parent.nodes[2]=n+11; parent.nodes[3]=n+10;
-      parent.parent_element_id=FirstId+2*p+1; parent.feature_id=parent.parent_element_id+4096;
-      if(q[p].Initialize(positions(),&parent,1).status!=sc::Q4ParametricStatus::Ok) return false;
-      input[p]={&q[p],0,nullptr};
-    }
-    for(unsigned p=0;p<Triangles;++p) {
-      // A separate tail strip includes the last global node. This is contact
-      // startup coverage, not a claim that this synthetic mesh is connected.
-      const unsigned cell=862+p/2,n=10*(cell/9)+cell%9;
-      sc::SurfaceTriangle parent;
-      parent.nodes[0]=n; parent.nodes[1]=p%2?n+11:n+1; parent.nodes[2]=p%2?n+10:n+11;
-      parent.parent_element_id=FirstId+2*(Quads+p)+1; parent.feature_id=parent.parent_element_id+4096;
-      parent.interpolation=sc::SurfaceInterpolation::kLinearTriangle;
-      if(sc::PrepareT3MaterialMeasure(positions(),parent,&t[p])!=sc::SurfaceMeasureStatus::Ok) return false;
-      input[Quads+p]={nullptr,0,&t[p]};
-    }
-    return true;
-  }
-};
+using namespace nodal_wall_capacity_test;
 void SameWeights(const sc::NodalWallWeights& a,const sc::NodalWallWeights& b) {
   ASSERT_TRUE(a.prepared()); ASSERT_TRUE(b.prepared());
   ASSERT_EQ(a.global_node_count(),b.global_node_count());
@@ -121,9 +89,9 @@ TEST(NodalWallWeights, LargeStartupCannotEnterLegacyResultOrResidentStorage) {
       {0,16,.5,1e-6,1e-6},1,&result).status,sc::NodalWallStatus::Capacity);
   EXPECT_EQ(Bytes(result),old);
   nodal_wall_owner_test::Fixture f; ASSERT_TRUE(f.Prepare()); auto config=f.Config(); config.owner.node_count=Nodes;
-  auto model=std::make_unique<sc::nodal_wall_device_detail::Model>();
+  auto model=std::make_unique<sc::nodal_wall_device_detail::PreparedModel>();
   EXPECT_EQ(sc::nodal_wall_device_detail::PrepareModel(config,f.wall.view(),weights,view,&scalar,&fixed,f.motion,model.get()).status,
       sc::NodalWallDeviceStatus::ResourceLimit);
-  EXPECT_FALSE(model->prepared);
+  EXPECT_FALSE(model->prepared());
 }
 } // namespace

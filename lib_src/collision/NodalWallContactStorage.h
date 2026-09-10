@@ -5,8 +5,8 @@
 #include "NodalWallContactReduction.h"
 
 namespace tlfea::contact::nodal_wall_device_detail {
-constexpr unsigned OwnerNodes=tl::fea::MaxShellCollectionNodes,Workers=64;
-static_assert(MaxNodalWallDeviceNodes==OwnerNodes && Workers>0 && Workers<=1024,
+constexpr unsigned Workers=64;
+static_assert(Workers>0 && Workers<=1024,
               "One bounded worker block strides over every compact node and parent");
 static_assert(MaxNodalWallDeviceNodes<=MaxNodalWallNodes && MaxNodalWallDeviceParents<=MaxNodalWallParents,
               "Device collection remains within the qualified host law capacities");
@@ -15,11 +15,12 @@ struct Model {
   NodalWallDeviceConfig config;
   PreparedPlanarWallQuery query;
   PlanarWallBoxCoverage coverage;
-  NodalWallParentWeight parents[MaxNodalWallDeviceParents]{};
-  NodalWallNodeWeight nodes[MaxNodalWallDeviceNodes]{};
-  Vec3 initial_position[OwnerNodes]{};
-  double inverse_mass[OwnerNodes]{},rate=0;
-  std::uint8_t fixed[OwnerNodes]{};
+  NodalWallParentWeight* parents=nullptr;
+  NodalWallNodeWeight* nodes=nullptr;
+  Vec3* initial_position=nullptr;
+  double* inverse_mass=nullptr;
+  double rate=0;
+  std::uint8_t* fixed=nullptr;
   std::uint64_t face_ids[MaxPlanarWallTriangles]{};
   std::uint32_t node_count=0,parent_count=0;
   bool prepared=false;
@@ -29,20 +30,27 @@ struct Control {
   std::uint32_t node=UINT32_MAX,parent=UINT32_MAX;
   NodalWallReport point;
 };
+struct ActiveResults {
+  NodalWallDiagnostics diagnostics;
+  NodalWallParentResult* parents=nullptr;
+  NodalWallPointResult* nodes=nullptr;
+  std::uint64_t* wall_face=nullptr;
+};
 struct Storage {
   Model model;
-  Control control,node_status[MaxNodalWallDeviceNodes]{};
-  NodalWallPointResult shares[MaxNodalWallDeviceParents*4]{};
-  NodalWallDeviceResults base,result;
+  Control control;
+  Control* node_status=nullptr;
+  NodalWallPointResult* shares=nullptr;
+  ActiveResults base,result;
   // Six full global-indexed arrays let the existing generic scatter preflight
   // every unique incident node privately, before one final owner publication.
-  double staged_force[6*OwnerNodes]{},addition_error[MaxNodalWallDeviceNodes]{};
+  double* staged_force=nullptr;
+  double* addition_error=nullptr;
 };
-static_assert(sizeof(Storage)<=MaxNodalWallDeviceBytes,"Complete contact storage, one allocation");
-static_assert(sizeof(Model)==105976 && sizeof(NodalWallDeviceResults)==79248 && sizeof(Storage)==471864,
-              "Pinned 64-bit host/CUDA storage ledger; review an ABI change before allocating");
+static_assert(sizeof(NodalWallDeviceResults)==79248,"Preserve the legacy fixed-result ABI");
+class PreparedModel;
 NodalWallDeviceReport PrepareModel(const NodalWallDeviceConfig&,PlanarWallView,const NodalWallWeights&,
-    VectorView,const double*,const std::uint8_t*,PlanarWallBox,Model*);
+    VectorView,const double*,const std::uint8_t*,PlanarWallBox,PreparedModel*);
 TL_SURFACE_HD inline bool Fail(Control& c,Code code,unsigned node=UINT32_MAX,unsigned parent=UINT32_MAX) {
   c.status=code; c.node=node; c.parent=parent; return false;
 }
@@ -61,22 +69,3 @@ TL_SURFACE_HD inline bool SignedScale(Q4IntegralInterval a,double b,Q4IntegralIn
 }
 TL_SURFACE_HD inline bool AddUpper(double a,double b,double* out) { return mass_detail::UpperSum(a,b,out); }
 } // namespace tlfea::contact::nodal_wall_device_detail
-
-namespace tlfea::contact {
-struct NodalWallContactDevice::Impl {
-  ~Impl();
-  nodal_wall_device_detail::Storage* device=nullptr;
-  NodalWallDeviceConfig config;
-  nodal_wall_device_detail::Control control;
-  NodalWallDeviceResults staging;
-  NodalWallDiagnostics available;
-  tl::fea::NodalAssemblyView base_view;
-  double rate=0;
-  std::uint64_t last_epoch=0,last_attempt=0,last_candidate_attempt=0;
-  cudaStream_t stream=nullptr;
-  bool usable=true,has_base=false,has_results=false,has_stream=false;
-  NodalWallDeviceReport Check(cudaError_t);
-  NodalWallDeviceReport ReadControl(cudaStream_t);
-  NodalWallDeviceReport FailAssembly(const tl::fea::NodalAssemblyView&,NodalWallDeviceReport);
-};
-} // namespace tlfea::contact

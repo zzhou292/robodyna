@@ -7,19 +7,19 @@ namespace fea=tl::fea;
 // Avoid whole-result temporaries on one CUDA lane as the collection grows.
 // All worker lanes call these helpers; arithmetic fields retain their owning
 // default initialization and each record has exactly one writer.
-__device__ inline void ResetResult(NodalWallDeviceResults& result) {
+__device__ inline void ResetResult(ActiveResults& result,unsigned parents,unsigned nodes) {
   const unsigned lane=threadIdx.x;
   if (lane==0) result.diagnostics={};
-  for (unsigned p=lane;p<MaxNodalWallDeviceParents;p+=Workers) result.parents[p]={};
-  for (unsigned n=lane;n<MaxNodalWallDeviceNodes;n+=Workers) {
+  for (unsigned p=lane;p<parents;p+=Workers) result.parents[p]={};
+  for (unsigned n=lane;n<nodes;n+=Workers) {
     result.nodes[n]={}; result.wall_face[n]=0;
   }
 }
 __device__ inline void CopyBase(Storage& s) {
   const unsigned lane=threadIdx.x;
   if (lane==0) s.base.diagnostics=s.result.diagnostics;
-  for (unsigned p=lane;p<MaxNodalWallDeviceParents;p+=Workers) s.base.parents[p]=s.result.parents[p];
-  for (unsigned n=lane;n<MaxNodalWallDeviceNodes;n+=Workers) {
+  for (unsigned p=lane;p<s.model.parent_count;p+=Workers) s.base.parents[p]=s.result.parents[p];
+  for (unsigned n=lane;n<s.model.node_count;n+=Workers) {
     s.base.nodes[n]=s.result.nodes[n]; s.base.wall_face[n]=s.result.wall_face[n];
   }
 }
@@ -45,12 +45,12 @@ __device__ inline bool ValidateAssembly(Storage& s,const fea::NodalAssemblyView&
 __device__ inline void Evaluate(Storage& s,const fea::DeviceNodalKinematicsView& k,
                                const NodalWallDiagnostics& identity) {
   const auto lane=threadIdx.x;
-  ResetResult(s.result);
+  ResetResult(s.result,s.model.parent_count,s.model.node_count);
   if (lane==0) s.result.diagnostics=identity;
-  for (unsigned i=lane;i<MaxNodalWallDeviceNodes;i+=Workers) s.node_status[i]={};
+  for (unsigned i=lane;i<s.model.node_count;i+=Workers) s.node_status[i]={};
   __syncthreads();
   if (s.control.status!=Code::Ok) return;
-  const auto count=static_cast<std::uint32_t>(k.node_count); // Host binding checked <=128.
+  const auto count=static_cast<std::uint32_t>(k.node_count); // Active host binding checked the complete owner extent.
   const VectorView x{k.position_xyz,count,3,1},v{k.velocity_xyz,count,3,1};
   const LumpedTranslationMassView mass{s.model.inverse_mass,s.model.fixed,count,k.base_epoch,
                                       TranslationMassModel::kIsotropicLumped};
@@ -127,14 +127,15 @@ __device__ inline void Evaluate(Storage& s,const fea::DeviceNodalKinematicsView&
   __syncthreads();
 }
 __device__ inline bool Scatter(Storage& s,const fea::NodalAssemblyView& v) {
+  const auto owner_nodes=s.model.config.owner.node_count;
   double* actual[]{v.forces.force_x,v.forces.force_y,v.forces.force_z,
                    v.forces.couple_x,v.forces.couple_y,v.forces.couple_z};
   for (unsigned c=0;c<6;++c) for (unsigned i=0;i<s.model.node_count;++i) {
     const auto n=s.model.nodes[i].node;
-    s.staged_force[c*OwnerNodes+n]=actual[c][n];
+    s.staged_force[c*owner_nodes+n]=actual[c][n];
   }
-  const fea::DeviceNodalForceView staged{s.staged_force,s.staged_force+OwnerNodes,s.staged_force+2*OwnerNodes,
-      s.staged_force+3*OwnerNodes,s.staged_force+4*OwnerNodes,s.staged_force+5*OwnerNodes,
+  const fea::DeviceNodalForceView staged{s.staged_force,s.staged_force+owner_nodes,s.staged_force+2*owner_nodes,
+      s.staged_force+3*owner_nodes,s.staged_force+4*owner_nodes,s.staged_force+5*owner_nodes,
       v.forces.node_count,v.forces.base_epoch};
   for (unsigned i=0;i<s.model.node_count;++i) {
     const auto n=s.model.nodes[i].node; const std::size_t index=n;
@@ -145,7 +146,7 @@ __device__ inline bool Scatter(Storage& s,const fea::NodalAssemblyView& v) {
         !Radius(s.staged_force[n],sum,&s.addition_error[i])) return Fail(s.control,Code::AssemblyFailure,n);
   }
   for (unsigned c=0;c<6;++c) for (unsigned i=0;i<s.model.node_count;++i) {
-    const auto n=s.model.nodes[i].node; actual[c][n]=s.staged_force[c*OwnerNodes+n];
+    const auto n=s.model.nodes[i].node; actual[c][n]=s.staged_force[c*owner_nodes+n];
   }
   return true; // Legacy timestep rows are deliberately untouched.
 }

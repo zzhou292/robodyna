@@ -1,4 +1,6 @@
 #include "NodalWallContactKernels.cuh"
+#include "NodalWallContactState.h"
+#include "lib_src/solvers/NodalTrialIdentity.h"
 #include <cmath>
 #include <cstring>
 
@@ -10,7 +12,7 @@ using Code=NodalWallDeviceStatus;
 __global__ void MarkFailure(fea::NodalAssemblyView v,unsigned node) { fea::RecordNodalAssemblyFailure(v,Status::kInvalidArgument,node); }
 __global__ void Assemble(d::Storage* storage,fea::NodalAssemblyView v,NodalWallDiagnostics identity) {
   auto& s=*storage;
-  d::ResetResult(s.base);
+  d::ResetResult(s.base,s.model.parent_count,s.model.node_count);
   if (threadIdx.x==0) { s.control={}; d::ValidateAssembly(s,v); }
   __syncthreads();
   d::Evaluate(s,v.accepted,identity);
@@ -44,36 +46,7 @@ bool SameView(const fea::DeviceNodalKinematicsView& a,const fea::DeviceNodalKine
       a.angular_velocity_xyz==b.angular_velocity_xyz && a.orientation_wxyz==b.orientation_wxyz &&
       a.node_count==b.node_count && a.base_epoch==b.base_epoch;
 }
-bool Disjoint(const void* a,std::size_t an,const void* b,std::size_t bn) {
-  const auto x=reinterpret_cast<std::uintptr_t>(a),y=reinterpret_cast<std::uintptr_t>(b);
-  return a && b && an<=UINTPTR_MAX-x && bn<=UINTPTR_MAX-y && (x+an<=y || y+bn<=x);
-}
-bool SameCertificate(Q4CertifiedIntegral a,Q4CertifiedIntegral b) {
-  return a.value==b.value && a.lower==b.lower && a.upper==b.upper && a.error==b.error;
-}
-bool SameDiagnostics(const NodalWallDiagnostics& a,const NodalWallDiagnostics& b) {
-  if (!a.valid || !b.valid || a.owner_id!=b.owner_id || a.configuration_id!=b.configuration_id ||
-      a.qualification_id!=b.qualification_id || a.wall_binding_id!=b.wall_binding_id ||
-      a.base_epoch!=b.base_epoch || a.attempt!=b.attempt || a.phase!=b.phase || a.scheme!=b.scheme ||
-      a.velocity_phase!=b.velocity_phase || a.node_count!=b.node_count || a.parent_count!=b.parent_count ||
-      !SameCertificate(a.resultant,b.resultant) || !SameCertificate(a.potential,b.potential)) return false;
-  const double x[]{a.time,a.velocity_time,a.base_time,a.base_velocity_time,a.kick_dt,
-      a.wall_reaction.x,a.wall_reaction.y,a.wall_reaction.z,a.wall_moment.x,a.wall_moment.y,a.wall_moment.z,
-      a.surface_power,a.maximum_penetration,a.stiffness_rate_bound,a.base_potential,a.base_potential_error,
-      a.potential_increment,a.kick_work,a.kick_work_roundoff,a.drift_work,a.drift_work_roundoff,
-      a.conservative_defect,a.work_uncertainty,a.quadratic_work_upper,a.wall_kick_impulse,a.wall_kick_impulse_error,
-      a.wall_kick_moment.x,a.wall_kick_moment.y,a.wall_kick_moment.z,
-      a.wall_kick_moment_error.x,a.wall_kick_moment_error.y,a.wall_kick_moment_error.z};
-  const double y[]{b.time,b.velocity_time,b.base_time,b.base_velocity_time,b.kick_dt,
-      b.wall_reaction.x,b.wall_reaction.y,b.wall_reaction.z,b.wall_moment.x,b.wall_moment.y,b.wall_moment.z,
-      b.surface_power,b.maximum_penetration,b.stiffness_rate_bound,b.base_potential,b.base_potential_error,
-      b.potential_increment,b.kick_work,b.kick_work_roundoff,b.drift_work,b.drift_work_roundoff,
-      b.conservative_defect,b.work_uncertainty,b.quadratic_work_upper,b.wall_kick_impulse,b.wall_kick_impulse_error,
-      b.wall_kick_moment.x,b.wall_kick_moment.y,b.wall_kick_moment.z,
-      b.wall_kick_moment_error.x,b.wall_kick_moment_error.y,b.wall_kick_moment_error.z};
-  for (unsigned i=0;i<sizeof(x)/sizeof(*x);++i) if (x[i]!=y[i]) return false;
-  return true;
-}
+using fea::trial_identity::Disjoint;
 NodalWallDiagnostics Identity(const NodalWallDeviceConfig& c,const fea::NodalAssemblyView& v) {
   NodalWallDiagnostics d; d.owner_id=v.owner_id; d.configuration_id=c.configuration_id;
   d.qualification_id=c.qualification_id; d.wall_binding_id=c.wall_binding_id;
@@ -100,7 +73,7 @@ NodalWallDeviceReport NodalWallContactDevice::Impl::Check(cudaError_t code) {
 }
 NodalWallDeviceReport NodalWallContactDevice::Impl::ReadControl(cudaStream_t borrowed) {
   auto r=Check(cudaGetLastError()); if (r.status!=Code::Ok) return r;
-  r=Check(cudaMemcpyAsync(&control,&device->control,sizeof(control),cudaMemcpyDeviceToHost,borrowed));
+  r=Check(cudaMemcpyAsync(&control,DeviceControl(),sizeof(control),cudaMemcpyDeviceToHost,borrowed));
   if (r.status!=Code::Ok) return r;
   r=Check(cudaStreamSynchronize(borrowed)); if (r.status!=Code::Ok) return r;
   return {control.status,control.status==Code::Ok?"OK":"Nodal wall operation rejected",
@@ -144,7 +117,7 @@ NodalWallDeviceReport NodalWallContactDevice::AssembleAccepted(const fea::NodalA
   Assemble<<<1,d::Workers,0,v.stream>>>(s.device,v,identity);
   r=s.ReadControl(v.stream); if (r.status!=Code::Ok) return fail(r);
   NodalWallDiagnostics next;
-  r=s.Check(cudaMemcpyAsync(&next,&s.device->result.diagnostics,sizeof(next),cudaMemcpyDeviceToHost,v.stream));
+  r=s.Check(cudaMemcpyAsync(&next,s.DeviceDiagnostics(),sizeof(next),cudaMemcpyDeviceToHost,v.stream));
   if (r.status!=Code::Ok) return fail(r);
   r=s.Check(cudaStreamSynchronize(v.stream)); if (r.status!=Code::Ok) return fail(r);
   s.has_base=true; s.has_results=true; s.available=next; *output=next;
@@ -173,22 +146,9 @@ NodalWallDeviceReport NodalWallContactDevice::EvaluateCandidate(const fea::Nodal
   Candidate<<<1,d::Workers,0,v.stream>>>(s.device,v,identity);
   r=s.ReadControl(v.stream); if (r.status!=Code::Ok) return r;
   NodalWallDiagnostics next;
-  r=s.Check(cudaMemcpyAsync(&next,&s.device->result.diagnostics,sizeof(next),cudaMemcpyDeviceToHost,v.stream));
+  r=s.Check(cudaMemcpyAsync(&next,s.DeviceDiagnostics(),sizeof(next),cudaMemcpyDeviceToHost,v.stream));
   if (r.status!=Code::Ok) return r;
   r=s.Check(cudaStreamSynchronize(v.stream)); if (r.status!=Code::Ok) return r;
   s.has_results=true; s.available=next; *output=next; return {Code::Ok,"Candidate contact evaluated without publication"};
-}
-NodalWallDeviceReport NodalWallContactDevice::CopyResults(const NodalWallDiagnostics& expected,NodalWallDeviceResults* output) {
-  if (!impl_) return {Code::NotInitialized,"Nodal wall is not initialized"};
-  auto& s=*impl_;
-  if (!s.usable) return {Code::DeviceFailure,"Nodal wall CUDA storage is poisoned"};
-  if (!s.has_results || !SameDiagnostics(expected,s.available)) return {Code::StaleAttempt,"Stale contact result identity"};
-  if (!Disjoint(output,sizeof(*output),&expected,sizeof(expected))) return {Code::InvalidInput,"Missing/overlapping contact readback"};
-  auto r=s.Check(cudaGetLastError()); if (r.status!=Code::Ok) return r;
-  r=s.Check(cudaMemcpyAsync(&s.staging,&s.device->result,sizeof(s.staging),cudaMemcpyDeviceToHost,s.stream));
-  if (r.status!=Code::Ok) return r;
-  r=s.Check(cudaStreamSynchronize(s.stream)); if (r.status!=Code::Ok) return r;
-  if (!SameDiagnostics(s.staging.diagnostics,expected)) return {Code::StaleAttempt,"Device contact result identity mismatch"};
-  *output=s.staging; return {Code::Ok,"Contact results staged; caller must await owner/material commit"};
 }
 } // namespace tlfea::contact

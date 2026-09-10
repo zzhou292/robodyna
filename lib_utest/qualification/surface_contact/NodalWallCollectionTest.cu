@@ -38,15 +38,17 @@ TEST(NodalWallCollection, CompleteCapacityNativeWeightsAndLateModelFaultsAreStag
   EXPECT_EQ(f->q4_count,82u); EXPECT_EQ(f->t3_count,46u);
   EXPECT_EQ(f->weights.node_count(),128u); EXPECT_EQ(f->weights.parent_count(),128u);
   EXPECT_EQ(f->weights.node(127).node,127u);
-  EXPECT_EQ(sizeof(detail::Model),105976u); EXPECT_EQ(sizeof(sc::NodalWallDeviceResults),79248u);
-  EXPECT_EQ(sizeof(detail::Storage),471864u); EXPECT_LE(sizeof(detail::Storage),sc::MaxNodalWallDeviceBytes);
+  EXPECT_EQ(sizeof(sc::NodalWallDeviceResults),79248u);
+  EXPECT_LE(sizeof(detail::Storage),sc::MaxNodalWallDeviceBytes);
   EXPECT_LT(detail::Workers,Nodes); // Exercise at least two compact-node iterations.
   EXPECT_GT(detail::Workers,0u); EXPECT_EQ(sc::MaxNodalWallDeviceBytes,512u*1024);
-  detail::Model model;
+  detail::PreparedModel model;
   auto prepare=[&](sc::NodalWallDeviceConfig c) { return detail::PrepareModel(c,f->wall.view(),f->weights,
       f->View(f->x),f->inverse.data(),f->fixed.data(),f->motion,&model); };
   ASSERT_EQ(prepare(f->Config()).status,Code::Ok); const auto saved=Bytes(model);
-  auto c=f->Config(); c.max_device_bytes=sizeof(detail::Storage)-1;
+  auto c=f->Config(); detail::ArenaLayout layout;
+  ASSERT_TRUE(detail::BuildArenaLayout(f->weights.parent_count(),f->weights.node_count(),Nodes,sc::MaxNodalWallDeviceBytes,layout));
+  c.max_device_bytes=layout.bytes-1;
   EXPECT_EQ(prepare(c).status,Code::ResourceLimit); Unchanged(model,saved);
   f->fixed[127]=6; EXPECT_EQ(prepare(f->Config()).status,Code::InvalidMass); Unchanged(model,saved); f->fixed[127]=0;
   const double inverse=f->inverse[127]; f->inverse[127]=0;
@@ -62,7 +64,7 @@ TEST(NodalWallCollection, CompleteCapacityNativeWeightsAndLateModelFaultsAreStag
     EXPECT_EQ(f->weights.parent(p).parent_element_id,reverse->weights.parent(p).parent_element_id);
     Same(f->weights.parent(p).share,reverse->weights.parent(p).share);
   }
-  RecordProperty("device_bytes",std::to_string(sizeof(detail::Storage)));
+  RecordProperty("device_bytes",std::to_string(layout.bytes));
 }
 
 TEST(NodalWallCollectionCuda, All94And128ParentsMatchHostAndIndependentLoadsAtHighNodes) {
