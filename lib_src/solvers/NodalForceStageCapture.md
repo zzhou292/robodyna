@@ -35,3 +35,16 @@ Use pre-kick member/primary velocities and the updated axes from the **same**
 The first stage has DT1=0; later fixed-step stages use DT1=h. Capture alone is
 neither collocated kinetic energy, the complete native ENCIN output, nor an
 admission tolerance for physical energy balance.
+
+## Owning CUDA qualification (2026-09-10)
+
+Production7a716b9 and qualification57285f2 pass the complete existing rigid/nodal
+CMake suite:93 functions in20 CTest groups, including13 new capture functions
+and80 prior functions. Ten new functions execute CUDA: nine capture/readback/
+capacity tests and one32-stage native-owner oracle. The other three new host/
+native functions include64 force-stage packets. Guarded reports are
+`crash-work/reports/force-stage-capture-build-1.json` and
+`force-stage-capture-tests-1.json`; per-executable XML is in
+`force-stage-capture-functions-1/`. Independent read-only review found no
+remaining blocker. App observation composition and its live case gate remain
+separate; this does not establish a physical energy acceptance tolerance.
