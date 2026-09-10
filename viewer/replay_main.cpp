@@ -1,5 +1,6 @@
 #include "chrono/AcceptedReplayScene.h"
 #include "chrono/ReplayParentScalarColors.h"
+#include "ReplayColorMetadata.h"
 #include "output/AcceptedReplay.h"
 #include "output/ArtifactIO.h"
 #include "chrono/geometry/ChTriangleMeshConnected.h"
@@ -32,11 +33,13 @@ struct Options {
     std::size_t require_frames = 0;
     bool wireframe = false;
     crash::visual::ReplayView view = crash::visual::ReplayView::IncidentSide;
+    crash::visual::ReplayColorMode colors = crash::visual::ReplayColorMode::Automatic;
 };
 Options Parse(int argc, char** argv) {
-    Require(argc >= 2, "usage: robo_dyna_replay BUNDLE [--capture NEW_DIR] [--fps 1..60] [--require-frames N] [--wireframe] [--deformation-scale 1..1000] [--view incident-side|wall-side]");
+    Require(argc >= 2, "usage: robo_dyna_replay BUNDLE [--capture NEW_DIR] [--fps 1..60] [--require-frames N] [--wireframe] [--deformation-scale 1..1000] [--view incident-side|wall-side] [--color auto|uniform|part-id|plastic-strain]");
     Options out;
     bool view_supplied = false;
+    bool color_supplied = false;
     out.bundle = argv[1];
     for (int i = 2; i < argc; ++i) {
         const std::string arg = argv[i];
@@ -63,6 +66,11 @@ Options Parse(int argc, char** argv) {
                 Require(!view_supplied, "duplicate view option");
                 Require(crash::visual::ParseReplayView(value, out.view), "view must be incident-side or wall-side");
                 view_supplied = true;
+            } else if (arg == "--color") {
+                Require(!color_supplied, "duplicate color option");
+                Require(crash::visual::ParseReplayColorMode(value,out.colors),
+                        "color must be auto, uniform, part-id or plastic-strain");
+                color_supplied = true;
             } else throw std::invalid_argument("unknown replay option: " + arg);
         }
     }
@@ -80,6 +88,19 @@ void PlasticColorLegend(double maximum) {
     ImGui::TextColored(ImVec4(yellow.R,yellow.G,yellow.B,1),"%.4g%%",50*maximum);ImGui::SameLine();
     ImGui::TextColored(ImVec4(red.R,red.G,red.B,1),"%.4g%%",100*maximum);ImGui::SameLine();
     ImGui::TextUnformatted("| fixed scale for every accepted frame");
+}
+void PartColorLegend(const crash::visual::AcceptedReplayScene& scene) {
+    const auto& entries=*scene.part_legend();
+    ImGui::TextUnformatted("Color: original part ID | categorical, not stress or material");
+    const std::size_t shown=std::min<std::size_t>(entries.size(),8);
+    for (std::size_t i=0;i<shown;++i) {
+        const auto& entry=entries[i];const auto& color=entry.color;
+        if (i%4) ImGui::SameLine();
+        ImGui::TextColored(ImVec4(color.R,color.G,color.B,1),"PID %llu",
+                           static_cast<unsigned long long>(entry.part_id));
+    }
+    if (shown<entries.size()) ImGui::Text("+ %zu parts | full PID/RGB table in capture manifest",entries.size()-shown);
+    ImGui::TextUnformatted("Fixed PID colors across frames and subsets");
 }
 class ReplayOverlay : public chrono::vsg3d::ChGuiComponentVSG {
   public:
@@ -111,7 +132,8 @@ class ReplayOverlay : public chrono::vsg3d::ChGuiComponentVSG {
             ImGui::Text("Frame %zu / %zu   Epoch %llu", stamp.index + 1, info_.frame_count,
                         static_cast<unsigned long long>(stamp.epoch));
             ImGui::TextUnformatted((info_.kind == crash::output::ReplayKind::SourcePartWall || info_.kind == crash::output::ReplayKind::SourceAssemblyWall)
-                ? (info_.source_plasticity?"Gray wireframe: original mesh wall":"Blue: original elastic part | Gray: placed original mesh wall")
+                ? (info_.source_plasticity||scene_.color_mode()==crash::visual::ReplayColorMode::PartId
+                    ?"Gray wireframe: original mesh wall":"Blue: original elastic part | Gray: placed original mesh wall")
                 : info_.kind == crash::output::ReplayKind::SourcePartElastic
                 ? "Free part; experimental LAW1; attachments unapplied"
                 : info_.kind != crash::output::ReplayKind::ElasticCoupon
@@ -120,7 +142,8 @@ class ReplayOverlay : public chrono::vsg3d::ChGuiComponentVSG {
             if(info_.kind==crash::output::ReplayKind::SourcePartWall || info_.kind==crash::output::ReplayKind::SourceAssemblyWall) {
                 if(info_.source_plasticity) {
                     ImGui::Text("Initial speed: %.3g m/s | deformation scale: 1x",info_.source_initial_speed_m_per_s);
-                    PlasticColorLegend(info_.plastic_strain_color_max);
+                    if (scene_.color_mode()==crash::visual::ReplayColorMode::PlasticStrain)
+                        PlasticColorLegend(info_.plastic_strain_color_max);
                     if(info_.kind==crash::output::ReplayKind::SourceAssemblyWall && info_.source_assembly) {
                         const auto& assembly=*info_.source_assembly;
                         ImGui::Text("%zu source parts | %zu shells | %zu internal rigid groups",
@@ -130,6 +153,9 @@ class ReplayOverlay : public chrono::vsg3d::ChGuiComponentVSG {
                 } else ImGui::TextUnformatted("Experimental LAW1; source attachments unapplied");
                 if(!info_.horizon_complete)ImGui::TextUnformatted("Accepted prefix only | requested horizon stopped early");
             }
+            if (scene_.color_mode()==crash::visual::ReplayColorMode::PartId) PartColorLegend(scene_);
+            else if (scene_.color_mode()==crash::visual::ReplayColorMode::Uniform && info_.source_plasticity)
+                ImGui::TextUnformatted("Color: uniform blue | plastic fields retained in archive");
             if (capture_) ImGui::TextUnformatted("Indexed PNG capture | fixed camera");
             else {
                 ImGui::Text("Playback: %.1f recorded frames/s", fps_);
@@ -212,7 +238,7 @@ int main(int argc, char** argv) {
         Require(!options.require_frames || options.require_frames == info.frame_count, "accepted frame count differs from required count");
         crash::visual::AcceptedReplayScene scene;
         const auto initialized = scene.Initialize(info, *reader.frame(), reader.wall(), options.wireframe,
-                                                  options.deformation_scale, options.view);
+                                                  options.deformation_scale, options.view, options.colors);
         Require(initialized.status == crash::visual::ReplaySceneStatus::Ok, initialized.message);
         const bool capture = !options.capture.empty();
         if (capture) {
@@ -362,15 +388,9 @@ int main(int argc, char** argv) {
                     crash::output::String(manifest,"material_model",info.material_model);
                     crash::output::String(manifest,"material_policy",info.material_policy);
                 }
-                crash::output::String(manifest,"surface_color_quantity","maximum accepted layer equivalent plastic strain per original source parent");
-                crash::output::String(manifest,"surface_color_palette","piecewise linear blue(0.12,0.64,0.94), yellow(0.98,0.84,0.16), red(0.90,0.12,0.10)");
-                crash::output::String(manifest,"surface_color_scale_policy","fixed 0..max(0.001, accepted final maximum plastic strain); endpoint saturation; no frame autoscale");
-                crash::output::Number(manifest,"surface_color_min",0);
-                crash::output::Number(manifest,"surface_color_max",info.plastic_strain_color_max);
-                crash::output::String(manifest,"surface_color_units","dimensionless; visible legend in percent");
-                crash::output::Boolean(manifest,"surface_color_flat_per_source_parent",true);
                 crash::output::Number(manifest,"source_initial_speed_m_per_s",info.source_initial_speed_m_per_s);
             }
+            crash::viewer::AppendReplayColorMetadata(manifest,info,scene);
             crash::output::Integer(manifest, "owner_id", info.owner_id);
             crash::output::Integer(manifest, "frame_count", rendered);
             crash::output::Integer(manifest, "renders_per_accepted_frame", 2);

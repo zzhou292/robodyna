@@ -132,6 +132,8 @@ struct AcceptedReplayScene::Impl {
     std::shared_ptr<chrono::ChVisualShapeTriangleMesh> shape;
     std::vector<chrono::ChVector3d> staged, reference;
     ReplayParentScalarColors parent_colors;
+    ReplayPartColors part_colors;
+    ReplayColorMode color_mode = ReplayColorMode::Uniform;
     std::vector<chrono::ChColor> staged_colors;
     double deformation_scale = 1;
     ReplayStamp stamp;
@@ -142,8 +144,17 @@ AcceptedReplayScene::~AcceptedReplayScene() = default;
 
 ReplaySceneReport AcceptedReplayScene::Initialize(const output::ReplayInfo& info, const output::ReplayFrame& frame,
                                                 std::shared_ptr<const chrono::ChTriangleMeshConnected> wall, bool wireframe,
-                                                double deformation_scale, ReplayView view) {
+                                                double deformation_scale, ReplayView view, ReplayColorMode colors) {
     if (impl_) return {ReplaySceneStatus::AlreadyInitialized, "Replay scene already initialized"};
+    if (!ReplayColorModeName(colors)) return {ReplaySceneStatus::InvalidFrame, "Invalid replay color mode"};
+    if (colors == ReplayColorMode::Automatic)
+        colors = info.source_plasticity ? ReplayColorMode::PlasticStrain : ReplayColorMode::Uniform;
+    if (colors == ReplayColorMode::PlasticStrain && !info.source_plasticity)
+        return {ReplaySceneStatus::InvalidFrame, "Plastic-strain colors require accepted source plastic fields"};
+    if (colors == ReplayColorMode::PartId &&
+        ((!SourceWall(info.kind) && info.kind != output::ReplayKind::SourcePartElastic) ||
+         info.triangle_source_part.size() != info.triangle_count))
+        return {ReplaySceneStatus::InvalidFrame, "Part colors require complete original source part IDs"};
     if (!ReplayViewName(view) || (view == ReplayView::WallSide && !SourceWall(info.kind)))
         return {ReplaySceneStatus::InvalidFrame, "wall-side view requires a source-part or source-assembly wall replay"};
     if (!std::isfinite(deformation_scale) || deformation_scale < 1 || deformation_scale > 1000 ||
@@ -165,6 +176,7 @@ ReplaySceneReport AcceptedReplayScene::Initialize(const output::ReplayInfo& info
         auto next = std::make_unique<Impl>();
         if (!MakeCamera(info, view, next->camera)) return {ReplaySceneStatus::InvalidFrame, "Invalid replay trajectory bounds"};
         next->info = info;
+        next->color_mode = colors;
         next->moving = CopyGeometry(*frame.mesh);
         if(info.source_plasticity) {
             if(!SourceWall(info.kind)||info.triangle_source_parent.size()!=info.triangle_count||
@@ -173,12 +185,17 @@ ReplaySceneReport AcceptedReplayScene::Initialize(const output::ReplayInfo& info
                 return {ReplaySceneStatus::InvalidFrame,"Invalid accepted plastic display association or fixed scale"};
             for(const auto& parent:frame.parent_plastic_strain)if(parent.value!=0)
                 return {ReplaySceneStatus::InvalidFrame,"Initial accepted plastic display field is not zero"};
-            auto& indices=next->moving->GetIndicesColors();indices.reserve(info.triangle_count);
-            for(std::size_t t=0;t<info.triangle_count;++t)indices.push_back({int(t),int(t),int(t)});
             next->staged_colors.resize(info.triangle_count);
         } else if(!frame.parent_plastic_strain.empty()||!info.triangle_source_parent.empty()||info.plastic_strain_color_max!=0)
             return {ReplaySceneStatus::InvalidFrame,"Plastic display values lack a declared material"};
-        next->shape = MakeShape(next->moving, true, wireframe,info.source_plasticity);
+        if (colors == ReplayColorMode::PartId &&
+            !next->part_colors.Initialize(info.triangle_source_part,next->moving->GetCoordsColors()))
+            return {ReplaySceneStatus::InvalidFrame, "Part colors require positive original source part IDs"};
+        if (colors != ReplayColorMode::Uniform) {
+            auto& indices=next->moving->GetIndicesColors();indices.reserve(info.triangle_count);
+            for(std::size_t t=0;t<info.triangle_count;++t)indices.push_back({int(t),int(t),int(t)});
+        } else next->moving->GetCoordsColors().clear();
+        next->shape = MakeShape(next->moving, true, wireframe,colors != ReplayColorMode::Uniform);
         next->staged.resize(info.node_count);
         next->deformation_scale = deformation_scale;
         if (deformation_scale != 1) next->reference = frame.mesh->GetCoordsVertices();
@@ -223,7 +240,7 @@ ReplaySceneReport AcceptedReplayScene::Publish(const output::ReplayFrame& frame)
     } else if(!frame.parent_plastic_strain.empty())
         return {ReplaySceneStatus::InvalidFrame,"Undeclared plastic display field"};
     state.moving->GetCoordsVertices().swap(state.staged);
-    if(state.info.source_plasticity)state.moving->GetCoordsColors().swap(state.staged_colors);
+    if(state.color_mode == ReplayColorMode::PlasticStrain)state.moving->GetCoordsColors().swap(state.staged_colors);
     state.stamp = {frame.index, frame.owner_id, frame.epoch, frame.time};
     state.system.SetChTime(frame.time);
     return {ReplaySceneStatus::Ok, "Replay frame published without rebinding"};
@@ -234,6 +251,12 @@ chrono::ChSystem& AcceptedReplayScene::system() {
 }
 const ReplayStamp* AcceptedReplayScene::stamp() const noexcept { return impl_ ? &impl_->stamp : nullptr; }
 double AcceptedReplayScene::deformation_scale() const noexcept { return impl_ ? impl_->deformation_scale : 1; }
+ReplayColorMode AcceptedReplayScene::color_mode() const noexcept {
+    return impl_ ? impl_->color_mode : ReplayColorMode::Automatic;
+}
+const std::vector<ReplayPartLegendEntry>* AcceptedReplayScene::part_legend() const noexcept {
+    return impl_ && impl_->color_mode == ReplayColorMode::PartId ? &impl_->part_colors.legend() : nullptr;
+}
 const ReplayCamera* AcceptedReplayScene::camera() const noexcept { return impl_ ? &impl_->camera : nullptr; }
 std::shared_ptr<const chrono::ChTriangleMeshConnected> AcceptedReplayScene::moving_mesh() const noexcept {
     return impl_ ? impl_->moving : nullptr;

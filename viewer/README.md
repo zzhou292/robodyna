@@ -23,10 +23,39 @@ The local executable is `crash-work/build/robo-dyna-replay-r0/viewer/robo_dyna_r
 After the coordinated build, the executable accepts:
 
 ```text
-robo_dyna_replay BUNDLE [--capture NEW_DIR] [--fps 1..60] [--require-frames N] [--wireframe] [--view incident-side|wall-side]
+robo_dyna_replay BUNDLE [--capture NEW_DIR] [--fps 1..60] [--require-frames N] [--wireframe] [--view incident-side|wall-side] [--color auto|uniform|part-id|plastic-strain]
 ```
 
 Without `--capture`, it displays successive recorded frames at ten frames per second by default, then holds the final frame. Pause, next-frame and close controls are provided. `--fps` changes presentation cadence only; the overlay always displays the actual saved simulation time. There is no interpolation, backward seek or deformation magnification in this slice.
+
+`--color part-id` colors each triangle by its authenticated original part ID.
+Both display triangles of a source quad retain the same part color. The versioned
+`robo-dyna.original-part-id.v1` palette uses frozen seed 1 and the full PID, so colors
+stay fixed across frames, triangle ordering and selected subsets. The overlay
+identifies this as categorical coloring, shows up to eight PID swatches, and the
+capture manifest retains the complete sorted PID/RGB table. The palette does not
+encode stress, material or plastic strain. Seed 1 is the first tested Weyl-offset
+seed with no binary32 or rounded linear 8-bit RGB aliases across all 875 original
+shell PIDs; it is fixed globally, not chosen per replay. An arbitrary number of
+64-bit IDs cannot be guaranteed perceptually distinct display colors.
+
+`--color plastic-strain` selects the existing native maximum-layer plastic-strain
+diagnostic and its fixed legend. The default `auto` preserves the previous
+plastic-strain colors for plastic archives and uniform blue otherwise; `uniform`
+is also explicit. Part mode rejects absent/zero original IDs and schemas without
+source part provenance. Plastic mode rejects archives without accepted plastic
+fields. Hidden plastic fields still undergo the same validation in part mode;
+failed frames preserve the complete accepted display. Camera, physical geometry,
+wall mesh, native fields, replay timing and accepted archive bytes are unchanged.
+
+The PID mapping comes from the already validated `triangle_binding` part column,
+which is checked against every authenticated source parent. The full canonical
+import also retains original element PIDs (`*_records` second column and part
+declarations); a future full-vehicle accepted reader can populate the same typed
+`triangle_source_part` vector. The palette utility itself permits up to 1,048,576
+triangles and is checked at the full source's 695,433-triangle count; this is
+separate from reader/scene admission. This display change does not admit a new
+source schema or raise the existing replay/mesh capacity limits.
 
 `--view wall-side` selects a fixed view from the opposite X side for source-part
 and source-assembly wall archives, exposing the wall-facing surface. The default

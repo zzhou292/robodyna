@@ -46,6 +46,9 @@ struct ReplayInfo {
     double plastic_strain_color_max = 0;
     double source_initial_speed_m_per_s = 0;
     std::vector<std::uint64_t> triangle_source_parent;
+    // Complete original PID per display triangle, copied only from validated
+    // source bindings. Empty for schemas without original part provenance.
+    std::vector<std::uint64_t> triangle_source_part;
 };
 struct ReplayParentScalar {
     std::uint64_t source_parent = 0;

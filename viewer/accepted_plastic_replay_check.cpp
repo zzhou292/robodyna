@@ -94,17 +94,20 @@ void CheckArchivedGeometry(const chrono::ChTriangleMeshConnected& mesh,const out
     }
 }
 
-void CheckActualPlasticBundle(const std::filesystem::path& fixture,out::ReplayKind kind) {
+void CheckActualPlasticBundle(const std::filesystem::path& fixture,out::ReplayKind kind,bool require_yield=true) {
     const bool assembly=kind==out::ReplayKind::SourceAssemblyWall;
     out::AcceptedReplay reader;auto report=reader.Open(fixture);
     ASSERT_EQ(report.status,out::ReplayStatus::Ok) << report.diagnostic;
     const auto info=*reader.info();ASSERT_EQ(info.kind,kind);
     ASSERT_TRUE(info.source_plasticity);ASSERT_GT(info.source_initial_speed_m_per_s,0);
     ASSERT_EQ(info.triangle_source_parent.size(),info.triangle_count);
+    ASSERT_EQ(info.triangle_source_part.size(),info.triangle_count);
     if(assembly) {
-        ASSERT_TRUE(info.source_assembly);ASSERT_EQ(info.node_count,1030u);ASSERT_EQ(info.triangle_count,1719u);
-        EXPECT_EQ(info.source_assembly->parents,915u);EXPECT_EQ(info.source_assembly->qeph,804u);
-        EXPECT_EQ(info.source_assembly->t3,111u);EXPECT_TRUE(info.material_model.empty());
+        ASSERT_TRUE(info.source_assembly);const auto parts=info.source_assembly->part_ids.size();
+        ASSERT_TRUE(parts==6||parts==7);const bool seven=parts==7;
+        ASSERT_EQ(info.node_count,seven?1093u:1030u);ASSERT_EQ(info.triangle_count,seven?1804u:1719u);
+        EXPECT_EQ(info.source_assembly->parents,seven?959u:915u);EXPECT_EQ(info.source_assembly->qeph,seven?845u:804u);
+        EXPECT_EQ(info.source_assembly->t3,seven?114u:111u);EXPECT_TRUE(info.material_model.empty());
     }
     const auto config=ReadDocument(fixture/"configuration.json",out::assembly::WallConfigurationBytes);
     const auto& triangle_binding=Array(Member(config,"triangle_binding"));
@@ -112,6 +115,10 @@ void CheckActualPlasticBundle(const std::filesystem::path& fixture,out::ReplayKi
     const auto recorded_wall=ReadDocument(fixture/"placed-wall.mesh.json",out::assembly::WallMeshBytes);
     crash::visual::AcceptedReplayScene scene;
     ASSERT_EQ(scene.Initialize(info,*reader.frame(),reader.wall()).status,crash::visual::ReplaySceneStatus::Ok);
+    crash::visual::AcceptedReplayScene parts;
+    ASSERT_EQ(parts.Initialize(info,*reader.frame(),reader.wall(),false,1,crash::visual::ReplayView::IncidentSide,
+                              crash::visual::ReplayColorMode::PartId).status,crash::visual::ReplaySceneStatus::Ok);
+    const auto part_shape=parts.moving_shape();
     const auto shape=scene.moving_shape();const auto mesh=shape->GetMesh();
     ASSERT_EQ(shape->GetNumMaterials(),0);ASSERT_EQ(scene.deformation_scale(),1);
     const auto wall=scene.wall_mesh();ASSERT_TRUE(wall);
@@ -121,6 +128,7 @@ void CheckActualPlasticBundle(const std::filesystem::path& fixture,out::ReplayKi
         if(i) {
             report=reader.Load(i);ASSERT_EQ(report.status,out::ReplayStatus::Ok) << report.diagnostic;
             ASSERT_EQ(scene.Publish(*reader.frame()).status,crash::visual::ReplaySceneStatus::Ok);
+            ASSERT_EQ(parts.Publish(*reader.frame()).status,crash::visual::ReplaySceneStatus::Ok);
         }
         const auto& frame=*reader.frame();
         const auto fields=ReadDocument(fixture/AcceptedName(frame.epoch,".fields.json"),
@@ -131,7 +139,7 @@ void CheckActualPlasticBundle(const std::filesystem::path& fixture,out::ReplayKi
         EXPECT_EQ(out::Bits(fields["accepted_time_s"].GetDouble()),out::Bits(frame.time));
         const auto expected=PointMaxima(fields,assembly);
         ASSERT_EQ(frame.parent_plastic_strain.size(),expected.size());
-        if(assembly)ASSERT_EQ(expected.size(),915u);
+        if(assembly)ASSERT_EQ(expected.size(),info.source_assembly->part_ids.size()==7?959u:915u);
         for(const auto& parent:frame.parent_plastic_strain) {
             const auto found=expected.find(parent.source_parent);ASSERT_NE(found,expected.end());
             EXPECT_EQ(out::Bits(parent.value),out::Bits(found->second));
@@ -141,6 +149,12 @@ void CheckActualPlasticBundle(const std::filesystem::path& fixture,out::ReplayKi
         for(std::size_t t=0;t<info.triangle_count;++t) {
             const auto& binding=Array(triangle_binding[t]);ASSERT_EQ(binding.Size(),9u);ASSERT_TRUE(binding[5].IsUint64());
             const auto eid=binding[5].GetUint64();EXPECT_EQ(info.triangle_source_parent[t],eid);
+            ASSERT_TRUE(binding[6].IsUint64());const auto pid=binding[6].GetUint64();ASSERT_GT(pid,0u);
+            EXPECT_EQ(info.triangle_source_part[t],pid);
+            const auto part_color=crash::visual::ReplayPartColor(pid);
+            const auto& displayed_part=parts.moving_mesh()->GetCoordsColors()[t];
+            EXPECT_EQ(displayed_part.R,part_color.R);EXPECT_EQ(displayed_part.G,part_color.G);
+            EXPECT_EQ(displayed_part.B,part_color.B);
             const auto found=expected.find(eid);ASSERT_NE(found,expected.end());
             const auto color=PointColor(found->second,info.plastic_strain_color_max);
             for(unsigned corner=0;corner<3;++corner) {
@@ -154,6 +168,9 @@ void CheckActualPlasticBundle(const std::filesystem::path& fixture,out::ReplayKi
         const auto archived_mesh=ReadDocument(fixture/AcceptedName(frame.epoch,".mesh.json"),out::assembly::WallMeshBytes);
         ASSERT_NO_FATAL_FAILURE(CheckArchivedGeometry(*mesh,archived_mesh));
         ASSERT_NO_FATAL_FAILURE(CheckArchivedGeometry(*wall,recorded_wall));
+        ASSERT_NO_FATAL_FAILURE(CheckArchivedGeometry(*parts.moving_mesh(),archived_mesh));
+        ASSERT_NO_FATAL_FAILURE(CheckArchivedGeometry(*parts.wall_mesh(),recorded_wall));
+        EXPECT_EQ(parts.moving_shape(),part_shape);EXPECT_EQ(parts.stamp()->epoch,frame.epoch);
         const auto& nodal=assembly?Member(fields,"nodal_fields"):fields;
         const auto& position=Array(Member(nodal,"position_xyz_m"));ASSERT_EQ(position.Size(),3*info.node_count);
         for(std::size_t n=0;n<info.node_count;++n)for(unsigned axis=0;axis<3;++axis) {
@@ -164,7 +181,7 @@ void CheckActualPlasticBundle(const std::filesystem::path& fixture,out::ReplayKi
         EXPECT_EQ(scene.wall_mesh(),wall);EXPECT_EQ(scene.stamp()->epoch,frame.epoch);
         EXPECT_DOUBLE_EQ(scene.stamp()->time,frame.time);
     }
-    EXPECT_TRUE(observed_yield) << "This optional gate requires actual nonzero accepted plastic histories";
+    if(require_yield)EXPECT_TRUE(observed_yield) << "This optional gate requires actual nonzero accepted plastic histories";
     EXPECT_DOUBLE_EQ(info.plastic_strain_color_max,std::max(.001,largest_point_strain));
 }
 
@@ -177,5 +194,12 @@ TEST(AcceptedReplayScene, ActualAssemblyBundleStagesEveryNativeParentAndPhysical
     const auto* fixture=std::getenv("ROBO_DYNA_SOURCE_ASSEMBLY_REPLAY_FIXTURE");
     if(!fixture||!*fixture)GTEST_SKIP() << "Set ROBO_DYNA_SOURCE_ASSEMBLY_REPLAY_FIXTURE to a completed assembly archive";
     CheckActualPlasticBundle(fixture,out::ReplayKind::SourceAssemblyWall);
+}
+TEST(AcceptedReplayScene, ActualSevenPartBundleKeepsOriginalPartColorsAndNativePlasticDiagnostic) {
+    const auto* fixture=std::getenv("ROBO_DYNA_SEVEN_PART_REPLAY_FIXTURE");
+    if(!fixture||!*fixture)GTEST_SKIP() << "Set ROBO_DYNA_SEVEN_PART_REPLAY_FIXTURE to a completed seven-part archive";
+    // A short source-complete smoke can remain elastic; native point fields
+    // are still checked exactly, with no claim that this fixture has yielded.
+    CheckActualPlasticBundle(fixture,out::ReplayKind::SourceAssemblyWall,false);
 }
 } // namespace

@@ -38,6 +38,8 @@ ReplayReport AcceptedReplay::Open(const std::filesystem::path& directory) {
         auto candidate = std::make_unique<Impl>();
         candidate->bundle = rd::ReadIndex(directory);
         auto& bundle = candidate->bundle;
+        for (const auto& triangle : bundle.source_triangles)
+            bundle.info.triangle_source_part.push_back(triangle[6]);
         if(bundle.info.source_plasticity) {
             bundle.info.plastic_strain_color_max=std::max(.001,bundle.assembly?bundle.assembly->maximum_plastic:bundle.plastic_final_values[0]);
             const auto& v=bundle.source_initial_velocity;

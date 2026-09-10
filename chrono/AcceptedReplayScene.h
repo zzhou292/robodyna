@@ -1,6 +1,8 @@
 #pragma once
 
 #include "ReplayView.h"
+#include "ReplayColorMode.h"
+#include "ReplayPartColors.h"
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -47,15 +49,18 @@ class AcceptedReplayScene {
     ReplaySceneReport Initialize(const output::ReplayInfo&, const output::ReplayFrame&,
                                 std::shared_ptr<const chrono::ChTriangleMeshConnected> wall,
                                 bool wireframe = false, double deformation_scale = 1,
-                                ReplayView view = ReplayView::IncidentSide);
+                                ReplayView view = ReplayView::IncidentSide,
+                                ReplayColorMode colors = ReplayColorMode::Automatic);
     // WallSide is supported by SourcePartWall and SourceAssemblyWall, whose
     // placed wall has its incident normal along -X. It reflects the camera's
     // X offset about the trajectory target; all accepted geometry is retained.
     // SourcePartElastic alone permits explicit presentation magnification: X0 +
     // scale*(X-X0), scale in [1,1000]. Caller supplies bounds computed over
     // transformed frames; input archives and accepted state remain untouched.
-    // Plastic wall replay uses a fixed declared scalar scale and one flat color
-    // per original source parent. Stages positions and colors together;
+    // Automatic retains plastic wall replay's fixed scalar scale; PartId uses
+    // complete original PIDs and a fixed palette across frames/subsets. It keeps
+    // native plastic-field validation active while displaying categorical colors.
+    // Plastic mode stages positions and colors together;
     // rejection preserves both, visual handles, stamp and presentation time.
     // No per-frame allocation or rebinding.
     ReplaySceneReport Publish(const output::ReplayFrame&);
@@ -63,6 +68,8 @@ class AcceptedReplayScene {
     const ReplayStamp* stamp() const noexcept;
     const ReplayCamera* camera() const noexcept;
     double deformation_scale() const noexcept;
+    ReplayColorMode color_mode() const noexcept;
+    const std::vector<ReplayPartLegendEntry>* part_legend() const noexcept;
     std::shared_ptr<const chrono::ChTriangleMeshConnected> moving_mesh() const noexcept;
     std::shared_ptr<const chrono::ChTriangleMeshConnected> wall_mesh() const noexcept;
     std::shared_ptr<chrono::ChVisualShapeTriangleMesh> moving_shape() const noexcept;
