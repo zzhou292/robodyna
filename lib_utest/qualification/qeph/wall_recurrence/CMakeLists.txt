@@ -87,3 +87,16 @@ target_compile_features(qeph_wall_raw_read_check PRIVATE cxx_std_17)
 target_compile_options(qeph_wall_raw_read_check PRIVATE -fno-fast-math -ffp-contract=off)
 add_test(NAME qeph_wall_raw_read_check COMMAND qeph_wall_raw_read_check)
 set_tests_properties(qeph_wall_raw_read_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)
+
+# Pure one-job decisions consume the reconstructed raw operands. No JSON,
+# native solver invocation or cross-job timestep selection is hidden here.
+add_library(qeph_wall_job_analysis STATIC WallJobAnalysis.cpp WallJobContactChecks.cpp)
+target_link_libraries(qeph_wall_job_analysis PUBLIC qeph_wall_raw_capture qeph_wall_recurrence_analysis)
+target_compile_features(qeph_wall_job_analysis PUBLIC cxx_std_17)
+target_compile_options(qeph_wall_job_analysis PRIVATE -fno-fast-math -ffp-contract=off)
+add_executable(qeph_wall_job_analysis_check WallJobAnalysisTest.cpp WallJobContactCheckTest.cpp)
+target_link_libraries(qeph_wall_job_analysis_check PRIVATE qeph_wall_job_analysis GTest::gtest_main)
+target_compile_features(qeph_wall_job_analysis_check PRIVATE cxx_std_17)
+target_compile_options(qeph_wall_job_analysis_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME qeph_wall_job_analysis_check COMMAND qeph_wall_job_analysis_check)
+set_tests_properties(qeph_wall_job_analysis_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)
