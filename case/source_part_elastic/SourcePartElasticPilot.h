@@ -10,4 +10,6 @@ Config PilotConfig(unsigned refinement);
 // Source-specific startup/free-flight qualification only: 1 m/s global X,
 // zero external load, original geometry/mass and the same elastic override.
 Config UniformFlightConfig(unsigned refinement);
+Config MeshWallConfig(unsigned refinement);
+source_part_wall::SourcePartWallSettings MeshWallSettings(const Config&);
 }

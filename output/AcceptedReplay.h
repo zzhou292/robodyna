@@ -11,7 +11,7 @@ namespace chrono { class ChTriangleMeshConnected; }
 
 namespace crash::output {
 
-enum class ReplayKind { NormalImpact, ElasticCoupon, GuidedPlate, SourcePartElastic };
+enum class ReplayKind { NormalImpact, ElasticCoupon, GuidedPlate, SourcePartElastic, SourcePartWall };
 enum class ReplayStatus { Ok, InvalidBundle, NotInitialized, InvalidFrame };
 struct ReplayReport { ReplayStatus status; std::string diagnostic; };
 struct ReplayInfo {
@@ -28,6 +28,8 @@ struct ReplayInfo {
     // Validated guided name; empty for other replay kinds. Missing legacy
     // guided metadata resolves to the original experiment only.
     std::string guided_experiment;
+    bool horizon_complete=true; // Explicit wall accepted prefixes may stop early.
+    std::string stop_reason;
 };
 struct ReplayFrame {
     std::size_t index = 0;

@@ -5,6 +5,7 @@ namespace crash::cases::source_part_elastic {
 namespace fe = tl::fea;
 namespace q = fe::qeph;
 namespace t = fe::t3;
+struct SourcePartWallState;
 
 struct SourcePartElasticCase::Impl {
     source::SourcePartContactFixture source;
@@ -16,6 +17,7 @@ struct SourcePartElasticCase::Impl {
     q::QephBatch qeph;
     t::T3Batch t3;
     fe::ShellBatchPublication publication;
+    std::unique_ptr<SourcePartWallState> wall;
     Snapshot accepted, trial;
     std::array<double,NodeCount> inverse_mass{}, inverse_inertia{}, spatial_shape{};
     std::array<double,3*NodeCount> pulse_force{}, endpoint_force{}, endpoint_couple{};
@@ -31,12 +33,20 @@ struct SourcePartElasticCase::Impl {
     ~Impl();
     Report Initialize(const source::SourcePartContactFixture&,const Config&);
     Report InitializeLoading();
+    Report InitializeWall(const case_data::CanonicalWall&,const std::string&,const source_part_wall::SourcePartWallSettings&);
+    Report AssembleWall(const fe::NodalAssemblyView&);
+    Report EvaluateWall();
+    Report GatherWallEndpoint();
+    Report ObserveWall(long double synchronized_kinetic);
+    void CommitWall() noexcept;
+    void DiscardWall() noexcept;
     Report Prepare();
+    Report EvaluateShells();
     Report Evaluate();
     Report Observe();
     Report Commit();
     void Discard() noexcept {
-        owner.Discard(); publication.DiscardTrial(); qeph.DiscardTrial(); t3.DiscardTrial();
+        owner.Discard(); publication.DiscardTrial(); qeph.DiscardTrial(); t3.DiscardTrial(); DiscardWall();
     }
 };
 

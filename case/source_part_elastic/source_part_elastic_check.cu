@@ -45,7 +45,7 @@ TEST_F(SourcePartElastic, All94OriginalShellsAgreeWithNativeThrough64AcceptedPul
     SourcePartElasticCase run;
     ASSERT_TRUE(run.Initialize(source,PilotConfig(1)));
     auto native=std::make_unique<NativeSequence>();
-    ASSERT_NO_FATAL_FAILURE(native->Initialize(run.binding()));
+    ASSERT_NO_FATAL_FAILURE(native->Initialize(run));
     const auto allocation=run.allocations();
     Snapshot base,endpoint; ASSERT_TRUE(run.Capture(&base));
     for(unsigned step=0;step<64;++step) {

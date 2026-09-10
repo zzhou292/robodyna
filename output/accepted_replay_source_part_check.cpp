@@ -1,5 +1,6 @@
 #include "AcceptedReplay.h"
 #include "AcceptedReplayData.h"
+#include "ReplayBundleTestSupport.h"
 #include "ArtifactIO.h"
 #include "chrono/geometry/ChTriangleMeshConnected.h"
 #include <gtest/gtest.h>
@@ -14,42 +15,7 @@ fs::path Source() {
     const char* path=std::getenv("ROBO_DYNA_SOURCE_PART_REPLAY_FIXTURE");
     Require(path&&*path,"ROBO_DYNA_SOURCE_PART_REPLAY_FIXTURE must name the accepted original source-part bundle");return path;
 }
-class ModifiedBundle {
-  public:
-    fs::path directory;
-    ModifiedBundle() {
-        auto pattern=(fs::temp_directory_path()/"source-part-replay-XXXXXX").string();std::vector<char> name(pattern.begin(),pattern.end());name.push_back(0);
-        const auto result=::mkdtemp(name.data());Require(result,"Cannot create source replay test directory");directory=result;
-        // Share immutable payloads; mutations replace a directory entry before
-        // writing. No write ever touches a source inode or original manifest.
-        for(const auto& entry:fs::directory_iterator(Source())) if(entry.is_regular_file()) {
-            std::error_code error;fs::create_hard_link(entry.path(),directory/entry.path().filename(),error);
-            if(error)fs::copy_file(entry.path(),directory/entry.path().filename());
-        }
-    }
-    ~ModifiedBundle(){std::error_code error;fs::remove_all(directory,error);}
-    Document Read(const std::string& file)const{return replay_detail::Json(ReadBounded(directory/file,32*1024*1024));}
-    void Replace(const std::string& file,const Document& d) {
-        fs::remove(directory/file);WriteJson(directory/file,d);
-    }
-    void Rehash(const std::string& file) {
-        auto manifest=Read("manifest.json");const auto bytes=ReadBounded(directory/file,32*1024*1024);bool found=false;
-        for(auto& entry:manifest["artifacts"].GetArray())if(file==entry["file"].GetString()) {
-            entry["sha256"].SetString(Sha256(bytes).c_str(),manifest.GetAllocator());entry["bytes"].SetUint64(bytes.size());found=true;
-        }
-        Require(found,"Mutated test file was not inventoried");Replace("manifest.json",manifest);
-    }
-    std::string Frame(std::uint64_t epoch)const {
-        const auto manifest=Read("manifest.json");
-        for(const auto& entry:manifest["artifacts"].GetArray()) {
-            const std::string name=entry["file"].GetString();
-            if(name.size()>12&&name.substr(name.size()-12)==".fields.json") {
-                const auto f=Read(name);if(f["accepted_epoch"].GetUint64()==epoch)return name;
-            }
-        }
-        throw std::runtime_error("Required epoch was not saved");
-    }
-};
+using ModifiedBundle=test_support::ModifiedReplayBundle;
 TEST(AcceptedReplaySourcePart, OriginalPartStreamsInitialFirstSparseAndFinalAcceptedGeometry) {
     AcceptedReplay reader;auto report=reader.Open(Source());ASSERT_EQ(report.status,ReplayStatus::Ok)<<report.diagnostic;
     ASSERT_EQ(reader.info()->kind,ReplayKind::SourcePartElastic);EXPECT_EQ(reader.info()->node_count,117u);
@@ -61,7 +27,7 @@ TEST(AcceptedReplaySourcePart, OriginalPartStreamsInitialFirstSparseAndFinalAcce
 }
 TEST(AcceptedReplaySourcePart, RehashedRawTimingFaultsRemainInvalid) {
     for(unsigned fault=0;fault<7;++fault) {
-        ModifiedBundle b;const auto name=b.Frame(fault==0?0:1);auto fields=b.Read(name);
+        ModifiedBundle b(Source());const auto name=b.Frame(fault==0?0:1);auto fields=b.Read(name);
         if(fault==0)fields["velocity_phase"].SetString("previous_midpoint",fields.GetAllocator());
         if(fault==1)fields["velocity_phase"].SetString("collocated",fields.GetAllocator());
         if(fault==2)fields["reaction_kick_dt_s"].SetDouble(fields["fixed_dt_s"].GetDouble());
@@ -75,7 +41,7 @@ TEST(AcceptedReplaySourcePart, RehashedRawTimingFaultsRemainInvalid) {
 }
 TEST(AcceptedReplaySourcePart, RehashedSourceMassFamilyAndConnectivityFaultsRemainInvalid) {
     for(unsigned fault=0;fault<6;++fault) {
-        ModifiedBundle b;auto c=b.Read("configuration.json");
+        ModifiedBundle b(Source());auto c=b.Read("configuration.json");
         if(fault==0)c["reference_nodes"][0]["mass_kg"].SetDouble(0);
         if(fault==1)c["reference_nodes"][0]["source_node_id"].SetUint64(0);
         if(fault==2)c["source_parents"][0]["family"].SetString("T3",c.GetAllocator());
@@ -88,7 +54,7 @@ TEST(AcceptedReplaySourcePart, RehashedSourceMassFamilyAndConnectivityFaultsRema
 }
 TEST(AcceptedReplaySourcePart, FieldGeometryAndQuaternionCorruptionAreRejected) {
     for(unsigned fault=0;fault<5;++fault) {
-        ModifiedBundle b;const auto name=b.Frame(fault>=3?0:1);auto f=b.Read(name);
+        ModifiedBundle b(Source());const auto name=b.Frame(fault>=3?0:1);auto f=b.Read(name);
         if(fault==0)f["position_xyz_m"][0].SetDouble(f["position_xyz_m"][0].GetDouble()+.001);
         if(fault==1)f["orientation_wxyz"][0].SetDouble(2);
         if(fault==2)f["synchronized_velocity_xyz_m_per_s"].PopBack();
@@ -98,7 +64,7 @@ TEST(AcceptedReplaySourcePart, FieldGeometryAndQuaternionCorruptionAreRejected) 
     }
 }
 TEST(AcceptedReplaySourcePart, FailedLoadAndReopenPreservePreviouslyPublishedReader) {
-    ModifiedBundle b;AcceptedReplay reader;auto report=reader.Open(b.directory);ASSERT_EQ(report.status,ReplayStatus::Ok)<<report.diagnostic;
+    ModifiedBundle b(Source());AcceptedReplay reader;auto report=reader.Open(b.directory);ASSERT_EQ(report.status,ReplayStatus::Ok)<<report.diagnostic;
     ASSERT_EQ(reader.Load(1).status,ReplayStatus::Ok);const auto old=*reader.frame();const auto old_info=*reader.info();
     const auto name=b.Frame(1);auto fields=b.Read(name);fields["velocity_phase"].SetString("collocated",fields.GetAllocator());
     b.Replace(name,fields);EXPECT_EQ(reader.Load(1).status,ReplayStatus::InvalidFrame);

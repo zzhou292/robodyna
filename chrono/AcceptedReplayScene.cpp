@@ -98,13 +98,18 @@ bool MakeCamera(const output::ReplayInfo& info, ReplayCamera& camera) {
     // horizontal projection keeps sqrt(1/2) of both Z width and X motion.
     // Y up and a small Y offset keep the long plate axis almost vertical.
     camera.vertical = info.kind == output::ReplayKind::GuidedPlate ? ReplayVertical::Y : ReplayVertical::Z;
-    const std::array<double, 3> direction = info.kind == output::ReplayKind::GuidedPlate
+    const std::array<double, 3> direction = info.kind == output::ReplayKind::SourcePartWall
+        ? std::array<double, 3>{-1.0, -1.0, 0.15}
+        : info.kind == output::ReplayKind::GuidedPlate
         ? std::array<double, 3>{-1.0, -0.15, -1.0}
         : info.kind == output::ReplayKind::ElasticCoupon
         ? std::array<double, 3>{-0.3, -1.25, 0.18}
         : std::array<double, 3>{-1.5, -1.25, 1.0};
     for (int i = 0; i < 3; ++i) {
-        camera.position[i] = camera.target[i] + 1.6 * diagonal * direction[i];
+        // Close incident-side source view: the whole original part and nearby
+        // actual wall remain visible; no geometry or deformation is scaled.
+        const double distance=info.kind==output::ReplayKind::SourcePartWall?1.25:1.6;
+        camera.position[i] = camera.target[i] + distance * diagonal * direction[i];
         if (!std::isfinite(camera.position[i])) return false;
     }
     return true;
@@ -134,9 +139,11 @@ ReplaySceneReport AcceptedReplayScene::Initialize(const output::ReplayInfo& info
         frame.epoch > info.final_epoch || !info.frame_count || info.frame_count > 1000 ||
         (info.frame_count == 1 && (info.final_epoch != 0 || info.final_time != 0)) ||
         (info.kind != output::ReplayKind::NormalImpact && info.kind != output::ReplayKind::ElasticCoupon &&
-         info.kind != output::ReplayKind::GuidedPlate && info.kind != output::ReplayKind::SourcePartElastic) ||
+         info.kind != output::ReplayKind::GuidedPlate && info.kind != output::ReplayKind::SourcePartElastic &&
+         info.kind != output::ReplayKind::SourcePartWall) ||
         frame.mesh->GetCoordsVertices().size() != info.node_count || frame.mesh->GetIndicesVertices().size() != info.triangle_count ||
-        (info.kind == output::ReplayKind::NormalImpact || info.kind == output::ReplayKind::GuidedPlate) != static_cast<bool>(wall) ||
+        (info.kind == output::ReplayKind::NormalImpact || info.kind == output::ReplayKind::GuidedPlate ||
+         info.kind == output::ReplayKind::SourcePartWall) != static_cast<bool>(wall) ||
         !DisplayGeometry(frame.mesh->GetCoordsVertices(), frame.mesh->GetIndicesVertices()) ||
         (wall && !DisplayGeometry(wall->GetCoordsVertices(), wall->GetIndicesVertices())))
         return {ReplaySceneStatus::InvalidFrame, "Invalid validated replay geometry or metadata"};
@@ -156,7 +163,8 @@ ReplaySceneReport AcceptedReplayScene::Initialize(const output::ReplayInfo& info
                 MakeShape(CopyGeometry(*frame.mesh), false, true)));
         if (wall) {
             next->wall = CopyGeometry(*wall);
-            next->system.AddBody(Carrier("canonical fixed wall", MakeShape(next->wall, false, true)));
+            next->system.AddBody(Carrier(info.kind==output::ReplayKind::SourcePartWall?"placed original fixed wall":"canonical fixed wall",
+                MakeShape(next->wall, false, true)));
         }
         next->stamp = {frame.index, frame.owner_id, frame.epoch, frame.time};
         next->system.SetChTime(frame.time);  // Recorded presentation time only.

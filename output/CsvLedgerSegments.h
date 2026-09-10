@@ -58,6 +58,10 @@ class CsvLedgerWriter {
     void Append(std::uint64_t accepted_epoch,const std::string& row);
     void Flush();
     void Finish(); // All planned rows required; checked close.
+    // Explicit accepted-prefix close. Requires at least one written row and
+    // returns the deterministic shorter plan; never fabricates missing rows.
+    // Existing Finish retains its complete-horizon contract.
+    CsvLedgerPlan FinishPrefix();
     void Abort() noexcept;
     std::uint64_t rows_written() const noexcept { return rows_; }
     bool failed() const noexcept { return failed_; }
@@ -70,6 +74,7 @@ class CsvLedgerWriter {
     std::ofstream stream_;
     std::uint64_t rows_=0;
     std::size_t segment_=0,bytes_=0;
+    std::size_t file_cap_=kArtifactFileCap;
     bool failed_=false,finished_=false;
 };
 

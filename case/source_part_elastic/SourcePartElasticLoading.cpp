@@ -4,7 +4,7 @@
 
 namespace crash::cases::source_part_elastic {
 Report SourcePartElasticCase::Impl::InitializeLoading() {
-    if(config.experiment==Experiment::UniformFlight) {
+    if(config.experiment!=Experiment::ElasticPulse) {
         for(std::size_t n=0;n<NodeCount;++n) for(unsigned a=0;a<3;++a)
             accepted.velocity[3*n+a]=config.initial_velocity[a];
         return Success(); // No pulse construction or load allocation in free flight.

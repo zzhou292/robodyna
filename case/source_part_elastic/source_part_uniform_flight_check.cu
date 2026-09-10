@@ -74,7 +74,7 @@ TEST_F(SourcePartUniformFlight, All94OriginalShellsAgreeWithNativeThrough64Rigid
     SourcePartElasticCase run;
     ASSERT_TRUE(run.Initialize(source,UniformFlightConfig(1)));
     auto native=std::make_unique<NativeSequence>();
-    ASSERT_NO_FATAL_FAILURE(native->Initialize(run.binding()));
+    ASSERT_NO_FATAL_FAILURE(native->Initialize(run));
     FlightOracle flight; ASSERT_NO_FATAL_FAILURE(flight.Initialize(run,*native));
     const auto allocation=run.allocations();
     Snapshot base,endpoint; ASSERT_TRUE(run.Capture(&base));
@@ -135,7 +135,7 @@ TEST_F(SourcePartUniformFlight, RejectedFirstMovingTrialPreservesMeasuredK0AndRe
     EXPECT_EQ(after.diagnostics.shells.kinetic.translation,initial_kinetic);
     EXPECT_EQ(p.accepted_q_work_magnitude,q_magnitudes); EXPECT_EQ(p.accepted_t_work_magnitude,t_magnitudes);
     ASSERT_NO_FATAL_FAILURE(ReadResults(run,*observed)); SameResults(*original,*observed);
-    auto native=std::make_unique<NativeSequence>(); ASSERT_NO_FATAL_FAILURE(native->Initialize(run.binding()));
+    auto native=std::make_unique<NativeSequence>(); ASSERT_NO_FATAL_FAILURE(native->Initialize(run));
     ASSERT_TRUE(run.Step()); ASSERT_TRUE(clean.Step());
     ASSERT_TRUE(run.Capture(&after)); ASSERT_TRUE(clean.Capture(&expected)); SameSnapshot(after,expected,false);
     ASSERT_NO_FATAL_FAILURE(ReadResults(run,*observed));

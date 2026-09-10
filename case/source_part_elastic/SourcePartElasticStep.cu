@@ -40,6 +40,10 @@ Report SourcePartElasticCase::Impl::Prepare() {
     const auto tr=t3.AssembleAccepted(assembly);
     if(tr.status!=t::BatchStatus::Success) return Failure(Status::ComponentFailure,tr.message,0,0,
         tr.element<source::T3Count?binding.t3_source_id(tr.element):0);
+    if(wall) {
+        const auto wr=AssembleWall(assembly);
+        if(!wr) return wr; // Last contributor measures actual force-addition roundoff.
+    }
     nr=owner.SealAssembly(token);
     if(nr.status!=fe::NodalStatus::Ok) return Failure(Status::ComponentFailure,nr.message);
     nr=fe::AdvanceStaggeredHistory(owner,token,{assembly.owner_id,assembly.accepted.base_epoch,
@@ -50,7 +54,7 @@ Report SourcePartElasticCase::Impl::Prepare() {
     if(!ReadPrepared(prepared,trial)) return Failure(Status::DeviceFailure,"Candidate nodal readback failed");
     return Success();
 }
-Report SourcePartElasticCase::Impl::Evaluate() {
+Report SourcePartElasticCase::Impl::EvaluateShells() {
     auto& d=trial.diagnostics.shells;
     auto qr=qeph.EvaluateCandidate(prepared,&d.qeph);
     if(qr.status!=q::BatchStatus::Success) return Failure(Status::ComponentFailure,qr.message,0,0,
@@ -62,6 +66,16 @@ Report SourcePartElasticCase::Impl::Evaluate() {
         tr.element<source::T3Count?binding.t3_source_id(tr.element):0);
     tr=t3.CopyPreparedResults(d.t3,tresult.data(),tresult.size());
     if(tr.status!=t::BatchStatus::Success) return Failure(Status::ComponentFailure,tr.message);
+    return Success();
+}
+Report SourcePartElasticCase::Impl::Evaluate() {
+    const auto shells=EvaluateShells();
+    if(!shells) return shells;
+    if(wall) {
+        const auto wr=EvaluateWall();
+        if(!wr) return wr;
+    }
+    auto& d=trial.diagnostics.shells;
     fe::ShellBatchDiagnostics common;
     const auto pr=publication.Prepare(owner,token,d.qeph,d.t3,&common);
     if(pr.status!=fe::ShellPublicationStatus::Success) return Failure(Status::ComponentFailure,pr.message);
@@ -81,6 +95,7 @@ Report SourcePartElasticCase::Impl::Commit() {
     accepted=trial;
     accepted_q_work_magnitude=trial_q_work_magnitude;
     accepted_t_work_magnitude=trial_t_work_magnitude;
+    CommitWall();
     return Success();
 }
 } // namespace crash::cases::source_part_elastic

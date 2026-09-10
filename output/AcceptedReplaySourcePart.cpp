@@ -77,18 +77,7 @@ void Family(const Bundle& bundle,const Entry& entry,const Value& d) {
         "maximum_displacement_m","maximum_absolute_strain","maximum_thickness_curvature","minimum_native_dt_s"})Real(d,name);
 }
 }
-void ReadSourcePartConfiguration(Bundle& bundle,const Document& c,const Document& final,const Document& manifest) {
-    Require(Text(c,"schema")=="robo_dyna.source_part_elastic_configuration.v1"&&Unsigned(c,"owner_id")==bundle.info.owner_id&&
-        Unsigned(c,"required_steps")==bundle.info.final_epoch&&Unsigned(final,"saved_frames")==bundle.info.frame_count&&
-        Unsigned(final,"owner_id")==bundle.info.owner_id,"Source replay configuration association mismatch");
-    Require(Text(c,"source_readiness_sha256")==Readiness&&Unsigned(c,"source_readiness_bytes")==671971&&Unsigned(c,"source_part_id")==Part&&
-        Unsigned(c,"q4_count")==Q4&&Unsigned(c,"t3_count")==T3&&!bundle.inventory.count("canonical-wall.mesh.json"),"Source replay scope or provenance mismatch");
-    Bool(manifest,"contact",false);Require(!Text(c,"attachment_policy").empty()&&!Text(c,"material_policy").empty(),"Source modeling policy is missing");
-    Require(Bits(Real(c,"young_modulus_Pa"))==Bits(200e9)&&Bits(Real(c,"poisson_ratio"))==Bits(.3)&&
-        Real(c,"density_kg_m3")>0&&Real(c,"thickness_m")>0,"Source experimental material declaration mismatch");
-    bundle.info.run_id=Unsigned(c,"run_id");bundle.info.topology_id=Unsigned(c,"topology_id");
-    bundle.qualification_id=Unsigned(c,"qualification_id");bundle.source_configuration_id=Unsigned(c,"configuration_id");
-    Require(bundle.info.run_id&&bundle.info.topology_id&&bundle.qualification_id&&bundle.source_configuration_id,"Source experiment identity is zero");
+void ReadSourcePartIdentity(Bundle& bundle,const Document& c) {
     const auto& vertices=Array(c,"vertex_binding",Nodes);const auto& nodes=Array(c,"reference_nodes",Nodes);
     const auto& parents=Array(c,"source_parents",Parents);const auto& triangles=Array(c,"triangle_binding",2*Q4+T3);
     bundle.info.node_count=Nodes;std::set<std::uint64_t> node_ids,parent_ids;
@@ -121,11 +110,25 @@ void ReadSourcePartConfiguration(Bundle& bundle,const Document& c,const Document
     }
     Require(qi==Q4&&ti==T3&&display==triangles.Size(),"Source family counts changed");
     for(bool present:covered)Require(present,"Source node was omitted from mechanics connectivity");
+}
+void ReadSourcePartConfiguration(Bundle& bundle,const Document& c,const Document& final,const Document& manifest) {
+    Require(Text(c,"schema")=="robo_dyna.source_part_elastic_configuration.v1"&&Unsigned(c,"owner_id")==bundle.info.owner_id&&
+        Unsigned(c,"required_steps")==bundle.info.final_epoch&&Unsigned(final,"saved_frames")==bundle.info.frame_count&&
+        Unsigned(final,"owner_id")==bundle.info.owner_id,"Source replay configuration association mismatch");
+    Require(Text(c,"source_readiness_sha256")==Readiness&&Unsigned(c,"source_readiness_bytes")==671971&&Unsigned(c,"source_part_id")==Part&&
+        Unsigned(c,"q4_count")==Q4&&Unsigned(c,"t3_count")==T3&&!bundle.inventory.count("canonical-wall.mesh.json"),"Source replay scope or provenance mismatch");
+    Bool(manifest,"contact",false);Require(!Text(c,"attachment_policy").empty()&&!Text(c,"material_policy").empty(),"Source modeling policy is missing");
+    Require(Bits(Real(c,"young_modulus_Pa"))==Bits(200e9)&&Bits(Real(c,"poisson_ratio"))==Bits(.3)&&
+        Real(c,"density_kg_m3")>0&&Real(c,"thickness_m")>0,"Source experimental material declaration mismatch");
+    bundle.info.run_id=Unsigned(c,"run_id");bundle.info.topology_id=Unsigned(c,"topology_id");
+    bundle.qualification_id=Unsigned(c,"qualification_id");bundle.source_configuration_id=Unsigned(c,"configuration_id");
+    Require(bundle.info.run_id&&bundle.info.topology_id&&bundle.qualification_id&&bundle.source_configuration_id,"Source experiment identity is zero");
+    ReadSourcePartIdentity(bundle,c);
     ReadIntervals(bundle,c,manifest);
 }
-void CheckSourcePartFields(const Bundle& bundle,const Entry& entry,const chrono::ChTriangleMeshConnected& mesh) {
-    const auto f=Json(VerifiedBytes(bundle,entry.mesh.substr(0,entry.mesh.size()-10)+".fields.json"));
-    Require(Text(f,"schema")=="robo_dyna.source_part_elastic_fields.v1"&&Unsigned(f,"owner_id")==entry.owner&&
+void CheckSourcePartFieldData(const Bundle& bundle,const Entry& entry,const chrono::ChTriangleMeshConnected& mesh,
+    const Document& f,const std::array<double,3>& startup_velocity) {
+    Require(Unsigned(f,"owner_id")==entry.owner&&
         Unsigned(f,"accepted_epoch")==entry.epoch&&Bits(Real(f,"accepted_time_s"))==Bits(entry.time)&&Bits(Real(f,"fixed_dt_s"))==Bits(bundle.fixed_dt)&&
         Text(f,"temporal_scheme")=="staggered_half_kick_start","Source field owner/epoch/scheme mismatch");
     CheckPositionFields(f,mesh);Finite(f,"orientation_wxyz",4*Nodes);Finite(f,"velocity_xyz_m_per_s",3*Nodes);
@@ -140,8 +143,8 @@ void CheckSourcePartFields(const Bundle& bundle,const Entry& entry,const chrono:
         const auto c=Json(VerifiedBytes(bundle,"configuration.json"));
         for(std::size_t n=0;n<Nodes;++n) for(unsigned j=0;j<3;++j)
             Require(Bits(mesh.GetCoordsVertices()[n][j])==Bits(c["reference_nodes"][n]["reference_xyz_m"][j].GetDouble())&&
-                f["velocity_xyz_m_per_s"][3*n+j].GetDouble()==0&&f["omega_world_xyz_rad_per_s"][3*n+j].GetDouble()==0&&
-                f["synchronized_velocity_xyz_m_per_s"][3*n+j].GetDouble()==0&&f["synchronized_omega_world_xyz_rad_per_s"][3*n+j].GetDouble()==0,
+                f["velocity_xyz_m_per_s"][3*n+j].GetDouble()==startup_velocity[j]&&f["omega_world_xyz_rad_per_s"][3*n+j].GetDouble()==0&&
+                f["synchronized_velocity_xyz_m_per_s"][3*n+j].GetDouble()==startup_velocity[j]&&f["synchronized_omega_world_xyz_rad_per_s"][3*n+j].GetDouble()==0,
                 "Source startup geometry/velocity changed");
         for(std::size_t n=0;n<Nodes;++n)for(unsigned j=0;j<4;++j)
             Require(f["orientation_wxyz"][4*n+j].GetDouble()==(j==0?1:0),"Source initial orientation is not identity");
@@ -155,5 +158,10 @@ void CheckSourcePartFields(const Bundle& bundle,const Entry& entry,const chrono:
     for(const char* key:{"base_kinetic","carried_kinetic"})for(const char* component:{"translation_J","rotation_total_J","rotation_physical_isotropic_J","rotation_added_isotropic_J"})
         Require(Real(Member(f,key),component)>=0,"Source kinetic diagnostic is negative");
     Real(Member(f,"qeph"),"hourglass_viscous_work_J");Real(Member(f,"qeph"),"hourglass_viscous_work_increment_J");
+}
+void CheckSourcePartFields(const Bundle& bundle,const Entry& entry,const chrono::ChTriangleMeshConnected& mesh) {
+    const auto f=Json(VerifiedBytes(bundle,entry.mesh.substr(0,entry.mesh.size()-10)+".fields.json"));
+    Require(Text(f,"schema")=="robo_dyna.source_part_elastic_fields.v1","Source pulse field schema mismatch");
+    CheckSourcePartFieldData(bundle,entry,mesh,f,{});
 }
 } // namespace crash::output::replay_detail

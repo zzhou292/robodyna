@@ -1,11 +1,11 @@
-#include "SourcePartElasticInternal.h"
+#include "SourcePartElasticWallInternal.h"
 #include <algorithm>
 #include <cmath>
 #include <new>
 
 namespace crash::cases::source_part_elastic {
 bool ValidConfig(const Config& c) noexcept {
-    if(c.experiment!=Experiment::ElasticPulse&&c.experiment!=Experiment::UniformFlight) return false;
+    if(c.experiment!=Experiment::ElasticPulse&&c.experiment!=Experiment::UniformFlight&&c.experiment!=Experiment::MeshWallImpact) return false;
     for(double v : {c.dt,c.maximum_displacement,c.maximum_rotation,
                     c.maximum_strain,c.maximum_thickness_curvature,c.minimum_area_ratio,c.maximum_area_ratio,
                     c.minimum_thickness_ratio,c.maximum_thickness_ratio,c.maximum_energy_residual,
@@ -17,6 +17,8 @@ bool ValidConfig(const Config& c) noexcept {
            c.dt>c.pulse_duration||c.initial_velocity[0]!=0||c.initial_velocity[1]!=0||c.initial_velocity[2]!=0) return false;
     } else if(c.pulse_duration!=0||c.acceleration!=0||c.spatial_axis!=0||c.direction!=std::array<double,3>{0,0,1}||
               (c.initial_velocity[0]==0&&c.initial_velocity[1]==0&&c.initial_velocity[2]==0)) return false;
+    if(c.experiment==Experiment::MeshWallImpact&&(c.initial_velocity[0]<=0||c.initial_velocity[1]!=0||
+        c.initial_velocity[2]!=0||c.relative_energy_residual>.05)) return false;
     double norm=0;
     for(double v:c.direction) { if(!std::isfinite(v)) return false; norm+=v*v; }
     return std::abs(norm-1)<=8e-16 && c.spatial_axis<3 &&
@@ -37,7 +39,8 @@ SourcePartElasticCase::~SourcePartElasticCase()=default;
 SourcePartElasticCase::Impl::~Impl() { if(device_pulse) cudaFree(device_pulse); }
 Report SourcePartElasticCase::Initialize(const source::SourcePartContactFixture& source,const Config& config) {
     if(impl_->initialized) return Failure(Status::AlreadyInitialized,"Source-part case is immutable after initialization");
-    if(!source.prepared()||!ValidConfig(config)) return Failure(Status::InvalidInput,"Unprepared source or invalid elastic case configuration");
+    if(!source.prepared()||!ValidConfig(config)||config.experiment==Experiment::MeshWallImpact)
+        return Failure(Status::InvalidInput,"Unprepared source, invalid configuration or missing wall setup");
     std::unique_ptr<Impl> staged(new(std::nothrow) Impl);
     if(!staged) return Failure(Status::ComponentFailure,"Source-part startup storage allocation failed");
     const auto result=staged->Initialize(source,config);
@@ -88,6 +91,10 @@ double SourcePartElasticCase::initial_kinetic_energy() const noexcept { return i
 fe::NodalAllocationInfo SourcePartElasticCase::allocations() const noexcept {
     fe::NodalAllocationInfo result;
     for(auto a:{impl_->owner.allocations(),impl_->qeph.allocations(),impl_->t3.allocations(),impl_->publication.allocations()}) {
+        result.device_bytes+=a.device_bytes; result.device_allocations+=a.device_allocations;
+    }
+    if(impl_->wall) {
+        const auto a=impl_->wall->contributor.allocations();
         result.device_bytes+=a.device_bytes; result.device_allocations+=a.device_allocations;
     }
     if(impl_->device_pulse) { result.device_bytes+=sizeof(impl_->pulse_force); ++result.device_allocations; }

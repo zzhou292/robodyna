@@ -1,7 +1,7 @@
 # Robo-dyna: Yaris delivery plan
 
-Updated 2026-09-09 after original source-part elastic refinement, accepted video
-and measured parallel CUDA speedup. This is the
+Updated 2026-09-10 after original source-part wall onset, archive/replay and
+comparison-test qualification. Full wall refinement/video are active. This is the
 implementation backlog. The latest measured ordering is maintained in the workspace
 [active execution plan](../../planning/CURRENT_EXECUTION_PLAN.md). The workspace
 [architecture and milestones](../../planning/YARIS_RIGID_WALL_DESIGN.md),
@@ -28,7 +28,11 @@ chord-length change is about 0.277 mm. The short actual-source native gate cover
 6,016 cell intervals, including late material/observer rejection and exact retry.
 Accepted archives, strict replay and Chrono rendering pass. This is the explicit
 free-part LAW1 elastic experiment; original MAT024 behavior, six nodal-rigid
-groups and tied attachments are not applied. It is not yet a part-wall impact.
+groups and tied attachments are not applied. Its separate mesh-wall onset gate
+now passes 8,448 intervals plus late failure/exact retry, with all 94 native
+histories checked. Full h/h2/h4 impact and physical-scale video remain pending.
+The next capability is [source-derived plastic deformation](../../planning/SOURCE_PART_PLASTICITY_NEXT_MILESTONE.md),
+with attachment closure and subassembly capacity audited in parallel.
 
 The CUDA mechanics foundation now includes complete prescribed QEPH/T3 elastic
 force/history, actual native structural mass/inertia, one shared nodal owner,
@@ -51,7 +55,7 @@ Two new and five existing CUDA functions pass; failed mesh publication preserves
 all exposed fields. The source-part case now uses that path for accepted
 archives and the inspected video without reconstructing missing physical fields.
 
-The retained total is **1,142 distinct passing functions**. Detailed historical
+The retained total is **1,162 distinct passing functions**. Detailed historical
 results, limitations and exact logs live in the [execution checkpoint](../../planning/EXECUTION_STATUS.md).
 The capacity architecture keeps one immutable shared binding, two typed element
 batches, one state owner/coordinator and the existing finite-wall contributor.

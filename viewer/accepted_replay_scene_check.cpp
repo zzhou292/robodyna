@@ -211,6 +211,24 @@ TEST(AcceptedReplayScene, SourcePartMagnificationIsExplicitPresentationAndPreser
     EXPECT_DOUBLE_EQ(scene.moving_mesh()->GetCoordsVertices()[1].z(),-.02);
 }
 
+TEST(AcceptedReplayScene, SourceWallRequiresActualMeshAndKeepsPhysicalScaleWithIncidentCamera) {
+    auto info=Info();info.kind=crash::output::ReplayKind::SourcePartWall;info.horizon_complete=false;
+    auto wall=std::make_shared<chrono::ChTriangleMeshConnected>();
+    wall->GetCoordsVertices()={{.201,-1,-1},{.201,1,-1},{.201,1,1},{.201,-1,1}};
+    wall->GetIndicesVertices()={{0,2,1},{0,3,2}};
+    auto initial=Frame(0,0);AcceptedReplayScene scene;
+    EXPECT_EQ(scene.Initialize(info,initial,{}).status,ReplaySceneStatus::InvalidFrame);
+    EXPECT_EQ(scene.Initialize(info,initial,wall,false,10).status,ReplaySceneStatus::InvalidFrame);
+    ASSERT_EQ(scene.Initialize(info,initial,wall).status,ReplaySceneStatus::Ok);
+    EXPECT_EQ(scene.deformation_scale(),1);EXPECT_EQ(scene.moving_mesh()->GetCoordsVertices(),initial.mesh->GetCoordsVertices());
+    EXPECT_EQ(scene.wall_mesh()->GetCoordsVertices(),wall->GetCoordsVertices());EXPECT_EQ(scene.wall_mesh()->GetIndicesVertices(),wall->GetIndicesVertices());
+    EXPECT_EQ(scene.camera()->vertical,crash::visual::ReplayVertical::Z);EXPECT_LT(scene.camera()->position[0],scene.camera()->target[0]);
+    ASSERT_EQ(scene.system().GetBodies().size(),2u);EXPECT_EQ(scene.system().GetBodies()[1]->GetName(),"placed original fixed wall");
+    const auto fixed=scene.wall_mesh();const auto coordinates=fixed->GetCoordsVertices();const auto next=Frame(1,.002);
+    ASSERT_EQ(scene.Publish(next).status,ReplaySceneStatus::Ok);EXPECT_EQ(scene.moving_mesh()->GetCoordsVertices(),next.mesh->GetCoordsVertices());
+    EXPECT_EQ(scene.wall_mesh(),fixed);EXPECT_EQ(scene.wall_mesh()->GetCoordsVertices(),coordinates);
+}
+
 TEST(AcceptedReplayScene, DisplayRangeAndDegenerateGeometryFailBeforePublication) {
     AcceptedReplayScene scene;
     auto invalid = Frame(0, 0);

@@ -1,10 +1,19 @@
 #include "SourcePartElasticTestSupport.h"
+#include "SourcePartElasticNativeDiagnostics.h"
+#include "SourcePartT3MaterialOracle.h"
 #include <cstring>
 
 namespace crash::cases::source_part_elastic::test {
 namespace qo=qeph_force_port_test;
 namespace to=t3_force_port_test;
-void NativeSequence::Initialize(const fe::ShellBatchBinding& b) {
+void NativeSequence::Initialize(SourcePartElasticCase& c) {
+    const auto& b=c.binding();
+    auto& p=SourcePartElasticTestAccess::Internal(c);
+    ASSERT_EQ(c.owner().accepted().epoch,0u);
+    std::array<t::ForceTrial,source::T3Count> initial_cuda;
+    t::BatchDiagnostics initial_diagnostics;
+    ASSERT_EQ(p.t3.CopyAcceptedResults(c.owner().accepted(),initial_cuda.data(),initial_cuda.size(),
+        &initial_diagnostics).status,t::BatchStatus::Success);
     for(std::size_t e=0;e<source::Q4Count;++e) {
         ASSERT_EQ(qn::Initialize(qeph_startup_test::NativeInput(b.qeph_reference(e).input),qr[e]),qn::Status::kSuccess);
         ASSERT_EQ(qn::InitializeHistory(qr[e],{},qhistory[e]),qn::Status::kSuccess);
@@ -14,9 +23,18 @@ void NativeSequence::Initialize(const fe::ShellBatchBinding& b) {
         ASSERT_EQ(tn::Initialize(to::Native(b.t3_reference(e).input),tr[e]),tn::Status::kSuccess);
         ASSERT_EQ(tn::InitializeHistory(tr[e],{},thistory[e]),tn::Status::kSuccess);
         to::StartupAgreement(b.t3_reference(e),tr[e]);
+        previous_cuda_t3[e]=to::Native(initial_cuda[e].proposed_history.data());
+        std::array<double,26> native_values{},cuda_values{};
+        tn::detail::PackHistory(thistory[e].data(),native_values);
+        tn::detail::PackHistory(previous_cuda_t3[e],cuda_values);
+        ASSERT_EQ(native_values,cuda_values);
+        const auto& stamp=initial_cuda[e].proposed_history.stamp();
+        ASSERT_EQ(stamp.time,0); ASSERT_EQ(stamp.sample_index,0u);
+        previous_cuda_t3_stamp[e]={stamp.time,stamp.sample_index}; previous_cuda_t3_available[e]=true;
     }
 }
-void NativeSequence::Check(SourcePartElasticCase& c,const Snapshot& base,const Snapshot& endpoint) {
+void NativeSequence::Check(SourcePartElasticCase& c,const Snapshot& base,const Snapshot& endpoint,
+    const std::array<long double,3*NodeCount>* additional_base_force) {
     auto& p=SourcePartElasticTestAccess::Internal(c);
     const auto& b=c.binding();
     // Independent global scatter of the previously accepted native caches
@@ -25,6 +43,7 @@ void NativeSequence::Check(SourcePartElasticCase& c,const Snapshot& base,const S
     std::array<long double,3*NodeCount> force{},couple{};
     for(std::size_t j=0;j<force.size();++j)
         force[j]=static_cast<long double>(p.pulse_force[j])*PulseScale(base.stamp.time,c.config().pulse_duration);
+    if(additional_base_force) for(std::size_t j=0;j<force.size();++j) force[j]+=(*additional_base_force)[j];
     auto scatter=[&](const auto& nodes,const auto& result) {
         for(unsigned local=0;local<nodes.size();++local) for(unsigned axis=0;axis<3;++axis) {
             const auto j=3*nodes[local]+axis;
@@ -60,6 +79,7 @@ void NativeSequence::Check(SourcePartElasticCase& c,const Snapshot& base,const S
     }
     for(std::size_t e=0;e<source::T3Count;++e) {
         SCOPED_TRACE(b.t3_source_id(e));
+        const bool had_failure=::testing::Test::HasFailure();
         t::PrescribedInterval in; in.base_time=base.stamp.time; in.dt=c.config().dt; in.sample_index=endpoint.stamp.epoch;
         for(unsigned local=0;local<3;++local) {
             const auto n=b.t3_nodes(e)[local],j=3*n;
@@ -69,7 +89,25 @@ void NativeSequence::Check(SourcePartElasticCase& c,const Snapshot& base,const S
         }
         ASSERT_EQ(tn::EvaluateForce(tr[e],thistory[e],to::Native(in),ttrial[e]),tn::Status::kSuccess);
         to::Agreement(b.t3_reference(e),in,p.tresult[e],ttrial[e]);
-        to::oracle::Check(tr[e],thistory[e].data(),to::Native(in),to::Native(tr[e],p.tresult[e]));
+        ASSERT_TRUE(previous_cuda_t3_available[e]);
+        ASSERT_EQ(previous_cuda_t3_stamp[e].time,base.stamp.time);
+        ASSERT_EQ(previous_cuda_t3_stamp[e].sample_index,base.stamp.epoch);
+        // Persistent native/CUDA trajectories stay separate. Each local law
+        // check uses its own real base, with upstream kinematics checked too.
+        { SCOPED_TRACE("native constitutive layer");
+          t3_material::Check(tr[e],thistory[e].data(),to::Native(in),ttrial[e]); }
+        { SCOPED_TRACE("CUDA constitutive layer");
+          t3_material::Check(tr[e],previous_cuda_t3[e],to::Native(in),to::Native(tr[e],p.tresult[e])); }
+        if(!had_failure&&::testing::Test::HasFailure()&&!printed_t3_failure) {
+            PrintT3Failure(b.t3_source_id(e),tr[e],thistory[e].data(),
+                previous_cuda_t3_available[e]?&previous_cuda_t3[e]:nullptr,
+                previous_cuda_t3_available[e]?&previous_cuda_t3_stamp[e]:nullptr,
+                to::Native(in),ttrial[e],p.tresult[e]);
+            printed_t3_failure=true;
+        }
+        previous_cuda_t3[e]=to::Native(p.tresult[e].proposed_history.data());
+        const auto& stamp=p.tresult[e].proposed_history.stamp();
+        previous_cuda_t3_stamp[e]={stamp.time,stamp.sample_index}; previous_cuda_t3_available[e]=true;
     }
 }
 void NativeSequence::Accept() {

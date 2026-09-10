@@ -5,7 +5,7 @@
 namespace crash::output {
 CsvLedgerWriter::CsvLedgerWriter(const std::filesystem::path& directory,const std::string& header,
                                  const CsvLedgerPlan& plan,std::size_t cap)
-    :directory_(directory),header_(header),plan_(plan) {
+    :directory_(directory),header_(header),plan_(plan),file_cap_(cap) {
     ValidateCsvLedgerPlan(plan_,header_,cap);
     Require(std::filesystem::is_directory(directory_),"CSV ledger output directory is unavailable");
     // Future rollover destinations are also create-only. Recheck each at Open
@@ -61,6 +61,12 @@ void CsvLedgerWriter::Flush() {
 void CsvLedgerWriter::Finish() {
     Require(!failed_&&!finished_&&rows_==plan_.interval_count,"CSV ledger has not written its complete planned horizon");
     try {CloseChecked();finished_=true;} catch(...) {Abort();throw;}
+}
+CsvLedgerPlan CsvLedgerWriter::FinishPrefix() {
+    Require(!failed_&&!finished_&&rows_&&rows_<=plan_.interval_count,"CSV ledger has no open accepted prefix");
+    const auto prefix=PlanCsvLedger(plan_.logical_file,header_,rows_,plan_.max_row_bytes,file_cap_);
+    Require(prefix.segments.size()==segment_+1,"CSV accepted prefix segment association failed");
+    try {CloseChecked();finished_=true;return prefix;} catch(...) {Abort();throw;}
 }
 void CsvLedgerWriter::Abort() noexcept {
     if(finished_)return;

@@ -2,18 +2,24 @@
 
 #include "qualification/source_contact/SourceShellCollection.h"
 #include "lib_src/elements/ShellBatchPublication.h"
+#include "SourcePartElasticWallMetrics.h"
 #include <array>
 #include <memory>
+#include <string>
+
+namespace tlfea::contact { struct NodalWallDeviceResults; }
+namespace crash::case_data { class CanonicalWall; }
+namespace crash::cases::source_part_wall { class SourcePartWallSetup; struct SourcePartWallSettings; }
 
 namespace crash::cases::source_part_elastic {
 namespace source = crash::qualification::source_contact;
 inline constexpr std::size_t NodeCount = source::NodeCount;
 
-// A named, free-part elastic experiment. Original source coordinates, density,
+// A named source-part elastic experiment. Original source coordinates, density,
 // thickness and parent identity are immutable; source MAT024 and attachments
 // are retained as unapplied input metadata. The existing source adapter declares
 // LAW1 E=200 GPa, nu=.3. None of these limits is a vehicle admission.
-enum class Experiment { ElasticPulse,UniformFlight };
+enum class Experiment { ElasticPulse,UniformFlight,MeshWallImpact };
 struct Config {
     Experiment experiment = Experiment::ElasticPulse;
     std::array<double,3> initial_velocity{};
@@ -25,7 +31,7 @@ struct Config {
     double minimum_area_ratio = 0, maximum_area_ratio = 0;
     double minimum_thickness_ratio = 0, maximum_thickness_ratio = 0;
     double maximum_energy_residual = 0; // Absolute J floor in the residual allowance.
-    double relative_energy_residual = 0; // Multiplies cumulative absolute external drift work.
+    double relative_energy_residual = 0; // Pulse: absolute drift work; wall: fixed initial K0.
     double maximum_native_dt_fraction = 0;
     std::uint64_t configuration_id = 0, qualification_id = 0;
 };
@@ -49,7 +55,7 @@ struct Diagnostics {
     double kinetic_work_allowance = 0;   // Arithmetic roundoff, not a physical tolerance.
     double synchronized_kinetic = 0;     // Reconstructed endpoint v/omega, total native J.
     double total_internal_work = 0;      // Native EINT(0)+EINT(1)+QEPH EVIS, counted once.
-    double energy_residual = 0;          // Ksync + native work - external drift work - initial K0.
+    double energy_residual = 0;          // Ksync + native work + wall potential - external work - K0.
     double max_relative_displacement = 0; // Translation removed using native mass centroid.
     double maximum_chord_change = 0;     // Capture-only pairwise length change; zero in step diagnostics.
     double maximum_rotation = 0;
@@ -81,6 +87,8 @@ class SourcePartElasticCase {
     SourcePartElasticCase(const SourcePartElasticCase&) = delete;
     SourcePartElasticCase& operator=(const SourcePartElasticCase&) = delete;
     Report Initialize(const source::SourcePartContactFixture&, const Config&);
+    Report Initialize(const source::SourcePartContactFixture&,const Config&,const case_data::CanonicalWall&,
+        const std::string& authenticated_wall_bytes,const source_part_wall::SourcePartWallSettings&);
     Report Step();
     Report Capture(Snapshot*);
     bool initialized() const noexcept;
@@ -91,6 +99,9 @@ class SourcePartElasticCase {
     const Config& config() const noexcept;
     const Diagnostics& diagnostics() const noexcept;
     double initial_kinetic_energy() const noexcept;
+    const source_part_wall::SourcePartWallSetup* wall_setup() const noexcept;
+    const tlfea::contact::NodalWallDeviceResults* accepted_contact() const noexcept;
+    const WallMetrics* wall_metrics() const noexcept;
     tl::fea::NodalAllocationInfo allocations() const noexcept;
   private:
     struct Impl;

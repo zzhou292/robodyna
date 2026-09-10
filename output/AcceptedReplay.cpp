@@ -58,6 +58,7 @@ ReplayReport AcceptedReplay::Open(const std::filesystem::path& directory) {
         for (unsigned axis = 0; axis < 3; ++axis)
             diameter = std::hypot(diameter, bundle.info.bounds_max[axis]-bundle.info.bounds_min[axis]);
         Require(std::isfinite(diameter) && diameter > 0, "Replay trajectory bounds are invalid");
+        if(bundle.info.kind==ReplayKind::SourcePartWall) candidate->wall=rd::ReadMesh(bundle,"placed-wall.mesh.json");
         if (bundle.inventory.count("canonical-wall.mesh.json")) {
             candidate->wall = rd::ReadMesh(bundle, "canonical-wall.mesh.json");
             if (bundle.info.kind == ReplayKind::GuidedPlate) rd::CheckGuidedWall(bundle, *candidate->wall);

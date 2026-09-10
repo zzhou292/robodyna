@@ -8,8 +8,11 @@ target_compile_features(robo_dyna_artifact_io PUBLIC cxx_std_17)
 include("${CMAKE_CURRENT_LIST_DIR}/../case/CanonicalWall.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../case/CanonicalWallArtifacts.cmake")
 add_library(robo_dyna_accepted_replay STATIC AcceptedReplay.cpp AcceptedReplayIndex.cpp AcceptedReplayMesh.cpp
-  AcceptedReplayGuided.cpp AcceptedReplayLedgers.cpp AcceptedReplaySourcePart.cpp)
+  AcceptedReplayGuided.cpp AcceptedReplayLedgers.cpp AcceptedReplaySourcePart.cpp
+  AcceptedReplaySourcePartWall.cpp AcceptedReplaySourcePartWallContact.cpp
+  AcceptedReplaySourcePartWallIntervals.cpp AcceptedReplayPlacedWall.cpp)
 target_link_libraries(robo_dyna_accepted_replay PUBLIC robo_dyna_artifact_io PRIVATE robo_dyna_canonical_wall_artifacts)
+target_compile_options(robo_dyna_accepted_replay PRIVATE -fno-fast-math -ffp-contract=off)
 if(ROBO_DYNA_ENABLE_REPLAY_CHECKS OR ROBO_DYNA_ENABLE_ELASTIC_COUPON)
   find_package(GTest REQUIRED)
   add_executable(robo_dyna_accepted_replay_source_part_check accepted_replay_source_part_check.cpp)
@@ -67,3 +70,5 @@ if(ROBO_DYNA_ENABLE_REPLAY_CHECKS OR ROBO_DYNA_ENABLE_ELASTIC_COUPON)
       ENVIRONMENT "ROBO_DYNA_GUIDED_REPLAY_FIXTURE=${ROBO_DYNA_GUIDED_REPLAY_FIXTURE}")
   endif()
 endif()
+
+include("${CMAKE_CURRENT_LIST_DIR}/SourcePartWallComparison.cmake")

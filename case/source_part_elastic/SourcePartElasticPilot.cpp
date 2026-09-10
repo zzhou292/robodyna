@@ -1,4 +1,5 @@
 #include "SourcePartElasticPilot.h"
+#include "case/source_part_wall/SourcePartWallSetup.h"
 #include <stdexcept>
 
 namespace crash::cases::source_part_elastic {
@@ -34,5 +35,21 @@ Config UniformFlightConfig(unsigned refinement) {
     c.configuration_id=0x535055464c543031ULL;
     c.qualification_id=0x5350554e41543031ULL;
     return c;
+}
+Config MeshWallConfig(unsigned refinement) {
+    auto c=UniformFlightConfig(refinement);
+    c.experiment=Experiment::MeshWallImpact;
+    c.configuration_id=0x535057414c4c3031ULL;
+    c.qualification_id=0x5350574e41543031ULL;
+    return c;
+}
+source_part_wall::SourcePartWallSettings MeshWallSettings(const Config& config) {
+    if(!ValidConfig(config)||config.experiment!=Experiment::MeshWallImpact)
+        throw std::invalid_argument("Wall settings require a valid mesh-wall experiment");
+    source_part_wall::SourcePartWallSettings settings;
+    settings.initial_velocity=config.initial_velocity;
+    settings.configuration_id=config.configuration_id; settings.qualification_id=config.qualification_id;
+    settings.wall_binding_id=0x53505742494e3031ULL;
+    return settings;
 }
 }

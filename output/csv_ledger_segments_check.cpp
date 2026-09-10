@@ -115,6 +115,18 @@ TEST(CsvLedgerSegmentsCheck, StreamRolloverPreservesExactRowsAndRequiresComplete
     EXPECT_THROW(writer.Finish(),std::runtime_error);
 }
 
+TEST(CsvLedgerSegmentsCheck, ExplicitAcceptedPrefixClosesOnlyWrittenSegmentsWithoutInventedRows) {
+    TempDirectory directory;const auto planned=SmallPlan(5);CsvLedgerWriter writer(directory.path,Header,planned,24);
+    EXPECT_THROW(writer.FinishPrefix(),std::runtime_error);EXPECT_FALSE(writer.failed());
+    writer.Append(1,"1,2\n");writer.Append(2,"3,4\n");writer.Append(3,"5,6\n");
+    EXPECT_THROW(writer.Finish(),std::runtime_error);const auto prefix=writer.FinishPrefix();
+    EXPECT_TRUE(SameCsvLedgerPlan(prefix,SmallPlan(3)));EXPECT_EQ(writer.rows_written(),3u);EXPECT_FALSE(writer.failed());
+    EXPECT_EQ(ReadBounded(directory.path/"contact.csv",24),"a,b\n1,2\n3,4\n");
+    EXPECT_EQ(ReadBounded(directory.path/"contact-0001.csv",24),"a,b\n5,6\n");EXPECT_FALSE(fs::exists(directory.path/"contact-0002.csv"));
+    EXPECT_THROW(writer.Append(4,"7,8\n"),std::runtime_error);
+    EXPECT_THROW(writer.FinishPrefix(),std::runtime_error);
+}
+
 TEST(CsvLedgerSegmentsCheck, InvalidRowsPreserveBytesAndAllowAnUnchangedRetry) {
     TempDirectory directory;const auto plan=SmallPlan(2);
     CsvLedgerWriter writer(directory.path,Header,plan,24);

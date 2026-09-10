@@ -31,7 +31,7 @@ Report SourcePartElasticCase::Impl::Initialize(const source::SourcePartContactFi
         cudaMemcpy(device_pulse,pulse_force.data(),sizeof(pulse_force),cudaMemcpyHostToDevice)!=cudaSuccess))
         return Failure(Status::DeviceFailure,"Pulse device setup failed");
     fe::ShellBatchStartup startup;
-    if(config.experiment==Experiment::UniformFlight)
+    if(config.experiment!=Experiment::ElasticPulse)
         startup={fe::ShellBatchStartupKind::ReferenceUniformTranslation,
             {config.initial_velocity[0],config.initial_velocity[1],config.initial_velocity[2]}};
     q::QephBatchConfig qc; qc.owner=owner.accepted(); qc.element_count=source::Q4Count;
@@ -61,7 +61,7 @@ Report SourcePartElasticCase::Impl::Initialize(const source::SourcePartContactFi
     if(read.status!=fe::NodalStatus::Ok) return Failure(Status::ComponentFailure,read.message);
     const auto dr=publication.CopyAcceptedDiagnostics(accepted.stamp,&accepted.diagnostics.shells);
     if(dr.status!=fe::ShellPublicationStatus::Success) return Failure(Status::ComponentFailure,dr.message);
-    if(config.experiment==Experiment::UniformFlight) {
+    if(config.experiment!=Experiment::ElasticPulse) {
         const auto& k=accepted.diagnostics.shells.kinetic;
         initial_kinetic=k.translation+k.rotation;
         if(!std::isfinite(initial_kinetic)||initial_kinetic<=0)

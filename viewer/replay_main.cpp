@@ -74,7 +74,9 @@ class ReplayOverlay : public chrono::vsg3d::ChGuiComponentVSG {
         const auto flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
                            ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
         if (ImGui::Begin("robo-dyna | accepted replay", nullptr, flags)) {
-            ImGui::TextUnformatted(info_.kind == crash::output::ReplayKind::SourcePartElastic
+            ImGui::TextUnformatted(info_.kind == crash::output::ReplayKind::SourcePartWall
+                ? "Yaris part 2000157 | mesh-wall impact | physical scale"
+                : info_.kind == crash::output::ReplayKind::SourcePartElastic
                 ? "Yaris part 2000157 | elastic Q4/T3"
                 : info_.kind == crash::output::ReplayKind::GuidedPlate
                 ? "Guided elastic Q4 plate | physical scale"
@@ -88,11 +90,17 @@ class ReplayOverlay : public chrono::vsg3d::ChGuiComponentVSG {
             ImGui::Text("Accepted time: %.6f ms", stamp.time * 1000);
             ImGui::Text("Frame %zu / %zu   Epoch %llu", stamp.index + 1, info_.frame_count,
                         static_cast<unsigned long long>(stamp.epoch));
-            ImGui::TextUnformatted(info_.kind == crash::output::ReplayKind::SourcePartElastic
+            ImGui::TextUnformatted(info_.kind == crash::output::ReplayKind::SourcePartWall
+                ? "Blue: original elastic part | Gray: placed original mesh wall"
+                : info_.kind == crash::output::ReplayKind::SourcePartElastic
                 ? "Free part; experimental LAW1; attachments unapplied"
                 : info_.kind != crash::output::ReplayKind::ElasticCoupon
                 ? "Blue: moving surface   Gray wireframe: canonical wall"
                 : "Blue: accepted coupon surface | no wall");
+            if(info_.kind==crash::output::ReplayKind::SourcePartWall) {
+                ImGui::TextUnformatted("Experimental LAW1; source attachments unapplied");
+                if(!info_.horizon_complete)ImGui::TextUnformatted("Accepted prefix only | requested horizon stopped early");
+            }
             if (capture_) ImGui::TextUnformatted("Indexed PNG capture | fixed camera");
             else {
                 ImGui::Text("Playback: %.1f recorded frames/s", fps_);
@@ -326,6 +334,11 @@ int main(int argc, char** argv) {
             crash::output::String(manifest, "deformation_display_law", "X0 + scale*(accepted_X-X0)");
             crash::output::Boolean(manifest, "wireframe", options.wireframe);
             crash::output::String(manifest, "wall_display", reader.wall() ? "gray_wireframe" : "none");
+            if(info.kind==crash::output::ReplayKind::SourcePartWall) {
+                crash::output::Boolean(manifest,"input_horizon_complete",info.horizon_complete);
+                crash::output::String(manifest,"input_stop_reason",info.stop_reason);
+                crash::output::String(manifest,"wall_geometry","actual placed original canonical mesh; original source and X transform archived separately");
+            }
             Array(manifest, "camera_position", scene.camera()->position);
             Array(manifest, "camera_target", scene.camera()->target);
             crash::output::String(manifest, "camera_vertical", scene.camera()->vertical == crash::visual::ReplayVertical::Y ? "Y" : "Z");

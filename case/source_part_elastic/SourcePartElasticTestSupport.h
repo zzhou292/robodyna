@@ -20,8 +20,15 @@ struct NativeSequence {
     std::array<tn::History,source::T3Count> thistory;
     std::array<qn::ForceTrial,source::Q4Count> qtrial;
     std::array<tn::ForceTrial,source::T3Count> ttrial;
-    void Initialize(const fe::ShellBatchBinding&);
-    void Check(SourcePartElasticCase&,const Snapshot& base,const Snapshot& endpoint);
+    // Test-only prior CUDA endpoint histories, retained without another device
+    // read. They are actual accepted bases on the next sequential Check call.
+    std::array<tn::HistoryValues,source::T3Count> previous_cuda_t3;
+    std::array<tn::HistoryStamp,source::T3Count> previous_cuda_t3_stamp;
+    std::array<bool,source::T3Count> previous_cuda_t3_available{};
+    bool printed_t3_failure=false;
+    void Initialize(SourcePartElasticCase&);
+    void Check(SourcePartElasticCase&,const Snapshot& base,const Snapshot& endpoint,
+        const std::array<long double,3*NodeCount>* additional_base_force=nullptr);
     void Accept();
 };
 struct Results {

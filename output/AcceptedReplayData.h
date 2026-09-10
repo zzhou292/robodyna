@@ -18,6 +18,7 @@ struct Entry {
     // v2 only: exact preceding interval, retained for <=1000 saved frames.
     std::uint64_t interval_attempt=0;
     double interval_base_time=0;
+    std::array<double,28> wall_interval_values{}; // Wall columns 6..33, saved frames only.
 };
 struct ContactParentBinding {
     std::uint64_t element = 0, face = 0, feature = 0;
@@ -39,6 +40,10 @@ struct Bundle {
     unsigned contact_leaf_limit=4096,contact_visit_limit=16384;
     bool explicit_contact_backend=false;
     bool explicit_guided_experiment=false;
+    std::array<double,3> source_initial_velocity{};
+    double wall_x=0,wall_penetration_cap=0,source_initial_kinetic=0,wall_energy_allowance=0;
+    std::vector<std::array<std::uint64_t,3>> wall_source_parents; // EID, arity, original index.
+    std::vector<std::uint64_t> wall_faces;
 };
 Document Json(const std::string& bytes);
 const Value& Member(const Value&, const char* name);
@@ -47,11 +52,17 @@ double Real(const Value&, const char* name);
 std::string Text(const Value&, const char* name);
 std::string VerifiedBytes(const Bundle&, const std::string& name);
 Bundle ReadIndex(const std::filesystem::path&);
+void CheckReplayTime(double actual,double expected,double dt,std::uint64_t epoch);
 std::shared_ptr<chrono::ChTriangleMeshConnected> ReadMesh(const Bundle&, const std::string&);
 void CheckFrameFields(const Bundle&, const Entry&, const chrono::ChTriangleMeshConnected&);
 void CheckPositionFields(const Value&, const chrono::ChTriangleMeshConnected&);
 void ReadSourcePartConfiguration(Bundle&, const Document&, const Document&, const Document&);
 void CheckSourcePartFields(const Bundle&, const Entry&, const chrono::ChTriangleMeshConnected&);
+void ReadSourcePartIdentity(Bundle&,const Document&);
+void CheckSourcePartFieldData(const Bundle&,const Entry&,const chrono::ChTriangleMeshConnected&,
+                             const Document&,const std::array<double,3>& startup_velocity);
+void ReadSourcePartWallConfiguration(Bundle&,const Document&,const Document&,const Document&);
+void CheckSourcePartWallFields(const Bundle&,const Entry&,const chrono::ChTriangleMeshConnected&);
 void ReadGuidedConfiguration(Bundle&, const Document&, const Document&, const Document&);
 void CheckGuidedLedgers(Bundle&, const Document& configuration, const Document& manifest);
 void CheckGuidedFields(const Bundle&, const Entry&, const chrono::ChTriangleMeshConnected&);

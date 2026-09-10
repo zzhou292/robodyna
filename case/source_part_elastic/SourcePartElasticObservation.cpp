@@ -1,4 +1,4 @@
-#include "SourcePartElasticInternal.h"
+#include "SourcePartElasticWallInternal.h"
 #include "lib_src/math/Quaternion.h"
 #include <algorithm>
 #include <cmath>
@@ -105,6 +105,10 @@ Report SourcePartElasticCase::Impl::Observe() {
     if(!report) return report;
     trial_q_work_magnitude=qwork.magnitude; trial_t_work_magnitude=twork.magnitude;
     out.total_internal_work=static_cast<double>(qwork.sum[0]+qwork.sum[1]+qwork.sum[2]+twork.sum[0]+twork.sum[1]);
+    if(wall) {
+        report=GatherWallEndpoint();
+        if(!report) return report;
+    }
     long double kick=0,drift=0,absolute_drift=0,kinetic=0,raw_kinetic=0;
     std::array<long double,3> centroid_delta{};
     long double mass=0;
@@ -151,13 +155,16 @@ Report SourcePartElasticCase::Impl::Observe() {
     const long double k0=static_cast<long double>(shells.base_kinetic.translation)+shells.base_kinetic.rotation;
     const long double k1=static_cast<long double>(shells.kinetic.translation)+shells.kinetic.rotation;
     const long double internal_kick=static_cast<long double>(qd.internal_kick_work)+shells.t3.internal_kick_work;
-    const long double allowance=Roundoff*(std::abs(k0)+std::abs(k1)+std::abs(kick)+std::abs(internal_kick))+1e-18L;
+    long double allowance=Roundoff*(std::abs(k0)+std::abs(k1)+std::abs(kick)+std::abs(internal_kick))+1e-18L;
+    if(wall) allowance+=Roundoff*std::abs(wall->trial.diagnostics.kick_work)+wall->trial.diagnostics.kick_work_roundoff;
     out.kinetic_work_allowance=static_cast<double>(allowance);
     out.kinetic_work_residual=static_cast<double>(k1-k0-kick-internal_kick);
+    if(wall) out.kinetic_work_residual=static_cast<double>(k1-k0-kick-internal_kick-wall->trial.diagnostics.kick_work);
     if(!std::isfinite(raw_kinetic)||std::abs(raw_kinetic-k1)>Roundoff*(std::abs(raw_kinetic)+std::abs(k1))+1e-18L)
         return Failure(Status::EnvelopeFailure,"Independent nodal kinetic sum disagrees with publication");
     if(!std::isfinite(out.kinetic_work_residual)||std::abs(out.kinetic_work_residual)>allowance)
         return Failure(Status::EnvelopeFailure,"Complete discrete kinetic-work identity failed",out.kinetic_work_residual,out.kinetic_work_allowance);
+    if(wall) return ObserveWall(kinetic);
     out.energy_residual=static_cast<double>(kinetic+out.total_internal_work-out.external_drift_work);
     if(config.experiment==Experiment::UniformFlight)
         out.energy_residual=static_cast<double>(kinetic+out.total_internal_work-initial_kinetic);

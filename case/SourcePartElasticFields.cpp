@@ -1,38 +1,14 @@
 #include "SourcePartElasticFields.h"
+#include "SourcePartCommonFields.h"
+#include "SourcePartFieldPrimitives.h"
 #include "output/SurfaceBindingFields.h"
 #include <cmath>
 
 namespace crash::cases::source_part_elastic {
 using namespace output;
 namespace {
-void CheckPhase(const Snapshot& f) {
-    const auto& s=f.stamp;
-    Require(s.owner_id&&s.node_count==NodeCount&&s.has_rotations&&std::isfinite(s.fixed_dt)&&s.fixed_dt>0&&
-        std::isfinite(s.time)&&s.time>=0&&s.temporal_scheme==tl::fea::NodalTemporalScheme::StaggeredHalfKickStart,
-        "Invalid source-part field owner or scheme");
-    if(!s.epoch) {
-        Require(s.time==0&&s.velocity_phase==tl::fea::NodalVelocityPhase::Collocated&&s.velocity_time==0&&
-            !s.reactions_valid&&s.reaction_base_epoch==0&&s.reaction_time==0&&s.reaction_kick_dt==0,
-            "Source initial field timing is not collocated startup");
-        for(std::size_t n=0;n<NodeCount;++n) {
-            for(unsigned j=0;j<4;++j)Require(f.orientation[4*n+j]==(j==0?1:0),"Source initial orientation is not identity");
-            for(unsigned j=0;j<3;++j)Require(f.velocity[3*n+j]==0&&f.omega[3*n+j]==0&&
-                f.synchronized_velocity[3*n+j]==0&&f.synchronized_omega[3*n+j]==0,"Source initial velocities are not rest");
-        }
-    } else Require(s.velocity_phase==tl::fea::NodalVelocityPhase::PreviousMidpoint&&s.reactions_valid&&
-        s.reaction_base_epoch==s.epoch-1&&std::isfinite(s.reaction_time)&&s.reaction_time>=0&&
-        Bits(s.time)==Bits(s.reaction_time+s.fixed_dt)&&Bits(s.velocity_time)==Bits(s.reaction_time+.5*s.fixed_dt)&&
-        Bits(s.reaction_kick_dt)==Bits(s.epoch==1?.5*s.fixed_dt:s.fixed_dt),
-        "Source field velocity or first-kick phase is invalid");
-}
-void UInt(Value& object, Document& doc, const char* key, std::uint64_t value) {
-    object.AddMember(Value(key,doc.GetAllocator()),Value().SetUint64(value),doc.GetAllocator());
-}
-void Scalar(Value& object, Document& doc, const char* key, double value) {
-    Require(std::isfinite(value),"Nonfinite source-part artifact scalar");
-    Value name(key,doc.GetAllocator());
-    object.AddMember(name,value,doc.GetAllocator());
-}
+using field_detail::UInt;
+using field_detail::Scalar;
 template<class D> Value Family(Document& doc,const D& d) {
     Value item(rapidjson::kObjectType);
     UInt(item,doc,"owner_id",d.owner_id); UInt(item,doc,"configuration_id",d.configuration_id);
@@ -108,27 +84,7 @@ output::Document SourcePartConfiguration(const SourcePartElasticCase& run,const 
     Number(doc,"relative_energy_residual",c.relative_energy_residual);
     Number(doc,"maximum_native_dt_fraction",c.maximum_native_dt_fraction);
     AppendSurfaceBinding(doc,binding);
-    Value nodes(rapidjson::kArrayType),parents(rapidjson::kArrayType);
-    for(std::size_t n=0;n<NodeCount;++n) {
-        Value item(rapidjson::kObjectType); const auto& s=run.source().nodes()[n]; const auto& b=run.binding().nodes()[n];
-        UInt(item,doc,"local_node",n); UInt(item,doc,"source_node_id",s.source_id); UInt(item,doc,"canonical_index",s.canonical_index);
-        UInt(item,doc,"source_line",s.source_line); const double x[]{b.position.x,b.position.y,b.position.z};
-        item.AddMember("reference_xyz_m",FiniteArray(doc,x,3),doc.GetAllocator());
-        Scalar(item,doc,"mass_kg",b.native.mass); Scalar(item,doc,"isotropic_inertia_kg_m2",b.native.isotropic_inertia);
-        Scalar(item,doc,"physical_inertia_kg_m2",b.native.physical_inertia); Scalar(item,doc,"added_inertia_kg_m2",b.native.added_inertia);
-        nodes.PushBack(item,doc.GetAllocator());
-    }
-    std::size_t qi=0,ti=0;
-    for(std::size_t p=0;p<source::ParentCount;++p) {
-        const auto& s=run.source().parents()[p]; Value item(rapidjson::kObjectType),connectivity(rapidjson::kArrayType);
-        UInt(item,doc,"source_parent_index",p); UInt(item,doc,"source_element_id",s.source_id); UInt(item,doc,"source_line",s.source_line);
-        UInt(item,doc,"canonical_index",s.canonical_index); UInt(item,doc,"arity",s.arity);
-        UInt(item,doc,"family_index",s.arity==4?qi++:ti++);
-        item.AddMember("family",Value(s.arity==4?"QEPH":"T3",doc.GetAllocator()),doc.GetAllocator());
-        for(unsigned j=0;j<s.arity;++j) connectivity.PushBack(s.local_node_indices[j],doc.GetAllocator());
-        item.AddMember("local_connectivity",connectivity,doc.GetAllocator()); parents.PushBack(item,doc.GetAllocator());
-    }
-    doc.AddMember("reference_nodes",nodes,doc.GetAllocator()); doc.AddMember("source_parents",parents,doc.GetAllocator());
+    AppendSourcePartInputTables(doc,run);
     return doc;
 }
 void AppendSourcePartDiagnostics(Document& doc,const Diagnostics& d) {
@@ -148,20 +104,9 @@ void AppendSourcePartDiagnostics(Document& doc,const Diagnostics& d) {
     doc.AddMember("qeph",q,doc.GetAllocator()); doc.AddMember("t3",t,doc.GetAllocator());
 }
 Document SourcePartFrameFields(const Snapshot& f) {
-    CheckPhase(f); const auto& s=f.stamp;
+    CheckSourcePartPhase(f,{});
     Document doc; doc.SetObject(); String(doc,"schema","robo_dyna.source_part_elastic_fields.v1");
-    Integer(doc,"owner_id",s.owner_id); Integer(doc,"accepted_epoch",s.epoch); Number(doc,"accepted_time_s",s.time);
-    Number(doc,"fixed_dt_s",s.fixed_dt); String(doc,"temporal_scheme","staggered_half_kick_start");
-    String(doc,"velocity_phase",s.velocity_phase==tl::fea::NodalVelocityPhase::Collocated?"collocated":"previous_midpoint");
-    Number(doc,"velocity_time_s",s.velocity_time); Boolean(doc,"reactions_valid",s.reactions_valid);
-    Integer(doc,"reaction_base_epoch",s.reaction_base_epoch); Number(doc,"reaction_time_s",s.reaction_time);
-    Number(doc,"reaction_kick_dt_s",s.reaction_kick_dt);
-    FiniteArray(doc,"position_xyz_m",f.position.data(),f.position.size());
-    FiniteArray(doc,"orientation_wxyz",f.orientation.data(),f.orientation.size());
-    FiniteArray(doc,"velocity_xyz_m_per_s",f.velocity.data(),f.velocity.size());
-    FiniteArray(doc,"omega_world_xyz_rad_per_s",f.omega.data(),f.omega.size());
-    FiniteArray(doc,"synchronized_velocity_xyz_m_per_s",f.synchronized_velocity.data(),f.synchronized_velocity.size());
-    FiniteArray(doc,"synchronized_omega_world_xyz_rad_per_s",f.synchronized_omega.data(),f.synchronized_omega.size());
+    AppendSourcePartKinematics(doc,f);
     String(doc,"synchronized_fields_policy","Derived endpoint velocity from raw previous midpoint plus complete endpoint internal and applied pulse RHS half kick; never the raw owner field");
     AppendSourcePartDiagnostics(doc,f.diagnostics); return doc;
 }
