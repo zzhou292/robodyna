@@ -48,6 +48,14 @@ parents in an explicit elastic free-part experiment. Source MAT024, attachments,
 self-contact, beams/solids/connectors and full-vehicle output remain major gates.
 No source entity may be silently removed to satisfy a fixture limit.
 
+The complete source-part host binding now passes: all117 original nodes,88Q4
+and six T3 retain exact geometry, source IDs and ordering. Native structural
+mass is0.25650893888187326 kg; total rotary inertia is5.1937904054349167e-6
+kg*m^2, with physical/added partitions retained separately. Two new tests and
+nine affected original-source regressions pass. This is startup for the explicit
+elastic experiment; resident capacity and part dynamics are still being integrated.
+Evidence: `crash-work/reports/source-shell-collection-tests-1/`.
+
 ## Current delivery cadence
 
 The user requested faster progress on 2026-09-09. Broadside rebound and short mixed

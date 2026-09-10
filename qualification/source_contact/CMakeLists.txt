@@ -17,6 +17,22 @@ target_include_directories(robo_dyna_source_contact_fixture PUBLIC
   "${CMAKE_CURRENT_LIST_DIR}" "${CRASH_TL_FEA_SOURCE_DIR}/lib_src")
 target_link_libraries(robo_dyna_source_contact_fixture PUBLIC robo_dyna_artifact_io)
 target_compile_options(robo_dyna_source_contact_fixture PRIVATE -fno-fast-math -ffp-contract=off)
+if(ROBO_DYNA_SOURCE_SHELL_COLLECTION)
+  include("${CRASH_TL_FEA_SOURCE_DIR}/lib_src/elements/ShellBatchBinding.cmake")
+  add_library(robo_dyna_source_shell_collection STATIC SourceShellCollection.cpp)
+  target_link_libraries(robo_dyna_source_shell_collection PUBLIC
+    robo_dyna_source_contact_fixture tl_shell_batch_binding)
+  target_compile_options(robo_dyna_source_shell_collection PRIVATE -fno-fast-math -ffp-contract=off)
+  add_executable(robo_dyna_source_shell_collection_check source_shell_collection_check.cpp)
+  target_link_libraries(robo_dyna_source_shell_collection_check PRIVATE
+    robo_dyna_source_shell_collection GTest::gtest)
+  target_include_directories(robo_dyna_source_shell_collection_check PRIVATE
+    "${CRASH_TL_FEA_SOURCE_DIR}/lib_utest/qualification/native/t3")
+  target_compile_options(robo_dyna_source_shell_collection_check PRIVATE -fno-fast-math -ffp-contract=off)
+  add_test(NAME source_shell_collection COMMAND robo_dyna_source_shell_collection_check
+    "${ROBO_DYNA_SOURCE_PART_READINESS}")
+  set_tests_properties(source_shell_collection PROPERTIES TIMEOUT 60 RUN_SERIAL TRUE PROCESSORS 1)
+endif()
 add_executable(robo_dyna_source_part_contact_check source_part_contact_check.cpp)
 target_link_libraries(robo_dyna_source_part_contact_check PRIVATE robo_dyna_source_contact_fixture
   tl_surface_material_measure robo_dyna_wall_tessellation robo_dyna_canonical_wall_artifacts GTest::gtest)

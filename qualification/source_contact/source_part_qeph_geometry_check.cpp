@@ -1,4 +1,5 @@
 #include "SourcePartContactFixture.h"
+#include "SourceShellReferenceInput.h"
 #include "lib_utest/qualification/qeph/QephKinematicsFixture.h"
 
 #include <filesystem>
@@ -16,17 +17,7 @@ std::filesystem::path readiness_path;
 std::string Exact(double value) { std::ostringstream text; text<<std::setprecision(17)<<value; return text.str(); }
 
 port::ReferenceInput Input(const source::SourcePartContactFixture& fixture,unsigned p) {
-  port::ReferenceInput input;
-  const auto& parent=fixture.parents()[p];
-  for(unsigned n=0;n<4;++n) {
-    const auto index=parent.local_node_indices[n];
-    const auto x=fixture.positions().at(index);
-    input.position[n]={x.x,x.y,x.z}; input.node_ids[n]=fixture.nodes()[index].source_id;
-  }
-  input.density=fixture.surface_mass().density_kg_m3;
-  input.thickness=fixture.surface_mass().thickness_m;
-  input.young_modulus=200e9; input.poisson_ratio=.3;
-  return input;
+  return source::QephReferenceInput(fixture,p);
 }
 
 // Independent mean-plane area from the two world diagonals. This is neither
