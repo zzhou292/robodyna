@@ -40,6 +40,19 @@ void CheckAssemblyDiagnostics(const Bundle& b,const Entry& e,const Value& d,cons
     Require(Text(shells,"native_kinetic_columns")=="translation_J,rotation_J,physical_isotropic_J,added_isotropic_J","Native shell kinetic columns changed");
     for(const char* key:{"base_native_kinetic_J","native_kinetic_J"})
         for(const auto& x:WallNumbers(shells,key,4).GetArray())Require(x.GetDouble()>=0,"Negative native shell kinetic magnitude");
+    if(a.connectors.empty()) {
+        Require(!shells.HasMember("connector_kinetic_columns")&&!shells.HasMember("base_connector_kinetic_J")&&!shells.HasMember("connector_kinetic_J"),
+            "Undeclared connector kinetic diagnostics");
+    } else {
+        Require(Text(shells,"connector_kinetic_columns")=="translation_J,rotation_J","Connector kinetic subtotal semantics changed");
+        const auto& motion=Member(d,"motion");
+        const auto before=AssemblyConnectorKinetic(b,Member(motion,"after"));
+        const auto& current=WallNumbers(shells,"connector_kinetic_J",2);
+        for(unsigned j=0;j<2;++j)AssemblyEqual(current[j].GetDouble(),before[j]);
+        const auto base=e.epoch?AssemblyConnectorKinetic(b,Member(motion,"before")):std::array<double,2>{};
+        const auto& raw_base=WallNumbers(shells,"base_connector_kinetic_J",2);
+        for(unsigned j=0;j<2;++j)AssemblyEqual(raw_base[j].GetDouble(),base[j]);
+    }
     const auto& q=Member(shells,"qeph");const auto& t=Member(shells,"t3");CheckFamily(b,e,q);CheckFamily(b,e,t);
     Real(q,"hourglass_viscous_work_J");Real(q,"hourglass_viscous_work_increment_J"); // Signed native work, not a dissipation ledger.
     long double work=Real(q,"hourglass_viscous_work_J"),magnitude=std::abs(work);

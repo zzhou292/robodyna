@@ -76,3 +76,54 @@ physical-scale integration diagnostic:6.5s presentation,10FPS,1280x720 H264,
 98,005B. All PNG hashes, video probe and full decode pass, and decoded initial/
 final images were inspected. Motion is barely visible at this microsecond
 horizon; the next visibly deforming connected-impact video remains separate.
+
+The seven-part extension selects the pinned 1,865,263-byte inventory only when
+`input.connectors` supplies the exact named
+`openradioss_tonne_millimetre_second_direct_import` policy and
+`openradioss_type25_linear_finite_offset_v1` kind. The source contains 959 shells
+(845 QEPH/114 T3), 1093 nodes, the same six groups/76 members, and WID 2101297.
+The source codec preserves all original cards and released connections. This is
+still an extracted component, not a closed full vehicle. With no declaration,
+the existing six-part pinned identity, optional fields and validation stay strict.
+
+Small connector modules verify the original WID, endpoint IDs/global indices,
+source card lines, source positions, generated property identity and explicitly
+resolved SI property table. Reference transverse direction follows the declared
+source chord/default seed. Half-property M/J endpoint rows are checked against
+the explicit property, accumulated in source order, and checked against declared
+total node coefficients. Shell physical/added inertia and per-part ledgers remain
+shell-only. Connector endpoints cannot overlap active rigid-group members.
+
+Accepted frame rows retain complete owner/source/configuration/qualification and
+base/attempt/endpoint timing. The reader checks proper frames, source/current
+chord and backtracked midpoint geometry, local/world force association, force-pair
+and torque balance, finite signed channel histories, aggregate work and minimum
+dt diagnostics, and the declared native dt fraction. It does not rerun TYPE25
+constitutive response, native timestep equations or a physical trajectory.
+Recorded dt remains a diagnostic with a bound, not an independent stability proof.
+
+Connector kinetic subtotals are already included in ordinary and native totals.
+The reader verifies them against total/source endpoint M/J and accepted carried
+velocities, and subtracts connector rotation only in the shell inertia-partition
+residual. It never adds the subtotal a second time. The initial base subtotal is
+zero because there is no completed interval. Optional force-stage observations
+retain their own base-time phase; they are not reconstructed from endpoint fields.
+
+A failed connector cannot reactivate at a later saved frame, and a later completed
+evaluation of an inactive spring has a zero force/couple cache. The newly failed
+interval itself may retain a nonzero cache. Signed work can change while that
+prior cache is removed. Channel work increments are compared against cumulative
+history differences only for adjacent saved epochs; sparse samples do not equate
+a final interval increment to their whole span. The previous frame is re-read
+through its retained inventory hash, with no mutable replay physics/history owner.
+Connector work remains separate from the existing shell/stabilization CSV ledger.
+
+`AcceptedReplayConnectors.*` uses the explicit
+`ROBO_DYNA_SEVEN_PART_SOURCE_INVENTORY` for synthetic value contracts, including
+source/property/late-row failures, subtotal counting, irreversible failure and
+sparse work semantics. It is not acceptance evidence.
+`AcceptedReplaySevenPart.*` requires a completed actual owner archive through
+`ROBO_DYNA_SOURCE_ASSEMBLY_SEVEN_PART_REPLAY_FIXTURE`; it exercises public Open/Load
+and rehashed corruption rejection. The corresponding CTest is
+`accepted_replay_source_assembly_connectors`. These optional fixtures are separate
+from the retained legacy assembly replay gate.

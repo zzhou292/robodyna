@@ -10,6 +10,12 @@ namespace crash::output::replay_detail {
 namespace source = modelio::assembly;
 // Read-only declarations and recorded diagnostics. This is not a material/state
 // owner and intentionally has no native mechanics or constrained recurrence.
+struct AssemblyConnectorDeclaration {
+    std::uint64_t element=0,property=0;
+    std::array<std::size_t,2> nodes{};
+    std::array<double,3> transverse{};
+    double length=0;
+};
 struct AssemblyReplayData {
     explicit AssemblyReplayData(source::SourceAssembly input):source(std::move(input)) {}
     source::SourceAssembly source;
@@ -17,7 +23,10 @@ struct AssemblyReplayData {
     std::size_t group_count=0,member_count=0;
     bool observe_force_stage=false;
     bool native_rotation_domain=false;
-    std::vector<std::array<double,4>> native_nodes;
+    std::vector<std::array<double,4>> native_nodes; // Shell coefficients, then total M/J after connector admission.
+    std::vector<std::array<double,2>> connector_nodes; // Subtotals already included in total M/J.
+    std::vector<AssemblyConnectorDeclaration> connectors;
+    double connector_dt_fraction=0;
     std::vector<bool> grouped_node;
     std::vector<std::size_t> contact_source_parent;
     std::vector<std::string> interval_files;
@@ -61,6 +70,11 @@ struct AssemblyKineticChannels {
 inline double AssemblyQuaternionLimit(const AssemblyReplayData& a) {
     return a.native_rotation_domain?std::acos(-1.):a.maximum_rotation;
 }
+void CheckAssemblySourceScope(const Value& configuration,const Value& manifest,bool seven);
+source::ArtifactIdentity AssemblySourceIdentity(const Value& configuration);
+void ReadAssemblyConnectors(Bundle&,const Value& configuration);
+void CheckAssemblyConnectors(const Bundle&,const Entry&,const Value& frame);
+std::array<double,2> AssemblyConnectorKinetic(const Bundle&,const Value&);
 void ReadAssemblyRotationDomain(AssemblyReplayData&,const Value&);
 void CheckAssemblyRotation(const Bundle&,const Entry&,const Value&,const Value*);
 AssemblyKineticChannels CheckAssemblyKineticChannels(const Bundle&,const Value&);

@@ -13,15 +13,20 @@ add_library(robo_dyna_accepted_replay STATIC AcceptedReplay.cpp AcceptedReplayIn
   AcceptedReplaySourceAssemblySections.cpp AcceptedReplaySourceAssemblyFields.cpp
   AcceptedReplaySourceAssemblyKineticChannels.cpp AcceptedReplaySourceAssemblyForceStage.cpp
   AcceptedReplaySourceAssemblyKinetic.cpp AcceptedReplaySourceAssemblyDiagnostics.cpp AcceptedReplaySourceAssemblyContact.cpp)
-target_sources(robo_dyna_accepted_replay PRIVATE AcceptedReplaySourceAssemblyRotation.cpp)
+target_sources(robo_dyna_accepted_replay PRIVATE AcceptedReplaySourceAssemblyRotation.cpp
+  AcceptedReplaySourceAssemblyConnectorPolicy.cpp AcceptedReplaySourceAssemblyConnectors.cpp
+  AcceptedReplaySourceAssemblyConnectorElements.cpp AcceptedReplaySourceAssemblyConnectorFrames.cpp)
 target_link_libraries(robo_dyna_accepted_replay PUBLIC robo_dyna_artifact_io PRIVATE robo_dyna_canonical_wall_artifacts robo_dyna_source_assembly robo_dyna_source_assembly_wall_forecast)
 target_compile_options(robo_dyna_accepted_replay PRIVATE -fno-fast-math -ffp-contract=off)
 if(ROBO_DYNA_ENABLE_REPLAY_CHECKS OR ROBO_DYNA_ENABLE_ELASTIC_COUPON)
   find_package(GTest REQUIRED)
   add_executable(robo_dyna_accepted_replay_source_assembly_check accepted_replay_source_assembly_check.cpp
-    accepted_replay_source_assembly_force_stage_check.cpp accepted_replay_source_assembly_rotation_check.cpp)
+    accepted_replay_source_assembly_force_stage_check.cpp accepted_replay_source_assembly_rotation_check.cpp
+    accepted_replay_source_assembly_connector_check.cpp accepted_replay_source_assembly_connector_fixture.cpp)
   target_link_libraries(robo_dyna_accepted_replay_source_assembly_check PRIVATE
     robo_dyna_accepted_replay robo_dyna_source_assembly GTest::gtest_main)
+  set(ROBO_DYNA_SEVEN_PART_SOURCE_INVENTORY "" CACHE FILEPATH "Authenticated seven-part source for connector replay contracts")
+  set(ROBO_DYNA_SOURCE_ASSEMBLY_SEVEN_PART_REPLAY_FIXTURE "" CACHE PATH "Completed actual seven-part connector archive")
   set(ROBO_DYNA_SOURCE_ASSEMBLY_REPLAY_FIXTURE "" CACHE PATH "Completed actual grouped source-assembly wall archive")
   set(ROBO_DYNA_SOURCE_ASSEMBLY_FORCE_STAGE_REPLAY_FIXTURE "" CACHE PATH "Completed assembly archive with force-stage observations enabled")
   if(ROBO_DYNA_SOURCE_ASSEMBLY_FORCE_STAGE_REPLAY_FIXTURE AND NOT EXISTS "${ROBO_DYNA_SOURCE_ASSEMBLY_FORCE_STAGE_REPLAY_FIXTURE}/manifest.json")
@@ -31,14 +36,26 @@ if(ROBO_DYNA_ENABLE_REPLAY_CHECKS OR ROBO_DYNA_ENABLE_ELASTIC_COUPON)
     message(FATAL_ERROR "Declared assembly replay fixture requires a completed manifest")
   endif()
   if(ROBO_DYNA_SOURCE_ASSEMBLY_REPLAY_FIXTURE OR ROBO_DYNA_SOURCE_ASSEMBLY_FORCE_STAGE_REPLAY_FIXTURE)
-    set(assembly_replay_filter "*")
+    set(assembly_replay_filter "*-AcceptedReplayConnectors.*:AcceptedReplaySevenPart.*")
     if(NOT ROBO_DYNA_SOURCE_ASSEMBLY_REPLAY_FIXTURE)
       set(assembly_replay_filter "AcceptedReplayForceStage.*")
     endif()
     add_test(NAME accepted_replay_source_assembly COMMAND robo_dyna_accepted_replay_source_assembly_check
       "--gtest_filter=${assembly_replay_filter}")
     set_tests_properties(accepted_replay_source_assembly PROPERTIES TIMEOUT 300 RUN_SERIAL TRUE PROCESSORS 1
-      ENVIRONMENT "ROBO_DYNA_SOURCE_ASSEMBLY_REPLAY_FIXTURE=${ROBO_DYNA_SOURCE_ASSEMBLY_REPLAY_FIXTURE};ROBO_DYNA_SOURCE_ASSEMBLY_FORCE_STAGE_REPLAY_FIXTURE=${ROBO_DYNA_SOURCE_ASSEMBLY_FORCE_STAGE_REPLAY_FIXTURE}")
+      ENVIRONMENT "ROBO_DYNA_SOURCE_ASSEMBLY_REPLAY_FIXTURE=${ROBO_DYNA_SOURCE_ASSEMBLY_REPLAY_FIXTURE};ROBO_DYNA_SOURCE_ASSEMBLY_FORCE_STAGE_REPLAY_FIXTURE=${ROBO_DYNA_SOURCE_ASSEMBLY_FORCE_STAGE_REPLAY_FIXTURE};ROBO_DYNA_SEVEN_PART_SOURCE_INVENTORY=${ROBO_DYNA_SEVEN_PART_SOURCE_INVENTORY};ROBO_DYNA_SOURCE_ASSEMBLY_SEVEN_PART_REPLAY_FIXTURE=${ROBO_DYNA_SOURCE_ASSEMBLY_SEVEN_PART_REPLAY_FIXTURE}")
+  endif()
+  if(ROBO_DYNA_SEVEN_PART_SOURCE_INVENTORY OR ROBO_DYNA_SOURCE_ASSEMBLY_SEVEN_PART_REPLAY_FIXTURE)
+    if(ROBO_DYNA_SEVEN_PART_SOURCE_INVENTORY AND NOT EXISTS "${ROBO_DYNA_SEVEN_PART_SOURCE_INVENTORY}")
+      message(FATAL_ERROR "Declared seven-part connector source fixture is absent")
+    endif()
+    if(ROBO_DYNA_SOURCE_ASSEMBLY_SEVEN_PART_REPLAY_FIXTURE AND NOT EXISTS "${ROBO_DYNA_SOURCE_ASSEMBLY_SEVEN_PART_REPLAY_FIXTURE}/manifest.json")
+      message(FATAL_ERROR "Declared seven-part replay requires a completed manifest")
+    endif()
+    add_test(NAME accepted_replay_source_assembly_connectors COMMAND robo_dyna_accepted_replay_source_assembly_check
+      "--gtest_filter=AcceptedReplayConnectors.*:AcceptedReplaySevenPart.*")
+    set_tests_properties(accepted_replay_source_assembly_connectors PROPERTIES TIMEOUT 300 RUN_SERIAL TRUE PROCESSORS 1
+      ENVIRONMENT "ROBO_DYNA_SEVEN_PART_SOURCE_INVENTORY=${ROBO_DYNA_SEVEN_PART_SOURCE_INVENTORY};ROBO_DYNA_SOURCE_ASSEMBLY_SEVEN_PART_REPLAY_FIXTURE=${ROBO_DYNA_SOURCE_ASSEMBLY_SEVEN_PART_REPLAY_FIXTURE}")
   endif()
   add_executable(robo_dyna_accepted_replay_source_part_check accepted_replay_source_part_check.cpp)
   target_link_libraries(robo_dyna_accepted_replay_source_part_check PRIVATE

@@ -17,16 +17,21 @@ void CheckKinetic(const Bundle& b,const Entry& e,const Value& v,bool before,cons
     Require(budget>=0&&std::abs(Real(v,"publication_residual_J"))<=budget,"Native publication kinetic budget exceeded");
     if(!nodal)return;
     const auto& a=*b.assembly;const auto& velocity=Member(*nodal,"velocity_xyz_m_per_s");const auto& omega=Member(*nodal,"angular_velocity_xyz_rad_per_s");
-    long double native[2][4]{};
+    long double native[2][4]{},connector[2]{};
     for(std::size_t n=0;n<a.native_nodes.size();++n) {
         long double vv=0,ww=0;
         for(unsigned j=0;j<3;++j) {const long double x=velocity[3*n+j].GetDouble(),w=omega[3*n+j].GetDouble();vv+=x*x;ww+=w*w;}
         auto& sum=native[a.grouped_node[n]?1:0];sum[0]+=.5L*a.native_nodes[n][0]*vv;
         for(unsigned j=1;j<4;++j)sum[j]+=.5L*a.native_nodes[n][j]*ww;
+        if(!a.connector_nodes.empty()) {connector[0]+=.5L*a.connector_nodes[n][0]*vv;connector[1]+=.5L*a.connector_nodes[n][1]*ww;}
     }
     for(unsigned j=0;j<4;++j) {
         AssemblyNear(ordinary[j],native[0][j],a.native_nodes.size());
         AssemblyNear(members[j],native[1][j],a.member_count);
+    }
+    if(!a.connectors.empty()) {
+        const auto reported=AssemblyConnectorKinetic(b,v);
+        for(unsigned j=0;j<2;++j)AssemblyNear(reported[j],connector[j],a.native_nodes.size());
     }
     if(!e.epoch) {
         const double actual_native=Real(v,"native_total_J"),actual_aggregate=Real(v,"effective_total_J");

@@ -63,6 +63,7 @@ void CheckSourceAssemblyFields(const Bundle& b,const Entry& e,const chrono::ChTr
         "Assembly plastic point/parent summary changed");
     CheckAssemblyDiagnostics(b,e,diagnostics,&n);
     CheckAssemblyForceStage(b,e,d);
+    CheckAssemblyConnectors(b,e,d);
     if(e.epoch)CheckAssemblyContact(b,e,Member(d,"contact"),n,diagnostics);
     else Require(Member(d,"contact").IsNull(),"Initial assembly frame cannot publish an interval contact candidate");
     if(e.epoch==b.info.final_epoch)Require(diagnostics==a.final_diagnostics,"Assembly final frame diagnostics differ from final metrics");

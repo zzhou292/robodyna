@@ -6,7 +6,7 @@
 namespace crash::output::replay_detail {
 void ReadSourceAssemblyConfiguration(Bundle& b,const Document& c,const Document& final,const Document& manifest) {
     using namespace output::assembly;
-    const auto pinned=source::PinnedYarisSixPartInventory();
+    const auto pinned=AssemblySourceIdentity(c);
     const auto CheckSource=[&](const Value& v) {
         Require(Text(v,"source_inventory_file")=="source-assembly-inventory.json"&&Text(v,"source_inventory_sha256")==pinned.sha256&&
             Unsigned(v,"source_inventory_bytes")==pinned.bytes,"Assembly replay original inventory identity changed");
@@ -16,7 +16,10 @@ void ReadSourceAssemblyConfiguration(Bundle& b,const Document& c,const Document&
     CheckSource(c);CheckSource(manifest);
     b.assembly=std::make_shared<AssemblyReplayData>(source::SourceAssembly::ReadBytes(VerifiedBytes(b,"source-assembly-inventory.json"),pinned));
     auto& a=*b.assembly;const auto& s=a.source.data();
-    Require(s.nodes.size()==1030&&s.parents.size()==915&&s.qeph_count==804&&s.t3_count==111,"Unsupported pinned assembly extent");
+    const bool seven=!s.internal_spotwelds.empty();CheckAssemblySourceScope(c,manifest,seven);
+    Require(seven?s.nodes.size()==1093&&s.parents.size()==959&&s.qeph_count==845&&s.t3_count==114:
+        s.nodes.size()==1030&&s.parents.size()==915&&s.qeph_count==804&&s.t3_count==111,"Unsupported pinned assembly extent");
+    if(seven)b.info.scope="Original seven-part Yaris component; one explicit TYPE25 weld and six internal groups active; external connections released; physical scale";
     b.info.node_count=s.nodes.size();b.info.run_id=Unsigned(c,"run_id");b.info.topology_id=Unsigned(c,"topology_id");
     a.instance=Unsigned(c,"source_instance_id");a.asset=Unsigned(c,"asset_id");
     b.source_configuration_id=Unsigned(c,"configuration_id");b.qualification_id=Unsigned(c,"qualification_id");b.wall_binding_id=Unsigned(c,"wall_binding_id");
@@ -78,6 +81,7 @@ void ReadSourceAssemblyConfiguration(Bundle& b,const Document& c,const Document&
         b.source_triangles.push_back(ids);b.topology.push_back({int(ids[0]),int(ids[1]),int(ids[2])});
     }
     ReadAssemblyDeclarations(b,Member(c,"input"));ReadAssemblyGroups(b,Member(c,"input"));
+    ReadAssemblyConnectors(b,c);
     ReadAssemblyWallSetup(b,Member(c,"wall_setup"));ReadAssemblyIntervals(b,c,manifest);
     std::set<std::string> expected_files{"configuration.json","source-assembly-inventory.json","accepted-frames.csv","final-metrics.json",
         "original-canonical-wall.manifest.json","placed-wall.mesh.json","placed-wall.obj","placed-wall-placement.json"};
