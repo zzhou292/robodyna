@@ -15,6 +15,34 @@
       "size": 27758,
       "sha256": "d351e3e23ea03aa1b2e2c3621442ea063382da75f86f6f1657fe56f480423af8",
       "git_blob_sha1": "d23daa5ba6976764b7d2bf399ea8f730d8e1b2a8"
+    },
+    {
+      "path": "original/engine/source/tools/skew/rotbmr.F",
+      "upstream_path": "engine/source/tools/skew/rotbmr.F",
+      "size": 4163,
+      "sha256": "98187647e3bf75e2f6f0818d3e1ee3e3e2b770ac137e69a313727e3427004a29",
+      "git_blob_sha1": "2c3cb6d2c5327abe5b11a14b59752c97bdb08245"
+    },
+    {
+      "path": "original/engine/source/constraints/general/rbody/rgbodv.F",
+      "upstream_path": "engine/source/constraints/general/rbody/rgbodv.F",
+      "size": 10239,
+      "sha256": "dcd81a9dd9a45d3a74652aa7f1c020b4fe2ddd915f4c3aeedc52466a91031cb7",
+      "git_blob_sha1": "fc180657437400bebc5efe249f11352b08e09ada"
+    },
+    {
+      "path": "original/engine/source/assembly/velocity.F",
+      "upstream_path": "engine/source/assembly/velocity.F",
+      "size": 4128,
+      "sha256": "e0bc3a753ed59ca688f63ef147d94bfb694c5e976c0ee1b927452f709ebb9371",
+      "git_blob_sha1": "2466990c526161dcb281e48eae2c1604dcb5cdc5"
+    },
+    {
+      "path": "original/engine/source/assembly/displacement.F",
+      "upstream_path": "engine/source/assembly/displacement.F",
+      "size": 4415,
+      "sha256": "c764653f86e1261310ffa898b00a40a76e3773e15da90b760f938d0d40fbe404",
+      "git_blob_sha1": "d4501a3a9ffb5b064e0e57f521290acd4f158e96"
     }
   ],
   "fragments": [
@@ -52,6 +80,69 @@
       "first_line": 643,
       "last_line": 645,
       "sha256": "99b3063718fc5ba5b7897bed675883e5a244cc34d4c9bfb3b680f6d60b5ff473"
+    },
+    {
+      "path": "extracted/FrameRotation.inc",
+      "source": "original/engine/source/tools/skew/rotbmr.F",
+      "first_line": 58,
+      "last_line": 111,
+      "sha256": "3488529025a195aff4a6619b9af0bf56cb3ea718a0efa9fc994b41ba00f2778a"
+    },
+    {
+      "path": "extracted/SavedBodyOmega.inc",
+      "source": "original/engine/source/constraints/general/rbody/rgbodfp.F",
+      "first_line": 624,
+      "last_line": 626,
+      "sha256": "085fcc27e8058debf386095b282470062eab92d7cc6fad131fe979b6aeb33b8c"
+    },
+    {
+      "path": "extracted/TorqueToFrame.inc",
+      "source": "original/engine/source/constraints/general/rbody/rgbodfp.F",
+      "first_line": 630,
+      "last_line": 632,
+      "sha256": "adfaaee05006bb876fdb54cfc1fe3e9c3890670cfc710d321c5d0ccf37f064a4"
+    },
+    {
+      "path": "extracted/AccelerationToWorld.inc",
+      "source": "original/engine/source/constraints/general/rbody/rgbodfp.F",
+      "first_line": 652,
+      "last_line": 654,
+      "sha256": "0446f921db05942b36b4fff9fee2fac66366da97f1bae5ea6f2e02bb2e4c9928"
+    },
+    {
+      "path": "extracted/MemberAcceleration.inc",
+      "source": "original/engine/source/constraints/general/rbody/rgbodv.F",
+      "first_line": 138,
+      "last_line": 161,
+      "sha256": "1e3026582e67c69fca209e6eebb755d865c12e043600c5a1976de47e9ad4da67"
+    },
+    {
+      "path": "extracted/MemberReaction.inc",
+      "source": "original/engine/source/constraints/general/rbody/rgbodv.F",
+      "first_line": 224,
+      "last_line": 236,
+      "sha256": "856338c23a1266972963fe18c837c8d41025cd8f82c5b6233c0aca1aceeca0cb"
+    },
+    {
+      "path": "extracted/TranslationKick.inc",
+      "source": "original/engine/source/assembly/velocity.F",
+      "first_line": 58,
+      "last_line": 65,
+      "sha256": "1f2cf5a230e7a2845ab3fe1a1bc1364f974159d4cc63c9bf6b8e155443b003b8"
+    },
+    {
+      "path": "extracted/RotationKick.inc",
+      "source": "original/engine/source/assembly/velocity.F",
+      "first_line": 80,
+      "last_line": 87,
+      "sha256": "2ab6358fa51b6d8736663aec44c93d20636eb9f0f1677ad368c6fa5ac3ea530b"
+    },
+    {
+      "path": "extracted/PositionDrift.inc",
+      "source": "original/engine/source/assembly/displacement.F",
+      "first_line": 92,
+      "last_line": 102,
+      "sha256": "a23217e1130d1cdef15fc5fcb3d31b0db8794a8e40c92f5c921eca34daf87d7c"
     }
   ],
   "interpretation": "Original complete files plus exact contiguous arithmetic fragments; wrapper context is separately authored. Eigen principal axes are equivalent tensor algebra, not native VALPR bit parity."

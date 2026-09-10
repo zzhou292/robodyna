@@ -6,3 +6,10 @@ cc_test(
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = ["//lib_src/constraints:nodal_rigid_group", "@googletest//:gtest_main"],
 )
+
+cc_test(
+    name = "nodal_rigid_step_check",
+    srcs = ["GroupStepMathTest.cpp", "GroupStepTestSupport.h", "GroupTestSupport.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/constraints:nodal_rigid_group_step_math", "@googletest//:gtest_main"],
+)

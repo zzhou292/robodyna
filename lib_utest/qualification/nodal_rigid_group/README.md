@@ -34,7 +34,7 @@ frame. It does not update that frame or choose its temporal phase. Thus no
 claim is made about native `ROTBMR`, `RGBODV`, first half kick, finite-rotation
 drift or transaction publication. Those remain the next integration gate.
 
-The native directory retains two complete pinned original files and five
+The native directory retains six complete pinned original files and fourteen
 byte-exact arithmetic fragments. `verify_sources.py` checks source SHA-256,
 Git blob identities and exact source line extraction. The Fortran wrapper
 supplies bounded input packets around original inertia, correction, force
@@ -67,3 +67,11 @@ native x-force assignment in the initial oracle extraction; the qualified
 fragment includes lines 122–130, with the original source pin unchanged.
 These gates qualify startup/stateless math only; constrained recurrence and
 its common nodal publication remain separate integration work.
+
+The separate pure recurrence packet targets are `nodal_rigid_step_check`,
+`nodal_rigid_step_native_check` and `nodal_rigid_step_cuda_check`. They compare
+frame/gyro/member acceleration/kick/drift arithmetic with explicit duration
+inputs, including a proposed TL half-kick packet. They do not integrate an
+owner, qualify donor engine startup timing, or publish a constrained trajectory.
+See `lib_src/constraints/NodalRigidGroupStepMath.md` for that scope. The packet
+implementation handoff has not run a compiler or GPU job.

@@ -1,0 +1,22 @@
+! Wrapper context authored here; included ROTBMR arithmetic is byte-exact.
+! OpenRadioss (C) 2026 Siemens, AGPL-3.0-or-later.
+      SUBROUTINE NRG_ROTBMR(VR,RBY,DT)
+      USE ISO_C_BINDING, ONLY:C_DOUBLE
+      IMPLICIT NONE
+      REAL(C_DOUBLE),INTENT(IN)::VR(3),DT
+      REAL(C_DOUBLE),INTENT(INOUT)::RBY(9)
+      REAL(C_DOUBLE),PARAMETER::EM10=1.D-10
+      REAL(C_DOUBLE) RX,RY,RZ,RX2,RY2,RZ2,R2,R,C,CM1,S,SZ,CZ,E11,
+     . E22,E12,E21,E13,E23,BL11,BL21,BL31,BL12,BL22,BL32,BN
+#include "extracted/FrameRotation.inc"
+      END
+
+      SUBROUTINE RBG_FRAME(FRAME,OMEGA,DT,OUTPUT)
+     . BIND(C,NAME="nodal_rigid_native_frame")
+      USE ISO_C_BINDING, ONLY:C_DOUBLE
+      IMPLICIT NONE
+      REAL(C_DOUBLE),INTENT(IN)::FRAME(9),OMEGA(3),DT
+      REAL(C_DOUBLE),INTENT(OUT)::OUTPUT(9)
+      OUTPUT=FRAME
+      CALL NRG_ROTBMR(OMEGA,OUTPUT,DT)
+      END

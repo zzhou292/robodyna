@@ -26,4 +26,4 @@ def verify(root):
 
 if __name__ == '__main__':
     verify(Path(__file__).resolve().parent)
-    print('Pinned nodal-rigid sources and five exact arithmetic fragments verified')
+    print('Pinned nodal-rigid sources and exact arithmetic fragments verified')

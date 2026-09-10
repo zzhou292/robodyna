@@ -11,6 +11,13 @@ cc_library(
     deps = ["//lib_src/math:fixed3", "//lib_src/math:quaternion", "@eigen//:eigen"],
 )
 
+cc_library(
+    name = "nodal_rigid_group_step_math",
+    hdrs = ["NodalRigidFrameStep.h", "NodalRigidGroupStepMath.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":nodal_rigid_group"],
+)
+
 cuda_library(
     name = "FEAT10ConstraintManager",
     srcs = [
