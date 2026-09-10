@@ -22,14 +22,24 @@ TEST_F(MixedShellCuda, AnalyticMixedAndZeroCurveCollectionsYieldRollbackAndRetry
     Staged old_shell; SectionPair old_section;
     ASSERT_TRUE(Accepted(r,old_shell)); ASSERT_TRUE(Sections(r,old_section));
     for(unsigned step=0;step<3;++step) {
+      SCOPED_TRACE(step);
       Prepared prepared; ASSERT_TRUE(Prepare(r,PlasticSchedule(r,step),prepared));
       Staged candidate; ASSERT_TRUE(Evaluate(r,prepared,candidate));
       SectionPair sections; ASSERT_TRUE(Sections(r,sections,&candidate));
       CheckHostAdapters(r,prepared,old_shell,old_section,candidate,sections,oracle);
       ASSERT_GT(sections.q.diagnostics.maximum_plastic_strain,0);
       ASSERT_GT(sections.t.diagnostics.maximum_plastic_strain,0);
-      ASSERT_GT(sections.t.history.point[0].filtered_rate_per_s,0);
-      if(all) ASSERT_GT(sections.q.history.point[0].filtered_rate_per_s,0);
+      // Schedule step 1 is a hold. At this fixture's millisecond step the
+      // native 10 kHz filter has alpha=1, so zero total rate clears its history.
+      // Other steps load/reverse; the mixed QEPH declaration disables rate.
+      if(step==1) {
+        ASSERT_EQ(sections.t.history.point[0].filtered_rate_per_s,0);
+        ASSERT_EQ(sections.q.history.point[0].filtered_rate_per_s,0);
+      } else {
+        ASSERT_GT(sections.t.history.point[0].filtered_rate_per_s,0);
+        if(all) ASSERT_GT(sections.q.history.point[0].filtered_rate_per_s,0);
+        else ASSERT_EQ(sections.q.history.point[0].filtered_rate_per_s,0);
+      }
       ASSERT_TRUE(Publish(r,prepared,candidate)); old_shell=candidate; old_section=sections;
     }
     Snapshot before; ASSERT_TRUE(Read(r.owner,before));
