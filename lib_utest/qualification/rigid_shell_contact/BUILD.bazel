@@ -1,0 +1,9 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "native_coefficient_admission_check",
+    srcs = ["NativeCoefficientAdmissionTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/solvers:nodal_native_physical_coefficients", "@googletest//:gtest_main"],
+)
+# CUDA joined-owner/wall execution is the standalone CMake target, reusing the
+# production owner, shell publication and contact library owners without donors.
