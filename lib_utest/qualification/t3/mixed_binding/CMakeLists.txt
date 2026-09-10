@@ -1,5 +1,5 @@
 # Included by the owning qualification project; the analytic oracle is header-only.
-add_executable(shell_batch_binding_check ShellBatchBindingTest.cpp)
+add_executable(shell_batch_binding_check ShellBatchBindingTest.cpp ShellBatchCollectionTest.cpp)
 target_link_libraries(shell_batch_binding_check PRIVATE tl_shell_batch_binding GTest::gtest_main)
 target_compile_features(shell_batch_binding_check PRIVATE cxx_std_17)
 target_compile_options(shell_batch_binding_check PRIVATE -fno-fast-math -ffp-contract=off)

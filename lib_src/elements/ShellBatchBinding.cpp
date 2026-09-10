@@ -39,8 +39,8 @@ ShellBindingReport CheckConnectivity(const std::array<std::size_t,N>& indices,
 }
 template<class Input,std::size_t N>
 ShellBindingReport RegisterNodes(const Input& input,const std::array<std::size_t,N>& indices,
-    ShellBindingFamily family,std::array<ShellBindingNode,MaxShellBindingNodes>& nodes,
-    std::array<bool,MaxShellBindingNodes>& seen) noexcept {
+    ShellBindingFamily family,std::array<ShellBindingNode,MaxShellCollectionNodes>& nodes,
+    std::array<bool,MaxShellCollectionNodes>& seen) noexcept {
   for(std::size_t i=0;i<N;++i) {
     const auto n=indices[i];
     const std::uint64_t id=input.node_ids[i]; // Widen QEPH, preserve all T3 bits.
@@ -50,7 +50,7 @@ ShellBindingReport RegisterNodes(const Input& input,const std::array<std::size_t
       if(!SamePosition(nodes[n].position,input.position[i]))
         return Error(ShellBindingStatus::PositionMismatch,"Shared coordinate bits differ",family,i,n);
     } else {
-      for(std::size_t other=0;other<MaxShellBindingNodes;++other)
+      for(std::size_t other=0;other<MaxShellCollectionNodes;++other)
         if(seen[other]&&nodes[other].source_id==id)
           return Error(ShellBindingStatus::IdentityMismatch,"Source ID maps to distinct global nodes",family,i,n);
       nodes[n].source_id=id; nodes[n].position=input.position[i]; seen[n]=true;
@@ -71,7 +71,7 @@ bool AddMass(ShellBindingMass& sum,const ShellBindingMass& term) noexcept {
 }
 template<class Reference,std::size_t N>
 ShellBindingReport Accumulate(const Reference& reference,const std::array<std::size_t,N>& indices,
-    ShellBindingFamily family,std::array<ShellBindingNode,MaxShellBindingNodes>& nodes,
+    ShellBindingFamily family,std::array<ShellBindingNode,MaxShellCollectionNodes>& nodes,
     ShellBindingMass& totals) noexcept {
   for(std::size_t i=0;i<N;++i) {
     const ShellBindingMass term{reference.nodal_mass[i],reference.isotropic_inertia[i],
@@ -83,10 +83,11 @@ ShellBindingReport Accumulate(const Reference& reference,const std::array<std::s
   return {};
 }
 template<class Input,std::size_t N>
-void AppendInventory(std::array<std::uint64_t,ShellBatchInventory::WordCount>& words,
+void AppendInventory(std::array<std::uint64_t,ShellBatchInventory::Capacity>& words,
     std::size_t& cursor,std::uint64_t family,const Input& input,
-    const std::array<std::size_t,N>& indices) noexcept {
+    const std::array<std::size_t,N>& indices,std::uint64_t source_id,bool legacy) noexcept {
   words[cursor++]=family; words[cursor++]=N;
+  if(!legacy) words[cursor++]=source_id;
   for(std::size_t i=0;i<N;++i) {
     words[cursor++]=indices[i]; words[cursor++]=input.node_ids[i];
     words[cursor++]=Bits(input.position[i].x); words[cursor++]=Bits(input.position[i].y);
@@ -97,47 +98,152 @@ void AppendInventory(std::array<std::uint64_t,ShellBatchInventory::WordCount>& w
 }
 } // namespace
 
+const qeph::ReferenceData& ShellBatchBinding::qeph_reference(std::size_t i) const noexcept {
+  static const qeph::ReferenceData empty;
+  return prepared_&&i<data_.qeph_count?data_.qeph[i].reference:empty;
+}
+const t3::ReferenceData& ShellBatchBinding::t3_reference(std::size_t i) const noexcept {
+  static const t3::ReferenceData empty;
+  return prepared_&&i<data_.t3_count?data_.t3[i].reference:empty;
+}
+const std::array<std::size_t,4>& ShellBatchBinding::qeph_nodes(std::size_t i) const noexcept {
+  static const std::array<std::size_t,4> empty{};
+  return prepared_&&i<data_.qeph_count?data_.qeph[i].nodes:empty;
+}
+const std::array<std::size_t,3>& ShellBatchBinding::t3_nodes(std::size_t i) const noexcept {
+  static const std::array<std::size_t,3> empty{};
+  return prepared_&&i<data_.t3_count?data_.t3[i].nodes:empty;
+}
+std::uint64_t ShellBatchBinding::qeph_source_id(std::size_t i) const noexcept {
+  return prepared_&&i<data_.qeph_count?data_.qeph[i].source_id:0;
+}
+std::uint64_t ShellBatchBinding::t3_source_id(std::size_t i) const noexcept {
+  return prepared_&&i<data_.t3_count?data_.t3[i].source_id:0;
+}
+const qeph::ReferenceData& ShellBatchBinding::qeph_reference() const noexcept {
+  return qeph_reference(data_.qeph_count==1&&data_.t3_count==1?0:NoShellBindingNode);
+}
+const t3::ReferenceData& ShellBatchBinding::t3_reference() const noexcept {
+  return t3_reference(data_.qeph_count==1&&data_.t3_count==1?0:NoShellBindingNode);
+}
+const std::array<std::size_t,4>& ShellBatchBinding::qeph_nodes() const noexcept {
+  return qeph_nodes(data_.qeph_count==1&&data_.t3_count==1?0:NoShellBindingNode);
+}
+const std::array<std::size_t,3>& ShellBatchBinding::t3_nodes() const noexcept {
+  return t3_nodes(data_.qeph_count==1&&data_.t3_count==1?0:NoShellBindingNode);
+}
+
 ShellBindingReport ShellBatchBinding::Initialize(const ShellBatchBindingInput& input) noexcept {
   if(prepared_) return Error(ShellBindingStatus::AlreadyInitialized,"Shell binding is immutable after initialization");
   if(input.node_count<4||input.node_count>MaxShellBindingNodes)
     return Error(ShellBindingStatus::InvalidInput,"One Q4 and one T3 require 4 to 7 covered nodes");
-  auto report=CheckConnectivity(input.qeph_nodes,input.node_count,ShellBindingFamily::Qeph);
-  if(report.status!=ShellBindingStatus::Success) return report;
-  report=CheckConnectivity(input.t3_nodes,input.node_count,ShellBindingFamily::T3);
-  if(report.status!=ShellBindingStatus::Success) return report;
+  const ShellQephBindingInput q{input.qeph,input.qeph_nodes,0};
+  const ShellT3BindingInput t{input.t3,input.t3_nodes,0};
+  return InitializeImpl({&q,&t,1,1,input.node_count},true);
+}
+ShellBindingReport ShellBatchBinding::Initialize(const ShellBatchCollectionInput& input) noexcept {
+  return InitializeImpl(input,false);
+}
 
+ShellBindingReport ShellBatchBinding::InitializeImpl(const ShellBatchCollectionInput& input,bool legacy) noexcept {
+  if(prepared_) return Error(ShellBindingStatus::AlreadyInitialized,"Shell binding is immutable after initialization");
+  // Check counts before arithmetic or borrowed-range access. No caller storage
+  // is read for a null/mismatched/oversized range.
+  if(input.node_count<3||input.node_count>MaxShellCollectionNodes||
+     input.qeph_count>MaxShellCollectionParents||input.t3_count>MaxShellCollectionParents||
+     input.qeph_count+input.t3_count==0||
+     input.qeph_count+input.t3_count>MaxShellCollectionParents||
+     (input.qeph_count==0)!=(input.qeph==nullptr)||
+     (input.t3_count==0)!=(input.t3==nullptr))
+    return Error(ShellBindingStatus::InvalidInput,"Invalid bounded typed collection ranges or node count");
+  auto at=[](ShellBindingReport report,std::size_t parent) {
+    report.parent_index=parent; return report;
+  };
+  std::array<std::uint64_t,MaxShellCollectionParents> parent_ids{};
+  std::size_t id_count=0;
+  auto parent_identity=[&](std::uint64_t id,ShellBindingFamily family) {
+    if(!legacy) {
+      if(id==0) return Error(ShellBindingStatus::InvalidParentIdentity,"Collection parent ID is zero",family);
+      for(std::size_t i=0;i<id_count;++i) if(parent_ids[i]==id)
+        return Error(ShellBindingStatus::InvalidParentIdentity,"Collection parent ID is repeated",family);
+      parent_ids[id_count++]=id;
+    }
+    return ShellBindingReport{};
+  };
+  // Preserve the pair's ordering: all connectivity checks, all native startup,
+  // all identities/coverage, then native mass reduction and final publication.
+  for(std::size_t i=0;i<input.qeph_count;++i) {
+    auto report=CheckConnectivity(input.qeph[i].nodes,input.node_count,ShellBindingFamily::Qeph);
+    if(report.status!=ShellBindingStatus::Success) return at(report,i);
+    report=parent_identity(input.qeph[i].source_parent_id,ShellBindingFamily::Qeph);
+    if(report.status!=ShellBindingStatus::Success) return at(report,i);
+  }
+  for(std::size_t i=0;i<input.t3_count;++i) {
+    auto report=CheckConnectivity(input.t3[i].nodes,input.node_count,ShellBindingFamily::T3);
+    if(report.status!=ShellBindingStatus::Success) return at(report,i);
+    report=parent_identity(input.t3[i].source_parent_id,ShellBindingFamily::T3);
+    if(report.status!=ShellBindingStatus::Success) return at(report,i);
+  }
   Data next;
-  const auto q=qeph::InitializeReference(input.qeph,next.qeph);
-  if(q!=qeph::Status::kSuccess) {
-    report=Error(ShellBindingStatus::InvalidQephReference,"QEPH startup rejected its typed input",ShellBindingFamily::Qeph);
-    report.qeph_status=q; return report;
+  next.qeph_count=input.qeph_count; next.t3_count=input.t3_count; next.node_count=input.node_count;
+  for(std::size_t i=0;i<input.qeph_count;++i) {
+    auto& parent=next.qeph[i];
+    const auto status=qeph::InitializeReference(input.qeph[i].reference,parent.reference);
+    if(status!=qeph::Status::kSuccess) {
+      auto report=Error(ShellBindingStatus::InvalidQephReference,"QEPH startup rejected its typed input",ShellBindingFamily::Qeph);
+      report.qeph_status=status; return at(report,i);
+    }
+    parent.nodes=input.qeph[i].nodes; parent.source_id=input.qeph[i].source_parent_id;
   }
-  const auto t=t3::InitializeReference(input.t3,next.t3);
-  if(t!=t3::Status::kSuccess) {
-    report=Error(ShellBindingStatus::InvalidT3Reference,"T3 startup rejected its typed input",ShellBindingFamily::T3);
-    report.t3_status=t; return report;
+  for(std::size_t i=0;i<input.t3_count;++i) {
+    auto& parent=next.t3[i];
+    const auto status=t3::InitializeReference(input.t3[i].reference,parent.reference);
+    if(status!=t3::Status::kSuccess) {
+      auto report=Error(ShellBindingStatus::InvalidT3Reference,"T3 startup rejected its typed input",ShellBindingFamily::T3);
+      report.t3_status=status; return at(report,i);
+    }
+    parent.nodes=input.t3[i].nodes; parent.source_id=input.t3[i].source_parent_id;
   }
-  next.qeph_nodes=input.qeph_nodes; next.t3_nodes=input.t3_nodes; next.node_count=input.node_count;
-  std::array<bool,MaxShellBindingNodes> seen{};
-  report=RegisterNodes(next.qeph.input,next.qeph_nodes,ShellBindingFamily::Qeph,next.nodes,seen);
-  if(report.status!=ShellBindingStatus::Success) return report;
-  report=RegisterNodes(next.t3.input,next.t3_nodes,ShellBindingFamily::T3,next.nodes,seen);
-  if(report.status!=ShellBindingStatus::Success) return report;
+  std::array<bool,MaxShellCollectionNodes> seen{};
+  for(std::size_t i=0;i<next.qeph_count;++i) {
+    const auto& parent=next.qeph[i];
+    const auto report=RegisterNodes(parent.reference.input,parent.nodes,ShellBindingFamily::Qeph,next.nodes,seen);
+    if(report.status!=ShellBindingStatus::Success) return at(report,i);
+  }
+  for(std::size_t i=0;i<next.t3_count;++i) {
+    const auto& parent=next.t3[i];
+    const auto report=RegisterNodes(parent.reference.input,parent.nodes,ShellBindingFamily::T3,next.nodes,seen);
+    if(report.status!=ShellBindingStatus::Success) return at(report,i);
+  }
   for(std::size_t n=0;n<next.node_count;++n) if(!seen[n])
     return Error(ShellBindingStatus::InvalidConnectivity,"Declared global node is uncovered",
                  ShellBindingFamily::None,NoShellBindingNode,n);
-  report=Accumulate(next.qeph,next.qeph_nodes,ShellBindingFamily::Qeph,next.nodes,next.totals);
-  if(report.status!=ShellBindingStatus::Success) return report;
-  report=Accumulate(next.t3,next.t3_nodes,ShellBindingFamily::T3,next.nodes,next.totals);
-  if(report.status!=ShellBindingStatus::Success) return report;
-
-  static_assert(ShellBatchInventory::WordCount==2+(2+5*4+4)+(2+5*3+4),"Complete native identity inventory");
+  for(std::size_t i=0;i<next.qeph_count;++i) {
+    const auto& parent=next.qeph[i];
+    const auto report=Accumulate(parent.reference,parent.nodes,ShellBindingFamily::Qeph,next.nodes,next.totals);
+    if(report.status!=ShellBindingStatus::Success) return at(report,i);
+  }
+  for(std::size_t i=0;i<next.t3_count;++i) {
+    const auto& parent=next.t3[i];
+    const auto report=Accumulate(parent.reference,parent.nodes,ShellBindingFamily::T3,next.nodes,next.totals);
+    if(report.status!=ShellBindingStatus::Success) return at(report,i);
+  }
+  static_assert(ShellBatchInventory::WordCount==2+(2+5*4+4)+(2+5*3+4),"Original pair inventory");
+  static_assert(ShellBatchInventory::Capacity>=4+MaxShellCollectionParents*(3+5*4+4),"Complete collection inventory");
   auto& words=next.inventory.words_;
   std::size_t cursor=0;
-  words[cursor++]=1; // In-process encoding discriminator only, not a file schema.
+  words[cursor++]=legacy?1:2; // In-process encoding only, never a file schema.
   words[cursor++]=next.node_count;
-  AppendInventory(words,cursor,4,next.qeph.input,next.qeph_nodes);
-  AppendInventory(words,cursor,3,next.t3.input,next.t3_nodes);
+  if(!legacy) { words[cursor++]=next.qeph_count; words[cursor++]=next.t3_count; }
+  for(std::size_t i=0;i<next.qeph_count;++i) {
+    const auto& parent=next.qeph[i];
+    AppendInventory(words,cursor,4,parent.reference.input,parent.nodes,parent.source_id,legacy);
+  }
+  for(std::size_t i=0;i<next.t3_count;++i) {
+    const auto& parent=next.t3[i];
+    AppendInventory(words,cursor,3,parent.reference.input,parent.nodes,parent.source_id,legacy);
+  }
+  next.inventory.word_count_=cursor;
   data_=next; prepared_=true;
   return {};
 }

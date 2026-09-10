@@ -3,6 +3,7 @@
 // startup operations. This module adds only immutable identity and reduction.
 #pragma once
 
+#include "ShellCollectionLimits.h"
 #include "qeph/QephData.h"
 #include "t3/T3Data.h"
 #include <array>
@@ -11,18 +12,20 @@
 #include <limits>
 
 namespace tl::fea {
-constexpr std::size_t MaxShellBindingNodes=7; // One native Q4 plus one native T3.
+// Legacy pair bound, also used by the unchanged resident publication scratch.
+constexpr std::size_t MaxShellBindingNodes=7;
 constexpr std::size_t NoShellBindingNode=std::numeric_limits<std::size_t>::max();
 enum class ShellBindingFamily { None,Qeph,T3 };
 enum class ShellBindingStatus {
   Success,AlreadyInitialized,InvalidInput,InvalidConnectivity,
   InvalidQephReference,InvalidT3Reference,IdentityMismatch,PositionMismatch,
-  NonfiniteMass,
+  NonfiniteMass,InvalidParentIdentity,
 };
 struct ShellBindingReport {
   ShellBindingStatus status=ShellBindingStatus::Success;
   ShellBindingFamily family=ShellBindingFamily::None;
   std::size_t local_node=NoShellBindingNode,global_node=NoShellBindingNode;
+  std::size_t parent_index=NoShellBindingNode; // Within the reported family.
   qeph::Status qeph_status=qeph::Status::kSuccess;
   t3::Status t3_status=t3::Status::kSuccess;
   const char* message="";
@@ -38,6 +41,25 @@ struct ShellBatchBindingInput {
   std::array<std::size_t,4> qeph_nodes{};
   std::array<std::size_t,3> t3_nodes{};
   std::size_t node_count=0;
+};
+// Borrowed input ranges are read only during Initialize. A zero count requires
+// a null pointer. At least one family is present; combined count is bounded.
+// Collection parent IDs must be nonzero and unique across BOTH families.
+// Native connectivity/order and source node IDs are retained without sorting.
+struct ShellQephBindingInput {
+  qeph::ReferenceInput reference;
+  std::array<std::size_t,4> nodes{};
+  std::uint64_t source_parent_id=0;
+};
+struct ShellT3BindingInput {
+  t3::ReferenceInput reference;
+  std::array<std::size_t,3> nodes{};
+  std::uint64_t source_parent_id=0;
+};
+struct ShellBatchCollectionInput {
+  const ShellQephBindingInput* qeph=nullptr;
+  const ShellT3BindingInput* t3=nullptr;
+  std::size_t qeph_count=0,t3_count=0,node_count=0;
 };
 struct ShellBindingMass {
   double mass=0;                // kg
@@ -58,52 +80,82 @@ struct ShellBindingNode {
 // these words confer neither nodal-owner nor publication authority.
 class ShellBatchInventory {
  public:
-  static constexpr std::size_t WordCount=49;
-  const std::array<std::uint64_t,WordCount>& words() const noexcept { return words_; }
-  bool operator==(const ShellBatchInventory& other) const noexcept { return words_==other.words_; }
+  static constexpr std::size_t WordCount=49; // Unchanged legacy pair encoding.
+  static constexpr std::size_t Capacity=4+27*MaxShellCollectionParents;
+  class WordView {
+   public:
+    const std::uint64_t* data() const noexcept { return data_; }
+    std::size_t size() const noexcept { return size_; }
+    const std::uint64_t* begin() const noexcept { return data_; }
+    const std::uint64_t* end() const noexcept { return data_+size_; }
+    const std::uint64_t& operator[](std::size_t i) const noexcept { return data_[i]; }
+   private:
+    WordView(const std::uint64_t* data,std::size_t size):data_(data),size_(size) {}
+    const std::uint64_t* data_;
+    std::size_t size_;
+    friend class ShellBatchInventory;
+  };
+  WordView words() const noexcept { return {words_.data(),word_count_}; }
+  bool operator==(const ShellBatchInventory& other) const noexcept {
+    return word_count_==other.word_count_&&words_==other.words_;
+  }
   bool operator!=(const ShellBatchInventory& other) const noexcept { return !(*this==other); }
  private:
-  std::array<std::uint64_t,WordCount> words_{};
+  std::array<std::uint64_t,Capacity> words_{}; // Unused words always zero.
+  std::size_t word_count_=0;
   friend class ShellBatchBinding;
 };
 
-// Host startup only, one QEPH Q4 and one native T3, 4..7 covered nodes. Fresh
-// qualified producers validate the references; no independently mutable
-// "validated" records are accepted. Shared nodes require identical source IDs
-// AND coordinate bits, including signed zero. Native contributions are reduced
-// QEPH first, then T3, each in local connectivity order, with no normalization.
-// All failure paths preserve this object's bytes. Initialize is one-shot and
-// publishes only after both references, identities and all sums have passed.
-// No allocation, inverse-mass policy, constraints, clock, force/history storage,
-// contact, dynamics admission or joint batch publication is implemented here.
+// Immutable host startup collection. Fresh qualified producers validate every
+// reference. Shared nodes require identical source IDs AND coordinate bits,
+// including signed zero. Contributions are reduced QEPH then T3, in input
+// parent/local order, with no normalization or total-inertia recombination.
+// All failures preserve this object's bytes; successful preparation copies all
+// inputs. Fixed storage, no allocation, constraints, clock or dynamics policy.
 class ShellBatchBinding {
  public:
   ShellBatchBinding()=default;
   ShellBatchBinding(const ShellBatchBinding&)=default;
   ShellBatchBinding& operator=(const ShellBatchBinding&)=delete;
+  // Preserves the exact original pair inventory and 4..7-node input contract.
   ShellBindingReport Initialize(const ShellBatchBindingInput& input) noexcept;
+  ShellBindingReport Initialize(const ShellBatchCollectionInput& input) noexcept;
   bool prepared() const noexcept { return prepared_; }
   std::size_t node_count() const noexcept { return data_.node_count; }
-  const qeph::ReferenceData& qeph_reference() const noexcept { return data_.qeph; }
-  const t3::ReferenceData& t3_reference() const noexcept { return data_.t3; }
-  const std::array<std::size_t,4>& qeph_nodes() const noexcept { return data_.qeph_nodes; }
-  const std::array<std::size_t,3>& t3_nodes() const noexcept { return data_.t3_nodes; }
-  const std::array<ShellBindingNode,MaxShellBindingNodes>& nodes() const noexcept { return data_.nodes; }
-  // Totals use the same seven-contribution order, not a differently ordered
-  // sum over global nodes. T3's measured angle sum is retained unchanged.
+  std::size_t qeph_count() const noexcept { return data_.qeph_count; }
+  std::size_t t3_count() const noexcept { return data_.t3_count; }
+  // Callers check counts before indexing. Invalid indices return immutable
+  // empty/unprepared values; they never silently select the first element.
+  const qeph::ReferenceData& qeph_reference(std::size_t i) const noexcept;
+  const t3::ReferenceData& t3_reference(std::size_t i) const noexcept;
+  const std::array<std::size_t,4>& qeph_nodes(std::size_t i) const noexcept;
+  const std::array<std::size_t,3>& t3_nodes(std::size_t i) const noexcept;
+  std::uint64_t qeph_source_id(std::size_t i) const noexcept;
+  std::uint64_t t3_source_id(std::size_t i) const noexcept;
+  // Compatibility accessors require exactly one member of each family;
+  // otherwise return the same empty values. Source IDs are zero for old input.
+  const qeph::ReferenceData& qeph_reference() const noexcept;
+  const t3::ReferenceData& t3_reference() const noexcept;
+  const std::array<std::size_t,4>& qeph_nodes() const noexcept;
+  const std::array<std::size_t,3>& t3_nodes() const noexcept;
+  const std::array<ShellBindingNode,MaxShellCollectionNodes>& nodes() const noexcept { return data_.nodes; }
   const ShellBindingMass& totals() const noexcept { return data_.totals; }
   const ShellBatchInventory& inventory() const noexcept { return data_.inventory; }
  private:
+  template<class Reference,std::size_t N> struct Parent {
+    Reference reference;
+    std::array<std::size_t,N> nodes{};
+    std::uint64_t source_id=0;
+  };
   struct Data {
-    qeph::ReferenceData qeph;
-    t3::ReferenceData t3;
-    std::array<std::size_t,4> qeph_nodes{};
-    std::array<std::size_t,3> t3_nodes{};
-    std::array<ShellBindingNode,MaxShellBindingNodes> nodes{};
+    std::array<Parent<qeph::ReferenceData,4>,MaxShellCollectionParents> qeph{};
+    std::array<Parent<t3::ReferenceData,3>,MaxShellCollectionParents> t3{};
+    std::array<ShellBindingNode,MaxShellCollectionNodes> nodes{};
     ShellBindingMass totals;
     ShellBatchInventory inventory;
-    std::size_t node_count=0;
+    std::size_t qeph_count=0,t3_count=0,node_count=0;
   } data_;
+  ShellBindingReport InitializeImpl(const ShellBatchCollectionInput&,bool legacy) noexcept;
   bool prepared_=false;
 };
 } // namespace tl::fea
