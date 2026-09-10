@@ -9,8 +9,9 @@ inline constexpr const char* WallArtifactKind="source_assembly_wall";
 inline constexpr std::size_t WallFieldBytes=8*1024*1024,WallMeshBytes=1024*1024,WallObjBytes=256*1024;
 inline constexpr std::size_t WallConfigurationBytes=8*1024*1024,WallManifestBytes=1024*1024;
 inline constexpr std::size_t WallSmallFileBytes=1024*1024,WallFrameIndexBytes=256*1024;
+inline constexpr std::size_t WallArchiveTotalCap=kArtifactMaximumTotalCap;
 struct WallArchiveLimits {
-    std::size_t total_bytes=kArtifactExtendedTotalCap,file_bytes=kArtifactFileCap,frames=kArtifactFrameCap;
+    std::size_t total_bytes=WallArchiveTotalCap,file_bytes=kArtifactFileCap,frames=kArtifactFrameCap;
 };
 struct WallArchiveRequest {
     std::uint64_t steps=0,run_id=0,topology_id=0,asset_id=0;

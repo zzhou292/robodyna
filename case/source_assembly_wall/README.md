@@ -24,7 +24,7 @@ At the base step, 1024 intervals span 15.26 microseconds. That is integration an
 replay evidence, not a visible crash. Profile the measured cost and qualify the
 native force-stage observation before promoting this experiment to a long impact.
 Archive forecasting retains the inherited eight-segment logical-ledger limit;
-the aggregate 1 GiB cap does not permit arbitrary interval counts.
+the aggregate 2 GiB cap does not permit arbitrary interval counts.
 
 Optional `--stage-timing NEW_JSON` enables fixed-storage host wall-time counters
 around the existing case calls. The path must be outside `NEW_DIR`, checked

@@ -154,7 +154,7 @@ Bundle ReadIndex(const std::filesystem::path& directory) {
     const bool source_wall = plastic_wall || bundle.info.schema == "robo_dyna.source_part_wall_artifacts.v1";
     const bool assembly_wall=bundle.info.schema==assembly::WallArtifactSchema;
     bundle.info.source_plasticity=plastic_wall||assembly_wall;
-    if(assembly_wall)bundle.total_cap=kArtifactExtendedTotalCap;
+    if(assembly_wall)bundle.total_cap=assembly::WallArchiveTotalCap;
     if(plastic_wall) bundle.total_cap=SourcePartPlasticWallTotalCap;
     Require(assembly_wall || coupon || guided || source_part || source_wall || bundle.info.schema == "tlfea.normal_impact_artifacts.v1", "Unsupported replay artifact schema");
     bundle.info.kind = assembly_wall ? ReplayKind::SourceAssemblyWall : source_wall ? ReplayKind::SourcePartWall : source_part ? ReplayKind::SourcePartElastic : guided ? ReplayKind::GuidedPlate : coupon ? ReplayKind::ElasticCoupon : ReplayKind::NormalImpact;

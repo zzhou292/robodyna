@@ -61,7 +61,7 @@ history. This extension introduces no new files or ledger columns.
 
 `connector_storage_limits` records the actual case contributor budgets.
 The output format admits at most 128 connectors (the pinned selection has one),
-within the unchanged 8 MiB configuration/frame reservations and 1 GiB total cap.
+within the unchanged 8 MiB configuration/frame reservations and 2 GiB total cap.
 The worst-token encoding fixture includes all 1093 nodes, 959 layered parents,
 128 connector rows and the enabled force-stage record. Forecasting uses the
 selected authenticated inventory byte size; the complete inventory and existing

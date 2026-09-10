@@ -25,13 +25,43 @@ TEST(SourceAssemblyWallArchive, ForecastAccountsForActualLedgerAndRejectsCapsBef
     EXPECT_TRUE(SameCsvLedgerPlan(p.intervals,PlanCsvLedger("accepted-intervals.csv",WallIntervalHeader,256,39*26)));
     for(unsigned bad=0;bad<6;++bad) {auto q=r;
         if(bad==0)q.limits.total_bytes=p.forecast_bytes-1;if(bad==1)q.limits.frames=65;
-        if(bad==2)q.limits.file_bytes=WallFieldBytes-1;if(bad==3)q.limits.total_bytes=kArtifactExtendedTotalCap+1;
+        if(bad==2)q.limits.file_bytes=WallFieldBytes-1;if(bad==3)q.limits.total_bytes=WallArchiveTotalCap+1;
         if(bad==4)q.frame_every=0;if(bad==5)q.steps=0;
         EXPECT_THROW(PlanWallArchive(q,source,wall),std::runtime_error);
     }
     r.steps=536871;r.frame_every=20000; // About8ms fits sparse frame budget but exceeds inherited eight-ledger-segment cap.
     EXPECT_THROW(PlanWallArchive(r,source,wall),std::runtime_error);
     r.steps=1000000000;r.frame_every=UINT32_MAX;EXPECT_THROW(PlanWallArchive(r,source,wall),std::runtime_error);
+}
+TEST(SourceAssemblyWallArchive, DoubledAggregateAllowsDenserFramesWithExactBudgetAdmission) {
+    auto r=Request();r.steps=32768;r.frame_every=160;
+    const auto source=source::PinnedYarisSevenPartInventory().bytes;
+    const auto wall=PreparedWall().placed_wall()->source_manifest()->size();
+    const auto plan=PlanWallArchive(r,source,wall);
+    EXPECT_EQ(r.limits.total_bytes,std::size_t{2}*1024*1024*1024);
+    EXPECT_EQ(plan.frame_capacity,207u);
+    EXPECT_GT(plan.forecast_bytes,kArtifactExtendedTotalCap);
+    EXPECT_LE(plan.forecast_bytes,WallArchiveTotalCap);
+    EXPECT_TRUE(SameCsvLedgerPlan(plan.intervals,
+        PlanCsvLedger("accepted-intervals.csv",WallIntervalHeader,r.steps,WallIntervalColumns*26)));
+    r.limits.total_bytes=kArtifactExtendedTotalCap;
+    EXPECT_THROW(PlanWallArchive(r,source,wall),std::runtime_error);
+    r.limits.total_bytes=plan.forecast_bytes;
+    EXPECT_EQ(PlanWallArchive(r,source,wall).forecast_bytes,plan.forecast_bytes);
+    --r.limits.total_bytes;EXPECT_THROW(PlanWallArchive(r,source,wall),std::runtime_error);
+    r.limits.total_bytes=WallArchiveTotalCap+1;
+    EXPECT_THROW(PlanWallArchive(r,source,wall),std::runtime_error);
+    // The aggregate change allocates no payload and does not enlarge each file.
+    TempDirectory dir;ArtifactInventory inventory(dir.path,WallArchiveTotalCap);
+    EXPECT_EQ(inventory.bytes(),0u);
+    EXPECT_THROW(ArtifactInventory(dir.path,WallArchiveTotalCap+1),std::runtime_error);
+    EXPECT_EQ(kArtifactFileCap,32u*1024*1024);
+    WriteBytes(dir.path/"payload.txt","complete\n");inventory.Add("payload.txt");
+    const auto manifest=Manifest(inventory);
+    EXPECT_THROW(wall_files::PublishManifest(dir.path,manifest,WallArchiveTotalCap+1),std::runtime_error);
+    EXPECT_FALSE(std::filesystem::exists(dir.path/"manifest.json"));
+    EXPECT_NO_THROW(wall_files::PublishManifest(dir.path,manifest,WallArchiveTotalCap));
+    EXPECT_TRUE(std::filesystem::exists(dir.path/"manifest.json"));
 }
 TEST(SourceAssemblyWallArchive, ExactSequenceRejectsWrongBaseDuplicateSkippedCadenceAndNonterminalPrefix) {
     WallFields f;auto r=Request();r.steps=4;r.frame_every=2;WallArchiveSequence s{r,f.stamp,0,0,4,false};

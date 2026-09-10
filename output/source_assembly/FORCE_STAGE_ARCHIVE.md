@@ -55,7 +55,7 @@ test seams and cannot enter the production archive writer.
 The additional object has fixed size. The complete 915-parent/1030-node host
 format test expands every numeric token to its maximum reserved width and
 checks the enabled frame against the unchanged 8 MiB reservation. Therefore
-the shared forecast, 32 MiB file cap, 1 GiB archive cap and 1000-frame cap remain
+the shared forecast, 32 MiB file cap, 2 GiB archive cap and 1000-frame cap remain
 unchanged. Serialization may allocate at output cadence; mechanics does not.
 
 Owning host tests extend `robo_dyna_source_assembly_wall_output_check` with

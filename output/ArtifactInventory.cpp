@@ -4,7 +4,7 @@
 namespace crash::output {
 ArtifactInventory::ArtifactInventory(std::filesystem::path directory,std::size_t total_cap)
     : directory_(std::move(directory)),total_cap_(total_cap) {
-    Require(total_cap_>0&&total_cap_<=kArtifactExtendedTotalCap,"Invalid artifact aggregate capacity");
+    Require(total_cap_>0&&total_cap_<=kArtifactMaximumTotalCap,"Invalid artifact aggregate capacity");
 }
 void ArtifactInventory::Add(const std::string& name, std::size_t component_cap) {
     Require(!name.empty() && name.size()<=255 &&

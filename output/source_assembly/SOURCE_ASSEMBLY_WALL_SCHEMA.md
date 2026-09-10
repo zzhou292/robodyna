@@ -91,7 +91,7 @@ feature/face/family/arity, four local force certificates and resultant/potential
 The exact table orders are in `SourceAssemblyWallContactFields.cpp`.
 
 Forecasting uses exact `PlanCsvLedger` bytes and segment counts for the requested
-steps. Hard limits are 1 GiB total, 32 MiB per file and 1000 frames, reduced by
+steps. Hard limits are 2 GiB total, 32 MiB per file and 1000 frames, reduced by
 caller limits when requested. Per-frame reservation is 8 MiB fields, 1 MiB mesh
 and 256 KiB OBJ. Static files and manifest are separately reserved. Forecast
 failure precedes directory creation and accepted output capture. Frames must
@@ -103,7 +103,7 @@ The inherited shared CSV planner also limits each logical ledger to eight
 the current schema to roughly 264000 intervals, or 3.94 ms at h=1/67108864 s,
 even when sparse frames would fit a larger total archive. Longer runs require
 separate accepted checkpoint bundles or a separately qualified shared ledger
-and reader extension; the 1 GiB aggregate allowance does not remove this limit.
+and reader extension; the 2 GiB aggregate allowance does not remove this limit.
 
 The owning production include is `SourceAssemblyWallArtifacts.cmake`, target
 `robo_dyna_source_assembly_wall_artifacts`. Pure host formatting/order/file tests

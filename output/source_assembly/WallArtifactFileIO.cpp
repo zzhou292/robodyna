@@ -22,7 +22,7 @@ void PublishManifest(const std::filesystem::path& directory,const Document& d,st
     Require(d.IsObject()&&d.HasMember("schema")&&d["schema"].IsString()&&d["schema"].GetString()==std::string(WallArtifactSchema)&&
         d.HasMember("kind")&&d["kind"].IsString()&&d["kind"].GetString()==std::string(WallArtifactKind)&&
         d.HasMember("status")&&d["status"].IsString()&&d["status"].GetString()==std::string("completed")&&
-        d.HasMember("artifacts")&&d["artifacts"].IsArray()&&cap&&cap<=kArtifactExtendedTotalCap,
+        d.HasMember("artifacts")&&d["artifacts"].IsArray()&&cap&&cap<=WallArchiveTotalCap,
         "Invalid assembly manifest scope");
     std::size_t total=JsonBytes(d,WallManifestBytes);Require(total<=cap,"Assembly manifest exceeds aggregate capacity");
     for(const auto& e:d["artifacts"].GetArray()) {

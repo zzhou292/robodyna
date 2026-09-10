@@ -5,7 +5,7 @@ namespace crash::output::assembly {
 WallArchivePlan PlanWallArchive(const WallArchiveRequest& r,std::size_t source,std::size_t wall) {
     const auto& l=r.limits;
     Require(r.steps&&r.frame_every&&r.run_id&&r.topology_id&&r.asset_id&&
-        l.total_bytes&&l.total_bytes<=kArtifactExtendedTotalCap&&l.file_bytes>=WallFieldBytes&&
+        l.total_bytes&&l.total_bytes<=WallArchiveTotalCap&&l.file_bytes>=WallFieldBytes&&
         l.file_bytes<=kArtifactFileCap&&l.frames&&l.frames<=kArtifactFrameCap&&
         source&&source<=4*1024*1024&&wall&&wall<=WallSmallFileBytes,"Invalid assembly archive request or limits");
     WallArchivePlan p;
