@@ -30,6 +30,19 @@ TEST(PilotOptions, SevenPartAssemblyIsExplicitAndCannotChangeStepOrAcceptAmbiguo
     EXPECT_THROW(Parse({"--assembly","seven-part","--assembly","six-part"}),std::invalid_argument);
     PilotOptions bad;bad.assembly=static_cast<PilotAssembly>(99);EXPECT_THROW(PilotFixedStep(bad),std::invalid_argument);
 }
+TEST(PilotOptions, SevenPartAndNativeRotationComposeInEitherOrderWithExactRequestedStep) {
+    const auto a=Parse({"--assembly","seven-part","--native-rotation-domain","--step-multiple","4","--observe-force-stage"});
+    const auto b=Parse({"--observe-force-stage","--step-multiple","4","--native-rotation-domain","--assembly","seven-part"});
+    for(const auto* options:{&a,&b}) {
+        EXPECT_EQ(options->pilot.assembly,PilotAssembly::SevenPartSpotweld);
+        EXPECT_TRUE(options->pilot.native_rotation_domain);EXPECT_TRUE(options->pilot.observe_force_stage);
+        EXPECT_EQ(PilotFixedStep(options->pilot),std::ldexp(1.,-24));
+        EXPECT_FALSE(options->pilot.timing.enabled);
+    }
+    EXPECT_EQ(a.inventory,b.inventory);EXPECT_EQ(a.wall,b.wall);EXPECT_EQ(a.archive,b.archive);
+    EXPECT_THROW(Parse({"--assembly","seven-part","--native-rotation-domain","--assembly","six-part"}),std::invalid_argument);
+    EXPECT_THROW(Parse({"--native-rotation-domain","--assembly","seven-part","--native-rotation-domain"}),std::invalid_argument);
+}
 TEST(PilotOptions, AllTwelveAllowedPairsGiveExactRequestedPowerOfTwoStep) {
     for(unsigned r:{1u,2u,4u})for(unsigned m:{1u,2u,4u,8u}) {
         PilotOptions o;o.refinement=r;o.step_multiple=m;
