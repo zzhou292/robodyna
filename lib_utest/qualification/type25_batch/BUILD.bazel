@@ -1,0 +1,20 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+cc_test(
+    name = "type25_batch_layout_check",
+    size = "small",
+    srcs = ["Input.h", "LayoutTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/elements/type25:type25_batch", "//lib_src/assembly:nodal_mass_binding",
+            "//lib_utils:bounded_arena", "@googletest//:gtest_main"],
+)
+cuda_test(
+    name = "type25_batch_cuda_check",
+    size = "small",
+    srcs = ["Input.h", "CudaFixture.h", "CapacityTest.cu", "CandidateTest.cu", "ReadbackTest.cu"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/elements/type25:type25_batch", "//lib_src/assembly:nodal_mass_binding",
+            "//lib_src/solvers:nodal_trial_identity", "//lib_utest:nodal_temporal_fixture",
+            "//lib_utest/qualification/type25:evaluation_values", "@googletest//:gtest_main"],
+)
