@@ -1,0 +1,58 @@
+{
+  "commit": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "repository": "https://github.com/OpenRadioss/OpenRadioss",
+  "sources": [
+    {
+      "path": "original/starter/source/constraints/general/rbody/inirby.F",
+      "upstream_path": "starter/source/constraints/general/rbody/inirby.F",
+      "size": 61171,
+      "sha256": "ea24961874d4080536176d6117e1cd8518dfe1e8b785db3c43edc04815cfe440",
+      "git_blob_sha1": "1ab28f4cae34612be63c3dd4cd16d2c380062125"
+    },
+    {
+      "path": "original/engine/source/constraints/general/rbody/rgbodfp.F",
+      "upstream_path": "engine/source/constraints/general/rbody/rgbodfp.F",
+      "size": 27758,
+      "sha256": "d351e3e23ea03aa1b2e2c3621442ea063382da75f86f6f1657fe56f480423af8",
+      "git_blob_sha1": "d23daa5ba6976764b7d2bf399ea8f730d8e1b2a8"
+    }
+  ],
+  "fragments": [
+    {
+      "path": "extracted/InertiaLoop.inc",
+      "source": "original/starter/source/constraints/general/rbody/inirby.F",
+      "first_line": 349,
+      "last_line": 366,
+      "sha256": "a5a074f6a84b01384ed8e28e99e80426f6fa395b404aba64c57794963a1e2b6c"
+    },
+    {
+      "path": "extracted/Ispher2.inc",
+      "source": "original/starter/source/constraints/general/rbody/inirby.F",
+      "first_line": 755,
+      "last_line": 760,
+      "sha256": "b55e405cf36a2418acb4f0f257e6cf92beb5163ba4ea76afc994b11733143680"
+    },
+    {
+      "path": "extracted/MemberWrench.inc",
+      "source": "original/engine/source/constraints/general/rbody/rgbodfp.F",
+      "first_line": 122,
+      "last_line": 130,
+      "sha256": "65818587e722f7b422beaa008a964c412d09cfa20cce6ffd841765e146c8e20d"
+    },
+    {
+      "path": "extracted/GyroscopicTorque.inc",
+      "source": "original/engine/source/constraints/general/rbody/rgbodfp.F",
+      "first_line": 634,
+      "last_line": 636,
+      "sha256": "a8a58ce56ee1f539ebf8928822127093f30c59816a1a14a6da5927fa6344d35f"
+    },
+    {
+      "path": "extracted/PrincipalAcceleration.inc",
+      "source": "original/engine/source/constraints/general/rbody/rgbodfp.F",
+      "first_line": 643,
+      "last_line": 645,
+      "sha256": "99b3063718fc5ba5b7897bed675883e5a244cc34d4c9bfb3b680f6d60b5ff473"
+    }
+  ],
+  "interpretation": "Original complete files plus exact contiguous arithmetic fragments; wrapper context is separately authored. Eigen principal axes are equivalent tensor algebra, not native VALPR bit parity."
+}

@@ -1,6 +1,15 @@
 load("@rules_cuda//cuda:defs.bzl", "cuda_library")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 
 package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "nodal_rigid_group",
+    srcs = ["NodalRigidGroupModel.cpp"],
+    hdrs = ["NodalRigidGroupModel.h", "NodalRigidGroupMath.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/math:fixed3", "//lib_src/math:quaternion", "@eigen//:eigen"],
+)
 
 cuda_library(
     name = "FEAT10ConstraintManager",
