@@ -39,7 +39,10 @@ impact admission remain open. Native T3/mixed wall contact now passes five CUDA
 functions and 41 regressions at TL `3b25699`, including 16 contact-only intervals
 with native structural masses, distinct contact weights and late-failure retry.
 The contributor keeps one 99,384-byte allocation and its two-parent/eight-incident-
-node cap. Mixed shell force feedback remains the next composition gate. The
+node cap. Mixed shell force feedback remains the next composition gate. Eight full-state
+native contact model/probe host functions now pass at `1bef7cc`; full-grid
+switching/stability analysis and explicit moving QEPH startup precede actual
+incoming-impact qualification. The
 [combined admission design](../../planning/QEPH_WALL_COUPLED_ADMISSION.md)
 separates short transaction checks, contact recurrence, incoming-velocity startup
 and impact/refinement; free-shell stability does not qualify wall impact. Plasticity,
