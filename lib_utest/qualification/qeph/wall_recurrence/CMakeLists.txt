@@ -119,3 +119,16 @@ add_executable(qeph_wall_analysis wall_analysis_main.cpp)
 target_link_libraries(qeph_wall_analysis PRIVATE qeph_wall_job_report)
 target_compile_features(qeph_wall_analysis PRIVATE cxx_std_17)
 target_compile_options(qeph_wall_analysis PRIVATE -fno-fast-math -ffp-contract=off)
+
+# Cross-job comparison consumes compact validated measurements. File readers
+# and command composition remain separate from the frozen timestep policy.
+add_library(qeph_wall_screen_selection STATIC WallBoostComparison.cpp WallScreenSelection.cpp)
+target_link_libraries(qeph_wall_screen_selection PUBLIC qeph_wall_job_analysis)
+target_compile_features(qeph_wall_screen_selection PUBLIC cxx_std_17)
+target_compile_options(qeph_wall_screen_selection PRIVATE -fno-fast-math -ffp-contract=off)
+add_executable(qeph_wall_screen_selection_check WallBoostComparisonTest.cpp WallScreenSelectionTest.cpp)
+target_link_libraries(qeph_wall_screen_selection_check PRIVATE qeph_wall_screen_selection GTest::gtest_main)
+target_compile_features(qeph_wall_screen_selection_check PRIVATE cxx_std_17)
+target_compile_options(qeph_wall_screen_selection_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME qeph_wall_screen_selection_check COMMAND qeph_wall_screen_selection_check)
+set_tests_properties(qeph_wall_screen_selection_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)
