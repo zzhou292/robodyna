@@ -73,5 +73,8 @@ The separate pure recurrence packet targets are `nodal_rigid_step_check`,
 frame/gyro/member acceleration/kick/drift arithmetic with explicit duration
 inputs, including a proposed TL half-kick packet. They do not integrate an
 owner, qualify donor engine startup timing, or publish a constrained trajectory.
-See `lib_src/constraints/NodalRigidGroupStepMath.md` for that scope. The packet
-implementation handoff has not run a compiler or GPU job.
+See `lib_src/constraints/NodalRigidGroupStepMath.md` for that scope. All 12 new packet tests pass alongside the 21 startup/stateless tests in six
+host/native/CUDA targets on the RTX 5090 (2026-09-10). The owning Bazel targets
+also build. Workspace evidence:
+`crash-work/reports/nodal-rigid-step-{configure,build,tests}-1` and
+`nodal-rigid-step-owning-bazel-1`. No owner integration is claimed.
