@@ -23,10 +23,22 @@ The local executable is `crash-work/build/robo-dyna-replay-r0/viewer/robo_dyna_r
 After the coordinated build, the executable accepts:
 
 ```text
-robo_dyna_replay BUNDLE [--capture NEW_DIR] [--fps 1..60] [--require-frames N] [--wireframe]
+robo_dyna_replay BUNDLE [--capture NEW_DIR] [--fps 1..60] [--require-frames N] [--wireframe] [--view incident-side|wall-side]
 ```
 
 Without `--capture`, it displays successive recorded frames at ten frames per second by default, then holds the final frame. Pause, next-frame and close controls are provided. `--fps` changes presentation cadence only; the overlay always displays the actual saved simulation time. There is no interpolation, backward seek or deformation magnification in this slice.
+
+`--view wall-side` selects a fixed view from the opposite X side for source-part
+and source-assembly wall archives, exposing the wall-facing surface. The default
+`incident-side` camera retains its original coordinates and arithmetic. The new
+view reverses only the camera's X offset about the same complete-trajectory
+target; distance, field of view, geometry, wall triangles, accepted frames and
+native plastic-strain colors are retained. Both source-wall views use physical
+deformation at 1x. Other replay kinds reject `wall-side` because they do not share
+the placed source-wall convention. Names are exact and repeated `--view` options
+are rejected. The overlay names the fixed view, and capture `manifest.json`
+records `camera_view` alongside the actual camera coordinates. This additional
+overlay label changes screenshot pixels even for the unchanged default camera.
 
 The passing normal-rig gate uses all 15 frames in `crash-work/runs/robo-dyna-smoke-20260909`. The passing final coupon bundle is `crash-work/runs/elastic-coupon-b2-20260909`, with 81 accepted frames. The following are **inner commands** for separate guarded GPU runs into new directories, not instructions to overlap them with mechanics:
 

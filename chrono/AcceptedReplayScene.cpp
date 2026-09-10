@@ -86,7 +86,7 @@ std::shared_ptr<chrono::ChBody> Carrier(const char* name,
     body->GetVisualModel()->EnableWireframe(0U, shape->IsWireframe());
     return body;
 }
-bool MakeCamera(const output::ReplayInfo& info, ReplayCamera& camera) {
+bool MakeCamera(const output::ReplayInfo& info, ReplayView view, ReplayCamera& camera) {
     double extent[3];
     for (int i = 0; i < 3; ++i) {
         const double lo = info.bounds_min[i], hi = info.bounds_max[i];
@@ -97,7 +97,7 @@ bool MakeCamera(const output::ReplayInfo& info, ReplayCamera& camera) {
     }
     const double diagonal = std::hypot(extent[0], extent[1], extent[2]);
     if (!(diagonal > 0) || !std::isfinite(diagonal)) return false;
-    // Fixed oblique view from the incident side of the -X-facing wall. Coupon
+    // Fixed oblique view, optionally across the -X-facing source wall. Coupon
     // geometry is also visible from above. The full moving trajectory is framed;
     // a large fixed wall may extend beyond the image and is never rescaled.
     // Guided geometry is the coupon posed into Y/Z. A 45-degree X/Z view
@@ -105,15 +105,17 @@ bool MakeCamera(const output::ReplayInfo& info, ReplayCamera& camera) {
     // horizontal projection keeps sqrt(1/2) of both Z width and X motion.
     // Y up and a small Y offset keep the long plate axis almost vertical.
     camera.vertical = info.kind == output::ReplayKind::GuidedPlate ? ReplayVertical::Y : ReplayVertical::Z;
-    const std::array<double, 3> direction = SourceWall(info.kind)
+    camera.view = view;
+    std::array<double, 3> direction = SourceWall(info.kind)
         ? std::array<double, 3>{-1.0, -1.0, 0.15}
         : info.kind == output::ReplayKind::GuidedPlate
         ? std::array<double, 3>{-1.0, -0.15, -1.0}
         : info.kind == output::ReplayKind::ElasticCoupon
         ? std::array<double, 3>{-0.3, -1.25, 0.18}
         : std::array<double, 3>{-1.5, -1.25, 1.0};
+    if (view == ReplayView::WallSide) direction[0] = -direction[0];
     for (int i = 0; i < 3; ++i) {
-        // Close incident-side source view: the whole original part and nearby
+        // Close source view: the whole original part and nearby
         // actual wall remain visible; no geometry or deformation is scaled.
         const double distance=SourceWall(info.kind)?1.25:1.6;
         camera.position[i] = camera.target[i] + distance * diagonal * direction[i];
@@ -139,8 +141,11 @@ AcceptedReplayScene::AcceptedReplayScene() = default;
 AcceptedReplayScene::~AcceptedReplayScene() = default;
 
 ReplaySceneReport AcceptedReplayScene::Initialize(const output::ReplayInfo& info, const output::ReplayFrame& frame,
-                                                std::shared_ptr<const chrono::ChTriangleMeshConnected> wall, bool wireframe, double deformation_scale) {
+                                                std::shared_ptr<const chrono::ChTriangleMeshConnected> wall, bool wireframe,
+                                                double deformation_scale, ReplayView view) {
     if (impl_) return {ReplaySceneStatus::AlreadyInitialized, "Replay scene already initialized"};
+    if (!ReplayViewName(view) || (view == ReplayView::WallSide && !SourceWall(info.kind)))
+        return {ReplaySceneStatus::InvalidFrame, "wall-side view requires a source-part or source-assembly wall replay"};
     if (!std::isfinite(deformation_scale) || deformation_scale < 1 || deformation_scale > 1000 ||
         (deformation_scale != 1 && info.kind != output::ReplayKind::SourcePartElastic) ||
         !frame.mesh || !info.owner_id || frame.owner_id != info.owner_id || frame.index != 0 || frame.epoch != 0 || frame.time != 0 ||
@@ -158,7 +163,7 @@ ReplaySceneReport AcceptedReplayScene::Initialize(const output::ReplayInfo& info
         return {ReplaySceneStatus::InvalidFrame, "Invalid validated replay geometry or metadata"};
     try {
         auto next = std::make_unique<Impl>();
-        if (!MakeCamera(info, next->camera)) return {ReplaySceneStatus::InvalidFrame, "Invalid replay trajectory bounds"};
+        if (!MakeCamera(info, view, next->camera)) return {ReplaySceneStatus::InvalidFrame, "Invalid replay trajectory bounds"};
         next->info = info;
         next->moving = CopyGeometry(*frame.mesh);
         if(info.source_plasticity) {

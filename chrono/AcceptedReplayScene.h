@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ReplayView.h"
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -25,6 +26,7 @@ struct ReplayCamera {
     std::array<double, 3> position{}, target{};
     double vertical_fov_degrees = 40;
     ReplayVertical vertical = ReplayVertical::Z;
+    ReplayView view = ReplayView::IncidentSide;
 };
 
 // Core-only presentation adapter for a previously validated AcceptedReplay.
@@ -44,7 +46,11 @@ class AcceptedReplayScene {
     AcceptedReplayScene& operator=(const AcceptedReplayScene&) = delete;
     ReplaySceneReport Initialize(const output::ReplayInfo&, const output::ReplayFrame&,
                                 std::shared_ptr<const chrono::ChTriangleMeshConnected> wall,
-                                bool wireframe = false, double deformation_scale = 1);
+                                bool wireframe = false, double deformation_scale = 1,
+                                ReplayView view = ReplayView::IncidentSide);
+    // WallSide is supported by SourcePartWall and SourceAssemblyWall, whose
+    // placed wall has its incident normal along -X. It reflects the camera's
+    // X offset about the trajectory target; all accepted geometry is retained.
     // SourcePartElastic alone permits explicit presentation magnification: X0 +
     // scale*(X-X0), scale in [1,1000]. Caller supplies bounds computed over
     // transformed frames; input archives and accepted state remain untouched.

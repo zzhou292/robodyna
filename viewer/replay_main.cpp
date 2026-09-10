@@ -31,10 +31,12 @@ struct Options {
     double fps = 10, deformation_scale = 1;
     std::size_t require_frames = 0;
     bool wireframe = false;
+    crash::visual::ReplayView view = crash::visual::ReplayView::IncidentSide;
 };
 Options Parse(int argc, char** argv) {
-    Require(argc >= 2, "usage: robo_dyna_replay BUNDLE [--capture NEW_DIR] [--fps 1..60] [--require-frames N] [--wireframe] [--deformation-scale 1..1000]");
+    Require(argc >= 2, "usage: robo_dyna_replay BUNDLE [--capture NEW_DIR] [--fps 1..60] [--require-frames N] [--wireframe] [--deformation-scale 1..1000] [--view incident-side|wall-side]");
     Options out;
+    bool view_supplied = false;
     out.bundle = argv[1];
     for (int i = 2; i < argc; ++i) {
         const std::string arg = argv[i];
@@ -57,6 +59,10 @@ Options Parse(int argc, char** argv) {
                 const auto count = std::stoull(value, &end);
                 Require(end == value.size() && count > 0 && count <= 1000, "required frame count must be 1..1000");
                 out.require_frames = static_cast<std::size_t>(count);
+            } else if (arg == "--view") {
+                Require(!view_supplied, "duplicate view option");
+                Require(crash::visual::ParseReplayView(value, out.view), "view must be incident-side or wall-side");
+                view_supplied = true;
             } else throw std::invalid_argument("unknown replay option: " + arg);
         }
     }
@@ -99,6 +105,7 @@ class ReplayOverlay : public chrono::vsg3d::ChGuiComponentVSG {
                 ImGui::Text("Deformation display: %.1fx | X0 + scale*(X-X0)", scene_.deformation_scale());
             if (scene_.deformation_scale() != 1)
                 ImGui::TextUnformatted("Gray wireframe: original undeformed reference");
+            ImGui::Text("Fixed view: %s", crash::visual::ReplayViewName(scene_.camera()->view));
             const auto& stamp = *scene_.stamp();
             ImGui::Text("Accepted time: %.6f ms", stamp.time * 1000);
             ImGui::Text("Frame %zu / %zu   Epoch %llu", stamp.index + 1, info_.frame_count,
@@ -201,7 +208,8 @@ int main(int argc, char** argv) {
         }
         Require(!options.require_frames || options.require_frames == info.frame_count, "accepted frame count differs from required count");
         crash::visual::AcceptedReplayScene scene;
-        const auto initialized = scene.Initialize(info, *reader.frame(), reader.wall(), options.wireframe, options.deformation_scale);
+        const auto initialized = scene.Initialize(info, *reader.frame(), reader.wall(), options.wireframe,
+                                                  options.deformation_scale, options.view);
         Require(initialized.status == crash::visual::ReplaySceneStatus::Ok, initialized.message);
         const bool capture = !options.capture.empty();
         if (capture) {
@@ -390,6 +398,7 @@ int main(int argc, char** argv) {
                 crash::output::String(manifest,"input_stop_reason",info.stop_reason);
                 crash::output::String(manifest,"wall_geometry","actual placed original canonical mesh; original source and X transform archived separately");
             }
+            crash::output::String(manifest, "camera_view", crash::visual::ReplayViewName(scene.camera()->view));
             Array(manifest, "camera_position", scene.camera()->position);
             Array(manifest, "camera_target", scene.camera()->target);
             crash::output::String(manifest, "camera_vertical", scene.camera()->vertical == crash::visual::ReplayVertical::Y ? "Y" : "Z");
