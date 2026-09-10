@@ -2,6 +2,7 @@
 
 #include "FENodalStateView.h"
 #include "ExplicitStepStability.h"
+#include "NodalForceStageSnapshot.h"
 #include "../constraints/NodalRigidGroupState.h"
 #include <cuda_runtime_api.h>
 #include <cstddef>
@@ -43,6 +44,9 @@ struct NodalStateConfig {
   // Separate operations require prescribed-load or case-qualified history
   // admission; neither operation commits external material history.
   NodalTemporalScheme temporal_scheme = NodalTemporalScheme::VelocityFirst;
+  // Optional transient A/AR capture. Requires fresh extended staggered startup
+  // with attached plain rigid groups. Disabled preserves legacy allocations.
+  bool capture_force_stage_accelerations = false;
 };
 // Optional conventional-node degrees of freedom. Masks are immutable WORLD
 // constraints: bits 1/2/4 fix x/y/z translation, and rotation_fixed is 0 or 1.
@@ -243,6 +247,15 @@ class FENodalState {
   // are at proposed_time, v/omega at velocity_time. The returned prepared view
   // has BorrowPrepared's lifetime. Calls are serialized with owner operations.
   NodalReport CopyPrepared(const NodalTrialToken&, NodalSnapshotBuffer, NodalPreparedView*);
+  // Actual force-stage A/AR from the same completed prepared kick. All node
+  // arrays and source-associated group rows are mandatory and publish together
+  // with prepared identity, only after authentication, readback and finite checks.
+  // Outputs must be disjoint from one another and token. Fixed ordinary DOFs
+  // have zero A/AR. The force stage is prepared.base_time, not proposed_time;
+  // combine with pre-kick motion and the SAME prepared group's updated axes.
+  // Unavailable without startup opt-in, or after commit/discard/new attempt.
+  // Does not return accepted data, advance state, or define an energy tolerance.
+  NodalReport CopyPreparedForceStage(const NodalTrialToken&,NodalForceStageSnapshotBuffer,NodalPreparedView*);
   NodalRigidGroupInfo rigid_groups() const noexcept;
   // Failure-atomic readback, with the SAME accepted owner stamp. The frame's
   // force-stage time is stamp.reaction_time after a step, stamp.time at startup.

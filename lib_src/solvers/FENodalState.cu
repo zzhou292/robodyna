@@ -2,6 +2,7 @@
 #include "NodalRotation.h"
 #include "NodalTrialIdentity.h"
 #include "NodalRigidGroupStorage.h"
+#include "NodalForceStageCaptureLayout.h"
 #include <atomic>
 #include <cmath>
 #include <cstring>
@@ -124,6 +125,8 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
     return {NodalStatus::UnsupportedTemporalScheme, "Unknown nodal temporal scheme"};
   if (staggered && !rotations)
     return {NodalStatus::UnsupportedTemporalScheme, "Staggered stepping requires extended nodal initialization"};
+  if(c.capture_force_stage_accelerations&&(!staggered||!rotations||!groups))
+    return {NodalStatus::UnsupportedTemporalScheme,"Force-stage capture requires fresh staggered rigid-group startup"};
   if (in.node_count != c.node_count || !in.position_xyz || !in.velocity_xyz || !inverse_mass ||
       (rotations ? (!in.orientation_wxyz || !dofs->translation_fixed_bits || !dofs->rotation_fixed || !dofs->inverse_inertia) : !fixed) ||
       !std::isfinite(c.fixed_dt) || !std::isfinite(c.minimum_dt) || c.minimum_dt <= 0 ||
@@ -168,7 +171,13 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
   const std::size_t state_values = (rotations ? 19 : 6)*n+group_values;
   const std::size_t inverse_values = (rotations ? 2 : 1)*n;
   const std::size_t mask_bytes = (rotations ? 3 : 1)*n;
-  const std::size_t bytes = (2*state_values + 11*n + inverse_values)*sizeof(double) + mask_bytes + sizeof(Control)+
+  const nodal_detail::ForceStageCaptureLayout capture{n,rigid_groups?rigid_groups->info.group_count:0};
+  const std::size_t capture_values=c.capture_force_stage_accelerations?capture.values():0;
+  // Existing private host state staging is larger than the capture payload;
+  // prove that extent before allocating either host state or device scratch.
+  if(capture_values>state_values) return {NodalStatus::ResourceLimit,"Force-stage capture exceeds host staging extent"};
+  const std::size_t scratch_values=11*n+capture_values;
+  const std::size_t bytes = (2*state_values + scratch_values + inverse_values)*sizeof(double) + mask_bytes + sizeof(Control)+
     (rigid_groups?rigid_groups->immutable_bytes:0);
   if (bytes > c.max_device_bytes) return {NodalStatus::ResourceLimit, "Device byte budget is insufficient"};
   try {
@@ -191,7 +200,7 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
     };
     report = allocate(&next->accepted, state_values*sizeof(double)); if (report.status != NodalStatus::Ok) return report;
     report = allocate(&next->trial, state_values*sizeof(double)); if (report.status != NodalStatus::Ok) return report;
-    report = allocate(&next->scratch, 11*n*sizeof(double)); if (report.status != NodalStatus::Ok) return report;
+    report = allocate(&next->scratch, scratch_values*sizeof(double)); if (report.status != NodalStatus::Ok) return report;
     report = allocate(&next->inverse, inverse_values*sizeof(double)); if (report.status != NodalStatus::Ok) return report;
     report = allocate(&next->fixed, mask_bytes); if (report.status != NodalStatus::Ok) return report;
     report = allocate(&next->control, sizeof(Control)); if (report.status != NodalStatus::Ok) return report;
@@ -225,7 +234,7 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
     }
     report = next->Check(cudaMemcpyAsync(next->fixed, next->constraint_staging.data(), mask_bytes, cudaMemcpyHostToDevice, next->stream));
     if (report.status != NodalStatus::Ok) return report;
-    report = next->Check(cudaMemsetAsync(next->scratch, 0, 11*n*sizeof(double), next->stream));
+    report = next->Check(cudaMemsetAsync(next->scratch, 0, scratch_values*sizeof(double), next->stream));
     if (report.status != NodalStatus::Ok) return report;
     next->host_control.rows = {next->scratch+6*n, next->scratch+7*n, static_cast<std::uint32_t>(n), static_cast<std::uint32_t>(n)};
     report = next->Check(cudaMemcpyAsync(next->control, &next->host_control, sizeof(Control), cudaMemcpyHostToDevice, next->stream));

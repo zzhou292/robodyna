@@ -4,7 +4,7 @@
 find_package(CUDAToolkit REQUIRED)
 get_filename_component(TL_NODAL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../.." ABSOLUTE)
 include("${CMAKE_CURRENT_LIST_DIR}/../constraints/NodalRigidGroup.cmake")
-add_library(tl_explicit_nodal_state STATIC FENodalState.cu FENodalSnapshotReadback.cu ExplicitTranslationStep.cu ExplicitNodalStep.cu
+add_library(tl_explicit_nodal_state STATIC FENodalState.cu FENodalSnapshotReadback.cu FENodalForceStageReadback.cu ExplicitTranslationStep.cu ExplicitNodalStep.cu
   NodalRigidGroupStorage.cu ExplicitNodalRigidStep.cu)
 target_compile_features(tl_explicit_nodal_state PUBLIC cxx_std_17)
 set_target_properties(tl_explicit_nodal_state PROPERTIES

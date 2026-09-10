@@ -22,10 +22,12 @@ TL_SURFACE_HD inline NodalStatus PrepareNodeOrientation(const double* accepted,d
   return NodalStatus::Ok;
 }
 
+template<bool Capture=false>
 TL_SURFACE_HD inline NodalStatus AdvanceOrdinaryNode(const double* accepted,double* trial,
     const double* force,const double* inverse,const std::uint8_t* constraints,
-    std::uint32_t i,std::uint32_t n,double h,double kick_dt,double maximum_angle) {
-  if(!AdvanceTranslationNodeWithKick(accepted,trial,force,inverse[i],constraints[n+i],i,n,h,kick_dt,trial+13*n))
+    std::uint32_t i,std::uint32_t n,double h,double kick_dt,double maximum_angle,
+    double* acceleration_xyz=nullptr,double* angular_acceleration_xyz=nullptr) {
+  if(!AdvanceTranslationNodeWithKick<Capture>(accepted,trial,force,inverse[i],constraints[n+i],i,n,h,kick_dt,trial+13*n,acceleration_xyz))
     return NodalStatus::InvalidOutput;
   const bool fixed_rotation=constraints[2*n+i]!=0;
   for(unsigned a=0;a<3;++a) {
@@ -34,6 +36,7 @@ TL_SURFACE_HD inline NodalStatus AdvanceOrdinaryNode(const double* accepted,doub
     const double acceleration=fixed_rotation?0:inverse[n+i]*couple;
     const double omega=fixed_rotation?0:accepted[6*n+j]+kick_dt*acceleration;
     trial[6*n+j]=omega; trial[16*n+j]=fixed_rotation?-couple:0;
+    if constexpr(Capture) angular_acceleration_xyz[j]=acceleration;
     const double increment=h*omega;
     if(!tlfea::contact::IsFinite(acceleration)||!tlfea::contact::IsFinite(omega)||!tlfea::contact::IsFinite(increment))
       return NodalStatus::InvalidOutput;

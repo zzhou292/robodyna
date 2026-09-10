@@ -2,6 +2,7 @@
 #include "ExplicitNodalRigidStep.h"
 #include "NodalRigidGroupStorage.h"
 #include "NodalNodeStep.h"
+#include "NodalForceStageCaptureLayout.h"
 #include "../constraints/NodalRigidGroupCandidate.h"
 
 namespace tl::fea {
@@ -10,10 +11,11 @@ __device__ void Fail(nodal_detail::Control* control,NodalStatus status,std::uint
   control->status=status; control->node=node;
   if(status==NodalStatus::StepTooLarge) control->limit.dt=0;
 }
+template<bool Capture=false>
 __global__ void AdvanceRigid(nodal_detail::Control* control,const double* accepted,double* trial,
     const double* loads,const double* inverse,const std::uint8_t* constraints,std::uint32_t n,
     rigid::GroupDeviceView groups,rigid::StepDurations durations,double maximum_angle,
-    std::uint64_t epoch,std::uint64_t attempt) {
+    std::uint64_t epoch,std::uint64_t attempt,rigid::AccelerationSink sink={}) {
   if(control->status!=NodalStatus::Ok) return;
   if(control->rows.base_epoch!=epoch||control->rows.attempt!=attempt||
       !stability::IsCurrentLimit(control->rows,control->limit)||control->limit.dt<durations.drift_dt) {
@@ -23,12 +25,12 @@ __global__ void AdvanceRigid(nodal_detail::Control* control,const double* accept
     Fail(control,NodalStatus::MissingStepAdmission,UINT32_MAX); return;
   }
   for(std::uint32_t i=0;i<n;++i) if(!groups.member_nodes[i]) {
-    const auto status=nodal_detail::AdvanceOrdinaryNode(accepted,trial,loads,inverse,constraints,i,n,
-        durations.drift_dt,durations.kick_dt,maximum_angle);
+    const auto status=nodal_detail::AdvanceOrdinaryNode<Capture>(accepted,trial,loads,inverse,constraints,i,n,
+        durations.drift_dt,durations.kick_dt,maximum_angle,sink.node,sink.node_rotation);
     if(status!=NodalStatus::Ok) { Fail(control,status,i); return; }
   }
   for(std::uint32_t g=0;g<groups.group_count;++g) {
-    const auto result=rigid::PrepareGroupCandidate(groups,g,accepted,trial,loads,n,durations);
+    const auto result=rigid::PrepareGroupCandidate<Capture>(groups,g,accepted,trial,loads,n,durations,sink);
     if(result.status!=rigid::StepStatus::Success) {
       Fail(control,result.status==rigid::StepStatus::RotationLimit?NodalStatus::StepTooLarge:NodalStatus::InvalidOutput,result.node);
       return;
@@ -45,8 +47,14 @@ __global__ void AdvanceRigid(nodal_detail::Control* control,const double* accept
 
 cudaError_t FENodalState::Impl::LaunchRigidAdvance(double maximum_angle) {
   const rigid::StepDurations durations{stamp.epoch==0?0:config.fixed_dt,candidate_kick_dt,config.fixed_dt};
-  AdvanceRigid<<<1,1,0,stream>>>(control,accepted,trial,scratch,inverse,fixed,
-    static_cast<std::uint32_t>(config.node_count),rigid_groups->device,durations,maximum_angle,stamp.epoch,attempt);
+  if(config.capture_force_stage_accelerations) {
+    const nodal_detail::ForceStageCaptureLayout layout{config.node_count,rigid_groups->info.group_count};
+    AdvanceRigid<true><<<1,1,0,stream>>>(control,accepted,trial,scratch,inverse,fixed,
+      static_cast<std::uint32_t>(config.node_count),rigid_groups->device,durations,maximum_angle,stamp.epoch,attempt,layout.Sink(scratch));
+  } else {
+    AdvanceRigid<false><<<1,1,0,stream>>>(control,accepted,trial,scratch,inverse,fixed,
+      static_cast<std::uint32_t>(config.node_count),rigid_groups->device,durations,maximum_angle,stamp.epoch,attempt);
+  }
   return cudaGetLastError();
 }
 NodalReport AdvanceStaggeredRigidGroups(FENodalState& owner,const NodalTrialToken& token,

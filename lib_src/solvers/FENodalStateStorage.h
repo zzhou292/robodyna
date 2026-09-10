@@ -19,10 +19,11 @@ struct Control {
 // rotational operations. Constraint bits are WORLD x/y/z; only trial buffers
 // are written. The caller records the first invalid node and discards a failed
 // attempt. reaction_xyz is optional, and records forces on the constrained node.
+template<bool Capture=false>
 TL_SURFACE_HD inline bool AdvanceTranslationNodeWithKick(
     const double* accepted, double* trial, const double* force, double inverse_mass,
     std::uint8_t fixed_bits, std::uint32_t node, std::uint32_t n, double h, double kick_dt,
-    double* reaction_xyz = nullptr) {
+    double* reaction_xyz = nullptr,double* acceleration_xyz = nullptr) {
   for (unsigned axis = 0; axis < 3; ++axis) {
     const auto j = 3*node+axis;
     const bool fixed = (fixed_bits & (1u << axis)) != 0;
@@ -31,6 +32,7 @@ TL_SURFACE_HD inline bool AdvanceTranslationNodeWithKick(
     const double position = fixed ? accepted[j] : accepted[j]+h*velocity;
     trial[3*n+j] = velocity; trial[j] = position;
     if (reaction_xyz) reaction_xyz[j] = fixed ? -force[axis*n+node] : 0;
+    if constexpr(Capture) acceleration_xyz[j]=acceleration;
     if (!tlfea::contact::IsFinite(acceleration) || !tlfea::contact::IsFinite(velocity) ||
         !tlfea::contact::IsFinite(position)) return false;
   }

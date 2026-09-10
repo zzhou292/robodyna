@@ -2,6 +2,7 @@
 #pragma once
 #include "NodalRigidGroupState.h"
 #include "NodalRigidGroupStepMath.h"
+#include "NodalRigidAccelerationSink.h"
 
 #if defined(__CUDACC__)
 #define TL_RIGID_CANDIDATE_HD __host__ __device__
@@ -23,14 +24,18 @@ TL_RIGID_CANDIDATE_HD inline void WriteNode(double* data,std::uint32_t node,Vec3
 }
 // Private assembly adapter for the declared x3/v3/omega3/q4/reactionF3/
 // reactionC3 nodal layout followed by 18 values per group. Only trial values
-// are written. A caller must discard the whole trial on any failure; no view
+// and the optional transient acceleration sink are written. A caller must
+// discard the whole trial on any failure; no view
 // or acceptance is published here. Immutable membership is startup-validated.
+template<bool Capture=false>
 TL_RIGID_CANDIDATE_HD inline GroupCandidateResult PrepareGroupCandidate(GroupDeviceView view,
     std::uint32_t group,const double* accepted,double* trial,const double* loads,
-    std::uint32_t nodes,StepDurations durations) {
+    std::uint32_t nodes,StepDurations durations,AccelerationSink sink={}) {
   using namespace candidate_detail;
   if(!view.groups||!view.members||!accepted||!trial||!loads||group>=view.group_count)
     return {StepStatus::InvalidInput};
+  if constexpr(Capture)
+    if(!sink.node||!sink.node_rotation||!sink.group||!sink.group_rotation) return {StepStatus::InvalidInput};
   const auto range=view.groups[group];
   if(range.count<3||range.offset>view.member_count||range.count>view.member_count-range.offset)
     return {StepStatus::InvalidInput};
@@ -64,8 +69,16 @@ TL_RIGID_CANDIDATE_HD inline GroupCandidateResult PrepareGroupCandidate(GroupDev
     WriteNode(trial,node,next.position); WriteNode(trial+3*nodes,node,next.velocity);
     WriteNode(trial+6*nodes,node,next.omega); WriteNode(trial+13*nodes,node,next.reaction_force);
     WriteNode(trial+16*nodes,node,next.reaction_couple);
+    if constexpr(Capture) {
+      AccelerationSink::Write(sink.node,node,next.acceleration);
+      AccelerationSink::Write(sink.node_rotation,node,next.angular_acceleration);
+    }
   }
   WriteGroupState(trial+offset,{primary.center,primary.velocity,primary.omega,primary.force_frame.axes});
+  if constexpr(Capture) {
+    AccelerationSink::Write(sink.group,group,primary.acceleration);
+    AccelerationSink::Write(sink.group_rotation,group,primary.angular_acceleration);
+  }
   return {};
 }
 } // namespace tl::fea::rigid
