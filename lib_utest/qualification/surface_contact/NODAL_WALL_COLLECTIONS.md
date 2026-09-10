@@ -29,21 +29,21 @@ Five functions are frozen before execution:
 
 Normal fixture law is kappa = 16 N/m3, cap = 0.5 m, unchanged per-parent force budget 5e-7 N and potential budget 1.2500000000000005e-12 J. Independent arithmetic retains 2e-12 times (1 + absolute truth). Work checks retain 256 binary64 eps times absolute terms plus 1e-12 times the 1/64 J scale; impulse uses the same formula and 1/1024 N s scale. No numerical tolerance was raised. The overflow-only tuple retains the previous kappa = 1e308 and per-parent budgets = 1e296; it is not a physical parameter choice. The late accuracy test deliberately uses 1e-30 J and must reject.
 
-Root registration: one CUDA test target, suggested `utest_nodal_wall_collection_cuda`, compiling `NodalWallCollectionFixture.cpp` and `NodalWallCollectionTest.cu`. Reuse `tl_nodal_wall_contact_device`, `tl_q4_parametric_contact`, TL startup headers and the existing GTest/strict floating-point options. No native interval bridge is needed. Existing model, owner and native contact tests remain required regressions; only the old exact storage-size assertion changes to the measured new layout. The source117 app adapter needs no new public fixture API: existing prepared `NodalWallWeights`, global position/mass/mask views and `Initialize` already accept its authenticated records after this bound change.
+Root registration: one CUDA test target, suggested `utest_nodal_wall_collection_cuda`, compiling `NodalWallCollectionFixture.cpp` and `NodalWallCollectionTest.cu`. Reuse `tl_nodal_wall_contact_device`, `tl_q4_parametric_contact`, TL startup headers and the existing GTest/strict floating-point options. No native interval bridge is needed. Existing model, owner and native contact tests remain required regressions; only the old exact storage-size assertion changes to the measured new layout. The source 117 app adapter needs no new public fixture API: existing prepared `NodalWallWeights`, global position/mass/mask views and `Initialize` already accept its authenticated records after this bound change.
 
 ## Execution result
 
-All five new functions and28 existing owner/contact functions pass, including
-94/128-parent host/device agreement, actual128-node two-kick contact motion,
+All five new functions and 28 existing owner/contact functions pass, including
+94/128-parent host/device agreement, actual 128-node two-kick contact motion,
 last-node failure preservation and exact retry. The measured one-allocation
-storage is471,864 B within the512 KiB cap. No law, numerical budget, input
+storage is 471,864 B within the 512 KiB cap. No law, numerical budget, input
 geometry or applied load was changed after execution. Peer review corrected
 a test-only Q4/T3 node-ID width mismatch before the first build; both use
 1000+n while contact parent/feature IDs remain wider than2^54.
 
 Reports: `crash-work/reports/contact-collection-{configure,build,tests}-1.*`
-and tests-1 XML. Build elapsed24.061 s, peak sampled RSS745,631,744 B. All
+and tests-1 XML. Build elapsed 24.061 s, peak sampled RSS 745,631,744 B. All
 CPU/RAM/GPU guards passed. Six owning component Bazel targets also pass in
-`shell-contact-collection-bazel-1.*`. The actual original117-node/94-parent
+`shell-contact-collection-bazel-1.*`. The actual original 117-node/94-parent
 source data separately pass host native structural startup in robo-dyna; these
 contact capacity fixtures are synthetic and do not establish part dynamics.

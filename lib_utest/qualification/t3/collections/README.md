@@ -37,16 +37,16 @@ must agree exactly with the clean trajectory. Count/union mass rejection occurs
 before any accepted publication. No contact, long response, impact or 117-node
 vehicle-part dynamics qualification is claimed by this short collection gate.
 
-Passing runtime: nine production device allocations total817,119 B: owner48,223,
-QEPH440,752, T3 323,968 and shared kinetic scratch4,176 B. Test-only pointer
-loads add6,144 B. Across the three new functions,704 QEPH and128 T3 native
+Passing runtime: nine production device allocations total 817,119 B: owner 48,223,
+QEPH 440,752, T3 323,968 and shared kinetic scratch 4,176 B. Test-only pointer
+loads add 6,144 B. Across the three new functions,704 QEPH and 128 T3 native
 cell intervals pass, including every retained force/history field. The omitted
-Q4/T3 contributions exceed the arithmetic budget by112,999/104,824 times.
+Q4/T3 contributions exceed the arithmetic budget by 112,999/104,824 times.
 No tolerance, loading, timestep or mechanics arithmetic changed after execution.
 
 Evidence is `crash-work/reports/resident-shell-collection-{build,tests}-*.{json,log}`
-and tests-1 XML. The actual build-2 took28.472 s with823,590,912 B sampled RSS;
-tests-1 took0.988 s. Initial build-1 had no generated target yet; configure-1
+and tests-1 XML. The actual build-2 took 28.472 s with 823,590,912 B sampled RSS;
+tests-1 took 0.988 s. Initial build-1 had no generated target yet; configure-1
 rejected modification of the pinned port CMake entrypoint. Registration now
 uses the existing mixed feature's CMake extension, preserving that pinned file.
 Configure-2 and build-2 pass. Both source-review macro fixes preceded compilation.
@@ -54,3 +54,9 @@ Configure-2 and build-2 pass. Both source-review macro fixes preceded compilatio
 Twenty affected standalone QEPH and joint-wall functions also pass under
 `shell-contact-collection-qeph-tests-1/`; six owning Bazel targets pass under
 `shell-contact-collection-bazel-1.*`. Native references remain test-only.
+
+The enlarged owner also passes all seven accepted Chrono output functions in
+`shell-collection-output-tests-1.xml`. Both full coarse wall rebounds preserve
+all scientific fields exactly, with only changed allocation/runtime metadata
+excluded; see `wall_response/RESULTS.md`. No original-source dynamics or video
+is implied by these capacity and compatibility results.

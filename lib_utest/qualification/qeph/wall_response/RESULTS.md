@@ -58,3 +58,12 @@ fixture costs are not a vehicle throughput estimate.
 The next delivery work is joined mixed Q4/T3 feedback, accepted phase-aware
 output and connected capacity for the complete 117-node source part. Additional
 broadside variants are deferred unless an integration failure requires them.
+
+After the connected-capacity integration at `efab23a`, both complete coarse
+fixtures were rerun using launch provenance-2. Every scientific field matches
+the original run exactly; only executable/provenance, elapsed time and the
+changed batch/wall allocation sizes are excluded. Together the runs complete
+8,192 owner intervals/12,288 native cell intervals in 8.386 s, peaking at
+161,746,944 B sampled RSS. Evidence is `qeph-wall-response-{one,two}-h-2/`
+and `shell-contact-collection-{one,two}-rebound-parity-1.json`. The original
+refinement results remain retained; no extra response function is counted.

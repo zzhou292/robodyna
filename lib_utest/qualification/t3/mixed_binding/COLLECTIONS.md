@@ -61,7 +61,7 @@ Eight added host functions freeze the following checks before execution:
 - A synthetic connected 117-node/94-parent fixture contains 88 nonuniform flat
   rectangular Q4s and six scalene T3s. Every node is checked using independent
   long-double world-triangle areas and world-edge atan2 angles, plus fresh native
-  startup scalar sums in the exact declared order. Node116 has a wide source ID.
+  startup scalar sums in the exact declared order. Node 116 has a wide source ID.
 - All 128 nodes and all 128 parents (each family separately) are exercised.
 - Last-family parent IDs, coordinates, materials and order affect the inventory;
   active lengths differ when parents are omitted.
@@ -86,11 +86,11 @@ runtime. All eight original plus eight new host functions should run together;
 resident consumers are a separately owned implementation stage.
 
 Root execution evidence: `crash-work/reports/shell-collection-{build,tests}-1.*`
-and the tests-1 XML directory. Build elapsed18.393 s with704,290,816 B sampled
-peak RSS; the sixteen-function host run passes in0.268 s under one CPU/1 GiB.
+and the tests-1 XML directory. Build elapsed 18.393 s with 704,290,816 B sampled
+peak RSS; the sixteen-function host run passes in 0.268 s under one CPU/1 GiB.
 The authenticated original-source adapter also passes two new functions and
 nine affected source regressions under `source-shell-collection-tests-1/`.
-It preserves all117 original nodes/88Q4/six T3 and independently checks native
-structural mass0.25650893888187326 kg and total J5.1937904054349167e-6 kg*m^2.
+It preserves all 117 original nodes/88 Q4/six T3 and independently checks native
+structural mass 0.25650893888187326 kg and total J 5.1937904054349167e-6 kg*m^2.
 That is host startup only; resident/contact capacity and part dynamics are
 separate integration gates. No original MAT024 or attachment equivalence claim.
