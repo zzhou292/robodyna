@@ -11,8 +11,8 @@ enum class NodalOutputTiming { CollocatedOnly, StaggeredHalfKick };
 // chooses output cadence; Publish never advances time or performs a trial. It
 // receives a live owner each time and checks the identity captured at setup, so
 // no owner pointer or borrowed device memory is retained between calls.
-// Setup/publication/rendering are externally serialized. The bounded TL owner
-// currently admits at most 64 nodes. No shell-qualification library is linked.
+// Setup/publication/rendering are externally serialized. Capture storage follows
+// the bounded TL owner's node limit. No shell-qualification library is linked.
 // The two-argument Initialize preserves the collocated-only protocol. Staggered
 // output requires explicit opt-in and binds the owner's scheme, fixed dt, node
 // count and rotation availability. Positions/quaternions are accepted endpoint

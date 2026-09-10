@@ -39,31 +39,50 @@ Two new and five existing CUDA functions pass; failed mesh publication preserves
 all exposed fields. This prepares the rendering path without reconstructing
 or inventing missing physical fields. Case/archive integration remains next.
 
-The retained total is 1,092 distinct passing functions. Detailed historical
+The retained total is 1,110 distinct passing functions. Detailed historical
 results, limitations and exact logs live in the [execution checkpoint](../../planning/EXECUTION_STATUS.md).
 The next capacity work keeps one immutable shared binding, two typed element
 batches, one state owner/coordinator and the existing finite-wall contributor.
-Target 128 nodes/parents, then use all 117 original nodes and 94 original shell
-parents in an explicit elastic free-part experiment. Source MAT024, attachments,
+TL `efab23a` now qualifies 128-node/parent capacity through the existing owner,
+batches and finite-wall contributor. Three resident and five contact CUDA/host
+functions pass with affected regressions and six owning Bazel targets. Both
+complete coarse rebound runs preserve every scientific field exactly after the
+storage change. Use all 117 original nodes and 94 original shell parents next
+in an explicit elastic free-part experiment. Source MAT024, attachments,
 self-contact, beams/solids/connectors and full-vehicle output remain major gates.
 No source entity may be silently removed to satisfy a fixture limit.
 
-The complete source-part host binding now passes: all117 original nodes,88Q4
+The complete source-part host binding now passes: all 117 original nodes,88 Q4
 and six T3 retain exact geometry, source IDs and ordering. Native structural
-mass is0.25650893888187326 kg; total rotary inertia is5.1937904054349167e-6
+mass is 0.25650893888187326 kg; total rotary inertia is 5.1937904054349167e-6
 kg*m^2, with physical/added partitions retained separately. Two new tests and
 nine affected original-source regressions pass. This is startup for the explicit
-elastic experiment; resident capacity and part dynamics are still being integrated.
+elastic experiment. Resident capacity is qualified; actual part dynamics remain
+next.
 Evidence: `crash-work/reports/source-shell-collection-tests-1/`.
 
 ## Current delivery cadence
 
-The user requested faster progress on 2026-09-09. Broadside rebound and short mixed
-force feedback pass; prioritize connected capacity and the complete
-117-node Yaris source part with accepted deformation output. Batch focused
-regressions at integration checkpoints and retain commits, logs and required
-input bindings. Additional fixture variants and report infrastructure are deferred
-unless needed to resolve a failure. Physics checks and the 16 GB RAM ceiling stay.
+The user requested faster progress on 2026-09-09. Broadside rebound, mixed
+feedback, connected resident/contact capacity and actual-source startup pass.
+Next implement one `SourcePartElasticCase` using the existing CUDA components:
+reference-rest, a declared spatial force pulse, then free elastic response.
+Qualify the actual geometry/load with a bounded pilot and refinement, then
+record accepted fields and render an inspected Chrono video. Add incoming
+startup and mesh-wall impact to that same case afterward.
+
+Reuse NodalMeshOutput, ArtifactIO/Inventory/MeshArchive and the VSG pipeline.
+The first video needs exact source mappings, native mass/inertia, accepted
+positions/orientations, correctly timed velocities and work diagnostics. Full
+private-history/restart export is optional; it must not delay that result.
+The complete part uses 117 vertices and 182 display triangles. Reference
+oracles stay in the short qualification gate, not the production timestep.
+
+Batch focused regressions at integration checkpoints and retain local commits,
+logs and required input bindings. Extra broadside variants and reporting
+frameworks are deferred unless a failure needs them. Parallelize source work;
+serialize heavy builds/GPU runs. Builds use two workers on four affinity CPUs,
+a 12 GiB RSS guard, and remain below the user's 16 GB RAM ceiling.
 
 ## Historical verified starting point
 
