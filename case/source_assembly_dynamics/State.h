@@ -79,10 +79,10 @@ struct Sample {
 };
 struct SourceAssemblyWallCase::Impl {
     Impl(const source_assembly::SourceAssemblyBindings& b,const source_assembly::SourceAssemblyWallSetup& w,
-         const Config& c,std::size_t host_bytes)
+         const Config& c,std::size_t host_bytes,StepTimingOptions timing_options)
         :bindings(b),setup(w),config(c),sample{Sample(nodes(),groups(),quads(),triangles()),Sample(nodes(),groups(),quads(),triangles())},
          inverse_mass(nodes()),inverse_inertia(nodes()),free(nodes()),load_soa(6*nodes()),
-         applied_force(3*nodes()),applied_couple(3*nodes()),wall_faces(w.placed_wall()->view().triangle_count),host_bytes(host_bytes) {}
+         applied_force(3*nodes()),applied_couple(3*nodes()),wall_faces(w.placed_wall()->view().triangle_count),host_bytes(host_bytes),timer(timing_options) {}
     const source_assembly::SourceAssemblyBindings bindings;
     const source_assembly::SourceAssemblyWallSetup setup;
     const Config config;
@@ -98,6 +98,7 @@ struct SourceAssemblyWallCase::Impl {
     std::vector<double> load_soa,applied_force,applied_couple;
     std::vector<std::uint64_t> wall_faces;
     std::size_t host_bytes=0;
+    StepTimer timer;
     unsigned accepted_slot=0;
     fe::NodalTrialToken token;
     fe::NodalPreparedView prepared;
@@ -124,7 +125,10 @@ struct SourceAssemblyWallCase::Impl {
     Report CheckMotion();
     Report Commit();
     void Discard() noexcept { owner.Discard();publication.DiscardTrial();qeph.DiscardTrial();t3.DiscardTrial();wall.DiscardTrial(); }
-    Report Stop(Report r) noexcept { Discard();if(r.status==Status::DeviceFailure)poisoned=true;return r; }
+    Report Stop(Report r) noexcept {
+        timer.Measure<StepStage::DiscardTrial>([&] {Discard();return Success();});
+        if(r.status==Status::DeviceFailure)poisoned=true;return r;
+    }
     fe::NodalAllocationInfo Allocations() const noexcept;
 };
 } // namespace crash::cases::source_assembly_dynamics

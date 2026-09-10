@@ -18,7 +18,7 @@ foreach(robo_required IN ITEMS ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY ROBO_DYNA_SOU
 endforeach()
 include("${robo_dynamics_root}/case/CanonicalWallArtifacts.cmake")
 add_executable(robo_dyna_source_assembly_dynamics_check
-  tests/Fixture.cpp tests/WallCaseTest.cpp tests/WallRunTest.cpp
+  tests/Fixture.cpp tests/WallCaseTest.cpp tests/WallRunTest.cpp tests/StepTimingTest.cpp
   "${robo_dynamics_root}/qualification/source_assembly/SourceAssemblyFlightFixture.cu")
 target_link_libraries(robo_dyna_source_assembly_dynamics_check PRIVATE robo_dyna_source_assembly_dynamics
   robo_dyna_canonical_wall_artifacts GTest::gtest_main CUDA::cudart)

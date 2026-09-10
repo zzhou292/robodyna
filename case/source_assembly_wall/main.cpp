@@ -1,4 +1,5 @@
 #include "Pilot.h"
+#include "StepTimingReport.h"
 #include <charconv>
 #include <iostream>
 #include <string_view>
@@ -14,17 +15,29 @@ std::uint64_t Count(const char* input,std::uint64_t maximum) {
 }
 int main(int argc,char** argv) {
     namespace wall=crash::cases::source_assembly_wall;
+    crash::cases::source_assembly_dynamics::SourceAssemblyWallCase run;
+    std::string timing_path;int status=1;
     try {
-        if(argc!=6&&argc!=7)throw std::invalid_argument(
-            "usage: robo_dyna_source_assembly_wall INVENTORY WALL STEPS FRAME_EVERY NEW_DIR [REFINEMENT_1_2_4]");
+        int positional=argc;
+        if(argc>=3&&std::string_view(argv[argc-2])=="--stage-timing") {
+            timing_path=argv[argc-1];positional-=2;
+            if(timing_path.empty())throw std::invalid_argument("Stage timing path must be nonempty");
+        }
+        if(positional!=6&&positional!=7)throw std::invalid_argument(
+            "usage: robo_dyna_source_assembly_wall INVENTORY WALL STEPS FRAME_EVERY NEW_DIR [REFINEMENT_1_2_4] [--stage-timing NEW_JSON]");
+        if(!timing_path.empty())wall::CheckStepTimingPath(timing_path,argv[5]);
         crash::output::assembly::WallArchiveRequest request;
         request.steps=Count(argv[3],1<<20);request.frame_every=unsigned(Count(argv[4],request.steps));
         request.run_id=0x53415752554e31ULL;request.topology_id=0x534157544f5031ULL;request.asset_id=0x53415741535331ULL;
-        const unsigned refinement=argc==7?unsigned(Count(argv[6],4)):1;
-        crash::cases::source_assembly_dynamics::SourceAssemblyWallCase run;
-        wall::InitializePilot(run,argv[1],argv[2],request,refinement);
-        return wall::Execute(run,request,argv[5]);
+        const unsigned refinement=positional==7?unsigned(Count(argv[6],4)):1;
+        wall::InitializePilot(run,argv[1],argv[2],request,refinement,{!timing_path.empty()});
+        status=wall::Execute(run,request,argv[5]);
     }catch(const std::exception& error) {
-        std::cerr<<"Assembly output incomplete: "<<error.what()<<'\n';return 1;
+        std::cerr<<"Assembly output incomplete: "<<error.what()<<'\n';
     }
+    if(!timing_path.empty()&&run.initialized()) {
+        try {wall::WriteStepTiming(timing_path,run.timing(),status);}
+        catch(const std::exception& error) {std::cerr<<"Stage timing report failed: "<<error.what()<<'\n';}
+    }
+    return status;
 }

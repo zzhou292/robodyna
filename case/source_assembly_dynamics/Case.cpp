@@ -7,7 +7,7 @@ namespace crash::cases::source_assembly_dynamics {
 SourceAssemblyWallCase::SourceAssemblyWallCase()=default;
 SourceAssemblyWallCase::~SourceAssemblyWallCase()=default;
 Report SourceAssemblyWallCase::Initialize(const source_assembly::SourceAssemblyBindings& b,
-        const source_assembly::SourceAssemblyWallSetup& setup,const Config& config) {
+        const source_assembly::SourceAssemblyWallSetup& setup,const Config& config,StepTimingOptions timing_options) {
     if(impl_)return Failure(Status::AlreadyInitialized,"Assembly wall case is immutable after startup");
     if(!ValidConfig(config)||!setup.initialized()||!setup.bindings()||!setup.settings()||!setup.certificate())
         return Failure(Status::InvalidInput,"Missing prepared setup or explicit assembly run configuration");
@@ -35,19 +35,21 @@ Report SourceAssemblyWallCase::Initialize(const source_assembly::SourceAssemblyB
        !budget.Append<std::uint64_t>(2*n+setup.placed_wall()->view().triangle_count,ignored))
         return Failure(Status::ResourceLimit,"Assembly host observation payload exceeds its startup byte budget");
     try {
-        auto next=std::make_unique<Impl>(b,setup,config,budget.bytes());
+        auto next=std::make_unique<Impl>(b,setup,config,budget.bytes(),timing_options);
         const auto report=next->Initialize();if(!report)return report;
         impl_=std::move(next);return Success();
     } catch(const std::bad_alloc&) { return Failure(Status::ResourceLimit,"Assembly startup host allocation failed"); }
 }
 Report SourceAssemblyWallCase::Step() {
     if(!impl_)return Failure(Status::NotInitialized,"Assembly wall case is not initialized");
-    if(impl_->poisoned)return Failure(Status::DeviceFailure,"Assembly CUDA participant is poisoned");
-    auto r=impl_->Prepare();if(!r)return impl_->Stop(r);
-    r=impl_->Evaluate();if(!r)return impl_->Stop(r);
-    r=impl_->Check();if(!r)return impl_->Stop(r);
-    r=impl_->Commit();if(!r)return impl_->Stop(r);
-    return r;
+    return impl_->timer.Step([&] {
+        if(impl_->poisoned)return Failure(Status::DeviceFailure,"Assembly CUDA participant is poisoned");
+        auto r=impl_->Prepare();if(!r)return impl_->Stop(r);
+        r=impl_->Evaluate();if(!r)return impl_->Stop(r);
+        r=impl_->Check();if(!r)return impl_->Stop(r);
+        r=impl_->Commit();if(!r)return impl_->Stop(r);
+        return r;
+    });
 }
 Report SourceAssemblyWallCase::CaptureAccepted(output::assembly::SourceAssemblyAcceptedOutput& output) {
     if(!impl_)return Failure(Status::NotInitialized,"Assembly wall case is not initialized");
@@ -56,6 +58,9 @@ Report SourceAssemblyWallCase::CaptureAccepted(output::assembly::SourceAssemblyA
         return Failure(Status::ComponentFailure,"Accepted assembly stamp changed outside its case");
     const auto r=output.Publish(impl_->owner,impl_->qeph,impl_->t3,impl_->publication);
     return r.status==visual::Status::Ok?Success():Failure(Status::ComponentFailure,r.message);
+}
+StepTimingSnapshot SourceAssemblyWallCase::timing() const noexcept {
+    return impl_?impl_->timer.snapshot():StepTimingSnapshot{};
 }
 bool SourceAssemblyWallCase::initialized() const noexcept { return impl_!=nullptr; }
 const fe::FENodalState* SourceAssemblyWallCase::owner() const noexcept { return impl_?&impl_->owner:nullptr; }

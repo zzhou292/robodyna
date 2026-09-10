@@ -7,5 +7,6 @@ namespace crash::cases::source_assembly_wall {
 source_assembly_dynamics::Config PilotConfig(unsigned refinement);
 void InitializePilot(source_assembly_dynamics::SourceAssemblyWallCase&,
     const std::string& source_inventory,const std::string& original_wall,
-    const output::assembly::WallArchiveRequest&,unsigned refinement);
+    const output::assembly::WallArchiveRequest&,unsigned refinement,
+    source_assembly_dynamics::StepTimingOptions timing={});
 }

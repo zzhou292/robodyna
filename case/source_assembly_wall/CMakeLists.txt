@@ -6,7 +6,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/../source_assembly/SourceAssemblyBindings.cma
 set(CRASH_TL_FEA_SOURCE_DIR "${ROBO_DYNA_TL_ROOT}")
 add_subdirectory("${ROBO_DYNA_TL_ROOT}/lib_src/solvers" tl-owner)
 include("${CMAKE_CURRENT_LIST_DIR}/../../output/source_assembly/SourceAssemblyWallArtifacts.cmake")
-add_library(robo_dyna_source_assembly_wall_execution STATIC Execution.cpp Pilot.cpp)
+add_library(robo_dyna_source_assembly_wall_execution STATIC Execution.cpp Pilot.cpp StepTimingReport.cpp)
 target_link_libraries(robo_dyna_source_assembly_wall_execution PUBLIC robo_dyna_source_assembly_wall_artifacts)
 target_compile_options(robo_dyna_source_assembly_wall_execution PRIVATE -fno-fast-math -ffp-contract=off)
 add_executable(robo_dyna_source_assembly_wall main.cpp)

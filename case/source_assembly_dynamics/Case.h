@@ -1,5 +1,6 @@
 #pragma once
 #include "Config.h"
+#include "StepTiming.h"
 #include "case/source_assembly_observation/SourceAssemblyObservation.h"
 #include <memory>
 
@@ -36,8 +37,10 @@ class SourceAssemblyWallCase {
     SourceAssemblyWallCase(const SourceAssemblyWallCase&)=delete;
     SourceAssemblyWallCase& operator=(const SourceAssemblyWallCase&)=delete;
     Report Initialize(const source_assembly::SourceAssemblyBindings&,
-        const source_assembly::SourceAssemblyWallSetup&,const Config&);
+        const source_assembly::SourceAssemblyWallSetup&,const Config&,StepTimingOptions={});
     Report Step();
+    // Copied diagnostic counters only; never an accepted physics observation.
+    StepTimingSnapshot timing() const noexcept;
     Report CaptureAccepted(output::assembly::SourceAssemblyAcceptedOutput&);
     bool initialized() const noexcept;
     const tl::fea::FENodalState* owner() const noexcept;

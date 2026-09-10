@@ -34,12 +34,12 @@ Report SourceAssemblyWallCase::Impl::Prepare() {
         return Failure(Status::ComponentFailure,"Owner changed outside its assembly wall case");
     candidate().diagnostics={};prepared={};base_contact={};
     fe::NodalAssemblyView assembly;
-    auto r=Convert(owner.BeginTrial(&token,&assembly));if(!r)return r;
-    r=QReport(qeph.AssembleAccepted(owner,assembly));if(!r)return r;
-    r=TReport(t3.AssembleAccepted(owner,assembly));if(!r)return r;
+    auto r=timer.Measure<StepStage::BeginTrial>([&] {return Convert(owner.BeginTrial(&token,&assembly));});if(!r)return r;
+    r=timer.Measure<StepStage::AssembleQeph>([&] {return QReport(qeph.AssembleAccepted(owner,assembly));});if(!r)return r;
+    r=timer.Measure<StepStage::AssembleT3>([&] {return TReport(t3.AssembleAccepted(owner,assembly));});if(!r)return r;
     // Contact is last so its certificate includes the actual preceding native
     // shell-force additions. Keep this order when observing applied work.
-    r=Convert(wall.AssembleAccepted(owner,assembly,&base_contact));if(!r)return r;
+    r=timer.Measure<StepStage::AssembleWall>([&] {return Convert(wall.AssembleAccepted(owner,assembly,&base_contact));});if(!r)return r;
     if(!base_contact.valid||base_contact.phase!=contact::NodalWallDevicePhase::AcceptedBase||
        base_contact.owner_id!=stamp.owner_id||base_contact.base_epoch!=stamp.epoch||
        base_contact.attempt!=assembly.attempt||base_contact.time!=stamp.time||
@@ -53,31 +53,33 @@ Report SourceAssemblyWallCase::Impl::Prepare() {
         return Failure(Status::EnvelopeFailure,"Certified initially separated assembly has nonzero initial contact");
     // Snapshot is complete while assembly pointers are still valid. No candidate
     // evaluation below scatters into or recomputes this accepted-base load.
-    r=CopyLoads(assembly,load_soa,applied_force,applied_couple);if(!r)return r;
-    r=Convert(owner.SealAssembly(token));if(!r)return r;
+    r=timer.Measure<StepStage::CopyAppliedLoads>([&] {return CopyLoads(assembly,load_soa,applied_force,applied_couple);});if(!r)return r;
+    r=timer.Measure<StepStage::SealAssembly>([&] {return Convert(owner.SealAssembly(token));});if(!r)return r;
     const fe::NodalStaggeredHistoryAdmission admission{stamp.owner_id,stamp.epoch,assembly.attempt,
         config.fixed_dt,config.deformation.maximum_rotation_increment,setup.settings()->qualification_id};
-    r=Convert(fe::AdvanceStaggeredRigidGroups(owner,token,admission));if(!r)return r;
-    r=Convert(owner.CopyPrepared(token,candidate().fields.buffer(),&prepared));if(!r)return r;
+    r=timer.Measure<StepStage::AdvanceOwner>([&] {return Convert(fe::AdvanceStaggeredRigidGroups(owner,token,admission));});if(!r)return r;
+    r=timer.Measure<StepStage::ReadPreparedNodes>([&] {return Convert(owner.CopyPrepared(token,candidate().fields.buffer(),&prepared));});if(!r)return r;
     fe::NodalPreparedView group_view;
-    r=Convert(owner.CopyPreparedRigidGroups(token,{candidate().fields.groups.data(),groups()},&group_view));if(!r)return r;
+    r=timer.Measure<StepStage::ReadPreparedGroups>([&] {
+        return Convert(owner.CopyPreparedRigidGroups(token,{candidate().fields.groups.data(),groups()},&group_view));
+    });if(!r)return r;
     if(!fe::trial_identity::SamePrepared(prepared,group_view))
         return Failure(Status::ComponentFailure,"Candidate nodal/reaction/group readbacks identify different prepared states");
     return Success();
 }
 Report SourceAssemblyWallCase::Impl::Evaluate() {
     auto& next=candidate();auto& d=next.diagnostics.shells;
-    auto r=QReport(qeph.EvaluateCandidate(owner,token,prepared,&d.qeph));if(!r)return r;
-    r=TReport(t3.EvaluateCandidate(owner,token,prepared,&d.t3));if(!r)return r;
-    r=QReport(qeph.CopyPreparedResults(d.qeph,next.parents.qeph.data(),quads()));if(!r)return r;
-    r=TReport(t3.CopyPreparedResults(d.t3,next.parents.t3.data(),triangles()));if(!r)return r;
-    r=QReport(qeph.CopyPreparedSectionHistory(d.qeph,next.parents.qsection.data(),quads()));if(!r)return r;
-    r=TReport(t3.CopyPreparedSectionHistory(d.t3,next.parents.tsection.data(),triangles()));if(!r)return r;
+    auto r=timer.Measure<StepStage::EvaluateQeph>([&] {return QReport(qeph.EvaluateCandidate(owner,token,prepared,&d.qeph));});if(!r)return r;
+    r=timer.Measure<StepStage::EvaluateT3>([&] {return TReport(t3.EvaluateCandidate(owner,token,prepared,&d.t3));});if(!r)return r;
+    r=timer.Measure<StepStage::ReadQephResults>([&] {return QReport(qeph.CopyPreparedResults(d.qeph,next.parents.qeph.data(),quads()));});if(!r)return r;
+    r=timer.Measure<StepStage::ReadT3Results>([&] {return TReport(t3.CopyPreparedResults(d.t3,next.parents.t3.data(),triangles()));});if(!r)return r;
+    r=timer.Measure<StepStage::ReadQephSections>([&] {return QReport(qeph.CopyPreparedSectionHistory(d.qeph,next.parents.qsection.data(),quads()));});if(!r)return r;
+    r=timer.Measure<StepStage::ReadT3Sections>([&] {return TReport(t3.CopyPreparedSectionHistory(d.t3,next.parents.tsection.data(),triangles()));});if(!r)return r;
     contact::NodalWallDiagnostics contact_diagnostics;
-    r=Convert(wall.EvaluateCandidate(owner,token,prepared,&contact_diagnostics));if(!r)return r;
-    r=Convert(wall.CopyResults(contact_diagnostics,next.wall.buffer()));if(!r)return r;
+    r=timer.Measure<StepStage::EvaluateWall>([&] {return Convert(wall.EvaluateCandidate(owner,token,prepared,&contact_diagnostics));});if(!r)return r;
+    r=timer.Measure<StepStage::ReadWallResults>([&] {return Convert(wall.CopyResults(contact_diagnostics,next.wall.buffer()));});if(!r)return r;
     fe::ShellBatchDiagnostics common;
-    r=Convert(publication.Prepare(owner,token,d.qeph,d.t3,&common));if(!r)return r;
+    r=timer.Measure<StepStage::PreparePublication>([&] {return Convert(publication.Prepare(owner,token,d.qeph,d.t3,&common));});if(!r)return r;
     d=common;return Success();
 }
 Report SourceAssemblyWallCase::Impl::CheckMotion() {
@@ -91,14 +93,14 @@ Report SourceAssemblyWallCase::Impl::CheckMotion() {
     return Convert(observation::ObserveInterval(input,&next.diagnostics.motion));
 }
 Report SourceAssemblyWallCase::Impl::Check() {
-    auto r=CheckShells();if(!r)return r;
-    r=CheckContact();if(!r)return r;
-    return CheckMotion();
+    auto r=timer.Measure<StepStage::CheckShells>([&] {return CheckShells();});if(!r)return r;
+    r=timer.Measure<StepStage::CheckContact>([&] {return CheckContact();});if(!r)return r;
+    return timer.Measure<StepStage::CheckMotion>([&] {return CheckMotion();});
 }
 Report SourceAssemblyWallCase::Impl::Commit() {
     auto& next=candidate();const auto& d=next.diagnostics.shells;
     const fe::NodalValidationReceipt receipt{d.qeph.owner_id,d.qeph.base_epoch,d.qeph.attempt,d.qeph.qualification_id,true};
-    const auto r=Convert(publication.Commit(owner,token,d,receipt));if(!r)return r;
+    const auto r=timer.Measure<StepStage::CommitPublication>([&] {return Convert(publication.Commit(owner,token,d,receipt));});if(!r)return r;
     // Only infallible value updates and selection follow the sole owner/native
     // history publication. Contact keeps its completed candidate phase tag.
     next.diagnostics.stamp=owner.accepted();next.diagnostics.has_interval=true;

@@ -16,7 +16,8 @@ source_assembly_dynamics::Config PilotConfig(unsigned refinement) {
 }
 void InitializePilot(source_assembly_dynamics::SourceAssemblyWallCase& run,
     const std::string& inventory,const std::string& wall_path,
-    const output::assembly::WallArchiveRequest& request,unsigned refinement) {
+    const output::assembly::WallArchiveRequest& request,unsigned refinement,
+    source_assembly_dynamics::StepTimingOptions timing) {
     namespace source=modelio::assembly;
     const auto config=PilotConfig(refinement);
     const auto input=source::SourceAssembly::Read(inventory,source::PinnedYarisSixPartInventory());
@@ -34,7 +35,7 @@ void InitializePilot(source_assembly_dynamics::SourceAssemblyWallCase& run,
     settings.boundary=source_assembly::SourceAssemblyWallBoundary::ReleasedExternalConnections;
     source_assembly::SourceAssemblyWallSetup setup;
     const auto prepared=setup.Initialize(bindings,canonical,bytes,settings);output::Require(bool(prepared),prepared.message);
-    const auto initialized=run.Initialize(bindings,setup,config);
+    const auto initialized=run.Initialize(bindings,setup,config,timing);
     if(!initialized)throw std::runtime_error(FailureText(initialized));
 }
 }
