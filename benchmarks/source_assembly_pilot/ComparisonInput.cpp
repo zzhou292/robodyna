@@ -26,6 +26,9 @@ void Run::Open(const std::filesystem::path& path) {
     output::AcceptedReplay reader;const auto report=reader.Open(path);
     if(report.status!=output::ReplayStatus::Ok)throw std::runtime_error(report.diagnostic);
     Require(reader.info()->kind==output::ReplayKind::SourceAssemblyWall,"Pilot requires source_assembly_wall archives");
+    Require(reader.info()->source_assembly&&reader.info()->source_assembly->inventory_sha256==
+            modelio::assembly::PinnedYarisSixPartInventory().sha256,
+            "Pilot comparison supports only the pinned six-part component without connectors; seven-part connector comparison is not qualified");
     bundle=rd::ReadIndex(path);
     Require(output::Sha256(output::ReadBounded(path/"manifest.json",1024*1024))==manifest_hash,
             "Pilot manifest changed during validation");

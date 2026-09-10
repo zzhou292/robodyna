@@ -74,4 +74,21 @@ TEST(AssemblyPilot,ValidatedRunRejectsLateRehashedPhaseAndUnhashedTruncation) {
     clone.ReplaceBytes(file,"{");
     EXPECT_THROW(invalid.Open(clone.directory),std::runtime_error);
 }
+TEST(AssemblyPilot,ActualValidSevenPartArchiveCannotProduceAnIncompleteSixPartComparison) {
+    const auto* seven=std::getenv("ROBO_DYNA_PILOT_SEVEN_PART_REFERENCE");
+    if(!seven||!*seven)GTEST_SKIP()<<"Set explicit actual seven-part archive fixture";
+    output::AcceptedReplay reader;const auto opened=reader.Open(seven);
+    ASSERT_EQ(opened.status,output::ReplayStatus::Ok)<<opened.diagnostic;
+    ASSERT_TRUE(reader.info()->source_assembly);
+    ASSERT_EQ(reader.info()->source_assembly->inventory_sha256,modelio::assembly::PinnedYarisSevenPartInventory().sha256);
+    const auto reject=[](const auto& operation) {
+        try {operation();FAIL()<<"Connector archive reached six-part-only comparison";}
+        catch(const std::runtime_error& e) {
+            EXPECT_STREQ(e.what(),"Pilot comparison supports only the pinned six-part component without connectors; seven-part connector comparison is not qualified");
+        }
+    };
+    assembly_pilot::Run run;reject([&]{run.Open(seven);});
+    reject([&]{Compare({seven,seven});});
+    if(Fixture())reject([&]{Compare({Fixture(),seven});});
+}
 } // namespace crash::benchmarks::assembly_pilot

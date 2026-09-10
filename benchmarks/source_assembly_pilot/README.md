@@ -6,6 +6,14 @@ for every archive/source/material/group/released-boundary/phase/ledger check,
 then read fields through the retained hash-and-size inventory. No solver, CUDA
 runtime, new force evaluation, state owner or energy-admission policy is linked.
 
+Admission remains restricted to the authenticated pinned six-part inventory.
+The owning replay reader also supports the seven-part spotweld assembly, but
+this comparator explicitly rejects it: connector histories, signed work and
+failure response require a separately qualified comparison extension. A valid
+seven-part replay archive therefore does not imply comparator support. Supply
+`ROBO_DYNA_PILOT_SEVEN_PART_REFERENCE` at configuration to test this boundary
+against a completed actual archive, alongside the existing six-part fixture.
+
 The reference must have the finest step. A candidate step must be an exact
 integer multiple of the reference's binary64 rational value, with multiplier
 at most 2^20. Significand/exponent integer arithmetic rejects rounded false
