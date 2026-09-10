@@ -8,7 +8,12 @@
 #include <memory>
 
 namespace tl::fea {
+// Legacy contributor capacity. Existing shell/contact modules retain their own
+// qualified bounds; admitting a larger owner does not enlarge those modules.
 constexpr std::size_t MaxTranslationNodes = 128;
+// First connected-assembly owner bound. Device and host staging use active
+// counts, and the unchanged byte cap below still applies before allocation.
+constexpr std::size_t MaxNodalStateNodes = 2048;
 constexpr std::size_t MaxTranslationDeviceBytes = 1024 * 1024;
 
 enum class NodalStatus {

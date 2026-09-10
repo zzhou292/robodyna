@@ -1,7 +1,7 @@
 #pragma once
 
 #include "FENodalState.h"
-#include <array>
+#include <vector>
 
 namespace tl::fea {
 namespace nodal_detail {
@@ -71,7 +71,7 @@ struct FENodalState::Impl {
   nodal_detail::Control host_control;
   // Legacy slab: x3/v3. Extended slab: x3/v3/omega3/q4/reactionF3/reactionC3.
   // No allocation or host vector growth after startup.
-  std::array<double, 19 * MaxTranslationNodes> staging{};
-  std::array<std::uint8_t, 3 * MaxTranslationNodes> constraint_staging{};
+  std::vector<double> staging;
+  std::vector<std::uint8_t> constraint_staging;
 };
 }  // namespace tl::fea

@@ -219,6 +219,15 @@ cuda_test(
 )
 
 cuda_test(
+    name = "utest_nodal_capacity_cuda",
+    size = "small",
+    srcs = ["utest_nodal_capacity_cuda.cu"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/solvers:explicit_nodal_state", "@googletest//:gtest_main"],
+)
+
+cuda_test(
     name = "utest_nodal_rotation_cuda",
     size = "small",
     srcs = ["utest_nodal_rotation_cuda.cu"],

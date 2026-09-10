@@ -212,6 +212,13 @@ if(TL_CONTACT_ENABLE_CUDA)
   tl_contact_test(utest_nodal_rotation_cuda)
   set_tests_properties(utest_nodal_rotation_cuda PROPERTIES PROCESSORS 1)
 
+  add_executable(utest_nodal_capacity_cuda "${TL_ROOT}/lib_utest/utest_nodal_capacity_cuda.cu")
+  target_link_libraries(utest_nodal_capacity_cuda PRIVATE tl_explicit_nodal_state)
+  target_compile_options(utest_nodal_capacity_cuda PRIVATE
+    "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false>")
+  tl_contact_test(utest_nodal_capacity_cuda)
+  set_tests_properties(utest_nodal_capacity_cuda PROPERTIES PROCESSORS 1)
+
   add_subdirectory("${TL_ROOT}/lib_src/collision" "tl-planar-mesh-contact")
   include("${TL_ROOT}/lib_src/collision/Q4PlanarContact.cmake")
   add_executable(utest_q4_planar_contact_cuda "${TL_ROOT}/lib_utest/utest_q4_planar_contact_cuda.cu")

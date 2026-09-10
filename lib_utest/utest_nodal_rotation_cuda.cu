@@ -101,7 +101,7 @@ TEST_F(NodalRotationCuda, InvalidDofsQuaternionsAndMassFailBeforePublication) {
   EXPECT_EQ(owner.allocations().device_bytes,0u);
 }
 
-TEST_F(NodalRotationCuda, FullCapacityArbitraryAxisSpinMatchesExactWorldComposition) {
+TEST_F(NodalRotationCuda, LegacyContributorCapacitySpinMatchesExactWorldComposition) {
   Initial in; in.n=Capacity; const double r=std::sqrt(.5);
   for(std::size_t i=0;i<in.n;++i) {
     const double sign=i%2?-1:1;

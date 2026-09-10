@@ -108,7 +108,7 @@ TEST_F(NodalStepCuda, TwoContributorsDriveSharedMassesAndPreserveFixedNodes) {
   EXPECT_NEAR(result.v[0],.5,1e-15); EXPECT_EQ(result.stamp.epoch,2u);
 }
 
-TEST_F(NodalStepCuda, FreeFlightAtFullAdmittedCapacityKeepsOneSharedNodeSpace) {
+TEST_F(NodalStepCuda, FreeFlightAtLegacyContributorCapacityKeepsOneSharedNodeSpace) {
   Initial in; in.n=fe::MaxTranslationNodes;
   for (std::size_t i=0;i<3*in.n;++i) { in.x[i]=double(i)/100; in.v[i]=(int(i%3)-1)*.2; }
   fe::FENodalState state; ASSERT_EQ(state.Initialize(Config(in,.125),in.view(),in.inverse.data(),in.fixed.data()).status, NS::Ok);
@@ -176,7 +176,7 @@ TEST_F(NodalStepCuda, InvalidStartupIsRejectedBeforeOwnerPublication) {
     fe::FENodalState state; EXPECT_EQ(state.Initialize(c,in.view(),in.inverse.data(),in.fixed.data()).status,expected);
     EXPECT_EQ(state.accepted().owner_id,0u); EXPECT_EQ(state.allocations().device_bytes,0u);
   };
-  auto c=good; c.node_count=fe::MaxTranslationNodes+1; reject(c,NS::ResourceLimit);
+  auto c=good; c.node_count=fe::MaxNodalStateNodes+1; reject(c,NS::ResourceLimit);
   c=good; c.node_count=0; reject(c,NS::ResourceLimit);
   c=good; c.max_device_bytes=1; reject(c,NS::ResourceLimit);
   c=good; c.max_device_bytes=fe::MaxTranslationDeviceBytes+1; reject(c,NS::ResourceLimit);

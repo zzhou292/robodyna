@@ -203,7 +203,7 @@ TEST_F(NodalTemporalCuda, PreparedDiscardAndLateRuntimeFailureCannotPublishNewPh
   Snapshot retry; ASSERT_TRUE(Read(healthy,retry)); retry.stamp.owner_id=accepted.stamp.owner_id; SameState(retry,accepted);
 }
 
-TEST_F(NodalTemporalCuda, FullCapacityUsesTheSameSixAllocationsAndTwoStateSlabs) {
+TEST_F(NodalTemporalCuda, LegacyPacketCapacityUsesTheSameSixAllocationsAndTwoStateSlabs) {
   Initial in; in.n=Capacity; in.h=1./64;
   for(unsigned i=0;i<Capacity;++i) in.v[3*i]=.125*(i+1);
   fe::FENodalState owner,legacy; ASSERT_EQ(in.Initialize(owner).status,Code::Ok);
@@ -223,7 +223,9 @@ TEST_F(NodalTemporalCuda, FullCapacityUsesTheSameSixAllocationsAndTwoStateSlabs)
   auto before=result; auto small=result.buffer(); small.capacity_nodes=Capacity-1;
   EXPECT_EQ(owner.CopyAccepted(small,&result.stamp).status,Code::ResourceLimit); SameState(result,before);
   EXPECT_EQ(owner.allocations().device_bytes,allocation.device_bytes);
-  Initial too_large; too_large.n=Capacity+1; fe::FENodalState rejected;
+  // Reject before dereferencing the tiny packet: its 64-node storage bound is
+  // not the nodal owner's count limit.
+  Initial too_large; too_large.n=fe::MaxNodalStateNodes+1; fe::FENodalState rejected;
   EXPECT_EQ(too_large.Initialize(rejected).status,Code::ResourceLimit); EXPECT_EQ(rejected.allocations().device_allocations,0u);
 }
 

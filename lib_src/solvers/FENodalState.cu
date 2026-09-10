@@ -114,7 +114,7 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
                                         const double* inverse_mass, const std::uint8_t* fixed,
                                         const NodalDofConfig* dofs) {
   if (impl_) return {NodalStatus::InvalidInput, "Owner already initialized"};
-  if (!c.node_count || c.node_count > MaxTranslationNodes || !c.max_device_bytes ||
+  if (!c.node_count || c.node_count > MaxNodalStateNodes || !c.max_device_bytes ||
       c.max_device_bytes > MaxTranslationDeviceBytes)
     return {NodalStatus::ResourceLimit, "Nodal capacity exceeds admitted limits"};
   const bool rotations = dofs != nullptr;
@@ -162,6 +162,8 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
   if (bytes > c.max_device_bytes) return {NodalStatus::ResourceLimit, "Device byte budget is insufficient"};
   try {
     auto next = std::make_unique<Impl>();
+    next->staging.resize(state_values,0.);
+    next->constraint_staging.resize(mask_bytes,0);
     next->config = c; next->stamp = {NewOwner(), 0, n, 0, c.fixed_dt};
     next->stamp.temporal_scheme = c.temporal_scheme;
     next->has_rotations = rotations; next->has_component_constraints = component_constraints;
