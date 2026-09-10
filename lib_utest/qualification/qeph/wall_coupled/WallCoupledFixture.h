@@ -14,17 +14,29 @@ constexpr std::uint64_t WallConfiguration=0x43573057414c4c31ULL;
 constexpr std::uint64_t WallBinding=0x43573046494e4931ULL;
 constexpr double Slope=1./128,Preload=0x1p-12,Kappa=4e5,DepthCap=.0005;
 constexpr double ForceError=5e-7,EnergyError=1.2500000000000005e-12;
+struct WallExperiment {
+  std::uint64_t qualification=WallQualification,shell_configuration=ShellConfiguration;
+  std::uint64_t wall_configuration=WallConfiguration,wall_binding=WallBinding;
+  sc::NodalWallConfig law{0,Kappa,DepthCap,ForceError,EnergyError};
+  q::BatchStartup startup{};
+  double maximum_rotation_increment=1e-3;
+};
 struct WallRig {
   Rig shell;
+  const WallExperiment experiment;
   sc::Q4ParametricReference reference;
   sc::NodalWallWeights weights;
   std::array<sc::SurfaceQ4,2> parents{};
   q4_planar_test::Wall mesh=q4_planar_test::Square();
   sc::PlanarWallBox motion{{0,-.05,-.05},{0,.05,.05}};
   sc::NodalWallContactDevice wall;
-  explicit WallRig(unsigned cells):shell(cells) {}
+  explicit WallRig(unsigned cells,const WallExperiment& selected={}):shell(cells),experiment(selected) {}
   bool Initialize(double h);
-  sc::NodalWallConfig Law() const { return {0,Kappa,DepthCap,ForceError,EnergyError}; }
+  // Common participant tail after the caller prepares exact typed references,
+  // native mass/rotary partitions and the sole live owner. Old Initialize
+  // retains its original pose/rest owner; incoming uses an explicit startup.
+  bool InitializeParticipants();
+  sc::NodalWallConfig Law() const { return experiment.law; }
   sc::NodalWallResult Host(const Snapshot&,std::uint64_t epoch,std::uint64_t attempt) const;
   void Discard() { shell.owner.Discard(); shell.batch.DiscardTrial(); wall.DiscardTrial(); }
 };
@@ -53,6 +65,7 @@ struct ContactEvidence {
   unsigned omitted_contact_epoch=0,omitted_shell_epoch=0;
 };
 void ContactLedgers(const WallRig&,const Snapshot&,const Trial&,const Staged&,ContactEvidence&);
+void ContactLedgers(const WallRig&,const Snapshot&,const Trial&,const Staged&,const LedgerScales&,ContactEvidence&);
 void Controls(const WallRig&,const Snapshot&,const Trial&,const Staged&,const Loads&,ContactEvidence&);
 void Prefix(unsigned cells);
 } // namespace qeph_wall_test

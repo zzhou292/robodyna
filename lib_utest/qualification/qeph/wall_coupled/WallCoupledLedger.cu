@@ -27,12 +27,14 @@ std::array<Wide,N> Shares(const Rig& r) {
   return result;
 }
 }
-void ContactLedgers(const WallRig& w,const Snapshot& base,const Trial& t,const Staged& s,ContactEvidence& evidence) {
+static void ContactLedgersWithScales(const WallRig& w,const Snapshot& base,const Trial& t,const Staged& s,
+                                    ContactEvidence& evidence,const LedgerScales* scales) {
   const auto& r=w.shell; const auto& p=t.nodal; const auto& d=s.contact;
   const auto shares=Shares(r);
   const Wide area=r.count*static_cast<Wide>(Side)*Side;
-  const Wide energy_scale=Kappa*area*Preload*Preload;
-  const Wide impulse_scale=Kappa*area*Preload*(4*H0),angular_scale=Side*impulse_scale;
+  const Wide energy_scale=scales?scales->energy:Kappa*area*Preload*Preload;
+  const Wide impulse_scale=scales?scales->linear:Kappa*area*Preload*(4*H0);
+  const Wide angular_scale=scales?scales->angular:Side*impulse_scale;
   Wide kick=0,drift=0,base_potential=0,next_potential=0,quadratic=0,quadratic_uncertainty=0,force_error_work=0;
   Wide impulse=0,moment_y=0,moment_z=0,terms=0,moment_terms=0;
   Wide delta_momentum=0,internal_impulse=0,momentum_terms=0,total_kinetic=0,kinetic_terms=0;
@@ -41,7 +43,9 @@ void ContactLedgers(const WallRig& w,const Snapshot& base,const Trial& t,const S
     const Wide a=base.x[3*n],x=p.state.x[3*n],dx=x-a;
     const Wide va=base.v[3*n],v=p.state.v[3*n];
     const Wide force=node.force_world.x;
-    const Wide exact_k=Kappa*shares[n],ga=std::max(0.L,a),gx=std::max(0.L,x);
+    const Wide exact_k=(scales?w.Law().stiffness_per_area:Kappa)*shares[n];
+    const Wide ga=scales?std::max(0.L,a-w.Law().wall_x):std::max(0.L,a);
+    const Wide gx=scales?std::max(0.L,x-w.Law().wall_x):std::max(0.L,x);
     Check(-force,exact_k*ga,std::abs(force)+exact_k*ga,0,node.force.error,evidence.work_ratio);
     EXPECT_EQ(node.force_world.y,0); EXPECT_EQ(node.force_world.z,0);
     const Wide dw=p.view.kick_dt*force*(va+v)*.5L,dd=force*dx;
@@ -95,6 +99,16 @@ void ContactLedgers(const WallRig& w,const Snapshot& base,const Trial& t,const S
   Check(d.wall_kick_moment.y,moment_y,moment_terms,angular_scale,d.wall_kick_moment_error.y,evidence.impulse_ratio);
   Check(d.wall_kick_moment.z,moment_z,moment_terms,angular_scale,d.wall_kick_moment_error.z,evidence.impulse_ratio);
   EXPECT_EQ(d.wall_kick_moment.x,0);
+}
+void ContactLedgers(const WallRig& w,const Snapshot& base,const Trial& t,const Staged& s,ContactEvidence& evidence) {
+  ContactLedgersWithScales(w,base,t,s,evidence,nullptr);
+}
+void ContactLedgers(const WallRig& w,const Snapshot& base,const Trial& t,const Staged& s,
+                    const LedgerScales& scales,ContactEvidence& evidence) {
+  ASSERT_TRUE(std::isfinite(scales.energy)&&scales.energy>0);
+  ASSERT_TRUE(std::isfinite(scales.linear)&&scales.linear>0);
+  ASSERT_TRUE(std::isfinite(scales.angular)&&scales.angular>0);
+  ContactLedgersWithScales(w,base,t,s,evidence,&scales);
 }
 void Controls(const WallRig& w,const Snapshot& base,const Trial& t,const Staged& s,
               const Loads& contact,ContactEvidence& evidence) {

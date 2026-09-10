@@ -22,12 +22,13 @@ long double ExperimentEnergyScale(const Rig& r) {
   return scale;
 }
 }
-void CheckLedgers(const Rig& r,const Snapshot& base,const Prepared& p,const Loads& load,
-                  const PortResults& cache,const q::BatchDiagnostics& d,LedgerEvidence& evidence) {
+static void CheckLedgersWithScales(const Rig& r,const Snapshot& base,const Prepared& p,const Loads& load,
+                  const PortResults& cache,const q::BatchDiagnostics& d,LedgerEvidence& evidence,const LedgerScales* scales) {
   Loads internal; const auto amplitude=Amplitude(r);
-  const long double energy_scale=ExperimentEnergyScale(r);
+  const long double energy_scale=scales?scales->energy:ExperimentEnergyScale(r);
   long double linear_scale=0,angular_scale=0;
-  for(unsigned i=0;i<3*r.n;++i) {
+  if(scales) { linear_scale=scales->linear; angular_scale=scales->angular; }
+  else for(unsigned i=0;i<3*r.n;++i) {
     linear_scale+=std::abs(amplitude.force[i])*4*H0;
     angular_scale+=(Side*std::abs(amplitude.force[i])+std::abs(amplitude.couple[i]))*4*H0;
   }
@@ -104,8 +105,8 @@ void CheckLedgers(const Rig& r,const Snapshot& base,const Prepared& p,const Load
   const double reported[]{d.kinetic_translation,d.kinetic_rotation,d.kinetic_physical_isotropic,d.kinetic_added_isotropic};
   for(unsigned k=0;k<4;++k) Check(reported[k],next_kinetic[k],std::abs(next_kinetic[k]),energy_scale,evidence.kick_ratio);
 }
-void CheckSourceWork(const Rig& r,const PortResults& accepted,const PortResults& candidate,
-                     const q::BatchDiagnostics& d,LedgerEvidence& evidence) {
+static void CheckSourceWorkWithScale(const Rig& r,const PortResults& accepted,const PortResults& candidate,
+                     const q::BatchDiagnostics& d,LedgerEvidence& evidence,const long double* scale) {
   long double total[3]{},increment[3]{},difference[3]{};
   long double total_terms[3]{},increment_terms[3]{},difference_terms[3]{};
   for(unsigned e=0;e<r.count;++e) {
@@ -128,7 +129,7 @@ void CheckSourceWork(const Rig& r,const PortResults& accepted,const PortResults&
   const double reported[]{d.internal_work[0],d.internal_work[1],d.hourglass_viscous_work};
   const double reported_increment[]{d.internal_work_increment[0],d.internal_work_increment[1],
                                     d.hourglass_viscous_work_increment};
-  const auto energy_scale=ExperimentEnergyScale(r);
+  const auto energy_scale=scale?*scale:ExperimentEnergyScale(r);
   for(unsigned c=0;c<3;++c) {
     SCOPED_TRACE(c);
     Check(reported[c],total[c],total_terms[c],energy_scale,evidence.source_work_ratio);
@@ -136,6 +137,26 @@ void CheckSourceWork(const Rig& r,const PortResults& accepted,const PortResults&
     Check(reported_increment[c],difference[c],difference_terms[c],energy_scale,evidence.source_work_ratio);
   }
   evidence.source_internal_work=static_cast<double>(total[0]+total[1]+total[2]);
+}
+void CheckLedgers(const Rig& r,const Snapshot& base,const Prepared& p,const Loads& load,
+                  const PortResults& cache,const q::BatchDiagnostics& d,LedgerEvidence& evidence) {
+  CheckLedgersWithScales(r,base,p,load,cache,d,evidence,nullptr);
+}
+void CheckLedgers(const Rig& r,const Snapshot& base,const Prepared& p,const Loads& load,
+                  const PortResults& cache,const q::BatchDiagnostics& d,const LedgerScales& scales,LedgerEvidence& evidence) {
+  ASSERT_TRUE(std::isfinite(scales.energy)&&scales.energy>0);
+  ASSERT_TRUE(std::isfinite(scales.linear)&&scales.linear>0);
+  ASSERT_TRUE(std::isfinite(scales.angular)&&scales.angular>0);
+  CheckLedgersWithScales(r,base,p,load,cache,d,evidence,&scales);
+}
+void CheckSourceWork(const Rig& r,const PortResults& accepted,const PortResults& candidate,
+                     const q::BatchDiagnostics& d,LedgerEvidence& evidence) {
+  CheckSourceWorkWithScale(r,accepted,candidate,d,evidence,nullptr);
+}
+void CheckSourceWork(const Rig& r,const PortResults& accepted,const PortResults& candidate,
+                     const q::BatchDiagnostics& d,long double scale,LedgerEvidence& evidence) {
+  ASSERT_TRUE(std::isfinite(scale)&&scale>0);
+  CheckSourceWorkWithScale(r,accepted,candidate,d,evidence,&scale);
 }
 double WrongKickSeparation(const Rig& r,const Snapshot& base,const Prepared& p,const Loads& load,bool initial) {
   double ratio=0;

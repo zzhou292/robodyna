@@ -31,11 +31,27 @@ bool WallRig::Initialize(double h) {
   }
   for(unsigned n=0;n<r.n;++n) { r.inverse[n]=1/r.mass[n]; r.inverse_j[n]=1/r.inertia[n]; }
   if(!r.InitializeOwner()) return false;
+  return InitializeParticipants();
+}
+bool WallRig::InitializeParticipants() {
+  auto& r=shell;
   auto config=r.Config(q::BatchUsage::CoupledForces);
-  config.qualification_id=WallQualification; config.configuration_id=ShellConfiguration;
+  config.qualification_id=experiment.qualification; config.configuration_id=experiment.shell_configuration;
+  config.startup=experiment.startup;
   auto b=r.batch.Initialize(config,r.element.data());
   EXPECT_EQ(b.status,q::BatchStatus::Success)<<b.message;
-  if(b.status!=q::BatchStatus::Success || !r.Bind()) return false;
+  if(b.status!=q::BatchStatus::Success) return false;
+  if(experiment.startup.kind==q::BatchStartupKind::ReferenceRest) {
+    if(!r.Bind()) return false;
+  } else {
+    fe::NodalTrialToken token; fe::NodalAssemblyView view;
+    const auto begin=r.owner.BeginTrial(&token,&view);
+    EXPECT_EQ(begin.status,fe::NodalStatus::Ok); if(begin.status!=fe::NodalStatus::Ok) return false;
+    const auto bound=r.batch.AssembleAccepted(r.owner,view);
+    EXPECT_EQ(bound.status,q::BatchStatus::Success)<<bound.message;
+    r.owner.Discard(); r.batch.DiscardTrial();
+    if(bound.status!=q::BatchStatus::Success) return false;
+  }
   const sc::VectorView positions{r.x.data(),r.n,3,1};
   const auto prepared=reference.Initialize(positions,parents.data(),r.count);
   EXPECT_EQ(prepared.status,sc::Q4ParametricStatus::Ok)<<prepared.message;
@@ -43,8 +59,8 @@ bool WallRig::Initialize(double h) {
   const sc::NodalWallParentInput inputs[]{{&reference,0,nullptr},{&reference,1,nullptr}};
   auto w=weights.Initialize(r.n,inputs,r.count); EXPECT_EQ(w.status,sc::NodalWallStatus::Ok);
   if(w.status!=sc::NodalWallStatus::Ok) return false;
-  sc::NodalWallDeviceConfig c; c.owner=r.owner.accepted(); c.configuration_id=WallConfiguration;
-  c.qualification_id=WallQualification; c.wall_binding_id=WallBinding; c.law=Law();
+  sc::NodalWallDeviceConfig c; c.owner=r.owner.accepted(); c.configuration_id=experiment.wall_configuration;
+  c.qualification_id=experiment.qualification; c.wall_binding_id=experiment.wall_binding; c.law=Law();
   const auto result=wall.Initialize(c,mesh.view(),weights,positions,r.inverse.data(),r.fixed.data(),motion);
   EXPECT_EQ(result.status,sc::NodalWallDeviceStatus::Ok)<<result.message;
   return result.status==sc::NodalWallDeviceStatus::Ok;
