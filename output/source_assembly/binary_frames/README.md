@@ -105,3 +105,12 @@ ctest --test-dir <build> --parallel 1 --output-on-failure
 Omit the live flag for the pure host target; it links no runtime owner or CUDA
 mechanics. Both native readback and the full JSON field writer remain unchanged
 contracts outside this small adapter.
+
+
+Root qualification: all seven host and four actual CUDA functions pass at
+integrated app `2334b01` with TL `9c0755a`, with no skips. Reports:
+`crash-work/reports/component-binary-frame-{configure,build,tests}-1`; detailed
+function XMLs are under `component-binary-frame-functions-1/`. Test runtime was
+9.314 s and peak sampled RSS226,385,920 B. This qualification covers accepted
+record parity and failure behavior, not a new physical trajectory or full-run
+publication. Source V1/LAW44 component admission remains unchanged.
