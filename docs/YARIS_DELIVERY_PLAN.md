@@ -26,8 +26,13 @@ the latter owns 6,216 device bytes and adds eight passing functions at TL
 scientific response records matching their preceding baseline. The source-part
 wall-contact cost gate and stateless contact contributor on the existing owner
 also pass. The vehicle is not running yet. Immutable mixed Q4/T3 mass and
-identity binding now passes eight host tests at TL `9be796a`; joining resident
-batches and joint publication remain next. Short shell/wall transactions pass
+identity binding passes eight host tests at TL `9be796a`. Joint resident
+publication now passes eight CUDA functions and three actual-owner identity
+functions at `e215665`: one five-node union, one kinetic ledger, 20 native cell
+interval checks and 23,551 explicit device bytes across nine allocations.
+Ten native recurrence-helper tests also pass; all36 prior native matrices and
+six sustained GPU response records preserve their scientific fields exactly.
+Mixed force-feedback dynamics remains open. Short shell/wall transactions pass
 four CUDA functions at TL `1611802`, including both failure orders and retry;
 this is a 0.2384-microsecond preload check. Combined long-response and incoming
 impact admission remain open. The current device wall participant accepts Q4
