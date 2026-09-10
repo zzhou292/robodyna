@@ -7,6 +7,14 @@ bool Initialize(Rig& r,fe::ShellBatchSectionBinding& catalog,bool other_family_c
   std::array<fe::ShellQephBindingInput,Parents> qs{{f.qeph,f.qeph}};
   std::array<fe::ShellT3BindingInput,Parents> ts{{f.t3,f.t3}};
   qs[1].source_parent_id=703;ts[1].source_parent_id=704;
+  // Distinct physical parents retain the five-node fixture and its source IDs.
+  // Copy coordinates from their authoritative original parent/local slot.
+  qs[1].nodes={0,1,4,3};
+  qs[1].reference.position[2]=f.t3.reference.position[1];
+  qs[1].reference.node_ids[2]=f.t3.reference.node_ids[1];
+  ts[1].nodes={0,4,2};
+  ts[1].reference.position[0]=f.qeph.reference.position[0];
+  ts[1].reference.node_ids[0]=f.qeph.reference.node_ids[0];
   const auto binding=r.binding.Initialize({qs.data(),ts.data(),Parents,Parents,Nodes});
   EXPECT_EQ(binding.status,fe::ShellBindingStatus::Success);if(binding.status!=fe::ShellBindingStatus::Success)return false;
   r.initial.n=Nodes;r.initial.h=H;

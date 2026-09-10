@@ -4,6 +4,26 @@
 
 namespace mixed_layered_test {
 namespace {
+q::PrescribedInterval QInterval(const Rig& r,const Prepared& p,unsigned parent) {
+  auto in=QephInterval(r,p);
+  for(unsigned i=0;i<4;++i) {
+    const auto n=r.binding.qeph_nodes(parent)[i];
+    in.position_endpoint[i]={p.endpoint.x[3*n],p.endpoint.x[3*n+1],p.endpoint.x[3*n+2]};
+    in.velocity_midpoint[i]={p.endpoint.v[3*n],p.endpoint.v[3*n+1],p.endpoint.v[3*n+2]};
+    in.omega_midpoint[i]={p.endpoint.omega[3*n],p.endpoint.omega[3*n+1],p.endpoint.omega[3*n+2]};
+  }
+  return in;
+}
+t::PrescribedInterval TInterval(const Rig& r,const Prepared& p,unsigned parent) {
+  auto in=T3Interval(r,p);
+  for(unsigned i=0;i<3;++i) {
+    const auto n=r.binding.t3_nodes(parent)[i];
+    in.position[i]={p.endpoint.x[3*n],p.endpoint.x[3*n+1],p.endpoint.x[3*n+2]};
+    in.velocity[i]={p.endpoint.v[3*n],p.endpoint.v[3*n+1],p.endpoint.v[3*n+2]};
+    in.angular_velocity[i]={p.endpoint.omega[3*n],p.endpoint.omega[3*n+1],p.endpoint.omega[3*n+2]};
+  }
+  return in;
+}
 void Near(double a,double b) {
   ASSERT_TRUE(std::isfinite(a));ASSERT_TRUE(std::isfinite(b));
   EXPECT_LE(std::abs(a-b),2e-12*std::max({1.,std::abs(a),std::abs(b)}));
@@ -50,9 +70,9 @@ void CheckAdapters(const Rig& r,const fe::ShellBatchSectionBinding& catalog,cons
   ASSERT_NE(old.qsection[0].elastic(),nullptr);ASSERT_NE(old.tsection[1].elastic(),nullptr);
   q::LayeredLaw1ForceTrial qe;t::LayeredLaw1ForceTrial te;
   ASSERT_EQ(q::EvaluateLayeredLaw1Force(r.binding.qeph_reference(0),qp,
-    {old.qforce[0].proposed_history,*old.qsection[0].elastic()},QephInterval(r,p),qe),q::Status::kSuccess);
+    {old.qforce[0].proposed_history,*old.qsection[0].elastic()},QInterval(r,p,0),qe),q::Status::kSuccess);
   ASSERT_EQ(t::EvaluateLayeredLaw1Force(r.binding.t3_reference(1),tp,
-    {old.tforce[1].proposed_history,*old.tsection[1].elastic()},T3Interval(r,p),te),t::Status::kSuccess);
+    {old.tforce[1].proposed_history,*old.tsection[1].elastic()},TInterval(r,p,1),te),t::Status::kSuccess);
   ForceAgreement(actual.qforce[0],qe.force);ForceAgreement(actual.tforce[1],te.force);
   ASSERT_NE(actual.qsection[0].elastic(),nullptr);ASSERT_NE(actual.tsection[1].elastic(),nullptr);
   EXPECT_EQ(actual.qsection[0].plastic(),nullptr);EXPECT_EQ(actual.tsection[1].plastic(),nullptr);
@@ -63,9 +83,9 @@ void CheckAdapters(const Rig& r,const fe::ShellBatchSectionBinding& catalog,cons
   q::LayeredJ2ForceTrial qj;t::LayeredJ2ForceTrial tj;
   ASSERT_NE(old.qsection[1].plastic(),nullptr);ASSERT_NE(old.tsection[0].plastic(),nullptr);
   ASSERT_EQ(q::EvaluateLayeredJ2Force(r.binding.qeph_reference(1),qplastic,
-    {old.qforce[1].proposed_history,old.qsection[1].plastic()->history},QephInterval(r,p),qj),q::Status::kSuccess);
+    {old.qforce[1].proposed_history,old.qsection[1].plastic()->history},QInterval(r,p,1),qj),q::Status::kSuccess);
   ASSERT_EQ(t::EvaluateLayeredJ2Force(r.binding.t3_reference(0),tplastic,
-    {old.tforce[0].proposed_history,old.tsection[0].plastic()->history},T3Interval(r,p),tj),t::Status::kSuccess);
+    {old.tforce[0].proposed_history,old.tsection[0].plastic()->history},TInterval(r,p,0),tj),t::Status::kSuccess);
   ForceAgreement(actual.qforce[1],qj.force);ForceAgreement(actual.tforce[0],tj.force);
   Plastic(actual.qsection[1],old.qsection[1],qj,old.qforce[1]);Plastic(actual.tsection[0],old.tsection[0],tj,old.tforce[0]);
 }
