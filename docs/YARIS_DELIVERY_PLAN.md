@@ -1,7 +1,7 @@
 # Robo-dyna: Yaris delivery plan
 
-Updated 2026-09-09 after finite Q4 wall coverage, CUDA contact transaction tests,
-prescribed batch measurements and the full source-part inventory. This is the
+Updated 2026-09-09 after original source-part elastic refinement, accepted video
+and measured parallel CUDA speedup. This is the
 implementation backlog. The latest measured ordering is maintained in the workspace
 [active execution plan](../../planning/CURRENT_EXECUTION_PLAN.md). The workspace
 [architecture and milestones](../../planning/YARIS_RIGID_WALL_DESIGN.md),
@@ -15,8 +15,20 @@ is LS-DYNA-like CAE functionality. No external production solver is introduced.
 
 **Current assessment: approximately 25–30% toward the vehicle deliverable.**
 This is a capability-based engineering estimate, not a test-count or elapsed-time
-ratio. The vehicle is not running. The inspected guided elastic plate video
-remains the available deformation demonstration.
+ratio. The vehicle is not running. The
+[original source-part elastic video](../../crash-work/renders/source-part-elastic-h-video-1/yaris-part-elastic.mp4)
+now shows accepted deformation of the actual Yaris geometry. Its 258 frames
+cover 1.953125 ms of simulation over 10.32 s of playback, with displacement
+explicitly magnified 25x and an immutable original reference outline.
+
+All 117 nodes, 88 Q4 and six T3 of PID 2000157 run in one app-owned
+`SourcePartElasticCase` at app `25434d0`. The complete h/h2/h4 pulse/free-response
+study passes all six comparison fields at 257 shared physical times; maximum
+chord-length change is about 0.277 mm. The short actual-source native gate covers
+6,016 cell intervals, including late material/observer rejection and exact retry.
+Accepted archives, strict replay and Chrono rendering pass. This is the explicit
+free-part LAW1 elastic experiment; original MAT024 behavior, six nodal-rigid
+groups and tied attachments are not applied. It is not yet a part-wall impact.
 
 The CUDA mechanics foundation now includes complete prescribed QEPH/T3 elastic
 force/history, actual native structural mass/inertia, one shared nodal owner,
@@ -36,43 +48,76 @@ force/history arithmetic and allocation; no external solver runtime is added.
 Robo-dyna's accepted mesh adapter now explicitly handles staggered timing and
 retains actual endpoint x/q, midpoint v/omega and complete accepted stamp.
 Two new and five existing CUDA functions pass; failed mesh publication preserves
-all exposed fields. This prepares the rendering path without reconstructing
-or inventing missing physical fields. Case/archive integration remains next.
+all exposed fields. The source-part case now uses that path for accepted
+archives and the inspected video without reconstructing missing physical fields.
 
-The retained total is 1,110 distinct passing functions. Detailed historical
+The retained total is **1,142 distinct passing functions**. Detailed historical
 results, limitations and exact logs live in the [execution checkpoint](../../planning/EXECUTION_STATUS.md).
-The next capacity work keeps one immutable shared binding, two typed element
+The capacity architecture keeps one immutable shared binding, two typed element
 batches, one state owner/coordinator and the existing finite-wall contributor.
 TL `efab23a` now qualifies 128-node/parent capacity through the existing owner,
 batches and finite-wall contributor. Three resident and five contact CUDA/host
 functions pass with affected regressions and six owning Bazel targets. Both
 complete coarse rebound runs preserve every scientific field exactly after the
-storage change. Use all 117 original nodes and 94 original shell parents next
-in an explicit elastic free-part experiment. Source MAT024, attachments,
+storage change. The actual source-part elastic experiment now retains all 117
+original nodes and 94 original shell parents. Source MAT024, attachments,
 self-contact, beams/solids/connectors and full-vehicle output remain major gates.
 No source entity may be silently removed to satisfy a fixture limit.
 
-The complete source-part host binding now passes: all 117 original nodes,88 Q4
+The complete source-part host binding passes: all 117 original nodes, 88 Q4
 and six T3 retain exact geometry, source IDs and ordering. Native structural
 mass is 0.25650893888187326 kg; total rotary inertia is 5.1937904054349167e-6
 kg*m^2, with physical/added partitions retained separately. Two new tests and
 nine affected original-source regressions pass. This is startup for the explicit
-elastic experiment. Resident capacity is qualified; actual part dynamics remain
-next.
+elastic experiment. Resident capacity and the frozen actual-part elastic
+trajectory/refinement are qualified within that scope.
 Evidence: `crash-work/reports/source-shell-collection-tests-1/`.
+
+Parallel parent evaluation preserves all 778 scientific files / 42,954,314 B of
+the complete coarse source run exactly. Runtime falls from 331.503 s to 99.327 s,
+a 3.33749x speedup, with unchanged owned device allocation and ordered reductions.
+The quarter-step run completes in 390.55 s with 184,127,488 B peak sampled RSS.
+Twenty existing QEPH functions and owning Bazel gates pass after the parallel
+change, retained locally at TL `c419359`. These are measured part results, not vehicle-scale
+throughput. No new test count is assigned to repeated runs or refinement.
+
+TL `7335646` / app `f746d39` now qualify shared moving startup/common K0,
+source/placed-wall geometry, actual-source uniform free flight and the contact
+helper: six + five + three + six new functions, with affected regressions and
+owning build gates. The [preparation checkpoint](../../crash-work/reports/source-wall-preparation-checkpoint-1.json)
+pins this 20-function increment and the frozen impact pilot. Coupled source-part
+contact dynamics have not run yet.
 
 ## Current delivery cadence
 
-The user requested faster progress on 2026-09-09. Broadside rebound, mixed
-feedback, connected resident/contact capacity and actual-source startup pass.
-Next implement one `SourcePartElasticCase` using the existing CUDA components:
-reference-rest, a declared spatial force pulse, then free elastic response.
-Qualify the actual geometry/load with a bounded pilot and refinement, then
-record accepted fields and render an inspected Chrono video. Add incoming
-startup and mesh-wall impact to that same case afterward.
+The user requested faster progress and periodic demo videos on 2026-09-09.
+The original elastic source-part milestone now passes, including refinement and
+video. Extend the same case to a gentle impact against the actual finite mesh
+wall; preserve its existing owner, native binding, typed batches, common
+publication and accepted-output path.
+
+1. Incoming startup, geometry, actual-source free flight and the contact helper
+   are integrated and qualified at TL `7335646` / app `f746d39`. Reuse their
+   native mass/K0 authentication, certified contact areas and explicit wall
+   placement in the same case.
+2. Qualify one actual-source contact-onset/failure-retry integration. Follow the
+   [frozen wall pilot](../../planning/SOURCE_PART_WALL_PILOT.md): 1 m/s, original
+   0.5 mm gap and 8,448-H native-checked prefix through 503.5400390625 microseconds.
+   Check all 94 native histories and independently evaluated accepted-base
+   contact, then late rejection/exact retry. The full pilot retains its about
+   2 ms initial horizon, native-K0/area-based penalty and separate timestep guards.
+3. Run the same impact at h/h2/h4 with synchronized energy, wall impulse,
+   strain/curvature, area/thickness, coverage and penetration checks before every
+   commit. Archive the actual placed 62-vertex/100-triangle wall, inspect and
+   fully decode a new video, and require documented separation/rebound before
+   calling the result a completed impact.
+
+Reaction comparison uses the frozen scale `2*K0/design_penetration`, about
+684.024 N. Physical energy requires absolute residual plus uncertainty to stay
+within `0.05*K0 + 1e-10 J`; uncertainty does not enlarge that physical budget.
 
 Reuse NodalMeshOutput, ArtifactIO/Inventory/MeshArchive and the VSG pipeline.
-The first video needs exact source mappings, native mass/inertia, accepted
+The impact video needs exact source mappings, native mass/inertia, accepted
 positions/orientations, correctly timed velocities and work diagnostics. Full
 private-history/restart export is optional; it must not delay that result.
 The complete part uses 117 vertices and 182 display triangles. Reference
@@ -82,7 +127,9 @@ Batch focused regressions at integration checkpoints and retain local commits,
 logs and required input bindings. Extra broadside variants and reporting
 frameworks are deferred unless a failure needs them. Parallelize source work;
 serialize heavy builds/GPU runs. Builds use two workers on four affinity CPUs,
-a 12 GiB RSS guard, and remain below the user's 16 GB RAM ceiling.
+an 18 GiB RSS guard, and remain below the user's latest 20 GB RAM ceiling.
+Numerical jobs use one affinity CPU and lower per-stage limits; retain at least
+32 GiB available RAM and 8 GiB free VRAM. No pushes.
 
 ## Historical verified starting point
 
@@ -123,7 +170,11 @@ Backend unit tests live in TL `lib_utest`; Chrono reference tests and applicatio
 integration tests stay with their owning modules. No growing omnibus prototype
 or collection of per-experiment production scripts.
 
-## Immediate work packages
+## Historical work packages and broader backlog
+
+The records below preserve the earlier component progression and its original
+limits. The current cadence above supersedes their next-step statements;
+accepted and failed numerical evidence remains unchanged.
 
 C2 integration passes 13 host/five CUDA tests and Bazel, retained in TL
 `da4516b`. C3 passes nine finite-mesh host checks and Bazel. C4 now passes eleven
@@ -317,14 +368,15 @@ Q4 would consume approximately **8.77 GiB for those three caches alone**.
 Reuse their arithmetic with compact state and measured scratch. Whole-vehicle
 state, contact and output capacity must each be qualified.
 
-The current batch kernels report **255 registers and 9,776/9,808 bytes of stack
+The historical elastic-coupon batch kernels report **255 registers and 9,776/9,808 bytes of stack
 per thread** in the saved `elastic-coupon-kernel-resources-1.log`. Their two-element
 run takes roughly 4.3 ms per accepted step and adds about 2.6–2.7 GiB of device-wide
 memory while explicitly owning only 17 KiB. These measurements do not establish
 batch occupancy or identify all context/driver/stack allocation. The
 [scaling review](../../planning/YARIS_SHELL_SCALING_REVIEW.md) records completed
-profiling and prescribed 2/8/32/128-element measurements; next are scratch reduction
-and deterministic shared-node assembly before source-part scaling. Keep existing
+profiling and prescribed 2/8/32/128-element measurements. The later QEPH/T3
+source-part case now has the measured 3.33749x parallel-evaluation improvement
+above; whole-vehicle memory, assembly and contact scaling remain open. Keep existing
 force/energy oracles unchanged. Compute Sanitizer is not installed in the local
 CUDA toolkit, so no sanitizer-clean claim is made.
 
@@ -332,18 +384,22 @@ Grow representative element/contact batches geometrically before actual full
 initialization; report bytes/entity, total peak owned memory, milliseconds per
 accepted step, candidate counts and host/device transfers. Keep state resident
 between output frames. A larger-model run requires a measured memory forecast
-that fits the workstation reserves; no GPU speedup or calendar claim yet.
+that fits the workstation reserves. Do not extrapolate the measured part speedup
+to whole-vehicle throughput or a calendar estimate.
 
 Pinned glslang, VSG and its companion dependencies are now built in an isolated
 workspace prefix. A recorded one-line disabled-Assimp fallback include correction
 is retained separately from the original archive. The fresh Chrono core+VSG build
-is active. The actual rig and elastic coupon frames and the decoded coupon video
-have been inspected; the guided-impact and vehicle rendering gates remain open.
+is available. Actual rig, elastic coupon, guided plate and original source-part
+elastic frames/videos have passed their scoped inspections. Source-part wall
+impact and full-vehicle rendering remain open.
 
 All builds and runtime probes use `run_bounded.py` and the shared
-`crash-work/reports/workstation.lock`: at most two CPU affinity slots, one build
-job, numerical thread pools of one, at least 32 GiB available RAM and 8 GiB free
-VRAM. Use smaller per-probe limits and serialize GPU/build work. Parallelize
+`crash-work/reports/workstation.lock`: builds use at most four CPU affinity slots,
+two compiler workers and 18 GiB process-group RSS under the user's 20 GB RAM
+ceiling. Numerical jobs use one affinity CPU, thread pools of one and lower
+stage-specific caps, retaining at least 32 GiB available RAM and 8 GiB free
+VRAM. Serialize GPU/build work. Parallelize
 source implementation, independent CPU audits and review. Stop at guard or
 numerical failure and preserve the accepted checkpoint. No pushes.
 
