@@ -24,3 +24,21 @@ cuda_test(
     tags = ["exclusive", "gpu"],
     deps = ["//lib_src/solvers:explicit_nodal_state", "//lib_utest:nodal_temporal_fixture", "@googletest//:gtest_main"],
 )
+
+cc_test(
+    name = "nodal_rigid_observation_check",
+    srcs = ["GroupKineticObservationTest.cpp", "GroupKickObservationTest.cpp", "GroupObservationFixture.h",
+            "GroupObservationOracle.h", "GroupKickFixture.h", "GroupStepTestSupport.h", "GroupTestSupport.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/constraints:nodal_rigid_observation", "@googletest//:gtest_main"],
+)
+
+cuda_test(
+    name = "nodal_rigid_observation_cuda_check",
+    size = "small",
+    srcs = ["GroupObservationCudaTest.cu", "GroupObservationFixture.h", "GroupObservationOracle.h",
+            "GroupKickFixture.h", "GroupStepTestSupport.h", "GroupTestSupport.h"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/constraints:nodal_rigid_observation", "@googletest//:gtest_main"],
+)

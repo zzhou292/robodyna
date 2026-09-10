@@ -57,6 +57,13 @@
       "size": 509220,
       "sha256": "0830995908a9bcfe3cad10c7db154f3c5023958529ece366d8019c2c7f6525c0",
       "git_blob_sha1": "b21114a17ddfefb59e2b694ec98c18fe20985ac0"
+    },
+    {
+      "path": "original/engine/source/constraints/general/rbody/rgbcor.F",
+      "upstream_path": "engine/source/constraints/general/rbody/rgbcor.F",
+      "size": 27840,
+      "sha256": "ca7f8edc40fca44c6c71f81a8bb0ae14226f833c014453bbdf6753e046171ea9",
+      "git_blob_sha1": "4a1cd6b377b66ecdf75f030cd70a91c329891759"
     }
   ],
   "fragments": [
@@ -178,6 +185,27 @@
       "first_line": 6453,
       "last_line": 6457,
       "sha256": "938ef5a60fae408992123602ee2fedb47d0b027a4c8fbadc5a41dbc1526be83c"
+    },
+    {
+      "path": "extracted/KineticPrimaryCorrection.inc",
+      "source": "original/engine/source/constraints/general/rbody/rgbcor.F",
+      "first_line": 267,
+      "last_line": 283,
+      "sha256": "ee221c58d6b8f6808f6ef09c234fbee7c0ecfb7eb045b3ce4d21e0bf453af571"
+    },
+    {
+      "path": "extracted/KineticMemberCorrection.inc",
+      "source": "original/engine/source/constraints/general/rbody/rgbcor.F",
+      "first_line": 326,
+      "last_line": 351,
+      "sha256": "b168656eaca4977b07ef8f669969f583346c8b3c52d35ebeff105c7ce1295592"
+    },
+    {
+      "path": "extracted/KineticCorrectionPublish.inc",
+      "source": "original/engine/source/constraints/general/rbody/rgbcor.F",
+      "first_line": 453,
+      "last_line": 454,
+      "sha256": "77bfbb027beb1944ac61ff89623bd27c6ff1ba4b5c3289b8564954da8171aa4b"
     }
   ],
   "interpretation": "Original complete files plus exact contiguous arithmetic fragments; wrapper context is separately authored. Eigen principal axes are equivalent tensor algebra, not native VALPR bit parity."

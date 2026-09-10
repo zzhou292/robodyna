@@ -1,0 +1,5 @@
+include_guard(GLOBAL)
+include("${CMAKE_CURRENT_LIST_DIR}/NodalRigidGroup.cmake")
+add_library(tl_nodal_rigid_observation INTERFACE)
+target_link_libraries(tl_nodal_rigid_observation INTERFACE tl_nodal_rigid_group)
+target_compile_features(tl_nodal_rigid_observation INTERFACE cxx_std_17)

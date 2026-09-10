@@ -37,7 +37,7 @@ claim is made by the stateless-math tests about native `ROTBMR`, `RGBODV`, first
 half kick, finite-rotation drift or transaction publication. Separate packet,
 phase and owner gates below cover those additional responsibilities.
 
-The native directory retains eight complete pinned original files and seventeen
+The native directory retains nine complete pinned original files and twenty
 byte-exact arithmetic fragments. `verify_sources.py` checks source SHA-256,
 Git blob identities and exact source line extraction. The Fortran wrapper
 supplies bounded input packets around original inertia, correction, force
@@ -110,3 +110,12 @@ is `//lib_utest/qualification/nodal_rigid_group:nodal_rigid_owner_check`; native
 Fortran comparisons use CMake. These new runtime gates must pass before R3a is
 treated as qualified. This change does not admit shell/contact coupling or
 aggregate rigid-group energy reporting.
+
+The separate value-observation targets are `nodal_rigid_observation_check`,
+`nodal_rigid_observation_native_check` and `nodal_rigid_observation_cuda_check`.
+See `lib_src/constraints/NodalRigidObservation.md` for explicit midpoint/lagged
+frame phases, native member and aggregate K, primary/correction partitions,
+applied versus reaction kick work, stable replacement deltas and arithmetic
+budgets. These value functions do not attach to owner/common publication or
+reconstruct native collocated output. `NodalRigidCollocatedObservationDesign.md`
+records the distinct force-stage input and remaining qualification gate.

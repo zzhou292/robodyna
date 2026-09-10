@@ -18,6 +18,14 @@ cc_library(
     deps = [":nodal_rigid_group"],
 )
 
+cc_library(
+    name = "nodal_rigid_observation",
+    hdrs = ["NodalRigidObservationTypes.h", "NodalRigidObservationMath.h",
+            "NodalRigidKineticObservation.h", "NodalRigidKickObservation.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":nodal_rigid_group_step_math"],
+)
+
 cuda_library(
     name = "FEAT10ConstraintManager",
     srcs = [
