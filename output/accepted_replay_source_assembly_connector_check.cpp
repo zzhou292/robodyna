@@ -123,12 +123,32 @@ TEST(AcceptedReplaySevenPart,CompleteActualBundleStreams959ParentsAnd1093Nodes) 
     const auto& info=*replay.info();ASSERT_TRUE(info.source_assembly);EXPECT_EQ(info.node_count,1093u);
     EXPECT_EQ(info.source_assembly->parents,959u);EXPECT_EQ(info.source_assembly->qeph,845u);EXPECT_EQ(info.source_assembly->t3,114u);
     EXPECT_EQ(info.source_assembly->part_ids.size(),7u);EXPECT_EQ(info.source_assembly->inventory_sha256,source::PinnedYarisSevenPartInventory().sha256);
-    EXPECT_NE(info.scope.find("seven-part"),std::string::npos);ASSERT_EQ(replay.Load(info.frame_count-1).status,ReplayStatus::Ok);
+    EXPECT_NE(info.scope.find("seven-part"),std::string::npos);
+    for(std::size_t i=0;i<info.frame_count;++i) {
+        SCOPED_TRACE(i);const auto loaded=replay.Load(i);ASSERT_EQ(loaded.status,ReplayStatus::Ok)<<loaded.diagnostic;
+    }
     EXPECT_EQ(replay.frame()->parent_plastic_strain.size(),959u);EXPECT_EQ(replay.frame()->epoch,info.final_epoch);
+    test_support::ModifiedReplayBundle rounded(Actual());const auto file=rounded.Frame(info.final_epoch);auto fields=rounded.Read(file);
+    for(const auto* key:{"connector_kinetic_J","base_connector_kinetic_J"}) {
+        auto& channel=fields["diagnostics"]["shells"][key];
+        // Prefer the tiny actual rotational channel; a zero-spin archive can
+        // instead exercise the independent translation reduction.
+        const unsigned j=channel[1u].GetDouble()>0?1u:0u;
+        if(channel[j].GetDouble()>0)channel[j].SetDouble(std::nextafter(channel[j].GetDouble(),std::numeric_limits<double>::infinity()));
+    }
+    // The final diagnostic document is also copied verbatim into final metrics;
+    // preserve that exact-copy contract while perturbing the independent sum.
+    auto final=rounded.Read("final-metrics.json");final["diagnostics"].CopyFrom(fields["diagnostics"],final.GetAllocator());
+    rounded.Replace("final-metrics.json",final);rounded.Rehash("final-metrics.json");
+    rounded.Replace(file,fields);rounded.Rehash(file);AcceptedReplay roundoff;
+    const auto agreed=roundoff.Open(rounded.directory);EXPECT_EQ(agreed.status,ReplayStatus::Ok)<<agreed.diagnostic;
 }
 TEST(AcceptedReplaySevenPart,RehashedActualConnectorSourceAndAcceptedRecordsCannotChange) {
     if(Actual().empty())GTEST_SKIP()<<"No completed actual seven-part connector archive supplied";
-    for(unsigned fault=0;fault<9;++fault) {
+    AcceptedReplay original;const auto opened=original.Open(Actual());
+    ASSERT_EQ(opened.status,ReplayStatus::Ok)<<opened.diagnostic; // Corruption rejection must not pass vacuously.
+    for(unsigned fault=0;fault<12;++fault) {
+        SCOPED_TRACE(fault);
         test_support::ModifiedReplayBundle b(Actual());std::string file="configuration.json";auto d=b.Read(file);
         if(fault<4) {
             auto& c=d["input"]["connectors"];
@@ -143,6 +163,17 @@ TEST(AcceptedReplaySevenPart,RehashedActualConnectorSourceAndAcceptedRecordsCann
             if(fault==6)d["connectors"]["elements"][0u]["endpoint_wrenches"][1u][5u].SetDouble(123);
             if(fault==7)d["connectors"]["elements"][0u]["critical_dt_s"].SetDouble(0);
             if(fault==8)d["diagnostics"]["motion"]["after"]["connector_kinetic_J"][1u].SetDouble(-1);
+            if(fault==9||fault==10) {
+                auto& value=d["diagnostics"]["shells"][fault==9?"connector_kinetic_J":"base_connector_kinetic_J"][1u];
+                // The actual tiny rotating smoke differs by one rounding bit
+                // across independent reductions; a relative change must still
+                // reject even far below any ordinary absolute tolerance.
+                value.SetDouble(value.GetDouble()>0?value.GetDouble()*1.000001:1e-151);
+            }
+            if(fault==11) {
+                file=b.Frame(0);d=b.Read(file);
+                d["diagnostics"]["shells"]["base_connector_kinetic_J"][1u].SetDouble(1e-310);
+            }
         }
         b.Replace(file,d);b.Rehash(file);AcceptedReplay reader;const auto r=reader.Open(b.directory);
         EXPECT_EQ(r.status,ReplayStatus::InvalidBundle)<<fault<<" "<<r.diagnostic;

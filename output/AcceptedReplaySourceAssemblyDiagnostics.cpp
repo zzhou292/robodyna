@@ -46,12 +46,23 @@ void CheckAssemblyDiagnostics(const Bundle& b,const Entry& e,const Value& d,cons
     } else {
         Require(Text(shells,"connector_kinetic_columns")=="translation_J,rotation_J","Connector kinetic subtotal semantics changed");
         const auto& motion=Member(d,"motion");
-        const auto before=AssemblyConnectorKinetic(b,Member(motion,"after"));
+        const auto after=AssemblyConnectorKinetic(b,Member(motion,"after"));
         const auto& current=WallNumbers(shells,"connector_kinetic_J",2);
-        for(unsigned j=0;j<2;++j)AssemblyEqual(current[j].GetDouble(),before[j]);
+        // Publication uses binary64 endpoint arithmetic; the independent host
+        // observation reduces in long double. These derived subtotals are not
+        // copied identities. Bound agreement by their own positive magnitude
+        // and complete endpoint count, with no absolute floor for tiny values.
+        const auto agreement=[&](double raw,double observed) {
+            Require(raw>=0,"Negative connector publication kinetic subtotal");
+            AssemblyReduction(raw,observed,std::max(raw,observed),2*a.connectors.size());
+        };
+        for(unsigned j=0;j<2;++j)agreement(current[j].GetDouble(),after[j]);
         const auto base=e.epoch?AssemblyConnectorKinetic(b,Member(motion,"before")):std::array<double,2>{};
         const auto& raw_base=WallNumbers(shells,"base_connector_kinetic_J",2);
-        for(unsigned j=0;j<2;++j)AssemblyEqual(raw_base[j].GetDouble(),base[j]);
+        for(unsigned j=0;j<2;++j) {
+            if(e.epoch)agreement(raw_base[j].GetDouble(),base[j]);
+            else AssemblyEqual(raw_base[j].GetDouble(),0); // No completed initial interval.
+        }
     }
     const auto& q=Member(shells,"qeph");const auto& t=Member(shells,"t3");CheckFamily(b,e,q);CheckFamily(b,e,t);
     Real(q,"hourglass_viscous_work_J");Real(q,"hourglass_viscous_work_increment_J"); // Signed native work, not a dissipation ledger.
