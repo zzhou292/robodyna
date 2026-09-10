@@ -61,15 +61,15 @@ __global__ void Assemble(Storage* storage,const Slab* accepted,NodalAssemblyView
   }
   if(s.control.status!=BatchStatus::Success) RecordNodalAssemblyFailure(v,sc::Status::kInvalidArgument,s.control.node);
 }
-__global__ void Candidate(Storage* storage,const Slab* accepted,Slab* trial,NodalPreparedView v,BatchDiagnostics identity,
+__global__ void CandidateElements(Storage* storage,const Slab* accepted,Slab* trial,NodalPreparedView v,
     shell_batch_plasticity_detail::DeviceStorage* plasticity,unsigned accepted_slab) {
   auto& s=*storage;
   auto* element_status=s.candidate_status;
-  const unsigned lane=threadIdx.x;
-  if(lane==0) { s.control={}; s.control.diagnostics=identity; }
-  // Each active parent has one writer. Worker count is independent of storage
-  // capacity; striding also covers a partial final group without extra padding.
-  for(unsigned e=lane;e<s.model.config.element_count;e+=blockDim.x) {
+  // Parent work is independent: each thread owns its result, section history
+  // and status. No control or shared-node force reduction is written here.
+  const unsigned first=blockIdx.x*blockDim.x+threadIdx.x;
+  const unsigned stride=gridDim.x*blockDim.x;
+  for(unsigned e=first;e<s.model.config.element_count;e+=stride) {
     element_status[e]=Status::kSuccess;
     PrescribedInterval interval; interval.base_time=v.base_time; interval.dt=s.model.config.owner.fixed_dt;
     interval.sample_index=v.kinematics.base_epoch+1;
@@ -93,9 +93,13 @@ __global__ void Candidate(Storage* storage,const Slab* accepted,Slab* trial,Noda
       }
     }
   }
-  __syncthreads();
-  if(lane!=0) return;
-  // Preserve the serial contract's first failing parent and reduction order.
+}
+__global__ void FinalizeCandidate(Storage* storage,const Slab* accepted,const Slab* trial,
+                                   NodalPreparedView v,BatchDiagnostics identity) {
+  auto& s=*storage; s.control={}; s.control.diagnostics=identity;
+  const auto* element_status=s.candidate_status;
+  // The same-stream kernel boundary makes every parent result visible before
+  // preserving the original first-failure scan and serial reduction order.
   // A failed candidate never exposes partially evaluated higher-index cells.
   for(unsigned i=0;i<s.model.config.element_count;++i) {
     const auto status=element_status[i];
@@ -109,8 +113,17 @@ __global__ void Candidate(Storage* storage,const Slab* accepted,Slab* trial,Noda
 }
 void LaunchAssembly(Storage* s,const Slab* a,NodalAssemblyView v,bool initial) { Assemble<<<1,1,0,v.stream>>>(s,a,v,initial); }
 void LaunchCandidate(Storage* s,const Slab* a,Slab* b,NodalPreparedView v,BatchDiagnostics d,
-    shell_batch_plasticity_detail::DeviceStorage* plasticity,unsigned accepted_slab) {
-  Candidate<<<1,64,0,v.stream>>>(s,a,b,v,d,plasticity,accepted_slab);
+    shell_batch_plasticity_detail::DeviceStorage* plasticity,unsigned accepted_slab,std::size_t element_count) {
+  // The private caller supplies its immutable startup-admitted count (1..1024),
+  // never a device-header dereference or a new independent capacity setting.
+  constexpr unsigned threads=64;
+  const unsigned blocks=1u+static_cast<unsigned>((element_count-1)/threads);
+  CandidateElements<<<blocks,threads,0,v.stream>>>(s,a,b,v,plasticity,accepted_slab);
+  // Preserve the first launch error for ReadControl and never finalize stale
+  // parent slots after a rejected launch. Stream execution errors are checked
+  // by the existing control readback/synchronization before any publication.
+  if(cudaPeekAtLastError()!=cudaSuccess) return;
+  FinalizeCandidate<<<1,1,0,v.stream>>>(s,a,b,v,d);
 }
 void LaunchFailure(NodalAssemblyView v) { MarkFailure<<<1,1,0,v.stream>>>(v); }
 } // namespace tl::fea::t3::batch_detail

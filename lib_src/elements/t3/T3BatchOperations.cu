@@ -129,7 +129,7 @@ BatchReport T3Batch::EvaluateCandidateImpl(FENodalState* owner,const NodalTrialT
   d.kinetic_available=!s.joined_binding.has_value();
   d.has_completed_interval=true; d.accepted_force_assembled=assembled; d.usage=s.config.usage;
   batch_detail::LaunchCandidate(s.storage,s.accepted,s.trial,v,d,
-      s.plasticity?s.plasticity->device():nullptr,s.AcceptedSlabIndex());
+      s.plasticity?s.plasticity->device():nullptr,s.AcceptedSlabIndex(),s.config.element_count);
   report=s.ReadControl(); if(report.status!=BatchStatus::Success) return report;
   s.candidate_diagnostics=s.control.diagnostics; s.candidate_view=v; s.pending=true;
   *output=s.candidate_diagnostics; return {BatchStatus::Success,"OK"};

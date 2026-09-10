@@ -77,16 +77,72 @@ TEST_F(CudaTest, FinalQAndTFailurePreserveYieldedStateAndRetryExactlyAtFullCount
   SameResults(expected,actual,true); EXPECT_EQ(clean.endpoint.x,retry.endpoint.x);
   ASSERT_TRUE(Publish(*r,retry,actual)); EXPECT_EQ(r->owner.accepted().epoch,2u); SameAllocations(*r,allocated);
 }
+TEST_F(CudaTest, CrossBlockFailuresKeepFirstSourceOrderAndRetryEveryHistoryExactly) {
+  for(bool plastic:{false,true}) {
+    SCOPED_TRACE(plastic); auto r=std::make_unique<Rig>(); ASSERT_TRUE(r->Initialize(plastic));
+    Prepared first; Results base;
+    ASSERT_TRUE(Prepare(*r,first,true)); ASSERT_TRUE(Evaluate(*r,first,base));
+    ASSERT_TRUE(Publish(*r,first,base)); ASSERT_TRUE(Accepted(*r,base));
+    if(plastic) {
+      ASSERT_GT(base.qs.back().diagnostics.maximum_plastic_strain,0);
+      ASSERT_GT(base.ts.back().diagnostics.maximum_plastic_strain,0);
+    }
+    Snapshot before; ASSERT_TRUE(Read(*r,before)); const auto allocated=Allocations(*r);
+    Prepared clean; Results expected;
+    ASSERT_TRUE(Prepare(*r,clean)); ASSERT_TRUE(Evaluate(*r,clean,expected)); r->Discard();
+    for(unsigned family=0;family<2;++family) for(std::size_t first_bad:{63u,64u}) {
+      SCOPED_TRACE(family);
+      SCOPED_TRACE(first_bad);
+      Prepared failed; ASSERT_TRUE(Prepare(*r,failed));
+      auto qd=base.diagnostics.qeph; auto td=base.diagnostics.t3;
+      if(!family) ASSERT_EQ(r->t3.EvaluateCandidate(failed.view,&td).status,t::BatchStatus::Success);
+      else ASSERT_EQ(r->qeph.EvaluateCandidate(failed.view,&qd).status,q::BatchStatus::Success);
+      // Reverse mutation order, across block 0/1 and the partial final block.
+      // Shared synthetic Q4 nodes also fail later parents, never an earlier one.
+      const auto last=family?TCount-1:QCount-1;
+      for(std::size_t e:{last,std::size_t{64},first_bad}) {
+        if(!family) {const auto n=r->binding.qeph_nodes(e); Collapse(failed,n[2],n[1]);}
+        else {const auto n=r->binding.t3_nodes(e); Collapse(failed,n[2],n[1]);}
+      }
+      if(!family) {
+        const auto saved=host_shell_test::Bytes(qd);
+        const auto rejected=r->qeph.EvaluateCandidate(failed.view,&qd);
+        EXPECT_EQ(rejected.status,q::BatchStatus::ElementFailure); EXPECT_EQ(rejected.element,first_bad);
+        EXPECT_EQ(host_shell_test::Bytes(qd),saved);
+      } else {
+        const auto saved=host_shell_test::Bytes(td);
+        const auto rejected=r->t3.EvaluateCandidate(failed.view,&td);
+        EXPECT_EQ(rejected.status,t::BatchStatus::ElementFailure); EXPECT_EQ(rejected.element,first_bad);
+        EXPECT_EQ(host_shell_test::Bytes(td),saved);
+      }
+      auto common=base.diagnostics; const auto saved=host_shell_test::Bytes(common);
+      EXPECT_EQ(r->publication.Prepare(r->owner,failed.token,qd,td,&common).status,fe::ShellPublicationStatus::StaleTrial);
+      EXPECT_EQ(host_shell_test::Bytes(common),saved);
+      Results held; Snapshot after; ASSERT_TRUE(Accepted(*r,held)); ASSERT_TRUE(Read(*r,after));
+      SameResults(base,held,plastic); SameSnapshot(before,after); SameAllocations(*r,allocated);
+      r->Discard();
+      Prepared retry; Results actual;
+      ASSERT_TRUE(Prepare(*r,retry)); ASSERT_TRUE(Evaluate(*r,retry,actual));
+      SameResults(expected,actual,plastic); SameSnapshot(clean.endpoint,retry.endpoint);
+      r->Discard();
+    }
+    Prepared final; Results actual;
+    ASSERT_TRUE(Prepare(*r,final)); ASSERT_TRUE(Evaluate(*r,final,actual));
+    SameResults(expected,actual,plastic); ASSERT_TRUE(Publish(*r,final,actual));
+    EXPECT_EQ(r->owner.accepted().epoch,2u); SameAllocations(*r,allocated);
+  }
+}
 TEST_F(CudaTest, StartupCapsPrecedeBorrowedReadsAndLateInvalidReferenceRetriesWithoutPublication) {
   auto r=std::make_unique<Rig>(); ASSERT_TRUE(r->BuildReference());
   const auto poison=reinterpret_cast<const q::QephBatchElement*>(std::uintptr_t{1});
-  for(unsigned kind=0;kind<5;++kind) {
+  for(unsigned kind=0;kind<6;++kind) {
     auto config=r->QConfig(); q::QephBatch batch;
     if(kind==0) config.element_count=std::numeric_limits<std::size_t>::max();
     if(kind==1) config.owner.node_count=2049;
     if(kind==2) config.max_device_bytes=QBytes(QCount,NodeCount)-1;
     if(kind==3) config.storage_limits.max_host_bytes=1;
     if(kind==4) config.storage_limits={};
+    if(kind==5) config.element_count=0;
     EXPECT_EQ(batch.Initialize(config,poison).status,q::BatchStatus::ResourceLimit);
     EXPECT_EQ(batch.allocations().device_allocations,0u);
   }
