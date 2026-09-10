@@ -124,18 +124,22 @@ NodalRigidGroupReport NodalRigidGroupModel::Initialize(const NodalRigidGroupMode
   if(impl_) return Fail(Status::AlreadyInitialized,"Rigid group model is immutable after initialization");
   const auto& l=input.limits;
   if(!input.source_instance_id||!input.global_node_count||!input.groups||!input.group_count||
-     !l.max_groups||!l.max_members||l.max_members_per_group<3||!l.max_host_bytes||
+     !l.max_groups||!l.max_members||l.max_members_per_group<2||!l.max_host_bytes||
      !Positive(input.source_units.mass_to_kg)||!Positive(input.source_units.length_to_m))
     return Fail(Status::InvalidInput,"Rigid model requires explicit identity, complete groups, bounds and source units");
   if(input.group_count>l.max_groups) return Fail(Status::ResourceLimit,"Rigid group count exceeds admission cap");
   std::size_t forecast=sizeof(Impl);
-  if(input.group_count>l.max_members/3||!AddBytes(input.group_count,sizeof(NodalRigidGroupProperties),forecast)||
+  if(input.group_count>l.max_members/2||!AddBytes(input.group_count,sizeof(NodalRigidGroupProperties),forecast)||
      forecast>l.max_host_bytes) return Fail(Status::ResourceLimit,"Rigid group inventory cannot fit startup budget");
   std::size_t count=0;
   for(std::size_t g=0;g<input.group_count;++g) {
     const auto& in=input.groups[g];
-    if(!in.source_group_id||!in.source_node_set_id||!in.members||in.member_count<3)
-      return Fail(Status::InvalidInput,"Rigid group requires explicit source IDs and at least three complete members",g);
+    if(!in.source_group_id||!in.source_node_set_id||!in.members||in.member_count<2)
+      return Fail(Status::InvalidInput,"Rigid group requires explicit source IDs and at least two complete members",g);
+    if(in.member_count==2) {
+      const double threshold=(1e-8*input.source_units.length_to_m)*input.source_units.length_to_m;
+      if(!Positive(threshold)) return Fail(Status::InvalidInput,"Two-member native displacement threshold is unrepresentable",g);
+    }
     if(in.member_count>l.max_members_per_group||count>l.max_members||in.member_count>l.max_members-count)
       return Fail(Status::ResourceLimit,"Rigid membership count exceeds admission cap",g);
     count+=in.member_count;

@@ -8,6 +8,9 @@ void nodal_rigid_native_primary_step(const double*,const double*,const double*,c
 void nodal_rigid_native_member_step(const int*,const double*,const double*,const double*,const double*,const double*,
     const double*,const double*,const double*,const double*,const double*,const double*,const double*,
     double*,double*,double*,double*,double*,double*,double*);
+void nodal_rigid_native_two_member_step(const int*,const double*,const double*,const double*,const double*,const double*,
+    const double*,const double*,const double*,const double*,const double*,const double*,const double*,
+    double*,double*,double*,double*,double*,double*,double*,const double*);
 }
 namespace rigid_step_test {
 namespace {
@@ -29,14 +32,14 @@ tl::math::Matrix3 NativeFrame(const tl::math::Matrix3& in,Vec3 omega,double dt) 
   const auto input=NativeAxes(in); const auto spin=Values(omega); std::array<double,9> output;
   nodal_rigid_native_frame(input.data(),spin.data(),&dt,output.data()); return Axes(output.data());
 }
-Trial NativePacket(const Input& in) {
-  const int count=Count; const auto& body=in.body;
+Trial NativePacketActive(const Input& in,int count,double length) {
+   const auto& body=in.body;
   const auto frame=NativeAxes(body.previous_frame.axes);
   const auto j=Values(body.previous_frame.inertia);
   const auto center=Values(body.center),velocity=Values(body.velocity),omega=Values(body.omega);
   const double durations[]{body.durations.previous_drift_dt,body.durations.kick_dt,body.durations.drift_dt};
   double x[3*Count],v[3*Count],w[3*Count],f[3*Count],c[3*Count],mass[Count],inertia[Count];
-  for(unsigned n=0;n<Count;++n) {
+  for(unsigned n=0;n<unsigned(count);++n) {
     const auto& m=in.member[n]; mass[n]=m.mass; inertia[n]=m.inertia;
     for(unsigned a=0;a<3;++a) { x[3*n+a]=Get(m.position,a); v[3*n+a]=Get(m.velocity,a);
       w[3*n+a]=Get(m.omega,a); f[3*n+a]=Get(m.force,a); c[3*n+a]=Get(m.couple,a); }
@@ -50,13 +53,20 @@ Trial NativePacket(const Input& in) {
   p.acceleration=Vector(a); p.angular_acceleration=Vector(alpha);
   p.center=Vector(new_x); p.velocity=Vector(new_v); p.omega=Vector(new_w);
   double ma[3*Count],mar[3*Count],mx[3*Count],mv[3*Count],mw[3*Count],mr[3*Count],mrc[3*Count];
+  if(count==2) {
+  nodal_rigid_native_two_member_step(&count,center.data(),velocity.data(),new_w,a,durations,
+      x,v,w,mass,inertia,f,c,ma,mar,mx,mv,mw,mr,mrc,&length);
+  } else {
   nodal_rigid_native_member_step(&count,center.data(),velocity.data(),new_w,a,durations,
       x,v,w,mass,inertia,f,c,ma,mar,mx,mv,mw,mr,mrc);
-  for(unsigned n=0;n<Count;++n) {
+  }
+  for(unsigned n=0;n<unsigned(count);++n) {
     auto& m=out.member[n]; m.acceleration=Vector(ma+3*n); m.angular_acceleration=Vector(mar+3*n);
     m.position=Vector(mx+3*n); m.velocity=Vector(mv+3*n); m.omega=Vector(mw+3*n);
     m.reaction_force=Vector(mr+3*n); m.reaction_couple=Vector(mrc+3*n);
   }
   return out;
 }
+Trial NativePacket(const Input& in) { return NativePacketActive(in,Count,1); }
+Trial NativeTwoPacket(const Input& in,double length) { return NativePacketActive(in,2,length); }
 } // namespace rigid_step_test

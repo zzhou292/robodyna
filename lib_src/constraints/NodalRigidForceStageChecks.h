@@ -32,7 +32,7 @@ TL_RIGID_OBSERVATION_HD inline bool Disjoint(const void* input,std::size_t bytes
 TL_RIGID_OBSERVATION_HD inline bool Ranges(const GroupForceStageKineticInput& in,
                                            const GroupForceStageKineticObservation& out) {
   const auto n=in.metric.member_count;
-  if(n<3||n>observation_detail::MaxMembers) return false;
+  if(n<2||n>observation_detail::MaxMembers) return false;
   return Disjoint(&in,sizeof(in),&out,sizeof(out))&&
     Disjoint(in.metric.group,sizeof(NodalRigidGroupProperties),&out,sizeof(out))&&
     Disjoint(in.metric.members,n*sizeof(NodalRigidGroupMember),&out,sizeof(out))&&

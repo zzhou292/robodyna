@@ -14,7 +14,7 @@ TL_NATIVE_COEFFICIENT_HD inline bool Empty(NodalRigidGroupInfo g) noexcept {
   return !g.source_instance_id&&!g.group_count&&!g.member_count;
 }
 TL_NATIVE_COEFFICIENT_HD inline bool ValidScope(NodalRigidGroupInfo g,std::size_t nodes) noexcept {
-  return Empty(g)||(g.source_instance_id&&g.group_count&&g.member_count<=nodes&&g.group_count<=g.member_count/3);
+  return Empty(g)||(g.source_instance_id&&g.group_count&&g.member_count<=nodes&&g.group_count<=g.member_count/2);
 }
 TL_NATIVE_COEFFICIENT_HD inline bool SameScope(NodalRigidGroupInfo a,NodalRigidGroupInfo b) noexcept {
   return a.source_instance_id==b.source_instance_id&&a.group_count==b.group_count&&a.member_count==b.member_count;

@@ -11,7 +11,7 @@ cudaError_t RigidStorage::Upload(cudaStream_t stream) {
   auto error=cudaMalloc(&arena,immutable_bytes); if(error!=cudaSuccess) return error;
   auto* bytes=static_cast<unsigned char*>(arena);
   device={reinterpret_cast<const RigidGroupRange*>(bytes),reinterpret_cast<const RigidMemberMetric*>(bytes+members_offset),
-    bytes+nodes_offset,static_cast<std::uint32_t>(groups.size()),static_cast<std::uint32_t>(members.size())};
+    bytes+nodes_offset,static_cast<std::uint32_t>(groups.size()),static_cast<std::uint32_t>(members.size()),units.length_to_m};
   error=cudaMemcpyAsync(bytes,groups.data(),groups.size()*sizeof(RigidGroupRange),cudaMemcpyHostToDevice,stream);
   if(error!=cudaSuccess) return error;
   error=cudaMemcpyAsync(bytes+members_offset,members.data(),members.size()*sizeof(RigidMemberMetric),cudaMemcpyHostToDevice,stream);
@@ -43,8 +43,8 @@ NodalReport PrepareRigidStorage(const NodalRigidGroupModel& model,const NodalSta
   const auto first=model.members()[0].global_node;
   next->initial_velocity={input.velocity_xyz[3*first],input.velocity_xyz[3*first+1],input.velocity_xyz[3*first+2]};
   for(const auto& group:next->properties) {
-    if(group.member_count<3||group.member_count>MaxOwnerRigidMembersPerGroup)
-      return {NodalStatus::ResourceLimit,"Rigid group requires 3 to 256 complete members"};
+    if(group.member_count<2||group.member_count>MaxOwnerRigidMembersPerGroup)
+      return {NodalStatus::ResourceLimit,"Rigid group requires 2 to 256 complete members"};
     next->groups.push_back({static_cast<std::uint32_t>(group.member_offset),static_cast<std::uint32_t>(group.member_count),
                            group.total_mass_kg,group.principal.inertia});
   }

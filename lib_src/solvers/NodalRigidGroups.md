@@ -13,8 +13,10 @@ unchanged: no generated primary is inserted as another physical node.
 properties, native regularization ledger and source-ordered member inventory.
 One immutable CUDA arena stores compact group ranges/principal inertias/masses,
 member indices/masses/J, and node membership flags. Capacity is 64 groups, 256
-members per group, and at most the owner's admitted physical-node count. All
+members per group (at least two), and at most the owner's admitted physical-node count. All
 counts and the whole device payload are checked before device allocation.
+Exactly two members use the [native finite-rotation branch](../constraints/NodalRigidTwoMemberStep.md);
+the complete model source-length conversion remains in the immutable device view.
 
 The evolving center, velocity, world spin and principal axes occupy 18 doubles
 per group at the tail of **each existing accepted/trial nodal slab**. There is no

@@ -1,5 +1,10 @@
 # Native rigid-group step packets
 
+The separately qualified [two-member branch](NodalRigidTwoMemberStep.md) shares
+primary, reaction and kick/drift utilities while retaining its distinct native
+finite-velocity update and explicit proxy-inertia evaluation order. This document
+describes the unchanged greater-than-two public packet default.
+
 `NodalRigidFrameStep.h` and `NodalRigidGroupStepMath.h` implement allocation-free
 host/device values for the pinned OpenRadioss free, 3D, explicit rigid-body
 branch with more than two members. They do not attach constraints to an owner,

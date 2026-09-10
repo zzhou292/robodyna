@@ -26,7 +26,8 @@ add_custom_target(nodal_rigid_verify_sources
   COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/native/verify_sources.py" VERBATIM)
 add_library(nodal_rigid_native STATIC native/NativeRigidGroup.F
   native/NativeFrameStep.F native/NativePrimaryStep.F native/NativeMemberStep.F native/NativeSchedule.F
-  native/NativeKineticObservation.F native/NativeForceStageKinetic.F)
+  native/NativeKineticObservation.F native/NativeForceStageKinetic.F
+  native/NativeFiniteVelocity.F90 native/NativeTwoMemberStep.F)
 add_dependencies(nodal_rigid_native nodal_rigid_verify_sources)
 target_include_directories(nodal_rigid_native PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/native")
 target_compile_options(nodal_rigid_native PRIVATE -cpp -ffixed-line-length-none -fcheck=bounds
@@ -88,6 +89,13 @@ foreach(target nodal_force_stage_capture_packet_check nodal_force_stage_capture_
   set_tests_properties(${target} PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)
 endforeach()
 
+add_executable(nodal_rigid_two_member_native_check TwoMemberNativeTest.cpp
+  GroupPhaseNativeFixture.cpp GroupStepNativeFixture.cpp)
+target_link_libraries(nodal_rigid_two_member_native_check PRIVATE tl_nodal_rigid_group nodal_rigid_native GTest::gtest_main)
+target_compile_options(nodal_rigid_two_member_native_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME nodal_rigid_two_member_native_check COMMAND nodal_rigid_two_member_native_check)
+set_tests_properties(nodal_rigid_two_member_native_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)
+
 if(TL_NODAL_RIGID_CUDA_CHECKS OR TL_NODAL_RIGID_OWNER_CHECKS)
   enable_language(CUDA)
   find_package(CUDAToolkit REQUIRED)
@@ -127,6 +135,9 @@ if(TL_NODAL_RIGID_OWNER_CHECKS)
   add_subdirectory("${tl_rigid_root}/lib_src/solvers" "${CMAKE_CURRENT_BINARY_DIR}/nodal_owner")
   add_executable(nodal_rigid_owner_check GroupOwnerStartupTest.cu GroupOwnerRollbackTest.cu GroupOwnerCapacityTest.cu NonRigidNodeQueryTest.cu)
   target_link_libraries(nodal_rigid_owner_check PRIVATE tl_explicit_nodal_state GTest::gtest_main)
+  add_executable(nodal_rigid_two_member_owner_check TwoMemberOwnerNativeTest.cu TwoMemberOwnerRollbackTest.cu
+    GroupPhaseNativeFixture.cpp GroupStepNativeFixture.cpp)
+  target_link_libraries(nodal_rigid_two_member_owner_check PRIVATE tl_explicit_nodal_state nodal_rigid_native GTest::gtest_main)
   add_executable(nodal_rigid_owner_native_check GroupOwnerNativeTest.cu GroupPhaseNativeFixture.cpp GroupStepNativeFixture.cpp)
   target_link_libraries(nodal_rigid_owner_native_check PRIVATE tl_explicit_nodal_state nodal_rigid_native GTest::gtest_main)
   add_executable(nodal_prepared_snapshot_check PreparedSnapshotTest.cu PreparedSnapshotRejectionTest.cu
@@ -140,7 +151,7 @@ if(TL_NODAL_RIGID_OWNER_CHECKS)
   add_executable(nodal_force_stage_capture_owner_native_check ForceStageCaptureOwnerNativeTest.cu
     GroupPhaseNativeFixture.cpp GroupStepNativeFixture.cpp)
   target_link_libraries(nodal_force_stage_capture_owner_native_check PRIVATE tl_explicit_nodal_state nodal_rigid_native GTest::gtest_main)
-  foreach(target nodal_rigid_owner_check nodal_rigid_owner_native_check nodal_prepared_snapshot_check
+  foreach(target nodal_rigid_two_member_owner_check nodal_rigid_owner_check nodal_rigid_owner_native_check nodal_prepared_snapshot_check
       nodal_force_stage_capture_check nodal_force_stage_capture_owner_native_check)
     set_target_properties(${target} PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED ON)
     target_compile_options(${target} PRIVATE

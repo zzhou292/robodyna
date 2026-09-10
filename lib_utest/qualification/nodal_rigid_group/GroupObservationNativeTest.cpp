@@ -1,5 +1,6 @@
 #include "GroupKickFixture.h"
 #include "GroupStepNativeFixture.h"
+#include "TwoMemberFixture.h"
 extern "C" void nodal_rigid_native_kinetic_correction(const int*,const double*,const double*,const double*,
     const double*,const double*,const double*,const double*,const double*,double*);
 namespace rigid_observation_test {
@@ -36,6 +37,23 @@ TEST(NodalRigidObservationNative,NativeMemberReactionsSatisfyAllKickAndReplaceme
     rigid::GroupKickObservation output; const auto report=rigid::ObserveGroupKick(fixture.Input(),output);
     ASSERT_TRUE(report)<<int(report.status)<<" member "<<report.member<<" dof "<<report.dof<<" residual "<<report.residual<<" budget "<<report.roundoff_budget;
     CompareWork(fixture.Input(),output); fixture.Carry(step+1);
+  }
+}
+TEST(NodalRigidObservationNative,TwoMemberStoredObservationMatchesIndependentWorldTensor) {
+  rigid_two_test::SourceFixture f;
+  for(unsigned g=0;g<4;++g) {
+    auto packet=f.Packet(g);packet.member[1].couple={2e-4,3e-4,-4e-4};
+    const auto trial=rigid_step_test::NativeTwoPacket(packet,.001);
+    const Motion motion[]{{trial.member[0].velocity,trial.member[0].omega},
+                          {trial.member[1].velocity,trial.member[1].omega}};
+    rigid::GroupKineticInput input{{f.model.groups()+g,f.model.members()+2*g,2},motion,
+      {trial.primary.center,trial.primary.velocity,trial.primary.omega,trial.primary.force_frame.axes},
+      {rigid::ObservationPhaseKind::StoredMidpointWithLaggedFrame,1./1024,1./2048,0}};
+    rigid::GroupKineticObservation out;ASSERT_TRUE(rigid::ObserveGroupKinetic(input,out));
+    Compare(out,Oracle(input));
+    EXPECT_GT(out.aggregate.principal_correction_rotation,0);
+    const auto saved=rigid_step_test::Bytes(out);input.metric.member_count=1;
+    EXPECT_FALSE(rigid::ObserveGroupKinetic(input,out));EXPECT_EQ(rigid_step_test::Bytes(out),saved);
   }
 }
 } // namespace rigid_observation_test

@@ -49,14 +49,26 @@ TL_RIGID_STEP_HD inline bool Finite(const MemberStepTrial& t) {
     detail::Finite(t.position)&&detail::Finite(t.velocity)&&detail::Finite(t.omega)&&
     detail::Finite(t.reaction_force)&&detail::Finite(t.reaction_couple);
 }
+// Shared native reaction, common kick and drift; operation order is unchanged.
+TL_RIGID_STEP_HD inline void CompleteMember(const MemberStepInput& in,
+    double kick,double drift,MemberStepTrial& next) {
+  next.reaction_force={in.mass*next.acceleration.x-in.force.x,in.mass*next.acceleration.y-in.force.y,
+                        in.mass*next.acceleration.z-in.force.z};
+  next.reaction_couple={in.inertia*next.angular_acceleration.x-in.couple.x,in.inertia*next.angular_acceleration.y-in.couple.y,
+                         in.inertia*next.angular_acceleration.z-in.couple.z};
+  next.velocity={in.velocity.x+kick*next.acceleration.x,in.velocity.y+kick*next.acceleration.y,in.velocity.z+kick*next.acceleration.z};
+  next.omega={in.omega.x+kick*next.angular_acceleration.x,in.omega.y+kick*next.angular_acceleration.y,in.omega.z+kick*next.angular_acceleration.z};
+  next.position={in.position.x+drift*next.velocity.x,in.position.y+drift*next.velocity.y,in.position.z+drift*next.velocity.z};
+}
 } // namespace step_detail
 
-// Pure packet for the >2-member, free explicit anisotropic branch. The caller
+// Shared free explicit anisotropic primary packet. The caller
 // owns the duration/phase contract: this function neither chooses a timestep nor
 // asserts that a (0,h/2,h) packet is the donor engine's actual startup. The native
 // old-spin guard is retained; case-specific new-spin limits belong to admission.
 // Each output is published by value only after all arithmetic succeeds.
-TL_RIGID_STEP_HD inline StepStatus EvaluatePrimaryStep(const PrimaryStepInput& in,
+template<bool NativeProxy>
+TL_RIGID_STEP_HD inline StepStatus EvaluatePrimaryStepPacket(const PrimaryStepInput& in,
     PrimaryStepTrial& output) {
   if(!step_detail::Durations(in.durations)||!detail::Orthonormal(in.previous_frame.axes)||
       !detail::Positive(in.previous_frame.inertia)||!detail::Finite(in.center)||
@@ -74,11 +86,22 @@ TL_RIGID_STEP_HD inline StepStatus EvaluatePrimaryStep(const PrimaryStepInput& i
   if(rotated!=MathStatus::Success) return StepStatus::NonfiniteResult;
   const auto torque=detail::ToLocal(next.force_frame.axes,in.applied.couple);
   const auto j=next.force_frame.inertia,w=next.saved_body_omega;
-  const Vec3 local{(torque.x+(j.y-j.z)*w.y*w.z)/j.x,
+  // The legacy >2 path cancels this proxy. The two-member finite displacement
+  // recurrence retains native multiply/divide order: a tiny spin rounding change
+  // is amplified by its displacement/kick and acceleration/kick divisions.
+  if constexpr(NativeProxy) {
+    const double proxy=::fmin(j.x,::fmin(j.y,j.z));
+    const Vec3 local{(torque.x+(j.y-j.z)*w.y*w.z)*proxy/j.x,
+           (torque.y+(j.z-j.x)*w.z*w.x)*proxy/j.y,
+           (torque.z+(j.x-j.y)*w.x*w.y)*proxy/j.z};
+    const auto world=detail::ToWorld(next.force_frame.axes,local);
+    next.angular_acceleration={world.x/proxy,world.y/proxy,world.z/proxy};
+  } else {
+    const Vec3 local{(torque.x+(j.y-j.z)*w.y*w.z)/j.x,
                    (torque.y+(j.z-j.x)*w.z*w.x)/j.y,
                    (torque.z+(j.x-j.y)*w.x*w.y)/j.z};
-  // Native primary proxy J multiply/divide cancels; it is not extra inertia.
-  next.angular_acceleration=detail::ToWorld(next.force_frame.axes,local);
+    next.angular_acceleration=detail::ToWorld(next.force_frame.axes,local);
+  }
   next.acceleration={in.applied.force.x/in.mass,in.applied.force.y/in.mass,in.applied.force.z/in.mass};
   const double kick=in.durations.kick_dt,drift=in.durations.drift_dt;
   next.velocity={in.velocity.x+kick*next.acceleration.x,in.velocity.y+kick*next.acceleration.y,
@@ -89,6 +112,10 @@ TL_RIGID_STEP_HD inline StepStatus EvaluatePrimaryStep(const PrimaryStepInput& i
   if(!step_detail::Finite(next)) return StepStatus::NonfiniteResult;
   output=next; return StepStatus::Success;
 }
+
+// Preserve the original public API and its arithmetic for all existing callers.
+TL_RIGID_STEP_HD inline StepStatus EvaluatePrimaryStep(const PrimaryStepInput& in,
+    PrimaryStepTrial& output) { return EvaluatePrimaryStepPacket<false>(in,output); }
 
 // Compose with the corresponding input/trial returned by EvaluatePrimaryStep.
 // No identity/transaction authority is conveyed by these plain math packets.
@@ -109,13 +136,7 @@ TL_RIGID_STEP_HD inline StepStatus EvaluateMemberStep(const PrimaryStepInput& bo
   next.acceleration={primary.acceleration.x+(body.velocity.x+g.x+.5*drift*(w.y*g.z-w.z*g.y)-in.velocity.x)*usdt,
       primary.acceleration.y+(body.velocity.y+g.y+.5*drift*(w.z*g.x-w.x*g.z)-in.velocity.y)*usdt,
       primary.acceleration.z+(body.velocity.z+g.z+.5*drift*(w.x*g.y-w.y*g.x)-in.velocity.z)*usdt};
-  next.reaction_force={in.mass*next.acceleration.x-in.force.x,in.mass*next.acceleration.y-in.force.y,
-                        in.mass*next.acceleration.z-in.force.z};
-  next.reaction_couple={in.inertia*next.angular_acceleration.x-in.couple.x,in.inertia*next.angular_acceleration.y-in.couple.y,
-                         in.inertia*next.angular_acceleration.z-in.couple.z};
-  next.velocity={in.velocity.x+kick*next.acceleration.x,in.velocity.y+kick*next.acceleration.y,in.velocity.z+kick*next.acceleration.z};
-  next.omega={in.omega.x+kick*next.angular_acceleration.x,in.omega.y+kick*next.angular_acceleration.y,in.omega.z+kick*next.angular_acceleration.z};
-  next.position={in.position.x+drift*next.velocity.x,in.position.y+drift*next.velocity.y,in.position.z+drift*next.velocity.z};
+  step_detail::CompleteMember(in,kick,drift,next);
   if(!tl::math::Finite(usdt)||!detail::Finite(arm)||!detail::Finite(g)||!step_detail::Finite(next))
     return StepStatus::NonfiniteResult;
   output=next; return StepStatus::Success;

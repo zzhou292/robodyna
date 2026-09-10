@@ -38,7 +38,7 @@ TL_RIGID_OBSERVATION_HD inline bool ValidPhase(ObservationPhase p) {
   return Near(p.velocity_time,p.frame_time+.5*(p.position_time-p.frame_time),8);
 }
 TL_RIGID_OBSERVATION_HD inline bool ValidMetric(GroupObservationMetric input) {
-  if(!input.group||!input.members||input.member_count<3||input.member_count>MaxMembers||
+  if(!input.group||!input.members||input.member_count<2||input.member_count>MaxMembers||
       input.member_count!=input.group->member_count) return false;
   const auto& g=*input.group; const auto& r=g.regularization;
   if(!g.source_group_id||!g.source_node_set_id||!detail::Orthonormal(g.principal.axes)||

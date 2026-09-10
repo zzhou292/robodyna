@@ -40,6 +40,7 @@ struct GroupDeviceView {
   const MemberMetric* members=nullptr;
   const std::uint8_t* member_nodes=nullptr;
   std::uint32_t group_count=0,member_count=0;
+  double source_length_to_m=0; // Required only by the two-member finite-rotation switch.
 };
 #if defined(__CUDACC__)
 #define TL_RIGID_STATE_HD __host__ __device__

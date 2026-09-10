@@ -1,5 +1,6 @@
 #include "GroupForceStageFixture.h"
 #include "GroupStepNativeFixture.h"
+#include "TwoMemberFixture.h"
 extern "C" void nodal_rigid_native_force_stage_kinetic(const int*,const double*,const double*,const double*,
     const double*,const double*,const double*,const double*,const double*,const double*,const double*,const double*,const double*,double*);
 namespace rigid_observation_test {
@@ -51,5 +52,31 @@ TEST(NodalRigidForceStageNative,LargeNativeMemberBranchWithDenseAnisotropyAndUne
     {.125,.0625,0,{.125,.1875,.25}}};
   rigid::GroupForceStageKineticObservation out;ASSERT_TRUE(rigid::ObserveGroupForceStageKinetic(in,out));
   NativeCorrection(in,out);CheckForceStageOracle(in,out);
+}
+TEST(NodalRigidForceStageNative,TwoMemberSourceShapesUseActualNativeAccelerationAndCountPrimaryOnce) {
+  rigid_two_test::SourceFixture f;
+  for(unsigned g=0;g<4;++g) {
+    auto packet=f.Packet(g);std::array<Motion,2> before{};
+    std::array<rigid::ForceStageAcceleration,2> a{};
+    for(unsigned step=0;step<8;++step) {
+      const double h=1./1024;packet.body.durations={step?h:0,step?h:.5*h,h};
+      for(unsigned i=0;i<2;++i) {
+        before[i]={packet.member[i].velocity,packet.member[i].omega};
+        packet.member[i].couple={2e-5,-3e-5,4e-5};
+      }
+      const auto trial=rigid_step_test::NativeTwoPacket(packet,.001);
+      for(unsigned i=0;i<2;++i) a[i]={trial.member[i].acceleration,trial.member[i].angular_acceleration};
+      rigid::GroupForceStageKineticInput input{{f.model.groups()+g,f.model.members()+2*g,2},
+        before.data(),a.data(),{packet.body.velocity,packet.body.omega},
+        {trial.primary.acceleration,trial.primary.angular_acceleration},trial.primary.force_frame.axes,
+        {step*h,step?(step-.5)*h:0,step?(step-1)*h:0,packet.body.durations}};
+      rigid::GroupForceStageKineticObservation out;ASSERT_TRUE(rigid::ObserveGroupForceStageKinetic(input,out));
+      NativeCorrection(input,out);CheckForceStageOracle(input,out);EXPECT_EQ(out.member_count,2u);
+      if(step==0)EXPECT_DOUBLE_EQ(out.aggregate.primary_translation,.5*(1e-20*1000)*(.3*.3+.2*.2+.1*.1));
+      const auto saved=rigid_step_test::Bytes(out);a[1].rotation.z=std::numeric_limits<double>::quiet_NaN();
+      EXPECT_FALSE(rigid::ObserveGroupForceStageKinetic(input,out));EXPECT_EQ(rigid_step_test::Bytes(out),saved);
+      rigid_two_test::Carry(trial,packet);
+    }
+  }
 }
 } // namespace rigid_observation_test

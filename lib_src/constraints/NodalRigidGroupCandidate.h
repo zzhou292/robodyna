@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "NodalRigidGroupState.h"
-#include "NodalRigidGroupStepMath.h"
+#include "NodalRigidTwoMemberStep.h"
 #include "NodalRigidAccelerationSink.h"
 
 #if defined(__CUDACC__)
@@ -37,7 +37,7 @@ TL_RIGID_CANDIDATE_HD inline GroupCandidateResult PrepareGroupCandidate(GroupDev
   if constexpr(Capture)
     if(!sink.node||!sink.node_rotation||!sink.group||!sink.group_rotation) return {StepStatus::InvalidInput};
   const auto range=view.groups[group];
-  if(range.count<3||range.offset>view.member_count||range.count>view.member_count-range.offset)
+  if(range.count<2||range.offset>view.member_count||range.count>view.member_count-range.offset)
     return {StepStatus::InvalidInput};
   const auto offset=19*std::size_t(nodes)+GroupStateValues*group;
   const auto prior=ReadGroupState(accepted+offset);
@@ -57,14 +57,15 @@ TL_RIGID_CANDIDATE_HD inline GroupCandidateResult PrepareGroupCandidate(GroupDev
   }
   PrimaryStepTrial primary;
   const auto first_node=view.members[range.offset].node;
-  auto status=EvaluatePrimaryStep(input,primary);
+  auto status=range.count==2 ? EvaluateTwoMemberPrimaryStep(input,primary) : EvaluatePrimaryStep(input,primary);
   if(status!=StepStatus::Success) return {status,first_node};
   for(std::uint32_t i=0;i<range.count;++i) {
     const auto m=view.members[range.offset+i]; const auto node=m.node;
     const MemberStepInput member{Node(accepted,node),Node(accepted+3*nodes,node),Node(accepted+6*nodes,node),
       Load(loads,node,nodes),Load(loads+3*nodes,node,nodes),m.mass,m.inertia};
     MemberStepTrial next;
-    status=EvaluateMemberStep(input,primary,member,next);
+    status=range.count==2 ? EvaluateTwoMemberStep(input,primary,member,view.source_length_to_m,next)
+                         : EvaluateMemberStep(input,primary,member,next);
     if(status!=StepStatus::Success) return {status,node};
     WriteNode(trial,node,next.position); WriteNode(trial+3*nodes,node,next.velocity);
     WriteNode(trial+6*nodes,node,next.omega); WriteNode(trial+13*nodes,node,next.reaction_force);

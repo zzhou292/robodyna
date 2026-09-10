@@ -64,6 +64,13 @@
       "size": 27840,
       "sha256": "ca7f8edc40fca44c6c71f81a8bb0ae14226f833c014453bbdf6753e046171ea9",
       "git_blob_sha1": "4a1cd6b377b66ecdf75f030cd70a91c329891759"
+    },
+    {
+      "path": "original/engine/source/constraints/general/rbody/velrot_explicit.F90",
+      "size": 9999,
+      "sha256": "e6056d962c81518e7b2a8fa3158812c4153fbbfd324385db9ba6eb253480d185",
+      "git_blob_sha1": "55648c517c97a9baff66355c35602c112a5ecc4f",
+      "upstream_path": "engine/source/constraints/general/rbody/velrot_explicit.F90"
     }
   ],
   "fragments": [
@@ -213,6 +220,27 @@
       "first_line": 295,
       "last_line": 320,
       "sha256": "d2cfb9973c892ead1b9610fd103c83582cb0f10449db8f1c7ebedb1ea83d5ac2"
+    },
+    {
+      "path": "extracted/TwoMemberAcceleration.inc",
+      "source": "original/engine/source/constraints/general/rbody/rgbodv.F",
+      "first_line": 118,
+      "last_line": 136,
+      "sha256": "ddd05738df9d0f28561b6219a9613af0b754ca154698bb9e435361e31ff434ab"
+    },
+    {
+      "path": "extracted/FiniteVelocity.inc",
+      "source": "original/engine/source/constraints/general/rbody/velrot_explicit.F90",
+      "first_line": 80,
+      "last_line": 105,
+      "sha256": "c9bf64a48222921b3b710e0bebb2bf8ab6517819313562d115003d712a1cb54b"
+    },
+    {
+      "path": "extracted/FiniteCross.inc",
+      "source": "original/engine/source/constraints/general/rbody/velrot_explicit.F90",
+      "first_line": 138,
+      "last_line": 140,
+      "sha256": "3dba5fc3b7f6bbcb608da1ea040303f538e324b0e51ed977714992a3e62204f6"
     }
   ],
   "interpretation": "Original complete files plus exact contiguous arithmetic fragments; wrapper context is separately authored. Eigen principal axes are equivalent tensor algebra, not native VALPR bit parity."
