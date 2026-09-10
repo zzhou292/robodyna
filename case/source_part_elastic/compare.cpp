@@ -1,5 +1,6 @@
 #include "output/AcceptedReplay.h"
 #include "output/ArtifactIO.h"
+#include "output/SourcePartComparison.h"
 #include "chrono_thirdparty/rapidjson/stringbuffer.h"
 #include "chrono_thirdparty/rapidjson/writer.h"
 #include <algorithm>
@@ -36,44 +37,12 @@ Document Fields(const std::filesystem::path& dir,std::uint64_t epoch) {
 constexpr std::size_t Channels=6;
 using Differences=std::array<double,Channels>;
 const char* Names[]{"position","rotation","synchronized_velocity","synchronized_omega","total_energy","external_work"};
-double Vectors(const Value& a,const Value& b,const char* field,double scale) {
-    const auto& x=Get(a,field);const auto& y=Get(b,field);
-    Require(x.IsArray()&&y.IsArray()&&x.Size()==351&&y.Size()==351,"Wrong source vector size");
-    double result=0;
-    for(unsigned n=0;n<117;++n) {
-        double square=0;
-        for(unsigned axis=0;axis<3;++axis) {
-            const auto j=3*n+axis;Require(x[j].IsNumber()&&y[j].IsNumber(),"Invalid vector component");
-            const auto difference=x[j].GetDouble()-y[j].GetDouble();
-            Require(std::isfinite(difference),"Nonfinite vector difference");square+=difference*difference;
-        }
-        result=std::max(result,std::sqrt(square)/scale);
-    }
-    return result;
-}
-double Rotations(const Value& a,const Value& b) {
-    const auto& x=Get(a,"orientation_wxyz");const auto& y=Get(b,"orientation_wxyz");
-    Require(x.IsArray()&&y.IsArray()&&x.Size()==468&&y.Size()==468,"Wrong source rotation size");
-    double result=0;
-    for(unsigned n=0;n<117;++n) {
-        long double p[4]{},q[4]{};
-        for(unsigned j=0;j<4;++j){p[j]=x[4*n+j].GetDouble();q[j]=y[4*n+j].GetDouble();}
-        const long double w=p[0]*q[0]+p[1]*q[1]+p[2]*q[2]+p[3]*q[3];
-        const long double rx=p[0]*q[1]-p[1]*q[0]-p[2]*q[3]+p[3]*q[2];
-        const long double ry=p[0]*q[2]+p[1]*q[3]-p[2]*q[0]-p[3]*q[1];
-        const long double rz=p[0]*q[3]-p[1]*q[2]+p[2]*q[1]-p[3]*q[0];
-        const double angle=static_cast<double>(2*std::atan2(std::sqrt(rx*rx+ry*ry+rz*rz),std::abs(w)));
-        Require(std::isfinite(angle),"Nonfinite rotation difference");result=std::max(result,angle/.01);
-    }
-    return result;
-}
 Differences Difference(const Value& a,const Value& b) {
     Require(io::Bits(Real(a,"accepted_time_s"))==io::Bits(Real(b,"accepted_time_s")),"Different physical sample times");
     const double ea=Real(a,"synchronized_kinetic_J")+Real(a,"total_internal_work_J");
     const double eb=Real(b,"synchronized_kinetic_J")+Real(b,"total_internal_work_J");
-    return {Vectors(a,b,"position_xyz_m",.001),Rotations(a,b),
-        Vectors(a,b,"synchronized_velocity_xyz_m_per_s",1),
-        Vectors(a,b,"synchronized_omega_world_xyz_rad_per_s",100),
+    const auto kinematics=io::source_comparison::Kinematics(a,b);
+    return {kinematics[0],kinematics[1],kinematics[2],kinematics[3],
         std::abs(ea-eb)/.1,std::abs(Real(a,"external_drift_work_J")-Real(b,"external_drift_work_J"))/.1};
 }
 }
