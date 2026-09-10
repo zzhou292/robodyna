@@ -11,9 +11,10 @@ The exact inventory is authenticated by the named pinned reader: 804 QEPH and
 curves with 63 samples. All coordinates, original ELFORM, source EID/PID/family
 indices, every catalog curve and rate declaration are checked. Native inverse
 mass and isotropic inertia are copied back from the actual owner and checked
-against the complete TL startup binding. The six internal rigid groups and
-released external frontier remain retained source data. **No internal group is
-attached or dynamically enforced in this gate.**
+against the complete TL startup binding. The original two capacity tests retain the six internal rigid groups as
+source data without attaching them. The two grouped tests described below
+attach all six actual groups. The released external frontier is retained in
+both modes.
 
 Startup is 8 m/s uniform +X translation and zero spin. Four intervals at
 `1/67108864` seconds each test source geometry storage and free-flight recurrence.
@@ -38,5 +39,25 @@ Use the serialized workstation resource guard. No build/test execution was done
 by the implementation agent; the main integration owner runs qualification.
 
 Passing this gate supports original-source GPU capacity and free flight only.
-Internal group recurrence/force transfer and mesh-wall contact integration remain
-separate gates before connected impact, longer trajectories and video output.
+Loaded grouped contact, energy/work observation and mesh-wall trajectory
+integration remain separate gates before longer impacts and video output.
+
+The initial two actual-source tests passed on the RTX 5090 (2026-09-10), with
+reports `crash-work/reports/source-assembly-flight-{configure,build,tests}-1`.
+The test run sampled about 177 MiB process RAM. This is the unconnected capacity
+gate described above. Two additional grouped-source tests now pass against the qualified R3a owner
+and explicit live-owner/token contributor admission. All four functions pass
+in `source-assembly-group-flight-tests-1`; build evidence is
+`source-assembly-group-flight-build-2`. The initial build attempt caught two
+GTest macros sharing a source line; splitting those fixture statements fixed
+the generated-label collision. No production arithmetic changed.
+
+The grouped tests initialize all six original groups and their 76 members,
+then advance four source intervals. Every source parent is checked against the
+qualified host material/shell value operation. Accepted and prepared group
+snapshots authenticate source IDs and the exact common owner token; a rejected
+complete publication preserves every group, nodal field and both shell/history
+families. Retry reproduces the group state, nodal candidate and every shell
+result exactly. Allocation sizes/counts remain fixed. Kinetic diagnostics here
+are explicitly the raw native nodal sum; aggregate constrained-energy and
+loaded-contact trajectory validation are separate gates.

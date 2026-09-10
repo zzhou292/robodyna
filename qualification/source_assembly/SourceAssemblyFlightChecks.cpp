@@ -16,7 +16,10 @@ void CheckSource(const Rig& r) {
     ASSERT_EQ(s.parents.size(),915u);ASSERT_EQ(c.parent_count(),915u);
     ASSERT_NE(r.bindings.rigid_groups(),nullptr);EXPECT_EQ(r.bindings.rigid_groups()->group_count(),6u);
     EXPECT_EQ(r.bindings.rigid_groups()->member_count(),76u);
-    // The six groups are retained immutable startup data, never attached to the owner.
+    const auto groups=r.owner.rigid_groups();
+    EXPECT_EQ(groups.group_count,r.groups_attached?6u:0u);
+    EXPECT_EQ(groups.member_count,r.groups_attached?76u:0u);
+    EXPECT_EQ(groups.source_instance_id,r.groups_attached?r.bindings.source_instance_id():0u);
     EXPECT_EQ(s.boundary.policy,"released_external_connections");
     EXPECT_EQ(r.contact_geometry.binding()->inventory(),b.inventory());
     ASSERT_EQ(r.contact_geometry.weights()->node_count(),1030u);ASSERT_EQ(r.contact_geometry.weights()->parent_count(),915u);

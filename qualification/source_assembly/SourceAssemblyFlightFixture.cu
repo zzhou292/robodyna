@@ -2,8 +2,9 @@
 #include <cuda_runtime.h>
 
 namespace crash::qualification::source_assembly {
-Rig::Rig(const src::SourceAssembly& source)
+Rig::Rig(const src::SourceAssembly& source,bool attach_groups)
     :bindings(SourceAssemblyBindings::Prepare(source,cases::source_assembly::test::Options())),
+     groups_attached(attach_groups),
      initial(nodes()),inverse_mass(nodes()),inverse_inertia(nodes()),free(nodes()) {}
 bool Rig::Initialize() {
     const auto geometry=contact_geometry.Initialize(bindings.shells());
@@ -16,8 +17,12 @@ bool Rig::Initialize() {
     }
     fe::NodalStateConfig config;config.node_count=nodes();config.fixed_dt=TimeStep;
     config.temporal_scheme=fe::NodalTemporalScheme::StaggeredHalfKickStart;
-    const auto initialized=owner.Initialize(config,{initial.x.data(),initial.v.data(),initial.w.data(),nodes(),initial.orientation.data()},
-        inverse_mass.data(),{free.data(),free.data(),inverse_inertia.data()});
+    const fe::HostNodalKinematicsView startup{initial.x.data(),initial.v.data(),initial.w.data(),nodes(),initial.orientation.data()};
+    const fe::NodalDofConfig dofs{free.data(),free.data(),inverse_inertia.data()};
+    if(groups_attached&&!bindings.rigid_groups())return false;
+    const auto initialized=groups_attached?
+        owner.Initialize(config,startup,inverse_mass.data(),dofs,*bindings.rigid_groups()):
+        owner.Initialize(config,startup,inverse_mass.data(),dofs);
     EXPECT_EQ(initialized.status,fe::NodalStatus::Ok)<<initialized.message;
     if(initialized.status!=fe::NodalStatus::Ok)return false;
     q::QephBatchConfig qc;qc.owner=owner.accepted();qc.element_count=quads();
@@ -61,10 +66,14 @@ bool Prepare(Rig& r,Prepared& p) {
     EXPECT_EQ(r.owner.BeginTrial(&p.token,&assembly).status,fe::NodalStatus::Ok);
     EXPECT_EQ(r.qeph.AssembleAccepted(r.owner,assembly).status,q::BatchStatus::Success);
     EXPECT_EQ(r.t3.AssembleAccepted(r.owner,assembly).status,t::BatchStatus::Success);
-    // No contact, external force or rigid-group contributor is assembled.
+    // Group enforcement, when attached, is inside the same owner advance.
+    // No contact or external force is assembled in this short free-flight gate.
     EXPECT_EQ(r.owner.SealAssembly(p.token).status,fe::NodalStatus::Ok);
-    EXPECT_EQ(fe::AdvanceStaggeredHistory(r.owner,p.token,
-        {assembly.owner_id,assembly.accepted.base_epoch,assembly.attempt,TimeStep,1,Qualification}).status,fe::NodalStatus::Ok);
+    const fe::NodalStaggeredHistoryAdmission admission{
+        assembly.owner_id,assembly.accepted.base_epoch,assembly.attempt,TimeStep,1,Qualification};
+    const auto advanced=r.groups_attached?fe::AdvanceStaggeredRigidGroups(r.owner,p.token,admission):
+        fe::AdvanceStaggeredHistory(r.owner,p.token,admission);
+    EXPECT_EQ(advanced.status,fe::NodalStatus::Ok)<<advanced.message;
     EXPECT_EQ(r.owner.BorrowPrepared(p.token,&p.view).status,fe::NodalStatus::Ok);
     if(::testing::Test::HasFailure())return false;
     const auto bytes=3*r.nodes()*sizeof(double);const auto& v=p.view;
@@ -75,8 +84,10 @@ bool Prepare(Rig& r,Prepared& p) {
     EXPECT_EQ(cudaStreamSynchronize(v.stream),cudaSuccess);return !::testing::Test::HasFailure();
 }
 bool Evaluate(Rig& r,const Prepared& p,ShellFields& out) {
-    const auto qr=r.qeph.EvaluateCandidate(p.view,&out.diagnostics.qeph);
-    const auto tr=r.t3.EvaluateCandidate(p.view,&out.diagnostics.t3);
+    const auto qr=r.groups_attached?r.qeph.EvaluateCandidate(r.owner,p.token,p.view,&out.diagnostics.qeph):
+        r.qeph.EvaluateCandidate(p.view,&out.diagnostics.qeph);
+    const auto tr=r.groups_attached?r.t3.EvaluateCandidate(r.owner,p.token,p.view,&out.diagnostics.t3):
+        r.t3.EvaluateCandidate(p.view,&out.diagnostics.t3);
     EXPECT_EQ(qr.status,q::BatchStatus::Success)<<qr.message<<" family_index="<<qr.element;
     EXPECT_EQ(tr.status,t::BatchStatus::Success)<<tr.message<<" family_index="<<tr.element;
     if(qr.status!=q::BatchStatus::Success||tr.status!=t::BatchStatus::Success)return false;

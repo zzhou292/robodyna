@@ -19,7 +19,8 @@ if(NOT EXISTS "${ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY}")
   message(FATAL_ERROR "Actual-source flight requires the explicit frozen inventory path")
 endif()
 add_executable(robo_dyna_source_assembly_flight_check
-  SourceAssemblyFlightFixture.cu SourceAssemblyFlightChecks.cpp SourceAssemblyParentChecks.cpp SourceAssemblyFlightTest.cpp)
+  SourceAssemblyFlightFixture.cu SourceAssemblyFlightChecks.cpp SourceAssemblyParentChecks.cpp
+  SourceAssemblyFlightTest.cpp SourceAssemblyGroupFlightTest.cpp)
 target_link_libraries(robo_dyna_source_assembly_flight_check PRIVATE
   robo_dyna_source_assembly_bindings robo_dyna_shell_collection_contact_geometry tl_shell_batch_publication
   CUDA::cudart GTest::gtest_main)

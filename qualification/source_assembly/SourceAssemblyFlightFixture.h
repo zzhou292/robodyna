@@ -3,6 +3,7 @@
 #include "case/shell_collection/ShellCollectionContactGeometry.h"
 #include "lib_src/elements/ShellBatchPublication.h"
 #include "lib_src/solvers/ExplicitNodalStep.h"
+#include "lib_src/solvers/ExplicitNodalRigidStep.h"
 #include "lib_src/solvers/ExplicitTranslationStep.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
 #include <vector>
@@ -38,8 +39,9 @@ struct Prepared {
 // Test composition only: no step policy, independent clock or new solver.
 // Destruction order remains publication, batches, owner, immutable source.
 struct Rig {
-    explicit Rig(const src::SourceAssembly& source);
+    explicit Rig(const src::SourceAssembly& source,bool attach_groups=false);
     SourceAssemblyBindings bindings;
+    const bool groups_attached;
     cases::ShellCollectionContactGeometry contact_geometry;
     Fields initial;
     std::vector<double> inverse_mass,inverse_inertia;
