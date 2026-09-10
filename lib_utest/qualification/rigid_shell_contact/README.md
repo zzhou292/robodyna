@@ -45,6 +45,11 @@ maximum child RSS 179,232 KiB. Five production host translation units pass synta
 checks (168,448 KiB). Contact and the three focused CUDA translation units pass
 host syntax surrogates with launches stripped only in `/tmp` (231,492 KiB peak);
 this is not CUDA compile/runtime evidence. All author checks used one affinity
-CPU and a 512 MiB address-space cap. R3b is pending the actual grouped-source and
-focused CUDA gates. Plastic-law numerical correctness and aggregate energy
-observations retain their separate qualification owners.
+CPU and a 512 MiB address-space cap. The actual grouped-source free-flight gate and focused R3b runtime now pass.
+Root qualification: all two host and eight CUDA functions pass in
+`rigid-shell-contact-tests-3`. The first retained runtime attempt exposed a
+fixture using physical X extent in the projected-box API; the next exposed
+a penetration fault mislabeled as a coverage fault. The fixture now projects
+X to the wall and injects a final-node Y coverage violation. No production
+checks or tolerances were relaxed. Plastic-law numerical correctness and
+aggregate energy observations retain their separate qualification owners.

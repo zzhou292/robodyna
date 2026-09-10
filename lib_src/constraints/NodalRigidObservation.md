@@ -144,6 +144,7 @@ CMake include: `NodalRigidObservation.cmake`. Qualification targets are
 `nodal_rigid_observation_check`, `nodal_rigid_observation_native_check` and,
 with `TL_NODAL_RIGID_CUDA_CHECKS=ON`, `nodal_rigid_observation_cuda_check`.
 Corresponding production/host/CUDA Bazel targets use `nodal_rigid_observation`.
-Native Fortran uses CMake and the existing manifest verifier. Runtime gates
-must be run under the workspace guard before integration; syntax checks alone
-do not establish numerical qualification.
+Native Fortran uses CMake and the existing manifest verifier. All 15 new host/native/CUDA functions and all 48 previous rigid functions
+pass under the workstation guard in `nodal-rigid-observation-tests-1` (12 CTest
+groups). Native source extraction verification also passes. This qualifies
+the supplied-value and actual-kick scope above, not collocated engine output.

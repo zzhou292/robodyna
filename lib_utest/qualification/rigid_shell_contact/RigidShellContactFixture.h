@@ -27,7 +27,9 @@ struct Fixture {
   sc::NodalWallWeights weights;
   std::array<sc::PlanarWallVertex,4> wall_vertices{};
   std::array<sc::PlanarWallTriangle,2> wall_faces{};
-  sc::PlanarWallBox motion{{-.05,-.5,-.5},{.05,2.5,1.5}};
+  // The coverage API takes a projected Y/Z box at the exact wall X.
+  // Physical X penetration is bounded separately by WallConfig::law.
+  sc::PlanarWallBox motion{{0,-.5,-.5},{0,2.5,1.5}};
   bool Prepare(std::uint64_t source=Source,double speed=0);
   fe::NodalReport Owner(fe::FENodalState&) const;
   q::QephBatchConfig QConfig(fe::NodalStamp) const;

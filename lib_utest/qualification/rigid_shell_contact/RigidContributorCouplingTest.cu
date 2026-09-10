@@ -125,8 +125,8 @@ TEST_F(Cuda, LateContactFailureRollsBackGroupNodesAndBothHistoriesWithExactRetry
   ASSERT_TRUE(Assemble(r,failed)); ASSERT_TRUE(Advance(r,failed)); ASSERT_TRUE(Shells(r,failed));
   // Inject a late final-node geometry fault into the actual private owner
   // candidate after shell preparation; accepted slabs and source remain intact.
-  const double outside=.5;
-  ASSERT_EQ(cudaMemcpyAsync(const_cast<double*>(failed.view.kinematics.position_xyz)+3*(Nodes-1),&outside,
+  const double outside=3; // Y exceeds the admitted projected maximum 2.5.
+  ASSERT_EQ(cudaMemcpyAsync(const_cast<double*>(failed.view.kinematics.position_xyz)+3*(Nodes-1)+1,&outside,
       sizeof(outside),cudaMemcpyHostToDevice,failed.view.stream),cudaSuccess);
   sc::NodalWallDiagnostics output; output.attempt=789; const auto before=Bytes(output);
   EXPECT_EQ(r.contact.EvaluateCandidate(r.owner,failed.token,failed.view,&output).status,sc::NodalWallDeviceStatus::GeometryFailure);
