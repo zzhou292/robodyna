@@ -1,0 +1,637 @@
+{
+  "schema": "tl.qeph-wall-recurrence-analysis-source-map.v1",
+  "stage": "source-and-independent-review-frozen-before-first-execution",
+  "scope": "Full-state metric/schedule/spectral/Gram/identity/comparison analytic qualification; no full-grid native execution or impact admission",
+  "new_host_test_functions": 13,
+  "regression_host_test_functions": 18,
+  "cuda_required": false,
+  "hermetic_runtime": false,
+  "prerequisites": [
+    {
+      "path": "crash-work/checkpoints/qeph-wall-model-1/manifest.json",
+      "bytes": 33433,
+      "sha256": "14f1a78560c4301e1d36c9b56fb9dfc61e92c4bcbea1708516f511458d29491d"
+    }
+  ],
+  "external_dependency_scope": "Compiler, Eigen, GTest and native Fortran runtime supplied by bounded build environment; original/prepared donor closure verified by pinned owning scripts",
+  "external_includes": [
+    "Eigen/Core",
+    "Eigen/Eigenvalues",
+    "Eigen/SVD",
+    "algorithm",
+    "array",
+    "cfloat",
+    "cmath",
+    "complex",
+    "cstddef",
+    "cstdint",
+    "cstring",
+    "gtest/gtest.h",
+    "limits",
+    "map",
+    "mutex",
+    "new",
+    "set",
+    "string",
+    "utility",
+    "vector"
+  ],
+  "input_count": 119,
+  "inputs": [
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/NodalWallContact.cmake",
+      "bytes": 583,
+      "sha256": "635de44380ce069da4840bbba48620ee8e220bcfd0c684786e96f49adc7900f8"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/NodalWallContact.cpp",
+      "bytes": 4327,
+      "sha256": "b775a8ab6add0d5ce3f876237186380cce8300268b7c38c6dcc73e1e124bc503"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/NodalWallContact.h",
+      "bytes": 5782,
+      "sha256": "68ceb81d9bcce45be00172229107a4a7474974a463af7fc60cfcbaf52c60fb62"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/NodalWallContactEvaluation.cpp",
+      "bytes": 4144,
+      "sha256": "5adfe931dc1154ccf286174f8fd933d3188344e2435732f5c8336c4cdfc6a5e7"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/NodalWallContactPoint.h",
+      "bytes": 5097,
+      "sha256": "8d18f959a71e595b33c49387fd5c61387cdb8c2cbf590b28aa779a71415488a0"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/NodalWallContactReduction.h",
+      "bytes": 1267,
+      "sha256": "02b341c8fb7d43cfcd7d2e1d14e24595f65bb11c7e2238777603f09b133a0acc"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/PlanarContactTypes.h",
+      "bytes": 1276,
+      "sha256": "4adec3ba35b39dc13f65baed5464a743982f1820421e2040c1e35ef87a01df1e"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/PlanarWallBox.cpp",
+      "bytes": 4619,
+      "sha256": "e1ab3be153942b9d679f6581aa492fcc5e1dc548e29821c5db46aa7deb56443b"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/PlanarWallBox.h",
+      "bytes": 1350,
+      "sha256": "e166d0171434b56cb94a93f7fc14f18b5623bd121592ed7befc80bd0a6857626"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/PlanarWallGeometry.cmake",
+      "bytes": 502,
+      "sha256": "3fa10817e9150984fbc9146487e22745eb928d54078a67a06552342e14d54bc8"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/PlanarWallGeometry.cpp",
+      "bytes": 10536,
+      "sha256": "f3cf0d1b47a4ce099cd3484d674a36b6799068e822a0df7b0ee4e246ea005e70"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/PlanarWallGeometry.h",
+      "bytes": 2338,
+      "sha256": "b817475488594d29191adbb4a7bf343ca10e2ed2e37946fcf8daea89ecd525ca"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/PrescribedSurfaceContact.cmake",
+      "bytes": 670,
+      "sha256": "79ac0f25857e77942a07230e5271fc57bbb92777b8717459553d9984e824b5ed"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/PrescribedSurfaceContact.cpp",
+      "bytes": 10063,
+      "sha256": "093a8ca03d2da87b37bfe8621d8da1cfba0a3f4766a39bcfe7872345745adb5f"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/PrescribedSurfaceContact.h",
+      "bytes": 3682,
+      "sha256": "2b0e7903b328c133b8ce6f725237549ad8c8bcb802bd1a0451d9264e116daae9"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/PrescribedSurfaceInterval.h",
+      "bytes": 5577,
+      "sha256": "985351651e3cf94471623d4cac8c05f5dde1e1c9ca38431845cd1ad54f151a1c"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/Q4ContactBounds.h",
+      "bytes": 8505,
+      "sha256": "f5368d22406e773c3e24c4b8025b94b4a6b75144ab08e4aa12fda95679bdea52"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/Q4ContactIntegration.h",
+      "bytes": 16615,
+      "sha256": "40e8e66332eebb4a07eaba1747902a12d605d63447800fc49c60b200aa325282"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/Q4ContactIntegrationTypes.h",
+      "bytes": 4358,
+      "sha256": "d36edf2ec31bc627424474362b75666e4df10dd712ea977845f2cfb324d2bcf0"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/Q4IntegralMeasure.h",
+      "bytes": 2598,
+      "sha256": "f0dd75882683e39a4f76b99e50c44090900f081889da7384b4082200e2077b1d"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/Q4ParametricContact.cmake",
+      "bytes": 681,
+      "sha256": "f9235fca695965baff8011012df0dc55c2071a7a4eed98f13c225d5ee9e0734f"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/Q4ParametricContact.cpp",
+      "bytes": 5542,
+      "sha256": "f4b5222d3b569917536a7b58dd9c30255bbc9fc7b20ff9931310a8ba5671c32b"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/Q4ParametricContact.h",
+      "bytes": 4134,
+      "sha256": "482ef3d40c01ce16676100ff262ee2d793ffb32e73d63cf71b51b34ceb114def"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/Q4PlanarGeometry.h",
+      "bytes": 7310,
+      "sha256": "aaf13c0aac823fb8bfa3e42a717f20868d20380623c83c0e08218771d1566eb2"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/Q4RectangularIntegration.h",
+      "bytes": 16556,
+      "sha256": "5d44891ed3c71f2e23b88152f33539d33fc6f70e3365e17996aaaf06756dc892"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/Q4RectangularIntegrationTypes.h",
+      "bytes": 1598,
+      "sha256": "e75a3f9b37a1c70ea4e09b3c941595c0e1590845468412b1130ea4e9e741d48a"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/Q4SurfaceMapping.h",
+      "bytes": 8231,
+      "sha256": "ce0aa55c38e35e134c72d0708e79c4e3a4edb795a1525db2e6bf0e4b3c6b7c97"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/Q4SurfaceMass.h",
+      "bytes": 4584,
+      "sha256": "ae4c7a6575e35f781e15a01e03f54f9f0bc3a3d01d6dbd92b870abe32b16b152"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/SurfaceContactGeometry.h",
+      "bytes": 17523,
+      "sha256": "2d98ff5f406555cf60936c5e5fff665b25e5c7aebb6642cc1077a6b241f90442"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/SurfaceContactLaw.h",
+      "bytes": 6902,
+      "sha256": "bc42ccb77db470c47d485374e2ffe938594c661191022bc4a12bcb8186480df5"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/SurfaceContactMass.h",
+      "bytes": 8476,
+      "sha256": "f7c6e09529c86f41a4581311e6deacd3fce35c4b05dff6f1d210304710e2fb28"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/SurfaceContactTypes.h",
+      "bytes": 7384,
+      "sha256": "ee19965627faacc6d68314a9b24a0fac817117b2be5be22e077349ccbdd14568"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/SurfaceMaterialBounds.h",
+      "bytes": 6857,
+      "sha256": "29b2e210a171a21ab9907205d9c2355d1d3234bb732466d702e1b309b7c914b8"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/SurfaceMaterialMeasure.cmake",
+      "bytes": 555,
+      "sha256": "964de2e29aaff68e83769ddd689f2235b173a66c433e9f4fb38268c1e07e87d2"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/SurfaceMaterialMeasure.cpp",
+      "bytes": 4694,
+      "sha256": "43a8656fab2fdfa1a35a7e75f54e3fe06757302e837a3bb486b37afa16cc34f2"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/SurfaceMaterialMeasure.h",
+      "bytes": 4120,
+      "sha256": "cb208d9ed716f851aa38e99b44e4dbb2c2647dfd6c599b063a5302cb1d8750fe"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/T3ContactIntegration.h",
+      "bytes": 14950,
+      "sha256": "3656de85392af64d4662738e078058f5577e006118d7aeb2f4c80f6c1c403d25"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/collision/T3ContactIntegrationTypes.h",
+      "bytes": 2360,
+      "sha256": "fb1c3a3cf0f1901aa9e604b7deb5de4c0bb594f6e88db1ecd4478b53342abee7"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/ReissnerFrame.h",
+      "bytes": 10621,
+      "sha256": "764090dab48e12b3deb732251867c51616ec2f90a222f2a53b79b315a74c0180"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/elements/ReissnerRotation.h",
+      "bytes": 13406,
+      "sha256": "e09dc8c971a22e0dda9ad3a84aff1f34cf4558ef802350f6af1951d229c081f1"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/math/Fixed3.h",
+      "bytes": 2924,
+      "sha256": "ab85903048860e3640e700a9b3a98d7cb792898f1f60621e74554145d200d7fb"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/math/Quaternion.h",
+      "bytes": 6145,
+      "sha256": "de1e9fc2150c7ee8b1d92a75b954b0343ea524d00e4f3da5ee540bf3c2bb81f1"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_src/solvers/ExplicitStepStability.h",
+      "bytes": 10391,
+      "sha256": "555e53b8f8396720ebaab009ae2454bbaf1e8691202775bd75e269bc73a760f1"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/q4_contact_integration_fixture.h",
+      "bytes": 1992,
+      "sha256": "9f7100cd24553aebc51449d6ddb0227f3a24ad5c998e2bbc54414d599dc9e296"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/q4_planar_geometry_fixture.h",
+      "bytes": 3201,
+      "sha256": "369e4aab4cbc05155180d99d2ac055b4f14213dcd127f2a55b9f651474d5d9e4"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/CMakeLists.txt",
+      "bytes": 5728,
+      "sha256": "bb97f870f9ba678739d0663585a6ebf5ca1ff703f34c5c0ddc6afccea251a7e1"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/NativeQephBridge.h",
+      "bytes": 1298,
+      "sha256": "1a33971d22771f02b8fb04d2256f20fee8d9689dc980e70c780db78dd3975374"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/NativeQephForce.F",
+      "bytes": 3996,
+      "sha256": "026378bc21260d26209ca972de1b196edbf7976455825622b34aa45d17564ed7"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/NativeQephKinematics.F",
+      "bytes": 814,
+      "sha256": "9d36ab6a6d6eef99ee0ba38edc21c0d6e91d47fd4be43b1afcbcab08fe6d6283"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/NativeQephScatter.F",
+      "bytes": 2124,
+      "sha256": "2357e772db7a5a0c9fc00053feb87ae446b4e02eb4e573c41af9a633cd72c965"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/NativeQephStartup.F",
+      "bytes": 2343,
+      "sha256": "554528ff1eae15807a354db4cf01f168e69b88b70b20e91d2547c11e12fb908a"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephForceReference.cpp",
+      "bytes": 4505,
+      "sha256": "4535964f160dd514fdd7592bc1a1adcc25265728a2a5cb7fa371e0115e239b4d"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephForceReference.h",
+      "bytes": 1733,
+      "sha256": "ddd8a4a34408e87ab4a0fd77ab6e73defa9fb3d70d51d9bb7bad1f1cb2258f97"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephGeometry.cpp",
+      "bytes": 2293,
+      "sha256": "9e7152b1be1b381139246398c4b2e59a2755f6bcad1289e5ce1a47b7fd34df45"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephGeometry.h",
+      "bytes": 300,
+      "sha256": "02862d454fb5c233c2bcea868c9d1d63b0ec70e54f7c1f735676ffcc8cb6bfca"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephHistory.cpp",
+      "bytes": 2448,
+      "sha256": "e3d5c542d85e4d5b9c44223b101fb88e908f71800c88afecaa1cee0fe3be5616"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephHistory.h",
+      "bytes": 2008,
+      "sha256": "e0adc73e85f19bc4d1813f2d2e60a932473eed3cabf6b6c1278305ee653ab88a"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephNativeGeometry.F",
+      "bytes": 6563,
+      "sha256": "6adfaa4d938d8099c56326f2b6984632d8240375d4c783fbced2d89252f634b0"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephNativeHistory.F",
+      "bytes": 1466,
+      "sha256": "5faf3fb45ea763fe7c1d375c7d49d5a805bd4d68b543505be0cd83c08e55b5c6"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephNativeLaw1.F",
+      "bytes": 3733,
+      "sha256": "cddd8bbea6ebcbd6ed1e701bb153f928090f926eca64a91ca86d0d9e8de0e931"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephNativeMaterial.F",
+      "bytes": 2999,
+      "sha256": "c8184b50d34abce5785b9392a0907c328bc92b25364ed32700f3857ec53df2c2"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephNativeStiffness.F",
+      "bytes": 1681,
+      "sha256": "60651474e891231e588115c3a1d97348ab9dddeb5131450630353ec760123c9d"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephReference.cpp",
+      "bytes": 5207,
+      "sha256": "d09678dc65879a54cb6db1d0372c3446f2e653cf6fb41676133614dbdd67325f"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephReference.h",
+      "bytes": 1241,
+      "sha256": "387d15ab3977f975029d248c6b6f9f17ff1242cadf720256f397eeb7676366d9"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/QephReferenceTypes.h",
+      "bytes": 3337,
+      "sha256": "18f4587fc2dea12269c77893365226c74868b181cafbf324661873a44dd718bc"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/prepare_sources.py",
+      "bytes": 3150,
+      "sha256": "682fec32145e28930b45520bf399b46d64fe88ad9f1bfed6244b3096f9a429e6"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/source-manifest.json",
+      "bytes": 19722,
+      "sha256": "46d2759036e16558500c91a9d14dd225f203aa5d2abec81bb951ac1b956030be"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/native/qeph/verify_sources.py",
+      "bytes": 4059,
+      "sha256": "ae984db3b29d21bfbb3997d6827bea7045472575c1006e6510ef5262c3fbdf87"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/CMakeLists.txt",
+      "bytes": 6792,
+      "sha256": "4144bdd2457c38cb7af6d990f46b379d1d3b5243744285921f4b2d23fef762b4"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/CMakeLists.txt",
+      "bytes": 2599,
+      "sha256": "2ba2dd9e1c109f5e5a57c401bbb9be7dc5821fd6f98e58a79610a7107a82b104"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceAnalysis.cpp",
+      "bytes": 4058,
+      "sha256": "b53930ee420064b1de15b5c0856dd60ace58dc20bce0458f2a0a1c6ec3340a40"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceAudit.cpp",
+      "bytes": 2557,
+      "sha256": "972e0c2e43bb76b4a5a1ed132b1b410dbaa1c12fc32b588078595a70ca1e7278"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceAudit.h",
+      "bytes": 3112,
+      "sha256": "b7cc942316d07dcef171363c92a6d255833b77d5e12f9c907f918b0c5e7443ba"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceDictionary.cpp",
+      "bytes": 3296,
+      "sha256": "2a1c8b4ec7a61c63bd4d3304f31ed7fbbd7231065760e925902a00635cbec149"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceIdentity.cpp",
+      "bytes": 3178,
+      "sha256": "4bf6a7b318f283ce2753444c9c30d1552cff2cce7de3fd5f2d2cf5ffc74e1bfd"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceIdentity.h",
+      "bytes": 183,
+      "sha256": "cc54bf8122bcfd8e06bbe9a097d3682f66805c8ad7edb98ffbe4d2fcad736193"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceNativeMap.h",
+      "bytes": 965,
+      "sha256": "c4cca1e1c5a0f91b67e3d99605ee29a42abf28bd111ddfd6a8e7e09ca8b36e1a"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrencePowerGram.cpp",
+      "bytes": 2888,
+      "sha256": "4a0c141b3e91eacc5b6996ab2974adcca1ff57387a25ff7eea72df98cdcccbd4"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrencePowerGram.h",
+      "bytes": 1382,
+      "sha256": "cb58111908bc393be71adfa3387f35643b9adc6d85c2020ce83712c6c718e4ae"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/free_response/RecurrenceProbe.cpp",
+      "bytes": 7056,
+      "sha256": "32049e499eb2e54f73b038ee778e8b0106c0342e9122e772f42b81fbb43b60c8"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/ANALYSIS_CONTRACT.md",
+      "bytes": 9097,
+      "sha256": "cdda5c376fbfe6af780741da0071a28295bb4439f899b2f034264bc940be7853"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/CMakeLists.txt",
+      "bytes": 3479,
+      "sha256": "c8a60894af4f3a1288f96de7c99d06a2f42ac2c86f970023330e0d85dcef5802"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/ContactBranchOperator.cpp",
+      "bytes": 3609,
+      "sha256": "07124c9891ad22821e8bde00d747e6499a3fb22b661bd1dffab3e5b753f16dea"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/ContactBranchProbe.cpp",
+      "bytes": 4878,
+      "sha256": "d178349e16194d46ae4807abb298ac1a0bbaa4b79e8871894efec78f4a7fdce9"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/ContactBranchProbe.h",
+      "bytes": 2680,
+      "sha256": "f80a1f99a111d53b82b62e49834e859a33cdb2c8e4fd80cd067f49fbc8299f94"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/ContactBranchProbeTest.cpp",
+      "bytes": 8816,
+      "sha256": "f9dc415404f18287e8e950c39e0202fe8df217866a6bd830bb20fea120966896"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/ContactNativeMap.cpp",
+      "bytes": 3584,
+      "sha256": "a4056cb9ced5888d6955913434e2eff9d6ca30dad11e6eba242eeb6528c8561c"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/MODEL_CONTRACT.md",
+      "bytes": 3464,
+      "sha256": "dde11c72fcb6ad0e6e0cf31464a15a3cd51a497fc392190e2b0b4480b27a094c"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/MODEL_RESULTS.md",
+      "bytes": 2303,
+      "sha256": "dd7ff69073606c698e6fde2fd63f9117d9874564d079cecfc275a111695abbc0"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/MovingNativeProbe.cpp",
+      "bytes": 1541,
+      "sha256": "5632c98deb2f4ee8217f4f63d44566b162cfb6becd547eb02f3a41012498c2ee"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/MovingNativeProbe.h",
+      "bytes": 848,
+      "sha256": "1946ee69df61dca21c6e89ab09850540c10d8e4301c06eaf97e0c53a50ed14b5"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/MovingNativeProbeTest.cpp",
+      "bytes": 7377,
+      "sha256": "b3392afb91c3c541b3223c4f080a6adebf92d7555426bd5fa5621be71837ca68"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/PowerGramCompositionTest.cpp",
+      "bytes": 10796,
+      "sha256": "652249e612c1df1c78110d4840fdeb88d1edec0412d3813278972804d20d116e"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/WallAnalysisComparison.cpp",
+      "bytes": 3574,
+      "sha256": "797ff803353244e30fc2c18a467d529ed6d2eae8b9385b28d847ab05e15d0e89"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/WallIdentityComparisonTest.cpp",
+      "bytes": 7512,
+      "sha256": "a582ea59a437b205c80209dbe01ad03dd1045a9a2ba30b5a5e14b63d44312b6c"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/WallMetricScheduleTest.cpp",
+      "bytes": 6518,
+      "sha256": "7c005ee822345534685a7dd5b50fd4061a23270f15c81557c097ec505a483983"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/WallRecurrenceAnalysis.cpp",
+      "bytes": 2380,
+      "sha256": "365747d77c5a20f666f94e558b80e161a401e9a2d58b41836f6e74ecd62312a7"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/WallRecurrenceAnalysis.h",
+      "bytes": 2356,
+      "sha256": "ec797e3f9461b8d343b7561d2a14820fdaceccdd4a58309c95c2f16b2ae879ed"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/WallRecurrenceModel.cpp",
+      "bytes": 6328,
+      "sha256": "8627c930853e75589cf7f2861cb672a46c643891f8102086609326df9fa97eb1"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/WallRecurrenceModel.h",
+      "bytes": 2780,
+      "sha256": "915e479e2ad23525ccf72697b6048419bdb0bcacd2489cd3bddd268d10293f77"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/WallRecurrenceModelTest.cpp",
+      "bytes": 8469,
+      "sha256": "4b60873b553184e1a82e027ebc30de3350cc77cb42ae95cc521d0460bd000f8d"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/WallRecurrenceSpectrum.cpp",
+      "bytes": 3946,
+      "sha256": "0680300a38cb9c0d24a8f6821146f206fcd11d6e7ff3596591b64e8e3ecd501f"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/WallRecurrenceSpectrum.h",
+      "bytes": 1925,
+      "sha256": "cfb0766d68f4fe913322d9859e09600c2d6aed264a552e5ad3e692c7ce55dfa0"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/WallRecurrenceTestFixture.h",
+      "bytes": 2925,
+      "sha256": "df7846e2a0391094e240752fe4ea3ab597f45a4fa01d8dcc631d19093705cda5"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/WallSequenceAnalysis.cpp",
+      "bytes": 2292,
+      "sha256": "4f02f727c3dc1502abc03db90a1d7804c9b7dd4627f1a40fcc11e5e8d2792a89"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/WallSpectrumTest.cpp",
+      "bytes": 7545,
+      "sha256": "60fe4a64af21c6c239ddf5de48d8327379a6bdc76c0f099142601cedb746ca56"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/WallStateIdentities.cpp",
+      "bytes": 5600,
+      "sha256": "7ce628ed58d86bd2d9b9f7e77164fa59e07175c5ef08e279982fddf5061e6859"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/WallStateIdentities.h",
+      "bytes": 1643,
+      "sha256": "28c975ded7cfb5af3a63aa62b0ef108424c6ce73b4a76361a66a717b6d4e3d22"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/WallStateMetric.cpp",
+      "bytes": 2264,
+      "sha256": "b4b5471477b973cb2a0d18710b4c2d818c3ca78296810ef02edb59fe63522891"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/WallStateMetric.h",
+      "bytes": 976,
+      "sha256": "87b3a6e86c60927e0699321f9305bef61def8e8557057b1b96909ab854a00e4b"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/WallSwitchingSchedule.cpp",
+      "bytes": 4055,
+      "sha256": "74bad249ffba6892bb28f538e73bdb9e9599c783045dfb71d28da4593b912252"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/WallSwitchingSchedule.h",
+      "bytes": 1886,
+      "sha256": "e024573e093d76f598ce70e2b66b29955fea30c5e64c729b54643b1939fda631"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/model-source-map.json",
+      "bytes": 21950,
+      "sha256": "c92791767112e81c9fd5551927d571f1280cb671cca13c42fcb27e009cc500a1"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/lib_utest/qualification/qeph/wall_recurrence/source-map.json",
+      "bytes": 13559,
+      "sha256": "43ace8c01da7cb57b7f78dc3e8cb217d27b5bb7e29bbe70dfae53c6d2cf04b85"
+    },
+    {
+      "path": "Total-Lagrangian-FEA/tools/run_bounded.py",
+      "bytes": 8757,
+      "sha256": "c4eddb8f608b0f4cf916c746b05ccc2cd0b17e77dd1ccb0ea2718bb01995d870"
+    },
+    {
+      "path": "crash-work/checkpoints/nodal-wall-native-1/manifest.json",
+      "bytes": 80890,
+      "sha256": "d6547aa31cbc7645cf75e25d5888cfe6bfe97478e2e91515981619e542d1cbe7"
+    },
+    {
+      "path": "crash-work/checkpoints/qeph-wall-model-1/manifest.json",
+      "bytes": 33433,
+      "sha256": "14f1a78560c4301e1d36c9b56fb9dfc61e92c4bcbea1708516f511458d29491d"
+    },
+    {
+      "path": "crash-work/checkpoints/shell-mixed-publication-1/manifest.json",
+      "bytes": 67191,
+      "sha256": "8b03c428556089257f0576b3879cdb160c5268017d487691b0dd7fe294463ee9"
+    },
+    {
+      "path": "planning/QEPH_WALL_RECURRENCE_SCREEN.md",
+      "bytes": 10553,
+      "sha256": "cd3c910c39766cdddfa0b94ec3df5b0e1ac717699df621f8a3fb2f1af0ecd61d"
+    }
+  ]
+}

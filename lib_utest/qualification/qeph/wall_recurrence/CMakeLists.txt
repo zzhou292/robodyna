@@ -29,3 +29,21 @@ target_compile_features(qeph_wall_recurrence_model_check PRIVATE cxx_std_17)
 target_compile_options(qeph_wall_recurrence_model_check PRIVATE -fno-fast-math -ffp-contract=off)
 add_test(NAME qeph_wall_recurrence_model_check COMMAND qeph_wall_recurrence_model_check)
 set_tests_properties(qeph_wall_recurrence_model_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)
+
+# Full-state analysis consumes retained derivatives; it owns neither the native
+# capture loop nor any production mechanics state.
+add_library(qeph_wall_recurrence_analysis STATIC
+  WallStateMetric.cpp WallSwitchingSchedule.cpp WallRecurrenceSpectrum.cpp
+  WallSequenceAnalysis.cpp WallStateIdentities.cpp
+  WallRecurrenceAnalysis.cpp WallAnalysisComparison.cpp)
+target_link_libraries(qeph_wall_recurrence_analysis PUBLIC qeph_wall_recurrence_model)
+target_compile_features(qeph_wall_recurrence_analysis PUBLIC cxx_std_17)
+target_compile_options(qeph_wall_recurrence_analysis PRIVATE -fno-fast-math -ffp-contract=off)
+add_executable(qeph_wall_recurrence_analysis_check
+  WallMetricScheduleTest.cpp WallSpectrumTest.cpp WallIdentityComparisonTest.cpp)
+target_link_libraries(qeph_wall_recurrence_analysis_check PRIVATE
+  qeph_wall_recurrence_analysis GTest::gtest_main)
+target_compile_features(qeph_wall_recurrence_analysis_check PRIVATE cxx_std_17)
+target_compile_options(qeph_wall_recurrence_analysis_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME qeph_wall_recurrence_analysis_check COMMAND qeph_wall_recurrence_analysis_check)
+set_tests_properties(qeph_wall_recurrence_analysis_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)
