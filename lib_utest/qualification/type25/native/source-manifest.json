@@ -1,0 +1,36 @@
+{
+  "repository": "https://github.com/OpenRadioss/OpenRadioss",
+  "commit": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "sources": [
+    {
+      "path": "original/starter/source/elements/spring/rmass.F",
+      "upstream_path": "starter/source/elements/spring/rmass.F",
+      "size": 8914,
+      "sha256": "0b5f5822acbfd3951c6cbe0af20d72e6ae63edabbdedbd6e1d7628b0bf59d907",
+      "git_blob_sha1": "89d10e0f6ebaf09e72eb84967536cff4276d7017"
+    },
+    {
+      "path": "original/starter/source/elements/spring/r4buf3.F",
+      "upstream_path": "starter/source/elements/spring/r4buf3.F",
+      "size": 10230,
+      "sha256": "2836024f095d7c249509dd0526c8af74e4c2a90c4d0d18314a633f282a8ff50b",
+      "git_blob_sha1": "fff31ce808e34db67ae5a88fda9f7a04b5e3b332"
+    },
+    {
+      "path": "original/starter/source/elements/spring/rinit3.F",
+      "upstream_path": "starter/source/elements/spring/rinit3.F",
+      "size": 90241,
+      "sha256": "dabdb3eefa5a38327ec769784323c285efc1f0da2e7a6eff4b03d49eb438a551",
+      "git_blob_sha1": "3e098fe295dab3cb11060e8b3cd7eca9f53bccc7"
+    },
+    {
+      "path": "original/engine/source/elements/spring/r4evec3.F",
+      "upstream_path": "engine/source/elements/spring/r4evec3.F",
+      "size": 10816,
+      "sha256": "505d3359948b5fbb14e057a7b39aeec4f99deeefe6b29acbeba4f58c4d76d8c6",
+      "git_blob_sha1": "1def3d40d186036c0f5c1b2ebc6a323748019641"
+    }
+  ],
+  "scope": "Complete startup/frame donor bytes. Production C++ adapts selected scalar operations; native compiled qualification follows separately.",
+  "extractions": []
+}

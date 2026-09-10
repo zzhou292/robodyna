@@ -1,0 +1,6 @@
+include_guard(GLOBAL)
+add_library(tl_type25_model STATIC "${CMAKE_CURRENT_LIST_DIR}/Type25Model.cpp")
+get_filename_component(tl_type25_root "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+target_include_directories(tl_type25_model PUBLIC "${tl_type25_root}")
+target_compile_features(tl_type25_model PUBLIC cxx_std_17)
+target_compile_options(tl_type25_model PRIVATE -fno-fast-math -ffp-contract=off)

@@ -1,0 +1,9 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+package(default_visibility = ["//visibility:public"])
+cc_library(
+    name = "type25_model",
+    srcs = ["Type25Model.cpp"],
+    hdrs = ["Type25Types.h", "Type25Model.h", "Type25Identity.h", "Type25Property.h", "Type25Frame.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/math:fixed3", "//lib_src/math:fixed3_operations"],
+)
