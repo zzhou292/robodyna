@@ -103,6 +103,12 @@ cc_library(
 )
 
 cc_library(
+    name = "source_identity_index",
+    hdrs = ["SourceIdentityIndex.h"],
+    deps = [":bounded_startup_array"],
+)
+
+cc_library(
     name = "bounded_arena",
     hdrs = ["BoundedArena.h"],
 )

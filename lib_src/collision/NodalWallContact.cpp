@@ -1,5 +1,6 @@
 #include "NodalWallContact.h"
 #include "Q4ParametricContact.h"
+#include "NodalWallWeightStartup.h"
 #include <algorithm>
 #include <new>
 
@@ -10,11 +11,7 @@ bool Less(const NodalWallParentWeight& a,const NodalWallParentWeight& b) {
   if (a.parent_face_id!=b.parent_face_id) return a.parent_face_id<b.parent_face_id;
   return a.feature_id<b.feature_id;
 }
-bool Accumulate(Q4CertifiedIntegral& sum,Q4CertifiedIntegral value) {
-  Q4IntegralInterval truth;
-  return q4_bounds::Add({sum.lower,sum.upper},{value.lower,value.upper},&truth) &&
-      q4_bounds::Certify(sum.value+value.value,truth,&sum);
-}
+using nodal_wall_detail::AccumulateWeight;
 } // namespace
 
 NodalWallReport NodalWallWeights::Initialize(std::uint32_t global_nodes,
@@ -25,15 +22,22 @@ NodalWallReport NodalWallWeights::Initialize(std::uint32_t global_nodes,
     const NodalWallParentInput* input,std::uint32_t count,const NodalWallWeightLimits& limits) {
   using Code=NodalWallStatus;
   if (!global_nodes || !input || !count) return {};
+  const bool vehicle=limits.profile==NodalWallWeightProfile::Vehicle;
+  if(!vehicle&&limits.profile!=NodalWallWeightProfile::Legacy)return {};
   if (!limits.max_nodes || !limits.max_parents || !limits.max_owned_bytes ||
-      limits.max_nodes>MaxNodalWallWeightNodes || limits.max_parents>MaxNodalWallWeightParents)
+      limits.max_nodes>(vehicle?MaxVehicleWallWeightNodes:MaxNodalWallWeightNodes) ||
+      limits.max_parents>(vehicle?MaxVehicleWallWeightParents:MaxNodalWallWeightParents))
     return {};
+  if(vehicle&&(!limits.max_startup_bytes||limits.max_startup_bytes>MaxVehicleWallWeightScratchBytes||
+      limits.max_owned_bytes>MaxVehicleWallWeightOwnedBytes))return {};
   if (global_nodes>limits.max_nodes || count>limits.max_parents)
     return nodal_wall_detail::Report(Code::Capacity);
   // Hard count bounds above make every product/sum below representable. Check
   // the full owned payload before allocation or reading any borrowed parent.
   const auto bytes=sizeof(*this)+decltype(parents_)::ExtraBytes(count)+decltype(nodes_)::ExtraBytes(global_nodes);
   if (bytes>limits.max_owned_bytes) return nodal_wall_detail::Report(Code::Capacity);
+  if(vehicle&&nodal_wall_detail::WeightStartupBytes(count,global_nodes)>limits.max_startup_bytes)
+    return nodal_wall_detail::Report(Code::Capacity);
   try {
   NodalWallWeights next; next.global_node_count_=global_nodes; next.parent_count_=count;
   next.parents_.Resize(count); next.nodes_.Resize(global_nodes);
@@ -68,6 +72,12 @@ NodalWallReport NodalWallWeights::Initialize(std::uint32_t global_nodes,
         !nodal_wall_detail::Certificate(out.share,true)) return failure;
   }
   std::sort(next.parents_.data(),next.parents_.data()+count,Less);
+  if(vehicle) {
+    const auto report=nodal_wall_detail::BuildIndexedWeights(next.parents_.data(),count,
+      next.nodes_.data(),global_nodes,next.node_count_,next.total_area_);
+    if(report.status!=Code::Ok)return report;
+    next.prepared_=true;*this=next;return report;
+  }
   for (unsigned p=0;p<count;++p) {
     const auto& parent=next.parents_[p];
     for (unsigned j=0;j<p;++j) {
@@ -77,14 +87,14 @@ NodalWallReport NodalWallWeights::Initialize(std::uint32_t global_nodes,
         auto failure=nodal_wall_detail::Report(Code::DuplicateParent); failure.parent=p; return failure;
       }
     }
-    if (!Accumulate(next.total_area_,parent.area)) return nodal_wall_detail::Report(Code::NonFiniteArithmetic);
+    if (!AccumulateWeight(next.total_area_,parent.area)) return nodal_wall_detail::Report(Code::NonFiniteArithmetic);
   }
   for (unsigned node=0;node<global_nodes;++node) {
     NodalWallNodeWeight weight; weight.node=node; bool present=false;
     for (unsigned p=0;p<count;++p) for (unsigned n=0;n<next.parents_[p].arity;++n)
       if (next.parents_[p].nodes[n]==node) {
         present=true;
-        if (!Accumulate(weight.area,next.parents_[p].share))
+        if (!AccumulateWeight(weight.area,next.parents_[p].share))
           return nodal_wall_detail::Report(Code::NonFiniteArithmetic,Status::kNonFiniteResult,node);
       }
     if (present) {

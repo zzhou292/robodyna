@@ -505,6 +505,19 @@ cc_library(
     ],
 )
 
+# Explicit host-only source-count wall weights; no resident CUDA dependency.
+cc_test(
+    name = "vehicle_wall_weights_source_size",
+    size = "large",
+    tags = ["exclusive", "manual"],
+    srcs = [
+        "qualification/vehicle_wall_weights/WeightSourceSizeTest.cpp",
+        "qualification/vehicle_wall_weights/WeightTestSupport.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:nodal_wall_contact", "@googletest//:gtest_main"],
+)
+
 # Explicit host-only vehicle catalog qualification; no resident CUDA dependency.
 cc_test(
     name = "vehicle_plasticity_catalog_small",

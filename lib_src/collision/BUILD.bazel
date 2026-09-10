@@ -124,10 +124,10 @@ cc_library(
 
 cc_library(
     name = "nodal_wall_contact",
-    srcs = ["NodalWallContact.cpp", "NodalWallContactEvaluation.cpp"],
-    hdrs = ["NodalWallContact.h", "NodalWallContactPoint.h", "NodalWallContactReduction.h"],
+    srcs = ["NodalWallContact.cpp", "NodalWallContactEvaluation.cpp", "NodalWallWeightStartup.cpp"],
+    hdrs = ["NodalWallContact.h", "NodalWallContactPoint.h", "NodalWallContactReduction.h", "NodalWallWeightLimits.h", "NodalWallWeightStartup.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
-    deps = [":q4_parametric_contact", "//lib_src/solvers:explicit_step_stability", "//lib_utils:bounded_startup_array"],
+    deps = [":q4_parametric_contact", "//lib_src/solvers:explicit_step_stability", "//lib_utils:bounded_startup_array", "//lib_utils:source_identity_index"],
 )
 
 cuda_library(

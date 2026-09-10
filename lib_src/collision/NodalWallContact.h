@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Q4ContactBounds.h"
+#include "NodalWallWeightLimits.h"
 #include "lib_src/solvers/ExplicitStepStability.h"
 #include "lib_utils/BoundedStartupArray.h"
 #include <array>
@@ -12,14 +13,8 @@ class T3MaterialMeasure;
 inline constexpr const char* NodalWallContactModel="reference-area-lumped-nodal-wall-v1";
 // Bounded prescribed operations only. These capacities do not change the
 // physical nodal owner's capacity or admit an owner, stream, clock or history.
-inline constexpr std::uint32_t MaxNodalWallParents=128,MaxNodalWallNodes=128;
 // Larger immutable weights are a host startup capability only. Neither the
 // prescribed result packet nor the CUDA contributor inherits these bounds.
-inline constexpr std::uint32_t MaxNodalWallWeightParents=1024,MaxNodalWallWeightNodes=2048;
-struct NodalWallWeightLimits {
-  std::uint32_t max_parents=MaxNodalWallWeightParents,max_nodes=MaxNodalWallWeightNodes;
-  std::size_t max_owned_bytes=4*1024*1024;
-};
 enum class NodalWallStatus {
   Ok,InvalidInput,InvalidReference,Capacity,DuplicateParent,MassFailure,
   FixedMotion,FixedPenetration,PenetrationLimit,NonFiniteArithmetic,Accuracy

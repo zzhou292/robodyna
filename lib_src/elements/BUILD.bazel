@@ -24,7 +24,7 @@ cc_library(
     name = "shell_binding_identity_index",
     visibility = ["//visibility:private"],
     hdrs = ["ShellBindingIdentityIndex.h"],
-    deps = [":shell_host_binding_limits", "//lib_utils:bounded_startup_array"],
+    deps = [":shell_host_binding_limits", "//lib_utils:source_identity_index"],
 )
 
 cc_library(
