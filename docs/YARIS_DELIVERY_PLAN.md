@@ -1,7 +1,7 @@
 # Robo-dyna: Yaris delivery plan
 
-Updated 2026-09-10 for the full-shell milestone, against robo-dyna `118e1d7`
-and TL-FEA `a519f3a`.
+Updated 2026-09-10 for the full-shell milestone, against robo-dyna `0b6cb2a`
+and TL-FEA `a834700`.
 This is the concise delivery roadmap. The workspace
 [active execution plan](../../planning/CURRENT_EXECUTION_PLAN.md) tracks current
 runs and integration order; [execution status](../../planning/EXECUTION_STATUS.md)
@@ -96,11 +96,23 @@ Actual original pure/mixed analytic source declarations now pass the V2 reader/
 binding tests; V1 archives retain their table-only contract. Explicit vehicle
 rigid owner capacity passes all eight focused root CPU/CUDA test groups, up to
 1,024 groups / 8,192 members, including full-node capture and rejection/retry.
-Native layered LAW1 point/NIP3 values pass seven root CPU/CUDA test groups with
-existing plasticity regressions. Layered elastic Q/T forces and vehicle resident
-Q/T capacity remain in progress. Binary frame and interval record foundations
-pass owning tests; static source/topology bundles and live full-shell output
-remain to be integrated.
+Native layered LAW1 point/NIP3 and rotating Q/T force adapters are qualified.
+Vehicle Q/T resident storage passes eleven host/CUDA functions at all 328,344
+quads /21,301 triangles /359,785 nodes. The corresponding mesh-wall owner passes
+nine host/CUDA functions. These synthetic capacity/transaction tests preserve
+legacy profiles; they do not establish original-vehicle mechanics admission.
+Mixed host material tags are merged; per-parent resident dispatch is undergoing
+root native/CUDA qualification. Original elastic source candidates cover 27,177
+retained shells. V3 source integration is resolving auxiliary external node
+roles before original fixture qualification; no V3 wall/archive is admitted yet.
+
+Binary frame/interval records and the complete static source/mapping bundle are
+qualified. The static bundle passes 35 root host tests and measures 144,417,279 B
+across 31 files, preserving the complete original key and canonical arrays.
+Wall/configuration/run metadata remain separate budget obligations under 2 GiB.
+Live full-shell publication and complete run reader/replay remain to be integrated;
+Chrono's existing indexed scene and PID colors are reused. The adapter preserves
+explicit unavailable plastic fields rather than inventing zero plastic strain.
 
 The [population design](../../planning/FULL_SHELL_POPULATION_ARCHITECTURE.md)
 keeps one complete batch per native formulation and selects the material law per
@@ -118,7 +130,7 @@ replay work in parallel. Profiling and throughput optimization are deferred.
 | Next milestone | Work and ownership | Exit evidence |
 | --- | --- | --- |
 | Compile the full shell and its load paths | Audit every retained original shell, material/section and connection, including explicit tire/nonshell exclusions and released interfaces. Reuse TL shell, rigid-group and TYPE25 contributors and add required beam/tie/material branches through the same CUDA owner. | Authenticated complete source selection, correct units and combined mass/inertia, loaded connection tests and shared-step rejection/retry. |
-| Admit the full selected shell assembly | Extend node/shell/connector/contact/output capacities to actual source counts. The current component uses 959 of 1,024 qualified shell slots; larger owner and contributor gates are independent. | Complete source coverage, bounded storage, meaningful capacity/rejection tests and measured memory within the existing workstation allowance; full-shell free flight. |
+| Admit the full selected shell assembly | Extend node/shell/connector/contact/output capacities to actual source counts. Node, Q/T and wall capacities now pass the complete-count gates; source material, connection and publication coverage remain independent. | Complete source coverage, bounded storage, meaningful capacity/rejection tests and measured memory within the existing workstation allowance; full-shell free flight. |
 | Support the needed folding contact | Implement required self-contact, feature/edge handling, thickness and friction in TL collision modules, reusing existing geometry/query/law utilities. | Loaded shell/contact cases, force/moment balance, crossing/sliding tests and failed-step preservation before assembly integration. |
 | Extend and visualize full-shell crushing | Integrate whole-shell first contact, then progress through 5 ms toward a 20 ms source-speed impact and later 50 ms. Keep smaller cases as targeted integration/regression checks. | Accounted load paths, stable accepted histories, force/plasticity diagnostics and inspected physical-scale videos with distinct part colors. |
 | Verify alongside implementation | Extend the existing comparator with connector phase, motion, force/couple, signed work and combined M/J. Use selected smaller-step runs where a changed mechanism or unresolved response requires them. | Meaningful positive/negative fixtures and matching-time comparisons without mixing phases or inferring convergence from matching totals alone. Until qualified, the current comparator rejects seven-part archives. |
