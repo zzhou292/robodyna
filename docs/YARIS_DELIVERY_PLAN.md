@@ -40,9 +40,11 @@ functions and 41 regressions at TL `3b25699`, including 16 contact-only interval
 with native structural masses, distinct contact weights and late-failure retry.
 The contributor keeps one 99,384-byte allocation and its two-parent/eight-incident-
 node cap. Mixed shell force feedback remains the next composition gate. Eight full-state
-native contact model/probe host functions now pass at `1bef7cc`; full-grid
-switching/stability analysis and explicit moving QEPH startup precede actual
-incoming-impact qualification. The
+native contact model/probe host functions now pass at `1bef7cc`, followed by
+13 independently checked full-state stability-analysis utility functions at
+`08fb0c4`. The retained total is 1,021 distinct passing functions. Full-grid native
+capture, authenticated switching/stability decisions and explicit moving QEPH
+startup precede actual incoming-impact qualification. The
 [combined admission design](../../planning/QEPH_WALL_COUPLED_ADMISSION.md)
 separates short transaction checks, contact recurrence, incoming-velocity startup
 and impact/refinement; free-shell stability does not qualify wall impact. Plasticity,
