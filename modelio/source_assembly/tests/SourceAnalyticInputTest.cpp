@@ -1,20 +1,13 @@
-#include "AssemblyTestSupport.h"
+#include "AnalyticTestSupport.h"
 #include "lib_src/elements/ShellBatchBinding.h"
 #include "lib_src/elements/ShellBatchPlasticityBinding.h"
 #include <cmath>
 
 namespace crash::modelio::assembly::test {
 namespace {
-ArtifactIdentity Identity(bool mixed) {
-    return mixed ? ArtifactIdentity{1130084, "48b3fdf74dcc7dffc53fa91574401ead248dae22912f215924b2e148d8974957"}
-                 : ArtifactIdentity{768894, "2c4ce206c1b30a3363035ff748a2a5de293fff9cacdc87cf45fc09c46f5cf8b3"};
-}
-std::filesystem::path Path(bool mixed) {
-    const auto* name = mixed ? "ROBO_DYNA_SOURCE_ANALYTIC_MIXED_INVENTORY" : "ROBO_DYNA_SOURCE_ANALYTIC_INVENTORY";
-    const auto* path = std::getenv(name); output::Require(path && *path, "Explicit analytic source fixture is required");
-    return path;
-}
-SourceAssembly LoadAnalytic(bool mixed) { return SourceAssembly::Read(Path(mixed), Identity(mixed)); }
+using analytic::Identity;
+using analytic::Path;
+SourceAssembly LoadAnalytic(bool mixed) { return analytic::Load(mixed); }
 std::string AlterAnalytic(const std::function<void(output::Document&)>& edit) {
     const auto bytes = output::ReadBounded(Path(false), Identity(false).bytes);
     output::Document d; d.Parse<rapidjson::kParseFullPrecisionFlag>(bytes.data(), bytes.size());

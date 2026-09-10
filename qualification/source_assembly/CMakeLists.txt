@@ -31,3 +31,17 @@ target_compile_options(robo_dyna_source_assembly_flight_check PRIVATE
 add_test(NAME source_assembly_flight COMMAND robo_dyna_source_assembly_flight_check)
 set_tests_properties(source_assembly_flight PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 180
   ENVIRONMENT "ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY=${ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY}")
+
+set(ROBO_DYNA_SOURCE_ANALYTIC_INVENTORY "" CACHE FILEPATH "Frozen original analytic LAW44 part inventory")
+set(ROBO_DYNA_SOURCE_ANALYTIC_MIXED_INVENTORY "" CACHE FILEPATH "Frozen original mixed table/analytic inventory")
+if(ROBO_DYNA_SOURCE_ANALYTIC_INVENTORY OR ROBO_DYNA_SOURCE_ANALYTIC_MIXED_INVENTORY)
+  foreach(fixture ROBO_DYNA_SOURCE_ANALYTIC_INVENTORY ROBO_DYNA_SOURCE_ANALYTIC_MIXED_INVENTORY)
+    if(NOT EXISTS "${${fixture}}")
+      message(FATAL_ERROR "Analytic source flight requires explicit ${fixture}")
+    endif()
+  endforeach()
+  target_sources(robo_dyna_source_assembly_flight_check PRIVATE SourceAnalyticFlightTest.cpp)
+  set_property(TEST source_assembly_flight APPEND PROPERTY ENVIRONMENT
+    "ROBO_DYNA_SOURCE_ANALYTIC_INVENTORY=${ROBO_DYNA_SOURCE_ANALYTIC_INVENTORY}"
+    "ROBO_DYNA_SOURCE_ANALYTIC_MIXED_INVENTORY=${ROBO_DYNA_SOURCE_ANALYTIC_MIXED_INVENTORY}")
+endif()

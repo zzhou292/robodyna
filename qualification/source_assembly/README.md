@@ -1,5 +1,17 @@
 # Actual six-part source GPU free-flight gate
 
+Optional original V2 fixtures extend this same qualification to pure analytic
+LAW44 (PID2000064:388 parents/421 nodes) and mixed table/analytic LAW44
+(482 parents/538 nodes). Set `ROBO_DYNA_SOURCE_ANALYTIC_INVENTORY` and
+`ROBO_DYNA_SOURCE_ANALYTIC_MIXED_INVENTORY` together. Both original inventories
+are pinned by complete bytes/SHA256 and share the host-reader fixture authority.
+The existing owner, family participants, full-parent host comparisons and
+publication helpers are reused. Each case advances four accepted intervals and
+rejects/retries one complete candidate exactly, preserving allocation counts.
+These source selections have no internal groups; external interfaces remain
+explicitly released. This is actual-source material/storage integration, with
+zero free-flight plastic work; it does not admit the V2 wall case or archive.
+
 This focused qualification composes existing `SourceAssemblyBindings`, TL's
 active QEPH/T3 participants and plastic catalog, one `FENodalState`, and one
 `ShellBatchPublication`. It retains the source-neutral contact geometry. It
