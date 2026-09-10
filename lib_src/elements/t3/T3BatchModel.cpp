@@ -3,6 +3,7 @@
 #include "T3History.h"
 #include "../ShellBatchJoinedModel.h"
 #include <cmath>
+#include <new>
 
 namespace tl::fea::t3::batch_detail {
 namespace {
@@ -39,14 +40,17 @@ BatchReport BuildModel(const T3BatchConfig& c,const T3BatchElement* input,Model&
     return {BatchStatus::InvalidInput,"Batch requires explicit usage and an epoch-zero staggered rotational owner"};
   if(!shell_startup_detail::ValidStartup(c.startup,c.usage==BatchUsage::CoupledForces))
     return {BatchStatus::InvalidInput,"Invalid or unsupported T3 initial motion declaration"};
-  if(!c.element_count||c.element_count>MaxBatchElements||!o.node_count||o.node_count>MaxBatchNodes||
-     !c.max_device_bytes||c.max_device_bytes>MaxBatchDeviceBytes||sizeof(Storage)>c.max_device_bytes)
+  Layout checked_layout;
+  if(!ValidShellResidentLimits(c.storage_limits,c.element_count,o.node_count,c.max_device_bytes)||
+     !checked_layout.Initialize(c.element_count,o.node_count,c.max_device_bytes))
     return {BatchStatus::ResourceLimit,"T3 element/node/allocation capacity exceeded"};
   if(joined&&(!joined->prepared()||!joined->qeph_count()||c.element_count!=joined->t3_count()||
               o.node_count!=joined->node_count()))
     return {BatchStatus::InvalidInput,"Joined T3 scope requires its exact count from the complete mixed collection"};
-  Model model{}; Slab initial{}; model.config=c;
-  bool seen[MaxBatchNodes]{}; std::uint64_t ids[MaxBatchNodes]{};
+  Model model=output; Slab initial=startup; model.config=c;
+  std::unique_ptr<bool[]> seen(new(std::nothrow) bool[o.node_count]{});
+  std::unique_ptr<std::uint64_t[]> ids(new(std::nothrow) std::uint64_t[o.node_count]{});
+  if(!seen||!ids) return {BatchStatus::ResourceLimit,"T3 active identity staging allocation failed"};
   for(unsigned e=0;e<c.element_count;++e) {
     T3BatchElement selected;
     if(joined) {

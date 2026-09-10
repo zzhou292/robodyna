@@ -4,6 +4,7 @@
 #include "QephBatchStartup.h"
 #include "../ShellBatchJoinedModel.h"
 #include <cmath>
+#include <new>
 
 namespace tl::fea::qeph::batch_detail {
 namespace {
@@ -32,14 +33,17 @@ BatchReport BuildModel(const QephBatchConfig& c,const QephBatchElement* input,Mo
     return {BatchStatus::InvalidInput,"Batch requires explicit usage and an epoch-zero staggered rotational owner"};
   if(!ValidStartup(c,joined!=nullptr))
     return {BatchStatus::InvalidInput,"Invalid or unsupported QEPH initial motion declaration"};
-  if(!c.element_count||c.element_count>MaxBatchElements||!o.node_count||o.node_count>MaxBatchNodes||
-     !c.max_device_bytes||c.max_device_bytes>MaxBatchDeviceBytes||sizeof(Storage)>c.max_device_bytes)
+  Layout checked_layout;
+  if(!ValidShellResidentLimits(c.storage_limits,c.element_count,o.node_count,c.max_device_bytes)||
+     !checked_layout.Initialize(c.element_count,o.node_count,c.max_device_bytes))
     return {BatchStatus::ResourceLimit,"QEPH element/node/allocation capacity exceeded"};
   if(joined&&(!joined->prepared()||!joined->t3_count()||c.element_count!=joined->qeph_count()||
               o.node_count!=joined->node_count()))
     return {BatchStatus::InvalidInput,"Joined QEPH scope requires its exact count from the complete mixed collection"};
   model.config=c;
-  bool seen[MaxBatchNodes]{}; std::uint32_t ids[MaxBatchNodes]{};
+  std::unique_ptr<bool[]> seen(new(std::nothrow) bool[o.node_count]{});
+  std::unique_ptr<std::uint32_t[]> ids(new(std::nothrow) std::uint32_t[o.node_count]{});
+  if(!seen||!ids) return {BatchStatus::ResourceLimit,"QEPH active identity staging allocation failed"};
   for(unsigned e=0;e<c.element_count;++e) {
     QephBatchElement selected;
     if(joined) {

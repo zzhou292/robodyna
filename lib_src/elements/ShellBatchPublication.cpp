@@ -3,7 +3,7 @@
 #include "qeph/QephBatchStorage.h"
 #include "t3/T3BatchStorage.h"
 #include "ShellBatchStartup.h"
-#include <array>
+#include <stdexcept>
 #include <cstring>
 #include <new>
 
@@ -30,10 +30,17 @@ ShellPublicationReport InitialMovingKinetic(FENodalState& owner,const ShellBatch
   // Initial assembly views have expired after caller Discard. Authenticate
   // those source identities separately, then obtain fresh actual owner fields
   // through its accepted-only readback contract; never dereference old views.
-  std::array<double,3*MaxShellCollectionNodes> x{},v{},w{};
-  std::array<double,4*MaxShellCollectionNodes> orientation{};
+  const auto count=binding.node_count();
+  // The caller has preflighted this complete 13-double/node temporary payload.
+  util::HostArena fields; util::BoundedArenaLayout layout(13*count*sizeof(double));
+  util::ArenaRegion xr,vr,wr,qr;
+  if(!layout.Append<double>(3*count,xr)||!layout.Append<double>(3*count,vr)||
+     !layout.Append<double>(3*count,wr)||!layout.Append<double>(4*count,qr)||!fields.Initialize(layout.bytes()))
+    return {S::ResourceLimit,"Initial kinetic readback staging allocation failed"};
+  auto* x=fields.Construct<double>(xr); auto* v=fields.Construct<double>(vr);
+  auto* w=fields.Construct<double>(wr); auto* orientation=fields.Construct<double>(qr);
   NodalStamp stamp;
-  const auto copied=owner.CopyAccepted({x.data(),v.data(),MaxShellCollectionNodes,orientation.data(),w.data()},&stamp);
+  const auto copied=owner.CopyAccepted({x,v,count,orientation,w},&stamp);
   if(copied.status!=NodalStatus::Ok) return Nodal(copied);
   if(!trial_identity::SameStamp(stamp,expected)||stamp.epoch||stamp.time!=0||stamp.velocity_time!=0||stamp.node_count!=binding.node_count()||
      stamp.temporal_scheme!=NodalTemporalScheme::StaggeredHalfKickStart||stamp.velocity_phase!=NodalVelocityPhase::Collocated)
@@ -41,7 +48,7 @@ ShellPublicationReport InitialMovingKinetic(FENodalState& owner,const ShellBatch
   ShellBatchKinetic measured;
   for(std::size_t n=0;n<binding.node_count();++n) {
     const tl::math::Vec3 position{x[3*n],x[3*n+1],x[3*n+2]},velocity{v[3*n],v[3*n+1],v[3*n+2]},omega{w[3*n],w[3*n+1],w[3*n+2]};
-    if(!shell_startup_detail::MatchesInitialNode(startup,position,binding.nodes()[n].position,velocity,omega,orientation.data()+4*n))
+    if(!shell_startup_detail::MatchesInitialNode(startup,position,binding.nodes()[n].position,velocity,omega,orientation+4*n))
       return {S::InvalidInput,"Actual common initial state differs from the bound motion declaration"};
     if(!shell_startup_detail::AddInitialTranslationKinetic(binding.nodes()[n].native.mass,velocity,measured.translation))
       return {S::NonfiniteResult,"Measured common initial kinetic energy overflows"};
@@ -55,6 +62,7 @@ struct ShellBatchPublication::Impl {
   t3::T3Batch* tbatch=nullptr;
   const ShellBatchPublication* scope=nullptr;
   shell_publication_detail::Storage* storage=nullptr;
+  shell_publication_detail::Layout layout;
   shell_publication_detail::Control control;
   ShellBatchDiagnostics accepted,candidate;
   NodalPreparedView candidate_view;
@@ -133,13 +141,25 @@ ShellBatchPublication::~ShellBatchPublication() {
   if(impl_->qbatch->impl_->publication_scope==this) impl_->qbatch->impl_->publication_scope=nullptr;
   if(impl_->tbatch->impl_->publication_scope==this) impl_->tbatch->impl_->publication_scope=nullptr;
 }
-ShellPublicationReport ShellBatchPublication::Initialize(FENodalState& owner,qeph::QephBatch& q,t3::T3Batch& t) {
+ShellPublicationReport ShellBatchPublication::Initialize(FENodalState& owner,qeph::QephBatch& q,t3::T3Batch& t,
+    const ShellPublicationLimits& limits) try {
   if(impl_) return {S::InvalidInput,"Mixed publication scope is already initialized"};
   if(!q.impl_||!t.impl_) return {S::NotInitialized,"Both shell participants must be initialized"};
   if(!q.impl_->joined_binding||!t.impl_->joined_binding) return {S::NotJoined,"Both shell participants must use InitializeJoined"};
+  const auto count=q.impl_->joined_binding->node_count();
+  shell_publication_detail::Layout layout;
+  if(!limits.max_nodes||limits.max_nodes>MaxShellResidentNodes||count>limits.max_nodes||
+     !limits.max_device_bytes||limits.max_device_bytes>MaxShellResidentDeviceBytes||
+     !limits.max_host_bytes||limits.max_host_bytes>MaxShellResidentHostBytes||
+     !layout.Initialize(count,limits.max_device_bytes))
+    return {S::ResourceLimit,"Mixed publication active-node/device capacity exceeded"};
+  util::BoundedArenaLayout host_budget(limits.max_host_bytes); util::ArenaRegion ignored;
+  if(!host_budget.Append<unsigned char>(sizeof(Impl),ignored)||!host_budget.Append<unsigned char>(layout.bytes,ignored)||
+     !host_budget.Append<double>(13*count,ignored))
+    return {S::ResourceLimit,"Mixed publication startup payload exceeds host cap"};
   std::unique_ptr<Impl> next(new(std::nothrow) Impl);
   if(!next) return {S::ResourceLimit,"Mixed publication host allocation failed"};
-  next->qbatch=&q; next->tbatch=&t; next->scope=this;
+  next->qbatch=&q; next->tbatch=&t; next->scope=this; next->layout=layout;
   if(q.impl_->publication_scope||t.impl_->publication_scope||!next->SameScope()||!q.impl_->bound||!t.impl_->bound||q.impl_->pending||t.impl_->pending||
      q.impl_->accepted_stamp.epoch||!q.impl_->usable||!t.impl_->usable)
     return {S::InvalidInput,"Mixed initialization requires same-scope bound epoch-zero participants"};
@@ -160,18 +180,22 @@ ShellPublicationReport ShellBatchPublication::Initialize(FENodalState& owner,qep
       return measured;
     }
   }
-  shell_publication_detail::Storage initial;
-  const auto& binding=*q.impl_->joined_binding; initial.model.node_count=binding.node_count();
+  util::HostArena arena;
+  if(!arena.Initialize(layout.bytes)) return {S::ResourceLimit,"Mixed kinetic staging allocation failed"};
+  auto* initial=layout.Construct(arena);
+  if(!initial) return {S::ResourceLimit,"Mixed kinetic startup layout is invalid"};
+  const auto& binding=*q.impl_->joined_binding;
   for(std::size_t n=0;n<binding.node_count();++n) {
     const auto& mass=binding.nodes()[n].native;
-    initial.model.mass[n]=mass.mass; initial.model.inertia[n]=mass.isotropic_inertia;
-    initial.model.physical[n]=mass.physical_inertia; initial.model.added[n]=mass.added_inertia;
+    initial->model.mass[n]=mass.mass; initial->model.inertia[n]=mass.isotropic_inertia;
+    initial->model.physical[n]=mass.physical_inertia; initial->model.added[n]=mass.added_inertia;
   }
   auto r=next->Runtime(cudaGetLastError(),"Pending CUDA error before mixed publication initialization");
   if(r.status!=S::Success) return r;
-  r=next->Runtime(cudaMalloc(reinterpret_cast<void**>(&next->storage),sizeof(initial)),"Mixed kinetic allocation failed");
+  r=next->Runtime(cudaMalloc(reinterpret_cast<void**>(&next->storage),layout.bytes),"Mixed kinetic allocation failed");
   if(r.status!=S::Success) return r;
-  r=next->Runtime(cudaMemcpy(next->storage,&initial,sizeof(initial),cudaMemcpyHostToDevice),"Mixed kinetic initialization failed");
+  *initial=layout.Rebase(*initial,next->storage);
+  r=next->Runtime(cudaMemcpy(next->storage,arena.data(),layout.bytes,cudaMemcpyHostToDevice),"Mixed kinetic initialization failed");
   if(r.status!=S::Success) return r;
   next->accepted.qeph=q.impl_->accepted_diagnostics; next->accepted.t3=t.impl_->accepted_diagnostics;
   next->accepted.kinetic=initial_kinetic;
@@ -180,7 +204,8 @@ ShellPublicationReport ShellBatchPublication::Initialize(FENodalState& owner,qep
   next->accepted.valid=true;
   q.impl_->publication_scope=this; t.impl_->publication_scope=this;
   impl_=std::move(next); return Ok();
-}
+} catch(const std::bad_alloc&) { return {S::ResourceLimit,"Mixed publication host allocation failed"}; }
+  catch(const std::length_error&) { return {S::ResourceLimit,"Mixed publication host size overflow"}; }
 ShellPublicationReport ShellBatchPublication::Prepare(FENodalState& owner,const NodalTrialToken& token,
     const qeph::BatchDiagnostics& q,const t3::BatchDiagnostics& t,ShellBatchDiagnostics* output) {
   auto fail=[&](ShellPublicationReport r) {
@@ -255,6 +280,6 @@ ShellPublicationReport ShellBatchPublication::CopyAcceptedDiagnostics(const Noda
 }
 void ShellBatchPublication::DiscardTrial() noexcept { if(impl_) impl_->Discard(); }
 NodalAllocationInfo ShellBatchPublication::allocations() const noexcept {
-  return impl_?NodalAllocationInfo{sizeof(shell_publication_detail::Storage),1}:NodalAllocationInfo{};
+  return impl_?NodalAllocationInfo{impl_->layout.bytes,1}:NodalAllocationInfo{};
 }
 } // namespace tl::fea

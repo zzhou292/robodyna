@@ -1,3 +1,4 @@
+#include "../active_shell_collection/StorageExpectations.h"
 #include "ResidentCollectionFixture.h"
 #include "lib_src/elements/qeph/QephBatchStorage.h"
 #include "lib_src/elements/t3/T3BatchStorage.h"
@@ -14,9 +15,8 @@ TEST_F(MixedShellCuda, CollectionMaterialsOwnCurvesYieldAndPublishWithoutAllocat
   ASSERT_TRUE(InitializeCollection(r,oracle)); ASSERT_TRUE(r.Bind());
   const auto qa=r.qeph.allocations(),ta=r.t3.allocations();
   ASSERT_EQ(qa.device_allocations,2u); ASSERT_EQ(ta.device_allocations,2u);
-  const auto extra=sizeof(fe::shell_batch_plasticity_detail::DeviceStorage);
-  EXPECT_EQ(qa.device_bytes,sizeof(q::batch_detail::Storage)+extra);
-  EXPECT_EQ(ta.device_bytes,sizeof(t::batch_detail::Storage)+extra);
+  EXPECT_EQ(qa.device_bytes,active_shell_test::QBytes(1,Nodes,6));
+  EXPECT_EQ(ta.device_bytes,active_shell_test::TBytes(1,Nodes,6));
   Staged old_shell; SectionPair old_section;
   ASSERT_TRUE(Accepted(r,old_shell)); ASSERT_TRUE(Sections(r,old_section));
   for(unsigned interval=0;interval<4;++interval) {
@@ -89,7 +89,7 @@ TEST_F(MixedShellCuda, CollectionByteCapAndDifferentInventoryFailBeforePublicati
   Rig r; fe::ShellBatchPlasticityBinding oracle; ASSERT_TRUE(InitializeCollection(r,oracle));
   q::QephBatchConfig config; config.owner=r.owner.accepted(); config.element_count=1;
   config.configuration_id=Configuration; config.qualification_id=Qualification; config.usage=q::BatchUsage::PrescribedFields;
-  config.max_device_bytes=sizeof(q::batch_detail::Storage);
+  config.max_device_bytes=active_shell_test::QBytes(1,Nodes);
   q::QephBatch capped;
   EXPECT_EQ(capped.InitializeJoined(config,r.binding,oracle).status,q::BatchStatus::ResourceLimit);
   EXPECT_EQ(capped.allocations().device_allocations,0u);

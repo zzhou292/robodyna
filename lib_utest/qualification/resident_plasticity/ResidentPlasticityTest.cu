@@ -1,3 +1,4 @@
+#include "../active_shell_collection/StorageExpectations.h"
 #include "ResidentPlasticityFixture.h"
 #include "lib_src/elements/qeph/QephBatchStorage.h"
 #include "lib_src/elements/t3/T3BatchStorage.h"
@@ -13,9 +14,8 @@ TEST_F(MixedShellCuda, ResidentPlasticSectionsPublishWithBothShellsAcrossLoadHol
   Rig r; ASSERT_TRUE(Initialize(r)); ASSERT_TRUE(r.Bind());
   const auto qa=r.qeph.allocations(),ta=r.t3.allocations();
   ASSERT_EQ(qa.device_allocations,2u); ASSERT_EQ(ta.device_allocations,2u);
-  const auto extra=sizeof(fe::shell_batch_plasticity_detail::DeviceStorage);
-  EXPECT_EQ(qa.device_bytes,sizeof(q::batch_detail::Storage)+extra);
-  EXPECT_EQ(ta.device_bytes,sizeof(t::batch_detail::Storage)+extra);
+  EXPECT_EQ(qa.device_bytes,active_shell_test::QBytes(1,Nodes,3));
+  EXPECT_EQ(ta.device_bytes,active_shell_test::TBytes(1,Nodes,3));
   Staged old_shell; SectionPair old_section;
   ASSERT_TRUE(Accepted(r,old_shell)); ASSERT_TRUE(Sections(r,old_section));
   EXPECT_EQ(old_section.q.cumulative_plastic_work_J,0); EXPECT_EQ(old_section.t.cumulative_plastic_work_J,0);
@@ -80,14 +80,14 @@ TEST_F(MixedShellCuda, LateFamilyFailurePreservesSectionsAndRetriesExactly) {
 TEST_F(MixedShellCuda, MaterialScopeAndByteCapRejectWithoutChangingTheDefaultAllocation) {
   {
     Rig elastic; ASSERT_TRUE(elastic.Initialize()); ASSERT_TRUE(elastic.Bind());
-    EXPECT_EQ(elastic.qeph.allocations().device_bytes,sizeof(q::batch_detail::Storage));
-    EXPECT_EQ(elastic.t3.allocations().device_bytes,sizeof(t::batch_detail::Storage));
+    EXPECT_EQ(elastic.qeph.allocations().device_bytes,active_shell_test::QBytes(1,Nodes));
+    EXPECT_EQ(elastic.t3.allocations().device_bytes,active_shell_test::TBytes(1,Nodes));
     EXPECT_EQ(elastic.qeph.allocations().device_allocations,1u);
     EXPECT_EQ(elastic.t3.allocations().device_allocations,1u);
     fe::ShellBatchPlasticityConfig material{37,47,{CurveX,CurveY,3}};
     q::QephBatchConfig config; config.owner=elastic.owner.accepted(); config.element_count=1;
     config.configuration_id=Configuration; config.qualification_id=Qualification;
-    config.usage=q::BatchUsage::PrescribedFields; config.max_device_bytes=sizeof(q::batch_detail::Storage);
+    config.usage=q::BatchUsage::PrescribedFields; config.max_device_bytes=active_shell_test::QBytes(1,Nodes);
     q::QephBatch capped;
     EXPECT_EQ(capped.InitializeJoined(config,elastic.binding,material).status,q::BatchStatus::ResourceLimit);
     EXPECT_EQ(capped.allocations().device_allocations,0u);

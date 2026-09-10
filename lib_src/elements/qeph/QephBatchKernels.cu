@@ -63,7 +63,7 @@ __global__ void Assemble(Storage* storage,const Slab* accepted,NodalAssemblyView
 __global__ void Candidate(Storage* storage,const Slab* accepted,Slab* trial,NodalPreparedView v,BatchDiagnostics identity,
     shell_batch_plasticity_detail::DeviceStorage* plasticity,unsigned accepted_slab) {
   auto& s=*storage;
-  __shared__ Status element_status[MaxBatchElements];
+  auto* element_status=s.candidate_status;
   const unsigned lane=threadIdx.x;
   if(lane==0) { s.control={}; s.control.diagnostics=identity; }
   // Each active parent has one writer. Worker count is independent of storage

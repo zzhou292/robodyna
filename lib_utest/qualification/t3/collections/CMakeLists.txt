@@ -19,3 +19,5 @@ target_compile_options(resident_triangle_tail_check PRIVATE
   "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>")
 add_test(NAME resident_triangle_tail_check COMMAND resident_triangle_tail_check)
 set_tests_properties(resident_triangle_tail_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+
+include("${CMAKE_CURRENT_LIST_DIR}/../../active_shell_collection/ActiveCollection.cmake")

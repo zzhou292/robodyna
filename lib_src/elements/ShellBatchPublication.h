@@ -5,6 +5,10 @@
 #include <memory>
 
 namespace tl::fea {
+struct ShellPublicationLimits {
+  std::size_t max_nodes=MaxShellCollectionNodes;
+  std::size_t max_device_bytes=128*1024,max_host_bytes=1024*1024;
+};
 struct ShellBatchKinetic {
   double translation=0,rotation=0;
   // Native isotropic partitions (including drilling). Total rotation uses
@@ -31,7 +35,7 @@ struct ShellPublicationReport {
 // CoupledForces usage. Coupled candidates require BOTH accepted caches to have
 // contributed to this same owner's attempt. Both
 // batches must be initialized with the SAME complete immutable binding and
-// its exact nonzero family counts (at most 128 parents total and 128 nodes),
+// its exact nonzero family counts within their explicit resident limits,
 // owner/configuration/qualification/usage, then perform initial rest/mass
 // binding. The caller may evaluate QEPH and T3 in either order from the same
 // authentic prepared token. Neither joined batch can publish by itself.
@@ -58,7 +62,8 @@ class ShellBatchPublication {
   // Moving startup measures common K0 once from fresh CopyAccepted fields in
   // native node order. Family kinetic stays unavailable/zero, and epoch-zero
   // base_kinetic stays zero because there is no completed interval.
-  ShellPublicationReport Initialize(FENodalState&,qeph::QephBatch&,t3::T3Batch&);
+  ShellPublicationReport Initialize(FENodalState&,qeph::QephBatch&,t3::T3Batch&,
+      const ShellPublicationLimits& limits={});
   // Preflight BOTH completed contributors against the actual owner token
   // before GPU measurement. Kinetic energy is reduced over the complete native
   // union exactly once at each base/endpoint, at the declared velocity times.

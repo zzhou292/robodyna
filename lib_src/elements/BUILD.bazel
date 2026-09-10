@@ -9,6 +9,12 @@ cc_library(
 )
 
 cc_library(
+    name = "shell_resident_storage",
+    hdrs = ["ShellResidentLimits.h", "ShellBatchArenaLayout.h"],
+    deps = [":shell_collection_limits", "//lib_utils:bounded_arena"],
+)
+
+cc_library(
     name = "shell_batch_startup",
     hdrs = ["ShellBatchStartup.h"],
     deps = ["//lib_src/math:fixed3", "//lib_src/math:quaternion"],
@@ -45,9 +51,9 @@ cc_library(
 cuda_library(
     name = "shell_batch_plasticity_storage",
     srcs = ["ShellBatchPlasticityStorage.cpp", "ShellBatchPlasticityCollectionStorage.cpp"],
-    hdrs = ["ShellBatchPlasticityStorage.h"],
+    hdrs = ["ShellBatchPlasticityStorage.h", "ShellPlasticArenaLayout.h"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
-    deps = [":shell_batch_plasticity", ":shell_batch_plasticity_binding", ":shell_collection_limits"],
+    deps = [":shell_batch_plasticity", ":shell_batch_plasticity_binding", ":shell_resident_storage", "//lib_utils:bounded_startup_array"],
 )
 
 cuda_library(
@@ -57,7 +63,7 @@ cuda_library(
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
     deps = [
         ":shell_batch_binding", ":shell_batch_fields", ":shell_batch_startup",
-        ":shell_batch_plasticity_storage",
+        ":shell_batch_plasticity_storage", ":shell_resident_storage",
         "//lib_src/elements/qeph:batch", "//lib_src/elements/t3:batch",
         "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_trial_identity",
     ],
@@ -68,7 +74,7 @@ cc_library(
     hdrs = ["ShellBatchFields.h"],
     # Existing family APIs consume their shared field/startup declarations
     # through this neutral boundary, preserving the pinned port BUILD files.
-    deps = [":shell_batch_startup", "//lib_src/math:fixed3", "//lib_src/math:quaternion", "//lib_src/solvers:explicit_nodal_state"],
+    deps = [":shell_batch_startup", ":shell_resident_storage", "//lib_src/math:fixed3", "//lib_src/math:quaternion", "//lib_src/solvers:explicit_nodal_state"],
 )
 
 cc_library(

@@ -1,6 +1,7 @@
 #pragma once
 #include "T3ForceData.h"
 #include "../ShellCollectionLimits.h"
+#include "../ShellResidentLimits.h"
 #include "../ShellBatchStartup.h"
 #include "../../solvers/ExplicitNodalStep.h"
 #include <memory>
@@ -20,6 +21,7 @@ struct T3BatchConfig {
   std::size_t element_count=0,max_device_bytes=MaxBatchDeviceBytes;
   BatchUsage usage=BatchUsage::Unspecified;
   BatchStartup startup;
+  ShellResidentLimits storage_limits;
 };
 enum class BatchStatus {
   Success,InvalidInput,NotInitialized,NotBound,ResourceLimit,WrongOwner,StaleTrial,

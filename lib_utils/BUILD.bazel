@@ -101,3 +101,8 @@ cc_library(
     name = "bounded_startup_array",
     hdrs = ["BoundedStartupArray.h"],
 )
+
+cc_library(
+    name = "bounded_arena",
+    hdrs = ["BoundedArena.h"],
+)

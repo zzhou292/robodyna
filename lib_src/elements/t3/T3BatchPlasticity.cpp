@@ -15,7 +15,7 @@ BatchReport T3Batch::Impl::InitializePlasticity(const ShellBatchPlasticityBindin
   std::unique_ptr<HostStorage> next(new(std::nothrow) HostStorage);
   if(!next) return {BatchStatus::ResourceLimit,"Collection plastic section host allocation failed"};
   const auto setup=next->InitializeCollection(catalog,*joined_binding,ShellBindingFamily::T3,
-      config.element_count,config.max_device_bytes-sizeof(batch_detail::Storage));
+      config.element_count,config.max_device_bytes-layout.bytes,config.storage_limits.max_host_bytes);
   if(setup.status==SetupStatus::DeviceFailure) return Runtime(setup.cuda_status,setup.message);
   if(setup.status!=SetupStatus::Success)
     return {setup.status==SetupStatus::ResourceLimit?BatchStatus::ResourceLimit:BatchStatus::InvalidInput,setup.message};
@@ -25,15 +25,16 @@ BatchReport T3Batch::Impl::InitializePlasticity(const ShellBatchPlasticityBindin
 BatchReport T3Batch::Impl::InitializePlasticity(const ShellBatchPlasticityConfig& declaration,
     const batch_detail::Model& model) {
   using namespace shell_batch_plasticity_detail;
-  std::array<ReferenceMaterial,MaxBatchElements> references{};
+  std::unique_ptr<ReferenceMaterial[]> references(new(std::nothrow) ReferenceMaterial[config.element_count]{});
+  if(!references) return {BatchStatus::ResourceLimit,"Active plastic reference staging allocation failed"};
   for(std::size_t e=0;e<config.element_count;++e) {
     const auto& r=model.element[e].reference.input;
     references[e]={r.young_modulus,r.poisson_ratio,r.density};
   }
   std::unique_ptr<HostStorage> next(new(std::nothrow) HostStorage);
   if(!next) return {BatchStatus::ResourceLimit,"T3 plastic section host allocation failed"};
-  const auto setup=next->Initialize(declaration,references.data(),config.element_count,
-      config.max_device_bytes-sizeof(batch_detail::Storage));
+  const auto setup=next->Initialize(declaration,references.get(),config.element_count,
+      config.max_device_bytes-layout.bytes,config.storage_limits.max_host_bytes);
   if(setup.status==SetupStatus::DeviceFailure) return Runtime(setup.cuda_status,setup.message);
   if(setup.status!=SetupStatus::Success)
     return {setup.status==SetupStatus::ResourceLimit?BatchStatus::ResourceLimit:BatchStatus::InvalidInput,setup.message};

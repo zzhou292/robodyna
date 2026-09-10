@@ -1,4 +1,5 @@
 #include "ResidentCollectionFixture.h"
+#include "../../active_shell_collection/StorageExpectations.h"
 #include "lib_src/elements/qeph/QephBatchStorage.h"
 #include "lib_src/elements/t3/T3BatchStorage.h"
 #include "lib_src/elements/ShellBatchPublicationStorage.h"
@@ -20,9 +21,9 @@ void ReportAllocations(const Rig& r) {
   const auto a=Allocations(r);
   EXPECT_EQ(a[0].device_allocations,6u);
   for(unsigned i=1;i<4;++i) EXPECT_EQ(a[i].device_allocations,1u);
-  EXPECT_EQ(a[1].device_bytes,sizeof(q::batch_detail::Storage));
-  EXPECT_EQ(a[2].device_bytes,sizeof(t::batch_detail::Storage));
-  EXPECT_EQ(a[3].device_bytes,sizeof(fe::shell_publication_detail::Storage));
+  EXPECT_EQ(a[1].device_bytes,active_shell_test::QBytes(QCount,Nodes));
+  EXPECT_EQ(a[2].device_bytes,active_shell_test::TBytes(TCount,Nodes));
+  EXPECT_EQ(a[3].device_bytes,active_shell_test::PublicationBytes(Nodes));
   EXPECT_LE(a[0].device_bytes,fe::MaxTranslationDeviceBytes);
   EXPECT_LE(a[1].device_bytes,q::MaxBatchDeviceBytes); EXPECT_LE(a[2].device_bytes,t::MaxBatchDeviceBytes);
   Property("owner_device_bytes",a[0].device_bytes); Property("qeph_device_bytes",a[1].device_bytes);

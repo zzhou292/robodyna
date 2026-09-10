@@ -1,6 +1,7 @@
 // Lifecycle adapted from the qualified QEPH participant; no force equations.
 #include "T3BatchStorage.h"
 #include <new>
+#include <stdexcept>
 #include <utility>
 
 namespace tl::fea::t3 {
@@ -25,7 +26,9 @@ BatchReport T3Batch::Impl::ReadControl() {
 }
 BatchReport T3Batch::Impl::ReadResults(const batch_detail::Slab* source) {
   auto r=PendingError(); if(r.status!=BatchStatus::Success) return r;
-  r=Runtime(cudaMemcpyAsync(staging.data(),source->element,config.element_count*sizeof(ForceTrial),
+  const unsigned slab=source==&storage->slab[0]?0u:1u;
+  if(source!=&storage->slab[slab]) return {BatchStatus::InvalidInput,"Unknown T3 result slab"};
+  r=Runtime(cudaMemcpyAsync(staging.data(),device_header.slab[slab].element,config.element_count*sizeof(ForceTrial),
       cudaMemcpyDeviceToHost,stream),"T3 element readback failed");
   if(r.status!=BatchStatus::Success) return r;
   return Runtime(cudaStreamSynchronize(stream),"T3 element readback stream failed");
@@ -50,17 +53,44 @@ BatchReport T3Batch::InitializeJoined(const T3BatchConfig& config,const ShellBat
 }
 BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchElement* elements,
     const ShellBatchBinding* joined,const ShellBatchPlasticityConfig* plasticity,
-    const ShellBatchPlasticityBinding* collection_plasticity) {
+    const ShellBatchPlasticityBinding* collection_plasticity) try {
   if(impl_) return {BatchStatus::InvalidInput,"T3 batch is already initialized"};
   // Startup staging is bounded and heap-backed; it is released after the one
   // resident device allocation is initialized. Per-step storage is unchanged.
-  std::unique_ptr<Storage> initial(new(std::nothrow) Storage{});
-  if(!initial) return {BatchStatus::ResourceLimit,"T3 startup staging allocation failed"};
+  batch_detail::Layout layout;
+  if(!ValidShellResidentLimits(config.storage_limits,config.element_count,config.owner.node_count,config.max_device_bytes)||
+     !layout.Initialize(config.element_count,config.owner.node_count,config.max_device_bytes))
+    return {BatchStatus::ResourceLimit,"T3 active element/node/device capacity exceeded"};
+  const auto host_cap=config.storage_limits.max_host_bytes;
+  util::BoundedArenaLayout host_budget(host_cap); util::ArenaRegion ignored;
+  if(!host_budget.Append<unsigned char>(sizeof(Impl),ignored)||!host_budget.Append<unsigned char>(layout.bytes,ignored)||
+     !host_budget.Append<ForceTrial>(config.element_count,ignored)||!host_budget.Append<unsigned char>(64,ignored)||
+     !host_budget.Append<bool>(config.owner.node_count,ignored)||!host_budget.Append<std::uint64_t>(config.owner.node_count,ignored)||
+     (joined&&!host_budget.Append<unsigned char>(joined->host_bytes(),ignored)))
+    return {BatchStatus::ResourceLimit,"T3 startup payload exceeds host cap"};
+  if(plasticity||collection_plasticity) {
+    using namespace shell_batch_plasticity_detail;
+    if(plasticity&&(!plasticity->material_id||!plasticity->curve_id||!plasticity->curve.plastic_strain||
+       !plasticity->curve.yield_stress_pa||plasticity->curve.count<2||plasticity->curve.count>MaxCurvePoints))
+      return {BatchStatus::InvalidInput,"Invalid plastic material identity/curve shape"};
+    const auto points=plasticity?plasticity->curve.count:collection_plasticity->curve_point_count();
+    Layout plastic_layout; std::size_t plastic_host_bytes=0;
+    if(!HostStorage::Forecast(config.element_count,points,collection_plasticity?collection_plasticity->host_bytes():0,
+         config.max_device_bytes-layout.bytes,host_cap,plastic_layout,plastic_host_bytes)||
+       !host_budget.Append<unsigned char>(plastic_host_bytes,ignored)||
+       !host_budget.Append<ReferenceMaterial>(config.element_count,ignored))
+      return {BatchStatus::ResourceLimit,"T3 combined plasticity payload exceeds startup budgets"};
+  }
+  util::HostArena arena;
+  if(!arena.Initialize(layout.bytes)) return {BatchStatus::ResourceLimit,"T3 startup staging allocation failed"};
+  auto* initial=layout.Construct(arena);
+  if(!initial) return {BatchStatus::ResourceLimit,"T3 startup arena layout is invalid"};
   auto report=batch_detail::BuildModel(config,elements,initial->model,initial->slab[0],joined);
   if(report.status!=BatchStatus::Success) return report;
   std::unique_ptr<Impl> candidate(new(std::nothrow) Impl);
   if(!candidate) return {BatchStatus::ResourceLimit,"T3 host allocation failed"};
-  candidate->config=config; candidate->accepted_stamp=config.owner;
+  candidate->config=config; candidate->accepted_stamp=config.owner; candidate->layout=layout;
+  candidate->staging.Resize(config.element_count);
   candidate->accepted_diagnostics=batch_detail::InitialDiagnostics(config,joined!=nullptr);
   if(joined) candidate->joined_binding.emplace(*joined);
   report=candidate->PendingError(); if(report.status!=BatchStatus::Success) return report;
@@ -72,16 +102,19 @@ BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchEle
     report=candidate->InitializePlasticity(*collection_plasticity);
     if(report.status!=BatchStatus::Success) return report;
   }
-  report=candidate->Runtime(cudaMalloc(reinterpret_cast<void**>(&candidate->storage),sizeof(Storage)),"T3 allocation failed");
+  report=candidate->Runtime(cudaMalloc(reinterpret_cast<void**>(&candidate->storage),layout.bytes),"T3 allocation failed");
   if(report.status!=BatchStatus::Success) return report;
-  report=candidate->Runtime(cudaMemcpy(candidate->storage,initial.get(),sizeof(Storage),cudaMemcpyHostToDevice),"T3 initialization copy failed");
+  candidate->device_header=layout.Rebase(*initial,candidate->storage);
+  *initial=candidate->device_header;
+  report=candidate->Runtime(cudaMemcpy(candidate->storage,arena.data(),layout.bytes,cudaMemcpyHostToDevice),"T3 initialization copy failed");
   if(report.status!=BatchStatus::Success) return report;
   candidate->accepted=&candidate->storage->slab[0]; candidate->trial=&candidate->storage->slab[1];
   impl_=std::move(candidate); return Ok();
-}
+} catch(const std::bad_alloc&) { return {BatchStatus::ResourceLimit,"T3 host allocation failed"}; }
+  catch(const std::length_error&) { return {BatchStatus::ResourceLimit,"T3 host size overflow"}; }
 void T3Batch::DiscardTrial() noexcept { if(impl_) impl_->Discard(); }
 NodalAllocationInfo T3Batch::allocations() const noexcept {
-  return impl_?NodalAllocationInfo{sizeof(Storage)+(impl_->plasticity?sizeof(shell_batch_plasticity_detail::DeviceStorage):0),
+  return impl_?NodalAllocationInfo{impl_->layout.bytes+(impl_->plasticity?impl_->plasticity->device_bytes():0),
       impl_->plasticity?2u:1u}:NodalAllocationInfo{};
 }
 } // namespace tl::fea::t3
