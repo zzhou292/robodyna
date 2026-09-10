@@ -42,9 +42,12 @@ The contributor keeps one 99,384-byte allocation and its two-parent/eight-incide
 node cap. Mixed shell force feedback remains the next composition gate. Eight full-state
 native contact model/probe host functions now pass at `1bef7cc`, followed by
 13 independently checked full-state stability-analysis utility functions at
-`08fb0c4`. The retained total is 1,021 distinct passing functions. Full-grid native
-capture, authenticated switching/stability decisions and explicit moving QEPH
-startup precede actual incoming-impact qualification. The
+`08fb0c4` and seven incremental raw-capture/report functions at `842469b`.
+The retained total is 1,028 distinct passing functions. Authenticated reading and
+derived reports precede six full native jobs. Five explicit moving-startup CUDA
+functions now pass after a test-only snapshot-tail correction; default/joined and
+sustained response regressions remain required before that slice is qualified.
+Actual incoming-impact qualification follows these gates. The
 [combined admission design](../../planning/QEPH_WALL_COUPLED_ADMISSION.md)
 separates short transaction checks, contact recurrence, incoming-velocity startup
 and impact/refinement; free-shell stability does not qualify wall impact. Plasticity,
