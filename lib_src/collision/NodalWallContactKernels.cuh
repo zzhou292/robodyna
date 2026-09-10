@@ -4,6 +4,25 @@
 
 namespace tlfea::contact::nodal_wall_device_detail {
 namespace fea=tl::fea;
+// Avoid whole-result temporaries on one CUDA lane as the collection grows.
+// All 128 lanes call these helpers; arithmetic fields retain their owning
+// default initialization and each record has exactly one writer.
+__device__ inline void ResetResult(NodalWallDeviceResults& result) {
+  const unsigned lane=threadIdx.x;
+  if (lane==0) result.diagnostics={};
+  for (unsigned p=lane;p<MaxNodalWallDeviceParents;p+=Workers) result.parents[p]={};
+  for (unsigned n=lane;n<MaxNodalWallDeviceNodes;n+=Workers) {
+    result.nodes[n]={}; result.wall_face[n]=0;
+  }
+}
+__device__ inline void CopyBase(Storage& s) {
+  const unsigned lane=threadIdx.x;
+  if (lane==0) s.base.diagnostics=s.result.diagnostics;
+  for (unsigned p=lane;p<MaxNodalWallDeviceParents;p+=Workers) s.base.parents[p]=s.result.parents[p];
+  for (unsigned n=lane;n<MaxNodalWallDeviceNodes;n+=Workers) {
+    s.base.nodes[n]=s.result.nodes[n]; s.base.wall_face[n]=s.result.wall_face[n];
+  }
+}
 __device__ inline bool ValidateAssembly(Storage& s,const fea::NodalAssemblyView& v) {
   if (v.result->base_epoch!=v.accepted.base_epoch || v.result->attempt!=v.attempt ||
       v.bounds->base_epoch!=v.accepted.base_epoch || v.bounds->attempt!=v.attempt ||
@@ -26,11 +45,12 @@ __device__ inline bool ValidateAssembly(Storage& s,const fea::NodalAssemblyView&
 __device__ inline void Evaluate(Storage& s,const fea::DeviceNodalKinematicsView& k,
                                const NodalWallDiagnostics& identity) {
   const auto lane=threadIdx.x;
-  if (lane==0) { s.result={}; s.result.diagnostics=identity; }
+  ResetResult(s.result);
+  if (lane==0) s.result.diagnostics=identity;
   if (lane<MaxNodalWallDeviceNodes) s.node_status[lane]={};
   __syncthreads();
   if (s.control.status!=Code::Ok) return;
-  const auto count=static_cast<std::uint32_t>(k.node_count); // Host binding already checked <=64.
+  const auto count=static_cast<std::uint32_t>(k.node_count); // Host binding checked <=128.
   const VectorView x{k.position_xyz,count,3,1},v{k.velocity_xyz,count,3,1};
   const LumpedTranslationMassView mass{s.model.inverse_mass,s.model.fixed,count,k.base_epoch,
                                       TranslationMassModel::kIsotropicLumped};

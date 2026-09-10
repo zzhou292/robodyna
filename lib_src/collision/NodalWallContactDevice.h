@@ -2,11 +2,13 @@
 #include "NodalWallContact.h"
 #include "PlanarWallBox.h"
 #include "lib_src/solvers/FENodalState.h"
+#include "lib_src/elements/ShellCollectionLimits.h"
 #include <memory>
 
 namespace tlfea::contact {
-constexpr unsigned MaxNodalWallDeviceParents=2,MaxNodalWallDeviceNodes=8;
-constexpr std::size_t MaxNodalWallDeviceBytes=256*1024;
+constexpr unsigned MaxNodalWallDeviceParents=tl::fea::MaxShellCollectionParents;
+constexpr unsigned MaxNodalWallDeviceNodes=tl::fea::MaxShellCollectionNodes;
+constexpr std::size_t MaxNodalWallDeviceBytes=512*1024;
 struct NodalWallDeviceConfig {
   tl::fea::NodalStamp owner;
   std::uint64_t configuration_id=0,qualification_id=0,wall_binding_id=0;
@@ -51,8 +53,8 @@ struct NodalWallDeviceResults {
   std::uint64_t wall_face[MaxNodalWallDeviceNodes]{};
 };
 
-// Stateless, fixed-plane contributor, one/two native Q4 and/or T3 parents
-// with <=8 incident nodes in the existing <=64-node owner. Exactly Q4/4 and
+// Stateless, fixed-plane contributor, up to 128 native Q4 and/or T3 parents
+// with <=128 incident nodes in the same physical-node owner. Exactly Q4/4 and
 // T3/3 family/arity pairs use the immutable owning A0/4 and A0/3 shares.
 // Zero offset/friction/damping; no direct couple, shell mass/history,
 // clock, stream or commit owner. Initial owner must use staggered half-kick

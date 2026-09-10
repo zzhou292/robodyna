@@ -27,7 +27,7 @@ TEST(NodalWallNativeCuda, NativeScaleneMassesSharesAndMixedUnionMatchIndependent
     EXPECT_EQ(owner.allocations().device_allocations,6u);
     EXPECT_EQ(contact.allocations().device_allocations,1u);
     EXPECT_EQ(contact.allocations().device_bytes,sizeof(detail::Storage));
-    EXPECT_EQ(sizeof(detail::Storage),99384u);
+    EXPECT_EQ(sizeof(detail::Storage),471864u);
     long double rate=0;
     for(unsigned i=f.first();i<f.n;++i) rate=std::max(rate,stiffness*f.node_area[i]*f.inverse[i]);
     EXPECT_GE(static_cast<long double>(contact.stiffness_rate_bound()),rate);

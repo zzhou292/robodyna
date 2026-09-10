@@ -36,14 +36,15 @@ BatchReport QephBatch::Initialize(const QephBatchConfig& config,const QephBatchE
 }
 BatchReport QephBatch::InitializeJoined(const QephBatchConfig& config,const ShellBatchBinding& binding) {
   if(!binding.prepared()) return {BatchStatus::InvalidInput,"Mixed binding is not prepared"};
-  QephBatchElement element; element.reference=binding.qeph_reference();
-  for(unsigned i=0;i<4;++i) element.nodes[i]=binding.qeph_nodes()[i];
-  return InitializeImpl(config,&element,&binding);
+  return InitializeImpl(config,nullptr,&binding);
 }
 BatchReport QephBatch::InitializeImpl(const QephBatchConfig& config,const QephBatchElement* elements,const ShellBatchBinding* joined) {
   if(impl_) return {BatchStatus::InvalidInput,"QEPH batch is already initialized"};
-  Storage initial{};
-  auto report=batch_detail::BuildModel(config,elements,initial.model,initial.slab[0],joined);
+  // A bounded startup allocation avoids placing the complete 128-parent model
+  // and two history slabs on the host stack. No allocation occurs per step.
+  std::unique_ptr<Storage> initial(new(std::nothrow) Storage{});
+  if(!initial) return {BatchStatus::ResourceLimit,"QEPH startup staging allocation failed"};
+  auto report=batch_detail::BuildModel(config,elements,initial->model,initial->slab[0],joined);
   if(report.status!=BatchStatus::Success) return report;
   std::unique_ptr<Impl> candidate(new(std::nothrow) Impl);
   if(!candidate) return {BatchStatus::ResourceLimit,"QEPH host allocation failed"};
@@ -53,7 +54,7 @@ BatchReport QephBatch::InitializeImpl(const QephBatchConfig& config,const QephBa
   report=candidate->PendingError(); if(report.status!=BatchStatus::Success) return report;
   report=candidate->Runtime(cudaMalloc(reinterpret_cast<void**>(&candidate->storage),sizeof(Storage)),"QEPH allocation failed");
   if(report.status!=BatchStatus::Success) return report;
-  report=candidate->Runtime(cudaMemcpy(candidate->storage,&initial,sizeof(initial),cudaMemcpyHostToDevice),"QEPH initialization copy failed");
+  report=candidate->Runtime(cudaMemcpy(candidate->storage,initial.get(),sizeof(Storage),cudaMemcpyHostToDevice),"QEPH initialization copy failed");
   if(report.status!=BatchStatus::Success) return report;
   candidate->accepted=&candidate->storage->slab[0]; candidate->trial=&candidate->storage->slab[1];
   impl_=std::move(candidate); return Ok();

@@ -8,9 +8,9 @@ TEST_F(QephBatchCuda, InvalidStartupAndActualMassRestMismatchNeverAuthorizeIniti
     SCOPED_TRACE(kind);
     q::QephBatch batch; auto config=rig.Config(); auto elements=rig.element;
     if(kind==0) config.usage=q::BatchUsage::Unspecified;
-    if(kind==1) config.element_count=5;
+    if(kind==1) config.element_count=q::MaxBatchElements+1;
     if(kind==2) config.max_device_bytes=1;
-    if(kind==3) config.owner.node_count=17;
+    if(kind==3) config.owner.node_count=q::MaxBatchNodes+1;
     if(kind==4) elements[1].reference.area*=2;
     if(kind==5) { auto& input=elements[1].reference.input; input.node_ids[0]+=100;
       ASSERT_EQ(q::InitializeReference(input,elements[1].reference),q::Status::kSuccess); }

@@ -26,9 +26,9 @@ struct Control {
 struct Storage { Model model; Slab slab[2]; Control control; };
 static_assert(std::is_trivially_copyable<Storage>::value,"Resident records require value-copy storage");
 static_assert(sizeof(Storage)<=MaxBatchDeviceBytes,"Bounded T3 batch allocation");
-// Prior standalone ABI was Storage6216B. The joined model flag changes live
-// storage layout; root must measure and retain the new host/CUDA allocation
-// before promotion. Native result size and alignment stay independently fixed.
+// Collection capacity changes the private storage extent, not native results.
+// Allocation tests retain actual host/CUDA sizes before promotion; no layout is
+// a persisted ABI. Native result size and alignment remain independently fixed.
 static_assert(sizeof(ForceTrial)==976&&alignof(Storage)==8,"Qualified native T3 record layout");
 
 BatchReport BuildModel(const T3BatchConfig&,const T3BatchElement*,Model&,Slab&,const ShellBatchBinding* joined=nullptr);

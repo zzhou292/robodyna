@@ -3,8 +3,8 @@
 #include "ShellBatchBinding.h"
 
 namespace tl::fea::shell_batch_detail {
-// Host model preparation shared by the two typed participants. Their one
-// selected reference/history remains formulation-specific. The immutable
+// Host model preparation shared by the two typed participants. All selected
+// references/histories remain formulation-specific. The immutable
 // producer has already established complete union coverage and native order.
 template<class Model>
 void ApplyJoinedMass(const ShellBatchBinding& binding,Model& model) noexcept {

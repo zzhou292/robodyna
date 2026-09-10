@@ -31,6 +31,7 @@ struct ShellPublicationReport {
 // CoupledForces usage. Coupled candidates require BOTH accepted caches to have
 // contributed to this same owner's attempt. Both
 // batches must be initialized with the SAME complete immutable binding and
+// its exact nonzero family counts (at most 128 parents total and 128 nodes),
 // owner/configuration/qualification/usage, then perform initial rest/mass
 // binding. The caller may evaluate QEPH and T3 in either order from the same
 // authentic prepared token. Neither joined batch can publish by itself.

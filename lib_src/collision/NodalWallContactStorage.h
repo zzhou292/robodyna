@@ -5,7 +5,11 @@
 #include "NodalWallContactReduction.h"
 
 namespace tlfea::contact::nodal_wall_device_detail {
-constexpr unsigned OwnerNodes=tl::fea::MaxTranslationNodes,Workers=128;
+constexpr unsigned OwnerNodes=tl::fea::MaxShellCollectionNodes,Workers=128;
+static_assert(MaxNodalWallDeviceNodes==OwnerNodes && MaxNodalWallDeviceParents==128 && Workers==128,
+              "One bounded worker block covers every compact node and parent");
+static_assert(MaxNodalWallDeviceNodes<=MaxNodalWallNodes && MaxNodalWallDeviceParents<=MaxNodalWallParents,
+              "Device collection remains within the qualified host law capacities");
 using Code=NodalWallDeviceStatus;
 struct Model {
   NodalWallDeviceConfig config;
@@ -35,7 +39,7 @@ struct Storage {
   double staged_force[6*OwnerNodes]{},addition_error[MaxNodalWallDeviceNodes]{};
 };
 static_assert(sizeof(Storage)<=MaxNodalWallDeviceBytes,"Complete contact storage, one allocation");
-static_assert(sizeof(Model)==84952 && sizeof(NodalWallDeviceResults)==3984 && sizeof(Storage)==99384,
+static_assert(sizeof(Model)==105976 && sizeof(NodalWallDeviceResults)==79248 && sizeof(Storage)==471864,
               "Pinned 64-bit host/CUDA storage ledger; review an ABI change before allocating");
 NodalWallDeviceReport PrepareModel(const NodalWallDeviceConfig&,PlanarWallView,const NodalWallWeights&,
     VectorView,const double*,const std::uint8_t*,PlanarWallBox,Model*);

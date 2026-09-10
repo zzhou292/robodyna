@@ -140,7 +140,7 @@ cuda_library(
         "NodalWallContactKernels.cuh",
     ],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
-    deps = [":nodal_wall_contact", ":prepared_planar_wall_query", "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_force_assembly"],
+    deps = [":nodal_wall_contact", ":prepared_planar_wall_query", "//lib_src/elements:shell_collection_limits", "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_force_assembly"],
 )
 
 cc_library(

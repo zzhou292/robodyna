@@ -24,7 +24,7 @@ bool SameReference(const ReferenceData& a,const ReferenceData& b) {
 
 BatchReport BuildModel(const QephBatchConfig& c,const QephBatchElement* input,Model& model,Slab& initial,const ShellBatchBinding* joined) {
   const auto& o=c.owner;
-  if(!input||!o.owner_id||!o.has_rotations||o.epoch||o.time!=0||o.velocity_time!=0||
+  if((!input&&!joined)||!o.owner_id||!o.has_rotations||o.epoch||o.time!=0||o.velocity_time!=0||
      o.reactions_valid||!std::isfinite(o.fixed_dt)||o.fixed_dt<=0||
      o.temporal_scheme!=NodalTemporalScheme::StaggeredHalfKickStart||
      o.velocity_phase!=NodalVelocityPhase::Collocated||!c.configuration_id||!c.qualification_id||
@@ -35,12 +35,18 @@ BatchReport BuildModel(const QephBatchConfig& c,const QephBatchElement* input,Mo
   if(!c.element_count||c.element_count>MaxBatchElements||!o.node_count||o.node_count>MaxBatchNodes||
      !c.max_device_bytes||c.max_device_bytes>MaxBatchDeviceBytes||sizeof(Storage)>c.max_device_bytes)
     return {BatchStatus::ResourceLimit,"QEPH element/node/allocation capacity exceeded"};
-  if(joined&&(!joined->prepared()||c.element_count!=1||o.node_count!=joined->node_count()))
-    return {BatchStatus::InvalidInput,"Joined scope requires one element from the complete union"};
+  if(joined&&(!joined->prepared()||!joined->t3_count()||c.element_count!=joined->qeph_count()||
+              o.node_count!=joined->node_count()))
+    return {BatchStatus::InvalidInput,"Joined QEPH scope requires its exact count from the complete mixed collection"};
   model.config=c;
   bool seen[MaxBatchNodes]{}; std::uint32_t ids[MaxBatchNodes]{};
   for(unsigned e=0;e<c.element_count;++e) {
-    const auto& element=input[e]; ReferenceData checked;
+    QephBatchElement selected;
+    if(joined) {
+      selected.reference=joined->qeph_reference(e);
+      for(unsigned local=0;local<4;++local) selected.nodes[local]=joined->qeph_nodes(e)[local];
+    }
+    const auto& element=joined?selected:input[e]; ReferenceData checked;
     const auto status=InitializeReference(element.reference.input,checked);
     if(status!=Status::kSuccess||!SameReference(element.reference,checked))
       return {BatchStatus::ElementFailure,"Reference differs from its startup producer",e,UINT32_MAX,

@@ -9,3 +9,5 @@ target_compile_options(mixed_shell_batch_check PRIVATE
   "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>")
 add_test(NAME mixed_shell_batch_check COMMAND mixed_shell_batch_check)
 set_tests_properties(mixed_shell_batch_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+# Larger collections exercise the same joined-publication feature and libraries.
+add_subdirectory("../collections" "collections")

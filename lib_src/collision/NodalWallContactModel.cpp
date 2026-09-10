@@ -20,7 +20,7 @@ NodalWallDeviceReport PrepareModel(const NodalWallDeviceConfig& c,PlanarWallView
       !IsFinite(law.parent_energy_error) || law.parent_energy_error<=0 ||
       !IsFinite(c.exposed_clearance) || c.exposed_clearance<=0)
     return {Code::InvalidInput,"Invalid initial owner, prepared weights or physical declaration"};
-  if (!owner.node_count || owner.node_count>OwnerNodes || !weights.node_count() ||
+  if (!owner.node_count || owner.node_count>OwnerNodes || owner.node_count>tl::fea::MaxTranslationNodes || !weights.node_count() ||
       weights.node_count()>MaxNodalWallDeviceNodes || !weights.parent_count() ||
       weights.parent_count()>MaxNodalWallDeviceParents || !c.max_device_bytes ||
       c.max_device_bytes>MaxNodalWallDeviceBytes || c.max_device_bytes<sizeof(Storage))

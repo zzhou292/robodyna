@@ -14,7 +14,9 @@ namespace fe=tl::fea;
 using Code=fe::NodalStatus;
 using Scheme=fe::NodalTemporalScheme;
 using Phase=fe::NodalVelocityPhase;
-constexpr std::size_t Capacity=fe::MaxTranslationNodes;
+// This legacy by-value kernel packet remains intentionally bounded at 64.
+// Larger resident-collection fixtures use pointer-backed device loads.
+constexpr std::size_t Capacity=64;
 constexpr double ArithmeticTolerance=2e-13; // SI fixtures with O(1) motion/load.
 struct Initial {
   std::size_t n=1;

@@ -31,7 +31,7 @@ bool SameReference(const ReferenceData& a,const ReferenceData& b) {
 
 BatchReport BuildModel(const T3BatchConfig& c,const T3BatchElement* input,Model& output,Slab& startup,const ShellBatchBinding* joined) {
   const auto& o=c.owner;
-  if(!input||!o.owner_id||!o.has_rotations||o.epoch||o.time!=0||o.velocity_time!=0||
+  if((!input&&!joined)||!o.owner_id||!o.has_rotations||o.epoch||o.time!=0||o.velocity_time!=0||
      o.reactions_valid||!std::isfinite(o.fixed_dt)||o.fixed_dt<=0||
      o.temporal_scheme!=NodalTemporalScheme::StaggeredHalfKickStart||
      o.velocity_phase!=NodalVelocityPhase::Collocated||!c.configuration_id||!c.qualification_id||
@@ -40,12 +40,18 @@ BatchReport BuildModel(const T3BatchConfig& c,const T3BatchElement* input,Model&
   if(!c.element_count||c.element_count>MaxBatchElements||!o.node_count||o.node_count>MaxBatchNodes||
      !c.max_device_bytes||c.max_device_bytes>MaxBatchDeviceBytes||sizeof(Storage)>c.max_device_bytes)
     return {BatchStatus::ResourceLimit,"T3 element/node/allocation capacity exceeded"};
-  if(joined&&(!joined->prepared()||c.element_count!=1||o.node_count!=joined->node_count()))
-    return {BatchStatus::InvalidInput,"Joined scope requires one element from the complete union"};
+  if(joined&&(!joined->prepared()||!joined->qeph_count()||c.element_count!=joined->t3_count()||
+              o.node_count!=joined->node_count()))
+    return {BatchStatus::InvalidInput,"Joined T3 scope requires its exact count from the complete mixed collection"};
   Model model{}; Slab initial{}; model.config=c;
   bool seen[MaxBatchNodes]{}; std::uint64_t ids[MaxBatchNodes]{};
   for(unsigned e=0;e<c.element_count;++e) {
-    const auto& element=input[e]; ReferenceData checked;
+    T3BatchElement selected;
+    if(joined) {
+      selected.reference=joined->t3_reference(e);
+      for(unsigned local=0;local<3;++local) selected.nodes[local]=joined->t3_nodes(e)[local];
+    }
+    const auto& element=joined?selected:input[e]; ReferenceData checked;
     const auto status=InitializeReference(element.reference.input,checked);
     if(status!=Status::kSuccess||!SameReference(element.reference,checked))
       return {BatchStatus::ElementFailure,"Reference differs from its startup producer",e,UINT32_MAX,

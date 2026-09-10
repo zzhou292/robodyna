@@ -8,7 +8,7 @@
 #include <memory>
 
 namespace tl::fea {
-constexpr std::size_t MaxTranslationNodes = 64;
+constexpr std::size_t MaxTranslationNodes = 128;
 constexpr std::size_t MaxTranslationDeviceBytes = 1024 * 1024;
 
 enum class NodalStatus {

@@ -1,11 +1,13 @@
 #pragma once
 #include "T3ForceData.h"
+#include "../ShellCollectionLimits.h"
 #include "../../solvers/ExplicitNodalStep.h"
 #include <memory>
 
 namespace tl::fea { class ShellBatchBinding; class ShellBatchPublication; }
 namespace tl::fea::t3 {
-constexpr std::size_t MaxBatchElements=2,MaxBatchNodes=16,MaxBatchDeviceBytes=1024*1024;
+constexpr std::size_t MaxBatchElements=MaxShellCollectionParents,MaxBatchNodes=MaxShellCollectionNodes;
+constexpr std::size_t MaxBatchDeviceBytes=1024*1024;
 struct T3BatchElement { ReferenceData reference; std::size_t nodes[3]{}; };
 enum class BatchUsage { Unspecified,PrescribedFields,CoupledForces };
 struct T3BatchConfig {
@@ -76,7 +78,8 @@ class T3Batch {
   T3Batch(const T3Batch&)=delete;
   T3Batch& operator=(const T3Batch&)=delete;
   BatchReport Initialize(const T3BatchConfig&,const T3BatchElement*);
-  // Immutable joined scope; exactly one typed cell from the complete union.
+  // Immutable joined scope; every T3 cell from the complete collection.
+  // Both families must be present; config.element_count must match exactly.
   // Matching prescribed or coupled usage is enforced by the sole joined
   // coordinator. Startup remains reference-at-rest; standalone Commit rejects it.
   BatchReport InitializeJoined(const T3BatchConfig&,const ShellBatchBinding&);

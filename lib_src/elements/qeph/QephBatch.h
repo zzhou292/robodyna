@@ -1,11 +1,13 @@
 #pragma once
 #include "QephForceData.h"
+#include "../ShellCollectionLimits.h"
 #include "../../solvers/ExplicitNodalStep.h"
 #include <memory>
 
 namespace tl::fea { class ShellBatchBinding; class ShellBatchPublication; }
 namespace tl::fea::qeph {
-constexpr std::size_t MaxBatchElements=4,MaxBatchNodes=16,MaxBatchDeviceBytes=1024*1024;
+constexpr std::size_t MaxBatchElements=MaxShellCollectionParents,MaxBatchNodes=MaxShellCollectionNodes;
+constexpr std::size_t MaxBatchDeviceBytes=1024*1024;
 struct QephBatchElement { ReferenceData reference; std::size_t nodes[4]{}; };
 enum class BatchUsage { Unspecified,PrescribedFields,CoupledForces };
 enum class BatchStartupKind { ReferenceRest,ReferenceUniformTranslation };
@@ -91,7 +93,8 @@ class QephBatch {
   QephBatch(const QephBatch&)=delete;
   QephBatch& operator=(const QephBatch&)=delete;
   BatchReport Initialize(const QephBatchConfig&,const QephBatchElement*);
-  // Immutable joined scope; exactly one typed cell from the complete union.
+  // Immutable joined scope; every QEPH cell from the complete collection.
+  // Both families must be present; config.element_count must match exactly.
   // Matching prescribed or coupled usage is enforced by the sole joined
   // coordinator. Startup remains reference-at-rest; standalone Commit rejects it.
   BatchReport InitializeJoined(const QephBatchConfig&,const ShellBatchBinding&);

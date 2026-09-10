@@ -37,14 +37,15 @@ BatchReport T3Batch::Initialize(const T3BatchConfig& config,const T3BatchElement
 }
 BatchReport T3Batch::InitializeJoined(const T3BatchConfig& config,const ShellBatchBinding& binding) {
   if(!binding.prepared()) return {BatchStatus::InvalidInput,"Mixed binding is not prepared"};
-  T3BatchElement element; element.reference=binding.t3_reference();
-  for(unsigned i=0;i<3;++i) element.nodes[i]=binding.t3_nodes()[i];
-  return InitializeImpl(config,&element,&binding);
+  return InitializeImpl(config,nullptr,&binding);
 }
 BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchElement* elements,const ShellBatchBinding* joined) {
   if(impl_) return {BatchStatus::InvalidInput,"T3 batch is already initialized"};
-  Storage initial{};
-  auto report=batch_detail::BuildModel(config,elements,initial.model,initial.slab[0],joined);
+  // Startup staging is bounded and heap-backed; it is released after the one
+  // resident device allocation is initialized. Per-step storage is unchanged.
+  std::unique_ptr<Storage> initial(new(std::nothrow) Storage{});
+  if(!initial) return {BatchStatus::ResourceLimit,"T3 startup staging allocation failed"};
+  auto report=batch_detail::BuildModel(config,elements,initial->model,initial->slab[0],joined);
   if(report.status!=BatchStatus::Success) return report;
   std::unique_ptr<Impl> candidate(new(std::nothrow) Impl);
   if(!candidate) return {BatchStatus::ResourceLimit,"T3 host allocation failed"};
@@ -54,7 +55,7 @@ BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchEle
   report=candidate->PendingError(); if(report.status!=BatchStatus::Success) return report;
   report=candidate->Runtime(cudaMalloc(reinterpret_cast<void**>(&candidate->storage),sizeof(Storage)),"T3 allocation failed");
   if(report.status!=BatchStatus::Success) return report;
-  report=candidate->Runtime(cudaMemcpy(candidate->storage,&initial,sizeof(initial),cudaMemcpyHostToDevice),"T3 initialization copy failed");
+  report=candidate->Runtime(cudaMemcpy(candidate->storage,initial.get(),sizeof(Storage),cudaMemcpyHostToDevice),"T3 initialization copy failed");
   if(report.status!=BatchStatus::Success) return report;
   candidate->accepted=&candidate->storage->slab[0]; candidate->trial=&candidate->storage->slab[1];
   impl_=std::move(candidate); return Ok();

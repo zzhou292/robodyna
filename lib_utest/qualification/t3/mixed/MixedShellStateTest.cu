@@ -66,7 +66,7 @@ TEST_F(MixedShellCuda, NativeSharedEdgeBindingUsesOneOwnerMassAndSeparateTypedHi
   EXPECT_LE(allocations[0].device_bytes,fe::MaxTranslationDeviceBytes);
   EXPECT_LE(allocations[1].device_bytes,q::MaxBatchDeviceBytes);
   EXPECT_LE(allocations[2].device_bytes,t::MaxBatchDeviceBytes);
-  EXPECT_LE(allocations[3].device_bytes,1024u); // Owning mixed kinetic scratch's fixed cap.
+  EXPECT_LE(allocations[3].device_bytes,8192u); // Owning collection kinetic scratch's fixed cap.
   std::size_t total=0;
   for(unsigned i=0;i<allocations.size();++i) {
     EXPECT_GT(allocations[i].device_bytes,0u); total+=allocations[i].device_bytes;

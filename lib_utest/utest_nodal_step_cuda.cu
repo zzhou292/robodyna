@@ -176,7 +176,7 @@ TEST_F(NodalStepCuda, InvalidStartupIsRejectedBeforeOwnerPublication) {
     fe::FENodalState state; EXPECT_EQ(state.Initialize(c,in.view(),in.inverse.data(),in.fixed.data()).status,expected);
     EXPECT_EQ(state.accepted().owner_id,0u); EXPECT_EQ(state.allocations().device_bytes,0u);
   };
-  auto c=good; c.node_count=65; reject(c,NS::ResourceLimit);
+  auto c=good; c.node_count=fe::MaxTranslationNodes+1; reject(c,NS::ResourceLimit);
   c=good; c.node_count=0; reject(c,NS::ResourceLimit);
   c=good; c.max_device_bytes=1; reject(c,NS::ResourceLimit);
   c=good; c.max_device_bytes=fe::MaxTranslationDeviceBytes+1; reject(c,NS::ResourceLimit);

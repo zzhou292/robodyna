@@ -7,9 +7,9 @@ TEST_F(T3BatchCuda, InvalidReferenceMassAndActualRestNeverAuthorizeStartupCache)
   for(unsigned kind=0;kind<11;++kind) {
     SCOPED_TRACE(kind); t::T3Batch batch; auto config=r.Config(); auto elements=r.element;
     if(kind==0) config.usage=t::BatchUsage::Unspecified;
-    if(kind==1) config.element_count=3;
+    if(kind==1) config.element_count=t::MaxBatchElements+1;
     if(kind==2) config.max_device_bytes=1;
-    if(kind==3) config.owner.node_count=17;
+    if(kind==3) config.owner.node_count=t::MaxBatchNodes+1;
     if(kind==4) elements[1].reference.area*=2;
     if(kind==5) {
       auto in=elements[1].reference.input;

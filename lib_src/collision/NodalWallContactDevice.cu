@@ -10,15 +10,18 @@ using Code=NodalWallDeviceStatus;
 __global__ void MarkFailure(fea::NodalAssemblyView v,unsigned node) { fea::RecordNodalAssemblyFailure(v,Status::kInvalidArgument,node); }
 __global__ void Assemble(d::Storage* storage,fea::NodalAssemblyView v,NodalWallDiagnostics identity) {
   auto& s=*storage;
-  if (threadIdx.x==0) { s.control={}; s.base={}; d::ValidateAssembly(s,v); }
+  d::ResetResult(s.base);
+  if (threadIdx.x==0) { s.control={}; d::ValidateAssembly(s,v); }
   __syncthreads();
   d::Evaluate(s,v.accepted,identity);
   if (threadIdx.x==0) {
     if (s.control.status==Code::Ok && d::Scatter(s,v)) {
-      s.result.diagnostics.valid=true; s.base=s.result;
+      s.result.diagnostics.valid=true;
     }
     if (s.control.status!=Code::Ok) fea::RecordNodalAssemblyFailure(v,Status::kInvalidArgument,s.control.node);
   }
+  __syncthreads();
+  if (s.control.status==Code::Ok) d::CopyBase(s);
 }
 __global__ void Candidate(d::Storage* storage,fea::NodalPreparedView v,NodalWallDiagnostics identity) {
   auto& s=*storage;

@@ -56,7 +56,9 @@ struct ShellBatchPublication::Impl {
     const bool same_usage=(q.config.usage==qeph::BatchUsage::PrescribedFields&&t.config.usage==t3::BatchUsage::PrescribedFields)||
       (q.config.usage==qeph::BatchUsage::CoupledForces&&t.config.usage==t3::BatchUsage::CoupledForces);
     return q.joined_binding&&t.joined_binding&&q.joined_binding->inventory()==t.joined_binding->inventory()&&
-      q.config.element_count==1&&t.config.element_count==1&&q.config.configuration_id==t.config.configuration_id&&
+      q.config.element_count==q.joined_binding->qeph_count()&&q.config.element_count>0&&
+      t.config.element_count==t.joined_binding->t3_count()&&t.config.element_count>0&&
+      q.config.configuration_id==t.config.configuration_id&&
       q.config.qualification_id==t.config.qualification_id&&same_usage&&trial_identity::SameStamp(q.config.owner,t.config.owner)&&
       trial_identity::SameStamp(q.accepted_stamp,t.accepted_stamp)&&q.stream==t.stream;
   }
