@@ -43,7 +43,7 @@ node cap. Mixed shell force feedback remains the next composition gate. Eight fu
 native contact model/probe host functions now pass at `1bef7cc`, followed by
 13 independently checked full-state stability-analysis utility functions at
 `08fb0c4` and seven incremental raw-capture/report functions at `842469b`.
-The retained total is 1,057 distinct passing functions. Explicit moving-startup
+The retained total is 1,069 distinct passing functions. Explicit moving-startup
 CUDA is qualified at `c32e106`: five new and 41 retained unit functions pass,
 along with all six sustained GPU runs and both refinements. Scientific fields
 match the default-rest baseline exactly; QEPH adds only 32 B of startup metadata.
@@ -55,9 +55,14 @@ at `504b2be`/`5aef73c`. Four report and seven boost/selection functions now pass
 at `23f05a1`/`86c03ca`. All six actual full-state derived analyses pass at
 `6eb2f3a`, including every sampled timestep; maximum weighted mean gain is
 45.5463 below 64. The 522 derived artifacts retain exact source/runtime evidence.
-Authenticated derived reading and four actual cross-boost comparisons must close
-the final timestep decision before incoming CUDA entry/retry and rebound/refinement.
-The incoming prefix is being implemented in parallel against that decision. The
+Five authenticated-reader and four selection-report functions also pass. The
+complete six-job/four-boost screen selects H0 at `386184b`. Actual incoming
+CUDA entry now passes at `e17950b`: three functions, 23 regressions, 2,412 native
+intervals and seven rejected-trial retries. One/two cells complete h/h2 prefixes
+through 13.3514 microseconds, retaining eight allocations and 116,028/116,850 B.
+Six longer default-rest runs and both refinements keep exact scientific parity.
+Full broadside compression, release, rebound and h/h2/h4 refinement are next,
+using the existing transaction and a separate wall-specific observation layer. The
 [combined admission design](../../planning/QEPH_WALL_COUPLED_ADMISSION.md)
 separates short transaction checks, contact recurrence, incoming-velocity startup
 and impact/refinement; free-shell stability does not qualify wall impact. Plasticity,
