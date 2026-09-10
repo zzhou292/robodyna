@@ -3,6 +3,23 @@
 #include <cstdlib>
 #include <stdexcept>
 namespace crash::output::test_support {
+// Fixed-string JSON forecast with every numeric token widened to26 bytes.
+// Used by schema-specific tests to check actual serializers against their caps.
+inline std::size_t WorstScalarWidth(const std::string& bytes) {
+    std::size_t bound=bytes.size();
+    for(std::size_t i=0;i<bytes.size();) {
+        if(bytes[i]=='"') {
+            ++i;while(i<bytes.size()&&bytes[i]!='"')i+=bytes[i]=='\\'?2:1;
+            Require(i<bytes.size(),"Unterminated serialized string");++i;
+        } else if(bytes[i]=='-'||(bytes[i]>='0'&&bytes[i]<='9')) {
+            const auto first=i++;
+            while(i<bytes.size()&&std::string("0123456789.eE+-").find(bytes[i])!=std::string::npos)++i;
+            Require(i-first<=26,"Numeric token exceeds forecast");bound+=26-(i-first);
+        } else if(bytes.compare(i,4,"true")==0) {++bound;i+=4;}
+        else ++i;
+    }
+    return bound;
+}
 // Test-only immutable-payload clone. Replacement unlinks its directory entry
 // first, so a corruption probe never writes through the original hard link.
 class ModifiedReplayBundle {

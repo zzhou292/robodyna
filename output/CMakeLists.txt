@@ -10,7 +10,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/../case/CanonicalWallArtifacts.cmake")
 add_library(robo_dyna_accepted_replay STATIC AcceptedReplay.cpp AcceptedReplayIndex.cpp AcceptedReplayMesh.cpp
   AcceptedReplayGuided.cpp AcceptedReplayLedgers.cpp AcceptedReplaySourcePart.cpp
   AcceptedReplaySourcePartWall.cpp AcceptedReplaySourcePartWallContact.cpp
-  AcceptedReplaySourcePartWallIntervals.cpp AcceptedReplayPlacedWall.cpp)
+  AcceptedReplaySourcePartWallIntervals.cpp AcceptedReplayPlacedWall.cpp AcceptedReplaySourcePartPlastic.cpp)
 target_link_libraries(robo_dyna_accepted_replay PUBLIC robo_dyna_artifact_io PRIVATE robo_dyna_canonical_wall_artifacts)
 target_compile_options(robo_dyna_accepted_replay PRIVATE -fno-fast-math -ffp-contract=off)
 if(ROBO_DYNA_ENABLE_REPLAY_CHECKS OR ROBO_DYNA_ENABLE_ELASTIC_COUPON)
@@ -72,3 +72,4 @@ if(ROBO_DYNA_ENABLE_REPLAY_CHECKS OR ROBO_DYNA_ENABLE_ELASTIC_COUPON)
 endif()
 
 include("${CMAKE_CURRENT_LIST_DIR}/SourcePartWallComparison.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/SourcePartPlasticComparison.cmake")

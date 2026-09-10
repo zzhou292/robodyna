@@ -48,8 +48,10 @@ class AcceptedReplayScene {
     // SourcePartElastic alone permits explicit presentation magnification: X0 +
     // scale*(X-X0), scale in [1,1000]. Caller supplies bounds computed over
     // transformed frames; input archives and accepted state remain untouched.
-    // Stages all positions before publication; rejection preserves geometry,
-    // visual handles, stamp and presentation time. No per-frame allocation.
+    // Plastic wall replay uses a fixed declared scalar scale and one flat color
+    // per original source parent. Stages positions and colors together;
+    // rejection preserves both, visual handles, stamp and presentation time.
+    // No per-frame allocation or rebinding.
     ReplaySceneReport Publish(const output::ReplayFrame&);
     chrono::ChSystem& system();  // Borrow for AttachSystem only; throws before Initialize.
     const ReplayStamp* stamp() const noexcept;

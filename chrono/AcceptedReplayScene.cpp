@@ -1,4 +1,5 @@
 #include "AcceptedReplayScene.h"
+#include "ReplayParentScalarColors.h"
 
 #include "output/AcceptedReplay.h"
 #include "chrono/assets/ChVisualShapeTriangleMesh.h"
@@ -47,10 +48,10 @@ std::shared_ptr<chrono::ChTriangleMeshConnected> CopyGeometry(const chrono::ChTr
     auto mesh = std::make_shared<chrono::ChTriangleMeshConnected>();
     mesh->GetCoordsVertices() = source.GetCoordsVertices();
     mesh->GetIndicesVertices() = source.GetIndicesVertices();
-    return mesh;  // Archive materials/normals never replace our one-material policy.
+    return mesh;  // Archive attributes never replace the declared display policy.
 }
 std::shared_ptr<chrono::ChVisualShapeTriangleMesh> MakeShape(
-    const std::shared_ptr<chrono::ChTriangleMeshConnected>& mesh, bool moving, bool wireframe) {
+    const std::shared_ptr<chrono::ChTriangleMeshConnected>& mesh, bool moving, bool wireframe, bool colors=false) {
     auto shape = std::make_shared<chrono::ChVisualShapeTriangleMesh>();
     shape->SetMesh(mesh, false);
     shape->SetMutable(moving);
@@ -58,6 +59,9 @@ std::shared_ptr<chrono::ChVisualShapeTriangleMesh> MakeShape(
     shape->SetDoubleFaced(true);
     shape->SetBackfaceCull(false);
     shape->SetWireframe(wireframe);
+    // Chrono/VSG binds dynamic color buffers only for its no-material mesh path.
+    // Indexed face colors below use that existing path, including mutable normals.
+    if(colors)return shape;
     auto material = std::make_shared<chrono::ChVisualMaterial>();
     material->SetDiffuseColor(moving ? chrono::ChColor(0.12f, 0.64f, 0.94f) : chrono::ChColor(0.42f, 0.46f, 0.51f));
     material->SetMetallic(0.0f);
@@ -122,6 +126,8 @@ struct AcceptedReplayScene::Impl {
     std::shared_ptr<chrono::ChTriangleMeshConnected> moving, wall;
     std::shared_ptr<chrono::ChVisualShapeTriangleMesh> shape;
     std::vector<chrono::ChVector3d> staged, reference;
+    ReplayParentScalarColors parent_colors;
+    std::vector<chrono::ChColor> staged_colors;
     double deformation_scale = 1;
     ReplayStamp stamp;
     ReplayCamera camera;
@@ -152,7 +158,19 @@ ReplaySceneReport AcceptedReplayScene::Initialize(const output::ReplayInfo& info
         if (!MakeCamera(info, next->camera)) return {ReplaySceneStatus::InvalidFrame, "Invalid replay trajectory bounds"};
         next->info = info;
         next->moving = CopyGeometry(*frame.mesh);
-        next->shape = MakeShape(next->moving, true, wireframe);
+        if(info.source_plasticity) {
+            if(info.kind!=output::ReplayKind::SourcePartWall||info.triangle_source_parent.size()!=info.triangle_count||
+               !next->parent_colors.Initialize(info.triangle_source_parent,frame.parent_plastic_strain,
+                    info.plastic_strain_color_max,next->moving->GetCoordsColors()))
+                return {ReplaySceneStatus::InvalidFrame,"Invalid accepted plastic display association or fixed scale"};
+            for(const auto& parent:frame.parent_plastic_strain)if(parent.value!=0)
+                return {ReplaySceneStatus::InvalidFrame,"Initial accepted plastic display field is not zero"};
+            auto& indices=next->moving->GetIndicesColors();indices.reserve(info.triangle_count);
+            for(std::size_t t=0;t<info.triangle_count;++t)indices.push_back({int(t),int(t),int(t)});
+            next->staged_colors.resize(info.triangle_count);
+        } else if(!frame.parent_plastic_strain.empty()||!info.triangle_source_parent.empty()||info.plastic_strain_color_max!=0)
+            return {ReplaySceneStatus::InvalidFrame,"Plastic display values lack a declared material"};
+        next->shape = MakeShape(next->moving, true, wireframe,info.source_plasticity);
         next->staged.resize(info.node_count);
         next->deformation_scale = deformation_scale;
         if (deformation_scale != 1) next->reference = frame.mesh->GetCoordsVertices();
@@ -191,7 +209,13 @@ ReplaySceneReport AcceptedReplayScene::Publish(const output::ReplayFrame& frame)
             state.staged[n] = state.reference[n] + state.deformation_scale * (state.staged[n] - state.reference[n]);
     if (!DisplayGeometry(state.staged, state.moving->GetIndicesVertices()))
         return {ReplaySceneStatus::InvalidFrame, "Replay frame cannot be represented by renderer geometry"};
+    if(state.info.source_plasticity) {
+        if(!state.parent_colors.Stage(frame.parent_plastic_strain,state.staged_colors))
+            return {ReplaySceneStatus::InvalidFrame,"Replay parent identity or plastic display scalar changed"};
+    } else if(!frame.parent_plastic_strain.empty())
+        return {ReplaySceneStatus::InvalidFrame,"Undeclared plastic display field"};
     state.moving->GetCoordsVertices().swap(state.staged);
+    if(state.info.source_plasticity)state.moving->GetCoordsColors().swap(state.staged_colors);
     state.stamp = {frame.index, frame.owner_id, frame.epoch, frame.time};
     state.system.SetChTime(frame.time);
     return {ReplaySceneStatus::Ok, "Replay frame published without rebinding"};

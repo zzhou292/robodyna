@@ -1,4 +1,5 @@
 #include "AcceptedReplayData.h"
+#include "SourcePartWallArtifactSchema.h"
 #include <algorithm>
 #include <charconv>
 #include <cmath>
@@ -56,7 +57,7 @@ void ReadInventory(Bundle& bundle, const Document& manifest) {
                 "Unsafe replay inventory filename");
         Require(hash.size() == 64 && hash.find_first_not_of("0123456789abcdef") == std::string::npos,
                 "Invalid replay SHA256");
-        Require(bytes <= kFileCap && bytes <= kTotalCap-total, "Replay inventory exceeds byte caps");
+        Require(bytes <= kFileCap && bytes <= bundle.total_cap-total, "Replay inventory exceeds byte caps");
         total += static_cast<std::size_t>(bytes);
         Require(bundle.inventory.emplace(name, Artifact{hash, static_cast<std::size_t>(bytes)}).second,
                 "Duplicate replay inventory filename");
@@ -150,13 +151,16 @@ Bundle ReadIndex(const std::filesystem::path& directory) {
     const bool guided = bundle.info.schema == "robo_dyna.guided_plate_artifacts.v1" ||
                         bundle.info.schema == "robo_dyna.guided_plate_artifacts.v2";
     const bool source_part = bundle.info.schema == "robo_dyna.source_part_elastic_artifacts.v1";
-    const bool source_wall = bundle.info.schema == "robo_dyna.source_part_wall_artifacts.v1";
+    const bool plastic_wall = bundle.info.schema == "robo_dyna.source_part_wall_artifacts.v2";
+    const bool source_wall = plastic_wall || bundle.info.schema == "robo_dyna.source_part_wall_artifacts.v1";
+    bundle.info.source_plasticity=plastic_wall;
+    if(plastic_wall) bundle.total_cap=SourcePartPlasticWallTotalCap;
     Require(coupon || guided || source_part || source_wall || bundle.info.schema == "tlfea.normal_impact_artifacts.v1", "Unsupported replay artifact schema");
     bundle.info.kind = source_wall ? ReplayKind::SourcePartWall : source_part ? ReplayKind::SourcePartElastic : guided ? ReplayKind::GuidedPlate : coupon ? ReplayKind::ElasticCoupon : ReplayKind::NormalImpact;
     const auto& shell_model = Member(manifest, "shell_model"); const auto& vehicle_model = Member(manifest, "vehicle_model");
     Require(shell_model.IsBool() && shell_model.GetBool() == (coupon || guided || source_part || source_wall) && vehicle_model.IsBool() && !vehicle_model.GetBool(),
             "Replay schema/model scope flags disagree");
-    bundle.info.scope = source_wall ? "Original Yaris part 2000157; elastic mesh-wall impact at physical scale" : source_part ? "Original Yaris part 2000157; experimental elastic pulse and free response" : guided ? "Synthetic guided elastic plate against the canonical wall" : coupon ? "Synthetic elastic shell coupon" : "Translational mass patch against the canonical wall";
+    bundle.info.scope = plastic_wall ? "Original Yaris part 2000157; plastic mesh-wall impact at physical scale" : source_wall ? "Original Yaris part 2000157; elastic mesh-wall impact at physical scale" : source_part ? "Original Yaris part 2000157; experimental elastic pulse and free response" : guided ? "Synthetic guided elastic plate against the canonical wall" : coupon ? "Synthetic elastic shell coupon" : "Translational mass patch against the canonical wall";
     bundle.info.final_epoch = Unsigned(manifest, "accepted_epoch");
     bundle.info.final_time = Real(manifest, "accepted_time_s");
     Require(bundle.info.final_epoch && bundle.info.final_time > 0, "Replay completed horizon is invalid");

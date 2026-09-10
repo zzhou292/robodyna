@@ -5,6 +5,17 @@
 namespace crash::cases::source_part_elastic {
 Report SourcePartElasticCase::Impl::Initialize(const source::SourcePartContactFixture& input,const Config& settings) {
     source=input; config=settings;
+    const bool plastic=config.material_model!=MaterialModel::ElasticLaw1;
+    if(plastic&&(config.material.declaration().density_kg_m3!=source.surface_mass().density_kg_m3||
+        config.material.declaration().thickness_m!=source.surface_mass().thickness_m))
+        return Failure(Status::InvalidInput,"Source material density/thickness differs from the authenticated geometry");
+    fe::ShellBatchPlasticityConfig plasticity;
+    if(plastic) {
+        plasticity.material_id=config.material.declaration().material_id;
+        plasticity.curve_id=config.material.declaration().curve_id;
+        plasticity.curve=config.material.curve();
+        plasticity.rate=config.rate;
+    }
     const auto cr=collection.Initialize(source);
     if(cr.status!=source::FixtureStatus::Ok) return Failure(Status::ComponentFailure,"Original source collection conversion failed");
     const auto br=binding.Initialize(collection.input());
@@ -38,13 +49,13 @@ Report SourcePartElasticCase::Impl::Initialize(const source::SourcePartContactFi
     qc.configuration_id=config.configuration_id; qc.qualification_id=config.qualification_id;
     qc.usage=q::BatchUsage::CoupledForces;
     qc.startup=startup;
-    const auto qr=qeph.InitializeJoined(qc,binding);
+    const auto qr=plastic?qeph.InitializeJoined(qc,binding,plasticity):qeph.InitializeJoined(qc,binding);
     if(qr.status!=q::BatchStatus::Success) return Failure(Status::ComponentFailure,qr.message);
     t::T3BatchConfig tc; tc.owner=owner.accepted(); tc.element_count=source::T3Count;
     tc.configuration_id=config.configuration_id; tc.qualification_id=config.qualification_id;
     tc.usage=t::BatchUsage::CoupledForces;
     tc.startup=startup;
-    const auto tr=t3.InitializeJoined(tc,binding);
+    const auto tr=plastic?t3.InitializeJoined(tc,binding,plasticity):t3.InitializeJoined(tc,binding);
     if(tr.status!=t::BatchStatus::Success) return Failure(Status::ComponentFailure,tr.message);
     fe::NodalAssemblyView assembly;
     const auto begin=owner.BeginTrial(&token,&assembly);
@@ -69,6 +80,11 @@ Report SourcePartElasticCase::Impl::Initialize(const source::SourcePartContactFi
         accepted.synchronized_velocity=accepted.velocity;
         accepted.synchronized_omega=accepted.omega;
         accepted.diagnostics.synchronized_kinetic=initial_kinetic;
+    }
+    accepted.plastic.enabled=plastic;
+    if(plastic) {
+        const auto observed=InitializePlasticObservation();
+        if(!observed) return observed;
     }
     initialized=true;
     return Success();

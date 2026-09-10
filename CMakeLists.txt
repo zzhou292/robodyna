@@ -46,6 +46,7 @@ option(ROBO_DYNA_SOURCE_T3_FORCE "Qualify native T3 force/history on the six aut
 option(ROBO_DYNA_SOURCE_QEPH_GEOMETRY "Qualify QEPH startup and rates on the 88 authenticated source quads" OFF)
 option(ROBO_DYNA_SOURCE_SHELL_COLLECTION "Bind all original source shells with native structural mass" OFF)
 option(ROBO_DYNA_ENABLE_SOURCE_PART_ELASTIC "Run and archive the original mixed-shell elastic part experiment" OFF)
+option(ROBO_DYNA_ENABLE_PLASTIC_SHELL_CHECKS "Build tabulated plastic material and layered shell qualification" OFF)
 if(ROBO_DYNA_ENABLE_SOURCE_PART_ELASTIC AND
    (NOT ROBO_DYNA_SOURCE_SHELL_COLLECTION OR NOT CRASH_ENABLE_TL_NODAL_CHECK))
   message(FATAL_ERROR "Source-part elastic dynamics requires source shell collection and TL nodal output")
@@ -102,6 +103,9 @@ if(ROBO_DYNA_ENABLE_SOURCE_CONTACT_CHECKS)
 endif()
 if(ROBO_DYNA_ENABLE_SOURCE_PART_ELASTIC)
   add_subdirectory(case/source_part_elastic)
+endif()
+if(ROBO_DYNA_ENABLE_PLASTIC_SHELL_CHECKS)
+  add_subdirectory(qualification/plastic_shell)
 endif()
 
 add_test(NAME vehicle_geometry_unit

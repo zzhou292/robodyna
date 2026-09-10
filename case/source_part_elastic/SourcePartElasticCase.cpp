@@ -5,6 +5,20 @@
 
 namespace crash::cases::source_part_elastic {
 bool ValidConfig(const Config& c) noexcept {
+    if(c.material_model!=MaterialModel::ElasticLaw1&&c.material_model!=MaterialModel::ExperimentalRateIndependentTabulatedJ2&&
+       c.material_model!=MaterialModel::SourceCowperSymonds) return false;
+    if(c.material_model!=MaterialModel::SourceCowperSymonds&&
+       (c.rate.enabled||c.rate.cowper_symonds_c_per_s!=0||c.rate.cowper_symonds_p!=0||c.rate.cutoff_hz!=0)) return false;
+    if(c.material_model!=MaterialModel::ElasticLaw1) {
+        if(!c.material.prepared()) return false;
+        const auto& m=c.material.declaration();
+        if(m.part_id!=source::PartId||m.young_pa!=200e9||m.poisson_ratio!=.3||
+           m.through_thickness_points!=3) return false;
+        if(c.material_model==MaterialModel::SourceCowperSymonds&&(!c.rate.enabled||
+           c.rate.cowper_symonds_c_per_s!=m.source_rate_coefficient_per_s||
+           c.rate.cowper_symonds_p!=m.source_rate_exponent||
+           c.rate.cutoff_hz!=m.resolved_filter_cutoff_per_s)) return false;
+    }
     if(c.experiment!=Experiment::ElasticPulse&&c.experiment!=Experiment::UniformFlight&&c.experiment!=Experiment::MeshWallImpact) return false;
     for(double v : {c.dt,c.maximum_displacement,c.maximum_rotation,
                     c.maximum_strain,c.maximum_thickness_curvature,c.minimum_area_ratio,c.maximum_area_ratio,

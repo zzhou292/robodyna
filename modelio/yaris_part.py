@@ -17,6 +17,9 @@ DOCUMENTATION = {
     'section': 'https://help.altair.com/hwsolvers/rad/topics/solvers/rad/section_shell_lsdyna_r.htm',
     'curve': 'https://help.altair.com/hwsolvers/rad/topics/solvers/rad/define_curve_lsdyna_r.htm',
     'part': 'https://help.altair.com/hwsolvers/rad/topics/solvers/rad/part_lsdyna_r.htm',
+    'pinned_material_converter': 'https://github.com/OpenRadioss/OpenRadioss/blob/'
+        'a62b27e6baa555d222a580d6218867d0be4d70b5/'
+        'reader/source/dyna2rad/dyna2rad/_private/convertmats.cxx#L1461-L1500',
 }
 
 
@@ -37,7 +40,12 @@ def declaration_report(declarations):
             'curve_ordinate': 'yield stress, converted from source units to Pa',
             'rate_type': 'total_strain_rate' if material.rate_type == 0 else 'unresolved_blank',
             'rate_parameters': 'C and P declared; no rate-dependent stress update or donor equivalence asserted',
-            'donor_reference': 'Altair documents LAW36 for this curve branch; LAW44 is not assumed equivalent',
+            'donor_reference': 'The pinned converter selects LAW44 for the admitted plain LCSS curve, '
+                'absent LCSR and positive C/P; its earlier TABLE and LCSR branches select LAW36. '
+                'This source mapping does not qualify donor or TL constitutive equivalence',
+            'donor_options': 'Curve hardening with B=0; supplied VP=0 maps to converter VP=0/ISMOOTH=1. '
+                'A blank VP remains unresolved here. Native starter defaults, rate filtering, '
+                'section integration and history remain unqualified',
             'source_ELFORM': 'source formulation code retained; no mapping to the current TL shell is admitted',
             'blank_fields': 'None means absent in the source, never an implicit numerical zero',
             'curve_defaults': 'Only identity scales/offsets have documented defaults; each use is recorded',
@@ -51,8 +59,9 @@ def declaration_report(declarations):
         ],
         'interpretation_references': {
             'urls': DOCUMENTATION,
-            'reviewed_utc_date': '2026-09-09',
-            'scope': 'Primary Altair LS-DYNA input-interface documentation; not complete LS-DYNA keyword equivalence',
+            'reviewed_utc_date': '2026-09-10',
+            'scope': 'Primary Altair input-interface documentation and pinned OpenRadioss converter source; '
+                'not complete LS-DYNA keyword equivalence or mechanics admission',
         },
     }
 

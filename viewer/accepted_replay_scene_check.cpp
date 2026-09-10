@@ -37,6 +37,29 @@ ReplayInfo Info() {
     return info;
 }
 ReplayFrame Frame(std::size_t index, double z) { return {index, 9, 6 * index, 0.01 * index, Mesh(z)}; }
+ReplayInfo PlasticInfo() {
+    auto info=Info();info.kind=crash::output::ReplayKind::SourcePartWall;
+    info.source_plasticity=true;info.node_count=5;info.triangle_count=3;
+    info.bounds_min[0]=-.1;info.plastic_strain_color_max=.02;
+    info.triangle_source_parent={100,100,200};return info;
+}
+ReplayFrame PlasticFrame(std::size_t index,double z,double q4,double t3) {
+    auto frame=Frame(index,z);auto mesh=Mesh(z);
+    mesh->GetCoordsVertices().push_back({-.1,0,0});mesh->GetIndicesVertices().push_back({0,3,4});
+    frame.mesh=mesh;
+    // Parent order intentionally differs from triangle order; source identity
+    // determines colors, never adjacency, element-family order or vertex ID.
+    frame.parent_plastic_strain={{200,t3},{100,q4}};return frame;
+}
+void ColorNear(const chrono::ChColor& actual,float r,float g,float b) {
+    EXPECT_NEAR(actual.R,r,2e-7f);EXPECT_NEAR(actual.G,g,2e-7f);EXPECT_NEAR(actual.B,b,2e-7f);
+}
+void SameColors(const std::vector<chrono::ChColor>& actual,const std::vector<chrono::ChColor>& expected) {
+    ASSERT_EQ(actual.size(),expected.size());
+    for(std::size_t i=0;i<actual.size();++i) {
+        EXPECT_FLOAT_EQ(actual[i].R,expected[i].R);EXPECT_FLOAT_EQ(actual[i].G,expected[i].G);EXPECT_FLOAT_EQ(actual[i].B,expected[i].B);
+    }
+}
 
 TEST(AcceptedReplayScene, EmptyStateRejectsPublication) {
     AcceptedReplayScene scene;
@@ -227,6 +250,66 @@ TEST(AcceptedReplayScene, SourceWallRequiresActualMeshAndKeepsPhysicalScaleWithI
     const auto fixed=scene.wall_mesh();const auto coordinates=fixed->GetCoordsVertices();const auto next=Frame(1,.002);
     ASSERT_EQ(scene.Publish(next).status,ReplaySceneStatus::Ok);EXPECT_EQ(scene.moving_mesh()->GetCoordsVertices(),next.mesh->GetCoordsVertices());
     EXPECT_EQ(scene.wall_mesh(),fixed);EXPECT_EQ(scene.wall_mesh()->GetCoordsVertices(),coordinates);
+}
+
+TEST(AcceptedReplayScene, AcceptedParentColorsUseExistingMutablePathAndKeepPhysicalCoordinates) {
+    AcceptedReplayScene scene;const auto initial=PlasticFrame(0,0,0,0);const auto wall=Mesh();
+    ASSERT_EQ(scene.Initialize(PlasticInfo(),initial,wall).status,ReplaySceneStatus::Ok);
+    const auto shape=scene.moving_shape();const auto mesh=shape->GetMesh();
+    EXPECT_TRUE(shape->IsMutable());EXPECT_TRUE(shape->IsFixedConnectivity());
+    EXPECT_EQ(shape->GetNumMaterials(),0); // Owning VSG requires this for dynamic vertex/face colors.
+    EXPECT_EQ(mesh->GetCoordsVertices(),initial.mesh->GetCoordsVertices());EXPECT_EQ(scene.deformation_scale(),1);
+    ASSERT_EQ(mesh->GetIndicesColors().size(),3u);
+    for(unsigned t=0;t<3;++t)EXPECT_EQ(mesh->GetIndicesColors()[t],chrono::ChVector3i(t,t,t));
+    for(const auto& color:mesh->GetFaceColors())ColorNear(color,.12f,.64f,.94f);
+    const auto next=PlasticFrame(1,.002,.01,.02);
+    ASSERT_EQ(scene.Publish(next).status,ReplaySceneStatus::Ok);
+    EXPECT_EQ(scene.moving_shape(),shape);EXPECT_EQ(scene.moving_mesh().get(),mesh.get());
+    EXPECT_EQ(mesh->GetCoordsVertices(),next.mesh->GetCoordsVertices());
+    const auto& faces=mesh->GetFaceColors();ASSERT_EQ(faces.size(),9u);
+    for(unsigned v=0;v<6;++v)ColorNear(faces[v],.98f,.84f,.16f); // Both original Q4 subtriangles.
+    for(unsigned v=6;v<9;++v)ColorNear(faces[v],.90f,.12f,.10f); // Independent T3 parent.
+    EXPECT_TRUE(initial.mesh->GetCoordsColors().empty());EXPECT_TRUE(next.mesh->GetCoordsColors().empty());
+    const auto colors=mesh->GetCoordsColors();const auto camera=*scene.camera();
+    ASSERT_EQ(scene.Publish(PlasticFrame(2,-.002,.01,.02)).status,ReplaySceneStatus::Ok);
+    SameColors(mesh->GetCoordsColors(),colors);EXPECT_EQ(scene.camera()->position,camera.position);
+    EXPECT_EQ(scene.wall_mesh()->GetCoordsVertices(),wall->GetCoordsVertices());
+}
+
+TEST(AcceptedReplayScene, LateColorOrGeometryFailurePreservesTheWholeAcceptedDisplayAndRetry) {
+    AcceptedReplayScene scene;
+    ASSERT_EQ(scene.Initialize(PlasticInfo(),PlasticFrame(0,0,0,0),Mesh()).status,ReplaySceneStatus::Ok);
+    ASSERT_EQ(scene.Publish(PlasticFrame(1,.002,.005,.01)).status,ReplaySceneStatus::Ok);
+    const auto positions=scene.moving_mesh()->GetCoordsVertices();const auto colors=scene.moving_mesh()->GetCoordsColors();
+    auto invalid=PlasticFrame(2,-.002,.02,.02);
+    invalid.parent_plastic_strain.back().value=std::numeric_limits<double>::quiet_NaN();
+    EXPECT_EQ(scene.Publish(invalid).status,ReplaySceneStatus::InvalidFrame);
+    EXPECT_EQ(scene.moving_mesh()->GetCoordsVertices(),positions);SameColors(scene.moving_mesh()->GetCoordsColors(),colors);
+    invalid=PlasticFrame(2,-.002,.02,.02);invalid.parent_plastic_strain.back().source_parent=999;
+    EXPECT_EQ(scene.Publish(invalid).status,ReplaySceneStatus::InvalidFrame);
+    invalid=PlasticFrame(2,-.002,.02,.02);auto bad=std::make_shared<chrono::ChTriangleMeshConnected>(*invalid.mesh);
+    bad->GetCoordsVertices().back().z()=std::numeric_limits<double>::quiet_NaN();invalid.mesh=bad;
+    EXPECT_EQ(scene.Publish(invalid).status,ReplaySceneStatus::InvalidFrame);
+    EXPECT_EQ(scene.moving_mesh()->GetCoordsVertices(),positions);SameColors(scene.moving_mesh()->GetCoordsColors(),colors);
+    EXPECT_EQ(scene.stamp()->index,1u);EXPECT_EQ(scene.system().GetChTime(),.01);
+    const auto retry=PlasticFrame(2,-.002,.02,.02);
+    ASSERT_EQ(scene.Publish(retry).status,ReplaySceneStatus::Ok);
+    EXPECT_EQ(scene.moving_mesh()->GetCoordsVertices(),retry.mesh->GetCoordsVertices());
+    for(const auto& color:scene.moving_mesh()->GetCoordsColors())ColorNear(color,.90f,.12f,.10f);
+    EXPECT_EQ(scene.stamp()->index,2u);EXPECT_EQ(scene.system().GetChTime(),.02);
+}
+
+TEST(AcceptedReplayScene, ParentAssociationAndScaleMustBeCompleteBeforeInitialization) {
+    AcceptedReplayScene scene;auto info=PlasticInfo();const auto initial=PlasticFrame(0,0,0,0);
+    info.plastic_strain_color_max=0;
+    EXPECT_EQ(scene.Initialize(info,initial,Mesh()).status,ReplaySceneStatus::InvalidFrame);
+    info=PlasticInfo();info.triangle_source_parent.back()=999;
+    EXPECT_EQ(scene.Initialize(info,initial,Mesh()).status,ReplaySceneStatus::InvalidFrame);
+    auto duplicate=initial;duplicate.parent_plastic_strain.back().source_parent=200;
+    EXPECT_EQ(scene.Initialize(PlasticInfo(),duplicate,Mesh()).status,ReplaySceneStatus::InvalidFrame);
+    EXPECT_EQ(scene.Initialize(PlasticInfo(),PlasticFrame(0,0,.001,0),Mesh()).status,ReplaySceneStatus::InvalidFrame);
+    EXPECT_EQ(scene.stamp(),nullptr);
+    ASSERT_EQ(scene.Initialize(PlasticInfo(),initial,Mesh()).status,ReplaySceneStatus::Ok);
 }
 
 TEST(AcceptedReplayScene, DisplayRangeAndDegenerateGeometryFailBeforePublication) {

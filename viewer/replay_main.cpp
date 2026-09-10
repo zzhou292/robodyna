@@ -1,4 +1,5 @@
 #include "chrono/AcceptedReplayScene.h"
+#include "chrono/ReplayParentScalarColors.h"
 #include "output/AcceptedReplay.h"
 #include "output/ArtifactIO.h"
 #include "chrono/geometry/ChTriangleMeshConnected.h"
@@ -32,7 +33,7 @@ struct Options {
     bool wireframe = false;
 };
 Options Parse(int argc, char** argv) {
-    Require(argc >= 2, "usage: robo_dyna_replay BUNDLE [--capture NEW_DIR] [--fps 1..30] [--require-frames N] [--wireframe] [--deformation-scale 1..1000]");
+    Require(argc >= 2, "usage: robo_dyna_replay BUNDLE [--capture NEW_DIR] [--fps 1..60] [--require-frames N] [--wireframe] [--deformation-scale 1..1000]");
     Options out;
     out.bundle = argv[1];
     for (int i = 2; i < argc; ++i) {
@@ -47,7 +48,7 @@ Options Parse(int argc, char** argv) {
             } else if (arg == "--fps") {
                 std::size_t end = 0;
                 out.fps = std::stod(value, &end);
-                Require(end == value.size() && std::isfinite(out.fps) && out.fps >= 1 && out.fps <= 30, "playback fps must be 1..30");
+                Require(end == value.size() && std::isfinite(out.fps) && out.fps >= 1 && out.fps <= 60, "playback fps must be 1..60");
             } else if (arg == "--deformation-scale") {
                 std::size_t end = 0; out.deformation_scale = std::stod(value, &end);
                 Require(end == value.size() && std::isfinite(out.deformation_scale) && out.deformation_scale >= 1 && out.deformation_scale <= 1000, "deformation scale must be 1..1000");
@@ -64,6 +65,16 @@ Options Parse(int argc, char** argv) {
 struct Playback {
     bool paused = false, step = false, close = false;
 };
+void PlasticColorLegend(double maximum) {
+    ImGui::TextUnformatted("Color: equivalent plastic strain (max layer per parent)");
+    const auto blue=crash::visual::ReplayScalarColor(0);
+    const auto yellow=crash::visual::ReplayScalarColor(.5);
+    const auto red=crash::visual::ReplayScalarColor(1);
+    ImGui::TextColored(ImVec4(blue.R,blue.G,blue.B,1),"0%%");ImGui::SameLine();
+    ImGui::TextColored(ImVec4(yellow.R,yellow.G,yellow.B,1),"%.4g%%",50*maximum);ImGui::SameLine();
+    ImGui::TextColored(ImVec4(red.R,red.G,red.B,1),"%.4g%%",100*maximum);ImGui::SameLine();
+    ImGui::TextUnformatted("| fixed scale for every accepted frame");
+}
 class ReplayOverlay : public chrono::vsg3d::ChGuiComponentVSG {
   public:
     ReplayOverlay(const crash::output::ReplayInfo& info, const crash::visual::AcceptedReplayScene& scene,
@@ -91,14 +102,18 @@ class ReplayOverlay : public chrono::vsg3d::ChGuiComponentVSG {
             ImGui::Text("Frame %zu / %zu   Epoch %llu", stamp.index + 1, info_.frame_count,
                         static_cast<unsigned long long>(stamp.epoch));
             ImGui::TextUnformatted(info_.kind == crash::output::ReplayKind::SourcePartWall
-                ? "Blue: original elastic part | Gray: placed original mesh wall"
+                ? (info_.source_plasticity?"Gray wireframe: original mesh wall":"Blue: original elastic part | Gray: placed original mesh wall")
                 : info_.kind == crash::output::ReplayKind::SourcePartElastic
                 ? "Free part; experimental LAW1; attachments unapplied"
                 : info_.kind != crash::output::ReplayKind::ElasticCoupon
                 ? "Blue: moving surface   Gray wireframe: canonical wall"
                 : "Blue: accepted coupon surface | no wall");
             if(info_.kind==crash::output::ReplayKind::SourcePartWall) {
-                ImGui::TextUnformatted("Experimental LAW1; source attachments unapplied");
+                if(info_.source_plasticity) {
+                    ImGui::Text("Initial speed: %.3g m/s | deformation scale: 1x",info_.source_initial_speed_m_per_s);
+                    PlasticColorLegend(info_.plastic_strain_color_max);
+                    ImGui::TextUnformatted("Isolated source part; vehicle attachments not included");
+                } else ImGui::TextUnformatted("Experimental LAW1; source attachments unapplied");
                 if(!info_.horizon_complete)ImGui::TextUnformatted("Accepted prefix only | requested horizon stopped early");
             }
             if (capture_) ImGui::TextUnformatted("Indexed PNG capture | fixed camera");
@@ -310,6 +325,18 @@ int main(int argc, char** argv) {
             crash::output::String(manifest, "input_bundle", fs::weakly_canonical(options.bundle).string());
             crash::output::String(manifest, "input_schema", info.schema);
             crash::output::String(manifest, "input_scope", info.scope);
+            if(info.source_plasticity) {
+                crash::output::String(manifest,"material_model",info.material_model);
+                crash::output::String(manifest,"material_policy",info.material_policy);
+                crash::output::String(manifest,"surface_color_quantity","maximum accepted layer equivalent plastic strain per original source parent");
+                crash::output::String(manifest,"surface_color_palette","piecewise linear blue(0.12,0.64,0.94), yellow(0.98,0.84,0.16), red(0.90,0.12,0.10)");
+                crash::output::String(manifest,"surface_color_scale_policy","fixed 0..max(0.001, accepted final maximum plastic strain); endpoint saturation; no frame autoscale");
+                crash::output::Number(manifest,"surface_color_min",0);
+                crash::output::Number(manifest,"surface_color_max",info.plastic_strain_color_max);
+                crash::output::String(manifest,"surface_color_units","dimensionless; visible legend in percent");
+                crash::output::Boolean(manifest,"surface_color_flat_per_source_parent",true);
+                crash::output::Number(manifest,"source_initial_speed_m_per_s",info.source_initial_speed_m_per_s);
+            }
             crash::output::Integer(manifest, "owner_id", info.owner_id);
             crash::output::Integer(manifest, "frame_count", rendered);
             crash::output::Integer(manifest, "renders_per_accepted_frame", 2);
@@ -324,6 +351,7 @@ int main(int argc, char** argv) {
             crash::output::Number(manifest, "final_time", scene.stamp()->time);
             crash::output::Integer(manifest, "width", dimensions[0]);
             crash::output::Integer(manifest, "height", dimensions[1]);
+            crash::output::Number(manifest, "presentation_frame_rate_fps", options.fps);
             crash::output::Integer(manifest, "loading_workers", visual->GetLoadingThreadCount());
             crash::output::Boolean(manifest, "complete", true);
             crash::output::Boolean(manifest, "all_png_decoded", true);

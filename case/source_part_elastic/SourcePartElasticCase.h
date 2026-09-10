@@ -3,6 +3,8 @@
 #include "qualification/source_contact/SourceShellCollection.h"
 #include "lib_src/elements/ShellBatchPublication.h"
 #include "SourcePartElasticWallMetrics.h"
+#include "case/source_part_plastic/SourcePartPlasticState.h"
+#include "case/source_part_plastic/SourcePartMaterial.h"
 #include <array>
 #include <memory>
 #include <string>
@@ -20,8 +22,12 @@ inline constexpr std::size_t NodeCount = source::NodeCount;
 // are retained as unapplied input metadata. The existing source adapter declares
 // LAW1 E=200 GPa, nu=.3. None of these limits is a vehicle admission.
 enum class Experiment { ElasticPulse,UniformFlight,MeshWallImpact };
+enum class MaterialModel { ElasticLaw1,ExperimentalRateIndependentTabulatedJ2,SourceCowperSymonds };
 struct Config {
     Experiment experiment = Experiment::ElasticPulse;
+    MaterialModel material_model = MaterialModel::ElasticLaw1;
+    source_part_plastic::SourcePartMaterial material;
+    tl::material::TabulatedShellPlasticityRate rate;
     std::array<double,3> initial_velocity{};
     double dt = 0, pulse_duration = 0, acceleration = 0;
     unsigned spatial_axis = 0;
@@ -69,6 +75,7 @@ struct Snapshot {
     std::array<double,4*NodeCount> orientation{};
     tl::fea::NodalStamp stamp;
     Diagnostics diagnostics;
+    source_part_plastic::PlasticSummary plastic;
 };
 
 bool ValidConfig(const Config&) noexcept;
@@ -91,6 +98,7 @@ class SourcePartElasticCase {
         const std::string& authenticated_wall_bytes,const source_part_wall::SourcePartWallSettings&);
     Report Step();
     Report Capture(Snapshot*);
+    Report CapturePlasticSectionHistory(source_part_plastic::SourcePartPlasticState*) const;
     bool initialized() const noexcept;
     tl::fea::FENodalState& owner() noexcept;
     const source::SourcePartContactFixture& source() const noexcept;

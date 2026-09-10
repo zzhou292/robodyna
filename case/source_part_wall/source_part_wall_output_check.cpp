@@ -13,25 +13,7 @@ namespace crash::cases::source_part_wall {
 namespace {
 namespace part=source_part_elastic;namespace out=output;namespace fs=std::filesystem;
 std::string SourcePath,WallPath;
-// Bound the actual pretty-printed schema without changing its scientific data.
-// Quoted strings (including escaped characters) remain literal; every numeric
-// token reserves 26 bytes, covering binary64 and uint64 output, and bools 5.
-std::size_t WorstScalarWidth(const std::string& bytes) {
-    std::size_t bound=bytes.size();
-    for(std::size_t i=0;i<bytes.size();) {
-        if(bytes[i]=='"') {
-            ++i;
-            while(i<bytes.size()&&bytes[i]!='"')i+=bytes[i]=='\\'?2:1;
-            out::Require(i<bytes.size(),"Unterminated serialized string");++i;
-        } else if(bytes[i]=='-'||(bytes[i]>='0'&&bytes[i]<='9')) {
-            const auto first=i++;
-            while(i<bytes.size()&&std::string("0123456789.eE+-").find(bytes[i])!=std::string::npos)++i;
-            out::Require(i-first<=26,"Numeric token exceeds forecast");bound+=26-(i-first);
-        } else if(bytes.compare(i,4,"true")==0) { ++bound;i+=4; }
-        else ++i;
-    }
-    return bound;
-}
+using out::test_support::WorstScalarWidth;
 class BundleFixture {
   public:
     fs::path parent,directory;

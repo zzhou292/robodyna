@@ -1,5 +1,6 @@
 #include "SourcePartWallFields.h"
 #include "SourcePartCommonFields.h"
+#include "SourcePartPlasticFields.h"
 #include "output/SurfaceBindingFields.h"
 #include <cmath>
 
@@ -14,13 +15,13 @@ Document SourcePartWallConfiguration(const elastic::SourcePartElasticCase& run,c
     std::uint64_t steps,unsigned every) {
     Require(run.initialized()&&run.config().experiment==elastic::Experiment::MeshWallImpact&&run.wall_setup(),
             "Wall fields require the initialized mesh-wall experiment");
-    const auto& c=run.config();Document d;d.SetObject();
-    String(d,"schema","robo_dyna.source_part_wall_configuration.v1");
-    String(d,"scope","Original Yaris part 2000157; experimental elastic QEPH/T3 impact against the placed original finite mesh wall");
+    const auto& c=run.config();const bool plastic=source_part_plastic::PlasticEnabled(c);Document d;d.SetObject();
+    String(d,"schema",plastic?"robo_dyna.source_part_wall_configuration.v2":"robo_dyna.source_part_wall_configuration.v1");
+    String(d,"scope",plastic?"Original Yaris part 2000157; plastic QEPH/T3 impact against the placed original finite mesh wall":"Original Yaris part 2000157; experimental elastic QEPH/T3 impact against the placed original finite mesh wall");
     String(d,"units","SI; endpoint x/q, raw world v/omega at declared midpoint, separately derived endpoint v/omega");
     String(d,"source_readiness_sha256",source::ReadinessSha256);Integer(d,"source_readiness_bytes",source::ReadinessBytes);
     Integer(d,"source_part_id",source::PartId);Integer(d,"q4_count",source::Q4Count);Integer(d,"t3_count",source::T3Count);
-    String(d,"material_policy","Experimental LAW1 E=200 GPa nu=0.3; original density and thickness; source MAT024/ELFORM2 not reproduced");
+    String(d,"material_policy",source_part_plastic::MaterialPolicy(c));
     String(d,"attachment_policy","Free part; source rigid groups and tied scope remain unapplied metadata");
     String(d,"mass_policy","Actual native QEPH/T3 structural mass and total isotropic J; no contact-area proxy mass");
     String(d,"loading_policy","Uniform physical initial velocity; zero initial spin; no external pulse or gravity");
@@ -39,7 +40,8 @@ Document SourcePartWallConfiguration(const elastic::SourcePartElasticCase& run,c
     String(d,"energy_policy","K synchronized + native internal and viscous work + contact potential - measured initial K0; contact work is not subtracted twice");
     String(d,"contact_result_policy","Epoch zero has certified separation only; later contact results retain their prepared-candidate provenance beside the committed owner stamp");
     AppendSurfaceBinding(d,binding);elastic::AppendSourcePartInputTables(d,run);
-    Object(d,"wall_setup",SourcePartWallSetupFields(*run.wall_setup()));return d;
+    Object(d,"wall_setup",SourcePartWallSetupFields(*run.wall_setup()));
+    if(plastic)source_part_plastic::AppendSourcePartPlasticConfiguration(d,run);return d;
 }
 void CheckAcceptedWallContact(const tl::fea::NodalStamp& s,const elastic::Diagnostics& d,const contact::NodalWallDeviceResults* r) {
     Require(s.owner_id&&d.shells.valid,"Missing accepted source wall identity");
@@ -83,7 +85,7 @@ Document SourcePartWallFrameFields(const elastic::Snapshot& f,const SourcePartWa
     Require(setup.initialized()&&setup.owner_stamp()->owner_id==f.stamp.owner_id&&
         Bits(setup.owner_stamp()->fixed_dt)==Bits(f.stamp.fixed_dt),"Wall frame requires its original immutable owner setup");
     elastic::CheckSourcePartPhase(f,setup.settings()->initial_velocity);CheckAcceptedWallContact(f.stamp,f.diagnostics,contact_result);
-    Document d;d.SetObject();String(d,"schema","robo_dyna.source_part_wall_fields.v1");elastic::AppendSourcePartKinematics(d,f);
+    Document d;d.SetObject();String(d,"schema",f.plastic.enabled?"robo_dyna.source_part_wall_fields.v2":"robo_dyna.source_part_wall_fields.v1");elastic::AppendSourcePartKinematics(d,f);
     String(d,"synchronized_fields_policy","Derived endpoint velocity from raw previous midpoint plus complete native internal and contact endpoint RHS half kick; raw owner fields are unchanged");
     elastic::AppendSourcePartDiagnostics(d,f.diagnostics);AppendSourcePartWallMetrics(d,metrics);
     Integer(d,"strictly_separated_nodes",StrictlySeparatedNodes(contact_result));

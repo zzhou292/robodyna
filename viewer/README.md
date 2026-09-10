@@ -23,7 +23,7 @@ The local executable is `crash-work/build/robo-dyna-replay-r0/viewer/robo_dyna_r
 After the coordinated build, the executable accepts:
 
 ```text
-robo_dyna_replay BUNDLE [--capture NEW_DIR] [--fps 1..30] [--require-frames N] [--wireframe]
+robo_dyna_replay BUNDLE [--capture NEW_DIR] [--fps 1..60] [--require-frames N] [--wireframe]
 ```
 
 Without `--capture`, it displays successive recorded frames at ten frames per second by default, then holds the final frame. Pause, next-frame and close controls are provided. `--fps` changes presentation cadence only; the overlay always displays the actual saved simulation time. There is no interpolation, backward seek or deformation magnification in this slice.

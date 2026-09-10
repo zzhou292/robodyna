@@ -1,5 +1,6 @@
 #include "SourcePartWallArtifacts.h"
 #include "SourcePartWallFields.h"
+#include "SourcePartPlasticFields.h"
 #include "chrono/NodalMeshOutput.h"
 #include "chrono/geometry/ChTriangleMeshConnected.h"
 #include "output/ArtifactInventory.h"
@@ -24,11 +25,15 @@ struct SourcePartWallArtifacts::Impl {
     fs::path directory;ArtifactInventory inventory;visual::NodalMeshOutput output;
     CsvLedgerPlan plan;std::unique_ptr<CsvLedgerWriter> intervals;std::ofstream frames;
     tl::fea::NodalStamp last;std::uint64_t requested_steps=0,last_frame=0,frame_count=0,frame_cap=0;
-    bool failed=false,finished=false;
-    explicit Impl(const std::string& path):directory(path),inventory(directory){}
+    bool failed=false,finished=false,plastic=false;
+    std::size_t total_cap=kArtifactTotalCap,field_cap=SourcePartWallFieldCap,frame_bytes=SourcePartWallFrameCap;
+    explicit Impl(const std::string& path,bool has_plastic):directory(path),
+        inventory(directory,has_plastic?SourcePartPlasticWallTotalCap:kArtifactTotalCap),plastic(has_plastic) {
+        if(plastic){total_cap=SourcePartPlasticWallTotalCap;field_cap=SourcePartPlasticWallFieldCap;frame_bytes=SourcePartPlasticWallFrameCap;}
+    }
 };
 SourcePartWallArtifacts::SourcePartWallArtifacts(const std::string& path,elastic::SourcePartElasticCase& run,
-    std::uint64_t steps,unsigned every,std::uint64_t run_id,std::uint64_t topology_id):impl_(std::make_unique<Impl>(path)) {
+    std::uint64_t steps,unsigned every,std::uint64_t run_id,std::uint64_t topology_id):impl_(std::make_unique<Impl>(path,run.initialized()&&source_part_plastic::PlasticEnabled(run.config()))) {
     auto& s=*impl_;Require(run.initialized()&&run.wall_setup()&&run.wall_metrics()&&steps&&every&&
         run.config().experiment==elastic::Experiment::MeshWallImpact,"Wall output needs a prepared mesh-wall run and positive horizon/cadence");
     elastic::Snapshot initial;const auto captured=run.Capture(&initial);Require(bool(captured),captured.message);
@@ -37,8 +42,8 @@ SourcePartWallArtifacts::SourcePartWallArtifacts(const std::string& path,elastic
     s.frame_cap=1+steps/every+(steps%every!=0)+(every>1&&steps>1)+1;
     Require(s.frame_cap<=kArtifactFrameCap,"Wall frame forecast exceeds replay cap");
     s.plan=PlanCsvLedger("accepted-intervals.csv",SourcePartWallIntervalHeader,steps,SourcePartWallIntervalColumns*26);
-    Require(s.plan.total_bytes<kArtifactTotalCap-1024*1024&&
-        s.frame_cap<=(kArtifactTotalCap-1024*1024-s.plan.total_bytes)/SourcePartWallFrameCap,"Wall archive forecast exceeds aggregate cap");
+    Require(s.plan.total_bytes<s.total_cap-1024*1024&&
+        s.frame_cap<=(s.total_cap-1024*1024-s.plan.total_bytes)/s.frame_bytes,"Wall archive forecast exceeds aggregate cap");
     const auto binding=elastic::SourcePartSurfaceBinding(run,run_id,topology_id);
     const auto initialized=s.output.Initialize(run.owner(),binding,visual::NodalOutputTiming::StaggeredHalfKick);
     Require(initialized.status==visual::Status::Ok,initialized.message);
@@ -77,6 +82,7 @@ void SourcePartWallArtifacts::WriteFrame(elastic::SourcePartElasticCase& run) {
     Require(SameOwner(s.last,frame.stamp)&&s.last.epoch==frame.stamp.epoch&&Bits(s.last.time)==Bits(frame.stamp.time)&&
         (!s.frame_count||frame.stamp.epoch>s.last_frame)&&run.wall_setup()&&run.wall_metrics(),"Wall frame is not the recorded accepted endpoint");
     auto fields=SourcePartWallFrameFields(frame,*run.wall_setup(),run.accepted_contact(),*run.wall_metrics());
+    if(s.plastic)source_part_plastic::AppendSourcePartPlasticFrame(fields,run,frame);
     const auto published=s.output.Publish(run.owner());Require(published.status==visual::Status::Ok,published.message);
     const auto mesh=s.output.surface().mesh();const auto* stamp=s.output.stamp();
     Require(mesh&&stamp&&stamp->owner_id==frame.stamp.owner_id&&stamp->epoch==frame.stamp.epoch&&Bits(stamp->time)==Bits(frame.stamp.time),
@@ -87,7 +93,7 @@ void SourcePartWallArtifacts::WriteFrame(elastic::SourcePartElasticCase& run) {
     WriteMeshFiles(s.directory,stem,*mesh);WriteJson(s.directory/(stem+".fields.json"),fields);
     s.inventory.Add(stem+".mesh.json",SourcePartWallMeshCap);
     s.inventory.Add(stem+".obj",SourcePartWallObjCap);
-    s.inventory.Add(stem+".fields.json",SourcePartWallFieldCap);
+    s.inventory.Add(stem+".fields.json",s.field_cap);
     s.frames<<frame.stamp.owner_id<<','<<frame.stamp.epoch<<','<<frame.stamp.time<<','<<stem<<".mesh.json,"<<stem<<".obj\n";
     s.frames.flush();s.intervals->Flush();Require(bool(s.frames),"Wall frame index flush failed");s.last_frame=frame.stamp.epoch;++s.frame_count;
 }
@@ -107,11 +113,12 @@ void SourcePartWallArtifacts::Close(elastic::SourcePartElasticCase& run,double e
     Number(metrics,"accepted_time_s",final.stamp.time);Integer(metrics,"saved_frames",s.frame_count);Number(metrics,"elapsed_wall_seconds",elapsed);
     Integer(metrics,"owned_device_bytes",run.allocations().device_bytes);elastic::AppendSourcePartDiagnostics(metrics,final.diagnostics);
     AppendSourcePartWallMetrics(metrics,*run.wall_metrics());Number(metrics,"initial_kinetic_J",run.initial_kinetic_energy());
+    if(s.plastic)source_part_plastic::AppendSourcePartPlasticSummary(metrics,final.plastic);
     WriteJson(s.directory/"final-metrics.json",metrics);s.inventory.Add("final-metrics.json");
-    Document manifest;manifest.SetObject();String(manifest,"schema","robo_dyna.source_part_wall_artifacts.v1");String(manifest,"status","completed");
+    Document manifest;manifest.SetObject();String(manifest,"schema",s.plastic?"robo_dyna.source_part_wall_artifacts.v2":"robo_dyna.source_part_wall_artifacts.v1");String(manifest,"status","completed");
     Boolean(manifest,"shell_model",true);Boolean(manifest,"vehicle_model",false);Boolean(manifest,"contact",true);
     Boolean(manifest,"horizon_complete",!prefix);String(manifest,"stop_reason",reason);
-    String(manifest,"scope","Original Yaris part 2000157; experimental elastic mesh-wall impact, source attachments unapplied");
+    String(manifest,"scope",s.plastic?"Original Yaris part 2000157; plastic mesh-wall impact, source attachments unapplied":"Original Yaris part 2000157; experimental elastic mesh-wall impact, source attachments unapplied");
     Integer(manifest,"accepted_epoch",final.stamp.epoch);Number(manifest,"accepted_time_s",final.stamp.time);Integer(manifest,"requested_steps",s.requested_steps);
     String(manifest,"completion_meaning",prefix?"Accepted prefix archived after an explicit stop; requested horizon and rebound are not complete":
         "Declared bounded horizon archived; contact/rebound/refinement and physical validation are separate gates");

@@ -19,6 +19,7 @@ struct SourcePartElasticCase::Impl {
     fe::ShellBatchPublication publication;
     std::unique_ptr<SourcePartWallState> wall;
     Snapshot accepted, trial;
+    source_part_plastic::SourcePartPlasticState accepted_plastic,trial_plastic;
     std::array<double,NodeCount> inverse_mass{}, inverse_inertia{}, spatial_shape{};
     std::array<double,3*NodeCount> pulse_force{}, endpoint_force{}, endpoint_couple{};
     std::array<q::ForceTrial,source::Q4Count> qresult{};
@@ -42,6 +43,8 @@ struct SourcePartElasticCase::Impl {
     void DiscardWall() noexcept;
     Report Prepare();
     Report EvaluateShells();
+    Report ObservePlasticSections();
+    Report InitializePlasticObservation();
     Report Evaluate();
     Report Observe();
     Report Commit();

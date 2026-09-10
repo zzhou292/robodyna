@@ -27,6 +27,14 @@ struct ContactParentBinding {
 struct Bundle {
     std::filesystem::path directory;
     ReplayInfo info;
+    std::size_t total_cap=kTotalCap;
+    double plastic_curve_maximum=0;
+    double plastic_initial_thickness=0,plastic_min_thickness_ratio=0,plastic_max_thickness_ratio=0;
+    std::array<double,3> plastic_final_values{};
+    std::array<std::uint64_t,2> plastic_final_counts{};
+    std::vector<std::array<double,2>> plastic_curve;
+    std::vector<std::array<std::uint64_t,3>> plastic_source_parents; // EID, arity, family index.
+    std::vector<double> plastic_reference_volume;
     std::map<std::string, Artifact> inventory;
     std::vector<Entry> entries;
     std::vector<std::array<int,3>> topology;
@@ -61,6 +69,9 @@ void CheckSourcePartFields(const Bundle&, const Entry&, const chrono::ChTriangle
 void ReadSourcePartIdentity(Bundle&,const Document&);
 void CheckSourcePartFieldData(const Bundle&,const Entry&,const chrono::ChTriangleMeshConnected&,
                              const Document&,const std::array<double,3>& startup_velocity);
+void ReadSourcePartPlasticConfiguration(Bundle&,const Document&);
+void CheckSourcePartPlasticFields(const Bundle&,const Entry&,const Document&);
+std::vector<ReplayParentScalar> ReadSourcePartPlasticDisplay(const Bundle&,const Entry&);
 void ReadSourcePartWallConfiguration(Bundle&,const Document&,const Document&,const Document&);
 void CheckSourcePartWallFields(const Bundle&,const Entry&,const chrono::ChTriangleMeshConnected&);
 void ReadGuidedConfiguration(Bundle&, const Document&, const Document&, const Document&);

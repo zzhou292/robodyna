@@ -17,7 +17,9 @@ void MatchTopology(const rd::Bundle& bundle, const chrono::ChTriangleMeshConnect
 ReplayFrame Frame(const rd::Bundle& bundle, std::size_t index,
                   const std::shared_ptr<const chrono::ChTriangleMeshConnected>& mesh) {
     const auto& entry = bundle.entries[index];
-    return {index, entry.owner, entry.epoch, entry.time, mesh};
+    ReplayFrame frame{index, entry.owner, entry.epoch, entry.time, mesh};
+    if(bundle.info.source_plasticity)frame.parent_plastic_strain=rd::ReadSourcePartPlasticDisplay(bundle,entry);
+    return frame;
 }
 }  // namespace
 
@@ -34,6 +36,13 @@ ReplayReport AcceptedReplay::Open(const std::filesystem::path& directory) {
         auto candidate = std::make_unique<Impl>();
         candidate->bundle = rd::ReadIndex(directory);
         auto& bundle = candidate->bundle;
+        if(bundle.info.source_plasticity) {
+            bundle.info.plastic_strain_color_max=std::max(.001,bundle.plastic_final_values[0]);
+            const auto& v=bundle.source_initial_velocity;
+            bundle.info.source_initial_speed_m_per_s=std::hypot(v[0],v[1],v[2]);
+            for(const auto& triangle:bundle.source_triangles)
+                bundle.info.triangle_source_parent.push_back(triangle[5]);
+        }
         bundle.info.bounds_min.fill(std::numeric_limits<double>::infinity());
         bundle.info.bounds_max.fill(-std::numeric_limits<double>::infinity());
         for (std::size_t i = 0; i < bundle.entries.size(); ++i) {
@@ -45,9 +54,9 @@ ReplayReport AcceptedReplay::Open(const std::filesystem::path& directory) {
                 if (bundle.topology.empty())
                     for (const auto& face : mesh->GetIndicesVertices()) bundle.topology.push_back({face[0], face[1], face[2]});
                 bundle.info.triangle_count = bundle.topology.size();
-                candidate->current = Frame(bundle, 0, mesh);
             }
             MatchTopology(bundle, *mesh); rd::CheckFrameFields(bundle, bundle.entries[i], *mesh);
+            if(i==0)candidate->current=Frame(bundle,0,mesh);
             for (const auto& position : mesh->GetCoordsVertices())
                 for (unsigned axis = 0; axis < 3; ++axis) {
                     bundle.info.bounds_min[axis] = std::min(bundle.info.bounds_min[axis], position[axis]);

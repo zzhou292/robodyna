@@ -79,6 +79,31 @@ class SourcePartDeclarations(unittest.TestCase):
         self.assertIsNone(typed.section.cards[1].get('marea'))
         self.assertIsNone(typed.part.cards[0].get('hgid'))
 
+    def test_curve_plus_rates_guidance_uses_pinned_converter_without_admission(self):
+        typed = compile_source(deck())
+        before = asdict(typed)
+        report = declaration_report(typed)
+        guidance = report['interpretation']
+        self.assertIn('selects LAW44', guidance['donor_reference'])
+        self.assertIn('earlier TABLE and LCSR branches select LAW36', guidance['donor_reference'])
+        self.assertIn('B=0', guidance['donor_options'])
+        self.assertIn('VP=0/ISMOOTH=1', guidance['donor_options'])
+        self.assertIn('unqualified', guidance['donor_options'])
+        self.assertIn('a62b27e6baa555d222a580d6218867d0be4d70b5',
+                      report['interpretation_references']['urls']['pinned_material_converter'])
+        self.assertFalse(report['simulation_ready'])
+        self.assertEqual(asdict(typed), before)
+
+    def test_mapping_guidance_does_not_admit_table_or_lcsr_branches(self):
+        source = blocks()
+        source['material'][2] = row(8000, 8, 47, 48, 0)
+        with self.assertRaises(WallImportError):
+            compile_source(deck(source))
+        source = blocks()
+        source['curve'][0] = '*DEFINE_TABLE'
+        with self.assertRaises(WallImportError):
+            compile_source(deck(source))
+
     def test_missing_blank_material_card_is_not_repaired(self):
         source = blocks()
         source['material'].pop()
@@ -92,6 +117,8 @@ class SourcePartDeclarations(unittest.TestCase):
         typed = compile_source(deck(source))
         self.assertIsNone(typed.material.rate_type)
         self.assertEqual(declaration_report(typed)['interpretation']['rate_type'], 'unresolved_blank')
+        self.assertIn('blank VP remains unresolved',
+                      declaration_report(typed)['interpretation']['donor_options'])
         self.assertEqual(dict(typed.hardening_curve.documented_defaults),
                          {'sfa': 1., 'sfo': 1., 'offa': 0., 'offo': 0.})
 

@@ -4,7 +4,7 @@
 #include <set>
 namespace crash::output::replay_detail {
 void ReadSourcePartWallConfiguration(Bundle& b,const Document& c,const Document& final,const Document& manifest) {
-    Require(Text(c,"schema")=="robo_dyna.source_part_wall_configuration.v1"&&Unsigned(c,"owner_id")==b.info.owner_id&&
+    Require(Text(c,"schema")== (b.info.source_plasticity?"robo_dyna.source_part_wall_configuration.v2":"robo_dyna.source_part_wall_configuration.v1")&&Unsigned(c,"owner_id")==b.info.owner_id&&
         Unsigned(final,"owner_id")==b.info.owner_id&&Unsigned(final,"saved_frames")==b.info.frame_count,"Wall configuration association failed");
     Require(Text(c,"source_readiness_sha256")=="74e733b76a5c530c94ba39876ce3707df2ca8c602348204632eb902a48402d89"&&
         Unsigned(c,"source_readiness_bytes")==671971&&Unsigned(c,"source_part_id")==2000157&&Unsigned(c,"q4_count")==88&&Unsigned(c,"t3_count")==6&&
@@ -20,7 +20,13 @@ void ReadSourcePartWallConfiguration(Bundle& b,const Document& c,const Document&
         "Wall experimental source material/mass declaration is missing");
     b.info.run_id=Unsigned(c,"run_id");b.info.topology_id=Unsigned(c,"topology_id");b.source_configuration_id=Unsigned(c,"configuration_id");
     b.qualification_id=Unsigned(c,"qualification_id");Require(b.info.run_id&&b.info.topology_id&&b.source_configuration_id&&b.qualification_id,"Zero wall run identity");
-    ReadSourcePartIdentity(b,c);const auto& setup=Member(c,"wall_setup");Require(setup.IsObject(),"Missing wall setup certificate");
+    ReadSourcePartIdentity(b,c);
+    if(b.info.source_plasticity) {
+        ReadSourcePartPlasticConfiguration(b,c);
+        b.plastic_final_values={Real(final,"maximum_plastic_strain"),Real(final,"mean_plastic_strain"),Real(final,"cumulative_plastic_work_J")};
+        b.plastic_final_counts={Unsigned(final,"yielded_points"),Unsigned(final,"yielded_parents")};
+    }
+    const auto& setup=Member(c,"wall_setup");Require(setup.IsObject(),"Missing wall setup certificate");
     Require(Text(setup,"contact_model")=="reference-area-lumped-nodal-wall-v1"&&Unsigned(setup,"configuration_id")==b.source_configuration_id&&
         Unsigned(setup,"qualification_id")==b.qualification_id&&Bits(Real(setup,"fixed_dt_s"))==Bits(b.fixed_dt),"Wall setup model/identity mismatch");
     b.wall_binding_id=Unsigned(setup,"wall_binding_id");Require(b.wall_binding_id,"Zero wall binding identity");
@@ -62,12 +68,13 @@ void ReadSourcePartWallConfiguration(Bundle& b,const Document& c,const Document&
 void CheckSourcePartWallFields(const Bundle& b,const Entry& e,const chrono::ChTriangleMeshConnected& mesh) {
     const auto name=e.mesh.substr(0,e.mesh.size()-10)+".fields.json";
     const auto fields=b.inventory.find(name),mesh_file=b.inventory.find(e.mesh),obj=b.inventory.find(e.obj);
-    Require(fields!=b.inventory.end()&&fields->second.bytes<=SourcePartWallFieldCap&&
+    Require(fields!=b.inventory.end()&&fields->second.bytes<=(b.info.source_plasticity?SourcePartPlasticWallFieldCap:SourcePartWallFieldCap)&&
         mesh_file!=b.inventory.end()&&mesh_file->second.bytes<=SourcePartWallMeshCap&&
         obj!=b.inventory.end()&&obj->second.bytes<=SourcePartWallObjCap,"Wall frame exceeds its schema byte cap");
     const auto f=Json(VerifiedBytes(b,name));
-    Require(Text(f,"schema")=="robo_dyna.source_part_wall_fields.v1","Wall field schema mismatch");
+    Require(Text(f,"schema")== (b.info.source_plasticity?"robo_dyna.source_part_wall_fields.v2":"robo_dyna.source_part_wall_fields.v1"),"Wall field schema mismatch");
     CheckSourcePartFieldData(b,e,mesh,f,b.source_initial_velocity);
+    if(b.info.source_plasticity)CheckSourcePartPlasticFields(b,e,f);
     Require(Real(f,"external_kick_work_J")==0&&Real(f,"external_drift_work_J")==0&&Real(f,"absolute_external_drift_work_J")==0,
         "Wall impact fields contain an undeclared external pulse");
     for(const char* key:{"carried_momentum_residual_xyz_kg_m_per_s","carried_momentum_allowance_xyz_kg_m_per_s",

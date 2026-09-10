@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace chrono { class ChTriangleMeshConnected; }
 
@@ -30,12 +31,26 @@ struct ReplayInfo {
     std::string guided_experiment;
     bool horizon_complete=true; // Explicit wall accepted prefixes may stop early.
     std::string stop_reason;
+    bool source_plasticity=false;
+    std::string material_model, material_policy;
+    // Display metadata only. Plastic wall replay keeps one fixed color scale
+    // for the complete accepted prefix; values are dimensionless, not percent.
+    double plastic_strain_color_max = 0;
+    double source_initial_speed_m_per_s = 0;
+    std::vector<std::uint64_t> triangle_source_parent;
+};
+struct ReplayParentScalar {
+    std::uint64_t source_parent = 0;
+    double value = 0;
 };
 struct ReplayFrame {
     std::size_t index = 0;
     std::uint64_t owner_id = 0, epoch = 0;
     double time = 0;
     std::shared_ptr<const chrono::ChTriangleMeshConnected> mesh;
+    // Maximum accumulated equivalent plastic strain over the parent's three
+    // accepted layers. No interpolation between source parents or triangles.
+    std::vector<ReplayParentScalar> parent_plastic_strain;
 };
 
 // Validated, accepted-only geometry replay; no solver, physical clock or state
@@ -50,7 +65,7 @@ struct ReplayFrame {
 // pinned original canonical wall. Derived wall variants use a separate contract.
 //
 // Preview caps: 1000 frames, 4096 vertices/8192 triangles per mesh, 32 MiB per
-// file and 256 MiB declared inventory. Only metadata, immutable connectivity,
+// file and 256 MiB declared inventory (1 GiB for explicit plastic wall v2). Only metadata, immutable connectivity,
 // the current mesh, optional wall and temporary staging are retained. Callers
 // should release old frame.mesh handles rather than accumulating a whole run.
 class AcceptedReplay {

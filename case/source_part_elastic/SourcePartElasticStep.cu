@@ -66,6 +66,7 @@ Report SourcePartElasticCase::Impl::EvaluateShells() {
         tr.element<source::T3Count?binding.t3_source_id(tr.element):0);
     tr=t3.CopyPreparedResults(d.t3,tresult.data(),tresult.size());
     if(tr.status!=t::BatchStatus::Success) return Failure(Status::ComponentFailure,tr.message);
+    if(config.material_model!=MaterialModel::ElasticLaw1) return ObservePlasticSections();
     return Success();
 }
 Report SourcePartElasticCase::Impl::Evaluate() {
@@ -93,6 +94,7 @@ Report SourcePartElasticCase::Impl::Commit() {
     trial.diagnostics.shells.qeph.phase=q::BatchPhase::Accepted;
     trial.diagnostics.shells.t3.phase=t::BatchPhase::Accepted;
     accepted=trial;
+    if(config.material_model!=MaterialModel::ElasticLaw1) accepted_plastic=trial_plastic;
     accepted_q_work_magnitude=trial_q_work_magnitude;
     accepted_t_work_magnitude=trial_t_work_magnitude;
     CommitWall();

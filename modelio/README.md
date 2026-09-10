@@ -46,9 +46,17 @@ alongside those SI declarations. Unit conversion overflow/underflow is rejected.
 
 The reviewed [Altair MAT024 input reference](https://help.altair.com/hwsolvers/rad/topics/solvers/rad/mat_024_piecewise_linear_plasticity_lsdyna_r.htm)
 defines this positive-LCSS branch through a plastic-strain/stress curve, with
-SIGY/ETAN ignored and VP 0 denoting total strain rate. Its documented mapping is
-LAW36 for the curve branch; this is not evidence of equivalent donor or TL
-mechanics. The [curve reference](https://help.altair.com/hwsolvers/rad/topics/solvers/rad/define_curve_lsdyna_r.htm)
+SIGY/ETAN ignored and VP 0 denoting total strain rate. The
+[pinned OpenRadioss converter](https://github.com/OpenRadioss/OpenRadioss/blob/a62b27e6baa555d222a580d6218867d0be4d70b5/reader/source/dyna2rad/dyna2rad/_private/convertmats.cxx#L1461-L1500)
+is more specific than the documentation's generic LAW36 curve summary: this
+compiler admits a plain LCSS curve, absent LCSR and positive C/P, which selects
+LAW44 with B=0. Earlier TABLE and LCSR branches select LAW36 and remain outside
+the compiler's accepted declaration domain. Supplied VP=0 maps to converter
+VP=0/ISMOOTH=1; a source blank remains unresolved in this compiler. Native
+starter defaults, filter coefficients and histories, section integration, and
+constitutive equivalence still require qualification. This guidance correction
+does not modify previously generated reports or enable material mechanics.
+The [curve reference](https://help.altair.com/hwsolvers/rad/topics/solvers/rad/define_curve_lsdyna_r.htm)
 provides scale/offset defaults. The [section reference](https://help.altair.com/hwsolvers/rad/topics/solvers/rad/section_shell_lsdyna_r.htm)
 is an input-interface subset and does not justify inventing all LS-DYNA defaults.
 Other fields and controls remain pending before simulation.
