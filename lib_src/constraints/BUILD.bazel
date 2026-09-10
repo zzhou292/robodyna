@@ -5,10 +5,18 @@ package(default_visibility = ["//visibility:public"])
 
 cc_library(
     name = "nodal_rigid_group",
-    srcs = ["NodalRigidGroupModel.cpp"],
-    hdrs = ["NodalRigidGroupModel.h", "NodalRigidGroupMath.h"],
+    srcs = ["NodalRigidGroupModel.cpp", "NodalRigidInertiaFinalize.cpp"],
+    hdrs = ["NodalRigidGroupModel.h", "NodalRigidGroupMath.h", "NodalRigidInertiaFinalize.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = ["//lib_src/math:fixed3", "//lib_src/math:quaternion", "@eigen//:eigen"],
+)
+
+cc_library(
+    name = "nodal_rigid_assembly",
+    srcs = ["NodalRigidAssemblyBody.cpp", "NodalRigidAssemblyMerge.cpp", "NodalRigidAssemblyFinalize.cpp"],
+    hdrs = ["NodalRigidAssemblyValues.h", "NodalRigidAssemblyInternal.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":nodal_rigid_group"],
 )
 
 cc_library(

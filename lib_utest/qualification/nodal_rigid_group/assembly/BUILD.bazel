@@ -1,0 +1,8 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+
+cc_test(
+    name = "nodal_rigid_assembly_check",
+    srcs = ["AssemblyValueTest.cpp", "AssemblyFixture.h", "AssemblyLongDoubleOracle.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/constraints:nodal_rigid_assembly", "@googletest//:gtest_main"],
+)

@@ -1,6 +1,7 @@
 include_guard(GLOBAL)
 find_package(Eigen3 REQUIRED)
-add_library(tl_nodal_rigid_group STATIC "${CMAKE_CURRENT_LIST_DIR}/NodalRigidGroupModel.cpp")
+add_library(tl_nodal_rigid_group STATIC "${CMAKE_CURRENT_LIST_DIR}/NodalRigidGroupModel.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/NodalRigidInertiaFinalize.cpp")
 get_filename_component(tl_rigid_root "${CMAKE_CURRENT_LIST_DIR}/../.." ABSOLUTE)
 target_include_directories(tl_nodal_rigid_group PUBLIC "${tl_rigid_root}")
 target_link_libraries(tl_nodal_rigid_group PRIVATE Eigen3::Eigen)

@@ -1,0 +1,22 @@
+include("${tl_rigid_root}/lib_src/constraints/NodalRigidAssembly.cmake")
+execute_process(COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/native/verify_sources.py"
+  RESULT_VARIABLE rigid_assembly_verify ERROR_VARIABLE rigid_assembly_verify_error)
+if(NOT rigid_assembly_verify EQUAL 0)
+  message(FATAL_ERROR "Pinned rigid assembly source verification failed: ${rigid_assembly_verify_error}")
+endif()
+add_custom_target(nodal_rigid_assembly_verify_sources
+  COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/native/verify_sources.py" VERBATIM)
+add_library(nodal_rigid_assembly_native STATIC native/NativeAssembly.F)
+add_dependencies(nodal_rigid_assembly_native nodal_rigid_assembly_verify_sources)
+target_include_directories(nodal_rigid_assembly_native PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/native")
+target_compile_options(nodal_rigid_assembly_native PRIVATE -cpp -ffixed-line-length-none
+  -fcheck=bounds -fbacktrace -fno-fast-math -ffp-contract=off)
+add_executable(nodal_rigid_assembly_check AssemblyValueTest.cpp)
+add_executable(nodal_rigid_assembly_native_check AssemblyNativeOracle.cpp AssemblyNativeTest.cpp)
+target_link_libraries(nodal_rigid_assembly_native_check PRIVATE nodal_rigid_assembly_native nodal_rigid_native)
+foreach(target nodal_rigid_assembly_check nodal_rigid_assembly_native_check)
+  target_link_libraries(${target} PRIVATE tl_nodal_rigid_assembly GTest::gtest_main)
+  target_compile_options(${target} PRIVATE -fno-fast-math -ffp-contract=off)
+  add_test(NAME ${target} COMMAND ${target})
+  set_tests_properties(${target} PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)
+endforeach()

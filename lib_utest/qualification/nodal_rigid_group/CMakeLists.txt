@@ -102,6 +102,8 @@ target_compile_options(nodal_rigid_two_member_native_check PRIVATE -fno-fast-mat
 add_test(NAME nodal_rigid_two_member_native_check COMMAND nodal_rigid_two_member_native_check)
 set_tests_properties(nodal_rigid_two_member_native_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)
 
+add_subdirectory(assembly)
+
 if(TL_NODAL_RIGID_CUDA_CHECKS OR TL_NODAL_RIGID_OWNER_CHECKS)
   enable_language(CUDA)
   find_package(CUDAToolkit REQUIRED)

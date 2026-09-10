@@ -1,0 +1,18 @@
+          DO I=1,NSL
+           N=LSN(I)
+           XX=(X(1,N)-X(1,M))*(X(1,N)-X(1,M))
+           XY=(X(1,N)-X(1,M))*(X(2,N)-X(2,M))
+           XZ=(X(1,N)-X(1,M))*(X(3,N)-X(3,M))
+           YY=(X(2,N)-X(2,M))*(X(2,N)-X(2,M))
+           YZ=(X(2,N)-X(2,M))*(X(3,N)-X(3,M))
+           ZZ=(X(3,N)-X(3,M))*(X(3,N)-X(3,M))
+           RBY(1,NRB)=RBY(1,NRB)+IN_LOC(I)+(YY+ZZ)*MS_LOC(I)
+           RBY(2,NRB)=RBY(2,NRB)-XY*MS_LOC(I)
+           RBY(3,NRB)=RBY(3,NRB)-XZ*MS_LOC(I)
+           RBY(4,NRB)=RBY(4,NRB)-XY*MS_LOC(I)
+           RBY(5,NRB)=RBY(5,NRB)+IN_LOC(I)+(ZZ+XX)*MS_LOC(I)
+           RBY(6,NRB)=RBY(6,NRB)-YZ*MS_LOC(I)
+           RBY(7,NRB)=RBY(7,NRB)-XZ*MS_LOC(I)
+           RBY(8,NRB)=RBY(8,NRB)-YZ*MS_LOC(I)
+           RBY(9,NRB)=RBY(9,NRB)+IN_LOC(I)+(XX+YY)*MS_LOC(I)
+          ENDDO
