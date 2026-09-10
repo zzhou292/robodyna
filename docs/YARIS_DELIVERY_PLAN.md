@@ -43,13 +43,16 @@ node cap. Mixed shell force feedback remains the next composition gate. Eight fu
 native contact model/probe host functions now pass at `1bef7cc`, followed by
 13 independently checked full-state stability-analysis utility functions at
 `08fb0c4` and seven incremental raw-capture/report functions at `842469b`.
-The retained total is 1,033 distinct passing functions. Explicit moving-startup
+The retained total is 1,046 distinct passing functions. Explicit moving-startup
 CUDA is qualified at `c32e106`: five new and 41 retained unit functions pass,
 along with all six sustained GPU runs and both refinements. Scientific fields
 match the default-rest baseline exactly; QEPH adds only 32 B of startup metadata.
 The first snapshot-tail test failure is preserved and fixed without production
-or tolerance changes. Authenticated reading/derived decisions and six full native
-wall jobs precede actual incoming-entry and rebound/refinement qualification. The
+or tolerance changes. All six full native wall jobs are now captured at `bd21204`:
+108 native matrices, 72 physical contact branches and 57,942 native cell intervals.
+The strict reader and one-job analysis now pass thirteen additional functions
+at `504b2be`/`5aef73c`. Derived reports and cross-boost selection must consume the
+actual raw set before incoming-entry and rebound/refinement qualification. The
 [combined admission design](../../planning/QEPH_WALL_COUPLED_ADMISSION.md)
 separates short transaction checks, contact recurrence, incoming-velocity startup
 and impact/refinement; free-shell stability does not qualify wall impact. Plasticity,
