@@ -4,6 +4,7 @@ from collections import Counter
 from .assembly_declarations import assembly_section
 from .keyword_cards import parse_part, parse_material, parse_curve
 from .full_shell_materials import material_fields, material_dispositions
+from .law44_declarations import linear_law44_candidates
 
 
 def block_record(block):
@@ -48,4 +49,5 @@ def declaration_coverage(source, geometry_rows, selected_parts, excluded):
                    disposition=k[3],shells=n) for k,n in sorted(grouped.items())]
     return dict(parts=parts,tables=tables,retained_shell_families=families,
                 material_dispositions=material_dispositions(index,parts),
+                linear_law44_candidates=linear_law44_candidates(index,parts,units),
                 interpretation='Adapter candidates retain source options; native startup, capacities and physical equivalence are not qualified by this report')

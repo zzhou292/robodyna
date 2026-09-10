@@ -86,14 +86,24 @@ def parse_section(block, units):
                         tuple(_scale(t, units.length_to_m) for t in thickness), (first, second), block)
 
 
-def parse_material(block, units):
+def _material_cards(block):
     _shape(block, ('*MAT_024', '*MAT_PIECEWISE_LINEAR_PLASTICITY'), 4)
     first = card(block.cards[0], MAT1, [int] + [float] * 7)
     second = card(block.cards[1], MAT2, [float, float, int, int, integral_flag, float, float, float])
     eps = card(block.cards[2], tuple(f'eps{i}' for i in range(1, 9)))
     stress = card(block.cards[3], tuple(f'es{i}' for i in range(1, 9)))
+    return first, second, eps, stress
+
+
+def parse_material(block, units):
+    first, second, eps, stress = _material_cards(block)
     _positive(first.get('mid'), first.get('ro'), first.get('e'), second.get('lcss'),
               second.get('c'), second.get('p'))
+    _material_options(first, second, eps, stress)
+    return _material_declaration(block, units, (first, second, eps, stress))
+
+
+def _material_options(first, second, eps, stress):
     require(first.get('pr') is not None and -1 < first.get('pr') < .5, 'Poisson ratio must be explicit and admissible')
     require(second.get('vp') in (None, 0), 'only supplied total-rate VP=0 or unresolved blank VP is declared')
     _blank(first, ('fail', 'tdel'))
@@ -103,6 +113,10 @@ def parse_material(block, units):
     for name in ('sigy', 'etan'):
         value = first.get(name)
         require(value is None or value >= 0, f'unsupported negative supplied {name}')
+
+
+def _material_declaration(block, units, cards):
+    first, second, eps, stress = cards
     def stress_si(name):
         value = first.get(name)
         return None if value is None else _scale(value, units.stress_to_si)
