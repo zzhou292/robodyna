@@ -10,10 +10,11 @@ struct ArenaLayout {
   ResultRegions base,result;
   std::size_t bytes=0;
   std::size_t parent_count=0,node_count=0,global_count=0;
+  NodalWallDeviceProfile profile=NodalWallDeviceProfile::Legacy;
 };
 // Counts and all aligned byte extents are admitted before borrowed reads.
 bool BuildArenaLayout(std::size_t parents,std::size_t nodes,std::size_t global_nodes,
-    std::size_t cap,ArenaLayout&) noexcept;
+    std::size_t cap,ArenaLayout&,NodalWallDeviceProfile=NodalWallDeviceProfile::Legacy) noexcept;
 std::size_t HostPreparationBytes(const ArenaLayout&) noexcept;
 class PreparedModel {
  public:

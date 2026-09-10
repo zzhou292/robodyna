@@ -12,9 +12,18 @@ constexpr std::size_t MaxNodalWallDeviceBytes=512*1024;
 constexpr unsigned MaxActiveNodalWallDeviceParents=1024,MaxActiveNodalWallDeviceNodes=2048;
 constexpr std::size_t MaxActiveNodalWallDeviceBytes=8*1024*1024;
 constexpr std::size_t MaxNodalWallHostBytes=16*1024*1024;
+constexpr unsigned MaxVehicleNodalWallDeviceParents=524288,MaxVehicleNodalWallDeviceNodes=524288;
+constexpr std::size_t MaxVehicleNodalWallDeviceBytes=2ULL*1024*1024*1024;
+constexpr std::size_t MaxVehicleNodalWallHostBytes=2ULL*1024*1024*1024;
+enum class NodalWallDeviceProfile { Legacy,Vehicle };
 struct NodalWallDeviceLimits {
   std::size_t parents=MaxNodalWallDeviceParents,nodes=MaxNodalWallDeviceNodes,
       global_nodes=MaxNodalWallDeviceNodes;
+  NodalWallDeviceProfile profile=NodalWallDeviceProfile::Legacy;
+  static constexpr NodalWallDeviceLimits Vehicle() noexcept {
+    return {MaxVehicleNodalWallDeviceParents,MaxVehicleNodalWallDeviceNodes,MaxVehicleNodalWallDeviceNodes,
+      NodalWallDeviceProfile::Vehicle};
+  }
 };
 struct NodalWallDeviceConfig {
   tl::fea::NodalStamp owner;
@@ -73,7 +82,8 @@ struct NodalWallDeviceResultView {
 };
 
 // Stateless, fixed-plane contributor. Defaults admit 128 parents/nodes; explicit
-// count and byte limits admit <=1024 parents and <=2048 global/incident nodes.
+// legacy count/byte limits admit <=1024 parents and <=2048 global/incident nodes.
+// Vehicle() explicitly admits <=524288 of each with separately supplied byte caps.
 // Exactly Q4/4 and
 // T3/3 family/arity pairs use the immutable owning A0/4 and A0/3 shares.
 // Zero offset/friction/damping; no direct couple, shell mass/history,

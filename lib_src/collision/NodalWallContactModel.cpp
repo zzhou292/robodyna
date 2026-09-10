@@ -1,4 +1,5 @@
 #include "NodalWallContactState.h"
+#include "NodalWallContactIncidence.h"
 #include "lib_src/solvers/NodalNativePhysicalCoefficients.h"
 #include <cmath>
 #include <new>
@@ -24,11 +25,15 @@ NodalWallDeviceReport PrepareModel(const NodalWallDeviceConfig& c,PlanarWallView
       !IsFinite(c.exposed_clearance) || c.exposed_clearance<=0)
     return {Code::InvalidInput,"Invalid initial owner, prepared weights or physical declaration"};
   ArenaLayout layout; const auto& limits=c.limits;
-  if (!limits.parents || limits.parents>MaxActiveNodalWallDeviceParents || !limits.nodes ||
-      limits.nodes>MaxActiveNodalWallDeviceNodes || !limits.global_nodes || limits.global_nodes>MaxActiveNodalWallDeviceNodes ||
+  const bool vehicle=limits.profile==NodalWallDeviceProfile::Vehicle;
+  const auto parent_cap=vehicle?MaxVehicleNodalWallDeviceParents:MaxActiveNodalWallDeviceParents;
+  const auto node_cap=vehicle?MaxVehicleNodalWallDeviceNodes:MaxActiveNodalWallDeviceNodes;
+  if ((limits.profile!=NodalWallDeviceProfile::Legacy&&!vehicle)||
+      !limits.parents || limits.parents>parent_cap || !limits.nodes ||
+      limits.nodes>node_cap || !limits.global_nodes || limits.global_nodes>node_cap ||
       owner.node_count>limits.global_nodes || weights.node_count()>limits.nodes || weights.parent_count()>limits.parents ||
-      !c.max_host_bytes || c.max_host_bytes>MaxNodalWallHostBytes ||
-      !BuildArenaLayout(weights.parent_count(),weights.node_count(),owner.node_count,c.max_device_bytes,layout) ||
+      !c.max_host_bytes || c.max_host_bytes>(vehicle?MaxVehicleNodalWallHostBytes:MaxNodalWallHostBytes) ||
+      !BuildArenaLayout(weights.parent_count(),weights.node_count(),owner.node_count,c.max_device_bytes,layout,limits.profile) ||
       HostPreparationBytes(layout)>c.max_host_bytes)
     return {Code::ResourceLimit,"Nodal contact exceeds its admitted count or complete arena byte budget"};
   try {
@@ -54,9 +59,14 @@ NodalWallDeviceReport PrepareModel(const NodalWallDeviceConfig& c,PlanarWallView
         return {Code::InvalidInput,"Contact parent must have its exact native Q4/4 or T3/3 family and arity",UINT32_MAX,p};
       next.parents[p]=parent;
     }
-    unsigned incident_count=0;
+    if(vehicle) {
+      for(unsigned i=0;i<next.node_count;++i)next.nodes[i]=weights.node(i);
+      const auto incidence=BuildVehicleIncidence(next);
+      if(incidence.status!=Code::Ok)return incidence;
+    }
+    unsigned incident_count=vehicle?next.incident_offsets[next.node_count]:0;
     for (unsigned i=0;i<next.node_count;++i) {
-      next.incident_offsets[i]=incident_count;
+      if(!vehicle)next.incident_offsets[i]=incident_count;
       const auto node=weights.node(i).node; next.nodes[i]=weights.node(i);
       if (node>=owner.node_count || (masks[node]!=0 && masks[node]!=7) ||
           !IsFinite(inverse[node]) || (masks[node]==7 ? inverse[node]!=0 : inverse[node]<=0))
@@ -69,19 +79,29 @@ NodalWallDeviceReport PrepareModel(const NodalWallDeviceConfig& c,PlanarWallView
       // admission to the legacy translation PSD stability proof.
       const LumpedTranslationMassView mass{next.inverse_mass,next.fixed,static_cast<std::uint32_t>(owner.node_count),0,
                                          TranslationMassModel::kIsotropicLumped};
-      for (unsigned p=0;p<next.parent_count;++p) for (unsigned l=0;l<next.parents[p].arity;++l) {
-        if (next.parents[p].nodes[l]!=node) continue;
-        // Reuse the admitted source traversal once at startup. This preserves
-        // the exact parent/local order of every later directed node reduction.
-        if (incident_count>=4*next.parent_count)
-          return {Code::InvalidInput,"Contact incidence exceeds its complete arena",node,p};
-        next.incident_slots[incident_count++]=4*p+l;
+      const auto evaluate=[&](unsigned p) -> NodalWallDeviceReport {
         NodalWallPointResult value;
         const auto report=EvaluateNodalWallPoint({node,next.parents[p].share},x.at(node),{},mass,law,1,&value);
         if (report.status!=NodalWallStatus::Ok)
           return {Code::PointFailure,"Initial node or all-active rate is not admissible",node,p,report};
         if (!value.fixed && !AddUpper(rate,value.row.stiffness[0],&rate))
           return {Code::NonFiniteArithmetic,"Assembled contact rate overflows",node,p};
+        return {Code::Ok,"OK"};
+      };
+      if(vehicle) {
+        for(unsigned j=next.incident_offsets[i];j<next.incident_offsets[i+1];++j) {
+          const auto report=evaluate(next.incident_slots[j]/4);
+          if(report.status!=Code::Ok)return report;
+        }
+      } else {
+        for (unsigned p=0;p<next.parent_count;++p) for (unsigned l=0;l<next.parents[p].arity;++l) {
+          if (next.parents[p].nodes[l]!=node) continue;
+          if (incident_count>=4*next.parent_count)
+            return {Code::InvalidInput,"Contact incidence exceeds its complete arena",node,p};
+          next.incident_slots[incident_count++]=4*p+l;
+          const auto report=evaluate(p);
+          if(report.status!=Code::Ok)return report;
+        }
       }
       if (rate>next.rate) next.rate=rate;
     }

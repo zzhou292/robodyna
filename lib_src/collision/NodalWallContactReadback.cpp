@@ -75,7 +75,7 @@ NodalWallDeviceReport NodalWallContactDevice::CopyResults(const NodalWallDiagnos
     const NodalWallDeviceResultView& output) {
   if(!impl_) return {Code::NotInitialized,"Nodal wall is not initialized"};
   auto& s=*impl_; const auto& layout=s.prepared.layout();
-  if(!d::ValidResultView(output,layout.parent_count,layout.node_count,&expected))
+  if(!d::ValidResultView(output,layout.parent_count,layout.node_count,&expected,s.config.limits.profile))
     return {Code::InvalidInput,"Contact output capacities or disjoint ranges are invalid"};
   const auto r=s.ReadResults(expected); if(r.status!=Code::Ok) return r;
   const auto& staged=s.prepared.storage().result;

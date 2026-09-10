@@ -137,6 +137,7 @@ cuda_library(
         "NodalWallContactDevice.h",
         "NodalWallContactStorage.h",
         "NodalWallContactArena.h",
+        "NodalWallContactIncidence.h",
         "NodalWallContactState.h",
         "NodalWallContactResultIO.h",
         "NodalWallContactDiagnostics.h",
@@ -148,7 +149,7 @@ cuda_library(
 
 cc_library(
     name = "nodal_wall_contact_owner",
-    srcs = ["NodalWallContactModel.cpp", "NodalWallContactArena.cpp", "NodalWallContactReadback.cpp"],
+    srcs = ["NodalWallContactModel.cpp", "NodalWallContactArena.cpp", "NodalWallContactReadback.cpp", "NodalWallContactIncidence.cpp"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [":nodal_wall_contact_device"],
 )

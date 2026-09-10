@@ -28,3 +28,7 @@ yielded native histories. Reports `source-assembly-wall-incidence-parity-1/2`
 retain file-level checks. The128-step inclusive stage timer falls from14.026 to
 7.705 seconds (1.820x), and the1024-step archive run from116.835 to64.698 seconds
 (1.806x). These are measured component runs, not vehicle-scale throughput.
+
+## Explicit vehicle startup
+
+`NodalWallDeviceLimits::Vehicle()` adds a bounded dense global-to-compact startup index. Count/prefix construction and a parent/local ordered fill prepare the existing immutable offsets and slots; rate evaluation keeps the legacy node and per-node share order. The previous scan remains for Legacy. Kernels and reductions are unchanged. Count/byte profiles and measured layouts are documented in `lib_utest/qualification/vehicle_wall_device/README.md`.

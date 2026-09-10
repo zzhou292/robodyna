@@ -9,7 +9,7 @@ constexpr unsigned Workers=64;
 static_assert(Workers>0 && Workers<=1024,
               "One bounded worker block strides over every compact node and parent");
 static_assert(MaxNodalWallDeviceNodes<=MaxNodalWallNodes && MaxNodalWallDeviceParents<=MaxNodalWallParents,
-              "Device collection remains within the qualified host law capacities");
+              "Legacy fixed-result capacities remain within the legacy host arrays");
 using Code=NodalWallDeviceStatus;
 struct Model {
   NodalWallDeviceConfig config;

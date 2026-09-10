@@ -1,4 +1,5 @@
 #include "NodalWallContactArena.h"
+#include "NodalWallContactIncidence.h"
 #include <limits>
 
 namespace tlfea::contact::nodal_wall_device_detail {
@@ -17,9 +18,12 @@ void RebaseResult(void* base,const ResultRegions& r,ActiveResults& v) {
   v.wall_face=tl::util::ArenaPointer<std::uint64_t>(base,r.wall_face);
 }
 }
-bool BuildArenaLayout(std::size_t p,std::size_t n,std::size_t g,std::size_t cap,ArenaLayout& output) noexcept {
-  if(!p||!n||!g||p>MaxActiveNodalWallDeviceParents||n>g||g>MaxActiveNodalWallDeviceNodes||
-      !cap||cap>MaxActiveNodalWallDeviceBytes) return false;
+bool BuildArenaLayout(std::size_t p,std::size_t n,std::size_t g,std::size_t cap,ArenaLayout& output,NodalWallDeviceProfile profile) noexcept {
+  const bool vehicle=profile==NodalWallDeviceProfile::Vehicle;
+  if((profile!=NodalWallDeviceProfile::Legacy&&!vehicle)||!p||!n||!g||
+      p>(vehicle?MaxVehicleNodalWallDeviceParents:MaxActiveNodalWallDeviceParents)||n>g||
+      g>(vehicle?MaxVehicleNodalWallDeviceNodes:MaxActiveNodalWallDeviceNodes)||
+      !cap||cap>(vehicle?MaxVehicleNodalWallDeviceBytes:MaxActiveNodalWallDeviceBytes)) return false;
   ArenaLayout next; tl::util::BoundedArenaLayout b(cap);
   if(!b.Append<Storage>(1,next.header)||!b.Append<NodalWallParentWeight>(p,next.parents)||
       !b.Append<NodalWallNodeWeight>(n,next.nodes)||
@@ -30,13 +34,14 @@ bool BuildArenaLayout(std::size_t p,std::size_t n,std::size_t g,std::size_t cap,
       !b.Append<double>(6*g,next.force)||!b.Append<double>(n,next.error)||
       !AppendResult(b,p,n,next.base)||!AppendResult(b,p,n,next.result)) return false;
   next.bytes=b.bytes(); next.parent_count=p; next.node_count=n; next.global_count=g;
-  output=next; return true;
+  next.profile=profile; output=next; return true;
 }
 std::size_t HostPreparationBytes(const ArenaLayout& layout) noexcept {
   // Full retained host arena plus a conservative fixed reserve for both header
   // shadows, Impl, layout, and the unchanged bounded planar-wall validator's
   // temporary faces/edges/maps. Caller inputs and allocator bookkeeping excluded.
-  constexpr std::size_t reserve=512*1024;
+  const std::size_t reserve=512*1024+(layout.profile==NodalWallDeviceProfile::Vehicle?
+      IncidenceStartupBytes(layout.global_count):0);
   return layout.bytes>std::numeric_limits<std::size_t>::max()-reserve?
       std::numeric_limits<std::size_t>::max():layout.bytes+reserve;
 }
