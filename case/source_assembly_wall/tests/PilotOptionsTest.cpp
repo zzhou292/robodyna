@@ -17,8 +17,18 @@ TEST(PilotOptions, DefaultsAndExistingRefinementRetainExactBinaryStep) {
     EXPECT_EQ(defaults.pilot.refinement,1u);EXPECT_EQ(defaults.pilot.step_multiple,1u);
     EXPECT_FALSE(defaults.pilot.timing.enabled);EXPECT_TRUE(defaults.timing_path.empty());
     EXPECT_FALSE(defaults.pilot.observe_force_stage);EXPECT_FALSE(defaults.pilot.native_rotation_domain);
+    EXPECT_EQ(defaults.pilot.assembly,PilotAssembly::SixPart);
     EXPECT_EQ(PilotFixedStep(Parse({"2"}).pilot),std::ldexp(1.,-27));
     EXPECT_EQ(PilotFixedStep(Parse({"4"}).pilot),std::ldexp(1.,-28));
+}
+TEST(PilotOptions, SevenPartAssemblyIsExplicitAndCannotChangeStepOrAcceptAmbiguousSourceNames) {
+    const auto options=Parse({"--assembly","seven-part","--step-multiple","8"});
+    EXPECT_EQ(options.pilot.assembly,PilotAssembly::SevenPartSpotweld);EXPECT_EQ(PilotFixedStep(options.pilot),std::ldexp(1.,-23));
+    EXPECT_EQ(Parse({"--assembly","six-part"}).pilot.assembly,PilotAssembly::SixPart);
+    EXPECT_THROW(Parse({"--assembly"}),std::invalid_argument);
+    EXPECT_THROW(Parse({"--assembly","seven"}),std::invalid_argument);
+    EXPECT_THROW(Parse({"--assembly","seven-part","--assembly","six-part"}),std::invalid_argument);
+    PilotOptions bad;bad.assembly=static_cast<PilotAssembly>(99);EXPECT_THROW(PilotFixedStep(bad),std::invalid_argument);
 }
 TEST(PilotOptions, AllTwelveAllowedPairsGiveExactRequestedPowerOfTwoStep) {
     for(unsigned r:{1u,2u,4u})for(unsigned m:{1u,2u,4u,8u}) {

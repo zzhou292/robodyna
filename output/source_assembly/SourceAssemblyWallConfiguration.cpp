@@ -1,6 +1,7 @@
 #include "SourceAssemblyWallFields.h"
 #include "WallFieldValues.h"
 #include "case/source_assembly_dynamics/NativeRotation.h"
+#include "SourceAssemblyConnectorFields.h"
 #include "output/SurfaceBindingFields.h"
 #include <cmath>
 
@@ -21,7 +22,8 @@ Document ConfigurationDocument(const cases::source_assembly::SourceAssemblyBindi
     const auto plan=PlanWallArchive(r,b.source().data().identity.bytes,setup.placed_wall()->source_manifest()->size());
     const double horizon=static_cast<double>(r.steps)*c.fixed_dt;Require(std::isfinite(horizon)&&horizon>0,"Requested horizon cannot be represented");
     Document d;d.SetObject();String(d,"schema",WallConfigurationSchema);String(d,"kind",WallArtifactKind);
-    String(d,"scope","Original six-part Yaris component, internal nodal rigid groups active, external connections explicitly released");
+    String(d,"scope",b.connectors()?ConnectorScope:
+        "Original six-part Yaris component, internal nodal rigid groups active, external connections explicitly released");
     Boolean(d,"shell_model",true);Boolean(d,"vehicle_model",false);
     if(c.observe_force_stage)Boolean(d,"observe_force_stage",true);
     if(c.rotation_domain==dynamics::RotationDomain::NativeShellGeometryV1) {
@@ -57,6 +59,13 @@ Document ConfigurationDocument(const cases::source_assembly::SourceAssemblyBindi
     Integer(storage,"publication_host_bytes",z.publication.max_host_bytes);Integer(storage,"contact_max_parents",z.contact.counts.parents);
     Integer(storage,"contact_max_nodes",z.contact.counts.nodes);Integer(storage,"contact_max_global_nodes",z.contact.counts.global_nodes);
     Integer(storage,"contact_device_bytes",z.contact.max_device_bytes);Integer(storage,"contact_host_bytes",z.contact.max_host_bytes);Child(d,"storage_limits",storage);
+    if(b.connectors()) {
+        Require(b.connectors()->connection_count()<=MaxArchivedConnectors,"Connector archive count exceeds the reserved frame budget");
+        Document limits;limits.SetObject();Integer(limits,"max_connections",z.connector.max_connections);
+        Integer(limits,"max_device_bytes",z.connector.max_device_bytes);Integer(limits,"max_host_bytes",z.connector.max_host_bytes);
+        Child(d,"connector_storage_limits",limits);
+        String(d,"connector_work_scope","Native signed TYPE25 channel work is separate from native_internal_work_J, which retains shell and stabilization work; sampled connector increments describe only their final accepted interval");
+    }
     AppendCsvLedgerSegments(d,&plan.intervals,1);return d;
 }
 } // namespace crash::output::assembly::wall_fields

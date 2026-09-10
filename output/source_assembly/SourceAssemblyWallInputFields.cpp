@@ -1,5 +1,6 @@
 #include "SourceAssemblyWallFields.h"
 #include "WallFieldValues.h"
+#include "SourceAssemblyConnectorFields.h"
 #include <algorithm>
 
 namespace crash::output::assembly::wall_fields {
@@ -68,6 +69,7 @@ Document InputDocument(const cases::source_assembly::SourceAssemblyBindings& b) 
         for(double x:{m.mass,m.isotropic_inertia,m.physical_inertia,m.added_inertia})row.PushBack(x,d.GetAllocator());nodes.PushBack(row,d.GetAllocator());
     }
     Put(d,"native_nodes",std::move(nodes));
+    if(b.connectors())Child(d,"connectors",ConnectorInputDocument(b));
     String(d,"part_native_columns","source_part_id,parent_count,qeph_count,t3_count,mass_kg,total_inertia_kg_m2,physical_inertia_kg_m2,added_inertia_kg_m2");
     Value ledger(rapidjson::kArrayType);for(const auto& p:b.part_mass_ledger()) {
         auto row=Ids(d,{p.source_part_id,p.parent_count,p.qeph_count,p.t3_count});

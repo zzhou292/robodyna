@@ -12,9 +12,10 @@ Document Phase(const tl::fea::rigid::ObservationPhase& p) {
         "stored_midpoint_with_lagged_frame":"unspecified");
     Number(d,"position_time_s",p.position_time);Number(d,"velocity_time_s",p.velocity_time);Number(d,"frame_time_s",p.frame_time);return d;
 }
-Document Kinetic(const KineticSummary& k) {
+Document Kinetic(const KineticSummary& k,bool connectors) {
     Document d;d.SetObject();Child(d,"phase",Phase(k.phase));
     KineticChannels(d,k.ordinary,k.grouped_members,k.groups,k.native_total,k.effective_total);
+    if(connectors)Put(d,"connector_kinetic_J",Values(d,{k.connector.translation,k.connector.rotation}));
     Number(d,"publication_residual_J",k.publication_residual);Number(d,"publication_roundoff_budget_J",k.publication_roundoff_budget);return d;
 }
 Value Work(Document& d,const tl::fea::rigid::KickWorkChannels& w) {return Values(d,{w.translation,w.rotation,w.total});}
@@ -55,11 +56,16 @@ Document DiagnosticsDocument(const dynamics::Diagnostics& a) {
     Integer(d,"first_contact_epoch",a.first_contact_epoch);Integer(d,"last_contact_epoch",a.last_contact_epoch);Integer(d,"contact_intervals",a.contact_intervals);
     Document shells;shells.SetObject();String(shells,"native_kinetic_columns","translation_J,rotation_J,physical_isotropic_J,added_isotropic_J");
     Put(shells,"base_native_kinetic_J",NativeKinetic(shells,a.shells.base_kinetic));Put(shells,"native_kinetic_J",NativeKinetic(shells,a.shells.kinetic));
+    if(a.shells.has_connector) {
+        String(shells,"connector_kinetic_columns","translation_J,rotation_J");
+        Put(shells,"base_connector_kinetic_J",Values(shells,{a.shells.base_kinetic.connector_translation,a.shells.base_kinetic.connector_rotation}));
+        Put(shells,"connector_kinetic_J",Values(shells,{a.shells.kinetic.connector_translation,a.shells.kinetic.connector_rotation}));
+    }
     auto q=Family(a.shells.qeph);Number(q,"hourglass_viscous_work_J",a.shells.qeph.hourglass_viscous_work);
     Number(q,"hourglass_viscous_work_increment_J",a.shells.qeph.hourglass_viscous_work_increment);
     Child(shells,"qeph",q);Child(shells,"t3",Family(a.shells.t3));Child(d,"shells",shells);
-    Document m;m.SetObject();if(a.has_interval)Child(m,"before",Kinetic(a.motion.before));else Put(m,"before",Value());
-    Child(m,"after",Kinetic(a.motion.after));String(m,"kick_work_columns","translation_J,rotation_J,total_J");
+    Document m;m.SetObject();if(a.has_interval)Child(m,"before",Kinetic(a.motion.before,a.shells.has_connector));else Put(m,"before",Value());
+    Child(m,"after",Kinetic(a.motion.after,a.shells.has_connector));String(m,"kick_work_columns","translation_J,rotation_J,total_J");
     Put(m,"applied_kick_work_J",Work(m,a.motion.applied));Put(m,"reaction_kick_work_J",Work(m,a.motion.reaction));
     Number(m,"native_delta_J",a.motion.native_delta);Number(m,"effective_delta_J",a.motion.effective_delta);
     Number(m,"replacement_delta_J",a.motion.replacement_delta);Number(m,"native_residual_J",a.motion.native_residual);

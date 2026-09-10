@@ -1,4 +1,5 @@
 #include "SourceAssemblyWallFields.h"
+#include "SourceAssemblyConnectorFields.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
 #include "lib_src/math/Quaternion.h"
 #include <cmath>
@@ -33,9 +34,9 @@ template<class D> void Family(const D& a,const D& b,const fe::NodalStamp& s,
     for(unsigned i=0;i<4;++i)Require(av[i]==0,"Joined family cannot publish an independent kinetic metric");
 }
 void Kinetic(const fe::ShellBatchKinetic& a,const fe::ShellBatchKinetic& b) {
-    const double av[]{a.translation,a.rotation,a.physical_isotropic,a.added_isotropic};
-    const double bv[]{b.translation,b.rotation,b.physical_isotropic,b.added_isotropic};
-    for(unsigned i=0;i<4;++i)Require(std::isfinite(av[i])&&av[i]>=0&&Bits(av[i])==Bits(bv[i]),"Captured native kinetic changed");
+    const double av[]{a.translation,a.rotation,a.physical_isotropic,a.added_isotropic,a.connector_translation,a.connector_rotation};
+    const double bv[]{b.translation,b.rotation,b.physical_isotropic,b.added_isotropic,b.connector_translation,b.connector_rotation};
+    for(unsigned i=0;i<6;++i)Require(std::isfinite(av[i])&&av[i]>=0&&Bits(av[i])==Bits(bv[i]),"Captured native kinetic changed");
 }
 void Phase(const fe::rigid::ObservationPhase& p,bool initial,double x,double v,double frame) {
     Require(p.kind==(initial?fe::rigid::ObservationPhaseKind::PhysicalInitialization:
@@ -71,6 +72,7 @@ void CheckFrame(const FrameView& v) {
         s.velocity_time==s.reaction_time+.5*s.fixed_dt&&s.reaction_kick_dt==(s.epoch==1?.5*s.fixed_dt:s.fixed_dt),
         "Invalid accepted staggered interval stamp");
     CheckForceStageFrame(v);
+    CheckConnectorFrame(v);
     const auto& settings=*v.setup->settings();Family(v.captured_shells->qeph,d.shells.qeph,s,settings);
     Family(v.captured_shells->t3,d.shells.t3,s,settings);
     Require(Bits(v.captured_shells->qeph.hourglass_viscous_work)==Bits(d.shells.qeph.hourglass_viscous_work)&&

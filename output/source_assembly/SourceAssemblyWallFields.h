@@ -28,10 +28,11 @@ struct FrameView {
     dynamics::ContactView contact;
     bool observe_force_stage=false;
     const cases::source_assembly_observation::ForceStageSummary* force_stage=nullptr;
+    dynamics::ConnectorView connectors;
 };
 void CheckFrame(const FrameView&);
 void CheckForceStageFrame(const FrameView&);
-Document ForceStageDocument(const cases::source_assembly_observation::ForceStageSummary&);
+Document ForceStageDocument(const cases::source_assembly_observation::ForceStageSummary&,bool has_connectors=false);
 void CheckCase(const dynamics::SourceAssemblyWallCase&);
 Document FrameDocument(const FrameView&);
 Document StampDocument(const tl::fea::NodalStamp&);

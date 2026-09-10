@@ -90,6 +90,12 @@ visual::Report SourceAssemblyAcceptedOutput::Publish(fe::FENodalState& owner,fe:
     if(common.status!=fe::ShellPublicationStatus::Success)return {Status::InvalidFrame,common.message};
     if(!staged.diagnostics.valid||!Accepted(staged.diagnostics.qeph,stamp)||!Accepted(staged.diagnostics.t3,stamp))
         return {Status::InvalidFrame,"Assembly diagnostics are not the complete accepted endpoint"};
+    const auto* connector=s.bindings.connectors();
+    if(staged.diagnostics.has_connector!=bool(connector)||(connector&&
+       (!Accepted(staged.diagnostics.connector,stamp)||
+        staged.diagnostics.connector.source_instance_id!=s.bindings.source_instance_id()||
+        staged.diagnostics.connector.element_count!=connector->connection_count())))
+        return {Status::InvalidFrame,"Accepted connector publication differs from the complete source binding"};
     fe::qeph::BatchDiagnostics qd;fe::t3::BatchDiagnostics td;
     const auto qr=q.CopyAcceptedResults(stamp,s.qforce.data(),s.qforce.size(),&qd);
     if(qr.status!=fe::qeph::BatchStatus::Success)return {Status::InvalidFrame,qr.message};

@@ -25,7 +25,9 @@ inline fe::NodalStamp Next(const fe::NodalStamp& old) {
 // Synthetic accepted-shaped values only: they test formatting/source association,
 // not a solver result. The production writer has no API to receive this fixture.
 struct WallFields {
-    WallFields():bindings(prepared::WallAssembly()),setup(PreparedWall()),stamp(prepared::DeclaredStamp(bindings)),
+    WallFields():WallFields(prepared::WallAssembly(),PreparedWall()) {}
+    WallFields(const cases::source_assembly::SourceAssemblyBindings& b,const cases::source_assembly::SourceAssemblyWallSetup& wall)
+        :bindings(b),setup(wall),stamp(prepared::DeclaredStamp(bindings)),
         surface(SourceAssemblySurface::Prepare(bindings.source(),{stamp.owner_id,23,31},5,bindings.source_instance_id())),
         sections(surface),x(Positions(surface)),v(3*stamp.node_count),w(v.size()),orientation(4*stamp.node_count),
         contact_nodes(stamp.node_count),contact_parents(bindings.source().data().parents.size()),faces(stamp.node_count) {

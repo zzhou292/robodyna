@@ -1,4 +1,5 @@
 #include "Pilot.h"
+#include "PilotSource.h"
 #include "case/CanonicalWallArtifacts.h"
 #include "output/ArtifactIO.h"
 #include <sstream>
@@ -21,14 +22,13 @@ void InitializePilot(source_assembly_dynamics::SourceAssemblyWallCase& run,
     const output::assembly::WallArchiveRequest& request,const PilotOptions& options) {
     namespace source=modelio::assembly;
     const auto config=PilotConfig(options);
-    const auto input=source::SourceAssembly::Read(inventory,source::PinnedYarisSixPartInventory());
+    const auto input=ReadPilotSource(inventory,options.assembly);
     const auto bytes=case_data::ReadPinnedWallManifest(wall_path);
     // Reject impossible archive requests before CUDA startup and any directory.
     output::assembly::PlanWallArchive(request,input.data().identity.bytes,bytes.size());
     std::istringstream stream(bytes);case_data::CanonicalWall canonical;
     output::Require(canonical.Load(stream).status==case_data::WallStatus::Ok,"Cannot load original finite wall");
-    const auto bindings=source_assembly::SourceAssemblyBindings::Prepare(input,
-        {0x5941524953,source::MaterialRatePolicy::OpenRadiossDirectImportDefault});
+    const auto bindings=PreparePilotBindings(input,options.assembly);
     source_assembly::SourceAssemblyWallSettings settings;
     settings.initial_velocity={8,0,0};settings.leading_gap=5e-6;
     settings.configuration_id=0x534157434631ULL;settings.qualification_id=0x534157434751ULL;

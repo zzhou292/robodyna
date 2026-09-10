@@ -17,7 +17,7 @@ Build this directory with explicit `ROBO_DYNA_TL_ROOT`, `Chrono_DIR` and CUDA
 architecture. Run only under the workstation guard:
 
 ```
-robo_dyna_source_assembly_wall INVENTORY WALL STEPS FRAME_EVERY NEW_DIR [REFINEMENT_1_2_4] [--stage-timing NEW_JSON] [--step-multiple 1_2_4_8] [--observe-force-stage]
+robo_dyna_source_assembly_wall INVENTORY WALL STEPS FRAME_EVERY NEW_DIR [REFINEMENT_1_2_4] [--stage-timing NEW_JSON] [--step-multiple 1_2_4_8] [--observe-force-stage] [--assembly six-part|seven-part]
 ```
 
 At the base step, 1024 intervals span 15.26 microseconds. That is integration and
@@ -74,3 +74,19 @@ source-native frame/normal guard while retaining the pilot's 1 rad geometric and
 rigid-group limits. It preserves all actual quaternion output and per-step
 rotation admission. See [the domain contract](../source_assembly_dynamics/NATIVE_ROTATION_DOMAIN.md)
 for native evidence and the mechanically consequential shared-node spin caveat.
+
+`--assembly seven-part` selects the separately authenticated seven-part inventory
+and explicitly activates the original spotweld through the native TYPE25 import
+policy. `PilotSource.cpp` owns that source/policy selection; an inventory from the
+other scope fails before CUDA startup. Six-part remains the default. Both scopes
+retain one owner, the same six rigid groups and explicitly released external
+connections. Connector properties and combined endpoint M/J are archived under
+the [optional TYPE25 schema](../../output/source_assembly/SOURCE_ASSEMBLY_TYPE25_SCHEMA.md).
+
+The seven-part loaded qualification requests `--step-multiple 4` (h=2^-24 s).
+Its 8h request fails the existing source-specific contact `h*sqrt(rate)` startup
+guard, even though the six-part source admits 8h. No multiplier bypasses that
+guard, and the default multiplier remains one. The admitted timestep and the
+source's native element checks still govern every actual interval. The original
+shell-only spin trace rejects connector endpoints; other supported probe nodes
+retain the same diagnostic behavior.

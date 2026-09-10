@@ -7,7 +7,7 @@ namespace crash::cases::source_assembly_wall {
 namespace {
 constexpr const char* Usage="usage: robo_dyna_source_assembly_wall INVENTORY WALL STEPS FRAME_EVERY NEW_DIR "
     "[REFINEMENT_1_2_4] [--stage-timing NEW_JSON] [--step-multiple 1_2_4_8] [--observe-force-stage] [--native-rotation-domain] "
-    "[--spin-node SOURCE_NID --spin-output NEW_JSONL [--spin-every INTERVALS]]";
+    "[--spin-node SOURCE_NID --spin-output NEW_JSONL [--spin-every INTERVALS]] [--assembly six-part|seven-part]";
 std::uint64_t Count(std::string_view value,std::uint64_t maximum) {
     std::uint64_t count=0;
     const auto parsed=std::from_chars(value.data(),value.data()+value.size(),count);
@@ -24,7 +24,7 @@ CliOptions ParseOptions(int argc,const char* const* argv) {
     int i=6;
     if(i<argc&&std::string_view(argv[i]).substr(0,2)!="--")
         next.pilot.refinement=static_cast<unsigned>(Count(argv[i++],4));
-    bool saw_multiple=false,saw_spin_every=false;
+    bool saw_multiple=false,saw_spin_every=false,saw_assembly=false;
     while(i<argc) {
         const std::string_view option=argv[i++];
         if(option=="--observe-force-stage") {
@@ -47,6 +47,12 @@ CliOptions ParseOptions(int argc,const char* const* argv) {
             next.spin_path=argv[i++];
         } else if(option=="--spin-every"&&!saw_spin_every) {
             next.spin_every=Count(argv[i++],next.steps);saw_spin_every=true;
+        } else if(option=="--assembly"&&!saw_assembly) {
+            const std::string_view value=argv[i++];
+            if(value=="six-part")next.pilot.assembly=PilotAssembly::SixPart;
+            else if(value=="seven-part")next.pilot.assembly=PilotAssembly::SevenPartSpotweld;
+            else throw std::invalid_argument("Assembly must be six-part or seven-part");
+            saw_assembly=true;
         } else throw std::invalid_argument("Unknown or repeated assembly option");
     }
     if(bool(next.pilot.observe_qeph_spin_node)!=!next.spin_path.empty()||

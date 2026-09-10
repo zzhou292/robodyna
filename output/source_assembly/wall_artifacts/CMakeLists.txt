@@ -25,3 +25,13 @@ target_compile_options(robo_dyna_source_assembly_wall_artifacts_check PRIVATE -f
 add_test(NAME source_assembly_wall_artifacts COMMAND robo_dyna_source_assembly_wall_artifacts_check)
 set_tests_properties(source_assembly_wall_artifacts PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 600
   ENVIRONMENT "ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY=${ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY};ROBO_DYNA_SOURCE_ASSEMBLY_WALL=${ROBO_DYNA_SOURCE_ASSEMBLY_WALL}")
+set(ROBO_DYNA_SOURCE_BRACKET_INVENTORY "" CACHE FILEPATH "Frozen authenticated seven-part source inventory")
+if(ROBO_DYNA_SOURCE_BRACKET_INVENTORY)
+  if(NOT EXISTS "${ROBO_DYNA_SOURCE_BRACKET_INVENTORY}")
+    message(FATAL_ERROR "The explicit seven-part artifact fixture is missing")
+  endif()
+  target_sources(robo_dyna_source_assembly_wall_artifacts_check PRIVATE
+    "${CMAKE_CURRENT_LIST_DIR}/../tests/SourceBracketArtifactsCudaTest.cpp")
+  set_property(TEST source_assembly_wall_artifacts APPEND PROPERTY ENVIRONMENT
+    "ROBO_DYNA_SOURCE_BRACKET_INVENTORY=${ROBO_DYNA_SOURCE_BRACKET_INVENTORY}")
+endif()

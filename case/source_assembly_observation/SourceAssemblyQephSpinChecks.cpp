@@ -8,6 +8,9 @@ Report Select(const SourceAssemblyBindings& b,std::uint64_t id,Selection& next) 
     for(std::size_t n=0;n<source.nodes.size();++n)if(source.nodes[n].source_id==id)next.node=n;
     if(next.node==SIZE_MAX||next.node>=b.shells().node_count()||b.shells().nodes()[next.node].source_id!=id)
         return {Status::WrongIdentity,"Spin source node is absent or misbound"};
+    if(const auto* connectors=b.connectors())for(std::size_t e=0;e<2*connectors->connection_count();++e)
+        if(connectors->endpoint_mass()[e].global_node==next.node)
+            return {Status::InvalidInput,"Spin probe requires a node without connector mass or couple contributions",SIZE_MAX,next.node};
     if(const auto* groups=b.rigid_groups())for(std::size_t m=0;m<groups->member_count();++m)
         if(groups->members()[m].global_node==next.node)
             return {Status::InvalidInput,"Spin probe currently requires an ordinary node",SIZE_MAX,next.node};

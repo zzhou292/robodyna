@@ -1,3 +1,4 @@
+#include "case/source_assembly_observation/SourceAssemblyQephSpin.h"
 #include "ForceStageFixture.h"
 #include "case/source_assembly/tests/SourceBracketTestSupport.h"
 
@@ -43,5 +44,11 @@ TEST(SourceBracketObservation, ForceStageOrdinaryAccelerationUsesTotalJWithoutCh
     const auto saved=Bytes(result);const auto n=f.bindings.connectors()->connections()[0].global_node[1];
     f.acceleration.w[3*n+2]=std::numeric_limits<double>::infinity();
     EXPECT_EQ(ObserveForceStage(f.force_input(),&result).status,Status::NonfiniteResult);EXPECT_EQ(Bytes(result),saved);
+}
+TEST(SourceBracketObservation, ShellOnlySpinAttributionRejectsConnectorEndpointsBeforeSampling) {
+    const auto bindings=source_assembly::test::BracketBindings();
+    EXPECT_FALSE(CheckQephSpinSource(bindings,2181504));
+    EXPECT_FALSE(CheckQephSpinSource(bindings,2204838));
+    EXPECT_TRUE(CheckQephSpinSource(bindings,2181592));
 }
 } // namespace crash::cases::source_assembly_observation::test

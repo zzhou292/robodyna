@@ -1,6 +1,7 @@
 #include "SourceAssemblyWallArtifactState.h"
 #include "WallArtifactFileIO.h"
 #include "WallFieldValues.h"
+#include "SourceAssemblyConnectorFields.h"
 #include <cmath>
 
 namespace crash::output::assembly {
@@ -24,7 +25,8 @@ void SourceAssemblyWallArtifacts::Close(dynamics::SourceAssemblyWallCase& run,do
         wall_files::WriteJsonBounded(s.directory/"final-metrics.json",metrics,WallSmallFileBytes);s.inventory.Add("final-metrics.json",WallSmallFileBytes);
         Document d;d.SetObject();String(d,"schema",WallArtifactSchema);String(d,"kind",WallArtifactKind);String(d,"status","completed");
         Boolean(d,"shell_model",true);Boolean(d,"vehicle_model",false);Boolean(d,"contact",true);Boolean(d,"horizon_complete",!prefix);String(d,"stop_reason",reason);
-        String(d,"scope","Original connected six-part Yaris component; complete internal groups and explicit released external connections");
+        String(d,"scope",run.bindings()->connectors()?wall_fields::ConnectorScope:
+            "Original connected six-part Yaris component; complete internal groups and explicit released external connections");
         String(d,"completion_meaning",prefix?"Accepted prefix archived after an explicit stop; requested horizon is incomplete":
             "Declared bounded accepted horizon archived; visible deformation, collocated physical energy and full vehicle validation remain separate gates");
         Integer(d,"owner_id",stamp.owner_id);Integer(d,"run_id",s.request.run_id);Integer(d,"topology_id",s.request.topology_id);

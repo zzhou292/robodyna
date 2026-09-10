@@ -12,6 +12,9 @@ add_library(robo_dyna_source_assembly_wall_values STATIC
   "${CMAKE_CURRENT_LIST_DIR}/SourceAssemblyWallStamp.cpp" "${CMAKE_CURRENT_LIST_DIR}/SourceAssemblyWallFrameChecks.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/SourceAssemblyWallFrameFields.cpp" "${CMAKE_CURRENT_LIST_DIR}/SourceAssemblyWallDiagnostics.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/SourceAssemblyWallForceStageFields.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/SourceAssemblyConnectorInputFields.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/SourceAssemblyConnectorFrameFields.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/SourceAssemblyConnectorFrameChecks.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/SourceAssemblyWallContactFields.cpp" "${CMAKE_CURRENT_LIST_DIR}/SourceAssemblyWallInputFields.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/SourceAssemblyWallSetupFields.cpp" "${CMAKE_CURRENT_LIST_DIR}/SourceAssemblyWallConfiguration.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/SourceAssemblyWallInterval.cpp" "${CMAKE_CURRENT_LIST_DIR}/WallArtifactFileIO.cpp")
