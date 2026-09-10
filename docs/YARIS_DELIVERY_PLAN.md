@@ -71,6 +71,15 @@ work. The [current checkpoint](../../planning/EXECUTION_STATUS.md) records
 retained scope and limitations; the following tables preserve the earlier
 foundation and the broader implementation backlog.
 
+## Current delivery cadence
+
+The user requested faster progress on 2026-09-09. Finish the current broadside
+rebound integration, then prioritize mixed Q4/T3 dynamics and the complete
+117-node Yaris source part with accepted deformation output. Batch focused
+regressions at integration checkpoints and retain commits, logs and required
+input bindings. Additional fixture variants and report infrastructure are deferred
+unless needed to resolve a failure. Physics checks and the 16 GB RAM ceiling stay.
+
 ## Historical verified starting point
 
 | Capability | Fresh evidence and practical boundary |
