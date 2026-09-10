@@ -1,0 +1,47 @@
+C SPDX-License-Identifier: AGPL-3.0-or-later
+C OpenRadioss Copyright (C) 2026 Siemens. Exact source body and hashes
+C retained in source-manifest.json. Wrapper only binds scalar test values.
+#define R4EVEC3 TYPE25_NATIVE_R4EVEC3
+#include "extracted/CompleteFrame.inc"
+#undef R4EVEC3
+      SUBROUTINE TYPE25_FRAME(POS,VEL,OMEGA,OLDY,STEP,AXES,MID,LENGTH)
+     . BIND(C,NAME='type25_native_frame')
+      USE ISO_C_BINDING
+      IMPLICIT NONE
+      REAL(C_DOUBLE),INTENT(IN) :: POS(3,2),VEL(3,2),OMEGA(3,2),OLDY(3),STEP
+      REAL(C_DOUBLE),INTENT(OUT) :: AXES(9),MID(9),LENGTH(2)
+      DOUBLE PRECISION DT1
+      INTEGER SCODVER,ISMDISP
+      COMMON /TYPE25_NATIVE_TIME/ DT1
+      COMMON /TYPE25_NATIVE_VERSION/ SCODVER
+      COMMON /TYPE25_NATIVE_SMALL_DISPLACEMENT/ ISMDISP
+      INTEGER NGL(1),NC1(1),NC2(1)
+      DOUBLE PRECISION RLOC(3,1),ERR(3,1),V(3,2),X1(3,1),X2(3,1),
+     . EXX(1),EYX(1),EZX(1),EXY(1),EYY(1),EZY(1),EXZ(1),EYZ(1),EZZ(1),
+     . EXX2(1),EYX2(1),EZX2(1),EXY2(1),EYY2(1),EZY2(1),EXZ2(1),EYZ2(1),EZZ2(1),
+     . AL2DP(1),ALDP(1),AL(1),AL2(1),RX1(1),RY1(1),RZ1(1),RX2(1),RY2(1),RZ2(1),
+     . VX1(1),VY1(1),VZ1(1),VX2(1),VY2(1),VZ2(1)
+      DT1=STEP
+      SCODVER=101
+      ISMDISP=0
+      NC1=1
+      NC2=2
+      NGL=1
+      RLOC(:,1)=OLDY
+      ERR=0D0
+      V=VEL
+      X1(:,1)=POS(:,1)
+      X2(:,1)=POS(:,2)
+      RX1=OMEGA(1,1)
+      RY1=OMEGA(2,1)
+      RZ1=OMEGA(3,1)
+      RX2=OMEGA(1,2)
+      RY2=OMEGA(2,2)
+      RZ2=OMEGA(3,2)
+      CALL TYPE25_NATIVE_R4EVEC3(RLOC,V,EXX2,EYX2,EZX2,EXY2,EYY2,EZY2,
+     . EXZ2,EYZ2,EZZ2,AL2DP,X1,X2,AL2,ALDP,ERR,NGL,AL,EXX,EYX,EZX,EXY,EYY,
+     . EZY,EXZ,EYZ,EZZ,RX1,RY1,RZ1,RX2,RY2,RZ2,VX1,VX2,VY1,VY2,VZ1,VZ2,NC1,NC2,1)
+      AXES=(/EXX(1),EXY(1),EXZ(1),EYX(1),EYY(1),EYZ(1),EZX(1),EZY(1),EZZ(1)/)
+      MID=(/EXX2(1),EXY2(1),EXZ2(1),EYX2(1),EYY2(1),EYZ2(1),EZX2(1),EZY2(1),EZZ2(1)/)
+      LENGTH=(/ALDP(1),AL2DP(1)/)
+      END

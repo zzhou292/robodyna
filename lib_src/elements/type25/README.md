@@ -2,9 +2,10 @@
 
 `Type25Model` owns immutable, fully resolved startup inputs and exact endpoint
 identity. `Type25Frame` implements the finite-length, two-node frame operations
-from OpenRadioss R4BUF3/R4EVEC3. This first commit has host startup/frame checks;
-it does not yet qualify the complete force recurrence or add a CUDA contributor.
-No spring history participates in a nodal step or publication in this slice.
+from OpenRadioss R4BUF3/R4EVEC3. `Type25Math` adds finite-offset deformation,
+four linear force channels, coupled force failure, endpoint wrench scatter and
+the unscaled native elementary timestep. These are stateless host/device value
+operations. No spring history participates in a nodal step or publication yet.
 
 The input subset is Ileng=0, no third node, no coordinate randomization, no
 sensor, no preload/INISPRI, no curves, no rate-dependent failure and no mass
@@ -41,4 +42,9 @@ Frame code is a scalar/vector adaptation, not a call to a native solver.
 
 Owning CMake target: `tl_type25_model`, included through `Type25Model.cmake`.
 Bazel owner: `//lib_src/elements/type25:type25_model`. Standalone host checks
-are configured from `lib_utest/qualification/type25`; no CUDA is required.
+are configured from `lib_utest/qualification/type25`. `TYPE25_NATIVE_CHECKS=ON`
+adds the compiled Fortran source operations; pass an explicit Fortran compiler
+when using the workspace's existing local toolchain. `TYPE25_CUDA_CHECKS=ON`
+adds two small pure-math CUDA checks, scheduled separately by the coordinator.
+The math owner is `tl_type25_math` / `//lib_src/elements/type25:type25_math`.
+See `SOURCE_CONTRACT.md` for the exact source subset, operation and phase limits.

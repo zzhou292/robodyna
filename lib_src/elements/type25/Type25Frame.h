@@ -36,6 +36,13 @@ TL_TYPE25_HD inline Status InitializeReference(SourceUnits units,const Vec3 (&po
 }
 
 namespace detail {
+TL_TYPE25_HD inline bool ValidReference(const Reference& r) {
+  if(!tl::math::Finite(r.position[0])||!tl::math::Finite(r.position[1])||
+     !Positive(r.length_m)||!tl::math::Unit(r.transverse_axis))return false;
+  const auto chord=tl::math::Subtract(r.position[1],r.position[0]);
+  return tl::math::Norm(chord)==r.length_m&&
+      ::fabs(tl::math::Dot(tl::math::Divide(chord,r.length_m),r.transverse_axis))<=1e-12;
+}
 TL_TYPE25_HD inline bool ValidKinematics(const EndpointKinematics& a) {
   return tl::math::Finite(a.position)&&tl::math::Finite(a.velocity)&&tl::math::Finite(a.angular_velocity);
 }

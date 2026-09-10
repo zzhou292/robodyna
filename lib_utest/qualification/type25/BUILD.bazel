@@ -1,0 +1,17 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+cc_test(
+    name = "type25_host_check",
+    size = "small",
+    srcs = ["Fixture.h", "ModelTest.cpp", "FrameTest.cpp", "MathTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/elements/type25:type25_math", "//lib_src/math:fixed3_operations", "@googletest//:gtest_main"],
+)
+cuda_test(
+    name = "type25_math_cuda_check",
+    size = "small",
+    srcs = ["MathCudaTest.cu", "Fixture.h", "EvaluationValues.h"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/elements/type25:type25_math", "//lib_src/math:fixed3_operations", "@googletest//:gtest_main"],
+)
