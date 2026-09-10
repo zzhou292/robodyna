@@ -31,12 +31,12 @@ TL_TYPE25_HD inline Status Response(const Property& p,const History& accepted,do
   double force[4]{},criterion=0;
   for(unsigned i=0;i<4;++i) {
     const double velocity=(x[i]-oldx[i])/dt;
-    if(!tl::math::Finite(velocity)||!tl::math::Finite(oldf[i]))return Status::NonfiniteResult;
+    if(!tl::math::fixed3::Finite(velocity)||!tl::math::fixed3::Finite(oldf[i]))return Status::NonfiniteResult;
     // REDEF3: no curves, A=1/B=E=0/GF3=1, explicit dynamics. Keep its
     // final +0 and OFF multiplication; work uses the scalar radial channel.
     force[i]=(p.stiffness[i]*x[i]+p.damping[i]*velocity+0)*(accepted.active?1:0);
     next.internal_work_J[i]=accepted.internal_work_J[i]+(x[i]-oldx[i])*(force[i]+oldf[i])*.5;
-    if(!tl::math::Finite(force[i])||!tl::math::Finite(next.internal_work_J[i]))return Status::NonfiniteResult;
+    if(!tl::math::fixed3::Finite(force[i])||!tl::math::fixed3::Finite(next.internal_work_J[i]))return Status::NonfiniteResult;
     if(accepted.active) {
       const double limit=force[i]>0?p.failure_positive[i]:p.failure_negative[i];
       const double ratio=force[i]/limit;

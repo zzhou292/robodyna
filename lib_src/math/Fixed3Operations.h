@@ -9,7 +9,8 @@
 #define TL_FIXED3_HD
 #endif
 
-namespace tl::math {
+namespace tl::math::fixed3 {
+using ::tl::math::Finite;
 // Shared scalar order used by TL's existing rigid and shell frame helpers.
 TL_FIXED3_HD inline bool Finite(Vec3 v) { return Finite(v.x)&&Finite(v.y)&&Finite(v.z); }
 TL_FIXED3_HD inline Vec3 Add(Vec3 a,Vec3 b) { return {a.x+b.x,a.y+b.y,a.z+b.z}; }
@@ -42,6 +43,6 @@ TL_FIXED3_HD inline bool Orthonormal(const Matrix3& m,double tolerance=1e-12) {
     ::fabs(Dot(x,y))<=tolerance&&::fabs(Dot(x,z))<=tolerance&&
     ::fabs(Dot(y,z))<=tolerance&&::fabs(Dot(Cross(x,y),z)-1)<=tolerance;
 }
-} // namespace tl::math
+} // namespace tl::math::fixed3
 
 #undef TL_FIXED3_HD

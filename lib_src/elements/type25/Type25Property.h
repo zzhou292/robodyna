@@ -14,8 +14,8 @@
 
 namespace tl::fea::type25 {
 namespace detail {
-TL_TYPE25_HD inline bool Positive(double x) { return tl::math::Finite(x)&&x>0; }
-TL_TYPE25_HD inline bool Nonnegative(double x) { return tl::math::Finite(x)&&x>=0; }
+TL_TYPE25_HD inline bool Positive(double x) { return tl::math::fixed3::Finite(x)&&x>0; }
+TL_TYPE25_HD inline bool Nonnegative(double x) { return tl::math::fixed3::Finite(x)&&x>=0; }
 // Source-unit factors used solely to express the donor's regularized arithmetic.
 struct Units {
   double mass=0,inertia=0,translation_stiffness=0,rotation_stiffness=0;
@@ -38,7 +38,7 @@ TL_TYPE25_HD inline bool ValidProperty(const Property& p) {
   if(!detail::Positive(p.mass_kg)||!detail::Positive(p.isotropic_inertia_kg_m2))return false;
   for(unsigned i=0;i<4;++i)
     if(!detail::Positive(p.stiffness[i])||!detail::Nonnegative(p.damping[i])||
-       !detail::Positive(p.failure_positive[i])||!tl::math::Finite(p.failure_negative[i])||p.failure_negative[i]>=0||
+       !detail::Positive(p.failure_positive[i])||!tl::math::fixed3::Finite(p.failure_negative[i])||p.failure_negative[i]>=0||
        !detail::Positive(p.failure_weight[i])||!detail::Positive(p.failure_exponent[i]))return false;
   return true;
 }

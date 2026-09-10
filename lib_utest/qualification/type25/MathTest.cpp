@@ -52,8 +52,8 @@ TEST(Type25Math,TranslationAndCommonAxialSpinHaveZeroDeformation) {
   spring::History old;old.transverse_axis=ref.transverse_axis;
   spring::EndpointKinematics nodes[2]{{points[0],{8,2,-3},{4,0,0}},{points[1],{8,2,-3},{4,0,0}}};
   spring::Evaluation e;ASSERT_EQ(spring::Evaluate({1,1,1},Property(),ref,old,nodes,.01,e),spring::Status::Success);
-  EXPECT_DOUBLE_EQ(tl::math::Norm(e.history.displacement_m),0);EXPECT_DOUBLE_EQ(tl::math::Norm(e.history.rotation_rad),0);
-  EXPECT_DOUBLE_EQ(tl::math::Norm(e.endpoints[0].force_N),0);EXPECT_DOUBLE_EQ(tl::math::Norm(e.endpoints[0].couple_Nm),0);
+  EXPECT_DOUBLE_EQ(tl::math::fixed3::Norm(e.history.displacement_m),0);EXPECT_DOUBLE_EQ(tl::math::fixed3::Norm(e.history.rotation_rad),0);
+  EXPECT_DOUBLE_EQ(tl::math::fixed3::Norm(e.endpoints[0].force_N),0);EXPECT_DOUBLE_EQ(tl::math::fixed3::Norm(e.endpoints[0].couple_Nm),0);
   EXPECT_NEAR(e.history.transverse_axis.y,std::cos(.04),2*DBL_EPSILON);
   EXPECT_NEAR(e.history.transverse_axis.z,std::sin(.04),2*DBL_EPSILON);
 }
@@ -81,7 +81,7 @@ TEST(Type25Math,EveryLateFailurePreservesFullOutputAndCleanRetry) {
     if(mutation==5)history.active=false;
     if(mutation==6)p.failure_positive[3]=std::numeric_limits<double>::denorm_min();
     if(mutation==7)reference.length_m=std::nextafter(reference.length_m,1.);
-    if(mutation==8)reference.transverse_axis=tl::math::Divide(tl::math::Subtract(c.position[1],c.position[0]),reference.length_m);
+    if(mutation==8)reference.transverse_axis=tl::math::fixed3::Divide(tl::math::fixed3::Subtract(c.position[1],c.position[0]),reference.length_m);
     spring::Evaluation out;out.critical_dt_s=42;const auto saved=out;
     EXPECT_NE(spring::Evaluate(f.Input().source_units,p,reference,history,nodes,dt,out),spring::Status::Success)<<mutation;
     EXPECT_EQ(std::memcmp(&saved,&out,sizeof(out)),0)<<mutation;

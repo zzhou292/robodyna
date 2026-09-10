@@ -35,10 +35,10 @@ TL_TYPE25_HD inline Status Evaluate(SourceUnits units,const Property& property,c
   const auto f=next.history.local_force_N,m=next.history.local_couple_Nm;
   const double arm=.5*next.frame.length_m;
   const Vec3 m1{m.x,m.y-arm*f.z,m.z+arm*f.y},m2{m.x,m.y+arm*f.z,m.z-arm*f.y};
-  next.endpoints[0]={tl::math::ToWorld(next.frame.axes,f),tl::math::ToWorld(next.frame.axes,m1)};
-  next.endpoints[1]={tl::math::Scale(next.endpoints[0].force_N,-1),
-      tl::math::Scale(tl::math::ToWorld(next.frame.axes,m2),-1)};
-  for(unsigned i=0;i<2;++i)if(!tl::math::Finite(next.endpoints[i].force_N)||!tl::math::Finite(next.endpoints[i].couple_Nm))
+  next.endpoints[0]={tl::math::fixed3::ToWorld(next.frame.axes,f),tl::math::fixed3::ToWorld(next.frame.axes,m1)};
+  next.endpoints[1]={tl::math::fixed3::Scale(next.endpoints[0].force_N,-1),
+      tl::math::fixed3::Scale(tl::math::fixed3::ToWorld(next.frame.axes,m2),-1)};
+  for(unsigned i=0;i<2;++i)if(!tl::math::fixed3::Finite(next.endpoints[i].force_N)||!tl::math::fixed3::Finite(next.endpoints[i].couple_Nm))
     return Status::NonfiniteResult;
   Stability stable;status=CriticalStep(units,property,next.frame.length_m,stable);
   if(status!=Status::Success)return status;
