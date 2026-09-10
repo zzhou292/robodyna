@@ -1,4 +1,5 @@
 #include "NodalWallCapacityCudaProbe.h"
+#include <cstddef>
 #include <cuda_runtime_api.h>
 
 namespace {

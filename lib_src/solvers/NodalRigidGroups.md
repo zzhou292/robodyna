@@ -106,3 +106,9 @@ principal-frame update, and using newly kicked spin for that update. Native wrap
 source files and seventeen exact fragments; they do not execute the full engine.
 All numerical execution uses the workspace guard; a host syntax pass alone is
 not a runtime qualification result.
+
+The actual owner gate passes on the RTX 5090 (2026-09-10): all 48 functions
+across nine host/native/CUDA targets, including 12 new phase/owner functions.
+Reports are `crash-work/reports/nodal-rigid-owner-{configure,build,tests}-1`.
+The owning Bazel owner target builds in `active-storage-owner-owning-bazel-1`.
+These results retain the separate contributor and aggregate-observation gates.

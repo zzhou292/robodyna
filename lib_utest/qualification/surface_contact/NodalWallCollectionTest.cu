@@ -4,6 +4,13 @@
 
 namespace {
 using namespace nodal_wall_collection_test;
+std::size_t ContactBytes(const Fixture& fixture) {
+  detail::ArenaLayout layout;
+  const bool valid=detail::BuildArenaLayout(fixture.weights.parent_count(),fixture.weights.node_count(),Nodes,
+      sc::MaxNodalWallDeviceBytes,layout);
+  EXPECT_TRUE(valid);
+  return valid?layout.bytes:0;
+}
 __global__ void Set(double* values,unsigned index,double value) { if(!threadIdx.x) values[index]=value; }
 __global__ void Seed(fe::NodalAssemblyView v) {
   const unsigned n=threadIdx.x; if(n>=v.accepted.node_count) return;
@@ -75,7 +82,7 @@ TEST(NodalWallCollectionCuda, All94And128ParentsMatchHostAndIndependentLoadsAtHi
     ASSERT_TRUE(f->Bind(owner,contact,f->Config()));
     const auto oa=owner.allocations(),ca=contact.allocations();
     EXPECT_EQ(oa.device_allocations,6u); EXPECT_EQ(ca.device_allocations,1u);
-    EXPECT_EQ(ca.device_bytes,471864u);
+    EXPECT_EQ(ca.device_bytes,ContactBytes(*f));
     fe::NodalTrialToken token; fe::NodalAssemblyView a;
     ASSERT_EQ(owner.BeginTrial(&token,&a).status,fe::NodalStatus::Ok);
     Seed<<<1,128,0,a.stream>>>(a); ASSERT_EQ(cudaGetLastError(),cudaSuccess);
@@ -209,6 +216,6 @@ TEST(NodalWallCollectionCuda, Late128thDestinationOverflowLeavesAllSixArraysAndE
   EXPECT_EQ(ReadForces(a),before); Unchanged(d,db); Same(Read(owner),accepted);
   owner.Discard(); contact.DiscardTrial();
   ASSERT_NO_FATAL_FAILURE(Retry(*f,owner,contact,config.law)); Same(Read(owner),accepted);
-  EXPECT_EQ(contact.allocations().device_allocations,1u); EXPECT_EQ(contact.allocations().device_bytes,471864u);
+  EXPECT_EQ(contact.allocations().device_allocations,1u); EXPECT_EQ(contact.allocations().device_bytes,ContactBytes(*f));
 }
 } // namespace

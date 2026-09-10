@@ -48,3 +48,12 @@ contact targets remain required. Existing host model gates now own their
 prepared arena rather than copying a fixed array aggregate. This qualification
 does not establish shell/contact dynamics with nodal-rigid constraints: those
 must supply and qualify the constrained contact mass metric separately.
+
+All 29 functions in the seven host/CUDA groups pass on the RTX 5090
+(2026-09-10), including the new 915-parent/1,030-node fixture. Evidence:
+`crash-work/reports/active-wall-storage-build-4` and
+`active-wall-storage-tests-2`. Earlier retained attempts exposed a missing
+standard header in the test-only CUDA probe and two obsolete fixed-byte
+expectations in an old fixture; production contact arithmetic did not change.
+The owning Bazel contact target also passes in
+`active-storage-owner-owning-bazel-1`.

@@ -65,3 +65,9 @@ large host geometry admission and the live-owner overload required to bind
 uniform initial translation. Those fixture calls were corrected; production
 arithmetic/storage did not change. Existing legacy suite qualification follows
 separately.
+
+The integrated original-part harness passes all 39 selected groups after the
+active storage change (`active-shell-legacy-tests-1`). The owning Bazel arena,
+QEPH/T3 and common publication targets build in
+`active-storage-owner-owning-bazel-1`. Larger grouped dynamics remains a
+separate qualification.
