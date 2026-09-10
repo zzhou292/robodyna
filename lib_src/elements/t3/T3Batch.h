@@ -6,7 +6,7 @@
 #include "../../solvers/ExplicitNodalStep.h"
 #include <memory>
 
-namespace tl::fea { class ShellBatchBinding; class ShellBatchPublication;
+namespace tl::fea { class ShellBatchBinding; class ShellBatchPublication; class NodalMassBinding;
   class ShellBatchPlasticityBinding; struct ShellBatchPlasticityConfig; struct ShellBatchSectionState; }
 namespace tl::fea::t3 {
 constexpr std::size_t MaxBatchElements=MaxShellCollectionParents,MaxBatchNodes=MaxShellCollectionNodes;
@@ -103,6 +103,11 @@ class T3Batch {
   // Complete multi-material catalog: both families copy the same full binding,
   // while each native parent selects its own prepared material/section.
   BatchReport InitializeJoined(const T3BatchConfig&,const ShellBatchBinding&,const ShellBatchPlasticityBinding&);
+  // Augmented startup uses one complete typed nodal M/J composition.
+  // Its connector must also join the sole publication coordinator.
+  BatchReport InitializeJoined(const T3BatchConfig&,const ShellBatchBinding&,const NodalMassBinding&);
+  BatchReport InitializeJoined(const T3BatchConfig&,const ShellBatchBinding&,
+                               const ShellBatchPlasticityBinding&,const NodalMassBinding&);
   // Raw supplied-view validation/assembly. Initial numerical binding retains
   // its source identity; actual owner association is checked separately before
   // the first standalone or joined publication. A forged raw view alone is
@@ -131,7 +136,8 @@ class T3Batch {
   friend class ::tl::fea::ShellBatchPublication;
   BatchReport InitializeImpl(const T3BatchConfig&,const T3BatchElement*,const ShellBatchBinding*,
                              const ShellBatchPlasticityConfig* plasticity=nullptr,
-                             const ShellBatchPlasticityBinding* collection_plasticity=nullptr);
+                             const ShellBatchPlasticityBinding* collection_plasticity=nullptr,
+                             const NodalMassBinding* nodal_mass=nullptr);
   BatchReport AssembleAcceptedImpl(FENodalState*,const NodalAssemblyView&);
   BatchReport EvaluateCandidateImpl(FENodalState*,const NodalTrialToken*,const NodalPreparedView&,BatchDiagnostics*);
   friend BatchReport CommitT3Trial(FENodalState&,const NodalTrialToken&,T3Batch&,

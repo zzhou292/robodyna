@@ -1,0 +1,15 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "nodal_mass_binding",
+    srcs = ["NodalMassBinding.cpp"],
+    hdrs = ["NodalMassBinding.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        "//lib_src/elements:shell_batch_binding",
+        "//lib_src/elements/type25:type25_model",
+        "//lib_utils:bounded_arena",
+        "//lib_utils:bounded_startup_array",
+    ],
+)

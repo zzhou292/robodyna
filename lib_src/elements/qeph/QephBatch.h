@@ -6,7 +6,7 @@
 #include "../../solvers/ExplicitNodalStep.h"
 #include <memory>
 
-namespace tl::fea { class ShellBatchBinding; class ShellBatchPublication;
+namespace tl::fea { class ShellBatchBinding; class ShellBatchPublication; class NodalMassBinding;
   class ShellBatchPlasticityBinding; struct ShellBatchPlasticityConfig; struct ShellBatchSectionState; }
 namespace tl::fea::qeph {
 constexpr std::size_t MaxBatchElements=MaxShellCollectionParents,MaxBatchNodes=MaxShellCollectionNodes;
@@ -107,6 +107,11 @@ class QephBatch {
   // Complete multi-material catalog: both families copy the same full binding,
   // while each native parent selects its own prepared material/section.
   BatchReport InitializeJoined(const QephBatchConfig&,const ShellBatchBinding&,const ShellBatchPlasticityBinding&);
+  // Augmented startup uses one complete typed nodal M/J composition.
+  // Its connector must also join the sole publication coordinator.
+  BatchReport InitializeJoined(const QephBatchConfig&,const ShellBatchBinding&,const NodalMassBinding&);
+  BatchReport InitializeJoined(const QephBatchConfig&,const ShellBatchBinding&,
+                               const ShellBatchPlasticityBinding&,const NodalMassBinding&);
   // Raw supplied-view validation/assembly for rest or an already-bound batch.
   // First uniform-translation binding requires the live-owner overload below.
   // Initial numerical rest binding retains
@@ -139,7 +144,8 @@ class QephBatch {
   friend class ::tl::fea::ShellBatchPublication;
   BatchReport InitializeImpl(const QephBatchConfig&,const QephBatchElement*,const ShellBatchBinding*,
                              const ShellBatchPlasticityConfig* plasticity=nullptr,
-                             const ShellBatchPlasticityBinding* collection_plasticity=nullptr);
+                             const ShellBatchPlasticityBinding* collection_plasticity=nullptr,
+                             const NodalMassBinding* nodal_mass=nullptr);
   BatchReport AssembleAcceptedImpl(FENodalState*,const NodalAssemblyView&);
   BatchReport EvaluateCandidateImpl(FENodalState*,const NodalTrialToken*,const NodalPreparedView&,BatchDiagnostics*);
   friend BatchReport CommitQephTrial(FENodalState&,const NodalTrialToken&,QephBatch&,

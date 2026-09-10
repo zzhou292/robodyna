@@ -89,6 +89,7 @@ struct ShellBatchPublication::Impl {
     const bool same_usage=(q.config.usage==qeph::BatchUsage::PrescribedFields&&t.config.usage==t3::BatchUsage::PrescribedFields)||
       (q.config.usage==qeph::BatchUsage::CoupledForces&&t.config.usage==t3::BatchUsage::CoupledForces);
     return q.joined_binding&&t.joined_binding&&q.joined_binding->inventory()==t.joined_binding->inventory()&&
+      ((!q.joined_mass&&!t.joined_mass)||(q.joined_mass&&t.joined_mass&&q.joined_mass->Matches(*t.joined_mass)))&&
       q.config.element_count==q.joined_binding->qeph_count()&&q.config.element_count>0&&
       t.config.element_count==t.joined_binding->t3_count()&&t.config.element_count>0&&
       q.config.configuration_id==t.config.configuration_id&&
@@ -146,6 +147,10 @@ ShellPublicationReport ShellBatchPublication::Initialize(FENodalState& owner,qep
   if(impl_) return {S::InvalidInput,"Mixed publication scope is already initialized"};
   if(!q.impl_||!t.impl_) return {S::NotInitialized,"Both shell participants must be initialized"};
   if(!q.impl_->joined_binding||!t.impl_->joined_binding) return {S::NotJoined,"Both shell participants must use InitializeJoined"};
+  // Until a typed connector joins this transaction, augmented coefficients
+  // cannot be published by a shell-only coordinator.
+  if(q.impl_->joined_mass||t.impl_->joined_mass)
+    return {S::NotJoined,"Combined nodal mass requires the connector publication participant"};
   const auto count=q.impl_->joined_binding->node_count();
   shell_publication_detail::Layout layout;
   if(!limits.max_nodes||limits.max_nodes>MaxShellResidentNodes||count>limits.max_nodes||

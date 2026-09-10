@@ -50,10 +50,22 @@ BatchReport QephBatch::InitializeJoined(const QephBatchConfig& config,const Shel
   if(!binding.prepared()) return {BatchStatus::InvalidInput,"Mixed binding is not prepared"};
   return InitializeImpl(config,nullptr,&binding,&plasticity);
 }
+BatchReport QephBatch::InitializeJoined(const QephBatchConfig& config,const ShellBatchBinding& binding,
+    const NodalMassBinding& mass) {
+  return InitializeImpl(config,nullptr,&binding,nullptr,nullptr,&mass);
+}
+BatchReport QephBatch::InitializeJoined(const QephBatchConfig& config,const ShellBatchBinding& binding,
+    const ShellBatchPlasticityBinding& plasticity,const NodalMassBinding& mass) {
+  if(!plasticity.Matches(binding))
+    return {BatchStatus::InvalidInput,"Complete plasticity catalog differs from the joined native binding"};
+  return InitializeImpl(config,nullptr,&binding,nullptr,&plasticity,&mass);
+}
 BatchReport QephBatch::InitializeImpl(const QephBatchConfig& config,const QephBatchElement* elements,
     const ShellBatchBinding* joined,const ShellBatchPlasticityConfig* plasticity,
-    const ShellBatchPlasticityBinding* collection_plasticity) try {
+    const ShellBatchPlasticityBinding* collection_plasticity,const NodalMassBinding* nodal_mass) try {
   if(impl_) return {BatchStatus::InvalidInput,"QEPH batch is already initialized"};
+  if(nodal_mass&&(!joined||!nodal_mass->Matches(*joined)))
+    return {BatchStatus::InvalidInput,"Combined nodal mass differs from complete joined shell inventory"};
   batch_detail::Layout layout;
   if(!ValidShellResidentLimits(config.storage_limits,config.element_count,config.owner.node_count,config.max_device_bytes)||
      !layout.Initialize(config.element_count,config.owner.node_count,config.max_device_bytes))
@@ -63,7 +75,8 @@ BatchReport QephBatch::InitializeImpl(const QephBatchConfig& config,const QephBa
   if(!host_budget.Append<unsigned char>(sizeof(Impl),ignored)||!host_budget.Append<unsigned char>(layout.bytes,ignored)||
      !host_budget.Append<ForceTrial>(config.element_count,ignored)||!host_budget.Append<unsigned char>(64,ignored)||
      !host_budget.Append<bool>(config.owner.node_count,ignored)||!host_budget.Append<std::uint64_t>(config.owner.node_count,ignored)||
-     (joined&&!host_budget.Append<unsigned char>(joined->host_bytes(),ignored)))
+     (joined&&!host_budget.Append<unsigned char>(joined->host_bytes(),ignored))||
+     (nodal_mass&&!host_budget.Append<unsigned char>(nodal_mass->host_bytes(),ignored)))
     return {BatchStatus::ResourceLimit,"QEPH startup payload exceeds host cap"};
   if(plasticity||collection_plasticity) {
     using namespace shell_batch_plasticity_detail;
@@ -90,6 +103,13 @@ BatchReport QephBatch::InitializeImpl(const QephBatchConfig& config,const QephBa
   candidate->staging.Resize(config.element_count);
   candidate->accepted_diagnostics=batch_detail::InitialDiagnostics(config,joined!=nullptr);
   if(joined) candidate->joined_binding.emplace(*joined);
+  if(nodal_mass) {
+    candidate->joined_mass.emplace(*nodal_mass);
+    for(std::size_t n=0;n<nodal_mass->node_count();++n) {
+      const auto& values=nodal_mass->nodes()[n].coefficients;
+      initial->model.mass[n]=values.mass; initial->model.inertia[n]=values.isotropic_inertia;
+    }
+  }
   report=candidate->PendingError(); if(report.status!=BatchStatus::Success) return report;
   if(plasticity) {
     report=candidate->InitializePlasticity(*plasticity,initial->model);

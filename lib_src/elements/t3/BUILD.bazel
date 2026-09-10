@@ -45,6 +45,7 @@ cuda_library(
         "//lib_src/elements:shell_batch_joined_model",
         "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_force_assembly",
         "//lib_src/solvers:nodal_trial_identity",
+        "//lib_src/assembly:nodal_mass_binding",
         "//lib_src/solvers:nodal_native_physical_coefficients",
     ],
 )

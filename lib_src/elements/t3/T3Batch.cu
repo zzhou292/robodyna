@@ -51,10 +51,22 @@ BatchReport T3Batch::InitializeJoined(const T3BatchConfig& config,const ShellBat
   if(!binding.prepared()) return {BatchStatus::InvalidInput,"Mixed binding is not prepared"};
   return InitializeImpl(config,nullptr,&binding,&plasticity);
 }
+BatchReport T3Batch::InitializeJoined(const T3BatchConfig& config,const ShellBatchBinding& binding,
+    const NodalMassBinding& mass) {
+  return InitializeImpl(config,nullptr,&binding,nullptr,nullptr,&mass);
+}
+BatchReport T3Batch::InitializeJoined(const T3BatchConfig& config,const ShellBatchBinding& binding,
+    const ShellBatchPlasticityBinding& plasticity,const NodalMassBinding& mass) {
+  if(!plasticity.Matches(binding))
+    return {BatchStatus::InvalidInput,"Complete plasticity catalog differs from the joined native binding"};
+  return InitializeImpl(config,nullptr,&binding,nullptr,&plasticity,&mass);
+}
 BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchElement* elements,
     const ShellBatchBinding* joined,const ShellBatchPlasticityConfig* plasticity,
-    const ShellBatchPlasticityBinding* collection_plasticity) try {
+    const ShellBatchPlasticityBinding* collection_plasticity,const NodalMassBinding* nodal_mass) try {
   if(impl_) return {BatchStatus::InvalidInput,"T3 batch is already initialized"};
+  if(nodal_mass&&(!joined||!nodal_mass->Matches(*joined)))
+    return {BatchStatus::InvalidInput,"Combined nodal mass differs from complete joined shell inventory"};
   // Startup staging is bounded and heap-backed; it is released after the one
   // resident device allocation is initialized. Per-step storage is unchanged.
   batch_detail::Layout layout;
@@ -66,7 +78,8 @@ BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchEle
   if(!host_budget.Append<unsigned char>(sizeof(Impl),ignored)||!host_budget.Append<unsigned char>(layout.bytes,ignored)||
      !host_budget.Append<ForceTrial>(config.element_count,ignored)||!host_budget.Append<unsigned char>(64,ignored)||
      !host_budget.Append<bool>(config.owner.node_count,ignored)||!host_budget.Append<std::uint64_t>(config.owner.node_count,ignored)||
-     (joined&&!host_budget.Append<unsigned char>(joined->host_bytes(),ignored)))
+     (joined&&!host_budget.Append<unsigned char>(joined->host_bytes(),ignored))||
+     (nodal_mass&&!host_budget.Append<unsigned char>(nodal_mass->host_bytes(),ignored)))
     return {BatchStatus::ResourceLimit,"T3 startup payload exceeds host cap"};
   if(plasticity||collection_plasticity) {
     using namespace shell_batch_plasticity_detail;
@@ -93,6 +106,13 @@ BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchEle
   candidate->staging.Resize(config.element_count);
   candidate->accepted_diagnostics=batch_detail::InitialDiagnostics(config,joined!=nullptr);
   if(joined) candidate->joined_binding.emplace(*joined);
+  if(nodal_mass) {
+    candidate->joined_mass.emplace(*nodal_mass);
+    for(std::size_t n=0;n<nodal_mass->node_count();++n) {
+      const auto& values=nodal_mass->nodes()[n].coefficients;
+      initial->model.mass[n]=values.mass; initial->model.inertia[n]=values.isotropic_inertia;
+    }
+  }
   report=candidate->PendingError(); if(report.status!=BatchStatus::Success) return report;
   if(plasticity) {
     report=candidate->InitializePlasticity(*plasticity,initial->model);

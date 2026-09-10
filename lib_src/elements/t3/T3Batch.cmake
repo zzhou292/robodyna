@@ -16,3 +16,6 @@ set_target_properties(tl_t3_batch PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQU
 target_compile_options(tl_t3_batch PRIVATE
   "$<$<COMPILE_LANGUAGE:CXX>:-fno-fast-math;-ffp-contract=off>"
   "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>")
+
+include("${CMAKE_CURRENT_LIST_DIR}/../../assembly/NodalMassBinding.cmake")
+target_link_libraries(tl_t3_batch PUBLIC tl_nodal_mass_binding)

@@ -2,6 +2,7 @@
 #include "QephBatch.h"
 #include "../../solvers/NodalTrialIdentity.h"
 #include "../ShellBatchBinding.h"
+#include "../../assembly/NodalMassBinding.h"
 #include "../ShellBatchPlasticityStorage.h"
 #include "../ShellBatchArenaLayout.h"
 #include "lib_utils/BoundedStartupArray.h"
@@ -47,6 +48,7 @@ struct QephBatch::Impl {
   QephBatchConfig config;
   NodalStamp accepted_stamp;
   std::optional<ShellBatchBinding> joined_binding; // Host-only immutable inventory.
+  std::optional<NodalMassBinding> joined_mass; // Complete augmented startup identity.
   const ShellBatchPublication* publication_scope=nullptr; // One borrowed coordinator claim.
   std::unique_ptr<shell_batch_plasticity_detail::HostStorage> plasticity;
   batch_detail::Storage* storage=nullptr;
