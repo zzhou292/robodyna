@@ -14,7 +14,8 @@ struct ForceStageFixture {
   }
 };
 inline Triple Collocated(Triple v,Triple a,long double half) {
-  for(unsigned i=0;i<3;++i)v[i]+=a[i]*half;return v;
+  for(unsigned i=0;i<3;++i)v[i]+=a[i]*half;
+  return v;
 }
 inline void CheckForceStageOracle(const rigid::GroupForceStageKineticInput& in,
                                   const rigid::GroupForceStageKineticObservation& out) {

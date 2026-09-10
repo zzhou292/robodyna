@@ -36,7 +36,8 @@ TEST(NodalRigidForceStage,WrongPhysicalInputsAreDetectableAndWrongScheduleIsReje
 }
 TEST(NodalRigidForceStage,RoundedReactionAndKickInversionCannotReplaceActualAcceleration) {
   Fixture f;std::array<Motion,Count> before{};std::array<rigid::ForceStageAcceleration,Count> a{};
-  for(auto& motion:before)motion.velocity={1,0,0};a.back().translation={1,0,0};
+  for(auto& motion:before)motion.velocity={1,0,0};
+  a.back().translation={1,0,0};
   rigid::GroupForceStageKineticInput in{f.Metric(),before.data(),a.data(),{{1,0,0},{}},{},f.state.principal_axes,
     {1,.5,0,{1,1,1}}};
   rigid::GroupForceStageKineticObservation good,bad;ASSERT_TRUE(rigid::ObserveGroupForceStageKinetic(in,good));

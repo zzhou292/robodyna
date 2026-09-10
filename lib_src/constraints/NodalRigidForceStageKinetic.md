@@ -40,3 +40,11 @@ zero-DT1 wrapper remains unchanged. Independent long-double world-tensor tests,
 64 native force-stage packets and one optional CUDA gate cover this value scope.
 Neither wrapper proves complete ENCIN/ENROT output parity or physical energy
 conservation; its baseline native output-producer audit is still separate.
+
+Integrated as563fbc7 and independently source-reviewed by root. The guarded
+`rigid-force-stage-tests-1` gate passes all23 functions: eight new host/native/CUDA
+functions and fifteen prior stored-observation functions across six CTest groups.
+Both owning Bazel targets build in `rigid-force-stage-owning-bazel-1`. The first
+CMake build attempt retains a stale generated-target error; explicit regeneration
+and `rigid-force-stage-build-2` pass. Two test-only indentation warnings were
+subsequently split into clear statements, without arithmetic changes.
