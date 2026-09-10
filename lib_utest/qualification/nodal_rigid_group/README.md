@@ -119,3 +119,12 @@ applied versus reaction kick work, stable replacement deltas and arithmetic
 budgets. These value functions do not attach to owner/common publication or
 reconstruct native collocated output. `NodalRigidCollocatedObservationDesign.md`
 records the distinct force-stage input and remaining qualification gate.
+
+## Force-stage collocated value gate
+
+`nodal_rigid_force_stage_check` and `nodal_rigid_force_stage_native_check` qualify
+the separate pre-kick + actual A/AR + updated-axis observable. Native RGBCOR
+fragments now have a separate nonzero-DT1 wrapper with both member loop branches;
+the existing zero-duration wrapper and stored observation tests remain intact.
+The optional `nodal_rigid_force_stage_cuda_check` needs TL_NODAL_RIGID_CUDA_CHECKS.
+This adds no owner capture and makes no complete native global-energy claim.

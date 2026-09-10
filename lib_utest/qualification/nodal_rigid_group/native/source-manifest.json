@@ -206,6 +206,13 @@
       "first_line": 453,
       "last_line": 454,
       "sha256": "77bfbb027beb1944ac61ff89623bd27c6ff1ba4b5c3289b8564954da8171aa4b"
+    },
+    {
+      "path": "extracted/KineticLargeMemberCorrection.inc",
+      "source": "original/engine/source/constraints/general/rbody/rgbcor.F",
+      "first_line": 295,
+      "last_line": 320,
+      "sha256": "d2cfb9973c892ead1b9610fd103c83582cb0f10449db8f1c7ebedb1ea83d5ac2"
     }
   ],
   "interpretation": "Original complete files plus exact contiguous arithmetic fragments; wrapper context is separately authored. Eigen principal axes are equivalent tensor algebra, not native VALPR bit parity."

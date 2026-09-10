@@ -21,7 +21,8 @@ cc_library(
 cc_library(
     name = "nodal_rigid_observation",
     hdrs = ["NodalRigidObservationTypes.h", "NodalRigidObservationMath.h",
-            "NodalRigidKineticObservation.h", "NodalRigidKickObservation.h"],
+            "NodalRigidKineticObservation.h", "NodalRigidKineticValues.h", "NodalRigidKickObservation.h",
+            "NodalRigidForceStageObservationTypes.h", "NodalRigidForceStageChecks.h", "NodalRigidForceStageKinetic.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [":nodal_rigid_group_step_math"],
 )

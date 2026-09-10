@@ -1,9 +1,10 @@
 # Native collocated rigid-group observation: phase contract and next input
 
-This is a design boundary, not another production observation mode. Current
-`ObserveGroupKinetic`/`ObserveGroupKick` use explicitly supplied physical-initial
-or midpoint/lagged-frame values. They do not reconstruct native collocated
-velocities from an accepted endpoint.
+The pure value increment is now implemented separately by
+`ObserveGroupForceStageKinetic`; see `NodalRigidForceStageKinetic.md` for its
+qualified scope. Owner capture and engine integration below remain future work.
+Existing `ObserveGroupKinetic`/`ObserveGroupKick` retain their physical-initial or
+midpoint/lagged-frame contract and do not reconstruct native collocated values.
 
 All references below use OpenRadioss commit
 `a62b27e6baa555d222a580d6218867d0be4d70b5`. The complete `rgbcor.F` is retained in

@@ -26,7 +26,7 @@ add_custom_target(nodal_rigid_verify_sources
   COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/native/verify_sources.py" VERBATIM)
 add_library(nodal_rigid_native STATIC native/NativeRigidGroup.F
   native/NativeFrameStep.F native/NativePrimaryStep.F native/NativeMemberStep.F native/NativeSchedule.F
-  native/NativeKineticObservation.F)
+  native/NativeKineticObservation.F native/NativeForceStageKinetic.F)
 add_dependencies(nodal_rigid_native nodal_rigid_verify_sources)
 target_include_directories(nodal_rigid_native PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/native")
 target_compile_options(nodal_rigid_native PRIVATE -cpp -ffixed-line-length-none -fcheck=bounds
@@ -67,11 +67,28 @@ target_compile_options(nodal_rigid_observation_native_check PRIVATE -fno-fast-ma
 add_test(NAME nodal_rigid_observation_native_check COMMAND nodal_rigid_observation_native_check)
 set_tests_properties(nodal_rigid_observation_native_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)
 
+add_executable(nodal_rigid_force_stage_check GroupForceStageKineticTest.cpp)
+add_executable(nodal_rigid_force_stage_native_check GroupForceStageNativeTest.cpp GroupStepNativeFixture.cpp)
+target_link_libraries(nodal_rigid_force_stage_native_check PRIVATE nodal_rigid_native)
+foreach(target nodal_rigid_force_stage_check nodal_rigid_force_stage_native_check)
+  target_link_libraries(${target} PRIVATE tl_nodal_rigid_observation GTest::gtest_main)
+  target_compile_options(${target} PRIVATE -fno-fast-math -ffp-contract=off)
+  add_test(NAME ${target} COMMAND ${target})
+  set_tests_properties(${target} PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)
+endforeach()
+
 if(TL_NODAL_RIGID_CUDA_CHECKS OR TL_NODAL_RIGID_OWNER_CHECKS)
   enable_language(CUDA)
   find_package(CUDAToolkit REQUIRED)
 endif()
 if(TL_NODAL_RIGID_CUDA_CHECKS)
+  add_executable(nodal_rigid_force_stage_cuda_check GroupForceStageCudaTest.cu)
+  target_link_libraries(nodal_rigid_force_stage_cuda_check PRIVATE tl_nodal_rigid_observation GTest::gtest_main CUDA::cudart)
+  set_target_properties(nodal_rigid_force_stage_cuda_check PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED ON)
+  target_compile_options(nodal_rigid_force_stage_cuda_check PRIVATE
+    "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>")
+  add_test(NAME nodal_rigid_force_stage_cuda_check COMMAND nodal_rigid_force_stage_cuda_check)
+  set_tests_properties(nodal_rigid_force_stage_cuda_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)
   add_executable(nodal_rigid_observation_cuda_check GroupObservationCudaTest.cu)
   target_link_libraries(nodal_rigid_observation_cuda_check PRIVATE tl_nodal_rigid_observation GTest::gtest_main CUDA::cudart)
   set_target_properties(nodal_rigid_observation_cuda_check PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED ON)
