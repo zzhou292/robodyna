@@ -1,4 +1,5 @@
 #include "Fixture.h"
+#include "ContactResultComparison.h"
 #include "case/source_assembly_observation/tests/ForceStageOracle.h"
 #include <cstring>
 #include <sstream>
@@ -38,6 +39,7 @@ TEST_F(SourceAssemblyDynamicsCheck, ForceStageActual128ContactIntervalsPreserveS
     const auto allocations=observed.allocations();const auto host=observed.host_payload_bytes();
     const auto workspace=Access::CaptureStorage(observed);
     const auto initial=observed.diagnostics()->motion.after;
+    std::size_t padding_bytes=0,first_padding_offset=SIZE_MAX;
     for(unsigned step=0;step<128;++step) {
         SCOPED_TRACE(step);const auto before=Access::Accepted(observed);
         auto r=plain.Step();ASSERT_TRUE(r)<<r.message;r=observed.Step();ASSERT_TRUE(r)<<r.message;
@@ -51,8 +53,16 @@ TEST_F(SourceAssemblyDynamicsCheck, ForceStageActual128ContactIntervalsPreserveS
         EXPECT_EQ(p.wall.diagnostics.resultant.value,o.wall.diagnostics.resultant.value);
         EXPECT_EQ(p.wall.diagnostics.potential.value,o.wall.diagnostics.potential.value);
         EXPECT_EQ(p.wall.wall_face,o.wall.wall_face);
-        EXPECT_EQ(std::memcmp(p.wall.parents.data(),o.wall.parents.data(),p.wall.parents.size()*sizeof(contact::NodalWallParentResult)),0);
-        EXPECT_EQ(std::memcmp(p.wall.nodes.data(),o.wall.nodes.data(),p.wall.nodes.size()*sizeof(contact::NodalWallPointResult)),0);
+        for(std::size_t i=0;i<p.wall.parents.size();++i) {
+            const auto diff=ContactDifference(p.wall.parents[i],o.wall.parents[i]);
+            EXPECT_EQ(diff.field_bytes,0u)<<"parent="<<i<<" field="<<diff.first_field<<" offset="<<diff.first_field_offset;
+        }
+        for(std::size_t i=0;i<p.wall.nodes.size();++i) {
+            const auto diff=ContactDifference(p.wall.nodes[i],o.wall.nodes[i]);
+            EXPECT_EQ(diff.field_bytes,0u)<<"node="<<i<<" field="<<diff.first_field<<" offset="<<diff.first_field_offset;
+            if(diff.padding_bytes&&first_padding_offset==SIZE_MAX)first_padding_offset=diff.first_padding_offset;
+            padding_bytes+=diff.padding_bytes;
+        }
         EXPECT_EQ(plain.accepted_force_stage(),nullptr);const auto* result=observed.accepted_force_stage();ASSERT_NE(result,nullptr);
         EXPECT_EQ(result->owner_id,observed.owner()->accepted().owner_id);
         EXPECT_EQ(result->base_epoch,step);EXPECT_EQ(result->enclosing_epoch,step+1);
@@ -78,6 +88,8 @@ TEST_F(SourceAssemblyDynamicsCheck, ForceStageActual128ContactIntervalsPreserveS
     EXPECT_EQ(observed.diagnostics()->first_contact_epoch,42u);EXPECT_GT(observed.accepted_contact().diagnostics->resultant.value,0);
     std::ostringstream maximum;maximum.precision(17);maximum<<observed.diagnostics()->maximum_plastic_strain;
     RecordProperty("maximum_plastic_strain",maximum.str());
+    RecordProperty("contact_padding_different_bytes",std::to_string(padding_bytes));
+    RecordProperty("contact_first_padding_offset",std::to_string(first_padding_offset));
     // This baseline short gate proves contact and exact existing material
     // histories. It does not assert that 128 baseline steps reach first yield.
 }
