@@ -8,7 +8,7 @@ publishing the prepared model.
 
 `NodalWallContactArena` owns and rebases `node_count + 1` offsets and
 `4 * parent_count` slot capacity inside its existing bounded arena. This adds
-18,780 bytes of arrays for 1,030 nodes and 915 parents, plus header/alignment
+18,764 bytes of arrays for 1,030 nodes and 915 parents, plus header/alignment
 accounting. It does not add a device allocation or enlarge a configured cap.
 
 `NodalWallContactKernels.cuh` reads each row instead of scanning all parents for
