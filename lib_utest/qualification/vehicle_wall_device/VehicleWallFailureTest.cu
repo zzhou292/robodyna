@@ -1,7 +1,7 @@
 #include "VehicleWallFixture.h"
 namespace vehicle_wall_device_test {
 namespace {
-__global__ void SetLast(double* field,std::size_t n){field[n]=-std::numeric_limits<double>::max();}
+__global__ void SetLast(double* field,std::size_t n,double value){field[n]=value;}
 }
 TEST_F(CudaTest, LastGlobal359784ScatterFailureLeavesAllForcesAndAcceptedStateUntouchedThenRetriesExactly) {
   auto f=std::make_unique<Fixture>();ASSERT_TRUE(f->Prepare());
@@ -18,7 +18,8 @@ TEST_F(CudaTest, LastGlobal359784ScatterFailureLeavesAllForcesAndAcceptedStateUn
     fe::NodalTrialToken token;fe::NodalAssemblyView a;ASSERT_EQ(owner.BeginTrial(&token,&a).status,fe::NodalStatus::Ok);
     sc::NodalWallDiagnostics d;d.owner_id=991;const auto original=nodal_wall_owner_test::Bytes(d);
     if(pass==1) {
-      SetLast<<<1,1,0,a.stream>>>(a.forces.force_x,f->n-1);ASSERT_EQ(cudaStreamSynchronize(a.stream),cudaSuccess);
+      SetLast<<<1,1,0,a.stream>>>(a.forces.force_x,f->n-1,-std::numeric_limits<double>::max());
+      ASSERT_EQ(cudaStreamSynchronize(a.stream),cudaSuccess);
       const auto held=Forces(a);const auto failure=contact.AssembleAccepted(owner,a,&d);
       EXPECT_EQ(failure.status,Code::AssemblyFailure);EXPECT_EQ(failure.node,f->n-1);
       EXPECT_EQ(Forces(a),held);EXPECT_EQ(nodal_wall_owner_test::Bytes(d),original);
