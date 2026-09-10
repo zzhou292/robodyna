@@ -110,5 +110,11 @@ capture transfer followed by a CUDA error. The last case uses the existing TL
 qualification-only linker probe, never a production failure hook. Its correct
 outcome is a poisoned case, not retry. The 128-interval scope establishes
 contact and material-history parity without asserting first yield. These new
-CUDA cases require the root's guarded runtime qualification; host syntax alone
-is not numerical or GPU evidence.
+CUDA cases now pass the root's guarded runtime qualification:
+`assembly-force-stage-live-tests-2` records all four actual cases plus the
+contact representation comparator,23.33 seconds and217,448,448B sampled peak RSS.
+The first run exposed a test's raw-struct padding comparison. Every named
+point/parent field now compares bit-for-bit, with111,870 differing padding bytes
+separately recorded across128 intervals. No mechanics or tolerance changed.
+The independent actual writer gate passes all six cases, including optional
+committed observations through a rejected attempt and retry.

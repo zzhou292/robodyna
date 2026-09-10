@@ -75,5 +75,11 @@ under one CPU and a 512 MiB virtual-address cap (373680 KiB peak child RSS).
 The enabled worst-width frame is 6981691 bytes. XML and compiler output are in
 `/tmp/force-stage-output-syntax-nilqfr_y/`. All 14 edited/new C++ translation units
 pass host syntax against an isolated copy of the frozen live-case headers.
-The real-case CUDA writer and actual enabled replay gates remain the root
-coordinator's qualification; no actual enabled trajectory is claimed here.
+Root qualification now passes all six real-case CUDA writer functions
+(`assembly-force-stage-output-tests-1`,8.94s), including committed-only capture
+after a rejected attempt. The actual8h/128-step component pilot completes with
+65 force-stage frames at15.258789us. The owning reader gate passes all14 assembly
+functions, including the three enabled-archive cases and retained disabled
+compatibility (`assembly-force-stage-replay-tests-1`). The9 base replay functions
+also pass. These checks authenticate stored observations and do not establish
+physical response accuracy or timestep convergence.
