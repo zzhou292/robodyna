@@ -40,8 +40,9 @@ NodalWallDeviceReport PrepareModel(const NodalWallDeviceConfig& c,PlanarWallView
     for (unsigned f=0;f<faces.size();++f) next.face_ids[f]=faces[f].geometry.face_id;
     for (unsigned p=0;p<next.parent_count;++p) {
       const auto& parent=weights.parent(p);
-      if (parent.family!=NodalWallParentFamily::Q4CenterArea || parent.arity!=4)
-        return {Code::InvalidInput,"This owner contributor admits one/two native Q4 parents only",UINT32_MAX,p};
+      if (!((parent.family==NodalWallParentFamily::Q4CenterArea && parent.arity==4) ||
+            (parent.family==NodalWallParentFamily::T3Native && parent.arity==3)))
+        return {Code::InvalidInput,"Contact parent must have its exact native Q4/4 or T3/3 family and arity",UINT32_MAX,p};
       next.parents[p]=parent;
     }
     for (unsigned i=0;i<next.node_count;++i) {
@@ -55,7 +56,7 @@ NodalWallDeviceReport PrepareModel(const NodalWallDeviceConfig& c,PlanarWallView
       double rate=0;
       const LumpedTranslationMassView mass{next.inverse_mass,next.fixed,static_cast<std::uint32_t>(owner.node_count),0,
                                          TranslationMassModel::kIsotropicLumped};
-      for (unsigned p=0;p<next.parent_count;++p) for (unsigned l=0;l<4;++l) {
+      for (unsigned p=0;p<next.parent_count;++p) for (unsigned l=0;l<next.parents[p].arity;++l) {
         if (next.parents[p].nodes[l]!=node) continue;
         NodalWallPointResult value;
         const auto report=EvaluateNodalWallPoint({node,next.parents[p].share},x.at(node),{},mass,law,1,&value);

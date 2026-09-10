@@ -46,7 +46,7 @@ __device__ inline void Evaluate(Storage& s,const fea::DeviceNodalKinematicsView&
           face==UINT32_MAX) Fail(status,Code::GeometryFailure,n);
       else {
         s.result.wall_face[lane]=s.model.face_ids[face]; NodalWallPointResult node;
-        for (unsigned p=0;p<s.model.parent_count;++p) for (unsigned l=0;l<4;++l) {
+        for (unsigned p=0;p<s.model.parent_count;++p) for (unsigned l=0;l<s.model.parents[p].arity;++l) {
           if (s.model.parents[p].nodes[l]!=n || status.status!=Code::Ok) continue;
           NodalWallPointResult share;
           const auto code=EvaluateNodalWallPoint({n,s.model.parents[p].share},position,velocity,
@@ -74,7 +74,9 @@ __device__ inline void Evaluate(Storage& s,const fea::DeviceNodalKinematicsView&
       auto& out=s.result.parents[p]; const auto& parent=s.model.parents[p];
       out.parent_element_id=parent.parent_element_id; out.parent_face_id=parent.parent_face_id;
       out.feature_id=parent.feature_id; out.family=parent.family; out.arity=parent.arity;
-      for (unsigned l=0;l<4;++l) {
+      // Stride four preserves the existing storage layout. A T3's fourth
+      // share is never read; its unused force output remains zero from reset.
+      for (unsigned l=0;l<parent.arity;++l) {
         const auto& share=s.shares[4*p+l]; out.force[l]=share.force;
         if (!nodal_wall_reduction::Sum(out.resultant,share.force) ||
             !nodal_wall_reduction::Sum(out.potential,share.potential)) { Fail(s.control,Code::NonFiniteArithmetic,UINT32_MAX,p); break; }
@@ -82,7 +84,7 @@ __device__ inline void Evaluate(Storage& s,const fea::DeviceNodalKinematicsView&
       if (s.control.status!=Code::Ok) break;
       bool accurate=out.resultant.error<=s.model.config.law.parent_force_error &&
                     out.potential.error<=s.model.config.law.parent_energy_error;
-      for (unsigned l=0;l<4;++l) accurate=accurate && out.force[l].error<=s.model.config.law.parent_force_error;
+      for (unsigned l=0;l<parent.arity;++l) accurate=accurate && out.force[l].error<=s.model.config.law.parent_force_error;
       if (!accurate) { Fail(s.control,Code::Accuracy,UINT32_MAX,p); break; }
       out.valid=true;
     }

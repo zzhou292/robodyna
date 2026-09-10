@@ -51,11 +51,15 @@ struct NodalWallDeviceResults {
   std::uint64_t wall_face[MaxNodalWallDeviceNodes]{};
 };
 
-// Stateless, fixed-plane contributor, one/two Q4 parents in the existing <=64
-// node owner. Zero offset/friction/damping; no rotations, shell mass/history,
+// Stateless, fixed-plane contributor, one/two native Q4 and/or T3 parents
+// with <=8 incident nodes in the existing <=64-node owner. Exactly Q4/4 and
+// T3/3 family/arity pairs use the immutable owning A0/4 and A0/3 shares.
+// Zero offset/friction/damping; no direct couple, shell mass/history,
 // clock, stream or commit owner. Initial owner must use staggered half-kick
 // timing at epoch zero. Free XYZ/fully-fixed incident nodes only; this does not
-// extend QEPH's all-free binding. Contact model is NodalWallContactModel.
+// extend either shell batch's all-free binding or admit mixed force-feedback
+// dynamics. Contact model is NodalWallContactModel. Native shell mass/J stays
+// separate from contact area; the caller supplies the actual union mass.
 //
 // Initialize copies immutable weights, mass/masks, fixed positions, actual wall
 // and a host-certified finite motion envelope. Subsequent calls use only the

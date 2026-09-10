@@ -48,8 +48,14 @@ TEST(NodalWallModel, InvalidIdentityMassAndCapsPreserveEveryPreparedByte) {
   sc::NodalWallWeights triangle_weights; const sc::NodalWallParentInput input{nullptr,0,&tri};
   ASSERT_EQ(triangle_weights.Initialize(f.n,&input,1).status,sc::NodalWallStatus::Ok);
   const auto held=Bytes(out);
+  f.inverse[2]=0;
   EXPECT_EQ(detail::PrepareModel(f.Config(),f.wall.view(),triangle_weights,f.View(f.x),f.inverse.data(),
-      f.fixed.data(),f.motion,&out).status,Code::InvalidInput); Unchanged(out,held);
+      f.fixed.data(),f.motion,&out).status,Code::InvalidMass); Unchanged(out,held);
+  f.inverse[2]=1;
+  ASSERT_EQ(detail::PrepareModel(f.Config(),f.wall.view(),triangle_weights,f.View(f.x),f.inverse.data(),
+      f.fixed.data(),f.motion,&out).status,Code::Ok);
+  EXPECT_EQ(out.parents[0].family,sc::NodalWallParentFamily::T3Native);
+  EXPECT_EQ(out.parents[0].arity,3u);
 }
 TEST(NodalWallModel, ActualFiniteEnvelopeRejectsHolesAndOutsideWithoutPointSubstitution) {
   Fixture f; ASSERT_TRUE(f.Prepare()); detail::Model out;
