@@ -15,6 +15,8 @@ def main():
     parser.add_argument('--canonical-assets', required=True, type=Path)
     parser.add_argument('--output', required=True, type=Path, help='new file in an existing directory')
     parser.add_argument('--boundary-policy', choices=('unassigned', 'released_external_connections'), default='unassigned')
+    parser.add_argument('--material-policy', choices=('tabulated', 'law44_tabulated_or_linear'), default='tabulated',
+                        help='explicit V2 enables native analytic LAW44; default retains the V1 table-only contract')
     parser.add_argument('--part-ids', nargs='+', type=int, default=YARIS_CONNECTOR_PARTS,
                         help='complete source part IDs; defaults to the original six-part component')
     args = parser.parse_args()
@@ -23,7 +25,7 @@ def main():
             raise ValueError('output must be a new file with an existing parent directory')
         report = compile_archive_assembly(args.source_archive, args.canonical_assets,
                                          part_ids=args.part_ids,
-                                         boundary_policy=args.boundary_policy)
+                                         boundary_policy=args.boundary_policy, material_policy=args.material_policy)
         write_assembly_report(args.output, report)
     except (OSError, ValueError, UnicodeError, zipfile.BadZipFile) as error:
         print(f'robo-dyna assembly inventory: {error}', file=sys.stderr)

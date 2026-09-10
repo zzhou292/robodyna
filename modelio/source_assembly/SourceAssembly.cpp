@@ -21,7 +21,18 @@ void CheckIdentity(const ArtifactIdentity& expected,const ReadLimits& limits) {
         "Source assembly requires explicit expected content identity within read cap");
 }
 void ReadScope(const Value& document, Data& data) {
-    TextIs(document, "schema", InventorySchema); data.schema = Text(document, "schema");
+    data.schema = Text(document, "schema");
+    Require(data.schema == InventorySchema || data.schema == Law44InventorySchema, "Unsupported assembly schema");
+    if (data.schema == Law44InventorySchema) {
+        const auto& law = Member(document, "law44_policy");
+        TextIs(law, "revision", "a62b27e6baa555d222a580d6218867d0be4d70b5");
+        TextIs(law, "hardening_model", "law44_linear"); TextIs(law, "A", "SIGY");
+        TextIs(law, "B", "ETAN*E/(E-ETAN)");
+        Require(Unsigned(law, "n") == 1 && Unsigned(law, "function_reference") == 0 &&
+            Unsigned(law, "vp") == 0, "Unsupported analytic LAW44 conversion policy");
+        Same(Real(law, "source_time_to_s"), 1); Same(Real(law, "rate_filter_hz"), 10000);
+        Flag(law, "case_integration_qualified", false);
+    }
     for (const auto* key : {"simulation_ready", "geometry_modified", "mechanics_capacity_changed",
                             "full_attachment_closure_qualified", "source_mass_equivalence_qualified"}) Flag(document, key, false);
     const auto& source = Member(document, "source");
@@ -63,7 +74,8 @@ void CheckCounts(const Value& document, const Data& data) {
     count("shared_nodes", reader::Member(reader::Member(document, "geometry"), "shared_node_ids").Size());
     std::vector<bool> materials(data.materials.size()), sections(data.sections.size()), curves(data.curves.size());
     for (const auto& parent : data.parents) {
-        materials[parent.material_index] = true; sections[parent.section_index] = true; curves[parent.curve_index] = true;
+        materials[parent.material_index] = true; sections[parent.section_index] = true;
+        if (parent.curve_index != NoCurveIndex) curves[parent.curve_index] = true;
     }
     for (const auto* used : {&materials, &sections, &curves})
         reader::Require(std::all_of(used->begin(), used->end(), [](bool present) { return present; }), "Unreferenced assembly declaration");

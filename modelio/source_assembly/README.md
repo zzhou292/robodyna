@@ -1,5 +1,9 @@
 # Authenticated assembly startup inputs
 
+The explicit [V2 analytic/table LAW44 mode](ANALYTIC_LAW44.md) reuses these
+same source and native-input modules. The default compiler and frozen V1
+archives retain their table-only contract.
+
 `SourceAssembly` reads the frozen `robo-dyna.source-assembly-inventory.v1`
 artifact through the existing `output/ArtifactIO` byte cap and SHA-256
 primitives. Its expected content identity is a required caller argument;

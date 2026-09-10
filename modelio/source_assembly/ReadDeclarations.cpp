@@ -22,9 +22,8 @@ void ReadDeclarations(const Value& document, const ReadLimits& limits, Data& dat
     data.units = {Real(units, "mass_to_kg"), Real(units, "length_to_m"), Real(units, "time_to_s")};
     Same(data.units.mass_to_kg, 1000); Same(data.units.length_to_m, .001); Same(data.units.time_to_s, 1);
     const double stress_scale = data.units.mass_to_kg / (data.units.length_to_m * data.units.time_to_s * data.units.time_to_s);
-    const double density_scale = data.units.mass_to_kg / (data.units.length_to_m * data.units.length_to_m * data.units.length_to_m);
     std::size_t curve_points = 0;
-    for (const auto& value : Array(declarations, "curves", limits.tables, 1).GetArray()) {
+    for (const auto& value : Array(declarations, "curves", limits.tables, data.schema == InventorySchema ? 1 : 0).GetArray()) {
         Curve curve; curve.id = Unsigned(value, "curve_id", UINT32_MAX);
         curve.source = Block(Member(value, "source")); curve.cards = Cards(value, limits.curve_points + 1);
         Require(curve.source.keyword == "*DEFINE_CURVE", "Unsupported assembly curve keyword");
@@ -48,32 +47,7 @@ void ReadDeclarations(const Value& document, const ReadLimits& limits, Data& dat
         Append(data.curves, std::move(curve));
     }
     for (const auto& value : Array(declarations, "materials", limits.tables, 1).GetArray()) {
-        Material material;
-        material.id = Unsigned(value, "material_id", UINT32_MAX);
-        material.curve_id = Unsigned(value, "hardening_curve_id", UINT32_MAX);
-        material.density_kg_m3 = Real(value, "density_kg_m3"); material.young_pa = Real(value, "young_pa");
-        material.poisson_ratio = Real(value, "poisson_ratio");
-        material.rate_c_per_s = Real(value, "rate_coefficient_per_s"); material.rate_p = Real(value, "rate_exponent");
-        material.source_rate_type = Unsigned(value, "rate_type", 0);
-        material.supplied_sigy_pa = OptionalReal(value, "supplied_sigy_pa");
-        material.supplied_etan_pa = OptionalReal(value, "supplied_etan_pa");
-        material.source = Block(Member(value, "source")); material.cards = Cards(value, 4);
-        Require((material.source.keyword == "*MAT_PIECEWISE_LINEAR_PLASTICITY" || material.source.keyword == "*MAT_024") &&
-            material.cards.size() == 4 && material.cards[0].blank_mask == 224 && material.cards[1].blank_mask == 232 &&
-            material.cards[2].blank_mask == 255 && material.cards[3].blank_mask == 255,
-            "Unsupported assembly MAT024 card options");
-        Require(material.density_kg_m3 > 0 && material.young_pa > 0 && material.poisson_ratio >= 0 &&
-            material.poisson_ratio < .5 && material.rate_c_per_s > 0 && material.rate_p > 0 &&
-            material.supplied_sigy_pa && *material.supplied_sigy_pa >= 0 && !material.supplied_etan_pa &&
-            Contains(data.curves, material.curve_id), "Invalid assembly material tuple/curve association");
-        const auto& first = material.cards[0]; const auto& second = material.cards[1];
-        Same(CardValue(first, 0), double(material.id)); Same(CardValue(first, 1) * density_scale, material.density_kg_m3);
-        Same(CardValue(first, 2) * stress_scale, material.young_pa); Same(CardValue(first, 3), material.poisson_ratio);
-        Same(CardValue(first, 4) * stress_scale, *material.supplied_sigy_pa);
-        Same(CardValue(second, 0) / data.units.time_to_s, material.rate_c_per_s);
-        Same(CardValue(second, 1), material.rate_p); Same(CardValue(second, 2), double(material.curve_id));
-        Same(CardValue(second, 4), double(material.source_rate_type));
-        Append(data.materials, std::move(material));
+        Append(data.materials, ReadLaw44Material(value, data));
     }
     for (const auto& value : Array(declarations, "sections", limits.tables, 1).GetArray()) {
         Section section;

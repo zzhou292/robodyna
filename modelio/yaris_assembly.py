@@ -28,6 +28,8 @@ def _table(declarations, attribute, identity):
     result = {}
     for declaration in declarations:
         value = getattr(declaration, attribute)
+        if value is None:
+            continue
         key = getattr(value, identity)
         require(key not in result or result[key] == value, 'conflicting assembly declaration identity')
         result[key] = value
@@ -35,8 +37,11 @@ def _table(declarations, attribute, identity):
 
 
 def compile_archive_assembly(archive_path, asset_dir, part_ids=YARIS_CONNECTOR_PARTS,
-                             limits=AssemblyLimits(), boundary_policy='unassigned'):
+                             limits=AssemblyLimits(), boundary_policy='unassigned',
+                             material_policy='tabulated'):
     require(isinstance(limits, AssemblyLimits), 'explicit offline AssemblyLimits required')
+    require(material_policy in ('tabulated', 'law44_tabulated_or_linear'), 'unsupported assembly material policy')
+    allow_linear = material_policy == 'law44_tabulated_or_linear'
     part_ids = tuple(part_ids)
     require(boundary_policy in ('unassigned', 'released_external_connections'),
             'unsupported assembly extraction boundary policy')
@@ -59,7 +64,7 @@ def compile_archive_assembly(archive_path, asset_dir, part_ids=YARIS_CONNECTOR_P
             weld_inventory = scan_spotwelds(stream, yaris_part.VEHICLE)
     require(index.sha256 == weld_inventory.source_sha256 == reference['files'][yaris_part.VEHICLE]['sha256'],
             'assembly source member SHA256 mismatch')
-    declarations = compile_assembly_declarations(index, part_ids, seed.units, limits)
+    declarations = compile_assembly_declarations(index, part_ids, seed.units, limits, allow_linear)
     geometry = load_assembly_geometry(asset_dir, archive_path, declarations, reference, limits)
     attachments = compile_assembly_attachments(index, weld_inventory, geometry, asset_dir,
                                                 archive_path, reference, limits)
@@ -83,11 +88,13 @@ def compile_archive_assembly(archive_path, asset_dir, part_ids=YARIS_CONNECTOR_P
                     if boundary_policy == 'released_external_connections' else 'no dynamics boundary has been assigned')
     names = ('assembly_declarations.py', 'assembly_geometry.py', 'assembly_attachments.py', 'assembly_bindings.py',
              'spotweld_cards.py', 'yaris_assembly.py', 'canonical_geometry.py', 'canonical_incidence.py',
-             'source_blocks.py', 'attachment_cards.py', 'keyword_cards.py', 'declarations.py', '_legacy.py', 'yaris_part.py')
+             'source_blocks.py', 'attachment_cards.py', 'keyword_cards.py', 'declarations.py', '_legacy.py', 'yaris_part.py',
+             'assembly_law44.py', 'law44_declarations.py')
     generator = {'modelio/' + name: file_sha256(Path(__file__).with_name(name)) for name in names}
     for name in ('compile_yaris_assembly.py', 'compile_yaris_part.py', 'import_yaris_vehicle.py', 'import_yaris_wall.py'):
         generator['tools/' + name] = file_sha256(yaris_part.ROOT / 'tools' / name)
-    return dict(schema='robo-dyna.source-assembly-inventory.v1', simulation_ready=False,
+    result = dict(schema='robo-dyna.source-assembly-inventory.v2' if allow_linear else
+                  'robo-dyna.source-assembly-inventory.v1', simulation_ready=False,
                 full_attachment_closure_qualified=False, geometry_modified=False, mechanics_capacity_changed=False,
                 source_mass_equivalence_qualified=False,
                 source=dict(authority['source'], all_other_entities='outside the declared whole-part and literal interface scope',
@@ -98,7 +105,7 @@ def compile_archive_assembly(archive_path, asset_dir, part_ids=YARIS_CONNECTOR_P
                             q4=geometry.qeph_parent_count, native_t3=geometry.t3_parent_count,
                             shared_nodes=len(geometry.shared_node_ids), materials=len({d.material.material_id for d in declarations}),
                             sections=len({d.section.section_id for d in declarations}),
-                            curves=len({d.hardening_curve.curve_id for d in declarations}),
+                            curves=len({d.hardening_curve.curve_id for d in declarations if d.hardening_curve is not None}),
                             internal_nodal_rigid_groups=sum(g['classification'] == 'internal' for g in groups),
                             outgoing_nodal_rigid_groups=sum(g['classification'] == 'outgoing' for g in groups),
                             internal_spotwelds=sum(w['classification'] == 'internal' for w in welds),
@@ -118,6 +125,12 @@ def compile_archive_assembly(archive_path, asset_dir, part_ids=YARIS_CONNECTOR_P
                 native_mass_ledger=dict(status='pending shell startup', additional_mass_assigned=False,
                                         selected_parts_complete=True, frontier_only_nodes_are_physical_owner_nodes=False),
                 generator_sources=generator)
+    if allow_linear:
+        from .assembly_law44 import material_table
+        from .law44_declarations import LINEAR_LAW44_POLICY
+        result['declarations']['materials'] = material_table(declarations)
+        result['law44_policy'] = dict(LINEAR_LAW44_POLICY)
+    return result
 
 
 def write_assembly_report(path, report):

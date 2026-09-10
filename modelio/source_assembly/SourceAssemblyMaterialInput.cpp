@@ -16,7 +16,15 @@ SourceAssemblyMaterialInput::SourceAssemblyMaterialInput(const SourceAssembly& s
         // becomes zero in CPP_GET_FLOATV_FLOATD, then HM_READ_MAT44 with
         // ISMOOTH=1 resolves 10000/s. It is not a Radioss CFG re-read default.
         const tl::material::TabulatedShellPlasticityRate rate{true, material.rate_c_per_s, material.rate_p, 10000.};
-        materials_.push_back({material.id, material.curve_id, material.young_pa, material.poisson_ratio, material.density_kg_m3, rate});
+        tl::fea::ShellPlasticityMaterialInput native{material.id, material.curve_id, material.young_pa,
+            material.poisson_ratio, material.density_kg_m3, rate};
+        if (material.hardening == MaterialHardening::LinearLaw44) {
+            output::Require(material.supplied_sigy_pa && material.supplied_etan_pa && !material.curve_id,
+                "Analytic source material requires explicit SIGY/ETAN and no curve");
+            native.hardening = tl::material::ShellPlasticityHardeningKind::LinearLaw44;
+            native.linear = {*material.supplied_sigy_pa, *material.supplied_etan_pa};
+        }
+        materials_.push_back(native);
     }
     for (const auto& section : data.sections)
         sections_.push_back({section.id, section.thickness_m[0], section.through_thickness_points});

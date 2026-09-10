@@ -18,6 +18,21 @@ target_compile_options(robo_dyna_source_assembly_input_check PRIVATE -fno-fast-m
 add_test(NAME source_assembly_input COMMAND robo_dyna_source_assembly_input_check)
 set_tests_properties(source_assembly_input PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120
   ENVIRONMENT "ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY=${ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY}")
+set(ROBO_DYNA_SOURCE_ANALYTIC_INVENTORY "" CACHE FILEPATH "Optional original analytic LAW44 source V2 fixture")
+set(ROBO_DYNA_SOURCE_ANALYTIC_MIXED_INVENTORY "" CACHE FILEPATH "Optional mixed original analytic/table V2 fixture")
+if(ROBO_DYNA_SOURCE_ANALYTIC_INVENTORY)
+  if(NOT EXISTS "${ROBO_DYNA_SOURCE_ANALYTIC_INVENTORY}" OR NOT EXISTS "${ROBO_DYNA_SOURCE_ANALYTIC_MIXED_INVENTORY}")
+    message(FATAL_ERROR "Both explicit analytic source fixtures must exist")
+  endif()
+  include("${ROBO_DYNA_TL_ROOT}/lib_src/elements/ShellBatchPlasticityBinding.cmake")
+  add_executable(robo_dyna_source_analytic_input_check tests/SourceAnalyticInputTest.cpp)
+  target_link_libraries(robo_dyna_source_analytic_input_check PRIVATE robo_dyna_source_assembly_shell_input
+    robo_dyna_source_assembly_material_input tl_shell_batch_plasticity_binding GTest::gtest_main)
+  target_compile_options(robo_dyna_source_analytic_input_check PRIVATE -fno-fast-math -ffp-contract=off)
+  add_test(NAME source_analytic_input COMMAND robo_dyna_source_analytic_input_check)
+  set_tests_properties(source_analytic_input PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120
+    ENVIRONMENT "ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY=${ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY};ROBO_DYNA_SOURCE_ANALYTIC_INVENTORY=${ROBO_DYNA_SOURCE_ANALYTIC_INVENTORY};ROBO_DYNA_SOURCE_ANALYTIC_MIXED_INVENTORY=${ROBO_DYNA_SOURCE_ANALYTIC_MIXED_INVENTORY}")
+endif()
 set(ROBO_DYNA_SOURCE_BRACKET_INVENTORY "" CACHE FILEPATH "Optional frozen original seven-part bracket inventory")
 if(ROBO_DYNA_SOURCE_BRACKET_INVENTORY)
   if(NOT EXISTS "${ROBO_DYNA_SOURCE_BRACKET_INVENTORY}")

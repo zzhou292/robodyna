@@ -17,6 +17,8 @@ inline ArtifactIdentity PinnedYarisSevenPartInventory() {
     return {1865263, "5ca793e0a2602585f5f789652a9af4d3918e27fd8c029aaad924f792922a797e"};
 }
 inline constexpr const char* InventorySchema = "robo-dyna.source-assembly-inventory.v1";
+inline constexpr const char* Law44InventorySchema = "robo-dyna.source-assembly-inventory.v2";
+inline constexpr std::size_t NoCurveIndex = SIZE_MAX;
 struct ReadLimits {
     std::size_t bytes = 4 * 1024 * 1024, nodes = 2048, parents = 1024, parts = 8;
     std::size_t tables = 8, curve_points = 1024, groups = 64, group_members = 256; // curve_points is the TOTAL pool.
@@ -60,6 +62,7 @@ struct Part {
     SourceBlock source;
     std::vector<DeclarationCard> cards;
 };
+enum class MaterialHardening { TabulatedLaw44, LinearLaw44 };
 struct Material {
     SourceId id = 0, curve_id = 0;
     double density_kg_m3 = 0, young_pa = 0, poisson_ratio = 0;
@@ -68,6 +71,7 @@ struct Material {
     std::optional<double> supplied_sigy_pa, supplied_etan_pa;
     SourceBlock source;
     std::vector<DeclarationCard> cards;
+    MaterialHardening hardening = MaterialHardening::TabulatedLaw44;
 };
 struct Section {
     SourceId id = 0;

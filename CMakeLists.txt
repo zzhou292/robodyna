@@ -131,7 +131,7 @@ add_test(NAME source_assembly_unit
           -s "${CMAKE_CURRENT_SOURCE_DIR}/tests" -p "test_source_assembly.py" -v)
 set_tests_properties(source_assembly_unit PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE)
 
-foreach(source_gate IN ITEMS law44_declarations full_shell_scope)
+foreach(source_gate IN ITEMS law44_declarations full_shell_scope assembly_law44)
   add_test(NAME ${source_gate}_unit
     COMMAND "${Python3_EXECUTABLE}" -B -m unittest discover
             -s "${CMAKE_CURRENT_SOURCE_DIR}/tests" -p "test_${source_gate}.py" -v)

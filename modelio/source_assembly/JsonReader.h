@@ -25,6 +25,7 @@ std::vector<DeclarationCard> Cards(const Value&, std::size_t cap);
 std::vector<RawAttachmentCard> AttachmentCards(const Value&, std::size_t cap);
 std::size_t NodeIndex(const Data&, SourceId);
 void ReadDeclarations(const Value&, const ReadLimits&, Data&);
+Material ReadLaw44Material(const Value&, const Data&);
 void ReadGeometry(const Value&, const ReadLimits&, Data&);
 void ReadAttachments(const Value&, const ReadLimits&, Data&);
 }  // namespace crash::modelio::assembly::reader
