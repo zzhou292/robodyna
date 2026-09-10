@@ -52,3 +52,27 @@ It exports `law44_point_native` and, by default, the five-function
 `law44_rate_native_check` / `law44_rate_native` for the four rate functions.
 The root execution queue owns guarded configuration, compilation and testing.
 No runtime or test result is claimed by this source patch.
+
+## Physical layer-thickness entry
+
+`NativePhysicalThickness.h` adds `EvaluatePhysicalThickness` for the layered
+recurrence oracle. It passes the actual layer-volume weight in metres and the
+running reported thickness into complete SIGEPS44C. Native elastic and plastic
+thickness additions retain their source order; the output reports thickness in
+metres. The previous `Evaluate` API, `Result` layout and C symbol remain intact:
+they call the same native body with THKLY=1 and initial THK=0.
+
+Common validation/response decoding is factored into small host modules. No
+production material/section function computes the reference. Rejection leaves
+the public output unchanged, including when a finite native packet produces
+vanished thickness. The selected domain still excludes failure and nonlocal
+updates.
+
+The two new host/native functions pass alongside both existing standalone CTest
+targets. A 1728-interval source-rate load/hold/reverse path found 326 bit-level
+thickness differences from the intentionally collapsed unit-increment shortcut;
+its point and sequential thickness comparisons pass the existing budgets.
+Filtered VP2 can continue native plastic flow during zero-strain hold as its
+rate-scaled yield decreases. A first fixture incorrectly required constant PLA
+there; that expectation was corrected without changing mechanics or tolerances.
+The focused build used one CPU, 204236 KiB peak RSS and 3.63 s; no CUDA run.
