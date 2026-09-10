@@ -79,5 +79,6 @@ The 14 cases cover pinned counts/coordinate bits, all native input mappings,
 curve/material retention, source group membership and release metadata,
 copy/move lifetime, explicit rate policy, wrong hashes, duplicate JSON keys,
 late source-ID/member/declaration errors, scope changes and each admission cap.
-This handoff has performed source review and authenticated inventory inspection;
-no compiler, CTest, native runtime or GPU job has been run by this subtask.
+The owning standalone target passes all 14 host cases (2026-09-10). Workspace
+evidence: `crash-work/reports/source-assembly-input-{configure,build,tests}-1`.
+This reader gate does not advance native mechanics or use a GPU.

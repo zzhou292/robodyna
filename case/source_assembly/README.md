@@ -15,3 +15,13 @@ Six host tests exercise all actual 915 native parents / 1030 nodes, the six MID/
 Standalone qualification uses this directory as the CMake source, with explicit `Chrono_DIR`, `ROBO_DYNA_TL_ROOT` and `ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY`. The top-level opt-in is `ROBO_DYNA_ENABLE_SOURCE_ASSEMBLY_STARTUP_CHECKS`. Source reader/adapters remain separate modelio targets; TL startup libraries are linked through their existing CMake fragments.
 
 At handoff only the bounded syntax gate has run: one affinity CPU, 512 MiB virtual-address cap, 1.69 seconds and 225348 KiB peak RSS. Root owns the numerical host gate and integrated checks. No larger CUDA capacity, owner or crash trajectory is admitted here.
+
+All six startup tests pass against the frozen six-part inventory (2026-09-10).
+Every actual native reference and material declaration prepares successfully.
+Native structural mass is 1.8021908802155335 kg; all six complete internal
+groups preserve their 76 original members. No group activates the source
+principal-inertia correction, while native shell added inertia and generated
+primary regularizers remain explicit ledger channels. Evidence:
+`crash-work/reports/source-assembly-startup-{configure,build,tests}-1`; the
+GTest XML records the full per-part and per-group M/J channels.
+This is immutable host startup evidence; connected dynamics is not yet running.
