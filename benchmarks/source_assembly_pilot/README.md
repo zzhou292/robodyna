@@ -87,3 +87,12 @@ the real reader. Author compilation plus tests used one CPU/512MiB; all six
 pass,3.986s runtime,357416KiB peak child RSS including compilation. The unchanged
 qualified reader libraries were reused; this is not a fresh owning CMake build
 or new dynamics evidence. XML: `/tmp/assembly-pilot-host-ilkg1gvl/tests.xml`.
+
+The fresh owning CMake gate also passes all six functions
+(`assembly-pilot-compare-tests-1`,3.67s). Its first build exposed a missing public
+neutral-model include dependency; `SourceAssemblyPilot.cmake` now explicitly
+links `robo_dyna_source_assembly`, without adding a solver/runtime dependency.
+The failed build report is retained. The actual short three-run comparison and
+the0.122ms4h/8h comparison are recorded in
+`source-assembly-short-pilot-comparison-1.json` and
+`source-assembly-medium-pilot-comparison-1.json` under workspace reports.
