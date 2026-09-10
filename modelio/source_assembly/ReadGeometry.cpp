@@ -32,9 +32,10 @@ void BindParent(const Value& value, Parent& p, const Data& data) {
     p.material_index = Unsigned(value, "material_index", data.materials.size() - 1);
     p.section_index = Unsigned(value, "section_index", data.sections.size() - 1);
     const auto& curve_index = Member(value, "curve_index");
-    const bool linear = data.materials[p.material_index].hardening == MaterialHardening::LinearLaw44;
-    if (linear) {
-        Require(data.schema == Law44InventorySchema && curve_index.IsNull(), "Analytic parent must have no curve index");
+    const auto& material=data.materials[p.material_index];
+    const bool no_curve=material.law==MaterialLaw::LayeredLaw1 || material.hardening==MaterialHardening::LinearLaw44;
+    if (no_curve) {
+        Require(data.schema != InventorySchema && curve_index.IsNull(), "Non-tabulated parent must have no curve index");
         p.curve_index = NoCurveIndex;
     } else {
         Require(!data.curves.empty(), "Tabulated parent requires a real curve table");
@@ -45,7 +46,7 @@ void BindParent(const Value& value, Parent& p, const Data& data) {
     const auto& part = data.parts[p.part_index];
     Require(p.material_id == part.material_id && p.section_id == part.section_id &&
         p.material_id == data.materials[p.material_index].id && p.section_id == data.sections[p.section_index].id &&
-        (linear ? p.curve_id == 0 : p.curve_id == data.curves[p.curve_index].id) &&
+        (no_curve ? p.curve_id == 0 : p.curve_id == data.curves[p.curve_index].id) &&
         p.curve_id == data.materials[p.material_index].curve_id &&
         p.source_elform == data.sections[p.section_index].source_elform, "Assembly parent declaration mapping mismatch");
     const auto& nodes = Array(value, "node_indices", p.arity, p.arity);

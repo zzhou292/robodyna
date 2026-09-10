@@ -51,7 +51,7 @@ def assembly_section(block, units):
                         (first, second), block)
 
 
-def compile_assembly_declarations(index, part_ids, units, limits, allow_linear=False):
+def compile_assembly_declarations(index, part_ids, units, limits, allow_linear=False, allow_elastic=False):
     require(0 < len(part_ids) <= limits.parts and len(set(part_ids)) == len(part_ids) and
             all(type(p) is int and 0 < p < 2**63 for p in part_ids),
             'invalid assembly part selection or part cap')
@@ -59,8 +59,8 @@ def compile_assembly_declarations(index, part_ids, units, limits, allow_linear=F
     for pid in sorted(part_ids):
         part = parse_part(index.one('part', pid))
         section = assembly_section(index.one('section', part.section_id), units)
-        from .assembly_law44 import compile_material
-        material, curve = compile_material(index, part.material_id, units, allow_linear)
+        from .assembly_materials import compile_material
+        material, curve = compile_material(index, part.material_id, units, allow_linear, allow_elastic)
         result.append(PartDeclarations(part, section, material, curve, units))
     return tuple(result)
 

@@ -18,6 +18,7 @@ inline ArtifactIdentity PinnedYarisSevenPartInventory() {
 }
 inline constexpr const char* InventorySchema = "robo-dyna.source-assembly-inventory.v1";
 inline constexpr const char* Law44InventorySchema = "robo-dyna.source-assembly-inventory.v2";
+inline constexpr const char* SectionInventorySchema = "robo-dyna.source-assembly-inventory.v3";
 inline constexpr std::size_t NoCurveIndex = SIZE_MAX;
 struct ReadLimits {
     std::size_t bytes = 4 * 1024 * 1024, nodes = 2048, parents = 1024, parts = 8;
@@ -62,6 +63,7 @@ struct Part {
     SourceBlock source;
     std::vector<DeclarationCard> cards;
 };
+enum class MaterialLaw { LayeredLaw44, LayeredLaw1 };
 enum class MaterialHardening { TabulatedLaw44, LinearLaw44 };
 struct Material {
     SourceId id = 0, curve_id = 0;
@@ -72,6 +74,7 @@ struct Material {
     SourceBlock source;
     std::vector<DeclarationCard> cards;
     MaterialHardening hardening = MaterialHardening::TabulatedLaw44;
+    MaterialLaw law = MaterialLaw::LayeredLaw44;
 };
 struct Section {
     SourceId id = 0;

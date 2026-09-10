@@ -4,7 +4,8 @@
 
 namespace crash::modelio::assembly {
 enum class MaterialRatePolicy { OpenRadiossDirectImportDefault };
-// Mandatory named policy: original C/P/VP declarations are kept in SourceAssembly.
+// Mandatory named policy: original LAW44 C/P/VP declarations stay in SourceAssembly;
+// LAW1 has no rate declarations and uses canonical unused native controls.
 // No default argument silently enables/disables filtering. Curves borrow from
 // shared immutable source ownership, so copies/moves never dangle curve pointers.
 class SourceAssemblyMaterialInput {

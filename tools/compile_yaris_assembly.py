@@ -7,6 +7,7 @@ import zipfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from modelio.yaris_assembly import compile_archive_assembly, write_assembly_report, YARIS_CONNECTOR_PARTS
+from modelio.assembly_materials import MATERIAL_POLICIES
 
 
 def main():
@@ -15,8 +16,8 @@ def main():
     parser.add_argument('--canonical-assets', required=True, type=Path)
     parser.add_argument('--output', required=True, type=Path, help='new file in an existing directory')
     parser.add_argument('--boundary-policy', choices=('unassigned', 'released_external_connections'), default='unassigned')
-    parser.add_argument('--material-policy', choices=('tabulated', 'law44_tabulated_or_linear'), default='tabulated',
-                        help='explicit V2 enables native analytic LAW44; default retains the V1 table-only contract')
+    parser.add_argument('--material-policy', choices=MATERIAL_POLICIES, default='tabulated',
+                        help='V2 enables analytic LAW44; V3 also retains original layered LAW1 elastic declarations')
     parser.add_argument('--part-ids', nargs='+', type=int, default=YARIS_CONNECTOR_PARTS,
                         help='complete source part IDs; defaults to the original six-part component')
     args = parser.parse_args()

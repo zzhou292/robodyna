@@ -18,6 +18,7 @@ from .canonical_geometry import read_json
 from .source_blocks import (scan_metadata, DECLARATION_FAMILIES, ATTACHMENT_FAMILIES,
                             MAX_SOURCE_BYTES)
 from .spotweld_cards import scan_spotwelds
+from .assembly_materials import MATERIAL_POLICIES, SECTION_SCHEMA
 
 YARIS_CONNECTOR_PARTS = (2000119, 2000120, 2000145, 2000157, 2000165, 2000260)
 AUTHENTICATION_PART_ID = 2000157
@@ -40,8 +41,9 @@ def compile_archive_assembly(archive_path, asset_dir, part_ids=YARIS_CONNECTOR_P
                              limits=AssemblyLimits(), boundary_policy='unassigned',
                              material_policy='tabulated'):
     require(isinstance(limits, AssemblyLimits), 'explicit offline AssemblyLimits required')
-    require(material_policy in ('tabulated', 'law44_tabulated_or_linear'), 'unsupported assembly material policy')
-    allow_linear = material_policy == 'law44_tabulated_or_linear'
+    require(material_policy in MATERIAL_POLICIES, 'unsupported assembly material policy')
+    allow_elastic = material_policy == 'layered_law1_or_law44'
+    allow_linear = material_policy != 'tabulated'
     part_ids = tuple(part_ids)
     require(boundary_policy in ('unassigned', 'released_external_connections'),
             'unsupported assembly extraction boundary policy')
@@ -64,7 +66,7 @@ def compile_archive_assembly(archive_path, asset_dir, part_ids=YARIS_CONNECTOR_P
             weld_inventory = scan_spotwelds(stream, yaris_part.VEHICLE)
     require(index.sha256 == weld_inventory.source_sha256 == reference['files'][yaris_part.VEHICLE]['sha256'],
             'assembly source member SHA256 mismatch')
-    declarations = compile_assembly_declarations(index, part_ids, seed.units, limits, allow_linear)
+    declarations = compile_assembly_declarations(index, part_ids, seed.units, limits, allow_linear, allow_elastic)
     geometry = load_assembly_geometry(asset_dir, archive_path, declarations, reference, limits)
     attachments = compile_assembly_attachments(index, weld_inventory, geometry, asset_dir,
                                                 archive_path, reference, limits)
@@ -89,11 +91,12 @@ def compile_archive_assembly(archive_path, asset_dir, part_ids=YARIS_CONNECTOR_P
     names = ('assembly_declarations.py', 'assembly_geometry.py', 'assembly_attachments.py', 'assembly_bindings.py',
              'spotweld_cards.py', 'yaris_assembly.py', 'canonical_geometry.py', 'canonical_incidence.py',
              'source_blocks.py', 'attachment_cards.py', 'keyword_cards.py', 'declarations.py', '_legacy.py', 'yaris_part.py',
-             'assembly_law44.py', 'law44_declarations.py')
+             'assembly_law44.py', 'law44_declarations.py', 'assembly_materials.py', 'law1_declarations.py')
     generator = {'modelio/' + name: file_sha256(Path(__file__).with_name(name)) for name in names}
     for name in ('compile_yaris_assembly.py', 'compile_yaris_part.py', 'import_yaris_vehicle.py', 'import_yaris_wall.py'):
         generator['tools/' + name] = file_sha256(yaris_part.ROOT / 'tools' / name)
-    result = dict(schema='robo-dyna.source-assembly-inventory.v2' if allow_linear else
+    result = dict(schema=SECTION_SCHEMA if allow_elastic else
+                  'robo-dyna.source-assembly-inventory.v2' if allow_linear else
                   'robo-dyna.source-assembly-inventory.v1', simulation_ready=False,
                 full_attachment_closure_qualified=False, geometry_modified=False, mechanics_capacity_changed=False,
                 source_mass_equivalence_qualified=False,
@@ -128,8 +131,15 @@ def compile_archive_assembly(archive_path, asset_dir, part_ids=YARIS_CONNECTOR_P
     if allow_linear:
         from .assembly_law44 import material_table
         from .law44_declarations import LINEAR_LAW44_POLICY
-        result['declarations']['materials'] = material_table(declarations)
+        if not allow_elastic:
+            result['declarations']['materials'] = material_table(declarations)
         result['law44_policy'] = dict(LINEAR_LAW44_POLICY)
+    if allow_elastic:
+        from .assembly_materials import material_table, section_policy
+        result['declarations']['materials'] = material_table(declarations)
+        result['section_policy'] = section_policy()
+        result['donor_policy']['interpretation'] = (
+            'Explicit layered LAW1/LAW44 section policy; original source ELFORM remains unchanged')
     return result
 
 

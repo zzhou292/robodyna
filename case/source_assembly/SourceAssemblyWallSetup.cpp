@@ -32,6 +32,8 @@ SourceAssemblyWallReport SourceAssemblyWallSetup::Initialize(const SourceAssembl
     const case_data::CanonicalWall& canonical,const std::string& bytes,const SourceAssemblyWallSettings& settings,
     const SourceAssemblyWallLimits& limits) {
     if(data_)return {Code::AlreadyInitialized,"Source assembly wall setup is immutable after publication"};
+    if(source.source().data().schema==source::SectionInventorySchema)
+        return {Code::InvalidInput,"Layered source V3 is qualified for host binding only; wall case admission is separate"};
     if(!ValidSettings(settings)||source.source().data().boundary.policy!="released_external_connections"||
        !canonical.loaded()||bytes.empty())
         return {Code::InvalidInput,"Declared uniform motion, released component boundary and original canonical wall are required"};

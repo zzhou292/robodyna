@@ -22,17 +22,8 @@ void CheckIdentity(const ArtifactIdentity& expected,const ReadLimits& limits) {
 }
 void ReadScope(const Value& document, Data& data) {
     data.schema = Text(document, "schema");
-    Require(data.schema == InventorySchema || data.schema == Law44InventorySchema, "Unsupported assembly schema");
-    if (data.schema == Law44InventorySchema) {
-        const auto& law = Member(document, "law44_policy");
-        TextIs(law, "revision", "a62b27e6baa555d222a580d6218867d0be4d70b5");
-        TextIs(law, "hardening_model", "law44_linear"); TextIs(law, "A", "SIGY");
-        TextIs(law, "B", "ETAN*E/(E-ETAN)");
-        Require(Unsigned(law, "n") == 1 && Unsigned(law, "function_reference") == 0 &&
-            Unsigned(law, "vp") == 0, "Unsupported analytic LAW44 conversion policy");
-        Same(Real(law, "source_time_to_s"), 1); Same(Real(law, "rate_filter_hz"), 10000);
-        Flag(law, "case_integration_qualified", false);
-    }
+    Require(data.schema == InventorySchema || data.schema == Law44InventorySchema || data.schema == SectionInventorySchema, "Unsupported assembly schema");
+    ReadMaterialPolicy(document,data);
     for (const auto* key : {"simulation_ready", "geometry_modified", "mechanics_capacity_changed",
                             "full_attachment_closure_qualified", "source_mass_equivalence_qualified"}) Flag(document, key, false);
     const auto& source = Member(document, "source");

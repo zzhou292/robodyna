@@ -47,7 +47,7 @@ void ReadDeclarations(const Value& document, const ReadLimits& limits, Data& dat
         Append(data.curves, std::move(curve));
     }
     for (const auto& value : Array(declarations, "materials", limits.tables, 1).GetArray()) {
-        Append(data.materials, ReadLaw44Material(value, data));
+        Append(data.materials, ReadMaterial(value, data));
     }
     for (const auto& value : Array(declarations, "sections", limits.tables, 1).GetArray()) {
         Section section;

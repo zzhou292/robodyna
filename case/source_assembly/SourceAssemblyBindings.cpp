@@ -51,7 +51,9 @@ SourceAssemblyBindings SourceAssemblyBindings::Prepare(const source::SourceAssem
     const auto shell_report=next->shells.Initialize(shell_input.input(),options.shell_limits);
     if(shell_report.status!=fe::ShellBindingStatus::Success) ShellFailure(shell_report,shell_input);
     const source::SourceAssemblyMaterialInput material_input(source,options.material_rate_policy);
-    const auto material_report=next->materials.Initialize(next->shells,material_input.input(),options.material_limits);
+    const auto material_report=data.schema==source::SectionInventorySchema ?
+        next->materials.InitializeSections(next->shells,material_input.input(),options.material_limits) :
+        next->materials.Initialize(next->shells,material_input.input(),options.material_limits);
     if(material_report.status!=fe::ShellPlasticityBindingStatus::Success) {
         std::ostringstream message;
         message<<"Assembly material startup: entry="<<material_report.entry<<" status="<<unsigned(material_report.status)

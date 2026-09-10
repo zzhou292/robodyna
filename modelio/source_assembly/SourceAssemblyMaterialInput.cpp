@@ -1,4 +1,5 @@
 #include "SourceAssemblyMaterialInput.h"
+#include "NativeMaterialInput.h"
 #include "output/ArtifactIO.h"
 
 namespace crash::modelio::assembly {
@@ -10,22 +11,8 @@ SourceAssemblyMaterialInput::SourceAssemblyMaterialInput(const SourceAssembly& s
         output::Require(curve.plastic_strain.size() <= UINT32_MAX, "Curve count cannot be represented by native material input");
         curves_.push_back({curve.id, {curve.plastic_strain.data(), curve.stress_pa.data(), static_cast<std::uint32_t>(curve.plastic_strain.size())}});
     }
-    for (const auto& material : data.materials) {
-        output::Require(material.source_rate_type == 0, "Assembly direct-import policy requires source VP=0");
-        // Same pinned direct-import chain as SourcePartMaterial: absent Fcut
-        // becomes zero in CPP_GET_FLOATV_FLOATD, then HM_READ_MAT44 with
-        // ISMOOTH=1 resolves 10000/s. It is not a Radioss CFG re-read default.
-        const tl::material::TabulatedShellPlasticityRate rate{true, material.rate_c_per_s, material.rate_p, 10000.};
-        tl::fea::ShellPlasticityMaterialInput native{material.id, material.curve_id, material.young_pa,
-            material.poisson_ratio, material.density_kg_m3, rate};
-        if (material.hardening == MaterialHardening::LinearLaw44) {
-            output::Require(material.supplied_sigy_pa && material.supplied_etan_pa && !material.curve_id,
-                "Analytic source material requires explicit SIGY/ETAN and no curve");
-            native.hardening = tl::material::ShellPlasticityHardeningKind::LinearLaw44;
-            native.linear = {*material.supplied_sigy_pa, *material.supplied_etan_pa};
-        }
-        materials_.push_back(native);
-    }
+    for (const auto& material : data.materials)
+        materials_.push_back(detail::NativeMaterial(material));
     for (const auto& section : data.sections)
         sections_.push_back({section.id, section.thickness_m[0], section.through_thickness_points});
     for (const auto& parent : data.parents)

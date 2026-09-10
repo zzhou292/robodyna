@@ -1,5 +1,7 @@
 # Authenticated assembly startup inputs
 
+The explicit [V3 layered elastic/plastic mode](LAYERED_SECTIONS.md) adds typed
+host-only LAW1 admission without changing the V1 wall/archive boundary.
 The explicit [V2 analytic/table LAW44 mode](ANALYTIC_LAW44.md) reuses these
 same source and native-input modules. The default compiler and frozen V1
 archives retain their table-only contract.
