@@ -19,6 +19,16 @@ cc_library(
 )
 
 cc_library(
+    name = "tabulated_shell_plasticity",
+    hdrs = [
+        "TabulatedShellPlasticity.h",
+        "detail/TabulatedShellPlasticityCurve.h",
+        "detail/TabulatedShellPlasticityUpdate.h",
+    ],
+    deps = ["//lib_src/math:quaternion"],
+)
+
+cc_library(
     name = "materials",
     hdrs = [
         "MaterialModel.cuh",

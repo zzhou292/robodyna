@@ -1,0 +1,20 @@
+# Included by the integrating qualification project after CXX/CUDA and GTest.
+get_filename_component(tabulated_shell_tl_root "${CMAKE_CURRENT_LIST_DIR}/../../../.." ABSOLUTE)
+add_executable(tabulated_shell_input_check "${CMAKE_CURRENT_LIST_DIR}/PointInputTest.cpp")
+target_compile_features(tabulated_shell_input_check PRIVATE cxx_std_17)
+target_include_directories(tabulated_shell_input_check PRIVATE "${tabulated_shell_tl_root}")
+target_link_libraries(tabulated_shell_input_check PRIVATE GTest::gtest_main)
+target_compile_options(tabulated_shell_input_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME tabulated_shell_input_check COMMAND tabulated_shell_input_check)
+set_tests_properties(tabulated_shell_input_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)
+
+if(CMAKE_CUDA_COMPILER)
+  add_executable(tabulated_shell_device_check "${CMAKE_CURRENT_LIST_DIR}/PointDeviceTest.cu")
+  target_include_directories(tabulated_shell_device_check PRIVATE "${tabulated_shell_tl_root}")
+  target_link_libraries(tabulated_shell_device_check PRIVATE CUDA::cudart GTest::gtest_main)
+  set_target_properties(tabulated_shell_device_check PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+  target_compile_options(tabulated_shell_device_check PRIVATE
+    "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>")
+  add_test(NAME tabulated_shell_device_check COMMAND tabulated_shell_device_check)
+  set_tests_properties(tabulated_shell_device_check PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)
+endif()
