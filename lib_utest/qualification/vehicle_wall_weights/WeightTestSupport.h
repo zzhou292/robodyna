@@ -23,7 +23,10 @@ inline void SameWeights(const sc::NodalWallWeights& a,const sc::NodalWallWeights
     const auto& x=a.parent(p);const auto& y=b.parent(p);
     EXPECT_EQ(x.parent_element_id,y.parent_element_id);EXPECT_EQ(x.feature_id,y.feature_id);
     EXPECT_EQ(x.parent_face_id,y.parent_face_id);EXPECT_EQ(x.family,y.family);EXPECT_EQ(x.arity,y.arity);
-    for(unsigned i=0;i<4;++i)EXPECT_EQ(x.nodes[i],y.nodes[i]);Same(x.area,y.area);Same(x.share,y.share);
+    for(unsigned i=0;i<4;++i) {
+      EXPECT_EQ(x.nodes[i],y.nodes[i]);
+    }
+    Same(x.area,y.area);Same(x.share,y.share);
   }
   for(unsigned n=0;n<a.node_count();++n) {EXPECT_EQ(a.node(n).node,b.node(n).node);Same(a.node(n).area,b.node(n).area);}
 }
