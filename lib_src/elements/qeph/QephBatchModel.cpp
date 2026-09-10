@@ -3,6 +3,7 @@
 #include "QephHistory.h"
 #include "QephBatchStartup.h"
 #include "../ShellBatchJoinedModel.h"
+#include "../ShellResidentStartupIndex.h"
 #include "lib_src/solvers/NodalNativePhysicalCoefficients.h"
 #include <cmath>
 #include <new>
@@ -48,6 +49,9 @@ BatchReport BuildModel(const QephBatchConfig& c,const QephBatchElement* input,Mo
   std::unique_ptr<bool[]> seen(new(std::nothrow) bool[o.node_count]{});
   std::unique_ptr<std::uint32_t[]> ids(new(std::nothrow) std::uint32_t[o.node_count]{});
   if(!seen||!ids) return {BatchStatus::ResourceLimit,"QEPH active identity staging allocation failed"};
+  const bool indexed=VehicleShellResidentLimits(c.storage_limits);
+  shell_batch_detail::ResidentNodeIdentityIndex identity;
+  if(indexed)identity.Prepare(4*c.element_count,[&](std::size_t i) { return joined?joined->qeph_reference(i/4).input.node_ids[i%4]:input[i/4].reference.input.node_ids[i%4]; });
   for(unsigned e=0;e<c.element_count;++e) {
     QephBatchElement selected;
     if(joined) {
@@ -68,9 +72,14 @@ BatchReport BuildModel(const QephBatchConfig& c,const QephBatchElement* input,Mo
       const auto id=element.reference.input.node_ids[local]; const auto x=element.reference.input.position[local];
       if(seen[n]&&(ids[n]!=id||!SameVector(model.initial_position[n],x)))
         return {BatchStatus::InvalidInput,"Shared reference node identity/position mismatch",e,static_cast<std::uint32_t>(n)};
+      if(indexed) {
+        if(!seen[n]&&identity.First(id)!=4*e+local)
+          return {BatchStatus::InvalidInput,"Source node identity maps to multiple owner nodes",e};
+      } else {
       for(unsigned other=0;other<o.node_count;++other)
         if(other!=n&&seen[other]&&ids[other]==id)
           return {BatchStatus::InvalidInput,"Source node identity maps to multiple owner nodes",e};
+      }
       seen[n]=true; ids[n]=id; model.initial_position[n]=x;
       model.mass[n]+=checked.nodal_mass[local]; model.inertia[n]+=checked.isotropic_inertia[local];
       model.physical[n]+=checked.physical_inertia[local]; model.added[n]+=checked.added_inertia[local];

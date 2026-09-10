@@ -23,7 +23,7 @@ struct Layout {
   util::ArenaRegion header,mass,inertia,physical,added,connector_mass,connector_inertia;
   std::size_t bytes=0;
   bool Initialize(std::size_t nodes,std::size_t cap,bool has_connector=false) noexcept {
-    if(!nodes||nodes>MaxShellResidentNodes) return false;
+    if(!nodes||nodes>MaxVehicleShellResidentNodes) return false;
     Layout next; util::BoundedArenaLayout layout(cap);
     if(!layout.Append<Storage>(1,next.header)||!layout.Append<double>(nodes,next.mass)||
        !layout.Append<double>(nodes,next.inertia)||!layout.Append<double>(nodes,next.physical)||

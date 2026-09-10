@@ -1,4 +1,5 @@
 #include "ShellBatchPlasticityStorage.h"
+#include "ShellResidentHostAccounting.h"
 #include <new>
 #include <stdexcept>
 #include <utility>
@@ -6,13 +7,15 @@
 namespace tl::fea::shell_batch_plasticity_detail {
 SetupReport HostStorage::InitializeCollection(const ShellBatchPlasticityBinding& catalog,
     const ShellBatchBinding& binding,ShellBindingFamily family,std::size_t count,
-    std::size_t maximum_extra_device_bytes,std::size_t maximum_extra_host_bytes) try {
-  if(device_||collection_||!catalog.Matches(binding)||!count||count>MaxShellResidentParents||
+    std::size_t maximum_extra_device_bytes,std::size_t maximum_extra_host_bytes,bool vehicle_shared_inventory) try {
+  if(device_||collection_||!catalog.Matches(binding)||!count||count>MaxVehicleShellResidentParents||
       (family!=ShellBindingFamily::Qeph&&family!=ShellBindingFamily::T3)||
       count!=(family==ShellBindingFamily::Qeph?binding.qeph_count():binding.t3_count()))
     return {SetupStatus::InvalidInput,"Plasticity catalog must match the complete joined native collection"};
   Layout layout; std::size_t host_bytes=0;
-  if(!Forecast(count,catalog.curve_point_count(),catalog.host_bytes(),maximum_extra_device_bytes,
+  std::size_t binding_bytes=0,catalog_bytes=0;
+  if(!shell_batch_detail::RetainedScopeBytes(&binding,&catalog,vehicle_shared_inventory,binding_bytes,catalog_bytes)||
+     !Forecast(count,catalog.curve_point_count(),catalog_bytes,maximum_extra_device_bytes,
       maximum_extra_host_bytes,layout,host_bytes))
     return {SetupStatus::ResourceLimit,"Optional plastic section exceeds active byte budgets"};
   std::unique_ptr<ShellBatchPlasticityBinding> owned(new(std::nothrow) ShellBatchPlasticityBinding(catalog));

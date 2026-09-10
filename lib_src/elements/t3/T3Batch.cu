@@ -1,5 +1,7 @@
 // Lifecycle adapted from the qualified QEPH participant; no force equations.
 #include "T3BatchStorage.h"
+#include "../ShellResidentStartupIndex.h"
+#include "../ShellResidentHostAccounting.h"
 #include <new>
 #include <stdexcept>
 #include <utility>
@@ -74,12 +76,17 @@ BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchEle
      !layout.Initialize(config.element_count,config.owner.node_count,config.max_device_bytes))
     return {BatchStatus::ResourceLimit,"T3 active element/node/device capacity exceeded"};
   const auto host_cap=config.storage_limits.max_host_bytes;
+  const bool vehicle=VehicleShellResidentLimits(config.storage_limits);
+  std::size_t binding_bytes=0,catalog_bytes=0;
+  if(!shell_batch_detail::RetainedScopeBytes(joined,collection_plasticity,vehicle,binding_bytes,catalog_bytes))
+    return {BatchStatus::ResourceLimit,"Invalid retained immutable scope payload"};
   util::BoundedArenaLayout host_budget(host_cap); util::ArenaRegion ignored;
   if(!host_budget.Append<unsigned char>(sizeof(Impl),ignored)||!host_budget.Append<unsigned char>(layout.bytes,ignored)||
      !host_budget.Append<ForceTrial>(config.element_count,ignored)||!host_budget.Append<unsigned char>(64,ignored)||
      !host_budget.Append<bool>(config.owner.node_count,ignored)||!host_budget.Append<std::uint64_t>(config.owner.node_count,ignored)||
-     (joined&&!host_budget.Append<unsigned char>(joined->host_bytes(),ignored))||
-     (nodal_mass&&!host_budget.Append<unsigned char>(nodal_mass->host_bytes(),ignored)))
+     (joined&&!host_budget.Append<unsigned char>(binding_bytes,ignored))||
+     (nodal_mass&&!host_budget.Append<unsigned char>(nodal_mass->host_bytes(),ignored))||
+     (vehicle&&!host_budget.Append<unsigned char>(shell_batch_detail::ResidentIndexBytes(config.element_count,true),ignored)))
     return {BatchStatus::ResourceLimit,"T3 startup payload exceeds host cap"};
   if(plasticity||collection_plasticity) {
     using namespace shell_batch_plasticity_detail;
@@ -88,7 +95,7 @@ BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchEle
       return {BatchStatus::InvalidInput,"Invalid plastic material identity/curve shape"};
     const auto points=plasticity?plasticity->curve.count:collection_plasticity->curve_point_count();
     Layout plastic_layout; std::size_t plastic_host_bytes=0;
-    if(!HostStorage::Forecast(config.element_count,points,collection_plasticity?collection_plasticity->host_bytes():0,
+    if(!HostStorage::Forecast(config.element_count,points,catalog_bytes,
          config.max_device_bytes-layout.bytes,host_cap,plastic_layout,plastic_host_bytes)||
        !host_budget.Append<unsigned char>(plastic_host_bytes,ignored)||
        !host_budget.Append<ReferenceMaterial>(config.element_count,ignored))

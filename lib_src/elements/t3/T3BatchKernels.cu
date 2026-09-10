@@ -114,7 +114,7 @@ __global__ void FinalizeCandidate(Storage* storage,const Slab* accepted,const Sl
 void LaunchAssembly(Storage* s,const Slab* a,NodalAssemblyView v,bool initial) { Assemble<<<1,1,0,v.stream>>>(s,a,v,initial); }
 void LaunchCandidate(Storage* s,const Slab* a,Slab* b,NodalPreparedView v,BatchDiagnostics d,
     shell_batch_plasticity_detail::DeviceStorage* plasticity,unsigned accepted_slab,std::size_t element_count) {
-  // The private caller supplies its immutable startup-admitted count (1..1024),
+  // The private caller supplies its immutable startup-admitted active count,
   // never a device-header dereference or a new independent capacity setting.
   constexpr unsigned threads=64;
   const unsigned blocks=1u+static_cast<unsigned>((element_count-1)/threads);

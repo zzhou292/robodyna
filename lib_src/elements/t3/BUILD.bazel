@@ -43,6 +43,7 @@ cuda_library(
         ":force", ":layered_j2", "//lib_src/elements:shell_batch_fields",
         "//lib_src/elements:shell_batch_plasticity_storage",
         "//lib_src/elements:shell_batch_joined_model",
+        "//lib_src/elements:shell_resident_startup_index", "//lib_src/elements:shell_resident_host_accounting",
         "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_force_assembly",
         "//lib_src/solvers:nodal_trial_identity",
         "//lib_src/assembly:nodal_mass_binding",

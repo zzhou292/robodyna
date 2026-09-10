@@ -118,8 +118,8 @@
     },
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
-      "bytes": 2031,
-      "sha256": "660deb85599bfb85bff6bcc723bec7f43b0a229ccc0da22e5e4d7045f96f84ec"
+      "bytes": 2143,
+      "sha256": "5a342aad8420677962b69df7b585c4d913475858724d07949fec43381f27bf30"
     },
     {
       "path": "lib_src/elements/t3/CMakeLists.txt",
@@ -133,13 +133,13 @@
     },
     {
       "path": "lib_utest/qualification/t3/source-manifest.json",
-      "bytes": 16551,
-      "sha256": "dabe887f9885f4b9d77ebe6b054cf3c2d7d504a1a7d642c7cadf9cbd7ebd21bf"
+      "bytes": 17775,
+      "sha256": "15eabcb6d869a4c34cd2cee4f78734243aae7e7bde7515b53f8aa0e533c619d1"
     },
     {
       "path": "lib_utest/qualification/t3/verify_sources.py",
       "bytes": 2001,
-      "sha256": "fd9647fd6989c97937c86d6d3b740279ef4a86997b08dd5735498d3705711305"
+      "sha256": "ce41b3e895f733ca35e213ac14e0680aa762398c619f4e2991b9fa791372a240"
     },
     {
       "path": "lib_utest/qualification/t3/T3PortFixture.h",
@@ -605,6 +605,51 @@
       }
     ],
     "reason": "Add separate NIP3 LAW1 force target; existing T3 startup/global force/native arithmetic unchanged.",
+    "force_arithmetic_changed": false
+  },
+  "vehicle_capacity_build_registration": {
+    "previous_manifest_sha256": "696f3b4dcb37b84b0e1237a3b8f1a4e7c19aaa9ca163d315d5156d6a57d5ef3b",
+    "previous_input_records": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 1834,
+        "sha256": "1099a1c16dbba11a9e44b73f4dac56a64f519a3a332d065a71eadd7e2542f245"
+      },
+      {
+        "path": "lib_utest/qualification/t3/source-manifest.json",
+        "bytes": 16039,
+        "sha256": "75f290e57ce9b3f34ed9c4e6dcba8bad67289e4b8e551434d0b724ba3ee29a88"
+      },
+      {
+        "path": "lib_utest/qualification/t3/verify_sources.py",
+        "bytes": 2001,
+        "sha256": "f1a52a5e32bb0f56550f2b23ac83f8a0bf9d8c6919d262bf9c2d3222e6cc6a9a"
+      }
+    ],
+    "reason": "Register vehicle startup index and retained-scope accounting dependencies; native donor, startup/rates/force arithmetic and original test sources remain unchanged.",
+    "force_arithmetic_changed": false
+  },
+  "vehicle_capacity_merge_registration": {
+    "previous_manifest_sha256": "f14e8d4fe88898001536f86607b850e4f4a78068536f7539b2b720322bbc5a7d",
+    "vehicle_capacity_author_commit": "ec54a2f7fb046e9a52f23320e9fa3eaf471f7a77",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 2031,
+        "sha256": "660deb85599bfb85bff6bcc723bec7f43b0a229ccc0da22e5e4d7045f96f84ec"
+      },
+      {
+        "path": "lib_utest/qualification/t3/source-manifest.json",
+        "bytes": 16551,
+        "sha256": "dabe887f9885f4b9d77ebe6b054cf3c2d7d504a1a7d642c7cadf9cbd7ebd21bf"
+      },
+      {
+        "path": "lib_utest/qualification/t3/verify_sources.py",
+        "bytes": 2001,
+        "sha256": "fd9647fd6989c97937c86d6d3b740279ef4a86997b08dd5735498d3705711305"
+      }
+    ],
+    "reason": "Compose vehicle startup registrations with the independently qualified layered LAW1 force registrations; donor and force arithmetic remain unchanged.",
     "force_arithmetic_changed": false
   }
 }

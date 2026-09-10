@@ -21,6 +21,18 @@ cc_library(
 )
 
 cc_library(
+    name = "shell_resident_startup_index",
+    hdrs = ["ShellResidentStartupIndex.h"],
+    deps = [":shell_binding_identity_index"],
+)
+
+cc_library(
+    name = "shell_resident_host_accounting",
+    hdrs = ["ShellResidentHostAccounting.h"],
+    deps = [":shell_batch_binding", ":shell_batch_plasticity_binding"],
+)
+
+cc_library(
     name = "shell_binding_identity_index",
     visibility = ["//visibility:private"],
     hdrs = ["ShellBindingIdentityIndex.h"],
@@ -65,7 +77,7 @@ cuda_library(
     srcs = ["ShellBatchPlasticityStorage.cpp", "ShellBatchPlasticityCollectionStorage.cpp"],
     hdrs = ["ShellBatchPlasticityStorage.h", "ShellPlasticArenaLayout.h"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
-    deps = [":shell_batch_plasticity", ":shell_batch_plasticity_binding", ":shell_resident_storage", "//lib_utils:bounded_startup_array"],
+    deps = [":shell_batch_plasticity", ":shell_batch_plasticity_binding", ":shell_resident_storage", ":shell_resident_host_accounting", "//lib_utils:bounded_startup_array"],
 )
 
 cuda_library(

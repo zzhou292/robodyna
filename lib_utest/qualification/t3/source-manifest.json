@@ -15,8 +15,8 @@
   "ported_files": [
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
-      "bytes": 2031,
-      "sha256": "660deb85599bfb85bff6bcc723bec7f43b0a229ccc0da22e5e4d7045f96f84ec"
+      "bytes": 2143,
+      "sha256": "5a342aad8420677962b69df7b585c4d913475858724d07949fec43381f27bf30"
     },
     {
       "path": "lib_src/elements/t3/CMakeLists.txt",
@@ -415,6 +415,31 @@
       }
     ],
     "reason": "Add separate NIP3 LAW1 force target; existing T3 startup/global force/native arithmetic unchanged.",
+    "force_arithmetic_changed": false
+  },
+  "vehicle_capacity_build_registration": {
+    "previous_manifest_sha256": "75f290e57ce9b3f34ed9c4e6dcba8bad67289e4b8e551434d0b724ba3ee29a88",
+    "previous_input_records": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 1834,
+        "sha256": "1099a1c16dbba11a9e44b73f4dac56a64f519a3a332d065a71eadd7e2542f245"
+      }
+    ],
+    "reason": "Register vehicle startup index and retained-scope accounting dependencies; native donor, startup/rates/force arithmetic and original test sources remain unchanged.",
+    "force_arithmetic_changed": false
+  },
+  "vehicle_capacity_merge_registration": {
+    "previous_manifest_sha256": "dabe887f9885f4b9d77ebe6b054cf3c2d7d504a1a7d642c7cadf9cbd7ebd21bf",
+    "vehicle_capacity_author_commit": "ec54a2f7fb046e9a52f23320e9fa3eaf471f7a77",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 2031,
+        "sha256": "660deb85599bfb85bff6bcc723bec7f43b0a229ccc0da22e5e4d7045f96f84ec"
+      }
+    ],
+    "reason": "Compose vehicle startup registrations with the independently qualified layered LAW1 force registrations; donor and force arithmetic remain unchanged.",
     "force_arithmetic_changed": false
   }
 }

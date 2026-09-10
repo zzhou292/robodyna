@@ -2,6 +2,7 @@
 #include "T3Startup.h"
 #include "T3History.h"
 #include "../ShellBatchJoinedModel.h"
+#include "../ShellResidentStartupIndex.h"
 #include "lib_src/solvers/NodalNativePhysicalCoefficients.h"
 #include <cmath>
 #include <new>
@@ -55,6 +56,14 @@ BatchReport BuildModel(const T3BatchConfig& c,const T3BatchElement* input,Model&
   std::unique_ptr<bool[]> seen(new(std::nothrow) bool[o.node_count]{});
   std::unique_ptr<std::uint64_t[]> ids(new(std::nothrow) std::uint64_t[o.node_count]{});
   if(!seen||!ids) return {BatchStatus::ResourceLimit,"T3 active identity staging allocation failed"};
+  const bool indexed=VehicleShellResidentLimits(c.storage_limits);
+  shell_batch_detail::ResidentNodeIdentityIndex identity;
+  if(indexed)identity.Prepare(3*c.element_count,[&](std::size_t i) { return joined?joined->t3_reference(i/3).input.node_ids[i%3]:input[i/3].reference.input.node_ids[i%3]; });
+  shell_batch_detail::ResidentTriangleIndex topology;
+  if(indexed)topology.Prepare(c.element_count,[&](std::size_t e) {
+    if(joined)return joined->t3_nodes(e);
+    return std::array<std::size_t,3>{input[e].nodes[0],input[e].nodes[1],input[e].nodes[2]};
+  });
   for(unsigned e=0;e<c.element_count;++e) {
     T3BatchElement selected;
     if(joined) {
@@ -66,6 +75,12 @@ BatchReport BuildModel(const T3BatchConfig& c,const T3BatchElement* input,Model&
     if(status!=Status::kSuccess||!SameReference(element.reference,checked))
       return {BatchStatus::ElementFailure,"Reference differs from its startup producer",e,UINT32_MAX,
               status==Status::kSuccess?Status::kInvalidReference:status};
+    if(indexed) {
+      if(topology.DuplicateBefore(e,{element.nodes[0],element.nodes[1],element.nodes[2]},
+          [&](std::size_t prior) {const auto* n=model.element[prior].nodes;
+            return std::array<std::size_t,3>{n[0],n[1],n[2]};}))
+        return {BatchStatus::InvalidInput,"Duplicate T3 physical connectivity",e};
+    } else {
     for(unsigned prior=0;prior<e;++prior) {
       bool same=true;
       for(unsigned i=0;i<3;++i) {
@@ -74,6 +89,7 @@ BatchReport BuildModel(const T3BatchConfig& c,const T3BatchElement* input,Model&
         same&=found;
       }
       if(same) return {BatchStatus::InvalidInput,"Duplicate T3 physical connectivity",e};
+    }
     }
     model.element[e]=element;
     for(unsigned local=0;local<3;++local) {
@@ -84,9 +100,14 @@ BatchReport BuildModel(const T3BatchConfig& c,const T3BatchElement* input,Model&
       const auto id=element.reference.input.node_ids[local]; const auto x=element.reference.input.position[local];
       if(seen[n]&&(ids[n]!=id||!SameVector(model.initial_position[n],x)))
         return {BatchStatus::InvalidInput,"Shared reference node identity/position mismatch",e,static_cast<std::uint32_t>(n)};
+      if(indexed) {
+        if(!seen[n]&&identity.First(id)!=3*e+local)
+          return {BatchStatus::InvalidInput,"Source node identity maps to multiple owner nodes",e};
+      } else {
       for(unsigned other=0;other<o.node_count;++other)
         if(other!=n&&seen[other]&&ids[other]==id)
           return {BatchStatus::InvalidInput,"Source node identity maps to multiple owner nodes",e};
+      }
       seen[n]=true; ids[n]=id; model.initial_position[n]=x;
       model.mass[n]+=checked.nodal_mass[local]; model.inertia[n]+=checked.isotropic_inertia[local];
       model.physical[n]+=checked.physical_inertia[local]; model.added[n]+=checked.added_inertia[local];

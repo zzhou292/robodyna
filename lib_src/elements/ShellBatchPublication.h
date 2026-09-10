@@ -9,6 +9,10 @@ namespace tl::fea {
 struct ShellPublicationLimits {
   std::size_t max_nodes=MaxShellCollectionNodes;
   std::size_t max_device_bytes=128*1024,max_host_bytes=1024*1024;
+  ShellResidentProfile profile=ShellResidentProfile::Legacy;
+  static constexpr ShellPublicationLimits Vehicle() noexcept {
+    return {MaxVehicleShellResidentNodes,32ULL*1024*1024,128ULL*1024*1024,ShellResidentProfile::Vehicle};
+  }
 };
 struct ShellBatchKinetic {
   double translation=0,rotation=0;

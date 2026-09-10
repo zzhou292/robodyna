@@ -185,10 +185,14 @@ ShellPublicationReport ShellBatchPublication::InitializeImpl(FENodalState& owner
   if(bool(q.impl_->joined_mass)!=bool(connector)||bool(t.impl_->joined_mass)!=bool(connector))
     return {S::NotJoined,"Combined nodal mass requires the connector publication participant"};
   const auto count=q.impl_->joined_binding->node_count();
+  const bool vehicle=limits.profile==ShellResidentProfile::Vehicle;
+  const auto ceiling=vehicle?ShellPublicationLimits::Vehicle():ShellPublicationLimits{MaxShellResidentNodes,
+    MaxShellResidentDeviceBytes,MaxShellResidentHostBytes};
   shell_publication_detail::Layout layout;
-  if(!limits.max_nodes||limits.max_nodes>MaxShellResidentNodes||count>limits.max_nodes||
-     !limits.max_device_bytes||limits.max_device_bytes>MaxShellResidentDeviceBytes||
-     !limits.max_host_bytes||limits.max_host_bytes>MaxShellResidentHostBytes||
+  if((limits.profile!=ShellResidentProfile::Legacy&&!vehicle)||
+     !limits.max_nodes||limits.max_nodes>ceiling.max_nodes||count>limits.max_nodes||
+     !limits.max_device_bytes||limits.max_device_bytes>ceiling.max_device_bytes||
+     !limits.max_host_bytes||limits.max_host_bytes>ceiling.max_host_bytes||
      !layout.Initialize(count,limits.max_device_bytes,connector!=nullptr))
     return {S::ResourceLimit,"Mixed publication active-node/device capacity exceeded"};
   util::BoundedArenaLayout host_budget(limits.max_host_bytes); util::ArenaRegion ignored;

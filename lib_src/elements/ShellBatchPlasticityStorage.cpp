@@ -17,7 +17,7 @@ HostStorage::~HostStorage() { if(device_) cudaFree(device_); }
 bool HostStorage::Forecast(std::size_t count,std::size_t points,std::size_t catalog_bytes,
     std::size_t device_cap,std::size_t host_cap,Layout& output,std::size_t& host_bytes) noexcept {
   Layout layout;
-  if(!host_cap||host_cap>MaxShellResidentHostBytes||!layout.Initialize(count,points,device_cap)) return false;
+  if(!host_cap||host_cap>MaxVehicleShellResidentHostBytes||!layout.Initialize(count,points,device_cap)) return false;
   util::BoundedArenaLayout host(host_cap); util::ArenaRegion ignored;
   if(!host.Append<unsigned char>(sizeof(HostStorage),ignored)||!host.Append<unsigned char>(layout.bytes,ignored)||
      !host.Append<ShellBatchSectionState>(count,ignored)||!host.Append<double>(2*points,ignored)||
@@ -27,7 +27,7 @@ bool HostStorage::Forecast(std::size_t count,std::size_t points,std::size_t cata
 }
 SetupReport HostStorage::Initialize(const ShellBatchPlasticityConfig& c,const ReferenceMaterial* references,
     std::size_t count,std::size_t maximum_extra_device_bytes,std::size_t maximum_extra_host_bytes) try {
-  if(device_||!references||!count||count>MaxShellResidentParents||!c.material_id||!c.curve_id||
+  if(device_||!references||!count||count>MaxVehicleShellResidentParents||!c.material_id||!c.curve_id||
      !c.curve.plastic_strain||!c.curve.yield_stress_pa||c.curve.count<2||c.curve.count>MaxCurvePoints)
     return {SetupStatus::InvalidInput,"Plasticity requires explicit IDs, curve and bounded source references"};
   Layout layout; std::size_t host_bytes=0;

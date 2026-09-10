@@ -30,7 +30,8 @@ class HostStorage {
   SetupReport Initialize(const ShellBatchPlasticityConfig&,const ReferenceMaterial*,
       std::size_t count,std::size_t maximum_extra_device_bytes,std::size_t maximum_extra_host_bytes);
   SetupReport InitializeCollection(const ShellBatchPlasticityBinding&,const ShellBatchBinding&,
-      ShellBindingFamily,std::size_t count,std::size_t maximum_extra_device_bytes,std::size_t maximum_extra_host_bytes);
+      ShellBindingFamily,std::size_t count,std::size_t maximum_extra_device_bytes,std::size_t maximum_extra_host_bytes,
+      bool vehicle_shared_inventory=false);
   cudaError_t Read(unsigned slab,std::size_t count,cudaStream_t) noexcept;
   DeviceStorage* device() const noexcept { return device_; }
   std::size_t device_bytes() const noexcept { return device_?layout_.bytes:0; }

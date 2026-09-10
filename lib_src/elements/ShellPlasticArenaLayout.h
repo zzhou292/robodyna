@@ -16,7 +16,8 @@ struct Layout {
   util::ArenaRegion header,curve_x,curve_y,parameters,section[2];
   std::size_t bytes=0;
   bool Initialize(std::size_t count,std::size_t points,std::size_t cap) noexcept {
-    if(!count||count>MaxShellResidentParents||points==1||points>MaxShellPlasticityCurvePoints) return false;
+    if(!count||count>MaxVehicleShellResidentParents||points==1||points>MaxShellPlasticityCurvePoints||
+       !cap||cap>MaxVehicleShellResidentDeviceBytes) return false;
     Layout next; util::BoundedArenaLayout layout(cap);
     if(!layout.Append<DeviceStorage>(1,next.header)||!layout.Append<double>(points,next.curve_x)||
        !layout.Append<double>(points,next.curve_y)||!layout.Append<sections::PointParameters>(count,next.parameters)||

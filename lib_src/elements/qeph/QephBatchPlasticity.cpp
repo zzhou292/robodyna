@@ -15,7 +15,8 @@ BatchReport QephBatch::Impl::InitializePlasticity(const ShellBatchPlasticityBind
   std::unique_ptr<HostStorage> next(new(std::nothrow) HostStorage);
   if(!next) return {BatchStatus::ResourceLimit,"Collection plastic section host allocation failed"};
   const auto setup=next->InitializeCollection(catalog,*joined_binding,ShellBindingFamily::Qeph,
-      config.element_count,config.max_device_bytes-layout.bytes,config.storage_limits.max_host_bytes);
+      config.element_count,config.max_device_bytes-layout.bytes,config.storage_limits.max_host_bytes,
+      VehicleShellResidentLimits(config.storage_limits));
   if(setup.status==SetupStatus::DeviceFailure) return Runtime(setup.cuda_status,setup.message);
   if(setup.status!=SetupStatus::Success)
     return {setup.status==SetupStatus::ResourceLimit?BatchStatus::ResourceLimit:BatchStatus::InvalidInput,setup.message};
