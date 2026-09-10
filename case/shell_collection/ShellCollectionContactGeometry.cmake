@@ -1,0 +1,10 @@
+include_guard(GLOBAL)
+include("${ROBO_DYNA_TL_ROOT}/lib_src/elements/ShellBatchBinding.cmake")
+include("${ROBO_DYNA_TL_ROOT}/lib_src/collision/NodalWallContact.cmake")
+add_library(robo_dyna_shell_collection_contact_geometry STATIC
+  "${CMAKE_CURRENT_LIST_DIR}/ShellCollectionContactGeometry.cpp")
+get_filename_component(robo_shell_collection_app_root "${CMAKE_CURRENT_LIST_DIR}/../.." ABSOLUTE)
+target_include_directories(robo_dyna_shell_collection_contact_geometry PUBLIC "${robo_shell_collection_app_root}")
+target_link_libraries(robo_dyna_shell_collection_contact_geometry PUBLIC tl_shell_batch_binding tl_nodal_wall_contact)
+target_compile_features(robo_dyna_shell_collection_contact_geometry PUBLIC cxx_std_17)
+target_compile_options(robo_dyna_shell_collection_contact_geometry PRIVATE -fno-fast-math -ffp-contract=off)
