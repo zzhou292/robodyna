@@ -113,8 +113,8 @@
     },
     {
       "path": "lib_src/materials/BUILD.bazel",
-      "bytes": 1139,
-      "sha256": "0db48dcc4cbbf0558aea8996bdb7820b443872388d18f0a9060846ac8d705e64"
+      "bytes": 1217,
+      "sha256": "949967c732d285dd1c0123c1631ef549e8a50173cf90a5b23ca79b84dec48039"
     },
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
@@ -561,5 +561,17 @@
         }
       }
     }
+  },
+  "analytic_material_build_registration": {
+    "previous_manifest_sha256": "91bb1fc756a84854000167f3a2a7671f14ce97f941853ee0edce7b2528ded8d6",
+    "changed_path": "lib_src/materials/BUILD.bazel",
+    "previous_entry": {
+      "path": "lib_src/materials/BUILD.bazel",
+      "bytes": 1139,
+      "sha256": "0db48dcc4cbbf0558aea8996bdb7820b443872388d18f0a9060846ac8d705e64"
+    },
+    "reason": "Register the two analytic LAW44 helper headers in the existing material target; all force donor, arithmetic and test dependencies remain byte-identical.",
+    "implementation_commit": "7906cbb",
+    "force_arithmetic_changed": false
   }
 }
