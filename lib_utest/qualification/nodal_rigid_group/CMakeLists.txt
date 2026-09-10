@@ -77,6 +77,17 @@ foreach(target nodal_rigid_force_stage_check nodal_rigid_force_stage_native_chec
   set_tests_properties(${target} PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)
 endforeach()
 
+add_executable(nodal_force_stage_capture_packet_check ForceStageCapturePacketTest.cpp)
+target_link_libraries(nodal_force_stage_capture_packet_check PRIVATE tl_nodal_rigid_group GTest::gtest_main)
+add_executable(nodal_force_stage_capture_native_check ForceStageCaptureNativeTest.cpp
+  GroupPhaseNativeFixture.cpp GroupStepNativeFixture.cpp)
+target_link_libraries(nodal_force_stage_capture_native_check PRIVATE tl_nodal_rigid_group nodal_rigid_native GTest::gtest_main)
+foreach(target nodal_force_stage_capture_packet_check nodal_force_stage_capture_native_check)
+  target_compile_options(${target} PRIVATE -fno-fast-math -ffp-contract=off)
+  add_test(NAME ${target} COMMAND ${target})
+  set_tests_properties(${target} PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)
+endforeach()
+
 if(TL_NODAL_RIGID_CUDA_CHECKS OR TL_NODAL_RIGID_OWNER_CHECKS)
   enable_language(CUDA)
   find_package(CUDAToolkit REQUIRED)
@@ -122,7 +133,15 @@ if(TL_NODAL_RIGID_OWNER_CHECKS)
     PreparedSnapshotCapacityTest.cu PreparedSnapshotFaultTest.cu PreparedSnapshotCudaProbe.cpp)
   target_link_libraries(nodal_prepared_snapshot_check PRIVATE tl_explicit_nodal_state GTest::gtest_main)
   target_link_options(nodal_prepared_snapshot_check PRIVATE "LINKER:--wrap=cudaMemcpyAsync")
-  foreach(target nodal_rigid_owner_check nodal_rigid_owner_native_check nodal_prepared_snapshot_check)
+  add_executable(nodal_force_stage_capture_check ForceStageCaptureCudaTest.cu ForceStageCaptureRejectionTest.cu
+    ForceStageCaptureCapacityTest.cu ForceStageCaptureFaultTest.cu ForceStageCaptureCudaProbe.cpp PreparedSnapshotCudaProbe.cpp)
+  target_link_libraries(nodal_force_stage_capture_check PRIVATE tl_explicit_nodal_state GTest::gtest_main)
+  target_link_options(nodal_force_stage_capture_check PRIVATE "LINKER:--wrap=cudaMemcpyAsync" "LINKER:--wrap=cudaMalloc")
+  add_executable(nodal_force_stage_capture_owner_native_check ForceStageCaptureOwnerNativeTest.cu
+    GroupPhaseNativeFixture.cpp GroupStepNativeFixture.cpp)
+  target_link_libraries(nodal_force_stage_capture_owner_native_check PRIVATE tl_explicit_nodal_state nodal_rigid_native GTest::gtest_main)
+  foreach(target nodal_rigid_owner_check nodal_rigid_owner_native_check nodal_prepared_snapshot_check
+      nodal_force_stage_capture_check nodal_force_stage_capture_owner_native_check)
     set_target_properties(${target} PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED ON)
     target_compile_options(${target} PRIVATE
       "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>"

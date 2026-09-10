@@ -2,6 +2,27 @@ load("@rules_cc//cc:defs.bzl", "cc_test")
 load("@rules_cuda//cuda:defs.bzl", "cuda_test")
 
 cc_test(
+    name = "nodal_force_stage_capture_packet_check",
+    size = "small",
+    srcs = ["ForceStageCapturePacketTest.cpp", "ForceStageCapturePacketFixture.h", "GroupStepTestSupport.h", "GroupTestSupport.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/constraints:nodal_rigid_group_step_math", "@googletest//:gtest_main"],
+)
+
+cuda_test(
+    name = "nodal_force_stage_capture_check",
+    size = "small",
+    srcs = ["ForceStageCaptureCudaTest.cu", "ForceStageCaptureRejectionTest.cu", "ForceStageCaptureCapacityTest.cu",
+            "ForceStageCaptureFaultTest.cu", "ForceStageCaptureCudaProbe.cpp", "ForceStageCaptureCudaProbe.h",
+            "PreparedSnapshotCudaProbe.cpp", "PreparedSnapshotCudaProbe.h", "ForceStageCaptureFixture.h",
+            "GroupOwnerFixture.h", "GroupStepTestSupport.h", "GroupTestSupport.h"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    linkopts = ["-Wl,--wrap=cudaMemcpyAsync", "-Wl,--wrap=cudaMalloc"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/solvers:explicit_nodal_state", "//lib_utest:nodal_temporal_fixture", "@googletest//:gtest_main"],
+)
+
+cc_test(
     name = "nodal_rigid_group_check",
     srcs = ["GroupModelTest.cpp", "GroupMathTest.cpp", "GroupTestSupport.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
