@@ -1,37 +1,20 @@
 #include "Pilot.h"
 #include "StepTimingReport.h"
-#include <charconv>
+#include "CliOptions.h"
 #include <iostream>
-#include <string_view>
 
-namespace {
-std::uint64_t Count(const char* input,std::uint64_t maximum) {
-    const std::string_view value(input);std::uint64_t count=0;
-    const auto parsed=std::from_chars(value.data(),value.data()+value.size(),count);
-    if(parsed.ec!=std::errc{}||parsed.ptr!=value.data()+value.size()||!count||count>maximum)
-        throw std::invalid_argument("Expected a positive count within the declared limit");
-    return count;
-}
-}
 int main(int argc,char** argv) {
     namespace wall=crash::cases::source_assembly_wall;
     crash::cases::source_assembly_dynamics::SourceAssemblyWallCase run;
     std::string timing_path;int status=1;
     try {
-        int positional=argc;
-        if(argc>=3&&std::string_view(argv[argc-2])=="--stage-timing") {
-            timing_path=argv[argc-1];positional-=2;
-            if(timing_path.empty())throw std::invalid_argument("Stage timing path must be nonempty");
-        }
-        if(positional!=6&&positional!=7)throw std::invalid_argument(
-            "usage: robo_dyna_source_assembly_wall INVENTORY WALL STEPS FRAME_EVERY NEW_DIR [REFINEMENT_1_2_4] [--stage-timing NEW_JSON]");
-        if(!timing_path.empty())wall::CheckStepTimingPath(timing_path,argv[5]);
+        const auto options=wall::ParseOptions(argc,argv);timing_path=options.timing_path;
+        if(!timing_path.empty())wall::CheckStepTimingPath(timing_path,options.archive);
         crash::output::assembly::WallArchiveRequest request;
-        request.steps=Count(argv[3],1<<20);request.frame_every=unsigned(Count(argv[4],request.steps));
+        request.steps=options.steps;request.frame_every=options.frame_every;
         request.run_id=0x53415752554e31ULL;request.topology_id=0x534157544f5031ULL;request.asset_id=0x53415741535331ULL;
-        const unsigned refinement=positional==7?unsigned(Count(argv[6],4)):1;
-        wall::InitializePilot(run,argv[1],argv[2],request,refinement,{!timing_path.empty()});
-        status=wall::Execute(run,request,argv[5]);
+        wall::InitializePilot(run,options.inventory,options.wall,request,options.pilot);
+        status=wall::Execute(run,request,options.archive);
     }catch(const std::exception& error) {
         std::cerr<<"Assembly output incomplete: "<<error.what()<<'\n';
     }

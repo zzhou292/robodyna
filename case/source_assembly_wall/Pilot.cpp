@@ -4,9 +4,8 @@
 #include <sstream>
 
 namespace crash::cases::source_assembly_wall {
-source_assembly_dynamics::Config PilotConfig(unsigned refinement) {
-    output::Require(refinement==1||refinement==2||refinement==4,"Pilot refinement must be 1, 2 or 4");
-    source_assembly_dynamics::Config config;config.fixed_dt=1./67108864/refinement;
+source_assembly_dynamics::Config PilotConfig(const PilotOptions& options) {
+    source_assembly_dynamics::Config config;config.fixed_dt=PilotFixedStep(options);
     auto& d=config.deformation;
     d.maximum_displacement=.02;d.maximum_rotation=1;d.maximum_rotation_increment=1;
     d.maximum_strain=.2;d.maximum_thickness_curvature=.2;
@@ -16,10 +15,9 @@ source_assembly_dynamics::Config PilotConfig(unsigned refinement) {
 }
 void InitializePilot(source_assembly_dynamics::SourceAssemblyWallCase& run,
     const std::string& inventory,const std::string& wall_path,
-    const output::assembly::WallArchiveRequest& request,unsigned refinement,
-    source_assembly_dynamics::StepTimingOptions timing) {
+    const output::assembly::WallArchiveRequest& request,const PilotOptions& options) {
     namespace source=modelio::assembly;
-    const auto config=PilotConfig(refinement);
+    const auto config=PilotConfig(options);
     const auto input=source::SourceAssembly::Read(inventory,source::PinnedYarisSixPartInventory());
     const auto bytes=case_data::ReadPinnedWallManifest(wall_path);
     // Reject impossible archive requests before CUDA startup and any directory.
@@ -35,7 +33,7 @@ void InitializePilot(source_assembly_dynamics::SourceAssemblyWallCase& run,
     settings.boundary=source_assembly::SourceAssemblyWallBoundary::ReleasedExternalConnections;
     source_assembly::SourceAssemblyWallSetup setup;
     const auto prepared=setup.Initialize(bindings,canonical,bytes,settings);output::Require(bool(prepared),prepared.message);
-    const auto initialized=run.Initialize(bindings,setup,config,timing);
+    const auto initialized=run.Initialize(bindings,setup,config,options.timing);
     if(!initialized)throw std::runtime_error(FailureText(initialized));
 }
 }

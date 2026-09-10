@@ -17,7 +17,7 @@ Build this directory with explicit `ROBO_DYNA_TL_ROOT`, `Chrono_DIR` and CUDA
 architecture. Run only under the workstation guard:
 
 ```
-robo_dyna_source_assembly_wall INVENTORY WALL STEPS FRAME_EVERY NEW_DIR [REFINEMENT_1_2_4] [--stage-timing NEW_JSON]
+robo_dyna_source_assembly_wall INVENTORY WALL STEPS FRAME_EVERY NEW_DIR [REFINEMENT_1_2_4] [--stage-timing NEW_JSON] [--step-multiple 1_2_4_8]
 ```
 
 At the base step, 1024 intervals span 15.26 microseconds. That is integration and
@@ -42,3 +42,22 @@ integer wall nanoseconds. This is host call time, including any existing waits,
 not kernel time. No CUDA event, query or synchronization is added. Use an
 identical request without timing to check accepted field/ledger parity before
 using the measurements to select an optimization.
+
+The optional `--step-multiple` requests `fixed_dt = (1/67108864 s) * multiple /
+refinement`, with multiple 1, 2, 4 or 8 and the existing refinement 1, 2 or 4.
+Both default to one. Named options may appear in either order after the optional
+positional refinement; missing, unknown or repeated options fail before startup.
+`PilotOptions` carries these execution choices into the existing pilot setup.
+The exact resulting `fixed_dt` is already recorded in configuration output.
+
+This changes the requested step only: native element, contact-rate, deformation,
+source and resource checks remain in force. A multiplier's acceptance by the
+parser does not establish coupled stability or response accuracy. Matched-horizon
+runs must compare the admitted results before a larger step is used for a longer
+impact. The options/parser host gate can be built independently of the solver:
+
+```sh
+cmake -S case/source_assembly_wall/options -B /tmp/robo-dyna-pilot-options -DCMAKE_BUILD_TYPE=Release
+cmake --build /tmp/robo-dyna-pilot-options --parallel 1
+ctest --test-dir /tmp/robo-dyna-pilot-options --output-on-failure
+```
