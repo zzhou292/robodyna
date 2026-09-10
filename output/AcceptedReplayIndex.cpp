@@ -147,12 +147,13 @@ Bundle ReadIndex(const std::filesystem::path& directory) {
     const bool coupon = bundle.info.schema == "robo_dyna.elastic_coupon_artifacts.v1";
     const bool guided = bundle.info.schema == "robo_dyna.guided_plate_artifacts.v1" ||
                         bundle.info.schema == "robo_dyna.guided_plate_artifacts.v2";
-    Require(coupon || guided || bundle.info.schema == "tlfea.normal_impact_artifacts.v1", "Unsupported replay artifact schema");
-    bundle.info.kind = guided ? ReplayKind::GuidedPlate : coupon ? ReplayKind::ElasticCoupon : ReplayKind::NormalImpact;
+    const bool source_part = bundle.info.schema == "robo_dyna.source_part_elastic_artifacts.v1";
+    Require(coupon || guided || source_part || bundle.info.schema == "tlfea.normal_impact_artifacts.v1", "Unsupported replay artifact schema");
+    bundle.info.kind = source_part ? ReplayKind::SourcePartElastic : guided ? ReplayKind::GuidedPlate : coupon ? ReplayKind::ElasticCoupon : ReplayKind::NormalImpact;
     const auto& shell_model = Member(manifest, "shell_model"); const auto& vehicle_model = Member(manifest, "vehicle_model");
-    Require(shell_model.IsBool() && shell_model.GetBool() == (coupon || guided) && vehicle_model.IsBool() && !vehicle_model.GetBool(),
+    Require(shell_model.IsBool() && shell_model.GetBool() == (coupon || guided || source_part) && vehicle_model.IsBool() && !vehicle_model.GetBool(),
             "Replay schema/model scope flags disagree");
-    bundle.info.scope = guided ? "Synthetic guided elastic plate against the canonical wall" : coupon ? "Synthetic elastic shell coupon" : "Translational mass patch against the canonical wall";
+    bundle.info.scope = source_part ? "Original Yaris part 2000157; experimental elastic pulse and free response" : guided ? "Synthetic guided elastic plate against the canonical wall" : coupon ? "Synthetic elastic shell coupon" : "Translational mass patch against the canonical wall";
     bundle.info.final_epoch = Unsigned(manifest, "accepted_epoch");
     bundle.info.final_time = Real(manifest, "accepted_time_s");
     Require(bundle.info.final_epoch && bundle.info.final_time > 0, "Replay completed horizon is invalid");
@@ -162,11 +163,16 @@ Bundle ReadIndex(const std::filesystem::path& directory) {
     Require(Unsigned(final, "accepted_epoch") == bundle.info.final_epoch &&
             Bits(Real(final, "accepted_time_s")) == Bits(bundle.info.final_time), "Final metrics disagree with replay manifest");
     const auto configuration = Json(VerifiedBytes(bundle, "configuration.json"));
-    const double dt = Real(configuration,(coupon || guided) ? "fixed_dt_s" : "dt_s");
+    const double dt = Real(configuration,(coupon || guided || source_part) ? "fixed_dt_s" : "dt_s");
     const double horizon = Real(configuration,coupon ? "half_period_horizon_s" : "requested_horizon_s");
     Require(dt > 0 && horizon > 0, "Replay configured step/horizon must be positive");
     for (const auto& entry : bundle.entries) CheckTime(entry.time,entry.epoch*dt,dt,entry.epoch);
     CheckTime(bundle.info.final_time,horizon,dt,bundle.info.final_epoch);
+    if (source_part) {
+        bundle.fixed_dt = dt;
+        ReadSourcePartConfiguration(bundle, configuration, final, manifest);
+        return bundle;
+    }
     if (coupon || guided) {
         Require(Text(configuration, "schema") == (guided ? "robo_dyna.guided_plate_configuration.v1" : "robo_dyna.elastic_coupon_configuration.v1") &&
                 Unsigned(configuration, "owner_id") == bundle.info.owner_id &&

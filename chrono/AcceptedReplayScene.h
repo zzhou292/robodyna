@@ -44,13 +44,17 @@ class AcceptedReplayScene {
     AcceptedReplayScene& operator=(const AcceptedReplayScene&) = delete;
     ReplaySceneReport Initialize(const output::ReplayInfo&, const output::ReplayFrame&,
                                 std::shared_ptr<const chrono::ChTriangleMeshConnected> wall,
-                                bool wireframe = false);
+                                bool wireframe = false, double deformation_scale = 1);
+    // SourcePartElastic alone permits explicit presentation magnification: X0 +
+    // scale*(X-X0), scale in [1,1000]. Caller supplies bounds computed over
+    // transformed frames; input archives and accepted state remain untouched.
     // Stages all positions before publication; rejection preserves geometry,
     // visual handles, stamp and presentation time. No per-frame allocation.
     ReplaySceneReport Publish(const output::ReplayFrame&);
     chrono::ChSystem& system();  // Borrow for AttachSystem only; throws before Initialize.
     const ReplayStamp* stamp() const noexcept;
     const ReplayCamera* camera() const noexcept;
+    double deformation_scale() const noexcept;
     std::shared_ptr<const chrono::ChTriangleMeshConnected> moving_mesh() const noexcept;
     std::shared_ptr<const chrono::ChTriangleMeshConnected> wall_mesh() const noexcept;
     std::shared_ptr<chrono::ChVisualShapeTriangleMesh> moving_shape() const noexcept;

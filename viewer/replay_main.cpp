@@ -1,6 +1,8 @@
 #include "chrono/AcceptedReplayScene.h"
 #include "output/AcceptedReplay.h"
 #include "output/ArtifactIO.h"
+#include "chrono/geometry/ChTriangleMeshConnected.h"
+#include <algorithm>
 
 #include "chrono/core/ChDataPath.h"
 #include "chrono_vsg/ChVisualSystemVSG.h"
@@ -25,12 +27,12 @@ using crash::output::Require;
 using WallClock = std::chrono::steady_clock;
 struct Options {
     fs::path bundle, capture;
-    double fps = 10;
+    double fps = 10, deformation_scale = 1;
     std::size_t require_frames = 0;
     bool wireframe = false;
 };
 Options Parse(int argc, char** argv) {
-    Require(argc >= 2, "usage: robo_dyna_replay BUNDLE [--capture NEW_DIR] [--fps 1..30] [--require-frames N] [--wireframe]");
+    Require(argc >= 2, "usage: robo_dyna_replay BUNDLE [--capture NEW_DIR] [--fps 1..30] [--require-frames N] [--wireframe] [--deformation-scale 1..1000]");
     Options out;
     out.bundle = argv[1];
     for (int i = 2; i < argc; ++i) {
@@ -46,6 +48,9 @@ Options Parse(int argc, char** argv) {
                 std::size_t end = 0;
                 out.fps = std::stod(value, &end);
                 Require(end == value.size() && std::isfinite(out.fps) && out.fps >= 1 && out.fps <= 30, "playback fps must be 1..30");
+            } else if (arg == "--deformation-scale") {
+                std::size_t end = 0; out.deformation_scale = std::stod(value, &end);
+                Require(end == value.size() && std::isfinite(out.deformation_scale) && out.deformation_scale >= 1 && out.deformation_scale <= 1000, "deformation scale must be 1..1000");
             } else if (arg == "--require-frames") {
                 std::size_t end = 0;
                 const auto count = std::stoull(value, &end);
@@ -69,15 +74,23 @@ class ReplayOverlay : public chrono::vsg3d::ChGuiComponentVSG {
         const auto flags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
                            ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
         if (ImGui::Begin("robo-dyna | accepted replay", nullptr, flags)) {
-            ImGui::TextUnformatted(info_.kind == crash::output::ReplayKind::GuidedPlate
+            ImGui::TextUnformatted(info_.kind == crash::output::ReplayKind::SourcePartElastic
+                ? "Yaris part 2000157 | elastic Q4/T3"
+                : info_.kind == crash::output::ReplayKind::GuidedPlate
                 ? "Guided elastic Q4 plate | physical scale"
                 : info_.kind == crash::output::ReplayKind::NormalImpact
                     ? "Nondeforming normal-contact rig" : "Elastic Q4 coupon | physical scale");
+            if (info_.kind == crash::output::ReplayKind::SourcePartElastic)
+                ImGui::Text("Deformation display: %.1fx | X0 + scale*(X-X0)", scene_.deformation_scale());
+            if (scene_.deformation_scale() != 1)
+                ImGui::TextUnformatted("Gray wireframe: original undeformed reference");
             const auto& stamp = *scene_.stamp();
             ImGui::Text("Accepted time: %.6f ms", stamp.time * 1000);
             ImGui::Text("Frame %zu / %zu   Epoch %llu", stamp.index + 1, info_.frame_count,
                         static_cast<unsigned long long>(stamp.epoch));
-            ImGui::TextUnformatted(info_.kind != crash::output::ReplayKind::ElasticCoupon
+            ImGui::TextUnformatted(info_.kind == crash::output::ReplayKind::SourcePartElastic
+                ? "Free part; experimental LAW1; attachments unapplied"
+                : info_.kind != crash::output::ReplayKind::ElasticCoupon
                 ? "Blue: moving surface   Gray wireframe: canonical wall"
                 : "Blue: accepted coupon surface | no wall");
             if (capture_) ImGui::TextUnformatted("Indexed PNG capture | fixed camera");
@@ -141,10 +154,27 @@ int main(int argc, char** argv) {
         crash::output::AcceptedReplay reader;
         auto report = reader.Open(options.bundle);
         Require(report.status == crash::output::ReplayStatus::Ok, report.diagnostic.c_str());
-        const auto info = *reader.info();
+        auto info = *reader.info();
+        Require(options.deformation_scale == 1 || info.kind == crash::output::ReplayKind::SourcePartElastic, "Deformation scaling is explicit source-part presentation only");
+        if (options.deformation_scale != 1) {
+            const auto reference = reader.frame()->mesh->GetCoordsVertices();
+            info.bounds_min.fill(std::numeric_limits<double>::infinity());
+            info.bounds_max.fill(-std::numeric_limits<double>::infinity());
+            for (std::size_t i = 0; i < info.frame_count; ++i) {
+                report = reader.Load(i); Require(report.status == crash::output::ReplayStatus::Ok, report.diagnostic.c_str());
+                const auto& vertices = reader.frame()->mesh->GetCoordsVertices();
+                for (std::size_t n = 0; n < reference.size(); ++n) for (unsigned axis = 0; axis < 3; ++axis) {
+                    const double x = reference[n][axis] + options.deformation_scale * (vertices[n][axis] - reference[n][axis]);
+                    Require(std::isfinite(x), "Magnified display bounds are nonfinite");
+                    info.bounds_min[axis] = std::min(info.bounds_min[axis], x);
+                    info.bounds_max[axis] = std::max(info.bounds_max[axis], x);
+                }
+            }
+            report = reader.Load(0); Require(report.status == crash::output::ReplayStatus::Ok, report.diagnostic.c_str());
+        }
         Require(!options.require_frames || options.require_frames == info.frame_count, "accepted frame count differs from required count");
         crash::visual::AcceptedReplayScene scene;
-        const auto initialized = scene.Initialize(info, *reader.frame(), reader.wall(), options.wireframe);
+        const auto initialized = scene.Initialize(info, *reader.frame(), reader.wall(), options.wireframe, options.deformation_scale);
         Require(initialized.status == crash::visual::ReplaySceneStatus::Ok, initialized.message);
         const bool capture = !options.capture.empty();
         if (capture) {
@@ -290,9 +320,12 @@ int main(int argc, char** argv) {
             crash::output::Boolean(manifest, "complete", true);
             crash::output::Boolean(manifest, "all_png_decoded", true);
             crash::output::Boolean(manifest, "simulation_executed_by_viewer", false);
-            crash::output::Boolean(manifest, "deformation_scaled", false);
+            crash::output::Boolean(manifest, "deformation_scaled", options.deformation_scale != 1);
+            crash::output::Number(manifest, "deformation_scale", options.deformation_scale);
+            crash::output::Boolean(manifest, "original_reference_outline", options.deformation_scale != 1);
+            crash::output::String(manifest, "deformation_display_law", "X0 + scale*(accepted_X-X0)");
             crash::output::Boolean(manifest, "wireframe", options.wireframe);
-            crash::output::String(manifest, "wall_display", info.kind != crash::output::ReplayKind::ElasticCoupon ? "gray_wireframe" : "none");
+            crash::output::String(manifest, "wall_display", reader.wall() ? "gray_wireframe" : "none");
             Array(manifest, "camera_position", scene.camera()->position);
             Array(manifest, "camera_target", scene.camera()->target);
             crash::output::String(manifest, "camera_vertical", scene.camera()->vertical == crash::visual::ReplayVertical::Y ? "Y" : "Z");

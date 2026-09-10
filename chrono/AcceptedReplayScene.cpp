@@ -116,7 +116,8 @@ struct AcceptedReplayScene::Impl {
     output::ReplayInfo info;
     std::shared_ptr<chrono::ChTriangleMeshConnected> moving, wall;
     std::shared_ptr<chrono::ChVisualShapeTriangleMesh> shape;
-    std::vector<chrono::ChVector3d> staged;
+    std::vector<chrono::ChVector3d> staged, reference;
+    double deformation_scale = 1;
     ReplayStamp stamp;
     ReplayCamera camera;
 };
@@ -124,16 +125,18 @@ AcceptedReplayScene::AcceptedReplayScene() = default;
 AcceptedReplayScene::~AcceptedReplayScene() = default;
 
 ReplaySceneReport AcceptedReplayScene::Initialize(const output::ReplayInfo& info, const output::ReplayFrame& frame,
-                                                std::shared_ptr<const chrono::ChTriangleMeshConnected> wall, bool wireframe) {
+                                                std::shared_ptr<const chrono::ChTriangleMeshConnected> wall, bool wireframe, double deformation_scale) {
     if (impl_) return {ReplaySceneStatus::AlreadyInitialized, "Replay scene already initialized"};
-    if (!frame.mesh || !info.owner_id || frame.owner_id != info.owner_id || frame.index != 0 || frame.epoch != 0 || frame.time != 0 ||
+    if (!std::isfinite(deformation_scale) || deformation_scale < 1 || deformation_scale > 1000 ||
+        (deformation_scale != 1 && info.kind != output::ReplayKind::SourcePartElastic) ||
+        !frame.mesh || !info.owner_id || frame.owner_id != info.owner_id || frame.index != 0 || frame.epoch != 0 || frame.time != 0 ||
         !std::isfinite(info.final_time) || info.final_time < frame.time ||
         frame.epoch > info.final_epoch || !info.frame_count || info.frame_count > 1000 ||
         (info.frame_count == 1 && (info.final_epoch != 0 || info.final_time != 0)) ||
         (info.kind != output::ReplayKind::NormalImpact && info.kind != output::ReplayKind::ElasticCoupon &&
-         info.kind != output::ReplayKind::GuidedPlate) ||
+         info.kind != output::ReplayKind::GuidedPlate && info.kind != output::ReplayKind::SourcePartElastic) ||
         frame.mesh->GetCoordsVertices().size() != info.node_count || frame.mesh->GetIndicesVertices().size() != info.triangle_count ||
-        (info.kind != output::ReplayKind::ElasticCoupon) != static_cast<bool>(wall) ||
+        (info.kind == output::ReplayKind::NormalImpact || info.kind == output::ReplayKind::GuidedPlate) != static_cast<bool>(wall) ||
         !DisplayGeometry(frame.mesh->GetCoordsVertices(), frame.mesh->GetIndicesVertices()) ||
         (wall && !DisplayGeometry(wall->GetCoordsVertices(), wall->GetIndicesVertices())))
         return {ReplaySceneStatus::InvalidFrame, "Invalid validated replay geometry or metadata"};
@@ -144,8 +147,13 @@ ReplaySceneReport AcceptedReplayScene::Initialize(const output::ReplayInfo& info
         next->moving = CopyGeometry(*frame.mesh);
         next->shape = MakeShape(next->moving, true, wireframe);
         next->staged.resize(info.node_count);
+        next->deformation_scale = deformation_scale;
+        if (deformation_scale != 1) next->reference = frame.mesh->GetCoordsVertices();
         next->system.SetGravitationalAcceleration(chrono::VNULL);
         next->system.AddBody(Carrier("accepted moving surface", next->shape));
+        if (deformation_scale != 1)
+            next->system.AddBody(Carrier("original source reference outline",
+                MakeShape(CopyGeometry(*frame.mesh), false, true)));
         if (wall) {
             next->wall = CopyGeometry(*wall);
             next->system.AddBody(Carrier("canonical fixed wall", MakeShape(next->wall, false, true)));
@@ -170,6 +178,9 @@ ReplaySceneReport AcceptedReplayScene::Publish(const output::ReplayFrame& frame)
         frame.mesh->GetIndicesVertices() != state.moving->GetIndicesVertices())
         return {ReplaySceneStatus::InvalidFrame, "Replay frame identity, ordering or connectivity changed"};
     std::copy(frame.mesh->GetCoordsVertices().begin(), frame.mesh->GetCoordsVertices().end(), state.staged.begin());
+    if (state.deformation_scale != 1)
+        for (std::size_t n = 0; n < state.staged.size(); ++n)
+            state.staged[n] = state.reference[n] + state.deformation_scale * (state.staged[n] - state.reference[n]);
     if (!DisplayGeometry(state.staged, state.moving->GetIndicesVertices()))
         return {ReplaySceneStatus::InvalidFrame, "Replay frame cannot be represented by renderer geometry"};
     state.moving->GetCoordsVertices().swap(state.staged);
@@ -182,6 +193,7 @@ chrono::ChSystem& AcceptedReplayScene::system() {
     return impl_->system;
 }
 const ReplayStamp* AcceptedReplayScene::stamp() const noexcept { return impl_ ? &impl_->stamp : nullptr; }
+double AcceptedReplayScene::deformation_scale() const noexcept { return impl_ ? impl_->deformation_scale : 1; }
 const ReplayCamera* AcceptedReplayScene::camera() const noexcept { return impl_ ? &impl_->camera : nullptr; }
 std::shared_ptr<const chrono::ChTriangleMeshConnected> AcceptedReplayScene::moving_mesh() const noexcept {
     return impl_ ? impl_->moving : nullptr;

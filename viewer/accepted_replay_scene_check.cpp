@@ -184,6 +184,33 @@ TEST(AcceptedReplayScene, GuidedPlateRequiresWallAndUsesFixedObliquePhysicalView
     }
 }
 
+TEST(AcceptedReplayScene, SourcePartMagnificationIsExplicitPresentationAndPreservesInputAndFailedState) {
+    auto info=Info();info.kind=crash::output::ReplayKind::SourcePartElastic;
+    AcceptedReplayScene scene;auto first=Frame(0,0);auto next=Frame(1,.002);
+    EXPECT_EQ(scene.Initialize(Info(),first,{},false,10).status,ReplaySceneStatus::InvalidFrame);
+    EXPECT_EQ(scene.Initialize(info,first,{},false,0).status,ReplaySceneStatus::InvalidFrame);
+    EXPECT_EQ(scene.Initialize(info,first,{},false,1001).status,ReplaySceneStatus::InvalidFrame);
+    ASSERT_EQ(scene.Initialize(info,first,{},false,10).status,ReplaySceneStatus::Ok);
+    EXPECT_EQ(scene.deformation_scale(),10);EXPECT_FALSE(scene.wall_mesh());
+    ASSERT_EQ(scene.system().GetBodies().size(),2u);
+    const auto reference=scene.system().GetBodies()[1];
+    EXPECT_EQ(reference->GetName(),"original source reference outline");
+    EXPECT_TRUE(reference->IsFixed());EXPECT_FALSE(reference->IsCollisionEnabled());
+    const auto outline=std::dynamic_pointer_cast<chrono::ChVisualShapeTriangleMesh>(reference->GetVisualShape(0));
+    ASSERT_TRUE(outline);EXPECT_TRUE(outline->IsWireframe());EXPECT_FALSE(outline->IsMutable());
+    EXPECT_EQ(outline->GetMesh()->GetCoordsVertices(),first.mesh->GetCoordsVertices());
+    ASSERT_EQ(scene.Publish(next).status,ReplaySceneStatus::Ok);
+    EXPECT_DOUBLE_EQ(scene.moving_mesh()->GetCoordsVertices()[1].z(),.02);
+    EXPECT_DOUBLE_EQ(next.mesh->GetCoordsVertices()[1].z(),.002);
+    EXPECT_DOUBLE_EQ(first.mesh->GetCoordsVertices()[1].z(),0);
+    EXPECT_EQ(outline->GetMesh()->GetCoordsVertices(),first.mesh->GetCoordsVertices());
+    const auto prior=scene.moving_mesh()->GetCoordsVertices();auto invalid=Frame(2,.002);invalid.owner_id=77;
+    EXPECT_EQ(scene.Publish(invalid).status,ReplaySceneStatus::InvalidFrame);
+    EXPECT_EQ(scene.moving_mesh()->GetCoordsVertices(),prior);EXPECT_EQ(scene.stamp()->index,1u);
+    ASSERT_EQ(scene.Publish(Frame(2,-.002)).status,ReplaySceneStatus::Ok);
+    EXPECT_DOUBLE_EQ(scene.moving_mesh()->GetCoordsVertices()[1].z(),-.02);
+}
+
 TEST(AcceptedReplayScene, DisplayRangeAndDegenerateGeometryFailBeforePublication) {
     AcceptedReplayScene scene;
     auto invalid = Frame(0, 0);

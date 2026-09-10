@@ -11,7 +11,7 @@ namespace chrono { class ChTriangleMeshConnected; }
 
 namespace crash::output {
 
-enum class ReplayKind { NormalImpact, ElasticCoupon, GuidedPlate };
+enum class ReplayKind { NormalImpact, ElasticCoupon, GuidedPlate, SourcePartElastic };
 enum class ReplayStatus { Ok, InvalidBundle, NotInitialized, InvalidFrame };
 struct ReplayReport { ReplayStatus status; std::string diagnostic; };
 struct ReplayInfo {

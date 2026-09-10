@@ -1,0 +1,34 @@
+#pragma once
+#include "SourcePartElasticInternal.h"
+#include "SourcePartElasticPilot.h"
+#include "lib_utest/qualification/qeph/QephForceFixture.h"
+#include "lib_utest/qualification/t3/T3ForcePortFixture.h"
+
+namespace crash::cases::source_part_elastic {
+// Qualification-only access; no public case API accepts fabricated candidates.
+struct SourcePartElasticTestAccess {
+    static auto& Internal(SourcePartElasticCase& c) { return *c.impl_; }
+};
+namespace test {
+namespace qn=tl::qualification::qeph;
+namespace tn=tl::qualification::t3;
+struct NativeSequence {
+    std::array<qn::Reference,source::Q4Count> qr;
+    std::array<tn::Reference,source::T3Count> tr;
+    std::array<qn::History,source::Q4Count> qhistory;
+    std::array<tn::History,source::T3Count> thistory;
+    std::array<qn::ForceTrial,source::Q4Count> qtrial;
+    std::array<tn::ForceTrial,source::T3Count> ttrial;
+    void Initialize(const fe::ShellBatchBinding&);
+    void Check(SourcePartElasticCase&,const Snapshot& base,const Snapshot& endpoint);
+    void Accept();
+};
+struct Results {
+    std::array<q::ForceTrial,source::Q4Count> qeph;
+    std::array<t::ForceTrial,source::T3Count> t3;
+};
+void ReadResults(SourcePartElasticCase&,Results&);
+void SameResults(const Results&,const Results&);
+void SameSnapshot(const Snapshot&,const Snapshot&,bool same_owner=true);
+} // namespace test
+} // namespace crash::cases::source_part_elastic

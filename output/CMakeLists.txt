@@ -1,5 +1,5 @@
 find_package(OpenSSL REQUIRED COMPONENTS Crypto)
-add_library(robo_dyna_artifact_io STATIC ArtifactIO.cpp ArtifactInventory.cpp MeshArchive.cpp
+add_library(robo_dyna_artifact_io STATIC ArtifactIO.cpp ArtifactInventory.cpp MeshArchive.cpp SurfaceBindingFields.cpp
   CsvLedgerSegments.cpp CsvLedgerWriter.cpp)
 target_link_libraries(robo_dyna_artifact_io PUBLIC Chrono::Chrono_core PRIVATE OpenSSL::Crypto)
 target_include_directories(robo_dyna_artifact_io PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
@@ -8,10 +8,19 @@ target_compile_features(robo_dyna_artifact_io PUBLIC cxx_std_17)
 include("${CMAKE_CURRENT_LIST_DIR}/../case/CanonicalWall.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../case/CanonicalWallArtifacts.cmake")
 add_library(robo_dyna_accepted_replay STATIC AcceptedReplay.cpp AcceptedReplayIndex.cpp AcceptedReplayMesh.cpp
-  AcceptedReplayGuided.cpp AcceptedReplayLedgers.cpp)
+  AcceptedReplayGuided.cpp AcceptedReplayLedgers.cpp AcceptedReplaySourcePart.cpp)
 target_link_libraries(robo_dyna_accepted_replay PUBLIC robo_dyna_artifact_io PRIVATE robo_dyna_canonical_wall_artifacts)
 if(ROBO_DYNA_ENABLE_REPLAY_CHECKS OR ROBO_DYNA_ENABLE_ELASTIC_COUPON)
   find_package(GTest REQUIRED)
+  add_executable(robo_dyna_accepted_replay_source_part_check accepted_replay_source_part_check.cpp)
+  target_link_libraries(robo_dyna_accepted_replay_source_part_check PRIVATE
+    robo_dyna_accepted_replay GTest::gtest_main)
+  set(ROBO_DYNA_SOURCE_PART_REPLAY_FIXTURE "" CACHE PATH "Completed original source-part elastic archive")
+  if(ROBO_DYNA_SOURCE_PART_REPLAY_FIXTURE)
+    add_test(NAME accepted_replay_source_part COMMAND robo_dyna_accepted_replay_source_part_check)
+    set_tests_properties(accepted_replay_source_part PROPERTIES TIMEOUT 120 RUN_SERIAL TRUE PROCESSORS 1
+      ENVIRONMENT "ROBO_DYNA_SOURCE_PART_REPLAY_FIXTURE=${ROBO_DYNA_SOURCE_PART_REPLAY_FIXTURE}")
+  endif()
   add_executable(robo_dyna_csv_ledger_segments_check csv_ledger_segments_check.cpp)
   target_link_libraries(robo_dyna_csv_ledger_segments_check PRIVATE robo_dyna_artifact_io GTest::gtest_main)
   add_test(NAME csv_ledger_segments COMMAND robo_dyna_csv_ledger_segments_check)

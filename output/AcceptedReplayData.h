@@ -32,6 +32,7 @@ struct Bundle {
     std::vector<std::array<std::uint64_t,9>> source_triangles;
     double fixed_dt = 0;
     std::uint64_t qualification_id = 0, wall_binding_id = 0;
+    std::uint64_t source_configuration_id = 0;
     std::vector<ContactParentBinding> contact_parents;
     std::string contact_integration_backend;
     unsigned contact_depth_limit=16;
@@ -49,6 +50,8 @@ Bundle ReadIndex(const std::filesystem::path&);
 std::shared_ptr<chrono::ChTriangleMeshConnected> ReadMesh(const Bundle&, const std::string&);
 void CheckFrameFields(const Bundle&, const Entry&, const chrono::ChTriangleMeshConnected&);
 void CheckPositionFields(const Value&, const chrono::ChTriangleMeshConnected&);
+void ReadSourcePartConfiguration(Bundle&, const Document&, const Document&, const Document&);
+void CheckSourcePartFields(const Bundle&, const Entry&, const chrono::ChTriangleMeshConnected&);
 void ReadGuidedConfiguration(Bundle&, const Document&, const Document&, const Document&);
 void CheckGuidedLedgers(Bundle&, const Document& configuration, const Document& manifest);
 void CheckGuidedFields(const Bundle&, const Entry&, const chrono::ChTriangleMeshConnected&);

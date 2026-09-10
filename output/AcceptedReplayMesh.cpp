@@ -91,6 +91,7 @@ void CheckPositionFields(const Value& fields, const chrono::ChTriangleMeshConnec
         }
 }
 void CheckFrameFields(const Bundle& bundle, const Entry& entry, const chrono::ChTriangleMeshConnected& mesh) {
+    if (bundle.info.kind == ReplayKind::SourcePartElastic) { CheckSourcePartFields(bundle, entry, mesh); return; }
     if (bundle.info.kind == ReplayKind::GuidedPlate) { CheckGuidedFields(bundle, entry, mesh); return; }
     if (bundle.info.kind != ReplayKind::ElasticCoupon) return;
     const auto name = entry.mesh.substr(0, entry.mesh.size()-10)+".fields.json";
