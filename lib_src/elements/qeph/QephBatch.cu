@@ -48,7 +48,8 @@ BatchReport QephBatch::InitializeJoined(const QephBatchConfig& config,const Shel
   return InitializeImpl(config,nullptr,&binding,&plasticity);
 }
 BatchReport QephBatch::InitializeImpl(const QephBatchConfig& config,const QephBatchElement* elements,
-    const ShellBatchBinding* joined,const ShellBatchPlasticityConfig* plasticity) {
+    const ShellBatchBinding* joined,const ShellBatchPlasticityConfig* plasticity,
+    const ShellBatchPlasticityBinding* collection_plasticity) {
   if(impl_) return {BatchStatus::InvalidInput,"QEPH batch is already initialized"};
   // A bounded startup allocation avoids placing the complete 128-parent model
   // and two history slabs on the host stack. No allocation occurs per step.
@@ -64,6 +65,10 @@ BatchReport QephBatch::InitializeImpl(const QephBatchConfig& config,const QephBa
   report=candidate->PendingError(); if(report.status!=BatchStatus::Success) return report;
   if(plasticity) {
     report=candidate->InitializePlasticity(*plasticity,initial->model);
+    if(report.status!=BatchStatus::Success) return report;
+  }
+  if(collection_plasticity) {
+    report=candidate->InitializePlasticity(*collection_plasticity);
     if(report.status!=BatchStatus::Success) return report;
   }
   report=candidate->Runtime(cudaMalloc(reinterpret_cast<void**>(&candidate->storage),sizeof(Storage)),"QEPH allocation failed");

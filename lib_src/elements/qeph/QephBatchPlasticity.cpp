@@ -3,6 +3,25 @@
 #include <new>
 
 namespace tl::fea::qeph {
+BatchReport QephBatch::InitializeJoined(const QephBatchConfig& config,const ShellBatchBinding& binding,
+    const ShellBatchPlasticityBinding& plasticity) {
+  if(!plasticity.Matches(binding))
+    return {BatchStatus::InvalidInput,"Complete plasticity catalog differs from the joined native binding"};
+  return InitializeImpl(config,nullptr,&binding,nullptr,&plasticity);
+}
+BatchReport QephBatch::Impl::InitializePlasticity(const ShellBatchPlasticityBinding& catalog) {
+  using namespace shell_batch_plasticity_detail;
+  if(!joined_binding) return {BatchStatus::InvalidInput,"Collection plasticity requires a joined native binding"};
+  std::unique_ptr<HostStorage> next(new(std::nothrow) HostStorage);
+  if(!next) return {BatchStatus::ResourceLimit,"Collection plastic section host allocation failed"};
+  const auto setup=next->InitializeCollection(catalog,*joined_binding,ShellBindingFamily::Qeph,
+      config.element_count,config.max_device_bytes-sizeof(batch_detail::Storage));
+  if(setup.status==SetupStatus::DeviceFailure) return Runtime(setup.cuda_status,setup.message);
+  if(setup.status!=SetupStatus::Success)
+    return {setup.status==SetupStatus::ResourceLimit?BatchStatus::ResourceLimit:BatchStatus::InvalidInput,setup.message};
+  plasticity=std::move(next);
+  return {BatchStatus::Success,"OK"};
+}
 BatchReport QephBatch::Impl::InitializePlasticity(const ShellBatchPlasticityConfig& declaration,
     const batch_detail::Model& model) {
   using namespace shell_batch_plasticity_detail;

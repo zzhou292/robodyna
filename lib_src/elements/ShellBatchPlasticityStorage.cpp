@@ -53,6 +53,8 @@ cudaError_t HostStorage::Read(unsigned slab,std::size_t count,cudaStream_t strea
   return error==cudaSuccess?cudaStreamSynchronize(stream):error;
 }
 bool HostStorage::SameMaterialScope(const HostStorage& b) const noexcept {
+  if(collection_||b.collection_)
+    return collection_&&b.collection_&&collection_->SameScope(*b.collection_);
   if(material_id_!=b.material_id_||curve_id_!=b.curve_id_||curve_count_!=b.curve_count_||
      !Same(material_,b.material_)||rate_.enabled!=b.rate_.enabled||
      !Same(rate_.cowper_symonds_c_per_s,b.rate_.cowper_symonds_c_per_s)||

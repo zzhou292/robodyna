@@ -6,7 +6,7 @@
 #include <memory>
 
 namespace tl::fea { class ShellBatchBinding; class ShellBatchPublication;
-  struct ShellBatchPlasticityConfig; struct ShellBatchSectionState; }
+  class ShellBatchPlasticityBinding; struct ShellBatchPlasticityConfig; struct ShellBatchSectionState; }
 namespace tl::fea::t3 {
 constexpr std::size_t MaxBatchElements=MaxShellCollectionParents,MaxBatchNodes=MaxShellCollectionNodes;
 constexpr std::size_t MaxBatchDeviceBytes=1024*1024;
@@ -98,6 +98,9 @@ class T3Batch {
   // caller config/curve storage may expire after Initialize returns.
   BatchReport Initialize(const T3BatchConfig&,const T3BatchElement*,const ShellBatchPlasticityConfig&);
   BatchReport InitializeJoined(const T3BatchConfig&,const ShellBatchBinding&,const ShellBatchPlasticityConfig&);
+  // Complete multi-material catalog: both families copy the same full binding,
+  // while each native parent selects its own prepared material/section.
+  BatchReport InitializeJoined(const T3BatchConfig&,const ShellBatchBinding&,const ShellBatchPlasticityBinding&);
   // Raw supplied-view validation/assembly. Initial numerical binding retains
   // its source identity; actual owner association is checked separately before
   // the first standalone or joined publication. A forged raw view alone is
@@ -121,7 +124,8 @@ class T3Batch {
  private:
   friend class ::tl::fea::ShellBatchPublication;
   BatchReport InitializeImpl(const T3BatchConfig&,const T3BatchElement*,const ShellBatchBinding*,
-                             const ShellBatchPlasticityConfig* plasticity=nullptr);
+                             const ShellBatchPlasticityConfig* plasticity=nullptr,
+                             const ShellBatchPlasticityBinding* collection_plasticity=nullptr);
   BatchReport AssembleAcceptedImpl(FENodalState*,const NodalAssemblyView&);
   friend BatchReport CommitT3Trial(FENodalState&,const NodalTrialToken&,T3Batch&,
                                     const BatchDiagnostics&,const NodalValidationReceipt&) noexcept;

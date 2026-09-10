@@ -1,0 +1,11 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+
+cc_test(
+    name = "shell_plasticity_binding_check",
+    srcs = ["PlasticityBindingTest.cpp", "PlasticityBindingFixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        "//lib_src/elements:shell_batch_plasticity_binding",
+        "@googletest//:gtest_main",
+    ],
+)

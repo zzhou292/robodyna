@@ -16,4 +16,7 @@ void SameSections(const SectionPair&,const SectionPair&);
 void CheckHostAdapters(const Rig&,const Prepared&,const Staged& old_shell,
                        const SectionPair& old_section,const Staged&,const SectionPair&,
                        tl::material::TabulatedShellPlasticityRate rate={});
+void CheckHostAdapters(const Rig&,const Prepared&,const Staged& old_shell,
+                       const SectionPair& old_section,const Staged&,const SectionPair&,
+                       const fe::ShellBatchPlasticityBinding&);
 } // namespace resident_plasticity_test

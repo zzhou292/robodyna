@@ -49,7 +49,8 @@ BatchReport T3Batch::InitializeJoined(const T3BatchConfig& config,const ShellBat
   return InitializeImpl(config,nullptr,&binding,&plasticity);
 }
 BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchElement* elements,
-    const ShellBatchBinding* joined,const ShellBatchPlasticityConfig* plasticity) {
+    const ShellBatchBinding* joined,const ShellBatchPlasticityConfig* plasticity,
+    const ShellBatchPlasticityBinding* collection_plasticity) {
   if(impl_) return {BatchStatus::InvalidInput,"T3 batch is already initialized"};
   // Startup staging is bounded and heap-backed; it is released after the one
   // resident device allocation is initialized. Per-step storage is unchanged.
@@ -65,6 +66,10 @@ BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchEle
   report=candidate->PendingError(); if(report.status!=BatchStatus::Success) return report;
   if(plasticity) {
     report=candidate->InitializePlasticity(*plasticity,initial->model);
+    if(report.status!=BatchStatus::Success) return report;
+  }
+  if(collection_plasticity) {
+    report=candidate->InitializePlasticity(*collection_plasticity);
     if(report.status!=BatchStatus::Success) return report;
   }
   report=candidate->Runtime(cudaMalloc(reinterpret_cast<void**>(&candidate->storage),sizeof(Storage)),"T3 allocation failed");

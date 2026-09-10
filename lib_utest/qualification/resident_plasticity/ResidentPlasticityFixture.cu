@@ -1,4 +1,5 @@
 #include "ResidentPlasticityFixture.h"
+#include "lib_src/elements/ShellBatchPlasticityBinding.h"
 #include <algorithm>
 
 namespace resident_plasticity_test {
@@ -82,17 +83,14 @@ void Compare(const fe::sections::ShellLayeredJ2History& a,const fe::sections::Sh
   }
 }
 }
-void CheckHostAdapters(const Rig& r,const Prepared& p,const Staged& old_shell,
+namespace {
+void CheckHostParameters(const Rig& r,const Prepared& p,const Staged& old_shell,
     const SectionPair& old_section,const Staged& next,const SectionPair& section,
-    tl::material::TabulatedShellPlasticityRate rate) {
-  fe::sections::PointParameters parameters;
-  const auto& material=r.binding.qeph_reference().input;
-  ASSERT_EQ(tl::material::PrepareTabulatedShellPlasticity(material.young_modulus,material.poisson_ratio,material.density,
-      {CurveX,CurveY,3},rate,parameters),tl::material::TabulatedShellPlasticityStatus::Ok);
+    const fe::sections::PointParameters& qparameters,const fe::sections::PointParameters& tparameters) {
   q::LayeredJ2ForceTrial qtrial; t::LayeredJ2ForceTrial ttrial;
-  ASSERT_EQ(q::EvaluateLayeredJ2Force(r.binding.qeph_reference(),parameters,
+  ASSERT_EQ(q::EvaluateLayeredJ2Force(r.binding.qeph_reference(),qparameters,
       {old_shell.qeph.proposed_history,old_section.q.history},QephInterval(r,p),qtrial),q::Status::kSuccess);
-  ASSERT_EQ(t::EvaluateLayeredJ2Force(r.binding.t3_reference(),parameters,
+  ASSERT_EQ(t::EvaluateLayeredJ2Force(r.binding.t3_reference(),tparameters,
       {old_shell.t3.proposed_history,old_section.t.history},T3Interval(r,p),ttrial),t::Status::kSuccess);
   Compare(next.qeph,qtrial.force); Compare(next.t3,ttrial.force);
   Compare(section.q.history,qtrial.proposed_section); Compare(section.t.history,ttrial.proposed_section);
@@ -102,5 +100,23 @@ void CheckHostAdapters(const Rig& r,const Prepared& p,const Staged& old_shell,
   Near(section.t.cumulative_plastic_work_J,old_section.t.cumulative_plastic_work_J+
       ttrial.section_diagnostics.plastic_work_density_increment*old_shell.t3.proposed_history.data().thickness*
       ttrial.force.kinematics.area);
+}
+} // namespace
+void CheckHostAdapters(const Rig& r,const Prepared& p,const Staged& old_shell,
+    const SectionPair& old_section,const Staged& next,const SectionPair& section,
+    tl::material::TabulatedShellPlasticityRate rate) {
+  fe::sections::PointParameters parameters;
+  const auto& material=r.binding.qeph_reference().input;
+  ASSERT_EQ(tl::material::PrepareTabulatedShellPlasticity(material.young_modulus,material.poisson_ratio,material.density,
+      {CurveX,CurveY,3},rate,parameters),tl::material::TabulatedShellPlasticityStatus::Ok);
+  CheckHostParameters(r,p,old_shell,old_section,next,section,parameters,parameters);
+}
+void CheckHostAdapters(const Rig& r,const Prepared& p,const Staged& old_shell,
+    const SectionPair& old_section,const Staged& next,const SectionPair& section,
+    const fe::ShellBatchPlasticityBinding& catalog) {
+  fe::sections::PointParameters qp,tp;
+  ASSERT_TRUE(catalog.Parameters(fe::ShellBindingFamily::Qeph,0,&qp));
+  ASSERT_TRUE(catalog.Parameters(fe::ShellBindingFamily::T3,0,&tp));
+  CheckHostParameters(r,p,old_shell,old_section,next,section,qp,tp);
 }
 } // namespace resident_plasticity_test

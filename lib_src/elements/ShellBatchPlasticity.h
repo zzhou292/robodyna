@@ -7,6 +7,8 @@ namespace tl::fea {
 // Existing batch configuration
 // records and LAW1 device storage remain unchanged. Initialize copies all data;
 // the caller may release this declaration and its curve storage afterwards.
+// Joined collections with per-parent materials use ShellBatchPlasticityBinding
+// instead; the original single-material API and scope rules remain available.
 struct ShellBatchPlasticityConfig {
   std::uint64_t material_id=0,curve_id=0;
   material::TabulatedShellPlasticityCurve curve{};

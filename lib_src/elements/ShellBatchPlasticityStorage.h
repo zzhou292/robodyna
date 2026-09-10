@@ -1,5 +1,6 @@
 #pragma once
 #include "ShellBatchPlasticity.h"
+#include "ShellBatchPlasticityBinding.h"
 #include "ShellCollectionLimits.h"
 #include <cuda_runtime_api.h>
 #include <array>
@@ -7,7 +8,7 @@
 #include <type_traits>
 
 namespace tl::fea::shell_batch_plasticity_detail {
-constexpr std::size_t MaxCurvePoints=1024;
+constexpr std::size_t MaxCurvePoints=MaxShellPlasticityCurvePoints;
 struct ReferenceMaterial { double young=0,nu=0,rho=0; };
 struct DeviceStorage {
   double curve_x[MaxCurvePoints]{},curve_y[MaxCurvePoints]{};
@@ -34,6 +35,8 @@ class HostStorage {
   HostStorage& operator=(const HostStorage&)=delete;
   SetupReport Initialize(const ShellBatchPlasticityConfig&,const ReferenceMaterial*,
       std::size_t count,std::size_t maximum_extra_device_bytes);
+  SetupReport InitializeCollection(const ShellBatchPlasticityBinding&,const ShellBatchBinding&,
+      ShellBindingFamily,std::size_t count,std::size_t maximum_extra_device_bytes);
   cudaError_t Read(unsigned slab,std::size_t count,cudaStream_t) noexcept;
   DeviceStorage* device() const noexcept { return device_; }
   const ShellBatchSectionState* staging() const noexcept { return staging_.data(); }
@@ -46,6 +49,7 @@ class HostStorage {
   material::TabulatedShellPlasticityRate rate_{};
   std::array<double,MaxCurvePoints> curve_x_{},curve_y_{};
   std::array<ShellBatchSectionState,MaxShellCollectionParents> staging_{};
+  std::unique_ptr<ShellBatchPlasticityBinding> collection_; // New path only; full owned scope.
 };
 inline bool SameMaterialScope(const std::unique_ptr<HostStorage>& a,
     const std::unique_ptr<HostStorage>& b) noexcept {

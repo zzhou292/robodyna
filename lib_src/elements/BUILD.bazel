@@ -34,12 +34,20 @@ cc_library(
     deps = ["//lib_src/elements/sections:shell_layered_j2"],
 )
 
+cc_library(
+    name = "shell_batch_plasticity_binding",
+    srcs = ["ShellBatchPlasticityBinding.cpp", "ShellBatchPlasticityBindingSetup.cpp"],
+    hdrs = ["ShellBatchPlasticityBinding.h", "ShellBatchPlasticityBindingInternal.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":shell_batch_binding", ":shell_batch_plasticity"],
+)
+
 cuda_library(
     name = "shell_batch_plasticity_storage",
-    srcs = ["ShellBatchPlasticityStorage.cpp"],
+    srcs = ["ShellBatchPlasticityStorage.cpp", "ShellBatchPlasticityCollectionStorage.cpp"],
     hdrs = ["ShellBatchPlasticityStorage.h"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
-    deps = [":shell_batch_plasticity", ":shell_collection_limits"],
+    deps = [":shell_batch_plasticity", ":shell_batch_plasticity_binding", ":shell_collection_limits"],
 )
 
 cuda_library(

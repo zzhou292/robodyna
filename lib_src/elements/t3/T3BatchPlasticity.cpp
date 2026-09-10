@@ -3,6 +3,25 @@
 #include <new>
 
 namespace tl::fea::t3 {
+BatchReport T3Batch::InitializeJoined(const T3BatchConfig& config,const ShellBatchBinding& binding,
+    const ShellBatchPlasticityBinding& plasticity) {
+  if(!plasticity.Matches(binding))
+    return {BatchStatus::InvalidInput,"Complete plasticity catalog differs from the joined native binding"};
+  return InitializeImpl(config,nullptr,&binding,nullptr,&plasticity);
+}
+BatchReport T3Batch::Impl::InitializePlasticity(const ShellBatchPlasticityBinding& catalog) {
+  using namespace shell_batch_plasticity_detail;
+  if(!joined_binding) return {BatchStatus::InvalidInput,"Collection plasticity requires a joined native binding"};
+  std::unique_ptr<HostStorage> next(new(std::nothrow) HostStorage);
+  if(!next) return {BatchStatus::ResourceLimit,"Collection plastic section host allocation failed"};
+  const auto setup=next->InitializeCollection(catalog,*joined_binding,ShellBindingFamily::T3,
+      config.element_count,config.max_device_bytes-sizeof(batch_detail::Storage));
+  if(setup.status==SetupStatus::DeviceFailure) return Runtime(setup.cuda_status,setup.message);
+  if(setup.status!=SetupStatus::Success)
+    return {setup.status==SetupStatus::ResourceLimit?BatchStatus::ResourceLimit:BatchStatus::InvalidInput,setup.message};
+  plasticity=std::move(next);
+  return {BatchStatus::Success,"OK"};
+}
 BatchReport T3Batch::Impl::InitializePlasticity(const ShellBatchPlasticityConfig& declaration,
     const batch_detail::Model& model) {
   using namespace shell_batch_plasticity_detail;

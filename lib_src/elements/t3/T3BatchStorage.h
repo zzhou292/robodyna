@@ -71,6 +71,7 @@ struct T3Batch::Impl {
   BatchReport ReadControl();
   BatchReport ReadResults(const batch_detail::Slab*);
   BatchReport InitializePlasticity(const ShellBatchPlasticityConfig&,const batch_detail::Model&);
+  BatchReport InitializePlasticity(const ShellBatchPlasticityBinding&);
   unsigned AcceptedSlabIndex() const noexcept { return accepted==&storage->slab[0]?0u:1u; }
   void Discard() noexcept { pending=false; candidate_view={}; candidate_diagnostics={}; }
   // Infallible sole publication boundary, shared by standalone and joined paths.

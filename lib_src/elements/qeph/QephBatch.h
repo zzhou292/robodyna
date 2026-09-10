@@ -6,7 +6,7 @@
 #include <memory>
 
 namespace tl::fea { class ShellBatchBinding; class ShellBatchPublication;
-  struct ShellBatchPlasticityConfig; struct ShellBatchSectionState; }
+  class ShellBatchPlasticityBinding; struct ShellBatchPlasticityConfig; struct ShellBatchSectionState; }
 namespace tl::fea::qeph {
 constexpr std::size_t MaxBatchElements=MaxShellCollectionParents,MaxBatchNodes=MaxShellCollectionNodes;
 constexpr std::size_t MaxBatchDeviceBytes=1024*1024;
@@ -102,6 +102,9 @@ class QephBatch {
   // caller config/curve storage may expire after Initialize returns.
   BatchReport Initialize(const QephBatchConfig&,const QephBatchElement*,const ShellBatchPlasticityConfig&);
   BatchReport InitializeJoined(const QephBatchConfig&,const ShellBatchBinding&,const ShellBatchPlasticityConfig&);
+  // Complete multi-material catalog: both families copy the same full binding,
+  // while each native parent selects its own prepared material/section.
+  BatchReport InitializeJoined(const QephBatchConfig&,const ShellBatchBinding&,const ShellBatchPlasticityBinding&);
   // Raw supplied-view validation/assembly for rest or an already-bound batch.
   // First uniform-translation binding requires the live-owner overload below.
   // Initial numerical rest binding retains
@@ -129,7 +132,8 @@ class QephBatch {
  private:
   friend class ::tl::fea::ShellBatchPublication;
   BatchReport InitializeImpl(const QephBatchConfig&,const QephBatchElement*,const ShellBatchBinding*,
-                             const ShellBatchPlasticityConfig* plasticity=nullptr);
+                             const ShellBatchPlasticityConfig* plasticity=nullptr,
+                             const ShellBatchPlasticityBinding* collection_plasticity=nullptr);
   BatchReport AssembleAcceptedImpl(FENodalState*,const NodalAssemblyView&);
   friend BatchReport CommitQephTrial(FENodalState&,const NodalTrialToken&,QephBatch&,
                                     const BatchDiagnostics&,const NodalValidationReceipt&) noexcept;
