@@ -15,7 +15,7 @@ void SameSpring(const Spring& a,const Spring& b) {
 }
 TEST_F(SourceAssemblyDynamicsCheck, ActualSevenPartCommonPublicationRetainsWeldAndOptionalKineticCapture) {
     const auto bindings=source::test::BracketBindings();const auto setup=PrepareWall(bindings);
-    auto config=SmokeConfig();config.fixed_dt=8*Dt;config.observe_force_stage=true;
+    auto config=SmokeConfig();config.fixed_dt=4*Dt;config.observe_force_stage=true;
     SourceAssemblyWallCase run;const auto initialized=run.Initialize(bindings,setup,config);
     ASSERT_TRUE(initialized)<<initialized.message;
     const auto allocations=run.allocations();const auto host=run.host_payload_bytes();
