@@ -1,0 +1,20 @@
+cmake_minimum_required(VERSION 3.18)
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+  project(RoboDynaSourceAssemblyInput LANGUAGES CXX)
+  find_package(Chrono REQUIRED CONFIG)
+  enable_testing()
+endif()
+include("${CMAKE_CURRENT_LIST_DIR}/SourceAssembly.cmake")
+find_package(GTest REQUIRED)
+set(ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY "" CACHE FILEPATH "Frozen authenticated six-part Yaris assembly inventory")
+if(NOT EXISTS "${ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY}")
+  message(FATAL_ERROR "The assembly input check requires the explicit frozen inventory path")
+endif()
+add_executable(robo_dyna_source_assembly_input_check
+  tests/SourceAssemblyReaderTest.cpp tests/SourceAssemblyInputTest.cpp tests/SourceAssemblyRejectionTest.cpp)
+target_link_libraries(robo_dyna_source_assembly_input_check PRIVATE
+  robo_dyna_source_assembly_shell_input robo_dyna_source_assembly_material_input GTest::gtest_main)
+target_compile_options(robo_dyna_source_assembly_input_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME source_assembly_input COMMAND robo_dyna_source_assembly_input_check)
+set_tests_properties(source_assembly_input PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120
+  ENVIRONMENT "ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY=${ROBO_DYNA_SOURCE_ASSEMBLY_INVENTORY}")

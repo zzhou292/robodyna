@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 project(RoboDyna LANGUAGES NONE)
+option(ROBO_DYNA_ENABLE_SOURCE_ASSEMBLY_INPUT_CHECKS "Build authenticated assembly declaration and TL startup-input checks without dynamics" OFF)
 find_package(Python3 3.8 REQUIRED COMPONENTS Interpreter)
 enable_testing()
 add_test(NAME yaris_wall_import
@@ -157,4 +158,10 @@ if(CRASH_YARIS_VEHICLE_ASSETS)
             -s "${CMAKE_CURRENT_SOURCE_DIR}/tests" -p "test_yaris_assembly_model.py" -v)
   set_tests_properties(yaris_assembly_inventory PROPERTIES TIMEOUT 120 RUN_SERIAL TRUE
     ENVIRONMENT "YARIS_VEHICLE_ASSET_DIR=${CRASH_YARIS_VEHICLE_ASSETS}")
+endif()
+
+if(ROBO_DYNA_ENABLE_SOURCE_ASSEMBLY_INPUT_CHECKS)
+  enable_language(CXX)
+  find_package(Chrono REQUIRED CONFIG)
+  add_subdirectory(modelio/source_assembly)
 endif()
