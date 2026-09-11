@@ -1,6 +1,7 @@
 #include "AcceptedReplayScene.h"
 #include "ReplayParentScalarColors.h"
 #include "ReplayDisplayGeometry.h"
+#include "ReplayVisuals.h"
 
 #include "output/AcceptedReplay.h"
 #include "chrono/assets/ChVisualShapeTriangleMesh.h"
@@ -20,56 +21,7 @@ namespace {
 bool SourceWall(output::ReplayKind kind) {
     return kind==output::ReplayKind::SourcePartWall||kind==output::ReplayKind::SourceAssemblyWall;
 }
-std::shared_ptr<chrono::ChTriangleMeshConnected> CopyGeometry(const chrono::ChTriangleMeshConnected& source) {
-    auto mesh = std::make_shared<chrono::ChTriangleMeshConnected>();
-    mesh->GetCoordsVertices() = source.GetCoordsVertices();
-    mesh->GetIndicesVertices() = source.GetIndicesVertices();
-    return mesh;  // Archive attributes never replace the declared display policy.
-}
-std::shared_ptr<chrono::ChVisualShapeTriangleMesh> MakeShape(
-    const std::shared_ptr<chrono::ChTriangleMeshConnected>& mesh, bool moving, bool wireframe, bool colors=false) {
-    auto shape = std::make_shared<chrono::ChVisualShapeTriangleMesh>();
-    shape->SetMesh(mesh, false);
-    shape->SetMutable(moving);
-    shape->SetFixedConnectivity();
-    shape->SetDoubleFaced(true);
-    shape->SetBackfaceCull(false);
-    shape->SetWireframe(wireframe);
-    // Chrono/VSG binds dynamic color buffers only for its no-material mesh path.
-    // Indexed face colors below use that existing path, including mutable normals.
-    if(colors)return shape;
-    auto material = std::make_shared<chrono::ChVisualMaterial>();
-    material->SetDiffuseColor(moving ? chrono::ChColor(0.12f, 0.64f, 0.94f) : chrono::ChColor(0.42f, 0.46f, 0.51f));
-    material->SetMetallic(0.0f);
-    material->SetRoughness(0.7f);
-    shape->AddMaterial(material);
-    return shape;
-}
-std::shared_ptr<chrono::ChBody> Carrier(const char* name,
-                                      const std::shared_ptr<chrono::ChVisualShapeTriangleMesh>& shape) {
-    auto body = std::make_shared<chrono::ChBody>();
-    body->SetName(name);
-    body->SetFixed(true);
-    body->SetPos(chrono::VNULL);
-    body->SetRot(chrono::QUNIT);
-    body->EnableCollision(false);
-    body->AddVisualShape(shape);
-    // VSG's fixed-shape path reads the model instance flag; its mutable-mesh
-    // path reads the shape flag. Keep both existing representations consistent.
-    body->GetVisualModel()->EnableWireframe(0U, shape->IsWireframe());
-    return body;
-}
 bool MakeCamera(const output::ReplayInfo& info, ReplayView view, ReplayCamera& camera) {
-    double extent[3];
-    for (int i = 0; i < 3; ++i) {
-        const double lo = info.bounds_min[i], hi = info.bounds_max[i];
-        if (!std::isfinite(lo) || !std::isfinite(hi) || hi < lo) return false;
-        camera.target[i] = lo * 0.5 + hi * 0.5;
-        extent[i] = hi - lo;
-        if (!std::isfinite(extent[i])) return false;
-    }
-    const double diagonal = std::hypot(extent[0], extent[1], extent[2]);
-    if (!(diagonal > 0) || !std::isfinite(diagonal)) return false;
     // Fixed oblique view, optionally across the -X-facing source wall. Coupon
     // geometry is also visible from above. The full moving trajectory is framed;
     // a large fixed wall may extend beyond the image and is never rescaled.
@@ -86,15 +38,8 @@ bool MakeCamera(const output::ReplayInfo& info, ReplayView view, ReplayCamera& c
         : info.kind == output::ReplayKind::ElasticCoupon
         ? std::array<double, 3>{-0.3, -1.25, 0.18}
         : std::array<double, 3>{-1.5, -1.25, 1.0};
-    if (view == ReplayView::WallSide) direction[0] = -direction[0];
-    for (int i = 0; i < 3; ++i) {
-        // Close source view: the whole original part and nearby
-        // actual wall remain visible; no geometry or deformation is scaled.
-        const double distance=SourceWall(info.kind)?1.25:1.6;
-        camera.position[i] = camera.target[i] + distance * diagonal * direction[i];
-        if (!std::isfinite(camera.position[i])) return false;
-    }
-    return true;
+    return MakeBoundsCamera(info.bounds_min,info.bounds_max,direction,SourceWall(info.kind)?1.25:1.6,
+        camera.vertical,view,camera);
 }
 }  // namespace
 
@@ -159,7 +104,7 @@ ReplaySceneReport AcceptedReplayScene::Initialize(const output::ReplayInfo& info
         next->info = info;
         next->color_mode = colors;
         next->limits = limits;
-        next->moving = CopyGeometry(*frame.mesh);
+        next->moving = CopyReplayGeometry(*frame.mesh);
         if(info.source_plasticity) {
             if(!SourceWall(info.kind)||info.triangle_source_parent.size()!=info.triangle_count||
                !next->parent_colors.Initialize(info.triangle_source_parent,frame.parent_plastic_strain,
@@ -180,19 +125,19 @@ ReplaySceneReport AcceptedReplayScene::Initialize(const output::ReplayInfo& info
             auto& indices=next->moving->GetIndicesColors();indices.reserve(info.triangle_count);
             for(std::size_t t=0;t<info.triangle_count;++t)indices.push_back({int(t),int(t),int(t)});
         } else next->moving->GetCoordsColors().clear();
-        next->shape = MakeShape(next->moving, true, wireframe,colors != ReplayColorMode::Uniform);
+        next->shape = MakeReplayShape(next->moving, true, wireframe,colors != ReplayColorMode::Uniform);
         next->staged.resize(info.node_count);
         next->deformation_scale = deformation_scale;
         if (deformation_scale != 1) next->reference = frame.mesh->GetCoordsVertices();
         next->system.SetGravitationalAcceleration(chrono::VNULL);
-        next->system.AddBody(Carrier("accepted moving surface", next->shape));
+        next->system.AddBody(MakeReplayCarrier("accepted moving surface", next->shape));
         if (deformation_scale != 1)
-            next->system.AddBody(Carrier("original source reference outline",
-                MakeShape(CopyGeometry(*frame.mesh), false, true)));
+            next->system.AddBody(MakeReplayCarrier("original source reference outline",
+                MakeReplayShape(CopyReplayGeometry(*frame.mesh), false, true)));
         if (wall) {
-            next->wall = CopyGeometry(*wall);
-            next->system.AddBody(Carrier(SourceWall(info.kind)?"placed original fixed wall":"canonical fixed wall",
-                MakeShape(next->wall, false, true)));
+            next->wall = CopyReplayGeometry(*wall);
+            next->system.AddBody(MakeReplayCarrier(SourceWall(info.kind)?"placed original fixed wall":"canonical fixed wall",
+                MakeReplayShape(next->wall, false, true)));
         }
         next->stamp = {frame.index, frame.owner_id, frame.epoch, frame.time};
         next->system.SetChTime(frame.time);  // Recorded presentation time only.

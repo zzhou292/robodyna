@@ -1,6 +1,7 @@
 #include "chrono/AcceptedReplayScene.h"
 #include "chrono/ReplayParentScalarColors.h"
 #include "ReplayColorMetadata.h"
+#include "ReplayVsg.h"
 #include "output/AcceptedReplay.h"
 #include "output/ArtifactIO.h"
 #include "chrono/geometry/ChTriangleMeshConnected.h"
@@ -186,18 +187,7 @@ class ReplayOverlay : public chrono::vsg3d::ChGuiComponentVSG {
     bool capture_;
     double fps_;
 };
-// Use the same protected extension as ChVehicleVisualSystemVSG: no trackball
-// handler is installed, so user events cannot change the reference camera.
-class FixedReplayVisual : public chrono::vsg3d::ChVisualSystemVSG {
-  public:
-    FixedReplayVisual() { m_camera_trackball = false; }
-    std::array<std::uint32_t, 2> FramebufferSize() const {
-        if (!m_window) throw std::logic_error("VSG did not create a window");
-        const auto extent = m_window->extent2D();
-        return {extent.width, extent.height};
-    }
-};
-chrono::ChVector3d Vector(const std::array<double, 3>& value) { return {value[0], value[1], value[2]}; }
+using crash::viewer::FixedReplayVisual;
 void Array(crash::output::Document& document, const char* name, const std::array<double, 3>& values) {
     rapidjson::Value array(rapidjson::kArrayType);
     for (double value : values) array.PushBack(value, document.GetAllocator());
@@ -264,45 +254,12 @@ int main(int argc, char** argv) {
         Require(fs::is_regular_file(chrono::GetChronoDataFile("logo_chrono_alpha.png")), "Chrono visualization data directory is missing its logo");
         Playback playback;
         auto visual = std::make_shared<FixedReplayVisual>();
-        visual->AttachSystem(&scene.system());
-        visual->SetLoadingThreadCount(1);
-        visual->SetTargetRenderFPS(0);  // Never skip a requested capture.
-        visual->SetWindowSize(1280, 720);
-        visual->SetWindowPosition(60, 60);
-        visual->SetWindowTitle("robo-dyna | accepted simulation replay");
-        visual->SetBackgroundColor(chrono::ChColor(0.06f, 0.08f, 0.11f));
-        visual->SetCameraVertical(scene.camera()->vertical == crash::visual::ReplayVertical::Y
-            ? chrono::CameraVerticalDir::Y : chrono::CameraVerticalDir::Z);
-        visual->AddCamera(Vector(scene.camera()->position), Vector(scene.camera()->target));
-        visual->SetCameraAngleDeg(scene.camera()->vertical_fov_degrees);
-        // Illuminate from the fixed camera side. The owning API clamps azimuth
-        // to [0, 2*pi], so a negative angle would silently light the other side.
-        const auto& camera = *scene.camera();
-        const double dx = camera.position[0] - camera.target[0];
-        const double dy = camera.position[1] - camera.target[1];
-        const double dz = camera.position[2] - camera.target[2];
-        // Owning VSG uses (x,z) azimuth with reversed z for Y-up.
-        const bool y_up = camera.vertical == crash::visual::ReplayVertical::Y;
-        double light_azimuth = y_up ? std::atan2(-dz, dx) : std::atan2(dy, dx);
-        if (light_azimuth < 0) light_azimuth += 2 * std::acos(-1.0);
-        const double light_elevation = y_up ? std::atan2(dy, std::hypot(dx, dz))
-                                           : std::atan2(dz, std::hypot(dx, dy));
-        visual->SetLightIntensity(1.0f);
-        visual->SetLightDirection(light_azimuth, light_elevation);
-        visual->SetBaseGuiVisibility(false);
+        const auto light=crash::viewer::ConfigureReplayVisual(*visual,scene.system(),*scene.camera());
+        const double light_azimuth=light.azimuth,light_elevation=light.elevation;
         visual->AddGuiComponent(std::make_shared<ReplayOverlay>(info, scene, playback, capture, options.fps));
-        visual->Initialize();  // Binds the scene exactly once.
-        Require(visual->IsInitialized(), "VSG initialization did not complete");
-        ImGui::GetIO().IniFilename = nullptr;  // Playback never writes Chrono's shared imgui.ini.
-        Require(visual->GetLoadingThreadCount() == 1, "VSG loading-worker budget changed");
-        const auto dimensions = visual->FramebufferSize();
-        const auto device_properties = visual->GetWindow()->getPhysicalDevice()->getProperties();
-        Require(dimensions[0] > 0 && dimensions[0] <= 2560 && dimensions[1] > 0 && dimensions[1] <= 1440,
-                "VSG framebuffer exceeds bounded replay dimensions");
-        // Test actual post-initialize rejection in every runtime smoke.
-        bool locked = false;
-        try { visual->SetLoadingThreadCount(2); } catch (const std::logic_error&) { locked = true; }
-        Require(locked && visual->GetLoadingThreadCount() == 1, "VSG loading-worker configuration did not freeze");
+        crash::viewer::InitializeReplayVisual(*visual);
+        const auto dimensions=visual->FramebufferSize();
+        const auto device_properties=visual->GetWindow()->getPhysicalDevice()->getProperties();
         auto png_options = vsg::Options::create();
         png_options->add(vsgXchange::all::create());
         std::ostringstream index;

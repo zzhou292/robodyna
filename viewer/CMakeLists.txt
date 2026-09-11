@@ -19,10 +19,11 @@ if(ROBO_DYNA_ENABLE_REPLAY)
   if(NOT TARGET robo_dyna_accepted_replay)
     message(FATAL_ERROR "Add the accepted replay reader target before viewer")
   endif()
+  include(ReplayVsg.cmake)
   add_executable(robo_dyna_replay replay_main.cpp)
   target_compile_features(robo_dyna_replay PUBLIC cxx_std_17)
   target_link_libraries(robo_dyna_replay PRIVATE robo_dyna_replay_scene robo_dyna_accepted_replay
-    robo_dyna_artifact_io robo_dyna_replay_color_metadata Chrono::Chrono_vsg)
+    robo_dyna_artifact_io robo_dyna_replay_color_metadata robo_dyna_replay_vsg Chrono::Chrono_vsg)
   target_compile_definitions(robo_dyna_replay PRIVATE ROBO_DYNA_CHRONO_DATA_DIR="${CHRONO_DATA_DIR}")
 endif()
 
