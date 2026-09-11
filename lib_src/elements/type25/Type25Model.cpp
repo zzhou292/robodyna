@@ -2,6 +2,7 @@
 #include "Type25Model.h"
 #include "Type25Frame.h"
 #include "Type25Identity.h"
+#include "Type25ModelIndex.h"
 #include <algorithm>
 
 namespace tl::fea::type25 {
@@ -19,19 +20,18 @@ namespace {
 ModelReport Fail(Status status,const char* message,std::size_t index=SIZE_MAX) {
   return {status,message,index};
 }
-// Explicit hard bounds apply even when a caller increases its requested limits.
-constexpr std::size_t MaxConnections=1024,MaxProperties=64,MaxNodes=2048;
-constexpr std::size_t MaxHostBytes=16*1024*1024,SharedControlReserve=256;
+constexpr std::size_t SharedControlReserve=256;
 bool Reserve(std::size_t count,std::size_t size,std::size_t cap,std::size_t& bytes) {
   if(bytes>cap||size==0||count>(cap-bytes)/size)return false;
   bytes+=count*size;return true;
 }
-ModelReport CheckConnection(const ModelInput& in,std::size_t i) {
+ModelReport CheckConnection(const ModelInput& in,std::size_t i,const detail::ModelIndex* index) {
   const auto& c=in.connections[i];
   if(!c.source_element_id||c.property_index>=in.property_count||
      c.global_node[0]>=in.global_node_count||c.global_node[1]>=in.global_node_count||
      c.global_node[0]==c.global_node[1]||!c.source_node_id[0]||!c.source_node_id[1]||
      c.source_node_id[0]==c.source_node_id[1])return Fail(Status::InvalidInput,"Invalid connection identity or endpoint",i);
+  if(index)return index->CheckPriorConnections(in,i);
   for(std::size_t j=0;j<i;++j) {
     const auto& prior=in.connections[j];
     if(prior.source_element_id==c.source_element_id)return Fail(Status::DuplicateIdentity,"Duplicate source connection ID",i);
@@ -50,23 +50,31 @@ Model::~Model()=default;
 ModelReport Model::Initialize(const ModelInput& in) noexcept {
   if(impl_)return Fail(Status::InvalidInput,"TYPE25 model is already initialized");
   const auto& lim=in.limits;
-  if(!lim.max_connections||lim.max_connections>MaxConnections||!lim.max_properties||lim.max_properties>MaxProperties||
-     !lim.max_nodes||lim.max_nodes>MaxNodes||!lim.max_host_bytes||lim.max_host_bytes>MaxHostBytes||
+  const auto hard=Bounds(lim.profile);const bool vehicle=lim.profile==CapacityProfile::Vehicle;
+  if(!ValidProfile(lim.profile)||!lim.max_connections||lim.max_connections>hard.connections||!lim.max_properties||lim.max_properties>hard.properties||
+     !lim.max_nodes||lim.max_nodes>hard.nodes||!lim.max_host_bytes||lim.max_host_bytes>hard.model_host_bytes||
      !in.connection_count||in.connection_count>lim.max_connections||!in.property_count||in.property_count>lim.max_properties||
      !in.global_node_count||in.global_node_count>lim.max_nodes)return Fail(Status::ResourceLimit,"TYPE25 count or hard limit exceeded");
   std::size_t bytes=sizeof(Model)+sizeof(Impl)+SharedControlReserve;
   if(!Reserve(in.property_count,sizeof(PropertyInput),lim.max_host_bytes,bytes)||
      !Reserve(in.connection_count,sizeof(ConnectionInput)+sizeof(Reference)+sizeof(History)+2*sizeof(EndpointMass),lim.max_host_bytes,bytes))
     return Fail(Status::ResourceLimit,"TYPE25 host payload exceeds declared budget");
+  std::size_t startup_bytes=bytes;
+  if(vehicle&&!Reserve(1,detail::ModelIndex::Bytes(in.property_count,in.connection_count),lim.max_host_bytes,startup_bytes))
+    return Fail(Status::ResourceLimit,"TYPE25 vehicle identity scratch exceeds declared budget");
   detail::Units units;
   if(!in.source_instance_id||!in.properties||!in.connections||!detail::ResolveUnits(in.source_units,units))
     return Fail(Status::InvalidInput,"Missing source identity, units or input range");
+  if(vehicle&&(reinterpret_cast<std::uintptr_t>(in.properties)>UINTPTR_MAX-in.property_count*sizeof(PropertyInput)||
+      reinterpret_cast<std::uintptr_t>(in.connections)>UINTPTR_MAX-in.connection_count*sizeof(ConnectionInput)))
+    return Fail(Status::InvalidInput,"Overflowing TYPE25 vehicle input range");
   try {
     auto next=std::make_shared<Impl>();
     next->source_instance_id=in.source_instance_id;next->units=in.source_units;next->node_count=in.global_node_count;
-    next->owned_bytes=bytes;next->startup_bytes=bytes;
+    next->owned_bytes=bytes;next->startup_bytes=startup_bytes;
     next->property_count=in.property_count;next->connection_count=in.connection_count;
-    // One allocation per exact active array at startup; no scratch identity map.
+    // One allocation per exact active array. Only explicit Vehicle startup
+    // adds temporary indexes; the legacy path keeps its existing byte contract.
     next->properties=std::make_unique<PropertyInput[]>(in.property_count);
     std::copy_n(in.properties,in.property_count,next->properties.get());
     next->connections=std::make_unique<ConnectionInput[]>(in.connection_count);
@@ -74,14 +82,18 @@ ModelReport Model::Initialize(const ModelInput& in) noexcept {
     next->references=std::make_unique<Reference[]>(in.connection_count);
     next->initial=std::make_unique<History[]>(in.connection_count);
     next->mass=std::make_unique<EndpointMass[]>(2*in.connection_count);
+    std::unique_ptr<detail::ModelIndex> index;
+    if(vehicle){index=std::make_unique<detail::ModelIndex>();index->Prepare(in);}
     for(std::size_t p=0;p<in.property_count;++p) {
       if(!in.properties[p].source_property_id||!ValidProperty(in.properties[p].property))
         return Fail(Status::InvalidInput,"Invalid resolved TYPE25 property");
-      for(std::size_t j=0;j<p;++j)if(in.properties[j].source_property_id==in.properties[p].source_property_id)
-        return Fail(Status::DuplicateIdentity,"Duplicate source property ID");
+      if(index) {
+        if(!index->FirstProperty(in,p))return Fail(Status::DuplicateIdentity,"Duplicate source property ID");
+      } else for(std::size_t j=0;j<p;++j)if(in.properties[j].source_property_id==in.properties[p].source_property_id)
+          return Fail(Status::DuplicateIdentity,"Duplicate source property ID");
     }
     for(std::size_t i=0;i<in.connection_count;++i) {
-      const auto checked=CheckConnection(in,i);if(!checked)return checked;
+      const auto checked=CheckConnection(in,i,index.get());if(!checked)return checked;
       const auto& c=in.connections[i];const auto& p=in.properties[c.property_index];
       const auto frame=InitializeReference(in.source_units,c.position,c.seed,next->references[i]);
       if(frame!=Status::Success)return Fail(frame,"Invalid reference frame",i);
@@ -96,6 +108,7 @@ ModelReport Model::Initialize(const ModelInput& in) noexcept {
   }catch(...){return Fail(Status::ResourceLimit,"TYPE25 startup allocation failed");}
 }
 bool Model::prepared() const noexcept { return static_cast<bool>(impl_); }
+bool Model::SharesStorage(const Model& other) const noexcept {return impl_&&impl_==other.impl_;}
 bool Model::Matches(const Model& other) const noexcept {
   if(!impl_||!other.impl_)return false;
   if(impl_==other.impl_)return true;

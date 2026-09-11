@@ -3,7 +3,11 @@
 
 namespace tl::fea::type25::batch_detail {
 bool MakeLayout(std::size_t p,std::size_t c,std::size_t n,std::size_t cap,ArenaLayout& output) noexcept {
-  if(!p||p>64||!c||c>1024||!n||n>2048||!cap||cap>16*1024*1024)return false;
+  return MakeLayout(p,c,n,cap,output,CapacityProfile::Legacy);
+}
+bool MakeLayout(std::size_t p,std::size_t c,std::size_t n,std::size_t cap,ArenaLayout& output,CapacityProfile profile) noexcept {
+  const auto hard=Bounds(profile);
+  if(!ValidProfile(profile)||!p||p>hard.properties||!c||c>hard.connections||!n||n>hard.nodes||!cap||cap>hard.batch_device_bytes)return false;
   ArenaLayout next;util::BoundedArenaLayout layout(cap);
   if(!layout.Append<Storage>(1,next.header)||!layout.Append<Property>(p,next.properties)||
      !layout.Append<DeviceElement>(c,next.elements)||!layout.Append<DeviceNode>(n,next.nodes)||

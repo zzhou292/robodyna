@@ -1,5 +1,6 @@
 load("@rules_cc//cc:defs.bzl", "cc_test")
 load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+exports_files(["VehicleOwnerFixture.h", "VehicleOwnerFixture.cu"], visibility = ["//visibility:public"])
 cc_test(
     name = "nodal_vehicle_layout_check",
     size = "small",

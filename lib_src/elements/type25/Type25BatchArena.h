@@ -28,6 +28,8 @@ struct ArenaLayout {
   std::size_t bytes=0;
 };
 bool MakeLayout(std::size_t properties,std::size_t elements,std::size_t nodes,std::size_t cap,ArenaLayout&) noexcept;
+bool MakeLayout(std::size_t properties,std::size_t elements,std::size_t nodes,std::size_t cap,
+                ArenaLayout&,CapacityProfile) noexcept;
 // Rebase one header to either a fresh host startup arena or its device copy.
 // The returned header is always a host value; no device pointer is dereferenced.
 Storage RebasedHeader(void* arena,const ArenaLayout&) noexcept;

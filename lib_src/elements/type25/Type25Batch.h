@@ -11,9 +11,15 @@ class Model;
 struct BatchConfig {
   NodalStamp owner;
   std::uint64_t configuration_id=0,qualification_id=0;
-  std::size_t element_count=0,max_nodes=2048,max_connections=1024;
+  std::size_t element_count=0,max_nodes=LegacyCapacity.nodes,max_connections=LegacyCapacity.connections;
   std::size_t max_device_bytes=2*1024*1024,max_host_bytes=8*1024*1024;
   ShellBatchStartup startup;
+  // This factory changes requested bounds only. Use the explicit Vehicle
+  // InitializeJoined overload; the legacy overload still rejects these bounds.
+  static BatchConfig Vehicle() noexcept {
+    BatchConfig c;c.max_nodes=VehicleCapacity.nodes;c.max_connections=VehicleCapacity.connections;
+    c.max_device_bytes=VehicleCapacity.batch_device_bytes;c.max_host_bytes=VehicleCapacity.batch_host_bytes;return c;
+  }
 };
 enum class BatchStatus {
   Success,InvalidInput,NotInitialized,NotBound,ResourceLimit,WrongOwner,StaleTrial,
@@ -57,6 +63,7 @@ class Batch {
   Batch(const Batch&)=delete;
   Batch& operator=(const Batch&)=delete;
   BatchReport InitializeJoined(const BatchConfig&,const Model&,const NodalMassBinding&);
+  BatchReport InitializeJoined(const BatchConfig&,const Model&,const NodalMassBinding&,CapacityProfile);
   BatchReport AssembleAccepted(FENodalState&,const NodalAssemblyView&);
   BatchReport EvaluateCandidate(FENodalState&,const NodalTrialToken&,const NodalPreparedView&,BatchDiagnostics*);
   BatchReport CopyAcceptedDiagnostics(const NodalStamp&,BatchDiagnostics*) const noexcept;

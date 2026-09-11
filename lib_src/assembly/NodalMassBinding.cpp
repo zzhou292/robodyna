@@ -34,16 +34,24 @@ NodalMassReport NodalMassBinding::Initialize(const ShellBatchBinding& shells,
      !connectors.connection_count()||connectors.global_node_count()!=shells.node_count())
     return {S::InvalidInput,"Complete prepared shell and connector models are required"};
   const auto count=shells.node_count();
-  if(!limits.max_nodes||limits.max_nodes>2048||count>limits.max_nodes||
-     !limits.max_host_bytes||limits.max_host_bytes>16*1024*1024)
+  const auto hard=type25::Bounds(limits.profile);const bool vehicle=limits.profile==type25::CapacityProfile::Vehicle;
+  if(!type25::ValidProfile(limits.profile)||!limits.max_nodes||limits.max_nodes>hard.nodes||count>limits.max_nodes||
+     !limits.max_host_bytes||limits.max_host_bytes>hard.combined_host_bytes)
     return {S::ResourceLimit,"Combined nodal mass limits exceed bounded startup domain"};
-  // Charge shared producer payload in full. Their own models have already
-  // validated all original input extents; no unbounded caller ranges are read.
+  // Legacy conservative accounting remains unchanged. Vehicle counts embedded
+  // handle bytes through Impl and retains each actual producer backing once.
+  // Qualified producer models already validated their original input extents.
+  std::size_t shell_bytes=shells.host_bytes(),connector_bytes=connectors.owned_payload_bytes();
+  if(vehicle) {
+    if(shell_bytes<sizeof(ShellBatchBinding)||connector_bytes<sizeof(type25::Model))
+      return {S::ResourceLimit,"TYPE25 retained producer payload is inconsistent"};
+    shell_bytes-=sizeof(ShellBatchBinding);connector_bytes-=sizeof(type25::Model);
+  }
   util::BoundedArenaLayout budget(limits.max_host_bytes); util::ArenaRegion ignored;
   if(!budget.Append<unsigned char>(sizeof(Impl)+64,ignored)||
      !budget.Append<NodalMassNode>(count,ignored)||!budget.Append<unsigned char>(64,ignored)||
-     !budget.Append<unsigned char>(shells.host_bytes(),ignored)||
-     !budget.Append<unsigned char>(connectors.owned_payload_bytes(),ignored))
+     !budget.Append<unsigned char>(shell_bytes,ignored)||
+     !budget.Append<unsigned char>(connector_bytes,ignored))
     return {S::ResourceLimit,"Combined nodal mass payload exceeds startup budget"};
   auto next=std::make_shared<Impl>(shells,connectors);
   next->nodes.Resize(count); next->bytes=budget.bytes(); next->totals.shell=shells.totals();
@@ -108,6 +116,9 @@ bool NodalMassBinding::Matches(const ShellBatchBinding& shells) const noexcept {
 }
 bool NodalMassBinding::Matches(const type25::Model& connectors) const noexcept {
   return impl_&&impl_->connectors.Matches(connectors);
+}
+bool NodalMassBinding::SharesConnectorStorage(const type25::Model& connectors) const noexcept {
+  return impl_&&impl_->connectors.SharesStorage(connectors);
 }
 bool NodalMassBinding::Matches(const NodalMassBinding& other) const noexcept {
   return impl_&&other.impl_&&(impl_==other.impl_||

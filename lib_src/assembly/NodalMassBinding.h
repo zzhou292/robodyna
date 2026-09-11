@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "../elements/ShellBatchBinding.h"
+#include "../elements/type25/Type25Capacity.h"
 #include <memory>
 
 namespace tl::fea {
@@ -18,7 +19,11 @@ struct NodalMassNode {
   NodalMassPartitions coefficients;
 };
 struct NodalMassLimits {
-  std::size_t max_nodes=2048,max_host_bytes=8*1024*1024;
+  std::size_t max_nodes=type25::LegacyCapacity.nodes,max_host_bytes=8*1024*1024;
+  type25::CapacityProfile profile=type25::CapacityProfile::Legacy;
+  static constexpr NodalMassLimits Vehicle() noexcept {
+    return {type25::VehicleCapacity.nodes,type25::VehicleCapacity.combined_host_bytes,type25::CapacityProfile::Vehicle};
+  }
 };
 enum class NodalMassStatus {
   Success,AlreadyInitialized,InvalidInput,ResourceLimit,IdentityMismatch,
@@ -54,6 +59,7 @@ class NodalMassBinding {
   const NodalMassPartitions& totals() const noexcept;
   bool Matches(const ShellBatchBinding&) const noexcept;
   bool Matches(const type25::Model&) const noexcept;
+  bool SharesConnectorStorage(const type25::Model&) const noexcept;
   bool Matches(const NodalMassBinding&) const noexcept;
  private:
   struct Impl;

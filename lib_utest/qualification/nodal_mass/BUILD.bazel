@@ -1,5 +1,12 @@
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+cc_test(
+    name = "nodal_mass_vehicle_check",
+    size = "large",
+    srcs = ["NodalMassVehicleTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_utest/qualification/type25_batch:vehicle_mass_input", "@googletest//:gtest_main"],
+)
 
 cc_library(
     name = "test_support",

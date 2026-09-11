@@ -5,7 +5,7 @@ find_package(GTest REQUIRED)
 find_package(CUDAToolkit REQUIRED)
 get_filename_component(tl_type25_batch_root "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
 include("${tl_type25_batch_root}/lib_src/assembly/NodalMassBinding.cmake")
-add_executable(type25_batch_layout_check LayoutTest.cpp
+add_executable(type25_batch_layout_check LayoutTest.cpp VehicleLayoutTest.cpp
   "${tl_type25_batch_root}/lib_src/elements/type25/Type25BatchArena.cpp"
   "${tl_type25_batch_root}/lib_src/elements/type25/Type25BatchIdentity.cpp"
   "${tl_type25_batch_root}/lib_src/elements/type25/Type25BatchStartup.cpp")
@@ -15,10 +15,13 @@ target_compile_options(type25_batch_layout_check PRIVATE -fno-fast-math -ffp-con
 add_test(NAME type25_batch_layout COMMAND type25_batch_layout_check)
 set_tests_properties(type25_batch_layout PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
 option(TYPE25_BATCH_CUDA_CHECKS "Build resident TYPE25 actual-owner CUDA checks" OFF)
-if(TYPE25_BATCH_CUDA_CHECKS)
+option(TYPE25_VEHICLE_CUDA_CHECKS "Build explicit vehicle TYPE25 capacity/rollback checks (root-scheduled)" OFF)
+if(TYPE25_BATCH_CUDA_CHECKS OR TYPE25_VEHICLE_CUDA_CHECKS)
   enable_language(CUDA)
   add_subdirectory("${tl_type25_batch_root}/lib_src/solvers" nodal-owner)
   include("${tl_type25_batch_root}/lib_src/elements/type25/Type25Batch.cmake")
+endif()
+if(TYPE25_BATCH_CUDA_CHECKS)
   add_executable(type25_batch_cuda_check CapacityTest.cu CandidateTest.cu ReadbackTest.cu)
   target_link_libraries(type25_batch_cuda_check PRIVATE tl_type25_batch GTest::gtest_main)
   set_target_properties(type25_batch_cuda_check PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
@@ -26,4 +29,17 @@ if(TYPE25_BATCH_CUDA_CHECKS)
     -Xcompiler=-fno-fast-math,-ffp-contract=off)
   add_test(NAME type25_batch_cuda COMMAND type25_batch_cuda_check)
   set_tests_properties(type25_batch_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+endif()
+if(TYPE25_VEHICLE_CUDA_CHECKS)
+  add_executable(type25_vehicle_cuda_check VehicleCudaFixture.cu VehicleCandidateTest.cu VehicleReadbackFaultTest.cu
+    "${CMAKE_CURRENT_SOURCE_DIR}/../nodal_vehicle/VehicleOwnerFixture.cu"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../nodal_rigid_group/PreparedSnapshotCudaProbe.cpp")
+  target_link_libraries(type25_vehicle_cuda_check PRIVATE tl_type25_batch GTest::gtest_main)
+  target_link_options(type25_vehicle_cuda_check PRIVATE "LINKER:--wrap=cudaMemcpyAsync")
+  set_target_properties(type25_vehicle_cuda_check PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+  target_compile_options(type25_vehicle_cuda_check PRIVATE
+    "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>"
+    "$<$<COMPILE_LANGUAGE:CXX>:-fno-fast-math;-ffp-contract=off>")
+  add_test(NAME type25_vehicle_cuda COMMAND type25_vehicle_cuda_check)
+  set_tests_properties(type25_vehicle_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 600)
 endif()

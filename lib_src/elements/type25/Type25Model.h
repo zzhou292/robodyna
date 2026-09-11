@@ -27,6 +27,9 @@ class Model {
   ModelReport Initialize(const ModelInput&) noexcept;
   bool prepared() const noexcept;
   bool Matches(const Model&) const noexcept;
+  // Storage identity only, for once-only retained-payload accounting. Equal
+  // independently constructed models do not share storage.
+  bool SharesStorage(const Model&) const noexcept;
   std::uint64_t source_instance_id() const noexcept;
   SourceUnits source_units() const noexcept;
   std::size_t global_node_count() const noexcept;

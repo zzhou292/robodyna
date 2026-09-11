@@ -1,9 +1,33 @@
-load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_test", "cc_library")
 load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+cc_library(
+    name = "vehicle_mass_input",
+    testonly = True,
+    hdrs = ["Input.h", "VehicleMassInput.h"],
+    visibility = ["//visibility:public"],
+    deps = ["//lib_src/elements/type25:type25_batch", "//lib_src/elements/type25:type25_math",
+            "//lib_src/assembly:nodal_mass_binding", "//lib_utest/qualification/type25:vehicle_model_fixture",
+            "@googletest//:gtest_main"],
+)
+cuda_test(
+    name = "type25_vehicle_cuda_check",
+    size = "large",
+    srcs = ["VehicleCudaFixture.h", "VehicleCudaFixture.cu", "VehicleCandidateTest.cu", "VehicleReadbackFaultTest.cu",
+            "//lib_utest/qualification/nodal_vehicle:VehicleOwnerFixture.h",
+            "//lib_utest/qualification/nodal_vehicle:VehicleOwnerFixture.cu",
+            "//lib_utest/qualification/nodal_rigid_group:PreparedSnapshotCudaProbe.h",
+            "//lib_utest/qualification/nodal_rigid_group:PreparedSnapshotCudaProbe.cpp"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    linkopts = ["-Wl,--wrap=cudaMemcpyAsync"],
+    tags = ["exclusive", "gpu"],
+    deps = [":vehicle_mass_input", "//lib_src/solvers:explicit_nodal_state",
+            "//lib_src/solvers:nodal_trial_identity", "//lib_utest/qualification/type25:evaluation_values",
+            "@googletest//:gtest_main"],
+)
 cc_test(
     name = "type25_batch_layout_check",
     size = "small",
-    srcs = ["Input.h", "LayoutTest.cpp"],
+    srcs = ["Input.h", "LayoutTest.cpp", "VehicleLayoutTest.cpp"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = ["//lib_src/elements/type25:type25_batch", "//lib_src/assembly:nodal_mass_binding",
             "//lib_utils:bounded_arena", "@googletest//:gtest_main"],

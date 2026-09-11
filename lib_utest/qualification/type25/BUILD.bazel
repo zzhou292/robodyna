@@ -1,9 +1,16 @@
 load("@rules_cc//cc:defs.bzl", "cc_test", "cc_library")
 load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+cc_library(
+    name = "vehicle_model_fixture",
+    testonly = True,
+    hdrs = ["Fixture.h", "VehicleModelFixture.h"],
+    visibility = ["//visibility:public"],
+    deps = ["//lib_src/elements/type25:type25_model"],
+)
 cc_test(
     name = "type25_host_check",
     size = "small",
-    srcs = ["Fixture.h", "ModelTest.cpp", "FrameTest.cpp", "MathTest.cpp"],
+    srcs = ["Fixture.h", "VehicleModelFixture.h", "VehicleModelTest.cpp", "ModelTest.cpp", "FrameTest.cpp", "MathTest.cpp"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = ["//lib_src/elements/type25:type25_math", "//lib_src/math:fixed3_operations", "@googletest//:gtest_main"],
 )

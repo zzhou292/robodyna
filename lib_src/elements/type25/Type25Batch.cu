@@ -32,21 +32,32 @@ BatchReport Batch::Impl::ReadResults(const batch_detail::Slab* from) {
 }
 Batch::Batch()=default;
 Batch::~Batch()=default;
-BatchReport Batch::InitializeJoined(const BatchConfig& config,const Model& model,const NodalMassBinding& mass) try {
+BatchReport Batch::InitializeJoined(const BatchConfig& config,const Model& model,const NodalMassBinding& mass) {
+  return InitializeJoined(config,model,mass,CapacityProfile::Legacy);
+}
+BatchReport Batch::InitializeJoined(const BatchConfig& config,const Model& model,const NodalMassBinding& mass,CapacityProfile profile) try {
   if(impl_)return {BatchStatus::InvalidInput,"TYPE25 batch is already initialized"};
   // Count/byte preflight uses immutable scalar extents before reading arrays or
   // allocating either startup staging or device storage. Shared source handles
   // are conservatively charged in full even when other participants retain them.
   batch_detail::ArenaLayout layout;
-  if(!config.max_nodes||config.max_nodes>2048||!config.max_connections||config.max_connections>1024||
+  const auto hard=Bounds(profile);const bool vehicle=profile==CapacityProfile::Vehicle;
+  if(!ValidProfile(profile)||!config.max_nodes||config.max_nodes>hard.nodes||!config.max_connections||config.max_connections>hard.connections||
      config.owner.node_count>config.max_nodes||config.element_count>config.max_connections||
-     !config.max_host_bytes||config.max_host_bytes>16*1024*1024||
-     !batch_detail::MakeLayout(model.property_count(),config.element_count,config.owner.node_count,config.max_device_bytes,layout))
+     !config.max_host_bytes||config.max_host_bytes>hard.batch_host_bytes||
+     !batch_detail::MakeLayout(model.property_count(),config.element_count,config.owner.node_count,config.max_device_bytes,layout,profile))
     return {BatchStatus::ResourceLimit,"TYPE25 active counts or device/host limits are invalid"};
   util::BoundedArenaLayout budget(config.max_host_bytes);util::ArenaRegion ignored;
+  std::size_t model_bytes=model.owned_payload_bytes();
+  if(vehicle) {
+    if(model_bytes<sizeof(Model))return {BatchStatus::ResourceLimit,"TYPE25 retained model payload is inconsistent"};
+    // The embedded Model handle is already in Impl. Only exact shared backing
+    // with the retained combined mass model permits the remaining discount.
+    model_bytes=mass.SharesConnectorStorage(model)?0:model_bytes-sizeof(Model);
+  }
   if(!budget.Append<unsigned char>(sizeof(Impl),ignored)||!budget.Append<unsigned char>(layout.bytes,ignored)||
      !budget.Append<Evaluation>(config.element_count,ignored)||!budget.Append<unsigned char>(64,ignored)||
-     !budget.Append<unsigned char>(model.owned_payload_bytes(),ignored)||!budget.Append<unsigned char>(mass.host_bytes(),ignored))
+     !budget.Append<unsigned char>(model_bytes,ignored)||!budget.Append<unsigned char>(mass.host_bytes(),ignored))
     return {BatchStatus::ResourceLimit,"TYPE25 complete startup payload exceeds host cap"};
   util::HostArena arena;
   if(!arena.Initialize(layout.bytes))return {BatchStatus::ResourceLimit,"TYPE25 startup arena allocation failed"};

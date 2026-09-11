@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "../../math/Fixed3.h"
+#include "Type25Capacity.h"
 #include <cstddef>
 #include <cstdint>
 
@@ -75,8 +76,13 @@ struct EndpointMass {
   double mass_kg=0,isotropic_inertia_kg_m2=0;
 };
 struct ModelLimits {
-  std::size_t max_connections=1024,max_properties=64,max_nodes=2048;
+  std::size_t max_connections=LegacyCapacity.connections,max_properties=LegacyCapacity.properties,max_nodes=LegacyCapacity.nodes;
   std::size_t max_host_bytes=4*1024*1024;
+  CapacityProfile profile=CapacityProfile::Legacy;
+  static constexpr ModelLimits Vehicle() noexcept {
+    return {VehicleCapacity.connections,VehicleCapacity.properties,VehicleCapacity.nodes,
+            VehicleCapacity.model_host_bytes,CapacityProfile::Vehicle};
+  }
 };
 struct ModelInput {
   std::uint64_t source_instance_id=0;
