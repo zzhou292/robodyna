@@ -7,7 +7,7 @@ geometry adapter supplies native reference contact area; no new mass or inertia
 is produced. The sole shared geometry change exposes its existing startup sum
 as source, retained geometry and temporary fields. Legacy admission is unchanged.
 
-The case declaration is 35 mph (`35 * .44704` m/s), a requested 20 ms duration,
+The default startup declaration is 35 mph (`35 * .44704` m/s), a requested 20 ms duration,
 20 mm leading gap, 10 mm transverse motion margin and 1 micrometre exposed-edge
 clearance. The explicit numerical inputs default to stiffness/area `1e7`, maximum
 penetration `.1 m`, and parent force/energy error `1e-6`. These values do not grant
@@ -46,11 +46,12 @@ coincidence. Contact `Initialize` performs its qualified full physical/publisher
 rigid/CIN and actual initial activity authentication. It allocates scratch only;
 accepted epoch, all material histories and the common clock are unchanged.
 
-This object does not modify free-flight `PrepareStep` or expose mutable owner
-access. Ordered accepted contact force/STI assembly, combined current-response
-screening, prepared work/activity capture and common discard/commit are the next
-explicit wall dynamics integration. The initial test uses a `3e-7 s` constructor
-candidate; loaded joints/contact may require a smaller admitted interval.
+This initial attachment object does not expose mutable owner access. The separate
+[`LoadedWall`](loaded/README.md) factory installs ordered accepted contact force/STI
+assembly and prepared work/activity capture in the existing dynamics transaction.
+Its named profile uses a 0.25 m transverse margin and explicitly selected 5, 20 or
+50 ms duration. The initial test uses a `3e-7 s` constructor candidate; loaded
+joints/contact may require a smaller admitted interval.
 
 ## Budget and lifetime
 
@@ -92,7 +93,8 @@ Owning CMake source: `case/vehicle_wall`. Small target
 `robo_dyna_vehicle_wall_values_check`, CTest `vehicle_wall_values`.
 Set `ROBO_DYNA_VEHICLE_WALL_ORIGINAL=ON` for target
 `robo_dyna_vehicle_wall_original_check` and separate CTests `vehicle_wall_setup`
-and `vehicle_wall_startup` (one original function each). The setup gate reuses
+and `vehicle_wall_startup` (one original function each). Loaded gates are documented
+separately and do not change these historical startup claims. The setup gate reuses
 the complete original fixture and therefore includes the already qualified
 source search GPU dependency, even though it does not allocate a dynamics owner.
 Run it first and inspect its complete host/device preview and original coverage.

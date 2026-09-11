@@ -4,9 +4,9 @@
 #include "output/ArtifactIO.h"
 namespace crash::cases::vehicle_wall {
 RuntimeForecast VehicleWallStartup::Preview(const VehicleWallSetup& setup,
-    vehicle_dynamics::Config config, RuntimeLimits limits) {
+    vehicle_dynamics::Config config, RuntimeLimits limits,const vehicle_runtime::JointModel* joints) {
     const auto dynamics=vehicle_dynamics::VehiclePhysicalDynamics::Preflight(
-        setup.execution(),setup.attachments(),config);
+        setup.execution(),setup.attachments(),config,joints);
     // Forecast reads source values only; this empty, unclaimed coordinator is a
     // prospective object, not an initialized participant/publication authority.
     tl::fea::ShellBatchPublication prospective_publication;

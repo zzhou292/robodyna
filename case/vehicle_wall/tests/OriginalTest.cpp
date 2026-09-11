@@ -119,6 +119,8 @@ TEST(VehicleWallOriginal, ActualInitialOwnerContactIdentityBudgetAndRetry) {
     EXPECT_FALSE(dynamics.has_prepared_step());
     RecordProperty("actual_contact_device_bytes",std::to_string(contact.contact_allocations().device_bytes));
     RecordProperty("epoch",std::to_string(dynamics.accepted().epoch));
-    RecordProperty("reserved_step_s",std::to_string(dynamics.accepted().fixed_dt));
+    std::ostringstream step;
+    step<<std::setprecision(17)<<dynamics.accepted().fixed_dt;
+    RecordProperty("reserved_step_s",step.str());
 }
 } // namespace crash::cases::vehicle_wall::test

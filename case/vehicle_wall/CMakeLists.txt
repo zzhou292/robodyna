@@ -11,7 +11,7 @@ endif()
 set(CRASH_TL_FEA_SOURCE_DIR "${ROBO_DYNA_TL_ROOT}")
 include("VehicleWallValues.cmake")
 include("../shell_collection/ShellCollectionContactGeometry.cmake")
-add_executable(robo_dyna_vehicle_wall_values_check tests/ValuesTest.cpp
+add_executable(robo_dyna_vehicle_wall_values_check tests/ValuesTest.cpp tests/LoadedConfigTest.cpp
   "${CMAKE_CURRENT_LIST_DIR}/../shell_collection/tests/MappedContactGeometryTest.cpp")
 target_link_libraries(robo_dyna_vehicle_wall_values_check PRIVATE robo_dyna_vehicle_wall_values
   robo_dyna_shell_collection_contact_geometry GTest::gtest_main)
@@ -27,15 +27,17 @@ if(ROBO_DYNA_VEHICLE_WALL_ORIGINAL)
   if(NOT EXISTS "${ROBO_DYNA_VEHICLE_WALL_MANIFEST}")
     message(FATAL_ERROR "Vehicle wall requires original canonical wall manifest")
   endif()
-  add_executable(robo_dyna_vehicle_wall_original_check tests/OriginalTest.cpp
+  add_executable(robo_dyna_vehicle_wall_original_check tests/OriginalTest.cpp tests/LoadedOriginalTest.cpp
     "${CMAKE_CURRENT_LIST_DIR}/../vehicle_startup/physical_attachments/tests/Source.cpp")
-  target_link_libraries(robo_dyna_vehicle_wall_original_check PRIVATE robo_dyna_vehicle_wall_startup GTest::gtest_main)
+  target_link_libraries(robo_dyna_vehicle_wall_original_check PRIVATE robo_dyna_vehicle_loaded_wall GTest::gtest_main)
   target_compile_options(robo_dyna_vehicle_wall_original_check PRIVATE -fno-fast-math -ffp-contract=off)
-  foreach(gate setup startup)
+  foreach(gate setup startup loaded)
     if(gate STREQUAL setup)
       set(filter "VehicleWallOriginal.CompleteSourceCoverageAndForecastBeforeContactAllocation")
-    else()
+    elseif(gate STREQUAL startup)
       set(filter "VehicleWallOriginal.ActualInitialOwnerContactIdentityBudgetAndRetry")
+    else()
+      set(filter "VehicleLoadedWallOriginal.FirstNonzeroContactUsesActualCompleteOwnerAndDiscardRetry")
     endif()
     add_test(NAME vehicle_wall_${gate} COMMAND "${Python3_EXECUTABLE}" -B
       "${CMAKE_CURRENT_LIST_DIR}/../vehicle_startup/tied_classification/tests/actual_fixture.py"
@@ -44,4 +46,5 @@ if(ROBO_DYNA_VEHICLE_WALL_ORIGINAL)
     set_tests_properties(vehicle_wall_${gate} PROPERTIES TIMEOUT 600 RUN_SERIAL TRUE PROCESSORS 2
       ENVIRONMENT "ROBO_VEHICLE_DECLARATIONS=${ROBO_DYNA_VEHICLE_DECLARATIONS};ROBO_VEHICLE_GLASS_RESOLUTION=${ROBO_DYNA_VEHICLE_GLASS_RESOLUTION};ROBO_VEHICLE_GLASS_SHA256=${ROBO_DYNA_VEHICLE_GLASS_SHA256};ROBO_DYNA_TYPE13_DECLARATION=${ROBO_DYNA_VEHICLE_TYPE13_DECLARATION};ROBO_VEHICLE_WALL=${ROBO_DYNA_VEHICLE_WALL_MANIFEST}")
   endforeach()
+  include("${CMAKE_CURRENT_LIST_DIR}/tests/LoadedCuda.cmake")
 endif()

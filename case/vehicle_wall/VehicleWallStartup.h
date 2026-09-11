@@ -3,6 +3,7 @@
 #include "case/vehicle_dynamics/VehiclePhysicalDynamics.h"
 #include "lib_src/collision/NodalWallMappedContact.h"
 namespace crash::cases::vehicle_wall {
+class LoadedWall;
 struct RuntimeLimits {
     std::size_t host_bytes=std::size_t{20}*1000*1000*1000;
     std::size_t device_bytes=std::size_t{8}<<30;
@@ -20,7 +21,8 @@ class VehicleWallStartup {
   public:
     // Value-only preview before creating the actual owner. No owner identity or
     // contact admission is granted by this descriptive allocation forecast.
-    static RuntimeForecast Preview(const VehicleWallSetup&,vehicle_dynamics::Config={},RuntimeLimits={});
+    static RuntimeForecast Preview(const VehicleWallSetup&,vehicle_dynamics::Config={},RuntimeLimits={},
+        const vehicle_runtime::JointModel* = nullptr);
     static RuntimeForecast Preflight(const VehicleWallSetup&,vehicle_dynamics::VehiclePhysicalDynamics&,RuntimeLimits={});
     static VehicleWallStartup Prepare(const VehicleWallSetup&,vehicle_dynamics::VehiclePhysicalDynamics&,RuntimeLimits={});
     ~VehicleWallStartup();
@@ -33,6 +35,7 @@ class VehicleWallStartup {
     const tl::fea::NodalStamp& initial_stamp() const noexcept;
     tl::fea::NodalAllocationInfo contact_allocations() const noexcept;
   private:
+    friend class LoadedWall;
     struct Data;
     explicit VehicleWallStartup(std::unique_ptr<Data>);
     std::unique_ptr<Data> data_;

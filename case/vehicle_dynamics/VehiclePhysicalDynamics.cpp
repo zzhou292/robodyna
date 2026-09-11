@@ -5,13 +5,13 @@
 
 namespace crash::cases::vehicle_dynamics {
 Forecast VehiclePhysicalDynamics::Preflight(const vehicle_runtime::Execution& e,
-    const vehicle_runtime::Attachments& a,Config config) {
+    const vehicle_runtime::Attachments& a,Config config,const vehicle_runtime::JointModel* joints) {
     output::Require(tl::fea::ValidCinStructuralStep(config.structural),"Invalid physical structural timestep policy");
     output::Require(std::isfinite(config.maximum_rotation_increment) &&
         config.maximum_rotation_increment>0 && config.maximum_rotation_increment<=.2,
         "Physical free-flight rotation bound must be positive and at most 0.2 rad");
     Forecast result;
-    result.startup=vehicle_runtime::VehiclePhysicalStartup::Preflight(e,a,config.startup);
+    result.startup=vehicle_runtime::VehiclePhysicalStartup::Preflight(e,a,config.startup,joints);
     const auto activity=vehicle_startup::TiedCinWitnessActivity::Forecast(a.witnesses());
     const auto n=e.model().coefficients().nodes().size();
     tl::util::BoundedArenaLayout workspace(config.workspace_bytes);
@@ -28,9 +28,9 @@ Forecast VehiclePhysicalDynamics::Preflight(const vehicle_runtime::Execution& e,
     return result;
 }
 VehiclePhysicalDynamics VehiclePhysicalDynamics::Prepare(const vehicle_runtime::Execution& e,
-    const vehicle_runtime::Attachments& a,Config config) {
-    const auto forecast=Preflight(e,a,config);
-    auto startup=vehicle_runtime::VehiclePhysicalStartup::Prepare(e,a,config.startup);
+    const vehicle_runtime::Attachments& a,Config config,const vehicle_runtime::JointModel* joints) {
+    const auto forecast=Preflight(e,a,config,joints);
+    auto startup=vehicle_runtime::VehiclePhysicalStartup::Prepare(e,a,config.startup,joints);
     return VehiclePhysicalDynamics(std::make_unique<Storage>(std::move(startup),config,forecast));
 }
 VehiclePhysicalDynamics::Storage::Storage(vehicle_runtime::VehiclePhysicalStartup&& value,Config c,Forecast f)
@@ -47,7 +47,21 @@ VehiclePhysicalDynamics::VehiclePhysicalDynamics(VehiclePhysicalDynamics&&) noex
 VehiclePhysicalDynamics& VehiclePhysicalDynamics::operator=(VehiclePhysicalDynamics&&) noexcept=default;
 const Forecast& VehiclePhysicalDynamics::forecast() const noexcept { return storage_->forecast; }
 tl::fea::NodalStamp VehiclePhysicalDynamics::accepted() const noexcept { return storage_->stamp; }
-tl::fea::NodalAllocationInfo VehiclePhysicalDynamics::allocations() const noexcept { return storage_->startup.allocations(); }
+tl::fea::NodalAllocationInfo VehiclePhysicalDynamics::allocations() const noexcept {
+    auto result=storage_->startup.allocations();
+    if(storage_->wall) {
+        const auto wall=storage_->wall->allocations();
+        result.device_bytes+=wall.device_bytes;
+        result.device_allocations+=wall.device_allocations;
+    }
+    return result;
+}
+const vehicle_wall::VehicleWallSetup* VehiclePhysicalDynamics::wall_setup() const noexcept {
+    return storage_->wall ? &storage_->wall->setup() : nullptr;
+}
+const vehicle_wall::RuntimeForecast* VehiclePhysicalDynamics::wall_forecast() const noexcept {
+    return storage_->wall ? &storage_->wall->forecast() : nullptr;
+}
 bool VehiclePhysicalDynamics::has_prepared_step() const noexcept { return storage_->pending; }
 const StepObservation& VehiclePhysicalDynamics::PrepareStep() {
     auto& s=*storage_;
@@ -73,6 +87,10 @@ const StepObservation& VehiclePhysicalDynamics::last_accepted_step() const {
     return storage_->observations[storage_->accepted_slot];
 }
 void VehiclePhysicalDynamics::Storage::Discard() noexcept {
-    state().owner.Discard();state().publication.DiscardTrial();pending=false;prepared={};
+    if(wall) wall->Discard();
+    state().owner.Discard();
+    state().publication.DiscardTrial();
+    pending=false;
+    prepared={};
 }
 } // namespace crash::cases::vehicle_dynamics

@@ -7,15 +7,18 @@ the native tied/rigid step. All material candidates and complete field readback
 finish before the common publication. Discard/retry preserves the accepted
 selection. Step and capture workspace is bounded before factory allocation.
 
-The current profile applies no external force or wall contact and contains no
+The default profile applies no external force or wall contact and contains no
 TYPE45 contributor. It is a complete-count integration diagnostic for the
 selected physical model, not a connected-vehicle crash. Uniform-motion errors
 are observed from actual computed positions, velocities, orientations and spins
 against original coordinates; the adapter never sets prescribed trajectories.
 
 The public preparation/commit/discard phases allow the caller to inspect the
-candidate before accepting it. A future wall/joint case must extend admission
-and participant integration explicitly. Accepted material fields are already
+candidate before accepting it. An explicit optional `JointModel` now authenticates
+and adds the seventh TYPE45 participant through the same startup/common publisher.
+The separate [`LoadedWall`](../vehicle_wall/loaded/README.md) factory installs one
+authenticated finite-wall stage before sealing and after material preparation.
+The default null-joint/no-wall path is unchanged. Accepted material fields are already
 owned by TL; the separate capture module will serialize their real histories.
 
 Qualification passes two small motion-observation checks, a complete original
@@ -49,3 +52,9 @@ factor 0.8 at the existing 1e-8 s diagnostic step. It checks every selected
 operator's free motion, commits once, records the actual minimum, and verifies
 unchanged allocation counts. This local structural screen is distinct from
 retained-joint completion or a global nonlinear crash stability guarantee.
+
+`StepObservation::wall.enabled` distinguishes an installed wall from unavailable
+contact data. Accepted and prepared wall observations come from the actual owner
+attempt; only `last_accepted_step()` is an accepted interval record. Existing
+`uniform_motion` fields remain measured deviations from the declared free-motion
+baseline, including on loaded runs; they never prescribe the trajectory.

@@ -1,9 +1,10 @@
 #pragma once
 #include "../vehicle_runtime/VehiclePhysicalStartup.h"
 #include "MotionSummary.h"
+#include "WallObservation.h"
 #include <stdexcept>
 
-namespace crash::cases::vehicle_wall { class VehicleWallStartup; }
+namespace crash::cases::vehicle_wall { class VehicleWallStartup; class VehicleWallSetup; class LoadedWall; struct RuntimeForecast; }
 namespace crash::cases::vehicle_dynamics {
 namespace capture { class VehicleAcceptedFrames; }
 struct Config {
@@ -23,6 +24,7 @@ struct StepObservation {
     tl::fea::ShellPhysicalDiagnostics mechanics;
     // Zero with the disabled profile; otherwise actual post-CIN local limit.
     double structural_step_limit=0;
+    WallObservation wall;
 };
 class StepSizeError : public std::runtime_error {
   public:
@@ -35,14 +37,17 @@ class StepSizeError : public std::runtime_error {
     std::uint32_t node_;
 };
 // Composes the currently selected physical operators through one TL clock.
-// This initial integration profile has no external loads, joints or contact.
-// It qualifies complete-model free flight; it does not admit a connected crash.
+// The original factory remains free flight. The explicit loaded factory adds
+// one finite-wall stage to this same transaction, with actual step screening.
+// This class alone does not establish complete source/load-path closure.
 // PrepareStep does all fallible mechanics/readback work; CommitStep publishes
-// the sole owner and all six histories. DiscardStep preserves accepted results.
+// the sole owner and every declared history. DiscardStep preserves accepted results.
 class VehiclePhysicalDynamics {
   public:
-    static Forecast Preflight(const vehicle_runtime::Execution&,const vehicle_runtime::Attachments&,Config={});
-    static VehiclePhysicalDynamics Prepare(const vehicle_runtime::Execution&,const vehicle_runtime::Attachments&,Config={});
+    static Forecast Preflight(const vehicle_runtime::Execution&,const vehicle_runtime::Attachments&,
+        Config={},const vehicle_runtime::JointModel* = nullptr);
+    static VehiclePhysicalDynamics Prepare(const vehicle_runtime::Execution&,const vehicle_runtime::Attachments&,
+        Config={},const vehicle_runtime::JointModel* = nullptr);
     ~VehiclePhysicalDynamics();
     VehiclePhysicalDynamics(VehiclePhysicalDynamics&&) noexcept;
     VehiclePhysicalDynamics& operator=(VehiclePhysicalDynamics&&) noexcept;
@@ -51,6 +56,10 @@ class VehiclePhysicalDynamics {
     const Forecast& forecast() const noexcept;
     tl::fea::NodalStamp accepted() const noexcept;
     tl::fea::NodalAllocationInfo allocations() const noexcept;
+    // Null on the unchanged free-flight profile. Returned source/budget views
+    // remain immutable and valid while the dynamics object is alive.
+    const vehicle_wall::VehicleWallSetup* wall_setup() const noexcept;
+    const vehicle_wall::RuntimeForecast* wall_forecast() const noexcept;
     const StepObservation& PrepareStep();
     void CommitStep();
     void DiscardStep() noexcept;
@@ -59,6 +68,7 @@ class VehiclePhysicalDynamics {
   private:
     friend class capture::VehicleAcceptedFrames;
     friend class vehicle_wall::VehicleWallStartup;
+    friend class vehicle_wall::LoadedWall;
     struct Storage;
     explicit VehiclePhysicalDynamics(std::unique_ptr<Storage>);
     std::unique_ptr<Storage> storage_;

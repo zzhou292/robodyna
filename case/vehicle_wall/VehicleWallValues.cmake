@@ -4,6 +4,7 @@ include("${ROBO_DYNA_TL_ROOT}/lib_src/collision/PlanarWallGeometry.cmake")
 add_library(robo_dyna_vehicle_wall_values STATIC
   "${CMAKE_CURRENT_LIST_DIR}/Settings.cpp" "${CMAKE_CURRENT_LIST_DIR}/EnvelopeWall.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/RuntimeBudget.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/loaded/Config.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/../wall_penalty/WallPlacementBounds.cpp")
 get_filename_component(vehicle_wall_app_root "${CMAKE_CURRENT_LIST_DIR}/../.." ABSOLUTE)
 target_include_directories(robo_dyna_vehicle_wall_values PUBLIC "${vehicle_wall_app_root}"

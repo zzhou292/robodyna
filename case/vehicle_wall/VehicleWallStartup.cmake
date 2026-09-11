@@ -15,3 +15,9 @@ add_library(robo_dyna_vehicle_wall_startup STATIC
 target_link_libraries(robo_dyna_vehicle_wall_startup PUBLIC robo_dyna_vehicle_wall_setup
   robo_dyna_vehicle_physical_dynamics tl_nodal_wall_mapped)
 target_compile_options(robo_dyna_vehicle_wall_startup PRIVATE -fno-fast-math -ffp-contract=off)
+
+add_library(robo_dyna_vehicle_loaded_wall STATIC
+  "${CMAKE_CURRENT_LIST_DIR}/loaded/Prepare.cpp" "${CMAKE_CURRENT_LIST_DIR}/loaded/Stages.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/loaded/Operations.cpp")
+target_link_libraries(robo_dyna_vehicle_loaded_wall PUBLIC robo_dyna_vehicle_wall_startup)
+target_compile_options(robo_dyna_vehicle_loaded_wall PRIVATE -fno-fast-math -ffp-contract=off)
