@@ -24,8 +24,11 @@
     },
     {
       "path": "lib_src/elements/ShellBatchFields.h",
-      "bytes": 2542,
-      "sha256": "607d07075d51d14118dc26328bcd04cfa6ba049a294bff7de003260726b5ebf9"
+      "bytes": 2553,
+      "sha256": "f42f9794c7a4439225260a02608b5b7d71267fff89b295df64147a247b42fd85",
+      "prior_sha256": "607d07075d51d14118dc26328bcd04cfa6ba049a294bff7de003260726b5ebf9",
+      "prior_bytes": 2542,
+      "followup": "Default-double accumulator template; expression body authenticated by qeph_observer_reduction"
     },
     {
       "path": "lib_src/elements/qeph/QephHistory.h",

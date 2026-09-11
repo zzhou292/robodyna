@@ -2,6 +2,7 @@
 #pragma once
 #include "Stiffness.h"
 #include "../QephBatch.h"
+#include "ObserverTypes.h"
 #include <cstdint>
 
 namespace tl::fea::qeph::mapped {
@@ -23,6 +24,7 @@ struct AssemblyMemory {
   AssemblyNode* node=nullptr;
   // Integer diagnostic ordering only; no floating-point atomic accumulation.
   unsigned long long* failure=nullptr;
+  ObserverSummary* observer=nullptr;
 };
 inline constexpr unsigned long long NoAssemblyFailure=~0ull;
 } // namespace tl::fea::qeph::mapped

@@ -9,6 +9,7 @@ add_library(tl_qeph_batch STATIC
   "${CMAKE_CURRENT_LIST_DIR}/mapped/Initialize.cu"
   "${CMAKE_CURRENT_LIST_DIR}/mapped/Assemble.cu"
   "${CMAKE_CURRENT_LIST_DIR}/mapped/Kernels.cu"
+  "${CMAKE_CURRENT_LIST_DIR}/mapped/ObserverKernels.cu"
   "${CMAKE_CURRENT_LIST_DIR}/mapped/Publication.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/mapped/Readback.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/QephBatch.cu"

@@ -20,10 +20,10 @@ template<unsigned Count> TL_SURFACE_HD inline void Gather(const std::size_t (&no
 }
 // Exact signed cache-work order from QephBatchDiagnostics; no constitutive
 // energy interpretation. Caller measures finite outputs and owns publication.
-template<unsigned Count,class Sum=double> TL_SURFACE_HD inline void AccumulateInternalWork(
+template<unsigned Count> TL_SURFACE_HD inline void AccumulateInternalWork(
     const std::size_t (&nodes)[Count],const tl::math::Vec3 (&force)[Count],
     const tl::math::Vec3 (&couple)[Count],const NodalPreparedView& view,double h,
-    Sum& kick_work,Sum& drift_work) {
+    double& kick_work,double& drift_work) {
   static_assert(Count==3||Count==4,"Native shell topology");
   for(unsigned i=0;i<Count;++i) {
     const auto n=nodes[i];

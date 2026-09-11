@@ -163,6 +163,12 @@ void LaunchMappedCandidateDiagnostics(Storage* s,const Slab* a,const Slab* b,Nod
   if(cudaPeekAtLastError()!=cudaSuccess) return;
   FinalizeMappedDiagnostics<<<1,1,0,view.stream>>>(s,a,b,view,identity,mixed);
 }
+void LaunchMappedObserverDiagnostics(Storage* s,const Slab* a,const Slab* b,NodalPreparedView view,
+    BatchDiagnostics identity,const shell_batch_plasticity_detail::MixedDeviceStorage* mixed) {
+  PrepareMappedDiagnostics<<<256,128,0,view.stream>>>(s,b,view,mixed);
+  if(cudaPeekAtLastError()!=cudaSuccess) return;
+  LaunchMappedObserverReduction(s,a,b,view,identity,mixed);
+}
 void LaunchCandidate(Storage* s,const Slab* a,Slab* b,NodalPreparedView v,BatchDiagnostics d,
     shell_batch_plasticity_detail::DeviceStorage* plasticity,unsigned accepted_slab,std::size_t element_count,
     shell_batch_plasticity_detail::MixedDeviceStorage* mixed,
@@ -176,7 +182,7 @@ void LaunchCandidate(Storage* s,const Slab* a,Slab* b,NodalPreparedView v,BatchD
   // parent slots after a rejected launch. Stream execution errors are checked
   // by the existing control readback/synchronization before any publication.
   if(cudaPeekAtLastError()!=cudaSuccess) return;
-  if(mapped) LaunchMappedCandidateDiagnostics(s,a,b,v,d,mixed);
+  if(mapped) LaunchMappedObserverDiagnostics(s,a,b,v,d,mixed);
   else FinalizeCandidate<<<1,1,0,v.stream>>>(s,a,b,v,d,mixed);
 }
 void LaunchFailure(NodalAssemblyView v) { MarkFailure<<<1,1,0,v.stream>>>(v); }

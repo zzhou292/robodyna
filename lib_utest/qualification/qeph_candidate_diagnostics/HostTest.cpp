@@ -33,10 +33,12 @@ TEST(QephCandidateDiagnostics,PhasePriorityPartialFieldsMissingCatalogAndRetry) 
   f.Reset(1);const auto serial=f.Serial(1,f.input.law),actual=f.Staged(1,f.input.law);
   ASSERT_EQ(actual.status,q::BatchStatus::Success);SameControl(actual,serial);
 }
-TEST(QephCandidateDiagnostics,NoArenaGrowthScratchReuseAndStandaloneArithmetic) {
+TEST(QephCandidateDiagnostics,AccountedObserverTailScratchReuseAndStandaloneArithmetic) {
   b::Layout full;
   ASSERT_TRUE(full.InitializeMapped(324094,372435,std::size_t{2}<<30));
-  EXPECT_EQ(full.bytes,1183491056u);
+  // Later fixed observer reductions own a typed tail; this old serial/parallel
+  // validation comparison still covers its unchanged arithmetic and scratch.
+  EXPECT_EQ(full.bytes,1183491056u+32768u+sizeof(void*));
   b::Layout exact,short_cap;
   EXPECT_TRUE(exact.InitializeMapped(324094,372435,full.bytes));
   EXPECT_FALSE(short_cap.InitializeMapped(324094,372435,full.bytes-1));

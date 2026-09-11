@@ -7,7 +7,7 @@ namespace tl::fea::qeph::mapped {
 // Optional tail on the existing family arena. Legacy initializers allocate no
 // incidence or gather scratch; the mapped profile forecasts this complete tail.
 struct AssemblyLayout {
-  util::ArenaRegion offsets,incidence,parent,node,failure;
+  util::ArenaRegion offsets,incidence,parent,node,failure,observer;
   std::size_t bytes=0;
   bool Initialize(std::size_t base,std::size_t parents,std::size_t nodes,std::size_t cap) noexcept {
     if (!parents || parents>UINT32_MAX/4 || !nodes || nodes>=UINT32_MAX) return false;
@@ -19,21 +19,22 @@ struct AssemblyLayout {
         !layout.Append<std::uint32_t>(4*parents,next.incidence) ||
         !layout.Append<AssemblyParent>(parents,next.parent) ||
         !layout.Append<AssemblyNode>(nodes,next.node) ||
-        !layout.Append<unsigned long long>(1,next.failure)) return false;
+        !layout.Append<unsigned long long>(1,next.failure) ||
+        !layout.Append<ObserverSummary>(ObserverBlocks(parents,nodes),next.observer)) return false;
     next.bytes=layout.bytes(); *this=next; return true;
   }
   bool Construct(util::HostArena& arena,AssemblyMemory& memory) const noexcept {
     if (!bytes) { memory={}; return true; }
     memory={arena.Construct<std::uint32_t>(offsets),arena.Construct<std::uint32_t>(incidence),
         arena.Construct<AssemblyParent>(parent),arena.Construct<AssemblyNode>(node),
-        arena.Construct<unsigned long long>(failure)};
-    return memory.offsets&&memory.incidence&&memory.parent&&memory.node&&memory.failure;
+        arena.Construct<unsigned long long>(failure),arena.Construct<ObserverSummary>(observer)};
+    return memory.offsets&&memory.incidence&&memory.parent&&memory.node&&memory.failure&&memory.observer;
   }
   AssemblyMemory Rebase(void* base) const noexcept {
     if (!bytes) return {};
     return {util::ArenaPointer<std::uint32_t>(base,offsets),util::ArenaPointer<std::uint32_t>(base,incidence),
         util::ArenaPointer<AssemblyParent>(base,parent),util::ArenaPointer<AssemblyNode>(base,node),
-        util::ArenaPointer<unsigned long long>(base,failure)};
+        util::ArenaPointer<unsigned long long>(base,failure),util::ArenaPointer<ObserverSummary>(base,observer)};
   }
 };
 } // namespace tl::fea::qeph::mapped

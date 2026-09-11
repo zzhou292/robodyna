@@ -1,0 +1,61 @@
+{
+  "baseline_commit": "3a1a9acb2eab10f298d348f45adcea37af8cdfba",
+  "scope": "Mapped QEPH observer trees; all mechanics and serial fallback bodies retained",
+  "files": [
+    {
+      "path": "lib_utest/qualification/qeph_observer_reduction/reference/ShellBatchFields.h",
+      "bytes": 2542,
+      "sha256": "607d07075d51d14118dc26328bcd04cfa6ba049a294bff7de003260726b5ebf9"
+    },
+    {
+      "path": "lib_utest/qualification/qeph_candidate_diagnostics/SerialDiagnostics.h",
+      "bytes": 5423,
+      "sha256": "4e70d11daa534db840b6feed129918906a4b5037d51a991af82b0e646054a6a0"
+    },
+    {
+      "path": "lib_src/elements/ShellBatchFields.h",
+      "bytes": 2553,
+      "sha256": "f42f9794c7a4439225260a02608b5b7d71267fff89b295df64147a247b42fd85"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/CandidateDiagnostics.h",
+      "bytes": 3548,
+      "sha256": "cbda9a0fc528a9e9750c8872613bcc74f789d5014e1c554806232ae037a601f9"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/Result.h",
+      "bytes": 4608,
+      "sha256": "93bde1836116c1b1f55e5dafd850fd40e9a77bf671164883a4b8e8327cc5209e"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephHistory.h",
+      "bytes": 3493,
+      "sha256": "800b1e45308b7dac8b04d01c1bb251314a3b7ddda559257528d8adf7118a69c3"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephBatchDiagnostics.h",
+      "bytes": 4024,
+      "sha256": "58637b6162a754f793e4dab546fe2c241d65a9698b39e3179d7df451883d5e2b"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/ObserverTypes.h",
+      "bytes": 1265,
+      "sha256": "e3a20fe8ace4a125d8bba81e96f6f1924d07b1b352c209b8241f159e47b0cf55"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/ObserverSums.h",
+      "bytes": 2372,
+      "sha256": "46b21d00eb83c1e77ca2e3a5763571a25885672cef667b8f7345be7bb6502121"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/ObserverValues.h",
+      "bytes": 5423,
+      "sha256": "8abd9250550d80548fcaed9871609e1e0a0dfbe6d19957cddc56b76ccce3e10a"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/ObserverKernels.cu",
+      "bytes": 2872,
+      "sha256": "3ef54889760e98218f666859d70ae3b66cabe3a49997f16397ba65ab6cda5b2d"
+    }
+  ]
+}

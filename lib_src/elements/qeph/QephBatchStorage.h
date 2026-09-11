@@ -68,6 +68,10 @@ void LaunchMappedAssembly(Storage*,const Slab*,NodalAssemblyView,NodalCinAssembl
 void LaunchAssembly(Storage*,const Slab*,NodalAssemblyView,bool initial);
 void LaunchMappedCandidateDiagnostics(Storage*,const Slab*,const Slab*,NodalPreparedView,BatchDiagnostics,
     const shell_batch_plasticity_detail::MixedDeviceStorage*);
+void LaunchMappedObserverReduction(Storage*,const Slab*,const Slab*,NodalPreparedView,BatchDiagnostics,
+    const shell_batch_plasticity_detail::MixedDeviceStorage*);
+void LaunchMappedObserverDiagnostics(Storage*,const Slab*,const Slab*,NodalPreparedView,BatchDiagnostics,
+    const shell_batch_plasticity_detail::MixedDeviceStorage*);
 void LaunchCandidate(Storage*,const Slab*,Slab*,NodalPreparedView,BatchDiagnostics,
                      shell_batch_plasticity_detail::DeviceStorage*,unsigned accepted_slab,std::size_t element_count,
                      shell_batch_plasticity_detail::MixedDeviceStorage*,
