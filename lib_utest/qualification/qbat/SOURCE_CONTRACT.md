@@ -44,7 +44,7 @@ It does not inherit QEPH's .015 coefficients or infer later force viscosity.
   is subsequently overwritten by GEO13 at383. PM24 is a resolved input, not
   synthesized from a substitute material. Native stiffness/dt use the same
   exact reference area/local-coordinate packet produced by native startup.
-* `CBACOOR:201–264` uses current sum/subtraction R/S order, engine CLSKEW3 K0,
+* `CBACOOR:201–265` uses current sum/subtraction R/S order, engine CLSKEW3 K0,
   current mean plane, area and raw ZL1. This is the same current-frame leaf
   already used in QEPH, whose remaining geometry/force code is not invoked.
   OFF1/ISMSTR2 uses current geometry; OFF2 and saved-small-strain substitution

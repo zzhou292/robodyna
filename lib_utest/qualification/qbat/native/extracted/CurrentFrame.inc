@@ -62,3 +62,4 @@ c
         ZZ4=X(3,M)-X(3,J)
         XL4(I)=R11(I)*XX4+R21(I)*YY4+R31(I)*ZZ4
         YL4(I)=R12(I)*XX4+R22(I)*YY4+R32(I)*ZZ4
+      ENDDO
