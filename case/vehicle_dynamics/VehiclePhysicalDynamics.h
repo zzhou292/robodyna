@@ -2,6 +2,7 @@
 #include "../vehicle_runtime/VehiclePhysicalStartup.h"
 #include "MotionSummary.h"
 #include "WallObservation.h"
+#include "StepTiming.h"
 #include <stdexcept>
 
 namespace crash::cases::vehicle_wall { class VehicleWallStartup; class VehicleWallSetup; class LoadedWall; struct RuntimeForecast; }
@@ -12,6 +13,7 @@ struct Config {
     std::size_t workspace_bytes=128u<<20;
     double maximum_rotation_increment=.2;
     tl::fea::NodalCinStructuralStep structural;
+    StepTimingOptions timing;
 };
 struct Forecast {
     vehicle_runtime::Forecast startup;
@@ -56,6 +58,7 @@ class VehiclePhysicalDynamics {
     const Forecast& forecast() const noexcept;
     tl::fea::NodalStamp accepted() const noexcept;
     tl::fea::NodalAllocationInfo allocations() const noexcept;
+    StepTimingSnapshot timing() const noexcept;
     // Null on the unchanged free-flight profile. Returned source/budget views
     // remain immutable and valid while the dynamics object is alive.
     const vehicle_wall::VehicleWallSetup* wall_setup() const noexcept;

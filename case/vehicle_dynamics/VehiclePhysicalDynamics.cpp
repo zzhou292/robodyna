@@ -34,7 +34,7 @@ VehiclePhysicalDynamics VehiclePhysicalDynamics::Prepare(const vehicle_runtime::
     return VehiclePhysicalDynamics(std::make_unique<Storage>(std::move(startup),config,forecast));
 }
 VehiclePhysicalDynamics::Storage::Storage(vehicle_runtime::VehiclePhysicalStartup&& value,Config c,Forecast f)
-    :startup(std::move(value)),config(c),forecast(f),
+    :startup(std::move(value)),config(c),forecast(f),timer(c.timing),
      activity(vehicle_startup::TiedCinWitnessActivity::Create(startup.attachments().witnesses())),
      fields{Fields(startup.accepted().node_count),Fields(startup.accepted().node_count)},stamp(startup.accepted()) {
     tl::fea::NodalStamp read;
@@ -46,6 +46,7 @@ VehiclePhysicalDynamics::~VehiclePhysicalDynamics()=default;
 VehiclePhysicalDynamics::VehiclePhysicalDynamics(VehiclePhysicalDynamics&&) noexcept=default;
 VehiclePhysicalDynamics& VehiclePhysicalDynamics::operator=(VehiclePhysicalDynamics&&) noexcept=default;
 const Forecast& VehiclePhysicalDynamics::forecast() const noexcept { return storage_->forecast; }
+StepTimingSnapshot VehiclePhysicalDynamics::timing() const noexcept { return storage_->timer.snapshot(); }
 tl::fea::NodalStamp VehiclePhysicalDynamics::accepted() const noexcept { return storage_->stamp; }
 tl::fea::NodalAllocationInfo VehiclePhysicalDynamics::allocations() const noexcept {
     auto result=storage_->startup.allocations();
@@ -65,9 +66,12 @@ const vehicle_wall::RuntimeForecast* VehiclePhysicalDynamics::wall_forecast() co
 bool VehiclePhysicalDynamics::has_prepared_step() const noexcept { return storage_->pending; }
 const StepObservation& VehiclePhysicalDynamics::PrepareStep() {
     auto& s=*storage_;
-    output::Require(!s.pending,"Discard or commit the existing prepared step first");
-    try { s.Prepare();s.Evaluate();s.Capture();s.pending=true; }
-    catch(...) {s.Discard();throw;}
+    s.timer.Step([&] {
+        output::Require(!s.pending,"Discard or commit the existing prepared step first");
+        try {s.Prepare();s.Evaluate();s.Capture();s.pending=true;}
+        catch(...) {s.Discard();throw;}
+        return true;
+    });
     return s.candidate();
 }
 void VehiclePhysicalDynamics::CommitStep() {
@@ -75,8 +79,12 @@ void VehiclePhysicalDynamics::CommitStep() {
     output::Require(s.pending,"Physical step has not completed preparation");
     auto& state=s.state();
     const auto& view=s.prepared;
-    const auto report=state.publication.CommitPhysical(state.owner,s.token,s.candidate().mechanics,
-        {view.owner_id,view.kinematics.base_epoch,view.attempt,s.config.startup.qualification_id,true});
+    tl::fea::ShellPublicationReport report;
+    s.timer.Measure<StepStage::Commit>([&] {
+        report=state.publication.CommitPhysical(state.owner,s.token,s.candidate().mechanics,
+            {view.owner_id,view.kinematics.base_epoch,view.attempt,s.config.startup.qualification_id,true});
+        return report.status==tl::fea::ShellPublicationStatus::Success;
+    });
     if(static_cast<int>(report.status)!=0) { s.Discard();detail::Require(report,"Physical publication"); }
     // No allocation, device call, readback or other fallible work after success.
     s.stamp=state.owner.accepted();s.accepted_slot=1-s.accepted_slot;s.pending=false;
@@ -87,10 +95,13 @@ const StepObservation& VehiclePhysicalDynamics::last_accepted_step() const {
     return storage_->observations[storage_->accepted_slot];
 }
 void VehiclePhysicalDynamics::Storage::Discard() noexcept {
-    if(wall) wall->Discard();
-    state().owner.Discard();
-    state().publication.DiscardTrial();
-    pending=false;
-    prepared={};
+    timer.Measure<StepStage::Discard>([&] {
+        if(wall) wall->Discard();
+        state().owner.Discard();
+        state().publication.DiscardTrial();
+        pending=false;
+        prepared={};
+        return true;
+    });
 }
 } // namespace crash::cases::vehicle_dynamics

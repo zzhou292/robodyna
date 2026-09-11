@@ -25,15 +25,17 @@ TEST(VehicleLoadedWallOriginal, FirstNonzeroContactUsesActualCompleteOwnerAndDis
     settings.leading_gap_m=1e-6; // Explicit first-contact qualification; not the default 20 mm run gap.
     settings.requested_duration_s=.005;
     const auto setup=VehicleWallSetup::Prepare(execution,attachments,original,bytes,settings);
-    const auto forecast=LoadedWall::Preflight(setup,LoadedWallConfig(),{},&joints);
+    auto config=LoadedWallConfig();
+    config.timing.enabled=true;
+    const auto forecast=LoadedWall::Preflight(setup,config,{},&joints);
     RecordProperty("complete_host_upper_bound",std::to_string(forecast.peak_host_upper_bound));
     RecordProperty("complete_device_bytes",std::to_string(forecast.device_bytes));
     std::cout<<"Loaded complete preview before owner allocation: host="<<forecast.peak_host_upper_bound
              <<" device="<<forecast.device_bytes<<" joints="<<joints.model().joints().size()<<std::endl;
     RuntimeLimits short_cap;
     short_cap.host_bytes=forecast.peak_host_upper_bound-1;
-    EXPECT_THROW(LoadedWall::Prepare(setup,LoadedWallConfig(),short_cap,&joints),std::runtime_error);
-    auto simulation=LoadedWall::Prepare(setup,LoadedWallConfig(),{},&joints);
+    EXPECT_THROW(LoadedWall::Prepare(setup,config,short_cap,&joints),std::runtime_error);
+    auto simulation=LoadedWall::Prepare(setup,config,{},&joints);
     ASSERT_NE(simulation.wall_setup(),nullptr);
     EXPECT_EQ(simulation.wall_setup()->geometry().weights()->parent_count(),349645u);
     EXPECT_EQ(simulation.allocations().device_bytes,forecast.device_bytes);
@@ -72,6 +74,22 @@ TEST(VehicleLoadedWallOriginal, FirstNonzeroContactUsesActualCompleteOwnerAndDis
     EXPECT_EQ(simulation.accepted().epoch,2);
     EXPECT_EQ(simulation.last_accepted_step().wall.prepared.contact.resultant.value,loaded.wall.prepared.contact.resultant.value);
     EXPECT_EQ(simulation.allocations().device_bytes,forecast.device_bytes);
+    const auto timing=simulation.timing();
+    ASSERT_TRUE(timing.enabled);
+    EXPECT_FALSE(timing.counter_saturated);
+    EXPECT_EQ(timing.clock_failures,0u);
+    EXPECT_EQ(timing.backward_samples,0u);
+    using Stage=vehicle_dynamics::StepStage;
+    for(auto stage:{Stage::PrepareStep,Stage::AssembleQeph,Stage::AdvanceCin,Stage::EvaluateType45,Stage::EvaluateWall}) {
+        const auto& row=timing.total[static_cast<std::size_t>(stage)];
+        EXPECT_EQ(row.calls,3u);
+        EXPECT_EQ(row.valid_samples,3u);
+    }
+    EXPECT_EQ(timing.total[static_cast<std::size_t>(Stage::Commit)].calls,2u);
+    for(std::size_t i=0;i<timing.total.size();++i) {
+        RecordProperty(std::string("stage_ns_")+vehicle_dynamics::StepStageNames[i],std::to_string(timing.total[i].wall_ns));
+        RecordProperty(std::string("stage_calls_")+vehicle_dynamics::StepStageNames[i],std::to_string(timing.total[i].calls));
+    }
     RecordProperty("type45_joints",std::to_string(loaded.mechanics.type45.joint_count));
     RecordProperty("physical_nodes",std::to_string(simulation.accepted().node_count));
     RecordProperty("shell_parents",std::to_string(setup.geometry().weights()->parent_count()));

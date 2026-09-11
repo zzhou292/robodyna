@@ -58,3 +58,26 @@ contact data. Accepted and prepared wall observations come from the actual owner
 attempt; only `last_accepted_step()` is an accepted interval record. Existing
 `uniform_motion` fields remain measured deviations from the declared free-motion
 baseline, including on loaded runs; they never prescribe the trajectory.
+
+## Optional call timing
+
+`Config::timing.enabled` opts into the existing bounded `StageTimer`; the default
+is disabled. `timing()` returns copied diagnostic counters. Named stages separate
+each accepted family/joint/wall assembly, the CIN/rigid advance, each candidate,
+prepared field capture, commit and discard. Slot zero is the inclusive
+`PrepareStep` call. Other named calls remain in their original order. Rejected
+calls contribute failed-stage counters, while accepted mechanics are unchanged.
+No extra CUDA call or synchronization is added. Host wall time can include waits
+already performed by each operation; it is not a device-kernel duration.
+
+The timer is inline in the existing storage and charged by its existing
+`sizeof(Storage)` forecast for both enabled and disabled configurations. It has
+no per-step allocation. The previously qualified timer handles invalid/backward
+clock reads and saturates counters without changing a mechanics result or
+exception. This is independent of the sole physical timestep/owner epoch.
+
+The original loaded two-interval/discard-retry test explicitly enables timing
+and records `stage_ns_*`/`stage_calls_*` properties. It expects three prepared
+attempts and two common commits while retaining all prior numerical/source
+checks. Root owns this actual gate. Author validation reuses the standalone
+timer host tests and complete physical production/test syntax checks.

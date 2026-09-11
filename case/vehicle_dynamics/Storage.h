@@ -11,6 +11,7 @@ struct VehiclePhysicalDynamics::Storage {
     vehicle_runtime::VehiclePhysicalStartup startup;
     Config config;
     Forecast forecast;
+    StepTimer timer;
     std::unique_ptr<vehicle_startup::TiedCinWitnessActivity> activity;
     std::unique_ptr<detail::WallContribution> wall;
     std::array<Fields,2> fields;
