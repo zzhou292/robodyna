@@ -5,11 +5,23 @@ find_package(GTest REQUIRED)
 find_package(CUDAToolkit REQUIRED)
 get_filename_component(TL_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../.." ABSOLUTE)
 option(PHYSICAL_MESH_WALL_CUDA "Actual all-family mapped contact owner gate" OFF)
-add_executable(physical_mesh_wall_values ValueTest.cpp "${TL_ROOT}/lib_src/collision/nodal_wall_mapped/Layout.cpp")
+include("${TL_ROOT}/lib_src/assembly/ShellNodeMap.cmake")
+include("${TL_ROOT}/lib_src/collision/NodalWallContact.cmake")
+include("${TL_ROOT}/lib_src/collision/PreparedPlanarWallQuery.cmake")
+add_executable(physical_mesh_wall_values ValueTest.cpp HostPreparationTest.cpp
+  "${TL_ROOT}/lib_src/collision/nodal_wall_mapped/Layout.cpp"
+  "${TL_ROOT}/lib_src/collision/NodalWallContactModel.cpp"
+  "${TL_ROOT}/lib_src/collision/NodalWallContactArena.cpp"
+  "${TL_ROOT}/lib_src/collision/NodalWallContactIncidence.cpp")
 target_include_directories(physical_mesh_wall_values PRIVATE "${TL_ROOT}" "${CUDAToolkit_INCLUDE_DIRS}")
 target_compile_features(physical_mesh_wall_values PRIVATE cxx_std_17)
-target_compile_options(physical_mesh_wall_values PRIVATE -fno-fast-math -ffp-contract=off)
-target_link_libraries(physical_mesh_wall_values PRIVATE GTest::gtest_main)
+target_compile_options(physical_mesh_wall_values PRIVATE -fno-fast-math -ffp-contract=off
+  -ffunction-sections -fdata-sections)
+# The existing Model TU also owns legacy CUDA initialization; this host-only
+# gate discards that unused entry without linking or executing a device owner.
+target_link_options(physical_mesh_wall_values PRIVATE -Wl,--gc-sections)
+target_link_libraries(physical_mesh_wall_values PRIVATE GTest::gtest_main
+  tl_shell_node_map tl_nodal_wall_contact tl_prepared_planar_wall_query)
 add_test(NAME physical_mesh_wall_values COMMAND physical_mesh_wall_values)
 if(PHYSICAL_MESH_WALL_CUDA)
   enable_language(CUDA)

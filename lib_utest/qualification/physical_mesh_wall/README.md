@@ -118,3 +118,16 @@ with both triangles associated to the same source/assembled quad. Its altered
 reference moves the T3-only vertex in X: the earlier Y move was parallel to the
 opposite edge and preserved area. An explicit increased-area assertion protects
 the intended negative control. Root `physical-wall-tests-2` retains the failure.
+
+The third root run exposed the projected-box contract: both X endpoints passed
+to `CheckPlanarWallBox` must equal the actual wall plane. Runtime containment is
+YZ-only; penetration is checked separately by the point law. The shared fixture
+now returns that projected box. A new host preparation test uses the exact same
+wall, configuration and reference helper through production `PreparePhysicalModel`:
+complete wall/reference success, nonprojected/edge-exceeding box rejection,
+initial penetration rejection, unchanged empty output and retry all pass. Five
+host functions pass in `physical-wall-host-preparation-author-3`, with no GPU
+calls. Its first link attempt retained unused legacy CUDA methods (resolved by
+host function-section garbage collection), and the second tiny fixture traversed
+unused capacity beyond `binding.node_count()`; both failed reports are retained.
+The frozen actual source/force fixtures are otherwise unchanged.
