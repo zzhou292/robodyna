@@ -29,12 +29,11 @@ bool ShellBatchPlasticityBinding::Law(ShellBindingFamily family,std::size_t inde
     ShellSectionLaw* output) const noexcept {
   const auto* m=ParentMaterial(family,index);
   if(!output||!m) return false;
-  const bool q=family==ShellBindingFamily::Qeph;
-  const auto& parent=data_.parents[(q?data_.qeph_parent:data_.t3_parent)[index]];
-  const auto& section=data_.sections[parent.section_index];
+  const auto* parent=FamilyParent(family,index);
+  const auto& section=data_.sections[parent->section_index];
   if(section.formulation==ShellSectionFormulation::OneThicknessPoint) {
-    if(q||m->declaration.law!=ShellSectionLaw::LayeredLaw44Nip3) return false;
-    *output=ShellSectionLaw::Law44Nip1;
+    if(family==ShellBindingFamily::Qeph||m->declaration.law!=ShellSectionLaw::LayeredLaw44Nip3) return false;
+    *output=family==ShellBindingFamily::Qbat?ShellSectionLaw::Law44QbatFourInPlane:ShellSectionLaw::Law44Nip1;
     return true;
   }
   if(section.formulation!=ShellSectionFormulation::LayeredNip3||
@@ -44,7 +43,15 @@ bool ShellBatchPlasticityBinding::Law(ShellBindingFamily family,std::size_t inde
   return true;
 }
 bool ShellBatchPlasticityBinding::Counts(ShellBindingFamily family,ShellSectionCounts* output) const noexcept {
-  if(!prepared_||!output||(family!=ShellBindingFamily::Qeph&&family!=ShellBindingFamily::T3)) return false;
-  *output=family==ShellBindingFamily::Qeph?data_.qeph_laws:data_.t3_laws;return true;
+  if(!prepared_||!output) return false;
+  switch(family) {
+    case ShellBindingFamily::Qeph: *output=data_.qeph_laws; return true;
+    case ShellBindingFamily::T3: *output=data_.t3_laws; return true;
+    case ShellBindingFamily::Qbat:
+      if(!data_.formulations) return false;
+      *output=data_.qbat_laws;
+      return true;
+    default: return false;
+  }
 }
 } // namespace tl::fea

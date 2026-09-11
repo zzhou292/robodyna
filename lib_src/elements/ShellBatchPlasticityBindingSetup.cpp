@@ -1,5 +1,6 @@
 #include "ShellBatchPlasticityBindingInternal.h"
 #include "ShellPlasticityCatalogScratch.h"
+#include "ShellBindingValues.h"
 #include <new>
 
 namespace tl::fea {
@@ -12,10 +13,11 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::Initialize(
 std::size_t ShellBatchPlasticityBinding::host_bytes() const noexcept {
   return sizeof(*this)+data_.inventory.backing_bytes()+data_.curves.backing_bytes()+
     data_.materials.backing_bytes()+data_.sections.backing_bytes()+data_.parents.backing_bytes()+
-    data_.qeph_parent.backing_bytes()+data_.t3_parent.backing_bytes();
+    data_.qeph_parent.backing_bytes()+data_.t3_parent.backing_bytes()+data_.qbat_parent.backing_bytes();
 }
 std::size_t ShellBatchPlasticityBinding::startup_scratch_bytes() const noexcept {
-  return prepared_?sizeof(Data)+CatalogScratch::Bytes(data_.parent_count,data_.qeph_count,data_.t3_count):0;
+  return prepared_?sizeof(Data)+CatalogScratch::Bytes(data_.parent_count,data_.qeph_count,
+      data_.t3_count,data_.qbat_count):0;
 }
 ShellPlasticityBindingReport ShellBatchPlasticityBinding::Initialize(
     const ShellBatchBinding& binding,const ShellBatchPlasticityBindingInput& input,
@@ -44,10 +46,12 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::InitializeCatalog(
 }
 ShellPlasticityBindingReport ShellBatchPlasticityBinding::InitializeCatalogImpl(
     const ShellBatchBinding& binding,const ShellBatchPlasticityBindingInput& input,
-    const ShellPlasticityCatalogLimits& limits,bool heterogeneous) noexcept {
+    const ShellPlasticityCatalogLimits& limits,bool heterogeneous,bool formulations) noexcept {
   if(prepared_) return Error(Status::AlreadyInitialized,"Plasticity binding is immutable after preparation");
-  if(binding.qbat_count()!=0)
+  if(binding.qbat_count()!=0&&!formulations)
     return Error(Status::InvalidInput,"QBAT requires an explicit complete formulation catalog");
+  if(formulations&&(!heterogeneous||binding.qbat_count()==0))
+    return Error(Status::InvalidInput,"Explicit formulation catalog requires QBAT and typed sections");
   if(!binding.prepared()||(input.curve_count&&!input.curves)||!input.materials||!input.sections||!input.parents||
      !input.material_count||!input.section_count||!input.parent_count)
     return Error(Status::InvalidInput,"Complete prepared binding and explicit nonempty catalog ranges are required");
@@ -58,7 +62,7 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::InitializeCatalogImpl(
   for(auto count:{input.curve_count,input.material_count,input.section_count})
     if(count>limits.max_definitions)
       return Error(Status::ResourceLimit,"Plasticity catalog exceeds definition admission");
-  if(input.parent_count!=binding.qeph_count()+binding.t3_count())
+  if(input.parent_count!=binding.qeph_count()+binding.t3_count()+binding.qbat_count())
     return Error(Status::InvalidParent,"Plasticity mapping must cover every native collection parent");
   const auto bytes=sizeof(*this)+binding.inventory().backing_bytes()+
     decltype(data_.curves)::ExtraBytes(input.curve_count)+
@@ -66,14 +70,21 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::InitializeCatalogImpl(
     decltype(data_.sections)::ExtraBytes(input.section_count)+
     decltype(data_.parents)::ExtraBytes(input.parent_count)+
     decltype(data_.qeph_parent)::ExtraBytes(binding.qeph_count())+
-    decltype(data_.t3_parent)::ExtraBytes(binding.t3_count());
+    decltype(data_.t3_parent)::ExtraBytes(binding.t3_count())+
+    decltype(data_.qbat_parent)::ExtraBytes(binding.qbat_count());
   if(bytes>limits.max_owned_bytes)
     return Error(Status::ResourceLimit,"Owned host plasticity catalog exceeds byte admission");
   // Bounds above limit every multiplication/addition to <256 MiB. The staging
   // object and private temporary indexes are separate from retained backing.
-  const auto scratch=sizeof(Data)+CatalogScratch::Bytes(input.parent_count,binding.qeph_count(),binding.t3_count());
+  const auto scratch=sizeof(Data)+CatalogScratch::Bytes(input.parent_count,binding.qeph_count(),
+      binding.t3_count(),binding.qbat_count());
   if(scratch>limits.max_startup_scratch_bytes)
     return Error(Status::ResourceLimit,"Plasticity catalog startup scratch exceeds byte admission");
+  if(formulations&&(!shell_binding_detail::ValidRange(input.curves,input.curve_count)||
+      !shell_binding_detail::ValidRange(input.materials,input.material_count)||
+      !shell_binding_detail::ValidRange(input.sections,input.section_count)||
+      !shell_binding_detail::ValidRange(input.parents,input.parent_count)))
+    return Error(Status::InvalidInput,"Formulation catalog ranges are misaligned or overflowing");
   // All range counts and the TOTAL pool size are checked before any curve copy.
   std::size_t points=0;
   for(std::size_t i=0;i<input.curve_count;++i) {
@@ -82,19 +93,26 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::InitializeCatalogImpl(
       return Error(Status::InvalidCurve,"Curve requires a nonzero ID and at least two supplied points",i);
     if(c.curve.count>MaxShellPlasticityCurvePoints-points)
       return Error(Status::ResourceLimit,"Complete plasticity curve pool exceeds 1024 points",i);
+    if(formulations&&(!shell_binding_detail::ValidRange(c.curve.plastic_strain,c.curve.count)||
+        !shell_binding_detail::ValidRange(c.curve.yield_stress_pa,c.curve.count)))
+      return Error(Status::InvalidCurve,"Formulation curve range is misaligned or overflowing",i);
     points+=c.curve.count;
   }
-  try { return Build(binding,input,heterogeneous); }
+  try { return Build(binding,input,heterogeneous,formulations); }
   catch(const std::bad_alloc&) { return Error(Status::ResourceLimit,"Plasticity catalog startup allocation failed"); }
 }
 ShellPlasticityBindingReport ShellBatchPlasticityBinding::Build(
-    const ShellBatchBinding& binding,const ShellBatchPlasticityBindingInput& input,bool heterogeneous) {
+    const ShellBatchBinding& binding,const ShellBatchPlasticityBindingInput& input,
+    bool heterogeneous,bool formulations) {
   Data staged;
   staged.heterogeneous=heterogeneous;
+  staged.formulations=formulations;
   staged.curves.Resize(input.curve_count); staged.materials.Resize(input.material_count);
   staged.sections.Resize(input.section_count); staged.parents.Resize(input.parent_count);
   staged.qeph_parent.Resize(binding.qeph_count()); staged.t3_parent.Resize(binding.t3_count());
+  staged.qbat_parent.Resize(binding.qbat_count());
   staged.inventory=binding.inventory(); staged.qeph_count=binding.qeph_count(); staged.t3_count=binding.t3_count();
+  staged.qbat_count=binding.qbat_count();
   auto report=CopyCurves(input,staged);
   if(report.status==Status::Success) report=PrepareMaterials(input,staged);
   if(report.status==Status::Success) report=CopySections(input,staged);

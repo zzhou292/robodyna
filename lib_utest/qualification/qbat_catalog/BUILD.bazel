@@ -1,0 +1,27 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+
+cc_library(
+    name = "fixture",
+    testonly = True,
+    hdrs = ["Fixture.h"],
+    deps = ["//lib_src/elements:shell_formulation_scope",
+            "//lib_utest/qualification/qbat_binding:fixture",
+            "//lib_src/materials:tabulated_shell_plasticity", "@googletest//:gtest_main"],
+)
+cc_test(
+    name = "qbat_catalog_host_check",
+    size = "small",
+    srcs = ["ValueTest.cpp", "FailureTest.cpp", "ScopeTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":fixture", "//lib_src/elements:shell_formulation_scope",
+            "//lib_utest/qualification/nodal_mass:test_support", "@googletest//:gtest_main"],
+)
+cc_test(
+    name = "qbat_catalog_original_check",
+    size = "medium",
+    srcs = ["OriginalTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":fixture", "//lib_src/elements:shell_formulation_scope",
+            "//lib_utest/qualification/qbat_binding:original_source",
+            "//lib_utest/qualification/qbat:source_fixture", "@googletest//:gtest_main"],
+)

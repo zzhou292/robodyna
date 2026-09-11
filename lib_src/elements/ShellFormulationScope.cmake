@@ -1,0 +1,7 @@
+if(NOT TARGET tl_shell_formulation_scope)
+  include("${CMAKE_CURRENT_LIST_DIR}/ShellBatchFailureBinding.cmake")
+  include("${CMAKE_CURRENT_LIST_DIR}/../assembly/NodalMassBinding.cmake")
+  add_library(tl_shell_formulation_scope STATIC "${CMAKE_CURRENT_LIST_DIR}/ShellFormulationScope.cpp")
+  target_link_libraries(tl_shell_formulation_scope PUBLIC tl_shell_batch_failure_binding tl_nodal_mass_binding)
+  target_compile_features(tl_shell_formulation_scope PUBLIC cxx_std_17)
+endif()

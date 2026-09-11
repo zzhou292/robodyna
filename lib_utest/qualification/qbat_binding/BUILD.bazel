@@ -4,6 +4,7 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_test")
 cc_library(
     name = "fixture",
     testonly = True,
+    visibility = ["//lib_utest/qualification/qbat_catalog:__pkg__"],
     hdrs = ["Fixture.h"],
     deps = ["//lib_src/elements:shell_batch_binding", "//lib_src/elements/qbat:geometry",
             "//lib_src/elements/t3:startup", "@googletest//:gtest_main"],
@@ -11,6 +12,7 @@ cc_library(
 cc_library(
     name = "original_source",
     testonly = True,
+    visibility = ["//lib_utest/qualification/qbat_catalog:__pkg__"],
     srcs = ["OriginalFixture.cpp"],
     hdrs = ["OriginalFixture.h"],
     copts = ["-std=c++17"],

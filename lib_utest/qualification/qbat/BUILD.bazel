@@ -30,5 +30,6 @@ cc_library(
     hdrs = ["source_fixture/YarisQbatSourceFixture.h"],
     data = ["source_fixture/source-manifest.json"],
     visibility = ["//lib_utest/qualification/t3_one_point:__pkg__",
+                  "//lib_utest/qualification/qbat_catalog:__pkg__",
                   "//lib_utest/qualification/qbat_binding:__pkg__"],
 )

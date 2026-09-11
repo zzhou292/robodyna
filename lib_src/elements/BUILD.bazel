@@ -77,7 +77,7 @@ cc_library(
 
 cc_library(
     name = "shell_batch_plasticity_binding",
-    srcs = ["ShellBatchPlasticityBinding.cpp", "ShellBatchPlasticityBindingSetup.cpp", "ShellBatchPlasticityBindingParents.cpp", "ShellBatchSectionBinding.cpp", "ShellPlasticityCatalogScratch.h"],
+    srcs = ["ShellBatchPlasticityBinding.cpp", "ShellBatchPlasticityBindingSetup.cpp", "ShellBatchPlasticityBindingParents.cpp", "ShellBatchSectionBinding.cpp", "ShellBatchFormulationBinding.cpp", "ShellPlasticityCatalogScratch.h"],
     hdrs = ["ShellBatchPlasticityBinding.h", "ShellBatchPlasticityBindingInternal.h", "ShellPlasticityCatalogLimits.h", "ShellBatchSectionBinding.h", "ShellSectionLaw.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [":shell_batch_binding", ":shell_batch_plasticity", ":shell_binding_identity_index", "//lib_src/materials:shell_elastic_law1_point", "//lib_utils:bounded_startup_array"],
@@ -88,7 +88,16 @@ cc_library(
     srcs = ["failure/ShellFailureBinding.cpp"],
     hdrs = ["ShellBatchFailure.h", "ShellBatchFailureBinding.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
-    deps = [":shell_batch_plasticity_binding", "//lib_src/elements/sections:shell_layered_j2_failure", "//lib_src/elements/sections:shell_layered_tab1", "//lib_utils:bounded_arena"],
+    deps = [":shell_batch_binding", ":shell_batch_plasticity_binding", "//lib_src/elements/sections:shell_layered_j2_failure", "//lib_src/elements/sections:shell_layered_tab1", "//lib_utils:bounded_arena"],
+)
+
+cc_library(
+    name = "shell_formulation_scope",
+    srcs = ["ShellFormulationScope.cpp"],
+    hdrs = ["ShellFormulationScope.h"],
+    copts = ["-std=c++17"],
+    deps = [":shell_batch_failure_binding", ":shell_batch_plasticity_binding",
+            "//lib_src/assembly:nodal_mass_binding"],
 )
 
 cc_library(

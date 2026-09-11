@@ -8,6 +8,9 @@ enum class ShellSectionLaw : std::uint8_t {
   Unspecified=0,LayeredLaw44Nip3,LayeredLaw1Nip3,
   // Resolved section role, never a material declaration tag.
   Law44Nip1,
+  // Four in-plane stations, each with the SAME source NIP1 section.
+  // Resolved role only; never a material declaration tag.
+  Law44QbatFourInPlane,
 };
 enum class ShellSectionFormulation : std::uint8_t {
   LayeredNip3,
@@ -16,5 +19,6 @@ enum class ShellSectionFormulation : std::uint8_t {
 struct ShellSectionCounts {
   std::size_t law44=0,law1=0;
   std::size_t law44_nip1=0; // Subset of law44, not another material total.
+  std::size_t law44_qbat=0; // Four in-plane points per parent; subset of law44.
 };
 } // namespace tl::fea

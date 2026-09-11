@@ -8,13 +8,24 @@ bool ShellBatchPlasticityBinding::Matches(const ShellBatchBinding& binding) cons
 const ShellPlasticityParentInput* ShellBatchPlasticityBinding::parent(std::size_t index) const noexcept {
   return prepared_&&index<data_.parent_count?&data_.parents[index].declaration:nullptr;
 }
+const ShellBatchPlasticityBinding::Parent* ShellBatchPlasticityBinding::FamilyParent(
+    ShellBindingFamily family,std::size_t index) const noexcept {
+  if(!prepared_) return nullptr;
+  switch(family) {
+    case ShellBindingFamily::Qeph:
+      return index<data_.qeph_count?&data_.parents[data_.qeph_parent[index]]:nullptr;
+    case ShellBindingFamily::T3:
+      return index<data_.t3_count?&data_.parents[data_.t3_parent[index]]:nullptr;
+    case ShellBindingFamily::Qbat:
+      return data_.formulations&&index<data_.qbat_count?&data_.parents[data_.qbat_parent[index]]:nullptr;
+    default:
+      return nullptr;
+  }
+}
 const ShellBatchPlasticityBinding::Material* ShellBatchPlasticityBinding::ParentMaterial(
     ShellBindingFamily family,std::size_t index) const noexcept {
-  if(!prepared_||(family!=ShellBindingFamily::Qeph&&family!=ShellBindingFamily::T3)) return nullptr;
-  const bool q=family==ShellBindingFamily::Qeph;
-  if(index>=(q?data_.qeph_count:data_.t3_count)) return nullptr;
-  const auto& parent=data_.parents[(q?data_.qeph_parent:data_.t3_parent)[index]];
-  return &data_.materials[parent.material_index];
+  const auto* parent=FamilyParent(family,index);
+  return parent?&data_.materials[parent->material_index]:nullptr;
 }
 bool ShellBatchPlasticityBinding::Parameters(ShellBindingFamily family,std::size_t index,
     sections::PointParameters* output) const noexcept {
@@ -33,7 +44,7 @@ bool ShellBatchPlasticityBinding::SameScope(const ShellBatchPlasticityBinding& o
   if(!prepared_||!other.prepared_||a.inventory!=b.inventory||a.curve_count!=b.curve_count||
       a.material_count!=b.material_count||a.section_count!=b.section_count||a.parent_count!=b.parent_count||
       a.point_count!=b.point_count||a.qeph_count!=b.qeph_count||a.t3_count!=b.t3_count||
-      a.heterogeneous!=b.heterogeneous) return false;
+      a.qbat_count!=b.qbat_count||a.formulations!=b.formulations||a.heterogeneous!=b.heterogeneous) return false;
   for(std::size_t i=0;i<a.curve_count;++i)
     if(a.curves[i].id!=b.curves[i].id||a.curves[i].offset!=b.curves[i].offset||a.curves[i].count!=b.curves[i].count) return false;
   for(std::size_t i=0;i<a.point_count;++i)

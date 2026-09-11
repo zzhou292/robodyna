@@ -1,6 +1,7 @@
 #include "../ShellBatchFailureBinding.h"
 #include "../sections/ShellLayeredTab1ForceAdapter.h"
 #include "lib_utils/BoundedArena.h"
+#include "../ShellBindingValues.h"
 #include <cstring>
 #include <new>
 #include <stdexcept>
@@ -10,7 +11,7 @@ struct ShellBatchFailureBinding::Data {
   explicit Data(const ShellBatchPlasticityBinding& value) : catalog(value) {}
   ShellBatchPlasticityBinding catalog;
   util::BoundedStartupArray<ShellFailureParentInput, 0> rows;
-  util::BoundedStartupArray<std::size_t, 0> qeph, t3;
+  util::BoundedStartupArray<std::size_t, 0> qeph, t3, qbat;
   std::size_t count = 0, bytes = 0;
 };
 namespace {
@@ -36,7 +37,7 @@ bool Same(const sections::ShellLayeredTab1Parameters& a,
 bool AdmittedPolicy(const ShellFailureParentInput& row, ShellSectionLaw law,
                     const ShellBatchPlasticityBinding& catalog) noexcept {
   const bool no_tab1 = Same(row.tab1, sections::ShellLayeredTab1Parameters{});
-  if (law == ShellSectionLaw::Law44Nip1) {
+  if (law == ShellSectionLaw::Law44Nip1 || law == ShellSectionLaw::Law44QbatFourInPlane) {
     return row.policy == ShellFailurePolicy::ConstantAllPoints && no_tab1 &&
         tl::math::Finite(row.constant.failure_strain) && row.constant.failure_strain > 0;
   }
@@ -70,10 +71,12 @@ ShellPlasticityBindingReport ShellBatchFailureBinding::Initialize(
     return {Status::ResourceLimit, NoShellBindingNode, ShellBindingFamily::None,
             "Failure declaration count/host cap exceeded"};
   }
-  ShellSectionCounts q, t;
+  ShellSectionCounts q, t, b;
   catalog.Counts(ShellBindingFamily::Qeph, &q);
   catalog.Counts(ShellBindingFamily::T3, &t);
+  if (catalog.formulation_sections()) catalog.Counts(ShellBindingFamily::Qbat, &b);
   const auto nq = q.law1 + q.law44, nt = t.law1 + t.law44;
+  const auto nb = b.law1 + b.law44;
   util::BoundedArenaLayout budget(limits.max_host_bytes);
   util::ArenaRegion ignored;
   // catalog.host_bytes includes its inline object; Data embeds it exactly once.
@@ -81,7 +84,7 @@ ShellPlasticityBindingReport ShellBatchFailureBinding::Initialize(
       !budget.Append<unsigned char>(catalog.host_bytes(), ignored) ||
       !budget.Append<ShellFailureParentInput>(count, ignored) ||
       !budget.Append<std::size_t>(count, ignored) ||
-      !budget.Append<unsigned char>(4 * 64, ignored)) {
+      !budget.Append<unsigned char>((nb ? 5 : 4) * 64, ignored)) {
     return {Status::ResourceLimit, NoShellBindingNode, ShellBindingFamily::None,
             "Failure declaration payload exceeds host cap"};
   }
@@ -89,10 +92,15 @@ ShellPlasticityBindingReport ShellBatchFailureBinding::Initialize(
     return {Status::InvalidInput, NoShellBindingNode, ShellBindingFamily::None,
             "Missing failure declarations"};
   }
+  if (catalog.formulation_sections() && !shell_binding_detail::ValidRange(input, count)) {
+    return {Status::InvalidInput, NoShellBindingNode, ShellBindingFamily::None,
+            "Formulation failure range is misaligned or overflowing"};
+  }
   auto next = std::make_shared<Data>(catalog);
   next->rows.Resize(count);
   next->qeph.Resize(nq);
   next->t3.Resize(nt);
+  next->qbat.Resize(nb);
   bool any_failure = false;
   for (std::size_t i = 0; i < count; ++i) {
     const auto& row = input[i];
@@ -109,8 +117,13 @@ ShellPlasticityBindingReport ShellBatchFailureBinding::Initialize(
     }
     any_failure = any_failure || row.policy != ShellFailurePolicy::None;
     next->rows[i] = row;
-    auto& family_index = source->family == ShellBindingFamily::Qeph ? next->qeph : next->t3;
-    family_index[source->family_index] = i;
+    switch (source->family) {
+      case ShellBindingFamily::Qeph: next->qeph[source->family_index] = i; break;
+      case ShellBindingFamily::T3: next->t3[source->family_index] = i; break;
+      case ShellBindingFamily::Qbat: next->qbat[source->family_index] = i; break;
+      default:
+        return {Status::InvalidParent, i, source->family, "Unknown failure formulation family"};
+    }
   }
   if (!any_failure) {
     return {Status::InvalidInput, NoShellBindingNode, ShellBindingFamily::None,
@@ -140,9 +153,15 @@ const ShellFailureParentInput* ShellBatchFailureBinding::parent(std::size_t i) c
 }
 const ShellFailureParentInput* ShellBatchFailureBinding::parent(
     ShellBindingFamily family, std::size_t i) const noexcept {
-  if (!data_ || (family != ShellBindingFamily::Qeph && family != ShellBindingFamily::T3)) return nullptr;
-  const auto& index = family == ShellBindingFamily::Qeph ? data_->qeph : data_->t3;
-  return i < index.size() ? &data_->rows[index[i]] : nullptr;
+  if (!data_) return nullptr;
+  const auto* index = &data_->qeph;
+  switch (family) {
+    case ShellBindingFamily::Qeph: break;
+    case ShellBindingFamily::T3: index = &data_->t3; break;
+    case ShellBindingFamily::Qbat: index = &data_->qbat; break;
+    default: return nullptr;
+  }
+  return i < index->size() ? &data_->rows[(*index)[i]] : nullptr;
 }
 bool ShellBatchFailureBinding::Matches(const ShellBatchPlasticityBinding& value) const noexcept {
   return data_ && data_->catalog.SameScope(value);

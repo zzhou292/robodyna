@@ -81,6 +81,14 @@ class ShellBatchPlasticityBinding {
       const ShellBatchPlasticityBindingInput&,const ShellHostBindingLimits& = {}) noexcept;
   ShellPlasticityBindingReport InitializeSectionCatalog(const ShellBatchBinding&,
       const ShellBatchPlasticityBindingInput&,const ShellPlasticityCatalogLimits&) noexcept;
+  // Explicit complete QEPH/T3/QBAT HOST catalog. At least one QBAT parent is
+  // required; QEPH/T3 may be absent. Original NIP1/SID is shared by T3 and QBAT,
+  // whose resolved roles have one and four actual points respectively.
+  // Existing initializers and resident participants still reject QBAT.
+  ShellPlasticityBindingReport InitializeFormulations(const ShellBatchBinding&,
+      const ShellBatchPlasticityBindingInput&,const ShellHostBindingLimits& = {}) noexcept;
+  ShellPlasticityBindingReport InitializeFormulationCatalog(const ShellBatchBinding&,
+      const ShellBatchPlasticityBindingInput&,const ShellPlasticityCatalogLimits&) noexcept;
   // Includes complete inventory backing, even when shared with the binding.
   std::size_t host_bytes() const noexcept;
   std::size_t startup_scratch_bytes() const noexcept;
@@ -102,6 +110,7 @@ class ShellBatchPlasticityBinding {
   bool Law(ShellBindingFamily,std::size_t family_index,ShellSectionLaw* output) const noexcept;
   bool Counts(ShellBindingFamily,ShellSectionCounts* output) const noexcept;
   bool heterogeneous_sections() const noexcept { return prepared_&&data_.heterogeneous; }
+  bool formulation_sections() const noexcept { return prepared_&&data_.formulations; }
  private:
   struct Curve { std::uint64_t id=0; std::size_t offset=0,count=0; };
   struct Material {
@@ -125,11 +134,18 @@ class ShellBatchPlasticityBinding {
     std::size_t qeph_count=0,t3_count=0;
     ShellSectionCounts qeph_laws{},t3_laws{};
     bool heterogeneous=false;
+    // No capacity-sized inline QBAT array on legacy paths.
+    tl::util::BoundedStartupArray<std::size_t,0> qbat_parent;
+    std::size_t qbat_count=0;
+    ShellSectionCounts qbat_laws{};
+    bool formulations=false;
   } data_;
   bool prepared_=false;
   ShellPlasticityBindingReport InitializeCatalogImpl(const ShellBatchBinding&,const ShellBatchPlasticityBindingInput&,
-      const ShellPlasticityCatalogLimits&,bool heterogeneous) noexcept;
-  ShellPlasticityBindingReport Build(const ShellBatchBinding&,const ShellBatchPlasticityBindingInput&,bool heterogeneous);
+      const ShellPlasticityCatalogLimits&,bool heterogeneous,bool formulations=false) noexcept;
+  ShellPlasticityBindingReport Build(const ShellBatchBinding&,const ShellBatchPlasticityBindingInput&,
+      bool heterogeneous,bool formulations);
+  const Parent* FamilyParent(ShellBindingFamily,std::size_t) const noexcept;
   const Material* ParentMaterial(ShellBindingFamily,std::size_t family_index) const noexcept;
   static ShellPlasticityBindingReport CopyCurves(const ShellBatchPlasticityBindingInput&,Data&) noexcept;
   static ShellPlasticityBindingReport PrepareMaterials(const ShellBatchPlasticityBindingInput&,Data&) noexcept;
