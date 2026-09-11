@@ -1,0 +1,178 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "sources": [
+    {
+      "source": "starter/source/elements/solid/solide/checksvolume.F",
+      "path": "../../solid18_reference/native/original/starter/source/elements/solid/solide/checksvolume.F",
+      "bytes": 9561,
+      "sha256": "fa7abeb360c050bbe137ce201d71004149548a95ab539770a444b4b364cdd148",
+      "git_blob_sha1": "29a38da32ca8da0a1594acca9c782b1624f87373"
+    },
+    {
+      "source": "starter/source/elements/solid/solide/srepiso3.F",
+      "path": "../../solid18_reference/native/original/starter/source/elements/solid/solide/srepiso3.F",
+      "bytes": 4828,
+      "sha256": "bc0f854989f60eb1be8a195f4be2b2d4f295592dae713ee3434b5492e219cd0a",
+      "git_blob_sha1": "b42699888a63c31e0af727628f82596b2d4f0a6f"
+    },
+    {
+      "source": "starter/source/elements/solid/solide/sortho3.F",
+      "path": "../../solid18_reference/native/original/starter/source/elements/solid/solide/sortho3.F",
+      "bytes": 6235,
+      "sha256": "2a333f4e669265e01d8076d34033ac5eb70d590eea1298e61f3af298764d150a",
+      "git_blob_sha1": "a53601d047627407bfb415c80e7b0e7067149de3"
+    },
+    {
+      "source": "starter/share/includes/com01_c.inc",
+      "path": "../../solid18_reference/native/original/starter/share/includes/com01_c.inc",
+      "bytes": 4354,
+      "sha256": "6fa339e13e36c1e40ed644eb028378dce93b697493c8f082d815e16295234879",
+      "git_blob_sha1": "9f612a7ed25ca3ad7a3396f5aa2f227f608692ce"
+    },
+    {
+      "source": "starter/share/includes/scr05_c.inc",
+      "path": "../../solid18_reference/native/original/starter/share/includes/scr05_c.inc",
+      "bytes": 1973,
+      "sha256": "3889a8c9f1c09a5d9d318f070163bbbefcc039542fe69b89a2092e2bde06e5b9",
+      "git_blob_sha1": "f9c2c79c1d1b0db7857455f0f4e80fb80c929948"
+    },
+    {
+      "source": "starter/share/includes/param_c.inc",
+      "path": "../../solid18_reference/native/original/starter/share/includes/param_c.inc",
+      "bytes": 3582,
+      "sha256": "2f9eda3bdf12ee25f44ea0d4d2351ef04656a77ca3b9a3f2936b2750bba4b938",
+      "git_blob_sha1": "71aaf57fb9da3072dca9ae5ccb256cf814383d9f"
+    },
+    {
+      "source": "starter/share/includes/vect01_c.inc",
+      "path": "../../solid18_reference/native/original/starter/share/includes/vect01_c.inc",
+      "bytes": 1832,
+      "sha256": "f6905cba281493e5040dd43642509e41d8d652c5e27fcdec15fae81f42c4c4d3",
+      "git_blob_sha1": "2d10ca9c5ee440633c023a9c035938eb18d5fa55"
+    },
+    {
+      "source": "starter/share/spe_inc/implicit_f.inc",
+      "path": "../../solid18_reference/native/original/starter/share/spe_inc/implicit_f.inc",
+      "bytes": 1597,
+      "sha256": "9431871663a79d913a40ab9b433aa70d3ed4dc5cc5c345c1f25798b7451eff73",
+      "git_blob_sha1": "80a0c9ad24913bb2c60c9c49663bf15ad6fd5d04"
+    },
+    {
+      "source": "starter/share/spe_inc/mvsiz_p.inc",
+      "path": "../../solid18_reference/native/original/starter/share/spe_inc/mvsiz_p.inc",
+      "bytes": 1622,
+      "sha256": "8498e1f3be7d3872f79594a09b18fa97f57875b25ca893cf853b28109293857e",
+      "git_blob_sha1": "274ad22011292c0f56994a526638fee5a2b265e8"
+    },
+    {
+      "source": "common_source/modules/constant_mod.F",
+      "path": "../../native/qeph/original/common_source/modules/constant_mod.F",
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865",
+      "git_blob_sha1": "5f78c0a6769ac024deb6bba9d3037cd747f36837"
+    },
+    {
+      "source": "common_source/modules/precision_mod.F90",
+      "path": "../../native/qeph/original/common_source/modules/precision_mod.F90",
+      "bytes": 71995,
+      "sha256": "0846aee31622c4bfdc22895a5580bce7b6be216d392b8ba219be53dafe570201",
+      "git_blob_sha1": "801e7590ca7f366cd5b2723ae9acfa6a089049cf"
+    },
+    {
+      "source": "common_source/modules/elements/element_mod.F90",
+      "path": "../../native/qeph/original/common_source/modules/elements/element_mod.F90",
+      "bytes": 105714,
+      "sha256": "5843cc5fa95989e876462c6b2370b4dadf577439b2eb07d725b69ac85c5c326e",
+      "git_blob_sha1": "b4ea870494bd11c5d139290e942ae8ae17fe7da2"
+    },
+    {
+      "source": "engine/share/spe_inc/hardware.inc",
+      "path": "../../native/qeph/original/engine/share/spe_inc/hardware.inc",
+      "bytes": 3556,
+      "sha256": "10a8e3d40d430fd92ed33b2d1b6fda43262e8c4901340ee740db0f1479ee0b00",
+      "git_blob_sha1": "40bedb84eaa3529c6a76f51d97d22575601ab37d"
+    },
+    {
+      "source": "engine/share/r8/my_real.inc",
+      "path": "../../native/qeph/original/engine/share/r8/my_real.inc",
+      "bytes": 1658,
+      "sha256": "b2b61dbf62a940a49f92f8458e72e6c7ab92fbae48a72e5a7fce5d6d6bbaf8df",
+      "git_blob_sha1": "14e5c4b5b9167a30f165b726ada28047de9b411b"
+    },
+    {
+      "source": "starter/source/elements/solid/solide6z/s6zcoor3.F90",
+      "path": "original/starter/source/elements/solid/solide6z/s6zcoor3.F90",
+      "bytes": 13406,
+      "sha256": "00b31343cc3ff44e3507dd85518c72d50568016aa487847781a3a6bd83e42d83",
+      "git_blob_sha1": "bd3d822ba4a3539c083fdae766c3154970987f3e"
+    },
+    {
+      "source": "starter/source/elements/solid/solide6z/s6zrcoor3.F90",
+      "path": "original/starter/source/elements/solid/solide6z/s6zrcoor3.F90",
+      "bytes": 17362,
+      "sha256": "7c77efa67148b490d163633269274fae38dc3278d4f855d27457dbbda775522c",
+      "git_blob_sha1": "e609e466856b817def496e7d24f9014454d58da3"
+    },
+    {
+      "source": "starter/source/elements/solid/solide6z/s6zjacidp.F90",
+      "path": "original/starter/source/elements/solid/solide6z/s6zjacidp.F90",
+      "bytes": 8244,
+      "sha256": "cea69a453117c807abcacf3d36782e0cf495c78c5b0330caf0e8da76e5adaa38",
+      "git_blob_sha1": "525612f0751f7cb45a8610de5673478c17cad8a2"
+    },
+    {
+      "source": "starter/source/elements/solid/solide6z/s6zderi3.F90",
+      "path": "original/starter/source/elements/solid/solide6z/s6zderi3.F90",
+      "bytes": 8252,
+      "sha256": "3cd74ee542ec6b3b0e392089315cf33862527667af12345770af096942c08bf7",
+      "git_blob_sha1": "3c114940be6e4c1619ea4eccb3a653175d342894"
+    },
+    {
+      "source": "starter/source/elements/solid/solide6z/s6zortho3.F90",
+      "path": "original/starter/source/elements/solid/solide6z/s6zortho3.F90",
+      "bytes": 8217,
+      "sha256": "a4ac04043ec4456a96a1f46d5150ad7fc80e5088ae13fa040e37485167654ed6",
+      "git_blob_sha1": "ef30f1e75ee594618c7d25975419dc9a1f43f862"
+    },
+    {
+      "source": "starter/source/elements/thickshell/solide6c/s6cortho3.F",
+      "path": "original/starter/source/elements/thickshell/solide6c/s6cortho3.F",
+      "bytes": 5078,
+      "sha256": "c634b42fa910f490f39953dc9a8898789ff928ef09e0ab2e833680a9089a0989",
+      "git_blob_sha1": "0c1138d1568ab9f57a9b258c46615f8c442118be"
+    },
+    {
+      "source": "starter/source/elements/thickshell/solide6c/s6fraca3.F",
+      "path": "original/starter/source/elements/thickshell/solide6c/s6fraca3.F",
+      "bytes": 4223,
+      "sha256": "0b07f4c8c226baad4ae9d763a6e5c358bdc03f52577c32c0d816a0f3bc8c3af2",
+      "git_blob_sha1": "822a56592a999d886f6153c69f70249480e9370c"
+    },
+    {
+      "source": "starter/source/elements/thickshell/solide6c/s6mass3.F",
+      "path": "original/starter/source/elements/thickshell/solide6c/s6mass3.F",
+      "bytes": 7090,
+      "sha256": "714ed2db6ed48d7f98bf5e915e921552804eb5da3310b5f6840a11b057332755",
+      "git_blob_sha1": "65ffa5fbfbca738466bb9741c3e66c398a95f08b"
+    },
+    {
+      "source": "starter/source/elements/solid/solide/slen.F",
+      "path": "original/starter/source/elements/solid/solide/slen.F",
+      "bytes": 3979,
+      "sha256": "c4cebd8a7e27a7b23e4494271ae0433367f583af3073e121023f5bb3079693ad",
+      "git_blob_sha1": "361b886b6e437fd72507d515fe5ae60ecf6e74e4"
+    },
+    {
+      "source": "starter/share/includes/com04_c.inc",
+      "path": "original/starter/share/includes/com04_c.inc",
+      "bytes": 5015,
+      "sha256": "fc44553835fe7a2d224ded939f5b69f9bda7b7765b39c1c9a08ea0ca955a9349",
+      "git_blob_sha1": "5445249dd4f0e7ec6da549651601eec481f97e9f"
+    }
+  ],
+  "license": {
+    "path": "../../solid18_reference/native/LICENSE.md",
+    "bytes": 34283,
+    "sha256": "ad858d53cae05eed9531ecd4c467440803acffe34c69de7b88e03affc5b6a1bd"
+  }
+}

@@ -29,7 +29,7 @@ TL_BRICK_HD inline Status InitializeReference(const ReferenceInput& input, Refer
     next.native_to_source_[n] = static_cast<std::uint8_t>(source);
     native[n] = input.position_m[source];
   }
-  if (!detail::Frame(native,next.geometry_.frame)) return Status::InvalidGeometry;
+  if (!detail::CyclicFrame(native,next.geometry_.frame)) return Status::InvalidGeometry;
   for (unsigned n = 0; n < 8; ++n) {
     next.geometry_.local_position_m[n] = brick::Local(next.geometry_.frame,native[n]);
     if (!brick::Finite(next.geometry_.local_position_m[n])) return Status::NonfiniteResult;

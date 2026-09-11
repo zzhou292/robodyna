@@ -30,8 +30,8 @@ struct StartupGeometry {
 struct Mass {
   double source_slot_mass_kg[8]{};
   double element_mass_kg = 0;
-  // This HEPH startup accepts eight distinct nodes. Six-node source cells use
-  // the earlier S6ZINIT3 dispatcher and require a separate wedge participant.
+  // This HEPH startup accepts eight distinct nodes. An explicit six-node
+  // packet uses the separate S6ZINIT3 wedge profile; source conversion is external.
   static constexpr double isotropic_inertia_kg_m2() noexcept { return 0; }
 };
 class Reference {
