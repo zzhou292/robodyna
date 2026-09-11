@@ -51,6 +51,7 @@ NodalWallDeviceReport NodalWallMappedContact::Initialize(const NodalWallDeviceCo
     next->host.Construct<double>(layout.inverse);
     next->host.Construct<m::Summary>(layout.summary);
     next->host.Construct<m::ObserverSummary>(layout.observer);
+    next->host.Construct<m::IntervalSummary>(layout.interval);
     next->local=m::Bind(next->host.data(),layout);
     tl::util::BoundedStartupArray<double,0> coordinates;
     coordinates.Resize(3*config.owner.node_count);

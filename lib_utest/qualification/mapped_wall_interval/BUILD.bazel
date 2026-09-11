@@ -1,0 +1,10 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "host",
+    size = "small",
+    srcs = ["HostTest.cpp", "Truth.cpp", "Fixture.h", "SerialInterval.h"],
+    deps = ["//lib_src/collision:nodal_wall_mapped",
+            "//lib_utest/qualification/mapped_wall_observers:interval_truth", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+# Complete CUDA packet and physical fixture ownership is in local CMake.

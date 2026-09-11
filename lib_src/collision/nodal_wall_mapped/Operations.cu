@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Evaluation.cuh"
+#include "IntervalReduction.cuh"
 #include "Scatter.cuh"
 #include "Kernels.cuh"
 #include "lib_src/solvers/NodalNativePhysicalCoefficients.h"
@@ -39,6 +40,7 @@ __global__ void CopyAcceptedBase(d::Storage* pointer) {
 __global__ void BeginCandidate(d::Storage* pointer,m::Sidecar side,fe::NodalPreparedView view) {
   auto& storage=*pointer;
   storage.control={};
+  side.summary->interval_tree_used=false;
   side.summary->parent_failure=~0ull;
   side.summary->points_admitted=false;
   if(!storage.base.diagnostics.valid || storage.base.diagnostics.attempt!=view.attempt ||
@@ -49,7 +51,7 @@ __global__ void BeginCandidate(d::Storage* pointer,m::Sidecar side,fe::NodalPrep
 __global__ void FinishCandidate(d::Storage* pointer,m::Sidecar side,fe::NodalPreparedView view) {
   auto& storage=*pointer;
   if(storage.control.status==Code::Ok &&
-      d::MeasureInterval(storage,view) && m::RemovedPotential(storage,side)) {
+      m::RemovedPotential(storage,side)) {
     storage.result.diagnostics.stiffness_rate_bound=side.summary->rate;
     storage.result.diagnostics.valid=true;
   }
@@ -176,6 +178,9 @@ NodalWallDeviceReport NodalWallMappedContact::EvaluateCandidate(fe::FENodalState
   m::parallel::Evaluate(state.device,state.remote,view.kinematics,identity,
       state.shadow.model.node_count,state.shadow.model.parent_count,state.stream,false,
       {state.remote.observer,state.layout.observer.count});
+  if(cudaPeekAtLastError()!=cudaSuccess) return state.ReadControl();
+  m::parallel::MeasureInterval(state.device,view,state.shadow.model.node_count,state.stream,
+      {state.remote.interval,state.layout.interval.count},&state.remote.summary->interval_tree_used);
   if(cudaPeekAtLastError()!=cudaSuccess) return state.ReadControl();
   FinishCandidate<<<1,1,0,state.stream>>>(state.device,state.remote,view);
   report=state.ReadControl();

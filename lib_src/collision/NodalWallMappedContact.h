@@ -30,6 +30,8 @@ struct NodalWallMappedDiagnostics {
   double current_response_rate_upper=0;
   std::size_t accepted_active_parents=0,proposed_active_parents=0;
   bool prepared_activity_available=false,valid=false;
+  // Execution-route observation only; false for base/serial interval results.
+  bool interval_tree_used=false;
 };
 // Physical finite-wall scratch contributor. No accepted material/contact state,
 // clock, owner commit or participant claim is added. Explicit zero damping,

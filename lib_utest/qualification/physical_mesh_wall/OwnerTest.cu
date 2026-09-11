@@ -70,6 +70,9 @@ TEST(PhysicalWallCuda, ExactSourceAndBudgetRejectBeforePublicationThenLoadedRigi
     ASSERT_TRUE(Good(contact.CopyResults(candidate,result.View())));
     for(const auto& value:result.nodes) EXPECT_FALSE(value.row.valid);
     if(interval==0) {
+      auto wrong_route=candidate;
+      wrong_route.interval_tree_used=!candidate.interval_tree_used;
+      EXPECT_EQ(contact.CopyResults(wrong_route,result.View()).status,c::NodalWallDeviceStatus::StaleAttempt);
       rejected=candidate;
       EXPECT_NE(rig.publication.CommitPhysical(rig.owner,token,common,
           {prepared.owner_id,prepared.kinematics.base_epoch,prepared.attempt,p::Qualification,false}).status,

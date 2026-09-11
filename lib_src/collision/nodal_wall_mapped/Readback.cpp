@@ -16,7 +16,8 @@ bool SameDiagnostics(const NodalWallMappedDiagnostics& a,const NodalWallMappedDi
       SameCertificate(a.removed_potential,b.removed_potential) &&
       a.current_response_rate_upper==b.current_response_rate_upper &&
       a.accepted_active_parents==b.accepted_active_parents && a.proposed_active_parents==b.proposed_active_parents &&
-      a.prepared_activity_available==b.prepared_activity_available;
+      a.prepared_activity_available==b.prepared_activity_available &&
+      a.interval_tree_used==b.interval_tree_used;
 }
 } // namespace tlfea::contact::nodal_wall_mapped
 namespace tlfea::contact {
@@ -55,6 +56,7 @@ NodalWallDeviceReport NodalWallMappedContact::Impl::ReadDiagnostics(bool candida
   next.accepted_active_parents=accepted_active;
   next.proposed_active_parents=candidate?proposed_active:accepted_active;
   next.prepared_activity_available=candidate;
+  next.interval_tree_used=candidate && summary.interval_tree_used;
   next.valid=true;
   output=next;
   return {Code::Ok,"Mapped diagnostics staged"};

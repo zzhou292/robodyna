@@ -3,6 +3,7 @@
 #include "../NodalWallContactArena.h"
 #include "../RigidNormalResponse.h"
 #include "ObserverTypes.h"
+#include "IntervalTypes.h"
 namespace tlfea::contact::nodal_wall_mapped {
 struct Summary {
   Q4CertifiedIntegral removed_potential;
@@ -10,6 +11,7 @@ struct Summary {
   // Integer arbitration only; parent floating sums stay in original slot order.
   unsigned long long parent_failure=~0ull;
   bool points_admitted=false;
+  bool interval_tree_used=false;
 };
 struct Sidecar {
   std::uint8_t* accepted=nullptr;
@@ -22,9 +24,10 @@ struct Sidecar {
   Summary* summary=nullptr;
   std::size_t groups=0;
   ObserverSummary* observer=nullptr;
+  IntervalSummary* interval=nullptr;
 };
 struct Layout {
-  tl::util::ArenaRegion accepted,proposed,roots,bodies,traces,stiffness,inverse,summary,observer;
+  tl::util::ArenaRegion accepted,proposed,roots,bodies,traces,stiffness,inverse,summary,observer,interval;
   std::size_t bytes=0;
 };
 bool MakeLayout(std::size_t parents,std::size_t nodes,std::size_t groups,

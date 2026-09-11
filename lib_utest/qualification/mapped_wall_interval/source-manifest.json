@@ -1,0 +1,126 @@
+{
+  "revision": "b85e90485076bad238ba3bf79d6fcfa75c4dcdcf",
+  "scope": "Optional mapped same-mask interval observation only. Complete serial MeasureInterval remains fallback and the legacy default. Rounded leaf work and certified integral helpers unchanged; new summary certifies reassociated observers independently. No physical contribution or admission formula change.",
+  "files": [
+    {
+      "path": "lib_src/collision/NodalWallContactDiagnostics.h",
+      "bytes": 4680,
+      "sha256": "4a61fb9f8ab3fd6a70978cffbb50b105b633e9ae2e8f3e7edf027f3a16604585"
+    },
+    {
+      "path": "lib_src/collision/NodalWallContactKernels.cuh",
+      "bytes": 4468,
+      "sha256": "929dd58ad7f312f827a97fe5413203c103d8b11afeb81f375cf4751f931eecc2"
+    },
+    {
+      "path": "lib_src/collision/Q4ContactBounds.h",
+      "bytes": 8505,
+      "sha256": "f5368d22406e773c3e24c4b8025b94b4a6b75144ab08e4aa12fda95679bdea52"
+    },
+    {
+      "path": "lib_src/collision/SurfaceContactMass.h",
+      "bytes": 8476,
+      "sha256": "f7c6e09529c86f41a4581311e6deacd3fce35c4b05dff6f1d210304710e2fb28"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Kernels.cuh",
+      "bytes": 3580,
+      "sha256": "2944f61652523c82030d88abd7ece032389bb5b16007bca8690c8a32e8ee148f"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Forecast.cpp",
+      "bytes": 7358,
+      "sha256": "08dd40c68096e11eda3528231b3011efebba7c7ab44154554ee5ce8b08f7ecc0"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Storage.h",
+      "bytes": 3147,
+      "sha256": "a8dfd243261502c483ab3c7e27901b20cfaddf8ed84500775d30c8553d402f7a"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_observers/IntervalTruth.h",
+      "bytes": 2337,
+      "sha256": "d9aec40fe70124b94afe3b480ba3cfb2c8d2c5d6224131e43621ea29eeaf3fc5"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_observers/Truth.h",
+      "bytes": 3757,
+      "sha256": "3687ad5481575e244e32823b5f98f067b09632597130d8541ef82464e10ad433"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/IntervalTypes.h",
+      "bytes": 1101,
+      "sha256": "29e7ec88fbadaeece7d676a9e3c45c66372fc896ae260c30dfb9af1d25199548"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/IntervalProof.h",
+      "bytes": 3912,
+      "sha256": "2758a1d6aa413e03ac68f1fb8fdaa323462c798cd0626ad67d46c8424acdb8da"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/IntervalValues.h",
+      "bytes": 5163,
+      "sha256": "2b6ada6643819a04b30e0fffcfae90f7b32d738153b578659fea33598f640d37"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/IntervalFinalizer.h",
+      "bytes": 3669,
+      "sha256": "68cee85ad7d7fe14649352e233890dee0fb391eebab0b25b71a1b2ec9b520a05"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/IntervalReduction.cuh",
+      "bytes": 2843,
+      "sha256": "8be37e16a6024ed0a647b3cb942abd9715e3e26b37ebf057d3790e0f7959f4a7"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Layout.h",
+      "bytes": 1384,
+      "sha256": "59170079a04d90ab629e5bdcc7e3a7ad016d2b5d2664830138e33a98f510a7d3"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Layout.cpp",
+      "bytes": 1801,
+      "sha256": "15e1ce2d30ed7d1b94d330915268e31b55279212fa7c517bf7770683020d99de"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Initialize.cpp",
+      "bytes": 5570,
+      "sha256": "2ac3b86e2465395c99f41249bec548770e33f2909cad8986410a60f40a6c8911"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
+      "bytes": 10427,
+      "sha256": "4fb8522bd293e60219d17ae2ec29b8da640098183ad57951e7f11da59dc90899"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_interval/reference/NodalWallContactDiagnostics.h",
+      "bytes": 4680,
+      "sha256": "4a61fb9f8ab3fd6a70978cffbb50b105b633e9ae2e8f3e7edf027f3a16604585"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_interval/SerialInterval.h",
+      "bytes": 4732,
+      "sha256": "b25b88a69649a8058fb366a44a0587e024ea731bbf13e95f627bdb365d80628b"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_interval/Fixture.h",
+      "bytes": 4848,
+      "sha256": "799688c85dfac87967d0007c43506a7186345ab5cb19ce5501f04e18616c138f"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_interval/Truth.cpp",
+      "bytes": 3149,
+      "sha256": "5c1bbf345fd47d0b296e5dbcc95a17a566a48f703d98e934e058fcd6f9bf6cdb"
+    },
+    {
+      "path": "lib_src/collision/NodalWallMappedContact.h",
+      "bytes": 3649,
+      "sha256": "b5cd2b4ddbc0046cd239c25484f6ae2ca8a5fed17529100a0b3cb40ebbaa8466"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Readback.cpp",
+      "bytes": 7444,
+      "sha256": "e7fdd526056058220a2b2f697975c739e286fdc0e660f0ec77a08b2ae5e2740d"
+    }
+  ]
+}
