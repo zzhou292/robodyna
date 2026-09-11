@@ -46,12 +46,22 @@ bounds; wrong counts or source associations are never numerical tolerances.
 The shell map retains exact local-to-domain NIDs and coordinate bits. TYPE13
 retains its already checked complete domain, including the N3 distinction.
 TYPE25 endpoint identity, property, domain index and coordinates are checked
-before use. Q/T/B, TYPE13, ELEMENT_MASS and all three solid families share the original
-structural EID namespace;
-TYPE25 original spotweld WIDs are distinct. Zero structural IDs and repeated
+before use. Q/T/B, TYPE13 and all three solid families share the original
+structural EID namespace. ELEMENT_MASS nodal-mass IDs and TYPE25 original
+spotweld WIDs have their own independent namespaces. Each typed producer keeps
+its positive and unique IDs; equal numbers across namespaces do not merge or
+drop physical records. Zero structural IDs and repeated
 structural IDs reject in original validation order. Legacy pair bindings with
 zero parent IDs remain supported by their unchanged original APIs, not this
 new source-identified ledger. No reduced hash substitutes for complete identity.
+
+This corrects an earlier overly broad mass/structural collision check. The
+original Yaris has36 mass IDs also used by different TYPE13 beams;35 such mass
+records belong to the retained source domain. For example, BEAM2409343 connects
+3467984–3467985, while MASS2409343 adds mass at shell node2416473. The pinned
+OpenRadioss mass converter emits a separate ADMAS type5 node/mass list. Source
+identity and contribution order are retained; no material or mass arithmetic
+changes. This typed nodal-mass distinction is not a generic keyword-ID policy.
 
 Each row exposes exact Q/T/B/TYPE25/TYPE13/ELEMENT_MASS occurrence counts. Uncovered nodes
 remain zero with no occurrences. This proves only that no admitted producer

@@ -115,4 +115,32 @@ TEST(SolidCoefficients, SingleLedgerRejectsCrossFamilyCollisionAndIncludesExactB
   fe::NodalCoefficientLedger mismatch;
   EXPECT_EQ(mismatch.InitializeWithSolids({{&map},nullptr,&wrong_domain}).status,S::IdentityMismatch);
 }
+TEST(SolidCoefficients, NodalMassIdentityCannotSuppressAnIndependentSolidContribution) {
+  SolidFixture f;
+  const auto domain=f.Domain();
+  const auto map=f.Map(domain);
+  const auto solids=f.Solids(domain);
+  fe::NodalCoefficientLedger structural;
+  ASSERT_TRUE(structural.InitializeWithSolids({{&map},nullptr,&solids}));
+  const auto node=domain.Find(f.a.source_node_id[0]);
+  for(const auto id:{f.a.source_element_id,f.b.source_element_id,f.c.source_element_id}) {
+    const fe::ElementMassSource original{id,f.a.source_node_id[0],node,.002};
+    fe::ElementMassContributions point;
+    ASSERT_TRUE(point.Initialize(domain,{1,1000,&original,1}));
+    fe::NodalCoefficientLedger joined;
+    ASSERT_TRUE(joined.InitializeWithSolids({{&map},&point,&solids}));
+    EXPECT_EQ(joined.scope().element_mass_records,1u);
+    EXPECT_EQ(joined.scope().solid18_parents,1u);
+    EXPECT_EQ(joined.scope().solid24_parents,1u);
+    EXPECT_EQ(joined.scope().solid6z_parents,1u);
+    EXPECT_EQ(joined.nodes()[node].coefficients.element_mass,2.0);
+    EXPECT_EQ(Bits(joined.nodes()[node].coefficients.isotropic_inertia),
+              Bits(structural.nodes()[node].coefficients.isotropic_inertia));
+    // Source order adds the mass before solid contributions, so compare the
+    // independently retained source terms rather than changing addition order.
+    EXPECT_EQ(joined.nodes()[node].coefficients.solid18_mass,structural.nodes()[node].coefficients.solid18_mass);
+    EXPECT_EQ(joined.nodes()[node].coefficients.solid24_mass,structural.nodes()[node].coefficients.solid24_mass);
+    EXPECT_EQ(joined.nodes()[node].coefficients.solid6z_mass,structural.nodes()[node].coefficients.solid6z_mass);
+  }
+}
 }  // namespace coefficient_test

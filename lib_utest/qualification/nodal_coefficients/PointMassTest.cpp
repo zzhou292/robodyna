@@ -112,7 +112,7 @@ TEST(NodalCoefficientElementMass, SingleArenaNamedOrderSourcePartitionsAndLegacy
   EXPECT_EQ(Bits(expanded.nodes()[2].coefficients.isotropic_inertia),Bits(0.0));
   EXPECT_GT(expanded.nodes()[2].coefficients.mass,0);
 }
-TEST(NodalCoefficientElementMass, StructuralNamespaceLateOverflowAndDomainBackingBudget) {
+TEST(NodalCoefficientElementMass, IndependentMassNamespaceLateOverflowAndDomainBackingBudget) {
   Fixture f;
   const auto domain=f.Domain(); const auto map=f.Map(domain);
   const auto beams=f.Contributions(domain); const auto springs=f.Springs();
@@ -123,15 +123,15 @@ TEST(NodalCoefficientElementMass, StructuralNamespaceLateOverflowAndDomainBackin
   ASSERT_TRUE(expected.InitializeWithElementMass({sources,&points}));
   for(const auto id:{f.shells.qeph_source_id(0),f.shells.t3_source_id(0),
                      f.shells.qbat_source_id(0),beams.model()->connections()[0].source_id}) {
-    auto bad=clean; bad.back().source_element_id=id;
-    const auto duplicate=Points(domain,bad);
-    fe::NodalCoefficientLedger result; const auto before=Bytes(result);
-    const auto report=result.InitializeWithElementMass({sources,&duplicate});
-    EXPECT_EQ(report.status,S::DuplicateIdentity); EXPECT_EQ(report.producer,fe::CoefficientProducer::ElementMass);
-    EXPECT_EQ(report.parent,2u); EXPECT_EQ(Bytes(result),before);
-    ASSERT_TRUE(result.InitializeWithElementMass({sources,&points})); Exact(result,expected);
+    auto aliases=clean; aliases.front().source_element_id=id;
+    const auto distinct_mass=Points(domain,aliases);
+    fe::NodalCoefficientLedger result;
+    ASSERT_TRUE(result.InitializeWithElementMass({sources,&distinct_mass}));
+    Exact(result,expected);
+    EXPECT_FALSE(result.Matches(expected)); // Same values, different exact source mass identity.
+    EXPECT_EQ(result.element_mass()->records()[0].source.source_element_id,id);
   }
-  // WID remains separate from the structural/point-mass EID namespace.
+  // WID also remains separate from structural IDs and nodal-mass IDs.
   clean.front().source_element_id=f.spring_input[0].source_element_id;
   // This fixture WID deliberately aliases a shell EID, so use the other WID.
   f.spring_input[0].source_element_id=990000;

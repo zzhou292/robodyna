@@ -18,7 +18,6 @@ CoefficientReport Identities(NodalCoefficientSources input,const ElementMassCont
     return {S::IdentityMismatch,"TYPE25 source instance or node extent differs",P::Type25};
   const auto q=shells.qeph_count(),t=shells.t3_count(),b=shells.qbat_count();
   const auto beams=input.type13?input.type13->model()->connection_count():0;
-  const auto mass_records=masses?masses->records().size():0;
   const auto solid_parents=solids?solids->parents().size():0;
   auto id=[&](std::size_t i) {
     if(i<q) return shells.qeph_source_id(i);
@@ -29,18 +28,21 @@ CoefficientReport Identities(NodalCoefficientSources input,const ElementMassCont
     i-=b;
     if(i<beams) return input.type13->model()->connections()[i].source_id;
     i-=beams;
-    if(i<mass_records) return masses->records()[i].source.source_element_id;
-    return solids->parents()[i-mass_records].source_element_id;
+    return solids->parents()[i].source_element_id;
   };
+  // ELEMENT_MASS/ADMAS is an independent nodal-mass source namespace.
+  // Its immutable producer already rejects repeated mass IDs. Original Yaris
+  // mass cards legitimately retain IDs also used by different TYPE13 beams.
+  // Keep both contributions; structural Q/T/B/beam/solid IDs remain unique.
   util::SourceIdentityIndex<0> identities;
-  identities.Prepare(q+t+b+beams+mass_records+solid_parents,id);
-  for(std::size_t i=0;i<q+t+b+beams+mass_records+solid_parents;++i) {
+  identities.Prepare(q+t+b+beams+solid_parents,id);
+  for(std::size_t i=0;i<q+t+b+beams+solid_parents;++i) {
     auto producer=i<q?P::Qeph:i<q+t?P::T3:i<q+t+b?P::Qbat:
         i<q+t+b+beams?P::Type13:P::ElementMass;
     auto parent=i<q?i:i<q+t?i-q:i<q+t+b?i-q-t:
         i<q+t+b+beams?i-q-t-b:i-q-t-b-beams;
-    if(i>=q+t+b+beams+mass_records) {
-      parent=i-q-t-b-beams-mass_records;
+    if(i>=q+t+b+beams) {
+      parent=i-q-t-b-beams;
       const auto family=solids->parents()[parent].family;
       producer=family==SolidCoefficientFamily::Solid18?P::Solid18:
           family==SolidCoefficientFamily::Solid24?P::Solid24:P::Solid6z;
