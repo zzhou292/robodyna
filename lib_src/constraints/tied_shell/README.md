@@ -41,3 +41,10 @@ remain separate work. In particular, these values do not permit an independently
 integrated secondary node or duplicate nodal mass. Do not substitute runtime
 MINER selection for the distinct starter I2_DTN caller. No source weld is admitted
 by this module alone.
+
+
+`TiedSearch.h` adds the independently qualified native candidate projection and
+ordered selection. It keeps explicit working units, true repeated-third T3
+semantics and native distance ties. It does not assign original-source packing
+or attach the force patch. See `lib_utest/qualification/tied_shell_search/README.md`
+for the eight host/native/CUDA functions and finite-overflow review corrections.

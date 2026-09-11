@@ -5,3 +5,9 @@ cc_library(
     deps = ["//lib_src/math:fixed3_operations"],
     visibility = ["//visibility:public"],
 )
+cc_library(
+    name = "tied_shell_search",
+    hdrs = ["TiedSearchTypes.h", "TiedSearchProjection.h", "TiedSearch.h"],
+    deps = [":tied_shell_patch"],
+    visibility = ["//visibility:public"],
+)

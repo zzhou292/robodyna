@@ -1,0 +1,42 @@
+{
+  "commit": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "sources": [
+    {
+      "path": "original/starter/source/interfaces/inter3d1/i2dst3.F",
+      "source": "starter/source/interfaces/inter3d1/i2dst3.F",
+      "size": 13415,
+      "sha256": "eaf326d1ef89e34f1d9fdda9edfb0c7682cfb43952be6b34538a266b12159e19",
+      "git_blob_sha1": "6917e961760b4e777234bb04f284a8a40326aac6"
+    },
+    {
+      "path": "original/starter/source/interfaces/inter3d1/i7lin3.F",
+      "source": "starter/source/interfaces/inter3d1/i7lin3.F",
+      "size": 2895,
+      "sha256": "225b73c5d7dd80e2481997a731f1ca07a49278a81e3027c8a4df7330ae862af3",
+      "git_blob_sha1": "599979b97ad19ff8125e51b90ab4c51aaeb7ba05"
+    },
+    {
+      "path": "original/starter/source/interfaces/inter3d1/i2cor3.F",
+      "source": "starter/source/interfaces/inter3d1/i2cor3.F",
+      "size": 9055,
+      "sha256": "93d93f7b6dfe07f393dbcb7a76b99edd14ba89f0a77f761bcf110925dfbe7037",
+      "git_blob_sha1": "1e50ec301b7cbb8e9ea3e7f69a17f316ad198889"
+    },
+    {
+      "path": "original/starter/share/includes/vect07_c.inc",
+      "source": "starter/share/includes/vect07_c.inc",
+      "size": 1462,
+      "sha256": "b1a3f0d940add205c7f5ef22ccbe46100e1fa8f0286946eb3e8df23fa1678505",
+      "git_blob_sha1": "e36b072f11ba264a5d98e9c6e9ee79d88fd43ee1"
+    }
+  ],
+  "fragments": [
+    {
+      "source": "original/starter/source/interfaces/inter3d1/i2cor3.F",
+      "first_line": 183,
+      "last_line": 198,
+      "path": "Gap.inc",
+      "sha256": "69a077b07d95895c0a9aaab7d5756e9b3e46a390ff8b2921c4b9fb50d4c8299d"
+    }
+  ]
+}
