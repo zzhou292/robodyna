@@ -1,0 +1,33 @@
+cmake_minimum_required(VERSION 3.22)
+project(RoboDynaTiedSearchAssessment LANGUAGES CXX)
+find_package(Chrono REQUIRED CONFIG)
+enable_testing()
+include("${CMAKE_CURRENT_LIST_DIR}/../TiedSearchAssessmentValues.cmake")
+find_package(GTest REQUIRED)
+add_executable(robo_dyna_tied_assessment_values_check tests/ValueTest.cpp
+  "${CMAKE_CURRENT_LIST_DIR}/../../../modelio/tied_shell/tests/TinyFixture.cpp")
+target_link_libraries(robo_dyna_tied_assessment_values_check PRIVATE robo_dyna_tied_assessment_values GTest::gtest_main)
+target_compile_options(robo_dyna_tied_assessment_values_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME tied_assessment_values COMMAND robo_dyna_tied_assessment_values_check)
+option(ROBO_DYNA_TIED_ASSESSMENT_CUDA "Build actual GPU assessment and original-source checks" OFF)
+if(ROBO_DYNA_TIED_ASSESSMENT_CUDA)
+  enable_language(CUDA)
+  enable_language(Fortran)
+  include("${CMAKE_CURRENT_LIST_DIR}/../TiedSearchAssessment.cmake")
+  find_package(Python3 REQUIRED COMPONENTS Interpreter)
+  set(ROBO_DYNA_TIED_CANONICAL "" CACHE PATH "Explicit original canonical directory")
+  set(ROBO_DYNA_TIED_SCOPE "" CACHE FILEPATH "Explicit original scope10")
+  if(NOT EXISTS "${ROBO_DYNA_TIED_CANONICAL}" OR NOT EXISTS "${ROBO_DYNA_TIED_SCOPE}")
+    message(FATAL_ERROR "Actual tied assessment requires canonical and scope fixtures")
+  endif()
+  include("${ROBO_DYNA_TL_ROOT}/lib_utest/qualification/tied_shell_search_bucket/Native.cmake")
+  add_executable(robo_dyna_tied_assessment_actual_check tests/ActualSourceTest.cpp
+    "${CMAKE_CURRENT_LIST_DIR}/../../../modelio/tied_shell/search_geometry/tests/BucketOracle.cpp")
+  target_link_libraries(robo_dyna_tied_assessment_actual_check PRIVATE robo_dyna_tied_search_assessment tied_search_bucket_native tied_search_oracle GTest::gtest_main)
+  target_compile_options(robo_dyna_tied_assessment_actual_check PRIVATE -fno-fast-math -ffp-contract=off)
+  add_test(NAME tied_assessment_actual COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_LIST_DIR}/../../../output/full_shell/static_bundle/tests/actual_source_fixture.py"
+    "${ROBO_DYNA_TIED_CANONICAL}" "${ROBO_DYNA_TIED_SCOPE}"
+    "$<TARGET_FILE:robo_dyna_tied_assessment_actual_check>" "TiedAssessmentActual.*")
+  set_tests_properties(tied_assessment_actual PROPERTIES PROCESSORS 1 RUN_SERIAL TRUE TIMEOUT 240)
+endif()
