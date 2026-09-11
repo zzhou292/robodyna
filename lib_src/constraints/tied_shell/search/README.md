@@ -61,3 +61,16 @@ ctest --test-dir <build> --output-on-failure
 `tl_tied_search_driver_values` builds the budget/order helpers without compiling
 CUDA. `tl_tied_search_driver` owns the actual synchronous GPU call. The six host
 functions and two CUDA functions have separate executables/CTest entries.
+
+`TiedSearchFinalization` adds immutable first-ordinary-TYPE2/level28 finalization
+as a separate value module. Six host and six complete native I2TID3 functions
+plus source identity pass root qualification2026-09-11, preserving strict
+S/T thresholds, original-order maps, DMIN clearing and native message actions.
+The complete source-bound app check keeps all11,165 slaves and compacts29,585
+used master nodes from183,457; all selected ranks/ST/STB and seven empty native
+flush calls agree. Reports `tied-finalization-root-*` and
+`tied-finalized-source-root-*` retain these gates. The owning Bazel finalization
+target passes `type13-finalization-owning-bazel-build-2`; the first attempt
+failed in Bazel's sandbox network profiler before compilation. Classification,
+native coefficient/motion transfer and a common mechanical owner remain
+separate responsibilities.
