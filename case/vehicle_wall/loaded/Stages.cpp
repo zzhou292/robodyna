@@ -6,8 +6,7 @@ namespace crash::cases::vehicle_wall {
 void LoadedWall::Stages::Assemble(tl::fea::FENodalState& owner,const tl::fea::NodalTrialToken& token,
     const tl::fea::NodalAssemblyView& assembly,vehicle_dynamics::WallObservation& output) {
     const auto stamp=owner.accepted();
-    output::Require(stamp.time+stamp.fixed_dt<=contact.setup().settings().requested_duration_s,
-        "Next loaded interval exceeds the declared wall duration");
+    output::Require(stamp.epoch<planned_intervals,"Loaded run has reached its declared fixed-step horizon");
     loaded::Assemble(contact.data_->contact,owner,token,assembly,output);
 }
 void LoadedWall::Stages::Evaluate(tl::fea::FENodalState& owner,const tl::fea::NodalTrialToken& token,

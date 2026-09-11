@@ -1,4 +1,5 @@
 #include "../LoadedWall.h"
+#include "output/full_shell/FixedStepHorizon.h"
 #include <gtest/gtest.h>
 #include <limits>
 namespace crash::cases::vehicle_wall::test {
@@ -22,6 +23,31 @@ TEST(VehicleLoadedWallValues, ExplicitDurationsRecomputeEnvelopeWithoutChangingS
     for (const auto bad : {0.0,-.005,.006,.051,std::numeric_limits<double>::infinity()}) {
         settings.requested_duration_s=bad;
         EXPECT_THROW(CheckSettings(settings),std::runtime_error);
+    }
+}
+TEST(VehicleLoadedWallValues, FixedHorizonSharesArchiveBoundaryAndPreservesRejectedOutput) {
+    namespace records=output::full_shell;
+    const double durations[]={.005,.02,.05};
+    const std::uint64_t expected[]={16667,66667,166667};
+    for(unsigned i=0;i<3;++i) {
+        std::uint64_t count=0;
+        ASSERT_TRUE(records::PlanFixedStepHorizon(3e-7,durations[i],count));
+        EXPECT_EQ(count,expected[i]);
+        EXPECT_TRUE(records::MatchesFixedStepHorizon(count,3e-7,durations[i]));
+        EXPECT_FALSE(records::MatchesFixedStepHorizon(count-1,3e-7,durations[i]));
+        EXPECT_FALSE(records::MatchesFixedStepHorizon(count+1,3e-7,durations[i]));
+    }
+    const double h=1.0/1024;
+    std::uint64_t count=0;
+    ASSERT_TRUE(records::PlanFixedStepHorizon(h,5*h,count));
+    EXPECT_EQ(count,5u);
+    ASSERT_TRUE(records::PlanFixedStepHorizon(h,std::nextafter(5*h,6*h),count));
+    EXPECT_EQ(count,6u);
+    for(const double invalid:{0.0,-1.0,std::numeric_limits<double>::infinity(),
+                             std::numeric_limits<double>::denorm_min()}) {
+        count=123;
+        EXPECT_FALSE(records::PlanFixedStepHorizon(invalid,.005,count));
+        EXPECT_EQ(count,123u);
     }
 }
 } // namespace crash::cases::vehicle_wall::test

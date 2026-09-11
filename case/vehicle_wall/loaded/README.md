@@ -18,7 +18,10 @@ from the authenticated original wall. The requested durations are explicitly
 asserts a completed or stable run. Every attempt retains the actual envelope,
 penetration, rotation and combined current-response checks. The factory rejects
 a smaller transverse margin or a disabled structural screen. An attempt cannot
-advance beyond the declared duration; no final-step time is fabricated.
+advance beyond the first mathematical fixed-step endpoint at or after the
+requested duration, using the archive's shared exact horizon predicate. The
+nominal overshoot is less than one step; actual final time comes from the owner,
+including its represented recurrence. No shortened final step is fabricated.
 
 ## One attempt
 

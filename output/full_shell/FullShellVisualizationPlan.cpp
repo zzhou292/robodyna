@@ -1,5 +1,6 @@
 #include "FullShellVisualizationPlan.h"
 #include "IntervalChunkPlan.h"
+#include "FixedStepHorizon.h"
 #include <cmath>
 #include <set>
 
@@ -23,9 +24,7 @@ Plan PlanArchive(const PlanRequest& r) {
     // Count is supplied by the case plan. Check that it is the first mathematical
     // fixed-dt endpoint at/after the requested duration. Actual saved times still
     // come from the accepted owner and are never reconstructed by this planner.
-    const long double h=r.fixed_dt,target=r.requested_duration;
-    Require(std::isfinite(r.fixed_dt*static_cast<double>(r.intervals))&&
-        std::isfinite(h*r.intervals)&&h*r.intervals>=target&&h*(r.intervals-1)<target,
+    Require(MatchesFixedStepHorizon(r.intervals,r.fixed_dt,r.requested_duration),
         "Interval count does not match the actual planned timestep/horizon");
     Plan p;const arrays::Limits limits{r.file_byte_cap,UINT32_MAX,64};
     p.position_bytes=arrays::ByteCount({arrays::Scalar::Float64,r.nodes,3,{}},limits);
