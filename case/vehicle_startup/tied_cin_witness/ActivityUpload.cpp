@@ -19,10 +19,19 @@ TiedCinActivityReport TiedCinWitnessActivity::UploadAttempt(tl::fea::FENodalStat
     const tl::fea::NodalCinWitnessSource source{&state.roster.attachments().model(),roster.ranges.data(),
         roster.witnesses.data(),roster.ranges.size(),roster.witnesses.size()};
     const auto checked=owner.ValidateCinWitnessSource(source);
+    if (checked.status==tl::fea::NodalStatus::DeviceFailure) {
+        state.poisoned=true;
+        return reject({Status::DeviceFailure,"CIN source owner is poisoned"});
+    }
     if (checked.status!=tl::fea::NodalStatus::Ok)
         return reject({Status::InvalidInput,"Actual CIN owner retained a different source roster"});
     tl::fea::NodalCinAssemblyView view;
-    if (owner.BorrowCinAssembly(token,&view).status!=tl::fea::NodalStatus::Ok ||
+    const auto borrowed=owner.BorrowCinAssembly(token,&view);
+    if (borrowed.status==tl::fea::NodalStatus::DeviceFailure) {
+        state.poisoned=true;
+        return reject({Status::DeviceFailure,"CIN attempt owner is poisoned"});
+    }
+    if (borrowed.status!=tl::fea::NodalStatus::Ok ||
         view.owner_id!=state.stamp.owner_id || view.base_epoch!=state.stamp.epoch || !view.attempt ||
         !view.qualification_id || view.witness_count!=state.accepted.size() ||
         view.node_count!=state.roster.attachments().model().domain()->node_count())

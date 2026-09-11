@@ -21,11 +21,20 @@ TiedCinActivityReport TiedCinWitnessActivity::CaptureAccepted(const tl::fea::FEN
     if (state.poisoned) return {Status::DeviceFailure,"CIN activity adapter is poisoned"};
     const auto& binding=state.roster.binding().shells();
     const auto checked=publication.ValidateAcceptedActivitySources(owner,participants,binding.inventory());
+    if (checked.status==tl::fea::ShellPublicationStatus::DeviceFailure) {
+        state.poisoned=true;
+        return {Status::DeviceFailure,"Accepted shell publication is poisoned"};
+    }
     if (checked.status!=tl::fea::ShellPublicationStatus::Success)
         return {Status::StaleOwner,"Accepted shell participants/inventory do not belong to this owner"};
     const auto stamp=owner.accepted();
     tl::fea::ShellBatchDiagnostics common;
-    if (publication.CopyAcceptedDiagnostics(stamp,&common).status!=tl::fea::ShellPublicationStatus::Success)
+    const auto copied=publication.CopyAcceptedDiagnostics(stamp,&common);
+    if (copied.status==tl::fea::ShellPublicationStatus::DeviceFailure) {
+        state.poisoned=true;
+        return {Status::DeviceFailure,"Accepted shell diagnostics are poisoned"};
+    }
+    if (copied.status!=tl::fea::ShellPublicationStatus::Success)
         return {Status::StaleOwner,"Accepted common shell endpoint is unavailable"};
     const auto failed=[&](bool device) {
         state.poisoned=state.poisoned || device;
