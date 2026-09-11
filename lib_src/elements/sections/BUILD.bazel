@@ -37,6 +37,6 @@ cc_library(
 )
 cc_library(
     name = "shell_layered_tab1",
-    hdrs = ["ShellLayeredTab1.h", "ShellLayeredTab1Work.h"],
+    hdrs = ["ShellLayeredTab1.h", "ShellLayeredTab1Work.h", "ShellLayeredTab1ForceAdapter.h"],
     deps = [":shell_layered_j2", ":shell_layered_failure_work", "//lib_src/materials/failure:shell_tab1_constant_failure"],
 )
