@@ -1,7 +1,14 @@
-load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_test", "cc_library")
+cc_library(
+    name = "test_values",
+    testonly = True,
+    hdrs = ["TestSupport.h", "source_fixture/OriginalCurve.h"],
+    deps = ["//lib_src/materials/law44/solid:point", "@googletest//:gtest"],
+    visibility = ["//lib_utest/qualification/solid18_law44_force:__pkg__"],
+)
 cc_test(
     name = "host_check",
-    srcs = ["HostTest.cpp", "TestSupport.h", "source_fixture/OriginalCurve.h"],
+    srcs = ["HostTest.cpp"],
     copts = ["-fno-fast-math", "-ffp-contract=off"],
-    deps = ["//lib_src/materials/law44/solid:point", "@googletest//:gtest_main"],
+    deps = [":test_values", "@googletest//:gtest_main"],
 )

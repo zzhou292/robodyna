@@ -7,8 +7,8 @@
       "sha256": "f13608c0a69a44c03a53447f3d7b477cc42a472011ad017bb7e6280d9afcb28f"
     },
     "lib_src/elements/solid18/law44/BUILD.bazel": {
-      "bytes": 243,
-      "sha256": "3e8e8278013977e1541ccd5046fdef87c682ced041a558acf2275d70c7adba62"
+      "bytes": 572,
+      "sha256": "4b544b836011223add1120da1a6df651d22efcb677cf014e6182c7bcb92281b2"
     },
     "lib_src/elements/solid18/law44/README.md": {
       "bytes": 1446,
@@ -27,8 +27,8 @@
       "sha256": "5e25e961d8cf93eb924545e9ead904cf681205b15c8a780d7d61f90663b09557"
     },
     "lib_utest/qualification/solid18_law44_reference/BUILD.bazel": {
-      "bytes": 338,
-      "sha256": "12815c8bd88ef5a77ffae91ebb0e3442f440729b3afc5f940341ab918484750a"
+      "bytes": 542,
+      "sha256": "3226e3f18bd7e471e5984886e5675059cb0a39f0a390f06d8b8e2b928da22624"
     },
     "lib_utest/qualification/solid18_law44_reference/CMakeLists.txt": {
       "bytes": 4041,
