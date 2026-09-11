@@ -94,4 +94,26 @@ TEST_F(QbatDevice, StartupFailureGeometryFailureAndExactDeviceRetry) {
   ASSERT_EQ(after.status,qb::Status::kSuccess);
   EXPECT_EQ(Values(after.geometry),Values(before.geometry));
 }
+TEST_F(QbatDevice, SharedPlacementRejectsBeforeReplacingCenteredReferenceAndRetries) {
+  Startup<<<1,1>>>(Fixture(),device);
+  ASSERT_EQ(cudaGetLastError(),cudaSuccess);
+  const auto before = Copy();
+  ASSERT_EQ(before.status,qb::Status::kSuccess);
+  using Placement = tl::fea::ShellReferencePlacement;
+  for (auto placement : {Placement::TopReferencePlane,Placement::BottomReferencePlane}) {
+    auto input = Fixture();
+    input.quadrilateral.placement = placement;
+    Startup<<<1,1>>>(input,device);
+    ASSERT_EQ(cudaGetLastError(),cudaSuccess);
+    const auto after = Copy();
+    ASSERT_EQ(after.status,qb::Status::kInvalidInput);
+    EXPECT_EQ(Values(after.reference),Values(before.reference));
+    EXPECT_EQ(after.reference.input().quadrilateral.placement,Placement::Centered);
+  }
+  Startup<<<1,1>>>(Fixture(),device);
+  ASSERT_EQ(cudaGetLastError(),cudaSuccess);
+  const auto retry = Copy();
+  ASSERT_EQ(retry.status,qb::Status::kSuccess);
+  EXPECT_EQ(Values(retry.reference),Values(before.reference));
+}
 } // namespace qbat_test

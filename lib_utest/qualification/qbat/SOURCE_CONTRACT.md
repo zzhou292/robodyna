@@ -104,6 +104,13 @@ ENDDO; `22f0755` restores that exact source boundary through CBACOOR265. The
 second build and first complete CTest run pass without production changes or
 tolerance changes. Geometry admission still does not qualify the force caller.
 
+After QEPH acquired an explicit reference-plane placement field, QBAT's wrapper
+also explicitly rejects noncentered quadrilateral inputs. Its own selected
+offset ratio remains zero; broadening the shared startup helper must not expand
+this formulation's scope. One host and one actual CUDA rejection/retry function
+cover both placement signs. All16 QBAT functions and23 native QEPH regressions
+pass with the new identity layout in `qbat-placement-scope-root-functions-1`.
+
 ```sh
 cmake -S lib_utest/qualification/qbat -B BUILD \
   -DQBAT_NATIVE_CHECKS=ON -DQBAT_CUDA_CHECKS=ON \

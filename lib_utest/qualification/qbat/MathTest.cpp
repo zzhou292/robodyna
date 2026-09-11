@@ -90,6 +90,22 @@ TEST(QbatGeometry, ExplicitOptionsAndLateCoefficientFailurePreserveReference) {
   ASSERT_EQ(qb::InitializeReference(ref.input(),ref),qb::Status::kSuccess);
   EXPECT_EQ(Values(ref),Values(before));
 }
+TEST(QbatGeometry, SharedPlacedQuadDoesNotBroadenCenteredQbatScope) {
+  auto input = Fixture();
+  qb::Reference reference;
+  ASSERT_EQ(qb::InitializeReference(input,reference),qb::Status::kSuccess);
+  const auto before = Values(reference);
+  using Placement = tl::fea::ShellReferencePlacement;
+  for (auto placement : {Placement::TopReferencePlane, Placement::BottomReferencePlane,
+                          static_cast<Placement>(77)}) {
+    input.quadrilateral.placement = placement;
+    EXPECT_EQ(qb::InitializeReference(input,reference),qb::Status::kInvalidInput);
+    EXPECT_EQ(Values(reference),before);
+    EXPECT_EQ(reference.input().quadrilateral.placement,Placement::Centered);
+  }
+  ASSERT_EQ(qb::InitializeReference(Fixture(),reference),qb::Status::kSuccess);
+  EXPECT_EQ(Values(reference),before);
+}
 TEST(QbatGeometry, GeometryFailureAndExactRetryAreValueAtomic) {
   auto in=Fixture();
   qb::Reference ref;
