@@ -15,14 +15,7 @@ if(TYPE13_H1_NATIVE_CHECKS)
   add_test(NAME type13_h1_source_identity COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/native/verify_sources.py")
   add_test(NAME type13_h1_original_fixture_identity COMMAND "${Python3_EXECUTABLE}" -B
     "${CMAKE_CURRENT_LIST_DIR}/../type13/source_fixture/verify_fixture.py")
-  add_library(type13_h1_native STATIC native/NativeChannel.F90 native/NativeCurve.F native/NativeDeformation.F
-    native/NativeFailure.F native/NativeStability.F
-    "${CMAKE_CURRENT_LIST_DIR}/../type25/native/NativeFrame.F"
-    "${CMAKE_CURRENT_LIST_DIR}/../type25/native/NativeScatter.F")
-  target_include_directories(type13_h1_native PRIVATE "${CMAKE_CURRENT_LIST_DIR}/native"
-    "${CMAKE_CURRENT_LIST_DIR}/../type25/native/stubs")
-  target_compile_options(type13_h1_native PRIVATE -cpp -ffixed-line-length-none -ffree-line-length-none
-    -fno-fast-math -ffp-contract=off -fcheck=all -finit-real=snan)
+  include("${CMAKE_CURRENT_LIST_DIR}/Native.cmake")
   add_executable(type13_h1_native_test NativeTest.cpp NativeOracle.cpp)
   target_link_libraries(type13_h1_native_test PRIVATE tl_type13_math type13_h1_native GTest::gtest_main)
   target_compile_options(type13_h1_native_test PRIVATE -fno-fast-math -ffp-contract=off)

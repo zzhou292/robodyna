@@ -1,0 +1,23 @@
+{
+  "repository": "https://github.com/OpenRadioss/OpenRadioss",
+  "commit": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Exact complete R2LEN3 endpoint STI/STIR loop; explicit supplied current coefficients, no rigid endpoint association. Zero damping admitted in production; nonzero damping is a distinguishing native-only control. Shared existing force/curve/frame oracle unchanged.",
+  "sources": [
+    {
+      "path": "../../type13_recurrence/native/original/engine/source/elements/spring/r2len3.F",
+      "upstream_path": "engine/source/elements/spring/r2len3.F",
+      "size": 10364,
+      "sha256": "d9172514fb8d3672fcf5b6035ddb3f5b051222cf9bbb3e3274e245253a67d60b",
+      "git_blob_sha1": "b2aeb067838585447e6c29195e4e5b2f660595f5"
+    }
+  ],
+  "fragments": [
+    {
+      "path": "EndpointStiffness.inc",
+      "source": "../../type13_recurrence/native/original/engine/source/elements/spring/r2len3.F",
+      "first_line": 84,
+      "last_line": 169,
+      "sha256": "9201d2bc54807beac4dac01db26ef0b0a5b0b382e26e88d3a70514bcc7afaedb"
+    }
+  ]
+}
