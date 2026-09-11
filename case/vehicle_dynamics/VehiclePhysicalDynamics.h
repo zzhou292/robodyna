@@ -3,6 +3,7 @@
 #include "MotionSummary.h"
 
 namespace crash::cases::vehicle_dynamics {
+namespace capture { class VehicleAcceptedFrames; }
 struct Config {
     vehicle_runtime::Config startup;
     std::size_t workspace_bytes=128u<<20;
@@ -41,6 +42,7 @@ class VehiclePhysicalDynamics {
     bool has_prepared_step() const noexcept;
     const StepObservation& last_accepted_step() const;
   private:
+    friend class capture::VehicleAcceptedFrames;
     struct Storage;
     explicit VehiclePhysicalDynamics(std::unique_ptr<Storage>);
     std::unique_ptr<Storage> storage_;
