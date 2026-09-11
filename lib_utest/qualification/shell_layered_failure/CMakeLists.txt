@@ -4,7 +4,7 @@ option(TL_LAYERED_FAILURE_NATIVE "Build exact native LAW44/failure caller qualif
 get_filename_component(TL_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../.." ABSOLUTE)
 find_package(GTest REQUIRED)
 enable_testing()
-add_executable(shell_layered_failure_values_check FailureSectionValueTest.cpp)
+add_executable(shell_layered_failure_values_check FailureSectionValueTest.cpp FailureMaskOrderTest.cpp)
 target_include_directories(shell_layered_failure_values_check PRIVATE "${TL_ROOT}")
 target_compile_features(shell_layered_failure_values_check PRIVATE cxx_std_17)
 target_compile_options(shell_layered_failure_values_check PRIVATE -fno-fast-math -ffp-contract=off)

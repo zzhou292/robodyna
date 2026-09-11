@@ -36,8 +36,16 @@ TL_SHELL_SECTION_HD inline bool ApplyLayeredJ2FailureWork(
   for(double value:output.strain_curvature) if(!tl::math::Finite(value)) return false;
   for(double value:output.internal_work) if(!tl::math::Finite(value)) return false;
   auto candidate=output;
-  if(!ApplyLayeredSectionWork(section.current,dx,reference_thickness,area,
+  auto work_section=section.current;
+  // MULAWC adds viscosity to current UNMASKED FOR before multiplying by OFF.
+  // Starting from the material-only masked observable changes signed zero and
+  // can hide an overflowing raw sum. Reuse the original ordered reduction.
+  if(!section.history.element_active)
+    Nip3Resultants(section.history.current_force_point,work_section.material_stress,work_section.bending_stress);
+  if(!ApplyLayeredSectionWork(work_section,dx,reference_thickness,area,
       viscosity,candidate,section.history.element_active)) return false;
+  // Keep the distinct material-only observable final-parent masked as declared.
+  for(unsigned i=0;i<5;++i) candidate.material_stress[i]=section.current.material_stress[i];
   for(double value:candidate.stress) if(!tl::math::Finite(value)) return false;
   for(double value:candidate.strain_curvature) if(!tl::math::Finite(value)) return false;
   output=candidate;

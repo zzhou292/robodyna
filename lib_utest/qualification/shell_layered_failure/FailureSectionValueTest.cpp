@@ -1,6 +1,8 @@
 #include "FailureSectionFixture.h"
 #include <gtest/gtest.h>
 #include <limits>
+#include <array>
+#include <cstring>
 
 namespace layered_failure_test {
 TEST(LayeredFailureValues, ExactWeightsAndEveryFailedSubset) {
@@ -76,11 +78,17 @@ TEST(LayeredFailureValues, LastPointFailureAndInvalidWorkPreserveOutput) {
   sec::ShellLayeredJ2FailureHistory base;
   base.saved.point[2].plastic_strain=3.; // Beyond the retained curve domain.
   sec::ShellLayeredJ2FailureResult result;result.constitutive_increment[0]=73;
+  // Snapshot the same object's representation; no comparison of padding in
+  // separately evaluated results or ordinary aggregate copies is assumed.
+  std::array<unsigned char,sizeof(result)> before{};
+  std::memcpy(before.data(),&result,sizeof(result));
   EXPECT_EQ(sec::UpdateShellLayeredJ2Failure(p,{1.},base,in,1.e-6,result),sec::PointStatus::CurveDomainExceeded);
   EXPECT_EQ(result.constitutive_increment[0],73);
+  EXPECT_EQ(std::memcmp(before.data(),&result,sizeof(result)),0);
   base={};base.failure[2].failure_time_s=std::numeric_limits<double>::quiet_NaN();
   EXPECT_EQ(sec::UpdateShellLayeredJ2Failure(p,{1.},base,in,1.e-6,result),sec::PointStatus::InvalidHistory);
   EXPECT_EQ(result.constitutive_increment[0],73);
+  EXPECT_EQ(std::memcmp(before.data(),&result,sizeof(result)),0);
   ASSERT_EQ(sec::UpdateShellLayeredJ2Failure(p,{1.},{},in,1.e-6,result),sec::PointStatus::Ok);
   WorkHistory work;work.internal_work[0]=19.;
   result.current.reported_thickness=std::numeric_limits<double>::quiet_NaN();

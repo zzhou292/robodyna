@@ -3,6 +3,27 @@
 #include <cmath>
 
 namespace layered_failure_test {
+TEST(LayeredFailureNative, InactiveBiaxialPredictorRetainsPostViscosityZeroSigns) {
+  const auto p=Parameters();auto in=Input(p);
+  in.strain_curvature_increment[0]=.0004;
+  in.strain_curvature_increment[1]=-.001;
+  const auto base=Seed(7);auto native=NativeSeed(base);NativeTrace trace;WorkHistory work;
+  NativeStep(p,1.,in,2.e-6,.01,.015,native,trace);
+  sec::ShellLayeredJ2FailureResult result;
+  ASSERT_EQ(sec::UpdateShellLayeredJ2Failure(p,{1.},base,in,2.e-6,result),sec::PointStatus::Ok);
+  ASSERT_TRUE(sec::ApplyLayeredJ2FailureWork(result,in.strain_curvature_increment,
+      in.reference_thickness,.01,trace.diagnostics[8],work));
+  Compare(result,work,native,trace,in.reference_thickness,.01);
+  const double viscous=trace.diagnostics[8]*(.0004+.5*(-.001));
+  const double raw=.25*trace.point_values[0]+.5*trace.point_values[13]+.25*trace.point_values[26];
+  ASSERT_GT(raw,0.);ASSERT_LT(viscous,0.);ASSERT_GT(raw+viscous,0.);
+  EXPECT_FALSE(std::signbit(native.stress[0]));
+  EXPECT_TRUE(std::signbit((raw*0.+viscous)*0.)); // Detect the rejected pre-mask order.
+  for(unsigned c=0;c<5;++c) {
+    EXPECT_EQ(std::signbit(work.stress[c]),std::signbit(native.stress[c]));
+    EXPECT_EQ(std::signbit(work.material_stress[c]),std::signbit(native.material[c]));
+  }
+}
 TEST(LayeredFailureNative, EverySubsetAndLocalInactivePointMatchesCompleteNativeLaw) {
   for(bool analytic:{false,true}) for(bool rate:{false,true}) for(unsigned mask=0;mask<8;++mask) {
     if(analytic&&!rate) continue; // Existing analytic source admission requires positive C/P.

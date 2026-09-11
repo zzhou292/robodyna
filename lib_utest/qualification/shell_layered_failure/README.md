@@ -29,6 +29,13 @@ legacy reduction order. Legacy APIs and saved-history/resultant checks are not
 weakened; the new failure-aware match uses the actual current-force history.
 Generalized work adds viscosity before the final parent mask and retains the
 old-force half of removal-interval work. Its wrapper stages failure atomically.
+The work adapter reconstructs raw current resultants with the existing NIP3
+reduction before adding viscosity and applying OFF; the separately exposed
+material-only values remain parent masked. Applying viscosity to already-masked
+material values changes signed zero and can conceal overflow of the raw sum.
+Focused value cases check both, full work preservation and exact retry. A native
+OFF0 biaxial predictor case compares zero signs against the unchanged caller
+extract, including a negative control for the wrong order.
 
 Native MULAWC:2068 overwrites local failure DPLA with PLA(new)−PLA(old).
 MULAWC:2011 uses that same rounded subtraction for its plastic-work diagnostic.
