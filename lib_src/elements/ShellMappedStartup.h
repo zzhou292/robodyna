@@ -11,7 +11,7 @@ NodalReport Validate(const NodalStamp&,const ShellBatchStartup&,
 // sidecar storage and its copied handle are charged by this forecast.
 bool ForecastSections(const ShellPhysicalBinding&,ShellBindingFamily,std::size_t,
     std::size_t device_cap,std::size_t host_cap,const ShellBatchFailureLimits&,
-    std::size_t& host_bytes) noexcept;
+    std::size_t& host_bytes,std::size_t& device_bytes) noexcept;
 // No new coefficient reduction: copy one complete authoritative ledger into
 // existing family diagnostic arrays. Zero scalar J is a valid source value.
 template<class Model> bool CopyLedger(const ShellPhysicalBinding& physical,Model& model) noexcept {

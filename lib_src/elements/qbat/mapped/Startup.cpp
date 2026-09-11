@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Startup.h"
+#include "../QbatBatchStorage.h"
 #include <cmath>
 
 namespace tl::fea::qbat::mapped {
@@ -94,3 +95,18 @@ BatchReport BuildModel(const BatchConfig& config,const ShellPhysicalBinding& phy
   return {BatchStatus::Success,"OK"};
 }
 } // namespace tl::fea::qbat::mapped
+
+namespace tl::fea::qbat {
+MappedForecast Batch::ForecastMapped(const BatchConfig& config,
+    const ShellPhysicalBinding& physical,const NodalCinWitnessSource& source) noexcept {
+  mapped::Forecast next;
+  MappedForecast result;
+  result.report = mapped::MakeForecast(config,physical,source,sizeof(Impl),next);
+  if (result.report.status != BatchStatus::Success) return result;
+  if (!shell_mapped_detail::MakeFootprint(next.host_bytes,physical.owned_payload_bytes(),
+      next.device.bytes,next.proof.bytes,result.footprint)) {
+    result.report = {BatchStatus::ResourceLimit,"Mapped footprint partition exceeds complete budget"};
+  }
+  return result;
+}
+} // namespace tl::fea::qbat

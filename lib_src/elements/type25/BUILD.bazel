@@ -30,7 +30,7 @@ cuda_library(
     ],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false",
              "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
-    deps = [
+    deps = ["//lib_src/elements:shell_mapped_footprint",
         ":type25_math", ":type25_model", "//lib_src/assembly:nodal_mass_binding",
         "//lib_src/elements:shell_physical_owner",
         "//lib_src/elements:shell_batch_fields", "//lib_src/elements:shell_batch_startup",

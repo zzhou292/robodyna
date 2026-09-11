@@ -7,7 +7,7 @@ namespace tl::fea::t3::mapped {
 struct Forecast {
   batch_detail::Layout device;
   shell_physical_owner::ProofLayout proof;
-  std::size_t host_bytes=0;
+  std::size_t host_bytes=0,section_device_bytes=0;
 };
 BatchReport MakeForecast(const T3BatchConfig&,const ShellPhysicalBinding&,
     const NodalCinWitnessSource&,const ShellBatchFailureLimits&,std::size_t,Forecast&) noexcept;

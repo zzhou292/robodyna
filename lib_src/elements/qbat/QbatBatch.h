@@ -1,11 +1,20 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
+#include "../ShellMappedFootprint.h"
 #include "QbatBatchTypes.h"
 #include "../ShellFormulationScope.h"
 #include <memory>
 
 namespace tl::fea { class ShellBatchPublication; class ShellPhysicalBinding; }
 namespace tl::fea::qbat {
+// A value-only preallocation query; it never authenticates or allocates an owner.
+// config.owner is a descriptive fresh stamp. InitializeMapped still requires
+// the actual owner and its complete raw coefficient/source proof.
+struct MappedForecast {
+  BatchReport report;
+  ShellMappedFootprint footprint;
+};
+
 
 // One complete native QBAT family from a prepared formulation inventory.
 // The owner supplies all nodal state, clock, stream and actual transaction views.
@@ -22,6 +31,9 @@ class Batch {
   // Explicit physical-domain profile. Requires the actual fresh CIN owner and
   // its complete immutable witness source. Raw initial M/J is authenticated
   // once; later transferred coefficients belong to that same owner.
+  // Read-only descriptive forecast; actual owner admission remains InitializeMapped.
+  static MappedForecast ForecastMapped(const BatchConfig&,const ShellPhysicalBinding&,
+      const NodalCinWitnessSource&) noexcept;
   BatchReport InitializeMapped(const BatchConfig&,const ShellPhysicalBinding&,
       FENodalState&,const NodalCinWitnessSource&);
   BatchReport AssembleMappedAccepted(FENodalState&,const NodalTrialToken&,

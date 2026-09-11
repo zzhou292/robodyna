@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
+#include "../ShellMappedFootprint.h"
 #include "Type25Types.h"
 #include "../ShellBatchStartup.h"
 #include "../../solvers/FENodalState.h"
@@ -32,6 +33,10 @@ struct BatchReport {
   std::uint32_t element=UINT32_MAX,node=UINT32_MAX;
   Status element_status=Status::Success;
   NodalStatus nodal_status=NodalStatus::Ok;
+};
+struct MappedForecast {
+  BatchReport report;
+  ShellMappedFootprint footprint;
 };
 enum class BatchPhase { Unspecified,Accepted,Prepared };
 struct BatchDiagnostics {
@@ -68,6 +73,9 @@ class Batch {
   // Explicit zero-damping TYPE25 profile over the complete physical domain.
   // The only model authority is physical.coefficients()->type25(). CIN-owned
   // dependent inverses may be zero; all endpoints must have non-rigid rotations.
+  // Read-only descriptive forecast; actual owner admission remains InitializeMapped.
+  static MappedForecast ForecastMapped(const BatchConfig&,const ShellPhysicalBinding&,
+      const NodalCinWitnessSource&,CapacityProfile) noexcept;
   BatchReport InitializeMapped(const BatchConfig&,const ShellPhysicalBinding&,
       FENodalState&,const NodalCinWitnessSource&,CapacityProfile);
   BatchReport AssembleMappedAccepted(FENodalState&,const NodalTrialToken&,const NodalAssemblyView&);

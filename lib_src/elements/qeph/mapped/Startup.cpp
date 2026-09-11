@@ -24,7 +24,7 @@ BatchReport MakeForecast(const QephBatchConfig& config,const ShellPhysicalBindin
   std::size_t sidecar_bytes=0;
   if (!shell_physical_owner::ForecastProof(config.owner.node_count,source.range_count,host_cap,next.proof) ||
       !shell_mapped_detail::ForecastSections(physical,ShellBindingFamily::Qeph,config.element_count,
-          config.max_device_bytes-next.device.bytes,host_cap,limits,sidecar_bytes)) {
+          config.max_device_bytes-next.device.bytes,host_cap,limits,sidecar_bytes,next.section_device_bytes)) {
     return {BatchStatus::ResourceLimit,"Mapped Qeph complete point/proof storage exceeds its cap"};
   }
   util::BoundedArenaLayout host(host_cap);
@@ -88,3 +88,18 @@ BatchReport BuildModel(const QephBatchConfig& config,const ShellPhysicalBinding&
   return {BatchStatus::Success,"OK"};
 }
 } // namespace tl::fea::qeph::mapped
+
+namespace tl::fea::qeph {
+MappedForecast QephBatch::ForecastMapped(const QephBatchConfig& config,
+    const ShellPhysicalBinding& physical,const NodalCinWitnessSource& source,const ShellBatchFailureLimits& limits) noexcept {
+  mapped::Forecast next;
+  MappedForecast result;
+  result.report = mapped::MakeForecast(config,physical,source,limits,sizeof(Impl),next);
+  if (result.report.status != BatchStatus::Success) return result;
+  if (!shell_mapped_detail::MakeFootprint(next.host_bytes,physical.owned_payload_bytes(),
+      next.device.bytes + next.section_device_bytes,next.proof.bytes,result.footprint)) {
+    result.report = {BatchStatus::ResourceLimit,"Mapped footprint partition exceeds complete budget"};
+  }
+  return result;
+}
+} // namespace tl::fea::qeph

@@ -1,0 +1,10 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "mapped_forecasts_check",
+    size = "small",
+    srcs = ["HostTest.cpp"],
+    deps = ["//lib_src/elements/qeph:batch_values", "//lib_src/elements/t3:batch_values",
+            "//lib_src/elements/qbat:batch_values", "//lib_src/elements/type25:type25_batch",
+            "//lib_utest/qualification/qbat_mapped:fixture", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)

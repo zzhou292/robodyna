@@ -1,4 +1,5 @@
 #pragma once
+#include "../ShellMappedFootprint.h"
 #include "QephForceData.h"
 #include "../ShellCollectionLimits.h"
 #include "../ShellResidentLimits.h"
@@ -64,6 +65,10 @@ struct BatchDiagnostics {
   double internal_kick_work=0,internal_drift_work=0;
 };
 
+struct MappedForecast {
+  BatchReport report;
+  ShellMappedFootprint footprint;
+};
 class QephBatch;
 BatchReport CommitQephTrial(FENodalState&,const NodalTrialToken&,QephBatch&,
                            const BatchDiagnostics&,const NodalValidationReceipt&) noexcept;
@@ -164,6 +169,9 @@ class QephBatch {
       const ShellBatchFailureLimits& = {});
   // Complete physical node domain, actual initial M/J proof and CIN owner.
   // Explicit rigid skins require physical.execution() and its actual PART binding.
+  // Read-only descriptive forecast; actual owner admission remains InitializeMapped.
+  static MappedForecast ForecastMapped(const QephBatchConfig&,const ShellPhysicalBinding&,
+      const NodalCinWitnessSource&,const ShellBatchFailureLimits& = {}) noexcept;
   BatchReport InitializeMapped(const QephBatchConfig&,const ShellPhysicalBinding&,
       FENodalState&,const NodalCinWitnessSource&,const ShellBatchFailureLimits& = {});
   BatchReport AssembleMappedAccepted(FENodalState&,const NodalTrialToken&,const NodalAssemblyView&);

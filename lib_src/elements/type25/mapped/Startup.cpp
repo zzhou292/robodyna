@@ -100,3 +100,19 @@ BatchReport BuildModel(const BatchConfig& config,const ShellPhysicalBinding& phy
   return {BatchStatus::Success,"OK"};
 }
 } // namespace tl::fea::type25::mapped
+
+namespace tl::fea::type25 {
+MappedForecast Batch::ForecastMapped(const BatchConfig& config,
+    const ShellPhysicalBinding& physical,const NodalCinWitnessSource& source,
+    CapacityProfile profile) noexcept {
+  mapped::Forecast next;
+  MappedForecast result;
+  result.report = mapped::MakeForecast(config,physical,source,profile,sizeof(Impl),next);
+  if (result.report.status != BatchStatus::Success) return result;
+  if (!shell_mapped_detail::MakeFootprint(next.host_bytes,physical.owned_payload_bytes(),
+      next.device.bytes,next.proof.bytes,result.footprint)) {
+    result.report = {BatchStatus::ResourceLimit,"Mapped footprint partition exceeds complete budget"};
+  }
+  return result;
+}
+} // namespace tl::fea::type25

@@ -1,4 +1,5 @@
 #pragma once
+#include "../ShellMappedFootprint.h"
 #include "T3ForceData.h"
 #include "../ShellCollectionLimits.h"
 #include "../ShellResidentLimits.h"
@@ -63,6 +64,10 @@ struct BatchDiagnostics {
   double internal_kick_work=0,internal_drift_work=0;
 };
 
+struct MappedForecast {
+  BatchReport report;
+  ShellMappedFootprint footprint;
+};
 class T3Batch;
 BatchReport CommitT3Trial(FENodalState&,const NodalTrialToken&,T3Batch&,
                            const BatchDiagnostics&,const NodalValidationReceipt&) noexcept;
@@ -155,6 +160,9 @@ class T3Batch {
       const ShellBatchFailureLimits& = {});
   // Complete physical node domain, actual initial M/J proof and CIN owner.
   // Explicit rigid skins require physical.execution() and its actual PART binding.
+  // Read-only descriptive forecast; actual owner admission remains InitializeMapped.
+  static MappedForecast ForecastMapped(const T3BatchConfig&,const ShellPhysicalBinding&,
+      const NodalCinWitnessSource&,const ShellBatchFailureLimits& = {}) noexcept;
   BatchReport InitializeMapped(const T3BatchConfig&,const ShellPhysicalBinding&,
       FENodalState&,const NodalCinWitnessSource&,const ShellBatchFailureLimits& = {});
   BatchReport AssembleMappedAccepted(FENodalState&,const NodalTrialToken&,const NodalAssemblyView&);

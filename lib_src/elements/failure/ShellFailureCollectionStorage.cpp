@@ -8,7 +8,7 @@
 namespace tl::fea::shell_batch_plasticity_detail {
 bool HostStorage::ForecastFailureSections(std::size_t count, std::size_t points,
     std::size_t binding_bytes, std::size_t device_cap, std::size_t host_cap,
-    const ShellBatchFailureLimits& limits, std::size_t& host_bytes, bool one_point) noexcept {
+    const ShellBatchFailureLimits& limits, std::size_t& host_bytes, bool one_point, std::size_t* device_bytes) noexcept {
   FailureLayout failure;
   MixedLayout mixed;
   OnePointLayout point;
@@ -28,6 +28,7 @@ bool HostStorage::ForecastFailureSections(std::size_t count, std::size_t points,
     return false;
   }
   host_bytes = host.bytes();
+  if (device_bytes) *device_bytes = point.bytes + failure.bytes + mixed.bytes;
   return true;
 }
 

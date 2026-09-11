@@ -281,3 +281,8 @@ cc_library(
     deps = [":shell_physical_owner_values", ":shell_batch_plasticity_storage", ":shell_batch_fields",
             "//lib_src/assembly:shell_physical_binding", "//lib_src/solvers:nodal_trial_identity"],
 )
+
+cc_library(
+    name = "shell_mapped_footprint",
+    hdrs = ["ShellMappedFootprint.h"],
+)
