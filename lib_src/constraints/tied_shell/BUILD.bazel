@@ -1,5 +1,14 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 cc_library(
+    name = "tied_shell_classification",
+    srcs = ["TiedClassification.cpp", "TiedClassificationBudget.cpp",
+            "TiedClassificationChecks.cpp", "TiedClassificationKinematics.cpp"],
+    hdrs = ["TiedClassification.h", "TiedClassificationInternal.h", "TiedClassificationTags.h"],
+    deps = ["//lib_utils:bounded_arena", "//lib_utils:source_identity_index"],
+    copts = ["-std=c++17"],
+    visibility = ["//visibility:public"],
+)
+cc_library(
     name = "tied_shell_patch",
     hdrs = ["TiedPatchTypes.h", "TiedPatchGeometry.h", "TiedPatchForce.h", "TiedPatchMotion.h", "TiedPatchCoefficients.h"],
     deps = ["//lib_src/math:fixed3_operations"],

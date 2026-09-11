@@ -1,0 +1,57 @@
+{
+  "commit": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "sources": [
+    {
+      "path": "original/starter/source/interfaces/inter3d1/itagsl2.F",
+      "size": 10608,
+      "sha256": "eb8e1b8b160884150ecc464a3fbe881b4f4f6c2d9fa594569b518934e835ab21",
+      "git_blob_sha1": "2226f514eb58bdc6bf2e909646dfdec511e23fef"
+    },
+    {
+      "path": "original/starter/source/interfaces/inter3d1/i24tools.F",
+      "size": 26172,
+      "sha256": "fc91f38402f15ddd0e9b4206b17ca9f118a3ea5475d76d8a13975bcdd57f3867",
+      "git_blob_sha1": "bbe05c7ae7c0fe5b534c551739b31ba237f37f0b"
+    },
+    {
+      "path": "original/starter/source/constraints/general/kinini.F",
+      "size": 3436,
+      "sha256": "8e071ffd34ba7f2e586ec2db27d1038cccbf058ef46f3f53e6f602c828472f07",
+      "git_blob_sha1": "4285898d8d68115b5dc18c0b1015ae2af0b1e07c"
+    },
+    {
+      "path": "original/starter/source/constraints/general/kinset.F",
+      "size": 19933,
+      "sha256": "58fae145f6826afa57e28608f0864d285c606dae1b225170cd267a95909aa305",
+      "git_blob_sha1": "e3daf92b7c589d7d709ea0a07a9c8550a5c027ed"
+    },
+    {
+      "path": "original/common_source/includes/kincod_c.inc",
+      "size": 2239,
+      "sha256": "681cdd6d8328c4298dbb53a5a3decbdfeb77092c65fc67ce1b688e83c4497b8e",
+      "git_blob_sha1": "7ee11d1a9bfe843427a6e4d5c80af2fcbde4c63d"
+    },
+    {
+      "path": "original/starter/source/constraints/general/rbody/checkrby.F",
+      "size": 9291,
+      "sha256": "14a215cf679813e66d50c562c80f2bf7fc0a6e3e41d0c8b39226ed5a53417ad5",
+      "git_blob_sha1": "1809463fc2c38de0c94801f150c28cf67cf9fb13"
+    }
+  ],
+  "fragments": [
+    {
+      "path": "Intab.F",
+      "source": "original/starter/source/interfaces/inter3d1/i24tools.F",
+      "first_line": 95,
+      "last_line": 118,
+      "sha256": "e24f8806efa0101aed838a4c07b465cdce2458f76e74396a6e9fd796411e17bc"
+    },
+    {
+      "path": "RigidRegistration.inc",
+      "source": "original/starter/source/constraints/general/rbody/checkrby.F",
+      "first_line": 134,
+      "last_line": 150,
+      "sha256": "afa025b9a614db91e380ec72ece4b701b0074b5b6cdaa39f84dc0e24126e1e3a"
+    }
+  ]
+}
