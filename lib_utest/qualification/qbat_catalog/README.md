@@ -15,6 +15,13 @@ glass runtime admission or exercise their force law.
 
 Author qualification (one CPU, 512 MiB):
 
+Root qualification at `dfdf217` passes all61 numeric functions plus original
+fixture identity, `qbat-catalog-root-tests-1`. The complete owning build sampled
+1204047872 B RSS under8 affinity CPUs/four workers. Both owning catalog Bazel
+targets also pass `qbat-catalog-search-driver-bazel-build-1` alongside the
+separate geometric attachment driver. No resident QBAT state is admitted by
+these host tests.
+
 - Eight new host functions pass, report `/tmp/qbat-catalog-tests-1.xml`.
 - All 51 affected old host functions pass (21 material/section, 14 collection,
   16 geometry binding), `/tmp/qbat-catalog-legacy-tests-1.json`; default four

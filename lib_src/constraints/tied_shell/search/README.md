@@ -38,6 +38,16 @@ source candidate counts require the owning GPU gate. Host tests do not establish
 GPU conservativeness or full original-source completeness; the independent
 native bucket qualification compares those separately.
 
+Root qualification passes all eight driver functions, including actual CUDA,
+`tied-search-driver-root-tests-1`. The app's complete source gate also passes:
+all11165 selected ranks, per-node exact-box counts and projections match an
+independent native traversal over171813 masters. Both pipelines enumerate31104
+pairs; there are no unmatched nodes, outside flags or rejected selected patches.
+Driver payload forecast is100087022 B host /106955790 B device; actual CUB
+sort/scan scratch is2237695 /1791 B. The owning Bazel driver target passes
+`qbat-catalog-search-driver-bazel-build-1`. This is startup mapping; native
+finalization, classification and mechanics remain separate.
+
 Standalone qualification:
 
 ```
