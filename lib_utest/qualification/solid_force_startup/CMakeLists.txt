@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(TLSolidForceStartup LANGUAGES CXX)
+project(TLSolidForceStartup LANGUAGES CXX C)
 get_filename_component(TL_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../.." ABSOLUTE)
 enable_testing()
 find_package(GTest REQUIRED)
