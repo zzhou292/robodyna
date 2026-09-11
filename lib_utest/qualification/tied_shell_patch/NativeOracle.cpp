@@ -4,6 +4,7 @@ extern "C" {
 void tl_tied_patch_force(const double*, const double*, const double*, const int*, double*, double*);
 void tl_tied_patch_motion(const double*, const double*, const double*, const double*, const int*, double*);
 void tl_tied_patch_coefficients(const double*, const double*, const double*, const int*, double*);
+void tl_tied_patch_assembly(const double*, const double*, const int*, double*);
 }
 namespace tied_patch_test {
 namespace {
@@ -34,6 +35,13 @@ std::array<double,24> NativeCoefficients(const tie::PatchInput& geometry,
   const int repeated = repeated_node ? 1 : 0;
   std::array<double,24> output{};
   tl_tied_patch_coefficients(x,secondary,input.initial_master_inertia,&repeated,output.data());
+  return output;
+}
+std::array<double,12> NativeAssembly(const NativeResult& native,
+    const std::array<double,12>& initial, bool repeated_node) {
+  const int repeated = repeated_node ? 1 : 0;
+  std::array<double,12> output{};
+  tl_tied_patch_assembly(native.values.data(),initial.data(),&repeated,output.data());
   return output;
 }
 } // namespace tied_patch_test

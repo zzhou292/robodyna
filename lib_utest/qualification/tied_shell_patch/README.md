@@ -40,6 +40,18 @@ equation/tolerance changes. Independent code review found no blocker. This adds
 the coefficient value stage, not source classification, retained release history,
 source-ordered multi-slave assembly or a connected original vehicle owner.
 
+`NodalRepeatedForceAssembly` closes the four-slot triangle scatter boundary by
+reusing the strict existing single-node operation on private scratch. It retains
+the native order of additions, including a cancellation control for which
+precombining repeated-slot loads gives the wrong result. The legacy distinct-node
+API remains unchanged and continues to reject repeats. Five additional functions
+(three host, one exact-native accumulation, one CUDA) pass alongside all15 earlier
+functions in `tied-repeated-assembly-root-functions-1`, with zero failures/skips.
+Native I2FOR28_CIN426–437 independently accumulates the native loads for four
+shapes and16 packets, including a real repeated triangle. Final connectivity,
+nonfinite input and overflow failures leave all destination components unchanged.
+The helper does not authenticate topology or a nodal-owner transaction.
+
 ```sh
 cmake -S lib_utest/qualification/tied_shell_patch -B BUILD \
   -DCMAKE_BUILD_TYPE=Release -DTL_TIED_PATCH_NATIVE=ON \
