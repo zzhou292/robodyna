@@ -1,0 +1,44 @@
+{
+  "repository": "https://github.com/OpenRadioss/OpenRadioss",
+  "commit": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Explicit TYPE2 Spotflag28, IRODDL1, WEIGHT1 force and I2VIROT3 motion value reference; coefficient transfer and owner stage absent",
+  "sources": [
+    {
+      "path": "original/engine/source/interfaces/interf/i2for28_cin.F",
+      "upstream_path": "engine/source/interfaces/interf/i2for28_cin.F",
+      "size": 16266,
+      "sha256": "4625048acc41c3f8361bdabe142dbc9ebd68b183c00c119d496daa6231a5495c",
+      "git_blob_sha1": "7244b940955a63931c40c2e3e3601bd5498be0dd"
+    },
+    {
+      "path": "original/engine/source/interfaces/interf/i2vit3.F",
+      "upstream_path": "engine/source/interfaces/interf/i2vit3.F",
+      "size": 24780,
+      "sha256": "235e8bb8335b28e80d61b34c5e470867522fb54d9837b20b384930413de24a1d",
+      "git_blob_sha1": "59fad59670e7f838502dd0b424a998b1d0eee9ab"
+    }
+  ],
+  "fragments": [
+    {
+      "path": "Geometry.inc",
+      "source": "original/engine/source/interfaces/interf/i2for28_cin.F",
+      "first_line": 315,
+      "last_line": 385,
+      "sha256": "3d51a80d47227656d3896d1c9fceade64a2920d04d4e3cb02c975176989b1303"
+    },
+    {
+      "path": "Load.inc",
+      "source": "original/engine/source/interfaces/interf/i2for28_cin.F",
+      "first_line": 387,
+      "last_line": 424,
+      "sha256": "568c16b1b49fa29491d78068a14967eced03d18cac584003bcd27317cede4adb"
+    },
+    {
+      "path": "NativeMotion.F",
+      "source": "original/engine/source/interfaces/interf/i2vit3.F",
+      "first_line": 315,
+      "last_line": 515,
+      "sha256": "b9b94d077374b7b243a54b4cf39710032bd9645a32e5d88a3d0abf19f9f93484"
+    }
+  ]
+}

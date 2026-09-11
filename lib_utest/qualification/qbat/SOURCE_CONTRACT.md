@@ -94,6 +94,16 @@ preflight admits all 4,250 original geometry packets with quad mass
 maximum raw warp 2.1697457886104242e-4 m. This is not native/CUDA evidence.
 Native/actual CUDA runs are coordinator-owned after freeze.
 
+Root qualification now passes all 14 new numeric functions: six host, four
+native, two complete original-source and two actual CUDA. All 23 existing native
+QEPH kinematics/force functions also pass, with zero failures or skips in
+`crash-work/reports/qbat-geometry-root-functions-1`. Both source identity gates
+pass. Reports are `qbat-geometry-root-{configure,build,tests}-*.json`.
+The first native build exposed an extraction ending one line before its closing
+ENDDO; `22f0755` restores that exact source boundary through CBACOOR265. The
+second build and first complete CTest run pass without production changes or
+tolerance changes. Geometry admission still does not qualify the force caller.
+
 ```sh
 cmake -S lib_utest/qualification/qbat -B BUILD \
   -DQBAT_NATIVE_CHECKS=ON -DQBAT_CUDA_CHECKS=ON \
