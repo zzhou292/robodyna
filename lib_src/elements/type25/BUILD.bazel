@@ -6,13 +6,13 @@ cc_library(
     srcs = ["Type25Model.cpp"],
     hdrs = ["Type25Types.h", "Type25Capacity.h", "Type25Model.h", "Type25ModelIndex.h", "Type25Identity.h", "Type25Property.h", "Type25Frame.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
-    deps = ["//lib_src/math:fixed3", "//lib_src/math:fixed3_operations", "//lib_utils:source_identity_index"],
+    deps = ["//lib_src/elements/spring:spring_frame_projection", "//lib_src/math:fixed3", "//lib_src/math:fixed3_operations", "//lib_utils:source_identity_index"],
 )
 cc_library(
     name = "type25_math",
     hdrs = ["Type25Math.h", "Type25Deformation.h", "Type25Response.h", "Type25Stability.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
-    deps = [":type25_model", "//lib_src/math:fixed3_operations"],
+    deps = ["//lib_src/elements/spring:spring_frame_projection", ":type25_model", "//lib_src/math:fixed3_operations"],
 )
 
 cuda_library(

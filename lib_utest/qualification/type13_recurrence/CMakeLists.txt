@@ -1,0 +1,42 @@
+cmake_minimum_required(VERSION 3.18)
+project(tl_type13_recurrence_qualification LANGUAGES CXX)
+enable_testing()
+get_filename_component(tl_root "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+include("${tl_root}/lib_src/elements/type13/Type13Math.cmake")
+find_package(GTest REQUIRED)
+add_executable(type13_h1_host_test MathTest.cpp)
+target_link_libraries(type13_h1_host_test PRIVATE tl_type13_math GTest::gtest_main)
+target_compile_options(type13_h1_host_test PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME type13_h1_host COMMAND type13_h1_host_test)
+option(TYPE13_H1_NATIVE_CHECKS "Compile exact native TYPE13 H1 packet reference" ON)
+if(TYPE13_H1_NATIVE_CHECKS)
+  enable_language(Fortran)
+  find_package(Python3 REQUIRED COMPONENTS Interpreter)
+  add_test(NAME type13_h1_source_identity COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/native/verify_sources.py")
+  add_test(NAME type13_h1_original_fixture_identity COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_LIST_DIR}/../type13/source_fixture/verify_fixture.py")
+  add_library(type13_h1_native STATIC native/NativeChannel.F90 native/NativeCurve.F native/NativeDeformation.F
+    native/NativeFailure.F native/NativeStability.F
+    "${CMAKE_CURRENT_LIST_DIR}/../type25/native/NativeFrame.F"
+    "${CMAKE_CURRENT_LIST_DIR}/../type25/native/NativeScatter.F")
+  target_include_directories(type13_h1_native PRIVATE "${CMAKE_CURRENT_LIST_DIR}/native"
+    "${CMAKE_CURRENT_LIST_DIR}/../type25/native/stubs")
+  target_compile_options(type13_h1_native PRIVATE -cpp -ffixed-line-length-none -ffree-line-length-none
+    -fno-fast-math -ffp-contract=off -fcheck=all -finit-real=snan)
+  add_executable(type13_h1_native_test NativeTest.cpp NativeOracle.cpp)
+  target_link_libraries(type13_h1_native_test PRIVATE tl_type13_math type13_h1_native GTest::gtest_main)
+  target_compile_options(type13_h1_native_test PRIVATE -fno-fast-math -ffp-contract=off)
+  add_test(NAME type13_h1_native COMMAND type13_h1_native_test)
+endif()
+option(TYPE13_H1_CUDA_CHECKS "Compile optional root-scheduled CUDA value checks" OFF)
+if(TYPE13_H1_CUDA_CHECKS)
+  enable_language(CUDA)
+  find_package(CUDAToolkit REQUIRED)
+  add_executable(type13_h1_cuda_test MathCudaTest.cu)
+  target_link_libraries(type13_h1_cuda_test PRIVATE tl_type13_math GTest::gtest_main CUDA::cudart)
+  set_target_properties(type13_h1_cuda_test PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED ON)
+  target_compile_options(type13_h1_cuda_test PRIVATE
+    "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>")
+  add_test(NAME type13_h1_cuda COMMAND type13_h1_cuda_test)
+  set_tests_properties(type13_h1_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)
+endif()

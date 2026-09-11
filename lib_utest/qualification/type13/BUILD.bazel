@@ -1,4 +1,4 @@
-load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_test", "cc_library")
 load("@rules_cuda//cuda:defs.bzl", "cuda_test")
 cc_test(
     name = "type13_startup_check",
@@ -14,4 +14,11 @@ cuda_test(
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
     tags = ["exclusive", "gpu"],
     deps = ["//lib_src/elements/type13:type13_startup", "@googletest//:gtest_main"],
+)
+
+cc_library(
+    name = "startup_fixture",
+    hdrs = ["Fixture.h"],
+    visibility = ["//visibility:public"],
+    deps = ["//lib_src/elements/type13:type13_startup"],
 )

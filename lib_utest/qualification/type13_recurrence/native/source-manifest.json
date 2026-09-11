@@ -1,0 +1,149 @@
+{
+  "repository": "https://github.com/OpenRadioss/OpenRadioss",
+  "commit": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "R4DEF3 large-displacement INISPRI0/Ileng1, REDEF3 H1 zero damping/unit scales/no secondary curves, VINTER2 binary64, Ifail1/Ifail2=0 no rate, R2LEN3 unscaled dt. Existing TYPE25 complete R4EVEC3/scatter oracle reused unchanged. Warning I/O and inactive branches excluded; all source files retained.",
+  "sources": [
+    {
+      "path": "original/engine/source/elements/spring/r4def3.F",
+      "upstream_path": "engine/source/elements/spring/r4def3.F",
+      "size": 29769,
+      "sha256": "2586965f4dfc0b7322ab3f4724d70bc1041c5e8ca175bf7f1b505a1568b77ad5",
+      "git_blob_sha1": "fdf228dfd62827fd6fdb0e5833f066f183ce6040"
+    },
+    {
+      "path": "original/engine/source/elements/spring/redef3.F90",
+      "upstream_path": "engine/source/elements/spring/redef3.F90",
+      "size": 49273,
+      "sha256": "def4f78e29751ac71e649c53527a4d09ef15e8b40e0257b8469883da9ef5597e",
+      "git_blob_sha1": "5cf579750d56c000c0fd2dd04af9dd2abde783ca"
+    },
+    {
+      "path": "original/engine/source/elements/spring/r2len3.F",
+      "upstream_path": "engine/source/elements/spring/r2len3.F",
+      "size": 10364,
+      "sha256": "d9172514fb8d3672fcf5b6035ddb3f5b051222cf9bbb3e3274e245253a67d60b",
+      "git_blob_sha1": "b2aeb067838585447e6c29195e4e5b2f660595f5"
+    },
+    {
+      "path": "original/engine/source/tools/curve/vinter.F",
+      "upstream_path": "engine/source/tools/curve/vinter.F",
+      "size": 12880,
+      "sha256": "4ecc3e2dc2119112826bd0cacfcc423e4551cca4a66e063b210d352c00a8fdcd",
+      "git_blob_sha1": "94d549102200d5a057424c0716674bbb82850ee2"
+    }
+  ],
+  "fragments": [
+    {
+      "path": "extracted/FreshLength.inc",
+      "source": "original/engine/source/elements/spring/r4def3.F",
+      "first_line": 190,
+      "last_line": 202,
+      "sha256": "557b8b5b6b526c0da104da30b2d5a3a29ab96b08997b21b4af18d3272fd49504"
+    },
+    {
+      "path": "extracted/ReferenceLength.inc",
+      "source": "original/engine/source/elements/spring/r4def3.F",
+      "first_line": 210,
+      "last_line": 218,
+      "sha256": "30c1dad2756bdec015e04be238b4d913bef1cdf7e9a327ab5178c308eb67cac3"
+    },
+    {
+      "path": "extracted/Translation.inc",
+      "source": "original/engine/source/elements/spring/r4def3.F",
+      "first_line": 262,
+      "last_line": 289,
+      "sha256": "116a28dce4aac7176e18274f10cf7dbf61ea937953ddd23df2bd543c94d58665"
+    },
+    {
+      "path": "extracted/Rotation.inc",
+      "source": "original/engine/source/elements/spring/r4def3.F",
+      "first_line": 565,
+      "last_line": 573,
+      "sha256": "dd760a7ab71cb0de91a0bea87d89e6845d9694247966fa90c86552dbc7a2e4bf"
+    },
+    {
+      "path": "extracted/ChannelCriterion.inc",
+      "source": "original/engine/source/elements/spring/r4def3.F",
+      "first_line": 337,
+      "last_line": 378,
+      "sha256": "2f3832d49689f181509a688fc111435b11f209c3c379c847b221db1169867d9e"
+    },
+    {
+      "path": "extracted/CoupledFailure.inc",
+      "source": "original/engine/source/elements/spring/r4def3.F",
+      "first_line": 800,
+      "last_line": 827,
+      "sha256": "4a7be4afbabe22d334f15248dad0157f6076a981cc2341f12c88a2f2f4d5923f"
+    },
+    {
+      "path": "extracted/TranslationCoefficients.inc",
+      "source": "original/engine/source/elements/spring/r4def3.F",
+      "first_line": 154,
+      "last_line": 180,
+      "sha256": "f66f72b1e7da25f706dfd70eb6def25f31eac540e4b2c172f31cbf04f52d902e"
+    },
+    {
+      "path": "extracted/RotationCoefficients.inc",
+      "source": "original/engine/source/elements/spring/r4def3.F",
+      "first_line": 532,
+      "last_line": 550,
+      "sha256": "521758e4c1e403f2268d1dea72f8ed0396eb091155a313b80c306ed6a6d48e42"
+    },
+    {
+      "path": "extracted/NormalizeCoefficients.inc",
+      "source": "original/engine/source/elements/spring/r4def3.F",
+      "first_line": 870,
+      "last_line": 877,
+      "sha256": "8deb08db3c76732250cf4d5049a8ec3d9ab6230088e88fd6a388a793419e8545"
+    },
+    {
+      "path": "extracted/NormalizeHistory.inc",
+      "source": "original/engine/source/elements/spring/redef3.F90",
+      "first_line": 272,
+      "last_line": 286,
+      "sha256": "39a0d8e7eab9bb9d825b2cdbfc659985c2e0e9a39708a5151e4995d63ba3ae99"
+    },
+    {
+      "path": "extracted/H1Trial.inc",
+      "source": "original/engine/source/elements/spring/redef3.F90",
+      "first_line": 432,
+      "last_line": 443,
+      "sha256": "7536d4267eade46e9fdb9c42e3e8bca836021a4f0f11b77477ce43afaf6c3291"
+    },
+    {
+      "path": "extracted/H1Clip.inc",
+      "source": "original/engine/source/elements/spring/redef3.F90",
+      "first_line": 763,
+      "last_line": 776,
+      "sha256": "1bcfc3155b9d4a47b8792a3af7439acdb8d3b3c251bed49cf6ae3c854ef84b18"
+    },
+    {
+      "path": "extracted/MaskedWork.inc",
+      "source": "original/engine/source/elements/spring/redef3.F90",
+      "first_line": 1141,
+      "last_line": 1146,
+      "sha256": "59d3494b5f14373682d344a8f305d413ef4d12fb7252b77db2dd214191b620e4"
+    },
+    {
+      "path": "extracted/RestoreHistory.inc",
+      "source": "original/engine/source/elements/spring/redef3.F90",
+      "first_line": 1153,
+      "last_line": 1159,
+      "sha256": "c23b840c08397d2639786a88a64a8ebe1738da1abc2f18aa3ef920488d0bf460"
+    },
+    {
+      "path": "extracted/CompleteCurve.inc",
+      "source": "original/engine/source/tools/curve/vinter.F",
+      "first_line": 133,
+      "last_line": 192,
+      "sha256": "2579c82d8a6e8a595971fbcf23a16b22352b61727e83e92ee0cc6a96f4575b22"
+    },
+    {
+      "path": "extracted/CriticalStep.inc",
+      "source": "original/engine/source/elements/spring/r2len3.F",
+      "first_line": 205,
+      "last_line": 213,
+      "sha256": "5e6d40f781567d554c4e099d710b7ab1664f5016b97dda8b88b1d0e1d33397e5"
+    }
+  ]
+}

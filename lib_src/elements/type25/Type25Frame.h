@@ -4,6 +4,7 @@
 // GNU AGPL v3 or later; see LICENSE.md alongside.
 #pragma once
 #include "Type25Property.h"
+#include "../spring/SpringFrame.h"
 
 #if defined(__CUDACC__)
 #define TL_TYPE25_HD __host__ __device__
@@ -46,15 +47,6 @@ TL_TYPE25_HD inline bool ValidReference(const Reference& r) {
 TL_TYPE25_HD inline bool ValidKinematics(const EndpointKinematics& a) {
   return tl::math::fixed3::Finite(a.position)&&tl::math::fixed3::Finite(a.velocity)&&tl::math::fixed3::Finite(a.angular_velocity);
 }
-TL_TYPE25_HD inline bool FinishFrame(Vec3 x,Vec3 y,Vec3 z,double cy,double sz,Matrix3& out) {
-  y=tl::math::fixed3::Add(tl::math::fixed3::Scale(y,cy),tl::math::fixed3::Scale(z,sz));
-  y=tl::math::fixed3::Divide(y,::fmax(1e-15,tl::math::fixed3::Norm(y)));
-  z=tl::math::fixed3::Cross(x,y);
-  z=tl::math::fixed3::Divide(z,::fmax(1e-15,tl::math::fixed3::Norm(z)));
-  const auto axes=tl::math::fixed3::Columns(x,y,z);
-  if(!tl::math::fixed3::Orthonormal(axes))return false;
-  out=axes;return true;
-}
 } // namespace detail
 
 // R4EVEC3: current chord and chord backtracked by half dt with the actual
@@ -66,24 +58,11 @@ TL_TYPE25_HD inline Status AdvanceFrame(SourceUnits units,Vec3 accepted_transver
   detail::Units u;
   if(!detail::ResolveUnits(units,u)||!detail::Positive(dt)||!tl::math::fixed3::Unit(accepted_transverse)||
      !detail::ValidKinematics(nodes[0])||!detail::ValidKinematics(nodes[1]))return Status::InvalidInput;
-  const double half_dt=.5*dt;
-  const auto chord=tl::math::fixed3::Subtract(nodes[1].position,nodes[0].position);
-  const auto middle=tl::math::fixed3::Subtract(chord,tl::math::fixed3::Scale(tl::math::fixed3::Subtract(nodes[1].velocity,nodes[0].velocity),half_dt));
-  Frame next;next.length_m=tl::math::fixed3::Norm(chord);next.midpoint_length_m=tl::math::fixed3::Norm(middle);
-  if(!tl::math::fixed3::Finite(next.length_m)||!tl::math::fixed3::Finite(next.midpoint_length_m))return Status::NonfiniteResult;
-  if(next.length_m<=u.length_floor||next.midpoint_length_m<=u.length_floor)return Status::DegenerateGeometry;
-  const auto x=tl::math::fixed3::Divide(chord,next.length_m),xm=tl::math::fixed3::Divide(middle,next.midpoint_length_m);
-  const auto z=tl::math::fixed3::Cross(x,accepted_transverse),zm=tl::math::fixed3::Cross(xm,accepted_transverse);
-  const auto y=tl::math::fixed3::Cross(z,x),ym=tl::math::fixed3::Cross(zm,xm);
-  const double w1=tl::math::fixed3::Dot(xm,nodes[0].angular_velocity),w2=tl::math::fixed3::Dot(xm,nodes[1].angular_velocity);
-  const double angle=(w1+w2)/2*half_dt;
-  if(!tl::math::fixed3::Finite(angle))return Status::NonfiniteResult;
-  const double c=::cos(angle),s=::sin(angle);
-  if(!detail::FinishFrame(x,y,z,(2*c*c-1)/::fmax(1e-15,tl::math::fixed3::Norm(y)),
-       (2*c*s)/::fmax(1e-15,tl::math::fixed3::Norm(z)),next.axes)||
-     !detail::FinishFrame(xm,ym,zm,c/::fmax(1e-15,tl::math::fixed3::Norm(ym)),
-       s/::fmax(1e-15,tl::math::fixed3::Norm(zm)),next.midpoint_axes))return Status::DegenerateGeometry;
-  output=next;return Status::Success;
+  spring::FrameValues next;
+  const auto status=spring::AdvanceFrame(accepted_transverse,nodes,dt,u.length_floor,next);
+  if(status==spring::Status::NonfiniteResult)return Status::NonfiniteResult;
+  if(status!=spring::Status::Success)return Status::DegenerateGeometry;
+  output={next.axes,next.midpoint_axes,next.length,next.midpoint_length};return Status::Success;
 }
 } // namespace tl::fea::type25
 

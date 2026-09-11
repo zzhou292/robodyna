@@ -5,6 +5,7 @@
 #pragma once
 #include "Type25Response.h"
 #include "Type25Stability.h"
+#include "../spring/SpringScatter.h"
 
 #if defined(__CUDACC__)
 #define TL_TYPE25_HD __host__ __device__
@@ -32,14 +33,10 @@ TL_TYPE25_HD inline Status Evaluate(SourceUnits units,const Property& property,c
   // R4CUM3: force pair plus the two finite-length shear arms. The signs of
   // the endpoint moments are distinct; replacing this by +/- one couple
   // would violate total angular momentum for a transverse spring force.
-  const auto f=next.history.local_force_N,m=next.history.local_couple_Nm;
-  const double arm=.5*next.frame.length_m;
-  const Vec3 m1{m.x,m.y-arm*f.z,m.z+arm*f.y},m2{m.x,m.y+arm*f.z,m.z-arm*f.y};
-  next.endpoints[0]={tl::math::fixed3::ToWorld(next.frame.axes,f),tl::math::fixed3::ToWorld(next.frame.axes,m1)};
-  next.endpoints[1]={tl::math::fixed3::Scale(next.endpoints[0].force_N,-1),
-      tl::math::fixed3::Scale(tl::math::fixed3::ToWorld(next.frame.axes,m2),-1)};
-  for(unsigned i=0;i<2;++i)if(!tl::math::fixed3::Finite(next.endpoints[i].force_N)||!tl::math::fixed3::Finite(next.endpoints[i].couple_Nm))
-    return Status::NonfiniteResult;
+  spring::WrenchValues endpoints[2];
+  if(!spring::Scatter(next.frame.axes,next.frame.length_m,next.history.local_force_N,
+       next.history.local_couple_Nm,endpoints))return Status::NonfiniteResult;
+  for(unsigned i=0;i<2;++i)next.endpoints[i]={endpoints[i].force,endpoints[i].couple};
   Stability stable;status=CriticalStep(units,property,next.frame.length_m,stable);
   if(status!=Status::Success)return status;
   next.critical_dt_s=stable.critical_dt_s;next.translation_stiffness_N_per_m=stable.translation_stiffness_N_per_m;

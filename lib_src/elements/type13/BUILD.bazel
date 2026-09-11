@@ -5,3 +5,13 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = ["//lib_src/math:fixed3_operations"],
 )
+
+cc_library(
+    name = "type13_math",
+    hdrs = ["Type13RecurrenceTypes.h", "Type13RecurrenceChecks.h", "Type13Curve.h",
+            "Type13Deformation.h", "Type13Response.h", "Type13Stability.h", "Type13Math.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    visibility = ["//visibility:public"],
+    deps = [":type13_startup", "//lib_src/elements/spring:spring_frame_projection",
+            "//lib_src/math:fixed3_operations"],
+)

@@ -1,0 +1,7 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+cc_library(
+    name = "spring_frame_projection",
+    hdrs = ["SpringFrame.h", "SpringScatter.h"],
+    visibility = ["//visibility:public"],
+    deps = ["//lib_src/math:fixed3_operations"],
+)
