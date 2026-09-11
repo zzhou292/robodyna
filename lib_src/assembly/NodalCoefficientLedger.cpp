@@ -5,14 +5,17 @@
 
 namespace tl::fea {
 struct NodalCoefficientLedger::Impl {
-  Impl(NodalCoefficientSources input,const ElementMassContributions* mass):shells(*input.shells),
+  Impl(NodalCoefficientSources input,const ElementMassContributions* mass,
+      const SolidNodeContributions* solid):shells(*input.shells),
       springs(input.type25?*input.type25:tl::fea::type25::Model{}),
       beams(input.type13?*input.type13:Type13NodeContributions{}),
-      masses(mass?*mass:ElementMassContributions{}) {}
+      masses(mass?*mass:ElementMassContributions{}),
+      solids(solid?*solid:SolidNodeContributions{}) {}
   ShellNodeMap shells;
   tl::fea::type25::Model springs;
   Type13NodeContributions beams;
   ElementMassContributions masses;
+  SolidNodeContributions solids;
   util::HostArena arena;
   NodalCoefficientNode* nodes=nullptr;
   NodalCoefficientTotals totals{};
@@ -26,20 +29,26 @@ CoefficientReport NodalCoefficientLedger::Initialize(NodalCoefficientSources inp
 }
 CoefficientReport NodalCoefficientLedger::InitializeWithElementMass(
     NodalCoefficientSourcesWithElementMass input,CoefficientLimits limits) noexcept {
-  return InitializeImpl(input,CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_ElementMass_V2,limits);
+  return InitializeImpl({input.structural,input.element_mass,nullptr},
+      CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_ElementMass_V2,limits);
 }
-CoefficientReport NodalCoefficientLedger::InitializeImpl(NodalCoefficientSourcesWithElementMass sources,
+CoefficientReport NodalCoefficientLedger::InitializeWithSolids(
+    NodalCoefficientSourcesWithSolids input,CoefficientLimits limits) noexcept {
+  return InitializeImpl(input,CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_ElementMass_Solid18_24_6z_V3,limits);
+}
+CoefficientReport NodalCoefficientLedger::InitializeImpl(NodalCoefficientSourcesWithSolids sources,
     CoefficientOrder order,CoefficientLimits limits) noexcept try {
   using namespace coefficient_detail;
   if(impl_) return {S::AlreadyInitialized,"Coefficient ledger is immutable"};
   const auto input=sources.structural;
   const auto* masses=sources.element_mass;
+  const auto* solids=sources.solids;
   Budget budget(limits.max_host_bytes);
-  auto r=Preflight(input,masses,limits,sizeof(Impl),budget);
+  auto r=Preflight(input,masses,solids,limits,sizeof(Impl),budget);
   if(!r) return r;
-  r=Identities(input,masses);
+  r=Identities(input,masses,solids);
   if(!r) return r;
-  auto next=std::make_shared<Impl>(input,masses);
+  auto next=std::make_shared<Impl>(input,masses,solids);
   if(!next->arena.Initialize(budget.arena.bytes())||
       !(next->nodes=next->arena.Construct<NodalCoefficientNode>(budget.nodes)))
     return {S::ResourceLimit,"Coefficient node arena allocation failed"};
@@ -51,11 +60,16 @@ CoefficientReport NodalCoefficientLedger::InitializeImpl(NodalCoefficientSources
   scope.type25_connections=input.type25?input.type25->connection_count():0;
   scope.type13_connections=input.type13?input.type13->model()->connection_count():0;
   scope.element_mass_records=masses?masses->records().size():0;
+  scope.solid18_parents=solids?solids->parent_count(SolidCoefficientFamily::Solid18):0;
+  scope.solid24_parents=solids?solids->parent_count(SolidCoefficientFamily::Solid24):0;
+  scope.solid6z_parents=solids?solids->parent_count(SolidCoefficientFamily::Solid6z):0;
   r=Shells(next->shells,next->nodes);
   if(!r) return r;
   r=Springs(input,next->nodes);
   if(!r) return r;
   r=ElementMasses(masses,next->nodes);
+  if(!r) return r;
+  r=Solids(solids,next->nodes);
   if(!r) return r;
   r=Totals(next->nodes,next->shells.owner_node_count(),next->totals,scope);
   if(!r) return r;
@@ -78,6 +92,9 @@ const Type13NodeContributions* NodalCoefficientLedger::type13() const noexcept {
 }
 const ElementMassContributions* NodalCoefficientLedger::element_mass() const noexcept {
   return impl_&&impl_->masses.prepared()?&impl_->masses:nullptr;
+}
+const SolidNodeContributions* NodalCoefficientLedger::solids() const noexcept {
+  return impl_&&impl_->solids.prepared()?&impl_->solids:nullptr;
 }
 CoefficientOrder NodalCoefficientLedger::order() const noexcept {
   return impl_?impl_->order:CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_V1;
@@ -114,8 +131,24 @@ bool NodalCoefficientLedger::Matches(const NodalCoefficientLedger& other) const 
   if(!impl_||!other.impl_) return false;
   if(impl_==other.impl_) return true;
   const NodalCoefficientSources sources{other.shells(),other.type25(),other.type13()};
-  return other.order()==CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_V1?Matches(sources):
-      MatchesWithElementMass(NodalCoefficientSourcesWithElementMass{sources,other.element_mass()});
+  switch(other.order()) {
+    case CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_V1: return Matches(sources);
+    case CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_ElementMass_V2:
+      return MatchesWithElementMass({sources,other.element_mass()});
+    case CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_ElementMass_Solid18_24_6z_V3:
+      return MatchesWithSolids({sources,other.element_mass(),other.solids()});
+  }
+  return false;
+}
+bool NodalCoefficientLedger::MatchesWithSolids(NodalCoefficientSourcesWithSolids sources) const noexcept {
+  const auto input=sources.structural;
+  return impl_&&order()==CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_ElementMass_Solid18_24_6z_V3&&
+      input.shells&&impl_->shells.Matches(*input.shells)&&
+      bool(input.type25)==bool(type25())&&(!input.type25||impl_->springs.Matches(*input.type25))&&
+      bool(input.type13)==bool(type13())&&(!input.type13||impl_->beams.Matches(*input.type13))&&
+      bool(sources.element_mass)==bool(element_mass())&&
+      (!sources.element_mass||impl_->masses.Matches(*sources.element_mass))&&
+      bool(sources.solids)==bool(solids())&&(!sources.solids||impl_->solids.Matches(*sources.solids));
 }
 std::size_t NodalCoefficientLedger::owned_payload_bytes() const noexcept {return impl_?impl_->retained:sizeof(*this);}
 std::size_t NodalCoefficientLedger::startup_payload_bytes() const noexcept {return impl_?impl_->startup:sizeof(*this);}

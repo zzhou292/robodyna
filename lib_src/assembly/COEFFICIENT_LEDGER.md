@@ -5,8 +5,9 @@
 owner, inverse M/J, DOF assignment, clock, contributor registration or full-source
 completion authority. The original Initialize entry remains closed to those
 producers. InitializeWithElementMass adds an optional immutable
-ElementMassContributions through the same Impl and node arena. Solid producers
-and later raw rigid/CIN transformations remain separate.
+ElementMassContributions through the same Impl and node arena. InitializeWithSolids
+extends that same ledger with typed solid18/24/6z coefficients; later raw
+rigid/CIN transformations remain separate.
 
 The fixed policy `PreparedSI_Q_T_B_Type25_Type13_V1` visits QEPH, T3, QBAT in
 retained parent/local-node order, then TYPE25 and TYPE13 in model/endpoint order.
@@ -45,7 +46,8 @@ bounds; wrong counts or source associations are never numerical tolerances.
 The shell map retains exact local-to-domain NIDs and coordinate bits. TYPE13
 retains its already checked complete domain, including the N3 distinction.
 TYPE25 endpoint identity, property, domain index and coordinates are checked
-before use. Q/T/B, TYPE13 and ELEMENT_MASS share the original structural EID namespace;
+before use. Q/T/B, TYPE13, ELEMENT_MASS and all three solid families share the original
+structural EID namespace;
 TYPE25 original spotweld WIDs are distinct. Zero structural IDs and repeated
 structural IDs reject in original validation order. Legacy pair bindings with
 zero parent IDs remain supported by their unchanged original APIs, not this
@@ -95,3 +97,37 @@ native control reuses the unchanged authenticated HM_READ_ADMAS TYPE5 packet in
 nodal_rigid_group/assembly; Fortran/native and the expanded full-count fixture
 are root-run gates. No donor enters production. Original source-card selection
 and completeness are app obligations, not implied by a positive nodal row.
+
+## Selected solid coefficient extension
+
+`SolidNodeContributions` accepts only prepared solid18, HEPH24 and S6Z reference
+objects. It snapshots their exact source-slot native masses, EID/PID/SID/MID and
+NID associations into the immutable physical domain, checking represented SI
+coordinate bits. It reuses `NodalNodeDomain::Find`, `SourceIdentityIndex` and
+`HostArena`. No density-times-volume reconstruction, invented scalar inertia,
+second nodal ledger or mechanical state lives in this producer. Borrowed reference
+objects may expire after initialization. Its `Matches` means coefficient identity;
+force models still own complete reference geometry and material/profile identity.
+
+The V3 ledger appends solid18, solid24 and S6Z after the prior V2 sequence, keeping
+each family in supplied parent/source-slot order. Family mass and occurrence
+partitions are diagnostics; authoritative nodal mass receives each source-slot
+term directly. Solid-only nodes have positive mass and exactly zero scalar J.
+That is coefficient evidence, not permission to divide by zero or manufacture a
+rotational constraint. DOF admission is the next owner integration requirement.
+
+Root numerical/source gate `solid-coefficients-root-tests-3` passes19 functions
+(15 host,2 existing native,1 full-count,1 original-solid native) plus9 identities.
+All908 adhesive/1309 brick/195 mapped wedge cells map onto5980 actual original
+solid nodes and agree with independent native startup mass. The original-count
+synthetic full shell ledger plus point masses now retains389722416 B and reserves
+395316872 B at startup. This is capacity evidence, not the complete original
+vehicle coefficient closure. Follow-up owning/affected gates are recorded in the
+workspace execution status.
+
+The expanded test channel array initially retained the old12-channel binary128
+workspace and failed in `solid-coefficients-root-tests-2`. The oracle now derives
+all work arrays from one shared15-channel count, and includes an additional
+mixed-solid two-stage rounding control. No production coefficient equation or
+numerical allowance changed. The initial passing source/native evidence and
+failed test-harness attempt remain preserved.

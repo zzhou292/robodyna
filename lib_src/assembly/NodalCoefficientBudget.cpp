@@ -3,11 +3,13 @@
 #include "../../lib_utils/SourceIdentityIndex.h"
 
 namespace tl::fea::coefficient_detail {
-CoefficientReport Preflight(NodalCoefficientSources input,const ElementMassContributions* masses,CoefficientLimits limits,
+CoefficientReport Preflight(NodalCoefficientSources input,const ElementMassContributions* masses,
+    const SolidNodeContributions* solids,CoefficientLimits limits,
     std::size_t implementation_bytes,Budget& result) noexcept {
   if(!input.shells||!input.shells->prepared()||
       (input.type25&&!input.type25->prepared())||
-      (input.type13&&!input.type13->prepared())||(masses&&!masses->prepared()))
+      (input.type13&&!input.type13->prepared())||(masses&&!masses->prepared())||
+      (solids&&!solids->prepared()))
     return {S::InvalidInput,"Complete prepared typed sources are required"};
   const auto& shells=*input.shells->shells();
   const auto& domain=*input.shells->domain();
@@ -16,15 +18,17 @@ CoefficientReport Preflight(NodalCoefficientSources input,const ElementMassContr
   const auto springs=input.type25?input.type25->connection_count():0;
   const auto beams=input.type13?input.type13->model()->connection_count():0;
   const auto mass_records=masses?masses->records().size():0;
+  const auto solid_parents=solids?solids->parents().size():0;
   if(!limits.max_nodes||limits.max_nodes>hard.max_nodes||
       !limits.max_shell_parents||limits.max_shell_parents>hard.max_shell_parents||
       !limits.max_type25_connections||limits.max_type25_connections>hard.max_type25_connections||
       !limits.max_type13_connections||limits.max_type13_connections>hard.max_type13_connections||
       !limits.max_element_mass_records||limits.max_element_mass_records>hard.max_element_mass_records||
+      !limits.max_solid_parents||limits.max_solid_parents>hard.max_solid_parents||
       !limits.max_host_bytes||limits.max_host_bytes>hard.max_host_bytes||
       domain.node_count()>limits.max_nodes||parents>limits.max_shell_parents||
       springs>limits.max_type25_connections||beams>limits.max_type13_connections||
-      mass_records>limits.max_element_mass_records)
+      mass_records>limits.max_element_mass_records||solid_parents>limits.max_solid_parents)
     return {S::ResourceLimit,"Coefficient counts or caps exceed bounded scope"};
 
   util::BoundedArenaLayout retained(limits.max_host_bytes),peak(limits.max_host_bytes);
@@ -50,6 +54,19 @@ CoefficientReport Preflight(NodalCoefficientSources input,const ElementMassContr
     if(!backing(bytes,sizeof(Type13NodeContributions)))
       return {S::ResourceLimit,"Retained TYPE13 coefficient records exceed cap"};
   }
+  if(solids) {
+    auto bytes=solids->owned_payload_bytes();
+    if(domain.SharesStorage(*solids->domain())||
+        (input.type13&&input.type13->domain()->SharesStorage(*solids->domain()))||
+        (masses&&masses->domain()->SharesStorage(*solids->domain()))) {
+      const auto shared=solids->domain()->owned_payload_bytes();
+      if(shared<sizeof(NodalNodeDomain)||bytes<shared-sizeof(NodalNodeDomain))
+        return {S::ResourceLimit,"Shared solid domain payload is inconsistent"};
+      bytes-=shared-sizeof(NodalNodeDomain);
+    }
+    if(!backing(bytes,sizeof(SolidNodeContributions)))
+      return {S::ResourceLimit,"Retained solid coefficient snapshot exceeds cap"};
+  }
   if(masses) {
     auto bytes=masses->owned_payload_bytes();
     if(domain.SharesStorage(*masses->domain())) {
@@ -69,7 +86,7 @@ CoefficientReport Preflight(NodalCoefficientSources input,const ElementMassContr
   // One transient source index, released before publication; sorting never
   // changes source or reduction order. Retained plus scratch is the peak.
   if(!peak.Append<unsigned char>(retained.bytes(),ignored)||
-      !peak.Append<unsigned char>(util::SourceIdentityIndex<0>::Bytes(parents+beams+mass_records),ignored))
+      !peak.Append<unsigned char>(util::SourceIdentityIndex<0>::Bytes(parents+beams+mass_records+solid_parents),ignored))
     return {S::ResourceLimit,"Coefficient identity scratch exceeds startup cap"};
   result.retained=retained.bytes();
   result.startup=peak.bytes();

@@ -1,0 +1,6 @@
+include_guard(GLOBAL)
+include("${CMAKE_CURRENT_LIST_DIR}/NodalNodeDomain.cmake")
+add_library(tl_solid_node_contributions STATIC "${CMAKE_CURRENT_LIST_DIR}/SolidNodeContributions.cpp")
+target_link_libraries(tl_solid_node_contributions PUBLIC tl_nodal_node_domain)
+target_compile_features(tl_solid_node_contributions PUBLIC cxx_std_17)
+target_compile_options(tl_solid_node_contributions PRIVATE -fno-fast-math -ffp-contract=off)

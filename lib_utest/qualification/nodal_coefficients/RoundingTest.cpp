@@ -1,4 +1,4 @@
-#include "Fixture.h"
+#include "SolidFixture.h"
 
 namespace coefficient_test {
 namespace {
@@ -24,7 +24,7 @@ struct Sum {
       <<" bound="<<static_cast<double>(Bound());
   }
 };
-using Channels=std::array<Sum,12>;
+using Channels=std::array<Sum,ValueCount>;
 std::vector<Channels> IndependentTerms(const fe::NodalCoefficientLedger& ledger) {
   std::vector<Channels> result(ledger.nodes().size());
   const auto& map=*ledger.shells();
@@ -57,12 +57,19 @@ std::vector<Channels> IndependentTerms(const fe::NodalCoefficientLedger& ledger)
     auto& out=result[record.source.domain_node];
     out[0].Add(record.mass_kg); out[11].Add(record.mass_kg);
   }
+  if(ledger.solids()) for(const auto& parent:ledger.solids()->parents()) {
+    for(unsigned k=0;k<parent.node_count;++k) {
+      auto& out=result[parent.domain_node[k]];
+      out[0].Add(parent.mass_kg[k]);
+      out[12+static_cast<unsigned>(parent.family)].Add(parent.mass_kg[k]);
+    }
+  }
   return result;
 }
 void CheckTwoStages(const fe::NodalCoefficientLedger& ledger) {
   const auto terms=IndependentTerms(ledger);
   Channels rounded_nodes;
-  std::array<High,12> true_total{},node_error_bound{};
+  std::array<High,ValueCount> true_total{},node_error_bound{};
   for(std::size_t n=0;n<terms.size();++n) {
     const auto actual=Values(ledger.nodes()[n].coefficients);
     for(unsigned c=0;c<actual.size();++c) {
@@ -112,6 +119,19 @@ TEST(NodalCoefficientRounding, IndependentHighPrecisionBothStagesAndOrderSensiti
     distinguished=distinguished||Bits(reverse)!=Bits(ledger.nodes()[n].coefficients.mass);
   }
   EXPECT_TRUE(distinguished);
+}
+TEST(NodalCoefficientRounding, MixedSolidSharedNodeTermsKeepBothReductionBounds) {
+  SolidFixture f;
+  f.spring_property.property.mass_kg=1e14;
+  const auto domain=f.Domain(); const auto map=f.Map(domain);
+  const auto springs=f.Springs(); const auto beams=f.Contributions(domain);
+  const auto solids=f.Solids(domain);
+  const fe::ElementMassSource point{9800,domain.nodes()[f.map[0]].source_id,f.map[0],.013};
+  fe::ElementMassContributions mass;
+  ASSERT_TRUE(mass.Initialize(domain,{1,1,&point,1}));
+  fe::NodalCoefficientLedger ledger;
+  ASSERT_TRUE(ledger.InitializeWithSolids({{&map,&springs,&beams},&mass,&solids}));
+  CheckTwoStages(ledger);
 }
 
 TEST(NodalCoefficientRounding, QualifiedTinyInertiaAndLateGlobalOverflowRetry) {

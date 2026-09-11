@@ -5,11 +5,21 @@ cc_library(
     name = "nodal_coefficient_ledger",
     srcs = ["NodalCoefficientLedger.cpp", "NodalCoefficientBudget.cpp",
             "NodalCoefficientChecks.cpp", "NodalCoefficientShells.cpp",
-            "NodalCoefficientSprings.cpp", "NodalCoefficientPointMasses.cpp"],
+            "NodalCoefficientSprings.cpp", "NodalCoefficientPointMasses.cpp", "NodalCoefficientSolids.cpp"],
     hdrs = ["NodalCoefficientLedger.h", "NodalCoefficientTypes.h", "NodalCoefficientInternal.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
-    deps = [":shell_node_map", ":type13_node_contributions", ":element_mass_contributions", ":nodal_node_domain",
+    deps = [":shell_node_map", ":type13_node_contributions", ":element_mass_contributions", ":solid_node_contributions", ":nodal_node_domain",
             "//lib_src/elements/type25:type25_model", "//lib_src/elements:shell_batch_binding",
+            "//lib_utils:bounded_arena", "//lib_utils:source_identity_index"],
+)
+
+cc_library(
+    name = "solid_node_contributions",
+    srcs = ["SolidNodeContributions.cpp"],
+    hdrs = ["SolidNodeContributions.h", "SolidContributionChecks.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":nodal_node_domain", "//lib_src/elements/solid18:reference",
+            "//lib_src/elements/solid24:reference", "//lib_src/elements/solid6z:reference",
             "//lib_utils:bounded_arena", "//lib_utils:source_identity_index"],
 )
 
