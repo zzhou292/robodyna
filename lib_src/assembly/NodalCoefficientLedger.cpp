@@ -5,28 +5,41 @@
 
 namespace tl::fea {
 struct NodalCoefficientLedger::Impl {
-  explicit Impl(NodalCoefficientSources input):shells(*input.shells),
+  Impl(NodalCoefficientSources input,const ElementMassContributions* mass):shells(*input.shells),
       springs(input.type25?*input.type25:tl::fea::type25::Model{}),
-      beams(input.type13?*input.type13:Type13NodeContributions{}) {}
+      beams(input.type13?*input.type13:Type13NodeContributions{}),
+      masses(mass?*mass:ElementMassContributions{}) {}
   ShellNodeMap shells;
   tl::fea::type25::Model springs;
   Type13NodeContributions beams;
+  ElementMassContributions masses;
   util::HostArena arena;
   NodalCoefficientNode* nodes=nullptr;
   NodalCoefficientTotals totals{};
   NodalCoefficientScope scope{};
+  CoefficientOrder order=CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_V1;
   std::size_t retained=0,startup=0;
 };
 CoefficientReport NodalCoefficientLedger::Initialize(NodalCoefficientSources input,
-    CoefficientLimits limits) noexcept try {
+    CoefficientLimits limits) noexcept {
+  return InitializeImpl({input,nullptr},CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_V1,limits);
+}
+CoefficientReport NodalCoefficientLedger::InitializeWithElementMass(
+    NodalCoefficientSourcesWithElementMass input,CoefficientLimits limits) noexcept {
+  return InitializeImpl(input,CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_ElementMass_V2,limits);
+}
+CoefficientReport NodalCoefficientLedger::InitializeImpl(NodalCoefficientSourcesWithElementMass sources,
+    CoefficientOrder order,CoefficientLimits limits) noexcept try {
   using namespace coefficient_detail;
   if(impl_) return {S::AlreadyInitialized,"Coefficient ledger is immutable"};
+  const auto input=sources.structural;
+  const auto* masses=sources.element_mass;
   Budget budget(limits.max_host_bytes);
-  auto r=Preflight(input,limits,sizeof(Impl),budget);
+  auto r=Preflight(input,masses,limits,sizeof(Impl),budget);
   if(!r) return r;
-  r=Identities(input);
+  r=Identities(input,masses);
   if(!r) return r;
-  auto next=std::make_shared<Impl>(input);
+  auto next=std::make_shared<Impl>(input,masses);
   if(!next->arena.Initialize(budget.arena.bytes())||
       !(next->nodes=next->arena.Construct<NodalCoefficientNode>(budget.nodes)))
     return {S::ResourceLimit,"Coefficient node arena allocation failed"};
@@ -37,14 +50,18 @@ CoefficientReport NodalCoefficientLedger::Initialize(NodalCoefficientSources inp
   scope.qbat_parents=binding.qbat_count();
   scope.type25_connections=input.type25?input.type25->connection_count():0;
   scope.type13_connections=input.type13?input.type13->model()->connection_count():0;
+  scope.element_mass_records=masses?masses->records().size():0;
   r=Shells(next->shells,next->nodes);
   if(!r) return r;
   r=Springs(input,next->nodes);
+  if(!r) return r;
+  r=ElementMasses(masses,next->nodes);
   if(!r) return r;
   r=Totals(next->nodes,next->shells.owner_node_count(),next->totals,scope);
   if(!r) return r;
   next->retained=budget.retained;
   next->startup=budget.startup;
+  next->order=order;
   impl_=std::move(next);
   return {};
 } catch(const std::bad_alloc&) {
@@ -58,6 +75,12 @@ const type25::Model* NodalCoefficientLedger::type25() const noexcept {
 }
 const Type13NodeContributions* NodalCoefficientLedger::type13() const noexcept {
   return impl_&&impl_->beams.prepared()?&impl_->beams:nullptr;
+}
+const ElementMassContributions* NodalCoefficientLedger::element_mass() const noexcept {
+  return impl_&&impl_->masses.prepared()?&impl_->masses:nullptr;
+}
+CoefficientOrder NodalCoefficientLedger::order() const noexcept {
+  return impl_?impl_->order:CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_V1;
 }
 const NodalNodeDomain* NodalCoefficientLedger::domain() const noexcept {return impl_?impl_->shells.domain():nullptr;}
 tl::util::ConstView<NodalCoefficientNode> NodalCoefficientLedger::nodes() const noexcept {
@@ -73,12 +96,26 @@ const NodalCoefficientScope& NodalCoefficientLedger::scope() const noexcept {
   return impl_?impl_->scope:empty;
 }
 bool NodalCoefficientLedger::Matches(NodalCoefficientSources input) const noexcept {
-  return impl_&&input.shells&&impl_->shells.Matches(*input.shells)&&
+  return impl_&&order()==CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_V1&&
+      input.shells&&impl_->shells.Matches(*input.shells)&&
       bool(input.type25)==bool(type25())&&(!input.type25||impl_->springs.Matches(*input.type25))&&
       bool(input.type13)==bool(type13())&&(!input.type13||impl_->beams.Matches(*input.type13));
 }
+bool NodalCoefficientLedger::MatchesWithElementMass(NodalCoefficientSourcesWithElementMass sources) const noexcept {
+  const auto input=sources.structural;
+  return impl_&&order()==CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_ElementMass_V2&&
+      input.shells&&impl_->shells.Matches(*input.shells)&&
+      bool(input.type25)==bool(type25())&&(!input.type25||impl_->springs.Matches(*input.type25))&&
+      bool(input.type13)==bool(type13())&&(!input.type13||impl_->beams.Matches(*input.type13))&&
+      bool(sources.element_mass)==bool(element_mass())&&
+      (!sources.element_mass||impl_->masses.Matches(*sources.element_mass));
+}
 bool NodalCoefficientLedger::Matches(const NodalCoefficientLedger& other) const noexcept {
-  return impl_&&other.impl_&&(impl_==other.impl_||Matches({other.shells(),other.type25(),other.type13()}));
+  if(!impl_||!other.impl_) return false;
+  if(impl_==other.impl_) return true;
+  const NodalCoefficientSources sources{other.shells(),other.type25(),other.type13()};
+  return other.order()==CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_V1?Matches(sources):
+      MatchesWithElementMass(NodalCoefficientSourcesWithElementMass{sources,other.element_mass()});
 }
 std::size_t NodalCoefficientLedger::owned_payload_bytes() const noexcept {return impl_?impl_->retained:sizeof(*this);}
 std::size_t NodalCoefficientLedger::startup_payload_bytes() const noexcept {return impl_?impl_->startup:sizeof(*this);}

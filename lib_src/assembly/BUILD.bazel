@@ -5,12 +5,20 @@ cc_library(
     name = "nodal_coefficient_ledger",
     srcs = ["NodalCoefficientLedger.cpp", "NodalCoefficientBudget.cpp",
             "NodalCoefficientChecks.cpp", "NodalCoefficientShells.cpp",
-            "NodalCoefficientSprings.cpp"],
+            "NodalCoefficientSprings.cpp", "NodalCoefficientPointMasses.cpp"],
     hdrs = ["NodalCoefficientLedger.h", "NodalCoefficientTypes.h", "NodalCoefficientInternal.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
-    deps = [":shell_node_map", ":type13_node_contributions", ":nodal_node_domain",
+    deps = [":shell_node_map", ":type13_node_contributions", ":element_mass_contributions", ":nodal_node_domain",
             "//lib_src/elements/type25:type25_model", "//lib_src/elements:shell_batch_binding",
             "//lib_utils:bounded_arena", "//lib_utils:source_identity_index"],
+)
+
+cc_library(
+    name = "element_mass_contributions",
+    srcs = ["ElementMassContributions.cpp"],
+    hdrs = ["ElementMassContributions.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":nodal_node_domain", "//lib_utils:bounded_arena", "//lib_utils:source_identity_index"],
 )
 
 cc_library(

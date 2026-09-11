@@ -2,7 +2,7 @@ load("@rules_cc//cc:defs.bzl", "cc_test")
 cc_test(
     name = "nodal_coefficient_check",
     size = "small",
-    srcs = ["ValueTest.cpp", "RoundingTest.cpp", "Fixture.h"],
+    srcs = ["ValueTest.cpp", "RoundingTest.cpp", "PointMassTest.cpp", "Fixture.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = ["//lib_src/assembly:nodal_coefficient_ledger", "//lib_src/assembly:nodal_mass_binding",
             "//lib_utest/qualification/qbat_binding:fixture",

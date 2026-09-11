@@ -24,7 +24,7 @@ struct Sum {
       <<" bound="<<static_cast<double>(Bound());
   }
 };
-using Channels=std::array<Sum,11>;
+using Channels=std::array<Sum,12>;
 std::vector<Channels> IndependentTerms(const fe::NodalCoefficientLedger& ledger) {
   std::vector<Channels> result(ledger.nodes().size());
   const auto& map=*ledger.shells();
@@ -53,12 +53,16 @@ std::vector<Channels> IndependentTerms(const fe::NodalCoefficientLedger& ledger)
     out[8].Add(term.mass_kg); out[9].Add(term.isotropic_inertia_kg_m2);
     out[10].Add(term.added_inertia_kg_m2);
   }
+  if(ledger.element_mass()) for(const auto& record:ledger.element_mass()->records()) {
+    auto& out=result[record.source.domain_node];
+    out[0].Add(record.mass_kg); out[11].Add(record.mass_kg);
+  }
   return result;
 }
 void CheckTwoStages(const fe::NodalCoefficientLedger& ledger) {
   const auto terms=IndependentTerms(ledger);
   Channels rounded_nodes;
-  std::array<High,11> true_total{},node_error_bound{};
+  std::array<High,12> true_total{},node_error_bound{};
   for(std::size_t n=0;n<terms.size();++n) {
     const auto actual=Values(ledger.nodes()[n].coefficients);
     for(unsigned c=0;c<actual.size();++c) {
@@ -86,6 +90,13 @@ TEST(NodalCoefficientRounding, IndependentHighPrecisionBothStagesAndOrderSensiti
   fe::NodalCoefficientLedger ledger;
   ASSERT_TRUE(ledger.Initialize({&map,&springs,&beams}));
   CheckTwoStages(ledger);
+  const fe::ElementMassSource points[]={{9100,d.nodes()[f.map[0]].source_id,f.map[0],.01},
+      {9101,d.nodes()[f.map[0]].source_id,f.map[0],.01},{9102,d.nodes()[2].source_id,2,1e-290}};
+  fe::ElementMassContributions masses;
+  ASSERT_TRUE(masses.Initialize(d,{1,1,points,3}));
+  fe::NodalCoefficientLedger expanded;
+  ASSERT_TRUE(expanded.InitializeWithElementMass({{&map,&springs,&beams},&masses}));
+  CheckTwoStages(expanded);
   // A reversed complete producer order must actually change a represented sum,
   // proving this fixture can catch accidental subtotal reassociation.
   bool distinguished=false;

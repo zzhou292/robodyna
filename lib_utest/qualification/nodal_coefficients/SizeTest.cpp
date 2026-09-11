@@ -45,5 +45,22 @@ TEST(NodalCoefficientSize, ActualSourceCountsSyntheticShellsAndUncoveredExtras) 
   RecordProperty("node_count",nodes.size());
   RecordProperty("retained_bytes",ledger.owned_payload_bytes());
   RecordProperty("startup_bytes",ledger.startup_payload_bytes());
+  const fe::ElementMassSource points[]={{UINT64_MAX-2,nodes.front().source_id,0,.0011},
+      {UINT64_MAX-3,nodes.back().source_id,nodes.size()-1,.0023}};
+  fe::ElementMassContributions masses;
+  ASSERT_TRUE(masses.Initialize(domain,{17,1000,points,2}));
+  fe::NodalCoefficientLedger expanded;
+  ASSERT_TRUE(expanded.InitializeWithElementMass({{&map},&masses},fe::CoefficientLimits::Vehicle()));
+  EXPECT_EQ(expanded.scope().uncovered_nodes,0u);
+  EXPECT_EQ(expanded.scope().element_mass_records,2u);
+  for(std::size_t n=0;n<F::SourceNodes;++n) {
+    const auto a=Values(ledger.nodes()[n+1].coefficients);
+    const auto b=Values(expanded.nodes()[n+1].coefficients);
+    for(unsigned c=0;c<a.size();++c) ASSERT_EQ(Bits(a[c]),Bits(b[c]));
+  }
+  EXPECT_EQ(Bits(expanded.nodes()[0].coefficients.isotropic_inertia),Bits(0.0));
+  EXPECT_EQ(Bits(expanded.nodes()[nodes.size()-1].coefficients.isotropic_inertia),Bits(0.0));
+  RecordProperty("expanded_retained_bytes",expanded.owned_payload_bytes());
+  RecordProperty("expanded_startup_bytes",expanded.startup_payload_bytes());
 }
 } // namespace coefficient_test

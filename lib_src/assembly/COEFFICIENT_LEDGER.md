@@ -3,8 +3,10 @@
 `NodalCoefficientLedger` owns immutable startup coefficients from one complete
 `ShellNodeMap` and optional qualified TYPE25 and TYPE13 producers. It adds no
 owner, inverse M/J, DOF assignment, clock, contributor registration or full-source
-completion authority. Solid and additive point-mass producers are not admitted
-by this first version. Later raw rigid/CIN transformations remain separate.
+completion authority. The original Initialize entry remains closed to those
+producers. InitializeWithElementMass adds an optional immutable
+ElementMassContributions through the same Impl and node arena. Solid producers
+and later raw rigid/CIN transformations remain separate.
 
 The fixed policy `PreparedSI_Q_T_B_Type25_Type13_V1` visits QEPH, T3, QBAT in
 retained parent/local-node order, then TYPE25 and TYPE13 in model/endpoint order.
@@ -13,6 +15,17 @@ record. Each node's authoritative mass/native total J receives those terms
 directly. Diagnostic partitions never reconstruct the authoritative total.
 Global authoritative and diagnostic totals subsequently sum the nodal values in
 declared domain-node order. The two reductions are distinct rounding stages.
+
+The named extended entry reports
+`PreparedSI_Q_T_B_Type25_Type13_ElementMass_V2`, including when its optional mass
+producer is absent. It appends each point-mass record after TYPE13, preserving
+source-row order. `order()` is now a per-instance query. The producer retains
+original EID/NID/index/source-mass bits, a mass-to-kg scale and the exact domain;
+it converts each mass once and never accepts scalar J. Nonnegative additive
+TYPE5 is the only policy, with positive-conversion underflow/overflow rejected.
+Zero source mass retains its occurrence without declaring a positive DOF.
+The ledger leaves scalar J untouched and records the point-mass partition
+separately. Part/set distribution and target/replacement mass are not admitted.
 
 Shell thickness/placement and area-added inertia retain their original channels.
 TYPE13 native total J already contains its numerical floor; `added_inertia` is
@@ -32,13 +45,13 @@ bounds; wrong counts or source associations are never numerical tolerances.
 The shell map retains exact local-to-domain NIDs and coordinate bits. TYPE13
 retains its already checked complete domain, including the N3 distinction.
 TYPE25 endpoint identity, property, domain index and coordinates are checked
-before use. Q/T/B and TYPE13 share the original structural EID namespace;
+before use. Q/T/B, TYPE13 and ELEMENT_MASS share the original structural EID namespace;
 TYPE25 original spotweld WIDs are distinct. Zero structural IDs and repeated
 structural IDs reject in original validation order. Legacy pair bindings with
 zero parent IDs remain supported by their unchanged original APIs, not this
 new source-identified ledger. No reduced hash substitutes for complete identity.
 
-Each row exposes exact Q/T/B/TYPE25/TYPE13 occurrence counts. Uncovered nodes
+Each row exposes exact Q/T/B/TYPE25/TYPE13/ELEMENT_MASS occurrence counts. Uncovered nodes
 remain zero with no occurrences. This proves only that no admitted producer
 touched the node; it assigns no absent, dependent or prescribed role. Even all
 nodes covered cannot prove all original contributions are present. Later source
@@ -73,3 +86,12 @@ The full-count ledger retains366695696 B with372290120 B complete startup.
 All three owning Bazel targets PASS in `nodal-coefficients-owning-bazel-build-1`.
 No production correction was needed. This is still the V1 additive scope above;
 solid, point-mass, rigid/constraint stages and full-owner admission are separate.
+
+The subsequent point-mass increment retains that V1 qualification as historical
+evidence; private/node sizes grow and the complete forecasts are recalculated.
+Author checks pass 11 host functions under one CPU/512 MiB (seven existing plus
+four focused mass functions), including both-stage binary128 bounds. The new
+native control reuses the unchanged authenticated HM_READ_ADMAS TYPE5 packet in
+nodal_rigid_group/assembly; Fortran/native and the expanded full-count fixture
+are root-run gates. No donor enters production. Original source-card selection
+and completeness are app obligations, not implied by a positive nodal row.

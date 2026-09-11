@@ -92,10 +92,10 @@ struct Fixture {
     return result;
   }
 };
-inline std::array<double,11> Values(const fe::NodalCoefficientTotals& c) {
+inline std::array<double,12> Values(const fe::NodalCoefficientTotals& c) {
   return {c.mass,c.isotropic_inertia,c.shell.mass,c.shell.isotropic_inertia,
     c.shell.physical_inertia,c.shell.added_inertia,c.type25.mass,c.type25.isotropic_inertia,
-    c.type13.mass,c.type13.isotropic_inertia,c.type13.added_inertia};
+    c.type13.mass,c.type13.isotropic_inertia,c.type13.added_inertia,c.element_mass};
 }
 inline void Exact(const fe::NodalCoefficientLedger& a,const fe::NodalCoefficientLedger& b) {
   ASSERT_EQ(a.nodes().size(),b.nodes().size());
@@ -106,6 +106,7 @@ inline void Exact(const fe::NodalCoefficientLedger& a,const fe::NodalCoefficient
     const auto& v=b.nodes()[n].occurrences;
     EXPECT_EQ(u.qeph,v.qeph); EXPECT_EQ(u.t3,v.t3); EXPECT_EQ(u.qbat,v.qbat);
     EXPECT_EQ(u.type25,v.type25); EXPECT_EQ(u.type13,v.type13);
+    EXPECT_EQ(u.element_mass,v.element_mass);
   }
   const auto x=Values(a.totals()),y=Values(b.totals());
   for(unsigned k=0;k<x.size();++k) EXPECT_EQ(Bits(x[k]),Bits(y[k]));
