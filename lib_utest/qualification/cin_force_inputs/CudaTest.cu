@@ -78,7 +78,9 @@ TEST(CinForceInputsCuda, TransferScreenAndMotionFailuresKeepOriginalPhasePriorit
     Packet expected = initial;
     cin_parallel_test::Inject(expected, fault);
     Packet staged = expected;
-    const auto accepted = initial.accepted;
+    // Some faults deliberately edit accepted geometry/orientation. Preserve
+    // that actual input; the unaffected pre-injection fixture is for retry.
+    const auto accepted = staged.accepted;
     RunPacket(expected, false);
     RunPacket(staged, true);
     ASSERT_NE(expected.control.status, NodalStatus::Ok);
