@@ -1,0 +1,9 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "host_check",
+    srcs = ["HostTest.cpp", "TestSupport.h"],
+    deps = ["//lib_src/materials/law90:point",
+            "//lib_utest/qualification/law90_preparation:fixture",
+            "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
