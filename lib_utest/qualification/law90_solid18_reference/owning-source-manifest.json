@@ -193,8 +193,8 @@
     },
     {
       "path": "lib_utest/qualification/law90_solid18_reference/native/prepare_sources.py",
-      "bytes": 5247,
-      "sha256": "fbe8ec82d5cac03e19daee82f1648715922a938a28b722ca0489ace5dbf384a1"
+      "bytes": 5763,
+      "sha256": "d5687d32eb03579fd633af54645ec57eed0aeb8c92497bf25598b8fd674fbdcb"
     },
     {
       "path": "lib_utest/qualification/law90_solid18_reference/native/source-manifest.json",

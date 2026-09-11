@@ -62,7 +62,10 @@ def prepare(output,check):
         outputs={}
         for source,value in data.items():
             basename=Path(source).name
-            if (source.startswith(stage+'/share/') or source.startswith('common_source/')):
+            # Common CONSTANT_MOD and starter IMPLICIT_F need the same precision
+            # and hardware macros; their authenticated owners are under engine.
+            if (source.startswith(stage+'/share/') or source.startswith('common_source/') or
+                    source in {'engine/share/r8/my_real.inc','engine/share/spe_inc/hardware.inc'}):
                 if basename in outputs and outputs[basename]!=value: raise ValueError('ambiguous basename '+basename)
                 outputs[basename]=value
             if stage=='engine' and source.startswith('engine/') and basename in ENGINE_LEAVES:
@@ -76,6 +79,10 @@ def prepare(output,check):
             outputs['sgsavini.F']=subroutine(data[S+'solid/solide/scoor3.F'],'SGSAVINI')
             for name,(source,first,last) in SLICES.items():
                 outputs[name]=''.join(data[source].splitlines(keepends=True)[first-1:last])
+        for name,value in outputs.items():
+            for include in re.findall(r'^\s*#include\s+"([^"]+)"',value,re.M):
+                if include not in outputs:
+                    raise ValueError('missing '+stage+' include '+include+' from '+name)
         names=set(common_names)
         for value in outputs.values():
             names.update(n.lower() for n in re.findall(r'(?im)^\s*(?:SUBROUTINE|(?:\w+\s+)*FUNCTION)\s+(\w+)',value))
