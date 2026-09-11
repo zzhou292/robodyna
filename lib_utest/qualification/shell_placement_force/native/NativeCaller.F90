@@ -17,7 +17,8 @@ contains
       dt1,time,dx,thk0,area,dm,points,failures,parent,for_g,for,mom,thk,eint,point_values,diag,removed,ssp)
     integer(c_int),intent(in) :: ipos,mfunc,npts
     real(c_double),intent(in) :: curve(2,npts+1),basic(4),linear(2),rate_control(3), &
-        table_parameters(4),dt1,time,dx(8),thk0(1),area(1),dm,ssp
+        table_parameters(4),dt1,time,dx(8),thk0(1),area(1),dm
+    real(c_double),intent(inout) :: ssp
     real(c_double),intent(inout) :: points(7,3),failures(5,3),parent,for_g(1,5),for(1,5), &
         mom(1,3),thk(1),eint(1,2)
     real(c_double),intent(out) :: point_values(13,3),diag(9)

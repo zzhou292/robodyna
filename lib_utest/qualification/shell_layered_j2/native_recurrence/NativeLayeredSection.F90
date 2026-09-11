@@ -36,7 +36,8 @@ contains
   subroutine LR_UPDATE_SECTION(npts,curve,basic,rate_control,dt1,thk0,area,ssp,dm,dx, &
       points,for,for_g,mom,thk,eint,diag,status) bind(C,name='lr_update_section')
     integer(c_int),value :: npts
-    real(c_double),intent(in) :: curve(2,npts+1),basic(4),rate_control(3),dt1,thk0(1),area(1),ssp(1),dm,dx(8)
+    real(c_double),intent(in) :: curve(2,npts+1),basic(4),rate_control(3),dt1,thk0(1),area(1),dm,dx(8)
+    real(c_double),intent(inout) :: ssp(1)
     real(c_double),intent(inout) :: points(7,3),for(1,5),for_g(1,5),mom(1,3),thk(1),eint(1,2)
     real(c_double),intent(out) :: diag(8)
     integer(c_int),intent(out) :: status
@@ -79,6 +80,8 @@ contains
           base,deps,rate,thklyl(1),thkn(1),values)
       if(.not.all(ieee_is_finite(values))) return
       if(values(12)/=one.or.values(6)<base(6).or.values(6)>curve(1,npts+1)) return
+      ! Complete SIGEPS44C writes SOUNDSP for every point, before viscosity.
+      ssp=values(11)
       thkn=values(9);etse=values(8);sigy=values(10);lbuf%pla=values(6)
       signxx=values(1);signyy=values(2);signxy=values(3);signyz=values(4);signzx=values(5)
       points(1:5,ipt)=values(1:5);points(6,ipt)=values(6);points(7,ipt)=values(13)

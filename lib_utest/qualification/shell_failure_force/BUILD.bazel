@@ -16,7 +16,12 @@ cc_library(
 )
 cc_test(
     name = "failure_force_values",
-    srcs = ["FailureForceValueTest.cpp"],
+    srcs = ["FailureForceValueTest.cpp", "LayeredSoundSpeedValueTest.cpp"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
-    deps = [":failure_force_test_support", "@googletest//:gtest_main"],
+    deps = [
+        ":failure_force_test_support",
+        "//lib_src/elements/qeph:layered_law1",
+        "//lib_src/elements/t3:layered_law1",
+        "@googletest//:gtest_main",
+    ],
 )

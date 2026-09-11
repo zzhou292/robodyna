@@ -11,7 +11,8 @@ template<class Accepted,class Trial,class Adapter>
 TL_QEPH_HD inline Status EvaluateLayeredForce(const ReferenceData& r,const sections::PointParameters& parameters,
     const Accepted& accepted,const PrescribedInterval& interval,Trial& output,const Adapter& adapter) noexcept {
   const auto& base=accepted.shell;
-  if(!sections::MatchesLayeredJ2Material(parameters,r.input)||
+  if(!sections::ValidLayeredJ2Parameters(parameters)||
+     !sections::MatchesLayeredJ2Material(parameters,r.input)||
      !adapter.Matches(base.data(),r.input.placement)) return Status::kInvalidInput;
   if(!SaneReference(r)||!base.matches_reference(r)) return Status::kInvalidReference;
   const auto& stamp=base.stamp();
@@ -42,6 +43,9 @@ TL_QEPH_HD inline Status EvaluateLayeredForce(const ReferenceData& r,const secti
   typename Adapter::Result section;
   if(adapter.Update(section_input,interval.base_time+interval.dt,section)!=sections::PointStatus::Ok)
     return Status::kNonfiniteResult;
+  // SIGEPS44C replaces the startup SSP before MULAWC viscosity and CNDT3.
+  // This is the validated LAW44 coefficient, including for an inactive parent.
+  material.sound_speed=parameters.sound_speed;
   const double dtinv=material.dt/::fmax(material.dt*material.dt,force_constant::em20);
   const double viscosity=force_constant::onep414*material.dm*material.rho*
       material.sound_speed*::sqrt(geometry.values.area)*dtinv;

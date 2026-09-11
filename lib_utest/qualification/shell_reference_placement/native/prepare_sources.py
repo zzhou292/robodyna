@@ -8,7 +8,7 @@ import re
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[3]
-MANIFEST_SHA256 = "86697c30708cbcdbb1f1c0c054119eaef211f0b709dc818b97d5a97e1915a9be"
+MANIFEST_SHA256 = "363321aabbf0332247a4c702a5a3ab02d7bf3eb71e2f3d7370d7b8b23016b9ff"
 
 
 def replace_once(text, old, new):
@@ -35,8 +35,9 @@ def generate(manifest, inputs):
         text = re.sub(r'\b' + symbol + r'\b', 'placement_' + symbol, text, flags=re.I)
     text = replace_once(text, 'point_failure,parent_failure,israte_override,ssp_override)',
                         'point_failure,parent_failure,israte_override,ssp_override,position_override,moment_override)')
-    text = replace_once(text, 'real(c_double),optional,intent(in) :: ssp_override',
-                        'real(c_double),optional,intent(in) :: ssp_override,position_override(3),moment_override(3)')
+    text = replace_once(text, 'real(c_double),optional,intent(inout) :: ssp_override',
+                        'real(c_double),optional,intent(inout) :: ssp_override\n'
+                        '    real(c_double),optional,intent(in) :: position_override(3),moment_override(3)')
     text = replace_once(text, 'call law44_point_section(posly(1,:),thkly,wm)',
                         'call law44_point_section(posly(1,:),thkly,wm)\n'
                         '    if(present(position_override)) posly(1,:)=position_override\n'

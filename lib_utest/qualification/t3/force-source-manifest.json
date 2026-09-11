@@ -74,8 +74,8 @@
     },
     {
       "path": "lib_src/elements/t3/T3LayeredForceCore.h",
-      "sha256": "1fc5208447d4091d718b604c84d78790fa212f9c7a252f228e4b421a927fb540",
-      "bytes": 4474
+      "sha256": "59f470904bea0ebba41c94fb2d945feb3125a58637bc669a5e8b9e342c68c4b4",
+      "bytes": 4727
     },
     {
       "path": "lib_src/elements/t3/T3LayeredJ2Failure.h",
@@ -123,8 +123,8 @@
     },
     {
       "path": "lib_src/materials/BUILD.bazel",
-      "bytes": 1347,
-      "sha256": "10e5728b4dd84d4c4f7a8fc71ed56df7010cee5bdc845e3ae600280eedbddb67"
+      "bytes": 1477,
+      "sha256": "96c5c67678e83b247d1c13413ad67d19aa04440e002687e249d554ede8049d6b"
     },
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
@@ -790,5 +790,13 @@
   "native_reference_placement_scope": "Centered family coefficients now reuse typed placement helpers with unchanged operations. Explicit nonzero section/coefficient value qualification is owned by shell_reference_placement; live reference/batch/source placement admission remains separate.",
   "resident_tab1_build_registration": {
     "scope": "Register the qualified TAB1 adapter as an explicit resident batch dependency; native and historical pins unchanged."
+  },
+  "law44_sound_speed_build_registration": {
+    "previous_entry": {
+      "path": "lib_src/materials/BUILD.bazel",
+      "bytes": 1347,
+      "sha256": "10e5728b4dd84d4c4f7a8fc71ed56df7010cee5bdc845e3ae600280eedbddb67"
+    },
+    "reason": "ae3ba80 adds only the law44_membrane owning target; no old material target or native source changed."
   }
 }

@@ -12,7 +12,7 @@ HERE=Path(__file__).resolve().parent
 PROJECT=HERE.parents[3]
 BASE=PROJECT/'lib_utest/qualification/shell_tab1_force/native'
 LAYERS=PROJECT/'lib_utest/qualification/shell_layered_j2/native_recurrence'
-MANIFEST_SHA256='02936c7021bd20da3fd91e189f50f1238bbb6b0243350bad8f7aaac1aa22a2ff'
+MANIFEST_SHA256='6b47e9ba1c13ea1e3a2b7f2261e7eff051902d106f6149c1bdf17522338f5275'
 
 
 def replace_once(text,old,new):

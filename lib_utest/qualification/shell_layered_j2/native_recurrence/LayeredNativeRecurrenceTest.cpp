@@ -33,6 +33,8 @@ TEST(ShellLayeredNativeRecurrence,QephIndependentYieldedRotationAndUnloadingHist
       const auto in=path.Interval(input);q::LayeredJ2ForceTrial actual;oracle::QephTrial expected;
       ASSERT_EQ(q::EvaluateLayeredJ2Force(r,material,accepted,in,actual),q::Status::kSuccess);
       ASSERT_EQ(oracle::Evaluate(nr,native,qeph_kinematics_test::NativeInterval(in),Law(rate),expected),nq::Status::kSuccess);
+      EXPECT_DOUBLE_EQ(expected.shell.diagnostics.native_sound_speed,
+          std::sqrt((input.young_modulus/(1.-input.poisson_ratio*input.poisson_ratio))/input.density));
       qeph_force_port_test::ForceAgreement(actual.force,expected.shell,input,in,cv::Tolerance);
       Sections(actual.proposed_section,expected.points);
       Diagnostics(actual.section_diagnostics,expected.section,expected.shell.kinematics.area,
@@ -75,6 +77,8 @@ TEST(ShellLayeredNativeRecurrence,T3IndependentYieldedRotationAndUnloadingHistor
       const auto in=path.Interval(input);t::LayeredJ2ForceTrial actual;oracle::T3Trial expected;
       ASSERT_EQ(t::EvaluateLayeredJ2Force(r,material,accepted,in,actual),t::Status::kSuccess);
       ASSERT_EQ(oracle::Evaluate(nr,native,t3_port_test::Native(in),Law(rate),expected),nt::Status::kSuccess);
+      EXPECT_DOUBLE_EQ(expected.shell.diagnostics.native_sound_speed,
+          std::sqrt((input.young_modulus/(1.-input.poisson_ratio*input.poisson_ratio))/input.density));
       t3_force_port_test::Agreement(r,in,actual.force,expected.shell,cv::Tolerance);
       EXPECT_DOUBLE_EQ(expected.shell.proposed_history.data().equivalent_strain_rate,
                        expected.section.total_shell_rate_per_s);

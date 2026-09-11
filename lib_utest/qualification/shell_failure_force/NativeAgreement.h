@@ -21,6 +21,14 @@ inline std::vector<double> Diagnostics(const t::ForceDiagnostics& d) {
 inline void ArrayAgreement(const std::vector<double>& values,const double* expected,double absolute=2.e-11) {
   for(unsigned i=0;i<values.size();++i) {SCOPED_TRACE(i);qeph_force_port_test::Independent(values[i],expected[i],absolute);}
 }
+// Independently returned SIGEPS44C values(11), not the initial family seed.
+// All three points share this material; the last point must reach family DT.
+template<class Packet>
+inline void PointSoundSpeedAgreement(const Packet& packet,bool quad) {
+  const double returned=packet.force[(quad?142:82)+1];
+  for(unsigned point=0;point<3;++point)
+    EXPECT_DOUBLE_EQ(returned,packet.point_values[13*point+10]);
+}
 inline void Geometry(const q::ForceTrial& force,const native::Packet& n,const q::PrescribedInterval& in) {
   native::nq::Kinematics k;
   ASSERT_EQ(native::nq::detail::UnpackKinematics(n.force.data(),n.planar,qeph_kinematics_test::NativeInterval(in),k),native::nq::Status::kSuccess);
@@ -42,6 +50,7 @@ template<class F,class I> void Agreement(const typename F::Trial& trial,const na
   std::vector<double> loads;Append(loads,force.internal_force);Append(loads,force.internal_couple);
   ArrayAgreement(loads,n.force.data()+(quad?118:64));
   ArrayAgreement(Diagnostics(force.diagnostics),n.force.data()+(quad?142:82));
+  PointSoundSpeedAgreement(n,quad);
   layered_failure_test::NativeState state;state.points=n.points;state.failures=n.failures;
   std::copy_n(n.history.data(),5,state.stress.begin());std::copy_n(n.history.data()+5,5,state.material.begin());
   std::copy_n(n.history.data()+10,3,state.moment.begin());state.thickness=n.history[quad?33:21];

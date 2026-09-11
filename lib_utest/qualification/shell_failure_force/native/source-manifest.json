@@ -9,8 +9,8 @@
     },
     {
       "path": "lib_utest/qualification/shell_layered_j2/native_recurrence/NativeLayeredQephSection.F",
-      "sha256": "19491fb32e5b0629b140794b1b49be7fb548d17c993b783e1f7c9dde2bd0f824",
-      "bytes": 3133
+      "sha256": "eadc9c4ab8ff70e4ada5d7cb789efe850103f1d48d9a9c3078a953ef45c0fdae",
+      "bytes": 3136
     },
     {
       "path": "lib_utest/qualification/shell_layered_j2/native_recurrence/NativeLayeredT3Force.F",
@@ -19,8 +19,8 @@
     },
     {
       "path": "lib_utest/qualification/shell_layered_j2/native_recurrence/NativeLayeredT3Section.F",
-      "sha256": "69bc8bb5a87fb281fc128e30e40aabda332903d2e5abfcbbdef07db27fdfa6b6",
-      "bytes": 2771
+      "sha256": "dd5cbc44ef918763699cf9c17911842a2314907e3c510d134bb9440b6ed82c4e",
+      "bytes": 2774
     },
     {
       "path": "lib_utest/qualification/native/qeph/source-manifest.json",
@@ -64,14 +64,14 @@
     },
     {
       "path": "lib_utest/qualification/shell_layered_failure/native/NativeCaller.F90",
-      "sha256": "63f5413a8347b843ca23ed889bdf15a54b7b491dd31023f096598d0a0e31493e",
-      "bytes": 8040
+      "sha256": "e510710bff008e20c83f40d5d7fc62cd86519a9f5a7e91d9bf3204afecee0d75",
+      "bytes": 8194
     }
   ],
   "generated": {
-    "FailureQephSection.F": "4c72d865e909d02d530bca45c1286b30cd35f2e49d1614d64e67c633320768f8",
+    "FailureQephSection.F": "a071c186f6f854ea10ad8541027824dce498981cafb1b7826231f01ad141af1e",
     "FailureQephForce.F": "874b36f7ee9bde03ac2421cef8496780cc738458cf1dfd9b4a32398476420394",
-    "FailureT3Section.F": "698a77c1c5d7927a600f3c1e9b3a5066b62837b0aefa6076b8a831d2306553f6",
+    "FailureT3Section.F": "236b881442f8e9420ed45132f7ca552f08664667fb584597d0bbe88e19172bff",
     "FailureT3Force.F": "fb7399d37acdd52d1ec4d0bca98658b3817c55f0cfa72e7c1b22c4c3c90ee788"
   },
   "previous_adaptations": [
@@ -84,6 +84,16 @@
         "FailureT3Force.F": "fb7399d37acdd52d1ec4d0bca98658b3817c55f0cfa72e7c1b22c4c3c90ee788"
       },
       "reason": "Earlier bridge used the standalone caller sound speed; complete family coefficient SSP must be passed explicitly."
+    },
+    {
+      "manifest_sha256": "4581b812a337048f00cee47f17560d58d212a83c90cb0e723b381d35febb1a30",
+      "generated": {
+        "FailureQephSection.F": "4c72d865e909d02d530bca45c1286b30cd35f2e49d1614d64e67c633320768f8",
+        "FailureQephForce.F": "874b36f7ee9bde03ac2421cef8496780cc738458cf1dfd9b4a32398476420394",
+        "FailureT3Section.F": "698a77c1c5d7927a600f3c1e9b3a5066b62837b0aefa6076b8a831d2306553f6",
+        "FailureT3Force.F": "fb7399d37acdd52d1ec4d0bca98658b3817c55f0cfa72e7c1b22c4c3c90ee788"
+      },
+      "reason": "Prior family SSP input was incorrectly retained after SIGEPS44C overwrote SOUNDSP; propagate the actual point return before viscosity and timestep."
     }
   ]
 }

@@ -27,6 +27,7 @@ void Agreement(const typename F::Trial& trial,const native::Packet& n,
   Append(loads,force.internal_couple);
   ArrayAgreement(loads,n.force.data()+(quad?118:64));
   ArrayAgreement(Diagnostics(force.diagnostics),n.force.data()+(quad?142:82));
+  failure_force_test::PointSoundSpeedAgreement(n,quad);
 
   tab1_test::NativeState state;
   state.points=n.points;
@@ -46,11 +47,10 @@ void Agreement(const typename F::Trial& trial,const native::Packet& n,
   work.thickness=h.thickness;
   tab1_test::Compare(trial.section,work,state,trace,thickness,force.kinematics.area);
 
-  // Actual native family coefficient, independently returned by its complete
-  // CNCOEF3B/C3COEF3 path, must feed the section viscosity even after removal.
+  // Actual SIGEPS44C return must feed family viscosity even after removal.
   const unsigned index=quad?142:82;
   const double sound_speed=n.force[index+1],dm=n.force[index+2];
-  EXPECT_DOUBLE_EQ(sound_speed,std::sqrt(70e9/2500.));
+  EXPECT_DOUBLE_EQ(sound_speed,std::sqrt((70e9/(1.-.22*.22))/2500.));
   const double onep414=((1.+4./10.)+1./100.)+4./1000.;
   const double dtinv=interval.dt/std::max(interval.dt*interval.dt,1./1e20);
   const double viscosity=(onep414*dm)*sound_speed*std::sqrt(force.kinematics.area)*dtinv*2500.;

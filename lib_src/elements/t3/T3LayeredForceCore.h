@@ -10,7 +10,8 @@ template<class Accepted,class Trial,class Adapter>
 TL_T3_HD inline Status EvaluateLayeredForce(const ReferenceData& r,const sections::PointParameters& parameters,
     const Accepted& accepted,const PrescribedInterval& in,Trial& output,const Adapter& adapter) noexcept {
   const auto& base=accepted.shell;
-  if(!sections::MatchesLayeredJ2Material(parameters,r.input)||
+  if(!sections::ValidLayeredJ2Parameters(parameters)||
+     !sections::MatchesLayeredJ2Material(parameters,r.input)||
      !adapter.Matches(base.data(),r.input.placement)) return Status::kInvalidInput;
   if(!SaneReference(r)||!base.matches_reference(r)) return Status::kInvalidReference;
   const auto& stamp=base.stamp();
@@ -44,6 +45,9 @@ TL_T3_HD inline Status EvaluateLayeredForce(const ReferenceData& r,const section
   typename Adapter::Result section;
   if(adapter.Update(section_input,in.base_time+in.dt,section)!=sections::PointStatus::Ok)
     return Status::kNonfiniteResult;
+  // SIGEPS44C replaces the startup SSP before MULAWC viscosity and C3DT3.
+  // Keep elastic A11/G and the separate LAW1 force path unchanged.
+  material.elastic.sound_speed=parameters.sound_speed;
   using namespace force_constant;
   const double dtinv=in.dt/::fmax(in.dt*in.dt,em20);
   const double eps_k2=(dx[5]*dx[5]+dx[6]*dx[6]+dx[5]*dx[6]+fourth*(dx[7]*dx[7]))*one_over_9*(proposed.thickness*proposed.thickness);

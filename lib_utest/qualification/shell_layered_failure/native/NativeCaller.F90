@@ -42,8 +42,8 @@ contains
         dx,thk0,area,dm,points,failures,parent,for_g,for,mom,thk,eint,point_values,diag,removed, &
         JohnsonPoint,JohnsonParent)
   end subroutine
-  ! Complete family drivers supply their own M%SSP. Preserve the standalone
-  ! wrapper and its original default while keeping one shared caller loop.
+  ! Complete family drivers supply initial M%SSP and receive the actual final
+  ! SIGEPS44C value. The standalone wrapper keeps the same public packet.
   subroutine layered_failure_caller_ssp(mfunc,npts,curve,basic,linear,rate_control,d1,dt1,time, &
       dx,thk0,area,dm,points,failures,parent,for_g,for,mom,thk,eint,point_values,diag,removed,caller_ssp) &
       bind(C,name='layered_failure_caller_ssp')
@@ -54,7 +54,7 @@ contains
         mom(1,3),thk(1),eint(1,2)
     real(c_double),intent(out) :: point_values(13,3),diag(9)
     integer(c_int),intent(out) :: removed
-    real(c_double),intent(in) :: caller_ssp
+    real(c_double),intent(inout) :: caller_ssp
     call layered_failure_packet(mfunc,npts,curve,basic,linear,rate_control,[d1],dt1,time, &
         dx,thk0,area,dm,points,failures,parent,for_g,for,mom,thk,eint,point_values,diag,removed, &
         JohnsonPoint,JohnsonParent,ssp_override=caller_ssp)
@@ -72,7 +72,7 @@ contains
     procedure(LF_POINT_FAILURE) :: point_failure
     procedure(LF_PARENT_FAILURE) :: parent_failure
     integer(c_int),optional,intent(in) :: israte_override
-    real(c_double),optional,intent(in) :: ssp_override
+    real(c_double),optional,intent(inout) :: ssp_override
     logical :: filter_active
     integer,parameter :: nel=1,jlt=1,mtn=44,ixfem=0,dmg_flag=0
     logical,parameter :: flag_law2=.false.,flag_law25=.false.,flag_zcfac=.true.
@@ -116,6 +116,8 @@ contains
       call LAW44_POINT_PACKET(mfunc,linear(1),hardening,npts,curve,basic(2),basic(3),basic(1), &
           basic(4),base,deps,rate,thklyl(1),thkn(1),values,off(1),time,israte_override)
       point_values(:,ipt)=values
+      ! Native SOUNDSP is overwritten even when the parent is already OFF0.
+      ssp=values(11)
       thkn=values(9);etse=values(8);sigy=values(10);lbuf%pla=values(6);lbuf%epsd=zero
       signxx=values(1);signyy=values(2);signxy=values(3);signyz=values(4);signzx=values(5)
 #include "PointPlasticWork.inc"
@@ -138,6 +140,7 @@ contains
 #include "WorkAfter.inc"
 #include "WorkAccumulate.inc"
     parent=off(1);removed=idel7nok
+    if(present(ssp_override)) ssp_override=ssp(1)
     diag=[gbuf%wpla(1),mean_pla,max_pla,zcfac(1,1),zcfac(1,2),yld(1),sigy(1),total_rate,visc(1)]
   end subroutine
   subroutine JohnsonPoint(parameters,history,element,dpla,time,stress)

@@ -10,7 +10,7 @@ project=here.parents[3]
 root=project/'lib_utest/qualification'
 out=args.output
 raw=(here/'source-manifest.json').read_bytes()
-if hashlib.sha256(raw).hexdigest()!='4581b812a337048f00cee47f17560d58d212a83c90cb0e723b381d35febb1a30':
+if hashlib.sha256(raw).hexdigest()!='1db5fadf466bf3eaced36a6f0c7ad86d65e2d632c65c5593e19ac81ef54b4137':
     raise RuntimeError('Native adaptation manifest changed')
 manifest=json.loads(raw)
 for row in manifest['inputs']:

@@ -37,7 +37,7 @@ def adapt(directory):
 
 def prepare(output,check):
     raw=(HERE/'source-manifest.json').read_bytes()
-    if hashlib.sha256(raw).hexdigest()!='d79c381d15323c2b315585aa5830ff3f0e4d8cbddd450eabfa5f99560c685493':
+    if hashlib.sha256(raw).hexdigest()!='1f71f2ab1c584773bcbc0970a02b714a9a11708d8bc6e3f6beccafb82fd2f1f0':
         raise RuntimeError('Changed TAB1 family manifest')
     manifest=json.loads(raw)
     for row in manifest['inputs']:

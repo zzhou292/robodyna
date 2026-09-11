@@ -96,6 +96,11 @@ those serialized gates and the affected existing resident regressions.
 
 ## Root qualification
 
+The later [LAW44 sound-speed handoff correction](LAW44_SOUND_SPEED_HANDOFF.md)
+identifies an omitted native point return in these historical family wrappers.
+The results below remain historical evidence; they do not qualify the corrected
+viscosity or timestep handoff.
+
 At TL `1017522`, all **13 new functions pass**: four values, seven independent
 native checks and two actual CUDA device-history tests. All **36 affected
 regressions** also pass: four legacy failure-caller native functions, 18 mixed
