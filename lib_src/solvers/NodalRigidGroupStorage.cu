@@ -57,6 +57,7 @@ NodalReport PrepareRigidStorage(const NodalRigidGroupModel& model,const NodalSta
   for(const auto& member:next->source_members) {
     const auto i=member.global_node;
     if(i>=config.node_count||next->member_nodes[i]||dofs.translation_fixed_bits[i]||dofs.rotation_fixed[i]||
+        (dofs.rotation_present&&!dofs.rotation_present[i])||
         inverse_mass[i]!=1/member.mass_kg||dofs.inverse_inertia[i]!=1/member.total_inertia_kg_m2)
       return {NodalStatus::InvalidInput,"Rigid member mass/inertia or free-DOF association differs from owner",static_cast<std::uint32_t>(i)};
     const double x[]{member.position.x,member.position.y,member.position.z};

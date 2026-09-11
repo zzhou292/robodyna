@@ -1,5 +1,14 @@
-load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+
+cc_library(
+    name = "owner_test_support",
+    testonly = True,
+    hdrs = ["GroupOwnerFixture.h", "GroupStepTestSupport.h", "GroupTestSupport.h"],
+    deps = ["//lib_src/solvers:explicit_nodal_state",
+            "//lib_utest:nodal_temporal_fixture", "@googletest//:gtest_main"],
+    visibility = ["//visibility:public"],
+)
 exports_files(["PreparedSnapshotCudaProbe.h", "PreparedSnapshotCudaProbe.cpp"], visibility = ["//visibility:public"])
 
 cc_test(

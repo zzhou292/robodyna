@@ -12,7 +12,8 @@ namespace sc = tlfea::contact;
 __global__ void Advance(nodal_detail::Control* control, const double* accepted,
                         double* trial, const double* force, const double* inverse,
                         const std::uint8_t* constraints, std::uint32_t n, double h, double kick_dt,
-                        double maximum_angle, std::uint64_t epoch, std::uint64_t attempt) {
+                        double maximum_angle, std::uint64_t epoch, std::uint64_t attempt,
+                        const std::uint8_t* rotation_present) {
   if (control->status != NodalStatus::Ok) return;
   if (control->rows.base_epoch != epoch || control->rows.attempt != attempt ||
       !stability::IsCurrentLimit(control->rows, control->limit) || control->limit.dt < h) {
@@ -22,7 +23,8 @@ __global__ void Advance(nodal_detail::Control* control, const double* accepted,
     control->status = NodalStatus::MissingStepAdmission; return;
   }
   for (std::uint32_t i = 0; i < n; ++i) {
-    const auto status=nodal_detail::AdvanceOrdinaryNode(accepted,trial,force,inverse,constraints,i,n,h,kick_dt,maximum_angle);
+    const auto status=nodal_detail::AdvanceOrdinaryNode(accepted,trial,force,inverse,constraints,i,n,h,kick_dt,maximum_angle,
+        nullptr,nullptr,rotation_present);
     if(status!=NodalStatus::Ok) {
       if(status==NodalStatus::StepTooLarge) control->limit.dt=0;
       control->status=status; control->node=i; return;
@@ -115,7 +117,7 @@ NodalReport FENodalState::Impl::AdvanceSealedNodal(
   else {
     Advance<<<1,1,0,s.stream>>>(s.control, s.accepted, s.trial, s.scratch, s.inverse, s.fixed,
         static_cast<std::uint32_t>(s.config.node_count), s.config.fixed_dt, s.candidate_kick_dt, admission.maximum_rotation_increment,
-        s.stamp.epoch, s.attempt);
+        s.stamp.epoch, s.attempt,s.stamp.has_rotation_presence?s.fixed+3*s.config.node_count:nullptr);
     error=cudaGetLastError();
   }
   auto report = s.Check(error); if (report.status != NodalStatus::Ok) return report;

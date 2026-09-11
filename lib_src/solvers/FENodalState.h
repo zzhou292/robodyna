@@ -62,6 +62,11 @@ struct NodalDofConfig {
   const std::uint8_t* translation_fixed_bits = nullptr;
   const std::uint8_t* rotation_fixed = nullptr;
   const double* inverse_inertia = nullptr;
+  // Immutable 0/1 rotational DOF presence. Null preserves all-present legacy
+  // behavior. Absent rotations require zero inverse J, zero initial spin and
+  // rotation_fixed=0. They carry no reaction; an applied couple rejects the
+  // trial. CIN dependents/masters and rigid members must remain present.
+  const std::uint8_t* rotation_present = nullptr;
 };
 struct NodalStamp {
   std::uint64_t owner_id = 0, epoch = 0;
@@ -80,6 +85,7 @@ struct NodalStamp {
   // staggered kick. It is distinct from the full physical interval duration h.
   double reaction_kick_dt = 0;
   NodalRigidGroupInfo rigid_groups{}; // Immutable source association, no extra state owner.
+  bool has_rotation_presence = false;
 };
 struct NodalAllocationInfo {
   // Explicit module-owned cudaMalloc buffers; excludes CUDA runtime/driver
@@ -122,6 +128,7 @@ struct NodalAssemblyView {
   NodalVelocityPhase velocity_phase = NodalVelocityPhase::Collocated;
   double position_time = 0, velocity_time = 0;
   NodalRigidGroupInfo rigid_groups{};
+  const std::uint8_t* rotation_present = nullptr;
 };
 // Read-only completed candidate for module admission checks before commit.
 // kinematics.base_epoch remains the ACCEPTED base epoch of this attempt.

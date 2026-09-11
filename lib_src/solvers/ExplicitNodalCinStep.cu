@@ -20,7 +20,8 @@ __global__ void AdvanceCin(nodal_detail::Control* control, const double* accepte
     double* loads, const std::uint8_t* fixed, cin::StageView model, double* tail,
     double* work, constraints::tied_shell::Patch* patches, const std::uint8_t* activity,
     rigid::GroupDeviceView groups, rigid::StepDurations durations, double maximum_angle,
-    std::uint64_t epoch, std::uint64_t attempt, rigid::AccelerationSink capture) {
+    std::uint64_t epoch, std::uint64_t attempt, rigid::AccelerationSink capture,
+    const std::uint8_t* rotation_present) {
   if (control->status != NodalStatus::Ok) return;
   if (control->rows.base_epoch != epoch || control->rows.attempt != attempt ||
       !stability::IsCurrentLimit(control->rows, control->limit) ||
@@ -53,7 +54,7 @@ __global__ void AdvanceCin(nodal_detail::Control* control, const double* accepte
       continue;
     }
     current_inverse[i] = fixed[n+i] == 7 ? 0 : 1/tail[i];
-    current_inverse[n+i] = fixed[2*n+i] ? 0 : 1/tail[n+i];
+    current_inverse[n+i] = (fixed[2*n+i] || (rotation_present && !rotation_present[i])) ? 0 : 1/tail[n+i];
     if (!std::isfinite(current_inverse[i]) || !std::isfinite(current_inverse[n+i])) {
       Fail(control, NodalStatus::InvalidOutput, i);
       return;
@@ -61,7 +62,7 @@ __global__ void AdvanceCin(nodal_detail::Control* control, const double* accepte
     if (groups.member_nodes && groups.member_nodes[i]) continue;
     const auto status = nodal_detail::AdvanceOrdinaryNode<true>(accepted, trial, loads,
       current_inverse, fixed, i, n, durations.drift_dt, durations.kick_dt, maximum_angle,
-      acceleration, angular_acceleration);
+      acceleration, angular_acceleration, rotation_present);
     if (status != NodalStatus::Ok) {
       Fail(control, status, i);
       return;
@@ -139,7 +140,8 @@ cudaError_t FENodalState::Impl::LaunchCinAdvance(double maximum_angle) {
   }
   AdvanceCin<<<1,1,0,stream>>>(control, accepted, trial, scratch, fixed, cin->device,
       trial+cin->state_offset, cin->work, cin->patches, cin->activity, groups, durations,
-      maximum_angle, stamp.epoch, attempt, capture);
+      maximum_angle, stamp.epoch, attempt, capture,
+      stamp.has_rotation_presence?fixed+3*config.node_count:nullptr);
   return cudaGetLastError();
 }
 

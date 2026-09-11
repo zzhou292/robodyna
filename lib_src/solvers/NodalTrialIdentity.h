@@ -7,7 +7,8 @@
 namespace tl::fea::trial_identity {
 inline bool SameStamp(const NodalStamp& a,const NodalStamp& b) noexcept {
   return a.owner_id==b.owner_id&&a.epoch==b.epoch&&a.node_count==b.node_count&&a.time==b.time&&
-    a.fixed_dt==b.fixed_dt&&a.has_rotations==b.has_rotations&&a.reactions_valid==b.reactions_valid&&
+    a.fixed_dt==b.fixed_dt&&a.has_rotations==b.has_rotations&&a.has_rotation_presence==b.has_rotation_presence&&
+    a.reactions_valid==b.reactions_valid&&
     a.reaction_base_epoch==b.reaction_base_epoch&&a.reaction_time==b.reaction_time&&
     a.temporal_scheme==b.temporal_scheme&&a.velocity_phase==b.velocity_phase&&
     a.velocity_time==b.velocity_time&&a.reaction_kick_dt==b.reaction_kick_dt&&SameRigidGroupInfo(a.rigid_groups,b.rigid_groups);
@@ -31,7 +32,7 @@ inline bool SameAssemblySources(const NodalAssemblyView& a,const NodalAssemblyVi
     a.mass.fixed==b.mass.fixed&&a.mass.node_count==b.mass.node_count&&
     a.mass.base_epoch==b.mass.base_epoch&&a.mass.model==b.mass.model&&
     a.inverse_inertia==b.inverse_inertia&&a.translation_fixed_bits==b.translation_fixed_bits&&
-    a.rotation_fixed==b.rotation_fixed&&a.stream==b.stream&&a.owner_id==b.owner_id&&
+    a.rotation_fixed==b.rotation_fixed&&a.rotation_present==b.rotation_present&&a.stream==b.stream&&a.owner_id==b.owner_id&&
     a.temporal_scheme==b.temporal_scheme&&a.velocity_phase==b.velocity_phase&&
     a.position_time==b.position_time&&a.velocity_time==b.velocity_time&&SameRigidGroupInfo(a.rigid_groups,b.rigid_groups);
 }

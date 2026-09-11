@@ -151,7 +151,11 @@ NodalReport PrepareCinStorage(const NodalCinStartup& input, const NodalStateConf
     next->dependent[row.secondary] = 1;
   }
   for (const auto& row : next->rows) {
+    if (dofs.rotation_present && !dofs.rotation_present[row.secondary])
+      return {NodalStatus::InvalidInput, "CIN dependent rotation is kinematically present", row.secondary};
     for (const auto node : row.masters) {
+      if (dofs.rotation_present && !dofs.rotation_present[node])
+        return {NodalStatus::InvalidInput, "CIN master must carry a rotational DOF", node};
       if (next->dependent[node]) return {NodalStatus::InvalidInput, "CIN hierarchy/secondary-master overlap is not admitted", node};
     }
   }
@@ -162,7 +166,10 @@ NodalReport PrepareCinStorage(const NodalCinStartup& input, const NodalStateConf
       }
     } else if ((dofs.translation_fixed_bits[i] != 7 &&
           (!input.mass[i] || inverse_mass[i] != 1/input.mass[i])) ||
-        (!dofs.rotation_fixed[i] && (!input.inertia[i] || dofs.inverse_inertia[i] != 1/input.inertia[i]))) {
+        (!dofs.rotation_fixed[i] && (!dofs.rotation_present || dofs.rotation_present[i]) &&
+          (!input.inertia[i] || dofs.inverse_inertia[i] != 1/input.inertia[i])) ||
+        (dofs.rotation_present && !dofs.rotation_present[i] &&
+          (input.inertia[i] != 0 || dofs.inverse_inertia[i] != 0))) {
       return {NodalStatus::InvalidInput, "Independent raw M/J and supplied inverse association differ", std::uint32_t(i)};
     }
   }

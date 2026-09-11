@@ -130,6 +130,7 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
       c.max_device_bytes > MaxActiveNodalStateDeviceBytes)
     return {NodalStatus::ResourceLimit, "Nodal capacity exceeds admitted limits"};
   const bool rotations = dofs != nullptr;
+  const bool rotation_presence = rotations && dofs->rotation_present;
   const bool staggered = c.temporal_scheme == NodalTemporalScheme::StaggeredHalfKickStart;
   if (c.temporal_scheme != NodalTemporalScheme::VelocityFirst && !staggered)
     return {NodalStatus::UnsupportedTemporalScheme, "Unknown nodal temporal scheme"};
@@ -166,7 +167,8 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
   const std::size_t capture_values=c.capture_force_stage_accelerations?capture.values():0;
   nodal_detail::StateLayout layout;
   if(!layout.Initialize(n,rotations,group_values,rigid_layout.device_bytes,
-      capture_values,sizeof(Control),c.max_device_bytes,cin_layout.state_values,cin_layout.device_bytes))
+      capture_values,sizeof(Control),c.max_device_bytes,cin_layout.state_values,cin_layout.device_bytes,
+      rotation_presence))
     return {NodalStatus::ResourceLimit,"Device byte budget or host staging extent is insufficient"};
   if (cin) {
     // Simultaneous retained source/optional arrays, complete existing owner
@@ -180,12 +182,16 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
   bool component_constraints = false;
   for (std::size_t i = 0; i < c.node_count; ++i) {
     const unsigned bits = rotations ? dofs->translation_fixed_bits[i] : (fixed[i] ? 7 : 0);
+    const bool absent_rotation = rotation_presence && !dofs->rotation_present[i];
+    if (rotation_presence && (dofs->rotation_present[i] > 1 ||
+        (absent_rotation && (dofs->rotation_fixed[i] || dofs->inverse_inertia[i] != 0))))
+      return {NodalStatus::InvalidInput, "Absent rotation requires zero J inverse and no fixed reaction", static_cast<std::uint32_t>(i)};
     if ((rotations ? bits > 7 : fixed[i] > 1) || !std::isfinite(inverse_mass[i]) ||
         (bits == 7 ? inverse_mass[i] != 0 : (cin ? inverse_mass[i] < 0 : inverse_mass[i] <= 0)))
       return {NodalStatus::InvalidInput, "Invalid explicit mass or fixed mask", static_cast<std::uint32_t>(i)};
     component_constraints |= bits != 0 && bits != 7;
     if (rotations && (dofs->rotation_fixed[i] > 1 || !std::isfinite(dofs->inverse_inertia[i]) ||
-        (dofs->rotation_fixed[i] ? dofs->inverse_inertia[i] != 0 :
+        ((dofs->rotation_fixed[i] || absent_rotation) ? dofs->inverse_inertia[i] != 0 :
           (cin ? dofs->inverse_inertia[i] < 0 : dofs->inverse_inertia[i] <= 0)) ||
         !nodal_detail::UnitQuaternion(nodal_detail::ReadQuaternion(in.orientation_wxyz + 4*i))))
       return {NodalStatus::InvalidInput, "Invalid isotropic inertia, rotation mask, or unit quaternion", static_cast<std::uint32_t>(i)};
@@ -196,7 +202,7 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
       if (!rotations && in.angular_velocity_xyz && in.angular_velocity_xyz[j] != 0)
         return {NodalStatus::UnsupportedRotation, "Angular motion is not admitted", static_cast<std::uint32_t>(i)};
       if (rotations && in.angular_velocity_xyz && (!std::isfinite(in.angular_velocity_xyz[j]) ||
-          (dofs->rotation_fixed[i] && in.angular_velocity_xyz[j] != 0)))
+          ((dofs->rotation_fixed[i] || absent_rotation) && in.angular_velocity_xyz[j] != 0)))
         return {NodalStatus::InvalidInput, "Invalid angular or fixed-rotation velocity", static_cast<std::uint32_t>(i)};
     }
   }
@@ -236,6 +242,7 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
     next->stamp.temporal_scheme = c.temporal_scheme;
     next->has_rotations = rotations; next->has_component_constraints = component_constraints;
     next->stamp.has_rotations = rotations; next->state_values = state_values;
+    next->stamp.has_rotation_presence = rotation_presence;
     if (!next->stamp.owner_id) return {NodalStatus::HistoryLimit, "Owner identities exhausted"};
     auto report = next->Check(cudaStreamCreateWithFlags(&next->stream, cudaStreamNonBlocking));
     if (report.status != NodalStatus::Ok) return report;
@@ -283,6 +290,7 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
       if (rotations) {
         next->constraint_staging[n+i] = dofs->translation_fixed_bits[i];
         next->constraint_staging[2*n+i] = dofs->rotation_fixed[i];
+        if (rotation_presence) next->constraint_staging[3*n+i] = dofs->rotation_present[i];
       }
     }
     report = next->Check(cudaMemcpyAsync(next->fixed, next->constraint_staging.data(), mask_bytes, cudaMemcpyHostToDevice, next->stream));
@@ -312,6 +320,7 @@ NodalAssemblyView FENodalState::Impl::AcceptedAssemblySources() const noexcept {
   view.rigid_groups=stamp.rigid_groups;
   if (has_rotations) {
     view.inverse_inertia = current_inverse+n; view.translation_fixed_bits = fixed+n; view.rotation_fixed = fixed+2*n;
+    view.rotation_present = stamp.has_rotation_presence ? fixed+3*n : nullptr;
   }
   return view;
 }

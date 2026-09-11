@@ -1,5 +1,15 @@
-load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+
+cc_library(
+    name = "owner_test_support",
+    testonly = True,
+    hdrs = ["Fixture.h", "OwnerFixture.h"],
+    deps = ["//lib_src/solvers:explicit_nodal_state",
+            "//lib_utest/qualification/tied_cin_attachment:test_support",
+            "@googletest//:gtest_main"],
+    visibility = ["//visibility:public"],
+)
 
 cc_test(
     name = "tied_cin_runtime_host_check",

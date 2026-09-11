@@ -26,21 +26,24 @@ template<bool Capture=false>
 TL_SURFACE_HD inline NodalStatus AdvanceOrdinaryNode(const double* accepted,double* trial,
     const double* force,const double* inverse,const std::uint8_t* constraints,
     std::uint32_t i,std::uint32_t n,double h,double kick_dt,double maximum_angle,
-    double* acceleration_xyz=nullptr,double* angular_acceleration_xyz=nullptr) {
+    double* acceleration_xyz=nullptr,double* angular_acceleration_xyz=nullptr,
+    const std::uint8_t* rotation_present=nullptr) {
   if(!AdvanceTranslationNodeWithKick<Capture>(accepted,trial,force,inverse[i],constraints[n+i],i,n,h,kick_dt,trial+13*n,acceleration_xyz))
     return NodalStatus::InvalidOutput;
   const bool fixed_rotation=constraints[2*n+i]!=0;
+  const bool absent_rotation=rotation_present&&!rotation_present[i];
   for(unsigned a=0;a<3;++a) {
     const auto j=3*i+a;
     const double couple=force[(3+a)*n+i];
-    const double acceleration=fixed_rotation?0:inverse[n+i]*couple;
-    const double omega=fixed_rotation?0:accepted[6*n+j]+kick_dt*acceleration;
+    if(absent_rotation&&couple!=0) return NodalStatus::InvalidOutput;
+    const double acceleration=(fixed_rotation||absent_rotation)?0:inverse[n+i]*couple;
+    const double omega=(fixed_rotation||absent_rotation)?0:accepted[6*n+j]+kick_dt*acceleration;
     trial[6*n+j]=omega; trial[16*n+j]=fixed_rotation?-couple:0;
     if constexpr(Capture) angular_acceleration_xyz[j]=acceleration;
     const double increment=h*omega;
     if(!tlfea::contact::IsFinite(acceleration)||!tlfea::contact::IsFinite(omega)||!tlfea::contact::IsFinite(increment))
       return NodalStatus::InvalidOutput;
   }
-  return PrepareNodeOrientation(accepted,trial,i,n,h,maximum_angle,fixed_rotation);
+  return PrepareNodeOrientation(accepted,trial,i,n,h,maximum_angle,fixed_rotation||absent_rotation);
 }
 } // namespace tl::fea::nodal_detail

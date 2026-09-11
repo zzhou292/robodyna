@@ -110,11 +110,15 @@ NodalReport FENodalState::Impl::StageCinSnapshot(const double* source) {
   const bool completed = source == trial || stamp.epoch > 0;
   for (std::size_t i = 0; i < n; ++i) {
     const bool dependent = storage.dependent[i] != 0;
+    const bool absent_rotation = stamp.has_rotation_presence && !constraint_staging[3*n+i];
+    if (absent_rotation && tail[n+i] != 0) {
+      return Reject(NodalStatus::InvalidOutput, "Absent rotation acquired nonzero CIN inertia", std::uint32_t(i));
+    }
     if (dependent && completed && (tail[i] != 0 || tail[n+i] != 0)) {
       return Reject(NodalStatus::InvalidOutput, "Completed CIN dependent coefficients are not zero", std::uint32_t(i));
     }
     const double inverse_mass = dependent || constraint_staging[n+i] == 7 ? 0 : 1/tail[i];
-    const double inverse_inertia = dependent || constraint_staging[2*n+i] ? 0 : 1/tail[n+i];
+    const double inverse_inertia = dependent || constraint_staging[2*n+i] || absent_rotation ? 0 : 1/tail[n+i];
     if (tail[2*n+i] != inverse_mass || tail[3*n+i] != inverse_inertia) {
       return Reject(NodalStatus::InvalidOutput, "CIN coefficient readback disagrees with its derived inverse", std::uint32_t(i));
     }

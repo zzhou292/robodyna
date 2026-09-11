@@ -1,0 +1,14 @@
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+
+cuda_test(
+    name = "nodal_rotation_presence_check",
+    size = "small",
+    srcs = ["PresenceTest.cu", "ConstraintTest.cu"],
+    deps = ["//lib_src/solvers:explicit_nodal_state",
+            "//lib_utest:nodal_temporal_fixture",
+            "//lib_utest/qualification/tied_cin_runtime:owner_test_support",
+            "//lib_utest/qualification/nodal_rigid_group:owner_test_support",
+            "@googletest//:gtest_main"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+)

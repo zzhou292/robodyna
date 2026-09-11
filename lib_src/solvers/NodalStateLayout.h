@@ -14,9 +14,10 @@ struct StateLayout {
   bool Initialize(std::size_t nodes,bool rotations,std::size_t group_values,
       std::size_t immutable_rigid_bytes,std::size_t capture_values,
       std::size_t control_bytes,std::size_t cap,
-      std::size_t cin_state_values=0,std::size_t cin_device_bytes=0) noexcept {
+      std::size_t cin_state_values=0,std::size_t cin_device_bytes=0,
+      bool rotation_presence=false) noexcept {
     if(!nodes||nodes>MaxActiveNodalStateNodes||!cap||cap>MaxActiveNodalStateDeviceBytes||
-       !control_bytes||(!rotations&&(group_values||immutable_rigid_bytes||capture_values))) return false;
+       !control_bytes||(!rotations&&(group_values||immutable_rigid_bytes||capture_values||rotation_presence))) return false;
     const std::size_t nodal_values=(rotations?19:6)*nodes;
     if(group_values>std::numeric_limits<std::size_t>::max()-nodal_values) return false;
     if(cin_state_values>std::numeric_limits<std::size_t>::max()-nodal_values-group_values) return false;
@@ -27,7 +28,7 @@ struct StateLayout {
     if(!budget.Append<double>(state_values,next.accepted)||!budget.Append<double>(state_values,next.trial)||
        !budget.Append<double>(11*nodes+capture_values,next.scratch)||
        !budget.Append<double>((rotations?2:1)*nodes,next.inverse)||
-       !budget.Append<std::uint8_t>((rotations?3:1)*nodes,next.fixed)||
+       !budget.Append<std::uint8_t>((rotations?(rotation_presence?4:3):1)*nodes,next.fixed)||
        !budget.Append<std::byte>(control_bytes,next.control)||
        !budget.Append<std::byte>(immutable_rigid_bytes,next.rigid)||
        !budget.Append<std::byte>(cin_device_bytes,next.cin)) return false;
