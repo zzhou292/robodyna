@@ -13,6 +13,12 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 
 package(default_visibility = ["//visibility:public"])
 
+cc_library(
+    name = "rigid_normal_response",
+    hdrs = ["RigidNormalResponse.h", "RigidNormalResponseBounds.h"],
+    deps = [":q4_contact_integration", "//lib_src/constraints:nodal_rigid_group_step_math"],
+)
+
 cuda_library(
     name = "planar_mesh_contact_device",
     srcs = ["PlanarMeshContactDevice.cu"],
