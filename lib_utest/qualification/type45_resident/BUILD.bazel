@@ -1,0 +1,9 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "virgin_host",
+    size = "small",
+    srcs = ["VirginTest.cpp"],
+    deps = ["//lib_src/elements/type45/resident:virgin",
+            "//lib_utest/qualification/type45_joint:test_support", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)

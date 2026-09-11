@@ -11,6 +11,14 @@ contains
     real(c_double), intent(in) :: property(14),x(3,2),spin(3,2),time,dt
     real(c_double), intent(inout) :: uvar(39),history(13),observation(25)
     integer(c_int), intent(out) :: status
+    call StepPhase(kind,property,x,spin,time,dt,cycle,.false.,uvar,history,observation,status)
+  end subroutine
+  subroutine StepPhase(kind,property,x,spin,time,dt,cycle,constructor,uvar,history,observation,status)
+    integer(c_int), intent(in) :: kind,cycle
+    real(c_double), intent(in) :: property(14),x(3,2),spin(3,2),time,dt
+    logical, intent(in) :: constructor
+    real(c_double), intent(inout) :: uvar(39),history(13),observation(25)
+    integer(c_int), intent(out) :: status
     real(8) :: var(39,1),d(1,3),r(1,3),force(1,3),moment(1,3),eint(1),xl(1,3)
     real(8) :: rot1(3,1),rot2(3,1),rby(1),xkm(1),xkr(1),xcm(1),xcr(1),mass(1),iner(1),off(1)
     real(8) :: x0_error(3,1),sti(3,1),stir(3,1),dt2t,msrt(1),dmelt(1)
@@ -18,7 +26,12 @@ contains
     integer :: ixr(6,1),nc1(1),nc2(1),isens,neltst,ityptst,unit,i,offset
     type(SENSOR_STR_) :: sensors(0)
     status=1
-    if(kind<1.or.kind>3.or.cycle<1.or.dt<=0.or.time<=0) return
+    if(kind<1.or.kind>3) return
+    if(constructor) then
+      if(cycle/=0.or.dt/=0.or.time/=0) return
+    else
+      if(cycle<1.or.dt<=0.or.time<=0) return
+    endif
     if(.not.all(ieee_is_finite(property)).or..not.all(ieee_is_finite(x)).or. &
        .not.all(ieee_is_finite(spin)).or..not.ieee_is_finite(time).or..not.ieee_is_finite(dt).or. &
        .not.all(ieee_is_finite(uvar)).or..not.all(ieee_is_finite(history))) return

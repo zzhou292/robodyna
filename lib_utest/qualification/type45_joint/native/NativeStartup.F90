@@ -23,6 +23,14 @@ contains
     real(c_double), intent(in) :: property(14),xinput(3,5),damping(2,2),coefficient(4,2),dt
     real(c_double), intent(inout) :: uvar(39),observation(13)
     integer(c_int), intent(out) :: status
+    call StartupPhase(kind,property,xinput,roles,damping,coefficient,dt,.true.,uvar,observation,status)
+  end subroutine
+  subroutine StartupPhase(kind,property,xinput,roles,damping,coefficient,dt,automatic_enabled,uvar,observation,status)
+    integer(c_int), intent(in) :: kind,roles(2)
+    real(c_double), intent(in) :: property(14),xinput(3,5),damping(2,2),coefficient(4,2),dt
+    logical, intent(in) :: automatic_enabled
+    real(c_double), intent(inout) :: uvar(39),observation(13)
+    integer(c_int), intent(out) :: status
     real(8) :: x(3,5),xl(1,3),mass(1),inertia(1),stifn(1),stifr(1),viscm(1),viscr(1)
     real(8) :: var(39,1),rby(14,2),ms(5),iner(5),sn(5),sr(5),gmass(1),automatic(5),next(13)
     integer :: ix(4,1),ixr(6,1),extra(5,2),npby(6,2),members(2),itab(5),igeo(32),i,n,unit
@@ -31,7 +39,9 @@ contains
     if(kind<1.or.kind>3.or.any(roles<0).or.any(roles>2)) return
     if(.not.all(ieee_is_finite(property)).or..not.all(ieee_is_finite(xinput)).or. &
        .not.all(ieee_is_finite(damping)).or..not.all(ieee_is_finite(coefficient)).or..not.ieee_is_finite(dt)) return
-    if(dt<=0.or.property(1)<=0.or.property(2)<=0.or.property(2)>1) return
+    if(property(1)<=0.or.property(2)<=0.or.property(2)>1) return
+    if(automatic_enabled.and.dt<=0) return
+    if(.not.automatic_enabled.and.dt/=0) return
     open(newunit=unit,status='scratch')
     call T45_RESET_CONTEXT(0.d0,0.d0,0,unit)
     call SetProperty(kind,property)
@@ -101,7 +111,8 @@ contains
       status=2
       return
     endif
-    call T45_AUTOMATIC(kind,property(1),dt,x,ms,iner,sn,sr,npby,var(:,1),automatic,unit)
+    automatic=0
+    if(automatic_enabled) call T45_AUTOMATIC(kind,property(1),dt,x,ms,iner,sn,sr,npby,var(:,1),automatic,unit)
     next(5:9)=automatic
     next(10:13)=var(34:37,1)
     close(unit)

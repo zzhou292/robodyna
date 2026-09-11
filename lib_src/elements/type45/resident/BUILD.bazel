@@ -1,0 +1,7 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+cc_library(
+    name = "virgin",
+    hdrs = ["Virgin.h"],
+    deps = ["//lib_src/elements/type45:values"],
+    visibility = ["//visibility:public"],
+)
