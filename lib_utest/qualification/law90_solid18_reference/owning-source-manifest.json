@@ -98,8 +98,8 @@
     },
     {
       "path": "lib_utest/qualification/law90_solid18_reference/BUILD.bazel",
-      "bytes": 404,
-      "sha256": "d149619bdcaa8c76b961d408844259188f000e9792941ffecbefe12bf6b9442d"
+      "bytes": 780,
+      "sha256": "4548685f784eeee31f62d9fbe83b706208363da40f6a285b4f4d3298cbe63163"
     },
     {
       "path": "lib_utest/qualification/law90_solid18_reference/CMakeLists.txt",
@@ -225,6 +225,16 @@
       "path": "lib_utest/qualification/law90_solid18_reference/verify_source.py",
       "bytes": 1048,
       "sha256": "b1d439037dc7c62e5f769a10222f0a0b9a8792e1af41c4c2a274cbcce3d2d7cf"
+    }
+  ],
+  "previous_fixture_exports": [
+    {
+      "previous": {
+        "path": "lib_utest/qualification/law90_solid18_reference/BUILD.bazel",
+        "bytes": 404,
+        "sha256": "d149619bdcaa8c76b961d408844259188f000e9792941ffecbefe12bf6b9442d"
+      },
+      "change": "Add test-only TestSupport export; prior owning test target unchanged."
     }
   ]
 }

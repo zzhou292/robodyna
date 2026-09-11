@@ -11,6 +11,8 @@ CoefficientReport Preflight(NodalCoefficientSources input,const ElementMassContr
       (input.type13&&!input.type13->prepared())||(masses&&!masses->prepared())||
       (solids&&!solids->prepared()))
     return {S::InvalidInput,"Complete prepared typed sources are required"};
+  if(solids && solids->profile()!=SolidCoefficientProfile::OriginalThreeFamilies)
+    return {S::IdentityMismatch,"Extended solid references require an explicit extended ledger profile"};
   const auto& shells=*input.shells->shells();
   const auto& domain=*input.shells->domain();
   const auto hard=CoefficientLimits::Vehicle();

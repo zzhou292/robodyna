@@ -27,8 +27,8 @@
       "sha256": "5e25e961d8cf93eb924545e9ead904cf681205b15c8a780d7d61f90663b09557"
     },
     "lib_utest/qualification/solid18_law44_reference/BUILD.bazel": {
-      "bytes": 542,
-      "sha256": "3226e3f18bd7e471e5984886e5675059cb0a39f0a390f06d8b8e2b928da22624"
+      "bytes": 625,
+      "sha256": "108d88f8a6cd3448f0fa2203f6350a5ff3ffa5bd916c4178392aea0c28449bb2"
     },
     "lib_utest/qualification/solid18_law44_reference/CMakeLists.txt": {
       "bytes": 4041,
@@ -126,5 +126,15 @@
       "bytes": 14374,
       "sha256": "045a5d85cf6700e3950e2248d0c8e337c1ce64311651b0c1470a96915b7c14b3"
     }
-  }
+  },
+  "previous_fixture_exports": [
+    {
+      "path": "lib_utest/qualification/solid18_law44_reference/BUILD.bazel",
+      "previous": {
+        "bytes": 542,
+        "sha256": "3226e3f18bd7e471e5984886e5675059cb0a39f0a390f06d8b8e2b928da22624"
+      },
+      "change": "Add extended coefficient test visibility; existing force export unchanged."
+    }
+  ]
 }

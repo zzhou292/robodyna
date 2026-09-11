@@ -4,9 +4,12 @@
 #include "../elements/solid18/Solid18Types.h"
 #include "../elements/solid24/Solid24Types.h"
 #include "../elements/solid6z/Solid6zTypes.h"
+#include "../elements/solid18/law44/Types.h"
+#include "../elements/solid18/total_strain/ReferenceTypes.h"
 
 namespace tl::fea {
-enum class SolidCoefficientFamily { Solid18, Solid24, Solid6z };
+enum class SolidCoefficientFamily { Solid18, Solid24, Solid6z, Solid18Law44, Solid18Law90 };
+enum class SolidCoefficientProfile { OriginalThreeFamilies, ExtendedLaw44Law90 };
 struct SolidCoefficientInput {
   std::uint64_t source_instance_id = 0;
   const solid18::Reference* solid18 = nullptr;
@@ -15,6 +18,12 @@ struct SolidCoefficientInput {
   std::size_t solid24_count = 0;
   const solid6z::Reference* solid6z = nullptr;
   std::size_t solid6z_count = 0;
+  // Explicit extension; the legacy aggregate prefix and family order stay fixed.
+  const solid18::law44::Reference* law44 = nullptr;
+  std::size_t law44_count = 0;
+  const solid18::total_strain::Reference* law90 = nullptr;
+  std::size_t law90_count = 0;
+  SolidCoefficientProfile profile = SolidCoefficientProfile::OriginalThreeFamilies;
 };
 struct SolidCoefficientParent {
   SolidCoefficientFamily family = SolidCoefficientFamily::Solid18;
@@ -36,6 +45,8 @@ struct SolidCoefficientLimits {
 // solid18, solid24, solid6z, preserving each input order and original source
 // slots (not native reorientation). No raw caller-supplied coefficient entry.
 // The immutable domain and exact native masses are retained, not borrowed refs.
+// The extension appends LAW44 and LAW90; a repeated H8 keeps all eight slots.
+// Extended snapshots require a later explicit ledger/owner profile admission.
 // Matches authenticates coefficient identity only; mechanics models must retain
 // their complete references/material profiles separately. No force/DOF admission.
 class SolidNodeContributions {
@@ -50,6 +61,7 @@ class SolidNodeContributions {
                               SolidCoefficientLimits = {}) noexcept;
   bool prepared() const noexcept { return bool(impl_); }
   const NodalNodeDomain* domain() const noexcept;
+  SolidCoefficientProfile profile() const noexcept;
   tl::util::ConstView<SolidCoefficientParent> parents() const noexcept;
   std::size_t parent_count(SolidCoefficientFamily) const noexcept;
   bool Matches(const SolidNodeContributions&) const noexcept;

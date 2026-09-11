@@ -14,6 +14,26 @@ inline const double* Masses(const solid24::Reference& ref) noexcept {
 inline const double* Masses(const solid6z::Reference& ref) noexcept {
   return ref.mass().source_slot_mass_kg;
 }
+inline const double* Masses(const solid18::law44::Reference& ref) noexcept {
+  return ref.mass().source_nodal_mass_kg;
+}
+inline const double* Masses(const solid18::total_strain::Reference& ref) noexcept {
+  return ref.mass().source_nodal_mass_kg;
+}
+// Called only after all five pointer/count pairs and total extent are checked.
+// Keep the same typed visitation for identity lookup and source-slot mapping.
+template<class Visitor>
+auto Visit(const SolidCoefficientInput& input, std::size_t parent, Visitor visit) {
+  using F = SolidCoefficientFamily;
+  if (parent < input.solid18_count) return visit(input.solid18[parent], F::Solid18, 8u);
+  parent -= input.solid18_count;
+  if (parent < input.solid24_count) return visit(input.solid24[parent], F::Solid24, 8u);
+  parent -= input.solid24_count;
+  if (parent < input.solid6z_count) return visit(input.solid6z[parent], F::Solid6z, 6u);
+  parent -= input.solid6z_count;
+  if (parent < input.law44_count) return visit(input.law44[parent], F::Solid18Law44, 8u);
+  return visit(input.law90[parent-input.law44_count], F::Solid18Law90, 8u);
+}
 template<class Reference>
 NodalDomainReport Map(const Reference& ref, const NodalNodeDomain& domain,
     SolidCoefficientFamily family, unsigned arity, SolidCoefficientParent& out,

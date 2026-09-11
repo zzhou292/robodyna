@@ -4,7 +4,8 @@ cc_library(
     testonly = True,
     hdrs = ["TestSupport.h"],
     deps = ["//lib_src/elements/solid18/law44:reference", "//lib_utest/qualification/solid18_reference:source_fixture", "@googletest//:gtest"],
-    visibility = ["//lib_utest/qualification/solid18_law44_force:__pkg__"],
+    visibility = ["//lib_utest/qualification/solid18_law44_force:__pkg__",
+                  "//lib_utest/qualification/extended_solid_coefficients:__pkg__"],
 )
 cc_test(
     name = "host_check",

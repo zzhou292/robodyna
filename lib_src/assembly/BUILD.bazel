@@ -28,6 +28,8 @@ cc_library(
     hdrs = ["SolidNodeContributions.h", "SolidContributionChecks.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [":nodal_node_domain", "//lib_src/elements/solid18:reference",
+            "//lib_src/elements/solid18/law44:reference",
+            "//lib_src/elements/solid18/total_strain:reference_kinematics",
             "//lib_src/elements/solid24:reference", "//lib_src/elements/solid6z:reference",
             "//lib_utils:bounded_arena", "//lib_utils:source_identity_index"],
 )
