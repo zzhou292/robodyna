@@ -38,7 +38,9 @@ struct CinLayout {
     next.attachments = r;
     next.witnesses = w;
     next.state_values = 4*n + 2*r + 1;
-    // STIFN, STIFR, entry IN, current A3 and AR3.
+    // STIFN, STIFR, entry IN, current A3 and AR3. After a completed
+    // advance, the last 7*n values may stage the TT0 physical main query;
+    // captured A/AR already belongs to the separate force-stage buffer.
     next.scratch_values = 9*n;
     util::BoundedArenaLayout device(limits.max_device_bytes);
     if (!device.Append<constraints::tied_shell::cin::StageRow>(r, next.rows) ||

@@ -17,6 +17,8 @@ struct NodalCinWitnessSource;
 struct NodalCinAdmission;
 struct NodalCinAssemblyView;
 struct NodalCinSnapshotBuffer;
+struct NodalCinPhysicalMainBuffer;
+struct NodalCinPhysicalMainStamp;
 enum class NodalStatus {
   Ok, InvalidInput, ResourceLimit, NotInitialized, WrongPhase, StaleTrial,
   ContributorFailure, InvalidOutput, UnsupportedRotation, StepTooLarge,
@@ -255,6 +257,9 @@ class FENodalState {
   NodalReport ValidateCinWitnessSource(const NodalCinWitnessSource&) const noexcept;
   NodalReport CopyAcceptedCin(NodalCinSnapshotBuffer, NodalStamp*);
   NodalReport CopyPreparedCin(const NodalTrialToken&, NodalCinSnapshotBuffer, NodalPreparedView*);
+  // TT0 only: complete post-CIN virtual main coefficients, no physical node or clock.
+  NodalReport CopyPreparedCinPhysicalMains(const NodalTrialToken&, NodalCinPhysicalMainBuffer,
+                                          NodalCinPhysicalMainStamp*);
   NodalReport BeginTrial(NodalTrialToken*, NodalAssemblyView*);
   // Host-only comparison of a retained assembly SOURCE identity with this
   // owner's current accepted buffers and immutable mass/constraint storage.

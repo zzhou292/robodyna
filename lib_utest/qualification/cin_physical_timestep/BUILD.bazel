@@ -1,5 +1,20 @@
-load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+cc_library(
+    name = "value_fixture",
+    testonly = True,
+    hdrs = ["Fixture.h"],
+    deps = ["//lib_src/solvers:cin_structural_step_values"],
+    visibility = ["//lib_utest/qualification/cin_physical_main_summary:__pkg__"],
+)
+cc_library(
+    name = "owner_support",
+    testonly = True,
+    hdrs = ["OwnerSupport.h"],
+    deps = ["//lib_src/solvers:explicit_nodal_state",
+            "//lib_utest/qualification/rigid_assembly_owner:fixture"],
+    visibility = ["//lib_utest/qualification/cin_physical_main_summary:__pkg__"],
+)
 cc_test(
     name = "cin_physical_timestep_host",
     size = "small",
