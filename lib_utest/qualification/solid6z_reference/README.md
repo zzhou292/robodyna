@@ -46,3 +46,12 @@ coefficient. The eventual case producer must authenticate and name that policy.
 Configure this directory with `TL_SOLID6Z_REFERENCE_NATIVE=ON` and
 `TL_SOLID6Z_REFERENCE_CUDA=ON` for owning gates. Test-only native donor sources
 never enter the production Bazel `//lib_src/elements/solid6z:reference` target.
+
+Root `rubber-wedge-root-tests-1` passes11 numerical functions (4 host,4 native,
+3 CUDA) plus2 identities at integrated `cdbe23b`. All195 original mapped
+wedges require the same native orientation reversal; wedge-only mass is
+0.056384 kg. This qualifies startup, not force or complete source admission.
+
+Affected legacy HEPH10 numerical functions and2 identities PASS in
+`wedge-affected-solid24-root-tests-1`; owning S6Z/affected-reference builds PASS
+in `cin-wedge-owning-bazel-build-1`.

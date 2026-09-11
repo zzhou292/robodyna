@@ -65,3 +65,12 @@ functions), `tied_cin_runtime_native_test` (3 functions), and
 `tied_cin_runtime_cuda_test` (4 owner functions plus 1 native comparison when the
 native option is enabled). CMake owns the Fortran qualification. Bazel registers
 the host and CUDA owner targets and the ordinary production library.
+
+Root `tied-cin-runtime-root-tests-1` passes22 numerical functions (14 host,
+3 native,5 CUDA) plus source identity after integration as `5640868`.
+Original-size optional device storage is52338608 B. Actual original live
+witness/activity source admission remains separate; owning/affected gates
+are recorded in the workspace execution status.
+
+Affected Q/T/QBAT owner regression groups PASS in `cin-affected-qbat-root-tests-1`;
+owning host/CUDA builds PASS in `cin-wedge-owning-bazel-build-1`.
