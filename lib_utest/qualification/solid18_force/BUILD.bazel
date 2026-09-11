@@ -1,0 +1,12 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "solid18_force_host",
+    srcs = ["HostTest.cpp", "TestSupport.h"],
+    deps = [
+        "//lib_src/elements/solid18:force",
+        "//lib_utest/qualification/solid18_reference:source_fixture",
+        "//lib_utest/qualification/solid_law36_point:source_fixture",
+        "@googletest//:gtest_main",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)

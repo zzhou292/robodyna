@@ -14,3 +14,20 @@ cc_library(
     deps = ["//lib_src/math:fixed3", "//lib_src/math:quaternion",
             "//lib_src/elements/solid_common:brick_frame"],
 )
+cc_library(
+    name = "force",
+    hdrs = [
+        "Solid18ForceTypes.h",
+        "Solid18ForceChecks.h",
+        "Solid18History.h",
+        "Solid18NaturalDerivatives.h",
+        "Solid18CurrentGeometry.h",
+        "Solid18SelectiveShear.h",
+        "Solid18Selection.h",
+        "Solid18PointKinematics.h",
+        "Solid18PointResponse.h",
+        "Solid18ForceWork.h",
+        "Solid18Force.h",
+    ],
+    deps = [":reference", "//lib_src/materials:solid_law36_point"],
+)
