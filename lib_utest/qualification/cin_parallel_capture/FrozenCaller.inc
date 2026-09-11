@@ -3,7 +3,6 @@
 #include "cin_advance/Node.h"
 #include "cin_advance/ForceInputs.h"
 #include "cin_advance/Screen.h"
-#include "cin_advance/Capture.h"
 #include "cin_timestep/Screen.h"
 #include "NodalCinStorage.h"
 #include "NodalRigidGroupStorage.h"
@@ -156,71 +155,14 @@ __global__ void CompleteCin(const cin_advance::Input input) {
       return;
     }
   }
-
+  if (capture.node) {
+    for (std::uint32_t node = 0; node < n; ++node) {
+      if (groups.member_nodes && groups.member_nodes[node]) continue;
+      for (unsigned a = 0; a < 3; ++a) {
+        capture.node[3*node+a] = acceleration[3*node+a];
+        capture.node_rotation[3*node+a] = angular_acceleration[3*node+a];
+      }
+    }
+  }
 }
 } // namespace
-
-cudaError_t cin_advance::Launch(const Input& input, cudaStream_t stream) {
-  const bool parallel_inputs = input.input_failure != nullptr;
-  auto error = cudaSuccess;
-  if (parallel_inputs) {
-    error = force_inputs::Launch(input, stream);
-    if (error != cudaSuccess) return error;
-  }
-  const bool parallel_screen = input.screen && screen::Blocks(input.model.node_count) &&
-      input.structural.profile != NodalCinStructuralProfile::Disabled;
-  PrepareCin<<<1,1,0,stream>>>(input, parallel_inputs, parallel_screen);
-  error = cudaGetLastError();
-  if (error != cudaSuccess) return error;
-  if (parallel_screen) {
-    error = screen::Launch(input, stream);
-    if (error != cudaSuccess) return error;
-  }
-  constexpr unsigned threads = 128;
-  const auto blocks = (input.model.node_count+threads-1)/threads;
-  AdvanceOrdinaryCin<<<blocks,threads,0,stream>>>(input);
-  error = cudaGetLastError();
-  if (error != cudaSuccess) return error;
-  CompleteCin<<<1,1,0,stream>>>(input);
-  error = cudaGetLastError();
-  if (error != cudaSuccess) return error;
-  return capture::Launch(input, stream);
-}
-
-cudaError_t FENodalState::Impl::LaunchCinAdvance(double maximum_angle,
-    const NodalCinStructuralStep* structural) {
-  const rigid::StepDurations durations{stamp.epoch == 0 ? 0 : config.fixed_dt,
-      candidate_kick_dt, config.fixed_dt};
-  const auto groups = rigid_groups ? rigid_groups->device : rigid::GroupDeviceView{};
-  rigid::AccelerationSink capture;
-  if (config.capture_force_stage_accelerations) {
-    const nodal_detail::ForceStageCaptureLayout layout{config.node_count, groups.group_count};
-    capture = layout.Sink(scratch);
-  }
-  return cin_advance::Launch({control, accepted, trial, scratch, fixed, cin->device,
-      trial+cin->state_offset, cin->work, cin->patches, cin->activity, groups, durations,
-      maximum_angle, stamp.epoch, attempt, capture,
-      stamp.has_rotation_presence?fixed+3*config.node_count:nullptr,
-      structural ? *structural : NodalCinStructuralStep{}, cin->failure, cin->input_failure, cin->screen}, stream);
-}
-
-NodalReport AdvanceStaggeredCin(FENodalState& owner, const NodalTrialToken& token,
-    const NodalCinAdmission& admission) {
-  if (!owner.impl_) return {NodalStatus::NotInitialized, "Owner is not initialized"};
-  auto& state = *owner.impl_;
-  if (!state.cin || !admission.no_explicit_interface_release_event ||
-      admission.qualification_id != state.cin->qualification_id) {
-    return state.Reject(NodalStatus::MissingStepAdmission, "Missing CIN no-release qualification");
-  }
-  if (!ValidCinStructuralStep(admission.structural)) {
-    return state.Reject(NodalStatus::MissingStepAdmission, "Invalid physical CIN structural profile");
-  }
-  const auto* structural = admission.structural.profile == NodalCinStructuralProfile::Disabled
-      ? nullptr : &admission.structural;
-  const NodalStepAdmission declared{admission.owner_id, admission.base_epoch, admission.attempt,
-    admission.maximum_dt, admission.maximum_rotation_increment,
-    NodalStepAdmissionKind::RestrictedHistoryTrajectory, admission.qualification_id, 0};
-  return state.AdvanceSealedNodal(token.owner_id_, token.base_epoch_, token.attempt_, declared,
-      NodalTemporalScheme::StaggeredHalfKickStart, bool(state.rigid_groups), true, structural);
-}
-} // namespace tl::fea

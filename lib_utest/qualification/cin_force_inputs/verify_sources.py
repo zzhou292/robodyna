@@ -4,11 +4,12 @@ from pathlib import Path
 import hashlib
 import json
 import re
+import runpy
 
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 raw = (here / 'source-manifest.json').read_bytes()
-assert hashlib.sha256(raw).hexdigest() == '848c93994e982fda8e981f783ebbbb86012790c3529410d5390f6d2f21fb454b'
+assert hashlib.sha256(raw).hexdigest() == 'f8304fba734d84751ef161fcf5a389c850141cd3d70b43d23c29a52fb3888a82'
 manifest = json.loads(raw)
 for row in manifest['files']:
     path = Path(row['path'])
@@ -75,8 +76,9 @@ for name in ('epoch', 'attempt', 'durations'):
 same(body(inputs, 'CheckPrefix'), 'auto* control = input.control;'+prefix+'return true;', 'owner prefix')
 start, end = '  if (structural.profile != NodalCinStructuralProfile::Disabled)', '  *input.failure = cin_advance::NoFailure;'
 assert old_owner[old_owner.index(start):old_owner.index(end)] == owner[owner.index(start):owner.index(end)], 'structural screen'
-for name in ('AdvanceOrdinaryCin', 'CompleteCin'):
-    same(body(owner, name), body(old_owner, name), name)
+same(body(owner, 'AdvanceOrdinaryCin'), body(old_owner, 'AdvanceOrdinaryCin'), 'ordinary motion')
+without_capture = runpy.run_path(str(here.parent/'cin_parallel_capture/capture_proof.py'))['without_capture']
+same(body(owner, 'CompleteCin'), without_capture(body(old_owner, 'CompleteCin')), 'ordered suffix before exact final copy extraction')
 kernels = (root/'lib_src/solvers/cin_advance/ForceInputs.cu').read_text()
 launch = body(kernels, 'Launch')
 assert launch.index('BeginInputs<<<') < launch.index('CheckNodes<<<') < launch.index('CompleteInputs<<<') < launch.index('CopyEntryInertia<<<')

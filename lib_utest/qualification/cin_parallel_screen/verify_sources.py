@@ -9,7 +9,7 @@ import runpy
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 raw = (here / 'source-manifest.json').read_bytes()
-assert hashlib.sha256(raw).hexdigest() == 'd3e23b5b6593151b5a1c5b4483387f9d97bc561d3315cc0661a522c32c133b74'
+assert hashlib.sha256(raw).hexdigest() == 'e39805d47855e4c1ba0b02a40233ac2fafb470d7ace0719f9ef5383b50021a7f'
 manifest = json.loads(raw)
 for row in manifest['files']:
     path = Path(row['path'])
@@ -63,8 +63,9 @@ extract = extract.replace('cin_timestep::', 'cin_screen_frozen::')
 assert extract == (here/'FrozenCaller.inc').read_text(), 'complete frozen caller prefix/motion/suffix'
 same(body(old_owner, 'cin_advance::Launch'), body((here/'Frozen.cu').read_text(), 'LaunchFrozen'), 'frozen launch order')
 owner = (root/'lib_src/solvers/ExplicitNodalCinStep.cu').read_text()
-for name in ('AdvanceOrdinaryCin', 'CompleteCin'):
-    same(body(owner, name), body(old_owner, name), name)
+same(body(owner, 'AdvanceOrdinaryCin'), body(old_owner, 'AdvanceOrdinaryCin'), 'ordinary motion')
+without_capture = runpy.run_path(str(here.parent/'cin_parallel_capture/capture_proof.py'))['without_capture']
+same(body(owner, 'CompleteCin'), without_capture(body(old_owner, 'CompleteCin')), 'ordered suffix before exact final copy extraction')
 current_prefix = body(owner, 'PrepareCin')
 insert = '  // Screen owns the ordinary failure-key initialization only after successful\n  // structural admission. A rejected screen leaves the prior key untouched.\n  if (parallel_screen) return;\n'
 assert insert in current_prefix

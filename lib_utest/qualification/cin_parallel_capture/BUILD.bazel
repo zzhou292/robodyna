@@ -1,0 +1,27 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+cc_library(
+    name = "fixture",
+    testonly = True,
+    hdrs = ["FrozenCopy.h", "FrozenCaller.inc", "Values.h"],
+    deps = ["//lib_src/solvers:explicit_nodal_state", "@googletest//:gtest_main"],
+)
+cc_test(
+    name = "host",
+    size = "small",
+    srcs = ["HostTest.cpp"],
+    deps = [":fixture"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cuda_test(
+    name = "cuda",
+    size = "small",
+    srcs = ["ValuesTest.cu", "CallerTest.cu", "Frozen.cu",
+            "//lib_utest/qualification/cin_parallel_ordinary:device_packet_sources",
+            "//lib_utest/qualification/cin_parallel_ordinary:owner_test_sources"],
+    deps = [":fixture", "//lib_utest/qualification/cin_force_inputs:fixture",
+            "//lib_utest/qualification/rigid_assembly_owner:fixture"],
+    copts = ["--std=c++17", "-Ilib_src/solvers", "--fmad=false", "--prec-div=true",
+             "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+    tags = ["exclusive", "gpu"],
+)

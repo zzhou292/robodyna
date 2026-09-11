@@ -3,51 +3,6 @@
   "scope": "Complete frozen serial CIN caller; unchanged arithmetic and ordered prefix/suffix; no new native formula oracle",
   "files": [
     {
-      "path": "lib_utest/qualification/cin_parallel_ordinary/serial/ExplicitNodalCinStep.cu.txt",
-      "bytes": 8854,
-      "sha256": "19e1a3d46ff04f9b0eff95192d7bf49b254a7db917ebf7e1f7428d5169e7bf9f"
-    },
-    {
-      "path": "lib_utest/qualification/cin_parallel_ordinary/serial/Kernel.inc",
-      "bytes": 6691,
-      "sha256": "94e30ef6f852c297eaf4f01cf93fc7f9241e1a2f3fc269719c6a1debb9465dfa"
-    },
-    {
-      "path": "lib_src/constraints/tied_shell/runtime/CinForceStage.h",
-      "bytes": 8237,
-      "sha256": "064991b19a42716eaad88fcaebeb0ce3907788fcaa7a0e0fc425de6ede109151"
-    },
-    {
-      "path": "lib_src/constraints/tied_shell/runtime/CinMotionStage.h",
-      "bytes": 1774,
-      "sha256": "9f8f729e802df94729fcf5392b0b06fc50d55b0f883bd9f538c531c3b21f30f3"
-    },
-    {
-      "path": "lib_src/solvers/NodalNodeStep.h",
-      "bytes": 2661,
-      "sha256": "80cca34361e54979a1d6ae100f045604f1b98c6e2ceb18caa8af12c84a5be35e"
-    },
-    {
-      "path": "lib_src/solvers/FENodalStateStorage.h",
-      "bytes": 4407,
-      "sha256": "4235ba6fe6bc7d566b60c13e3d7f2fe7b2eba3208b0af87f146f169c9e0c7167"
-    },
-    {
-      "path": "lib_src/solvers/cin_timestep/Screen.h",
-      "bytes": 846,
-      "sha256": "a07f4bd744e2b9f86f89bda8f4cb91e3cf574a98da2157136e4fbc42f72d68f9"
-    },
-    {
-      "path": "lib_src/solvers/cin_timestep/Rigid.h",
-      "bytes": 2514,
-      "sha256": "cf3de0fe21e006c656f0e75d6668bf6f8fba52e79a80064cd630fe6f40c1f89a"
-    },
-    {
-      "path": "lib_src/solvers/cin_timestep/Ordinary.h",
-      "bytes": 1094,
-      "sha256": "b8dd1fd169847bd49b211be16e203546d97ae49beee432f8370a08bffd32d01e"
-    },
-    {
       "path": "lib_src/constraints/NodalRigidGroupCandidate.h",
       "bytes": 4771,
       "sha256": "a9e530294e1cb1fbe3ed7c82bbff0245b83ca9889fa497c8f6cf3bbb47b5d2c1"
@@ -63,9 +18,14 @@
       "sha256": "ff1b354e5a45ded03bd9a33cca82aea4ff2a56f2f7b8bab5ce446e8cdf2d2463"
     },
     {
-      "path": "lib_src/solvers/NodalForceStageCaptureLayout.h",
-      "bytes": 694,
-      "sha256": "b2ac659dfca0a07aba32b5323c7e3460f9cd264f3e28dcb5c1d541d1cdaae9bd"
+      "path": "lib_src/constraints/tied_shell/runtime/CinForceStage.h",
+      "bytes": 8237,
+      "sha256": "064991b19a42716eaad88fcaebeb0ce3907788fcaa7a0e0fc425de6ede109151"
+    },
+    {
+      "path": "lib_src/constraints/tied_shell/runtime/CinMotionStage.h",
+      "bytes": 1774,
+      "sha256": "9f8f729e802df94729fcf5392b0b06fc50d55b0f883bd9f538c531c3b21f30f3"
     },
     {
       "path": "lib_src/solvers/ExplicitNodalStep.cu",
@@ -73,14 +33,64 @@
       "sha256": "44ed4520ae6f055f8b3529626a8a1a6c5665e44128e0d9702d76b8c7e30c09d6"
     },
     {
-      "path": "lib_src/solvers/cin_timestep/Sources.h",
-      "bytes": 1193,
-      "sha256": "abeace0d6f2f72072a5ecc6564b48fe05ca7a35629b54b9c653ab80db49eeb55"
+      "path": "lib_src/solvers/FENodalStateStorage.h",
+      "bytes": 4407,
+      "sha256": "4235ba6fe6bc7d566b60c13e3d7f2fe7b2eba3208b0af87f146f169c9e0c7167"
+    },
+    {
+      "path": "lib_src/solvers/NodalForceStageCaptureLayout.h",
+      "bytes": 694,
+      "sha256": "b2ac659dfca0a07aba32b5323c7e3460f9cd264f3e28dcb5c1d541d1cdaae9bd"
+    },
+    {
+      "path": "lib_src/solvers/NodalNodeStep.h",
+      "bytes": 2661,
+      "sha256": "80cca34361e54979a1d6ae100f045604f1b98c6e2ceb18caa8af12c84a5be35e"
+    },
+    {
+      "path": "lib_src/solvers/cin_timestep/Ordinary.h",
+      "bytes": 1094,
+      "sha256": "b8dd1fd169847bd49b211be16e203546d97ae49beee432f8370a08bffd32d01e"
+    },
+    {
+      "path": "lib_src/solvers/cin_timestep/Rigid.h",
+      "bytes": 2514,
+      "sha256": "cf3de0fe21e006c656f0e75d6668bf6f8fba52e79a80064cd630fe6f40c1f89a"
+    },
+    {
+      "path": "lib_src/solvers/cin_timestep/Screen.h",
+      "bytes": 846,
+      "sha256": "a07f4bd744e2b9f86f89bda8f4cb91e3cf574a98da2157136e4fbc42f72d68f9"
     },
     {
       "path": "lib_src/solvers/cin_timestep/ScreenValues.h",
       "bytes": 3322,
       "sha256": "0c71bfcf243f76662cfc961a676674239742228565b34f29297886550f54e823"
+    },
+    {
+      "path": "lib_src/solvers/cin_timestep/Sources.h",
+      "bytes": 1193,
+      "sha256": "abeace0d6f2f72072a5ecc6564b48fe05ca7a35629b54b9c653ab80db49eeb55"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_capture/capture_proof.py",
+      "bytes": 525,
+      "sha256": "2b54e1dd0c24efba0099d7205d0fd1cec53c65b29d8c369a0339d7ae39cd759f"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_capture/reference/ExplicitNodalCinStep.cu",
+      "bytes": 10167,
+      "sha256": "93daabe8c09d45fe9292234fdad030aa35aa61faba12f942db89ee3087264346"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/serial/ExplicitNodalCinStep.cu.txt",
+      "bytes": 8854,
+      "sha256": "19e1a3d46ff04f9b0eff95192d7bf49b254a7db917ebf7e1f7428d5169e7bf9f"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/serial/Kernel.inc",
+      "bytes": 6691,
+      "sha256": "94e30ef6f852c297eaf4f01cf93fc7f9241e1a2f3fc269719c6a1debb9465dfa"
     }
   ],
   "input_only_extraction": {
@@ -105,6 +115,11 @@
           "sha256": "b39f7984600944055c0fb7df0b326070f9a21e81ddf5221afafad98ac56516cb"
         }
       ]
+    },
+    {
+      "scope": "Before exact final capture extraction from CompleteCin; all frozen oracle files unchanged",
+      "manifest_sha256": "4b7646e844babea8a62cd774be5636fa3421a69668f26447fa177025d85f4a7d",
+      "files": []
     }
   ]
 }

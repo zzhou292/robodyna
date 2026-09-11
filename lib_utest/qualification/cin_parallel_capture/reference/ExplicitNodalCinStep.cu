@@ -3,7 +3,6 @@
 #include "cin_advance/Node.h"
 #include "cin_advance/ForceInputs.h"
 #include "cin_advance/Screen.h"
-#include "cin_advance/Capture.h"
 #include "cin_timestep/Screen.h"
 #include "NodalCinStorage.h"
 #include "NodalRigidGroupStorage.h"
@@ -156,7 +155,15 @@ __global__ void CompleteCin(const cin_advance::Input input) {
       return;
     }
   }
-
+  if (capture.node) {
+    for (std::uint32_t node = 0; node < n; ++node) {
+      if (groups.member_nodes && groups.member_nodes[node]) continue;
+      for (unsigned a = 0; a < 3; ++a) {
+        capture.node[3*node+a] = acceleration[3*node+a];
+        capture.node_rotation[3*node+a] = angular_acceleration[3*node+a];
+      }
+    }
+  }
 }
 } // namespace
 
@@ -182,9 +189,7 @@ cudaError_t cin_advance::Launch(const Input& input, cudaStream_t stream) {
   error = cudaGetLastError();
   if (error != cudaSuccess) return error;
   CompleteCin<<<1,1,0,stream>>>(input);
-  error = cudaGetLastError();
-  if (error != cudaSuccess) return error;
-  return capture::Launch(input, stream);
+  return cudaGetLastError();
 }
 
 cudaError_t FENodalState::Impl::LaunchCinAdvance(double maximum_angle,

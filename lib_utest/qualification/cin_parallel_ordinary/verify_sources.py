@@ -8,7 +8,7 @@ import re
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 raw = (here / "source-manifest.json").read_bytes()
-assert hashlib.sha256(raw).hexdigest() == "4b7646e844babea8a62cd774be5636fa3421a69668f26447fa177025d85f4a7d"
+assert hashlib.sha256(raw).hexdigest() == "ebd82719851c8ec51ca5b73bd7d068fa663b0aee0cee18d54f98eddb99761405"
 manifest = json.loads(raw)
 for row in manifest["files"]:
     path = Path(row["path"])
@@ -34,7 +34,8 @@ intermediate = (here.parent / "cin_force_inputs/serial/ExplicitNodalCinStep.cu.t
 prefix = intermediate[intermediate.index(start):intermediate.index("  *input.failure")]
 assert old_prefix == prefix, "prefix arithmetic or error order changed"
 suffix = "  // Source/owner admission proves CIN has no rigid member intersection."
-assert old[old.index(suffix):old.index("} // namespace")] == current[
+without_capture = runpy.run_path(str(here.parent/"cin_parallel_capture/capture_proof.py"))["without_capture"]
+assert without_capture(old[old.index(suffix):old.index("} // namespace")]) == current[
     current.index(suffix):current.index("} // namespace")], "suffix arithmetic or error order changed"
 
 # Compare the extracted local node operation after only the explicit view-name
