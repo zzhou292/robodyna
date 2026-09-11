@@ -8,6 +8,7 @@ struct ShellFailureParentInput {
   ShellPlasticityParentInput source;
   ShellFailurePolicy policy = ShellFailurePolicy::None;
   sections::ConstantFailureParameters constant{};
+  sections::ShellLayeredTab1Parameters tab1{};
 };
 // Immutable declaration only. Every catalog parent is supplied in the exact
 // original catalog input order, including non-failing LAW1/LAW44 parents.

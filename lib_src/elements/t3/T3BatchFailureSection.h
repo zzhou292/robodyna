@@ -1,8 +1,9 @@
 #pragma once
 #include "T3BatchLayeredSection.h"
 #include "T3LayeredJ2Failure.h"
+#include "T3LayeredTab1.h"
 #include "../failure/ShellFailureArenaLayout.h"
-#include "../failure/ShellFailureValues.h"
+#include "../failure/ShellFailureSectionAdvance.h"
 
 namespace tl::fea::t3::batch_detail {
 TL_T3_HD inline Status EvaluateFailureSection(const ReferenceData& reference,
@@ -24,23 +25,25 @@ TL_T3_HD inline Status EvaluateFailureSection(const ReferenceData& reference,
     if (status == Status::kSuccess) failure.state[1u - slab][parent] = sidecar;
     return status;
   }
-  if (policy != ShellFailurePolicy::ConstantAllPoints ||
-      mixed.law[parent] != ShellSectionLaw::LayeredLaw44Nip3) {
-    return Status::kInvalidInput;
+  if (mixed.law[parent] != ShellSectionLaw::LayeredLaw44Nip3) return Status::kInvalidInput;
+  if (policy == ShellFailurePolicy::ConstantAllPoints) {
+    const LayeredJ2FailureHistory base{old_shell, FailureHistory(old, sidecar)};
+    LayeredJ2FailureForceTrial next;
+    const auto status = EvaluateLayeredJ2FailureForce(reference, mixed.plastic.parameters[parent],
+        failure.parameters[parent], base, interval, next);
+    if (status != Status::kSuccess) return status;
+    return PublishFailureSection(old, old_shell.data().thickness, next, mixed, failure,
+        1u - slab, parent, output) ? Status::kSuccess : Status::kNonfiniteResult;
   }
-  const LayeredJ2FailureHistory base{old_shell, FailureHistory(old, sidecar)};
-  LayeredJ2FailureForceTrial next;
-  const auto status = EvaluateLayeredJ2FailureForce(reference, mixed.plastic.parameters[parent],
-      failure.parameters[parent], base, interval, next);
-  if (status != Status::kSuccess) return status;
-  ShellBatchSectionState section;
-  if (!ProposedPlasticSection(old, next.section.history.saved, next.section.current.diagnostics,
-                             old_shell.data().thickness, next.force.kinematics.area, section)) {
-    return Status::kNonfiniteResult;
+  if (policy == ShellFailurePolicy::Tab1AnyPoint) {
+    const LayeredTab1History base{old_shell, Tab1FailureHistory(old, sidecar)};
+    LayeredTab1ForceTrial next;
+    const auto status = EvaluateLayeredTab1Force(reference, mixed.plastic.parameters[parent],
+        failure.tab1_parameters[parent], base, interval, next);
+    if (status != Status::kSuccess) return status;
+    return PublishFailureSection(old, old_shell.data().thickness, next, mixed, failure,
+        1u - slab, parent, output) ? Status::kSuccess : Status::kNonfiniteResult;
   }
-  output = next.force;
-  mixed.plastic.section[1u - slab][parent] = section;
-  failure.state[1u - slab][parent] = FailureState(next.section.history);
-  return Status::kSuccess;
+  return Status::kInvalidInput;
 }
 } // namespace tl::fea::t3::batch_detail

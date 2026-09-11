@@ -89,7 +89,7 @@ template<class Family> void Exercise() {
       ASSERT_TRUE(catalog.Parameters(Family::Family, e, &mixed->plastic.parameters[e]));
       failure->policy[e] = fe::ShellFailurePolicy::ConstantAllPoints;
       failure->parameters[e].failure_strain = 1e-6;
-      for (auto* slab : failure->state) slab[e].policy = failure->policy[e];
+      for (auto* slab : failure->state) slab[e] = fe::ShellBatchFailureState::Constant();
     }
     ASSERT_EQ(InitializeHistory(Family::Reference(binding, e), {}, accepted[e]),
               decltype(InitializeHistory(Family::Reference(binding, e), {}, accepted[e]))::kSuccess);

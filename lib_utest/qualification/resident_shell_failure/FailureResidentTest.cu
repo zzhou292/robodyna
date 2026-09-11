@@ -27,8 +27,8 @@ TEST_F(Cuda,CompleteMixedParentsRemoveThenRetainPostRemovalHistoryAndOneClock) {
     EXPECT_TRUE(next.tfailure[0].active);
     EXPECT_FALSE(next.qfailure[1].active);
     EXPECT_FALSE(next.tfailure[1].active);
-    EXPECT_EQ(next.qfailure[0].policy,fe::ShellFailurePolicy::None);
-    EXPECT_EQ(next.qfailure[1].policy,fe::ShellFailurePolicy::ConstantAllPoints);
+    EXPECT_EQ(next.qfailure[0].policy(),fe::ShellFailurePolicy::None);
+    EXPECT_EQ(next.qfailure[1].policy(),fe::ShellFailurePolicy::ConstantAllPoints);
     if(step) {
       EXPECT_NE(next.material.qforce[1].proposed_history.data().strain_curvature[0],old.material.qforce[1].proposed_history.data().strain_curvature[0]);
       EXPECT_NE(next.material.tforce[1].proposed_history.data().strain_curvature[0],old.material.tforce[1].proposed_history.data().strain_curvature[0]);

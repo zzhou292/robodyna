@@ -26,7 +26,7 @@ TEST(ResidentFailureLayout,ExplicitSidecarExactBudgetsAndRebasedSlabsPreserveLeg
   tl::util::HostArena arena;ASSERT_TRUE(arena.Initialize(layout.bytes));auto* value=layout.Construct(arena);ASSERT_NE(value,nullptr);
   auto* fake=reinterpret_cast<void*>(std::uintptr_t(0x100000));auto rebased=layout.Rebase(fake);
   EXPECT_EQ(reinterpret_cast<std::uintptr_t>(rebased.state[1]),0x100000+layout.state[1].offset);
-  EXPECT_TRUE(value->state[1][6].active);EXPECT_EQ(value->state[1][6].policy,fe::ShellFailurePolicy::None);
+  EXPECT_TRUE(value->state[1][6].active);EXPECT_EQ(value->state[1][6].policy(),fe::ShellFailurePolicy::None);
   storage::MixedLayout retained;ASSERT_TRUE(retained.Initialize(7,6,1<<20));EXPECT_EQ(retained.bytes,old_bytes);
 }
 TEST(ResidentFailureLayout,FullOriginalCountsFitCombinedExistingFamilyDeviceBudgets) {
@@ -41,15 +41,15 @@ TEST(ResidentFailureLayout,FullOriginalCountsFitCombinedExistingFamilyDeviceBudg
   RecordProperty("failure_total_device_bytes",std::to_string(qf.bytes+tf.bytes));
 }
 TEST(ResidentFailureLayout,ActivityAndSavedVersusCurrentStressRejectLateCorruption) {
-  fe::ShellBatchSectionState section;fe::ShellBatchFailureState state;state.policy=fe::ShellFailurePolicy::ConstantAllPoints;
-  EXPECT_TRUE(storage::ValidFailureState(state,state.policy,&section,0));
-  state.point[2]={1,.25,false};state.current_force_point[2].stress[4]=123;
-  EXPECT_TRUE(storage::ValidFailureState(state,state.policy,&section,.25));
-  EXPECT_FALSE(storage::ValidFailureState(state,state.policy,&section,.125));
-  state.active=false;EXPECT_FALSE(storage::ValidFailureState(state,state.policy,&section,.25));state.active=true;
+  fe::ShellBatchSectionState section;auto state=fe::ShellBatchFailureState::Constant();
+  EXPECT_TRUE(storage::ValidFailureState(state,state.policy(),&section,0));
+  state.constant_points()[2]={1,.25,false};state.current_force_point[2].stress[4]=123;
+  EXPECT_TRUE(storage::ValidFailureState(state,state.policy(),&section,.25));
+  EXPECT_FALSE(storage::ValidFailureState(state,state.policy(),&section,.125));
+  state.active=false;EXPECT_FALSE(storage::ValidFailureState(state,state.policy(),&section,.25));state.active=true;
   state.current_force_point[2].stress[4]=std::numeric_limits<double>::infinity();
-  EXPECT_FALSE(storage::ValidFailureState(state,state.policy,&section,.25));
-  state={};*reinterpret_cast<unsigned char*>(&state.point[2].point_active)=2;
+  EXPECT_FALSE(storage::ValidFailureState(state,state.policy(),&section,.25));
+  state=fe::ShellBatchFailureState::Constant();*reinterpret_cast<unsigned char*>(&state.constant_points()[2].point_active)=2;
   EXPECT_FALSE(storage::ValidFailureEncoding(state));
 }
 } // namespace resident_failure_test

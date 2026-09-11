@@ -20,7 +20,9 @@ remain separate work.
 `ShellBatchFailureBinding` is an immutable, complete source-order declaration
 alongside the existing explicitly heterogeneous section catalog. Every parent
 has a policy: `None` or LAW44 `ConstantAllPoints` with positive native D1.
-`Tab1AnyPoint` is reserved and rejected. LAW1 remains non-failing. An all-None
+The subsequent [resident TAB1 increment](../resident_shell_tab1/README.md)
+admits explicitly qualified `Tab1AnyPoint` declarations. This regression suite
+continues to test the original constant/None path. LAW1 remains non-failing. An all-None
 collection uses the existing initializer.
 
 The new `InitializeJoined(config, binding, catalog, failure, limits)` overload
@@ -56,7 +58,7 @@ control allowances, not allocator overhead, driver memory or process RSS.
 The embedded immutable handle and shared native backing are counted once;
 shared backing is discounted only after the existing identity check.
 
-On this binary64 host, the failure header is 32 B, policy 4 B, D1 8 B, and
+At the original constant-only qualification, the failure header was 32 B, policy 4 B, D1 8 B, and
 failure state 208 B. Checked alignment gives 888 B for two parents. For the
 original tire-free source counts (328,344 QEPH, 21,301 T3, 359,785 nodes), a
 forecast with 1,024 curve points per family gives:
@@ -68,6 +70,8 @@ forecast with 1,024 curve points per family gives:
 | Complete T3 arena + mixed section + failure arena | 102,322,956 |
 
 These are layout forecasts, not full-vehicle mechanics or startup admission.
+The linked TAB1 increment documents the updated typed payload and current sizes;
+this table preserves the original qualified measurement rather than a current ABI.
 The complete nodal/contact/publication/other producer budgets remain separate.
 
 ## Owning qualification

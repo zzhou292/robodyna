@@ -31,7 +31,8 @@ static_assert(std::is_trivially_copyable<Storage>::value,"Resident records requi
 using Layout=shell_batch_detail::BatchArenaLayout<Storage,QephBatchElement,ForceTrial,Vec3,Status>;
 static_assert(sizeof(Storage)<2048,"Resident header contains no capacity-sized arrays");
 
-BatchReport BuildModel(const QephBatchConfig&,const QephBatchElement*,Model&,Slab&,const ShellBatchBinding* joined=nullptr);
+BatchReport BuildModel(const QephBatchConfig&,const QephBatchElement*,Model&,Slab&,const ShellBatchBinding* joined=nullptr,
+    const ShellBatchFailureBinding* failure=nullptr);
 bool SameDiagnostics(const BatchDiagnostics&,const BatchDiagnostics&) noexcept;
 using trial_identity::SameStamp;
 using trial_identity::SamePrepared;

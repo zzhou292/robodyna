@@ -3,6 +3,7 @@
 #include "QephHistory.h"
 #include "QephBatchStartup.h"
 #include "../ShellBatchJoinedModel.h"
+#include "../ShellBatchFailureBinding.h"
 #include "../ShellResidentStartupIndex.h"
 #include "lib_src/solvers/NodalNativePhysicalCoefficients.h"
 #include <cmath>
@@ -25,8 +26,13 @@ bool SameReference(const ReferenceData& a,const ReferenceData& b) {
 }
 }
 
-BatchReport BuildModel(const QephBatchConfig& c,const QephBatchElement* input,Model& model,Slab& initial,const ShellBatchBinding* joined) {
+BatchReport BuildModel(const QephBatchConfig& c, const QephBatchElement* input,
+    Model& model, Slab& initial, const ShellBatchBinding* joined,
+    const ShellBatchFailureBinding* failure) {
   const auto& o=c.owner;
+  if (failure && (!joined || !failure->catalog() || !failure->catalog()->Matches(*joined))) {
+    return {BatchStatus::InvalidInput, "Failure scope differs from complete joined geometry"};
+  }
   if(!native_physical_coefficients::ValidScope(o.rigid_groups,o.node_count)||
      (!native_physical_coefficients::Empty(o.rigid_groups)&&(!joined||c.usage!=BatchUsage::CoupledForces)))
     return {BatchStatus::InvalidInput,"Rigid groups require complete scope and joined coupled shell publication"};
@@ -59,8 +65,13 @@ BatchReport BuildModel(const QephBatchConfig& c,const QephBatchElement* input,Mo
       for(unsigned local=0;local<4;++local) selected.nodes[local]=joined->qeph_nodes(e)[local];
     }
     const auto& element=joined?selected:input[e]; ReferenceData checked;
-    if(element.reference.input.placement!=ShellReferencePlacement::Centered)
-      return {BatchStatus::InvalidInput,"Noncentered shell placement has no resident admission",e};
+    if (element.reference.input.placement != ShellReferencePlacement::Centered) {
+      const auto* source = failure ? failure->parent(ShellBindingFamily::Qeph, e) : nullptr;
+      if (!source || source->policy != ShellFailurePolicy::Tab1AnyPoint) {
+        return {BatchStatus::InvalidInput,
+                "Noncentered placement requires the exact qualified TAB1 failure binding", e};
+      }
+    }
     const auto status=InitializeReference(element.reference.input,checked);
     if(status!=Status::kSuccess||!SameReference(element.reference,checked))
       return {BatchStatus::ElementFailure,"Reference differs from its startup producer",e,UINT32_MAX,

@@ -94,7 +94,7 @@ BatchReport QephBatch::InitializeImpl(const QephBatchConfig& config,const QephBa
     const auto points=plasticity?plasticity->curve.count:collection_plasticity->curve_point_count();
     Layout plastic_layout; std::size_t plastic_host_bytes=0;
     const bool mixed=collection_plasticity&&collection_plasticity->heterogeneous_sections();
-    if (failure && (!failure_limits || !mixed ||
+    if (failure && (!failure_limits || !mixed || !failure->Matches(*collection_plasticity) ||
                     failure->host_bytes() < collection_plasticity->host_bytes())) {
       return {BatchStatus::InvalidInput, "Failure sidecar requires explicit mixed scope and limits"};
     }
@@ -119,7 +119,7 @@ BatchReport QephBatch::InitializeImpl(const QephBatchConfig& config,const QephBa
   if(!arena.Initialize(layout.bytes)) return {BatchStatus::ResourceLimit,"QEPH startup staging allocation failed"};
   auto* initial=layout.Construct(arena);
   if(!initial) return {BatchStatus::ResourceLimit,"QEPH startup arena layout is invalid"};
-  auto report=batch_detail::BuildModel(config,elements,initial->model,initial->slab[0],joined);
+  auto report=batch_detail::BuildModel(config,elements,initial->model,initial->slab[0],joined,failure);
   if(report.status!=BatchStatus::Success) return report;
   std::unique_ptr<Impl> candidate(new(std::nothrow) Impl);
   if(!candidate) return {BatchStatus::ResourceLimit,"QEPH host allocation failed"};

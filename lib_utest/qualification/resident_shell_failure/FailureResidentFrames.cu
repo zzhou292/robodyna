@@ -29,15 +29,19 @@ bool Evaluate(Rig& rig,const Prepared& prepared,Frame& output) {
 }
 namespace {
 void Sidecar(const fe::ShellBatchFailureState& a,const fe::ShellBatchFailureState& b) {
-  EXPECT_EQ(a.policy,b.policy);
+  EXPECT_EQ(a.policy(),b.policy());
   EXPECT_EQ(a.active,b.active);
   std::vector<double> x,y;
   for(unsigned p=0;p<3;++p) {
-    EXPECT_EQ(a.point[p].point_active,b.point[p].point_active);
-    failure_force_test::Append(x,a.point[p].damage);
-    failure_force_test::Append(y,b.point[p].damage);
-    failure_force_test::Append(x,a.point[p].failure_time_s);
-    failure_force_test::Append(y,b.point[p].failure_time_s);
+    if (const auto* left = a.constant_points()) {
+      ASSERT_NE(b.constant_points(), nullptr);
+      const auto& right = b.constant_points()[p];
+      EXPECT_EQ(left[p].point_active, right.point_active);
+      failure_force_test::Append(x, left[p].damage);
+      failure_force_test::Append(y, right.damage);
+      failure_force_test::Append(x, left[p].failure_time_s);
+      failure_force_test::Append(y, right.failure_time_s);
+    }
     failure_force_test::Append(x,a.current_force_point[p].stress);
     failure_force_test::Append(y,b.current_force_point[p].stress);
   }

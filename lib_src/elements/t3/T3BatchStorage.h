@@ -36,7 +36,8 @@ static_assert(sizeof(Storage)<2048,"Resident header contains no capacity-sized a
 // physical fields are unchanged and complete sizes remain explicitly checked.
 static_assert(sizeof(ForceTrial)==984&&alignof(Storage)==8,"Qualified native T3 record layout");
 
-BatchReport BuildModel(const T3BatchConfig&,const T3BatchElement*,Model&,Slab&,const ShellBatchBinding* joined=nullptr);
+BatchReport BuildModel(const T3BatchConfig&,const T3BatchElement*,Model&,Slab&,const ShellBatchBinding* joined=nullptr,
+    const ShellBatchFailureBinding* failure=nullptr);
 bool SameDiagnostics(const BatchDiagnostics&,const BatchDiagnostics&) noexcept;
 using trial_identity::SameStamp;
 using trial_identity::SamePrepared;

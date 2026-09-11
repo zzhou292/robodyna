@@ -6,7 +6,7 @@
   "native_reference_checkpoint": "t3-r3-native-force-history-1",
   "startup_rates_tl_commit": "f5ceb29",
   "startup_rates_checkpoint": "t3-port-startup-rates-1",
-  "live_startup_manifest_sha256": "2d8f9a837c60ac5e88e4d05bf859d800bb225eea89b63a9f8db666888f68dd23",
+  "live_startup_manifest_sha256": "69b9296b90f481989d552ebdf55940352483dee17d13fcb27a55ec94e7ec7644",
   "native_source_manifest_sha256": "3f4891f6dab344de9c0c579b699e43e11b30a7359358170833395481e62c2e9f",
   "transformations": [
     "Single three-node fixed-array selected source arithmetic; no MVSIZ or COMMON in production",
@@ -128,8 +128,8 @@
     },
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
-      "bytes": 2807,
-      "sha256": "e018d6c8aa4add2b0e62ea29abd63e6e858ff8d082efc93af33b467dcfaffcf5"
+      "bytes": 2824,
+      "sha256": "709efc9c40ad85c2f0a0c8e4dfe3fdd9a916f61e3734073a65b579c7b415ef8d"
     },
     {
       "path": "lib_src/elements/t3/CMakeLists.txt",
@@ -143,13 +143,13 @@
     },
     {
       "path": "lib_utest/qualification/t3/source-manifest.json",
-      "bytes": 20886,
-      "sha256": "d64eaa2089b51f8895c44c6ee4be81c8f12122b215f54d0bdebcac23d9784b55"
+      "bytes": 21078,
+      "sha256": "69b9296b90f481989d552ebdf55940352483dee17d13fcb27a55ec94e7ec7644"
     },
     {
       "path": "lib_utest/qualification/t3/verify_sources.py",
       "bytes": 2001,
-      "sha256": "094c34c9943e73afcfff5180aa9975a5745510a6b78dc7c46967e9461c1c25e8"
+      "sha256": "58c5ac6ec9059c8f6d72d49436a3f9f51ab9a8bc4bdcb0db6c0e552bcfb0a25f"
     },
     {
       "path": "lib_utest/qualification/t3/T3PortFixture.h",
@@ -787,5 +787,8 @@
     "review": "Independent resident storage/transaction/readback review found no blocker after deleting raw arena owner copying; actual resident CUDA execution remains the owning qualification."
   },
   "glass_and_failure_build_registration": "Main 6083b01 registers optional failure batches and glass force headers; only BUILD metadata and its startup manifest identity change. Native donor and legacy T3 force arithmetic are unchanged.",
-  "native_reference_placement_scope": "Centered family coefficients now reuse typed placement helpers with unchanged operations. Explicit nonzero section/coefficient value qualification is owned by shell_reference_placement; live reference/batch/source placement admission remains separate."
+  "native_reference_placement_scope": "Centered family coefficients now reuse typed placement helpers with unchanged operations. Explicit nonzero section/coefficient value qualification is owned by shell_reference_placement; live reference/batch/source placement admission remains separate.",
+  "resident_tab1_build_registration": {
+    "scope": "Register the qualified TAB1 adapter as an explicit resident batch dependency; native and historical pins unchanged."
+  }
 }

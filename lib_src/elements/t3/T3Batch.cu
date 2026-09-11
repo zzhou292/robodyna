@@ -97,7 +97,7 @@ BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchEle
     const auto points=plasticity?plasticity->curve.count:collection_plasticity->curve_point_count();
     Layout plastic_layout; std::size_t plastic_host_bytes=0;
     const bool mixed=collection_plasticity&&collection_plasticity->heterogeneous_sections();
-    if (failure && (!failure_limits || !mixed ||
+    if (failure && (!failure_limits || !mixed || !failure->Matches(*collection_plasticity) ||
                     failure->host_bytes() < collection_plasticity->host_bytes())) {
       return {BatchStatus::InvalidInput, "Failure sidecar requires explicit mixed scope and limits"};
     }
@@ -122,7 +122,7 @@ BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchEle
   if(!arena.Initialize(layout.bytes)) return {BatchStatus::ResourceLimit,"T3 startup staging allocation failed"};
   auto* initial=layout.Construct(arena);
   if(!initial) return {BatchStatus::ResourceLimit,"T3 startup arena layout is invalid"};
-  auto report=batch_detail::BuildModel(config,elements,initial->model,initial->slab[0],joined);
+  auto report=batch_detail::BuildModel(config,elements,initial->model,initial->slab[0],joined,failure);
   if(report.status!=BatchStatus::Success) return report;
   std::unique_ptr<Impl> candidate(new(std::nothrow) Impl);
   if(!candidate) return {BatchStatus::ResourceLimit,"T3 host allocation failed"};

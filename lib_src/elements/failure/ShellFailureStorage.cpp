@@ -57,7 +57,16 @@ SetupReport FailureHostStorage::Initialize(const ShellBatchFailureBinding& bindi
     }
     initial->policy[e] = source->policy;
     initial->parameters[e] = source->constant;
-    for (auto* slab : initial->state) slab[e].policy = source->policy;
+    initial->tab1_parameters[e] = source->tab1;
+    for (auto* slab : initial->state) {
+      if (source->policy == ShellFailurePolicy::ConstantAllPoints) {
+        slab[e] = ShellBatchFailureState::Constant();
+      } else if (source->policy == ShellFailurePolicy::Tab1AnyPoint) {
+        slab[e] = ShellBatchFailureState::Tab1();
+      }
+    }
+    // Establish the selected union member before subsequent CUDA byte readback.
+    staging_[e] = initial->state[0][e];
   }
   FailureDeviceStorage* candidate = nullptr;
   auto error = cudaMalloc(reinterpret_cast<void**>(&candidate), layout.bytes);
@@ -85,6 +94,19 @@ SetupReport FailureHostStorage::Read(unsigned slab, std::size_t count,
   if (!device_ || slab > 1 || count != count_ || !sections) {
     return {SetupStatus::InvalidInput, "Invalid failure readback shape"};
   }
+  // A rejected/injected read may have changed a staged tag. Restore the exact
+  // active member before raw CUDA writes; do not rely on C++20 implicit lifetime.
+  for (std::size_t e = 0; e < count; ++e) {
+    const auto* source = binding_.parent(family_, e);
+    if (!source) return {SetupStatus::InvalidInput, "Incomplete failure readback source"};
+    if (source->policy == ShellFailurePolicy::ConstantAllPoints) {
+      staging_[e] = ShellBatchFailureState::Constant();
+    } else if (source->policy == ShellFailurePolicy::Tab1AnyPoint) {
+      staging_[e] = ShellBatchFailureState::Tab1();
+    } else {
+      staging_[e] = ShellBatchFailureState{};
+    }
+  }
   auto error = cudaMemcpyAsync(staging_.data(), header_.state[slab],
       count * sizeof(ShellBatchFailureState), cudaMemcpyDeviceToHost, stream);
   if (error == cudaSuccess) error = cudaStreamSynchronize(stream);
@@ -93,7 +115,7 @@ SetupReport FailureHostStorage::Read(unsigned slab, std::size_t count,
   }
   for (std::size_t e = 0; e < count; ++e) {
     const auto* source = binding_.parent(family_, e);
-    if (!source || !ValidFailureEncoding(staging_[e]) ||
+    if (!source || staging_[e].policy() != source->policy || !ValidFailureEncoding(staging_[e]) ||
         !ValidFailureState(staging_[e], source->policy, sections[e].plastic(), time)) {
       return {SetupStatus::NonfiniteResult,
               "Failure sidecar state disagrees with its declared policy/saved section"};

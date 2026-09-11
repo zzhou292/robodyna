@@ -45,8 +45,8 @@ template<class Trial,class OldForce> void Check(const Trial& expected,const OldF
   Agreement({next.cumulative_plastic_work_J},{work});
   EXPECT_EQ(failure.active,expected.section.history.element_active);
   for(unsigned p=0;p<3;++p) {
-    EXPECT_EQ(failure.point[p].point_active,expected.section.history.failure[p].point_active);
-    Agreement({failure.point[p].damage,failure.point[p].failure_time_s},
+    EXPECT_EQ(failure.constant_points()[p].point_active,expected.section.history.failure[p].point_active);
+    Agreement({failure.constant_points()[p].damage,failure.constant_points()[p].failure_time_s},
       {expected.section.history.failure[p].damage,expected.section.history.failure[p].failure_time_s});
     values.clear();oracle.clear();
     failure_force_test::Append(values,failure.current_force_point[p].stress);

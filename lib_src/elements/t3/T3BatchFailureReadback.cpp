@@ -1,6 +1,6 @@
 #include "T3BatchStorage.h"
 #include "../failure/ShellFailureReadback.h"
-#include <cstring>
+#include <algorithm>
 
 namespace tl::fea::t3 {
 BatchReport T3Batch::CopyAcceptedFailureHistory(const NodalStamp& expected,
@@ -24,7 +24,7 @@ BatchReport T3Batch::CopyAcceptedFailureHistory(const NodalStamp& expected,
   const auto report = shell_batch_plasticity_detail::ReadFailure(state,
       state.AcceptedSlabIndex(), state.accepted_diagnostics.time);
   if (report.status != BatchStatus::Success) return report;
-  std::memcpy(output, state.plasticity->failure_staging(), capacity * sizeof(*output));
+  std::copy_n(state.plasticity->failure_staging(), capacity, output);
   *diagnostics = state.accepted_diagnostics;
   return {BatchStatus::Success, "OK"};
 }
@@ -53,7 +53,7 @@ BatchReport T3Batch::CopyPreparedFailureHistory(const BatchDiagnostics& expected
     state.Discard();
     return report;
   }
-  std::memcpy(output, state.plasticity->failure_staging(), capacity * sizeof(*output));
+  std::copy_n(state.plasticity->failure_staging(), capacity, output);
   return {BatchStatus::Success, "OK"};
 }
 } // namespace tl::fea::t3

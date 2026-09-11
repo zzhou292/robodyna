@@ -1,4 +1,5 @@
 #include "../ShellBatchFailureBinding.h"
+#include "../sections/ShellLayeredTab1ForceAdapter.h"
 #include "lib_utils/BoundedArena.h"
 #include <cstring>
 #include <new>
@@ -22,11 +23,30 @@ bool Same(const ShellPlasticityParentInput& a, const ShellPlasticityParentInput&
 bool Same(double a, double b) noexcept {
   return std::memcmp(&a, &b, sizeof a) == 0;
 }
-bool AdmittedPolicy(const ShellFailureParentInput& row, ShellSectionLaw law) noexcept {
-  if (row.policy == ShellFailurePolicy::None) return Same(row.constant.failure_strain, 0.);
-  return row.policy == ShellFailurePolicy::ConstantAllPoints &&
-      law == ShellSectionLaw::LayeredLaw44Nip3 &&
-      tl::math::Finite(row.constant.failure_strain) && row.constant.failure_strain > 0;
+bool Same(const sections::ShellLayeredTab1Parameters& a,
+          const sections::ShellLayeredTab1Parameters& b) noexcept {
+  if (a.parent_policy != b.parent_policy || !Same(a.table.failure_strain, b.table.failure_strain)) {
+    return false;
+  }
+  for (unsigned i = 0; i < 3; ++i) {
+    if (!Same(a.table.triaxiality[i], b.table.triaxiality[i])) return false;
+  }
+  return true;
+}
+bool AdmittedPolicy(const ShellFailureParentInput& row, ShellSectionLaw law,
+                    const ShellBatchPlasticityBinding& catalog) noexcept {
+  const bool no_tab1 = Same(row.tab1, sections::ShellLayeredTab1Parameters{});
+  if (row.policy == ShellFailurePolicy::None) {
+    return Same(row.constant.failure_strain, 0.) && no_tab1;
+  }
+  if (law != ShellSectionLaw::LayeredLaw44Nip3) return false;
+  if (row.policy == ShellFailurePolicy::ConstantAllPoints) {
+    return no_tab1 && tl::math::Finite(row.constant.failure_strain) && row.constant.failure_strain > 0;
+  }
+  if (row.policy != ShellFailurePolicy::Tab1AnyPoint || !Same(row.constant.failure_strain, 0.)) return false;
+  sections::PointParameters material;
+  return catalog.Parameters(row.source.family, row.source.family_index, &material) &&
+      sections::ValidLayeredTab1ForceParameters(material, row.tab1);
 }
 } // namespace
 
@@ -79,9 +99,9 @@ ShellPlasticityBindingReport ShellBatchFailureBinding::Initialize(
     }
     ShellSectionLaw law;
     catalog.Law(source->family, source->family_index, &law);
-    if (!AdmittedPolicy(row, law)) {
+    if (!AdmittedPolicy(row, law, catalog)) {
       return {Status::InvalidMaterial, i, source->family,
-              "Failure requires canonical None or qualified LAW44 ConstantAllPoints with positive D1"};
+              "Failure policy/parameters differ from the qualified complete material catalog"};
     }
     any_failure = any_failure || row.policy != ShellFailurePolicy::None;
     next->rows[i] = row;
@@ -131,7 +151,7 @@ bool ShellBatchFailureBinding::SameScope(const ShellBatchFailureBinding& other) 
     const auto& a = data_->rows[i];
     const auto& b = other.data_->rows[i];
     if (!Same(a.source, b.source) || a.policy != b.policy ||
-        !Same(a.constant.failure_strain, b.constant.failure_strain)) {
+        !Same(a.constant.failure_strain, b.constant.failure_strain) || !Same(a.tab1, b.tab1)) {
       return false;
     }
   }
