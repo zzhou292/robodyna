@@ -1,5 +1,15 @@
 # TAB1 glass through the existing QEPH/T3 force cores
 
+Root qualification on main `4f89ada`: all four host, two independent native
+and two actual CUDA functions pass with no skips or tolerance changes. The
+owning Bazel target builds. Evidence is in
+`crash-work/reports/shell-tab1-force-root-{configure,build,tests}-1.json`,
+`shell-tab1-force-root-functions-1/` and
+`spring-h1-glass-force-bazel-build-1.json`. The four-worker build sampled
+404,029,440 B peak RSS; GPU tests used two CPUs with a 2 GiB RSS guard.
+These are complete prescribed force/history comparisons, not resident glass
+publication or full original windshield placement admission.
+
 This increment adds small typed QEPH/T3 history and force wrappers plus one
 section adapter. Geometry, material coefficients, local/global force order,
 stabilization, native time-step diagnostics and prescribed-history publication

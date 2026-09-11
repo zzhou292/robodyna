@@ -1,5 +1,18 @@
 # TYPE13 native H1 recurrence qualification
 
+Root qualification on main `c5a31e8`: all six host, six independent native and
+two actual CUDA functions pass, as do both source identity checks. The shared
+spring frame/scatter extraction also passes all 20 affected TYPE25 host/native/
+CUDA functions and its source identity check. All four owning spring Bazel
+targets build in `spring-h1-glass-force-bazel-build-1`.
+
+Evidence: `crash-work/reports/type13-h1-root-{build,tests}-1.json`, numeric XML
+in `type13-h1-root-functions-1/`, and `type25-spring-root-regression-*`.
+The H1 build used four workers on eight affinity CPUs; GPU tests used two CPUs
+with a 2 GiB RSS guard. H1 build sampled peak RSS was 346,619,904 B.
+This qualifies prescribed endpoint mechanics; a resident beam contributor and
+its original tied shell attachments remain separate integration work.
+
 Scope and dimensional/phase contract: `lib_src/elements/type13/RECURRENCE.md`.
 The property uses the already qualified literal original MAT100 converter values;
 this target does not parse a source keyword or run an attached vehicle.
