@@ -1,4 +1,4 @@
-load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 cc_test(
     name = "host",
     size = "small",
@@ -11,4 +11,14 @@ cc_test(
             "//lib_utest/qualification/solid18_law44_reference:test_values",
             "//lib_utest/qualification/law90_solid18_reference:test_values",
             "@googletest//:gtest_main"],
+)
+
+cc_library(
+    name = "test_values",
+    testonly = True,
+    hdrs = ["Fixture.h"],
+    visibility = ["//visibility:public"],
+    deps = ["//lib_utest/qualification/nodal_coefficients:solid_test_support",
+            "//lib_utest/qualification/solid18_law44_reference:test_values",
+            "//lib_utest/qualification/law90_solid18_reference:test_values"],
 )

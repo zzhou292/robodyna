@@ -22,6 +22,12 @@ CoefficientReport Solids(const SolidNodeContributions* input, NodalCoefficientNo
         case SolidCoefficientFamily::Solid6z:
           subtotal = &row.coefficients.solid6z_mass;
           occurrences = &row.occurrences.solid6z; producer = P::Solid6z; break;
+        case SolidCoefficientFamily::Solid18Law44:
+          subtotal = &row.coefficients.solid18_law44_mass;
+          occurrences = &row.occurrences.solid18_law44; producer = P::Solid18Law44; break;
+        case SolidCoefficientFamily::Solid18Law90:
+          subtotal = &row.coefficients.solid18_law90_mass;
+          occurrences = &row.occurrences.solid18_law90; producer = P::Solid18Law90; break;
         default: return {S::IdentityMismatch, "Unknown closed solid family"};
       }
       // Each native source-slot term is added once. No reconstruction from

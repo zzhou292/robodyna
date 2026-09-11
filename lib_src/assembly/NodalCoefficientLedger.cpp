@@ -36,6 +36,11 @@ CoefficientReport NodalCoefficientLedger::InitializeWithSolids(
     NodalCoefficientSourcesWithSolids input,CoefficientLimits limits) noexcept {
   return InitializeImpl(input,CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_ElementMass_Solid18_24_6z_V3,limits);
 }
+CoefficientReport NodalCoefficientLedger::InitializeWithExtendedSolids(
+    NodalCoefficientSourcesWithSolids input,CoefficientLimits limits) noexcept {
+  return InitializeImpl(input,
+      CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_ElementMass_Solid18_24_6z_Law44_Law90_V4,limits);
+}
 CoefficientReport NodalCoefficientLedger::InitializeImpl(NodalCoefficientSourcesWithSolids sources,
     CoefficientOrder order,CoefficientLimits limits) noexcept try {
   using namespace coefficient_detail;
@@ -44,7 +49,7 @@ CoefficientReport NodalCoefficientLedger::InitializeImpl(NodalCoefficientSources
   const auto* masses=sources.element_mass;
   const auto* solids=sources.solids;
   Budget budget(limits.max_host_bytes);
-  auto r=Preflight(input,masses,solids,limits,sizeof(Impl),budget);
+  auto r=Preflight(input,masses,solids,order,limits,sizeof(Impl),budget);
   if(!r) return r;
   r=Identities(input,masses,solids);
   if(!r) return r;
@@ -63,6 +68,8 @@ CoefficientReport NodalCoefficientLedger::InitializeImpl(NodalCoefficientSources
   scope.solid18_parents=solids?solids->parent_count(SolidCoefficientFamily::Solid18):0;
   scope.solid24_parents=solids?solids->parent_count(SolidCoefficientFamily::Solid24):0;
   scope.solid6z_parents=solids?solids->parent_count(SolidCoefficientFamily::Solid6z):0;
+  scope.solid18_law44_parents=solids?solids->parent_count(SolidCoefficientFamily::Solid18Law44):0;
+  scope.solid18_law90_parents=solids?solids->parent_count(SolidCoefficientFamily::Solid18Law90):0;
   r=Shells(next->shells,next->nodes);
   if(!r) return r;
   r=Springs(input,next->nodes);
@@ -137,12 +144,21 @@ bool NodalCoefficientLedger::Matches(const NodalCoefficientLedger& other) const 
       return MatchesWithElementMass({sources,other.element_mass()});
     case CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_ElementMass_Solid18_24_6z_V3:
       return MatchesWithSolids({sources,other.element_mass(),other.solids()});
+    case CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_ElementMass_Solid18_24_6z_Law44_Law90_V4:
+      return MatchesWithExtendedSolids({sources,other.element_mass(),other.solids()});
   }
   return false;
 }
 bool NodalCoefficientLedger::MatchesWithSolids(NodalCoefficientSourcesWithSolids sources) const noexcept {
+  return MatchesSolids(sources,CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_ElementMass_Solid18_24_6z_V3);
+}
+bool NodalCoefficientLedger::MatchesWithExtendedSolids(NodalCoefficientSourcesWithSolids sources) const noexcept {
+  return MatchesSolids(sources,
+      CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_ElementMass_Solid18_24_6z_Law44_Law90_V4);
+}
+bool NodalCoefficientLedger::MatchesSolids(NodalCoefficientSourcesWithSolids sources,CoefficientOrder expected) const noexcept {
   const auto input=sources.structural;
-  return impl_&&order()==CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_ElementMass_Solid18_24_6z_V3&&
+  return impl_&&order()==expected&&
       input.shells&&impl_->shells.Matches(*input.shells)&&
       bool(input.type25)==bool(type25())&&(!input.type25||impl_->springs.Matches(*input.type25))&&
       bool(input.type13)==bool(type13())&&(!input.type13||impl_->beams.Matches(*input.type13))&&

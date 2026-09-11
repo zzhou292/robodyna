@@ -7,9 +7,10 @@ namespace tl::fea {
 enum class CoefficientOrder {
   PreparedSI_Q_T_B_Type25_Type13_V1,
   PreparedSI_Q_T_B_Type25_Type13_ElementMass_V2,
-  PreparedSI_Q_T_B_Type25_Type13_ElementMass_Solid18_24_6z_V3
+  PreparedSI_Q_T_B_Type25_Type13_ElementMass_Solid18_24_6z_V3,
+  PreparedSI_Q_T_B_Type25_Type13_ElementMass_Solid18_24_6z_Law44_Law90_V4
 };
-enum class CoefficientProducer { None,Qeph,T3,Qbat,Type25,Type13,NodeTotals,ElementMass,Solid18,Solid24,Solid6z };
+enum class CoefficientProducer { None,Qeph,T3,Qbat,Type25,Type13,NodeTotals,ElementMass,Solid18,Solid24,Solid6z,Solid18Law44,Solid18Law90 };
 enum class CoefficientStatus {
   Success,AlreadyInitialized,InvalidInput,ResourceLimit,IdentityMismatch,
   DuplicateIdentity,PositionMismatch,NonfiniteResult
@@ -43,14 +44,16 @@ struct NodalCoefficientTotals {
   Type13CoefficientPartition type13{};
   double element_mass=0; // Additive physical nodal mass; scalar J is untouched.
   double solid18_mass=0,solid24_mass=0,solid6z_mass=0;
+  double solid18_law44_mass=0,solid18_law90_mass=0;
 };
 struct CoefficientOccurrences {
   std::uint64_t qeph=0,t3=0,qbat=0,type25=0,type13=0,element_mass=0;
   std::uint64_t solid18=0,solid24=0,solid6z=0;
+  std::uint64_t solid18_law44=0,solid18_law90=0;
 };
 inline bool HasCoefficientProducer(const CoefficientOccurrences& n) noexcept {
   return n.qeph||n.t3||n.qbat||n.type25||n.type13||n.element_mass||
-    n.solid18||n.solid24||n.solid6z;
+    n.solid18||n.solid24||n.solid6z||n.solid18_law44||n.solid18_law90;
 }
 struct NodalCoefficientNode {
   NodalCoefficientTotals coefficients{};
@@ -61,6 +64,7 @@ struct NodalCoefficientScope {
   std::size_t type25_connections=0,type13_connections=0;
   std::size_t element_mass_records=0;
   std::size_t solid18_parents=0,solid24_parents=0,solid6z_parents=0;
+  std::size_t solid18_law44_parents=0,solid18_law90_parents=0;
   CoefficientOccurrences occurrences{};
   std::size_t covered_nodes=0,uncovered_nodes=0;
 };

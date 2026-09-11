@@ -44,8 +44,14 @@ CoefficientReport Identities(NodalCoefficientSources input,const ElementMassCont
     if(i>=q+t+b+beams) {
       parent=i-q-t-b-beams;
       const auto family=solids->parents()[parent].family;
-      producer=family==SolidCoefficientFamily::Solid18?P::Solid18:
-          family==SolidCoefficientFamily::Solid24?P::Solid24:P::Solid6z;
+      switch(family) {
+        case SolidCoefficientFamily::Solid18: producer=P::Solid18; break;
+        case SolidCoefficientFamily::Solid24: producer=P::Solid24; break;
+        case SolidCoefficientFamily::Solid6z: producer=P::Solid6z; break;
+        case SolidCoefficientFamily::Solid18Law44: producer=P::Solid18Law44; break;
+        case SolidCoefficientFamily::Solid18Law90: producer=P::Solid18Law90; break;
+        default: return {S::IdentityMismatch,"Unknown closed solid family"};
+      }
     }
     if(!id(i)) return {S::IdentityMismatch,"Original structural EID must be positive",producer,parent};
     if(identities.First(id(i))!=i)
@@ -69,7 +75,9 @@ CoefficientReport Totals(NodalCoefficientNode* nodes,std::size_t count,
         !Add(totals.type13.added_inertia,c.type13.added_inertia)||
         !Add(totals.element_mass,c.element_mass)||
         !Add(totals.solid18_mass,c.solid18_mass)||!Add(totals.solid24_mass,c.solid24_mass)||
-        !Add(totals.solid6z_mass,c.solid6z_mass))
+        !Add(totals.solid6z_mass,c.solid6z_mass)||
+        !Add(totals.solid18_law44_mass,c.solid18_law44_mass)||
+        !Add(totals.solid18_law90_mass,c.solid18_law90_mass))
       return {S::NonfiniteResult,"Global coefficient sum overflow",P::NodeTotals,SIZE_MAX,SIZE_MAX,n};
     const auto& o=row.occurrences;
     scope.occurrences.qeph+=o.qeph;
@@ -81,6 +89,8 @@ CoefficientReport Totals(NodalCoefficientNode* nodes,std::size_t count,
     scope.occurrences.solid18+=o.solid18;
     scope.occurrences.solid24+=o.solid24;
     scope.occurrences.solid6z+=o.solid6z;
+    scope.occurrences.solid18_law44+=o.solid18_law44;
+    scope.occurrences.solid18_law90+=o.solid18_law90;
     if(HasCoefficientProducer(o)) ++scope.covered_nodes;
     else ++scope.uncovered_nodes;
   }
@@ -92,7 +102,9 @@ CoefficientReport Totals(NodalCoefficientNode* nodes,std::size_t count,
       scope.occurrences.element_mass!=scope.element_mass_records||
       scope.occurrences.solid18!=8*scope.solid18_parents||
       scope.occurrences.solid24!=8*scope.solid24_parents||
-      scope.occurrences.solid6z!=6*scope.solid6z_parents)
+      scope.occurrences.solid6z!=6*scope.solid6z_parents||
+      scope.occurrences.solid18_law44!=8*scope.solid18_law44_parents||
+      scope.occurrences.solid18_law90!=8*scope.solid18_law90_parents)
     return {S::IdentityMismatch,"Complete producer occurrence count differs"};
   return {};
 }

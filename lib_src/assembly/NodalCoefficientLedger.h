@@ -38,6 +38,11 @@ class NodalCoefficientLedger {
                                              CoefficientLimits={}) noexcept;
   CoefficientReport InitializeWithSolids(NodalCoefficientSourcesWithSolids,
                                         CoefficientLimits={}) noexcept;
+  // Explicit V4 order: the legacy solid families followed by LAW44 and LAW90.
+  // Requires an extended immutable snapshot. This adds mass only; admitting
+  // mechanics, constraints and force publication remains the owner's task.
+  CoefficientReport InitializeWithExtendedSolids(NodalCoefficientSourcesWithSolids,
+                                                CoefficientLimits={}) noexcept;
   bool prepared() const noexcept {return bool(impl_);}
   const ShellNodeMap* shells() const noexcept;
   const type25::Model* type25() const noexcept;
@@ -51,6 +56,7 @@ class NodalCoefficientLedger {
   bool Matches(NodalCoefficientSources) const noexcept;
   bool MatchesWithElementMass(NodalCoefficientSourcesWithElementMass) const noexcept;
   bool MatchesWithSolids(NodalCoefficientSourcesWithSolids) const noexcept;
+  bool MatchesWithExtendedSolids(NodalCoefficientSourcesWithSolids) const noexcept;
   bool Matches(const NodalCoefficientLedger&) const noexcept;
   std::size_t owned_payload_bytes() const noexcept;
   std::size_t startup_payload_bytes() const noexcept;
@@ -58,6 +64,7 @@ class NodalCoefficientLedger {
  private:
   CoefficientReport InitializeImpl(NodalCoefficientSourcesWithSolids,
                                   CoefficientOrder,CoefficientLimits) noexcept;
+  bool MatchesSolids(NodalCoefficientSourcesWithSolids,CoefficientOrder) const noexcept;
   struct Impl;
   std::shared_ptr<const Impl> impl_;
 };

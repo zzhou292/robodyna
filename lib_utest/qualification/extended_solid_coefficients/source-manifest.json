@@ -14,8 +14,8 @@
     },
     {
       "path": "lib_src/assembly/NodalCoefficientBudget.cpp",
-      "bytes": 5782,
-      "sha256": "c4dc60cdb6bbcdf3ce5ebe0763ff97ef421f164af8354d5e418194ca597c6bea"
+      "bytes": 6008,
+      "sha256": "40c370edce60940a9022c91be9ec1291ae3bf4d661d063aab0db5cc12a16fd45"
     },
     {
       "path": "lib_src/assembly/SolidContributionChecks.h",
@@ -39,8 +39,8 @@
     },
     {
       "path": "lib_utest/qualification/extended_solid_coefficients/BUILD.bazel",
-      "bytes": 721,
-      "sha256": "1a66ab82bc5e43172750135697ac24f9bb22b02fbaec442be5ee4f597f650d3c"
+      "bytes": 1099,
+      "sha256": "0573fec0cb289c732a6ef158dac9ce476ec34cbf78d82f4a83b581e90d2feb14"
     },
     {
       "path": "lib_utest/qualification/extended_solid_coefficients/BoundsTest.cpp",
@@ -126,6 +126,18 @@
       "path": "lib_utest/qualification/solid18_law44_reference/verify_source.py",
       "bytes": 1375,
       "sha256": "66e9fd8f3d74b34773fe0ce0a7e7d4e2f1d9549e7323578db68e612bdde49cdd"
+    }
+  ],
+  "prior_ledger_extension_records": [
+    {
+      "path": "lib_src/assembly/NodalCoefficientBudget.cpp",
+      "bytes": 5782,
+      "sha256": "c4dc60cdb6bbcdf3ce5ebe0763ff97ef421f164af8354d5e418194ca597c6bea"
+    },
+    {
+      "path": "lib_utest/qualification/extended_solid_coefficients/BUILD.bazel",
+      "bytes": 721,
+      "sha256": "1a66ab82bc5e43172750135697ac24f9bb22b02fbaec442be5ee4f597f650d3c"
     }
   ]
 }

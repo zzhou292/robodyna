@@ -4,15 +4,18 @@
 
 namespace tl::fea::coefficient_detail {
 CoefficientReport Preflight(NodalCoefficientSources input,const ElementMassContributions* masses,
-    const SolidNodeContributions* solids,CoefficientLimits limits,
+    const SolidNodeContributions* solids,CoefficientOrder order,CoefficientLimits limits,
     std::size_t implementation_bytes,Budget& result) noexcept {
   if(!input.shells||!input.shells->prepared()||
       (input.type25&&!input.type25->prepared())||
       (input.type13&&!input.type13->prepared())||(masses&&!masses->prepared())||
       (solids&&!solids->prepared()))
     return {S::InvalidInput,"Complete prepared typed sources are required"};
-  if(solids && solids->profile()!=SolidCoefficientProfile::OriginalThreeFamilies)
-    return {S::IdentityMismatch,"Extended solid references require an explicit extended ledger profile"};
+  const bool extended=order==
+      CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_ElementMass_Solid18_24_6z_Law44_Law90_V4;
+  if(extended ? (!solids||solids->profile()!=SolidCoefficientProfile::ExtendedLaw44Law90) :
+      (solids&&solids->profile()!=SolidCoefficientProfile::OriginalThreeFamilies))
+    return {S::IdentityMismatch,"Solid snapshot and explicit coefficient order differ"};
   const auto& shells=*input.shells->shells();
   const auto& domain=*input.shells->domain();
   const auto hard=CoefficientLimits::Vehicle();
