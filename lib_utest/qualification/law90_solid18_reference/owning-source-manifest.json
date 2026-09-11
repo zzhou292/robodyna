@@ -93,13 +93,13 @@
     },
     {
       "path": "lib_utest/qualification/law90_solid18_reference/Agreement.h",
-      "bytes": 5461,
-      "sha256": "523dea0f5bc26e410d7e50e49cbb4db08dd8c5895c705d301ac4aeb96cfd0e96"
+      "bytes": 6283,
+      "sha256": "0b0c0b6c6c3b49d2ad70958f7f724300263db6be2b981cf87d8678cbc94e3fa2"
     },
     {
       "path": "lib_utest/qualification/law90_solid18_reference/BUILD.bazel",
-      "bytes": 382,
-      "sha256": "ec7ce179fd89ff15fde26ea3c88bb61c091ed5c046b69f19310cfff7d699b2d8"
+      "bytes": 404,
+      "sha256": "d149619bdcaa8c76b961d408844259188f000e9792941ffecbefe12bf6b9442d"
     },
     {
       "path": "lib_utest/qualification/law90_solid18_reference/CMakeLists.txt",
@@ -113,8 +113,8 @@
     },
     {
       "path": "lib_utest/qualification/law90_solid18_reference/HostTest.cpp",
-      "bytes": 6141,
-      "sha256": "d0e2548e176842bb7258e060d91272578d0dd2f08cea9266994b5311ec19afbd"
+      "bytes": 7418,
+      "sha256": "25c4a4a11e394435157a5471ab293c25e87c196d4394e9a9a3dd3a8d4710b168"
     },
     {
       "path": "lib_utest/qualification/law90_solid18_reference/NativeOracle.cpp",
@@ -133,8 +133,8 @@
     },
     {
       "path": "lib_utest/qualification/law90_solid18_reference/README.md",
-      "bytes": 5307,
-      "sha256": "7a8e12b425e6d1df85fb73c3a892af47ca60fe66256b8907e30d10fad07ed19d"
+      "bytes": 6914,
+      "sha256": "4087dc38203dac7a162ad0fc9b3051e5a7eae2770c7247769fe514b2edf20e94"
     },
     {
       "path": "lib_utest/qualification/law90_solid18_reference/SourceFixture.h",
@@ -143,13 +143,18 @@
     },
     {
       "path": "lib_utest/qualification/law90_solid18_reference/SourceNativeTest.cpp",
-      "bytes": 2572,
-      "sha256": "d2c6e86b6d0339b1cf6b9d2f18300c75d9da5a29569abdf97d9eced677740f22"
+      "bytes": 4520,
+      "sha256": "0ef820f8572016d622cf3a9be7dfabf430e6eef9c51fae7c23b07a3349380777"
     },
     {
       "path": "lib_utest/qualification/law90_solid18_reference/TestSupport.h",
       "bytes": 4395,
       "sha256": "ee32629c32e82ea06f9189998aeec8c2e789779e32815502051b06db73e05317"
+    },
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/WorkingModeBound.h",
+      "bytes": 1845,
+      "sha256": "e911772b8d6018710b11327416c4761b059710531255f5470bdc722031360998"
     },
     {
       "path": "lib_utest/qualification/law90_solid18_reference/native/CMakeLists.txt",

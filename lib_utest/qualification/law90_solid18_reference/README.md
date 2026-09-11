@@ -56,9 +56,9 @@ cmake --build BUILD -j2
 ctest --test-dir BUILD --output-on-failure
 ```
 
-Selectors: `law90_solid18_reference_host` (5 functions),
+Selectors: `law90_solid18_reference_host` (6 functions),
 `law90_solid18_reference_native` (4),
-`law90_solid18_reference_sourcenative` (2 original full-population functions),
+`law90_solid18_reference_sourcenative` (3 original full-population functions),
 `law90_solid18_reference_cuda` (2), and three identities
 `law90_solid18_owning_identity`, `law90_solid18_native_identity`,
 `law90_solid18_original_identity`; imported `solid18_reference_native_identity`
@@ -83,3 +83,26 @@ C++/CUDA-shaped host syntax and fixture/native source preparation pass within
 axes; its preserved failed report is superseded by the source-supported native
 Y/Z/X frame expectations. No production equation or tolerance was changed for
 that fixture correction. No native/GPU execution is claimed by author checks.
+
+Working-unit higher-mode follow-up: root tests2 passed all four native tiny,
+both CUDA and all 2,690 original current packets after correcting two wrapper
+frame mappings. No production math changed. The remaining original reference
+working-mm comparison first failed at EID2191748, index51 (higher_mode[3].x):
+actual 3.7499673921637111e-08 m, converted native 3.749967424937495e-08 m,
+difference -3.2773783930456593e-16 m, old bound 2.2934403987715874e-16 m,
+higher-mode group scale 0.00012441679077936085 m. Same-unit SI/native passed.
+
+`WorkingModeBound.h` applies only to the twelve higher modes when comparing
+working-unit outputs converted to SI. Each is seven signed additions of local
+coordinates. Let u=epsilon(binary64)/2, gamma7=7u/(1-7u), a=SI local coordinates,
+b=individually converted working local coordinates, and S the exact signed sum.
+The forward bound is |S(a)-S(b)| + gamma7*sum|a| + (gamma7+u)/(1-u)*sum|b|
++ u/(1-u)*|b_mode|, plus the independently computed long-double witness rounding.
+The terms cover native addition, individual coordinate conversion and final
+mode conversion separately. Inputs are finite normal original-model values;
+this is an arithmetic roundoff witness, not a fitted material/geometry tolerance.
+All checked local coordinates and every other packet group retain their prior
+comparators; same-unit checks are unchanged. A new host function passes 384
+cancellation cases and perturbation negatives. The new original-source function
+records the exact native witness and checks all twelve mode perturbations plus
+density rejection; its execution is root-owned.

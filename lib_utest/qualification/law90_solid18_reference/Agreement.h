@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "TestSupport.h"
+#include "WorkingModeBound.h"
 #include "lib_utest/qualification/solid18_reference/NativeOracle.h"
 #include <gtest/gtest.h>
 #include <iomanip>
@@ -39,6 +40,9 @@ inline ::testing::AssertionResult ReferenceAgreement(const std::array<double,Ref
   std::array<double,solid18_test::ValueCount> av{},bv{};
   std::copy_n(a.begin(),av.size(),av.begin());
   std::copy_n(b.begin(),bv.size(),bv.begin());
+  // Only the 12 higher-mode values have a separate operation-derived working
+  // bound below. Every other base field retains its owning comparator unchanged.
+  if(conditioning>0)std::copy_n(bv.begin()+42,12,av.begin()+42);
   const bool base=conditioning>0 ? solid18_test::AgreeWorkingUnits(av,bv,conditioning)
                                : solid18_test::Agree(av,bv);
   const double relative=conditioning>0 ?
@@ -47,6 +51,7 @@ inline ::testing::AssertionResult ReferenceAgreement(const std::array<double,Ref
     // Diagnostics repeat only the owning comparator's existing group schedule;
     // the existing Agree/AgreeWorkingUnits result remains admission authority.
     for(const auto range:{std::pair<unsigned,unsigned>{0,9},{9,24},{33,9},{42,12}}) {
+      if(conditioning>0&&range.first==42)continue;
       const auto result=GroupDetails(a,b,range.first,range.second,relative,
                                     conditioning>0&&range.first>=33);
       if(!result)return result;
@@ -62,6 +67,16 @@ inline ::testing::AssertionResult ReferenceAgreement(const std::array<double,Ref
       if(!result)return result;
     }
     return ::testing::AssertionFailure()<<"owning base comparator failed";
+  }
+  if(conditioning>0) {
+    for(unsigned mode=0;mode<4;++mode)for(unsigned axis=0;axis<3;++axis) {
+      const unsigned i=42+3*mode+axis;
+      const auto bound=HigherModeWorkingBound(a,b,mode,axis);
+      if(!std::isfinite(a[i])||!std::isfinite(b[i])||
+         std::abs(static_cast<long double>(a[i])-b[i])>bound)
+        return ::testing::AssertionFailure()<<std::setprecision(17)<<"working higher-mode index="<<i
+            <<" actual="<<a[i]<<" native="<<b[i]<<" delta="<<a[i]-b[i]<<" bound="<<bound;
+    }
   }
   const auto group=[&](unsigned first,unsigned count) {
     return GroupDetails(a,b,first,count,relative);

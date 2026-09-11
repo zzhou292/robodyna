@@ -51,3 +51,40 @@ TEST(Law90Solid18Source, AllOriginalCurrentGeometryTotalTensorAndRates) {
   }
   RecordProperty("original_current_packets",2*fixture::element_count);
 }
+TEST(Law90Solid18Source, WorkingModeCancellationRejectsPerturbations) {
+  unsigned row=fixture::element_count;
+  for(unsigned n=0;n<fixture::element_count;++n)
+    if(fixture::solid_records_u64[n][0]==2191748)row=n;
+  ASSERT_LT(row,fixture::element_count);
+  const auto input=Original(row);
+  t::Reference reference;
+  ASSERT_EQ(t::InitializeReference90(input,reference),s::Status::Success);
+  const auto actual=ReferenceValues(reference);
+  const auto native_si=ReferenceOracle(input);
+  const auto working=ReferenceOracle(Original(row,true));
+  ASSERT_EQ(native_si.status,0);ASSERT_EQ(working.status,0);
+  ASSERT_EQ(native_si.source_slot,working.source_slot);
+  ASSERT_TRUE(ReferenceAgreement(actual,native_si.values));
+  auto expected=WorkingReferenceToSI(working.values);
+  double coordinate=0;
+  for(const auto& x:input.position_m)
+    coordinate=std::max({coordinate,std::abs(x.x),std::abs(x.y),std::abs(x.z)});
+  const double conditioning=coordinate/reference.geometry().characteristic_length_m;
+  ASSERT_TRUE(ReferenceAgreement(actual,expected,conditioning));
+  const auto record=[&](const char* name,long double value) {
+    std::ostringstream stream;stream<<std::setprecision(21)<<value;RecordProperty(name,stream.str());
+  };
+  record("actual_mode51_m",actual[51]);record("native_working_mode51_m",expected[51]);
+  record("delta_mode51_m",actual[51]-expected[51]);
+  record("forward_bound_mode51_m",HigherModeWorkingBound(actual,expected,3,0));
+  for(unsigned mode=0;mode<4;++mode)for(unsigned axis=0;axis<3;++axis) {
+    const unsigned i=42+3*mode+axis;
+    auto bad=expected;
+    const double bound=static_cast<double>(HigherModeWorkingBound(actual,expected,mode,axis));
+    bad[i]+=std::max(1e-12,64*bound);
+    EXPECT_FALSE(ReferenceAgreement(actual,bad,conditioning))<<i;
+    EXPECT_FALSE(ReferenceAgreement(actual,bad))<<i;
+  }
+  auto bad=expected;bad[147]*=1.000001;
+  EXPECT_FALSE(ReferenceAgreement(actual,bad,conditioning));
+}

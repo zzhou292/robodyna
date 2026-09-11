@@ -124,3 +124,33 @@ TEST(Law90Solid18Reference, RejectedLateValuesAndExplicitScratchRetry) {
   EXPECT_EQ(CurrentValues(scratch.staged),CurrentValues(output));
   EXPECT_EQ(Bytes(reference),reference_before);
 }
+
+#include "WorkingModeBound.h"
+TEST(Law90Solid18Reference, WorkingModeForwardBoundUsesOperandScale) {
+  constexpr int signs[4][8]{{1,1,-1,-1,-1,-1,1,1},
+      {1,-1,-1,1,-1,1,1,-1},{1,-1,1,-1,1,-1,1,-1},
+      {-1,1,-1,1,1,-1,1,-1}};
+  for(unsigned sample=0;sample<32;++sample) {
+    std::array<double,ReferenceCount> a{},b{};
+    double working[8][3]{};
+    for(unsigned n=0;n<8;++n)for(unsigned axis=0;axis<3;++axis) {
+      working[n][axis]=937.25+sample*.07+n*.0037+axis*.0189;
+      b[9+3*n+axis]=working[n][axis]*.001;
+      a[9+3*n+axis]=std::nextafter(b[9+3*n+axis],n%2 ? 0.0 : 2.0);
+    }
+    for(unsigned mode=0;mode<4;++mode)for(unsigned axis=0;axis<3;++axis) {
+      double si=signs[mode][0]*a[9+axis],mm=signs[mode][0]*working[0][axis];
+      for(unsigned n=1;n<8;++n) {
+        si+=signs[mode][n]*a[9+3*n+axis];
+        mm+=signs[mode][n]*working[n][axis];
+      }
+      const unsigned index=42+3*mode+axis;
+      a[index]=si;b[index]=mm*.001;
+      const auto bound=HigherModeWorkingBound(a,b,mode,axis);
+      EXPECT_LE(std::abs(static_cast<long double>(a[index])-b[index]),bound);
+      auto bad=b;bad[index]+=1e-10;
+      EXPECT_GT(std::abs(static_cast<long double>(a[index])-bad[index]),
+                HigherModeWorkingBound(a,bad,mode,axis));
+    }
+  }
+}
