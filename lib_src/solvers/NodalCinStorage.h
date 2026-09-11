@@ -24,6 +24,7 @@ struct CinStorage {
   double* work = nullptr;
   cin_advance::FailureKey* failure = nullptr;
   cin_advance::FailureKey* input_failure = nullptr;
+  cin_advance::screen::Summary* screen = nullptr;
   cudaError_t Upload(cudaStream_t);
   cudaError_t ResetTrial(cudaStream_t);
   void InitializeState(double* state, const NodalCinStartup&, const double* inverse_mass, const NodalDofConfig&) const noexcept;

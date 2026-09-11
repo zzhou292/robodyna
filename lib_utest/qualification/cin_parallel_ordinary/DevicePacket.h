@@ -8,12 +8,13 @@ struct DeviceDelete {
 };
 class DevicePacket {
  public:
-  explicit DevicePacket(Packet&, bool parallel_inputs = false);
+  explicit DevicePacket(Packet&, bool parallel_inputs = false, bool parallel_screen = false);
   DevicePacket(const DevicePacket&) = delete;
   DevicePacket& operator=(const DevicePacket&) = delete;
   void Run(bool parallel);
   void RunWith(cudaError_t (*)(const cin_advance::Input&, cudaStream_t));
   void Download(Packet&) const;
+  cin_advance::screen::Summary ScreenSummary() const;
  private:
   void* Upload(const void*, std::size_t);
   std::vector<std::unique_ptr<void, DeviceDelete>> allocations_;

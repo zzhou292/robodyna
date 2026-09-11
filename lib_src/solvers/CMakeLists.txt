@@ -7,7 +7,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/../constraints/NodalRigidAssemblyBinding.cmak
 include("${CMAKE_CURRENT_LIST_DIR}/../constraints/tied_shell/TiedCinAttachment.cmake")
 add_library(tl_explicit_nodal_state STATIC FENodalState.cu FENodalConstraintQueries.cu FENodalSnapshotReadback.cu FENodalForceStageReadback.cu ExplicitTranslationStep.cu ExplicitNodalStep.cu
   NodalRigidGroupStorage.cu NodalRigidAssemblyStorage.cpp NodalAssemblyCinForecast.cpp NodalRigidAssemblyChecks.cpp NodalRigidAssemblyIdentity.cpp ExplicitNodalRigidStep.cu NodalCinStartup.cpp NodalCinStorage.cu NodalCinState.cpp
-  NodalCinReadback.cu NodalCinPhysicalMains.cu ExplicitNodalCinStep.cu cin_advance/ForceInputs.cu)
+  NodalCinReadback.cu NodalCinPhysicalMains.cu ExplicitNodalCinStep.cu cin_advance/ForceInputs.cu cin_advance/Screen.cu)
 target_compile_features(tl_explicit_nodal_state PUBLIC cxx_std_17)
 set_target_properties(tl_explicit_nodal_state PROPERTIES
   CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)

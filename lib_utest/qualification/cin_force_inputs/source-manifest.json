@@ -59,13 +59,36 @@
     },
     {
       "path": "lib_src/solvers/cin_timestep/Screen.h",
-      "bytes": 4545,
-      "sha256": "b39f7984600944055c0fb7df0b326070f9a21e81ddf5221afafad98ac56516cb"
+      "bytes": 846,
+      "sha256": "a07f4bd744e2b9f86f89bda8f4cb91e3cf574a98da2157136e4fbc42f72d68f9"
     },
     {
       "path": "lib_src/solvers/NodalNodeStep.h",
       "bytes": 2661,
       "sha256": "80cca34361e54979a1d6ae100f045604f1b98c6e2ceb18caa8af12c84a5be35e"
+    },
+    {
+      "path": "lib_src/solvers/cin_timestep/Sources.h",
+      "bytes": 1193,
+      "sha256": "abeace0d6f2f72072a5ecc6564b48fe05ca7a35629b54b9c653ab80db49eeb55"
+    },
+    {
+      "path": "lib_src/solvers/cin_timestep/ScreenValues.h",
+      "bytes": 3322,
+      "sha256": "0c71bfcf243f76662cfc961a676674239742228565b34f29297886550f54e823"
+    }
+  ],
+  "previous_source_receipts": [
+    {
+      "manifest_sha256": "5d8e6e05376b0b1275c38171c3ff5a9a139fb46f59e6d8eeb6502dba3b2603b3",
+      "reason": "Exact CIN Screen helper extraction and counted parallel screen; complete prior Screen retained in cin_parallel_screen/reference/Screen.h. No scalar or rigid trace change.",
+      "files": [
+        {
+          "path": "lib_src/solvers/cin_timestep/Screen.h",
+          "bytes": 4545,
+          "sha256": "b39f7984600944055c0fb7df0b326070f9a21e81ddf5221afafad98ac56516cb"
+        }
+      ]
     }
   ]
 }

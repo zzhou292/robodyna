@@ -34,8 +34,8 @@
     },
     {
       "path": "lib_src/solvers/cin_timestep/Screen.h",
-      "bytes": 4545,
-      "sha256": "b39f7984600944055c0fb7df0b326070f9a21e81ddf5221afafad98ac56516cb"
+      "bytes": 846,
+      "sha256": "a07f4bd744e2b9f86f89bda8f4cb91e3cf574a98da2157136e4fbc42f72d68f9"
     },
     {
       "path": "lib_src/solvers/cin_timestep/Rigid.h",
@@ -71,6 +71,16 @@
       "path": "lib_src/solvers/ExplicitNodalStep.cu",
       "bytes": 9553,
       "sha256": "44ed4520ae6f055f8b3529626a8a1a6c5665e44128e0d9702d76b8c7e30c09d6"
+    },
+    {
+      "path": "lib_src/solvers/cin_timestep/Sources.h",
+      "bytes": 1193,
+      "sha256": "abeace0d6f2f72072a5ecc6564b48fe05ca7a35629b54b9c653ab80db49eeb55"
+    },
+    {
+      "path": "lib_src/solvers/cin_timestep/ScreenValues.h",
+      "bytes": 3322,
+      "sha256": "0c71bfcf243f76662cfc961a676674239742228565b34f29297886550f54e823"
     }
   ],
   "input_only_extraction": {
@@ -83,5 +93,18 @@
         "sha256": "036ab41b2e7117aaeb40ec9be4977d2439106558cf38aa4cdc1e064603b424e3"
       }
     ]
-  }
+  },
+  "previous_source_receipts": [
+    {
+      "manifest_sha256": "b2cc9e4a3bc9b047b3e16217c816bb67616f0803a09889c0f5633767206a88df",
+      "reason": "Exact CIN Screen helper extraction and counted parallel screen; complete prior Screen retained in cin_parallel_screen/reference/Screen.h. No scalar or rigid trace change.",
+      "files": [
+        {
+          "path": "lib_src/solvers/cin_timestep/Screen.h",
+          "bytes": 4545,
+          "sha256": "b39f7984600944055c0fb7df0b326070f9a21e81ddf5221afafad98ac56516cb"
+        }
+      ]
+    }
+  ]
 }

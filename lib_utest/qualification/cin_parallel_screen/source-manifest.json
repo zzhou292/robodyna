@@ -1,0 +1,266 @@
+{
+  "baseline_commit": "8f8fb0ae49190eabf383ebd081198a2c3dde7992",
+  "scope": "Exact ordinary-node parallel minimum; complete frozen old Screen and caller; unchanged scalar arithmetic and rigid/member suffix.",
+  "files": [
+    {
+      "path": "lib_src/collision/RigidNormalResponse.h",
+      "bytes": 4944,
+      "sha256": "6e1ece1f09b2ad62f652cc5308ee5e1d958e9812122badfda00c1e23e6805a8f"
+    },
+    {
+      "path": "lib_src/collision/RigidNormalResponseBounds.h",
+      "bytes": 1938,
+      "sha256": "5f4436626a50b4620428d3d3fbd1fa02de67264b63f7d31ed7c6bb3c85686b5d"
+    },
+    {
+      "path": "lib_src/solvers/BUILD.bazel",
+      "bytes": 7518,
+      "sha256": "2ae1a9de275774bd6c565d13957af41198388b1afd73a49e4f2457c48e433579"
+    },
+    {
+      "path": "lib_src/solvers/CMakeLists.txt",
+      "bytes": 1689,
+      "sha256": "c99a705181502f23f00b47f89adf375b14fb2d5bf6a101d2638fdb51fc49696d"
+    },
+    {
+      "path": "lib_src/solvers/ExplicitNodalCinStep.cu",
+      "bytes": 10167,
+      "sha256": "93daabe8c09d45fe9292234fdad030aa35aa61faba12f942db89ee3087264346"
+    },
+    {
+      "path": "lib_src/solvers/NodalAssemblyCinForecast.cpp",
+      "bytes": 3875,
+      "sha256": "b337d529f6d8f408ba44bdcbf19a7392c0c33d85b08eec4a930c7050a90c1766"
+    },
+    {
+      "path": "lib_src/solvers/NodalCinLayout.h",
+      "bytes": 3988,
+      "sha256": "f8297c4f2dd66eba19e044bb0af179a25e6d526852d255cfaf820e66d776b280"
+    },
+    {
+      "path": "lib_src/solvers/NodalCinStartup.cpp",
+      "bytes": 11980,
+      "sha256": "c89cb564f2613d281f669f9c809653ed3a5516e138b2a5f6fd49acb1ef34a416"
+    },
+    {
+      "path": "lib_src/solvers/NodalCinStorage.cu",
+      "bytes": 2282,
+      "sha256": "3ed2a87200e7efa5455a859bb2fe2aa049b483fefe5d398eeedca2a6a2cad765"
+    },
+    {
+      "path": "lib_src/solvers/NodalCinStorage.h",
+      "bytes": 1620,
+      "sha256": "f45647dca38c81856d15492be3637d23f5236d22d83050b97bdc442262871032"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/ForceInputs.cu",
+      "bytes": 1694,
+      "sha256": "7e62556811342882cc8e47e87dece721d14e001e525adc580e368d40d03dbbec"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/ForceInputs.h",
+      "bytes": 2828,
+      "sha256": "c369de8cccd292b0d3b4a0bb320268d5ebf85201c46920df7ada122ce9cc969b"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/Input.h",
+      "bytes": 1541,
+      "sha256": "a228f1ec0cd8d7702ffe7b124e25b3c713ea76eb4b9c2136dcdc1bc91b4525e4"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/Node.h",
+      "bytes": 1515,
+      "sha256": "5cc379936e5165f5008b0bb0e17841031b0d986555a596efde833848bcbd5f6c"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/Screen.cu",
+      "bytes": 2688,
+      "sha256": "3bf24b3e3d5049a240af851e1e1f88b1999e7bb5377fbf4df6da2155b332eb43"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/Screen.h",
+      "bytes": 592,
+      "sha256": "1400f7108e066f2db74f7944cc657bacfdd7c9b1d9e43fc3d6bf975bb0551083"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/ScreenSummary.h",
+      "bytes": 2770,
+      "sha256": "91e7b83f25b4a75de9a70eb7e98c47a5804f00c2efd2db698371f008d9431a09"
+    },
+    {
+      "path": "lib_src/solvers/cin_timestep/Ordinary.h",
+      "bytes": 1094,
+      "sha256": "b8dd1fd169847bd49b211be16e203546d97ae49beee432f8370a08bffd32d01e"
+    },
+    {
+      "path": "lib_src/solvers/cin_timestep/Rigid.h",
+      "bytes": 2514,
+      "sha256": "cf3de0fe21e006c656f0e75d6668bf6f8fba52e79a80064cd630fe6f40c1f89a"
+    },
+    {
+      "path": "lib_src/solvers/cin_timestep/Screen.h",
+      "bytes": 846,
+      "sha256": "a07f4bd744e2b9f86f89bda8f4cb91e3cf574a98da2157136e4fbc42f72d68f9"
+    },
+    {
+      "path": "lib_src/solvers/cin_timestep/ScreenValues.h",
+      "bytes": 3322,
+      "sha256": "0c71bfcf243f76662cfc961a676674239742228565b34f29297886550f54e823"
+    },
+    {
+      "path": "lib_src/solvers/cin_timestep/Sources.h",
+      "bytes": 1193,
+      "sha256": "abeace0d6f2f72072a5ecc6564b48fe05ca7a35629b54b9c653ab80db49eeb55"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_inputs/BUILD.bazel",
+      "bytes": 996,
+      "sha256": "74bdb126f4b9c891c576e253a5a08beee050683b97101553a781feb8b38f3632"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_inputs/Fixture.h",
+      "bytes": 4570,
+      "sha256": "18372bb0cfba273f843e7e330445e7fd428effd9fed328918ff7da962be3cbbb"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_inputs/HostTest.cpp",
+      "bytes": 5108,
+      "sha256": "c2801bcfec638edef426c0cfc0fc87bf87a6965ebc092ff765367391e1177498"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_inputs/source-manifest.json",
+      "bytes": 3540,
+      "sha256": "848c93994e982fda8e981f783ebbbb86012790c3529410d5390f6d2f21fb454b"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_inputs/verify_sources.py",
+      "bytes": 5825,
+      "sha256": "16a88aa289c8f5b91893fec9b235d832de6dd77e55801aaad658b2c4ac6a0506"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/BUILD.bazel",
+      "bytes": 1734,
+      "sha256": "a0b31ffdfc469433dd74bc55b74d294c239b125f8b60a0ada06bcfd60ffc8963"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/Compare.cpp",
+      "bytes": 2800,
+      "sha256": "612e89698416f49201c4e899a73c3677bc6029fa7260a44ce22a3b7a1faa16be"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/DevicePacket.cu",
+      "bytes": 3797,
+      "sha256": "dfbf3739e5b9bb04cc68feb1ddfee8edf968ff3944fa4825b3fb359d184580c6"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/DevicePacket.h",
+      "bytes": 807,
+      "sha256": "dc09e15e26939bf351095ebdea0ab71f33750e16aa43d0d6b4400071f3b5d5c6"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/HostTest.cpp",
+      "bytes": 5621,
+      "sha256": "0a3bef3ba0f34bc52a415d6e40cfade68ac72d4c72471ebca0d8e132be4c66d4"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/Packet.cpp",
+      "bytes": 4871,
+      "sha256": "f50a20dd7436a2214d2aac87f43a99d5fbed610048c6b1ffa76d8be86fb9d99d"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/Packet.h",
+      "bytes": 1449,
+      "sha256": "04d40284e691da8907490f12bae6ac5286c264fa05c5d6df2fd5929913706844"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/Serial.cu",
+      "bytes": 768,
+      "sha256": "4d922cbfe9f9e50587d0952b92d84218840779c8974c2de482829c4ab723949f"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/source-manifest.json",
+      "bytes": 4147,
+      "sha256": "4b7646e844babea8a62cd774be5636fa3421a69668f26447fa177025d85f4a7d"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/verify_sources.py",
+      "bytes": 4562,
+      "sha256": "a31b9b7156ba16ec77089ff6295704092d06f16abe70cbd84a668f8b755dc6a8"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_screen/BUILD.bazel",
+      "bytes": 1228,
+      "sha256": "14ed2060465cfc9574708a998ad95e7dad35701cfb4bcaacc2505c3520e102ef"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_screen/CMakeLists.txt",
+      "bytes": 2402,
+      "sha256": "89d93fa9c9e262809343847acaf525cdc03469d9a41a7b5c53e24357e5ed9a50"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_screen/CallerTest.cu",
+      "bytes": 3556,
+      "sha256": "e1623c4a1d64412b8e4918bb04b05fd0f96afcb842063c0172db28c4aa3f1e7b"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_screen/Fixture.h",
+      "bytes": 5159,
+      "sha256": "9626683d2f2c3719b81d31ec696bf688ae590f98c8d35cac2f7408a34f95df02"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_screen/Frozen.cu",
+      "bytes": 950,
+      "sha256": "d35cf9b489d898428a195025515d59108fca54261ad821cb60716fedc9400cc8"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_screen/FrozenCaller.inc",
+      "bytes": 6712,
+      "sha256": "cd747372ab760606d02304132b052fec1e59b42b7382ca023880e6a706d7e813"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_screen/FrozenScreen.h",
+      "bytes": 4730,
+      "sha256": "e5285ee530f8372c5bb884623365a48cfacf43bb75471fee92d7a66b722b46cc"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_screen/HostTest.cpp",
+      "bytes": 7469,
+      "sha256": "21b95449515a864ac78be8bb1f2629f756ba6f2dbf31a470bd3a9595e5c5d193"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_screen/ValuesTest.cu",
+      "bytes": 7707,
+      "sha256": "b3f92797c6d2bc25952d486bb916563c304d6ab4e51374608a1e9bc6124e74d6"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_screen/reference/ExplicitNodalCinStep.cu",
+      "bytes": 9620,
+      "sha256": "a522e5c57c2c22967f882a67dba76411d08ec6fc9a75fa67bc07cf358d9a5c96"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_screen/reference/Screen.h",
+      "bytes": 4545,
+      "sha256": "b39f7984600944055c0fb7df0b326070f9a21e81ddf5221afafad98ac56516cb"
+    },
+    {
+      "path": "lib_utest/qualification/cin_physical_timestep/BUILD.bazel",
+      "bytes": 1617,
+      "sha256": "2c510ef407d2f5fc6549a86c00145735e752b62e703ac91d2cfcc4c5f33f36f4"
+    },
+    {
+      "path": "lib_utest/qualification/cin_physical_timestep/Fixture.h",
+      "bytes": 1660,
+      "sha256": "97d9d6da6849e97d23b4b63c077e46a22504363989c2ab6e5dca2ded5f3399d0"
+    },
+    {
+      "path": "lib_utest/qualification/cin_physical_timestep/OwnerSupport.h",
+      "bytes": 3202,
+      "sha256": "425ad5e53f48904c6e654a985fe55587f951f8210ff024bc34feac2a53bc3e1e"
+    },
+    {
+      "path": "lib_utest/qualification/cin_physical_timestep/OwnerTest.cu",
+      "bytes": 5082,
+      "sha256": "461e537ae92e4f47c461890ceb9ea7344ecefc3e065acad4a915e896136bb9b1"
+    }
+  ]
+}

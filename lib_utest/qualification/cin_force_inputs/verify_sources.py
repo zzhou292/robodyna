@@ -8,7 +8,7 @@ import re
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 raw = (here / 'source-manifest.json').read_bytes()
-assert hashlib.sha256(raw).hexdigest() == '5d8e6e05376b0b1275c38171c3ff5a9a139fb46f59e6d8eeb6502dba3b2603b3'
+assert hashlib.sha256(raw).hexdigest() == '848c93994e982fda8e981f783ebbbb86012790c3529410d5390f6d2f21fb454b'
 manifest = json.loads(raw)
 for row in manifest['files']:
     path = Path(row['path'])
@@ -87,7 +87,7 @@ for name in ('CheckNodes', 'CopyEntryInertia'):
 assert 'atomicMin(input.input_failure, static_cast<FailureKey>(node))' in kernels
 assert 'force.entry_inertia[node] = force.inertia[node];' in kernels
 assert 'force_inputs::Launch(input, stream)' in owner
-assert 'cin->failure, cin->input_failure}, stream)' in owner
+assert 'cin->failure, cin->input_failure, cin->screen}, stream)' in owner
 for file in ('Serial.cu', 'SerialHost.cpp'):
     value = (here/file).read_text()
     assert '#define PrepareForceTrial PrepareFrozenForceTrial' in value

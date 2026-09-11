@@ -15,6 +15,8 @@ cudaError_t CinStorage::Upload(cudaStream_t stream) {
   work = reinterpret_cast<double*>(bytes+layout.work.offset);
   failure = util::ArenaPointer<cin_advance::FailureKey>(arena, layout.failure);
   input_failure = util::ArenaPointer<cin_advance::FailureKey>(arena, layout.input_failure);
+  screen = util::ArenaPointer<cin_advance::screen::Summary>(arena, layout.screen);
+  // Screen records are fully written by each node kernel before reduction.
   // Private keys have no startup meaning. Every successful prefix initializes
   // its own key before any worker or completion stage can read it.
   device = {device_rows, device_dependent, std::uint32_t(layout.nodes),

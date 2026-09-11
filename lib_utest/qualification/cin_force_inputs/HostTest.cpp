@@ -83,7 +83,8 @@ TEST(CinForceInputs, AdditionalKeyAndActualHeadersRespectExactCapsAndRetry) {
   EXPECT_EQ(layout.input_failure.offset, layout.failure.offset+sizeof(cin_advance::FailureKey));
   EXPECT_EQ(layout.input_failure.bytes, 8u);
   EXPECT_EQ(layout.input_failure.count, 1u);
-  EXPECT_EQ(layout.device_bytes, layout.input_failure.offset+layout.input_failure.bytes);
+  EXPECT_EQ(layout.screen.offset, layout.input_failure.offset+layout.input_failure.bytes);
+  EXPECT_EQ(layout.device_bytes, layout.screen.offset+layout.screen.bytes);
   EXPECT_EQ(layout.scratch_values, 9u*372435);
   EXPECT_EQ(layout.state_values, 4u*372435+2u*11165+1);
   RecordProperty("full_optional_device_bytes", std::to_string(layout.optional_device_bytes));

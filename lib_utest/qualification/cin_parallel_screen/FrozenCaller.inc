@@ -2,8 +2,7 @@
 #include "NodalCinRuntime.h"
 #include "cin_advance/Node.h"
 #include "cin_advance/ForceInputs.h"
-#include "cin_advance/Screen.h"
-#include "cin_timestep/Screen.h"
+#include "FrozenScreen.h"
 #include "NodalCinStorage.h"
 #include "NodalRigidGroupStorage.h"
 #include "NodalNodeStep.h"
@@ -20,7 +19,7 @@ __device__ void Fail(nodal_detail::Control* control, NodalStatus status, std::ui
   control->node = node;
   if (status == NodalStatus::StepTooLarge) control->limit.dt = 0;
 }
-__global__ void PrepareCin(const cin_advance::Input input, bool inputs_prepared, bool parallel_screen) {
+__global__ void PrepareCin(const cin_advance::Input input, bool inputs_prepared) {
   auto* control = input.control;
   const auto* accepted = input.accepted;
   auto* loads = input.loads;
@@ -49,16 +48,13 @@ __global__ void PrepareCin(const cin_advance::Input input, bool inputs_prepared,
         ? NodalStatus::MissingStepAdmission : NodalStatus::InvalidOutput, stage.node);
     return;
   }
-  // Screen owns the ordinary failure-key initialization only after successful
-  // structural admission. A rejected screen leaves the prior key untouched.
-  if (parallel_screen) return;
   if (structural.profile != NodalCinStructuralProfile::Disabled) {
-    const cin_timestep::Sources sources{accepted, tail, tail+n, work, work+n,
+    const cin_screen_frozen::Sources sources{accepted, tail, tail+n, work, work+n,
       fixed+n, fixed+2*n, rotation_present, model.dependent_nodes, groups, n,
       durations.previous_drift_dt};
-    cin_timestep::Result result;
+    cin_screen_frozen::Result result;
     std::uint32_t invalid_node = UINT32_MAX;
-    if (!cin_timestep::Screen(sources, structural.factor, result, invalid_node)) {
+    if (!cin_screen_frozen::Screen(sources, structural.factor, result, invalid_node)) {
       Fail(control, NodalStatus::InvalidOutput, invalid_node);
       return;
     }
@@ -167,65 +163,3 @@ __global__ void CompleteCin(const cin_advance::Input input) {
 }
 } // namespace
 
-cudaError_t cin_advance::Launch(const Input& input, cudaStream_t stream) {
-  const bool parallel_inputs = input.input_failure != nullptr;
-  auto error = cudaSuccess;
-  if (parallel_inputs) {
-    error = force_inputs::Launch(input, stream);
-    if (error != cudaSuccess) return error;
-  }
-  const bool parallel_screen = input.screen && screen::Blocks(input.model.node_count) &&
-      input.structural.profile != NodalCinStructuralProfile::Disabled;
-  PrepareCin<<<1,1,0,stream>>>(input, parallel_inputs, parallel_screen);
-  error = cudaGetLastError();
-  if (error != cudaSuccess) return error;
-  if (parallel_screen) {
-    error = screen::Launch(input, stream);
-    if (error != cudaSuccess) return error;
-  }
-  constexpr unsigned threads = 128;
-  const auto blocks = (input.model.node_count+threads-1)/threads;
-  AdvanceOrdinaryCin<<<blocks,threads,0,stream>>>(input);
-  error = cudaGetLastError();
-  if (error != cudaSuccess) return error;
-  CompleteCin<<<1,1,0,stream>>>(input);
-  return cudaGetLastError();
-}
-
-cudaError_t FENodalState::Impl::LaunchCinAdvance(double maximum_angle,
-    const NodalCinStructuralStep* structural) {
-  const rigid::StepDurations durations{stamp.epoch == 0 ? 0 : config.fixed_dt,
-      candidate_kick_dt, config.fixed_dt};
-  const auto groups = rigid_groups ? rigid_groups->device : rigid::GroupDeviceView{};
-  rigid::AccelerationSink capture;
-  if (config.capture_force_stage_accelerations) {
-    const nodal_detail::ForceStageCaptureLayout layout{config.node_count, groups.group_count};
-    capture = layout.Sink(scratch);
-  }
-  return cin_advance::Launch({control, accepted, trial, scratch, fixed, cin->device,
-      trial+cin->state_offset, cin->work, cin->patches, cin->activity, groups, durations,
-      maximum_angle, stamp.epoch, attempt, capture,
-      stamp.has_rotation_presence?fixed+3*config.node_count:nullptr,
-      structural ? *structural : NodalCinStructuralStep{}, cin->failure, cin->input_failure, cin->screen}, stream);
-}
-
-NodalReport AdvanceStaggeredCin(FENodalState& owner, const NodalTrialToken& token,
-    const NodalCinAdmission& admission) {
-  if (!owner.impl_) return {NodalStatus::NotInitialized, "Owner is not initialized"};
-  auto& state = *owner.impl_;
-  if (!state.cin || !admission.no_explicit_interface_release_event ||
-      admission.qualification_id != state.cin->qualification_id) {
-    return state.Reject(NodalStatus::MissingStepAdmission, "Missing CIN no-release qualification");
-  }
-  if (!ValidCinStructuralStep(admission.structural)) {
-    return state.Reject(NodalStatus::MissingStepAdmission, "Invalid physical CIN structural profile");
-  }
-  const auto* structural = admission.structural.profile == NodalCinStructuralProfile::Disabled
-      ? nullptr : &admission.structural;
-  const NodalStepAdmission declared{admission.owner_id, admission.base_epoch, admission.attempt,
-    admission.maximum_dt, admission.maximum_rotation_increment,
-    NodalStepAdmissionKind::RestrictedHistoryTrajectory, admission.qualification_id, 0};
-  return state.AdvanceSealedNodal(token.owner_id_, token.base_epoch_, token.attempt_, declared,
-      NodalTemporalScheme::StaggeredHalfKickStart, bool(state.rigid_groups), true, structural);
-}
-} // namespace tl::fea

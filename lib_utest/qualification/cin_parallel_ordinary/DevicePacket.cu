@@ -25,7 +25,7 @@ void* DevicePacket::Upload(const void* source, std::size_t bytes) {
   Check(cudaMemcpy(next, source, bytes, cudaMemcpyHostToDevice));
   return next;
 }
-DevicePacket::DevicePacket(Packet& p, bool parallel_inputs) {
+DevicePacket::DevicePacket(Packet& p, bool parallel_inputs, bool parallel_screen) {
   const auto upload = [this](const auto& values) {
     using T = typename std::decay_t<decltype(values)>::value_type;
     return static_cast<T*>(Upload(values.data(), values.size()*sizeof(T)));
@@ -35,6 +35,11 @@ DevicePacket::DevicePacket(Packet& p, bool parallel_inputs) {
   input_.failure = static_cast<cin_advance::FailureKey*>(Upload(&p.failure, sizeof(p.failure)));
   if (parallel_inputs) {
     input_.input_failure = static_cast<cin_advance::FailureKey*>(Upload(&p.input_failure, sizeof(p.input_failure)));
+  }
+  if (parallel_screen) {
+    const std::vector<cin_advance::screen::Summary> summaries(
+        cin_advance::screen::Blocks(Nodes), {-7, 123, 456});
+    input_.screen = upload(summaries);
   }
   input_.accepted = upload(p.accepted);
   input_.trial = upload(p.trial);
@@ -64,6 +69,11 @@ void DevicePacket::Run(bool parallel) {
 void DevicePacket::RunWith(cudaError_t (*launch)(const cin_advance::Input&, cudaStream_t)) {
   Check(launch(input_, nullptr));
   Check(cudaStreamSynchronize(nullptr));
+}
+cin_advance::screen::Summary DevicePacket::ScreenSummary() const {
+  cin_advance::screen::Summary result{};
+  Check(cudaMemcpy(&result, input_.screen, sizeof(result), cudaMemcpyDeviceToHost));
+  return result;
 }
 void DevicePacket::Download(Packet& p) const {
   if (input_.input_failure) {
