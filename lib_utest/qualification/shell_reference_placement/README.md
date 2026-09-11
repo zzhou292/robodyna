@@ -79,3 +79,17 @@ must use each family's actual native M%SSP in the existing caller override seam.
 Resident collection admission, original source mapping, physical contact surface,
 and accepted rendering remain separate. These fixtures contain presentation-free
 section/coefficient values, not a running windshield or complete vehicle.
+
+Root qualification passes all nine new functions (four host, three independent
+native, two actual CUDA), with zero failures/skips. The initial native build
+caught LAYINI's outer loop ending one line beyond its extraction; `e2d9e20`
+restores that exact ENDDO. After regenerating the checked native cache, build3
+and tests1 pass. Reports: `shell-reference-placement-root-*`.
+
+All eight centered glass force functions and thirteen constant-failure force
+functions also pass after rebuilding the shared helpers, including native and
+actual CUDA removal histories. Evidence:
+`placement-glass-force-regression-functions-1` and
+`placement-failure-force-regression-functions-1`. The owning placement Bazel
+target builds in `placement-qbat-tied-resident-bazel-build-1` together with the
+four QBAT/tied/resident targets. This does not expand the runtime scope above.
