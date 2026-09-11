@@ -5,6 +5,7 @@
 #include "../../ShellMixedSectionArenaLayout.h"
 #include "../../ShellMappedNode.h"
 #include "../../../solvers/NodalForceAssembly.h"
+#include "../../../solvers/NodalCinRuntime.h"
 
 namespace tl::fea::t3::batch_detail {
 namespace {
