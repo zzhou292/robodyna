@@ -93,7 +93,7 @@ cc_library(
 
 cc_library(
     name = "shell_batch_plasticity_binding",
-    srcs = ["ShellBatchPlasticityBinding.cpp", "ShellBatchPlasticityBindingSetup.cpp", "ShellBatchPlasticityBindingParents.cpp", "ShellBatchSectionBinding.cpp", "ShellBatchFormulationBinding.cpp", "ShellPlasticityCatalogScratch.h"],
+    srcs = ["ShellBatchPlasticityBinding.cpp", "ShellBatchPlasticityBindingSetup.cpp", "ShellBatchPlasticityBindingParents.cpp", "ShellBatchSectionBinding.cpp", "ShellExecutionCatalog.cpp", "ShellBatchFormulationBinding.cpp", "ShellPlasticityCatalogScratch.h"],
     hdrs = ["ShellBatchPlasticityBinding.h", "ShellBatchPlasticityBindingInternal.h", "ShellPlasticityCatalogLimits.h", "ShellBatchSectionBinding.h", "ShellSectionLaw.h", "ShellCatalogCurveView.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [":shell_batch_binding", ":shell_batch_plasticity", ":shell_binding_identity_index", "//lib_src/materials:shell_elastic_law1_point", "//lib_utils:bounded_startup_array"],

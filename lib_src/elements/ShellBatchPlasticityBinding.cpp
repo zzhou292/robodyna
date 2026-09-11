@@ -44,7 +44,8 @@ bool ShellBatchPlasticityBinding::SameScope(const ShellBatchPlasticityBinding& o
   if(!prepared_||!other.prepared_||a.inventory!=b.inventory||a.curve_count!=b.curve_count||
       a.material_count!=b.material_count||a.section_count!=b.section_count||a.parent_count!=b.parent_count||
       a.point_count!=b.point_count||a.qeph_count!=b.qeph_count||a.t3_count!=b.t3_count||
-      a.qbat_count!=b.qbat_count||a.formulations!=b.formulations||a.heterogeneous!=b.heterogeneous) return false;
+      a.qbat_count!=b.qbat_count||a.formulations!=b.formulations||a.heterogeneous!=b.heterogeneous||
+      a.execution!=b.execution) return false;
   for(std::size_t i=0;i<a.curve_count;++i)
     if(a.curves[i].id!=b.curves[i].id||a.curves[i].offset!=b.curves[i].offset||a.curves[i].count!=b.curves[i].count) return false;
   for(std::size_t i=0;i<a.point_count;++i)

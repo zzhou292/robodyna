@@ -57,12 +57,23 @@ bool AdmittedPolicy(const ShellFailureParentInput& row, ShellSectionLaw law,
 
 ShellPlasticityBindingReport ShellBatchFailureBinding::Initialize(
     const ShellBatchPlasticityBinding& catalog, const ShellFailureParentInput* input,
-    std::size_t count, const ShellBatchFailureLimits& limits) noexcept try {
+    std::size_t count, const ShellBatchFailureLimits& limits) noexcept {
+  return InitializeImpl(catalog, input, count, limits, false);
+}
+ShellPlasticityBindingReport ShellBatchFailureBinding::InitializeExecution(
+    const ShellBatchPlasticityBinding& catalog, const ShellFailureParentInput* input,
+    std::size_t count, const ShellBatchFailureLimits& limits) noexcept {
+  return InitializeImpl(catalog, input, count, limits, true);
+}
+ShellPlasticityBindingReport ShellBatchFailureBinding::InitializeImpl(
+    const ShellBatchPlasticityBinding& catalog, const ShellFailureParentInput* input,
+    std::size_t count, const ShellBatchFailureLimits& limits, bool execution) noexcept try {
   if (data_) {
     return {Status::AlreadyInitialized, NoShellBindingNode, ShellBindingFamily::None,
             "Failure binding is immutable"};
   }
-  if (!catalog.heterogeneous_sections() || count != catalog.parent_count() || !count) {
+  if (!catalog.heterogeneous_sections() || count != catalog.parent_count() || !count ||
+      catalog.execution_sections() != execution) {
     return {Status::InvalidInput, NoShellBindingNode, ShellBindingFamily::None,
             "Failure requires the complete explicit mixed catalog"};
   }
@@ -75,8 +86,9 @@ ShellPlasticityBindingReport ShellBatchFailureBinding::Initialize(
   catalog.Counts(ShellBindingFamily::Qeph, &q);
   catalog.Counts(ShellBindingFamily::T3, &t);
   if (catalog.formulation_sections()) catalog.Counts(ShellBindingFamily::Qbat, &b);
-  const auto nq = q.law1 + q.law44, nt = t.law1 + t.law44;
-  const auto nb = b.law1 + b.law44;
+  const auto nq = q.law1 + q.law44 + q.rigid_skin;
+  const auto nt = t.law1 + t.law44 + t.rigid_skin;
+  const auto nb = b.law1 + b.law44 + b.rigid_skin;
   util::BoundedArenaLayout budget(limits.max_host_bytes);
   util::ArenaRegion ignored;
   // catalog.host_bytes includes its inline object; Data embeds it exactly once.
@@ -125,7 +137,7 @@ ShellPlasticityBindingReport ShellBatchFailureBinding::Initialize(
         return {Status::InvalidParent, i, source->family, "Unknown failure formulation family"};
     }
   }
-  if (!any_failure) {
+  if (!any_failure && !execution) {
     return {Status::InvalidInput, NoShellBindingNode, ShellBindingFamily::None,
             "An all-None declaration uses the ordinary mixed path"};
   }

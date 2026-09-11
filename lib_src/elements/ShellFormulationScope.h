@@ -19,4 +19,7 @@ struct ShellFormulationScope {
 // Read-only identity validation. Does not allocate, touch CUDA, choose limits,
 // admit participants, or weaken the existing Q/T runtime rejection of QBAT.
 ShellPlasticityBindingReport ValidateShellFormulationScope(const ShellFormulationScope&) noexcept;
+// Explicit host execution scope. Physical PART/ledger proof is checked by the
+// ShellPhysicalBinding execution entry, not by this declaration-only function.
+ShellPlasticityBindingReport ValidateShellExecutionScope(const ShellFormulationScope&) noexcept;
 } // namespace tl::fea

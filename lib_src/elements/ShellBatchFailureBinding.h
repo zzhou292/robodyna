@@ -17,6 +17,10 @@ class ShellBatchFailureBinding {
  public:
   ShellPlasticityBindingReport Initialize(const ShellBatchPlasticityBinding&,
       const ShellFailureParentInput*, std::size_t, const ShellBatchFailureLimits& = {}) noexcept;
+  // Complete explicit execution catalog, including canonical None rigid rows.
+  // This entry also permits an all-None execution scope; it adds no state.
+  ShellPlasticityBindingReport InitializeExecution(const ShellBatchPlasticityBinding&,
+      const ShellFailureParentInput*, std::size_t, const ShellBatchFailureLimits& = {}) noexcept;
   bool prepared() const noexcept { return bool(data_); }
   bool Matches(const ShellBatchPlasticityBinding&) const noexcept;
   bool SameScope(const ShellBatchFailureBinding&) const noexcept;
@@ -27,6 +31,8 @@ class ShellBatchFailureBinding {
   std::size_t host_bytes() const noexcept;
   std::size_t parent_count() const noexcept;
  private:
+  ShellPlasticityBindingReport InitializeImpl(const ShellBatchPlasticityBinding&,
+      const ShellFailureParentInput*, std::size_t, const ShellBatchFailureLimits&, bool execution) noexcept;
   struct Data;
   std::shared_ptr<const Data> data_;
 };

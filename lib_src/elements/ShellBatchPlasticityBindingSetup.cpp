@@ -46,11 +46,11 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::InitializeCatalog(
 }
 ShellPlasticityBindingReport ShellBatchPlasticityBinding::InitializeCatalogImpl(
     const ShellBatchBinding& binding,const ShellBatchPlasticityBindingInput& input,
-    const ShellPlasticityCatalogLimits& limits,bool heterogeneous,bool formulations) noexcept {
+    const ShellPlasticityCatalogLimits& limits,bool heterogeneous,bool formulations,bool execution) noexcept {
   if(prepared_) return Error(Status::AlreadyInitialized,"Plasticity binding is immutable after preparation");
   if(binding.qbat_count()!=0&&!formulations)
     return Error(Status::InvalidInput,"QBAT requires an explicit complete formulation catalog");
-  if(formulations&&(!heterogeneous||binding.qbat_count()==0))
+  if(formulations&&(!heterogeneous||(!execution&&binding.qbat_count()==0)))
     return Error(Status::InvalidInput,"Explicit formulation catalog requires QBAT and typed sections");
   if(!binding.prepared()||(input.curve_count&&!input.curves)||!input.materials||!input.sections||!input.parents||
      !input.material_count||!input.section_count||!input.parent_count)
@@ -98,15 +98,16 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::InitializeCatalogImpl(
       return Error(Status::InvalidCurve,"Formulation curve range is misaligned or overflowing",i);
     points+=c.curve.count;
   }
-  try { return Build(binding,input,heterogeneous,formulations); }
+  try { return Build(binding,input,heterogeneous,formulations,execution); }
   catch(const std::bad_alloc&) { return Error(Status::ResourceLimit,"Plasticity catalog startup allocation failed"); }
 }
 ShellPlasticityBindingReport ShellBatchPlasticityBinding::Build(
     const ShellBatchBinding& binding,const ShellBatchPlasticityBindingInput& input,
-    bool heterogeneous,bool formulations) {
+    bool heterogeneous,bool formulations,bool execution) {
   Data staged;
   staged.heterogeneous=heterogeneous;
   staged.formulations=formulations;
+  staged.execution=execution;
   staged.curves.Resize(input.curve_count); staged.materials.Resize(input.material_count);
   staged.sections.Resize(input.section_count); staged.parents.Resize(input.parent_count);
   staged.qeph_parent.Resize(binding.qeph_count()); staged.t3_parent.Resize(binding.t3_count());
@@ -149,6 +150,13 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::PrepareMaterials(
         [](const auto& x){return x.declaration.material_id;})!=NoShellBindingNode)
       return Error(Status::InvalidMaterial,"Missing or duplicate material ID",i);
     auto& target=out.materials[i];
+    if(m.law==ShellSectionLaw::RigidSkin) {
+      if(!out.execution||!ValidRigidSkinMaterial(m))
+        return Error(Status::InvalidMaterial,"Rigid skin requires explicit execution mode and no constitutive controls",i);
+      target.declaration=m;
+      target.curve_index=NoShellBindingNode;
+      continue;
+    }
     if(m.law==ShellSectionLaw::LayeredLaw1Nip3) {
       material::ShellElasticLaw1PointParameters elastic;
       if(!out.heterogeneous||m.curve_id||m.hardening!=material::ShellPlasticityHardeningKind::Tabulated||
@@ -196,7 +204,9 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::CopySections(
     const bool layered=s.formulation==ShellSectionFormulation::LayeredNip3&&s.through_thickness_points==3;
     const bool one_point=out.heterogeneous&&s.formulation==ShellSectionFormulation::OneThicknessPoint&&
         s.through_thickness_points==1;
-    if(!s.section_id||!tl::math::Finite(s.thickness_m)||s.thickness_m<=0||(!layered&&!one_point)||
+    const bool rigid=out.execution&&s.formulation==ShellSectionFormulation::Nonconstitutive&&
+        s.through_thickness_points==0;
+    if(!s.section_id||!tl::math::Finite(s.thickness_m)||s.thickness_m<=0||(!layered&&!one_point&&!rigid)||
         Find(out.sections,i,s.section_id,[](const auto& x){return x.section_id;})!=NoShellBindingNode)
       return Error(Status::InvalidSection,"Section requires unique ID, positive thickness and an explicit supported point count",i);
     out.sections[i]=s;

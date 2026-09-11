@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "NodalCoefficientLedger.h"
+#include "ShellExecutionBinding.h"
 #include "../elements/ShellFormulationScope.h"
 
 namespace tl::fea {
@@ -25,6 +26,9 @@ class ShellPhysicalBinding {
   ShellPhysicalBinding& operator=(const ShellPhysicalBinding&) = delete;
   NodalDomainReport Initialize(const ShellFormulationScope&, const NodalCoefficientLedger&,
                               ShellPhysicalBindingLimits = {}) noexcept;
+  NodalDomainReport InitializeExecution(const ShellFormulationScope&, const NodalCoefficientLedger&,
+      const ShellExecutionBinding&, ShellPhysicalBindingLimits = {}) noexcept;
+  const ShellExecutionBinding* execution() const noexcept;
   bool prepared() const noexcept { return bool(impl_); }
   const NodalCoefficientLedger* coefficients() const noexcept;
   const ShellBatchFailureBinding* failure() const noexcept;
@@ -35,6 +39,8 @@ class ShellPhysicalBinding {
   bool Matches(const ShellPhysicalBinding&) const noexcept;
   std::size_t owned_payload_bytes() const noexcept;
  private:
+  NodalDomainReport InitializeImpl(const ShellFormulationScope&, const NodalCoefficientLedger&,
+      ShellPhysicalBindingLimits, const ShellExecutionBinding*) noexcept;
   struct Impl;
   std::shared_ptr<const Impl> impl_;
 };

@@ -83,6 +83,10 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::BindParents(const Shel
       placement=reference.quadrilateral.placement;
     }
     if(!matches) return Error(Status::IdentityMismatch,"Parent material/thickness bits differ from its native reference",i,p.family);
+    const bool rigid=m.law==ShellSectionLaw::RigidSkin;
+    if(rigid!=(s.formulation==ShellSectionFormulation::Nonconstitutive)||
+        (rigid&&(!out.execution||p.family==ShellBindingFamily::Qbat)))
+      return Error(Status::InvalidSection,"Rigid skin requires QEPH/T3 and an explicit zero-point section",i,p.family);
     const bool one_point=s.formulation==ShellSectionFormulation::OneThicknessPoint;
     if(one_point&&(p.family==ShellBindingFamily::Qeph||m.law!=ShellSectionLaw::LayeredLaw44Nip3||
         placement!=ShellReferencePlacement::Centered))
@@ -93,7 +97,8 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::BindParents(const Shel
       return Error(Status::InvalidSection,"QBAT requires the explicit shared one-thickness-point section",i,p.family);
     out.parents[i]={p,mi,si};
     rows[p.family_index]=i;
-    if(m.law==ShellSectionLaw::LayeredLaw1Nip3) ++laws->law1;
+    if(rigid) ++laws->rigid_skin;
+    else if(m.law==ShellSectionLaw::LayeredLaw1Nip3) ++laws->law1;
     else if(m.law==ShellSectionLaw::LayeredLaw44Nip3) {
       ++laws->law44;
       if(one_point&&p.family==ShellBindingFamily::T3) ++laws->law44_nip1;

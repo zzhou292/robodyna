@@ -11,14 +11,18 @@ enum class ShellSectionLaw : std::uint8_t {
   // Four in-plane stations, each with the SAME source NIP1 section.
   // Resolved role only; never a material declaration tag.
   Law44QbatFourInPlane,
+  // Explicit nonconstitutive execution role; no material-point parameters.
+  RigidSkin,
 };
 enum class ShellSectionFormulation : std::uint8_t {
   LayeredNip3,
   OneThicknessPoint,
+  Nonconstitutive,
 };
 struct ShellSectionCounts {
   std::size_t law44=0,law1=0;
   std::size_t law44_nip1=0; // Subset of law44, not another material total.
   std::size_t law44_qbat=0; // Four in-plane points per parent; subset of law44.
+  std::size_t rigid_skin=0; // Zero material points, not a LAW1/LAW44 subset.
 };
 } // namespace tl::fea

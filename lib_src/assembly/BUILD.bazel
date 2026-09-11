@@ -6,7 +6,7 @@ cc_library(
     srcs = ["ShellPhysicalBinding.cpp"],
     hdrs = ["ShellPhysicalBinding.h"],
     copts = ["-std=c++17"],
-    deps = [":nodal_coefficient_ledger", "//lib_src/elements:shell_formulation_scope",
+    deps = [":nodal_coefficient_ledger", ":shell_execution_binding", "//lib_src/elements:shell_formulation_scope",
             "//lib_utils:bounded_arena"],
 )
 
@@ -89,4 +89,14 @@ cc_library(
         "//lib_utils:bounded_arena",
         "//lib_utils:bounded_startup_array",
     ],
+)
+
+cc_library(
+    name = "shell_execution_binding",
+    srcs = ["ShellExecutionBinding.cpp", "shell_execution/Budget.cpp", "shell_execution/Parents.cpp"],
+    hdrs = ["ShellExecutionBinding.h", "shell_execution/Internal.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":nodal_coefficient_ledger", "//lib_src/constraints:nodal_rigid_assembly_binding",
+            "//lib_src/elements:shell_batch_plasticity_binding",
+            "//lib_utils:bounded_arena", "//lib_utils:source_identity_index"],
 )

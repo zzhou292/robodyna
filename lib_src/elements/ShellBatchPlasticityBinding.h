@@ -89,6 +89,12 @@ class ShellBatchPlasticityBinding {
       const ShellBatchPlasticityBindingInput&,const ShellHostBindingLimits& = {}) noexcept;
   ShellPlasticityBindingReport InitializeFormulationCatalog(const ShellBatchBinding&,
       const ShellBatchPlasticityBindingInput&,const ShellPlasticityCatalogLimits&) noexcept;
+  // Explicit complete host execution catalog. RigidSkin declarations retain
+  // original reference coefficients, require a Nonconstitutive zero-point
+  // section, and confer no PART membership or runtime authority by themselves.
+  // QEPH/T3/QBAT use one catalog; QBAT need not be present.
+  ShellPlasticityBindingReport InitializeExecutionCatalog(const ShellBatchBinding&,
+      const ShellBatchPlasticityBindingInput&,const ShellPlasticityCatalogLimits& = {}) noexcept;
   // Includes complete inventory backing, even when shared with the binding.
   std::size_t host_bytes() const noexcept;
   std::size_t startup_scratch_bytes() const noexcept;
@@ -109,6 +115,8 @@ class ShellBatchPlasticityBinding {
       material::ShellElasticLaw1PointParameters* output) const noexcept;
   bool Law(ShellBindingFamily,std::size_t family_index,ShellSectionLaw* output) const noexcept;
   bool Counts(ShellBindingFamily,ShellSectionCounts* output) const noexcept;
+  bool MaterialPointCount(ShellBindingFamily,std::size_t family_index,unsigned* output) const noexcept;
+  bool execution_sections() const noexcept { return prepared_&&data_.execution; }
   bool heterogeneous_sections() const noexcept { return prepared_&&data_.heterogeneous; }
   bool formulation_sections() const noexcept { return prepared_&&data_.formulations; }
  private:
@@ -139,14 +147,16 @@ class ShellBatchPlasticityBinding {
     std::size_t qbat_count=0;
     ShellSectionCounts qbat_laws{};
     bool formulations=false;
+    bool execution=false;
   } data_;
   bool prepared_=false;
   ShellPlasticityBindingReport InitializeCatalogImpl(const ShellBatchBinding&,const ShellBatchPlasticityBindingInput&,
-      const ShellPlasticityCatalogLimits&,bool heterogeneous,bool formulations=false) noexcept;
+      const ShellPlasticityCatalogLimits&,bool heterogeneous,bool formulations=false,bool execution=false) noexcept;
   ShellPlasticityBindingReport Build(const ShellBatchBinding&,const ShellBatchPlasticityBindingInput&,
-      bool heterogeneous,bool formulations);
+      bool heterogeneous,bool formulations,bool execution);
   const Parent* FamilyParent(ShellBindingFamily,std::size_t) const noexcept;
   const Material* ParentMaterial(ShellBindingFamily,std::size_t family_index) const noexcept;
+  static bool ValidRigidSkinMaterial(const ShellPlasticityMaterialInput&) noexcept;
   static ShellPlasticityBindingReport CopyCurves(const ShellBatchPlasticityBindingInput&,Data&) noexcept;
   static ShellPlasticityBindingReport PrepareMaterials(const ShellBatchPlasticityBindingInput&,Data&) noexcept;
   static ShellPlasticityBindingReport CopySections(const ShellBatchPlasticityBindingInput&,Data&) noexcept;

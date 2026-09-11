@@ -1,0 +1,12 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+
+cc_test(
+    name = "shell_execution_host_check",
+    size = "small",
+    srcs = ["CatalogTest.cpp", "BindingTest.cpp", "PhysicalTest.cpp", "Fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/assembly:shell_physical_binding",
+            "//lib_src/assembly:shell_execution_binding",
+            "//lib_utest/qualification/qbat_catalog:fixture",
+            "@googletest//:gtest_main"],
+)

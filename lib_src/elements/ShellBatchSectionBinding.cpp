@@ -31,6 +31,12 @@ bool ShellBatchPlasticityBinding::Law(ShellBindingFamily family,std::size_t inde
   if(!output||!m) return false;
   const auto* parent=FamilyParent(family,index);
   const auto& section=data_.sections[parent->section_index];
+  if(m->declaration.law==ShellSectionLaw::RigidSkin) {
+    if(!data_.execution||section.formulation!=ShellSectionFormulation::Nonconstitutive||
+        section.through_thickness_points!=0||family==ShellBindingFamily::Qbat) return false;
+    *output=ShellSectionLaw::RigidSkin;
+    return true;
+  }
   if(section.formulation==ShellSectionFormulation::OneThicknessPoint) {
     if(family==ShellBindingFamily::Qeph||m->declaration.law!=ShellSectionLaw::LayeredLaw44Nip3) return false;
     *output=family==ShellBindingFamily::Qbat?ShellSectionLaw::Law44QbatFourInPlane:ShellSectionLaw::Law44Nip1;
