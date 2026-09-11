@@ -52,12 +52,9 @@
       IF(STATUS/=0)RETURN
       CALL LAW90_ENGINE_TOTAL(X,PERM,SAVED,PIJ,G,DISP,WORLD,MF,B)
       K=0
-      DO ROW=1,3
-       DO COLUMN=1,3
-        K=K+1
-        VALUES(K)=G%FRAME(1,3*(COLUMN-1)+ROW)
-       ENDDO
-      ENDDO
+C     SORTHO3 output order is E1X,E2X,E3X,E1Y,...: already row-major.
+      VALUES(1:9)=G%FRAME(1,:)
+      K=9
       DO N=1,8
        VALUES(K+1:K+3)=G%X(1,N,:)
        K=K+3

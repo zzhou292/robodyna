@@ -102,8 +102,8 @@
      . 1,1,MF(1,IP,1),MF(1,IP,2),
      . MF(1,IP,3),MF(1,IP,4),MF(1,IP,5),MF(1,IP,6),
      . MF(1,IP,7),MF(1,IP,8),MF(1,IP,9),G%FRAME(1,1),
-     . G%FRAME(1,2),G%FRAME(1,3),G%FRAME(1,4),G%FRAME(1,5),
-     . G%FRAME(1,6),G%FRAME(1,7),G%FRAME(1,8),G%FRAME(1,9))
+     . G%FRAME(1,4),G%FRAME(1,7),G%FRAME(1,2),G%FRAME(1,5),
+     . G%FRAME(1,8),G%FRAME(1,3),G%FRAME(1,6),G%FRAME(1,9))
       ENDDO
       CALL LAW90_ENGINE_S8ESELECSHT(
      . 2,2,2,8,
