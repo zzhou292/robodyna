@@ -8,6 +8,7 @@ import tempfile
 import zipfile
 
 canonical, scope, binary = map(Path, sys.argv[1:4])
+test_filter = sys.argv[4] if len(sys.argv) > 4 else 'TiedAuxiliaryActual.*'
 name = '2010-toyota-yaris-coarse-v1l/set-yaris-coarse-v1l.key'
 with tempfile.TemporaryDirectory(prefix='robo-tied-auxiliary-') as temporary:
     target = Path(temporary) / 'set-yaris-coarse-v1l.key'
@@ -21,5 +22,5 @@ with tempfile.TemporaryDirectory(prefix='robo-tied-auxiliary-') as temporary:
         stream.write(data)
     helper = Path(__file__).resolve().parents[4] / 'output/full_shell/static_bundle/tests/actual_source_fixture.py'
     result = subprocess.run([sys.executable, '-B', str(helper), str(canonical), str(scope),
-        str(binary), 'TiedAuxiliaryActual.*'], env=dict(os.environ, ROBO_TIED_AUX_MEMBER=str(target)))
+        str(binary), test_filter], env=dict(os.environ, ROBO_TIED_AUX_MEMBER=str(target)))
     raise SystemExit(result.returncode)

@@ -25,6 +25,10 @@ group lists retain original card order. Master/slave intersections are separate
 and never replace the complete membership. All auxiliary node-list and NODE
 blocks used to index this source namespace are retained, including source rows
 which do not occur in a selected rigid group.
+The later classification read-set dependency also retains original
+`*ELEMENT_SOLID` blocks through the same authenticated source helper, so their
+topology can be checked without reparsing the auxiliary member. This retains
+source evidence only; it does not admit a solid owner or create midpoint tags.
 
 The expected original-source gate is 11 groups, 228 member occurrences, nine
 groups touching 125 distinct masters, no declared slaves and 88 noncanonical

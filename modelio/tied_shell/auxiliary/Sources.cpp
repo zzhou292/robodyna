@@ -16,7 +16,8 @@ std::vector<SourceEvidence> Sources(const Value& file, const std::string& member
         const bool group = keyword == "*CONSTRAINED_NODAL_RIGID_BODY" ||
                            keyword == "*CONSTRAINED_NODAL_RIGID_BODY_TITLE";
         if (group) ++groups;
-        if (!group && keyword.rfind("*SET_NODE_", 0) != 0 && keyword != "*NODE") continue;
+        if (!group && keyword.rfind("*SET_NODE_", 0) != 0 && keyword != "*NODE" &&
+            keyword != "*ELEMENT_SOLID") continue;
         detail::Request request;
         request.evidence.block = {MemberName, keyword, {}, hash, first, last};
         Require(requests.emplace(first, std::move(request)).second, "Duplicate auxiliary block request");
