@@ -78,6 +78,8 @@ BatchReport QephBatch::CopyPreparedParentActivity(FENodalState& owner,
   auto report = shell_activity_detail::PreparedPreflight(state, *this, owner, token,
       expected, batch_detail::SameDiagnostics(expected, state.candidate_diagnostics), output, capacity);
   if (report.status != BatchStatus::Success) return report;
+  if (!shell_activity_detail::JoinedOutputDisjoint(state,output,capacity))
+    return {BatchStatus::InvalidInput,"Prepared activity overlaps retained joined shell sources"};
   const auto slab = 1u - state.AcceptedSlabIndex();
   report = shell_batch_plasticity_detail::ReadFailure(state, slab, expected.time);
   if (report.status != BatchStatus::Success) {

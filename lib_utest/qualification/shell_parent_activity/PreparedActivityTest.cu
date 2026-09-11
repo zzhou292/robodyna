@@ -56,9 +56,6 @@ void CheckRejected(Batch& batch, Rig& rig, const Prepared& candidate,
   ++stale.attempt;
   EXPECT_EQ(batch.CopyPreparedParentActivity(rig.owner, candidate.token, stale,
       flags.data(), count).status, Status::StaleTrial);
-  fe::NodalTrialToken invalid;
-  EXPECT_EQ(batch.CopyPreparedParentActivity(rig.owner, invalid, expected,
-      flags.data(), count).status, Status::StaleTrial);
   fe::FENodalState foreign;
   EXPECT_EQ(batch.CopyPreparedParentActivity(foreign, candidate.token, expected,
       flags.data(), count).status, Status::StaleTrial);
@@ -70,9 +67,10 @@ void CheckRejected(Batch& batch, Rig& rig, const Prepared& candidate,
   EXPECT_EQ(batch.CopyPreparedParentActivity(rig.owner, candidate.token, expected,
       reinterpret_cast<std::uint8_t*>(const_cast<Diagnostics*>(&expected)), count).status,
       Status::InvalidInput);
-  auto* source = const_cast<fe::ShellBindingNode*>(rig.binding->nodes().data());
+  // This tiny legacy binding uses inline nodes copied into each participant.
+  // Its caller-owned node array is not a borrowed retained-source view.
   EXPECT_EQ(batch.CopyPreparedParentActivity(rig.owner, candidate.token, expected,
-      reinterpret_cast<std::uint8_t*>(source), count).status, Status::InvalidInput);
+      reinterpret_cast<std::uint8_t*>(&batch), count).status, Status::InvalidInput);
   EXPECT_EQ(flags, unchanged);
 }
 }
@@ -90,6 +88,14 @@ TEST(ShellPreparedActivityCuda, CompleteFamiliesRequireActualTokenAndProtectAllO
   ASSERT_NO_FATAL_FAILURE(CheckRejected(rig.qbat, rig, candidate,
       candidate.diagnostics.qbat, rig.binding->qbat_count()));
   ASSERT_NO_FATAL_FAILURE(CheckPreparedActivity(rig, candidate));
+  // BorrowPrepared rejects a bad token by discarding that owner's attempt.
+  // Verify this contract after the non-destructive output checks, then retry
+  // the complete attempt rather than treating an invalidated token as live.
+  fe::NodalTrialToken invalid;
+  std::vector<std::uint8_t> rejected(rig.binding->qbat_count(), 19);
+  EXPECT_EQ(rig.qbat.CopyPreparedParentActivity(rig.owner, invalid,
+      candidate.diagnostics.qbat, rejected.data(), rejected.size()).status, qb::BatchStatus::StaleTrial);
+  EXPECT_EQ(rejected, std::vector<std::uint8_t>(rejected.size(), 19));
   rig.Discard();
   std::uint8_t flag = 19;
   EXPECT_EQ(rig.qbat.CopyPreparedParentActivity(rig.owner, candidate.token,

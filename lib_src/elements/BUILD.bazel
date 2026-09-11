@@ -290,5 +290,5 @@ cc_library(
 cc_library(
     name = "shell_prepared_activity_readback",
     hdrs = ["ShellPreparedActivityReadback.h"],
-    deps = ["//lib_src/solvers:nodal_native_physical_coefficients"],
+    deps = [":shell_formulation_output_ranges", "//lib_src/solvers:nodal_native_physical_coefficients"],
 )

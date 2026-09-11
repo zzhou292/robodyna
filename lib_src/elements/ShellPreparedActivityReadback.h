@@ -1,8 +1,23 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "../solvers/NodalNativePhysicalCoefficients.h"
+#include "ShellFormulationOutputRanges.h"
 
 namespace tl::fea::shell_activity_detail {
+// Q/T's older readbacks intentionally retain their legacy output contract.
+// The new prepared activity entry authenticates its actual retained joined
+// sources and staging even for a non-physical formulation participant.
+template<class State>
+bool JoinedOutputDisjoint(const State& state,const void* output,std::size_t bytes) noexcept {
+  using trial_identity::Disjoint;
+  if(!state.joined_binding || !state.plasticity || !state.plasticity->failure_binding()) return false;
+  const ShellFormulationScope scope{&*state.joined_binding,state.plasticity->section_catalog(),
+      state.plasticity->failure_binding(),state.joined_mass?&*state.joined_mass:nullptr};
+  return Disjoint(output,bytes,&state,sizeof(state)) &&
+      Disjoint(output,bytes,state.staging.data(),state.config.element_count*sizeof(*state.staging.data())) &&
+      Disjoint(output,bytes,state.plasticity.get(),sizeof(*state.plasticity)) &&
+      shell_formulation_detail::OutputDisjoint(scope,output,bytes);
+}
 // Shared host preflight only. Each family still validates its complete typed
 // history through its existing owning readback before publishing any flag.
 template<class State, class Batch, class Diagnostics>
