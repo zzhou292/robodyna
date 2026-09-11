@@ -1,0 +1,33 @@
+cmake_minimum_required(VERSION 3.18)
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+  project(RoboDynaVehicleSolidSource LANGUAGES CXX)
+  find_package(Chrono REQUIRED CONFIG)
+  enable_testing()
+endif()
+include("${CMAKE_CURRENT_LIST_DIR}/VehicleSolidSource.cmake")
+find_package(GTest REQUIRED)
+add_executable(robo_dyna_vehicle_solid_fields_check tests/FieldsTest.cpp tests/GeometryTest.cpp)
+target_link_libraries(robo_dyna_vehicle_solid_fields_check PRIVATE
+  robo_dyna_vehicle_solid_source GTest::gtest_main)
+target_compile_options(robo_dyna_vehicle_solid_fields_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME vehicle_solid_fields COMMAND robo_dyna_vehicle_solid_fields_check)
+option(ROBO_DYNA_VEHICLE_SOLID_ACTUAL_TESTS "Enable original2412-cell source/reference qualification" OFF)
+if(ROBO_DYNA_VEHICLE_SOLID_ACTUAL_TESTS)
+  find_package(Python3 REQUIRED COMPONENTS Interpreter)
+  foreach(name CANONICAL SCOPE)
+    set(ROBO_DYNA_VEHICLE_${name} "" CACHE PATH "Explicit original vehicle ${name} fixture")
+    if(NOT EXISTS "${ROBO_DYNA_VEHICLE_${name}}")
+      message(FATAL_ERROR "Original solid source gate requires ${name}")
+    endif()
+  endforeach()
+  add_executable(robo_dyna_vehicle_solid_source_check tests/ActualSourceTest.cpp)
+  target_link_libraries(robo_dyna_vehicle_solid_source_check PRIVATE
+    robo_dyna_vehicle_solid_source GTest::gtest_main)
+  target_compile_options(robo_dyna_vehicle_solid_source_check PRIVATE -fno-fast-math -ffp-contract=off)
+  add_test(NAME vehicle_solid_source COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_LIST_DIR}/../../output/full_shell/static_bundle/tests/actual_source_fixture.py"
+    "${ROBO_DYNA_VEHICLE_CANONICAL}" "${ROBO_DYNA_VEHICLE_SCOPE}"
+    "$<TARGET_FILE:robo_dyna_vehicle_solid_source_check>" "VehicleSolidSource.*")
+endif()
+get_property(solid_source_tests DIRECTORY PROPERTY TESTS)
+set_tests_properties(${solid_source_tests} PROPERTIES TIMEOUT 240 RUN_SERIAL TRUE PROCESSORS 1)
