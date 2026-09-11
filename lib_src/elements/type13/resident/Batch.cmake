@@ -8,7 +8,8 @@ add_library(tl_type13_batch STATIC
   "${CMAKE_CURRENT_LIST_DIR}/AssembleOperation.cu"
   "${CMAKE_CURRENT_LIST_DIR}/EvaluateOperation.cu"
   "${CMAKE_CURRENT_LIST_DIR}/Readback.cu"
-  "${CMAKE_CURRENT_LIST_DIR}/Publication.cpp")
+  "${CMAKE_CURRENT_LIST_DIR}/Publication.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/PublicationScope.cpp")
 target_link_libraries(tl_type13_batch PUBLIC tl_type13_batch_values tl_explicit_nodal_state)
 target_compile_features(tl_type13_batch PUBLIC cxx_std_17)
 set_target_properties(tl_type13_batch PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)

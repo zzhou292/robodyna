@@ -41,6 +41,7 @@ struct Batch::Impl {
   std::uint64_t assembled_epoch = UINT64_MAX;
   std::uint64_t assembled_attempt = 0, last_candidate_attempt = 0;
   bool usable = true, bound = false, pending = false;
+  const ShellBatchPublication* publication_scope = nullptr;
   std::size_t Count() const noexcept { return source.model()->connection_count(); }
   unsigned TrialSlab() const noexcept { return 1 - accepted_slab; }
   void Discard() noexcept {

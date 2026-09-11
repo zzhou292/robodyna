@@ -97,3 +97,28 @@ every accepted history against independent native recurrence. The sole initial
 failure was a test fixture that included unrelated nodes in its one-beam local
 model; the source-local inventory was corrected without changing production.
 Full production common publication remains the next integration boundary.
+
+## Common publication ownership
+
+The resident retains an opaque common-coordinator claimant after the same
+initial-source preflight used by the shell/TYPE25 participants. Admission checks
+its bound epoch-zero source contributions, source/domain identity, actual owner
+stamp, configuration, qualification, startup motion and ordinary/CIN assembly
+profile. A second claimant or pending candidate cannot attach. Claiming occurs
+only after every contributor and coordinator allocation/readback preflight has
+succeeded. Releasing a different claimant does nothing; a released resident
+cannot be attached at a later epoch. The common owner must outlive calls and the
+borrowed resident must outlive its coordinator.
+
+Every prepared publication checks the actual retained claimant before the
+ordinary token/candidate proof. A foreign or missing claimant cannot advance
+nodal state or material histories. The only post-owner-commit operation remains
+the existing infallible slab switch. Private poison/discard propagates common
+CUDA failure without a new clock, solver, allocation or per-step callback.
+
+The qualification friend uses opaque test identities for closed one-contributor
+native fixtures. Two separate CUDA controls exercise real initial preflight,
+unique claims, release, foreign-source/startup/CIN-profile rejection, native
+candidate comparison, accepted-state preservation and poison handling. This
+claim seam is preparation for the common production coordinator; it does not
+claim that the full shell/beam/solid transaction is wired yet.

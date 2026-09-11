@@ -92,9 +92,17 @@ class Batch {
  private:
   friend class ::tl::fea::ShellBatchPublication;
   friend class BatchQualificationPeer;
+  BatchReport PreflightAttach(const NodalStamp&, const Type13NodeContributions&,
+      std::uint64_t configuration, std::uint64_t qualification,
+      const ShellBatchStartup&, BatchAssembly,
+      const ShellBatchPublication* claimant) const noexcept;
+  void AttachPublication(const ShellBatchPublication*) noexcept;
+  void ReleasePublication(const ShellBatchPublication*) noexcept;
+  void Poison() noexcept;
   BatchReport PreflightPublication(FENodalState&, const NodalTrialToken&,
                                     const NodalPreparedView&,
-                                    const BatchDiagnostics&) const noexcept;
+                                    const BatchDiagnostics&,
+                                    const ShellBatchPublication* claimant) const noexcept;
   void Publish(const NodalStamp&) noexcept;
   struct Impl;
   std::unique_ptr<Impl> impl_;

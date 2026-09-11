@@ -5,7 +5,7 @@ cuda_library(
     srcs = [
         "Arena.cpp", "Forecast.cpp", "Startup.cpp", "Identity.cpp", "OutputRanges.cpp",
         "Batch.cu", "Assembly.cu", "Candidate.cu", "AssembleOperation.cu",
-        "EvaluateOperation.cu", "Readback.cu", "Publication.cpp",
+        "EvaluateOperation.cu", "Readback.cu", "Publication.cpp", "PublicationScope.cpp",
     ],
     hdrs = [
         "Batch.h", "Arena.h", "Storage.h", "Kinematics.h", "Measure.h",
