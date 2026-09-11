@@ -1,0 +1,85 @@
+{
+  "scope": "Selected rear-metal LAW44 value and independent native caller; VinterSegmentValue extracts unchanged shared interpolation arithmetic",
+  "files": [
+    {
+      "path": "../../../lib_src/materials/detail/VinterValue.h",
+      "sha256": "56f6e54bf8f5b5a5bb2613b3f04d1f561a18dee62261aa0412130d1495407678"
+    },
+    {
+      "path": "../../../lib_src/materials/law44/solid/Curve.h",
+      "sha256": "2204fa7b07286e44d28c1e64beca6dcb88dc99ff4718afd28cecb567d21c64ac"
+    },
+    {
+      "path": "../../../lib_src/materials/law44/solid/Prepare.h",
+      "sha256": "5606f4b4029d75545cc459847282db3da061155dbd23e2527112ce0f87d1718c"
+    },
+    {
+      "path": "../../../lib_src/materials/law44/solid/Rate.h",
+      "sha256": "286491b6e58debd1d1e32a1b636464cd9f974424a630cd442bf4a131e5667db0"
+    },
+    {
+      "path": "../../../lib_src/materials/law44/solid/Tension.h",
+      "sha256": "8bc05f5fdb5e7527a2172fcf6b70e7c790f70c542df7a1d5aa2622a176951e7a"
+    },
+    {
+      "path": "../../../lib_src/materials/law44/solid/Types.h",
+      "sha256": "2c63069e5c1e3ae83e54e2a01fb5c193328c477b4eaee92437a5aca631d0c93f"
+    },
+    {
+      "path": "../../../lib_src/materials/law44/solid/Update.h",
+      "sha256": "53ced60ede95b270f5b0884d82a0561e935244825700edb138e4746fc2f67afe"
+    },
+    {
+      "path": "CudaTest.cu",
+      "sha256": "1916e236766af7ac43107c06c37e7f9fe976a20eb8a74cf4e30baa6c7d7dac2b"
+    },
+    {
+      "path": "HostTest.cpp",
+      "sha256": "e013990e950ad56d8998b24aa94b47cdf1a306d720ac1eefd4185d8c4d3c5fd9"
+    },
+    {
+      "path": "NativeOracle.cpp",
+      "sha256": "d3ff000033df95243cb89cc67d421fa7092a26704c7b75597d5a288f8daaa239"
+    },
+    {
+      "path": "NativeOracle.h",
+      "sha256": "3a23dd74f49ae016f13d98fe8dec73cbf15c05628eafb8068c9c5c8041369e34"
+    },
+    {
+      "path": "NativeTest.cpp",
+      "sha256": "6195d5212d15d920b44268af8fa3b1645132d2e05e9c380e631d37ce3b7034b0"
+    },
+    {
+      "path": "TestSupport.h",
+      "sha256": "a6077ba45482e30cd75a1d6addd7d35452f8bbba5367fee04090a8b24e9132e3"
+    },
+    {
+      "path": "native/NativeInterface.F",
+      "sha256": "d3e6fde8030b9fe948c9eb98c35e47c6e29b2d4ae1b3c0b51c4b9656a9fc1fd9"
+    },
+    {
+      "path": "native/NativePoint.F90",
+      "sha256": "ece8147221ff4d594c0aaf1983b37884354ec78d4aaf5b8e760f7919820d0213"
+    },
+    {
+      "path": "native/NativeSetup.F",
+      "sha256": "94539a8e77b8455e635c8acf10a27822998f1e3c18ef12023b14431a5f836967"
+    },
+    {
+      "path": "native/prepare_sources.py",
+      "sha256": "c6c6e7fc9bee68e0a8e29434fe1a0263d31580ae1cbc7afff45b64c917d86474"
+    },
+    {
+      "path": "source_fixture/OriginalCurve.h",
+      "sha256": "fbb5a3438398898d2ae479cec55f12abf4249d41277f788bbf535623e64092ae"
+    },
+    {
+      "path": "source_fixture/source-receipt.json",
+      "sha256": "045a5d85cf6700e3950e2248d0c8e337c1ce64311651b0c1470a96915b7c14b3"
+    },
+    {
+      "path": "verify_source.py",
+      "sha256": "c845e17828614bc3229b3d126bed6bc9700ee352b87924c9bf4da80fe67ad4cc"
+    }
+  ]
+}

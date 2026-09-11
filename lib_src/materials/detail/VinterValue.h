@@ -11,6 +11,15 @@
 #endif
 namespace tl::material::detail {
 template<class Curve>
+TL_VINTER_HD inline bool VinterSegmentValue(Curve c, std::uint32_t low,
+    double x, double& value, double& slope) noexcept {
+  const double width = c.plastic_strain[low + 1] - c.plastic_strain[low];
+  slope = (c.yield_stress_pa[low + 1] - c.yield_stress_pa[low]) / width;
+  value = c.yield_stress_pa[low] + slope * (x - c.plastic_strain[low]);
+  return width > 0 && tl::math::Finite(slope) && slope >= 0 &&
+         tl::math::Finite(value) && value > 0;
+}
+template<class Curve>
 TL_VINTER_HD inline bool VinterValue(Curve c, double x,
                                     double& value, double& slope) noexcept {
   // Strict X > next knot selects the native left segment at an exact knot.
@@ -20,11 +29,7 @@ TL_VINTER_HD inline bool VinterValue(Curve c, double x,
     if (x > c.plastic_strain[middle]) low = middle;
     else high = middle;
   }
-  const double width = c.plastic_strain[low + 1] - c.plastic_strain[low];
-  slope = (c.yield_stress_pa[low + 1] - c.yield_stress_pa[low]) / width;
-  value = c.yield_stress_pa[low] + slope * (x - c.plastic_strain[low]);
-  return width > 0 && tl::math::Finite(slope) && slope >= 0 &&
-         tl::math::Finite(value) && value > 0;
+  return VinterSegmentValue(c, low, x, value, slope);
 }
 }  // namespace tl::material::detail
 #undef TL_VINTER_HD

@@ -1,0 +1,7 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "host_check",
+    srcs = ["HostTest.cpp", "TestSupport.h", "source_fixture/OriginalCurve.h"],
+    copts = ["-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/materials/law44/solid:point", "@googletest//:gtest_main"],
+)
