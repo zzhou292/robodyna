@@ -3,8 +3,8 @@
   "files": [
     {
       "path": "lib_src/elements/solid18/BUILD.bazel",
-      "bytes": 1080,
-      "sha256": "4385645bafe95f063cb3e8571059299d742daeee2289340accb75e3036922c4b"
+      "bytes": 1112,
+      "sha256": "472fe2b3d53d56b2b0b09531f4a6f5a52ddb62ad7719469183d3f13e41bd8551"
     },
     {
       "path": "lib_src/elements/solid18/Solid18CurrentGeometry.h",

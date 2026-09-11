@@ -29,6 +29,7 @@ cc_library(
         "Solid18RateValues.h",
         "Solid18PointResponse.h",
         "Solid18ForceWork.h",
+        "Solid18ForceValues.h",
         "Solid18Force.h",
         "Solid18ForceScratch.h",
     ],

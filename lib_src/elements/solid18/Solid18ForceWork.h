@@ -1,33 +1,16 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // S8EFINT3/S8EFMOY3/SRROTA3: OpenRadioss, Copyright (C) 2026 Siemens.
 #pragma once
-#include "Solid18ForceTypes.h"
+#include "Solid18ForceValues.h"
 
 namespace tl::fea::solid18::detail {
 TL_SOLID18_HD inline void AccumulateForce(const PointDerivatives& geometry,
     const PointHistory& history, Vec3 (&force)[8]) noexcept {
   double stress[6];
-  for (unsigned k = 0; k < 3; ++k) {
-    stress[k] = (history.material.point.stress_pa[k]+0.0-history.bulk_pressure_pa)*
-                geometry.current_volume_m3;
-  }
-  for (unsigned k = 3; k < 6; ++k) {
-    stress[k] = (history.material.point.stress_pa[k]+0.0)*geometry.current_volume_m3;
-  }
-  const auto& p = geometry.regular_per_m;
-  const auto& s = geometry.shear_per_m;
-  const auto& b = geometry.cross_per_m;
-  // Native regular/shear subtraction precedes the separate cross-term pass.
-  for (unsigned n = 0; n < 8; ++n) {
-    force[n].x = force[n].x-(stress[0]*p[0][n]+stress[3]*s[0][n]+stress[5]*s[2][n]);
-    force[n].y = force[n].y-(stress[1]*p[1][n]+stress[3]*s[1][n]+stress[4]*s[4][n]);
-    force[n].z = force[n].z-(stress[2]*p[2][n]+stress[5]*s[3][n]+stress[4]*s[5][n]);
-  }
-  for (unsigned n = 0; n < 8; ++n) {
-    force[n].x = force[n].x-(stress[1]*b[0][n]+stress[2]*b[2][n]);
-    force[n].y = force[n].y-(stress[0]*b[1][n]+stress[2]*b[4][n]);
-    force[n].z = force[n].z-(stress[0]*b[3][n]+stress[1]*b[5][n]);
-  }
+  PointStressVolume(history.material.point.stress_pa,history.bulk_pressure_pa,
+                    geometry.current_volume_m3,stress);
+  AccumulateSelectedShearForce(geometry,stress,force);
+  AccumulateCrossForce(geometry,stress,force);
 }
 
 TL_SOLID18_HD inline void AccumulateGlobal(const Reference& reference,
@@ -54,9 +37,4 @@ TL_SOLID18_HD inline void AccumulateGlobal(const Reference& reference,
   diagnostics.plastic_work_increment_j += observation.material.plastic_work_increment_j;
 }
 
-TL_SOLID18_HD inline Vec3 WorldForce(const Matrix3& frame, const Vec3& force) noexcept {
-  return {frame.v[0]*force.x+frame.v[1]*force.y+frame.v[2]*force.z,
-          frame.v[3]*force.x+frame.v[4]*force.y+frame.v[5]*force.z,
-          frame.v[6]*force.x+frame.v[7]*force.y+frame.v[8]*force.z};
-}
 }  // namespace tl::fea::solid18::detail
