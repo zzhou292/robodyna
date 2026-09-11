@@ -5,11 +5,12 @@ package(default_visibility = ["//visibility:public"])
 
 cc_library(
     name = "shell_physical_owner_values",
-    srcs = ["ShellPhysicalOwnerLayout.cpp", "ShellPhysicalOutputRanges.cpp"],
-    hdrs = ["ShellPhysicalOwner.h", "ShellPhysicalOutputRanges.h"],
+    srcs = ["ShellPhysicalOwnerLayout.cpp", "ShellPhysicalOutputRanges.cpp", "ShellExecutionOutputRanges.cpp"],
+    hdrs = ["ShellPhysicalOwner.h", "ShellPhysicalOutputRanges.h", "ShellExecutionOutputRanges.h"],
     deps = [":shell_batch_startup", ":shell_formulation_output_ranges",
-            "//lib_src/assembly:shell_physical_binding", "//lib_src/assembly:nodal_coefficient_ledger",
-            "//lib_src/solvers:explicit_nodal_state", "//lib_utils:bounded_arena"],
+            "//lib_src/assembly:shell_physical_binding", "//lib_src/assembly:shell_execution_binding",
+            ":shell_batch_plasticity_binding", "//lib_src/assembly:nodal_coefficient_ledger",
+            "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_trial_identity", "//lib_utils:bounded_arena"],
 )
 
 cc_library(

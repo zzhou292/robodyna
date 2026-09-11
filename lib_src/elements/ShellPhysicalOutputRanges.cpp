@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "ShellPhysicalOutputRanges.h"
 #include "ShellFormulationOutputRanges.h"
+#include "ShellExecutionOutputRanges.h"
 
 namespace tl::fea::shell_physical_owner {
 namespace {
@@ -33,6 +34,8 @@ bool Type13Ranges(const Type13NodeContributions& source,const void* output,std::
 }
 bool OutputDisjoint(const ShellPhysicalBinding& physical,const void* output,std::size_t bytes) noexcept {
   if (!physical.prepared() || !Range(output,bytes,&physical)) return false;
+  if (physical.execution() &&
+      !shell_execution_detail::OutputDisjoint(*physical.execution(),output,bytes)) return false;
   const auto& ledger=*physical.coefficients();
   const auto& domain=*physical.domain();
   const auto& map=*physical.mapping();

@@ -73,3 +73,15 @@ reuses existing QBAT catalog/failure and physical-binding tests. Bazel owns the
 new host target at `//lib_utest/qualification/shell_execution:shell_execution_host_check`.
 No native numerical formula changed; the PART and shell coefficient producers
 retain their independently qualified donor/native gates.
+# Retained execution output ranges
+
+The separate `shell_execution_ranges_host` target checks public output exclusions
+for the retained execution role span, independently prepared equal catalogs,
+PART/group/member/topology/merge arrays and the complete physical ledger. The
+same `shell_physical_owner::OutputDisjoint` entry now checks these ranges before
+mapped participants publish output. This host gate does not admit a resident
+participant or qualify CUDA readback.
+
+Author gate: two functions passed under 1 CPU/512 MiB in
+`/tmp/shell-execution-ranges-tests-1.json` and its XML. Owning Bazel target:
+`//lib_utest/qualification/shell_execution:shell_execution_ranges_check`.

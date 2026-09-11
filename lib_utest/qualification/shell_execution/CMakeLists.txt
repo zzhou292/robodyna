@@ -18,3 +18,10 @@ target_link_libraries(shell_execution_legacy PRIVATE tl_shell_physical_binding G
 target_compile_options(shell_execution_legacy PRIVATE -fno-fast-math -ffp-contract=off)
 add_test(NAME shell_execution_legacy COMMAND shell_execution_legacy)
 set_tests_properties(shell_execution_legacy PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)
+
+include("${TL_ROOT}/lib_src/elements/ShellPhysicalOwnerValues.cmake")
+add_executable(shell_execution_ranges_host OutputRangesTest.cpp)
+target_link_libraries(shell_execution_ranges_host PRIVATE tl_shell_physical_owner_values GTest::gtest_main)
+target_compile_options(shell_execution_ranges_host PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME shell_execution_ranges_host COMMAND shell_execution_ranges_host)
+set_tests_properties(shell_execution_ranges_host PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 60)

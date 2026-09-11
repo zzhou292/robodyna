@@ -10,3 +10,14 @@ cc_test(
             "//lib_utest/qualification/qbat_catalog:fixture",
             "@googletest//:gtest_main"],
 )
+
+cc_test(
+    name = "shell_execution_ranges_check",
+    size = "small",
+    srcs = ["OutputRangesTest.cpp", "Fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/elements:shell_physical_owner_values",
+            "//lib_src/assembly:shell_physical_binding",
+            "//lib_utest/qualification/qbat_catalog:fixture",
+            "@googletest//:gtest_main"],
+)
