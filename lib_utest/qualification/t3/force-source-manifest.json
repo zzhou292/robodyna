@@ -49,13 +49,13 @@
     },
     {
       "path": "lib_src/elements/t3/T3History.h",
-      "bytes": 2774,
-      "sha256": "c8d180a12a7357c7ac43f0d8fdc40914eb6273e378ab5fa4749b8fef270faff8"
+      "bytes": 3363,
+      "sha256": "458f76cf36d62d384de775610be8f6c6dea03ecef6ce6ecfdc095c9d752c840a"
     },
     {
       "path": "lib_src/elements/t3/T3HistoryData.h",
-      "bytes": 1508,
-      "sha256": "da1a8ae42be61d8cee797506d2fdd4c06f7723547bd88e533d4976c332e80dde"
+      "bytes": 1771,
+      "sha256": "b75927d7bb38793e7e7807572e377b96de3bcbd8fd6e1657115dd40a105e7e89"
     },
     {
       "path": "lib_src/elements/t3/T3Law1.h",
@@ -69,8 +69,18 @@
     },
     {
       "path": "lib_src/elements/t3/T3StiffnessDiagnostics.h",
-      "bytes": 1608,
-      "sha256": "243feb418ae0d8a3e8f8f5f88e142d8534a48f4b075399b438c87574f4fd42fc"
+      "bytes": 1889,
+      "sha256": "a6160ee07f2782661634104372673a528a93f85b6d106b4f26240b1d7836900c"
+    },
+    {
+      "path": "lib_src/elements/t3/T3LayeredForceCore.h",
+      "sha256": "799b8485d5ba8a190d2f7d7465da0f2b847fe21037109ba1f56ed8aba19c21fe",
+      "bytes": 4375
+    },
+    {
+      "path": "lib_src/elements/t3/T3LayeredJ2Failure.h",
+      "sha256": "563378bbab7e98d0b1c055462c51f3fa0e66bf564500d119e60800c5271ea9c7",
+      "bytes": 1795
     }
   ],
   "tests": [
@@ -118,8 +128,8 @@
     },
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
-      "bytes": 2210,
-      "sha256": "5ef040a5deb6024f761cbeabcbfe1c22e7958b40ed499ed8fc81aa29979dc690"
+      "bytes": 2403,
+      "sha256": "94d3c1a69afe6684c0bddf896efe3be15917870d64f22277726dad478762d918"
     },
     {
       "path": "lib_src/elements/t3/CMakeLists.txt",
@@ -133,13 +143,13 @@
     },
     {
       "path": "lib_utest/qualification/t3/source-manifest.json",
-      "bytes": 18984,
-      "sha256": "7e9edf0fa0f859161f5f909e1dbbe21644b86a88fd04900716d1f0ae818f3f30"
+      "bytes": 19477,
+      "sha256": "6b302f66b9a4aa00fcdc022612d91eba40c5ab156d516ad698c51a70dbf33718"
     },
     {
       "path": "lib_utest/qualification/t3/verify_sources.py",
       "bytes": 2001,
-      "sha256": "0b647f952d652a2d917a35f287de4a603ba0fce390aa210d1fed1a53519545ec"
+      "sha256": "3f3753eebb26ba0c70e2057e633ec24c4f43ba0fc1827296b85a27736ef55e59"
     },
     {
       "path": "lib_utest/qualification/t3/T3PortFixture.h",
@@ -265,6 +275,16 @@
       "path": "lib_utest/qualification/native/t3/source-manifest.json",
       "bytes": 28358,
       "sha256": "3f4891f6dab344de9c0c579b699e43e11b30a7359358170833395481e62c2e9f"
+    },
+    {
+      "path": "lib_src/elements/sections/ShellLayeredJ2ForceAdapter.h",
+      "sha256": "b0011113d2beda7f72aab49a6c83a68667759eddb354ebf142317083f3dc8fea",
+      "bytes": 1391
+    },
+    {
+      "path": "lib_src/elements/sections/ShellLayeredJ2FailureForceAdapter.h",
+      "sha256": "ed35eba3cf87901e54a88cc91fdf2218008ecb6b8e28737ec12fc64c388cd241",
+      "bytes": 1401
     }
   ],
   "donor_routines": [
@@ -696,5 +716,42 @@
     ],
     "reason": "Compose mixed resident registration with the independently qualified vehicle and layered LAW1 registrations; native donor, integrated startup and force arithmetic remain unchanged.",
     "force_arithmetic_changed": false
+  },
+  "accepted_failure_force_extension": {
+    "scope": "Explicit local NIP3 constant-D1 family value operation; same family core and legacy active1 APIs retained. OFF0 native history/stiffness/force gates do not admit resident/contact/source runtime.",
+    "previous_manifest_sha256": "0c6e97a86f6aa785ffc9c47dd74c56c760d37725484112f2692112d4f563df54",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/t3/T3History.h",
+        "bytes": 2774,
+        "sha256": "c8d180a12a7357c7ac43f0d8fdc40914eb6273e378ab5fa4749b8fef270faff8"
+      },
+      {
+        "path": "lib_src/elements/t3/T3HistoryData.h",
+        "bytes": 1508,
+        "sha256": "da1a8ae42be61d8cee797506d2fdd4c06f7723547bd88e533d4976c332e80dde"
+      },
+      {
+        "path": "lib_src/elements/t3/T3StiffnessDiagnostics.h",
+        "bytes": 1608,
+        "sha256": "243feb418ae0d8a3e8f8f5f88e142d8534a48f4b075399b438c87574f4fd42fc"
+      },
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 2210,
+        "sha256": "5ef040a5deb6024f761cbeabcbfe1c22e7958b40ed499ed8fc81aa29979dc690"
+      },
+      {
+        "path": "lib_utest/qualification/t3/source-manifest.json",
+        "bytes": 18984,
+        "sha256": "7e9edf0fa0f859161f5f909e1dbbe21644b86a88fd04900716d1f0ae818f3f30"
+      },
+      {
+        "path": "lib_utest/qualification/t3/verify_sources.py",
+        "bytes": 2001,
+        "sha256": "0b647f952d652a2d917a35f287de4a603ba0fce390aa210d1fed1a53519545ec"
+      }
+    ],
+    "review": "Root independently reviewed shared family/history/stiffness/C5/C8/HVL production changes; no blocker. New native/CUDA execution remains owning qualification."
   }
 }

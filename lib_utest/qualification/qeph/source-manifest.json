@@ -330,13 +330,13 @@
     },
     {
       "path": "lib_src/elements/qeph/QephHistory.h",
-      "bytes": 2874,
-      "sha256": "5ee6fa1b44b588c17350b6095d2a3c40c5bbbb94fb20aff9e1a3e88a1c648ef2"
+      "bytes": 3467,
+      "sha256": "eef3ad5b6159c111c98da16210c17c6791824e634e4b94fd3b7b7a24b6183bb2"
     },
     {
       "path": "lib_src/elements/qeph/QephHistoryData.h",
-      "bytes": 2000,
-      "sha256": "848c87e948e5abe1efabbf84b77912f4672e214fe9a8c4d00341b32841954820"
+      "bytes": 2262,
+      "sha256": "17a5dfe9697e6d985cd54fdb888c9222f25c0f893f9e6389bccb44fb9b9ed17a"
     },
     {
       "path": "lib_src/elements/qeph/QephLaw1.h",
@@ -350,23 +350,33 @@
     },
     {
       "path": "lib_src/elements/qeph/QephStabilizationForces.h",
-      "bytes": 3550,
-      "sha256": "ded0128a521c7a906efa222edb96eab2872e64c1f110c2005ed47e0f2111de4d"
+      "bytes": 3574,
+      "sha256": "40787ce0132246bb24bcf6175999cd569027b91ad846726fb4b41d76eafc1cd4"
     },
     {
       "path": "lib_src/elements/qeph/QephStabilizationState.h",
-      "bytes": 2255,
-      "sha256": "1513d23b608abe5c606b9605cacbc22a7c9988e8aced25079e9870b0fc815732"
+      "bytes": 2537,
+      "sha256": "8d627e55a2a7e28702ce99bf58d189654c22ad2a1887b6f23b2de54cd4f09acb"
     },
     {
       "path": "lib_src/elements/qeph/QephStiffnessDiagnostics.h",
-      "bytes": 1678,
-      "sha256": "7c62acd02b1d3c3f6209c1a3d162a1ccea564c33632fe9a97596216dae44b6e1"
+      "bytes": 1966,
+      "sha256": "860a9ba2e8e27fb37779cc62fc2fa9d18931d9371758a2bd2957f3c6ef5c8591"
     },
     {
       "path": "lib_src/materials/ShellElasticLaw1.h",
       "bytes": 3424,
       "sha256": "579bc554bbb82e33f612cb582e2bab4a4b572a493e15db9d3c582faa6db8be62"
+    },
+    {
+      "path": "lib_src/elements/qeph/QephLayeredForceCore.h",
+      "sha256": "879e6eacac4ba10b059c311cde1fe2712e312426c6cc4cd7600b91b90e6b2571",
+      "bytes": 4502
+    },
+    {
+      "path": "lib_src/elements/qeph/QephLayeredJ2Failure.h",
+      "sha256": "e6d6ea4712c5e557d83670417ef6492ed3805b3862d7dbcc978f910366e2351f",
+      "bytes": 1805
     }
   ],
   "shared_and_native_dependencies": [
@@ -469,6 +479,16 @@
       "path": "lib_utest/qualification/native/qeph/NativeQephScatter.F",
       "bytes": 2124,
       "sha256": "2357e772db7a5a0c9fc00053feb87ae446b4e02eb4e573c41af9a633cd72c965"
+    },
+    {
+      "path": "lib_src/elements/sections/ShellLayeredJ2ForceAdapter.h",
+      "sha256": "b0011113d2beda7f72aab49a6c83a68667759eddb354ebf142317083f3dc8fea",
+      "bytes": 1391
+    },
+    {
+      "path": "lib_src/elements/sections/ShellLayeredJ2FailureForceAdapter.h",
+      "sha256": "ed35eba3cf87901e54a88cc91fdf2218008ecb6b8e28737ec12fc64c388cd241",
+      "bytes": 1401
     }
   ],
   "tests": [
@@ -776,5 +796,37 @@
     "cuda_packet_cap_bytes": 8192,
     "failure": "missing/foreign reference,stale time/index,overflow/nonadvancing time,nonfinite fields,late THKN rejection,complete byte preservation,retry",
     "dynamics_qualified": false
+  },
+  "accepted_failure_force_extension": {
+    "scope": "Explicit local NIP3 constant-D1 family value operation; same family core and legacy active1 APIs retained. OFF0 native history/stiffness/force gates do not admit resident/contact/source runtime.",
+    "previous_manifest_sha256": "36d1ac1b927d56495dd85020d059b88e03cac620d23a21fcbe8267f8b7b42e31",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/qeph/QephHistory.h",
+        "bytes": 2874,
+        "sha256": "5ee6fa1b44b588c17350b6095d2a3c40c5bbbb94fb20aff9e1a3e88a1c648ef2"
+      },
+      {
+        "path": "lib_src/elements/qeph/QephHistoryData.h",
+        "bytes": 2000,
+        "sha256": "848c87e948e5abe1efabbf84b77912f4672e214fe9a8c4d00341b32841954820"
+      },
+      {
+        "path": "lib_src/elements/qeph/QephStabilizationForces.h",
+        "bytes": 3550,
+        "sha256": "ded0128a521c7a906efa222edb96eab2872e64c1f110c2005ed47e0f2111de4d"
+      },
+      {
+        "path": "lib_src/elements/qeph/QephStabilizationState.h",
+        "bytes": 2255,
+        "sha256": "1513d23b608abe5c606b9605cacbc22a7c9988e8aced25079e9870b0fc815732"
+      },
+      {
+        "path": "lib_src/elements/qeph/QephStiffnessDiagnostics.h",
+        "bytes": 1678,
+        "sha256": "7c62acd02b1d3c3f6209c1a3d162a1ccea564c33632fe9a97596216dae44b6e1"
+      }
+    ],
+    "review": "Root independently reviewed shared family/history/stiffness/C5/C8/HVL production changes; no blocker. New native/CUDA execution remains owning qualification."
   }
 }

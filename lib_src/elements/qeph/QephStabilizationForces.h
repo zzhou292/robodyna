@@ -6,11 +6,11 @@
 
 namespace tl::fea::qeph::detail {
 TL_QEPH_HD inline void StabilizationForces(const GeometryWork& g,const MaterialWork& m,
-    HistoryValues& h,const StabilizationWork& w,LocalForceWork& local) {
+    HistoryValues& h,const StabilizationWork& w,LocalForceWork& local,double active=1) {
   using namespace force_constant;
   const auto* vg=h.stabilization; const auto* vh=g.values.hourglass_rate;
   const auto* dhg=w.increment; auto* f=local.force; auto& cm=local.couple;
-  const double c8=four_over_3*1.;
+  const double c8=four_over_3*active;
   double ss1=(g.my34*vg[0]+g.my23*vg[6])*c8;
   double ss2=(g.mx23*vg[7]+g.mx34*vg[1])*c8;
   double sf1=(g.my34*vg[2]+g.my23*vg[8])*c8;
@@ -20,7 +20,7 @@ TL_QEPH_HD inline void StabilizationForces(const GeometryWork& g,const MaterialW
   double sc5=(g.my34*vg[4]+g.mx34*vg[5])*c2;
   double sc6=(g.my23*vg[10]+g.mx23*vg[11])*c2;
   double ss3=sc5+sc6;
-  const double hvl=m.dn*::sqrt(m.rho*g.values.area*1.)*1.;
+  const double hvl=m.dn*::sqrt(m.rho*g.values.area*1.)*active;
   const double ssv0=g.my23*g.my23,ssv1=g.my34*g.my34;
   const double ssv2=g.mx23*g.mx23,ssv3=g.mx34*g.mx34;
   const double hxxv=fivep333*(ssv1+ssv0);

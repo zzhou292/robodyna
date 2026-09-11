@@ -11,7 +11,7 @@ struct HistoryValues {
   double thickness=0;           // Reported THK, m; force thickness stays reference t.
   double internal_work[2]{};    // Native accumulated EINT, J; not a potential.
   double equivalent_strain_rate=0; // EPSD, 1/s, overwritten each interval.
-  double active=1;              // Fixed active1 branch; no HOURG or EVIS.
+  double active=1;              // Accepted OFF 0/1; legacy entry points admit only active1.
 };
 struct HistoryStamp { double time=0; std::uint64_t sample_index=0; };
 class History {
@@ -21,6 +21,8 @@ class History {
   TL_T3_HD const HistoryStamp& stamp() const noexcept { return stamp_; }
   TL_T3_HD bool matches_reference(const ReferenceData&) const noexcept;
  private:
+  TL_T3_HD static Status Prepare(const ReferenceData&,const HistoryValues&,HistoryStamp,History&,bool) noexcept;
+  friend TL_T3_HD Status PrepareFailurePrescribedHistory(const ReferenceData&,const HistoryValues&,HistoryStamp,History&) noexcept;
   HistoryValues data_{};
   HistoryStamp stamp_{};
   ReferenceInput reference_input_{};

@@ -1,0 +1,72 @@
+{
+  "schema": "tl.shell-failure-force-native-adaptation.v1",
+  "donor_revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "inputs": [
+    {
+      "path": "lib_utest/qualification/shell_layered_j2/native_recurrence/NativeLayeredQephForce.F",
+      "sha256": "0be40d7790563490df4781a425657c4339c734d5cd14ae2aa2a66a59a87498a8",
+      "bytes": 4333
+    },
+    {
+      "path": "lib_utest/qualification/shell_layered_j2/native_recurrence/NativeLayeredQephSection.F",
+      "sha256": "19491fb32e5b0629b140794b1b49be7fb548d17c993b783e1f7c9dde2bd0f824",
+      "bytes": 3133
+    },
+    {
+      "path": "lib_utest/qualification/shell_layered_j2/native_recurrence/NativeLayeredT3Force.F",
+      "sha256": "58265de6cbc739510cacb24c406edc07da324afe0383a2f25214206768eff141",
+      "bytes": 3489
+    },
+    {
+      "path": "lib_utest/qualification/shell_layered_j2/native_recurrence/NativeLayeredT3Section.F",
+      "sha256": "69bc8bb5a87fb281fc128e30e40aabda332903d2e5abfcbbdef07db27fdfa6b6",
+      "bytes": 2771
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/source-manifest.json",
+      "sha256": "46d2759036e16558500c91a9d14dd225f203aa5d2abec81bb951ac1b956030be",
+      "bytes": 19722
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/source-manifest.json",
+      "sha256": "3f4891f6dab344de9c0c579b699e43e11b30a7359358170833395481e62c2e9f",
+      "bytes": 28358
+    },
+    {
+      "path": "lib_utest/qualification/shell_layered_failure/native/source-manifest.json",
+      "sha256": "c694dfa5280d3aaa050bb5d3aa759fdecc5d2e7f1afa8f14ad738f765cf558b7",
+      "bytes": 6384
+    },
+    {
+      "path": "lib_utest/qualification/shell_layered_j2/native_recurrence/source-manifest.json",
+      "sha256": "aac6f4d9e4b7ffff7bc10529b889ac3808a0a6a02093b3395b1483be1860c9eb",
+      "bytes": 3626
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/T3NativeGeometry.F",
+      "sha256": "408482a2b62d1c286a63d82cc74b93956b27305b7b1615fd0058360bdd997fe5",
+      "bytes": 6731
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/original/engine/source/elements/sh3n/coque3n/c3coef3.F",
+      "sha256": "35d43e70c21fc830659ae2f778ce0efefa9308bd71d2bd35bf27552e3e4ae046",
+      "bytes": 6618
+    },
+    {
+      "path": "lib_utest/qualification/native/t3/original/engine/source/elements/sh3n/coque3n/c3coor3.F",
+      "sha256": "dc1a3af9d60541a35974468bc7307a5dfdfa941ba215c09bb34e0e1b5ad11615",
+      "bytes": 13129
+    },
+    {
+      "path": "lib_utest/qualification/native/qeph/original/engine/source/elements/shell/coquez/czdef.F",
+      "sha256": "f9ba7c81092818d002b3e042741af123c6bb658bced6777178b06b2f02f9de0c",
+      "bytes": 30550
+    }
+  ],
+  "generated": {
+    "FailureQephForce.F": "874b36f7ee9bde03ac2421cef8496780cc738458cf1dfd9b4a32398476420394",
+    "FailureT3Section.F": "388e61df0e3d2c55927c234fd624ba1caee81bb15719a932ef447bdacab9cb2d",
+    "FailureQephSection.F": "5447da8ea0b47c5ecb302ce1e2e86c3afbb7d7f3eac9a55d9668364abbf4178e",
+    "FailureT3Force.F": "fb7399d37acdd52d1ec4d0bca98658b3817c55f0cfa72e7c1b22c4c3c90ee788"
+  }
+}

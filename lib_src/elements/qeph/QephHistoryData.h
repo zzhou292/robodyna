@@ -23,7 +23,7 @@ struct HistoryValues {
   double thickness=0;          // Reported THK; ITHK0 force thickness stays fixed.
   double internal_work[2]{};    // Accumulated native EINT, J; not a potential.
   double hourglass_viscous_work=0; // One-cell PARTSAV(8), J.
-  double active=1;             // This first fixed branch admits only active1.
+  double active=1;             // Accepted OFF 0/1; legacy entry points admit only active1.
 };
 struct HistoryStamp { double time=0; std::uint64_t sample_index=0; };
 
@@ -36,6 +36,8 @@ class History {
   TL_QEPH_HD const HistoryStamp& stamp() const noexcept { return stamp_; }
   TL_QEPH_HD bool matches_reference(const ReferenceData&) const noexcept;
  private:
+  TL_QEPH_HD static Status Prepare(const ReferenceData&,const HistoryValues&,HistoryStamp,History&,bool) noexcept;
+  friend TL_QEPH_HD Status PrepareFailurePrescribedHistory(const ReferenceData&,const HistoryValues&,HistoryStamp,History&) noexcept;
   HistoryValues data_{};
   HistoryStamp stamp_{};
   ReferenceInput reference_input_{};

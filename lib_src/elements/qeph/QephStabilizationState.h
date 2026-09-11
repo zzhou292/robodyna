@@ -12,7 +12,7 @@ struct StabilizationWork {
   double bending_factor=0, membrane_loading=0, bending_loading=0;
 };
 TL_QEPH_HD inline void UpdateStabilization(const GeometryWork& g,const MaterialWork& m,
-                                          HistoryValues& h,StabilizationWork& w) {
+                                          HistoryValues& h,StabilizationWork& w,double active=1) {
   using namespace force_constant;
   auto* dhg=w.increment; auto* vg=h.stabilization;
   for(unsigned i=0;i<6;++i) dhg[i]=g.values.hourglass_rate[i]*m.dt;
@@ -28,7 +28,7 @@ TL_QEPH_HD inline void UpdateStabilization(const GeometryWork& g,const MaterialW
   const double sf2=-g.mx23*vg[9]-g.mx34*vg[3];
   const double sc5=g.my34*vg[4]+g.mx34*vg[5];
   const double sc6=g.my23*vg[10]+g.mx23*vg[11];
-  const double c5=.5*1.*m.thickness*four_over_3;
+  const double c5=.5*active*m.thickness*four_over_3;
   const double esx=ss1*dhg[0]+ss2*dhg[1];
   const double old_work0=c5*(esx+.25*(sc5*dhg[4]+sc6*dhg[5]));
   const double emx=(sf1*dhg[2]-sf2*dhg[3])*w.bending_factor;

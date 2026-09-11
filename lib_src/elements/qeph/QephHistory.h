@@ -16,11 +16,11 @@ template<unsigned N> TL_QEPH_HD inline bool FiniteHistoryArray(const double (&a)
   for(double value:a) if(!tl::math::Finite(value)) return false;
   return true;
 }
-TL_QEPH_HD inline bool ValidHistoryValues(const HistoryValues& h) {
+TL_QEPH_HD inline bool ValidHistoryValues(const HistoryValues& h,bool allow_inactive=false) {
   return FiniteHistoryArray(h.stress)&&FiniteHistoryArray(h.material_stress)&&
       FiniteHistoryArray(h.bending_stress)&&FiniteHistoryArray(h.stabilization)&&
       FiniteHistoryArray(h.strain_curvature)&&FiniteHistoryArray(h.internal_work)&&
-      Positive(h.thickness)&&tl::math::Finite(h.hourglass_viscous_work)&&h.active==1;
+      Positive(h.thickness)&&tl::math::Finite(h.hourglass_viscous_work)&&(h.active==1||(allow_inactive&&h.active==0));
 }
 } // namespace tl::fea::qeph::detail
 
@@ -41,16 +41,25 @@ TL_QEPH_HD inline bool History::matches_reference(const ReferenceData& r) const 
 
 // Explicit prescribed finite values, not a native restart admission. Failure
 // preserves output bytes, including when values alias an existing output.
-TL_QEPH_HD inline Status PreparePrescribedHistory(const ReferenceData& r,
-    const HistoryValues& values,HistoryStamp stamp,History& output) noexcept {
+TL_QEPH_HD inline Status History::Prepare(const ReferenceData& r,
+    const HistoryValues& values,HistoryStamp stamp,History& output,bool allow_inactive) noexcept {
   if(!detail::SaneReference(r)) return Status::kInvalidReference;
-  if(!detail::ValidHistoryValues(values)||!tl::math::Finite(stamp.time)||stamp.time<0)
+  if(!detail::ValidHistoryValues(values,allow_inactive)||!tl::math::Finite(stamp.time)||stamp.time<0)
     return Status::kInvalidInput;
   History candidate;
   candidate.data_=values; candidate.stamp_=stamp;
   candidate.reference_input_=r.input; candidate.prepared_=true;
   output=candidate;
   return Status::kSuccess;
+}
+TL_QEPH_HD inline Status PreparePrescribedHistory(const ReferenceData& r,
+    const HistoryValues& values,HistoryStamp stamp,History& output) noexcept {
+  return History::Prepare(r,values,stamp,output,false);
+}
+// Explicit accepted OFF0/1 value path; not native restart or owner admission.
+TL_QEPH_HD inline Status PrepareFailurePrescribedHistory(const ReferenceData& r,
+    const HistoryValues& values,HistoryStamp stamp,History& output) noexcept {
+  return History::Prepare(r,values,stamp,output,true);
 }
 TL_QEPH_HD inline Status InitializeHistory(const ReferenceData& r,
     HistoryStamp stamp,History& output) noexcept {
