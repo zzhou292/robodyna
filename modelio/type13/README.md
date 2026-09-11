@@ -36,3 +36,12 @@ linked through their existing owning targets. No CUDA/runtime target is added.
 The TL startup's separate native/CUDA gate qualifies the RKINI3/R4BUF3/RMASS
 values; this app test does not execute the complete SDI converter or a vehicle
 simulation.
+
+Root qualification at app `88de1e2` / TL `ea58e30`: all four C++ functions and
+the converter source-identity check PASS, with no skips. The actual loader
+authenticates every ordered original node and beam record, rejects all fifteen
+coherently rehashed corruptions, and passes the exact startup budget / one-byte
+short / retry gate. Reports are `type13-source-root-{configure,build,tests}-1`
+and `type13-source-root-functions-1/` in the workspace reports directory.
+This admits source startup values only; connection forces, tied attachment and
+common CUDA owner participation remain separate implementation gates.

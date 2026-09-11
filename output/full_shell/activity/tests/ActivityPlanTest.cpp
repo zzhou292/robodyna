@@ -10,6 +10,7 @@ PlanRequest FullRequest(const Context& c) {
     for(unsigned i=0;i<4;++i)r.static_files.push_back({"canonical-reservation-"+std::to_string(i)+".bin",33554432});
     r.static_files.push_back({"canonical-reservation-tail.bin",10199551});
     r.static_files.push_back({"yaris-vehicle-declarations-1.json",3648589});
+    r.static_files.push_back({"yaris-type13-startup-declaration-1.json",5150841});
     r.static_files.push_back({"wall.mesh.json",1048576});
     r.static_files.push_back({"configuration.json",65536});
     r.static_files.push_back({"manifest.json",16384});
