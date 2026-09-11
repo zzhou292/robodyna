@@ -85,3 +85,7 @@ publication. Build used eight affinity CPUs/four workers and sampled
 2,731,995,136 B process-tree RSS. Tests used two CPUs/2 GiB; sampled RSS
 169,455,616 B. These are prescribed-state integration checks, not a new impact
 trajectory. Affected old resident/source-flight regressions are tracked separately.
+Those affected gates now pass all50 functions:11 resident TAB1,13 resident
+constant failure,18 mixed/resident plasticity and8 actual-source CUDA flight.
+Reports `one-point-resident-{tab1,constant,mixed,source-flight}-tests-1` retain
+their separate XML evidence. Original149/631-parent fixtures remain covered.
