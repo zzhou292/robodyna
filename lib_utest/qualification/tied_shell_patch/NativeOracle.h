@@ -1,5 +1,6 @@
 #pragma once
 #include "Fixture.h"
+#include "CoefficientFixture.h"
 
 namespace tied_patch_test {
 struct NativeResult {
@@ -8,6 +9,8 @@ struct NativeResult {
 };
 NativeResult Native(const tie::PatchInput&, const tie::SecondaryLoad&, const tie::MasterMotion&,
                     bool repeated_node = false);
+std::array<double,24> NativeCoefficients(const tie::PatchInput&,const tie::CoefficientInput&,
+                                         bool repeated_node = false);
 inline void Agreement(const tie::Patch& patch, const tie::MasterLoads& load,
     const tie::SecondaryMotion& motion, const NativeResult& native) {
   for (unsigned i = 0; i < 7; ++i) {

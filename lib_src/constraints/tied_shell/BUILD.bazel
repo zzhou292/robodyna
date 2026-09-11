@@ -1,7 +1,7 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 cc_library(
     name = "tied_shell_patch",
-    hdrs = ["TiedPatchTypes.h", "TiedPatchGeometry.h", "TiedPatchForce.h", "TiedPatchMotion.h"],
+    hdrs = ["TiedPatchTypes.h", "TiedPatchGeometry.h", "TiedPatchForce.h", "TiedPatchMotion.h", "TiedPatchCoefficients.h"],
     deps = ["//lib_src/math:fixed3_operations"],
     visibility = ["//visibility:public"],
 )

@@ -23,6 +23,23 @@ without changing equations or tolerances. The source identity CTest also passes.
 This gate covers the value contract described in the production README, not
 whole-interface coefficient transfer or original vehicle attachment admission.
 
+The subsequent coefficient extension passes six additional functions (three
+host, one independent native, two actual CUDA), with all nine original functions
+passing again. Exact explicit I2FOR28_CIN442–503 and independently computed
+geometry cover four shapes and eight input modes. Current master IN is zero in
+the reference packet while supplied MINER can be positive; repeated triangles
+use J4=J3 and both native additions target the same physical node. This checks
+both inertia-transfer branches, zero physical coefficients, native DMAST versus
+source mass and exact zero/EM20 dependent coefficients. Invalid final input and
+computed overflow preserve the complete previously published GPU value packet.
+
+Evidence: `tied-coefficients-root-functions-1` contains all15 passing functions
+with zero failures/skips; guards are `tied-coefficients-root-{build,tests}-*.json`.
+The first build caught two GTest trace declarations on one line, fixed without
+equation/tolerance changes. Independent code review found no blocker. This adds
+the coefficient value stage, not source classification, retained release history,
+source-ordered multi-slave assembly or a connected original vehicle owner.
+
 ```sh
 cmake -S lib_utest/qualification/tied_shell_patch -B BUILD \
   -DCMAKE_BUILD_TYPE=Release -DTL_TIED_PATCH_NATIVE=ON \

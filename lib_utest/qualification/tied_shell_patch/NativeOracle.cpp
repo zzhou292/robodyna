@@ -3,6 +3,7 @@
 extern "C" {
 void tl_tied_patch_force(const double*, const double*, const double*, const int*, double*, double*);
 void tl_tied_patch_motion(const double*, const double*, const double*, const double*, const int*, double*);
+void tl_tied_patch_coefficients(const double*, const double*, const double*, const int*, double*);
 }
 namespace tied_patch_test {
 namespace {
@@ -21,6 +22,18 @@ NativeResult Native(const tie::PatchInput& input, const tie::SecondaryLoad& load
   const int repeated = repeated_node ? 1 : 0;
   tl_tied_patch_force(x,force,couple,&repeated,output.cofactor.data(),output.values.data());
   tl_tied_patch_motion(x,output.cofactor.data(),v,a,&repeated,output.values.data()+12);
+  return output;
+}
+std::array<double,24> NativeCoefficients(const tie::PatchInput& geometry,
+    const tie::CoefficientInput& input, bool repeated_node) {
+  double x[15];
+  for (unsigned i = 0; i < 4; ++i) Pack(geometry.master_position[i],x+3*i);
+  Pack(geometry.secondary_position,x+12);
+  const auto& s = input.secondary;
+  const double secondary[] = {s.mass,s.inertia,s.translational_stiffness,s.rotational_stiffness};
+  const int repeated = repeated_node ? 1 : 0;
+  std::array<double,24> output{};
+  tl_tied_patch_coefficients(x,secondary,input.initial_master_inertia,&repeated,output.data());
   return output;
 }
 } // namespace tied_patch_test

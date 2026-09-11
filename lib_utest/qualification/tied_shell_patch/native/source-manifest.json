@@ -1,7 +1,7 @@
 {
   "repository": "https://github.com/OpenRadioss/OpenRadioss",
   "commit": "a62b27e6baa555d222a580d6218867d0be4d70b5",
-  "scope": "Explicit TYPE2 Spotflag28, IRODDL1, WEIGHT1 force and I2VIROT3 motion value reference; coefficient transfer and owner stage absent",
+  "scope": "Explicit TYPE2 Spotflag28, IRODDL1, WEIGHT1 force, coefficient transfer and I2VIROT3 motion value reference; source/classification/owner stage absent",
   "sources": [
     {
       "path": "original/engine/source/interfaces/interf/i2for28_cin.F",
@@ -39,6 +39,13 @@
       "first_line": 315,
       "last_line": 515,
       "sha256": "b9b94d077374b7b243a54b4cf39710032bd9645a32e5d88a3d0abf19f9f93484"
+    },
+    {
+      "path": "Coefficients.inc",
+      "source": "original/engine/source/interfaces/interf/i2for28_cin.F",
+      "first_line": 442,
+      "last_line": 503,
+      "sha256": "bc3bcbf4c188762bdc2cc73bb21d9041fd1abe5a8e857e531b332a403408d271"
     }
   ]
 }

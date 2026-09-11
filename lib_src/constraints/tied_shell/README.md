@@ -24,8 +24,20 @@ The geometry guard requires a finite positive determinant greater than
 a native clamp. Collinear, coincident, nonfinite or sufficiently ill-conditioned
 patches are rejected. Current coordinates must be supplied for each evaluation.
 
-Interface search/classification, source identities, native mass/inertia and
-stiffness redistribution, dependent-DOF participation, release history and
-owner-stage integration remain separate work. In particular, these values do
-not permit an independently integrated secondary node or duplicate nodal mass.
-No source weld is admitted by this module alone.
+`TransferCoefficients` stages the selected native mass/inertia/stiffness
+increments. Its four `initial_master_inertia` inputs are native MINER, distinct
+from the current assembled IN values. Positive inertia at all four master slots
+selects inertia transfer; otherwise native offset inertia contributes additional
+numerical mass. `source_mass` and `source_inertia` retain the original secondary
+coefficients, while `numerical_mass_delta` reports DMAST separately. Dependent
+M/J become zero and dependent stiffness becomes exact native EM20. Zero source
+mass or inertia is valid; negative/nonfinite input and computed overflow reject.
+These are staged slot increments, not an assembled nodal update. True repeated
+triangle slots must receive identical initial inertia and assemble to one node.
+
+Interface search/classification, source identities, coefficient assembly and
+dependent-DOF participation, retained release history and owner-stage integration
+remain separate work. In particular, these values do not permit an independently
+integrated secondary node or duplicate nodal mass. Do not substitute runtime
+MINER selection for the distinct starter I2_DTN caller. No source weld is admitted
+by this module alone.

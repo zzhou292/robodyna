@@ -1,7 +1,7 @@
 load("@rules_cc//cc:defs.bzl", "cc_test")
 cc_test(
     name = "tied_patch_host_test",
-    srcs = ["ValueTest.cpp", "Fixture.h"],
+    srcs = ["ValueTest.cpp", "Fixture.h", "CoefficientFixture.h", "CoefficientValueTest.cpp"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = ["//lib_src/constraints/tied_shell:tied_shell_patch", "@googletest//:gtest_main"],
 )
