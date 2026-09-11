@@ -1,0 +1,21 @@
+#pragma once
+#include "Config.h"
+#include "SourceIdentity.h"
+#include <array>
+namespace crash::cases::vehicle_runtime {
+struct Forecast {
+    // Previous source construction bounds are reported separately. Their retired
+    // scratch and module caps are not new runtime allocations or additive RSS.
+    std::array<std::size_t,3> prior_construction_bytes{}; // model, execution, attachments
+    std::size_t retained_source_upper_bound = 0, app_fixed_bytes = 0, packing_bytes = 0;
+    std::size_t retained_host_upper_bound = 0, peak_temporary_bytes = 0, readback_temporary_bytes = 0;
+    std::size_t peak_host_upper_bound = 0, device_bytes = 0;
+    tl::fea::NodalAssemblyCinForecast owner;
+    std::array<tl::fea::ShellMappedFootprint,6> participants{}; // Q,T,B,TYPE25,TYPE13,solids
+    tl::fea::ShellPhysicalPublicationForecast publisher;
+};
+namespace detail {
+std::size_t SourceBytes(const Execution&,const Attachments&,std::size_t cap);
+Forecast ForecastStartup(const Config&,const Execution&,const Attachments&,std::size_t fixed_bytes);
+} // namespace detail
+} // namespace crash::cases::vehicle_runtime

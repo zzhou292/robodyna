@@ -36,6 +36,24 @@ TEST(VehiclePhysicalAttachmentsOriginal, Type13ActualEndpointRigidAndCinRoleCens
         }
     }
     ASSERT_EQ(records,8884);
+    EXPECT_EQ(unique.size(),7493);
+    EXPECT_EQ(secondary_records,8884);
+    EXPECT_EQ(secondary.size(),7493);
+    EXPECT_EQ(part_records,0);
+    EXPECT_EQ(plain_records,0);
+    EXPECT_EQ(master_records,0);
+    std::size_t shell_nodes=0, cin_nodes=0, shell_secondary_nodes=0;
+    for (auto bits:roles.node) {
+        shell_nodes += bool(bits&Shell);
+        cin_nodes += bool(bits&CinSecondary);
+        shell_secondary_nodes += (bits&Shell) && (bits&CinSecondary);
+    }
+    EXPECT_EQ(shell_nodes,359785);
+    EXPECT_EQ(cin_nodes,11165);
+    EXPECT_EQ(shell_secondary_nodes,0);
+    RecordProperty("shell_nodes",std::to_string(shell_nodes));
+    RecordProperty("cin_secondary_nodes",std::to_string(cin_nodes));
+    RecordProperty("shell_cin_secondary_intersection",std::to_string(shell_secondary_nodes));
     RecordProperty("type13_endpoint_records",std::to_string(records));
     RecordProperty("type13_unique_endpoint_nodes",std::to_string(unique.size()));
     RecordProperty("type13_part_records",std::to_string(part_records));

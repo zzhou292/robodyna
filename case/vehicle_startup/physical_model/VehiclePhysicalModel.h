@@ -40,6 +40,9 @@ class VehiclePhysicalModel {
     const tl::fea::NodalRigidGroupModel& plain_groups() const noexcept;
     const tl::fea::NodalRigidAssemblyBinding& rigid_assembly() const noexcept;
     const Forecast& forecast() const noexcept;
+    bool SharesStorage(const VehiclePhysicalModel& other) const noexcept {
+        return storage_ == other.storage_;
+    }
   private:
     struct Storage;
     explicit VehiclePhysicalModel(std::shared_ptr<const Storage> value) : storage_(std::move(value)) {}
