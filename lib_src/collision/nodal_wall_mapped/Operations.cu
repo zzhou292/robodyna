@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Evaluation.cuh"
+#include "Scatter.cuh"
 #include "Kernels.cuh"
 #include "lib_src/solvers/NodalNativePhysicalCoefficients.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
@@ -15,8 +16,7 @@ __global__ void BeginAssembly(d::Storage* pointer,m::Sidecar side,fe::NodalAssem
   *side.summary={};
   side.summary->points_admitted=m::ValidateAssembly(storage,side,view);
 }
-__global__ void FinishAssembly(d::Storage* pointer,m::Sidecar side,fe::NodalAssemblyView view,
-    fe::NodalCinAssemblyView cin) {
+__global__ void CheckResponse(d::Storage* pointer,m::Sidecar side,fe::NodalAssemblyView view) {
   auto& storage=*pointer;
   if(storage.control.status==Code::Ok && m::Response(storage,side,view.accepted)) {
     double step=0,frequency=0;
@@ -24,13 +24,10 @@ __global__ void FinishAssembly(d::Storage* pointer,m::Sidecar side,fe::NodalAsse
         !mass_detail::UpperProduct(storage.model.config.owner.fixed_dt,frequency,&step) || step>=1.6)
       d::Fail(storage.control,Code::StepTooLarge);
   }
-  if(storage.control.status==Code::Ok && m::StageStiffness(storage,side,cin) &&
-      d::Scatter(storage,view,false)) {
-    d::PublishScatter(storage,view);
-    for(unsigned i=0;i<storage.model.node_count;++i)
-      cin.translational_stiffness[storage.model.nodes[i].node]=side.stiffness[i];
-    storage.result.diagnostics.valid=true;
-  }
+}
+__global__ void FinishAssembly(d::Storage* pointer,fe::NodalAssemblyView view) {
+  auto& storage=*pointer;
+  if(storage.control.status==Code::Ok) storage.result.diagnostics.valid=true;
   if(storage.control.status!=Code::Ok)
     fe::RecordNodalAssemblyFailure(view,Status::kInvalidArgument,storage.control.node);
 }
@@ -126,7 +123,11 @@ NodalWallDeviceReport NodalWallMappedContact::AssembleAccepted(fe::FENodalState&
   m::parallel::Evaluate(state.device,state.remote,view.accepted,Identity(state.config,view),
       nodes,parents,state.stream,true);
   if(cudaPeekAtLastError()!=cudaSuccess) return state.ReadControl();
-  FinishAssembly<<<1,1,0,state.stream>>>(state.device,state.remote,view,cin);
+  CheckResponse<<<1,1,0,state.stream>>>(state.device,state.remote,view);
+  if(cudaPeekAtLastError()!=cudaSuccess) return state.ReadControl();
+  m::parallel::Scatter(state.device,state.remote,view,cin,nodes,state.stream);
+  if(cudaPeekAtLastError()!=cudaSuccess) return state.ReadControl();
+  FinishAssembly<<<1,1,0,state.stream>>>(state.device,view);
   if(cudaPeekAtLastError()!=cudaSuccess) return state.ReadControl();
   CopyAcceptedBase<<<m::parallel::Blocks(nodes>parents?nodes:parents),d::Workers,0,state.stream>>>(state.device);
   report=state.ReadControl();

@@ -85,7 +85,7 @@ TEST(PhysicalWallCuda, ExactSourceAndBudgetRejectBeforePublicationThenLoadedRigi
     }
   }
 }
-TEST(PhysicalWallCuda, LateStiffnessFailureLeavesForceAndAcceptedStateUntouchedThenRetry) {
+TEST(PhysicalWallCuda, LateStiffnessAndForceFailuresLeaveAllDestinationsAndAcceptedStateUntouchedThenRetry) {
   p::Rig rig(true);
   ASSERT_TRUE(rig.Initialize());
   Geometry geometry(rig.fixture);
@@ -93,30 +93,46 @@ TEST(PhysicalWallCuda, LateStiffnessFailureLeavesForceAndAcceptedStateUntouchedT
   ASSERT_TRUE(Good(contact.Initialize(Config(rig),geometry.Wall(),geometry.weights,Source(rig),rig.owner,geometry.Motion())));
   p::Snapshot before,after;
   ASSERT_TRUE(rig.Read(before));
-  fe::NodalTrialToken token;
-  fe::NodalAssemblyView assembly;
-  ASSERT_TRUE(rig.Begin(token,assembly));
-  fe::NodalCinAssemblyView cin;
-  ASSERT_TRUE(p::Good(rig.owner.BorrowCinAssembly(token,&cin)));
   const auto last=geometry.weights.node(geometry.weights.node_count()-1).node;
-  std::vector<double> force(rig.fixture.domain.node_count()),after_force(force.size());
-  ASSERT_EQ(cudaMemcpyAsync(force.data(),assembly.forces.force_x,force.size()*sizeof(double),cudaMemcpyDeviceToHost,assembly.stream),cudaSuccess);
-  const double bad=std::numeric_limits<double>::quiet_NaN();
-  ASSERT_EQ(cudaMemcpyAsync(cin.translational_stiffness+last,&bad,sizeof(bad),cudaMemcpyHostToDevice,assembly.stream),cudaSuccess);
-  ASSERT_EQ(cudaStreamSynchronize(assembly.stream),cudaSuccess);
-  c::NodalWallMappedDiagnostics output;
-  output.accepted_active_parents=777;
-  EXPECT_EQ(contact.AssembleAccepted(rig.owner,token,assembly,&output).status,c::NodalWallDeviceStatus::AssemblyFailure);
-  EXPECT_EQ(output.accepted_active_parents,777u);
-  ASSERT_EQ(cudaMemcpyAsync(after_force.data(),assembly.forces.force_x,force.size()*sizeof(double),cudaMemcpyDeviceToHost,assembly.stream),cudaSuccess);
-  ASSERT_EQ(cudaStreamSynchronize(assembly.stream),cudaSuccess);
-  EXPECT_EQ(force,after_force);
-  rig.owner.Discard(); rig.publication.DiscardTrial(); contact.DiscardTrial();
-  ASSERT_TRUE(rig.Read(after)); p::Exact(before,after);
-  ASSERT_TRUE(rig.Begin(token,assembly));
-  ASSERT_TRUE(Good(contact.AssembleAccepted(rig.owner,token,assembly,&output)));
-  rig.owner.Discard(); rig.publication.DiscardTrial(); contact.DiscardTrial();
+  const auto count=rig.fixture.domain.node_count();
+  std::vector<double> destination(8*count),after_destination(destination.size());
+  for(bool stiffness_fault:{true,false}) {
+    SCOPED_TRACE(stiffness_fault);
+    fe::NodalTrialToken token;
+    fe::NodalAssemblyView assembly;
+    ASSERT_TRUE(rig.Begin(token,assembly));
+    fe::NodalCinAssemblyView cin;
+    ASSERT_TRUE(p::Good(rig.owner.BorrowCinAssembly(token,&cin)));
+    const double bad=std::numeric_limits<double>::quiet_NaN();
+    double* broken=stiffness_fault?cin.translational_stiffness:assembly.forces.couple_z;
+    ASSERT_EQ(cudaMemcpyAsync(broken+last,&bad,sizeof(bad),cudaMemcpyHostToDevice,assembly.stream),cudaSuccess);
+    double* arrays[]{assembly.forces.force_x,assembly.forces.force_y,assembly.forces.force_z,
+        assembly.forces.couple_x,assembly.forces.couple_y,assembly.forces.couple_z,
+        cin.translational_stiffness,cin.rotational_stiffness};
+    for(unsigned channel=0;channel<8;++channel)
+      ASSERT_EQ(cudaMemcpyAsync(destination.data()+channel*count,arrays[channel],count*sizeof(double),
+          cudaMemcpyDeviceToHost,assembly.stream),cudaSuccess);
+    ASSERT_EQ(cudaStreamSynchronize(assembly.stream),cudaSuccess);
+    c::NodalWallMappedDiagnostics output;
+    output.accepted_active_parents=777;
+    const auto report=contact.AssembleAccepted(rig.owner,token,assembly,&output);
+    EXPECT_EQ(report.status,c::NodalWallDeviceStatus::AssemblyFailure);
+    EXPECT_EQ(report.node,last);
+    EXPECT_EQ(output.accepted_active_parents,777u);
+    for(unsigned channel=0;channel<8;++channel)
+      ASSERT_EQ(cudaMemcpyAsync(after_destination.data()+channel*count,arrays[channel],count*sizeof(double),
+          cudaMemcpyDeviceToHost,assembly.stream),cudaSuccess);
+    ASSERT_EQ(cudaStreamSynchronize(assembly.stream),cudaSuccess);
+    for(std::size_t i=0;i<destination.size();++i)
+      EXPECT_EQ(p::Bits(destination[i]),p::Bits(after_destination[i]))<<i;
+    rig.owner.Discard(); rig.publication.DiscardTrial(); contact.DiscardTrial();
+    ASSERT_TRUE(rig.Read(after)); p::Exact(before,after);
+    ASSERT_TRUE(rig.Begin(token,assembly));
+    ASSERT_TRUE(Good(contact.AssembleAccepted(rig.owner,token,assembly,&output)));
+    rig.owner.Discard(); rig.publication.DiscardTrial(); contact.DiscardTrial();
+  }
 }
+
 } // namespace physical_wall_test
 namespace physical_wall_test {
 TEST(PhysicalWallCuda, ActualT3RemovalUsesBaseMaskThenPostRemovalZeroAndCaptureRetry) {

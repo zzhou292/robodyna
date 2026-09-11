@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "Storage.h"
+#include "ScatterNode.h"
 #include "../NodalWallContactKernels.cuh"
 namespace tlfea::contact::nodal_wall_mapped {
 __device__ inline bool ValidateAssembly(d::Storage& storage,Sidecar side,const fe::NodalAssemblyView& view) {
@@ -51,14 +52,8 @@ __device__ inline bool Response(d::Storage& storage,Sidecar side,const fe::Devic
   return true;
 }
 __device__ inline bool StageStiffness(d::Storage& storage,Sidecar side,const fe::NodalCinAssemblyView& cin) {
-  for(unsigned i=0;i<storage.model.node_count;++i) {
-    const auto node=storage.model.nodes[i].node;
-    const double before=cin.translational_stiffness[node];
-    const double value=before+storage.result.nodes[i].stiffness.value;
-    if(!IsFinite(before) || before<0 || !IsFinite(value) || value<0)
-      return d::Fail(storage.control,Code::AssemblyFailure,node);
-    side.stiffness[i]=value;
-  }
+  for(unsigned i=0;i<storage.model.node_count;++i)
+    if(!StageStiffnessNode(storage,side,cin,i,storage.control)) return false;
   return true;
 }
 __device__ inline bool RemovedPotential(d::Storage& storage,Sidecar side) {
