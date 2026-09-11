@@ -35,7 +35,8 @@ TEST(QbatMappedOriginal,All4250QuadsKeepSourceOrderAcrossScrambledLargerPhysical
   ASSERT_FALSE(mapping.identity_map());
   const fe::ElementMassSource extra{9000000001ull,nodes[0].source_id,0,.002};
   fe::ElementMassContributions point;
-  ASSERT_TRUE(point.Initialize(domain,{92,1000,&extra,1}));
+  EXPECT_EQ(point.Initialize(domain,{92,1000,&extra,1}).status,fe::NodalDomainStatus::InvalidInput);
+  ASSERT_TRUE(point.Initialize(domain,{domain.source_instance_id(),1000,&extra,1}));
   fe::NodalCoefficientLedger ledger;
   ASSERT_TRUE(ledger.InitializeWithElementMass({{&mapping},&point},fe::CoefficientLimits::Vehicle()));
   fe::ShellPhysicalBinding physical;
