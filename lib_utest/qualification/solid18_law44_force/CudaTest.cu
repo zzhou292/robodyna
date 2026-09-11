@@ -177,7 +177,7 @@ TEST(Rear18ForceCuda, AllOriginal306Including109RepeatedSlotCells) {
     SCOPED_TRACE(input.source_element_id);
     law::Reference reference;
     ASSERT_EQ(law::InitializeReference(input,reference),s::Status::Success);
-    const auto material = law44_solid_test::Parameters(input.source_part_id == 2000392);
+    const auto material = OriginalParameters(input.source_part_id);
     const auto interval = Path(reference,0);
     const DeviceScratch blank{};
     ASSERT_EQ(cudaMemcpy(scratch.pointer,&blank,sizeof(blank),cudaMemcpyHostToDevice),cudaSuccess);

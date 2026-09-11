@@ -64,8 +64,8 @@
       "sha256": "61d02c22f88387c399f5c430915881809a77e514084fb631668a2b202a32f4df"
     },
     "lib_utest/qualification/solid18_law44_force/source-manifest.json": {
-      "bytes": 8567,
-      "sha256": "b33d3d0e0f302afc3315d8f9d0afb0fb06f26ad149021a61c3dd654f6df048ce"
+      "bytes": 9194,
+      "sha256": "e61690b93f2dfdad90b0130a6f63dbdbdb8cb1fddeea648bbc7d42df9afb976d"
     },
     "lib_utest/qualification/solid18_law44_reference/source-manifest.json": {
       "bytes": 6382,
@@ -80,8 +80,8 @@
       "sha256": "21c3f30f00e640ebf4a91ec4801167cd20335fe7275a1e46b0474dd80612e5b2"
     },
     "lib_utest/qualification/solid18_law44_startup/CudaTest.cu": {
-      "bytes": 9145,
-      "sha256": "1a7d86cab88338ff9da04fbd3a3525fddbabe5f5998114d86f4ba38ddc6a01d3"
+      "bytes": 9141,
+      "sha256": "9cfa6c0f9182a54de6c93c76f205cea1ae06b0048047d9fd6854cd7c2ae84bde"
     },
     "lib_utest/qualification/solid18_law44_startup/HostTest.cpp": {
       "bytes": 6152,
@@ -96,16 +96,16 @@
       "sha256": "b6e28e250144472254cec95606f8423fe2b484e1a7b35ba2f31f2d3a50b50cc2"
     },
     "lib_utest/qualification/solid18_law44_startup/NativeTest.cpp": {
-      "bytes": 2826,
-      "sha256": "df1a7ab2c4bef6789685cfeb4c25ef19920fc18447765cc6202f1f3d6674ade2"
+      "bytes": 2822,
+      "sha256": "dbee25120b01138b205845c5ca633f42272d435d827b91f27eeaf0790a22b9b3"
     },
     "lib_utest/qualification/solid18_law44_startup/PointNativeTest.cpp": {
       "bytes": 2256,
       "sha256": "ec60487e3546a123fea6cd19077c6748e4b7b51e565f258b94fd17a07dbc0cd7"
     },
     "lib_utest/qualification/solid18_law44_startup/README.md": {
-      "bytes": 4166,
-      "sha256": "fd8946b68708b77276bab3415633bbb139849252510c23614a8a78b17cfc306a"
+      "bytes": 4966,
+      "sha256": "ee4b230c7f37f986c2474435dbd235be609c9ad19590a03ae871eef6ad5a61bb"
     },
     "lib_utest/qualification/solid18_law44_startup/TestSupport.h": {
       "bytes": 1633,

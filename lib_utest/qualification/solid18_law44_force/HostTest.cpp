@@ -1,6 +1,20 @@
 #include "TestSupport.h"
 
 namespace rear_force_test {
+TEST(Rear18Force, OriginalMaterialSelectionKeepsBarAndTubeSourceModuli) {
+  const auto bar = OriginalParameters(2000016);
+  const auto tube = OriginalParameters(2000392);
+  EXPECT_EQ(bar.material.young_pa,50000.0*1e6);
+  EXPECT_EQ(tube.material.young_pa,200000.0*1e6);
+  EXPECT_EQ(bar.material.density_kg_m3,7.8900e-9*1e12);
+  EXPECT_EQ(tube.material.density_kg_m3,bar.material.density_kg_m3);
+  EXPECT_EQ(bar.curve.count,46u);
+  EXPECT_EQ(tube.curve.plastic_strain,bar.curve.plastic_strain);
+  EXPECT_EQ(tube.curve.yield_stress_pa,bar.curve.yield_stress_pa);
+  EXPECT_GT(tube.sound_speed_m_s,bar.sound_speed_m_s);
+  EXPECT_THROW(OriginalMaterial(0),std::invalid_argument);
+  EXPECT_THROW(OriginalMaterial(2000393),std::invalid_argument);
+}
 TEST(Rear18Force, NativePressureFractionAndCollapsedViscosityHaveDistinctForces) {
   // A prescribed diagonal stress and unit signed gradients isolate the native
   // pressure-removal branch from kinematics and constitutive arithmetic.

@@ -10,7 +10,7 @@ TEST(Rear18ForceSource, EveryOriginalCellKeepsEightHistoriesAndSourceSlots) {
     SCOPED_TRACE(input.source_element_id);
     law::Reference reference;
     ASSERT_EQ(law::InitializeReference(input,reference),s::Status::Success);
-    const auto material = law44_solid_test::Parameters(input.source_part_id == 2000392);
+    const auto material = OriginalParameters(input.source_part_id);
     law::History accepted;
     ASSERT_EQ(law::InitializeHistory(reference,material,accepted),s::Status::Success);
     auto native = NativeInitial(input);

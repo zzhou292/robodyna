@@ -65,3 +65,16 @@ startup/scratch functions, seven existing point functions, five existing rear
 functions and source identities). The bounded configure/build/test took 5.00 s
 with 245,292 KiB peak child RSS. Three native C++ units and the CUDA-shaped
 original-source branches pass syntax checks. No native/GPU execution is claimed.
+# Original material association correction
+
+The source force and TT0 sweeps use the shared, explicit original-part selector:
+PID/MID 2000016 (rear bar, original line 478) has E = 50000 MPa; PID/MID
+2000392 (rear tube, line 7895) has E = 200000 MPa. Both retain the same source
+density and 46-point curve. The earlier original-geometry sweeps selected these
+two moduli in reverse. Those passes remain element/geometry evidence and do not
+qualify the correct original material association. Rerun both recurrence and
+TT0 native/CUDA sweeps with this correction. Constitutive equations, native
+wrappers and comparison tolerances are unchanged.
+
+The host source-association control rejects the reversed map and unknown part
+IDs; all four original native/CUDA force/startup call sites use the same helper.

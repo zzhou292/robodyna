@@ -51,7 +51,7 @@ TEST(Rear18StartupSource, All306OriginalTT0FieldsAndThreePositiveIntervals) {
     SCOPED_TRACE(input.source_element_id);
     law::Reference reference;
     ASSERT_EQ(law::InitializeReference(input,reference),s::Status::Success);
-    const auto material = law44_solid_test::Parameters(input.source_part_id == 2000392);
+    const auto material = rear_force_test::OriginalParameters(input.source_part_id);
     CheckNative(reference,material,{11.123,-.37,.129},3);
     ASSERT_FALSE(HasFatalFailure());
     collapsed += law::detail::NativeDegeneracy(reference) != 0;

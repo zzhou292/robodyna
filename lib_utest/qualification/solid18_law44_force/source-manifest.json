@@ -102,12 +102,12 @@
       "sha256": "3e4cbce52e77d17d8d4bcf0981a7fdf95e189bcbc3b35dbde013f79a457c44b5"
     },
     "lib_utest/qualification/solid18_law44_force/CudaTest.cu": {
-      "bytes": 9188,
-      "sha256": "5a2ab014211db371fe412ed2c5def6a7fb6843b3d11067b9a8c61ac3eb65bb19"
+      "bytes": 9167,
+      "sha256": "32ce9de4def7353dad68d669da35d185a3f0b8c893d01758351fc8afd2da0210"
     },
     "lib_utest/qualification/solid18_law44_force/HostTest.cpp": {
-      "bytes": 7561,
-      "sha256": "cee7328091b684d54261db1d50696f0626b649c30dc9cdcf77b7a88b96ad9f6f"
+      "bytes": 8302,
+      "sha256": "3ad43180e7286eb8389187483865490da07802539f08c8d306bc42a3bcb8105e"
     },
     "lib_utest/qualification/solid18_law44_force/NativeOracle.cpp": {
       "bytes": 3659,
@@ -134,12 +134,12 @@
       "sha256": "0d16daf9baf915947f2268098b647ff452ec74be6744f2ad63c1fee381d59255"
     },
     "lib_utest/qualification/solid18_law44_force/SourceNativeTest.cpp": {
-      "bytes": 1411,
-      "sha256": "740f2d7e00415ed052067f57a34a475ada222b1522e925c805f5bf8eaee7a58b"
+      "bytes": 1390,
+      "sha256": "7fdfe830e023bad9601458aff9b5734262136978f9372bfbffd15ff7cafda310"
     },
     "lib_utest/qualification/solid18_law44_force/TestSupport.h": {
-      "bytes": 1486,
-      "sha256": "1992932b390af3873cc70a147c3a9fb413ea8d2f7dd8d87962084c4625c3c72e"
+      "bytes": 2278,
+      "sha256": "68b01251ec973e15826f38dae4a229216f8c10256fb89f451aa71d29e682bbf5"
     },
     "lib_utest/qualification/solid18_law44_force/Trajectory.h": {
       "bytes": 1617,
@@ -199,5 +199,22 @@
     }
   },
   "pressure_coefficient": "S8EFINT3:154 and S8EFMOY3:120 use ZEP3 = THREE/TEN, CONSTANT_MOD:667; distinct from THIRD",
-  "tt0_extension": "Additive constructor/scratch; original positive-interval profile and native source leaves preserved"
+  "tt0_extension": "Additive constructor/scratch; original positive-interval profile and native source leaves preserved",
+  "source_material_association_correction": {
+    "scope": "Qualification only; original rear PID/MID mapping; no mechanics or tolerance changes",
+    "2000016": {
+      "name": "431_enginemountrearbar",
+      "source_line": 478,
+      "young_mpa": 50000,
+      "young_pa": 50000000000,
+      "block_sha256": "a4c4fea7533940357f39eea88c2ede417d4a2aca20f858de1a0676c5b7f31fcf"
+    },
+    "2000392": {
+      "name": "424_enginemountreartube",
+      "source_line": 7895,
+      "young_mpa": 200000,
+      "young_pa": 200000000000,
+      "block_sha256": "1ec87633dc4bab03ab37f25ded0fc19573b9ae7fea6b5717f09c76692d0dd635"
+    }
+  }
 }

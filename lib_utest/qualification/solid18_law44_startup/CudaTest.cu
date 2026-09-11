@@ -176,7 +176,7 @@ TEST(Rear18StartupCuda, EveryOriginalConstructorAndFirstPositiveInterval) {
   std::vector<Input> input;
   for (unsigned row = 0; row < std::size(rear18_test::original::Cells); ++row) {
     const auto source = rear18_test::original::Input(row);
-    input.push_back({source,law44_solid_test::Material(source.source_part_id == 2000392),{11.123,-.37,.129}});
+    input.push_back({source,rear_force_test::OriginalMaterial(source.source_part_id),{11.123,-.37,.129}});
   }
   ASSERT_EQ(input.size(),306u);
   DeviceCheck(input,1,false);
