@@ -26,6 +26,7 @@ cc_library(
         "Solid18SelectiveShear.h",
         "Solid18Selection.h",
         "Solid18PointKinematics.h",
+        "Solid18RateValues.h",
         "Solid18PointResponse.h",
         "Solid18ForceWork.h",
         "Solid18Force.h",

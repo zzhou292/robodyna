@@ -1,23 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Selected S8EDEFO3 I_SH2/ICP2/JCVT1: OpenRadioss (C) 2026 Siemens.
 #pragma once
-#include "Solid18Orientation.h"
+#include "Solid18RateValues.h"
 #include "Solid18ForceTypes.h"
 
 namespace tl::fea::solid18::detail {
-TL_SOLID18_HD inline double RateSum(const double (&p)[8], const Vec3 (&v)[8],
-                                   unsigned axis) noexcept {
-  double sum = p[0]*Component(v[0],axis);
-  for (unsigned n = 1; n < 8; ++n) sum += p[n]*Component(v[n],axis);
-  return sum;
-}
-
-TL_SOLID18_HD inline double AddRateSum(double sum, const double (&p)[8],
-    const Vec3 (&v)[8], unsigned axis) noexcept {
-  for (unsigned n = 0; n < 8; ++n) sum += p[n]*Component(v[n],axis);
-  return sum;
-}
-
 TL_SOLID18_HD inline Status PointKinematics(const PointDerivatives& point,
     const Vec3 (&velocity)[8], double dt, PointHistory& staged,
     PointObservation& observation) noexcept {
@@ -51,15 +38,8 @@ TL_SOLID18_HD inline Status PointKinematics(const PointDerivatives& point,
   staged.material.internal_energy_density_j_m3 =
       staged.material.internal_energy_density_j_m3/factor;
   // IRESP0: the initial double volume does not receive this correction.
-  const double half_dt = .5*dt;
-  const double full_dt = 2*half_dt;
   auto& rate = observation.engineering_rate_per_s;
-  rate[3] = xy+yx-full_dt*(xx*xy+yx*yy+zx*zy);
-  rate[4] = yz+zy-full_dt*(yy*yz+zy*zz+xy*xz);
-  rate[5] = xz+zx-full_dt*(zz*zx+xz*xx+yz*yx);
-  rate[0] = xx-half_dt*(xx*xx+yx*yx+zx*zx);
-  rate[1] = yy-half_dt*(yy*yy+zy*zy+xy*xy);
-  rate[2] = zz-half_dt*(zz*zz+xz*xz+yz*yz);
+  QuadraticEngineeringRate(xx, yy, zz, xy, xz, yx, yz, zx, zy, dt, rate);
   if (!Positive(staged.storage_volume_m3) ||
       !tl::math::Finite(staged.material.internal_energy_density_j_m3) ||
       !tl::math::Finite(correction)) return Status::NonfiniteResult;

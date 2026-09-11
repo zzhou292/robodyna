@@ -48,19 +48,14 @@ TL_SOLID18_HD inline void CenterGradient(const Matrix3& inverse,
 
 // No current orientation reversal is permitted: source/native slot identity
 // was established once at startup. Negative Jacobian fallback is out of scope.
-TL_SOLID18_HD inline Status CurrentGeometryValues(const Reference& reference,
-    const PrescribedInterval& interval, CurrentGeometry& result,
+TL_SOLID18_HD inline Status NativeCurrentGeometryValues(const Vec3 (&native)[8],
+    const Vec3 (&native_velocity)[8], CurrentGeometry& result,
     StartupGeometry& shared) noexcept {
-  Vec3 native[8];
-  for (unsigned n = 0; n < 8; ++n) {
-    native[n] = interval.position_endpoint_m[reference.source_slot(n)];
-  }
   if (!Frame(native, shared.frame)) return Status::InvalidGeometry;
   for (unsigned n = 0; n < 8; ++n) {
     shared.native_position_m[n] = Local(shared.frame, native[n]);
     result.local_position_m[n] = shared.native_position_m[n];
-    result.local_velocity_m_s[n] = Local(shared.frame,
-        interval.velocity_midpoint_m_s[reference.source_slot(n)]);
+    result.local_velocity_m_s[n] = Local(shared.frame, native_velocity[n]);
     if (!Finite(result.local_position_m[n]) || !Finite(result.local_velocity_m_s[n]))
       return Status::NonfiniteResult;
   }
@@ -90,6 +85,17 @@ TL_SOLID18_HD inline Status CurrentGeometryValues(const Reference& reference,
     }
   }
   return Status::Success;
+}
+TL_SOLID18_HD inline Status CurrentGeometryValues(const Reference& reference,
+    const PrescribedInterval& interval, CurrentGeometry& result,
+    StartupGeometry& shared) noexcept {
+  Vec3 native[8];
+  Vec3 velocity[8];
+  for (unsigned n = 0; n < 8; ++n) {
+    native[n] = interval.position_endpoint_m[reference.source_slot(n)];
+    velocity[n] = interval.velocity_midpoint_m_s[reference.source_slot(n)];
+  }
+  return NativeCurrentGeometryValues(native, velocity, result, shared);
 }
 // Value-only callers retain their existing automatic staging.
 TL_SOLID18_HD inline Status CurrentGeometryValues(const Reference& reference,

@@ -39,10 +39,8 @@ TL_SOLID18_HD inline void NaturalDerivatives(unsigned ip, double (&p)[3][8]) noe
   p[2][7] = -p[2][3];
 }
 
-TL_SOLID18_HD inline void RegularDerivatives(unsigned ip, const Matrix3& inverse,
-                                            double (&out)[3][8]) noexcept {
-  double p[3][8];
-  NaturalDerivatives(ip, p);
+TL_SOLID18_HD inline void RegularDerivativeValues(const double (&p)[3][8],
+    const Matrix3& inverse, double (&out)[3][8]) noexcept {
   for (unsigned axis = 0; axis < 3; ++axis) {
     const double a = inverse.v[3*axis];
     const double b = inverse.v[3*axis+1];
@@ -62,5 +60,12 @@ TL_SOLID18_HD inline void RegularDerivatives(unsigned ip, const Matrix3& inverse
     out[axis][6] = ar7-bs6-ct3;
     out[axis][7] = -ar7-bs5-ct4;
   }
+}
+
+TL_SOLID18_HD inline void RegularDerivatives(unsigned ip, const Matrix3& inverse,
+                                            double (&out)[3][8]) noexcept {
+  double p[3][8];
+  NaturalDerivatives(ip, p);
+  RegularDerivativeValues(p, inverse, out);
 }
 }  // namespace tl::fea::solid18::detail
