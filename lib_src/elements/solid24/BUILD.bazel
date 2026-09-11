@@ -1,0 +1,7 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+cc_library(
+    name = "reference",
+    hdrs = ["Solid24Types.h", "Solid24Geometry.h", "Solid24Reference.h"],
+    deps = ["//lib_src/elements/solid_common:brick_frame"],
+    visibility = ["//visibility:public"],
+)

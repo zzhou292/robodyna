@@ -106,3 +106,10 @@ Use root's serialized bounded native/GPU wrapper. Bazel owners remain
 The subsequent current-measure/force increment remains separate, with genuine
 accepted eight-point density/pressure/volume/work histories and native ISELECT2
 rather than a geometry-only force approximation.
+
+Root selected-startup gate now passes all11 numerical functions and both
+identities, including all908 original cells on native CPU and CUDA:
+`solid18-selected-startup-root-tests-1`. The new independent native caller
+therefore closes the corrected startup scope described above. Owning targets
+pass in `solid18-solid24-owning-bazel-build-1`. The force/history and original
+source-to-owner integration remain separate required milestones.
