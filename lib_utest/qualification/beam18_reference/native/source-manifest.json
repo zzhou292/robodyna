@@ -1,0 +1,89 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Complete selected PCOORI/PEVECI/PMASS plus full DEFBEAM_SECT and exact material/default setup; no beam recurrence or dt/OFF",
+  "sources": [
+    {
+      "source": "starter/source/elements/beam/pcoori.F",
+      "path": "original/starter/source/elements/beam/pcoori.F",
+      "bytes": 7071,
+      "sha256": "e6bd0c55bb48dceccc0f898594a26fe75e8d3a07e86becb3835b17dad5a10e8a",
+      "git_blob_sha1": "b5fbdb06ab267629e60e4a599e5309772333142a",
+      "retrieval": "official pinned HTTPS"
+    },
+    {
+      "source": "starter/source/elements/beam/peveci.F",
+      "path": "original/starter/source/elements/beam/peveci.F",
+      "bytes": 4313,
+      "sha256": "a0769f296c01ad2ae5d24f103f07835fb6118fc824648eaf7211a42fe2dad9f9",
+      "git_blob_sha1": "729ab98e27cb1c2728bfc0549c92162711255a5c",
+      "retrieval": "official pinned HTTPS"
+    },
+    {
+      "source": "starter/source/elements/beam/pinit3.F",
+      "path": "original/starter/source/elements/beam/pinit3.F",
+      "bytes": 8621,
+      "sha256": "e48d988e13870c16198b1976a085cc2f682d12f2e70b427fd9a4a9fc5b9fcb98",
+      "git_blob_sha1": "8be8bb4d391a28d36b4cb8bdf2f12312bad1e822",
+      "retrieval": "official pinned HTTPS"
+    },
+    {
+      "source": "starter/source/elements/beam/pmass.F",
+      "path": "original/starter/source/elements/beam/pmass.F",
+      "bytes": 9688,
+      "sha256": "d54610042be00f163ab20d4b81241ba343d75bae56945edc8b5b5de8b6c65189",
+      "git_blob_sha1": "03cdf0839b7f91c63625747381b0ab376004188f",
+      "retrieval": "official pinned HTTPS"
+    },
+    {
+      "source": "starter/source/properties/beam/hm_read_prop18.F",
+      "path": "original/starter/source/properties/beam/hm_read_prop18.F",
+      "bytes": 45108,
+      "sha256": "7f7b2b3aca2922fe885571a2bb9710721b9f7923f4d2737daf70e42b54b3a040",
+      "git_blob_sha1": "71224a2201206db515f7e57c10d712c6ae42add2",
+      "retrieval": "official pinned HTTPS"
+    },
+    {
+      "source": "common_source/modules/constant_mod.F",
+      "path": "original/common_source/modules/constant_mod.F",
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865",
+      "git_blob_sha1": "5f78c0a6769ac024deb6bba9d3037cd747f36837",
+      "retrieval": "unchanged existing qualified same-pin source"
+    },
+    {
+      "source": "starter/share/r8/my_real.inc",
+      "path": "original/starter/share/r8/my_real.inc",
+      "bytes": 1474,
+      "sha256": "92c03276ae3899b1fdab5f6833cea538aa94c9d2c41f3d35a4f304ea5e64fd8c",
+      "git_blob_sha1": "e8a7d1176e886459a7323d0b3a246233d2d2e712",
+      "retrieval": "unchanged existing qualified same-pin source"
+    },
+    {
+      "source": "starter/source/materials/mat/mat044/hm_read_mat44.F",
+      "path": "original/starter/source/materials/mat/mat044/hm_read_mat44.F",
+      "bytes": 17325,
+      "sha256": "79915c2f70251e92578385dcaa1ec085b020914851f83c5126e39d00affd58c1",
+      "git_blob_sha1": "e533fe9f250ccb1e53979cc4ddccded357e464cb",
+      "retrieval": "unchanged existing qualified same-pin source"
+    }
+  ],
+  "complete_subroutines": {
+    "defbeam_sect.F": [
+      "starter/source/properties/beam/hm_read_prop18.F",
+      425,
+      880
+    ]
+  },
+  "selected_setup": {
+    "material_shear.inc": [
+      "starter/source/materials/mat/mat044/hm_read_mat44.F",
+      250,
+      252
+    ],
+    "damping_default.inc": [
+      "starter/source/properties/beam/hm_read_prop18.F",
+      159,
+      159
+    ]
+  }
+}

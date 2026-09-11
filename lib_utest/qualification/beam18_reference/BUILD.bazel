@@ -1,0 +1,6 @@
+cc_test(
+    name = "host_check",
+    srcs = ["HostTest.cpp", "TestSupport.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/elements/beam18:reference", "@googletest//:gtest_main"],
+)

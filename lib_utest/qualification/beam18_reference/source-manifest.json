@@ -1,0 +1,162 @@
+{
+  "scope": "Selected circular4 beam18 reference and native M/J/STI/STIR only",
+  "original_fixture_sha256": "5d85548343e4190db4f6ebc5f0975f6e05921140c7403a87ba389c6445dd1644",
+  "files": {
+    "lib_src/elements/beam18/BUILD.bazel": {
+      "bytes": 216,
+      "sha256": "ee5630d11f12aa4c32835ec95e2a488b3713b80b8d7305aa941d2c1e01f851c3"
+    },
+    "lib_src/elements/beam18/Geometry.h": {
+      "bytes": 2545,
+      "sha256": "38bb3b5261e5e8959ca13af614f1a709286ac53b14c1c96f53801c8d86096008"
+    },
+    "lib_src/elements/beam18/Mass.h": {
+      "bytes": 3194,
+      "sha256": "1bafc11dc624f2868e554bd43282d2b2d6a18fe1f84258147bdd4f71674210a0"
+    },
+    "lib_src/elements/beam18/REFERENCE.md": {
+      "bytes": 2357,
+      "sha256": "77a7168ffa82454d8f478fbf182638353f5b45f306e0d61767f5a35d5ebd3a34"
+    },
+    "lib_src/elements/beam18/Reference.h": {
+      "bytes": 1912,
+      "sha256": "1d4238237e5f30004f399c93d66e8a11c99a02c8122952eeb06b961b0cbd533b"
+    },
+    "lib_src/elements/beam18/Section.h": {
+      "bytes": 1544,
+      "sha256": "b6083ebac9292d1f69597230e85c2f0f38549186b3c48932305faab9afa3f0df"
+    },
+    "lib_src/elements/beam18/Types.h": {
+      "bytes": 2903,
+      "sha256": "fb1ea1123a69b83fad00fd612c7e455a4b1bf40cbda7f6bb26d7830dba41fa0b"
+    },
+    "lib_src/elements/beam18/Units.h": {
+      "bytes": 1002,
+      "sha256": "2b855aefd3e69b468209f70c0a1fbd7e8064a0238ceb37cd18e1d549c329fb2f"
+    },
+    "lib_utest/qualification/beam18_reference/BUILD.bazel": {
+      "bytes": 229,
+      "sha256": "08f2da2611f5e8658158a9a4002f310a735134300611c66bc955da799a280406"
+    },
+    "lib_utest/qualification/beam18_reference/CMakeLists.txt": {
+      "bytes": 3046,
+      "sha256": "1af6d6dd5502bd18560e13a29eabcef8ecf7bbb4a147a37d4f79c9dc36c9afae"
+    },
+    "lib_utest/qualification/beam18_reference/CudaTest.cu": {
+      "bytes": 3152,
+      "sha256": "f4f13bc666b19b7150ae212f91009189349f044e24e8aa9a7e2b586a668c5d2e"
+    },
+    "lib_utest/qualification/beam18_reference/HostTest.cpp": {
+      "bytes": 5271,
+      "sha256": "4212c6eff2a8722acabe1708d88b0f6c8c0d7730f28c4765239dc9510408f44c"
+    },
+    "lib_utest/qualification/beam18_reference/NativeOracle.cpp": {
+      "bytes": 1875,
+      "sha256": "9d4238caacd2d0c5663dcc81988d033380fd60b4bbc82d4aabdd5a5a00a1be4b"
+    },
+    "lib_utest/qualification/beam18_reference/NativeOracle.h": {
+      "bytes": 393,
+      "sha256": "4919f16b5ad27c6dc2191ff9f1efe804ba81a45b572dd65614d0a765a616ca61"
+    },
+    "lib_utest/qualification/beam18_reference/NativeTest.cpp": {
+      "bytes": 1919,
+      "sha256": "ed876269d0c6db7699d27659c3d02830cef9d5d1b5dc56f08cf995f6eeb0d681"
+    },
+    "lib_utest/qualification/beam18_reference/README.md": {
+      "bytes": 1594,
+      "sha256": "074b19e30c84f15166b96b5846153cf3d0f591fb4f8f8dea6f1b4d9df6d3ee6d"
+    },
+    "lib_utest/qualification/beam18_reference/TestSupport.h": {
+      "bytes": 1964,
+      "sha256": "af96b6ce64a2eb4be70b2beaa7fc7e7492d8cf5b7bcce579efecbd8d096ae7b0"
+    },
+    "lib_utest/qualification/beam18_reference/export_fixture.py": {
+      "bytes": 5736,
+      "sha256": "d1c9aaf7661e1fd9fbbfcc95c87b84cd6d9d4b754df50cc25e83fa5af07c8f2b"
+    },
+    "lib_utest/qualification/beam18_reference/native/CMakeLists.txt": {
+      "bytes": 1098,
+      "sha256": "caef30d4c9df36baca484858711306cbceea252ba557735b4ff31ed426878696"
+    },
+    "lib_utest/qualification/beam18_reference/native/Context.F90": {
+      "bytes": 874,
+      "sha256": "c49f381c64034c6abff10ef370c93def91b2e1577146bb2a9330ee7fe1f486c9"
+    },
+    "lib_utest/qualification/beam18_reference/native/NativeReference.F": {
+      "bytes": 2790,
+      "sha256": "0e6f3b5e2f3c2687040206506ce988747d1bd5aad43bead06eba58edf5eff022"
+    },
+    "lib_utest/qualification/beam18_reference/native/context/com04_c.inc": {
+      "bytes": 56,
+      "sha256": "f21fb4241d224ec9dc8d4cde31b8f15c4d2114ef732165fc8eea81c0854c271b"
+    },
+    "lib_utest/qualification/beam18_reference/native/context/implicit_f.inc": {
+      "bytes": 77,
+      "sha256": "fed71e76b93826f5216d9b025d11c355c0700729279dfc174ac187eac6b06246"
+    },
+    "lib_utest/qualification/beam18_reference/native/context/mvsiz_p.inc": {
+      "bytes": 35,
+      "sha256": "5c1fd58e202d06d6ff067a1f321f49382000ca26b20053b4971999d7aa9dd70c"
+    },
+    "lib_utest/qualification/beam18_reference/native/context/param_c.inc": {
+      "bytes": 60,
+      "sha256": "17ed6b0e58d70ee1d56d0e0e74670cb12e0fa8634abda149d4caf81d905f5e99"
+    },
+    "lib_utest/qualification/beam18_reference/native/context/scr12_c.inc": {
+      "bytes": 62,
+      "sha256": "7fac5c2a0060ac57b25f206d76032a51e3943e881f5da0add4f19deb25d4bda3"
+    },
+    "lib_utest/qualification/beam18_reference/native/context/vect01_c.inc": {
+      "bytes": 61,
+      "sha256": "5ef5670aecb3645e1e4ed8a57a2a325b0af6f5b64c1656a77fb6ad48167c1161"
+    },
+    "lib_utest/qualification/beam18_reference/native/original/common_source/modules/constant_mod.F": {
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865"
+    },
+    "lib_utest/qualification/beam18_reference/native/original/starter/share/r8/my_real.inc": {
+      "bytes": 1474,
+      "sha256": "92c03276ae3899b1fdab5f6833cea538aa94c9d2c41f3d35a4f304ea5e64fd8c"
+    },
+    "lib_utest/qualification/beam18_reference/native/original/starter/source/elements/beam/pcoori.F": {
+      "bytes": 7071,
+      "sha256": "e6bd0c55bb48dceccc0f898594a26fe75e8d3a07e86becb3835b17dad5a10e8a"
+    },
+    "lib_utest/qualification/beam18_reference/native/original/starter/source/elements/beam/peveci.F": {
+      "bytes": 4313,
+      "sha256": "a0769f296c01ad2ae5d24f103f07835fb6118fc824648eaf7211a42fe2dad9f9"
+    },
+    "lib_utest/qualification/beam18_reference/native/original/starter/source/elements/beam/pinit3.F": {
+      "bytes": 8621,
+      "sha256": "e48d988e13870c16198b1976a085cc2f682d12f2e70b427fd9a4a9fc5b9fcb98"
+    },
+    "lib_utest/qualification/beam18_reference/native/original/starter/source/elements/beam/pmass.F": {
+      "bytes": 9688,
+      "sha256": "d54610042be00f163ab20d4b81241ba343d75bae56945edc8b5b5de8b6c65189"
+    },
+    "lib_utest/qualification/beam18_reference/native/original/starter/source/materials/mat/mat044/hm_read_mat44.F": {
+      "bytes": 17325,
+      "sha256": "79915c2f70251e92578385dcaa1ec085b020914851f83c5126e39d00affd58c1"
+    },
+    "lib_utest/qualification/beam18_reference/native/original/starter/source/properties/beam/hm_read_prop18.F": {
+      "bytes": 45108,
+      "sha256": "7f7b2b3aca2922fe885571a2bb9710721b9f7923f4d2737daf70e42b54b3a040"
+    },
+    "lib_utest/qualification/beam18_reference/native/prepare_sources.py": {
+      "bytes": 2244,
+      "sha256": "7e0d84eea01e45023a6b7b94ececef1a828fe974c2064074264ae118afd7db78"
+    },
+    "lib_utest/qualification/beam18_reference/native/source-manifest.json": {
+      "bytes": 3506,
+      "sha256": "b1653105f6ba67f4ecb3986e55b4a224e5f35a937d599f9607de58b4475e8c44"
+    },
+    "lib_utest/qualification/beam18_reference/prepare_fixture.py": {
+      "bytes": 4951,
+      "sha256": "b85b11f5df3c6d5e055fc2cd32d4a8a9e5291f080933a4085411ee7b177d501b"
+    },
+    "lib_utest/qualification/beam18_reference/verify_source.py": {
+      "bytes": 725,
+      "sha256": "6dc1d8ec34734d9e56a31cdd2c23921a2affdde3eba3f98dd03e6705452a803a"
+    }
+  }
+}

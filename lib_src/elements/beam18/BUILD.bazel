@@ -1,0 +1,6 @@
+cc_library(
+    name = "reference",
+    hdrs = ["Types.h", "Units.h", "Section.h", "Geometry.h", "Mass.h", "Reference.h"],
+    visibility = ["//visibility:public"],
+    deps = ["//lib_src/math:fixed3_operations"],
+)
