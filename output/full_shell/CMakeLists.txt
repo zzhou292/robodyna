@@ -15,6 +15,7 @@ add_library(robo_dyna_full_shell_records STATIC FullShellVisualizationSchema.cpp
 target_link_libraries(robo_dyna_full_shell_records PUBLIC robo_dyna_bounded_array_io robo_dyna_interval_values)
 target_compile_features(robo_dyna_full_shell_records PUBLIC cxx_std_17)
 target_compile_options(robo_dyna_full_shell_records PRIVATE -fno-fast-math -ffp-contract=off)
+include("${CMAKE_CURRENT_LIST_DIR}/activity/ActivityRecords.cmake")
 add_library(robo_dyna_interval_segments STATIC IntervalSequence.cpp IntervalSegmentChecks.cpp
   IntervalSegmentFields.cpp IntervalSegmentReader.cpp IntervalSegmentWriter.cpp)
 target_link_libraries(robo_dyna_interval_segments PUBLIC robo_dyna_full_shell_records)

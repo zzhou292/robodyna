@@ -54,6 +54,10 @@ class Context {
     const std::string& point_layout_sha256() const noexcept;
     double fixed_dt() const noexcept;
     const RecordLimits& limits() const noexcept;
+    // Retained value payload, excluding allocator/control-block bookkeeping and
+    // process RSS. SIZE_MAX indicates unrepresentable accounting. A shared Context
+    // backing is charged once by an owning optional-record startup budget.
+    std::size_t retained_payload_bytes() const noexcept;
   private:
     struct Data;
     explicit Context(std::shared_ptr<const Data> data):data_(std::move(data)){}

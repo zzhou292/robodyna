@@ -114,6 +114,16 @@ const std::vector<std::size_t>& Context::point_offsets() const noexcept{return d
 const std::string& Context::point_layout_sha256() const noexcept{return data_->point_hash;}
 double Context::fixed_dt() const noexcept{return data_->fixed_dt;}
 const RecordLimits& Context::limits() const noexcept{return data_->limits;}
+std::size_t Context::retained_payload_bytes() const noexcept {
+    std::size_t bytes=sizeof(Data);
+    const auto add=[&](std::size_t count,std::size_t width) {
+        if(count>(SIZE_MAX-bytes)/width)return false;bytes+=count*width;return true;
+    };
+    if(!add(data_->parents.capacity(),sizeof(ParentPoints))||!add(data_->offsets.capacity(),sizeof(std::size_t)))return SIZE_MAX;
+    for(const auto* text:{&data_->identity.source_inventory_sha256,&data_->identity.source_mapping_sha256,&data_->point_hash})
+        if(!add(text->capacity(),1)||!add(1,1))return SIZE_MAX;
+    return bytes;
+}
 
 void CheckStamp(const Context& context, const FrameStamp& s) {
     CheckStamp(context.fixed_dt(),s);
