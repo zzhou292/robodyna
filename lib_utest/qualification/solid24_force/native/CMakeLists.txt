@@ -12,7 +12,7 @@ file(MAKE_DIRECTORY "${modules}")
 add_custom_target(heph_force_verify_native COMMAND "${Python3_EXECUTABLE}" -B
   "${CMAKE_CURRENT_SOURCE_DIR}/prepare_sources.py" --output "${prepared}" --check)
 set(leaves szderi3 szhour3 szetfac sordeft3 sztorth3 sgcoor3 sdefot3
-  sdefo3 sdlen3 slen sfint3 srepiso3 sortho3 srrota3 schkjabt3)
+  sdefo3 sdlen3 slen sfint3 srepiso3 sortho3 srrota3 schkjabt3 schkjab3)
 set(sources)
 foreach(leaf IN LISTS leaves)
   list(APPEND sources "${prepared}/${leaf}.F")

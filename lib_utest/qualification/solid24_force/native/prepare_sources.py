@@ -13,7 +13,7 @@ import re
 ROOT=Path(__file__).resolve().parent
 LEAVES={'szderi3.F','szhour3.F','szetfac.F','sordeft3.F','sztorth3.F',
         'sgcoor3.F','sdefot3.F','sdefo3.F','sdlen3.F','slen.F','sfint3.F',
-        'srepiso3.F','sortho3.F','srrota3.F','schkjabt3.F'}
+        'srepiso3.F','sortho3.F','srrota3.F','schkjabt3.F','schkjab3.F'}
 INTERFACES={'SZDERI3','SZDERITO3','SZHOUR3','SORDEFT3','SZTORTH3',
             'SGCOOR3','SDEFOT3','SDEFO3','SDLEN3','SFINT3','SREPISO3','SORTHO3','SRROTA3'}
 

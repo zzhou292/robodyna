@@ -61,6 +61,8 @@ relabelled as native HEPH input. Actual runtime/source admission remains separat
 The full `SZFORC3` is retained as caller-phase evidence. Complete SZDERI3,
 SZDERITO3, SREPISO3, SORTHO3, SRROTA3, SGCOOR3, SDEFOT3, SZTORTH3, SORDEFT3,
 SDLEN3/SLEN, SDEFO3, SZHOUR3/SZETFAC and SFINT3 execute independently of production.
+Complete SCHKJAB3 is also linked because the unchanged SZDERI3 object contains
+the unselected SZDERIT3 entry point; its call remains independently namespaced.
 The immutable shared native material packet executes SRHO/MULAW/MMAIN/MQ and
 complete SIGEPS42. The startup oracle supplies its own source permutation and
 reference Jacobian. The family wrapper receives no production geometry, stress,
