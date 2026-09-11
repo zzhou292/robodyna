@@ -31,6 +31,14 @@ Author gate: five new host functions, three existing LAW44 preparation
 functions, original source identity, and host syntax for the native C++ adapter.
 Native and CUDA are root-owned gates; authored tests are not execution evidence.
 
+Root qualification (2026-09-11,892efa3/be0bfd3): all30 numeric functions and
+both source identities PASS in `crash-work/reports/solid-law36-root-tests-1.json`.
+This includes11 new host/native/CUDA and19 affected LAW44 functions. The first
+native build lacked the NUMMAT declaration; including the existing com04_c.inc
+in NativeSetup fixed that context only. Donor expressions and tolerances did
+not change. All owning targets and the affected QBAT CUDA caller build PASS in
+`law36-post-kinchk-owning-bazel-build-1`. Solid18 geometry/force is a separate gate.
+
 Configure the owning CMake directory lib_utest/qualification/solid_law36_point:
 
     cmake -S lib_utest/qualification/solid_law36_point -B BUILD_DIR \

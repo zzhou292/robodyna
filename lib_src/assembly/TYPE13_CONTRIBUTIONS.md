@@ -74,3 +74,10 @@ Production CMake target: `tl_type13_node_contributions`. Bazel production target
 `//lib_src/assembly:type13_node_contributions`; tests are in
 `//lib_utest/qualification/type13_contributions`, with the original target manual.
 Production links no native oracle, engine, Fortran or CUDA runtime.
+
+Root qualification (2026-09-11,2cd0f06): all7 new functions, the2 affected
+original native model functions and source identity PASS. All4442 original
+beams/8884 endpoint records map; retained adapter payload2581136 B. The three
+owning Bazel targets also PASS. Workspace evidence:
+`type13-contributions-root-tests-1`, `type13-contributions-model-tests-1`, and
+`type13-contributions-owning-bazel-build-1`. No production correction was needed.

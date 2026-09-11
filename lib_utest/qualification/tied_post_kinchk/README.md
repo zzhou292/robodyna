@@ -23,5 +23,9 @@ oracle, not a reconstruction of the full starter registry.
 Configure this directory with `-DTL_TIED_POST_KINCHK_NATIVE=ON` for the owning
 Fortran gate. Targets are `tied_post_kinchk_host_test` and
 `tied_post_kinchk_native_test`; all CTest entries start `tied_post_kinchk_`.
-The author ran host and source-identity checks only. Native execution remains
-the owning gate.
+The author ran host and source-identity checks only. Root subsequently passed
+all3 host +4 native functions and source identity (`tied-post-kinchk-root-tests-1`,
+2026-09-11). The18 affected classifier host/native functions plus source identity
+also pass (`post-kinchk-affected-classification-tests-1`). Both owning targets
+build in `law36-post-kinchk-owning-bazel-build-1`. No production correction was
+needed. These observations do not admit coefficients or a runtime owner.

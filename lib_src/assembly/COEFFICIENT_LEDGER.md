@@ -66,3 +66,10 @@ the existing TYPE13 and TYPE25 coefficient donors at shared endpoints; its C++
 packet compiles, while Fortran/native execution is root-owned. No new donor or
 production/reference dependency is introduced. Strict legacy binding and mass
 APIs are unchanged, and no GPU/runtime performance claim is made.
+
+Root qualification (2026-09-11,50ec767): all9 host/native/full-count functions
+and both unchanged native-source identities PASS in `nodal-coefficients-root-tests-1`.
+The full-count ledger retains366695696 B with372290120 B complete startup.
+All three owning Bazel targets PASS in `nodal-coefficients-owning-bazel-build-1`.
+No production correction was needed. This is still the V1 additive scope above;
+solid, point-mass, rigid/constraint stages and full-owner admission are separate.
