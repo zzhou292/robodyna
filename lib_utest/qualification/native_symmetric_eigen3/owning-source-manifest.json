@@ -1,0 +1,105 @@
+{
+  "scope": "native spectral prerequisite; no LAW90 point or source admission",
+  "files": [
+    {
+      "path": "lib_src/math/NativeSymmetricEigen3.h",
+      "bytes": 1953,
+      "sha256": "3a4c7a4507f2af4528f8596a40d8687997631e2d4f4f8f8a537e5614ebe372c9"
+    },
+    {
+      "path": "lib_src/math/native_symmetric_eigen3/Directions.h",
+      "bytes": 1688,
+      "sha256": "308aa5f6013f2cd42b9ff38624fbfc13e083488e6287d4d66e2d51542e08b6a6"
+    },
+    {
+      "path": "lib_src/math/native_symmetric_eigen3/README.md",
+      "bytes": 2347,
+      "sha256": "9e057bff3edc33c99eed8a748c18a76819cb1f26a09cf40354c8607a5e86aa4f"
+    },
+    {
+      "path": "lib_src/math/native_symmetric_eigen3/Repeated.h",
+      "bytes": 1603,
+      "sha256": "16ee4ba827cecb4287a18bab769fed36866c85c7179dde8046bc285bbe946936"
+    },
+    {
+      "path": "lib_src/math/native_symmetric_eigen3/Roots.h",
+      "bytes": 2995,
+      "sha256": "f9a8b5c7ab5cdf63069999364275e777be484fbe3beeb4c71b7e7b8ae08d3bcd"
+    },
+    {
+      "path": "lib_src/math/native_symmetric_eigen3/Types.h",
+      "bytes": 2512,
+      "sha256": "35ec4565ea52a93497b9f35854bac5583f0999d1d0ae4510a3bea42106e1963d"
+    },
+    {
+      "path": "lib_utest/qualification/native_symmetric_eigen3/BUILD.bazel",
+      "bytes": 274,
+      "sha256": "a7bb90495ac30c49676d8b828a2a54ec6c2fe4a6f2b93ce7fe949c638fb120f8"
+    },
+    {
+      "path": "lib_utest/qualification/native_symmetric_eigen3/CMakeLists.txt",
+      "bytes": 2193,
+      "sha256": "a27156103d9f65f24fc84416e1ee4eab0f6e5c9bac543d880a9a8f84fa958ea5"
+    },
+    {
+      "path": "lib_utest/qualification/native_symmetric_eigen3/CudaTest.cu",
+      "bytes": 3012,
+      "sha256": "52e021f86a7e6f948870ac5def1c37d92f7928cc208994ac3dcd1b6c5ba3387c"
+    },
+    {
+      "path": "lib_utest/qualification/native_symmetric_eigen3/HostTest.cpp",
+      "bytes": 5038,
+      "sha256": "69126498956e6d5c007d8c197e8e0ae0f83ea4e123d8c451d5e2985b94f6148c"
+    },
+    {
+      "path": "lib_utest/qualification/native_symmetric_eigen3/NativeSupport.h",
+      "bytes": 1740,
+      "sha256": "2e9ac7a96633c3bebcd3c765d1cffda08825595f85d5c83edc0c3e0aef2947f3"
+    },
+    {
+      "path": "lib_utest/qualification/native_symmetric_eigen3/NativeTest.cpp",
+      "bytes": 2054,
+      "sha256": "6baf985c2019c7a33b09f645221a3a3d9c97b9605b507355564e30931bc68213"
+    },
+    {
+      "path": "lib_utest/qualification/native_symmetric_eigen3/README.md",
+      "bytes": 3290,
+      "sha256": "6d8ed5d3bf5e39985f4bfecce35be102693e45184cf0d917ebdb45abc016d21a"
+    },
+    {
+      "path": "lib_utest/qualification/native_symmetric_eigen3/TestSupport.h",
+      "bytes": 4656,
+      "sha256": "64426226a08b49d55317d90b84a80037befcc02328cc34bcccbc01ff928f0cb1"
+    },
+    {
+      "path": "lib_utest/qualification/native_symmetric_eigen3/native/CMakeLists.txt",
+      "bytes": 1373,
+      "sha256": "5328fdc4c985c7cd1b77910e0bfc3a3fe2086b2805f1697e5f8fd9f6702a07a0"
+    },
+    {
+      "path": "lib_utest/qualification/native_symmetric_eigen3/native/NativeSpectrum.F",
+      "bytes": 1750,
+      "sha256": "64019467d54e8f68335433e6d8d62e04c7c05d43e739c2494c1f2305a81347bb"
+    },
+    {
+      "path": "lib_utest/qualification/native_symmetric_eigen3/native/NativeSpectrum.h",
+      "bytes": 370,
+      "sha256": "7436b0b65f3bb8ca5a520c5395eb53749d10d7d7ad5490efa43d35b569ee228e"
+    },
+    {
+      "path": "lib_utest/qualification/native_symmetric_eigen3/native/prepare_sources.py",
+      "bytes": 2581,
+      "sha256": "234f3d2890d1ddf051977d750353b61cae56b9a9dd6c0c98b0a3504ab13fde03"
+    },
+    {
+      "path": "lib_utest/qualification/native_symmetric_eigen3/native/source-manifest.json",
+      "bytes": 3781,
+      "sha256": "14b8ddc30e0d7c283388761bb0045c41b1f4743387a2f57dd180c3b90f035f07"
+    },
+    {
+      "path": "lib_utest/qualification/native_symmetric_eigen3/verify_source.py",
+      "bytes": 1022,
+      "sha256": "072491d41cd4e47fcd8ed6fd13da57403814eed6cdf9fe5c3c0f81cb09f9af9c"
+    }
+  ]
+}
