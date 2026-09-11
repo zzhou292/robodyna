@@ -94,6 +94,16 @@ struct NodalAllocationInfo {
   // internal allocations and pageable-copy staging outside this module.
   std::size_t device_bytes = 0, device_allocations = 0;
 };
+// Read-only combined-owner capacity query. No raw input arrays are read, no
+// owner identity is created, and no kinematic/coefficient/DOF admission occurs.
+struct NodalAssemblyCinForecast {
+  NodalReport report;
+  std::size_t device_bytes = 0;           // Exact explicit allocation sum.
+  std::size_t source_host_bytes = 0;      // Retained CIN model/domain/classification.
+  std::size_t owner_host_bytes = 0;       // Incremental retained payload upper bound.
+  std::size_t startup_scratch_bytes = 0;  // Temporary witness identity index.
+  std::size_t startup_host_bytes = 0;     // Existing complete owner admission bound.
+};
 struct NodalSnapshotBuffer {
   double* position_xyz = nullptr;
   double* velocity_xyz = nullptr;
@@ -210,6 +220,9 @@ class NodalTrialToken {
 // before retrying initialization after a runtime failure.
 class FENodalState {
  public:
+  static NodalAssemblyCinForecast ForecastAssemblyCin(const NodalStateConfig&,
+      const NodalRigidAssemblyBinding&,const NodalCinStartup&,
+      bool rotation_presence = true) noexcept;
   FENodalState();
   ~FENodalState();
   FENodalState(const FENodalState&) = delete;

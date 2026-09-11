@@ -11,7 +11,8 @@ cc_library(
             "//lib_utest/qualification/nodal_coefficients:solid_test_support",
             "//lib_utest/qualification/tied_cin_attachment:test_support", "@googletest//:gtest"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
-    visibility = ["//lib_utest/qualification/solid_resident:__pkg__",
+    visibility = ["//lib_utest/qualification/physical_owner_forecast:__pkg__",
+                  "//lib_utest/qualification/solid_resident:__pkg__",
                   "//lib_utest/qualification/qbat_mapped:__pkg__"],
 )
 

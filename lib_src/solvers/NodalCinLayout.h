@@ -7,14 +7,16 @@
 namespace tl::fea::nodal_detail {
 inline bool CinOwnerHostFits(std::size_t optional_bytes, std::size_t rigid_bytes,
     std::size_t state_capacity, std::size_t constraint_capacity, std::size_t owner_bytes,
-    std::size_t maximum_bytes) noexcept {
+    std::size_t maximum_bytes,std::size_t* output_bytes=nullptr) noexcept {
   util::BoundedArenaLayout host(maximum_bytes);
   util::ArenaRegion unused;
-  return host.Append<std::byte>(optional_bytes, unused) &&
+  const bool fits = host.Append<std::byte>(optional_bytes, unused) &&
       host.Append<std::byte>(rigid_bytes, unused) &&
       host.Append<double>(state_capacity, unused) &&
       host.Append<std::uint8_t>(constraint_capacity, unused) &&
       host.Append<std::byte>(owner_bytes, unused);
+  if (fits && output_bytes) *output_bytes = host.bytes();
+  return fits;
 }
 struct CinLayout {
   util::ArenaRegion rows, dependent, activity, patches, work, first_witness;

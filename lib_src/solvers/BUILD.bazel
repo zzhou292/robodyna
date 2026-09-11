@@ -29,7 +29,7 @@ cc_library(
 
 cuda_library(
     name = "explicit_nodal_state",
-    srcs = ["FENodalState.cu", "FENodalConstraintQueries.cu", "FENodalSnapshotReadback.cu", "FENodalForceStageReadback.cu", "ExplicitTranslationStep.cu", "ExplicitNodalStep.cu", "NodalRigidGroupStorage.cu", "NodalRigidAssemblyStorage.cpp", "NodalRigidAssemblyChecks.cpp", "NodalRigidAssemblyIdentity.cpp", "ExplicitNodalRigidStep.cu",
+    srcs = ["FENodalState.cu", "FENodalConstraintQueries.cu", "FENodalSnapshotReadback.cu", "FENodalForceStageReadback.cu", "ExplicitTranslationStep.cu", "ExplicitNodalStep.cu", "NodalRigidGroupStorage.cu", "NodalRigidAssemblyStorage.cpp", "NodalAssemblyCinForecast.cpp", "NodalRigidAssemblyChecks.cpp", "NodalRigidAssemblyIdentity.cpp", "ExplicitNodalRigidStep.cu",
             "NodalCinStartup.cpp", "NodalCinStorage.cu", "NodalCinState.cpp", "NodalCinReadback.cu", "ExplicitNodalCinStep.cu"],
     hdrs = ["FENodalState.h", "FENodalStateStorage.h", "ExplicitTranslationStep.h", "ExplicitNodalStep.h", "NodalRotation.h", "NodalTrialIdentity.h",
             "NodalNodeStep.h", "NodalRigidGroupStorage.h", "ExplicitNodalRigidStep.h", "NodalSnapshotRanges.h",
