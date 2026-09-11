@@ -5,3 +5,8 @@ cc_library(
     hdrs = ["Types.h", "Prepare.h", "Stress.h", "Update.h"],
     deps = ["//lib_src/math:symmetric_eigen3", "//lib_src/math:quaternion"],
 )
+cc_library(
+    name = "caller",
+    hdrs = ["Caller.h", "CallerTypes.h", "TotalStrain.h"],
+    deps = [":point"],
+)
