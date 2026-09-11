@@ -22,5 +22,5 @@ with tempfile.TemporaryDirectory(prefix='robo-tied-classification-') as temporar
     helper = Path(__file__).resolve().parents[4] / 'modelio/tied_shell/auxiliary/tests/actual_fixture.py'
     env = dict(os.environ, ROBO_TIED_WALL_MEMBER=str(target), ROBO_VEHICLE_DECLARATIONS=str(declarations))
     result = subprocess.run([sys.executable, '-B', str(helper), str(canonical), str(scope),
-                             str(binary), 'TiedClassificationActual.*'], env=env)
+                             str(binary), sys.argv[5] if len(sys.argv) > 5 else 'TiedClassificationActual.*'], env=env)
     raise SystemExit(result.returncode)

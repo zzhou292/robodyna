@@ -25,7 +25,7 @@ if(ROBO_DYNA_TIED_CLASSIFICATION_ACTUAL)
       message(FATAL_ERROR "Original classification fixture missing: ${input}")
     endif()
   endforeach()
-  add_executable(robo_dyna_tied_classification_actual_check tests/ActualSourceTest.cpp)
+  add_executable(robo_dyna_tied_classification_actual_check tests/ActualSourceTest.cpp tests/ActualClassification.cpp)
   target_link_libraries(robo_dyna_tied_classification_actual_check PRIVATE
     robo_dyna_tied_search_classification tied_classification_oracle GTest::gtest_main)
   add_test(NAME tied_classification_actual COMMAND "${Python3_EXECUTABLE}" -B
