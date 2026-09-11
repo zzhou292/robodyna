@@ -1,0 +1,6 @@
+include_guard(GLOBAL)
+include("${CMAKE_CURRENT_LIST_DIR}/ShellPhysicalOwnerValues.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/ShellBatchPlasticity.cmake")
+add_library(tl_shell_mapped_startup STATIC "${CMAKE_CURRENT_LIST_DIR}/ShellMappedStartup.cpp")
+target_link_libraries(tl_shell_mapped_startup PUBLIC tl_shell_physical_owner_values tl_shell_batch_plasticity)
+target_compile_options(tl_shell_mapped_startup PRIVATE -fno-fast-math -ffp-contract=off)

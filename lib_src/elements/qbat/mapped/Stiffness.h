@@ -4,12 +4,10 @@
 #include "../QbatBatchArena.h"
 #include "../QbatForceCoefficients.h"
 #include "../QbatGeometry.h"
+#include "../../ShellNodalStiffness.h"
 
 namespace tl::fea::qbat::mapped {
-struct NodalStiffness {
-  double translation[4]{};
-  double rotation[4]{};
-};
+using NodalStiffness=shell_nodal_stiffness::Packet<4>;
 // Separate coefficient packet; virgin force/history/diagnostic availability is
 // unchanged. No dt-zero material call and no reference CINMAS STIR substitution.
 TL_QBAT_HD inline bool AcceptedStiffness(const batch_detail::Element& element,
@@ -51,22 +49,6 @@ TL_QBAT_HD inline bool AcceptedStiffness(const batch_detail::Element& element,
 // Parents may share physical nodes, and retain their distinct additive terms.
 TL_QBAT_HD inline bool AddStiffness(const std::size_t (&nodes)[4],const NodalStiffness& value,
     double* translation,double* rotation,std::size_t count) noexcept {
-  if (!translation || !rotation || translation==rotation) return false;
-  double next_translation[4],next_rotation[4];
-  for (unsigned slot=0;slot<4;++slot) {
-    if (nodes[slot]>=count || !tl::math::Finite(value.translation[slot]) || value.translation[slot]<0 ||
-        !tl::math::Finite(value.rotation[slot]) || value.rotation[slot]<0) return false;
-    for (unsigned prior=0;prior<slot;++prior) if (nodes[prior]==nodes[slot]) return false;
-    if (!tl::math::Finite(translation[nodes[slot]]) || translation[nodes[slot]]<0 ||
-        !tl::math::Finite(rotation[nodes[slot]]) || rotation[nodes[slot]]<0) return false;
-    next_translation[slot]=translation[nodes[slot]]+value.translation[slot];
-    next_rotation[slot]=rotation[nodes[slot]]+value.rotation[slot];
-    if (!tl::math::Finite(next_translation[slot]) || !tl::math::Finite(next_rotation[slot])) return false;
-  }
-  for (unsigned slot=0;slot<4;++slot) {
-    translation[nodes[slot]]=next_translation[slot];
-    rotation[nodes[slot]]=next_rotation[slot];
-  }
-  return true;
+  return shell_nodal_stiffness::Add(nodes,value,translation,rotation,count);
 }
 } // namespace tl::fea::qbat::mapped

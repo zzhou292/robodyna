@@ -14,7 +14,7 @@ class MixedHostStorage {
   static bool Forecast(std::size_t count,std::size_t points,std::size_t catalog_bytes,
       std::size_t device_cap,std::size_t host_cap,MixedLayout&,std::size_t& host_bytes) noexcept;
   SetupReport Initialize(const ShellBatchPlasticityBinding&,ShellBindingFamily,std::size_t,
-      const MixedLayout&);
+      const MixedLayout&,bool execution=false);
   SetupReport Read(unsigned slab,std::size_t count,cudaStream_t,const ShellBatchPlasticityBinding&,
       const ShellBatchOnePointSectionState* one_point=nullptr) noexcept;
   MixedDeviceStorage* device() const noexcept { return device_; }

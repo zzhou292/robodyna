@@ -2,7 +2,15 @@
 # tl_t3 and tl_explicit_nodal_state; no native/reference/test dependency.
 include("${CMAKE_CURRENT_LIST_DIR}/../ShellBatchBinding.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../ShellBatchPlasticity.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../ShellMappedStartup.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../ShellPhysicalOwner.cmake")
 add_library(tl_t3_batch STATIC
+  "${CMAKE_CURRENT_LIST_DIR}/mapped/Startup.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/mapped/Initialize.cu"
+  "${CMAKE_CURRENT_LIST_DIR}/mapped/Assemble.cu"
+  "${CMAKE_CURRENT_LIST_DIR}/mapped/Kernels.cu"
+  "${CMAKE_CURRENT_LIST_DIR}/mapped/Publication.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/mapped/Readback.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/T3Batch.cu"
   "${CMAKE_CURRENT_LIST_DIR}/T3BatchOperations.cu"
   "${CMAKE_CURRENT_LIST_DIR}/T3BatchKernels.cu"
@@ -26,3 +34,5 @@ target_link_libraries(tl_t3_batch PUBLIC tl_nodal_mass_binding)
 
 include("${CMAKE_CURRENT_LIST_DIR}/../ShellFormulationScope.cmake")
 target_link_libraries(tl_t3_batch PUBLIC tl_shell_formulation_scope)
+
+target_link_libraries(tl_t3_batch PUBLIC tl_shell_mapped_startup tl_shell_physical_owner)

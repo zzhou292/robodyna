@@ -67,8 +67,9 @@ SetupReport HostStorage::InitializeSections(const ShellBatchPlasticityBinding& c
   catch(const std::length_error&) { return {SetupStatus::ResourceLimit,"Mixed section host size overflow"}; }
 
 SetupReport MixedHostStorage::Initialize(const ShellBatchPlasticityBinding& catalog,
-    ShellBindingFamily family,std::size_t count,const MixedLayout& layout) {
+    ShellBindingFamily family,std::size_t count,const MixedLayout& layout,bool execution) {
   if(device_||!catalog.heterogeneous_sections()||!count||count!=layout.law.count||
+      catalog.execution_sections()!=execution||
       (family!=ShellBindingFamily::Qeph&&family!=ShellBindingFamily::T3))
     return {SetupStatus::InvalidInput,"Invalid explicit mixed section layout"};
   util::HostArena arena;
@@ -96,7 +97,9 @@ SetupReport MixedHostStorage::Initialize(const ShellBatchPlasticityBinding& cata
       offsets[e]=static_cast<std::size_t>(p.curve.plastic_strain-source.curve_x.data());
       if(offsets[e]>source.point_count||p.curve.count>source.point_count-offsets[e])
         return {SetupStatus::InvalidInput,"Mixed material curve exceeds the owned pool"};
-    } else return {SetupStatus::InvalidInput,"Mixed catalog has an unsupported law"};
+    } else if(initial->law[e]!=ShellSectionLaw::RigidSkin||!execution) {
+      return {SetupStatus::InvalidInput,"Mixed catalog has an unsupported law"};
+    }
   }
   MixedDeviceStorage* candidate=nullptr;auto error=cudaMalloc(reinterpret_cast<void**>(&candidate),layout.bytes);
   if(error!=cudaSuccess)return {SetupStatus::DeviceFailure,"Mixed section allocation failed",error};

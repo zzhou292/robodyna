@@ -24,6 +24,10 @@ BatchReport T3Batch::CopyAcceptedFailureHistory(const NodalStamp& expected,
       !shell_batch_plasticity_detail::FailureOutputRanges(expected, output, capacity, diagnostics, *this)) {
     return {BatchStatus::InvalidInput, "Failure readback outputs are missing or overlap inputs"};
   }
+  if (!state.OutputDisjoint(output,capacity*sizeof(*output)) ||
+      !state.OutputDisjoint(diagnostics,sizeof(*diagnostics))) {
+    return {BatchStatus::InvalidInput,"Mapped readback output aliases retained source/state"};
+  }
   const auto report = shell_batch_plasticity_detail::ReadFailure(state,
       state.AcceptedSlabIndex(), state.accepted_diagnostics.time);
   if (report.status != BatchStatus::Success) return report;
@@ -49,6 +53,10 @@ BatchReport T3Batch::CopyAcceptedParentActivity(const NodalStamp& expected,
   if (!diagnostics || !shell_batch_plasticity_detail::FailureOutputRanges(
       expected, output, capacity, diagnostics, *this)) {
     return {BatchStatus::InvalidInput, "Activity output is missing or overlaps inspected inputs"};
+  }
+  if (!state.OutputDisjoint(output,capacity*sizeof(*output)) ||
+      !state.OutputDisjoint(diagnostics,sizeof(*diagnostics))) {
+    return {BatchStatus::InvalidInput,"Mapped readback output aliases retained source/state"};
   }
   const auto report = shell_batch_plasticity_detail::ReadFailure(state,
       state.AcceptedSlabIndex(), state.accepted_diagnostics.time);
@@ -89,6 +97,9 @@ BatchReport T3Batch::CopyPreparedFailureHistory(const BatchDiagnostics& expected
   if (!shell_batch_plasticity_detail::FailureOutputRanges(expected, output, capacity,
                                                         static_cast<BatchDiagnostics*>(nullptr), *this)) {
     return {BatchStatus::InvalidInput, "Failure readback output is missing or overlaps input"};
+  }
+  if (!state.OutputDisjoint(output,capacity*sizeof(*output))) {
+    return {BatchStatus::InvalidInput,"Mapped readback output aliases retained source/state"};
   }
   const auto report = shell_batch_plasticity_detail::ReadFailure(state,
       1u - state.AcceptedSlabIndex(), state.candidate_diagnostics.time);

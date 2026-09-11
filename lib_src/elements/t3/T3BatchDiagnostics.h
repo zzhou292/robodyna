@@ -9,7 +9,7 @@ using namespace tl::fea::shell_batch_fields;
 // Actual global shared masses/J and one owner velocity per node. Physical and
 // added scalar partitions are explicitly isotropic (including drilling).
 TL_T3_HD inline bool Measure(const Model& model,const Slab& base,const Slab& next,
-                              const NodalPreparedView& view,Control& out) {
+                              const NodalPreparedView& view,Control& out,const ShellSectionLaw* roles=nullptr) {
   auto& d=out.diagnostics;
   if(d.kinetic_available==model.joined) return false;
   for(unsigned n=0;n<model.config.owner.node_count;++n) {
@@ -26,15 +26,18 @@ TL_T3_HD inline bool Measure(const Model& model,const Slab& base,const Slab& nex
     const auto* q=view.kinematics.orientation_wxyz+4*n;
     if(!tl::math::UnitQuaternion({q[0],q[1],q[2],q[3]})) return false;
   }
+  unsigned material_parent=0;
   for(unsigned e=0;e<model.config.element_count;++e) {
+    if(roles&&roles[e]==ShellSectionLaw::RigidSkin) continue;
     const auto& element=model.element[e]; const auto& r=next.element[e]; const auto& h=r.proposed_history.data();
     const auto& old=base.element[e];
     const double area=r.kinematics.area/element.reference.area;
     const double thickness=h.thickness/element.reference.input.thickness;
     if(!detail::Positive(area)||!detail::Positive(thickness)) return false;
-    d.minimum_area_ratio=e?::fmin(d.minimum_area_ratio,area):area;
-    d.minimum_thickness_ratio=e?::fmin(d.minimum_thickness_ratio,thickness):thickness;
-    d.minimum_native_dt=e?::fmin(d.minimum_native_dt,r.diagnostics.unscaled_element_dt):r.diagnostics.unscaled_element_dt;
+    d.minimum_area_ratio=material_parent?::fmin(d.minimum_area_ratio,area):area;
+    d.minimum_thickness_ratio=material_parent?::fmin(d.minimum_thickness_ratio,thickness):thickness;
+    d.minimum_native_dt=material_parent?::fmin(d.minimum_native_dt,r.diagnostics.unscaled_element_dt):r.diagnostics.unscaled_element_dt;
+    ++material_parent;
     for(unsigned c=0;c<2;++c) { d.internal_work[c]+=h.internal_work[c]; d.internal_work_increment[c]+=r.diagnostics.internal_work_increment[c]; }
     for(unsigned c=0;c<5;++c) d.maximum_absolute_strain=::fmax(d.maximum_absolute_strain,::fabs(h.strain_curvature[c]));
     for(unsigned c=5;c<8;++c) d.maximum_thickness_curvature=::fmax(d.maximum_thickness_curvature,

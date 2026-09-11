@@ -15,8 +15,8 @@
   "ported_files": [
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
-      "bytes": 3332,
-      "sha256": "5199e6d2ef729fba14331016d45867d8944197fe4f415911d925dbb8e8d9cbd1"
+      "bytes": 4780,
+      "sha256": "82328921cd206f2250a2f3953a0653c8cca0dcd8f79d463dc60ee05edfec8e4a"
     },
     {
       "path": "lib_src/elements/t3/CMakeLists.txt",
@@ -533,5 +533,16 @@
       }
     ],
     "scope": "Add explicitly authenticated complete QBAT/QEPH/T3 participant dependency. Native donor, original startup and force arithmetic unchanged."
+  },
+  "mapped_qt_resident_registration": {
+    "scope": "Host batch-value ownership and explicit mapped Q/T physical owner targets. No native donor, material or force arithmetic changes.",
+    "previous_manifest_sha256": "c23336f714a7b23c8bd5bb2ae8caa3dc240e56c60b62976e5e34bd6fadd4b523",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 3332,
+        "sha256": "5199e6d2ef729fba14331016d45867d8944197fe4f415911d925dbb8e8d9cbd1"
+      }
+    ]
   }
 }

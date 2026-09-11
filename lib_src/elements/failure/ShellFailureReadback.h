@@ -15,7 +15,7 @@ template<class Impl> auto ReadFailure(Impl& state, unsigned slab, double time) {
     report.status = result.status == SetupStatus::NonfiniteResult ? Status::NonfiniteResult : Status::InvalidInput;
     report.message = result.message;
   }
-  return report;
+  return report.status==Status::Success?state.ValidateMappedSections(slab):report;
 }
 
 template<class Stamp, class Value, class Diagnostics, class Batch>

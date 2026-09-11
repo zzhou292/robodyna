@@ -10,6 +10,8 @@
 #include <memory>
 #include <type_traits>
 
+namespace tl::fea { class ShellPhysicalBinding; }
+
 namespace tl::fea::shell_batch_plasticity_detail {
 constexpr std::size_t MaxCurvePoints=MaxShellPlasticityCurvePoints;
 struct ReferenceMaterial { double young=0,nu=0,rho=0; };
@@ -57,6 +59,10 @@ class HostStorage {
   SetupReport InitializeFailureCollection(const ShellBatchFailureBinding&,const ShellBatchBinding&,
       ShellBindingFamily,std::size_t,std::size_t device_cap,std::size_t host_cap,
       const ShellBatchFailureLimits&,bool vehicle);
+  // The caller retains and has already budgeted this exact physical source.
+  // Rigid rows have no material or point-history availability.
+  SetupReport InitializeMappedCollection(const ShellPhysicalBinding&,ShellBindingFamily,
+      std::size_t,std::size_t device_cap,std::size_t host_cap,const ShellBatchFailureLimits&);
   static bool ForecastFailureSections(std::size_t count,std::size_t points,std::size_t binding_bytes,
       std::size_t device_cap,std::size_t host_cap,const ShellBatchFailureLimits&,std::size_t& host_bytes,
       bool one_point=false) noexcept;
@@ -70,6 +76,9 @@ class HostStorage {
   const ShellBatchSectionState* staging() const noexcept { return staging_.data(); }
   bool SameMaterialScope(const HostStorage&) const noexcept;
  private:
+  SetupReport InitializeFailureCollectionImpl(const ShellBatchFailureBinding&,const ShellBatchBinding&,
+      ShellBindingFamily,std::size_t,std::size_t,std::size_t,
+      const ShellBatchFailureLimits&,bool vehicle,bool execution,bool retained_physical);
   DeviceStorage* device_=nullptr;
   DeviceStorage device_header_; // Rebased address values; never host-dereference device fields.
   Layout layout_;

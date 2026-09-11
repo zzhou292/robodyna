@@ -16,6 +16,11 @@ BatchReport T3Batch::CopyAcceptedResults(const NodalStamp& expected,ForceTrial* 
   if(!batch_detail::SameStamp(expected,s.accepted_stamp)) return {BatchStatus::StaleTrial,"Accepted T3 endpoint identity mismatch"};
   if(capacity<s.config.element_count) return {BatchStatus::ResourceLimit,"T3 result capacity is insufficient"};
   const auto bytes=s.config.element_count*sizeof(ForceTrial);
+  if(!s.OutputDisjoint(output,bytes)||
+     !s.OutputDisjoint(diagnostics,sizeof(*diagnostics))||
+     (s.physical&&!trial_identity::Disjoint(diagnostics,sizeof(*diagnostics),this,sizeof(*this)))||
+     (s.physical&&!trial_identity::Disjoint(output,bytes,this,sizeof(*this))))
+    return {BatchStatus::InvalidInput,"Mapped readback output aliases retained source/state"};
   if(!Disjoint(output,bytes,diagnostics,sizeof(*diagnostics))||!Disjoint(output,bytes,&expected,sizeof(expected))||
      !Disjoint(diagnostics,sizeof(*diagnostics),&expected,sizeof(expected))) return InvalidRead();
   auto r=s.ReadResults(s.accepted); if(r.status!=BatchStatus::Success) return r;
@@ -30,6 +35,9 @@ BatchReport T3Batch::CopyPreparedResults(const BatchDiagnostics& expected,ForceT
     return {BatchStatus::StaleTrial,"Prepared T3 result identity mismatch"};
   if(capacity<s.config.element_count) return {BatchStatus::ResourceLimit,"T3 result capacity is insufficient"};
   const auto bytes=s.config.element_count*sizeof(ForceTrial);
+  if(!s.OutputDisjoint(output,bytes)||
+     (s.physical&&!trial_identity::Disjoint(output,bytes,this,sizeof(*this))))
+    return {BatchStatus::InvalidInput,"Mapped readback output aliases retained source/state"};
   if(!Disjoint(output,bytes,&expected,sizeof(expected))) return InvalidRead();
   auto r=s.ReadResults(s.trial); if(r.status!=BatchStatus::Success) return r;
   std::memcpy(output,s.staging.data(),bytes); return {BatchStatus::Success,"OK"};

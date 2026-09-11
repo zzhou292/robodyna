@@ -33,7 +33,8 @@ BatchReport T3Batch::Impl::ReadResults(const batch_detail::Slab* source) {
   r=Runtime(cudaMemcpyAsync(staging.data(),device_header.slab[slab].element,config.element_count*sizeof(ForceTrial),
       cudaMemcpyDeviceToHost,stream),"T3 element readback failed");
   if(r.status!=BatchStatus::Success) return r;
-  return Runtime(cudaStreamSynchronize(stream),"T3 element readback stream failed");
+  r=Runtime(cudaStreamSynchronize(stream),"T3 element readback stream failed");
+  return r.status==BatchStatus::Success?ValidateMappedResults(slab):r;
 }
 T3Batch::T3Batch()=default;
 T3Batch::~T3Batch()=default;

@@ -1,11 +1,11 @@
-load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 
 cc_test(
     name = "shell_execution_host_check",
     size = "small",
-    srcs = ["CatalogTest.cpp", "BindingTest.cpp", "PhysicalTest.cpp", "Fixture.h"],
+    srcs = ["CatalogTest.cpp", "BindingTest.cpp", "PhysicalTest.cpp"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
-    deps = ["//lib_src/assembly:shell_physical_binding",
+    deps = [":fixture", "//lib_src/assembly:shell_physical_binding",
             "//lib_src/assembly:shell_execution_binding",
             "//lib_utest/qualification/qbat_catalog:fixture",
             "@googletest//:gtest_main"],
@@ -14,10 +14,19 @@ cc_test(
 cc_test(
     name = "shell_execution_ranges_check",
     size = "small",
-    srcs = ["OutputRangesTest.cpp", "Fixture.h"],
+    srcs = ["OutputRangesTest.cpp"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
-    deps = ["//lib_src/elements:shell_physical_owner_values",
+    deps = [":fixture", "//lib_src/elements:shell_physical_owner_values",
             "//lib_src/assembly:shell_physical_binding",
             "//lib_utest/qualification/qbat_catalog:fixture",
             "@googletest//:gtest_main"],
+)
+
+cc_library(
+    name = "fixture",
+    testonly = True,
+    visibility = ["//lib_utest/qualification/qt_mapped:__pkg__"],
+    hdrs = ["Fixture.h"],
+    deps = ["//lib_src/assembly:shell_physical_binding", "//lib_src/assembly:shell_execution_binding",
+            "//lib_utest/qualification/qbat_catalog:fixture", "@googletest//:gtest_main"],
 )

@@ -23,7 +23,9 @@ BatchReport QephBatch::AssembleAccepted(FENodalState& owner,const NodalAssemblyV
 }
 BatchReport QephBatch::AssembleAcceptedImpl(FENodalState* owner,const NodalAssemblyView& v) {
   if(!impl_) return MarkRejected(v,{BatchStatus::NotInitialized,"QEPH batch is not initialized"});
-  auto& s=*impl_; s.Discard();
+  auto& s=*impl_;
+  if(s.physical) return {BatchStatus::InvalidInput,"Mapped Qeph requires tokened CIN assembly"};
+  s.Discard();
   auto fail=[&](BatchReport r) { const auto marked=MarkRejected(v,r); if(marked.status==BatchStatus::DeviceFailure) s.usable=false; return marked; };
   auto report=s.PendingError(); if(report.status!=BatchStatus::Success) return fail(report);
   const auto& a=s.accepted_stamp; const auto n=a.node_count;
@@ -97,11 +99,14 @@ BatchReport QephBatch::EvaluateCandidateImpl(FENodalState* owner,const NodalTria
   auto report=s.PendingError(); if(report.status!=BatchStatus::Success) return report;
   if(!s.bound) return {BatchStatus::NotBound,"Initial reference/motion and mass binding is required"};
   if(!output) return {BatchStatus::InvalidInput,"Missing QEPH diagnostic output"};
+  if(s.physical&&(!s.OutputDisjoint(output,sizeof(*output))||
+      !trial_identity::Disjoint(output,sizeof(*output),this,sizeof(*this))))
+    return {BatchStatus::InvalidInput,"Mapped diagnostic output aliases retained source/state"};
   const auto& a=s.accepted_stamp; const auto n=a.node_count; const auto h=a.fixed_dt;
   if(v.owner_id!=a.owner_id) return {BatchStatus::WrongOwner,"QEPH candidate belongs to another owner"};
   if(!native_physical_coefficients::SameScope(a.rigid_groups,v.rigid_groups))
     return {BatchStatus::StaleTrial,"Shell candidate rigid-group scope mismatch"};
-  if(!native_physical_coefficients::Empty(a.rigid_groups)&&(!owner||!token))
+  if((s.physical||!native_physical_coefficients::Empty(a.rigid_groups))&&(!owner||!token))
     return {BatchStatus::InvalidInput,"Rigid-group candidate requires the live owner and common token"};
   if(owner&&token) {
     const auto authenticated=native_physical_coefficients::AuthenticatePrepared(*owner,*token,a,v);

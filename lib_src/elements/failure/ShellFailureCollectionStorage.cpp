@@ -2,6 +2,7 @@
 #include "../ShellMixedSectionStorage.h"
 #include "../one_point/ShellOnePointStorage.h"
 #include "../ShellResidentHostAccounting.h"
+#include "../../assembly/ShellPhysicalBinding.h"
 #include <new>
 
 namespace tl::fea::shell_batch_plasticity_detail {
@@ -34,8 +35,22 @@ SetupReport HostStorage::InitializeFailureCollection(const ShellBatchFailureBind
     const ShellBatchBinding& binding, ShellBindingFamily family, std::size_t count,
     std::size_t device_cap, std::size_t host_cap,
     const ShellBatchFailureLimits& limits, bool vehicle) {
+  return InitializeFailureCollectionImpl(failure,binding,family,count,device_cap,host_cap,limits,vehicle,false,false);
+}
+SetupReport HostStorage::InitializeMappedCollection(const ShellPhysicalBinding& physical,
+    ShellBindingFamily family,std::size_t count,std::size_t device_cap,std::size_t host_cap,
+    const ShellBatchFailureLimits& limits) {
+  if (!physical.prepared()) return {SetupStatus::InvalidInput,"Missing complete mapped source"};
+  return InitializeFailureCollectionImpl(*physical.failure(),*physical.shells(),family,count,
+      device_cap,host_cap,limits,false,bool(physical.execution()),true);
+}
+SetupReport HostStorage::InitializeFailureCollectionImpl(const ShellBatchFailureBinding& failure,
+    const ShellBatchBinding& binding, ShellBindingFamily family, std::size_t count,
+    std::size_t device_cap, std::size_t host_cap,
+    const ShellBatchFailureLimits& limits, bool vehicle,bool execution,bool retained_physical) {
   const auto* catalog = failure.catalog();
   if (device_ || mixed_ || collection_ || failure_ || !catalog || !catalog->Matches(binding) ||
+      catalog->execution_sections()!=execution ||
       (family != ShellBindingFamily::Qeph && family != ShellBindingFamily::T3) ||
       count != (family == ShellBindingFamily::Qeph ? binding.qeph_count() : binding.t3_count())) {
     return {SetupStatus::InvalidInput, "Failure requires a complete joined mixed catalog"};
@@ -45,7 +60,8 @@ SetupReport HostStorage::InitializeFailureCollection(const ShellBatchFailureBind
       failure.host_bytes() < catalog->host_bytes()) {
     return {SetupStatus::ResourceLimit, "Invalid retained failure payload"};
   }
-  const auto failure_bytes = failure.host_bytes() - catalog->host_bytes() + catalog_bytes;
+  const auto failure_bytes = retained_physical ? sizeof(ShellBatchFailureBinding) :
+      failure.host_bytes() - catalog->host_bytes() + catalog_bytes;
   ShellSectionCounts counts;
   if (!catalog->Counts(family, &counts)) {
     return {SetupStatus::InvalidInput, "Failure catalog family is unavailable"};
@@ -76,7 +92,7 @@ SetupReport HostStorage::InitializeFailureCollection(const ShellBatchFailureBind
   }
   auto result = failure_storage->Initialize(failure, family, count, failure_layout);
   if (result.status != SetupStatus::Success) return result;
-  result = mixed_storage->Initialize(*failure_storage->binding().catalog(), family, count, mixed_layout);
+  result = mixed_storage->Initialize(*failure_storage->binding().catalog(), family, count, mixed_layout,execution);
   if (result.status != SetupStatus::Success) return result;
   if (point_storage) {
     result = point_storage->Initialize(*catalog, binding, count, point_layout);

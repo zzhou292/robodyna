@@ -30,16 +30,45 @@ cc_library(
     deps = [":force", "//lib_src/elements/sections:shell_layered_j2"],
 )
 
+cc_library(
+    name = "mapped_values",
+    hdrs = ["mapped/Stiffness.h", "mapped/Result.h"],
+    deps = [":force", ":one_point_law44", "//lib_src/elements:shell_nodal_stiffness",
+            "//lib_src/elements:shell_batch_plasticity_binding"],
+)
+
+cc_library(
+    name = "batch_values",
+    srcs = ["T3BatchModel.cpp", "T3BatchIdentity.cpp", "mapped/Startup.cpp"],
+    hdrs = ["T3Batch.h", "T3BatchStorage.h", "T3BatchDiagnostics.h", "T3BatchLayeredSection.h", "T3BatchFailureSection.h", "T3BatchOnePointSection.h" , "mapped/Startup.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":mapped_values", "//lib_src/elements:shell_mapped_startup",
+        ":force", ":layered_j2", ":layered_law1", ":one_point_law44", ":layered_j2_failure", ":layered_tab1", "//lib_src/elements:shell_batch_fields",
+        "//lib_src/elements:shell_batch_plasticity_storage",
+        "//lib_src/elements:shell_batch_joined_model",
+        "//lib_src/elements:shell_formulation_scope",
+        "//lib_src/elements:shell_resident_startup_index", "//lib_src/elements:shell_resident_host_accounting",
+        "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_force_assembly",
+        "//lib_src/solvers:nodal_trial_identity",
+        "//lib_src/assembly:nodal_mass_binding",
+        "//lib_src/solvers:nodal_native_physical_coefficients",
+    ],
+)
+
 cuda_library(
     name = "batch",
     srcs = [
+        "mapped/Initialize.cu", "mapped/Assemble.cu", "mapped/Kernels.cu",
+        "mapped/Publication.cpp", "mapped/Readback.cpp",
         "T3Batch.cu", "T3BatchOperations.cu", "T3BatchKernels.cu",
-        "T3BatchModel.cpp", "T3BatchIdentity.cpp", "T3BatchPublication.cpp",
+        "T3BatchPublication.cpp",
         "T3BatchPlasticity.cpp", "T3BatchSections.cpp", "T3BatchOnePointReadback.cpp", "T3BatchFailure.cpp", "T3BatchFailureReadback.cpp",
     ],
-    hdrs = ["T3Batch.h", "T3BatchStorage.h", "T3BatchDiagnostics.h", "T3BatchLayeredSection.h", "T3BatchFailureSection.h", "T3BatchOnePointSection.h"],
+    hdrs = [],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
     deps = [
+        ":batch_values", "//lib_src/elements:shell_physical_owner",
+        "//lib_src/elements:shell_mapped_startup",
         ":force", ":layered_j2", ":layered_law1", ":one_point_law44", ":layered_j2_failure", ":layered_tab1", "//lib_src/elements:shell_batch_fields",
         "//lib_src/elements:shell_batch_plasticity_storage",
         "//lib_src/elements:shell_batch_joined_model",

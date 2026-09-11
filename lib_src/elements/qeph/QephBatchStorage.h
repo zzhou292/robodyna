@@ -2,6 +2,7 @@
 #include "QephBatch.h"
 #include "../../solvers/NodalTrialIdentity.h"
 #include "../ShellBatchBinding.h"
+#include "../../assembly/ShellPhysicalBinding.h"
 #include "../../assembly/NodalMassBinding.h"
 #include "../ShellBatchPlasticityStorage.h"
 #include "../ShellBatchArenaLayout.h"
@@ -18,6 +19,7 @@ struct Model {
   double *mass=nullptr,*inertia=nullptr;
   double *physical=nullptr,*added=nullptr;
   bool joined=false;
+  bool mapped=false; // Explicit complete physical-domain profile only.
 };
 struct Slab { ForceTrial* element=nullptr; };
 struct Control {
@@ -38,6 +40,8 @@ using trial_identity::SameStamp;
 using trial_identity::SamePrepared;
 using trial_identity::ValidKinematics;
 BatchDiagnostics InitialDiagnostics(const QephBatchConfig&,bool joined=false);
+void LaunchMappedAssembly(Storage*,const Slab*,NodalAssemblyView,NodalCinAssemblyView,
+    const shell_batch_plasticity_detail::MixedDeviceStorage*,bool initial);
 void LaunchAssembly(Storage*,const Slab*,NodalAssemblyView,bool initial);
 void LaunchCandidate(Storage*,const Slab*,Slab*,NodalPreparedView,BatchDiagnostics,
                      shell_batch_plasticity_detail::DeviceStorage*,unsigned accepted_slab,std::size_t element_count,
@@ -50,6 +54,8 @@ namespace tl::fea::qeph {
 struct QephBatch::Impl {
   QephBatchConfig config;
   NodalStamp accepted_stamp;
+  std::optional<ShellPhysicalBinding> physical;
+  std::size_t cin_witness_count=0;
   bool formulations=false; // Only the explicit complete-formulation initializer.
   std::optional<ShellBatchBinding> joined_binding; // Host-only immutable inventory.
   std::optional<NodalMassBinding> joined_mass; // Complete augmented startup identity.
@@ -79,6 +85,9 @@ struct QephBatch::Impl {
   BatchReport InitializePlasticity(const ShellBatchPlasticityConfig&,const batch_detail::Model&);
   BatchReport InitializePlasticity(const ShellBatchPlasticityBinding&);
   BatchReport InitializeFailure(const ShellBatchFailureBinding&,const ShellBatchFailureLimits&);
+  BatchReport ValidateMappedResults(unsigned slab) const noexcept;
+  BatchReport ValidateMappedSections(unsigned slab);
+  bool OutputDisjoint(const void*,std::size_t) const noexcept;
   unsigned AcceptedSlabIndex() const noexcept { return accepted==&storage->slab[0]?0u:1u; }
   void Discard() noexcept { pending=false; candidate_view={}; candidate_diagnostics={}; }
   // Infallible sole publication boundary, shared by standalone and joined paths.

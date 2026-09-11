@@ -32,7 +32,8 @@ BatchReport QephBatch::Impl::ReadResults(const batch_detail::Slab* source) {
   r=Runtime(cudaMemcpyAsync(staging.data(),device_header.slab[slab].element,config.element_count*sizeof(ForceTrial),
       cudaMemcpyDeviceToHost,stream),"QEPH element readback failed");
   if(r.status!=BatchStatus::Success) return r;
-  return Runtime(cudaStreamSynchronize(stream),"QEPH element readback stream failed");
+  r=Runtime(cudaStreamSynchronize(stream),"QEPH element readback stream failed");
+  return r.status==BatchStatus::Success?ValidateMappedResults(slab):r;
 }
 QephBatch::QephBatch()=default;
 QephBatch::~QephBatch()=default;

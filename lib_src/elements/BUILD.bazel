@@ -135,7 +135,7 @@ cuda_library(
     srcs = ["ShellBatchPlasticityStorage.cpp", "ShellBatchPlasticityCollectionStorage.cpp", "ShellMixedSectionStorage.cpp", "ShellMixedSectionReadback.cpp", "one_point/ShellOnePointStorage.cpp", "failure/ShellFailureStorage.cpp", "failure/ShellFailureCollectionStorage.cpp"],
     hdrs = ["ShellBatchPlasticityStorage.h", "one_point/ShellOnePointStorage.h", "ShellPlasticArenaLayout.h", "ShellBatchLayeredSection.h", "ShellMixedSectionArenaLayout.h", "ShellMixedSectionStorage.h", "ShellLayeredSectionValues.h", "ShellBatchSectionAdvance.h", "failure/ShellFailureArenaLayout.h", "failure/ShellFailureStorage.h", "failure/ShellFailureValues.h", "failure/ShellFailureReadback.h", "failure/ShellFailureSectionAdvance.h"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
-    deps = [":shell_batch_plasticity", ":shell_batch_plasticity_binding", ":shell_batch_failure_binding", ":shell_batch_one_point", "//lib_src/solvers:nodal_trial_identity", ":shell_resident_storage", ":shell_resident_host_accounting", "//lib_src/elements/sections:shell_layered_law1", "//lib_utils:bounded_startup_array"],
+    deps = ["//lib_src/assembly:shell_physical_binding", ":shell_batch_plasticity", ":shell_batch_plasticity_binding", ":shell_batch_failure_binding", ":shell_batch_one_point", "//lib_src/solvers:nodal_trial_identity", ":shell_resident_storage", ":shell_resident_host_accounting", "//lib_src/elements/sections:shell_layered_law1", "//lib_utils:bounded_startup_array"],
 )
 
 cuda_library(
@@ -256,4 +256,18 @@ cuda_library(
         "//lib_utils:mesh_manager",
         "@eigen//:eigen",
     ],
+)
+
+cc_library(
+    name = "shell_nodal_stiffness",
+    hdrs = ["ShellNodalStiffness.h"],
+    deps = ["//lib_src/math:quaternion"],
+)
+cc_library(
+    name = "shell_mapped_startup",
+    srcs = ["ShellMappedStartup.cpp"],
+    hdrs = ["ShellMappedStartup.h", "ShellMappedNode.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":shell_physical_owner_values", ":shell_batch_plasticity_storage", ":shell_batch_fields",
+            "//lib_src/assembly:shell_physical_binding", "//lib_src/solvers:nodal_trial_identity"],
 )

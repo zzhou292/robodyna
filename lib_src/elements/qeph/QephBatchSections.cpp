@@ -10,7 +10,7 @@ template<class Impl> BatchReport ReadLayered(Impl& s,unsigned slab,double time) 
   if(read.status==Setup::DeviceFailure)return s.Runtime(read.cuda_status,read.message);
   if(read.status!=Setup::Success)
     return {read.status==Setup::NonfiniteResult?BatchStatus::NonfiniteResult:BatchStatus::InvalidInput,read.message};
-  return {BatchStatus::Success,"OK"};
+  return s.ValidateMappedSections(slab);
 }
 }
 BatchReport QephBatch::CopyAcceptedLayeredSectionHistory(const NodalStamp& expected,
@@ -25,6 +25,11 @@ BatchReport QephBatch::CopyAcceptedLayeredSectionHistory(const NodalStamp& expec
     return {BatchStatus::StaleTrial,"Accepted Qeph layered section identity mismatch"};
   if(capacity<s.config.element_count)return {BatchStatus::ResourceLimit,"Qeph layered section capacity is insufficient"};
   const auto bytes=s.config.element_count*sizeof(ShellBatchLayeredSection);
+  if(!s.OutputDisjoint(output,bytes)||
+     !s.OutputDisjoint(diagnostics,sizeof(*diagnostics))||
+     (s.physical&&!trial_identity::Disjoint(diagnostics,sizeof(*diagnostics),this,sizeof(*this)))||
+     (s.physical&&!trial_identity::Disjoint(output,bytes,this,sizeof(*this))))
+    return {BatchStatus::InvalidInput,"Mapped readback output aliases retained source/state"};
   if(!Disjoint(output,bytes,diagnostics,sizeof(*diagnostics))||!Disjoint(output,bytes,&expected,sizeof expected)||
      !Disjoint(diagnostics,sizeof(*diagnostics),&expected,sizeof expected))
     return {BatchStatus::InvalidInput,"Qeph layered section outputs are missing or overlap inputs"};
@@ -44,6 +49,9 @@ BatchReport QephBatch::CopyPreparedLayeredSectionHistory(const BatchDiagnostics&
     return {BatchStatus::StaleTrial,"Prepared Qeph layered section identity mismatch"};
   if(capacity<s.config.element_count)return {BatchStatus::ResourceLimit,"Qeph layered section capacity is insufficient"};
   const auto bytes=s.config.element_count*sizeof(ShellBatchLayeredSection);
+  if(!s.OutputDisjoint(output,bytes)||
+     (s.physical&&!trial_identity::Disjoint(output,bytes,this,sizeof(*this))))
+    return {BatchStatus::InvalidInput,"Mapped readback output aliases retained source/state"};
   if(!Disjoint(output,bytes,&expected,sizeof expected))
     return {BatchStatus::InvalidInput,"Qeph layered section output is missing or overlaps its receipt"};
   const auto report=ReadLayered(s,1u-s.AcceptedSlabIndex(),s.candidate_diagnostics.time);

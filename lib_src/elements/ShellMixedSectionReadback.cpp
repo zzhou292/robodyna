@@ -24,7 +24,9 @@ SetupReport MixedHostStorage::Read(unsigned slab,std::size_t count,cudaStream_t 
       // The optional owner stages and validates its complete payload first.
       if(!one_point||family_!=ShellBindingFamily::T3)
         return {SetupStatus::InvalidInput,"One-point history is unavailable"};
-    } else return {SetupStatus::InvalidInput,"Unsupported section readback law"};
+    } else if(law!=ShellSectionLaw::RigidSkin||!catalog.execution_sections()) {
+      return {SetupStatus::InvalidInput,"Unsupported section readback law"};
+    }
   }
   for(std::size_t e=0;e<count;++e) {
     ShellSectionLaw law=ShellSectionLaw::Unspecified;catalog.Law(family_,e,&law);
@@ -32,7 +34,9 @@ SetupReport MixedHostStorage::Read(unsigned slab,std::size_t count,cudaStream_t 
       output_[e]=ShellBatchLayeredSection::Elastic(elastic_[e]);
     else if(law==ShellSectionLaw::LayeredLaw44Nip3)
       output_[e]=ShellBatchLayeredSection::Plastic(plastic_[e]);
-    else output_[e]=ShellBatchLayeredSection::OnePoint(one_point[e]);
+    else if(law==ShellSectionLaw::Law44Nip1)
+      output_[e]=ShellBatchLayeredSection::OnePoint(one_point[e]);
+    else output_[e]=ShellBatchLayeredSection::RigidSkin();
   }
   return {SetupStatus::Success,"OK"};
 }

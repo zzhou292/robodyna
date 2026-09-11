@@ -1,0 +1,40 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+
+cc_test(
+    name = "qt_mapped_stiffness_check",
+    size = "small",
+    srcs = ["StiffnessTest.cpp"],
+    deps = ["//lib_src/elements/qeph:mapped_values", "//lib_src/elements/t3:mapped_values",
+            "//lib_utest/qualification/qbat_binding:fixture",
+            "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cc_library(
+    name = "owner_fixture",
+    testonly = True,
+    hdrs = ["OwnerFixture.h", "TypedValues.h"],
+    srcs = ["OwnerFixture.cpp"],
+    deps = ["//lib_src/elements/qeph:batch_values", "//lib_src/elements/t3:batch_values",
+            "//lib_utest/qualification/qbat_mapped:fixture", "@googletest//:gtest_main"],
+)
+cc_test(
+    name = "qt_mapped_startup_check",
+    size = "small",
+    srcs = ["StartupTest.cpp", "ResultTest.cpp", "SkinFixtureTest.cpp"],
+    deps = [":owner_fixture", "//lib_src/elements/qeph:batch_values", "//lib_src/elements/t3:batch_values",
+            "//lib_utest/qualification/qbat_mapped:fixture", "//lib_utest/qualification/shell_execution:fixture",
+            "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cuda_test(
+    name = "qt_mapped_cuda_check",
+    size = "small",
+    srcs = ["PrepareOwner.cu", "OwnerTrialTest.cu", "OwnerSkinTest.cu"],
+    deps = [":owner_fixture", "//lib_src/elements/qeph:batch", "//lib_src/elements/t3:batch",
+            "//lib_src/solvers:nodal_trial_identity", "@googletest//:gtest_main"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false",
+             "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+    tags = ["exclusive", "gpu"],
+)
+# The independent complete native caller/scatter packets use owning CMake.

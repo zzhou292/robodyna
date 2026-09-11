@@ -32,6 +32,9 @@ class ShellBatchLayeredSection {
   static ShellBatchLayeredSection OnePoint(const ShellBatchOnePointSectionState& value) noexcept {
     return {ShellSectionLaw::Law44Nip1,Payload(value)};
   }
+  static ShellBatchLayeredSection RigidSkin() noexcept {
+    return {ShellSectionLaw::RigidSkin,Payload{}};
+  }
  private:
   union Payload {
     ShellBatchSectionState plastic;

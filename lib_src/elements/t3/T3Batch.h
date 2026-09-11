@@ -9,7 +9,7 @@
 
 namespace tl::fea { class ShellBatchBinding; class ShellBatchPublication; class NodalMassBinding;
   class ShellBatchPlasticityBinding; struct ShellBatchPlasticityConfig; struct ShellBatchSectionState; class ShellBatchLayeredSection;
-  class ShellBatchFailureBinding;
+  class ShellBatchFailureBinding; class ShellPhysicalBinding; struct NodalCinWitnessSource;
   struct ShellBatchFailureLimits; struct ShellBatchFailureState; }
 namespace tl::fea::t3 {
 constexpr std::size_t MaxBatchElements=MaxShellCollectionParents,MaxBatchNodes=MaxShellCollectionNodes;
@@ -153,9 +153,17 @@ class T3Batch {
   // named path and the common formulation publisher; legacy admission stays closed.
   BatchReport InitializeFormulations(const T3BatchConfig&,const ShellFormulationScope&,
       const ShellBatchFailureLimits& = {});
+  // Complete physical node domain, actual initial M/J proof and CIN owner.
+  // Explicit rigid skins require physical.execution() and its actual PART binding.
+  BatchReport InitializeMapped(const T3BatchConfig&,const ShellPhysicalBinding&,
+      FENodalState&,const NodalCinWitnessSource&,const ShellBatchFailureLimits& = {});
+  BatchReport AssembleMappedAccepted(FENodalState&,const NodalTrialToken&,const NodalAssemblyView&);
   void DiscardTrial() noexcept;
   NodalAllocationInfo allocations() const noexcept;
  private:
+  const ShellPhysicalBinding* MappedBinding() const noexcept;
+  BatchReport PreflightAttachMapped(FENodalState&,const ShellPhysicalBinding&,
+      std::uint64_t,std::uint64_t,const ShellBatchStartup&,const ShellBatchPublication*) const noexcept;
   friend class ::tl::fea::ShellBatchPublication;
   BatchReport InitializeImpl(const T3BatchConfig&,const T3BatchElement*,const ShellBatchBinding*,
                              const ShellBatchPlasticityConfig* plasticity=nullptr,

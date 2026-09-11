@@ -1,0 +1,25 @@
+enable_language(CUDA)
+find_package(CUDAToolkit REQUIRED)
+if(NOT TARGET tl_explicit_nodal_state)
+  add_subdirectory("${tl_root}/lib_src/solvers" nodal-owner)
+endif()
+if(NOT TARGET tl_qeph)
+  add_subdirectory("${tl_root}/lib_src/elements/qeph" qeph-values)
+  add_subdirectory("${tl_root}/lib_src/elements/t3" t3-values)
+endif()
+if(NOT TARGET tl_qeph_batch)
+  include("${tl_root}/lib_src/elements/qeph/QephBatch.cmake")
+endif()
+if(NOT TARGET tl_t3_batch)
+  include("${tl_root}/lib_src/elements/t3/T3Batch.cmake")
+endif()
+add_executable(qt_mapped_cuda_test PrepareOwner.cu OwnerTrialTest.cu OwnerSkinTest.cu
+  OwnerFixture.cpp ../rigid_assembly_owner/Fixture.cpp)
+target_link_libraries(qt_mapped_cuda_test PRIVATE tl_qeph_batch tl_t3_batch
+  tl_nodal_rigid_assembly_binding tl_tied_cin_attachment GTest::gtest_main CUDA::cudart)
+set_target_properties(qt_mapped_cuda_test PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED ON)
+target_compile_options(qt_mapped_cuda_test PRIVATE
+  "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>"
+  "$<$<COMPILE_LANGUAGE:CXX>:-fno-fast-math;-ffp-contract=off>")
+add_test(NAME qt_mapped_cuda COMMAND qt_mapped_cuda_test)
+set_tests_properties(qt_mapped_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)

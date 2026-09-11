@@ -6,7 +6,7 @@
   "native_reference_checkpoint": "t3-r3-native-force-history-1",
   "startup_rates_tl_commit": "f5ceb29",
   "startup_rates_checkpoint": "t3-port-startup-rates-1",
-  "live_startup_manifest_sha256": "0d3a2c6e16340b32c885253c1b027bfd91e753283e9f9728db548031a0e20c89",
+  "live_startup_manifest_sha256": "87b128d30d3af618d86a6c0b3c26578303c6b34ee9a7e5068b4c90486798a8cb",
   "native_source_manifest_sha256": "3f4891f6dab344de9c0c579b699e43e11b30a7359358170833395481e62c2e9f",
   "transformations": [
     "Single three-node fixed-array selected source arithmetic; no MVSIZ or COMMON in production",
@@ -128,8 +128,8 @@
     },
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
-      "bytes": 3332,
-      "sha256": "5199e6d2ef729fba14331016d45867d8944197fe4f415911d925dbb8e8d9cbd1"
+      "bytes": 4780,
+      "sha256": "82328921cd206f2250a2f3953a0653c8cca0dcd8f79d463dc60ee05edfec8e4a"
     },
     {
       "path": "lib_src/elements/t3/CMakeLists.txt",
@@ -143,13 +143,13 @@
     },
     {
       "path": "lib_utest/qualification/t3/source-manifest.json",
-      "bytes": 22454,
-      "sha256": "c23336f714a7b23c8bd5bb2ae8caa3dc240e56c60b62976e5e34bd6fadd4b523"
+      "bytes": 22951,
+      "sha256": "87b128d30d3af618d86a6c0b3c26578303c6b34ee9a7e5068b4c90486798a8cb"
     },
     {
       "path": "lib_utest/qualification/t3/verify_sources.py",
       "bytes": 2001,
-      "sha256": "9763cd4c5d1bdb3cc292f47e75fe42c9ca7cbf160f0dee1eaceccb2c5b8915f3"
+      "sha256": "fd173766ce9f14b33baa275489eee2ea6cef8d70141cb341500d833a6b3ee07e"
     },
     {
       "path": "lib_utest/qualification/t3/T3PortFixture.h",
@@ -874,5 +874,26 @@
       }
     ],
     "scope": "Register isolated solid LAW36 point and neutral VINTER helper; old shell public APIs and interpolation expressions unchanged."
+  },
+  "mapped_qt_resident_registration": {
+    "scope": "Host batch-value ownership and explicit mapped Q/T physical owner targets. No native donor, material or force arithmetic changes.",
+    "previous_manifest_sha256": "89f48df30c555da674e2377eb3b7d759fb1d7466f7167f43928642327eaaf157",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 3332,
+        "sha256": "5199e6d2ef729fba14331016d45867d8944197fe4f415911d925dbb8e8d9cbd1"
+      },
+      {
+        "path": "lib_utest/qualification/t3/source-manifest.json",
+        "bytes": 22454,
+        "sha256": "c23336f714a7b23c8bd5bb2ae8caa3dc240e56c60b62976e5e34bd6fadd4b523"
+      },
+      {
+        "path": "lib_utest/qualification/t3/verify_sources.py",
+        "bytes": 2001,
+        "sha256": "9763cd4c5d1bdb3cc292f47e75fe42c9ca7cbf160f0dee1eaceccb2c5b8915f3"
+      }
+    ]
   }
 }

@@ -1,4 +1,5 @@
 #include "T3BatchDiagnostics.h"
+#include "mapped/Result.h"
 #include "T3LayeredJ2.h"
 #include "T3BatchFailureSection.h"
 #include "T3BatchOnePointSection.h"
@@ -80,7 +81,12 @@ __global__ void CandidateElements(Storage* storage,const Slab* accepted,Slab* tr
     interval.sample_index=v.kinematics.base_epoch+1;
     shell_batch_fields::Gather(s.model.element[e].nodes,v.kinematics,
       interval.position,interval.velocity,interval.angular_velocity);
-    if(mixed&&mixed->law[e]==ShellSectionLaw::Law44Nip1)
+    if(s.model.mapped&&mixed&&mixed->law[e]==ShellSectionLaw::RigidSkin) {
+      element_status[e]=mapped::AdvanceSkin(s.model.element[e].reference,accepted->element[e],interval,trial->element[e]);
+      if(element_status[e]==Status::kSuccess&&failure) {
+        failure->state[1u-accepted_slab][e]=ShellBatchFailureState{};
+      }
+    } else if(mixed&&mixed->law[e]==ShellSectionLaw::Law44Nip1)
       element_status[e]=failure&&one_point?
         EvaluateOnePointSection(s.model.element[e].reference,accepted->element[e].proposed_history,
           interval,*mixed,*failure,*one_point,accepted_slab,e,trial->element[e]):Status::kInvalidInput;
@@ -110,7 +116,8 @@ __global__ void CandidateElements(Storage* storage,const Slab* accepted,Slab* tr
   }
 }
 __global__ void FinalizeCandidate(Storage* storage,const Slab* accepted,const Slab* trial,
-                                   NodalPreparedView v,BatchDiagnostics identity) {
+                                   NodalPreparedView v,BatchDiagnostics identity,
+    const shell_batch_plasticity_detail::MixedDeviceStorage* mixed) {
   auto& s=*storage; s.control={}; s.control.diagnostics=identity;
   const auto* element_status=s.candidate_status;
   // The same-stream kernel boundary makes every parent result visible before
@@ -122,7 +129,17 @@ __global__ void FinalizeCandidate(Storage* storage,const Slab* accepted,const Sl
       s.control.status=BatchStatus::ElementFailure; s.control.element=i; s.control.element_status=status; return;
     }
   }
-  if(!Measure(s.model,*accepted,*trial,v,s.control)) { s.control.status=BatchStatus::NonfiniteResult; return; }
+  if(s.model.mapped) {
+    if(!mixed) { s.control.status=BatchStatus::InvalidInput; return; }
+    for(unsigned e=0;e<s.model.config.element_count;++e) {
+      const bool skin=mixed->law[e]==ShellSectionLaw::RigidSkin;
+      if(!mapped::ValidResult(s.model.element[e].reference,trial->element[e],v.proposed_time,
+          v.kinematics.base_epoch+1,skin)) {
+        s.control.status=BatchStatus::NonfiniteResult; s.control.element=e; return;
+      }
+    }
+  }
+  if(!Measure(s.model,*accepted,*trial,v,s.control,s.model.mapped?mixed->law:nullptr)) { s.control.status=BatchStatus::NonfiniteResult; return; }
   s.control.diagnostics.valid=true;
 }
 }
@@ -141,7 +158,7 @@ void LaunchCandidate(Storage* s,const Slab* a,Slab* b,NodalPreparedView v,BatchD
   // parent slots after a rejected launch. Stream execution errors are checked
   // by the existing control readback/synchronization before any publication.
   if(cudaPeekAtLastError()!=cudaSuccess) return;
-  FinalizeCandidate<<<1,1,0,v.stream>>>(s,a,b,v,d);
+  FinalizeCandidate<<<1,1,0,v.stream>>>(s,a,b,v,d,mixed);
 }
 void LaunchFailure(NodalAssemblyView v) { MarkFailure<<<1,1,0,v.stream>>>(v); }
 } // namespace tl::fea::t3::batch_detail

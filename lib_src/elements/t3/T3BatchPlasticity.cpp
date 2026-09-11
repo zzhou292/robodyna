@@ -53,6 +53,11 @@ BatchReport T3Batch::CopyAcceptedSectionHistory(const NodalStamp& expected,Shell
     return {BatchStatus::StaleTrial,"Accepted T3 section endpoint identity mismatch"};
   if(capacity<s.config.element_count) return {BatchStatus::ResourceLimit,"T3 section readback capacity is insufficient"};
   const auto bytes=s.config.element_count*sizeof(ShellBatchSectionState);
+  if(!s.OutputDisjoint(output,bytes)||
+     !s.OutputDisjoint(diagnostics,sizeof(*diagnostics))||
+     (s.physical&&!trial_identity::Disjoint(diagnostics,sizeof(*diagnostics),this,sizeof(*this)))||
+     (s.physical&&!trial_identity::Disjoint(output,bytes,this,sizeof(*this))))
+    return {BatchStatus::InvalidInput,"Mapped readback output aliases retained source/state"};
   if(!Disjoint(output,bytes,diagnostics,sizeof(*diagnostics))||!Disjoint(output,bytes,&expected,sizeof expected)||
      !Disjoint(diagnostics,sizeof(*diagnostics),&expected,sizeof expected))
     return {BatchStatus::InvalidInput,"T3 section readback output is missing or overlaps inputs"};
@@ -73,6 +78,9 @@ BatchReport T3Batch::CopyPreparedSectionHistory(const BatchDiagnostics& expected
     return {BatchStatus::StaleTrial,"Prepared T3 section identity mismatch"};
   if(capacity<s.config.element_count) return {BatchStatus::ResourceLimit,"T3 section readback capacity is insufficient"};
   const auto bytes=s.config.element_count*sizeof(ShellBatchSectionState);
+  if(!s.OutputDisjoint(output,bytes)||
+     (s.physical&&!trial_identity::Disjoint(output,bytes,this,sizeof(*this))))
+    return {BatchStatus::InvalidInput,"Mapped readback output aliases retained source/state"};
   if(!Disjoint(output,bytes,&expected,sizeof expected))
     return {BatchStatus::InvalidInput,"T3 section readback output is missing or overlaps its receipt"};
   auto r=s.PendingError(); if(r.status!=BatchStatus::Success) return r;
