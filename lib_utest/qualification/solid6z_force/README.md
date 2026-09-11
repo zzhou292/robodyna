@@ -85,8 +85,21 @@ reference and source fixture identities are separate CTest entries. Native
 checks stop at the first mismatch. CUDA uses explicit bounded device scratch;
 it does not request an oversized global device stack allocation.
 
+Root qualification: 12 numerical functions and five source identities pass,
+including all195 original cells over five packets and independent400-step
+native/CUDA histories. Reports: `solid6z-force-root-tests-3`. The original
+working-density conversion is used unchanged in both reference and material.
+Initial build failures (Fortran type/variable collision and scratch initialization)
+and failed residual-relative comparisons are retained in root reports.
+
 The comparison uses a 3e-10 factor on each dimensionally homogeneous group,
-including the six stress components as a tensor. Source IDs and permutations
+including the six stress components as a tensor. At full unloading, constitutive
+cancellation additionally admits `128*epsilon*(bulk+2*mu)*(1+L1(strain))` Pa.
+The corresponding force bound is that stress bound times current volume and
+the native gradient L1 norm. Other channels retain their original bounds.
+Both unloaded rotated endpoints reject injected0.01 Pa stress/history and
+0.001 N force errors; no production equation is changed to fit the oracle.
+Source IDs and permutations
 are checked independently and cannot be absorbed by numeric tolerances.
 Negative controls change a retained history, a half-work phase and a final
 source-slot force. Rejected output preservation uses complete bytes; successful

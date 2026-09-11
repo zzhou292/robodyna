@@ -13,6 +13,7 @@ struct NativeResult {
   std::array<double,54> forces{};
   // Mode velocities, final modes, G, FCL, first and final EINT.
   std::array<double,28> stabilization{};
+  double constitutive_modulus_pa = 0; // Input scale for a machine-roundoff bound.
   int status = -1;
 };
 class NativeHistory {
@@ -23,6 +24,7 @@ class NativeHistory {
     if (reference.status != 0) return false;
     parameters_ = {material.mu_pa,material.poisson_ratio,
         material.density_kg_m3,material.tension_cutoff_pa};
+    modulus_pa_ = material.bulk_pa+2*material.mu_pa;
     permutation_ = reference.permutation;
     for (unsigned n = 0; n < 6; ++n) {
       const auto x = input.position_m[permutation_[n]];
@@ -50,6 +52,7 @@ class NativeHistory {
     }
     const double step[3]{interval.dt_s,damping,sound_speed_scale};
     NativeResult result;
+    result.constitutive_modulus_pa = modulus_pa_;
     solid6z_force_native(parameters_.data(),original_.data(),reference_.data(),accepted_.data(),
         position.data(),velocity.data(),step,result.geometry.data(),result.material.data(),
         result.history.data(),result.forces.data(),result.stabilization.data(),&result.status);
@@ -61,6 +64,7 @@ class NativeHistory {
     return result;
   }
  private:
+  double modulus_pa_ = 0;
   std::array<double,4> parameters_{};
   std::array<int,6> permutation_{};
   std::array<double,18> original_{};

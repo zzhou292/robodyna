@@ -10,7 +10,7 @@ TEST(Solid6zForceSource, All195MappedOriginalWedgesAdvanceIndependentNativeCalle
     if (!solid6z_test::Source(row,input)) continue;
     SCOPED_TRACE(input.source_element_id);
     const auto reference = Reference(input);
-    const auto material = Material();
+    const auto material = Material(input.density_kg_m3);
     auto accepted = Initial(reference,material);
     NativeHistory native;
     ASSERT_TRUE(native.Initialize(input,material));

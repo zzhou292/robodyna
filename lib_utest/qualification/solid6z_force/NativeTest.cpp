@@ -17,6 +17,34 @@ TEST(Solid6zForceNative, CompleteCallerOwnsIndependent400StepRotatedHistoryAndBo
     s::ForceTrial result;
     ASSERT_EQ(s::EvaluateForce(reference,accepted,interval,material,{},result),s::Status::Success) << step;
     ASSERT_TRUE(Agree(Pack(result),expected)) << step;
+    if (step == 199 || step == 399) {
+      // The prescribed path returns to an unloaded rotated configuration.
+      // The absolute constitutive roundoff bound must not hide a finite stress
+      // or resultant error at precisely the cancellation points it admits.
+      const auto values = Pack(result);
+      double maximum_stress = 0, maximum_difference = 0;
+      for (unsigned i = 0; i < 6; ++i) {
+        maximum_stress = std::max(maximum_stress,std::abs(expected.material[i]));
+        maximum_difference = std::max(maximum_difference,
+            std::abs(values.material[i]-expected.material[i]));
+      }
+      EXPECT_LT(maximum_stress,1e-5);
+      RecordProperty(step == 199 ? "half_cycle_stress_error_pa" : "full_cycle_stress_error_pa",
+          ::testing::PrintToString(maximum_difference));
+      for (unsigned channel : {0u,9u,15u}) {
+        auto corrupt = expected;
+        corrupt.material[channel] += .01;
+        EXPECT_FALSE(Agree(values,corrupt)) << channel;
+      }
+      auto corrupt = expected;
+      corrupt.history[0] += .01;
+      EXPECT_FALSE(Agree(values,corrupt));
+      for (unsigned channel : {0u,18u,36u}) {
+        corrupt = expected;
+        corrupt.forces[channel] += .001;
+        EXPECT_FALSE(Agree(values,corrupt)) << channel;
+      }
+    }
     accepted = result.proposed_history;
     native.Accept(expected);
   }

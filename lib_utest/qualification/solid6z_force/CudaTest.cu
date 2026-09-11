@@ -102,7 +102,7 @@ void Check(bool retry) {
   ASSERT_EQ(cudaMalloc(&device_values.data,Steps*sizeof(Values)),cudaSuccess);
   ASSERT_EQ(cudaMalloc(&device_scratch.data,sizeof(DeviceScratch)),cudaSuccess);
   ASSERT_EQ(cudaMemcpy(device_intervals.data,intervals.data(),Steps*sizeof(s::PrescribedInterval),cudaMemcpyHostToDevice),cudaSuccess);
-  const DeviceScratch initial;
+  const DeviceScratch initial{};
   ASSERT_EQ(cudaMemcpy(device_scratch.data,&initial,sizeof(initial),cudaMemcpyHostToDevice),cudaSuccess);
   Run<<<1,1>>>(reference,material,device_intervals.data,device_values.data,device_scratch.data,retry);
   ASSERT_EQ(cudaGetLastError(),cudaSuccess);

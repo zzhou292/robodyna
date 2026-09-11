@@ -11,7 +11,7 @@ subroutine SOLID6Z_FORCE_NATIVE(PARAMETERS,XREF,JAC_I,BASE,X,V,STEP, &
   integer(c_int),intent(out) :: STATUS
   type(native_geometry) :: G
   real(kind=8) :: D(MVSIZ,6,3),MATERIAL_STEP(4),NATIVE_POINT(33),NATIVE_HISTORY(21)
-  real(kind=8) :: NATIVE_FORCES(54),NATIVE_STABILIZATION(28),NATIVE_GEOMETRY(98)
+  real(kind=8) :: NATIVE_FORCES(54),NATIVE_STABILIZATION(28),GEOMETRY_PACKET(98)
   integer :: K,N,INDEX
   interface
     subroutine law42_solid_caller_native(P,B,M,R,S,O,I) bind(C,name='law42_solid_caller_native')
@@ -51,26 +51,26 @@ subroutine SOLID6Z_FORCE_NATIVE(PARAMETERS,XREF,JAC_I,BASE,X,V,STEP, &
   call SOLID6Z_FORCE_RESULTANTS(G,PARAMETERS,JAC_I(11),BASE,NATIVE_POINT, &
     STEP(1),STEP(2),STEP(3),NATIVE_HISTORY,NATIVE_FORCES,NATIVE_STABILIZATION)
 ! Native R and public Matrix3 both store world-frame columns in row-major order.
-  NATIVE_GEOMETRY(1:9)=G%FRAME(1,:)
+  GEOMETRY_PACKET(1:9)=G%FRAME(1,:)
   do N=1,6
     do K=1,3
-      NATIVE_GEOMETRY(9+3*(N-1)+K)=G%X(1,N,K)
-      NATIVE_GEOMETRY(27+3*(N-1)+K)=G%V(1,N,K)
-      NATIVE_GEOMETRY(45+6*(K-1)+N)=G%P(1,N,K)
+      GEOMETRY_PACKET(9+3*(N-1)+K)=G%X(1,N,K)
+      GEOMETRY_PACKET(27+3*(N-1)+K)=G%V(1,N,K)
+      GEOMETRY_PACKET(45+6*(K-1)+N)=G%P(1,N,K)
     end do
   end do
-  NATIVE_GEOMETRY(64:72)=G%WORLD_GRADIENT(1,:)
-  NATIVE_GEOMETRY(73:81)=G%MATERIAL_GRADIENT(1,:)
-  NATIVE_GEOMETRY(82:90)=G%VELOCITY_GRADIENT(1,:)
-  NATIVE_GEOMETRY(91:96)=G%RATE(1,:)
-  NATIVE_GEOMETRY(97:98)=[G%VOLUME(1),G%LENGTH(1)]
+  GEOMETRY_PACKET(64:72)=G%WORLD_GRADIENT(1,:)
+  GEOMETRY_PACKET(73:81)=G%MATERIAL_GRADIENT(1,:)
+  GEOMETRY_PACKET(82:90)=G%VELOCITY_GRADIENT(1,:)
+  GEOMETRY_PACKET(91:96)=G%RATE(1,:)
+  GEOMETRY_PACKET(97:98)=[G%VOLUME(1),G%LENGTH(1)]
   STATUS=3
-  if (.not.all(ieee_is_finite(NATIVE_GEOMETRY))) return
+  if (.not.all(ieee_is_finite(GEOMETRY_PACKET))) return
   if (.not.all(ieee_is_finite(NATIVE_POINT))) return
   if (.not.all(ieee_is_finite(NATIVE_HISTORY))) return
   if (.not.all(ieee_is_finite(NATIVE_FORCES))) return
   if (.not.all(ieee_is_finite(NATIVE_STABILIZATION))) return
-  GEOMETRY=NATIVE_GEOMETRY
+  GEOMETRY=GEOMETRY_PACKET
   POINT=NATIVE_POINT
   HISTORY=NATIVE_HISTORY
   FORCES=NATIVE_FORCES

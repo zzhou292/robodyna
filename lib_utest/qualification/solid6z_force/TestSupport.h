@@ -27,9 +27,9 @@ inline s::Reference Reference(s::ReferenceInput input = ReferenceInput()) {
   if (s::InitializeReference(input,result) != s::Status::Success) throw std::runtime_error("wedge reference");
   return result;
 }
-inline s::Material Material() {
+inline s::Material Material(double density = 1980) {
   s::Material result;
-  if (tl::material::law42::Prepare(24e6,.463,1980,1e26,result) != tl::material::law42::Status::Ok)
+  if (tl::material::law42::Prepare(24e6,.463,density,1e26,result) != tl::material::law42::Status::Ok)
     throw std::runtime_error("LAW42 material");
   return result;
 }
