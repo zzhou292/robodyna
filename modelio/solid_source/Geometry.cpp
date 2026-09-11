@@ -65,7 +65,7 @@ void ReadGeometry(const source::CanonicalData& source, const std::string& member
         Require(elements.insert(record[0]).second, "Duplicate original solid element identity");
         const auto found = parts.find(record[1]);
         if (found == parts.end()) {
-            Require(!Selected(record[1]), "Selected solid has no admitted material declaration");
+            Require(!Selected(record[1], data.policy), "Selected solid has no admitted material declaration");
             ++data.outside_solids;
             continue;
         }

@@ -70,3 +70,55 @@ driver to authenticate/extract the original main member. No GPU is needed for
 this source/reference gate. Neither this gate nor positive native masses admit
 the complete physical ledger, missing producers, rigid/tied DOFs, contact or a
 vehicle trajectory.
+
+## Explicit extended rubber source policy
+
+`OriginalAdhesive18ExtendedRubberHephS6zV2` adds exactly four source parts to V1:
+
+| Original PID | Source cells | Selected HEPH / S6Z | Literal source density t/mm³ |
+| --- | ---: | ---: | ---: |
+| 2000017 | 297 | 226 / 71 | 1.9800e-9 |
+| 2000393 | 72 | 72 / 0 | 1.9800e-9 |
+| 2000509 | 234 | 192 / 42 | 1.9990e-9 |
+| 2000521 | 234 | 192 / 42 | 1.9990e-9 |
+
+It retains 13 parts and 3,249 cells: 908 adhesive solid18, 1,991 HEPH and
+350 S6Z. The other 11,985 source solids remain explicitly outside. No production
+case factory selects V2 by default. The four additions use the same MAT007
+LAW42 preparation, original blank ELFORM and PART HG2000017 override, and
+explicit HEPH/S6Z case mapping as V1. There is no new force law or material
+substitution. The main and auxiliary source cards remain immutable.
+
+`SourcePolicy.h` owns only the explicit PID selection and expected counts.
+`Preflight`, `ReadDeclarations`, `ReadPart`, `ReadGeometry` and the single
+`PrepareReferences` append path are shared. Default limits remain512MiB and
+4,096 parents; both policies fit the same conservative default reservation.
+The actual owned payload is counted after successful preparation. Lowering the
+parent cap below3,249 rejects V2 before source/member preparation.
+
+The independent audit receipt is
+`crash-work/reports/yaris-remaining-metal-rubber-source-1.json`, SHA256
+`751a2834dd7c31d9fe84633589ab6c17ce430d7417b43beb305f121038cbb2e5`.
+Tests retain only four source counts/ordered-record hashes from that receipt,
+not another full geometry fixture or source parser. They verify all added raw
+EIDs, source order, units, geometry, material provenance, canonical coverage,
+typed point/slot mapping, old2,412-reference bit parity and exact cap/retry.
+The optional native tests call the existing complete solid24/solid6z reference
+oracles for all682/155 new references. Their numerical predicates/tolerances
+remain the existing owning TL predicates. Those tests compare SI packets;
+they do not claim a new original-working-coordinate round-trip equivalence.
+
+Enable the existing V1 tests plus `ROBO_DYNA_VEHICLE_SOLID_EXTENDED_TESTS=ON`
+for the new `vehicle_solid_extended_source` CTest. Adding
+`ROBO_DYNA_VEHICLE_SOLID_EXTENDED_NATIVE=ON` enables GNU Fortran and the two
+existing TL native libraries, producing `vehicle_solid24_extended_native` and
+`vehicle_solid6z_extended_native`. Source/member fixtures and
+`ROBO_DYNA_TL_ROOT` remain the same explicit inputs as V1. No CUDA is required.
+These original/native runs belong to the root qualification lane.
+
+This slice does not restore metallic/foam/beam paths, original antiroll joints,
+groups or masses, nor CONTACT_INTERIOR. A later full constructor must rebuild
+the same PhysicalScope/domain/ledger/rigid/CIN identities from the selected
+source and qualify those relations before selecting a new demo profile. The
+existing physical factories' V1 call sites are unchanged. It is not a complete
+connected-source or full-vehicle runtime admission.

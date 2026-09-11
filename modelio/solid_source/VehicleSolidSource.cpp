@@ -24,10 +24,12 @@ VehicleSolidSource VehicleSolidSource::Prepare(const source::CanonicalSource& so
     detail::ReadGeometry(canonical, member, next->data, limits);
     detail::PrepareReferences(canonical, next->data, limits);
     const auto& data = next->data;
-    output::Require(data.parts.size() == 9 && data.rows.size() == 2412 &&
-                    data.solid18.size() == 908 && data.solid24.size() == 1309 &&
-                    data.solid6z.size() == 195 && data.original_solids == 15234 &&
-                    data.outside_solids == 12822, "Original retained solid census changed");
+    const auto census = detail::ExpectedCensus(policy);
+    output::Require(data.parts.size() == census.parts && data.rows.size() == census.parents &&
+                    data.solid18.size() == census.solid18 && data.solid24.size() == census.solid24 &&
+                    data.solid6z.size() == census.solid6z && data.original_solids == 15234 &&
+                    data.outside_solids == 15234 - census.parents,
+                    "Original retained solid census changed");
     next->data.owned_payload_bytes = detail::OwnedPayload(next->data, limits);
     return VehicleSolidSource(std::move(next));
 }

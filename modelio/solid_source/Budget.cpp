@@ -29,13 +29,12 @@ Forecast Budget(const source::CanonicalData& source, Policy policy, Limits limit
         hard.parents, hard.nodes, hard.source_solids, hard.blocks};
     for (unsigned i = 0; i < std::size(value); ++i)
         Require(value[i] && value[i] <= maximum[i], "Invalid solid source limits");
-    Require(policy == Policy::OriginalAdhesive18RubberHephS6zV1,
-            "Unsupported solid source resolution policy");
+    const auto census = ExpectedCensus(policy);
     CheckOriginal(source);
     const auto& records = source::FindArray(source, "solids_records");
     Require(records.descriptor.layout.columns == 10 &&
         records.descriptor.layout.rows <= limits.source_solids && source.canonical_nodes <= limits.nodes &&
-        source.inputs.source_member.bytes <= limits.member_bytes && limits.parents >= 2412,
+        source.inputs.source_member.bytes <= limits.member_bytes && limits.parents >= census.parents,
         "Original solid source count exceeds capacity");
     Forecast result;
     result.fixed_bytes = sizeof(Data) + sizeof(source::CanonicalData) + sizeof(VehicleSolidSource) + 512;

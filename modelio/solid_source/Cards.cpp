@@ -75,7 +75,7 @@ void ReadPart(Part& part, const std::vector<tied_shell::SourceEvidence>& sources
         ReadCurve(sources[part.curve_source], data);
     } else {
         part.material_law = MaterialLaw::Law42;
-        Require(part.id >= FirstRubberPart && part.id <= LastRubberPart,
+        Require(SelectedRubber(part.id, data.policy),
                 "Rubber source PID is outside named demo selection");
         Require(!vehicle::detail::SourceScalar(p, 3) && tied_shell::detail::CardId(p, 4) == 2000017,
                 "Original rubber hourglass association changed");

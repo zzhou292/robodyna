@@ -15,9 +15,11 @@ template<class T> void Array(source::CanonicalData& source, unsigned slot, const
 }
 struct Geometry {
     source::CanonicalData source;
-    Data data = Rubber();
+    Data data;
     std::string member;
-    Geometry(bool wedge) {
+    Geometry(bool wedge, std::uint64_t id = 2000477,
+             Policy policy = Policy::OriginalAdhesive18RubberHephS6zV1)
+        : data(Rubber(id, policy, id == 2000509 || id == 2000521 ? "1.9990E-9" : "1.9800E-9")) {
         Resolve(data);
         std::vector<std::uint64_t> ids;
         std::vector<double> positions;
@@ -43,9 +45,9 @@ struct Geometry {
             positions[0] = -0.0;
         }
         source.canonical_nodes = ids.size();
-        std::vector<std::uint64_t> records{100, 2000477};
+        std::vector<std::uint64_t> records{100, id};
         std::ostringstream card;
-        card << std::setw(8) << 100 << std::setw(8) << 2000477;
+        card << std::setw(8) << 100 << std::setw(8) << id;
         for (auto n : nodes) {
             records.push_back(ids[n]);
             card << std::setw(8) << ids[n];
@@ -105,5 +107,27 @@ TEST(VehicleSolidGeometry, LateRawRowMismatchAndIncompleteWedgeRejectBeforePubli
     Resolve(next);
     EXPECT_THROW(detail::ReadGeometry(retry.source, retry.member, next, {}), std::runtime_error);
     EXPECT_EQ(retry.data.solid6z.size(), 1u);
+}
+TEST(VehicleSolidGeometry, ExtendedSourceUsesSameNativeGeometryAndCarriesAntirollDensity) {
+    constexpr auto policy = Policy::OriginalAdhesive18ExtendedRubberHephS6zV2;
+    for (bool wedge : {false, true}) {
+        Geometry rear(wedge, 2000017, policy);
+        Geometry antiroll(wedge, 2000521, policy);
+        ASSERT_NO_THROW(rear.Prepare());
+        ASSERT_NO_THROW(antiroll.Prepare());
+        ASSERT_EQ(antiroll.data.rows.size(), 1u);
+        EXPECT_EQ(antiroll.data.rows[0].part_id, 2000521u);
+        const auto rear_mass = wedge ? rear.data.solid6z[0].mass().element_mass_kg :
+                                      rear.data.solid24[0].mass().element_mass_kg;
+        const auto antiroll_mass = wedge ? antiroll.data.solid6z[0].mass().element_mass_kg :
+                                          antiroll.data.solid24[0].mass().element_mass_kg;
+        EXPECT_GT(antiroll_mass, rear_mass);
+        EXPECT_NEAR(antiroll_mass / rear_mass, 1.999 / 1.98, 1e-14);
+        auto omitted = Rubber();
+        Resolve(omitted);
+        ASSERT_NO_THROW(detail::ReadGeometry(antiroll.source, antiroll.member, omitted, {}));
+        EXPECT_TRUE(omitted.rows.empty());
+        EXPECT_EQ(omitted.outside_solids, 1u);
+    }
 }
 } // namespace crash::modelio::solid_source::test

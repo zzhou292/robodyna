@@ -46,9 +46,10 @@ void ReadDeclarations(const source::CanonicalData& source, const std::string& me
     const auto request = [&](const Value& row) {
         return tied_shell::detail::RequestSource(requests, row, blocks, source_limits);
     };
-    data.parts.reserve(9);
+    const auto census = ExpectedCensus(data.policy);
+    data.parts.reserve(census.parts);
     for (const auto& [id, original] : parts) {
-        if (!Selected(id)) continue;
+        if (!Selected(id, data.policy)) continue;
         const auto& declared = source::FindPart(source, id);
         Require(!declared.shell_section && Unsigned(*original, "source_section_id") == declared.section &&
                 Unsigned(*original, "source_material_id") == declared.material,
@@ -62,7 +63,7 @@ void ReadDeclarations(const source::CanonicalData& source, const std::string& me
         if (id == AdhesivePart) part.curve_source = request(Find(curves, 2100010));
         data.parts.push_back(part);
     }
-    Require(data.parts.size() == 9, "Selected solid PART inventory is incomplete");
+    Require(data.parts.size() == census.parts, "Selected solid PART inventory is incomplete");
     // HOURGLASS is retained in the authenticated complete block inventory, not
     // the shell declaration tables. Read its source evidence using the same helper.
     for (const auto& block : blocks.GetArray()) {

@@ -8,7 +8,12 @@
 
 namespace crash::modelio::solid_source {
 namespace source = output::full_shell::source;
-enum class Policy { OriginalAdhesive18RubberHephS6zV1 };
+enum class Policy {
+    OriginalAdhesive18RubberHephS6zV1,
+    // Adds only rear-mount/antiroll rubber PIDs17/393/509/521. This is a
+    // source/reference profile, not a complete connected-vehicle admission.
+    OriginalAdhesive18ExtendedRubberHephS6zV2
+};
 enum class Family { Solid18, Solid24, Solid6z };
 enum class MaterialLaw { Law36, Law42 };
 struct Limits {

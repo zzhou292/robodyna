@@ -17,15 +17,19 @@ inline tied_shell::SourceEvidence Evidence(const char* keyword, std::vector<std:
     for (std::size_t i = 0; i < cards.size(); ++i) source.cards.emplace_back(10 + i, cards[i]);
     return source;
 }
-inline Data Rubber() {
+inline Data Rubber(std::uint64_t id = 2000477,
+                   Policy policy = Policy::OriginalAdhesive18RubberHephS6zV1,
+                   const char* density = "1.9800E-9") {
     Data data;
+    data.policy = policy;
+    const auto name = std::to_string(id);
     data.sources = {
-        Evidence("*PART", {"Original rubber", Card({"2000477", "2000477", "2000477", "", "2000017"})}),
-        Evidence("*SECTION_SOLID", {Card({"2000477"})}),
-        Evidence("*MAT_BLATZ-KO_RUBBER", {Card({"2000477", "1.9800E-9", "24.000000"})}),
+        Evidence("*PART", {"Original rubber", Card({name.c_str(), name.c_str(), name.c_str(), "", "2000017"})}),
+        Evidence("*SECTION_SOLID", {Card({name.c_str()})}),
+        Evidence("*MAT_BLATZ-KO_RUBBER", {Card({name.c_str(), density, "24.000000"})}),
         Evidence("*HOURGLASS", {Card({"2000017", "2", ".1", "0", "1.5E-4", "6E-5"})})};
     Part part;
-    part.id = part.section_id = part.material_id = 2000477;
+    part.id = part.section_id = part.material_id = id;
     part.sources = {0, 1, 2};
     data.parts.push_back(part);
     return data;
