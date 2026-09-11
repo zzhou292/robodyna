@@ -4,6 +4,17 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
+    name = "shell_reference_placement",
+    hdrs = ["ShellReferencePlacement.h"],
+)
+
+cc_library(
+    name = "shell_placement_coefficients",
+    hdrs = ["ShellPlacementCoefficients.h"],
+    deps = [":shell_reference_placement", "//lib_src/math:quaternion"],
+)
+
+cc_library(
     name = "shell_collection_limits",
     hdrs = ["ShellCollectionLimits.h"],
 )

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Selected C3INMAS/C3DERII/SPMD_MSIN, OpenRadioss (C) 2026 Siemens.
 #pragma once
+#include "lib_src/elements/ShellPlacementCoefficients.h"
 #include "T3Geometry.h"
 
 namespace tl::fea::t3 {
@@ -32,7 +33,7 @@ TL_T3_HD inline Status InitializeReference(const ReferenceInput& input,Reference
   const double pi=::atan2(0.,-1.);
   for(unsigned i=0;i<3;++i) next.angle_weight[i]=::acos(next.angle_cosine[i])/pi;
   const double em=input.density*input.thickness*next.area;
-  const double xi=em*(next.area/(9./2)+input.thickness*input.thickness*(1./12));
+  const double xi=NativeT3PlacementInertia(em,next.area,input.thickness);
   const double physical=em*input.thickness*input.thickness*(1./12),added=em*(next.area/(9./2));
   next.element_mass=em; next.element_isotropic_inertia=xi;
   next.element_physical_inertia=physical; next.element_added_inertia=added;

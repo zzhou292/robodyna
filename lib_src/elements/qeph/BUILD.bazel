@@ -5,7 +5,7 @@ package(default_visibility = ["//visibility:public"])
 cc_library(
     name = "startup",
     hdrs = ["QephData.h", "QephStartupFrame.h", "QephStartup.h"],
-    deps = ["//lib_src/math:fixed3", "//lib_src/math:quaternion"],
+    deps = ["//lib_src/math:fixed3", "//lib_src/math:quaternion", "//lib_src/elements:shell_placement_coefficients"],
 )
 
 cc_library(
@@ -26,7 +26,7 @@ cc_library(
         "QephStabilizationState.h", "QephStabilizationForces.h",
         "QephForceProjection.h", "QephStiffnessDiagnostics.h",
     ],
-    deps = [":kinematics", "//lib_src/materials:shell_elastic_law1"],
+    deps = [":kinematics", "//lib_src/materials:shell_elastic_law1", "//lib_src/elements:shell_placement_coefficients"],
 )
 
 cc_library(

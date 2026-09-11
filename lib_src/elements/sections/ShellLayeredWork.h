@@ -11,8 +11,11 @@
 namespace tl::fea::sections {
 template<class SectionHistory,class HistoryValues>
 TL_LAYERED_WORK_HD inline bool MatchesLayeredSectionResultants(const SectionHistory& section,
-    const HistoryValues& h) noexcept {
-  double force[5]{},moment[3]{}; Nip3Resultants(section.point,force,moment);
+    const HistoryValues& h,
+    ShellReferencePlacement placement=ShellReferencePlacement::Centered) noexcept {
+  if(!ValidShellReferencePlacement(placement)) return false;
+  double force[5]{},moment[3]{};
+  Nip3Resultants(section.point,force,moment,placement);
   for(unsigned i=0;i<5;++i) if(force[i]!=h.material_stress[i]) return false;
   for(unsigned i=0;i<3;++i) if(moment[i]!=h.bending_stress[i]) return false;
   return true;

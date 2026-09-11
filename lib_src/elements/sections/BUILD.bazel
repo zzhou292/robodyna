@@ -11,6 +11,7 @@ cc_library(
 cc_library(
     name = "shell_nip3",
     hdrs = ["ShellNip3.h"],
+    deps = ["//lib_src/elements:shell_reference_placement"],
 )
 cc_library(
     name = "shell_layered_law1",

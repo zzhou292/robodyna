@@ -15,8 +15,8 @@
   "ported_files": [
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
-      "bytes": 2657,
-      "sha256": "92445fb0827fe01f5c7ccf6aed2a849de68412cef863a276fa3c73f5fe58f7c0"
+      "bytes": 2759,
+      "sha256": "7819e8f9c753e559fa2e77b4918affb166c2136e54fb32c0d3088415195a992a"
     },
     {
       "path": "lib_src/elements/t3/CMakeLists.txt",
@@ -60,8 +60,8 @@
     },
     {
       "path": "lib_src/elements/t3/T3Startup.h",
-      "bytes": 3417,
-      "sha256": "b5c2a9d2eb3bf9085b7b47d44636d44cb69ec676cb9b69dcb98a31909747acc7"
+      "bytes": 3467,
+      "sha256": "19d42bfb04ffa69255b5c5ec2115e34d1f25a0fb6685e95076d45e16195d21db"
     }
   ],
   "tests": [
@@ -236,6 +236,16 @@
       "path": "lib_utest/qualification/native/t3/verify_sources.py",
       "bytes": 5662,
       "sha256": "67aa47b575fea7ba31558ad4550cdc71323f8471a7e9d220e94b326fe451e482"
+    },
+    {
+      "path": "lib_src/elements/ShellReferencePlacement.h",
+      "bytes": 970,
+      "sha256": "059cc0c9d3114e253d545cb45480263540a6fd82c7b77a880e1536af233f0307"
+    },
+    {
+      "path": "lib_src/elements/ShellPlacementCoefficients.h",
+      "bytes": 1988,
+      "sha256": "e7497ac1d49fe97aaeab400f2efe071dfde93c7e59d68ec630eb16a7db406ce4"
     }
   ],
   "donor_routines": [
@@ -489,5 +499,6 @@
       }
     ],
     "review": "Independent resident storage/transaction/readback review found no blocker after deleting raw arena owner copying; actual resident CUDA execution remains the owning qualification."
-  }
+  },
+  "native_reference_placement_scope": "Centered startup/material/stiffness now reuse typed placement coefficient helpers with unchanged centered operations. Nonzero TYPE1 section/coefficient value qualification is owned by shell_reference_placement; live ReferenceInput/batch/source placement admission remains separate."
 }

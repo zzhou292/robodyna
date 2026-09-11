@@ -4,6 +4,7 @@
 #pragma once
 #include "QephGeometryWork.h"
 #include "lib_src/materials/ShellElasticLaw1.h"
+#include "lib_src/elements/ShellPlacementCoefficients.h"
 
 namespace tl::fea::qeph::detail {
 // MYREAL8 constants retain source expression order; these are not raw REAL32
@@ -24,14 +25,19 @@ constexpr double viscosity=zep01+five_em3;
 struct MaterialWork {
   double thickness=0,thickness2=0,nu=0,g=0,young=0,a11=0,a12=0;
   double sound_speed=0,rho=0,volume=0,gs=0,dt=0,dm=0,dn=0;
+  double offset=0;
   double g_sqrt=0,a11_sqrt=0,a12_sqrt=0,nu_sqrt=0,shf=0,shf_sqrt=0;
   tl::material::ShellElasticLaw1Coefficients elastic;
 };
 TL_QEPH_HD inline bool PrepareMaterial(const ReferenceInput& in,double area,
-                                      double dt,MaterialWork& m) {
+    double dt,MaterialWork& m,
+    ShellReferencePlacement placement=ShellReferencePlacement::Centered) {
   using namespace force_constant;
+  ShellPlacementCoefficients positioned;
+  if(!PrepareShellPlacementCoefficients(placement,in.thickness,positioned)) return false;
   // hm_read_mat01 + selected CNCOEF3B: LAW1, IGTYP1, ITHK0, NPT0.
   m.thickness=in.thickness;
+  m.offset=positioned.offset;
   m.thickness2=m.thickness*m.thickness;
   m.volume=m.thickness*area; m.dt=dt;
   m.rho=in.density; m.young=in.young_modulus; m.nu=in.poisson_ratio;

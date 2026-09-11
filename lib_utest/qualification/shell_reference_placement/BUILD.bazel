@@ -1,0 +1,13 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "shell_reference_placement_values_check",
+    srcs = ["PlacementFixture.h", "PlacementValueTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        "//lib_src/elements:shell_placement_coefficients",
+        "//lib_src/elements/qeph:force",
+        "//lib_src/elements/t3:force",
+        "//lib_utest/qualification/shell_tab1_glass:tab1_test_support",
+        "@googletest//:gtest_main",
+    ],
+)

@@ -5,7 +5,7 @@ package(default_visibility = ["//visibility:public"])
 cc_library(
     name = "startup",
     hdrs = ["T3Data.h", "T3Geometry.h", "T3Startup.h"],
-    deps = ["//lib_src/math:fixed3", "//lib_src/math:quaternion"],
+    deps = ["//lib_src/math:fixed3", "//lib_src/math:quaternion", "//lib_src/elements:shell_placement_coefficients"],
 )
 
 cc_library(
@@ -21,7 +21,7 @@ cc_library(
         "T3Material.h", "T3Law1.h", "T3StiffnessDiagnostics.h",
         "T3ForceProjection.h", "T3Force.h",
     ],
-    deps = [":kinematics", "//lib_src/materials:shell_elastic_law1"],
+    deps = [":kinematics", "//lib_src/materials:shell_elastic_law1", "//lib_src/elements:shell_placement_coefficients"],
 )
 
 cc_library(

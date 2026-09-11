@@ -7,7 +7,7 @@ namespace tl::fea::t3::detail {
 TL_T3_HD inline void StiffnessDiagnostics(const GeometryWork& g,const MaterialWork& m,ForceDiagnostics& d,double active=1) {
   const double viscmx=::sqrt(1.+m.dm*m.dm)-m.dm;
   const double length=g.kinematics.characteristic_length*viscmx/::sqrt(g.kinematics.area_scale);
-  const double f_offset=1.+.5*::fabs(m.offset)/m.thickness;
+  const double f_offset=NativeShellOffsetStiffnessFactor(m.offset,m.thickness);
   const double athk=g.kinematics.area*m.thickness;
   d.effective_thickness=m.thickness; d.native_sound_speed=m.elastic.sound_speed;
   d.membrane_viscosity=m.dm; d.shear_factor=m.shf; d.transverse_shear_modulus=m.gs;

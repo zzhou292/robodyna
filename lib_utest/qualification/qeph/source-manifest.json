@@ -260,8 +260,8 @@
     },
     {
       "path": "lib_src/elements/qeph/QephStartup.h",
-      "bytes": 3914,
-      "sha256": "04b3d00f8b4ef8347d563aa07712d077ad35ca27307d928a041d99eb1ddea7bf"
+      "bytes": 4009,
+      "sha256": "fe660c8e7c2c2f6a91815e7228221589fc02c698f89a935d99e11556caeaa0d6"
     },
     {
       "path": "lib_src/elements/qeph/LICENSE.md",
@@ -345,8 +345,8 @@
     },
     {
       "path": "lib_src/elements/qeph/QephMaterial.h",
-      "bytes": 2587,
-      "sha256": "3acc296ab32d9a678f3de49ac1b5bf15c2ecd39653ab10a01a04f3b920fde20f"
+      "bytes": 2863,
+      "sha256": "4dac252b7730159a33d9a8cd06baea4a569be911fafc699919eaad9b3011e4c1"
     },
     {
       "path": "lib_src/elements/qeph/QephStabilizationForces.h",
@@ -360,8 +360,8 @@
     },
     {
       "path": "lib_src/elements/qeph/QephStiffnessDiagnostics.h",
-      "bytes": 1966,
-      "sha256": "860a9ba2e8e27fb37779cc62fc2fa9d18931d9371758a2bd2957f3c6ef5c8591"
+      "bytes": 2004,
+      "sha256": "663e40efb514fca51ea21d8d66eef5733018258bba29f63729ec3682ece18d5a"
     },
     {
       "path": "lib_src/materials/ShellElasticLaw1.h",
@@ -489,6 +489,16 @@
       "path": "lib_src/elements/sections/ShellLayeredJ2FailureForceAdapter.h",
       "sha256": "ed35eba3cf87901e54a88cc91fdf2218008ecb6b8e28737ec12fc64c388cd241",
       "bytes": 1401
+    },
+    {
+      "path": "lib_src/elements/ShellReferencePlacement.h",
+      "bytes": 970,
+      "sha256": "059cc0c9d3114e253d545cb45480263540a6fd82c7b77a880e1536af233f0307"
+    },
+    {
+      "path": "lib_src/elements/ShellPlacementCoefficients.h",
+      "bytes": 1988,
+      "sha256": "e7497ac1d49fe97aaeab400f2efe071dfde93c7e59d68ec630eb16a7db406ce4"
     }
   ],
   "tests": [
@@ -828,5 +838,6 @@
       }
     ],
     "review": "Root independently reviewed shared family/history/stiffness/C5/C8/HVL production changes; no blocker. New native/CUDA execution remains owning qualification."
-  }
+  },
+  "native_reference_placement_scope": "Centered startup/material/stiffness now reuse typed placement coefficient helpers with unchanged centered operations. Nonzero TYPE1 section/coefficient value qualification is owned by shell_reference_placement; live ReferenceInput/batch/source placement admission remains separate."
 }

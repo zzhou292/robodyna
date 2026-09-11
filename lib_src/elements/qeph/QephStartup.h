@@ -3,6 +3,7 @@
 // CDERII and selected centered CINMAS expressions; see the pinned source map
 // in lib_utest/qualification/qeph/source-manifest.json and adjacent LICENSE.md.
 #pragma once
+#include "lib_src/elements/ShellPlacementCoefficients.h"
 #include "QephStartupFrame.h"
 
 #if defined(__CUDACC__)
@@ -54,7 +55,8 @@ TL_QEPH_STARTUP_HD inline Status InitializeReference(const ReferenceInput& input
   const double mass=input.density*input.thickness*candidate.area*.25;
   const double physical=mass*input.thickness*input.thickness*(1./12);
   const double added=mass*(candidate.area/12);
-  const double total=mass*(candidate.area/12+input.thickness*input.thickness*(1./12+0));
+  const double total=NativeQephPlacementInertia(mass,candidate.area,input.thickness,
+      ShellReferencePlacement::Centered);
   if (!detail::Positive(mass)||!detail::Positive(physical)||
       !detail::Positive(added)||!detail::Positive(total)) return Status::kNonfiniteResult;
   for (unsigned i=0;i<4;++i) {

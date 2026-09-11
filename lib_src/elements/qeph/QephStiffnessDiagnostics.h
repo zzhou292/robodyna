@@ -10,7 +10,7 @@ TL_QEPH_HD inline void StiffnessDiagnostics(const GeometryWork& g,const Material
   const double maximum_viscosity=::fmax(m.dm,m.dn);
   const double reduction=::sqrt(1.+maximum_viscosity*maximum_viscosity)-maximum_viscosity;
   const double length=g.values.characteristic_length*reduction/::sqrt(1.);
-  const double offset_factor=1.+.5*::fabs(0.)/m.thickness;
+  const double offset_factor=NativeShellOffsetStiffnessFactor(m.offset,m.thickness);
   d.effective_thickness=m.thickness; d.native_sound_speed=m.sound_speed;
   d.membrane_viscosity=m.dm; d.stabilization_viscosity=m.dn;
   // Native CNDT3/C3DT3 assign exact zero stiffness for OFF0, retaining DTEL.
@@ -18,7 +18,7 @@ TL_QEPH_HD inline void StiffnessDiagnostics(const GeometryWork& g,const Material
   else {
   d.translational_stiffness=.5*offset_factor*m.volume*m.a11/(length*length);
   d.rotational_stiffness=d.translational_stiffness*(m.thickness2+g.values.area)*
-      force_constant::one_over_12+d.translational_stiffness*0.*0.;
+      force_constant::one_over_12+d.translational_stiffness*m.offset*m.offset;
   }
   d.unscaled_element_dt=1.*length/m.sound_speed;
 }

@@ -24,8 +24,9 @@ TL_SHELL_SECTION_HD inline bool ValidLayeredJ2Parameters(const PointParameters& 
 // trial. No plastic-work diagnostic is added to this total stress-work ledger.
 template<class HistoryValues>
 TL_SHELL_SECTION_HD inline bool MatchesLayeredJ2Resultants(const ShellLayeredJ2History& section,
-    const HistoryValues& h) noexcept {
-  return MatchesLayeredSectionResultants(section,h);
+    const HistoryValues& h,
+    ShellReferencePlacement placement=ShellReferencePlacement::Centered) noexcept {
+  return MatchesLayeredSectionResultants(section,h,placement);
 }
 template<class ReferenceInput>
 TL_SHELL_SECTION_HD inline bool MatchesLayeredJ2Material(const PointParameters& p,

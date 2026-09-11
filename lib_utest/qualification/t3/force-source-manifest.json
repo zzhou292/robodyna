@@ -6,7 +6,7 @@
   "native_reference_checkpoint": "t3-r3-native-force-history-1",
   "startup_rates_tl_commit": "f5ceb29",
   "startup_rates_checkpoint": "t3-port-startup-rates-1",
-  "live_startup_manifest_sha256": "cc30154dee061747bbdc1bd6fe6a487ecf8772af1f63c09f2e8ebe81b4c4c714",
+  "live_startup_manifest_sha256": "2d8f9a837c60ac5e88e4d05bf859d800bb225eea89b63a9f8db666888f68dd23",
   "native_source_manifest_sha256": "3f4891f6dab344de9c0c579b699e43e11b30a7359358170833395481e62c2e9f",
   "transformations": [
     "Single three-node fixed-array selected source arithmetic; no MVSIZ or COMMON in production",
@@ -64,13 +64,13 @@
     },
     {
       "path": "lib_src/elements/t3/T3Material.h",
-      "bytes": 1376,
-      "sha256": "91fa981389db384cc72e46b60606b79433a5d6ab7b81d0b1d7170744ebaff11a"
+      "bytes": 1640,
+      "sha256": "6c1f13a28f26fe284de9016fb2bf66bad028ecf0d6554f1c54b0c63294a80c2d"
     },
     {
       "path": "lib_src/elements/t3/T3StiffnessDiagnostics.h",
-      "bytes": 1889,
-      "sha256": "a6160ee07f2782661634104372673a528a93f85b6d106b4f26240b1d7836900c"
+      "bytes": 1909,
+      "sha256": "7d8f8e875b326cc066142a077928102cac1bd7064376ec7f36c495265f2222a0"
     },
     {
       "path": "lib_src/elements/t3/T3LayeredForceCore.h",
@@ -128,8 +128,8 @@
     },
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
-      "bytes": 2657,
-      "sha256": "92445fb0827fe01f5c7ccf6aed2a849de68412cef863a276fa3c73f5fe58f7c0"
+      "bytes": 2759,
+      "sha256": "7819e8f9c753e559fa2e77b4918affb166c2136e54fb32c0d3088415195a992a"
     },
     {
       "path": "lib_src/elements/t3/CMakeLists.txt",
@@ -143,13 +143,13 @@
     },
     {
       "path": "lib_utest/qualification/t3/source-manifest.json",
-      "bytes": 20207,
-      "sha256": "cc30154dee061747bbdc1bd6fe6a487ecf8772af1f63c09f2e8ebe81b4c4c714"
+      "bytes": 20886,
+      "sha256": "2d8f9a837c60ac5e88e4d05bf859d800bb225eea89b63a9f8db666888f68dd23"
     },
     {
       "path": "lib_utest/qualification/t3/verify_sources.py",
       "bytes": 2001,
-      "sha256": "33bb651743a161396b9ca4b60587856357568065a95721ce56fecdd91a0e8aeb"
+      "sha256": "2a14dcb18a2bc42cb2a148b28c540ae8b336c6b0d3f64aa983b1fac8a8e0d79b"
     },
     {
       "path": "lib_utest/qualification/t3/T3PortFixture.h",
@@ -285,6 +285,16 @@
       "path": "lib_src/elements/sections/ShellLayeredJ2FailureForceAdapter.h",
       "sha256": "ed35eba3cf87901e54a88cc91fdf2218008ecb6b8e28737ec12fc64c388cd241",
       "bytes": 1401
+    },
+    {
+      "path": "lib_src/elements/ShellReferencePlacement.h",
+      "bytes": 970,
+      "sha256": "059cc0c9d3114e253d545cb45480263540a6fd82c7b77a880e1536af233f0307"
+    },
+    {
+      "path": "lib_src/elements/ShellPlacementCoefficients.h",
+      "bytes": 1988,
+      "sha256": "e7497ac1d49fe97aaeab400f2efe071dfde93c7e59d68ec630eb16a7db406ce4"
     }
   ],
   "donor_routines": [
@@ -776,5 +786,6 @@
     ],
     "review": "Independent resident storage/transaction/readback review found no blocker after deleting raw arena owner copying; actual resident CUDA execution remains the owning qualification."
   },
-  "glass_and_failure_build_registration": "Main 6083b01 registers optional failure batches and glass force headers; only BUILD metadata and its startup manifest identity change. Native donor and legacy T3 force arithmetic are unchanged."
+  "glass_and_failure_build_registration": "Main 6083b01 registers optional failure batches and glass force headers; only BUILD metadata and its startup manifest identity change. Native donor and legacy T3 force arithmetic are unchanged.",
+  "native_reference_placement_scope": "Centered family coefficients now reuse typed placement helpers with unchanged operations. Explicit nonzero section/coefficient value qualification is owned by shell_reference_placement; live reference/batch/source placement admission remains separate."
 }

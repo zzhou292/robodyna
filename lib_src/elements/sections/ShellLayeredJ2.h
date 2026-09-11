@@ -20,6 +20,7 @@ struct ShellLayeredJ2Input {
   // The source ITHICK=1 adapters supply accepted reported thickness here.
   double reference_thickness=0, reported_thickness=0, transverse_shear_modulus=0;
   double dt=0; // Native interval duration, required by the optional rate branch.
+  ShellReferencePlacement placement=ShellReferencePlacement::Centered;
 };
 struct ShellLayeredJ2Diagnostics {
   double plastic_work_density_increment=0; // WF-weighted native point diagnostic, J/m3.
@@ -48,8 +49,9 @@ struct ShellLayeredJ2Result {
 // FOR*t and MOM*t^2 are the physical force/moment resultants. Keeping the same
 // ordered accumulation here and at admission binds sidecar stress to the shell.
 TL_SHELL_SECTION_HD inline void LayeredJ2Resultants(const ShellLayeredJ2History& h,
-    double (&force)[5],double (&moment)[3]) noexcept {
-  Nip3Resultants(h.point,force,moment);
+    double (&force)[5],double (&moment)[3],
+    ShellReferencePlacement placement=ShellReferencePlacement::Centered) noexcept {
+  Nip3Resultants(h.point,force,moment,placement);
 }
 
 // The effective force thickness stays fixed within this interval. The point
@@ -69,7 +71,8 @@ template<class Observer>
 TL_SHELL_SECTION_HD inline PointStatus Update(const PointParameters& p,
     const ShellLayeredJ2History& accepted,const ShellLayeredJ2Input& in,
     bool element_active,Observer& observer,ShellLayeredJ2Result& output) noexcept {
-  if(!tl::math::Finite(in.reference_thickness)||!(in.reference_thickness>0)||
+  if(!ValidShellReferencePlacement(in.placement)||
+     !tl::math::Finite(in.reference_thickness)||!(in.reference_thickness>0)||
      !tl::math::Finite(in.reported_thickness)||!(in.reported_thickness>=1.e-30)||
      !tl::math::Finite(in.transverse_shear_modulus)||!(in.transverse_shear_modulus>0))
     return PointStatus::InvalidIncrement;
@@ -88,7 +91,7 @@ TL_SHELL_SECTION_HD inline PointStatus Update(const PointParameters& p,
     point_input.transverse_shear_modulus=in.transverse_shear_modulus;
     point_input.dt=in.dt; point_input.total_strain_rate_per_s=total_rate;
     point_input.element_active=element_active;
-    Nip3LayerIncrement(in,layer,point_input.strain_increment);
+    Nip3LayerIncrement(in,layer,point_input.strain_increment,in.placement);
     tl::material::TabulatedShellPlasticityResult point;
     const auto status=tl::material::UpdateLaw44ShellPlasticity(p,accepted.point[layer],point_input,point);
     if(status!=PointStatus::Ok) return status;
@@ -107,7 +110,7 @@ TL_SHELL_SECTION_HD inline PointStatus Update(const PointParameters& p,
     d.mean_yield_before_pa=d.mean_yield_before_pa+weight*point.yield_before_pa;
     d.last_point_yield_before_pa=point.yield_before_pa;
   }
-  LayeredJ2Resultants(candidate.history,candidate.material_stress,candidate.bending_stress);
+  LayeredJ2Resultants(candidate.history,candidate.material_stress,candidate.bending_stress,in.placement);
   if(!tl::math::Finite(candidate.reported_thickness)||!(candidate.reported_thickness>=1.e-30)||
      !tl::math::Finite(candidate.diagnostics.plastic_work_density_increment)||
      !tl::math::Finite(candidate.diagnostics.mean_plastic_strain)||

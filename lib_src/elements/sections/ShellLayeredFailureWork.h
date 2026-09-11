@@ -11,9 +11,11 @@ namespace tl::fea::sections {
 struct ShellFailureForcePoint { double stress[5]{}; };
 template<class HistoryValues>
 TL_FAILURE_WORK_HD inline bool MatchesLayeredFailureResultants(
-    const ShellFailureForcePoint (&points)[3],bool active,const HistoryValues& h) noexcept {
+    const ShellFailureForcePoint (&points)[3],bool active,const HistoryValues& h,
+    ShellReferencePlacement placement=ShellReferencePlacement::Centered) noexcept {
+  if(!ValidShellReferencePlacement(placement)) return false;
   double force[5]{},moment[3]{};
-  Nip3Resultants(points,force,moment);
+  Nip3Resultants(points,force,moment,placement);
   if(!active) {
     for(double& value:force) value*=0.;
     for(double& value:moment) value*=0.;
@@ -29,8 +31,9 @@ template<class SectionResult,class HistoryValues>
 TL_FAILURE_WORK_HD inline bool ApplyLayeredFailureWork(
     const SectionResult& current,const ShellFailureForcePoint (&points)[3],bool active,
     const double (&dx)[8],
-    double reference_thickness,double area,double viscosity,HistoryValues& output) noexcept {
-  if(!MatchesLayeredFailureResultants(points,active,current)||
+    double reference_thickness,double area,double viscosity,HistoryValues& output,
+    ShellReferencePlacement placement=ShellReferencePlacement::Centered) noexcept {
+  if(!MatchesLayeredFailureResultants(points,active,current,placement)||
       !tl::math::Finite(reference_thickness)||!(reference_thickness>0)||
       !tl::math::Finite(area)||!(area>0)||!tl::math::Finite(viscosity)||viscosity<0)
     return false;
@@ -47,7 +50,7 @@ TL_FAILURE_WORK_HD inline bool ApplyLayeredFailureWork(
   // Starting from the material-only masked observable changes signed zero and
   // can hide an overflowing raw sum. Reuse the original ordered reduction.
   if(!active)
-    Nip3Resultants(points,work_section.material_stress,work_section.bending_stress);
+    Nip3Resultants(points,work_section.material_stress,work_section.bending_stress,placement);
   if(!ApplyLayeredSectionWork(work_section,dx,reference_thickness,area,
       viscosity,candidate,active)) return false;
   // Keep the distinct material-only observable final-parent masked as declared.
