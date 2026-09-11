@@ -1,0 +1,7 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+cc_library(
+    name = "values",
+    hdrs = glob(["Type45*.h"]),
+    deps = ["//lib_src/math:fixed3_operations"],
+    visibility = ["//visibility:public"],
+)

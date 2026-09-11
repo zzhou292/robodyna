@@ -1,0 +1,99 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Supplied scalar TYPE45 kinds 1/2/3; no source export or runtime admission",
+  "sources": [
+    {
+      "path": "original/starter/source/properties/spring/hm_read_prop45.F",
+      "bytes": 54868,
+      "sha256": "95e285901e2d7e8b3154f8789304607c57608a256f998f96472021660267325d",
+      "git_blob_sha1": "68f97a6ad82e24d5fd2e5fca6d11c898a82c7ad5",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/starter/source/properties/spring/hm_read_prop45.F",
+      "source": "starter/source/properties/spring/hm_read_prop45.F"
+    },
+    {
+      "path": "original/starter/source/elements/joint/rjoint/rini45.F",
+      "bytes": 34040,
+      "sha256": "2656e7a5196f61bcf213ffc3915f21d12d593895a4e459d41a927c9ab4193e0f",
+      "git_blob_sha1": "02a8a36f8ad780c800b97f9ffc6b955049f0a9da",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/starter/source/elements/joint/rjoint/rini45.F",
+      "source": "starter/source/elements/joint/rjoint/rini45.F"
+    },
+    {
+      "path": "original/engine/source/elements/joint/rgjoint.F",
+      "bytes": 7627,
+      "sha256": "8c2325d0f41dbf2758e8ec6ec1db81c189ed95e9386863012fb5e202c6ca0e6e",
+      "git_blob_sha1": "2e18e8ecf149331448fa51077d19e3cace508d53",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/source/elements/joint/rgjoint.F",
+      "source": "engine/source/elements/joint/rgjoint.F"
+    },
+    {
+      "path": "original/engine/source/elements/joint/ruser33.F",
+      "bytes": 25332,
+      "sha256": "9882d0797be2d1a77f1c7e97bb15080eaeccebc46a50e766f6a2579ca9883052",
+      "git_blob_sha1": "330433dfc830191ff12a09992a920d4f809e4a73",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/source/elements/joint/ruser33.F",
+      "source": "engine/source/elements/joint/ruser33.F"
+    },
+    {
+      "path": "original/engine/source/elements/joint/rskew33.F",
+      "bytes": 23015,
+      "sha256": "b154c0f8a94ff7dbadc8103dea1af23d7a2720582a891478b621f3b3bdc9ff43",
+      "git_blob_sha1": "7ebdbac0a4c20f70359bbfc5c4ae759501348d5c",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/source/elements/joint/rskew33.F",
+      "source": "engine/source/elements/joint/rskew33.F"
+    },
+    {
+      "path": "original/starter/source/elements/joint/rjoint/rini45_rb.F",
+      "bytes": 8907,
+      "sha256": "e01a11ff14accbc055c6afb12cd63494e2863646694b539809f3fbd113f10a0e",
+      "git_blob_sha1": "e0b284f8be63181d6215155a08f293315d0b9729",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/starter/source/elements/joint/rjoint/rini45_rb.F",
+      "source": "starter/source/elements/joint/rjoint/rini45_rb.F"
+    },
+    {
+      "path": "original/engine/source/elements/joint/rdtime33.F",
+      "bytes": 5038,
+      "sha256": "765ed956d0037883fe6ac8a79a6efd14a202413b8073893b735a257de9167766",
+      "git_blob_sha1": "b924b75aad7cd1158d8367dd6fcd49c987790d63",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/source/elements/joint/rdtime33.F",
+      "source": "engine/source/elements/joint/rdtime33.F"
+    },
+    {
+      "path": "original/engine/source/elements/joint/rcum33.F",
+      "bytes": 5844,
+      "sha256": "76aaa480140dd7488a9ff27a03aad5c34530c1e98ddaa85cc34761fe1824b7a5",
+      "git_blob_sha1": "817b71197d9c8004438f6cfe48de489dc6bc1741",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/source/elements/joint/rcum33.F",
+      "source": "engine/source/elements/joint/rcum33.F"
+    },
+    {
+      "path": "original/engine/source/elements/joint/joint_block_stiffness.F",
+      "bytes": 14015,
+      "sha256": "ad873f4e17865959ec578f37806f78201d728217d678c4e32552fc20aec4c004",
+      "git_blob_sha1": "b8a7ea0a619bd072bdaeec4ebc82ecbb115e4045",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/source/elements/joint/joint_block_stiffness.F",
+      "source": "engine/source/elements/joint/joint_block_stiffness.F"
+    },
+    {
+      "source": "common_source/modules/constant_mod.F",
+      "path": "original/common_source/modules/constant_mod.F",
+      "bytes": 86324,
+      "git_blob_sha1": "5f78c0a6769ac024deb6bba9d3037cd747f36837",
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865"
+    },
+    {
+      "source": "engine/share/r8/my_real.inc",
+      "path": "original/engine/share/r8/my_real.inc",
+      "bytes": 1658,
+      "git_blob_sha1": "14e5c4b5b9167a30f165b726ada28047de9b411b",
+      "sha256": "b2b61dbf62a940a49f92f8458e72e6c7ab92fbae48a72e5a7fce5d6d6bbaf8df"
+    }
+  ],
+  "license": {
+    "path": "LICENSE-AGPL-3.0.txt",
+    "source": "LICENSE.md",
+    "bytes": 34283,
+    "sha256": "ad858d53cae05eed9531ecd4c467440803acffe34c69de7b88e03affc5b6a1bd",
+    "git_blob_sha1": "cba6f6a15a4cc3ba212e9e9059f7243e2d171090"
+  }
+}
