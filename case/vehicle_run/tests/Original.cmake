@@ -1,0 +1,26 @@
+if(NOT ROBO_DYNA_VEHICLE_RUN_LIVE)
+  message(FATAL_ERROR "Original run gate requires the live controller")
+endif()
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../../vehicle_runtime" startup)
+set(ROBO_DYNA_VEHICLE_WALL_MANIFEST "" CACHE FILEPATH "Pinned original canonical wall manifest")
+if(NOT EXISTS "${ROBO_DYNA_VEHICLE_WALL_MANIFEST}")
+  message(FATAL_ERROR "Original run needs its pinned wall manifest")
+endif()
+add_executable(robo_dyna_vehicle_run_original_check
+  "${CMAKE_CURRENT_LIST_DIR}/OriginalTest.cpp")
+target_link_libraries(robo_dyna_vehicle_run_original_check PRIVATE robo_dyna_vehicle_run_original_source GTest::gtest_main)
+target_compile_options(robo_dyna_vehicle_run_original_check PRIVATE -fno-fast-math -ffp-contract=off)
+foreach(gate forecast loaded_prefix)
+  if(gate STREQUAL forecast)
+    set(filter "VehicleRunOriginal.ForecastRetainsCompleteSourceAndRejectsStaleRunIdentityBeforeOwner")
+  else()
+    set(filter "VehicleRunOriginal.TwoActualLoadedIntervalsExportAuthenticAcceptedPrefixAndViewerInput")
+  endif()
+  add_test(NAME vehicle_run_${gate} COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_LIST_DIR}/../../vehicle_startup/tied_classification/tests/actual_fixture.py"
+    "${ROBO_DYNA_VEHICLE_CANONICAL}" "${ROBO_DYNA_VEHICLE_SCOPE}" "${ROBO_DYNA_VEHICLE_DECLARATIONS}"
+    "$<TARGET_FILE:robo_dyna_vehicle_run_original_check>" "${filter}")
+  set_tests_properties(vehicle_run_${gate} PROPERTIES TIMEOUT 600 RUN_SERIAL TRUE PROCESSORS 2
+    ENVIRONMENT "ROBO_VEHICLE_DECLARATIONS=${ROBO_DYNA_VEHICLE_DECLARATIONS};ROBO_VEHICLE_GLASS_RESOLUTION=${ROBO_DYNA_VEHICLE_GLASS_RESOLUTION};ROBO_VEHICLE_GLASS_SHA256=${ROBO_DYNA_VEHICLE_GLASS_SHA256};ROBO_DYNA_TYPE13_DECLARATION=${ROBO_DYNA_VEHICLE_TYPE13_DECLARATION};ROBO_VEHICLE_WALL=${ROBO_DYNA_VEHICLE_WALL_MANIFEST}")
+endforeach()

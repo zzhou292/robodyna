@@ -1,0 +1,71 @@
+#include "RunState.h"
+#include "case/vehicle_runtime/ParticipantConfigs.h"
+#include "lib_utils/BoundedArena.h"
+#include "output/ArtifactIO.h"
+#include <algorithm>
+namespace crash::cases::vehicle_run {
+namespace {
+constexpr std::size_t MappingCap=512u<<20,ControllerReserve=4u<<20;
+std::size_t Sum(std::size_t cap,std::initializer_list<std::size_t> values) {
+    tl::util::BoundedArenaLayout budget(cap);
+    tl::util::ArenaRegion region;
+    for(auto bytes:values) output::Require(budget.Append<std::byte>(bytes,region),"Complete run reservation exceeds cap");
+    return budget.bytes();
+}
+}
+PreparedRun PreparedRun::Prepare(const vehicle_wall::VehicleWallSetup& setup,const vehicle_runtime::JointModel& joints,
+    Config config,records::Identity identity) {
+    const auto horizon=Plan(config);
+    output::Require(setup.settings().requested_duration_s==config.duration_s &&
+        setup.settings().mesh_profile==vehicle_wall::WallMeshProfile::EnvelopeRectangleV1 &&
+        setup.settings().transverse_margin_m>=.25 && identity.run && identity.topology &&
+        !identity.owner && joints.model().joints().size()==38,
+        "Run requires matching loaded envelope/duration, a fresh run identity and all 38 retained joints");
+    auto dynamics=vehicle_wall::LoadedWallConfig();
+    output::Require((!identity.source_instance || identity.source_instance==setup.execution().physical().domain()->source_instance_id()) &&
+        (!identity.configuration || identity.configuration==dynamics.startup.configuration_id) &&
+        (!identity.qualification || identity.qualification==dynamics.startup.qualification_id),
+        "Run identity conflicts with actual source/configuration/qualification");
+    dynamics.startup.reserved_step_s=config.fixed_dt_s;
+    dynamics.timing.enabled=true;
+    const auto wall=vehicle_wall::LoadedWall::Preflight(setup,dynamics,{},&joints);
+    const auto maximum_host=config.resources==ResourceProfile::Normal?20ull*1000*1000*1000:60ull*1000*1000*1000;
+    const auto mapping_phase=Sum(maximum_host,{wall.peak_host_upper_bound,MappingCap,ControllerReserve});
+    auto mapping=output::physical_frames::Mapping::Prepare(setup.execution(),MappingCap);
+    // Reuse the existing descriptive stamp only for value forecasts. The live
+    // capture factory later supplies/authenticates its actual allocated owner.
+    auto prospective=identity;
+    prospective.owner=vehicle_runtime::detail::DescriptiveStamp(dynamics.startup,setup.execution()).owner_id;
+    prospective.source_instance=setup.execution().physical().domain()->source_instance_id();
+    prospective.configuration=dynamics.startup.configuration_id;
+    prospective.qualification=dynamics.startup.qualification_id;
+    const auto context=mapping.source_mapping().MakeFrameContext(prospective,config.fixed_dt_s);
+    const auto capture=output::physical_frames::PhysicalAcceptedFrames::Preflight(mapping,context);
+    const auto probe_request=output::physical_run::MakeWallRequest(context,horizon.intervals,config.duration_s,
+        config.samples,records::FullRunByteCap-CompanionByteCap);
+    const auto probe=output::physical_run::RunArchive::PreflightWithWall(setup,mapping,context,probe_request,{true,true});
+    const auto shared_wall=Sum(maximum_host,{setup.forecast().shared_source_upper_bound,
+        setup.forecast().retained_setup_bytes});
+    output::Require(probe.shared_wall_setup_upper_bound==shared_wall &&
+        shared_wall<=wall.retained_host_upper_bound,
+        "Archive and loaded owner do not share the same retained setup reservation");
+    const auto required_host=std::max(mapping_phase,Sum(maximum_host,
+        {wall.peak_host_upper_bound,capture.peak_bytes,probe.peak_host_bytes,ControllerReserve}));
+    const auto required_archive=Sum(records::FullRunByteCap,{probe.archive.archive.forecast_bytes,CompanionByteCap});
+    const auto caps=SelectCaps(config.resources,required_host,required_archive);
+    auto next=std::make_shared<Data>(setup,joints,std::move(mapping),config,std::move(identity));
+    next->dynamics=dynamics;
+    next->horizon=horizon;
+    next->request=output::physical_run::MakeWallRequest(context,horizon.intervals,config.duration_s,
+        config.samples,caps.archive_bytes-CompanionByteCap);
+    next->forecast.wall=wall;
+    next->forecast.capture=capture;
+    next->forecast.archive=output::physical_run::RunArchive::PreflightWithWall(setup,next->mapping,context,next->request,next->profile);
+    next->forecast.complete_host_bytes=required_host;
+    next->forecast.complete_archive_bytes=required_archive;
+    next->forecast.caps=caps;
+    return PreparedRun(std::move(next));
+}
+const Forecast& PreparedRun::forecast() const noexcept {return data_->forecast;}
+const Horizon& PreparedRun::horizon() const noexcept {return data_->horizon;}
+} // namespace crash::cases::vehicle_run
