@@ -108,7 +108,7 @@ TEST(QtMappedStartup, ExplicitRigidSkinAndConstitutiveLayersShareExactTopology) 
   config.owner.node_count=source.domain.node_count();
   config.element_count=source.shells.t3_count();
   fe::t3::batch_detail::Layout layout;
-  ASSERT_TRUE(layout.Initialize(config.element_count,config.owner.node_count,1u<<20));
+  ASSERT_TRUE(layout.InitializeMapped(config.element_count,config.owner.node_count,1u<<20));
   tl::util::HostArena arena;
   ASSERT_TRUE(arena.Initialize(layout.bytes));
   auto* storage=layout.Construct(arena);

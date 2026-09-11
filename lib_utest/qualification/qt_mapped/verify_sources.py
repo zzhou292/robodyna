@@ -3,7 +3,7 @@
 import hashlib
 import json
 from pathlib import Path
-MANIFEST_SHA256 = "4cd021e7a599720dc2d6bcafd6448857d0427c8fe3f1378ab5bbad36a2030849"
+MANIFEST_SHA256 = "8fee69567ae17fb4e64005b9408c437ef731fa8b50195e6652be8d50abb5eaa8"
 def verify():
     directory=Path(__file__).resolve().parent
     root=directory.parents[2]

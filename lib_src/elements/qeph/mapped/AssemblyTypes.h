@@ -3,6 +3,7 @@
 #include "Stiffness.h"
 #include "../QephBatch.h"
 #include "ObserverTypes.h"
+#include "../../mapped_shell/NodeGather.h"
 #include <cstdint>
 
 namespace tl::fea::qeph::mapped {
@@ -13,10 +14,7 @@ struct AssemblyParent {
   BatchStatus status=BatchStatus::Success;
   std::uint32_t node=UINT32_MAX;
 };
-struct AssemblyNode {
-  double value[8]{}; // force XYZ, couple XYZ, translation STI, rotation STIR
-  bool touched=false;
-};
+using AssemblyNode = mapped_shell::AssemblyNode;
 struct AssemblyMemory {
   std::uint32_t* offsets=nullptr;
   std::uint32_t* incidence=nullptr;
@@ -26,5 +24,5 @@ struct AssemblyMemory {
   unsigned long long* failure=nullptr;
   ObserverSummary* observer=nullptr;
 };
-inline constexpr unsigned long long NoAssemblyFailure=~0ull;
+inline constexpr unsigned long long NoAssemblyFailure=mapped_shell::NoAssemblyFailure;
 } // namespace tl::fea::qeph::mapped

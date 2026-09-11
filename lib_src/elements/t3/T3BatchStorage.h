@@ -1,5 +1,6 @@
 #pragma once
 #include "T3Batch.h"
+#include "mapped/AssemblyLayout.h"
 #include "../../solvers/NodalTrialIdentity.h"
 #include "../ShellBatchBinding.h"
 #include "../../assembly/ShellPhysicalBinding.h"
@@ -28,9 +29,41 @@ struct Control {
   std::uint32_t element=UINT32_MAX,node=UINT32_MAX;
   BatchDiagnostics diagnostics;
 };
-struct Storage { Model model; Slab slab[2]; Control control; Status* candidate_status=nullptr; };
+struct Storage {
+  Model model;
+  Slab slab[2];
+  Control control;
+  Status* candidate_status = nullptr;
+  mapped::AssemblyMemory assembly;
+};
 static_assert(std::is_trivially_copyable<Storage>::value,"Resident records require value-copy storage");
-using Layout=shell_batch_detail::BatchArenaLayout<Storage,T3BatchElement,ForceTrial,Vec3,Status>;
+using BaseLayout=shell_batch_detail::BatchArenaLayout<Storage,T3BatchElement,ForceTrial,Vec3,Status>;
+struct Layout : BaseLayout {
+  mapped::AssemblyLayout assembly;
+  bool Initialize(std::size_t parents, std::size_t nodes, std::size_t cap) noexcept {
+    Layout next;
+    if (!next.BaseLayout::Initialize(parents, nodes, cap)) return false;
+    *this = next;
+    return true;
+  }
+  bool InitializeMapped(std::size_t parents, std::size_t nodes, std::size_t cap) noexcept {
+    Layout next;
+    if (!next.Initialize(parents, nodes, cap) ||
+        !next.assembly.Initialize(next.bytes, parents, nodes, cap)) return false;
+    next.bytes = next.assembly.bytes;
+    *this = next;
+    return true;
+  }
+  Storage* Construct(util::HostArena& arena) const noexcept {
+    auto* result = BaseLayout::Construct(arena);
+    return result && assembly.Construct(arena, result->assembly) ? result : nullptr;
+  }
+  Storage Rebase(const Storage& host, void* base) const noexcept {
+    auto result = BaseLayout::Rebase(host, base);
+    result.assembly = assembly.Rebase(base);
+    return result;
+  }
+};
 static_assert(sizeof(Storage)<2048,"Resident header contains no capacity-sized arrays");
 // Collection capacity changes the private storage extent, not native results.
 // Allocation tests retain actual host/CUDA sizes before promotion; no layout is

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Startup.h"
 #include "Stiffness.h"
+#include "Incidence.h"
 #include "../T3History.h"
 
 namespace tl::fea::t3::mapped {
@@ -17,7 +18,7 @@ BatchReport MakeForecast(const T3BatchConfig& config,const ShellPhysicalBinding&
   Forecast next;
   if (!ValidShellResidentLimits(config.storage_limits,config.element_count,
       config.owner.node_count,config.max_device_bytes) ||
-      !next.device.Initialize(config.element_count,config.owner.node_count,config.max_device_bytes)) {
+      !next.device.InitializeMapped(config.element_count,config.owner.node_count,config.max_device_bytes)) {
     return {BatchStatus::ResourceLimit,"Mapped T3 active device layout exceeds its cap"};
   }
   const auto host_cap=config.storage_limits.max_host_bytes;
@@ -84,6 +85,11 @@ BatchReport BuildModel(const T3BatchConfig& config,const ShellPhysicalBinding& p
       return {BatchStatus::ElementFailure,"Mapped T3 endpoint bookkeeping is invalid",
           static_cast<std::uint32_t>(parent),UINT32_MAX,status};
     }
+  }
+  if (!BuildIncidence(model.element, config.element_count, config.owner.node_count,
+      storage.assembly.offsets, config.owner.node_count + 1,
+      storage.assembly.incidence, 3 * config.element_count)) {
+    return {BatchStatus::InvalidInput,"Mapped T3 ordered incidence is invalid"};
   }
   return {BatchStatus::Success,"OK"};
 }

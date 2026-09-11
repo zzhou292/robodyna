@@ -1,0 +1,69 @@
+{
+  "baseline_commit": "3eca05d76b7dd2b190769c3469a6cdbad1c4b441",
+  "baseline_path": "lib_src/elements/t3/mapped/Kernels.cu",
+  "baseline_bytes": 2996,
+  "baseline_sha256": "4ca996b23181fc005c2bc3b29f99c94164c9d52914a797f3be9c7ee5d2075f5e",
+  "scope": "Complete frozen serial T3 mapped caller; family force/stiffness and QEPH observer/oracle unchanged. Serial CUDA equivalence, not a new native force oracle.",
+  "files": [
+    {
+      "path": "lib_src/solvers/NodalForceAssembly.h",
+      "bytes": 3219,
+      "sha256": "334ab0d87813996918a8d9024e4f50ce2f3fa1a5e44fa63e649b43f7e1b01c81"
+    },
+    {
+      "path": "lib_src/elements/ShellNodalStiffness.h",
+      "bytes": 1955,
+      "sha256": "15087328d3b101ced21f68e7aed07b4cfe659bf5c88f9f0dc3ae39badd17af62"
+    },
+    {
+      "path": "lib_src/elements/t3/mapped/Stiffness.h",
+      "bytes": 2394,
+      "sha256": "3242f1377890f6a682365c47d4cbab912b2fc48ff19a79fdfbe975d73f8f99fd"
+    },
+    {
+      "path": "lib_src/elements/t3/mapped/Result.h",
+      "bytes": 4213,
+      "sha256": "1c6a8cfad19cf38773214e89fce65b3df266132fe74fb5cc8686cf9af2ffeae3"
+    },
+    {
+      "path": "lib_utest/qualification/t3_mapped_gather/SerialAssembly.cuh",
+      "bytes": 3162,
+      "sha256": "309ae9da983a9bb83b9e9cc5c9b2af48ebf91872b04eca9d64efa93bca53ec98"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/ObserverTypes.h",
+      "bytes": 1265,
+      "sha256": "e3a20fe8ace4a125d8bba81e96f6f1924d07b1b352c209b8241f159e47b0cf55"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/ObserverSums.h",
+      "bytes": 2372,
+      "sha256": "46b21d00eb83c1e77ca2e3a5763571a25885672cef667b8f7345be7bb6502121"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/ObserverValues.h",
+      "bytes": 5423,
+      "sha256": "8abd9250550d80548fcaed9871609e1e0a0dfbe6d19957cddc56b76ccce3e10a"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/ObserverKernels.cu",
+      "bytes": 2872,
+      "sha256": "3ef54889760e98218f666859d70ae3b66cabe3a49997f16397ba65ab6cda5b2d"
+    },
+    {
+      "path": "lib_utest/qualification/qeph_mapped_gather/SerialAssembly.cuh",
+      "bytes": 3252,
+      "sha256": "fd321b96a431756b63ca45bb18dfb10058ca8eca49a194350b5927a65744d9e2"
+    },
+    {
+      "path": "lib_utest/qualification/qeph_mapped_gather/source-manifest.json",
+      "bytes": 1243,
+      "sha256": "a91ef17d1872725a2e4ca98936e93b4d1c20b2cae2e8a5e84bca478c185141ba"
+    },
+    {
+      "path": "lib_utest/qualification/qeph_mapped_gather/verify_sources.py",
+      "bytes": 768,
+      "sha256": "bd8be6daacdfd5394a93df4fd242879717fe63bcc529e8dbb1c0804fe35b22f9"
+    }
+  ]
+}

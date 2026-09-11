@@ -95,8 +95,8 @@
     },
     {
       "path": "lib_utest/qualification/qt_mapped/StartupTest.cpp",
-      "bytes": 6852,
-      "sha256": "14f2299781e9a906f226bffb5eb6a83e246312e09371706bc8576b2bf8428182"
+      "bytes": 6858,
+      "sha256": "e85ad10a223103a556833de8c0bfc2dbd06791b6b73165beb8d21ee8747db589"
     },
     {
       "path": "lib_utest/qualification/qt_mapped/StiffnessTest.cpp",
@@ -138,5 +138,16 @@
       "bytes": 3472,
       "sha256": "3d245f5a22bf0632b961da34f663d84f550a4690b529089464f64b1952137edb"
     }
-  ]
+  ],
+  "mapped_t3_gather_registration": {
+    "scope": "Register shared bounded mapped QEPH/T3 gather and T3 optional arena; no native force/material/startup equations changed. Direct mapped T3 fixture now constructs its required optional tail.",
+    "previous_manifest_sha256": "4cd021e7a599720dc2d6bcafd6448857d0427c8fe3f1378ab5bbad36a2030849",
+    "previous_entries": [
+      {
+        "path": "lib_utest/qualification/qt_mapped/StartupTest.cpp",
+        "bytes": 6852,
+        "sha256": "14f2299781e9a906f226bffb5eb6a83e246312e09371706bc8576b2bf8428182"
+      }
+    ]
+  }
 }
