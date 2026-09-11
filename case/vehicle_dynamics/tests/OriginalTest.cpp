@@ -2,6 +2,7 @@
 #include "case/vehicle_startup/physical_attachments/tests/Support.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
 #include <iomanip>
+#include <limits>
 #include <sstream>
 namespace crash::cases::vehicle_dynamics::test {
 namespace {
@@ -61,5 +62,28 @@ TEST(VehiclePhysicalDynamicsOriginal, CompleteFreeFlightDiscardRetryAndSinglePub
     RecordProperty("epoch",std::to_string(simulation.accepted().epoch));
     std::ostringstream time;time<<std::setprecision(17)<<simulation.accepted().time;
     RecordProperty("completed_physical_seconds",time.str());
+}
+TEST(VehiclePhysicalDynamicsOriginal, CompletePostCinStructuralStepAdmission) {
+    Config config;
+    config.structural={tl::fea::NodalCinStructuralProfile::NativeOrdinaryRigidTrace,.8};
+    auto bad=config;bad.structural.factor=0;
+    EXPECT_THROW(VehiclePhysicalDynamics::Preflight(Shells(),Source(),bad),std::runtime_error);
+    auto simulation=VehiclePhysicalDynamics::Prepare(Shells(),Source(),config);
+    const auto allocations=simulation.allocations();
+    try {
+        const auto& candidate=simulation.PrepareStep();
+        ASSERT_NO_FATAL_FAILURE(CheckMotion(candidate));
+        ASSERT_GE(candidate.structural_step_limit,config.startup.reserved_step_s);
+        ASSERT_LT(candidate.structural_step_limit,std::numeric_limits<double>::max());
+        std::ostringstream limit;limit<<std::setprecision(17)<<candidate.structural_step_limit;
+        RecordProperty("post_cin_structural_limit_seconds",limit.str());
+        simulation.CommitStep();
+        EXPECT_EQ(simulation.accepted().epoch,1u);
+        EXPECT_EQ(simulation.allocations().device_bytes,allocations.device_bytes);
+        EXPECT_EQ(simulation.allocations().device_allocations,allocations.device_allocations);
+    } catch(const StepSizeError& error) {
+        FAIL()<<"Complete model requires smaller configured dt; measured post-CIN limit="
+            <<std::setprecision(17)<<error.limit()<<" at physical node="<<error.node();
+    }
 }
 } // namespace crash::cases::vehicle_dynamics::test

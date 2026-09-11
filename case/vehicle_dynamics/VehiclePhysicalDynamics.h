@@ -1,6 +1,7 @@
 #pragma once
 #include "../vehicle_runtime/VehiclePhysicalStartup.h"
 #include "MotionSummary.h"
+#include <stdexcept>
 
 namespace crash::cases::vehicle_dynamics {
 namespace capture { class VehicleAcceptedFrames; }
@@ -8,6 +9,7 @@ struct Config {
     vehicle_runtime::Config startup;
     std::size_t workspace_bytes=128u<<20;
     double maximum_rotation_increment=.2;
+    tl::fea::NodalCinStructuralStep structural;
 };
 struct Forecast {
     vehicle_runtime::Forecast startup;
@@ -18,6 +20,18 @@ struct StepObservation {
     double proposed_time=0;
     MotionSummary uniform_motion;
     tl::fea::ShellPhysicalDiagnostics mechanics;
+    // Zero with the disabled profile; otherwise actual post-CIN local limit.
+    double structural_step_limit=0;
+};
+class StepSizeError : public std::runtime_error {
+  public:
+    StepSizeError(double limit,std::uint32_t node):std::runtime_error("Physical timestep exceeds the post-CIN limit"),
+        limit_(limit),node_(node) {}
+    double limit() const noexcept {return limit_;}
+    std::uint32_t node() const noexcept {return node_;}
+  private:
+    double limit_;
+    std::uint32_t node_;
 };
 // Composes the currently selected physical operators through one TL clock.
 // This initial integration profile has no external loads, joints or contact.

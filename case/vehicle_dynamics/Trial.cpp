@@ -19,9 +19,13 @@ void VehiclePhysicalDynamics::Storage::Prepare() {
     detail::Require(s.solids.AssembleAccepted(s.owner,token,assembly),"Solid accepted assembly");
     detail::Require(activity->UploadAttempt(s.owner,token),"Actual accepted CIN witness upload");
     detail::Require(s.owner.SealAssembly(token),"Seal complete physical assembly");
-    detail::Require(tl::fea::AdvanceStaggeredCin(s.owner,token,
+    const auto advanced=tl::fea::AdvanceStaggeredCin(s.owner,token,
         {stamp.owner_id,stamp.epoch,assembly.attempt,config.startup.qualification_id,
-         config.startup.reserved_step_s,config.maximum_rotation_increment,true}),"Advance physical CIN/rigid owner");
+         config.startup.reserved_step_s,config.maximum_rotation_increment,true,config.structural});
+    if(advanced.status==tl::fea::NodalStatus::StepTooLarge)
+        throw StepSizeError(advanced.stable_dt,advanced.node);
+    detail::Require(advanced,"Advance physical CIN/rigid owner");
+    candidate().structural_step_limit=advanced.stable_dt;
     detail::Require(s.owner.BorrowPrepared(token,&prepared),"Borrow complete prepared physical owner");
 }
 void VehiclePhysicalDynamics::Storage::Evaluate() {

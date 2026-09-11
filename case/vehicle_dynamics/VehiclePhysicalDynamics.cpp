@@ -6,6 +6,7 @@
 namespace crash::cases::vehicle_dynamics {
 Forecast VehiclePhysicalDynamics::Preflight(const vehicle_runtime::Execution& e,
     const vehicle_runtime::Attachments& a,Config config) {
+    output::Require(tl::fea::ValidCinStructuralStep(config.structural),"Invalid physical structural timestep policy");
     output::Require(std::isfinite(config.maximum_rotation_increment) &&
         config.maximum_rotation_increment>0 && config.maximum_rotation_increment<=.2,
         "Physical free-flight rotation bound must be positive and at most 0.2 rad");

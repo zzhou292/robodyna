@@ -33,3 +33,19 @@ This short diagnostic is not a visible-motion video. The 170.155 s complete test
 (startup plus five attempts) also establishes that the current serial assembly
 path is not yet practical for a 20 ms full-vehicle run. Physical step selection
 and bounded parallel assembly remain separate required work for that demo.
+
+## Optional physical timestep screen
+
+`Config::structural` opts into TL's post-CIN screen with an explicit factor.
+The ordinary native mass/stiffness formula and current rigid-body analytical
+trace remain owned by TL. `StepObservation::structural_step_limit` preserves
+its actual returned minimum for an accepted candidate; zero means disabled.
+A `StepSizeError` carries the rejected limit and physical node after the usual
+complete discard. It does not change the fixed timestep in an existing owner;
+a new configured run is needed to select a different step.
+
+The `vehicle_physical_dynamics_structural_screen` original-model gate uses
+factor 0.8 at the existing 1e-8 s diagnostic step. It checks every selected
+operator's free motion, commits once, records the actual minimum, and verifies
+unchanged allocation counts. This local structural screen is distinct from
+retained-joint completion or a global nonlinear crash stability guarantee.
