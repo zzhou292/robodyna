@@ -62,6 +62,7 @@ TEST(VehicleLoadedWallOriginal, FirstNonzeroContactUsesActualCompleteOwnerAndDis
     EXPECT_EQ(retry.wall.prepared.contact.resultant.value,rejected.wall.prepared.contact.resultant.value);
     EXPECT_EQ(retry.wall.prepared.contact.potential.value,rejected.wall.prepared.contact.potential.value);
     EXPECT_EQ(retry.wall.prepared.contact.drift_work,rejected.wall.prepared.contact.drift_work);
+    EXPECT_EQ(retry.wall.prepared.interval_tree_used,rejected.wall.prepared.interval_tree_used);
     simulation.CommitStep();
     EXPECT_EQ(simulation.accepted().epoch,1);
     const auto loaded=simulation.PrepareStep();
@@ -106,6 +107,8 @@ TEST(VehicleLoadedWallOriginal, FirstNonzeroContactUsesActualCompleteOwnerAndDis
     RecordProperty("accepted_force_n",force.str());
     RecordProperty("candidate_penetration_m",penetration.str());
     RecordProperty("candidate_potential_j",potential.str());
+    RecordProperty("first_interval_tree_used",retry.wall.prepared.interval_tree_used ? "true" : "false");
+    RecordProperty("second_interval_tree_used",loaded.wall.prepared.interval_tree_used ? "true" : "false");
     RecordProperty("scope","two complete loaded contact intervals and discard/retry; no complete 5 ms run");
 }
 } // namespace crash::cases::vehicle_wall::test
