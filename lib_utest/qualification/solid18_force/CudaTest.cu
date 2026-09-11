@@ -23,6 +23,17 @@ struct DeviceStatus {
   bool phase_rejected = false;
   bool output_preserved = false;
 };
+// Explicit one-thread fixture storage; do not reserve a large CUDA stack for
+// every resident hardware thread just to retain retry snapshots and histories.
+struct DeviceScratch {
+  s::Reference reference;
+  s::Material material;
+  s::History accepted;
+  s::HistoryValues bad_values;
+  s::History bad;
+  s::PrescribedInterval wrong_phase;
+  unsigned char snapshot[sizeof(s::ForceTrial)]{};
+};
 __device__ bool SameBytes(const s::ForceTrial& a, const unsigned char* y) {
   const auto* x = reinterpret_cast<const unsigned char*>(&a);
   for (unsigned i = 0; i < sizeof(a); ++i) {
@@ -32,10 +43,10 @@ __device__ bool SameBytes(const s::ForceTrial& a, const unsigned char* y) {
 }
 __global__ void Trajectory(s::ReferenceInput input, const double* strain, const double* yield,
     unsigned points, const s::PrescribedInterval* intervals, unsigned count, bool faults,
-    s::ForceTrial* results, DeviceStatus* output) {
-  s::Reference reference;
-  s::Material material;
-  s::History accepted;
+    s::ForceTrial* results, DeviceStatus* output, DeviceScratch* scratch) {
+  auto& reference = scratch->reference;
+  auto& material = scratch->material;
+  auto& accepted = scratch->accepted;
   DeviceStatus state;
   if (s::InitializeReference(input,reference) != s::Status::Success ||
       tl::material::law36::Prepare(law36_test::E,law36_test::Nu,law36_test::Rho,
@@ -52,12 +63,13 @@ __global__ void Trajectory(s::ReferenceInput input, const double* strain, const 
       return;
     }
     if (faults && step == 100) {
-      unsigned char snapshot[sizeof(s::ForceTrial)];
+      auto& snapshot = scratch->snapshot;
       const auto* original = reinterpret_cast<const unsigned char*>(&results[step]);
       for (unsigned i = 0; i < sizeof(snapshot); ++i) snapshot[i] = original[i];
-      auto bad_values = accepted.data();
+      auto& bad_values = scratch->bad_values;
+      bad_values = accepted.data();
       bad_values.point[7].material.point.stress_pa[0] = 1e308;
-      s::History bad;
+      auto& bad = scratch->bad;
       if (s::PreparePrescribedHistory(reference,material,bad_values,accepted.stamp(),bad) !=
           s::Status::Success) {
         *output = state;
@@ -66,7 +78,8 @@ __global__ void Trajectory(s::ReferenceInput input, const double* strain, const 
       state.late_rejected = s::EvaluateForce(reference,bad,intervals[step],material,results[step]) !=
                             s::Status::Success;
       state.output_preserved = SameBytes(results[step],snapshot);
-      auto wrong_phase = intervals[step];
+      auto& wrong_phase = scratch->wrong_phase;
+      wrong_phase = intervals[step];
       ++wrong_phase.sample_index;
       state.phase_rejected = s::EvaluateForce(reference,accepted,wrong_phase,material,results[step]) !=
                              s::Status::Success;
@@ -89,7 +102,6 @@ void RunDevice(bool faults) {
   int count = 0;
   ASSERT_EQ(cudaGetDeviceCount(&count),cudaSuccess);
   ASSERT_GT(count,0);
-  ASSERT_EQ(cudaDeviceSetLimit(cudaLimitStackSize,256*1024),cudaSuccess);
   const auto reference = Reference();
   const auto material = Material();
   constexpr unsigned steps = 400;
@@ -100,11 +112,14 @@ void RunDevice(bool faults) {
   DeviceArray<s::PrescribedInterval> motion(steps);
   DeviceArray<s::ForceTrial> trial(steps);
   DeviceArray<DeviceStatus> result(1);
+  DeviceArray<DeviceScratch> scratch(1);
+  const DeviceScratch initial_scratch{};
+  ASSERT_EQ(cudaMemcpy(scratch.pointer,&initial_scratch,sizeof(initial_scratch),cudaMemcpyHostToDevice),cudaSuccess);
   ASSERT_EQ(cudaMemcpy(strain.pointer,curve.plastic_strain,sizeof(double)*curve.count,cudaMemcpyHostToDevice),cudaSuccess);
   ASSERT_EQ(cudaMemcpy(yield.pointer,curve.yield_stress_pa,sizeof(double)*curve.count,cudaMemcpyHostToDevice),cudaSuccess);
   ASSERT_EQ(cudaMemcpy(motion.pointer,intervals.data(),sizeof(intervals[0])*steps,cudaMemcpyHostToDevice),cudaSuccess);
   Trajectory<<<1,1>>>(reference.input(),strain.pointer,yield.pointer,curve.count,motion.pointer,
-                       steps,faults,trial.pointer,result.pointer);
+                       steps,faults,trial.pointer,result.pointer,scratch.pointer);
   ASSERT_EQ(cudaGetLastError(),cudaSuccess);
   ASSERT_EQ(cudaDeviceSynchronize(),cudaSuccess);
   DeviceStatus status;
