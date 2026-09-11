@@ -4,7 +4,8 @@ cc_library(
     testonly = True,
     hdrs = ["TestSupport.h"],
     deps = ["//lib_src/elements/solids:model"],
-    visibility = ["//lib_utest/qualification/solid_resident:__pkg__"],
+    visibility = ["//lib_utest/qualification/solid_resident:__pkg__",
+                  "//lib_utest/qualification/extended_solid_model:__pkg__"],
 )
 cc_test(
     name = "host_check",

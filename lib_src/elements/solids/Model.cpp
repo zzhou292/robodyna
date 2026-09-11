@@ -17,12 +17,16 @@ ModelReport Model::Initialize(const NodalNodeDomain& domain,ModelInput input,Mod
   scratch.reference18=scratch.arena.Construct<solid18::Reference>(layout.reference18);
   scratch.reference24=scratch.arena.Construct<solid24::Reference>(layout.reference24);
   scratch.reference6z=scratch.arena.Construct<solid6z::Reference>(layout.reference6z);
+  scratch.reference44=scratch.arena.Construct<solid18::law44::Reference>(layout.reference44);
+  scratch.reference90=scratch.arena.Construct<solid18::total_strain::Reference>(layout.reference90);
   scratch.material_indices=scratch.arena.Construct<std::size_t>(layout.material_indices);
-  if(!scratch.reference18 || !scratch.reference24 || !scratch.reference6z || !scratch.material_indices)
+  if(!scratch.reference18 || !scratch.reference24 || !scratch.reference6z || !scratch.reference44 || !scratch.reference90 || !scratch.material_indices)
     return Error(ModelStatus::ResourceLimit,"Solid scratch layout is invalid",input);
   for(std::size_t i=0;i<input.solid18.size();++i)scratch.reference18[i]=input.solid18[i].reference;
   for(std::size_t i=0;i<input.solid24.size();++i)scratch.reference24[i]=input.solid24[i].reference;
   for(std::size_t i=0;i<input.solid6z.size();++i)scratch.reference6z[i]=input.solid6z[i].reference;
+  for(std::size_t i=0;i<input.solid18_law44.size();++i)scratch.reference44[i]=input.solid18_law44[i].reference;
+  for(std::size_t i=0;i<input.solid18_law90.size();++i)scratch.reference90[i]=input.solid18_law90[i].reference;
   report=PlanMaterials(input,limits,scratch,layout);
   if(!report)return report;
   report=CompleteLayout(input,limits,layout);
@@ -43,6 +47,12 @@ ModelReport Model::Initialize(const NodalNodeDomain& domain,ModelInput input,Mod
   coefficient_input.solid18=input.solid18.size()?scratch.reference18:nullptr;
   coefficient_input.solid24=input.solid24.size()?scratch.reference24:nullptr;
   coefficient_input.solid6z=input.solid6z.size()?scratch.reference6z:nullptr;
+  coefficient_input.law44_count=input.solid18_law44.size();
+  coefficient_input.law90_count=input.solid18_law90.size();
+  coefficient_input.law44=input.solid18_law44.size()?scratch.reference44:nullptr;
+  coefficient_input.law90=input.solid18_law90.size()?scratch.reference90:nullptr;
+  coefficient_input.profile=input.profile==ModelProfile::ExtendedLaw44Law90
+      ? SolidCoefficientProfile::ExtendedLaw44Law90 : SolidCoefficientProfile::OriginalThreeFamilies;
   SolidNodeContributions coefficients;
   const auto mapped=coefficients.Initialize(domain,coefficient_input,coefficient_limits);
   if(!mapped) {
@@ -53,7 +63,7 @@ ModelReport Model::Initialize(const NodalNodeDomain& domain,ModelInput input,Mod
   }
   layout.owned_bytes+=coefficients.owned_payload_bytes()-sizeof(SolidNodeContributions);
   layout.startup_bytes+=coefficients.startup_payload_bytes()-sizeof(SolidNodeContributions);
-  auto next=std::make_shared<Impl>(coefficients);
+  auto next=std::make_shared<Impl>(coefficients,input.profile);
   next->layout=layout;
   auto& storage=next->storage;
   if(!storage.arena.Initialize(layout.arena_bytes))
@@ -61,10 +71,15 @@ ModelReport Model::Initialize(const NodalNodeDomain& domain,ModelInput input,Mod
   storage.parent18=storage.arena.Construct<Parent18>(layout.parent18);
   storage.parent24=storage.arena.Construct<Parent24>(layout.parent24);
   storage.parent6z=storage.arena.Construct<Parent6z>(layout.parent6z);
+  storage.parent44=storage.arena.Construct<Parent18Law44>(layout.parent44);
+  storage.parent90=storage.arena.Construct<Parent18Law90>(layout.parent90);
+  storage.material44=storage.arena.Construct<Material44>(layout.material44);
+  storage.material90=storage.arena.Construct<Material90>(layout.material90);
   storage.material36=storage.arena.Construct<Material36>(layout.material36);
   storage.material42=storage.arena.Construct<Material42>(layout.material42);
   storage.curves=storage.arena.Construct<double>(layout.curves);
   if(!storage.parent18 || !storage.parent24 || !storage.parent6z ||
+      !storage.parent44 || !storage.parent90 || !storage.material44 || !storage.material90 ||
       !storage.material36 || !storage.material42 || !storage.curves)
     return Error(ModelStatus::ResourceLimit,"Solid mechanics arena layout is invalid",input);
   report=CopyMaterials(input,scratch,layout,storage);

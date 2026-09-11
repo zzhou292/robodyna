@@ -4,11 +4,13 @@
 #include "../solid18/Solid18ForceTypes.h"
 #include "../solid24/Solid24ForceTypes.h"
 #include "../solid6z/Solid6zForceTypes.h"
+#include "../solid18/law44/ForceTypes.h"
+#include "../../materials/law90/Types.h"
 
 namespace tl::fea::solids {
 using Family = SolidCoefficientFamily;
 // Caller-supplied prepared mechanics. Repeated source MIDs must have identical
-// named material values; LAW36 curve pointers are borrowed only during Initialize.
+// named material values; LAW36/44/90 curves are borrowed only during Initialize.
 struct Input18 { solid18::Reference reference; solid18::Material material; };
 struct Input24 { solid24::Reference reference; solid24::Material material; };
 struct Input6z {
@@ -16,14 +18,34 @@ struct Input6z {
   solid6z::Material material;
   solid6z::ForceProfile profile;
 };
+struct Input18Law44 { solid18::law44::Reference reference; solid18::law44::Material material; };
+struct Input18Law90 { solid18::total_strain::Reference reference; tl::material::law90::PreparedMaterial material; };
+// The extended profile requires at least one LAW44 or LAW90 parent. It does not
+// authorize current three-family resident execution.
+enum class ModelProfile { OriginalThreeFamilies, ExtendedLaw44Law90 };
 struct ModelInput {
   std::uint64_t source_instance_id = 0;
   util::ConstView<Input18> solid18{nullptr,0};
   util::ConstView<Input24> solid24{nullptr,0};
   util::ConstView<Input6z> solid6z{nullptr,0};
+  util::ConstView<Input18Law44> solid18_law44{nullptr,0};
+  util::ConstView<Input18Law90> solid18_law90{nullptr,0};
+  ModelProfile profile = ModelProfile::OriginalThreeFamilies;
 };
 struct Material36 { std::uint64_t source_material_id = 0; solid18::Material value; };
 struct Material42 { std::uint64_t source_material_id = 0; solid24::Material value; };
+struct Material44 { std::uint64_t source_material_id = 0; solid18::law44::Material value; };
+struct Material90 { std::uint64_t source_material_id = 0; tl::material::law90::PreparedMaterial value; };
+struct Parent18Law44 {
+  solid18::law44::Reference reference;
+  std::size_t material_index = SIZE_MAX;
+  std::size_t domain_nodes[8]{};
+};
+struct Parent18Law90 {
+  solid18::total_strain::Reference reference;
+  std::size_t material_index = SIZE_MAX;
+  std::size_t domain_nodes[8]{};
+};
 struct Parent18 {
   solid18::Reference reference;
   std::size_t material_index = SIZE_MAX;
@@ -61,8 +83,9 @@ struct ModelReport {
 };
 
 // Immutable complete mechanics identity, with one owned curve pool deduplicated
-// by original MID, three typed parent spans and an exact coefficient snapshot.
-// The domain and all borrowed material values are retained. No force cache,
+// by original MID, explicitly profiled typed parent spans and an exact coefficient snapshot.
+// The domain is shared and all material curves are copied into the owned arena.
+// LAW90 is admitted only with its single reference density PM1=PM89. No force cache,
 // clock, inverse coefficients, source-coverage claim or owner admission is made.
 class Model {
  public:
@@ -73,12 +96,17 @@ class Model {
   Model& operator=(Model&&) = delete;
   ModelReport Initialize(const NodalNodeDomain&, ModelInput, ModelLimits = {}) noexcept;
   bool prepared() const noexcept { return bool(impl_); }
+  ModelProfile profile() const noexcept;
   std::uint64_t source_instance_id() const noexcept;
   const NodalNodeDomain* domain() const noexcept;
   const SolidNodeContributions* contributions() const noexcept;
   util::ConstView<Parent18> solid18() const noexcept;
   util::ConstView<Parent24> solid24() const noexcept;
   util::ConstView<Parent6z> solid6z() const noexcept;
+  util::ConstView<Parent18Law44> solid18_law44() const noexcept;
+  util::ConstView<Parent18Law90> solid18_law90() const noexcept;
+  util::ConstView<Material44> materials44() const noexcept;
+  util::ConstView<Material90> materials90() const noexcept;
   util::ConstView<Material36> materials36() const noexcept;
   util::ConstView<Material42> materials42() const noexcept;
   bool Matches(const Model&) const noexcept;

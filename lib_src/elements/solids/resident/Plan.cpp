@@ -18,7 +18,10 @@ bool DeclaredRigidScope(NodalRigidGroupInfo group, std::size_t nodes) noexcept {
 BatchReport Plan(const BatchConfig& config, const Model& model,
     ArenaLayout& output) noexcept {
   const auto& owner = config.owner;
-  if (!model.prepared() || !model.domain() || !model.contributions() ||
+  // This resident owns only the original three typed families. Extended model
+  // ownership does not authorize uploading a silently truncated population.
+  if (!model.prepared() || model.profile() != ModelProfile::OriginalThreeFamilies ||
+      !model.domain() || !model.contributions() ||
       !owner.owner_id || owner.epoch || owner.time != 0 || owner.velocity_time != 0 ||
       !owner.has_rotations || owner.reactions_valid || owner.reaction_base_epoch ||
       owner.reaction_time != 0 || owner.reaction_kick_dt != 0 ||
