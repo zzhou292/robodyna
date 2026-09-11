@@ -17,7 +17,7 @@ target_compile_options(robo_dyna_physical_run_records PRIVATE -fno-fast-math -ff
 option(ROBO_DYNA_PHYSICAL_RUN_LIVE_FACTORY "Build accepted dynamics interval factory" OFF)
 if(ROBO_DYNA_PHYSICAL_RUN_LIVE_FACTORY)
   include("${CMAKE_CURRENT_LIST_DIR}/../../case/vehicle_dynamics/output/VehicleAcceptedFrames.cmake")
-  add_library(robo_dyna_physical_run_live STATIC "${CMAKE_CURRENT_LIST_DIR}/AcceptedDynamics.cpp")
+  add_library(robo_dyna_physical_run_live STATIC "${CMAKE_CURRENT_LIST_DIR}/AcceptedDynamics.cpp" "${CMAKE_CURRENT_LIST_DIR}/AcceptedWall.cpp" "${CMAKE_CURRENT_LIST_DIR}/AcceptedWallValues.cpp")
   target_link_libraries(robo_dyna_physical_run_live PUBLIC robo_dyna_physical_run_records robo_dyna_vehicle_accepted_frames)
   target_compile_features(robo_dyna_physical_run_live PUBLIC cxx_std_17)
   target_compile_options(robo_dyna_physical_run_live PRIVATE -fno-fast-math -ffp-contract=off)

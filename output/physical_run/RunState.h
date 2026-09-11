@@ -13,6 +13,7 @@ struct RunArchive::Data {
     std::unique_ptr<IntervalWriter> intervals;
     Index index;
     Manifest manifest;
+    cases::vehicle_wall::SetupIdentity wall;
     bool failed=false,closed=false,prefix_sample=false;
 };
 namespace detail {

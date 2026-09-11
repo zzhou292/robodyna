@@ -9,6 +9,9 @@ struct Limits {std::size_t host_bytes=256u<<20;};
 struct Forecast {
     records::activity::ActivityPlan archive;
     std::size_t interval_staging_bytes=0,peak_host_bytes=0;
+    // Exact same immutable setup as the loaded dynamics. No extra source or
+    // geometry allocation; composition charges this retained backing once.
+    std::size_t shared_wall_setup_upper_bound=0;
 };
 // Caller supplies its actual fixed-step horizon and desired sample count.
 // A larger ceiling is always explicit; default admission remains two GiB.

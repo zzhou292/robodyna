@@ -1,4 +1,5 @@
 #include "AcceptedInterval.h"
+#include "AcceptedWall.h"
 #include "case/vehicle_dynamics/VehiclePhysicalDynamics.h"
 #include "output/physical_frames/PhysicalAcceptedFrames.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
@@ -44,7 +45,8 @@ AcceptedInterval CaptureAcceptedInterval(const cases::vehicle_dynamics::VehicleP
         Require(d.type45.source_instance_id==identity.source_instance && d.type45.joint_count &&
             d.type45.automatic_stiffness_initialized,"Committed joint source/count/automatic phase differs");
     }
+    auto wall=detail::CaptureWall(run,identity,value);
     Require(tl::fea::trial_identity::SameStamp(stamp,run.accepted()),"Physical owner changed during accepted observation");
-    return AcceptedInterval(std::move(value),identity,profile);
+    return AcceptedInterval(std::move(value),identity,profile,std::move(wall));
 }
 } // namespace crash::output::physical_run

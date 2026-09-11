@@ -29,12 +29,17 @@ if(ROBO_DYNA_PHYSICAL_RUN_WALL)
   if(NOT EXISTS "${ROBO_DYNA_VEHICLE_WALL}")
     message(FATAL_ERROR "Physical wall archive requires original wall manifest")
   endif()
-  target_sources(robo_dyna_physical_run_original_check PRIVATE tests/WallOriginalTest.cpp)
-  target_link_libraries(robo_dyna_physical_run_original_check PRIVATE robo_dyna_physical_run_wall)
+  target_sources(robo_dyna_physical_run_original_check PRIVATE tests/WallOriginalTest.cpp tests/WallPhaseTest.cpp tests/WallProvenanceOriginalTest.cpp)
+  target_link_libraries(robo_dyna_physical_run_original_check PRIVATE robo_dyna_physical_run_wall robo_dyna_vehicle_loaded_wall)
   add_test(NAME physical_run_wall_original COMMAND "${Python3_EXECUTABLE}" -B
     "${CMAKE_CURRENT_LIST_DIR}/../../case/vehicle_startup/tied_classification/tests/actual_fixture.py"
     "${ROBO_DYNA_VEHICLE_CANONICAL}" "${ROBO_DYNA_VEHICLE_SCOPE}" "${ROBO_DYNA_VEHICLE_DECLARATIONS}"
     "$<TARGET_FILE:robo_dyna_physical_run_original_check>" "PhysicalRunWallOriginal.*")
   set_tests_properties(physical_run_wall_original PROPERTIES TIMEOUT 600 RUN_SERIAL TRUE PROCESSORS 2
     ENVIRONMENT "ROBO_VEHICLE_DECLARATIONS=${ROBO_DYNA_VEHICLE_DECLARATIONS};ROBO_VEHICLE_GLASS_RESOLUTION=${ROBO_DYNA_VEHICLE_GLASS_RESOLUTION};ROBO_VEHICLE_GLASS_SHA256=${ROBO_DYNA_VEHICLE_GLASS_SHA256};ROBO_DYNA_TYPE13_DECLARATION=${ROBO_DYNA_VEHICLE_TYPE13_DECLARATION};ROBO_VEHICLE_WALL=${ROBO_DYNA_VEHICLE_WALL}")
+endif()
+
+if(ROBO_DYNA_PHYSICAL_RUN_WALL)
+  add_test(NAME physical_run_wall_phase COMMAND robo_dyna_physical_run_original_check --gtest_filter=PhysicalRunWallPhase.*)
+  set_tests_properties(physical_run_wall_phase PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE PROCESSORS 1)
 endif()

@@ -1,5 +1,6 @@
 #pragma once
 #include "Settings.h"
+#include "SetupIdentity.h"
 #include "case/shell_collection/ShellCollectionContactGeometry.h"
 #include "case/PlacedCanonicalWall.h"
 #include "case/vehicle_runtime/SourceIdentity.h"
@@ -24,6 +25,8 @@ class VehicleWallSetup {
         const case_data::CanonicalWall&,const std::string& wall_bytes,const Settings& = {},Limits = {});
     static VehicleWallSetup Prepare(const vehicle_runtime::Execution&,const vehicle_runtime::Attachments&,
         const case_data::CanonicalWall&,const std::string& wall_bytes,const Settings& = {},Limits = {});
+    SetupIdentity identity() const noexcept {return SetupIdentity(data_);}
+    bool SharesStorage(const VehicleWallSetup& other) const noexcept {return data_==other.data_;}
     const vehicle_runtime::Execution& execution() const noexcept;
     const vehicle_runtime::Attachments& attachments() const noexcept;
     const Settings& settings() const noexcept;

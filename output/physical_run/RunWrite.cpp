@@ -7,6 +7,8 @@ void RunArchive::Append(const AcceptedInterval& row) {
     Require(!failed() && !s.closed && !s.prefix_sample,"Physical run is closed or poisoned");
     Require(records::SameIdentity(row.identity(),s.context.identity()) && SameProfile(row.profile(),s.configuration.profile),
         "Accepted interval belongs to another physical run/profile");
+    Require(s.configuration.wall==bool(s.wall) && s.wall.Matches(row.wall_),
+        "Accepted interval differs from the actual archived wall setup or has no loaded contact");
     const auto epoch=s.intervals->sequence().last.epoch;
     const auto& schedule=s.forecast.archive.archive.frame_epochs;
     if(std::binary_search(schedule.begin(),schedule.end(),epoch))

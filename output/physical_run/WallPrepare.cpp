@@ -26,7 +26,10 @@ Forecast RunArchive::PreflightWithWall(const cases::vehicle_wall::VehicleWallSet
     const physical_frames::Mapping& mapping,const records::Context& context,records::source::BundleRequest request,
     Profile profile,Limits limits) {
     CheckSetup(setup,mapping,context,request);
-    return PreflightCore(mapping.source_mapping(),context,std::move(request),profile,limits,true);
+    auto forecast=PreflightCore(mapping.source_mapping(),context,std::move(request),profile,limits,true);
+    forecast.shared_wall_setup_upper_bound=setup.forecast().shared_source_upper_bound+
+        setup.forecast().retained_setup_bytes;
+    return forecast;
 }
 RunArchive RunArchive::PrepareWithWall(const std::filesystem::path& root,const cases::vehicle_wall::VehicleWallSetup& setup,
     const physical_frames::Mapping& mapping,const records::Context& context,records::source::BundleRequest request,
@@ -45,6 +48,9 @@ RunArchive RunArchive::PrepareWithWall(const std::filesystem::path& root,const c
     }
     ReadWallArtifacts(root,receipt,mapping.source_mapping().source().data(),context);
     archive.data_->manifest.wall=std::move(receipt);
+    archive.data_->wall=setup.identity();
+    archive.data_->forecast.shared_wall_setup_upper_bound=setup.forecast().shared_source_upper_bound+
+        setup.forecast().retained_setup_bytes;
     return archive;
 }
 } // namespace crash::output::physical_run

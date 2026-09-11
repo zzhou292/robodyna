@@ -109,3 +109,22 @@ late file corruption/retry and one-byte-short host admission before file mutatio
 This gate is authored for root; it makes no loaded contact claim. The shared mesh
 extraction also affects `robo_dyna_accepted_replay_check` / CTest `accepted_replay`
 and retained wall replay fixtures.
+
+Loaded accepted rows additionally retain a typed immutable `VehicleWallSetup`
+backing identity. Only the actual dynamics factory can seal that identity after
+checking both same-attempt wall force/candidate observations. `Append` requires
+the exact setup retained by `PrepareWithWall`; a reused numeric wall ID, a
+separately prepared equal setup, a changed placement, or a free-flight row cannot
+stand in for that authority. No wall serialization or digest is repeated per
+step. Initial-only wall prefixes remain valid and claim zero contact intervals.
+The handle retains existing setup/source storage; the forecast exposes its
+`shared_wall_setup_upper_bound` separately for composition to charge once.
+The writer's incremental workspace bound includes the small handle in its
+existing bounded object/metadata allowance.
+
+The follow-on owning `physical_run_wall_phase` checks ten corrupted observation
+phases with retry. `physical_run_wall_original` additionally contains actual
+loaded seven-participant acceptance with foreign-placement rejection (even with
+a reused wall binding ID), and actual free-flight rejection. These source/CUDA
+functions are authored for root qualification; author checks alone establish no
+loaded archive result.
