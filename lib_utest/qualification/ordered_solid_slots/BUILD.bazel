@@ -1,0 +1,8 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "host",
+    srcs = ["HostTest.cpp", "Fixture.h"],
+    copts = ["-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/solvers:nodal_repeated_force_assembly",
+            "//lib_src/solvers:nodal_repeated_stiffness", "@googletest//:gtest_main"],
+)
