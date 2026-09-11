@@ -60,3 +60,11 @@ actual metadata compilation passed in 1.83s/92,500KiB RSS under one CPU/512MiB;
 the owning C++ first build passed in 25.43s/295,196KiB. Final host evidence and
 source freeze are recorded in `crash-work/reports/vehicle-source-*`. All four
 actual-source functions pass in 1.39s/152,504KiB; no CUDA or heavy jobs were run.
+
+
+Root integration: app `687cee0`. The owning four C++ functions and nine Python
+checks pass under the workstation guard; detailed root evidence is
+`crash-work/reports/vehicle-source-root-{configure,build,tests,python}-1` and
+`vehicle-source-root-functions-1.xml`. Root source review found no blocker.
+The C++ gate completed in1.505 s with163,627,008 B peak sampled RSS and no skips.
+Actual native reference construction and runtime admission remain separate.

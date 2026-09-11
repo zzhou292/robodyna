@@ -1,7 +1,7 @@
 # Robo-dyna: Yaris delivery plan
 
-Updated 2026-09-10 for the full-shell milestone, against robo-dyna `a682637`
-and TL-FEA `9c0755a`.
+Updated 2026-09-10 for the full-shell milestone, against robo-dyna `687cee0`
+and TL-FEA `7e6f50c`.
 This is the concise delivery roadmap. The workspace
 [active execution plan](../../planning/CURRENT_EXECUTION_PLAN.md) tracks current
 runs and integration order; [execution status](../../planning/EXECUTION_STATUS.md)
@@ -121,17 +121,20 @@ Wall/configuration/run metadata remain separate budget obligations under 2 GiB.
 The neutral complete-frame Chrono adapter passes eight host functions and all35
 shared scene functions, including actual component archives. Native, inapplicable
 and unavailable plastic fields have explicit types. Live component binary capture
-and parity is under root qualification; full-shell run publication and complete
+and parity passes seven host and four actual CUDA functions; all ten affected
+legacy writer functions also pass; full-shell run publication and complete
 run reader/replay remain to be integrated.
 
 The [population design](../../planning/FULL_SHELL_POPULATION_ARCHITECTURE.md)
 keeps one complete batch per native formulation and selects the material law per
 parent. A material ID does not create another solver participant or another mass
 contribution. Remaining full-source physics includes failure/glass, rigid-part and membrane
-roles, beam/tie load paths and contact for longer folding. The new immutable
-[vehicle source plan](../../planning/FULL_VEHICLE_SOURCE_BINDING.md) will retain
-all349,645 parents while exposing278,301 supported declarations and71,344
-shells with explicit unresolved roles. Declaration coverage is not runtime admission.
+roles, beam/tie load paths and contact for longer folding. The immutable
+[vehicle source plan](../../planning/FULL_VEHICLE_SOURCE_BINDING.md) is implemented
+and passes four actual-source C++ and nine Python checks. It retains all349,645
+parents while exposing278,301 supported declarations and71,344 shells with
+explicit unresolved roles. Actual native reference construction is the next
+gate; declaration coverage is not runtime admission.
 
 User priority: **functionality first, performance afterward**. The next
 engineering objective is the full selected Yaris shell assembly with its
