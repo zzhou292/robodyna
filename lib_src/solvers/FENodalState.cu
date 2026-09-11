@@ -120,10 +120,16 @@ NodalReport FENodalState::Initialize(const NodalStateConfig& c, HostNodalKinemat
   return InitializeImpl(c, in, inverse_mass, nullptr, &dofs, groups, &cin);
 }
 
+NodalReport FENodalState::Initialize(const NodalStateConfig& c, HostNodalKinematicsView in,
+    const double* inverse_mass, const NodalDofConfig& dofs,
+    const NodalRigidAssemblyBinding& binding, const NodalCinStartup* cin) {
+  return InitializeImpl(c, in, inverse_mass, nullptr, &dofs, nullptr, cin, &binding);
+}
+
 NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKinematicsView in,
                                         const double* inverse_mass, const std::uint8_t* fixed,
                                         const NodalDofConfig* dofs, const NodalRigidGroupModel* groups,
-                                        const NodalCinStartup* cin) {
+                                        const NodalCinStartup* cin, const NodalRigidAssemblyBinding* binding) {
   if (impl_) return {NodalStatus::InvalidInput, "Owner already initialized"};
   if (!c.max_nodes || c.max_nodes > MaxActiveNodalStateNodes ||
       !c.node_count || c.node_count > c.max_nodes || !c.max_device_bytes ||
@@ -136,7 +142,7 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
     return {NodalStatus::UnsupportedTemporalScheme, "Unknown nodal temporal scheme"};
   if (staggered && !rotations)
     return {NodalStatus::UnsupportedTemporalScheme, "Staggered stepping requires extended nodal initialization"};
-  if(c.capture_force_stage_accelerations&&(!staggered||!rotations||!groups))
+  if(c.capture_force_stage_accelerations&&(!staggered||!rotations||(!groups&&!binding)))
     return {NodalStatus::UnsupportedTemporalScheme,"Force-stage capture requires fresh staggered rigid-group startup"};
   if (in.node_count != c.node_count || !in.position_xyz || !in.velocity_xyz || !inverse_mass ||
       (rotations ? (!in.orientation_wxyz || !dofs->translation_fixed_bits || !dofs->rotation_fixed || !dofs->inverse_inertia) : !fixed) ||
@@ -156,14 +162,19 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
     const auto report=nodal_detail::ForecastRigidStorage(*groups,c,rigid_layout);
     if(report.status!=NodalStatus::Ok)return report;
   }
-  const std::size_t group_values=groups?rigid::GroupStateValues*groups->group_count():0;
+  if (binding) {
+    const auto report = nodal_detail::ForecastRigidStorage(*binding, c, rigid_layout);
+    if (report.status != NodalStatus::Ok) return report;
+  }
+  const auto group_count = binding ? binding->groups().size() : (groups ? groups->group_count() : 0);
+  const std::size_t group_values = rigid::GroupStateValues*group_count;
   nodal_detail::CinLayout cin_layout;
   if (cin) {
     if (!rotations) return {NodalStatus::UnsupportedRotation, "CIN requires extended nodal state"};
     const auto report = nodal_detail::ForecastCinStorage(*cin, c, cin_layout);
     if (report.status != NodalStatus::Ok) return report;
   }
-  const nodal_detail::ForceStageCaptureLayout capture{n,groups?groups->group_count():0};
+  const nodal_detail::ForceStageCaptureLayout capture{n,group_count};
   const std::size_t capture_values=c.capture_force_stage_accelerations?capture.values():0;
   nodal_detail::StateLayout layout;
   if(!layout.Initialize(n,rotations,group_values,rigid_layout.device_bytes,
@@ -183,16 +194,20 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
   for (std::size_t i = 0; i < c.node_count; ++i) {
     const unsigned bits = rotations ? dofs->translation_fixed_bits[i] : (fixed[i] ? 7 : 0);
     const bool absent_rotation = rotation_presence && !dofs->rotation_present[i];
+    // Exact compact source association below checks the coefficient and role.
+    // Ordinary nodes retain their positive independent inverse requirements.
+    const bool dependent_rigid = binding && binding->FindMember(i);
+    const bool dependent_inverse = cin || dependent_rigid;
     if (rotation_presence && (dofs->rotation_present[i] > 1 ||
         (absent_rotation && (dofs->rotation_fixed[i] || dofs->inverse_inertia[i] != 0))))
       return {NodalStatus::InvalidInput, "Absent rotation requires zero J inverse and no fixed reaction", static_cast<std::uint32_t>(i)};
     if ((rotations ? bits > 7 : fixed[i] > 1) || !std::isfinite(inverse_mass[i]) ||
-        (bits == 7 ? inverse_mass[i] != 0 : (cin ? inverse_mass[i] < 0 : inverse_mass[i] <= 0)))
+        (bits == 7 ? inverse_mass[i] != 0 : (dependent_inverse ? inverse_mass[i] < 0 : inverse_mass[i] <= 0)))
       return {NodalStatus::InvalidInput, "Invalid explicit mass or fixed mask", static_cast<std::uint32_t>(i)};
     component_constraints |= bits != 0 && bits != 7;
     if (rotations && (dofs->rotation_fixed[i] > 1 || !std::isfinite(dofs->inverse_inertia[i]) ||
         ((dofs->rotation_fixed[i] || absent_rotation) ? dofs->inverse_inertia[i] != 0 :
-          (cin ? dofs->inverse_inertia[i] < 0 : dofs->inverse_inertia[i] <= 0)) ||
+          (dependent_inverse ? dofs->inverse_inertia[i] < 0 : dofs->inverse_inertia[i] <= 0)) ||
         !nodal_detail::UnitQuaternion(nodal_detail::ReadQuaternion(in.orientation_wxyz + 4*i))))
       return {NodalStatus::InvalidInput, "Invalid isotropic inertia, rotation mask, or unit quaternion", static_cast<std::uint32_t>(i)};
     for (unsigned axis = 0; axis < 3; ++axis) {
@@ -206,11 +221,17 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
         return {NodalStatus::InvalidInput, "Invalid angular or fixed-rotation velocity", static_cast<std::uint32_t>(i)};
     }
   }
+  if (binding) {
+    const auto report = nodal_detail::ValidateRigidAssemblyOwner(*binding,in,inverse_mass,*dofs,cin != nullptr);
+    if (report.status != NodalStatus::Ok) return report;
+  }
   std::unique_ptr<nodal_detail::RigidStorage> rigid_groups;
-  if(groups) {
+  if(groups || binding) {
     if(!rotations) return {NodalStatus::UnsupportedRotation,"Rigid groups require extended nodal state"};
     try {
-      auto report=nodal_detail::PrepareRigidStorage(*groups,c,in,inverse_mass,*dofs,rigid_layout,rigid_groups);
+      const auto report = binding
+        ? nodal_detail::PrepareRigidStorage(*binding,c,in,inverse_mass,*dofs,rigid_layout,rigid_groups)
+        : nodal_detail::PrepareRigidStorage(*groups,c,in,inverse_mass,*dofs,rigid_layout,rigid_groups);
       if(report.status!=NodalStatus::Ok) return report;
     } catch(const std::bad_alloc&) { return {NodalStatus::ResourceLimit,"Rigid host storage allocation failed"}; }
   }
@@ -219,7 +240,7 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
   if (cin) {
     try {
       const auto report = nodal_detail::PrepareCinStorage(*cin, c, in, inverse_mass,
-          *dofs, groups, cin_layout, cin_storage);
+          *dofs, groups, cin_layout, cin_storage, binding);
       if (report.status != NodalStatus::Ok) return report;
       cin_storage->state_offset = 19*n+group_values;
     } catch (const std::bad_alloc&) {
@@ -276,7 +297,7 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
       std::memcpy(next->staging.data()+9*n, in.orientation_wxyz, 4*n*sizeof(double));
     }
     if(next->rigid_groups) next->rigid_groups->InitializeState(next->staging.data()+19*n);
-    if(next->cin) next->cin->InitializeState(next->staging.data(), *cin, *dofs);
+    if(next->cin) next->cin->InitializeState(next->staging.data(), *cin, inverse_mass, *dofs);
     report = next->Check(cudaMemcpyAsync(next->accepted, next->staging.data(), state_values*sizeof(double), cudaMemcpyHostToDevice, next->stream));
     if (report.status != NodalStatus::Ok) return report;
     report = next->Check(cudaMemcpyAsync(next->inverse, inverse_mass, n*sizeof(double), cudaMemcpyHostToDevice, next->stream));

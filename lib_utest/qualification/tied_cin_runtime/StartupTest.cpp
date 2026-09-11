@@ -80,7 +80,7 @@ TEST(CinRuntimeStartup, ZeroDependentInertiaIsLiteralAndHasNoConventionalInverse
   ASSERT_EQ(fea::nodal_detail::PrepareCinStorage(input, f.Config(), f.Kinematics(), f.inverse.data(),
       f.Dofs(), nullptr, layout, output).status, fea::NodalStatus::Ok);
   std::vector<double> tail(layout.state_values, 0);
-  output->InitializeState(tail.data(), input, f.Dofs());
+  output->InitializeState(tail.data(), input, f.inverse.data(), f.Dofs());
   const auto n = f.mass.size();
   EXPECT_EQ(tail[n+node], 0);
   EXPECT_EQ(tail[2*n+node], 0);

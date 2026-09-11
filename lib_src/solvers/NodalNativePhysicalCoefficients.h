@@ -11,13 +11,17 @@ namespace tl::fea::native_physical_coefficients {
 #define TL_NATIVE_COEFFICIENT_HD
 #endif
 TL_NATIVE_COEFFICIENT_HD inline bool Empty(NodalRigidGroupInfo g) noexcept {
-  return !g.source_instance_id&&!g.group_count&&!g.member_count;
+  return !g.source_instance_id&&!g.group_count&&!g.member_count&&!g.part_group_count&&!g.plain_source_instance_id;
 }
 TL_NATIVE_COEFFICIENT_HD inline bool ValidScope(NodalRigidGroupInfo g,std::size_t nodes) noexcept {
-  return Empty(g)||(g.source_instance_id&&g.group_count&&g.member_count<=nodes&&g.group_count<=g.member_count/2);
+  // Existing shell/connector participants admit plain groups only. The complete
+  // mapped owner has a separate future participant admission boundary.
+  return !g.part_group_count&&!g.plain_source_instance_id&&
+    (Empty(g)||(g.source_instance_id&&g.group_count&&g.member_count<=nodes&&g.group_count<=g.member_count/2));
 }
 TL_NATIVE_COEFFICIENT_HD inline bool SameScope(NodalRigidGroupInfo a,NodalRigidGroupInfo b) noexcept {
-  return a.source_instance_id==b.source_instance_id&&a.group_count==b.group_count&&a.member_count==b.member_count;
+  return a.source_instance_id==b.source_instance_id&&a.group_count==b.group_count&&a.member_count==b.member_count&&
+    a.part_group_count==b.part_group_count&&a.plain_source_instance_id==b.plain_source_instance_id;
 }
 TL_NATIVE_COEFFICIENT_HD inline bool Admitted(NodalRigidGroupInfo configured,NodalRigidGroupInfo actual,
     tlfea::contact::TranslationMassModel model,std::size_t nodes) noexcept {

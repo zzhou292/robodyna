@@ -1,5 +1,6 @@
 #pragma once
 #include "../math/Fixed3.h"
+#include "../constraints/NodalRigidAssemblyTypes.h"
 #include <cstddef>
 #include <cstdint>
 
@@ -10,6 +11,7 @@ struct NodalRigidGroupAccelerationSnapshot {
   std::uint64_t source_group_id=0,source_node_set_id=0;
   std::size_t member_count=0;
   tl::math::Vec3 acceleration{},angular_acceleration{};
+  RigidBindingSourceKind source_kind=RigidBindingSourceKind::NodalGroup;
 };
 struct NodalForceStageSnapshotBuffer {
   double* acceleration_xyz=nullptr;

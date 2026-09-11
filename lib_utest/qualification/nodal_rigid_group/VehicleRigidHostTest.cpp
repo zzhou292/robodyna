@@ -44,8 +44,8 @@ TEST(VehicleRigidHost,ExplicitOwnerCountsAndExactPayloadPreflightAreAtomic) {
   EXPECT_EQ(layout.groups.offset,0u);EXPECT_EQ(layout.members.offset,759*sizeof(rigid::GroupRange));
   EXPECT_EQ(layout.node_mask.offset,759*sizeof(rigid::GroupRange)+7539*sizeof(rigid::MemberMetric));
   EXPECT_EQ(layout.device_bytes,layout.node_mask.offset+VehicleNodes);
-  const auto expected=object+759*(sizeof(fe::NodalRigidGroupProperties)+sizeof(rigid::GroupRange)+sizeof(fe::NodalRigidGroupSnapshot))+
-    7539*(sizeof(fe::NodalRigidGroupMember)+sizeof(rigid::MemberMetric))+VehicleNodes;
+  const auto expected=object+759*(sizeof(fe::RigidBindingGroup)+sizeof(rigid::GroupRange)+sizeof(fe::NodalRigidGroupSnapshot))+
+    7539*(sizeof(fe::RigidBindingMember)+sizeof(rigid::MemberMetric))+VehicleNodes;
   EXPECT_EQ(layout.host_bytes,expected);
   const auto before=layout;auto short_host=vehicle;short_host.max_host_bytes=expected-1;
   EXPECT_FALSE(layout.Initialize(VehicleNodes,759,7539,short_host,object));

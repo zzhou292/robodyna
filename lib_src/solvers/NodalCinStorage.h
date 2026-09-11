@@ -24,10 +24,11 @@ struct CinStorage {
   double* work = nullptr;
   cudaError_t Upload(cudaStream_t);
   cudaError_t ResetTrial(cudaStream_t);
-  void InitializeState(double* state, const NodalCinStartup&, const NodalDofConfig&) const noexcept;
+  void InitializeState(double* state, const NodalCinStartup&, const double* inverse_mass, const NodalDofConfig&) const noexcept;
 };
 NodalReport ForecastCinStorage(const NodalCinStartup&, const NodalStateConfig&, CinLayout&) noexcept;
 NodalReport PrepareCinStorage(const NodalCinStartup&, const NodalStateConfig&,
     HostNodalKinematicsView, const double*, const NodalDofConfig&,
-    const NodalRigidGroupModel*, const CinLayout&, std::unique_ptr<CinStorage>&);
+    const NodalRigidGroupModel*, const CinLayout&, std::unique_ptr<CinStorage>&,
+    const NodalRigidAssemblyBinding* = nullptr);
 } // namespace tl::fea::nodal_detail

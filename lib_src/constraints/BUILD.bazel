@@ -4,12 +4,18 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
+    name = "nodal_rigid_assembly_types",
+    hdrs = ["NodalRigidAssemblyTypes.h"],
+    deps = [":nodal_rigid_group"],
+)
+
+cc_library(
     name = "nodal_rigid_assembly_binding",
     srcs = ["NodalRigidAssemblyBinding.cpp", "NodalRigidAssemblyBindingBudget.cpp",
             "NodalRigidAssemblyBindingMap.cpp"],
     hdrs = ["NodalRigidAssemblyBinding.h", "NodalRigidAssemblyBindingInternal.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
-    deps = [":nodal_rigid_part_assembly_model", "//lib_src/assembly:nodal_node_domain",
+    deps = [":nodal_rigid_assembly_types", ":nodal_rigid_part_assembly_model", "//lib_src/assembly:nodal_node_domain",
             "//lib_utils:bounded_arena", "//lib_utils:source_identity_index"],
 )
 
@@ -52,7 +58,7 @@ cc_library(
     name = "nodal_rigid_group_step_math",
     hdrs = ["NodalRigidFrameStep.h", "NodalRigidTwoMemberStep.h", "NodalRigidFiniteVelocity.h", "NodalRigidGroupStepMath.h", "NodalRigidGroupState.h", "NodalRigidGroupCandidate.h", "NodalRigidAccelerationSink.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
-    deps = [":nodal_rigid_group"],
+    deps = [":nodal_rigid_group", ":nodal_rigid_assembly_types"],
 )
 
 cc_library(

@@ -53,8 +53,10 @@ __global__ void AdvanceCin(nodal_detail::Control* control, const double* accepte
       current_inverse[n+i] = 0;
       continue;
     }
-    current_inverse[i] = fixed[n+i] == 7 ? 0 : 1/tail[i];
-    current_inverse[n+i] = (fixed[2*n+i] || (rotation_present && !rotation_present[i])) ? 0 : 1/tail[n+i];
+    const bool part_member = groups.member_nodes && groups.member_nodes[i] == rigid::PartMemberNode;
+    current_inverse[i] = fixed[n+i] == 7 || (part_member && tail[i] == 0) ? 0 : 1/tail[i];
+    current_inverse[n+i] = fixed[2*n+i] || (rotation_present && !rotation_present[i]) ||
+        (part_member && tail[n+i] == 0) ? 0 : 1/tail[n+i];
     if (!std::isfinite(current_inverse[i]) || !std::isfinite(current_inverse[n+i])) {
       Fail(control, NodalStatus::InvalidOutput, i);
       return;

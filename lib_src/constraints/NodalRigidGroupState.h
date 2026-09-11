@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "NodalRigidGroupMath.h"
+#include "NodalRigidAssemblyTypes.h"
 #include <cstdint>
 
 namespace tl::fea {
@@ -15,6 +16,7 @@ struct NodalRigidGroupState {
 struct NodalRigidGroupSnapshot {
   std::uint64_t source_group_id=0,source_node_set_id=0;
   NodalRigidGroupState state{};
+  RigidBindingSourceKind source_kind=RigidBindingSourceKind::NodalGroup;
 };
 struct NodalRigidGroupSnapshotBuffer {
   NodalRigidGroupSnapshot* groups=nullptr;
@@ -23,16 +25,22 @@ struct NodalRigidGroupSnapshotBuffer {
 struct NodalRigidGroupInfo {
   std::uint64_t source_instance_id=0;
   std::size_t group_count=0,member_count=0;
+  std::size_t part_group_count=0;
+  std::uint64_t plain_source_instance_id=0;
 };
 inline bool SameRigidGroupInfo(NodalRigidGroupInfo a,NodalRigidGroupInfo b) noexcept {
-  return a.source_instance_id==b.source_instance_id&&a.group_count==b.group_count&&a.member_count==b.member_count;
+  return a.source_instance_id==b.source_instance_id&&a.group_count==b.group_count&&a.member_count==b.member_count&&
+    a.part_group_count==b.part_group_count&&a.plain_source_instance_id==b.plain_source_instance_id;
 }
 namespace rigid {
 constexpr std::size_t GroupStateValues=18;
+inline constexpr std::uint8_t PlainMemberNode = 1;
+inline constexpr std::uint8_t PartMemberNode = 2;
 struct GroupRange {
   std::uint32_t offset=0,count=0;
   double mass=0;
   tl::math::Vec3 principal_inertia{};
+  bool dependent_coefficients=false;
 };
 struct MemberMetric { std::uint32_t node=0; double mass=0,inertia=0; };
 struct GroupDeviceView {

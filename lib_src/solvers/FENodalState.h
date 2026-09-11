@@ -44,7 +44,7 @@ struct NodalStateConfig {
   // admission; neither operation commits external material history.
   NodalTemporalScheme temporal_scheme = NodalTemporalScheme::VelocityFirst;
   // Optional transient A/AR capture. Requires fresh extended staggered startup
-  // with attached plain rigid groups. Disabled preserves legacy allocations.
+  // with attached prepared rigid groups. Disabled preserves legacy allocations.
   bool capture_force_stage_accelerations = false;
   // Appended for aggregate-initialization compatibility. Larger owner counts
   // require explicit count AND sufficient byte limits; defaults remain 2048
@@ -55,9 +55,11 @@ struct NodalStateConfig {
 };
 // Optional conventional-node degrees of freedom. Masks are immutable WORLD
 // constraints: bits 1/2/4 fix x/y/z translation, and rotation_fixed is 0 or 1.
-// Free rotations require positive isotropic inverse inertia; fixed rotations
+// Independent free rotations require positive isotropic inverse inertia; fixed rotations
 // require zero inverse inertia and initial angular velocity. This is an input
 // inertia declaration, not a shell mass formula or drilling-inertia choice.
+// The typed PART assembly overload separately admits exact zero M/J members
+// with primary-driven, present kinematic DOFs.
 struct NodalDofConfig {
   const std::uint8_t* translation_fixed_bits = nullptr;
   const std::uint8_t* rotation_fixed = nullptr;
@@ -160,6 +162,7 @@ TL_SURFACE_HD inline void RecordNodalAssemblyFailure(
 
 class FENodalState;
 class NodalRigidGroupModel;
+class NodalRigidAssemblyBinding;
 struct NodalStepAdmission;
 struct NodalValidationReceipt;
 struct NodalStaggeredPrescribedAdmission;
@@ -230,6 +233,11 @@ class FENodalState {
   NodalReport Initialize(const NodalStateConfig&, HostNodalKinematicsView,
                          const double* inverse_mass, const NodalDofConfig&,
                          const NodalCinStartup&, const NodalRigidGroupModel* = nullptr);
+  // Prepared PART and plain groups in one owner. Requires VehicleAssembly
+  // limits, exact source coefficients and kinematically present member rotation.
+  NodalReport Initialize(const NodalStateConfig&, HostNodalKinematicsView,
+                         const double* inverse_mass, const NodalDofConfig&,
+                         const NodalRigidAssemblyBinding&, const NodalCinStartup* = nullptr);
   NodalReport BorrowCinAssembly(const NodalTrialToken&, NodalCinAssemblyView*);
   NodalReport ValidateCinWitnessSource(const NodalCinWitnessSource&) const noexcept;
   NodalReport CopyAcceptedCin(NodalCinSnapshotBuffer, NodalStamp*);
@@ -301,7 +309,7 @@ class FENodalState {
   NodalReport InitializeImpl(const NodalStateConfig&, HostNodalKinematicsView,
                              const double* inverse_mass, const std::uint8_t* fixed,
                              const NodalDofConfig*, const NodalRigidGroupModel* = nullptr,
-                             const NodalCinStartup* = nullptr);
+                             const NodalCinStartup* = nullptr,const NodalRigidAssemblyBinding* = nullptr);
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };

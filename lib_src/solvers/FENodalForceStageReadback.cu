@@ -34,7 +34,7 @@ NodalReport FENodalState::CopyPreparedForceStage(const NodalTrialToken& token,
     const auto& source=groups.properties[g];
     const auto* a=data+6*layout.nodes+3*g;
     const auto* ar=data+6*layout.nodes+3*layout.groups+3*g;
-    out.groups[g]={source.source_group_id,source.source_node_set_id,source.member_count,{a[0],a[1],a[2]},{ar[0],ar[1],ar[2]}};
+    out.groups[g]={source.source_id,source.source_node_set_id,source.member_count,{a[0],a[1],a[2]},{ar[0],ar[1],ar[2]},source.source_kind};
   }
   *prepared=next;
   return {NodalStatus::Ok,"Prepared force-stage accelerations copied"};

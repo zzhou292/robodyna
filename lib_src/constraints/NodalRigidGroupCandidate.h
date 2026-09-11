@@ -64,8 +64,10 @@ TL_RIGID_CANDIDATE_HD inline GroupCandidateResult PrepareGroupCandidate(GroupDev
     const MemberStepInput member{Node(accepted,node),Node(accepted+3*nodes,node),Node(accepted+6*nodes,node),
       Load(loads,node,nodes),Load(loads+3*nodes,node,nodes),m.mass,m.inertia};
     MemberStepTrial next;
-    status=range.count==2 ? EvaluateTwoMemberStep(input,primary,member,view.source_length_to_m,next)
-                         : EvaluateMemberStep(input,primary,member,next);
+    const auto policy=range.dependent_coefficients?MemberCoefficientPolicy::NonnegativeDependent:
+      MemberCoefficientPolicy::PositiveIndependent;
+    status=range.count==2 ? EvaluateTwoMemberStep(input,primary,member,view.source_length_to_m,next,policy)
+                         : EvaluateMemberStep(input,primary,member,next,policy);
     if(status!=StepStatus::Success) return {status,node};
     WriteNode(trial,node,next.position); WriteNode(trial+3*nodes,node,next.velocity);
     WriteNode(trial+6*nodes,node,next.omega); WriteNode(trial+13*nodes,node,next.reaction_force);

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "NodalCinStorage.h"
+#include "NodalRigidGroupStorage.h"
 #include "FENodalStateStorage.h"
 #include "NodalTrialIdentity.h"
 #include <cmath>
@@ -117,10 +118,20 @@ NodalReport FENodalState::Impl::StageCinSnapshot(const double* source) {
     if (dependent && completed && (tail[i] != 0 || tail[n+i] != 0)) {
       return Reject(NodalStatus::InvalidOutput, "Completed CIN dependent coefficients are not zero", std::uint32_t(i));
     }
-    const double inverse_mass = dependent || constraint_staging[n+i] == 7 ? 0 : 1/tail[i];
-    const double inverse_inertia = dependent || constraint_staging[2*n+i] || absent_rotation ? 0 : 1/tail[n+i];
+    const bool part_member = rigid_groups && rigid_groups->member_nodes[i] == rigid::PartMemberNode;
+    const double inverse_mass = dependent || constraint_staging[n+i] == 7 ||
+        (part_member && tail[i] == 0) ? 0 : 1/tail[i];
+    const double inverse_inertia = dependent || constraint_staging[2*n+i] || absent_rotation ||
+        (part_member && tail[n+i] == 0) ? 0 : 1/tail[n+i];
     if (tail[2*n+i] != inverse_mass || tail[3*n+i] != inverse_inertia) {
       return Reject(NodalStatus::InvalidOutput, "CIN coefficient readback disagrees with its derived inverse", std::uint32_t(i));
+    }
+  }
+  if (rigid_groups) {
+    for (const auto& member : rigid_groups->source_members) {
+      const auto node = member.domain_node;
+      if (tail[node] != member.mass_kg || tail[n+node] != member.isotropic_inertia_kg_m2)
+        return Reject(NodalStatus::InvalidOutput, "CIN changed unrelated rigid coefficients", std::uint32_t(node));
     }
   }
   return {NodalStatus::Ok, "CIN snapshot staged"};

@@ -3,6 +3,7 @@
 #include "FENodalState.h"
 #include "NodalRigidStorageLayout.h"
 #include "../constraints/NodalRigidGroupModel.h"
+#include "../constraints/NodalRigidAssemblyBinding.h"
 #include "../constraints/NodalRigidGroupState.h"
 #include <vector>
 
@@ -21,8 +22,8 @@ struct RigidStorage {
   RigidStorage& operator=(const RigidStorage&)=delete;
   NodalRigidGroupInfo info;
   NodalRigidSourceUnits units;
-  std::vector<NodalRigidGroupProperties> properties;
-  std::vector<NodalRigidGroupMember> source_members;
+  std::vector<RigidBindingGroup> properties;
+  std::vector<RigidBindingMember> source_members;
   std::vector<RigidGroupRange> groups;
   std::vector<RigidMemberMetric> members;
   std::vector<std::uint8_t> member_nodes;
@@ -35,7 +36,16 @@ struct RigidStorage {
   void InitializeState(double*) const noexcept;
 };
 NodalReport ForecastRigidStorage(const NodalRigidGroupModel&,const NodalStateConfig&,RigidStorageLayout&) noexcept;
+NodalReport ForecastRigidStorage(const NodalRigidAssemblyBinding&,const NodalStateConfig&,RigidStorageLayout&) noexcept;
 NodalReport PrepareRigidStorage(const NodalRigidGroupModel&,const NodalStateConfig&,
     HostNodalKinematicsView,const double* inverse_mass,const NodalDofConfig&,const RigidStorageLayout&,
     std::unique_ptr<RigidStorage>& output);
+NodalReport PrepareRigidStorage(const NodalRigidAssemblyBinding&,const NodalStateConfig&,
+    HostNodalKinematicsView,const double* inverse_mass,const NodalDofConfig&,const RigidStorageLayout&,
+    std::unique_ptr<RigidStorage>& output);
+NodalReport ValidateRigidAssemblyOwner(const NodalRigidAssemblyBinding&,HostNodalKinematicsView,
+    const double*,const NodalDofConfig&,bool cin) noexcept;
+// Shared compact source association and range construction after typed startup.
+NodalReport CompleteRigidStorage(const NodalStateConfig&,HostNodalKinematicsView,const double*,
+    const NodalDofConfig&,const RigidStorageLayout&,RigidStorage&);
 } // namespace tl::fea::nodal_detail

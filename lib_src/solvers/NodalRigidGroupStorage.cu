@@ -6,7 +6,6 @@
 #include <cstring>
 
 namespace tl::fea::nodal_detail {
-RigidStorage::~RigidStorage() { if(arena) cudaFree(arena); }
 cudaError_t RigidStorage::Upload(cudaStream_t stream) {
   auto error=cudaMalloc(&arena,immutable_bytes); if(error!=cudaSuccess) return error;
   auto* bytes=static_cast<unsigned char*>(arena);
@@ -18,11 +17,6 @@ cudaError_t RigidStorage::Upload(cudaStream_t stream) {
   if(error!=cudaSuccess) return error;
   return cudaMemcpyAsync(bytes+nodes_offset,member_nodes.data(),member_nodes.size(),cudaMemcpyHostToDevice,stream);
 }
-void RigidStorage::InitializeState(double* tail) const noexcept {
-  for(std::size_t g=0;g<properties.size();++g)
-    rigid::WriteGroupState(tail+rigid::GroupStateValues*g,
-      {properties[g].center,initial_velocity,{},properties[g].principal.axes});
-}
 
 NodalReport ForecastRigidStorage(const NodalRigidGroupModel& model,const NodalStateConfig& config,
     RigidStorageLayout& output) noexcept {
@@ -30,6 +24,8 @@ NodalReport ForecastRigidStorage(const NodalRigidGroupModel& model,const NodalSt
     return {NodalStatus::InvalidInput,"Rigid model is not complete for this node inventory"};
   if(config.temporal_scheme!=NodalTemporalScheme::StaggeredHalfKickStart)
     return {NodalStatus::UnsupportedTemporalScheme,"Rigid groups require staggered physical initialization"};
+  if (config.rigid_limits.profile != NodalRigidOwnerProfile::PlainGroups)
+    return {NodalStatus::ResourceLimit,"Plain groups require plain owner limits"};
   RigidStorageLayout next;
   if(!next.Initialize(config.node_count,model.group_count(),model.member_count(),config.rigid_limits,sizeof(RigidStorage)))
     return {NodalStatus::ResourceLimit,"Rigid count or host payload exceeds explicit owner limits"};
@@ -44,39 +40,19 @@ NodalReport PrepareRigidStorage(const NodalRigidGroupModel& model,const NodalSta
   auto next=std::make_unique<RigidStorage>();
   next->info={model.source_instance_id(),model.group_count(),model.member_count()};
   next->units=model.source_units();
-  next->properties.assign(model.groups(),model.groups()+model.group_count());
-  next->source_members.assign(model.members(),model.members()+model.member_count());
-  next->groups.reserve(model.group_count()); next->members.reserve(model.member_count());
-  next->member_nodes.resize(config.node_count,0); next->snapshots.resize(model.group_count());
-  const auto first=model.members()[0].global_node;
-  next->initial_velocity={input.velocity_xyz[3*first],input.velocity_xyz[3*first+1],input.velocity_xyz[3*first+2]};
-  for(const auto& group:next->properties) {
-    next->groups.push_back({static_cast<std::uint32_t>(group.member_offset),static_cast<std::uint32_t>(group.member_count),
-                           group.total_mass_kg,group.principal.inertia});
+  next->properties.reserve(model.group_count());
+  next->source_members.reserve(model.member_count());
+  for(std::size_t g=0;g<model.group_count();++g) {
+    const auto& p=model.groups()[g];
+    next->properties.push_back({RigidBindingSourceKind::NodalGroup,p.source_group_id,p.source_node_set_id,
+      p.member_offset,p.member_count,p.total_mass_kg,p.center,p.principal});
   }
-  for(const auto& member:next->source_members) {
-    const auto i=member.global_node;
-    if(i>=config.node_count||next->member_nodes[i]||dofs.translation_fixed_bits[i]||dofs.rotation_fixed[i]||
-        (dofs.rotation_present&&!dofs.rotation_present[i])||
-        inverse_mass[i]!=1/member.mass_kg||dofs.inverse_inertia[i]!=1/member.total_inertia_kg_m2)
-      return {NodalStatus::InvalidInput,"Rigid member mass/inertia or free-DOF association differs from owner",static_cast<std::uint32_t>(i)};
-    const double x[]{member.position.x,member.position.y,member.position.z};
-    const double v[]{next->initial_velocity.x,next->initial_velocity.y,next->initial_velocity.z};
-    for(unsigned a=0;a<3;++a)
-      if(input.position_xyz[3*i+a]!=x[a]||input.velocity_xyz[3*i+a]!=v[a]||
-          (input.angular_velocity_xyz&&input.angular_velocity_xyz[3*i+a]!=0))
-        return {NodalStatus::InvalidInput,"Rigid startup requires exact reference positions and uniform translation with zero spin",static_cast<std::uint32_t>(i)};
-    next->member_nodes[i]=1;
-    next->members.push_back({static_cast<std::uint32_t>(i),member.mass_kg,member.total_inertia_kg_m2});
+  for(std::size_t n=0;n<model.member_count();++n) {
+    const auto& m=model.members()[n];
+    next->source_members.push_back({m.source_node_id,m.global_node,m.position,m.mass_kg,m.total_inertia_kg_m2});
   }
-  // Forecasted retained payload includes the source copies, compact metadata,
-  // membership mask and snapshots. No startup-only rigid array is allocated.
-  if(!RigidHostPayload(sizeof(RigidStorage),next->properties.capacity(),next->source_members.capacity(),
-      next->groups.capacity(),next->members.capacity(),next->member_nodes.capacity(),next->snapshots.capacity(),
-      config.rigid_limits.max_host_bytes,next->owned_host_bytes))
-    return {NodalStatus::ResourceLimit,"Actual rigid host capacities exceed payload budget"};
-  next->members_offset=layout.members.offset;next->nodes_offset=layout.node_mask.offset;
-  next->immutable_bytes=layout.device_bytes;
+  const auto report=CompleteRigidStorage(config,input,inverse_mass,dofs,layout,*next);
+  if(report.status!=NodalStatus::Ok)return report;
   output=std::move(next); return {NodalStatus::Ok,"Rigid startup association prepared"};
 }
 } // namespace tl::fea::nodal_detail
@@ -91,7 +67,7 @@ NodalReport FENodalState::Impl::StageRigidSnapshot(const double* state) {
   for(std::size_t g=0;g<count;++g) {
     const auto value=rigid::ReadGroupState(staging.data()+offset+rigid::GroupStateValues*g);
     if(!rigid::ValidGroupState(value)) return Reject(NodalStatus::InvalidOutput,"Rigid state readback is invalid");
-    r.snapshots[g]={r.properties[g].source_group_id,r.properties[g].source_node_set_id,value};
+    r.snapshots[g]={r.properties[g].source_id,r.properties[g].source_node_set_id,value,r.properties[g].source_kind};
   }
   return {NodalStatus::Ok,"Rigid snapshot staged"};
 }

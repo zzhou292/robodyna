@@ -1,0 +1,28 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+
+cc_test(
+    name = "rigid_assembly_owner_host",
+    size = "small",
+    srcs = ["Fixture.cpp", "Fixture.h", "HostTest.cpp"],
+    deps = ["//lib_src/solvers:explicit_nodal_state",
+            "//lib_src/solvers:nodal_native_physical_coefficients",
+            "//lib_src/constraints:nodal_rigid_assembly_binding",
+            "//lib_utest/qualification/nodal_coefficients:solid_test_support",
+            "//lib_utest/qualification/tied_cin_attachment:test_support",
+            "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+
+cuda_test(
+    name = "rigid_assembly_owner_cuda",
+    size = "small",
+    srcs = ["Fixture.cpp", "Fixture.h", "OwnerFixture.h", "OwnerTest.cu"],
+    deps = ["//lib_src/solvers:explicit_nodal_state",
+            "//lib_src/constraints:nodal_rigid_assembly_binding",
+            "//lib_utest/qualification/nodal_coefficients:solid_test_support",
+            "//lib_utest/qualification/tied_cin_attachment:test_support",
+            "@googletest//:gtest_main"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+)

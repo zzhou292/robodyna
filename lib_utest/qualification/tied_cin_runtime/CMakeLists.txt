@@ -3,17 +3,16 @@ project(TLTiedCinRuntime LANGUAGES CXX)
 enable_testing()
 get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
 include("${TL_ROOT}/lib_src/constraints/tied_shell/TiedCinAttachment.cmake")
-include("${TL_ROOT}/lib_src/constraints/NodalRigidGroup.cmake")
+include("${TL_ROOT}/lib_src/constraints/NodalRigidAssemblyBinding.cmake")
 find_package(GTest REQUIRED)
 find_package(CUDAToolkit REQUIRED)
-# These storage methods are ordinary host C++; no device code or CUDA calls
-# execute in the host checks. The owning CUDA gate compiles the original TU.
+# State initialization is ordinary host C++; these checks allocate no device state.
 add_executable(tied_cin_runtime_host_test ValueTest.cpp StartupTest.cpp
   "${CMAKE_CURRENT_LIST_DIR}/../nodal_vehicle/LayoutTest.cpp"
   "${TL_ROOT}/lib_src/solvers/NodalCinStartup.cpp"
-  HostStorage.cpp)
+  "${TL_ROOT}/lib_src/solvers/NodalCinState.cpp")
 target_link_libraries(tied_cin_runtime_host_test PRIVATE tl_tied_cin_attachment
-  tl_nodal_rigid_group CUDA::cudart GTest::gtest_main)
+  tl_nodal_rigid_assembly_binding CUDA::cudart GTest::gtest_main)
 target_compile_options(tied_cin_runtime_host_test PRIVATE -fno-fast-math -ffp-contract=off)
 add_test(NAME tied_cin_runtime_host COMMAND tied_cin_runtime_host_test)
 option(TL_TIED_CIN_RUNTIME_NATIVE "Build complete native CIN caller qualification" OFF)

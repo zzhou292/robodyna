@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "NodalCinStorage.h"
 #include "../constraints/NodalRigidGroupModel.h"
+#include "../constraints/NodalRigidAssemblyBinding.h"
 #include <algorithm>
 #include <cmath>
 #include <cstring>
@@ -60,9 +61,13 @@ NodalReport ForecastCinStorage(const NodalCinStartup& input, const NodalStateCon
 
 NodalReport PrepareCinStorage(const NodalCinStartup& input, const NodalStateConfig& config,
     HostNodalKinematicsView kinematics, const double* inverse_mass, const NodalDofConfig& dofs,
-    const NodalRigidGroupModel* groups, const CinLayout& layout, std::unique_ptr<CinStorage>& output) {
+    const NodalRigidGroupModel* groups, const CinLayout& layout, std::unique_ptr<CinStorage>& output,
+    const NodalRigidAssemblyBinding* binding) {
   if (!input.mass || !input.inertia || !input.witness_ranges || !input.witnesses) {
     return {NodalStatus::InvalidInput, "CIN coefficient and complete witness inputs are mandatory"};
+  }
+  if (binding && (!binding->prepared() || !binding->domain()->Matches(*input.model->domain()))) {
+    return {NodalStatus::InvalidInput, "CIN and rigid assembly require the same complete source domain"};
   }
   // All finite raw values/reciprocal/source-bit checks precede optional arrays.
   const auto domain = input.model->domain()->nodes();
@@ -70,6 +75,11 @@ NodalReport PrepareCinStorage(const NodalCinStartup& input, const NodalStateConf
     if (!std::isfinite(input.mass[i]) || input.mass[i] < 0 ||
         !std::isfinite(input.inertia[i]) || input.inertia[i] < 0) {
       return {NodalStatus::InvalidInput, "CIN current M/J must be finite and nonnegative", std::uint32_t(i)};
+    }
+    if (binding) {
+      const auto& expected = binding->coefficients()->nodes()[i].coefficients;
+      if (!SameBits(input.mass[i],expected.mass) || !SameBits(input.inertia[i],expected.isotropic_inertia))
+        return {NodalStatus::InvalidInput,"CIN raw coefficients differ from the complete rigid ledger",std::uint32_t(i)};
     }
     const double xyz[] = {domain[i].position.x, domain[i].position.y, domain[i].position.z};
     for (unsigned a = 0; a < 3; ++a) {
@@ -164,6 +174,18 @@ NodalReport PrepareCinStorage(const NodalCinStartup& input, const NodalStateConf
       if (inverse_mass[i] != 0 || dofs.inverse_inertia[i] != 0) {
         return {NodalStatus::InvalidInput, "CIN dependents have no conventional inverse or kick", std::uint32_t(i)};
       }
+    } else if (binding && binding->FindMember(i)) {
+      // Prepared binding owns the source coefficient authority. Free PART
+      // members may have zero M/J; they still carry primary-driven rotation.
+      const auto& member = *binding->FindMember(i);
+      const double expected_mass = member.mass_kg == 0 ? 0 : 1/member.mass_kg;
+      const double expected_inertia = member.isotropic_inertia_kg_m2 == 0
+          ? 0 : 1/member.isotropic_inertia_kg_m2;
+      if (!SameBits(input.mass[i], member.mass_kg) ||
+          !SameBits(input.inertia[i], member.isotropic_inertia_kg_m2) ||
+          inverse_mass[i] != expected_mass || dofs.inverse_inertia[i] != expected_inertia) {
+        return {NodalStatus::InvalidInput, "CIN raw rigid coefficients differ from the prepared source", std::uint32_t(i)};
+      }
     } else if ((dofs.translation_fixed_bits[i] != 7 &&
           (!input.mass[i] || inverse_mass[i] != 1/input.mass[i])) ||
         (!dofs.rotation_fixed[i] && (!dofs.rotation_present || dofs.rotation_present[i]) &&
@@ -173,14 +195,15 @@ NodalReport PrepareCinStorage(const NodalCinStartup& input, const NodalStateConf
       return {NodalStatus::InvalidInput, "Independent raw M/J and supplied inverse association differ", std::uint32_t(i)};
     }
   }
-  if (groups) {
+  if (groups || binding) {
     // Reuse the already budgeted membership array as a temporary role index.
     // Bit zero always means dependent; bit one is removed before publication.
     for (const auto& row : next->rows) {
       for (const auto node : row.masters) next->dependent[node] |= 2;
     }
-    for (std::size_t i = 0; i < groups->member_count(); ++i) {
-      const auto node = groups->members()[i].global_node;
+    const auto count = binding ? binding->members().size() : groups->member_count();
+    for (std::size_t i = 0; i < count; ++i) {
+      const auto node = binding ? binding->members()[i].domain_node : groups->members()[i].global_node;
       if (node >= config.node_count || next->dependent[node]) {
         return {NodalStatus::InvalidInput, "CIN master/dependent intersects an actual rigid member", std::uint32_t(node)};
       }

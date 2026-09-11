@@ -16,7 +16,8 @@ struct NodalCinStartup {
   // explicit supplied values, not inferred from reciprocal source inputs.
   // Dependent M/J may be zero; their supplied and derived conventional inverse
   // values are zero even when raw M/J is positive. Only independent free DOFs
-  // require a positive raw coefficient and its reciprocal.
+  // require a positive raw coefficient and its reciprocal. Prepared PART members
+  // keep their authenticated nonnegative M/J and zero inverse when zero.
   const double* mass = nullptr;
   const double* inertia = nullptr;
   const constraints::tied_shell::cin::WitnessRange* witness_ranges = nullptr;
