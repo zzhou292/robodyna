@@ -122,3 +122,32 @@ the same PhysicalScope/domain/ledger/rigid/CIN identities from the selected
 source and qualify those relations before selecting a new demo profile. The
 existing physical factories' V1 call sites are unchanged. It is not a complete
 connected-source or full-vehicle runtime admission.
+
+## Explicit rear metal source policy
+
+`OriginalAdhesive18ExtendedRubberRearLaw44V3` retains V2 and adds the 210
+PID2000016 rear-bar cells and 96 PID2000392 rear-tube cells. The result is
+15 parts and 3,555 solids, with 11,679 original solids outside this producer.
+`RearMaterial.cpp` reads the actual MAT024 declarations and shared 46-point
+curve2100270 through the existing authenticated source reader. It prepares
+LAW44 with E50/200 GPa, nu.3, original density, C8000/s, P8 and the qualified
+VP0 filtered-rate branch with its native 10000/s cutoff. Curve stress converts
+from original MPa to Pa; plastic strain and the original seconds remain unchanged.
+The immutable source handle owns both curve arrays and prepared materials.
+
+The 306 new references use the qualified solid18 LAW44 ICP1/ISMSTR2 profile.
+All eight original slots are retained, including the 109 repeated-pair H8
+records. They are not passed through the rubber S6Z topology conversion.
+Existing reference initialization, row packing and resource accounting are
+shared; the V3 forecast additionally reserves LAW44 references. The existing
+4,096-parent and 512 MiB source caps cover this profile.
+
+Enable `ROBO_DYNA_VEHICLE_SOLID_REAR_TESTS=ON` alongside the actual and extended
+source tests to run `vehicle_rear_solid_source`. It checks every added source
+slot and represented SI position, all 46 curve values, qualified material
+parameters, positive per-slot mass, shared lifetime, unchanged V2 records and
+reference values, rejected material branches and exact resource bounds.
+Root's `rear-solid-source-root-tests-1` passed all 19 functions across four
+CTest targets. The source adapter adds no default vehicle selection or runtime
+history: physical domain, complete original rigid groups, coefficient ledger
+and resident state must be composed and tested before these parts enter a run.

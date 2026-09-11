@@ -91,6 +91,10 @@ void ReadGeometry(const source::CanonicalData& source, const std::string& member
         if (row.part_id == AdhesivePart) {
             Require(unique.size() == 8, "Adhesive source requires eight distinct solid18 slots");
             row.family = Family::Solid18;
+        } else if (SelectedRear(row.part_id, data.policy)) {
+            // Keep the original eight slots. The qualified LAW44 reference
+            // validates either eight distinct nodes or the exact repeated pairs.
+            row.family = Family::Solid18Law44;
         } else if (unique.size() == 8) {
             row.family = Family::Solid24;
         } else {

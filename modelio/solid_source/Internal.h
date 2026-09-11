@@ -15,6 +15,7 @@ Forecast Budget(const source::CanonicalData&, Policy, Limits);
 void ReadDeclarations(const source::CanonicalData&, const std::string&, Data&, Limits);
 void ReadPart(Part&, const std::vector<tied_shell::SourceEvidence>&, Data&);
 void PrepareMaterial(Part&, Data&);
+void ReadRearMaterial(Part&, const tied_shell::SourceEvidence&, Data&);
 void ReadGeometry(const source::CanonicalData&, const std::string&, Data&, Limits);
 void PrepareReferences(const source::CanonicalData&, Data&, Limits);
 std::size_t OwnedPayload(const Data&, Limits);

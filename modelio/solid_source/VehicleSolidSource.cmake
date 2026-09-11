@@ -6,6 +6,7 @@ add_library(robo_dyna_vehicle_solid_source STATIC
   "${CMAKE_CURRENT_LIST_DIR}/Sources.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/Cards.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/Materials.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/RearMaterial.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/Geometry.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/References.cpp")
 target_link_libraries(robo_dyna_vehicle_solid_source PUBLIC robo_dyna_tied_shell_declaration)

@@ -2,6 +2,7 @@
 #include "lib_src/elements/solid18/Solid18Reference.h"
 #include "lib_src/elements/solid24/Solid24Reference.h"
 #include "lib_src/elements/solid6z/Solid6zReference.h"
+#include "lib_src/elements/solid18/law44/Reference.h"
 #include <algorithm>
 
 namespace crash::modelio::solid_source::detail {
@@ -41,12 +42,20 @@ void PrepareReferences(const source::CanonicalData& source, Data& data, Limits) 
     data.solid18.reserve(count(Family::Solid18));
     data.solid24.reserve(count(Family::Solid24));
     data.solid6z.reserve(count(Family::Solid6z));
+    data.solid18_law44.reserve(count(Family::Solid18Law44));
     for (auto& row : data.rows) {
         Require(row.part_index < data.parts.size(), "Solid row material association is invalid");
         const auto& part = data.parts[row.part_index];
         Require((row.family == Family::Solid18) == (part.material_law == MaterialLaw::Law36),
                 "Selected solid family/material law association changed");
-        if (row.family == Family::Solid18) {
+        Require((row.family == Family::Solid18Law44) == (part.material_law == MaterialLaw::Law44),
+                "Selected rear solid family/material association changed");
+        if (row.family == Family::Solid18Law44) {
+            tl::fea::solid18::law44::ReferenceInput input;
+            Pack(input, row, part, positions, 8);
+            input.profile = tl::fea::solid18::law44::Profile();
+            Append(data.solid18_law44, input, row);
+        } else if (row.family == Family::Solid18) {
             tl::fea::solid18::ReferenceInput input;
             Pack(input, row, part, positions, 8);
             Append(data.solid18, input, row);

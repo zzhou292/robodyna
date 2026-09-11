@@ -55,7 +55,8 @@ Forecast Budget(const source::CanonicalData& source, Policy policy, Limits limit
     Add(result.geometry_bytes, records.descriptor.layout.rows, 192, limits.host_bytes);
     Add(result.geometry_bytes, limits.parents, sizeof(Row) + 256, limits.host_bytes);
     Add(result.reference_bytes, limits.parents, sizeof(tl::fea::solid18::Reference) +
-        sizeof(tl::fea::solid24::Reference) + sizeof(tl::fea::solid6z::Reference), limits.host_bytes);
+        sizeof(tl::fea::solid24::Reference) + sizeof(tl::fea::solid6z::Reference) +
+        (census.solid18_law44 ? sizeof(tl::fea::solid18::law44::Reference) : 0), limits.host_bytes);
     for (auto bytes : {result.fixed_bytes, result.canonical_bytes, result.parsing_bytes,
                       result.geometry_bytes, result.reference_bytes})
         Add(result.total_bytes, bytes, 1, limits.host_bytes);
@@ -75,6 +76,9 @@ std::size_t OwnedPayload(const Data& data, Limits limits) {
     vector(data.solid18);
     vector(data.solid24);
     vector(data.solid6z);
+    vector(data.solid18_law44);
+    vector(data.rear_plastic_strain);
+    vector(data.rear_yield_stress_pa);
     vector(data.sources);
     for (const auto& row : data.rows) text(row.raw_card);
     for (const auto& source : data.sources) {

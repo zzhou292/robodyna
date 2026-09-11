@@ -47,6 +47,13 @@ void ReadPart(Part& part, const std::vector<tied_shell::SourceEvidence>& sources
         "Selected solid source PART/SECTION/MATERIAL association changed");
     Require(!material.cards.empty() && tied_shell::detail::CardId(material.cards[0].second, 0) == part.material_id,
             "Selected solid material identity changed");
+    if (SelectedRear(part.id, data.policy)) {
+        Blank(p, 3, 8);
+        Require(Required(s, 1) == 2, "Original rear-metal ELFORM is not two");
+        Blank(s, 2, 8);
+        ReadRearMaterial(part, material, data);
+        return;
+    }
     if (part.id == AdhesivePart) {
         part.material_law = MaterialLaw::Law36;
         Blank(p, 3, 8);

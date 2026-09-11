@@ -61,6 +61,7 @@ void ReadDeclarations(const source::CanonicalData& source, const std::string& me
         part.sources = {request(*original), request(Find(sections, declared.section)),
                         request(Find(materials, declared.material))};
         if (id == AdhesivePart) part.curve_source = request(Find(curves, 2100010));
+        if (SelectedRear(id, data.policy)) part.curve_source = request(Find(curves, 2100270));
         data.parts.push_back(part);
     }
     Require(data.parts.size() == census.parts, "Selected solid PART inventory is incomplete");

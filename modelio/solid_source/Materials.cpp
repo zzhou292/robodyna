@@ -1,6 +1,7 @@
 #include "Internal.h"
 #include "lib_src/materials/law36/Prepare.h"
 #include "lib_src/materials/law42/Prepare.h"
+#include "lib_src/materials/law44/solid/Prepare.h"
 
 namespace crash::modelio::solid_source::detail {
 void PrepareMaterial(Part& part, Data& data) {
@@ -12,6 +13,13 @@ void PrepareMaterial(Part& part, Data& data) {
             part.density_kg_m3, curve, material);
         Require(status == tl::material::law36::Status::Ok, "Native adhesive LAW36 material rejected");
         part.law36 = material;
+    } else if (part.material_law == MaterialLaw::Law44) {
+        const tl::material::law44::solid::Curve curve{data.rear_plastic_strain.data(),
+            data.rear_yield_stress_pa.data(), static_cast<std::uint32_t>(data.rear_plastic_strain.size())};
+        tl::material::law44::solid::Parameters material;
+        const auto status = tl::material::law44::solid::Prepare(part.law44.material, curve, material);
+        Require(status == tl::material::law44::solid::Status::Ok, "Native rear LAW44 material rejected");
+        part.law44 = material;
     } else {
         // Pinned MAT007->LAW42: one Ogden term, alpha2, nu.463, no Prony.
         // Starter default tension cutoff is1e20 in the original MPa units.

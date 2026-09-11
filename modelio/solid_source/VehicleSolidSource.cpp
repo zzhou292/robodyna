@@ -27,7 +27,8 @@ VehicleSolidSource VehicleSolidSource::Prepare(const source::CanonicalSource& so
     const auto census = detail::ExpectedCensus(policy);
     output::Require(data.parts.size() == census.parts && data.rows.size() == census.parents &&
                     data.solid18.size() == census.solid18 && data.solid24.size() == census.solid24 &&
-                    data.solid6z.size() == census.solid6z && data.original_solids == 15234 &&
+                    data.solid6z.size() == census.solid6z &&
+                    data.solid18_law44.size() == census.solid18_law44 && data.original_solids == 15234 &&
                     data.outside_solids == 15234 - census.parents,
                     "Original retained solid census changed");
     next->data.owned_payload_bytes = detail::OwnedPayload(next->data, limits);

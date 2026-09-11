@@ -5,6 +5,8 @@
 #include "lib_src/elements/solid6z/Solid6zForceTypes.h"
 #include "lib_src/materials/law36/Types.h"
 #include "lib_src/materials/law42/Types.h"
+#include "lib_src/elements/solid18/law44/Types.h"
+#include "lib_src/materials/law44/solid/Types.h"
 
 namespace crash::modelio::solid_source {
 namespace source = output::full_shell::source;
@@ -12,10 +14,11 @@ enum class Policy {
     OriginalAdhesive18RubberHephS6zV1,
     // Adds only rear-mount/antiroll rubber PIDs17/393/509/521. This is a
     // source/reference profile, not a complete connected-vehicle admission.
-    OriginalAdhesive18ExtendedRubberHephS6zV2
+    OriginalAdhesive18ExtendedRubberHephS6zV2,
+    OriginalAdhesive18ExtendedRubberRearLaw44V3
 };
-enum class Family { Solid18, Solid24, Solid6z };
-enum class MaterialLaw { Law36, Law42 };
+enum class Family { Solid18, Solid24, Solid6z, Solid18Law44 };
+enum class MaterialLaw { Law36, Law42, Law44 };
 struct Limits {
     std::size_t host_bytes = 512 * 1024 * 1024;
     std::size_t member_bytes = 64 * 1024 * 1024, metadata_bytes = 1024 * 1024;
@@ -36,6 +39,7 @@ struct Part {
     double density_kg_m3 = 0;
     tl::material::law36::Parameters law36;
     tl::material::law42::Parameters law42;
+    tl::material::law44::solid::Parameters law44;
 };
 struct Row {
     std::uint64_t element_id = 0, part_id = 0;
@@ -58,6 +62,8 @@ struct Data {
     std::vector<tl::fea::solid24::Reference> solid24;
     std::vector<tl::fea::solid6z::Reference> solid6z;
     tl::fea::solid6z::ForceProfile wedge_force_profile;
+    std::vector<double> rear_plastic_strain, rear_yield_stress_pa;
+    std::vector<tl::fea::solid18::law44::Reference> solid18_law44;
     std::size_t original_solids = 0, outside_solids = 0;
     std::size_t owned_payload_bytes = 0;
 };

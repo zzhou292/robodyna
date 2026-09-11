@@ -8,13 +8,17 @@ inline constexpr std::uint64_t LastRubberPart = 2000484;
 
 struct Census {
     std::size_t parts, parents, solid18, solid24, solid6z;
+    std::size_t solid18_law44 = 0;
 };
 inline bool Supported(Policy policy) noexcept {
     return policy == Policy::OriginalAdhesive18RubberHephS6zV1 ||
-           policy == Policy::OriginalAdhesive18ExtendedRubberHephS6zV2;
+           policy == Policy::OriginalAdhesive18ExtendedRubberHephS6zV2 ||
+           policy == Policy::OriginalAdhesive18ExtendedRubberRearLaw44V3;
 }
 inline Census ExpectedCensus(Policy policy) {
     output::Require(Supported(policy), "Unsupported solid source resolution policy");
+    if (policy == Policy::OriginalAdhesive18ExtendedRubberRearLaw44V3)
+        return {15, 3555, 908, 1991, 350, 306};
     if (policy == Policy::OriginalAdhesive18ExtendedRubberHephS6zV2)
         return {13, 3249, 908, 1991, 350};
     return {9, 2412, 908, 1309, 195};
@@ -22,10 +26,14 @@ inline Census ExpectedCensus(Policy policy) {
 inline bool SelectedRubber(std::uint64_t id, Policy policy) noexcept {
     if (!Supported(policy)) return false;
     if (id >= FirstRubberPart && id <= LastRubberPart) return true;
-    if (policy != Policy::OriginalAdhesive18ExtendedRubberHephS6zV2) return false;
+    if (policy == Policy::OriginalAdhesive18RubberHephS6zV1) return false;
     return id == 2000017 || id == 2000393 || id == 2000509 || id == 2000521;
 }
+inline bool SelectedRear(std::uint64_t id, Policy policy) noexcept {
+    return policy == Policy::OriginalAdhesive18ExtendedRubberRearLaw44V3 &&
+           (id == 2000016 || id == 2000392);
+}
 inline bool Selected(std::uint64_t id, Policy policy) noexcept {
-    return Supported(policy) && (id == AdhesivePart || SelectedRubber(id, policy));
+    return Supported(policy) && (id == AdhesivePart || SelectedRubber(id, policy) || SelectedRear(id, policy));
 }
 } // namespace crash::modelio::solid_source::detail
