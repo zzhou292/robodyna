@@ -75,7 +75,7 @@ cc_library(
         "law36/Update.h",
         "law36/Caller.h",
     ],
-    deps = [":vinter_value", "//lib_src/math:quaternion"],
+    deps = [":vinter_value", ":solid_caller_values", "//lib_src/math:quaternion"],
 )
 
 cc_library(
@@ -87,5 +87,11 @@ cc_library(
 cc_library(
     name = "vinter2_value",
     hdrs = ["detail/Vinter2Value.h"],
+    deps = ["//lib_src/math:quaternion"],
+)
+
+cc_library(
+    name = "solid_caller_values",
+    hdrs = ["detail/SolidCallerValues.h"],
     deps = ["//lib_src/math:quaternion"],
 )
