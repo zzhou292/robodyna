@@ -61,5 +61,24 @@ cmake --build <build> --parallel 1 --target \
 ctest --test-dir <build> --output-on-failure
 ```
 
-Root schedules the original execution. No original-count result is claimed by
-the author-only tiny gate.
+The owning original gate passed all six functions at app `f7f5ef2`. Its immutable
+report is `crash-work/reports/yaris-physical-source-coverage-1.json` (4,687,730 B).
+The baseline contains 372,240 nodes. All 2,828 literal TYPE25 records have blank
+optional fields; their 5,656 endpoints add 103 nodes, producing a provisional
+372,343-node union. This is not a final physical-domain count.
+
+All 20 PART roots are covered. Before and after TYPE25, the plain-group census
+is unchanged: 673 complete, 80 partial, six absent, with 259 unique missing
+members. None of those groups intersects the eight excluded tire shell parts.
+Ninety-four missing nodes have no structural shell/beam/solid incidence; 165 have
+other original beam/solid incidence. These source obligations require explicit
+producer or case-disposition decisions; TYPE25 does not close them.
+
+Two point-mass records outside the current 54-PART-extra selection lie on retained
+shell nodes: EID2409343/NID2416473 and EID2409344/NID2416267. Their additional mass
+must be accounted for before claiming a complete ledger. The census does not
+assign it implicitly to shell coefficients.
+
+The complete census preflight is 474,705,250 B and its owned result is 4,814,162 B.
+The 5,102 original rigid skin parent/PID/root associations are preserved. Existing
+native material execution and owner admission remain separate gates.
