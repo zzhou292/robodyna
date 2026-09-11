@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
 #include "Measure.h"
-#include <limits>
+#include <cfloat>
 
 namespace tl::fea::solids::batch_detail {
 namespace {
@@ -45,7 +45,7 @@ __global__ void Finalize(Storage* storage, unsigned accepted, unsigned trial,
     identity.qualification_id = state.config.qualification_id;
     identity.phase = BatchPhase::Accepted;
   }
-  identity.minimum_native_dt_s = std::numeric_limits<double>::max();
+  identity.minimum_native_dt_s = DBL_MAX;
   state.control.diagnostics = identity;
   const auto* prepared = initial ? nullptr : &view;
   if (!MeasureFamily<Traits18>(state, accepted, trial, 0, prepared) ||
