@@ -2,6 +2,7 @@
 // Qualification of the existing SAP as a tied-search candidate provider.
 // This is not original-deck bucket traversal or a runtime attachment owner.
 #include "NativeOracle.h"
+#include "BoundsFixture.h"
 #include "lib_src/collision/HydroelasticBroadphase.cuh"
 #include <set>
 #include <stdexcept>
@@ -47,28 +48,36 @@ struct Scene {
   Scene() {
     // Duplicate rank 0 at rank 3 exercises first-in-order exact ties.
     masters={Shape(0), Shape(1), Shape(2), Shape(0)};
+    auto unequal=Shape();unequal.geometry_m.master_position[0].x=-.1;
+    masters.push_back(unequal);
+    auto degenerate=Shape();
+    for(auto& p:degenerate.geometry_m.master_position) p={};
+    masters.push_back(degenerate);
     const int m=masters.size(), count=m+secondary.size();
     nodes.resize(4*m+secondary.size(), 3);
     elements.resize(count, 4);
     bodies.resize(count);
     radii.resize(count, 0.);
     for (int i=0; i<m; ++i) {
-      ts::CandidateProjection projection;
-      if (ts::ProjectCandidate(masters[i], projection)!=ts::Status::Success)
+      ts::NativeSearchBounds bounds;
+      if (ts::PrepareSearchBounds(BoundsInput(masters[i]), bounds)!=ts::Status::Success)
         throw std::runtime_error("invalid test search master");
-      // Outward rounding retains a conservative SI radius after conversion.
-      radii[i]=std::nextafter(projection.gap_m,
+      // The startup search uses original working coordinates. Its MAX-diagonal
+      // radius differs from the MIN-diagonal final projection gap.
+      radii[i]=std::nextafter(bounds.inflation,
                              std::numeric_limits<double>::infinity());
       for (int k=0; k<4; ++k) {
         const auto p=masters[i].geometry_m.master_position[k];
-        nodes.row(4*i+k)<<p.x,p.y,p.z;
+        nodes.row(4*i+k)<<p.x/masters[i].working_length_to_m,
+            p.y/masters[i].working_length_to_m,p.z/masters[i].working_length_to_m;
         elements(i,k)=4*i+k;
       }
       bodies[i]=0;
     }
     for (int i=0; i<static_cast<int>(secondary.size()); ++i) {
       const auto p=secondary[i];
-      nodes.row(4*m+i)<<p.x,p.y,p.z;
+      nodes.row(4*m+i)<<p.x/masters[0].working_length_to_m,
+          p.y/masters[0].working_length_to_m,p.z/masters[0].working_length_to_m;
       elements.row(m+i).setConstant(4*m+i);
       bodies[m+i]=1;
     }
@@ -117,6 +126,7 @@ TEST_F(TiedSearchBroadphase, AllAxesRetainNativeAcceptedPairsAndOrderedChoices) 
     for (int m=0; m<static_cast<int>(scene.masters.size()); ++m) {
       auto input=scene.masters[m];
       input.geometry_m.secondary_position=scene.secondary[i];
+      if(NativeBounds(BoundsInput(input),scene.secondary[i])[7]!=1) continue;
       if (Native(input,m+1,expected[i]).admissible) accepted.emplace(m,i);
     }
   ASSERT_FALSE(accepted.empty());
@@ -131,6 +141,10 @@ TEST_F(TiedSearchBroadphase, AllAxesRetainNativeAcceptedPairsAndOrderedChoices) 
     for (const auto [m,i] : pairs) {
       auto input=scene.masters[m];
       input.geometry_m.secondary_position=scene.secondary[i];
+      ts::NativeSearchBounds bounds;bool within=false;
+      ASSERT_EQ(ts::PrepareSearchBounds(BoundsInput(input),bounds),ts::Status::Success);
+      ASSERT_EQ(ts::WithinSearchBounds(bounds,scene.secondary[i],within),ts::Status::Success);
+      if(!within) continue;
       ASSERT_EQ(ts::ConsiderCandidate(input,m+1,actual[i]),ts::Status::Success);
     }
     for (std::size_t i=0; i<actual.size(); ++i) {

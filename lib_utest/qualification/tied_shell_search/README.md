@@ -2,7 +2,9 @@
 
 This gate qualifies the selected TYPE2/Spotflag28 Ignore2/DSEARCH0 geometric
 candidate and ordered selection. It reuses TL fixed-vector operations; force,
-motion, coefficient transfer, broadphase and source packing remain separate.
+motion and coefficient transfer remain separate. Native candidate bounds and
+reuse of the existing GPU broadphase are qualified below; source packing has
+its own application-owned gate.
 
 The public input contains SI coordinates/thickness and explicit original working
 length (.001 m for the Yaris millimetre deck). I2BAR3 area and I7LIN3 edge floors
@@ -87,3 +89,36 @@ This establishes a small-fixture reuse path, not full-deck native bucket
 traversal, degeneracy admission, CIN/PEN classification or an attachment owner.
 Actual source ordering, conservative geometry-domain admission and original
 full mapping comparison remain necessary before production attachment startup.
+
+## Native candidate bounds and exact filtering
+
+`TiedSearchBounds.h` preserves two distinct native decisions. I2BUC1 inflates
+each master by max(.05 times its **larger** diagonal, .6 times its thickness
+plus the interface-wide maximum secondary shell thickness). I2COR3's final
+projection uses the **smaller** diagonal and the individual secondary shell
+thickness. Both calculations use explicit original working coordinates.
+`WithinSearchBounds` applies I2TRIVOX's inclusive box filter after conservative
+candidate generation. The caller must separately exclude a secondary whose
+physical node ID is one of that master's four slots.
+
+This exact filter is required for native geometric admission: the native
+zero-area floor can admit a distant point in raw projection even though the
+startup box excludes it. A successful search still does not establish force
+patch rank; attachment installation must also pass `PreparePatch`.
+
+Root `tied-bounds-root-tests-1` passes **15 numeric functions** (4 host,
+7 native, 2 CUDA projection/bounds and 2 CUDA broadphase) plus source identity.
+The SAP fixture now includes unequal diagonals and a zero-area master, builds
+bounds in original units, filters candidates using the exact native box and
+restores IRECT rank before selection. All three axes agree with independently
+native-filtered exhaustive choices; exact-capacity retry still passes. Separate
+tests cover global secondary thickness, inclusive faces, one-ULP outside points,
+overflow and rejected-output preservation. Six complete donors and six exact
+fragments pass byte/hash verification. Independent read-only review found no
+blocker. This remains a bounded fixture, not the full original mapping.
+
+Build3 and tests1 are accepted. Build1 retained a fragment extraction-offset
+error (I2TRIVOX line240 instead of241); correcting the copied range to241–244
+from the same pinned donor fixed the wrapper. No donor arithmetic or comparison
+tolerance changed. The native-only intermediate gate passed seven functions
+and source identity before the complete CUDA gate.

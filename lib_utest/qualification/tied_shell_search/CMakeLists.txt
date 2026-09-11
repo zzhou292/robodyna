@@ -10,14 +10,14 @@ set(shared "${CMAKE_CURRENT_LIST_DIR}/../native/qeph/original")
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/modules")
 add_library(tied_search_native STATIC
   "${shared}/common_source/modules/constant_mod.F"
-  native/NativeSearch.F
+  native/NativeSearch.F native/NativeBounds.F90
   native/original/starter/source/interfaces/inter3d1/i2dst3.F
   native/original/starter/source/interfaces/inter3d1/i7lin3.F)
 target_include_directories(tied_search_native PRIVATE "${native}"
   "${native}/original/starter/share/includes" "${shared}/engine/share/includes"
   "${shared}/engine/share/spe_inc" "${shared}/engine/share/r8")
 target_compile_definitions(tied_search_native PRIVATE MYREAL8 CPP_mach=CPP_p4linux964 COMP_GFORTRAN)
-target_compile_options(tied_search_native PRIVATE -cpp -ffixed-line-length-none
+target_compile_options(tied_search_native PRIVATE -cpp -ffixed-line-length-none -ffree-line-length-none
   -fno-fast-math -ffp-contract=off -fcheck=all -finit-real=snan)
 set_target_properties(tied_search_native PROPERTIES Fortran_MODULE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/modules")
 add_library(tied_search_oracle STATIC NativeOracle.cpp)
@@ -26,7 +26,7 @@ target_compile_options(tied_search_oracle PRIVATE -fno-fast-math -ffp-contract=o
 add_executable(tied_search_host_test ValueTest.cpp)
 target_link_libraries(tied_search_host_test PRIVATE tl_tied_shell_search GTest::gtest_main)
 target_compile_options(tied_search_host_test PRIVATE -fno-fast-math -ffp-contract=off)
-add_executable(tied_search_native_test NativeTest.cpp)
+add_executable(tied_search_native_test NativeTest.cpp BoundsNativeTest.cpp)
 target_link_libraries(tied_search_native_test PRIVATE tied_search_oracle GTest::gtest_main)
 target_compile_options(tied_search_native_test PRIVATE -fno-fast-math -ffp-contract=off)
 add_test(NAME tied_search_values COMMAND tied_search_host_test)
@@ -36,7 +36,7 @@ option(TL_TIED_SEARCH_CUDA "Build actual CUDA projection/selection checks" OFF)
 if(TL_TIED_SEARCH_CUDA)
   enable_language(CUDA)
   find_package(CUDAToolkit REQUIRED)
-  add_executable(tied_search_cuda_test CudaTest.cu)
+  add_executable(tied_search_cuda_test CudaTest.cu BoundsCudaTest.cu)
   target_link_libraries(tied_search_cuda_test PRIVATE tied_search_oracle GTest::gtest_main CUDA::cudart)
   set_target_properties(tied_search_cuda_test PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED ON)
   target_compile_options(tied_search_cuda_test PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>")

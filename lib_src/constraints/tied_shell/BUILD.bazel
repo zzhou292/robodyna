@@ -7,7 +7,7 @@ cc_library(
 )
 cc_library(
     name = "tied_shell_search",
-    hdrs = ["TiedSearchTypes.h", "TiedSearchProjection.h", "TiedSearch.h"],
+    hdrs = ["TiedSearchTypes.h", "TiedSearchProjection.h", "TiedSearch.h", "TiedSearchBounds.h"],
     deps = [":tied_shell_patch"],
     visibility = ["//visibility:public"],
 )
