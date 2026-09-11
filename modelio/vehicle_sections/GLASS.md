@@ -34,11 +34,11 @@ are copied unchanged. Native QEPH offset inertia and unchanged TYPE1 T3 inertia
 come from the existing TL startup producer; no mass is redistributed or summed.
 Optional contact projection is explicitly false.
 
-The expected original increment is 9 parts / 14,210 shells, including 8,502
+The qualified original increment is 9 parts / 14,210 shells, including 8,502
 noncentered windshield shells (PIDs 2000023 and 2000523). All 349,645 parents
 remain: 340,292 declarations become available for native reference assessment,
-with 9,353 still unresolved. These are expected source counts until the owning
-original-source gate records its result. Neither source resolution nor a valid
+with 9,353 still unresolved. The owning source and reference gates confirm these
+counts with zero reference rejections. Neither source resolution nor a valid
 local reference admits a complete runtime owner, contact eligibility, rigid
 part, one-point midlayer, QBAT formulation or connected vehicle load path.
 
@@ -72,3 +72,18 @@ The original reference test compares every prior supported reference field,
 checks every new source input and native result, and reports the full forecast
 before construction. It retains two assessments for parity, so its process cap
 must cover that test total. No native Fortran, CUDA or solver is linked here.
+
+Root evidence: `vehicle-glass-root-{sections,references}-tests-1` passes
+12 functions: three glass fields, two original glass source, one complete
+glass reference and six prior section field/source regressions. The create-only
+resolution is `yaris-vehicle-section-resolution-glass-1.json`, 190,529 bytes,
+SHA256 `ea40b817b66c73e961c502e5ff0d4dffd5d354b65e1339e6a093164adeb32158`.
+Its source forecast is 298,624,383 B; complete reference forecast 559,298,524 B,
+within the unchanged 768 MiB profile. The reference gate constructs all340,292
+supported original rows, checks the14,210 glass inputs and native results,
+and preserves exact prior supported reference values. The serialized test
+processes used two CPUs /2 GiB guards; sampled RSS was at most673,988,608 B.
+These measurements are startup evidence, not a coupled trajectory.
+All nine affected historical/original resolved-reference functions also pass
+in `vehicle-glass-root-reference-regression-tests-1`, including the149/631-shell
+component reference bit comparisons.
