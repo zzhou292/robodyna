@@ -93,3 +93,28 @@ enables native prerequisites). The two matching CTests are
 `shell_failure_force_native` and `shell_failure_force_cuda`. CPU-only author
 checks do not constitute Fortran or CUDA execution evidence; the parent owns
 those serialized gates and the affected existing resident regressions.
+
+## Root qualification
+
+At TL `1017522`, all **13 new functions pass**: four values, seven independent
+native checks and two actual CUDA device-history tests. All **36 affected
+regressions** also pass: four legacy failure-caller native functions, 18 mixed
+layout/resident functions, five legacy native force recurrence functions, one
+legacy layered CUDA function, and eight original-source app CUDA functions.
+No skips or comparison-budget changes were used. The latter app gate builds
+current app `aa2f3ce` against the same main TL headers and includes the original
+149-shell elastic and 631-shell mixed fixtures. The owning Bazel value target
+also builds (`shell-failure-force-bazel-build-1`).
+
+Reports in the workspace are `shell-failure-force-root-tests-2`,
+`mixed-layered-resident-root-regression-tests-1`,
+`shell-failure-force-legacy-regression-tests-1`, and
+`source-layered-flight-root-regression-tests-1`, with corresponding per-function
+XML directories. Preserve the initial failed runtime gate: the complete family
+driver needed to supply native M%SSP explicitly to the test bridge. The production
+force equations were unchanged. The initial CUDA fixture compile failure was
+fixed by placing its two gtest trace macros on distinct source lines.
+
+This qualification covers force values and existing owner regressions. Optional
+resident failure history, source admission, contact activity and full-shell
+impact remain separate integration work.
