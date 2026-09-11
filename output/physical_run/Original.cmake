@@ -8,6 +8,7 @@ foreach(name CANONICAL SCOPE DECLARATIONS GLASS_RESOLUTION TYPE13_DECLARATION)
     message(FATAL_ERROR "Physical run archive requires ${name}")
   endif()
 endforeach()
+
 set(ROBO_DYNA_VEHICLE_GLASS_SHA256 "" CACHE STRING "Authenticated glass sidecar SHA256")
 add_executable(robo_dyna_physical_run_original_check tests/OriginalTest.cpp
   "${CMAKE_CURRENT_LIST_DIR}/../../case/vehicle_startup/physical_attachments/tests/Source.cpp")
@@ -22,3 +23,18 @@ foreach(gate InitialOnlyPrefixHasCompleteSourceAndNoAcceptedIntervalClaim OneAct
   set_tests_properties(physical_run_${gate} PROPERTIES TIMEOUT 600 RUN_SERIAL TRUE PROCESSORS 2
     ENVIRONMENT "ROBO_VEHICLE_DECLARATIONS=${ROBO_DYNA_VEHICLE_DECLARATIONS};ROBO_VEHICLE_GLASS_RESOLUTION=${ROBO_DYNA_VEHICLE_GLASS_RESOLUTION};ROBO_VEHICLE_GLASS_SHA256=${ROBO_DYNA_VEHICLE_GLASS_SHA256};ROBO_DYNA_TYPE13_DECLARATION=${ROBO_DYNA_VEHICLE_TYPE13_DECLARATION}")
 endforeach()
+
+if(ROBO_DYNA_PHYSICAL_RUN_WALL)
+  set(ROBO_DYNA_VEHICLE_WALL "" CACHE FILEPATH "Authenticated original canonical wall manifest")
+  if(NOT EXISTS "${ROBO_DYNA_VEHICLE_WALL}")
+    message(FATAL_ERROR "Physical wall archive requires original wall manifest")
+  endif()
+  target_sources(robo_dyna_physical_run_original_check PRIVATE tests/WallOriginalTest.cpp)
+  target_link_libraries(robo_dyna_physical_run_original_check PRIVATE robo_dyna_physical_run_wall)
+  add_test(NAME physical_run_wall_original COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_LIST_DIR}/../../case/vehicle_startup/tied_classification/tests/actual_fixture.py"
+    "${ROBO_DYNA_VEHICLE_CANONICAL}" "${ROBO_DYNA_VEHICLE_SCOPE}" "${ROBO_DYNA_VEHICLE_DECLARATIONS}"
+    "$<TARGET_FILE:robo_dyna_physical_run_original_check>" "PhysicalRunWallOriginal.*")
+  set_tests_properties(physical_run_wall_original PROPERTIES TIMEOUT 600 RUN_SERIAL TRUE PROCESSORS 2
+    ENVIRONMENT "ROBO_VEHICLE_DECLARATIONS=${ROBO_DYNA_VEHICLE_DECLARATIONS};ROBO_VEHICLE_GLASS_RESOLUTION=${ROBO_DYNA_VEHICLE_GLASS_RESOLUTION};ROBO_VEHICLE_GLASS_SHA256=${ROBO_DYNA_VEHICLE_GLASS_SHA256};ROBO_DYNA_TYPE13_DECLARATION=${ROBO_DYNA_VEHICLE_TYPE13_DECLARATION};ROBO_VEHICLE_WALL=${ROBO_DYNA_VEHICLE_WALL}")
+endif()

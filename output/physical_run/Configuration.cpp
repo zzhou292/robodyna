@@ -7,6 +7,7 @@ Document ConfigurationDocument(const Configuration& c) {
     records::CheckIdentity(c.identity);arrays::CheckHash(c.point_layout_sha256);
     records::PlanArchive(r);
     Document d;d.SetObject();String(d,"schema","robo_dyna.physical_run_configuration.v1");
+    if(c.wall)String(d,"wall_case",WallProfile);
     array_json::Child(d,"identity",records::IdentityDocument(c.identity));
     array_json::Child(d,"profile",ProfileDocument(c.profile));
     String(d,"point_layout_sha256",c.point_layout_sha256);
@@ -24,10 +25,15 @@ Document ConfigurationDocument(const Configuration& c) {
 }
 Configuration ReadConfiguration(const Value& v) {
     using namespace array_json;
-    Keys(v,{"schema","identity","profile","point_layout_sha256","nodes","parents","points","samples","intervals",
+    const bool wall=v.IsObject() && v.HasMember("wall_case");
+    if(wall)Keys(v,{"schema","identity","profile","point_layout_sha256","nodes","parents","points","samples","intervals",
+        "fixed_dt_s","requested_duration_s","static_reserve_bytes","total_byte_cap","file_byte_cap","static_reservations","wall_case"});
+    else Keys(v,{"schema","identity","profile","point_layout_sha256","nodes","parents","points","samples","intervals",
         "fixed_dt_s","requested_duration_s","static_reserve_bytes","total_byte_cap","file_byte_cap","static_reservations"});
     Require(Text(v["schema"])=="robo_dyna.physical_run_configuration.v1","Unsupported physical configuration");
     Configuration c;auto& r=c.request;
+    if(wall)Require(Text(v["wall_case"])==WallProfile,"Unknown physical wall profile");
+    c.wall=wall;
     c.identity=records::ParseIdentity(v["identity"]);c.profile=ReadProfile(v["profile"]);
     c.point_layout_sha256=Text(v["point_layout_sha256"]);
     r.nodes=UInt(v["nodes"]);r.parents=UInt(v["parents"]);r.plastic_points=UInt(v["points"]);

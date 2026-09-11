@@ -6,6 +6,7 @@ namespace crash::output::physical_run {
 Document ManifestDocument(const Manifest& m) {
     Document d;d.SetObject();String(d,"schema",Schema);
     String(d,"publication","closed_accepted_prefix_or_horizon");
+    if(m.wall)array_json::Child(d,"wall_case",WallDocument(*m.wall));
     array_json::Child(d,"identity",records::IdentityDocument(m.identity));
     array_json::Child(d,"configuration",FileDocument(m.configuration));array_json::Child(d,"index",FileDocument(m.index));
     array_json::Child(d,"source_bundle",FileDocument(m.source));array_json::Child(d,"parent_activity",FileDocument(m.activity_declaration));
@@ -16,9 +17,12 @@ Document ManifestDocument(const Manifest& m) {
 }
 Manifest ReadManifest(const Value& v) {
     using namespace array_json;
-    Keys(v,{"schema","publication","identity","configuration","index","source_bundle","parent_activity","whole_run_forecast_bytes","files"});
+    const bool wall=v.IsObject() && v.HasMember("wall_case");
+    if(wall)Keys(v,{"schema","publication","identity","configuration","index","source_bundle","parent_activity","whole_run_forecast_bytes","files","wall_case"});
+    else Keys(v,{"schema","publication","identity","configuration","index","source_bundle","parent_activity","whole_run_forecast_bytes","files"});
     Require(Text(v["schema"])==Schema && Text(v["publication"])=="closed_accepted_prefix_or_horizon","Unsupported physical run archive");
     Manifest m;
+    if(wall)m.wall=ReadWallDocument(v["wall_case"]);
     m.identity=records::ParseIdentity(v["identity"]);m.configuration=ReadFileRecord(v["configuration"]);
     m.index=ReadFileRecord(v["index"]);m.source=ReadFileRecord(v["source_bundle"]);m.activity_declaration=ReadFileRecord(v["parent_activity"]);
     m.forecast_bytes=UInt(v["whole_run_forecast_bytes"]);

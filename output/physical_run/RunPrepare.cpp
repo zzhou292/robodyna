@@ -12,16 +12,21 @@ records::source::BundleRequest MakeRequest(const records::Context& c,std::uint64
     records::activity::PlanWithActivity(c,r,"parent-activity.json");return request;
 }
 namespace detail {
-void ValidateRequest(const records::PlanRequest& r) {
+void ValidateRequest(const records::PlanRequest& r,bool wall) {
     Require(!r.extra_interval_bytes && !r.extra_frame_bytes,"Physical run has unsupported optional storage");
-    Require(r.static_files.size()==3,"Physical run requires exactly its three outer static reservations");
+    Require(r.static_files.size()==(wall?10u:3u),"Physical run static reservation count differs from named profile");
     for(const auto* name:{"manifest.json","frame-index.json","configuration.json"}) {
         bool found=false;
         for(const auto& f:r.static_files)if(f.file==name)found=f.bytes==MetadataCap;
         Require(found,"Physical run metadata reservation differs from writer cap");
     }
+    if(wall)for(const auto* name:WallFiles) {
+        bool found=false;
+        for(const auto& f:r.static_files)if(f.file==name)found=f.bytes==WallFileCap;
+        Require(found,"Physical wall reservation differs from fixed artifact cap");
+    }
 }
-Forecast ForecastRun(const records::Context& c,const physical_frames::Archive& a,Profile p,Limits limits) {
+Forecast ForecastRun(const records::Context& c,const physical_frames::Archive& a,Profile p,Limits limits,bool wall) {
     Require(limits.host_bytes && limits.host_bytes<=512u<<20,"Invalid physical run host cap");
     Forecast f;f.archive=a.plan();
     const auto rows=std::min<std::uint64_t>(f.archive.archive.rows_per_chunk,f.archive.archive.interval_bytes/interval::RowBytes);
@@ -30,24 +35,33 @@ Forecast ForecastRun(const records::Context& c,const physical_frames::Archive& a
     Require(budget.Append<std::byte>(a.startup_host_bytes(),region) &&
         budget.Append<std::byte>(3*f.interval_staging_bytes,region) &&
         budget.Append<std::byte>(32*MetadataCap,region) &&
-        budget.Append<std::byte>(sizeof(FrameFiles)*f.archive.archive.frame_capacity,region),
+        budget.Append<std::byte>(sizeof(FrameFiles)*f.archive.archive.frame_capacity,region) &&
+        budget.Append<std::byte>(wall?WallWorkspaceBytes:0,region),
         "Physical run source/frame/interval/metadata peak exceeds host cap");
     f.peak_host_bytes=budget.bytes();return f;
 }
 }
 Forecast RunArchive::Preflight(const records::source::PreparedSourceMapping& mapping,const records::Context& context,
     records::source::BundleRequest request,Profile profile,Limits limits) {
-    detail::ValidateRequest(request.archive);
+    return PreflightCore(mapping,context,std::move(request),profile,limits,false);
+}
+Forecast RunArchive::PreflightCore(const records::source::PreparedSourceMapping& mapping,const records::Context& context,
+    records::source::BundleRequest request,Profile profile,Limits limits,bool wall) {
+    detail::ValidateRequest(request.archive,wall);
     auto frame_archive=physical_frames::Archive::Prepare(mapping,context,std::move(request));
-    return detail::ForecastRun(context,frame_archive,profile,limits);
+    return detail::ForecastRun(context,frame_archive,profile,limits,wall);
 }
 RunArchive RunArchive::Prepare(const std::filesystem::path& root,const records::source::PreparedSourceMapping& mapping,
     const records::Context& context,records::source::BundleRequest request,Profile profile,Limits limits) {
-    detail::ValidateRequest(request.archive);
+    return PrepareCore(root,mapping,context,std::move(request),profile,limits,false);
+}
+RunArchive RunArchive::PrepareCore(const std::filesystem::path& root,const records::source::PreparedSourceMapping& mapping,
+    const records::Context& context,records::source::BundleRequest request,Profile profile,Limits limits,bool wall) {
+    detail::ValidateRequest(request.archive,wall);
     auto frame_archive=physical_frames::Archive::Prepare(mapping,context,request);
-    const auto forecast=detail::ForecastRun(context,frame_archive,profile,limits);
+    const auto forecast=detail::ForecastRun(context,frame_archive,profile,limits,wall);
     for(const auto& reserve:frame_archive.source_bundle().reservations())request.archive.static_files.push_back(reserve);
-    Configuration config{context.identity(),profile,request.archive,context.point_layout_sha256()};
+    Configuration config{context.identity(),profile,request.archive,context.point_layout_sha256(),wall};
     ConfigurationDocument(config);
     Require(std::filesystem::symlink_status(root).type()==std::filesystem::file_type::directory &&
         std::filesystem::is_empty(root),"Physical run needs a real empty destination directory");

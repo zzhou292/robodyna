@@ -5,6 +5,7 @@ add_library(robo_dyna_artifact_io STATIC
   "${CMAKE_CURRENT_LIST_DIR}/ArtifactIO.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/ArtifactInventory.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/MeshArchive.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/GeometryMeshArchive.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/SurfaceBindingFields.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/CsvLedgerSegments.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/CsvLedgerWriter.cpp")

@@ -48,18 +48,36 @@ samples remain separate resources. The reader streams chunks instead of
 allocating the complete interval history. Its complete original-source peak
 and initial/one-interval gates are authored and require root execution.
 
-The core schema is deliberately no-wall. A named `WallCaseArtifacts` follow-on
-will retain the actual `VehicleWallSetup` receipt in `wall/`, with exactly the
-seven files produced by `WriteSetupArtifacts`: original canonical manifest,
-placed mesh/OBJ/placement, selected mesh/OBJ, and setup. It will add fixed typed
-reservations and a manifest receipt, bind original source/execution identities,
-and expose the authenticated selected mesh. Unknown companion files remain
-rejected. No wall is reconstructed from untrusted settings.
+The optional named wall adapter uses `MakeWallRequest`,
+`RunArchive::PreflightWithWall` and `PrepareWithWall` with the actual immutable
+`VehicleWallSetup` and `physical_frames::Mapping`. It authenticates their exact
+execution backing and requested duration before mutation. `WriteSetupArtifacts`
+produces exactly seven files in `wall/`: original canonical manifest, placed
+mesh/OBJ/placement, selected mesh/OBJ, and setup. All seven reserve 1 MiB each
+under the selected whole-run cap. The original 62-node/100-triangle wall or the
+selected four-node/two-triangle rectangle bounds serialization before writes.
+The writer reserves 16 MiB for wall serialization; closing requires a complete
+typed receipt in the outer manifest. Default no-wall calls remain strict.
+
+Replay checks complete file hashes, pinned original wall provenance, vehicle
+source associations, placement/selected mesh linkage and exact plane bits. Its
+`wall()` receipt and `wall_mesh()` expose the authenticated immutable mesh.
+Neither reconstructs geometry from settings. The reader reuses the geometry-only
+Chrono reader extracted from `AcceptedReplayMesh`; legacy readers retain their
+previous 4096/8192 count limits and coordinate/topology checks. Record and wall
+temporary phases are sequential, so the budget takes their maximum and separately
+charges 512 KiB for retained bounded wall geometry. Unknown companion files remain
+rejected even with a rehashed outer inventory.
+
+The existing mesh writer rejects a negative-zero coordinate if Chrono's JSON
+integer encoding loses its sign. The regression retains that rejection; binary
+shell frame arrays independently preserve signed zero exactly. No value is
+silently canonicalized to make a mesh pass.
 
 ## Qualification
 
 Owning pure target: `robo_dyna_physical_run_check`; CTest `physical_run_records`.
-Twelve host functions cover roundtrip, exact binary64/uint64, cadence/epochs,
+Fourteen host functions cover roundtrip, exact binary64/uint64, cadence/epochs,
 prefix/completion, optional availability, chunk/host/whole-run caps, rehashed
 phase corruption, unknown referenced inventory and an actual short write.
 
@@ -68,13 +86,13 @@ Configure `output/physical_run` with explicit `Chrono_DIR` and
 actual gates, also set `ROBO_DYNA_PHYSICAL_RUN_LIVE_FACTORY=ON` and
 `ROBO_DYNA_PHYSICAL_RUN_ORIGINAL=ON`, with existing original fixture arguments
 `ROBO_DYNA_VEHICLE_{CANONICAL,SCOPE,DECLARATIONS,GLASS_RESOLUTION,TYPE13_DECLARATION}`
-and `ROBO_DYNA_VEHICLE_GLASS_SHA256`. The two original CTest names are:
+and `ROBO_DYNA_VEHICLE_GLASS_SHA256`. The original CTest names are:
 
 - `physical_run_InitialOnlyPrefixHasCompleteSourceAndNoAcceptedIntervalClaim`
 - `physical_run_OneActualAcceptedIntervalFactoryDiscardAndFailedPrefixRoundTrip`
 - `physical_run_OriginalJointInitialPrefixAuthenticatesSeventhSourceAndVirginPhase`
 
-The latter performs one explicit diagnostic freeflight interval and a discarded
+The advancing-prefix test performs one explicit diagnostic freeflight interval and a discarded
 attempt. It makes no joint/contact/full-crash claim. Author checks are one CPU,
 512 MiB host-only; all actual source/GPU checks remain root-owned.
 
@@ -82,3 +100,12 @@ Affected shared gates are `full_shell_visualization_records`,
 `full_shell_interval_segments`, `full_shell_canonical_array_compatibility`, and
 `physical_capture_values`. Existing frame archive compilation is factored into
 `robo_dyna_physical_frame_archive`; the runtime capture API is unchanged.
+
+For the actual wall gate, also enable `ROBO_DYNA_PHYSICAL_RUN_WALL=ON` and supply
+`ROBO_DYNA_VEHICLE_WALL` (the pinned original wall manifest). The additional
+target is `robo_dyna_physical_run_wall`, CTest `physical_run_wall_original`.
+It checks initial-only complete-source archive/readback, exact wall coordinates,
+late file corruption/retry and one-byte-short host admission before file mutation.
+This gate is authored for root; it makes no loaded contact claim. The shared mesh
+extraction also affects `robo_dyna_accepted_replay_check` / CTest `accepted_replay`
+and retained wall replay fixtures.

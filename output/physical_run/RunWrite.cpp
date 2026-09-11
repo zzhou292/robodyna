@@ -29,6 +29,7 @@ void RunArchive::Sample(const records::FrameRecord& frame,const records::activit
 }
 records::RecordFile RunArchive::Close(bool prefix,const std::string& reason) {
     auto& s=*data_;Require(!failed() && !s.closed,"Physical run is closed or poisoned");
+    Require(s.configuration.wall==bool(s.manifest.wall),"Physical wall receipt is incomplete");
     s.index.final=s.intervals->sequence().last;s.index.accepted_intervals=s.index.final.epoch;
     Require(prefix ? (s.index.accepted_intervals<s.index.planned_intervals && !reason.empty() && reason.size()<=4096) :
         (s.index.accepted_intervals==s.index.planned_intervals && reason.empty()),"Physical completion/prefix endpoint differs");
@@ -39,7 +40,7 @@ records::RecordFile RunArchive::Close(bool prefix,const std::string& reason) {
     try {
         s.index.segments=s.intervals->Finish();CheckIndex(s.context,s.configuration,s.index);
         s.manifest.index=WriteDocument(s.root,"frame-index.json",IndexDocument(s.configuration,s.index),MetadataCap);
-        s.manifest.inventory=Inventory(s.root,s.configuration.request.total_byte_cap-MetadataCap);
+        s.manifest.inventory=Inventory(s.root,s.configuration.request.total_byte_cap-MetadataCap,s.configuration.wall);
         CheckReferencedInventory(s.root,s.context,s.index,s.manifest);
         const auto result=WriteDocument(s.root,"manifest.json",ManifestDocument(s.manifest),MetadataCap);
         s.closed=true;return result;

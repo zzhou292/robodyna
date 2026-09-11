@@ -25,6 +25,8 @@ class Replay {
     const Index& index() const noexcept;
     std::size_t peak_host_bytes() const noexcept;
     Sample ReadSample(std::size_t) const;
+    const WallReceipt* wall() const noexcept;
+    std::shared_ptr<const chrono::ChTriangleMeshConnected> wall_mesh() const noexcept;
   private:
     struct Data;
     explicit Replay(std::shared_ptr<const Data> data):data_(std::move(data)) {}

@@ -1,7 +1,7 @@
 #include "Metadata.h"
 #include <algorithm>
 namespace crash::output::physical_run {
-std::vector<records::RecordFile> Inventory(const std::filesystem::path& root,std::size_t cap) {
+std::vector<records::RecordFile> Inventory(const std::filesystem::path& root,std::size_t cap,bool wall) {
     Require(cap && cap<=records::FullRunByteCap && std::filesystem::symlink_status(root).type()==std::filesystem::file_type::directory,
         "Invalid physical archive directory/cap");
     std::vector<std::string> names;
@@ -9,7 +9,7 @@ std::vector<records::RecordFile> Inventory(const std::filesystem::path& root,std
         const auto status=entry.symlink_status();
         const auto name=entry.path().lexically_relative(root).generic_string();
         if(status.type()==std::filesystem::file_type::directory) {
-            Require(name=="arrays","Unexpected physical archive directory");continue;
+            Require(name=="arrays" || (wall && name=="wall"),"Unexpected physical archive directory");continue;
         }
         Require(status.type()==std::filesystem::file_type::regular,"Physical archive has nonregular entries");
         if(name=="manifest.json")continue;
@@ -27,7 +27,7 @@ std::vector<records::RecordFile> Inventory(const std::filesystem::path& root,std
 }
 void CheckInventory(const std::filesystem::path& root,const records::RecordFile& file,const Manifest& m,std::size_t cap) {
     Require(file.file=="manifest.json" && file.bytes<=MetadataCap && file.bytes<=cap,"Physical manifest extent differs");
-    const auto actual=Inventory(root,cap-file.bytes);
+    const auto actual=Inventory(root,cap-file.bytes,bool(m.wall));
     Require(actual.size()==m.inventory.size(),"Physical inventory count differs");
     for(std::size_t i=0;i<actual.size();++i)Require(actual[i].file==m.inventory[i].file &&
         actual[i].sha256==m.inventory[i].sha256 && actual[i].bytes==m.inventory[i].bytes,"Physical archive inventory differs");

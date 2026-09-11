@@ -7,6 +7,7 @@ add_library(robo_dyna_physical_run_records STATIC
   "${CMAKE_CURRENT_LIST_DIR}/IndexFields.cpp" "${CMAKE_CURRENT_LIST_DIR}/IndexChecks.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/Manifest.cpp" "${CMAKE_CURRENT_LIST_DIR}/Inventory.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/ReferencedInventory.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/WallFields.cpp" "${CMAKE_CURRENT_LIST_DIR}/WallRead.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/RunPrepare.cpp" "${CMAKE_CURRENT_LIST_DIR}/RunWrite.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/Replay.cpp" "${CMAKE_CURRENT_LIST_DIR}/ReplayRecords.cpp")
 target_link_libraries(robo_dyna_physical_run_records PUBLIC robo_dyna_physical_frame_archive)
@@ -20,4 +21,12 @@ if(ROBO_DYNA_PHYSICAL_RUN_LIVE_FACTORY)
   target_link_libraries(robo_dyna_physical_run_live PUBLIC robo_dyna_physical_run_records robo_dyna_vehicle_accepted_frames)
   target_compile_features(robo_dyna_physical_run_live PUBLIC cxx_std_17)
   target_compile_options(robo_dyna_physical_run_live PRIVATE -fno-fast-math -ffp-contract=off)
+endif()
+option(ROBO_DYNA_PHYSICAL_RUN_WALL "Build named actual vehicle wall archive adapter" OFF)
+if(ROBO_DYNA_PHYSICAL_RUN_WALL)
+  include("${CMAKE_CURRENT_LIST_DIR}/../../case/vehicle_wall/VehicleWallStartup.cmake")
+  add_library(robo_dyna_physical_run_wall STATIC "${CMAKE_CURRENT_LIST_DIR}/WallPrepare.cpp")
+  target_link_libraries(robo_dyna_physical_run_wall PUBLIC robo_dyna_physical_run_records
+    robo_dyna_vehicle_wall_setup robo_dyna_physical_accepted_frames)
+  target_compile_options(robo_dyna_physical_run_wall PRIVATE -fno-fast-math -ffp-contract=off)
 endif()

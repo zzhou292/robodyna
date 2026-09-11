@@ -12,6 +12,8 @@ struct Replay::Data {
     Configuration configuration;
     Index index;
     std::size_t host_bytes;
+    std::optional<WallReceipt> wall;
+    std::shared_ptr<const chrono::ChTriangleMeshConnected> wall_mesh;
 };
 Replay Replay::Open(const std::filesystem::path& root,const records::RecordFile& file,
     const records::source::SourceInputs& source,const std::string& digest,ReplayLimits limits) {
@@ -22,6 +24,7 @@ Replay Replay::Open(const std::filesystem::path& root,const records::RecordFile&
     Require(manifest.identity.source_mapping_sha256==digest,"Physical run mapping differs from caller authority");
     auto config=ReadConfiguration(array_json::Parse(ReadFile(root,manifest.configuration,MetadataCap),MetadataCap));
     Require(records::SameIdentity(manifest.identity,config.identity),"Physical configuration belongs to another run");
+    Require(config.wall==bool(manifest.wall),"Physical wall profile/receipt presence differs");
     CheckInventory(root,file,manifest,config.request.total_byte_cap);
     auto mapping=records::source::ReadSourceBundle(root,manifest.source,source,digest,limits.source);
     auto context=mapping.MakeFrameContext(config.identity,config.request.fixed_dt,limits.records);
@@ -30,21 +33,28 @@ Replay Replay::Open(const std::filesystem::path& root,const records::RecordFile&
     tl::util::BoundedArenaLayout budget(limits.host_bytes);tl::util::ArenaRegion region;
     const auto interval_bytes=std::min<std::uint64_t>(plan.archive.rows_per_chunk,config.request.intervals)*8*
         (4+RealFields(config.profile).size());
+    const auto record_workspace=3*interval_bytes+3*sizeof(double)*(3*context.nodes()+context.points());
     Require(budget.Append<std::byte>(limits.source.host_bytes,region) &&
         budget.Append<std::byte>(context.retained_payload_bytes(),region) &&
-        budget.Append<std::byte>(32*MetadataCap,region) && budget.Append<std::byte>(3*interval_bytes,region) &&
-        budget.Append<double>(3*(3*context.nodes()+context.points()),region),"Physical replay retained/peak buffers exceed host cap");
+        budget.Append<std::byte>(32*MetadataCap,region) &&
+        budget.Append<std::byte>(std::max(record_workspace,config.wall?WallWorkspaceBytes:0),region) &&
+        budget.Append<std::byte>(config.wall?WallMeshRetainedBytes:0,region),"Physical replay retained/peak buffers exceed host cap");
     auto index=ReadIndex(context,config,array_json::Parse(ReadFile(root,manifest.index,MetadataCap),MetadataCap));
     records::activity::ReadDeclaration(root,context,manifest.activity_declaration);
     ValidateRecords(root,context,config,index,128u<<20);
     CheckReferencedInventory(root,context,index,manifest);
-    return Replay(std::make_shared<Data>(root,std::move(mapping),std::move(context),std::move(config),std::move(index),budget.bytes()));
+    auto wall=manifest.wall?ReadWallArtifacts(root,*manifest.wall,mapping.source().data(),context):nullptr;
+    auto data=std::make_shared<Data>(root,std::move(mapping),std::move(context),std::move(config),std::move(index),budget.bytes());
+    data->wall=manifest.wall;data->wall_mesh=std::move(wall);
+    return Replay(std::move(data));
 }
 const records::source::PreparedSourceMapping& Replay::mapping() const noexcept {return data_->mapping;}
 const records::Context& Replay::context() const noexcept {return data_->context;}
 const Configuration& Replay::configuration() const noexcept {return data_->configuration;}
 const Index& Replay::index() const noexcept {return data_->index;}
 std::size_t Replay::peak_host_bytes() const noexcept {return data_->host_bytes;}
+const WallReceipt* Replay::wall() const noexcept {return data_->wall?&*data_->wall:nullptr;}
+std::shared_ptr<const chrono::ChTriangleMeshConnected> Replay::wall_mesh() const noexcept {return data_->wall_mesh;}
 Sample Replay::ReadSample(std::size_t k) const {
     Require(k<data_->index.frames.size(),"Physical replay sample index is outside the run");
     const auto& f=data_->index.frames[k];

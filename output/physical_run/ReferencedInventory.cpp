@@ -14,6 +14,10 @@ void CheckReferencedInventory(const std::filesystem::path& root,const records::C
     };
     const auto array=[&](const arrays::Descriptor& file) {add({file.file,file.sha256,file.bytes});};
     for(const auto* file:{&manifest.configuration,&manifest.index,&manifest.source,&manifest.activity_declaration})add(*file);
+    if(manifest.wall) {
+        WallDocument(*manifest.wall);
+        for(const auto& file:manifest.wall->files)add(file);
+    }
     const auto source=array_json::Parse(ReadFile(root,manifest.source,records::source::BundleMetadataByteCap),
         records::source::BundleMetadataByteCap);
     Require(source.HasMember("files") && source["files"].IsArray(),"Physical source inventory is missing");
