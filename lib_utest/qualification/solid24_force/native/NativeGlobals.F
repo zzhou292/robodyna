@@ -17,6 +17,9 @@
       NPROPG=172
       NPSAV=20
       NUMNOD=8
+! Selected modern property layout: SZHOUR3 reads CVIS from GEO(13),
+! beginning at native INVSTR35, rather than the legacy material PM(4).
+      INVSTR=35
       INTEG8=0
       IMPL_S=0
       IDYNA=0

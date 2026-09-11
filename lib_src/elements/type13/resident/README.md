@@ -88,3 +88,12 @@ accepted-state retry, readback corruption, initial/byte caps, real CIN stiffness
 with zero dependent inverses, and every original beam in an eight-interval
 actual-owner/native force-history comparison. They establish this contributor's
 recurrence on actual owner packets, not a second complete native nodal solver.
+
+Root checkpoint:13 numerical functions and two identities pass across
+`type13-resident-root-tests-1` (12 passing functions) and the corrected
+`type13-resident-cin-root-tests-2` (the remaining actual CIN function).
+The original4442-connection owner advances eight loaded intervals and compares
+every accepted history against independent native recurrence. The sole initial
+failure was a test fixture that included unrelated nodes in its one-beam local
+model; the source-local inventory was corrected without changing production.
+Full production common publication remains the next integration boundary.

@@ -108,3 +108,19 @@ Production Bazel ownership is `//lib_src/elements/solid24:force`; the bounded
 host target is `//lib_utest/qualification/solid24_force:host_check`. Two tiny
 qualification-only `test_values` targets reuse existing serializers/reference
 fixtures. No native/reference source enters production.
+
+## Root qualification checkpoint
+
+Ten numerical functions and five source identities pass in
+`solid24-force-root-tests-3`: all1309 original bricks over three native/CUDA
+intervals,32-step independent histories, and late rejection/retry. The owning
+build gate is recorded separately. The original52-file donor set needed the
+complete SCHKJAB3 dependency of the retained secondary SZDERIT3 routine,
+so the final checked set contains53 files.
+
+The native wrapper explicitly selects `INVSTR=35`, the boundary for the modern
+GEO(13) CVIS property layout. Its initial zero context selected legacy PM(4),
+incorrectly disabling damping and causing force/work mismatches. The fixed
+wrapper and direct positive native-FCL control preserve the production
+equations and all comparison tolerances. The original failed build and
+numerical reports remain available.

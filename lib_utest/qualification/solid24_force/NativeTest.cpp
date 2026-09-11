@@ -21,6 +21,10 @@ TEST(HephForceNative, CompleteMovingHistoryAndHourglassWorkAcrossReversal) {
       ASSERT_EQ(s::EvaluateForce(reference,history,interval,material,result),s::ForceStatus::Success);
       const auto expected=NativeStep(native,interval,material);
       Compare(result,expected);
+      // The selected modern property layout consumes GEO(13)=CVIS=.1.
+      // A zero/uninitialized INVSTR would silently select legacy PM(4)=0.
+      EXPECT_GT(expected.values[186],0);
+      EXPECT_GT(result.diagnostics.stabilization_viscosity_kg_m_s,0);
       EXPECT_GT(result.diagnostics.stabilization_modulus_pa,0);
       EXPECT_GT(result.diagnostics.material.unscaled_element_dt_s,0);
       s::Vec3 force{};
