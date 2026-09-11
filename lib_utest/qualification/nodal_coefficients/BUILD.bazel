@@ -1,4 +1,15 @@
-load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+cc_library(
+    name = "solid_test_support",
+    testonly = True,
+    hdrs = ["SolidFixture.h", "Fixture.h"],
+    deps = ["//lib_src/assembly:nodal_coefficient_ledger", "//lib_src/assembly:nodal_mass_binding",
+            "//lib_src/elements/solid18:reference", "//lib_src/elements/solid24:reference",
+            "//lib_src/elements/solid6z:reference",
+            "//lib_utest/qualification/qbat_binding:fixture",
+            "//lib_utest/qualification/type13_model:model_fixture", "@googletest//:gtest_main"],
+    visibility = ["//visibility:public"],
+)
 cc_test(
     name = "nodal_coefficient_check",
     size = "small",

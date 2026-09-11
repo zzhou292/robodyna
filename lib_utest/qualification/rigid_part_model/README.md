@@ -60,3 +60,13 @@ Root qualification passes6 host and2 native numerical functions plus2 donor
 identities in `rigid-part-model-root-tests-1`. Owning Bazel builds pass in
 `rigid-part-model-owning-bazel-build-1`. The complete synthetic model retains
 433752 B/startup497376 B. These are startup/model gates, not live vehicle dynamics.
+
+The solid-ledger integration gate `solid-rigid-coverage-root-tests-1` passes
+7 host and3 native functions plus2 donor identities. Each family separately
+provides all coefficients for a solid-only rigid body with zero nodal J; its
+raw mass/center/tensor matches the independent native wrapper. A missing
+producer rejects atomically and the same model retries with the real ledger.
+The shared `HasCoefficientProducer` predicate is used by both ledger coverage
+and rigid admission, preventing an outdated list from dropping solid-only nodes.
+Owning rigid-model and ledger targets pass in
+`solid-rigid-coverage-owning-build-1`.

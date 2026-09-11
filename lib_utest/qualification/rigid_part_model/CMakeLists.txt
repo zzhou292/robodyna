@@ -4,7 +4,7 @@ enable_testing()
 find_package(GTest REQUIRED)
 get_filename_component(tl_root "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
 include("${tl_root}/lib_src/constraints/NodalRigidPartAssemblyModel.cmake")
-add_executable(rigid_part_model_check ValueTest.cpp RoundingTest.cpp)
+add_executable(rigid_part_model_check ValueTest.cpp RoundingTest.cpp SolidTest.cpp)
 target_link_libraries(rigid_part_model_check PRIVATE tl_nodal_rigid_part_assembly_model GTest::gtest_main)
 target_compile_options(rigid_part_model_check PRIVATE -fno-fast-math -ffp-contract=off)
 add_test(NAME rigid_part_model_values COMMAND rigid_part_model_check)
@@ -28,7 +28,7 @@ if(RIGID_PART_MODEL_NATIVE)
   target_include_directories(rigid_part_model_native PRIVATE "${assembly_native}" "${rigid_native}")
   target_compile_options(rigid_part_model_native PRIVATE -cpp -ffixed-line-length-none
     -fcheck=bounds -fbacktrace -fno-fast-math -ffp-contract=off)
-  add_executable(rigid_part_model_native_check NativeTest.cpp
+  add_executable(rigid_part_model_native_check NativeTest.cpp SolidNativeTest.cpp
     "../nodal_rigid_group/assembly/AssemblyNativeOracle.cpp")
   target_link_libraries(rigid_part_model_native_check PRIVATE
     tl_nodal_rigid_part_assembly_model rigid_part_model_native GTest::gtest_main)

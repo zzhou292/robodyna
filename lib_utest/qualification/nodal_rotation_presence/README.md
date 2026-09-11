@@ -21,7 +21,9 @@ solid-only node. Existing rotation, temporal, history-admission, CIN owner and
 rigid startup tests are linked into a separate regression executable.
 
 Root gate `nodal-rotation-presence-root-tests-2` passes all five new functions
-and the separate legacy regression executable. Attempt1 exposed the existing
+and37 functions in the separate legacy regression executable.
+Owning presence and affected shell-publication builds pass in
+`nodal-rotation-presence-owning-build-1`. Attempt1 exposed the existing
 CIN snapshot validator still reconstructing `1/J` for a rotation-free node;
 that validator now checks explicit absence and rejects any nonzero raw J there.
 No integration equations or test tolerances changed to close that failure.

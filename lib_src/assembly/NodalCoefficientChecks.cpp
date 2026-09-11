@@ -79,7 +79,7 @@ CoefficientReport Totals(NodalCoefficientNode* nodes,std::size_t count,
     scope.occurrences.solid18+=o.solid18;
     scope.occurrences.solid24+=o.solid24;
     scope.occurrences.solid6z+=o.solid6z;
-    if(o.qeph||o.t3||o.qbat||o.type25||o.type13||o.element_mass||o.solid18||o.solid24||o.solid6z) ++scope.covered_nodes;
+    if(HasCoefficientProducer(o)) ++scope.covered_nodes;
     else ++scope.uncovered_nodes;
   }
   if(scope.occurrences.qeph!=4*scope.qeph_parents||

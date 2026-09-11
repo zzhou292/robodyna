@@ -48,6 +48,10 @@ struct CoefficientOccurrences {
   std::uint64_t qeph=0,t3=0,qbat=0,type25=0,type13=0,element_mass=0;
   std::uint64_t solid18=0,solid24=0,solid6z=0;
 };
+inline bool HasCoefficientProducer(const CoefficientOccurrences& n) noexcept {
+  return n.qeph||n.t3||n.qbat||n.type25||n.type13||n.element_mass||
+    n.solid18||n.solid24||n.solid6z;
+}
 struct NodalCoefficientNode {
   NodalCoefficientTotals coefficients{};
   CoefficientOccurrences occurrences{};

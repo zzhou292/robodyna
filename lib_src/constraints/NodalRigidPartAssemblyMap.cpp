@@ -3,16 +3,13 @@
 
 namespace tl::fea::rigid::part_assembly_detail {
 namespace {
-bool Covered(const CoefficientOccurrences& n) noexcept {
-  return n.qeph||n.t3||n.qbat||n.type25||n.type13||n.element_mass;
-}
 Report MapRange(Storage& s,std::size_t part,std::size_t offset,std::size_t count) {
   const auto& domain=*s.coefficients.domain();
   for(std::size_t n=offset;n<offset+count;++n) {
     const auto index=domain.Find(s.topology.original_members()[n]);
     if(index==SIZE_MAX)
       return Fail(S::IdentityMismatch,"Rigid member NID is absent from the supplied domain",part,n);
-    if(!Covered(s.coefficients.nodes()[index].occurrences))
+    if(!HasCoefficientProducer(s.coefficients.nodes()[index].occurrences))
       return Fail(S::MissingCoefficient,"Rigid member has no admitted coefficient producer",part,n);
     s.members[n]={index,part};
   }
