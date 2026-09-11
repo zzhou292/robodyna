@@ -1,10 +1,10 @@
 ! SPDX-License-Identifier: AGPL-3.0-or-later
-subroutine rear18_reference_native(x,rho0,local,values,perm,mass,status) bind(C)
+subroutine rear18_reference_native(x,rho0,local,values,perm,slot_mass,mass,status) bind(C)
   use iso_c_binding, only: c_double,c_int,c_int64_t
   implicit none
   real(c_double),intent(in) :: x(3,8),rho0
   integer(c_int),intent(in) :: local(8)
-  real(c_double),intent(out) :: values(148),mass(8)
+  real(c_double),intent(out) :: values(148),slot_mass(8),mass(8)
   integer(c_int),intent(out) :: perm(8),status
   real(c_double) :: unique_x(3,8)
   logical :: seen(8)
@@ -16,11 +16,11 @@ subroutine rear18_reference_native(x,rho0,local,values,perm,mass,status) bind(C)
       real(c_double),intent(out) :: values(148)
       integer(c_int),intent(out) :: perm(8),status
     end subroutine
-    subroutine rear18_scatter(x,rho,volume,nodes,mass)
+    subroutine rear18_scatter(x,rho,volume,nodes,slot_mass,mass)
       import c_double
       real(c_double),intent(in) :: x(3,8),rho,volume
       integer,intent(in) :: nodes(8)
-      real(c_double),intent(out) :: mass(8)
+      real(c_double),intent(out) :: slot_mass(8),mass(8)
     end subroutine
   end interface
   status=1
@@ -50,5 +50,5 @@ subroutine rear18_reference_native(x,rho0,local,values,perm,mass,status) bind(C)
   enddo
   ! Native geometry's returned global rho and center volume feed complete SMASS3.
   ! Actual repeated node indices are used here; no independent-node surrogate.
-  call rear18_scatter(unique_x,values(148),values(135),native_nodes,mass)
+  call rear18_scatter(unique_x,values(148),values(135),native_nodes,slot_mass,mass)
 end subroutine

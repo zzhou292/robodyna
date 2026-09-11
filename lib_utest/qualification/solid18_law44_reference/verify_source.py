@@ -15,6 +15,12 @@ for name, expected in manifest['files'].items():
     data = path.read_bytes()
     if len(data) != expected['bytes'] or hashlib.sha256(data).hexdigest() != expected['sha256']:
         raise ValueError('rear reference identity changed: '+name)
+receipt = json.loads((ROOT/'native/scatter-source-receipt.json').read_text())
+scatter = receipt['sources'][0]
+start, end = scatter['selected_lines']
+selected = b''.join((TL/scatter['path']).read_bytes().splitlines(keepends=True)[start-1:end])
+if selected != (ROOT/'native/spmd_mass.inc').read_bytes():
+    raise ValueError('compiled SPMD_MSIN branch differs from the complete donor')
 with tempfile.TemporaryDirectory(prefix='rear18-native-identity-') as directory:
     generator = ROOT.parent/'solid18_reference/native/prepare_sources.py'
     command = [sys.executable, '-B', str(generator), '--output', directory]

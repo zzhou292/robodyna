@@ -2,6 +2,20 @@
 #include <gtest/gtest.h>
 
 namespace rear18_test {
+TEST(Rear18Native, SlotMassAndNodalMassAreSeparateNativeStages) {
+  const auto native = Native(Collapsed());
+  ASSERT_EQ(native.status, 0);
+  for (unsigned n = 0; n < 8; ++n) {
+    ASSERT_GT(native.native_slot_mass[n], 0);
+    EXPECT_DOUBLE_EQ(native.native_slot_mass[n], native.values[138+native.permutation[n]]);
+  }
+  // SMASS3 produces eight MSS entries; only SPMD_MSIN combines repeated NIDs.
+  EXPECT_DOUBLE_EQ(native.node_mass[0], native.native_slot_mass[0]);
+  EXPECT_DOUBLE_EQ(native.node_mass[4], native.native_slot_mass[4]+native.native_slot_mass[5]);
+  EXPECT_NE(native.node_mass[4], native.native_slot_mass[4]);
+  EXPECT_EQ(native.node_mass[6], 0);
+  EXPECT_EQ(native.node_mass[7], 0);
+}
 TEST(Rear18Native, CompleteGeometryAndActualRepeatedNodeMassScatter) {
   for (bool collapsed : {false, true}) for (bool reverse : {false, true}) {
     auto input = collapsed ? Collapsed() : Cube();

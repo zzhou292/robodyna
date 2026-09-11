@@ -3,17 +3,29 @@
 Five host functions cover the explicit profile and old strict entry, common
 geometry identity, eight mass terms on six source NIDs, initial orientation
 reversal, signed-zero/ULP/topology rejection, aliased input and unchanged-output
-retry. Two native functions reuse the already-qualified complete solid18 native
-startup packet and add a second complete SMASS3 call with actual repeated NC
-indices. Its rho and volume come from the native geometry packet, never the
-production reference. Native nodal scatter distinguishes six physical nodes
-from eight independent slots; the duplicate nodes receive two contributions.
+retry. Three native functions reuse the already-qualified complete solid18
+native startup packet and add a second complete SMASS3 call with actual repeated
+NC indices. Its rho and volume come from the native geometry packet, never the
+production reference. SMASS3 fills element-slot MSS; it does not write nodal MS.
+The exact selected SPMD_MSIN source branch then scatters MSS into MS, preserving
+K=1..8. These independent observations distinguish six physical nodes from eight
+slots; the duplicate nodes receive two contributions.
 
 The complete native geometry remains owned by `solid18_reference/native`.
 This wrapper does not edit its donors, namespaces, equations or comparisons.
 It adds an explicit interface and validated compact source-node association,
 then calls the same original SMASS3 with ISROT0 and independent zero arrays.
+Complete INITIA and SPMD_MSIN are authenticated by the correction receipt. The
+compiled include is byte-identical to SPMD_MSIN:120–127 (ITHERM_FE0). The wrapper
+supplies one element, hence INDEX(1)=1, and closes the selected conditional after
+the include. This packet makes no multi-element sorting or global-order claim.
 Production owns per-slot mass; native node sums are qualification observations.
+
+Root's first `rear18-reference-root-tests-1` gate exposed the missing caller:
+all 148 geometry/slot values matched, while the old wrapper observed unchanged
+zero MS. The correction adds the actual selected scatter and separately exposes
+native MSS and MS, with a regression that requires the repeated-node sum. No
+production equation or numerical tolerance changes.
 
 The root-exported original fixture is
 `crash-work/reports/yaris-rear-metal-geometry-1`, manifest SHA

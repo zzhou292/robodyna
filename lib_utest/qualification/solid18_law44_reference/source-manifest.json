@@ -43,24 +43,24 @@
       "sha256": "f0e20015d02f13e30f2438fb4705e306a8f119b94d821bb2519c0e2e77b524a2"
     },
     "lib_utest/qualification/solid18_law44_reference/NativeOracle.cpp": {
-      "bytes": 1921,
-      "sha256": "7f769a46e4a0c099565162d537527b49c9dd038e2f59519fc37f166bb541db45"
+      "bytes": 2155,
+      "sha256": "ec7b0436a20b8b576a14bf55add419616462ec3f78b38d3b9d546771ceffb627"
     },
     "lib_utest/qualification/solid18_law44_reference/NativeOracle.h": {
-      "bytes": 500,
-      "sha256": "01831b0f8f53493c94753eaea2f9324ef4966d9e796f92e558967fff130e6c1b"
+      "bytes": 587,
+      "sha256": "9f8ece55cdd6791f61cd87b443e59a460c1f16b6f79697c50a130db62b2917f5"
     },
     "lib_utest/qualification/solid18_law44_reference/NativeTest.cpp": {
-      "bytes": 1284,
-      "sha256": "842779e2996618efdf1b9bdd9e10f09be433c8f5cb834abf36ad86c3aae34572"
+      "bytes": 1985,
+      "sha256": "7049a604436442588136d96339ff40d015d93846a19dca5931b2340f329ba230"
     },
     "lib_utest/qualification/solid18_law44_reference/README.md": {
-      "bytes": 2938,
-      "sha256": "4873ab9b52107d0be676dd4dc8ea515e3334e8fe9cd4f3a69e0c6d6c4ee20ac8"
+      "bytes": 3775,
+      "sha256": "b1d51d64bc125ff4f6c08b0a6ddcb5bca2364942178585c5a58e4836cb38ae74"
     },
     "lib_utest/qualification/solid18_law44_reference/SourceNativeTest.cpp": {
-      "bytes": 1546,
-      "sha256": "44cb5fbdebce723c3a337ba705d8cdb8d2efe4ba4b6430ded65fb7b8630e3706"
+      "bytes": 1792,
+      "sha256": "067d0a743b64f5cab9af58d5b3361181df3ac2e022e39610f2069bdb357a7b4d"
     },
     "lib_utest/qualification/solid18_law44_reference/TestSupport.h": {
       "bytes": 1855,
@@ -71,20 +71,32 @@
       "sha256": "e9097b873b19ac6f21ad2cf304452e79ca6901b3d4e52d1d5002969b835a69f7"
     },
     "lib_utest/qualification/solid18_law44_reference/native/NativePacket.F90": {
-      "bytes": 1863,
-      "sha256": "435e3924ce7e382dcc0d2deb495781c520f7312ddabab5c97d018ec83372cd17"
+      "bytes": 1919,
+      "sha256": "239b366e12b36ad3eeaceed024c2a454f68c23022e896ba58db2008e8d68c0fe"
     },
     "lib_utest/qualification/solid18_law44_reference/native/NativeScatter.F": {
-      "bytes": 2118,
-      "sha256": "b112be592ca38324b8dac4f4bf72ac0ee89ad43d8c60d0f8db051dac503fb894"
+      "bytes": 2651,
+      "sha256": "4409c5e6865a972f67fac9d4599f5abbe30a0a0585f537bf4dbbddb0cbdb9e3e"
+    },
+    "lib_utest/qualification/solid18_law44_reference/native/original/starter/source/elements/initia/spmd_msin.F": {
+      "bytes": 19111,
+      "sha256": "555c8d2e41039c2e7f90df2c046d0add8412aceccc1c2a19cb818ff099d20ff8"
+    },
+    "lib_utest/qualification/solid18_law44_reference/native/scatter-source-receipt.json": {
+      "bytes": 1046,
+      "sha256": "3b1255afc2543f796a0dcec1fde016c989d2c2653f933c89271902a92466f88e"
+    },
+    "lib_utest/qualification/solid18_law44_reference/native/spmd_mass.inc": {
+      "bytes": 177,
+      "sha256": "4993f04dca4e73e7a2d2f39225b4480f335f7b90e44c669c4833d3c9536606b7"
     },
     "lib_utest/qualification/solid18_law44_reference/prepare_fixture.py": {
       "bytes": 5174,
       "sha256": "e76d5567af3c5b11608514bc1931bb5b35b0976e8fac126a13b49cc60e415c6c"
     },
     "lib_utest/qualification/solid18_law44_reference/verify_source.py": {
-      "bytes": 991,
-      "sha256": "4bcdae109999b97e0260b5364e8e935f689dbe4710327c66e43f7e66f43ce511"
+      "bytes": 1375,
+      "sha256": "66e9fd8f3d74b34773fe0ce0a7e7d4e2f1d9549e7323578db68e612bdde49cdd"
     },
     "lib_utest/qualification/solid18_reference/NativeOracle.cpp": {
       "bytes": 3985,
@@ -97,6 +109,10 @@
     "lib_utest/qualification/solid18_reference/native/NativeReference.F": {
       "bytes": 6239,
       "sha256": "ab2ff52659e7b0cb51a438541c54df6025b63c5eea31dbda92ebfc66bdbb1a71"
+    },
+    "lib_utest/qualification/solid18_reference/native/original/starter/source/elements/initia/initia.F": {
+      "bytes": 157433,
+      "sha256": "9fefea57c7913ae1d9c2cb89255822d6615074d88a609e28815921eb566000c0"
     },
     "lib_utest/qualification/solid18_reference/native/prepare_sources.py": {
       "bytes": 3788,

@@ -6,6 +6,7 @@ namespace rear18_test {
 struct NativePacket {
   std::array<double,148> values{};
   std::array<int,8> permutation{};
+  std::array<double,8> native_slot_mass{};  // Complete SMASS3 MSS, native slot order.
   std::array<double,8> node_mass{};
   int status = -1;
 };

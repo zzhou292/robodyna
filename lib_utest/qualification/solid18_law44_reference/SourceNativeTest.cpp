@@ -24,6 +24,9 @@ TEST(Rear18NativeOriginal, EveryOriginalCellGeometrySlotMassAndWorkingUnits) {
     const auto mass = Scatter(reference);
     for (unsigned n = 0; n < 8; ++n) {
       EXPECT_EQ(reference.source_slot(n), static_cast<unsigned>(native.permutation[n]));
+      EXPECT_TRUE(solid18_test::Close(reference.mass().source_nodal_mass_kg[reference.source_slot(n)],
+                  native.native_slot_mass[n]*1000,
+                  256*std::numeric_limits<double>::epsilon()*std::max(1.0, conditioning)));
       EXPECT_TRUE(solid18_test::Close(mass[n], native.node_mass[n]*1000,
                   256*std::numeric_limits<double>::epsilon()*std::max(1.0, conditioning)));
       EXPECT_EQ(mass[n] == 0, native.node_mass[n] == 0);
