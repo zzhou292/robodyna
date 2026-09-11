@@ -3,6 +3,9 @@
 #include "modelio/vehicle_sections/tests/GlassSourceSupport.h"
 #include <iostream>
 #include <set>
+#ifdef ROBO_DYNA_CIN_ACTIVITY_CHECK
+#include "../../TiedCinWitnessActivity.h"
+#endif
 
 namespace crash::cases::vehicle_startup::cin_actual_test {
 const TiedCinAttachments& Prepared();
@@ -102,4 +105,28 @@ TEST(TiedCinWitnessActual, ExactCapsLifetimeAndLateCountFailureLeaveImmutableRos
     EXPECT_EQ(retry.data().witnesses.back().source_element_id,saved.data().witnesses.back().source_element_id);
     EXPECT_EQ(retry.data().origins.back().source_parent_row,saved.data().origins.back().source_parent_row);
 }
+#ifdef ROBO_DYNA_CIN_ACTIVITY_CHECK
+TEST(TiedCinWitnessActual, LiveActivityWorkspaceCannotInventVirginOwnerStateOrUploadToAnUnadmittedOwner) {
+    const auto& roster=Prepared();
+    const auto forecast=TiedCinWitnessActivity::Forecast(roster);
+    TiedCinActivityLimits limits;
+    limits.workspace_bytes=forecast.workspace_bytes-1;
+    EXPECT_THROW(TiedCinWitnessActivity::Create(roster,limits),std::exception);
+    ++limits.workspace_bytes;
+    auto activity=TiedCinWitnessActivity::Create(roster,limits);
+    EXPECT_FALSE(activity->has_accepted_activity());
+    EXPECT_EQ(activity->accepted_flags().count,0u);
+    tl::fea::FENodalState owner;
+    tl::fea::ShellBatchPublication publication;
+    EXPECT_EQ(activity->CaptureAccepted(owner,publication,{}).status,TiedCinActivityStatus::StaleOwner);
+    EXPECT_FALSE(activity->has_accepted_activity());
+    tl::fea::NodalTrialToken token;
+    EXPECT_EQ(activity->UploadAttempt(owner,token).status,TiedCinActivityStatus::StaleOwner);
+    EXPECT_EQ(activity->accepted_flags().count,0u);
+    EXPECT_EQ(activity->forecast().workspace_bytes,forecast.workspace_bytes);
+    RecordProperty("activity_workspace_bytes",std::to_string(forecast.workspace_bytes));
+    RecordProperty("activity_complete_host_reservation",std::to_string(forecast.total_host_bytes));
+}
+#endif
+
 }

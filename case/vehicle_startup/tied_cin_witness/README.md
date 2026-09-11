@@ -33,3 +33,37 @@ GLASS_RESOLUTION,GLASS_SHA256}` inputs and `ROBO_DYNA_TL_ROOT`. The two original
 functions reuse the qualified classification/CIN fixture and full native shell
 binding; they report actual witness count, maximum per row and unmapped slots.
 They do not instantiate a full vehicle dynamics owner.
+
+The root original-source gate passed all six roster/value functions: all 11,165
+attachments retain 13,173 source shell witnesses, at most three per attachment,
+with zero unmapped witness slots. The conservative preparation reservation is
+1,599,219,753 bytes. No original triangle needed a containing-quad witness; the
+synthetic control independently covers that native containment case. Root
+reports: `tied-cin-witness-root-tests-2`; the first attempt's sandbox CUDA access
+failure is preserved separately.
+
+## Accepted activity adapter
+
+`TiedCinWitnessActivity` preallocates the complete Q/T/B parent-byte buffers and
+two witness buffers under the unchanged 128 MiB workspace cap and 2 GiB complete
+host reservation. Capture authenticates the live owner, actual attached batch
+objects and exact complete inventory before reading accepted histories. The
+initial public snapshot is absent. Initial activity requires actual native
+virgin-history/source binding; one-point T3 reads its genuine one-point failure
+state. Any late family/readback/mapping failure leaves the prior snapshot intact.
+Only the supplied immutable source mapping selects the family-local masks.
+
+Upload additionally authenticates the exact CIN model backing, every stored
+range/witness and an actual open owner token. It copies only the witness activity
+channel. Pending eligibility or any upload error discards the attempted nodal
+assembly. A CUDA failure permanently blocks this adapter. No stiffness, M/J,
+release-event receipt, force admission or owner clock is supplied here.
+
+The activity-value tests cover coincident positive layers, all-inactive pending,
+triangle/quad distinction, late invalid values/indices, aliases and exact caps.
+The actual-source adapter gate (`ROBO_DYNA_TIED_CIN_WITNESS_ACTIVITY=ON`) compiles
+the live implementation and proves that an uninitialized owner cannot manufacture
+virgin activity or accept an upload. It does not claim a positive full vehicle
+owner test: complete source coefficients/DOFs and shell-to-owner composition are
+still separate work. The underlying actual Q/T/B readbacks and exact CIN-owner
+roster authentication have their own TL CUDA owner qualification.
