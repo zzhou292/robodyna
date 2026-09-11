@@ -84,3 +84,17 @@ ctest --test-dir <build> -j1 --output-on-failure -R '^resident_shell_tab1_(host|
 The host target also belongs to Bazel:
 `//lib_utest/qualification/resident_shell_tab1:resident_shell_tab1_host_check`.
 Root schedules native/CUDA and the existing resident constant/mixed regressions.
+
+
+Root integration (2026-09-10) passes all11 owning functions:5 host,2 native and4
+actual CUDA. Accepted reports: `resident-shell-tab1-root-tests-1` / functions1.
+Build1 exposed missing root Fortran language initialization for the cross-directory
+native runtime link; root enable_language(Fortran) fixes it and build2 passes.
+No resident equation or tolerance changed.
+
+A subsequent independent review identified a pre-existing shared Q/T LAW44
+sound-speed handoff omission in both production and retained native force
+wrappers. Correction and affected force/resident/app regressions are pending;
+the above result establishes resident dispatch/transaction agreement with those
+retained wrappers, not closure of that newly identified caller defect. No full
+vehicle source/run is admitted by this gate.

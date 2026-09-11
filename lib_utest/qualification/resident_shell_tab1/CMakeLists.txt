@@ -13,6 +13,7 @@ set_tests_properties(resident_shell_tab1_host PROPERTIES RUN_SERIAL TRUE PROCESS
 option(TL_RESIDENT_TAB1_NATIVE "Compare resident dispatcher with complete native placed force" OFF)
 option(TL_RESIDENT_TAB1_CUDA "Qualify complete actual resident TAB1 collections" OFF)
 if(TL_RESIDENT_TAB1_NATIVE OR TL_RESIDENT_TAB1_CUDA)
+  enable_language(Fortran)
   set(TL_PLACEMENT_FORCE_NATIVE ON CACHE BOOL "" FORCE)
   set(TL_PLACEMENT_FORCE_CUDA OFF CACHE BOOL "" FORCE)
   add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../shell_placement_force" placed-reference)
