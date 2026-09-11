@@ -5,6 +5,7 @@
       USE SOLID18_FORCE_MESSAGE_MOD,ONLY:GEOMETRY_ERRORS
 #include "implicit_f.inc"
 #include "impl1_c.inc"
+#include "scr07_c.inc"
 #include "scr17_c.inc"
       REAL(KIND=8),INTENT(IN) :: X(3,8),V(3,8),SAVED(21),POISSON
       TYPE(NATIVE_GEOMETRY),INTENT(OUT) :: G
