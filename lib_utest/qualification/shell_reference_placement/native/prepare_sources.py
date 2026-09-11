@@ -8,7 +8,7 @@ import re
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[3]
-MANIFEST_SHA256 = "bc749b214d84179d449950cf4a33dc5d535c17bdb8d6d3c685e73ca458609364"
+MANIFEST_SHA256 = "86697c30708cbcdbb1f1c0c054119eaef211f0b709dc818b97d5a97e1915a9be"
 
 
 def replace_once(text, old, new):
