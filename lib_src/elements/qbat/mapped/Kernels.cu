@@ -2,6 +2,7 @@
 #include "Stiffness.h"
 #include "../QbatBatchStorage.h"
 #include "../QbatBatchResultChecks.h"
+#include "../../ShellBatchFields.h"
 #include "../../../solvers/NodalForceAssembly.h"
 
 namespace tl::fea::qbat::batch_detail {
