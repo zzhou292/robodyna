@@ -79,7 +79,7 @@
     {
       "path": "lib_utest/qualification/law90_preparation/native/prepare_sources.py",
       "bytes": 2451,
-      "sha256": "fa23d9eb411fe16bf5029920e964bf8846bae6dc51ae54d84f053ab5754db237"
+      "sha256": "05940f8c19558feba075440fb82073b3ff8659fa60ca8e8fce2fea8a31e16113"
     },
     {
       "path": "lib_utest/qualification/law90_preparation/native/source-manifest.json",

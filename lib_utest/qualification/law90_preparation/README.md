@@ -20,7 +20,7 @@ fields and trajectory are compared with the independent native packet. No
 global CUDA stack reservation or large per-thread scratch is introduced.
 
 The native harness authenticates the complete enclosing HM_READ_MAT90 source,
-including its actual unmodified flag lines109–111, cutoff defaults137–139 and
+including its actual unmodified flag lines107–109, cutoff defaults137–139 and
 the complete scale/default/parameter region150–213. The wrapper supplies
 post-HM_GET values and one real table; it does not port the reader equations.
 Full FUNC_SLOPE, LAW90_UPD and VINTER/VINTER2/VINTER2DP/FINTER2 bodies compile

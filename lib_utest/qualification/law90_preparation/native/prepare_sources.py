@@ -9,7 +9,7 @@ import re
 ROOT = Path(__file__).resolve().parent
 READER = 'starter/source/materials/mat/mat090/hm_read_mat90.F'
 REGIONS = {
-    'reader_flags.inc': (109, 111),
+    'reader_flags.inc': (107, 109),
     'reader_cutoffs.inc': (137, 139),
     'reader_values.inc': (150, 213),
 }
