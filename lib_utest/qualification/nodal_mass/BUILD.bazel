@@ -11,6 +11,7 @@ cc_test(
 cc_library(
     name = "test_support",
     testonly = True,
+    visibility = ["//lib_utest/qualification/qbat_binding:__pkg__"],
     hdrs = ["NodalMassTestSupport.h"],
     deps = [
         "//lib_src/assembly:nodal_mass_binding",

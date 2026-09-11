@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-// Native mass/reference values are produced by the qualified QEPH and T3
+// Native mass/reference values are produced by qualified QEPH, T3 and QBAT
 // startup operations. This module adds only immutable identity and reduction.
 #pragma once
 
@@ -8,6 +8,7 @@
 #include "../../lib_utils/BoundedStartupArray.h"
 #include "qeph/QephData.h"
 #include "t3/T3Data.h"
+#include "qbat/QbatTypes.h"
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -17,11 +18,11 @@ namespace tl::fea {
 // Legacy pair bound, also used by the unchanged resident publication scratch.
 constexpr std::size_t MaxShellBindingNodes=7;
 constexpr std::size_t NoShellBindingNode=std::numeric_limits<std::size_t>::max();
-enum class ShellBindingFamily { None,Qeph,T3 };
+enum class ShellBindingFamily { None,Qeph,T3,Qbat };
 enum class ShellBindingStatus {
   Success,AlreadyInitialized,InvalidInput,InvalidConnectivity,
   InvalidQephReference,InvalidT3Reference,IdentityMismatch,PositionMismatch,
-  NonfiniteMass,InvalidParentIdentity,ResourceLimit,
+  NonfiniteMass,InvalidParentIdentity,ResourceLimit,InvalidQbatReference,
 };
 struct ShellBindingReport {
   ShellBindingStatus status=ShellBindingStatus::Success;
@@ -31,6 +32,7 @@ struct ShellBindingReport {
   qeph::Status qeph_status=qeph::Status::kSuccess;
   t3::Status t3_status=t3::Status::kSuccess;
   const char* message="";
+  qbat::Status qbat_status=qbat::Status::kSuccess;
 };
 
 // Dense global indices [0,node_count), every index covered, no repeated index
@@ -63,6 +65,18 @@ struct ShellBatchCollectionInput {
   const ShellT3BindingInput* t3=nullptr;
   std::size_t qeph_count=0,t3_count=0,node_count=0;
 };
+// The explicit formulation entry retains every distinct source layer, even
+// when its physical node set equals another QEPH or QBAT layer's node set.
+struct ShellQbatBindingInput {
+  qbat::ReferenceInput reference;
+  std::array<std::size_t,4> nodes{};
+  std::uint64_t source_parent_id=0;
+};
+struct ShellFormulationCollectionInput {
+  ShellBatchCollectionInput shells;
+  const ShellQbatBindingInput* qbat=nullptr;
+  std::size_t qbat_count=0;
+};
 struct ShellBindingMass {
   double mass=0;                // kg
   double isotropic_inertia=0;   // Native TOTAL J, kg*m^2; never recombined.
@@ -80,6 +94,7 @@ struct ShellBindingNode {
 // or numerical equivalence test. Includes family, arity, ordered connectivity,
 // exact source IDs, every input coordinate/material binary64 bit pattern,
 // and an explicit typed placement word after each parent's material words.
+// The named formulation entry also retains every QBAT option and initial A11.
 // Future participants must compare the entire inventory and actual binding;
 // these words confer neither nodal-owner nor publication authority.
 class ShellBatchInventory {
@@ -120,11 +135,13 @@ class ShellBatchInventory {
 
 // Immutable host startup collection. Fresh qualified producers validate every
 // reference. Shared nodes require identical source IDs AND coordinate bits,
-// including signed zero. Contributions are reduced QEPH then T3, in input
-// parent/local order, with no normalization or total-inertia recombination.
+// including signed zero. Contributions are reduced QEPH, T3, then optional
+// QBAT, in input parent/local order, with no normalization or total-inertia
+// recombination. Distinct source layers with identical node sets are retained.
 // All failures preserve this object's bytes; successful preparation copies all
-// inputs. Default admission uses allocation-free inline storage. Explicit host
-// limits permit startup-only owned allocation; publication/copies allocate nothing.
+// inputs. Legacy default admission uses allocation-free inline storage. Explicit
+// host limits and the named formulation entry permit startup-only owned
+// allocation; publication/copies allocate nothing.
 // Vehicle() opts into binding-only 524288-parent/node capacity. The existing
 // catalog and device participants require independent admission. Startup scratch
 // is bounded separately and released before Initialize returns.
@@ -141,6 +158,11 @@ class ShellBatchBinding {
   ShellBindingReport Initialize(const ShellBatchBindingInput& input) noexcept;
   ShellBindingReport Initialize(const ShellBatchCollectionInput& input) noexcept;
   ShellBindingReport Initialize(const ShellBatchCollectionInput&,const ShellHostBindingLimits&) noexcept;
+  // Requires QBAT and complete QEPH/T3/QBAT global coverage. This host value
+  // confers no QBAT catalog/resident/publication admission. Legacy initializers
+  // retain their original input shape and inventory encoding.
+  ShellBindingReport InitializeFormulations(const ShellFormulationCollectionInput&,
+      const ShellHostBindingLimits& limits={}) noexcept;
   // Inline object + complete owned backing + reserved shared-control bytes.
   // Shared backing is charged in full per handle; this is not process RSS.
   std::size_t host_bytes() const noexcept;
@@ -148,15 +170,20 @@ class ShellBatchBinding {
   std::size_t node_count() const noexcept { return data_.node_count; }
   std::size_t qeph_count() const noexcept { return data_.qeph_count; }
   std::size_t t3_count() const noexcept { return data_.t3_count; }
+  std::size_t qbat_count() const noexcept { return data_.qbat_count; }
+  std::size_t startup_scratch_bytes() const noexcept;
   // Callers check counts before indexing. Invalid indices return immutable
   // empty/unprepared values; they never silently select the first element.
   const qeph::ReferenceData& qeph_reference(std::size_t i) const noexcept;
   const t3::ReferenceData& t3_reference(std::size_t i) const noexcept;
+  const qbat::Reference& qbat_reference(std::size_t i) const noexcept;
   const std::array<std::size_t,4>& qeph_nodes(std::size_t i) const noexcept;
   const std::array<std::size_t,3>& t3_nodes(std::size_t i) const noexcept;
+  const std::array<std::size_t,4>& qbat_nodes(std::size_t i) const noexcept;
   std::uint64_t qeph_source_id(std::size_t i) const noexcept;
   std::uint64_t t3_source_id(std::size_t i) const noexcept;
-  // Compatibility accessors require exactly one member of each family;
+  std::uint64_t qbat_source_id(std::size_t i) const noexcept;
+  // Compatibility accessors require exactly one QEPH and T3, with no QBAT;
   // otherwise return the same empty values. Source IDs are zero for old input.
   const qeph::ReferenceData& qeph_reference() const noexcept;
   const t3::ReferenceData& t3_reference() const noexcept;
@@ -168,6 +195,8 @@ class ShellBatchBinding {
   NodeView nodes() const noexcept { return {data_.nodes.data(),data_.nodes.size()}; }
   NodeView active_nodes() const noexcept { return {data_.nodes.data(),node_count()}; }
   const ShellBindingMass& totals() const noexcept { return data_.totals; }
+  // Attribution only: already included in nodes().native and totals().
+  const ShellBindingMass& qbat_totals() const noexcept { return data_.qbat_totals; }
   const ShellBatchInventory& inventory() const noexcept { return data_.inventory; }
  private:
   template<class Reference,std::size_t N> struct Parent {
@@ -182,10 +211,15 @@ class ShellBatchBinding {
     ShellBindingMass totals;
     ShellBatchInventory inventory;
     std::size_t qeph_count=0,t3_count=0,node_count=0;
+    tl::util::BoundedStartupArray<Parent<qbat::Reference,4>,0> qbat;
+    std::size_t qbat_count=0;
+    ShellBindingMass qbat_totals;
   } data_;
   ShellBindingReport InitializeImpl(const ShellBatchCollectionInput&,bool legacy,
-      const ShellHostBindingLimits&,bool expanded) noexcept;
-  ShellBindingReport Build(const ShellBatchCollectionInput&,bool legacy);
+      const ShellHostBindingLimits&,bool expanded,
+      const ShellQbatBindingInput* qbat=nullptr,std::size_t qbat_count=0) noexcept;
+  ShellBindingReport Build(const ShellBatchCollectionInput&,bool legacy,
+      const ShellQbatBindingInput*,std::size_t qbat_count);
   bool prepared_=false;
 };
 } // namespace tl::fea

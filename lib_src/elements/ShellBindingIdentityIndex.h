@@ -16,8 +16,8 @@ using NodeIdentityIndex=IdentityIndex<4*MaxShellHostParents>;
 using NodeSeen=tl::util::BoundedStartupArray<bool,MaxShellHostNodes>;
 // Counts have already passed the binding-only hard bounds before arithmetic.
 inline constexpr std::size_t ScratchBytes(std::size_t q,std::size_t t,
-    std::size_t nodes,bool legacy) noexcept {
-  return ParentIdentityIndex::Bytes(legacy?0:q+t)+NodeIdentityIndex::Bytes(4*q+3*t)+
+    std::size_t nodes,bool legacy,std::size_t qbat=0) noexcept {
+  return ParentIdentityIndex::Bytes(legacy?0:q+t+qbat)+NodeIdentityIndex::Bytes(4*q+3*t+4*qbat)+
     sizeof(NodeSeen)+NodeSeen::ExtraBytes(nodes);
 }
 } // namespace tl::fea::shell_binding_detail

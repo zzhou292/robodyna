@@ -110,7 +110,9 @@ struct ShellBatchPublication::Impl {
     const auto& q=*qbatch->impl_; const auto& t=*tbatch->impl_;
     const bool same_usage=(q.config.usage==qeph::BatchUsage::PrescribedFields&&t.config.usage==t3::BatchUsage::PrescribedFields)||
       (q.config.usage==qeph::BatchUsage::CoupledForces&&t.config.usage==t3::BatchUsage::CoupledForces);
-    return q.joined_binding&&t.joined_binding&&q.joined_binding->inventory()==t.joined_binding->inventory()&&
+    return q.joined_binding&&t.joined_binding&&
+      q.joined_binding->qbat_count()==0&&t.joined_binding->qbat_count()==0&&
+      q.joined_binding->inventory()==t.joined_binding->inventory()&&
       ((!q.joined_mass&&!t.joined_mass)||(q.joined_mass&&t.joined_mass&&q.joined_mass->Matches(*t.joined_mass)))&&
       bool(connector)==bool(q.joined_mass)&&
       (!connector||q.config.usage==qeph::BatchUsage::CoupledForces)&&

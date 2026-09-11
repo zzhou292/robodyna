@@ -21,6 +21,8 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::Initialize(
     const ShellBatchBinding& binding,const ShellBatchPlasticityBindingInput& input,
     const ShellHostBindingLimits& limits) noexcept {
   if(prepared_) return Error(Status::AlreadyInitialized,"Plasticity binding is immutable after preparation");
+  if(binding.qbat_count()!=0)
+    return Error(Status::InvalidInput,"QBAT requires an explicit complete formulation catalog");
   if(!binding.prepared()||(input.curve_count&&!input.curves)||!input.materials||!input.sections||!input.parents||
      !input.material_count||!input.section_count||!input.parent_count)
     return Error(Status::InvalidInput,"Complete prepared binding and explicit nonempty catalog ranges are required");
@@ -44,6 +46,8 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::InitializeCatalogImpl(
     const ShellBatchBinding& binding,const ShellBatchPlasticityBindingInput& input,
     const ShellPlasticityCatalogLimits& limits,bool heterogeneous) noexcept {
   if(prepared_) return Error(Status::AlreadyInitialized,"Plasticity binding is immutable after preparation");
+  if(binding.qbat_count()!=0)
+    return Error(Status::InvalidInput,"QBAT requires an explicit complete formulation catalog");
   if(!binding.prepared()||(input.curve_count&&!input.curves)||!input.materials||!input.sections||!input.parents||
      !input.material_count||!input.section_count||!input.parent_count)
     return Error(Status::InvalidInput,"Complete prepared binding and explicit nonempty catalog ranges are required");

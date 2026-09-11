@@ -57,10 +57,10 @@ cc_library(
 
 cc_library(
     name = "shell_batch_binding",
-    srcs = ["ShellBatchBinding.cpp"],
-    hdrs = ["ShellBatchBinding.h"],
+    srcs = ["ShellBatchBinding.cpp", "ShellBatchBindingBuild.cpp", "ShellBatchBindingQbat.cpp"],
+    hdrs = ["ShellBatchBinding.h", "ShellBindingValues.h", "ShellBindingInventory.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
-    deps = [":shell_collection_limits", ":shell_host_binding_limits", ":shell_binding_identity_index", "//lib_utils:bounded_startup_array", "//lib_src/elements/qeph:startup", "//lib_src/elements/t3:startup"],
+    deps = [":shell_collection_limits", ":shell_host_binding_limits", ":shell_binding_identity_index", "//lib_utils:bounded_startup_array", "//lib_src/elements/qeph:startup", "//lib_src/elements/t3:startup", "//lib_src/elements/qbat:geometry", "//lib_src/math:quaternion"],
 )
 
 cc_library(

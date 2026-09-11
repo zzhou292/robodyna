@@ -68,6 +68,8 @@ BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchEle
     const ShellBatchPlasticityBinding* collection_plasticity,const NodalMassBinding* nodal_mass,
     const ShellBatchFailureBinding* failure,const ShellBatchFailureLimits* failure_limits) try {
   if(impl_) return {BatchStatus::InvalidInput,"T3 batch is already initialized"};
+  if(joined&&joined->qbat_count()!=0)
+    return {BatchStatus::InvalidInput,"QBAT requires a complete formulation publication participant"};
   if(nodal_mass&&(!joined||!nodal_mass->Matches(*joined)))
     return {BatchStatus::InvalidInput,"Combined nodal mass differs from complete joined shell inventory"};
   // Startup staging is bounded and heap-backed; it is released after the one
