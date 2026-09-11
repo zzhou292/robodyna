@@ -22,6 +22,24 @@ ShellContactGeometryReport ShellCollectionContactGeometry::InitializeMapped(
 ShellContactGeometryReport ShellCollectionContactGeometry::InitializeImpl(
     const fe::ShellBatchBinding& binding,const fe::ShellNodeMap* mapping,const ShellContactGeometryLimits& limits) {
     if(impl_||!binding.prepared()) return {Code::InvalidInput,"Fresh geometry and a complete native binding are required"};
+    ShellContactGeometryFootprint footprint;
+    const auto forecast=Forecast(binding,mapping,limits,footprint);
+    if(!forecast)return forecast;
+    try {
+        auto next=std::make_unique<Impl>(binding,mapping);next->startup_bytes=footprint.startup_bytes;
+        next->PrepareCoordinates();
+        const auto report=next->PrepareReferences(limits);
+        if(!report)return report;
+        impl_=std::move(next);return {Code::Ok,"Complete shell contact reference prepared"};
+    } catch(const std::bad_alloc&) { return {Code::ResourceLimit,"Shell contact startup allocation failed"}; }
+}
+ShellContactGeometryReport ShellCollectionContactGeometry::ForecastMapped(
+    const fe::ShellNodeMap& mapping,ShellContactGeometryFootprint& output,const ShellContactGeometryLimits& limits) {
+    if(!mapping.prepared())return {Code::InvalidInput,"A prepared exact shell-to-domain map is required"};
+    return Forecast(*mapping.shells(),&mapping,limits,output);
+}
+ShellContactGeometryReport ShellCollectionContactGeometry::Forecast(const fe::ShellBatchBinding& binding,
+    const fe::ShellNodeMap* mapping,const ShellContactGeometryLimits& limits,ShellContactGeometryFootprint& output) {
     const auto q=binding.qeph_count(),t=binding.t3_count(),b=binding.qbat_count(),p=q+t+b;
     const auto n=mapping?mapping->owner_node_count():binding.node_count();
     const bool vehicle=limits.weights.profile==sc::NodalWallWeightProfile::Vehicle;
@@ -42,19 +60,16 @@ ShellContactGeometryReport ShellCollectionContactGeometry::InitializeImpl(
     if(!limits.weights.max_owned_bytes||limits.weights.max_owned_bytes>maximum_weights||
        (vehicle&&(!limits.weights.max_startup_bytes||limits.weights.max_startup_bytes>sc::MaxVehicleWallWeightScratchBytes)))
         return {Code::ResourceLimit,"Invalid immutable contact weight payload budget"};
-    const auto payload=sizeof(Impl)+(mapping?mapping->owned_payload_bytes():binding.host_bytes())+3*n*sizeof(double)+p*sizeof(ShellContactParent)+
-        (q+b)*sizeof(sc::Q4ParametricReference)+t*sizeof(sc::T3MaterialMeasure)+
-        p*sizeof(sc::NodalWallParentInput)+limits.weights.max_owned_bytes+
-        (vehicle?limits.weights.max_startup_bytes:0);
-    if(payload>limits.max_startup_bytes)
+    ShellContactGeometryFootprint next;
+    next.shared_source_bytes=mapping?mapping->owned_payload_bytes():binding.host_bytes();
+    next.retained_geometry_bytes=sizeof(Impl)+3*n*sizeof(double)+p*sizeof(ShellContactParent)+limits.weights.max_owned_bytes;
+    next.temporary_bytes=(q+b)*sizeof(sc::Q4ParametricReference)+t*sizeof(sc::T3MaterialMeasure)+
+        p*sizeof(sc::NodalWallParentInput)+(vehicle?limits.weights.max_startup_bytes:0);
+    next.startup_bytes=next.shared_source_bytes+next.retained_geometry_bytes+next.temporary_bytes;
+    if(next.startup_bytes>limits.max_startup_bytes)
         return {Code::ResourceLimit,"Shell contact peak startup payload exceeds its byte budget"};
-    try {
-        auto next=std::make_unique<Impl>(binding,mapping);next->startup_bytes=payload;
-        next->PrepareCoordinates();
-        const auto report=next->PrepareReferences(limits);
-        if(!report)return report;
-        impl_=std::move(next);return {Code::Ok,"Complete shell contact reference prepared"};
-    } catch(const std::bad_alloc&) { return {Code::ResourceLimit,"Shell contact startup allocation failed"}; }
+    output=next;
+    return {Code::Ok,"Complete shell geometry allocation forecast"};
 }
 bool ShellCollectionContactGeometry::prepared() const noexcept { return bool(impl_); }
 const fe::ShellBatchBinding* ShellCollectionContactGeometry::binding() const noexcept { return impl_?&impl_->binding:nullptr; }

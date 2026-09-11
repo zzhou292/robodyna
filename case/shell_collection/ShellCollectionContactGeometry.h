@@ -16,6 +16,9 @@ struct ShellContactGeometryLimits {
         return {2ULL*1024*1024*1024,tlfea::contact::NodalWallWeightLimits::Vehicle()};
     }
 };
+struct ShellContactGeometryFootprint {
+    std::size_t shared_source_bytes=0,retained_geometry_bytes=0,temporary_bytes=0,startup_bytes=0;
+};
 struct ShellContactParent {
     tl::fea::ShellBindingFamily family=tl::fea::ShellBindingFamily::None;
     std::size_t family_index=0;
@@ -45,6 +48,11 @@ class ShellCollectionContactGeometry {
     // physical nodes receive no surface area and do not enlarge surface bounds.
     // This geometry operation does not admit constraints or a contact runtime.
     ShellContactGeometryReport InitializeMapped(const tl::fea::ShellNodeMap&,const ShellContactGeometryLimits& = {});
+    // Same checked count/layout ledger as initialization, before allocation.
+    // Source backing is separate so a composed owner can count it once after
+    // proving exact shared mapping identity. Retained weights use their cap.
+    static ShellContactGeometryReport ForecastMapped(const tl::fea::ShellNodeMap&,
+        ShellContactGeometryFootprint&,const ShellContactGeometryLimits& = {});
     bool prepared() const noexcept;
     const tl::fea::ShellBatchBinding* binding() const noexcept;
     const tl::fea::ShellNodeMap* mapping() const noexcept;
@@ -61,6 +69,8 @@ class ShellCollectionContactGeometry {
     std::size_t startup_payload_bytes() const noexcept;
   private:
     struct Impl;
+    static ShellContactGeometryReport Forecast(const tl::fea::ShellBatchBinding&,
+        const tl::fea::ShellNodeMap*,const ShellContactGeometryLimits&,ShellContactGeometryFootprint&);
     ShellContactGeometryReport InitializeImpl(const tl::fea::ShellBatchBinding&,
         const tl::fea::ShellNodeMap*,const ShellContactGeometryLimits&);
     std::unique_ptr<const Impl> impl_;

@@ -81,4 +81,23 @@ TEST(MappedContactGeometry, ExactBoundAndInvalidMapLeaveFreshOrAcceptedGeometryU
     EXPECT_EQ(short_budget.InitializeMapped(map,limits).status,ShellContactGeometryStatus::ResourceLimit);
     EXPECT_FALSE(short_budget.prepared());
 }
+TEST(MappedContactGeometry, ForecastPartitionsExistingBudgetAndRejectsAtomically) {
+    const auto map=MappedLayers();
+    ShellContactGeometryFootprint forecast;
+    ASSERT_TRUE(ShellCollectionContactGeometry::ForecastMapped(map,forecast));
+    EXPECT_EQ(forecast.startup_bytes,forecast.shared_source_bytes+
+        forecast.retained_geometry_bytes+forecast.temporary_bytes);
+    EXPECT_EQ(forecast.shared_source_bytes,map.owned_payload_bytes());
+    ShellCollectionContactGeometry geometry;
+    ASSERT_TRUE(geometry.InitializeMapped(map));
+    EXPECT_EQ(geometry.startup_payload_bytes(),forecast.startup_bytes);
+    auto limits=ShellContactGeometryLimits{};
+    limits.max_startup_bytes=forecast.startup_bytes-1;
+    const auto retained=forecast;
+    EXPECT_FALSE(ShellCollectionContactGeometry::ForecastMapped(map,forecast,limits));
+    EXPECT_EQ(forecast.startup_bytes,retained.startup_bytes);
+    EXPECT_EQ(forecast.temporary_bytes,retained.temporary_bytes);
+    ++limits.max_startup_bytes;
+    EXPECT_TRUE(ShellCollectionContactGeometry::ForecastMapped(map,forecast,limits));
+}
 } // namespace crash::cases::test

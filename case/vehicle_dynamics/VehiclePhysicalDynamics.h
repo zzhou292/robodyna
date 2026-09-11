@@ -3,6 +3,7 @@
 #include "MotionSummary.h"
 #include <stdexcept>
 
+namespace crash::cases::vehicle_wall { class VehicleWallStartup; }
 namespace crash::cases::vehicle_dynamics {
 namespace capture { class VehicleAcceptedFrames; }
 struct Config {
@@ -57,6 +58,7 @@ class VehiclePhysicalDynamics {
     const StepObservation& last_accepted_step() const;
   private:
     friend class capture::VehicleAcceptedFrames;
+    friend class vehicle_wall::VehicleWallStartup;
     struct Storage;
     explicit VehiclePhysicalDynamics(std::unique_ptr<Storage>);
     std::unique_ptr<Storage> storage_;
