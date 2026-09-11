@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.18)
+project(TLNodalDomainQualification LANGUAGES CXX)
+enable_testing()
+find_package(GTest REQUIRED)
+include("${CMAKE_CURRENT_LIST_DIR}/NodalDomain.cmake")

@@ -4,6 +4,46 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_test")
 package(default_visibility = ["//visibility:public"])
 
 cc_test(
+    name = "nodal_domain_values",
+    size = "small",
+    srcs = [
+        "qualification/nodal_domain/DomainTest.cpp",
+        "qualification/nodal_domain/MapTest.cpp",
+        "qualification/nodal_domain/Fixture.h",
+        "qualification/qbat_binding/Fixture.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":shell_batch_binding_test_fixture", "//lib_src/assembly:shell_node_map", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "nodal_domain_full_count",
+    size = "medium",
+    srcs = [
+        "qualification/nodal_domain/SizeTest.cpp",
+        "qualification/nodal_domain/Fixture.h",
+        "qualification/vehicle_shell_host/VehicleShellFixture.h",
+    ],
+    args = ["--gtest_filter=NodalDomainSize.DeclaredMaximum"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":shell_batch_binding_test_fixture", "//lib_src/assembly:shell_node_map", "@googletest//:gtest_main"],
+)
+
+cc_test(
+    name = "shell_node_map_source_count",
+    size = "large",
+    tags = ["exclusive", "manual"],
+    srcs = [
+        "qualification/nodal_domain/SizeTest.cpp",
+        "qualification/nodal_domain/Fixture.h",
+        "qualification/vehicle_shell_host/VehicleShellFixture.h",
+    ],
+    args = ["--gtest_filter=NodalDomainSize.SourceCountShellMap"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":shell_batch_binding_test_fixture", "//lib_src/assembly:shell_node_map", "@googletest//:gtest_main"],
+)
+
+cc_test(
     name = "utest_prepared_planar_wall_query",
     size = "small",
     srcs = ["utest_prepared_planar_wall_query.cc"],

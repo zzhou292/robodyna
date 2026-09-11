@@ -2,6 +2,31 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
+    name = "nodal_node_domain",
+    srcs = ["NodalNodeDomain.cpp"],
+    hdrs = ["NodalNodeDomain.h", "NodalDomainIdentity.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        "//lib_src/math:fixed3",
+        "//lib_utils:bounded_arena",
+        "//lib_utils:bounded_startup_array",
+        "//lib_utils:source_identity_index",
+    ],
+)
+
+cc_library(
+    name = "shell_node_map",
+    srcs = ["ShellNodeMap.cpp"],
+    hdrs = ["ShellNodeMap.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        ":nodal_node_domain",
+        "//lib_src/elements:shell_batch_binding",
+        "//lib_utils:bounded_arena",
+    ],
+)
+
+cc_library(
     name = "nodal_mass_binding",
     srcs = ["NodalMassBinding.cpp"],
     hdrs = ["NodalMassBinding.h"],
