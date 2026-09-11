@@ -95,3 +95,19 @@ supplied-context classification; original-source role association and final
 matched/compacted interface input are still needed before a vehicle CIN/PEN
 count can be reported. The short run's sampled RSS does not measure peak
 allocation.
+
+## Observed slave projection
+
+The additional projection tests compare the complete caller on fresh selected
+slaves with independently registered, nonzero master-only rigid conditions.
+Both native rigid kinds, reversed registration order and overlapping groups
+must preserve every observed slave field, IRUPT, shared ITF table and classifier
+warning count. A late slave member, cyclic role, imposed section, RBE2/RBE3 role
+or second selected interface is a negative control. Unobserved zero fields in
+the projected packet are deliberately not presented as original starter state.
+
+`Native.cmake` exposes the unchanged complete caller as
+`tied_classification_oracle` for the application source gate. No native routine,
+packet ABI or production classification equation changes in this increment.
+Two new host functions, native C++ syntax and unchanged source identities pass
+under one CPU / 512 MiB. The two new native functions remain root-owned.
