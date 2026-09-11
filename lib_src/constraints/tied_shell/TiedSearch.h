@@ -4,29 +4,30 @@
 #include "TiedSearchProjection.h"
 
 namespace tl::constraints::tied_shell {
-TL_TIED_PATCH_HD inline Status ProjectCandidate(const SearchInput& input,
+namespace search_detail {
+// Converted positive SI thickness can underflow to zero. Preserve that legacy
+// diagonal-based domain; public original-working inputs are checked separately.
+TL_TIED_PATCH_HD inline Status ProjectWorkingCandidate(const WorkingSearchInput& input,
     CandidateProjection& output) noexcept {
   namespace v=tl::math::fixed3;
   using tl::math::Finite;
   const bool triangle=input.topology==MasterTopology::TriangleRepeatedThird;
   if ((!triangle && input.topology!=MasterTopology::Quad) ||
       !Finite(input.working_length_to_m) || input.working_length_to_m<=0 ||
-      !Finite(input.master_thickness_m) || input.master_thickness_m<=0 ||
-      !Finite(input.secondary_shell_thickness_m) || input.secondary_shell_thickness_m<0 ||
-      !v::Finite(input.geometry_m.secondary_position)) return Status::InvalidInput;
-  const auto& third=input.geometry_m.master_position[2];
-  const auto& fourth=input.geometry_m.master_position[3];
+      !Finite(input.master_thickness) || input.master_thickness<0 ||
+      !Finite(input.secondary_shell_thickness) || input.secondary_shell_thickness<0 ||
+      !v::Finite(input.geometry.secondary_position)) return Status::InvalidInput;
+  const auto& third=input.geometry.master_position[2];
+  const auto& fourth=input.geometry.master_position[3];
   if (triangle && (third.x!=fourth.x || third.y!=fourth.y || third.z!=fourth.z))
     return Status::InvalidInput;
-  Vec3 x[4]{};
+  const auto& x=input.geometry.master_position;
   for (unsigned i=0;i<4;++i) {
-    if (!v::Finite(input.geometry_m.master_position[i])) return Status::InvalidInput;
-    x[i]=v::Divide(input.geometry_m.master_position[i],input.working_length_to_m);
-    if (!v::Finite(x[i])) return Status::NonfiniteResult;
+    if (!v::Finite(x[i])) return Status::InvalidInput;
   }
-  const auto point=v::Divide(input.geometry_m.secondary_position,input.working_length_to_m);
-  const double master=input.master_thickness_m/input.working_length_to_m;
-  const double secondary=input.secondary_shell_thickness_m/input.working_length_to_m;
+  const auto point=input.geometry.secondary_position;
+  const double master=input.master_thickness;
+  const double secondary=input.secondary_shell_thickness;
   const double diagonal13=v::Norm(v::Subtract(x[0],x[2]));
   const double diagonal24=v::Norm(v::Subtract(x[1],x[3]));
   if (!Finite(diagonal13) || !Finite(diagonal24)) return Status::NonfiniteResult;
@@ -71,9 +72,49 @@ TL_TIED_PATCH_HD inline Status ProjectCandidate(const SearchInput& input,
   output=next;
   return Status::Success;
 }
+} // namespace search_detail
+TL_TIED_PATCH_HD inline Status ProjectCandidate(const WorkingSearchInput& input,
+    CandidateProjection& output) noexcept {
+  if (!tl::math::Finite(input.master_thickness) || input.master_thickness<=0)
+    return Status::InvalidInput;
+  return search_detail::ProjectWorkingCandidate(input,output);
+}
+// Convenience adapter for existing SI callers. Validate topology before the
+// conversion, which can merge distinct representable source coordinates.
+TL_TIED_PATCH_HD inline Status ProjectCandidate(const SearchInput& input,
+    CandidateProjection& output) noexcept {
+  namespace v=tl::math::fixed3;
+  using tl::math::Finite;
+  const bool triangle=input.topology==MasterTopology::TriangleRepeatedThird;
+  if ((!triangle && input.topology!=MasterTopology::Quad) ||
+      !Finite(input.working_length_to_m) || input.working_length_to_m<=0 ||
+      !Finite(input.master_thickness_m) || input.master_thickness_m<=0 ||
+      !Finite(input.secondary_shell_thickness_m) || input.secondary_shell_thickness_m<0 ||
+      !v::Finite(input.geometry_m.secondary_position)) return Status::InvalidInput;
+  const auto& third=input.geometry_m.master_position[2];
+  const auto& fourth=input.geometry_m.master_position[3];
+  if (triangle && (third.x!=fourth.x || third.y!=fourth.y || third.z!=fourth.z))
+    return Status::InvalidInput;
+  WorkingSearchInput working;
+  working.topology=input.topology;
+  working.working_length_to_m=input.working_length_to_m;
+  for (unsigned i=0;i<4;++i) {
+    if (!v::Finite(input.geometry_m.master_position[i])) return Status::InvalidInput;
+    working.geometry.master_position[i]=v::Divide(input.geometry_m.master_position[i],input.working_length_to_m);
+    if (!v::Finite(working.geometry.master_position[i])) return Status::NonfiniteResult;
+  }
+  working.geometry.secondary_position=v::Divide(input.geometry_m.secondary_position,input.working_length_to_m);
+  working.master_thickness=input.master_thickness_m/input.working_length_to_m;
+  working.secondary_shell_thickness=input.secondary_shell_thickness_m/input.working_length_to_m;
+  if (!v::Finite(working.geometry.secondary_position) || !Finite(working.master_thickness) ||
+      !Finite(working.secondary_shell_thickness)) return Status::NonfiniteResult;
+  return search_detail::ProjectWorkingCandidate(working,output);
+}
 // Consume caller-defined native candidate order. Exact score ties retain the
 // existing match; this function never sorts EIDs or assigns a packing order.
-TL_TIED_PATCH_HD inline Status ConsiderCandidate(const SearchInput& input,
+// The two ProjectCandidate overloads admit SI or original working packets.
+template<class Input>
+TL_TIED_PATCH_HD inline Status ConsiderCandidate(const Input& input,
     std::uint64_t ordered_master,SearchChoice& choice) noexcept {
   const auto& prior=choice.projection;
   if (choice.matched && (!prior.admissible ||

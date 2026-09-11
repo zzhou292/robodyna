@@ -122,3 +122,25 @@ error (I2TRIVOX line240 instead of241); correcting the copied range to241–244
 from the same pinned donor fixed the wrapper. No donor arithmetic or comparison
 tolerance changed. The native-only intermediate gate passed seven functions
 and source identity before the complete CUDA gate.
+
+## Original source coordinates without a unit round trip
+
+The additive `WorkingSearchInput` and `WorkingSearchBoundsInput` overloads take
+genuine original coordinates/thicknesses and explicit `working_length_to_m`.
+They share the existing projection/bounds arithmetic. `CandidateProjection`
+continues to expose SI distances and a separate original-unit selection score;
+`WithinWorkingSearchBounds` consumes an original-unit point directly. Existing
+SI convenience overloads retain their conversion contract. Source adapters
+must authenticate the source-to-SI relation rather than reconstruct original
+doubles from rounded SI coordinates.
+
+Root `tied-working-root-tests-2` passes **20 numeric functions** (4 host,
+11 native, 3 CUDA, 2 SAP) and source identity. The native packet now accepts
+original doubles directly. An exact-bound negative control proves that a
+source-to-SI round trip changes an inclusive-box decision; native projection,
+selection, rejected values and device retry are also covered. Independent
+review found a narrow legacy SI admission change for positive thickness
+underflow during unit conversion. The shared arithmetic now preserves that
+diagonal-based native domain; the new public working overloads still require
+positive original thickness. The native regression covers both contracts.
+Review of the corrected delta found no blocker. Build2/tests2 are accepted.

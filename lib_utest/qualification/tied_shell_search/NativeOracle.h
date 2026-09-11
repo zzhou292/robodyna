@@ -8,4 +8,5 @@ struct NativeChoice {
   double distance=std::numeric_limits<double>::max();
 };
 ts::CandidateProjection Native(const ts::SearchInput&,int,NativeChoice&);
+ts::CandidateProjection Native(const ts::WorkingSearchInput&,int,NativeChoice&);
 } // namespace tied_search_test

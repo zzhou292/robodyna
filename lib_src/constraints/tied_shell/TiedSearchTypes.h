@@ -14,6 +14,15 @@ struct SearchInput {
   // Native dimensional floors are evaluated before converting results to SI.
   double working_length_to_m=0;
 };
+// Original source coordinates/thicknesses, before SI rounding. Startup source
+// adapters must use this packet when a source->SI->source round trip loses bits.
+// Geometry is in working units; all CandidateProjection *_m outputs remain SI.
+struct WorkingSearchInput {
+  PatchInput geometry;
+  MasterTopology topology=MasterTopology::Quad;
+  double master_thickness=0, secondary_shell_thickness=0;
+  double working_length_to_m=0;
+};
 struct CandidateProjection {
   double gap_m=0, penetration_m=0, distance_m=0;
   // Native comparison stays in original units; SI conversion can merge two
