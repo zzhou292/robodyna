@@ -1,0 +1,14 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+package(default_visibility = ["//visibility:public"])
+cc_library(
+    name = "reference",
+    hdrs = [
+        "Solid18Types.h",
+        "Solid18Orientation.h",
+        "Solid18Basis.h",
+        "Solid18StartupGeometry.h",
+        "Solid18Mass.h",
+        "Solid18Reference.h",
+    ],
+    deps = ["//lib_src/math:fixed3", "//lib_src/math:quaternion"],
+)
