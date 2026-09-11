@@ -44,7 +44,8 @@ cmake -S modelio/tied_shell/packing -B <build> \
   -DROBO_DYNA_TIED_CANONICAL=<workspace>/crash-work/assets/yaris-vehicle \
   -DROBO_DYNA_TIED_SCOPE=<workspace>/crash-work/reports/yaris-full-shell-scope-10.json
 cmake --build <build> --target robo_dyna_tied_packing_check -j1
-ctest --test-dir <build> --output-on-failure
+ctest --test-dir <build> -j1 --output-on-failure --no-tests=error \
+  -R '^tied_packing_(values|native|actual)$'
 ```
 
 The separate source audit in `planning/YARIS_TIED_SHELL_PACKING.md` records
@@ -53,3 +54,17 @@ audited source contributes no converted `/DEFAULT/INTER` override; explicit
 Ignore 2, Spotflag 28 and Idel2 1 survive, while Isearch defaults to 2. The handle
 does not manufacture a validated native IKINE/classification packet from that
 audit. Complete classification and search associations require separate gates.
+
+Root integration passes all10 functions:5 small,3 native and2 complete-source
+checks (`tied-packing-root-tests-1` / functions1). Native Fortran bounds checks
+are enabled. All171,813 original master ranks/four-slot tuples,183,457 master
+nodes and11,165 secondary nodes agree with the independent native ordering.
+The complete permutation digest matches the separate source census above.
+Measured startup forecast is114,398,796 B and retained payload1,374,568 B.
+The guard reports0.755 s /186,626,048 B sampled process-tree RSS for the gate;
+this is not an allocator peak measurement.
+
+Independent review caught an excess-argument INSURF call in the initial native
+wrapper. The exact call and explicit INSURF/INPOINT interfaces were corrected
+before root execution; complete donor files are unchanged. Production packing
+needed no arithmetic correction. Classification and attachments remain unresolved.

@@ -26,7 +26,7 @@ if(ROBO_DYNA_TIED_PACKING_NATIVE)
     "${native_generated}/shell_surface_buffer.F")
   target_include_directories(robo_dyna_tied_packing_native PRIVATE "${native_generated}")
   target_compile_options(robo_dyna_tied_packing_native PRIVATE
-    "$<$<COMPILE_LANGUAGE:Fortran>:-ffixed-line-length-none;-ffree-line-length-none>")
+    "$<$<COMPILE_LANGUAGE:Fortran>:-ffixed-line-length-none;-ffree-line-length-none;-fcheck=all>")
   target_sources(robo_dyna_tied_packing_check PRIVATE tests/NativeOracle.cpp tests/NativeTest.cpp tests/ActualSourceTest.cpp)
   target_link_libraries(robo_dyna_tied_packing_check PRIVATE robo_dyna_tied_packing_native)
   add_test(NAME tied_packing_native COMMAND robo_dyna_tied_packing_check --gtest_filter=TiedPackingNative.*)
