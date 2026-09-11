@@ -1,0 +1,27 @@
+cmake_minimum_required(VERSION 3.22)
+project(RoboDynaVehicleJointModel LANGUAGES CXX)
+find_package(Chrono REQUIRED CONFIG)
+find_package(GTest REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+enable_testing()
+include("${CMAKE_CURRENT_LIST_DIR}/VehicleJointModel.cmake")
+foreach(name CANONICAL SCOPE DECLARATIONS GLASS_RESOLUTION TYPE13_DECLARATION)
+  set(ROBO_DYNA_VEHICLE_${name} "" CACHE PATH "Explicit original vehicle ${name}")
+  if(NOT EXISTS "${ROBO_DYNA_VEHICLE_${name}}")
+    message(FATAL_ERROR "Original joint model requires ${name}")
+  endif()
+endforeach()
+set(ROBO_DYNA_VEHICLE_GLASS_SHA256 "" CACHE STRING "Authenticated original glass SHA256")
+string(LENGTH "${ROBO_DYNA_VEHICLE_GLASS_SHA256}" sha_length)
+if(NOT sha_length EQUAL 64)
+  message(FATAL_ERROR "Original joint model requires glass SHA256")
+endif()
+add_executable(robo_dyna_vehicle_joint_model_check tests/OriginalTest.cpp)
+target_link_libraries(robo_dyna_vehicle_joint_model_check PRIVATE robo_dyna_vehicle_joint_model GTest::gtest_main)
+target_compile_options(robo_dyna_vehicle_joint_model_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME vehicle_joint_model_original COMMAND "${Python3_EXECUTABLE}" -B
+  "${CMAKE_CURRENT_LIST_DIR}/../../../output/full_shell/static_bundle/tests/actual_source_fixture.py"
+  "${ROBO_DYNA_VEHICLE_CANONICAL}" "${ROBO_DYNA_VEHICLE_SCOPE}"
+  "$<TARGET_FILE:robo_dyna_vehicle_joint_model_check>" "VehicleJointModelOriginal.*")
+set_tests_properties(vehicle_joint_model_original PROPERTIES TIMEOUT 300 RUN_SERIAL TRUE PROCESSORS 2
+  ENVIRONMENT "ROBO_VEHICLE_DECLARATIONS=${ROBO_DYNA_VEHICLE_DECLARATIONS};ROBO_VEHICLE_GLASS_RESOLUTION=${ROBO_DYNA_VEHICLE_GLASS_RESOLUTION};ROBO_VEHICLE_GLASS_SHA256=${ROBO_DYNA_VEHICLE_GLASS_SHA256};ROBO_DYNA_TYPE13_DECLARATION=${ROBO_DYNA_VEHICLE_TYPE13_DECLARATION}")
