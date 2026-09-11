@@ -118,3 +118,32 @@ TEST(Law90Solid18Force, CurrentInversionAndEpochReplayRejectAtomically) {
   interval=Path(input,1);
   ASSERT_EQ(f::EvaluateForce90(reference,initial.proposed_history,interval,material,result),s::Status::Success);
 }
+
+TEST(Law90Solid18Force, ActualBlankHuDensityRawCurveAndLatePointRollback) {
+  const auto material=Material(true);auto input=Cube();
+  input.density_kg_m3=material.reader().density_kg_m3;
+  for(auto& p:input.position_m){p.x*=10;p.y*=10;p.z*=10;}
+  f::Reference reference;ASSERT_EQ(f::InitializeReference90(input,reference),s::Status::Success);
+  f::ForceTrial initial;ASSERT_EQ(f::InitializeForce90(reference,material,{},initial),s::Status::Success);
+  EXPECT_EQ(material.reader().loading_flag,1);
+  EXPECT_EQ(material.reader().curve_scale,1e6);
+  auto values=initial.proposed_history.data();
+  values.point[7].internal_energy_density_j_m3=std::numeric_limits<double>::max();
+  f::History failing;ASSERT_EQ(f::PreparePrescribedHistory90(reference,material,values,{},failing),s::Status::Success);
+  auto interval=Path(input,3);interval.base_time_s=0;interval.sample_index=1;
+  f::ForceTrial destination=initial;const auto before=Bytes(destination);
+  EXPECT_NE(f::EvaluateForce90(reference,failing,interval,material,destination),s::Status::Success);
+  EXPECT_EQ(Bytes(destination),before);
+  f::ForceScratch scratch;
+  EXPECT_NE(f::EvaluateForce90Scratch(reference,failing,interval,material,scratch),s::Status::Success);
+  EXPECT_GT(scratch.next.point[6].point.instantaneous_quasistatic_energy_pa,0);
+  ASSERT_EQ(f::EvaluateForce90(reference,initial.proposed_history,interval,material,destination),s::Status::Success);
+  for(unsigned ip=0;ip<8;++ip) {
+    const auto& point=destination.point[ip].material;
+    EXPECT_EQ(point.point.tangent_factor,1e20/material.updated().young_pa);
+    EXPECT_EQ(point.history.point.strain_norm,0);
+    EXPECT_EQ(point.history.point.path_energy_pa,0);
+    EXPECT_GT(point.history.point.instantaneous_quasistatic_energy_pa,0);
+  }
+  EXPECT_EQ(destination.proposed_history.stamp().sample_index,1u);
+}

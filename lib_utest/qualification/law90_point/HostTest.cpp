@@ -133,3 +133,34 @@ TEST(Law90PointHost, LateCursorCurveStretchAndArithmeticRejectionRetry) {
   for (unsigned k = 0; k < 21; ++k) EXPECT_TRUE(SameBits(a[k], b[k]));
 }
 } // namespace law90_point_test
+
+namespace law90_point_test {
+TEST(Law90PointHost, BlankHuCarriesPathSlotsAndUsesNativeLargeEt) {
+  law::PreparedMaterial material;
+  ASSERT_EQ(law::PrepareSI(OriginalBlankHuInput(), OriginalBlankHuCurve(), material), law::Status::Ok);
+  law::PointResult point;
+  ASSERT_EQ(law::InitializePointSI(material, {}, point), law::PointStatus::Ok);
+  point.history.stress_norm_pa=17;
+  point.history.maximum_path_energy_pa=8;
+  point.history.path_energy_pa=3;
+  point.history.strain_norm=.9;
+  point.history.reserved5=42;
+  const auto seed=point.history;
+  for(unsigned step=1;step<=40;++step) {
+    ASSERT_EQ(law::UpdatePointSI(material,point.history,Path(step,true),step*.01,point),law::PointStatus::Ok);
+    EXPECT_EQ(point.history.stress_norm_pa,seed.stress_norm_pa);
+    EXPECT_EQ(point.history.maximum_path_energy_pa,seed.maximum_path_energy_pa);
+    EXPECT_EQ(point.history.path_energy_pa,seed.path_energy_pa);
+    EXPECT_EQ(point.history.strain_norm,seed.strain_norm);
+    EXPECT_EQ(point.history.unloading_factor,seed.unloading_factor);
+    EXPECT_EQ(point.history.reserved5,42);
+    EXPECT_EQ(point.tangent_factor,1e20/material.updated().young_pa);
+  }
+  EXPECT_GT(point.history.instantaneous_quasistatic_energy_pa,0);
+  const auto before=Bytes(point);auto invalid=Path(41,true);
+  invalid.engineering_rate_s_inverse[5]=std::numeric_limits<double>::quiet_NaN();
+  EXPECT_EQ(law::UpdatePointSI(material,point.history,invalid,.41,point),law::PointStatus::InvalidInput);
+  EXPECT_EQ(Bytes(point),before);
+  ASSERT_EQ(law::UpdatePointSI(material,point.history,Path(41,true),.41,point),law::PointStatus::Ok);
+}
+} // namespace law90_point_test

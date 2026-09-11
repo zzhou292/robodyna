@@ -19,6 +19,10 @@ enum class Status : std::uint8_t {
 // or source identity is implied. Storage must outlive every prepared value use.
 struct CurveView {
   const double* compression_strain = nullptr;
+  // Native base ordinates. Historical member name is retained for source
+  // compatibility: effective stress in Pa is reader.curve_scale * stress_pa[i].
+  // Either Pa ordinates/scale1 or raw working ordinates/dimensioned scale are
+  // explicit valid representations; never pre-scale and scale again.
   const double* stress_pa = nullptr;
   std::uint32_t count = 0;
 };
@@ -36,7 +40,7 @@ struct PreparationInput {
   double shape = 0;
   double alpha = 0;
   double curve_scale = 0;
-  double curve_scale_dimension = 1;
+  double curve_scale_dimension = 1; // Pa per base ordinate unit when scale is blank/zero.
   double curve_rate_s_inverse = 0;
   double filter_cutoff_hz = 0;
   int smooth = 1;
@@ -99,6 +103,7 @@ class PreparedMaterial {
 };
 
 struct CurveResult {
+  // Unscaled native base value/slope; SIGEPS90 applies reader.curve_scale later.
   double stress_pa = 0;
   double slope_pa = 0;
   std::uint32_t cursor = 0;

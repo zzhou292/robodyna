@@ -22,9 +22,11 @@ inline s::ReferenceInput Distorted() {
   input.density_kg_m3=law90_test::OriginalInput().density_kg_m3;
   return input;
 }
-inline law::PreparedMaterial Material() {
+inline law::PreparedMaterial Material(bool blank_hu=false) {
   law::PreparedMaterial result;
-  const auto status=law::PrepareSI(law90_test::OriginalInput(),law90_test::OriginalCurve(),result);
+  const auto input=blank_hu ? law90_test::OriginalBlankHuInput() : law90_test::OriginalInput();
+  const auto curve=blank_hu ? law90_test::OriginalBlankHuCurve() : law90_test::OriginalCurve();
+  const auto status=law::PrepareSI(input,curve,result);
   EXPECT_EQ(status,law::Status::Ok);
   return result;
 }

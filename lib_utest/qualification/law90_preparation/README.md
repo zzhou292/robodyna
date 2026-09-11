@@ -61,3 +61,21 @@ all5 host functions passing; `...-identity-1`, `...-syntax-1`, and
 `...-configure-1` record source authentication, native/CUDA-shaped C++ syntax,
 and host-only CMake configuration. No Fortran compiler or device test was run
 by the author.
+
+## Actual blank-HU extension
+
+The separate real native SDI gate `law90-sdi-root-tests-2` passed direct import,
+scanner-free identity-transform export and re-read. The copied immutable
+`NativeSdiOriginal.json` is SHA-authenticated against that executed observation;
+its generated hex-float header carries all33 prepared values. Verification joins
+the raw28 curve points to the original card receipt, checks both SDI branches,
+and reproduces native HM_GET density factor order. This preserves actual raw
+MPa ordinates/YFAC1e6 and incoming Hys0→IFLAG1/finalHys1. It supersedes the older
+source-default-pending statement only for this exact bounded SDI profile.
+
+Six host functions now include bitwise actual33/default classifier controls;
+five native functions add raw-ordinate original preparation against the complete
+reader oracle and the executed SDI packet. Positive and negative zero HU also
+exercise IFLAG1 with the retained scale1 representation. Other profiles remain
+rejected. Old explicit-HU1/CUDA and VINTER2 controls are retained. Author host
+Release/NDEBUG checks pass; new native/CUDA qualification belongs to root.

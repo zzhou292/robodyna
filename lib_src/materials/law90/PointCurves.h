@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-// Engine SIGEPS90:326–354 and515–553, OpenRadioss Copyright (C) 2026 Siemens.
+// Engine SIGEPS90:326–354,405–440 and515–553, OpenRadioss Copyright (C) 2026 Siemens.
 #pragma once
 #include "PointKinematics.h"
 #include "Curve.h"
@@ -13,7 +13,8 @@ struct CurveResponse {
   double stress_norm = 0;
 };
 TL_LAW90_HD inline PointStatus CurvePass(const PreparedMaterial& material,
-    const Kinematics& kinematics, PointHistory& history, CurveResponse& response) noexcept {
+    const Kinematics& kinematics, PointHistory& history, CurveResponse& response,
+    bool explicit_unloading_curve = false) noexcept {
   response = {};
   for (unsigned k = 0; k < 3; ++k) {
     CurveResult curve;
@@ -28,7 +29,11 @@ TL_LAW90_HD inline PointStatus CurvePass(const PreparedMaterial& material,
         .5 * kinematics.compression[k] * response.stress[k];
     const double slope = material.reader().curve_scale * curve.slope_pa;
     if (!tl::math::Finite(slope) || slope < 0) return PointStatus::InvalidCurve;
-    response.minimum_slope = detail::Minimum(response.minimum_slope, slope);
+    // IFLAG1 retains the donor MAX from the finite EP20 initial value.
+    // It is not the IFLAG2 minimum and must not be "corrected" to one.
+    response.minimum_slope = explicit_unloading_curve
+        ? detail::Maximum(response.minimum_slope, slope)
+        : detail::Minimum(response.minimum_slope, slope);
   }
   response.stress_norm = ::sqrt(response.stress[0]*response.stress[0] +
       response.stress[1]*response.stress[1] + response.stress[2]*response.stress[2]);

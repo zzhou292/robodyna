@@ -2,6 +2,7 @@
 #include "lib_src/materials/law90/Prepare.h"
 #include "lib_src/materials/law90/Curve.h"
 #include "source_fixture/OriginalMaterial.h"
+#include "source_fixture/NativeSdiOriginal.h"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -19,6 +20,19 @@ inline law::PreparationInput OriginalInput() {
 }
 inline law::CurveView OriginalCurve() {
   return {original_radiator::strain, original_radiator::stress_pa,
+          original_radiator::point_count};
+}
+// Actual direct/export/re-read SDI receipt: blank HU enters HM_READ_MAT90 as0.
+// The legacy OriginalInput helper retains its already-qualified explicit-HU1 case.
+inline law::PreparationInput OriginalBlankHuInput() {
+  auto input = OriginalInput();
+  input.hysteresis = 0;
+  input.density_kg_m3 = original_radiator_sdi::density_kg_m3;
+  input.curve_scale_dimension = 1e6;
+  return input;
+}
+inline law::CurveView OriginalBlankHuCurve() {
+  return {original_radiator::strain, original_radiator::stress_mpa,
           original_radiator::point_count};
 }
 inline std::array<double, 13> InputValues(const law::PreparationInput& p) {

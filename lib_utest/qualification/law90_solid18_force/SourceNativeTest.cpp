@@ -2,12 +2,16 @@
 #include "NativeSupport.h"
 #include "lib_utest/qualification/law90_solid18_reference/SourceFixture.h"
 using namespace law90_force_test;
-TEST(Law90Solid18SourceForce, All1345OriginalIndependentEightPointHistories) {
-  const auto material=Material();const auto curve=law90_test::OriginalCurve();
-  const auto prepared=law90_point_test::NativePrepared(law90_test::OriginalInput(),curve);
+void AllOriginalSource(bool blank_hu) {
+  const auto material=Material(blank_hu);
+  const auto material_input=blank_hu ? law90_test::OriginalBlankHuInput() : law90_test::OriginalInput();
+  const auto curve=blank_hu ? law90_test::OriginalBlankHuCurve() : law90_test::OriginalCurve();
+  const auto prepared=law90_point_test::NativePrepared(material_input,curve);
   unsigned observed=0;
   for(unsigned row=0;row<law90_reference_test::fixture::element_count;++row) {
-    const auto input=law90_reference_test::Original(row);SCOPED_TRACE(input.source_element_id);
+    auto input=law90_reference_test::Original(row);SCOPED_TRACE(input.source_element_id);
+    // Explicit native SDI unit interpretation; canonical density bits stay in the source fixture.
+    if(blank_hu)input.density_kg_m3=material_input.density_kg_m3;
     f::Reference reference;ASSERT_EQ(f::InitializeReference90(input,reference),s::Status::Success);
     f::ForceTrial accepted;ASSERT_EQ(f::InitializeForce90(reference,material,{15.6464,0,0},accepted),s::Status::Success);
     s::PrescribedInterval virgin;
@@ -21,6 +25,9 @@ TEST(Law90Solid18SourceForce, All1345OriginalIndependentEightPointHistories) {
       ASSERT_TRUE(ForceAgreement(ForceValues(trial),native));CheckCursors(trial,native);accepted=trial;++observed;
     }
   }
-  RecordProperty("original_elements",1345);RecordProperty("native_force_packets",observed);
+  ::testing::Test::RecordProperty("original_elements",1345);::testing::Test::RecordProperty("native_force_packets",observed);
   EXPECT_EQ(observed,1345u*9u);
 }
+
+TEST(Law90Solid18SourceForce, All1345OriginalIndependentEightPointHistories) { AllOriginalSource(false); }
+TEST(Law90Solid18SourceForce, ActualBlankHuRawCurveAll1345IndependentHistories) { AllOriginalSource(true); }

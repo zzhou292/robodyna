@@ -18,10 +18,14 @@ TL_LAW90_HD inline PointStatus Evaluate(const PreparedMaterial& material,
   if (status != PointStatus::Ok) return status;
   const bool unloading = UpdateLoading(kinematics, response, next);
   // The second native VINTER2 visit is required even with one immutable curve.
-  status = CurvePass(material, kinematics, next.history, response);
+  const bool explicit_unloading_curve = material.reader().loading_flag == 1;
+  status = CurvePass(material, kinematics, next.history, response, explicit_unloading_curve);
   if (status != PointStatus::Ok) return status;
   next.tangent_factor = response.minimum_slope/material.updated().young_pa;
-  UpdatePath(material, kinematics, unloading, response, next.history);
+  // SIGEPS90's UVAR1/2/4/6/7 path/damage block belongs only to IFLAG2.
+  // IFLAG1 carries those slots unchanged while common rate/modulus state evolves.
+  if (!explicit_unloading_curve)
+    UpdatePath(material, kinematics, unloading, response, next.history);
   CauchyStress(material, kinematics, response, unloading, next);
   UpdateModulus(material, kinematics, response, next);
   status = CheckResult(material, next);

@@ -22,14 +22,16 @@ TEST(Law90PointNative, VirginActualPreparationDensityAndNonzeroConstruction) {
   }
 }
 
-void OriginalTrajectory(bool rotated) {
-  const auto prepared = NativePrepared(OriginalInput(), OriginalCurve());
+void OriginalTrajectory(bool rotated, bool blank_hu = false) {
+  const auto input = blank_hu ? OriginalBlankHuInput() : OriginalInput();
+  const auto curve = blank_hu ? OriginalBlankHuCurve() : OriginalCurve();
+  const auto prepared = NativePrepared(input, curve);
   law::PreparedMaterial material;
-  ASSERT_EQ(law::PrepareSI(OriginalInput(), OriginalCurve(), material), law::Status::Ok);
+  ASSERT_EQ(law::PrepareSI(input, curve, material), law::Status::Ok);
   NativeState native;
   law::PointResult point;
   auto kinematics = Path(0, rotated);
-  AdvanceNative(prepared.data(), OriginalCurve(), kinematics, 0, native);
+  AdvanceNative(prepared.data(), curve, kinematics, 0, native);
   ASSERT_EQ(law::InitializePointSI(material, kinematics, point), law::PointStatus::Ok);
   ASSERT_TRUE(Compare(point, native));
   native.history[4] = 17.25;
@@ -39,10 +41,17 @@ void OriginalTrajectory(bool rotated) {
   for (unsigned step = 1; step <= 320; ++step) {
     const auto old = point.history;
     kinematics = Path(step, rotated);
-    AdvanceNative(prepared.data(), OriginalCurve(), kinematics, step*1e-4, native);
+    AdvanceNative(prepared.data(), curve, kinematics, step*1e-4, native);
     ASSERT_EQ(law::UpdatePointSI(material, old, kinematics, step*1e-4, point), law::PointStatus::Ok) << step;
     ASSERT_TRUE(Compare(point, native)) << "step " << step;
     EXPECT_EQ(point.history.reserved5, 17.25);
+    if (blank_hu) {
+      EXPECT_EQ(point.history.stress_norm_pa, 0);
+      EXPECT_EQ(point.history.path_energy_pa, 0);
+      EXPECT_EQ(point.history.maximum_path_energy_pa, 0);
+      EXPECT_EQ(point.history.strain_norm, 0);
+      EXPECT_EQ(point.tangent_factor, 1e20/material.updated().young_pa);
+    }
     largest_modulus = std::max(largest_modulus, point.history.effective_modulus_pa);
     nonunit_et = nonunit_et || std::abs(point.tangent_factor-1) > .1;
     for (unsigned k = 0; k < 3; ++k) backtracked = backtracked || point.history.cursor[k] < old.cursor[k];
@@ -54,11 +63,16 @@ void OriginalTrajectory(bool rotated) {
   changed.history[4] = 0;
   EXPECT_FALSE(Compare(point, changed));
   changed = native;
-  changed.values[8] += .1; // ET is distinct from SSP and cannot be filled with1.
+  changed.values[8] += .1*std::max(1., std::abs(changed.values[8])); // ET is distinct from SSP and cannot be filled with1.
   EXPECT_FALSE(Compare(point, changed));
 }
 TEST(Law90PointNative, OriginalAxisLoadUnloadTensionAndAllHistory) { OriginalTrajectory(false); }
 TEST(Law90PointNative, OriginalRotatedLoadUnloadTensionAndAllHistory) { OriginalTrajectory(true); }
+
+TEST(Law90PointNative, OriginalBlankHuAxisAndRotatedHistories) {
+  OriginalTrajectory(false, true);
+  OriginalTrajectory(true, true);
+}
 
 TEST(Law90PointNative, KnotsPlateauTensionAndNativeCursorDirections) {
   ToyCurve curve;
@@ -107,5 +121,31 @@ TEST(Law90PointNative, FailedAttemptRetriesItsIndependentNativeHistory) {
   ASSERT_EQ(law::UpdatePointSI(material, point.history, Path(43, true), .43, point), law::PointStatus::Ok);
   AdvanceNative(prepared.data(), OriginalCurve(), Path(43, true), .43, native);
   ASSERT_TRUE(Compare(point, native));
+}
+} // namespace law90_point_test
+
+namespace law90_point_test {
+TEST(Law90PointNative, BlankHuPrescribedTenHistorySlotsAreNotResetOrAdvancedAsDamage) {
+  const auto input=OriginalBlankHuInput();const auto curve=OriginalBlankHuCurve();
+  const auto prepared=NativePrepared(input,curve);law::PreparedMaterial material;
+  ASSERT_EQ(law::PrepareSI(input,curve,material),law::Status::Ok);
+  NativeState native;law::PointResult point;
+  AdvanceNative(prepared.data(),curve,{},0,native);
+  ASSERT_EQ(law::InitializePointSI(material,{},point),law::PointStatus::Ok);
+  ASSERT_TRUE(Compare(point, native));
+  point.history.stress_norm_pa=17;point.history.maximum_path_energy_pa=8;
+  point.history.path_energy_pa=3;point.history.strain_norm=.9;point.history.reserved5=42;
+  native.history[0]=17;native.history[1]=8;native.history[3]=3;
+  native.history[5]=.9;native.history[4]=42;
+  for(unsigned step=1;step<=320;++step) {
+    AdvanceNative(prepared.data(),curve,Path(step,true),step*.01,native);
+    ASSERT_EQ(law::UpdatePointSI(material,point.history,Path(step,true),step*.01,point),law::PointStatus::Ok);
+    ASSERT_TRUE(Compare(point,native))<<step;
+    EXPECT_EQ(point.history.stress_norm_pa,17);EXPECT_EQ(point.history.path_energy_pa,3);
+    EXPECT_EQ(point.history.maximum_path_energy_pa,8);EXPECT_EQ(point.history.strain_norm,.9);
+    EXPECT_EQ(point.history.reserved5,42);
+  }
+  auto wrong=native;wrong.history[3]=0;EXPECT_FALSE(Compare(point,wrong));
+  wrong=native;wrong.values[8]=1;EXPECT_FALSE(Compare(point,wrong));
 }
 } // namespace law90_point_test

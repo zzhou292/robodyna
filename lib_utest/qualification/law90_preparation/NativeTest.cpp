@@ -4,7 +4,7 @@
 
 namespace law90_test {
 TEST(Law90Native, CompletePreparationAndDefaultBranches) {
-  for (int mode = 0; mode < 4; ++mode) {
+  for (int mode = 0; mode < 6; ++mode) {
     auto input = OriginalInput();
     if (mode == 1) {
       input.contact_modulus_pa = 0;
@@ -24,6 +24,8 @@ TEST(Law90Native, CompletePreparationAndDefaultBranches) {
       input.tension_cutoff_pa = -3;
       input.curve_scale = 3;
     }
+    if (mode == 4) input.hysteresis = 0;
+    if (mode == 5) input.hysteresis = -0.0;
     law::PreparedMaterial material;
     ASSERT_EQ(law::PrepareSI(input, OriginalCurve(), material), law::Status::Ok);
     double actual[33], expected[33];
@@ -50,10 +52,25 @@ TEST(Law90Native, CompletePreparationAndDefaultBranches) {
   law90_native_prepare(values.data(), flags.data(), original_radiator::strain,
                        original_radiator::stress_pa, &count, expected);
   EXPECT_EQ(expected[8], 1);  // resolved Hys1
-  EXPECT_EQ(expected[16], 1); // native IFLAG1, distinct from selected IFLAG2
+  EXPECT_EQ(expected[16], 1); // native IFLAG1, distinct from explicit-HU1 IFLAG2
   EXPECT_EQ(expected[18], 1); // default TFLAG1
   law::PreparedMaterial rejected;
   EXPECT_EQ(law::PrepareSI(input, OriginalCurve(), rejected), law::Status::UnsupportedProfile);
+}
+
+TEST(Law90Native, ExecutedSdiBlankHuRawCurveAllPreparedBits) {
+  const auto input=OriginalBlankHuInput();const auto curve=OriginalBlankHuCurve();
+  law::PreparedMaterial material;
+  ASSERT_EQ(law::PrepareSI(input,curve,material),law::Status::Ok);
+  const auto values=InputValues(input);const auto flags=InputFlags(input);
+  const int count=int(curve.count);double native[33],actual[33];
+  law90_native_prepare(values.data(),flags.data(),curve.compression_strain,
+                       curve.stress_pa,&count,native);
+  Pack(material,actual);
+  for(unsigned i=0;i<33;++i) {
+    EXPECT_TRUE(SameBits(actual[i],native[i]))<<i;
+    EXPECT_TRUE(SameBits(native[i],original_radiator_sdi::prepared[i]))<<i;
+  }
 }
 
 TEST(Law90Native, OriginalWorkingUnitsAreComparedSeparately) {

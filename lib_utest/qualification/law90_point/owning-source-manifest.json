@@ -8,8 +8,8 @@
     },
     {
       "path": "lib_src/materials/law90/Point.h",
-      "bytes": 2512,
-      "sha256": "34165addd5f11afd96fb12dc6800d623ce53b807f5eb9381ac06fcaac37c8a2a"
+      "bytes": 2805,
+      "sha256": "5c9f88a6a784ac83c23b0405ef6a1682880c2475da677b4797f89b9517ed462d"
     },
     {
       "path": "lib_src/materials/law90/PointChecks.h",
@@ -18,8 +18,8 @@
     },
     {
       "path": "lib_src/materials/law90/PointCurves.h",
-      "bytes": 1851,
-      "sha256": "f33a84c8808cf9a4b9243767c4b298a0d09e950cdcebd0ce73cc50f27212ff67"
+      "bytes": 2140,
+      "sha256": "4a16308877c6fd2cf9a35924b8501f519cb4abe809f845a3b37d68a40ef4568e"
     },
     {
       "path": "lib_src/materials/law90/PointHistoryUpdate.h",
@@ -33,8 +33,8 @@
     },
     {
       "path": "lib_src/materials/law90/PointREADME.md",
-      "bytes": 3149,
-      "sha256": "de3f37330c2716f53a335507f958e60f5f6520231dd2d03ea779afa9cb0f2027"
+      "bytes": 3640,
+      "sha256": "26cbfed8da26d91787eab16dccbfff8db8674ea16e303c58cfb5ffd9a19170fd"
     },
     {
       "path": "lib_src/materials/law90/PointStress.h",
@@ -63,13 +63,13 @@
     },
     {
       "path": "lib_utest/qualification/law90_point/CudaTest.cu",
-      "bytes": 5274,
-      "sha256": "712b10572f8a2785f13fd37191c856cda76e17a93599e5d5952070e92483f512"
+      "bytes": 5771,
+      "sha256": "80a5e488d77509499ffe937387e56f5e48e116c0f567141173a70ee3a383b91b"
     },
     {
       "path": "lib_utest/qualification/law90_point/HostTest.cpp",
-      "bytes": 6819,
-      "sha256": "519e765bf5c84606c5528f3157fc9d0ff2e76bbbd51aa6dc97a2357a754b9f9a"
+      "bytes": 8460,
+      "sha256": "f938cbd4297ace5d98d9af4f2a28b9405201f542ecc79fbd7610789b91566332"
     },
     {
       "path": "lib_utest/qualification/law90_point/NativeSupport.h",
@@ -78,18 +78,18 @@
     },
     {
       "path": "lib_utest/qualification/law90_point/NativeTest.cpp",
-      "bytes": 5505,
-      "sha256": "fba589ab2d31a69850e648ebfd901c1cac9bf081d4db77a0ab556bb3276f6bfd"
+      "bytes": 7618,
+      "sha256": "8bcf2aa67b22e8b5fce4e83cc70a59675b03d88686d81cb067c20470708503c1"
     },
     {
       "path": "lib_utest/qualification/law90_point/README.md",
-      "bytes": 3962,
-      "sha256": "41cf41db4e210020db7c9ea1cbd992b74252f8e949b51f7e1ec1e05972a13506"
+      "bytes": 4673,
+      "sha256": "23497fc291c2982366d010590beb01046b742155316acaab606530dfdc6fc492"
     },
     {
       "path": "lib_utest/qualification/law90_point/TestSupport.h",
-      "bytes": 3106,
-      "sha256": "6b095fee310fff121ada113175424ebc901415f2363af3b76c8d3ca949d6b63b"
+      "bytes": 3186,
+      "sha256": "a43206234e0e7eb0d125608e45789eb689a46c791e397de60054f7f2c050ecfa"
     },
     {
       "path": "lib_utest/qualification/law90_point/native/CMakeLists.txt",

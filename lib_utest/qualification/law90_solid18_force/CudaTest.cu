@@ -62,16 +62,18 @@ void Read(DevicePacket* device,DevicePacket& host) {
   ASSERT_EQ(cudaMemcpy(&host,device,sizeof(host),cudaMemcpyDeviceToHost),cudaSuccess);
 }
 }
-TEST(Law90Solid18Cuda, IndependentRecurrentNativeValuesLateFailureAndRetry) {
+void RecurrentDevice(bool blank_hu) {
   Device device;ASSERT_NE(device.pointer,nullptr);auto host=std::make_unique<DevicePacket>();
-  law90_point_test::ToyCurve curve;const auto material_input=ElementToyInput();
-  SetMaterial(*host,material_input,curve.view());host->input=Distorted();
+  law90_point_test::ToyCurve toy;
+  const auto material_input=blank_hu ? law90_test::OriginalBlankHuInput() : ElementToyInput();
+  const auto curve=blank_hu ? law90_test::OriginalBlankHuCurve() : toy.view();
+  SetMaterial(*host,material_input,curve);host->input=Distorted();host->input.density_kg_m3=material_input.density_kg_m3;
   for(auto& p:host->input.position_m){p.x*=10;p.y*=10;p.z*=10;}
   host->initial_velocity={3,-1,2};
-  const auto prepared=law90_point_test::NativePrepared(material_input,curve.view());
+  const auto prepared=law90_point_test::NativePrepared(material_input,curve);
   NativeForce native(host->input.density_kg_m3);s::PrescribedInterval virgin;
   for(unsigned n=0;n<8;++n){virgin.position_endpoint_m[n]=host->input.position_m[n];virgin.velocity_midpoint_m_s[n]=host->initial_velocity;}
-  AdvanceNative(prepared.data(),curve.view(),host->input,virgin,true,native);ASSERT_EQ(native.status,0);
+  AdvanceNative(prepared.data(),curve,host->input,virgin,true,native);ASSERT_EQ(native.status,0);
   ASSERT_EQ(cudaMemcpy(device.pointer,host.get(),sizeof(*host),cudaMemcpyHostToDevice),cudaSuccess);
   Initialize<<<1,1>>>(device.pointer);Read(device.pointer,*host);ASSERT_EQ(host->stage,3u);ASSERT_EQ(host->status,s::Status::Success);
   ASSERT_TRUE(ForceAgreement(ForceValues(host->published),native));CheckCursors(host->published,native);
@@ -81,22 +83,26 @@ TEST(Law90Solid18Cuda, IndependentRecurrentNativeValuesLateFailureAndRetry) {
     if(step==40) {
       const auto before=Bytes(host->published);Advance<<<1,1>>>(device.pointer,true);Read(device.pointer,*host);
       ASSERT_EQ(host->stage,5u);ASSERT_NE(host->status,s::Status::Success);ASSERT_EQ(Bytes(host->published),before);
-      EXPECT_GT(host->scratch.next.point[6].point.strain_norm,0);
+      if(blank_hu)EXPECT_GT(host->scratch.next.point[6].point.instantaneous_quasistatic_energy_pa,0);
+      else EXPECT_GT(host->scratch.next.point[6].point.strain_norm,0);
     }
-    AdvanceNative(prepared.data(),curve.view(),host->input,interval,false,native);ASSERT_EQ(native.status,0);
+    AdvanceNative(prepared.data(),curve,host->input,interval,false,native);ASSERT_EQ(native.status,0);
     Advance<<<1,1>>>(device.pointer,false);Read(device.pointer,*host);ASSERT_EQ(host->status,s::Status::Success);
     ASSERT_TRUE(ForceAgreement(ForceValues(host->published),native));CheckCursors(host->published,native);
     ASSERT_EQ(host->published.proposed_history.stamp().sample_index,step);
   }
-  RecordProperty("explicit_device_packet_bytes",int(sizeof(DevicePacket)));
+  ::testing::Test::RecordProperty("explicit_device_packet_bytes",int(sizeof(DevicePacket)));
 }
-TEST(Law90Solid18Cuda, All1345OriginalConstructorAndFirstNativeIntervals) {
+TEST(Law90Solid18Cuda, IndependentRecurrentNativeValuesLateFailureAndRetry) { RecurrentDevice(false); }
+TEST(Law90Solid18Cuda, ActualBlankHuRawCurveNativeValuesLateFailureAndRetry) { RecurrentDevice(true); }
+void AllOriginalDevice(bool blank_hu) {
   Device device;ASSERT_NE(device.pointer,nullptr);auto host=std::make_unique<DevicePacket>();
-  const auto input_material=law90_test::OriginalInput();const auto curve=law90_test::OriginalCurve();
+  const auto input_material=blank_hu ? law90_test::OriginalBlankHuInput() : law90_test::OriginalInput();
+  const auto curve=blank_hu ? law90_test::OriginalBlankHuCurve() : law90_test::OriginalCurve();
   const auto prepared=law90_point_test::NativePrepared(input_material,curve);
   unsigned observed=0;
   for(unsigned row=0;row<law90_reference_test::fixture::element_count;++row) {
-    SetMaterial(*host,input_material,curve);host->input=law90_reference_test::Original(row);host->initial_velocity={15.6464,0,0};
+    SetMaterial(*host,input_material,curve);host->input=law90_reference_test::Original(row);if(blank_hu)host->input.density_kg_m3=input_material.density_kg_m3;host->initial_velocity={15.6464,0,0};
     SCOPED_TRACE(host->input.source_element_id);NativeForce native(host->input.density_kg_m3);s::PrescribedInterval virgin;
     for(unsigned n=0;n<8;++n){virgin.position_endpoint_m[n]=host->input.position_m[n];virgin.velocity_midpoint_m_s[n]=host->initial_velocity;}
     AdvanceNative(prepared.data(),curve,host->input,virgin,true,native);ASSERT_EQ(native.status,0);
@@ -111,5 +117,8 @@ TEST(Law90Solid18Cuda, All1345OriginalConstructorAndFirstNativeIntervals) {
       CheckCursors(host->published,native);++observed;
     }
   }
-  RecordProperty("original_device_native_packets",observed);EXPECT_EQ(observed,1345u*3u);
+  ::testing::Test::RecordProperty("original_device_native_packets",observed);EXPECT_EQ(observed,1345u*3u);
 }
+
+TEST(Law90Solid18Cuda, All1345OriginalConstructorAndFirstNativeIntervals) { AllOriginalDevice(false); }
+TEST(Law90Solid18Cuda, ActualBlankHuRawCurveAll1345ConstructorAndCarriedIntervals) { AllOriginalDevice(true); }

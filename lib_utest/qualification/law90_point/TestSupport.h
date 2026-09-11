@@ -6,6 +6,8 @@
 namespace law90_point_test {
 namespace law = tl::material::law90;
 using law90_test::OriginalInput;
+using law90_test::OriginalBlankHuInput;
+using law90_test::OriginalBlankHuCurve;
 using law90_test::OriginalCurve;
 using law90_test::SameBits;
 using law90_test::Bytes;

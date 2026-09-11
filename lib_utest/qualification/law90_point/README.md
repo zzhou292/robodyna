@@ -65,3 +65,15 @@ Bazel owners: `//lib_src/materials/law90:point`,
 The previously frozen preparation and native spectral gates are prerequisites
 already executed by root. This new point remains pending native/CUDA promotion
 at author freeze and establishes no physical EINT/work or element/case result.
+
+## Original blank HU / IFLAG1
+
+The actual SDI raw-curve/YFAC1e6/771.9999999999999 kg/m3 fixture now exercises
+IFLAG1 separately from the retained explicit-HU1 controls. The full engine
+routine and all donor bytes remain unchanged. New native axis/rotated320-step
+and prescribed-history trajectories compare every21 value and3 cursor at
+TIME0 and loading/unloading; the five path/damage slots are carried exactly.
+Negative controls reject invented ET1 and changed carried path state. The new
+CUDA321-sample trajectory owns recurrence and late rejection/retry on device.
+Host6 functions pass under Release/NDEBUG; root must execute all7 native and
+3 CUDA functions before extending qualification to this branch.

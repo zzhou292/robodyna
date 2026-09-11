@@ -98,7 +98,7 @@ TEST(Law90Preparation, DifferentNativeBranchesRemainClosed) {
   const auto saved = Bytes(output);
   for (int branch = 0; branch < 6; ++branch) {
     auto input = OriginalInput();
-    if (branch == 0) input.hysteresis = 0; // Hys becomes1 but IFLAG is1
+    if (branch == 0) input.hysteresis = .5; // other damage multipliers remain unsupported
     if (branch == 1) input.tension_flag = 0; // native TFLAG1
     if (branch == 2) input.failure_mode = 1;
     if (branch == 3) input.poisson_ratio = .3;
@@ -113,3 +113,18 @@ TEST(Law90Preparation, DifferentNativeBranchesRemainClosed) {
   EXPECT_EQ(Bytes(output), saved);
 }
 }  // namespace law90_test
+
+TEST(Law90Preparation, OriginalBlankHuPreservesItsPreDefaultClassifier) {
+  using namespace law90_test;
+  law::PreparedMaterial blank, explicit_one;
+  ASSERT_EQ(law::PrepareSI(OriginalBlankHuInput(), OriginalBlankHuCurve(), blank), law::Status::Ok);
+  ASSERT_EQ(law::PrepareSI([&]{auto i=OriginalBlankHuInput();i.hysteresis=1;return i;}(), OriginalBlankHuCurve(), explicit_one), law::Status::Ok);
+  EXPECT_EQ(blank.reader().hysteresis, 1);
+  EXPECT_EQ(blank.reader().loading_flag, 1);
+  EXPECT_EQ(explicit_one.reader().loading_flag, 2);
+  double a[33], b[33]; Pack(blank, a); Pack(explicit_one, b);
+  for (unsigned k=0; k<33; ++k) {
+    if (k!=16) EXPECT_TRUE(SameBits(a[k], b[k])) << k;
+    EXPECT_TRUE(SameBits(a[k], original_radiator_sdi::prepared[k])) << k;
+  }
+}

@@ -3,7 +3,8 @@
 This is a pure eight-point element value seam for the radiator's selected
 LAW90 / engine solid17 / IINT2 / ICP0 / ISMSTR10 / JCVT1 / ISELECT1 profile.
 It does not admit the source into an app model, ledger, resident participant,
-or clock. The executed SDI KCON/default export remains a separate obligation.
+or clock. The separate executed SDI gate now establishes actual blank-HU
+IFLAG1, KCON20 GPa and raw-curve scaling; source/runtime admission remains separate.
 
 `InitializeForce90` evaluates native TIME0 with original positions and the
 supplied uniform velocity. Its history stamp is sample zero, not an interval.
@@ -33,7 +34,8 @@ speed; MQVISCB RHOREF is the actual current density for ISMSTR10. The direct
 caller tests retain unequal PM1/PM89. The original element reference has one
 density, so force admission explicitly requires its actual blank-RHOR default
 PM1=PM89=reference density; no altered density is silently admitted. ET is the actual returned
-minimum slope/E0, not a constant. Pressure, dV, average volume and old/new Q enter
+IFLAG2 minimum slope/E0 or IFLAG1 MAX(1e20, slopes)/E0. It is never
+replaced by a constant1. Pressure, dV, average volume and old/new Q enter
 the no-EOS native work before storage normalization. The literal SI volume floor
 is 1e-20 m3; sub-floor packet tests are not original working-unit parity claims.
 
@@ -112,3 +114,32 @@ Existing force/reference/point APIs and equations are unchanged. Their new
 fixture targets only expose existing immutable test helpers; owning manifests
 refresh only these reviewed build registrations. The separately frozen shared
 force extraction57084e6 was root-qualified through old solid18 host/native/CUDA.
+
+## Qualified explicit-HU1 and actual blank-HU extension
+
+Root `law90-solid18-force-root-tests-2` passed the earlier complete explicit-HU1
+force gate:6 host,5 native, all1345*(TIME0+8) source packets and2 actual CUDA
+functions. Root fixes were harness/build only; production equations were unchanged.
+
+The actual blank-HU extension leaves geometry/caller/force arithmetic unchanged
+and consumes the extended point with IFLAG1. Source fixtures preserve all1345
+EID/PID/node/coordinate/order records, explicitly using the executed native SDI
+density bits for both reference and material. Raw original MPa ordinates with
+YFAC1e6 retain native subtraction/scaling order. The old SI-ordinate scale1
+explicit-HU1 controls remain separate and unchanged.
+
+New controls add actual raw-curve material to the direct320-step caller, a
+rotated/distorted160-step element trajectory, all1345*(TIME0+8) native packets,
+and actual CUDA160-step rollback plus1345*(TIME0+2) source packets. The late
+IFLAG1 witness checks evolving quasistatic energy, because its strain-norm path
+slot correctly remains carried zero. Author7 host functions pass under
+Release/NDEBUG. Final owning function counts are host7/native6/source2/CUDA4;
+the new native/CUDA branch requires root execution. No new device scratch or
+production state is added; all earlier sizes remain unchanged.
+
+Author extension evidence: `law90-iflag1-host-author-1.json` passes all19
+host functions across preparation/point/force; `law90-iflag1-identity-author-2.json`
+authenticates all reused source owners. C++/CUDA-shaped syntax passes in
+`law90-iflag1-syntax-author-{1,2,3}.json`; the first run preserved a test-helper
+RecordProperty qualification error, corrected without production changes.
+No native/Fortran/NVCC/device execution was performed by the author.

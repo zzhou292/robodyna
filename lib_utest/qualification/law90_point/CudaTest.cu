@@ -95,6 +95,17 @@ TEST(Law90PointCuda, OriginalRotatedNativeHistoryAndDeviceOwnedLateRetry) {
   for (unsigned step = 0; step < series.step_count; ++step) series.input[step] = Path(step, true);
   CheckDevice(series);
 }
+TEST(Law90PointCuda, OriginalBlankHuNativeHistoryAndDeviceOwnedLateRetry) {
+  DeviceSeries series;
+  series.material_input = OriginalBlankHuInput();
+  series.curve_count = 28;
+  std::copy_n(OriginalBlankHuCurve().compression_strain, 28, series.x);
+  std::copy_n(OriginalBlankHuCurve().stress_pa, 28, series.y);
+  series.step_count = MaximumSteps;
+  series.fault_step = 43;
+  for (unsigned step = 0; step < series.step_count; ++step) series.input[step] = Path(step, true);
+  CheckDevice(series);
+}
 TEST(Law90PointCuda, NativePlateauZeroEtTensionCapAndCursorRetry) {
   ToyCurve curve;
   curve.y[2] = curve.y[1];

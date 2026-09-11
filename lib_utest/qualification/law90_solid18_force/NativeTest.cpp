@@ -3,9 +3,11 @@
 using namespace law90_force_test;
 TEST(Law90Solid18Native, CompleteCallerConstructorAndIndependentHistory) {
   law90_point_test::ToyCurve toy;
-  for(bool original:{true,false}) {
-    const auto input=original ? law90_test::OriginalInput() : law90_point_test::ToyInput();
-    const auto curve=original ? law90_test::OriginalCurve() : toy.view();
+  for(unsigned profile=0;profile<3;++profile) {
+    const auto input=profile==2 ? law90_test::OriginalBlankHuInput() :
+        (profile==0 ? law90_test::OriginalInput() : law90_point_test::ToyInput());
+    const auto curve=profile==2 ? law90_test::OriginalBlankHuCurve() :
+        (profile==0 ? law90_test::OriginalCurve() : toy.view());
     law::PreparedMaterial material;ASSERT_EQ(law::PrepareSI(input,curve,material),law::Status::Ok);
     const auto prepared=law90_point_test::NativePrepared(input,curve);
     NativeCaller native(prepared[1]);law::CallerResult accepted;
@@ -51,26 +53,30 @@ TEST(Law90Solid18Native, StorageFloorAndActualPressureVolumeWork) {
     EXPECT_NE(trial.volume_increment_m3,packet.current_volume_m3-packet.storage_volume_m3);
   }
 }
-TEST(Law90Solid18Native, FullElementRotatedCompressionUnloadingAndPointCursors) {
-  law90_point_test::ToyCurve curve;const auto input_material=ElementToyInput();
-  law::PreparedMaterial material;ASSERT_EQ(law::PrepareSI(input_material,curve.view(),material),law::Status::Ok);
-  const auto prepared=law90_point_test::NativePrepared(input_material,curve.view());
+void FullElementNative(bool blank_hu) {
+  law90_point_test::ToyCurve toy;
+  const auto input_material=blank_hu ? law90_test::OriginalBlankHuInput() : ElementToyInput();
+  const auto curve=blank_hu ? law90_test::OriginalBlankHuCurve() : toy.view();
+  law::PreparedMaterial material;ASSERT_EQ(law::PrepareSI(input_material,curve,material),law::Status::Ok);
+  const auto prepared=law90_point_test::NativePrepared(input_material,curve);
   for(bool flipped:{false,true}) {
-    auto input=Distorted();if(flipped)for(auto& p:input.position_m)p.x=-p.x;
+    auto input=Distorted();input.density_kg_m3=input_material.density_kg_m3;if(flipped)for(auto& p:input.position_m)p.x=-p.x;
     f::Reference reference;ASSERT_EQ(f::InitializeReference90(input,reference),s::Status::Success);
     f::ForceTrial accepted;ASSERT_EQ(f::InitializeForce90(reference,material,{3,-1,2},accepted),s::Status::Success);
     s::PrescribedInterval virgin;
     for(unsigned n=0;n<8;++n){virgin.position_endpoint_m[n]=input.position_m[n];virgin.velocity_midpoint_m_s[n]={3,-1,2};}
-    NativeForce native(input.density_kg_m3);AdvanceNative(prepared.data(),curve.view(),input,virgin,true,native);
+    NativeForce native(input.density_kg_m3);AdvanceNative(prepared.data(),curve,input,virgin,true,native);
     ASSERT_EQ(native.status,0);ASSERT_TRUE(ForceAgreement(ForceValues(accepted),native));CheckCursors(accepted,native);
     for(unsigned step=1;step<=160;++step) {
       SCOPED_TRACE(step);auto interval=Path(input,step);MatchBase(accepted.proposed_history,interval);
-      AdvanceNative(prepared.data(),curve.view(),input,interval,false,native);ASSERT_EQ(native.status,0);
+      AdvanceNative(prepared.data(),curve,input,interval,false,native);ASSERT_EQ(native.status,0);
       f::ForceTrial trial;ASSERT_EQ(f::EvaluateForce90(reference,accepted.proposed_history,interval,material,trial),s::Status::Success);
       ASSERT_TRUE(ForceAgreement(ForceValues(trial),native));CheckCursors(trial,native);accepted=trial;
     }
   }
 }
+TEST(Law90Solid18Native, FullElementRotatedCompressionUnloadingAndPointCursors) { FullElementNative(false); }
+TEST(Law90Solid18Native, ActualBlankHuRawCurveElementLoadingAndUnloading) { FullElementNative(true); }
 TEST(Law90Solid18Native, AgreementRejectsDimensionAndStatePerturbations) {
   const auto material=Material();const auto input=Cube();f::Reference reference;
   ASSERT_EQ(f::InitializeReference90(input,reference),s::Status::Success);

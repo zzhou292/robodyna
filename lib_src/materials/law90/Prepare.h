@@ -74,7 +74,8 @@ TL_LAW90_HD inline Status ReadSelectedSI(
   next.smooth = 0;
   next.rate_flag = 0;
   if (next.poisson_ratio != 0 || next.hysteresis != 1 || next.shape != 1 ||
-      next.alpha != 1 || next.loading_flag != 2 || next.tension_flag != 2 ||
+      next.alpha != 1 || (next.loading_flag != 1 && next.loading_flag != 2) ||
+      next.tension_flag != 2 ||
       next.failure_mode != 0 || next.curve_rate_s_inverse != 0 ||
       next.filter_cutoff_hz != 0 || (input.smooth != 0 && input.smooth != 1)) {
     return Status::UnsupportedProfile;
