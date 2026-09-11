@@ -31,3 +31,10 @@ Default configuration runs only small host/source checks. The original fixture
 is build-generated from fixed-hash binaries; neither TL production nor native
 math depends on the app importer. The create-only exporter is a staging tool
 that reuses existing app canonical and working-coordinate readers.
+
+The optional N3 normalization in the C++ packet is bound to the complete
+pinned HM_READ_BEAM reader and its exact lines158–183, emitted as
+`reader_orientation_identity.inc` for identity checking only. The selected
+node-defined profile has no vector override: absent or endpoint-alias N3
+resolves to N2 before native system indexing. N3 is CHECK_USED, while only
+N1/N2 are CHECK_BEAM. No reader behavior or numerical oracle changed.

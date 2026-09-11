@@ -51,8 +51,8 @@
       "sha256": "4212c6eff2a8722acabe1708d88b0f6c8c0d7730f28c4765239dc9510408f44c"
     },
     "lib_utest/qualification/beam18_reference/NativeOracle.cpp": {
-      "bytes": 1875,
-      "sha256": "9d4238caacd2d0c5663dcc81988d033380fd60b4bbc82d4aabdd5a5a00a1be4b"
+      "bytes": 2018,
+      "sha256": "52c8921c6ab44012cc97ee6ab1acadefb82f321d9080102f2325e5ea52a281b6"
     },
     "lib_utest/qualification/beam18_reference/NativeOracle.h": {
       "bytes": 393,
@@ -63,8 +63,8 @@
       "sha256": "ed876269d0c6db7699d27659c3d02830cef9d5d1b5dc56f08cf995f6eeb0d681"
     },
     "lib_utest/qualification/beam18_reference/README.md": {
-      "bytes": 1594,
-      "sha256": "074b19e30c84f15166b96b5846153cf3d0f591fb4f8f8dea6f1b4d9df6d3ee6d"
+      "bytes": 2029,
+      "sha256": "f3d7664ab249c656e16eff6b7c4148ceab6d9a57b958b7c6a66e476dea4f4c16"
     },
     "lib_utest/qualification/beam18_reference/TestSupport.h": {
       "bytes": 1964,
@@ -147,8 +147,8 @@
       "sha256": "7e0d84eea01e45023a6b7b94ececef1a828fe974c2064074264ae118afd7db78"
     },
     "lib_utest/qualification/beam18_reference/native/source-manifest.json": {
-      "bytes": 3506,
-      "sha256": "b1653105f6ba67f4ecb3986e55b4a224e5f35a937d599f9607de58b4475e8c44"
+      "bytes": 4254,
+      "sha256": "7f6920b6a5caafd99827553283d373b1a5c2fbc3288dc2db202d8834e779795f"
     },
     "lib_utest/qualification/beam18_reference/prepare_fixture.py": {
       "bytes": 4951,

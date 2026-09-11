@@ -65,6 +65,14 @@
       "sha256": "79915c2f70251e92578385dcaa1ec085b020914851f83c5126e39d00affd58c1",
       "git_blob_sha1": "e533fe9f250ccb1e53979cc4ddccded357e464cb",
       "retrieval": "unchanged existing qualified same-pin source"
+    },
+    {
+      "source": "starter/source/elements/reader/hm_read_beam.F",
+      "path": "original/starter/source/elements/reader/hm_read_beam.F",
+      "bytes": 10278,
+      "sha256": "0132dca6741f3d624dee65f334623432695dbce984b599f97ac60909a62a3e48",
+      "git_blob_sha1": "807df89060f0c03a264ed89ace8fe67cf90bc53b",
+      "retrieval": "official pinned HTTPS"
     }
   ],
   "complete_subroutines": {
@@ -84,6 +92,12 @@
       "starter/source/properties/beam/hm_read_prop18.F",
       159,
       159
+    ],
+    "reader_orientation_identity.inc": [
+      "starter/source/elements/reader/hm_read_beam.F",
+      158,
+      183
     ]
-  }
+  },
+  "reader_orientation_scope": "Read-only evidence for NativeOracle.cpp resolved system-index packet: selected original node-defined orientation, no vector override; absent or endpoint-alias N3 resolves to N2 before USR2SYS; orientation N3 only CHECK_USED."
 }

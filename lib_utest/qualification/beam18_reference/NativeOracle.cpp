@@ -9,6 +9,8 @@ NativeResult Native(const beam::Input& input) {
   for (unsigned i=0;i<3;++i) {
     x[3*i]=input.position[i].x; x[3*i+1]=input.position[i].y; x[3*i+2]=input.position[i].z;
   }
+  // HM_READ_BEAM:158-183, retained in native/source-manifest.json.
+  // The selected node-defined profile has IBEAM_VECTOR=0; system N2 is 2.
   const auto third=input.source_node_id[2];
   const int n3=(!third || third==input.source_node_id[0] || third==input.source_node_id[1]) ? 2 : 3;
   beam18_reference_native(x,&input.radius,&input.density,&input.young,&input.poisson,
