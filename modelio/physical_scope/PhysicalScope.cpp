@@ -37,4 +37,6 @@ const Data& PhysicalScope::data() const noexcept { return storage_->data; }
 const Forecast& PhysicalScope::forecast() const noexcept { return storage_->forecast; }
 const rigid::point_mass::Source& PhysicalScope::point_mass_source() const noexcept { return storage_->masses; }
 const tied_shell::TiedShellDeclaration& PhysicalScope::tied_source() const noexcept { return storage_->tied; }
+const type13::SourceType13& PhysicalScope::type13_source() const noexcept { return storage_->beams; }
+const solid_source::VehicleSolidSource& PhysicalScope::solid_source() const noexcept { return storage_->solids; }
 } // namespace crash::modelio::physical_scope

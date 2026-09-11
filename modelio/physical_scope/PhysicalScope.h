@@ -93,6 +93,8 @@ class PhysicalScope {
     const Forecast& forecast() const noexcept;
     const rigid::point_mass::Source& point_mass_source() const noexcept;
     const tied_shell::TiedShellDeclaration& tied_source() const noexcept;
+    const type13::SourceType13& type13_source() const noexcept;
+    const solid_source::VehicleSolidSource& solid_source() const noexcept;
   private:
     struct Storage;
     explicit PhysicalScope(std::shared_ptr<const Storage> value) : storage_(std::move(value)) {}

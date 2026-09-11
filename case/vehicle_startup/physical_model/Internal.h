@@ -1,0 +1,19 @@
+#pragma once
+#include "VehiclePhysicalModel.h"
+#include "output/ArtifactIO.h"
+
+namespace crash::cases::vehicle_startup::physical_model::detail {
+using output::Require;
+namespace fe = tl::fea;
+inline modelio::type25::Declaration WeldDeclaration() {
+    return {modelio::type25::Policy::OriginalDefaultSpotweldsV1, 0x59415249533235ULL};
+}
+void PrepareBeams(const modelio::type13::SourceType13&, const fe::NodalNodeDomain&,
+                  std::size_t cap, fe::type13::Model&);
+void PrepareSolids(const modelio::solid_source::VehicleSolidSource&, const fe::NodalNodeDomain&,
+                   std::size_t cap, fe::solids::Model&);
+fe::NodalRigidGroupMember PlainMember(const fe::NodalNodeDomain&, const fe::NodalCoefficientLedger&,
+                                     std::uint64_t nid);
+void PreparePlain(const modelio::physical_domain::VehiclePhysicalDomain&, const fe::NodalCoefficientLedger&,
+                  std::size_t cap, fe::NodalRigidGroupModel&);
+} // namespace crash::cases::vehicle_startup::physical_model::detail
