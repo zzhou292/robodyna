@@ -1,5 +1,15 @@
 # Original tied classification after search finalization
 
+Root qualification (2026-09-11, app `33f2ba7`, TL `7527fbe`) passes all14 C++
+functions and one Python importer test. All11,165 original slaves select CIN,
+zero PEN; every observed field, all8192 ITF words and the native classifier
+counters agree. Complete forecast515,134,232 B fits512 MiB; source context
+reserves408,609,922 B including the rigid source reservation371,091,422 B.
+The1.382 s guarded test samples369,557,504 B under2 CPUs/2 GiB.
+Canonical evidence uses `crash-work/reports/tied-classification-source-root-*`;
+`tied-classification-evidence-index.md` documents the earlier report-prefix
+collision and preserved old native XML. Post-KINCHK remains a separate phase.
+
 `TiedSearchClassification::Prepare(finalized, context)` requires the same
 immutable declaration backing. It reuses finalized compact NSV/MSR maps and TL
 `Classify`, with the independently qualified observed-slave projection. Original
