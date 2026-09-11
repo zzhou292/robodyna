@@ -32,6 +32,10 @@ struct Fixture {
   }
   s::BatchConfig Configuration() const {
     auto config=Config(mechanics.domain.node_count());
+    // The recurrence validates the actual CIN owner interval. Its receipt and
+    // contributor must use that same qualification identity, not Config's
+    // standalone constructor-test identity.
+    config.qualification_id=mechanics.Cin().qualification_id;
     config.owner.fixed_dt=mechanics.Config().fixed_dt;
     config.owner.has_rotation_presence=true;
     config.owner.rigid_groups={1,mechanics.binding.groups().size(),mechanics.binding.members().size(),
