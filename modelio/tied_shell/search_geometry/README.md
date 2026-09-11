@@ -81,3 +81,17 @@ create-only source fixture utility authenticates the original ZIP/member and
 sets the explicit source paths for the actual group. No GPU target is added.
 Subsequent broadphase/projection assessment and constraint classification are
 separate consumers of this handle.
+
+Root qualification at app `6ea128e`: all11 functions pass in
+`tied-search-geometry-root-tests-1` (6 host,2 native,3 original-source), including
+all193,068 independent native packets. The complete source has exactly171,813
+masters,11,165 secondaries,194,622 working nodes,180,315 matching-shell
+occurrences and4,251 three-layer witnesses. Native-equivalent winning thickness
+is2.28 mm for every witness; all six permutations agree. The complete startup
+forecast is438,219,119 B, retained payload20,278,882 B, and9,794 original
+coordinate components would change bits through an SI round trip. The source
+test sampled251,322,368 B RSS under2 CPUs/2 GiB. The immutable result preserves
+packing/canonical ownership and passes complete-source failure/retry. Final
+slave-to-master mapping and original constraint classification remain separate
+gates. Shared raw-source materialization also preserves all17 prior declaration
+and packing functions (`tied-evidence-reuse-{declaration,packing}-tests-1`).

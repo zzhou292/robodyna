@@ -90,3 +90,13 @@ lifetime, plus late member corruption and a one-byte-short startup budget.
 The fixture extracts only the 44,991-byte auxiliary member itself, then invokes
 the existing bounded main-member fixture helper. Full-source execution remains
 the root-owned qualification boundary.
+
+Root qualification at app `c681eac`: all seven functions pass in
+`tied-auxiliary-root-tests-1` (five values, two original-source). The authenticated
+original has 11 groups / 228 member occurrences; nine groups touch 125 distinct
+master nodes and none touches a secondary. All 88 auxiliary member nodes retain
+their own source records. The mesh-wall policy explicitly replaces all six
+original wall blocks from both source files. Startup forecast is 151,732,370 B;
+owned payload is 91,158 B. The 2-CPU / 2-GiB source test sampled 163,160,064 B RSS.
+This establishes original source evidence and boundary disposition, not native
+registration order, CIN/PEN classification or mechanics owner admission.
