@@ -1,0 +1,48 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Native source packing qualification only; no full search/classification/solver",
+  "sources": [
+    {
+      "source": "common_source/tools/sort/my_orders.c",
+      "bytes": 3652,
+      "git_blob_sha1": "37dca9fd6fb96ed1dbb0aab8033462bb5d71cfb3",
+      "sha256": "75d1173b7558f5c832620f299d331e7f1cc631037c4b1f5e000769b516fd68e0"
+    },
+    {
+      "source": "starter/source/interfaces/interf1/inpoint.F",
+      "bytes": 3070,
+      "git_blob_sha1": "92cd3a4f275fd058721fa64ff8afdc0b8c14ccb5",
+      "sha256": "345036d75a7b1617ca7c337636f571af10dcfd5ad04ff91f66c0d5c737417e3f"
+    },
+    {
+      "source": "starter/source/interfaces/interf1/insurf.F",
+      "bytes": 7910,
+      "git_blob_sha1": "b66fd249f7fdb2c95a70bc121d2be6465fe78e40",
+      "sha256": "750232de1ad745238833565139b7b1a0c1b0e7597c420c1bb76fc04e870fc93d"
+    },
+    {
+      "source": "starter/source/interfaces/interf1/count3.F",
+      "bytes": 4214,
+      "git_blob_sha1": "8a46eaf2554dcbdc793087c696c29adb5396d56a",
+      "sha256": "123cc9cfdf56bf4fefb5715501ca01001fdb0ca18b8d25db6498395b015e57e6"
+    },
+    {
+      "source": "starter/source/model/sets/shell_surface_buffer.F",
+      "bytes": 4127,
+      "git_blob_sha1": "880f2445e31e11d5e9f749eace72348211d429b8",
+      "sha256": "29a0a1e659467af884a317f332a3400f3a33c1c6ec78923042f5234f575bbb33"
+    },
+    {
+      "source": "starter/source/model/sets/create_surface_from_element.F",
+      "bytes": 8446,
+      "git_blob_sha1": "641a6c31c5d4455f0e57d82293af86f404de55fc",
+      "sha256": "c9c28d6dada8ce2ee8135737c80dea28e2d81727ff993f95371ccc9fdb815fe1"
+    },
+    {
+      "source": "starter/source/model/sets/create_node_from_element.F",
+      "bytes": 9874,
+      "sha256": "aec59b7ffaa655dc394f3d918de969beffa7027e835059d5045579143b898bac",
+      "git_blob_sha1": "e9921255b37e6c53ac32eec362a5ff0a667d8ec4"
+    }
+  ]
+}
