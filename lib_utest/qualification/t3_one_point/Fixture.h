@@ -63,15 +63,15 @@ struct Fixture {
 };
 // One independently prescribed smooth path: endpoint x and midpoint v/omega.
 // Nonuniform director spin is deliberate; it is not inferred from nodal q.
-inline t3::PrescribedInterval Path(const Fixture& fixture,unsigned step) {
+inline t3::PrescribedInterval Path(const Fixture& fixture,unsigned step,double amplitude=.18) {
   t3::PrescribedInterval in;
   in.base_time=step*Dt;
   in.dt=Dt;
   in.sample_index=step+1;
   const double te=(step+1)*Dt,tm=(step+.5)*Dt;
   constexpr double frequency=2*3.14159265358979323846/(128*Dt);
-  const double ee=.18*std::sin(frequency*te),em=.18*std::sin(frequency*tm);
-  const double de=.18*frequency*std::cos(frequency*tm);
+  const double ee=amplitude*std::sin(frequency*te),em=amplitude*std::sin(frequency*tm);
+  const double de=amplitude*frequency*std::cos(frequency*tm);
   const double rotation_rate=1.2/(128*Dt);
   const t3::Vec3 omega{rotation_rate/3,2*rotation_rate/3,2*rotation_rate/3};
   t3::Vec3 center{};

@@ -9,11 +9,14 @@ TEST(T3OnePointNative, OriginalTriangleYieldUnloadReloadCarriesIndependentFullHi
     double peak_pla=0,minimum_work=0,thickness_excursion=0;
     for(unsigned step=0;step<256;++step) {
       SCOPED_TRACE(step);
-      const auto in=Path(f,step);
+      // Excite resolved thickness change even after rotating this oblique
+      // original triangle; keep the native comparison tolerances unchanged.
+      const auto in=Path(f,step,.30);
       t3::OnePointForceTrial out;
       ASSERT_EQ(t3::EvaluateOnePointLaw44Force(f.reference,f.material,f.failure,h,in,out),t3::Status::kSuccess);
       ASSERT_EQ(native.Step(f,in),0);
       CompareNative(out,native);
+      ASSERT_FALSE(HasFailure());
       h=out.proposed_history;
       peak_pla=std::max(peak_pla,native.state[31]);
       minimum_work=std::min(minimum_work,native.output[101]);
@@ -34,6 +37,7 @@ TEST(T3OnePointNative, NativeSinglePointRemovalCurrentWorkAndFollowingZeroCache)
     ASSERT_EQ(t3::EvaluateOnePointLaw44Force(f.reference,f.material,f.failure,h,Path(f,step),out),t3::Status::kSuccess);
     ASSERT_EQ(native.Step(f,Path(f,step)),0);
     CompareNative(out,native);
+    ASSERT_FALSE(HasFailure());
     EXPECT_EQ(native.state[25],0);
     EXPECT_EQ(native.state[34],Dt);
     if(step==0) {
@@ -54,6 +58,7 @@ TEST(T3OnePointNative, ResetHistoryAndWrongVelocityPhaseAreDecisiveNegativeContr
     ASSERT_EQ(t3::EvaluateOnePointLaw44Force(f.reference,f.material,f.failure,h,Path(f,step),out),t3::Status::kSuccess);
     ASSERT_EQ(native.Step(f,Path(f,step)),0);
     CompareNative(out,native);
+    ASSERT_FALSE(HasFailure());
     h=out.proposed_history;
   }
   const auto before=native;
@@ -96,6 +101,7 @@ TEST(T3OnePointNative, SharedZeroShearUsesNativeTablePositiveRateAndRateOffBranc
       ASSERT_EQ(t3::EvaluateOnePointLaw44Force(f.reference,f.material,f.failure,h,Path(f,step),out),t3::Status::kSuccess);
       ASSERT_EQ(native.Step(f,Path(f,step)),0);
       CompareNative(out,native);
+      ASSERT_FALSE(HasFailure());
       h=out.proposed_history;
     }
   }

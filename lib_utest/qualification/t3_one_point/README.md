@@ -103,3 +103,20 @@ startup/geometry/global-force regression groups. Host-only config sets both
 one-point checks OFF. Bazel production is `//lib_src/elements/t3:one_point_law44`;
 tests are `//lib_utest/qualification/t3_one_point:t3_one_point_check` and
 `//lib_utest/qualification/t3_one_point:t3_one_point_cuda_check`.
+
+Root integration passes11 owning functions:4 host,5 native and2 actual CUDA,
+plus10 affected QBAT host/native functions and2 source identities. Reports:
+`t3-one-point-root-tests-2` / functions2, build3. Native build1 found unprefixed
+ELBUFDEF/ELEMENT module imports in the new wrapper; those now name the already
+private T3 engine modules. No donor routine or production equation changed.
+
+Tests1 had complete native arithmetic agreement, but one rotated load path
+produced only0.947 micrometres of thickness excursion, below its asserted
+1 micrometre coverage threshold. That one prescribed path now uses amplitude
+0.30 instead of0.18; default paths, the threshold and all comparison tolerances
+remain unchanged. The stronger path passes the same full-history comparison.
+Native loops now stop after the first mismatch to bound failure logs.
+
+The source fixture is shared with its sole QBAT owner. This gate does not
+independently qualify the original triangle's startup M/J or a resident owner;
+the explicit native startup comparison belongs to the next resident gate.

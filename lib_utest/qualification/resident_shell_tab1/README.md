@@ -94,7 +94,9 @@ No resident equation or tolerance changed.
 
 A subsequent independent review identified a pre-existing shared Q/T LAW44
 sound-speed handoff omission in both production and retained native force
-wrappers. Correction and affected force/resident/app regressions are pending;
-the above result establishes resident dispatch/transaction agreement with those
-retained wrappers, not closure of that newly identified caller defect. No full
-vehicle source/run is admitted by this gate.
+wrappers. TL `b12cd18` corrects it; all11 owning functions pass again with the
+actual returned native point SSP (`law44-ssp-root-resident-tab1-tests-1` /
+functions1). The corrected force gates also pass24 ordinary/failure and13
+placement/glass functions. Historical results remain unchanged; remaining
+affected resident/source-flight regressions are tracked in the active plan.
+No full vehicle source/run is admitted by this gate.
