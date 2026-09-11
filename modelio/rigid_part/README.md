@@ -53,3 +53,11 @@ Author qualification: seven new source/reference functions and sixteen existing
 functions pass under one CPU / 512 MiB. The two complete-source/root functions
 and one all-prior-reference function compile for root's separately scheduled
 gate; author compilation is not complete-source or runtime admission.
+
+Root qualification on2026-09-11 passes all26 source/reference functions,
+including the three complete original-source checks. All349,645 references
+succeed with zero rejection/unresolved rows; every prior344,543 named reference
+field remains identical. Source forecast522,032,110 B and reference
+forecast789,592,619 B fit the unchanged512/768 MiB profiles. The full reference
+parity check retains both assessments and sampled784,822,272 B process RSS
+under2 CPUs/3 GiB. Evidence: `crash-work/reports/vehicle-rigid-root-*`.

@@ -35,3 +35,11 @@ Enable `ROBO_DYNA_TIED_FINALIZATION_ACTUAL` with explicit
 GPU assessment once and compares all original finalization rows and messages
 against the complete independently compiled I2TID3 oracle. It requires the
 serialized original-source/GPU qualification queue.
+
+Root qualification on2026-09-11 passes five host functions and the complete
+original CUDA/native check. All11,165 slaves remain;29,585 used master nodes
+compact from183,457, preserving all native maps, selected ranks, ST/STB and
+seven empty flush calls. Forecast221,400,049 B, finalizer owned2,495,500 B;
+the test sampled291,508,224 B RSS under2 CPUs/2 GiB. Evidence is retained in
+`crash-work/reports/tied-finalized-source-root-*`. Classification and mechanics
+remain separate pending stages.
