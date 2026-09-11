@@ -4,6 +4,22 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
+    name = "shell_physical_owner_values",
+    srcs = ["ShellPhysicalOwnerLayout.cpp", "ShellPhysicalOutputRanges.cpp"],
+    hdrs = ["ShellPhysicalOwner.h", "ShellPhysicalOutputRanges.h"],
+    deps = [":shell_batch_startup", ":shell_formulation_output_ranges",
+            "//lib_src/assembly:shell_physical_binding", "//lib_src/assembly:nodal_coefficient_ledger",
+            "//lib_src/solvers:explicit_nodal_state", "//lib_utils:bounded_arena"],
+)
+
+cc_library(
+    name = "shell_physical_owner",
+    srcs = ["ShellPhysicalOwnerSource.cpp", "ShellPhysicalOwnerAssembly.cpp"],
+    deps = [":shell_physical_owner_values", "//lib_src/solvers:explicit_nodal_state",
+            "//lib_src/solvers:nodal_native_physical_coefficients", "//lib_src/solvers:nodal_trial_identity"],
+)
+
+cc_library(
     name = "shell_reference_placement",
     hdrs = ["ShellReferencePlacement.h"],
 )

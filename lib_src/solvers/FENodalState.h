@@ -259,6 +259,9 @@ class FENodalState {
   // retained at startup. Valid at any accepted epoch; no device read/allocation.
   // Complete non-rigid coefficients and current CIN values remain separate.
   NodalReport ValidateRigidAssemblyBinding(const NodalRigidAssemblyBinding&) const noexcept;
+  // Immutable source-role query only: present rotations and unfixed world DOFs.
+  // Authentic PART/CIN zero inverses are allowed; no coefficients are inferred.
+  NodalReport ValidateFreeRotationalNodes(const std::size_t*,std::size_t count) const noexcept;
   NodalReport SealAssembly(const NodalTrialToken&);
   // Only after the applicable advance succeeds. Validators use the returned stream
   // and finish before Commit; the coordinator must discard any rejected trial.
