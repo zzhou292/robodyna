@@ -13,6 +13,20 @@ module LF_CALLER
   type LF_WORK
     real(c_double) :: wpla(1)=0
   end type
+  abstract interface
+    subroutine LF_POINT_FAILURE(parameters,history,element,dpla,time,stress)
+      import c_double,c_int
+      real(c_double),intent(in) :: parameters(:),dpla,time,stress(5)
+      real(c_double),intent(inout) :: history(:)
+      integer(c_int),intent(in) :: element
+    end subroutine
+    subroutine LF_PARENT_FAILURE(flags,weights,parent)
+      import c_double,c_int
+      integer(c_int),intent(in) :: flags(3)
+      real(c_double),intent(in) :: weights(3)
+      real(c_double),intent(inout) :: parent
+    end subroutine
+  end interface
 contains
   subroutine layered_failure_caller(mfunc,npts,curve,basic,linear,rate_control,d1,dt1,time, &
       dx,thk0,area,dm,points,failures,parent,for_g,for,mom,thk,eint,point_values,diag,removed) &
@@ -24,6 +38,42 @@ contains
         mom(1,3),thk(1),eint(1,2)
     real(c_double),intent(out) :: point_values(13,3),diag(9)
     integer(c_int),intent(out) :: removed
+    call layered_failure_packet(mfunc,npts,curve,basic,linear,rate_control,[d1],dt1,time, &
+        dx,thk0,area,dm,points,failures,parent,for_g,for,mom,thk,eint,point_values,diag,removed, &
+        JohnsonPoint,JohnsonParent)
+  end subroutine
+  ! Complete family drivers supply their own M%SSP. Preserve the standalone
+  ! wrapper and its original default while keeping one shared caller loop.
+  subroutine layered_failure_caller_ssp(mfunc,npts,curve,basic,linear,rate_control,d1,dt1,time, &
+      dx,thk0,area,dm,points,failures,parent,for_g,for,mom,thk,eint,point_values,diag,removed,caller_ssp) &
+      bind(C,name='layered_failure_caller_ssp')
+    integer(c_int),value :: mfunc,npts
+    real(c_double),intent(in) :: curve(2,npts+1),basic(4),linear(2),rate_control(3), &
+        d1,dt1,time,dx(8),thk0(1),area(1),dm
+    real(c_double),intent(inout) :: points(7,3),failures(3,3),parent,for_g(1,5),for(1,5), &
+        mom(1,3),thk(1),eint(1,2)
+    real(c_double),intent(out) :: point_values(13,3),diag(9)
+    integer(c_int),intent(out) :: removed
+    real(c_double),intent(in) :: caller_ssp
+    call layered_failure_packet(mfunc,npts,curve,basic,linear,rate_control,[d1],dt1,time, &
+        dx,thk0,area,dm,points,failures,parent,for_g,for,mom,thk,eint,point_values,diag,removed, &
+        JohnsonPoint,JohnsonParent,ssp_override=caller_ssp)
+  end subroutine
+  subroutine layered_failure_packet(mfunc,npts,curve,basic,linear,rate_control,failure_parameters,dt1,time, &
+      dx,thk0,area,dm,points,failures,parent,for_g,for,mom,thk,eint,point_values,diag,removed, &
+      point_failure,parent_failure,israte_override,ssp_override)
+    integer(c_int),value :: mfunc,npts
+    real(c_double),intent(in) :: curve(2,npts+1),basic(4),linear(2),rate_control(3), &
+        failure_parameters(:),dt1,time,dx(8),thk0(1),area(1),dm
+    real(c_double),intent(inout) :: points(7,3),failures(:,:),parent,for_g(1,5),for(1,5), &
+        mom(1,3),thk(1),eint(1,2)
+    real(c_double),intent(out) :: point_values(13,3),diag(9)
+    integer(c_int),intent(out) :: removed
+    procedure(LF_POINT_FAILURE) :: point_failure
+    procedure(LF_PARENT_FAILURE) :: parent_failure
+    integer(c_int),optional,intent(in) :: israte_override
+    real(c_double),optional,intent(in) :: ssp_override
+    logical :: filter_active
     integer,parameter :: nel=1,jlt=1,mtn=44,ixfem=0,dmg_flag=0
     logical,parameter :: flag_law2=.false.,flag_law25=.false.,flag_zcfac=.true.
     integer :: i,ipt,jpos,nindx,indx(1),idel7nok,ioff_duct(1),foff(1),flags(3)
@@ -41,6 +91,7 @@ contains
     rho=basic(1);off=parent;off_old=off;dmg_glob_scale=one;sigy=zero
     ioff_duct=0;idel7nok=0;print_fail=.false.
     ssp=sqrt(basic(2)/(one-basic(3)*basic(3))/basic(1))
+    if(present(ssp_override)) ssp=ssp_override
     dtinv=dt1/max(dt1**2,em20)
     total_rate=law44_point_shell_rate(dx,thk(1),dt1)
     call law44_point_section(posly(1,:),thkly,wm)
@@ -58,17 +109,19 @@ contains
       sigoxx=base(1);sigoyy=base(2);sigoxy=base(3)
       deps=[depsxx(1),depsyy(1),depsxy(1),depsyz(1),depszx(1)]
       rate=[zero,zero,zero,one,zero]
-      if(rate_control(1)>zero) rate=[rate_control(1),rate_control(2),total_rate, &
+      filter_active=rate_control(1)>zero
+      if(present(israte_override)) filter_active=israte_override>0
+      if(filter_active) rate=[rate_control(1),rate_control(2),total_rate, &
           law44_point_filter(rate_control(3),dt1),points(7,ipt)]
       call LAW44_POINT_PACKET(mfunc,linear(1),hardening,npts,curve,basic(2),basic(3),basic(1), &
-          basic(4),base,deps,rate,thklyl(1),thkn(1),values,off(1),time)
+          basic(4),base,deps,rate,thklyl(1),thkn(1),values,off(1),time,israte_override)
       point_values(:,ipt)=values
       thkn=values(9);etse=values(8);sigy=values(10);lbuf%pla=values(6);lbuf%epsd=zero
       signxx=values(1);signyy=values(2);signxy=values(3);signyz=values(4);signzx=values(5)
 #include "PointPlasticWork.inc"
 #include "CallerFailureIncrement.inc"
-      call constant_failure_native(d1,failures(1,ipt),failures(2,ipt),int(failures(3,ipt),c_int), &
-          int(off(1),c_int),dpla(1),time,values(1:5),failures(:,ipt))
+      call point_failure(failure_parameters,failures(:,ipt),int(off(1),c_int), &
+          dpla(1),time,values(1:5))
       foff=int(failures(3,ipt));flags(ipt)=foff(1);offl=one;sigoff=one
 #include "PointMask.inc"
 #include "SavedStress.inc"
@@ -77,7 +130,7 @@ contains
 #include "LayerFactors.inc"
       mean_pla=mean_pla+thkly(ipt)*values(6);max_pla=max(max_pla,values(6))
     enddo
-    call layered_failure_parent(flags,thkly,off(1))
+    call parent_failure(flags,thkly,off(1))
 #include "ParentPublish.inc"
     ! Material-only observable uses the same final parent mask as the caller.
     for_g=for*off(1)
@@ -86,5 +139,18 @@ contains
 #include "WorkAccumulate.inc"
     parent=off(1);removed=idel7nok
     diag=[gbuf%wpla(1),mean_pla,max_pla,zcfac(1,1),zcfac(1,2),yld(1),sigy(1),total_rate,visc(1)]
+  end subroutine
+  subroutine JohnsonPoint(parameters,history,element,dpla,time,stress)
+    real(c_double),intent(in) :: parameters(:),dpla,time,stress(5)
+    real(c_double),intent(inout) :: history(:)
+    integer(c_int),intent(in) :: element
+    call constant_failure_native(parameters(1),history(1),history(2),int(history(3),c_int), &
+        element,dpla,time,stress,history)
+  end subroutine
+  subroutine JohnsonParent(flags,weights,parent)
+    integer(c_int),intent(in) :: flags(3)
+    real(c_double),intent(in) :: weights(3)
+    real(c_double),intent(inout) :: parent
+    call layered_failure_parent(flags,weights,parent)
   end subroutine
 end module
