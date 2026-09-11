@@ -13,7 +13,7 @@ std::size_t Product(std::uint64_t n,std::size_t bytes,std::size_t cap) {
 }
 }
 Plan PlanArchive(const PlanRequest& r) {
-    Require(r.total_byte_cap&&r.total_byte_cap<=TotalByteCap&&r.file_byte_cap>=IntervalCoreBytes&&r.file_byte_cap<=kArtifactFileCap&&
+    Require(r.total_byte_cap&&r.total_byte_cap<=FullRunByteCap&&r.file_byte_cap>=IntervalCoreBytes&&r.file_byte_cap<=kArtifactFileCap&&
         r.static_byte_reserve&&r.static_byte_reserve<=r.total_byte_cap&&r.nodes&&r.nodes<=1048576&&
         r.parents&&r.parents<=1048576&&r.plastic_points<=4194304&&
         r.frames>=2&&r.frames<kArtifactFrameCap&&r.intervals>=r.frames-1&&r.intervals<=UINT64_MAX/2,

@@ -1,0 +1,74 @@
+#include "RunState.h"
+#include "lib_utils/BoundedArena.h"
+namespace crash::output::physical_run {
+records::source::BundleRequest MakeRequest(const records::Context& c,std::uint64_t intervals,
+    double duration,std::size_t samples,std::size_t total_cap) {
+    records::source::BundleRequest request;
+    auto& r=request.archive;
+    r.nodes=c.nodes();r.parents=c.parents().size();r.plastic_points=c.points();
+    r.intervals=intervals;r.requested_duration=duration;r.frames=samples;r.fixed_dt=c.fixed_dt();
+    r.total_byte_cap=total_cap;
+    r.static_files={{"manifest.json",MetadataCap},{"frame-index.json",MetadataCap},{"configuration.json",MetadataCap}};
+    records::activity::PlanWithActivity(c,r,"parent-activity.json");return request;
+}
+namespace detail {
+void ValidateRequest(const records::PlanRequest& r) {
+    Require(!r.extra_interval_bytes && !r.extra_frame_bytes,"Physical run has unsupported optional storage");
+    Require(r.static_files.size()==3,"Physical run requires exactly its three outer static reservations");
+    for(const auto* name:{"manifest.json","frame-index.json","configuration.json"}) {
+        bool found=false;
+        for(const auto& f:r.static_files)if(f.file==name)found=f.bytes==MetadataCap;
+        Require(found,"Physical run metadata reservation differs from writer cap");
+    }
+}
+Forecast ForecastRun(const records::Context& c,const physical_frames::Archive& a,Profile p,Limits limits) {
+    Require(limits.host_bytes && limits.host_bytes<=512u<<20,"Invalid physical run host cap");
+    Forecast f;f.archive=a.plan();
+    const auto rows=std::min<std::uint64_t>(f.archive.archive.rows_per_chunk,f.archive.archive.interval_bytes/interval::RowBytes);
+    f.interval_staging_bytes=rows*8*(4+RealFields(p).size());
+    tl::util::BoundedArenaLayout budget(limits.host_bytes);tl::util::ArenaRegion region;
+    Require(budget.Append<std::byte>(a.startup_host_bytes(),region) &&
+        budget.Append<std::byte>(3*f.interval_staging_bytes,region) &&
+        budget.Append<std::byte>(32*MetadataCap,region) &&
+        budget.Append<std::byte>(sizeof(FrameFiles)*f.archive.archive.frame_capacity,region),
+        "Physical run source/frame/interval/metadata peak exceeds host cap");
+    f.peak_host_bytes=budget.bytes();return f;
+}
+}
+Forecast RunArchive::Preflight(const records::source::PreparedSourceMapping& mapping,const records::Context& context,
+    records::source::BundleRequest request,Profile profile,Limits limits) {
+    detail::ValidateRequest(request.archive);
+    auto frame_archive=physical_frames::Archive::Prepare(mapping,context,std::move(request));
+    return detail::ForecastRun(context,frame_archive,profile,limits);
+}
+RunArchive RunArchive::Prepare(const std::filesystem::path& root,const records::source::PreparedSourceMapping& mapping,
+    const records::Context& context,records::source::BundleRequest request,Profile profile,Limits limits) {
+    detail::ValidateRequest(request.archive);
+    auto frame_archive=physical_frames::Archive::Prepare(mapping,context,request);
+    const auto forecast=detail::ForecastRun(context,frame_archive,profile,limits);
+    for(const auto& reserve:frame_archive.source_bundle().reservations())request.archive.static_files.push_back(reserve);
+    Configuration config{context.identity(),profile,request.archive,context.point_layout_sha256()};
+    ConfigurationDocument(config);
+    Require(std::filesystem::symlink_status(root).type()==std::filesystem::file_type::directory &&
+        std::filesystem::is_empty(root),"Physical run needs a real empty destination directory");
+    auto state=std::make_unique<Data>(root,context,std::move(frame_archive),std::move(config),forecast);
+    state->index.planned_intervals=request.archive.intervals;
+    state->index.frames.reserve(forecast.archive.archive.frame_capacity);
+    state->intervals=std::make_unique<IntervalWriter>(root,context,profile,request.archive.intervals,
+        request.archive.file_byte_cap,limits.host_bytes);
+    // Every allocation/preflight above precedes the first output mutation.
+    std::filesystem::create_directory(root/"arrays");
+    state->manifest.identity=context.identity();state->manifest.forecast_bytes=forecast.archive.archive.forecast_bytes;
+    state->manifest.source=records::source::WriteSourceBundle(root,state->frames.source_bundle());
+    state->manifest.activity_declaration=records::activity::WriteDeclaration(root,"parent-activity.json",context);
+    state->manifest.configuration=WriteDocument(root,"configuration.json",ConfigurationDocument(state->configuration),MetadataCap);
+    return RunArchive(std::move(state));
+}
+RunArchive::RunArchive(std::unique_ptr<Data> data):data_(std::move(data)) {}
+RunArchive::~RunArchive()=default;
+RunArchive::RunArchive(RunArchive&&) noexcept=default;
+RunArchive& RunArchive::operator=(RunArchive&&) noexcept=default;
+const Forecast& RunArchive::forecast() const noexcept {return data_->forecast;}
+std::uint64_t RunArchive::accepted_intervals() const noexcept {return data_->intervals->sequence().last.epoch;}
+bool RunArchive::failed() const noexcept {return data_->failed || data_->intervals->failed();}
+} // namespace crash::output::physical_run

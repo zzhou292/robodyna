@@ -7,9 +7,13 @@ namespace crash::output {
 inline constexpr std::size_t kArtifactFileCap = 32*1024*1024;
 inline constexpr std::size_t kArtifactTotalCap = 256*1024*1024;
 inline constexpr std::size_t kArtifactExtendedTotalCap = 1024*1024*1024;
-// Maximum explicit aggregate allowance. Existing clients retain their own
+// Legacy explicit aggregate ceiling. Existing clients retain their own
 // defaults; this does not enlarge individual files or resident memory.
 inline constexpr std::size_t kArtifactMaximumTotalCap = std::size_t{2}*1024*1024*1024;
+// Explicit opt-in ceiling for a forecasted full physical run. Legacy aggregate
+// defaults and ArtifactInventory admission remain unchanged.
+static_assert(sizeof(std::size_t)>=8,"Full physical run archives require 64-bit byte accounting");
+inline constexpr std::size_t kArtifactFullRunTotalCap = std::size_t{6}*1024*1024*1024;
 inline constexpr std::size_t kArtifactFrameCap = 1000;
 inline constexpr std::size_t kArtifactInventoryCap = 3*kArtifactFrameCap+16;
 

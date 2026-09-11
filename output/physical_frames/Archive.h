@@ -1,7 +1,9 @@
 #pragma once
-#include "PhysicalAcceptedFrames.h"
+#include "output/full_shell/activity/ActivityRecord.h"
 #include "output/full_shell/static_bundle/SourceBundle.h"
 namespace crash::output::physical_frames {
+namespace records=full_shell;
+namespace source=full_shell::source;
 struct FrameFiles {
     records::RecordFile frame,activity;
     records::FrameStamp stamp;

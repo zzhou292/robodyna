@@ -3,7 +3,7 @@
 namespace crash::output::interval {
 ChunkPlan PlanChunks(std::uint64_t intervals,std::size_t file_cap,std::size_t total_cap,std::size_t extra) {
     Require(intervals&&file_cap>=RowBytes&&file_cap<=kArtifactFileCap&&
-        total_cap&&total_cap<=kArtifactMaximumTotalCap&&extra<=file_cap-RowBytes,
+        total_cap&&total_cap<=kArtifactFullRunTotalCap&&extra<=file_cap-RowBytes,
         "Invalid interval chunk capacity");
     ChunkPlan result;
     result.intervals=intervals;

@@ -1,0 +1,36 @@
+#include "IntervalIO.h"
+namespace crash::output::physical_run {
+Sequence ReadIntervals(const std::filesystem::path& root,const records::Context& c,Profile p,
+    std::uint64_t planned,std::uint64_t accepted,const std::vector<Segment>& segments,
+    std::size_t file_cap,std::size_t host_cap,const std::function<void(const Values&)>& visit) {
+    const auto plan=interval::PlanChunks(planned,file_cap);
+    Require(accepted<=planned && segments.size()==accepted/plan.rows_per_chunk+(accepted%plan.rows_per_chunk!=0),
+        "Incomplete physical interval segment coverage");
+    const auto cols=RealFields(p).size();
+    Require(host_cap && host_cap<=256u<<20 && std::min(plan.rows_per_chunk,planned)<=host_cap/(3*8*(4+cols)),
+        "Physical interval read staging exceeds host cap");
+    const arrays::Limits limits{file_cap,UINT32_MAX,64};
+    Sequence sequence;
+    for(std::size_t k=0;k<segments.size();++k) {
+        const auto& s=segments[k];
+        const auto count=std::min(plan.rows_per_chunk,accepted-sequence.last.epoch);
+        const auto stem="interval-"+std::to_string(k);
+        Require(s.first_epoch==sequence.last.epoch+1 && s.rows==count &&
+            s.integers.file==stem+".integers.bin" && s.reals.file==stem+".reals.bin" &&
+            s.integers.layout.scalar==arrays::Scalar::UInt64 && s.integers.layout.rows==count &&
+            s.integers.layout.columns==4 && s.integers.layout.fields==IntegerFields() &&
+            s.reals.layout.scalar==arrays::Scalar::Float64 && s.reals.layout.rows==count &&
+            s.reals.layout.columns==cols && s.reals.layout.fields==RealFields(p),"Physical interval layout/order differs");
+        const auto integers=arrays::Read<std::uint64_t>(root,s.integers,limits);
+        const auto reals=arrays::Read<double>(root,s.reals,limits);
+        for(std::size_t i=0;i<count;++i) {
+            const auto* a=integers.data()+4*i;const auto* b=reals.data()+cols*i;
+            Values value{a[0],{a[3],a[1],a[2],b[1],b[0],b[2],b[3]},std::nullopt};
+            if(p.structural_limit)value.structural_limit_s=b[4];
+            sequence=Advance(c,p,planned,sequence,value);
+            if(visit)visit(value);
+        }
+    }
+    Require(sequence.last.epoch==accepted,"Physical ledger final count differs");return sequence;
+}
+} // namespace crash::output::physical_run

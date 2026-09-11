@@ -1,0 +1,55 @@
+#include "Replay.h"
+#include "output/BoundedArrayJson.h"
+#include "lib_utils/BoundedArena.h"
+namespace crash::output::physical_run {
+struct Replay::Data {
+    Data(std::filesystem::path r,records::source::PreparedSourceMapping m,records::Context c,
+        Configuration config,Index i,std::size_t cap):root(std::move(r)),mapping(std::move(m)),context(std::move(c)),
+        configuration(std::move(config)),index(std::move(i)),host_bytes(cap) {}
+    std::filesystem::path root;
+    records::source::PreparedSourceMapping mapping;
+    records::Context context;
+    Configuration configuration;
+    Index index;
+    std::size_t host_bytes;
+};
+Replay Replay::Open(const std::filesystem::path& root,const records::RecordFile& file,
+    const records::source::SourceInputs& source,const std::string& digest,ReplayLimits limits) {
+    Require(limits.host_bytes && limits.host_bytes<=512u<<20 &&
+        limits.source.host_bytes<=limits.host_bytes && (128u<<20)<=limits.host_bytes-limits.source.host_bytes,
+        "Physical replay source and record workspace exceed host cap");
+    const auto manifest=ReadManifest(array_json::Parse(ReadFile(root,file,MetadataCap),MetadataCap));
+    Require(manifest.identity.source_mapping_sha256==digest,"Physical run mapping differs from caller authority");
+    auto config=ReadConfiguration(array_json::Parse(ReadFile(root,manifest.configuration,MetadataCap),MetadataCap));
+    Require(records::SameIdentity(manifest.identity,config.identity),"Physical configuration belongs to another run");
+    CheckInventory(root,file,manifest,config.request.total_byte_cap);
+    auto mapping=records::source::ReadSourceBundle(root,manifest.source,source,digest,limits.source);
+    auto context=mapping.MakeFrameContext(config.identity,config.request.fixed_dt,limits.records);
+    const auto plan=records::activity::PlanWithActivity(context,config.request,"parent-activity.json");
+    Require(plan.archive.forecast_bytes==manifest.forecast_bytes,"Physical whole-run forecast differs");
+    tl::util::BoundedArenaLayout budget(limits.host_bytes);tl::util::ArenaRegion region;
+    const auto interval_bytes=std::min<std::uint64_t>(plan.archive.rows_per_chunk,config.request.intervals)*8*
+        (4+RealFields(config.profile).size());
+    Require(budget.Append<std::byte>(limits.source.host_bytes,region) &&
+        budget.Append<std::byte>(context.retained_payload_bytes(),region) &&
+        budget.Append<std::byte>(32*MetadataCap,region) && budget.Append<std::byte>(3*interval_bytes,region) &&
+        budget.Append<double>(3*(3*context.nodes()+context.points()),region),"Physical replay retained/peak buffers exceed host cap");
+    auto index=ReadIndex(context,config,array_json::Parse(ReadFile(root,manifest.index,MetadataCap),MetadataCap));
+    records::activity::ReadDeclaration(root,context,manifest.activity_declaration);
+    ValidateRecords(root,context,config,index,128u<<20);
+    CheckReferencedInventory(root,context,index,manifest);
+    return Replay(std::make_shared<Data>(root,std::move(mapping),std::move(context),std::move(config),std::move(index),budget.bytes()));
+}
+const records::source::PreparedSourceMapping& Replay::mapping() const noexcept {return data_->mapping;}
+const records::Context& Replay::context() const noexcept {return data_->context;}
+const Configuration& Replay::configuration() const noexcept {return data_->configuration;}
+const Index& Replay::index() const noexcept {return data_->index;}
+std::size_t Replay::peak_host_bytes() const noexcept {return data_->host_bytes;}
+Sample Replay::ReadSample(std::size_t k) const {
+    Require(k<data_->index.frames.size(),"Physical replay sample index is outside the run");
+    const auto& f=data_->index.frames[k];
+    auto frame=records::ReadFrame(data_->root,data_->context,f.frame,f.stamp);
+    auto activity=records::activity::ReadActivity(data_->root,data_->context,f.activity,f.stamp);
+    return {std::move(frame),std::move(activity)};
+}
+} // namespace crash::output::physical_run

@@ -7,6 +7,7 @@ namespace crash::output::full_shell {
 inline constexpr const char* FrameSchema="robo_dyna.full_shell_visualization_frame.v1";
 inline constexpr const char* ArchiveSchema="robo_dyna.full_shell_accepted_visualization.v1";
 inline constexpr std::size_t TotalByteCap=kArtifactMaximumTotalCap;
+inline constexpr std::size_t FullRunByteCap=kArtifactFullRunTotalCap;
 inline constexpr std::size_t FrameMetadataByteCap=16*1024;
 inline constexpr std::size_t IntervalCoreBytes=interval::RowBytes;
 inline constexpr std::size_t StaticReserveBytes=192*1024*1024;
