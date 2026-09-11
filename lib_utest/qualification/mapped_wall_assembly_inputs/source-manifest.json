@@ -1,0 +1,201 @@
+{
+  "baseline_commit": "cc7d08f",
+  "scope": "Exact mapped assembly-input validation only; unchanged response/scatter/activity/interval and complete caller suffix; no new storage.",
+  "files": [
+    {
+      "path": "lib_src/collision/BUILD.bazel",
+      "bytes": 11278,
+      "sha256": "e53654f2eb75a63091fe84f9ec8c3c7ddb8d14e4b0166b669b35808e8fd8b782"
+    },
+    {
+      "path": "lib_src/collision/NodalWallContactDiagnostics.h",
+      "bytes": 4680,
+      "sha256": "4a61fb9f8ab3fd6a70978cffbb50b105b633e9ae2e8f3e7edf027f3a16604585"
+    },
+    {
+      "path": "lib_src/collision/NodalWallContactEvaluation.cuh",
+      "bytes": 6766,
+      "sha256": "60b03ea95817b1ed0badd2461a2a37b76c3348f688a7bc5c1f452989071978cd"
+    },
+    {
+      "path": "lib_src/collision/NodalWallContactKernels.cuh",
+      "bytes": 4468,
+      "sha256": "929dd58ad7f312f827a97fe5413203c103d8b11afeb81f375cf4751f931eecc2"
+    },
+    {
+      "path": "lib_src/collision/NodalWallContactScatter.h",
+      "bytes": 2491,
+      "sha256": "4042467d5520a119bd2f2bf18b520a34e4b81408f54427b271e3f63a6a4c7f47"
+    },
+    {
+      "path": "lib_src/collision/NodalWallMappedContact.cmake",
+      "bytes": 1342,
+      "sha256": "efe6a3bedd99d7d5cbc4e98758866289f934389bc33e88e916876c67c8bac437"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Activity.cpp",
+      "bytes": 5006,
+      "sha256": "591035d19301edefa4e9fc76dff9805155411043b4821a894b03c375e810e7d7"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/AssemblyValidation.cuh",
+      "bytes": 2428,
+      "sha256": "de653097f762841852e8e2bc7568c0a403aabd3b060694764feda168fac1f845"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/AssemblyValidation.h",
+      "bytes": 3247,
+      "sha256": "2db5659664fe369300d83f91fd363ad1c091e6c1a61cde65cb32016487f16169"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Evaluation.cuh",
+      "bytes": 3561,
+      "sha256": "dbe4ebfe95ac764aa7b7551c9970f580a23665beb5174c6cb47d6021e3acc56c"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Forecast.cpp",
+      "bytes": 7358,
+      "sha256": "08dd40c68096e11eda3528231b3011efebba7c7ab44154554ee5ce8b08f7ecc0"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Initialize.cpp",
+      "bytes": 5570,
+      "sha256": "2ac3b86e2465395c99f41249bec548770e33f2909cad8986410a60f40a6c8911"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/IntervalReduction.cuh",
+      "bytes": 2843,
+      "sha256": "8be37e16a6024ed0a647b3cb942abd9715e3e26b37ebf057d3790e0f7959f4a7"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Kernels.cuh",
+      "bytes": 2906,
+      "sha256": "192313d826696d025beae8b80526f83f2cfdea9c9afe1c447718efaff659c28b"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Layout.cpp",
+      "bytes": 1801,
+      "sha256": "15e1ce2d30ed7d1b94d330915268e31b55279212fa7c517bf7770683020d99de"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Layout.h",
+      "bytes": 1454,
+      "sha256": "c82174a14bef4d6fcdcbf4a86a5f62436b80324ca5cd9fa03d2e6bce758820c4"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/ObserverReduction.cuh",
+      "bytes": 3551,
+      "sha256": "4b7538260d8a8fed84eef1a067c6171db8c0730615279118a23f309ba5144a3c"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
+      "bytes": 10235,
+      "sha256": "5c238d2181ab18c65deabe38b175db91472d6a2170343901db8a6d41f0307705"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Readback.cpp",
+      "bytes": 7444,
+      "sha256": "e7fdd526056058220a2b2f697975c739e286fdc0e660f0ec77a08b2ae5e2740d"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Scatter.cuh",
+      "bytes": 2720,
+      "sha256": "69076cc6648d56d8ff7dca48993fb777fdfd7e05c2c2453f71740207e742514b"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/ScatterNode.h",
+      "bytes": 1257,
+      "sha256": "5d6038cd1572f828017f2ba118c77b0ee04948dbdba642f13669d37736ff2407"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Sources.cpp",
+      "bytes": 5160,
+      "sha256": "f55e547fd86f73f3558caf9fd4059fbacda71a828443ec79050ba2613c90c516"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Storage.h",
+      "bytes": 3147,
+      "sha256": "a8dfd243261502c483ab3c7e27901b20cfaddf8ed84500775d30c8553d402f7a"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_assembly_inputs/BUILD.bazel",
+      "bytes": 812,
+      "sha256": "7529969d599bc6813f980bc12a5243654af35c8aeffbbe6b946831dbd9c1e68c"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_assembly_inputs/CMakeLists.txt",
+      "bytes": 3229,
+      "sha256": "7ddb0fe6742ff73fb65f6ceddcfcb510ca79eccb04bd3d95072655290a5508b7"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_assembly_inputs/CudaTest.cu",
+      "bytes": 5327,
+      "sha256": "c98361512fedef004d0e46320bb3e49025256324e188e4e1efa811e90069e92f"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_assembly_inputs/Fixture.h",
+      "bytes": 5576,
+      "sha256": "df3b7207b8f5f8eb0f1e848a67bdfd906fbbcba655ea64ec8cc97cebc1a53b5e"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_assembly_inputs/FrozenValidation.h",
+      "bytes": 1566,
+      "sha256": "04115b91790ae10be2ba72745f93a0a806ac4a9b182b3bf818e19e6607681a06"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_assembly_inputs/HostTest.cpp",
+      "bytes": 2592,
+      "sha256": "869e836bc1d076db093ba967c090d662f377a161f2418688c01c5e23f3e9413c"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_assembly_inputs/OwnerTest.cu",
+      "bytes": 3008,
+      "sha256": "e014c05b0ff5408de755f387df8f4f630dbd531a866ca1f76edf323dcae5afe9"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_assembly_inputs/reference/Kernels.cuh",
+      "bytes": 3580,
+      "sha256": "2944f61652523c82030d88abd7ece032389bb5b16007bca8690c8a32e8ee148f"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_assembly_inputs/reference/Layout.h",
+      "bytes": 1384,
+      "sha256": "59170079a04d90ab629e5bdcc7e3a7ad016d2b5d2664830138e33a98f510a7d3"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_assembly_inputs/reference/Operations.cu",
+      "bytes": 10427,
+      "sha256": "4fb8522bd293e60219d17ae2ec29b8da640098183ad57951e7f11da59dc90899"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_interval/source-manifest.json",
+      "bytes": 5854,
+      "sha256": "d9f5c16edbec3242ebf6291201c653731df15367008ea2be47e76da8cca74de6"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_interval/verify_sources.py",
+      "bytes": 2493,
+      "sha256": "317dcba4a152cff4c4c44387c52cfa78cb85e37bcbcfdf2af77f9e6aff03502b"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_observers/source-manifest.json",
+      "bytes": 6167,
+      "sha256": "7e483ece6926e333addbaaaccf458012a907dc90a6a38afef518db544f647f95"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_observers/verify_sources.py",
+      "bytes": 2076,
+      "sha256": "54b186c68d44f2cafd80df7ce570e0589edc6c37608ffa4b69cfaacc538891df"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_scatter/Verify.cmake",
+      "bytes": 701,
+      "sha256": "ab620d9998c5cd6a07d55bf442f59a786f8821f062cfd200ac5050b07cad5c01"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_scatter/source-manifest.json",
+      "bytes": 1005,
+      "sha256": "72688493a88da0348c715ea8af56bab0b700e1a4335e647b814bb14f533f5950"
+    }
+  ]
+}

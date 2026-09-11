@@ -34,8 +34,8 @@
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Kernels.cuh",
-      "bytes": 3580,
-      "sha256": "2944f61652523c82030d88abd7ece032389bb5b16007bca8690c8a32e8ee148f"
+      "bytes": 2906,
+      "sha256": "192313d826696d025beae8b80526f83f2cfdea9c9afe1c447718efaff659c28b"
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Scatter.cuh",
@@ -69,8 +69,8 @@
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Layout.h",
-      "bytes": 1384,
-      "sha256": "59170079a04d90ab629e5bdcc7e3a7ad016d2b5d2664830138e33a98f510a7d3"
+      "bytes": 1454,
+      "sha256": "c82174a14bef4d6fcdcbf4a86a5f62436b80324ca5cd9fa03d2e6bce758820c4"
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Layout.cpp",
@@ -84,8 +84,8 @@
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
-      "bytes": 10427,
-      "sha256": "4fb8522bd293e60219d17ae2ec29b8da640098183ad57951e7f11da59dc90899"
+      "bytes": 10235,
+      "sha256": "5c238d2181ab18c65deabe38b175db91472d6a2170343901db8a6d41f0307705"
     },
     {
       "path": "lib_utest/qualification/mapped_wall_observers/reference/NodalWallContactEvaluation.cuh",
@@ -132,5 +132,28 @@
         "sha256": "08d5745250d827d4bcdde1e3f749e39f4cd2982a61a4d545d0c5fae6ac07a882"
       }
     ]
-  }
+  },
+  "assembly_validation_previous_receipts": [
+    {
+      "manifest_sha256": "bc331267e08175b4837ac2dd7c147f9de9d895d892701960bdf685dfbc6b9fba",
+      "reason": "Mapped-only exact assembly-input helper extraction and schedule; no Response/scatter/observer/interval arithmetic changes. Complete old Kernels and Operations retained by mapped_wall_assembly_inputs.",
+      "files": [
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Kernels.cuh",
+          "bytes": 3580,
+          "sha256": "2944f61652523c82030d88abd7ece032389bb5b16007bca8690c8a32e8ee148f"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Layout.h",
+          "bytes": 1384,
+          "sha256": "59170079a04d90ab629e5bdcc7e3a7ad016d2b5d2664830138e33a98f510a7d3"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
+          "bytes": 10427,
+          "sha256": "4fb8522bd293e60219d17ae2ec29b8da640098183ad57951e7f11da59dc90899"
+        }
+      ]
+    }
+  ]
 }

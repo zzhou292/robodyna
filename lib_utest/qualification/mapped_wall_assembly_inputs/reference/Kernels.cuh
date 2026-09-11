@@ -2,17 +2,26 @@
 #pragma once
 #include "Storage.h"
 #include "ScatterNode.h"
-#include "AssemblyValidation.h"
 #include "../NodalWallContactKernels.cuh"
 namespace tlfea::contact::nodal_wall_mapped {
 __device__ inline bool ValidateAssembly(d::Storage& storage,Sidecar side,const fe::NodalAssemblyView& view) {
-  namespace a = assembly_validation;
-  if (!a::Header(view, storage.control)) return false;
-  for (unsigned i = 0; i < storage.model.node_count; ++i) {
-    double inverse = 0;
-    if (!a::Mass(storage, side, view, i, inverse, storage.control)) return false;
-    side.inverse[i] = inverse;
-    if (!a::Geometry(storage, view, i, storage.control)) return false;
+  if(view.result->base_epoch!=view.accepted.base_epoch || view.result->attempt!=view.attempt ||
+      view.bounds->base_epoch!=view.accepted.base_epoch || view.bounds->attempt!=view.attempt ||
+      !view.bounds->initialized || !view.bounds->valid || view.bounds->sealed || view.result->status!=Status::kOk)
+    return d::Fail(storage.control,Code::AssemblyFailure);
+  for(unsigned i=0;i<storage.model.node_count;++i) {
+    const auto node=storage.model.nodes[i].node;
+    const auto inverse=view.mass.inverse_mass[node];
+    if(view.mass.fixed[node] || view.translation_fixed_bits[node] || !IsFinite(inverse) ||
+        inverse<0 || (side.roots[i]==UINT32_MAX && inverse<=0))
+      return d::Fail(storage.control,Code::InvalidMass,node);
+    side.inverse[i]=inverse;
+    if(view.accepted.base_epoch==0) {
+      const auto expected=storage.model.initial_position[node];
+      const auto* x=view.accepted.position_xyz+3*node;
+      if(x[0]!=expected.x || x[1]!=expected.y || x[2]!=expected.z)
+        return d::Fail(storage.control,Code::GeometryFailure,node);
+    }
   }
   return true;
 }

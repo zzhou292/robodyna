@@ -8,8 +8,7 @@ namespace tlfea::contact::nodal_wall_mapped {
 struct Summary {
   Q4CertifiedIntegral removed_potential;
   double rate=0;
-  // Nonoverlapping assembly-input then parent integer arbitration. Reset between
-  // those phases; parent floating sums stay in original slot order.
+  // Integer arbitration only; parent floating sums stay in original slot order.
   unsigned long long parent_failure=~0ull;
   bool points_admitted=false;
   bool interval_tree_used=false;

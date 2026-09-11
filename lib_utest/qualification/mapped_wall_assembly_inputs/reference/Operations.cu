@@ -2,7 +2,6 @@
 #include "Evaluation.cuh"
 #include "IntervalReduction.cuh"
 #include "Scatter.cuh"
-#include "AssemblyValidation.cuh"
 #include "Kernels.cuh"
 #include "lib_src/solvers/NodalNativePhysicalCoefficients.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
@@ -12,6 +11,12 @@ namespace d=nodal_wall_device_detail;
 namespace fe=tl::fea;
 using Code=NodalWallDeviceStatus;
 namespace {
+__global__ void BeginAssembly(d::Storage* pointer,m::Sidecar side,fe::NodalAssemblyView view) {
+  auto& storage=*pointer;
+  storage.control={};
+  *side.summary={};
+  side.summary->points_admitted=m::ValidateAssembly(storage,side,view);
+}
 __global__ void CheckResponse(d::Storage* pointer,m::Sidecar side,fe::NodalAssemblyView view) {
   auto& storage=*pointer;
   if(storage.control.status==Code::Ok && m::Response(storage,side,view.accepted)) {
@@ -115,7 +120,7 @@ NodalWallDeviceReport NodalWallMappedContact::AssembleAccepted(fe::FENodalState&
   state.base_stamp=stamp;
   state.last_attempt=view.attempt;
   const auto nodes=state.shadow.model.node_count,parents=state.shadow.model.parent_count;
-  m::assembly_validation::Launch(state.device,state.remote,view,nodes,state.stream);
+  BeginAssembly<<<1,1,0,state.stream>>>(state.device,state.remote,view);
   if(cudaPeekAtLastError()!=cudaSuccess) return state.ReadControl();
   m::parallel::Evaluate(state.device,state.remote,view.accepted,Identity(state.config,view),
       nodes,parents,state.stream,true,{state.remote.observer,state.layout.observer.count});
