@@ -37,7 +37,7 @@ static_assert(sizeof(Storage)<2048,"Resident header contains no capacity-sized a
 static_assert(sizeof(ForceTrial)==984&&alignof(Storage)==8,"Qualified native T3 record layout");
 
 BatchReport BuildModel(const T3BatchConfig&,const T3BatchElement*,Model&,Slab&,const ShellBatchBinding* joined=nullptr,
-    const ShellBatchFailureBinding* failure=nullptr);
+    const ShellBatchFailureBinding* failure=nullptr,bool formulations=false);
 bool SameDiagnostics(const BatchDiagnostics&,const BatchDiagnostics&) noexcept;
 using trial_identity::SameStamp;
 using trial_identity::SamePrepared;
@@ -56,6 +56,7 @@ namespace tl::fea::t3 {
 struct T3Batch::Impl {
   T3BatchConfig config;
   NodalStamp accepted_stamp;
+  bool formulations=false; // Only the explicit complete-formulation initializer.
   std::optional<ShellBatchBinding> joined_binding; // Host-only immutable inventory.
   std::optional<NodalMassBinding> joined_mass; // Complete augmented startup identity.
   const ShellBatchPublication* publication_scope=nullptr; // One borrowed coordinator claim.

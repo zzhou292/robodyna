@@ -28,7 +28,7 @@ bool SameReference(const ReferenceData& a,const ReferenceData& b) {
 
 BatchReport BuildModel(const QephBatchConfig& c, const QephBatchElement* input,
     Model& model, Slab& initial, const ShellBatchBinding* joined,
-    const ShellBatchFailureBinding* failure) {
+    const ShellBatchFailureBinding* failure,bool formulations) {
   const auto& o=c.owner;
   if (failure && (!joined || !failure->catalog() || !failure->catalog()->Matches(*joined))) {
     return {BatchStatus::InvalidInput, "Failure scope differs from complete joined geometry"};
@@ -48,7 +48,7 @@ BatchReport BuildModel(const QephBatchConfig& c, const QephBatchElement* input,
   if(!ValidShellResidentLimits(c.storage_limits,c.element_count,o.node_count,c.max_device_bytes)||
      !checked_layout.Initialize(c.element_count,o.node_count,c.max_device_bytes))
     return {BatchStatus::ResourceLimit,"QEPH element/node/allocation capacity exceeded"};
-  if(joined&&(!joined->prepared()||!joined->t3_count()||c.element_count!=joined->qeph_count()||
+  if(joined&&(!joined->prepared()||(!formulations&&!joined->t3_count())||c.element_count!=joined->qeph_count()||
               o.node_count!=joined->node_count()))
     return {BatchStatus::InvalidInput,"Joined QEPH scope requires its exact count from the complete mixed collection"};
   model.config=c;

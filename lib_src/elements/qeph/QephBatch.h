@@ -5,6 +5,7 @@
 #include "../ShellBatchStartup.h"
 #include "../../solvers/ExplicitNodalStep.h"
 #include <memory>
+#include "../ShellFormulationScope.h"
 
 namespace tl::fea { class ShellBatchBinding; class ShellBatchPublication; class NodalMassBinding;
   class ShellBatchPlasticityBinding; struct ShellBatchPlasticityConfig; struct ShellBatchSectionState; class ShellBatchLayeredSection;
@@ -152,6 +153,10 @@ class QephBatch {
   // all caller outputs remain unchanged if validation or device readback fails.
   BatchReport CopyAcceptedFailureHistory(const NodalStamp&,ShellBatchFailureState*,std::size_t capacity,BatchDiagnostics*);
   BatchReport CopyPreparedFailureHistory(const BatchDiagnostics&,ShellBatchFailureState*,std::size_t capacity);
+  // Explicit complete QEPH/T3/QBAT scope. All present families require this
+  // named path and the common formulation publisher; legacy admission stays closed.
+  BatchReport InitializeFormulations(const QephBatchConfig&,const ShellFormulationScope&,
+      const ShellBatchFailureLimits& = {});
   void DiscardTrial() noexcept;
   NodalAllocationInfo allocations() const noexcept;
  private:
@@ -161,7 +166,7 @@ class QephBatch {
                              const ShellBatchPlasticityBinding* collection_plasticity=nullptr,
                              const NodalMassBinding* nodal_mass=nullptr,
                              const ShellBatchFailureBinding* failure=nullptr,
-                             const ShellBatchFailureLimits* failure_limits=nullptr);
+                             const ShellBatchFailureLimits* failure_limits=nullptr,bool formulations=false);
   BatchReport AssembleAcceptedImpl(FENodalState*,const NodalAssemblyView&);
   BatchReport EvaluateCandidateImpl(FENodalState*,const NodalTrialToken*,const NodalPreparedView&,BatchDiagnostics*);
   friend BatchReport CommitQephTrial(FENodalState&,const NodalTrialToken&,QephBatch&,

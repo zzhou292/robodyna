@@ -19,7 +19,8 @@ cuda_test(
 cc_library(
     name = "fixture",
     hdrs = ["Fixture.h"],
-    visibility = ["//lib_utest/qualification/qbat_force:__pkg__"],
+    visibility = ["//lib_utest/qualification/qbat_force:__pkg__",
+                  "//lib_utest/qualification/qbat_resident:__pkg__"],
     deps = ["//lib_src/elements/qbat:geometry"],
 )
 
@@ -31,5 +32,6 @@ cc_library(
     data = ["source_fixture/source-manifest.json"],
     visibility = ["//lib_utest/qualification/t3_one_point:__pkg__",
                   "//lib_utest/qualification/qbat_catalog:__pkg__",
-                  "//lib_utest/qualification/qbat_binding:__pkg__"],
+                  "//lib_utest/qualification/qbat_binding:__pkg__",
+                  "//lib_utest/qualification/qbat_resident:__pkg__"],
 )

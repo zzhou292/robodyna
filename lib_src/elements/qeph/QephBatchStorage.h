@@ -32,7 +32,7 @@ using Layout=shell_batch_detail::BatchArenaLayout<Storage,QephBatchElement,Force
 static_assert(sizeof(Storage)<2048,"Resident header contains no capacity-sized arrays");
 
 BatchReport BuildModel(const QephBatchConfig&,const QephBatchElement*,Model&,Slab&,const ShellBatchBinding* joined=nullptr,
-    const ShellBatchFailureBinding* failure=nullptr);
+    const ShellBatchFailureBinding* failure=nullptr,bool formulations=false);
 bool SameDiagnostics(const BatchDiagnostics&,const BatchDiagnostics&) noexcept;
 using trial_identity::SameStamp;
 using trial_identity::SamePrepared;
@@ -50,6 +50,7 @@ namespace tl::fea::qeph {
 struct QephBatch::Impl {
   QephBatchConfig config;
   NodalStamp accepted_stamp;
+  bool formulations=false; // Only the explicit complete-formulation initializer.
   std::optional<ShellBatchBinding> joined_binding; // Host-only immutable inventory.
   std::optional<NodalMassBinding> joined_mass; // Complete augmented startup identity.
   const ShellBatchPublication* publication_scope=nullptr; // One borrowed coordinator claim.

@@ -15,8 +15,8 @@
   "ported_files": [
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
-      "bytes": 3278,
-      "sha256": "bb698c0f1ca36bdede32f8c209d9a1a9f2f3d5c543fc4764728386a19a607ec6"
+      "bytes": 3332,
+      "sha256": "5199e6d2ef729fba14331016d45867d8944197fe4f415911d925dbb8e8d9cbd1"
     },
     {
       "path": "lib_src/elements/t3/CMakeLists.txt",
@@ -522,5 +522,16 @@
       "sha256": "a4fbba8b90a569a4389eb5841f04e5b709d97db3cc9b91a971b7203e52eb1e19"
     },
     "scope": "Add optional T3 one-point resident dispatch/readback ownership; original force and native donor records unchanged."
+  },
+  "qbat_formulation_resident_registration": {
+    "previous_manifest_sha256": "0d3a2c6e16340b32c885253c1b027bfd91e753283e9f9728db548031a0e20c89",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 3278,
+        "sha256": "bb698c0f1ca36bdede32f8c209d9a1a9f2f3d5c543fc4764728386a19a607ec6"
+      }
+    ],
+    "scope": "Add explicitly authenticated complete QBAT/QEPH/T3 participant dependency. Native donor, original startup and force arithmetic unchanged."
   }
 }

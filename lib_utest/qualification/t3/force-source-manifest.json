@@ -128,8 +128,8 @@
     },
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
-      "bytes": 3278,
-      "sha256": "bb698c0f1ca36bdede32f8c209d9a1a9f2f3d5c543fc4764728386a19a607ec6"
+      "bytes": 3332,
+      "sha256": "5199e6d2ef729fba14331016d45867d8944197fe4f415911d925dbb8e8d9cbd1"
     },
     {
       "path": "lib_src/elements/t3/CMakeLists.txt",
@@ -143,13 +143,13 @@
     },
     {
       "path": "lib_utest/qualification/t3/source-manifest.json",
-      "bytes": 21942,
-      "sha256": "0d3a2c6e16340b32c885253c1b027bfd91e753283e9f9728db548031a0e20c89"
+      "bytes": 22454,
+      "sha256": "c23336f714a7b23c8bd5bb2ae8caa3dc240e56c60b62976e5e34bd6fadd4b523"
     },
     {
       "path": "lib_utest/qualification/t3/verify_sources.py",
       "bytes": 2001,
-      "sha256": "d639371ca1451bf3cc770559c4450774107b4bc40a1e7f524c46fd5819ccea43"
+      "sha256": "9763cd4c5d1bdb3cc292f47e75fe42c9ca7cbf160f0dee1eaceccb2c5b8915f3"
     },
     {
       "path": "lib_utest/qualification/t3/T3PortFixture.h",
@@ -842,5 +842,26 @@
       "bytes": 2001,
       "sha256": "d087e2642bb5441eb24b7cb99af609c102cd59a59eca6040fd7098480e3b7356"
     }
+  },
+  "qbat_formulation_resident_registration": {
+    "previous_manifest_sha256": "3fc5c3c697564df90529add83e761b89343dd81b794b827afe9c14e08c6ba289",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 3278,
+        "sha256": "bb698c0f1ca36bdede32f8c209d9a1a9f2f3d5c543fc4764728386a19a607ec6"
+      },
+      {
+        "path": "lib_utest/qualification/t3/source-manifest.json",
+        "bytes": 21942,
+        "sha256": "0d3a2c6e16340b32c885253c1b027bfd91e753283e9f9728db548031a0e20c89"
+      },
+      {
+        "path": "lib_utest/qualification/t3/verify_sources.py",
+        "bytes": 2001,
+        "sha256": "d639371ca1451bf3cc770559c4450774107b4bc40a1e7f524c46fd5819ccea43"
+      }
+    ],
+    "scope": "Add complete formulation participant scope dependency and retain its reviewed startup manifest chain. Native donor and force arithmetic unchanged."
   }
 }

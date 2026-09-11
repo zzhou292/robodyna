@@ -1,4 +1,4 @@
-load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_test", "cc_library")
 load("@rules_cuda//cuda:defs.bzl", "cuda_test")
 cc_test(
     name = "qbat_force_check",
@@ -13,5 +13,13 @@ cuda_test(
     srcs = ["Fixture.h", "MathCudaTest.cu"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
     tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/elements/qbat:force", "//lib_utest/qualification/qbat:fixture", "@googletest//:gtest_main"],
+)
+
+cc_library(
+    name = "fixture",
+    testonly = True,
+    hdrs = ["Fixture.h"],
+    visibility = ["//lib_utest/qualification/qbat_resident:__pkg__"],
     deps = ["//lib_src/elements/qbat:force", "//lib_utest/qualification/qbat:fixture", "@googletest//:gtest_main"],
 )

@@ -35,7 +35,7 @@ bool SameReference(const ReferenceData& a,const ReferenceData& b) {
 
 BatchReport BuildModel(const T3BatchConfig& c, const T3BatchElement* input,
     Model& output, Slab& startup, const ShellBatchBinding* joined,
-    const ShellBatchFailureBinding* failure) {
+    const ShellBatchFailureBinding* failure,bool formulations) {
   const auto& o=c.owner;
   if (failure && (!joined || !failure->catalog() || !failure->catalog()->Matches(*joined))) {
     return {BatchStatus::InvalidInput, "Failure scope differs from complete joined geometry"};
@@ -55,7 +55,7 @@ BatchReport BuildModel(const T3BatchConfig& c, const T3BatchElement* input,
   if(!ValidShellResidentLimits(c.storage_limits,c.element_count,o.node_count,c.max_device_bytes)||
      !checked_layout.Initialize(c.element_count,o.node_count,c.max_device_bytes))
     return {BatchStatus::ResourceLimit,"T3 element/node/allocation capacity exceeded"};
-  if(joined&&(!joined->prepared()||!joined->qeph_count()||c.element_count!=joined->t3_count()||
+  if(joined&&(!joined->prepared()||(!formulations&&!joined->qeph_count())||c.element_count!=joined->t3_count()||
               o.node_count!=joined->node_count()))
     return {BatchStatus::InvalidInput,"Joined T3 scope requires its exact count from the complete mixed collection"};
   Model model=output; Slab initial=startup; model.config=c;
@@ -66,7 +66,7 @@ BatchReport BuildModel(const T3BatchConfig& c, const T3BatchElement* input,
   shell_batch_detail::ResidentNodeIdentityIndex identity;
   if(indexed)identity.Prepare(3*c.element_count,[&](std::size_t i) { return joined?joined->t3_reference(i/3).input.node_ids[i%3]:input[i/3].reference.input.node_ids[i%3]; });
   shell_batch_detail::ResidentTriangleIndex topology;
-  if(indexed)topology.Prepare(c.element_count,[&](std::size_t e) {
+  if(indexed&&!formulations)topology.Prepare(c.element_count,[&](std::size_t e) {
     if(joined)return joined->t3_nodes(e);
     return std::array<std::size_t,3>{input[e].nodes[0],input[e].nodes[1],input[e].nodes[2]};
   });
@@ -88,22 +88,24 @@ BatchReport BuildModel(const T3BatchConfig& c, const T3BatchElement* input,
     if(status!=Status::kSuccess||!SameReference(element.reference,checked))
       return {BatchStatus::ElementFailure,"Reference differs from its startup producer",e,UINT32_MAX,
               status==Status::kSuccess?Status::kInvalidReference:status};
-    if(indexed) {
-      if(topology.DuplicateBefore(e,{element.nodes[0],element.nodes[1],element.nodes[2]},
-          [&](std::size_t prior) {const auto* n=model.element[prior].nodes;
-            return std::array<std::size_t,3>{n[0],n[1],n[2]};}))
-        return {BatchStatus::InvalidInput,"Duplicate T3 physical connectivity",e};
-    } else {
-    for(unsigned prior=0;prior<e;++prior) {
-      bool same=true;
-      for(unsigned i=0;i<3;++i) {
-        bool found=false;
-        for(unsigned j=0;j<3;++j) found|=element.nodes[i]==model.element[prior].nodes[j];
-        same&=found;
+    if(!formulations) {
+      if(indexed) {
+        if(topology.DuplicateBefore(e,{element.nodes[0],element.nodes[1],element.nodes[2]},
+            [&](std::size_t prior) {const auto* n=model.element[prior].nodes;
+              return std::array<std::size_t,3>{n[0],n[1],n[2]};}))
+          return {BatchStatus::InvalidInput,"Duplicate T3 physical connectivity",e};
+      } else {
+      for(unsigned prior=0;prior<e;++prior) {
+        bool same=true;
+        for(unsigned i=0;i<3;++i) {
+          bool found=false;
+          for(unsigned j=0;j<3;++j) found|=element.nodes[i]==model.element[prior].nodes[j];
+          same&=found;
+        }
+        if(same) return {BatchStatus::InvalidInput,"Duplicate T3 physical connectivity",e};
       }
-      if(same) return {BatchStatus::InvalidInput,"Duplicate T3 physical connectivity",e};
-    }
-    }
+      }
+    } // Complete formulation inventory permits distinct source layers.
     model.element[e]=element;
     for(unsigned local=0;local<3;++local) {
       const auto n=element.nodes[local];

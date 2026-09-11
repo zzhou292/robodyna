@@ -62,12 +62,19 @@ BatchReport QephBatch::InitializeJoined(const QephBatchConfig& config,const Shel
     return {BatchStatus::InvalidInput,"Complete plasticity catalog differs from the joined native binding"};
   return InitializeImpl(config,nullptr,&binding,nullptr,&plasticity,&mass);
 }
+BatchReport QephBatch::InitializeFormulations(const QephBatchConfig& config,const ShellFormulationScope& scope,
+    const ShellBatchFailureLimits& limits) {
+  const auto checked=ValidateShellFormulationScope(scope);
+  if(checked.status!=ShellPlasticityBindingStatus::Success)
+    return {BatchStatus::InvalidInput,checked.message};
+  return InitializeImpl(config,nullptr,scope.binding,nullptr,scope.catalog,scope.mass,scope.failure,&limits,true);
+}
 BatchReport QephBatch::InitializeImpl(const QephBatchConfig& config,const QephBatchElement* elements,
     const ShellBatchBinding* joined,const ShellBatchPlasticityConfig* plasticity,
     const ShellBatchPlasticityBinding* collection_plasticity,const NodalMassBinding* nodal_mass,
-    const ShellBatchFailureBinding* failure,const ShellBatchFailureLimits* failure_limits) try {
+    const ShellBatchFailureBinding* failure,const ShellBatchFailureLimits* failure_limits,bool formulations) try {
   if(impl_) return {BatchStatus::InvalidInput,"QEPH batch is already initialized"};
-  if(joined&&joined->qbat_count()!=0)
+  if(joined&&joined->qbat_count()!=0&&!formulations)
     return {BatchStatus::InvalidInput,"QBAT requires a complete formulation publication participant"};
   if(nodal_mass&&(!joined||!nodal_mass->Matches(*joined)))
     return {BatchStatus::InvalidInput,"Combined nodal mass differs from complete joined shell inventory"};
@@ -121,11 +128,12 @@ BatchReport QephBatch::InitializeImpl(const QephBatchConfig& config,const QephBa
   if(!arena.Initialize(layout.bytes)) return {BatchStatus::ResourceLimit,"QEPH startup staging allocation failed"};
   auto* initial=layout.Construct(arena);
   if(!initial) return {BatchStatus::ResourceLimit,"QEPH startup arena layout is invalid"};
-  auto report=batch_detail::BuildModel(config,elements,initial->model,initial->slab[0],joined,failure);
+  auto report=batch_detail::BuildModel(config,elements,initial->model,initial->slab[0],joined,failure,formulations);
   if(report.status!=BatchStatus::Success) return report;
   std::unique_ptr<Impl> candidate(new(std::nothrow) Impl);
   if(!candidate) return {BatchStatus::ResourceLimit,"QEPH host allocation failed"};
   candidate->config=config; candidate->accepted_stamp=config.owner; candidate->layout=layout;
+  candidate->formulations=formulations;
   candidate->staging.Resize(config.element_count);
   candidate->accepted_diagnostics=batch_detail::InitialDiagnostics(config,joined!=nullptr);
   if(joined) candidate->joined_binding.emplace(*joined);

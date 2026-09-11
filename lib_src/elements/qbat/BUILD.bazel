@@ -1,4 +1,5 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_cuda//cuda:defs.bzl", "cuda_library")
 package(default_visibility = ["//visibility:public"])
 cc_library(
     name = "geometry",
@@ -16,4 +17,32 @@ cc_library(
     deps = [":geometry", "//lib_src/elements/qeph:kinematics", "//lib_src/elements/qeph:force",
             "//lib_src/elements/sections:shell_layered_j2", "//lib_src/elements/sections:shell_law44_membrane_point",
             "//lib_src/materials:law44_membrane", "//lib_src/materials:law44_scope", "//lib_src/materials/failure:shell_constant_plastic_failure"],
+)
+
+# Pointer-free cache, bounded host startup, and concrete owner participant.
+cc_library(
+    name = "batch_values",
+    srcs = ["QbatBatchArena.cpp", "QbatBatchStartup.cpp", "QbatBatchIdentity.cpp"],
+    hdrs = ["QbatBatchTypes.h", "QbatBatchArena.h", "QbatBatchStartup.h",
+            "QbatBatchIdentity.h", "QbatBatchAdvance.h", "QbatBatchResultChecks.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":force", "//lib_src/elements:shell_formulation_scope",
+            "//lib_src/elements:shell_batch_joined_model", "//lib_src/elements:shell_resident_storage",
+            "//lib_src/elements:shell_batch_plasticity_binding",
+            "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_trial_identity",
+            "//lib_src/solvers:nodal_native_physical_coefficients"],
+)
+cuda_library(
+    name = "batch",
+    srcs = ["QbatBatch.cu", "QbatBatchOperations.cu", "QbatBatchReadback.cu",
+            "QbatBatchKernels.cu", "QbatBatchPublication.cpp"],
+    hdrs = ["QbatBatch.h", "QbatBatchStorage.h", "QbatBatchMeasure.h"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false",
+             "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+    deps = [":batch_values", "//lib_src/elements:shell_batch_fields",
+            "//lib_src/elements:shell_formulation_output_ranges",
+            "//lib_src/elements:shell_resident_host_accounting",
+            "//lib_src/elements:shell_batch_plasticity_binding",
+            "//lib_src/assembly:nodal_mass_binding", "//lib_src/solvers:nodal_force_assembly",
+            "//lib_src/solvers:nodal_native_physical_coefficients", "//lib_src/solvers:nodal_trial_identity"],
 )

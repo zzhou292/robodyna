@@ -63,12 +63,19 @@ BatchReport T3Batch::InitializeJoined(const T3BatchConfig& config,const ShellBat
     return {BatchStatus::InvalidInput,"Complete plasticity catalog differs from the joined native binding"};
   return InitializeImpl(config,nullptr,&binding,nullptr,&plasticity,&mass);
 }
+BatchReport T3Batch::InitializeFormulations(const T3BatchConfig& config,const ShellFormulationScope& scope,
+    const ShellBatchFailureLimits& limits) {
+  const auto checked=ValidateShellFormulationScope(scope);
+  if(checked.status!=ShellPlasticityBindingStatus::Success)
+    return {BatchStatus::InvalidInput,checked.message};
+  return InitializeImpl(config,nullptr,scope.binding,nullptr,scope.catalog,scope.mass,scope.failure,&limits,true);
+}
 BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchElement* elements,
     const ShellBatchBinding* joined,const ShellBatchPlasticityConfig* plasticity,
     const ShellBatchPlasticityBinding* collection_plasticity,const NodalMassBinding* nodal_mass,
-    const ShellBatchFailureBinding* failure,const ShellBatchFailureLimits* failure_limits) try {
+    const ShellBatchFailureBinding* failure,const ShellBatchFailureLimits* failure_limits,bool formulations) try {
   if(impl_) return {BatchStatus::InvalidInput,"T3 batch is already initialized"};
-  if(joined&&joined->qbat_count()!=0)
+  if(joined&&joined->qbat_count()!=0&&!formulations)
     return {BatchStatus::InvalidInput,"QBAT requires a complete formulation publication participant"};
   if(nodal_mass&&(!joined||!nodal_mass->Matches(*joined)))
     return {BatchStatus::InvalidInput,"Combined nodal mass differs from complete joined shell inventory"};
@@ -129,11 +136,12 @@ BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchEle
   if(!arena.Initialize(layout.bytes)) return {BatchStatus::ResourceLimit,"T3 startup staging allocation failed"};
   auto* initial=layout.Construct(arena);
   if(!initial) return {BatchStatus::ResourceLimit,"T3 startup arena layout is invalid"};
-  auto report=batch_detail::BuildModel(config,elements,initial->model,initial->slab[0],joined,failure);
+  auto report=batch_detail::BuildModel(config,elements,initial->model,initial->slab[0],joined,failure,formulations);
   if(report.status!=BatchStatus::Success) return report;
   std::unique_ptr<Impl> candidate(new(std::nothrow) Impl);
   if(!candidate) return {BatchStatus::ResourceLimit,"T3 host allocation failed"};
   candidate->config=config; candidate->accepted_stamp=config.owner; candidate->layout=layout;
+  candidate->formulations=formulations;
   candidate->staging.Resize(config.element_count);
   candidate->accepted_diagnostics=batch_detail::InitialDiagnostics(config,joined!=nullptr);
   if(joined) candidate->joined_binding.emplace(*joined);

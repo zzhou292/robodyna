@@ -3,6 +3,7 @@
 #include "qeph/QephBatch.h"
 #include "t3/T3Batch.h"
 #include "type25/Type25Batch.h"
+#include "qbat/QbatBatch.h"
 #include <memory>
 
 namespace tl::fea {
@@ -29,6 +30,22 @@ struct ShellBatchDiagnostics {
   type25::BatchDiagnostics connector;
   ShellBatchKinetic base_kinetic,kinetic;
   bool valid=false,has_connector=false;
+  // Trailing opt-in formulation channels preserve older positional members.
+  // Absent families have canonical empty diagnostics, never phantom results.
+  qbat::BatchDiagnostics qbat;
+  bool has_qeph=true,has_t3=true,has_qbat=false;
+};
+struct ShellFormulationParticipants {
+  qeph::QephBatch* qeph=nullptr;
+  t3::T3Batch* t3=nullptr;
+  qbat::Batch* qbat=nullptr;
+  type25::Batch* connector=nullptr;
+};
+struct ShellFormulationCandidates {
+  const qeph::BatchDiagnostics* qeph=nullptr;
+  const t3::BatchDiagnostics* t3=nullptr;
+  const qbat::BatchDiagnostics* qbat=nullptr;
+  const type25::BatchDiagnostics* connector=nullptr;
 };
 enum class ShellPublicationStatus {
   Success,InvalidInput,NotInitialized,NotJoined,StaleTrial,ResourceLimit,
@@ -78,6 +95,14 @@ class ShellBatchPublication {
   // Its initial cache is already authenticated from the same owner's sources.
   ShellPublicationReport Initialize(FENodalState&,qeph::QephBatch&,t3::T3Batch&,
       type25::Batch&,const ShellPublicationLimits& limits={});
+  // Closed explicit QEPH/T3/QBAT composition. QBAT is required; QEPH/T3
+  // pointers are present exactly when the common immutable inventory contains
+  // that family. Every present shell uses InitializeFormulations. The optional
+  // connector is required exactly when the common combined M/J is retained.
+  ShellPublicationReport InitializeFormulations(FENodalState&,const ShellFormulationParticipants&,
+      const ShellPublicationLimits& limits={});
+  ShellPublicationReport PrepareFormulations(FENodalState&,const NodalTrialToken&,
+      const ShellFormulationCandidates&,ShellBatchDiagnostics*);
   // Preflight all completed contributors against the actual owner token
   // before GPU measurement. Kinetic energy is reduced over the complete native
   // union exactly once at each base/endpoint, at the declared velocity times.
@@ -98,6 +123,7 @@ class ShellBatchPublication {
   void DiscardTrial() noexcept;
   NodalAllocationInfo allocations() const noexcept;
  private:
+  ShellPublicationReport CopyAcceptedFormulations(const NodalStamp&,ShellBatchDiagnostics*) const noexcept;
   ShellPublicationReport InitializeImpl(FENodalState&,qeph::QephBatch&,t3::T3Batch&,
       type25::Batch*,const ShellPublicationLimits&);
   ShellPublicationReport PrepareImpl(FENodalState&,const NodalTrialToken&,

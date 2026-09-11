@@ -53,6 +53,7 @@ class HostStorage {
   const ShellBatchFailureState* failure_staging() const noexcept;
   std::size_t failure_device_bytes() const noexcept;
   bool failure_sections() const noexcept { return bool(failure_); }
+  const ShellBatchFailureBinding* failure_binding() const noexcept;
   SetupReport InitializeFailureCollection(const ShellBatchFailureBinding&,const ShellBatchBinding&,
       ShellBindingFamily,std::size_t,std::size_t device_cap,std::size_t host_cap,
       const ShellBatchFailureLimits&,bool vehicle);

@@ -98,6 +98,9 @@ const ShellBatchFailureState* HostStorage::failure_staging() const noexcept {
 std::size_t HostStorage::failure_device_bytes() const noexcept {
   return failure_ ? failure_->device_bytes() : 0;
 }
+const ShellBatchFailureBinding* HostStorage::failure_binding() const noexcept {
+  return failure_ ? &failure_->binding() : nullptr;
+}
 bool HostStorage::SameFailureScope(const HostStorage& other) const noexcept {
   return (!failure_ && !other.failure_) ||
       (failure_ && other.failure_ && failure_->binding().SameScope(other.failure_->binding()));

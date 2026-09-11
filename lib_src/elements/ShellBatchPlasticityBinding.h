@@ -55,7 +55,7 @@ struct ShellPlasticityBindingReport {
   ShellBindingFamily family=ShellBindingFamily::None;
   const char* message="OK";
 };
-namespace shell_batch_plasticity_detail { class HostStorage; class MixedHostStorage; }
+namespace shell_batch_plasticity_detail { class HostStorage; class MixedHostStorage; struct CatalogCurveView; }
 
 // Immutable host catalog for the COMPLETE authenticated native collection.
 // All curves/declarations/mapping are owned after Initialize. Stored prepared
@@ -153,6 +153,7 @@ class ShellBatchPlasticityBinding {
   static ShellPlasticityBindingReport BindParents(const ShellBatchBinding&,const ShellBatchPlasticityBindingInput&,Data&);
   friend class shell_batch_plasticity_detail::HostStorage;
   friend class shell_batch_plasticity_detail::MixedHostStorage;
+  friend struct shell_batch_plasticity_detail::CatalogCurveView;
 };
 static_assert(sizeof(ShellBatchPlasticityBinding)<128*1024,"Bounded host-only material catalog");
 } // namespace tl::fea

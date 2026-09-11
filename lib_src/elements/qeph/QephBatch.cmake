@@ -22,3 +22,6 @@ target_compile_options(tl_qeph_batch PRIVATE
 
 include("${CMAKE_CURRENT_LIST_DIR}/../../assembly/NodalMassBinding.cmake")
 target_link_libraries(tl_qeph_batch PUBLIC tl_nodal_mass_binding)
+
+include("${CMAKE_CURRENT_LIST_DIR}/../ShellFormulationScope.cmake")
+target_link_libraries(tl_qeph_batch PUBLIC tl_shell_formulation_scope)
