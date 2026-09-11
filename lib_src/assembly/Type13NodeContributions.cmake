@@ -1,0 +1,7 @@
+include_guard(GLOBAL)
+include("${CMAKE_CURRENT_LIST_DIR}/NodalNodeDomain.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../elements/type13/Type13Model.cmake")
+add_library(tl_type13_node_contributions STATIC "${CMAKE_CURRENT_LIST_DIR}/Type13NodeContributions.cpp")
+target_link_libraries(tl_type13_node_contributions PUBLIC tl_nodal_node_domain tl_type13_model)
+target_compile_features(tl_type13_node_contributions PUBLIC cxx_std_17)
+target_compile_options(tl_type13_node_contributions PRIVATE -fno-fast-math -ffp-contract=off)

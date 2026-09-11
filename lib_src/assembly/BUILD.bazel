@@ -2,6 +2,19 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
+    name = "type13_node_contributions",
+    srcs = ["Type13NodeContributions.cpp"],
+    hdrs = ["Type13NodeContributions.h", "Type13ContributionChecks.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        ":nodal_node_domain",
+        "//lib_src/elements/type13:type13_model",
+        "//lib_src/math:fixed3_operations",
+        "//lib_utils:bounded_arena",
+    ],
+)
+
+cc_library(
     name = "nodal_node_domain",
     srcs = ["NodalNodeDomain.cpp"],
     hdrs = ["NodalNodeDomain.h", "NodalDomainIdentity.h"],

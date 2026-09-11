@@ -1,5 +1,11 @@
 load("@rules_cc//cc:defs.bzl", "cc_test", "cc_library")
 load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+cc_library(
+    name = "original_fixture",
+    testonly = True,
+    hdrs = ["source_fixture/YarisType13SourceFixture.h"],
+    visibility = ["//visibility:public"],
+)
 cc_test(
     name = "type13_startup_check",
     size = "small",

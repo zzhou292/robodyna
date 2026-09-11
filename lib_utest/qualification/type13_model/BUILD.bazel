@@ -1,4 +1,19 @@
-load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_test", "cc_library")
+cc_library(
+    name = "model_fixture",
+    testonly = True,
+    hdrs = ["Fixture.h"],
+    visibility = ["//visibility:public"],
+    deps = ["//lib_src/elements/type13:type13_model",
+            "//lib_utest/qualification/type13:startup_fixture", "@googletest//:gtest_main"],
+)
+cc_library(
+    name = "original_model_fixture",
+    testonly = True,
+    hdrs = ["OriginalSource.h"],
+    visibility = ["//visibility:public"],
+    deps = [":model_fixture", "//lib_utest/qualification/type13:original_fixture"],
+)
 cc_test(
     name = "type13_model_check",
     size = "small",
