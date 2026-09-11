@@ -63,7 +63,7 @@ TEST(Law90Solid18Source, WorkingModeCancellationRejectsPerturbations) {
   const auto native_si=ReferenceOracle(input);
   const auto working=ReferenceOracle(Original(row,true));
   ASSERT_EQ(native_si.status,0);ASSERT_EQ(working.status,0);
-  ASSERT_EQ(native_si.source_slot,working.source_slot);
+  for(unsigned n=0;n<8;++n) ASSERT_EQ(native_si.source_slot[n],working.source_slot[n]);
   ASSERT_TRUE(ReferenceAgreement(actual,native_si.values));
   auto expected=WorkingReferenceToSI(working.values);
   double coordinate=0;
