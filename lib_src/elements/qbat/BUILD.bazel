@@ -26,7 +26,7 @@ cc_library(
     hdrs = ["QbatBatchTypes.h", "QbatBatchArena.h", "QbatBatchStartup.h",
             "QbatBatchIdentity.h", "QbatBatchAdvance.h", "QbatBatchResultChecks.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
-    deps = [":force", "//lib_src/elements:shell_formulation_scope",
+    deps = [":force", "//lib_src/elements:shell_formulation_scope", "//lib_src/elements:shell_batch_startup",
             "//lib_src/elements:shell_batch_joined_model", "//lib_src/elements:shell_resident_storage",
             "//lib_src/elements:shell_batch_plasticity_binding",
             "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_trial_identity",

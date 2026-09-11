@@ -10,10 +10,10 @@ cc_test(
         "qualification/nodal_domain/DomainTest.cpp",
         "qualification/nodal_domain/MapTest.cpp",
         "qualification/nodal_domain/Fixture.h",
-        "qualification/qbat_binding/Fixture.h",
     ],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
-    deps = [":shell_batch_binding_test_fixture", "//lib_src/assembly:shell_node_map", "@googletest//:gtest_main"],
+    deps = [":shell_batch_binding_test_fixture", "//lib_utest/qualification/qbat_binding:fixture",
+            "//lib_src/assembly:shell_node_map", "@googletest//:gtest_main"],
 )
 
 cc_test(
