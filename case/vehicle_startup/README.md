@@ -22,7 +22,7 @@ continues, so `first_error()` means the first native rejection in original paren
 order, not the binding's Q-before-T error precedence. Source association/packing
 or budget errors throw before an immutable result is published.
 
-The current source has 349645 retained parents. Declarations support attempting
+The historical plan-only scope has 349645 retained parents. Its declarations support attempting
 259200 QEPH and 19101 T3 references; 71344 other parents remain unresolved. These
 are input counts, not a claim that the native geometry accepts every attempt.
 The source gate records actual success/rejection counts and first failing
@@ -43,6 +43,17 @@ resolve source failure laws, MAT_RIGID, unsupported sections/materials, auxiliar
 coefficients, beam/tied load paths, or the selected vehicle boundary. This module
 does not require unrelated nonshell assemblies to become runtime prerequisites.
 
+The new `Prepare(VehicleSectionResolution, ReferenceLimits)` overload retains the
+separate immutable resolution handle, accessible through `resolution()`. That
+accessor is null for the historical overload. Both overloads use the same geometry
+decode, source packing and native append path. Resolution output2 makes 326082
+parents available for native assessment while retaining 23563 unresolved rows.
+It adds 47781 ordinary positive-FAIL declarations with their original MID/SID,
+thickness, coefficients and source blocks. Failure policy does not change the
+reference geometry or native M/J producer. Actual success/rejection counts for
+this extended scope require the new owning source gate; declaration resolution
+alone is insufficient.
+
 ## Memory admission
 
 `ForecastReferences` validates explicit count and byte limits before allocating
@@ -59,6 +70,17 @@ of accounted startup payload. The forecast adds:
   byte string used by the existing checked array codec.
 - Fixed owning/vector control objects and a conservative 32 KiB startup stack
   allowance. Allocator bookkeeping and process RSS remain separate guard concerns.
+
+The resolved overload selects the explicit `ReferenceLimits::ResolvedSections()`
+profile, capped at 768 MiB. The legacy profile still rejects a byte cap above
+512 MiB; the plan-only overload rejects the new profile. The resolution's source
+bound already includes the historical plan, so shared backing is charged once.
+For the frozen output2 fixture, before native-reference execution, the forecast is
+540700156 bytes: source/resolution 283999415, reference capacity 180127936,
+rows 22377280, decode 36956356 plus temporary 17205937, and fixed controls/stack
+33232. Capacities remain conservative (326082 QEPH and 21301 T3 slots), not an
+assertion of successful native family counts. The optional handle adds 24 control
+bytes to the historical factory forecast; its references and counts are unchanged.
 
 All products and additions are checked against the caller's cap before use.
 The complete-source retry test intentionally retains two immutable assessments;
@@ -83,3 +105,13 @@ field, immutable lifetime, cap rejection and exact whole-assessment retry.
 The two targets are host-only. No CUDA runtime, driver, solver ownership or
 native Fortran oracle is linked; donor arithmetic remains the already-qualified
 TL QEPH/T3 producer. Full-source execution belongs to the serialized parent gate.
+
+Enable `ROBO_DYNA_VEHICLE_REFERENCE_RESOLVED_TESTS=ON` and provide the preceding
+source paths plus `ROBO_DYNA_VEHICLE_RESOLUTION` pointing to the authenticated
+`yaris-vehicle-section-resolution-2.json`. Target
+`robo_dyna_vehicle_reference_resolved_check` / CTest `vehicle_reference_resolved`
+assesses every source row, verifies original material/thickness and donor M/J,
+compares every previously supported reference and both V3 fixtures exactly, and
+checks explicit profile admission, late budget failure and clean retry. This
+qualification intentionally retains legacy and resolved assessments concurrently;
+its process guard must cover that total rather than one factory's forecast.

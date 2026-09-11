@@ -1,5 +1,6 @@
 #pragma once
 #include "VehicleShellReferences.h"
+#include "ReferenceDeclarations.h"
 #include "modelio/source_assembly/SourceShellReferenceInput.h"
 
 namespace crash::cases::vehicle_startup::detail {
@@ -21,5 +22,5 @@ struct Geometry {
     std::vector<std::uint32_t> connections, lines;
     explicit Geometry(const modelio::vehicle::source::CanonicalData&);
 };
-void PrepareRows(const VehicleSourcePlan&,const Geometry&,ReferenceStorage&);
+void PrepareRows(const DeclarationView&,const Geometry&,ReferenceStorage&);
 } // namespace crash::cases::vehicle_startup::detail
