@@ -13,6 +13,12 @@ add_executable(robo_dyna_vehicle_shell_execution_original_check tests/OriginalCa
   tests/OriginalLayersTest.cpp tests/OriginalRetryTest.cpp)
 target_link_libraries(robo_dyna_vehicle_shell_execution_original_check PRIVATE
   robo_dyna_vehicle_shell_execution GTest::gtest_main)
+option(ROBO_DYNA_VEHICLE_CONTACT_GEOMETRY_ORIGINAL "Verify complete source-mapped contact surface" OFF)
+if(ROBO_DYNA_VEHICLE_CONTACT_GEOMETRY_ORIGINAL)
+  include("${CMAKE_CURRENT_LIST_DIR}/../../shell_collection/ShellCollectionContactGeometry.cmake")
+  target_sources(robo_dyna_vehicle_shell_execution_original_check PRIVATE tests/OriginalContactGeometryTest.cpp)
+  target_link_libraries(robo_dyna_vehicle_shell_execution_original_check PRIVATE robo_dyna_shell_collection_contact_geometry)
+endif()
 target_compile_options(robo_dyna_vehicle_shell_execution_original_check PRIVATE -fno-fast-math -ffp-contract=off)
 add_test(NAME vehicle_shell_execution_original COMMAND "${Python3_EXECUTABLE}" -B
   "${CMAKE_CURRENT_LIST_DIR}/../../../output/full_shell/static_bundle/tests/actual_source_fixture.py"

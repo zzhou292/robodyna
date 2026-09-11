@@ -1,5 +1,6 @@
 #pragma once
 #include "lib_src/elements/ShellBatchBinding.h"
+#include "lib_src/assembly/ShellNodeMap.h"
 #include "lib_src/collision/NodalWallContact.h"
 #include "lib_src/collision/PlanarWallBox.h"
 #include <array>
@@ -40,8 +41,13 @@ class ShellCollectionContactGeometry {
     ShellCollectionContactGeometry(const ShellCollectionContactGeometry&)=delete;
     ShellCollectionContactGeometry& operator=(const ShellCollectionContactGeometry&)=delete;
     ShellContactGeometryReport Initialize(const tl::fea::ShellBatchBinding&,const ShellContactGeometryLimits& = {});
+    // Exact domain coordinates and mapped QEPH/T3/QBAT connectivity. Extra
+    // physical nodes receive no surface area and do not enlarge surface bounds.
+    // This geometry operation does not admit constraints or a contact runtime.
+    ShellContactGeometryReport InitializeMapped(const tl::fea::ShellNodeMap&,const ShellContactGeometryLimits& = {});
     bool prepared() const noexcept;
     const tl::fea::ShellBatchBinding* binding() const noexcept;
+    const tl::fea::ShellNodeMap* mapping() const noexcept;
     const tlfea::contact::NodalWallWeights* weights() const noexcept;
     tlfea::contact::VectorView positions() const noexcept;
     std::array<tlfea::contact::Vec3,2> reference_bounds() const noexcept;
@@ -55,6 +61,8 @@ class ShellCollectionContactGeometry {
     std::size_t startup_payload_bytes() const noexcept;
   private:
     struct Impl;
+    ShellContactGeometryReport InitializeImpl(const tl::fea::ShellBatchBinding&,
+        const tl::fea::ShellNodeMap*,const ShellContactGeometryLimits&);
     std::unique_ptr<const Impl> impl_;
 };
 } // namespace crash::cases
