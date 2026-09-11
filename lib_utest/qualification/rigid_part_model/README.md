@@ -46,11 +46,17 @@ a synthetic 22-primary/two-merge/20-root model with one 796-member root.
 The separate original point-mass source gate retains 155 original literal rows,
 including 54 rigid extras. This model's capacity fixture is not the original
 22-body aggregate. Actual source admission waits for all required original rubber
-coefficient producers: the source hourglass override selects ISOLID1 for the
-1309 eight-node cells, while 195 wedges dispatch earlier to S6ZINIT3. No original
+coefficient producers under the explicit demo HEPH24/S6Z formulation mapping.
+The original hourglass override instead resolves Isolid1 and remains separately
+recorded in the case/source policy; this model does not choose that mapping. No original
 rubber mass, force, runtime or complete-vehicle claim follows from these tests.
 
 Standalone CMake defaults to host values only. `RIGID_PART_MODEL_NATIVE=ON`
 reuses unchanged existing authenticated INIRBY/ADMAS5 and correction wrappers;
 no reference code enters the production target. Root owns Fortran/native and
 larger source gates. Author host checks use one CPU and 512 MiB.
+
+Root qualification passes6 host and2 native numerical functions plus2 donor
+identities in `rigid-part-model-root-tests-1`. Owning Bazel builds pass in
+`rigid-part-model-owning-bazel-build-1`. The complete synthetic model retains
+433752 B/startup497376 B. These are startup/model gates, not live vehicle dynamics.

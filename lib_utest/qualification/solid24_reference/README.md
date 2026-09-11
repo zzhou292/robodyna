@@ -1,5 +1,15 @@
 # Native HEPH brick startup
 
+**Source-profile boundary:** the original rubber HGID2000017 has IHQ2/QM0.1.
+The converter applies it after the blank section and changes Isolid24 to
+Isolid1 (`convertprops.cxx:221–253`). Therefore this module is a qualified
+HEPH value implementation on original geometry, not the original selected
+bushing startup. The full-shell demo explicitly selects HEPH24/S6Z under
+`planning/YARIS_RUBBER_SOURCE_PROFILE.md`, preserving source controls separately.
+No vehicle participant uses it yet. Original Isolid1 emulation is deferred;
+the exact hourglass receipt is
+`crash-work/reports/yaris-rubber-hourglass-source-1.json`.
+
 `solid24` provides a bounded value entry for the eight-node JHBE24 startup:
 immutable original identities, SRCOOR3 orientation and cyclic frame, SZDERI3
 center volume, SDLEN3 characteristic length and SMASS3 translational mass.
@@ -14,9 +24,9 @@ repeated node IDs, invalid geometry or nonfinite results leave output untouched.
 The first profile has no scalar rotational inertia, ALE or reference shape.
 
 The original rubber fixture contains1504 cells/2308 nodes in8 parts. All1309
-bricks match the complete native reference on CPU and CUDA, including source
+bricks match the explicitly selected HEPH native reference on CPU and CUDA, including source
 slots, volume, length and equal per-slot masses. Their startup mass subtotal is
-0.781662kg. The195 wedges explicitly reject this entry: INITIA dispatches them
+0.781662kg for that selected profile. The195 wedges explicitly reject this entry: INITIA dispatches them
 to S6ZINIT3 before the HEPH branch, with their own connectivity and mass rules.
 They remain required load paths in the vehicle plan.
 
