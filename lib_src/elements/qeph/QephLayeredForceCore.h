@@ -12,7 +12,7 @@ TL_QEPH_HD inline Status EvaluateLayeredForce(const ReferenceData& r,const secti
     const Accepted& accepted,const PrescribedInterval& interval,Trial& output,const Adapter& adapter) noexcept {
   const auto& base=accepted.shell;
   if(!sections::MatchesLayeredJ2Material(parameters,r.input)||
-     !adapter.Matches(base.data())) return Status::kInvalidInput;
+     !adapter.Matches(base.data(),r.input.placement)) return Status::kInvalidInput;
   if(!SaneReference(r)||!base.matches_reference(r)) return Status::kInvalidReference;
   const auto& stamp=base.stamp();
   if(!ValidHistoryValues(base.data(),Adapter::admits_failure)||!tl::math::Finite(stamp.time)||stamp.time<0||
@@ -27,10 +27,11 @@ TL_QEPH_HD inline Status EvaluateLayeredForce(const ReferenceData& r,const secti
   MaterialWork material;
   auto coefficients_input=r.input;
   coefficients_input.thickness=base.data().thickness; // Source ITHICK=1; native mass stays fixed.
-  if(!PrepareMaterial(coefficients_input,geometry.values.area,interval.dt,material))
+  if(!PrepareMaterial(coefficients_input,geometry.values.area,interval.dt,material,r.input.placement))
     return Status::kNonfiniteResult;
   auto proposed=base.data();
   sections::ShellLayeredJ2Input section_input;
+  section_input.placement=r.input.placement;
   auto& dx=section_input.strain_curvature_increment;
   for(unsigned i=0;i<8;++i) dx[i]=geometry.values.regular_rate[i]*material.dt;
   const double xz=dx[3]; dx[3]=dx[4]; dx[4]=xz; // Native QEPH aliases: YZ,ZX.
@@ -44,7 +45,7 @@ TL_QEPH_HD inline Status EvaluateLayeredForce(const ReferenceData& r,const secti
   const double dtinv=material.dt/::fmax(material.dt*material.dt,force_constant::em20);
   const double viscosity=force_constant::onep414*material.dm*material.rho*
       material.sound_speed*::sqrt(geometry.values.area)*dtinv;
-  if(!adapter.Apply(section,dx,material.thickness,geometry.values.area,viscosity,proposed))
+  if(!adapter.Apply(section,dx,material.thickness,geometry.values.area,viscosity,proposed,r.input.placement))
     return Status::kNonfiniteResult;
   Adapter::Publish(section,staged);
   StiffnessDiagnostics(geometry,material,candidate.diagnostics,proposed.active);

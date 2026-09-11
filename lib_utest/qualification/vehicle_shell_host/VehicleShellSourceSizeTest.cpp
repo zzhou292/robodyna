@@ -8,7 +8,7 @@ TEST(VehicleShellHostSourceSize, Complete349645Parents359785NodesAndOrderedNativ
   Geometry b;ASSERT_EQ(b.Initialize(f->input(),fe::ShellHostBindingLimits::Vehicle()).status,Status::Success);
   EXPECT_EQ(b.node_count(),359785u);EXPECT_EQ(b.qeph_count()+b.t3_count(),349645u);
   ASSERT_EQ(b.active_nodes().size(),f->count);EXPECT_EQ(b.nodes().size(),f->count);
-  EXPECT_EQ(b.inventory().words().size(),4+27*Fixture::SourceQ+22*Fixture::SourceT);
+  EXPECT_EQ(b.inventory().words().size(),4+28*Fixture::SourceQ+23*Fixture::SourceT);
   std::vector<fe::ShellBindingMass> expected(f->count);fe::ShellBindingMass total;
   fe::qeph::ReferenceData q;fe::t3::ReferenceData t,tail;
   ASSERT_EQ(fe::qeph::InitializeReference(f->q.front().reference,q),fe::qeph::Status::kSuccess);

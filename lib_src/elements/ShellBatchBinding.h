@@ -66,7 +66,8 @@ struct ShellBatchCollectionInput {
 struct ShellBindingMass {
   double mass=0;                // kg
   double isotropic_inertia=0;   // Native TOTAL J, kg*m^2; never recombined.
-  double physical_inertia=0;    // Native thickness partition, kg*m^2.
+  // Native thickness/offset partition (Q4), thickness partition (T3), kg*m^2.
+  double physical_inertia=0;
   double added_inertia=0;       // Native area-added partition, kg*m^2.
 };
 struct ShellBindingNode {
@@ -77,7 +78,8 @@ struct ShellBindingNode {
 
 // Complete fixed-word identity encoding, NOT a persisted schema, reduced hash
 // or numerical equivalence test. Includes family, arity, ordered connectivity,
-// exact source IDs and every input coordinate/material binary64 bit pattern.
+// exact source IDs, every input coordinate/material binary64 bit pattern,
+// and an explicit typed placement word after each parent's material words.
 // Future participants must compare the entire inventory and actual binding;
 // these words confer neither nodal-owner nor publication authority.
 class ShellBatchInventory {
@@ -87,8 +89,8 @@ class ShellBatchInventory {
   ShellBatchInventory(ShellBatchInventory&& other) noexcept
       :ShellBatchInventory(static_cast<const ShellBatchInventory&>(other)) {}
   ShellBatchInventory& operator=(const ShellBatchInventory&) noexcept=default;
-  static constexpr std::size_t WordCount=49; // Unchanged legacy pair encoding.
-  static constexpr std::size_t Capacity=4+27*MaxShellCollectionParents; // Inline capacity only.
+  static constexpr std::size_t WordCount=51; // Version 3 pair encoding, including placement.
+  static constexpr std::size_t Capacity=4+28*MaxShellCollectionParents; // Inline capacity only.
   class WordView {
    public:
     const std::uint64_t* data() const noexcept { return data_; }
@@ -135,7 +137,7 @@ class ShellBatchBinding {
   ShellBatchBinding(ShellBatchBinding&& other) noexcept
       :ShellBatchBinding(static_cast<const ShellBatchBinding&>(other)) {}
   ShellBatchBinding& operator=(const ShellBatchBinding&)=delete;
-  // Preserves the exact original pair inventory and 4..7-node input contract.
+  // Retains the original pair input and 4..7-node contract; inventory version 3.
   ShellBindingReport Initialize(const ShellBatchBindingInput& input) noexcept;
   ShellBindingReport Initialize(const ShellBatchCollectionInput& input) noexcept;
   ShellBindingReport Initialize(const ShellBatchCollectionInput&,const ShellHostBindingLimits&) noexcept;

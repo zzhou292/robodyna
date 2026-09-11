@@ -15,8 +15,8 @@
   "ported_files": [
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
-      "bytes": 2759,
-      "sha256": "7819e8f9c753e559fa2e77b4918affb166c2136e54fb32c0d3088415195a992a"
+      "bytes": 2807,
+      "sha256": "e018d6c8aa4add2b0e62ea29abd63e6e858ff8d082efc93af33b467dcfaffcf5"
     },
     {
       "path": "lib_src/elements/t3/CMakeLists.txt",
@@ -35,8 +35,8 @@
     },
     {
       "path": "lib_src/elements/t3/T3Data.h",
-      "bytes": 1434,
-      "sha256": "3e9a7b829442a585f0b2f51044716d8794a2f52c79d9cabfd7d9b362713d1ecd"
+      "bytes": 1559,
+      "sha256": "5d3f51224179ec92f3dc31750563bc4ed1ba4f9f64b66cd36c2479db495f9691"
     },
     {
       "path": "lib_src/elements/t3/T3Geometry.h",
@@ -45,8 +45,8 @@
     },
     {
       "path": "lib_src/elements/t3/T3Kinematics.h",
-      "bytes": 3201,
-      "sha256": "6426e348666fa7b0b9a0f553a83338fb9ef763fdc8b6ea8fb8d7cab521c69088"
+      "bytes": 3251,
+      "sha256": "29cda5fa91d1a74b51fb7ba8aa467fcadaab6839c2772932ea992bb867a03189"
     },
     {
       "path": "lib_src/elements/t3/T3KinematicsData.h",
@@ -60,8 +60,8 @@
     },
     {
       "path": "lib_src/elements/t3/T3Startup.h",
-      "bytes": 3467,
-      "sha256": "19d42bfb04ffa69255b5c5ec2115e34d1f25a0fb6685e95076d45e16195d21db"
+      "bytes": 3523,
+      "sha256": "ae68f74f5dd773ab2a38eb57fcdb787fa280f844b2d5681ea87d197b0aebe5bf"
     }
   ],
   "tests": [

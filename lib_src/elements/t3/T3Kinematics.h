@@ -6,7 +6,7 @@ namespace tl::fea::t3::detail {
 // Producer record validation, not authentication of arbitrary writable memory.
 // A resident owner must bind the immutable startup result before consuming it.
 TL_T3_HD inline bool SaneReference(const ReferenceData& r) {
-  if(!r.prepared||!Coordinates(r.input.position)||!Positive(r.input.density)||
+  if(!r.prepared||!ValidShellReferencePlacement(r.input.placement)||!Coordinates(r.input.position)||!Positive(r.input.density)||
      !Positive(r.input.thickness)||!Positive(r.input.young_modulus)||
      !tl::math::Finite(r.input.poisson_ratio)||r.input.poisson_ratio<0||r.input.poisson_ratio>=.5||
      !Positive(r.area)||!Proper(r.frame)||!Positive(r.characteristic_length)||

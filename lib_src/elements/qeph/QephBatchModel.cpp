@@ -59,6 +59,8 @@ BatchReport BuildModel(const QephBatchConfig& c,const QephBatchElement* input,Mo
       for(unsigned local=0;local<4;++local) selected.nodes[local]=joined->qeph_nodes(e)[local];
     }
     const auto& element=joined?selected:input[e]; ReferenceData checked;
+    if(element.reference.input.placement!=ShellReferencePlacement::Centered)
+      return {BatchStatus::InvalidInput,"Noncentered shell placement has no resident admission",e};
     const auto status=InitializeReference(element.reference.input,checked);
     if(status!=Status::kSuccess||!SameReference(element.reference,checked))
       return {BatchStatus::ElementFailure,"Reference differs from its startup producer",e,UINT32_MAX,

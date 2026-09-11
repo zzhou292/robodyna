@@ -43,14 +43,15 @@ the old zero-argument accessors return empty unless there is exactly one parent
 of each family. They never silently select the first parent of a collection.
 
 The old `ShellBatchBindingInput` overload forwards to this same builder with
-absent parent IDs and its original 4..7-node restriction. Its complete 49-word
-inventory values and ordering remain exact. New collection inventories use
-encoding discriminator 2, node/Q4/T3 counts and ordered per-parent words:
+absent parent IDs and its original 4..7-node restriction. Its version 3,
+51-word inventory explicitly includes placement. Collection inventories use
+encoding discriminator 4, node/Q4/T3 counts and ordered per-parent words:
 family, arity, source-parent ID, then global index/source-node ID/three binary64
-coordinate words per local node, and the four original material scalar words.
+coordinate words per local node, four original material scalar words, and
+an explicit placement word.
 `inventory().words()` is now a read-only pointer/active-length view, not a
-49-element array reference. `WordCount=49` names the legacy length only;
-consumers use the active size or full inventory equality, never a 49-word
+51-element array reference. `WordCount=51` names the version 3 pair length;
+consumers use the active size or full inventory equality, never a fixed pair-word
 prefix. Equality includes active length and the complete fixed storage (unused
 words are zero). This is an in-process identity encoding, not a file schema,
 hash, owner token or publication receipt.
@@ -94,3 +95,8 @@ It preserves all 117 original nodes/88 Q4/six T3 and independently checks native
 structural mass 0.25650893888187326 kg and total J 5.1937904054349167e-6 kg*m^2.
 That is host startup only; resident/contact capacity and part dynamics are
 separate integration gates. No original MAT024 or attachment equivalence claim.
+
+Reference placement is an explicit word after each parent's four material words.
+The in-process pair/collection encodings are versions 3/4 (51 pair words;
+28 words per Q4 and 23 per T3 in a collection). These are complete comparison
+records, not persistent archive schemas.

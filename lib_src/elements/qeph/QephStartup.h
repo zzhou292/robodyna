@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Adapted from OpenRadioss, Copyright (C) 2026 Siemens.
-// CDERII and selected centered CINMAS expressions; see the pinned source map
+// CDERII and selected typed-placement CINMAS expressions; see the pinned source map
 // in lib_utest/qualification/qeph/source-manifest.json and adjacent LICENSE.md.
 #pragma once
 #include "lib_src/elements/ShellPlacementCoefficients.h"
@@ -13,7 +13,7 @@
 #endif
 
 namespace tl::fea::qeph {
-// Startup only, fixed IREP0 QEPH/centered LAW1. The native frame determinant
+// Startup only, fixed IREP0 QEPH with TYPE1 placement. The native frame determinant
 // exceeds 1e-20 m^2 plus the declared 64epsilon boundary band; normalized corner
 // turns exceed128epsilon. Material, projected coordinates, mass and all inertia
 // partitions must remain finite, and every mass/inertia is strictly positive.
@@ -21,7 +21,8 @@ namespace tl::fea::qeph {
 // force, batch, time integration or mass-scaling policy is introduced here.
 // Failure preserves all output bytes; successful initialization may replace it.
 TL_QEPH_STARTUP_HD inline Status InitializeReference(const ReferenceInput& input,ReferenceData& output) {
-  if (!detail::Positive(input.density)||!detail::Positive(input.young_modulus)||
+  if(!ValidShellReferencePlacement(input.placement)||!detail::Positive(input.density)||
+      !detail::Positive(input.young_modulus)||
       !detail::Positive(input.thickness)||!tl::math::Finite(input.poisson_ratio)||
       input.poisson_ratio<0||input.poisson_ratio>=.5) return Status::kInvalidInput;
   for (unsigned i=0;i<4;++i) {
@@ -53,10 +54,12 @@ TL_QEPH_STARTUP_HD inline Status InitializeReference(const ReferenceInput& input
   // Exact native total expression and independent diagnostic partitions. Do
   // not sum partitions to replace the total or inject Reissner drilling mass.
   const double mass=input.density*input.thickness*candidate.area*.25;
-  const double physical=mass*input.thickness*input.thickness*(1./12);
+  const double shift=NativeShellShift(input.placement);
+  const double physical=mass*input.thickness*input.thickness*
+      (input.placement==ShellReferencePlacement::Centered ? 1./12 : 1./12+shift*shift);
   const double added=mass*(candidate.area/12);
   const double total=NativeQephPlacementInertia(mass,candidate.area,input.thickness,
-      ShellReferencePlacement::Centered);
+      input.placement);
   if (!detail::Positive(mass)||!detail::Positive(physical)||
       !detail::Positive(added)||!detail::Positive(total)) return Status::kNonfiniteResult;
   for (unsigned i=0;i<4;++i) {

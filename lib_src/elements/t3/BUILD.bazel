@@ -5,7 +5,7 @@ package(default_visibility = ["//visibility:public"])
 cc_library(
     name = "startup",
     hdrs = ["T3Data.h", "T3Geometry.h", "T3Startup.h"],
-    deps = ["//lib_src/math:fixed3", "//lib_src/math:quaternion", "//lib_src/elements:shell_placement_coefficients"],
+    deps = ["//lib_src/math:fixed3", "//lib_src/math:quaternion", "//lib_src/elements:shell_placement_coefficients", "//lib_src/elements:shell_reference_placement"],
 )
 
 cc_library(

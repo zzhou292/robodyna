@@ -16,6 +16,7 @@ struct LayeredLaw1ForceTrial {
 };
 TL_T3_HD inline Status InitializeLayeredLaw1History(const ReferenceData& r,
     const tl::material::ShellElasticLaw1PointParameters& p,HistoryStamp stamp,LayeredLaw1History& output) noexcept {
+  if(r.input.placement!=ShellReferencePlacement::Centered) return Status::kInvalidInput;
   if(!sections::MatchesLayeredMaterial(p,r.input)) return Status::kInvalidInput;
   LayeredLaw1History candidate;
   const auto status=InitializeHistory(r,stamp,candidate.shell);
@@ -28,6 +29,7 @@ TL_T3_HD inline Status InitializeLayeredLaw1History(const ReferenceData& r,
 TL_T3_HD inline Status EvaluateLayeredLaw1Force(const ReferenceData& r,const tl::material::ShellElasticLaw1PointParameters& parameters,
     const LayeredLaw1History& accepted,
     const PrescribedInterval& in,LayeredLaw1ForceTrial& output) noexcept {
+  if(r.input.placement!=ShellReferencePlacement::Centered) return Status::kInvalidInput;
   const auto& base=accepted.shell;
   if(!sections::MatchesLayeredMaterial(parameters,r.input)||
      !sections::MatchesLayeredSectionResultants(accepted.section,base.data())) return Status::kInvalidInput;

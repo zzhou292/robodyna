@@ -31,7 +31,7 @@ TL_T3_HD inline bool History::matches_reference(const ReferenceData& r) const no
       !detail::SameHistoryBits(a.position[n].x,b.position[n].x)||
       !detail::SameHistoryBits(a.position[n].y,b.position[n].y)||
       !detail::SameHistoryBits(a.position[n].z,b.position[n].z)) return false;
-  return detail::SameHistoryBits(a.density,b.density)&&detail::SameHistoryBits(a.thickness,b.thickness)&&
+  return a.placement==b.placement&&detail::SameHistoryBits(a.density,b.density)&&detail::SameHistoryBits(a.thickness,b.thickness)&&
       detail::SameHistoryBits(a.young_modulus,b.young_modulus)&&detail::SameHistoryBits(a.poisson_ratio,b.poisson_ratio);
 }
 // Explicit prescribed values, not restart authentication. Complete output

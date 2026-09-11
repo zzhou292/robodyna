@@ -5,11 +5,11 @@
 #include "T3Geometry.h"
 
 namespace tl::fea::t3 {
-// Three physical nodes; centered IGTYP1/ISMSTR-1. Preserves caller output on
+// Three physical nodes; typed IGTYP1 placement, ISMSTR-1. Preserves caller output on
 // every failure, including input aliasing the old output. No mass scaling,
 // angle normalization, clamp, stiffness, material history or clock.
 TL_T3_HD inline Status InitializeReference(const ReferenceInput& input,ReferenceData& output) {
-  if(!detail::Positive(input.density)||!detail::Positive(input.thickness)||
+  if(!ValidShellReferencePlacement(input.placement)||!detail::Positive(input.density)||!detail::Positive(input.thickness)||
      !detail::Positive(input.young_modulus)||!tl::math::Finite(input.poisson_ratio)||
      input.poisson_ratio<0||input.poisson_ratio>=.5||!detail::Coordinates(input.position)) return Status::kInvalidInput;
   for(unsigned i=0;i<3;++i) for(unsigned j=0;j<i;++j)

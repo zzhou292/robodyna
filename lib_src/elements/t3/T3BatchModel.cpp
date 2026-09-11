@@ -71,6 +71,8 @@ BatchReport BuildModel(const T3BatchConfig& c,const T3BatchElement* input,Model&
       for(unsigned local=0;local<3;++local) selected.nodes[local]=joined->t3_nodes(e)[local];
     }
     const auto& element=joined?selected:input[e]; ReferenceData checked;
+    if(element.reference.input.placement!=ShellReferencePlacement::Centered)
+      return {BatchStatus::InvalidInput,"Noncentered shell placement has no resident admission",e};
     const auto status=InitializeReference(element.reference.input,checked);
     if(status!=Status::kSuccess||!SameReference(element.reference,checked))
       return {BatchStatus::ElementFailure,"Reference differs from its startup producer",e,UINT32_MAX,

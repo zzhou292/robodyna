@@ -83,8 +83,8 @@ TEST(ShellBatchBinding,InventoryIncludesEveryOrderedInputRatherThanOnlyMass) {
   ASSERT_EQ(identical.Initialize(in).status,Status::Success);
   EXPECT_EQ(original.inventory(),identical.inventory());
   const auto& words=original.inventory().words();
-  EXPECT_EQ(words.size(),49); EXPECT_EQ(words[0],1); EXPECT_EQ(words[1],5);
-  EXPECT_EQ(words[2],4); EXPECT_EQ(words[3],4); EXPECT_EQ(words[28],3); EXPECT_EQ(words[29],3);
+  EXPECT_EQ(words.size(),51); EXPECT_EQ(words[0],3); EXPECT_EQ(words[1],5);
+  EXPECT_EQ(words[2],4); EXPECT_EQ(words[3],4); EXPECT_EQ(words[29],3); EXPECT_EQ(words[30],3);
   for(unsigned family=0;family<2;++family) for(unsigned field=0;field<4;++field) {
     SCOPED_TRACE(family);
     SCOPED_TRACE(field);

@@ -2,6 +2,7 @@
 // Adapted from pinned OpenRadioss, Copyright (C) 2026 Siemens.
 // See LICENSE.md and lib_utest/qualification/t3/source-manifest.json.
 #pragma once
+#include "lib_src/elements/ShellReferencePlacement.h"
 #include "lib_src/math/Fixed3.h"
 #include <cstdint>
 
@@ -19,6 +20,7 @@ struct ReferenceInput {
   Vec3 position[3]{};
   std::uint64_t node_ids[3]{0,1,2};
   double density=7890,thickness=.001648,young_modulus=200e9,poisson_ratio=.3;
+  ShellReferencePlacement placement=ShellReferencePlacement::Centered;
 };
 // Immutable producer result; no owner/clock or material state. The selected
 // native T3 angle masses and A/4.5 inertia must not become Q4 equal quarters.

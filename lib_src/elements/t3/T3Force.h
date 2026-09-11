@@ -11,6 +11,7 @@ namespace tl::fea::t3 {
 // All inputs and caller output survive failure, even when base aliases output.
 TL_T3_HD inline Status EvaluateForce(const ReferenceData& r,const History& base,
     const PrescribedInterval& in,ForceTrial& output) noexcept {
+  if(r.input.placement!=ShellReferencePlacement::Centered) return Status::kInvalidInput;
   if(!detail::SaneReference(r)||!base.matches_reference(r)) return Status::kInvalidReference;
   const auto& stamp=base.stamp();
   if(!detail::ValidHistoryValues(base.data())||!tl::math::Finite(stamp.time)||stamp.time<0||

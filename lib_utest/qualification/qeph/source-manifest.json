@@ -250,8 +250,8 @@
   "ported_files": [
     {
       "path": "lib_src/elements/qeph/QephData.h",
-      "bytes": 1599,
-      "sha256": "49af97612d8b6fb58f8649401d9a454aa845250d2715fded9adbca9579dd9a5d"
+      "bytes": 1724,
+      "sha256": "d777fc9210259f0cd1b1b35c607e68b78459e475eff3577d39562c2414559692"
     },
     {
       "path": "lib_src/elements/qeph/QephStartupFrame.h",
@@ -260,8 +260,8 @@
     },
     {
       "path": "lib_src/elements/qeph/QephStartup.h",
-      "bytes": 4009,
-      "sha256": "fe660c8e7c2c2f6a91815e7228221589fc02c698f89a935d99e11556caeaa0d6"
+      "bytes": 4195,
+      "sha256": "dfc9551ff6cfa77caa445b0c9f1f88c3cc010469484d2128ecba15213ddb6a25"
     },
     {
       "path": "lib_src/elements/qeph/LICENSE.md",
@@ -305,8 +305,8 @@
     },
     {
       "path": "lib_src/elements/qeph/QephKinematics.h",
-      "bytes": 5216,
-      "sha256": "3ebb15d7a38dbdf1bc327f1d2a4ed3c37d83b50fc0521c0bd7a94c14f1cced13"
+      "bytes": 5266,
+      "sha256": "6e081828b7fcd16fddafed6da5aeba2afa499994798629f42ef21edd94dc94d4"
     },
     {
       "path": "lib_src/elements/qeph/QephElasticForces.h",
@@ -315,8 +315,8 @@
     },
     {
       "path": "lib_src/elements/qeph/QephForce.h",
-      "bytes": 3031,
-      "sha256": "7140ecfa7bf1a356910c99f340d5c44c6ace236be25656fce9589f9ddaf8f522"
+      "bytes": 3120,
+      "sha256": "ee1049f334788824ee4347d25b8c0fa5a90b366587df51262d194ed55056fea0"
     },
     {
       "path": "lib_src/elements/qeph/QephForceData.h",
@@ -330,8 +330,8 @@
     },
     {
       "path": "lib_src/elements/qeph/QephHistory.h",
-      "bytes": 3467,
-      "sha256": "eef3ad5b6159c111c98da16210c17c6791824e634e4b94fd3b7b7a24b6183bb2"
+      "bytes": 3493,
+      "sha256": "800b1e45308b7dac8b04d01c1bb251314a3b7ddda559257528d8adf7118a69c3"
     },
     {
       "path": "lib_src/elements/qeph/QephHistoryData.h",
@@ -370,13 +370,13 @@
     },
     {
       "path": "lib_src/elements/qeph/QephLayeredForceCore.h",
-      "sha256": "879e6eacac4ba10b059c311cde1fe2712e312426c6cc4cd7600b91b90e6b2571",
-      "bytes": 4502
+      "sha256": "d46f96e111ebe643a40c2cb72fa86754845c998919633ad4ad633825a838a27b",
+      "bytes": 4601
     },
     {
       "path": "lib_src/elements/qeph/QephLayeredJ2Failure.h",
-      "sha256": "e6d6ea4712c5e557d83670417ef6492ed3805b3862d7dbcc978f910366e2351f",
-      "bytes": 1805
+      "sha256": "a34d38082404514f228506e4897a1cb57b32214871035c9695dc77aada1808bc",
+      "bytes": 1983
     }
   ],
   "shared_and_native_dependencies": [
@@ -482,13 +482,13 @@
     },
     {
       "path": "lib_src/elements/sections/ShellLayeredJ2ForceAdapter.h",
-      "sha256": "b0011113d2beda7f72aab49a6c83a68667759eddb354ebf142317083f3dc8fea",
-      "bytes": 1391
+      "sha256": "0ba587bc3e37cfccac919e4b55856e18d72234935451978a2509b31cdf18c8f5",
+      "bytes": 1675
     },
     {
       "path": "lib_src/elements/sections/ShellLayeredJ2FailureForceAdapter.h",
-      "sha256": "ed35eba3cf87901e54a88cc91fdf2218008ecb6b8e28737ec12fc64c388cd241",
-      "bytes": 1401
+      "sha256": "bf2bb29c16fe2c11f1c85b399a95ac4997599997b055a093211102a4e7cbcb31",
+      "bytes": 1685
     },
     {
       "path": "lib_src/elements/ShellReferencePlacement.h",

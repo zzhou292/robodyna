@@ -11,7 +11,7 @@ TL_T3_HD inline Status EvaluateLayeredForce(const ReferenceData& r,const section
     const Accepted& accepted,const PrescribedInterval& in,Trial& output,const Adapter& adapter) noexcept {
   const auto& base=accepted.shell;
   if(!sections::MatchesLayeredJ2Material(parameters,r.input)||
-     !adapter.Matches(base.data())) return Status::kInvalidInput;
+     !adapter.Matches(base.data(),r.input.placement)) return Status::kInvalidInput;
   if(!SaneReference(r)||!base.matches_reference(r)) return Status::kInvalidReference;
   const auto& stamp=base.stamp();
   if(!ValidHistoryValues(base.data(),Adapter::admits_failure)||!tl::math::Finite(stamp.time)||stamp.time<0||
@@ -24,7 +24,7 @@ TL_T3_HD inline Status EvaluateLayeredForce(const ReferenceData& r,const section
   MaterialWork material;
   auto coefficients_input=r.input;
   coefficients_input.thickness=base.data().thickness; // Source ITHICK=1; native mass stays fixed.
-  if(!PrepareMaterial(coefficients_input,geometry.kinematics.area,material)) return Status::kNonfiniteResult;
+  if(!PrepareMaterial(coefficients_input,geometry.kinematics.area,material,r.input.placement)) return Status::kNonfiniteResult;
   status=EvaluateRates(in,geometry); if(status!=Status::kSuccess) return status;
   auto& k=geometry.kinematics;
   k.base_time=in.base_time; k.position_time=in.base_time+in.dt; k.velocity_time=in.base_time+.5*in.dt;
@@ -33,6 +33,7 @@ TL_T3_HD inline Status EvaluateLayeredForce(const ReferenceData& r,const section
   auto& candidate=staged.force; candidate.kinematics=k;
   auto proposed=base.data();
   sections::ShellLayeredJ2Input section_input;
+  section_input.placement=r.input.placement;
   auto& dx=section_input.strain_curvature_increment;
   const double rate_factor=in.dt/k.area;
   for(unsigned i=0;i<8;++i) dx[i]=k.raw_rate[i]*rate_factor; // Already native YZ,ZX.
@@ -49,7 +50,7 @@ TL_T3_HD inline Status EvaluateLayeredForce(const ReferenceData& r,const section
   const double eps_m2=four_over_3*(dx[0]*dx[0]+dx[1]*dx[1]+dx[0]*dx[1]+fourth*(dx[2]*dx[2]));
   proposed.equivalent_strain_rate=1.*(::sqrt(eps_k2+eps_m2)*dtinv)+(1.-1.)*proposed.equivalent_strain_rate;
   const double viscosity=onep414*material.dm*material.rho*material.elastic.sound_speed*::sqrt(k.area)*dtinv;
-  if(!adapter.Apply(section,dx,material.thickness,k.area,viscosity,proposed)) return Status::kNonfiniteResult;
+  if(!adapter.Apply(section,dx,material.thickness,k.area,viscosity,proposed,r.input.placement)) return Status::kNonfiniteResult;
   Adapter::Publish(section,staged);
   StiffnessDiagnostics(geometry,material,candidate.diagnostics,proposed.active);
   LocalForceWork local;

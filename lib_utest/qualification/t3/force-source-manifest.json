@@ -29,8 +29,8 @@
   "ported_files": [
     {
       "path": "lib_src/elements/t3/T3Force.h",
-      "bytes": 2787,
-      "sha256": "90c6f75f90bd57ae9724603cc39ad79868ba513e010fa573d3e98a31ee2ca1c2"
+      "bytes": 2876,
+      "sha256": "0d09a19f4108c4c60b0404c4824cebeefc1ca73da8f62044ac33f3d61f9c1e61"
     },
     {
       "path": "lib_src/elements/t3/T3ForceConstants.h",
@@ -49,8 +49,8 @@
     },
     {
       "path": "lib_src/elements/t3/T3History.h",
-      "bytes": 3363,
-      "sha256": "458f76cf36d62d384de775610be8f6c6dea03ecef6ce6ecfdc095c9d752c840a"
+      "bytes": 3389,
+      "sha256": "33960de7060fadeb8ce02c2cc78c5cc3394b1501bb02b1f3a6e38658ba1b1919"
     },
     {
       "path": "lib_src/elements/t3/T3HistoryData.h",
@@ -74,13 +74,13 @@
     },
     {
       "path": "lib_src/elements/t3/T3LayeredForceCore.h",
-      "sha256": "799b8485d5ba8a190d2f7d7465da0f2b847fe21037109ba1f56ed8aba19c21fe",
-      "bytes": 4375
+      "sha256": "1fc5208447d4091d718b604c84d78790fa212f9c7a252f228e4b421a927fb540",
+      "bytes": 4474
     },
     {
       "path": "lib_src/elements/t3/T3LayeredJ2Failure.h",
-      "sha256": "563378bbab7e98d0b1c055462c51f3fa0e66bf564500d119e60800c5271ea9c7",
-      "bytes": 1795
+      "sha256": "57975f106796a58cbe4505f71c223f08d4eaf2518a5aa1af241b31ac38468398",
+      "bytes": 1973
     }
   ],
   "tests": [
@@ -128,8 +128,8 @@
     },
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
-      "bytes": 2759,
-      "sha256": "7819e8f9c753e559fa2e77b4918affb166c2136e54fb32c0d3088415195a992a"
+      "bytes": 2807,
+      "sha256": "e018d6c8aa4add2b0e62ea29abd63e6e858ff8d082efc93af33b467dcfaffcf5"
     },
     {
       "path": "lib_src/elements/t3/CMakeLists.txt",
@@ -144,12 +144,12 @@
     {
       "path": "lib_utest/qualification/t3/source-manifest.json",
       "bytes": 20886,
-      "sha256": "2d8f9a837c60ac5e88e4d05bf859d800bb225eea89b63a9f8db666888f68dd23"
+      "sha256": "d64eaa2089b51f8895c44c6ee4be81c8f12122b215f54d0bdebcac23d9784b55"
     },
     {
       "path": "lib_utest/qualification/t3/verify_sources.py",
       "bytes": 2001,
-      "sha256": "2a14dcb18a2bc42cb2a148b28c540ae8b336c6b0d3f64aa983b1fac8a8e0d79b"
+      "sha256": "094c34c9943e73afcfff5180aa9975a5745510a6b78dc7c46967e9461c1c25e8"
     },
     {
       "path": "lib_utest/qualification/t3/T3PortFixture.h",
@@ -278,13 +278,13 @@
     },
     {
       "path": "lib_src/elements/sections/ShellLayeredJ2ForceAdapter.h",
-      "sha256": "b0011113d2beda7f72aab49a6c83a68667759eddb354ebf142317083f3dc8fea",
-      "bytes": 1391
+      "sha256": "0ba587bc3e37cfccac919e4b55856e18d72234935451978a2509b31cdf18c8f5",
+      "bytes": 1675
     },
     {
       "path": "lib_src/elements/sections/ShellLayeredJ2FailureForceAdapter.h",
-      "sha256": "ed35eba3cf87901e54a88cc91fdf2218008ecb6b8e28737ec12fc64c388cd241",
-      "bytes": 1401
+      "sha256": "bf2bb29c16fe2c11f1c85b399a95ac4997599997b055a093211102a4e7cbcb31",
+      "bytes": 1685
     },
     {
       "path": "lib_src/elements/ShellReferencePlacement.h",

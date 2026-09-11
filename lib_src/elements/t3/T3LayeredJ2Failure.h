@@ -9,6 +9,7 @@ struct LayeredJ2FailureForceTrial { ForceTrial force{};sections::ShellLayeredJ2F
 TL_T3_HD inline Status InitializeLayeredJ2FailureHistory(const ReferenceData& r,
     const sections::PointParameters& parameters,const sections::ConstantFailureParameters& failure,
     HistoryStamp stamp,LayeredJ2FailureHistory& output) noexcept {
+  if(r.input.placement!=ShellReferencePlacement::Centered) return Status::kInvalidInput;
   if(!sections::MatchesLayeredJ2Material(parameters,r.input)||!sections::ValidLayeredJ2Parameters(parameters)||
       !tl::math::Finite(failure.failure_strain)||!(failure.failure_strain>0)) return Status::kInvalidInput;
   LayeredJ2FailureHistory candidate;
@@ -23,6 +24,7 @@ TL_T3_HD inline Status EvaluateLayeredJ2FailureForce(const ReferenceData& r,
     const sections::PointParameters& parameters,const sections::ConstantFailureParameters& failure,
     const LayeredJ2FailureHistory& accepted,const PrescribedInterval& interval,
     LayeredJ2FailureForceTrial& output) noexcept {
+  if(r.input.placement!=ShellReferencePlacement::Centered) return Status::kInvalidInput;
   return detail::EvaluateLayeredForce(r,parameters,accepted,interval,output,
       sections::LayeredJ2FailureForceAdapter{parameters,accepted.section,failure});
 }

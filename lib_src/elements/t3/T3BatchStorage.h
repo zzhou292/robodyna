@@ -32,8 +32,9 @@ using Layout=shell_batch_detail::BatchArenaLayout<Storage,T3BatchElement,ForceTr
 static_assert(sizeof(Storage)<2048,"Resident header contains no capacity-sized arrays");
 // Collection capacity changes the private storage extent, not native results.
 // Allocation tests retain actual host/CUDA sizes before promotion; no layout is
-// a persisted ABI. Native result size and alignment remain independently fixed.
-static_assert(sizeof(ForceTrial)==976&&alignof(Storage)==8,"Qualified native T3 record layout");
+// a persisted ABI. The reference placement word adds 8 identity bytes; native
+// physical fields are unchanged and complete sizes remain explicitly checked.
+static_assert(sizeof(ForceTrial)==984&&alignof(Storage)==8,"Qualified native T3 record layout");
 
 BatchReport BuildModel(const T3BatchConfig&,const T3BatchElement*,Model&,Slab&,const ShellBatchBinding* joined=nullptr);
 bool SameDiagnostics(const BatchDiagnostics&,const BatchDiagnostics&) noexcept;

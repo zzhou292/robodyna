@@ -22,9 +22,10 @@ struct LayeredTab1ForceAdapter {
   const ShellLayeredTab1Parameters& failure;
 
   template<class H>
-  TL_SHELL_SECTION_HD bool Matches(const H& h) const noexcept {
+  TL_SHELL_SECTION_HD bool Matches(const H& h,
+      ShellReferencePlacement placement=ShellReferencePlacement::Centered) const noexcept {
     return h.active==(accepted.element_active?1:0)&&
-        MatchesLayeredTab1Resultants(accepted,h);
+        MatchesLayeredTab1Resultants(accepted,h,placement);
   }
   TL_SHELL_SECTION_HD PointStatus Update(const ShellLayeredJ2Input& input,
       double time,Result& result) const noexcept {
@@ -32,8 +33,9 @@ struct LayeredTab1ForceAdapter {
   }
   template<class H>
   TL_SHELL_SECTION_HD bool Apply(const Result& result,const double (&dx)[8],
-      double thickness,double area,double viscosity,H& h) const noexcept {
-    if(!ApplyLayeredTab1Work(result,dx,thickness,area,viscosity,h)) return false;
+      double thickness,double area,double viscosity,H& h,
+      ShellReferencePlacement placement=ShellReferencePlacement::Centered) const noexcept {
+    if(!ApplyLayeredTab1Work(result,dx,thickness,area,viscosity,h,placement)) return false;
     h.active=result.history.element_active?1:0;
     return true;
   }

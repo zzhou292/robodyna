@@ -15,6 +15,7 @@ struct LayeredJ2ForceTrial {
 };
 TL_T3_HD inline Status InitializeLayeredJ2History(const ReferenceData& r,
     const sections::PointParameters& p,HistoryStamp stamp,LayeredJ2History& output) noexcept {
+  if(r.input.placement!=ShellReferencePlacement::Centered) return Status::kInvalidInput;
   if(!sections::MatchesLayeredJ2Material(p,r.input)) return Status::kInvalidInput;
   LayeredJ2History candidate;
   const auto status=InitializeHistory(r,stamp,candidate.shell);
@@ -26,6 +27,7 @@ TL_T3_HD inline Status InitializeLayeredJ2History(const ReferenceData& r,
 // the family diagnostic, including its accepted reported-thickness dependency.
 TL_T3_HD inline Status EvaluateLayeredJ2Force(const ReferenceData& r,const sections::PointParameters& parameters,
     const LayeredJ2History& accepted,const PrescribedInterval& in,LayeredJ2ForceTrial& output) noexcept {
+  if(r.input.placement!=ShellReferencePlacement::Centered) return Status::kInvalidInput;
   return detail::EvaluateLayeredForce(r,parameters,accepted,in,output,
       sections::LayeredJ2ForceAdapter{parameters,accepted.section});
 }

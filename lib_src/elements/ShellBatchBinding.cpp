@@ -97,6 +97,7 @@ void AppendInventory(Words& words,
   }
   words[cursor++]=Bits(input.density); words[cursor++]=Bits(input.thickness);
   words[cursor++]=Bits(input.young_modulus); words[cursor++]=Bits(input.poisson_ratio);
+  words[cursor++]=static_cast<std::uint64_t>(input.placement);
 }
 } // namespace
 
@@ -176,7 +177,7 @@ ShellBindingReport ShellBatchBinding::InitializeImpl(const ShellBatchCollectionI
      input.node_count>limits.max_nodes||input.qeph_count+input.t3_count>limits.max_parents)
     return Error(expanded?ShellBindingStatus::ResourceLimit:ShellBindingStatus::InvalidInput,
                  "Collection exceeds host admission limits");
-  const auto words=legacy?ShellBatchInventory::WordCount:4+27*input.qeph_count+22*input.t3_count;
+  const auto words=legacy?ShellBatchInventory::WordCount:4+28*input.qeph_count+23*input.t3_count;
   const auto bytes=sizeof(*this)+decltype(data_.qeph)::ExtraBytes(input.qeph_count)+
     decltype(data_.t3)::ExtraBytes(input.t3_count)+decltype(data_.nodes)::ExtraBytes(input.node_count)+
     decltype(data_.inventory.words_)::ExtraBytes(words);
@@ -224,7 +225,7 @@ ShellBindingReport ShellBatchBinding::Build(const ShellBatchCollectionInput& inp
   Data next;
   next.qeph.Resize(input.qeph_count); next.t3.Resize(input.t3_count);
   next.nodes.Resize(input.node_count);
-  next.inventory.words_.Resize(legacy?ShellBatchInventory::WordCount:4+27*input.qeph_count+22*input.t3_count);
+  next.inventory.words_.Resize(legacy?ShellBatchInventory::WordCount:4+28*input.qeph_count+23*input.t3_count);
   next.qeph_count=input.qeph_count; next.t3_count=input.t3_count; next.node_count=input.node_count;
   for(std::size_t i=0;i<input.qeph_count;++i) {
     auto& parent=next.qeph[i];
@@ -276,11 +277,11 @@ ShellBindingReport ShellBatchBinding::Build(const ShellBatchCollectionInput& inp
     const auto report=Accumulate(parent.reference,parent.nodes,ShellBindingFamily::T3,next.nodes.data(),next.totals);
     if(report.status!=ShellBindingStatus::Success) return at(report,i);
   }
-  static_assert(ShellBatchInventory::WordCount==2+(2+5*4+4)+(2+5*3+4),"Original pair inventory");
-  static_assert(ShellBatchInventory::Capacity>=4+MaxShellCollectionParents*(3+5*4+4),"Complete collection inventory");
+  static_assert(ShellBatchInventory::WordCount==2+(2+5*4+5)+(2+5*3+5),"Complete placed pair inventory");
+  static_assert(ShellBatchInventory::Capacity>=4+MaxShellCollectionParents*(3+5*4+5),"Complete collection inventory");
   auto& words=next.inventory.words_;
   std::size_t cursor=0;
-  words[cursor++]=legacy?1:2; // In-process encoding only, never a file schema.
+  words[cursor++]=legacy?3:4; // In-process encoding only, never a file schema.
   words[cursor++]=next.node_count;
   if(!legacy) { words[cursor++]=next.qeph_count; words[cursor++]=next.t3_count; }
   for(std::size_t i=0;i<next.qeph_count;++i) {

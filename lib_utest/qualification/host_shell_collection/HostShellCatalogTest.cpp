@@ -14,7 +14,7 @@ TEST(HostShellCatalog, CompleteSixMaterialTwoCurveParentMapping) {
   EXPECT_EQ(catalog.material_count(),6u); EXPECT_EQ(catalog.section_count(),6u);
   EXPECT_EQ(catalog.curve_count(),2u); EXPECT_EQ(catalog.curve_point_count(),63u);
   EXPECT_EQ(catalog.parent_count(),915u); EXPECT_TRUE(catalog.Matches(native));
-  EXPECT_EQ(catalog.inventory().words().size(),24154u);
+  EXPECT_EQ(catalog.inventory().words().size(),25069u);
   std::array<std::size_t,6> observed{};
   for(std::size_t i=0;i<f.parents.size();++i) {
     const auto& expected=f.parents[i]; const auto* p=catalog.parent(i); ASSERT_NE(p,nullptr);

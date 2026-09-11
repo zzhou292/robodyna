@@ -9,14 +9,18 @@ struct LayeredJ2FailureForceAdapter {
   const PointParameters& parameters;
   const ShellLayeredJ2FailureHistory& accepted;
   const ConstantFailureParameters& failure;
-  template<class H> TL_SHELL_SECTION_HD bool Matches(const H& h) const noexcept {
+  template<class H> TL_SHELL_SECTION_HD bool Matches(const H& h,
+      ShellReferencePlacement placement=ShellReferencePlacement::Centered) const noexcept {
+    if(placement!=ShellReferencePlacement::Centered) return false;
     return h.active==(accepted.element_active?1:0)&&MatchesLayeredJ2FailureResultants(accepted,h);
   }
   TL_SHELL_SECTION_HD PointStatus Update(const ShellLayeredJ2Input& input,double time,Result& result) const noexcept {
     return UpdateShellLayeredJ2Failure(parameters,failure,accepted,input,time,result);
   }
   template<class H> TL_SHELL_SECTION_HD bool Apply(const Result& result,const double (&dx)[8],
-      double thickness,double area,double viscosity,H& h) const noexcept {
+      double thickness,double area,double viscosity,H& h,
+      ShellReferencePlacement placement=ShellReferencePlacement::Centered) const noexcept {
+    if(placement!=ShellReferencePlacement::Centered) return false;
     if(!ApplyLayeredJ2FailureWork(result,dx,thickness,area,viscosity,h)) return false;
     h.active=result.history.element_active?1:0;return true;
   }

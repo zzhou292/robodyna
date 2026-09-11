@@ -15,6 +15,7 @@ namespace tl::fea::qeph {
 // failure, including late reported-thickness or force/diagnostic arithmetic.
 TL_QEPH_HD inline Status EvaluateForce(const ReferenceData& r,const History& base,
     const PrescribedInterval& interval,ForceTrial& output) noexcept {
+  if(r.input.placement!=ShellReferencePlacement::Centered) return Status::kInvalidInput;
   if(!detail::SaneReference(r)||!base.matches_reference(r)) return Status::kInvalidReference;
   const auto& stamp=base.stamp();
   if(!detail::ValidHistoryValues(base.data())||!tl::math::Finite(stamp.time)||stamp.time<0||

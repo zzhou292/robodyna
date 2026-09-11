@@ -12,7 +12,7 @@ TL_QEPH_HD inline bool SaneReference(const ReferenceData& r) {
   // malformed PODs; they are not provenance authentication and do not repeat
   // startup frame/mass assembly on every prescribed evaluation.
   const auto& in=r.input;
-  if(!r.prepared||!Positive(in.density)||!Positive(in.young_modulus)||!Positive(in.thickness)||
+  if(!r.prepared||!ValidShellReferencePlacement(r.input.placement)||!Positive(in.density)||!Positive(in.young_modulus)||!Positive(in.thickness)||
      !tl::math::Finite(in.poisson_ratio)||in.poisson_ratio<0||in.poisson_ratio>=.5||
      !Positive(r.area)||!Proper(r.frame)) return false;
   for(unsigned n=0;n<4;++n) {

@@ -10,14 +10,18 @@ struct LayeredJ2ForceAdapter {
   using Result=ShellLayeredJ2Result;
   const PointParameters& parameters;
   const ShellLayeredJ2History& accepted;
-  template<class H> TL_SHELL_SECTION_HD bool Matches(const H& h) const noexcept {
+  template<class H> TL_SHELL_SECTION_HD bool Matches(const H& h,
+      ShellReferencePlacement placement=ShellReferencePlacement::Centered) const noexcept {
+    if(placement!=ShellReferencePlacement::Centered) return false;
     return MatchesLayeredJ2Resultants(accepted,h);
   }
   TL_SHELL_SECTION_HD PointStatus Update(const ShellLayeredJ2Input& input,double,Result& result) const noexcept {
     return UpdateShellLayeredJ2(parameters,accepted,input,result);
   }
   template<class H> TL_SHELL_SECTION_HD bool Apply(const Result& result,const double (&dx)[8],
-      double thickness,double area,double viscosity,H& h) const noexcept {
+      double thickness,double area,double viscosity,H& h,
+      ShellReferencePlacement placement=ShellReferencePlacement::Centered) const noexcept {
+    if(placement!=ShellReferencePlacement::Centered) return false;
     return ApplyLayeredJ2Work(result,dx,thickness,area,viscosity,h);
   }
   TL_SHELL_SECTION_HD static const ShellLayeredJ2Diagnostics& Diagnostics(const Result& r) noexcept {
