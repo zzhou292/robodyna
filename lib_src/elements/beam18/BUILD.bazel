@@ -1,3 +1,5 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
 cc_library(
     name = "reference",
     hdrs = ["Types.h", "Units.h", "Section.h", "Geometry.h", "Mass.h", "Reference.h"],
