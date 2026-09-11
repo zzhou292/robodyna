@@ -118,6 +118,10 @@ TEST(Law42Caller, SharedEightSlotLengthAndModesRetainTranslationAndBalance) {
   x[7].x=std::numeric_limits<double>::max();
   EXPECT_FALSE(solid::Law42CharacteristicLength(x,24,length));
   EXPECT_DOUBLE_EQ(length,2);
+  solid::Vec3 tiny[8]{};
+  for (unsigned n=0;n<8;++n) tiny[n]={double(n&1)*1e-6,double((n>>1)&1)*1e-6,double(n>>2)*1e-6};
+  ASSERT_TRUE(solid::Law42CharacteristicLength(tiny,1e-18,length));
+  EXPECT_DOUBLE_EQ(length,4e-18/std::sqrt(1e-20));
   solid::Vec3 velocity[8];
   for (auto& v:velocity) v={1,-2,3};
   const double projection[4][4]{};

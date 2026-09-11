@@ -11,7 +11,8 @@ TL_BRICK_HD inline bool Law42CharacteristicLength(const Vec3 (&x)[8],
   if (!Positive(volume_m3)) return false;
   constexpr unsigned face[6][4]{{0,1,2,3},{4,5,6,7},{0,1,5,4},
                               {1,2,6,5},{2,3,7,6},{3,0,4,7}};
-  double maximum=0;
+  // SDLEN3 initializes AREAM to native EM20 in this SI packet profile.
+  double maximum=1e-20;
   for (const auto& f:face) {
     const double area=FaceMeasure(x[f[0]],x[f[1]],x[f[2]],x[f[3]]);
     if (!tl::math::Finite(area)) return false;
