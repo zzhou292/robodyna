@@ -1,6 +1,48 @@
 #include "TestSupport.h"
 
 namespace rear_force_test {
+TEST(Rear18Force, NativePressureFractionAndCollapsedViscosityHaveDistinctForces) {
+  // A prescribed diagonal stress and unit signed gradients isolate the native
+  // pressure-removal branch from kinematics and constitutive arithmetic.
+  law::PointDerivatives point_geometry{};
+  point_geometry.current_volume_m3 = 2;
+  for (auto& axis : point_geometry.regular_per_m) {
+    axis[0] = 1;
+    axis[1] = -1;
+  }
+  law::PointHistory point_history{};
+  point_history.material.stress_pa[0] = 10;
+  point_history.material.stress_pa[1] = 20;
+  point_history.material.stress_pa[2] = 30;
+  point_history.bulk_pressure_pa = 4;
+  s::Vec3 ordinary[8]{}, collapsed[8]{};
+  law::detail::AccumulatePointForce(point_geometry,point_history,0,ordinary);
+  law::detail::AccumulatePointForce(point_geometry,point_history,12,collapsed);
+  // Native ZEP3=0.3 gives P=18; the collapsed branch uses Q=4.
+  EXPECT_DOUBLE_EQ(ordinary[0].x,16);
+  EXPECT_DOUBLE_EQ(ordinary[0].y,-4);
+  EXPECT_DOUBLE_EQ(ordinary[0].z,-24);
+  EXPECT_DOUBLE_EQ(collapsed[0].x,-12);
+  EXPECT_DOUBLE_EQ(collapsed[0].y,-32);
+  EXPECT_DOUBLE_EQ(collapsed[0].z,-52);
+  EXPECT_EQ(ordinary[1].x,-ordinary[0].x);
+  EXPECT_EQ(ordinary[1].y,-ordinary[0].y);
+  EXPECT_EQ(ordinary[1].z,-ordinary[0].z);
+  law::CurrentGeometry geometry{};
+  geometry.center_volume_m3 = 1;
+  geometry.point[0].current_volume_m3 = .25;
+  geometry.point[1].current_volume_m3 = .75;
+  law::PointObservation observation{};
+  law::GlobalHistory global{};
+  law::ForceDiagnostics diagnostics{};
+  const auto reference = Reference();
+  law::detail::AccumulateGlobal(reference,geometry,0,point_history,observation,global,diagnostics);
+  EXPECT_DOUBLE_EQ(diagnostics.mean_pressure_pa,3.5);
+  point_history.material.stress_pa[0] = 20;
+  point_history.bulk_pressure_pa = 8;
+  law::detail::AccumulateGlobal(reference,geometry,1,point_history,observation,global,diagnostics);
+  EXPECT_DOUBLE_EQ(diagnostics.mean_pressure_pa,13.25);
+}
 TEST(Rear18Force, EightPointHistoryRetainsReferenceAndActualMaterialIdentity) {
   for (bool collapsed : {false,true}) {
     const auto reference = Reference(collapsed);

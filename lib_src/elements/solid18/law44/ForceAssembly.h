@@ -4,10 +4,13 @@
 #include "ForceTypes.h"
 
 namespace tl::fea::solid18::law44::detail {
+// S8EFINT3 and S8EFMOY3 use ZEP3, defined as THREE/TEN in CONSTANT_MOD.
+// This selected pressure coefficient is distinct from native THIRD.
+inline constexpr double native_pressure_fraction = 3.0/10.0;
 TL_SOLID18_HD inline void AccumulatePointForce(const PointDerivatives& geometry,
     const PointHistory& history, unsigned degeneracy, Vec3 (&force)[8]) noexcept {
   const auto& sig = history.material.stress_pa;
-  double pressure = (1.0/3.0)*(sig[0]+sig[1]+sig[2]+0.0+0.0+0.0);
+  double pressure = native_pressure_fraction*(sig[0]+sig[1]+sig[2]+0.0+0.0+0.0);
   if (degeneracy > 10) pressure = history.bulk_pressure_pa;
   double stress[6];
   for (unsigned k = 0; k < 3; ++k) stress[k] = (sig[k]+0.0-pressure)*geometry.current_volume_m3;
@@ -35,7 +38,7 @@ TL_SOLID18_HD inline void AccumulateGlobal(const Reference& reference, const Cur
   diagnostics.raw_stiffness_n_m = diagnostics.raw_stiffness_n_m+observation.raw_stiffness_n_m;
   global.plastic_strain = global.plastic_strain+factor*point_history.material.plastic_strain;
   global.filtered_rate_per_s = global.filtered_rate_per_s+factor*point_history.material.filtered_rate_per_s;
-  const double mean = (1.0/3.0)*(stress[0]+stress[1]+stress[2]+0.0+0.0+0.0);
+  const double mean = native_pressure_fraction*(stress[0]+stress[1]+stress[2]+0.0+0.0+0.0);
   diagnostics.mean_pressure_pa = diagnostics.mean_pressure_pa+factor*(mean-point_history.bulk_pressure_pa);
   diagnostics.minimum_unscaled_dt_s = ::fmin(diagnostics.minimum_unscaled_dt_s,observation.unscaled_element_dt_s);
   diagnostics.internal_work_increment_j += observation.internal_work_j;

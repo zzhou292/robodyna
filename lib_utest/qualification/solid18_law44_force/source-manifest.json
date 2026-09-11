@@ -50,8 +50,8 @@
       "sha256": "20012a57342f2b87cbc8fab815b48e80581f1257540ca132c6a83f8b1ef17daa"
     },
     "lib_src/elements/solid18/law44/ForceAssembly.h": {
-      "bytes": 3669,
-      "sha256": "47ea045572b3b8677213970ff4c49b9ec0c91322821c16a649b41d97fd461e82"
+      "bytes": 3902,
+      "sha256": "47928002b8de902d615efeb8dd07a3cd4a7030b377be0778d66b5f9cef71f51e"
     },
     "lib_src/elements/solid18/law44/ForceChecks.h": {
       "bytes": 4213,
@@ -106,8 +106,8 @@
       "sha256": "5a2ab014211db371fe412ed2c5def6a7fb6843b3d11067b9a8c61ac3eb65bb19"
     },
     "lib_utest/qualification/solid18_law44_force/HostTest.cpp": {
-      "bytes": 5619,
-      "sha256": "36687a4446845985241aa7ff8a252413a0ad7e9fd48a6d0c97b8ffe8c5d41546"
+      "bytes": 7561,
+      "sha256": "cee7328091b684d54261db1d50696f0626b649c30dc9cdcf77b7a88b96ad9f6f"
     },
     "lib_utest/qualification/solid18_law44_force/NativeOracle.cpp": {
       "bytes": 3585,
@@ -189,5 +189,6 @@
       "bytes": 1231,
       "sha256": "6846793b8e6f03153dd20f5a35b8b7b0428fa85b7d9bc1c60a8eb729b6793705"
     }
-  }
+  },
+  "pressure_coefficient": "S8EFINT3:154 and S8EFMOY3:120 use ZEP3 = THREE/TEN, CONSTANT_MOD:667; distinct from THIRD"
 }
