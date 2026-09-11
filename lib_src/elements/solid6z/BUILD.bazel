@@ -1,7 +1,15 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 cc_library(
     name = "reference",
-    hdrs = glob(["*.h"]),
+    hdrs = ["Solid6zTypes.h", "Solid6zJacobian.h", "Solid6zGeometry.h",
+            "Solid6zReference.h", "CollapsedBrickTopology.h"],
     deps = ["//lib_src/elements/solid_common:brick_frame"],
+    visibility = ["//visibility:public"],
+)
+cc_library(
+    name = "force",
+    hdrs = glob(["Solid6zForce*.h", "Solid6zHourglass*.h"]),
+    deps = [":reference", "//lib_src/elements/solid_common:brick_frame",
+            "//lib_src/materials/law42:caller"],
     visibility = ["//visibility:public"],
 )
