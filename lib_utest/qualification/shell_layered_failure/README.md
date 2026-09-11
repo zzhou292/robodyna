@@ -2,7 +2,12 @@
 
 This qualifies section values only. It adds no collection storage, accepted
 selector, owner, contact removal, source admission or full-vehicle execution.
-Native Fortran/runtime qualification is pending the parent's guarded gate.
+Root qualification of the reviewed section passes eight host and four native
+functions without skips (`shell-layered-failure-root-tests-2`). The native gate
+includes the viscosity/final-mask ordering regression. Twenty-nine affected
+point/rate/analytic/layered QEPH/T3 recurrence and CUDA adapter functions also
+pass (`shell-layered-failure-regression-tests-1`), and both owning Bazel targets
+build. Failure-aware resident/contact/source admission remains unimplemented.
 
 The admitted source subset is centered NIP3, one layer, one in-plane point,
 local isotropic LAW44 with existing analytic or tabulated hardening, positive
