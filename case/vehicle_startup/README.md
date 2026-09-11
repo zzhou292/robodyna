@@ -29,6 +29,14 @@ The source gate records actual success/rejection counts and first failing
 family/EID/PID/line/status in XML. A passing coverage test can contain reported
 native rejections: the report must be read before claiming reference readiness.
 
+Root qualification on 2026-09-10 reports **278301 successes and zero rejections**,
+with all 71344 unresolved rows retained. Three value and three complete-source
+functions pass without skips in `vehicle-native-reference-root-functions-1/`.
+The actual 149/631-shell V3 projections match every native reference field.
+The accounted forecast is 463597300 bytes; the guarded test took 1.007 s with
+478031872 bytes sampled process-tree RSS. These are original geometry/startup
+results, not a vehicle trajectory or a complete mechanics admission.
+
 There is no partial `ShellBatchBinding`, nodal/global mass sum, rigid model, owner,
 accepted state, clock, force or history here. Local reference validity does not
 resolve source failure laws, MAT_RIGID, unsupported sections/materials, auxiliary
