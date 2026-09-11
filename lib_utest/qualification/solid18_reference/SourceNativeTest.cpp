@@ -42,12 +42,41 @@ TEST(Solid18ReferenceSource, All908OriginalCellsNativeGeometryMassAndWorkingUnit
     for (const auto& x : input.position_m)
       coordinate_scale = std::max({coordinate_scale,std::abs(x.x),std::abs(x.y),std::abs(x.z)});
     const double conditioning = coordinate_scale/actual.geometry().characteristic_length_m;
-    const double unit_roundoff = 256*std::numeric_limits<double>::epsilon()*std::max(1.0,conditioning);
-    ASSERT_TRUE(Agree(Values(actual),NativeWorkingToSI(working.values),unit_roundoff));
+    ASSERT_TRUE(AgreeWorkingUnits(Values(actual),NativeWorkingToSI(working.values),conditioning));
   }
   EXPECT_GT(nonuniform,0u);
   RecordProperty("source_cells",SourceCount);
   RecordProperty("native_orientation_reversals",reversed);
   RecordProperty("nonuniform_mass_cells",nonuniform);
+}
+TEST(Solid18ReferenceSource, WorkingUnitCancellationStillRejectsPhysicalDerivativeChange) {
+  unsigned selected = SourceCount;
+  for (unsigned i = 0; i < SourceCount; ++i) {
+    if (original::solids[i].id == 2200907) selected = i;
+  }
+  ASSERT_LT(selected,SourceCount);
+  const auto input = Source(selected);
+  s::Reference reference;
+  ASSERT_EQ(s::InitializeReference(input,reference),s::Status::Success);
+  const auto native_si = Native(input);
+  const auto native_working = Native(Source(selected,true));
+  ASSERT_EQ(native_si.status,0);
+  ASSERT_EQ(native_working.status,0);
+  ASSERT_EQ(native_si.source_slot,native_working.source_slot);
+  const auto actual = Values(reference);
+  auto expected = NativeWorkingToSI(native_working.values);
+  ASSERT_TRUE(Agree(actual,native_si.values));
+  double coordinate_scale = 0;
+  for (const auto& x : input.position_m)
+    coordinate_scale = std::max({coordinate_scale,std::abs(x.x),std::abs(x.y),std::abs(x.z)});
+  const double conditioning = coordinate_scale/reference.geometry().characteristic_length_m;
+  ASSERT_TRUE(AgreeWorkingUnits(actual,expected,conditioning));
+  // Packed89 is Gauss2 / native node6 / local-x derivative, in inverse metres.
+  // The real conversion difference is 5.49e-12; a 1e-5 physical change must fail.
+  expected[89] += 1e-5;
+  EXPECT_FALSE(AgreeWorkingUnits(actual,expected,conditioning));
+  expected = NativeWorkingToSI(native_working.values);
+  expected[33] = std::nextafter(expected[33],1.0);
+  EXPECT_FALSE(AgreeWorkingUnits(actual,expected,conditioning));
 }
 }  // namespace solid18_test
