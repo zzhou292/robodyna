@@ -10,7 +10,7 @@ project=here.parents[3]
 root=project/'lib_utest/qualification'
 out=args.output
 raw=(here/'source-manifest.json').read_bytes()
-if hashlib.sha256(raw).hexdigest()!='2adc63262e71445d258bd1faed674f6b189b78ba2eb49352bf61e9317cada5d5':
+if hashlib.sha256(raw).hexdigest()!='4581b812a337048f00cee47f17560d58d212a83c90cb0e723b381d35febb1a30':
     raise RuntimeError('Native adaptation manifest changed')
 manifest=json.loads(raw)
 for row in manifest['inputs']:
@@ -34,7 +34,7 @@ for family,name,short in [('Qeph','QEPH','QE'),('T3','T3','T3')]:
     b=s.index('      END SUBROUTINE',a)+len('      END SUBROUTINE\n')
     s=s[:a]+s[b:]
     s=s.replace(f'LR_{name}_SECTION_MOD',f'LF_{name}_SECTION_MOD').replace(f'LR_{short}_SECTION',f'LF_{short}_SECTION')
-    s=s.replace('      USE LR_SECTION_MOD, ONLY: LR_UPDATE_SECTION',f'      USE LR_{name}_SECTION_MOD, ONLY: LR_{short}_MATERIAL\n      USE LF_CALLER, ONLY: LAYERED_FAILURE_CALLER')
+    s=s.replace('      USE LR_SECTION_MOD, ONLY: LR_UPDATE_SECTION',f'      USE LR_{name}_SECTION_MOD, ONLY: LR_{short}_MATERIAL\n      USE LF_CALLER, ONLY: LAYERED_FAILURE_CALLER_SSP')
     s=s.replace('POINTS,DIAG,','POINTS,MFUNC,LINEAR,D1,TIME,FAILURES,POINT_VALUES,REMOVED,DIAG,')
     s=s.replace('      REAL(C_DOUBLE),INTENT(INOUT) :: POINTS(7,3)', '''      REAL(C_DOUBLE),INTENT(INOUT) :: POINTS(7,3),FAILURES(3,3)
       REAL(C_DOUBLE),INTENT(IN) :: LINEAR(2),D1,TIME
@@ -46,9 +46,9 @@ for family,name,short in [('Qeph','QEPH','QE'),('T3','T3','T3')]:
     a=s.index('      CALL LR_UPDATE_SECTION(')
     b=s.index('      IF(STATUS/=0) RETURN',a)+len('      IF(STATUS/=0) RETURN')
     dx='DX(1,:)' if family=='Qeph' else 'G%DEF(1,:)'
-    replacement=f'''      CALL LAYERED_FAILURE_CALLER(MFUNC,NPTS,CURVE,BASIC,LINEAR,RATE_CONTROL,D1,STEP,TIME,
+    replacement=f'''      CALL LAYERED_FAILURE_CALLER_SSP(MFUNC,NPTS,CURVE,BASIC,LINEAR,RATE_CONTROL,D1,STEP,TIME,
      . {dx},M%THK0(1:1),G%AREA(1:1),M%DM,POINTS,FAILURES,H%ACTIVE,
-     . H%FOR_G,H%FOR,H%MOM,H%THK(1:1),H%EINT,POINT_VALUES,DIAG,REMOVED)
+     . H%FOR_G,H%FOR,H%MOM,H%THK(1:1),H%EINT,POINT_VALUES,DIAG,REMOVED,M%SSP(1))
       G%OFF(1)=H%ACTIVE
       STATUS=0'''
     s=s[:a]+replacement+s[b:]

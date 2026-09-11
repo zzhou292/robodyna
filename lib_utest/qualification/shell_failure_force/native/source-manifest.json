@@ -61,12 +61,29 @@
       "path": "lib_utest/qualification/native/qeph/original/engine/source/elements/shell/coquez/czdef.F",
       "sha256": "f9ba7c81092818d002b3e042741af123c6bb658bced6777178b06b2f02f9de0c",
       "bytes": 30550
+    },
+    {
+      "path": "lib_utest/qualification/shell_layered_failure/native/NativeCaller.F90",
+      "sha256": "63f5413a8347b843ca23ed889bdf15a54b7b491dd31023f096598d0a0e31493e",
+      "bytes": 8040
     }
   ],
   "generated": {
+    "FailureQephSection.F": "4c72d865e909d02d530bca45c1286b30cd35f2e49d1614d64e67c633320768f8",
     "FailureQephForce.F": "874b36f7ee9bde03ac2421cef8496780cc738458cf1dfd9b4a32398476420394",
-    "FailureT3Section.F": "388e61df0e3d2c55927c234fd624ba1caee81bb15719a932ef447bdacab9cb2d",
-    "FailureQephSection.F": "5447da8ea0b47c5ecb302ce1e2e86c3afbb7d7f3eac9a55d9668364abbf4178e",
+    "FailureT3Section.F": "698a77c1c5d7927a600f3c1e9b3a5066b62837b0aefa6076b8a831d2306553f6",
     "FailureT3Force.F": "fb7399d37acdd52d1ec4d0bca98658b3817c55f0cfa72e7c1b22c4c3c90ee788"
-  }
+  },
+  "previous_adaptations": [
+    {
+      "manifest_sha256": "2adc63262e71445d258bd1faed674f6b189b78ba2eb49352bf61e9317cada5d5",
+      "generated": {
+        "FailureQephForce.F": "874b36f7ee9bde03ac2421cef8496780cc738458cf1dfd9b4a32398476420394",
+        "FailureT3Section.F": "388e61df0e3d2c55927c234fd624ba1caee81bb15719a932ef447bdacab9cb2d",
+        "FailureQephSection.F": "5447da8ea0b47c5ecb302ce1e2e86c3afbb7d7f3eac9a55d9668364abbf4178e",
+        "FailureT3Force.F": "fb7399d37acdd52d1ec4d0bca98658b3817c55f0cfa72e7c1b22c4c3c90ee788"
+      },
+      "reason": "Earlier bridge used the standalone caller sound speed; complete family coefficient SSP must be passed explicitly."
+    }
+  ]
 }

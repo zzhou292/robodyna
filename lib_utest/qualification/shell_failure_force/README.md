@@ -46,12 +46,18 @@ positive finite DTEL.
 
 ## Independent native and CUDA gates
 
-`native/prepare_sources.py` hashes twelve existing native adapters/manifests and
+`native/prepare_sources.py` hashes thirteen existing native adapters/manifests and
 donors, then generates four checked adapters from the existing complete layered
 family control drivers. It reuses their coefficient preparation and complete
 geometry/strain/stiffness/force/projection leaves. The material call changes to
-the existing `LF_CALLER::layered_failure_caller`, which owns complete LAW44 and
-Johnson leaves plus exact MULAWC/FAIL_SETOFF_C extracts. There are no production
+the existing `LF_CALLER::layered_failure_caller_ssp`, which owns complete LAW44 and
+Johnson leaves plus exact MULAWC/FAIL_SETOFF_C extracts. The bridge passes the actual coefficient producer's `M%SSP(1)` into the
+shared caller. The standalone caller retains its original plane-stress speed
+and unchanged C ABI; its reconstructed speed cannot substitute for the family's
+prepared coefficient. The first root gate exposed this adapter error as a
+4.8% viscosity inflation at nu=0.3, before removal; its failing reports remain
+recorded. An explicit native coefficient-association test checks this seam for
+both families, including inactive intervals. There are no production
 equations in this native bridge and no second copy of the donor libraries.
 
 The T3 geometry/rate wrapper has an active1-only **wrapper** guard after its

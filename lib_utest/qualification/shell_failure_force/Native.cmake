@@ -38,7 +38,7 @@ ff_family(shell_failure_qeph_native qeph_q1_native
   "${ff_prepared}/FailureQephSection.F" "${ff_prepared}/FailureQephForce.F")
 ff_family(shell_failure_t3_native t3_r3_native
   "${ff_prepared}/FailureT3Section.F" "${ff_prepared}/FailureT3Force.F")
-add_executable(shell_failure_force_native_check FailureForceNativeTest.cpp native/NativePacket.cpp
+add_executable(shell_failure_force_native_check FailureForceNativeTest.cpp FailureSoundSpeedNativeTest.cpp native/NativePacket.cpp
   "${CMAKE_CURRENT_SOURCE_DIR}/../shell_layered_failure/FailureNativeChecks.cpp")
 target_include_directories(shell_failure_force_native_check PRIVATE "${TL_ROOT}")
 target_compile_features(shell_failure_force_native_check PRIVATE cxx_std_17)
