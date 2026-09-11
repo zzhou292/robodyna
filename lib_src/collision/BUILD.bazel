@@ -149,6 +149,7 @@ cuda_library(
         "NodalWallContactDiagnostics.h",
         "NodalWallContactDiagnosticIdentity.h",
         "NodalWallContactKernels.cuh",
+        "NodalWallContactEvaluation.cuh",
     ],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
     deps = [":nodal_wall_contact", ":prepared_planar_wall_query", "//lib_src/elements:shell_collection_limits", "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_force_assembly", "//lib_utils:bounded_arena", "//lib_src/solvers:nodal_native_physical_coefficients"],
@@ -264,7 +265,7 @@ cuda_library(
 cuda_library(
     name = "nodal_wall_mapped_device",
     srcs = ["nodal_wall_mapped/Operations.cu"],
-    hdrs = ["NodalWallMappedContact.h", "nodal_wall_mapped/Storage.h", "nodal_wall_mapped/Layout.h", "nodal_wall_mapped/Kernels.cuh"],
+    hdrs = ["NodalWallMappedContact.h", "nodal_wall_mapped/Storage.h", "nodal_wall_mapped/Layout.h", "nodal_wall_mapped/Kernels.cuh", "nodal_wall_mapped/Evaluation.cuh"],
     deps = [":nodal_wall_contact_device", ":rigid_normal_response",
             "//lib_src/elements:shell_batch_publication", "//lib_src/elements:shell_physical_owner",
             "//lib_src/elements:shell_mapped_footprint",

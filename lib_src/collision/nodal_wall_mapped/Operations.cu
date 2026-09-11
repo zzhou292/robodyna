@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+#include "Evaluation.cuh"
 #include "Kernels.cuh"
 #include "lib_src/solvers/NodalNativePhysicalCoefficients.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
@@ -8,49 +9,49 @@ namespace d=nodal_wall_device_detail;
 namespace fe=tl::fea;
 using Code=NodalWallDeviceStatus;
 namespace {
-__global__ void Assemble(d::Storage* pointer,m::Sidecar side,fe::NodalAssemblyView view,
-    fe::NodalCinAssemblyView cin,NodalWallDiagnostics identity) {
+__global__ void BeginAssembly(d::Storage* pointer,m::Sidecar side,fe::NodalAssemblyView view) {
   auto& storage=*pointer;
-  d::ResetResult(storage.base,storage.model.parent_count,storage.model.node_count);
-  if(threadIdx.x==0) {
-    storage.control={};
-    *side.summary={};
-    m::ValidateAssembly(storage,side,view);
-  }
-  __syncthreads();
-  d::Evaluate<true>(storage,view.accepted,identity,side.accepted);
-  if(threadIdx.x==0) {
-    if(storage.control.status==Code::Ok && m::Response(storage,side,view.accepted)) {
-      double step=0,frequency=0;
-      if(!mass_detail::Upper(::sqrt(side.summary->rate),&frequency) ||
-          !mass_detail::UpperProduct(storage.model.config.owner.fixed_dt,frequency,&step) || step>=1.6)
-        d::Fail(storage.control,Code::StepTooLarge);
-    }
-    if(storage.control.status==Code::Ok && m::StageStiffness(storage,side,cin) &&
-        d::Scatter(storage,view,false)) {
-      d::PublishScatter(storage,view);
-      for(unsigned i=0;i<storage.model.node_count;++i)
-        cin.translational_stiffness[storage.model.nodes[i].node]=side.stiffness[i];
-      storage.result.diagnostics.valid=true;
-    }
-    if(storage.control.status!=Code::Ok)
-      fe::RecordNodalAssemblyFailure(view,Status::kInvalidArgument,storage.control.node);
-  }
-  __syncthreads();
-  if(storage.control.status==Code::Ok) d::CopyBase(storage);
+  storage.control={};
+  *side.summary={};
+  side.summary->points_admitted=m::ValidateAssembly(storage,side,view);
 }
-__global__ void Candidate(d::Storage* pointer,m::Sidecar side,fe::NodalPreparedView view,
-    NodalWallDiagnostics identity) {
+__global__ void FinishAssembly(d::Storage* pointer,m::Sidecar side,fe::NodalAssemblyView view,
+    fe::NodalCinAssemblyView cin) {
   auto& storage=*pointer;
-  if(threadIdx.x==0) {
-    storage.control={};
-    if(!storage.base.diagnostics.valid || storage.base.diagnostics.attempt!=view.attempt ||
-        storage.base.diagnostics.base_epoch!=view.kinematics.base_epoch)
-      d::Fail(storage.control,Code::StaleAttempt);
+  if(storage.control.status==Code::Ok && m::Response(storage,side,view.accepted)) {
+    double step=0,frequency=0;
+    if(!mass_detail::Upper(::sqrt(side.summary->rate),&frequency) ||
+        !mass_detail::UpperProduct(storage.model.config.owner.fixed_dt,frequency,&step) || step>=1.6)
+      d::Fail(storage.control,Code::StepTooLarge);
   }
-  __syncthreads();
-  d::Evaluate<true>(storage,view.kinematics,identity,side.accepted);
-  if(threadIdx.x==0 && storage.control.status==Code::Ok &&
+  if(storage.control.status==Code::Ok && m::StageStiffness(storage,side,cin) &&
+      d::Scatter(storage,view,false)) {
+    d::PublishScatter(storage,view);
+    for(unsigned i=0;i<storage.model.node_count;++i)
+      cin.translational_stiffness[storage.model.nodes[i].node]=side.stiffness[i];
+    storage.result.diagnostics.valid=true;
+  }
+  if(storage.control.status!=Code::Ok)
+    fe::RecordNodalAssemblyFailure(view,Status::kInvalidArgument,storage.control.node);
+}
+__global__ void CopyAcceptedBase(d::Storage* pointer) {
+  auto& storage=*pointer;
+  if(storage.control.status==Code::Ok)
+    d::CopyBase(storage,blockIdx.x*blockDim.x+threadIdx.x,gridDim.x*blockDim.x);
+}
+__global__ void BeginCandidate(d::Storage* pointer,m::Sidecar side,fe::NodalPreparedView view) {
+  auto& storage=*pointer;
+  storage.control={};
+  side.summary->parent_failure=~0ull;
+  side.summary->points_admitted=false;
+  if(!storage.base.diagnostics.valid || storage.base.diagnostics.attempt!=view.attempt ||
+      storage.base.diagnostics.base_epoch!=view.kinematics.base_epoch)
+    d::Fail(storage.control,Code::StaleAttempt);
+  else side.summary->points_admitted=true;
+}
+__global__ void FinishCandidate(d::Storage* pointer,m::Sidecar side,fe::NodalPreparedView view) {
+  auto& storage=*pointer;
+  if(storage.control.status==Code::Ok &&
       d::MeasureInterval(storage,view) && m::RemovedPotential(storage,side)) {
     storage.result.diagnostics.stiffness_rate_bound=side.summary->rate;
     storage.result.diagnostics.valid=true;
@@ -119,7 +120,15 @@ NodalWallDeviceReport NodalWallMappedContact::AssembleAccepted(fe::FENodalState&
   state.base=view;
   state.base_stamp=stamp;
   state.last_attempt=view.attempt;
-  Assemble<<<1,d::Workers,0,state.stream>>>(state.device,state.remote,view,cin,Identity(state.config,view));
+  const auto nodes=state.shadow.model.node_count,parents=state.shadow.model.parent_count;
+  BeginAssembly<<<1,1,0,state.stream>>>(state.device,state.remote,view);
+  if(cudaPeekAtLastError()!=cudaSuccess) return state.ReadControl();
+  m::parallel::Evaluate(state.device,state.remote,view.accepted,Identity(state.config,view),
+      nodes,parents,state.stream,true);
+  if(cudaPeekAtLastError()!=cudaSuccess) return state.ReadControl();
+  FinishAssembly<<<1,1,0,state.stream>>>(state.device,state.remote,view,cin);
+  if(cudaPeekAtLastError()!=cudaSuccess) return state.ReadControl();
+  CopyAcceptedBase<<<m::parallel::Blocks(nodes>parents?nodes:parents),d::Workers,0,state.stream>>>(state.device);
   report=state.ReadControl();
   if(report.status!=Code::Ok) return report;
   NodalWallMappedDiagnostics next;
@@ -161,7 +170,12 @@ NodalWallDeviceReport NodalWallMappedContact::EvaluateCandidate(fe::FENodalState
   identity.velocity_time=view.velocity_time;
   identity.velocity_phase=view.velocity_phase;
   identity.kick_dt=view.kick_dt;
-  Candidate<<<1,d::Workers,0,state.stream>>>(state.device,state.remote,view,identity);
+  BeginCandidate<<<1,1,0,state.stream>>>(state.device,state.remote,view);
+  if(cudaPeekAtLastError()!=cudaSuccess) return state.ReadControl();
+  m::parallel::Evaluate(state.device,state.remote,view.kinematics,identity,
+      state.shadow.model.node_count,state.shadow.model.parent_count,state.stream,false);
+  if(cudaPeekAtLastError()!=cudaSuccess) return state.ReadControl();
+  FinishCandidate<<<1,1,0,state.stream>>>(state.device,state.remote,view);
   report=state.ReadControl();
   if(report.status!=Code::Ok) return report;
   NodalWallMappedDiagnostics next;

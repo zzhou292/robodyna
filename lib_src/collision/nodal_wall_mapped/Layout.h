@@ -6,6 +6,9 @@ namespace tlfea::contact::nodal_wall_mapped {
 struct Summary {
   Q4CertifiedIntegral removed_potential;
   double rate=0;
+  // Integer arbitration only; parent floating sums stay in original slot order.
+  unsigned long long parent_failure=~0ull;
+  bool points_admitted=false;
 };
 struct Sidecar {
   std::uint8_t* accepted=nullptr;
