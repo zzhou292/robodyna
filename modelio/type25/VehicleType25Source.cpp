@@ -15,13 +15,7 @@ VehicleType25Source VehicleType25Source::Prepare(const physical_scope::PhysicalS
     const tl::fea::NodalNodeDomain& domain, Declaration declaration, Limits limits) {
     const auto forecast = Preflight(source, domain, declaration, limits);
     auto next = std::make_shared<Storage>(source, domain, declaration);
-    const auto& canonical = source.tied_source().canonical().data();
-    const auto& ids_array = physical_scope::source::FindArray(canonical, "node_ids");
-    const auto& positions_array = physical_scope::source::FindArray(canonical, "node_positions");
-    const auto ids = output::arrays::Decode<std::uint64_t>(ids_array.descriptor, ids_array.bytes);
-    const auto positions = output::arrays::Decode<double>(positions_array.descriptor, positions_array.bytes);
-    detail::CheckDomain(ids, positions, source.data().node_roles, domain,
-        source.point_mass_source().rigid_source().topology().source_instance_id(), source.data().counts.with_type25_nodes);
+    physical_scope::ValidateDeclaredDomain(source, domain);
     const auto connections = detail::Pack(source.data().spotwelds, domain);
     const native::PropertyInput property{declaration.generated_property_id, assembly::ResolvedSpotweldProperty()};
     native::ModelInput input;
