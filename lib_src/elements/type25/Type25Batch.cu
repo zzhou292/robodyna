@@ -30,6 +30,26 @@ BatchReport Batch::Impl::ReadResults(const batch_detail::Slab* from) {
   if(r.status!=BatchStatus::Success)return r;
   return Runtime(cudaStreamSynchronize(stream),"TYPE25 evaluation readback stream failed");
 }
+BatchReport Batch::Impl::Upload(util::HostArena& arena,const batch_detail::Storage& header) {
+  auto report=PendingError();
+  if(report.status!=BatchStatus::Success)return report;
+  report=Runtime(cudaMalloc(reinterpret_cast<void**>(&storage),layout.bytes),
+      "TYPE25 device arena allocation failed");
+  if(report.status!=BatchStatus::Success)return report;
+  auto device=batch_detail::RebasedHeader(storage,layout);
+  device.model.config=header.model.config;
+  device.model.units=header.model.units;
+  device.model.source_instance_id=header.model.source_instance_id;
+  device.control=header.control;
+  device_header=device;
+  *util::ArenaPointer<batch_detail::Storage>(arena.data(),layout.header)=device;
+  report=Runtime(cudaMemcpy(storage,arena.data(),layout.bytes,cudaMemcpyHostToDevice),
+      "TYPE25 device startup copy failed");
+  if(report.status!=BatchStatus::Success)return report;
+  accepted=&storage->slab[0];
+  trial=&storage->slab[1];
+  return Ok();
+}
 Batch::Batch()=default;
 Batch::~Batch()=default;
 BatchReport Batch::InitializeJoined(const BatchConfig& config,const Model& model,const NodalMassBinding& mass) {
@@ -67,16 +87,9 @@ BatchReport Batch::InitializeJoined(const BatchConfig& config,const Model& model
   auto next=std::make_unique<Impl>();next->config=config;next->accepted_stamp=config.owner;next->layout=layout;
   next->source.emplace(model);next->combined.emplace(mass);next->accepted_diagnostics=diagnostics;
   next->staging=std::make_unique<Evaluation[]>(config.element_count);next->host_payload_bytes=budget.bytes();
-  r=next->PendingError();if(r.status!=BatchStatus::Success)return r;
-  r=next->Runtime(cudaMalloc(reinterpret_cast<void**>(&next->storage),layout.bytes),"TYPE25 device arena allocation failed");
+  r=next->Upload(arena,header);
   if(r.status!=BatchStatus::Success)return r;
-  auto device=batch_detail::RebasedHeader(next->storage,layout);
-  device.model.config=header.model.config;device.model.units=header.model.units;device.model.source_instance_id=header.model.source_instance_id;
-  device.control=header.control;next->device_header=device;
-  *util::ArenaPointer<batch_detail::Storage>(arena.data(),layout.header)=device;
-  r=next->Runtime(cudaMemcpy(next->storage,arena.data(),layout.bytes,cudaMemcpyHostToDevice),"TYPE25 device startup copy failed");
-  if(r.status!=BatchStatus::Success)return r;
-  next->accepted=&next->storage->slab[0];next->trial=&next->storage->slab[1];impl_=std::move(next);return Ok();
+  impl_=std::move(next);return Ok();
 } catch(const std::bad_alloc&) { return {BatchStatus::ResourceLimit,"TYPE25 host allocation failed"}; }
   catch(const std::length_error&) { return {BatchStatus::ResourceLimit,"TYPE25 host allocation extent overflow"}; }
 void Batch::DiscardTrial() noexcept { if(impl_)impl_->Discard(); }

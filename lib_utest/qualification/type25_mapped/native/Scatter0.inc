@@ -1,0 +1,1 @@
+        STIFN(NC1(I))=STIFN(NC1(I))+STI(1,I)

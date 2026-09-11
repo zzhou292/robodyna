@@ -10,7 +10,7 @@ BatchReport Batch::PreflightAttach(const NodalStamp& stamp,const NodalMassBindin
   const auto& s=*impl_;
   if(!s.usable)return {BatchStatus::Unusable,"TYPE25 CUDA storage is poisoned"};
   if(!s.bound)return {BatchStatus::NotBound,"TYPE25 original live sources are not bound"};
-  if(!claimant||s.publication_scope||s.pending||s.accepted_stamp.epoch||
+  if(s.physical||!s.combined||!claimant||s.publication_scope||s.pending||s.accepted_stamp.epoch||
      !trial_identity::SameStamp(stamp,s.accepted_stamp)||!s.combined->Matches(mass)||
      configuration!=s.config.configuration_id||qualification!=s.config.qualification_id||
      !shell_startup_detail::SameStartup(startup,s.config.startup))

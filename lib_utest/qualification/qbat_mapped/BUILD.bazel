@@ -3,6 +3,7 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_test")
 
 cc_library(
     name = "fixture",
+    visibility = ["//lib_utest/qualification/type25_mapped:__pkg__"],
     testonly = True,
     hdrs = ["Fixture.h"],
     deps = ["//lib_src/elements/qbat:batch_values",

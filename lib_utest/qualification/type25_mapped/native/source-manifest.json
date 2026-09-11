@@ -1,0 +1,79 @@
+{
+  "repository": "https://github.com/OpenRadioss/OpenRadioss",
+  "commit": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Original zero-damping Ileng0 coefficient branch only: R6DEF3 coefficients, complete R2LEN3 nodal branch before dt floors, ordered R4CUM3 stiffness additions. Existing full original donor files are reused, not copied.",
+  "sources": [
+    {
+      "path": "../../type25/native/original/engine/source/elements/spring/r6def3.F",
+      "upstream_path": "engine/source/elements/spring/r6def3.F",
+      "size": 23989,
+      "sha256": "a751a1421df8d45a24aa5b3c28b44927979424523bfdba7fa2abab6ecf1b22f8",
+      "git_blob_sha1": "0fb52ac99447dd5f6f39e7bfa6e9d692da30a681"
+    },
+    {
+      "path": "../../type25/native/original/engine/source/elements/spring/r2len3.F",
+      "upstream_path": "engine/source/elements/spring/r2len3.F",
+      "size": 10364,
+      "sha256": "d9172514fb8d3672fcf5b6035ddb3f5b051222cf9bbb3e3274e245253a67d60b",
+      "git_blob_sha1": "b2aeb067838585447e6c29195e4e5b2f660595f5"
+    },
+    {
+      "path": "../../type25/native/original/engine/source/elements/spring/r4cum3.F",
+      "upstream_path": "engine/source/elements/spring/r4cum3.F",
+      "size": 5781,
+      "sha256": "4aa1af0800588923016463ac71018d2126ab81c5cda67ff03d20a5f06803476b",
+      "git_blob_sha1": "9a457627e88b4b421c395dcfde24ee2395dadf50"
+    }
+  ],
+  "fragments": [
+    {
+      "path": "Translation.inc",
+      "source": "../../type25/native/original/engine/source/elements/spring/r6def3.F",
+      "first_line": 148,
+      "last_line": 168,
+      "sha256": "92f7e18aa3161fe6b304b20ba000a4cc5ad14a4b7585e9773dce9f74d414e1ae"
+    },
+    {
+      "path": "Rotation.inc",
+      "source": "../../type25/native/original/engine/source/elements/spring/r6def3.F",
+      "first_line": 444,
+      "last_line": 456,
+      "sha256": "826d7e35d61161a929c7ffb2fee118516326347636f4568766cb5e20760e0ffb"
+    },
+    {
+      "path": "Nodal.inc",
+      "source": "../../type25/native/original/engine/source/elements/spring/r2len3.F",
+      "first_line": 84,
+      "last_line": 169,
+      "sha256": "9201d2bc54807beac4dac01db26ef0b0a5b0b382e26e88d3a70514bcc7afaedb"
+    },
+    {
+      "path": "Scatter0.inc",
+      "source": "../../type25/native/original/engine/source/elements/spring/r4cum3.F",
+      "first_line": 95,
+      "last_line": 95,
+      "sha256": "583a511d0870264646824f415efc5a9e029572f766ac85271ddb69f4853d5a24"
+    },
+    {
+      "path": "Scatter1.inc",
+      "source": "../../type25/native/original/engine/source/elements/spring/r4cum3.F",
+      "first_line": 103,
+      "last_line": 103,
+      "sha256": "d8f4f873a4ba79fdeadd133340b1e4489c0c41e6ba5002d90c0c72a1ce246319"
+    },
+    {
+      "path": "Scatter2.inc",
+      "source": "../../type25/native/original/engine/source/elements/spring/r4cum3.F",
+      "first_line": 130,
+      "last_line": 130,
+      "sha256": "119a5dd7cc65811e6810e6d4695cee569f5aa594e04d58805ff320129e775280"
+    },
+    {
+      "path": "Scatter3.inc",
+      "source": "../../type25/native/original/engine/source/elements/spring/r4cum3.F",
+      "first_line": 138,
+      "last_line": 138,
+      "sha256": "22316802141a35dfb59e8f0be531e049dc45b1eba17295d1d1df4fc86515793f"
+    }
+  ]
+}

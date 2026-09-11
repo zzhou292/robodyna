@@ -1,0 +1,1 @@
+        STIFN(NC2(I))=STIFN(NC2(I))+STI(2,I)

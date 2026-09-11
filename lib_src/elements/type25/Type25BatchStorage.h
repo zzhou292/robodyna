@@ -4,10 +4,15 @@
 #include "Type25BatchIdentity.h"
 #include "Type25Model.h"
 #include "../../assembly/NodalMassBinding.h"
+#include "../../assembly/ShellPhysicalBinding.h"
 #include <optional>
 #include <utility>
 
 namespace tl::fea::type25::batch_detail {
+void LaunchMappedAssembly(Storage*,const Slab*,NodalAssemblyView,NodalCinAssemblyView,bool initial);
+BatchReport ConstructStartup(const BatchConfig&,const Model&,util::HostArena&,
+    const ArenaLayout&,Storage&);
+BatchReport BuildElements(const BatchConfig&,const Model&,Storage&,BatchDiagnostics&);
 void LaunchAssembly(Storage*,const Slab*,NodalAssemblyView,bool initial);
 void LaunchCandidate(Storage*,const Slab*,Slab*,NodalPreparedView,BatchDiagnostics,std::size_t element_count);
 void LaunchFailure(NodalAssemblyView);
@@ -21,6 +26,9 @@ struct Batch::Impl {
   NodalStamp accepted_stamp;
   std::optional<Model> source;
   std::optional<NodalMassBinding> combined;
+  std::optional<ShellPhysicalBinding> physical;
+  NodalAssemblyView initial_sources;
+  std::size_t cin_witness_count=0;
   const ShellBatchPublication* publication_scope=nullptr;
   batch_detail::Storage* storage=nullptr;
   batch_detail::Storage device_header;
@@ -39,6 +47,7 @@ struct Batch::Impl {
   BatchReport Runtime(cudaError_t,const char*) noexcept;
   BatchReport PendingError() noexcept;
   BatchReport ReadControl();
+  BatchReport Upload(util::HostArena&,const batch_detail::Storage&);
   BatchReport ReadResults(const batch_detail::Slab*);
   bool OutputDisjoint(const void*,std::size_t) const noexcept;
   unsigned AcceptedSlabIndex() const noexcept { return accepted==&storage->slab[0]?0u:1u; }

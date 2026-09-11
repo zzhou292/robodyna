@@ -20,7 +20,9 @@ BatchReport MarkRejected(const NodalAssemblyView& view,BatchReport report) {
 }
 BatchReport Batch::AssembleAccepted(FENodalState& owner,const NodalAssemblyView& view) {
   if(!impl_)return {BatchStatus::NotInitialized,"TYPE25 batch is not initialized"};
-  auto& s=*impl_;s.Discard();
+  auto& s=*impl_;
+  if(s.physical)return {BatchStatus::InvalidInput,"Mapped TYPE25 requires its token-bound assembly API"};
+  s.Discard();
   if(!s.usable)return {BatchStatus::Unusable,"TYPE25 CUDA storage is poisoned"};
   // Always authenticate actual immutable sources before any borrowed device
   // read or sticky failure write, including the unconstrained startup path.

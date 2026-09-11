@@ -5,9 +5,10 @@
 #include "../../solvers/FENodalState.h"
 #include <memory>
 
-namespace tl::fea { class NodalMassBinding; class NodalRigidGroupModel; class ShellBatchPublication; }
+namespace tl::fea { class NodalMassBinding; class NodalRigidGroupModel; class ShellBatchPublication; class ShellPhysicalBinding; }
 namespace tl::fea::type25 {
 class Model;
+class BatchQualificationPeer;
 struct BatchConfig {
   NodalStamp owner;
   std::uint64_t configuration_id=0,qualification_id=0;
@@ -64,6 +65,12 @@ class Batch {
   Batch& operator=(const Batch&)=delete;
   BatchReport InitializeJoined(const BatchConfig&,const Model&,const NodalMassBinding&);
   BatchReport InitializeJoined(const BatchConfig&,const Model&,const NodalMassBinding&,CapacityProfile);
+  // Explicit zero-damping TYPE25 profile over the complete physical domain.
+  // The only model authority is physical.coefficients()->type25(). CIN-owned
+  // dependent inverses may be zero; all endpoints must have non-rigid rotations.
+  BatchReport InitializeMapped(const BatchConfig&,const ShellPhysicalBinding&,
+      FENodalState&,const NodalCinWitnessSource&,CapacityProfile);
+  BatchReport AssembleMappedAccepted(FENodalState&,const NodalTrialToken&,const NodalAssemblyView&);
   BatchReport AssembleAccepted(FENodalState&,const NodalAssemblyView&);
   BatchReport EvaluateCandidate(FENodalState&,const NodalTrialToken&,const NodalPreparedView&,BatchDiagnostics*);
   BatchReport CopyAcceptedDiagnostics(const NodalStamp&,BatchDiagnostics*) const noexcept;
@@ -74,6 +81,11 @@ class Batch {
   std::size_t host_bytes() const noexcept;
  private:
   friend class ::tl::fea::ShellBatchPublication;
+  friend class BatchQualificationPeer; // Test-only; no production independent publisher.
+  const ShellPhysicalBinding* MappedBinding() const noexcept;
+  BatchReport PreflightAttachMapped(FENodalState&,const ShellPhysicalBinding&,
+      std::uint64_t configuration_id,std::uint64_t qualification_id,
+      const ShellBatchStartup&,const ShellBatchPublication*) const noexcept;
   BatchReport PreflightAttach(const NodalStamp&,const NodalMassBinding&,std::uint64_t configuration_id,
       std::uint64_t qualification_id,const ShellBatchStartup&,const ShellBatchPublication*) const noexcept;
   void AttachPublication(const ShellBatchPublication*) noexcept;

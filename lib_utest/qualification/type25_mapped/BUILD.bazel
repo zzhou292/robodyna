@@ -1,0 +1,12 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+# Independent Fortran and actual CUDA/native trajectories use owning CMake.
+cc_test(
+    name = "type25_mapped_host_check",
+    size = "small",
+    srcs = ["HostTest.cpp", "Fixture.h"],
+    deps = ["//lib_src/elements/type25:type25_batch",
+            "//lib_utest/qualification/qbat_mapped:fixture",
+            "//lib_utest/qualification/type25:vehicle_model_fixture",
+            "//lib_utest/qualification/type25:evaluation_values", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)

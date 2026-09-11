@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Type25BatchStorage.h"
 #include <cstring>
+#include "../ShellPhysicalOutputRanges.h"
 
 namespace tl::fea::type25 {
 bool Batch::Impl::OutputDisjoint(const void* output,std::size_t bytes) const noexcept {
   using trial_identity::Disjoint;
   if(!Disjoint(output,bytes,this,sizeof(*this))||!Disjoint(output,bytes,staging.get(),config.element_count*sizeof(Evaluation)))return false;
+  if(physical)return shell_physical_owner::OutputDisjoint(*physical,output,bytes);
   const auto& m=*source;
   return Disjoint(output,bytes,m.connections(),m.connection_count()*sizeof(ConnectionInput))&&
     Disjoint(output,bytes,m.properties(),m.property_count()*sizeof(PropertyInput))&&
