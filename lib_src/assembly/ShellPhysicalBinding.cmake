@@ -1,0 +1,6 @@
+include_guard(GLOBAL)
+include("${CMAKE_CURRENT_LIST_DIR}/NodalCoefficientLedger.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../elements/ShellFormulationScope.cmake")
+add_library(tl_shell_physical_binding STATIC "${CMAKE_CURRENT_LIST_DIR}/ShellPhysicalBinding.cpp")
+target_link_libraries(tl_shell_physical_binding PUBLIC tl_nodal_coefficient_ledger tl_shell_formulation_scope)
+target_compile_features(tl_shell_physical_binding PUBLIC cxx_std_17)
