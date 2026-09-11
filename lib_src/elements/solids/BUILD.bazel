@@ -1,0 +1,14 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+cc_library(
+    name = "model",
+    srcs = ["Model.cpp", "model/Budget.cpp", "model/Materials.cpp",
+            "model/Parents.cpp", "model/Identity.cpp", "model/Readback.cpp"],
+    hdrs = ["Model.h", "model/Internal.h", "model/Impl.h"],
+    deps = ["//lib_src/assembly:solid_node_contributions",
+            "//lib_src/elements/solid18:force", "//lib_src/elements/solid24:force",
+            "//lib_src/elements/solid6z:force", "//lib_src/materials:solid_law36_point",
+            "//lib_src/materials/law42:caller", "//lib_utils:bounded_arena",
+            "//lib_utils:source_identity_index"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    visibility = ["//visibility:public"],
+)
