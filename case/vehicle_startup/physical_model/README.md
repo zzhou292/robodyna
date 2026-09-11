@@ -47,3 +47,22 @@ module caps; test2 exposed the real mass/beam identity collision. Both failures
 remain recorded. Test3 passed numerically but its GTest property overload
 narrowed the byte count; test4 preserves integer widths and binary64 quantity
 precision in the evidence. No force/constitutive tolerance was changed.
+
+## Rear source to immutable model
+
+The existing private `PrepareSolids` adapter also accepts the explicit rear V3
+source profile. It appends typed LAW44 inputs in their retained source order
+and selects TL's extended immutable model profile. The model owns its material
+curves after the source and temporary packing vectors are destroyed. All eight
+source slots, including repeated rear H8 node IDs, retain their domain mapping.
+
+`vehicle_rear_solid_model` checks all3,555 source parents, both actual rear
+moduli,109 repeated mappings, curve lifetime, rejected incomplete domain and
+insufficient budget, and a successful retry. The original complete physical
+model tests remain enabled. Root's `rear-solid-model-bridge-tests-1` passed all
+27 numerical functions across seven CTests, including the two new functions.
+
+This adapter does not change the full-case selection: `Preflight` still requires
+the existing2,412-solid inventory. A future explicit physical case profile must
+compose its complete original groups, V4 coefficients, CIN and resident state
+before selecting the larger source population.
