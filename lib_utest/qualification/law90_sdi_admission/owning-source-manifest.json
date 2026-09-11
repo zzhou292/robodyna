@@ -3,8 +3,8 @@
   "files": [
     {
       "path": "CMakeLists.txt",
-      "bytes": 4229,
-      "sha256": "2940090f1db94e6d2e9336d3d7634e47ab50070f4282fd6a0a864263de67d407"
+      "bytes": 4153,
+      "sha256": "7a119b3ecc3c0c8f93ffdd1410a3ec962e2340ebf43463897e19d95d6b6b38a8"
     },
     {
       "path": "Fields.cpp",
@@ -18,8 +18,8 @@
     },
     {
       "path": "Main.cpp",
-      "bytes": 2064,
-      "sha256": "499e39ec463f94c124cbc24f93c6a852094be8c254ab2aecf154b72614107440"
+      "bytes": 2597,
+      "sha256": "388d77e17210537d5ab74dbba68bf17347ea096e921d9b70e0a4010b746c5c4f"
     },
     {
       "path": "NativeUnits.F",
@@ -38,18 +38,18 @@
     },
     {
       "path": "README.md",
-      "bytes": 4749,
-      "sha256": "cfbcf5b6cd314fdac5f77e4e3b5d7b8ac2edc07f6575d08d8b3f986a2a66b129"
+      "bytes": 6209,
+      "sha256": "82d7625e614ac021885a2e17cd5e0040fd10aa92665cbbedc6e175af3f7663c0"
     },
     {
       "path": "Writer.cpp",
-      "bytes": 1260,
-      "sha256": "5b2070c008df165bb947c916bef2f328e9c7c123065036106a6472a69b264b20"
+      "bytes": 3652,
+      "sha256": "841465876a37d0a8dd13b44d4bd6d5c0107f2ba6a38fb1fda5bbf60056f8992f"
     },
     {
       "path": "fixture.py",
-      "bytes": 3390,
-      "sha256": "8a6d6784084c14db8bc71c282123c2117f8c97024ccfa7bfad2aab44ff2f4ae9"
+      "bytes": 3841,
+      "sha256": "0def457f1948a37e99eb840313ce3a908d7b809849707da349c632aa2d153708"
     },
     {
       "path": "prepare_sources.py",
@@ -58,8 +58,8 @@
     },
     {
       "path": "run_check.py",
-      "bytes": 5342,
-      "sha256": "0c1fc11dd6174135bd0681ba75024cd7ecf639ab7ff504787d9cebded3f39c30"
+      "bytes": 6680,
+      "sha256": "b63283a473e5295c9c8dd3686bdd02b36f9a99987a20eeb784442f8e7c1868bb"
     }
   ]
 }

@@ -72,13 +72,32 @@ def run(executable, pinned, fixture, output):
         require(hashlib.sha256(source.read_bytes()).hexdigest() == record['sha256'], 'fixture changed')
         report = output / (name + '.json')
         exported = output / (name + '.rad')
-        with (output / (name + '.log')).open('xb') as log:
-            subprocess.run([str(executable), str(source), str(exported), str(report)],
-                           env=env, stdout=log, stderr=subprocess.STDOUT, check=True, timeout=120)
+        log_path = output / (name + '.log')
+        with log_path.open('xb') as log:
+            process = subprocess.run([str(executable), str(source), str(exported), str(report)],
+                           env=env, stdout=log, stderr=subprocess.STDOUT, timeout=120)
+        if name.startswith('reject_'):
+            require(process.returncode == 1 and 'nonidentity MOVE_FUNCT' in log_path.read_text(),
+                    'nonidentity native curve not rejected')
+            require(not exported.exists() and not report.exists(), 'rejected export published output')
+            results[name] = {'rejected_before_output': True}
+            continue
+        require(process.returncode == 0, 'native process failed: ' + str(log_path))
         d = json.loads(report.read_text())
         result = check_observation(d, inputs['curve_working_xy'], name == 'explicit_hu_one')
         results[name] = {'classifiers': result, 'export_sha256': hashlib.sha256(exported.read_bytes()).hexdigest(),
                          'observation_sha256': hashlib.sha256(report.read_bytes()).hexdigest()}
+    control_export = output / 'reject_material_subobject.rad'
+    control_report = output / 'reject_material_subobject.json'
+    control_log = output / 'reject_material_subobject.log'
+    with control_log.open('xb') as log:
+        process = subprocess.run([str(executable), str(fixture / 'original.key'),
+                                  str(control_export), str(control_report), '--active-material-control'],
+                                 env=env, stdout=log, stderr=subprocess.STDOUT, timeout=120)
+    require(process.returncode == 1 and 'active optional material subobject' in control_log.read_text(),
+            'active native material option not rejected')
+    require(not control_export.exists() and not control_report.exists(), 'material control published')
+    results['reject_material_subobject'] = {'rejected_before_output': True}
     baseline = json.loads((output / 'original.json').read_text())
     damping = json.loads((output / 'source_damp_control.json').read_text())
     require(fields(damping['source_fields'])['DAMP']['effective_native_value'] == .2, 'DAMP control unread')

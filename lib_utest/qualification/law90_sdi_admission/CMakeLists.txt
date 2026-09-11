@@ -21,8 +21,8 @@ execute_process(COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_SOURCE_DIR}/
   --cache "${TL_LAW90_SDI_CACHE}" --units "${TL_LAW90_SDI_UNITS}" --output "${pinned}"
   COMMAND_ERROR_IS_FATAL ANY)
 # Reuse all five complete native core-library CMake definitions. The solver's
-# unrelated Fortran bridge is not built. The native writer needs only its
-# documented current-model storage accessor, supplied in Writer.cpp.
+# unrelated Fortran bridge is not built. Writer.cpp uses its public scanner-free
+# native writer overload after authenticating exact scalar-export scope.
 set(arch linux64)
 set(com 0)
 set(lib a)
@@ -46,8 +46,7 @@ target_link_libraries(law90_sdi_reader INTERFACE
   -Wl,--start-group dyna2rad_linux64 io_linux64 sdi_linux64 cfgio_linux64 cfgkernel_linux64
   -Wl,--end-group law90_sdi_boost_filesystem)
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../law90_preparation/native" preparation)
-add_executable(law90_sdi_native Main.cpp Fields.cpp Writer.cpp Preparation.cpp NativeUnits.F
-  "${open_reader_root_dir}/source/solver_interface/source/cfg_reading/PrintOption.cpp")
+add_executable(law90_sdi_native Main.cpp Fields.cpp Writer.cpp Preparation.cpp NativeUnits.F)
 target_compile_features(law90_sdi_native PRIVATE cxx_std_17)
 target_include_directories(law90_sdi_native PRIVATE "${pinned}")
 target_compile_definitions(law90_sdi_native PRIVATE NO_GZ_LIB TXT_MSG UNV USE_NAMESPACE

@@ -41,6 +41,13 @@ def fixture(receipt, output):
         padded = first_card.ljust(80)
         changed = padded[:10*field] + f'{value:>10}' + padded[10*(field+1):]
         variants[name] = baseline.replace(first_card, changed, 1)
+    curve = next(b for b in selected if b['family'] == 'curve')
+    curve_card = curve['cards'][0]['text']
+    for name, field, value in [('scale_x', 2, '2'), ('scale_y', 3, '2'),
+                               ('offset_x', 4, '.1'), ('offset_y', 5, '.1')]:
+        padded = curve_card.ljust(80)
+        changed = padded[:10*field] + f'{value:>10}' + padded[10*(field+1):]
+        variants['reject_' + name] = baseline.replace(curve_card, changed, 1)
     output.mkdir(parents=True, exist_ok=True)
     records = {}
     for name, text in variants.items():

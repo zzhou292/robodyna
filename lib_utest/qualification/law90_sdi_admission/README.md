@@ -1,10 +1,9 @@
 # Native MAT057 → LAW90 SDI admission observation
 
 This qualification-only executable links all five unchanged native reader core
-libraries and the complete native `PrintOption.cpp` writer at
-`a62b27e6baa555d222a580d6218867d0be4d70b5`. The harness supplies only the writer's
-current-model lookup. It invokes real `DynakeyReadModel`, `DynaToRad::CallConvert`,
-`PrintEntity` with its native `FF_D00_2026`, and `RadiossblkReadModel`. No handwritten
+libraries and the complete native `MECDataWriter` at
+`a62b27e6baa555d222a580d6218867d0be4d70b5`. The harness preflights the selected scanner-free public writer scope. It invokes real `DynakeyReadModel`, `DynaToRad::CallConvert`,
+`MECDataWriter::WriteObjectData` with the native `FF_D00_2026` configuration, and `RadiossblkReadModel`. No handwritten
 LAW90 export, mock reader, app source admission, solver or new production dependency
 is provided.
 
@@ -74,3 +73,24 @@ The native test creates `observations/` once, keeping each exact `.rad`, `.json`
 and `.log`, plus aggregate `result.json`. Preserve/move this directory before a
 rerun; never silently overwrite earlier failed native evidence. Failure before a
 complete result leaves the direct logs/exports for diagnosis and makes CTest fail.
+
+## Native convenience-writer failure and scoped correction
+
+Root's first native execution reached direct material/preparation but crashed in
+`MECDataWriter::WriteSubobject:2751`. The complete `PrintOption.cpp` helper always
+constructs a scanner with null `hwHCSolverInf`; the subobject writer dereferences
+that pointer. The converter always attaches MOVE_FUNCT even for the original
+identity curve operation. Failed `.rad`/logs and `law90-sdi-root-debug-1` remain.
+
+The corrected harness uses the existing native scanner-free overload, preserving
+per-entity writer construction, modern format, compression and rounding settings.
+It authenticates exactly one MOVE_FUNCT with stored scale1/1 and offset0/0, and
+rejects unknown/nested curve operations plus any optional material subobject or
+active heat/thermal/Prony flag before opening an output file. Only the native
+BEGIN/FUNCT/MAT/END declaration packet is exported. No stored values are changed;
+omitting the proven identity transform cannot alter function values. This is not
+a general full-model exporter or a claim that the defective convenience helper
+works with arbitrary subobjects. Four native source controls change each scale/
+offset independently; a fifth activates the native material Prony flag. Each must
+reject before output. Baseline/explicit-HU/source-DAMP still export/re-read through
+the complete native main-card writer and require exact curve equality.
