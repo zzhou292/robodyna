@@ -11,10 +11,12 @@ endif()
 if(NOT TARGET robo_dyna_replay_geometry_values)
   add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../replay" "${CMAKE_CURRENT_BINARY_DIR}/replay-core")
 endif()
+include("${CMAKE_CURRENT_LIST_DIR}/../../output/full_shell/activity/ActivityRecords.cmake")
 add_library(robo_dyna_full_shell_frame_geometry STATIC FullShellFrameGeometry.cpp
-  FrameGeometryInitialize.cpp FrameGeometryChecks.cpp FrameGeometryFields.cpp)
+  FrameGeometryInitialize.cpp FrameGeometryChecks.cpp FrameGeometryFields.cpp
+  FrameGeometryTopology.cpp FrameGeometryUpdate.cpp)
 target_link_libraries(robo_dyna_full_shell_frame_geometry PUBLIC
-  robo_dyna_full_shell_source_mapping robo_dyna_replay_geometry_values)
+  robo_dyna_full_shell_source_mapping robo_dyna_replay_geometry_values robo_dyna_parent_activity)
 target_compile_features(robo_dyna_full_shell_frame_geometry PUBLIC cxx_std_17)
 target_compile_options(robo_dyna_full_shell_frame_geometry PRIVATE -fno-fast-math -ffp-contract=off)
 option(ROBO_DYNA_FULL_SHELL_FRAME_GEOMETRY_TESTS "Build presentation-only source/binary frame tests" ON)
@@ -22,7 +24,7 @@ if(ROBO_DYNA_FULL_SHELL_FRAME_GEOMETRY_TESTS)
   find_package(GTest REQUIRED)
   find_package(Python3 REQUIRED COMPONENTS Interpreter)
   add_executable(robo_dyna_full_shell_frame_geometry_check tests/ScalarApplicabilityTest.cpp
-    tests/FrameGeometryValueTest.cpp tests/FrameGeometryActualTest.cpp)
+    tests/FrameGeometryValueTest.cpp tests/FrameGeometryActualTest.cpp tests/FrameActivityTest.cpp)
   target_link_libraries(robo_dyna_full_shell_frame_geometry_check PRIVATE
     robo_dyna_full_shell_frame_geometry GTest::gtest_main)
   target_compile_options(robo_dyna_full_shell_frame_geometry_check PRIVATE -fno-fast-math -ffp-contract=off)

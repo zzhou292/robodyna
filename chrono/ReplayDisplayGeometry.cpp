@@ -12,17 +12,22 @@ double RendererCoordinate(double value) {
     return stored;
 }
 } // namespace
-bool CheckReplayDisplayGeometry(const std::vector<chrono::ChVector3d>& positions,
-                     const std::vector<chrono::ChVector3i>& triangles,
-                     ReplayGeometryLimits limits) {
-    if (!limits.valid() || positions.empty() || positions.size() > limits.vertices ||
-        triangles.empty() || triangles.size() > limits.triangles) return false;
+bool CheckReplayDisplayPositions(const std::vector<chrono::ChVector3d>& positions,
+        ReplayGeometryLimits limits) {
+    if (!limits.valid() || positions.empty() || positions.size() > limits.vertices) return false;
     // VSG's rendering buffers are float, and its actual GetFaceNormals uses a
     // binary64 cross product and length. Reject geometry those operations cannot
     // represent, even if it was valid for a more general archive consumer.
     for (const auto& p : positions)
         if (!Finite(p) || !std::isfinite(static_cast<float>(p.x())) ||
             !std::isfinite(static_cast<float>(p.y())) || !std::isfinite(static_cast<float>(p.z()))) return false;
+    return true;
+}
+bool CheckReplayDisplayGeometry(const std::vector<chrono::ChVector3d>& positions,
+                     const std::vector<chrono::ChVector3i>& triangles,
+                     ReplayGeometryLimits limits) {
+    if (!CheckReplayDisplayPositions(positions, limits) || triangles.empty() ||
+        triangles.size() > limits.triangles) return false;
     for (const auto& t : triangles) {
         for (int j = 0; j < 3; ++j)
             if (t[j] < 0 || static_cast<std::size_t>(t[j]) >= positions.size()) return false;

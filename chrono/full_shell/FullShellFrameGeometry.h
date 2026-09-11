@@ -1,5 +1,6 @@
 #pragma once
 #include "chrono/AcceptedReplayScene.h"
+#include "output/full_shell/activity/ActivityRecord.h"
 #include "output/full_shell/static_bundle/PreparedSourceMapping.h"
 
 namespace crash::visual::full_shell {
@@ -12,6 +13,9 @@ struct FrameGeometryOptions {
     ReplayColorMode colors = ReplayColorMode::PartId;
     // Required positive fixed scale when native PLA exists; zero if none exists.
     double plastic_strain_maximum = 0;
+    // Explicit optional channel. Every update then requires an authenticated
+    // ActivityRecord; the legacy overload remains all-parent presentation.
+    bool parent_activity = false;
 };
 std::size_t FrameGeometryBudget(std::size_t nodes, std::size_t parents, std::size_t triangles,
     const FrameGeometryOptions&);
@@ -32,11 +36,16 @@ class FullShellFrameGeometry {
         const output::full_shell::Context&, FrameGeometryOptions = {});
     ReplaySceneReport Update(const output::full_shell::FrameRecord&,
         const output::full_shell::FrameStamp& expected);
+    ReplaySceneReport Update(const output::full_shell::FrameRecord&,
+        const output::full_shell::activity::ActivityRecord&,
+        const output::full_shell::FrameStamp& expected);
     // No visible frame/fields before a successful Update. Failure preserves the
     // last complete positions, fields, colors and stamp; input bytes are untouched.
     std::shared_ptr<const chrono::ChTriangleMeshConnected> mesh() const noexcept;
     const output::full_shell::FrameStamp* stamp() const noexcept;
     const std::vector<output::ReplayParentScalar>* fields() const noexcept;
+    // Associations align with the current visible face order after an update.
+    // The optional activity profile keeps the complete original PID legend.
     const std::vector<std::uint64_t>* triangle_source_parents() const noexcept;
     const std::vector<std::uint64_t>* triangle_source_parts() const noexcept;
     const ReplayScalarLegend* scalar_legend() const noexcept;

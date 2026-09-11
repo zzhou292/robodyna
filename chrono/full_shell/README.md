@@ -109,3 +109,58 @@ ctest --test-dir <build> --parallel 1 --output-on-failure
 viewer and standalone geometry checks reuse it. The full accepted-run publisher,
 authenticated full-shell replay sidecar/kind, placed-wall admission and CLI capture
 remain the explicit next gates described in the workspace replay integration plan.
+
+## Optional accepted parent activity
+
+Set `FrameGeometryOptions::parent_activity=true` and use
+`Update(frame, activity_record, expected_stamp)`. The default remains false and
+the legacy overload retains complete all-parent topology. An enabled profile
+requires the record on every update; supplying one to the legacy profile also
+rejects, so the caller cannot accidentally omit or ignore this channel.
+
+The immutable `ActivityRecord` must match the retained context's complete source,
+owner/run/configuration identities, point-layout hash, node/parent/point counts
+and fixed step. Its accepted stamp must exactly match the frame and externally
+expected stamp. Record value creation/reading remains the existing separate
+versioned activity codec. No parent flags are inferred from PLA, point failure,
+contact eligibility or missing data; no archive/run admission is added here.
+
+Original triangle order, Q4 diagonal and true T3 topology are retained. Visible
+face, color-index and source EID/PID arrays compact by authenticated parent flag.
+Color storage and the PID legend retain complete original triangle/part slots,
+so hiding a part does not change any remaining part's palette. Scalar fields
+remain complete and validated even for hidden parents. Coincident layers retain
+their distinct source identities and can be hidden independently.
+
+Backward seeks can restore inactive parents from an earlier record; this is
+presentation of recorded data, not solver reactivation. All-inactive records
+publish an empty face set. Every coordinate still passes finite binary64 and
+binary32 representability checks, while geometric collapse is checked only for
+visible faces. A failed identity, phase, field or late visible-triangle check
+preserves every published face, coordinate, color, source association and stamp.
+The mesh handle is stable; all updates remain externally serialized.
+
+The opt-in adds a conservative 64 B per original display triangle to the existing
+checked additional-workspace forecast, before optional topology allocation. At
+359,785 nodes / 349,645 parents / 677,989 triangles this is 354,012,416 B,
+below the unchanged default 384 MiB cap (absolute ceiling 512 MiB). Borrowed
+source/context/frame/activity storage and Chrono/VSG driver allocations stay
+outside this presentation-workspace count as before. Legacy budget values and
+profile admission are unchanged.
+
+Four new tiny owning host functions exercise the shared presentation
+initialization/update path with Q4/T3/coincident layers, noncontiguous original
+color indices, all-inactive and backward seeks, source/owner/layout/phase
+rejection, late collapse/NaN rollback and exact capacity retry. They do not
+fabricate an authenticated `CanonicalSource` or public source mapping. The
+public adapter retains the existing source check and uses the same tested state
+functions. Five unchanged tiny geometry/scalar functions pass alongside them.
+No full-source, renderer, VSG or GPU job ran in the author lane; the existing
+three actual-source functions remain available under the owning CMake gate.
+
+Author evidence is `crash-work/reports/full-shell-frame-activity-author-1` and
+`-2` (`.json`, `.log`, `.xml`). The final nine-function host gate passed after
+adding the noncontiguous original color-index control; build/run took 9.779 s
+with 404,541,440 B sampled peak RSS. The isolated owning CMake build used the
+existing Chrono core package and `-O0 -DNDEBUG` under one CPU / 512 MiB; this is
+host presentation evidence, not a render or GPU qualification.

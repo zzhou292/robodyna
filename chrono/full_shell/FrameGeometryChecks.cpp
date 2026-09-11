@@ -17,6 +17,14 @@ std::size_t FrameGeometryBudget(std::size_t n, std::size_t p, std::size_t t, con
             "Full-shell presentation byte capacity exceeded");
         bytes += term.first * term.second;
     }
+    if (o.parent_activity) {
+        // Original topology/index plus complete-capacity visible staging. The
+        // borrowed immutable ActivityRecord remains the caller's reservation.
+        constexpr std::size_t width = 64;
+        output::Require(bytes <= o.host_bytes && t <= (o.host_bytes - bytes) / width,
+            "Full-shell activity topology exceeds host byte capacity");
+        bytes += t * width;
+    }
     return bytes;
 }
 namespace detail {
