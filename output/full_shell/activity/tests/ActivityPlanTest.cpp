@@ -49,4 +49,27 @@ TEST(ParentActivity, SeparateMetadataAndValueFilesUseIndependentFileCaps) {
     EXPECT_EQ(plan.packed_frame_bytes,8);EXPECT_EQ(plan.frame_metadata_bytes,MetadataByteCap);
     EXPECT_EQ(plan.archive.frame_capacity,3);
 }
+TEST(ParentActivity, TwentyMillisecondVehicleForecastKeepsIntegrationStepAndCompleteLedger) {
+    // Forecast only: neither this step nor this duration is vehicle dynamics
+    // admission. Reduce saved frames to fit storage, never change integration h.
+    const auto c=Sized(349645,359785,0x1p-26);
+    auto request=FullRequest(c);
+    request.frames=88;request.requested_duration=.020;request.intervals=1342178;
+    const auto plan=PlanWithActivity(c,request,"parent-activity.json");
+    EXPECT_EQ(plan.archive.frame_capacity,89);
+    RecordProperty("forecast_bytes",std::to_string(plan.archive.forecast_bytes));
+    RecordProperty("forecast_files",std::to_string(plan.archive.forecast_files));
+    RecordProperty("frame_bytes",std::to_string(plan.archive.frame_bytes));
+    RecordProperty("interval_bytes",std::to_string(plan.archive.interval_bytes));
+    EXPECT_EQ(plan.archive.frame_epochs.front(),0);
+    EXPECT_EQ(plan.archive.frame_epochs.back(),request.intervals);
+    EXPECT_EQ(plan.archive.position_bytes,359785*3*8);
+    EXPECT_EQ(plan.archive.plastic_bytes,349645*3*8);
+    EXPECT_EQ(plan.archive.interval_bytes,request.intervals*IntervalCoreBytes);
+    EXPECT_LT(plan.archive.forecast_bytes,TotalByteCap);
+    // A single additional saved frame exceeds this conservative all-NIP3
+    // profile, including activity and a separate last-accepted prefix reserve.
+    ++request.frames;
+    EXPECT_THROW(PlanWithActivity(c,request,"parent-activity.json"),std::runtime_error);
+}
 } // namespace crash::output::full_shell::activity::test

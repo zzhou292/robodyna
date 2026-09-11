@@ -1,5 +1,24 @@
 # Accepted parent activity records
 
+## Root qualification, 2026-09-10
+
+The reviewed author foundation `ebd2e38` and root 20 ms forecast extension pass
+10 new host functions plus all 9 existing frame/plan functions, with zero skips
+or failures. Source review checked scope/stamp validation, preflight before
+borrowed reads, packed padding, staged readback and separate file accounting.
+Evidence is under `crash-work/reports/parent-activity-root-*` in the workspace;
+the final build is `parent-activity-root-build-2`, following the initial owning
+build with the legacy target. These are value/record gates, not live capture.
+
+The complete-count conservative all-NIP3 20 ms forecast, at an illustrative
+unchanged integration step 2^-26 s, fits **88 saved frames plus one last-accepted
+prefix reserve** in 2,140,777,152 B / 482 files. The 1,342,178 interval rows take
+418,759,536 B; each saved frame including activity takes 17,086,416 B. One more
+saved frame is rejected. Known source/declaration/wall/configuration reservations
+and frame metadata are included; the remaining static reserve is charged too.
+Future extra channels must be added to the forecast. This does not qualify the
+vehicle timestep or claim a running 20 ms trajectory.
+
 This optional record is separate from the unchanged position/native-PLA V1
 record. Its schema is `robo_dyna.full_shell_parent_activity.v1`; the one-time
 declaration sidecar uses `robo_dyna.full_shell_parent_activity_declaration.v1`.

@@ -7,11 +7,11 @@ namespace base=full_shell::test;
 inline ActivityInput Input(const Context& c,const FrameStamp& s,const std::vector<std::uint8_t>& values) {
     return {c.identity(),c.point_layout_sha256(),s,values.data(),values.size()};
 }
-inline Context Sized(std::size_t count,std::size_t nodes=4) {
+inline Context Sized(std::size_t count,std::size_t nodes=4,double fixed_dt=.125) {
     std::vector<ParentPoints> parents;parents.reserve(count);
     for(std::size_t i=0;i<count;++i)
         parents.push_back({1000000+i,2000000+i%867,2,1,3,PlasticField::NativeEquivalentPlasticStrain});
-    return Context::Create(base::Id(),nodes,parents.data(),parents.size(),.125);
+    return Context::Create(base::Id(),nodes,parents.data(),parents.size(),fixed_dt);
 }
 inline Document Metadata(const base::Directory& dir,const RecordFile& record) {
     return array_json::Parse(ReadBounded(dir.path/record.file,MetadataByteCap),MetadataByteCap);
