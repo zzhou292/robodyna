@@ -4,6 +4,7 @@
 
 namespace type45_test {
 NativeOracle::NativeOracle(const Fixture& fixture,int& status) {
+  geometry=fixture.geometry;
   kind=static_cast<int>(fixture.property.kind);
   if (fixture.property.working_units==WorkingUnits::MillimetreTonneSecond) {
     length=.001;
@@ -38,6 +39,7 @@ NativeOracle::NativeOracle(const Fixture& fixture,int& status) {
   }
   type45_native::type45_native_startup(&kind,property.data(),positions,roles,damping,
     coefficient,&fixture.context.target_dt_s,state.uvar.data(),startup.values.data(),&status);
+  initial_state=state;
 }
 bool NativeOracle::Step(const Interval& interval,type45_native::Step& output) {
   if (interval.sample_index>INT_MAX) return false;
@@ -51,8 +53,10 @@ bool NativeOracle::Step(const Interval& interval,type45_native::Step& output) {
     }
   }
   int status=-1;
+  const auto before=state;
   type45_native::type45_native_step(&kind,property.data(),positions,spin,&time,&interval.dt_s,
     &cycle,state.uvar.data(),state.history.data(),output.values.data(),&status);
+  if (status==0) { previous_state=before; last_interval=interval; }
   return status==0;
 }
 } // namespace type45_test

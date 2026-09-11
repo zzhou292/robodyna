@@ -32,6 +32,7 @@ TEST(Type45Source, All44OriginalGeometriesWithExplicitSuppliedPropertiesAndConte
     History accepted;
     ASSERT_EQ(History::Initialize(reference,accepted),Status::Success);
     for(unsigned i=0;i<4;++i) {
+      SCOPED_TRACE(i);
       auto step=fixture.Step(accepted);
       step.position_m[1].y+=(i+1)*3e-7;
       step.angular_velocity_rad_s[0]={.13,-.07,.03};
