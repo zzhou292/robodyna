@@ -3,6 +3,7 @@
 #include <memory>
 namespace crash::cases::vehicle_dynamics { struct ExecutionAccess; }
 namespace crash::cases::vehicle_runtime {
+namespace detail { struct CaptureAccess; }
 struct InitialInspection {
     tl::fea::NodalStamp stamp;
     tl::fea::NodalAllocationInfo allocations;
@@ -34,6 +35,7 @@ class VehiclePhysicalStartup {
     InitialInspection InspectInitial();
   private:
     friend struct vehicle_dynamics::ExecutionAccess;
+    friend struct detail::CaptureAccess;
     struct Storage;
     explicit VehiclePhysicalStartup(std::unique_ptr<Storage>);
     std::unique_ptr<Storage> storage_;

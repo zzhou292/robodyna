@@ -20,6 +20,7 @@ target_compile_features(robo_dyna_vehicle_runtime_values PUBLIC cxx_std_17)
 target_compile_options(robo_dyna_vehicle_runtime_values PRIVATE -fno-fast-math -ffp-contract=off)
 add_library(robo_dyna_vehicle_physical_startup STATIC
   "${CMAKE_CURRENT_LIST_DIR}/VehiclePhysicalStartup.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/CaptureAccess.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/SourceIdentity.cpp" "${CMAKE_CURRENT_LIST_DIR}/SourceRoles.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/SourceBudget.cpp" "${CMAKE_CURRENT_LIST_DIR}/Forecast.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/ParticipantConfigs.cpp"

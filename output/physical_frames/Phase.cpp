@@ -1,0 +1,52 @@
+#include "Fields.h"
+#include "lib_src/solvers/NodalTrialIdentity.h"
+namespace crash::output::physical_frames::detail {
+namespace {
+template<class D> void Check(const D& d,const tl::fea::NodalStamp& s,const records::FrameStamp& f,
+    std::uint64_t configuration,std::uint64_t qualification) {
+    Require(d.valid && d.owner_id==s.owner_id && d.configuration_id==configuration &&
+        d.qualification_id==qualification && d.epoch==s.epoch && Bits(d.time)==Bits(s.time) &&
+        d.phase==decltype(d.phase)::Accepted && d.has_completed_interval==bool(s.epoch),
+        "Accepted participant phase/owner identity differs");
+    if(s.epoch) Require(d.base_epoch==f.base_epoch && d.attempt==f.attempt &&
+        Bits(d.base_time)==Bits(f.base_time) && Bits(d.velocity_time)==Bits(f.velocity_time) &&
+        Bits(d.kick_dt)==Bits(f.kick_dt),"Accepted participant has another interval phase");
+}
+}
+records::FrameStamp Phase(const CaptureScope& c) {
+    const auto& s=c.stamp;
+    const auto& d=c.diagnostics;
+    Require(d.valid && !d.kinetic_available && d.has_qeph && d.has_t3 && d.has_qbat &&
+        d.has_type25 && d.has_type13 && d.has_solids && s.owner_id && s.node_count &&
+        s.temporal_scheme==tl::fea::NodalTemporalScheme::StaggeredHalfKickStart,
+        "Capture requires the complete accepted physical publication");
+    records::FrameStamp f;
+    if(s.epoch) f={s.epoch,s.reaction_base_epoch,d.qeph.attempt,s.time,s.reaction_time,s.velocity_time,s.reaction_kick_dt};
+    else Require(!s.reactions_valid && s.time==0 && s.velocity_time==0,"Initial accepted owner has advanced");
+    records::CheckStamp(s.fixed_dt,f);
+    const auto config=d.qeph.configuration_id,qualification=d.qeph.qualification_id;
+    Require(config && qualification,"Missing accepted publication configuration");
+    Check(d.qeph,s,f,config,qualification);
+    Check(d.t3,s,f,config,qualification);
+    Check(d.qbat,s,f,config,qualification);
+    Check(d.type25,s,f,config,qualification);
+    Check(d.type13,s,f,config,qualification);
+    Check(d.solids,s,f,config,qualification);
+    return f;
+}
+void CheckReadback(const CaptureScope& scope,const tl::fea::qeph::BatchDiagnostics& value) {
+    Check(value,scope.stamp,Phase(scope),scope.diagnostics.qeph.configuration_id,scope.diagnostics.qeph.qualification_id);
+}
+void CheckReadback(const CaptureScope& scope,const tl::fea::t3::BatchDiagnostics& value) {
+    Check(value,scope.stamp,Phase(scope),scope.diagnostics.t3.configuration_id,scope.diagnostics.t3.qualification_id);
+}
+void CheckReadback(const CaptureScope& scope,const tl::fea::qbat::BatchDiagnostics& value) {
+    Check(value,scope.stamp,Phase(scope),scope.diagnostics.qbat.configuration_id,scope.diagnostics.qbat.qualification_id);
+}
+void CheckSameEndpoint(const CaptureScope& a,const CaptureScope& b) {
+    Require(tl::fea::trial_identity::SameStamp(a.stamp,b.stamp) && records::SameStamp(Phase(a),Phase(b)) &&
+        a.diagnostics.qeph.configuration_id==b.diagnostics.qeph.configuration_id &&
+        a.diagnostics.qeph.qualification_id==b.diagnostics.qeph.qualification_id,
+        "Accepted owner changed during serialized capture");
+}
+} // namespace crash::output::physical_frames::detail
