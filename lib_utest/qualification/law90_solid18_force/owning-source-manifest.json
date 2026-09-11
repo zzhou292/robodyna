@@ -108,8 +108,8 @@
     },
     {
       "path": "lib_utest/qualification/law90_solid18_force/TestSupport.h",
-      "bytes": 3967,
-      "sha256": "5dc30647fad11757a989da2cfb54763e14fd306214fbc1682188104ae80bfa44"
+      "bytes": 3997,
+      "sha256": "7506396bc000fdd5cb784ff284770b17064eb90f709baada3361ea32fc190cfc"
     },
     {
       "path": "lib_utest/qualification/law90_solid18_force/native/CMakeLists.txt",
@@ -206,6 +206,13 @@
       "path": "lib_utest/qualification/law90_solid18_force/CudaTest.cu",
       "bytes": 6919,
       "sha256": "41e0f9c82d05f32a40b4fc9c5f5a2011d36e250e3e440f2c1a38431e72ae3ed1"
+    }
+  ],
+  "prior_release_fixture_records": [
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/TestSupport.h",
+      "bytes": 3967,
+      "sha256": "5dc30647fad11757a989da2cfb54763e14fd306214fbc1682188104ae80bfa44"
     }
   ]
 }

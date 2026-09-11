@@ -23,7 +23,8 @@ inline s::ReferenceInput Distorted() {
 }
 inline law::PreparedMaterial Material() {
   law::PreparedMaterial result;
-  assert(law::PrepareSI(law90_test::OriginalInput(),law90_test::OriginalCurve(),result)==law::Status::Ok);
+  const auto status=law::PrepareSI(law90_test::OriginalInput(),law90_test::OriginalCurve(),result);
+  EXPECT_EQ(status,law::Status::Ok);
   return result;
 }
 inline s::PrescribedInterval Path(const s::ReferenceInput& input,unsigned step,
