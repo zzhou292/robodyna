@@ -53,9 +53,17 @@ BatchReport T3Batch::CopyAcceptedParentActivity(const NodalStamp& expected,
   const auto report = shell_batch_plasticity_detail::ReadFailure(state,
       state.AcceptedSlabIndex(), state.accepted_diagnostics.time);
   if (report.status != BatchStatus::Success) return report;
+  if (state.plasticity->one_point_sections()) {
+    const auto checked = state.ValidateOnePointReadback(state.AcceptedSlabIndex(),
+        state.accepted_diagnostics.time, state.accepted_stamp.epoch);
+    if (checked.status != BatchStatus::Success) return checked;
+  }
   const auto* history = state.plasticity->failure_staging();
+  const auto* sections = state.plasticity->section_staging();
   for (std::size_t parent = 0; parent < capacity; ++parent) {
-    output[parent] = history[parent].active ? 1 : 0;
+    const auto* point = sections[parent].one_point();
+    const bool active = point ? point->point.failure.history.point_active : history[parent].active;
+    output[parent] = active ? 1 : 0;
   }
   *diagnostics = state.accepted_diagnostics;
   return {BatchStatus::Success, "Accepted parent activity copied"};

@@ -35,16 +35,21 @@ void CheckActivity(Rig& rig,bool expect_virgin=false) {
   if (rig.binding->t3_count()) {
     const auto count=rig.binding->t3_count();
     std::vector<std::uint8_t> activity(count,19);
-    std::vector<fe::ShellBatchFailureState> history(count);
-    fe::t3::BatchDiagnostics diagnostics,full;
+    std::vector<fe::t3::ForceTrial> history(count);
+    std::vector<fe::ShellBatchLayeredSection> sections(count);
+    fe::t3::BatchDiagnostics diagnostics,full,typed;
     ASSERT_EQ(rig.t3.CopyAcceptedParentActivity(stamp,activity.data(),count,&diagnostics).status,
               fe::t3::BatchStatus::Success);
-    ASSERT_EQ(rig.t3.CopyAcceptedFailureHistory(stamp,history.data(),count,&full).status,
+    ASSERT_EQ(rig.t3.CopyAcceptedResults(stamp,history.data(),count,&full).status,
+              fe::t3::BatchStatus::Success);
+    ASSERT_EQ(rig.t3.CopyAcceptedLayeredSectionHistory(stamp,sections.data(),count,&typed).status,
               fe::t3::BatchStatus::Success);
     EXPECT_EQ(diagnostics.epoch,common.t3.epoch);
     EXPECT_EQ(diagnostics.owner_id,common.t3.owner_id);
     for (std::size_t i=0;i<count;++i) {
-      EXPECT_EQ(activity[i],history[i].active ? 1 : 0);
+      EXPECT_EQ(activity[i],history[i].proposed_history.data().active);
+      if (const auto* point=sections[i].one_point())
+        EXPECT_EQ(activity[i],point->point.failure.history.point_active ? 1 : 0);
       if (expect_virgin) EXPECT_EQ(activity[i],1);
     }
   }
@@ -129,7 +134,7 @@ TEST(ShellParentActivityCuda, ActualRemovalAndDiscardKeepAcceptedActivityWithHis
   Rig rig;
   ASSERT_TRUE(rig.Initialize(source.Scope(),false,false,0x1p-12));
   CheckActivity(rig,true);
-  bool removed=false;
+  bool removed=false,t3_removed=false;
   for (unsigned step=0;step<24;++step) {
     Prepared candidate;
     ASSERT_TRUE(rig.Prepare(candidate,30));
@@ -142,7 +147,13 @@ TEST(ShellParentActivityCuda, ActualRemovalAndDiscardKeepAcceptedActivityWithHis
     ASSERT_TRUE(rig.Commit(candidate));
     CheckActivity(rig);
     for (const auto& row:candidate.qbat) removed|=!row.history.element_active;
+    std::uint8_t active=19;
+    fe::t3::BatchDiagnostics diagnostics;
+    ASSERT_EQ(rig.t3.CopyAcceptedParentActivity(rig.owner.accepted(),&active,1,&diagnostics).status,
+              fe::t3::BatchStatus::Success);
+    t3_removed|=active==0;
   }
   EXPECT_TRUE(removed);
+  EXPECT_TRUE(t3_removed);
 }
 } // namespace qbat_resident_test
