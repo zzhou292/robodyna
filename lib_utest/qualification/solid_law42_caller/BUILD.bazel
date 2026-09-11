@@ -9,7 +9,7 @@ cc_test(
 cc_library(
     name = "test_values",
     testonly = True,
-    hdrs = ["Values.h"],
+    hdrs = ["Values.h", "NativeComparison.h"],
     deps = ["//lib_src/materials/law42:caller"],
     visibility = ["//lib_utest/qualification/solid24_force:__pkg__"],
 )

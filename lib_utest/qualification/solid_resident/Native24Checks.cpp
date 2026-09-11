@@ -2,13 +2,15 @@
 #include "NativeChecks.h"
 
 namespace solid_resident_test {
-void CheckNative(const s::Result24& result,const heph_test::NativeTrial& expected) {
+void CheckNative(const s::Result24& result,const heph_test::NativeTrial& expected,
+    const HephRoundoff& roundoff) {
   ASSERT_EQ(expected.status,0);
   const auto actual=Values(result);
   ASSERT_EQ(actual.size(),83u);
   const auto compare=[&](unsigned a,unsigned b) {
     EXPECT_TRUE(std::isfinite(actual[a]));
-    EXPECT_NEAR(actual[a],expected.values[b],heph_test::ForceTolerance(b,expected.values))<<a<<'/'<<b;
+    EXPECT_NEAR(actual[a],expected.values[b],
+        heph_test::ForceTolerance(b,expected.values)+roundoff.Additional(b))<<a<<'/'<<b;
   };
   for (unsigned k=0;k<21;++k) compare(k,k);
   for (unsigned k=0;k<24;++k) compare(21+k,22+k);

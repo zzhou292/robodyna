@@ -1,5 +1,11 @@
 load("@rules_cc//cc:defs.bzl", "cc_test")
 cc_test(
+    name = "roundoff_check",
+    srcs = ["HephRoundoffTest.cpp", "HephRoundoff.h", "HephCapturedPacket.h"],
+    deps = ["//lib_utest/qualification/solid24_force:test_values", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cc_test(
     name = "host_check",
     srcs = ["HostTest.cpp", "FixtureTest.cpp", "TestSupport.h", "Fixture.h"],
     deps = ["//lib_src/elements/solids/resident:values", "//lib_src/solvers:nodal_force_assembly",

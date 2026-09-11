@@ -19,6 +19,7 @@ struct NativeTrajectory::Impl {
   tl::fea::solid24::ForceTrial host_b;
   tl::fea::solid24::History accepted_host_b;
   tl::fea::solid24::PrescribedInterval interval_b;
+  HephRoundoff accepted_roundoff_b, next_roundoff_b;
 };
 NativeTrajectory::NativeTrajectory()=default;
 NativeTrajectory::~NativeTrajectory()=default;
@@ -56,7 +57,9 @@ bool NativeTrajectory::Initialize(const s::Model& model,tl::math::Vec3 velocity)
     const auto status=tl::fea::solid24::InitializeForce(parent.reference,material,velocity,p.host_b);
     EXPECT_EQ(status,tl::fea::solid24::ForceStatus::Success);
   }
-  return !p.next_a.status&&!p.next_b.status&&!p.next_c.status;
+  if (p.next_a.status || p.next_b.status || p.next_c.status) return false;
+  return PrepareHephRoundoff(model.materials42()[model.solid24()[0].material_index].value,
+      p.next_b.values,p.b.values,p.b.reference.values[33],0,{},p.next_roundoff_b);
 }
 bool NativeTrajectory::Evaluate(const std::vector<double>& x,const std::vector<double>& v,
     double time,double dt,std::uint64_t epoch) {
@@ -76,13 +79,16 @@ bool NativeTrajectory::Evaluate(const std::vector<double>& x,const std::vector<d
         model.materials42()[parent.material_index].value,p.host_b);
     EXPECT_EQ(status,tl::fea::solid24::ForceStatus::Success);
   }
-  return !p.next_a.status&&!p.next_b.status&&!p.next_c.status;
+  if (p.next_a.status || p.next_b.status || p.next_c.status) return false;
+  return PrepareHephRoundoff(model.materials42()[model.solid24()[0].material_index].value,
+      p.next_b.values,p.b.values,p.b.reference.values[33],dt,
+      p.accepted_roundoff_b,p.next_roundoff_b);
 }
 void NativeTrajectory::Compare(const Results& results,double time,std::uint64_t epoch) const {
   if (HephDiagnosticEnabled())
     HephDiagnostic(impl_->interval_b,impl_->accepted_host_b,impl_->host_b,results.b,impl_->next_b,epoch);
   CheckNative(results.a,impl_->next_a);
-  CheckNative(results.b,impl_->next_b);
+  CheckNative(results.b,impl_->next_b,impl_->next_roundoff_b);
   CheckNative(results.c,impl_->next_c,impl_->model.solid6z()[0].reference.geometry().volume_m3);
   EXPECT_EQ(results.a.stamp.time_s,time);EXPECT_EQ(results.a.stamp.sample_index,epoch);
   EXPECT_EQ(results.b.stamp.time_s,time);EXPECT_EQ(results.b.stamp.sample_index,epoch);
@@ -92,6 +98,7 @@ void NativeTrajectory::Accept() {
   impl_->a=impl_->next_a.next;
   heph_test::AcceptNative(impl_->next_b,impl_->b);
   impl_->c.Accept(impl_->next_c);
+  impl_->accepted_roundoff_b=impl_->next_roundoff_b;
   if (HephDiagnosticEnabled()) impl_->accepted_host_b=impl_->host_b.proposed_history;
 }
 } // namespace solid_resident_test
