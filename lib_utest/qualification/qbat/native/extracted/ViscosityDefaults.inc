@@ -1,0 +1,20 @@
+      IF(MTN == 19)THEN
+          VISCDEF=FOURTH
+      ELSEIF(MTN == 25.OR.MTN == 27 .OR. MTN == 123 .OR. MTN == 127 .OR. MTN == 125)THEN
+          VISCDEF=FIVEEM2
+      ELSE
+          VISCDEF=ZERO
+      ENDIF
+c
+      VISCMX = GROUP_PARAM%VISC_DM
+      VISCE  = GEO(13,IPROP)
+      IF (VISCMX == ZERO) VISCMX = VISCDEF
+      IF (MTN == 1 .OR.MTN == 2 .OR. MTN == 3.OR.
+     .    MTN == 22.OR.MTN == 23.OR.MTN == 91) VISCMX = ZERO
+      VISCMX = MAX(VISCMX,VISCE)
+      VISCMX = SQRT(ONE + VISCMX*VISCMX)-VISCMX
+c
+      DO I=LFT,LLT
+        DTEL(I)= ALMIN(I)*VISCMX/SSP(I)
+        ALDT(I)= ALMIN(I)
+      ENDDO

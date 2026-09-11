@@ -1,0 +1,9 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+package(default_visibility = ["//visibility:public"])
+cc_library(
+    name = "geometry",
+    hdrs = ["QbatTypes.h", "QbatChecks.h", "QbatReferenceCoefficients.h",
+            "QbatReference.h", "QbatPointDerivatives.h", "QbatGeometry.h"],
+    deps = ["//lib_src/elements/qeph:startup", "//lib_src/elements/qeph:kinematics",
+            "//lib_src/math:fixed3", "//lib_src/math:quaternion"],
+)

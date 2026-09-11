@@ -1,0 +1,163 @@
+{
+  "repository": "https://github.com/OpenRadioss/OpenRadioss",
+  "commit": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Pure active OFF1 IHBE11 NPTR2/NPTS2/NPTT1 geometry, CNDLENI initial coefficients; no velocities/force/material history. Shared complete CNEVECI/CDERII/CINMAS reference and engine CLSKEW3 are linked from the existing native QEPH owner.",
+  "sources": [
+    {
+      "path": "original/starter/source/elements/shell/coqueba/cndleni.F",
+      "upstream_path": "starter/source/elements/shell/coqueba/cndleni.F",
+      "size": 20370,
+      "sha256": "58e24597f0bdc9f04d5f378071cf21dffd865b1aea2d793f108ebab25c1a5740",
+      "git_blob_sha1": "a39b4a44c6d451111f0ae63c053a7cdeabfdbf90"
+    },
+    {
+      "path": "original/starter/source/elements/shell/coqueba/cbainit3.F",
+      "upstream_path": "starter/source/elements/shell/coqueba/cbainit3.F",
+      "size": 32744,
+      "sha256": "7148b42c3eb17f8c1cc7eebfaa253af1cba3c2d9f0e9a82dd22acf1b7adcc656",
+      "git_blob_sha1": "b222d8d4665ba387e8a23e601ced88ab349a1d2d"
+    },
+    {
+      "path": "original/engine/source/elements/shell/coqueba/cbacoor.F",
+      "upstream_path": "engine/source/elements/shell/coqueba/cbacoor.F",
+      "size": 70315,
+      "sha256": "ebf13e11e9c30dad954602084fc90170dd2dc3fc9cb7039690a549cc20bf1456",
+      "git_blob_sha1": "a6a908a3f8c8de000ed81440844266f2f9d800dd"
+    },
+    {
+      "path": "original/engine/source/elements/shell/coqueba/cbadef.F",
+      "upstream_path": "engine/source/elements/shell/coqueba/cbadef.F",
+      "size": 74868,
+      "sha256": "839eb23b55ce2a341313c057cf1c3d1b923c694b64d9624bd9161a3cbd58f611",
+      "git_blob_sha1": "94776567320aeb4ae5e0e5b14f9463b38fe6f24d"
+    },
+    {
+      "path": "original/starter/source/modules/defaults_mod.F90",
+      "upstream_path": "starter/source/modules/defaults_mod.F90",
+      "size": 10651,
+      "sha256": "19e53469b0d14fbf4a7007aaabf1180a74172d054ec9b1af76764d990f784477",
+      "git_blob_sha1": "7aae351e84df43f295673e1107e014b4f05abc42"
+    },
+    {
+      "path": "original/starter/source/general_controls/default_values/hm_read_defshell.F",
+      "upstream_path": "starter/source/general_controls/default_values/hm_read_defshell.F",
+      "size": 5318,
+      "sha256": "aeaf082068194d1644cbf5cfba3e1af93d4919ecd858b836ef2abc21fc2c825e",
+      "git_blob_sha1": "c2175c05424262d13a5b04a99bc75d58cc98bd4c"
+    },
+    {
+      "path": "original/hm_cfg_files/config/CFG/radioss2025/PROP/prop_p1_shell.cfg",
+      "upstream_path": "hm_cfg_files/config/CFG/radioss2025/PROP/prop_p1_shell.cfg",
+      "size": 16130,
+      "sha256": "e4f87d18cc3f856d1e5fd114750a88228838cb3ea31bc90650ad0b3c71c6552d",
+      "git_blob_sha1": "44bed7c14fb430dfc3eae5c53ca2908c8a32ca07"
+    },
+    {
+      "path": "original/starter/source/properties/shell/hm_read_prop01.F",
+      "upstream_path": "starter/source/properties/shell/hm_read_prop01.F",
+      "size": 16609,
+      "sha256": "13d216d324eafee9085522d19c597754a5ad51aad02a294316a6c459b89c37d4",
+      "git_blob_sha1": "5a7af926ee09df65436592aee9140a24c1058943"
+    },
+    {
+      "path": "original/starter/source/elements/shell/coque/set_elgroup_param.F",
+      "upstream_path": "starter/source/elements/shell/coque/set_elgroup_param.F",
+      "size": 6271,
+      "sha256": "c71f7e79c649546ee0a666faf4f301679d96390ca7db63e50fcaa20f19ffebea",
+      "git_blob_sha1": "67f858f32dcca1691c3c207e48ee219e43ae18e3"
+    },
+    {
+      "path": "original/reader/source/dyna2rad/dyna2rad/_private/convertprops.cxx",
+      "upstream_path": "reader/source/dyna2rad/dyna2rad/_private/convertprops.cxx",
+      "size": 199888,
+      "sha256": "87ce68f7e6d9d9186bb2ed5bbc74d1ca97226b8ebaffd48408e2becaae46852d",
+      "git_blob_sha1": "e6ddfb2465fce574d5836822f96979af0f0d659c"
+    }
+  ],
+  "fragments": [
+    {
+      "path": "extracted/CurrentFrame.inc",
+      "source": "original/engine/source/elements/shell/coqueba/cbacoor.F",
+      "first_line": 201,
+      "last_line": 264,
+      "sha256": "d8b1d37b66ef331ae60e7f2c1ed6b99db7c2b1a56fe9f2ee8df204e19b342968"
+    },
+    {
+      "path": "extracted/CenteredGeometry.inc",
+      "source": "original/engine/source/elements/shell/coqueba/cbacoor.F",
+      "first_line": 349,
+      "last_line": 371,
+      "sha256": "1bc314e24e0f6d7f285575fc6a1bc50d849863e5949d8a3bec26eb8fb24b27ac"
+    },
+    {
+      "path": "extracted/SurfaceBranches.inc",
+      "source": "original/engine/source/elements/shell/coqueba/cbacoor.F",
+      "first_line": 440,
+      "last_line": 455,
+      "sha256": "e031ce7141ba33366dba0e5b4996aa05c2357c43d94245b132bbb0969716122f"
+    },
+    {
+      "path": "extracted/FlatPointPrelude.inc",
+      "source": "original/engine/source/elements/shell/coqueba/cbacoor.F",
+      "first_line": 457,
+      "last_line": 477,
+      "sha256": "f4358e879e1f7c1303deccf9967a935f1c7dbe1b2ad99e21d689d1c0a1ee479a"
+    },
+    {
+      "path": "extracted/FlatPointGeometry.inc",
+      "source": "original/engine/source/elements/shell/coqueba/cbacoor.F",
+      "first_line": 513,
+      "last_line": 548,
+      "sha256": "30cd8caa3452cebbba277c551954bad9a32b523cdb08d2c2391206a32c404aef"
+    },
+    {
+      "path": "extracted/NativeCbaDef1.F",
+      "source": "original/engine/source/elements/shell/coqueba/cbadef.F",
+      "first_line": 1198,
+      "last_line": 1263,
+      "sha256": "72e9a8e6fcbb33c60cd856a0b7f6a3705bea597d9af91867a6575deddc8465b9"
+    },
+    {
+      "path": "extracted/NativeCbaDefSh.F",
+      "source": "original/engine/source/elements/shell/coqueba/cbadef.F",
+      "first_line": 723,
+      "last_line": 768,
+      "sha256": "34f1649adbd4d068abca8820e9322cb58d1e50c89d44935edcfcbcc65fdc2fc1"
+    },
+    {
+      "path": "extracted/SoundSpeed.inc",
+      "source": "original/starter/source/elements/shell/coqueba/cndleni.F",
+      "first_line": 307,
+      "last_line": 312,
+      "sha256": "7085ed23d7d1f5391ab98cf97856b94a419b355e67429255a44241e3485bc9d6"
+    },
+    {
+      "path": "extracted/CharacteristicLength.inc",
+      "source": "original/starter/source/elements/shell/coqueba/cndleni.F",
+      "first_line": 315,
+      "last_line": 355,
+      "sha256": "d0a732c2593519e4ba186febe8f4a080f5749d3a139f4bb3f7a5eb089542a49c"
+    },
+    {
+      "path": "extracted/SelectedLength.inc",
+      "source": "original/starter/source/elements/shell/coqueba/cndleni.F",
+      "first_line": 358,
+      "last_line": 361,
+      "sha256": "cdfddcf9d5ffd82840b916555148c7ded2c4989ad2f7b4e6c722330522bc4eb7"
+    },
+    {
+      "path": "extracted/ViscosityDefaults.inc",
+      "source": "original/starter/source/elements/shell/coqueba/cndleni.F",
+      "first_line": 374,
+      "last_line": 393,
+      "sha256": "910ced191fb9d98c50e9aeee47ed58d94f8724499a5723c8046bcf3bf736eeb8"
+    },
+    {
+      "path": "extracted/NodalStiffness.inc",
+      "source": "original/starter/source/elements/shell/coqueba/cndleni.F",
+      "first_line": 440,
+      "last_line": 455,
+      "sha256": "95f57062c40c7219540179320c5a07b928aa2a306939cdf7168f30cc7db8826b"
+    }
+  ]
+}

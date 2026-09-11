@@ -1,0 +1,17 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+cc_test(
+    name = "qbat_geometry_check",
+    size = "small",
+    srcs = ["Fixture.h", "MathTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/elements/qbat:geometry", "@googletest//:gtest_main"],
+)
+cuda_test(
+    name = "qbat_geometry_cuda_check",
+    size = "small",
+    srcs = ["Fixture.h", "MathCudaTest.cu"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/elements/qbat:geometry", "@googletest//:gtest_main"],
+)
