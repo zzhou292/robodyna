@@ -1,5 +1,21 @@
 # Explicit filtered LAW44 with zero strengthening
 
+## Root qualification, 2026-09-10
+
+Frozen `910e346` passes all 40 numeric functions with zero failures/skips:
+3 value, 2 native, 1 actual CUDA, 18 catalog, and all 16 previous native
+point/rate/analytic checks. Root source review confirmed exact scope identity,
+unchanged disabled-rate defaults and the shared point return map.
+Evidence is `crash-work/reports/shell-filtered-zero-c-root-{configure,build,tests}-1`
+and `shell-filtered-zero-c-root-functions-1/` in the parent workspace.
+The 8-affinity-CPU / 4-worker build used an 18 GiB guard, took 40.875 s and
+sampled 1,147,723,776 B peak RSS. Actual native/GPU0 tests used 2 CPUs / 2 GiB and
+took 0.603 s. These short gates under-report memory peaks between samples.
+Both owning Bazel targets build (`shell-filtered-zero-c-bazel-build-1`).
+The trailing policy changes the parameter layout; combined resident regressions
+are scheduled with the failure-force integration. No glass caller, source or
+resident failure admission is claimed by this point-level gate.
+
 `ShellPlasticityRatePolicy::FilteredZeroC` admits enabled=true, C=0, resolved
 P=1 and a positive, explicitly supplied cutoff. It preserves the native rate
 history even though the strengthening multiplier is exactly one. The default
