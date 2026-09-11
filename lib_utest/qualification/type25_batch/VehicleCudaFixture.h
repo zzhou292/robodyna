@@ -7,7 +7,9 @@
 
 namespace type25_batch_test {
 namespace vehicle=fe::vehicle_test;
-inline constexpr double VehicleStep=0x1p-20;
+// The complete fixture's native minimum is about 2.46951e-7 s.
+// Use a fixed step below it; owner-capacity constants are not stability inputs.
+inline constexpr double VehicleStep=0x1p-24;
 struct VehicleRig {
   VehicleMassInput input;
   vehicle::Initial initial;
