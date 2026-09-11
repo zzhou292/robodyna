@@ -71,7 +71,7 @@ cuda_library(
     ],
     hdrs = [],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
-    deps = [
+    deps = ["//lib_src/elements:shell_prepared_activity_readback",
         ":batch_values", "//lib_src/elements:shell_physical_owner",
         "//lib_src/elements:shell_mapped_startup",
         ":force", ":layered_j2", ":layered_law1", ":layered_j2_failure", ":layered_tab1", "//lib_src/elements:shell_batch_fields",

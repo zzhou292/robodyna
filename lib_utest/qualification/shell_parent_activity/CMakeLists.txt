@@ -10,7 +10,7 @@ add_subdirectory("${tl_root}/lib_src/elements/t3" t3-values)
 include("${tl_root}/lib_src/elements/qeph/QephBatch.cmake")
 include("${tl_root}/lib_src/elements/t3/T3Batch.cmake")
 include("${tl_root}/lib_src/elements/ShellBatchPublication.cmake")
-add_executable(shell_parent_activity_cuda_test ActivityTest.cu
+add_executable(shell_parent_activity_cuda_test ActivityTest.cu PreparedActivityTest.cu
   ../qbat_resident/ResidentStartup.cu ../qbat_resident/ResidentFrames.cu
   ../qbat_resident/ReadFault.cu)
 target_link_libraries(shell_parent_activity_cuda_test PRIVATE

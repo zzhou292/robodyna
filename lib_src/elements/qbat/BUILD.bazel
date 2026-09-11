@@ -41,7 +41,7 @@ cuda_library(
     hdrs = ["QbatBatchMeasure.h"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false",
              "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
-    deps = ["//lib_src/elements:shell_physical_owner", ":batch_values", "//lib_src/elements:shell_batch_fields",
+    deps = ["//lib_src/elements:shell_prepared_activity_readback", "//lib_src/elements:shell_physical_owner", ":batch_values", "//lib_src/elements:shell_batch_fields",
             "//lib_src/elements:shell_formulation_output_ranges",
             "//lib_src/elements:shell_resident_host_accounting",
             "//lib_src/elements:shell_batch_plasticity_binding",

@@ -15,8 +15,8 @@
   "ported_files": [
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
-      "bytes": 4780,
-      "sha256": "82328921cd206f2250a2f3953a0653c8cca0dcd8f79d463dc60ee05edfec8e4a"
+      "bytes": 4879,
+      "sha256": "4154a28ff8d0461655aa719c2d6860b405df72d9ef3f69f4621318c8fbae096d"
     },
     {
       "path": "lib_src/elements/t3/CMakeLists.txt",
@@ -542,6 +542,17 @@
         "path": "lib_src/elements/t3/BUILD.bazel",
         "bytes": 3332,
         "sha256": "5199e6d2ef729fba14331016d45867d8944197fe4f415911d925dbb8e8d9cbd1"
+      }
+    ]
+  },
+  "prepared_activity_readback_registration": {
+    "scope": "Add the shared host readback preflight dependency for actual owner/token prepared parent activity. No donor, startup, force arithmetic or existing accepted readback changes.",
+    "previous_manifest_sha256": "87b128d30d3af618d86a6c0b3c26578303c6b34ee9a7e5068b4c90486798a8cb",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 4780,
+        "sha256": "82328921cd206f2250a2f3953a0653c8cca0dcd8f79d463dc60ee05edfec8e4a"
       }
     ]
   }

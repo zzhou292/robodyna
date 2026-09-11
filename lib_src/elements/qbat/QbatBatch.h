@@ -51,6 +51,10 @@ class Batch {
   // same full four-point/native-result validation as CopyAcceptedResults.
   BatchReport CopyAcceptedParentActivity(const NodalStamp&,std::uint8_t*,
       std::size_t capacity,BatchDiagnostics*);
+  // Complete candidate OFF from the same actual owner/token and typed history.
+  // Exact capacity and disjoint output; no accepted publication or activity default.
+  BatchReport CopyPreparedParentActivity(FENodalState&,const NodalTrialToken&,
+      const BatchDiagnostics&,std::uint8_t*,std::size_t capacity);
   void DiscardTrial() noexcept;
   NodalAllocationInfo allocations() const noexcept;
   std::size_t host_bytes() const noexcept;

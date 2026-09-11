@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "QbatBatchStorage.h"
 #include "QbatBatchResultChecks.h"
+#include "../ShellPreparedActivityReadback.h"
 #include "../ShellFormulationOutputRanges.h"
 #include "../ShellPhysicalOutputRanges.h"
 #include <cstring>
@@ -85,6 +86,24 @@ BatchReport Batch::CopyAcceptedParentActivity(const NodalStamp& expected,
   }
   *diagnostics = state.accepted_diagnostics;
   return {BatchStatus::Success,"Accepted QBAT parent activity copied"};
+}
+BatchReport Batch::CopyPreparedParentActivity(FENodalState& owner,
+    const NodalTrialToken& token, const BatchDiagnostics& expected,
+    std::uint8_t* output, std::size_t capacity) {
+  if (!impl_) return {BatchStatus::NotInitialized, "QBAT batch is not initialized"};
+  auto& state = *impl_;
+  auto report = shell_activity_detail::PreparedPreflight(state, *this, owner, token,
+      expected, batch_detail::SameDiagnostics(expected, state.candidate_diagnostics), output, capacity);
+  if (report.status != BatchStatus::Success) return report;
+  report = state.ReadResults(state.trial, expected);
+  if (report.status != BatchStatus::Success) {
+    state.Discard();
+    return report;
+  }
+  for (std::size_t parent = 0; parent < capacity; ++parent) {
+    output[parent] = state.staging[parent].history.element_active ? 1 : 0;
+  }
+  return {BatchStatus::Success, "Complete prepared QBAT parent activity copied"};
 }
 BatchReport Batch::CopyPreparedResults(const BatchDiagnostics& expected,BatchResult* output,std::size_t capacity) {
   if(!impl_) return {BatchStatus::NotInitialized,"QBAT batch is not initialized"};

@@ -1,5 +1,6 @@
 #include "QephBatchStorage.h"
 #include "../failure/ShellFailureReadback.h"
+#include "../ShellPreparedActivityReadback.h"
 #include <algorithm>
 
 namespace tl::fea::qeph {
@@ -64,6 +65,31 @@ BatchReport QephBatch::CopyAcceptedParentActivity(const NodalStamp& expected,
   }
   *diagnostics = state.accepted_diagnostics;
   return {BatchStatus::Success, "Accepted parent activity copied"};
+}
+
+BatchReport QephBatch::CopyPreparedParentActivity(FENodalState& owner,
+    const NodalTrialToken& token, const BatchDiagnostics& expected,
+    std::uint8_t* output, std::size_t capacity) {
+  if (!impl_) return {BatchStatus::NotInitialized, "Batch is not initialized"};
+  auto& state = *impl_;
+  if (!state.plasticity || !state.plasticity->failure_sections()) {
+    return {BatchStatus::InvalidInput, "Prepared activity needs the explicit failure-capable scope"};
+  }
+  auto report = shell_activity_detail::PreparedPreflight(state, *this, owner, token,
+      expected, batch_detail::SameDiagnostics(expected, state.candidate_diagnostics), output, capacity);
+  if (report.status != BatchStatus::Success) return report;
+  const auto slab = 1u - state.AcceptedSlabIndex();
+  report = shell_batch_plasticity_detail::ReadFailure(state, slab, expected.time);
+  if (report.status != BatchStatus::Success) {
+    state.Discard();
+    return report;
+  }
+  const auto* history = state.plasticity->failure_staging();
+  for (std::size_t parent = 0; parent < capacity; ++parent) {
+    const bool active = history[parent].active;
+    output[parent] = active ? 1 : 0;
+  }
+  return {BatchStatus::Success, "Complete prepared parent activity copied"};
 }
 
 BatchReport QephBatch::CopyPreparedFailureHistory(const BatchDiagnostics& expected,

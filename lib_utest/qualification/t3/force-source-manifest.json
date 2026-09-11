@@ -6,7 +6,7 @@
   "native_reference_checkpoint": "t3-r3-native-force-history-1",
   "startup_rates_tl_commit": "f5ceb29",
   "startup_rates_checkpoint": "t3-port-startup-rates-1",
-  "live_startup_manifest_sha256": "87b128d30d3af618d86a6c0b3c26578303c6b34ee9a7e5068b4c90486798a8cb",
+  "live_startup_manifest_sha256": "082477e94696bda6ba87755a2bbadfe25b915142e1cb52b14961ebc80888c59a",
   "native_source_manifest_sha256": "3f4891f6dab344de9c0c579b699e43e11b30a7359358170833395481e62c2e9f",
   "transformations": [
     "Single three-node fixed-array selected source arithmetic; no MVSIZ or COMMON in production",
@@ -128,8 +128,8 @@
     },
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
-      "bytes": 4780,
-      "sha256": "82328921cd206f2250a2f3953a0653c8cca0dcd8f79d463dc60ee05edfec8e4a"
+      "bytes": 4879,
+      "sha256": "4154a28ff8d0461655aa719c2d6860b405df72d9ef3f69f4621318c8fbae096d"
     },
     {
       "path": "lib_src/elements/t3/CMakeLists.txt",
@@ -143,13 +143,13 @@
     },
     {
       "path": "lib_utest/qualification/t3/source-manifest.json",
-      "bytes": 22951,
-      "sha256": "87b128d30d3af618d86a6c0b3c26578303c6b34ee9a7e5068b4c90486798a8cb"
+      "bytes": 23500,
+      "sha256": "082477e94696bda6ba87755a2bbadfe25b915142e1cb52b14961ebc80888c59a"
     },
     {
       "path": "lib_utest/qualification/t3/verify_sources.py",
       "bytes": 2001,
-      "sha256": "fd173766ce9f14b33baa275489eee2ea6cef8d70141cb341500d833a6b3ee07e"
+      "sha256": "09cc234e2a7ff41f32cadcf4540012dfb4baeaa53775be492a0addcbb2b64fa4"
     },
     {
       "path": "lib_utest/qualification/t3/T3PortFixture.h",
@@ -893,6 +893,27 @@
         "path": "lib_utest/qualification/t3/verify_sources.py",
         "bytes": 2001,
         "sha256": "9763cd4c5d1bdb3cc292f47e75fe42c9ca7cbf160f0dee1eaceccb2c5b8915f3"
+      }
+    ]
+  },
+  "prepared_activity_readback_registration": {
+    "scope": "Add the shared host readback preflight dependency for actual owner/token prepared parent activity. No donor, startup, force arithmetic or existing accepted readback changes.",
+    "previous_manifest_sha256": "ea4233013ec48246d190fe2c79d7f4c56f860baaf87b2bec1d5c417c49a0ec32",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 4780,
+        "sha256": "82328921cd206f2250a2f3953a0653c8cca0dcd8f79d463dc60ee05edfec8e4a"
+      },
+      {
+        "path": "lib_utest/qualification/t3/source-manifest.json",
+        "bytes": 22951,
+        "sha256": "87b128d30d3af618d86a6c0b3c26578303c6b34ee9a7e5068b4c90486798a8cb"
+      },
+      {
+        "path": "lib_utest/qualification/t3/verify_sources.py",
+        "bytes": 2001,
+        "sha256": "fd173766ce9f14b33baa275489eee2ea6cef8d70141cb341500d833a6b3ee07e"
       }
     ]
   }

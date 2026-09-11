@@ -154,6 +154,10 @@ class T3Batch {
   // sidecars. Epoch zero requires successful source/virgin-state binding.
   BatchReport CopyAcceptedParentActivity(const NodalStamp&,std::uint8_t*,
       std::size_t capacity,BatchDiagnostics*);
+  // Complete candidate OFF from the same actual owner/token and typed history.
+  // Exact capacity and disjoint output; no accepted publication or activity default.
+  BatchReport CopyPreparedParentActivity(FENodalState&,const NodalTrialToken&,
+      const BatchDiagnostics&,std::uint8_t*,std::size_t capacity);
   // Explicit complete QEPH/T3/QBAT scope. All present families require this
   // named path and the common formulation publisher; legacy admission stays closed.
   BatchReport InitializeFormulations(const T3BatchConfig&,const ShellFormulationScope&,
