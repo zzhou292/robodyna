@@ -1,5 +1,6 @@
 #include "ShellBatchPlasticityStorage.h"
 #include "ShellMixedSectionStorage.h"
+#include "failure/ShellFailureStorage.h"
 #include <cstring>
 #include <new>
 #include <stdexcept>
@@ -75,8 +76,10 @@ cudaError_t HostStorage::Read(unsigned slab,std::size_t count,cudaStream_t strea
   return error==cudaSuccess?cudaStreamSynchronize(stream):error;
 }
 bool HostStorage::SameMaterialScope(const HostStorage& b) const noexcept {
-  if(collection_||b.collection_)
-    return collection_&&b.collection_&&collection_->SameScope(*b.collection_);
+  if (failure_ || b.failure_) return SameFailureScope(b);
+  const auto* a_scope = Collection();
+  const auto* b_scope = b.Collection();
+  if (a_scope || b_scope) return a_scope && b_scope && a_scope->SameScope(*b_scope);
   if(material_id_!=b.material_id_||curve_id_!=b.curve_id_||curve_count_!=b.curve_count_||
      !Same(material_,b.material_)||rate_.enabled!=b.rate_.enabled||rate_.policy!=b.rate_.policy||
      !Same(rate_.cowper_symonds_c_per_s,b.rate_.cowper_symonds_c_per_s)||

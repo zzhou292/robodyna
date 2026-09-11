@@ -9,7 +9,10 @@ cc_library(
         "//lib_utest/qualification/shell_layered_failure:failure_test_support",
         "@googletest//:gtest",
     ],
-    visibility = ["//lib_utest/qualification/shell_tab1_force:__pkg__"],
+    visibility = [
+        "//lib_utest/qualification/shell_tab1_force:__pkg__",
+        "//lib_utest/qualification/resident_shell_failure:__pkg__",
+    ],
 )
 cc_test(
     name = "failure_force_values",

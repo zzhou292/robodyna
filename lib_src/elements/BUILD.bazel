@@ -72,12 +72,20 @@ cc_library(
     deps = [":shell_batch_binding", ":shell_batch_plasticity", ":shell_binding_identity_index", "//lib_src/materials:shell_elastic_law1_point", "//lib_utils:bounded_startup_array"],
 )
 
+cc_library(
+    name = "shell_batch_failure_binding",
+    srcs = ["failure/ShellFailureBinding.cpp"],
+    hdrs = ["ShellBatchFailure.h", "ShellBatchFailureBinding.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":shell_batch_plasticity_binding", "//lib_src/elements/sections:shell_layered_j2_failure", "//lib_utils:bounded_arena"],
+)
+
 cuda_library(
     name = "shell_batch_plasticity_storage",
-    srcs = ["ShellBatchPlasticityStorage.cpp", "ShellBatchPlasticityCollectionStorage.cpp", "ShellMixedSectionStorage.cpp", "ShellMixedSectionReadback.cpp"],
-    hdrs = ["ShellBatchPlasticityStorage.h", "ShellPlasticArenaLayout.h", "ShellBatchLayeredSection.h", "ShellMixedSectionArenaLayout.h", "ShellMixedSectionStorage.h", "ShellLayeredSectionValues.h", "ShellBatchSectionAdvance.h"],
+    srcs = ["ShellBatchPlasticityStorage.cpp", "ShellBatchPlasticityCollectionStorage.cpp", "ShellMixedSectionStorage.cpp", "ShellMixedSectionReadback.cpp", "failure/ShellFailureStorage.cpp", "failure/ShellFailureCollectionStorage.cpp"],
+    hdrs = ["ShellBatchPlasticityStorage.h", "ShellPlasticArenaLayout.h", "ShellBatchLayeredSection.h", "ShellMixedSectionArenaLayout.h", "ShellMixedSectionStorage.h", "ShellLayeredSectionValues.h", "ShellBatchSectionAdvance.h", "failure/ShellFailureArenaLayout.h", "failure/ShellFailureStorage.h", "failure/ShellFailureValues.h", "failure/ShellFailureReadback.h"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
-    deps = [":shell_batch_plasticity", ":shell_batch_plasticity_binding", ":shell_resident_storage", ":shell_resident_host_accounting", "//lib_src/elements/sections:shell_layered_law1", "//lib_utils:bounded_startup_array"],
+    deps = [":shell_batch_plasticity", ":shell_batch_plasticity_binding", ":shell_batch_failure_binding", "//lib_src/solvers:nodal_trial_identity", ":shell_resident_storage", ":shell_resident_host_accounting", "//lib_src/elements/sections:shell_layered_law1", "//lib_utils:bounded_startup_array"],
 )
 
 cuda_library(

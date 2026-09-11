@@ -40,12 +40,12 @@ cuda_library(
     srcs = [
         "QephBatch.cu", "QephBatchOperations.cu", "QephBatchKernels.cu",
         "QephBatchModel.cpp", "QephBatchIdentity.cpp", "QephBatchPublication.cpp",
-        "QephBatchPlasticity.cpp", "QephBatchSections.cpp",
+        "QephBatchPlasticity.cpp", "QephBatchSections.cpp", "QephBatchFailure.cpp", "QephBatchFailureReadback.cpp",
     ],
-    hdrs = ["QephBatch.h", "QephBatchStorage.h", "QephBatchDiagnostics.h", "QephBatchStartup.h", "QephBatchLayeredSection.h"],
+    hdrs = ["QephBatch.h", "QephBatchStorage.h", "QephBatchDiagnostics.h", "QephBatchStartup.h", "QephBatchLayeredSection.h", "QephBatchFailureSection.h"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
     deps = [
-        ":force", ":layered_j2", ":layered_law1", "//lib_src/elements:shell_batch_fields",
+        ":force", ":layered_j2", ":layered_law1", ":layered_j2_failure", "//lib_src/elements:shell_batch_fields",
         "//lib_src/elements:shell_batch_plasticity_storage",
         "//lib_src/elements:shell_batch_joined_model",
         "//lib_src/elements:shell_resident_startup_index", "//lib_src/elements:shell_resident_host_accounting",

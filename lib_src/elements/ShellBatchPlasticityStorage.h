@@ -4,6 +4,7 @@
 #include "ShellCollectionLimits.h"
 #include "ShellPlasticArenaLayout.h"
 #include "ShellBatchLayeredSection.h"
+#include "ShellBatchFailureBinding.h"
 #include "lib_utils/BoundedStartupArray.h"
 #include <cuda_runtime_api.h>
 #include <memory>
@@ -22,6 +23,8 @@ struct SetupReport {
 // Host-owned declaration and readback staging exist only for the opt-in path.
 // Two section arrays use the original shell slab index; this class has no
 // accepted index, stamp, pending flag, commit, discard or independent clock.
+class FailureHostStorage;
+struct FailureDeviceStorage;
 class MixedHostStorage;
 struct MixedDeviceStorage;
 class HostStorage {
@@ -40,7 +43,16 @@ class HostStorage {
   std::size_t device_bytes() const noexcept;
   MixedDeviceStorage* mixed_device() const noexcept;
   bool heterogeneous_sections() const noexcept { return bool(mixed_); }
-  SetupReport ReadSections(unsigned slab,std::size_t count,cudaStream_t) noexcept;
+  SetupReport ReadSections(unsigned slab,std::size_t count,cudaStream_t,double time=0) noexcept;
+  FailureDeviceStorage* failure_device() const noexcept;
+  const ShellBatchFailureState* failure_staging() const noexcept;
+  std::size_t failure_device_bytes() const noexcept;
+  bool failure_sections() const noexcept { return bool(failure_); }
+  SetupReport InitializeFailureCollection(const ShellBatchFailureBinding&,const ShellBatchBinding&,
+      ShellBindingFamily,std::size_t,std::size_t device_cap,std::size_t host_cap,
+      const ShellBatchFailureLimits&,bool vehicle);
+  static bool ForecastFailureSections(std::size_t count,std::size_t points,std::size_t binding_bytes,
+      std::size_t device_cap,std::size_t host_cap,const ShellBatchFailureLimits&,std::size_t& host_bytes) noexcept;
   const ShellBatchLayeredSection* section_staging() const noexcept;
   // Conservative payload peak: arena initialization + readback + retained
   // curve/catalog data + per-parent rebase offsets. No allocation or input read.
@@ -61,6 +73,9 @@ class HostStorage {
   util::BoundedStartupArray<double,0> curve_x_,curve_y_;
   util::BoundedStartupArray<ShellBatchSectionState,0> staging_;
   std::unique_ptr<ShellBatchPlasticityBinding> collection_; // New path only; full owned scope.
+  std::unique_ptr<FailureHostStorage> failure_;
+  const ShellBatchPlasticityBinding* Collection() const noexcept;
+  bool SameFailureScope(const HostStorage&) const noexcept;
   std::unique_ptr<MixedHostStorage> mixed_; // Explicit mode only, same caller-provided slab index.
   SetupReport InitializeSections(const ShellBatchPlasticityBinding&,const ShellBatchBinding&,
       ShellBindingFamily,std::size_t,std::size_t,std::size_t,bool);

@@ -1,4 +1,4 @@
-load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 
 cc_test(
     name = "shell_plasticity_binding_check",
@@ -8,4 +8,11 @@ cc_test(
         "//lib_src/elements:shell_batch_plasticity_binding",
         "@googletest//:gtest_main",
     ],
+)
+
+cc_library(
+    name = "plasticity_binding_fixture",
+    visibility = ["//visibility:public"],
+    hdrs = ["PlasticityBindingFixture.h"],
+    deps = ["//lib_src/elements:shell_batch_plasticity_binding", "@googletest//:gtest"],
 )

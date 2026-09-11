@@ -65,7 +65,8 @@ BatchReport T3Batch::InitializeJoined(const T3BatchConfig& config,const ShellBat
 }
 BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchElement* elements,
     const ShellBatchBinding* joined,const ShellBatchPlasticityConfig* plasticity,
-    const ShellBatchPlasticityBinding* collection_plasticity,const NodalMassBinding* nodal_mass) try {
+    const ShellBatchPlasticityBinding* collection_plasticity,const NodalMassBinding* nodal_mass,
+    const ShellBatchFailureBinding* failure,const ShellBatchFailureLimits* failure_limits) try {
   if(impl_) return {BatchStatus::InvalidInput,"T3 batch is already initialized"};
   if(nodal_mass&&(!joined||!nodal_mass->Matches(*joined)))
     return {BatchStatus::InvalidInput,"Combined nodal mass differs from complete joined shell inventory"};
@@ -96,11 +97,22 @@ BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchEle
     const auto points=plasticity?plasticity->curve.count:collection_plasticity->curve_point_count();
     Layout plastic_layout; std::size_t plastic_host_bytes=0;
     const bool mixed=collection_plasticity&&collection_plasticity->heterogeneous_sections();
-    const bool forecast=mixed?
-      HostStorage::ForecastSections(config.element_count,points,catalog_bytes,
-        config.max_device_bytes-layout.bytes,host_cap,plastic_host_bytes):
-      HostStorage::Forecast(config.element_count,points,catalog_bytes,
-        config.max_device_bytes-layout.bytes,host_cap,plastic_layout,plastic_host_bytes);
+    if (failure && (!failure_limits || !mixed ||
+                    failure->host_bytes() < collection_plasticity->host_bytes())) {
+      return {BatchStatus::InvalidInput, "Failure sidecar requires explicit mixed scope and limits"};
+    }
+    bool forecast = false;
+    if (failure) {
+      const auto failure_bytes = failure->host_bytes() - collection_plasticity->host_bytes() + catalog_bytes;
+      forecast = HostStorage::ForecastFailureSections(config.element_count, points, failure_bytes,
+          config.max_device_bytes - layout.bytes, host_cap, *failure_limits, plastic_host_bytes);
+    } else if (mixed) {
+      forecast = HostStorage::ForecastSections(config.element_count, points, catalog_bytes,
+          config.max_device_bytes - layout.bytes, host_cap, plastic_host_bytes);
+    } else {
+      forecast = HostStorage::Forecast(config.element_count, points, catalog_bytes,
+          config.max_device_bytes - layout.bytes, host_cap, plastic_layout, plastic_host_bytes);
+    }
     if(!forecast||
        !host_budget.Append<unsigned char>(plastic_host_bytes,ignored)||
        !host_budget.Append<ReferenceMaterial>(config.element_count,ignored))
@@ -131,7 +143,11 @@ BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchEle
     if(report.status!=BatchStatus::Success) return report;
   }
   if(collection_plasticity) {
-    report=candidate->InitializePlasticity(*collection_plasticity);
+    if (failure) {
+      report = candidate->InitializeFailure(*failure, *failure_limits);
+    } else {
+      report = candidate->InitializePlasticity(*collection_plasticity);
+    }
     if(report.status!=BatchStatus::Success) return report;
   }
   report=candidate->Runtime(cudaMalloc(reinterpret_cast<void**>(&candidate->storage),layout.bytes),"T3 allocation failed");
@@ -147,6 +163,6 @@ BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchEle
 void T3Batch::DiscardTrial() noexcept { if(impl_) impl_->Discard(); }
 NodalAllocationInfo T3Batch::allocations() const noexcept {
   return impl_?NodalAllocationInfo{impl_->layout.bytes+(impl_->plasticity?impl_->plasticity->device_bytes():0),
-      impl_->plasticity?2u:1u}:NodalAllocationInfo{};
+      impl_->plasticity?(impl_->plasticity->failure_sections()?3u:2u):1u}:NodalAllocationInfo{};
 }
 } // namespace tl::fea::t3

@@ -1,4 +1,5 @@
 #include "ShellMixedSectionStorage.h"
+#include "failure/ShellFailureStorage.h"
 #include "ShellResidentHostAccounting.h"
 #include <new>
 #include <stdexcept>
@@ -23,12 +24,15 @@ bool HostStorage::ForecastSections(std::size_t count,std::size_t points,std::siz
   MixedLayout layout;return MixedHostStorage::Forecast(count,points,catalog_bytes,device_cap,host_cap,layout,host_bytes);
 }
 std::size_t HostStorage::device_bytes() const noexcept {
-  return mixed_?mixed_->device_bytes():device_?layout_.bytes:0;
+  return (mixed_?mixed_->device_bytes():device_?layout_.bytes:0)+failure_device_bytes();
 }
 MixedDeviceStorage* HostStorage::mixed_device() const noexcept { return mixed_?mixed_->device():nullptr; }
-SetupReport HostStorage::ReadSections(unsigned slab,std::size_t count,cudaStream_t stream) noexcept {
-  if(!mixed_||!collection_)return {SetupStatus::InvalidInput,"No explicit mixed section history"};
-  return mixed_->Read(slab,count,stream,*collection_);
+SetupReport HostStorage::ReadSections(unsigned slab,std::size_t count,cudaStream_t stream,double time) noexcept {
+  const auto* catalog=Collection();
+  if(!mixed_||!catalog)return {SetupStatus::InvalidInput,"No explicit mixed section history"};
+  const auto report=mixed_->Read(slab,count,stream,*catalog);
+  return report.status==SetupStatus::Success&&failure_?
+    failure_->Read(slab,count,stream,time,mixed_->staging()):report;
 }
 const ShellBatchLayeredSection* HostStorage::section_staging() const noexcept {
   return mixed_?mixed_->staging():nullptr;

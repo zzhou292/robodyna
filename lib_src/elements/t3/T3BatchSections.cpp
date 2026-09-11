@@ -3,9 +3,9 @@
 
 namespace tl::fea::t3 {
 namespace {
-template<class Impl> BatchReport ReadLayered(Impl& s,unsigned slab) {
+template<class Impl> BatchReport ReadLayered(Impl& s,unsigned slab,double time) {
   auto report=s.PendingError();if(report.status!=BatchStatus::Success)return report;
-  const auto read=s.plasticity->ReadSections(slab,s.config.element_count,s.stream);
+  const auto read=s.plasticity->ReadSections(slab,s.config.element_count,s.stream,time);
   using Setup=shell_batch_plasticity_detail::SetupStatus;
   if(read.status==Setup::DeviceFailure)return s.Runtime(read.cuda_status,read.message);
   if(read.status!=Setup::Success)
@@ -28,7 +28,7 @@ BatchReport T3Batch::CopyAcceptedLayeredSectionHistory(const NodalStamp& expecte
   if(!Disjoint(output,bytes,diagnostics,sizeof(*diagnostics))||!Disjoint(output,bytes,&expected,sizeof expected)||
      !Disjoint(diagnostics,sizeof(*diagnostics),&expected,sizeof expected))
     return {BatchStatus::InvalidInput,"T3 layered section outputs are missing or overlap inputs"};
-  const auto report=ReadLayered(s,s.AcceptedSlabIndex());if(report.status!=BatchStatus::Success)return report;
+  const auto report=ReadLayered(s,s.AcceptedSlabIndex(),s.accepted_diagnostics.time);if(report.status!=BatchStatus::Success)return report;
   std::memcpy(output,s.plasticity->section_staging(),bytes);*diagnostics=s.accepted_diagnostics;
   return {BatchStatus::Success,"OK"};
 }
@@ -46,7 +46,7 @@ BatchReport T3Batch::CopyPreparedLayeredSectionHistory(const BatchDiagnostics& e
   const auto bytes=s.config.element_count*sizeof(ShellBatchLayeredSection);
   if(!Disjoint(output,bytes,&expected,sizeof expected))
     return {BatchStatus::InvalidInput,"T3 layered section output is missing or overlaps its receipt"};
-  const auto report=ReadLayered(s,1u-s.AcceptedSlabIndex());
+  const auto report=ReadLayered(s,1u-s.AcceptedSlabIndex(),s.candidate_diagnostics.time);
   if(report.status!=BatchStatus::Success) { s.Discard();return report; }
   std::memcpy(output,s.plasticity->section_staging(),bytes);return {BatchStatus::Success,"OK"};
 }

@@ -44,7 +44,8 @@ BatchDiagnostics InitialDiagnostics(const T3BatchConfig&,bool joined=false);
 void LaunchAssembly(Storage*,const Slab*,NodalAssemblyView,bool initial);
 void LaunchCandidate(Storage*,const Slab*,Slab*,NodalPreparedView,BatchDiagnostics,
                      shell_batch_plasticity_detail::DeviceStorage*,unsigned accepted_slab,std::size_t element_count,
-                     shell_batch_plasticity_detail::MixedDeviceStorage*);
+                     shell_batch_plasticity_detail::MixedDeviceStorage*,
+                     shell_batch_plasticity_detail::FailureDeviceStorage*);
 void LaunchFailure(NodalAssemblyView);
 } // namespace tl::fea::t3::batch_detail
 
@@ -79,6 +80,7 @@ struct T3Batch::Impl {
   BatchReport ReadResults(const batch_detail::Slab*);
   BatchReport InitializePlasticity(const ShellBatchPlasticityConfig&,const batch_detail::Model&);
   BatchReport InitializePlasticity(const ShellBatchPlasticityBinding&);
+  BatchReport InitializeFailure(const ShellBatchFailureBinding&,const ShellBatchFailureLimits&);
   unsigned AcceptedSlabIndex() const noexcept { return accepted==&storage->slab[0]?0u:1u; }
   void Discard() noexcept { pending=false; candidate_view={}; candidate_diagnostics={}; }
   // Infallible sole publication boundary, shared by standalone and joined paths.

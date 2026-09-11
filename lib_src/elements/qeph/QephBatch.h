@@ -7,7 +7,9 @@
 #include <memory>
 
 namespace tl::fea { class ShellBatchBinding; class ShellBatchPublication; class NodalMassBinding;
-  class ShellBatchPlasticityBinding; struct ShellBatchPlasticityConfig; struct ShellBatchSectionState; class ShellBatchLayeredSection; }
+  class ShellBatchPlasticityBinding; struct ShellBatchPlasticityConfig; struct ShellBatchSectionState; class ShellBatchLayeredSection;
+  class ShellBatchFailureBinding;
+  struct ShellBatchFailureLimits; struct ShellBatchFailureState; }
 namespace tl::fea::qeph {
 constexpr std::size_t MaxBatchElements=MaxShellCollectionParents,MaxBatchNodes=MaxShellCollectionNodes;
 constexpr std::size_t MaxBatchDeviceBytes=1024*1024;
@@ -107,6 +109,9 @@ class QephBatch {
   // Complete multi-material catalog: both families copy the same full binding,
   // while each native parent selects its own prepared material/section.
   BatchReport InitializeJoined(const QephBatchConfig&,const ShellBatchBinding&,const ShellBatchPlasticityBinding&);
+  // Explicit complete mixed-collection failure sidecar. Default paths allocate none.
+  BatchReport InitializeJoined(const QephBatchConfig&,const ShellBatchBinding&,
+      const ShellBatchPlasticityBinding&,const ShellBatchFailureBinding&,const ShellBatchFailureLimits&);
   // Augmented startup uses one complete typed nodal M/J composition.
   // Its connector must also join the sole publication coordinator.
   BatchReport InitializeJoined(const QephBatchConfig&,const ShellBatchBinding&,const NodalMassBinding&);
@@ -142,6 +147,11 @@ class QephBatch {
   BatchReport CopyAcceptedSectionHistory(const NodalStamp&,ShellBatchSectionState*,std::size_t capacity,
                                         BatchDiagnostics*);
   BatchReport CopyPreparedSectionHistory(const BatchDiagnostics&,ShellBatchSectionState*,std::size_t capacity);
+  // Native parent activity and point failure are distinct from saved material stress.
+  // Exact complete family capacity and accepted/prepared identity are required;
+  // all caller outputs remain unchanged if validation or device readback fails.
+  BatchReport CopyAcceptedFailureHistory(const NodalStamp&,ShellBatchFailureState*,std::size_t capacity,BatchDiagnostics*);
+  BatchReport CopyPreparedFailureHistory(const BatchDiagnostics&,ShellBatchFailureState*,std::size_t capacity);
   void DiscardTrial() noexcept;
   NodalAllocationInfo allocations() const noexcept;
  private:
@@ -149,7 +159,9 @@ class QephBatch {
   BatchReport InitializeImpl(const QephBatchConfig&,const QephBatchElement*,const ShellBatchBinding*,
                              const ShellBatchPlasticityConfig* plasticity=nullptr,
                              const ShellBatchPlasticityBinding* collection_plasticity=nullptr,
-                             const NodalMassBinding* nodal_mass=nullptr);
+                             const NodalMassBinding* nodal_mass=nullptr,
+                             const ShellBatchFailureBinding* failure=nullptr,
+                             const ShellBatchFailureLimits* failure_limits=nullptr);
   BatchReport AssembleAcceptedImpl(FENodalState*,const NodalAssemblyView&);
   BatchReport EvaluateCandidateImpl(FENodalState*,const NodalTrialToken*,const NodalPreparedView&,BatchDiagnostics*);
   friend BatchReport CommitQephTrial(FENodalState&,const NodalTrialToken&,QephBatch&,

@@ -1,6 +1,6 @@
 #include "T3BatchDiagnostics.h"
 #include "T3LayeredJ2.h"
-#include "T3BatchLayeredSection.h"
+#include "T3BatchFailureSection.h"
 #include "../../solvers/NodalForceAssembly.h"
 #include "../../solvers/NodalNativePhysicalCoefficients.h"
 
@@ -64,7 +64,8 @@ __global__ void Assemble(Storage* storage,const Slab* accepted,NodalAssemblyView
 }
 __global__ void CandidateElements(Storage* storage,const Slab* accepted,Slab* trial,NodalPreparedView v,
     shell_batch_plasticity_detail::DeviceStorage* plasticity,unsigned accepted_slab,
-    shell_batch_plasticity_detail::MixedDeviceStorage* mixed) {
+    shell_batch_plasticity_detail::MixedDeviceStorage* mixed,
+    shell_batch_plasticity_detail::FailureDeviceStorage* failure) {
   auto& s=*storage;
   auto* element_status=s.candidate_status;
   // Parent work is independent: each thread owns its result, section history
@@ -77,7 +78,10 @@ __global__ void CandidateElements(Storage* storage,const Slab* accepted,Slab* tr
     interval.sample_index=v.kinematics.base_epoch+1;
     shell_batch_fields::Gather(s.model.element[e].nodes,v.kinematics,
       interval.position,interval.velocity,interval.angular_velocity);
-    if(mixed)
+    if(failure&&mixed)
+      element_status[e]=EvaluateFailureSection(s.model.element[e].reference,accepted->element[e].proposed_history,
+        interval,*mixed,*failure,accepted_slab,e,trial->element[e]);
+    else if(mixed)
       element_status[e]=EvaluateMixedSection(s.model.element[e].reference,accepted->element[e].proposed_history,
         interval,*mixed,accepted_slab,e,trial->element[e]);
     else if(!plasticity)
@@ -119,12 +123,13 @@ __global__ void FinalizeCandidate(Storage* storage,const Slab* accepted,const Sl
 void LaunchAssembly(Storage* s,const Slab* a,NodalAssemblyView v,bool initial) { Assemble<<<1,1,0,v.stream>>>(s,a,v,initial); }
 void LaunchCandidate(Storage* s,const Slab* a,Slab* b,NodalPreparedView v,BatchDiagnostics d,
     shell_batch_plasticity_detail::DeviceStorage* plasticity,unsigned accepted_slab,std::size_t element_count,
-    shell_batch_plasticity_detail::MixedDeviceStorage* mixed) {
+    shell_batch_plasticity_detail::MixedDeviceStorage* mixed,
+    shell_batch_plasticity_detail::FailureDeviceStorage* failure) {
   // The private caller supplies its immutable startup-admitted active count,
   // never a device-header dereference or a new independent capacity setting.
   constexpr unsigned threads=64;
   const unsigned blocks=1u+static_cast<unsigned>((element_count-1)/threads);
-  CandidateElements<<<blocks,threads,0,v.stream>>>(s,a,b,v,plasticity,accepted_slab,mixed);
+  CandidateElements<<<blocks,threads,0,v.stream>>>(s,a,b,v,plasticity,accepted_slab,mixed,failure);
   // Preserve the first launch error for ReadControl and never finalize stale
   // parent slots after a rejected launch. Stream execution errors are checked
   // by the existing control readback/synchronization before any publication.
