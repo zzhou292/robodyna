@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 #include "../qbat_resident/ResidentFixture.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
+#include "../tied_cin_runtime/Fixture.h"
 
 namespace qbat_resident_test {
 namespace {
@@ -155,5 +156,30 @@ TEST(ShellParentActivityCuda, ActualRemovalAndDiscardKeepAcceptedActivityWithHis
   }
   EXPECT_TRUE(removed);
   EXPECT_TRUE(t3_removed);
+}
+TEST(ShellParentActivityCuda, ActualCinOwnerRequiresExactImmutableRosterAndLateSourceIdentity) {
+  cin_runtime_test::Fixture fixture;
+  fe::FENodalState owner;
+  ASSERT_EQ(owner.Initialize(fixture.Config(),fixture.Kinematics(),fixture.inverse.data(),
+      fixture.Dofs(),fixture.Startup()).status,fe::NodalStatus::Ok);
+  fe::NodalCinWitnessSource source{&fixture.model,fixture.ranges.data(),fixture.witnesses.data(),
+      fixture.ranges.size(),fixture.witnesses.size()};
+  ASSERT_EQ(owner.ValidateCinWitnessSource(source).status,fe::NodalStatus::Ok);
+  auto wrong=source;
+  wrong.range_count=SIZE_MAX;
+  wrong.ranges=reinterpret_cast<const cin_runtime_test::cin::WitnessRange*>(1);
+  EXPECT_EQ(owner.ValidateCinWitnessSource(wrong).status,fe::NodalStatus::InvalidInput);
+  ++fixture.witnesses.back().source_element_id;
+  EXPECT_EQ(owner.ValidateCinWitnessSource(source).status,fe::NodalStatus::InvalidInput);
+  --fixture.witnesses.back().source_element_id;
+  ++fixture.ranges.back().offset;
+  EXPECT_EQ(owner.ValidateCinWitnessSource(source).status,fe::NodalStatus::InvalidInput);
+  --fixture.ranges.back().offset;
+  cin_runtime_test::Fixture other;
+  wrong=source;
+  wrong.model=&other.model;
+  EXPECT_EQ(owner.ValidateCinWitnessSource(wrong).status,fe::NodalStatus::InvalidInput);
+  EXPECT_EQ(owner.ValidateCinWitnessSource(source).status,fe::NodalStatus::Ok);
+  EXPECT_EQ(owner.accepted().epoch,0u);
 }
 } // namespace qbat_resident_test

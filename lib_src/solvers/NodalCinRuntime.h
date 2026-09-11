@@ -25,6 +25,14 @@ struct NodalCinStartup {
   std::uint64_t qualification_id = 0;
   NodalCinLimits limits;
 };
+// Read-only identity of an already admitted complete CIN roster. No physical
+// coefficient or activity values are supplied or reconstructed by this view.
+struct NodalCinWitnessSource {
+  const constraints::tied_shell::TiedCinAttachmentModel* model = nullptr;
+  const constraints::tied_shell::cin::WitnessRange* ranges = nullptr;
+  const constraints::tied_shell::cin::ActiveWitness* witnesses = nullptr;
+  std::size_t range_count = 0, witness_count = 0;
+};
 struct NodalCinAssemblyView {
   std::uint64_t owner_id = 0, base_epoch = 0, attempt = 0, qualification_id = 0;
   double* translational_stiffness = nullptr;

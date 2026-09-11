@@ -33,6 +33,40 @@ void Publish(NodalCinSnapshotBuffer out, const double* tail, std::size_t n, std:
 }
 }
 
+NodalReport FENodalState::ValidateCinWitnessSource(const NodalCinWitnessSource& source) const noexcept {
+  if (!impl_) return {NodalStatus::NotInitialized, "Owner is not initialized"};
+  const auto& state = *impl_;
+  if (!state.usable) return {NodalStatus::DeviceFailure, "CUDA owner is poisoned"};
+  if (!state.cin || !source.model || !source.model->prepared()) {
+    return {NodalStatus::InvalidInput, "No admitted CIN source or supplied immutable model"};
+  }
+  const auto& cin = *state.cin;
+  if (source.range_count != cin.rows.size() || source.witness_count != cin.witnesses.size()) {
+    return {NodalStatus::InvalidInput, "CIN source counts differ from the admitted complete roster"};
+  }
+  if (!source.ranges || !source.witnesses ||
+      source.model->rows().data != cin.source.rows().data ||
+      !source.model->domain()->SharesStorage(*cin.source.domain())) {
+    return {NodalStatus::InvalidInput, "CIN source is not the admitted immutable model/domain backing"};
+  }
+  for (std::size_t row = 0; row < source.range_count; ++row) {
+    const auto& expected = cin.rows[row].witnesses;
+    const auto& actual = source.ranges[row];
+    if (actual.offset != expected.offset || actual.count != expected.count) {
+      return {NodalStatus::InvalidInput, "CIN source witness range differs", std::uint32_t(row)};
+    }
+  }
+  for (std::size_t i = 0; i < source.witness_count; ++i) {
+    const auto& actual = source.witnesses[i];
+    const auto& expected = cin.witnesses[i];
+    bool same = actual.source_element_id == expected.source_element_id &&
+        actual.native_parent_index == expected.native_parent_index && actual.family == expected.family;
+    for (unsigned slot = 0; slot < 4; ++slot) same = same && actual.nodes[slot] == expected.nodes[slot];
+    if (!same) return {NodalStatus::InvalidInput, "CIN source witness differs", std::uint32_t(i)};
+  }
+  return {NodalStatus::Ok, "Complete CIN roster matches the actual owner"};
+}
+
 NodalReport FENodalState::BorrowCinAssembly(const NodalTrialToken& token, NodalCinAssemblyView* output) {
   if (!impl_) return {NodalStatus::NotInitialized, "Owner is not initialized"};
   auto& state = *impl_;

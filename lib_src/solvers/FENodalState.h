@@ -13,6 +13,7 @@
 
 namespace tl::fea {
 struct NodalCinStartup;
+struct NodalCinWitnessSource;
 struct NodalCinAdmission;
 struct NodalCinAssemblyView;
 struct NodalCinSnapshotBuffer;
@@ -223,6 +224,7 @@ class FENodalState {
                          const double* inverse_mass, const NodalDofConfig&,
                          const NodalCinStartup&, const NodalRigidGroupModel* = nullptr);
   NodalReport BorrowCinAssembly(const NodalTrialToken&, NodalCinAssemblyView*);
+  NodalReport ValidateCinWitnessSource(const NodalCinWitnessSource&) const noexcept;
   NodalReport CopyAcceptedCin(NodalCinSnapshotBuffer, NodalStamp*);
   NodalReport CopyPreparedCin(const NodalTrialToken&, NodalCinSnapshotBuffer, NodalPreparedView*);
   NodalReport BeginTrial(NodalTrialToken*, NodalAssemblyView*);
