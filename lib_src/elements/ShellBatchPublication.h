@@ -4,6 +4,7 @@
 #include "t3/T3Batch.h"
 #include "type25/Type25Batch.h"
 #include "qbat/QbatBatch.h"
+#include "ShellPhysicalPublication.h"
 #include <memory>
 
 namespace tl::fea {
@@ -101,6 +102,22 @@ class ShellBatchPublication {
   // connector is required exactly when the common combined M/J is retained.
   ShellPublicationReport InitializeFormulations(FENodalState&,const ShellFormulationParticipants&,
       const ShellPublicationLimits& limits={});
+  // Physical CIN profile. The actual rigid binding is required even when the
+  // shell catalog contains no rigid skin. All source proofs finish before any
+  // participant is claimed. There is no second clock or kinetic allocation.
+  static ShellPublicationReport ForecastPhysical(const ShellPhysicalBinding&,
+      std::size_t cin_attachments,const ShellPublicationLimits&,
+      ShellPhysicalPublicationForecast&) noexcept;
+  ShellPublicationReport InitializePhysical(FENodalState&,const ShellPhysicalBinding&,
+      const NodalRigidAssemblyBinding&,const NodalCinWitnessSource&,
+      const ShellPhysicalParticipants&,const ShellPhysicalPublicationIdentity&,
+      const ShellPublicationLimits& limits={});
+  ShellPublicationReport PreparePhysical(FENodalState&,const NodalTrialToken&,
+      const ShellPhysicalCandidates&,ShellPhysicalDiagnostics*);
+  ShellPublicationReport CommitPhysical(FENodalState&,const NodalTrialToken&,
+      const ShellPhysicalDiagnostics&,const NodalValidationReceipt&) noexcept;
+  ShellPublicationReport CopyAcceptedPhysicalDiagnostics(const NodalStamp&,
+      ShellPhysicalDiagnostics*) const noexcept;
   ShellPublicationReport PrepareFormulations(FENodalState&,const NodalTrialToken&,
       const ShellFormulationCandidates&,ShellBatchDiagnostics*);
   // Preflight all completed contributors against the actual owner token

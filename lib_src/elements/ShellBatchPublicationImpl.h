@@ -5,6 +5,7 @@
 #include "qeph/QephBatchStorage.h"
 #include "t3/T3BatchStorage.h"
 #include "qbat/QbatBatchStorage.h"
+#include "publication/PhysicalState.h"
 
 namespace tl::fea {
 using namespace shell_publication_detail;
@@ -17,6 +18,7 @@ struct ShellBatchPublication::Impl {
   shell_publication_detail::Storage* storage=nullptr;
   shell_publication_detail::Layout layout;
   shell_publication_detail::Control control;
+  std::shared_ptr<shell_publication_detail::PhysicalState> physical;
   ShellBatchDiagnostics accepted,candidate;
   NodalPreparedView candidate_view;
   bool pending=false,usable=true;
@@ -27,6 +29,11 @@ struct ShellBatchPublication::Impl {
     if(tbatch) tbatch->DiscardTrial();
     if(connector) connector->DiscardTrial();
     if(bbatch) bbatch->DiscardTrial();
+    if(physical) {
+      physical->candidate={};
+      if(physical->beams) physical->beams->DiscardTrial();
+      if(physical->solids) physical->solids->DiscardTrial();
+    }
   }
   void Poison() noexcept {
     usable=false;
@@ -34,6 +41,10 @@ struct ShellBatchPublication::Impl {
     if(tbatch&&tbatch->impl_) tbatch->impl_->usable=false;
     if(connector) connector->Poison();
     if(bbatch) bbatch->Poison();
+    if(physical) {
+      if(physical->beams) physical->beams->Poison();
+      if(physical->solids) physical->solids->Poison();
+    }
     Discard();
   }
   ShellPublicationReport Runtime(cudaError_t error,const char* message) noexcept {
@@ -41,6 +52,13 @@ struct ShellBatchPublication::Impl {
     Poison(); return {S::DeviceFailure,message};
   }
   bool SameFormulationScope() const noexcept;
+  bool PhysicalOutputDisjoint(const void*,std::size_t) const noexcept;
+  void CapturePhysicalDiagnostics(ShellPhysicalDiagnostics&,bool prepared) const noexcept;
+  bool SamePhysicalScope(const NodalStamp&) const noexcept;
+  bool PhysicalUsable() const noexcept;
+  ShellPublicationReport PreflightPhysical(FENodalState&,const NodalTrialToken&,
+      const ShellPhysicalCandidates&,NodalPreparedView&) noexcept;
+  void ReleasePhysical() noexcept;
   bool FormulationOutputDisjoint(const void*,std::size_t) const noexcept;
   ShellPublicationReport PreflightFormulations(FENodalState&,const NodalTrialToken&,
       const ShellFormulationCandidates&,NodalPreparedView&) noexcept;

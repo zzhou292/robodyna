@@ -28,7 +28,7 @@ ShellPublicationReport ShellBatchPublication::PrepareFormulations(FENodalState& 
     DiscardTrial();
     return report;
   };
-  if(!impl_||!impl_->bbatch) return fail({S::NotJoined,"Explicit QBAT formulation scope is required"});
+  if(!impl_||impl_->physical||!impl_->bbatch) return fail({S::NotJoined,"Explicit QBAT formulation scope is required"});
   auto& s=*impl_;
   using trial_identity::Disjoint;
   if(!s.FormulationOutputDisjoint(output,sizeof(*output))||

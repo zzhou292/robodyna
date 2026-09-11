@@ -40,6 +40,11 @@ bool OutputDisjoint(const ShellExecutionBinding& execution,
     if (!Range(output,bytes,catalog.parent(row))) return false;
   }
   const auto& binding=*execution.rigid();
+  return OutputDisjoint(binding,output,bytes);
+}
+bool OutputDisjoint(const NodalRigidAssemblyBinding& binding,
+    const void* output,std::size_t bytes) noexcept {
+  if (!binding.prepared()) return false;
   const auto& parts=*binding.parts();
   return Range(output,bytes,&binding) &&
       ViewRange(output,bytes,binding.groups()) &&

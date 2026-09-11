@@ -15,6 +15,7 @@ using namespace shell_publication_detail;
 ShellBatchPublication::ShellBatchPublication()=default;
 ShellBatchPublication::~ShellBatchPublication() {
   if(!impl_) return;
+  impl_->ReleasePhysical();
   // Borrowed participants must outlive this coordinator, including destruction.
   if(impl_->qbatch&&impl_->qbatch->impl_->publication_scope==this) impl_->qbatch->impl_->publication_scope=nullptr;
   if(impl_->tbatch&&impl_->tbatch->impl_->publication_scope==this) impl_->tbatch->impl_->publication_scope=nullptr;
@@ -122,6 +123,7 @@ ShellPublicationReport ShellBatchPublication::PrepareImpl(FENodalState& owner,co
     owner.Discard(); DiscardTrial(); return r;
   };
   if(!impl_) return fail({S::NotInitialized,"Mixed publication scope is not initialized"});
+  if(impl_->physical) return fail({S::NotJoined,"Physical publication requires its explicit transaction API"});
   if(impl_->bbatch) return fail({S::NotJoined,"QBAT requires the complete typed formulation candidate"});
   auto& s=*impl_; s.pending=false; s.candidate={}; s.candidate_view={};
   if(!trial_identity::Disjoint(output,sizeof(*output),&q,sizeof(q))||
@@ -143,6 +145,7 @@ ShellPublicationReport ShellBatchPublication::Commit(FENodalState& owner,const N
     owner.Discard(); DiscardTrial(); return r;
   };
   if(!impl_) return fail({S::NotInitialized,"Mixed publication scope is not initialized"});
+  if(impl_->physical) return fail({S::NotJoined,"Physical publication requires its explicit transaction API"});
   auto& s=*impl_;
   if(!s.pending||!SameDiagnostics(expected,s.candidate))
     return fail({S::StaleTrial,"Mixed publication does not match its measured complete candidate"});
@@ -187,6 +190,7 @@ ShellPublicationReport ShellBatchPublication::Commit(FENodalState& owner,const N
 ShellPublicationReport ShellBatchPublication::CopyAcceptedDiagnostics(const NodalStamp& expected,
     ShellBatchDiagnostics* output) const noexcept {
   if(!impl_) return {S::NotInitialized,"Mixed publication scope is not initialized"};
+  if(impl_->physical) return {S::NotJoined,"Physical publication requires its typed diagnostic reader"};
   if(impl_->bbatch) return CopyAcceptedFormulations(expected,output);
   const auto& s=*impl_;
   if(!output||!trial_identity::Disjoint(output,sizeof(*output),&expected,sizeof(expected)))
@@ -214,6 +218,12 @@ ShellPublicationReport ShellBatchPublication::ValidateAcceptedActivitySources(
       participants.qbat != state.bbatch || participants.connector != state.connector) {
     return {S::NotJoined,"Activity sources are not the actual attached participants"};
   }
+  if (state.physical) {
+    if (state.physical->owner != &owner || state.physical->binding.shells()->inventory() != inventory)
+      return {S::NotJoined,"Physical activity source owner or complete inventory differs"};
+    ShellPhysicalDiagnostics accepted;
+    return CopyAcceptedPhysicalDiagnostics(owner.accepted(),&accepted);
+  }
   ShellBatchDiagnostics accepted;
   const auto checked = CopyAcceptedDiagnostics(owner.accepted(),&accepted);
   if (checked.status != S::Success) return checked;
@@ -226,6 +236,7 @@ ShellPublicationReport ShellBatchPublication::ValidateAcceptedActivitySources(
 }
 void ShellBatchPublication::DiscardTrial() noexcept { if(impl_) impl_->Discard(); }
 NodalAllocationInfo ShellBatchPublication::allocations() const noexcept {
+  if(impl_&&impl_->physical) return {};
   return impl_?NodalAllocationInfo{impl_->layout.bytes,1}:NodalAllocationInfo{};
 }
 } // namespace tl::fea
