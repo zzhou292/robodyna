@@ -52,3 +52,10 @@ Targets: `robo_dyna_tied_post_kinchk_values_check` (three functions) and
 with `-R '^tied_post_kinchk_'`. The original fixture, capped source-byte extraction
 and hashes are reused. Use a fresh `tied-post-kinchk-source-root-*` report prefix
 and check each output path before launching the owning guard.
+
+Root qualification (2026-09-11,af0e021): all5 host/original functions PASS in
+`tied-post-kinchk-source-root-tests-1`; complete reservation437827286 B.
+Every11165 original CIN row/8192 ITF/KINET agrees with independent native KINCHK.
+All14 affected C++ classification/source functions and the Python topology gate
+also PASS in `post-kinchk-affected-classification-tests-1`. No production
+correction was needed. TL has its separate7-function native/host gate.
