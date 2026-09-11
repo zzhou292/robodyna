@@ -62,7 +62,7 @@ cmake -S modelio/tied_shell -B /tmp/robo-tied-declaration-root-1 \
   -DROBO_DYNA_TIED_SCOPE=/home/jsonzhou/Desktop/chrono-work/crash-work/reports/yaris-full-shell-scope-10.json \
   -DCMAKE_BUILD_TYPE=Release
 cmake --build /tmp/robo-tied-declaration-root-1 --target robo_dyna_tied_declaration_check -j1
-ctest --test-dir /tmp/robo-tied-declaration-root-1 --output-on-failure
+ctest --test-dir /tmp/robo-tied-declaration-root-1 --output-on-failure --no-tests=error -R '^tied_declaration_(values|actual)$'
 ```
 
 Run that actual-source gate only under the root's scheduled resource guard.
@@ -72,3 +72,11 @@ through the public authenticated canonical reader and immutable factory, checks
 every original master/physical slave incidence, and exercises budget rejection,
 late master-cap rejection, retained backing lifetime and retry. No solver,
 CUDA, geometric pairing or native search is run by either group.
+
+Root owning qualification (2026-09-10): all7 functions pass (5 tiny and2 actual
+original-source), without skips. Build `crash-work/build/tied-declaration-root-1`;
+accepted reports `tied-declaration-root-tests-2` and functions2. The complete
+forecast is308,237,674 B; retained owned payload11,017,033 B. The first root
+invocation unintentionally selected imported, unbuilt suites as well; its log
+remains tests1. The owning exact filter above is the accepted qualification.
+No source-ordering or native classification claim is added by this result.
