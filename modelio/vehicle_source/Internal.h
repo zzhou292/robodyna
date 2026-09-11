@@ -1,5 +1,6 @@
 #pragma once
 #include "VehicleSourcePlan.h"
+#include "SourceCards.h"
 #include "modelio/source_assembly/JsonReader.h"
 #include <map>
 
@@ -20,6 +21,4 @@ std::size_t Preflight(const source::CanonicalData&,const assembly::ArtifactIdent
 void CheckAuthority(const source::CanonicalData&,const Value&);
 Declarations ReadDeclarations(const source::CanonicalData&,const Value&,Limits);
 Geometry ReadGeometry(const source::CanonicalData&,const std::vector<PartDisposition>&);
-void CheckSource(const assembly::SourceBlock&,const Value& expected,const char* hash_key="sha256");
-void CheckTypedCards(const assembly::SourceBlock&,const std::vector<assembly::DeclarationCard>&,unsigned width=10);
 } // namespace crash::modelio::vehicle::detail

@@ -22,12 +22,16 @@ def parse_linear_law44_material(block, units):
     blank-rate defaults, inline points and section formulation are separate gates.
     The legacy positive-curve parser remains unchanged in its admission domain.
     """
+    return _parse_linear_law44_material(block, units)
+
+
+def _parse_linear_law44_material(block, units, *, constant_failure=False):
     require(units.time_to_s == 1, 'analytic LAW44 default filter currently requires source seconds')
     cards = _material_cards(block)
     first, second, eps, stress = cards
     _positive(first.get('mid'), first.get('ro'), first.get('e'), first.get('sigy'),
               second.get('c'), second.get('p'))
-    _material_options(*cards)
+    _material_options(*cards, constant_failure=constant_failure)
     require(second.get('lcss') == 0, 'analytic LAW44 requires explicit LCSS=0')
     require(second.get('vp') == 0, 'analytic LAW44 requires explicit total-rate VP=0')
     require(first.get('pr') >= 0, 'analytic LAW44 requires nonnegative Poisson ratio')

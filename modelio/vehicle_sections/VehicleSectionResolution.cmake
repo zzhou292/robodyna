@@ -1,0 +1,10 @@
+include_guard(GLOBAL)
+include("${CMAKE_CURRENT_LIST_DIR}/../vehicle_source/VehicleSourcePlan.cmake")
+add_library(robo_dyna_vehicle_sections STATIC
+  "${CMAKE_CURRENT_LIST_DIR}/VehicleSectionResolution.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/ResolutionDeclarations.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/ResolutionParents.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/ResolutionLimits.cpp")
+target_link_libraries(robo_dyna_vehicle_sections PUBLIC robo_dyna_vehicle_source)
+target_compile_features(robo_dyna_vehicle_sections PUBLIC cxx_std_17)
+target_compile_options(robo_dyna_vehicle_sections PRIVATE -fno-fast-math -ffp-contract=off)

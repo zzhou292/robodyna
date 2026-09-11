@@ -25,6 +25,9 @@ std::vector<DeclarationCard> Cards(const Value&, std::size_t cap);
 std::vector<RawAttachmentCard> AttachmentCards(const Value&, std::size_t cap);
 std::size_t NodeIndex(const Data&, SourceId);
 void ReadDeclarations(const Value&, const ReadLimits&, Data&);
+// Named declaration-only boundary; never used by the SourceAssembly reader.
+void ReadConstantFailureDeclarations(const Value&, const ReadLimits&, Data&);
+Material ReadConstantFailureMaterial(const Value&, const Data&);
 Material ReadLaw44Material(const Value&, const Data&);
 Material ReadLaw1Material(const Value&, const Data&);
 Material ReadMaterial(const Value&, const Data&);

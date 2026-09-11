@@ -103,10 +103,14 @@ def parse_material(block, units):
     return _material_declaration(block, units, (first, second, eps, stress))
 
 
-def _material_options(first, second, eps, stress):
+def _material_options(first, second, eps, stress, *, constant_failure=False):
     require(first.get('pr') is not None and -1 < first.get('pr') < .5, 'Poisson ratio must be explicit and admissible')
     require(second.get('vp') in (None, 0), 'only supplied total-rate VP=0 or unresolved blank VP is declared')
-    _blank(first, ('fail', 'tdel'))
+    if constant_failure:
+        _positive(first.get('fail'))
+        _blank(first, ('tdel',))
+    else:
+        _blank(first, ('fail', 'tdel'))
     _blank(second, ('lcsr', 'reserved6', 'reserved7', 'reserved8'))
     _blank(eps, eps.names)
     _blank(stress, stress.names)

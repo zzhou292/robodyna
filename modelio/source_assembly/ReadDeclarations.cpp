@@ -15,7 +15,9 @@ template<class T> bool Contains(const std::vector<T>& table, SourceId id) {
     return std::any_of(table.begin(), table.end(), [=](const auto& row) { return row.id == id; });
 }
 }  // namespace
-void ReadDeclarations(const Value& document, const ReadLimits& limits, Data& data) {
+namespace {
+void ReadDeclarationsUsing(const Value& document, const ReadLimits& limits, Data& data,
+                           Material (*read_material)(const Value&, const Data&)) {
     const auto& declarations = Member(document, "declarations");
     const auto& units = Member(declarations, "units");
     TextIs(units, "mass", "t"); TextIs(units, "length", "mm"); TextIs(units, "time", "s");
@@ -47,7 +49,7 @@ void ReadDeclarations(const Value& document, const ReadLimits& limits, Data& dat
         Append(data.curves, std::move(curve));
     }
     for (const auto& value : Array(declarations, "materials", limits.tables, 1).GetArray()) {
-        Append(data.materials, ReadMaterial(value, data));
+        Append(data.materials, read_material(value, data));
     }
     for (const auto& value : Array(declarations, "sections", limits.tables, 1).GetArray()) {
         Section section;
@@ -85,5 +87,13 @@ void ReadDeclarations(const Value& document, const ReadLimits& limits, Data& dat
     const auto selected = Ids(Member(document, "selected_part_ids"), limits.parts, true);
     Require(selected.size() == data.parts.size(), "Selected assembly parts do not match declarations");
     for (std::size_t i = 0; i < selected.size(); ++i) Require(selected[i] == data.parts[i].id, "Selected assembly PID mismatch");
+}
+} // namespace
+
+void ReadDeclarations(const Value& document, const ReadLimits& limits, Data& data) {
+    ReadDeclarationsUsing(document, limits, data, ReadMaterial);
+}
+void ReadConstantFailureDeclarations(const Value& document, const ReadLimits& limits, Data& data) {
+    ReadDeclarationsUsing(document, limits, data, ReadConstantFailureMaterial);
 }
 }  // namespace crash::modelio::assembly::reader
