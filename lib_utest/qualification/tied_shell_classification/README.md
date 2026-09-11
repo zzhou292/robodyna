@@ -85,3 +85,13 @@ and host `//lib_utest/qualification/tied_shell_classification:tied_classificatio
 At author handoff, nine host functions and source identity passed; both native
 C++ test units passed syntax checking. Fortran/native execution belongs to the
 root qualification gate. No original-source classification or GPU run is claimed.
+
+Root native qualification now passes **14 functions** (nine host and five
+native) plus source identity: `tied-classification-root-tests-1`, build1.
+Complete native routines compiled with runtime bounds checks and the explicit
+GNU Fortran toolchain. Independent review found no blocker in branch ordering,
+five-field kinematics, shared table mutation or staged publication. This is
+supplied-context classification; original-source role association and final
+matched/compacted interface input are still needed before a vehicle CIN/PEN
+count can be reported. The short run's sampled RSS does not measure peak
+allocation.

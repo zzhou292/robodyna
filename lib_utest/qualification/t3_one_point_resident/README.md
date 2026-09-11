@@ -75,3 +75,13 @@ qualified native library construction for reuse; it changes no Fortran wrapper
 or donor. Source hashes retain all old native records and append the reviewed
 T3 build registration. The original source fixture is reused through its owning
 QBAT test-only target without duplication.
+
+Root owning gate passes **31 functions** (21 catalog, four host, one original
+triangle startup native and five actual CUDA) plus source identity. Reports:
+`t3-one-point-resident-root-{configure,build,tests}-1`, XML functions1.
+The native startup comparison includes every nodal/element TOTAL J, physical J,
+added J and mass component; the CUDA history remains inside the existing common
+publication. Build used eight affinity CPUs/four workers and sampled
+2,731,995,136 B process-tree RSS. Tests used two CPUs/2 GiB; sampled RSS
+169,455,616 B. These are prescribed-state integration checks, not a new impact
+trajectory. Affected old resident/source-flight regressions are tracked separately.
