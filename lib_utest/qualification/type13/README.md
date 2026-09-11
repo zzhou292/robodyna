@@ -48,3 +48,13 @@ Bazel targets are `//lib_utest/qualification/type13:type13_startup_check` and
 `//lib_utest/qualification/type13:type13_startup_cuda_check`. Complete donors and
 exact extracts are verified by `native/verify_sources.py`; original fixture
 bytes by `source_fixture/verify_fixture.py`.
+
+The native precision chain is retained too: starter `implicit_f.inc:24` uses
+`CONSTANT_MOD`, and the starter r8 `my_real.inc:25` defines `DOUBLE PRECISION`.
+`constant_mod.F:568,571,580,604,617-635,647,657,662,994` constructs the powers
+of ten from exact small integers in `my_real`, then divides `ONE/EPxx`.
+Consequently EM5, EM15 and EM20 have exactly the wrapper/C++ binary64 literal
+values (`0x1.4f8b588e368f1p-17`, `0x1.203af9ee75616p-50`,
+`0x1.79ca10c924223p-67`). They do not use the separate `INFINITY=1E20`
+single-literal promotion at source line569. No threshold/floor adjustment is
+needed. The complete includes/module and blob hashes are in the native manifest.

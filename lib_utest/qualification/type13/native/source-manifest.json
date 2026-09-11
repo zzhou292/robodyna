@@ -30,6 +30,27 @@
       "size": 67887,
       "sha256": "9468295a1d9feea2dd4987a2ca4b77420cda8a9f2d928b0ca029e0e3f9dd2631",
       "git_blob_sha1": "3c768a4aaf4646dc9bbbbfa05c36ebd1c2f23fcb"
+    },
+    {
+      "path": "original/common_source/modules/constant_mod.F",
+      "upstream_path": "common_source/modules/constant_mod.F",
+      "size": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865",
+      "git_blob_sha1": "5f78c0a6769ac024deb6bba9d3037cd747f36837"
+    },
+    {
+      "path": "original/starter/share/spe_inc/implicit_f.inc",
+      "upstream_path": "starter/share/spe_inc/implicit_f.inc",
+      "size": 1597,
+      "sha256": "9431871663a79d913a40ab9b433aa70d3ed4dc5cc5c345c1f25798b7451eff73",
+      "git_blob_sha1": "80a0c9ad24913bb2c60c9c49663bf15ad6fd5d04"
+    },
+    {
+      "path": "original/starter/share/r8/my_real.inc",
+      "upstream_path": "starter/share/r8/my_real.inc",
+      "size": 1474,
+      "sha256": "92c03276ae3899b1fdab5f6833cea538aa94c9d2c41f3d35a4f304ea5e64fd8c",
+      "git_blob_sha1": "e8a7d1176e886459a7323d0b3a246233d2d2e712"
     }
   ],
   "fragments": [
