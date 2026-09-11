@@ -70,6 +70,21 @@ performance costs; no kernel optimization is claimed here.
 
 ## Qualification
 
+Root qualification on 2026-09-10 passes 36 functions without skips: 18 model/
+native, seven combined-mass, and 11 layout/CUDA functions. Nine functions are
+new vehicle-profile checks; the rest cover existing behavior. The complete
+524288-node /4096-connector CUDA fixture checks native nonzero loads, final-node
+failure, unchanged accepted state and exact retry. Its corrected fixed step is
+2^-24 s, below its measured native minimum of approximately 2.46951e-7 s.
+The first run's 2^-20 fixture assertion failure is retained; no native equation
+or bound was changed to accommodate it.
+
+Evidence: `type25-vehicle-model-tests-1`, `type25-vehicle-mass-tests-1`, and
+`type25-vehicle-batch-tests-2` with their function XML directories. The last run
+took 17.557 s with 687341568 bytes sampled process-tree RSS. All four owning
+Bazel targets also build in `type25-vehicle-bazel-build-1`. These are capacity,
+coefficient and transaction tests, not original vehicle dynamics.
+
 Author checks under one CPU/512 MiB: ten model/startup functions pass (three
 new, seven old); the new exact-layout/tail/cap function passes; all host
 production and test seams pass syntax. Evidence is
