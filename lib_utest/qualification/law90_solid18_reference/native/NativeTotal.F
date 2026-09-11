@@ -1,0 +1,115 @@
+! SPDX-License-Identifier: AGPL-3.0-or-later
+! Complete native total-strain leaves; no production derivatives enter the oracle.
+      SUBROUTINE LAW90_ENGINE_TOTAL(X,PERM,SAVED,PIJ,G,DISP,WORLD,MF,B)
+      USE LAW90_ENGINE_PACKETS
+      USE LAW90_ENGINE_ELEMENT_MOD,ONLY:NIXS
+#include "implicit_f.inc"
+#include "scr05_c.inc"
+      REAL(KIND=8),INTENT(IN) :: X(3,8),SAVED(21),PIJ(72,8)
+      INTEGER,INTENT(IN) :: PERM(8)
+      TYPE(NATIVE_GEOMETRY),INTENT(IN) :: G
+      REAL(KIND=8),INTENT(OUT) :: DISP(MVSIZ,8,3),WORLD(MVSIZ,8,9)
+      REAL(KIND=8),INTENT(OUT) :: MF(MVSIZ,8,9),B(MVSIZ,8,6)
+      REAL(KIND=8) INITIAL(MVSIZ,8,3),P(MVSIZ,8,3),UNUSED(MVSIZ,8,9)
+      REAL(KIND=8) EXTRA(MVSIZ,3),D(3,8),OFF(1),OFF0(1),TIME
+      REAL(KIND=8) DET0(1),JFAC(1),NU(1),DIV0(MVSIZ)
+      INTEGER IXS(NIXS,1),N,IP,IDEG(1)
+      IRESP=0
+      INITIAL=ZERO
+      DISP=ZERO
+      WORLD=ZERO
+      MF=ZERO
+      B=ZERO
+      UNUSED=ZERO
+      EXTRA=ZERO
+      D=ZERO
+      OFF=ONE
+      OFF0=ONE
+      TIME=ZERO
+      DET0=ONE
+      JFAC=ONE
+      NU=ZERO
+      DIV0=ZERO
+      IDEG=0
+      IXS=1
+      DO N=1,8
+       IXS(N+1,1)=PERM(N)+1
+      ENDDO
+      CALL LAW90_ENGINE_SGCOOR3(TIME,8,X,IXS,
+     . INITIAL(1,1,1),INITIAL(1,1,2),INITIAL(1,1,3),
+     . DISP(1,1,1),DISP(1,1,2),DISP(1,1,3),SAVED,D,
+     . OFF,OFF0,1,X,90,10)
+      DO IP=1,8
+      CALL LAW90_ENGINE_S8EGETPIJ(
+     . P(1,1,1),P(1,2,1),P(1,3,1),P(1,4,1),
+     . P(1,5,1),P(1,6,1),P(1,7,1),P(1,8,1),
+     . P(1,1,2),P(1,2,2),P(1,3,2),P(1,4,2),
+     . P(1,5,2),P(1,6,2),P(1,7,2),P(1,8,2),
+     . P(1,1,3),P(1,2,3),P(1,3,3),P(1,4,3),
+     . P(1,5,3),P(1,6,3),P(1,7,3),P(1,8,3),
+     . PIJ(1,IP),1)
+      CALL LAW90_ENGINE_S8EDEFOT3(
+     . P(1,1,1),P(1,2,1),P(1,3,1),P(1,4,1),
+     . P(1,5,1),P(1,6,1),P(1,7,1),P(1,8,1),
+     . P(1,1,2),P(1,2,2),P(1,3,2),P(1,4,2),
+     . P(1,5,2),P(1,6,2),P(1,7,2),P(1,8,2),
+     . P(1,1,3),P(1,2,3),P(1,3,3),P(1,4,3),
+     . P(1,5,3),P(1,6,3),P(1,7,3),P(1,8,3),
+     . UNUSED(1,1,2),UNUSED(1,2,2),UNUSED(1,3,2),UNUSED(1,4,2),
+     . UNUSED(1,5,2),UNUSED(1,6,2),UNUSED(1,7,2),UNUSED(1,8,2),
+     . UNUSED(1,1,4),UNUSED(1,2,4),UNUSED(1,3,4),UNUSED(1,4,4),
+     . UNUSED(1,5,4),UNUSED(1,6,4),UNUSED(1,7,4),UNUSED(1,8,4),
+     . UNUSED(1,1,3),UNUSED(1,2,3),UNUSED(1,3,3),UNUSED(1,4,3),
+     . UNUSED(1,5,3),UNUSED(1,6,3),UNUSED(1,7,3),UNUSED(1,8,3),
+     . UNUSED(1,1,7),UNUSED(1,2,7),UNUSED(1,3,7),UNUSED(1,4,7),
+     . UNUSED(1,5,7),UNUSED(1,6,7),UNUSED(1,7,7),UNUSED(1,8,7),
+     . UNUSED(1,1,6),UNUSED(1,2,6),UNUSED(1,3,6),UNUSED(1,4,6),
+     . UNUSED(1,5,6),UNUSED(1,6,6),UNUSED(1,7,6),UNUSED(1,8,6),
+     . UNUSED(1,1,8),UNUSED(1,2,8),UNUSED(1,3,8),UNUSED(1,4,8),
+     . UNUSED(1,5,8),UNUSED(1,6,8),UNUSED(1,7,8),UNUSED(1,8,8),
+     . UNUSED(1,1,1),UNUSED(1,2,1),UNUSED(1,3,1),UNUSED(1,4,1),
+     . UNUSED(1,5,1),UNUSED(1,6,1),UNUSED(1,7,1),UNUSED(1,8,1),
+     . UNUSED(1,1,5),UNUSED(1,2,5),UNUSED(1,3,5),UNUSED(1,4,5),
+     . UNUSED(1,5,5),UNUSED(1,6,5),UNUSED(1,7,5),UNUSED(1,8,5),
+     . UNUSED(1,1,9),UNUSED(1,2,9),UNUSED(1,3,9),UNUSED(1,4,9),
+     . UNUSED(1,5,9),UNUSED(1,6,9),UNUSED(1,7,9),UNUSED(1,8,9),
+     . UNUSED(1,1,2),UNUSED(1,2,2),UNUSED(1,3,2),UNUSED(1,4,2),
+     . UNUSED(1,5,2),UNUSED(1,6,2),UNUSED(1,7,2),UNUSED(1,8,2),
+     . UNUSED(1,1,4),UNUSED(1,2,4),UNUSED(1,3,4),UNUSED(1,4,4),
+     . UNUSED(1,5,4),UNUSED(1,6,4),UNUSED(1,7,4),UNUSED(1,8,4),
+     . UNUSED(1,1,3),UNUSED(1,2,3),UNUSED(1,3,3),UNUSED(1,4,3),
+     . UNUSED(1,5,3),UNUSED(1,6,3),UNUSED(1,7,3),UNUSED(1,8,3),
+     . UNUSED(1,1,7),UNUSED(1,2,7),UNUSED(1,3,7),UNUSED(1,4,7),
+     . UNUSED(1,5,7),UNUSED(1,6,7),UNUSED(1,7,7),UNUSED(1,8,7),
+     . UNUSED(1,1,6),UNUSED(1,2,6),UNUSED(1,3,6),UNUSED(1,4,6),
+     . UNUSED(1,5,6),UNUSED(1,6,6),UNUSED(1,7,6),UNUSED(1,8,6),
+     . UNUSED(1,1,8),UNUSED(1,2,8),UNUSED(1,3,8),UNUSED(1,4,8),
+     . UNUSED(1,5,8),UNUSED(1,6,8),UNUSED(1,7,8),UNUSED(1,8,8),
+     . DISP(1,1,1),DISP(1,2,1),DISP(1,3,1),DISP(1,4,1),
+     . DISP(1,5,1),DISP(1,6,1),DISP(1,7,1),DISP(1,8,1),
+     . DISP(1,1,2),DISP(1,2,2),DISP(1,3,2),DISP(1,4,2),
+     . DISP(1,5,2),DISP(1,6,2),DISP(1,7,2),DISP(1,8,2),
+     . DISP(1,1,3),DISP(1,2,3),DISP(1,3,3),DISP(1,4,3),
+     . DISP(1,5,3),DISP(1,6,3),DISP(1,7,3),DISP(1,8,3),
+     . WORLD(1,IP,1),WORLD(1,IP,2),WORLD(1,IP,3),WORLD(1,IP,4),
+     . WORLD(1,IP,5),WORLD(1,IP,6),WORLD(1,IP,7),WORLD(1,IP,8),
+     . WORLD(1,IP,9),0,DET0,JFAC,
+     . NU,1,IDEG,EXTRA(1,1),
+     . EXTRA(1,2),EXTRA(1,3),OFF,1,
+     . 10,90,DIV0)
+      MF(:,IP,:)=WORLD(:,IP,:)
+      CALL LAW90_ENGINE_SORDEFT3(
+     . 1,1,MF(1,IP,1),MF(1,IP,2),
+     . MF(1,IP,3),MF(1,IP,4),MF(1,IP,5),MF(1,IP,6),
+     . MF(1,IP,7),MF(1,IP,8),MF(1,IP,9),G%FRAME(1,1),
+     . G%FRAME(1,2),G%FRAME(1,3),G%FRAME(1,4),G%FRAME(1,5),
+     . G%FRAME(1,6),G%FRAME(1,7),G%FRAME(1,8),G%FRAME(1,9))
+      ENDDO
+      CALL LAW90_ENGINE_S8ESELECSHT(
+     . 2,2,2,8,
+     . MF(1,1,1),MF(1,1,2),MF(1,1,3),MF(1,1,4),
+     . MF(1,1,5),MF(1,1,6),MF(1,1,7),MF(1,1,8),
+     . MF(1,1,9),B(1,1,1),B(1,1,2),B(1,1,3),
+     . B(1,1,4),B(1,1,5),B(1,1,6),1,
+     . OFF,1,10)
+      END

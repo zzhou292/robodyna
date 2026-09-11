@@ -1,0 +1,11 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+package(default_visibility = ["//visibility:public"])
+cc_library(
+    name = "reference_kinematics",
+    hdrs = [
+        "ReferenceTypes.h", "Reference.h", "ReferenceJacobian.h",
+        "ReferencePij.h", "ReferenceTransform.h", "KinematicsTypes.h",
+        "SelectedTensor.h", "TotalGradient.h", "TotalKinematics.h",
+    ],
+    deps = ["//lib_src/elements/solid18:force", "//lib_src/elements/solid_common:brick_frame"],
+)
