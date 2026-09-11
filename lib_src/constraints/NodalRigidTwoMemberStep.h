@@ -16,12 +16,12 @@ TL_RIGID_TWO_HD inline StepStatus EvaluateTwoMemberPrimaryStep(const PrimaryStep
 // This is a value function: identity/phase and whole-trial rollback belong to owner.
 TL_RIGID_TWO_HD inline StepStatus EvaluateTwoMemberStep(const PrimaryStepInput& body,
     const PrimaryStepTrial& primary,const MemberStepInput& in,double length_to_m,
-    MemberStepTrial& output) {
+    MemberStepTrial& output,MemberCoefficientPolicy policy=MemberCoefficientPolicy::PositiveIndependent) {
   const double threshold=(1e-8*length_to_m)*length_to_m;
   if(!step_detail::Durations(body.durations)||!detail::Finite(body.center)||!detail::Finite(body.velocity)||
       !step_detail::Finite(primary)||!detail::Finite(in.position)||!detail::Finite(in.velocity)||
       !detail::Finite(in.omega)||!detail::Finite(in.force)||!detail::Finite(in.couple)||
-      !tl::math::Finite(in.mass)||in.mass<=0||!tl::math::Finite(in.inertia)||in.inertia<=0||
+      !step_detail::MemberCoefficients(in,policy)||
       !tl::math::Finite(length_to_m)||length_to_m<=0||!tl::math::Finite(threshold)||threshold<=0)
     return StepStatus::InvalidInput;
   MemberStepTrial next;

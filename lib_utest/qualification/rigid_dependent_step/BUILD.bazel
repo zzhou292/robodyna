@@ -1,0 +1,22 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+
+cc_test(
+    name = "host_check",
+    size = "small",
+    srcs = ["HostTest.cpp", "Fixture.h"],
+    deps = ["//lib_src/constraints:nodal_rigid_group_step_math",
+            "//lib_utest/qualification/nodal_rigid_group:owner_test_support",
+            "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cuda_test(
+    name = "cuda_check",
+    size = "small",
+    srcs = ["CudaTest.cu", "Fixture.h"],
+    deps = ["//lib_src/constraints:nodal_rigid_group_step_math",
+            "//lib_utest/qualification/nodal_rigid_group:owner_test_support",
+            "@googletest//:gtest_main"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+)

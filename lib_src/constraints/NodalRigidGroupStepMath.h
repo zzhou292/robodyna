@@ -11,6 +11,10 @@
 
 namespace tl::fea::rigid {
 enum class StepStatus { Success,InvalidInput,RotationLimit,NonfiniteResult };
+// Independent nodal coefficients are strictly positive. A rigid dependent
+// recovers motion from its primary and can carry zero source M/J; its reaction
+// remains M*a-F and J*alpha-C. This value policy grants no owner admission.
+enum class MemberCoefficientPolicy { PositiveIndependent, NonnegativeDependent };
 struct StepDurations {
   double previous_drift_dt=0,kick_dt=0,drift_dt=0;
 };
@@ -35,6 +39,11 @@ struct MemberStepTrial {
   Vec3 reaction_force{},reaction_couple{};
 };
 namespace step_detail {
+TL_RIGID_STEP_HD inline bool MemberCoefficients(const MemberStepInput& in,MemberCoefficientPolicy policy) {
+  if(!tl::math::Finite(in.mass)||!tl::math::Finite(in.inertia))return false;
+  if(policy==MemberCoefficientPolicy::PositiveIndependent)return in.mass>0&&in.inertia>0;
+  return policy==MemberCoefficientPolicy::NonnegativeDependent&&in.mass>=0&&in.inertia>=0;
+}
 TL_RIGID_STEP_HD inline bool Durations(StepDurations d) {
   return tl::math::Finite(d.previous_drift_dt)&&d.previous_drift_dt>=0&&
     tl::math::Finite(d.kick_dt)&&d.kick_dt>0&&tl::math::Finite(d.drift_dt)&&d.drift_dt>0;
@@ -122,11 +131,12 @@ TL_RIGID_STEP_HD inline StepStatus EvaluatePrimaryStep(const PrimaryStepInput& i
 // The acceleration then common-kick order retains native cancellation/roundoff;
 // replacing it by an exact geometric projection would change the recurrence.
 TL_RIGID_STEP_HD inline StepStatus EvaluateMemberStep(const PrimaryStepInput& body,
-    const PrimaryStepTrial& primary,const MemberStepInput& in,MemberStepTrial& output) {
+    const PrimaryStepTrial& primary,const MemberStepInput& in,MemberStepTrial& output,
+    MemberCoefficientPolicy policy=MemberCoefficientPolicy::PositiveIndependent) {
   if(!step_detail::Durations(body.durations)||!detail::Finite(body.center)||!detail::Finite(body.velocity)||
       !step_detail::Finite(primary)||!detail::Finite(in.position)||!detail::Finite(in.velocity)||
       !detail::Finite(in.omega)||!detail::Finite(in.force)||!detail::Finite(in.couple)||
-      !tl::math::Finite(in.mass)||in.mass<=0||!tl::math::Finite(in.inertia)||in.inertia<=0)
+      !step_detail::MemberCoefficients(in,policy))
     return StepStatus::InvalidInput;
   MemberStepTrial next;
   const double kick=body.durations.kick_dt,drift=body.durations.drift_dt,usdt=1/kick;
