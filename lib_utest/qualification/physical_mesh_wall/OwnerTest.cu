@@ -7,6 +7,8 @@ TEST(PhysicalWallCuda, ExactSourceAndBudgetRejectBeforePublicationThenLoadedRigi
   p::Rig rig(true);
   ASSERT_TRUE(rig.Initialize());
   Geometry geometry(rig.fixture),wrong(rig.fixture,true);
+  ASSERT_EQ(geometry.weights.parent(2).parent_element_id,102u);
+  EXPECT_GT(wrong.weights.parent(2).area.value,geometry.weights.parent(2).area.value);
   c::NodalWallMappedContact contact;
   auto config=Config(rig);
   auto source=Source(rig);

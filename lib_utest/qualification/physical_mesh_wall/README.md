@@ -111,3 +111,10 @@ follow-up resets that bounded value before each parent's single-use initializer.
 The unchanged three-Q4 fixture covers the full loop and the late altered-T3
 identity rejection. `physical-wall-tests-1` preserves the failing runtime evidence;
 no force, area arithmetic, tolerance or legacy initializer was changed.
+
+The second root run reached the finite-wall fixture and rejected its omitted
+source/assembled node and quad identities. The fixture now supplies all of them,
+with both triangles associated to the same source/assembled quad. Its altered
+reference moves the T3-only vertex in X: the earlier Y move was parallel to the
+opposite edge and preserved area. An explicit increased-area assertion protects
+the intended negative control. Root `physical-wall-tests-2` retains the failure.

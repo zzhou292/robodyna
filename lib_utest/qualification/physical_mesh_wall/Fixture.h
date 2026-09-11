@@ -16,7 +16,7 @@ struct Geometry {
       {{.039,1,1},3},{{.039,1,-1},4}}};
   explicit Geometry(const p::Fixture& source,bool alter_reference=false) {
     auto xyz=source.x;
-    if(alter_reference) xyz[3*source.domain.Find(14)+1]+=.001;
+    if(alter_reference) xyz[3*source.domain.Find(14)]+=.001;
     const c::VectorView coordinates{xyz.data(),static_cast<std::uint32_t>(source.domain.node_count()),3,1};
     const auto& binding=source.source.shells;
     std::array<c::NodalWallParentInput,4> input;
@@ -35,8 +35,11 @@ struct Geometry {
     EXPECT_EQ(c::PrepareT3MaterialMeasure(coordinates,parent,&triangle),c::SurfaceMeasureStatus::Ok);
     input[3]={nullptr,0,&triangle};
     EXPECT_EQ(weights.Initialize(coordinates.node_count,input.data(),input.size()).status,c::NodalWallStatus::Ok);
+    for(unsigned i=0;i<4;++i) vertices[i].assembled_source_node_id=1001+i;
     for(unsigned i=0;i<2;++i) {
       faces[i].triangle_id=700+i;
+      faces[i].source_quad_id=600;
+      faces[i].assembled_source_quad_id=1600;
     }
     faces[0].nodes[0]=0; faces[0].nodes[1]=1; faces[0].nodes[2]=2;
     faces[1].nodes[0]=0; faces[1].nodes[1]=2; faces[1].nodes[2]=3;
