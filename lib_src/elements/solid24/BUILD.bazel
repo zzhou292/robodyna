@@ -5,3 +5,21 @@ cc_library(
     deps = ["//lib_src/elements/solid_common:brick_frame"],
     visibility = ["//visibility:public"],
 )
+
+cc_library(
+    name = "force",
+    hdrs = [
+        "Solid24Force.h",
+        "Solid24ForceDerivatives.h",
+        "Solid24ForceHistory.h",
+        "Solid24ForceKinematics.h",
+        "Solid24ForceTypes.h",
+        "Solid24Stabilization.h",
+    ],
+    deps = [
+        ":reference",
+        "//lib_src/elements/solid_common:brick_frame",
+        "//lib_src/materials/law42:caller",
+    ],
+    visibility = ["//visibility:public"],
+)

@@ -1,0 +1,377 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Mapped active LAW42 HEPH24 total strain10 independent caller",
+  "license": {
+    "source": "LICENSE.md",
+    "path": "LICENSE.md",
+    "bytes": 34283,
+    "git_blob_sha1": "cba6f6a15a4cc3ba212e9e9059f7243e2d171090",
+    "sha256": "ad858d53cae05eed9531ecd4c467440803acffe34c69de7b88e03affc5b6a1bd"
+  },
+  "sources": [
+    {
+      "source": "common_source/modules/constant_mod.F",
+      "path": "../../solid_law42_caller/native/original/common_source/modules/constant_mod.F",
+      "bytes": 86324,
+      "git_blob_sha1": "5f78c0a6769ac024deb6bba9d3037cd747f36837",
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865"
+    },
+    {
+      "source": "common_source/modules/elements/element_mod.F90",
+      "path": "original/common_source/modules/elements/element_mod.F90",
+      "bytes": 105714,
+      "git_blob_sha1": "b4ea870494bd11c5d139290e942ae8ae17fe7da2",
+      "sha256": "5843cc5fa95989e876462c6b2370b4dadf577439b2eb07d725b69ac85c5c326e"
+    },
+    {
+      "source": "common_source/modules/precision_mod.F90",
+      "path": "../../solid_law42_caller/native/original/common_source/modules/precision_mod.F90",
+      "bytes": 71995,
+      "git_blob_sha1": "801e7590ca7f366cd5b2723ae9acfa6a089049cf",
+      "sha256": "0846aee31622c4bfdc22895a5580bce7b6be216d392b8ba219be53dafe570201"
+    },
+    {
+      "source": "engine/share/includes/com01_c.inc",
+      "path": "../../solid_law42_caller/native/original/engine/share/includes/com01_c.inc",
+      "bytes": 3697,
+      "git_blob_sha1": "0c4563aad5479d85ddd5da8f00e92a6702dfb3dd",
+      "sha256": "fe4d4bab0f0138427f7a16dc6ad46bfecac2543423787ee11d63b0a0456090df"
+    },
+    {
+      "source": "engine/share/includes/com04_c.inc",
+      "path": "../../solid_law42_caller/native/original/engine/share/includes/com04_c.inc",
+      "bytes": 4073,
+      "git_blob_sha1": "626b9a3a62a756194032e5b872a413b5b22236f9",
+      "sha256": "5e848151056a669919bacdb52ae28938bd869978be6de8461f619e6d19585525"
+    },
+    {
+      "source": "engine/share/includes/com06_c.inc",
+      "path": "../../solid_law42_caller/native/original/engine/share/includes/com06_c.inc",
+      "bytes": 2208,
+      "git_blob_sha1": "ec26889940ee3cc606bfb3ccb6fe9e2240d7cc4b",
+      "sha256": "2cbaca20f5a944c2a90ed55299928a0fae55abf242bfdc6fcedff244ddee5ad5"
+    },
+    {
+      "source": "engine/share/includes/com08_c.inc",
+      "path": "../../solid_law42_caller/native/original/engine/share/includes/com08_c.inc",
+      "bytes": 1865,
+      "git_blob_sha1": "527615007426bf007418321b9404b5fcf8639448",
+      "sha256": "10f98e71274a756d2e1345d29658c97a035c89c918257f20c2a164fbecfba496"
+    },
+    {
+      "source": "engine/share/includes/impl1_c.inc",
+      "path": "../../solid_law42_caller/native/original/engine/share/includes/impl1_c.inc",
+      "bytes": 3586,
+      "git_blob_sha1": "bb1edcd216a156efe566d75d2227d88c0fbe77c3",
+      "sha256": "c257001e6e818a85f2841d8aba25ef111773283752d8aea3fdbb58e8edd63112"
+    },
+    {
+      "source": "engine/share/includes/inter22.inc",
+      "path": "../../solid_law42_caller/native/original/engine/share/includes/inter22.inc",
+      "bytes": 3343,
+      "git_blob_sha1": "cc1eaebd846ace0c5d975b57bc1eb521eecc0359",
+      "sha256": "60a06956241356de829f3f58cf684d1d4492623b3c5b5c142b6ce067616ddac5"
+    },
+    {
+      "source": "engine/share/includes/param_c.inc",
+      "path": "../../solid_law42_caller/native/original/engine/share/includes/param_c.inc",
+      "bytes": 3581,
+      "git_blob_sha1": "74dff9d9ecb44c2a0a0314b770356640d84dc2a6",
+      "sha256": "fdf61d11b957fc3415d8367e45722ffbbfcab7d5a630fc24f57a683ea3d54045"
+    },
+    {
+      "source": "engine/share/includes/scr05_c.inc",
+      "path": "../../solid_law42_caller/native/original/engine/share/includes/scr05_c.inc",
+      "bytes": 1594,
+      "git_blob_sha1": "edfdadbce0be47ede50bd6bbe398e14883c0542e",
+      "sha256": "53a14b4a42266455432e4c7608b4ce34bee9b6dc120dbc055a3b1d7a76ff0c0b"
+    },
+    {
+      "source": "engine/share/includes/scr07_c.inc",
+      "path": "../../solid_law42_caller/native/original/engine/share/includes/scr07_c.inc",
+      "bytes": 1974,
+      "git_blob_sha1": "7bd8a12f7e2441425ce7a604150e8e38d278405f",
+      "sha256": "f1e44adb3fc9d2332af0e5e18be5f3976b7e588580c49f04af7b6c0816310e37"
+    },
+    {
+      "source": "engine/share/includes/scr14_c.inc",
+      "path": "../../solid_law42_caller/native/original/engine/share/includes/scr14_c.inc",
+      "bytes": 3329,
+      "git_blob_sha1": "38f4bfbda090ec767a0511639207fa3d58ad5b77",
+      "sha256": "a7ec6a97dd3b5113a179d979d0d9ff66a4c8859415636feb5006f86c3939f57d"
+    },
+    {
+      "source": "engine/share/includes/scr17_c.inc",
+      "path": "../../solid_law42_caller/native/original/engine/share/includes/scr17_c.inc",
+      "bytes": 2111,
+      "git_blob_sha1": "dfbf2b3224854b53b070fecc4924e1894a2841b5",
+      "sha256": "db56f0562b25b05803aba448236fa228c7ea6151e22000540e84d9ce2d9f80ee"
+    },
+    {
+      "source": "engine/share/includes/scr18_c.inc",
+      "path": "../../solid_law42_caller/native/original/engine/share/includes/scr18_c.inc",
+      "bytes": 1790,
+      "git_blob_sha1": "c8a9288f87c174debd9b5b47cbc31d8cf2674c0f",
+      "sha256": "1cfc4b1f7898053279b77d03f25e62c47f8d62e4810777b6c6021cfcadbb255f"
+    },
+    {
+      "source": "engine/share/includes/units_c.inc",
+      "path": "../../solid_law42_caller/native/original/engine/share/includes/units_c.inc",
+      "bytes": 2779,
+      "git_blob_sha1": "49bd9730899b5e8fcd77adeabacb263c422f3ffe",
+      "sha256": "c27320ffa81fd5bf362a0aa30903e2a302d68bb79aac94fc83fa46cc268dba89"
+    },
+    {
+      "source": "engine/share/r8/my_real.inc",
+      "path": "../../solid_law42_caller/native/original/engine/share/r8/my_real.inc",
+      "bytes": 1658,
+      "git_blob_sha1": "14e5c4b5b9167a30f165b726ada28047de9b411b",
+      "sha256": "b2b61dbf62a940a49f92f8458e72e6c7ab92fbae48a72e5a7fce5d6d6bbaf8df"
+    },
+    {
+      "source": "engine/share/spe_inc/comlock.inc",
+      "path": "../../solid_law42_caller/native/original/engine/share/spe_inc/comlock.inc",
+      "bytes": 1968,
+      "git_blob_sha1": "eea178e51ecbf9df13c12319e266ae42897237e6",
+      "sha256": "470ae1ea6af07d8464cf0a36c65bbb40ba32d40b4e301097b0e33de390424aff"
+    },
+    {
+      "source": "engine/share/spe_inc/hardware.inc",
+      "path": "../../solid_law42_caller/native/original/engine/share/spe_inc/hardware.inc",
+      "bytes": 3556,
+      "git_blob_sha1": "40bedb84eaa3529c6a76f51d97d22575601ab37d",
+      "sha256": "10a8e3d40d430fd92ed33b2d1b6fda43262e8c4901340ee740db0f1479ee0b00"
+    },
+    {
+      "source": "engine/share/spe_inc/implicit_f.inc",
+      "path": "../../solid_law42_caller/native/original/engine/share/spe_inc/implicit_f.inc",
+      "bytes": 1478,
+      "git_blob_sha1": "d54bff81213a4f7b53baa8422a0e8be20b338c17",
+      "sha256": "336888d703e8eb082459dfd5f9ed8689b8374bcc6940ab2d53f0df91a0a39cf2"
+    },
+    {
+      "source": "engine/share/spe_inc/lockoff.inc",
+      "path": "../../solid_law42_caller/native/original/engine/share/spe_inc/lockoff.inc",
+      "bytes": 2239,
+      "git_blob_sha1": "3a43222c4af0d7a2590718a5e74684d724029d9b",
+      "sha256": "6bbf602b6b6c6a8eacecf1c6fb97ac8ff4c05a967f56b5b1aebf65ffe24af639"
+    },
+    {
+      "source": "engine/share/spe_inc/lockon.inc",
+      "path": "../../solid_law42_caller/native/original/engine/share/spe_inc/lockon.inc",
+      "bytes": 2236,
+      "git_blob_sha1": "cddbcec07a0860890060eb997e0a7dffd489d4cb",
+      "sha256": "9f3ca126afe6c73e6083bbcac4c5f9c9259ffd3edfb771ebc006c68ff15457bb"
+    },
+    {
+      "source": "engine/share/spe_inc/mvsiz_p.inc",
+      "path": "../../solid_law42_caller/native/original/engine/share/spe_inc/mvsiz_p.inc",
+      "bytes": 3256,
+      "git_blob_sha1": "ace2eaec18ff827b0889b681100fe18fc180bf7b",
+      "sha256": "8a0f587350f7738e0f40e375fc1b2c8cb775e4c7540d41762c427cd42724ced7"
+    },
+    {
+      "source": "engine/share/spe_inc/novectorize_gfortran.inc",
+      "path": "../../solid_law42_caller/native/original/engine/share/spe_inc/novectorize_gfortran.inc",
+      "bytes": 1428,
+      "git_blob_sha1": "609eb9a0014f307df94d9c646a0627fb8934f9f5",
+      "sha256": "855d3b4b17e48e5de62c9374a99f013916b7ed05aea3435c173f46e3c1f4b81b"
+    },
+    {
+      "source": "engine/share/spe_inc/tlock_c.inc",
+      "path": "../../solid_law42_caller/native/original/engine/share/spe_inc/tlock_c.inc",
+      "bytes": 2151,
+      "git_blob_sha1": "54970dd5e6957cd477331971219ee59419ecd867",
+      "sha256": "c8f6f9a8405c173182acdf114060ec4a9a073e4886b6431da1a1f4fb145b33e4"
+    },
+    {
+      "source": "engine/share/spe_inc/vectorize.inc",
+      "path": "../../solid_law42_caller/native/original/engine/share/spe_inc/vectorize.inc",
+      "bytes": 1881,
+      "git_blob_sha1": "9c884843281aeb95cd647d43dc0dc67ef0a3bdb5",
+      "sha256": "67d75c7f52c1dc87facb732ef3ffd29502b9ea1972be228ed135e892f18f7153"
+    },
+    {
+      "source": "engine/source/elements/solid/solide/sdefo3.F",
+      "path": "original/engine/source/elements/solid/solide/sdefo3.F",
+      "bytes": 12290,
+      "git_blob_sha1": "1ce9359112ab354d8b005aee97917a834d1fb883",
+      "sha256": "fb2532a23b0d0e1630961990da45243f61422aaae1574ac449777b3efb6cd7de"
+    },
+    {
+      "source": "engine/source/elements/solid/solide/sdefot3.F",
+      "path": "original/engine/source/elements/solid/solide/sdefot3.F",
+      "bytes": 4712,
+      "git_blob_sha1": "f13b85beacee8f550ef445bb0589f53069c4b64a",
+      "sha256": "24a15722b8e1599d12c723c293596c2a14ca926fe10407e091324866dbe85a28"
+    },
+    {
+      "source": "engine/source/elements/solid/solide/sdlen3.F",
+      "path": "original/engine/source/elements/solid/solide/sdlen3.F",
+      "bytes": 7444,
+      "git_blob_sha1": "f512c43d370f807fd0bf4f5b6a96921dd0d0a203",
+      "sha256": "f89aa1dd9eb5b96ab51408070576487ba7cc27651bfe59a1a7fc0b203aa35410"
+    },
+    {
+      "source": "engine/source/elements/solid/solide/sfint3.F",
+      "path": "original/engine/source/elements/solid/solide/sfint3.F",
+      "bytes": 17561,
+      "git_blob_sha1": "ae5cc0835c7152b14bf6b157b425b84dc700decc",
+      "sha256": "81747df20f08366353ef65f7e8e98e288bb3a9097a3f45bd09ef238c12c0d90c"
+    },
+    {
+      "source": "engine/source/elements/solid/solide/sgcoor3.F",
+      "path": "original/engine/source/elements/solid/solide/sgcoor3.F",
+      "bytes": 6565,
+      "git_blob_sha1": "6bdd28d90aa1e76f6279858b48ab3b341b74a4bc",
+      "sha256": "028825274674f975c482cfdb807027b28be9acf666d892ad0bc131545bf84537"
+    },
+    {
+      "source": "engine/source/elements/solid/solide/slen.F",
+      "path": "original/engine/source/elements/solid/solide/slen.F",
+      "bytes": 3607,
+      "git_blob_sha1": "15bf31c4596b9ecd8020b40ccb725fca6da97ce2",
+      "sha256": "7daf5803ab014d074e71ec5c20425d1791e31b44c526afc9dfc6aa53a090784c"
+    },
+    {
+      "source": "engine/source/elements/solid/solide/sortho3.F",
+      "path": "original/engine/source/elements/solid/solide/sortho3.F",
+      "bytes": 6132,
+      "git_blob_sha1": "716f693e863137eca728cb9753d5ee4b6a25feaf",
+      "sha256": "e4b5edfb0ad407b6252d3bfa84c04ab12d3de28bc253ed76185daa8734ece86d"
+    },
+    {
+      "source": "engine/source/elements/solid/solide/srcoor3.F",
+      "path": "original/engine/source/elements/solid/solide/srcoor3.F",
+      "bytes": 26478,
+      "git_blob_sha1": "0aa237936b57d36b780e8c87b29ae1b0d91a7855",
+      "sha256": "83bbbef1b401eee1385db691048653c9c84a46f0e129aa3af042b377b769d08f"
+    },
+    {
+      "source": "engine/source/elements/solid/solide/srepiso3.F",
+      "path": "original/engine/source/elements/solid/solide/srepiso3.F",
+      "bytes": 4449,
+      "git_blob_sha1": "7cb9a1830fd19ae01f0e4c95d665efa4643aaafa",
+      "sha256": "74749451fc7d28e4b588c43cfda508005e217539604f45fc2b2b7cdea43baa50"
+    },
+    {
+      "source": "engine/source/elements/solid/solide/srho3.F",
+      "path": "../../solid_law42_caller/native/original/engine/source/elements/solid/solide/srho3.F",
+      "bytes": 12141,
+      "git_blob_sha1": "229745d227f1e8c54e8bd96b2cae7bbb89f9d6b4",
+      "sha256": "aa0ae4a2e9454d62efb176230c406a906d5d8233cae35770adeadbca6345ed25"
+    },
+    {
+      "source": "engine/source/elements/solid/solide/srrota3.F",
+      "path": "original/engine/source/elements/solid/solide/srrota3.F",
+      "bytes": 5408,
+      "git_blob_sha1": "16681d0fcbd9382bfe191bbadfe18e357ff9aea7",
+      "sha256": "8b5224efb8abc3f51d7eebda7fad0899cd4f8af5e4b0eb7b98c665985b6af3b7"
+    },
+    {
+      "source": "engine/source/elements/solid/solide4/schkjabt3.F",
+      "path": "original/engine/source/elements/solid/solide4/schkjabt3.F",
+      "bytes": 7630,
+      "git_blob_sha1": "d1228ab45a4ae01d73fddca74d6035e9b55c332b",
+      "sha256": "4de641fd59ab2d490c6e036adab322912f1fda8c42f938d0406d4f5504b25b35"
+    },
+    {
+      "source": "engine/source/elements/solid/solidez/sordeft3.F",
+      "path": "original/engine/source/elements/solid/solidez/sordeft3.F",
+      "bytes": 4196,
+      "git_blob_sha1": "24202d5b6d01941cdd4c976ab8e9493569e86475",
+      "sha256": "c851f6f5756da5d2dbb2cee5afc3d21c443306fc615aa51fef4856b4b2fb8514"
+    },
+    {
+      "source": "engine/source/elements/solid/solidez/szderi3.F",
+      "path": "original/engine/source/elements/solid/solidez/szderi3.F",
+      "bytes": 21449,
+      "git_blob_sha1": "a5995f2571708089801f3786477e591221a40def",
+      "sha256": "df6e6217fa09492a53a909bf75804a101e9abbaca82c58e2fa14eed4f5942c6f"
+    },
+    {
+      "source": "engine/source/elements/solid/solidez/szetfac.F",
+      "path": "original/engine/source/elements/solid/solidez/szetfac.F",
+      "bytes": 4927,
+      "git_blob_sha1": "f55f310ffab9a1612bff8246ec0130676fa3a801",
+      "sha256": "237fd0fca314d7e9eb99907dcac5ff087e3f1a1397972d50911d0d038f249c18"
+    },
+    {
+      "source": "engine/source/elements/solid/solidez/szforc3.F",
+      "path": "original/engine/source/elements/solid/solidez/szforc3.F",
+      "bytes": 59621,
+      "git_blob_sha1": "5c57f7d4e6a43078a37774930f108c5698bce766",
+      "sha256": "4d26c324a1dd0ccdb618042ccc4bfbde0ef1c482592cf8d1e33cfd4ae3c66bf4"
+    },
+    {
+      "source": "engine/source/elements/solid/solidez/szhour3.F",
+      "path": "original/engine/source/elements/solid/solidez/szhour3.F",
+      "bytes": 27784,
+      "git_blob_sha1": "ab7b132a7f7976bc815cb4a85c5aa6197c8c5b92",
+      "sha256": "e7327759a2828917000fe9d56559e9e635ce658c040a39bd751a6f4a84f285b0"
+    },
+    {
+      "source": "engine/source/elements/solid/solidez/sztorth3.F",
+      "path": "original/engine/source/elements/solid/solidez/sztorth3.F",
+      "bytes": 3917,
+      "git_blob_sha1": "c13a5c9cd9afd69d4d213a8b95d90deb6fd7a8e5",
+      "sha256": "b00c12d8d9860cbe142df364ad6b1a8e5c894dd8ca1c314b41564440c60374a1"
+    },
+    {
+      "source": "engine/source/materials/mat_share/mmain.F90",
+      "path": "../../solid_law42_caller/native/original/engine/source/materials/mat_share/mmain.F90",
+      "bytes": 141187,
+      "git_blob_sha1": "b45f62e1aa3a58452e50a61279ed179637a0164a",
+      "sha256": "682c53b5fa9a4f014f84e5a3bc9c6eb558a738065d2d15cb9babac764e585a1c"
+    },
+    {
+      "source": "engine/source/materials/mat_share/mqviscb.F",
+      "path": "../../solid_law42_caller/native/original/engine/source/materials/mat_share/mqviscb.F",
+      "bytes": 23421,
+      "git_blob_sha1": "4ec78cd6bd02205685fff8dea891f08d8af59341",
+      "sha256": "5d7f91a40766420a9681abd22b07558e59c24469aff1bcdf2eb5446d909644cc"
+    },
+    {
+      "source": "engine/source/materials/mat_share/mulaw.F90",
+      "path": "../../solid_law42_caller/native/original/engine/source/materials/mat_share/mulaw.F90",
+      "bytes": 142562,
+      "git_blob_sha1": "b9794e1db2d4f7809f510788fc069366532ed7b4",
+      "sha256": "1d3e7c01bef5d22a702682c2b860027902a46eaf657900034b7d4e534f809bc3"
+    },
+    {
+      "source": "starter/source/materials/mat/hm_read_mat.F90",
+      "path": "../../solid_law42_caller/native/original/starter/source/materials/mat/hm_read_mat.F90",
+      "bytes": 79808,
+      "git_blob_sha1": "0839fdd59eae3a527efe66bf2dbd9b21930fd04a",
+      "sha256": "4d13977914f6619ad1b7f0afc10d11d53dddb13c7f6f61895ae9acaae543de2b"
+    },
+    {
+      "source": "starter/source/materials/mat/mat042/hm_read_mat42.F",
+      "path": "../../solid_law42_caller/native/original/starter/source/materials/mat/mat042/hm_read_mat42.F",
+      "bytes": 14856,
+      "git_blob_sha1": "da6adc30e3e6e69666b0754f37d2d718225cef77",
+      "sha256": "e25f3df9ff55666f59f6c3225430a857bef835ad946c866aa6fbd35281363682"
+    },
+    {
+      "source": "engine/source/elements/elbuf/allocbuf_auto.F",
+      "path": "original/engine/source/elements/elbuf/allocbuf_auto.F",
+      "bytes": 111726,
+      "git_blob_sha1": "951c0c1fb4612598602afa5547e2854605750d79",
+      "sha256": "dd98f5fc264c750bc85fc244f3513a657e13a666583d75f1a72daabca89777f0"
+    },
+    {
+      "source": "engine/source/input/freform.F",
+      "path": "original/engine/source/input/freform.F",
+      "bytes": 100949,
+      "git_blob_sha1": "b477a7912e02c0c6fa35d8c2398dcec5a3074b28",
+      "sha256": "cc82e1fbfff48b21fc75dbc208d4d7d995d711fa2e4a7b99f2146e46b9687df0"
+    },
+    {
+      "source": "starter/source/properties/solid/hm_read_prop14.F",
+      "path": "original/starter/source/properties/solid/hm_read_prop14.F",
+      "bytes": 32543,
+      "git_blob_sha1": "356180a5024bd81e5f3d430af47c90393c5e7228",
+      "sha256": "e7585e4258824330d74566378de997c06feed33aa4000bec08d532850e94036f"
+    }
+  ]
+}

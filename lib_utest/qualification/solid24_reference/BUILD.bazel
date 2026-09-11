@@ -1,7 +1,15 @@
-load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_test", "cc_library")
 cc_test(
     name = "solid24_reference_host",
     srcs = ["HostTest.cpp", "TestSupport.h", "JacobianHostTest.cpp", "JacobianSupport.h"],
     deps = ["//lib_src/elements/solid24:reference", "@googletest//:gtest_main"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+
+cc_library(
+    name = "test_values",
+    testonly = True,
+    hdrs = ["TestSupport.h", "JacobianSupport.h"],
+    deps = ["//lib_src/elements/solid24:reference"],
+    visibility = ["//lib_utest/qualification/solid24_force:__pkg__"],
 )

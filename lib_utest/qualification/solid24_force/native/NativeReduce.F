@@ -1,0 +1,124 @@
+! SPDX-License-Identifier: AGPL-3.0-or-later
+! Complete physical SZHOUR3 then complete SFINT3 and world-force rotation.
+      SUBROUTINE HEPH_FORCE_REDUCE(PARAMETERS,VOLUME0,BASE_HOUR,BASE_STRESS,M,G,HOUR,ENERGY,F,HG)
+      USE HEPH_NATIVE_PACKETS
+      USE HEPH_NATIVE_INTERFACES
+      USE HEPH_NATIVE_ELBUFDEF_MOD
+      USE HEPH_NATIVE_MATPARAM_DEF_MOD
+      USE HEPH_NATIVE_HOUR_OBSERVATIONS,ONLY:WORK,MODULUS,VISCOSITY
+      USE HEPH_NATIVE_ELEMENT_MOD,ONLY:NIXS
+      IMPLICIT NONE
+      REAL(KIND=8),INTENT(IN) :: PARAMETERS(4),VOLUME0,BASE_HOUR(3,4),BASE_STRESS(6),M(33)
+      TYPE(GEOMETRY_PACKET),INTENT(IN) :: G
+      REAL(KIND=8),INTENT(OUT) :: HOUR(1,3,4),ENERGY(1),F(MVSIZ,8,3),HG(3)
+      INTEGER I,K,N,ONE_INDEX(1),IXS(NIXS,1)
+      REAL(KIND=8) PM(110,1),GEO(172,1),PARTSAV(20,1),RHO(1),OFF(1),CXX(1),VIS(1)
+      REAL(KIND=8) VD2(1),VOL0(1),SIGY(1),SIGN(1,6),SIGO(1,6),DEFP(1),ET(1),DMAX(1),STRHG(1,18)
+      REAL(KIND=8) Q(1),SVIS(MVSIZ,6),NORMAL(MVSIZ,6,3),ZERO_BUFFER(MVSIZ),DFE(MVSIZ,3),PBAK(MVSIZ)
+      TYPE(ELBUF_STRUCT_) BUFFERS
+      TYPE(MATPARAM_STRUCT_) MATERIAL
+      INTERFACE
+        SUBROUTINE INITIAL(P,GG) BIND(C,NAME='law42_solid_initial_modulus_native')
+          USE ISO_C_BINDING,ONLY:C_DOUBLE
+          REAL(C_DOUBLE),INTENT(IN) :: P(4)
+          REAL(C_DOUBLE),INTENT(OUT) :: GG
+        END SUBROUTINE
+      END INTERFACE
+      PM=ZERO
+      PM(1,1)=PARAMETERS(3)
+      PM(21,1)=PARAMETERS(2)
+      CALL INITIAL(PARAMETERS,PM(22,1))
+      GEO=ZERO
+      GEO(13,1)=ZEP1
+      PARTSAV=ZERO
+      ONE_INDEX=1
+      IXS=1
+      DO N=1,8
+        IXS(N+1,1)=N
+      ENDDO
+      RHO=M(7)
+      OFF=ONE
+      CXX=M(20)
+      VIS=M(22)
+      VD2=ZERO
+      VOL0=VOLUME0
+      SIGY=ZERO
+      SIGN(1,:)=M(1:6)
+      SIGO(1,:)=BASE_STRESS
+      DEFP=ZERO
+      ET=M(21)
+      DMAX=ZERO
+      STRHG=ZERO
+      HOUR(1,:,:)=BASE_HOUR
+      ENERGY=M(8)
+      F=ZERO
+      Q=M(9)
+      SVIS=ZERO
+      NORMAL=ZERO
+      ZERO_BUFFER=ZERO
+      DFE=ZERO
+      PBAK=ZERO
+      WORK=ZERO
+      MODULUS=ZERO
+      VISCOSITY=ZERO
+      CALL HEPH_NATIVE_SZHOUR3(
+     . BUFFERS,PM,RHO,OFF,
+     . G%V(1,1,1),G%V(1,2,1),G%V(1,3,1),G%V(1,4,1),
+     . G%V(1,5,1),G%V(1,6,1),G%V(1,7,1),G%V(1,8,1),
+     . G%V(1,1,2),G%V(1,2,2),G%V(1,3,2),G%V(1,4,2),
+     . G%V(1,5,2),G%V(1,6,2),G%V(1,7,2),G%V(1,8,2),
+     . G%V(1,1,3),G%V(1,2,3),G%V(1,3,3),G%V(1,4,3),
+     . G%V(1,5,3),G%V(1,6,3),G%V(1,7,3),G%V(1,8,3),
+     . F(1,1,1),F(1,1,2),F(1,1,3),F(1,2,1),
+     . F(1,2,2),F(1,2,3),F(1,3,1),F(1,3,2),
+     . F(1,3,3),F(1,4,1),F(1,4,2),F(1,4,3),
+     . F(1,5,1),F(1,5,2),F(1,5,3),F(1,6,1),
+     . F(1,6,2),F(1,6,3),F(1,7,1),F(1,7,2),
+     . F(1,7,3),F(1,8,1),F(1,8,2),F(1,8,3),
+     . G%PH(1,1,1),G%PH(1,1,2),G%PH(1,1,3),G%PH(1,1,4),
+     . G%PH(1,2,1),G%PH(1,2,2),G%PH(1,2,3),G%PH(1,2,4),
+     . G%PH(1,3,1),G%PH(1,3,2),G%PH(1,3,3),G%PH(1,3,4),
+     . G%PH(1,4,1),G%PH(1,4,2),G%PH(1,4,3),G%PH(1,4,4),
+     . G%VOLUME,ONE_INDEX,CXX,VIS,
+     . VD2,G%LENGTH,ONE_INDEX,GEO,
+     . PARTSAV,ONE_INDEX,G%RATE(1,1),G%RATE(1,2),
+     . G%RATE(1,3),G%RATE(1,4),G%RATE(1,5),G%RATE(1,6),
+     . HOUR,G%JAC(1,1),G%JAC(1,5),G%JAC(1,7),
+     . ENERGY,VOL0,SIGY,SIGN,
+     . SIGO,1,DEFP,1,
+     . ET,DMAX,1,STRHG,
+     . 0,42,10,1,
+     . 2,MATERIAL)
+      HG=[WORK(1)+WORK(2),MODULUS,VISCOSITY]
+      CALL HEPH_NATIVE_SFINT3(
+     . SIGN,G%P(1,1,1),G%P(1,2,1),G%P(1,3,1),
+     . G%P(1,4,1),G%P(1,1,2),G%P(1,2,2),G%P(1,3,2),
+     . G%P(1,4,2),G%P(1,1,3),G%P(1,2,3),G%P(1,3,3),
+     . G%P(1,4,3),ZERO_BUFFER,ZERO_BUFFER,ZERO_BUFFER,
+     . ZERO_BUFFER,ZERO_BUFFER,ZERO_BUFFER,ZERO_BUFFER,
+     . ZERO_BUFFER,ZERO_BUFFER,ZERO_BUFFER,ZERO_BUFFER,
+     . ZERO_BUFFER,F(1,1,1),F(1,1,2),F(1,1,3),
+     . F(1,2,1),F(1,2,2),F(1,2,3),F(1,3,1),
+     . F(1,3,2),F(1,3,3),F(1,4,1),F(1,4,2),
+     . F(1,4,3),F(1,5,1),F(1,5,2),F(1,5,3),
+     . F(1,6,1),F(1,6,2),F(1,6,3),F(1,7,1),
+     . F(1,7,2),F(1,7,3),F(1,8,1),F(1,8,2),
+     . F(1,8,3),G%VOLUME,Q,NORMAL(1,1,1),
+     . NORMAL(1,2,1),NORMAL(1,3,1),NORMAL(1,4,1),NORMAL(1,5,1),
+     . NORMAL(1,6,1),NORMAL(1,1,2),NORMAL(1,2,2),NORMAL(1,3,2),
+     . NORMAL(1,4,2),NORMAL(1,5,2),NORMAL(1,6,2),NORMAL(1,1,3),
+     . NORMAL(1,2,3),NORMAL(1,3,3),NORMAL(1,4,3),NORMAL(1,5,3),
+     . NORMAL(1,6,3),DFE,PBAK,IXS,
+     . 1,0,0,0,
+     . SVIS)
+      CALL HEPH_NATIVE_SRROTA3(
+     . G%FRAME(1,1),G%FRAME(1,4),G%FRAME(1,7),G%FRAME(1,2),
+     . G%FRAME(1,5),G%FRAME(1,8),G%FRAME(1,3),G%FRAME(1,6),
+     . G%FRAME(1,9),F(1,1,1),F(1,2,1),F(1,3,1),
+     . F(1,4,1),F(1,5,1),F(1,6,1),F(1,7,1),
+     . F(1,8,1),F(1,1,2),F(1,2,2),F(1,3,2),
+     . F(1,4,2),F(1,5,2),F(1,6,2),F(1,7,2),
+     . F(1,8,2),F(1,1,3),F(1,2,3),F(1,3,3),
+     . F(1,4,3),F(1,5,3),F(1,6,3),F(1,7,3),
+     . F(1,8,3),1)
+      END
