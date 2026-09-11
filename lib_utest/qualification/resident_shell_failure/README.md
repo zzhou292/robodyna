@@ -1,5 +1,22 @@
 # Complete resident collections with optional constant failure
 
+Root main `6083b01` passes all seven host and six actual CUDA functions.
+All 18 affected mixed/legacy resident functions and eight original Yaris app
+CUDA functions also pass on the combined current sources. Evidence:
+`crash-work/reports/resident-shell-failure-root-{build,tests}-1.json`,
+`resident-shell-failure-mixed-regression-tests-2.json` and
+`resident-shell-failure-source-regression-tests-1.json`, with matching function
+XML directories. The mixed tests-1 command matched no CTest names and failed;
+it is retained and not counted. The first two configure attempts identified
+stale T3 build-registration hashes, refreshed in `16ddbed` / `f6f162f` after
+review; native sources and legacy force equations were unchanged.
+
+The root build used four workers on eight affinity CPUs with an 18 GiB RSS
+guard, sampling a 1,814,102,016 B peak. Actual GPU tests used two affinity CPUs
+and a 2 GiB RSS guard. These short-run samples are not allocation ceilings.
+Source declaration admission, contact activity and glass TAB1 resident state
+remain separate work.
+
 `ShellBatchFailureBinding` is an immutable, complete source-order declaration
 alongside the existing explicitly heterogeneous section catalog. Every parent
 has a policy: `None` or LAW44 `ConstantAllPoints` with positive native D1.
