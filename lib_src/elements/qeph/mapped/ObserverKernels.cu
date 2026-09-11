@@ -1,17 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "ObserverValues.h"
+#include "../../mapped_shell/ObserverTree.cuh"
 #include "../../ShellMixedSectionArenaLayout.h"
 
 namespace tl::fea::qeph::batch_detail {
 namespace {
 using mapped::ObserverSummary;
-__device__ void ReduceBlock(ObserverSummary* values) {
-  for(unsigned offset=mapped::ObserverThreads/2;offset;offset/=2) {
-    __syncthreads();
-    if(threadIdx.x<offset) mapped::MergeObservations(values[threadIdx.x],values[threadIdx.x+offset]);
-  }
-  __syncthreads();
-}
+using mapped_shell::ReduceObserverBlock;
 __global__ void ObserveMapped(Storage* storage,const Slab* accepted,const Slab* trial,
     NodalPreparedView view,BatchDiagnostics identity,
     const shell_batch_plasticity_detail::MixedDeviceStorage* mixed) {
@@ -30,7 +25,7 @@ __global__ void ObserveMapped(Storage* storage,const Slab* accepted,const Slab* 
   for(std::size_t n=first;n<s.model.config.owner.node_count;n+=stride)
     mapped::ObserveNode(s,n,out);
   values[threadIdx.x]=out;
-  ReduceBlock(values);
+  ReduceObserverBlock(values);
   if(!threadIdx.x) s.assembly.observer[blockIdx.x]=values[0];
 }
 __global__ void FinishMappedObservers(Storage* storage,const Slab* accepted,const Slab* trial,
@@ -43,7 +38,7 @@ __global__ void FinishMappedObservers(Storage* storage,const Slab* accepted,cons
   if(!blocks) out.serial=true;
   for(unsigned i=threadIdx.x;i<blocks;i+=blockDim.x) mapped::MergeObservations(out,s.assembly.observer[i]);
   values[threadIdx.x]=out;
-  ReduceBlock(values);
+  ReduceObserverBlock(values);
   if(!threadIdx.x) mapped::FinalizeObservations(s,*accepted,*trial,view,identity,
       mixed?mixed->law:nullptr,values[0],s.control);
 }

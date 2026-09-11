@@ -81,11 +81,13 @@ BatchDiagnostics InitialDiagnostics(const T3BatchConfig&,bool joined=false);
 void LaunchMappedAssembly(Storage*,const Slab*,NodalAssemblyView,NodalCinAssemblyView,
     const shell_batch_plasticity_detail::MixedDeviceStorage*,bool initial);
 void LaunchAssembly(Storage*,const Slab*,NodalAssemblyView,bool initial);
+void LaunchMappedObserverDiagnostics(Storage*, const Slab*, const Slab*, NodalPreparedView, BatchDiagnostics,
+    const shell_batch_plasticity_detail::MixedDeviceStorage*);
 void LaunchCandidate(Storage*,const Slab*,Slab*,NodalPreparedView,BatchDiagnostics,
                      shell_batch_plasticity_detail::DeviceStorage*,unsigned accepted_slab,std::size_t element_count,
                      shell_batch_plasticity_detail::MixedDeviceStorage*,
                      shell_batch_plasticity_detail::FailureDeviceStorage*,
-                     shell_batch_plasticity_detail::OnePointDeviceStorage*);
+                     shell_batch_plasticity_detail::OnePointDeviceStorage*, bool mapped=false);
 void LaunchFailure(NodalAssemblyView);
 } // namespace tl::fea::t3::batch_detail
 

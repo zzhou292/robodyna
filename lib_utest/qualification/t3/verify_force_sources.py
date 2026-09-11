@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import runpy
 
-MANIFEST_SHA256 = "c7bf8d2a8140206c641ac4ac9a8a8f98904fc7492b9d6233ce567ba7965bef96"
+MANIFEST_SHA256 = "9103870dd9494cfbf7438ab5d84825d4e68a011dcd8d0362b84f81f3c7b8f92a"
 
 
 def verify():

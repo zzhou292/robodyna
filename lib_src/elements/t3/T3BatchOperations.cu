@@ -137,7 +137,7 @@ BatchReport T3Batch::EvaluateCandidateImpl(FENodalState* owner,const NodalTrialT
       s.plasticity?s.plasticity->device():nullptr,s.AcceptedSlabIndex(),s.config.element_count,
       s.plasticity?s.plasticity->mixed_device():nullptr,
       s.plasticity?s.plasticity->failure_device():nullptr,
-      s.plasticity?s.plasticity->one_point_device():nullptr);
+      s.plasticity?s.plasticity->one_point_device():nullptr,s.physical.has_value());
   report=s.ReadControl(); if(report.status!=BatchStatus::Success) return report;
   s.candidate_diagnostics=s.control.diagnostics; s.candidate_view=v; s.pending=true;
   *output=s.candidate_diagnostics; return {BatchStatus::Success,"OK"};

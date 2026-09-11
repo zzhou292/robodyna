@@ -2,7 +2,7 @@
 #pragma once
 #include "Fixture.h"
 #include "../mapped_shell_observer/Truth.h"
-namespace qeph_observer_test {
+namespace t3_observer_test {
 using namespace mapped_observer_truth;
 inline std::array<TruthSum,m::ObserverChannels> Truth(Fixture& f,unsigned epoch=1,bool assembled=true) {
   std::array<TruthSum,m::ObserverChannels> truth{};
@@ -11,10 +11,9 @@ inline std::array<TruthSum,m::ObserverChannels> Truth(Fixture& f,unsigned epoch=
     if(f.roles[p]==fe::ShellSectionLaw::RigidSkin)continue;
     const auto& r=f.host->slab[1].element[p];const auto& h=r.proposed_history.data();
     for(unsigned c=0;c<2;++c) {truth[c].Add(h.internal_work[c]);truth[c+2].Add(r.diagnostics.internal_work_increment[c]);}
-    truth[4].Add(h.hourglass_viscous_work);truth[5].Add(r.diagnostics.hourglass_viscous_work_increment);
     if(!assembled)continue;
     const auto& old=f.host->slab[0].element[p];
-    for(unsigned s=0;s<4;++s) {
+    for(unsigned s=0;s<3;++s) {
       const auto n=f.host->model.element[p].nodes[s];
       double v[3],w[3],dx[3],rotation[3];
       for(unsigned a=0;a<3;++a) {
@@ -36,7 +35,7 @@ inline void CheckTruth(Fixture& fixture,const b::Control& actual,unsigned epoch=
   const auto truth=Truth(fixture,epoch,assembled);const auto actual_sums=Sums(actual.diagnostics);
   const auto blocks=m::ObserverBlocks(fixture.roles.size(),Nodes);
   for(unsigned c=0;c<m::ObserverChannels;++c) {
-    const High bound=truth[c].Bound(fixture.roles.size(),blocks);
+    const High bound=truth[c].Bound(fixture.roles.size(),blocks,3);
     EXPECT_TRUE(Abs(High(actual_sums[c])-truth[c].value)<=bound)<<"channel "<<c;
     // A representable corruption demonstrably outside this very packet's
     // bound must be distinguishable; no global NearlyEqual relaxation exists.
@@ -44,4 +43,4 @@ inline void CheckTruth(Fixture& fixture,const b::Control& actual,unsigned epoch=
     EXPECT_GT(Abs(High(corrupted)-truth[c].value),bound)<<"control channel "<<c;
   }
 }
-} // namespace qeph_observer_test
+} // namespace t3_observer_test

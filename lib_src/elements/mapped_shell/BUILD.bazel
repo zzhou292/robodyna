@@ -12,3 +12,14 @@ cc_library(
     deps = [":values", "//lib_src/elements:shell_batch_plasticity_storage",
             "//lib_src/solvers:explicit_nodal_state"],
 )
+
+cc_library(
+    name = "observer_values",
+    hdrs = ["ObserverTypes.h", "ObserverSums.h"],
+    deps = ["//lib_src/math:fixed3"],
+)
+cc_library(
+    name = "observer_tree",
+    hdrs = ["ObserverTree.cuh"],
+    deps = [":observer_values"],
+)

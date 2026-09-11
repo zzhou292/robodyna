@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "Stiffness.h"
+#include "ObserverTypes.h"
 #include "../T3Batch.h"
 #include "../../mapped_shell/NodeGather.h"
 
@@ -17,6 +18,7 @@ struct AssemblyMemory {
   AssemblyParent* parent = nullptr;
   AssemblyNode* node = nullptr;
   unsigned long long* failure = nullptr;
+  ObserverSummary* observer = nullptr;
 };
 inline constexpr unsigned long long NoAssemblyFailure = mapped_shell::NoAssemblyFailure;
 } // namespace tl::fea::t3::mapped

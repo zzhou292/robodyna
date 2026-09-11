@@ -15,8 +15,8 @@
   "ported_files": [
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
-      "bytes": 5078,
-      "sha256": "e0a32ef2ea3a1acf409c5fc167734cc672678210761b8190775a38125d3a2370"
+      "bytes": 5372,
+      "sha256": "9b6d06079b3381226f6f97e0b41e970d7dea8856c6fc64d0f48f163e6dcedd69"
     },
     {
       "path": "lib_src/elements/t3/CMakeLists.txt",
@@ -564,6 +564,17 @@
         "path": "lib_src/elements/t3/BUILD.bazel",
         "bytes": 4879,
         "sha256": "4154a28ff8d0461655aa719c2d6860b405df72d9ef3f69f4621318c8fbae096d"
+      }
+    ]
+  },
+  "mapped_t3_observer_registration": {
+    "scope": "Neutral mapped shell observer helper extraction and optional T3 observation tail; old equation and frozen serial oracle bodies unchanged. Prior records retained.",
+    "previous_manifest_sha256": "2c86b84995c5998222be26578b8a88d6e682c276928416b30b59e103f9f9745e",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 5078,
+        "sha256": "e0a32ef2ea3a1acf409c5fc167734cc672678210761b8190775a38125d3a2370"
       }
     ]
   }

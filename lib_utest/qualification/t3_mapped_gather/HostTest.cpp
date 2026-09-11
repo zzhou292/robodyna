@@ -4,7 +4,7 @@
 
 namespace t3_gather_test {
 static_assert(sizeof(m::AssemblyParent)==56 && sizeof(m::AssemblyNode)==72);
-static_assert(sizeof(m::AssemblyMemory)==40 && sizeof(m::AssemblyLayout)==128);
+static_assert(sizeof(m::AssemblyMemory)==48 && sizeof(m::AssemblyLayout)==152);
 TEST(T3MappedGather,FlatSourceOrderAndLateConnectivityRejection) {
   struct Element { std::size_t nodes[3]; };
   Element elements[]{{{3,0,2}},{{1,3,2}},{{4,2,1}}};
@@ -41,9 +41,9 @@ TEST(T3MappedGather,ExactArenaCapRebaseLegacyAndFullVehicleForecast) {
   ASSERT_TRUE(full.InitializeMapped(21301,372435,2ull<<30));
   std::printf("GATHER_FORECAST legacy_layout=%zu mapped_layout=%zu optional_tail=%zu header_pointer_bytes=%zu parents=21301 nodes=372435\n",
       full_old.bytes,full.bytes,full.bytes-full_old.bytes,sizeof(m::AssemblyMemory));
-  EXPECT_EQ(full.bytes-full_old.bytes,29753540u);
-  EXPECT_EQ(sizeof(m::AssemblyMemory),40u);
-  EXPECT_EQ(sizeof(m::AssemblyLayout),128u);
+  EXPECT_EQ(full.bytes-full_old.bytes,29753540u+32768u);
+  EXPECT_EQ(sizeof(m::AssemblyMemory),48u);
+  EXPECT_EQ(sizeof(m::AssemblyLayout),152u);
   // Only fixed metadata grows for the old initializer. Every capacity-sized
   // region remains exclusive to InitializeMapped and its host/device forecast.
   struct PreviousHeader {
@@ -52,7 +52,7 @@ TEST(T3MappedGather,ExactArenaCapRebaseLegacyAndFullVehicleForecast) {
     b::Control control;
     q::Status* candidate_status;
   };
-  EXPECT_EQ(sizeof(b::Storage)-sizeof(PreviousHeader),40u);
+  EXPECT_EQ(sizeof(b::Storage)-sizeof(PreviousHeader),48u);
   RecordProperty("storage_header_bytes",std::to_string(sizeof(b::Storage)));
   RecordProperty("layout_header_bytes",std::to_string(sizeof(b::Layout)));
   RecordProperty("full_mapped_arena_bytes",std::to_string(full.bytes));
