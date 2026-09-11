@@ -13,6 +13,7 @@ struct DevicePacket {
   law::PreparedMaterial material;
   s::ReferenceInput input;
   f::Reference reference;
+  f::ReferenceScratch reference_scratch;
   s::PrescribedInterval interval;
   s::Vec3 initial_velocity;
   f::ForceScratch scratch;
@@ -25,8 +26,9 @@ struct DevicePacket {
 __global__ void Initialize(DevicePacket* p) {
   const auto result=law::PrepareSI(p->material_input,{p->curve_x,p->curve_y,p->curve_count},p->material);
   if(result!=law::Status::Ok){p->stage=1;return;}
-  p->status=f::InitializeReference90(p->input,p->reference);
+  p->status=f::InitializeReference90Scratch(p->input,p->reference_scratch);
   if(p->status!=s::Status::Success){p->stage=2;return;}
+  p->reference=p->reference_scratch.staged;
   p->status=f::InitializeForce90Scratch(p->reference,p->material,p->initial_velocity,p->scratch);
   if(p->status==s::Status::Success)p->published=p->scratch.staged;
   p->stage=3;

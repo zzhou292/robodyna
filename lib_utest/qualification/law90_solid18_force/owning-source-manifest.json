@@ -78,8 +78,8 @@
     },
     {
       "path": "lib_utest/qualification/law90_solid18_force/CudaTest.cu",
-      "bytes": 6919,
-      "sha256": "41e0f9c82d05f32a40b4fc9c5f5a2011d36e250e3e440f2c1a38431e72ae3ed1"
+      "bytes": 7019,
+      "sha256": "88f83c17dbca9eeb63ee40473bbb3222dac39a53d9ca9b9dd42af52cf33cfec5"
     },
     {
       "path": "lib_utest/qualification/law90_solid18_force/HostTest.cpp",
@@ -199,6 +199,13 @@
       "path": "lib_utest/qualification/law90_solid18_force/CMakeLists.txt",
       "bytes": 3822,
       "sha256": "9d0a3a8c5d4f024b96db4758d30ebe3c68536b495299ac08876c6f158d66fa75"
+    }
+  ],
+  "prior_cuda_fixture_records": [
+    {
+      "path": "lib_utest/qualification/law90_solid18_force/CudaTest.cu",
+      "bytes": 6919,
+      "sha256": "41e0f9c82d05f32a40b4fc9c5f5a2011d36e250e3e440f2c1a38431e72ae3ed1"
     }
   ]
 }
