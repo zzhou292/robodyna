@@ -104,3 +104,17 @@ ctest --test-dir BUILD_DIR --output-on-failure -j1 \
 
 Owning Bazel host target:
 `//lib_utest/qualification/shell_tab1_glass:shell_tab1_glass_values_check`.
+
+Root qualification at TL `fe6e1b8`: all **24 functions pass**, comprising six
+new host, four new native, two actual CUDA, eight legacy host and four legacy
+native functions. All **13 failure-force functions** also pass after rebuilding
+the common work helper, including both CUDA force trajectories. Reports are
+`shell-tab1-glass-root-{configure,build,tests}-1`,
+`shell-tab1-glass-force-regression-{build,tests}-1`, and matching per-function
+XML directories. No skips or tolerance changes were used. The owning Bazel
+glass and failure-force targets build after granting the glass qualification
+package access to the existing test-only failure fixture.
+
+This qualifies the point and centered section composition. Complete glass
+family forces, noncentered placement, resident/source admission and contact
+activity still require their own integration.
