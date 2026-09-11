@@ -1,0 +1,2 @@
+      USE CONSTANT_MOD
+      IMPLICIT NONE

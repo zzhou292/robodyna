@@ -1,0 +1,35 @@
+{
+  "commit": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "sources": [
+    {
+      "path": "original/starter/source/interfaces/inter3d1/i2tid3.F",
+      "source": "starter/source/interfaces/inter3d1/i2tid3.F",
+      "size": 35779,
+      "sha256": "ca47139a0956e32f27f6f5064403f0680a78a32a6664cccb542facf77b74fb76",
+      "git_blob_sha1": "5cd1ac387fc7a89b0f3164fa3888084a809c9628"
+    },
+    {
+      "path": "original/starter/source/interfaces/interf1/lecint.F",
+      "source": "starter/source/interfaces/interf1/lecint.F",
+      "size": 52110,
+      "sha256": "0095eda11c810cc01f077fb5612a64e6d6674b1e1627ef8912671734604613a9",
+      "git_blob_sha1": "38f856e9a526f7d517fc46660e8c1cc3be9b31fe"
+    },
+    {
+      "path": "original/starter/source/interfaces/intbuf/intbuf_ini_starter.F",
+      "source": "starter/source/interfaces/intbuf/intbuf_ini_starter.F",
+      "size": 111094,
+      "sha256": "7e8af8a37ec8c263939e5cc0ef4df8dcef42cb83343ffda0eff509b0b163f6b3",
+      "git_blob_sha1": "c40a706c725d7e19395e51f0e809a74e5f010524"
+    }
+  ],
+  "fragments": [
+    {
+      "path": "ConnectionCount.inc",
+      "source": "original/starter/source/interfaces/interf1/lecint.F",
+      "first_line": 1041,
+      "last_line": 1049,
+      "sha256": "07fbc41fb98a1459919fd0e1f6f3ddcdf532d238ce3fe7d2a638b18638e3b818"
+    }
+  ]
+}
