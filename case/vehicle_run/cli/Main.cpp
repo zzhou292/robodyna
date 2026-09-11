@@ -18,6 +18,8 @@ int main(int argc,char** argv) {
         auto settings=crash::cases::vehicle_wall::LoadedWallSettings();
         settings.requested_duration_s=options.config.duration_s;
         settings.leading_gap_m=options.gap_m;
+        if(options.wall_stiffness_n_m3) settings.stiffness_per_area=*options.wall_stiffness_n_m3;
+        if(options.penetration_limit_m) settings.maximum_penetration_m=*options.penetration_limit_m;
         std::cout<<std::setprecision(17)<<"Preparing pinned original source using existing bounded factories"<<std::endl;
         const auto source=run::PrepareOriginalYaris(options.source,settings);
         run::records::Identity identity;

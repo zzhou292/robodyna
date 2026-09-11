@@ -21,6 +21,8 @@ TEST(VehicleRunOptions, ExplicitCompleteSourceNormalDefaultsAndDiagnosticPrefix)
     EXPECT_EQ(defaults.config.duration_s,.005);
     EXPECT_EQ(defaults.config.fixed_dt_s,3e-7);
     EXPECT_EQ(defaults.gap_m,.02);
+    EXPECT_FALSE(defaults.wall_stiffness_n_m3);
+    EXPECT_FALSE(defaults.penetration_limit_m);
     EXPECT_EQ(defaults.run_id,71u);
     EXPECT_EQ(defaults.diagnostic_intervals,0u);
     EXPECT_EQ(defaults.config.resources,ResourceProfile::Normal);
@@ -38,5 +40,24 @@ TEST(VehicleRunOptions, MissingDuplicateOverflowAndInvalidNumericsRejectBeforeAn
         EXPECT_THROW(Parse(args),std::exception);
     }
     EXPECT_THROW(Parse({"run","--forecast-only"}),std::exception);
+}
+TEST(VehicleRunOptions, ExplicitWallControlsKeepUnitsAndRejectInvalidValuesBeforeSourceRead) {
+    auto args=Arguments();
+    args.insert(args.end(),{"--wall-stiffness-n-m3","1e9","--penetration-limit-m","0.002"});
+    const auto options=Parse(args);
+    ASSERT_TRUE(options.wall_stiffness_n_m3);
+    ASSERT_TRUE(options.penetration_limit_m);
+    EXPECT_EQ(*options.wall_stiffness_n_m3,1e9);
+    EXPECT_EQ(*options.penetration_limit_m,.002);
+    for(const auto* name:{"--wall-stiffness-n-m3","--penetration-limit-m"}) {
+        for(const auto* value:{"0","-1","nan","inf","1e999"}) {
+            auto invalid=Arguments();
+            invalid.insert(invalid.end(),{name,value});
+            EXPECT_THROW(Parse(invalid),std::exception)<<name<<' '<<value;
+        }
+        auto duplicate=args;
+        duplicate.insert(duplicate.end(),{name,"1"});
+        EXPECT_THROW(Parse(duplicate),std::exception);
+    }
 }
 } // namespace crash::cases::vehicle_run::test

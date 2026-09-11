@@ -108,6 +108,16 @@ only for the first-contact qualification. With no diagnostic limit the same
 loop executes the complete planned horizon. A later 20/50 ms run requires a new
 setup/owner/output directory and does not resume the prior visualization.
 
+`--wall-stiffness-n-m3` and `--penetration-limit-m` explicitly override the
+existing wall-case declarations for contact sensitivity runs. Stiffness has
+units N/m³ because contact multiplies it by the retained reference area and
+penetration. Both options require finite positive values and are written through
+the existing wall setup artifact. If absent, the owning case keeps its defaults.
+These controls do not bypass the physical/contact timestep screens or change
+the fixed integration step. A penalty choice still needs a demonstrated
+penetration and deformation response before calling the impact sufficiently
+close to a rigid wall.
+
 `--maximum-elapsed-s` stops at a completed accepted boundary after startup.
 `--stop-file PATH` supplies a simple cooperative stop: create that file outside
 the archive and the next accepted boundary exports a prefix. It does not
