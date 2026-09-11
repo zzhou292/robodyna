@@ -1,7 +1,10 @@
 ! SPDX-License-Identifier: AGPL-3.0-or-later
 ! One-element selected caller. All equations are complete native leaves.
-subroutine SOLID6Z_FORCE_NATIVE(PARAMETERS,XREF,JAC_I,BASE,X,V,STEP, &
-    GEOMETRY,POINT,HISTORY,FORCES,STABILIZATION,STATUS) bind(C,name='solid6z_force_native')
+module SOLID6Z_FORCE_CALLER
+  implicit none
+contains
+subroutine EVALUATE_VALUES(PARAMETERS,XREF,JAC_I,BASE,X,V,STEP, &
+    GEOMETRY,POINT,HISTORY,FORCES,STABILIZATION,STATUS,INITIALIZATION)
   use iso_c_binding
   use, intrinsic :: ieee_arithmetic
   use SOLID6Z_FORCE_PACKETS
@@ -9,6 +12,7 @@ subroutine SOLID6Z_FORCE_NATIVE(PARAMETERS,XREF,JAC_I,BASE,X,V,STEP, &
   real(c_double),intent(in) :: PARAMETERS(4),XREF(3,6),JAC_I(11),BASE(21),X(3,6),V(3,6),STEP(3)
   real(c_double),intent(out) :: GEOMETRY(98),POINT(33),HISTORY(21),FORCES(54),STABILIZATION(28)
   integer(c_int),intent(out) :: STATUS
+  logical,intent(in) :: INITIALIZATION
   type(native_geometry) :: G
   real(kind=8) :: D(MVSIZ,6,3),MATERIAL_STEP(4),NATIVE_POINT(33),NATIVE_HISTORY(21)
   real(kind=8) :: NATIVE_FORCES(54),NATIVE_STABILIZATION(28),GEOMETRY_PACKET(98)
@@ -26,7 +30,12 @@ subroutine SOLID6Z_FORCE_NATIVE(PARAMETERS,XREF,JAC_I,BASE,X,V,STEP, &
   if (.not.all(ieee_is_finite(JAC_I)).or..not.all(ieee_is_finite(BASE))) return
   if (.not.all(ieee_is_finite(X)).or..not.all(ieee_is_finite(V))) return
   if (.not.all(ieee_is_finite(STEP))) return
-  if (STEP(1)<=0.or.STEP(2)<0.or.STEP(3)<0.or.JAC_I(10)<=0.or.JAC_I(11)<=0) return
+  if (STEP(2)<0.or.STEP(3)<0.or.JAC_I(10)<=0.or.JAC_I(11)<=0) return
+  if (INITIALIZATION) then
+    if (STEP(1)/=0) return
+  else
+    if (STEP(1)<=0) return
+  end if
   G%X=0
   G%V=0
   G%FRAME=0
@@ -76,4 +85,18 @@ subroutine SOLID6Z_FORCE_NATIVE(PARAMETERS,XREF,JAC_I,BASE,X,V,STEP, &
   FORCES=NATIVE_FORCES
   STABILIZATION=NATIVE_STABILIZATION
   STATUS=0
+end subroutine
+end module
+
+! Preserve the established positive-step C ABI and its strict dt admission.
+subroutine SOLID6Z_FORCE_NATIVE(PARAMETERS,XREF,JAC_I,BASE,X,V,STEP, &
+    GEOMETRY,POINT,HISTORY,FORCES,STABILIZATION,STATUS) bind(C,name='solid6z_force_native')
+  use iso_c_binding
+  use SOLID6Z_FORCE_CALLER,only:EVALUATE_VALUES
+  implicit none
+  real(c_double),intent(in) :: PARAMETERS(4),XREF(3,6),JAC_I(11),BASE(21),X(3,6),V(3,6),STEP(3)
+  real(c_double),intent(out) :: GEOMETRY(98),POINT(33),HISTORY(21),FORCES(54),STABILIZATION(28)
+  integer(c_int),intent(out) :: STATUS
+  call EVALUATE_VALUES(PARAMETERS,XREF,JAC_I,BASE,X,V,STEP, &
+      GEOMETRY,POINT,HISTORY,FORCES,STABILIZATION,STATUS,.false.)
 end subroutine

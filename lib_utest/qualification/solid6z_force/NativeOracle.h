@@ -41,6 +41,18 @@ class NativeHistory {
   const std::array<double,21>& accepted() const { return accepted_; }
   void Prescribe(std::array<double,21> values) { accepted_ = values; }
   void Accept(const NativeResult& trial) { accepted_ = trial.history; }
+  NativeResult InitializeForce(tl::fea::solid6z::Vec3 velocity,
+                              double damping = .1, double sound_speed_scale = 1) const {
+    const double v[3]{velocity.x,velocity.y,velocity.z};
+    const double profile[2]{damping,sound_speed_scale};
+    NativeResult result;
+    result.constitutive_modulus_pa = modulus_pa_;
+    solid6z_force_initial_native(parameters_.data(),original_.data(),reference_.data(),v,profile,
+        result.geometry.data(),result.material.data(),result.history.data(),
+        result.forces.data(),result.stabilization.data(),&result.status);
+    RestoreForces(result);
+    return result;
+  }
   NativeResult Evaluate(const tl::fea::solid6z::PrescribedInterval& interval,
                         double damping = .1, double sound_speed_scale = 1) const {
     std::array<double,18> position{},velocity{};
@@ -56,14 +68,17 @@ class NativeHistory {
     solid6z_force_native(parameters_.data(),original_.data(),reference_.data(),accepted_.data(),
         position.data(),velocity.data(),step,result.geometry.data(),result.material.data(),
         result.history.data(),result.forces.data(),result.stabilization.data(),&result.status);
+    RestoreForces(result);
+    return result;
+  }
+ private:
+  void RestoreForces(NativeResult& result) const {
     const auto native = result.forces;
     for (unsigned n = 0; n < 6; ++n) {
       for (unsigned k = 0; k < 3; ++k)
         result.forces[36+3*permutation_[n]+k] = native[36+3*n+k];
     }
-    return result;
   }
- private:
   double modulus_pa_ = 0;
   std::array<double,4> parameters_{};
   std::array<int,6> permutation_{};

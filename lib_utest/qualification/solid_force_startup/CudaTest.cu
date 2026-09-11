@@ -118,7 +118,7 @@ TEST(SolidStartupCuda, ThreeDeviceOwnedConstructorsRejectLateInputsAndRetryExact
   const auto eb=heph_test::NativeStep(nb,ib,input.material42);heph_test::Compare(o.initial24,eb);heph_test::AcceptNative(eb,nb);
   heph_test::Compare(o.next24,heph_test::NativeStep(nb,input.interval24,input.material42));
   solid6z_force_test::NativeHistory nc;ASSERT_TRUE(nc.Initialize(input.reference6z.input(),input.material42));
-  const auto ec=nc.Evaluate(ic);ASSERT_TRUE(solid6z_force_test::Agree(solid6z_force_test::Pack(o.initial6z),ec));nc.Accept(ec);
+  const auto ec=nc.InitializeForce(v);ASSERT_TRUE(solid6z_force_test::Agree(solid6z_force_test::Pack(o.initial6z),ec));nc.Accept(ec);
   ASSERT_TRUE(solid6z_force_test::Agree(solid6z_force_test::Pack(o.next6z),nc.Evaluate(input.interval6z)));
 }
 } // namespace

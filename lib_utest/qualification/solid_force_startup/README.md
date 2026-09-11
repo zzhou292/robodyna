@@ -41,13 +41,19 @@ DT2 into DT1 before normal force calls. No invented native skip-material branch
 is used. First-step evidence is the actual independent family packet at dt0.
 
 The owning gate contains four new host functions plus 21 unchanged host
-functions, four native functions (three complete families and exact stiffness),
+functions, five native functions (three complete families, exact stiffness and
+the S6Z ordinary-zero-step rejection control),
 three all-original source functions (908/1309/195 parents), unchanged native
 family regression functions and one actual CUDA function. Each native family
 constructs and carries its own initial fields into four positive intervals.
 The CUDA kernel owns its three histories, checks late input rejection and exact
 retry, and compares complete named output fields against independent host native
 packets. No padded struct success comparisons or native history seeded from TL.
+
+The S6Z native ordinary packet retains its positive-step guard. Its separate
+constructor generates virgin BASE, exact XREF positions, uniform translation and
+zero dt itself, then calls the same complete native body through an explicit
+module interface. The source donors and corrected CXX policy are unchanged.
 
 Author validation: host gates and C++ syntax only; native/CUDA/source execution
 belongs to the scheduled root gate. No new tolerance is supplied here.

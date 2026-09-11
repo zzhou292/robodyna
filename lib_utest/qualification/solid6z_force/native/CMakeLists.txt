@@ -12,7 +12,7 @@ file(MAKE_DIRECTORY "${modules}")
 add_custom_target(solid6z_force_verify_native COMMAND "${Python3_EXECUTABLE}" -B
   "${CMAKE_CURRENT_SOURCE_DIR}/prepare_sources.py" --output "${prepared}" --check)
 add_library(solid6z_force_native STATIC NativeContext.F90 NativeGlobals.F
-  NativeCoordinates.F90 NativeCurrent.F90 NativeResultants.F90 NativeForce.F90
+  NativeCoordinates.F90 NativeCurrent.F90 NativeResultants.F90 NativeForce.F90 NativeInitial.F90
   "${prepared}/constant_mod.F" "${prepared}/precision_mod.F90"
   "${prepared}/s6zrcoor3.F90" "${prepared}/s6zderi3.F90" "${prepared}/s6zderito3.F90"
   "${prepared}/s6zdefot3.F90" "${prepared}/s6zdefc3.F90" "${prepared}/s6zdefo3.F90"
