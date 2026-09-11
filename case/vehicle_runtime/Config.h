@@ -1,6 +1,7 @@
 #pragma once
 #include "lib_src/elements/ShellBatchPublication.h"
 #include "lib_src/solvers/NodalCinRuntime.h"
+#include "lib_src/elements/type45/resident/Batch.h"
 
 namespace crash::cases::vehicle_runtime {
 inline constexpr double InitialSpeedMps = 35.0 * 0.44704;
@@ -12,6 +13,7 @@ struct Limits {
     tl::fea::ShellBatchFailureLimits failure = tl::fea::ShellBatchFailureLimits::Vehicle();
     tl::fea::ShellPublicationLimits publisher = tl::fea::ShellPublicationLimits::Vehicle();
     tl::fea::type13::BatchMappedLimits beams = tl::fea::type13::BatchMappedLimits::Vehicle();
+    tl::fea::type45::BatchLimits joints;
 };
 struct Config {
     std::uint64_t configuration_id = 0x594152495330ULL;

@@ -1,6 +1,7 @@
 #include "Forecast.h"
 #include "ParticipantConfigs.h"
 #include "Packing.h"
+#include "JointRuntime.h"
 #include "lib_src/elements/ShellBatchLayeredSection.h"
 #include "lib_utils/BoundedArena.h"
 #include "output/ArtifactIO.h"
@@ -8,7 +9,7 @@
 namespace crash::cases::vehicle_runtime::detail {
 namespace fe = tl::fea;
 Forecast ForecastStartup(const Config& config,const Execution& execution,const Attachments& attachments,
-    std::size_t fixed_bytes) {
+    std::size_t fixed_bytes,const JointModel* joints) {
     using output::Require;
     CheckConfig(config);
     CheckSource(execution,attachments);
@@ -19,6 +20,7 @@ Forecast ForecastStartup(const Config& config,const Execution& execution,const A
     out.prior_construction_bytes = {execution.model().forecast().total_bytes,execution.forecast().total_bytes,
                                    attachments.forecast().total_bytes};
     out.app_fixed_bytes = fixed_bytes;
+    if(joints) ForecastJoints(config,execution,attachments,*joints,out);
     out.retained_source_upper_bound = SourceBytes(execution,attachments,config.limits.host_bytes);
     const auto nodes = physical.domain()->node_count();
     out.packing_bytes = PackingBytes(nodes,config.limits.host_bytes);
@@ -69,6 +71,14 @@ Forecast ForecastStartup(const Config& config,const Execution& execution,const A
             device.Append<std::byte>(participant.device_bytes,unused),"Complete participant allocation exceeds runtime cap");
         out.peak_temporary_bytes = std::max(out.peak_temporary_bytes,participant.startup_scratch_bytes);
     }
+    if(joints) {
+        // The wrapper discounts only its exact shared physical/rigid backing.
+        // Batch scratch is conservatively retained for the entire run.
+        Require(host.Append<std::byte>(out.joint_source_bytes,unused) &&
+            host.Append<std::byte>(out.joints.incremental_host_bytes,unused) &&
+            device.Append<std::byte>(out.joints.device_bytes,unused),
+            "Complete joint runtime exceeds the physical host/device cap");
+    }
     out.peak_temporary_bytes = std::max(out.peak_temporary_bytes,
         out.publisher.startup_host_bytes-out.publisher.owned_host_bytes);
     // Native readbacks require complete family shapes. Visit channels/families
@@ -83,6 +93,8 @@ Forecast ForecastStartup(const Config& config,const Execution& execution,const A
         execution.model().solids().solid24().size()*sizeof(fe::solids::Result24) +
         execution.model().solids().solid6z().size()*sizeof(fe::solids::Result6z)};
     out.readback_temporary_bytes = *std::max_element(std::begin(reads),std::end(reads));
+    if(joints) out.readback_temporary_bytes=std::max(out.readback_temporary_bytes,
+        joints->model().joints().size()*sizeof(fe::type45::Result));
     out.peak_temporary_bytes = std::max(out.peak_temporary_bytes,out.readback_temporary_bytes);
     out.retained_host_upper_bound = host.bytes();
     Require(host.Append<std::byte>(out.peak_temporary_bytes,unused),"Peak runtime host phase exceeds cap");

@@ -2,6 +2,7 @@
 #include "Config.h"
 #include "SourceIdentity.h"
 #include <array>
+namespace crash::cases::vehicle_startup::joints { class VehicleJointModel; }
 namespace crash::cases::vehicle_runtime {
 struct Forecast {
     // Previous source construction bounds are reported separately. Their retired
@@ -12,10 +13,16 @@ struct Forecast {
     std::size_t peak_host_upper_bound = 0, device_bytes = 0;
     tl::fea::NodalAssemblyCinForecast owner;
     std::array<tl::fea::ShellMappedFootprint,6> participants{}; // Q,T,B,TYPE25,TYPE13,solids
+    // Optional seventh constraint contributor; complete immutable source is
+    // conservatively reserved separately from the existing shared shell source.
+    bool has_type45 = false;
+    std::size_t joint_source_bytes = 0;
+    tl::fea::type45::BatchForecast joints;
     tl::fea::ShellPhysicalPublicationForecast publisher;
 };
 namespace detail {
 std::size_t SourceBytes(const Execution&,const Attachments&,std::size_t cap);
-Forecast ForecastStartup(const Config&,const Execution&,const Attachments&,std::size_t fixed_bytes);
+Forecast ForecastStartup(const Config&,const Execution&,const Attachments&,std::size_t fixed_bytes,
+    const vehicle_startup::joints::VehicleJointModel* = nullptr);
 } // namespace detail
 } // namespace crash::cases::vehicle_runtime

@@ -6,18 +6,20 @@ VehiclePhysicalStartup::VehiclePhysicalStartup(std::unique_ptr<Storage> value) :
 VehiclePhysicalStartup::~VehiclePhysicalStartup() = default;
 VehiclePhysicalStartup::VehiclePhysicalStartup(VehiclePhysicalStartup&&) noexcept = default;
 VehiclePhysicalStartup& VehiclePhysicalStartup::operator=(VehiclePhysicalStartup&&) noexcept = default;
-Forecast VehiclePhysicalStartup::Preflight(const Execution& execution,const Attachments& attachments,Config config) {
-    return detail::ForecastStartup(config,execution,attachments,sizeof(Storage)+sizeof(VehiclePhysicalStartup));
+Forecast VehiclePhysicalStartup::Preflight(const Execution& execution,const Attachments& attachments,Config config,
+    const JointModel* joints) {
+    return detail::ForecastStartup(config,execution,attachments,sizeof(Storage)+sizeof(VehiclePhysicalStartup),joints);
 }
 VehiclePhysicalStartup VehiclePhysicalStartup::Prepare(const Execution& execution,
-    const Attachments& attachments,Config config) {
-    const auto forecast = Preflight(execution,attachments,config);
-    auto staged = std::make_unique<Storage>(execution,attachments,config,forecast);
+    const Attachments& attachments,Config config,const JointModel* joints) {
+    const auto forecast = Preflight(execution,attachments,config,joints);
+    auto staged = std::make_unique<Storage>(execution,attachments,config,forecast,joints);
     staged->roles = ResolveSourceRoles(attachments);
     output::Require(staged->roles.capacity_bytes() <= execution.physical().domain()->node_count(),
                     "Source role capacity exceeds forecast");
     staged->InitializeOwner();
     staged->InitializeParticipants();
+    staged->InitializeJoints();
     staged->BindInitialCaches();
     staged->InitializePublication();
     output::Require(staged->Allocations().device_bytes == forecast.device_bytes,
@@ -36,6 +38,10 @@ tl::fea::NodalAllocationInfo VehiclePhysicalStartup::Storage::Allocations() cons
         out.device_bytes += value.device_bytes;
         out.device_allocations += value.device_allocations;
     }
+    if(type45) {
+        out.device_bytes += type45->allocations().device_bytes;
+        out.device_allocations += type45->allocations().device_allocations;
+    }
     return out;
 }
 InitialInspection VehiclePhysicalStartup::InspectInitial() {
@@ -48,10 +54,13 @@ InitialInspection VehiclePhysicalStartup::InspectInitial() {
     storage_->InspectShells(out);
     storage_->InspectConnections(out);
     storage_->InspectSolids(out);
+    storage_->InspectJoints(out);
     tl::fea::ShellPhysicalDiagnostics diagnostics;
     detail::RequireSuccess(storage_->publication.CopyAcceptedPhysicalDiagnostics(out.stamp,&diagnostics));
     output::Require(diagnostics.valid && !diagnostics.kinetic_available,
                     "Initial common publication diagnostics are invalid");
+    output::Require(diagnostics.has_type45==bool(storage_->type45),
+                    "Initial publication joint availability differs from its participant scope");
     output::Require(storage_->owner.accepted().epoch==0 && storage_->owner.accepted().time==0 &&
                     storage_->Allocations().device_bytes==out.allocations.device_bytes,
                     "Initial readback changed clock or explicit allocations");

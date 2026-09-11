@@ -26,6 +26,10 @@ class VehicleJointModel {
     const tl::fea::type45::Model& model() const noexcept;
     const std::vector<std::uint32_t>& source_rows() const noexcept;
     const Forecast& forecast() const noexcept;
+    // Additional retained payload when physical() is already owned by the
+    // caller. Includes this wrapper, original rows and native joint model;
+    // excludes only the exact shared physical/domain/rigid backing.
+    std::size_t additional_owned_payload_bytes() const;
   private:
     struct Storage;
     explicit VehicleJointModel(std::shared_ptr<const Storage> value):storage_(std::move(value)) {}

@@ -2,7 +2,9 @@
 #include "Forecast.h"
 #include <memory>
 namespace crash::cases::vehicle_dynamics { struct ExecutionAccess; }
+namespace crash::cases::vehicle_startup::joints { class VehicleJointModel; }
 namespace crash::cases::vehicle_runtime {
+using JointModel = vehicle_startup::joints::VehicleJointModel;
 namespace detail { struct CaptureAccess; }
 struct InitialInspection {
     tl::fea::NodalStamp stamp;
@@ -11,6 +13,7 @@ struct InitialInspection {
     std::size_t shell_parents = 0, material_points = 0, rigid_skins = 0;
     std::size_t one_point_parents = 0, three_point_parents = 0, four_point_parents = 0;
     std::size_t type25_connections = 0, type13_connections = 0, solid_parents = 0;
+    std::size_t type45_joints = 0;
 };
 // One initial physical owner and its complete immutable source composition.
 // The public surface deliberately has no interval advance or mutable owner.
@@ -18,8 +21,8 @@ struct InitialInspection {
 // full vehicle trajectory require subsequent explicit case admission.
 class VehiclePhysicalStartup {
   public:
-    static Forecast Preflight(const Execution&,const Attachments&,Config = {});
-    static VehiclePhysicalStartup Prepare(const Execution&,const Attachments&,Config = {});
+    static Forecast Preflight(const Execution&,const Attachments&,Config = {},const JointModel* = nullptr);
+    static VehiclePhysicalStartup Prepare(const Execution&,const Attachments&,Config = {},const JointModel* = nullptr);
     ~VehiclePhysicalStartup();
     VehiclePhysicalStartup(VehiclePhysicalStartup&&) noexcept;
     VehiclePhysicalStartup& operator=(VehiclePhysicalStartup&&) noexcept;
