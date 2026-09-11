@@ -3,6 +3,14 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_test")
 
 package(default_visibility = ["//visibility:public"])
 
+cc_library(
+    name = "vehicle_shell_geometry_fixture",
+    testonly = True,
+    hdrs = ["qualification/vehicle_shell_host/VehicleShellFixture.h"],
+    visibility = ["//lib_utest/qualification/nodal_coefficients:__pkg__"],
+    deps = [":shell_batch_binding_test_fixture", "//lib_src/elements:shell_batch_binding"],
+)
+
 cc_test(
     name = "nodal_domain_values",
     size = "small",
