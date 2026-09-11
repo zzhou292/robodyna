@@ -96,3 +96,17 @@ groups); eight source/native/participant C++ syntax units pass; existing T3
 startup56/force67 and QBAT/fixture source verification pass. Largest guarded
 build sample 402743296 B, one CPU/512 MiB. Full original-source execution,
 native, NVCC and owning Bazel execution remain root qualification at handoff.
+
+Root qualification at TL `3ab3ad8`: all63 numerical functions pass in
+`qbat-binding-root-tests-1`, plus original fixture identity. This includes
+the8 new host functions,51 unchanged host regressions, both complete original
+4,250-quad/one-triangle tests, independent native coefficient comparison for
+every original element/node, and compiled old-participant rejection. The
+complete binding owns5,729,440 B and needs428,696 B startup scratch; the exact
+budget and last-parent rejection/retry pass. Native TOTAL J is compared as
+its own coefficient. Independent review found no blocker. The NVCC/native
+build passed in119.145 s with2,617,630,720 B sampled RSS under8 affinity CPUs
+and4 workers. The compiled rejection test does not execute QBAT on a GPU;
+resident QBAT state/publication remains the next formulation increment.
+All three owning Bazel targets also build (`qbat-binding-bazel-build-1`),
+45.731 s and640,643,072 B sampled RSS with the same bounded build policy.
