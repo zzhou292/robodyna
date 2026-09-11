@@ -43,10 +43,10 @@ std::size_t RequestSource(Draft& draft, const Value& expected, const Value& orig
     Require(draft.requests.size() <= limits.blocks, "Tied source block count exceeds capacity");
     return first; // Temporary source-line identity; ReadSources replaces it with the owned row index.
 }
-void ReadSources(Draft& draft, const std::string& member, Limits limits) {
+std::vector<SourceEvidence> ReadRequestedSources(Requests& requests, const std::string& member, Limits limits) {
     std::size_t cursor = 0, line = 1, metadata = 0;
-    std::map<std::size_t, std::size_t> rows;
-    for (auto& [first, request] : draft.requests) {
+    std::vector<SourceEvidence> result;
+    for (auto& [first, request] : requests) {
         while (line < first) {
             const auto end = member.find('\n', cursor);
             Require(end != std::string::npos, "Tied source block lies beyond original member");
@@ -89,9 +89,15 @@ void ReadSources(Draft& draft, const std::string& member, Limits limits) {
                         Text(card, "text") == evidence.cards[i].second, "Tied source card changed");
             }
         }
-        rows.emplace(first, draft.data.sources.size());
-        draft.data.sources.push_back(std::move(evidence));
+        result.push_back(std::move(evidence));
     }
+    return result;
+}
+void ReadSources(Draft& draft, const std::string& member, Limits limits) {
+    draft.data.sources = ReadRequestedSources(draft.requests, member, limits);
+    std::map<std::size_t, std::size_t> rows;
+    for (std::size_t i = 0; i < draft.data.sources.size(); ++i)
+        rows.emplace(draft.data.sources[i].block.first_line, i);
     const auto remap = [&](std::size_t& row) { row = rows.at(row); };
     auto& d = draft.data;
     remap(d.contact_source);

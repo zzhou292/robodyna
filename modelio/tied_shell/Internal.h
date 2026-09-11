@@ -24,6 +24,7 @@ std::size_t Preflight(const source::CanonicalData&, Limits);
 std::size_t OwnedPayload(const Data&, std::size_t cap);
 std::size_t RequestSource(Draft&, const Value&, const Value& original_blocks, Limits);
 void ReadSources(Draft&, const std::string&, Limits);
+std::vector<SourceEvidence> ReadRequestedSources(Requests&, const std::string&, Limits);
 std::vector<SourceId> ListIds(const SourceEvidence&, bool title, Limits);
 SourceId CardId(const std::string&, unsigned column);
 void CheckContact(const SourceEvidence&, SourceId slave, SourceId master);
