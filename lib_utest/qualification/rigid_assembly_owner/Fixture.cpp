@@ -2,7 +2,7 @@
 #include "Fixture.h"
 
 namespace rigid_assembly_owner_test {
-Fixture::Fixture(bool intersection,bool physical_plain,double point_mass_source) {
+Fixture::Fixture(bool intersection,bool physical_plain,double point_mass_source,bool complete_solids) {
   if (intersection) part_ids[3]=cin_source.declarations[0].master_source_ids[0];
   if (physical_plain) {
     source.nodes.push_back({778,{.06,-.01,.003}});
@@ -13,11 +13,20 @@ Fixture::Fixture(bool intersection,bool physical_plain,double point_mass_source)
   EXPECT_TRUE(shells.Initialize(source.shells,domain));
   fe::solid18::Reference solid;
   EXPECT_EQ(fe::solid18::InitializeReference(source.a,solid),fe::solid18::Status::Success);
-  EXPECT_TRUE(solids.Initialize(domain,{1,&solid,1}));
+  if (complete_solids) {
+    fe::solid24::Reference brick;
+    fe::solid6z::Reference wedge;
+    EXPECT_EQ(fe::solid24::InitializeReference(source.b,brick),fe::solid24::Status::Success);
+    EXPECT_EQ(fe::solid6z::InitializeReference(source.c,wedge),fe::solid6z::Status::Success);
+    EXPECT_TRUE(solids.Initialize(domain,{1,&solid,1,&brick,1,&wedge,1}));
+  } else EXPECT_TRUE(solids.Initialize(domain,{1,&solid,1}));
   zero_mass = domain.Find(777);
-  const fe::ElementMassSource masses[]{{18000,777,zero_mass,0},
-      {18001,778,physical_plain?domain.Find(778):SIZE_MAX,point_mass_source}};
-  EXPECT_TRUE(point.Initialize(domain,{1,1000,masses,physical_plain?2u:1u}));
+  std::vector<fe::ElementMassSource> masses{{18000,777,zero_mass,0}};
+  if (physical_plain) masses.push_back({18001,778,domain.Find(778),point_mass_source});
+  // Complete physical-owner proof admits every independent domain node. This
+  // test-only producer fills the otherwise deliberately uncovered node55.
+  if (complete_solids) masses.push_back({18002,55,domain.Find(55),.002});
+  EXPECT_TRUE(point.Initialize(domain,{1,1000,masses.data(),masses.size()}));
   // Real TYPE25 value producers provide the independent CIN patch coefficients.
   // Their recurrence is not a participant in this prescribed-load owner test.
   std::vector<fe::type25::ConnectionInput> connectors;

@@ -1,12 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-#include "TestSupport.h"
-#include "../solid18_reference/SourceFixture.h"
-#include "../solid24_reference/SourceFixture.h"
-#include "../solid24_reference/JacobianSupport.h"
-#include "../solid6z_reference/SourceFixture.h"
-#include "../solid_law36_point/source_fixture/OriginalMaterial.h"
+#include "OriginalFixture.h"
 #include <gtest/gtest.h>
-#include <map>
 
 namespace solid_model_test {
 template<class Values> void SameValues(const Values& a,const Values& b) {
@@ -28,55 +22,13 @@ template<class Parent,class Input> void SameSource(const Parent& parent,const In
   }
 }
 TEST(SolidModelSource, All2412OriginalReferencesMaterialsAndDomainSlotsAreRetained) {
-  std::vector<s::Input18> a;
-  std::vector<s::Input24> b;
-  std::vector<s::Input6z> c;
-  std::map<std::uint64_t,tl::math::Vec3> unique;
-  const auto collect=[&](const auto& input,unsigned arity) {
-    for(unsigned n=0;n<arity;++n) {
-      const auto added=unique.emplace(input.source_node_id[n],input.position_m[n]);
-      if(!added.second) {
-        const auto x=added.first->second,y=input.position_m[n];
-        Require(Bits(x.x,y.x) && Bits(x.y,y.y) && Bits(x.z,y.z));
-      }
-    }
-  };
-  for(unsigned i=0;i<solid18_test::SourceCount;++i) {
-    const auto input=solid18_test::Source(i);collect(input,8);
-    s::Input18 parent;
-    ASSERT_EQ(fe::solid18::InitializeReference(input,parent.reference),fe::solid18::Status::Success);
-    ASSERT_EQ(tl::material::law36::Prepare(law36_test::E,law36_test::Nu,input.density_kg_m3,
-      law36_test::Curve,parent.material),tl::material::law36::Status::Ok);
-    a.push_back(parent);
-  }
-  for(unsigned i=0;i<solid24_test::SourceCount;++i) {
-    auto input=solid24_test::Source(i);
-    fe::solid24::Material material;
-    ASSERT_EQ(tl::material::law42::Prepare(24e6,.463,input.density_kg_m3,1e26,material),tl::material::law42::Status::Ok);
-    if(solid24_test::IsBrick(input)) {
-      collect(input,8);
-      input.profile.reference_strain=fe::solid24::ReferenceStrain::TotalLagrangian10;
-      input.profile.working_length=fe::solid24::WorkingLengthUnit::Millimetre;
-      s::Input24 parent;parent.material=material;
-      ASSERT_EQ(fe::solid24::InitializeReference(input,parent.reference),fe::solid24::Status::Success);
-      b.push_back(parent);
-    } else {
-      fe::solid6z::ReferenceInput wedge;
-      ASSERT_TRUE(solid6z_test::Source(i,wedge));collect(wedge,6);
-      s::Input6z parent;parent.material=material;
-      ASSERT_EQ(fe::solid6z::InitializeReference(wedge,parent.reference),fe::solid6z::Status::Success);
-      c.push_back(parent);
-    }
-  }
-  ASSERT_EQ(a.size(),908u);ASSERT_EQ(b.size(),1309u);ASSERT_EQ(c.size(),195u);
-  std::vector<fe::NodalDomainNode> nodes;
-  for(auto it=unique.rbegin();it!=unique.rend();++it)nodes.push_back({it->first,it->second});
-  fe::NodalNodeDomain domain;
-  ASSERT_TRUE(domain.Initialize({777,nodes.data(),nodes.size()},fe::NodalDomainLimits::Vehicle()));
-  s::ModelInput input{777,{a.data(),a.size()},{b.data(),b.size()},{c.data(),c.size()}};
-  s::Model model;
-  const auto report=model.Initialize(domain,input);
-  ASSERT_TRUE(report)<<report.message<<" family "<<int(report.family)<<" parent "<<report.parent;
+  OriginalFixture fixture;
+  const auto& a=fixture.a;
+  const auto& b=fixture.b;
+  const auto& c=fixture.c;
+  const auto& nodes=fixture.nodes;
+  const auto& domain=fixture.domain;
+  const auto& model=fixture.model;
   ASSERT_EQ(model.contributions()->parents().size(),2412u);
   EXPECT_EQ(model.materials36().size(),1u);EXPECT_EQ(model.materials42().size(),8u);
   for(std::size_t i=0;i<a.size();++i) {

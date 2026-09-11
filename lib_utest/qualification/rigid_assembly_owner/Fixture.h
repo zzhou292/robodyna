@@ -36,7 +36,8 @@ struct Fixture {
   std::array<std::uint64_t,4> part_ids{777,9302,9303,9304};
   std::array<std::uint64_t,2> plain_ids{10,11};
   std::size_t ordinary = 0,zero_mass = 0;
-  explicit Fixture(bool intersection=false,bool physical_plain=false,double point_mass_source=.002);
+  explicit Fixture(bool intersection=false,bool physical_plain=false,double point_mass_source=.002,
+      bool complete_solids=false);
   fe::NodalStateConfig Config() const;
   fe::HostNodalKinematicsView Kinematics() const {return {x.data(),v.data(),w.data(),m.size(),q.data()};}
   fe::NodalDofConfig Dofs() const {return {fixed.data(),rotation_fixed.data(),ij.data(),present.data()};}

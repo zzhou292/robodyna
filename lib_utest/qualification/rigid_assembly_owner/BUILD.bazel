@@ -1,5 +1,19 @@
-load("@rules_cc//cc:defs.bzl", "cc_test", "cc_library")
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+
+cc_library(
+    name = "fixture",
+    testonly = True,
+    srcs = ["Fixture.cpp"],
+    hdrs = ["Fixture.h"],
+    deps = ["//lib_src/solvers:explicit_nodal_state",
+            "//lib_src/constraints:nodal_rigid_assembly_binding",
+            "//lib_utest/qualification/nodal_coefficients:solid_test_support",
+            "//lib_utest/qualification/tied_cin_attachment:test_support", "@googletest//:gtest"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    visibility = ["//lib_utest/qualification/solid_resident:__pkg__",
+                  "//lib_utest/qualification/qbat_mapped:__pkg__"],
+)
 
 cc_test(
     name = "rigid_assembly_owner_host",
@@ -27,17 +41,3 @@ cuda_test(
     tags = ["exclusive", "gpu"],
 )
 
-# Prepared source/ledger fixture shared without copying its producer declarations.
-cc_library(
-    name = "fixture",
-    testonly = True,
-    srcs = ["Fixture.cpp"],
-    hdrs = ["Fixture.h"],
-    visibility = ["//lib_utest/qualification/qbat_mapped:__pkg__"],
-    deps = ["//lib_src/solvers:explicit_nodal_state",
-            "//lib_src/constraints:nodal_rigid_assembly_binding",
-            "//lib_utest/qualification/nodal_coefficients:solid_test_support",
-            "//lib_utest/qualification/tied_cin_attachment:test_support",
-            "@googletest//:gtest_main"],
-    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
-)
