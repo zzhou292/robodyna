@@ -1,4 +1,5 @@
 #include "GlassDeclarations.h"
+#include "modelio/source_assembly/NativeMaterialInput.h"
 
 namespace crash::modelio::vehicle::resolution {
 using namespace assembly::reader;
@@ -32,11 +33,6 @@ void CheckGlassPolicy(const output::Value& value) {
     Flag(policy,"simulation_ready",false);
 }
 tl::fea::ShellPlasticityMaterialInput NativeGlassMaterial(const assembly::Material& material) {
-    tl::fea::ShellPlasticityMaterialInput native{material.id, 0, material.young_pa,
-        material.poisson_ratio, material.density_kg_m3, {}};
-    native.hardening = tl::material::ShellPlasticityHardeningKind::LinearLaw44;
-    native.linear = {*material.supplied_sigy_pa, *material.supplied_etan_pa};
-    native.rate = {true, 0, 1, 10000, tl::material::ShellPlasticityRatePolicy::FilteredZeroC};
-    return native;
+    return assembly::detail::NativeMaterial(material, assembly::detail::NativeLaw44Rate::FilteredZeroC);
 }
 } // namespace crash::modelio::vehicle::resolution

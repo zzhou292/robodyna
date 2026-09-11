@@ -8,6 +8,7 @@ struct ReferenceStorage {
     std::vector<ReferenceRow> rows;
     std::vector<tl::fea::qeph::ReferenceData> qeph;
     std::vector<tl::fea::t3::ReferenceData> t3;
+    std::vector<tl::fea::qbat::Reference> qbat;
     ReferenceCounts counts;
     std::size_t first_error=SIZE_MAX;
 };
@@ -15,6 +16,7 @@ struct ReferenceStorage {
 // each attempt has its own zero-initialized temporary, never a reused output.
 void Append(ReferenceStorage&,ReferenceRow,const tl::fea::qeph::ReferenceInput&);
 void Append(ReferenceStorage&,ReferenceRow,const tl::fea::t3::ReferenceInput&);
+void Append(ReferenceStorage&,ReferenceRow,const tl::fea::qbat::ReferenceInput&);
 void AppendUnresolved(ReferenceStorage&,ReferenceRow);
 struct Geometry {
     std::vector<std::uint64_t> node_ids, records;

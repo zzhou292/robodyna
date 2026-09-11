@@ -1,6 +1,7 @@
 #include "ReferenceStorage.h"
 #include "lib_src/elements/qeph/QephStartup.h"
 #include "lib_src/elements/t3/T3Startup.h"
+#include "lib_src/elements/qbat/QbatReference.h"
 #include <stdexcept>
 
 namespace crash::cases::vehicle_startup {
@@ -52,6 +53,19 @@ void Append(ReferenceStorage& out,ReferenceRow row,const tl::fea::t3::ReferenceI
     row.status=Map(tl::fea::t3::InitializeReference(input,next));++out.counts.t3_attempted;
     if(row.status==ReferenceStatus::Success) {
         row.reference_index=out.t3.size();out.t3.push_back(next);++out.counts.t3_succeeded;
+    }
+    Finish(out,row);
+}
+void Append(ReferenceStorage& out,ReferenceRow row,const tl::fea::qbat::ReferenceInput& input) {
+    tl::fea::qbat::Reference next;
+    row.family=ReferenceFamily::Qbat;
+    row.reference_index=SIZE_MAX;
+    row.status=Map(tl::fea::qbat::InitializeReference(input,next));
+    ++out.counts.qbat_attempted;
+    if(row.status==ReferenceStatus::Success) {
+        row.reference_index=out.qbat.size();
+        out.qbat.push_back(next);
+        ++out.counts.qbat_succeeded;
     }
     Finish(out,row);
 }

@@ -1,4 +1,5 @@
 #include "ReferenceStorage.h"
+#include "QbatReferenceInput.h"
 
 namespace crash::cases::vehicle_startup::detail {
 namespace {
@@ -26,7 +27,8 @@ Geometry::Geometry(const source::CanonicalData& d)
      lines(Decode<std::uint32_t>(d,"shells_source_lines")) {}
 void PrepareRows(const DeclarationView& declarations,const Geometry& g,ReferenceStorage& out) {
     const auto& source=declarations.source;
-    for(const auto& parent:source.parents()) {
+    for(std::size_t e=0;e<source.parents().size();++e) {
+        const auto& parent=source.parents()[e];
         const auto c=parent.canonical_parent;const auto& part=source.parts().at(parent.part_index);
         ReferenceRow row;row.element_id=g.records.at(6*c);row.part_id=part.part_id;
         row.material_id=part.material_id;row.section_id=part.section_id;
@@ -40,9 +42,24 @@ void PrepareRows(const DeclarationView& declarations,const Geometry& g,Reference
         }
         output::Require(m && s,"Supported reference lacks typed source declaration");
         const auto placement = declarations.Placement(parent.part_index);
-        if(g.records.at(6*c+4)!=g.records.at(6*c+5))
+        const bool triangle=g.records.at(6*c+4)==g.records.at(6*c+5);
+        const auto* mapping=declarations.Mapping(e);
+        const auto family=mapping ? mapping->family : (triangle ? tl::fea::ShellBindingFamily::T3 :
+                                                                 tl::fea::ShellBindingFamily::Qeph);
+        if(family==tl::fea::ShellBindingFamily::Qbat) {
+            output::Require(!triangle && s->source_elform==9 && s->through_thickness_points==1 &&
+                            declarations.resolution,"QBAT source formulation mismatch");
+            const auto* native=declarations.resolution->native_material(parent.part_index);
+            output::Require(native,"QBAT source material missing");
+            const auto quad=InputFor<tl::fea::qeph::ReferenceInput,4>(g,c,*m,*s,placement);
+            Append(out,row,OriginalMidlayerQbatInput(quad,*native));
+        } else if(family==tl::fea::ShellBindingFamily::Qeph) {
+            output::Require(!triangle,"QEPH source topology mismatch");
             Append(out,row,InputFor<tl::fea::qeph::ReferenceInput,4>(g,c,*m,*s,placement));
-        else Append(out,row,InputFor<tl::fea::t3::ReferenceInput,3>(g,c,*m,*s,placement));
+        } else {
+            output::Require(family==tl::fea::ShellBindingFamily::T3 && triangle,"T3 source topology mismatch");
+            Append(out,row,InputFor<tl::fea::t3::ReferenceInput,3>(g,c,*m,*s,placement));
+        }
     }
 }
 } // namespace crash::cases::vehicle_startup::detail

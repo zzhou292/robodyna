@@ -18,6 +18,7 @@ struct VehicleShellReferences::Data {
         refs.rows.reserve(view.source.counts().parents);
         refs.qeph.reserve(forecast.qeph_capacity);
         refs.t3.reserve(forecast.t3_capacity);
+        refs.qbat.reserve(forecast.qbat_capacity);
         const detail::Geometry geometry(view.source.canonical().data());
         detail::PrepareRows(view,geometry,refs);
         output::Require(refs.counts.parents==view.source.counts().parents &&
@@ -57,8 +58,16 @@ ReferenceForecast Forecast(const detail::DeclarationView& declarations,Reference
     forecast.row_bytes=add(count.parents,sizeof(ReferenceRow));
     forecast.qeph_capacity=std::min(count.q4,declarations.Available());
     forecast.t3_capacity=std::min(count.t3,declarations.Available());
+    if (declarations.resolution && declarations.resolution->resolution_key().profile ==
+        modelio::vehicle::ResolutionProfile::OriginalMidlayerV1) {
+        const auto& native=declarations.resolution->native_counts();
+        forecast.qeph_capacity=native.qeph;
+        forecast.t3_capacity=native.t3;
+        forecast.qbat_capacity=native.qbat;
+    }
     forecast.reference_capacity_bytes=add(forecast.qeph_capacity,sizeof(tl::fea::qeph::ReferenceData));
     forecast.reference_capacity_bytes+=add(forecast.t3_capacity,sizeof(tl::fea::t3::ReferenceData));
+    forecast.reference_capacity_bytes+=add(forecast.qbat_capacity,sizeof(tl::fea::qbat::Reference));
     // All retained decode vectors plus the largest temporary native-byte string.
     for (const auto* name : {"node_ids","shells_records","node_positions","shells_node_indices","shells_source_lines"}) {
         const auto bytes=modelio::vehicle::source::FindArray(source.canonical().data(),name).bytes.size();
@@ -102,5 +111,9 @@ const tl::fea::qeph::ReferenceData* VehicleShellReferences::qeph(std::size_t i) 
 const tl::fea::t3::ReferenceData* VehicleShellReferences::t3(std::size_t i) const noexcept {
     if(i>=rows().size()||rows()[i].family!=ReferenceFamily::T3||rows()[i].status!=ReferenceStatus::Success)return nullptr;
     return &data_->references.t3[rows()[i].reference_index];
+}
+const tl::fea::qbat::Reference* VehicleShellReferences::qbat(std::size_t i) const noexcept {
+    if(i>=rows().size()||rows()[i].family!=ReferenceFamily::Qbat||rows()[i].status!=ReferenceStatus::Success)return nullptr;
+    return &data_->references.qbat[rows()[i].reference_index];
 }
 } // namespace crash::cases::vehicle_startup

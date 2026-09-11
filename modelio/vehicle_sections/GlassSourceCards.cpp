@@ -7,30 +7,6 @@
 namespace crash::modelio::vehicle::resolution {
 using namespace assembly::reader;
 namespace {
-std::vector<assembly::DeclarationCard> OriginalCards(const assembly::SourceBlock& source) {
-    std::vector<assembly::DeclarationCard> cards;
-    std::istringstream stream(source.raw_text);
-    std::string line;
-    std::size_t number = source.first_line;
-    while (std::getline(stream, line)) {
-        const auto source_line = number++;
-        const auto first = line.find_first_not_of(" \t\r");
-        if (first != std::string::npos && (line[first] == '*' || line[first] == '$')) continue;
-        const auto comment = line.find('$');
-        if (comment != std::string::npos) line.resize(comment);
-        if (!line.empty() && line.back() == '\r') line.pop_back();
-        assembly::DeclarationCard card;
-        card.source_line = source_line;
-        for (unsigned field = 0; field < 8; ++field) {
-            const auto value = detail::SourceScalar(line, field);
-            card.values.push_back(value);
-            if (!value) card.blank_mask |= 1u << field;
-        }
-        cards.push_back(std::move(card));
-        Require(cards.size() <= 4, "Too many original glass data cards");
-    }
-    return cards;
-}
 void Shape(const std::vector<assembly::DeclarationCard>& cards, std::initializer_list<unsigned> masks) {
     Require(cards.size() == masks.size(), "Glass source card count changed");
     std::size_t i = 0;
@@ -46,7 +22,7 @@ double At(const assembly::DeclarationCard& card, unsigned field) {
 }
 void CheckGlassCardOrder(const assembly::SourceBlock& block,
                          const std::vector<assembly::DeclarationCard>& cards) {
-    const auto original = OriginalCards(block);
+    const auto original = detail::ReadSourceCards(block);
     Require(cards.size() == original.size(), "Glass source card coverage changed");
     for (std::size_t i = 0; i < cards.size(); ++i) {
         Require(cards[i].source_line == original[i].source_line,
@@ -87,8 +63,8 @@ bool EligibleGlass(const PartDisposition& part) {
     if (material.keyword != "*MAT_MODIFIED_PIECEWISE_LINEAR_PLASTICITY" && material.keyword != "*MAT_123") return false;
     if (part.unresolved_sources[1].keyword != "*SECTION_SHELL") return false;
     try {
-        CheckGlassMaterialCards(OriginalCards(material));
-        CheckGlassSectionCards(OriginalCards(part.unresolved_sources[1]));
+        CheckGlassMaterialCards(detail::ReadSourceCards(material));
+        CheckGlassSectionCards(detail::ReadSourceCards(part.unresolved_sources[1]));
         return true;
     } catch (const std::runtime_error&) {
         return false;
