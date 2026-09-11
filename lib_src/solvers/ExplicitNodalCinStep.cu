@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "NodalCinRuntime.h"
+#include "cin_timestep/Screen.h"
 #include "NodalCinStorage.h"
 #include "NodalRigidGroupStorage.h"
 #include "NodalNodeStep.h"
@@ -21,7 +22,7 @@ __global__ void AdvanceCin(nodal_detail::Control* control, const double* accepte
     double* work, constraints::tied_shell::Patch* patches, const std::uint8_t* activity,
     rigid::GroupDeviceView groups, rigid::StepDurations durations, double maximum_angle,
     std::uint64_t epoch, std::uint64_t attempt, rigid::AccelerationSink capture,
-    const std::uint8_t* rotation_present) {
+    const std::uint8_t* rotation_present, NodalCinStructuralStep structural) {
   if (control->status != NodalStatus::Ok) return;
   if (control->rows.base_epoch != epoch || control->rows.attempt != attempt ||
       !stability::IsCurrentLimit(control->rows, control->limit) ||
@@ -42,6 +43,25 @@ __global__ void AdvanceCin(nodal_detail::Control* control, const double* accepte
     Fail(control, stage.status == cin::StageStatus::PendingReleaseEligibility
         ? NodalStatus::MissingStepAdmission : NodalStatus::InvalidOutput, stage.node);
     return;
+  }
+  if (structural.profile != NodalCinStructuralProfile::Disabled) {
+    const cin_timestep::Sources sources{accepted, tail, tail+n, work, work+n,
+      fixed+n, fixed+2*n, rotation_present, model.dependent_nodes, groups, n,
+      durations.previous_drift_dt};
+    cin_timestep::Result result;
+    std::uint32_t invalid_node = UINT32_MAX;
+    if (!cin_timestep::Screen(sources, structural.factor, result, invalid_node)) {
+      Fail(control, NodalStatus::InvalidOutput, invalid_node);
+      return;
+    }
+    // Preserve the complete native/analytical bound for both success and a
+    // rejected step. This existing owner control is not a second row proof.
+    control->limit.dt = result.minimum_dt;
+    if (durations.drift_dt > result.minimum_dt) {
+      control->status = NodalStatus::StepTooLarge;
+      control->node = result.limiting_node;
+      return;
+    }
   }
   auto* current_inverse = tail+2*n;
   auto* acceleration = work+3*n;
@@ -131,7 +151,8 @@ __global__ void AdvanceCin(nodal_detail::Control* control, const double* accepte
 }
 } // namespace
 
-cudaError_t FENodalState::Impl::LaunchCinAdvance(double maximum_angle) {
+cudaError_t FENodalState::Impl::LaunchCinAdvance(double maximum_angle,
+    const NodalCinStructuralStep* structural) {
   const rigid::StepDurations durations{stamp.epoch == 0 ? 0 : config.fixed_dt,
       candidate_kick_dt, config.fixed_dt};
   const auto groups = rigid_groups ? rigid_groups->device : rigid::GroupDeviceView{};
@@ -143,7 +164,8 @@ cudaError_t FENodalState::Impl::LaunchCinAdvance(double maximum_angle) {
   AdvanceCin<<<1,1,0,stream>>>(control, accepted, trial, scratch, fixed, cin->device,
       trial+cin->state_offset, cin->work, cin->patches, cin->activity, groups, durations,
       maximum_angle, stamp.epoch, attempt, capture,
-      stamp.has_rotation_presence?fixed+3*config.node_count:nullptr);
+      stamp.has_rotation_presence?fixed+3*config.node_count:nullptr,
+      structural ? *structural : NodalCinStructuralStep{});
   return cudaGetLastError();
 }
 
@@ -155,10 +177,15 @@ NodalReport AdvanceStaggeredCin(FENodalState& owner, const NodalTrialToken& toke
       admission.qualification_id != state.cin->qualification_id) {
     return state.Reject(NodalStatus::MissingStepAdmission, "Missing CIN no-release qualification");
   }
+  if (!ValidCinStructuralStep(admission.structural)) {
+    return state.Reject(NodalStatus::MissingStepAdmission, "Invalid physical CIN structural profile");
+  }
+  const auto* structural = admission.structural.profile == NodalCinStructuralProfile::Disabled
+      ? nullptr : &admission.structural;
   const NodalStepAdmission declared{admission.owner_id, admission.base_epoch, admission.attempt,
     admission.maximum_dt, admission.maximum_rotation_increment,
     NodalStepAdmissionKind::RestrictedHistoryTrajectory, admission.qualification_id, 0};
   return state.AdvanceSealedNodal(token.owner_id_, token.base_epoch_, token.attempt_, declared,
-      NodalTemporalScheme::StaggeredHalfKickStart, bool(state.rigid_groups), true);
+      NodalTemporalScheme::StaggeredHalfKickStart, bool(state.rigid_groups), true, structural);
 }
 } // namespace tl::fea

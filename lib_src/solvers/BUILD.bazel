@@ -27,6 +27,12 @@ cc_library(
     deps = [":nodal_trial_identity"],
 )
 
+cc_library(
+    name = "cin_structural_step_values",
+    hdrs = ["NodalCinStructuralStep.h", "cin_timestep/Ordinary.h", "cin_timestep/Rigid.h", "cin_timestep/Screen.h"],
+    deps = ["//lib_src/collision:rigid_normal_response"],
+)
+
 cuda_library(
     name = "explicit_nodal_state",
     srcs = ["FENodalState.cu", "FENodalConstraintQueries.cu", "FENodalSnapshotReadback.cu", "FENodalForceStageReadback.cu", "ExplicitTranslationStep.cu", "ExplicitNodalStep.cu", "NodalRigidGroupStorage.cu", "NodalRigidAssemblyStorage.cpp", "NodalAssemblyCinForecast.cpp", "NodalRigidAssemblyChecks.cpp", "NodalRigidAssemblyIdentity.cpp", "ExplicitNodalRigidStep.cu",
@@ -37,7 +43,8 @@ cuda_library(
             "NodalCinRuntime.h", "NodalCinLayout.h", "NodalCinStorage.h"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
     deps = [":explicit_step_stability", ":nodal_state_layout", ":nodal_rigid_storage_layout", "//lib_src/math:quaternion", "//lib_src/constraints:nodal_rigid_group_step_math", "//lib_src/constraints:nodal_rigid_assembly_binding",
-            "//lib_src/constraints/tied_shell:cin_stage", "//lib_utils:source_identity_index"],
+            "//lib_src/constraints/tied_shell:cin_stage", "//lib_utils:source_identity_index",
+            ":cin_structural_step_values"],
 )
 
 cc_library(

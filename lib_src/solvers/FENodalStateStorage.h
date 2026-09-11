@@ -4,6 +4,7 @@
 #include <vector>
 
 namespace tl::fea {
+struct NodalCinStructuralStep;
 namespace nodal_detail {
 struct RigidStorage;
 struct CinStorage;
@@ -59,9 +60,9 @@ struct FENodalState::Impl {
   NodalAssemblyView AcceptedAssemblySources() const noexcept;
   NodalReport AdvanceSealedNodal(std::uint64_t owner, std::uint64_t epoch, std::uint64_t trial,
                                 const NodalStepAdmission&, NodalTemporalScheme, bool with_rigid_groups=false,
-                                bool with_cin=false);
+                                bool with_cin=false, const NodalCinStructuralStep* structural=nullptr);
   cudaError_t LaunchRigidAdvance(double maximum_angle);
-  cudaError_t LaunchCinAdvance(double maximum_angle);
+  cudaError_t LaunchCinAdvance(double maximum_angle, const NodalCinStructuralStep* structural);
   NodalReport StageCinSnapshot(const double* state);
   NodalReport StageRigidSnapshot(const double* state);
   NodalReport StageNodalSnapshot(const double* state, bool prepared);

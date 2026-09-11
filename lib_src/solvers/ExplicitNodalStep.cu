@@ -60,7 +60,7 @@ NodalReport AdvanceStaggeredHistory(FENodalState& owner, const NodalTrialToken& 
 
 NodalReport FENodalState::Impl::AdvanceSealedNodal(
     std::uint64_t owner_id, std::uint64_t epoch, std::uint64_t attempt,
-    const NodalStepAdmission& admission, NodalTemporalScheme expected_scheme, bool with_rigid_groups, bool with_cin) {
+    const NodalStepAdmission& admission, NodalTemporalScheme expected_scheme, bool with_rigid_groups, bool with_cin, const NodalCinStructuralStep* structural) {
   auto& s = *this;
   if (!s.usable) return {NodalStatus::DeviceFailure, "CUDA owner is poisoned"};
   if (!s.Matches(owner_id, epoch, attempt))
@@ -112,7 +112,7 @@ NodalReport FENodalState::Impl::AdvanceSealedNodal(
     return s.Reject(NodalStatus::InvalidInput, "Elastic qualification fields supplied for constant loads");
   }
   cudaError_t error;
-  if(with_cin) error=s.LaunchCinAdvance(admission.maximum_rotation_increment);
+  if(with_cin) error=s.LaunchCinAdvance(admission.maximum_rotation_increment, structural);
   else if(with_rigid_groups) error=s.LaunchRigidAdvance(admission.maximum_rotation_increment);
   else {
     Advance<<<1,1,0,s.stream>>>(s.control, s.accepted, s.trial, s.scratch, s.inverse, s.fixed,
@@ -124,7 +124,7 @@ NodalReport FENodalState::Impl::AdvanceSealedNodal(
   report = s.SynchronizeControl(); if (report.status != NodalStatus::Ok) return report;
   s.pending_qualification = elastic || history ? admission.qualification_id : 0;
   s.phase = elastic || history ? Phase::AwaitingValidation : Phase::Ready;
-  return {NodalStatus::Ok, "OK"};
+  return {NodalStatus::Ok, "OK", UINT32_MAX, structural ? s.host_control.limit.dt : 0};
 }
 
 NodalReport CompleteNodalValidation(FENodalState& owner, const NodalTrialToken& token,

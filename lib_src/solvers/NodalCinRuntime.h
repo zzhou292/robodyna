@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
+#include "NodalCinStructuralStep.h"
 #include "FENodalState.h"
 #include "../constraints/tied_shell/runtime/CinStageTypes.h"
 
@@ -49,6 +50,7 @@ struct NodalCinAdmission {
   std::uint64_t owner_id = 0, base_epoch = 0, attempt = 0, qualification_id = 0;
   double maximum_dt = 0, maximum_rotation_increment = 0;
   bool no_explicit_interface_release_event = false;
+  NodalCinStructuralStep structural; // Explicit default-off post-transfer screen.
 };
 struct NodalCinSnapshotBuffer {
   double* mass = nullptr;
