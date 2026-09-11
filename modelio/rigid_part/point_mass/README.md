@@ -29,3 +29,11 @@ scratch. No raw source cards are duplicated. Failed creation cannot mutate a
 prior immutable result. Small field tests run under one CPU/512MiB; the optional
 original source gate is root-owned. There is no dynamics, archive, contact or
 accepted-state publication in this module.
+# Root qualification
+
+At app `3f06ca5` /TL `3bdca7f`, all4 functions pass in
+`rigid-point-mass-source-root-tests-1`:3 field tests and the complete original
+155-record/54-consumed/101-outside source test, including the mapped TL mass
+producer and zero fabricated inertia. Complete source forecast371122582bytes;
+sampled test RSS291454976bytes under2 CPUs/3GiB. This establishes source
+composition only; rigid aggregate and complete vehicle owner remain separate.
