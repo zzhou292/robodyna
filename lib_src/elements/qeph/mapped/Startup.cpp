@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Startup.h"
 #include "Stiffness.h"
+#include "Incidence.h"
 #include "../QephHistory.h"
 
 namespace tl::fea::qeph::mapped {
@@ -17,7 +18,7 @@ BatchReport MakeForecast(const QephBatchConfig& config,const ShellPhysicalBindin
   Forecast next;
   if (!ValidShellResidentLimits(config.storage_limits,config.element_count,
       config.owner.node_count,config.max_device_bytes) ||
-      !next.device.Initialize(config.element_count,config.owner.node_count,config.max_device_bytes)) {
+      !next.device.InitializeMapped(config.element_count,config.owner.node_count,config.max_device_bytes)) {
     return {BatchStatus::ResourceLimit,"Mapped Qeph active device layout exceeds its cap"};
   }
   const auto host_cap=config.storage_limits.max_host_bytes;
@@ -84,6 +85,10 @@ BatchReport BuildModel(const QephBatchConfig& config,const ShellPhysicalBinding&
       return {BatchStatus::ElementFailure,"Mapped Qeph endpoint bookkeeping is invalid",
           static_cast<std::uint32_t>(parent),UINT32_MAX,status};
     }
+  }
+  if (!BuildIncidence(model.element,config.element_count,config.owner.node_count,
+      storage.assembly.offsets,config.owner.node_count+1,storage.assembly.incidence,4*config.element_count)) {
+    return {BatchStatus::InvalidInput,"Mapped Qeph ordered incidence is invalid"};
   }
   return {BatchStatus::Success,"OK"};
 }
