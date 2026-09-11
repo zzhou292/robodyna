@@ -22,8 +22,10 @@ TEST(TiedCinActual, SelectedMechanicalMasterRoleCensus) {
     const auto& context = value.post_kinchk().classification().context();
     const auto& rigid = context.rigid();
     const auto& declaration = context.auxiliary().declaration().data();
-    const auto& plain = rigid.data().plain_rigid_members;
-    ASSERT_TRUE(std::is_sorted(plain.begin(),plain.end()));
+    // The immutable source keeps declaration/member traversal order. Use a
+    // test-local lookup copy without changing that source authority or read set.
+    auto plain = rigid.data().plain_rigid_members;
+    std::sort(plain.begin(),plain.end());
     ASSERT_EQ(model.rows().count,11165u);
     std::set<tied::SourceId> selected_nodes, rigid_nodes, plain_nodes, root_parts;
     std::set<tied::SourceId> plain_groups, auxiliary_groups, auxiliary_members, auxiliary_selected;
