@@ -12,6 +12,7 @@ add_executable(mapped_forecasts_host_test HostTest.cpp
   "${tl_root}/lib_src/elements/t3/mapped/Startup.cpp"
   "${tl_root}/lib_src/elements/type25/mapped/Startup.cpp"
   "${tl_root}/lib_src/elements/type25/Type25BatchArena.cpp"
+  "${tl_root}/lib_src/elements/type25/Type25BatchIdentity.cpp"
   "${tl_root}/lib_src/elements/type25/Type25BatchStartup.cpp")
 target_link_libraries(mapped_forecasts_host_test PRIVATE tl_shell_mapped_startup
   tl_qbat_batch_values tl_tied_cin_attachment GTest::gtest_main)
