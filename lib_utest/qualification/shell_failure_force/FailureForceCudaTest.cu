@@ -22,7 +22,9 @@ template<class F> void DeviceRecurrence() {
   struct Free {DevicePacket<F>* value;~Free(){cudaFree(value);}} release{device};
   ASSERT_EQ(cudaMalloc(&control,sizeof(*control)),cudaSuccess);Free release_control{control};
   for(bool rate:{false,true})for(unsigned mask=0;mask<8;++mask) {
-    SCOPED_TRACE(rate);SCOPED_TRACE(mask);Fixture<F> f(mask);f.material=layered_failure_test::Parameters(false,rate);
+    SCOPED_TRACE(rate);
+    SCOPED_TRACE(mask);
+    Fixture<F> f(mask);f.material=layered_failure_test::Parameters(false,rate);
     DevicePacket<F> packet;packet.reference=f.reference;packet.accepted=f.accepted;packet.material=f.material;packet.failure=f.failure;
     std::copy_n(f.material.curve.plastic_strain,5,packet.strains);std::copy_n(f.material.curve.yield_stress_pa,5,packet.yields);
     auto n=native::Seed(f.accepted);const auto r=native::Reference<N>(f.reference.input);
