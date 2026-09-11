@@ -91,7 +91,9 @@ Forecast ForecastStartup(const Config& config,const Execution& execution,const A
         execution.model().beams().connection_count()*sizeof(fe::type13::Evaluation),
         execution.model().solids().solid18().size()*sizeof(fe::solids::Result18) +
         execution.model().solids().solid24().size()*sizeof(fe::solids::Result24) +
-        execution.model().solids().solid6z().size()*sizeof(fe::solids::Result6z)};
+        execution.model().solids().solid6z().size()*sizeof(fe::solids::Result6z) +
+        execution.model().solids().solid18_law44().size()*sizeof(fe::solids::Result18Law44) +
+        execution.model().solids().solid18_law90().size()*sizeof(fe::solids::Result18Law90)};
     out.readback_temporary_bytes = *std::max_element(std::begin(reads),std::end(reads));
     if(joints) out.readback_temporary_bytes=std::max(out.readback_temporary_bytes,
         joints->model().joints().size()*sizeof(fe::type45::Result));

@@ -29,7 +29,9 @@ ParticipantConfigs ConfigureParticipants(const Config& config,const Execution& s
     out.qeph.max_device_bytes = out.t3.max_device_bytes = out.qbat.max_device_bytes = config.limits.shell_device_bytes;
     out.type25.element_count = source.model().coefficients().type25()->connection_count();
     out.type13.assembly = fe::type13::BatchAssembly::CinNativeStiffness;
-    out.solids.profile = fe::solids::BatchProfile::PhysicalCinV1;
+    out.solids.profile = source.model().solids().profile() == fe::solids::ModelProfile::ExtendedLaw44Law90
+        ? fe::solids::BatchProfile::PhysicalCinExtendedLaw44Law90V2
+        : fe::solids::BatchProfile::PhysicalCinV1;
     out.solids.cin_attachment_count = attachments.witnesses().data().ranges.size();
     out.solids.cin_witness_count = attachments.witnesses().data().witnesses.size();
     out.publication = {config.configuration_id,config.qualification_id,InitialTranslation()};

@@ -56,3 +56,24 @@ Author checks are limited to small host packing and C++ syntax. Full source
 forecast, owning CUDA compilation, original owner allocation and readback are
 root-owned gates. This slice makes no full-vehicle trajectory, joint, beam-tie
 activity, contact or crash qualification claim.
+
+The runtime also consumes the explicit extended solid Model through
+`PhysicalCinExtendedLaw44Law90V2` (TL resident dependency `66d5d4b`). Its existing
+single solid participant retains all five families. Initial inspection requests
+the complete LAW36/HEPH/S6Z/LAW44/LAW90 typed buffers together, checks every
+family count and every sample-zero stamp, and reports their combined count.
+The readback forecast charges that same simultaneous five-buffer payload.
+Original three-family models continue selecting `PhysicalCinV1`; both added
+buffers are absent for that profile.
+
+This adapter does not select the V4 source/domain or create its joint policy.
+Author verification is limited to the three changed C++ translation units with
+`NDEBUG`, using the frozen extended resident headers under one CPU/512 MiB.
+Meaningful end-to-end validation requires the actual owner: rerun existing
+`vehicle_runtime_forecast`, `vehicle_runtime_original_owner`,
+`vehicle_runtime_joint_forecast` and `vehicle_runtime_joint_owner` for V1, then
+gate the separately composed V4 forecast before its full initial inspection.
+The V4 inspection must report 4900 parents with family counts
+908/1991/350/306/1345, preserve epoch zero on repeated reads, and match the exact
+forecasted device allocation. These V4 runtime checks remain root-owned and
+pending this adapter's freeze.
