@@ -54,6 +54,10 @@ static_assert(sizeof(NodalWallDeviceResults)==79248,"Preserve the legacy fixed-r
 class PreparedModel;
 NodalWallDeviceReport PrepareModel(const NodalWallDeviceConfig&,PlanarWallView,const NodalWallWeights&,
     VectorView,const double*,const std::uint8_t*,PlanarWallBox,PreparedModel*);
+// Internal geometry/area preparation only. The mapped owner must authenticate
+// complete physical source/roles before calling; this entry admits no mass/DOFs.
+NodalWallDeviceReport PreparePhysicalModel(const NodalWallDeviceConfig&,PlanarWallView,
+    const NodalWallWeights&,VectorView,PlanarWallBox,PreparedModel*);
 TL_SURFACE_HD inline bool Fail(Control& c,Code code,unsigned node=UINT32_MAX,unsigned parent=UINT32_MAX) {
   c.status=code; c.node=node; c.parent=parent; return false;
 }

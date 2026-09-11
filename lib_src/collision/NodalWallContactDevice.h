@@ -37,7 +37,7 @@ struct NodalWallDeviceConfig {
 enum class NodalWallDeviceStatus {
   Ok,InvalidInput,NotInitialized,ResourceLimit,WrongOwner,StaleAttempt,
   InvalidMass,GeometryFailure,PointFailure,Accuracy,AssemblyFailure,
-  NonFiniteArithmetic,DeviceFailure
+  NonFiniteArithmetic,DeviceFailure,StepTooLarge
 };
 struct NodalWallDeviceReport {
   NodalWallDeviceStatus status=NodalWallDeviceStatus::InvalidInput;

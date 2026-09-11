@@ -44,8 +44,9 @@ __device__ inline bool ValidateAssembly(Storage& s,const fea::NodalAssemblyView&
 }
 // All lanes enter each barrier. Compact slots are selected through immutable
 // native shares; no parent-count constants or source fixture arrays are copied.
+template<bool Physical=false>
 __device__ inline void Evaluate(Storage& s,const fea::DeviceNodalKinematicsView& k,
-                               const NodalWallDiagnostics& identity) {
+                               const NodalWallDiagnostics& identity,const std::uint8_t* activity=nullptr) {
   const auto lane=threadIdx.x;
   ResetResult(s.result,s.model.parent_count,s.model.node_count);
   if (lane==0) s.result.diagnostics=identity;
@@ -61,6 +62,23 @@ __device__ inline void Evaluate(Storage& s,const fea::DeviceNodalKinematicsView&
   for (unsigned compact=lane;compact<s.model.node_count;compact+=Workers) {
     const unsigned n=s.model.nodes[compact].node; const auto position=x.at(n),velocity=v.at(n);
     auto& status=s.node_status[compact]; const auto initial=s.model.initial_position[n];
+    if constexpr (Physical) {
+      bool active=false;
+      for(unsigned i=s.model.incident_offsets[compact];i<s.model.incident_offsets[compact+1];++i)
+        active=active || activity[s.model.incident_slots[i]/4]!=0;
+      if(!active) {
+        NodalWallPointResult zero;
+        zero.node=n;
+        zero.base_epoch=k.base_epoch;
+        zero.attempt=identity.attempt;
+        zero.wall_point={s.model.config.law.wall_x,position.y,position.z};
+        zero.valid=true;
+        s.result.nodes[compact]=zero;
+        for(unsigned i=s.model.incident_offsets[compact];i<s.model.incident_offsets[compact+1];++i)
+          s.shares[s.model.incident_slots[i]]=zero;
+        continue;
+      }
+    }
     if (!Inside(position,s.model.coverage.physical) || !IsFinite(velocity)) Fail(status,Code::GeometryFailure,n);
     else if (s.model.fixed[n] && (position.x!=initial.x || position.y!=initial.y || position.z!=initial.z))
       Fail(status,Code::GeometryFailure,n);
@@ -76,10 +94,24 @@ __device__ inline void Evaluate(Storage& s,const fea::DeviceNodalKinematicsView&
           if (status.status!=Code::Ok) break;
           const unsigned slot=s.model.incident_slots[i],p=slot/4,l=slot%4;
           NodalWallPointResult share;
-          const auto code=EvaluateNodalWallPoint({n,s.model.parents[p].share},position,velocity,
-                                                mass,s.model.config.law,identity.attempt,&share);
+          NodalWallReport code{NodalWallStatus::Ok,Status::kOk};
+          if constexpr (Physical) {
+            if(activity[p]) code=EvaluatePhysicalWallPoint({n,s.model.parents[p].share},position,
+                velocity,k.base_epoch,s.model.config.law,identity.attempt,&share);
+            else {
+              share.node=n;
+              share.base_epoch=k.base_epoch;
+              share.attempt=identity.attempt;
+              share.wall_point={s.model.config.law.wall_x,position.y,position.z};
+              share.valid=true;
+            }
+          } else {
+            code=EvaluateNodalWallPoint({n,s.model.parents[p].share},position,velocity,
+                mass,s.model.config.law,identity.attempt,&share);
+          }
           if (code.status!=NodalWallStatus::Ok) { status.point=code; Fail(status,Code::PointFailure,n,p); }
-          else if (!nodal_wall_reduction::AddShare(node,share)) Fail(status,Code::NonFiniteArithmetic,n,p);
+          else if (!(Physical?nodal_wall_reduction::AddPhysicalShare(node,share):
+              nodal_wall_reduction::AddShare(node,share))) Fail(status,Code::NonFiniteArithmetic,n,p);
           else s.shares[4*p+l]=share;
         }
         if (status.status==Code::Ok) {
@@ -124,7 +156,7 @@ __device__ inline void Evaluate(Storage& s,const fea::DeviceNodalKinematicsView&
       d.wall_reaction=Add(d.wall_reaction,node.wall_reaction); d.wall_moment=Add(d.wall_moment,node.wall_moment);
       d.surface_power+=node.surface_power;
       const double penetration=x.at(node.node).x-s.model.config.law.wall_x;
-      if (penetration>d.maximum_penetration) d.maximum_penetration=penetration;
+      if ((!Physical || node.stiffness.value>0) && penetration>d.maximum_penetration) d.maximum_penetration=penetration;
       if (!IsFinite(d.wall_reaction) || !IsFinite(d.wall_moment) || !IsFinite(d.surface_power)) {
         Fail(s.control,Code::NonFiniteArithmetic,node.node); break;
       }
@@ -133,7 +165,7 @@ __device__ inline void Evaluate(Storage& s,const fea::DeviceNodalKinematicsView&
   }
   __syncthreads();
 }
-__device__ inline bool Scatter(Storage& s,const fea::NodalAssemblyView& v) {
+__device__ inline bool Scatter(Storage& s,const fea::NodalAssemblyView& v,bool publish=true) {
   const auto owner_nodes=s.model.config.owner.node_count;
   double* actual[]{v.forces.force_x,v.forces.force_y,v.forces.force_z,
                    v.forces.couple_x,v.forces.couple_y,v.forces.couple_z};
@@ -152,9 +184,19 @@ __device__ inline bool Scatter(Storage& s,const fea::NodalAssemblyView& v) {
         !q4_bounds::Add({actual[0][n],actual[0][n]},{force.x,force.x},&sum) ||
         !Radius(s.staged_force[n],sum,&s.addition_error[i])) return Fail(s.control,Code::AssemblyFailure,n);
   }
-  for (unsigned c=0;c<6;++c) for (unsigned i=0;i<s.model.node_count;++i) {
+  if(publish) for (unsigned c=0;c<6;++c) for (unsigned i=0;i<s.model.node_count;++i) {
     const auto n=s.model.nodes[i].node; actual[c][n]=s.staged_force[c*owner_nodes+n];
   }
   return true; // Legacy timestep rows are deliberately untouched.
+}
+// Infallible copy after mapped force AND stiffness destinations passed.
+__device__ inline void PublishScatter(Storage& s,const fea::NodalAssemblyView& view) {
+  const auto nodes=s.model.config.owner.node_count;
+  double* actual[]{view.forces.force_x,view.forces.force_y,view.forces.force_z,
+      view.forces.couple_x,view.forces.couple_y,view.forces.couple_z};
+  for(unsigned c=0;c<6;++c) for(unsigned i=0;i<s.model.node_count;++i) {
+    const auto node=s.model.nodes[i].node;
+    actual[c][node]=s.staged_force[c*nodes+node];
+  }
 }
 } // namespace tlfea::contact::nodal_wall_device_detail

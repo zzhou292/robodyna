@@ -21,6 +21,7 @@ struct Snapshot {
   std::vector<std::uint64_t> values;
 };
 struct Rig {
+  explicit Rig(bool surface_rigid=false,double t3_failure=2.5) : fixture(surface_rigid,t3_failure) {}
   Fixture fixture;
   fe::FENodalState owner;
   fe::qeph::QephBatch qeph;

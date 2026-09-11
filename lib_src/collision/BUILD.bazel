@@ -147,6 +147,7 @@ cuda_library(
         "NodalWallContactState.h",
         "NodalWallContactResultIO.h",
         "NodalWallContactDiagnostics.h",
+        "NodalWallContactDiagnosticIdentity.h",
         "NodalWallContactKernels.cuh",
     ],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
@@ -257,4 +258,27 @@ cuda_library(
         "//third_party:dem_engine",
         "@eigen//:eigen",
     ],
+)
+
+# Explicit complete physical/CIN source profile. Legacy device owner stays closed.
+cuda_library(
+    name = "nodal_wall_mapped_device",
+    srcs = ["nodal_wall_mapped/Operations.cu"],
+    hdrs = ["NodalWallMappedContact.h", "nodal_wall_mapped/Storage.h", "nodal_wall_mapped/Layout.h", "nodal_wall_mapped/Kernels.cuh"],
+    deps = [":nodal_wall_contact_device", ":rigid_normal_response",
+            "//lib_src/elements:shell_batch_publication", "//lib_src/elements:shell_physical_owner",
+            "//lib_src/elements:shell_mapped_footprint",
+            "//lib_src/assembly:shell_physical_binding", "//lib_src/constraints:nodal_rigid_assembly_binding",
+            "//lib_src/solvers:nodal_native_physical_coefficients", "//lib_src/solvers:nodal_trial_identity",
+            "//lib_utils:bounded_startup_array"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false",
+             "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+)
+cc_library(
+    name = "nodal_wall_mapped",
+    srcs = ["nodal_wall_mapped/Layout.cpp", "nodal_wall_mapped/Forecast.cpp",
+            "nodal_wall_mapped/Sources.cpp", "nodal_wall_mapped/Initialize.cpp",
+            "nodal_wall_mapped/Activity.cpp", "nodal_wall_mapped/Readback.cpp"],
+    deps = [":nodal_wall_mapped_device", ":nodal_wall_contact_owner", "//lib_utils:source_identity_index"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
 )

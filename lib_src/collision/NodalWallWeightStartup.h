@@ -15,6 +15,10 @@ inline bool AccumulateWeight(Q4CertifiedIntegral& sum,Q4CertifiedIntegral value)
   return q4_bounds::Add({sum.lower,sum.upper},{value.lower,value.upper},&truth)&&
     q4_bounds::Certify(sum.value+value.value,truth,&sum);
 }
+// Exact owning Q4/T3 extraction, shared by source-to-physical authentication.
+// This is an allocation-free value operation; failure preserves output.
+NodalWallReport PrepareParentWeight(std::uint32_t,const NodalWallParentInput&,
+    NodalWallParentWeight*) noexcept;
 // Parent references are already validated and sorted by the legacy identity
 // order. Every node receives those shares in exactly that order. Output arrays
 // belong to a fresh staging value and are never externally visible on failure.

@@ -5,14 +5,17 @@
 #include <new>
 
 namespace tlfea::contact::nodal_wall_device_detail {
-NodalWallDeviceReport PrepareModel(const NodalWallDeviceConfig& c,PlanarWallView source,
+template<bool Physical>
+NodalWallDeviceReport PrepareModelImpl(const NodalWallDeviceConfig& c,PlanarWallView source,
     const NodalWallWeights& weights,VectorView x,const double* inverse,const std::uint8_t* masks,
     PlanarWallBox motion,PreparedModel* output) {
   using fea=tl::fea::NodalTemporalScheme;
   const auto& owner=c.owner; const auto& law=c.law;
-  if (!tl::fea::native_physical_coefficients::ValidScope(owner.rigid_groups,owner.node_count))
-    return {Code::InvalidInput,"Incomplete rigid-group contact scope"};
-  if (!output || !x.valid() || !inverse || !masks || !weights.prepared() || !owner.owner_id ||
+  if constexpr (!Physical) {
+    if (!tl::fea::native_physical_coefficients::ValidScope(owner.rigid_groups,owner.node_count))
+      return {Code::InvalidInput,"Incomplete rigid-group contact scope"};
+  }
+  if (!output || !x.valid() || (!Physical && (!inverse || !masks)) || !weights.prepared() || !owner.owner_id ||
       !c.configuration_id || !c.qualification_id || !c.wall_binding_id || !owner.has_rotations ||
       owner.temporal_scheme!=fea::StaggeredHalfKickStart ||
       owner.velocity_phase!=tl::fea::NodalVelocityPhase::Collocated || owner.epoch || owner.time!=0 ||
@@ -68,10 +71,18 @@ NodalWallDeviceReport PrepareModel(const NodalWallDeviceConfig& c,PlanarWallView
     for (unsigned i=0;i<next.node_count;++i) {
       if(!vehicle)next.incident_offsets[i]=incident_count;
       const auto node=weights.node(i).node; next.nodes[i]=weights.node(i);
-      if (node>=owner.node_count || (masks[node]!=0 && masks[node]!=7) ||
-          !IsFinite(inverse[node]) || (masks[node]==7 ? inverse[node]!=0 : inverse[node]<=0))
-        return {Code::InvalidMass,"Incident masks/mass must be free XYZ or fully fixed",node};
-      next.initial_position[node]=x.at(node); next.inverse_mass[node]=inverse[node]; next.fixed[node]=masks[node]==7;
+      if constexpr (!Physical) {
+        if (node>=owner.node_count || (masks[node]!=0 && masks[node]!=7) ||
+            !IsFinite(inverse[node]) || (masks[node]==7 ? inverse[node]!=0 : inverse[node]<=0))
+          return {Code::InvalidMass,"Incident masks/mass must be free XYZ or fully fixed",node};
+        next.initial_position[node]=x.at(node);
+        next.inverse_mass[node]=inverse[node];
+        next.fixed[node]=masks[node]==7;
+      } else {
+        if (node>=owner.node_count)
+          return {Code::InvalidInput,"Contact incident node exceeds owner",node};
+        next.initial_position[node]=x.at(node);
+      }
       if (!Inside(x.at(node),next.coverage.physical))
         return {Code::GeometryFailure,"An initial incident node is outside the admitted motion envelope",node};
       double rate=0;
@@ -81,10 +92,12 @@ NodalWallDeviceReport PrepareModel(const NodalWallDeviceConfig& c,PlanarWallView
                                          TranslationMassModel::kIsotropicLumped};
       const auto evaluate=[&](unsigned p) -> NodalWallDeviceReport {
         NodalWallPointResult value;
-        const auto report=EvaluateNodalWallPoint({node,next.parents[p].share},x.at(node),{},mass,law,1,&value);
+        const auto report=Physical ?
+            EvaluatePhysicalWallPoint({node,next.parents[p].share},x.at(node),{},0,law,1,&value) :
+            EvaluateNodalWallPoint({node,next.parents[p].share},x.at(node),{},mass,law,1,&value);
         if (report.status!=NodalWallStatus::Ok)
           return {Code::PointFailure,"Initial node or all-active rate is not admissible",node,p,report};
-        if (!value.fixed && !AddUpper(rate,value.row.stiffness[0],&rate))
+        if (!Physical && !value.fixed && !AddUpper(rate,value.row.stiffness[0],&rate))
           return {Code::NonFiniteArithmetic,"Assembled contact rate overflows",node,p};
         return {Code::Ok,"OK"};
       };
@@ -115,6 +128,15 @@ NodalWallDeviceReport PrepareModel(const NodalWallDeviceConfig& c,PlanarWallView
   } catch (const std::bad_alloc&) {
     return {Code::ResourceLimit,"Bounded host wall preparation allocation failed"};
   }
+}
+NodalWallDeviceReport PrepareModel(const NodalWallDeviceConfig& c,PlanarWallView wall,
+    const NodalWallWeights& weights,VectorView x,const double* inverse,
+    const std::uint8_t* masks,PlanarWallBox motion,PreparedModel* output) {
+  return PrepareModelImpl<false>(c,wall,weights,x,inverse,masks,motion,output);
+}
+NodalWallDeviceReport PreparePhysicalModel(const NodalWallDeviceConfig& c,PlanarWallView wall,
+    const NodalWallWeights& weights,VectorView x,PlanarWallBox motion,PreparedModel* output) {
+  return PrepareModelImpl<true>(c,wall,weights,x,nullptr,nullptr,motion,output);
 }
 } // namespace tlfea::contact::nodal_wall_device_detail
 

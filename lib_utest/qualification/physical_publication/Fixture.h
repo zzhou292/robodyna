@@ -38,7 +38,9 @@ struct Fixture {
   std::array<tied::cin::ActiveWitness,3> witnesses;
   std::vector<double> x,v,w,q,m,j,im,ij;
   std::vector<std::uint8_t> fixed,rotation_fixed,present;
-  Fixture();
+  bool surface_rigid=false;
+  double t3_failure=2.5;
+  explicit Fixture(bool surface_rigid=false,double t3_failure=2.5);
   void PrepareSources();
   void PrepareConstraints();
   void PrepareMaterials();

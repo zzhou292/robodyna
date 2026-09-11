@@ -4,7 +4,7 @@
 #include "lib_src/materials/law42/Prepare.h"
 
 namespace physical_publication_test {
-Fixture::Fixture() {
+Fixture::Fixture(bool surface,double failure) : surface_rigid(surface),t3_failure(failure) {
   source.nodes.push_back({778,{.06,-.01,.003}});
   source.nodes.push_back({901,{.02,.01,.001}});
   EXPECT_TRUE(domain.Initialize({1,source.nodes.data(),source.nodes.size()}));
@@ -36,7 +36,7 @@ void Fixture::PrepareSources() {
   for (unsigned row = 0; row < 2; ++row) {
     auto& connection = connections[row];
     connection.source_element_id = 19000+row;
-    const std::uint64_t ends[]{901,row ? 14u : 12u};
+    const std::uint64_t ends[]{901,row && !surface_rigid ? 14u : 12u};
     for (unsigned slot = 0; slot < 2; ++slot) {
       const auto node = domain.Find(ends[slot]);
       connection.global_node[slot] = node;

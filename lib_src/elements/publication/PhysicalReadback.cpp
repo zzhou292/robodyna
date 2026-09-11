@@ -65,4 +65,24 @@ ShellPublicationReport ShellBatchPublication::CopyAcceptedPhysicalDiagnostics(co
   *output = accepted;
   return Ok();
 }
+ShellPublicationReport ShellBatchPublication::ValidatePhysicalSources(const FENodalState& owner,
+    const ShellPhysicalBinding& binding,const ShellPhysicalParticipants& participants,
+    const ShellPhysicalPublicationIdentity& identity) const noexcept {
+  if (!impl_ || !impl_->physical) return {S::NotInitialized,"Physical publication is not initialized"};
+  const auto& state=*impl_;
+  const auto& source=*state.physical;
+  if (source.owner!=&owner || !source.binding.Matches(binding) ||
+      state.qbatch!=participants.qeph || state.tbatch!=participants.t3 ||
+      state.bbatch!=participants.qbat || state.connector!=participants.type25 ||
+      source.beams!=participants.type13 || source.solids!=participants.solids ||
+      source.identity.configuration_id!=identity.configuration_id ||
+      source.identity.qualification_id!=identity.qualification_id ||
+      !shell_startup_detail::SameStartup(source.identity.startup,identity.startup))
+    return {S::NotJoined,"Physical validator does not name the exact common source and participants"};
+  ShellPhysicalDiagnostics accepted;
+  return CopyAcceptedPhysicalDiagnostics(owner.accepted(),&accepted);
+}
+bool ShellBatchPublication::PhysicalOutputDisjoint(const void* output,std::size_t bytes) const noexcept {
+  return impl_ && impl_->physical && impl_->PhysicalOutputDisjoint(output,bytes);
+}
 } // namespace tl::fea

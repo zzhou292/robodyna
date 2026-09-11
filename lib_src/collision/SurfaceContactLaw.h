@@ -26,6 +26,32 @@ struct NormalContactResponse {
   bool active = false;
 };
 
+// Shared force/energy arithmetic after the caller resolves damping. The zero
+// damping physical-wall profile does not require a fabricated effective mass.
+namespace normal_contact_detail {
+TL_SURFACE_HD inline Status ApplyPenalty(double stiffness, double gap,
+    double normal_velocity, NormalContactResponse& response) {
+  if (gap <= 0) {
+    response.active = true;
+    const double penetration = -gap;
+    const double elastic_force = stiffness * penetration;
+    const double raw_force = elastic_force -
+                             response.damping_coefficient * normal_velocity;
+    if (!IsFinite(raw_force) || !IsFinite(elastic_force))
+      return Status::kNonFiniteResult;
+    response.force = raw_force > 0 ? raw_force : 0;
+    response.elastic_energy = 0.5 * elastic_force * penetration;
+    // Includes the unilateral clamp. During fast separation the dashpot can
+    // cancel the spring but can never make the normal resultant attractive.
+    response.dissipated_power = -(response.force - elastic_force) *
+                                normal_velocity;
+    if (!IsFinite(response.elastic_energy) || !IsFinite(response.dissipated_power))
+      return Status::kNonFiniteResult;
+  }
+  return Status::kOk;
+}
+} // namespace normal_contact_detail
+
 // The unilateral Hooke/dashpot convention follows Chrono ChContactSMC.cpp:
 // max(0, k*penetration - c*normal_velocity). This function owns no geometry,
 // dynamics, friction, history, or independent simulation clock.
@@ -68,23 +94,9 @@ TL_SURFACE_HD inline Status EvaluateNormalContact(
   if (!IsFinite(response.stable_timestep) || response.stable_timestep <= 0 ||
       !IsFinite(response.damping_coefficient))
     return Status::kNonFiniteResult;
-  if (input.gap <= 0) {
-    response.active = true;
-    const double penetration = -input.gap;
-    const double elastic_force = parameters.stiffness * penetration;
-    const double raw_force = elastic_force -
-                             response.damping_coefficient * input.normal_velocity;
-    if (!IsFinite(raw_force) || !IsFinite(elastic_force))
-      return Status::kNonFiniteResult;
-    response.force = raw_force > 0 ? raw_force : 0;
-    response.elastic_energy = 0.5 * elastic_force * penetration;
-    // Includes the unilateral clamp. During fast separation the dashpot can
-    // cancel the spring but can never make the normal resultant attractive.
-    response.dissipated_power = -(response.force - elastic_force) *
-                                input.normal_velocity;
-    if (!IsFinite(response.elastic_energy) || !IsFinite(response.dissipated_power))
-      return Status::kNonFiniteResult;
-  }
+  const auto penalty = normal_contact_detail::ApplyPenalty(parameters.stiffness,
+      input.gap, input.normal_velocity, response);
+  if (penalty != Status::kOk) return penalty;
   *out = response;
   return Status::kOk;
 }

@@ -1,0 +1,9 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "value_check",
+    size = "small",
+    srcs = ["ValueTest.cpp"],
+    deps = ["//lib_src/collision:nodal_wall_mapped", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+# Actual all-family owner integration is owned by this directory's CMake CUDA target.

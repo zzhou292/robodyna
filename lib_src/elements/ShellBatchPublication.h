@@ -140,6 +140,12 @@ class ShellBatchPublication {
   // endpoint. Matching declared IDs alone never authenticate another batch.
   ShellPublicationReport ValidateAcceptedActivitySources(const FENodalState&,
       const ShellFormulationParticipants&,const ShellBatchInventory&) const noexcept;
+  // Read-only source/output authority for additional precommit validators.
+  // No participant attach, claim, preparation or publication occurs here.
+  ShellPublicationReport ValidatePhysicalSources(const FENodalState&,
+      const ShellPhysicalBinding&,const ShellPhysicalParticipants&,
+      const ShellPhysicalPublicationIdentity&) const noexcept;
+  bool PhysicalOutputDisjoint(const void*,std::size_t) const noexcept;
   // Discards coordinator and every material scratch; caller still owns nodal
   // Discard when abandoning a trial outside Prepare/Commit.
   void DiscardTrial() noexcept;

@@ -3,7 +3,7 @@
 
 namespace physical_publication_test {
 void Fixture::PrepareConstraints() {
-  const std::uint64_t members[]{777,9302,9303,9304},plain_ids[]{778,55};
+  const std::uint64_t members[]{777,9302,9303,9304},plain_ids[]{778,surface_rigid?14u:55u};
   const fe::rigid::PartTopologyPartInput part{200,members,4};
   fe::rigid::PartTopologyInput input;
   input.source_instance_id = 1;
@@ -70,6 +70,7 @@ void Fixture::PrepareMaterials() {
       declaration.sections.data(),parents,0,3,3,4}).status,fe::ShellPlasticityBindingStatus::Success);
   fe::ShellFailureParentInput policies[4];
   for (unsigned row = 0; row < 4; ++row) policies[row] = qbat_catalog_test::Failure(parents[row]);
+  policies[2].constant.failure_strain=t3_failure;
   for (unsigned row = 0; row < 2; ++row) {
     policies[row].policy = fe::ShellFailurePolicy::Tab1AnyPoint;
     policies[row].constant = {};

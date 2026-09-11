@@ -11,7 +11,9 @@ namespace tlfea::contact {
 // No per-parent budget is imposed on a single share: composition owns that
 // accounting. All failures preserve caller output, including legacy helpers
 // which clear THEIR local temporaries. IEEE RN/no fast-math/no FTZ required.
-TL_SURFACE_HD inline NodalWallReport EvaluateNodalWallPoint(
+namespace nodal_wall_detail {
+template<bool Physical>
+TL_SURFACE_HD inline NodalWallReport EvaluatePoint(
     const NodalWallNodeWeight& weight,Vec3 position,Vec3 velocity,
     const LumpedTranslationMassView& mass,const NodalWallConfig& config,
     std::uint64_t attempt,NodalWallPointResult* output) {
@@ -24,10 +26,13 @@ TL_SURFACE_HD inline NodalWallReport EvaluateNodalWallPoint(
     return Report(Code::InvalidInput,Status::kInvalidArgument,node);
   if (!nodal_wall_detail::Certificate(weight.area,true))
     return Report(Code::InvalidReference,Status::kInvalidArgument,node);
-  if (mass.model!=TranslationMassModel::kIsotropicLumped || !mass.inverse_mass || !mass.fixed || !mass.node_count)
-    return Report(Code::MassFailure,Status::kInvalidArgument,node);
-  auto status=mass_detail::CheckNode(mass,node);
-  if (status!=Status::kOk) return Report(Code::MassFailure,status,node);
+  Status status=Status::kOk;
+  if constexpr (!Physical) {
+    if (mass.model!=TranslationMassModel::kIsotropicLumped || !mass.inverse_mass || !mass.fixed || !mass.node_count)
+      return Report(Code::MassFailure,Status::kInvalidArgument,node);
+    status=mass_detail::CheckNode(mass,node);
+    if (status!=Status::kOk) return Report(Code::MassFailure,status,node);
+  }
   Q4IntegralInterval depth;
   if (!q4_bounds::Difference(position.x,config.wall_x,&depth))
     return Report(Code::NonFiniteArithmetic,Status::kNonFiniteResult,node);
@@ -36,7 +41,7 @@ TL_SURFACE_HD inline NodalWallReport EvaluateNodalWallPoint(
   next.node=node; next.base_epoch=mass.base_epoch; next.attempt=attempt;
   next.wall_point={config.wall_x,position.y,position.z};
   next.touching_or_penetrating=position.x>=config.wall_x;
-  next.fixed=mass.fixed[node]!=0;
+  if constexpr (!Physical) next.fixed=mass.fixed[node]!=0;
   if (next.fixed) {
     if (velocity.x!=0 || velocity.y!=0 || velocity.z!=0) return Report(Code::FixedMotion,Status::kInvalidArgument,node);
     if (depth.upper>0) return Report(Code::FixedPenetration,Status::kNoDynamicDofs,node);
@@ -49,11 +54,16 @@ TL_SURFACE_HD inline NodalWallReport EvaluateNodalWallPoint(
       nominal_stiffness<=0 || !q4_bounds::Certify(nominal_stiffness,stiffness,&next.stiffness))
     return Report(Code::NonFiniteArithmetic,Status::kNonFiniteResult,node);
   const SignedNodeWeight stencil{node,1}; NormalJacobian jacobian;
-  status=BuildNormalJacobian(mass,&stencil,1,{-1,0,0},attempt,&jacobian);
-  if (status!=Status::kOk) return Report(Code::MassFailure,status,node);
   NormalContactResponse response;
-  status=EvaluateNormalContact({nominal_stiffness,0,.8},
-      {config.wall_x-position.x,-velocity.x,jacobian.inverse_effective_mass},&response);
+  if constexpr (Physical) {
+    status=normal_contact_detail::ApplyPenalty(nominal_stiffness,
+        config.wall_x-position.x,-velocity.x,response);
+  } else {
+    status=BuildNormalJacobian(mass,&stencil,1,{-1,0,0},attempt,&jacobian);
+    if (status!=Status::kOk) return Report(Code::MassFailure,status,node);
+    status=EvaluateNormalContact({nominal_stiffness,0,.8},
+        {config.wall_x-position.x,-velocity.x,jacobian.inverse_effective_mass},&response);
+  }
   if (status!=Status::kOk) return Report(Code::NonFiniteArithmetic,status,node);
   const Q4IntegralInterval positive{depth.lower>0?depth.lower:0,depth.upper>0?depth.upper:0};
   Q4IntegralInterval force,energy;
@@ -65,9 +75,13 @@ TL_SURFACE_HD inline NodalWallReport EvaluateNodalWallPoint(
   // Include the exact reference coefficient AND the used rounded coefficient;
   // a valid nominal estimate need not lie inside its truth interval.
   const double upper=stiffness.upper>nominal_stiffness?stiffness.upper:nominal_stiffness;
-  status=tl::fea::stability::MakeRankOneContribution(jacobian,upper,0,&next.row);
-  if (status!=Status::kOk) return Report(Code::NonFiniteArithmetic,status,node);
-  next.force_world=Scale(jacobian.values[0],response.force); // Existing one-node J^T.
+  if constexpr (!Physical) {
+    status=tl::fea::stability::MakeRankOneContribution(jacobian,upper,0,&next.row);
+    if (status!=Status::kOk) return Report(Code::NonFiniteArithmetic,status,node);
+    next.force_world=Scale(jacobian.values[0],response.force);
+  } else {
+    next.force_world=Scale(Vec3{-1,0,0},response.force);
+  }
   next.wall_reaction=Scale(next.force_world,-1);
   next.wall_moment=geometry_detail::Cross(next.wall_point,next.wall_reaction);
   next.surface_power=Dot(next.force_world,velocity);
@@ -75,5 +89,22 @@ TL_SURFACE_HD inline NodalWallReport EvaluateNodalWallPoint(
   if (!IsFinite(next.force_world) || !IsFinite(next.wall_moment) || !IsFinite(next.surface_power))
     return Report(Code::NonFiniteArithmetic,Status::kNonFiniteResult,node);
   next.valid=true; *output=next; return Report(Code::Ok,Status::kOk,node);
+}
+} // namespace nodal_wall_detail
+TL_SURFACE_HD inline NodalWallReport EvaluateNodalWallPoint(
+    const NodalWallNodeWeight& weight,Vec3 position,Vec3 velocity,
+    const LumpedTranslationMassView& mass,const NodalWallConfig& config,
+    std::uint64_t attempt,NodalWallPointResult* output) {
+  return nodal_wall_detail::EvaluatePoint<false>(weight,position,velocity,mass,config,attempt,output);
+}
+// No mass, fixed flag, stability row or local timestep is fabricated. Response
+// screening is supplied separately from actual current nodal/rigid coefficients.
+TL_SURFACE_HD inline NodalWallReport EvaluatePhysicalWallPoint(
+    const NodalWallNodeWeight& weight,Vec3 position,Vec3 velocity,
+    std::uint64_t base_epoch,const NodalWallConfig& config,std::uint64_t attempt,
+    NodalWallPointResult* output) {
+  LumpedTranslationMassView identity;
+  identity.base_epoch=base_epoch;
+  return nodal_wall_detail::EvaluatePoint<true>(weight,position,velocity,identity,config,attempt,output);
 }
 } // namespace tlfea::contact
