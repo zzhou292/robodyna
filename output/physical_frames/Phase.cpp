@@ -32,6 +32,18 @@ records::FrameStamp Phase(const CaptureScope& c) {
     Check(d.type25,s,f,config,qualification);
     Check(d.type13,s,f,config,qualification);
     Check(d.solids,s,f,config,qualification);
+    Require(d.has_type45==bool(c.type45_joint_count) &&
+        d.has_type45==bool(c.type45_source_instance_id),"Accepted joint source presence differs");
+    if(d.has_type45) {
+        Check(d.type45,s,f,config,qualification);
+        Require(d.type45.source_instance_id==c.type45_source_instance_id &&
+            d.type45.joint_count==c.type45_joint_count &&
+            d.type45.automatic_stiffness_initialized==bool(s.epoch),
+            "Accepted joint source/count/automatic-stiffness phase differs");
+        if(!s.epoch)Require(d.type45.attempt==0 && d.type45.base_epoch==0 &&
+            d.type45.base_time==0 && d.type45.velocity_time==0 && d.type45.base_velocity_time==0 && d.type45.kick_dt==0,
+            "Initial accepted joints contain a future interval phase");
+    }
     return f;
 }
 void CheckReadback(const CaptureScope& scope,const tl::fea::qeph::BatchDiagnostics& value) {
@@ -48,5 +60,8 @@ void CheckSameEndpoint(const CaptureScope& a,const CaptureScope& b) {
         a.diagnostics.qeph.configuration_id==b.diagnostics.qeph.configuration_id &&
         a.diagnostics.qeph.qualification_id==b.diagnostics.qeph.qualification_id,
         "Accepted owner changed during serialized capture");
+    Require(a.type45_joint_count==b.type45_joint_count &&
+        a.type45_source_instance_id==b.type45_source_instance_id &&
+        a.diagnostics.has_type45==b.diagnostics.has_type45,"Accepted joint source changed during capture");
 }
 } // namespace crash::output::physical_frames::detail

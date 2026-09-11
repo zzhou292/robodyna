@@ -3,6 +3,8 @@
 #include "case/vehicle_dynamics/output/VehicleAcceptedFrames.h"
 #include "case/vehicle_startup/physical_attachments/tests/Support.h"
 #include "output/full_shell/tests/TestSupport.h"
+#include "case/vehicle_startup/joints/VehicleJointModel.h"
+#include "case/vehicle_runtime/CaptureAccess.h"
 namespace crash::output::physical_run::test {
 namespace {
 namespace dynamics=cases::vehicle_dynamics;
@@ -52,10 +54,29 @@ TEST(PhysicalRunOriginal, OneActualAcceptedIntervalFactoryDiscardAndFailedPrefix
     run.PrepareStep();EXPECT_THROW(CaptureAcceptedInterval(run,producer,{false,true}),std::exception);run.DiscardStep();
     run.PrepareStep();run.CommitStep();
     const auto interval=CaptureAcceptedInterval(run,producer,{false,true});archive.Append(interval);
+    EXPECT_THROW(CaptureAcceptedInterval(run,producer,{true,true}),std::exception);
     EXPECT_THROW(archive.Append(interval),std::exception);EXPECT_EQ(archive.accepted_intervals(),1u);
     capture.Capture(run);archive.Sample(*producer.frame(),*producer.activity());
     const auto manifest=archive.FinishPrefix("diagnostic stops at first accepted endpoint; no joint/contact closure claim");
     CheckReplay(directory.path,manifest,*producer.frame(),*producer.activity());
     EXPECT_EQ(run.accepted().epoch,1u);
+}
+TEST(PhysicalRunOriginal, OriginalJointInitialPrefixAuthenticatesSeventhSourceAndVirginPhase) {
+    const auto source=modelio::type45::VehicleType45Source::Prepare(Source().physical().source_domain(),
+        modelio::type45::Policy::OriginalDirectSdiType45V1);
+    const auto joints=cases::vehicle_runtime::JointModel::Prepare(Source().physical(),source);
+    auto run=physical_frames::Run::Prepare(Shells(),Source(),{},&joints);
+    physical_frames::PhysicalAcceptedFrames capture(Map(),run,Identity());capture.Capture(run);
+    records::test::Directory directory;
+    const auto request=MakeRequest(capture.context(),1,capture.context().fixed_dt(),2);
+    auto archive=RunArchive::Prepare(directory.path,Map().source_mapping(),capture.context(),request,{true,false});
+    archive.Sample(*capture.frame(),*capture.activity());
+    const auto manifest=archive.FinishPrefix("initial seventh-participant snapshot; automatic stiffness remains uninitialized");
+    CheckReplay(directory.path,manifest,*capture.frame(),*capture.activity());
+    const auto scope=cases::vehicle_runtime::detail::CaptureAccess::Scope(run);
+    EXPECT_TRUE(scope.diagnostics.has_type45);EXPECT_EQ(scope.type45_joint_count,38u);
+    EXPECT_EQ(scope.diagnostics.type45.source_instance_id,capture.context().identity().source_instance);
+    EXPECT_FALSE(scope.diagnostics.type45.automatic_stiffness_initialized);
+    EXPECT_EQ(run.accepted().epoch,0u);
 }
 } // namespace crash::output::physical_run::test

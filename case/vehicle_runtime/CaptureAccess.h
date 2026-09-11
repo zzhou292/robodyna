@@ -5,6 +5,9 @@ namespace crash::cases::vehicle_runtime::detail {
 struct AcceptedCaptureScope {
     tl::fea::NodalStamp stamp;
     tl::fea::ShellPhysicalDiagnostics diagnostics;
+    // Read from the retained immutable joint model and actual optional batch.
+    std::uint64_t type45_source_instance_id=0;
+    std::size_t type45_joint_count=0;
 };
 // Internal read-only bridge for the full physical accepted output adapter. It
 // exports no mutable owner, participant, stream, trial token or storage pointer.

@@ -19,9 +19,11 @@ The physical interval profile stores owner/epoch/base/attempt as uint64 and the
 four native phase times as binary64, with one optional actual structural-limit
 scalar. Kinetic energy, total energy, internal work, contact force/penetration/
 work, and joint work are explicitly unavailable and have no numeric columns.
-Versioned profile metadata reserves a named seventh TYPE45 role; this first
-core freeze's live factory admits six participants. The follow-on consumes the
-qualified seventh publisher API and checks the actual batch/accepted stamp.
+Versioned profile metadata names the optional seventh TYPE45 role. Capture
+checks its actual retained model/count, batch and accepted publisher stamp;
+the live row factory requires profile presence to equal the actual common
+publisher and validates source, count, phase and initialized automatic stiffness.
+Initial capture requires automatic stiffness to remain uninitialized.
 
 Call `Sample` for the initial frame and each requested accepted sample, `Append`
 after common acceptance, and `Finish` only after the complete planned horizon.
@@ -70,6 +72,7 @@ and `ROBO_DYNA_VEHICLE_GLASS_SHA256`. The two original CTest names are:
 
 - `physical_run_InitialOnlyPrefixHasCompleteSourceAndNoAcceptedIntervalClaim`
 - `physical_run_OneActualAcceptedIntervalFactoryDiscardAndFailedPrefixRoundTrip`
+- `physical_run_OriginalJointInitialPrefixAuthenticatesSeventhSourceAndVirginPhase`
 
 The latter performs one explicit diagnostic freeflight interval and a discarded
 attempt. It makes no joint/contact/full-crash claim. Author checks are one CPU,

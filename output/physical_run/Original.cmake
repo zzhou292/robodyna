@@ -13,7 +13,8 @@ add_executable(robo_dyna_physical_run_original_check tests/OriginalTest.cpp
   "${CMAKE_CURRENT_LIST_DIR}/../../case/vehicle_startup/physical_attachments/tests/Source.cpp")
 target_link_libraries(robo_dyna_physical_run_original_check PRIVATE robo_dyna_physical_run_live GTest::gtest_main)
 target_compile_options(robo_dyna_physical_run_original_check PRIVATE -fno-fast-math -ffp-contract=off)
-foreach(gate InitialOnlyPrefixHasCompleteSourceAndNoAcceptedIntervalClaim OneActualAcceptedIntervalFactoryDiscardAndFailedPrefixRoundTrip)
+foreach(gate InitialOnlyPrefixHasCompleteSourceAndNoAcceptedIntervalClaim OneActualAcceptedIntervalFactoryDiscardAndFailedPrefixRoundTrip
+    OriginalJointInitialPrefixAuthenticatesSeventhSourceAndVirginPhase)
   add_test(NAME physical_run_${gate} COMMAND "${Python3_EXECUTABLE}" -B
     "${CMAKE_CURRENT_LIST_DIR}/../../case/vehicle_startup/tied_classification/tests/actual_fixture.py"
     "${ROBO_DYNA_VEHICLE_CANONICAL}" "${ROBO_DYNA_VEHICLE_SCOPE}" "${ROBO_DYNA_VEHICLE_DECLARATIONS}"

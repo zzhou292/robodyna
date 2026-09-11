@@ -24,9 +24,9 @@ AcceptedInterval CaptureAcceptedInterval(const cases::vehicle_dynamics::VehicleP
     Require(stamp.owner_id==identity.owner && stamp.epoch && !run.has_prepared_step() &&
         Bits(stamp.fixed_dt)==Bits(context.fixed_dt()) && stamp.reactions_valid,
         "Physical ledger requires an actual committed dynamics endpoint");
-    Require(!profile.type45,"Seven-participant live factory requires the qualified TYPE45 publisher increment");
     const auto& step=run.last_accepted_step();
     const auto& d=step.mechanics;
+    Require(profile.type45==d.has_type45,"Physical interval profile differs from actual joint participant");
     Require(d.valid && !d.kinetic_available && d.has_qeph && d.has_t3 && d.has_qbat &&
         d.has_type25 && d.has_type13 && d.has_solids && step.base.owner_id==stamp.owner_id &&
         step.base.epoch==stamp.reaction_base_epoch && Bits(step.base.time)==Bits(stamp.reaction_time) &&
@@ -39,6 +39,11 @@ AcceptedInterval CaptureAcceptedInterval(const cases::vehicle_dynamics::VehicleP
     CheckParticipant(d.qeph,stamp,value,identity);CheckParticipant(d.t3,stamp,value,identity);
     CheckParticipant(d.qbat,stamp,value,identity);CheckParticipant(d.type25,stamp,value,identity);
     CheckParticipant(d.type13,stamp,value,identity);CheckParticipant(d.solids,stamp,value,identity);
+    if(d.has_type45) {
+        CheckParticipant(d.type45,stamp,value,identity);
+        Require(d.type45.source_instance_id==identity.source_instance && d.type45.joint_count &&
+            d.type45.automatic_stiffness_initialized,"Committed joint source/count/automatic phase differs");
+    }
     Require(tl::fea::trial_identity::SameStamp(stamp,run.accepted()),"Physical owner changed during accepted observation");
     return AcceptedInterval(std::move(value),identity,profile);
 }
