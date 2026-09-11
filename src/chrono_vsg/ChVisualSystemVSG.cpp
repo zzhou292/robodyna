@@ -1147,9 +1147,17 @@ void ChVisualSystemVSG::Render() {
     // Dynamic data transfer CPU->GPU for deformable meshes
     // To speed up cpu-gpu - treat ChVector3d arrays as contiguous arrays for bulk conversion over to gpu
     for (auto& def_mesh : m_def_meshes) {
+        const auto visible_faces = def_mesh.trimesh->GetNumTriangles();
+        const bool variable_faces = def_mesh.topology.initialized();
+        // This check precedes all buffer writes. Growth beyond the initially
+        // bound full mesh needs a new explicit binding, never an out-of-bounds
+        // write. Fixed-connectivity and material paths keep their old contract.
+        if (variable_faces && !def_mesh.topology.Accepts(visible_faces))
+            throw std::runtime_error("Mutable visual mesh exceeds its initial triangle capacity");
         if (def_mesh.dynamic_vertices) {
             const auto& new_vertices = def_mesh.mesh_soup ? def_mesh.trimesh->GetFaceVertices() : def_mesh.trimesh->GetCoordsVertices();
-            assert(def_mesh.vertices->size() == new_vertices.size());
+            assert(variable_faces ? def_mesh.vertices->size() >= new_vertices.size()
+                                  : def_mesh.vertices->size() == new_vertices.size());
 
             const size_t count = new_vertices.size();
             if (count > 0) {
@@ -1169,7 +1177,8 @@ void ChVisualSystemVSG::Render() {
 
         if (def_mesh.dynamic_normals) {
             const auto& new_normals = def_mesh.mesh_soup ? def_mesh.trimesh->GetFaceNormals() : def_mesh.trimesh->GetAverageNormals();
-            assert(def_mesh.normals->size() == new_normals.size());
+            assert(variable_faces ? def_mesh.normals->size() >= new_normals.size()
+                                  : def_mesh.normals->size() == new_normals.size());
 
             const size_t count = new_normals.size();
             if (count > 0) {
@@ -1189,7 +1198,8 @@ void ChVisualSystemVSG::Render() {
         // large meshes when this loop is significant compared to the rest of the frame time
         if (def_mesh.dynamic_colors) {
             const auto& new_colors = def_mesh.mesh_soup ? def_mesh.trimesh->GetFaceColors() : def_mesh.trimesh->GetCoordsColors();
-            assert(def_mesh.colors->size() == new_colors.size());
+            assert(variable_faces ? def_mesh.colors->size() >= new_colors.size()
+                                  : def_mesh.colors->size() == new_colors.size());
 
             const size_t count = new_colors.size();
             if (count > 0) {
@@ -1209,6 +1219,8 @@ void ChVisualSystemVSG::Render() {
                 def_mesh.colors->dirty();
             }
         }
+        if (variable_faces)
+            def_mesh.topology.Publish(visible_faces);
     }
 
     m_viewer->recordAndSubmit();
@@ -2536,6 +2548,9 @@ void ChVisualSystemVSG::PopulateVisualShapesMutable(vsg::ref_ptr<vsg::Group> gro
             assert(def_mesh.colors->size() == def_mesh.vertices->size());
             def_mesh.colors->properties.dataVariance = vsg::DYNAMIC_DATA;
             def_mesh.dynamic_colors = true;
+            if (!trimesh->IsFixedConnectivity() &&
+                !def_mesh.topology.Initialize(*child, def_mesh.vertices->size()))
+                throw std::runtime_error("Mutable colored mesh does not have one bounded sequential draw");
         } else {
             def_mesh.dynamic_colors = false;
         }

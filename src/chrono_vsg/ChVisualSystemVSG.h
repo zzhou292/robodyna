@@ -43,6 +43,7 @@
 #include "chrono_vsg/ChEventHandlerVSG.h"
 #include "chrono_vsg/utils/ChShapeBuilderVSG.h"
 #include "chrono_vsg/utils/ChDataUtilsVSG.h"
+#include "chrono_vsg/utils/ChMutableMeshDraw.h"
 
 namespace chrono {
 namespace vsg3d {
@@ -515,6 +516,7 @@ class CH_VSG_API ChVisualSystemVSG : virtual public ChVisualSystem {
         bool dynamic_vertices;                             ///< mesh vertices change
         bool dynamic_normals;                              ///< mesh normals change
         bool dynamic_colors;                               ///< mesh vertex colors change
+        MutableMeshDraw topology;                          ///< optional bounded visible face count
     };
     std::vector<DeformableMesh> m_def_meshes;
 
