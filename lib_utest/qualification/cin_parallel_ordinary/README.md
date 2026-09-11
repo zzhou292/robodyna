@@ -52,6 +52,9 @@ functions are authored:
 - The public owner rejects an ordinary rotation limit, exposes no candidate,
   preserves every accepted node/coefficient field and stamp, and then retries
   with exact force capture under the sole selector at epochs zero and one.
+  It reuses `rigid_assembly_owner`'s actual PART/plain+CIN binding because the
+  existing capture admission requires rigid startup. Both group tails and
+  group A/AR are included; plain CIN-only capture remains rejected.
 
 Root owning commands, under the workstation heavy/GPU guard:
 

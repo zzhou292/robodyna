@@ -23,7 +23,7 @@ if(CIN_PARALLEL_ORDINARY_CUDA)
   enable_language(CUDA)
   add_subdirectory("${tl_root}/lib_src/solvers" nodal-owner)
   add_executable(cin_parallel_ordinary_cuda CudaTest.cu DevicePacket.cu OwnerTest.cu
-    Serial.cu Packet.cpp Compare.cpp)
+    Serial.cu Packet.cpp Compare.cpp ../rigid_assembly_owner/Fixture.cpp)
   target_include_directories(cin_parallel_ordinary_cuda PRIVATE "${tl_root}/lib_src/solvers")
   target_link_libraries(cin_parallel_ordinary_cuda PRIVATE tl_explicit_nodal_state GTest::gtest_main CUDA::cudart)
   set_target_properties(cin_parallel_ordinary_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED ON)

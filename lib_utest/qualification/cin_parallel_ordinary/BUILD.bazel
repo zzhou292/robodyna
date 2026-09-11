@@ -27,7 +27,7 @@ cuda_test(
     name = "cuda",
     size = "small",
     srcs = ["CudaTest.cu", "DevicePacket.cu", "OwnerTest.cu", "Serial.cu"],
-    deps = [":fixture"],
+    deps = [":fixture", "//lib_utest/qualification/rigid_assembly_owner:fixture"],
     copts = ["--std=c++17", "-Ilib_src/solvers", "--fmad=false", "--prec-div=true",
              "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
     tags = ["exclusive", "gpu"],
