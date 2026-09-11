@@ -29,8 +29,8 @@
       INEG_V=0
       INCONV=1
       IMCONV=1
-      LFT=1
-      LLT=1
+! Family leaves receive explicit 1..NEL bounds from NativeGeometry/Reduce.
+! LFT/LLT belong to the retained full driver context, not these common blocks.
       ANIM_N=0
       IAD_GPS=0
       END
