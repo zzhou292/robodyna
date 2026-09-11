@@ -20,6 +20,7 @@ struct Model {
   double *curve_x=nullptr,*curve_y=nullptr;
   std::size_t curve_points=0;
   bool joined=true;
+  bool mapped=false; // Explicit complete physical domain; old admission stays separate.
 };
 struct Slab { BatchResult* element=nullptr; };
 struct Control {

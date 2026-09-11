@@ -4,7 +4,7 @@
 #include "../ShellFormulationScope.h"
 #include <memory>
 
-namespace tl::fea { class ShellBatchPublication; }
+namespace tl::fea { class ShellBatchPublication; class ShellPhysicalBinding; }
 namespace tl::fea::qbat {
 
 // One complete native QBAT family from a prepared formulation inventory.
@@ -19,6 +19,13 @@ class Batch {
   Batch(const Batch&)=delete;
   Batch& operator=(const Batch&)=delete;
   BatchReport InitializeFormulations(const BatchConfig&,const ShellFormulationScope&);
+  // Explicit physical-domain profile. Requires the actual fresh CIN owner and
+  // its complete immutable witness source. Raw initial M/J is authenticated
+  // once; later transferred coefficients belong to that same owner.
+  BatchReport InitializeMapped(const BatchConfig&,const ShellPhysicalBinding&,
+      FENodalState&,const NodalCinWitnessSource&);
+  BatchReport AssembleMappedAccepted(FENodalState&,const NodalTrialToken&,
+      const NodalAssemblyView&);
   BatchReport AssembleAccepted(FENodalState&,const NodalAssemblyView&);
   BatchReport EvaluateCandidate(FENodalState&,const NodalTrialToken&,
       const NodalPreparedView&,BatchDiagnostics*);
@@ -40,6 +47,10 @@ class Batch {
   BatchReport PreflightAttach(FENodalState&,const ShellFormulationScope&,
       std::uint64_t configuration,std::uint64_t qualification,const ShellBatchStartup&,
       const ShellBatchPublication*) const noexcept;
+  BatchReport PreflightAttachMapped(FENodalState&,const ShellPhysicalBinding&,
+      std::uint64_t configuration,std::uint64_t qualification,const ShellBatchStartup&,
+      const ShellBatchPublication*) const noexcept;
+  const ShellPhysicalBinding* MappedBinding() const noexcept;
   BatchReport PreflightPublication(FENodalState&,const NodalTrialToken&,const NodalPreparedView&,
       const BatchDiagnostics&,const ShellBatchPublication*) const noexcept;
   void AttachPublication(const ShellBatchPublication*) noexcept;

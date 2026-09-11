@@ -4,6 +4,8 @@
 #include "QbatBatchArena.h"
 #include "QbatBatchIdentity.h"
 #include "../../assembly/NodalMassBinding.h"
+#include "../../assembly/ShellPhysicalBinding.h"
+#include "../../solvers/NodalCinRuntime.h"
 #include <optional>
 #include <utility>
 
@@ -11,6 +13,7 @@ namespace tl::fea::qbat::batch_detail {
 void LaunchAssembly(Storage*,const Slab*,NodalAssemblyView,bool initial);
 void LaunchCandidate(Storage*,const Slab*,Slab*,NodalPreparedView,BatchDiagnostics,std::size_t count);
 void LaunchFailure(NodalAssemblyView);
+void LaunchMappedAssembly(Storage*,const Slab*,NodalAssemblyView,NodalCinAssemblyView,bool initial);
 } // namespace tl::fea::qbat::batch_detail
 
 namespace tl::fea::qbat {
@@ -20,6 +23,8 @@ struct Batch::Impl {
   std::optional<ShellBatchBinding> binding;
   std::optional<ShellBatchFailureBinding> failure;
   std::optional<NodalMassBinding> combined;
+  std::optional<ShellPhysicalBinding> physical;
+  std::size_t cin_witness_count=0;
   const ShellBatchPublication* publication_scope=nullptr;
   batch_detail::Storage* storage=nullptr;
   batch_detail::Storage device_header;
@@ -40,11 +45,14 @@ struct Batch::Impl {
   BatchReport PendingError() noexcept;
   BatchReport ReadControl();
   BatchReport ReadResults(const batch_detail::Slab*,const BatchDiagnostics&);
+  BatchReport Upload(util::HostArena&,batch_detail::Storage&,const ShellBatchPlasticityBinding&);
   bool OutputDisjoint(const void*,std::size_t) const noexcept;
   ShellFormulationScope Scope() const noexcept {
+    if (physical) return {physical->shells(),physical->catalog(),physical->failure(),nullptr};
     return {binding?&*binding:nullptr,failure?failure->catalog():nullptr,
         failure?&*failure:nullptr,combined?&*combined:nullptr};
   }
+  const ShellBatchFailureBinding& Failure() const noexcept { return *Scope().failure; }
   void Discard() noexcept {
     pending=false;
     candidate_view={};

@@ -23,6 +23,7 @@ BatchReport MarkRejected(const NodalAssemblyView& view,BatchReport report) {
 BatchReport Batch::AssembleAccepted(FENodalState& owner,const NodalAssemblyView& view) {
   if(!impl_) return {BatchStatus::NotInitialized,"QBAT batch is not initialized"};
   auto& s=*impl_;
+  if(s.physical) return {BatchStatus::InvalidInput,"Mapped QBAT requires token-aware CIN assembly"};
   s.Discard();
   if(!s.usable) return {BatchStatus::DeviceFailure,"QBAT CUDA storage is poisoned"};
   // Authenticate before borrowed device reads or any sticky assembly write.

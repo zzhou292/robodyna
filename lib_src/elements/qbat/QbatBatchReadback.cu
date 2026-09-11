@@ -2,6 +2,7 @@
 #include "QbatBatchStorage.h"
 #include "QbatBatchResultChecks.h"
 #include "../ShellFormulationOutputRanges.h"
+#include "../ShellPhysicalOutputRanges.h"
 #include <cstring>
 
 namespace tl::fea::qbat {
@@ -9,8 +10,9 @@ bool Batch::Impl::OutputDisjoint(const void* output,std::size_t bytes) const noe
   using trial_identity::Disjoint;
   if(!Disjoint(output,bytes,this,sizeof(*this))||
       !Disjoint(output,bytes,staging.get(),config.element_count*sizeof(BatchResult))||
-      !Disjoint(output,bytes,binding->nodes().data(),binding->node_count()*sizeof(ShellBindingNode))) return false;
-  return shell_formulation_detail::OutputDisjoint(Scope(),output,bytes);
+      !Disjoint(output,bytes,Scope().binding->nodes().data(),Scope().binding->node_count()*sizeof(ShellBindingNode))) return false;
+  return physical ? shell_physical_owner::OutputDisjoint(*physical,output,bytes)
+      : shell_formulation_detail::OutputDisjoint(Scope(),output,bytes);
 }
 BatchReport Batch::Impl::ReadResults(const batch_detail::Slab* source,const BatchDiagnostics& expected) {
   auto report=PendingError();
@@ -24,7 +26,7 @@ BatchReport Batch::Impl::ReadResults(const batch_detail::Slab* source,const Batc
   if(report.status!=BatchStatus::Success) return report;
   for(std::size_t parent=0;parent<config.element_count;++parent) {
     Material material;
-    if(!failure->catalog()->Parameters(ShellBindingFamily::Qbat,parent,&material)||
+    if(!Failure().catalog()->Parameters(ShellBindingFamily::Qbat,parent,&material)||
         !batch_detail::ValidResult(staging[parent],material,expected.time,expected.epoch)) {
       Discard();
       return {BatchStatus::NonfiniteResult,"QBAT readback contains an invalid four-point result",

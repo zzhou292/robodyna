@@ -8,6 +8,7 @@ BatchReport Batch::PreflightAttach(FENodalState& owner,const ShellFormulationSco
     const ShellBatchPublication* claimant) const noexcept {
   if(!impl_) return {BatchStatus::NotInitialized,"QBAT batch is not initialized"};
   const auto& s=*impl_;
+  if(s.physical) return {BatchStatus::InvalidInput,"Mapped QBAT requires its physical publication profile"};
   if(!s.usable) return {BatchStatus::DeviceFailure,"QBAT CUDA storage is poisoned"};
   if(!s.bound) return {BatchStatus::NotBound,"QBAT live sources are not bound"};
   if(ValidateShellFormulationScope(scope).status!=ShellPlasticityBindingStatus::Success||

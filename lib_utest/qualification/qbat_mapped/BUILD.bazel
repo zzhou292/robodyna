@@ -1,0 +1,42 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+
+cc_library(
+    name = "fixture",
+    testonly = True,
+    hdrs = ["Fixture.h"],
+    deps = ["//lib_src/elements/qbat:batch_values",
+            "//lib_src/elements:shell_physical_owner_values",
+            "//lib_utest/qualification/rigid_assembly_owner:fixture",
+            "//lib_utest/qualification/qbat_catalog:fixture", "@googletest//:gtest_main"],
+)
+cc_test(
+    name = "qbat_mapped_host_check",
+    size = "small",
+    srcs = ["HostTest.cpp"],
+    deps = [":fixture", "//lib_utest/qualification/qbat_resident:test_support",
+            "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cc_test(
+    name = "qbat_mapped_original_check",
+    size = "medium",
+    srcs = ["OriginalTest.cpp"],
+    deps = ["//lib_src/elements/qbat:batch_values",
+            "//lib_utest/qualification/qbat_catalog:original_catalog",
+            "//lib_utest/qualification/qbat_binding:original_source",
+            "//lib_utest/qualification/qbat:source_fixture", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cuda_test(
+    name = "qbat_mapped_cuda_check",
+    size = "small",
+    srcs = ["OwnerFixture.h", "OwnerFixture.cu", "OwnerSourceTest.cu", "OwnerTrialTest.cu"],
+    deps = [":fixture", "//lib_src/elements/qbat:batch",
+            "//lib_src/solvers:nodal_trial_identity",
+            "//lib_utest/qualification/qbat_resident:test_support", "@googletest//:gtest_main"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false",
+             "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+    tags = ["exclusive", "gpu"],
+)
+# Independent Fortran packet and complete shared donor checks use owning CMake.

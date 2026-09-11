@@ -1,0 +1,73 @@
+{
+  "commit": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Virgin current geometry/CNDT3 NODADT0 stiffness, complete native CUPDTN3 scatter and recurrent QBAT forces. Shared original fixture remains owned by qualification/qbat. This packet adds no owner or time advance.",
+  "shared_files": [
+    {
+      "path": "../../qbat_force/native/source-manifest.json",
+      "size": 7142,
+      "sha256": "e6052b54475fa5871774e7848a861006ab7de9aca981caaf75d0f51106143135"
+    },
+    {
+      "path": "../../qbat_force/native/NativeKinematics.F",
+      "size": 3737,
+      "sha256": "bf785c7b281c325b8227d761a24bcff024af598948237d6cf40cbc6e0472be66"
+    },
+    {
+      "path": "../../qbat_force/native/extracted/CurrentDn.inc",
+      "size": 299,
+      "sha256": "64bea947e75d5ec6cc871b7de172a20bc1f51ed4a084b9c3c7620124f715fe7f"
+    },
+    {
+      "path": "../../qbat_force/native/extracted/CurrentViscosity.inc",
+      "size": 194,
+      "sha256": "120b4ec1329782bcfd2462a0d5c78259c3e0121f2d7a170b691448c80d44265b"
+    },
+    {
+      "path": "../../qbat_force/native/extracted/CurrentStiffness.inc",
+      "size": 155,
+      "sha256": "8a45cdb0b38a09c4c5263c78a5798fc3aacaf4b58231cd62904b64bf2da52b76"
+    },
+    {
+      "path": "../../qbat_force/native/NativeForce.F",
+      "size": 7384,
+      "sha256": "a156623fa840f1348a3853e6e5df1cd4981e9ac77ee35602c3afb1492d3944e2"
+    },
+    {
+      "path": "../../native/qeph/original/engine/source/elements/shell/coque/cupdtn3.F",
+      "size": 26859,
+      "sha256": "6fecfedb5bab15b13fc3962b7ad63784619545baceae33bda16db05670f7207e"
+    },
+    {
+      "path": "../../native/qeph/extracted/Cupdtn3.F",
+      "size": 18496,
+      "sha256": "40db57e0cea4f7cb5fa75ba40d729322453beca4165a31851e8dd5496170f935"
+    },
+    {
+      "path": "../../native/qeph/NativeQephScatter.F",
+      "size": 2124,
+      "sha256": "2357e772db7a5a0c9fc00053feb87ae446b4e02eb4e573c41af9a633cd72c965"
+    },
+    {
+      "path": "../../qbat/source_fixture/source-manifest.json",
+      "size": 13487,
+      "sha256": "1c6362e1900eef24cb854189fd2448ae2d6efb073fdd9414b5554c0e4dcda1e2"
+    },
+    {
+      "path": "../../qbat_binding/OriginalFixture.cpp",
+      "size": 2178,
+      "sha256": "6039f4c699ac4d14a51c5dd62266f7be8cce8a3ff5a07488a149e3a4d3f544f3"
+    },
+    {
+      "path": "../../qbat_catalog/OriginalCatalog.h",
+      "size": 1331,
+      "sha256": "bbcd8e9ba3d9d2883586db3937271376a53a9dd98d8488111547be03624bf3d3"
+    }
+  ],
+  "adapters": [
+    {
+      "path": "NativeInitial.F",
+      "size": 1332,
+      "sha256": "19261459f77b23d5d3811c2cd068aa1be1d7826249a191cc6b8d1a3720bfe25d"
+    }
+  ]
+}

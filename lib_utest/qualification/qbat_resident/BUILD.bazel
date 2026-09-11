@@ -1,4 +1,4 @@
-load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_test", "cc_library")
 # Native/actual-owner CUDA recurrence uses the independent Fortran reference
 # through the owning CMake gate. This host target checks value/layout contracts.
 cc_test(
@@ -8,6 +8,17 @@ cc_test(
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = ["//lib_src/elements/qbat:batch_values",
             "//lib_src/elements:shell_formulation_output_ranges",
+            "//lib_utest/qualification/qbat_catalog:fixture",
+            "//lib_utest/qualification/qbat_force:fixture", "//lib_utest/qualification/qbat:fixture",
+            "@googletest//:gtest_main"],
+)
+
+cc_library(
+    name = "test_support",
+    testonly = True,
+    hdrs = ["Fixture.h", "ResultValues.h"],
+    visibility = ["//lib_utest/qualification/qbat_mapped:__pkg__"],
+    deps = ["//lib_src/elements/qbat:batch_values",
             "//lib_utest/qualification/qbat_catalog:fixture",
             "//lib_utest/qualification/qbat_force:fixture", "//lib_utest/qualification/qbat:fixture",
             "@googletest//:gtest_main"],

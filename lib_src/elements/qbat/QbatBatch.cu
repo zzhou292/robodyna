@@ -33,6 +33,24 @@ BatchReport Batch::Impl::ReadControl() {
   return {control.status,control.status==BatchStatus::Success?"OK":"QBAT device validation failed",
       control.element,control.node,control.element_status};
 }
+BatchReport Batch::Impl::Upload(util::HostArena& arena,batch_detail::Storage& host,
+    const ShellBatchPlasticityBinding& catalog) {
+  auto report=PendingError();
+  if(report.status!=BatchStatus::Success) return report;
+  report=Runtime(cudaMalloc(reinterpret_cast<void**>(&storage),layout.bytes),"QBAT device arena allocation failed");
+  if(report.status!=BatchStatus::Success) return report;
+  device_header=layout.Rebase(host,storage);
+  if(!batch_detail::RebaseMaterials(host,device_header,catalog)) {
+    return {BatchStatus::InvalidInput,"QBAT immutable material curve rebase failed"};
+  }
+  host=device_header;
+  report=Runtime(cudaMemcpy(storage,arena.data(),layout.bytes,cudaMemcpyHostToDevice),
+      "QBAT device startup copy failed");
+  if(report.status!=BatchStatus::Success) return report;
+  accepted=&storage->slab[0];
+  trial=&storage->slab[1];
+  return Ok();
+}
 Batch::Batch()=default;
 Batch::~Batch()=default;
 BatchReport Batch::InitializeFormulations(const BatchConfig& config,const ShellFormulationScope& scope) try {
@@ -78,20 +96,8 @@ BatchReport Batch::InitializeFormulations(const BatchConfig& config,const ShellF
   next->accepted_diagnostics=diagnostics;
   next->staging=std::make_unique<BatchResult[]>(config.element_count);
   next->host_payload_bytes=budget.bytes();
-  report=next->PendingError();
+  report=next->Upload(arena,*host,*scope.catalog);
   if(report.status!=BatchStatus::Success) return report;
-  report=next->Runtime(cudaMalloc(reinterpret_cast<void**>(&next->storage),layout.bytes),"QBAT device arena allocation failed");
-  if(report.status!=BatchStatus::Success) return report;
-  next->device_header=layout.Rebase(*host,next->storage);
-  if(!batch_detail::RebaseMaterials(*host,next->device_header,*scope.catalog)) {
-    return {BatchStatus::InvalidInput,"QBAT immutable material curve rebase failed"};
-  }
-  *host=next->device_header;
-  report=next->Runtime(cudaMemcpy(next->storage,arena.data(),layout.bytes,cudaMemcpyHostToDevice),
-      "QBAT device startup copy failed");
-  if(report.status!=BatchStatus::Success) return report;
-  next->accepted=&next->storage->slab[0];
-  next->trial=&next->storage->slab[1];
   impl_=std::move(next);
   return Ok();
 } catch(const std::bad_alloc&) {

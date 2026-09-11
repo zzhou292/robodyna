@@ -15,7 +15,8 @@ cc_library(
 cc_library(
     name = "original_source",
     testonly = True,
-    visibility = ["//lib_utest/qualification/qbat_catalog:__pkg__",
+    visibility = ["//lib_utest/qualification/qbat_mapped:__pkg__",
+                  "//lib_utest/qualification/qbat_catalog:__pkg__",
                   "//lib_utest/qualification/qbat_resident:__pkg__"],
     srcs = ["OriginalFixture.cpp"],
     hdrs = ["OriginalFixture.h"],
