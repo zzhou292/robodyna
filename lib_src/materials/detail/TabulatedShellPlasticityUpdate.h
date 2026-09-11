@@ -9,10 +9,11 @@ TL_TABULATED_SHELL_HD inline double EquivalentStress(const double (&s)[5]) noexc
 }
 } // namespace tabulated_shell_detail
 
+namespace tabulated_shell_detail {
 TL_TABULATED_SHELL_HD inline TabulatedShellPlasticityStatus
-UpdateLaw44ShellPlasticity(const TabulatedShellPlasticityParameters& p,
+UpdateLaw44PlasticityImpl(const TabulatedShellPlasticityParameters& p,
     const TabulatedShellPlasticityHistory& accepted, const TabulatedShellPlasticityInput& input,
-    TabulatedShellPlasticityResult& output) noexcept {
+    TabulatedShellPlasticityResult& output, bool membrane) noexcept {
   using Status = TabulatedShellPlasticityStatus;
   if (!tl::math::Finite(p.young_pa) || p.young_pa <= 0 || !tl::math::Finite(p.poisson_ratio) ||
       p.poisson_ratio < 0 || p.poisson_ratio >= .5 || !tl::math::Finite(p.shear_modulus) ||
@@ -26,7 +27,8 @@ UpdateLaw44ShellPlasticity(const TabulatedShellPlasticityParameters& p,
   for (double s : accepted.stress) if (!tl::math::Finite(s)) return Status::InvalidHistory;
   if (!tabulated_shell_detail::HardeningDomain(p,accepted.plastic_strain))
     return p.hardening==ShellPlasticityHardeningKind::Tabulated?Status::CurveDomainExceeded:Status::HardeningDomainExceeded;
-  if (!tl::math::Finite(input.transverse_shear_modulus) || input.transverse_shear_modulus <= 0)
+  if (!tl::math::Finite(input.transverse_shear_modulus) ||
+      (membrane ? input.transverse_shear_modulus != 0 : input.transverse_shear_modulus <= 0))
     return Status::InvalidIncrement;
   for (double x : input.strain_increment) if (!tl::math::Finite(x)) return Status::InvalidIncrement;
   double yield = 0, hardening = 0;
@@ -102,6 +104,14 @@ UpdateLaw44ShellPlasticity(const TabulatedShellPlasticityParameters& p,
       !tl::math::Finite(trial.plastic_work_density)) return Status::NonfiniteResult;
   output = trial;
   return Status::Ok;
+}
+} // namespace tabulated_shell_detail
+// Keep the original positive-GS public entry and its operation order.
+TL_TABULATED_SHELL_HD inline TabulatedShellPlasticityStatus
+UpdateLaw44ShellPlasticity(const TabulatedShellPlasticityParameters& p,
+    const TabulatedShellPlasticityHistory& accepted, const TabulatedShellPlasticityInput& input,
+    TabulatedShellPlasticityResult& output) noexcept {
+  return tabulated_shell_detail::UpdateLaw44PlasticityImpl(p,accepted,input,output,false);
 }
 TL_TABULATED_SHELL_HD inline TabulatedShellPlasticityStatus
 UpdateTabulatedShellPlasticity(const TabulatedShellPlasticityParameters& p,

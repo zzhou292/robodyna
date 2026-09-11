@@ -1,0 +1,274 @@
+{
+  "commit": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Selected IHBE11 four surface points, NPTT1 LAW44 and D1-only failure. No owner or source admission.",
+  "sources": [
+    {
+      "path": "original/cbacoor.F",
+      "upstream_path": "engine/source/elements/shell/coqueba/cbacoor.F",
+      "size": 70315,
+      "sha256": "ebf13e11e9c30dad954602084fc90170dd2dc3fc9cb7039690a549cc20bf1456",
+      "git_blob_sha1": "a6a908a3f8c8de000ed81440844266f2f9d800dd"
+    },
+    {
+      "path": "original/cbafori.F",
+      "upstream_path": "engine/source/elements/shell/coqueba/cbafori.F",
+      "size": 22053,
+      "sha256": "8c767a59a9bc993915a9cc3f4ad4e732cd79dbbda4d8d58bdc9bc4e17e4939d4",
+      "git_blob_sha1": "d6d5458a48f470f05f82217991b296ba2ad56389"
+    },
+    {
+      "path": "original/cbaener.F",
+      "upstream_path": "engine/source/elements/shell/coqueba/cbaener.F",
+      "size": 4121,
+      "sha256": "c88f9c07b3793a1fabe8cc7e57aef55d1120a5d3be243b6e8cffbe3208cae683",
+      "git_blob_sha1": "c2ee2bd6cffcacb9d249228325bf6e09259afa7b"
+    },
+    {
+      "path": "original/cbavisc.F",
+      "upstream_path": "engine/source/elements/shell/coqueba/cbavisc.F",
+      "size": 6990,
+      "sha256": "5e4747ffe4435ceb7a83f19abf57b4707259354a418cdcf5cf51cb5550d49399",
+      "git_blob_sha1": "935abc1ac08548a1b683f9e2368fab8eb08d60dc"
+    },
+    {
+      "path": "original/cbaproj.F",
+      "upstream_path": "engine/source/elements/shell/coqueba/cbaproj.F",
+      "size": 13314,
+      "sha256": "98984afd30bd4919f13218d5cdda22bbe8a17dc5ec578b6f9c0265a3db21fa46",
+      "git_blob_sha1": "637fc64cfff6c6905da93b3e415e34546f63cc6e"
+    },
+    {
+      "path": "original/cbastra3.F",
+      "upstream_path": "engine/source/elements/shell/coqueba/cbastra3.F",
+      "size": 9093,
+      "sha256": "adf150c779a3109a131c854ac7f97bba94dea66d2c5c373c2ca4c62471ceb92c",
+      "git_blob_sha1": "e9b589e32e70c5336cf97e9e651e642a9799c564"
+    },
+    {
+      "path": "original/cbaforc3.F",
+      "upstream_path": "engine/source/elements/shell/coqueba/cbaforc3.F",
+      "size": 52166,
+      "sha256": "a90599935e2d2af3eeefa49290718ed9062ee5fb78399b50f8dde9c200a6eaa2",
+      "git_blob_sha1": "61b4b9316acca4a0cb686d5ded3395d5e21ee2b9"
+    },
+    {
+      "path": "original/mulawc.F90",
+      "upstream_path": "engine/source/materials/mat_share/mulawc.F90",
+      "size": 165437,
+      "sha256": "778df028efcdb9e28e8b2cb9156a431937c06fa073260d2c002164b420848526",
+      "git_blob_sha1": "f8ca5808fd2eebc76e64d28120b8ac6cb711b376"
+    },
+    {
+      "path": "original/fail_setoff_npg_c.F",
+      "upstream_path": "engine/source/materials/fail/fail_setoff_npg_c.F",
+      "size": 23448,
+      "sha256": "c478d8f81f92789b327c6de2f8236a1ef63f206c439ab2d820dc7e377d39131e",
+      "git_blob_sha1": "8c25a0eb75a175b397a616f2c39e5f95c0775b0a"
+    },
+    {
+      "path": "original/cndt3.F",
+      "upstream_path": "engine/source/elements/sh3n/coquedk/cndt3.F",
+      "size": 12054,
+      "sha256": "4ae20594cb1868ec0ef6d9ccb2aed816257862582ce292395e97cb767dfea404",
+      "git_blob_sha1": "652c459ee3cf93bdb4983e748ad5d2fd6b5ed672"
+    },
+    {
+      "path": "original/cncoef3.F",
+      "upstream_path": "engine/source/elements/sh3n/coquedk/cncoef3.F",
+      "size": 41674,
+      "sha256": "9b8d5c29258b80366179baf1e70b631117fa056c7cd1a2503ff98e47d8f978e5",
+      "git_blob_sha1": "9fbff29d0c49a65ee9bc65b702acf04ca01d103a"
+    }
+  ],
+  "fragments": [
+    {
+      "path": "extracted/VelocityCorrection.inc",
+      "source": "original/cbacoor.F",
+      "first_line": 373,
+      "last_line": 438,
+      "sha256": "a8a47da3c0f1a82b533261bc7e7b7af0022a801104211e1b4b525b6b0d072a0e"
+    },
+    {
+      "path": "extracted/FlatPacket.inc",
+      "source": "original/cbacoor.F",
+      "first_line": 457,
+      "last_line": 548,
+      "sha256": "d49b153f202a2f94ba663d628391af3feb42d235beb9d29dcc97b16b42958456"
+    },
+    {
+      "path": "extracted/CurrentLength.inc",
+      "source": "original/cbacoor.F",
+      "first_line": 1081,
+      "last_line": 1100,
+      "sha256": "cb7b9ff748ca399bc262e8b53e0b6b9f2d887934be2635fd8352b717e1e23ec8"
+    },
+    {
+      "path": "extracted/WorkBefore.inc",
+      "source": "original/mulawc.F90",
+      "first_line": 543,
+      "last_line": 547,
+      "sha256": "86097d64ea6599234f2a0671fb443684f0049e60e9fa80d3a1cf377ec94a9040"
+    },
+    {
+      "path": "extracted/OldOffMask.inc",
+      "source": "original/mulawc.F90",
+      "first_line": 562,
+      "last_line": 563,
+      "sha256": "6477561229075be25a1b735501b6f16ce2702a93ec5f13026a7f0dd4c2738885"
+    },
+    {
+      "path": "extracted/SectionBegin.inc",
+      "source": "original/mulawc.F90",
+      "first_line": 566,
+      "last_line": 582,
+      "sha256": "2c36b057d3a5214b150c0bcbc803d94c4cecef262fc47041ceeb7dcea51dfc9d"
+    },
+    {
+      "path": "extracted/PointPlasticWork.inc",
+      "source": "original/mulawc.F90",
+      "first_line": 2010,
+      "last_line": 2018,
+      "sha256": "478b32bf85b3aef4eac7892b0c54ee3ec7d996fdcd1b9ef7afb63acd457f954a"
+    },
+    {
+      "path": "extracted/CallerFailureIncrement.inc",
+      "source": "original/mulawc.F90",
+      "first_line": 2067,
+      "last_line": 2070,
+      "sha256": "57995038251c4abab7f00478d4a67bd2f21550535c07000f619b289f6f5461cd"
+    },
+    {
+      "path": "extracted/PointMask.inc",
+      "source": "original/mulawc.F90",
+      "first_line": 2613,
+      "last_line": 2618,
+      "sha256": "04601b63490f5e1d94eac01c10bd62e13a897438576e2d68cf1d540155a23ac6"
+    },
+    {
+      "path": "extracted/SavedStress.inc",
+      "source": "original/mulawc.F90",
+      "first_line": 2634,
+      "last_line": 2641,
+      "sha256": "034ca56ae7ccc65f8073206a3e5e553efe55a8426b51b7ee1e57ca844ffe8e7e"
+    },
+    {
+      "path": "extracted/LayerResultants.inc",
+      "source": "original/mulawc.F90",
+      "first_line": 2657,
+      "last_line": 2664,
+      "sha256": "a07f60da2259a018e59f85cfadf602a6a28f1220591ac45936588653edae9562"
+    },
+    {
+      "path": "extracted/ThicknessViscosity.inc",
+      "source": "original/mulawc.F90",
+      "first_line": 3016,
+      "last_line": 3032,
+      "sha256": "dd6994c9975c3a754f375ff84283a305798a5e9d74cca15ec72250cfebd60e68"
+    },
+    {
+      "path": "extracted/ParentPublish.inc",
+      "source": "original/mulawc.F90",
+      "first_line": 2937,
+      "last_line": 2952,
+      "sha256": "07745453f12711d999bf9c2561066b7b63f5bac3aa38118910b97e4a2b09ebfe"
+    },
+    {
+      "path": "extracted/WorkAfter.inc",
+      "source": "original/mulawc.F90",
+      "first_line": 3046,
+      "last_line": 3048,
+      "sha256": "b0966f0f77b4c5ccf14deb1cd54861ce4130f005057d6592f5974710812f5329"
+    },
+    {
+      "path": "extracted/WorkAccumulate.inc",
+      "source": "original/mulawc.F90",
+      "first_line": 3089,
+      "last_line": 3094,
+      "sha256": "156daf26648ca10ce00dd794593c95953348611dad1299c84b00cc13063d5fe8"
+    },
+    {
+      "path": "extracted/PointRemoval.inc",
+      "source": "original/fail_setoff_npg_c.F",
+      "first_line": 157,
+      "last_line": 183,
+      "sha256": "68e48d2f132a78c348ea8b8e0032dc0b78b6910b4fd183d897e121be5f124a8f"
+    },
+    {
+      "path": "extracted/ParentRemoval.inc",
+      "source": "original/fail_setoff_npg_c.F",
+      "first_line": 185,
+      "last_line": 196,
+      "sha256": "5099e3d0cd1973251fd53ee0bcd027db40d4c576a87297578a2f59aa9b6d900a"
+    },
+    {
+      "path": "extracted/Rate.inc",
+      "source": "original/cbaforc3.F",
+      "first_line": 764,
+      "last_line": 772,
+      "sha256": "ff80282f50f9895dfed03b01cb8c66dee80d876109c2a759cd021a499b58f694"
+    },
+    {
+      "path": "extracted/QuarterThickness.inc",
+      "source": "original/cbaforc3.F",
+      "first_line": 865,
+      "last_line": 866,
+      "sha256": "6901d60c09807e9c30cb20ebdc86ec4e49f38b4f3779f944f55c7fe57bd5baf6"
+    },
+    {
+      "path": "extracted/RatePublish.inc",
+      "source": "original/cbaforc3.F",
+      "first_line": 946,
+      "last_line": 948,
+      "sha256": "152963f32387be4873449c450e13241c4b6650a007565e9c8db571259ed14b88"
+    },
+    {
+      "path": "extracted/ParentRemovalEnd.inc",
+      "source": "original/fail_setoff_npg_c.F",
+      "first_line": 203,
+      "last_line": 206,
+      "sha256": "8bd1f8eac4d2ba82130d23819193409557b39cd8f66a1034c1d28db137fce52a"
+    },
+    {
+      "path": "extracted/CurrentViscosity.inc",
+      "source": "original/cndt3.F",
+      "first_line": 85,
+      "last_line": 89,
+      "sha256": "120b4ec1329782bcfd2462a0d5c78259c3e0121f2d7a170b691448c80d44265b"
+    },
+    {
+      "path": "extracted/CurrentTimestep.inc",
+      "source": "original/cndt3.F",
+      "first_line": 227,
+      "last_line": 229,
+      "sha256": "7449be7a6f8892eb9bc9a769403b3c422b4c5dc80806ab28c35b8dcbade644cd"
+    },
+    {
+      "path": "extracted/CurrentStiffness.inc",
+      "source": "original/cndt3.F",
+      "first_line": 314,
+      "last_line": 318,
+      "sha256": "8a45cdb0b38a09c4c5263c78a5798fc3aacaf4b58231cd62904b64bf2da52b76"
+    },
+    {
+      "path": "extracted/CurrentMaterialCoefficients.inc",
+      "source": "original/cncoef3.F",
+      "first_line": 387,
+      "last_line": 401,
+      "sha256": "ffadb77b1b5f16ad792f6c227a0df6328129e56e01ef7981103a3075a0f6947b"
+    },
+    {
+      "path": "extracted/CurrentShearCoefficients.inc",
+      "source": "original/cncoef3.F",
+      "first_line": 404,
+      "last_line": 420,
+      "sha256": "c18d7cf711692e739679c3bfb550dcd88fae0ed7bec03389ec2e64100b47cca3"
+    },
+    {
+      "path": "extracted/CurrentDn.inc",
+      "source": "original/cncoef3.F",
+      "first_line": 424,
+      "last_line": 436,
+      "sha256": "64bea947e75d5ec6cc871b7de172a20bc1f51ed4a084b9c3c7620124f715fe7f"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+if(TARGET tl_qbat_force)
+  return()
+endif()
+include("${CMAKE_CURRENT_LIST_DIR}/Qbat.cmake")
+add_library(tl_qbat_force INTERFACE)
+target_link_libraries(tl_qbat_force INTERFACE tl_qbat_geometry)

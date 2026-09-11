@@ -47,3 +47,9 @@ cc_library(
     ],
     copts = ["--std=c++17"],
 )
+
+cc_library(
+    name = "law44_membrane",
+    hdrs = ["Law44MembranePlasticity.h"],
+    deps = [":tabulated_shell_plasticity"],
+)
