@@ -1,4 +1,7 @@
 include_guard(GLOBAL)
+# The legacy tessellation adapter uses this spelling. Set it at the reusable
+# module boundary so callers need only the canonical explicit TL root.
+set(CRASH_TL_FEA_SOURCE_DIR "${ROBO_DYNA_TL_ROOT}")
 include("${CMAKE_CURRENT_LIST_DIR}/VehicleWallValues.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../vehicle_dynamics/VehiclePhysicalDynamics.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../shell_collection/ShellCollectionContactGeometry.cmake")
