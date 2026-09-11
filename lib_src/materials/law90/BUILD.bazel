@@ -10,3 +10,8 @@ cc_library(
     hdrs = glob(["Point*.h"]),
     deps = [":preparation", "//lib_src/math:native_symmetric_eigen3", "//lib_src/math:positive_identity_plus_symmetric3"],
 )
+cc_library(
+    name = "caller",
+    hdrs = ["CallerTypes.h", "CallerChecks.h", "Caller.h", "MaterialIdentity.h"],
+    deps = [":point", "//lib_src/materials:solid_caller_values"],
+)

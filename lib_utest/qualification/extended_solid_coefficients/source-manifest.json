@@ -69,8 +69,8 @@
     },
     {
       "path": "lib_utest/qualification/law90_solid18_reference/BUILD.bazel",
-      "bytes": 780,
-      "sha256": "4548685f784eeee31f62d9fbe83b706208363da40f6a285b4f4d3298cbe63163"
+      "bytes": 738,
+      "sha256": "fd2bf079b87317ca4bcea9b4e4ef971dd941a47ad543df4f9617bfb4636374ce"
     },
     {
       "path": "lib_utest/qualification/law90_solid18_reference/TestSupport.h",
@@ -138,6 +138,13 @@
       "path": "lib_utest/qualification/extended_solid_coefficients/BUILD.bazel",
       "bytes": 721,
       "sha256": "1a66ab82bc5e43172750135697ac24f9bb22b02fbaec442be5ee4f597f650d3c"
+    }
+  ],
+  "prior_force_export_records": [
+    {
+      "path": "lib_utest/qualification/law90_solid18_reference/BUILD.bazel",
+      "bytes": 780,
+      "sha256": "4548685f784eeee31f62d9fbe83b706208363da40f6a285b4f4d3298cbe63163"
     }
   ]
 }

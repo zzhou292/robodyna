@@ -9,3 +9,8 @@ cc_library(
     ],
     deps = ["//lib_src/elements/solid18:force", "//lib_src/elements/solid_common:brick_frame"],
 )
+cc_library(
+    name = "law90_force",
+    hdrs = ["ForceTypes.h", "ForceChecks.h", "ForceWork.h", "Force.h", "History.h"],
+    deps = [":reference_kinematics", "//lib_src/elements/solid18:force", "//lib_src/materials/law90:caller"],
+)

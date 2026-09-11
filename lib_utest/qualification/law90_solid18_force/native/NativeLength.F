@@ -1,0 +1,20 @@
+! SPDX-License-Identifier: AGPL-3.0-or-later
+      SUBROUTINE LAW90_FORCE_LENGTH(G,IP,LENGTH)
+      USE LAW90_ENGINE_PACKETS
+      IMPLICIT NONE
+      TYPE(NATIVE_GEOMETRY),INTENT(IN) :: G
+      INTEGER,INTENT(IN) :: IP
+      REAL(KIND=8),INTENT(INOUT) :: LENGTH
+      INTEGER,PARAMETER :: NEL=1
+      INTEGER I,IDTS6,IDEG(1)
+      REAL(KIND=8) :: VOLP(1),VOL(1),OFF(1),OFFG(1),DELTAX(1),SMAX(1),WI
+      IDTS6=0
+      IDEG=0
+      VOLP=G%VOLUME(1,IP)
+      OFFG=ONE
+      DELTAX=LENGTH
+      SMAX=G%SMAX(1)
+      WI=ONE
+#include "point_length.inc"
+      LENGTH=DELTAX(1)
+      END

@@ -15,5 +15,5 @@ cc_library(
     deps = ["//lib_src/elements/solid18/total_strain:reference_kinematics",
             "//lib_utest/qualification/solid18_reference:source_fixture",
             "@googletest//:gtest"],
-    visibility = ["//lib_utest/qualification/extended_solid_coefficients:__pkg__"],
+    visibility = ["//visibility:public"],
 )

@@ -1,0 +1,290 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "license": {
+    "path": "../../solid18_reference/native/LICENSE.md",
+    "bytes": 34283,
+    "sha256": "ad858d53cae05eed9531ecd4c467440803acffe34c69de7b88e03affc5b6a1bd"
+  },
+  "sources": [
+    {
+      "source": "common_source/modules/constant_mod.F",
+      "path": "../../native/qeph/original/common_source/modules/constant_mod.F",
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865",
+      "git_blob_sha1": "5f78c0a6769ac024deb6bba9d3037cd747f36837"
+    },
+    {
+      "source": "common_source/modules/elements/element_mod.F90",
+      "path": "../../native/qeph/original/common_source/modules/elements/element_mod.F90",
+      "bytes": 105714,
+      "sha256": "5843cc5fa95989e876462c6b2370b4dadf577439b2eb07d725b69ac85c5c326e",
+      "git_blob_sha1": "b4ea870494bd11c5d139290e942ae8ae17fe7da2"
+    },
+    {
+      "source": "common_source/modules/precision_mod.F90",
+      "path": "../../native/qeph/original/common_source/modules/precision_mod.F90",
+      "bytes": 71995,
+      "sha256": "0846aee31622c4bfdc22895a5580bce7b6be216d392b8ba219be53dafe570201",
+      "git_blob_sha1": "801e7590ca7f366cd5b2723ae9acfa6a089049cf"
+    },
+    {
+      "source": "engine/share/includes/com06_c.inc",
+      "path": "../../solid18_force/native/original/engine/share/includes/com06_c.inc",
+      "bytes": 2208,
+      "sha256": "2cbaca20f5a944c2a90ed55299928a0fae55abf242bfdc6fcedff244ddee5ad5",
+      "git_blob_sha1": "ec26889940ee3cc606bfb3ccb6fe9e2240d7cc4b"
+    },
+    {
+      "source": "engine/share/includes/com08_c.inc",
+      "path": "../../solid18_force/native/original/engine/share/includes/com08_c.inc",
+      "bytes": 1865,
+      "sha256": "10f98e71274a756d2e1345d29658c97a035c89c918257f20c2a164fbecfba496",
+      "git_blob_sha1": "527615007426bf007418321b9404b5fcf8639448"
+    },
+    {
+      "source": "engine/share/includes/impl1_c.inc",
+      "path": "../../solid18_force/native/original/engine/share/includes/impl1_c.inc",
+      "bytes": 3586,
+      "sha256": "c257001e6e818a85f2841d8aba25ef111773283752d8aea3fdbb58e8edd63112",
+      "git_blob_sha1": "bb1edcd216a156efe566d75d2227d88c0fbe77c3"
+    },
+    {
+      "source": "engine/share/includes/scr05_c.inc",
+      "path": "../../solid18_force/native/original/engine/share/includes/scr05_c.inc",
+      "bytes": 1594,
+      "sha256": "53a14b4a42266455432e4c7608b4ce34bee9b6dc120dbc055a3b1d7a76ff0c0b",
+      "git_blob_sha1": "edfdadbce0be47ede50bd6bbe398e14883c0542e"
+    },
+    {
+      "source": "engine/share/includes/scr07_c.inc",
+      "path": "../../solid18_force/native/original/engine/share/includes/scr07_c.inc",
+      "bytes": 1974,
+      "sha256": "f1e44adb3fc9d2332af0e5e18be5f3976b7e588580c49f04af7b6c0816310e37",
+      "git_blob_sha1": "7bd8a12f7e2441425ce7a604150e8e38d278405f"
+    },
+    {
+      "source": "engine/share/includes/scr17_c.inc",
+      "path": "../../solid18_force/native/original/engine/share/includes/scr17_c.inc",
+      "bytes": 2111,
+      "sha256": "db56f0562b25b05803aba448236fa228c7ea6151e22000540e84d9ce2d9f80ee",
+      "git_blob_sha1": "dfbf2b3224854b53b070fecc4924e1894a2841b5"
+    },
+    {
+      "source": "engine/share/includes/scr18_c.inc",
+      "path": "../../solid18_force/native/original/engine/share/includes/scr18_c.inc",
+      "bytes": 1790,
+      "sha256": "1cfc4b1f7898053279b77d03f25e62c47f8d62e4810777b6c6021cfcadbb255f",
+      "git_blob_sha1": "c8a9288f87c174debd9b5b47cbc31d8cf2674c0f"
+    },
+    {
+      "source": "engine/share/includes/units_c.inc",
+      "path": "../../solid18_force/native/original/engine/share/includes/units_c.inc",
+      "bytes": 2779,
+      "sha256": "c27320ffa81fd5bf362a0aa30903e2a302d68bb79aac94fc83fa46cc268dba89",
+      "git_blob_sha1": "49bd9730899b5e8fcd77adeabacb263c422f3ffe"
+    },
+    {
+      "source": "engine/share/r8/my_real.inc",
+      "path": "../../native/qeph/original/engine/share/r8/my_real.inc",
+      "bytes": 1658,
+      "sha256": "b2b61dbf62a940a49f92f8458e72e6c7ab92fbae48a72e5a7fce5d6d6bbaf8df",
+      "git_blob_sha1": "14e5c4b5b9167a30f165b726ada28047de9b411b"
+    },
+    {
+      "source": "engine/share/r8/r4r8_p.inc",
+      "path": "../../solid18_force/native/original/engine/share/r8/r4r8_p.inc",
+      "bytes": 1444,
+      "sha256": "3ed1bcfc68389ca2704e715b8e15d23ba8405a9264be5f806a64d1e4d137562d",
+      "git_blob_sha1": "cd6402deb2daedb8ac8d4f0543e2346074c4f478"
+    },
+    {
+      "source": "engine/share/spe_inc/comlock.inc",
+      "path": "../../solid18_force/native/original/engine/share/spe_inc/comlock.inc",
+      "bytes": 1968,
+      "sha256": "470ae1ea6af07d8464cf0a36c65bbb40ba32d40b4e301097b0e33de390424aff",
+      "git_blob_sha1": "eea178e51ecbf9df13c12319e266ae42897237e6"
+    },
+    {
+      "source": "engine/share/spe_inc/hardware.inc",
+      "path": "../../native/qeph/original/engine/share/spe_inc/hardware.inc",
+      "bytes": 3556,
+      "sha256": "10a8e3d40d430fd92ed33b2d1b6fda43262e8c4901340ee740db0f1479ee0b00",
+      "git_blob_sha1": "40bedb84eaa3529c6a76f51d97d22575601ab37d"
+    },
+    {
+      "source": "engine/share/spe_inc/implicit_f.inc",
+      "path": "../../solid18_force/native/original/engine/share/spe_inc/implicit_f.inc",
+      "bytes": 1478,
+      "sha256": "336888d703e8eb082459dfd5f9ed8689b8374bcc6940ab2d53f0df91a0a39cf2",
+      "git_blob_sha1": "d54bff81213a4f7b53baa8422a0e8be20b338c17"
+    },
+    {
+      "source": "engine/share/spe_inc/lockoff.inc",
+      "path": "../../solid18_force/native/original/engine/share/spe_inc/lockoff.inc",
+      "bytes": 2239,
+      "sha256": "6bbf602b6b6c6a8eacecf1c6fb97ac8ff4c05a967f56b5b1aebf65ffe24af639",
+      "git_blob_sha1": "3a43222c4af0d7a2590718a5e74684d724029d9b"
+    },
+    {
+      "source": "engine/share/spe_inc/lockon.inc",
+      "path": "../../solid18_force/native/original/engine/share/spe_inc/lockon.inc",
+      "bytes": 2236,
+      "sha256": "9f3ca126afe6c73e6083bbcac4c5f9c9259ffd3edfb771ebc006c68ff15457bb",
+      "git_blob_sha1": "cddbcec07a0860890060eb997e0a7dffd489d4cb"
+    },
+    {
+      "source": "engine/share/spe_inc/machine2.inc",
+      "path": "../../solid18_force/native/original/engine/share/spe_inc/machine2.inc",
+      "bytes": 3746,
+      "sha256": "272e010b163a1149c0822ef58f6a5b7d025f1895ddd00887b3f72cfa9b45b2bc",
+      "git_blob_sha1": "539f9dfb9d59b6b3fc9ceaf71360a1a274526bf2"
+    },
+    {
+      "source": "engine/share/spe_inc/mvsiz_p.inc",
+      "path": "../../solid18_force/native/original/engine/share/spe_inc/mvsiz_p.inc",
+      "bytes": 3256,
+      "sha256": "8a0f587350f7738e0f40e375fc1b2c8cb775e4c7540d41762c427cd42724ced7",
+      "git_blob_sha1": "ace2eaec18ff827b0889b681100fe18fc180bf7b"
+    },
+    {
+      "source": "engine/share/spe_inc/nofusion.inc",
+      "path": "../../solid18_force/native/original/engine/share/spe_inc/nofusion.inc",
+      "bytes": 1678,
+      "sha256": "b337f8f3b43fdd7d0a57d0a08378f58bfba8ef09e25b5b88c57f9f852f882235",
+      "git_blob_sha1": "5f32c0a342be4039fadf09f744ff5c150d20b99d"
+    },
+    {
+      "source": "engine/share/spe_inc/tlock_c.inc",
+      "path": "../../solid18_force/native/original/engine/share/spe_inc/tlock_c.inc",
+      "bytes": 2151,
+      "sha256": "c8f6f9a8405c173182acdf114060ec4a9a073e4886b6431da1a1f4fb145b33e4",
+      "git_blob_sha1": "54970dd5e6957cd477331971219ee59419ecd867"
+    },
+    {
+      "source": "engine/share/spe_inc/vectorize.inc",
+      "path": "../../solid18_force/native/original/engine/share/spe_inc/vectorize.inc",
+      "bytes": 1881,
+      "sha256": "67d75c7f52c1dc87facb732ef3ffd29502b9ea1972be228ed135e892f18f7153",
+      "git_blob_sha1": "9c884843281aeb95cd647d43dc0dc67ef0a3bdb5"
+    },
+    {
+      "source": "engine/source/elements/solid/solide/srho3.F",
+      "path": "../../solid18_force/native/original/engine/source/elements/solid/solide/srho3.F",
+      "bytes": 12141,
+      "sha256": "aa0ae4a2e9454d62efb176230c406a906d5d8233cae35770adeadbca6345ed25",
+      "git_blob_sha1": "229745d227f1e8c54e8bd96b2cae7bbb89f9d6b4"
+    },
+    {
+      "source": "engine/source/elements/solid/solide/srrota3.F",
+      "path": "../../solid18_force/native/original/engine/source/elements/solid/solide/srrota3.F",
+      "bytes": 5408,
+      "sha256": "8b5224efb8abc3f51d7eebda7fad0899cd4f8af5e4b0eb7b98c665985b6af3b7",
+      "git_blob_sha1": "16681d0fcbd9382bfe191bbadfe18e357ff9aea7"
+    },
+    {
+      "source": "engine/source/elements/solid/solide8e/s8ederi_2.F",
+      "path": "../../solid18_force/native/original/engine/source/elements/solid/solide8e/s8ederi_2.F",
+      "bytes": 7386,
+      "sha256": "3f9d60596770c59590f2b67e32b62f548b6402da4fc89f1de491e8df794c5342",
+      "git_blob_sha1": "1ca85f518c0eba59b8adf362eee83b59f8ecd18b"
+    },
+    {
+      "source": "engine/source/elements/solid/solide8e/s8efint3.F",
+      "path": "../../solid18_force/native/original/engine/source/elements/solid/solide8e/s8efint3.F",
+      "bytes": 18346,
+      "sha256": "d2236c07856dd899a69be5b7fd8d635ac33fc0d0504eeb9bc0d47c158d34aae7",
+      "git_blob_sha1": "e70e07e61114b8ec9fa009cf78e9f0425388632d"
+    },
+    {
+      "source": "engine/source/elements/solid/solide8e/s8efmoy3.F",
+      "path": "../../solid18_force/native/original/engine/source/elements/solid/solide8e/s8efmoy3.F",
+      "bytes": 5257,
+      "sha256": "f159b5d0726a242006c868e05c6339be9e734c81dd0922f18b3540f2558e23d5",
+      "git_blob_sha1": "399d3f2904956793a3f00e0b15d6eb17bc1876fc"
+    },
+    {
+      "source": "engine/source/elements/solid/solide8e/s8eforc3.F",
+      "path": "../../solid18_force/native/original/engine/source/elements/solid/solide8e/s8eforc3.F",
+      "bytes": 93331,
+      "sha256": "ce07f95c8710a539be0784c0de0816bf2d795c370e06a9fb6a799bd406cbe373",
+      "git_blob_sha1": "b1c361190f7d6033a6049b40ff3f1429ec562a23"
+    },
+    {
+      "source": "engine/source/elements/solid/solide8e/s8etotsh10.F",
+      "path": "../../law90_solid18_reference/native/original/engine/source/elements/solid/solide8e/s8etotsh10.F",
+      "bytes": 2782,
+      "sha256": "9582c722bc00602ec2453396a45ddfb888a5e716299c8ef5193285e26d7fbac8",
+      "git_blob_sha1": "ec5bc696ef2738095fdf590038dbfc1412da4500"
+    },
+    {
+      "source": "engine/source/materials/mat_share/mmain.F90",
+      "path": "../../solid_law36_point/native/original/engine/source/materials/mat_share/mmain.F90",
+      "bytes": 141187,
+      "sha256": "682c53b5fa9a4f014f84e5a3bc9c6eb558a738065d2d15cb9babac764e585a1c",
+      "git_blob_sha1": "b45f62e1aa3a58452e50a61279ed179637a0164a"
+    },
+    {
+      "source": "engine/source/materials/mat_share/mqviscb.F",
+      "path": "../../solid18_force/native/original/engine/source/materials/mat_share/mqviscb.F",
+      "bytes": 23421,
+      "sha256": "5d7f91a40766420a9681abd22b07558e59c24469aff1bcdf2eb5446d909644cc",
+      "git_blob_sha1": "4ec78cd6bd02205685fff8dea891f08d8af59341"
+    },
+    {
+      "source": "engine/source/materials/mat_share/mulaw.F90",
+      "path": "../../solid_law36_point/native/original/engine/source/materials/mat_share/mulaw.F90",
+      "bytes": 142562,
+      "sha256": "1d3e7c01bef5d22a702682c2b860027902a46eaf657900034b7d4e534f809bc3",
+      "git_blob_sha1": "b9794e1db2d4f7809f510788fc069366532ed7b4"
+    },
+    {
+      "source": "starter/source/elements/elbuf_init/ini_mlaw_vars.F",
+      "path": "original/starter/source/elements/elbuf_init/ini_mlaw_vars.F",
+      "bytes": 7515,
+      "sha256": "29fd0292614befb08613b57311880b8c0bf8fdc542255c3a3600bded287dfdc3",
+      "git_blob_sha1": "bf41a1706209bdbdfd40524e4a1a27e9f95cc4a7"
+    },
+    {
+      "source": "starter/share/modules1/elbuftag_mod.F",
+      "path": "original/starter/share/modules1/elbuftag_mod.F",
+      "bytes": 33617,
+      "sha256": "8601bc9875bbdb67ff6cbfe9261a9603a5adc463a28cc3f199bdde20c0ab2b00",
+      "git_blob_sha1": "4d9b772d67c4dc43ca6011a562b175ceae975460"
+    },
+    {
+      "source": "starter/source/materials/mat/mat090/hm_read_mat90.F",
+      "path": "../../law90_preparation/native/original/starter/source/materials/mat/mat090/hm_read_mat90.F",
+      "bytes": 12007,
+      "sha256": "71ec3e5a09be75ac1e840301d2c1cd473ccfd29f86ea8cdc1f96edee1f582d23",
+      "git_blob_sha1": "17a19b46030394b41a70b0029a6b46322af10e8c"
+    },
+    {
+      "source": "starter/source/elements/elbuf_init/zerovars_auto.F",
+      "path": "original/starter/source/elements/elbuf_init/zerovars_auto.F",
+      "bytes": 12896,
+      "sha256": "e105097a3d444444515959aeb647235033cabd49752fef9a93f7f40aff92eca1",
+      "git_blob_sha1": "b7f85994a13e8312044423bc5c93767f1b462127"
+    },
+    {
+      "source": "starter/source/elements/elbuf_init/initvars_auto.F",
+      "path": "original/starter/source/elements/elbuf_init/initvars_auto.F",
+      "bytes": 26951,
+      "sha256": "8d44724e7e8abb4b26004140fccd242daa4697dd50d046052f7629eb7dec9dab",
+      "git_blob_sha1": "3f54428a68b3fef049692054dc47e9938bebe2ea"
+    },
+    {
+      "source": "starter/source/materials/read_material_models.F",
+      "path": "original/starter/source/materials/read_material_models.F",
+      "bytes": 12260,
+      "sha256": "7ca6a3d0968b19681dfcef578ecbefc863461c533712f6bd626136d1800e6756",
+      "git_blob_sha1": "e863c48f216c74c7f4ca760f972bd57a19852fee"
+    },
+    {
+      "source": "starter/source/materials/mat/hm_read_mat.F90",
+      "path": "../../solid_law42_caller/native/original/starter/source/materials/mat/hm_read_mat.F90",
+      "bytes": 79808,
+      "sha256": "4d13977914f6619ad1b7f0afc10d11d53dddb13c7f6f61895ae9acaae543de2b",
+      "git_blob_sha1": "0839fdd59eae3a527efe66bf2dbd9b21930fd04a"
+    }
+  ]
+}

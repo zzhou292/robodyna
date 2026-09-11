@@ -1,4 +1,4 @@
-load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_test", "cc_library")
 cc_test(
     name = "host_check",
     srcs = ["HostTest.cpp", "TestSupport.h"],
@@ -6,4 +6,11 @@ cc_test(
             "//lib_utest/qualification/law90_preparation:fixture",
             "@googletest//:gtest_main"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+
+cc_library(
+    name = "fixture",
+    hdrs = ["TestSupport.h"],
+    deps = ["//lib_src/materials/law90:point", "//lib_utest/qualification/law90_preparation:fixture"],
+    visibility = ["//visibility:public"],
 )

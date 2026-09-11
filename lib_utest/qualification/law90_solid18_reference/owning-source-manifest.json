@@ -43,8 +43,8 @@
     },
     {
       "path": "lib_src/elements/solid18/total_strain/BUILD.bazel",
-      "bytes": 469,
-      "sha256": "ccfcdc48438144ce821baf76a1b633bfeebd8a6a51dd5ca91f84f5920f5942d4"
+      "bytes": 704,
+      "sha256": "7a262205f194bf95c2cd68e5e2db86de8081eeec72a2fd04a4c7ad4c482ed87f"
     },
     {
       "path": "lib_src/elements/solid18/total_strain/KinematicsTypes.h",
@@ -98,8 +98,8 @@
     },
     {
       "path": "lib_utest/qualification/law90_solid18_reference/BUILD.bazel",
-      "bytes": 780,
-      "sha256": "4548685f784eeee31f62d9fbe83b706208363da40f6a285b4f4d3298cbe63163"
+      "bytes": 738,
+      "sha256": "fd2bf079b87317ca4bcea9b4e4ef971dd941a47ad543df4f9617bfb4636374ce"
     },
     {
       "path": "lib_utest/qualification/law90_solid18_reference/CMakeLists.txt",

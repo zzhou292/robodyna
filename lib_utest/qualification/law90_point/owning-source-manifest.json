@@ -53,8 +53,8 @@
     },
     {
       "path": "lib_utest/qualification/law90_point/BUILD.bazel",
-      "bytes": 346,
-      "sha256": "ae8ac9543e25a7ca7aa378884f71c32a680579b52eb3b4f6b4d7ad73145de0c2"
+      "bytes": 572,
+      "sha256": "e72693404bdb7e1165f9782140591a5d40fcae931b365ce34c30f5b122f22b6d"
     },
     {
       "path": "lib_utest/qualification/law90_point/CMakeLists.txt",
