@@ -4,6 +4,12 @@
 #include <algorithm>
 #include <iostream>
 #include <numeric>
+#ifdef ROBO_DYNA_NATIVE_BUCKET
+#include "BucketOracle.h"
+#include "lib_src/constraints/tied_shell/TiedSearch.h"
+#include "lib_src/constraints/tied_shell/TiedPatchGeometry.h"
+#include "lib_utest/qualification/tied_shell_search/NativeOracle.h"
+#endif
 
 namespace crash::modelio::tied_shell::test {
 namespace {
@@ -137,4 +143,73 @@ TEST(TiedSearchGeometryActual, PublicLifetimeBudgetAndOriginalMemberRejectionPre
     EXPECT_EQ(retry.data().masters.back().projection_thickness, prior.data().masters.back().projection_thickness);
     EXPECT_FALSE(retry.PhysicalOwnNode(0, 0));
 }
+#ifdef ROBO_DYNA_NATIVE_BUCKET
+TEST(TiedSearchGeometryActual, IndependentNativeBucketsRetainEveryOriginalSecondaryAndSelectedSourcePatch) {
+    namespace ts = tl::constraints::tied_shell;
+    const auto& geometry = ActualGeometry();
+    const auto& d = geometry.data();
+    const auto native = NativeBucket(geometry);
+    ASSERT_EQ(native.selected.size(), 11165u);
+    std::vector<int> last_master(native.selected.size(), 0);
+    std::vector<std::size_t> counts(native.selected.size(), 0);
+    int previous = 0;
+    for (const auto& pair : native.pairs) {
+        ASSERT_GE(pair[0], previous); previous = pair[0];
+        ASSERT_GE(pair[0], 1); ASSERT_LE(std::size_t(pair[0]), d.masters.size());
+        ASSERT_GE(pair[1], 1); ASSERT_LE(std::size_t(pair[1]), native.selected.size());
+        ASSERT_NE(last_master[pair[1]-1], pair[0]);
+        last_master[pair[1]-1] = pair[0];
+        ++counts[pair[1]-1];
+    }
+    std::size_t matched = 0, outside = 0, singular = 0;
+    double smallest = std::numeric_limits<double>::max(), largest = 0;
+    for (std::size_t i = 0; i < native.selected.size(); ++i) {
+        const auto selected = native.selected[i];
+        if (!selected) continue;
+        ++matched;
+        ASSERT_GT(counts[i], 0u);
+        ASSERT_GT(selected, 0); ASSERT_LE(std::size_t(selected), d.masters.size());
+        const auto& m = d.masters[selected-1];
+        ts::WorkingSearchInput input;
+        input.working_length_to_m = d.working_length_to_m;
+        input.master_thickness = m.projection_thickness;
+        input.topology = m.family == SearchShellFamily::Q4 ?
+            ts::MasterTopology::Quad : ts::MasterTopology::TriangleRepeatedThird;
+        for (unsigned j = 0; j < 5; ++j) {
+            const auto& p = d.working_positions[j == 4 ? d.secondary_working_nodes[i] : m.working_nodes[j]];
+            const ts::Vec3 point{p[0],p[1],p[2]};
+            if (j == 4) input.geometry.secondary_position = point;
+            else input.geometry.master_position[j] = point;
+        }
+        ts::CandidateProjection projected;
+        ASSERT_EQ(ts::ProjectCandidate(input, projected), ts::Status::Success);
+        ASSERT_TRUE(projected.admissible);
+        tied_search_test::NativeChoice independent;
+        const auto native_projection = tied_search_test::Native(input, selected, independent);
+        tied_search_test::Compare(projected, native_projection);
+        ASSERT_FALSE(HasFailure()) << i;
+        EXPECT_DOUBLE_EQ(independent.st[0], native.st[i][0]);
+        EXPECT_DOUBLE_EQ(independent.st[1], native.st[i][1]);
+        EXPECT_DOUBLE_EQ(independent.distance, native.distance[i]);
+        outside += projected.outside_warning;
+        smallest = std::min(smallest, projected.gap_m);
+        largest = std::max(largest, projected.gap_m);
+        ts::PatchInput patch_input = input.geometry;
+        for (auto& p : patch_input.master_position) p = tl::math::fixed3::Scale(p, d.working_length_to_m);
+        patch_input.secondary_position = tl::math::fixed3::Scale(patch_input.secondary_position, d.working_length_to_m);
+        ts::Patch patch;
+        singular += ts::PreparePatch(patch_input, patch) != ts::Status::Success;
+    }
+    EXPECT_GT(matched, 0u);
+    std::cout << "Original native bucket pairs " << native.pairs.size()
+              << "; cells " << native.cells[0] << ',' << native.cells[1] << ',' << native.cells[2]
+              << "; matched " << matched << "; unmatched " << native.selected.size()-matched
+              << "; outside " << outside << "; selected force patches rejected " << singular
+              << "; gap_m " << smallest << ',' << largest << '\n';
+    RecordProperty("native_pairs", std::to_string(native.pairs.size()));
+    RecordProperty("native_matched", std::to_string(matched));
+    RecordProperty("native_unmatched", std::to_string(native.selected.size()-matched));
+    RecordProperty("native_selected_force_patch_rejections", std::to_string(singular));
+}
+#endif
 } // namespace crash::modelio::tied_shell::test

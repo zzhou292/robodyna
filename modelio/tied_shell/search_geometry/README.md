@@ -95,3 +95,13 @@ packing/canonical ownership and passes complete-source failure/retry. Final
 slave-to-master mapping and original constraint classification remain separate
 gates. Shared raw-source materialization also preserves all17 prior declaration
 and packing functions (`tied-evidence-reuse-{declaration,packing}-tests-1`).
+
+Optional `ROBO_DYNA_TIED_SEARCH_GEOMETRY_BUCKET=ON` reuses the TL independent
+native bucket oracle and the existing ActualGeometry fixture. All12 functions
+pass in `tied-bucket-source-root-tests-1`. Original native buckets25/10/8 produce
+31,104 candidate pairs; all11,165 secondary nodes match, with no outside flags
+or rejected selected force patches. The test-only `tests/BucketOracle` helper
+retains complete source-ordered choices and actual native pair enumeration for
+the production GPU driver's independent comparison. It supplies no candidate
+list or selected mapping to the native routine. This result remains explicitly
+unfinalized and unclassified; no connected owner or trajectory is claimed.
