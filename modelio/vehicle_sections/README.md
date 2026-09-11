@@ -50,3 +50,9 @@ actual-source acceptance evidence. For the actual owning test target
 the same prefix. Run `ctest --test-dir <build> -R '^vehicle_section_' --output-on-failure`.
 The actual fixture tests validate all original rows, independent raw-card numerical
 mutations, source/disposition rejection, byte caps and clean retry. No GPU is used.
+
+Root qualification passes two small field functions and all four original-source
+functions with zero failures/skips in `vehicle-section-resolution-root-functions-1`.
+The owning main build is `vehicle-section-resolution-root-1`; configure/build/test
+guard reports use the same prefix. Thirty focused Python reader/source functions
+also pass in the author lane. Original output2 is the authenticated fixture above.

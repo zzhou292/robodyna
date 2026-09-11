@@ -54,6 +54,16 @@ reference geometry or native M/J producer. Actual success/rejection counts for
 this extended scope require the new owning source gate; declaration resolution
 alone is insufficient.
 
+The owning resolved-source gate now reports **326082 successes, zero native
+rejections**: 305290 QEPH and 20792 T3, including all 47781 added failure-bearing
+shells. It retains all 23563 unresolved rows. All nine functions pass: three
+small values, three historical original-source, three resolved original-source.
+Historical references and the actual 149/631-shell V3 bindings remain exact;
+the one-byte-short rejection and exact-budget retry pass. Evidence is
+`crash-work/reports/vehicle-resolved-reference-root-functions-1` and the
+corresponding `vehicle-resolved-reference-root-{configure,build,tests}-1` guards.
+There is still no owner, global coefficient sum or vehicle force integration.
+
 ## Memory admission
 
 `ForecastReferences` validates explicit count and byte limits before allocating
