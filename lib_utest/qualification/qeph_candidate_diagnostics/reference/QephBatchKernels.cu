@@ -1,6 +1,5 @@
 #include "QephBatchDiagnostics.h"
 #include "mapped/Result.h"
-#include "mapped/CandidateDiagnostics.h"
 #include "QephLayeredJ2.h"
 #include "QephBatchFailureSection.h"
 #include "QephBatchStartup.h"
@@ -138,35 +137,12 @@ __global__ void FinalizeCandidate(Storage* storage,const Slab* accepted,const Sl
   if(!Measure(s.model,*accepted,*trial,v,s.control,s.model.mapped?mixed->law:nullptr)) { s.control.status=BatchStatus::NonfiniteResult; return; }
   s.control.diagnostics.valid=true;
 }
-__global__ void PrepareMappedDiagnostics(Storage* storage,const Slab* trial,NodalPreparedView view,
-    const shell_batch_plasticity_detail::MixedDeviceStorage* mixed) {
-  auto& s=*storage;
-  const auto first=blockIdx.x*blockDim.x+threadIdx.x;
-  const auto stride=gridDim.x*blockDim.x;
-  const auto* roles=mixed?mixed->law:nullptr;
-  for(std::size_t parent=first;parent<s.model.config.element_count;parent+=stride)
-    mapped::PrepareDiagnosticParent(s.model,trial->element[parent],s.candidate_status[parent],
-        roles,parent,view,s.assembly.parent[parent]);
-  for(std::size_t node=first;node<s.model.config.owner.node_count;node+=stride)
-    mapped::PrepareDiagnosticNode(s.model,view,node,s.assembly.node[node]);
-}
-__global__ void FinalizeMappedDiagnostics(Storage* storage,const Slab* accepted,const Slab* trial,
-    NodalPreparedView view,BatchDiagnostics identity,
-    const shell_batch_plasticity_detail::MixedDeviceStorage* mixed) {
-  mapped::FinalizeDiagnostics(*storage,*accepted,*trial,view,identity,mixed?mixed->law:nullptr,storage->control);
-}
 }
 void LaunchAssembly(Storage* s,const Slab* a,NodalAssemblyView v,bool initial) { Assemble<<<1,1,0,v.stream>>>(s,a,v,initial); }
-void LaunchMappedCandidateDiagnostics(Storage* s,const Slab* a,const Slab* b,NodalPreparedView view,
-    BatchDiagnostics identity,const shell_batch_plasticity_detail::MixedDeviceStorage* mixed) {
-  PrepareMappedDiagnostics<<<256,128,0,view.stream>>>(s,b,view,mixed);
-  if(cudaPeekAtLastError()!=cudaSuccess) return;
-  FinalizeMappedDiagnostics<<<1,1,0,view.stream>>>(s,a,b,view,identity,mixed);
-}
 void LaunchCandidate(Storage* s,const Slab* a,Slab* b,NodalPreparedView v,BatchDiagnostics d,
     shell_batch_plasticity_detail::DeviceStorage* plasticity,unsigned accepted_slab,std::size_t element_count,
     shell_batch_plasticity_detail::MixedDeviceStorage* mixed,
-    shell_batch_plasticity_detail::FailureDeviceStorage* failure,bool mapped) {
+    shell_batch_plasticity_detail::FailureDeviceStorage* failure) {
   // The private caller supplies its immutable startup-admitted active count,
   // never a device-header dereference or a new independent capacity setting.
   constexpr unsigned threads=64;
@@ -176,8 +152,7 @@ void LaunchCandidate(Storage* s,const Slab* a,Slab* b,NodalPreparedView v,BatchD
   // parent slots after a rejected launch. Stream execution errors are checked
   // by the existing control readback/synchronization before any publication.
   if(cudaPeekAtLastError()!=cudaSuccess) return;
-  if(mapped) LaunchMappedCandidateDiagnostics(s,a,b,v,d,mixed);
-  else FinalizeCandidate<<<1,1,0,v.stream>>>(s,a,b,v,d,mixed);
+  FinalizeCandidate<<<1,1,0,v.stream>>>(s,a,b,v,d,mixed);
 }
 void LaunchFailure(NodalAssemblyView v) { MarkFailure<<<1,1,0,v.stream>>>(v); }
 } // namespace tl::fea::qeph::batch_detail

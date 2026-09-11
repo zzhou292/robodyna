@@ -6,9 +6,26 @@
 namespace tl::fea::qeph::batch_detail {
 using namespace tl::fea::shell_batch_fields;
 
-TL_QEPH_HD inline bool MeasureParents(const Model& model,const Slab& base,const Slab& next,
-    const NodalPreparedView& view,Control& out,const ShellSectionLaw* roles=nullptr) {
+// Actual global shared masses/J and one owner velocity per node. Physical and
+// added scalar partitions are explicitly isotropic (including drilling).
+TL_QEPH_HD inline bool Measure(const Model& model,const Slab& base,const Slab& next,
+                              const NodalPreparedView& view,Control& out,const ShellSectionLaw* roles=nullptr) {
   auto& d=out.diagnostics;
+  if(d.kinetic_available==model.joined) return false;
+  for(unsigned n=0;n<model.config.owner.node_count;++n) {
+    const auto v=ReadVector(view.kinematics.velocity_xyz,n),w=ReadVector(view.kinematics.angular_velocity_xyz,n);
+    if(d.kinetic_available) {
+      const double vv=Dot(v,v),ww=Dot(w,w);
+      d.kinetic_translation+=.5*model.mass[n]*vv; d.kinetic_rotation+=.5*model.inertia[n]*ww;
+      d.kinetic_physical_isotropic+=.5*model.physical[n]*ww; d.kinetic_added_isotropic+=.5*model.added[n]*ww;
+    }
+    const auto dx=Difference(ReadVector(view.kinematics.position_xyz,n),model.initial_position[n]);
+    const double length=::hypot(::hypot(dx.x,dx.y),dx.z);
+    if(!tl::math::Finite(length)) return false;
+    d.maximum_displacement=::fmax(d.maximum_displacement,length);
+    const auto* q=view.kinematics.orientation_wxyz+4*n;
+    if(!tl::math::UnitQuaternion({q[0],q[1],q[2],q[3]})) return false;
+  }
   unsigned material_parent=0;
   for(unsigned e=0;e<model.config.element_count;++e) {
     if(roles&&roles[e]==ShellSectionLaw::RigidSkin) continue;
@@ -38,27 +55,5 @@ TL_QEPH_HD inline bool MeasureParents(const Model& model,const Slab& base,const 
     d.internal_kick_work,d.internal_drift_work};
   for(double value:finite) if(!tl::math::Finite(value)) return false;
   return true;
-}
-// Actual global shared masses/J and one owner velocity per node. Physical and
-// added scalar partitions are explicitly isotropic (including drilling).
-TL_QEPH_HD inline bool Measure(const Model& model,const Slab& base,const Slab& next,
-                              const NodalPreparedView& view,Control& out,const ShellSectionLaw* roles=nullptr) {
-  auto& d=out.diagnostics;
-  if(d.kinetic_available==model.joined) return false;
-  for(unsigned n=0;n<model.config.owner.node_count;++n) {
-    const auto v=ReadVector(view.kinematics.velocity_xyz,n),w=ReadVector(view.kinematics.angular_velocity_xyz,n);
-    if(d.kinetic_available) {
-      const double vv=Dot(v,v),ww=Dot(w,w);
-      d.kinetic_translation+=.5*model.mass[n]*vv; d.kinetic_rotation+=.5*model.inertia[n]*ww;
-      d.kinetic_physical_isotropic+=.5*model.physical[n]*ww; d.kinetic_added_isotropic+=.5*model.added[n]*ww;
-    }
-    const auto dx=Difference(ReadVector(view.kinematics.position_xyz,n),model.initial_position[n]);
-    const double length=::hypot(::hypot(dx.x,dx.y),dx.z);
-    if(!tl::math::Finite(length)) return false;
-    d.maximum_displacement=::fmax(d.maximum_displacement,length);
-    const auto* q=view.kinematics.orientation_wxyz+4*n;
-    if(!tl::math::UnitQuaternion({q[0],q[1],q[2],q[3]})) return false;
-  }
-  return MeasureParents(model,base,next,view,out,roles);
 }
 } // namespace tl::fea::qeph::batch_detail

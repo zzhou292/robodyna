@@ -140,7 +140,7 @@ BatchReport QephBatch::EvaluateCandidateImpl(FENodalState* owner,const NodalTria
   batch_detail::LaunchCandidate(s.storage,s.accepted,s.trial,v,d,
       s.plasticity?s.plasticity->device():nullptr,s.AcceptedSlabIndex(),s.config.element_count,
       s.plasticity?s.plasticity->mixed_device():nullptr,
-      s.plasticity?s.plasticity->failure_device():nullptr);
+      s.plasticity?s.plasticity->failure_device():nullptr,s.physical.has_value());
   report=s.ReadControl(); if(report.status!=BatchStatus::Success) return report;
   s.candidate_diagnostics=s.control.diagnostics; s.candidate_view=v; s.pending=true;
   *output=s.candidate_diagnostics; return {BatchStatus::Success,"OK"};
