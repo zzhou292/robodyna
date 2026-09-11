@@ -30,7 +30,7 @@ TEST(VehicleShellExecutionOriginal, CompleteMappedContactSurfaceKeepsEveryFamily
         }
     }
     EXPECT_EQ(q,324094u);EXPECT_EQ(t,21301u);EXPECT_EQ(b,4250u);EXPECT_EQ(skin,5102u);
-    std::vector<std::size_t> expected(map.mapping().data,map.mapping().data+map.mapping().count);
+    std::vector<std::size_t> expected(map.mapping().begin(),map.mapping().end());
     std::sort(expected.begin(),expected.end());
     for(std::size_t n=0;n<expected.size();++n)EXPECT_EQ(weights.node(n).node,expected[n]);
     RecordProperty("contact_parents",std::to_string(weights.parent_count()));
