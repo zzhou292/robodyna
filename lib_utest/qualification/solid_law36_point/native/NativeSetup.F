@@ -49,6 +49,7 @@
 #include "implicit_f.inc"
 #include "param_c.inc"
 #include "com01_c.inc"
+#include "com04_c.inc"
 #include "impl1_c.inc"
       NPROPMI=13
       NUMMAT=1
