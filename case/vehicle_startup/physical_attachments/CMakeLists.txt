@@ -17,7 +17,9 @@ if(NOT sha_length EQUAL 64)
   message(FATAL_ERROR "Physical attachment checks require glass SHA256")
 endif()
 add_executable(robo_dyna_vehicle_physical_attachments_check tests/Source.cpp
-  tests/OriginalAttachmentTest.cpp tests/RejectionTest.cpp)
+  tests/OriginalAttachmentTest.cpp tests/RejectionTest.cpp
+  "${CMAKE_CURRENT_LIST_DIR}/../../vehicle_runtime/SourceRoles.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/../../vehicle_runtime/tests/EndpointRoleTest.cpp")
 target_link_libraries(robo_dyna_vehicle_physical_attachments_check PRIVATE
   robo_dyna_vehicle_physical_attachments GTest::gtest_main)
 target_compile_options(robo_dyna_vehicle_physical_attachments_check PRIVATE -fno-fast-math -ffp-contract=off)
