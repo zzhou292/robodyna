@@ -21,9 +21,7 @@ VehicleWallSetup VehicleWallSetup::Prepare(const vehicle_runtime::Execution& e,c
         next->placement.declared_world_envelope,settings.exposed_clearance_m,settings.wall_binding_id,&next->original_coverage);
     next->coverage_report=next->original_coverage_report;
     next->coverage=next->original_coverage;
-    output::Require(next->coverage_report.status==tlfea::contact::PlanarContactStatus::Ok ||
-        next->coverage_report.status==tlfea::contact::PlanarContactStatus::UnsupportedGeometry,
-        next->coverage_report.message);
+    CheckOriginalCoverage(next->original_coverage_report,settings.mesh_profile);
     if (settings.mesh_profile==WallMeshProfile::EnvelopeRectangleV1) {
         next->generated=EnvelopeWall::Prepare(next->placement,settings);
         next->coverage_report=next->geometry.CheckWallCoverage(next->generated->geometry(),

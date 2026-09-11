@@ -2,6 +2,12 @@
 #include "output/ArtifactIO.h"
 namespace crash::cases::vehicle_wall {
 namespace c = tlfea::contact;
+void CheckOriginalCoverage(const c::PlanarContactReport& report,WallMeshProfile profile) {
+    const bool observed_crossing=profile==WallMeshProfile::EnvelopeRectangleV1 &&
+        report.status==c::PlanarContactStatus::AmbiguousBoundary;
+    output::Require(report.status==c::PlanarContactStatus::Ok ||
+        report.status==c::PlanarContactStatus::UnsupportedGeometry || observed_crossing,report.message);
+}
 c::PlanarWallView EnvelopeWall::view() const noexcept {
     return {vertices_.data(),4,triangles_.data(),2};
 }

@@ -2,6 +2,9 @@
 #include "Settings.h"
 #include <array>
 namespace crash::cases::vehicle_wall {
+// A generated profile may retain a valid donor mesh whose footprint crosses
+// the requested envelope. It still must qualify its own selected coverage.
+void CheckOriginalCoverage(const tlfea::contact::PlanarContactReport&,WallMeshProfile);
 // A distinct generated mesh, never a transformed original-source wall. Its
 // high-bit feature namespace contains no imported source IDs.
 class EnvelopeWall {

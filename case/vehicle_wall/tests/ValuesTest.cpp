@@ -65,6 +65,31 @@ TEST(VehicleWallValues, InvalidSettingsAndLateOverflowPreserveExistingMesh) {
     EXPECT_EQ(mesh.view().vertices[3].position.y,before.y);
     EXPECT_EQ(mesh.view().vertices[3].position.z,before.z);
 }
+TEST(VehicleWallValues, CrossingDonorFootprintDoesNotAuthorizeOrBlockSelectedGeneratedCoverage) {
+    Settings original_settings;
+    const auto original=EnvelopeWall::Prepare(Place({{{0,-1,0},{2,1,1}}},original_settings),original_settings);
+    auto loaded=original_settings;
+    loaded.transverse_margin_m=.25;
+    const auto placement=Place({{{0,0,.25},{2,1,.75}}},loaded);
+    c::PlanarWallBoxCoverage donor_coverage;
+    const auto donor=c::CheckPlanarWallBox(original.geometry(),placement.projected_wall_box,
+        loaded.exposed_clearance_m,loaded.wall_binding_id,c::PlanarWallBoxMode::ConservativeExpansion,&donor_coverage);
+    ASSERT_EQ(donor.status,c::PlanarContactStatus::AmbiguousBoundary);
+    EXPECT_FALSE(donor_coverage.covered);
+    EXPECT_THROW(CheckOriginalCoverage(donor,WallMeshProfile::PlacedOriginal),std::runtime_error);
+    ASSERT_NO_THROW(CheckOriginalCoverage(donor,WallMeshProfile::EnvelopeRectangleV1));
+    const auto selected=EnvelopeWall::Prepare(placement,loaded);
+    c::PlanarWallBoxCoverage selected_coverage;
+    const auto checked=c::CheckPlanarWallBox(selected.geometry(),placement.projected_wall_box,
+        loaded.exposed_clearance_m,loaded.wall_binding_id,c::PlanarWallBoxMode::ConservativeExpansion,&selected_coverage);
+    EXPECT_EQ(checked.status,c::PlanarContactStatus::Ok);
+    EXPECT_TRUE(selected_coverage.covered);
+    for(auto bad:{c::PlanarContactStatus::InvalidInput,c::PlanarContactStatus::ResourceLimit,
+                 c::PlanarContactStatus::UnsupportedMotion,c::PlanarContactStatus::NotInitialized}) {
+        EXPECT_THROW(CheckOriginalCoverage({bad,"invalid donor"},WallMeshProfile::EnvelopeRectangleV1),std::runtime_error);
+    }
+    EXPECT_EQ(donor.status,c::PlanarContactStatus::AmbiguousBoundary);
+}
 TEST(VehicleWallValues, CompleteBudgetChargesRetainedOnceAndMaximumScratchWithExactRetry) {
     vehicle_dynamics::Forecast dynamics;
     dynamics.startup.retained_source_upper_bound=1000;

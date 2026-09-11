@@ -106,3 +106,12 @@ GLASS_SHA256,TYPE13_DECLARATION}` arguments as the original runtime gate, plus
 setup test's create-only mesh/receipt export. The startup gate checks actual
 initial owner identity, exact contact payload, short-budget rejection/retry and
 unchanged accepted stamp. Neither test advances a loaded interval.
+
+The loaded 0.25 m envelope can cross an exposed edge of the original donor wall.
+That `AmbiguousBoundary` observation is retained for the generated profile while
+its selected mesh still must pass complete coverage independently. The original
+mesh profile and invalid/numerical/resource rejections retain their prior
+admission. The narrow regression uses an actual crossing finite footprint and
+the unchanged generated coverage helper; no tolerance or source geometry changes.
+Author evidence: `loaded-wall-footprint-author-1` (10 host functions and setup
+production syntax); full original loaded recurrence remains root-owned.
