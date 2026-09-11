@@ -104,3 +104,10 @@ The initial Clang CUDA syntax attempt failed on the installed Clang 14 C++ heade
 search (`cmath` unavailable); the failure is retained as
 `physical-wall-cuda-syntax-1`. No native, CUDA or original-source run was made in
 the one-CPU/512-MiB author lane. Root owns those remaining gates.
+
+Root's first NVCC build passed, then all three CUDA fixtures stopped at the
+second Q4 source reference: the reused reference was already prepared. The
+follow-up resets that bounded value before each parent's single-use initializer.
+The unchanged three-Q4 fixture covers the full loop and the late altered-T3
+identity rejection. `physical-wall-tests-1` preserves the failing runtime evidence;
+no force, area arithmetic, tolerance or legacy initializer was changed.

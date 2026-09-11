@@ -58,6 +58,9 @@ NodalWallDeviceReport NodalWallMappedContact::Impl::PrepareSources(const NodalWa
       parent.feature_id=parent.parent_element_id=id;
       const auto& nodes=is_qbat?binding.qbat_nodes(local):binding.qeph_nodes(local);
       for(unsigned l=0;l<4;++l) parent.nodes[l]=physical.mapping()->owner_index(nodes[l]);
+      // Initialize is single-use; reset this fixed-capacity value before the
+      // next source parent while reusing the same bounded stack storage.
+      quad=Q4ParametricReference{};
       if(quad.Initialize(position,&parent,1).status!=Q4ParametricStatus::Ok)
         return {Code::GeometryFailure,"Actual Q4 reference contact measure rejected",UINT32_MAX,static_cast<std::uint32_t>(p)};
       input.q4=&quad;
