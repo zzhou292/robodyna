@@ -11,7 +11,7 @@ inline ShellPlasticityBindingReport Error(Status status,const char* message,
 inline bool Same(double a,double b) noexcept { return std::memcmp(&a,&b,sizeof a)==0; }
 inline bool Same(const material::TabulatedShellPlasticityRate& a,
                  const material::TabulatedShellPlasticityRate& b) noexcept {
-  return a.enabled==b.enabled&&Same(a.cowper_symonds_c_per_s,b.cowper_symonds_c_per_s)&&
+  return a.enabled==b.enabled&&a.policy==b.policy&&Same(a.cowper_symonds_c_per_s,b.cowper_symonds_c_per_s)&&
     Same(a.cowper_symonds_p,b.cowper_symonds_p)&&Same(a.cutoff_hz,b.cutoff_hz);
 }
 template<class Range,class Id>

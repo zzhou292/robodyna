@@ -24,7 +24,11 @@ Fortran entry point or second time integrator.
 The common branch is `MFUNC=1`, `CA=CB=0`, `YSCALE=1`, `FISOKIN=0`,
 `OFF=1`, `INLOC=0`, with failure/tension limits inactive. The default has `CC=0`;
 all disabled rate declarations must have zero C/P/cutoff values. Enabling rate
-selects runtime `VFLAG=2, ISRATE=1` and requires explicit positive C, P and cutoff.
+selects runtime `VFLAG=2, ISRATE=1`; the default `Legacy` policy requires
+explicit positive C, P and cutoff. The separately selected `FilteredZeroC`
+policy requires enabled=true, C=0, resolved P=1 and a positive cutoff. It
+advances the same filter history while skipping strengthening exactly. It does
+not reinterpret disabled declarations.
 It prepares `CC1=1/C`, `CP1=1/P`, and `PM9=2*pi*cutoff` in donor order. Every
 point updates its own accepted UVAR1 by
 `r = alpha*EPSD_PG + (1-alpha)*old_r`, `alpha=min(1,PM9*dt)`, then multiplies
@@ -126,3 +130,8 @@ rate-off control. Its [qualification README](../../lib_utest/qualification/shell
 separates source evidence, host checks and pending native/CUDA execution. This
 policy does not opt existing source adapters or archives into failure-aware
 resident mechanics.
+
+The [zero-C qualification](../../lib_utest/qualification/shell_filtered_zero_c/README.md)
+adds the pinned starter CC0/CP1/ISRATE1/VP2 branch used by the original glass
+and membrane declarations. This is a material-value capability; source
+admission, TAB1 failure history and section placement remain separate gates.

@@ -20,10 +20,14 @@ struct TabulatedShellPlasticityCurve {
   std::uint32_t count = 0;
 };
 // Explicit LAW44 VP=2, ISRATE=1 branch: filtered shell total strain rate.
+// Legacy keeps the prior positive-C/P or disabled declaration contract.
+enum class ShellPlasticityRatePolicy : std::uint8_t { Legacy, FilteredZeroC };
 // Disabled declarations have zero scalar values; no hidden cutoff default.
+// FilteredZeroC requires enabled=true, C=0, resolved P=1 and positive cutoff.
 struct TabulatedShellPlasticityRate {
   bool enabled = false;
   double cowper_symonds_c_per_s = 0, cowper_symonds_p = 0, cutoff_hz = 0;
+  ShellPlasticityRatePolicy policy = ShellPlasticityRatePolicy::Legacy;
 };
 enum class ShellPlasticityHardeningKind : std::uint8_t { Tabulated, LinearLaw44 };
 // StrictDomain preserves historical admission. NativeLastSegment uses the
@@ -32,7 +36,8 @@ enum class ShellPlasticityCurveContinuation : std::uint8_t {
   StrictDomain, NativeLastSegment
 };
 // Original MAT024 LCSS=0, blank inline points. ETAN is the uniaxial tangent,
-// not the native plastic hardening modulus. Only positive-C/P VP2 is admitted.
+// not the native plastic hardening modulus. Both explicit filtered VP2 policies
+// are admitted; a disabled analytic declaration remains unsupported.
 struct Law44LinearHardening {
   double initial_yield_pa = 0, tangent_modulus_pa = 0;
 };

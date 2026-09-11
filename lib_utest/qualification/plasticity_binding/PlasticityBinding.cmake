@@ -3,7 +3,8 @@ include("${plasticity_binding_tl_root}/lib_src/elements/ShellBatchPlasticityBind
 add_executable(shell_plasticity_binding_check "${CMAKE_CURRENT_LIST_DIR}/PlasticityBindingTest.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/AnalyticBindingTest.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/SectionBindingTest.cpp"
-  "${CMAKE_CURRENT_LIST_DIR}/ContinuationBindingTest.cpp")
+  "${CMAKE_CURRENT_LIST_DIR}/ContinuationBindingTest.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/ZeroCRateBindingTest.cpp")
 target_include_directories(shell_plasticity_binding_check PRIVATE "${plasticity_binding_tl_root}")
 target_link_libraries(shell_plasticity_binding_check PRIVATE tl_shell_batch_plasticity_binding GTest::gtest_main)
 target_compile_options(shell_plasticity_binding_check PRIVATE -fno-fast-math -ffp-contract=off)

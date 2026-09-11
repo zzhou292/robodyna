@@ -6,7 +6,7 @@
       MODULE LAW44_POINT_BRIDGE_MOD
       CONTAINS
       SUBROUTINE LAW44_POINT_PACKET(MFUNC,A,B,NPTS,CURVE,E,NU,RHO,GS,
-     . BASE,DEPS,RATE,LAYER_THICKNESS,INITIAL_THICKNESS,VALUES,PARENT_OFF,NATIVE_TIME)
+     . BASE,DEPS,RATE,LAYER_THICKNESS,INITIAL_THICKNESS,VALUES,PARENT_OFF,NATIVE_TIME,ISRATE_OVERRIDE)
       USE ISO_C_BINDING, ONLY: C_DOUBLE,C_INT
 #include "implicit_f.inc"
       INTEGER(C_INT),VALUE :: MFUNC,NPTS
@@ -14,6 +14,7 @@
       REAL(C_DOUBLE),INTENT(IN) :: CURVE(2,NPTS+1),BASE(6),DEPS(5),RATE(5)
       REAL(C_DOUBLE),INTENT(OUT) :: VALUES(13)
       REAL(C_DOUBLE),OPTIONAL,INTENT(IN) :: PARENT_OFF,NATIVE_TIME
+      INTEGER(C_INT),OPTIONAL,INTENT(IN) :: ISRATE_OVERRIDE
       INTEGER KFUNC(1),NPF(2),VARTMP(1,1)
       MY_REAL UPARAM(24),ZERO_V(1),RHO_V(1),GS_V(1),THKLY(1),RATE_V(1),
      . OFF(1),LOFF(1),ETSE(1),THK(1),PLA(1),UVAR(1,1),SIGP(1,3),
@@ -57,6 +58,9 @@
         UPARAM(12)=ONE/RATE(2)
         UPARAM(13)=ONE
       ENDIF
+! A separate explicit starter ISRATE permits zero C with filtering. Existing
+! callers omit this argument and keep their original packet/default behavior.
+      IF(PRESENT(ISRATE_OVERRIDE)) UPARAM(13)=REAL(ISRATE_OVERRIDE,C_DOUBLE)
 ! FISOKIN=0. The default RATE(1)=0 preserves the original rate-off reference.
 ! NPF reserves a leading curve pair, matching native VINTER pointer arithmetic.
       KFUNC=1

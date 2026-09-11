@@ -78,7 +78,7 @@ bool HostStorage::SameMaterialScope(const HostStorage& b) const noexcept {
   if(collection_||b.collection_)
     return collection_&&b.collection_&&collection_->SameScope(*b.collection_);
   if(material_id_!=b.material_id_||curve_id_!=b.curve_id_||curve_count_!=b.curve_count_||
-     !Same(material_,b.material_)||rate_.enabled!=b.rate_.enabled||
+     !Same(material_,b.material_)||rate_.enabled!=b.rate_.enabled||rate_.policy!=b.rate_.policy||
      !Same(rate_.cowper_symonds_c_per_s,b.rate_.cowper_symonds_c_per_s)||
      !Same(rate_.cowper_symonds_p,b.rate_.cowper_symonds_p)||
      !Same(rate_.cutoff_hz,b.rate_.cutoff_hz)) return false;
