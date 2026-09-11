@@ -6,3 +6,9 @@ cc_library(
     hdrs = ["ShellConstantPlasticFailure.h"],
     deps = ["//lib_src/math:quaternion"],
 )
+
+cc_library(
+    name = "shell_tab1_constant_failure",
+    hdrs = ["ShellTab1ConstantFailure.h"],
+    deps = ["//lib_src/math:quaternion"],
+)

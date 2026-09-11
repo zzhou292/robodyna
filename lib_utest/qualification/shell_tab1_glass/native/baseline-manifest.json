@@ -1,0 +1,29 @@
+{
+  "scope": "Frozen authored wrapper parity only, not a new native physics donor",
+  "harnesses": [
+    {
+      "path": "baseline/NativeCaller.F90",
+      "commit": "910e3460f02972014e7228bf9c11d7d6bf79e198",
+      "source_path": "lib_utest/qualification/shell_layered_failure/native/NativeCaller.F90",
+      "bytes": 4456,
+      "sha256": "75bef1fe4697de5748f0ed7e0ff971dbce681f4bdd557245f0a17a03b84204f0",
+      "prepared": "LegacyCaller.F90"
+    },
+    {
+      "path": "baseline/NativeParent.F",
+      "commit": "910e3460f02972014e7228bf9c11d7d6bf79e198",
+      "source_path": "lib_utest/qualification/shell_layered_failure/native/NativeParent.F",
+      "bytes": 1074,
+      "sha256": "428a99a0d4e2ecbef85b3dc28ec8309277e12927b994c2445015df702a08a8d4",
+      "prepared": "LegacyParent.F"
+    },
+    {
+      "path": "baseline/NativeInterfaces.F90",
+      "commit": "910e3460f02972014e7228bf9c11d7d6bf79e198",
+      "source_path": "lib_utest/qualification/shell_layered_failure/native/NativeInterfaces.F90",
+      "bytes": 1473,
+      "sha256": "6b0e8a26bcd107bd9376f72a5649739036274c9e0ceed7fa8b49ac53e105d9e0",
+      "prepared": "LegacyInterfaces.F90"
+    }
+  ]
+}

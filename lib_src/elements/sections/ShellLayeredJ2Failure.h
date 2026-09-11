@@ -2,13 +2,13 @@
 // Selected local MULAWC / FAIL_SETOFF_C caller, OpenRadioss (C) 2026 Siemens.
 #pragma once
 #include "ShellLayeredJ2Work.h"
+#include "ShellLayeredFailureWork.h"
 #include "lib_src/materials/failure/ShellConstantPlasticFailure.h"
 
 namespace tl::fea::sections {
 using ConstantFailureParameters=tl::material::failure::ConstantPlasticFailureParameters;
 using ConstantFailureHistory=tl::material::failure::ConstantPlasticFailureHistory;
 
-struct ShellFailureForcePoint { double stress[5]{}; };
 struct ShellLayeredJ2FailureHistory {
   ShellLayeredJ2History saved{}; // SIGOFF-masked stress; PLA/rate remain native.
   ConstantFailureHistory failure[3]{};
