@@ -17,6 +17,12 @@ void RunTrajectory(bool rotate) {
       interval.base_time_s = accepted.stamp().time_s;
       const auto expected = Native(material,native,interval);
       ASSERT_EQ(expected.status,0);
+      if (step == 0) {
+        // The selected I_SH=0 branch uses regular derivatives. A swapped
+        // I_SH/ISMSTR call would read excluded zero shear arrays instead.
+        for (unsigned shear = 3; shear < 6; ++shear)
+          EXPECT_GT(std::abs(expected.observation[26+shear]),1.0);
+      }
       law::ForceTrial actual;
       ASSERT_EQ(law::EvaluateForce(reference,accepted,interval,material,actual),s::Status::Success);
       ASSERT_TRUE(Agree(actual,expected));
