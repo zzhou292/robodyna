@@ -1,0 +1,35 @@
+# Complete selected-model free flight
+
+This case adapter advances the existing physical owner and six mapped
+participants. It does not create a solver, second clock or source coefficients.
+Actual accepted Q/T/QBAT activity feeds the existing CIN witness adapter before
+the native tied/rigid step. All material candidates and complete field readback
+finish before the common publication. Discard/retry preserves the accepted
+selection. Step and capture workspace is bounded before factory allocation.
+
+The current profile applies no external force or wall contact and contains no
+TYPE45 contributor. It is a complete-count integration diagnostic for the
+selected physical model, not a connected-vehicle crash. Uniform-motion errors
+are observed from actual computed positions, velocities, orientations and spins
+against original coordinates; the adapter never sets prescribed trajectories.
+
+The public preparation/commit/discard phases allow the caller to inspect the
+candidate before accepting it. A future wall/joint case must extend admission
+and participant integration explicitly. Accepted material fields are already
+owned by TL; the separate capture module will serialize their real histories.
+
+Qualification passes two small motion-observation checks, a complete original
+forecast and four actual free-flight intervals including an unpublished trial
+followed by exact retry. Reports are `vehicle-physical-step-values-tests-2`
+and `vehicle-physical-free-flight-tests-1`. Complete host workspace is
+77,847,455 B; inclusive host bound 7,364,211,510 B. Actual sampled RSS is
+3,423,043,584 B and device growth 4,523,556,864 B under the 6 GiB growth guard.
+The preserved first forecast failure came from its CUDA search running without
+device access; the second owning forecast passes.
+
+At the reserved 1e-8 s interval, four accepted intervals end at 4e-8 s.
+Maximum position error is 1.11e-16 m and velocity error 1.94e-11 m/s.
+This short diagnostic is not a visible-motion video. The 170.155 s complete test
+(startup plus five attempts) also establishes that the current serial assembly
+path is not yet practical for a 20 ms full-vehicle run. Physical step selection
+and bounded parallel assembly remain separate required work for that demo.

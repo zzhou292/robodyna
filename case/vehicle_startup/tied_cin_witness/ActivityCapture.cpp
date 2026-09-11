@@ -17,6 +17,15 @@ template<class D> bool SameReceipt(const D& actual,const D& common) {
 }
 TiedCinActivityReport TiedCinWitnessActivity::CaptureAccepted(const tl::fea::FENodalState& owner,
         const tl::fea::ShellBatchPublication& publication,const tl::fea::ShellFormulationParticipants& participants) {
+    return Capture(owner,publication,participants,false);
+}
+TiedCinActivityReport TiedCinWitnessActivity::CaptureAcceptedPhysical(const tl::fea::FENodalState& owner,
+        const tl::fea::ShellBatchPublication& publication,const tl::fea::ShellFormulationParticipants& participants) {
+    return Capture(owner,publication,participants,true);
+}
+TiedCinActivityReport TiedCinWitnessActivity::Capture(const tl::fea::FENodalState& owner,
+        const tl::fea::ShellBatchPublication& publication,const tl::fea::ShellFormulationParticipants& participants,
+        bool physical) {
     auto& state=*impl_;
     if (state.poisoned) return {Status::DeviceFailure,"CIN activity adapter is poisoned"};
     const auto& binding=state.roster.binding().shells();
@@ -29,7 +38,14 @@ TiedCinActivityReport TiedCinWitnessActivity::CaptureAccepted(const tl::fea::FEN
         return {Status::StaleOwner,"Accepted shell participants/inventory do not belong to this owner"};
     const auto stamp=owner.accepted();
     tl::fea::ShellBatchDiagnostics common;
-    const auto copied=publication.CopyAcceptedDiagnostics(stamp,&common);
+    tl::fea::ShellPublicationReport copied;
+    if (physical) {
+        tl::fea::ShellPhysicalDiagnostics complete;
+        copied=publication.CopyAcceptedPhysicalDiagnostics(stamp,&complete);
+        common.qeph=complete.qeph;
+        common.t3=complete.t3;
+        common.qbat=complete.qbat;
+    } else copied=publication.CopyAcceptedDiagnostics(stamp,&common);
     if (copied.status==tl::fea::ShellPublicationStatus::DeviceFailure) {
         state.poisoned=true;
         return {Status::DeviceFailure,"Accepted shell diagnostics are poisoned"};

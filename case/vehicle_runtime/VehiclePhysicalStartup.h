@@ -1,6 +1,7 @@
 #pragma once
 #include "Forecast.h"
 #include <memory>
+namespace crash::cases::vehicle_dynamics { struct ExecutionAccess; }
 namespace crash::cases::vehicle_runtime {
 struct InitialInspection {
     tl::fea::NodalStamp stamp;
@@ -32,6 +33,7 @@ class VehiclePhysicalStartup {
     // returned only after all channels and exact immutable role identities pass.
     InitialInspection InspectInitial();
   private:
+    friend struct vehicle_dynamics::ExecutionAccess;
     struct Storage;
     explicit VehiclePhysicalStartup(std::unique_ptr<Storage>);
     std::unique_ptr<Storage> storage_;

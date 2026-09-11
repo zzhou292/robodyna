@@ -30,6 +30,8 @@ class TiedCinWitnessActivity {
     TiedCinWitnessActivity& operator=(const TiedCinWitnessActivity&) = delete;
     TiedCinActivityReport CaptureAccepted(const tl::fea::FENodalState&,const tl::fea::ShellBatchPublication&,
                                          const tl::fea::ShellFormulationParticipants&);
+    TiedCinActivityReport CaptureAcceptedPhysical(const tl::fea::FENodalState&,
+        const tl::fea::ShellBatchPublication&,const tl::fea::ShellFormulationParticipants&);
     // Requires a previously captured accepted endpoint and the exact CIN
     // source retained by this owner. Any failure discards the attempted nodal
     // assembly; accepted fields/previous snapshot remain unchanged. This only
@@ -41,6 +43,8 @@ class TiedCinWitnessActivity {
     native_search::ClassificationView<std::uint8_t> accepted_flags() const noexcept;
     const TiedCinActivityForecast& forecast() const noexcept;
   private:
+    TiedCinActivityReport Capture(const tl::fea::FENodalState&,const tl::fea::ShellBatchPublication&,
+                                 const tl::fea::ShellFormulationParticipants&,bool physical);
     struct Impl;
     explicit TiedCinWitnessActivity(std::unique_ptr<Impl>);
     std::unique_ptr<Impl> impl_;
