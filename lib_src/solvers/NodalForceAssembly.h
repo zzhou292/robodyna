@@ -48,6 +48,7 @@ template<unsigned Count>
 TL_NODAL_ASSEMBLY_HD inline NodalForceAssemblyStatus AccumulateNodalForces(
     const std::size_t* nodes,const tl::math::Vec3* force,const tl::math::Vec3* couple,
     DeviceNodalForceView view,int sign=1) {
+  static_assert(Count>0&&Count<=4,"Bounded shell and spring force/couple scatter");
   return nodal_force_detail::Accumulate<Count,true>(nodes,force,couple,view,sign);
 }
 // Solids have no rotational contribution. In particular, an absent/zero
