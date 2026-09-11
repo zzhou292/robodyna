@@ -1,5 +1,12 @@
 # Declared node domain and exact shell map
 
+Root qualification (2026-09-11, `7527fbe`, owning dependency correction
+`61e9180`) passes all10 host functions and the owning Bazel targets. The
+full-count synthetic shell map retains318,738,552 B including both producers;
+the524,288-node domain retains25,166,056 B. Root test sampled393,236,480 B RSS
+under2 CPUs/2 GiB. Evidence is `crash-work/reports/nodal-domain-root-tests-1`
+and `qbat-domain-owning-bazel-build-3`; this remains identity/capacity evidence.
+
 `NodalNodeDomain` owns a caller-supplied source instance ID and an ordered table
 of positive, unique source NIDs and finite represented SI coordinates. Distinct
 NIDs may have coincident coordinates. Lookup uses the existing retained

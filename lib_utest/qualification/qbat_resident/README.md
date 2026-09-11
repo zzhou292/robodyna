@@ -1,5 +1,17 @@
 # Complete QBAT resident participant
 
+Root qualification (2026-09-11, production `0dfb926`, fixture corrections
+`8fea40c`, build dependencies `61e9180`) passes all17 new functions: five host,
+two independent native and ten CUDA, including all4,250 original quads plus
+one T3 on three owner intervals. All62 affected old TL/app functions also pass:
+52 shell/failure/mixed, seven combined-mass/connector publication and three
+actual six/seven-part wall cases. Owning QBAT and common-publication Bazel
+targets compile successfully. Evidence prefixes in `crash-work/reports/` are
+`qbat-resident-root-tests-2`, `qbat-affected-{resident,mass,source-wall}-tests-1`
+and `qbat-domain-owning-bazel-build-3`. Failed first attempts remain recorded;
+fixes affect fixtures/package dependencies, not native arithmetic or tolerances.
+This qualifies the resident/common-publication slice, not full-vehicle assembly.
+
 This gate composes the already qualified four-surface-point QBAT recurrence
 with the existing nodal owner and shell publication. It adds no material,
 failure, reference, mass, force, contact or clock equation. The original
