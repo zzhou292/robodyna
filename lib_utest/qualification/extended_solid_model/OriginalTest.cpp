@@ -52,7 +52,11 @@ TEST(ExtendedSolidModelSource, All4063OriginalParentsRetainTypedMaterialsAndExac
     const auto input = rear18_test::original::Input(i);
     s::Input18Law44 parent;
     Require(fe::solid18::law44::InitializeReference(input,parent.reference)==fe::solid18::Status::Success);
-    parent.material = law44_solid_test::Parameters(input.source_part_id==2000392);
+    const bool bar = input.source_part_id == 2000016;
+    Require(bar || input.source_part_id == 2000392);
+    parent.material = law44_solid_test::Parameters(bar);
+    // Authenticated MAT024 cards: PID16 line478 E50000; PID392 line7895 E200000 MPa.
+    Require(Bits(parent.material.material.young_pa, (bar ? 50000.0 : 200000.0)*1e6));
     Collect(parent.reference,unique); rear.push_back(parent);
   }
   tl::material::law90::PreparedMaterial material90;
