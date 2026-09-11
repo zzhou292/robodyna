@@ -33,6 +33,10 @@ void PrepareRows(const DeclarationView& declarations,const Geometry& g,Reference
         ReferenceRow row;row.element_id=g.records.at(6*c);row.part_id=part.part_id;
         row.material_id=part.material_id;row.section_id=part.section_id;
         row.source_line=g.lines.at(c);row.canonical_parent=c;row.part_index=parent.part_index;
+        if (declarations.resolution) {
+            row.role=declarations.resolution->role(parent.part_index);
+            row.rigid_root_index=declarations.resolution->rigid_root_index(parent.part_index);
+        }
         output::Require(row.part_id==g.records.at(6*c+1),"Reference source part association changed");
         const auto* m=declarations.Material(parent.part_index);
         const auto* s=declarations.Section(parent.part_index);

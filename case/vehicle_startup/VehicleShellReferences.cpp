@@ -58,8 +58,8 @@ ReferenceForecast Forecast(const detail::DeclarationView& declarations,Reference
     forecast.row_bytes=add(count.parents,sizeof(ReferenceRow));
     forecast.qeph_capacity=std::min(count.q4,declarations.Available());
     forecast.t3_capacity=std::min(count.t3,declarations.Available());
-    if (declarations.resolution && declarations.resolution->resolution_key().profile ==
-        modelio::vehicle::ResolutionProfile::OriginalMidlayerV1) {
+    if (declarations.resolution && declarations.resolution->resolution_key().profile !=
+        modelio::vehicle::ResolutionProfile::Artifact) {
         const auto& native=declarations.resolution->native_counts();
         forecast.qeph_capacity=native.qeph;
         forecast.t3_capacity=native.t3;

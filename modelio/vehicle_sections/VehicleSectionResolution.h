@@ -1,11 +1,14 @@
 #pragma once
 #include "modelio/vehicle_source/VehicleSourcePlan.h"
+#include "modelio/vehicle_source/SourceShellRole.h"
 #include "lib_src/elements/ShellBatchFailureBinding.h"
 #include "lib_src/elements/ShellReferencePlacement.h"
 #include <memory>
 
 namespace crash::modelio::vehicle {
+namespace rigid_part { class RigidPartSource; }
 inline constexpr const char* ResolutionSchema = "robo-dyna.vehicle-section-resolution.v1";
+inline constexpr const char* OriginalRigidProfileName = "original_mat_rigid_shell_parts_v1";
 inline constexpr const char* OriginalMidlayerProfileName = "original_mat024_elform9_nip1_midlayer_v1";
 inline constexpr const char* GlassResolutionSchema = "robo-dyna.vehicle-section-resolution.v2";
 struct ResolutionLimits {
@@ -13,8 +16,8 @@ struct ResolutionLimits {
     std::size_t host_bytes = 512 * 1024 * 1024;
     std::size_t parents = 524288, parts = 1024, tables = 1024, curve_points = 1024;
 };
-enum class SectionDisposition { Existing, ConstantFailure, Unresolved, GlassTab1, Midlayer };
-enum class ResolutionProfile { Artifact, OriginalMidlayerV1 };
+enum class SectionDisposition { Existing, ConstantFailure, Unresolved, GlassTab1, Midlayer, RigidPart };
+enum class ResolutionProfile { Artifact, OriginalMidlayerV1, OriginalRigidPartsV1 };
 struct ResolutionKey {
     assembly::ArtifactIdentity artifact;
     ResolutionProfile profile = ResolutionProfile::Artifact;
@@ -48,8 +51,11 @@ struct ResolutionCounts {
     std::size_t unresolved_parts = 0, unresolved_shells = 0;
     std::size_t glass_parts = 0, glass_shells = 0, placed_glass_shells = 0;
     std::size_t midlayer_parts = 0, midlayer_shells = 0;
+    std::size_t rigid_parts = 0, rigid_shells = 0;
 };
 // Source values only. Retains the historical plan and its shared canonical backing.
+// RigidPart rows expose native reference coefficients with a separate required
+// ownership role; zero unresolved declarations never means runtime admission.
 // Unavailable rows remain in the complete topology index; no partial native binding,
 // node mass, force/history, owner, contact or connected load-path admission exists.
 class VehicleSectionResolution {
@@ -64,6 +70,13 @@ class VehicleSectionResolution {
         ResolutionProfile, ResolutionLimits = {});
     static std::size_t ForecastOriginalMidlayer(const VehicleSectionResolution&,
         ResolutionProfile, ResolutionLimits = {});
+    static VehicleSectionResolution ResolveOriginalRigidParts(const VehicleSectionResolution&,
+        const std::string& authenticated_original_member, ResolutionProfile, ResolutionLimits = {});
+    static std::size_t ForecastOriginalRigidParts(const VehicleSectionResolution&,
+        ResolutionProfile, ResolutionLimits = {});
+    const rigid_part::RigidPartSource* rigid_source() const noexcept;
+    SourceShellRole role(std::size_t part_index) const noexcept;
+    std::size_t rigid_root_index(std::size_t part_index) const noexcept;
     VehicleSectionResolution(const VehicleSectionResolution&) noexcept = default;
     VehicleSectionResolution(VehicleSectionResolution&& other) noexcept : data_(other.data_) {}
     VehicleSectionResolution& operator=(const VehicleSectionResolution&) = delete;

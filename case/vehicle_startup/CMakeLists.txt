@@ -9,9 +9,16 @@ option(ROBO_DYNA_VEHICLE_REFERENCE_TESTS "Build native reference host checks" ON
 option(ROBO_DYNA_VEHICLE_REFERENCE_RESOLVED_TESTS "Build resolved full-source reference checks" OFF)
 option(ROBO_DYNA_VEHICLE_REFERENCE_SOURCE_TESTS "Build actual full-source reference checks" OFF)
 option(ROBO_DYNA_VEHICLE_REFERENCE_MIDLAYER_TESTS "Build original midlayer and prior reference parity checks" OFF)
+option(ROBO_DYNA_VEHICLE_REFERENCE_RIGID_TESTS "Build original rigid and all prior reference parity checks" OFF)
 option(ROBO_DYNA_VEHICLE_REFERENCE_GLASS_TESTS "Build original glass reference checks" OFF)
 if(ROBO_DYNA_VEHICLE_REFERENCE_TESTS)
   find_package(GTest REQUIRED)
+  add_executable(robo_dyna_vehicle_rigid_reference_check tests/RigidReferenceTest.cpp)
+  target_link_libraries(robo_dyna_vehicle_rigid_reference_check PRIVATE robo_dyna_vehicle_native_reference GTest::gtest_main)
+  target_compile_options(robo_dyna_vehicle_rigid_reference_check PRIVATE -fno-fast-math -ffp-contract=off)
+  add_test(NAME vehicle_rigid_references COMMAND robo_dyna_vehicle_rigid_reference_check)
+  set_tests_properties(vehicle_rigid_references PROPERTIES TIMEOUT 60 RUN_SERIAL TRUE PROCESSORS 1)
+
   add_executable(robo_dyna_vehicle_reference_value_check tests/ReferenceValueTest.cpp)
   target_link_libraries(robo_dyna_vehicle_reference_value_check PRIVATE robo_dyna_vehicle_native_reference GTest::gtest_main)
   target_compile_options(robo_dyna_vehicle_reference_value_check PRIVATE -fno-fast-math -ffp-contract=off)
@@ -24,7 +31,7 @@ if(ROBO_DYNA_VEHICLE_REFERENCE_TESTS)
 
 endif()
 
-if(ROBO_DYNA_VEHICLE_REFERENCE_GLASS_TESTS OR ROBO_DYNA_VEHICLE_REFERENCE_MIDLAYER_TESTS)
+if(ROBO_DYNA_VEHICLE_REFERENCE_GLASS_TESTS OR ROBO_DYNA_VEHICLE_REFERENCE_MIDLAYER_TESTS OR ROBO_DYNA_VEHICLE_REFERENCE_RIGID_TESTS)
   find_package(GTest REQUIRED)
   find_package(Python3 REQUIRED COMPONENTS Interpreter)
   foreach(name CANONICAL SCOPE DECLARATIONS RESOLUTION GLASS_RESOLUTION)
@@ -47,6 +54,17 @@ if(ROBO_DYNA_VEHICLE_REFERENCE_GLASS_TESTS OR ROBO_DYNA_VEHICLE_REFERENCE_MIDLAY
     "$<TARGET_FILE:robo_dyna_vehicle_glass_reference_check>" "VehicleGlassReference.*")
   set_tests_properties(vehicle_glass_reference PROPERTIES PROCESSORS 1 RUN_SERIAL TRUE TIMEOUT 180
     ENVIRONMENT "ROBO_VEHICLE_DECLARATIONS=${ROBO_DYNA_VEHICLE_DECLARATIONS};ROBO_VEHICLE_RESOLUTION=${ROBO_DYNA_VEHICLE_RESOLUTION};ROBO_VEHICLE_GLASS_RESOLUTION=${ROBO_DYNA_VEHICLE_GLASS_RESOLUTION};ROBO_VEHICLE_GLASS_SHA256=${ROBO_DYNA_VEHICLE_GLASS_SHA256}")
+  if(ROBO_DYNA_VEHICLE_REFERENCE_RIGID_TESTS)
+    add_executable(robo_dyna_vehicle_rigid_reference_source_check tests/RigidReferenceSourceTest.cpp)
+    target_link_libraries(robo_dyna_vehicle_rigid_reference_source_check PRIVATE robo_dyna_vehicle_shell_references GTest::gtest_main)
+    target_compile_options(robo_dyna_vehicle_rigid_reference_source_check PRIVATE -fno-fast-math -ffp-contract=off)
+    add_test(NAME vehicle_rigid_reference_source COMMAND "${Python3_EXECUTABLE}" -B
+      "${CMAKE_CURRENT_LIST_DIR}/../../output/full_shell/static_bundle/tests/actual_source_fixture.py"
+      "${ROBO_DYNA_VEHICLE_CANONICAL}" "${ROBO_DYNA_VEHICLE_SCOPE}"
+      "$<TARGET_FILE:robo_dyna_vehicle_rigid_reference_source_check>" "VehicleRigidReferenceSource.*")
+    set_tests_properties(vehicle_rigid_reference_source PROPERTIES TIMEOUT 240 RUN_SERIAL TRUE PROCESSORS 1
+      ENVIRONMENT "ROBO_VEHICLE_DECLARATIONS=${ROBO_DYNA_VEHICLE_DECLARATIONS};ROBO_VEHICLE_RESOLUTION=${ROBO_DYNA_VEHICLE_RESOLUTION};ROBO_VEHICLE_GLASS_RESOLUTION=${ROBO_DYNA_VEHICLE_GLASS_RESOLUTION};ROBO_VEHICLE_GLASS_SHA256=${ROBO_DYNA_VEHICLE_GLASS_SHA256}")
+  endif()
   if(ROBO_DYNA_VEHICLE_REFERENCE_MIDLAYER_TESTS)
     execute_process(COMMAND "${Python3_EXECUTABLE}" -B
       "${ROBO_DYNA_TL_ROOT}/lib_utest/qualification/qbat/source_fixture/verify_fixture.py"

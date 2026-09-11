@@ -18,7 +18,7 @@ struct DeclarationView {
     }
     std::size_t Available() const noexcept {
         return resolution ? resolution->counts().existing_shells+resolution->counts().failure_shells+
-                            resolution->counts().glass_shells+resolution->counts().midlayer_shells :
+                            resolution->counts().glass_shells+resolution->counts().midlayer_shells+resolution->counts().rigid_shells :
                             source.counts().supported_parents;
     }
     tl::fea::ShellReferencePlacement Placement(std::size_t part) const noexcept {

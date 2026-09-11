@@ -18,7 +18,7 @@ NativeMappingValues MapNativeParents(const std::vector<SectionParentResolution>&
         if (part.status == SectionDisposition::Unresolved) continue;
         output::Require(part.status == SectionDisposition::Existing ||
             part.status == SectionDisposition::ConstantFailure || part.status == SectionDisposition::GlassTab1 ||
-            part.status == SectionDisposition::Midlayer, "Invalid section disposition");
+            part.status == SectionDisposition::Midlayer || part.status == SectionDisposition::RigidPart, "Invalid section disposition");
         const auto& source = original[parent.part_index];
         output::Require(source.part_id && source.material_id && source.section_id,
                         "Missing original native parent identity");

@@ -1,5 +1,6 @@
 #pragma once
 #include "modelio/vehicle_source/VehicleSourcePlan.h"
+#include "modelio/vehicle_source/SourceShellRole.h"
 
 #include "lib_src/elements/qeph/QephData.h"
 #include "lib_src/elements/t3/T3Data.h"
@@ -21,6 +22,8 @@ struct ReferenceRow {
     ReferenceFamily family=ReferenceFamily::None;
     ReferenceStatus status=ReferenceStatus::UnresolvedDeclaration;
     std::size_t reference_index=SIZE_MAX;
+    modelio::vehicle::SourceShellRole role=modelio::vehicle::SourceShellRole::ConstitutiveShell;
+    std::size_t rigid_root_index=SIZE_MAX;
 };
 struct ReferenceCounts {
     std::size_t parents=0, unresolved=0, attempted=0, succeeded=0, rejected=0;

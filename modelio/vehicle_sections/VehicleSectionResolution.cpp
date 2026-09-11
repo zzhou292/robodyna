@@ -36,16 +36,14 @@ const std::vector<SectionParentResolution>& VehicleSectionResolution::parents() 
 const assembly::Material* VehicleSectionResolution::material(std::size_t part) const noexcept { return data_->Material(part); }
 const assembly::Section* VehicleSectionResolution::section(std::size_t part) const noexcept { return data_->Section(part); }
 const tl::fea::ShellPlasticityMaterialInput* VehicleSectionResolution::native_material(std::size_t part) const noexcept {
-    if (!data_->Material(part)) return nullptr;
-    if (data_->base && part != data_->midlayer_part) return &data_->base->native_materials[part];
-    return &data_->native_materials[data_->base ? 0 : part];
+    return data_->NativeMaterial(part);
 }
 const tl::fea::ShellFailureParentInput* VehicleSectionResolution::native_parent(std::size_t parent) const noexcept {
     return parent < data_->Parents().size() && data_->Material(data_->Parents()[parent].part_index) ?
         &data_->native_parents[parent] : nullptr;
 }
 const std::vector<assembly::Curve>& VehicleSectionResolution::failure_curves() const noexcept {
-    return data_->base ? data_->base->declarations.failure.curves : data_->declarations.failure.curves;
+    return data_->FailureCurves();
 }
 const ResolutionKey& VehicleSectionResolution::resolution_key() const noexcept { return data_->key; }
 const NativeFormulationCounts& VehicleSectionResolution::native_counts() const noexcept { return data_->native_counts; }
@@ -53,8 +51,18 @@ const NativeParentMapping* VehicleSectionResolution::native_mapping(std::size_t 
     return parent < data_->mapping.size() ? &data_->mapping[parent] : nullptr;
 }
 tl::fea::ShellSectionFormulation VehicleSectionResolution::section_formulation(std::size_t part) const noexcept {
-    return data_->base && part == data_->midlayer_part ? tl::fea::ShellSectionFormulation::OneThicknessPoint :
-                                                      tl::fea::ShellSectionFormulation::LayeredNip3;
+    return data_->Formulation(part);
+}
+const rigid_part::RigidPartSource* VehicleSectionResolution::rigid_source() const noexcept {
+    return data_->Rigid();
+}
+SourceShellRole VehicleSectionResolution::role(std::size_t part) const noexcept {
+    const auto* rigid=data_->Rigid();
+    return rigid && rigid->body(part) ? SourceShellRole::OriginalRigidPart : SourceShellRole::ConstitutiveShell;
+}
+std::size_t VehicleSectionResolution::rigid_root_index(std::size_t part) const noexcept {
+    const auto* rigid=data_->Rigid();
+    return rigid ? rigid->root_index(part) : SIZE_MAX;
 }
 std::size_t VehicleSectionResolution::startup_budget_bytes() const noexcept { return data_->budget; }
 } // namespace crash::modelio::vehicle
