@@ -55,7 +55,13 @@ packing and ordered rejection. Eight prior field/reference tests also run.
 Three optional original-source tests are authored for the owning gate: complete
 344543 available references, all349645 rows and5102 unresolved rigid rows,
 4250 QBAT plus one T3, prior340292 named-reference parity and exact byte caps.
-Author qualification does not execute these full-source tests.
+Root qualification now passes all19 functions, including those three original
+source tests, in `vehicle-midlayer-root-{source,reference}-tests-1`. Every344543
+available reference succeeds, with zero rejections and5102 rigid rows unresolved.
+Every prior340292 reference agrees. Source/reference forecasts are340672935 /
+599955732 B; the complete reference parity test sampled651325440 B RSS while
+holding old and new results together. Source SI operations and admission caps
+are unchanged. This establishes source/reference composition, not dynamics.
 
 Build field checks from `modelio/vehicle_sections` with
 `ROBO_DYNA_VEHICLE_MIDLAYER_ACTUAL_TESTS=ON` for the two source tests. Build

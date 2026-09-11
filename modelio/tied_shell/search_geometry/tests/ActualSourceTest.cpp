@@ -200,7 +200,9 @@ TEST(TiedSearchGeometryActual, IndependentNativeBucketsRetainEveryOriginalSecond
         ts::Patch patch;
         singular += ts::PreparePatch(patch_input, patch) != ts::Status::Success;
     }
-    EXPECT_GT(matched, 0u);
+    EXPECT_EQ(matched, native.selected.size());
+    EXPECT_EQ(outside, 0u);
+    EXPECT_EQ(singular, 0u);
     std::cout << "Original native bucket pairs " << native.pairs.size()
               << "; cells " << native.cells[0] << ',' << native.cells[1] << ',' << native.cells[2]
               << "; matched " << matched << "; unmatched " << native.selected.size()-matched

@@ -40,6 +40,15 @@ the independent native bucket helper. The native helper never consumes GPU
 candidates. It reuses the existing primitive comparison budget. Root qualification
 must run this test; author host checks do not establish the full GPU result.
 
+Root gate `tied-assessment-root-tests-1` now passes all five host/source functions.
+All11165 selected ranks, per-node exact-box counts and native projections match
+the independent oracle.31104 candidates,0 unmatched,0 outside flags and0 rejected
+selected force patches. Total host forecast276211441 B includes source backing
+and driver reservation; device forecast106955790 B. The complete original CTest
+takes0.96 s and samples334950400 B RSS under2 CPUs/2 GiB. Independent code review
+found no association, lifetime, budgeting or publication blocker. Finalization
+and classification remain pending.
+
 Configure from this directory with `ROBO_DYNA_TL_ROOT`, installed `Chrono_DIR`,
 and `ROBO_DYNA_TIED_ASSESSMENT_CUDA=ON`, plus explicit `ROBO_DYNA_TIED_CANONICAL`
 and `ROBO_DYNA_TIED_SCOPE` (scope10) fixtures. Targets are
