@@ -10,5 +10,6 @@ cc_library(
         "Solid18Mass.h",
         "Solid18Reference.h",
     ],
-    deps = ["//lib_src/math:fixed3", "//lib_src/math:quaternion"],
+    deps = ["//lib_src/math:fixed3", "//lib_src/math:quaternion",
+            "//lib_src/elements/solid_common:brick_frame"],
 )
