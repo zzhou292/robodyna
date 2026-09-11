@@ -39,3 +39,10 @@ packet executes the original LAW42 `PARMAT(1)=GS` to `PM(22)` assignment, retain
 its distinction from printed `MU0=GS/2`. Native execution remains root-owned.
 The RV observation repeats only the complete native spectral decomposition and
 exact RV expression; it never feeds current forces, work or future history.
+
+The first root native recurrence run found cancellation residuals only in ZX
+stress (two observations of the same value): at most 1.397e-9 Pa across 27
+intervals; every other field passed. Stress comparisons retain the 3e-10
+coefficient but scale by the stress tensor/principal norm. Nonstress bounds are
+unchanged. The host gate rejects deliberate changes beyond each field's bound,
+including zero shear, material viscosity, time-step and signed-work channels.

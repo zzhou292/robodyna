@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Values.h"
+#include "NativeComparison.h"
 #include "native/NativeCaller.h"
 #include <gtest/gtest.h>
 #include <array>
@@ -46,7 +47,7 @@ TEST(Law42CallerNative, IndependentMaterialViscosityAndSharedEnergyRecurrence) {
     ASSERT_EQ(actual.size(),native.size());
     for(unsigned k=0;k<native.size();++k) {
       SCOPED_TRACE(k);
-      const double tolerance=3e-10*std::max(std::abs(native[k]),1e-12);
+      const double tolerance=law42_caller_test::NativeTolerance(k,native);
       EXPECT_NEAR(actual[k],native[k],tolerance);
     }
     history=result.history;

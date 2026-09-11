@@ -4,6 +4,7 @@
 #include "lib_src/elements/solid_common/SolidCharacteristicLength.h"
 #include <gtest/gtest.h>
 #include "Values.h"
+#include "NativeComparison.h"
 #include <array>
 #include <cstring>
 #include <limits>
@@ -15,6 +16,24 @@ namespace solid = tl::fea::solid_common;
 
 using law42_caller_test::Values;
 using law42_caller_test::Same;
+
+TEST(Law42Caller, SpectralCancellationBoundRejectsStressAndNonstressPerturbations) {
+  std::array<double,33> expected{};
+  expected[0]=1e6;expected[1]=-2e6;expected[15]=1e6;expected[16]=-2e6;
+  auto candidate=expected;
+  candidate[5]=1.4e-9;candidate[14]=-1.4e-9;
+  EXPECT_TRUE(law42_caller_test::NativeValuesAgree(candidate,expected));
+  for(unsigned field : {0u,5u,14u,16u}) {
+    candidate=expected;
+    candidate[field]+=2*law42_caller_test::NativeTolerance(field,expected);
+    EXPECT_FALSE(law42_caller_test::NativeValuesAgree(candidate,expected));
+  }
+  for(unsigned field : {6u,7u,8u,17u,18u,19u,20u,21u,22u,28u,29u,30u,31u,32u}) {
+    candidate=expected;
+    candidate[field]=2*law42_caller_test::NativeTolerance(field,expected);
+    EXPECT_FALSE(law42_caller_test::NativeValuesAgree(candidate,expected));
+  }
+}
 
 TEST(Law42Caller, TotalStrainRetainsNonsymmetricGradientAndRejectsLateOverflow) {
   const double gradient[9]{.125, .25, -.5, 0, -.25, .125, .5, 0, .25};
