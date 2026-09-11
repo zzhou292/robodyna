@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "NativeOracle.h"
 #include <iomanip>
+#include <iostream>
 
 namespace rear_force_test {
 // Scale only same-dimensional named groups to accommodate cancellation. There
@@ -33,7 +34,26 @@ bool Agree(const law::ForceTrial& actual, const NativeResult& expected) {
     SCOPED_TRACE("engine point "+std::to_string(ip));
     const auto* x = a.next.point.data()+20*ip;
     const auto* y = expected.next.point.data()+20*ip;
-    if (!Range(x,y,6,"point stress") || !Range(x+6,y+6,6,"point strain")) return false;
+    if (!Range(x,y,6,"point stress")) {
+      std::cerr << std::setprecision(17) << "REAR_INPUT_DIAG point=" << ip << '\n';
+      for (unsigned k = 0; k < 6; ++k)
+        std::cerr << "rate[" << k << "]=" << a.observation[38*ip+26+k]
+                  << " / " << expected.observation[38*ip+26+k] << '\n';
+      for (unsigned k : {16u,17u,18u})
+        std::cerr << "state[" << k << "]=" << x[k] << " / " << y[k] << '\n';
+      for (unsigned k : {24u,25u,32u,33u,34u})
+        std::cerr << "obs[" << k << "]=" << a.observation[38*ip+k]
+                  << " / " << expected.observation[38*ip+k] << '\n';
+      unsigned largest = 0;
+      for (unsigned k = 1; k < a.geometry.size(); ++k)
+        if (std::abs(a.geometry[k]-expected.geometry[k]) >
+            std::abs(a.geometry[largest]-expected.geometry[largest])) largest = k;
+      std::cerr << "geometry max delta channel=" << largest << " value=" << a.geometry[largest]
+                << " / " << expected.geometry[largest] << " center divergence="
+                << a.diagnostics[2] << " / " << expected.diagnostics[2] << '\n';
+      return false;
+    }
+    if (!Range(x+6,y+6,6,"point strain")) return false;
     for (unsigned k = 12; k < 20; ++k) {
       if (!Range(x+k,y+k,1,"point history")) return false;
     }
