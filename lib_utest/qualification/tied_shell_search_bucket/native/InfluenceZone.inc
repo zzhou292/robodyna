@@ -1,0 +1,2 @@
+        IF(TZINF05==ZERO)
+     .           TZINF05 = MAX(ZEP05*DD,0.6*(THKMAIN+THKSECND))
