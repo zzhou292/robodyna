@@ -1,0 +1,109 @@
+! SPDX-License-Identifier: AGPL-3.0-or-later
+! Post-HM_GET quantities enter exact HM_READ_MAT90 regions, then complete
+! FUNC_SLOPE and LAW90_UPD. Context does not recompute their numerical outputs.
+      SUBROUTINE LAW90_NATIVE_PREPARE(INPUT,FLAGS,X,Y,N,VALUES)
+     . BIND(C,NAME='law90_native_prepare')
+      USE ISO_C_BINDING, ONLY: C_DOUBLE,C_INT
+      USE LAW90_REF_MESSAGE_MOD
+#include "implicit_f.inc"
+#include "param_c.inc"
+      INTEGER(C_INT),INTENT(IN) :: N,FLAGS(3)
+      REAL(C_DOUBLE),INTENT(IN) :: INPUT(13),X(N),Y(N)
+      REAL(C_DOUBLE),INTENT(OUT) :: VALUES(33)
+      INTEGER I,ID,NFUNC,IFUNC(1),NUPARAM,NUVAR,NVARTMP,
+     . IFLAG,IDAM,ISRATE,IMATVIS,ISMOOTH,TFLAG,FAIL,IPM(32),
+     . NPC(2),FUNC_ID(1),IOUT
+      CHARACTER(100) TITR
+      MY_REAL RHO0,RHOR,E0,NU,ECONT,TCUT,HYS,SHAPE,ALPHA,FCUT,
+     . G,C1,RATE(1),YFAC(1),YFAC_DIM(1),UPARAM(32),PM(100),
+     . PARMAT(100),PLD(2*N),STIFFMIN,STIFFMAX,STIFFINI,STIFFAVG,
+     . YOUNG0
+      TYPE UNIT_CONTEXT
+        REAL(C_DOUBLE) FAC_T_WORK
+      END TYPE
+      TYPE TAG_CONTEXT
+        INTEGER G_EPSD,L_EPSD
+      END TYPE
+      TYPE(UNIT_CONTEXT) UNITAB
+      TYPE(TAG_CONTEXT) MTAG
+      NPROPM=100
+      NPROPMI=32
+      UNITAB%FAC_T_WORK=ONE
+      MTAG%G_EPSD=0
+      MTAG%L_EPSD=0
+      UPARAM=ZERO
+      PM=ZERO
+      PARMAT=ZERO
+      IPM=0
+      ID=2000063
+      TITR='Selected radiator LAW90 post-HM_GET packet'
+      NFUNC=1
+      IFUNC(1)=1
+      RHO0=INPUT(1)
+      RHOR=INPUT(2)
+      E0=INPUT(3)
+      NU=INPUT(4)
+      ECONT=INPUT(5)
+      TCUT=INPUT(6)
+      HYS=INPUT(7)
+      SHAPE=INPUT(8)
+      ALPHA=INPUT(9)
+      YFAC(1)=INPUT(10)
+      YFAC_DIM(1)=INPUT(11)
+      RATE(1)=INPUT(12)
+      FCUT=INPUT(13)
+      ISMOOTH=FLAGS(1)
+      TFLAG=FLAGS(2)
+      FAIL=FLAGS(3)
+#include "reader_flags.inc"
+#include "reader_cutoffs.inc"
+#include "reader_values.inc"
+      VALUES(1:14)=[PM(89),PM(1),UPARAM(1),UPARAM(4),
+     . UPARAM(5),PARMAT(2),PARMAT(1),UPARAM(18),UPARAM(7),
+     . UPARAM(6),UPARAM(15),UPARAM(12),UPARAM(11),PARMAT(5)]
+      VALUES(15:23)=[DBLE(ISMOOTH),DBLE(ISRATE),DBLE(IFLAG),
+     . DBLE(IDAM),DBLE(TFLAG),DBLE(FAIL),DBLE(IMATVIS),
+     . DBLE(NUVAR),DBLE(NVARTMP)]
+      DO I=1,N
+        PLD(2*I-1)=X(I)
+        PLD(2*I)=Y(I)
+      ENDDO
+      NPC=[1,2*N+1]
+      FUNC_ID(1)=2100015
+      IPM(10)=1
+      IPM(11)=1
+      CALL LAW90_REF_FUNC_SLOPE(1,YFAC(1),NPC,PLD,
+     . STIFFMIN,STIFFMAX,STIFFINI,STIFFAVG)
+      VALUES(24:27)=[STIFFMIN,STIFFMAX,STIFFINI,STIFFAVG]
+      OPEN(NEWUNIT=IOUT,STATUS='SCRATCH',ACTION='WRITE')
+      YOUNG0=ZERO
+      CALL LAW90_REF_LAW90_UPD(IOUT,TITR,ID,UPARAM,IPM,
+     . FUNC_ID,NPC,PLD,PM,1,YOUNG0)
+      CLOSE(IOUT)
+      IF(YOUNG0/=STIFFINI) ERROR STOP 'native initial slope changed'
+      VALUES(28:33)=[PM(20),PM(22),PM(32),UPARAM(13),
+     . PM(24),UPARAM(14)]
+      END
+
+      SUBROUTINE LAW90_NATIVE_CURVE(X,Y,N,QUERY,CURSOR,VALUES,NEXT)
+     . BIND(C,NAME='law90_native_curve')
+      USE ISO_C_BINDING, ONLY: C_DOUBLE,C_INT
+#include "implicit_f.inc"
+      INTEGER(C_INT),INTENT(IN) :: N,CURSOR
+      INTEGER(C_INT),INTENT(OUT) :: NEXT
+      REAL(C_DOUBLE),INTENT(IN) :: X(N),Y(N),QUERY
+      REAL(C_DOUBLE),INTENT(OUT) :: VALUES(2)
+      MY_REAL TF(2,N),Q(1),SLOPE(1),VALUE(1)
+      INTEGER I,IAD(1),IPOS(1),ILEN(1)
+      DO I=1,N
+        TF(1,I)=X(I)
+        TF(2,I)=Y(I)
+      ENDDO
+      IAD(1)=1
+      IPOS(1)=CURSOR
+      ILEN(1)=N-1-IPOS(1)
+      Q(1)=QUERY
+      CALL LAW90_REF_VINTER2(TF,IAD,IPOS,ILEN,1,Q,SLOPE,VALUE)
+      VALUES=[VALUE(1),SLOPE(1)]
+      NEXT=IPOS(1)
+      END

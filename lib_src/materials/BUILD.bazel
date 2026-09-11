@@ -83,3 +83,9 @@ cc_library(
     hdrs = ["detail/VinterValue.h"],
     deps = ["//lib_src/math:quaternion"],
 )
+
+cc_library(
+    name = "vinter2_value",
+    hdrs = ["detail/Vinter2Value.h"],
+    deps = ["//lib_src/math:quaternion"],
+)

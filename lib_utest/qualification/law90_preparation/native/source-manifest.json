@@ -1,0 +1,75 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "sources": [
+    {
+      "source": "starter/source/materials/mat/mat090/hm_read_mat90.F",
+      "path": "original/starter/source/materials/mat/mat090/hm_read_mat90.F",
+      "bytes": 12007,
+      "sha256": "71ec3e5a09be75ac1e840301d2c1cd473ccfd29f86ea8cdc1f96edee1f582d23",
+      "git_blob_sha1": "17a19b46030394b41a70b0029a6b46322af10e8c"
+    },
+    {
+      "source": "starter/source/materials/mat/mat090/law90_upd.F",
+      "path": "original/starter/source/materials/mat/mat090/law90_upd.F",
+      "bytes": 5823,
+      "sha256": "dc0f6c5f90a31ccd7464e1e996656a78315afa3ba9687be1654772f87b55a318",
+      "git_blob_sha1": "bb4044ab67db3ef4c5cce273838970015a8bffa2"
+    },
+    {
+      "source": "starter/source/tools/curve/func_slope.F",
+      "path": "original/starter/source/tools/curve/func_slope.F",
+      "bytes": 6663,
+      "sha256": "fdd3d41388515081936854b322cefb672735bad9145cedcb945f92e83a40477f",
+      "git_blob_sha1": "36fb5a8ff1d9ac6c9febdede52ae34043177a280"
+    },
+    {
+      "source": "engine/source/tools/curve/vinter.F",
+      "path": "original/engine/source/tools/curve/vinter.F",
+      "bytes": 12880,
+      "sha256": "4ecc3e2dc2119112826bd0cacfcc423e4551cca4a66e063b210d352c00a8fdcd",
+      "git_blob_sha1": "94d549102200d5a057424c0716674bbb82850ee2"
+    },
+    {
+      "source": "common_source/modules/constant_mod.F",
+      "path": "../../native/qeph/original/common_source/modules/constant_mod.F",
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865",
+      "git_blob_sha1": "5f78c0a6769ac024deb6bba9d3037cd747f36837"
+    },
+    {
+      "source": "common_source/modules/precision_mod.F90",
+      "path": "../../native/qeph/original/common_source/modules/precision_mod.F90",
+      "bytes": 71995,
+      "sha256": "0846aee31622c4bfdc22895a5580bce7b6be216d392b8ba219be53dafe570201",
+      "git_blob_sha1": "801e7590ca7f366cd5b2723ae9acfa6a089049cf"
+    },
+    {
+      "source": "engine/share/spe_inc/hardware.inc",
+      "path": "../../native/qeph/original/engine/share/spe_inc/hardware.inc",
+      "bytes": 3556,
+      "sha256": "10a8e3d40d430fd92ed33b2d1b6fda43262e8c4901340ee740db0f1479ee0b00",
+      "git_blob_sha1": "40bedb84eaa3529c6a76f51d97d22575601ab37d"
+    },
+    {
+      "source": "engine/share/r8/my_real.inc",
+      "path": "../../native/qeph/original/engine/share/r8/my_real.inc",
+      "bytes": 1658,
+      "sha256": "b2b61dbf62a940a49f92f8458e72e6c7ab92fbae48a72e5a7fce5d6d6bbaf8df",
+      "git_blob_sha1": "14e5c4b5b9167a30f165b726ada28047de9b411b"
+    },
+    {
+      "source": "starter/share/includes/param_c.inc",
+      "path": "../../solid18_reference/native/original/starter/share/includes/param_c.inc",
+      "bytes": 3582,
+      "sha256": "2f9eda3bdf12ee25f44ea0d4d2351ef04656a77ca3b9a3f2936b2750bba4b938",
+      "git_blob_sha1": "71aaf57fb9da3072dca9ae5ccb256cf814383d9f"
+    },
+    {
+      "source": "starter/share/spe_inc/implicit_f.inc",
+      "path": "../../solid18_reference/native/original/starter/share/spe_inc/implicit_f.inc",
+      "bytes": 1597,
+      "sha256": "9431871663a79d913a40ab9b433aa70d3ed4dc5cc5c345c1f25798b7451eff73",
+      "git_blob_sha1": "80a0c9ad24913bb2c60c9c49663bf15ad6fd5d04"
+    }
+  ]
+}

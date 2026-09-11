@@ -1,0 +1,105 @@
+{
+  "schema": "law90-preparation-identity-v1",
+  "files": [
+    {
+      "path": "lib_src/materials/detail/Vinter2Value.h",
+      "bytes": 2247,
+      "sha256": "5cef4012507a752c7f14a15846dec1ff986ab3a54e373747dd471f002181d70f"
+    },
+    {
+      "path": "lib_src/materials/law90/Curve.h",
+      "bytes": 1038,
+      "sha256": "f11604c824f51ef5fb74a7f46674c52cd89361b126e870cee4920d10d58d6a37"
+    },
+    {
+      "path": "lib_src/materials/law90/Prepare.h",
+      "bytes": 7262,
+      "sha256": "25a18dade52cfce6fd7217c45171d8e77fdc1b6ae193cf699d73b768a482ddcc"
+    },
+    {
+      "path": "lib_src/materials/law90/Types.h",
+      "bytes": 3353,
+      "sha256": "2babb454a04581aff5aaa22187917e026657f816ccd031891803c08f002d2531"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/BUILD.bazel",
+      "bytes": 310,
+      "sha256": "438022651c2ddd76d60fb8290ad99b909a1132734e51899c5d3810dff14eb48e"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/CMakeLists.txt",
+      "bytes": 2182,
+      "sha256": "8f9209fa635c910547e504518229f11b37b78bbb8d511495085bade0b2041298"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/CudaTest.cu",
+      "bytes": 3835,
+      "sha256": "d565024beaafdc4f6235266517e6a51006627a222fabd9924a389c2a1cb00281"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/HostTest.cpp",
+      "bytes": 5498,
+      "sha256": "1b4325a2a5762be3939c82535b4cdd0ae1a0f084f33bc5c36bad89eaf4082925"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/NativeTest.cpp",
+      "bytes": 4937,
+      "sha256": "8d5708a4d52ea567578938e526f8477a423f90d4e364d98e7779aa2fa9beb906"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/TestSupport.h",
+      "bytes": 2665,
+      "sha256": "6657073dfef8cc708698eb4c300bb997e6fe165d21fe51c13afb867578a077f8"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/native/CMakeLists.txt",
+      "bytes": 1352,
+      "sha256": "cd7d071572103e900b33ca694401e602822a4ceaad7a5f0d4a28b4196bb5b467"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/native/LICENSE.md",
+      "bytes": 34283,
+      "sha256": "ad858d53cae05eed9531ecd4c467440803acffe34c69de7b88e03affc5b6a1bd"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/native/NativeContext.F90",
+      "bytes": 818,
+      "sha256": "bb252e317c8ddeef7b176408d01f6e608c7fb5e8b45d7783eee657f2478f1895"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/native/NativeOracle.h",
+      "bytes": 416,
+      "sha256": "053c0212cafdc1a48ea7824070473a3183ade80a30edd7573aa5b30b7a743604"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/native/NativeSetup.F",
+      "bytes": 3546,
+      "sha256": "c820841e4641a8538af1ecc39f72295cbc6e32937863dd4d91c925140b901e70"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/native/prepare_sources.py",
+      "bytes": 2451,
+      "sha256": "fa23d9eb411fe16bf5029920e964bf8846bae6dc51ae54d84f053ab5754db237"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/native/source-manifest.json",
+      "bytes": 3280,
+      "sha256": "c28b12ded3ec1f961bfadb582a0cf55dd552696b94f06a9f9a1eb95a39f4c66a"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/source_fixture/OriginalMaterial.h",
+      "bytes": 2392,
+      "sha256": "1e4c0ae0ea5afadd4625a2534023944ede8dc7e449765d056ad2fb6cf06c08ba"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/source_fixture/source-receipt.json",
+      "bytes": 6196,
+      "sha256": "ef8916038bf11753bce3b95975ba25a7bdf477cc8ac2baef07d0e61d1748bd62"
+    },
+    {
+      "path": "lib_utest/qualification/law90_preparation/verify_source.py",
+      "bytes": 2280,
+      "sha256": "7f69af355e477f0d0b8e6a51ba2fc0f3aaac6309d5b0aa6618bc4bfef491ee32"
+    }
+  ]
+}
