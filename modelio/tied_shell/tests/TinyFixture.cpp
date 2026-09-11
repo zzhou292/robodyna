@@ -57,8 +57,21 @@ std::string Json(const Document& doc) {
     rapidjson::StringBuffer b; rapidjson::Writer<rapidjson::StringBuffer> w(b);
     Require(doc.Accept(w), "Invalid tiny fixture JSON"); return {b.GetString(), b.GetSize()};
 }
-TinyFixture::TinyFixture(bool set_options) {
+TinyFixture::TinyFixture(bool set_options, bool search_geometry) {
     Builder b;
+    std::size_t first_node_line = 0;
+    if (search_geometry) {
+        std::vector<std::string> cards;
+        const SourceId ids[] = {90,10,80,20,70,30,60,40,50,100,110,120};
+        for (unsigned i = 0; i < 12; ++i) {
+            std::ostringstream card;
+            card << std::setw(8) << ids[i] << std::setw(16) << (i == 0 ? "-0" : i == 1 ? "15.7" : "1")
+                 << std::setw(16) << "0" << std::setw(16) << "0";
+            cards.push_back(card.str());
+        }
+        const auto nodes = b.Block("*NODE", cards);
+        first_node_line = nodes["first_line"].GetUint64()+1;
+    }
     auto contact = b.Block("*CONTACT_TIED_SHELL_EDGE_TO_SURFACE", {Card({2,1,2,2}), "", ""});
     auto slave = b.Block("*SET_PART_LIST_TITLE", {"slave", set_options ? Card({2,1}) : Card({2}), Card({200,201})});
     auto master = b.Block("*SET_PART_LIST_TITLE", {"master", Card({1}), Card({100,101})});
@@ -67,7 +80,8 @@ TinyFixture::TinyFixture(bool set_options) {
         auto part = b.Block("*PART", {"part", Card({id,id+1000,id+2000})});
         auto section = b.Block(id < 200 ? "*SECTION_SHELL" : id == 200 ? "*SECTION_BEAM" : "*SECTION_SOLID",
                                {Card({id+1000,2}), "  1.000000"});
-        auto material = b.Block("*MAT_PIECEWISE_LINEAR_PLASTICITY", {Card({id+2000}), ""});
+        auto material = b.Block("*MAT_PIECEWISE_LINEAR_PLASTICITY",
+            {search_geometry ? Card({id+2000,1,70000}) : Card({id+2000}), ""});
         Integer(section, "identity", id+1000); Integer(material, "identity", id+2000);
         Push(sections, section); Push(materials, material);
         auto p = Object(), count = Object();
@@ -116,6 +130,17 @@ TinyFixture::TinyFixture(bool set_options) {
     AddArray<std::uint32_t>(canonical, 5, "beams_node_indices", {5,6}, 2);
     AddArray<SourceId>(canonical, 6, "solids_records", {7000,201,40,50,100,110,120,30,60,90}, 10);
     AddArray<std::uint32_t>(canonical, 7, "solids_node_indices", {7,8,9,10,11,5,6,0}, 8);
+    if (search_geometry) {
+        canonical.inputs.units = {"t", "mm", "s", 1000, .001, 1};
+        AddArray<SourceId>(canonical, 6, "solids_records", {7000,201,40,50,100,110,120,30,30,120}, 10);
+        AddArray<std::uint32_t>(canonical, 7, "solids_node_indices", {7,8,9,10,11,5,5,11}, 8);
+        AddArray<double>(canonical, 8, "node_positions", {-0.,0,0, 15.7*.001,0,0, .001,0,0,
+            .001,0,0, .001,0,0, .001,0,0, .001,0,0, .001,0,0, .001,0,0,
+            .001,0,0, .001,0,0, .001,0,0}, 3);
+        const auto n = static_cast<std::uint32_t>(first_node_line);
+        AddArray<std::uint32_t>(canonical, 9, "node_source_lines", {n,n+1,n+2,n+3,n+4,n+5,n+6,n+7,n+8,n+9,n+10,n+11}, 1);
+        AddArray<std::uint16_t>(canonical, 10, "node_blank_masks", {48,48,48,48,48,48,48,48,48,48,48,48}, 1);
+    }
 }
 void TinyFixture::AlterScope(const std::function<void(Document&)>& edit) {
     Document d; d.Parse(canonical.scope_bytes.c_str()); edit(d); canonical.scope_bytes = Json(d);

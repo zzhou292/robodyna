@@ -7,7 +7,7 @@ namespace crash::modelio::tied_shell::test {
 struct TinyFixture {
     source::CanonicalData canonical;
     std::string member;
-    explicit TinyFixture(bool set_options = false);
+    explicit TinyFixture(bool set_options = false, bool search_geometry = false);
     void AlterScope(const std::function<void(output::Document&)>&);
     Data Prepare(Limits limits = {}) const { return detail::Build(canonical, member, limits); }
 };
