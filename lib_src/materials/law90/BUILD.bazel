@@ -2,7 +2,7 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 package(default_visibility = ["//visibility:public"])
 cc_library(
     name = "preparation",
-    hdrs = ["Types.h", "Prepare.h", "Curve.h"],
+    hdrs = ["Types.h", "Prepare.h", "Curve.h", "Relocate.h"],
     deps = ["//lib_src/materials:vinter2_value", "//lib_src/math:quaternion"],
 )
 cc_library(

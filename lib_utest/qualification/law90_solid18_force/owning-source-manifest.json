@@ -43,8 +43,8 @@
     },
     {
       "path": "lib_src/materials/law90/BUILD.bazel",
-      "bytes": 637,
-      "sha256": "b25e656b8fe8c9995de67eaaf4a9e39bfdc40a9197090834d48b8a26c22e1fac"
+      "bytes": 651,
+      "sha256": "dc1d1f1d79be671dc4a3eec0471506441848a2a43a141e54b67df51f2aa16ffa"
     },
     {
       "path": "lib_src/materials/law90/Caller.h",
@@ -218,6 +218,16 @@
       "path": "lib_utest/qualification/law90_solid18_force/TestSupport.h",
       "bytes": 3997,
       "sha256": "7506396bc000fdd5cb784ff284770b17064eb90f709baada3361ea32fc190cfc"
+    }
+  ],
+  "previous_records": [
+    {
+      "reason": "Explicit immutable resident curve relocation; no scalar or equation change",
+      "record": {
+        "path": "lib_src/materials/law90/BUILD.bazel",
+        "bytes": 637,
+        "sha256": "b25e656b8fe8c9995de67eaaf4a9e39bfdc40a9197090834d48b8a26c22e1fac"
+      }
     }
   ]
 }

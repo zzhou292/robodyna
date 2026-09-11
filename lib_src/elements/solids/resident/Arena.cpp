@@ -34,13 +34,19 @@ bool MakeLayout(Counts count, const BatchConfig& config, ArenaLayout& output) no
   if (!LimitsValid(limits) || count.solid18 > limits.max_parents ||
       count.solid24 > limits.max_parents - count.solid18 ||
       count.solid6z > limits.max_parents - count.solid18 - count.solid24 ||
-      !(count.solid18 || count.solid24 || count.solid6z) ||
+      count.solid18_law44 > limits.max_parents - count.solid18 - count.solid24 - count.solid6z ||
+      count.solid18_law90 > limits.max_parents - count.solid18 - count.solid24 - count.solid6z - count.solid18_law44 ||
+      !(count.solid18 || count.solid24 || count.solid6z || count.solid18_law44 || count.solid18_law90) ||
       count.material36 > limits.max_materials ||
       count.material42 > limits.max_materials - count.material36 ||
+      count.material44 > limits.max_materials - count.material36 - count.material42 ||
+      count.material90 > limits.max_materials - count.material36 - count.material42 - count.material44 ||
+      bool(count.solid18_law44) != bool(count.material44) ||
+      bool(count.solid18_law90) != bool(count.material90) ||
       bool(count.solid18) != bool(count.material36) ||
       bool(count.solid24 || count.solid6z) != bool(count.material42) ||
       count.curve_points > limits.max_curve_points ||
-      bool(count.material36) != bool(count.curve_points) ||
+      bool(count.material36 || count.material44 || count.material90) != bool(count.curve_points) ||
       config.owner.node_count > limits.max_nodes) return false;
   ArenaLayout next;
   util::BoundedArenaLayout device(limits.max_device_bytes);
@@ -48,11 +54,17 @@ bool MakeLayout(Counts count, const BatchConfig& config, ArenaLayout& output) no
   if (!device.Append<Storage>(1, next.header) ||
       !device.Append<solid18::Material>(count.material36, next.material36) ||
       !device.Append<solid24::Material>(count.material42, next.material42) ||
+      !device.Append<solid18::law44::Material>(count.material44, next.material44) ||
+      !device.Append<solid18::total_strain::Material>(count.material90, next.material90) ||
       !device.Append<double>(2 * count.curve_points, next.curves) ||
       !Append<Traits18>(count.solid18, device, host, next.solid18) ||
       !Append<Traits24>(count.solid24, device, host, next.solid24) ||
       !Append<Traits6z>(count.solid6z, device, host, next.solid6z) ||
       !device.Append<Scratch18>(Scratch18Count(count.solid18), next.scratch18) ||
+      !Append<Traits18Law44>(count.solid18_law44, device, host, next.solid18_law44) ||
+      !Append<Traits18Law90>(count.solid18_law90, device, host, next.solid18_law90) ||
+      !device.Append<ExtendedScratch<Traits18Law44>>(Scratch18Count(count.solid18_law44), next.scratch44) ||
+      !device.Append<ExtendedScratch<Traits18Law90>>(Scratch18Count(count.solid18_law90), next.scratch90) ||
       !shell_physical_owner::ForecastProof(config.owner.node_count,
           config.cin_attachment_count, limits.max_host_bytes, next.proof)) return false;
   next.bytes = device.bytes();
@@ -69,6 +81,16 @@ Storage RebasedHeader(void* base, const ArenaLayout& layout) noexcept {
     next.material42 = util::ArenaPointer<solid24::Material>(base, layout.material42);
   if (layout.scratch18.count)
     next.scratch18 = util::ArenaPointer<Scratch18>(base, layout.scratch18);
+  if (layout.material44.count)
+    next.material44 = util::ArenaPointer<solid18::law44::Material>(base, layout.material44);
+  if (layout.material90.count)
+    next.material90 = util::ArenaPointer<solid18::total_strain::Material>(base, layout.material90);
+  if (layout.scratch44.count)
+    next.scratch44 = util::ArenaPointer<ExtendedScratch<Traits18Law44>>(base, layout.scratch44);
+  if (layout.scratch90.count)
+    next.scratch90 = util::ArenaPointer<ExtendedScratch<Traits18Law90>>(base, layout.scratch90);
+  next.solid18_law44 = Rebase<Traits18Law44>(base, layout.solid18_law44);
+  next.solid18_law90 = Rebase<Traits18Law90>(base, layout.solid18_law90);
   next.solid18 = Rebase<Traits18>(base, layout.solid18);
   next.solid24 = Rebase<Traits24>(base, layout.solid24);
   next.solid6z = Rebase<Traits6z>(base, layout.solid6z);

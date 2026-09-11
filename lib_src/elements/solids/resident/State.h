@@ -3,6 +3,8 @@
 #include "Traits18.h"
 #include "Traits24.h"
 #include "Traits6z.h"
+#include "Traits18Law44.h"
+#include "Traits18Law90.h"
 
 namespace tl::fea::solids::batch_detail {
 // Closed family traits adapt existing value APIs only. No mechanics formulas or

@@ -18,8 +18,8 @@
     },
     {
       "path": "lib_src/materials/law90/Types.h",
-      "bytes": 3794,
-      "sha256": "c6228bcd40c6de63b02f52da83984bc7ca3b52f3a7294b5ada0f6c2acb9c22e5"
+      "bytes": 3916,
+      "sha256": "8c943dcba93771dad58a3b3fb8496a317f22d2b331dc6de25c7198efd76e68d5"
     },
     {
       "path": "lib_utest/qualification/law90_preparation/BUILD.bazel",
@@ -110,6 +110,21 @@
       "path": "lib_utest/qualification/law90_preparation/verify_source.py",
       "bytes": 3945,
       "sha256": "6cc2acb8b64566a4381e545aabf35991f9c38afa2d3cad58bb13ebffd633ed24"
+    },
+    {
+      "path": "lib_src/materials/law90/Relocate.h",
+      "bytes": 2260,
+      "sha256": "b5d2096bcf7ac9f9834ee2953aaa113836d06b27b4c981c948d79e773c63fb0e"
+    }
+  ],
+  "previous_records": [
+    {
+      "reason": "Explicit immutable resident curve relocation; no scalar or equation change",
+      "record": {
+        "path": "lib_src/materials/law90/Types.h",
+        "bytes": 3794,
+        "sha256": "c6228bcd40c6de63b02f52da83984bc7ca3b52f3a7294b5ada0f6c2acb9c22e5"
+      }
     }
   ]
 }

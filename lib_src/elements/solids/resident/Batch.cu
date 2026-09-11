@@ -50,14 +50,17 @@ BatchReport Batch::InitializeJoined(const BatchConfig& config, const Model& mode
     return {BatchStatus::ResourceLimit, "Solid readback staging allocation failed"};
   if (!next->staging.Construct<batch_detail::State<batch_detail::Traits18>>(layout.solid18.staging) ||
       !next->staging.Construct<batch_detail::State<batch_detail::Traits24>>(layout.solid24.staging) ||
-      !next->staging.Construct<batch_detail::State<batch_detail::Traits6z>>(layout.solid6z.staging))
+      !next->staging.Construct<batch_detail::State<batch_detail::Traits6z>>(layout.solid6z.staging) ||
+      !next->staging.Construct<batch_detail::State<batch_detail::Traits18Law44>>(layout.solid18_law44.staging) ||
+      !next->staging.Construct<batch_detail::State<batch_detail::Traits18Law90>>(layout.solid18_law90.staging))
     return {BatchStatus::ResourceLimit, "Solid staging lifetime construction failed"};
   report = next->PendingError();
   if (!report) return report;
   report = next->Runtime(cudaMalloc(reinterpret_cast<void**>(&next->device), layout.bytes),
       "Solid device arena allocation failed");
   if (!report) return report;
-  batch_detail::RebaseCurves(model, layout, next->device, host_header);
+  report = batch_detail::RebaseCurves(model, layout, next->device, host_header);
+  if (!report) return report;
   auto device_header = batch_detail::RebasedHeader(next->device, layout);
   device_header.config = config;
   device_header.source_instance_id = model.source_instance_id();

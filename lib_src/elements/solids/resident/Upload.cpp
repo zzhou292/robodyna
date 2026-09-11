@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-#include "Arena.h"
+#include "MaterialUpload.h"
 
 namespace tl::fea::solids::batch_detail {
 namespace {
@@ -19,54 +19,23 @@ BatchReport BuildUpload(const BatchConfig& config, const Model& model,
   auto* storage = arena.Construct<Storage>(layout.header);
   if (!storage || !CopyFamily<Traits18>(model.solid18(), arena, layout.solid18) ||
       !CopyFamily<Traits24>(model.solid24(), arena, layout.solid24) ||
-      !CopyFamily<Traits6z>(model.solid6z(), arena, layout.solid6z)) {
+      !CopyFamily<Traits6z>(model.solid6z(), arena, layout.solid6z) ||
+      !CopyFamily<Traits18Law44>(model.solid18_law44(), arena, layout.solid18_law44) ||
+      !CopyFamily<Traits18Law90>(model.solid18_law90(), arena, layout.solid18_law90)) {
     return {BatchStatus::ResourceLimit, "Solid upload arena cannot construct typed parents"};
   }
-  if (layout.scratch18.count && !arena.Construct<Scratch18>(layout.scratch18)) {
+  if ((layout.scratch18.count && !arena.Construct<Scratch18>(layout.scratch18)) ||
+      (layout.scratch44.count && !arena.Construct<ExtendedScratch<Traits18Law44>>(layout.scratch44)) ||
+      (layout.scratch90.count && !arena.Construct<ExtendedScratch<Traits18Law90>>(layout.scratch90))) {
     return {BatchStatus::ResourceLimit, "Solid18 force scratch cannot be constructed"};
   }
   auto next = RebasedHeader(arena.data(), layout);
   next.config = config;
   next.source_instance_id = model.source_instance_id();
-  if (layout.material36.count) {
-    auto* materials = arena.Construct<solid18::Material>(layout.material36);
-    auto* curves = arena.Construct<double>(layout.curves);
-    if (!materials || !curves) {
-      return {BatchStatus::ResourceLimit, "Solid owned curve upload layout differs"};
-    }
-    std::size_t cursor = 0;
-    for (std::size_t m = 0; m < model.materials36().size(); ++m) {
-      materials[m] = model.materials36()[m].value;
-      const auto& curve = materials[m].curve;
-      for (std::size_t p = 0; p < curve.count; ++p) {
-        curves[cursor + p] = curve.plastic_strain[p];
-        curves[cursor + curve.count + p] = curve.yield_stress_pa[p];
-      }
-      materials[m].curve.plastic_strain = curves + cursor;
-      materials[m].curve.yield_stress_pa = curves + cursor + curve.count;
-      cursor += 2 * curve.count;
-    }
-  }
-  if (layout.material42.count) {
-    auto* materials = arena.Construct<solid24::Material>(layout.material42);
-    if (!materials) return {BatchStatus::ResourceLimit, "Solid scalar material upload layout differs"};
-    for (std::size_t m = 0; m < model.materials42().size(); ++m)
-      materials[m] = model.materials42()[m].value;
-  }
+  const auto report = UploadMaterials(model, arena, layout);
+  if (!report) return report;
   *storage = next;
   output = next;
   return {};
-}
-void RebaseCurves(const Model& model, const ArenaLayout& layout, void* device,
-    Storage& header) noexcept {
-  if (!layout.material36.count) return;
-  auto* curves = util::ArenaPointer<double>(device, layout.curves);
-  std::size_t cursor = 0;
-  for (std::size_t m = 0; m < model.materials36().size(); ++m) {
-    auto& material = header.material36[m];
-    material.curve.plastic_strain = curves + cursor;
-    material.curve.yield_stress_pa = curves + cursor + material.curve.count;
-    cursor += 2 * material.curve.count;
-  }
 }
 } // namespace tl::fea::solids::batch_detail

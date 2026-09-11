@@ -14,7 +14,7 @@ struct NodalCinWitnessSource;
 }
 namespace tl::fea::solids {
 class BatchQualificationPeer;
-enum class BatchProfile { Unspecified, PhysicalCinV1 };
+enum class BatchProfile { Unspecified, PhysicalCinV1, PhysicalCinExtendedLaw44Law90V2 };
 struct BatchLimits {
   std::size_t max_parents = 16384;
   std::size_t max_materials = 1024;
@@ -56,12 +56,12 @@ struct BatchDiagnostics {
   double kick_dt = 0;
   BatchPhase phase = BatchPhase::Unspecified;
   bool valid = false, has_completed_interval = false, accepted_force_assembled = false;
-  // Fixed family order: Solid18, Solid24, Solid6z. Every admitted solid is active;
+  // Fixed family order: Solid18, Solid24, Solid6z, Solid18Law44, Solid18Law90. Every admitted solid is active;
   // the qualified rubber cutoff rejects the entire trial instead of deleting it.
-  std::size_t parent_count[3]{};
-  double native_internal_work_increment_j[3]{};
-  double physical_hourglass_work_increment_j[3]{};
-  double plastic_work_increment_j = 0; // LAW36 only; already part of EINT.
+  std::size_t parent_count[5]{};
+  double native_internal_work_increment_j[5]{};
+  double physical_hourglass_work_increment_j[5]{};
+  double plastic_work_increment_j = 0; // LAW36/44 only; already part of EINT.
   double internal_kick_work_j = 0, internal_drift_work_j = 0;
   double minimum_native_dt_s = 0;
 };
@@ -72,7 +72,7 @@ struct BatchForecast {
   std::size_t startup_host_bytes = 0;
 };
 
-// One model, three typed spans and one private common-publication selector.
+// One model, five explicitly profiled typed spans and one private common-publication selector.
 // InitializeJoined constructs device TT0 caches only. Live owner admission is
 // the private proof below; no unclaimed batch can assemble physical forces.
 class Batch {

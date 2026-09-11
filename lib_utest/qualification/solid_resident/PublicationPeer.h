@@ -52,6 +52,11 @@ class BatchQualificationPeer {
     auto* state=batch.impl_->device_header.solid6z.slab[batch.impl_->TrialSlab()];
     return &state[0].cache.stabilization.modal_force_n[2][3];
   }
+  static double* PreparedLastLaw90CacheField(Batch& batch) {
+    auto* state=batch.impl_->device_header.solid18_law90.slab[batch.impl_->TrialSlab()];
+    const auto count=batch.impl_->model.solid18_law90().size();
+    return count ? &state[count-1].cache.rhs_force_n[7].z : nullptr;
+  }
   static double* LastMaterialDensity(Batch& batch) {
     const auto index=batch.impl_->model.solid6z()[0].material_index;
     return &batch.impl_->device_header.material42[index].density_kg_m3;

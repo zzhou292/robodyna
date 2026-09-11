@@ -14,6 +14,12 @@ template<class Traits> __global__ void Initialize(Storage* storage) {
           MaterialAt<Traits>(*storage, parent.material_index),
           storage->config.startup.uniform_velocity, storage->scratch18[threadIdx.x],
           family.slab[0][p]);
+    } else if constexpr (std::is_same_v<Traits, Traits18Law44> ||
+        std::is_same_v<Traits, Traits18Law90>) {
+      family.status[p] = InitializeExtendedState<Traits>(parent,
+          MaterialAt<Traits>(*storage, parent.material_index),
+          storage->config.startup.uniform_velocity, Scratch<Traits>(*storage, threadIdx.x),
+          family.slab[0][p]);
     } else {
       family.status[p] = InitializeState<Traits>(parent,
           MaterialAt<Traits>(*storage, parent.material_index), storage->config.startup.uniform_velocity,
@@ -40,6 +46,11 @@ template<class Traits> __global__ void Evaluate(Storage* storage, unsigned accep
       family.status[p] = UpdateState18(parent,
           MaterialAt<Traits>(*storage, parent.material_index), family.slab[accepted][p],
           interval, storage->scratch18[first], family.slab[trial][p]);
+    } else if constexpr (std::is_same_v<Traits, Traits18Law44> ||
+        std::is_same_v<Traits, Traits18Law90>) {
+      family.status[p] = UpdateExtendedState<Traits>(parent,
+          MaterialAt<Traits>(*storage, parent.material_index), family.slab[accepted][p],
+          interval, Scratch<Traits>(*storage, first), family.slab[trial][p]);
     } else {
       family.status[p] = UpdateState<Traits>(parent,
           MaterialAt<Traits>(*storage, parent.material_index), family.slab[accepted][p],
@@ -63,7 +74,9 @@ __global__ void Finalize(Storage* storage, unsigned accepted, unsigned trial,
   const auto* prepared = initial ? nullptr : &view;
   if (!MeasureFamily<Traits18>(state, accepted, trial, 0, prepared) ||
       !MeasureFamily<Traits24>(state, accepted, trial, 1, prepared) ||
-      !MeasureFamily<Traits6z>(state, accepted, trial, 2, prepared)) return;
+      !MeasureFamily<Traits6z>(state, accepted, trial, 2, prepared) ||
+      !MeasureFamily<Traits18Law44>(state, accepted, trial, 3, prepared) ||
+      !MeasureFamily<Traits18Law90>(state, accepted, trial, 4, prepared)) return;
   state.control.diagnostics.valid = true;
 }
 } // namespace
@@ -74,6 +87,10 @@ void LaunchInitialize(Storage* storage, cudaStream_t stream) {
   if (cudaPeekAtLastError() != cudaSuccess) return;
   Initialize<Traits6z><<<1, candidate_threads, 0, stream>>>(storage);
   if (cudaPeekAtLastError() != cudaSuccess) return;
+  Initialize<Traits18Law44><<<1, candidate_threads, 0, stream>>>(storage);
+  if (cudaPeekAtLastError() != cudaSuccess) return;
+  Initialize<Traits18Law90><<<1, candidate_threads, 0, stream>>>(storage);
+  if (cudaPeekAtLastError() != cudaSuccess) return;
   Finalize<<<1, 1, 0, stream>>>(storage, 0, 0, {}, {}, true);
 }
 void LaunchCandidate(Storage* storage, unsigned accepted, unsigned trial,
@@ -83,6 +100,10 @@ void LaunchCandidate(Storage* storage, unsigned accepted, unsigned trial,
   Evaluate<Traits24><<<candidate_blocks, candidate_threads, 0, view.stream>>>(storage, accepted, trial, view);
   if (cudaPeekAtLastError() != cudaSuccess) return;
   Evaluate<Traits6z><<<candidate_blocks, candidate_threads, 0, view.stream>>>(storage, accepted, trial, view);
+  if (cudaPeekAtLastError() != cudaSuccess) return;
+  Evaluate<Traits18Law44><<<candidate_blocks, candidate_threads, 0, view.stream>>>(storage, accepted, trial, view);
+  if (cudaPeekAtLastError() != cudaSuccess) return;
+  Evaluate<Traits18Law90><<<candidate_blocks, candidate_threads, 0, view.stream>>>(storage, accepted, trial, view);
   if (cudaPeekAtLastError() != cudaSuccess) return;
   Finalize<<<1, 1, 0, view.stream>>>(storage, accepted, trial, view, identity, false);
 }

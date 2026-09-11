@@ -29,7 +29,7 @@ bool SameDiagnostics(const BatchDiagnostics& a, const BatchDiagnostics& b) noexc
       !SameBits(a.internal_kick_work_j, b.internal_kick_work_j) ||
       !SameBits(a.internal_drift_work_j, b.internal_drift_work_j) ||
       !SameBits(a.minimum_native_dt_s, b.minimum_native_dt_s)) return false;
-  for (unsigned f = 0; f < 3; ++f) {
+  for (unsigned f = 0; f < 5; ++f) {
     if (a.parent_count[f] != b.parent_count[f] ||
         !SameBits(a.native_internal_work_increment_j[f], b.native_internal_work_increment_j[f]) ||
         !SameBits(a.physical_hourglass_work_increment_j[f], b.physical_hourglass_work_increment_j[f]))

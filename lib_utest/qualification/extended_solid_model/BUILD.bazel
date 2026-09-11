@@ -4,6 +4,7 @@ cc_library(
     name = "fixture",
     testonly = True,
     hdrs = ["Fixture.h", "ResidentConfig.h"],
+    visibility = ["//lib_utest/qualification/extended_solid_resident:__pkg__"],
     deps = ["//lib_utest/qualification/solid_model:fixture",
             "//lib_src/elements/solids:model", "//lib_src/elements/solids/resident:values",
             "//lib_src/elements/solid18/law44:reference",

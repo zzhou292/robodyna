@@ -27,6 +27,14 @@ TL_BRICK_HD inline double HourglassWork(const Cache6z& c) noexcept {
 TL_BRICK_HD inline double PlasticWork(const Cache18& c) noexcept { return c.diagnostics.plastic_work_increment_j; }
 TL_BRICK_HD inline double PlasticWork(const Cache24&) noexcept { return 0; }
 TL_BRICK_HD inline double PlasticWork(const Cache6z&) noexcept { return 0; }
+TL_BRICK_HD inline double NativeDt(const Cache18Law44& c) noexcept { return c.diagnostics.minimum_unscaled_dt_s; }
+TL_BRICK_HD inline double NativeDt(const Cache18Law90& c) noexcept { return c.diagnostics.minimum_unscaled_dt_s; }
+TL_BRICK_HD inline double Work(const Cache18Law44& c) noexcept { return c.diagnostics.internal_work_increment_j; }
+TL_BRICK_HD inline double Work(const Cache18Law90& c) noexcept { return c.diagnostics.internal_work_increment_j; }
+TL_BRICK_HD inline double HourglassWork(const Cache18Law44&) noexcept { return 0; }
+TL_BRICK_HD inline double HourglassWork(const Cache18Law90&) noexcept { return 0; }
+TL_BRICK_HD inline double PlasticWork(const Cache18Law44& c) noexcept { return c.diagnostics.plastic_work_increment_j; }
+TL_BRICK_HD inline double PlasticWork(const Cache18Law90&) noexcept { return 0; }
 template<class Traits>
 TL_BRICK_HD inline bool MeasureFamily(Storage& state, unsigned accepted, unsigned trial,
     unsigned family_index, const NodalPreparedView* view) noexcept {

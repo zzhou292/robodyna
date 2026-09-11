@@ -25,11 +25,25 @@ bool Batch::Impl::OutputDisjoint(const void* output, std::size_t bytes) const no
       !Range(output, bytes, model.solid24().data(), model.solid24().size()) ||
       !Range(output, bytes, model.solid6z().data(), model.solid6z().size()) ||
       !Range(output, bytes, model.materials36().data(), model.materials36().size()) ||
-      !Range(output, bytes, model.materials42().data(), model.materials42().size())) return false;
+      !Range(output, bytes, model.materials42().data(), model.materials42().size()) ||
+      !Range(output, bytes, model.solid18_law44().data(), model.solid18_law44().size()) ||
+      !Range(output, bytes, model.solid18_law90().data(), model.solid18_law90().size()) ||
+      !Range(output, bytes, model.materials44().data(), model.materials44().size()) ||
+      !Range(output, bytes, model.materials90().data(), model.materials90().size())) return false;
   for (const auto& material : model.materials36()) {
     const auto& curve = material.value.curve;
     if (!Range(output, bytes, curve.plastic_strain, curve.count) ||
         !Range(output, bytes, curve.yield_stress_pa, curve.count)) return false;
+  }
+  for (const auto& material : model.materials44()) {
+    const auto& curve = material.value.curve;
+    if (!Range(output, bytes, curve.plastic_strain, curve.count) ||
+        !Range(output, bytes, curve.yield_stress_pa, curve.count)) return false;
+  }
+  for (const auto& material : model.materials90()) {
+    const auto curve = material.value.curve();
+    if (!Range(output, bytes, curve.compression_strain, curve.count) ||
+        !Range(output, bytes, curve.stress_pa, curve.count)) return false;
   }
   return true;
 }
@@ -37,11 +51,15 @@ bool Batch::Impl::OutputBuffers(ResultBuffers buffers, const void* input,
     std::size_t input_bytes, const void* batch, std::size_t batch_bytes) const noexcept {
   if (!Output(buffers.solid18, buffers.count18, model.solid18().size()) ||
       !Output(buffers.solid24, buffers.count24, model.solid24().size()) ||
-      !Output(buffers.solid6z, buffers.count6z, model.solid6z().size())) return false;
-  const void* pointers[]{buffers.solid18, buffers.solid24, buffers.solid6z};
+      !Output(buffers.solid6z, buffers.count6z, model.solid6z().size()) ||
+      !Output(buffers.solid18_law44, buffers.count18_law44, model.solid18_law44().size()) ||
+      !Output(buffers.solid18_law90, buffers.count18_law90, model.solid18_law90().size())) return false;
+  const void* pointers[]{buffers.solid18, buffers.solid24, buffers.solid6z,
+      buffers.solid18_law44, buffers.solid18_law90};
   const std::size_t bytes[]{buffers.count18 * sizeof(Result18), buffers.count24 * sizeof(Result24),
-      buffers.count6z * sizeof(Result6z)};
-  for (unsigned f = 0; f < 3; ++f) {
+      buffers.count6z * sizeof(Result6z), buffers.count18_law44 * sizeof(Result18Law44),
+      buffers.count18_law90 * sizeof(Result18Law90)};
+  for (unsigned f = 0; f < 5; ++f) {
     if (!bytes[f]) continue;
     if (!OutputDisjoint(pointers[f], bytes[f]) ||
         !trial_identity::Disjoint(pointers[f], bytes[f], input, input_bytes) ||

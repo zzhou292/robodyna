@@ -98,6 +98,8 @@ class PreparedMaterial {
   ReaderValues reader_{};
   UpdatedValues updated_{};
   bool initialized_ = false;
+  friend TL_LAW90_HD Status RelocatePreparedCurve(
+      const PreparedMaterial&, CurveView, PreparedMaterial&) noexcept;
   friend TL_LAW90_HD Status PrepareSI(
       const PreparationInput&, CurveView, PreparedMaterial&) noexcept;
 };

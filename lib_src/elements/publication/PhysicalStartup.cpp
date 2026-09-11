@@ -82,7 +82,9 @@ ShellPublicationReport ShellBatchPublication::InitializePhysicalImpl(FENodalStat
     config.configuration_id = configuration;
     config.qualification_id = qualification;
     config.startup = startup;
-    config.profile = solids::BatchProfile::PhysicalCinV1;
+    config.profile = solid.model.profile() == solids::ModelProfile::ExtendedLaw44Law90
+        ? solids::BatchProfile::PhysicalCinExtendedLaw44Law90V2
+        : solids::BatchProfile::PhysicalCinV1;
     config.cin_attachment_count = cin.range_count;
     config.cin_witness_count = cin.witness_count;
     // This is the participant's sole immutable force model. Its complete native

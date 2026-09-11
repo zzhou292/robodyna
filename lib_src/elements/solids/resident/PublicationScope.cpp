@@ -13,6 +13,9 @@ BatchReport Batch::PreflightAttach(FENodalState& owner, const NodalCoefficientLe
   if (!claimant || state.publication_scope || state.bound || state.pending ||
       state.accepted_stamp.epoch || !batch_detail::SameConfig(config, state.config) ||
       !state.model.Matches(model) || !ledger.prepared() || !ledger.solids() ||
+      ledger.order() != (model.profile() == ModelProfile::ExtendedLaw44Law90
+          ? CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_ElementMass_Solid18_24_6z_Law44_Law90_V4
+          : CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_ElementMass_Solid18_24_6z_V3) ||
       !rigid.prepared() || !rigid.coefficients() ||
       !rigid.coefficients()->Matches(ledger) ||
       !state.model.contributions()->Matches(*ledger.solids()) ||

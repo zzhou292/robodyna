@@ -99,4 +99,37 @@ TL_BRICK_HD inline bool ValidResult(const Parent6z& p, const solid6z::Material& 
   for (const auto& row : d.modal_force_n) if (!FiniteValues(row)) return false;
   return true;
 }
+TL_BRICK_HD inline bool ValidResult(const Parent18Law44& p,
+    const solid18::law44::Material& material, const State<Traits18Law44>& state,
+    double time, std::uint64_t epoch) noexcept {
+  const auto& h = state.history;
+  const auto& c = state.cache;
+  const auto& d = c.diagnostics;
+  const auto degeneracy = solid18::law44::detail::NativeDegeneracy(p.reference);
+  const double finite[]{d.center_divergence_per_s, d.mean_pressure_pa,
+      d.internal_work_increment_j, d.plastic_work_increment_j};
+  return h.prepared() && h.stamp().time_s == time && h.stamp().sample_index == epoch &&
+      solid18::law44::detail::SameReference(p.reference, h.reference()) &&
+      solid18::law44::detail::SameMaterial(material, h.material()) &&
+      solid18::law44::detail::ValidMaterial(p.reference, h.material()) &&
+      solid18::law44::detail::ValidHistory(p.reference, material, h.data()) &&
+      Forces(c.rhs_force_n) && FiniteValues(finite) && d.plastic_work_increment_j >= 0 &&
+      d.native_degeneracy == degeneracy &&
+      d.caller_degeneracy == (degeneracy > 0 ? degeneracy + 10 : 0) &&
+      Coefficients(c.stiffness, d.raw_stiffness_n_m, d.minimum_unscaled_dt_s, .25);
+}
+TL_BRICK_HD inline bool ValidResult(const Parent18Law90& p,
+    const solid18::total_strain::Material& material, const State<Traits18Law90>& state,
+    double time, std::uint64_t epoch) noexcept {
+  const auto& h = state.history;
+  const auto& c = state.cache;
+  const auto& d = c.diagnostics;
+  return h.prepared() && h.stamp().time_s == time && h.stamp().sample_index == epoch &&
+      solid18::total_strain::force_detail::SameReference(p.reference, h.reference()) &&
+      tl::material::law90::SamePreparedMaterial(material, h.material()) &&
+      solid18::total_strain::force_detail::ValidMaterial(p.reference, h.material()) &&
+      solid18::total_strain::force_detail::ValidValues(material, h.data()) &&
+      Forces(c.rhs_force_n) && tl::math::Finite(d.internal_work_increment_j) &&
+      Coefficients(c.stiffness, d.raw_stiffness_n_m, d.minimum_unscaled_dt_s, .25);
+}
 } // namespace tl::fea::solids::batch_detail

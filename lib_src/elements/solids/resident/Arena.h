@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "Batch.h"
-#include "Scratch18.h"
+#include "ExtendedScratch.h"
 #include "../../ShellPhysicalOwner.h"
 
 namespace tl::fea::solids::batch_detail {
@@ -27,6 +27,12 @@ struct Storage {
   Scratch18* scratch18 = nullptr;
   DeviceFamily<Traits24> solid24;
   DeviceFamily<Traits6z> solid6z;
+  DeviceFamily<Traits18Law44> solid18_law44;
+  DeviceFamily<Traits18Law90> solid18_law90;
+  solid18::law44::Material* material44 = nullptr;
+  solid18::total_strain::Material* material90 = nullptr;
+  ExtendedScratch<Traits18Law44>* scratch44 = nullptr;
+  ExtendedScratch<Traits18Law90>* scratch90 = nullptr;
   Control control;
 };
 struct FamilyLayout {
@@ -34,13 +40,15 @@ struct FamilyLayout {
 };
 struct ArenaLayout {
   util::ArenaRegion header, material36, material42, curves, scratch18;
-  FamilyLayout solid18, solid24, solid6z;
+  FamilyLayout solid18, solid24, solid6z, solid18_law44, solid18_law90;
+  util::ArenaRegion material44, material90, scratch44, scratch90;
   std::size_t bytes = 0, staging_bytes = 0, curve_points = 0;
   shell_physical_owner::ProofLayout proof;
 };
 struct Counts {
   std::size_t solid18 = 0, solid24 = 0, solid6z = 0;
   std::size_t material36 = 0, material42 = 0, curve_points = 0;
+  std::size_t solid18_law44 = 0, solid18_law90 = 0, material44 = 0, material90 = 0;
 };
 bool MakeLayout(Counts, const BatchConfig&, ArenaLayout&) noexcept;
 BatchReport Plan(const BatchConfig&, const Model&, ArenaLayout&) noexcept;
@@ -49,6 +57,6 @@ BatchReport BuildUpload(const BatchConfig&, const Model&, util::HostArena&,
     const ArenaLayout&, Storage&);
 // Rebase the device material curve pointers once, before upload. No History
 // containing a host curve pointer is copied to the device.
-void RebaseCurves(const Model&, const ArenaLayout&, void* device,
+BatchReport RebaseCurves(const Model&, const ArenaLayout&, void* device,
     Storage& host_header) noexcept;
 } // namespace tl::fea::solids::batch_detail
