@@ -1,0 +1,7 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+cc_library(
+    name = "type13_startup",
+    hdrs = ["Type13Types.h", "Type13Units.h", "Type13Property.h", "Type13Reference.h", "Type13Startup.h"],
+    visibility = ["//visibility:public"],
+    deps = ["//lib_src/math:fixed3_operations"],
+)

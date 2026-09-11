@@ -1,0 +1,17 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+cc_test(
+    name = "type13_startup_check",
+    size = "small",
+    srcs = ["Fixture.h", "PropertyTest.cpp", "ReferenceTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/elements/type13:type13_startup", "@googletest//:gtest_main"],
+)
+cuda_test(
+    name = "type13_startup_cuda_check",
+    size = "small",
+    srcs = ["StartupCudaTest.cu", "Fixture.h"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+    deps = ["//lib_src/elements/type13:type13_startup", "@googletest//:gtest_main"],
+)
