@@ -1,0 +1,9 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "rigid_part_model_check",
+    size = "small",
+    srcs = ["ValueTest.cpp", "RoundingTest.cpp", "Fixture.h", "HighPrecision.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/constraints:nodal_rigid_part_assembly_model",
+            "//lib_utest/qualification/qbat_binding:fixture", "@googletest//:gtest_main"],
+)

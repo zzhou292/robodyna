@@ -28,6 +28,17 @@ cc_library(
 )
 
 cc_library(
+    name = "nodal_rigid_part_assembly_model",
+    srcs = ["NodalRigidPartAssemblyModel.cpp", "NodalRigidPartAssemblyBudget.cpp",
+            "NodalRigidPartAssemblyTopology.cpp", "NodalRigidPartAssemblyMap.cpp"],
+    hdrs = ["NodalRigidPartAssemblyModel.h", "NodalRigidPartAssemblyInternal.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":nodal_rigid_assembly", ":nodal_rigid_part_topology",
+            "//lib_src/assembly:nodal_coefficient_ledger", "//lib_utils:bounded_arena",
+            "//lib_utils:source_identity_index"],
+)
+
+cc_library(
     name = "nodal_rigid_group_step_math",
     hdrs = ["NodalRigidFrameStep.h", "NodalRigidTwoMemberStep.h", "NodalRigidFiniteVelocity.h", "NodalRigidGroupStepMath.h", "NodalRigidGroupState.h", "NodalRigidGroupCandidate.h", "NodalRigidAccelerationSink.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
