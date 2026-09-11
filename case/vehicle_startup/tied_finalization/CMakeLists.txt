@@ -1,0 +1,33 @@
+cmake_minimum_required(VERSION 3.22)
+project(RoboDynaTiedSearchFinalization LANGUAGES CXX)
+find_package(Chrono REQUIRED CONFIG)
+enable_testing()
+include("${CMAKE_CURRENT_LIST_DIR}/../TiedSearchFinalizedValues.cmake")
+find_package(GTest REQUIRED)
+add_executable(robo_dyna_tied_finalization_values_check tests/ValueTest.cpp
+  "${CMAKE_CURRENT_LIST_DIR}/../../../modelio/tied_shell/tests/TinyFixture.cpp")
+target_link_libraries(robo_dyna_tied_finalization_values_check PRIVATE robo_dyna_tied_finalization_values GTest::gtest_main)
+target_compile_options(robo_dyna_tied_finalization_values_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME tied_finalization_source_values COMMAND robo_dyna_tied_finalization_values_check)
+option(ROBO_DYNA_TIED_FINALIZATION_ACTUAL "Build actual source assessment and complete native finalizer checks" OFF)
+if(ROBO_DYNA_TIED_FINALIZATION_ACTUAL)
+  enable_language(CUDA)
+  enable_language(Fortran)
+  include("${CMAKE_CURRENT_LIST_DIR}/../TiedSearchFinalized.cmake")
+  find_package(Python3 REQUIRED COMPONENTS Interpreter)
+  set(ROBO_DYNA_TIED_CANONICAL "" CACHE PATH "Explicit original canonical directory")
+  set(ROBO_DYNA_TIED_SCOPE "" CACHE FILEPATH "Explicit original scope10")
+  if(NOT EXISTS "${ROBO_DYNA_TIED_CANONICAL}" OR NOT EXISTS "${ROBO_DYNA_TIED_SCOPE}")
+    message(FATAL_ERROR "Actual tied finalization requires canonical and scope fixtures")
+  endif()
+  include("${ROBO_DYNA_TL_ROOT}/lib_utest/qualification/tied_shell_finalization/Native.cmake")
+  add_executable(robo_dyna_tied_finalization_actual_check tests/ActualSourceTest.cpp)
+  target_link_libraries(robo_dyna_tied_finalization_actual_check PRIVATE robo_dyna_tied_search_finalized
+    tied_search_finalization_oracle GTest::gtest_main)
+  target_compile_options(robo_dyna_tied_finalization_actual_check PRIVATE -fno-fast-math -ffp-contract=off)
+  add_test(NAME tied_finalization_source_actual COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_LIST_DIR}/../../../output/full_shell/static_bundle/tests/actual_source_fixture.py"
+    "${ROBO_DYNA_TIED_CANONICAL}" "${ROBO_DYNA_TIED_SCOPE}"
+    "$<TARGET_FILE:robo_dyna_tied_finalization_actual_check>" "TiedFinalizationSourceActual.*")
+  set_tests_properties(tied_finalization_source_actual PROPERTIES PROCESSORS 1 RUN_SERIAL TRUE TIMEOUT 240)
+endif()
