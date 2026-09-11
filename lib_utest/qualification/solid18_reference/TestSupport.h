@@ -40,8 +40,9 @@ inline bool Close(double a, double b, double tolerance=2e-11) {
          std::abs(a-b) <= tolerance*std::max({1e-18,std::abs(a),std::abs(b)});
 }
 // Named active values only. Object padding is not a comparison/serialization ABI.
+inline constexpr unsigned ValueCount = 148;
 inline auto Values(const s::Reference& r) {
-  std::array<double,348> v{};
+  std::array<double,ValueCount> v{};
   std::size_t i = 0;
   const auto put = [&](const s::Vec3& x) {
     v[i++] = x.x;
@@ -51,18 +52,19 @@ inline auto Values(const s::Reference& r) {
   const auto& g = r.geometry();
   for (double x : g.frame.v) v[i++] = x;
   for (const auto& x : g.native_position_m) put(x);
+  for (double x : g.center_scaled_jacobian_m.v) v[i++] = x;
+  for (const auto& x : g.higher_mode_m) put(x);
   for (const auto& p : g.point) {
-    for (double x : p.shape) v[i++] = x;
-    for (const auto& x : p.derivative_per_m) put(x);
-    v[i++] = p.jacobian_volume_m3;
+    for (double x : p.scaled_jacobian_m.v) v[i++] = x;
+    v[i++] = p.initial_volume_m3;
   }
-  v[i++] = g.volume_m3;
-  for (double x : g.native_nodal_volume_m3) v[i++] = x;
-  for (const auto& x : g.native_average_derivative_per_m) put(x);
+  v[i++] = g.center_volume_m3;
+  v[i++] = g.integrated_volume_m3;
+  v[i++] = g.inverse_center_face_scale_per_m2;
   v[i++] = g.characteristic_length_m;
   for (double x : r.mass().source_nodal_mass_kg) v[i++] = x;
-  for (double x : r.mass().source_nodal_volume_m3) v[i++] = x;
   v[i++] = r.mass().element_mass_kg;
+  v[i++] = r.mass().initial_global_density_kg_m3;
   assert(i == v.size());
   return v;
 }

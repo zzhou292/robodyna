@@ -42,27 +42,29 @@ struct ReferenceInput {
 };
 
 struct StartupPoint {
-  // BASISF starter order. These are not engine material-history slots.
-  double shape[8]{};
-  Vec3 derivative_per_m[8]{};  // Native local coordinates and native node slots.
-  double jacobian_volume_m3 = 0;
+  // Engine IP = r + 2*s + 4*t, with r/s/t in {0,1}.
+  // S8EJACIP3's scaled covariant rows; each row contains local x/y/z.
+  Matrix3 scaled_jacobian_m;
+  double initial_volume_m3 = 0;  // Native S8EDERI3 LBUF%VOL and VOL0DP.
 };
 
 struct StartupGeometry {
   Matrix3 frame;  // Native axes in world-space columns.
   Vec3 native_position_m[8]{};
+  Matrix3 center_scaled_jacobian_m;
+  Vec3 higher_mode_m[4]{};  // Native HX/HY/HZ modes, not shape weights.
   StartupPoint point[8]{};
-  double volume_m3 = 0;
-  double native_nodal_volume_m3[8]{};  // Sum(detJ * H), not Gauss volumes.
-  Vec3 native_average_derivative_per_m[8]{};
-  double characteristic_length_m = 0;  // SDERI3B; not a timestep certificate.
+  double center_volume_m3 = 0;  // S8ZDERIC3 GBUF%VOL / VOLU.
+  double integrated_volume_m3 = 0;  // Diagnostic sum of the eight point volumes.
+  double inverse_center_face_scale_per_m2 = 0;
+  double characteristic_length_m = 0;  // Selected S8EDERI3; no dt certificate.
 };
 
 struct Mass {
   double source_nodal_mass_kg[8]{};
-  double source_nodal_volume_m3[8]{};
   double element_mass_kg = 0;
-  // No nodal rotational inertia: these are translational coefficients only.
+  double initial_global_density_kg_m3 = 0;  // SVALUE0 sum in native visitation order.
+  // SMASS3 uses this global density and center volume. No rotational inertia.
 };
 
 class Reference {

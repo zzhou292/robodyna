@@ -5,8 +5,9 @@ cc_library(
     hdrs = [
         "Solid18Types.h",
         "Solid18Orientation.h",
-        "Solid18Basis.h",
         "Solid18StartupGeometry.h",
+        "Solid18CenterGeometry.h",
+        "Solid18GaussGeometry.h",
         "Solid18Mass.h",
         "Solid18Reference.h",
     ],

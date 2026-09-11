@@ -9,33 +9,33 @@ TEST(Solid18Reference, AffinePartitionAndMass) {
   s::Reference r;
   ASSERT_EQ(s::InitializeReference(in, r), s::Status::Success);
   EXPECT_TRUE(r.prepared());
-  EXPECT_NEAR(r.geometry().volume_m3, 1, 1e-14);
+  EXPECT_NEAR(r.geometry().center_volume_m3, 1, 1e-14);
   EXPECT_NEAR(r.mass().element_mass_kg, 1070, 1e-11);
   for (unsigned n = 0; n < 8; ++n) {
     EXPECT_EQ(r.source_slot(n), n);
     EXPECT_EQ(r.input().source_node_id[n], in.source_node_id[n]);
     EXPECT_NEAR(r.mass().source_nodal_mass_kg[n], 1070./8, 1e-12);
   }
+  EXPECT_NEAR(r.geometry().integrated_volume_m3,1,1e-14);
   for (const auto& p : r.geometry().point) {
-    double sum = 0;
-    s::Vec3 gradient;
-    for (unsigned n = 0; n < 8; ++n) {
-      sum += p.shape[n];
-      gradient = s::detail::Add(gradient, p.derivative_per_m[n]);
-    }
-    EXPECT_NEAR(sum, 1, 1e-14);
-    EXPECT_NEAR(s::detail::Dot(gradient, gradient), 0, 1e-28);
+    EXPECT_NEAR(p.initial_volume_m3,.125,1e-14);
   }
 }
 
-TEST(Solid18Reference, DistortedWeightsAndNativeOrientationMap) {
+TEST(Solid18Reference, DistortedPointVolumesUniformNativeMassAndOrientationMap) {
   auto in = Distorted();
   s::Reference r, reversed;
   ASSERT_EQ(s::InitializeReference(in, r), s::Status::Success);
   double sum = 0;
   for (double value : r.mass().source_nodal_mass_kg) sum += value;
   EXPECT_NEAR(sum, r.mass().element_mass_kg, 1e-10);
-  EXPECT_GT(std::abs(r.mass().source_nodal_mass_kg[0]-r.mass().source_nodal_mass_kg[6]), 1.0);
+  for (unsigned n = 1; n < 8; ++n) {
+    EXPECT_EQ(r.mass().source_nodal_mass_kg[n],r.mass().source_nodal_mass_kg[0]);
+  }
+  EXPECT_GT(std::abs(r.geometry().point[0].initial_volume_m3-
+                     r.geometry().point[7].initial_volume_m3),.001);
+  EXPECT_GT(std::abs(r.geometry().center_volume_m3-
+                     r.geometry().integrated_volume_m3),1e-5);
   for (unsigned n = 0; n < 4; ++n) {
     std::swap(in.position_m[n], in.position_m[n+4]);
     std::swap(in.source_node_id[n], in.source_node_id[n+4]);

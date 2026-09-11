@@ -12,10 +12,11 @@ file(MAKE_DIRECTORY "${modules}")
 add_custom_target(solid18_reference_verify_native
   COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_SOURCE_DIR}/prepare_sources.py"
     --output "${prepared}" --check VERBATIM)
-add_library(solid18_reference_native STATIC NativeContext.F90 NativeReference.F
+add_library(solid18_reference_native STATIC NativeContext.F90 NativeMassContext.F90 NativeReference.F
   "${prepared}/checksvolume.F" "${prepared}/srepiso3.F" "${prepared}/sortho3.F"
-  "${prepared}/basisf.F" "${prepared}/basis8.F" "${prepared}/sderi3b.F"
-  "${prepared}/smass3b.F" "${prepared}/element_mod.F90"
+  "${prepared}/s8zderic3.F" "${prepared}/s8ejacip3.F" "${prepared}/s8ederi3.F"
+  "${prepared}/svalue0.F" "${prepared}/sczero3.F" "${prepared}/smass3.F"
+  "${prepared}/element_mod.F90"
   "${prepared}/constant_mod.F" "${prepared}/precision_mod.F90")
 add_dependencies(solid18_reference_native solid18_reference_verify_native)
 set_target_properties(solid18_reference_native PROPERTIES Fortran_MODULE_DIRECTORY "${modules}")

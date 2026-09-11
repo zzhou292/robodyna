@@ -16,7 +16,7 @@ void Compare(const s::ReferenceInput& input) {
   }
 }
 }
-TEST(Solid18ReferenceNative, CompleteFrameGaussWeightsAndMass) {
+TEST(Solid18ReferenceNative, CompleteSelectedCenterGaussAndMass) {
   Compare(Cube());
   if (HasFatalFailure()) return;
   Compare(Distorted());

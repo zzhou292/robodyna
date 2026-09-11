@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Verify complete pinned leaves, namespace them, and retain selected exact SRCOOR3 statements.
 
-The sole instrumentation copies SDERI3B's already-computed Gauss values into
-private observation storage. No native expression, array bound, or branch changes.
+Selected complete subroutines are extracted at authenticated boundaries.
+No equation instrumentation, expression, array bound, or branch changes.
 """
 import argparse
 import hashlib
@@ -22,7 +22,8 @@ SLICES = {
 }
 NAMES = {'constant_mod', 'precision_mod', 'element_mod', 'ale_mod', 'message_mod',
          'checkvolume_8n', 'checkvolume_6n', 'checkvolume_4n', 'srepiso3', 'sortho3',
-         'basisf', 'basis8', 'sderi3b', 'smass3b'}
+         'basisf', 'basis8', 'sderi3b', 'smass3b', 's8zderic3', 's8ejacip3',
+         's8ederi3', 'svalue0', 'sczero3', 'smass3', 'q1np_restart_mod', 'my_exit'}
 
 
 def prepare(output, check):
@@ -45,20 +46,18 @@ def prepare(output, check):
     outputs = {Path(source).name: value for source, value in data.items() if source != SRCOOR}
     for name, (first, last) in SLICES.items():
         outputs[name] = ''.join(data[SRCOOR].splitlines(keepends=True)[first-1:last])
-    value = outputs['sderi3b.F']
-    use = '      USE MESSAGE_MOD\n'
-    assert value.count(use) == 1
-    value = value.replace(use, use + '      USE SOLID18_POINT_CAPTURE, ONLY: POINT_VALUES\n')
-    anchor = '        DO I=1,NEL\n          DET(I)=DET(I)+VLINC(I,JPT)'
-    assert value.count(anchor) == 1
-    capture = 'C     Test-only observation of native values; selected wrapper has NEL=1.\n'
-    capture += '        POINT_VALUES(1:8,JPT)=H(1:8)\n'
-    for node in range(1, 9):
-        for component, axis in enumerate('XYZ'):
-            slot = 9 + 3*(node-1) + component
-            capture += f'        POINT_VALUES({slot},JPT)=P{axis}{node}(1)\n'
-    capture += '        POINT_VALUES(33,JPT)=VLINC(1,JPT)\n'
-    outputs['sderi3b.F'] = value.replace(anchor, capture + anchor)
+    complete = {
+        's8zderic3.F': ('starter/source/elements/solid/solide8z/s8zderi3.F',135,303),
+        's8ejacip3.F': ('starter/source/elements/solid/solide8z/s8zderi3.F',2169,2352),
+        's8ederi3.F': ('starter/source/elements/solid/solide8z/s8zderi3.F',2362,2442),
+        'svalue0.F': ('starter/source/elements/thickshell/solidec/scinit3.F',488,524),
+        'sczero3.F': ('starter/source/elements/thickshell/solidec/scinit3.F',535,563),
+    }
+    for name, (source, first, last) in complete.items():
+        body = ''.join(data[source].splitlines(keepends=True)[first-1:last])
+        if not re.match(r'\s*SUBROUTINE ',body,re.I) or not re.search(r'(?im)^\s*END(?: SUBROUTINE[^\n]*)?\s*$',body):
+            raise RuntimeError('Incomplete selected native body: '+name)
+        outputs[name] = body
     for name, value in outputs.items():
         result = names.sub(lambda m: 'SOLID18_REF_' + m.group().upper(), value).encode('latin1')
         path = output / name

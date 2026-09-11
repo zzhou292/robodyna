@@ -7,7 +7,7 @@
 namespace solid18_test {
 TEST(Solid18ReferenceSource, All908OriginalCellsNativeGeometryMassAndWorkingUnits) {
   unsigned reversed = 0;
-  unsigned nonuniform = 0;
+  unsigned nonuniform_points = 0;
   for (unsigned i = 0; i < SourceCount; ++i) {
     const auto input = Source(i);
     SCOPED_TRACE(input.source_element_id);
@@ -20,12 +20,18 @@ TEST(Solid18ReferenceSource, All908OriginalCellsNativeGeometryMassAndWorkingUnit
       ASSERT_EQ(actual.input().source_node_id[n],input.source_node_id[n]);
       ASSERT_EQ(actual.source_slot(n),expected.source_slot[n]);
       ASSERT_GT(actual.mass().source_nodal_mass_kg[n],0);
-      ASSERT_GT(actual.geometry().point[n].jacobian_volume_m3,0);
+      ASSERT_GT(actual.geometry().point[n].initial_volume_m3,0);
     }
     reversed += actual.source_slot(0) != 0;
-    const auto& m = actual.mass();
-    const auto mm = std::minmax_element(m.source_nodal_mass_kg,m.source_nodal_mass_kg+8);
-    nonuniform += *mm.second-*mm.first > m.element_mass_kg*1e-5;
+    for (unsigned n = 1; n < 8; ++n)
+      ASSERT_EQ(actual.mass().source_nodal_mass_kg[n],actual.mass().source_nodal_mass_kg[0]);
+    double minimum = actual.geometry().point[0].initial_volume_m3;
+    double maximum = minimum;
+    for (const auto& point : actual.geometry().point) {
+      minimum = std::min(minimum,point.initial_volume_m3);
+      maximum = std::max(maximum,point.initial_volume_m3);
+    }
+    nonuniform_points += maximum-minimum > actual.geometry().integrated_volume_m3*1e-5;
     // The original coordinate bits enter native mm/t arithmetic directly.
     // Only once-converted outputs use a geometric conditioning allowance;
     // admission and original-slot permutation remain exact in both runs.
@@ -44,12 +50,12 @@ TEST(Solid18ReferenceSource, All908OriginalCellsNativeGeometryMassAndWorkingUnit
     const double conditioning = coordinate_scale/actual.geometry().characteristic_length_m;
     ASSERT_TRUE(AgreeWorkingUnits(Values(actual),NativeWorkingToSI(working.values),conditioning));
   }
-  EXPECT_GT(nonuniform,0u);
+  EXPECT_GT(nonuniform_points,0u);
   RecordProperty("source_cells",SourceCount);
   RecordProperty("native_orientation_reversals",reversed);
-  RecordProperty("nonuniform_mass_cells",nonuniform);
+  RecordProperty("nonuniform_points_mass_cells",nonuniform_points);
 }
-TEST(Solid18ReferenceSource, WorkingUnitCancellationStillRejectsPhysicalDerivativeChange) {
+TEST(Solid18ReferenceSource, WorkingUnitGeometryConditioningRejectsPhysicalChange) {
   unsigned selected = SourceCount;
   for (unsigned i = 0; i < SourceCount; ++i) {
     if (original::solids[i].id == 2200907) selected = i;
@@ -71,12 +77,12 @@ TEST(Solid18ReferenceSource, WorkingUnitCancellationStillRejectsPhysicalDerivati
     coordinate_scale = std::max({coordinate_scale,std::abs(x.x),std::abs(x.y),std::abs(x.z)});
   const double conditioning = coordinate_scale/reference.geometry().characteristic_length_m;
   ASSERT_TRUE(AgreeWorkingUnits(actual,expected,conditioning));
-  // Packed89 is Gauss2 / native node6 / local-x derivative, in inverse metres.
-  // The real conversion difference is 5.49e-12; a 1e-5 physical change must fail.
-  expected[89] += 1e-5;
+  // A physical change to the first point Jacobian is larger than the declared
+  // coordinate-conversion allowance, even in a cancelling local component.
+  expected[54] += 1e-5;
   EXPECT_FALSE(AgreeWorkingUnits(actual,expected,conditioning));
   expected = NativeWorkingToSI(native_working.values);
-  expected[33] = std::nextafter(expected[33],1.0);
+  expected[147] *= 1.000001;
   EXPECT_FALSE(AgreeWorkingUnits(actual,expected,conditioning));
 }
 }  // namespace solid18_test

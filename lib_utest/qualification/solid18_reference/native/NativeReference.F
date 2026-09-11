@@ -4,7 +4,6 @@
      . BIND(C,NAME="solid18_reference_native")
       USE ISO_C_BINDING
       USE SOLID18_REF_ELEMENT_MOD, ONLY: NIXS
-      USE SOLID18_POINT_CAPTURE
       USE SOLID18_REF_MESSAGE_MOD, ONLY: GEOMETRY_ERRORS
 #include "implicit_f.inc"
 #include "mvsiz_p.inc"
@@ -13,10 +12,10 @@
 #include "vect01_c.inc"
 #include "scr05_c.inc"
       REAL(C_DOUBLE), INTENT(IN) :: X(3,8),RHO0
-      REAL(C_DOUBLE), INTENT(OUT) :: VALUES(348)
+      REAL(C_DOUBLE), INTENT(OUT) :: VALUES(148)
       INTEGER(C_INT), INTENT(OUT) :: PERM(8),STATUS
       INTEGER I,J,K,N,IXS(NIXS,1),MXT(1),NGEO(1),NGL(1)
-      INTEGER IPART(1),IGEO(1,1),JHBE
+      INTEGER IPART(1),IGEO(1,1),JHBE,IR,IS,IT,IP
       REAL(C_DOUBLE) SOLID18_REF_CHECKVOLUME_8N,XL,YL,ZL
       REAL(C_DOUBLE) V(3,8),RHO(1),VOLU(1),VEUL(51,1),DET(1)
       REAL(C_DOUBLE) DELTAX(1),GEO(12,1),PARTSAV(20,1),MSS(8,1)
@@ -32,12 +31,18 @@
       REAL(C_DOUBLE) RX(1),RY(1),RZ(1),SX(1),SY(1),SZ(1),TX(1),TY(1),TZ(1)
       REAL(C_DOUBLE) E1X(1),E1Y(1),E1Z(1),E2X(1),E2Y(1),E2Z(1),E3X(1),E3Y(1),E3Z(1)
       REAL(C_DOUBLE) F1X(1),F1Y(1),F1Z(1),F2X(1),F2Y(1),F2Z(1)
+      REAL(C_DOUBLE) CJ(1,9),H(4,MVSIZ,3),JP(MVSIZ,8,9),PV(1,8),PVDP(1,8)
+      REAL(C_DOUBLE) SMAX(1),VC(1),TOTALV,SIG(1,6),EINT(1),OFF(1),DTX(1)
+      REAL(C_DOUBLE) RHOG(1),SIGG(1,6),EINTG(1),OFFG(1),DTXG(1)
+      REAL(C_DOUBLE) INERTIA(8),VR(3,8),INS(8,1),RHOF(1),FRAC(1),FILL(1)
       LFT=1
       LLT=1
       NFT=0
       JALE=0
       JEUL=0
       JTHE=0
+      ISROT=0
+      IRODDL=0
       ISORTH=0
       IREST_MSELT=0
       JHBE=17
@@ -60,20 +65,58 @@
 #include "frame.inc"
 #include "project.inc"
       GEO=ZERO
-      GEO(12,1)=14
       IGEO=0
       VEUL=ZERO
       GEOMETRY_ERRORS=0
-      POINT_VALUES=ZERO
-      CALL SOLID18_REF_SDERI3B(VOLU,VEUL,51,GEO,IGEO,NGL,NGEO,
-     . X1,X2,X3,X4,X5,X6,X7,X8,
-     . Y1,Y2,Y3,Y4,Y5,Y6,Y7,Y8,
-     . Z1,Z2,Z3,Z4,Z5,Z6,Z7,Z8,DET,DELTAX,1,0)
+      DELTAX=EP30
+C     Selected INITIA:1235 -> S8ZINIT3:443,478-521,574,592.
+      CALL SOLID18_REF_S8ZDERIC3(VC,H(1,1,1),H(1,1,2),H(1,1,3),
+     . CJ(1,1),CJ(1,2),CJ(1,3),CJ(1,4),CJ(1,5),CJ(1,6),
+     . CJ(1,7),CJ(1,8),CJ(1,9),SMAX,VOLU,NGL,
+     . XD1,XD2,XD3,XD4,XD5,XD6,XD7,XD8,
+     . YD1,YD2,YD3,YD4,YD5,YD6,YD7,YD8,
+     . ZD1,ZD2,ZD3,ZD4,ZD5,ZD6,ZD7,ZD8)
       IF(GEOMETRY_ERRORS/=0)THEN
         STATUS=GEOMETRY_ERRORS
         RETURN
       ENDIF
-      RHO(1)=RHO0
+      CALL SOLID18_REF_S8EJACIP3(H(1,1,1),H(1,1,2),H(1,1,3),
+     . CJ(1,1),CJ(1,2),CJ(1,3),CJ(1,4),CJ(1,5),CJ(1,6),
+     . CJ(1,7),CJ(1,8),CJ(1,9),
+     . JP(1,1,1),JP(1,1,2),JP(1,1,3),JP(1,1,4),JP(1,1,5),JP(1,1,6),
+     . JP(1,1,7),JP(1,1,8),JP(1,1,9))
+      CALL SOLID18_REF_SCZERO3(RHOG,SIGG,EINTG,1)
+      SIG=ZERO
+      EINT=ZERO
+      OFF=ONE
+      OFFG=ONE
+      DTX=ZERO
+      DTXG=ZERO
+      RHO=RHO0
+      TOTALV=ZERO
+      DO IR=1,2
+        DO IS=1,2
+          DO IT=1,2
+            IP=IR+((IS-1)+(IT-1)*2)*2
+            CALL SOLID18_REF_S8EDERI3(PV(1,IP),VEUL,GEO,ONE,
+     .        JP(1,IP,1),JP(1,IP,2),JP(1,IP,3),JP(1,IP,4),JP(1,IP,5),
+     .        JP(1,IP,6),JP(1,IP,7),JP(1,IP,8),JP(1,IP,9),
+     .        SMAX,DELTAX,NGL,PVDP(1,IP))
+C           The selected binary64 startup supplies one exact VOL/VOL0DP value.
+            IF(PV(1,IP)/=PVDP(1,IP))THEN
+              STATUS=999
+              RETURN
+            ENDIF
+            CALL SOLID18_REF_SVALUE0(RHO,PV(1,IP),OFF,SIG,EINT,DTX,
+     .        RHOG,VC,OFFG,SIGG,EINTG,DTXG,1)
+            TOTALV=TOTALV+PV(1,IP)
+          ENDDO
+        ENDDO
+      ENDDO
+      IF(GEOMETRY_ERRORS/=0)THEN
+        STATUS=GEOMETRY_ERRORS
+        RETURN
+      ENDIF
       V=ZERO
       PARTSAV=ZERO
       MS=ZERO
@@ -85,9 +128,15 @@
       MCP=ZERO
       MCPS=ZERO
       MSSA=ZERO
+      INERTIA=ZERO
+      VR=ZERO
+      INS=ZERO
+      RHOF=ZERO
+      FRAC=ZERO
+      FILL=ONE
       IPART=1
-      CALL SOLID18_REF_SMASS3B(RHO,MS,VEUL(44,1),51,MSS,
-     . PARTSAV,X,V,IPART,MSNF,MSSF,WMA,RHOCP,MCP,MCPS,MSSA,VOLU,
+      CALL SOLID18_REF_SMASS3(RHOG,MS,PARTSAV,X,V,IPART,MSS,VOLU,
+     . MSNF,MSSF,INERTIA,VR,INS,WMA,RHOCP,MCP,MCPS,MSSA,RHOF,FRAC,FILL,
      . IX1,IX2,IX3,IX4,IX5,IX6,IX7,IX8)
 C     Observation packing only. Frame is row-major with native axes in columns.
       VALUES(1)=E1X(1)
@@ -124,31 +173,33 @@ C     Observation packing only. Frame is row-major with native axes in columns.
       VALUES(32)=Y8(1)
       VALUES(33)=Z8(1)
       K=33
-      DO J=1,8
-        DO N=1,33
+      DO J=1,9
+        K=K+1
+        VALUES(K)=CJ(1,J)
+      ENDDO
+      DO N=1,4
+        DO J=1,3
           K=K+1
-          VALUES(K)=POINT_VALUES(N,J)
+          VALUES(K)=H(N,1,J)
         ENDDO
       ENDDO
-      VALUES(298)=VOLU(1)
-      VALUES(299:306)=VEUL(44:51,1)
-      K=306
-      DO N=1,8
-        VALUES(K+1)=VEUL(N,1)
-        IF(N<=4)THEN
-          VALUES(K+2)=VEUL(N+8,1)
-        ELSE
-          VALUES(K+2)=VEUL(N+27,1)
-        ENDIF
-        VALUES(K+3)=VEUL(N+35,1)
-        K=K+3
+      DO IP=1,8
+        DO J=1,9
+          K=K+1
+          VALUES(K)=JP(1,IP,J)
+        ENDDO
+        K=K+1
+        VALUES(K)=PV(1,IP)
       ENDDO
-      VALUES(331)=DELTAX(1)
+      VALUES(135)=VC(1)
+      VALUES(136)=TOTALV
+      VALUES(137)=SMAX(1)
+      VALUES(138)=DELTAX(1)
       DO N=1,8
         J=IXS(N+1,1)
         PERM(N)=J-1
-        VALUES(331+J)=MSS(N,1)
-        VALUES(339+J)=VEUL(43+N,1)
+        VALUES(138+J)=MSS(N,1)
       ENDDO
-      VALUES(348)=PARTSAV(1,1)
+      VALUES(147)=PARTSAV(1,1)
+      VALUES(148)=RHOG(1)
       END SUBROUTINE

@@ -17,7 +17,7 @@ NativePacket Native(const s::ReferenceInput& input) {
   return result;
 }
 namespace {
-bool Range(const std::array<double,348>& a, const std::array<double,348>& b,
+bool Range(const std::array<double,ValueCount>& a, const std::array<double,ValueCount>& b,
            unsigned first, unsigned count, double relative) {
   double scale = 0;
   for (unsigned i = first; i < first+count; ++i) {
@@ -32,20 +32,20 @@ bool Range(const std::array<double,348>& a, const std::array<double,348>& b,
   return true;
 }
 }
-bool Agree(const std::array<double,348>& a, const std::array<double,348>& b,
+bool Agree(const std::array<double,ValueCount>& a, const std::array<double,ValueCount>& b,
            double relative) {
-  if (!Range(a,b,0,9,relative) || !Range(a,b,9,24,relative)) return false;
+  if (!Range(a,b,0,9,relative) || !Range(a,b,9,24,relative) ||
+      !Range(a,b,33,9,relative) || !Range(a,b,42,12,relative)) return false;
   for (unsigned p = 0; p < 8; ++p) {
-    const unsigned i = 33+33*p;
-    if (!Range(a,b,i,8,relative) || !Range(a,b,i+8,24,relative) ||
-        !Range(a,b,i+32,1,relative)) return false;
+    const unsigned i = 54+10*p;
+    if (!Range(a,b,i,9,relative) || !Range(a,b,i+9,1,relative)) return false;
   }
-  return Range(a,b,297,9,relative) && Range(a,b,306,24,relative) &&
-         Range(a,b,330,1,relative) && Range(a,b,331,8,relative) &&
-         Range(a,b,339,8,relative) && Range(a,b,347,1,relative);
+  return Range(a,b,134,2,relative) && Range(a,b,136,1,relative) &&
+         Range(a,b,137,1,relative) && Range(a,b,138,9,relative) &&
+         Range(a,b,147,1,relative);
 }
 namespace {
-bool UnitDerivatives(const std::array<double,348>& a, const std::array<double,348>& b,
+bool UnitGeometry(const std::array<double,ValueCount>& a, const std::array<double,ValueCount>& b,
                      unsigned first, unsigned count, double unit_roundoff) {
   double scale = 0;
   for (unsigned i = first; i < first+count; ++i) {
@@ -59,39 +59,37 @@ bool UnitDerivatives(const std::array<double,348>& a, const std::array<double,34
   return true;
 }
 }
-bool AgreeWorkingUnits(const std::array<double,348>& a, const std::array<double,348>& b,
+bool AgreeWorkingUnits(const std::array<double,ValueCount>& a, const std::array<double,ValueCount>& b,
                        double coordinate_conditioning) {
   if (!std::isfinite(coordinate_conditioning) || coordinate_conditioning <= 0) return false;
   const double unit_roundoff = 256*std::numeric_limits<double>::epsilon()*
                               std::max(1.0,coordinate_conditioning);
-  // Non-derivative channels keep the previous component-relative contract.
-  if (!Range(a,b,0,9,unit_roundoff) || !Range(a,b,9,24,unit_roundoff)) return false;
+  if (!Range(a,b,0,9,unit_roundoff) || !Range(a,b,9,24,unit_roundoff) ||
+      !UnitGeometry(a,b,33,9,unit_roundoff) ||
+      !UnitGeometry(a,b,42,12,unit_roundoff)) return false;
   for (unsigned p = 0; p < 8; ++p) {
-    const unsigned i = 33+33*p;
-    for (unsigned n = 0; n < 8; ++n) {
-      if (!std::isfinite(a[i+n]) || a[i+n] != b[i+n]) return false;
-    }
-    if (!UnitDerivatives(a,b,i+8,24,unit_roundoff) ||
-        !Range(a,b,i+32,1,unit_roundoff)) return false;
+    const unsigned i = 54+10*p;
+    if (!UnitGeometry(a,b,i,9,unit_roundoff) ||
+        !Range(a,b,i+9,1,unit_roundoff)) return false;
   }
-  return Range(a,b,297,9,unit_roundoff) && UnitDerivatives(a,b,306,24,unit_roundoff) &&
-         Range(a,b,330,1,unit_roundoff) && Range(a,b,331,8,unit_roundoff) &&
-         Range(a,b,339,8,unit_roundoff) && Range(a,b,347,1,unit_roundoff);
+  return Range(a,b,134,2,unit_roundoff) && Range(a,b,136,1,unit_roundoff) &&
+         Range(a,b,137,1,unit_roundoff) && Range(a,b,138,9,unit_roundoff) &&
+         Range(a,b,147,1,unit_roundoff);
 }
-std::array<double,348> NativeWorkingToSI(const std::array<double,348>& original) {
+std::array<double,ValueCount> NativeWorkingToSI(const std::array<double,ValueCount>& original) {
   auto values = original;
-  for (unsigned i = 9; i < 33; ++i) values[i] *= .001;
+  for (unsigned i = 9; i < 54; ++i) values[i] *= .001;
   for (unsigned p = 0; p < 8; ++p) {
-    const unsigned i = 33+33*p;
-    for (unsigned j = i+8; j < i+32; ++j) values[j] /= .001;
-    values[i+32] *= 1e-9;
+    const unsigned i = 54+10*p;
+    for (unsigned j = i; j < i+9; ++j) values[j] *= .001;
+    values[i+9] *= 1e-9;
   }
-  for (unsigned i = 297; i < 306; ++i) values[i] *= 1e-9;
-  for (unsigned i = 306; i < 330; ++i) values[i] /= .001;
-  values[330] *= .001;
-  for (unsigned i = 331; i < 339; ++i) values[i] *= 1000;
-  for (unsigned i = 339; i < 347; ++i) values[i] *= 1e-9;
-  values[347] *= 1000;
+  values[134] *= 1e-9;
+  values[135] *= 1e-9;
+  values[136] /= 1e-6;
+  values[137] *= .001;
+  for (unsigned i = 138; i < 147; ++i) values[i] *= 1000;
+  values[147] *= 1e12;
   return values;
 }
 }  // namespace solid18_test
