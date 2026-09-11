@@ -62,7 +62,7 @@ TEST(QbatForce, YieldedRotatingUnloadReloadRetainsFourHistoriesAndSeparateWork) 
   EXPECT_GT(history.data().plastic_work_j,0);
   EXPECT_GT(history.data().numerical_viscous_work_j,0);
 }
-TEST(QbatForce, FourthSurfaceRemovalRetainsCurrentPacketThenNextZeroForce) {
+TEST(QbatForce, FourthSurfaceRemovalRetainsPointCachesButMasksFinalForce) {
   Fixture f;
   for(unsigned last=0;last<4;++last) {
     SCOPED_TRACE(last);
@@ -71,9 +71,13 @@ TEST(QbatForce, FourthSurfaceRemovalRetainsCurrentPacketThenNextZeroForce) {
     ASSERT_EQ(qb::EvaluateForce(f.reference,f.material,f.failure,h,Path(f,0),trial),qb::Status::kSuccess);
     ASSERT_TRUE(trial.diagnostics.removed_now);
     ASSERT_FALSE(trial.proposed_history.data().element_active);
-    double current=0;
-    for(auto force:trial.internal_force_n) current+=std::abs(force.x)+std::abs(force.y)+std::abs(force.z);
-    EXPECT_GT(current,1e-3);
+    double cached_stress=0;
+    for(const auto& point:trial.proposed_history.data().point)
+      for(double stress:point.force_stress_pa) cached_stress+=std::abs(stress);
+    EXPECT_GT(cached_stress,1e-3);
+    for(auto force:trial.internal_force_n) {
+      EXPECT_EQ(force.x,0); EXPECT_EQ(force.y,0); EXPECT_EQ(force.z,0);
+    }
     for(const auto& point:trial.proposed_history.data().point) {
       EXPECT_FALSE(point.surface_active);
       for(double stress:point.material.stress) EXPECT_EQ(stress,0);

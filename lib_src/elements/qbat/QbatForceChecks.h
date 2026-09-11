@@ -23,7 +23,8 @@ TL_QBAT_HD inline bool SameReference(const Reference& a,const Reference& b) {
     if (q.node_ids[i]!=r.node_ids[i] || !Same(q.position[i].x,r.position[i].x) ||
         !Same(q.position[i].y,r.position[i].y) || !Same(q.position[i].z,r.position[i].z)) return false;
   }
-  return Same(q.density,r.density) && Same(q.young_modulus,r.young_modulus) &&
+  return q.placement==r.placement &&
+      Same(q.density,r.density) && Same(q.young_modulus,r.young_modulus) &&
       Same(q.poisson_ratio,r.poisson_ratio) && Same(q.thickness,r.thickness) &&
       Same(x.initial_a11_pa,y.initial_a11_pa) &&
       Same(x.options.membrane_viscosity,y.options.membrane_viscosity) &&

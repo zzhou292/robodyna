@@ -69,7 +69,8 @@ TL_QBAT_HD inline Status EvaluateForce(const Reference& reference,const Material
   detail::ConstantShearForce(k.geometry,next,initial_volume,local_force);
   detail::AggregateShearWork(next,k.geometry.area_m2,k.rate[3][2],interval.dt,next.internal_work_j[0]);
   if (!detail::TransverseViscosity(material,dn,interval.dt,k,next,local_force) ||
-      !detail::ProjectForces(k.geometry,local_force,trial.internal_force_n,trial.internal_couple_nm))
+      !detail::ProjectForces(k.geometry,local_force,next.element_active,
+          trial.internal_force_n,trial.internal_couple_nm))
     return Status::kNonfiniteResult;
   auto& d=trial.diagnostics;
   if (!detail::ForceCoefficients(reference,material,base,next.element_active,k,d)) return Status::kNonfiniteResult;

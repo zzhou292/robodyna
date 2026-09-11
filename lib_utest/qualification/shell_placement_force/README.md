@@ -71,3 +71,18 @@ Bazel owns the host gate as
 `//lib_utest/qualification/shell_placement_force:shell_placement_force_values_check`.
 Retain the centered TAB1, Johnson failure-force, layered LAW1, complete binding,
 expanded host collection, and resident centered regressions after integration.
+
+## Root integration qualification (2026-09-10)
+
+Complete placed force/reference integration passes11 functions (6 host,3 native,
+2 actual CUDA), including all three declared planes, failure/removal histories,
+and centered native bit parity. Reports: `shell-placement-force-root-*`.
+Post-integration regressions pass9 original reference/source functions,13 resident
+constant-failure functions and8 original-source CUDA flight functions. Reports:
+`placed-reference-{source,resident,source-flight}-regression-*`.
+
+Q/T reference sizes are now528/504 bytes. The complete resolved-source forecast
+is543,479,220 B, including182,907,000 B of reference capacity; the historical
+forecast is465,994,140 B. All326,082 resolved original references still succeed,
+with23,563 unresolved parents retained. These are startup/reference results,
+not whole-shell dynamics or resident glass admission.

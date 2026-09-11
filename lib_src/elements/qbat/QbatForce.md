@@ -23,9 +23,10 @@ retains its old validation and arithmetic.
 
 QBAT retains separate current material stress and cached FORPG stress
 (including both viscosity stages). Parent removal is tested only at the fourth
-surface point. Earlier points' already assembled in-plane forces remain in
-that removal packet. On the next OFF0 interval the native predictor, filter
-and strain operations still execute, while current forces become zero.
+surface point. Earlier point caches and work remain in that removal packet;
+CBAPROJ then multiplies every final world force and couple by the final parent
+OFF. Thus removal already zeros assembled forces in that interval. On later
+OFF0 intervals the native predictor, filter and strain operations still execute.
 
 Running thickness changes after every material call by the native quarter
 correction. CBAFORI1 uses the saved pre-point volume; CBAVISC uses the corrected

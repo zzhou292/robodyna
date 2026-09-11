@@ -35,7 +35,7 @@ TL_QBAT_HD inline void ConstantShearForce(const Geometry& g,const HistoryValues&
   force[1].y=force[1].y+sy2;
 }
 TL_QBAT_HD inline bool ProjectForces(const Geometry& g,const Vec3 (&packed)[4],
-    Vec3 (&world)[4],Vec3 (&couple)[4]) {
+    bool active,Vec3 (&world)[4],Vec3 (&couple)[4]) {
   const auto& a=packed;
   const Vec3 force[4]{{a[0].x+a[2].x,a[0].y+a[2].y,a[0].z+a[2].z},
       {a[1].x+a[3].x,a[1].y+a[3].y,a[1].z+a[3].z},
@@ -48,6 +48,11 @@ TL_QBAT_HD inline bool ProjectForces(const Geometry& g,const Vec3 (&packed)[4],
         q[6]*f.x+q[7]*f.y+q[8]*f.z};
     // Native VM=0 for NPTT1/IDRIL0, including its signed-zero arithmetic.
     couple[i]={q[0]*0.+q[1]*0.,q[3]*0.+q[4]*0.,q[6]*0.+q[7]*0.};
+    // CBAPROJ applies the final parent OFF after world projection. Earlier
+    // surface caches and work remain intact when the fourth point removes it.
+    const double mask=active?1.:0.;
+    world[i].x*=mask; world[i].y*=mask; world[i].z*=mask;
+    couple[i].x*=mask; couple[i].y*=mask; couple[i].z*=mask;
     if (!Finite(world[i]) || !Finite(couple[i])) return false;
   }
   return true;

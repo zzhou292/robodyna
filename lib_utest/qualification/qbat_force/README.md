@@ -89,3 +89,21 @@ Bazel targets:
 `//lib_utest/qualification/qbat_force:qbat_force_cuda_check`;
 production `//lib_src/elements/qbat:force`.
 No force or history value is admitted to a live owner by this gate.
+
+## Root integration qualification (2026-09-10)
+
+The combined TL gate passes **70 numeric functions**:12 new (4 host,6 native,
+2 actual CUDA) and58 affected geometry, QEPH, LAW44 and constant-failure functions,
+plus3 source identity checks. Reports are `qbat-force-root-{configure,build,tests}-*`;
+the accepted result is tests3 / functions3. No skipped functions or tolerance changes.
+
+The first native execution exposed an uninitialized common NPSAV used for local
+EVIS allocation. The test wrapper now uses eight fixed rows and initializes the
+native stride before calling leaves. The second execution caught a production
+omission: complete CBAPROJ multiplies final world forces/couples by final parent
+OFF. That final mask is now applied after projection; earlier Gauss stress
+caches and work remain as computed. Tests1 and2 are retained failed evidence.
+
+The shared reference now also carries explicit placement. QBAT keeps its
+qualified centered-only startup scope; force-history identity compares placement.
+No original source collection, resident owner or trajectory is admitted here.

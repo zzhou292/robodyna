@@ -26,7 +26,7 @@
      . VF(MVSIZ,3,4),VM(MVSIZ,2,4),FOR(1,5,4),MOM(1,3),
      . AGG(1,5),STRAIN(1,8),PGSTRAIN(1,8,4),POINTS(7,4),
      . FAILURES(3,4),SURFACES(4),OFF(1),OLD_OFF,
-     . EINT(1,2),WPLA,EVIS(NPSAV,1),POINT_VALUES(13,4),
+     . EINT(1,2),WPLA,EVIS(8,1),POINT_VALUES(13,4),
      . VOLG(1),VOL0(1),THK0(1),CDET(1),RHO(1),G(1),NU(1),
      . SSP(1),A1(1),SHF(1),AMU(1),DN,DT1C(1),
      . PM(27,1),GEO(200,1),THK02(1),YM(1),A11(1),A12(1),KRZ(1),KFAC,GS(1),
@@ -43,6 +43,9 @@
       JLT=1
       NEL=1
       NPG=4
+! Match the existing independent shell wrappers: storage is fixed before
+! entry; native leaves receive their common part-observation stride here.
+      NPSAV=8
       IPLAT=1
       IPARTC=1
       VF=ZERO;VM=ZERO;MOM=ZERO;BM=ZERO
