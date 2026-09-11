@@ -11,6 +11,8 @@ TL_TABULATED_SHELL_HD inline bool CurveValue(TabulatedShellPlasticityCurve c, do
     double& value, double& slope) noexcept {
   // Native VINTER uses the left segment at a knot (strict X > next knot).
   // A fresh search avoids an additional history/cache transaction.
+  // The same final segment applies beyond the table; admission is a separate
+  // explicit parameter policy. No extra point or interpolation branch is needed.
   std::uint32_t low = 0, high = c.count - 1;
   while (high - low > 1) {
     const auto middle = low + (high - low) / 2;
@@ -34,7 +36,18 @@ TL_TABULATED_SHELL_HD inline TabulatedShellPlasticityStatus
 PrepareTabulatedShellPlasticity(double young, double nu, double rho,
     TabulatedShellPlasticityCurve curve, TabulatedShellPlasticityRate rate,
     TabulatedShellPlasticityParameters& output) noexcept {
+  return PrepareTabulatedShellPlasticity(young, nu, rho, curve, rate,
+      ShellPlasticityCurveContinuation::StrictDomain, output);
+}
+TL_TABULATED_SHELL_HD inline TabulatedShellPlasticityStatus
+PrepareTabulatedShellPlasticity(double young, double nu, double rho,
+    TabulatedShellPlasticityCurve curve, TabulatedShellPlasticityRate rate,
+    ShellPlasticityCurveContinuation continuation,
+    TabulatedShellPlasticityParameters& output) noexcept {
   using Status = TabulatedShellPlasticityStatus;
+  if (continuation != ShellPlasticityCurveContinuation::StrictDomain &&
+      continuation != ShellPlasticityCurveContinuation::NativeLastSegment)
+    return Status::InvalidParameters;
   if (!tabulated_shell_detail::ValidElasticInput(young,nu,rho)) return Status::InvalidParameters;
   if (!tabulated_shell_detail::CurveShape(curve) || curve.plastic_strain[0] != 0)
     return Status::InvalidCurve;
@@ -53,6 +66,7 @@ PrepareTabulatedShellPlasticity(double young, double nu, double rho,
   TabulatedShellPlasticityParameters p;
   if (!tabulated_shell_detail::PrepareRate(p, rate)) return Status::InvalidParameters;
   p.curve = curve;
+  p.continuation = continuation;
   if (!tabulated_shell_detail::PrepareElastic(young,nu,rho,p)) return Status::InvalidParameters;
   output = p;
   return Status::Ok;

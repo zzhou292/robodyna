@@ -21,6 +21,8 @@ struct ShellPlasticityMaterialInput {
   material::Law44LinearHardening linear{};
   // Trailing default preserves existing positional LAW44 declarations.
   ShellSectionLaw law=ShellSectionLaw::LayeredLaw44Nip3;
+  // Explicit table endpoint admission is part of complete catalog identity.
+  material::ShellPlasticityCurveContinuation continuation=material::ShellPlasticityCurveContinuation::StrictDomain;
 };
 struct ShellPlasticitySectionInput {
   std::uint64_t section_id=0;

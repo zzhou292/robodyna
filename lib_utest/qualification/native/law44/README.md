@@ -76,3 +76,10 @@ Filtered VP2 can continue native plastic flow during zero-strain hold as its
 rate-scaled yield decreases. A first fixture incorrectly required constant PLA
 there; that expectation was corrected without changing mechanics or tolerances.
 The focused build used one CPU, 204236 KiB peak RSS and 3.63 s; no CUDA run.
+
+The qualification-only trailing `Input.continuation` defaults to `StrictDomain`.
+An explicit `NativeLastSegment` selection admits the unchanged native VINTER
+extrapolation below the actual default EPSGM cap. It changes only wrapper
+admission; original sources, private symbols and prior table sentinel constants
+are unchanged. The new original-curve and failure-caller gate lives in
+`../../shell_hardening_continuation`; analytic wrappers reject this table policy.

@@ -130,6 +130,7 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::PrepareMaterials(
     if(m.law==ShellSectionLaw::LayeredLaw1Nip3) {
       material::ShellElasticLaw1PointParameters elastic;
       if(!out.heterogeneous||m.curve_id||m.hardening!=material::ShellPlasticityHardeningKind::Tabulated||
+         m.continuation!=material::ShellPlasticityCurveContinuation::StrictDomain||
          !Same(m.rate,material::TabulatedShellPlasticityRate{})||
          !Same(m.linear.initial_yield_pa,0.)||!Same(m.linear.tangent_modulus_pa,0.)||
          !material::PrepareShellElasticLaw1Point(m.young_pa,m.poisson_ratio,m.density_kg_m3,elastic))
@@ -140,7 +141,8 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::PrepareMaterials(
     if(m.law!=ShellSectionLaw::LayeredLaw44Nip3)
       return Error(Status::InvalidMaterial,"Unknown layered shell material law",i);
     if(m.hardening==material::ShellPlasticityHardeningKind::LinearLaw44) {
-      if(m.curve_id||material::PrepareLinearLaw44ShellPlasticity(m.young_pa,m.poisson_ratio,m.density_kg_m3,
+      if(m.curve_id||m.continuation!=material::ShellPlasticityCurveContinuation::StrictDomain||
+          material::PrepareLinearLaw44ShellPlasticity(m.young_pa,m.poisson_ratio,m.density_kg_m3,
           m.linear,m.rate,target.coefficients)!=sections::PointStatus::Ok)
         return Error(Status::InvalidMaterial,"Analytic LAW44 requires no curve, valid SIGY/ETAN and positive source rate",i);
       target.declaration=m; target.curve_index=NoShellBindingNode;
@@ -155,7 +157,7 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::PrepareMaterials(
     const material::TabulatedShellPlasticityCurve curve{out.curve_x.data()+c.offset,out.curve_y.data()+c.offset,
       static_cast<std::uint32_t>(c.count)};
     if(material::PrepareTabulatedShellPlasticity(m.young_pa,m.poisson_ratio,m.density_kg_m3,
-        curve,m.rate,target.coefficients)!=sections::PointStatus::Ok)
+        curve,m.rate,m.continuation,target.coefficients)!=sections::PointStatus::Ok)
       return Error(Status::InvalidMaterial,"Material coefficients or rate declaration are invalid",i);
     target.coefficients.curve={}; // Never retain a pointer into staged or another catalog's storage.
     target.declaration=m; target.curve_index=ci; used[ci]=true;

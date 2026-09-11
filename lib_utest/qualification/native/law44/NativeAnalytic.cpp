@@ -9,6 +9,7 @@ bool EvaluateAnalytic(const AnalyticInput& source,double layer,double thickness,
   const auto& in=source.point;
   const double native_default_limit=static_cast<double>(1e20f); // CONSTANT_MOD, HM_READ_MAT44 SI branch.
   if(!detail::ValidCommonInput(in)||!in.rate.active||in.plastic_strain||in.yield_stress||in.point_count||
+     in.continuation!=CurveContinuation::StrictDomain||
      !std::isfinite(source.initial_yield)||source.initial_yield<=0||source.initial_yield>=native_default_limit||
      !std::isfinite(source.tangent_modulus)||source.tangent_modulus<0||source.tangent_modulus>=in.young||
      !std::isfinite(layer)||layer<=0||!std::isfinite(thickness)||thickness<=0) return false;

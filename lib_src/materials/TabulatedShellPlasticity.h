@@ -26,6 +26,11 @@ struct TabulatedShellPlasticityRate {
   double cowper_symonds_c_per_s = 0, cowper_symonds_p = 0, cutoff_hz = 0;
 };
 enum class ShellPlasticityHardeningKind : std::uint8_t { Tabulated, LinearLaw44 };
+// StrictDomain preserves historical admission. NativeLastSegment uses the
+// pinned VINTER final-segment extrapolation below the separate native cap.
+enum class ShellPlasticityCurveContinuation : std::uint8_t {
+  StrictDomain, NativeLastSegment
+};
 // Original MAT024 LCSS=0, blank inline points. ETAN is the uniaxial tangent,
 // not the native plastic hardening modulus. Only positive-C/P VP2 is admitted.
 struct Law44LinearHardening {
@@ -43,6 +48,7 @@ struct TabulatedShellPlasticityParameters {
   ShellPlasticityHardeningKind hardening = ShellPlasticityHardeningKind::Tabulated;
   Law44LinearHardening linear{};
   double plastic_hardening_pa = 0;
+  ShellPlasticityCurveContinuation continuation = ShellPlasticityCurveContinuation::StrictDomain;
 };
 struct TabulatedShellPlasticityHistory {
   double stress[5]{}; // XX, YY, XY, YZ, ZX, Pa; transverse shear stays elastic.
@@ -81,6 +87,11 @@ PrepareTabulatedShellPlasticity(double young, double nu, double rho,
 TL_TABULATED_SHELL_HD inline TabulatedShellPlasticityStatus
 PrepareTabulatedShellPlasticity(double young, double nu, double rho,
     TabulatedShellPlasticityCurve curve, TabulatedShellPlasticityRate rate,
+    TabulatedShellPlasticityParameters& output) noexcept;
+TL_TABULATED_SHELL_HD inline TabulatedShellPlasticityStatus
+PrepareTabulatedShellPlasticity(double young, double nu, double rho,
+    TabulatedShellPlasticityCurve curve, TabulatedShellPlasticityRate rate,
+    ShellPlasticityCurveContinuation continuation,
     TabulatedShellPlasticityParameters& output) noexcept;
 TL_TABULATED_SHELL_HD inline TabulatedShellPlasticityStatus
 PrepareLinearLaw44ShellPlasticity(double young, double nu, double rho,

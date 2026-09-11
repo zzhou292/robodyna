@@ -23,17 +23,26 @@ TL_TABULATED_SHELL_HD inline TabulatedShellPlasticityStatus ValidHardening(
     const TabulatedShellPlasticityParameters& p) noexcept {
   using Status=TabulatedShellPlasticityStatus;
   if(p.hardening==ShellPlasticityHardeningKind::Tabulated) {
-    if(p.linear.initial_yield_pa!=0||p.linear.tangent_modulus_pa!=0||p.plastic_hardening_pa!=0)
+    if(p.linear.initial_yield_pa!=0||p.linear.tangent_modulus_pa!=0||p.plastic_hardening_pa!=0||
+        (p.continuation!=ShellPlasticityCurveContinuation::StrictDomain&&
+         p.continuation!=ShellPlasticityCurveContinuation::NativeLastSegment))
       return Status::InvalidParameters;
     return CurveShape(p.curve)?Status::Ok:Status::InvalidCurve;
   }
   double b=0;
   if(p.hardening!=ShellPlasticityHardeningKind::LinearLaw44||!EmptyCurve(p.curve)||!p.rate.enabled||
+     p.continuation!=ShellPlasticityCurveContinuation::StrictDomain||
      !LinearModulus(p.young_pa,p.linear,b)||b!=p.plastic_hardening_pa) return Status::InvalidParameters;
   return Status::Ok;
 }
 TL_TABULATED_SHELL_HD inline bool HardeningDomain(const TabulatedShellPlasticityParameters& p,double pla) noexcept {
-  if(p.hardening==ShellPlasticityHardeningKind::Tabulated) return pla<=p.curve.plastic_strain[p.curve.count-1];
+  if(p.hardening==ShellPlasticityHardeningKind::Tabulated) {
+    // B=0 table branch has default EPSGM=INFINITY. At that separate native cap
+    // SIGEPS44C changes yield/tangent; this policy does not implement that branch.
+    if(p.continuation==ShellPlasticityCurveContinuation::NativeLastSegment)
+      return pla<AnalyticDefaultLimit();
+    return pla<=p.curve.plastic_strain[p.curve.count-1];
+  }
   const double limit=AnalyticDefaultLimit();
   const double stress_cap=p.plastic_hardening_pa==0?limit:(limit-p.linear.initial_yield_pa)/p.plastic_hardening_pa;
   return pla<limit&&pla<stress_cap;

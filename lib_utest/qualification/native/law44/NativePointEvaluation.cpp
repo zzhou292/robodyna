@@ -15,7 +15,16 @@ bool EvaluateValues(const Input& in, bool physical, double layer, double thickne
             (n && (in.plastic_strain[n]<=in.plastic_strain[n-1] ||
                    in.yield_stress[n]<in.yield_stress[n-1]))) return false;
     }
-    if (in.accepted_plastic_strain>in.plastic_strain[in.point_count-1]) return false;
+    if (in.continuation!=CurveContinuation::StrictDomain &&
+        in.continuation!=CurveContinuation::NativeLastSegment) return false;
+    // Keep default admission and the existing table oracle's sentinel values.
+    // Explicit continuation stays below the actual source default EPSGM cap;
+    // its distinct yield-cap/removal branches are not qualified here.
+    const auto in_domain=[&](double pla) {
+        return in.continuation==CurveContinuation::StrictDomain?
+            pla<=in.plastic_strain[in.point_count-1]:pla<static_cast<double>(1e20f);
+    };
+    if (!in_domain(in.accepted_plastic_strain)) return false;
     std::vector<double> curve(2*(in.point_count+1), 0);
     for (std::size_t n=0; n<in.point_count; ++n) {
         curve[2*(n+1)]=in.plastic_strain[n];
@@ -36,7 +45,7 @@ bool EvaluateValues(const Input& in, bool physical, double layer, double thickne
         in.strain_increment.data(), rate_values.data(), values.data());
     for (double x:values) if (!std::isfinite(x)) return false;
     if (values[11]!=1 || values[5]<in.accepted_plastic_strain ||
-        values[5]>in.plastic_strain[in.point_count-1]) return false;
+        !in_domain(values[5])) return false;
     output=values; return true;
 }
 } // namespace tl::qualification::law44::detail

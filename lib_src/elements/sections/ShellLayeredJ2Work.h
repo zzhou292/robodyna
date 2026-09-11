@@ -11,7 +11,8 @@ TL_SHELL_SECTION_HD inline bool ValidLayeredJ2Parameters(const PointParameters& 
   PointParameters checked;
   if(tl::material::tabulated_shell_detail::ValidHardening(p)!=PointStatus::Ok) return false;
   const auto status=p.hardening==tl::material::ShellPlasticityHardeningKind::Tabulated?
-    tl::material::PrepareTabulatedShellPlasticity(p.young_pa,p.poisson_ratio,p.density_kg_m3,p.curve,p.rate,checked):
+    tl::material::PrepareTabulatedShellPlasticity(p.young_pa,p.poisson_ratio,p.density_kg_m3,
+        p.curve,p.rate,p.continuation,checked):
     tl::material::PrepareLinearLaw44ShellPlasticity(p.young_pa,p.poisson_ratio,p.density_kg_m3,p.linear,p.rate,checked);
   if(status!=PointStatus::Ok) return false;
   return p.shear_modulus==checked.shear_modulus&&p.a11==checked.a11&&p.a12==checked.a12&&

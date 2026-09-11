@@ -44,6 +44,7 @@ bool ShellBatchPlasticityBinding::SameScope(const ShellBatchPlasticityBinding& o
     if(x.curve_index!=y.curve_index||m.material_id!=n.material_id||m.curve_id!=n.curve_id||
         !Same(m.young_pa,n.young_pa)||!Same(m.poisson_ratio,n.poisson_ratio)||
         !Same(m.density_kg_m3,n.density_kg_m3)||!Same(m.rate,n.rate)||m.hardening!=n.hardening||m.law!=n.law||
+        m.continuation!=n.continuation||
         !Same(m.linear.initial_yield_pa,n.linear.initial_yield_pa)||
         !Same(m.linear.tangent_modulus_pa,n.linear.tangent_modulus_pa)) return false;
   }

@@ -3,6 +3,7 @@
 #include <cstddef>
 
 namespace tl::qualification::law44 {
+enum class CurveContinuation { StrictDomain, NativeLastSegment };
 struct RateInput {
     bool active = false;
     double coefficient_per_s = 0, exponent = 0;
@@ -18,6 +19,8 @@ struct Input {
     std::array<double, 5> accepted_stress{}, strain_increment{};
     double accepted_plastic_strain = 0;
     RateInput rate;
+    // Qualification admission only; complete native VINTER is unchanged.
+    CurveContinuation continuation = CurveContinuation::StrictDomain;
 };
 struct Result {
     std::array<double, 5> stress{};

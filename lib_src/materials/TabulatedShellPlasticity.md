@@ -48,9 +48,16 @@ Pointers must refer to storage accessible to the executing host or device.
 Prepared coefficients and curve values must remain immutable during use.
 
 The interpolation cache is replaced by a fresh binary search with the same
-strict knot-side choice. Extrapolation beyond the final supplied curve strain
-is explicitly rejected, including a candidate that crosses it. The native
-projection freezes the old-point curve slope within an increment; this code
+strict knot-side choice. Existing preparation overloads select
+`ShellPlasticityCurveContinuation::StrictDomain` and reject extrapolation,
+including a candidate that crosses the final supplied strain. The explicit
+rate-plus-policy overload accepts `NativeLastSegment`, which reuses the same
+VINTER last-segment slope and expression beyond the endpoint. It adds no point,
+clamp or plateau. This policy admits PLA only below the separate native default
+EPSGM cap (`static_cast<double>(1e20f)`); the cap branch remains unsupported.
+The material catalog retains this policy in complete identity and prepared
+parameters. LAW1 and analytic declarations reject non-strict table policies.
+The native projection freezes the old-point curve slope within an increment; this code
 preserves that behavior and the native special `HS=E` at zero accumulated
 plastic strain. The accepted projection comes from the **third evaluated**
 Newton iterate; the next guess computed during that evaluation is not applied.
@@ -112,3 +119,10 @@ The existing table API and supported table behavior remain available. The
 optional [LAW44 analytic hardening](Law44AnalyticHardening.md) uses the same point
 recurrence with an explicit tagged source SIGY/ETAN declaration; it adds no
 synthetic table or separate history owner.
+
+The explicit continuation qualification uses the three complete original FAIL=1
+curves ending at .3, .4 and .5, with original positive-C/P settings and a separate
+rate-off control. Its [qualification README](../../lib_utest/qualification/shell_hardening_continuation/README.md)
+separates source evidence, host checks and pending native/CUDA execution. This
+policy does not opt existing source adapters or archives into failure-aware
+resident mechanics.
