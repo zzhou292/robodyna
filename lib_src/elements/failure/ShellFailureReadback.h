@@ -18,11 +18,11 @@ template<class Impl> auto ReadFailure(Impl& state, unsigned slab, double time) {
   return report;
 }
 
-template<class Stamp, class Diagnostics, class Batch>
-bool FailureOutputRanges(const Stamp& expected, ShellBatchFailureState* output,
+template<class Stamp, class Value, class Diagnostics, class Batch>
+bool FailureOutputRanges(const Stamp& expected, Value* output,
     std::size_t count, Diagnostics* diagnostics, const Batch& batch) noexcept {
   using trial_identity::Disjoint;
-  const auto bytes = count * sizeof(ShellBatchFailureState);
+  const auto bytes = count * sizeof(Value);
   if (!Disjoint(output, bytes, &expected, sizeof(expected)) ||
       !Disjoint(output, bytes, &batch, sizeof(batch))) {
     return false;

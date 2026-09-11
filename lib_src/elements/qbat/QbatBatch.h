@@ -28,6 +28,10 @@ class Batch {
   BatchReport CopyAcceptedResults(const NodalStamp&,BatchResult*,std::size_t capacity,BatchDiagnostics*);
   BatchReport CopyPreparedResults(const BatchDiagnostics&,BatchResult*,std::size_t capacity);
   BatchReport CopyAcceptedDiagnostics(const NodalStamp&,BatchDiagnostics*) const noexcept;
+  // Complete accepted element_active values, 0 inactive / 1 active, after the
+  // same full four-point/native-result validation as CopyAcceptedResults.
+  BatchReport CopyAcceptedParentActivity(const NodalStamp&,std::uint8_t*,
+      std::size_t capacity,BatchDiagnostics*);
   void DiscardTrial() noexcept;
   NodalAllocationInfo allocations() const noexcept;
   std::size_t host_bytes() const noexcept;

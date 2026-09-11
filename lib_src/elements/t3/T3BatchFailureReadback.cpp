@@ -32,6 +32,35 @@ BatchReport T3Batch::CopyAcceptedFailureHistory(const NodalStamp& expected,
   return {BatchStatus::Success, "OK"};
 }
 
+BatchReport T3Batch::CopyAcceptedParentActivity(const NodalStamp& expected,
+    std::uint8_t* output, std::size_t capacity, BatchDiagnostics* diagnostics) {
+  if (!impl_) return {BatchStatus::NotInitialized, "Batch is not initialized"};
+  auto& state = *impl_;
+  if (!state.plasticity || !state.plasticity->failure_sections()) {
+    return {BatchStatus::InvalidInput, "Parent activity needs the explicit failure-capable scope"};
+  }
+  if (!state.bound) return {BatchStatus::NotBound, "Initial source and virgin history are not bound"};
+  if (capacity != state.config.element_count) {
+    return {BatchStatus::ResourceLimit, "Activity readback requires exact complete family capacity"};
+  }
+  if (!batch_detail::SameStamp(expected, state.accepted_stamp)) {
+    return {BatchStatus::StaleTrial, "Accepted parent activity endpoint differs"};
+  }
+  if (!diagnostics || !shell_batch_plasticity_detail::FailureOutputRanges(
+      expected, output, capacity, diagnostics, *this)) {
+    return {BatchStatus::InvalidInput, "Activity output is missing or overlaps inspected inputs"};
+  }
+  const auto report = shell_batch_plasticity_detail::ReadFailure(state,
+      state.AcceptedSlabIndex(), state.accepted_diagnostics.time);
+  if (report.status != BatchStatus::Success) return report;
+  const auto* history = state.plasticity->failure_staging();
+  for (std::size_t parent = 0; parent < capacity; ++parent) {
+    output[parent] = history[parent].active ? 1 : 0;
+  }
+  *diagnostics = state.accepted_diagnostics;
+  return {BatchStatus::Success, "Accepted parent activity copied"};
+}
+
 BatchReport T3Batch::CopyPreparedFailureHistory(const BatchDiagnostics& expected,
     ShellBatchFailureState* output, std::size_t capacity) {
   if (!impl_) return {BatchStatus::NotInitialized, "Batch is not initialized"};

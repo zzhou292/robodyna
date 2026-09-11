@@ -56,6 +56,34 @@ BatchReport Batch::CopyAcceptedResults(const NodalStamp& expected,BatchResult* o
   *diagnostics=s.accepted_diagnostics;
   return {BatchStatus::Success,"OK"};
 }
+BatchReport Batch::CopyAcceptedParentActivity(const NodalStamp& expected,
+    std::uint8_t* output,std::size_t capacity,BatchDiagnostics* diagnostics) {
+  if (!impl_) return {BatchStatus::NotInitialized,"QBAT batch is not initialized"};
+  auto& state = *impl_;
+  if (!state.bound) return {BatchStatus::NotBound,"QBAT initial sources and virgin history are not bound"};
+  if (capacity != state.config.element_count) {
+    return {BatchStatus::ResourceLimit,"QBAT activity needs exact complete family capacity"};
+  }
+  if (!trial_identity::SameStamp(expected,state.accepted_stamp)) {
+    return {BatchStatus::StaleTrial,"QBAT accepted activity endpoint differs"};
+  }
+  using trial_identity::Disjoint;
+  if (!state.OutputDisjoint(output,capacity) || !state.OutputDisjoint(diagnostics,sizeof(*diagnostics)) ||
+      !Disjoint(output,capacity,diagnostics,sizeof(*diagnostics)) ||
+      !Disjoint(output,capacity,&expected,sizeof(expected)) ||
+      !Disjoint(diagnostics,sizeof(*diagnostics),&expected,sizeof(expected)) ||
+      !Disjoint(output,capacity,this,sizeof(*this)) ||
+      !Disjoint(diagnostics,sizeof(*diagnostics),this,sizeof(*this))) {
+    return {BatchStatus::InvalidInput,"QBAT activity output overlaps inspected or owned data"};
+  }
+  const auto report = state.ReadResults(state.accepted,state.accepted_diagnostics);
+  if (report.status != BatchStatus::Success) return report;
+  for (std::size_t parent = 0; parent < capacity; ++parent) {
+    output[parent] = state.staging[parent].history.element_active ? 1 : 0;
+  }
+  *diagnostics = state.accepted_diagnostics;
+  return {BatchStatus::Success,"Accepted QBAT parent activity copied"};
+}
 BatchReport Batch::CopyPreparedResults(const BatchDiagnostics& expected,BatchResult* output,std::size_t capacity) {
   if(!impl_) return {BatchStatus::NotInitialized,"QBAT batch is not initialized"};
   auto& s=*impl_;

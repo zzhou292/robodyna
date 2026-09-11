@@ -145,6 +145,10 @@ class T3Batch {
   // all caller outputs remain unchanged if validation or device readback fails.
   BatchReport CopyAcceptedFailureHistory(const NodalStamp&,ShellBatchFailureState*,std::size_t capacity,BatchDiagnostics*);
   BatchReport CopyPreparedFailureHistory(const BatchDiagnostics&,ShellBatchFailureState*,std::size_t capacity);
+  // Complete accepted parent OFF, 0 inactive / 1 active, from actual validated
+  // sidecars. Epoch zero requires successful source/virgin-state binding.
+  BatchReport CopyAcceptedParentActivity(const NodalStamp&,std::uint8_t*,
+      std::size_t capacity,BatchDiagnostics*);
   // Explicit complete QEPH/T3/QBAT scope. All present families require this
   // named path and the common formulation publisher; legacy admission stays closed.
   BatchReport InitializeFormulations(const T3BatchConfig&,const ShellFormulationScope&,

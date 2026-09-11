@@ -153,6 +153,11 @@ class QephBatch {
   // all caller outputs remain unchanged if validation or device readback fails.
   BatchReport CopyAcceptedFailureHistory(const NodalStamp&,ShellBatchFailureState*,std::size_t capacity,BatchDiagnostics*);
   BatchReport CopyPreparedFailureHistory(const BatchDiagnostics&,ShellBatchFailureState*,std::size_t capacity);
+  // Complete accepted parent OFF only: 0 inactive, 1 active. This reads the
+  // validated actual sidecar, including the bound virgin state at epoch zero.
+  // No declaration-derived activity or point-failure flag is substituted.
+  BatchReport CopyAcceptedParentActivity(const NodalStamp&,std::uint8_t*,
+      std::size_t capacity,BatchDiagnostics*);
   // Explicit complete QEPH/T3/QBAT scope. All present families require this
   // named path and the common formulation publisher; legacy admission stays closed.
   BatchReport InitializeFormulations(const QephBatchConfig&,const ShellFormulationScope&,

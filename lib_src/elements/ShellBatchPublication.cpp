@@ -205,6 +205,25 @@ ShellPublicationReport ShellBatchPublication::CopyAcceptedDiagnostics(const Noda
   }
   *output=s.accepted; return Ok();
 }
+ShellPublicationReport ShellBatchPublication::ValidateAcceptedActivitySources(
+    const FENodalState& owner,const ShellFormulationParticipants& participants,
+    const ShellBatchInventory& inventory) const noexcept {
+  if (!impl_) return {S::NotInitialized,"Publication is not initialized"};
+  const auto& state = *impl_;
+  if (participants.qeph != state.qbatch || participants.t3 != state.tbatch ||
+      participants.qbat != state.bbatch || participants.connector != state.connector) {
+    return {S::NotJoined,"Activity sources are not the actual attached participants"};
+  }
+  ShellBatchDiagnostics accepted;
+  const auto checked = CopyAcceptedDiagnostics(owner.accepted(),&accepted);
+  if (checked.status != S::Success) return checked;
+  const auto* binding = state.bbatch ? &*state.bbatch->impl_->binding :
+      &*state.qbatch->impl_->joined_binding;
+  if (binding->inventory() != inventory) {
+    return {S::NotJoined,"Activity source inventory differs from the complete accepted scope"};
+  }
+  return Ok();
+}
 void ShellBatchPublication::DiscardTrial() noexcept { if(impl_) impl_->Discard(); }
 NodalAllocationInfo ShellBatchPublication::allocations() const noexcept {
   return impl_?NodalAllocationInfo{impl_->layout.bytes,1}:NodalAllocationInfo{};

@@ -118,6 +118,11 @@ class ShellBatchPublication {
   ShellPublicationReport Commit(FENodalState&,const NodalTrialToken&,
       const ShellBatchDiagnostics&,const NodalValidationReceipt&) noexcept;
   ShellPublicationReport CopyAcceptedDiagnostics(const NodalStamp&,ShellBatchDiagnostics*) const noexcept;
+  // Read-only authentication for consumers of accepted family fields. Checks
+  // the actual attached objects, complete native inventory and live owner
+  // endpoint. Matching declared IDs alone never authenticate another batch.
+  ShellPublicationReport ValidateAcceptedActivitySources(const FENodalState&,
+      const ShellFormulationParticipants&,const ShellBatchInventory&) const noexcept;
   // Discards coordinator and every material scratch; caller still owns nodal
   // Discard when abandoning a trial outside Prepare/Commit.
   void DiscardTrial() noexcept;
