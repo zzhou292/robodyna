@@ -1,7 +1,5 @@
 #include "SourceAssemblyShellInput.h"
-#include "output/ArtifactIO.h"
-#include <limits>
-#include <type_traits>
+#include "SourceShellReferenceInput.h"
 
 namespace crash::modelio::assembly {
 namespace {
@@ -9,20 +7,18 @@ template<class Binding, unsigned Arity>
 Binding MakeBinding(const Data& source, const Parent& parent) {
     output::Require(parent.arity == Arity, "Assembly shell family arity mismatch");
     Binding binding; binding.source_parent_id = parent.source_id;
-    using NodeId = std::remove_reference_t<decltype(binding.reference.node_ids[0])>;
+    SourceReferenceNode nodes[Arity];
+    using NodeId=std::remove_reference_t<decltype(binding.reference.node_ids[0])>;
     for (unsigned n = 0; n < Arity; ++n) {
         const auto index = parent.nodes[n]; const auto& node = source.nodes.at(index);
-        output::Require(node.source_id <= std::numeric_limits<NodeId>::max(), "Native family cannot represent source NID");
+        // Keep the legacy per-node rejection order before reading later nodes.
+        output::Require(node.source_id<=std::numeric_limits<NodeId>::max(),"Native family cannot represent source NID");
         binding.nodes[n] = index;
-        binding.reference.position[n] = node.position_m;
-        binding.reference.node_ids[n] = static_cast<NodeId>(node.source_id);
+        nodes[n]={node.source_id,node.position_m};
     }
     const auto& material = source.materials.at(parent.material_index);
     const auto& section = source.sections.at(parent.section_index);
-    binding.reference.density = material.density_kg_m3;
-    binding.reference.young_modulus = material.young_pa;
-    binding.reference.poisson_ratio = material.poisson_ratio;
-    binding.reference.thickness = section.thickness_m[0];
+    binding.reference=PackShellReference<decltype(binding.reference)>(nodes,material,section);
     return binding;
 }
 }  // namespace
