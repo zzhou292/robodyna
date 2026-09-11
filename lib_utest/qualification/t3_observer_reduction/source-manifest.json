@@ -9,13 +9,25 @@
   "files": [
     {
       "path": "lib_src/elements/mapped_shell/ObserverTypes.h",
-      "bytes": 1294,
-      "sha256": "02846bceb852deefbd4b3bb5e30aecbf42da9e86dce1eafeb115b2348a64b7a2"
+      "bytes": 1450,
+      "sha256": "b8b82445c51d640c3006ba54a307631c39af3cf98f6e94d2fa474eac74d5d462",
+      "previous_records": [
+        {
+          "bytes": 1294,
+          "sha256": "02846bceb852deefbd4b3bb5e30aecbf42da9e86dce1eafeb115b2348a64b7a2"
+        }
+      ]
     },
     {
       "path": "lib_src/elements/mapped_shell/ObserverSums.h",
-      "bytes": 2437,
-      "sha256": "6b80e67e02db6ba3dd8312931ccb4b38b128919cad28c0abbfbc4fbdf5266ebf"
+      "bytes": 2617,
+      "sha256": "4b878223e7244cdae7af4e288c7f449878dd12d2d4a21b96a8d775960c4da003",
+      "previous_records": [
+        {
+          "bytes": 2437,
+          "sha256": "6b80e67e02db6ba3dd8312931ccb4b38b128919cad28c0abbfbc4fbdf5266ebf"
+        }
+      ]
     },
     {
       "path": "lib_src/elements/mapped_shell/ObserverTree.cuh",
@@ -102,5 +114,6 @@
       "bytes": 3722,
       "sha256": "711e91f1eb2a3fcfe5ee6e848536c6354d1ad8240f6bb59fa1cef1bef2cee4ea"
     }
-  ]
+  ],
+  "root_include_fix": "Scoped host/device decoration makes neutral observer headers self-contained under real NVCC; no arithmetic or record-layout change."
 }

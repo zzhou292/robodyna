@@ -3,8 +3,14 @@
 #include "ObserverTypes.h"
 #include <cfloat>
 
+#if defined(__CUDACC__)
+#define TL_MAPPED_OBSERVER_HD __host__ __device__
+#else
+#define TL_MAPPED_OBSERVER_HD
+#endif
+
 namespace tl::fea::mapped_shell {
-TL_SURFACE_HD inline void AddObservation(ObserverSummary& out, unsigned channel, double term) noexcept {
+TL_MAPPED_OBSERVER_HD inline void AddObservation(ObserverSummary& out, unsigned channel, double term) noexcept {
   if (!tl::math::Finite(term)) {
     out.serial = true;
     return;
@@ -18,11 +24,11 @@ TL_SURFACE_HD inline void AddObservation(ObserverSummary& out, unsigned channel,
 struct WorkObservation {
   ObserverSummary& out;
   unsigned channel;
-  TL_SURFACE_HD void operator-=(double term) noexcept {
+  TL_MAPPED_OBSERVER_HD void operator-=(double term) noexcept {
     AddObservation(out, channel, -term);
   }
 };
-TL_SURFACE_HD inline void MergeObservations(ObserverSummary& a, const ObserverSummary& b) noexcept {
+TL_MAPPED_OBSERVER_HD inline void MergeObservations(ObserverSummary& a, const ObserverSummary& b) noexcept {
   a.serial = a.serial || b.serial;
   a.maximum_term = ::fmax(a.maximum_term, b.maximum_term);
   for (unsigned channel = 0; channel < ObserverChannels; ++channel) {
@@ -43,9 +49,11 @@ TL_SURFACE_HD inline void MergeObservations(ObserverSummary& a, const ObserverSu
 // All original serial prefixes and tree partials stay below DBL_MAX/8; the
 // factor-eight margin covers binary64 addition and rounded-division error.
 // An inadequate proof requests the original serial path, not rejection.
-TL_SURFACE_HD inline bool FiniteObserverPrefixes(std::size_t parents, double maximum_term) noexcept {
+TL_MAPPED_OBSERVER_HD inline bool FiniteObserverPrefixes(std::size_t parents, double maximum_term) noexcept {
   if (!parents || parents > UINT32_MAX / 4 || !tl::math::Finite(maximum_term) || maximum_term < 0) return false;
   const double terms = 4.0 * static_cast<double>(parents) + 1;
   return maximum_term <= DBL_MAX / (8.0 * terms);
 }
 } // namespace tl::fea::mapped_shell
+
+#undef TL_MAPPED_OBSERVER_HD

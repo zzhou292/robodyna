@@ -5,7 +5,7 @@ import hashlib,json,subprocess,sys
 here=Path(__file__).resolve().parent
 root=here.parents[2]
 raw=(here/'source-manifest.json').read_bytes()
-assert hashlib.sha256(raw).hexdigest()=='999ae10db74319706499874d584c290730aeecfe47f53717f57fa0d5f187f5ff'
+assert hashlib.sha256(raw).hexdigest()=='af11af3911d74023b2678304bada0c7a1cda43be7eca48998fa43c863b32d368'
 manifest=json.loads(raw)
 for row in manifest['files']:
     path=Path(row['path'])

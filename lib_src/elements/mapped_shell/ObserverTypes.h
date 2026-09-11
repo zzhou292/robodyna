@@ -4,6 +4,12 @@
 #include <cstddef>
 #include <cstdint>
 
+#if defined(__CUDACC__)
+#define TL_MAPPED_OBSERVER_HD __host__ __device__
+#else
+#define TL_MAPPED_OBSERVER_HD
+#endif
+
 namespace tl::fea::mapped_shell {
 inline constexpr unsigned ObserverThreads = 128;
 inline constexpr unsigned ObserverMaxBlocks = 256;
@@ -20,10 +26,12 @@ struct ObserverSummary {
 };
 static_assert(sizeof(ObserverSummary) == 128, "Complete typed observer record");
 static_assert((ObserverThreads & (ObserverThreads - 1)) == 0, "Fixed binary tree");
-TL_SURFACE_HD inline unsigned ObserverBlocks(std::size_t parents, std::size_t nodes) noexcept {
+TL_MAPPED_OBSERVER_HD inline unsigned ObserverBlocks(std::size_t parents, std::size_t nodes) noexcept {
   const auto count = parents > nodes ? parents : nodes;
   if (!count || parents > UINT32_MAX / 4 || nodes >= UINT32_MAX) return 0;
   const auto blocks = 1 + (count - 1) / ObserverThreads;
   return static_cast<unsigned>(blocks > ObserverMaxBlocks ? ObserverMaxBlocks : blocks);
 }
 } // namespace tl::fea::mapped_shell
+
+#undef TL_MAPPED_OBSERVER_HD
