@@ -25,10 +25,10 @@ TL_SOLID18_HD inline Status PreparePrescribedHistory(const Reference& reference,
   if (status == Status::Success) output = next;
   return status;
 }
-TL_SOLID18_HD inline Status InitializeHistory(const Reference& reference,
-    const Material& material, History& output) noexcept {
-  if (!detail::ValidMaterial(reference,material)) return Status::InvalidInput;
-  HistoryValues values;
+namespace detail {
+TL_SOLID18_HD inline void InitialHistoryValues(const Reference& reference,
+    const Material& material, HistoryValues& values) noexcept {
+  values = {};
   for (unsigned ip = 0; ip < 8; ++ip) {
     auto& p = values.point[ip];
     p.density_kg_m3 = material.material.density_kg_m3;
@@ -41,6 +41,13 @@ TL_SOLID18_HD inline Status InitializeHistory(const Reference& reference,
     const auto& last = reference.geometry().native_position_m[7];
     values.saved_local_position_m[n] = {x.x-last.x,x.y-last.y,x.z-last.z};
   }
+}
+}  // namespace detail
+TL_SOLID18_HD inline Status InitializeHistory(const Reference& reference,
+    const Material& material, History& output) noexcept {
+  if (!detail::ValidMaterial(reference,material)) return Status::InvalidInput;
+  HistoryValues values;
+  detail::InitialHistoryValues(reference,material,values);
   return PreparePrescribedHistory(reference,material,values,{},output);
 }
 }  // namespace tl::fea::solid18::law44

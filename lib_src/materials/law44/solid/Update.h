@@ -16,13 +16,14 @@ TL_LAW44_SOLID_HD inline bool HistoryValid(const History& h, Curve c) noexcept {
 }
 }  // namespace detail
 
-// Closed active, convected MULAW/SIGEPS44 packet. No frame transformation,
-// EOS/current-density reconstruction, energy update or dt0 interval is implied.
-TL_LAW44_SOLID_HD inline Status Update(const Parameters& p, const History& accepted,
-    const Input& in, Result& output) noexcept {
+namespace detail {
+// Shared arithmetic. Only the separate virgin constructor admits zero dt.
+TL_LAW44_SOLID_HD inline Status UpdateValues(const Parameters& p, const History& accepted,
+    const Input& in, Result& output, bool initialization) noexcept {
   if (!detail::ParametersValid(p)) return Status::InvalidParameters;
   if (!detail::HistoryValid(accepted, p.curve)) return Status::InvalidHistory;
-  if (!detail::Positive(in.dt_s) || !tl::math::Finite(in.relative_density) ||
+  if (!tl::math::Finite(in.dt_s) || in.dt_s < 0 || (!initialization && in.dt_s == 0) ||
+      !tl::math::Finite(in.relative_density) ||
       in.relative_density < -1) return Status::InvalidInput;
   for (double rate : in.engineering_rate_per_s) {
     if (!tl::math::Finite(rate)) return Status::InvalidInput;
@@ -93,5 +94,19 @@ TL_LAW44_SOLID_HD inline Status Update(const Parameters& p, const History& accep
       !tl::math::Finite(r.yield_stress_pa) || !tl::math::Finite(r.tangent_factor)) return Status::NonfiniteResult;
   output = r;
   return Status::Ok;
+}
+}  // namespace detail
+// Closed active, convected MULAW/SIGEPS44 packet. No frame transformation,
+// EOS/current-density reconstruction, energy update or dt0 interval is implied.
+TL_LAW44_SOLID_HD inline Status Update(const Parameters& p, const History& accepted,
+    const Input& in, Result& output) noexcept {
+  return detail::UpdateValues(p,accepted,in,output,false);
+}
+// Native TT0 evaluation constructs its own virgin history. It is not a
+// zero-duration update of an existing accepted material state.
+TL_LAW44_SOLID_HD inline Status Initialize(const Parameters& p, const Input& in,
+    Result& output) noexcept {
+  if (in.dt_s != 0) return Status::InvalidInput;
+  return detail::UpdateValues(p,History{},in,output,true);
 }
 }  // namespace tl::material::law44::solid

@@ -21,6 +21,14 @@ subroutine REAR18_FORCE_MATERIAL(npts,curve,material,units,base,cursor,rate,dt, 
       real(c_double),intent(out) :: v(19),p(26)
       integer(c_int),intent(out) :: next,s
     end subroutine
+    subroutine initial(n,c,m,u,d,mu,v,next,p,s) bind(C,name='law44_solid_initialize_native')
+      import c_double,c_int
+      integer(c_int),value :: n,u
+      real(c_double),intent(in) :: c(2,n+1),m(7),d(7)
+      real(c_double),value :: mu
+      real(c_double),intent(out) :: v(19),p(26)
+      integer(c_int),intent(out) :: next,s
+    end subroutine
     subroutine SOLID18_FORCE_VISCOSITY(rate,rho,rho0,vol,length,ssp,vis,q,dt,sti)
       import c_double
       real(c_double),intent(in) :: rate(6),rho,rho0,vol,length,ssp,vis
@@ -47,8 +55,13 @@ subroutine REAR18_FORCE_MATERIAL(npts,curve,material,units,base,cursor,rate,dt, 
   amu_value=current_density/material(3)-one
   motion(1:6)=rate
   motion(7)=dt
-  call point(npts,curve,material,units,base(1:14),cursor,motion,amu_value, &
-             values(1:19),next_cursor,prepared,status)
+  if(dt==zero) then
+    call initial(npts,curve,material,units,motion,amu_value, &
+                 values(1:19),next_cursor,prepared,status)
+  else
+    call point(npts,curve,material,units,base(1:14),cursor,motion,amu_value, &
+               values(1:19),next_cursor,prepared,status)
+  endif
   if(status/=0) return
   voln=current_volume
   defp=values(13)

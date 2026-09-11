@@ -9,7 +9,7 @@ file(MAKE_DIRECTORY "${modules}")
 add_custom_target(rear18_force_verify_native
   COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_SOURCE_DIR}/prepare_sources.py"
     --output "${prepared}" --check VERBATIM)
-add_library(rear18_force_native STATIC NativeInterfaces.F90 NativeGeometry.F NativeControl.F
+add_library(rear18_force_native STATIC NativeInterfaces.F90 NativeEntryInterface.F90 NativeEntries.F NativeGeometry.F NativeControl.F
   NativePoint.F NativeMaterial.F90 NativeReduce.F NativeCaller.F
   "${prepared}/degenes8.F" "${prepared}/s8edefoc3.F" "${prepared}/s8zfintp3.F" "${prepared}/intab.F")
 add_dependencies(rear18_force_native rear18_force_verify_native solid18_force_native solid18_reference_native)

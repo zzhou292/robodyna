@@ -27,7 +27,7 @@
     },
     {
       "path": "../../../lib_src/materials/law44/solid/Update.h",
-      "sha256": "53ced60ede95b270f5b0884d82a0561e935244825700edb138e4746fc2f67afe"
+      "sha256": "99676ad8a988d5c0727e9db8ffb8fb30e6726564323187603d8e61c9108459c9"
     },
     {
       "path": "CudaTest.cu",
@@ -59,7 +59,7 @@
     },
     {
       "path": "native/NativePoint.F90",
-      "sha256": "ece8147221ff4d594c0aaf1983b37884354ec78d4aaf5b8e760f7919820d0213"
+      "sha256": "bb91f690e1cb24f687f23fded8bf2b7296fdf7dd4916db0735423c9bea5653d2"
     },
     {
       "path": "native/NativeSetup.F",
@@ -81,5 +81,6 @@
       "path": "verify_source.py",
       "sha256": "c845e17828614bc3229b3d126bed6bc9700ee352b87924c9bf4da80fe67ad4cc"
     }
-  ]
+  ],
+  "tt0_extension": "Private unchanged UpdateValues and native calculator; constructor supplies virgin history, ordinary update remains positive-dt"
 }

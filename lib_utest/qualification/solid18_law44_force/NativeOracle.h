@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "TestSupport.h"
-#include "lib_utest/qualification/solid18_law44_reference/NativeOracle.h"
 namespace rear_force_test {
 struct NativeState {
   std::array<double,160> point{};

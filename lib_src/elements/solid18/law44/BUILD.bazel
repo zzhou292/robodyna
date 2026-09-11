@@ -8,7 +8,7 @@ cc_library(
 cc_library(
     name = "force",
     hdrs = ["ForceTypes.h", "ForceChecks.h", "History.h", "Kinematics.h",
-            "PointResponse.h", "ForceAssembly.h", "Force.h"],
+            "PointResponse.h", "ForceAssembly.h", "Force.h", "ForceScratch.h"],
     deps = [":reference", "//lib_src/elements/solid18:force",
             "//lib_src/materials/law44/solid:point", "//lib_src/materials:solid_caller_values"],
 )

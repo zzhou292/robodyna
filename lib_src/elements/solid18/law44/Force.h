@@ -10,9 +10,16 @@ namespace detail {
 // Private unpublished staging; the public entry publishes only after every IP.
 TL_SOLID18_HD inline Status CalculateForceStaged(const Reference& reference,
     const History& accepted, const PrescribedInterval& interval, const Material& material,
-    ForceTrial& trial, HistoryValues& next, StartupGeometry& geometry_scratch) noexcept {
+    ForceTrial& trial, HistoryValues& next, StartupGeometry& geometry_scratch,
+    bool initialization = false) noexcept {
   const auto status = GeometryValues(reference,interval,trial.geometry,geometry_scratch);
   if (status != Status::Success) return status;
+  // I_SH0 never computes these channels. Reused unpublished scratch must expose
+  // the same selected zero fields as a fresh value packet.
+  for (auto& point : trial.geometry.point) {
+    for (auto& axis : point.shear_per_m) for (double& value : axis) value = 0;
+    for (auto& axis : point.cross_per_m) for (double& value : axis) value = 0;
+  }
   trial.diagnostics = {};
   auto& diagnostics = trial.diagnostics;
   diagnostics.native_degeneracy = NativeDegeneracy(reference);
@@ -38,7 +45,7 @@ TL_SOLID18_HD inline Status CalculateForceStaged(const Reference& reference,
                         trial.geometry.inverse_center_face_scale_per_m2/1.0);
         const auto point_status = PointResponse(material,accepted.data().point[ip],geometry,
             trial.geometry.local_velocity_m_s,diagnostics.center_divergence_per_s,
-            diagnostics.caller_degeneracy,interval.dt_s,length,next.point[ip],trial.point[ip]);
+            diagnostics.caller_degeneracy,interval.dt_s,length,next.point[ip],trial.point[ip],initialization);
         if (point_status != Status::Success) return point_status;
         AccumulatePointForce(geometry,next.point[ip],diagnostics.caller_degeneracy,local_force);
         AccumulateGlobal(reference,trial.geometry,ip,next.point[ip],trial.point[ip],next.global,diagnostics);
@@ -74,5 +81,26 @@ TL_SOLID18_HD inline Status EvaluateForce(const Reference& reference, const Hist
   const auto status = detail::CalculateForceStaged(reference,accepted,interval,material,trial,next,scratch);
   if (status == Status::Success) output = trial;
   return status;
+}
+// Constructor-only native TT0 evaluation. Initial fields retain sample0 and
+// time0; they are not a completed interval. Uniform translation includes rest.
+TL_SOLID18_HD inline Status InitializeForce(const Reference& reference,
+    const Material& material, Vec3 uniform_velocity_m_s, ForceTrial& output) noexcept {
+  if (!solid18::detail::Finite(uniform_velocity_m_s)) return Status::InvalidInput;
+  History virgin;
+  const auto status = InitializeHistory(reference,material,virgin);
+  if (status != Status::Success) return status;
+  PrescribedInterval initial;
+  for (unsigned n = 0; n < 8; ++n) {
+    initial.position_endpoint_m[n] = reference.input().position_m[n];
+    initial.velocity_midpoint_m_s[n] = uniform_velocity_m_s;
+  }
+  ForceTrial trial;
+  HistoryValues next;
+  StartupGeometry scratch;
+  const auto calculation = detail::CalculateForceStaged(reference,virgin,initial,
+      material,trial,next,scratch,true);
+  if (calculation == Status::Success) output = trial;
+  return calculation;
 }
 }  // namespace tl::fea::solid18::law44

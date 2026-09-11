@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "NativeOracle.h"
+#include "lib_utest/qualification/solid18_law44_reference/NativeOracle.h"
 #include <stdexcept>
 #include <vector>
 

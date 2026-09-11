@@ -7,8 +7,8 @@
       "sha256": "f13608c0a69a44c03a53447f3d7b477cc42a472011ad017bb7e6280d9afcb28f"
     },
     "lib_src/elements/solid18/law44/BUILD.bazel": {
-      "bytes": 572,
-      "sha256": "4b544b836011223add1120da1a6df651d22efcb677cf014e6182c7bcb92281b2"
+      "bytes": 590,
+      "sha256": "b6728abbab833c8082adf92021d884a62685889134a8a7f9d1b66cd8fe98b20d"
     },
     "lib_src/elements/solid18/law44/README.md": {
       "bytes": 1446,
@@ -136,5 +136,6 @@
       },
       "change": "Add extended coefficient test visibility; existing force export unchanged."
     }
-  ]
+  ],
+  "tt0_extension": "Additive constructor/scratch; original positive-interval profile and native source leaves preserved"
 }

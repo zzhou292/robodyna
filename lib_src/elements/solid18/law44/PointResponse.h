@@ -14,7 +14,7 @@ TL_SOLID18_HD inline double VonMises(const double (&stress)[6]) noexcept {
 TL_SOLID18_HD inline Status PointResponse(const Material& material, const PointHistory& accepted,
     const PointDerivatives& geometry, const Vec3 (&velocity)[8], double center_divergence,
     unsigned degeneracy, double dt, double length, PointHistory& proposed,
-    PointObservation& observation) noexcept {
+    PointObservation& observation, bool initialization = false) noexcept {
   proposed = accepted;
   const auto kinematic_status = PointKinematics(geometry,velocity,center_divergence,degeneracy,
                                                dt,proposed,observation);
@@ -34,7 +34,9 @@ TL_SOLID18_HD inline Status PointResponse(const Material& material, const PointH
   input.dt_s = dt;
   input.relative_density = observation.relative_density;
   for (unsigned k = 0; k < 6; ++k) input.engineering_rate_per_s[k] = observation.engineering_rate_per_s[k];
-  const auto material_status = point::Update(material,accepted.material,input,observation.material);
+  const auto material_status = initialization ?
+      point::Initialize(material,input,observation.material) :
+      point::Update(material,accepted.material,input,observation.material);
   if (material_status != point::Status::Ok) return Status::NonfiniteResult;
   proposed.material = observation.material.history;
   // MULAW uses the rounded stored PLA difference, not SIGEPS44's DPLA workspace.

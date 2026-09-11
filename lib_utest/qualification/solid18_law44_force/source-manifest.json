@@ -38,16 +38,16 @@
       "sha256": "fdc2975bc7ec91e5da0457db4ebc565aa13bffb45c731502876a1e6691773aec"
     },
     "lib_src/elements/solid18/law44/BUILD.bazel": {
-      "bytes": 572,
-      "sha256": "4b544b836011223add1120da1a6df651d22efcb677cf014e6182c7bcb92281b2"
+      "bytes": 590,
+      "sha256": "b6728abbab833c8082adf92021d884a62685889134a8a7f9d1b66cd8fe98b20d"
     },
     "lib_src/elements/solid18/law44/FORCE.md": {
-      "bytes": 3047,
-      "sha256": "07e275aab25987c39dc5e0321c9d9dfe7ac0f9e3122aea94630c9410b0f70561"
+      "bytes": 3600,
+      "sha256": "8b432f359bc5758820a6b4617f4c24ec015cc4de310dc65a2f5e10ad0e0aa96e"
     },
     "lib_src/elements/solid18/law44/Force.h": {
-      "bytes": 4238,
-      "sha256": "20012a57342f2b87cbc8fab815b48e80581f1257540ca132c6a83f8b1ef17daa"
+      "bytes": 5640,
+      "sha256": "dfcab2fc25a21b457b75708ef18ddc8d87c301895e83d663e803391e7614b975"
     },
     "lib_src/elements/solid18/law44/ForceAssembly.h": {
       "bytes": 3902,
@@ -62,16 +62,16 @@
       "sha256": "b317b1143a894b35dc14ad3eb9e02dded78c27bd95309c62267dc01e82b14428"
     },
     "lib_src/elements/solid18/law44/History.h": {
-      "bytes": 1971,
-      "sha256": "d7cea49d2fcd7babf241a7b7a3a5d563cd5b03006c2f2220a02fb651f423c7cc"
+      "bytes": 2228,
+      "sha256": "eaa6f0359d0e8532a338bcd0e54174f436d19b91a1a073ab7ccbf0d8058572ac"
     },
     "lib_src/elements/solid18/law44/Kinematics.h": {
       "bytes": 3633,
       "sha256": "9db1f548f06a6bc2c90978e19394bc7752d24a4cc02554ccac38de6b36562f12"
     },
     "lib_src/elements/solid18/law44/PointResponse.h": {
-      "bytes": 4350,
-      "sha256": "f6c040cfe3710ff79629ca5974152baae69c2b85d3018b181d2197713b89b05c"
+      "bytes": 4465,
+      "sha256": "e8723ec22532e7697f9d9d6154c93389647988f8060a1aa087e47033ff07e71a"
     },
     "lib_src/elements/solid18/law44/README.md": {
       "bytes": 1446,
@@ -94,8 +94,8 @@
       "sha256": "e1394bf404582ae5bb2ec7dfcbf5f815a508352f158aa7344d1a16db956f160c"
     },
     "lib_utest/qualification/solid18_law44_force/BUILD.bazel": {
-      "bytes": 422,
-      "sha256": "06410cf34763805666a9e0e50f29ed027e349696e8f857586cbef73eb1ea025b"
+      "bytes": 965,
+      "sha256": "30e379ba2d6d8626318975c03618894f40518d0e62e3aa94ddd8afbb0ad9ad00"
     },
     "lib_utest/qualification/solid18_law44_force/CMakeLists.txt": {
       "bytes": 4620,
@@ -110,12 +110,12 @@
       "sha256": "cee7328091b684d54261db1d50696f0626b649c30dc9cdcf77b7a88b96ad9f6f"
     },
     "lib_utest/qualification/solid18_law44_force/NativeOracle.cpp": {
-      "bytes": 3585,
-      "sha256": "57d1f84e2277a9e25af7aeb10246397ddc71a985e6841992d93c621804328ec9"
+      "bytes": 3659,
+      "sha256": "1e446c63eac70b3951ec2480215f47add7ff0c91e96087018325672c53181729"
     },
     "lib_utest/qualification/solid18_law44_force/NativeOracle.h": {
-      "bytes": 892,
-      "sha256": "abb50adb8723cf2d1dc167efb5520a5d7c1f1af3cac029510ba3b428e7a1a650"
+      "bytes": 818,
+      "sha256": "8ac3192533cf279e913e5f1974904ef009eb63e7f9c34c7daeacf2d7fc4358ae"
     },
     "lib_utest/qualification/solid18_law44_force/NativeTest.cpp": {
       "bytes": 3579,
@@ -146,12 +146,12 @@
       "sha256": "2a83a76a1d5a750def47ba87fefdaabb8bd8729db38b7fd4d8253a4cf292902e"
     },
     "lib_utest/qualification/solid18_law44_force/native/CMakeLists.txt": {
-      "bytes": 1818,
-      "sha256": "10f58ab8827cbc8b3ca52d7b642376ddcdbc610acd0a88d57cd571bc430ca1a1"
+      "bytes": 1859,
+      "sha256": "56be5c7e7353fdba32ffe61ace780a6939c587006860dc777a4c9fadd4e165c6"
     },
     "lib_utest/qualification/solid18_law44_force/native/NativeCaller.F": {
-      "bytes": 4131,
-      "sha256": "4f6c433f86647c234135bd9bbe44b3f58e107ff1883c9270d341ed8a70ce9a46"
+      "bytes": 4091,
+      "sha256": "7e72460fb7a7bbec3b10c7f9b3a57143c2aca15de33b811bd659ec3ff8d2a1de"
     },
     "lib_utest/qualification/solid18_law44_force/native/NativeControl.F": {
       "bytes": 2168,
@@ -166,8 +166,8 @@
       "sha256": "12b9fec3025a7b45fe8439ebaf1d0c300b0a832014aa94e8bc6716385936511b"
     },
     "lib_utest/qualification/solid18_law44_force/native/NativeMaterial.F90": {
-      "bytes": 4245,
-      "sha256": "1314684a98b7e66dde71187334c0f4b500474923270d485d1ef988a00c550e10"
+      "bytes": 4758,
+      "sha256": "61d02c22f88387c399f5c430915881809a77e514084fb631668a2b202a32f4df"
     },
     "lib_utest/qualification/solid18_law44_force/native/NativePoint.F": {
       "bytes": 9724,
@@ -188,7 +188,16 @@
     "lib_utest/qualification/solid18_law44_force/verify_source.py": {
       "bytes": 1231,
       "sha256": "6846793b8e6f03153dd20f5a35b8b7b0428fa85b7d9bc1c60a8eb729b6793705"
+    },
+    "lib_utest/qualification/solid18_law44_force/native/NativeEntries.F": {
+      "bytes": 2853,
+      "sha256": "91a56b722032484067846ba76339d5a63719f746e66872abfb0dde76811d9d32"
+    },
+    "lib_utest/qualification/solid18_law44_force/native/NativeEntryInterface.F90": {
+      "bytes": 884,
+      "sha256": "cea8cea1455360b396174513969794cc84e38eb54f9bf3dcbf4973ee1fd02f46"
     }
   },
-  "pressure_coefficient": "S8EFINT3:154 and S8EFMOY3:120 use ZEP3 = THREE/TEN, CONSTANT_MOD:667; distinct from THIRD"
+  "pressure_coefficient": "S8EFINT3:154 and S8EFMOY3:120 use ZEP3 = THREE/TEN, CONSTANT_MOD:667; distinct from THIRD",
+  "tt0_extension": "Additive constructor/scratch; original positive-interval profile and native source leaves preserved"
 }

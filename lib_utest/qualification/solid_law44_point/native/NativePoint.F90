@@ -1,6 +1,10 @@
 ! SPDX-License-Identifier: AGPL-3.0-or-later
-subroutine law44_solid_native(npts,curve,material,units,base,cursor,motion,amu_value, &
-                             values,next_cursor,prepared,status) bind(C,name='law44_solid_native')
+module LAW44_SOLID_NATIVE_VALUES
+  implicit none
+  private
+contains
+subroutine law44_solid_values(npts,curve,material,units,base,cursor,motion,amu_value, &
+                             values,next_cursor,prepared,status)
   use iso_c_binding, only: c_double,c_int
   use law44_solid_setup
   use law44_solid_interface
@@ -26,7 +30,7 @@ subroutine law44_solid_native(npts,curve,material,units,base,cursor,motion,amu_v
   real(c_double) :: voln(1),eint(1),uvar(1,1),pm(9,1)
   status=1
   if(npts<2.or.npts>1024.or.cursor<0.or.cursor>=npts-1) return
-  if(motion(7)<=0.or.(units/=0.and.units/=1)) return
+  if(motion(7)<0.or.(units/=0.and.units/=1)) return
   scale_s=one
   scale_rho=one
   scale_v=one
@@ -111,3 +115,38 @@ subroutine law44_solid_native(npts,curve,material,units,base,cursor,motion,amu_v
   next_cursor=vartmp(1,1)-1
   status=0
 end subroutine
+
+subroutine law44_solid_native(npts,curve,material,units,base,cursor,motion,amu_value, &
+                             values,next_cursor,prepared,status) bind(C,name='law44_solid_native')
+  use iso_c_binding, only:c_double,c_int
+  implicit none
+  integer(c_int),value :: npts,units,cursor
+  real(c_double),intent(in) :: curve(2,npts+1),material(7),base(14),motion(7)
+  real(c_double),value :: amu_value
+  real(c_double),intent(out) :: values(19),prepared(26)
+  integer(c_int),intent(out) :: next_cursor,status
+  status=1
+  if(motion(7)<=0) return
+  call law44_solid_values(npts,curve,material,units,base,cursor,motion,amu_value, &
+                          values,next_cursor,prepared,status)
+end subroutine
+
+! Constructor-only entry: no caller-supplied history or cursor.
+subroutine law44_solid_initialize_native(npts,curve,material,units,motion,amu_value, &
+    values,next_cursor,prepared,status) bind(C,name='law44_solid_initialize_native')
+  use iso_c_binding, only:c_double,c_int
+  use ieee_arithmetic, only:ieee_is_finite
+  implicit none
+  integer(c_int),value :: npts,units
+  real(c_double),intent(in) :: curve(2,npts+1),material(7),motion(7)
+  real(c_double),value :: amu_value
+  real(c_double),intent(out) :: values(19),prepared(26)
+  integer(c_int),intent(out) :: next_cursor,status
+  real(c_double) :: virgin(14)
+  status=1
+  if(motion(7)/=0.or..not.all(ieee_is_finite(motion)).or..not.ieee_is_finite(amu_value)) return
+  virgin=0d0
+  call law44_solid_values(npts,curve,material,units,virgin,0,motion,amu_value, &
+                          values,next_cursor,prepared,status)
+end subroutine
+end module
