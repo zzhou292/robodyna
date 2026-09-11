@@ -34,7 +34,7 @@ void PackCurves(Packing& out, const std::vector<modelio::assembly::Curve>& origi
                 if (curve.id != id) continue;
                 Check(curve);
                 Require(!selected || SameCurve(*selected, curve), "One supplied curve ID has conflicting point values");
-                selected = &curve;
+                if (!selected) selected = &curve;
             }
         }
         Require(selected, "Resolved shell material references an absent supplied curve");
