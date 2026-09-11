@@ -4,12 +4,13 @@ cuda_library(
     name = "type13_batch",
     srcs = [
         "Arena.cpp", "Forecast.cpp", "Startup.cpp", "Identity.cpp", "OutputRanges.cpp",
-        "Batch.cu", "Assembly.cu", "Candidate.cu", "AssembleOperation.cu",
+        "mapped/Forecast.cpp", "mapped/Initialize.cu", "mapped/Assemble.cu", "mapped/Publication.cpp",
+        "Upload.cu", "Batch.cu", "Assembly.cu", "Candidate.cu", "AssembleOperation.cu",
         "EvaluateOperation.cu", "Readback.cu", "Publication.cpp", "PublicationScope.cpp",
     ],
     hdrs = [
         "Batch.h", "Arena.h", "Storage.h", "Kinematics.h", "Measure.h",
-        "OperationChecks.h", "ResultChecks.h",
+        "OperationChecks.h", "ResultChecks.h", "mapped/State.h", "mapped/Startup.h",
     ],
     copts = [
         "--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false",
@@ -19,6 +20,8 @@ cuda_library(
     deps = [
         "//lib_src/elements/type13:type13_math", "//lib_src/elements/type13:type13_model",
         "//lib_src/assembly:type13_node_contributions", "//lib_src/assembly:nodal_node_domain",
+        "//lib_src/elements:shell_physical_owner", "//lib_src/elements:shell_physical_owner_values",
+        "//lib_src/assembly:shell_physical_binding", "//lib_src/constraints:nodal_rigid_assembly_binding",
         "//lib_src/elements:shell_batch_fields", "//lib_src/elements:shell_batch_startup",
         "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_force_assembly",
         "//lib_src/solvers:nodal_trial_identity", "//lib_src/solvers:nodal_native_physical_coefficients",

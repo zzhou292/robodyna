@@ -45,7 +45,9 @@ bool ShellBatchPublication::Impl::SamePhysicalScope(const NodalStamp& stamp) con
   if (connector && (!connector->impl_ || !connector->MappedBinding() ||
       !connector->MappedBinding()->Matches(binding) || !Claimed(*connector->impl_,stamp,scope))) return false;
   if (physical->beams && (!physical->beams->impl_ ||
-      !Claimed(*physical->beams->impl_,stamp,scope) ||
+      !Claimed(*physical->beams->impl_,stamp,scope) || !physical->beams->MappedBinding() ||
+      !physical->beams->MappedBinding()->Matches(binding) ||
+      physical->beams->impl_->physical->owner != physical->owner ||
       !physical->beams->impl_->source.Matches(*binding.coefficients()->type13()))) return false;
   if (physical->solids && (!physical->solids->impl_ ||
       !Claimed(*physical->solids->impl_,stamp,scope) ||

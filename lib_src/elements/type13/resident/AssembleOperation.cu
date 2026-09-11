@@ -8,6 +8,9 @@ BatchReport Batch::AssembleAccepted(FENodalState& owner, const NodalTrialToken& 
     return {BatchStatus::NotInitialized, "TYPE13 batch is not initialized"};
   }
   auto& state = *impl_;
+  if (state.physical) {
+    return {BatchStatus::InvalidInput, "Mapped TYPE13 requires AssembleMappedAccepted"};
+  }
   state.Discard();
   if (!state.usable) {
     return {BatchStatus::Unusable, "TYPE13 CUDA storage is poisoned"};

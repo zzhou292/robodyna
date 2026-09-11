@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(TLType13ResidentQualification LANGUAGES CXX)
+project(TLType13ResidentQualification LANGUAGES CXX C)
 enable_testing()
 get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
 find_package(GTest REQUIRED)

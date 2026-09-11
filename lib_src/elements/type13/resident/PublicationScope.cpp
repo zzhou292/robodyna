@@ -10,7 +10,7 @@ BatchReport Batch::PreflightAttach(const NodalStamp& stamp,
   const auto& state = *impl_;
   if (!state.usable) return {BatchStatus::Unusable, "TYPE13 CUDA storage is poisoned"};
   if (!state.bound) return {BatchStatus::NotBound, "TYPE13 initial live sources are not bound"};
-  if (!claimant || state.publication_scope || state.pending || state.accepted_stamp.epoch ||
+  if (state.physical || !claimant || state.publication_scope || state.pending || state.accepted_stamp.epoch ||
       !trial_identity::SameStamp(stamp, state.accepted_stamp) ||
       !state.source.Matches(source) || configuration != state.config.configuration_id ||
       qualification != state.config.qualification_id || assembly != state.config.assembly ||

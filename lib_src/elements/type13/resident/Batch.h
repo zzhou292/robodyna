@@ -5,7 +5,8 @@
 #include "../../../solvers/FENodalState.h"
 #include <memory>
 
-namespace tl::fea { class Type13NodeContributions; class ShellBatchPublication; }
+namespace tl::fea { class Type13NodeContributions; class ShellBatchPublication; class ShellPhysicalBinding;
+class NodalRigidAssemblyBinding; }
 namespace tl::fea::type13 {
 class BatchQualificationPeer; // Defined only by the owning qualification.
 
@@ -18,6 +19,11 @@ struct BatchLimits {
   std::size_t max_nodes = 524288;
   std::size_t max_device_bytes = 32u << 20;
   std::size_t max_host_bytes = 256u << 20;
+};
+// Separate complete physical backing reservation; legacy arena limits stay unchanged.
+struct BatchMappedLimits {
+  std::size_t max_host_bytes = 256u << 20;
+  static BatchMappedLimits Vehicle() noexcept { return {std::size_t{2} << 30}; }
 };
 struct BatchConfig {
   NodalStamp owner;
@@ -77,6 +83,14 @@ class Batch {
   static BatchReport Forecast(const BatchConfig&, const Type13NodeContributions&,
                               BatchForecast&) noexcept;
   BatchReport InitializeJoined(const BatchConfig&, const Type13NodeContributions&);
+  static BatchReport ForecastMapped(const BatchConfig&, const ShellPhysicalBinding&,
+      const NodalRigidAssemblyBinding&, const NodalCinWitnessSource&,
+      BatchForecast&, BatchMappedLimits = {}) noexcept;
+  BatchReport InitializeMapped(const BatchConfig&, const ShellPhysicalBinding&,
+      const NodalRigidAssemblyBinding&, FENodalState&, const NodalCinWitnessSource&,
+      BatchMappedLimits = {});
+  BatchReport AssembleMappedAccepted(FENodalState&, const NodalTrialToken&,
+      const NodalAssemblyView&);
   BatchReport AssembleAccepted(FENodalState&, const NodalTrialToken&,
                                const NodalAssemblyView&);
   BatchReport EvaluateCandidate(FENodalState&, const NodalTrialToken&,
@@ -96,6 +110,11 @@ class Batch {
       std::uint64_t configuration, std::uint64_t qualification,
       const ShellBatchStartup&, BatchAssembly,
       const ShellBatchPublication* claimant) const noexcept;
+  const ShellPhysicalBinding* MappedBinding() const noexcept;
+  BatchReport PreflightAttachMapped(FENodalState&, const ShellPhysicalBinding&,
+      const NodalRigidAssemblyBinding&, std::uint64_t configuration,
+      std::uint64_t qualification, const ShellBatchStartup&,
+      const ShellBatchPublication*) const noexcept;
   void AttachPublication(const ShellBatchPublication*) noexcept;
   void ReleasePublication(const ShellBatchPublication*) noexcept;
   void Poison() noexcept;

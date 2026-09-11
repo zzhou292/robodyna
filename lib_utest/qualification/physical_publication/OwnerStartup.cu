@@ -28,7 +28,7 @@ bool Rig::Initialize(bool initialize_solids,bool attach) {
   fe::type13::BatchConfig beam;
   beam.owner = owner.accepted(); beam.configuration_id = Configuration; beam.qualification_id = Qualification;
   beam.assembly = fe::type13::BatchAssembly::CinNativeStiffness;
-  if (!Good(beams.InitializeJoined(beam,fixture.beam_coefficients))) return false;
+  if (!Good(beams.InitializeMapped(beam,fixture.physical,fixture.rigid,owner,fixture.WitnessSource()))) return false;
   if (initialize_solids && !InitializeSolids()) return false;
   // Existing mapped/TYPE13 startup APIs bind their live initial cache on the
   // first actual accepted assembly. Discard this proof; no owner step occurs.
@@ -39,7 +39,7 @@ bool Rig::Initialize(bool initialize_solids,bool attach) {
       !Good(t3.AssembleMappedAccepted(owner,token,assembly)) ||
       !Good(qbat.AssembleMappedAccepted(owner,token,assembly)) ||
       !Good(welds.AssembleMappedAccepted(owner,token,assembly)) ||
-      !Good(beams.AssembleAccepted(owner,token,assembly))) return false;
+      !Good(beams.AssembleMappedAccepted(owner,token,assembly))) return false;
   owner.Discard();
   qeph.DiscardTrial(); t3.DiscardTrial(); qbat.DiscardTrial(); welds.DiscardTrial(); beams.DiscardTrial();
   return !attach || Attach();

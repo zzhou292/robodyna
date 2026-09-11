@@ -9,11 +9,21 @@ namespace {
 namespace contact = tlfea::contact;
 
 __device__ bool CheckEndpoints(Storage& state, const NodalAssemblyView& view,
-                               bool initial) {
+                               bool initial, bool mapped) {
   for (std::size_t e = 0; e < state.model.element_count; ++e) {
     const auto& element = state.model.elements[e];
     for (unsigned local = 0; local < 2; ++local) {
       const auto node = element.nodes[local];
+      if (mapped && (node >= state.model.config.owner.node_count ||
+          view.mass.fixed[node] || view.translation_fixed_bits[node] || view.rotation_fixed[node] ||
+          (view.rotation_present && view.rotation_present[node] != 1) ||
+          !detail::Nonnegative(view.mass.inverse_mass[node]) ||
+          !detail::Nonnegative(view.inverse_inertia[node]))) {
+        state.control.status = BatchStatus::InvalidInput;
+        state.control.element = e;
+        state.control.node = node;
+        return false;
+      }
       const auto x = shell_batch_fields::ReadVector(view.accepted.position_xyz, node);
       const auto v = shell_batch_fields::ReadVector(view.accepted.velocity_xyz, node);
       const auto w = shell_batch_fields::ReadVector(view.accepted.angular_velocity_xyz, node);
@@ -73,7 +83,7 @@ __device__ bool AddElement(const DeviceElement& element, const Evaluation& value
 
 __global__ void Assemble(Storage* storage, unsigned accepted,
                          NodalAssemblyView view, NodalCinAssemblyView cin,
-                         bool initial) {
+                         bool initial, bool mapped) {
   auto& state = *storage;
   state.control = {};
   if (view.result->base_epoch != view.accepted.base_epoch ||
@@ -83,7 +93,7 @@ __global__ void Assemble(Storage* storage, unsigned accepted,
       !view.bounds->valid || view.bounds->sealed ||
       view.result->status != contact::Status::kOk) {
     state.control.status = BatchStatus::AssemblyFailure;
-  } else if (CheckEndpoints(state, view, initial)) {
+  } else if (CheckEndpoints(state, view, initial, mapped)) {
     const bool stiffness = state.model.config.assembly == BatchAssembly::CinNativeStiffness;
     // One writer preserves each node's model-then-endpoint scalar order. No
     // atomics, inverse-coefficient inference or runtime neighbor map is needed.
@@ -107,8 +117,8 @@ __global__ void Failure(NodalAssemblyView view) {
 } // namespace
 
 void LaunchAssembly(Storage* storage, unsigned accepted, NodalAssemblyView view,
-                     NodalCinAssemblyView cin, bool initial) {
-  Assemble<<<1, 1, 0, view.stream>>>(storage, accepted, view, cin, initial);
+                     NodalCinAssemblyView cin, bool initial, bool mapped) {
+  Assemble<<<1, 1, 0, view.stream>>>(storage, accepted, view, cin, initial, mapped);
 }
 void LaunchFailure(NodalAssemblyView view) {
   Failure<<<1, 1, 0, view.stream>>>(view);

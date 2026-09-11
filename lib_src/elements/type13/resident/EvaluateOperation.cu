@@ -25,6 +25,9 @@ BatchReport Batch::EvaluateCandidate(FENodalState& owner, const NodalTrialToken&
   if (!state.bound) {
     return {BatchStatus::NotBound, "TYPE13 original live endpoint binding required"};
   }
+  if (state.physical && state.physical->owner != &owner) {
+    return {BatchStatus::StaleTrial, "Mapped TYPE13 candidate uses a different actual owner"};
+  }
   const auto authenticated = native_physical_coefficients::AuthenticatePrepared(
       owner, token, state.accepted_stamp, view);
   if (authenticated.status != NodalStatus::Ok) {

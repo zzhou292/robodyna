@@ -55,8 +55,8 @@ ShellPublicationReport ShellBatchPublication::InitializePhysical(FENodalState& o
     if (checked.status != S::Success) return checked;
   }
   if (p.type13) {
-    checked = PhysicalReport(p.type13->PreflightAttach(owner.accepted(),*binding.coefficients()->type13(),
-        configuration,qualification,startup,type13::BatchAssembly::CinNativeStiffness,this));
+    checked = PhysicalReport(p.type13->PreflightAttachMapped(owner,binding,rigid,
+        configuration,qualification,startup,this));
     if (checked.status != S::Success) return checked;
   }
   if (p.solids) {

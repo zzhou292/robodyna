@@ -5,7 +5,7 @@
 #include <limits>
 
 namespace tl::fea::type13::batch_detail {
-BatchReport SourcePreflight(const BatchConfig& config,
+BatchReport SourceGeometryPreflight(const BatchConfig& config,
                             const Type13NodeContributions& source) noexcept {
   const auto& owner = config.owner;
   if (!owner.owner_id || owner.epoch || owner.time != 0 ||
@@ -16,7 +16,6 @@ BatchReport SourcePreflight(const BatchConfig& config,
       owner.reaction_base_epoch || owner.reaction_time != 0 ||
       owner.reaction_kick_dt != 0 || !config.configuration_id ||
       !config.qualification_id || !shell_startup_detail::ValidStartup(config.startup, true) ||
-      !native_physical_coefficients::ValidScope(owner.rigid_groups, owner.node_count) ||
       (config.assembly != BatchAssembly::OrdinaryForces &&
        config.assembly != BatchAssembly::CinNativeStiffness)) {
     return {BatchStatus::InvalidInput, "TYPE13 requires explicit fresh staggered startup"};
@@ -25,22 +24,38 @@ BatchReport SourcePreflight(const BatchConfig& config,
       !source.Matches(*source.model(), *source.domain()) ||
       source.domain()->node_count() != owner.node_count ||
       source.model()->global_node_count() != owner.node_count ||
-      source.record_count() != 2 * source.model()->connection_count() ||
-      (!native_physical_coefficients::Empty(owner.rigid_groups) &&
-       owner.rigid_groups.source_instance_id != source.model()->source_instance_id())) {
+      source.record_count() != 2 * source.model()->connection_count()) {
     return {BatchStatus::InvalidInput, "TYPE13 endpoint model/domain extent differs from owner"};
   }
   return {};
 }
 
+BatchReport SourcePreflight(const BatchConfig& config,
+                            const Type13NodeContributions& source) noexcept {
+  if (!native_physical_coefficients::ValidScope(config.owner.rigid_groups,
+                                               config.owner.node_count)) {
+    return {BatchStatus::InvalidInput, "TYPE13 requires explicit fresh staggered startup"};
+  }
+  const auto checked = SourceGeometryPreflight(config, source);
+  if (!checked) return checked;
+  if (!native_physical_coefficients::Empty(config.owner.rigid_groups) &&
+      config.owner.rigid_groups.source_instance_id != source.model()->source_instance_id()) {
+    return {BatchStatus::InvalidInput, "TYPE13 endpoint model/domain extent differs from owner"};
+  }
+  return {};
+}
 BatchReport BuildStartup(const BatchConfig& config,
+    const Type13NodeContributions& source, util::HostArena& arena,
+    const ArenaLayout& layout, Storage& header, BatchDiagnostics& diagnostics) {
+  const auto checked = SourcePreflight(config, source);
+  if (!checked) return checked;
+  return BuildSourceValues(config, source, arena, layout, header, diagnostics);
+}
+
+BatchReport BuildSourceValues(const BatchConfig& config,
                           const Type13NodeContributions& source,
                           util::HostArena& arena, const ArenaLayout& layout,
                           Storage& header, BatchDiagnostics& diagnostics) {
-  const auto checked = SourcePreflight(config, source);
-  if (!checked) {
-    return checked;
-  }
   auto* storage = arena.Construct<Storage>(layout.header);
   if (!storage || !arena.Construct<Property>(layout.properties) ||
       !arena.Construct<DeviceElement>(layout.elements) ||

@@ -73,28 +73,8 @@ BatchReport Batch::InitializeJoined(const BatchConfig& config,
   next->host_bytes = forecast.startup_host_bytes;
   next->accepted_diagnostics = diagnostics;
   next->staging = std::make_unique<Evaluation[]>(source.model()->connection_count());
-  report = next->PendingError();
-  if (!report) {
-    return report;
-  }
-  report = next->Runtime(cudaMalloc(reinterpret_cast<void**>(&next->device), layout.bytes),
-                         "TYPE13 device arena allocation failed");
-  if (!report) {
-    return report;
-  }
-  auto device_header = batch_detail::RebasedHeader(next->device, layout);
-  device_header.model.config = header.model.config;
-  device_header.model.units = header.model.units;
-  device_header.model.source_instance_id = header.model.source_instance_id;
-  device_header.model.element_count = header.model.element_count;
-  device_header.control = header.control;
-  next->device_header = device_header;
-  *util::ArenaPointer<batch_detail::Storage>(arena.data(), layout.header) = device_header;
-  report = next->Runtime(cudaMemcpy(next->device, arena.data(), layout.bytes,
-                                    cudaMemcpyHostToDevice), "TYPE13 startup upload failed");
-  if (!report) {
-    return report;
-  }
+  report = next->Upload(arena, header);
+  if (!report) return report;
   impl_ = std::move(next);
   return {};
 } catch (const std::bad_alloc&) {

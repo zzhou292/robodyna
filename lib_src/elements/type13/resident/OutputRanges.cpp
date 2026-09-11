@@ -1,9 +1,15 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
+#include "../../ShellPhysicalOutputRanges.h"
+#include "../../ShellExecutionOutputRanges.h"
 
 namespace tl::fea::type13 {
 bool Batch::Impl::OutputDisjoint(const void* output, std::size_t bytes) const noexcept {
   using trial_identity::Disjoint;
+  if (physical && (!Disjoint(output, bytes, physical.get(), sizeof(mapped::State)) ||
+      !Disjoint(output, bytes, physical->owner, sizeof(FENodalState)) ||
+      !shell_physical_owner::OutputDisjoint(physical->physical, output, bytes) ||
+      !shell_execution_detail::OutputDisjoint(physical->rigid, output, bytes))) return false;
   const auto& model = *source.model();
   if (!Disjoint(output, bytes, this, sizeof(*this)) ||
       !Disjoint(output, bytes, staging.get(), Count() * sizeof(Evaluation)) ||

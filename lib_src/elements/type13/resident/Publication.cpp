@@ -13,7 +13,8 @@ BatchReport Batch::PreflightPublication(FENodalState& owner, const NodalTrialTok
   if (!state.usable) {
     return {BatchStatus::Unusable, "TYPE13 CUDA storage is poisoned"};
   }
-  if (!claimant || state.publication_scope != claimant || !state.bound || !state.pending ||
+  if ((state.physical && state.physical->owner != &owner) ||
+      !claimant || state.publication_scope != claimant || !state.bound || !state.pending ||
       !batch_detail::SameDiagnostics(expected, state.candidate_diagnostics) ||
       !trial_identity::SamePrepared(prepared, state.candidate_view)) {
     return {BatchStatus::StaleTrial, "TYPE13 pending publication identity differs"};

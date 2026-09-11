@@ -122,3 +122,11 @@ unique claims, release, foreign-source/startup/CIN-profile rejection, native
 candidate comparison, accepted-state preservation and poison handling. This
 claim seam is preparation for the common production coordinator; it does not
 claim that the full shell/beam/solid transaction is wired yet.
+
+## Explicit complete physical profile
+
+The additive [mapped initializer](mapped/README.md) authenticates the complete
+physical ledger, actual PART/plain binding and CIN source before allocation.
+The historical plain-only entry and the native force/history arithmetic remain
+unchanged. Common production publication requires the new mapped attachment
+preflight; source-level full-vehicle closure still belongs to the case gate.

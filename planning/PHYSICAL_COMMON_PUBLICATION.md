@@ -50,3 +50,14 @@ and activity across discard, then retry and a single successful publication.
 Native mechanics comparisons stay in the owning participant gates; this gate
 tests their combined transaction. Author checks are host/syntax only; root owns
 the actual CUDA and affected legacy qualification.
+
+## TYPE13 mapped qualification correction
+
+The first complete CUDA fixture reached the TYPE13 legacy rigid-scope rejection
+(`physical-publication-root-tests-1`); the fixture retained its genuine PART/plain
+and CIN sources. The correction adds a separate TYPE13 mapped initializer and
+private attachment check with complete `ShellPhysicalOwner` authentication.
+The shared legacy `ValidScope` remains strict. The common publisher now requires
+that mapped TYPE13 physical identity, like the other mapped contributors.
+TT0/history/force/stiffness values remain the same shared native-backed leaves.
+See `lib_src/elements/type13/resident/mapped/README.md` for bounds and owning gates.

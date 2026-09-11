@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "Arena.h"
+#include "mapped/State.h"
 #include "../../../assembly/Type13NodeContributions.h"
 #include "../../../solvers/NodalCinRuntime.h"
 #include "../../../solvers/NodalTrialIdentity.h"
@@ -9,10 +10,15 @@ namespace tl::fea::type13::batch_detail {
 BatchReport BuildStartup(const BatchConfig&, const Type13NodeContributions&,
                           util::HostArena&, const ArenaLayout&, Storage&,
                           BatchDiagnostics&);
+BatchReport SourceForecast(const BatchConfig&, const Type13NodeContributions&,
+    std::size_t private_bytes, BatchForecast&) noexcept;
+BatchReport SourceGeometryPreflight(const BatchConfig&, const Type13NodeContributions&) noexcept;
+BatchReport BuildSourceValues(const BatchConfig&, const Type13NodeContributions&,
+    util::HostArena&, const ArenaLayout&, Storage&, BatchDiagnostics&);
 BatchReport SourcePreflight(const BatchConfig&, const Type13NodeContributions&) noexcept;
 bool SameDiagnostics(const BatchDiagnostics&, const BatchDiagnostics&) noexcept;
 void LaunchAssembly(Storage*, unsigned slab, NodalAssemblyView,
-                     NodalCinAssemblyView, bool initial);
+                     NodalCinAssemblyView, bool initial, bool mapped = false);
 void LaunchCandidate(Storage*, unsigned accepted, unsigned trial,
                       NodalPreparedView, BatchDiagnostics, std::size_t count);
 void LaunchFailure(NodalAssemblyView);
@@ -27,6 +33,7 @@ struct Batch::Impl {
   Impl& operator=(const Impl&) = delete;
   BatchConfig config;
   Type13NodeContributions source;
+  std::unique_ptr<mapped::State> physical;
   NodalStamp accepted_stamp;
   batch_detail::ArenaLayout layout;
   batch_detail::Storage* device = nullptr;
@@ -49,6 +56,7 @@ struct Batch::Impl {
     candidate_view = {};
     candidate_diagnostics = {};
   }
+  BatchReport Upload(util::HostArena&, const batch_detail::Storage&);
   BatchReport Runtime(cudaError_t, const char*) noexcept;
   BatchReport PendingError() noexcept;
   BatchReport ReadControl();

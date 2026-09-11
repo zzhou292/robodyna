@@ -1,4 +1,4 @@
-add_executable(physical_publication_cuda OwnerStartup.cu OwnerAttempt.cu OwnerSnapshot.cu OwnerTest.cu)
+add_executable(physical_publication_cuda OwnerStartup.cu OwnerAttempt.cu OwnerSnapshot.cu OwnerTest.cu Type13MappedTest.cu)
 target_link_libraries(physical_publication_cuda PRIVATE physical_publication_fixture
   tl_shell_batch_publication CUDA::cudart)
 set_target_properties(physical_publication_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)

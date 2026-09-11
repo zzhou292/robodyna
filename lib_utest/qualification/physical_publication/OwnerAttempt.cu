@@ -8,7 +8,7 @@ bool Rig::Begin(fe::NodalTrialToken& token,fe::NodalAssemblyView& view) {
       Good(t3.AssembleMappedAccepted(owner,token,view)) &&
       Good(qbat.AssembleMappedAccepted(owner,token,view)) &&
       Good(welds.AssembleMappedAccepted(owner,token,view)) &&
-      Good(beams.AssembleAccepted(owner,token,view)) &&
+      Good(beams.AssembleMappedAccepted(owner,token,view)) &&
       Good(solids.AssembleAccepted(owner,token,view));
 }
 bool Rig::Advance(const fe::NodalTrialToken& token,const fe::NodalAssemblyView& assembly,

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
 
-namespace tl::fea::type13 {
-BatchReport Batch::Forecast(const BatchConfig& config,
+namespace tl::fea::type13::batch_detail {
+BatchReport SourceForecast(const BatchConfig& config,
                             const Type13NodeContributions& source,
-                            BatchForecast& output) noexcept {
+                            std::size_t private_bytes, BatchForecast& output) noexcept {
   if (!source.prepared() || !source.model() || !source.domain()) {
     return {BatchStatus::InvalidInput, "Prepared TYPE13 endpoint/domain source required"};
   }
@@ -23,17 +23,26 @@ BatchReport Batch::Forecast(const BatchConfig& config,
   util::ArenaRegion ignored;
   // The embedded source handle is already counted in Impl. Its backing owns
   // the model and domain; neither is retained or charged a second time here.
-  if (!host.Append<unsigned char>(sizeof(Batch) + sizeof(Impl), ignored) ||
+  if (!host.Append<unsigned char>(private_bytes, ignored) ||
       !host.Append<unsigned char>(source_bytes - sizeof(Type13NodeContributions), ignored) ||
       !host.Append<unsigned char>(layout.bytes, ignored) ||
       !host.Append<Evaluation>(model.connection_count(), ignored)) {
     return {BatchStatus::ResourceLimit, "Complete TYPE13 startup exceeds host byte cap"};
   }
-  const auto checked = batch_detail::SourcePreflight(config, source);
-  if (!checked) {
-    return checked;
-  }
   output = {layout.bytes, host.bytes()};
+  return {};
+}
+} // namespace tl::fea::type13::batch_detail
+namespace tl::fea::type13 {
+BatchReport Batch::Forecast(const BatchConfig& config,
+    const Type13NodeContributions& source, BatchForecast& output) noexcept {
+  BatchForecast next;
+  const auto forecast = batch_detail::SourceForecast(config, source,
+      sizeof(Batch) + sizeof(Impl), next);
+  if (!forecast) return forecast;
+  const auto checked = batch_detail::SourcePreflight(config, source);
+  if (!checked) return checked;
+  output = next;
   return {};
 }
 } // namespace tl::fea::type13
