@@ -1,5 +1,26 @@
 # Explicit native final-segment continuation
 
+## Root qualification, 2026-09-10
+
+Frozen author `b2590e8` passes all 37 numeric functions: 4 continuation values,
+3 native comparisons, 2 actual CUDA functions, all 16 catalog checks and the
+8 value / 4 native failure-section regressions. There are zero skips/failures.
+Root source review confirms policy propagation and unchanged legacy defaults.
+Evidence: `crash-work/reports/shell-hardening-continuation-root-{configure,build,tests}-1`
+and `shell-hardening-continuation-root-functions-1/` in the parent workspace.
+The build used 8 affinity CPUs / 4 workers with an 18 GiB guard; execution used
+2 CPUs / a 2 GiB guard and GPU0. Build time was 42.637 s and sampled peak RSS
+1,140,908,032 B; the test gate took 0.596 s. Sampling is not an allocation bound.
+This includes independently advanced device-owned failure histories through
+removal and two inactive intervals; resident/contact/source admission remains
+outside this section qualification.
+
+The rebuilt shared native wrapper also passes all 16 existing point/rate/analytic
+functions (`shell-hardening-continuation-regression-{build,tests}-1`). The owning
+Bazel continuation and catalog targets build in
+`vehicle-material-connection-bazel-build-1`; runtime evidence above comes from
+the CMake/native/CUDA gate, not from that build-only invocation.
+
 This qualification covers `ShellPlasticityCurveContinuation::NativeLastSegment`.
 Existing preparation overloads and source adapters retain `StrictDomain`.
 `CurveValue` arithmetic is unchanged: the bounded search already uses the final

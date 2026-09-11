@@ -1,5 +1,20 @@
 # TYPE13 startup qualification
 
+## Root qualification, 2026-09-10
+
+Frozen author `ab28803` passes all 14 numeric functions: 8 host values, 3 native
+comparisons, 1 complete original-source comparison and 2 actual CUDA functions.
+The original-source function checks every one of the 4,442 beam-weld frames and
+endpoint coefficients. Both source/hash gates also pass; zero skips/failures.
+Evidence: workspace `crash-work/reports/type13-startup-root-{configure,build,tests}-1`
+and `type13-startup-root-functions-1/`. Build: 4.772 s / 444,362,752 B sampled peak
+RSS; 8 affinity CPUs / 4 workers / 18 GiB guard. Native/CUDA execution used
+2 CPUs / 2 GiB / GPU0 and took 0.594 s. Short sampled gates under-report peak RSS.
+Both owning Bazel targets build in `vehicle-material-connection-bazel-build-1`.
+The subsequent `74108a9` provenance-only increment retains the native precision
+include chain; it changes no arithmetic or fixtures. Startup does not implement
+beam recurrence, hysteresis/failure, the tied attachment or common-owner admission.
+
 This target checks only resolved property normalization, explicit-N3 frame
 startup, and endpoint mass/inertia coefficients. Native recurrence, hysteresis
 history, failure, stability timestep, scatter, tied interfaces and owner
