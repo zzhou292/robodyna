@@ -2,6 +2,7 @@
 // VINTER interpolation adapted from OpenRadioss, Copyright (C) 2026 Siemens.
 // Included by TabulatedShellPlasticity.h; caller owns immutable curve storage.
 #pragma once
+#include "lib_src/materials/detail/VinterValue.h"
 namespace tl::material {
 namespace tabulated_shell_detail {
 TL_TABULATED_SHELL_HD inline bool CurveShape(TabulatedShellPlasticityCurve c) noexcept {
@@ -9,21 +10,7 @@ TL_TABULATED_SHELL_HD inline bool CurveShape(TabulatedShellPlasticityCurve c) no
 }
 TL_TABULATED_SHELL_HD inline bool CurveValue(TabulatedShellPlasticityCurve c, double x,
     double& value, double& slope) noexcept {
-  // Native VINTER uses the left segment at a knot (strict X > next knot).
-  // A fresh search avoids an additional history/cache transaction.
-  // The same final segment applies beyond the table; admission is a separate
-  // explicit parameter policy. No extra point or interpolation branch is needed.
-  std::uint32_t low = 0, high = c.count - 1;
-  while (high - low > 1) {
-    const auto middle = low + (high - low) / 2;
-    if (x > c.plastic_strain[middle]) low = middle;
-    else high = middle;
-  }
-  const double width = c.plastic_strain[low + 1] - c.plastic_strain[low];
-  slope = (c.yield_stress_pa[low + 1] - c.yield_stress_pa[low]) / width;
-  value = c.yield_stress_pa[low] + slope * (x - c.plastic_strain[low]);
-  return width > 0 && tl::math::Finite(slope) && slope >= 0 &&
-         tl::math::Finite(value) && value > 0;
+  return tl::material::detail::VinterValue(c, x, value, slope);
 }
 } // namespace tabulated_shell_detail
 

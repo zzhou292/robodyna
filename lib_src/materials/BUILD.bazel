@@ -34,7 +34,7 @@ cc_library(
         "detail/Law44ElasticParameters.h",
         "detail/Law44Hardening.h",
     ],
-    deps = ["//lib_src/math:quaternion"],
+    deps = [":vinter_value", "//lib_src/math:quaternion"],
 )
 
 cc_library(
@@ -64,4 +64,22 @@ cc_library(
     name = "law44_scope",
     hdrs = ["Law44MaterialScope.h"],
     deps = [":tabulated_shell_plasticity"],
+)
+
+cc_library(
+    name = "solid_law36_point",
+    hdrs = [
+        "SolidLaw36Point.h",
+        "law36/Types.h",
+        "law36/Prepare.h",
+        "law36/Update.h",
+        "law36/Caller.h",
+    ],
+    deps = [":vinter_value", "//lib_src/math:quaternion"],
+)
+
+cc_library(
+    name = "vinter_value",
+    hdrs = ["detail/VinterValue.h"],
+    deps = ["//lib_src/math:quaternion"],
 )

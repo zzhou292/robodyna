@@ -123,8 +123,8 @@
     },
     {
       "path": "lib_src/materials/BUILD.bazel",
-      "bytes": 1722,
-      "sha256": "fbade62c5f13c2e01b6bbaa6da864fd5fcb64a0337a4553b67b0b88528a1bbae"
+      "bytes": 2119,
+      "sha256": "dbb9431634c768813db181b4db6504d3017e001e7ddfc3fb1604a0e159d352dc"
     },
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
@@ -863,5 +863,16 @@
       }
     ],
     "scope": "Add complete formulation participant scope dependency and retain its reviewed startup manifest chain. Native donor and force arithmetic unchanged."
+  },
+  "solid_law36_value_registration": {
+    "previous_manifest_sha256": "a2f22fbc32ecc62e23667c6629cc3b896e27486c8b812b624fcaa15986fa1aeb",
+    "previous_entries": [
+      {
+        "path": "lib_src/materials/BUILD.bazel",
+        "bytes": 1722,
+        "sha256": "fbade62c5f13c2e01b6bbaa6da864fd5fcb64a0337a4553b67b0b88528a1bbae"
+      }
+    ],
+    "scope": "Register isolated solid LAW36 point and neutral VINTER helper; old shell public APIs and interpolation expressions unchanged."
   }
 }

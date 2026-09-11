@@ -1,0 +1,194 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "sources": [
+    {
+      "source": "engine/source/materials/mat/mat036/sigeps36.F",
+      "path": "original/engine/source/materials/mat/mat036/sigeps36.F",
+      "bytes": 66559,
+      "sha256": "6849109e1d8a57ffefca0c5fe52336921b581345240dd6e30ad768d156a3e155",
+      "git_blob_sha1": "9d22a5ac82af3090adf0593b0cf127ce82d39c6d"
+    },
+    {
+      "source": "engine/source/materials/mat/mat036/m36iter_imp.F",
+      "path": "original/engine/source/materials/mat/mat036/m36iter_imp.F",
+      "bytes": 22008,
+      "sha256": "416c22da7e11fef95f066f8f5d92865b696b0cb3c6576715c2ad6964d30e6776",
+      "git_blob_sha1": "17f3bd8664b3c89d69b8af032c4de5d966da7dc3"
+    },
+    {
+      "source": "engine/source/materials/mat_share/mstrain_rate.F",
+      "path": "original/engine/source/materials/mat_share/mstrain_rate.F",
+      "bytes": 4578,
+      "sha256": "cec10d5286c306d5f65afbd0129a58f50a4cfe46accb9e8ef2f77c0cdcff25cf",
+      "git_blob_sha1": "bea309be971770d67a1080f8b19f10ab725bbd72"
+    },
+    {
+      "source": "engine/source/materials/mat_share/mulaw.F90",
+      "path": "original/engine/source/materials/mat_share/mulaw.F90",
+      "bytes": 142562,
+      "sha256": "1d3e7c01bef5d22a702682c2b860027902a46eaf657900034b7d4e534f809bc3",
+      "git_blob_sha1": "b9794e1db2d4f7809f510788fc069366532ed7b4"
+    },
+    {
+      "source": "engine/source/materials/mat_share/mmain.F90",
+      "path": "original/engine/source/materials/mat_share/mmain.F90",
+      "bytes": 141187,
+      "sha256": "682c53b5fa9a4f014f84e5a3bc9c6eb558a738065d2d15cb9babac764e585a1c",
+      "git_blob_sha1": "b45f62e1aa3a58452e50a61279ed179637a0164a"
+    },
+    {
+      "source": "starter/source/materials/mat/mat036/hm_read_mat36.F",
+      "path": "original/starter/source/materials/mat/mat036/hm_read_mat36.F",
+      "bytes": 17725,
+      "sha256": "0e986e7d2d1b427d282374f7c86e20110191a4559ebd18c7b182b9e092035dcd",
+      "git_blob_sha1": "8d355fc6d5502eb779990de85f00d2c40402cade"
+    },
+    {
+      "source": "common_source/modules/constant_mod.F",
+      "path": "../../native/qeph/original/common_source/modules/constant_mod.F",
+      "bytes": 86324,
+      "sha256": "82cbe9ec53a0df4b76ccc0ff189a1d0e62e990138a37ee587934d5aa015a7865",
+      "git_blob_sha1": "5f78c0a6769ac024deb6bba9d3037cd747f36837"
+    },
+    {
+      "source": "common_source/modules/precision_mod.F90",
+      "path": "../../native/qeph/original/common_source/modules/precision_mod.F90",
+      "bytes": 71995,
+      "sha256": "0846aee31622c4bfdc22895a5580bce7b6be216d392b8ba219be53dafe570201",
+      "git_blob_sha1": "801e7590ca7f366cd5b2723ae9acfa6a089049cf"
+    },
+    {
+      "source": "engine/share/spe_inc/implicit_f.inc",
+      "path": "../../native/qeph/original/engine/share/spe_inc/implicit_f.inc",
+      "bytes": 1478,
+      "sha256": "336888d703e8eb082459dfd5f9ed8689b8374bcc6940ab2d53f0df91a0a39cf2",
+      "git_blob_sha1": "d54bff81213a4f7b53baa8422a0e8be20b338c17"
+    },
+    {
+      "source": "engine/share/includes/param_c.inc",
+      "path": "../../native/qeph/original/engine/share/includes/param_c.inc",
+      "bytes": 3581,
+      "sha256": "fdf61d11b957fc3415d8367e45722ffbbfcab7d5a630fc24f57a683ea3d54045",
+      "git_blob_sha1": "74dff9d9ecb44c2a0a0314b770356640d84dc2a6"
+    },
+    {
+      "source": "engine/share/includes/com01_c.inc",
+      "path": "../../native/qeph/original/engine/share/includes/com01_c.inc",
+      "bytes": 3697,
+      "sha256": "fe4d4bab0f0138427f7a16dc6ad46bfecac2543423787ee11d63b0a0456090df",
+      "git_blob_sha1": "0c4563aad5479d85ddd5da8f00e92a6702dfb3dd"
+    },
+    {
+      "source": "engine/share/includes/com04_c.inc",
+      "path": "../../native/qeph/original/engine/share/includes/com04_c.inc",
+      "bytes": 4073,
+      "sha256": "5e848151056a669919bacdb52ae28938bd869978be6de8461f619e6d19585525",
+      "git_blob_sha1": "626b9a3a62a756194032e5b872a413b5b22236f9"
+    },
+    {
+      "source": "engine/share/includes/com08_c.inc",
+      "path": "../../native/qeph/original/engine/share/includes/com08_c.inc",
+      "bytes": 1865,
+      "sha256": "10f98e71274a756d2e1345d29658c97a035c89c918257f20c2a164fbecfba496",
+      "git_blob_sha1": "527615007426bf007418321b9404b5fcf8639448"
+    },
+    {
+      "source": "engine/share/includes/scr17_c.inc",
+      "path": "../../native/qeph/original/engine/share/includes/scr17_c.inc",
+      "bytes": 2111,
+      "sha256": "db56f0562b25b05803aba448236fa228c7ea6151e22000540e84d9ce2d9f80ee",
+      "git_blob_sha1": "dfbf2b3224854b53b070fecc4924e1894a2841b5"
+    },
+    {
+      "source": "engine/share/includes/scr05_c.inc",
+      "path": "../../native/qeph/original/engine/share/includes/scr05_c.inc",
+      "bytes": 1594,
+      "sha256": "53a14b4a42266455432e4c7608b4ce34bee9b6dc120dbc055a3b1d7a76ff0c0b",
+      "git_blob_sha1": "edfdadbce0be47ede50bd6bbe398e14883c0542e"
+    },
+    {
+      "source": "engine/share/includes/units_c.inc",
+      "path": "../../native/qeph/original/engine/share/includes/units_c.inc",
+      "bytes": 2779,
+      "sha256": "c27320ffa81fd5bf362a0aa30903e2a302d68bb79aac94fc83fa46cc268dba89",
+      "git_blob_sha1": "49bd9730899b5e8fcd77adeabacb263c422f3ffe"
+    },
+    {
+      "source": "engine/share/includes/impl1_c.inc",
+      "path": "../../native/qeph/original/engine/share/includes/impl1_c.inc",
+      "bytes": 3586,
+      "sha256": "c257001e6e818a85f2841d8aba25ef111773283752d8aea3fdbb58e8edd63112",
+      "git_blob_sha1": "bb1edcd216a156efe566d75d2227d88c0fbe77c3"
+    },
+    {
+      "source": "engine/share/includes/parit_c.inc",
+      "path": "../../native/qeph/original/engine/share/includes/parit_c.inc",
+      "bytes": 1948,
+      "sha256": "aef339176a28d3f3212f55bf3bcbeda3916458e539e6e29f6142a0f4ac5716da",
+      "git_blob_sha1": "229e7c7a6c36103cd58c415f669b1f540756c531"
+    },
+    {
+      "source": "engine/share/spe_inc/comlock.inc",
+      "path": "../../native/qeph/original/engine/share/spe_inc/comlock.inc",
+      "bytes": 1968,
+      "sha256": "470ae1ea6af07d8464cf0a36c65bbb40ba32d40b4e301097b0e33de390424aff",
+      "git_blob_sha1": "eea178e51ecbf9df13c12319e266ae42897237e6"
+    },
+    {
+      "source": "engine/share/spe_inc/mvsiz_p.inc",
+      "path": "../../native/qeph/original/engine/share/spe_inc/mvsiz_p.inc",
+      "bytes": 3256,
+      "sha256": "8a0f587350f7738e0f40e375fc1b2c8cb775e4c7540d41762c427cd42724ced7",
+      "git_blob_sha1": "ace2eaec18ff827b0889b681100fe18fc180bf7b"
+    },
+    {
+      "source": "engine/share/spe_inc/hardware.inc",
+      "path": "../../native/qeph/original/engine/share/spe_inc/hardware.inc",
+      "bytes": 3556,
+      "sha256": "10a8e3d40d430fd92ed33b2d1b6fda43262e8c4901340ee740db0f1479ee0b00",
+      "git_blob_sha1": "40bedb84eaa3529c6a76f51d97d22575601ab37d"
+    },
+    {
+      "source": "engine/share/r8/my_real.inc",
+      "path": "../../native/qeph/original/engine/share/r8/my_real.inc",
+      "bytes": 1658,
+      "sha256": "b2b61dbf62a940a49f92f8458e72e6c7ab92fbae48a72e5a7fce5d6d6bbaf8df",
+      "git_blob_sha1": "14e5c4b5b9167a30f165b726ada28047de9b411b"
+    },
+    {
+      "source": "engine/source/tools/curve/vinter.F",
+      "path": "../../native/law44/original/vinter.F",
+      "bytes": 12880,
+      "sha256": "4ecc3e2dc2119112826bd0cacfcc423e4551cca4a66e063b210d352c00a8fdcd",
+      "git_blob_sha1": "94d549102200d5a057424c0716674bbb82850ee2"
+    },
+    {
+      "source": "engine/share/spe_inc/tlock_c.inc",
+      "path": "../../native/qeph/original/engine/share/spe_inc/tlock_c.inc",
+      "bytes": 2151,
+      "sha256": "c8f6f9a8405c173182acdf114060ec4a9a073e4886b6431da1a1f4fb145b33e4",
+      "git_blob_sha1": "54970dd5e6957cd477331971219ee59419ecd867"
+    },
+    {
+      "source": "engine/share/spe_inc/vectorize.inc",
+      "path": "../../native/qeph/original/engine/share/spe_inc/vectorize.inc",
+      "bytes": 1881,
+      "sha256": "67d75c7f52c1dc87facb732ef3ffd29502b9ea1972be228ed135e892f18f7153",
+      "git_blob_sha1": "9c884843281aeb95cd647d43dc0dc67ef0a3bdb5"
+    },
+    {
+      "source": "engine/share/spe_inc/lockon.inc",
+      "path": "../../native/qeph/original/engine/share/spe_inc/lockon.inc",
+      "bytes": 2236,
+      "sha256": "9f3ca126afe6c73e6083bbcac4c5f9c9259ffd3edfb771ebc006c68ff15457bb",
+      "git_blob_sha1": "cddbcec07a0860890060eb997e0a7dffd489d4cb"
+    },
+    {
+      "source": "engine/share/spe_inc/lockoff.inc",
+      "path": "../../native/qeph/original/engine/share/spe_inc/lockoff.inc",
+      "bytes": 2239,
+      "sha256": "6bbf602b6b6c6a8eacecf1c6fb97ac8ff4c05a967f56b5b1aebf65ffe24af639",
+      "git_blob_sha1": "3a43222c4af0d7a2590718a5e74684d724029d9b"
+    }
+  ]
+}
