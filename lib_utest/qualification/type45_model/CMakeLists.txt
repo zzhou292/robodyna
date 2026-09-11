@@ -1,0 +1,13 @@
+cmake_minimum_required(VERSION 3.22)
+project(TLType45Model LANGUAGES CXX)
+enable_testing()
+find_package(GTest REQUIRED)
+find_package(CUDAToolkit REQUIRED) # Existing host fixture uses owner view types only.
+get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+include("${TL_ROOT}/lib_src/elements/type45/Model.cmake")
+include("${TL_ROOT}/lib_src/constraints/tied_shell/TiedCinAttachment.cmake")
+add_executable(type45_model_host ModelTest.cpp ../rigid_assembly_owner/Fixture.cpp)
+target_link_libraries(type45_model_host PRIVATE tl_type45_model tl_tied_cin_attachment GTest::gtest_main CUDA::cudart)
+target_compile_options(type45_model_host PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME type45_model_host COMMAND type45_model_host)
+set_tests_properties(type45_model_host PROPERTIES TIMEOUT 120 RUN_SERIAL TRUE PROCESSORS 1)

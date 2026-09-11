@@ -5,3 +5,12 @@ cc_library(
     deps = ["//lib_src/math:fixed3_operations"],
     visibility = ["//visibility:public"],
 )
+cc_library(
+    name = "model",
+    srcs = ["Model.cpp", "model/Budget.cpp", "model/Mapping.cpp"],
+    hdrs = ["Model.h", "model/Internal.h"],
+    deps = [":values", "//lib_src/constraints:nodal_rigid_assembly_binding",
+            "//lib_utils:bounded_arena", "//lib_utils:source_identity_index"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    visibility = ["//visibility:public"],
+)
