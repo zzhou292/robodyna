@@ -8,6 +8,7 @@ if(NOT TARGET tl_solid_batch_values)
   add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/solids/resident" "${CMAKE_CURRENT_BINARY_DIR}/physical-solid-resident")
 endif()
 include("${CMAKE_CURRENT_LIST_DIR}/solids/resident/Batch.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/type45/resident/Batch.cmake")
 add_library(tl_shell_batch_publication STATIC
   "${CMAKE_CURRENT_LIST_DIR}/ShellBatchPublication.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/publication/PhysicalValues.cpp"
@@ -23,7 +24,7 @@ add_library(tl_shell_batch_publication STATIC
   "${CMAKE_CURRENT_LIST_DIR}/ShellBatchFormulationPublication.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/ShellBatchPublicationKernels.cu")
 target_link_libraries(tl_shell_batch_publication PUBLIC
-  tl_qeph_batch tl_t3_batch tl_type25_batch tl_type13_batch tl_solid_batch tl_qbat_batch tl_shell_batch_binding tl_explicit_nodal_state)
+  tl_qeph_batch tl_t3_batch tl_type25_batch tl_type13_batch tl_solid_batch tl_type45_batch tl_qbat_batch tl_shell_batch_binding tl_explicit_nodal_state)
 set_target_properties(tl_shell_batch_publication PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
 target_compile_options(tl_shell_batch_publication PRIVATE
   "$<$<COMPILE_LANGUAGE:CXX>:-fno-fast-math;-ffp-contract=off>"

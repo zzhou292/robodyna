@@ -9,6 +9,7 @@ class History {
   TL_TYPE45_HD const HistoryValues& values() const { return values_; }
   TL_TYPE45_HD Stamp stamp() const { return stamp_; }
   TL_TYPE45_HD bool ready() const { return reference_.ready(); }
+  TL_TYPE45_HD const Reference& reference() const { return reference_; }
   TL_TYPE45_HD bool Matches(const Reference& reference) const { return reference_.Matches(reference); }
   // The only initial history is the native virgin TT0 state. This does not
   // evaluate force after auto-K or manufacture an owner acceptance receipt.

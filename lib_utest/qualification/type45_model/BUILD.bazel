@@ -1,9 +1,17 @@
-load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+cc_library(
+    name = "fixture",
+    testonly = True,
+    hdrs = ["Fixture.h"],
+    deps = ["//lib_src/elements/type45:model",
+            "//lib_utest/qualification/rigid_assembly_owner:fixture"],
+    visibility = ["//lib_utest/qualification/type45_resident:__pkg__"],
+)
 cc_test(
     name = "type45_model_host",
     size = "small",
-    srcs = ["ModelTest.cpp", "Fixture.h"],
-    deps = ["//lib_src/elements/type45:model",
+    srcs = ["ModelTest.cpp"],
+    deps = [":fixture", "//lib_src/elements/type45:model",
             "//lib_utest/qualification/rigid_assembly_owner:fixture", "@googletest//:gtest_main"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
 )

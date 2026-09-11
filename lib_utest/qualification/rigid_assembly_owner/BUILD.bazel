@@ -15,6 +15,7 @@ cc_library(
                   "//lib_utest/qualification/cin_physical_main_summary:__pkg__",
                   "//lib_utest/qualification/physical_owner_forecast:__pkg__",
                   "//lib_utest/qualification/type45_model:__pkg__",
+                  "//lib_utest/qualification/type45_resident:__pkg__",
                   "//lib_utest/qualification/solid_resident:__pkg__",
                   "//lib_utest/qualification/qbat_mapped:__pkg__"],
 )

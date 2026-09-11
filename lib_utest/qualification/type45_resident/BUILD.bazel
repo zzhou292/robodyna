@@ -7,3 +7,13 @@ cc_test(
             "//lib_utest/qualification/type45_joint:test_support", "@googletest//:gtest_main"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
 )
+cc_test(
+    name = "resident_host",
+    size = "small",
+    srcs = ["StateTest.cpp", "LayoutTest.cpp"],
+    deps = ["//lib_src/elements/type45/resident:values",
+            "//lib_utest/qualification/type45_joint:test_support",
+            "//lib_utest/qualification/type45_model:fixture",
+            "//lib_utest/qualification/rigid_assembly_owner:fixture", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)

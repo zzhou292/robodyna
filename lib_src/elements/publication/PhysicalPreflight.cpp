@@ -4,6 +4,7 @@
 #include "../type25/Type25BatchStorage.h"
 #include "../type13/resident/Storage.h"
 #include "../solids/resident/Storage.h"
+#include "../type45/resident/Storage.h"
 
 namespace tl::fea {
 namespace {
@@ -27,7 +28,8 @@ bool ShellBatchPublication::Impl::PhysicalUsable() const noexcept {
       (!bbatch || !bbatch->impl_ || bbatch->impl_->usable) &&
       (!connector || !connector->impl_ || connector->impl_->usable) &&
       (!physical->beams || !physical->beams->impl_ || physical->beams->impl_->usable) &&
-      (!physical->solids || !physical->solids->impl_ || physical->solids->impl_->usable);
+      (!physical->solids || !physical->solids->impl_ || physical->solids->impl_->usable) &&
+      (!physical->joints || !physical->joints->impl_ || physical->joints->impl_->usable);
 }
 bool ShellBatchPublication::Impl::SamePhysicalScope(const NodalStamp& stamp) const noexcept {
   if (!usable || !physical || !physical->owner ||
@@ -52,6 +54,11 @@ bool ShellBatchPublication::Impl::SamePhysicalScope(const NodalStamp& stamp) con
   if (physical->solids && (!physical->solids->impl_ ||
       !Claimed(*physical->solids->impl_,stamp,scope) ||
       !physical->solids->impl_->model.contributions()->Matches(*binding.coefficients()->solids()))) return false;
+  if (bool(physical->joints)!=physical->joint_model.prepared()) return false;
+  if (physical->joints && (!physical->joints->impl_ ||
+      !Claimed(*physical->joints->impl_,stamp,scope) ||
+      !physical->joints->impl_->model.SharesStorage(physical->joint_model) ||
+      physical->joints->impl_->physical_scope!=&physical->binding)) return false;
   return true;
 }
 ShellPublicationReport ShellBatchPublication::Impl::PreflightPhysical(FENodalState& owner,
@@ -63,7 +70,8 @@ ShellPublicationReport ShellBatchPublication::Impl::PreflightPhysical(FENodalSta
     return {S::NotJoined,"Physical participants do not share the actual accepted owner scope"};
   if (bool(candidates.qeph) != bool(qbatch) || bool(candidates.t3) != bool(tbatch) ||
       bool(candidates.qbat) != bool(bbatch) || bool(candidates.type25) != bool(connector) ||
-      bool(candidates.type13) != bool(physical->beams) || bool(candidates.solids) != bool(physical->solids))
+      bool(candidates.type13) != bool(physical->beams) || bool(candidates.solids) != bool(physical->solids) ||
+      bool(candidates.type45) != bool(physical->joints))
     return {S::NotJoined,"Every declared physical candidate is required exactly once"};
   const auto borrowed = owner.BorrowPrepared(token,&authentic);
   if (borrowed.status != NodalStatus::Ok) return Nodal(borrowed);
@@ -92,6 +100,11 @@ ShellPublicationReport ShellBatchPublication::Impl::PreflightPhysical(FENodalSta
     const auto checked = PhysicalReport(physical->solids->PreflightPublication(owner,token,authentic,
         *candidates.solids,scope));
     if (checked.status != S::Success) return checked;
+  }
+  if (physical->joints) {
+    const auto checked=PhysicalReport(physical->joints->PreflightPublication(owner,token,authentic,
+        *candidates.type45,scope));
+    if (checked.status!=S::Success) return checked;
   }
   return Ok();
 }

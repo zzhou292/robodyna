@@ -112,6 +112,13 @@ class ShellBatchPublication {
       const NodalRigidAssemblyBinding&,const NodalCinWitnessSource&,
       const ShellPhysicalParticipants&,const ShellPhysicalPublicationIdentity&,
       const ShellPublicationLimits& limits={});
+  // Explicit optional constraint scope. The old initializer admits no joint
+  // participant. This retains the supplied exact Model handle and claims its
+  // Batch only after all existing physical participants have passed preflight.
+  ShellPublicationReport InitializePhysicalWithJoints(FENodalState&,const ShellPhysicalBinding&,
+      const NodalRigidAssemblyBinding&,const NodalCinWitnessSource&,const type45::Model&,
+      const ShellPhysicalParticipants&,const ShellPhysicalPublicationIdentity&,
+      const ShellPublicationLimits& limits={});
   ShellPublicationReport PreparePhysical(FENodalState&,const NodalTrialToken&,
       const ShellPhysicalCandidates&,ShellPhysicalDiagnostics*);
   ShellPublicationReport CommitPhysical(FENodalState&,const NodalTrialToken&,
@@ -151,6 +158,9 @@ class ShellBatchPublication {
   void DiscardTrial() noexcept;
   NodalAllocationInfo allocations() const noexcept;
  private:
+  ShellPublicationReport InitializePhysicalImpl(FENodalState&,const ShellPhysicalBinding&,
+      const NodalRigidAssemblyBinding&,const NodalCinWitnessSource&,const type45::Model*,
+      const ShellPhysicalParticipants&,const ShellPhysicalPublicationIdentity&,const ShellPublicationLimits&);
   ShellPublicationReport CopyAcceptedFormulations(const NodalStamp&,ShellBatchDiagnostics*) const noexcept;
   ShellPublicationReport InitializeImpl(FENodalState&,qeph::QephBatch&,t3::T3Batch&,
       type25::Batch*,const ShellPublicationLimits&);

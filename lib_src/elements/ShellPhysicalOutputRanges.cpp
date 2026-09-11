@@ -36,11 +36,15 @@ bool OutputDisjoint(const ShellPhysicalBinding& physical,const void* output,std:
   if (!physical.prepared() || !Range(output,bytes,&physical)) return false;
   if (physical.execution() &&
       !shell_execution_detail::OutputDisjoint(*physical.execution(),output,bytes)) return false;
-  const auto& ledger=*physical.coefficients();
-  const auto& domain=*physical.domain();
-  const auto& map=*physical.mapping();
   const ShellFormulationScope scope{physical.shells(),physical.catalog(),physical.failure(),nullptr};
-  if (!shell_formulation_detail::OutputDisjoint(scope,output,bytes) ||
+  return shell_formulation_detail::OutputDisjoint(scope,output,bytes) &&
+      OutputDisjoint(*physical.coefficients(),output,bytes);
+}
+bool OutputDisjoint(const NodalCoefficientLedger& ledger,const void* output,std::size_t bytes) noexcept {
+  if(!ledger.prepared() || !ledger.domain() || !ledger.shells()) return false;
+  const auto& domain=*ledger.domain();
+  const auto& map=*ledger.shells();
+  if (!map.shells() || !shell_formulation_detail::BindingOutputDisjoint(*map.shells(),output,bytes) ||
       !Range(output,bytes,&ledger) || !Range(output,bytes,&ledger.totals()) ||
       !Range(output,bytes,&ledger.scope()) || !DomainRange(domain,output,bytes) ||
       !Range(output,bytes,&map) ||

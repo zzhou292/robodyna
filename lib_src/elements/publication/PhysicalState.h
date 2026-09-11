@@ -6,13 +6,15 @@
 
 namespace tl::fea::shell_publication_detail {
 struct PhysicalState {
-  PhysicalState(const ShellPhysicalBinding& p,const NodalRigidAssemblyBinding& r)
-      : binding(p),rigid(r) {}
+  PhysicalState(const ShellPhysicalBinding& p,const NodalRigidAssemblyBinding& r,const type45::Model* j=nullptr)
+      : binding(p),rigid(r),joint_model(j?*j:type45::Model{}) {}
   ShellPhysicalBinding binding;
   NodalRigidAssemblyBinding rigid;
+  type45::Model joint_model;
   FENodalState* owner = nullptr;
   type13::Batch* beams = nullptr;
   solids::Batch* solids = nullptr;
+  type45::Batch* joints = nullptr;
   ShellPhysicalPublicationIdentity identity;
   ShellPhysicalPublicationForecast forecast;
   NodalStamp accepted_stamp;

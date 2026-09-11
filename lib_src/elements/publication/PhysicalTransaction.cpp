@@ -27,7 +27,8 @@ ShellPublicationReport ShellBatchPublication::PreparePhysical(FENodalState& owne
       (candidates.qbat && !Disjoint(output,sizeof(*output),candidates.qbat,sizeof(*candidates.qbat))) ||
       (candidates.type25 && !Disjoint(output,sizeof(*output),candidates.type25,sizeof(*candidates.type25))) ||
       (candidates.type13 && !Disjoint(output,sizeof(*output),candidates.type13,sizeof(*candidates.type13))) ||
-      (candidates.solids && !Disjoint(output,sizeof(*output),candidates.solids,sizeof(*candidates.solids))))
+      (candidates.solids && !Disjoint(output,sizeof(*output),candidates.solids,sizeof(*candidates.solids))) ||
+      (candidates.type45 && !Disjoint(output,sizeof(*output),candidates.type45,sizeof(*candidates.type45))))
     return fail({S::InvalidInput,"Physical diagnostic output overlaps an input or retained source"});
   state.pending = false;
   state.physical->candidate = {};
@@ -43,6 +44,7 @@ ShellPublicationReport ShellBatchPublication::PreparePhysical(FENodalState& owne
   next.has_type25 = candidates.type25 != nullptr;
   next.has_type13 = candidates.type13 != nullptr;
   next.has_solids = candidates.solids != nullptr;
+  next.has_type45 = candidates.type45 != nullptr;
   state.CapturePhysicalDiagnostics(next,true);
   next.valid = true;
   state.physical->candidate = next;
@@ -87,6 +89,7 @@ ShellPublicationReport ShellBatchPublication::CommitPhysical(FENodalState& owner
   if (state.connector) state.connector->Publish(stamp);
   if (physical.beams) physical.beams->Publish(stamp);
   if (physical.solids) physical.solids->Publish(stamp);
+  if (physical.joints) physical.joints->Publish(stamp);
   physical.accepted = physical.candidate;
   physical.accepted_stamp = stamp;
   if (state.qbatch) physical.accepted.qeph.phase = qeph::BatchPhase::Accepted;
@@ -95,6 +98,7 @@ ShellPublicationReport ShellBatchPublication::CommitPhysical(FENodalState& owner
   if (state.connector) physical.accepted.type25.phase = type25::BatchPhase::Accepted;
   if (physical.beams) physical.accepted.type13.phase = type13::BatchPhase::Accepted;
   if (physical.solids) physical.accepted.solids.phase = solids::BatchPhase::Accepted;
+  if (physical.joints) physical.accepted.type45.phase = type45::BatchPhase::Accepted;
   state.pending = false;
   state.candidate_view = {};
   physical.candidate = {};
