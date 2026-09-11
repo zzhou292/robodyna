@@ -255,6 +255,10 @@ class FENodalState {
   // Count/range validation precedes member lookup. No CUDA call, allocation,
   // phase change or force/publication authority; queries may repeat indices.
   NodalReport ValidateNonRigidNodes(const std::size_t*,std::size_t count) const noexcept;
+  // Read-only comparison with the complete immutable PART/plain metadata
+  // retained at startup. Valid at any accepted epoch; no device read/allocation.
+  // Complete non-rigid coefficients and current CIN values remain separate.
+  NodalReport ValidateRigidAssemblyBinding(const NodalRigidAssemblyBinding&) const noexcept;
   NodalReport SealAssembly(const NodalTrialToken&);
   // Only after the applicable advance succeeds. Validators use the returned stream
   // and finish before Commit; the coordinator must discard any rejected trial.

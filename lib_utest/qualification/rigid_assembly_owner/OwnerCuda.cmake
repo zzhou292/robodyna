@@ -18,7 +18,7 @@ target_include_directories(rigid_assembly_owner_native PRIVATE "${rigid_native}"
 target_compile_options(rigid_assembly_owner_native PRIVATE -cpp -ffixed-line-length-none
   -fcheck=bounds -fbacktrace -fno-fast-math -ffp-contract=off)
 add_subdirectory("${TL_ROOT}/lib_src/solvers" "${CMAKE_CURRENT_BINARY_DIR}/owner")
-add_executable(rigid_assembly_owner_cuda OwnerTest.cu NativeOwnerTest.cu Fixture.cpp
+add_executable(rigid_assembly_owner_cuda OwnerTest.cu IdentityTest.cu NativeOwnerTest.cu Fixture.cpp
   ../nodal_rigid_group/GroupStepNativeFixture.cpp ../nodal_rigid_group/GroupPhaseNativeFixture.cpp)
 target_link_libraries(rigid_assembly_owner_cuda PRIVATE tl_explicit_nodal_state
   rigid_assembly_owner_native GTest::gtest_main)

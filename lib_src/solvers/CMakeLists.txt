@@ -6,7 +6,7 @@ get_filename_component(TL_NODAL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../.." ABSOLUTE)
 include("${CMAKE_CURRENT_LIST_DIR}/../constraints/NodalRigidAssemblyBinding.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../constraints/tied_shell/TiedCinAttachment.cmake")
 add_library(tl_explicit_nodal_state STATIC FENodalState.cu FENodalConstraintQueries.cu FENodalSnapshotReadback.cu FENodalForceStageReadback.cu ExplicitTranslationStep.cu ExplicitNodalStep.cu
-  NodalRigidGroupStorage.cu NodalRigidAssemblyStorage.cpp NodalRigidAssemblyChecks.cpp ExplicitNodalRigidStep.cu NodalCinStartup.cpp NodalCinStorage.cu NodalCinState.cpp
+  NodalRigidGroupStorage.cu NodalRigidAssemblyStorage.cpp NodalRigidAssemblyChecks.cpp NodalRigidAssemblyIdentity.cpp ExplicitNodalRigidStep.cu NodalCinStartup.cpp NodalCinStorage.cu NodalCinState.cpp
   NodalCinReadback.cu ExplicitNodalCinStep.cu)
 target_compile_features(tl_explicit_nodal_state PUBLIC cxx_std_17)
 set_target_properties(tl_explicit_nodal_state PROPERTIES
