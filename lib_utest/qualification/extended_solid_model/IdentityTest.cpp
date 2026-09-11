@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Fixture.h"
+#include "lib_src/elements/solids/model/Internal.h"
 namespace extended_model_test {
 TEST(ExtendedSolidModel, CrossLawMidsRejectBeforePublicationAndRestoreValidRetry) {
   for (unsigned choice = 0; choice < 5; ++choice) {
@@ -67,5 +68,31 @@ TEST(ExtendedSolidModel, LastFamilySourceAndDensityFailuresLeaveEmptyHandleForRe
   const auto* parents = model.solid18_law90().data();
   EXPECT_EQ(model.Initialize(domain,f.Input()).status,s::ModelStatus::AlreadyInitialized);
   EXPECT_EQ(model.solid18_law90().data(),parents);
+}
+TEST(ExtendedSolidModel, OwnedFoamRebindPreservesBothLoadingBranchesAndNativeCurveScale) {
+  for (int flag : {1,2}) for (double scale : {1.0,1e6}) {
+    SCOPED_TRACE(flag);
+    SCOPED_TRACE(scale);
+    Fixture f;
+    f.foam_input.hysteresis = flag == 1 ? 0 : 1;
+    f.foam_input.curve_scale_dimension = scale;
+    f.foam_y[1] /= scale; f.foam_y[2] /= scale;
+    f.PrepareFoam(); f.Repeat90();
+    const auto original = f.input90[0].material;
+    ASSERT_EQ(original.reader().loading_flag,flag);
+    const auto domain = f.Domain();
+    s::Model model;
+    ASSERT_TRUE(model.Initialize(domain,f.Input()));
+    ASSERT_EQ(model.materials90().size(),1u);
+    const auto& owned = model.materials90()[0].value;
+    EXPECT_EQ(owned.reader().loading_flag,flag);
+    EXPECT_EQ(owned.reader().hysteresis,1);
+    EXPECT_TRUE(s::model_detail::Same(owned,original));
+    EXPECT_NE(owned.curve().stress_pa,original.curve().stress_pa);
+    EXPECT_EQ(model.solid18_law90()[0].material_index,model.solid18_law90()[1].material_index);
+    const auto expected = f.foam_y[2];
+    f.foam_y[2] = std::numeric_limits<double>::quiet_NaN();
+    EXPECT_EQ(owned.curve().stress_pa[2],expected);
+  }
 }
 } // namespace extended_model_test

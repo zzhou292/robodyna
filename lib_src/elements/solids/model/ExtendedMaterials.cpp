@@ -13,7 +13,8 @@ tl::material::law90::PreparationInput CanonicalInput(const tl::material::law90::
   input.poisson_ratio = r.poisson_ratio;
   input.contact_modulus_pa = r.contact_modulus_pa;
   input.tension_cutoff_pa = r.tension_cutoff_pa;
-  input.hysteresis = r.hysteresis;
+  // HM_READ_MAT90 selects the loading branch before defaulting Hys to one.
+  input.hysteresis = r.loading_flag == 1 ? 0 : r.hysteresis;
   input.shape = r.shape;
   input.alpha = r.alpha;
   input.curve_scale = r.curve_scale;
