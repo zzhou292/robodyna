@@ -35,7 +35,7 @@ TL_SOLID18_HD inline Status BulkViscosity(const Material& material,
 TL_SOLID18_HD inline Status PointResponse(const Material& material,
     const PointHistory& accepted, const PointDerivatives& geometry,
     const Vec3 (&velocity)[8], double dt, double length,
-    PointHistory& proposed, PointObservation& observation) noexcept {
+    PointHistory& proposed, PointObservation& observation, bool initialization = false) noexcept {
   proposed = accepted;
   Status status = PointKinematics(geometry,velocity,dt,proposed,observation);
   if (status != Status::Success) return status;
@@ -63,8 +63,9 @@ TL_SOLID18_HD inline Status PointResponse(const Material& material,
   measures.volume_increment_m3 = increment;
   measures.old_bulk_pressure_pa = accepted.bulk_pressure_pa;
   measures.new_bulk_pressure_pa = observation.bulk_pressure_pa;
-  const auto material_status = tl::material::law36::UpdateCaller(material,
-      proposed.material,kinematics,measures,observation.material);
+  const auto material_status = initialization ?
+      tl::material::law36::InitializeCaller(material,kinematics,measures,observation.material) :
+      tl::material::law36::UpdateCaller(material,proposed.material,kinematics,measures,observation.material);
   if (material_status != tl::material::law36::Status::Ok) return Status::InvalidInput;
   proposed.material = observation.material.history;
   proposed.bulk_pressure_pa = observation.bulk_pressure_pa;

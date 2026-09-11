@@ -9,16 +9,12 @@
 #include "Solid18ForceWork.h"
 
 namespace tl::fea::solid18 {
-// Pure active positive-Jacobian value recurrence. There is no owner clock,
-// source admission, mass allocation, contact, deletion or small-strain fallback.
-// All inputs (including aliases into output) are consumed before publication.
-TL_SOLID18_HD inline Status EvaluateForce(const Reference& reference,
+namespace detail {
+// Shared selected force arithmetic. Initialization is entered only by the
+// constructor below, with generated virgin history and exact reference fields.
+TL_SOLID18_HD inline Status CalculateForce(const Reference& reference,
     const History& accepted, const PrescribedInterval& interval,
-    const Material& material, ForceTrial& output) noexcept {
-  if (!detail::ValidMaterial(reference,material) || !detail::ValidInterval(accepted,interval) ||
-      !detail::SameReference(reference,accepted.reference()) ||
-      !detail::SameMaterial(material,accepted.material()) ||
-      !detail::ValidHistory(reference,accepted.data())) return Status::InvalidInput;
+    const Material& material, ForceTrial& output, bool initialization) noexcept {
   ForceTrial trial;
   Status status = detail::SelectAcceptedPoint(material,accepted.data(),trial.diagnostics);
   if (status != Status::Success) return status;
@@ -45,7 +41,7 @@ TL_SOLID18_HD inline Status EvaluateForce(const Reference& reference,
                         trial.geometry.inverse_center_face_scale_per_m2/1.0);
         status = detail::PointResponse(material,accepted.data().point[ip],geometry,
             trial.geometry.local_velocity_m_s,interval.dt_s,length,
-            next.point[ip],trial.point[ip]);
+            next.point[ip],trial.point[ip],initialization);
         if (status != Status::Success) return status;
         detail::AccumulateForce(geometry,next.point[ip],local_force);
         detail::AccumulateGlobal(reference,trial.geometry,ip,next.point[ip],
@@ -68,5 +64,32 @@ TL_SOLID18_HD inline Status EvaluateForce(const Reference& reference,
   if (status != Status::Success) return status;
   output = trial;
   return Status::Success;
+}
+} // namespace detail
+// Pure active positive-Jacobian recurrence. All borrowed inputs are consumed
+// before publication; this is not a state owner or a zero-duration update API.
+TL_SOLID18_HD inline Status EvaluateForce(const Reference& reference,
+    const History& accepted, const PrescribedInterval& interval,
+    const Material& material, ForceTrial& output) noexcept {
+  if (!detail::ValidMaterial(reference,material) || !detail::ValidInterval(accepted,interval) ||
+      !detail::SameReference(reference,accepted.reference()) ||
+      !detail::SameMaterial(material,accepted.material()) ||
+      !detail::ValidHistory(reference,accepted.data())) return Status::InvalidInput;
+  return detail::CalculateForce(reference,accepted,interval,material,output,false);
+}
+// Native TT0/DT1=0 construction. Initial material/rate/Q and cache fields are
+// evaluated once; sample0 is not a completed physical interval.
+TL_SOLID18_HD inline Status InitializeForce(const Reference& reference,
+    const Material& material, Vec3 uniform_velocity_m_s, ForceTrial& output) noexcept {
+  if (!detail::Finite(uniform_velocity_m_s)) return Status::InvalidInput;
+  History virgin;
+  const Status status=InitializeHistory(reference,material,virgin);
+  if (status!=Status::Success) return status;
+  PrescribedInterval initial;
+  for (unsigned n=0; n<8; ++n) {
+    initial.position_endpoint_m[n]=reference.input().position_m[n];
+    initial.velocity_midpoint_m_s[n]=uniform_velocity_m_s;
+  }
+  return detail::CalculateForce(reference,virgin,initial,material,output,true);
 }
 }  // namespace tl::fea::solid18

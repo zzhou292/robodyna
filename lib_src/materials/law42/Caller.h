@@ -38,8 +38,10 @@ TL_LAW42_HD inline bool BulkViscosity(const Parameters& material,
 }
 } // namespace caller_detail
 
-TL_LAW42_HD inline Status UpdateCaller(const Parameters& material,
-    const CallerHistory& accepted, const CallerInput& input, CallerResult& output) noexcept {
+namespace caller_detail {
+TL_LAW42_HD inline Status CallerValues(const Parameters& material,
+    const CallerHistory& accepted, const CallerInput& input, CallerResult& output,
+    bool initialization) noexcept {
   using caller_detail::Positive;
   Parameters checked;
   if (Prepare(material.mu_pa,material.poisson_ratio,material.density_kg_m3,
@@ -47,7 +49,8 @@ TL_LAW42_HD inline Status UpdateCaller(const Parameters& material,
       checked.bulk_pa != material.bulk_pa) return Status::InvalidParameters;
   if (!Positive(accepted.density_kg_m3) ||
       !tl::math::Finite(accepted.internal_energy_density_j_m3) ||
-      !tl::math::Finite(accepted.bulk_pressure_pa) || !Positive(input.dt_s) ||
+      !tl::math::Finite(accepted.bulk_pressure_pa) ||
+      !(initialization ? input.dt_s==0 : Positive(input.dt_s)) ||
       !Positive(input.current_volume_m3) || !Positive(input.storage_volume_m3) ||
       !Positive(input.characteristic_length_m)) return Status::InvalidInput;
   for (double value : accepted.stress_pa) if (!tl::math::Finite(value)) return Status::InvalidInput;
@@ -90,5 +93,18 @@ TL_LAW42_HD inline Status UpdateCaller(const Parameters& material,
       !tl::math::Finite(next.history.internal_energy_density_j_m3)) return Status::NonfiniteResult;
   output = next;
   return Status::Ok;
+}
+} // namespace caller_detail
+TL_LAW42_HD inline Status UpdateCaller(const Parameters& material,
+    const CallerHistory& accepted, const CallerInput& input, CallerResult& output) noexcept {
+  return caller_detail::CallerValues(material,accepted,input,output,false);
+}
+// Constructor-only native TT0 evaluation. There is no borrowed accepted history
+// and no interval stamp; the element initializer owns this one-time publication.
+TL_LAW42_HD inline Status InitializeCaller(const Parameters& material,
+    const CallerInput& input, CallerResult& output) noexcept {
+  CallerHistory virgin;
+  virgin.density_kg_m3=material.density_kg_m3;
+  return caller_detail::CallerValues(material,virgin,input,output,true);
 }
 } // namespace tl::material::law42

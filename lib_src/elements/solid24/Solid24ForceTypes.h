@@ -37,6 +37,7 @@ struct ForceDiagnostics {
 class History;
 struct ForceTrial;
 TL_BRICK_HD ForceStatus InitializeHistory(const Reference&,const Material&,History&) noexcept;
+TL_BRICK_HD ForceStatus InitializeForce(const Reference&,const Material&,Vec3,ForceTrial&) noexcept;
 TL_BRICK_HD ForceStatus EvaluateForce(const Reference&,const History&,const PrescribedInterval&,
                                      const Material&,ForceTrial&) noexcept;
 class History {
@@ -53,6 +54,7 @@ class History {
   HistoryStamp stamp_;
   bool initialized_ = false;
   friend TL_BRICK_HD ForceStatus InitializeHistory(const Reference&,const Material&,History&) noexcept;
+  friend TL_BRICK_HD ForceStatus InitializeForce(const Reference&,const Material&,Vec3,ForceTrial&) noexcept;
   friend TL_BRICK_HD ForceStatus EvaluateForce(const Reference&,const History&,
       const PrescribedInterval&,const Material&,ForceTrial&) noexcept;
 };

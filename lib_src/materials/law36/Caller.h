@@ -4,9 +4,10 @@
 namespace tl::material::law36 {
 // AMU is prepared here from actual density. Stress/rates already
 // belong to the same native material frame. No frame/geometry is reconstructed.
-TL_LAW36_HD inline Status UpdateCaller(const Parameters& p,
+namespace detail {
+TL_LAW36_HD inline Status CallerValues(const Parameters& p,
     const CallerHistory& accepted, const Kinematics& input, const Measures& measures,
-    CallerResult& output) noexcept {
+    CallerResult& output, bool initialization) noexcept {
   if (!detail::ParametersValid(p)) return Status::InvalidParameters;
   if (!detail::Positive(measures.density_kg_m3) ||
       !detail::Positive(measures.storage_volume_m3) ||
@@ -18,7 +19,7 @@ TL_LAW36_HD inline Status UpdateCaller(const Parameters& p,
   if (!tl::math::Finite(accepted.internal_energy_density_j_m3) ||
       !tl::math::Finite(accepted.plastic_work_j) || accepted.plastic_work_j < 0)
     return Status::InvalidHistory;
-  if (input.dt_s == 0 &&
+  if (!initialization && input.dt_s == 0 &&
       (accepted.internal_energy_density_j_m3 != 0 || accepted.plastic_work_j != 0 ||
        measures.density_kg_m3 != p.density_kg_m3 ||
        measures.current_volume_m3 != measures.storage_volume_m3 ||
@@ -31,7 +32,8 @@ TL_LAW36_HD inline Status UpdateCaller(const Parameters& p,
   result.relative_density = prepared.relative_density;
   result.average_volume_m3 = measures.current_volume_m3 - .5 * measures.volume_increment_m3;
   if (!detail::Positive(result.average_volume_m3)) return Status::InvalidInput;
-  const Status status = Update(p, accepted.point, prepared, result.point);
+  const Status status = initialization ? Initialize(p,prepared,result.point) :
+      Update(p,accepted.point,prepared,result.point);
   if (status != Status::Ok) return status;
   result.history = accepted;
   result.history.point = result.point.history;
@@ -66,5 +68,19 @@ TL_LAW36_HD inline Status UpdateCaller(const Parameters& p,
       !tl::math::Finite(result.history.plastic_work_j)) return Status::NonfiniteResult;
   output = result;
   return Status::Ok;
+}
+} // namespace detail
+TL_LAW36_HD inline Status UpdateCaller(const Parameters& p,
+    const CallerHistory& accepted, const Kinematics& input, const Measures& measures,
+    CallerResult& output) noexcept {
+  return detail::CallerValues(p,accepted,input,measures,output,false);
+}
+// Constructor-only TT0 evaluation. Its measures come from the actual initial
+// element geometry; ordinary UpdateCaller retains the legacy dt0 restrictions.
+TL_LAW36_HD inline Status InitializeCaller(const Parameters& p,
+    const Kinematics& input, const Measures& measures, CallerResult& output) noexcept {
+  if (input.dt_s != 0 || measures.old_bulk_pressure_pa != 0)
+    return Status::InvalidInput;
+  return detail::CallerValues(p,CallerHistory{},input,measures,output,true);
 }
 }  // namespace tl::material::law36

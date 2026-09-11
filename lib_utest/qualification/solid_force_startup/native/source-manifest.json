@@ -1,0 +1,32 @@
+{
+  "reference_commit": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Exact native active solid scalar stiffness scaling only; full family force oracles retain original force arithmetic.",
+  "sources": [
+    {
+      "source": "engine/source/elements/solid/solide/scumu3.F",
+      "path": "original/engine/source/elements/solid/solide/scumu3.F",
+      "bytes": 23756,
+      "sha256": "10128c69d2793bb73ef17b114ccd1642efcc251d305d7cd143325e2a66974d8b",
+      "git_blob_sha1": "4e4605b3101a4d1219fda1b9e0caba514a0ed9b9",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/source/elements/solid/solide/scumu3.F",
+      "lines": [
+        205,
+        207
+      ],
+      "include": "brick_stiffness.inc"
+    },
+    {
+      "source": "engine/source/elements/thickshell/solide6c/s6cumu3.F",
+      "path": "original/engine/source/elements/thickshell/solide6c/s6cumu3.F",
+      "bytes": 7994,
+      "sha256": "202631f37f0405a2a0b1de5b0e7a60c810cecc5e9c365a76c124972d680f6d8f",
+      "git_blob_sha1": "e1af0acc5bb90177df8d519c72f3a86ae1c8060b",
+      "url": "https://raw.githubusercontent.com/OpenRadioss/OpenRadioss/a62b27e6baa555d222a580d6218867d0be4d70b5/engine/source/elements/thickshell/solide6c/s6cumu3.F",
+      "lines": [
+        131,
+        133
+      ],
+      "include": "wedge_stiffness.inc"
+    }
+  ]
+}

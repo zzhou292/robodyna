@@ -47,15 +47,17 @@ TL_LAW36_HD inline bool Virgin(const History& h) noexcept {
 }
 }  // namespace detail
 
-TL_LAW36_HD inline Status Update(const Parameters& p, const History& accepted,
-                                const Input& input, Result& output) noexcept {
+namespace detail {
+// Shared arithmetic; only constructor entry points select initialization.
+TL_LAW36_HD inline Status UpdateValues(const Parameters& p, const History& accepted,
+    const Input& input, Result& output, bool initialization) noexcept {
   if (!detail::ParametersValid(p)) return Status::InvalidParameters;
   const Status prior = detail::HistoryStatus(accepted);
   if (prior != Status::Ok) return prior;
   if (!tl::math::Finite(input.kinematics.dt_s) || input.kinematics.dt_s < 0 ||
       !tl::math::Finite(input.relative_density) || input.relative_density < -1)
     return Status::InvalidInput;
-  if (input.kinematics.dt_s == 0 &&
+  if (!initialization && input.kinematics.dt_s == 0 &&
       (!detail::Virgin(accepted) || input.relative_density != 0))
     return Status::InvalidInput;
   Result result{};
@@ -125,5 +127,17 @@ TL_LAW36_HD inline Status Update(const Parameters& p, const History& accepted,
     return Status::NonfiniteResult;
   output = result;
   return Status::Ok;
+}
+} // namespace detail
+TL_LAW36_HD inline Status Update(const Parameters& p, const History& accepted,
+    const Input& input, Result& output) noexcept {
+  return detail::UpdateValues(p,accepted,input,output,false);
+}
+// Native TT0 material evaluation, constructed from virgin values. This accepts
+// no previous history and grants no zero-duration interval update capability.
+TL_LAW36_HD inline Status Initialize(const Parameters& p, const Input& input,
+    Result& output) noexcept {
+  if (input.kinematics.dt_s != 0) return Status::InvalidInput;
+  return detail::UpdateValues(p,History{},input,output,true);
 }
 }  // namespace tl::material::law36

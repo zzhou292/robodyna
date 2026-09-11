@@ -36,13 +36,10 @@ TL_BRICK_HD inline bool ValidInterval(const History& accepted,const PrescribedIn
 } // namespace tl::fea::solid24::force_detail
 
 namespace tl::fea::solid24 {
-TL_BRICK_HD inline ForceStatus EvaluateForce(const Reference& reference,const History& accepted,
-    const PrescribedInterval& interval,const Material& material,ForceTrial& output) noexcept {
-  if (!force_detail::ValidMaterial(reference,material) ||
-      !force_detail::ValidInterval(accepted,interval)) return ForceStatus::InvalidInput;
-  if (!force_detail::SameReference(reference,accepted.reference()) ||
-      !force_detail::SameMaterial(material,accepted.material())) return ForceStatus::ReferenceMismatch;
-  ForceTrial trial;
+namespace force_detail {
+TL_BRICK_HD inline ForceStatus CalculateForce(const Reference& reference,const History& accepted,
+    const PrescribedInterval& interval,const Material& material,ForceTrial& trial,
+    HistoryValues& next,bool initialization) noexcept {
   ForceStatus status=force_detail::CurrentKinematics(reference,interval,trial.geometry);
   if (status!=ForceStatus::Success) return status;
   tl::material::law42::CallerInput input;
@@ -54,10 +51,11 @@ TL_BRICK_HD inline ForceStatus EvaluateForce(const Reference& reference,const Hi
     input.displacement_gradient[k]=trial.geometry.material_displacement_gradient[k];
   for (unsigned k=0; k<6; ++k)
     input.engineering_rate_per_s[k]=trial.geometry.engineering_rate_per_s[k];
-  const auto material_status=tl::material::law42::UpdateCaller(material,accepted.values().material,
-      input,trial.diagnostics.material);
+  const auto material_status=initialization ?
+      tl::material::law42::InitializeCaller(material,input,trial.diagnostics.material) :
+      tl::material::law42::UpdateCaller(material,accepted.values().material,input,trial.diagnostics.material);
   if (material_status!=tl::material::law42::Status::Ok) return ForceStatus::MaterialFailure;
-  HistoryValues next=accepted.values();
+  next=accepted.values();
   next.material=trial.diagnostics.material.history;
   Vec3 local_force[8];
   status=force_detail::Stabilization(reference,material,trial.geometry,interval.dt_s,
@@ -73,9 +71,43 @@ TL_BRICK_HD inline ForceStatus EvaluateForce(const Reference& reference,const Hi
     if (!force_detail::brick::Finite(world)) return ForceStatus::NonfiniteResult;
     trial.rhs_force_n[reference.source_slot(n)]=world;
   }
+  return ForceStatus::Success;
+}
+} // namespace force_detail
+TL_BRICK_HD inline ForceStatus EvaluateForce(const Reference& reference,const History& accepted,
+    const PrescribedInterval& interval,const Material& material,ForceTrial& output) noexcept {
+  if (!force_detail::ValidMaterial(reference,material) ||
+      !force_detail::ValidInterval(accepted,interval)) return ForceStatus::InvalidInput;
+  if (!force_detail::SameReference(reference,accepted.reference()) ||
+      !force_detail::SameMaterial(material,accepted.material())) return ForceStatus::ReferenceMismatch;
+  ForceTrial trial;
+  HistoryValues next;
+  const auto status=force_detail::CalculateForce(reference,accepted,interval,material,trial,next,false);
+  if (status!=ForceStatus::Success) return status;
   trial.proposed_history=accepted;
   trial.proposed_history.values_=next;
   trial.proposed_history.stamp_={interval.base_time_s+interval.dt_s,interval.sample_index};
+  output=trial;
+  return ForceStatus::Success;
+}
+// Constructor-only native TT0 initialization; no previous history is accepted.
+TL_BRICK_HD inline ForceStatus InitializeForce(const Reference& reference,const Material& material,
+    Vec3 uniform_velocity_m_s,ForceTrial& output) noexcept {
+  if (!force_detail::brick::Finite(uniform_velocity_m_s)) return ForceStatus::InvalidInput;
+  History virgin;
+  auto status=InitializeHistory(reference,material,virgin);
+  if (status!=ForceStatus::Success) return status;
+  PrescribedInterval initial;
+  for (unsigned n=0; n<8; ++n) {
+    initial.position_m[n]=reference.input().position_m[n];
+    initial.velocity_m_s[n]=uniform_velocity_m_s;
+  }
+  ForceTrial trial;
+  HistoryValues next;
+  status=force_detail::CalculateForce(reference,virgin,initial,material,trial,next,true);
+  if (status!=ForceStatus::Success) return status;
+  trial.proposed_history=virgin;
+  trial.proposed_history.values_=next;
   output=trial;
   return ForceStatus::Success;
 }

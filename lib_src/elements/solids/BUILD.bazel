@@ -12,3 +12,10 @@ cc_library(
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     visibility = ["//visibility:public"],
 )
+cc_library(
+    name = "force_stiffness",
+    hdrs = ["ForceStiffness.h"],
+    deps = ["//lib_src/elements/solid18:force", "//lib_src/elements/solid24:force",
+            "//lib_src/elements/solid6z:force"],
+    visibility = ["//visibility:public"],
+)

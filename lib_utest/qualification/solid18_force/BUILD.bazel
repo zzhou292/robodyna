@@ -1,4 +1,4 @@
-load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_test", "cc_library")
 cc_test(
     name = "solid18_force_host",
     srcs = ["HostTest.cpp", "TestSupport.h"],
@@ -9,4 +9,15 @@ cc_test(
         "@googletest//:gtest_main",
     ],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+
+cc_library(
+    name = "test_values",
+    testonly = True,
+    hdrs = ["TestSupport.h"],
+    deps = ["//lib_src/elements/solid18:force",
+            "//lib_utest/qualification/solid18_reference:source_fixture",
+            "//lib_utest/qualification/solid_law36_point:source_fixture",
+            "@googletest//:gtest"],
+    visibility = ["//lib_utest/qualification/solid_force_startup:__pkg__"],
 )
