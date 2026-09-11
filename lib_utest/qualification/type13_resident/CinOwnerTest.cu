@@ -7,11 +7,6 @@ TEST_F(Type13ResidentCuda, ActualCinDestinationReceivesStiffnessWithZeroDependen
   cin_runtime_test::Fixture cin_source;
   std::fill(cin_source.velocity.begin(), cin_source.velocity.end(), 0);
   const auto& domain = cin_source.source.domain;
-  std::vector<t::ModelNode> nodes;
-  for (std::size_t i = 0; i < domain.node_count(); ++i) {
-    const auto& node = domain.nodes()[i];
-    nodes.push_back({node.source_id, i, node.position});
-  }
   const auto a = cin_source.rows[0].secondary;
   // The two independent test patches have coincident secondary coordinates.
   // Use one actual dependent and a distinct master coordinate; do not invent
@@ -24,10 +19,20 @@ TEST_F(Type13ResidentCuda, ActualCinDestinationReceivesStiffnessWithZeroDependen
   property.units = {1, 1, 1}; // Explicit synthetic SI property packet.
   t::ModelPropertyInput declaration{200, property};
   const auto orientation = cin_source.rows[0].masters[1];
-  t::ModelConnection connection{100, 0, {a, b, orientation}};
+  const std::size_t source_nodes[]{a, b, orientation};
+  std::array<t::ModelNode, 3> nodes;
+  for (unsigned local = 0; local < 3; ++local) {
+    const auto global = source_nodes[local];
+    const auto& node = domain.nodes()[global];
+    nodes[local] = {node.source_id, global, node.position};
+  }
+  t::ModelConnection connection{100, 0, {0, 1, 2}};
   t::Model model;
-  ASSERT_TRUE(model.Initialize({domain.source_instance_id(), {1, 1, 1}, nodes.data(),
-      &declaration, &connection, nodes.size(), 1, 1, domain.node_count()}));
+  const auto model_report = model.Initialize({domain.source_instance_id(), {1, 1, 1}, nodes.data(),
+      &declaration, &connection, nodes.size(), 1, 1, domain.node_count()});
+  ASSERT_TRUE(model_report) << model_report.message << ", status=" << int(model_report.status)
+      << ", kind=" << int(model_report.kind) << ", entry=" << model_report.entry
+      << ", native_status=" << int(model_report.native_status);
   fe::Type13NodeContributions contributions;
   ASSERT_TRUE(contributions.Initialize(model, domain));
   fe::FENodalState owner;
@@ -58,8 +63,8 @@ TEST_F(Type13ResidentCuda, ActualCinDestinationReceivesStiffnessWithZeroDependen
   t::BatchDiagnostics initial;
   ASSERT_TRUE(Good(batch.CopyAcceptedResults(owner.accepted(), accepted.data(), 1, &initial)));
   t::NativeEndpointKinematics native_initial_packet[2];
-  native_initial_packet[0].position = nodes[a].position_native;
-  native_initial_packet[1].position = nodes[b].position_native;
+  native_initial_packet[0].position = nodes[0].position_native;
+  native_initial_packet[1].position = nodes[1].position_native;
   const auto native_initial = type13_recurrence_test::NativeEvaluate(*model.property(0),
       model.startup(0)->reference, Virgin(model.startup(0)->reference), native_initial_packet, 0, true);
   Agreement(accepted[0], native_initial);
