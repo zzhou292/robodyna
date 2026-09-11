@@ -7,6 +7,8 @@
 #include "lib_src/materials/law42/Types.h"
 #include "lib_src/elements/solid18/law44/Types.h"
 #include "lib_src/materials/law44/solid/Types.h"
+#include "lib_src/materials/law90/Types.h"
+#include "lib_src/elements/solid18/total_strain/ReferenceTypes.h"
 
 namespace crash::modelio::solid_source {
 namespace source = output::full_shell::source;
@@ -15,14 +17,16 @@ enum class Policy {
     // Adds only rear-mount/antiroll rubber PIDs17/393/509/521. This is a
     // source/reference profile, not a complete connected-vehicle admission.
     OriginalAdhesive18ExtendedRubberHephS6zV2,
-    OriginalAdhesive18ExtendedRubberRearLaw44V3
+    OriginalAdhesive18ExtendedRubberRearLaw44V3,
+    OriginalExtendedSolidsV4 // V3 plus original radiator foam, actual blank-HU LAW90.
 };
-enum class Family { Solid18, Solid24, Solid6z, Solid18Law44 };
-enum class MaterialLaw { Law36, Law42, Law44 };
+enum class Family { Solid18, Solid24, Solid6z, Solid18Law44, Solid18Law90 };
+enum class MaterialLaw { Law36, Law42, Law44, Law90 };
 struct Limits {
     std::size_t host_bytes = 512 * 1024 * 1024;
     std::size_t member_bytes = 64 * 1024 * 1024, metadata_bytes = 1024 * 1024;
     std::size_t parents = 4096, nodes = 524288, source_solids = 16384, blocks = 16384;
+    static Limits ExtendedSolids() { Limits result; result.parents = 8192; return result; }
 };
 struct Forecast {
     std::size_t canonical_bytes = 0, parsing_bytes = 0, geometry_bytes = 0;
@@ -40,6 +44,8 @@ struct Part {
     tl::material::law36::Parameters law36;
     tl::material::law42::Parameters law42;
     tl::material::law44::solid::Parameters law44;
+    tl::material::law90::PreparationInput law90_input;
+    tl::material::law90::PreparedMaterial law90;
 };
 struct Row {
     std::uint64_t element_id = 0, part_id = 0;
@@ -64,6 +70,9 @@ struct Data {
     tl::fea::solid6z::ForceProfile wedge_force_profile;
     std::vector<double> rear_plastic_strain, rear_yield_stress_pa;
     std::vector<tl::fea::solid18::law44::Reference> solid18_law44;
+    std::vector<tl::fea::solid18::total_strain::Reference> solid18_law90;
+    // Native curve ordinates before YFAC; original MPa values with scale1e6.
+    std::vector<double> foam_compression_strain, foam_curve_ordinate;
     std::size_t original_solids = 0, outside_solids = 0;
     std::size_t owned_payload_bytes = 0;
 };

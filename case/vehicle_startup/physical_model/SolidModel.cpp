@@ -9,8 +9,10 @@ void PrepareSolids(const modelio::solid_source::VehicleSolidSource& source, cons
     std::vector<fe::solids::Input24> brick;
     std::vector<fe::solids::Input6z> wedge;
     std::vector<fe::solids::Input18Law44> rear;
+    std::vector<fe::solids::Input18Law90> foam;
     adhesive.reserve(data.solid18.size()); brick.reserve(data.solid24.size()); wedge.reserve(data.solid6z.size());
     rear.reserve(data.solid18_law44.size());
+    foam.reserve(data.solid18_law90.size());
     for (const auto& row : data.rows) {
         const auto& part = data.parts.at(row.part_index);
         if (row.family == src::Family::Solid18) {
@@ -19,6 +21,9 @@ void PrepareSolids(const modelio::solid_source::VehicleSolidSource& source, cons
         } else if (row.family == src::Family::Solid24) {
             Require(row.reference_index == brick.size(), "Original HEPH family order changed");
             brick.push_back({data.solid24.at(row.reference_index), part.law42});
+        } else if (row.family == src::Family::Solid18Law90) {
+            Require(row.reference_index == foam.size(), "Original radiator LAW90 family order changed");
+            foam.push_back({data.solid18_law90.at(row.reference_index), part.law90});
         } else if (row.family == src::Family::Solid18Law44) {
             Require(row.reference_index == rear.size(), "Original rear LAW44 family order changed");
             rear.push_back({data.solid18_law44.at(row.reference_index), part.law44});
@@ -32,7 +37,8 @@ void PrepareSolids(const modelio::solid_source::VehicleSolidSource& source, cons
     fe::solids::ModelInput input{domain.source_instance_id(),
         {adhesive.data(), adhesive.size()}, {brick.data(), brick.size()}, {wedge.data(), wedge.size()}};
     input.solid18_law44 = {rear.data(), rear.size()};
-    if (!rear.empty()) input.profile = fe::solids::ModelProfile::ExtendedLaw44Law90;
+    input.solid18_law90 = {foam.data(), foam.size()};
+    if (!rear.empty() || !foam.empty()) input.profile = fe::solids::ModelProfile::ExtendedLaw44Law90;
     const auto report = model.Initialize(domain, input, limits);
     Require(bool(report), report.message);
 }

@@ -13,22 +13,8 @@ void Blank(const std::string& row, unsigned first, unsigned last) {
         Require(!vehicle::detail::SourceScalar(row, field), "Unsupported selected solid source option");
 }
 void ReadCurve(const tied_shell::SourceEvidence& source, Data& data) {
-    Require(source.block.keyword == "*DEFINE_CURVE" && source.cards.size() == 9 &&
-        tied_shell::detail::CardId(source.cards[0].second, 0) == 2100010,
-        "Original adhesive curve identity or point count changed");
-    const auto& header = source.cards[0].second;
-    Require(Required(header, 1) == 0 && Required(header, 2) == 1 && Required(header, 3) == 1,
-            "Original adhesive curve scales or options changed");
-    Blank(header, 4, 8);
     Require(data.plastic_strain.empty() && data.yield_stress_pa.empty(), "Repeated adhesive curve");
-    data.plastic_strain.reserve(8);
-    data.yield_stress_pa.reserve(8);
-    for (std::size_t i = 1; i < source.cards.size(); ++i) {
-        const auto& row = source.cards[i].second;
-        Require(assembly::reader::auxiliary::BlankTail(row, 40), "Extra adhesive curve values");
-        data.plastic_strain.push_back(Required(row, 0, 20));
-        data.yield_stress_pa.push_back(Required(row, 1, 20) * 1e6);
-    }
+    ReadCurveData(source, 2100010, 8, 1e6, data.plastic_strain, data.yield_stress_pa);
 }
 void ReadPart(Part& part, const std::vector<tied_shell::SourceEvidence>& sources, Data& data) {
     const auto& original = sources.at(part.sources[0]);
@@ -47,6 +33,13 @@ void ReadPart(Part& part, const std::vector<tied_shell::SourceEvidence>& sources
         "Selected solid source PART/SECTION/MATERIAL association changed");
     Require(!material.cards.empty() && tied_shell::detail::CardId(material.cards[0].second, 0) == part.material_id,
             "Selected solid material identity changed");
+    if (SelectedRadiator(part.id, data.policy)) {
+        Blank(p, 3, 8);
+        Require(Required(s, 1) == 2, "Original radiator ELFORM is not two");
+        Blank(s, 2, 8);
+        ReadRadiatorMaterial(part, material, data);
+        return;
+    }
     if (SelectedRear(part.id, data.policy)) {
         Blank(p, 3, 8);
         Require(Required(s, 1) == 2, "Original rear-metal ELFORM is not two");

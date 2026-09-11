@@ -16,6 +16,9 @@ void ReadDeclarations(const source::CanonicalData&, const std::string&, Data&, L
 void ReadPart(Part&, const std::vector<tied_shell::SourceEvidence>&, Data&);
 void PrepareMaterial(Part&, Data&);
 void ReadRearMaterial(Part&, const tied_shell::SourceEvidence&, Data&);
+void ReadRadiatorMaterial(Part&, const tied_shell::SourceEvidence&, Data&);
+void ReadCurveData(const tied_shell::SourceEvidence&, std::uint64_t id,
+                   std::size_t count, double ordinate_scale, std::vector<double>& x, std::vector<double>& y);
 void ReadGeometry(const source::CanonicalData&, const std::string&, Data&, Limits);
 void PrepareReferences(const source::CanonicalData&, Data&, Limits);
 std::size_t OwnedPayload(const Data&, Limits);

@@ -4,26 +4,7 @@
 namespace crash::modelio::solid_source::detail {
 namespace {
 void ReadRearCurve(const tied_shell::SourceEvidence& source, Data& data) {
-    Require(source.block.keyword == "*DEFINE_CURVE" && source.cards.size() == 47 &&
-        tied_shell::detail::CardId(source.cards[0].second, 0) == 2100270,
-        "Original rear LAW44 curve identity or point count changed");
-    const auto& header = source.cards[0].second;
-    Require(Required(header, 1) == 0 && Required(header, 2) == 1 && Required(header, 3) == 1,
-            "Original rear LAW44 curve scales or options changed");
-    Blank(header, 4, 8);
-    if (!data.rear_plastic_strain.empty()) {
-        Require(data.rear_plastic_strain.size() == 46 && data.rear_yield_stress_pa.size() == 46,
-                "Incomplete shared rear LAW44 curve");
-        return; // Both parts request the same authenticated source block.
-    }
-    data.rear_plastic_strain.reserve(46);
-    data.rear_yield_stress_pa.reserve(46);
-    for (std::size_t i = 1; i < source.cards.size(); ++i) {
-        const auto& row = source.cards[i].second;
-        Require(assembly::reader::auxiliary::BlankTail(row, 40), "Extra rear LAW44 curve values");
-        data.rear_plastic_strain.push_back(Required(row, 0, 20));
-        data.rear_yield_stress_pa.push_back(Required(row, 1, 20) * 1e6);
-    }
+    ReadCurveData(source, 2100270, 46, 1e6, data.rear_plastic_strain, data.rear_yield_stress_pa);
 }
 }
 void ReadRearMaterial(Part& part, const tied_shell::SourceEvidence& source, Data& data) {

@@ -22,7 +22,7 @@ void CheckOriginal(const source::CanonicalData& source) {
         "Original solid source units changed");
 }
 Forecast Budget(const source::CanonicalData& source, Policy policy, Limits limits) {
-    const Limits hard;
+    const Limits hard = policy == Policy::OriginalExtendedSolidsV4 ? Limits::ExtendedSolids() : Limits{};
     const std::size_t value[]{limits.host_bytes, limits.member_bytes, limits.metadata_bytes,
         limits.parents, limits.nodes, limits.source_solids, limits.blocks};
     const std::size_t maximum[]{hard.host_bytes, hard.member_bytes, hard.metadata_bytes,
@@ -56,7 +56,8 @@ Forecast Budget(const source::CanonicalData& source, Policy policy, Limits limit
     Add(result.geometry_bytes, limits.parents, sizeof(Row) + 256, limits.host_bytes);
     Add(result.reference_bytes, limits.parents, sizeof(tl::fea::solid18::Reference) +
         sizeof(tl::fea::solid24::Reference) + sizeof(tl::fea::solid6z::Reference) +
-        (census.solid18_law44 ? sizeof(tl::fea::solid18::law44::Reference) : 0), limits.host_bytes);
+        (census.solid18_law44 ? sizeof(tl::fea::solid18::law44::Reference) : 0) +
+        (census.solid18_law90 ? sizeof(tl::fea::solid18::total_strain::Reference) : 0), limits.host_bytes);
     for (auto bytes : {result.fixed_bytes, result.canonical_bytes, result.parsing_bytes,
                       result.geometry_bytes, result.reference_bytes})
         Add(result.total_bytes, bytes, 1, limits.host_bytes);
@@ -77,6 +78,9 @@ std::size_t OwnedPayload(const Data& data, Limits limits) {
     vector(data.solid24);
     vector(data.solid6z);
     vector(data.solid18_law44);
+    vector(data.solid18_law90);
+    vector(data.foam_compression_strain);
+    vector(data.foam_curve_ordinate);
     vector(data.rear_plastic_strain);
     vector(data.rear_yield_stress_pa);
     vector(data.sources);

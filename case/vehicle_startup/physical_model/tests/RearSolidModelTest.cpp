@@ -1,5 +1,6 @@
 #include "../Internal.h"
 #include "modelio/solid_source/tests/ActualSupport.h"
+#include "lib_utest/qualification/law90_preparation/TestSupport.h"
 
 namespace crash::cases::vehicle_startup::physical_model::test {
 namespace src = modelio::solid_source;
@@ -83,5 +84,48 @@ TEST(VehicleRearSolidModel, MissingDomainOrInsufficientBudgetRejectsThenFreshMod
     EXPECT_FALSE(model.prepared());
     ASSERT_NO_THROW(detail::PrepareSolids(source, complete, ModelCap, model));
     EXPECT_TRUE(model.prepared());
+}
+TEST(VehicleRearSolidModel, Complete4900SourceModelKeepsActualFoamBranchAndOwnedRawCurve) {
+    fe::NodalNodeDomain domain;
+    fe::solids::Model model;
+    std::array<double,33> expected{};
+    std::array<double,28> strain{}, ordinate{};
+    {
+        const auto source = src::VehicleSolidSource::Prepare(modelio::vehicle::test::Canonical(),
+            src::test::MemberBytes(), src::Policy::OriginalExtendedSolidsV4, src::Limits::ExtendedSolids());
+        const auto nodes = DomainNodes(source);
+        ASSERT_TRUE(domain.Initialize({7303, nodes.data(), nodes.size()}, fe::NodalDomainLimits::Vehicle()));
+        ASSERT_NO_THROW(detail::PrepareSolids(source, domain, ModelCap, model));
+        ASSERT_EQ(model.contributions()->parents().size(), 4900u);
+        ASSERT_EQ(model.solid18_law44().size(), 306u);
+        ASSERT_EQ(model.solid18_law90().size(), 1345u);
+        ASSERT_EQ(model.materials90().size(), 1u);
+        const auto part = std::find_if(source.data().parts.begin(), source.data().parts.end(),
+                                      [](const src::Part& p) { return p.id == 2000063; });
+        ASSERT_NE(part, source.data().parts.end());
+        law90_test::Pack(part->law90, expected.data());
+        std::copy_n(source.data().foam_compression_strain.data(), 28, strain.begin());
+        std::copy_n(source.data().foam_curve_ordinate.data(), 28, ordinate.begin());
+        EXPECT_NE(model.materials90()[0].value.curve().stress_pa, part->law90.curve().stress_pa);
+        for (const auto& parent : model.solid18_law90()) {
+            const auto& input = parent.reference.input();
+            EXPECT_EQ(parent.material_index, 0u);
+            EXPECT_EQ(input.source_part_id, 2000063u);
+            EXPECT_EQ(output::Bits(input.density_kg_m3), output::Bits(part->density_kg_m3));
+            for (unsigned slot = 0; slot < 8; ++slot)
+                EXPECT_EQ(parent.domain_nodes[slot], domain.Find(input.source_node_id[slot]));
+        }
+    }
+    const auto& material = model.materials90()[0].value;
+    EXPECT_EQ(material.reader().loading_flag, 1);
+    EXPECT_EQ(material.reader().curve_scale, 1e6);
+    double actual[33]; law90_test::Pack(material, actual);
+    for (unsigned i = 0; i < 33; ++i) EXPECT_EQ(output::Bits(actual[i]), output::Bits(expected[i]));
+    for (unsigned i = 0; i < 28; ++i) {
+        EXPECT_EQ(output::Bits(material.curve().compression_strain[i]), output::Bits(strain[i]));
+        EXPECT_EQ(output::Bits(material.curve().stress_pa[i]), output::Bits(ordinate[i]));
+    }
+    RecordProperty("parents", 4900);
+    RecordProperty("model_owned_bytes", model.owned_payload_bytes());
 }
 } // namespace crash::cases::vehicle_startup::physical_model::test

@@ -151,3 +151,42 @@ Root's `rear-solid-source-root-tests-1` passed all 19 functions across four
 CTest targets. The source adapter adds no default vehicle selection or runtime
 history: physical domain, complete original rigid groups, coefficient ledger
 and resident state must be composed and tested before these parts enter a run.
+
+## Original radiator source profile
+
+`OriginalExtendedSolidsV4` adds PID2000063 to V3:16parts,4,900 solids,
+including1,345 radiator H8s. This source profile requires an explicit
+`Limits::ExtendedSolids()` declaration (8,192 parents); the original4,096-parent
+default and512MiB host cap remain unchanged. This is a source/model extension,
+with full-case selection still gated separately.
+
+The native SDI conversion/export/re-read gate proves that original blankHU
+selects LAW90 IFLAG1, even though the native reader later stores Hys1. KCON
+becomes20GPa. `RadiatorMaterial.cpp` reads the exact original MAT057 cards and
+uses existing material-unit utilities. It retains the native represented density
+771.9999999999999 for both material and reference; regrouping the density
+conversion into a literal1e12 multiplier would instead produce772.
+
+The original28 ordinate values remain unscaled, with the native YFAC1e6
+conversion applied inside LAW90's existing preparation and curve evaluation.
+This preserves native subtraction/multiplication order. `Curves.cpp` shares the
+card reader with adhesive and rear curves; a reused shared curve is checked
+point-by-point before use. All geometry retains original canonical SI bits.
+The LAW90 reference uses Isolid18/JHBE17,ICP0,ISMSTR10 andISELECT1.
+
+The opt-in radiator gate compares every prepared native scalar and all raw
+curve values with the authenticated actual SDI observation; it also checks
+all1,345 original references, unchanged3,555 prior source rows, actual HU
+rejection and explicit budget limits. The native observation hash is
+662fba9b45aceba5da1563574f80669adca99b114f3fe918d41e1a82fd06dd88.
+Root's `radiator-source-model-tests-1` passes all three original source functions
+and 12 immutable-model host functions after the complete IFLAG1 native/CUDA
+qualification. The source reserves 366,131,829 B and owns 14,258,771 B of payload.
+`radiator-solid-model-tests-1` passes all 28 functions across seven CTest entries,
+including the complete 4,900-parent source-to-Model bridge, raw curve ownership
+after source destruction and the unchanged original full physical model.
+These checks admit the source and immutable model only. The full vehicle's
+domain, coefficient ledger, groups, CIN attachments and CUDA participant require
+their corresponding extended profile gate before case selection changes.
+No foam J2 plastic-strain value, original damping override or new runtime clock
+is created.

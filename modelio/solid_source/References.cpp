@@ -3,6 +3,7 @@
 #include "lib_src/elements/solid24/Solid24Reference.h"
 #include "lib_src/elements/solid6z/Solid6zReference.h"
 #include "lib_src/elements/solid18/law44/Reference.h"
+#include "lib_src/elements/solid18/total_strain/Reference.h"
 #include <algorithm>
 
 namespace crash::modelio::solid_source::detail {
@@ -43,6 +44,7 @@ void PrepareReferences(const source::CanonicalData& source, Data& data, Limits) 
     data.solid24.reserve(count(Family::Solid24));
     data.solid6z.reserve(count(Family::Solid6z));
     data.solid18_law44.reserve(count(Family::Solid18Law44));
+    data.solid18_law90.reserve(count(Family::Solid18Law90));
     for (auto& row : data.rows) {
         Require(row.part_index < data.parts.size(), "Solid row material association is invalid");
         const auto& part = data.parts[row.part_index];
@@ -50,7 +52,18 @@ void PrepareReferences(const source::CanonicalData& source, Data& data, Limits) 
                 "Selected solid family/material law association changed");
         Require((row.family == Family::Solid18Law44) == (part.material_law == MaterialLaw::Law44),
                 "Selected rear solid family/material association changed");
-        if (row.family == Family::Solid18Law44) {
+        Require((row.family == Family::Solid18Law90) == (part.material_law == MaterialLaw::Law90),
+                "Selected radiator family/material association changed");
+        if (row.family == Family::Solid18Law90) {
+            tl::fea::solid18::ReferenceInput input;
+            Pack(input, row, part, positions, 8);
+            input.profile = tl::fea::solid18::total_strain::Law90Profile();
+            tl::fea::solid18::total_strain::Reference reference;
+            const auto status = tl::fea::solid18::total_strain::InitializeReference90(input, reference);
+            Require(status == tl::fea::solid18::Status::Success, "Original radiator reference rejected");
+            row.reference_index = data.solid18_law90.size();
+            data.solid18_law90.push_back(reference);
+        } else if (row.family == Family::Solid18Law44) {
             tl::fea::solid18::law44::ReferenceInput input;
             Pack(input, row, part, positions, 8);
             input.profile = tl::fea::solid18::law44::Profile();
