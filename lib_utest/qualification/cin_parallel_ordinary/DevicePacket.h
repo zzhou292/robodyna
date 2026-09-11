@@ -8,10 +8,11 @@ struct DeviceDelete {
 };
 class DevicePacket {
  public:
-  explicit DevicePacket(Packet&);
+  explicit DevicePacket(Packet&, bool parallel_inputs = false);
   DevicePacket(const DevicePacket&) = delete;
   DevicePacket& operator=(const DevicePacket&) = delete;
   void Run(bool parallel);
+  void RunWith(cudaError_t (*)(const cin_advance::Input&, cudaStream_t));
   void Download(Packet&) const;
  private:
   void* Upload(const void*, std::size_t);

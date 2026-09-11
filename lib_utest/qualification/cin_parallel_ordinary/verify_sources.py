@@ -8,7 +8,7 @@ import re
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 raw = (here / "source-manifest.json").read_bytes()
-assert hashlib.sha256(raw).hexdigest() == "9d5dec0adc6d5b269b88ef61b5d2cce54cf6e3282af1b153b649e700150273e8"
+assert hashlib.sha256(raw).hexdigest() == "b2cc9e4a3bc9b047b3e16217c816bb67616f0803a09889c0f5633767206a88df"
 manifest = json.loads(raw)
 for row in manifest["files"]:
     path = Path(row["path"])
@@ -26,7 +26,12 @@ assert extract == (here / "serial/Kernel.inc").read_text()
 
 start = "  if (control->status != NodalStatus::Ok) return;"
 old_prefix = old[old.index(start):old.index("  auto* current_inverse")]
-prefix = current[current.index(start):current.index("  *input.failure")]
+# The force-only input extraction now has its own exact-body proof. Keep the
+# intermediate frozen owner prefix as the original ordinary-stage baseline.
+import runpy
+runpy.run_path(str(here.parent / "cin_force_inputs/verify_sources.py"))
+intermediate = (here.parent / "cin_force_inputs/serial/ExplicitNodalCinStep.cu.txt").read_text()
+prefix = intermediate[intermediate.index(start):intermediate.index("  *input.failure")]
 assert old_prefix == prefix, "prefix arithmetic or error order changed"
 suffix = "  // Source/owner admission proves CIN has no rigid member intersection."
 assert old[old.index(suffix):old.index("} // namespace")] == current[

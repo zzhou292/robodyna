@@ -3,6 +3,7 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_test")
 
 cc_library(
     name = "fixture",
+    visibility = ["//lib_utest/qualification/cin_force_inputs:__pkg__"],
     testonly = True,
     hdrs = ["Packet.h", "DevicePacket.h", "Fault.h", "Serial.h", "serial/Kernel.inc"],
     srcs = ["Packet.cpp", "Compare.cpp"],
@@ -31,4 +32,10 @@ cuda_test(
     copts = ["--std=c++17", "-Ilib_src/solvers", "--fmad=false", "--prec-div=true",
              "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
     tags = ["exclusive", "gpu"],
+)
+
+filegroup(
+    name = "device_packet_sources",
+    srcs = ["DevicePacket.cu", "Serial.cu"],
+    visibility = ["//lib_utest/qualification/cin_force_inputs:__pkg__"],
 )

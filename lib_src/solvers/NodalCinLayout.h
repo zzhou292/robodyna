@@ -20,7 +20,7 @@ inline bool CinOwnerHostFits(std::size_t optional_bytes, std::size_t rigid_bytes
   return fits;
 }
 struct CinLayout {
-  util::ArenaRegion rows, dependent, activity, patches, work, first_witness, failure;
+  util::ArenaRegion rows, dependent, activity, patches, work, first_witness, failure, input_failure;
   // Tail within each of the existing accepted/trial double slabs:
   // M[n], J[n], derived inverse M[n], derived inverse J[n], SMAS[r], SINER[r], DMAST.
   std::size_t nodes = 0, attachments = 0, witnesses = 0;
@@ -50,7 +50,8 @@ struct CinLayout {
         !device.Append<std::uint32_t>(w, next.first_witness) ||
         !device.Append<constraints::tied_shell::Patch>(r, next.patches) ||
         !device.Append<double>(next.scratch_values, next.work) ||
-        !device.Append<cin_advance::FailureKey>(1, next.failure)) return false;
+        !device.Append<cin_advance::FailureKey>(1, next.failure) ||
+        !device.Append<cin_advance::FailureKey>(1, next.input_failure)) return false;
     next.device_bytes = device.bytes();
     const auto tail_bytes = 2*next.state_values*sizeof(double);
     if (tail_bytes > limits.max_device_bytes-next.device_bytes) return false;

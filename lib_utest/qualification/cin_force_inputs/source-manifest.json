@@ -1,0 +1,71 @@
+{
+  "baseline_commit": "68c5424aa38ae5a9910127465b19d4233ad2dee9",
+  "scope": "Parallel input-only scan/copy; complete frozen force header, reused complete frozen serial owner; unchanged row transfer and suffix.",
+  "files": [
+    {
+      "path": "lib_utest/qualification/cin_force_inputs/serial/CinForceStage.h.txt",
+      "bytes": 7419,
+      "sha256": "036ab41b2e7117aaeb40ec9be4977d2439106558cf38aa4cdc1e064603b424e3"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_inputs/serial/Force.h",
+      "bytes": 7533,
+      "sha256": "3686961f167a84b4efc7542f035c51bebe04b30d664e1357d4fa1f99cf244aef"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_inputs/serial/ExplicitNodalCinStep.cu.txt",
+      "bytes": 9559,
+      "sha256": "051f17e31cdc15bb2bdf87eb139caa1b53fb579b596235790279877a30f6eee8"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/serial/Kernel.inc",
+      "bytes": 6691,
+      "sha256": "94e30ef6f852c297eaf4f01cf93fc7f9241e1a2f3fc269719c6a1debb9465dfa"
+    },
+    {
+      "path": "lib_src/constraints/tied_shell/runtime/CinForceStage.h",
+      "bytes": 8237,
+      "sha256": "064991b19a42716eaad88fcaebeb0ce3907788fcaa7a0e0fc425de6ede109151"
+    },
+    {
+      "path": "lib_src/constraints/tied_shell/runtime/CinMotionStage.h",
+      "bytes": 1774,
+      "sha256": "9f8f729e802df94729fcf5392b0b06fc50d55b0f883bd9f538c531c3b21f30f3"
+    },
+    {
+      "path": "lib_src/constraints/tied_shell/TiedPatchCoefficients.h",
+      "bytes": 3081,
+      "sha256": "41df470d649d29645867150d0e41b875d493b942b3fa1b99584fbbbb70434ab2"
+    },
+    {
+      "path": "lib_src/constraints/tied_shell/TiedPatchForce.h",
+      "bytes": 1333,
+      "sha256": "1c1ad70c9a880149a4024f4c796e40a6f757f0bc8ec6459afa57005e2e3858e1"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/ForceInputs.h",
+      "bytes": 2828,
+      "sha256": "c369de8cccd292b0d3b4a0bb320268d5ebf85201c46920df7ada122ce9cc969b"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/ForceInputs.cu",
+      "bytes": 1694,
+      "sha256": "7e62556811342882cc8e47e87dece721d14e001e525adc580e368d40d03dbbec"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/Node.h",
+      "bytes": 1515,
+      "sha256": "5cc379936e5165f5008b0bb0e17841031b0d986555a596efde833848bcbd5f6c"
+    },
+    {
+      "path": "lib_src/solvers/cin_timestep/Screen.h",
+      "bytes": 4545,
+      "sha256": "b39f7984600944055c0fb7df0b326070f9a21e81ddf5221afafad98ac56516cb"
+    },
+    {
+      "path": "lib_src/solvers/NodalNodeStep.h",
+      "bytes": 2661,
+      "sha256": "80cca34361e54979a1d6ae100f045604f1b98c6e2ceb18caa8af12c84a5be35e"
+    }
+  ]
+}

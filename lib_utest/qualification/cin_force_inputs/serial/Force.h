@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
-#include "CinStageTypes.h"
-#include "../TiedPatchForce.h"
+#include "lib_src/constraints/tied_shell/runtime/CinStageTypes.h"
+#include "lib_src/constraints/tied_shell/TiedPatchForce.h"
 
-namespace tl::constraints::tied_shell::cin {
+namespace tl::constraints::tied_shell::cin_input_frozen {
+using namespace cin;
 namespace detail {
 TL_TIED_PATCH_HD inline Vec3 ReadXyz(const double* field, std::uint32_t node) noexcept {
   return {field[3*node], field[3*node+1], field[3*node+2]};
@@ -11,7 +12,7 @@ TL_TIED_PATCH_HD inline Vec3 ReadXyz(const double* field, std::uint32_t node) no
 TL_TIED_PATCH_HD inline bool Nonnegative(double x) noexcept {
   return tied_shell::detail::math::Finite(x) && x >= 0;
 }
-TL_TIED_PATCH_HD inline StageReport CheckForcePointers(StageView model, ForceTrial trial) noexcept {
+TL_TIED_PATCH_HD inline StageReport CheckForceInputs(StageView model, ForceTrial trial) noexcept {
   if (!model.rows || !model.dependent_nodes || !model.node_count || !model.row_count ||
       !trial.position_xyz || !trial.loads || !trial.mass || !trial.inertia ||
       !trial.translational_stiffness || !trial.rotational_stiffness ||
@@ -19,23 +20,18 @@ TL_TIED_PATCH_HD inline StageReport CheckForcePointers(StageView model, ForceTri
       !trial.numerical_mass || !trial.entry_inertia || !trial.patches || !trial.witness_activity) {
     return {StageStatus::InvalidInput};
   }
-  return {};
-}
-TL_TIED_PATCH_HD inline StageReport CheckForceNode(StageView model, ForceTrial trial,
-    std::uint32_t i) noexcept {
-  if (!Nonnegative(trial.mass[i]) || !Nonnegative(trial.inertia[i]) ||
-      !Nonnegative(trial.translational_stiffness[i]) || !Nonnegative(trial.rotational_stiffness[i]) ||
-      !tied_shell::detail::math::Finite(ReadXyz(trial.position_xyz, i))) {
-    return {StageStatus::InvalidInput, UINT32_MAX, i};
-  }
-  for (unsigned axis = 0; axis < 6; ++axis) {
-    if (!tied_shell::detail::math::Finite(trial.loads[axis*model.node_count+i])) {
+  for (std::uint32_t i = 0; i < model.node_count; ++i) {
+    if (!Nonnegative(trial.mass[i]) || !Nonnegative(trial.inertia[i]) ||
+        !Nonnegative(trial.translational_stiffness[i]) || !Nonnegative(trial.rotational_stiffness[i]) ||
+        !tied_shell::detail::math::Finite(ReadXyz(trial.position_xyz, i))) {
       return {StageStatus::InvalidInput, UINT32_MAX, i};
     }
+    for (unsigned axis = 0; axis < 6; ++axis) {
+      if (!tied_shell::detail::math::Finite(trial.loads[axis*model.node_count+i])) {
+        return {StageStatus::InvalidInput, UINT32_MAX, i};
+      }
+    }
   }
-  return {};
-}
-TL_TIED_PATCH_HD inline StageReport CheckForceAfterNodes(StageView model, ForceTrial trial) noexcept {
   if (!tied_shell::detail::math::Finite(*trial.numerical_mass)) return {StageStatus::InvalidInput};
   for (std::uint32_t w = 0; w < model.witness_count; ++w) {
     if (model.first_witness && (model.first_witness[w] > w ||
@@ -66,18 +62,17 @@ TL_TIED_PATCH_HD inline StageReport CheckForceAfterNodes(StageView model, ForceT
   }
   return {};
 }
-TL_TIED_PATCH_HD inline StageReport CheckForceInputs(StageView model, ForceTrial trial) noexcept {
-  auto report = CheckForcePointers(model, trial);
+} // namespace detail
+
+// Selected serial IPARIT0/IRODDL1/WEIGHT1/IDEL2=1 force phase. A failure may
+// leave private trial destinations partly written; the sole nodal owner must
+// discard them. No accepted input or caller publication is modified.
+TL_TIED_PATCH_HD inline StageReport PrepareForceTrial(StageView model, ForceTrial trial) noexcept {
+  auto report = detail::CheckForceInputs(model, trial);
   if (!report) return report;
-  for (std::uint32_t node = 0; node < model.node_count; ++node) {
-    report = CheckForceNode(model, trial, node);
-    if (!report) return report;
-  }
-  return CheckForceAfterNodes(model, trial);
-}
-// Inputs and entry IN are complete before this strictly ordered row/slot pass.
-TL_TIED_PATCH_HD inline StageReport TransferForceTrial(StageView model, ForceTrial trial) noexcept {
   const auto n = model.node_count;
+  // INTTI1 copies entry IN before any ordered CIN coefficient transfer.
+  for (std::uint32_t i = 0; i < n; ++i) trial.entry_inertia[i] = trial.inertia[i];
   for (std::uint32_t r = 0; r < model.row_count; ++r) {
     const auto row = model.rows[r];
     const auto secondary = row.secondary;
@@ -149,17 +144,4 @@ TL_TIED_PATCH_HD inline StageReport TransferForceTrial(StageView model, ForceTri
   }
   return {};
 }
-} // namespace detail
-
-// Selected serial IPARIT0/IRODDL1/WEIGHT1/IDEL2=1 force phase. A failure may
-// leave private trial destinations partly written; the sole nodal owner must
-// discard them. No accepted input or caller publication is modified.
-TL_TIED_PATCH_HD inline StageReport PrepareForceTrial(StageView model, ForceTrial trial) noexcept {
-  auto report = detail::CheckForceInputs(model, trial);
-  if (!report) return report;
-  const auto n = model.node_count;
-  // INTTI1 copies entry IN before any ordered CIN coefficient transfer.
-  for (std::uint32_t i = 0; i < n; ++i) trial.entry_inertia[i] = trial.inertia[i];
-  return detail::TransferForceTrial(model, trial);
-}
-} // namespace tl::constraints::tied_shell::cin
+} // namespace tl::constraints::tied_shell::cin_input_frozen

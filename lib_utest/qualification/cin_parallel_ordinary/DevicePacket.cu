@@ -25,7 +25,7 @@ void* DevicePacket::Upload(const void* source, std::size_t bytes) {
   Check(cudaMemcpy(next, source, bytes, cudaMemcpyHostToDevice));
   return next;
 }
-DevicePacket::DevicePacket(Packet& p) {
+DevicePacket::DevicePacket(Packet& p, bool parallel_inputs) {
   const auto upload = [this](const auto& values) {
     using T = typename std::decay_t<decltype(values)>::value_type;
     return static_cast<T*>(Upload(values.data(), values.size()*sizeof(T)));
@@ -33,6 +33,9 @@ DevicePacket::DevicePacket(Packet& p) {
   input_ = p.Input();
   input_.control = static_cast<nodal_detail::Control*>(Upload(&p.control, sizeof(p.control)));
   input_.failure = static_cast<cin_advance::FailureKey*>(Upload(&p.failure, sizeof(p.failure)));
+  if (parallel_inputs) {
+    input_.input_failure = static_cast<cin_advance::FailureKey*>(Upload(&p.input_failure, sizeof(p.input_failure)));
+  }
   input_.accepted = upload(p.accepted);
   input_.trial = upload(p.trial);
   input_.tail = input_.trial+p.TailOffset();
@@ -42,6 +45,7 @@ DevicePacket::DevicePacket(Packet& p) {
   input_.rotation_present = upload(p.present);
   input_.model.rows = upload(p.rows);
   input_.model.dependent_nodes = upload(p.dependent);
+  input_.model.first_witness = upload(p.first_witness);
   input_.activity = upload(p.activity);
   input_.patches = upload(p.patches);
   input_.groups.groups = upload(p.groups);
@@ -57,7 +61,14 @@ void DevicePacket::Run(bool parallel) {
   Check(parallel ? cin_advance::Launch(input_, nullptr) : LaunchSerial(input_, nullptr));
   Check(cudaStreamSynchronize(nullptr));
 }
+void DevicePacket::RunWith(cudaError_t (*launch)(const cin_advance::Input&, cudaStream_t)) {
+  Check(launch(input_, nullptr));
+  Check(cudaStreamSynchronize(nullptr));
+}
 void DevicePacket::Download(Packet& p) const {
+  if (input_.input_failure) {
+    Check(cudaMemcpy(&p.input_failure, input_.input_failure, sizeof(p.input_failure), cudaMemcpyDeviceToHost));
+  }
   Read(p.accepted, input_.accepted);
   Read(p.trial, input_.trial);
   Read(p.loads, input_.loads);

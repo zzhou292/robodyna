@@ -14,8 +14,9 @@ cudaError_t CinStorage::Upload(cudaStream_t stream) {
   patches = reinterpret_cast<constraints::tied_shell::Patch*>(bytes+layout.patches.offset);
   work = reinterpret_cast<double*>(bytes+layout.work.offset);
   failure = util::ArenaPointer<cin_advance::FailureKey>(arena, layout.failure);
-  // Private key has no startup meaning. Every successful prefix initializes
-  // it before any ordinary worker or completion stage can read it.
+  input_failure = util::ArenaPointer<cin_advance::FailureKey>(arena, layout.input_failure);
+  // Private keys have no startup meaning. Every successful prefix initializes
+  // its own key before any worker or completion stage can read it.
   device = {device_rows, device_dependent, std::uint32_t(layout.nodes),
             std::uint32_t(layout.attachments), std::uint32_t(layout.witnesses), device_first};
   error = cudaMemcpyAsync(device_rows, rows.data(), layout.rows.bytes, cudaMemcpyHostToDevice, stream);

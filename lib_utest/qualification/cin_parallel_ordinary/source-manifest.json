@@ -14,8 +14,8 @@
     },
     {
       "path": "lib_src/constraints/tied_shell/runtime/CinForceStage.h",
-      "bytes": 7419,
-      "sha256": "036ab41b2e7117aaeb40ec9be4977d2439106558cf38aa4cdc1e064603b424e3"
+      "bytes": 8237,
+      "sha256": "064991b19a42716eaad88fcaebeb0ce3907788fcaa7a0e0fc425de6ede109151"
     },
     {
       "path": "lib_src/constraints/tied_shell/runtime/CinMotionStage.h",
@@ -72,5 +72,16 @@
       "bytes": 9553,
       "sha256": "44ed4520ae6f055f8b3529626a8a1a6c5665e44128e0d9702d76b8c7e30c09d6"
     }
-  ]
+  ],
+  "input_only_extraction": {
+    "scope": "Exact force check/copy/transfer extraction, complete new frozen-header source proof; original serial caller unchanged.",
+    "previous_manifest_sha256": "9d5dec0adc6d5b269b88ef61b5d2cce54cf6e3282af1b153b649e700150273e8",
+    "previous_entries": [
+      {
+        "path": "lib_src/constraints/tied_shell/runtime/CinForceStage.h",
+        "bytes": 7419,
+        "sha256": "036ab41b2e7117aaeb40ec9be4977d2439106558cf38aa4cdc1e064603b424e3"
+      }
+    ]
+  }
 }

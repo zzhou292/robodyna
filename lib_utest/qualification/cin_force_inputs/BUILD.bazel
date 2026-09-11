@@ -1,0 +1,20 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+cc_library(
+    name = "fixture", testonly = True,
+    hdrs = ["Fixture.h", "Serial.h", "serial/Force.h"],
+    deps = ["//lib_utest/qualification/cin_parallel_ordinary:fixture"],
+)
+cc_test(
+    name = "host", size = "small",
+    srcs = ["HostTest.cpp", "SerialHost.cpp"],
+    deps = [":fixture"],
+    copts = ["-std=c++17", "-Ilib_src/solvers", "-fno-fast-math", "-ffp-contract=off"],
+)
+cuda_test(
+    name = "cuda", size = "small",
+    srcs = ["CudaTest.cu", "Serial.cu", "//lib_utest/qualification/cin_parallel_ordinary:device_packet_sources"],
+    deps = [":fixture", "//lib_src/solvers:explicit_nodal_state"],
+    copts = ["--std=c++17", "-Ilib_src/solvers", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+    tags = ["exclusive", "gpu"],
+)

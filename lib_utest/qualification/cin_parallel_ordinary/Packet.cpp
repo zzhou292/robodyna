@@ -115,7 +115,8 @@ cin_advance::Input Packet::Input() {
   if (capture_enabled) sink = {capture.data(), capture.data()+3*Nodes,
     capture.data()+6*Nodes, capture.data()+6*Nodes+3*groups.size()};
   return {&control, accepted.data(), trial.data(), loads.data(), fixed.data(),
-    {rows.data(), dependent.data(), Nodes, std::uint32_t(rows.size()), std::uint32_t(activity.size())},
+    {rows.data(), dependent.data(), Nodes, std::uint32_t(rows.size()), std::uint32_t(activity.size()),
+      first_witness.empty()?nullptr:first_witness.data()},
     trial.data()+TailOffset(), work.data(), patches.data(), activity.data(), group_view,
     durations, .2, epoch, attempt, sink, present.data(), structural, &failure};
 }

@@ -26,7 +26,7 @@ TEST(CinParallelOrdinary, FailureKeyPreservesNodeTraversalForEveryArrivalOrder) 
   EXPECT_LT(ca::EncodeFailure(fe::MaxActiveNodalStateNodes-1, Code::InvalidOutput), ca::NoFailure);
 }
 
-TEST(CinParallelOrdinary, FullCountLayoutChargesOnlyOneKeyAndPreservesLateRetry) {
+TEST(CinParallelOrdinary, FullCountLayoutChargesIndependentKeysAndPreservesLateRetry) {
   constexpr std::size_t nodes = 372435, rows = 11165, witnesses = 13173;
   fe::NodalCinLimits limits;
   fe::nodal_detail::CinLayout layout;
@@ -38,7 +38,8 @@ TEST(CinParallelOrdinary, FullCountLayoutChargesOnlyOneKeyAndPreservesLateRetry)
   EXPECT_EQ(layout.failure.count, 1u);
   EXPECT_EQ(layout.failure.offset % alignof(ca::FailureKey), 0u);
   EXPECT_EQ(layout.work.offset + layout.work.bytes, layout.failure.offset);
-  EXPECT_EQ(layout.device_bytes, layout.failure.offset + sizeof(ca::FailureKey));
+  EXPECT_EQ(layout.input_failure.offset, layout.failure.offset + sizeof(ca::FailureKey));
+  EXPECT_EQ(layout.device_bytes, layout.input_failure.offset + sizeof(ca::FailureKey));
   EXPECT_EQ(layout.scratch_values, 9*nodes);
   EXPECT_EQ(layout.state_values, 4*nodes+2*rows+1);
   EXPECT_EQ(layout.optional_device_bytes, layout.device_bytes+2*layout.state_values*sizeof(double));

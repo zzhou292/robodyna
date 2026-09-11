@@ -28,6 +28,8 @@ struct Input {
   const std::uint8_t* rotation_present = nullptr;
   NodalCinStructuralStep structural;
   FailureKey* failure = nullptr;
+  // Separate input scan key; null retains the private serial-prefix fixture path.
+  FailureKey* input_failure = nullptr;
 };
 cudaError_t Launch(const Input&, cudaStream_t);
 } // namespace tl::fea::cin_advance

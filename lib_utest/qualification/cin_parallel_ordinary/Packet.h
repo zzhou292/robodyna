@@ -10,6 +10,7 @@ inline constexpr std::uint32_t Nodes = 272;
 inline constexpr double H = 1e-6;
 struct Packet {
   std::vector<cin::StageRow> rows;
+  std::vector<std::uint32_t> first_witness;
   std::vector<rigid::GroupRange> groups;
   std::vector<rigid::MemberMetric> members;
   std::vector<std::uint8_t> dependent, activity, member_nodes, fixed, present;
@@ -17,6 +18,7 @@ struct Packet {
   std::vector<tied::Patch> patches;
   nodal_detail::Control control;
   cin_advance::FailureKey failure = 7;
+  cin_advance::FailureKey input_failure = 11;
   rigid::StepDurations durations{0, H/2, H};
   NodalCinStructuralStep structural;
   std::uint64_t epoch = 0, attempt = 1;

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "NodalCinRuntime.h"
 #include "cin_advance/Node.h"
-#include "cin_advance/ForceInputs.h"
 #include "cin_timestep/Screen.h"
 #include "NodalCinStorage.h"
 #include "NodalRigidGroupStorage.h"
@@ -19,7 +18,7 @@ __device__ void Fail(nodal_detail::Control* control, NodalStatus status, std::ui
   control->node = node;
   if (status == NodalStatus::StepTooLarge) control->limit.dt = 0;
 }
-__global__ void PrepareCin(const cin_advance::Input input, bool inputs_prepared) {
+__global__ void PrepareCin(const cin_advance::Input input) {
   auto* control = input.control;
   const auto* accepted = input.accepted;
   auto* loads = input.loads;
@@ -36,13 +35,21 @@ __global__ void PrepareCin(const cin_advance::Input input, bool inputs_prepared)
   const auto* rotation_present = input.rotation_present;
   const auto structural = input.structural;
   if (control->status != NodalStatus::Ok) return;
-  if (!inputs_prepared && !cin_advance::force_inputs::CheckPrefix(input)) return;
+  if (control->rows.base_epoch != epoch || control->rows.attempt != attempt ||
+      !stability::IsCurrentLimit(control->rows, control->limit) ||
+      control->limit.dt < durations.drift_dt) {
+    Fail(control, NodalStatus::StaleTrial, UINT32_MAX);
+    return;
+  }
+  if (control->limit.has_stiffness_or_damping) {
+    Fail(control, NodalStatus::MissingStepAdmission, UINT32_MAX);
+    return;
+  }
   const auto n = model.node_count;
   const auto r = model.row_count;
   const cin::ForceTrial force{accepted, loads, tail, tail+n, work, work+n,
     tail+4*n, tail+4*n+r, tail+4*n+2*r, work+2*n, patches, activity};
-  auto stage = inputs_prepared ? cin::detail::TransferForceTrial(model, force)
-      : cin::PrepareForceTrial(model, force);
+  auto stage = cin::PrepareForceTrial(model, force);
   if (!stage) {
     Fail(control, stage.status == cin::StageStatus::PendingReleaseEligibility
         ? NodalStatus::MissingStepAdmission : NodalStatus::InvalidOutput, stage.node);
@@ -164,14 +171,8 @@ __global__ void CompleteCin(const cin_advance::Input input) {
 } // namespace
 
 cudaError_t cin_advance::Launch(const Input& input, cudaStream_t stream) {
-  const bool parallel_inputs = input.input_failure != nullptr;
-  auto error = cudaSuccess;
-  if (parallel_inputs) {
-    error = force_inputs::Launch(input, stream);
-    if (error != cudaSuccess) return error;
-  }
-  PrepareCin<<<1,1,0,stream>>>(input, parallel_inputs);
-  error = cudaGetLastError();
+  PrepareCin<<<1,1,0,stream>>>(input);
+  auto error = cudaGetLastError();
   if (error != cudaSuccess) return error;
   constexpr unsigned threads = 128;
   const auto blocks = (input.model.node_count+threads-1)/threads;
@@ -196,7 +197,7 @@ cudaError_t FENodalState::Impl::LaunchCinAdvance(double maximum_angle,
       trial+cin->state_offset, cin->work, cin->patches, cin->activity, groups, durations,
       maximum_angle, stamp.epoch, attempt, capture,
       stamp.has_rotation_presence?fixed+3*config.node_count:nullptr,
-      structural ? *structural : NodalCinStructuralStep{}, cin->failure, cin->input_failure}, stream);
+      structural ? *structural : NodalCinStructuralStep{}, cin->failure}, stream);
 }
 
 NodalReport AdvanceStaggeredCin(FENodalState& owner, const NodalTrialToken& token,
