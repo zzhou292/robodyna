@@ -85,3 +85,22 @@ retains their complete owning source checks. Bazel owners are
 in this directory. Root should build/test the affected resident and publication
 owners after the new gate passes. Donor baseline records are preserved; the
 T3 manifest changes only register the reviewed host target split/new wiring.
+
+## First root runtime gate and focused correction
+
+`qt-mapped-root-tests-1` passed 13 host, three native and six CUDA functions.
+Four CUDA functions failed. The QEPH failures exposed a production retry defect:
+source binding survives discard, but the epoch-zero accepted cache remains
+virgin. Selecting stiffness by `!bound` therefore read unavailable completed
+coefficients on retry; QEPH rejected zero FAC while T3 silently scattered zero
+STI/STIR. Both mapped paths now select virgin stiffness by accepted epoch zero.
+The existing retry test additionally compares every scattered coefficient after
+discard to the first native coefficient packet, closing the silent T3 gap.
+
+The T3 failure-history assertions incorrectly requested the legacy NIP3 payload
+for true NIP1. They now use the existing typed section payload, which includes
+the actual one-point damage/timestamp/activity, and explicitly verify legacy
+readback rejection preserves destination bytes. Loads, intervals, constitutive
+operations and tolerances are unchanged. The author ran only host syntax for
+three CUDA TUs and the 27-record source receipt; corrected numeric execution
+belongs to the next root gate. The failed first root log remains preserved.

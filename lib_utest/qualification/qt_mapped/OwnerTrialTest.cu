@@ -45,6 +45,14 @@ TYPED_TEST(QtMappedCuda,CompleteNativeStiffnessAndStaleToken) {
   ASSERT_EQ(rig.owner.BeginTrial(&next,&assembly).status,fe::NodalStatus::Ok);
   EXPECT_NE(rig.batch.AssembleMappedAccepted(rig.owner,token,assembly).status,Family::Success);
   ASSERT_TRUE(rig.Begin(next,assembly));
+  // Binding survives discard, but epoch zero has no completed force cache.
+  // Both families must scatter the same nonzero virgin coefficients on retry.
+  ASSERT_EQ(rig.owner.BorrowCinAssembly(next,&cin).status,fe::NodalStatus::Ok);
+  ASSERT_EQ(cudaMemcpyAsync(actual.data(),cin.translational_stiffness,actual.size()*sizeof(double),cudaMemcpyDeviceToHost,cin.stream),cudaSuccess);
+  ASSERT_EQ(cudaMemcpyAsync(rotation.data(),cin.rotational_stiffness,rotation.size()*sizeof(double),cudaMemcpyDeviceToHost,cin.stream),cudaSuccess);
+  ASSERT_EQ(cudaStreamSynchronize(cin.stream),cudaSuccess);
+  EXPECT_EQ(actual,expected);
+  EXPECT_EQ(rotation,expected_rotation);
   EXPECT_EQ(Values(rig.Accepted()),accepted);
   EXPECT_EQ(rig.AcceptedState(),accepted_state);
 }
@@ -101,11 +109,16 @@ TYPED_TEST(QtMappedCuda,CinDependentZerosLateGeometryFailureAndTypedRetry) {
     } else EXPECT_NE(sections[row].plastic(),nullptr);
   }
   std::vector<fe::ShellBatchFailureState> failure(sections.size());
-  ASSERT_EQ(rig.batch.CopyPreparedFailureHistory(output,failure.data(),failure.size()).status,Family::Success);
+  const auto failure_before=PayloadBytes(failure);
+  const auto failure_report=rig.batch.CopyPreparedFailureHistory(output,failure.data(),failure.size());
+  if constexpr (Family::Slots==3) {
+    EXPECT_NE(failure_report.status,Family::Success);
+    EXPECT_EQ(PayloadBytes(failure),failure_before);
+  } else ASSERT_EQ(failure_report.status,Family::Success);
   StateBits proposed_state;
   for (std::size_t row=0;row<sections.size();++row) {
     Add(proposed_state,sections[row]);
-    Add(proposed_state,failure[row]);
+    if constexpr (Family::Slots!=3) Add(proposed_state,failure[row]);
   }
   EXPECT_NE(proposed_state,accepted_state); // Actual material fields advanced.
   EXPECT_EQ(Values(rig.Accepted()),accepted);

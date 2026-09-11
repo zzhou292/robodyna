@@ -31,6 +31,10 @@ inline fe::NodalReport InitializeOwner(Fixture& fixture,fe::FENodalState& owner)
       fixture.mechanics.im.data(),fixture.mechanics.Dofs(),fixture.Rigid(),&cin);
 }
 using qbat_binding_test::Bytes;
+template<class T> std::vector<unsigned char> PayloadBytes(const std::vector<T>& values) {
+  const auto* first=reinterpret_cast<const unsigned char*>(values.data());
+  return {first,first+values.size()*sizeof(T)};
+}
 inline fe::ShellSectionLaw Law(const fe::ShellBatchPlasticityBinding& catalog,fe::ShellBindingFamily family,std::size_t row) {
   fe::ShellSectionLaw law=fe::ShellSectionLaw::Unspecified;
   EXPECT_TRUE(catalog.Law(family,row,&law));
@@ -109,9 +113,21 @@ template<class Family> struct Rig {
     std::vector<fe::ShellBatchFailureState> failures(config.element_count);
     typename Family::Diagnostics diagnostics;
     EXPECT_EQ(batch.CopyAcceptedLayeredSectionHistory(owner.accepted(),sections.data(),sections.size(),&diagnostics).status,Family::Success);
-    EXPECT_EQ(batch.CopyAcceptedFailureHistory(owner.accepted(),failures.data(),failures.size(),&diagnostics).status,Family::Success);
+    const bool one_point=std::any_of(sections.begin(),sections.end(),[](const auto& row) { return row.one_point()!=nullptr; });
+    const auto old_failure=PayloadBytes(failures);
+    const auto old_diagnostics=Bytes(diagnostics);
+    const auto failure_report=batch.CopyAcceptedFailureHistory(owner.accepted(),failures.data(),failures.size(),&diagnostics);
+    if (one_point) {
+      // The true point owns its failure payload; no NIP3 history is available.
+      EXPECT_NE(failure_report.status,Family::Success);
+      EXPECT_EQ(PayloadBytes(failures),old_failure);
+      EXPECT_EQ(Bytes(diagnostics),old_diagnostics);
+    } else EXPECT_EQ(failure_report.status,Family::Success);
     StateBits values;
-    for (std::size_t row=0;row<sections.size();++row) { Add(values,sections[row]); Add(values,failures[row]); }
+    for (std::size_t row=0;row<sections.size();++row) {
+      Add(values,sections[row]);
+      if (!one_point) Add(values,failures[row]);
+    }
     return values;
   }
   std::vector<typename Family::Result> Accepted() {

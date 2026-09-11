@@ -49,7 +49,9 @@ BatchReport QephBatch::AssembleMappedAccepted(FENodalState& owner,const NodalTri
   state.assembled_attempt=view.attempt;
   state.assembled_epoch=UINT64_MAX;
   state.stream=view.stream;
-  batch_detail::LaunchMappedAssembly(state.storage,state.accepted,view,cin,state.plasticity->mixed_device(),!state.bound);
+  // A discarded attempt binds the source but does not create an accepted force
+  // packet. Every epoch-zero retry still requires the virgin native stiffness.
+  batch_detail::LaunchMappedAssembly(state.storage,state.accepted,view,cin,state.plasticity->mixed_device(),accepted.epoch==0);
   report=state.ReadControl();
   if (report.status!=BatchStatus::Success) return report;
   if (!state.bound) state.initial_sources=view;

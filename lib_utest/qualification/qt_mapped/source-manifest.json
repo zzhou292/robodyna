@@ -65,8 +65,8 @@
     },
     {
       "path": "lib_utest/qualification/qt_mapped/OwnerFixture.h",
-      "bytes": 7304,
-      "sha256": "9fafbd174495f2e1b67eabd74661203be8d7f6d49652ccc8771a3cde7bedb868"
+      "bytes": 8097,
+      "sha256": "c3b056ff2928e6b87d8721b935244d0c08c5ab0a8af9ac1b3e88761dfa13e84c"
     },
     {
       "path": "lib_utest/qualification/qt_mapped/OwnerSkinTest.cu",
@@ -75,8 +75,8 @@
     },
     {
       "path": "lib_utest/qualification/qt_mapped/OwnerTrialTest.cu",
-      "bytes": 7738,
-      "sha256": "cdeafd67d5af1db27939b4dadb8c14c4d4a500f89643b3bce559e424d22b2c06"
+      "bytes": 8678,
+      "sha256": "d08f1a64cf78abf061667c067979f695d8e8d44f16c34e39841bed8b038943e9"
     },
     {
       "path": "lib_utest/qualification/qt_mapped/PrepareOwner.cu",
@@ -127,6 +127,16 @@
       "path": "lib_utest/qualification/t3_one_point/native/source-manifest.json",
       "bytes": 2916,
       "sha256": "05a9140e1dfa77dc5efd70a5fbee3d0a562b08ee044b6e97b1e893e6776d029c"
+    },
+    {
+      "path": "lib_src/elements/qeph/mapped/Assemble.cu",
+      "bytes": 3494,
+      "sha256": "4fc03045e91b2f98e176141aa23fb3b25e692e828aa63de24152f16de06e0679"
+    },
+    {
+      "path": "lib_src/elements/t3/mapped/Assemble.cu",
+      "bytes": 3472,
+      "sha256": "3d245f5a22bf0632b961da34f663d84f550a4690b529089464f64b1952137edb"
     }
   ]
 }
