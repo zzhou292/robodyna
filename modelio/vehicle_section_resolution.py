@@ -18,7 +18,7 @@ def _encoded(value):
     return (json.dumps(value, sort_keys=True, separators=(',', ':'), allow_nan=False) + '\n').encode()
 
 
-def compile_vehicle_section_resolution(index, scope, units, authority):
+def compile_vehicle_section_resolution(index, scope, units, authority, *, include_glass=False):
     legacy = compile_vehicle_declarations(index, scope, units, authority)
     original_bytes = _encoded(legacy)
     rows, parts, sections, materials, curves = [], {}, {}, {}, {}
@@ -56,7 +56,7 @@ def compile_vehicle_section_resolution(index, scope, units, authority):
                     require(curves.setdefault(curve.curve_id, value) == value,
                             'conflicting resolved hardening curve')
         rows.append(row)
-    require(parts, 'vehicle resolution contains no ordinary constant-failure declarations')
+    require(parts or include_glass, 'vehicle resolution contains no ordinary constant-failure declarations')
     resolved = dict(schema=SECTION_SCHEMA, selected_part_ids=sorted(parts),
                     section_policy=section_policy(), law44_policy=dict(LINEAR_LAW44_POLICY),
                     declarations=dict(units=asdict(units),
@@ -64,6 +64,10 @@ def compile_vehicle_section_resolution(index, scope, units, authority):
                         materials=[materials[k] for k in sorted(materials)], curves=[curves[k] for k in sorted(curves)]))
     source = dict(authority, vehicle_plan_bytes=len(original_bytes),
                   vehicle_plan_sha256=hashlib.sha256(original_bytes).hexdigest())
-    return dict(schema=SCHEMA, source=source, policy=dict(POLICY), counts=counts, parts=rows,
-                constant_failure_declarations=resolved, simulation_ready=False,
-                native_startup_qualified=False)
+    result = dict(schema=SCHEMA, source=source, policy=dict(POLICY), counts=counts, parts=rows,
+                  constant_failure_declarations=resolved, simulation_ready=False,
+                  native_startup_qualified=False)
+    if include_glass:
+        from .glass_declarations import extend_glass_resolution
+        return extend_glass_resolution(index, units, result)
+    return result

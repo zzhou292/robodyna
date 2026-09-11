@@ -17,8 +17,12 @@ struct DeclarationView {
         return resolution ? resolution->section(part) : source.section(part);
     }
     std::size_t Available() const noexcept {
-        return resolution ? resolution->counts().existing_shells+resolution->counts().failure_shells :
+        return resolution ? resolution->counts().existing_shells+resolution->counts().failure_shells+
+                            resolution->counts().glass_shells :
                             source.counts().supported_parents;
+    }
+    tl::fea::ShellReferencePlacement Placement(std::size_t part) const noexcept {
+        return resolution ? resolution->parts()[part].placement : tl::fea::ShellReferencePlacement::Centered;
     }
     std::size_t SourceBound() const noexcept {
         // The resolution's bound already includes the historical plan once.

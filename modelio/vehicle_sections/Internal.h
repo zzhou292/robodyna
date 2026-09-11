@@ -1,5 +1,6 @@
 #pragma once
 #include "VehicleSectionResolution.h"
+#include "GlassDeclarations.h"
 #include "modelio/source_assembly/JsonReader.h"
 #include "modelio/vehicle_source/SourceCards.h"
 
@@ -9,6 +10,8 @@ struct Declarations {
     assembly::Data failure;
     std::vector<SectionPartResolution> parts;
     ResolutionCounts counts;
+    std::vector<GlassDeclaration> glass;
+    bool includes_glass = false;
 };
 std::size_t Preflight(const VehicleSourcePlan&, const assembly::ArtifactIdentity&, ResolutionLimits);
 void CheckAuthority(const VehicleSourcePlan&, const Value&);

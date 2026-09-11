@@ -64,6 +64,12 @@ the one-byte-short rejection and exact-budget retry pass. Evidence is
 corresponding `vehicle-resolved-reference-root-{configure,build,tests}-1` guards.
 There is still no owner, global coefficient sum or vehicle force integration.
 
+The explicit [glass resolution V2](../../modelio/vehicle_sections/GLASS.md) uses
+this same overload and native append path with immutable per-part reference
+placement. It preserves the historical overloads and canonical coordinates.
+The expected assessment scope is 340292 available / 9353 unresolved parents;
+actual geometry acceptance remains the separately scheduled original-source gate.
+
 ## Memory admission
 
 `ForecastReferences` validates explicit count and byte limits before allocating

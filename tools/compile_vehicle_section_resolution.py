@@ -12,12 +12,14 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('source-archive', 'canonical-assets', 'scope-report', 'output'):
         parser.add_argument('--' + name, type=Path, required=True)
+    parser.add_argument('--include-glass', action='store_true',
+                        help='Explicit V2 original MAT123 NUMINT1/TAB1 and NLOC resolution')
     args = parser.parse_args()
     try:
         if args.output.exists():
             raise ValueError('output must be a new path')
         report = compile_archive_vehicle_section_resolution(args.source_archive, args.canonical_assets,
-                                                            args.scope_report)
+                                                            args.scope_report, include_glass=args.include_glass)
         write_vehicle_section_resolution(args.output, report)
     except (OSError, ValueError) as error:
         print('robo-dyna vehicle section resolution: ' + str(error), file=sys.stderr)

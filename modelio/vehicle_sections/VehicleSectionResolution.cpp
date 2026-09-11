@@ -15,6 +15,7 @@ struct VehicleSectionResolution::Data {
         if (p >= declarations.parts.size()) return nullptr;
         const auto& part = declarations.parts[p];
         if (part.status == SectionDisposition::Existing) return source.material(p);
+        if (part.status == SectionDisposition::GlassTab1) return &declarations.glass[part.material_index].material;
         return part.status == SectionDisposition::ConstantFailure ?
             &declarations.failure.materials[part.material_index] : nullptr;
     }
@@ -22,6 +23,7 @@ struct VehicleSectionResolution::Data {
         if (p >= declarations.parts.size()) return nullptr;
         const auto& part = declarations.parts[p];
         if (part.status == SectionDisposition::Existing) return source.section(p);
+        if (part.status == SectionDisposition::GlassTab1) return &declarations.glass[part.section_index].section;
         return part.status == SectionDisposition::ConstantFailure ?
             &declarations.failure.sections[part.section_index] : nullptr;
     }
@@ -30,6 +32,10 @@ struct VehicleSectionResolution::Data {
         for (std::size_t p = 0; p < declarations.parts.size(); ++p) {
             const auto* material = Material(p);
             if (!material) continue;
+            if (declarations.parts[p].status == SectionDisposition::GlassTab1) {
+                native_materials[p] = resolution::NativeGlassMaterial(*material);
+                continue;
+            }
             auto native = assembly::detail::NativeMaterial(*material);
             if (declarations.parts[p].status == SectionDisposition::ConstantFailure && material->curve_id) {
                 native.continuation = tl::material::ShellPlasticityCurveContinuation::NativeLastSegment;
@@ -50,6 +56,10 @@ struct VehicleSectionResolution::Data {
             if (part.status == SectionDisposition::ConstantFailure) {
                 native.policy = tl::fea::ShellFailurePolicy::ConstantAllPoints;
                 native.constant.failure_strain = part.failure_strain;
+            } else if (part.status == SectionDisposition::GlassTab1) {
+                native.policy = tl::fea::ShellFailurePolicy::Tab1AnyPoint;
+                native.tab1.table = {{-.3,0,.3},part.failure_strain};
+                native.tab1.parent_policy = tl::fea::sections::ShellTab1ParentPolicy::AnyPoint;
             }
         }
     }
@@ -82,6 +92,7 @@ VehicleSectionResolution VehicleSectionResolution::ReadBytes(const VehicleSource
 const VehicleSourcePlan& VehicleSectionResolution::source() const noexcept { return data_->source; }
 const assembly::ArtifactIdentity& VehicleSectionResolution::identity() const noexcept { return data_->identity; }
 const ResolutionCounts& VehicleSectionResolution::counts() const noexcept { return data_->declarations.counts; }
+bool VehicleSectionResolution::includes_glass() const noexcept { return data_->declarations.includes_glass; }
 const std::vector<SectionPartResolution>& VehicleSectionResolution::parts() const noexcept { return data_->declarations.parts; }
 const std::vector<SectionParentResolution>& VehicleSectionResolution::parents() const noexcept { return data_->parents; }
 const assembly::Material* VehicleSectionResolution::material(std::size_t part) const noexcept { return data_->Material(part); }

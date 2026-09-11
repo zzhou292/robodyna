@@ -8,14 +8,16 @@ template<class T> std::vector<T> Decode(const source::CanonicalData& d,const cha
 }
 template<class Input,std::size_t Arity>
 Input InputFor(const Geometry& g,std::size_t canonical,const modelio::assembly::Material& material,
-               const modelio::assembly::Section& section) {
+               const modelio::assembly::Section& section,tl::fea::ShellReferencePlacement placement) {
     modelio::assembly::SourceReferenceNode nodes[Arity];
     for(std::size_t n=0;n<Arity;++n) {
         const auto i=g.connections.at(4*canonical+n);
         nodes[n]={g.node_ids.at(i),{g.positions.at(3*i),g.positions.at(3*i+1),g.positions.at(3*i+2)}};
         output::Require(nodes[n].source_id==g.records.at(6*canonical+2+n),"Reference source node association changed");
     }
-    return modelio::assembly::PackShellReference<Input>(nodes,material,section);
+    auto input = modelio::assembly::PackShellReference<Input>(nodes,material,section);
+    input.placement = placement;
+    return input;
 }
 }
 Geometry::Geometry(const source::CanonicalData& d)
@@ -37,9 +39,10 @@ void PrepareRows(const DeclarationView& declarations,const Geometry& g,Reference
             continue;
         }
         output::Require(m && s,"Supported reference lacks typed source declaration");
+        const auto placement = declarations.Placement(parent.part_index);
         if(g.records.at(6*c+4)!=g.records.at(6*c+5))
-            Append(out,row,InputFor<tl::fea::qeph::ReferenceInput,4>(g,c,*m,*s));
-        else Append(out,row,InputFor<tl::fea::t3::ReferenceInput,3>(g,c,*m,*s));
+            Append(out,row,InputFor<tl::fea::qeph::ReferenceInput,4>(g,c,*m,*s,placement));
+        else Append(out,row,InputFor<tl::fea::t3::ReferenceInput,3>(g,c,*m,*s,placement));
     }
 }
 } // namespace crash::cases::vehicle_startup::detail

@@ -1,21 +1,25 @@
 #pragma once
 #include "modelio/vehicle_source/VehicleSourcePlan.h"
 #include "lib_src/elements/ShellBatchFailureBinding.h"
+#include "lib_src/elements/ShellReferencePlacement.h"
 #include <memory>
 
 namespace crash::modelio::vehicle {
 inline constexpr const char* ResolutionSchema = "robo-dyna.vehicle-section-resolution.v1";
+inline constexpr const char* GlassResolutionSchema = "robo-dyna.vehicle-section-resolution.v2";
 struct ResolutionLimits {
     std::size_t declaration_bytes = 4 * 1024 * 1024;
     std::size_t host_bytes = 512 * 1024 * 1024;
     std::size_t parents = 524288, parts = 1024, tables = 1024, curve_points = 1024;
 };
-enum class SectionDisposition { Existing, ConstantFailure, Unresolved };
+enum class SectionDisposition { Existing, ConstantFailure, Unresolved, GlassTab1 };
 enum class SourceShellTopology { Q4, T3 };
 struct SectionPartResolution {
     SectionDisposition status = SectionDisposition::Unresolved;
     std::size_t material_index = SIZE_MAX, section_index = SIZE_MAX;
     double failure_strain = 0;
+    tl::fea::ShellReferencePlacement placement = tl::fea::ShellReferencePlacement::Centered;
+    std::optional<double> source_nloc;
 };
 struct SectionParentResolution {
     std::uint64_t source_parent_id = 0;
@@ -27,6 +31,7 @@ struct ResolutionCounts {
     std::size_t existing_parts = 0, existing_shells = 0;
     std::size_t failure_parts = 0, failure_shells = 0;
     std::size_t unresolved_parts = 0, unresolved_shells = 0;
+    std::size_t glass_parts = 0, glass_shells = 0, placed_glass_shells = 0;
 };
 // Source values only. Retains the historical plan and its shared canonical backing.
 // Unavailable rows remain in the complete topology index; no partial native binding,
@@ -44,8 +49,12 @@ class VehicleSectionResolution {
     const VehicleSourcePlan& source() const noexcept;
     const assembly::ArtifactIdentity& identity() const noexcept;
     const ResolutionCounts& counts() const noexcept;
+    bool includes_glass() const noexcept;
     const std::vector<SectionPartResolution>& parts() const noexcept;
     const std::vector<SectionParentResolution>& parents() const noexcept;
+    // Glass Material exposes physical/analytic coefficients and literal cards;
+    // generic rate fields are unused. native_material() supplies its explicit
+    // FilteredZeroC policy without fabricating original C/P/VP declarations.
     const assembly::Material* material(std::size_t part_index) const noexcept;
     const assembly::Section* section(std::size_t part_index) const noexcept;
     const tl::fea::ShellPlasticityMaterialInput* native_material(std::size_t part_index) const noexcept;

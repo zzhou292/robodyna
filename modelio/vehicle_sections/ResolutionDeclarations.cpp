@@ -45,12 +45,15 @@ void Count(ResolutionCounts& counts, SectionDisposition status, std::size_t shel
     } else if (status == SectionDisposition::ConstantFailure) {
         ++counts.failure_parts;
         counts.failure_shells += shells;
+    } else if (status == SectionDisposition::GlassTab1) {
+        ++counts.glass_parts;
+        counts.glass_shells += shells;
     } else {
         ++counts.unresolved_parts;
         counts.unresolved_shells += shells;
     }
 }
-void CheckCounts(const Value& value, const ResolutionCounts& counts) {
+void CheckCounts(const Value& value, const ResolutionCounts& counts, bool glass) {
     Require(Unsigned(value,"parts") == counts.parts && Unsigned(value,"shells") == counts.shells &&
             Unsigned(value,"existing_parts") == counts.existing_parts &&
             Unsigned(value,"existing_shells") == counts.existing_shells &&
@@ -59,6 +62,36 @@ void CheckCounts(const Value& value, const ResolutionCounts& counts) {
             Unsigned(value,"unresolved_parts") == counts.unresolved_parts &&
             Unsigned(value,"unresolved_shells") == counts.unresolved_shells,
             "Vehicle section resolution coverage disagrees");
+    if (glass) {
+        Require(Unsigned(value,"glass_parts") == counts.glass_parts &&
+                Unsigned(value,"glass_shells") == counts.glass_shells &&
+                Unsigned(value,"placed_glass_shells") == counts.placed_glass_shells,
+                "Glass resolution coverage/placement disagrees");
+    } else {
+        Require(!value.HasMember("glass_parts") && !value.HasMember("glass_shells") &&
+                !value.HasMember("placed_glass_shells"), "Glass counts require explicit resolution V2");
+    }
+}
+void ReadFailure(const Value& typed, const assembly::ReadLimits& limits, Declarations& next) {
+    const auto& declarations = Member(typed,"declarations");
+    const auto& parts = Array(declarations,"parts",limits.parts);
+    if (!parts.Empty()) {
+        ReadConstantFailureDeclarations(typed, limits, next.failure);
+        return;
+    }
+    Require(next.includes_glass, "V1 requires ordinary constant-failure declarations");
+    for (const auto* key : {"materials","sections","curves"}) {
+        Require(Array(declarations,key,limits.tables).Empty(), "Unreferenced empty failure inventory");
+    }
+    Require(Ids(Member(typed,"selected_part_ids"),limits.parts,true).empty(),
+            "Empty failure inventory has selected parts");
+    const auto& units = Member(declarations,"units");
+    TextIs(units,"mass","t");
+    TextIs(units,"length","mm");
+    TextIs(units,"time","s");
+    Same(Real(units,"mass_to_kg"),1000);
+    Same(Real(units,"length_to_m"),.001);
+    Same(Real(units,"time_to_s"),1);
 }
 } // namespace
 
@@ -73,6 +106,7 @@ Declarations ReadDeclarations(const VehicleSourcePlan& plan, const Value& doc, R
                 "Duplicate original part identity");
     }
     Declarations next;
+    next.includes_glass = Text(doc,"schema") == GlassResolutionSchema;
     next.failure.schema = assembly::SectionInventorySchema;
     const auto& typed = Member(doc, "constant_failure_declarations");
     TextIs(typed, "schema", assembly::SectionInventorySchema);
@@ -81,7 +115,18 @@ Declarations ReadDeclarations(const VehicleSourcePlan& plan, const Value& doc, R
     read.parts = limits.parts;
     read.tables = limits.tables;
     read.curve_points = limits.curve_points;
-    ReadConstantFailureDeclarations(typed, read, next.failure);
+    ReadFailure(typed, read, next);
+    if (next.includes_glass) {
+        const auto prior_tables = std::max(next.failure.materials.size(),next.failure.sections.size());
+        Require(prior_tables <= limits.tables, "Resolved table count exceeds limits");
+        const auto cap = std::min(limits.parts,limits.tables-prior_tables);
+        for (const auto& value : Array(Member(doc,"glass_declarations"),"parts",cap,1).GetArray()) {
+            auto glass = ReadGlassDeclaration(value);
+            Require(next.glass.empty() || next.glass.back().part.id < glass.part.id,
+                    "Duplicate or unordered glass source part");
+            next.glass.push_back(std::move(glass));
+        }
+    }
     const auto& rows = Array(doc, "parts", limits.parts, 1);
     Require(rows.Size() == plan.parts().size(), "Resolution must retain every original selected part");
     std::set<std::uint64_t> used_materials, used_sections, used_curves;
@@ -100,6 +145,9 @@ Declarations ReadDeclarations(const VehicleSourcePlan& plan, const Value& doc, R
         } else if (Eligible(original)) {
             part.status = SectionDisposition::ConstantFailure;
             expected = "constant_failure";
+        } else if (next.includes_glass && EligibleGlass(original)) {
+            part.status = SectionDisposition::GlassTab1;
+            expected = "glass_tab1";
         }
         TextIs(row, "status", expected);
         if (part.status == SectionDisposition::ConstantFailure) {
@@ -123,6 +171,26 @@ Declarations ReadDeclarations(const VehicleSourcePlan& plan, const Value& doc, R
             used_materials.insert(material.id);
             used_sections.insert(section.id);
             if (material.curve_id) used_curves.insert(material.curve_id);
+        } else if (part.status == SectionDisposition::GlassTab1) {
+            const auto index = next.counts.glass_parts;
+            Require(index < next.glass.size(), "Missing original glass declaration");
+            const auto& glass = next.glass[index];
+            Require(glass.part.id == original.part_id && glass.material.id == original.material_id &&
+                    glass.section.id == original.section_id, "Glass source order/association changed");
+            const auto origin = original_parts.find(original.part_id);
+            Require(origin != original_parts.end() && glass.part.title == Text(*origin->second,"title"),
+                    "Glass original part title changed");
+            SameBlock(glass.part.source,original.unresolved_sources[0]);
+            SameBlock(glass.section.source,original.unresolved_sources[1]);
+            SameBlock(glass.material.source,original.unresolved_sources[2]);
+            part.material_index = index;
+            part.section_index = index;
+            part.failure_strain = glass.failure_strain;
+            part.placement = glass.placement;
+            part.source_nloc = glass.source_nloc;
+            if (part.placement != tl::fea::ShellReferencePlacement::Centered) {
+                next.counts.placed_glass_shells += original.shell_count;
+            }
         }
         Count(next.counts, part.status, original.shell_count);
         next.parts.push_back(part);
@@ -131,6 +199,7 @@ Declarations ReadDeclarations(const VehicleSourcePlan& plan, const Value& doc, R
             used_materials.size() == next.failure.materials.size() &&
             used_sections.size() == next.failure.sections.size() &&
             used_curves.size() == next.failure.curves.size(), "Unreferenced resolved declaration");
+    Require(next.counts.glass_parts == next.glass.size(), "Unreferenced original glass declaration");
     const auto& originals = Member(Member(Member(scope,"declarations"),"tables"),"curve");
     std::map<std::uint64_t, const Value*> curves;
     for (const auto& row : originals.GetArray()) {
@@ -142,7 +211,7 @@ Declarations ReadDeclarations(const VehicleSourcePlan& plan, const Value& doc, R
         detail::CheckSource(curve.source, *found->second);
         detail::CheckTypedCards(curve.source, curve.cards, 20);
     }
-    CheckCounts(Member(doc,"counts"), next.counts);
+    CheckCounts(Member(doc,"counts"), next.counts, next.includes_glass);
     return next;
 }
 } // namespace crash::modelio::vehicle::resolution

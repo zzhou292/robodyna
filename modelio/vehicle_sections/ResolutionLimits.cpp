@@ -34,7 +34,11 @@ std::size_t Preflight(const VehicleSourcePlan& plan, const assembly::ArtifactIde
 }
 
 void CheckAuthority(const VehicleSourcePlan& plan, const Value& doc) {
-    TextIs(doc, "schema", ResolutionSchema);
+    const auto schema = Text(doc,"schema");
+    const bool glass = schema == GlassResolutionSchema;
+    Require(glass || schema == ResolutionSchema, "Unsupported vehicle section resolution schema");
+    Require(glass == doc.HasMember("glass_declarations"), "Glass declarations require explicit resolution V2");
+    if (glass) CheckGlassPolicy(Member(doc,"glass_declarations"));
     Flag(doc, "simulation_ready", false);
     Flag(doc, "native_startup_qualified", false);
     const auto& source = Member(doc, "source");

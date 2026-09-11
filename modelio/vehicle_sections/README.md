@@ -27,8 +27,9 @@ Root's complete source compile produced
 SHA-256 `49952c2f2ecb982ea7e8e53c6af2f1188a09c7ef389bc114ae4dfa4e9ef50006`.
 It adds 12 parts / 47,781 parents (37,436 table and 10,345 analytic), leaving 32
 parts / 23,563 parents unresolved. All 867 selected parts / 349,645 parents remain.
-The 4,251 ELFORM9/NIP1 parents, glass and rigid declarations remain explicit future
-obligations. Actual native references for these newly resolved rows and their full
+In this historical V1 profile, the 4,251 ELFORM9/NIP1 parents, glass and rigid declarations remain unresolved.
+The separate opt-in [V2 glass resolution](GLASS.md) retains that V1 contract.
+Actual native references for these newly resolved rows and their full
 vehicle runtime integration are separate gates. Initial output1 retained only the
 analytic rows because of the overly strict table ETAN check; it remains preserved
 as diagnostic evidence, not the resolved fixture.
