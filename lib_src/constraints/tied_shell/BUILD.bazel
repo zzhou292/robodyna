@@ -1,5 +1,13 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 cc_library(
+    name = "tied_post_kinchk",
+    srcs = ["TiedPostKinChk.cpp"],
+    hdrs = ["TiedPostKinChk.h"],
+    deps = [":tied_shell_classification", "//lib_utils:bounded_arena", "//lib_utils:source_identity_index"],
+    copts = ["-std=c++17"],
+    visibility = ["//visibility:public"],
+)
+cc_library(
     name = "tied_shell_classification",
     srcs = ["TiedClassification.cpp", "TiedClassificationBudget.cpp",
             "TiedClassificationChecks.cpp", "TiedClassificationKinematics.cpp"],

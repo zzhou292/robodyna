@@ -1,0 +1,20 @@
+{
+  "commit": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "sources": [
+    {
+      "path": "original/kinchk.F",
+      "size": 79322,
+      "sha256": "a451590f23ee9fb841f80359b871eda494894d16baaf359046db3b77b66155e5",
+      "git_blob_sha1": "d36b41e56780eb2c82fca4e4a03f6d1a683c0b07"
+    }
+  ],
+  "fragments": [
+    {
+      "path": "KinChk.inc",
+      "source": "original/kinchk.F",
+      "first_line": 35,
+      "last_line": 1228,
+      "sha256": "8a1173c36a764df6de4d5640aae0e567a3605efc8067fd19f78900d00b936abb"
+    }
+  ]
+}

@@ -9,15 +9,24 @@ module message_mod
   integer, parameter :: msgwarning=1, aninfo_blind_1=1, aninfo_blind_2=2
   integer, parameter :: msg_cumu=1, msg_print=2
   integer :: penalty_count=0
+  integer, parameter :: msgerror=2, aninfo=3
+  integer :: kinchk_warnings=0, kinchk_errors=0, kinchk_last_message=0
 contains
-  subroutine ancmsg(msgid,msgtype,anmode,i1,i2,c1,c2,prmod)
+  subroutine ancmsg(msgid,msgtype,anmode,i1,i2,c1,c2,prmod,i3)
     integer, intent(in) :: msgid,msgtype,anmode
-    integer, intent(in), optional :: i1,i2,prmod
+    integer, intent(in), optional :: i1,i2,prmod,i3
     character(len=*), intent(in), optional :: c1,c2
+    if(msgtype==msgerror) kinchk_errors=kinchk_errors+1
+    if(msgtype==msgwarning) kinchk_warnings=kinchk_warnings+1
+    kinchk_last_message=msgid
     if(msgid==1179.and.present(prmod)) then
       if(prmod==msg_cumu) penalty_count=penalty_count+1
     endif
   end subroutine
+end module
+module format_mod
+  implicit none
+  character(len=*), parameter :: fmw_a_i_a='(A,I8,A)', fmw_10i='(10I12)'
 end module
 module intbufdef_mod
   implicit none
