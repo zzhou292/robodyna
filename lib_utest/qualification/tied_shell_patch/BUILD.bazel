@@ -1,4 +1,11 @@
-load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+cc_library(
+    name = "test_support",
+    testonly = True,
+    hdrs = ["Fixture.h", "CoefficientFixture.h"],
+    deps = ["//lib_src/constraints/tied_shell:tied_shell_patch", "@googletest//:gtest"],
+    visibility = ["//visibility:public"],
+)
 cc_test(
     name = "tied_patch_host_test",
     srcs = ["ValueTest.cpp", "Fixture.h", "CoefficientFixture.h", "CoefficientValueTest.cpp",

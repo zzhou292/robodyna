@@ -1,5 +1,14 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 cc_library(
+    name = "tied_cin_attachment",
+    srcs = ["TiedCinAttachmentModel.cpp", "TiedCinAttachmentMap.cpp"],
+    hdrs = ["TiedCinAttachmentModel.h", "TiedCinAttachmentInternal.h"],
+    deps = [":tied_post_kinchk", ":tied_shell_patch", "//lib_src/assembly:nodal_node_domain",
+            "//lib_utils:bounded_arena", "//lib_utils:source_identity_index"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    visibility = ["//visibility:public"],
+)
+cc_library(
     name = "tied_post_kinchk",
     srcs = ["TiedPostKinChk.cpp"],
     hdrs = ["TiedPostKinChk.h"],

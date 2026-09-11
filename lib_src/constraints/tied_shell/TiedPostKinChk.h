@@ -44,6 +44,7 @@ class PostKinChkResult {
   std::uint64_t source_instance_id() const noexcept;
   std::uint32_t source_interface_id() const noexcept;
   KinChkForecast forecast() const noexcept;
+  bool SharesStorage(const PostKinChkResult& other) const noexcept { return data_ && data_ == other.data_; }
  private:
   struct Data;
   std::shared_ptr<const Data> data_;
