@@ -22,3 +22,12 @@ cc_library(
     visibility = ["//lib_utest/qualification/qbat_force:__pkg__"],
     deps = ["//lib_src/elements/qbat:geometry"],
 )
+
+# Authenticated original midlayer geometry, shared only by source-qualified tests.
+cc_library(
+    name = "source_fixture",
+    testonly = True,
+    hdrs = ["source_fixture/YarisQbatSourceFixture.h"],
+    data = ["source_fixture/source-manifest.json"],
+    visibility = ["//lib_utest/qualification/t3_one_point:__pkg__"],
+)

@@ -13,7 +13,7 @@ module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 module.verify(root)
 module.verify(qualification / 'native/law44_one_point')
-fixture = root.parent / 'source_fixture'
+fixture = qualification / 'qbat/source_fixture'
 assert hashlib.sha256((fixture / 'YarisQbatSourceFixture.h').read_bytes()).hexdigest() == \
     '87c3902373d3a5e9e27c09522ad9adc5f4c6e6822eb2f64aa613d82bc1638c98'
 assert hashlib.sha256((fixture / 'source-manifest.json').read_bytes()).hexdigest() == \

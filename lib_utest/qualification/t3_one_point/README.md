@@ -56,7 +56,8 @@ histories advance independently in the native oracle after initialization.
 The new caller carries actual `values(11)` SSP from SIGEPS44C into C3DT3.
 Legacy Q/T post-law SSP corrections are a separately owned audit/change.
 
-The fixture is the authenticated 659264-byte original geometry header,
+The fixture reuses `qualification/qbat/source_fixture`, its sole original
+owner and narrow test-only Bazel target. The authenticated header is 659264 bytes,
 SHA256 `87c3902373d3a5e9e27c09522ad9adc5f4c6e6822eb2f64aa613d82bc1638c98`.
 Its manifest retains the one excluded-from-QBAT triangle, canonical parent
 228325/source line 274492, original material/section cards and full source
@@ -77,10 +78,11 @@ The first removal test used a uniaxial stress that unloaded on this path;
 its failed report 1 remains. The corrected test seeds a valid biaxial near-D1
 state. No production arithmetic or comparison tolerance changed for that fix.
 
-Four native tests cover independently carried 256-step original/transformed
+Five native tests cover independently carried 256-step original/transformed
 geometry yield/unload/reload, all eight nonzero strains and changed thickness,
 removal/current-work/next-zero packets, table/positive-rate/rate-off branches,
-and wrong phase/reset-history/exact native retry controls. Two CUDA tests
+wrong phase/reset-history/exact native retry controls, and direct native GS0
+with nonzero transverse increments plus carried transverse stress. Two CUDA tests
 cover independent device history and late material failure/phase rollback
 with preserved buffers and exact retry. These native/GPU tests are authored
 but not executed by this author.
