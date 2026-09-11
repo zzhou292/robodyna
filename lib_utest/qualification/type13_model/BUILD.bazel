@@ -1,0 +1,9 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "type13_model_check",
+    size = "small",
+    srcs = ["Fixture.h", "ValueTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/elements/type13:type13_model",
+            "//lib_utest/qualification/type13:startup_fixture", "@googletest//:gtest_main"],
+)

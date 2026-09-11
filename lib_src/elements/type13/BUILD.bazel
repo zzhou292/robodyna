@@ -1,5 +1,13 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 cc_library(
+    name = "type13_model",
+    srcs = ["Type13Model.cpp", "Type13ModelChecks.cpp", "Type13ModelIdentity.cpp"],
+    hdrs = ["Type13Model.h", "Type13ModelInternal.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    visibility = ["//visibility:public"],
+    deps = [":type13_startup", "//lib_utils:bounded_arena", "//lib_utils:source_identity_index"],
+)
+cc_library(
     name = "type13_startup",
     hdrs = ["Type13Types.h", "Type13Units.h", "Type13Property.h", "Type13Reference.h", "Type13Startup.h"],
     visibility = ["//visibility:public"],
