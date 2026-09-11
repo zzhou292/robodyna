@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "NodalCinRuntime.h"
-#include "cin_advance/Node.h"
 #include "cin_timestep/Screen.h"
 #include "NodalCinStorage.h"
 #include "NodalRigidGroupStorage.h"
@@ -18,22 +17,12 @@ __device__ void Fail(nodal_detail::Control* control, NodalStatus status, std::ui
   control->node = node;
   if (status == NodalStatus::StepTooLarge) control->limit.dt = 0;
 }
-__global__ void PrepareCin(const cin_advance::Input input) {
-  auto* control = input.control;
-  const auto* accepted = input.accepted;
-  auto* loads = input.loads;
-  const auto* fixed = input.fixed;
-  const auto model = input.model;
-  auto* tail = input.tail;
-  auto* work = input.work;
-  auto* patches = input.patches;
-  const auto* activity = input.activity;
-  const auto groups = input.groups;
-  const auto durations = input.durations;
-  const auto epoch = input.epoch;
-  const auto attempt = input.attempt;
-  const auto* rotation_present = input.rotation_present;
-  const auto structural = input.structural;
+__global__ void AdvanceCin(nodal_detail::Control* control, const double* accepted, double* trial,
+    double* loads, const std::uint8_t* fixed, cin::StageView model, double* tail,
+    double* work, constraints::tied_shell::Patch* patches, const std::uint8_t* activity,
+    rigid::GroupDeviceView groups, rigid::StepDurations durations, double maximum_angle,
+    std::uint64_t epoch, std::uint64_t attempt, rigid::AccelerationSink capture,
+    const std::uint8_t* rotation_present, NodalCinStructuralStep structural) {
   if (control->status != NodalStatus::Ok) return;
   if (control->rows.base_epoch != epoch || control->rows.attempt != attempt ||
       !stability::IsCurrentLimit(control->rows, control->limit) ||
@@ -74,41 +63,33 @@ __global__ void PrepareCin(const cin_advance::Input input) {
       return;
     }
   }
-  *input.failure = cin_advance::NoFailure;
-}
-__global__ void AdvanceOrdinaryCin(const cin_advance::Input input) {
-  if (input.control->status != NodalStatus::Ok) return;
-  for (std::uint32_t node = blockIdx.x*blockDim.x+threadIdx.x;
-       node < input.model.node_count; node += blockDim.x*gridDim.x) {
-    const auto status = cin_advance::AdvanceNode(input, node);
-    if (status != NodalStatus::Ok) {
-      atomicMin(input.failure, cin_advance::EncodeFailure(node, status));
-    }
-  }
-}
-__global__ void CompleteCin(const cin_advance::Input input) {
-  auto* control = input.control;
-  const auto* accepted = input.accepted;
-  auto* trial = input.trial;
-  auto* loads = input.loads;
-  const auto model = input.model;
-  auto* work = input.work;
-  auto* patches = input.patches;
-  const auto groups = input.groups;
-  const auto durations = input.durations;
-  const auto maximum_angle = input.maximum_angle;
-  const auto capture = input.capture;
-  if (control->status != NodalStatus::Ok) return;
-  const auto failure = *input.failure;
-  if (failure != cin_advance::NoFailure) {
-    Fail(control, cin_advance::FailureStatus(failure), cin_advance::FailureNode(failure));
-    return;
-  }
-  const auto n = model.node_count;
-  const auto r = model.row_count;
+  auto* current_inverse = tail+2*n;
   auto* acceleration = work+3*n;
   auto* angular_acceleration = work+6*n;
-  cin::StageReport stage;
+  for (std::uint32_t i = 0; i < n; ++i) {
+    // There is no conventional inverse/kick for a dependent CIN DOF.
+    if (model.dependent_nodes[i]) {
+      current_inverse[i] = 0;
+      current_inverse[n+i] = 0;
+      continue;
+    }
+    const bool rigid_dependent = groups.member_nodes && rigid::UsesDependentCoefficients(groups.member_nodes[i]);
+    current_inverse[i] = fixed[n+i] == 7 || (rigid_dependent && tail[i] == 0) ? 0 : 1/tail[i];
+    current_inverse[n+i] = fixed[2*n+i] || (rotation_present && !rotation_present[i]) ||
+        (rigid_dependent && tail[n+i] == 0) ? 0 : 1/tail[n+i];
+    if (!std::isfinite(current_inverse[i]) || !std::isfinite(current_inverse[n+i])) {
+      Fail(control, NodalStatus::InvalidOutput, i);
+      return;
+    }
+    if (groups.member_nodes && groups.member_nodes[i]) continue;
+    const auto status = nodal_detail::AdvanceOrdinaryNode<true>(accepted, trial, loads,
+      current_inverse, fixed, i, n, durations.drift_dt, durations.kick_dt, maximum_angle,
+      acceleration, angular_acceleration, rotation_present);
+    if (status != NodalStatus::Ok) {
+      Fail(control, status, i);
+      return;
+    }
+  }
   // Source/owner admission proves CIN has no rigid member intersection. The
   // existing native aggregate and member arithmetic therefore stays unchanged.
   for (std::uint32_t g = 0; g < groups.group_count; ++g) {
@@ -170,19 +151,6 @@ __global__ void CompleteCin(const cin_advance::Input input) {
 }
 } // namespace
 
-cudaError_t cin_advance::Launch(const Input& input, cudaStream_t stream) {
-  PrepareCin<<<1,1,0,stream>>>(input);
-  auto error = cudaGetLastError();
-  if (error != cudaSuccess) return error;
-  constexpr unsigned threads = 128;
-  const auto blocks = (input.model.node_count+threads-1)/threads;
-  AdvanceOrdinaryCin<<<blocks,threads,0,stream>>>(input);
-  error = cudaGetLastError();
-  if (error != cudaSuccess) return error;
-  CompleteCin<<<1,1,0,stream>>>(input);
-  return cudaGetLastError();
-}
-
 cudaError_t FENodalState::Impl::LaunchCinAdvance(double maximum_angle,
     const NodalCinStructuralStep* structural) {
   const rigid::StepDurations durations{stamp.epoch == 0 ? 0 : config.fixed_dt,
@@ -193,11 +161,12 @@ cudaError_t FENodalState::Impl::LaunchCinAdvance(double maximum_angle,
     const nodal_detail::ForceStageCaptureLayout layout{config.node_count, groups.group_count};
     capture = layout.Sink(scratch);
   }
-  return cin_advance::Launch({control, accepted, trial, scratch, fixed, cin->device,
+  AdvanceCin<<<1,1,0,stream>>>(control, accepted, trial, scratch, fixed, cin->device,
       trial+cin->state_offset, cin->work, cin->patches, cin->activity, groups, durations,
       maximum_angle, stamp.epoch, attempt, capture,
       stamp.has_rotation_presence?fixed+3*config.node_count:nullptr,
-      structural ? *structural : NodalCinStructuralStep{}, cin->failure}, stream);
+      structural ? *structural : NodalCinStructuralStep{});
+  return cudaGetLastError();
 }
 
 NodalReport AdvanceStaggeredCin(FENodalState& owner, const NodalTrialToken& token,

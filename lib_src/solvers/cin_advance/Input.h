@@ -1,0 +1,33 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+#pragma once
+#include "FailureKey.h"
+#include "../FENodalStateStorage.h"
+#include "../NodalCinRuntime.h"
+#include "../../constraints/NodalRigidGroupState.h"
+#include "../../constraints/NodalRigidGroupStepMath.h"
+#include "../../constraints/NodalRigidAccelerationSink.h"
+namespace tl::fea::cin_advance {
+// Private launch views into the one owner's existing accepted/trial/work slabs.
+// They provide no public admission, lifetime, selector or publication authority.
+struct Input {
+  nodal_detail::Control* control = nullptr;
+  const double* accepted = nullptr;
+  double* trial = nullptr;
+  double* loads = nullptr;
+  const std::uint8_t* fixed = nullptr;
+  constraints::tied_shell::cin::StageView model;
+  double* tail = nullptr;
+  double* work = nullptr;
+  constraints::tied_shell::Patch* patches = nullptr;
+  const std::uint8_t* activity = nullptr;
+  rigid::GroupDeviceView groups;
+  rigid::StepDurations durations;
+  double maximum_angle = 0;
+  std::uint64_t epoch = 0, attempt = 0;
+  rigid::AccelerationSink capture;
+  const std::uint8_t* rotation_present = nullptr;
+  NodalCinStructuralStep structural;
+  FailureKey* failure = nullptr;
+};
+cudaError_t Launch(const Input&, cudaStream_t);
+} // namespace tl::fea::cin_advance

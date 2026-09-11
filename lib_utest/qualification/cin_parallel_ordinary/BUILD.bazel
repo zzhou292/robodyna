@@ -1,0 +1,34 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+
+cc_library(
+    name = "fixture",
+    testonly = True,
+    hdrs = ["Packet.h", "DevicePacket.h", "Fault.h", "Serial.h", "serial/Kernel.inc"],
+    srcs = ["Packet.cpp", "Compare.cpp"],
+    deps = ["//lib_utest/qualification/tied_cin_runtime:owner_test_support", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cc_test(
+    name = "host",
+    size = "small",
+    srcs = ["HostTest.cpp"],
+    deps = ["//lib_src/solvers:explicit_nodal_state", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cc_test(
+    name = "serial_fixture",
+    size = "small",
+    srcs = ["PacketHostTest.cpp", "SerialHost.cpp"],
+    deps = [":fixture"],
+    copts = ["-std=c++17", "-Ilib_src/solvers", "-fno-fast-math", "-ffp-contract=off"],
+)
+cuda_test(
+    name = "cuda",
+    size = "small",
+    srcs = ["CudaTest.cu", "DevicePacket.cu", "OwnerTest.cu", "Serial.cu"],
+    deps = [":fixture"],
+    copts = ["--std=c++17", "-Ilib_src/solvers", "--fmad=false", "--prec-div=true",
+             "--prec-sqrt=true", "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+    tags = ["exclusive", "gpu"],
+)
