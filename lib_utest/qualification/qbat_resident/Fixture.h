@@ -25,6 +25,16 @@ struct Source {
       for(auto& quad:fixture.geometry.q) quad.reference.placement=fe::ShellReferencePlacement::Centered;
       for(auto& triangle:fixture.triangles) triangle.reference.placement=fe::ShellReferencePlacement::Centered;
     } else {
+      // Match the qualified TAB1 section's analytic, filtered-zero-C domain.
+      // The catalog-only fixture otherwise uses a tabulated LAW44 curve,
+      // which is intentionally not admitted by the placed TAB1 force path.
+      for(unsigned i=0;i<2;++i) {
+        auto& material=fixture.materials[i];
+        material.curve_id=0;
+        material.hardening=tl::material::ShellPlasticityHardeningKind::LinearLaw44;
+        material.linear={fixture.y[0],0};
+        material.rate=fixture.materials[2].rate;
+      }
       for(auto& item:fixture.failures) {
         if(item.source.material_id==2000524) continue;
         item.policy=fe::ShellFailurePolicy::Tab1AnyPoint;
@@ -33,9 +43,11 @@ struct Source {
       }
     }
     EXPECT_EQ(binding.InitializeFormulations(fixture.Geometry()).status,fe::ShellBindingStatus::Success);
-    EXPECT_EQ(catalog.InitializeFormulations(binding,fixture.Input()).status,fe::ShellPlasticityBindingStatus::Success);
-    EXPECT_EQ(failure.Initialize(catalog,fixture.failures.data(),fixture.failures.size()).status,
-        fe::ShellPlasticityBindingStatus::Success);
+    auto input=fixture.Input();
+    if(layered) {input.curves=nullptr;input.curve_count=0;}
+    EXPECT_EQ(catalog.InitializeFormulations(binding,input).status,fe::ShellPlasticityBindingStatus::Success);
+    const auto checked=failure.Initialize(catalog,fixture.failures.data(),fixture.failures.size());
+    EXPECT_EQ(checked.status,fe::ShellPlasticityBindingStatus::Success)<<checked.message;
   }
   fe::ShellFormulationScope Scope() const { return {&binding,&catalog,&failure,nullptr}; }
   qb::BatchConfig Config() const {

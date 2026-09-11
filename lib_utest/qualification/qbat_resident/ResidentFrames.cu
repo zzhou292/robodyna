@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 #include "ResidentFixture.h"
 #include "ResultValues.h"
+#include "../../../lib_src/solvers/NodalTrialIdentity.h"
 
 namespace qbat_resident_test {
 namespace {
