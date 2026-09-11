@@ -20,7 +20,7 @@ struct MembraneLaw44PointResult {
 #if defined(__CUDACC__)
 __host__ __device__
 #endif
-inline bool UpdateMembraneLaw44Point(
+inline bool UpdateZeroShearLaw44Point(
     const tl::material::TabulatedShellPlasticityParameters& parameters,
     tl::material::failure::ConstantPlasticFailureParameters failure_parameters,
     const tl::material::TabulatedShellPlasticityHistory& accepted,
@@ -30,7 +30,7 @@ inline bool UpdateMembraneLaw44Point(
   if (!Finite(input.thickness_m) || input.thickness_m<=0 ||
       !Finite(input.area_m2) || input.area_m2<=0) return false;
   MembraneLaw44PointResult next;
-  if (tl::material::UpdateLaw44MembranePlasticity(parameters,accepted,input.material,next.current)!=
+  if (tl::material::UpdateLaw44ZeroShearPlasticity(parameters,accepted,input.material,next.current)!=
       tl::material::TabulatedShellPlasticityStatus::Ok) return false;
   double thickness=input.thickness_m;
   thickness=thickness+next.current.elastic_thickness_strain*input.thickness_m;
@@ -47,5 +47,18 @@ inline bool UpdateMembraneLaw44Point(
   for (double& stress:next.saved.stress) stress=stress*mask;
   output=next;
   return true;
+}
+// Retain the narrower CBADEF1/CBASTRA3 packet admission for existing callers.
+#if defined(__CUDACC__)
+__host__ __device__
+#endif
+inline bool UpdateMembraneLaw44Point(
+    const tl::material::TabulatedShellPlasticityParameters& parameters,
+    tl::material::failure::ConstantPlasticFailureParameters failure_parameters,
+    const tl::material::TabulatedShellPlasticityHistory& accepted,
+    tl::material::failure::ConstantPlasticFailureHistory failure_history,
+    const MembraneLaw44PointInput& input,MembraneLaw44PointResult& output) noexcept {
+  if (input.material.strain_increment[3]!=0 || input.material.strain_increment[4]!=0) return false;
+  return UpdateZeroShearLaw44Point(parameters,failure_parameters,accepted,failure_history,input,output);
 }
 } // namespace tl::fea::sections

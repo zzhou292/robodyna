@@ -103,88 +103,11 @@
       "sha256": "cb7b9ff748ca399bc262e8b53e0b6b9f2d887934be2635fd8352b717e1e23ec8"
     },
     {
-      "path": "extracted/WorkBefore.inc",
-      "source": "original/mulawc.F90",
-      "first_line": 543,
-      "last_line": 547,
-      "sha256": "86097d64ea6599234f2a0671fb443684f0049e60e9fa80d3a1cf377ec94a9040"
-    },
-    {
-      "path": "extracted/OldOffMask.inc",
-      "source": "original/mulawc.F90",
-      "first_line": 562,
-      "last_line": 563,
-      "sha256": "6477561229075be25a1b735501b6f16ce2702a93ec5f13026a7f0dd4c2738885"
-    },
-    {
-      "path": "extracted/SectionBegin.inc",
-      "source": "original/mulawc.F90",
-      "first_line": 566,
-      "last_line": 582,
-      "sha256": "2c36b057d3a5214b150c0bcbc803d94c4cecef262fc47041ceeb7dcea51dfc9d"
-    },
-    {
-      "path": "extracted/PointPlasticWork.inc",
-      "source": "original/mulawc.F90",
-      "first_line": 2010,
-      "last_line": 2018,
-      "sha256": "478b32bf85b3aef4eac7892b0c54ee3ec7d996fdcd1b9ef7afb63acd457f954a"
-    },
-    {
-      "path": "extracted/CallerFailureIncrement.inc",
-      "source": "original/mulawc.F90",
-      "first_line": 2067,
-      "last_line": 2070,
-      "sha256": "57995038251c4abab7f00478d4a67bd2f21550535c07000f619b289f6f5461cd"
-    },
-    {
       "path": "extracted/PointMask.inc",
       "source": "original/mulawc.F90",
       "first_line": 2613,
       "last_line": 2618,
       "sha256": "04601b63490f5e1d94eac01c10bd62e13a897438576e2d68cf1d540155a23ac6"
-    },
-    {
-      "path": "extracted/SavedStress.inc",
-      "source": "original/mulawc.F90",
-      "first_line": 2634,
-      "last_line": 2641,
-      "sha256": "034ca56ae7ccc65f8073206a3e5e553efe55a8426b51b7ee1e57ca844ffe8e7e"
-    },
-    {
-      "path": "extracted/LayerResultants.inc",
-      "source": "original/mulawc.F90",
-      "first_line": 2657,
-      "last_line": 2664,
-      "sha256": "a07f60da2259a018e59f85cfadf602a6a28f1220591ac45936588653edae9562"
-    },
-    {
-      "path": "extracted/ThicknessViscosity.inc",
-      "source": "original/mulawc.F90",
-      "first_line": 3016,
-      "last_line": 3032,
-      "sha256": "dd6994c9975c3a754f375ff84283a305798a5e9d74cca15ec72250cfebd60e68"
-    },
-    {
-      "path": "extracted/ParentPublish.inc",
-      "source": "original/mulawc.F90",
-      "first_line": 2937,
-      "last_line": 2952,
-      "sha256": "07745453f12711d999bf9c2561066b7b63f5bac3aa38118910b97e4a2b09ebfe"
-    },
-    {
-      "path": "extracted/WorkAfter.inc",
-      "source": "original/mulawc.F90",
-      "first_line": 3046,
-      "last_line": 3048,
-      "sha256": "b0966f0f77b4c5ccf14deb1cd54861ce4130f005057d6592f5974710812f5329"
-    },
-    {
-      "path": "extracted/WorkAccumulate.inc",
-      "source": "original/mulawc.F90",
-      "first_line": 3089,
-      "last_line": 3094,
-      "sha256": "156daf26648ca10ce00dd794593c95953348611dad1299c84b00cc13063d5fe8"
     },
     {
       "path": "extracted/PointRemoval.inc",

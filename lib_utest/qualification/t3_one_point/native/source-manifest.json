@@ -1,0 +1,79 @@
+{
+  "commit": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Original EID2357656 ordinary ISH3N2/ISMSTR2 NPG1 NPTT1 LAW44/ITHK1/DM0/IDRIL0 caller; complete native leaves plus exact caller fragments.",
+  "sources": [
+    {
+      "path": "original/c3forc3.F",
+      "upstream_path": "engine/source/elements/sh3n/coque3n/c3forc3.F",
+      "size": 36434,
+      "sha256": "311455e0ce9c40399f7651b5dbc3937725edd1494753c15b9975e0fcdf842b7f",
+      "git_blob_sha1": "c44556106f3347f455ed6af37cefc820fdbaf922"
+    },
+    {
+      "path": "original/hm_read_prop01.F",
+      "upstream_path": "starter/source/properties/shell/hm_read_prop01.F",
+      "size": 16609,
+      "sha256": "13d216d324eafee9085522d19c597754a5ad51aad02a294316a6c459b89c37d4",
+      "git_blob_sha1": "5a7af926ee09df65436592aee9140a24c1058943"
+    },
+    {
+      "path": "original/fail_setoff_c.F",
+      "upstream_path": "engine/source/materials/fail/fail_setoff_c.F",
+      "size": 20116,
+      "sha256": "9d0bd8d4d2a02e76872456f5f82d650cb9f0b5d38b10e6fc658f9782857b72f9",
+      "git_blob_sha1": "9626d858aa54db1184681baf1e4e7acb28bbaa6e"
+    },
+    {
+      "path": "original/c3grtails.F",
+      "upstream_path": "starter/source/elements/sh3n/coque3n/c3grtails.F",
+      "size": 42757,
+      "sha256": "fd4a8b10588c14b17539eca5ad7f0fe41cf34a36fb19e95533359d68433dd7db",
+      "git_blob_sha1": "26120fc2962f2c3625ee29249867073391b5c26b"
+    },
+    {
+      "path": "original/cmain3.F",
+      "upstream_path": "engine/source/materials/mat_share/cmain3.F",
+      "size": 20625,
+      "sha256": "948835a9ffea500d766769747fa1891c297751924ee1e2a62561a2cdd0e7a358",
+      "git_blob_sha1": "051c3e595deb093be56bb04968dc74a5351130a2"
+    }
+  ],
+  "fragments": [
+    {
+      "path": "extracted/CallerRate.inc",
+      "source": "original/c3forc3.F",
+      "first_line": 546,
+      "last_line": 557,
+      "size": 607,
+      "sha256": "6df158f212d8c08b24d9c9f710021168a9cc6515aed90cb588cb70cb85e37d23"
+    },
+    {
+      "path": "extracted/PropertyDefault.inc",
+      "source": "original/hm_read_prop01.F",
+      "first_line": 170,
+      "last_line": 173,
+      "sha256": "fe818007e63bbd025053a804fc72a974ce517e4539df7d612bb313347275515b"
+    },
+    {
+      "path": "extracted/ParentThreshold.inc",
+      "source": "original/fail_setoff_c.F",
+      "first_line": 140,
+      "last_line": 141,
+      "sha256": "ee6a9ce28532fdfe7f595e1ae356439a51a05052aa539c530026da558ac07d6d"
+    },
+    {
+      "path": "extracted/FailedThickness.inc",
+      "source": "original/fail_setoff_c.F",
+      "first_line": 161,
+      "last_line": 169,
+      "sha256": "0efd704e65d19dbb63618edf698a4be4ef107b5a4db88eebf3f09eff29d82114"
+    },
+    {
+      "path": "extracted/ParentCriterion.inc",
+      "source": "original/fail_setoff_c.F",
+      "first_line": 172,
+      "last_line": 177,
+      "sha256": "11aed3e8c2bcfcc0234fa055077a9eac97b61b6979655af347e21d0d0ce35728"
+    }
+  ]
+}

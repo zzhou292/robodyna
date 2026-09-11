@@ -15,5 +15,5 @@ cc_library(
             "QbatForceAssembly.h", "QbatForce.h"],
     deps = [":geometry", "//lib_src/elements/qeph:kinematics", "//lib_src/elements/qeph:force",
             "//lib_src/elements/sections:shell_layered_j2", "//lib_src/elements/sections:shell_law44_membrane_point",
-            "//lib_src/materials:law44_membrane", "//lib_src/materials/failure:shell_constant_plastic_failure"],
+            "//lib_src/materials:law44_membrane", "//lib_src/materials:law44_scope", "//lib_src/materials/failure:shell_constant_plastic_failure"],
 )

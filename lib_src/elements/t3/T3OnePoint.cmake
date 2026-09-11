@@ -1,0 +1,7 @@
+if(TARGET tl_t3_one_point)
+  return()
+endif()
+get_filename_component(tl_one_point_root "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+add_library(tl_t3_one_point INTERFACE)
+target_include_directories(tl_t3_one_point INTERFACE "${tl_one_point_root}")
+target_compile_features(tl_t3_one_point INTERFACE cxx_std_17)

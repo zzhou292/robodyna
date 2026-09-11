@@ -1,0 +1,17 @@
+# Complete native material/failure leaves are owned by their existing targets.
+# Surface/triangle geometry and parent deletion remain caller-owned.
+if(NOT TARGET law44_one_point_native)
+  set(one_point_native "${CMAKE_CURRENT_LIST_DIR}")
+  set(one_point_modules "${CMAKE_CURRENT_BINARY_DIR}/law44-one-point-modules")
+  file(MAKE_DIRECTORY "${one_point_modules}")
+  add_library(law44_one_point_native STATIC "${one_point_native}/NativeMembranePoint.F90")
+  add_dependencies(law44_one_point_native law44_point_native)
+  target_link_libraries(law44_one_point_native PUBLIC shell_constant_failure_native)
+  foreach(property INCLUDE_DIRECTORIES COMPILE_DEFINITIONS COMPILE_OPTIONS)
+    get_target_property(value law44_point_native ${property})
+    set_property(TARGET law44_one_point_native PROPERTY ${property} "${value}")
+  endforeach()
+  get_target_property(law_modules law44_point_native Fortran_MODULE_DIRECTORY)
+  target_include_directories(law44_one_point_native PRIVATE "${one_point_native}" "${law_modules}")
+  set_target_properties(law44_one_point_native PROPERTIES Fortran_MODULE_DIRECTORY "${one_point_modules}")
+endif()

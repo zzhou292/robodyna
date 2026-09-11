@@ -51,5 +51,17 @@ cc_library(
 cc_library(
     name = "law44_membrane",
     hdrs = ["Law44MembranePlasticity.h"],
+    deps = [":law44_zero_shear"],
+)
+
+cc_library(
+    name = "law44_zero_shear",
+    hdrs = ["Law44ZeroShearPlasticity.h"],
+    deps = [":tabulated_shell_plasticity"],
+)
+
+cc_library(
+    name = "law44_scope",
+    hdrs = ["Law44MaterialScope.h"],
     deps = [":tabulated_shell_plasticity"],
 )

@@ -15,8 +15,8 @@
   "ported_files": [
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
-      "bytes": 2824,
-      "sha256": "709efc9c40ad85c2f0a0c8e4dfe3fdd9a916f61e3734073a65b579c7b415ef8d"
+      "bytes": 3199,
+      "sha256": "a4fbba8b90a569a4389eb5841f04e5b709d97db3cc9b91a971b7203e52eb1e19"
     },
     {
       "path": "lib_src/elements/t3/CMakeLists.txt",
@@ -503,5 +503,16 @@
   "native_reference_placement_scope": "Centered startup/material/stiffness now reuse typed placement coefficient helpers with unchanged centered operations. Nonzero TYPE1 section/coefficient value qualification is owned by shell_reference_placement; live ReferenceInput/batch/source placement admission remains separate.",
   "resident_tab1_build_registration": {
     "scope": "Add the already qualified TAB1 family adapter as an explicit resident batch dependency; native donor and historical pins unchanged."
+  },
+  "one_point_law44_registration": {
+    "previous_manifest_sha256": "69b9296b90f481989d552ebdf55940352483dee17d13fcb27a55ec94e7ec7644",
+    "previous_entries": [
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 2824,
+        "sha256": "709efc9c40ad85c2f0a0c8e4dfe3fdd9a916f61e3734073a65b579c7b415ef8d"
+      }
+    ],
+    "reason": "Separate true NPG1/NPTT1/GS0 LAW44 force target and shared point/scope ownership; legacy T3 integrated and NIP3 arithmetic unchanged."
   }
 }

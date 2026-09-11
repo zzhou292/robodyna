@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Selected NPTT1 LAW44 caller: OpenRadioss (C) 2026 Siemens.
 #pragma once
-#include "TabulatedShellPlasticity.h"
+#include "Law44ZeroShearPlasticity.h"
 
 namespace tl::material {
 #if defined(__CUDACC__)
@@ -16,6 +16,6 @@ inline TabulatedShellPlasticityStatus UpdateLaw44MembranePlasticity(
   // from CNCOEF3, while SIGEPS44C still carries any supplied transverse stress.
   if (input.strain_increment[3]!=0 || input.strain_increment[4]!=0)
     return TabulatedShellPlasticityStatus::InvalidIncrement;
-  return tabulated_shell_detail::UpdateLaw44PlasticityImpl(parameters,accepted,input,output,true);
+  return UpdateLaw44ZeroShearPlasticity(parameters,accepted,input,output);
 }
 } // namespace tl::material

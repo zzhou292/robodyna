@@ -68,3 +68,12 @@ cc_library(
     hdrs = ["T3LayeredTab1.h"],
     deps = [":layered_j2", "//lib_src/elements/sections:shell_layered_tab1"],
 )
+
+cc_library(
+    name = "one_point_law44",
+    hdrs = ["T3OnePointTypes.h", "T3OnePointHistory.h", "T3OnePointCoefficients.h",
+            "T3OnePointMaterial.h", "T3OnePointForce.h"],
+    deps = [":force", "//lib_src/elements/sections:shell_layered_j2",
+            "//lib_src/elements/sections:shell_law44_membrane_point",
+            "//lib_src/materials:law44_scope"],
+)

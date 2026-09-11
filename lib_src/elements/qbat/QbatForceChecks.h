@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "QbatForceTypes.h"
+#include "lib_src/materials/Law44MaterialScope.h"
 #include "lib_src/elements/sections/ShellLayeredJ2Work.h"
 #include "lib_src/elements/qeph/QephHistory.h"
 
@@ -31,20 +32,7 @@ TL_QBAT_HD inline bool SameReference(const Reference& a,const Reference& b) {
       Same(x.options.numerical_viscosity,y.options.numerical_viscosity);
 }
 TL_QBAT_HD inline bool SameMaterial(const Material& a,const Material& b) {
-  if (a.hardening!=b.hardening || a.continuation!=b.continuation ||
-      a.curve.count!=b.curve.count || a.curve.plastic_strain!=b.curve.plastic_strain ||
-      a.curve.yield_stress_pa!=b.curve.yield_stress_pa ||
-      a.rate.enabled!=b.rate.enabled || a.rate.policy!=b.rate.policy) return false;
-  const double x[]{a.young_pa,a.poisson_ratio,a.density_kg_m3,a.shear_modulus,a.a11,a.a12,
-      a.three_g,a.sound_speed,a.inverse_rate_c,a.inverse_rate_p,a.angular_cutoff_per_s,
-      a.rate.cowper_symonds_c_per_s,a.rate.cowper_symonds_p,a.rate.cutoff_hz,
-      a.linear.initial_yield_pa,a.linear.tangent_modulus_pa,a.plastic_hardening_pa};
-  const double y[]{b.young_pa,b.poisson_ratio,b.density_kg_m3,b.shear_modulus,b.a11,b.a12,
-      b.three_g,b.sound_speed,b.inverse_rate_c,b.inverse_rate_p,b.angular_cutoff_per_s,
-      b.rate.cowper_symonds_c_per_s,b.rate.cowper_symonds_p,b.rate.cutoff_hz,
-      b.linear.initial_yield_pa,b.linear.tangent_modulus_pa,b.plastic_hardening_pa};
-  for (unsigned i=0;i<17;++i) if (!Same(x[i],y[i])) return false;
-  return true;
+  return tl::material::SameLaw44Parameters(a,b);
 }
 TL_QBAT_HD inline bool ValidMaterial(const Reference& r,const Material& p,Failure f) {
   return r.prepared() && Supported(r.input().options) &&

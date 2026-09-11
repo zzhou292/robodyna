@@ -123,13 +123,13 @@
     },
     {
       "path": "lib_src/materials/BUILD.bazel",
-      "bytes": 1477,
-      "sha256": "96c5c67678e83b247d1c13413ad67d19aa04440e002687e249d554ede8049d6b"
+      "bytes": 1722,
+      "sha256": "fbade62c5f13c2e01b6bbaa6da864fd5fcb64a0337a4553b67b0b88528a1bbae"
     },
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
-      "bytes": 2824,
-      "sha256": "709efc9c40ad85c2f0a0c8e4dfe3fdd9a916f61e3734073a65b579c7b415ef8d"
+      "bytes": 3199,
+      "sha256": "a4fbba8b90a569a4389eb5841f04e5b709d97db3cc9b91a971b7203e52eb1e19"
     },
     {
       "path": "lib_src/elements/t3/CMakeLists.txt",
@@ -143,13 +143,13 @@
     },
     {
       "path": "lib_utest/qualification/t3/source-manifest.json",
-      "bytes": 21078,
-      "sha256": "69b9296b90f481989d552ebdf55940352483dee17d13fcb27a55ec94e7ec7644"
+      "bytes": 21577,
+      "sha256": "987cef2ba3a7858c4231fabfc25913bf3df9d6825340c60d23eceadf0306ab61"
     },
     {
       "path": "lib_utest/qualification/t3/verify_sources.py",
       "bytes": 2001,
-      "sha256": "58c5ac6ec9059c8f6d72d49436a3f9f51ab9a8bc4bdcb0db6c0e552bcfb0a25f"
+      "sha256": "d087e2642bb5441eb24b7cb99af609c102cd59a59eca6040fd7098480e3b7356"
     },
     {
       "path": "lib_utest/qualification/t3/T3PortFixture.h",
@@ -798,5 +798,31 @@
       "sha256": "10e5728b4dd84d4c4f7a8fc71ed56df7010cee5bdc845e3ae600280eedbddb67"
     },
     "reason": "ae3ba80 adds only the law44_membrane owning target; no old material target or native source changed."
+  },
+  "one_point_law44_registration": {
+    "previous_manifest_sha256": "34d54e89ce93519dac1178b315aa517627cc9eecff59d97799c606723a36aec8",
+    "previous_entries": [
+      {
+        "path": "lib_src/materials/BUILD.bazel",
+        "bytes": 1477,
+        "sha256": "96c5c67678e83b247d1c13413ad67d19aa04440e002687e249d554ede8049d6b"
+      },
+      {
+        "path": "lib_src/elements/t3/BUILD.bazel",
+        "bytes": 2824,
+        "sha256": "709efc9c40ad85c2f0a0c8e4dfe3fdd9a916f61e3734073a65b579c7b415ef8d"
+      },
+      {
+        "path": "lib_utest/qualification/t3/source-manifest.json",
+        "bytes": 21078,
+        "sha256": "69b9296b90f481989d552ebdf55940352483dee17d13fcb27a55ec94e7ec7644"
+      },
+      {
+        "path": "lib_utest/qualification/t3/verify_sources.py",
+        "bytes": 2001,
+        "sha256": "58c5ac6ec9059c8f6d72d49436a3f9f51ab9a8bc4bdcb0db6c0e552bcfb0a25f"
+      }
+    ],
+    "reason": "Separate true NPG1/NPTT1/GS0 LAW44 force target and shared point/scope ownership; legacy T3 integrated and NIP3 arithmetic unchanged."
   }
 }

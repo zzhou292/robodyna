@@ -66,7 +66,8 @@ contains
     point(7)=values(13)
     wpla=gbuf%wpla(1)
   end subroutine
-  subroutine MembraneForceWork(dx,thk0,area,dm,dt,ssp,rho,old_off,parent,values,for,mom,thk,eint)
+  subroutine MembraneForceWork(npg,dx,thk0,area,dm,dt,ssp,rho,old_off,parent,values,for,mom,thk,eint)
+    integer,intent(in) :: npg
     real(c_double),intent(in) :: dx(8),thk0(1),area(1),dm,dt,ssp(1),rho(1),old_off,values(13)
     real(c_double),intent(inout) :: parent
     real(c_double),intent(inout) :: for(1,5),mom(1,3),thk(1),eint(1,2)
@@ -82,7 +83,9 @@ contains
     kxx=dx(6);kyy=dx(7);kxy=dx(8)
     off=old_off
 #include "extracted/WorkBefore.inc"
+    if(npg>1) then
 #include "extracted/OldOffMask.inc"
+    endif
 #include "extracted/SectionBegin.inc"
     signxx=values(1);signyy=values(2);signxy=values(3);signyz=values(4);signzx=values(5)
     thkn=values(9)

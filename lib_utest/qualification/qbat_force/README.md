@@ -21,10 +21,11 @@ and SHA256 and every exact selected fragment by source lines and bytes.
 - `NativeKinematics.F`: exact CBACOOR current frame, corrected velocities,
   actual spin, point geometry and current length. Existing complete CBADEF1/
   CBADEFSH and engine CLSKEW3 remain under the qualified geometry owner.
-- `NativeMembranePoint.F90`: complete SIGEPS44C and FAIL_JOHNSON_C through
+- `../native/law44_one_point/NativeMembranePoint.F90`: complete SIGEPS44C and FAIL_JOHNSON_C through
   existing native owners, plus exact MULAWC physical-thickness/work/saved-
   stress/resultant operations. Its point and force-work routines are separable
-  from QBAT's four-point coordinator.
+  from QBAT's four-point coordinator. The shared work routine receives NPG=4
+  explicitly, preserving its old-work mask; the T3 one-point caller uses NPG=1.
 - `NativeParent.F`: exact selected FAIL_SETOFF_NPG_C operations over a minimal
   shaped storage view. The source PTHKF=1/NPTT1/one constant criterion is
   explicit. Only logging and disabled failure-wave statements 197:202 are
