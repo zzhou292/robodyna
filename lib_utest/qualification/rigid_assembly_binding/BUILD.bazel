@@ -1,0 +1,10 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "rigid_assembly_binding_check",
+    size = "small",
+    srcs = ["ValueTest.cpp", "CapacityTest.cpp", "Fixture.h"],
+    deps = ["//lib_src/constraints:nodal_rigid_assembly_binding",
+            "//lib_utest/qualification/rigid_part_model:test_support",
+            "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)

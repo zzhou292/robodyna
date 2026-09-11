@@ -1,4 +1,13 @@
-load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+cc_library(
+    name = "test_support",
+    testonly = True,
+    hdrs = ["Fixture.h", "SolidFixture.h"],
+    deps = ["//lib_src/constraints:nodal_rigid_part_assembly_model",
+            "//lib_utest/qualification/nodal_coefficients:solid_test_support",
+            "//lib_utest/qualification/qbat_binding:fixture", "@googletest//:gtest_main"],
+    visibility = ["//visibility:public"],
+)
 cc_test(
     name = "rigid_part_model_check",
     size = "small",

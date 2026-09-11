@@ -4,6 +4,16 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
+    name = "nodal_rigid_assembly_binding",
+    srcs = ["NodalRigidAssemblyBinding.cpp", "NodalRigidAssemblyBindingBudget.cpp",
+            "NodalRigidAssemblyBindingMap.cpp"],
+    hdrs = ["NodalRigidAssemblyBinding.h", "NodalRigidAssemblyBindingInternal.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":nodal_rigid_part_assembly_model", "//lib_src/assembly:nodal_node_domain",
+            "//lib_utils:bounded_arena", "//lib_utils:source_identity_index"],
+)
+
+cc_library(
     name = "nodal_rigid_group",
     srcs = ["NodalRigidGroupModel.cpp", "NodalRigidInertiaFinalize.cpp"],
     hdrs = ["NodalRigidGroupModel.h", "NodalRigidGroupMath.h", "NodalRigidInertiaFinalize.h"],
