@@ -118,11 +118,11 @@ NodalReport FENodalState::Impl::StageCinSnapshot(const double* source) {
     if (dependent && completed && (tail[i] != 0 || tail[n+i] != 0)) {
       return Reject(NodalStatus::InvalidOutput, "Completed CIN dependent coefficients are not zero", std::uint32_t(i));
     }
-    const bool part_member = rigid_groups && rigid_groups->member_nodes[i] == rigid::PartMemberNode;
+    const bool rigid_dependent = rigid_groups && rigid::UsesDependentCoefficients(rigid_groups->member_nodes[i]);
     const double inverse_mass = dependent || constraint_staging[n+i] == 7 ||
-        (part_member && tail[i] == 0) ? 0 : 1/tail[i];
+        (rigid_dependent && tail[i] == 0) ? 0 : 1/tail[i];
     const double inverse_inertia = dependent || constraint_staging[2*n+i] || absent_rotation ||
-        (part_member && tail[n+i] == 0) ? 0 : 1/tail[n+i];
+        (rigid_dependent && tail[n+i] == 0) ? 0 : 1/tail[n+i];
     if (tail[2*n+i] != inverse_mass || tail[3*n+i] != inverse_inertia) {
       return Reject(NodalStatus::InvalidOutput, "CIN coefficient readback disagrees with its derived inverse", std::uint32_t(i));
     }

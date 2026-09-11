@@ -14,7 +14,7 @@ add_library(rigid_owner_host_storage STATIC
   "${TL_ROOT}/lib_src/solvers/NodalCinState.cpp")
 target_link_libraries(rigid_owner_host_storage PUBLIC tl_nodal_rigid_assembly_binding tl_tied_cin_attachment CUDA::cudart)
 target_compile_options(rigid_owner_host_storage PRIVATE -fno-fast-math -ffp-contract=off)
-add_executable(rigid_assembly_owner_host HostTest.cpp Fixture.cpp
+add_executable(rigid_assembly_owner_host HostTest.cpp PhysicalMemberTest.cpp Fixture.cpp
   ../nodal_rigid_group/VehicleRigidHostTest.cpp
   ../tied_cin_runtime/ValueTest.cpp ../tied_cin_runtime/StartupTest.cpp
   ../nodal_vehicle/LayoutTest.cpp)

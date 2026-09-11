@@ -14,6 +14,7 @@ namespace tl::fea {
 struct NodalRigidGroupModel::Impl {
   std::uint64_t source_instance=0;
   NodalRigidSourceUnits units{};
+  bool physical_coefficients=false;
   std::size_t node_count=0,owned_bytes=0,startup_bytes=0;
   std::vector<NodalRigidGroupProperties> groups;
   std::vector<NodalRigidGroupMember> members;
@@ -26,6 +27,7 @@ Report Fail(Status code,const char* message,std::size_t group=SIZE_MAX,std::size
   return {code,message,group,member};
 }
 bool Positive(double v) { return std::isfinite(v)&&v>0; }
+bool Nonnegative(double v) { return std::isfinite(v)&&v>=0; }
 bool AddBytes(std::size_t count,std::size_t width,std::size_t& bytes) {
   if(count>(SIZE_MAX-bytes)/width) return false;
   bytes+=count*width; return true;
@@ -37,9 +39,10 @@ tl::math::Matrix3 Value(const Eigen::Matrix3d& m) {
   for(unsigned i=0;i<3;++i) for(unsigned j=0;j<3;++j) out.v[3*i+j]=m(i,j);
   return out;
 }
-bool ValidMass(const NodalRigidGroupMember& m) {
-  if(!Positive(m.mass_kg)||!Positive(m.total_inertia_kg_m2)||
-     !Positive(m.physical_inertia_kg_m2)||!std::isfinite(m.added_inertia_kg_m2)||m.added_inertia_kg_m2<0)
+bool ValidMass(const NodalRigidGroupMember& m,bool physical) {
+  const auto admitted=physical?Nonnegative:Positive;
+  if(!admitted(m.mass_kg)||!admitted(m.total_inertia_kg_m2)||
+     !admitted(m.physical_inertia_kg_m2)||!Nonnegative(m.added_inertia_kg_m2))
     return false;
   const double partitions=m.physical_inertia_kg_m2+m.added_inertia_kg_m2;
   // Native total J and its partitions can have different final roundoff.
@@ -60,7 +63,8 @@ bool AddInertia(Eigen::Matrix3d& tensor,double mass,double inertia,Eigen::Vector
   return r.allFinite()&&tensor.allFinite();
 }
 Report PrepareGroup(NodalRigidGroupProperties& g,const NodalRigidGroupMember* members,
-    double primary_mass,double primary_j,std::size_t group) {
+    double primary_mass,double primary_j,std::size_t group,bool physical) {
+  const auto admitted=physical?Nonnegative:Positive;
   Eigen::Vector3d geometric=Eigen::Vector3d::Zero(),moment=Eigen::Vector3d::Zero();
   for(std::size_t i=0;i<g.member_count;++i) {
     const auto& m=members[i];
@@ -68,10 +72,12 @@ Report PrepareGroup(NodalRigidGroupProperties& g,const NodalRigidGroupMember* me
     g.structural_mass_kg+=m.mass_kg;
     g.native_total_inertia_sum+=m.total_inertia_kg_m2;
     g.physical_inertia_sum+=m.physical_inertia_kg_m2; g.added_inertia_sum+=m.added_inertia_kg_m2;
-    if(!geometric.allFinite()||!moment.allFinite()||!Positive(g.structural_mass_kg)||
-       !Positive(g.native_total_inertia_sum)||!Positive(g.physical_inertia_sum)||!std::isfinite(g.added_inertia_sum))
+    if(!geometric.allFinite()||!moment.allFinite()||!admitted(g.structural_mass_kg)||
+       !admitted(g.native_total_inertia_sum)||!admitted(g.physical_inertia_sum)||!Nonnegative(g.added_inertia_sum))
       return Fail(Status::NonfiniteResult,"Rigid group mass/centroid accumulation overflow",group,i);
   }
+  if(!Positive(g.structural_mass_kg))
+    return Fail(Status::InvalidMass,"Rigid body requires positive real structural mass",group);
   geometric/=static_cast<double>(g.member_count);
   g.generated_primary_position=Value(geometric);
   g.structural_center=Value(Eigen::Vector3d(moment/g.structural_mass_kg));
@@ -99,6 +105,12 @@ Report PrepareGroup(NodalRigidGroupProperties& g,const NodalRigidGroupMember* me
 NodalRigidGroupModel::NodalRigidGroupModel()=default;
 NodalRigidGroupModel::~NodalRigidGroupModel()=default;
 NodalRigidGroupReport NodalRigidGroupModel::Initialize(const NodalRigidGroupModelInput& input) noexcept {
+  return InitializeImpl(input,false);
+}
+NodalRigidGroupReport NodalRigidGroupModel::InitializePhysical(const NodalRigidGroupModelInput& input) noexcept {
+  return InitializeImpl(input,true);
+}
+NodalRigidGroupReport NodalRigidGroupModel::InitializeImpl(const NodalRigidGroupModelInput& input,bool physical) noexcept {
   if(impl_) return Fail(Status::AlreadyInitialized,"Rigid group model is immutable after initialization");
   const auto& l=input.limits;
   if(!input.source_instance_id||!input.global_node_count||!input.groups||!input.group_count||
@@ -140,7 +152,7 @@ NodalRigidGroupReport NodalRigidGroupModel::Initialize(const NodalRigidGroupMode
         const auto& m=in.members[i];
         if(!m.source_node_id||m.global_node>=input.global_node_count||!rigid::detail::Finite(m.position))
           return Fail(Status::InvalidInput,"Rigid member identity/index/position is invalid",g,i);
-        if(!ValidMass(m)) return Fail(Status::InvalidMass,"Rigid member native mass/J or partition evidence is invalid",g,i);
+        if(!ValidMass(m,physical)) return Fail(Status::InvalidMass,"Rigid member native mass/J or partition evidence is invalid",g,i);
         next->members.push_back(m);
       }
     }
@@ -177,15 +189,17 @@ NodalRigidGroupReport NodalRigidGroupModel::Initialize(const NodalRigidGroupMode
     if(!AddBytes(order.capacity(),sizeof(std::size_t),next->startup_bytes)||next->startup_bytes>l.max_host_bytes)
       return Fail(Status::ResourceLimit,"Actual rigid startup capacity exceeds payload budget");
     for(std::size_t g=0;g<input.group_count;++g) {
-      auto report=PrepareGroup(next->groups[g],next->members.data()+next->groups[g].member_offset,primary_mass,primary_j,g);
+      auto report=PrepareGroup(next->groups[g],next->members.data()+next->groups[g].member_offset,primary_mass,primary_j,g,physical);
       if(!report) return report;
     }
     next->source_instance=input.source_instance_id; next->units=input.source_units; next->node_count=input.global_node_count;
+    next->physical_coefficients=physical;
     impl_=std::move(next); return {};
   } catch(const std::bad_alloc&) { return Fail(Status::ResourceLimit,"Rigid startup allocation failed"); }
     catch(const std::length_error&) { return Fail(Status::ResourceLimit,"Rigid startup size is not representable"); }
 }
 bool NodalRigidGroupModel::prepared() const noexcept { return bool(impl_); }
+bool NodalRigidGroupModel::physical_coefficients() const noexcept {return impl_&&impl_->physical_coefficients;}
 std::uint64_t NodalRigidGroupModel::source_instance_id() const noexcept { return impl_?impl_->source_instance:0; }
 NodalRigidSourceUnits NodalRigidGroupModel::source_units() const noexcept { return impl_?impl_->units:NodalRigidSourceUnits{}; }
 std::size_t NodalRigidGroupModel::global_node_count() const noexcept { return impl_?impl_->node_count:0; }

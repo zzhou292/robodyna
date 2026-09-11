@@ -22,6 +22,8 @@ NodalReport ForecastRigidStorage(const NodalRigidGroupModel& model,const NodalSt
     RigidStorageLayout& output) noexcept {
   if(!model.prepared()||model.global_node_count()!=config.node_count||!model.group_count())
     return {NodalStatus::InvalidInput,"Rigid model is not complete for this node inventory"};
+  if(model.physical_coefficients())
+    return {NodalStatus::InvalidInput,"Physical rigid coefficients require the complete assembly binding"};
   if(config.temporal_scheme!=NodalTemporalScheme::StaggeredHalfKickStart)
     return {NodalStatus::UnsupportedTemporalScheme,"Rigid groups require staggered physical initialization"};
   if (config.rigid_limits.profile != NodalRigidOwnerProfile::PlainGroups)

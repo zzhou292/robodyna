@@ -92,3 +92,20 @@ prepared-snapshot and force-capture suites; `tied_cin_runtime` native/CUDA;
 `rigid_shell_contact` coefficient admission. Original plain shell/connector
 regressions must remain closed to the new assembly scope until the mapped
 participant work is admitted separately.
+
+The explicit `NodalRigidGroupModel::InitializePhysical` profile also admits real
+nonnegative per-member coefficients from point masses and solids. A body still
+requires positive total structural mass; the native generated primary is not a
+substitute for physical mass. Tensor, principal correction and member motion
+reuse the existing arithmetic. Legacy model/owner entry points retain their
+positive shell-member contract. The complete binding carries coefficient policy
+separately from PART versus plain source kind, and current CIN inverse/readback
+uses that explicit role.
+
+The physical-member increment passes8 new functions plus30 existing owner
+functions and the native source identity in `plain-rigid-physical-root-tests-1`.
+It covers zero scalar J, a leading zero-M/J member, structural-mass rejection,
+independent64-step loaded two-member histories with/without CIN, exact source
+binding, current CIN readback, late rejection and retry. These are actual CUDA
+owner tests with typed source coefficient producers, not a full-Yaris closure
+claim. The final original case still needs its exact source/ledger composition.

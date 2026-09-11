@@ -76,6 +76,12 @@ class NodalRigidGroupModel {
   NodalRigidGroupModel(const NodalRigidGroupModel&)=delete;
   NodalRigidGroupModel& operator=(const NodalRigidGroupModel&)=delete;
   NodalRigidGroupReport Initialize(const NodalRigidGroupModelInput&) noexcept;
+  // Explicit source coefficients from shells/solids/point masses. Individual
+  // members may have M0/J0; the complete body's structural mass must be positive.
+  // Native primary/tensor corrections are unchanged. Runtime requires the
+  // complete physical assembly binding, not the legacy plain-owner overload.
+  NodalRigidGroupReport InitializePhysical(const NodalRigidGroupModelInput&) noexcept;
+  bool physical_coefficients() const noexcept;
   bool prepared() const noexcept;
   std::uint64_t source_instance_id() const noexcept;
   NodalRigidSourceUnits source_units() const noexcept;
@@ -87,6 +93,7 @@ class NodalRigidGroupModel {
   const NodalRigidGroupProperties* groups() const noexcept;
   const NodalRigidGroupMember* members() const noexcept;
  private:
+  NodalRigidGroupReport InitializeImpl(const NodalRigidGroupModelInput&, bool physical) noexcept;
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };

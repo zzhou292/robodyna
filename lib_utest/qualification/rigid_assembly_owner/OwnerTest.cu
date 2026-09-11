@@ -108,4 +108,42 @@ TEST_F(Cuda, CinZeroInversesAcrossInitialPreparedAcceptedAndCaptureSourceKinds) 
     EXPECT_EQ(coefficients[n+f.ordinary],0);
   }
 }
+TEST_F(Cuda, PhysicalPlainZeroCoefficientCinReadbackAndLateRejectionKeepAcceptedState) {
+  Fixture f(false,true,0);
+  fe::FENodalState owner;
+  ASSERT_EQ(Initialize(owner,f,true).status,Code::Ok);
+  const auto node=f.domain.Find(778),n=f.m.size(),rows=f.ranges.size();
+  std::vector<double> coefficients(2*n+2*rows+1,-55.);
+  fe::NodalCinSnapshotBuffer out{coefficients.data(),coefficients.data()+n,
+    coefficients.data()+2*n,coefficients.data()+2*n+rows,coefficients.data()+2*n+2*rows,n,rows};
+  fe::NodalStamp stamp;
+  ASSERT_EQ(owner.CopyAcceptedCin(out,&stamp).status,Code::Ok);
+  EXPECT_EQ(coefficients[node],0);
+  EXPECT_EQ(coefficients[n+node],0);
+  Snapshot initial(n),unchanged(n);
+  initial.Read(owner);
+  auto bad=Loads(f);
+  bad[5*n+node]=1e12;
+  fe::NodalTrialToken token;
+  fe::NodalAssemblyView view;
+  Begin(owner,f,bad,true,token,view);
+  EXPECT_EQ(Advance(owner,token,view,true).status,Code::StepTooLarge);
+  unchanged.Read(owner);
+  Same(initial,unchanged);
+  owner.Discard();
+  for(unsigned step=0;step<3;++step) {
+    Begin(owner,f,Loads(f,step),true,token,view);
+    ASSERT_EQ(Advance(owner,token,view,true).status,Code::Ok);
+    fe::NodalPreparedView prepared;
+    ASSERT_EQ(owner.CopyPreparedCin(token,out,&prepared).status,Code::Ok);
+    EXPECT_EQ(coefficients[node],0);
+    EXPECT_EQ(coefficients[n+node],0);
+    ASSERT_EQ(owner.ValidateRigidAssemblyBinding(f.binding).status,Code::Ok);
+    Commit(owner,token,view);
+    ASSERT_EQ(owner.CopyAcceptedCin(out,&stamp).status,Code::Ok);
+    EXPECT_EQ(coefficients[node],0);
+    EXPECT_EQ(coefficients[n+node],0);
+    EXPECT_EQ(stamp.epoch,step+1);
+  }
+}
 } // namespace rigid_assembly_owner_test

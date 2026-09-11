@@ -61,13 +61,14 @@ NodalReport CompleteRigidStorage(const NodalStateConfig& config,HostNodalKinemat
       return {NodalStatus::InvalidInput,"Compact rigid member ranges are incomplete"};
     member_offset += group.member_count;
     const bool part = group.source_kind==RigidBindingSourceKind::Part;
+    const bool dependent = group.dependent_coefficients;
     next.groups.push_back({std::uint32_t(group.member_offset),std::uint32_t(group.member_count),
-      group.mass_kg,group.principal.inertia,part});
+      group.mass_kg,group.principal.inertia,dependent});
     for (std::size_t k=0;k<group.member_count;++k) {
       const auto& member=next.source_members[group.member_offset+k];
       const auto i = member.domain_node;
-      const double expected_mass=part&&member.mass_kg==0?0:1/member.mass_kg;
-      const double expected_j=part&&member.isotropic_inertia_kg_m2==0?0:1/member.isotropic_inertia_kg_m2;
+      const double expected_mass=dependent&&member.mass_kg==0?0:1/member.mass_kg;
+      const double expected_j=dependent&&member.isotropic_inertia_kg_m2==0?0:1/member.isotropic_inertia_kg_m2;
       if(i>=config.node_count||next.member_nodes[i]||dofs.translation_fixed_bits[i]||dofs.rotation_fixed[i]||
           (dofs.rotation_present&&!dofs.rotation_present[i])||
           inverse_mass[i]!=expected_mass||dofs.inverse_inertia[i]!=expected_j)
@@ -78,7 +79,8 @@ NodalReport CompleteRigidStorage(const NodalStateConfig& config,HostNodalKinemat
         if(input.position_xyz[3*i+a]!=x[a]||input.velocity_xyz[3*i+a]!=v[a]||
             (input.angular_velocity_xyz&&input.angular_velocity_xyz[3*i+a]!=0))
           return {NodalStatus::InvalidInput,"Rigid startup requires source coordinates and uniform translation with zero spin",std::uint32_t(i)};
-      next.member_nodes[i]=part?rigid::PartMemberNode:rigid::PlainMemberNode;
+      next.member_nodes[i]=part?rigid::PartMemberNode:
+          (dependent?rigid::PhysicalPlainMemberNode:rigid::PlainMemberNode);
       next.members.push_back({std::uint32_t(i),member.mass_kg,member.isotropic_inertia_kg_m2});
     }
   }

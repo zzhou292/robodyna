@@ -29,7 +29,7 @@ Report Bind(Storage& s,const NodalRigidGroupModel* plain) {
     const auto& value=s.parts.roots()[g].value;
     auto& row=s.groups[g];
     row={RigidBindingSourceKind::Part,topology.parts()[source.part_index].source_part_id,0,
-      cursor,source.member_count,value.raw.mass,value.raw.center,value.principal};
+      cursor,source.member_count,value.raw.mass,value.raw.center,value.principal,true};
     for(std::size_t k=0;k<source.member_count;++k) {
       const auto id=topology.root_members()[source.member_offset+k];
       auto report=Member(s,g,cursor,id);
@@ -46,7 +46,7 @@ Report Bind(Storage& s,const NodalRigidGroupModel* plain) {
     const auto g=topology.root_count()+p;
     const auto& source=plain->groups()[p];
     s.groups[g]={RigidBindingSourceKind::NodalGroup,source.source_group_id,source.source_node_set_id,
-      cursor,source.member_count,source.total_mass_kg,source.center,source.principal};
+      cursor,source.member_count,source.total_mass_kg,source.center,source.principal,plain->physical_coefficients()};
     for(std::size_t k=0;k<source.member_count;++k) {
       const auto& value=plain->members()[source.member_offset+k];
       if(others.First(value.source_node_id)==SIZE_MAX)

@@ -10,6 +10,7 @@ bool Bits(double a, double b) noexcept { return std::memcmp(&a,&b,sizeof(double)
 bool Same(const RigidBindingGroup& a, const RigidBindingGroup& b) noexcept {
   using nodal_domain_detail::SamePosition;
   if (a.source_kind != b.source_kind || a.source_id != b.source_id ||
+      a.dependent_coefficients != b.dependent_coefficients ||
       a.source_node_set_id != b.source_node_set_id || a.member_offset != b.member_offset ||
       a.member_count != b.member_count || !Bits(a.mass_kg,b.mass_kg) ||
       !SamePosition(a.center,b.center) || !SamePosition(a.principal.inertia,b.principal.inertia)) return false;

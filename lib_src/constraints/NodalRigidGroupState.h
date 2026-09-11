@@ -36,6 +36,7 @@ namespace rigid {
 constexpr std::size_t GroupStateValues=18;
 inline constexpr std::uint8_t PlainMemberNode = 1;
 inline constexpr std::uint8_t PartMemberNode = 2;
+inline constexpr std::uint8_t PhysicalPlainMemberNode = 3;
 struct GroupRange {
   std::uint32_t offset=0,count=0;
   double mass=0;
@@ -55,6 +56,9 @@ struct GroupDeviceView {
 #else
 #define TL_RIGID_STATE_HD
 #endif
+TL_RIGID_STATE_HD inline bool UsesDependentCoefficients(std::uint8_t role) noexcept {
+  return role==PartMemberNode || role==PhysicalPlainMemberNode;
+}
 TL_RIGID_STATE_HD inline NodalRigidGroupState ReadGroupState(const double* p) {
   NodalRigidGroupState s;
   s.center={p[0],p[1],p[2]}; s.velocity={p[3],p[4],p[5]}; s.omega={p[6],p[7],p[8]};

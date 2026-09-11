@@ -4,7 +4,7 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_test")
 cc_test(
     name = "rigid_assembly_owner_host",
     size = "small",
-    srcs = ["Fixture.cpp", "Fixture.h", "HostTest.cpp"],
+    srcs = ["Fixture.cpp", "Fixture.h", "HostTest.cpp", "PhysicalMemberTest.cpp"],
     deps = ["//lib_src/solvers:explicit_nodal_state",
             "//lib_src/solvers:nodal_native_physical_coefficients",
             "//lib_src/constraints:nodal_rigid_assembly_binding",

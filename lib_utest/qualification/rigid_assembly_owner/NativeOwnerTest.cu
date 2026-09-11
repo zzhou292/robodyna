@@ -27,8 +27,16 @@ void Compare(const fe::NodalRigidGroupSnapshot& actual,const native::Trial& expe
   for (unsigned k=0;k<9;++k)
     native::Agreement(actual.state.principal_axes.v[k],expected.primary.force_frame.axes.v[k]);
 }
-void Trajectory(bool use_cin) {
-  Fixture f;
+void Trajectory(bool use_cin,bool physical_plain=false,double point_mass_source=.002) {
+  Fixture f(false,physical_plain,point_mass_source);
+  EXPECT_EQ(f.binding.groups()[1].dependent_coefficients,physical_plain);
+  if (physical_plain) {
+    const auto node=f.domain.Find(778);
+    EXPECT_EQ(f.m[node],point_mass_source*1000);
+    EXPECT_EQ(f.j[node],0);
+    EXPECT_EQ(f.ij[node],0);
+    EXPECT_EQ(f.present[node],1);
+  }
   fe::FENodalState owner;
   ASSERT_EQ(Initialize(owner,f,use_cin).status,Code::Ok);
   const auto allocation=owner.allocations();
@@ -95,4 +103,8 @@ void Trajectory(bool use_cin) {
 }
 TEST_F(Cuda, AssemblyMixedOwnerMatchesIndependentNativeHistory) { Trajectory(false); }
 TEST_F(Cuda, AssemblyMixedOwnerWithCinMatchesIndependentNativeRigidHistory) { Trajectory(true); }
+TEST_F(Cuda, PhysicalPlainPointMassMatchesIndependentNativeHistory) {Trajectory(false,true);}
+TEST_F(Cuda, PhysicalPlainPointMassAndCinMatchIndependentNativeHistory) {Trajectory(true,true);}
+TEST_F(Cuda, PhysicalPlainZeroMassMatchesIndependentNativeHistory) {Trajectory(false,true,0);}
+TEST_F(Cuda, PhysicalPlainZeroMassAndCinMatchIndependentNativeHistory) {Trajectory(true,true,0);}
 } // namespace rigid_assembly_owner_test

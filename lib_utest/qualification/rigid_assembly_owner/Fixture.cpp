@@ -2,8 +2,12 @@
 #include "Fixture.h"
 
 namespace rigid_assembly_owner_test {
-Fixture::Fixture(bool intersection) {
+Fixture::Fixture(bool intersection,bool physical_plain,double point_mass_source) {
   if (intersection) part_ids[3]=cin_source.declarations[0].master_source_ids[0];
+  if (physical_plain) {
+    source.nodes.push_back({778,{.06,-.01,.003}});
+    plain_ids[0]=778;
+  }
   source.nodes.insert(source.nodes.end(),cin_source.nodes.begin(),cin_source.nodes.end());
   EXPECT_TRUE(domain.Initialize({1,source.nodes.data(),source.nodes.size()}));
   EXPECT_TRUE(shells.Initialize(source.shells,domain));
@@ -11,8 +15,9 @@ Fixture::Fixture(bool intersection) {
   EXPECT_EQ(fe::solid18::InitializeReference(source.a,solid),fe::solid18::Status::Success);
   EXPECT_TRUE(solids.Initialize(domain,{1,&solid,1}));
   zero_mass = domain.Find(777);
-  const fe::ElementMassSource zero{18000,777,zero_mass,0};
-  EXPECT_TRUE(point.Initialize(domain,{1,1000,&zero,1}));
+  const fe::ElementMassSource masses[]{{18000,777,zero_mass,0},
+      {18001,778,physical_plain?domain.Find(778):SIZE_MAX,point_mass_source}};
+  EXPECT_TRUE(point.Initialize(domain,{1,1000,masses,physical_plain?2u:1u}));
   // Real TYPE25 value producers provide the independent CIN patch coefficients.
   // Their recurrence is not a participant in this prescribed-load owner test.
   std::vector<fe::type25::ConnectionInput> connectors;
@@ -62,7 +67,8 @@ Fixture::Fixture(bool intersection) {
       c.shell.physical_inertia,c.shell.added_inertia};
   }
   const fe::NodalRigidGroupInput group{200,501,members.data(),members.size()};
-  EXPECT_TRUE(plain.Initialize({29,domain.node_count(),&group,1,{1000,.001}}));
+  const fe::NodalRigidGroupModelInput plain_input{29,domain.node_count(),&group,1,{1000,.001}};
+  EXPECT_TRUE(physical_plain?plain.InitializePhysical(plain_input):plain.Initialize(plain_input));
   EXPECT_TRUE(binding.Initialize(parts,&plain));
   auto post_input = cin_source.PostInput();
   post_input.source_instance_id = 1;

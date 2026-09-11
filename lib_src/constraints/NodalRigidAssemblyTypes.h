@@ -12,6 +12,7 @@ struct RigidBindingGroup {
   double mass_kg=0;
   tl::math::Vec3 center{};
   rigid::PrincipalFrame principal{};
+  bool dependent_coefficients=false;
 };
 struct RigidBindingMember {
   std::uint64_t source_node_id=0;
