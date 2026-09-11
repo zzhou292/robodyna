@@ -1,7 +1,7 @@
 load("@rules_cc//cc:defs.bzl", "cc_test")
 cc_test(
     name = "host_check",
-    srcs = ["HostTest.cpp"],
+    srcs = ["HostTest.cpp", "Values.h"],
     deps = ["//lib_src/materials/law42:caller", "//lib_src/elements/solid_common:brick_frame", "@googletest//:gtest_main"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
 )

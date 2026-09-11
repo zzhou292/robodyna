@@ -30,3 +30,12 @@ this directory establish host contracts only.
 
 Configure this directory and build/test `law42_caller_host_check`. Bazel owns
 `//lib_utest/qualification/solid_law42_caller:host_check`.
+
+The optional `LAW42_CALLER_NATIVE=ON` gate now authors two independent native
+comparisons. Its reusable `law42_solid_caller_native` target links the unchanged
+complete LAW42 point oracle. Exact surrounding source slices advance rho, total
+strain, returned-sound-speed viscosity and signed work. The separate modulus
+packet executes the original LAW42 `PARMAT(1)=GS` to `PM(22)` assignment, retaining
+its distinction from printed `MU0=GS/2`. Native execution remains root-owned.
+The RV observation repeats only the complete native spectral decomposition and
+exact RV expression; it never feeds current forces, work or future history.
