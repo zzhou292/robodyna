@@ -38,7 +38,9 @@ void CinStorage::InitializeState(double* state, const NodalCinStartup& input,
   std::copy(input.inertia, input.inertia+n, tail+n);
   for (std::size_t i = 0; i < n; ++i) {
     tail[2*n+i] = dependent[i] || dofs.translation_fixed_bits[i] == 7 ? 0 : 1/input.mass[i];
-    tail[3*n+i] = dependent[i] || dofs.rotation_fixed[i] ? 0 : 1/input.inertia[i];
+    // Startup already validated this exact inverse, including dependent/fixed
+    // and explicitly absent rotations. Do not reconstruct 1/0 for a solid node.
+    tail[3*n+i] = dofs.inverse_inertia[i];
   }
   // INIEND initializes ILEV28 SMAS/SINER from literal secondary coefficients.
   // Later force stages update only a nonzero current coefficient.

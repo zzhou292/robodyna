@@ -50,6 +50,9 @@ TEST(RotationPresenceCuda, CinTransfersKeepAnUnrelatedSolidNodeTranslationOnly) 
   auto startup=f.Startup(); startup.model=&model;
   fe::FENodalState owner,invalid;
   ASSERT_EQ(owner.Initialize(f.Config(),f.Kinematics(),f.inverse.data(),dofs,startup).status,Code::Ok);
+  cr::Snapshot initial(n,f.rows.size()); fe::NodalStamp initial_stamp;
+  ASSERT_EQ(owner.CopyAcceptedCin(initial.Cin(),&initial_stamp).status,Code::Ok);
+  EXPECT_EQ(initial_stamp.epoch,0u); EXPECT_EQ(initial.coefficients[n+extra],0);
   for(unsigned step=0;step<3;++step) {
     fe::NodalTrialToken token; fe::NodalAssemblyView view; fe::NodalCinAssemblyView cin;
     cr::Fill(owner,f,token,view,cin);
