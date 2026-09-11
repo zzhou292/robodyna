@@ -1,4 +1,5 @@
 #include "ShellMixedSectionStorage.h"
+#include "one_point/ShellOnePointStorage.h"
 #include "failure/ShellFailureStorage.h"
 #include "ShellResidentHostAccounting.h"
 #include <new>
@@ -24,13 +25,21 @@ bool HostStorage::ForecastSections(std::size_t count,std::size_t points,std::siz
   MixedLayout layout;return MixedHostStorage::Forecast(count,points,catalog_bytes,device_cap,host_cap,layout,host_bytes);
 }
 std::size_t HostStorage::device_bytes() const noexcept {
-  return (mixed_?mixed_->device_bytes():device_?layout_.bytes:0)+failure_device_bytes();
+  return (mixed_?mixed_->device_bytes():device_?layout_.bytes:0)+failure_device_bytes()+
+      (one_point_?one_point_->device_bytes():0);
 }
 MixedDeviceStorage* HostStorage::mixed_device() const noexcept { return mixed_?mixed_->device():nullptr; }
+OnePointDeviceStorage* HostStorage::one_point_device() const noexcept {
+  return one_point_?one_point_->device():nullptr;
+}
 SetupReport HostStorage::ReadSections(unsigned slab,std::size_t count,cudaStream_t stream,double time) noexcept {
   const auto* catalog=Collection();
   if(!mixed_||!catalog)return {SetupStatus::InvalidInput,"No explicit mixed section history"};
-  const auto report=mixed_->Read(slab,count,stream,*catalog);
+  if(one_point_) {
+    const auto report=one_point_->Read(slab,count,stream,*catalog,time);
+    if(report.status!=SetupStatus::Success) return report;
+  }
+  const auto report=mixed_->Read(slab,count,stream,*catalog,one_point_?one_point_->staging():nullptr);
   return report.status==SetupStatus::Success&&failure_?
     failure_->Read(slab,count,stream,time,mixed_->staging()):report;
 }
@@ -40,6 +49,9 @@ const ShellBatchLayeredSection* HostStorage::section_staging() const noexcept {
 SetupReport HostStorage::InitializeSections(const ShellBatchPlasticityBinding& catalog,
     const ShellBatchBinding& binding,ShellBindingFamily family,std::size_t count,
     std::size_t device_cap,std::size_t host_cap,bool vehicle) try {
+  ShellSectionCounts counts;
+  if(!catalog.Counts(family,&counts)||counts.law44_nip1)
+    return {SetupStatus::InvalidInput,"One-point T3 requires complete constant failure binding"};
   std::size_t binding_bytes=0,catalog_bytes=0,host_bytes=0;MixedLayout layout;
   if(!shell_batch_detail::RetainedScopeBytes(&binding,&catalog,vehicle,binding_bytes,catalog_bytes)||
      !MixedHostStorage::Forecast(count,catalog.curve_point_count(),catalog_bytes,device_cap,host_cap,layout,host_bytes))
@@ -77,7 +89,7 @@ SetupReport MixedHostStorage::Initialize(const ShellBatchPlasticityBinding& cata
     if(initial->law[e]==ShellSectionLaw::LayeredLaw1Nip3) {
       if(!catalog.ElasticParameters(family,e,&initial->elastic_parameters[e]))
         return {SetupStatus::InvalidInput,"Mixed catalog elastic parameters are unavailable"};
-    } else if(initial->law[e]==ShellSectionLaw::LayeredLaw44Nip3) {
+    } else if(initial->law[e]==ShellSectionLaw::LayeredLaw44Nip3||initial->law[e]==ShellSectionLaw::Law44Nip1) {
       auto& p=initial->plastic.parameters[e];
       if(!catalog.Parameters(family,e,&p))return {SetupStatus::InvalidInput,"Mixed catalog plastic parameters are unavailable"};
       if(p.hardening==material::ShellPlasticityHardeningKind::LinearLaw44)continue;

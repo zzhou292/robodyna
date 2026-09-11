@@ -1,4 +1,5 @@
 #include "ShellBatchPlasticityStorage.h"
+#include "one_point/ShellOnePointStorage.h"
 #include "ShellMixedSectionStorage.h"
 #include "failure/ShellFailureStorage.h"
 #include <cstring>

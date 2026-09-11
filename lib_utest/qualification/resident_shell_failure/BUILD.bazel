@@ -1,4 +1,4 @@
-load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 cc_test(
     name = "resident_shell_failure_host_check",
     srcs = ["FailureBindingTest.cpp", "FailureLayoutTest.cpp", "FailureDispatchTest.cpp", "FailureResidentSource.h"],
@@ -13,4 +13,13 @@ cc_test(
         "//lib_utest/qualification/shell_failure_force:failure_force_test_support",
         "@googletest//:gtest_main",
     ],
+)
+
+cc_library(
+    name = "failure_source_fixture",
+    testonly = True,
+    hdrs = ["FailureResidentSource.h"],
+    visibility = ["//lib_utest/qualification/t3_one_point_resident:__pkg__"],
+    deps = ["//lib_src/elements:shell_batch_failure_binding",
+            "//lib_utest/qualification/plasticity_binding:plasticity_binding_fixture"],
 )

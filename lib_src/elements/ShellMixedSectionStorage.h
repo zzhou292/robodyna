@@ -15,7 +15,8 @@ class MixedHostStorage {
       std::size_t device_cap,std::size_t host_cap,MixedLayout&,std::size_t& host_bytes) noexcept;
   SetupReport Initialize(const ShellBatchPlasticityBinding&,ShellBindingFamily,std::size_t,
       const MixedLayout&);
-  SetupReport Read(unsigned slab,std::size_t count,cudaStream_t,const ShellBatchPlasticityBinding&) noexcept;
+  SetupReport Read(unsigned slab,std::size_t count,cudaStream_t,const ShellBatchPlasticityBinding&,
+      const ShellBatchOnePointSectionState* one_point=nullptr) noexcept;
   MixedDeviceStorage* device() const noexcept { return device_; }
   std::size_t device_bytes() const noexcept { return device_?layout_.bytes:0; }
   const ShellBatchLayeredSection* staging() const noexcept { return output_.data(); }

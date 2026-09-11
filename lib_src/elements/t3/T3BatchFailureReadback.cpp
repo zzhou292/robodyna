@@ -7,6 +7,9 @@ BatchReport T3Batch::CopyAcceptedFailureHistory(const NodalStamp& expected,
     ShellBatchFailureState* output, std::size_t capacity, BatchDiagnostics* diagnostics) {
   if (!impl_) return {BatchStatus::NotInitialized, "Batch is not initialized"};
   auto& state = *impl_;
+  if (state.plasticity && state.plasticity->one_point_sections()) {
+    return {BatchStatus::InvalidInput, "One-point failure history requires typed complete section readback"};
+  }
   if (!state.plasticity || !state.plasticity->failure_sections()) {
     return {BatchStatus::InvalidInput, "No explicit failure sidecar"};
   }
@@ -33,6 +36,9 @@ BatchReport T3Batch::CopyPreparedFailureHistory(const BatchDiagnostics& expected
     ShellBatchFailureState* output, std::size_t capacity) {
   if (!impl_) return {BatchStatus::NotInitialized, "Batch is not initialized"};
   auto& state = *impl_;
+  if (state.plasticity && state.plasticity->one_point_sections()) {
+    return {BatchStatus::InvalidInput, "One-point failure history requires typed complete section readback"};
+  }
   if (!state.plasticity || !state.plasticity->failure_sections()) {
     return {BatchStatus::InvalidInput, "No explicit failure sidecar"};
   }

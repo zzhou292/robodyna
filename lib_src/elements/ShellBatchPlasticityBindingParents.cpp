@@ -43,9 +43,17 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::BindParents(const Shel
     const bool matches=q? shell_plasticity_binding_detail::Matches(binding.qeph_reference(p.family_index).input,m,s):
       shell_plasticity_binding_detail::Matches(binding.t3_reference(p.family_index).input,m,s);
     if(!matches) return Error(Status::IdentityMismatch,"Parent material/thickness bits differ from its native reference",i,p.family);
+    const bool one_point=s.formulation==ShellSectionFormulation::OneThicknessPoint;
+    if(one_point&&(q||m.law!=ShellSectionLaw::LayeredLaw44Nip3||
+        binding.t3_reference(p.family_index).input.placement!=ShellReferencePlacement::Centered))
+      return Error(Status::InvalidSection,"One thickness point requires centered T3 and LAW44",i,p.family);
     out.parents[i]={p,mi,si}; (q?out.qeph_parent:out.t3_parent)[p.family_index]=i;
     auto& laws=q?out.qeph_laws:out.t3_laws;
-    if(m.law==ShellSectionLaw::LayeredLaw1Nip3) ++laws.law1; else ++laws.law44;
+    if(m.law==ShellSectionLaw::LayeredLaw1Nip3) ++laws.law1;
+    else if(m.law==ShellSectionLaw::LayeredLaw44Nip3) {
+      ++laws.law44;
+      if(one_point) ++laws.law44_nip1;
+    } else return Error(Status::InvalidMaterial,"Unknown shell material kind",i,p.family);
     seen[p.family_index]=true; materials[mi]=true; sections[si]=true;
   }
   for(std::size_t i=0;i<out.qeph_count;++i) if(!qseen[i]) return Error(Status::InvalidParent,"Missing QEPH parent",i,ShellBindingFamily::Qeph);

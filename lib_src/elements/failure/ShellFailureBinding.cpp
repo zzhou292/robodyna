@@ -36,6 +36,10 @@ bool Same(const sections::ShellLayeredTab1Parameters& a,
 bool AdmittedPolicy(const ShellFailureParentInput& row, ShellSectionLaw law,
                     const ShellBatchPlasticityBinding& catalog) noexcept {
   const bool no_tab1 = Same(row.tab1, sections::ShellLayeredTab1Parameters{});
+  if (law == ShellSectionLaw::Law44Nip1) {
+    return row.policy == ShellFailurePolicy::ConstantAllPoints && no_tab1 &&
+        tl::math::Finite(row.constant.failure_strain) && row.constant.failure_strain > 0;
+  }
   if (row.policy == ShellFailurePolicy::None) {
     return Same(row.constant.failure_strain, 0.) && no_tab1;
   }

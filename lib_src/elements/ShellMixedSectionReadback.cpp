@@ -3,7 +3,7 @@
 
 namespace tl::fea::shell_batch_plasticity_detail {
 SetupReport MixedHostStorage::Read(unsigned slab,std::size_t count,cudaStream_t stream,
-    const ShellBatchPlasticityBinding& catalog) noexcept {
+    const ShellBatchPlasticityBinding& catalog,const ShellBatchOnePointSectionState* one_point) noexcept {
   if(!device_||slab>1||count!=count_||!catalog.heterogeneous_sections())
     return {SetupStatus::InvalidInput,"Mixed section readback shape is invalid"};
   auto error=cudaMemcpyAsync(plastic_.data(),header_.plastic.section[slab],count*sizeof(ShellBatchSectionState),
@@ -20,12 +20,19 @@ SetupReport MixedHostStorage::Read(unsigned slab,std::size_t count,cudaStream_t 
       if(!FiniteSection(elastic_[e]))return {SetupStatus::NonfiniteResult,"Nonfinite elastic section history"};
     } else if(law==ShellSectionLaw::LayeredLaw44Nip3) {
       if(!FiniteSection(plastic_[e]))return {SetupStatus::NonfiniteResult,"Nonfinite plastic section history"};
+    } else if(law==ShellSectionLaw::Law44Nip1) {
+      // The optional owner stages and validates its complete payload first.
+      if(!one_point||family_!=ShellBindingFamily::T3)
+        return {SetupStatus::InvalidInput,"One-point history is unavailable"};
     } else return {SetupStatus::InvalidInput,"Unsupported section readback law"};
   }
   for(std::size_t e=0;e<count;++e) {
     ShellSectionLaw law=ShellSectionLaw::Unspecified;catalog.Law(family_,e,&law);
-    output_[e]=law==ShellSectionLaw::LayeredLaw1Nip3?
-      ShellBatchLayeredSection::Elastic(elastic_[e]):ShellBatchLayeredSection::Plastic(plastic_[e]);
+    if(law==ShellSectionLaw::LayeredLaw1Nip3)
+      output_[e]=ShellBatchLayeredSection::Elastic(elastic_[e]);
+    else if(law==ShellSectionLaw::LayeredLaw44Nip3)
+      output_[e]=ShellBatchLayeredSection::Plastic(plastic_[e]);
+    else output_[e]=ShellBatchLayeredSection::OnePoint(one_point[e]);
   }
   return {SetupStatus::Success,"OK"};
 }

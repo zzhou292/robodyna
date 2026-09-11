@@ -47,7 +47,8 @@ void LaunchAssembly(Storage*,const Slab*,NodalAssemblyView,bool initial);
 void LaunchCandidate(Storage*,const Slab*,Slab*,NodalPreparedView,BatchDiagnostics,
                      shell_batch_plasticity_detail::DeviceStorage*,unsigned accepted_slab,std::size_t element_count,
                      shell_batch_plasticity_detail::MixedDeviceStorage*,
-                     shell_batch_plasticity_detail::FailureDeviceStorage*);
+                     shell_batch_plasticity_detail::FailureDeviceStorage*,
+                     shell_batch_plasticity_detail::OnePointDeviceStorage*);
 void LaunchFailure(NodalAssemblyView);
 } // namespace tl::fea::t3::batch_detail
 
@@ -80,6 +81,7 @@ struct T3Batch::Impl {
   BatchReport PendingError() noexcept;
   BatchReport ReadControl();
   BatchReport ReadResults(const batch_detail::Slab*);
+  BatchReport ValidateOnePointReadback(unsigned slab,double time,std::uint64_t epoch);
   BatchReport InitializePlasticity(const ShellBatchPlasticityConfig&,const batch_detail::Model&);
   BatchReport InitializePlasticity(const ShellBatchPlasticityBinding&);
   BatchReport InitializeFailure(const ShellBatchFailureBinding&,const ShellBatchFailureLimits&);

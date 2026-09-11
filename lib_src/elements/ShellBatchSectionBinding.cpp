@@ -29,7 +29,19 @@ bool ShellBatchPlasticityBinding::Law(ShellBindingFamily family,std::size_t inde
     ShellSectionLaw* output) const noexcept {
   const auto* m=ParentMaterial(family,index);
   if(!output||!m) return false;
-  *output=m->declaration.law;return true;
+  const bool q=family==ShellBindingFamily::Qeph;
+  const auto& parent=data_.parents[(q?data_.qeph_parent:data_.t3_parent)[index]];
+  const auto& section=data_.sections[parent.section_index];
+  if(section.formulation==ShellSectionFormulation::OneThicknessPoint) {
+    if(q||m->declaration.law!=ShellSectionLaw::LayeredLaw44Nip3) return false;
+    *output=ShellSectionLaw::Law44Nip1;
+    return true;
+  }
+  if(section.formulation!=ShellSectionFormulation::LayeredNip3||
+      (m->declaration.law!=ShellSectionLaw::LayeredLaw1Nip3&&
+       m->declaration.law!=ShellSectionLaw::LayeredLaw44Nip3)) return false;
+  *output=m->declaration.law;
+  return true;
 }
 bool ShellBatchPlasticityBinding::Counts(ShellBindingFamily family,ShellSectionCounts* output) const noexcept {
   if(!prepared_||!output||(family!=ShellBindingFamily::Qeph&&family!=ShellBindingFamily::T3)) return false;

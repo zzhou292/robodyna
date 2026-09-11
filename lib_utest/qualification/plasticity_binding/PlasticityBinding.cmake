@@ -3,6 +3,7 @@ include("${plasticity_binding_tl_root}/lib_src/elements/ShellBatchPlasticityBind
 add_executable(shell_plasticity_binding_check "${CMAKE_CURRENT_LIST_DIR}/PlasticityBindingTest.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/AnalyticBindingTest.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/SectionBindingTest.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/OnePointBindingTest.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/ContinuationBindingTest.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/ZeroCRateBindingTest.cpp")
 target_include_directories(shell_plasticity_binding_check PRIVATE "${plasticity_binding_tl_root}")

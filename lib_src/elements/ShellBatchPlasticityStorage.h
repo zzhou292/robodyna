@@ -27,6 +27,8 @@ class FailureHostStorage;
 struct FailureDeviceStorage;
 class MixedHostStorage;
 struct MixedDeviceStorage;
+class OnePointHostStorage;
+struct OnePointDeviceStorage;
 class HostStorage {
  public:
   HostStorage();
@@ -42,6 +44,9 @@ class HostStorage {
   DeviceStorage* device() const noexcept { return device_; }
   std::size_t device_bytes() const noexcept;
   MixedDeviceStorage* mixed_device() const noexcept;
+  OnePointDeviceStorage* one_point_device() const noexcept;
+  bool one_point_sections() const noexcept { return bool(one_point_); }
+  const ShellBatchPlasticityBinding* section_catalog() const noexcept { return Collection(); }
   bool heterogeneous_sections() const noexcept { return bool(mixed_); }
   SetupReport ReadSections(unsigned slab,std::size_t count,cudaStream_t,double time=0) noexcept;
   FailureDeviceStorage* failure_device() const noexcept;
@@ -52,7 +57,8 @@ class HostStorage {
       ShellBindingFamily,std::size_t,std::size_t device_cap,std::size_t host_cap,
       const ShellBatchFailureLimits&,bool vehicle);
   static bool ForecastFailureSections(std::size_t count,std::size_t points,std::size_t binding_bytes,
-      std::size_t device_cap,std::size_t host_cap,const ShellBatchFailureLimits&,std::size_t& host_bytes) noexcept;
+      std::size_t device_cap,std::size_t host_cap,const ShellBatchFailureLimits&,std::size_t& host_bytes,
+      bool one_point=false) noexcept;
   const ShellBatchLayeredSection* section_staging() const noexcept;
   // Conservative payload peak: arena initialization + readback + retained
   // curve/catalog data + per-parent rebase offsets. No allocation or input read.
@@ -77,6 +83,7 @@ class HostStorage {
   const ShellBatchPlasticityBinding* Collection() const noexcept;
   bool SameFailureScope(const HostStorage&) const noexcept;
   std::unique_ptr<MixedHostStorage> mixed_; // Explicit mode only, same caller-provided slab index.
+  std::unique_ptr<OnePointHostStorage> one_point_; // Optional T3 payload, no selector.
   SetupReport InitializeSections(const ShellBatchPlasticityBinding&,const ShellBatchBinding&,
       ShellBindingFamily,std::size_t,std::size_t,std::size_t,bool);
 };

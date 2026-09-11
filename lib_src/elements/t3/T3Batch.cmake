@@ -11,6 +11,7 @@ add_library(tl_t3_batch STATIC
   "${CMAKE_CURRENT_LIST_DIR}/T3BatchPublication.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/T3BatchPlasticity.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/T3BatchSections.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/T3BatchOnePointReadback.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/T3BatchFailure.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/T3BatchFailureReadback.cpp")
 target_link_libraries(tl_t3_batch PUBLIC tl_shell_batch_plasticity)

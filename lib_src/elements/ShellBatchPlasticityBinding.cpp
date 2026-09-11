@@ -50,7 +50,8 @@ bool ShellBatchPlasticityBinding::SameScope(const ShellBatchPlasticityBinding& o
   }
   for(std::size_t i=0;i<a.section_count;++i) {
     const auto& x=a.sections[i]; const auto& y=b.sections[i];
-    if(x.section_id!=y.section_id||!Same(x.thickness_m,y.thickness_m)||x.through_thickness_points!=y.through_thickness_points) return false;
+    if(x.section_id!=y.section_id||!Same(x.thickness_m,y.thickness_m)||
+        x.through_thickness_points!=y.through_thickness_points||x.formulation!=y.formulation) return false;
   }
   for(std::size_t i=0;i<a.parent_count;++i) {
     const auto& x=a.parents[i]; const auto& y=b.parents[i];

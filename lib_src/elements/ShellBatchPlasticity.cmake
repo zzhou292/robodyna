@@ -6,6 +6,7 @@ if(NOT TARGET tl_shell_batch_plasticity)
     "${CMAKE_CURRENT_LIST_DIR}/ShellBatchPlasticityCollectionStorage.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/ShellMixedSectionStorage.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/ShellMixedSectionReadback.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/one_point/ShellOnePointStorage.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/failure/ShellFailureStorage.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/failure/ShellFailureCollectionStorage.cpp")
   get_filename_component(shell_batch_plasticity_root "${CMAKE_CURRENT_LIST_DIR}/../.." ABSOLUTE)

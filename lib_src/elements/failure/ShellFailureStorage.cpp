@@ -58,6 +58,13 @@ SetupReport FailureHostStorage::Initialize(const ShellBatchFailureBinding& bindi
     initial->policy[e] = source->policy;
     initial->parameters[e] = source->constant;
     initial->tab1_parameters[e] = source->tab1;
+    ShellSectionLaw law = ShellSectionLaw::Unspecified;
+    if (!binding.catalog()->Law(family, e, &law)) {
+      return {SetupStatus::InvalidInput, "Failure sidecar section role is incomplete"};
+    }
+    // Genuine NIP1 history belongs only to its one-point payload. These old
+    // three-point slots remain unavailable private capacity in their None role.
+    if (law == ShellSectionLaw::Law44Nip1) continue;
     for (auto* slab : initial->state) {
       if (source->policy == ShellFailurePolicy::ConstantAllPoints) {
         slab[e] = ShellBatchFailureState::Constant();
@@ -99,7 +106,9 @@ SetupReport FailureHostStorage::Read(unsigned slab, std::size_t count,
   for (std::size_t e = 0; e < count; ++e) {
     const auto* source = binding_.parent(family_, e);
     if (!source) return {SetupStatus::InvalidInput, "Incomplete failure readback source"};
-    if (source->policy == ShellFailurePolicy::ConstantAllPoints) {
+    if (sections[e].law() == ShellSectionLaw::Law44Nip1) {
+      staging_[e] = ShellBatchFailureState{};
+    } else if (source->policy == ShellFailurePolicy::ConstantAllPoints) {
       staging_[e] = ShellBatchFailureState::Constant();
     } else if (source->policy == ShellFailurePolicy::Tab1AnyPoint) {
       staging_[e] = ShellBatchFailureState::Tab1();
@@ -115,6 +124,14 @@ SetupReport FailureHostStorage::Read(unsigned slab, std::size_t count,
   }
   for (std::size_t e = 0; e < count; ++e) {
     const auto* source = binding_.parent(family_, e);
+    if (sections[e].law() == ShellSectionLaw::Law44Nip1) {
+      if (!source || source->policy != ShellFailurePolicy::ConstantAllPoints ||
+          !sections[e].one_point() || !ValidFailureEncoding(staging_[e]) ||
+          !ValidFailureState(staging_[e], ShellFailurePolicy::None, nullptr, time)) {
+        return {SetupStatus::NonfiniteResult, "One-point row acquired a three-point failure state"};
+      }
+      continue; // The genuine point/failure packet was fully validated first.
+    }
     if (!source || staging_[e].policy() != source->policy || !ValidFailureEncoding(staging_[e]) ||
         !ValidFailureState(staging_[e], source->policy, sections[e].plastic(), time)) {
       return {SetupStatus::NonfiniteResult,

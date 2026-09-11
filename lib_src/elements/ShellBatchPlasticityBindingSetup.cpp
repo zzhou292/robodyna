@@ -171,9 +171,12 @@ ShellPlasticityBindingReport ShellBatchPlasticityBinding::CopySections(
     const ShellBatchPlasticityBindingInput& input,Data& out) noexcept {
   for(std::size_t i=0;i<input.section_count;++i) {
     const auto& s=input.sections[i];
-    if(!s.section_id||!tl::math::Finite(s.thickness_m)||s.thickness_m<=0||s.through_thickness_points!=3||
+    const bool layered=s.formulation==ShellSectionFormulation::LayeredNip3&&s.through_thickness_points==3;
+    const bool one_point=out.heterogeneous&&s.formulation==ShellSectionFormulation::OneThicknessPoint&&
+        s.through_thickness_points==1;
+    if(!s.section_id||!tl::math::Finite(s.thickness_m)||s.thickness_m<=0||(!layered&&!one_point)||
         Find(out.sections,i,s.section_id,[](const auto& x){return x.section_id;})!=NoShellBindingNode)
-      return Error(Status::InvalidSection,"Section requires unique nonzero ID, positive thickness and NIP3",i);
+      return Error(Status::InvalidSection,"Section requires unique ID, positive thickness and an explicit supported point count",i);
     out.sections[i]=s;
   }
   out.section_count=input.section_count; return {};

@@ -97,6 +97,11 @@ BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchEle
     const auto points=plasticity?plasticity->curve.count:collection_plasticity->curve_point_count();
     Layout plastic_layout; std::size_t plastic_host_bytes=0;
     const bool mixed=collection_plasticity&&collection_plasticity->heterogeneous_sections();
+    ShellSectionCounts section_counts;
+    const bool one_point=collection_plasticity&&
+        collection_plasticity->Counts(ShellBindingFamily::T3,&section_counts)&&section_counts.law44_nip1;
+    if(one_point&&!failure)
+      return {BatchStatus::InvalidInput,"One-point T3 requires complete constant failure binding"};
     if (failure && (!failure_limits || !mixed || !failure->Matches(*collection_plasticity) ||
                     failure->host_bytes() < collection_plasticity->host_bytes())) {
       return {BatchStatus::InvalidInput, "Failure sidecar requires explicit mixed scope and limits"};
@@ -105,7 +110,7 @@ BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchEle
     if (failure) {
       const auto failure_bytes = failure->host_bytes() - collection_plasticity->host_bytes() + catalog_bytes;
       forecast = HostStorage::ForecastFailureSections(config.element_count, points, failure_bytes,
-          config.max_device_bytes - layout.bytes, host_cap, *failure_limits, plastic_host_bytes);
+          config.max_device_bytes - layout.bytes, host_cap, *failure_limits, plastic_host_bytes, one_point);
     } else if (mixed) {
       forecast = HostStorage::ForecastSections(config.element_count, points, catalog_bytes,
           config.max_device_bytes - layout.bytes, host_cap, plastic_host_bytes);
@@ -163,6 +168,7 @@ BatchReport T3Batch::InitializeImpl(const T3BatchConfig& config,const T3BatchEle
 void T3Batch::DiscardTrial() noexcept { if(impl_) impl_->Discard(); }
 NodalAllocationInfo T3Batch::allocations() const noexcept {
   return impl_?NodalAllocationInfo{impl_->layout.bytes+(impl_->plasticity?impl_->plasticity->device_bytes():0),
-      impl_->plasticity?(impl_->plasticity->failure_sections()?3u:2u):1u}:NodalAllocationInfo{};
+      impl_->plasticity?(impl_->plasticity->failure_sections()?3u+
+          (impl_->plasticity->one_point_sections()?1u:0u):2u):1u}:NodalAllocationInfo{};
 }
 } // namespace tl::fea::t3

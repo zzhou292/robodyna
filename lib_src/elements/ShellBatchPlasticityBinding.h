@@ -28,6 +28,7 @@ struct ShellPlasticitySectionInput {
   std::uint64_t section_id=0;
   double thickness_m=0;
   unsigned through_thickness_points=3;
+  ShellSectionFormulation formulation=ShellSectionFormulation::LayeredNip3;
 };
 struct ShellPlasticityParentInput {
   ShellBindingFamily family=ShellBindingFamily::None;
@@ -75,7 +76,7 @@ class ShellBatchPlasticityBinding {
   // their original bounds, including rejection of ShellHostBindingLimits::Vehicle().
   ShellPlasticityBindingReport InitializeCatalog(const ShellBatchBinding&,
       const ShellBatchPlasticityBindingInput&,const ShellPlasticityCatalogLimits&) noexcept;
-  // Explicit heterogeneous NIP3 mode. Legacy initializers remain LAW44-only.
+  // Explicit section roles. Legacy initializers remain NIP3 LAW44-only.
   ShellPlasticityBindingReport InitializeSections(const ShellBatchBinding&,
       const ShellBatchPlasticityBindingInput&,const ShellHostBindingLimits& = {}) noexcept;
   ShellPlasticityBindingReport InitializeSectionCatalog(const ShellBatchBinding&,
