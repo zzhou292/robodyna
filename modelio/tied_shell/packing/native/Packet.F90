@@ -7,6 +7,25 @@ subroutine native_tied_packing(nn,nq,nt,ns,ixq,ixt,slaves,order,rect,msr,nm,nsv,
   use setdef_mod
   use my_alloc_mod
   implicit none
+  ! Match the complete pinned external declarations. In particular, TYPE18
+  ! immediately follows SIRECT; LIMIT/IND belong only to the node-sort block.
+  interface
+    subroutine insurf(nrt,msn,ir,irect,surf_nodes,itab,msv,id,titr,ntag,s_msv,sirect,type18)
+      use packing_context, only : numnod
+      use names_and_titles_mod, only : nchartitle
+      implicit none
+      integer :: nrt,msn,ir,id
+      integer, intent(in) :: s_msv,sirect
+      integer :: irect(4,sirect/4),surf_nodes(nrt,4),itab(numnod),msv(s_msv)
+      character(len=nchartitle) :: titr
+      integer, intent(inout) :: ntag(2*numnod+1)
+      logical, intent(inout) :: type18
+    end subroutine
+    subroutine inpoint(msn,noint,brics,itab,msv)
+      implicit none
+      integer :: msn,noint,brics(*),itab(*),msv(*)
+    end subroutine
+  end interface
   integer(c_int), intent(in) :: nn,nq,nt,ns
   integer(c_int), intent(in) :: ixq(5,nq),ixt(4,nt),slaves(ns)
   integer(c_int), intent(out) :: order(nq+nt),rect(4,nq+nt),msr(nn),nm,nsv(ns),cleared
@@ -45,7 +64,7 @@ subroutine native_tied_packing(nn,nq,nt,ns,ixq,ixt,slaves,order,rect,msr,nm,nsv,
   id=1
   msvsize=nn
   sirect=4*nseg
-  call insurf(nseg,nm,ir,rect,surf,itab,msr,id,title,tags,msvsize,sirect,limit,ind,type18)
+  call insurf(nseg,nm,ir,rect,surf,itab,msr,id,title,tags,msvsize,sirect,type18)
   cleared=merge(1,0,all(tags(1:)==0))
   ! Exact CREATE_NODE_FROM_ELEMENT sorting block, after physical incidence
   ! has supplied the packet's distinct node list.

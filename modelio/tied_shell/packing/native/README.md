@@ -24,3 +24,9 @@ separate source gate. The full native set-expression/converter/parser and
 IKINE classification are not compiled here. Original source IDs are mapped to
 monotonic native indices independently in the tests. No app production sorting
 helper is used by this oracle.
+
+The packet declares explicit interfaces matching the pinned `INSURF` and
+`INPOINT` signatures. `TYPE18` follows `SIRECT` directly; the extracted
+node-sort locals `LIMIT` and `IND` are not `INSURF` arguments. This corrects
+the original packet's extra arguments, which were hidden numerically by its
+disabled native printing branch. No source sorting arithmetic is changed.
