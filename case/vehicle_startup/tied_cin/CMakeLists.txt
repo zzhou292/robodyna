@@ -24,7 +24,7 @@ if(ROBO_DYNA_TIED_CIN_ACTUAL)
       message(FATAL_ERROR "Original CIN fixture missing: ${input}")
     endif()
   endforeach()
-  add_executable(robo_dyna_tied_cin_actual_check tests/ActualSourceTest.cpp
+  add_executable(robo_dyna_tied_cin_actual_check tests/ActualSourceTest.cpp tests/MasterRoleCensusTest.cpp
     "${CMAKE_CURRENT_LIST_DIR}/../tied_classification/tests/ActualClassification.cpp")
   target_link_libraries(robo_dyna_tied_cin_actual_check PRIVATE robo_dyna_tied_cin_attachments tied_patch_oracle GTest::gtest_main)
   target_compile_options(robo_dyna_tied_cin_actual_check PRIVATE -fno-fast-math -ffp-contract=off)
