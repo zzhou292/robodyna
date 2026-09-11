@@ -1,0 +1,43 @@
+cmake_minimum_required(VERSION 3.22)
+project(TLTiedCinRuntime LANGUAGES CXX)
+enable_testing()
+get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+include("${TL_ROOT}/lib_src/constraints/tied_shell/TiedCinAttachment.cmake")
+include("${TL_ROOT}/lib_src/constraints/NodalRigidGroup.cmake")
+find_package(GTest REQUIRED)
+find_package(CUDAToolkit REQUIRED)
+# These storage methods are ordinary host C++; no device code or CUDA calls
+# execute in the host checks. The owning CUDA gate compiles the original TU.
+add_executable(tied_cin_runtime_host_test ValueTest.cpp StartupTest.cpp
+  "${CMAKE_CURRENT_LIST_DIR}/../nodal_vehicle/LayoutTest.cpp"
+  "${TL_ROOT}/lib_src/solvers/NodalCinStartup.cpp"
+  HostStorage.cpp)
+target_link_libraries(tied_cin_runtime_host_test PRIVATE tl_tied_cin_attachment
+  tl_nodal_rigid_group CUDA::cudart GTest::gtest_main)
+target_compile_options(tied_cin_runtime_host_test PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME tied_cin_runtime_host COMMAND tied_cin_runtime_host_test)
+option(TL_TIED_CIN_RUNTIME_NATIVE "Build complete native CIN caller qualification" OFF)
+if(TL_TIED_CIN_RUNTIME_NATIVE)
+  enable_language(Fortran)
+  include("${CMAKE_CURRENT_LIST_DIR}/Native.cmake")
+  add_executable(tied_cin_runtime_native_test NativeTest.cpp)
+  target_link_libraries(tied_cin_runtime_native_test PRIVATE tl_tied_cin_attachment
+    tied_cin_runtime_native CUDA::cudart GTest::gtest_main)
+  target_compile_options(tied_cin_runtime_native_test PRIVATE -fno-fast-math -ffp-contract=off)
+  add_test(NAME tied_cin_runtime_native COMMAND tied_cin_runtime_native_test)
+endif()
+option(TL_TIED_CIN_RUNTIME_CUDA "Build the actual common-owner CUDA gate" OFF)
+if(TL_TIED_CIN_RUNTIME_CUDA)
+  enable_language(CUDA)
+  add_subdirectory("${TL_ROOT}/lib_src/solvers" nodal-owner)
+  add_executable(tied_cin_runtime_cuda_test OwnerTest.cu)
+  if(TL_TIED_CIN_RUNTIME_NATIVE)
+    target_sources(tied_cin_runtime_cuda_test PRIVATE NativeOwnerTest.cu)
+    target_link_libraries(tied_cin_runtime_cuda_test PRIVATE tied_cin_runtime_native)
+  endif()
+  target_link_libraries(tied_cin_runtime_cuda_test PRIVATE tl_explicit_nodal_state GTest::gtest_main)
+  set_target_properties(tied_cin_runtime_cuda_test PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
+  target_compile_options(tied_cin_runtime_cuda_test PRIVATE --fmad=false --prec-div=true --prec-sqrt=true --ftz=false)
+  add_test(NAME tied_cin_runtime_cuda COMMAND tied_cin_runtime_cuda_test)
+  set_tests_properties(tied_cin_runtime_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+endif()

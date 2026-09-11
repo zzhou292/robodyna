@@ -58,12 +58,14 @@ NodalReport AdvanceStaggeredHistory(FENodalState& owner, const NodalTrialToken& 
 
 NodalReport FENodalState::Impl::AdvanceSealedNodal(
     std::uint64_t owner_id, std::uint64_t epoch, std::uint64_t attempt,
-    const NodalStepAdmission& admission, NodalTemporalScheme expected_scheme, bool with_rigid_groups) {
+    const NodalStepAdmission& admission, NodalTemporalScheme expected_scheme, bool with_rigid_groups, bool with_cin) {
   auto& s = *this;
   if (!s.usable) return {NodalStatus::DeviceFailure, "CUDA owner is poisoned"};
   if (!s.Matches(owner_id, epoch, attempt))
     return s.Reject(NodalStatus::StaleTrial, "Trial token belongs to another owner or attempt");
   if (s.phase != Phase::Sealed) return s.Reject(NodalStatus::WrongPhase, "Assembly has not been sealed");
+  if (bool(s.cin) != with_cin)
+    return s.Reject(NodalStatus::MissingStepAdmission, "CIN attachments require their dedicated advance operation");
   if(bool(s.rigid_groups)!=with_rigid_groups)
     return s.Reject(NodalStatus::MissingStepAdmission,"Attached rigid groups require their dedicated advance operation");
   if (s.config.temporal_scheme != expected_scheme)
@@ -108,7 +110,8 @@ NodalReport FENodalState::Impl::AdvanceSealedNodal(
     return s.Reject(NodalStatus::InvalidInput, "Elastic qualification fields supplied for constant loads");
   }
   cudaError_t error;
-  if(with_rigid_groups) error=s.LaunchRigidAdvance(admission.maximum_rotation_increment);
+  if(with_cin) error=s.LaunchCinAdvance(admission.maximum_rotation_increment);
+  else if(with_rigid_groups) error=s.LaunchRigidAdvance(admission.maximum_rotation_increment);
   else {
     Advance<<<1,1,0,s.stream>>>(s.control, s.accepted, s.trial, s.scratch, s.inverse, s.fixed,
         static_cast<std::uint32_t>(s.config.node_count), s.config.fixed_dt, s.candidate_kick_dt, admission.maximum_rotation_increment,

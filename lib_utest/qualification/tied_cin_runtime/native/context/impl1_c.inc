@@ -1,0 +1,1 @@
+      INTEGER, PARAMETER :: IMPL_S=0

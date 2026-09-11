@@ -12,6 +12,10 @@
 #include <memory>
 
 namespace tl::fea {
+struct NodalCinStartup;
+struct NodalCinAdmission;
+struct NodalCinAssemblyView;
+struct NodalCinSnapshotBuffer;
 enum class NodalStatus {
   Ok, InvalidInput, ResourceLimit, NotInitialized, WrongPhase, StaleTrial,
   ContributorFailure, InvalidOutput, UnsupportedRotation, StepTooLarge,
@@ -157,6 +161,7 @@ class NodalTrialToken {
   // cannot authorize work after destruction, even if a new owner occupies the
   // same host address. Presenting such a stale value is a supported rejection.
   friend class FENodalState;
+  friend NodalReport AdvanceStaggeredCin(FENodalState&, const NodalTrialToken&, const NodalCinAdmission&);
   friend NodalReport AdvanceTranslations(FENodalState&, const NodalTrialToken&);
   friend NodalReport AdvanceNodal(FENodalState&, const NodalTrialToken&, const NodalStepAdmission&);
   friend NodalReport AdvanceStaggeredPrescribed(FENodalState&, const NodalTrialToken&, const NodalStaggeredPrescribedAdmission&);
@@ -212,6 +217,14 @@ class FENodalState {
   NodalReport Initialize(const NodalStateConfig&, HostNodalKinematicsView,
                          const double* inverse_mass, const NodalDofConfig&,
                          const NodalRigidGroupModel&);
+  // Explicit CIN phase, with optional disjoint existing rigid groups. Complete
+  // current coefficients and source witnesses are supplied by the caller.
+  NodalReport Initialize(const NodalStateConfig&, HostNodalKinematicsView,
+                         const double* inverse_mass, const NodalDofConfig&,
+                         const NodalCinStartup&, const NodalRigidGroupModel* = nullptr);
+  NodalReport BorrowCinAssembly(const NodalTrialToken&, NodalCinAssemblyView*);
+  NodalReport CopyAcceptedCin(NodalCinSnapshotBuffer, NodalStamp*);
+  NodalReport CopyPreparedCin(const NodalTrialToken&, NodalCinSnapshotBuffer, NodalPreparedView*);
   NodalReport BeginTrial(NodalTrialToken*, NodalAssemblyView*);
   // Host-only comparison of a retained assembly SOURCE identity with this
   // owner's current accepted buffers and immutable mass/constraint storage.
@@ -269,6 +282,7 @@ class FENodalState {
   // also be disjoint from the token. No mutable group view is exported.
   NodalReport CopyPreparedRigidGroups(const NodalTrialToken&,NodalRigidGroupSnapshotBuffer,NodalPreparedView*);
  private:
+  friend NodalReport AdvanceStaggeredCin(FENodalState&, const NodalTrialToken&, const NodalCinAdmission&);
   friend NodalReport AdvanceTranslations(FENodalState&, const NodalTrialToken&);
   friend NodalReport AdvanceNodal(FENodalState&, const NodalTrialToken&, const NodalStepAdmission&);
   friend NodalReport AdvanceStaggeredPrescribed(FENodalState&, const NodalTrialToken&, const NodalStaggeredPrescribedAdmission&);
@@ -277,7 +291,8 @@ class FENodalState {
   friend NodalReport CompleteNodalValidation(FENodalState&, const NodalTrialToken&, const NodalValidationReceipt&);
   NodalReport InitializeImpl(const NodalStateConfig&, HostNodalKinematicsView,
                              const double* inverse_mass, const std::uint8_t* fixed,
-                             const NodalDofConfig*, const NodalRigidGroupModel* = nullptr);
+                             const NodalDofConfig*, const NodalRigidGroupModel* = nullptr,
+                             const NodalCinStartup* = nullptr);
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };

@@ -1,0 +1,1 @@
+      INTEGER, PARAMETER :: ANIM_N(32)=0, ANIM_V(32)=0

@@ -6,6 +6,7 @@
 namespace tl::fea {
 namespace nodal_detail {
 struct RigidStorage;
+struct CinStorage;
 enum class Phase { Idle, Assembling, Sealed, AwaitingValidation, Ready };
 struct Control {
   stability::RowBounds rows;
@@ -57,8 +58,11 @@ struct FENodalState::Impl {
   bool Matches(std::uint64_t owner, std::uint64_t epoch, std::uint64_t trial) const;
   NodalAssemblyView AcceptedAssemblySources() const noexcept;
   NodalReport AdvanceSealedNodal(std::uint64_t owner, std::uint64_t epoch, std::uint64_t trial,
-                                const NodalStepAdmission&, NodalTemporalScheme, bool with_rigid_groups=false);
+                                const NodalStepAdmission&, NodalTemporalScheme, bool with_rigid_groups=false,
+                                bool with_cin=false);
   cudaError_t LaunchRigidAdvance(double maximum_angle);
+  cudaError_t LaunchCinAdvance(double maximum_angle);
+  NodalReport StageCinSnapshot(const double* state);
   NodalReport StageRigidSnapshot(const double* state);
   NodalReport StageNodalSnapshot(const double* state, bool prepared);
   NodalStateConfig config;
@@ -82,5 +86,6 @@ struct FENodalState::Impl {
   std::vector<double> staging;
   std::vector<std::uint8_t> constraint_staging;
   std::unique_ptr<nodal_detail::RigidStorage> rigid_groups;
+  std::unique_ptr<nodal_detail::CinStorage> cin;
 };
 }  // namespace tl::fea

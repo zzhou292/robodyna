@@ -1,0 +1,1 @@
+      INTEGER, PARAMETER :: OUTP_N(32)=0

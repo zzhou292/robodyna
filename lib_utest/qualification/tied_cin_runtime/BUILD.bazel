@@ -1,0 +1,23 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+
+cc_test(
+    name = "tied_cin_runtime_host_check",
+    size = "small",
+    srcs = ["Fixture.h", "ValueTest.cpp", "StartupTest.cpp"],
+    deps = ["//lib_src/solvers:explicit_nodal_state",
+            "//lib_utest/qualification/tied_cin_attachment:test_support",
+            "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+
+cuda_test(
+    name = "tied_cin_runtime_owner_check",
+    size = "small",
+    srcs = ["Fixture.h", "OwnerFixture.h", "OwnerTest.cu"],
+    deps = ["//lib_src/solvers:explicit_nodal_state",
+            "//lib_utest/qualification/tied_cin_attachment:test_support",
+            "@googletest//:gtest_main"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    tags = ["exclusive", "gpu"],
+)

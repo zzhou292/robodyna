@@ -1,0 +1,33 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+#pragma once
+#include "NodalCinLayout.h"
+#include <vector>
+
+namespace tl::fea::nodal_detail {
+struct CinStorage {
+  CinStorage() = default;
+  ~CinStorage();
+  CinStorage(const CinStorage&) = delete;
+  CinStorage& operator=(const CinStorage&) = delete;
+  constraints::tied_shell::TiedCinAttachmentModel source;
+  std::vector<constraints::tied_shell::cin::StageRow> rows;
+  std::vector<constraints::tied_shell::cin::ActiveWitness> witnesses;
+  std::vector<std::uint8_t> dependent;
+  std::vector<std::uint32_t> first_witness;
+  CinLayout layout;
+  std::size_t state_offset = 0;
+  std::uint64_t qualification_id = 0;
+  void* arena = nullptr;
+  constraints::tied_shell::cin::StageView device;
+  std::uint8_t* activity = nullptr;
+  constraints::tied_shell::Patch* patches = nullptr;
+  double* work = nullptr;
+  cudaError_t Upload(cudaStream_t);
+  cudaError_t ResetTrial(cudaStream_t);
+  void InitializeState(double* state, const NodalCinStartup&, const NodalDofConfig&) const noexcept;
+};
+NodalReport ForecastCinStorage(const NodalCinStartup&, const NodalStateConfig&, CinLayout&) noexcept;
+NodalReport PrepareCinStorage(const NodalCinStartup&, const NodalStateConfig&,
+    HostNodalKinematicsView, const double*, const NodalDofConfig&,
+    const NodalRigidGroupModel*, const CinLayout&, std::unique_ptr<CinStorage>&);
+} // namespace tl::fea::nodal_detail

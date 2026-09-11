@@ -12,7 +12,8 @@ struct NodalCoefficients {
 
 struct CoefficientInput {
   NodalCoefficients secondary{};
-  // Native MINER: initial master inertia, not the current assembled IN array.
+  // Native MINER: entry IN snapshot before this force-stage transfer. The
+  // retained field name is historical; this is not immutable time-zero J.
   double initial_master_inertia[4]{};
 };
 

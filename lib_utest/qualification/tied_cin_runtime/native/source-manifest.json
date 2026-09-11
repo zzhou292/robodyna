@@ -1,0 +1,67 @@
+{
+  "repository": "https://github.com/OpenRadioss/OpenRadioss",
+  "commit": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Complete ordered CIN force, diagnostic and motion routines; serial no-release witness; exact INIEND seed. Packet kick is an explicit test operation, not a native integrator extraction.",
+  "sources": [
+    {
+      "owner": "tl",
+      "path": "lib_utest/qualification/tied_shell_patch/native/original/engine/source/interfaces/interf/i2for28_cin.F",
+      "upstream_path": "engine/source/interfaces/interf/i2for28_cin.F",
+      "size": 16266,
+      "sha256": "4625048acc41c3f8361bdabe142dbc9ebd68b183c00c119d496daa6231a5495c",
+      "git_blob_sha1": "7244b940955a63931c40c2e3e3601bd5498be0dd",
+      "output": "FullForce.F",
+      "first_line": 33,
+      "last_line": 530,
+      "fragment_sha256": "cf6126b5c556b787d53cfdd429de45e6e3102ff420c772d6de89c8ab29c2cdcf"
+    },
+    {
+      "owner": "tl",
+      "path": "lib_utest/qualification/tied_shell_patch/native/original/engine/source/interfaces/interf/i2vit3.F",
+      "upstream_path": "engine/source/interfaces/interf/i2vit3.F",
+      "size": 24780,
+      "sha256": "235e8bb8335b28e80d61b34c5e470867522fb54d9837b20b384930413de24a1d",
+      "git_blob_sha1": "59fad59670e7f838502dd0b424a998b1d0eee9ab",
+      "output": "FullMotion.F",
+      "first_line": 315,
+      "last_line": 515,
+      "fragment_sha256": "b9b94d077374b7b243a54b4cf39710032bd9645a32e5d88a3d0abf19f9f93484"
+    },
+    {
+      "owner": "cache",
+      "path": "original/engine/source/interfaces/interf/i2forces.F",
+      "upstream_path": "engine/source/interfaces/interf/i2forces.F",
+      "size": 7490,
+      "sha256": "ddb4e18f782485b72de9810397976b67744aab2636700a1b337b2212e0ea839d",
+      "git_blob_sha1": "3f9eb5f326cc4df0c1c801980405bfdee8496fb4",
+      "output": "FullDiagnostics.F",
+      "first_line": 50,
+      "last_line": 183,
+      "fragment_sha256": "6be37669134d05e634e1756c94694aa31e2036cb26548ca4b2d8cd85842ca789"
+    },
+    {
+      "owner": "cache",
+      "path": "original/engine/source/interfaces/interf/chkstfn3.F",
+      "upstream_path": "engine/source/interfaces/interf/chkstfn3.F",
+      "size": 147398,
+      "sha256": "c30b302d520cc9007329a1cb728c8ac798b9f2fd2093cb4138ed53e1cb07f37a",
+      "git_blob_sha1": "c13544a47c973e041d03264f36c2508ca2bae9e5",
+      "output": "FullWitness.F",
+      "first_line": 3285,
+      "last_line": 3426,
+      "fragment_sha256": "38be1e7bfcc11c024031d2ea90c88bd4ccbbc9d47cc739dde21c3a4a2bd2522b"
+    },
+    {
+      "owner": "cache",
+      "path": "original/starter/source/interfaces/inter3d1/iniend.F",
+      "upstream_path": "starter/source/interfaces/inter3d1/iniend.F",
+      "size": 17966,
+      "sha256": "3673b4a5ddce84b44188c7ed89b989911f7338d85514b56d4753951ee61c01d4",
+      "git_blob_sha1": "9fe4d1601331572c3ff8ea0339cdd0f451c6ee20",
+      "output": "Seed.inc",
+      "first_line": 300,
+      "last_line": 301,
+      "fragment_sha256": "55071153e0dfc2d52149a753099fe49f7e454434cb79523ed5a2f8e7949be0a7"
+    }
+  ]
+}
