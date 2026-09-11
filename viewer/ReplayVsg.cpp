@@ -9,13 +9,18 @@ std::array<std::uint32_t,2> FixedReplayVisual::FramebufferSize() const {
     const auto extent=m_window->extent2D();
     return {extent.width,extent.height};
 }
-ReplayLighting ConfigureReplayVisual(FixedReplayVisual& visual,chrono::ChSystem& system,
-        const visual::ReplayCamera& camera) {
+std::shared_ptr<FixedReplayVisual> CreateReplayVisual() {
 #ifdef ROBO_DYNA_CHRONO_DATA_DIR
     chrono::SetChronoDataPath(ROBO_DYNA_CHRONO_DATA_DIR);
 #endif
     output::Require(std::filesystem::is_regular_file(chrono::GetChronoDataFile("logo_chrono_alpha.png")),
         "Chrono visualization data directory is missing its logo");
+    output::Require(std::filesystem::is_regular_file(chrono::GetChronoDataFile("vsg/fonts/OpenSans-Bold.vsgb")),
+        "Chrono visualization data directory is missing its VSG font");
+    return std::make_shared<FixedReplayVisual>();
+}
+ReplayLighting ConfigureReplayVisual(FixedReplayVisual& visual,chrono::ChSystem& system,
+        const visual::ReplayCamera& camera) {
     visual.AttachSystem(&system);
     visual.SetLoadingThreadCount(1);
     visual.SetTargetRenderFPS(0);

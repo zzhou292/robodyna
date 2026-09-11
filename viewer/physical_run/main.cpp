@@ -39,7 +39,7 @@ int main(int argc,char** argv) {
             capture_directory=options.capture;
             exporter=std::make_unique<app::Capture>(capture_directory,replay.index().frames.size(),options.capture_bytes);
         }
-        auto visual=std::make_shared<crash::viewer::FixedReplayVisual>();
+        auto visual=crash::viewer::CreateReplayVisual();
         app::Playback playback;
         const auto light=crash::viewer::ConfigureReplayVisual(*visual,scene.system(),*scene.camera());
         visual->AddGuiComponent(app::MakeOverlay(scene,playback,capture,options.frames_per_second));

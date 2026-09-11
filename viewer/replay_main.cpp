@@ -248,12 +248,8 @@ int main(int argc, char** argv) {
             Require(fs::create_directory(directory), "cannot create capture directory");
             capture_directory = directory;
         }
-#ifdef ROBO_DYNA_CHRONO_DATA_DIR
-        chrono::SetChronoDataPath(ROBO_DYNA_CHRONO_DATA_DIR);
-#endif
-        Require(fs::is_regular_file(chrono::GetChronoDataFile("logo_chrono_alpha.png")), "Chrono visualization data directory is missing its logo");
         Playback playback;
-        auto visual = std::make_shared<FixedReplayVisual>();
+        auto visual = crash::viewer::CreateReplayVisual();
         const auto light=crash::viewer::ConfigureReplayVisual(*visual,scene.system(),*scene.camera());
         const double light_azimuth=light.azimuth,light_elevation=light.elevation;
         visual->AddGuiComponent(std::make_shared<ReplayOverlay>(info, scene, playback, capture, options.fps));
