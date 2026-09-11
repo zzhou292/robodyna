@@ -1,0 +1,111 @@
+{
+  "revision": "3eca05d76b7dd2b190769c3469a6cdbad1c4b441",
+  "scope": "Optional mapped global ReduceNodes observer only. Complete frozen source and unchanged physical/local/certified interval leaves retained. New tree certifies its own nominal; no constitutive/nodal force/STI change.",
+  "files": [
+    {
+      "path": "lib_src/collision/NodalWallContactEvaluation.cuh",
+      "bytes": 6766,
+      "sha256": "60b03ea95817b1ed0badd2461a2a37b76c3348f688a7bc5c1f452989071978cd"
+    },
+    {
+      "path": "lib_src/collision/NodalWallContactReduction.h",
+      "bytes": 1613,
+      "sha256": "8be6f84bc4ef8ba8f079a10e532b904e04bd1a15631d55ca5c4ab22b52d4027d"
+    },
+    {
+      "path": "lib_src/collision/Q4ContactBounds.h",
+      "bytes": 8505,
+      "sha256": "f5368d22406e773c3e24c4b8025b94b4a6b75144ab08e4aa12fda95679bdea52"
+    },
+    {
+      "path": "lib_src/collision/NodalWallContactDiagnostics.h",
+      "bytes": 4680,
+      "sha256": "4a61fb9f8ab3fd6a70978cffbb50b105b633e9ae2e8f3e7edf027f3a16604585"
+    },
+    {
+      "path": "lib_src/collision/NodalWallContactKernels.cuh",
+      "bytes": 4468,
+      "sha256": "929dd58ad7f312f827a97fe5413203c103d8b11afeb81f375cf4751f931eecc2"
+    },
+    {
+      "path": "lib_src/collision/NodalWallContactScatter.h",
+      "bytes": 2491,
+      "sha256": "4042467d5520a119bd2f2bf18b520a34e4b81408f54427b271e3f63a6a4c7f47"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Kernels.cuh",
+      "bytes": 3580,
+      "sha256": "2944f61652523c82030d88abd7ece032389bb5b16007bca8690c8a32e8ee148f"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Scatter.cuh",
+      "bytes": 2720,
+      "sha256": "69076cc6648d56d8ff7dca48993fb777fdfd7e05c2c2453f71740207e742514b"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/ScatterNode.h",
+      "bytes": 1257,
+      "sha256": "5d6038cd1572f828017f2ba118c77b0ee04948dbdba642f13669d37736ff2407"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/ObserverTypes.h",
+      "bytes": 1461,
+      "sha256": "5a7ed4c80eb8fb84bee7b18c759003f75310a908d6b13ee8fd5c55528cc9aaf9"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/ObserverValues.h",
+      "bytes": 4989,
+      "sha256": "6512f32bbf7f82e6783f0a74648b38e954dac36012d15dfaeecac16a14efe31d"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/ObserverReduction.cuh",
+      "bytes": 3551,
+      "sha256": "4b7538260d8a8fed84eef1a067c6171db8c0730615279118a23f309ba5144a3c"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Evaluation.cuh",
+      "bytes": 3561,
+      "sha256": "dbe4ebfe95ac764aa7b7551c9970f580a23665beb5174c6cb47d6021e3acc56c"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Layout.h",
+      "bytes": 1278,
+      "sha256": "2562d4a6e7a3c28fb9ed44667885fd60ba7db6673834f412b34b92b10d79a411"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Layout.cpp",
+      "bytes": 1665,
+      "sha256": "ea763892887820e148812af91308f12d90d6f0c1f2ed9958dd66850692692a84"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Initialize.cpp",
+      "bytes": 5507,
+      "sha256": "f35cfc27a3908965a2027d260111bea407f33ff45588896dcf8aa450c3886ec6"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
+      "bytes": 10124,
+      "sha256": "08d5745250d827d4bcdde1e3f749e39f4cd2982a61a4d545d0c5fae6ac07a882"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_observers/reference/NodalWallContactEvaluation.cuh",
+      "bytes": 6766,
+      "sha256": "60b03ea95817b1ed0badd2461a2a37b76c3348f688a7bc5c1f452989071978cd"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_observers/SerialObservers.h",
+      "bytes": 1408,
+      "sha256": "381236b7b5a165149acc5874eb806f281abde41f579523610ef39311bcb51cf3"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_observers/Truth.h",
+      "bytes": 3757,
+      "sha256": "3687ad5481575e244e32823b5f98f067b09632597130d8541ef82464e10ad433"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_observers/IntervalTruth.h",
+      "bytes": 2337,
+      "sha256": "d9aec40fe70124b94afe3b480ba3cfb2c8d2c5d6224131e43621ea29eeaf3fc5"
+    }
+  ]
+}

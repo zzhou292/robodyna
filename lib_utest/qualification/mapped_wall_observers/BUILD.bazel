@@ -1,0 +1,9 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "host", size = "small",
+    srcs = ["HostTest.cpp", "IntervalTest.cpp", "Fixture.h", "Truth.h", "IntervalTruth.h", "SerialObservers.h"],
+    deps = ["//lib_src/collision:nodal_wall_mapped", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+# Actual frozen physical point/parent CUDA fixtures are owned by the local CMake
+# target, alongside their existing mapped_wall_evaluation owning gate.

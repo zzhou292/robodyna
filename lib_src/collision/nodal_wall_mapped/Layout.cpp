@@ -14,7 +14,8 @@ bool MakeLayout(std::size_t parents,std::size_t nodes,std::size_t groups,
       !builder.Append<double>(groups,next.traces) ||
       !builder.Append<double>(nodes,next.stiffness) ||
       !builder.Append<double>(nodes,next.inverse) ||
-      !builder.Append<Summary>(1,next.summary)) return false;
+      !builder.Append<Summary>(1,next.summary) ||
+      !builder.Append<ObserverSummary>(ObserverBlocks(nodes),next.observer)) return false;
   next.bytes=builder.bytes();
   output=next;
   return true;
@@ -27,6 +28,6 @@ Sidecar Bind(void* base,const Layout& layout) noexcept {
     ArenaPointer<RigidContactBody>(base,layout.bodies),
     ArenaPointer<double>(base,layout.traces),ArenaPointer<double>(base,layout.stiffness),
     ArenaPointer<double>(base,layout.inverse),ArenaPointer<Summary>(base,layout.summary),
-    layout.bodies.count};
+    layout.bodies.count,ArenaPointer<ObserverSummary>(base,layout.observer)};
 }
 } // namespace tlfea::contact::nodal_wall_mapped

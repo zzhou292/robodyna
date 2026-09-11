@@ -2,6 +2,7 @@
 #pragma once
 #include "../NodalWallContactArena.h"
 #include "../RigidNormalResponse.h"
+#include "ObserverTypes.h"
 namespace tlfea::contact::nodal_wall_mapped {
 struct Summary {
   Q4CertifiedIntegral removed_potential;
@@ -20,9 +21,10 @@ struct Sidecar {
   double* inverse=nullptr; // Current accepted inverse, frozen only for this attempt.
   Summary* summary=nullptr;
   std::size_t groups=0;
+  ObserverSummary* observer=nullptr;
 };
 struct Layout {
-  tl::util::ArenaRegion accepted,proposed,roots,bodies,traces,stiffness,inverse,summary;
+  tl::util::ArenaRegion accepted,proposed,roots,bodies,traces,stiffness,inverse,summary,observer;
   std::size_t bytes=0;
 };
 bool MakeLayout(std::size_t parents,std::size_t nodes,std::size_t groups,

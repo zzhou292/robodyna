@@ -121,7 +121,7 @@ NodalWallDeviceReport NodalWallMappedContact::AssembleAccepted(fe::FENodalState&
   BeginAssembly<<<1,1,0,state.stream>>>(state.device,state.remote,view);
   if(cudaPeekAtLastError()!=cudaSuccess) return state.ReadControl();
   m::parallel::Evaluate(state.device,state.remote,view.accepted,Identity(state.config,view),
-      nodes,parents,state.stream,true);
+      nodes,parents,state.stream,true,{state.remote.observer,state.layout.observer.count});
   if(cudaPeekAtLastError()!=cudaSuccess) return state.ReadControl();
   CheckResponse<<<1,1,0,state.stream>>>(state.device,state.remote,view);
   if(cudaPeekAtLastError()!=cudaSuccess) return state.ReadControl();
@@ -174,7 +174,8 @@ NodalWallDeviceReport NodalWallMappedContact::EvaluateCandidate(fe::FENodalState
   BeginCandidate<<<1,1,0,state.stream>>>(state.device,state.remote,view);
   if(cudaPeekAtLastError()!=cudaSuccess) return state.ReadControl();
   m::parallel::Evaluate(state.device,state.remote,view.kinematics,identity,
-      state.shadow.model.node_count,state.shadow.model.parent_count,state.stream,false);
+      state.shadow.model.node_count,state.shadow.model.parent_count,state.stream,false,
+      {state.remote.observer,state.layout.observer.count});
   if(cudaPeekAtLastError()!=cudaSuccess) return state.ReadControl();
   FinishCandidate<<<1,1,0,state.stream>>>(state.device,state.remote,view);
   report=state.ReadControl();

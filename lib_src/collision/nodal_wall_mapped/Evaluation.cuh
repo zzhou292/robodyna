@@ -2,12 +2,14 @@
 #pragma once
 #include "Layout.h"
 #include "../NodalWallContactKernels.cuh"
+#include "ObserverReduction.cuh"
 namespace tlfea::contact::nodal_wall_mapped::parallel {
 namespace d=nodal_wall_device_detail;
 namespace fe=tl::fea;
 using Code=NodalWallDeviceStatus;
 // Stream boundaries separate writers of point shares, parent certificates and
-// global diagnostics. No floating atomic or change to a certificate sum.
+// global diagnostics. The optional tree changes only the global observer fold;
+// point/parent certificate arithmetic and source-order error priority stay fixed.
 static __global__ void Points(d::Storage* pointer,Sidecar side,fe::DeviceNodalKinematicsView k,
     NodalWallDiagnostics identity,bool reset_base) {
   auto& storage=*pointer;
@@ -58,7 +60,8 @@ inline unsigned Blocks(std::size_t count) {
   return 1u+static_cast<unsigned>((count-1)/d::Workers);
 }
 inline void Evaluate(d::Storage* storage,Sidecar side,fe::DeviceNodalKinematicsView k,
-    NodalWallDiagnostics identity,std::size_t nodes,std::size_t parents,cudaStream_t stream,bool reset_base) {
+    NodalWallDiagnostics identity,std::size_t nodes,std::size_t parents,cudaStream_t stream,bool reset_base,
+    ObserverScratch observers={}) {
   const auto largest=nodes>parents?nodes:parents;
   Points<<<Blocks(largest),d::Workers,0,stream>>>(storage,side,k,identity,reset_base);
   if(cudaPeekAtLastError()!=cudaSuccess) return;
@@ -66,6 +69,8 @@ inline void Evaluate(d::Storage* storage,Sidecar side,fe::DeviceNodalKinematicsV
   if(cudaPeekAtLastError()!=cudaSuccess) return;
   Parents<<<Blocks(parents),d::Workers,0,stream>>>(storage,side);
   if(cudaPeekAtLastError()!=cudaSuccess) return;
-  Finish<<<1,1,0,stream>>>(storage,side,k);
+  if(observers.data && ObserverBlocks(nodes) && observers.count>=ObserverBlocks(nodes))
+    ReduceGlobalObservers(storage,side,k,observers,stream);
+  else Finish<<<1,1,0,stream>>>(storage,side,k);
 }
 } // namespace tlfea::contact::nodal_wall_mapped::parallel
