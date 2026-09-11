@@ -15,11 +15,20 @@ TEST(NativeCoefficientAdmission, ExactCompleteScopeWithoutConstrainedMassRetaggi
   EXPECT_FALSE(native::Admitted(grouped,{18,2,6},Mass::kUnspecified,8));
   EXPECT_FALSE(native::Admitted(grouped,{17,1,6},Mass::kUnspecified,8));
   EXPECT_FALSE(native::Admitted(grouped,{17,2,7},Mass::kUnspecified,8));
-  for(Info partial:std::array<Info,7>{{{17,0,0},{0,2,6},{17,2,0},{17,0,6},{0,0,6},{17,3,6},{17,1,9}}}) {
+  // The separately qualified two-member branch makes three complete groups
+  // of two valid. A fourth group with only six members remains incomplete.
+  EXPECT_TRUE(native::ValidScope({17,3,6},8));
+  EXPECT_TRUE(native::Admitted({17,3,6},{17,3,6},Mass::kUnspecified,8));
+  for(Info partial:std::array<Info,7>{{{17,0,0},{0,2,6},{17,2,0},{17,0,6},{0,0,6},{17,4,6},{17,1,9}}}) {
     EXPECT_FALSE(native::ValidScope(partial,8));
     EXPECT_FALSE(native::Admitted(partial,partial,Mass::kUnspecified,8));
   }
   EXPECT_FALSE(native::ValidScope({17,SIZE_MAX,SIZE_MAX},SIZE_MAX));
+  // The old unmapped contributor path still excludes the new PART assembly
+  // and authenticates both new identity fields even for an otherwise equal row.
+  EXPECT_FALSE(native::ValidScope({17,2,6,1,18},8));
+  EXPECT_FALSE(native::Admitted(grouped,{17,2,6,0,18},Mass::kUnspecified,8));
+  EXPECT_FALSE(native::SameScope(grouped,{17,2,6,1,0}));
 }
 TEST(NativeCoefficientAdmission, LegacyTranslationPsdProofStillRejectsGroupedOwnerMass) {
   // Early mass-tag rejection must not read fabricated physical buffers.
