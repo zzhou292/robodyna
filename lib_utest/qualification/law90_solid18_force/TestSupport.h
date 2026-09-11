@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
+#include <gtest/gtest.h>
 #include "lib_src/elements/solid18/total_strain/Force.h"
 #include "lib_utest/qualification/law90_point/TestSupport.h"
 #include "lib_utest/qualification/law90_solid18_reference/TestSupport.h"
