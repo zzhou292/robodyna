@@ -25,7 +25,7 @@ TL_LAYERED_WORK_HD inline bool MatchesLayeredMaterial(const Parameters& p,
 template<class SectionResult,class HistoryValues>
 TL_LAYERED_WORK_HD inline bool ApplyLayeredSectionWork(const SectionResult& section,
     const double (&dx)[8],double reference_thickness,double area,double viscosity,
-    HistoryValues& h) noexcept {
+    HistoryValues& h,bool element_active=true) noexcept {
   for(unsigned i=0;i<8;++i) h.strain_curvature[i]=h.strain_curvature[i]+dx[i];
   double membrane=h.stress[0]*dx[0]+h.stress[1]*dx[1]+h.stress[2]*dx[2]+h.stress[3]*dx[3]+h.stress[4]*dx[4];
   double bending=h.bending_stress[0]*dx[5]+h.bending_stress[1]*dx[6]+h.bending_stress[2]*dx[7];
@@ -35,6 +35,12 @@ TL_LAYERED_WORK_HD inline bool ApplyLayeredSectionWork(const SectionResult& sect
   h.stress[0]=h.stress[0]+viscosity*(dx[0]+.5*dx[1]);
   h.stress[1]=h.stress[1]+viscosity*(dx[1]+.5*dx[0]);
   h.stress[2]=h.stress[2]+viscosity*dx[2]*(1./3.);
+  // MULAWC masks after viscosity, before the new-force half of stress work.
+  // The default active path keeps the existing operation sequence unchanged.
+  if(!element_active) {
+    for(double& value:h.stress) value*=0.;
+    for(double& value:h.bending_stress) value*=0.;
+  }
   membrane=membrane+h.stress[0]*dx[0]+h.stress[1]*dx[1]+h.stress[2]*dx[2]+h.stress[3]*dx[3]+h.stress[4]*dx[4];
   bending=bending+h.bending_stress[0]*dx[5]+h.bending_stress[1]*dx[6]+h.bending_stress[2]*dx[7];
   const double half_volume=.5*reference_thickness*area*1.;

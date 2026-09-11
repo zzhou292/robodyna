@@ -23,3 +23,9 @@ cc_library(
     hdrs = ["ShellLayeredWork.h"],
     deps = [":shell_nip3", "//lib_src/math:quaternion"],
 )
+
+cc_library(
+    name = "shell_layered_j2_failure",
+    hdrs = ["ShellLayeredJ2Failure.h", "ShellLayeredJ2FailureUpdate.h", "ShellLayeredJ2FailureWork.h"],
+    deps = [":shell_layered_j2", "//lib_src/materials/failure:shell_constant_plastic_failure"],
+)

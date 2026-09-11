@@ -82,6 +82,17 @@ The adapters retain that shared coefficient helper.
 J/m3. It is not total stress work or a guaranteed exact split into recoverable
 and dissipated energy. Multiplication by section thickness weight and area,
 and consistency with discrete resultant work, remain section responsibilities.
+Here `delta_plastic_strain` is the rounded subtraction of accumulated new and old
+PLA, as in MULAWC:2011. It can differ from the constitutive `plastic_increment`,
+which retains the actual native point iterate. The failure-caller qualification
+corrected this diagnostic's earlier use of that iterate; force/history/clock
+semantics and existing archived results are unchanged by the correction.
+
+An explicit trailing `input.element_active=false` selects native parent OFF=0.
+Predictor, rate and hardening evaluation still run; plastic gather is disabled
+and local thickness additions are zero. The default remains active. Point damage,
+saved-stress masking and final section-resultant masking belong to the separate
+failure-aware NIP3 caller, not this constitutive leaf.
 
 Focused local tests cover invalid input and unchanged output, a late
 curve-domain failure with exact retry, and seven 64-increment cyclic sequences

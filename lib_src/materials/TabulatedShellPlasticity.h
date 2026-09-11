@@ -53,6 +53,9 @@ struct TabulatedShellPlasticityInput {
   double strain_increment[5]{}; // XX, YY, engineering XY, YZ, ZX.
   double transverse_shear_modulus = 0; // Actual element/section GS, Pa.
   double dt = 0, total_strain_rate_per_s = 0; // Required only when rate.enabled.
+  // Native parent OFF==1. Inactive parents still evaluate predictor/rate fields;
+  // only plastic gather and local thickness additions are disabled.
+  bool element_active = true;
 };
 struct TabulatedShellPlasticityResult {
   TabulatedShellPlasticityHistory history{};
@@ -62,7 +65,8 @@ struct TabulatedShellPlasticityResult {
   double plastic_thickness_strain = 0;
   double yield_before_pa = 0;
   double equivalent_stress_pa = 0;
-  // Native MULAWC diagnostic: .5*(old/new equivalent stress)*delta PLA.
+  // Native MULAWC diagnostic: .5*(old/new equivalent stress)*rounded delta PLA.
+  // The accumulated-PLA subtraction can differ from plastic_increment.
   // J/m3. This is not total stress work or a complete energy decomposition.
   double plastic_work_density = 0;
 };

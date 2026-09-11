@@ -34,7 +34,7 @@ template<class Response> bool DecodeResponse(const Input& in,
     if(candidate.filtered_rate_per_s<0) return false;
     candidate.equivalent_stress=Equivalent(candidate.stress);
     candidate.plastic_work_density=static_cast<double>(.5L*(Equivalent(in.accepted_stress)+
-        candidate.equivalent_stress)*candidate.plastic_increment);
+        candidate.equivalent_stress)*(candidate.plastic_strain-in.accepted_plastic_strain));
     return std::isfinite(candidate.equivalent_stress)&&std::isfinite(candidate.plastic_work_density);
 }
 } // namespace tl::qualification::law44::detail

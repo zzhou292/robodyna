@@ -55,9 +55,20 @@ TL_SHELL_SECTION_HD inline void LayeredJ2Resultants(const ShellLayeredJ2History&
 // The effective force thickness stays fixed within this interval. The point
 // law supplies two native thickness additions for each layer. Failure is atomic
 // even if the third layer rejects its curve domain after the first two succeed.
-TL_SHELL_SECTION_HD inline PointStatus UpdateShellLayeredJ2(const PointParameters& p,
+namespace layered_j2_detail {
+struct KeepPoint {
+  TL_SHELL_SECTION_HD PointStatus operator()(unsigned,
+      const tl::material::TabulatedShellPlasticityHistory&,
+      const tl::material::TabulatedShellPlasticityResult&) const noexcept {
+    return PointStatus::Ok;
+  }
+};
+// Observer sees the complete native current point before section accumulation.
+// It cannot change the constitutive result or the ordered reduction.
+template<class Observer>
+TL_SHELL_SECTION_HD inline PointStatus Update(const PointParameters& p,
     const ShellLayeredJ2History& accepted,const ShellLayeredJ2Input& in,
-    ShellLayeredJ2Result& output) noexcept {
+    bool element_active,Observer& observer,ShellLayeredJ2Result& output) noexcept {
   if(!tl::math::Finite(in.reference_thickness)||!(in.reference_thickness>0)||
      !tl::math::Finite(in.reported_thickness)||!(in.reported_thickness>=1.e-30)||
      !tl::math::Finite(in.transverse_shear_modulus)||!(in.transverse_shear_modulus>0))
@@ -76,10 +87,13 @@ TL_SHELL_SECTION_HD inline PointStatus UpdateShellLayeredJ2(const PointParameter
     tl::material::TabulatedShellPlasticityInput point_input;
     point_input.transverse_shear_modulus=in.transverse_shear_modulus;
     point_input.dt=in.dt; point_input.total_strain_rate_per_s=total_rate;
+    point_input.element_active=element_active;
     Nip3LayerIncrement(in,layer,point_input.strain_increment);
     tl::material::TabulatedShellPlasticityResult point;
     const auto status=tl::material::UpdateLaw44ShellPlasticity(p,accepted.point[layer],point_input,point);
     if(status!=PointStatus::Ok) return status;
+    const auto observed=observer(layer,accepted.point[layer],point);
+    if(observed!=PointStatus::Ok) return observed;
     candidate.history.point[layer]=point.history;
     const double weight=LayerForceWeight(layer),layer_thickness=weight*in.reference_thickness;
     candidate.reported_thickness=candidate.reported_thickness+point.elastic_thickness_strain*layer_thickness;
@@ -103,5 +117,13 @@ TL_SHELL_SECTION_HD inline PointStatus UpdateShellLayeredJ2(const PointParameter
   for(double x:candidate.material_stress) if(!tl::math::Finite(x)) return PointStatus::NonfiniteResult;
   for(double x:candidate.bending_stress) if(!tl::math::Finite(x)) return PointStatus::NonfiniteResult;
   output=candidate; return PointStatus::Ok;
+}
+} // namespace layered_j2_detail
+
+TL_SHELL_SECTION_HD inline PointStatus UpdateShellLayeredJ2(const PointParameters& p,
+    const ShellLayeredJ2History& accepted,const ShellLayeredJ2Input& in,
+    ShellLayeredJ2Result& output) noexcept {
+  layered_j2_detail::KeepPoint observer;
+  return layered_j2_detail::Update(p,accepted,in,true,observer,output);
 }
 } // namespace tl::fea::sections

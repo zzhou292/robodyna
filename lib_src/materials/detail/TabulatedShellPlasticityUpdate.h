@@ -53,11 +53,12 @@ UpdateLaw44ShellPlasticity(const TabulatedShellPlasticityParameters& p,
   s[4] = accepted.stress[4] + input.transverse_shear_modulus*dx[4];
   const double nu = p.poisson_ratio, nnu11 = nu/(1. - nu);
   trial.elastic_thickness_strain = -(dx[0] + dx[1])*nnu11;
+  if (!input.element_active) trial.elastic_thickness_strain *= 0.;
   double s1 = s[0] + s[1], s2 = s[0] - s[1];
   const double aa = .25*s1*s1, bb = .75*s2*s2 + 3.*s[2]*s[2];
   const double svm = ::sqrt(aa + bb);
   if (!tl::math::Finite(svm)) return Status::NonfiniteResult;
-  if (svm > yield) {
+  if (svm > yield && input.element_active) {
     hardening = ::fmax(0., hardening);
     double next = (svm - yield)/(p.three_g + hardening), dr = 0, pp = 0, qq = 0;
     trial.tangent_ratio = hardening/(hardening + p.young_pa);
@@ -93,7 +94,7 @@ UpdateLaw44ShellPlasticity(const TabulatedShellPlasticityParameters& p,
     return p.hardening==ShellPlasticityHardeningKind::Tabulated?Status::CurveDomainExceeded:Status::HardeningDomainExceeded;
   trial.equivalent_stress_pa = tabulated_shell_detail::EquivalentStress(s);
   trial.plastic_work_density = .5*(tabulated_shell_detail::EquivalentStress(accepted.stress) +
-      trial.equivalent_stress_pa)*trial.plastic_increment;
+      trial.equivalent_stress_pa)*(trial.history.plastic_strain-accepted.plastic_strain);
   for (double x : s) if (!tl::math::Finite(x)) return Status::NonfiniteResult;
   if (!tl::math::Finite(trial.tangent_ratio) || !tl::math::Finite(trial.elastic_thickness_strain) ||
       !tl::math::Finite(trial.plastic_thickness_strain) ||
