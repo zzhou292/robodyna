@@ -124,9 +124,8 @@ set_tests_properties(utest_step_stability PROPERTIES PROCESSORS 1
 add_executable(utest_surface_geometry "${TL_ROOT}/lib_utest/utest_surface_geometry.cc")
 tl_contact_test(utest_surface_geometry)
 
-add_library(tl_contact_cpu_utils STATIC "${TL_ROOT}/lib_utils/cpu_utils.cc")
-target_include_directories(tl_contact_cpu_utils PUBLIC "${TL_ROOT}")
-target_link_libraries(tl_contact_cpu_utils PUBLIC Eigen3::Eigen)
+include("${TL_ROOT}/lib_utils/CpuUtils.cmake")
+add_library(tl_contact_cpu_utils ALIAS tl_cpu_utils)
 add_executable(utest_utils "${TL_ROOT}/lib_utest/utest_utils.cc")
 target_link_libraries(utest_utils PRIVATE tl_contact_cpu_utils)
 tl_contact_test(utest_utils)
@@ -234,11 +233,8 @@ if(TL_CONTACT_ENABLE_CUDA)
   tl_contact_test(utest_planar_mesh_contact_cuda)
   set_tests_properties(utest_planar_mesh_contact_cuda PROPERTIES PROCESSORS 1)
 
-  add_library(tl_contact_broadphase STATIC
-    "${TL_ROOT}/lib_src/collision/HydroelasticBroadphase.cu"
-    "${TL_ROOT}/lib_utils/mesh_manager.cc")
-  target_include_directories(tl_contact_broadphase PUBLIC "${TL_ROOT}")
-  target_link_libraries(tl_contact_broadphase PUBLIC tl_contact_cpu_utils CUDA::cudart)
+  include("${TL_ROOT}/lib_src/collision/HydroelasticBroadphase.cmake")
+  add_library(tl_contact_broadphase ALIAS tl_collision_broadphase)
   add_executable(utest_surface_broadphase "${TL_ROOT}/lib_utest/utest_surface_broadphase.cu")
   target_link_libraries(utest_surface_broadphase PRIVATE tl_contact_broadphase)
   tl_contact_test(utest_surface_broadphase)

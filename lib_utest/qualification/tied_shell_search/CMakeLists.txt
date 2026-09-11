@@ -41,6 +41,15 @@ if(TL_TIED_SEARCH_CUDA)
   set_target_properties(tied_search_cuda_test PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED ON)
   target_compile_options(tied_search_cuda_test PRIVATE "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>")
   add_test(NAME tied_search_cuda COMMAND tied_search_cuda_test)
+  include("${tl_root}/lib_src/collision/HydroelasticBroadphase.cmake")
+  add_executable(tied_search_broadphase_test BroadphaseTest.cu)
+  target_link_libraries(tied_search_broadphase_test PRIVATE
+    tl_collision_broadphase tied_search_oracle GTest::gtest_main)
+  set_target_properties(tied_search_broadphase_test PROPERTIES
+    CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED ON)
+  target_compile_options(tied_search_broadphase_test PRIVATE
+    "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>")
+  add_test(NAME tied_search_broadphase COMMAND tied_search_broadphase_test)
 endif()
 get_property(tests DIRECTORY PROPERTY TESTS)
 set_tests_properties(${tests} PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)

@@ -65,3 +65,25 @@ ctest --test-dir BUILD --output-on-failure --no-tests=error
 
 Run through the existing workstation guard/lock. Owning Bazel host target:
 `//lib_utest/qualification/tied_shell_search:tied_search_values_check`.
+
+## Existing GPU broadphase reuse
+
+Two additional CUDA functions pass in `tied-search-broadphase-tests-1` /
+functions1. The existing `HydroelasticBroadphase` uses four-slot masters and
+four-repeated-slot secondary points in separate mesh groups. Per-master native
+gap inflation is rounded outward. All three SAP axes retain every independently
+native-accepted pair and the same ordered choice on1,805 secondary points,
+including flat/warped quads, true triangles and duplicate-master exact ties.
+The caller restores explicit master rank before consuming SAP candidates.
+One-pair-short capacity fails with empty results; exact-capacity retry agrees.
+
+The collision implementation is unchanged. Its CMake declaration and CPU
+utilities now have reusable owning modules; the existing contact harness uses
+aliases to those targets. Both existing utility and GPU broadphase test suites
+pass (`tied-search-broadphase-contact-tests-1`). The first new-target build ran
+before CMake reconfiguration and had no target; configure1/build2 pass.
+
+This establishes a small-fixture reuse path, not full-deck native bucket
+traversal, degeneracy admission, CIN/PEN classification or an attachment owner.
+Actual source ordering, conservative geometry-domain admission and original
+full mapping comparison remain necessary before production attachment startup.
