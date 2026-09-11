@@ -52,6 +52,7 @@ bool MakeLayout(Counts count, const BatchConfig& config, ArenaLayout& output) no
       !Append<Traits18>(count.solid18, device, host, next.solid18) ||
       !Append<Traits24>(count.solid24, device, host, next.solid24) ||
       !Append<Traits6z>(count.solid6z, device, host, next.solid6z) ||
+      !device.Append<Scratch18>(Scratch18Count(count.solid18), next.scratch18) ||
       !shell_physical_owner::ForecastProof(config.owner.node_count,
           config.cin_attachment_count, limits.max_host_bytes, next.proof)) return false;
   next.bytes = device.bytes();
@@ -66,6 +67,8 @@ Storage RebasedHeader(void* base, const ArenaLayout& layout) noexcept {
     next.material36 = util::ArenaPointer<solid18::Material>(base, layout.material36);
   if (layout.material42.count)
     next.material42 = util::ArenaPointer<solid24::Material>(base, layout.material42);
+  if (layout.scratch18.count)
+    next.scratch18 = util::ArenaPointer<Scratch18>(base, layout.scratch18);
   next.solid18 = Rebase<Traits18>(base, layout.solid18);
   next.solid24 = Rebase<Traits24>(base, layout.solid24);
   next.solid6z = Rebase<Traits6z>(base, layout.solid6z);

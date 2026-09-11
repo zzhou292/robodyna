@@ -7,6 +7,7 @@ cc_library(
     hdrs = glob(["*.h"]),
     deps = [
         "//lib_src/elements/solids:model", "//lib_src/elements/solids:force_stiffness",
+        "//lib_src/elements/solid18:force",
         "//lib_src/elements:shell_physical_owner_values", "//lib_src/elements:shell_batch_fields",
         "//lib_src/elements:shell_batch_startup", "//lib_src/solvers:explicit_nodal_state",
         "//lib_src/solvers:nodal_native_physical_coefficients", "//lib_src/solvers:nodal_trial_identity",

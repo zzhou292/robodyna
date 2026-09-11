@@ -12,16 +12,17 @@ namespace tl::fea::solid18 {
 namespace detail {
 // Shared selected force arithmetic. Initialization is entered only by the
 // constructor below, with generated virgin history and exact reference fields.
-TL_SOLID18_HD inline Status CalculateForce(const Reference& reference,
+TL_SOLID18_HD inline Status CalculateForceStaged(const Reference& reference,
     const History& accepted, const PrescribedInterval& interval,
-    const Material& material, ForceTrial& output, bool initialization) noexcept {
-  ForceTrial trial;
+    const Material& material, ForceTrial& trial, HistoryValues& next,
+    StartupGeometry& geometry_scratch, bool initialization) noexcept {
+  trial.diagnostics = {};
   Status status = detail::SelectAcceptedPoint(material,accepted.data(),trial.diagnostics);
   if (status != Status::Success) return status;
-  status = detail::CurrentGeometryValues(reference,interval,trial.geometry);
+  status = detail::CurrentGeometryValues(reference,interval,trial.geometry,geometry_scratch);
   if (status != Status::Success) return status;
   detail::SelectiveDerivatives(trial.diagnostics.selective_poisson_ratio,trial.geometry);
-  HistoryValues next = accepted.data();
+  next = accepted.data();
   next.global = {}; // S8ZZERO3: accepted global values already consumed by selection.
   for (unsigned n = 0; n < 7; ++n) {
     const auto& x = trial.geometry.local_position_m[n];
@@ -60,7 +61,18 @@ TL_SOLID18_HD inline Status CalculateForce(const Reference& reference,
       !tl::math::Finite(trial.diagnostics.plastic_work_increment_j))
     return Status::NonfiniteResult;
   const HistoryStamp stamp{interval.base_time_s+interval.dt_s,interval.sample_index};
-  status = PreparePrescribedHistory(reference,material,next,stamp,trial.proposed_history);
+  status = HistoryWriter::Prepare(reference,material,next,stamp,trial.proposed_history);
+  if (status != Status::Success) return status;
+  return Status::Success;
+}
+TL_SOLID18_HD inline Status CalculateForce(const Reference& reference,
+    const History& accepted, const PrescribedInterval& interval,
+    const Material& material, ForceTrial& output, bool initialization) noexcept {
+  ForceTrial trial;
+  HistoryValues next;
+  StartupGeometry geometry_scratch;
+  const auto status = CalculateForceStaged(reference,accepted,interval,material,
+      trial,next,geometry_scratch,initialization);
   if (status != Status::Success) return status;
   output = trial;
   return Status::Success;

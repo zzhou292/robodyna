@@ -22,6 +22,9 @@ BatchReport BuildUpload(const BatchConfig& config, const Model& model,
       !CopyFamily<Traits6z>(model.solid6z(), arena, layout.solid6z)) {
     return {BatchStatus::ResourceLimit, "Solid upload arena cannot construct typed parents"};
   }
+  if (layout.scratch18.count && !arena.Construct<Scratch18>(layout.scratch18)) {
+    return {BatchStatus::ResourceLimit, "Solid18 force scratch cannot be constructed"};
+  }
   auto next = RebasedHeader(arena.data(), layout);
   next.config = config;
   next.source_instance_id = model.source_instance_id();

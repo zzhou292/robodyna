@@ -29,7 +29,7 @@ endif()
 add_subdirectory("${TL_ROOT}/lib_src/elements/solids/resident" "${CMAKE_CURRENT_BINARY_DIR}/resident")
 include("${TL_ROOT}/lib_src/constraints/tied_shell/TiedCinAttachment.cmake")
 include("${TL_ROOT}/lib_src/constraints/NodalRigidAssemblyBinding.cmake")
-add_executable(solid_resident_host HostTest.cpp FixtureTest.cpp ../rigid_assembly_owner/Fixture.cpp)
+add_executable(solid_resident_host HostTest.cpp Scratch18Test.cpp FixtureTest.cpp ../rigid_assembly_owner/Fixture.cpp)
 target_link_libraries(solid_resident_host PRIVATE tl_solid_batch_values tl_tied_cin_attachment
   tl_nodal_rigid_assembly_binding GTest::gtest_main)
 target_compile_options(solid_resident_host PRIVATE -fno-fast-math -ffp-contract=off)

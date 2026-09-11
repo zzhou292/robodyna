@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "Batch.h"
-#include "State.h"
+#include "Scratch18.h"
 #include "../../ShellPhysicalOwner.h"
 
 namespace tl::fea::solids::batch_detail {
@@ -24,6 +24,7 @@ struct Storage {
   solid18::Material* material36 = nullptr;
   solid24::Material* material42 = nullptr;
   DeviceFamily<Traits18> solid18;
+  Scratch18* scratch18 = nullptr;
   DeviceFamily<Traits24> solid24;
   DeviceFamily<Traits6z> solid6z;
   Control control;
@@ -32,7 +33,7 @@ struct FamilyLayout {
   util::ArenaRegion parents, slab[2], status, staging;
 };
 struct ArenaLayout {
-  util::ArenaRegion header, material36, material42, curves;
+  util::ArenaRegion header, material36, material42, curves, scratch18;
   FamilyLayout solid18, solid24, solid6z;
   std::size_t bytes = 0, staging_bytes = 0, curve_points = 0;
   shell_physical_owner::ProofLayout proof;

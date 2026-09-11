@@ -28,6 +28,7 @@ cc_library(
         "Solid18PointResponse.h",
         "Solid18ForceWork.h",
         "Solid18Force.h",
+        "Solid18ForceScratch.h",
     ],
     deps = [":reference", "//lib_src/materials:solid_law36_point"],
 )

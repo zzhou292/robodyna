@@ -9,9 +9,16 @@ template<class Traits> __global__ void Initialize(Storage* storage) {
   auto& family = FamilyStorage<Traits>(*storage);
   for (std::size_t p = threadIdx.x; p < family.count; p += blockDim.x) {
     const auto& parent = family.parents[p];
-    family.status[p] = InitializeState<Traits>(parent,
-        MaterialAt<Traits>(*storage, parent.material_index), storage->config.startup.uniform_velocity,
-        family.slab[0][p]);
+    if constexpr (std::is_same_v<Traits, Traits18>) {
+      family.status[p] = InitializeState18(parent,
+          MaterialAt<Traits>(*storage, parent.material_index),
+          storage->config.startup.uniform_velocity, storage->scratch18[threadIdx.x],
+          family.slab[0][p]);
+    } else {
+      family.status[p] = InitializeState<Traits>(parent,
+          MaterialAt<Traits>(*storage, parent.material_index), storage->config.startup.uniform_velocity,
+          family.slab[0][p]);
+    }
     if (!family.status[p]) family.slab[1][p] = family.slab[0][p];
   }
 }
@@ -29,9 +36,15 @@ template<class Traits> __global__ void Evaluate(Storage* storage, unsigned accep
       Traits::Node(interval, n, shell_batch_fields::ReadVector(view.kinematics.position_xyz, node),
           shell_batch_fields::ReadVector(view.kinematics.velocity_xyz, node));
     }
-    family.status[p] = UpdateState<Traits>(parent,
-        MaterialAt<Traits>(*storage, parent.material_index), family.slab[accepted][p],
-        interval, family.slab[trial][p]);
+    if constexpr (std::is_same_v<Traits, Traits18>) {
+      family.status[p] = UpdateState18(parent,
+          MaterialAt<Traits>(*storage, parent.material_index), family.slab[accepted][p],
+          interval, storage->scratch18[first], family.slab[trial][p]);
+    } else {
+      family.status[p] = UpdateState<Traits>(parent,
+          MaterialAt<Traits>(*storage, parent.material_index), family.slab[accepted][p],
+          interval, family.slab[trial][p]);
+    }
   }
 }
 __global__ void Finalize(Storage* storage, unsigned accepted, unsigned trial,
@@ -55,21 +68,21 @@ __global__ void Finalize(Storage* storage, unsigned accepted, unsigned trial,
 }
 } // namespace
 void LaunchInitialize(Storage* storage, cudaStream_t stream) {
-  Initialize<Traits18><<<1, 64, 0, stream>>>(storage);
+  Initialize<Traits18><<<1, candidate_threads, 0, stream>>>(storage);
   if (cudaPeekAtLastError() != cudaSuccess) return;
-  Initialize<Traits24><<<1, 64, 0, stream>>>(storage);
+  Initialize<Traits24><<<1, candidate_threads, 0, stream>>>(storage);
   if (cudaPeekAtLastError() != cudaSuccess) return;
-  Initialize<Traits6z><<<1, 64, 0, stream>>>(storage);
+  Initialize<Traits6z><<<1, candidate_threads, 0, stream>>>(storage);
   if (cudaPeekAtLastError() != cudaSuccess) return;
   Finalize<<<1, 1, 0, stream>>>(storage, 0, 0, {}, {}, true);
 }
 void LaunchCandidate(Storage* storage, unsigned accepted, unsigned trial,
     NodalPreparedView view, BatchDiagnostics identity) {
-  Evaluate<Traits18><<<64, 64, 0, view.stream>>>(storage, accepted, trial, view);
+  Evaluate<Traits18><<<candidate_blocks, candidate_threads, 0, view.stream>>>(storage, accepted, trial, view);
   if (cudaPeekAtLastError() != cudaSuccess) return;
-  Evaluate<Traits24><<<64, 64, 0, view.stream>>>(storage, accepted, trial, view);
+  Evaluate<Traits24><<<candidate_blocks, candidate_threads, 0, view.stream>>>(storage, accepted, trial, view);
   if (cudaPeekAtLastError() != cudaSuccess) return;
-  Evaluate<Traits6z><<<64, 64, 0, view.stream>>>(storage, accepted, trial, view);
+  Evaluate<Traits6z><<<candidate_blocks, candidate_threads, 0, view.stream>>>(storage, accepted, trial, view);
   if (cudaPeekAtLastError() != cudaSuccess) return;
   Finalize<<<1, 1, 0, view.stream>>>(storage, accepted, trial, view, identity, false);
 }

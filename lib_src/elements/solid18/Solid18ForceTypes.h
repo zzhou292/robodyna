@@ -43,6 +43,8 @@ struct HistoryValues {
   Vec3 saved_local_position_m[7]{}; // S8SAV3: latest x1..7 minus x8.
 };
 
+namespace detail { struct HistoryWriter; }
+
 class History {
  public:
   TL_SOLID18_HD bool prepared() const noexcept { return prepared_; }
@@ -56,6 +58,7 @@ class History {
   Reference reference_{};
   Material material_{};
   bool prepared_ = false;
+  friend struct detail::HistoryWriter;
   friend TL_SOLID18_HD Status PreparePrescribedHistory(const Reference&,
       const Material&, const HistoryValues&, HistoryStamp, History&) noexcept;
 };

@@ -49,12 +49,12 @@ TL_SOLID18_HD inline void CenterGradient(const Matrix3& inverse,
 // No current orientation reversal is permitted: source/native slot identity
 // was established once at startup. Negative Jacobian fallback is out of scope.
 TL_SOLID18_HD inline Status CurrentGeometryValues(const Reference& reference,
-    const PrescribedInterval& interval, CurrentGeometry& result) noexcept {
+    const PrescribedInterval& interval, CurrentGeometry& result,
+    StartupGeometry& shared) noexcept {
   Vec3 native[8];
   for (unsigned n = 0; n < 8; ++n) {
     native[n] = interval.position_endpoint_m[reference.source_slot(n)];
   }
-  StartupGeometry shared;
   if (!Frame(native, shared.frame)) return Status::InvalidGeometry;
   for (unsigned n = 0; n < 8; ++n) {
     shared.native_position_m[n] = Local(shared.frame, native[n]);
@@ -90,5 +90,11 @@ TL_SOLID18_HD inline Status CurrentGeometryValues(const Reference& reference,
     }
   }
   return Status::Success;
+}
+// Value-only callers retain their existing automatic staging.
+TL_SOLID18_HD inline Status CurrentGeometryValues(const Reference& reference,
+    const PrescribedInterval& interval, CurrentGeometry& result) noexcept {
+  StartupGeometry shared;
+  return CurrentGeometryValues(reference,interval,result,shared);
 }
 }  // namespace tl::fea::solid18::detail
