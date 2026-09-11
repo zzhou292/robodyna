@@ -15,6 +15,7 @@ add_custom_target(solid24_reference_verify_native
 add_library(solid24_reference_native STATIC NativeReference.F NativeContext.F90
   "${CMAKE_CURRENT_SOURCE_DIR}/../../solid18_reference/native/NativeMassContext.F90"
   "${prepared}/constant_mod.F" "${prepared}/precision_mod.F90" "${prepared}/element_mod.F90"
+  "${prepared}/scoor3.F" "${prepared}/srcoor3.F" "${prepared}/sjacidp.F"
   "${prepared}/checksvolume.F" "${prepared}/srepiso3.F" "${prepared}/sortho3.F"
   "${prepared}/szderi3.F" "${prepared}/sdlen3.F" "${prepared}/slen.F" "${prepared}/smass3.F")
 add_dependencies(solid24_reference_native solid24_reference_verify_native)

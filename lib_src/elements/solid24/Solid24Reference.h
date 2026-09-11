@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "Solid24Geometry.h"
+#include "Solid24ReferenceJacobian.h"
 
 namespace tl::fea::solid24 {
 TL_BRICK_HD inline Status InitializeReference(const ReferenceInput& input, Reference& output) noexcept {
@@ -8,6 +9,11 @@ TL_BRICK_HD inline Status InitializeReference(const ReferenceInput& input, Refer
   const auto& p = input.profile;
   if (p.engine_jhbe != 24 || p.integration_points != 1 || p.startup_frame != 1 ||
       p.rotational_inertia != 0 || p.ale != 0 || p.reference_shape != 0)
+    return Status::UnsupportedProfile;
+  if ((p.reference_strain != ReferenceStrain::LocalGeometryOnly &&
+       p.reference_strain != ReferenceStrain::TotalLagrangian10) ||
+      (p.working_length != WorkingLengthUnit::Metre && p.working_length != WorkingLengthUnit::Millimetre) ||
+      (p.reference_strain == ReferenceStrain::LocalGeometryOnly && p.working_length != WorkingLengthUnit::Metre))
     return Status::UnsupportedProfile;
   if (!input.source_element_id || !input.source_part_id || !input.source_section_id ||
       !input.source_material_id || !brick::Positive(input.density_kg_m3)) return Status::InvalidInput;
@@ -28,6 +34,10 @@ TL_BRICK_HD inline Status InitializeReference(const ReferenceInput& input, Refer
     const unsigned source = signed_volume < 0 ? (n+4)%8 : n;
     next.native_to_source_[n] = static_cast<std::uint8_t>(source);
     native[n] = input.position_m[source];
+  }
+  if (p.reference_strain == ReferenceStrain::TotalLagrangian10) {
+    const Status status = detail::GlobalReferenceJacobian(native,p.working_length,next.reference_jacobian_);
+    if (status != Status::Success) return status;
   }
   if (!detail::CyclicFrame(native,next.geometry_.frame)) return Status::InvalidGeometry;
   for (unsigned n = 0; n < 8; ++n) {

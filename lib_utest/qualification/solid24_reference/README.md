@@ -13,8 +13,9 @@ the exact hourglass receipt is
 `solid24` provides a bounded value entry for the eight-node JHBE24 startup:
 immutable original identities, SRCOOR3 orientation and cyclic frame, SZDERI3
 center volume, SDLEN3 characteristic length and SMASS3 translational mass.
-It reuses the unchanged shared brick-frame utility. The three production
-headers separate types, geometry and reference construction.
+It reuses the unchanged shared brick-frame utility. The production modules separate types, local geometry, optional global reference
+Jacobian and reference construction. See `GLOBAL_REFERENCE.md` for the explicit
+ISMSTR10 prerequisite and its working-unit contract.
 
 This is the SINIT3 startup invocation selected after INITIA's local frame
 override. It takes the caller-prepared virgin density and FILL1; it does not
@@ -26,8 +27,10 @@ The first profile has no scalar rotational inertia, ALE or reference shape.
 The original rubber fixture contains1504 cells/2308 nodes in8 parts. All1309
 bricks match the explicitly selected HEPH native reference on CPU and CUDA, including source
 slots, volume, length and equal per-slot masses. Their startup mass subtotal is
-0.781662kg for that selected profile. The195 wedges explicitly reject this entry: INITIA dispatches them
-to S6ZINIT3 before the HEPH branch, with their own connectivity and mass rules.
+0.781662kg for that selected profile. The195 collapsed source cells explicitly reject this eight-distinct-node entry.
+The demo converts their topology explicitly before selecting S6ZINIT3, with its
+own connectivity and mass rules; the unchanged original reader retains eight
+positive repeated slots rather than automatically making that conversion.
 They remain required load paths in the vehicle plan.
 
 The source fixture is shared under `../solid_common/source_fixture/`; it
@@ -38,10 +41,12 @@ reproducible acquisition evidence is in
 `crash-work/reports/yaris-rubber-source-fixture-1/`. The fixture identity check
 pins both the493851-byte header and17991-byte manifest.
 
-The native manifest authenticates20 complete donor/include files from pinned
+The native manifest authenticates25 complete donor/include files from pinned
 OpenRadioss `a62b27e6baa555d222a580d6218867d0be4d70b5`. Common frame/mass donors
-are referenced by their existing paths. Only private symbol namespaces and
-exact SRCOOR3 statement extraction occur; no numerical expressions are patched.
+are referenced by their existing paths. Only private symbol namespaces and exact interface/retained legacy statement
+extraction occur; no numerical expressions are patched. The new packet executes
+complete SCOOR3, SJACIDP and SRCOOR3 bodies; SINIT3 is retained as caller-order
+authority and is not compiled.
 The shared dormant ALE/Q1NP mass context contains no mechanics. Complete
 SZDERI3, SDLEN3, SLEN and SMASS3 bodies run independently of the C++ values.
 

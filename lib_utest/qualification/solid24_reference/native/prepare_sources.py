@@ -25,11 +25,22 @@ def prepare(output, check):
                 or blob != record['git_blob_sha1']):
             raise RuntimeError('Native donor changed: '+record['source'])
         sources[Path(record['source']).name] = value.decode('latin1')
-    srcoor = sources.pop('srcoor3.F').splitlines(keepends=True)
+    srcoor = sources['srcoor3.F'].splitlines(keepends=True)
     for name,(first,last) in SLICES.items():
         sources[name] = ''.join(srcoor[first-1:last])
+    interface = '      INTERFACE\n'
+    for name,header,declaration in [('scoor3.F',(41,52),(75,94)),
+                                    ('srcoor3.F',(41,52),(72,91)),
+                                    ('sjacidp.F',(31,35),(51,56))]:
+        lines = sources[name].splitlines(keepends=True)
+        interface += ''.join(lines[header[0]-1:header[1]])
+        interface += '      USE ELEMENT_MOD, ONLY: NIXS\n'
+        interface += '#include "implicit_f.inc"\n#include "mvsiz_p.inc"\n'
+        interface += ''.join(lines[declaration[0]-1:declaration[1]])
+        interface += '      END SUBROUTINE\n'
+    sources['coordinate_interfaces.inc'] = interface+'      END INTERFACE\n'
     names = {'constant_mod','precision_mod','element_mod','message_mod','checkvolume_8n',
-             'checkvolume_6n','checkvolume_4n','srepiso3','sortho3','szderi3','sdlen3','slen','smass3'}
+             'checkvolume_6n','checkvolume_4n','srepiso3','sortho3','scoor3','srcoor3','sjacidp','sgsavini','mod_close','szderi3','sdlen3','slen','smass3'}
     for value in sources.values():
         names.update(n.lower() for n in re.findall(r'COMMON\s*/\s*(\w+)\s*/',value,re.I))
     shared = {'ale_mod','q1np_restart_mod','my_exit'}

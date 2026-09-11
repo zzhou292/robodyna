@@ -9,3 +9,8 @@ contains
     geometry_errors=geometry_errors+1
   end subroutine
 end module
+
+! Both complete coordinate donors retain this unselected branch unchanged.
+subroutine SOLID24_REF_MOD_CLOSE()
+  error stop 'Unexpected closed-cell geometry modification'
+end subroutine

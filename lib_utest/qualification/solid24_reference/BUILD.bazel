@@ -1,7 +1,7 @@
 load("@rules_cc//cc:defs.bzl", "cc_test")
 cc_test(
     name = "solid24_reference_host",
-    srcs = ["HostTest.cpp", "TestSupport.h"],
+    srcs = ["HostTest.cpp", "TestSupport.h", "JacobianHostTest.cpp", "JacobianSupport.h"],
     deps = ["//lib_src/elements/solid24:reference", "@googletest//:gtest_main"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
 )

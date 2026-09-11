@@ -7,12 +7,16 @@ namespace tl::fea::solid24 {
 using Vec3 = tl::math::Vec3;
 using Matrix3 = tl::math::Matrix3;
 enum class Status { Success, InvalidInput, UnsupportedProfile, InvalidGeometry, NonfiniteResult };
+enum class ReferenceStrain : std::uint8_t { LocalGeometryOnly, TotalLagrangian10 };
+enum class WorkingLengthUnit : std::uint8_t { Metre, Millimetre };
 
 // The SINIT3 startup call, after INITIA's local JCVT override. Runtime frame,
 // pressure, material and strain-formulation admission are separate contracts.
 struct StartupProfile {
   int engine_jhbe = 24, integration_points = 1, startup_frame = 1;
   int rotational_inertia = 0, ale = 0, reference_shape = 0;
+  ReferenceStrain reference_strain = ReferenceStrain::LocalGeometryOnly;
+  WorkingLengthUnit working_length = WorkingLengthUnit::Metre;
 };
 struct ReferenceInput {
   std::uint64_t source_element_id = 0, source_part_id = 0;
@@ -34,18 +38,27 @@ struct Mass {
   // packet uses the separate S6ZINIT3 wedge profile; source conversion is external.
   static constexpr double isotropic_inertia_kg_m2() noexcept { return 0; }
 };
+struct ReferenceJacobian {
+  double inverse[9]{};  // Native JAC_I(1:9) order, in inverse metres.
+  double volume_m3 = 0; // Native JAC_I(10), before the local-frame stage.
+};
 class Reference {
  public:
   TL_BRICK_HD bool prepared() const noexcept { return prepared_; }
   TL_BRICK_HD const ReferenceInput& input() const noexcept { return input_; }
   TL_BRICK_HD const StartupGeometry& geometry() const noexcept { return geometry_; }
   TL_BRICK_HD const Mass& mass() const noexcept { return mass_; }
+  TL_BRICK_HD const ReferenceJacobian* reference_jacobian() const noexcept {
+    return prepared_ && input_.profile.reference_strain == ReferenceStrain::TotalLagrangian10
+        ? &reference_jacobian_ : nullptr;
+  }
   TL_BRICK_HD unsigned source_slot(unsigned n) const noexcept { return n < 8 ? native_to_source_[n] : 8; }
   TL_BRICK_HD unsigned unique_node_count() const noexcept { return unique_node_count_; }
  private:
   ReferenceInput input_{};
   StartupGeometry geometry_{};
   Mass mass_{};
+  ReferenceJacobian reference_jacobian_{};
   std::uint8_t native_to_source_[8]{}, unique_node_count_ = 0;
   bool prepared_ = false;
   friend TL_BRICK_HD Status InitializeReference(const ReferenceInput&, Reference&) noexcept;
