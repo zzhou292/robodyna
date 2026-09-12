@@ -28,6 +28,9 @@ AcceptedInterval CaptureAcceptedInterval(const cases::vehicle_dynamics::VehicleP
     const auto& step=run.last_accepted_step();
     const auto& d=step.mechanics;
     Require(profile.type45==d.has_type45,"Physical interval profile differs from actual joint participant");
+    const auto* beam_model=capture.mapping().execution().model().structural_beams();
+    Require(profile.beam18==d.has_beam18 && d.has_beam18==bool(beam_model),
+        "Physical interval profile differs from actual structural beam participant");
     Require(d.valid && !d.kinetic_available && d.has_qeph && d.has_t3 && d.has_qbat &&
         d.has_type25 && d.has_type13 && d.has_solids && step.base.owner_id==stamp.owner_id &&
         step.base.epoch==stamp.reaction_base_epoch && Bits(step.base.time)==Bits(stamp.reaction_time) &&
@@ -44,6 +47,15 @@ AcceptedInterval CaptureAcceptedInterval(const cases::vehicle_dynamics::VehicleP
         CheckParticipant(d.type45,stamp,value,identity);
         Require(d.type45.source_instance_id==identity.source_instance && d.type45.joint_count &&
             d.type45.automatic_stiffness_initialized,"Committed joint source/count/automatic phase differs");
+    }
+    if(d.has_beam18) {
+        CheckParticipant(d.beam18,stamp,value,identity);
+        Require(d.beam18.source_instance_id==identity.source_instance &&
+                d.beam18.source_instance_id==beam_model->source_instance_id() &&
+                d.beam18.parent_count==beam_model->parents().size() && d.beam18.parent_count &&
+                d.beam18.accepted_force_assembled &&
+                Bits(d.beam18.base_velocity_time)==Bits(step.base.velocity_time),
+                "Committed structural beam source/count differs");
     }
     auto wall=detail::CaptureWall(run,identity,value);
     Require(tl::fea::trial_identity::SameStamp(stamp,run.accepted()),"Physical owner changed during accepted observation");

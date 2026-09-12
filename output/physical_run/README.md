@@ -154,3 +154,38 @@ late fields, unknown/mixed profiles and historical absence. Root's existing
 wall-plane rejection with its caller receipt unchanged. Full V4 wall output
 requires the separately qualified V4 domain/model factory; codec fixtures do
 not establish the original V4 node or rigid census.
+
+
+## Vehicle supports V5
+
+`Profile.beam18` is a trailing, default-false participant flag. The canonical
+participant list appends `beam18` after optional TYPE45. Actual accepted interval
+capture authenticates its retained Model/source/count and complete common
+publication phase; it does not add beam work or energy columns. All previously
+unavailable energies remain unavailable.
+
+The V5 wall composition uses embedded `robo_dyna.wall_physical_composition.v2`
+inside the unchanged outer `robo_dyna.vehicle_wall_setup.v2` file. It records
+`OriginalVehicleSupportsV5`, the V5 coefficient order, 17 solid parts with
+4980 parents ordered as `{908,1991,350,386,1345}`, 154 point-mass records, and
+142 structural beams from four parts. Beam source and model profiles are
+explicitly `OriginalCircularFourPointLaw44V1` and `CircularFourPointLaw44V1`.
+The live composition factory authenticates the same canonical source, ordered
+beam EID/PID rows, physical domain and retained beam coefficient producer.
+Total mass comes directly from the complete ledger, including its existing beam
+contribution; the receipt does not add diagnostic subtotals again.
+
+V1/V4 composition output remains embedded v1, with no structural beam fields.
+Historical outer setup v1 remains readable without composition when the run's
+beam flag is false. Wall archive preparation rejects omitted or invented beam
+presence even for initial-only prefixes. Replay requires the beam flag to agree
+with a V5 composition and rejects missing, downgraded or forged beam metadata.
+No additional files, archive channels or unbounded buffers are introduced; the
+existing fixed metadata and wall workspaces cover the small appended fields.
+
+The owning `physical_run_records`, `physical_wall_composition` and
+`physical_capture_values` gates cover old/new participant combinations, exact
+mass bits, schema downgrade, source/count/phase corruption and retry. The actual
+V5 loaded archive gate belongs to `case/vehicle_run` and must run after the V5
+runtime/CaptureAccess integration; codec fixtures alone do not qualify a live
+beam trajectory. Root should retain the V1/V4 live regression alongside it.

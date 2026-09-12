@@ -11,6 +11,7 @@ inline constexpr std::size_t MetadataCap=1024u<<10;
 struct Profile {
     bool type45=false;
     bool structural_limit=false;
+    bool beam18=false;
 };
 bool SameProfile(Profile,Profile) noexcept;
 Document ProfileDocument(Profile);

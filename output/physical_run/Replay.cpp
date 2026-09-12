@@ -46,6 +46,7 @@ Replay Replay::Open(const std::filesystem::path& root,const records::RecordFile&
     CheckReferencedInventory(root,context,index,manifest);
     std::optional<WallComposition> composition;
     auto wall=manifest.wall?ReadWallArtifacts(root,*manifest.wall,mapping.source().data(),context,&composition):nullptr;
+    if(manifest.wall)CheckWallBeamObservation(config.profile.beam18,composition);
     auto data=std::make_shared<Data>(root,std::move(mapping),std::move(context),std::move(config),std::move(index),budget.bytes());
     data->wall=manifest.wall;data->wall_mesh=std::move(wall);
     data->wall_composition=composition;

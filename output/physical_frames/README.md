@@ -68,3 +68,18 @@ captures and compares every shell coordinate and plastic value, writes/rereads
 the source bundle plus exact binary frame/activity, checks a late destination
 failure/retry, and verifies the owner remains at epoch/time zero. No author
 native/CUDA/full-source job has run for this freeze.
+
+
+V5 capture additionally authenticates the optional eighth structural-beam
+participant. `CaptureAccess` obtains source identity and parent count from the
+actual retained Model and batch; `Phase` verifies accepted phase, owner,
+configuration, epoch/base/attempt and all consumed times. Initial beam cache
+must have no assembled interval. Later cache must report accepted force assembly.
+Before/after capture checks preserve that source/count and endpoint. The public
+frame format remains the existing exact shell geometry/material/activity format;
+no beam history is fabricated or serialized as shell material data.
+
+The host phase fixture covers optional TYPE45/beam combinations, initial and
+accepted intervals, stale or missing beam source, late phase/attempt corruption
+and successful retry. Full V5 source/model and accepted GPU capture remain the
+owning root integration gate.

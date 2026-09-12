@@ -22,6 +22,16 @@ WallComposition Fixture(bool extended) {
     c.initial_mass_kg=std::nextafter(700.,701.);c.point_mass_kg=std::nextafter(16.,17.);
     return c;
 }
+WallComposition Supports() {
+    auto c=Fixture(true);
+    c.profile=CompositionProfile::VehicleSupportsV5;
+    c.physical_nodes=376930;c.solid_parts=17;c.point_mass_records=154;
+    c.solid_parents={908,1991,350,386,1345};
+    c.structural_beam_parents=142;c.structural_beam_parts=4;
+    c.plain_complete=755;c.plain_restricted=4;c.plain_omitted=0;
+    c.rigid_groups=779;c.rigid_members=12961;
+    return c; // Synthetic mass observations; source counts have a separate root gate.
+}
 Document Serialized(const Document& document) {
     rapidjson::StringBuffer bytes;rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(bytes);
     EXPECT_TRUE(document.Accept(writer));
@@ -85,5 +95,56 @@ TEST(WallComposition, LegacyAbsenceAndNewRequiredReceiptPreserveSourceDomainBoun
     EXPECT_THROW(ReadSetupComposition(document,359785,c.physical_nodes-1),std::exception);
     document["schema"].SetString("robo_dyna.vehicle_wall_setup.v99",document.GetAllocator());
     EXPECT_THROW(ReadSetupComposition(document,359785,393165),std::exception);
+}
+TEST(WallComposition, SupportsVersionKeepsExactTotalsAndRequiresQualifiedBeamCounts) {
+    const auto expected=Supports();
+    const auto document=Serialized(WallCompositionDocument(expected));
+    EXPECT_EQ(array_json::Text(document["schema"]),"robo_dyna.wall_physical_composition.v2");
+    EXPECT_EQ(array_json::Text(document["structural_beam_model_profile"]),"CircularFourPointLaw44V1");
+    const auto actual=ReadWallComposition(document);
+    EXPECT_EQ(actual.profile,CompositionProfile::VehicleSupportsV5);
+    EXPECT_EQ(actual.structural_beam_parents,142u);EXPECT_EQ(actual.structural_beam_parts,4u);
+    EXPECT_EQ(actual.solid_parents,expected.solid_parents);
+    EXPECT_EQ(actual.point_mass_records,154u);
+    EXPECT_EQ(Bits(actual.initial_mass_kg),Bits(expected.initial_mass_kg));
+    EXPECT_EQ(Bits(actual.point_mass_kg),Bits(expected.point_mass_kg));
+    const auto setup=SetupDocument(expected);
+    EXPECT_EQ(array_json::Text(setup["schema"]),"robo_dyna.vehicle_wall_setup.v2");
+    EXPECT_EQ(ReadSetupComposition(setup,359785,393165)->structural_beam_parents,142u);
+    EXPECT_NO_THROW(CheckWallBeamObservation(true,actual));
+    EXPECT_THROW(CheckWallBeamObservation(false,actual),std::exception);
+    for(const auto* field:{"structural_beam_parents","structural_beam_parts","solid_parts","point_mass_records"}) {
+        auto bad=WallCompositionDocument(expected);
+        bad[field].SetUint64(bad[field].GetUint64()-1);
+        EXPECT_THROW(ReadWallComposition(bad),std::exception);
+    }
+}
+TEST(WallComposition, ForgedBeamVersionsAndLegacyClaimsRejectWithoutChangingAbsence) {
+    const auto supports=Supports();
+    auto bad=WallCompositionDocument(supports);
+    bad["structural_beam_model_profile"].SetString("AnalyticLaw44",bad.GetAllocator());
+    EXPECT_THROW(ReadWallComposition(bad),std::exception);
+    bad=WallCompositionDocument(supports);
+    bad["structural_beam_source_profile"].SetString("OriginalExtendedSolidsV4",bad.GetAllocator());
+    EXPECT_THROW(ReadWallComposition(bad),std::exception);
+    bad=WallCompositionDocument(supports);
+    bad["schema"].SetString("robo_dyna.wall_physical_composition.v1",bad.GetAllocator());
+    EXPECT_THROW(ReadWallComposition(bad),std::exception);
+    for(const auto* field:{"structural_beam_source_profile","structural_beam_model_profile",
+                           "structural_beam_parents","structural_beam_parts"})bad.RemoveMember(field);
+    EXPECT_THROW(ReadWallComposition(bad),std::exception);
+    for(bool extended:{false,true}) {
+        const auto legacy=Fixture(extended);
+        const auto document=WallCompositionDocument(legacy);
+        EXPECT_EQ(array_json::Text(document["schema"]),"robo_dyna.wall_physical_composition.v1");
+        EXPECT_FALSE(document.HasMember("structural_beam_parents"));
+        EXPECT_NO_THROW(CheckWallBeamObservation(false,ReadWallComposition(document)));
+        EXPECT_THROW(CheckWallBeamObservation(true,ReadWallComposition(document)),std::exception);
+        auto invalid=legacy;invalid.structural_beam_parents=142;invalid.structural_beam_parts=4;
+        EXPECT_THROW(WallCompositionDocument(invalid),std::exception);
+    }
+    EXPECT_NO_THROW(CheckWallBeamObservation(false,std::nullopt));
+    EXPECT_THROW(CheckWallBeamObservation(true,std::nullopt),std::exception);
+    EXPECT_NO_THROW(ReadWallComposition(WallCompositionDocument(supports)));
 }
 } // namespace crash::output::physical_run::test

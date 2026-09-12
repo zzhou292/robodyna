@@ -1,12 +1,15 @@
 #include "Support.h"
 namespace crash::output::physical_run::test {
 TEST(PhysicalRunValues, ProfileOmitsUnavailableColumnsAndRejectsInventedAvailability) {
-    for(bool joint:{false,true})for(bool bound:{false,true}) {
-        const Profile p{joint,bound};const auto doc=ProfileDocument(p);
+    for(bool joint:{false,true})for(bool bound:{false,true})for(bool beam:{false,true}) {
+        const Profile p{joint,bound,beam};const auto doc=ProfileDocument(p);
         EXPECT_TRUE(SameProfile(ReadProfile(doc),p));
         EXPECT_EQ(RealFields(p).size(),bound?5u:4u);
         EXPECT_EQ(array_json::Text(doc["kinetic_energy"]),"unavailable");
         EXPECT_EQ(array_json::Text(doc["joint_work"]),"unavailable");
+        EXPECT_EQ(array_json::Text(doc["internal_work"]),"unavailable");
+        EXPECT_EQ(array_json::Text(doc["participants"]).find("beam18")!=std::string::npos,beam);
+        EXPECT_FALSE(SameProfile(p,{joint,bound,!beam}));
     }
     auto bad=ProfileDocument({});bad["kinetic_energy"].SetString("native_J",bad.GetAllocator());
     EXPECT_THROW(ReadProfile(bad),std::exception);
@@ -15,6 +18,20 @@ TEST(PhysicalRunValues, ProfileOmitsUnavailableColumnsAndRejectsInventedAvailabi
     row.structural_limit_s=std::numeric_limits<double>::quiet_NaN();
     EXPECT_THROW(CheckValues(c,{false,true},row),std::exception);
     row.structural_limit_s=.1;EXPECT_THROW(CheckValues(c,{false,true},row),std::exception);
+}
+TEST(PhysicalRunValues, StructuralBeamProfileRequiresExactDistinctOrderedRole) {
+    EXPECT_FALSE(ReadProfile(ProfileDocument({true,true})).beam18);
+    for(const auto* roles:{"qeph,t3,qbat,type25,type13,solids,beam13",
+                           "qeph,t3,qbat,type25,type13,solids,beam18,type45",
+                           "qeph,t3,qbat,type25,type13,solids,type45,beam18,beam18"}) {
+        auto bad=ProfileDocument({true,true,true});
+        bad["participants"].SetString(roles,bad.GetAllocator());
+        EXPECT_THROW(ReadProfile(bad),std::exception);
+    }
+    const auto context=Context();
+    auto config=Config(context);
+    config.profile={true,true,true};
+    EXPECT_TRUE(SameProfile(ReadConfiguration(ConfigurationDocument(config)).profile,config.profile));
 }
 TEST(PhysicalRunValues, AcceptedContiguityAllowsRejectedAttemptsButNeverGapsOrTrialTimes) {
     const auto c=Context();const Profile p{false,true};Sequence s;

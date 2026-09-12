@@ -44,6 +44,19 @@ records::FrameStamp Phase(const CaptureScope& c) {
             d.type45.base_time==0 && d.type45.velocity_time==0 && d.type45.base_velocity_time==0 && d.type45.kick_dt==0,
             "Initial accepted joints contain a future interval phase");
     }
+    Require(d.has_beam18==bool(c.beam18_parent_count) &&
+        d.has_beam18==bool(c.beam18_source_instance_id),"Accepted structural beam source presence differs");
+    if(d.has_beam18) {
+        Check(d.beam18,s,f,config,qualification);
+        Require(d.beam18.source_instance_id==c.beam18_source_instance_id &&
+                d.beam18.parent_count==c.beam18_parent_count &&
+                d.beam18.accepted_force_assembled==bool(s.epoch) &&
+                Bits(d.beam18.base_velocity_time)==Bits(d.qeph.base_velocity_time),
+                "Accepted structural beam source/count differs");
+        if(!s.epoch)Require(d.beam18.attempt==0 && d.beam18.base_epoch==0 &&
+            d.beam18.base_time==0 && d.beam18.velocity_time==0 && d.beam18.base_velocity_time==0 &&
+            d.beam18.kick_dt==0,"Initial accepted structural beams contain a future interval phase");
+    }
     return f;
 }
 void CheckReadback(const CaptureScope& scope,const tl::fea::qeph::BatchDiagnostics& value) {
@@ -63,5 +76,9 @@ void CheckSameEndpoint(const CaptureScope& a,const CaptureScope& b) {
     Require(a.type45_joint_count==b.type45_joint_count &&
         a.type45_source_instance_id==b.type45_source_instance_id &&
         a.diagnostics.has_type45==b.diagnostics.has_type45,"Accepted joint source changed during capture");
+    Require(a.beam18_parent_count==b.beam18_parent_count &&
+        a.beam18_source_instance_id==b.beam18_source_instance_id &&
+        a.diagnostics.has_beam18==b.diagnostics.has_beam18,
+        "Accepted structural beam source changed during capture");
 }
 } // namespace crash::output::physical_frames::detail

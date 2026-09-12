@@ -4,7 +4,7 @@
 namespace crash::output::physical_run {
 namespace {
 void CheckSetup(const cases::vehicle_wall::VehicleWallSetup& setup,const physical_frames::Mapping& mapping,
-    const records::Context& context,const records::source::BundleRequest& request) {
+    const records::Context& context,const records::source::BundleRequest& request,Profile profile) {
     const auto& execution=mapping.execution();
     Require(setup.execution().model().SharesStorage(execution.model()) &&
         setup.execution().execution().parents().data()==execution.execution().parents().data() &&
@@ -14,6 +14,8 @@ void CheckSetup(const cases::vehicle_wall::VehicleWallSetup& setup,const physica
         context.identity().source_instance==execution.physical().domain()->source_instance_id() &&
         Bits(request.archive.requested_duration)==Bits(setup.settings().requested_duration_s),
         "Physical wall archive duration/source differs from selected setup");
+    Require(profile.beam18==bool(execution.model().structural_beams()),
+        "Physical wall archive observation omits or invents structural beams");
     const auto original=setup.wall().view(),selected=setup.selected_wall_view();
     Require(original.vertex_count==62 && original.triangle_count==100,
         "Physical wall archive requires the complete pinned original wall");
@@ -25,7 +27,7 @@ void CheckSetup(const cases::vehicle_wall::VehicleWallSetup& setup,const physica
 Forecast RunArchive::PreflightWithWall(const cases::vehicle_wall::VehicleWallSetup& setup,
     const physical_frames::Mapping& mapping,const records::Context& context,records::source::BundleRequest request,
     Profile profile,Limits limits) {
-    CheckSetup(setup,mapping,context,request);
+    CheckSetup(setup,mapping,context,request,profile);
     auto forecast=PreflightCore(mapping.source_mapping(),context,std::move(request),profile,limits,true);
     forecast.shared_wall_setup_upper_bound=setup.forecast().shared_source_upper_bound+
         setup.forecast().retained_setup_bytes;
@@ -34,7 +36,7 @@ Forecast RunArchive::PreflightWithWall(const cases::vehicle_wall::VehicleWallSet
 RunArchive RunArchive::PrepareWithWall(const std::filesystem::path& root,const cases::vehicle_wall::VehicleWallSetup& setup,
     const physical_frames::Mapping& mapping,const records::Context& context,records::source::BundleRequest request,
     Profile profile,Limits limits) {
-    CheckSetup(setup,mapping,context,request);
+    CheckSetup(setup,mapping,context,request,profile);
     auto archive=PrepareCore(root,mapping.source_mapping(),context,std::move(request),profile,limits,true);
     Require(std::filesystem::create_directory(root/"wall"),"Physical wall output directory already exists");
     cases::vehicle_wall::WriteSetupArtifacts(root/"wall",setup);

@@ -13,5 +13,12 @@ void CheckIdentity(const Mapping& mapping,const records::Context& context,const 
     records::CheckStamp(context,f);
     if(scope.diagnostics.has_type45)Require(scope.type45_source_instance_id==id.source_instance,
         "Accepted joints belong to another physical source domain");
+    const auto* beams=mapping.execution().model().structural_beams();
+    Require(scope.diagnostics.has_beam18==bool(beams),
+        "Accepted structural beam presence differs from the actual physical model");
+    if(beams)Require(scope.beam18_source_instance_id==id.source_instance &&
+        scope.beam18_source_instance_id==beams->source_instance_id() &&
+        scope.beam18_parent_count==beams->parents().size(),
+        "Accepted structural beams belong to another physical source or count");
 }
 } // namespace crash::output::physical_frames::detail

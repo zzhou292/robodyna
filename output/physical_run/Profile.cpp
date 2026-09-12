@@ -2,13 +2,16 @@
 #include "output/BoundedArrayJson.h"
 namespace crash::output::physical_run {
 bool SameProfile(Profile a,Profile b) noexcept {
-    return a.type45==b.type45 && a.structural_limit==b.structural_limit;
+    return a.type45==b.type45 && a.structural_limit==b.structural_limit && a.beam18==b.beam18;
 }
 Document ProfileDocument(Profile p) {
     Document d;d.SetObject();
     String(d,"schema",ProfileSchema);
     String(d,"purpose","selected_physical_model_accepted_visualization_not_restart");
-    String(d,"participants",p.type45?"qeph,t3,qbat,type25,type13,solids,type45":"qeph,t3,qbat,type25,type13,solids");
+    std::string participants="qeph,t3,qbat,type25,type13,solids";
+    if(p.type45)participants+=",type45";
+    if(p.beam18)participants+=",beam18";
+    String(d,"participants",participants);
     String(d,"structural_limit",p.structural_limit?"post_cin_local_physical_bound_s":"unavailable");
     for(const auto* name:{"kinetic_energy","total_energy","internal_work","contact_force","contact_penetration","contact_work","joint_work"})
         String(d,name,"unavailable");
@@ -22,8 +25,12 @@ Profile ReadProfile(const Value& v) {
         "Unsupported physical observation profile");
     const auto roles=Text(v["participants"]);
     Profile p;
-    p.type45=roles=="qeph,t3,qbat,type25,type13,solids,type45";
-    Require(p.type45 || roles=="qeph,t3,qbat,type25,type13,solids","Unknown physical participant set");
+    p.type45=roles=="qeph,t3,qbat,type25,type13,solids,type45" ||
+             roles=="qeph,t3,qbat,type25,type13,solids,type45,beam18";
+    p.beam18=roles=="qeph,t3,qbat,type25,type13,solids,beam18" ||
+             roles=="qeph,t3,qbat,type25,type13,solids,type45,beam18";
+    Require(p.type45 || p.beam18 || roles=="qeph,t3,qbat,type25,type13,solids",
+            "Unknown physical participant set");
     const auto structural=Text(v["structural_limit"]);
     p.structural_limit=structural=="post_cin_local_physical_bound_s";
     Require(p.structural_limit || structural=="unavailable","Unknown structural-limit availability");
