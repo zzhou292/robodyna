@@ -1,0 +1,244 @@
+{
+  "schema": "t3_activity_readback_source_v1",
+  "baseline": "bf1c6a44a69a42c4d7b5a56855eeab43a6357295",
+  "change": "Complete one-point loop extraction and same-call mapped reuse, no full-history API or scalar predicate changes",
+  "prior_changed_records": [
+    {
+      "path": "lib_src/elements/t3/T3BatchOnePointReadback.cpp",
+      "bytes": 1734,
+      "sha256": "a3beb2d6a879df99ed007e5cf80ced2a4fe115a6dcfef2c5cdafce44a0c2575c"
+    },
+    {
+      "path": "lib_src/elements/t3/T3BatchFailureReadback.cpp",
+      "bytes": 7826,
+      "sha256": "fbfc6f3b26d81d225f32adff6d492c9e57b7192ab8d2e9bf6977da80582b4542"
+    },
+    {
+      "path": "lib_src/elements/t3/T3BatchStorage.h",
+      "bytes": 6930,
+      "sha256": "2ac0b832e7b9c5ccbd9b079b4aa13e89488684ed7ef74553eac687bdeaa1e937"
+    }
+  ],
+  "files": [
+    {
+      "path": "lib_src/elements/ShellPreparedActivityReadback.h",
+      "bytes": 3217,
+      "sha256": "95d93e5d97237365bc558816ae104b1dc1e4ad2e9861a3892f5299046cabfcec"
+    },
+    {
+      "path": "lib_src/elements/failure/ShellFailureReadback.h",
+      "bytes": 1842,
+      "sha256": "ca881dae778df1664f748b4edebf87223f0f48bba2fc25b001cc6612a823f3e0"
+    },
+    {
+      "path": "lib_src/elements/one_point/ShellOnePointValues.h",
+      "bytes": 2969,
+      "sha256": "12105470b8f28bf32d727663f0b24c48987441866e1fbbd1cf09b86b6878cc90"
+    },
+    {
+      "path": "lib_src/elements/t3/T3Batch.cmake",
+      "bytes": 2221,
+      "sha256": "ab5064c7ab7f7af0093739424891b50113838a1a499ee69eb12e2fa3f50a4f49"
+    },
+    {
+      "path": "lib_src/elements/t3/T3Batch.cu",
+      "bytes": 11930,
+      "sha256": "cb56ca1b5ae1b9fed822d0530c83dd2b1fec1352a632e9a7c62d11334df40792"
+    },
+    {
+      "path": "lib_src/elements/t3/T3Batch.h",
+      "bytes": 12615,
+      "sha256": "66432a74e706a8fb0bf6225f8654ef8272e3f83094de22b4481c5d5d43632ea9"
+    },
+    {
+      "path": "lib_src/elements/t3/T3BatchFailureReadback.cpp",
+      "bytes": 7376,
+      "sha256": "3f682010eba2aaaae0c4b57df8c58df409edddc72ded22f6bb282ab413fee997"
+    },
+    {
+      "path": "lib_src/elements/t3/T3BatchOnePointReadback.cpp",
+      "bytes": 2947,
+      "sha256": "ed3deccdb86e378e818e8c85d4f1a7ff88f0becb7878d541d5b3158d52b59c56"
+    },
+    {
+      "path": "lib_src/elements/t3/T3BatchSections.cpp",
+      "bytes": 4431,
+      "sha256": "58ec11df502f11df993f092901ef750b50673f422af962578211d1bfd7851d40"
+    },
+    {
+      "path": "lib_src/elements/t3/T3BatchStorage.h",
+      "bytes": 7011,
+      "sha256": "d3420115a5bacaf99d6b22cf5291b7c8dc9eebf249b785f7fbe80b186a8c2947"
+    },
+    {
+      "path": "lib_src/elements/t3/T3History.h",
+      "bytes": 3389,
+      "sha256": "33960de7060fadeb8ce02c2cc78c5cc3394b1501bb02b1f3a6e38658ba1b1919"
+    },
+    {
+      "path": "lib_src/elements/t3/T3HistoryData.h",
+      "bytes": 1771,
+      "sha256": "b75927d7bb38793e7e7807572e377b96de3bcbd8fd6e1657115dd40a105e7e89"
+    },
+    {
+      "path": "lib_src/elements/t3/T3OnePointHistory.h",
+      "bytes": 3568,
+      "sha256": "fb84a4ec4319466f27c386c1b7b97034fed506bc307de1b774b1fbd6f57a5e51"
+    },
+    {
+      "path": "lib_src/elements/t3/T3OnePointTypes.h",
+      "bytes": 2705,
+      "sha256": "15455b55c7d57903475b0daa89104a89173b493d6720e1598e6f8df42520e6ae"
+    },
+    {
+      "path": "lib_src/elements/t3/T3Startup.h",
+      "bytes": 3523,
+      "sha256": "ae68f74f5dd773ab2a38eb57fcdb787fa280f844b2d5681ea87d197b0aebe5bf"
+    },
+    {
+      "path": "lib_src/elements/t3/mapped/Readback.cpp",
+      "bytes": 3155,
+      "sha256": "928ce1ee3d38623d00f18da752ebe456a7f52c9233d537392013d6bcc1690af9"
+    },
+    {
+      "path": "lib_src/elements/t3/mapped/Result.h",
+      "bytes": 4213,
+      "sha256": "1c6a8cfad19cf38773214e89fce65b3df266132fe74fb5cc8686cf9af2ffeae3"
+    },
+    {
+      "path": "lib_utest/qualification/physical_publication/Constraints.cpp",
+      "bytes": 4174,
+      "sha256": "7309d518e2c216e08a345fa4c0a5f683d41c5ac85dd67d546f6f1bf778d41a70"
+    },
+    {
+      "path": "lib_utest/qualification/physical_publication/Fixture.h",
+      "bytes": 2549,
+      "sha256": "e3df2b6727988a4d397d32577668786a71a8850db4b1ca743fa44e75271545b3"
+    },
+    {
+      "path": "lib_utest/qualification/physical_publication/OwnerAttempt.cu",
+      "bytes": 3584,
+      "sha256": "9689c0ae3ddafa262fd885640bd9c940be36e13fcf690f68360261cbd1b7ffb1"
+    },
+    {
+      "path": "lib_utest/qualification/physical_publication/OwnerFixture.h",
+      "bytes": 2191,
+      "sha256": "32b2a171adf5f1189d4c40db65274ebc03bc7eab78ca043485f8af93e5b9bb55"
+    },
+    {
+      "path": "lib_utest/qualification/physical_publication/OwnerStartup.cu",
+      "bytes": 3515,
+      "sha256": "29d968547d6a5740d37ddfdeb59d83c9315c71d1dbc765e3ab67b4d33fcfd972"
+    },
+    {
+      "path": "lib_utest/qualification/physical_publication/Sources.cpp",
+      "bytes": 4315,
+      "sha256": "31d537470f986b77a73773d92870d6a324b09f81cb98fc2a591bad868a3f93bc"
+    },
+    {
+      "path": "lib_utest/qualification/t3_activity_readback/BUILD.bazel",
+      "bytes": 534,
+      "sha256": "88cc61ead2b0c35a89c894de40e4b6b9b8d5dc64551b8a15522233cf122cff3d"
+    },
+    {
+      "path": "lib_utest/qualification/t3_activity_readback/CMakeLists.txt",
+      "bytes": 1210,
+      "sha256": "4680f05a43c7aff3ff213ed56aa8d57d520aeabe0bdc2be059c379e497e0e516"
+    },
+    {
+      "path": "lib_utest/qualification/t3_activity_readback/CandidateFlow.h",
+      "bytes": 2968,
+      "sha256": "74b59a7688243da81ccc4eee90b5d70f8506f78dc63fb072edc396fe5c172706"
+    },
+    {
+      "path": "lib_utest/qualification/t3_activity_readback/Cuda.cmake",
+      "bytes": 1175,
+      "sha256": "7a675460bf08be1d8aaa24100725c705b87fd91e546d5dd67d991490db314e99"
+    },
+    {
+      "path": "lib_utest/qualification/t3_activity_readback/FailureTest.cu",
+      "bytes": 3791,
+      "sha256": "90a0140740f122f2c7a851e7fd7dcb791ad45a0d8e708fb0c841872fb3614791"
+    },
+    {
+      "path": "lib_utest/qualification/t3_activity_readback/FrozenBatch.cu.txt",
+      "bytes": 11930,
+      "sha256": "cb56ca1b5ae1b9fed822d0530c83dd2b1fec1352a632e9a7c62d11334df40792"
+    },
+    {
+      "path": "lib_utest/qualification/t3_activity_readback/FrozenFailure.cpp.txt",
+      "bytes": 7826,
+      "sha256": "fbfc6f3b26d81d225f32adff6d492c9e57b7192ab8d2e9bf6977da80582b4542"
+    },
+    {
+      "path": "lib_utest/qualification/t3_activity_readback/FrozenMapped.cpp.txt",
+      "bytes": 3155,
+      "sha256": "928ce1ee3d38623d00f18da752ebe456a7f52c9233d537392013d6bcc1690af9"
+    },
+    {
+      "path": "lib_utest/qualification/t3_activity_readback/FrozenOnePoint.cpp.txt",
+      "bytes": 1734,
+      "sha256": "a3beb2d6a879df99ed007e5cf80ced2a4fe115a6dcfef2c5cdafce44a0c2575c"
+    },
+    {
+      "path": "lib_utest/qualification/t3_activity_readback/FrozenReadFailure.h.txt",
+      "bytes": 1842,
+      "sha256": "ca881dae778df1664f748b4edebf87223f0f48bba2fc25b001cc6612a823f3e0"
+    },
+    {
+      "path": "lib_utest/qualification/t3_activity_readback/FrozenStorage.h.txt",
+      "bytes": 6930,
+      "sha256": "2ac0b832e7b9c5ccbd9b079b4aa13e89488684ed7ef74553eac687bdeaa1e937"
+    },
+    {
+      "path": "lib_utest/qualification/t3_activity_readback/HostSupport.h",
+      "bytes": 5943,
+      "sha256": "cea375d601b1403409a56f94ac60b1b363371bd27c36cd77f1254324ab764083"
+    },
+    {
+      "path": "lib_utest/qualification/t3_activity_readback/HostTest.cpp",
+      "bytes": 4340,
+      "sha256": "12cedfee9ecfc76a7d4387a1300df4b09897b64dfea545c2fd034339d44cc1ed"
+    },
+    {
+      "path": "lib_utest/qualification/t3_activity_readback/OwnerSupport.h",
+      "bytes": 5097,
+      "sha256": "e92e68f567995bfff1bd92486105786ccbe1501acc213f6e187056d078cdf4c6"
+    },
+    {
+      "path": "lib_utest/qualification/t3_activity_readback/OwnerTest.cu",
+      "bytes": 2522,
+      "sha256": "7eab50c0fb9ebc93c341fc1186fc82be036f55836af5157aa942fc30cd5fdf90"
+    },
+    {
+      "path": "lib_utest/qualification/t3_activity_readback/PreflightTest.cu",
+      "bytes": 2075,
+      "sha256": "48ac1c636d48359156fe4c6c0edd0c63944db4a02df178a555e92a91acbffb1c"
+    },
+    {
+      "path": "lib_utest/qualification/t3_activity_readback/README.md",
+      "bytes": 4419,
+      "sha256": "db113f4b2d127b030508502eab7a9b912183989bfb23509c8c299b112cedec6b"
+    },
+    {
+      "path": "lib_utest/qualification/t3_activity_readback/SerialFlow.h",
+      "bytes": 4804,
+      "sha256": "38506c000d1c0d6cf86763148d23c86c4b10ff3060e962d8b2f182efcc448f18"
+    },
+    {
+      "path": "lib_utest/qualification/t3_activity_readback/Transfers.cpp",
+      "bytes": 2255,
+      "sha256": "cf50253dd1d6a09f08a35c6a057b004e8d36b054164bb1f075841d95f48fc926"
+    },
+    {
+      "path": "lib_utest/qualification/t3_activity_readback/Transfers.h",
+      "bytes": 699,
+      "sha256": "497b8920ada353617751f28cb3d657cdf34d6fad30abaef661198add680287ee"
+    },
+    {
+      "path": "lib_utest/qualification/t3_activity_readback/generate_flows.py",
+      "bytes": 3852,
+      "sha256": "8687fc2e2e0365f768bd3ac7643a55791343fe49a3f42552513b63b66e5831ae"
+    }
+  ]
+}

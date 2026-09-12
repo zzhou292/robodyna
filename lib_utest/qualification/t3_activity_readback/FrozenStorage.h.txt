@@ -124,7 +124,6 @@ struct T3Batch::Impl {
   BatchReport ReadControl();
   BatchReport ReadResults(const batch_detail::Slab*);
   BatchReport ValidateOnePointReadback(unsigned slab,double time,std::uint64_t epoch);
-  BatchReport ReadParentActivity(unsigned slab,double time,std::uint64_t epoch);
   BatchReport InitializePlasticity(const ShellBatchPlasticityConfig&,const batch_detail::Model&);
   BatchReport InitializePlasticity(const ShellBatchPlasticityBinding&);
   BatchReport InitializeFailure(const ShellBatchFailureBinding&,const ShellBatchFailureLimits&);

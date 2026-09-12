@@ -1,9 +1,12 @@
-#include "T3BatchStorage.h"
-#include "T3OnePointHistory.h"
-#include "../failure/ShellFailureReadback.h"
-
-namespace tl::fea::t3 {
-namespace {
+// Generated from complete authenticated bodies; no numerical edits.
+#pragma once
+#include "lib_src/elements/t3/T3Batch.h"
+#include "lib_src/elements/t3/T3OnePointHistory.h"
+#include "lib_src/elements/t3/mapped/Result.h"
+#include "lib_src/elements/failure/ShellFailureReadback.h"
+namespace t3_readback_test::candidate {
+using namespace tl::fea;
+using namespace tl::fea::t3;
 template<class State, class ReadResults>
 BatchReport ReadOnePoint(State& state, unsigned slab, double time,
     std::uint64_t epoch, ReadResults read_results) {
@@ -34,24 +37,17 @@ BatchReport ReadOnePoint(State& state, unsigned slab, double time,
   }
   return {BatchStatus::Success, "OK"};
 }
-} // namespace
-
-BatchReport T3Batch::Impl::ValidateOnePointReadback(unsigned slab, double time, std::uint64_t epoch) {
-  return ReadOnePoint(*this, slab, time, epoch,
-      [&] { return ReadResults(&storage->slab[slab]); });
-}
-
-BatchReport T3Batch::Impl::ReadParentActivity(unsigned slab, double time, std::uint64_t epoch) {
-  return shell_batch_plasticity_detail::ReadFailure(*this, slab, time, [&](unsigned selected) {
-    const auto report = ValidateMappedSections(selected);
-    if (report.status != BatchStatus::Success || !plasticity->one_point_sections()) return report;
-    if (!physical) return ValidateOnePointReadback(selected, time, epoch);
+template<class State> BatchReport Activity(State& state, unsigned slab, double time, std::uint64_t epoch) {
+  return shell_batch_plasticity_detail::ReadFailure(state, slab, time, [&](unsigned selected) {
+    const auto report = state.ValidateMappedSections(selected);
+    if (report.status != BatchStatus::Success || !state.plasticity->one_point_sections()) return report;
+    if (!state.physical) return state.ValidateOnePointReadback(selected, time, epoch);
 
     // Successful mapped validation just copied and validated this complete slab.
     // Only const host role checks intervened, and batch calls are serialized.
     // Reuse is confined to this call: no retained validity bit or staged API.
     // Preserve the old second pending-error check before one-point validation.
-    return ReadOnePoint(*this, selected, time, epoch, [&] { return PendingError(); });
+    return ReadOnePoint(state, selected, time, epoch, [&] { return state.PendingError(); });
   });
 }
-} // namespace tl::fea::t3
+}
