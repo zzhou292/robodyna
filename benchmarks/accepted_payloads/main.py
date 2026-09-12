@@ -6,6 +6,11 @@ from pathlib import Path
 from compare import compare
 
 
+def check_report_location(report, *runs):
+    if any(report.resolve().is_relative_to(run.resolve()) for run in runs):
+        raise ValueError("comparison report must be outside both simulation directories")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("baseline", type=Path)
@@ -13,6 +18,7 @@ def main():
     parser.add_argument("--expected-host-delta", type=int, default=0)
     parser.add_argument("--report", type=Path, required=True)
     args = parser.parse_args()
+    check_report_location(args.report, args.baseline, args.candidate)
     result = compare(args.baseline, args.candidate, args.expected_host_delta)
     with args.report.open("x", encoding="utf-8") as stream:
         json.dump(result, stream, indent=2, allow_nan=False)

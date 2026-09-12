@@ -5,6 +5,7 @@ import unittest
 
 from compare import compare, sha256
 from raw_json import read_object
+from main import check_report_location
 
 
 class PayloadComparison(unittest.TestCase):
@@ -85,6 +86,15 @@ class PayloadComparison(unittest.TestCase):
                 read_object(p)
         p.write_text('{"nested":{"a":-0.0}, "a":1e-3}')
         self.assertEqual(read_object(p)[1]['a'], '1e-3')
+
+    def test_report_cannot_modify_either_run(self):
+        check_report_location(self.root / 'report.json', self.old, self.new)
+        for run in (self.old, self.new):
+            with self.assertRaises(ValueError):
+                check_report_location(run / 'archive/report.json', self.old, self.new)
+        (self.root / 'alias').symlink_to(self.old, target_is_directory=True)
+        with self.assertRaises(ValueError):
+            check_report_location(self.root / 'alias/new.json', self.old, self.new)
 
 
 if __name__ == "__main__":
