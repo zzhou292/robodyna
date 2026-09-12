@@ -78,7 +78,7 @@ inline void Same(const DeviceFixture& actual,const DeviceFixture& expected) {
       const auto y=qbat_resident_test::ResultValues(expected.storage->slab[slab].element[parent]);
       ASSERT_EQ(x.size(),y.size());
       for (std::size_t channel=0; channel<x.size(); ++channel)
-        EXPECT_EQ(Bits(x[channel]),Bits(y[channel]))<<slab<<":"<<parent<<":"<<channel;
+        EXPECT_EQ(x[channel],y[channel])<<slab<<":"<<parent<<":"<<channel;
     }
   }
 }

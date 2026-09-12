@@ -7,11 +7,21 @@ TEST(QbatMeasurementOwner,FailedCandidatePreservesOwnerOutputAndAcceptedHistoryT
   ASSERT_TRUE(rig.Initialize());
   const auto allocation=rig.batch.allocations();
   const auto stamp=rig.owner.accepted();
-  const auto accepted=rig.Accepted();
+  qb::BatchResult unbound;
+  qb::BatchDiagnostics unbound_diagnostics;
+  const auto unbound_before=Bytes(unbound);
+  const auto diagnostics_before=Bytes(unbound_diagnostics);
+  EXPECT_EQ(rig.batch.CopyAcceptedResults(stamp,&unbound,1,&unbound_diagnostics).status,
+      qb::BatchStatus::NotBound);
+  EXPECT_EQ(Bytes(unbound),unbound_before);
+  EXPECT_EQ(Bytes(unbound_diagnostics),diagnostics_before);
   fe::NodalTrialToken token;
   fe::NodalAssemblyView assembly;
   fe::NodalPreparedView view;
   ASSERT_TRUE(rig.Prepare(token,assembly,view));
+  // Initial live assembly establishes binding; initialization alone does not.
+  // This is still the virgin accepted cache, before any candidate publication.
+  const auto accepted=rig.Accepted();
   const auto node=rig.fixture.mechanics.domain.Find(13);
   const double nan=std::numeric_limits<double>::quiet_NaN();
   ASSERT_EQ(cudaMemcpyAsync(const_cast<double*>(view.kinematics.position_xyz)+3*node,

@@ -160,8 +160,15 @@
     },
     {
       "path": "lib_utest/qualification/qbat_measurement_operands/DeviceFixture.cuh",
-      "bytes": 3765,
-      "sha256": "c9b8ec01e125b51b3b42a24c91a81172014f0dfdf4f22993bb92ef25e97cc530"
+      "bytes": 3753,
+      "sha256": "96a0161b31e75a0da020fa2592b15dad03be2f2c9900ed27b2fede11d778075d",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 3765,
+          "prior_sha256": "c9b8ec01e125b51b3b42a24c91a81172014f0dfdf4f22993bb92ef25e97cc530",
+          "reason": "Test-only precision correction: ResultValues already returns uint64_t bit patterns; compare directly without converting through Bits(double). This strengthens exact complete-packet comparison and changes no production formula or tolerance."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/qbat_measurement_operands/Fixture.h",
@@ -180,8 +187,15 @@
     },
     {
       "path": "lib_utest/qualification/qbat_measurement_operands/OwnerTest.cu",
-      "bytes": 3698,
-      "sha256": "a568a445bfc9a4f2f08b72c162543c403f15543fd80d9fd5b871ae3a8749817c"
+      "bytes": 4259,
+      "sha256": "71bf21e3a0c7befa7ad2cba8d85f329213366238daae53a68976a1ebad3173ba",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 3698,
+          "prior_sha256": "a568a445bfc9a4f2f08b72c162543c403f15543fd80d9fd5b871ae3a8749817c",
+          "reason": "Fixture-only correction after root qbat-measurement-root-tests-1: InitializeMapped leaves live binding false until AssembleMappedAccepted. Capture the virgin accepted baseline after Rig::Prepare, keep failed-candidate accepted-state comparison, and explicitly check initial NotBound preserves both outputs. No production or numerical change."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/qbat_measurement_operands/README.md",
