@@ -144,8 +144,8 @@
     },
     {
       "path": "lib_utest/qualification/self_contact_broadphase/CudaTest.cu",
-      "bytes": 10769,
-      "sha256": "69cfc6b27d7e0d9ecf700f82f365b29f5b7d9839700c85be362ba9dc33d02702"
+      "bytes": 11026,
+      "sha256": "185020c38773d3bb20c8bf02d797357d123ab6227fffead2d915248d3dba7f03"
     },
     {
       "path": "lib_utest/qualification/self_contact_broadphase/HostTest.cpp",
@@ -227,6 +227,20 @@
         "sha256": "2266b6ec894802db0f5e432cd5fdd8f1acbb102afdf7deb0b643dd5d9048b9b8"
       }
     ],
-    "reason": "Compose the frozen broadphase with the later qualified mapped-wall removal proof and the additive fixed-facet fixture. Production broadphase/SAP bytes are unchanged; only complete build/proof identities and narrow fixture visibility are updated."
+    "reason": "Compose the frozen broadphase with the later qualified mapped-wall removal proof and the additive fixed-facet fixture. Production broadphase/SAP bytes are unchanged; only complete build/proof identities and narrow fixture visibility are updated.",
+    "cuda13_fixture_correction": {
+      "failed_report": "crash-work/reports/self-contact-prerequisite-tests-1.json",
+      "previous_record": {
+        "path": "lib_utest/qualification/self_contact_broadphase/CudaTest.cu",
+        "bytes": 10769,
+        "sha256": "69cfc6b27d7e0d9ecf700f82f365b29f5b7d9839700c85be362ba9dc33d02702"
+      },
+      "current_record": {
+        "path": "lib_utest/qualification/self_contact_broadphase/CudaTest.cu",
+        "bytes": 11026,
+        "sha256": "185020c38773d3bb20c8bf02d797357d123ab6227fffead2d915248d3dba7f03"
+      },
+      "scope": "Test-only correction: a zero grid is a synchronous launch argument/configuration error. CUDA 13.2 returns cudaErrorInvalidValue while older runtimes can return cudaErrorInvalidConfiguration. The gate now requires either documented category and exact propagation of the observed backend code through poison/revocation."
+    }
   }
 }

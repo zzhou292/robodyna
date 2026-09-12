@@ -169,13 +169,18 @@ TEST(SelfContactBroadphaseCuda, CudaLaunchFailureRevokesSuccessAndPoisonsStorage
   ct::SelfContactBroadphaseInput input{View(device, false)};
   ASSERT_EQ(broadphase.Evaluate(input, stream.value).status, S::Ok);
   ASSERT_EQ(broadphase.pairs().count, 1u);
-  // Zero grid is a recoverable CUDA launch-configuration error. No illegal
-  // memory access or destroyed stream is used to test failure propagation.
+  // Zero grid is a recoverable synchronous launch-argument/configuration
+  // error. CUDA 13 reports InvalidValue while older runtimes can report
+  // InvalidConfiguration; preserve the exact backend error through the owner.
+  // No illegal memory access or destroyed stream tests failure propagation.
   InvalidLaunchProbe<<<0, 1, 0, stream.value>>>();
-  ASSERT_EQ(cudaPeekAtLastError(), cudaErrorInvalidConfiguration);
+  const auto injected = cudaPeekAtLastError();
+  ASSERT_TRUE(injected == cudaErrorInvalidValue ||
+              injected == cudaErrorInvalidConfiguration)
+      << cudaGetErrorString(injected);
   EXPECT_EQ(broadphase.Evaluate(input, stream.value).status, S::DeviceFailure);
   Revoked(broadphase);
-  EXPECT_EQ(cudaGetLastError(), cudaErrorInvalidConfiguration);
+  EXPECT_EQ(cudaGetLastError(), injected);
   EXPECT_EQ(broadphase.Evaluate(input, stream.value).status, S::DeviceFailure);
   Revoked(broadphase);
 }
