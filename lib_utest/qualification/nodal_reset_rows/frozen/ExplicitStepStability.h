@@ -67,11 +67,7 @@ struct RowBounds {
 };
 
 TL_SURFACE_HD inline void InvalidateRows(RowBounds* rows) { if(rows) rows->valid=false; }
-namespace detail {
-// Begin preserves the serial API's invalidation and validation priority. No
-// array or other header field is written unless this preflight succeeds.
-TL_SURFACE_HD inline Status BeginResetRows(
-    RowBounds* rows, std::uint64_t epoch, std::uint64_t attempt) {
+TL_SURFACE_HD inline Status ResetRows(RowBounds* rows,std::uint64_t epoch,std::uint64_t attempt) {
   if(!rows) return Status::kInvalidArgument;
   rows->valid=false;
   if(!rows->stiffness || !rows->damping || rows->stiffness==rows->damping || !rows->node_count || !attempt)
@@ -79,20 +75,9 @@ TL_SURFACE_HD inline Status BeginResetRows(
   if(rows->capacity<rows->node_count) return Status::kOutOfRange;
   if(rows->initialized && (epoch<rows->base_epoch || (epoch==rows->base_epoch && attempt<=rows->attempt)))
     return Status::kStaleTrial;
-  return Status::kOk;
-}
-// Call only after every live row has been cleared by the same coordinator.
-TL_SURFACE_HD inline Status CompleteResetRows(
-    RowBounds* rows, std::uint64_t epoch, std::uint64_t attempt) {
+  for(std::uint32_t i=0;i<rows->node_count;++i) { rows->stiffness[i]=0;rows->damping[i]=0; }
   rows->base_epoch=epoch;rows->attempt=attempt;rows->initialized=true;rows->sealed=false;rows->valid=true;
   return Status::kOk;
-}
-} // namespace detail
-TL_SURFACE_HD inline Status ResetRows(RowBounds* rows,std::uint64_t epoch,std::uint64_t attempt) {
-  const auto status = detail::BeginResetRows(rows, epoch, attempt);
-  if (status != Status::kOk) return status;
-  for(std::uint32_t i=0;i<rows->node_count;++i) { rows->stiffness[i]=0;rows->damping[i]=0; }
-  return detail::CompleteResetRows(rows, epoch, attempt);
 }
 
 // All local sums validate before any row is changed. On any failure the whole

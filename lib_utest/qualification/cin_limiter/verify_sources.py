@@ -8,7 +8,7 @@ import runpy
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 raw = (here / 'source-manifest.json').read_bytes()
-EXPECTED = '96bb7e640cc56d60d11f267b0f25f4f83c6b1fbc0e547115f100a6209e659575'
+EXPECTED = '2ccaba8f5e7d5836135a69d238f730192503c58df75ca2eb268f7cb30b7a3b89'
 assert hashlib.sha256(raw).hexdigest() == EXPECTED
 manifest = json.loads(raw)
 for row in manifest['files']:
@@ -21,7 +21,9 @@ assert 'cudaMemcpy' not in query and 'cudaStream' not in query and '<<<' not in 
 assert 'sizeof(*output)' in query and '% alignof(NodalCinStructuralLimit)' in query
 assert query.index('state.Matches(') < query.index('*output = next;')
 assert query.index('OutsideSources(') < query.index('*output = next;')
-assert 'c->structural_limiter = {};' in (root / 'lib_src/solvers/FENodalState.cu').read_text()
+reset = runpy.run_path(str(here.parent / 'nodal_reset_rows/reset_proof.py'))
+owner = reset['legacy_owner']((root / 'lib_src/solvers/FENodalState.cu').read_text())
+assert 'c->structural_limiter = {};' in owner
 assert 'bool capture_limiter = false;' in (root / 'lib_src/solvers/NodalCinStructuralStep.h').read_text()
 runpy.run_path(str(here.parent / 'nodal_seal_rows/verify_sources.py'))
 runpy.run_path(str(here.parent / 'cin_force_transfers/verify_sources.py'))

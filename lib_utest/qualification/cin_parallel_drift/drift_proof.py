@@ -1,9 +1,19 @@
 """Exact orientation extraction and reversible dependent-drift scheduling."""
 from pathlib import Path
+import hashlib
 import re
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
+
+
+def legacy_build(current):
+    """Reverse only the additive Drift.cu owner source from shared base 1d62620."""
+    addition = ', "cin_advance/Drift.cu"'
+    assert current.count(addition) == 1
+    restored = current.replace(addition, '')
+    assert hashlib.sha256(restored.encode()).hexdigest() == 'b586a6bb9ba463a00dafd0908944711faf0134816ebdf18383bbd161f2d9fedf'
+    return restored
 
 
 def body(text, name):

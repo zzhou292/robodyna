@@ -9,7 +9,7 @@ import runpy
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 raw = (here / 'source-manifest.json').read_bytes()
-assert hashlib.sha256(raw).hexdigest() == '52ea164aaf94b0ea013137f35aacccb64fe66c274f87b51e1268ce5054b714db'
+assert hashlib.sha256(raw).hexdigest() == 'a8aa702b51128c7352c0f11b27b020b32be509999ff93bb2ebfaeae4b940223c'
 manifest = json.loads(raw)
 for row in manifest['files']:
     path = Path(row['path'])
@@ -35,6 +35,9 @@ def compact(text):
 
 old = (here / 'frozen/ExplicitStepStability.h').read_text()
 current = (root / 'lib_src/solvers/ExplicitStepStability.h').read_text()
+# Apply only the checked reset extraction before the unchanged finalizer proof.
+reset = runpy.run_path(str(here.parent / 'nodal_reset_rows/reset_proof.py'))
+current = reset['legacy_stability'](current)
 original = body(old, 'FinalizeRows')
 loop_start = original.index('  for(std::uint32_t i=0;')
 scalar_start = original.index('  const double alpha=')

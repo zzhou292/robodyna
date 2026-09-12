@@ -6,6 +6,7 @@
 #include "NodalStateLayout.h"
 #include "NodalCinStorage.h"
 #include "nodal_seal/Validation.cuh"
+#include "nodal_reset/Reset.cuh"
 #include <atomic>
 #include <cmath>
 #include <cstring>
@@ -26,14 +27,6 @@ std::uint64_t NewOwner() {
     if (next_owner.compare_exchange_weak(value, value + 1, std::memory_order_relaxed)) return value;
   }
   return 0;
-}
-__global__ void ResetTrial(Control* c, std::uint64_t epoch, std::uint64_t attempt) {
-  c->assembly = {};
-  c->assembly.base_epoch = epoch; c->assembly.attempt = attempt;
-  c->limit = {}; c->node = UINT32_MAX; c->status = NodalStatus::Ok;
-  c->structural_limiter = {};
-  if (stability::ResetRows(&c->rows, epoch, attempt) != sc::Status::kOk)
-    c->status = NodalStatus::InvalidOutput;
 }
 }  // namespace
 
@@ -354,7 +347,7 @@ NodalReport FENodalState::BeginTrial(NodalTrialToken* token, NodalAssemblyView* 
     report = s.Check(s.cin->ResetTrial(s.stream));
     if (report.status != NodalStatus::Ok) return report;
   }
-  ResetTrial<<<1,1,0,s.stream>>>(s.control, s.stamp.epoch, s.attempt);
+  nodal_reset::ResetTrial<<<1,nodal_reset::Threads,0,s.stream>>>(s.control, s.stamp.epoch, s.attempt);
   report = s.Check(cudaGetLastError()); if (report.status != NodalStatus::Ok) return report;
   report = s.SynchronizeControl(); if (report.status != NodalStatus::Ok) return report;
   token->owner_id_ = s.stamp.owner_id; token->base_epoch_ = s.stamp.epoch; token->attempt_ = s.attempt;

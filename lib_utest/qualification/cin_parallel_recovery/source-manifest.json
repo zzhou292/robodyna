@@ -24,8 +24,8 @@
     },
     {
       "path": "lib_src/solvers/BUILD.bazel",
-      "bytes": 8383,
-      "sha256": "2b2c8628d6eaa36e309e1caea57ff6226a8bb572237fe6d9bd067c827fa69310",
+      "bytes": 8408,
+      "sha256": "512cdc99ea9cfb41144004313911c27c78aaa2f373ff905679edc5168cc6c7b7",
       "reviewed_updates": [
         {
           "prior_bytes": 8249,
@@ -36,6 +36,21 @@
           "prior_bytes": 8359,
           "prior_sha256": "b586a6bb9ba463a00dafd0908944711faf0134816ebdf18383bbd161f2d9fedf",
           "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
+        },
+        {
+          "prior_bytes": 8359,
+          "prior_sha256": "b586a6bb9ba463a00dafd0908944711faf0134816ebdf18383bbd161f2d9fedf",
+          "reason": "Reviewed generic one-block ResetTrial scheduling: checked exact serial reset prefix/suffix and complete owner reversal; no force/CIN arithmetic, layout or allocation change."
+        },
+        {
+          "prior_bytes": 8384,
+          "prior_sha256": "bb184c82d5759caa672ce3f74cdc8b031754b08c4c6756db7f0743af5d285851",
+          "reason": "Frozen reset68d3717 incoming branch receipt retained during composition onto1d3a441."
+        },
+        {
+          "prior_bytes": 8383,
+          "prior_sha256": "2b2c8628d6eaa36e309e1caea57ff6226a8bb572237fe6d9bd067c827fa69310",
+          "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
         }
       ]
     },
@@ -172,8 +187,8 @@
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/source-manifest.json",
-      "bytes": 17607,
-      "sha256": "a59f6d18b35e33df8b902fa3a46b3f2413171c9458a2161aaed9bc44668a3e6a",
+      "bytes": 18017,
+      "sha256": "925e9ff8e49fa10203bc4b7b61b9bfc9a2969d298026f21f6d48a0148563c53b",
       "reviewed_updates": [
         {
           "prior_bytes": 8832,
@@ -184,13 +199,18 @@
           "prior_bytes": 15301,
           "prior_sha256": "35a4423f54a25221e1a06a531a1500150e4494cd7ef9157865328a4b3facdc2e",
           "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
+        },
+        {
+          "prior_bytes": 17607,
+          "prior_sha256": "a59f6d18b35e33df8b902fa3a46b3f2413171c9458a2161aaed9bc44668a3e6a",
+          "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/verify_sources.py",
       "bytes": 6359,
-      "sha256": "499cdd5c6a4cf39c37dc3fd302e62312e39cc7991037a4832320c850fa362a54",
+      "sha256": "b54e82ebbeaa38e24f8b91623b2f696da5a22a82bb3b5060461544b35bb85d24",
       "reviewed_updates": [
         {
           "prior_bytes": 6359,
@@ -201,6 +221,11 @@
           "prior_bytes": 6359,
           "prior_sha256": "ac7fa131ee15a3107e4584c3f88b5220a96435b404cb3758e95914e05d99d33c",
           "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
+        },
+        {
+          "prior_bytes": 6359,
+          "prior_sha256": "499cdd5c6a4cf39c37dc3fd302e62312e39cc7991037a4832320c850fa362a54",
+          "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
         }
       ]
     },
@@ -223,8 +248,8 @@
     },
     {
       "path": "lib_utest/qualification/cin_force_transfers/source-manifest.json",
-      "bytes": 60700,
-      "sha256": "15369c9349329724f1c5d4adc0c4edcd9c52ee067622ec1dccf6b71bdf3a7bc8",
+      "bytes": 72313,
+      "sha256": "fd1f57fe198a237eb1a7dcbba7e26e455d2e359b863eec4f8ac0dc89bfee2f93",
       "reviewed_updates": [
         {
           "prior_bytes": 22358,
@@ -235,6 +260,21 @@
           "prior_bytes": 51023,
           "prior_sha256": "1acedeee34404c15d574c24a88433d0a77e7059af7d6e37b334c9008953be86c",
           "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
+        },
+        {
+          "prior_bytes": 51023,
+          "prior_sha256": "1acedeee34404c15d574c24a88433d0a77e7059af7d6e37b334c9008953be86c",
+          "reason": "Reviewed generic one-block ResetTrial scheduling: checked exact serial reset prefix/suffix and complete owner reversal; no force/CIN arithmetic, layout or allocation change."
+        },
+        {
+          "prior_bytes": 54448,
+          "prior_sha256": "83bb0240e1f53a7a82419dd19da3ab3944013ec2e94c23ef08f31330d4f80e19",
+          "reason": "Frozen reset68d3717 incoming branch receipt retained during composition onto1d3a441."
+        },
+        {
+          "prior_bytes": 60700,
+          "prior_sha256": "15369c9349329724f1c5d4adc0c4edcd9c52ee067622ec1dccf6b71bdf3a7bc8",
+          "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
         }
       ]
     },
@@ -253,7 +293,7 @@
     {
       "path": "lib_utest/qualification/cin_force_transfers/verify_sources.py",
       "bytes": 3782,
-      "sha256": "882423531ae1d5dde3dc7bdcbd57a4b7fc64f953a17131049b4ce812f5a917f2",
+      "sha256": "ca1d4911214d72871bf5367eb1863acce278b00d18b4e118e512d1cac4034f6e",
       "reviewed_updates": [
         {
           "prior_bytes": 3658,
@@ -264,13 +304,28 @@
           "prior_bytes": 3782,
           "prior_sha256": "e024054fb2fcd6152737e3de50eaa9e084a951c504e09dbdd3f1e99858c7c54c",
           "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
+        },
+        {
+          "prior_bytes": 3782,
+          "prior_sha256": "e024054fb2fcd6152737e3de50eaa9e084a951c504e09dbdd3f1e99858c7c54c",
+          "reason": "Reviewed generic one-block ResetTrial scheduling: checked exact serial reset prefix/suffix and complete owner reversal; no force/CIN arithmetic, layout or allocation change."
+        },
+        {
+          "prior_bytes": 3782,
+          "prior_sha256": "d4ae1f556c40dc607354d6913d9dbd4e568adfb1d6a8eca8535d6e3b862eacc3",
+          "reason": "Frozen reset68d3717 incoming branch receipt retained during composition onto1d3a441."
+        },
+        {
+          "prior_bytes": 3782,
+          "prior_sha256": "882423531ae1d5dde3dc7bdcbd57a4b7fc64f953a17131049b4ce812f5a917f2",
+          "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_capture/source-manifest.json",
-      "bytes": 75571,
-      "sha256": "289bd00510a688697651b30683fe09504256d2469eaa26621abdd27e0d010ece",
+      "bytes": 80389,
+      "sha256": "b57a74303427ae74a53574440b5bdd83cbd63dd3d81914254c6ff1792bab5c9e",
       "reviewed_updates": [
         {
           "prior_bytes": 30947,
@@ -281,13 +336,28 @@
           "prior_bytes": 68487,
           "prior_sha256": "fdb5b593c5105694d5dc7ceed34528747261a58c4da2ec00fea5b4047b57e1c2",
           "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
+        },
+        {
+          "prior_bytes": 68487,
+          "prior_sha256": "fdb5b593c5105694d5dc7ceed34528747261a58c4da2ec00fea5b4047b57e1c2",
+          "reason": "Reviewed generic one-block ResetTrial scheduling: checked exact serial reset prefix/suffix and complete owner reversal; no force/CIN arithmetic, layout or allocation change."
+        },
+        {
+          "prior_bytes": 69514,
+          "prior_sha256": "94670be9ad1906db3db1bf48da765a13553c45747af32ca4354025674a7fe70b",
+          "reason": "Frozen reset68d3717 incoming branch receipt retained during composition onto1d3a441."
+        },
+        {
+          "prior_bytes": 75571,
+          "prior_sha256": "289bd00510a688697651b30683fe09504256d2469eaa26621abdd27e0d010ece",
+          "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_capture/verify_sources.py",
       "bytes": 3992,
-      "sha256": "5efa6800d993c91ef359d99a90555492cda7241ea88851baf94dfc2e71d2c76b",
+      "sha256": "346b8dcb1d5fc542b07122daa28bda5392abf56045c8748ea97ed222b396a7f4",
       "reviewed_updates": [
         {
           "prior_bytes": 3992,
@@ -298,13 +368,28 @@
           "prior_bytes": 3992,
           "prior_sha256": "f2903884507463f63b52fe63968c2ff0065a493cf8ac798ec8515922e35461ff",
           "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
+        },
+        {
+          "prior_bytes": 3992,
+          "prior_sha256": "f2903884507463f63b52fe63968c2ff0065a493cf8ac798ec8515922e35461ff",
+          "reason": "Reviewed generic one-block ResetTrial scheduling: checked exact serial reset prefix/suffix and complete owner reversal; no force/CIN arithmetic, layout or allocation change."
+        },
+        {
+          "prior_bytes": 3992,
+          "prior_sha256": "f93678a8d4eab39b7589359fcb4f397332642f605ac237fa83366e1ed50fbbc4",
+          "reason": "Frozen reset68d3717 incoming branch receipt retained during composition onto1d3a441."
+        },
+        {
+          "prior_bytes": 3992,
+          "prior_sha256": "5efa6800d993c91ef359d99a90555492cda7241ea88851baf94dfc2e71d2c76b",
+          "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/source-manifest.json",
-      "bytes": 88954,
-      "sha256": "0c15877ed5941f76fa0b47e86f742ea5b13f5165be1be770405baee3ad49a8f4",
+      "bytes": 96685,
+      "sha256": "160ca3eabc7cceab75b931ec7ccfc8a8cc04eda1ef44502c2910b080f69a9d05",
       "reviewed_updates": [
         {
           "prior_bytes": 39137,
@@ -315,13 +400,28 @@
           "prior_bytes": 80723,
           "prior_sha256": "c9e5750b607dbaac8fabdce8f57452e785bd90333ba1fa448446c8b3c858775e",
           "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
+        },
+        {
+          "prior_bytes": 80723,
+          "prior_sha256": "c9e5750b607dbaac8fabdce8f57452e785bd90333ba1fa448446c8b3c858775e",
+          "reason": "Reviewed generic one-block ResetTrial scheduling: checked exact serial reset prefix/suffix and complete owner reversal; no force/CIN arithmetic, layout or allocation change."
+        },
+        {
+          "prior_bytes": 82778,
+          "prior_sha256": "8dd71a3788e1f3c71834d38ea3dd21c86cb754e15e57d97f5a677f81fe42de78",
+          "reason": "Frozen reset68d3717 incoming branch receipt retained during composition onto1d3a441."
+        },
+        {
+          "prior_bytes": 88954,
+          "prior_sha256": "0c15877ed5941f76fa0b47e86f742ea5b13f5165be1be770405baee3ad49a8f4",
+          "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/verify_sources.py",
       "bytes": 3905,
-      "sha256": "ec9dffadf95e6ddfca4b5c06c2379ebcf810796b02f960d1af5f652939918b3b",
+      "sha256": "3ffeae37e692088ad6d4f2024726575f4da5dc0bb228ac4f210690297fb52b15",
       "reviewed_updates": [
         {
           "prior_bytes": 3905,
@@ -332,6 +432,21 @@
           "prior_bytes": 3905,
           "prior_sha256": "ae06ef89979bc057144d69a5d162e0e064341cf0c95c3c926a01e8d619484924",
           "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
+        },
+        {
+          "prior_bytes": 3905,
+          "prior_sha256": "ae06ef89979bc057144d69a5d162e0e064341cf0c95c3c926a01e8d619484924",
+          "reason": "Reviewed generic one-block ResetTrial scheduling: checked exact serial reset prefix/suffix and complete owner reversal; no force/CIN arithmetic, layout or allocation change."
+        },
+        {
+          "prior_bytes": 3905,
+          "prior_sha256": "59498b516c0827aa46ee36259ac90cb1328733edaff058479f815f8454b87ba7",
+          "reason": "Frozen reset68d3717 incoming branch receipt retained during composition onto1d3a441."
+        },
+        {
+          "prior_bytes": 3905,
+          "prior_sha256": "ec9dffadf95e6ddfca4b5c06c2379ebcf810796b02f960d1af5f652939918b3b",
+          "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
         }
       ]
     },
@@ -361,8 +476,8 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/source-manifest.json",
-      "bytes": 19689,
-      "sha256": "b9d4523f4c6d4f1188cd014016ece672606546f4256dd74a808d6e94704fb3b4",
+      "bytes": 20099,
+      "sha256": "1dfc6a90725b7e0eb809b60f68a76bcea44aa6e63a1a7b0c2235a7b5abd7b6d0",
       "reviewed_updates": [
         {
           "prior_bytes": 9439,
@@ -373,13 +488,18 @@
           "prior_bytes": 17383,
           "prior_sha256": "7b06d8f476e82f7cc5fb525f8fe4c270c55e2855f211d2909b0bf5e4cba2fca6",
           "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
+        },
+        {
+          "prior_bytes": 19689,
+          "prior_sha256": "b9d4523f4c6d4f1188cd014016ece672606546f4256dd74a808d6e94704fb3b4",
+          "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/verify_sources.py",
       "bytes": 4833,
-      "sha256": "dee03e1503b3c1e6d4f26376e42a3943175cee19291241e56c9c4225cea198a6",
+      "sha256": "557bb4afe0e0a7121500d092d5b62de25f94b1be7fdd3d3eab50fa94208d5714",
       "reviewed_updates": [
         {
           "prior_bytes": 4833,
@@ -390,6 +510,11 @@
           "prior_bytes": 4833,
           "prior_sha256": "5cebce36a78f1ea9225d7c6da50d0442e3eb5d4c92acad2d203a21bde6e252e6",
           "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
+        },
+        {
+          "prior_bytes": 4833,
+          "prior_sha256": "dee03e1503b3c1e6d4f26376e42a3943175cee19291241e56c9c4225cea198a6",
+          "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
         }
       ]
     },
@@ -544,8 +669,8 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/source-manifest.json",
-      "bytes": 75332,
-      "sha256": "66ce3bb3067571123ee5e8e70807e990345cb4ef3c0fca472a41b16533b44010",
+      "bytes": 78209,
+      "sha256": "6a70a416fd65139421370e7343b5e7ea10612b47003a2ff7f925e482169a3001",
       "reviewed_updates": [
         {
           "prior_bytes": 32017,
@@ -556,13 +681,28 @@
           "prior_bytes": 67879,
           "prior_sha256": "ae82c40038a254702b42fcb87436945e5b19ac431cd9723b980ad74fd0ba51c3",
           "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
+        },
+        {
+          "prior_bytes": 67879,
+          "prior_sha256": "ae82c40038a254702b42fcb87436945e5b19ac431cd9723b980ad74fd0ba51c3",
+          "reason": "Reviewed generic one-block ResetTrial scheduling: checked exact serial reset prefix/suffix and complete owner reversal; no force/CIN arithmetic, layout or allocation change."
+        },
+        {
+          "prior_bytes": 68221,
+          "prior_sha256": "32b6ed004f2d0d6fa22a302e1fe33d98140f08578d7bf6c490f81eb6c5c398ec",
+          "reason": "Frozen reset68d3717 incoming branch receipt retained during composition onto1d3a441."
+        },
+        {
+          "prior_bytes": 75332,
+          "prior_sha256": "66ce3bb3067571123ee5e8e70807e990345cb4ef3c0fca472a41b16533b44010",
+          "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/verify_sources.py",
       "bytes": 6798,
-      "sha256": "587a939b5121fdfbd0ecd95a6c038c591e542b1cac9de11efc26b6c6d9088448",
+      "sha256": "2afae6ebbce1483adc4e2598176f56c1f4aa7d27a846a6715d9cf18f3a4a783b",
       "reviewed_updates": [
         {
           "prior_bytes": 6798,
@@ -573,13 +713,28 @@
           "prior_bytes": 6798,
           "prior_sha256": "a0b18e70bb82b4031ca7540d6afbe644ac98f3c6a5b78b6a362191b22de18ded",
           "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
+        },
+        {
+          "prior_bytes": 6798,
+          "prior_sha256": "a0b18e70bb82b4031ca7540d6afbe644ac98f3c6a5b78b6a362191b22de18ded",
+          "reason": "Reviewed generic one-block ResetTrial scheduling: checked exact serial reset prefix/suffix and complete owner reversal; no force/CIN arithmetic, layout or allocation change."
+        },
+        {
+          "prior_bytes": 6798,
+          "prior_sha256": "aacd4839528491c02bc9fa31d6efb911f3abcc41b8b66d7efbc8b2516e5b218f",
+          "reason": "Frozen reset68d3717 incoming branch receipt retained during composition onto1d3a441."
+        },
+        {
+          "prior_bytes": 6798,
+          "prior_sha256": "587a939b5121fdfbd0ecd95a6c038c591e542b1cac9de11efc26b6c6d9088448",
+          "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/nodal_seal_rows/source-manifest.json",
-      "bytes": 42605,
-      "sha256": "52ea164aaf94b0ea013137f35aacccb64fe66c274f87b51e1268ce5054b714db",
+      "bytes": 54115,
+      "sha256": "a8aa702b51128c7352c0f11b27b020b32be509999ff93bb2ebfaeae4b940223c",
       "reviewed_updates": [
         {
           "prior_bytes": 16349,
@@ -590,13 +745,28 @@
           "prior_bytes": 37742,
           "prior_sha256": "4bdcd48aa164f3341feff936c180d3cda39051b68773ada9bc4b2c30b7f835c8",
           "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
+        },
+        {
+          "prior_bytes": 37742,
+          "prior_sha256": "4bdcd48aa164f3341feff936c180d3cda39051b68773ada9bc4b2c30b7f835c8",
+          "reason": "Reviewed generic one-block ResetTrial scheduling: checked exact serial reset prefix/suffix and complete owner reversal; no force/CIN arithmetic, layout or allocation change."
+        },
+        {
+          "prior_bytes": 42779,
+          "prior_sha256": "1661b652ee3532036323376e52c440f7e72cd043df5a4ce6deee3cfbf9dd89de",
+          "reason": "Frozen reset68d3717 incoming branch receipt retained during composition onto1d3a441."
+        },
+        {
+          "prior_bytes": 42605,
+          "prior_sha256": "52ea164aaf94b0ea013137f35aacccb64fe66c274f87b51e1268ce5054b714db",
+          "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/nodal_seal_rows/verify_sources.py",
-      "bytes": 3815,
-      "sha256": "4353aa5810d3196d4def2a6b1a86049146ced6b8010cd3d8dcebb530eaf71eb3",
+      "bytes": 4017,
+      "sha256": "56bffe3ee6b2074706c44c17a045f900c91ef4a34226a332f40b7ccedd08e81a",
       "reviewed_updates": [
         {
           "prior_bytes": 3815,
@@ -607,6 +777,21 @@
           "prior_bytes": 3815,
           "prior_sha256": "7cca37b0c4b352eadc8077bce164c514a7cbbc4572885f376b170628e77363a1",
           "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
+        },
+        {
+          "prior_bytes": 3815,
+          "prior_sha256": "7cca37b0c4b352eadc8077bce164c514a7cbbc4572885f376b170628e77363a1",
+          "reason": "Reviewed generic one-block ResetTrial scheduling: checked exact serial reset prefix/suffix and complete owner reversal; no force/CIN arithmetic, layout or allocation change."
+        },
+        {
+          "prior_bytes": 4084,
+          "prior_sha256": "6843aa8a214a0d555538e7852c3065ebba4d6e13584f2c6ec7711cfd48106916",
+          "reason": "Frozen reset68d3717 incoming branch receipt retained during composition onto1d3a441."
+        },
+        {
+          "prior_bytes": 3815,
+          "prior_sha256": "4353aa5810d3196d4def2a6b1a86049146ced6b8010cd3d8dcebb530eaf71eb3",
+          "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
         }
       ]
     },
@@ -622,8 +807,15 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_drift/drift_proof.py",
-      "bytes": 2960,
-      "sha256": "bd6c514bc8a55c4345bd374ffde4a54cf377bfd02942e541bde2d7d0f301130a"
+      "bytes": 3362,
+      "sha256": "bb3a2e8a61b09e6671b2e74d317b630476f49e887ba2fe1b7b2d979b85cb5426",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 2960,
+          "prior_sha256": "bd6c514bc8a55c4345bd374ffde4a54cf377bfd02942e541bde2d7d0f301130a",
+          "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_drift/reference/NodalNodeStep.h",
