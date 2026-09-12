@@ -8,7 +8,7 @@ The named loaded profile requires `EnvelopeRectangleV1` and at least 0.25 m
 transverse margin, with the exact 35 mph source profile. The usual gap is 0.02 m;
 the two-interval original qualification deliberately uses 1 µm to reach contact.
 
-`Config` chooses 5, 20, or 50 ms, a positive fixed step (default 3e-7 s) and 101 sampled
+`Config` chooses a 0.5 ms preview or 5, 20, or 50 ms, a positive fixed step (default 3e-7 s) and 101 sampled
 frames by default. The shared archive predicate selects the first mathematical
 fixed-step endpoint at or beyond the requested duration. The last interval has
 the ordinary fixed step; actual saved times come from the owner. The summary
@@ -141,6 +141,20 @@ will be free flight at those first endpoints; explicitly use `--gap-m .000001`
 only for the first-contact qualification. With no diagnostic limit the same
 loop executes the complete planned horizon. A later 20/50 ms run requires a new
 setup/owner/output directory and does not resume the prior visualization.
+
+For a dense complete-assembly preview, select
+`--physical-profile vehicle-supports-v5 --duration-ms 0.5 --fixed-dt-s 2e-7 --samples 101`
+with the same authenticated source paths and a fresh run ID/empty directory.
+Use its forecast first, then run without `--diagnostic-intervals` to request the
+whole preview. The existing binary64 horizon rule selects 2,501 ordinary fixed
+intervals and 101 sampled accepted endpoints, including epoch zero and the final
+epoch. The wall envelope uses that declared 0.5 ms duration. Actual saved times
+come from the owner; no frame interpolation, shortened step, velocity change or
+mass scaling is introduced. Completion still requires the final archive receipt;
+a stop/rejection remains an explicitly incomplete accepted prefix. A subsequent
+5 ms run starts from the original state in another directory. A 2,500-interval
+diagnostic stop on a declared 5 ms horizon keeps the 5 ms cadence and has only
+11 scheduled frames, so it is not the dense-preview configuration.
 
 `--wall-stiffness-n-m3` and `--penetration-limit-m` explicitly override the
 existing wall-case declarations for contact sensitivity runs. Stiffness has

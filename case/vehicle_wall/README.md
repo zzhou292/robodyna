@@ -49,7 +49,7 @@ accepted epoch, all material histories and the common clock are unchanged.
 This initial attachment object does not expose mutable owner access. The separate
 [`LoadedWall`](loaded/README.md) factory installs ordered accepted contact force/STI
 assembly and prepared work/activity capture in the existing dynamics transaction.
-Its named profile uses a 0.25 m transverse margin and explicitly selected 5, 20 or
+Its named profile uses a 0.25 m transverse margin and explicitly selected 0.5, 5, 20 or
 50 ms duration. The initial test uses a `3e-7 s` constructor candidate; loaded
 joints/contact may require a smaller admitted interval.
 

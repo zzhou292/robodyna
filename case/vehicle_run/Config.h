@@ -6,6 +6,7 @@ enum class ResourceProfile { Normal, ConditionalExpandedFull };
 enum class PhysicalProfile { RetainedShellAssembliesV1, ExtendedSolidsV4, VehicleSupportsV5 };
 const char* PhysicalProfileName(PhysicalProfile);
 struct Config {
+    // Explicit 0.5 ms preview or 5/20/50 ms run; all use the same fixed-step planner.
     double duration_s=.005;
     double fixed_dt_s=3e-7;
     std::size_t samples=101;

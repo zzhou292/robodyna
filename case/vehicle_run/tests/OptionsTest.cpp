@@ -92,4 +92,22 @@ TEST(VehicleRunOptions, VehicleSupportsV5IsExplicitAndKeepsNormalResourceDefault
     args.insert(args.end(),{"--physical-profile","extended-solids-v4"});
     EXPECT_THROW(Parse(args),std::invalid_argument);
 }
+TEST(VehicleRunOptions, HalfMillisecondPreviewSelectsFullHorizonWithUnchangedSamplingAndStep) {
+    auto args=Arguments();
+    args.insert(args.end(),{"--physical-profile","vehicle-supports-v5","--duration-ms","0.5",
+        "--fixed-dt-s","2e-7"});
+    const auto preview=Parse(args);
+    EXPECT_EQ(preview.config.duration_s,.0005);
+    EXPECT_EQ(preview.config.fixed_dt_s,2e-7);
+    EXPECT_EQ(preview.config.samples,101u);
+    EXPECT_EQ(preview.diagnostic_intervals,0u);
+    EXPECT_EQ(preview.config.resources,ResourceProfile::Normal);
+    EXPECT_EQ(Plan(preview.config).intervals,2501u);
+    EXPECT_NE(std::string(cli::Usage()).find("--duration-ms 0.5|5|20|50"),std::string::npos);
+    for(const auto* value:{"0.499","0.501","1","nan","inf"}) {
+        auto invalid=Arguments();
+        invalid.insert(invalid.end(),{"--duration-ms",value});
+        EXPECT_THROW(Parse(invalid),std::exception)<<value;
+    }
+}
 } // namespace crash::cases::vehicle_run::test

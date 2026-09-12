@@ -79,7 +79,7 @@ const char* Usage() noexcept {
         "--glass-resolution FILE --type13 FILE --aux-member FILE --original-wall-member FILE "
         "--wall-manifest FILE --run-id UINT --output EMPTY_DIR "
         "[--physical-profile retained-shell-v1|extended-solids-v4|vehicle-supports-v5] "
-        "[--duration-ms 5|20|50] [--fixed-dt-s 3e-7] [--gap-m .02] [--samples 101] "
+        "[--duration-ms 0.5|5|20|50] [--fixed-dt-s 3e-7] [--gap-m .02] [--samples 101] "
         "[--wall-stiffness-n-m3 VALUE] [--penetration-limit-m VALUE] "
         "[--diagnostic-intervals N] [--maximum-elapsed-s SEC] [--stop-file PATH] [--forecast-only] [--conditional-full-limits]";
 }

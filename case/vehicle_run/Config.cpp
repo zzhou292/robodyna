@@ -12,10 +12,10 @@ const char* PhysicalProfileName(PhysicalProfile profile) {
 }
 Horizon Plan(const Config& config) {
     PhysicalProfileName(config.physical_profile);
-    if((config.duration_s!=.005 && config.duration_s!=.02 && config.duration_s!=.05) ||
+    if((config.duration_s!=.0005 && config.duration_s!=.005 && config.duration_s!=.02 && config.duration_s!=.05) ||
         config.samples<2 || config.samples>1000 ||
         (config.resources!=ResourceProfile::Normal && config.resources!=ResourceProfile::ConditionalExpandedFull))
-        throw std::invalid_argument("Run requires explicit 5, 20 or 50 ms and 2..1000 samples");
+        throw std::invalid_argument("Run requires explicit 0.5, 5, 20 or 50 ms and 2..1000 samples");
     Horizon result;
     if(!output::full_shell::PlanFixedStepHorizon(config.fixed_dt_s,config.duration_s,result.intervals) ||
         result.intervals<config.samples-1)

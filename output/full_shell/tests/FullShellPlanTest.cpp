@@ -1,5 +1,7 @@
 #include "TestSupport.h"
 #include "output/full_shell/FullShellVisualizationPlan.h"
+#include "output/full_shell/FixedStepHorizon.h"
+#include <algorithm>
 #include <limits>
 
 namespace crash::output::full_shell::test {
@@ -46,5 +48,34 @@ TEST(FullShellPlan,ChecksDeclaredFilesOptionalChannelsAndRealTimestep) {
     r=good;r.intervals=2;r.frames=2;
     r.fixed_dt=.75*std::numeric_limits<double>::max();r.requested_duration=std::numeric_limits<double>::max();
     EXPECT_THROW(PlanArchive(r),std::exception);
+}
+TEST(FullShellPlan,HalfMillisecondPreviewHas101AcceptedSamplesAcrossItsOwnHorizon) {
+    auto request=Request(2e-7,0);
+    request.requested_duration=.0005;
+    request.frames=101;
+    ASSERT_TRUE(PlanFixedStepHorizon(request.fixed_dt,request.requested_duration,request.intervals));
+    ASSERT_EQ(request.intervals,2501u);
+    const auto preview=PlanArchive(request);
+    ASSERT_EQ(preview.frame_epochs.size(),101u);
+    EXPECT_EQ(preview.frame_epochs.front(),0u);
+    EXPECT_EQ(preview.frame_epochs.back(),request.intervals);
+    EXPECT_EQ(preview.frame_capacity,102u); // Includes the existing off-cadence prefix reserve.
+    for(std::size_t frame=1;frame<preview.frame_epochs.size();++frame) {
+        const auto gap=preview.frame_epochs[frame]-preview.frame_epochs[frame-1];
+        EXPECT_TRUE(gap==25 || gap==26);
+    }
+    auto full=request;
+    full.requested_duration=.005;
+    ASSERT_TRUE(PlanFixedStepHorizon(full.fixed_dt,full.requested_duration,full.intervals));
+    const auto full_plan=PlanArchive(full);
+    EXPECT_EQ(std::count_if(full_plan.frame_epochs.begin(),full_plan.frame_epochs.end(),
+        [](std::uint64_t epoch) {return epoch<=2500;}),11);
+    EXPECT_EQ(preview.frame_bytes,full_plan.frame_bytes);
+    EXPECT_LT(preview.interval_bytes,full_plan.interval_bytes);
+    auto exact=request;
+    exact.total_byte_cap=preview.forecast_bytes;
+    EXPECT_NO_THROW(PlanArchive(exact));
+    --exact.total_byte_cap;
+    EXPECT_THROW(PlanArchive(exact),std::exception);
 }
 } // namespace crash::output::full_shell::test

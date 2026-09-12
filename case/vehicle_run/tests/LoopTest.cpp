@@ -1,4 +1,5 @@
 #include "../Loop.h"
+#include "output/full_shell/FixedStepHorizon.h"
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <stdexcept>
@@ -180,5 +181,23 @@ TEST(VehicleRunConfig, ExplicitHorizonsConditionalCapsAndInvalidInputs) {
     EXPECT_THROW(SelectCaps(ResourceProfile::ConditionalExpandedFull,60ull*1000*1000*1000+1,1),std::invalid_argument);
     config.duration_s=.006;
     EXPECT_THROW(Plan(config),std::invalid_argument);
+}
+TEST(VehicleRunConfig, PreviewKeepsEarliestFixedEndpointAndRejectsExcessSamples) {
+    Config config;
+    config.duration_s=.0005;
+    EXPECT_EQ(Plan(config).intervals,1667u);
+    config.fixed_dt_s=2e-7;
+    const auto preview=Plan(config);
+    EXPECT_EQ(preview.intervals,2501u);
+    EXPECT_EQ(preview.requested_duration_s,.0005);
+    EXPECT_EQ(preview.fixed_dt_s,2e-7);
+    EXPECT_GE(preview.nominal_endpoint_s,static_cast<long double>(config.duration_s));
+    EXPECT_LT(static_cast<long double>(preview.intervals-1)*config.fixed_dt_s,
+        static_cast<long double>(config.duration_s));
+    EXPECT_TRUE(output::full_shell::MatchesFixedStepHorizon(preview.intervals,config.fixed_dt_s,config.duration_s));
+    config.fixed_dt_s=1e-5;
+    EXPECT_THROW(Plan(config),std::invalid_argument);
+    config.samples=2;
+    EXPECT_NO_THROW(Plan(config));
 }
 } // namespace crash::cases::vehicle_run::test

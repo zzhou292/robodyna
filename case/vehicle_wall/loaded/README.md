@@ -12,7 +12,9 @@ The named loaded settings select `EnvelopeRectangleV1`, 35 mph, a 20 mm leading
 gap and a 0.25 m transverse motion margin. The selected mesh adds another margin
 around the projected envelope and retains its generated feature IDs separately
 from the authenticated original wall. The requested durations are explicitly
-5, 20 or 50 ms; each recomputes nominal travel/envelope. The default is 20 ms.
+0.5, 5, 20 or 50 ms; each recomputes nominal travel/envelope. The default is 20 ms.
+The 0.5 ms option is an explicit preview horizon; its fixed timestep, 35 mph
+startup and contact/structural admission rules are unchanged.
 `LoadedWallConfig` supplies a candidate fixed interval of `3e-7 s` and enables
 `NativeOrdinaryRigidTrace` with factor 0.8. Neither duration nor configuration
 asserts a completed or stable run. Every attempt retains the actual envelope,
