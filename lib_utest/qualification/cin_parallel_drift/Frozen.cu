@@ -1,3 +1,4 @@
+#include "FrozenDrift.h"
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "NodalCinRuntime.h"
 #include "cin_advance/Node.h"
@@ -18,7 +19,8 @@
 #include "../constraints/NodalRigidGroupCandidate.h"
 #include "../constraints/tied_shell/runtime/CinMotionStage.h"
 
-namespace tl::fea {
+namespace tl::fea::cin_drift_test {
+using namespace cin_advance;
 namespace {
 namespace cin = constraints::tied_shell::cin;
 __device__ void Fail(nodal_detail::Control* control, NodalStatus status, std::uint32_t node) {
@@ -132,7 +134,7 @@ __global__ void CompleteCin(const cin_advance::Input input, bool groups_prepared
     const auto range = groups.groups[g];
     for (std::uint32_t i = 0; i < range.count; ++i) {
       const auto node = groups.members[range.offset+i].node;
-      const auto status = nodal_detail::PrepareNodeOrientation(accepted, trial, node, n,
+      const auto status = frozen_orientation::PrepareNodeOrientation(accepted, trial, node, n,
           durations.drift_dt, maximum_angle, false);
       if (status != NodalStatus::Ok) {
         Fail(control, status, node);
@@ -147,12 +149,12 @@ __global__ void CompleteCin(const cin_advance::Input input, bool groups_prepared
     Fail(control, NodalStatus::InvalidOutput, stage.node);
     return;
   }
-  cin_advance::recovery::Drift(input);
+  frozen::Drift(input);
 
 }
 } // namespace
 
-cudaError_t cin_advance::Launch(const Input& input, cudaStream_t stream) {
+cudaError_t LaunchFrozen(const Input& input, cudaStream_t stream) {
   const bool parallel_inputs = input.input_failure != nullptr;
   auto error = cudaSuccess;
   if (parallel_inputs) {
@@ -194,41 +196,4 @@ cudaError_t cin_advance::Launch(const Input& input, cudaStream_t stream) {
   return capture::Launch(input, stream);
 }
 
-cudaError_t FENodalState::Impl::LaunchCinAdvance(double maximum_angle,
-    const NodalCinStructuralStep* structural) {
-  const rigid::StepDurations durations{stamp.epoch == 0 ? 0 : config.fixed_dt,
-      candidate_kick_dt, config.fixed_dt};
-  const auto groups = rigid_groups ? rigid_groups->device : rigid::GroupDeviceView{};
-  rigid::AccelerationSink capture;
-  if (config.capture_force_stage_accelerations) {
-    const nodal_detail::ForceStageCaptureLayout layout{config.node_count, groups.group_count};
-    capture = layout.Sink(scratch);
-  }
-  return cin_advance::Launch({control, accepted, trial, scratch, fixed, cin->device,
-      trial+cin->state_offset, cin->work, cin->patches, cin->activity, groups, durations,
-      maximum_angle, stamp.epoch, attempt, capture,
-      stamp.has_rotation_presence?fixed+3*config.node_count:nullptr,
-      structural ? *structural : NodalCinStructuralStep{}, cin->failure, cin->input_failure, cin->screen, cin->group_reports,
-      cin->prepared_transfers, cin->prepared_recovery, cin->recovery_failure, cin->prepared_drift}, stream);
-}
-
-NodalReport AdvanceStaggeredCin(FENodalState& owner, const NodalTrialToken& token,
-    const NodalCinAdmission& admission) {
-  if (!owner.impl_) return {NodalStatus::NotInitialized, "Owner is not initialized"};
-  auto& state = *owner.impl_;
-  if (!state.cin || !admission.no_explicit_interface_release_event ||
-      admission.qualification_id != state.cin->qualification_id) {
-    return state.Reject(NodalStatus::MissingStepAdmission, "Missing CIN no-release qualification");
-  }
-  if (!ValidCinStructuralStep(admission.structural)) {
-    return state.Reject(NodalStatus::MissingStepAdmission, "Invalid physical CIN structural profile");
-  }
-  const auto* structural = admission.structural.profile == NodalCinStructuralProfile::Disabled
-      ? nullptr : &admission.structural;
-  const NodalStepAdmission declared{admission.owner_id, admission.base_epoch, admission.attempt,
-    admission.maximum_dt, admission.maximum_rotation_increment,
-    NodalStepAdmissionKind::RestrictedHistoryTrajectory, admission.qualification_id, 0};
-  return state.AdvanceSealedNodal(token.owner_id_, token.base_epoch_, token.attempt_, declared,
-      NodalTemporalScheme::StaggeredHalfKickStart, bool(state.rigid_groups), true, structural);
-}
-} // namespace tl::fea
+} // namespace tl::fea::cin_drift_test

@@ -8,7 +8,7 @@ import runpy
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 raw = (here/'source-manifest.json').read_bytes()
-assert hashlib.sha256(raw).hexdigest() == 'fa4a58e7e858798830b609c7ac35d8f19b6d00c1fc4bbd4ac0db4acb89d63e64'
+assert hashlib.sha256(raw).hexdigest() == '15c0710d6b0686e2fcc1bec132d1e1fdb991bcbc952d204caf73312d291d42f1'
 manifest = json.loads(raw)
 for row in manifest['files']:
     path = Path(row['path'])
@@ -61,7 +61,7 @@ assert finish.index('failed != NoFailure') < finish.index('Drift(input)')
 owner = (root/'lib_src/solvers/ExplicitNodalCinStep.cu').read_text()
 launch = body(owner, 'cin_advance::Launch')
 assert launch.index('groups::LaunchMotion') < launch.index('CompleteCin<<<') < launch.index('recovery::Launch') < launch.index('capture::Launch')
-assert 'cin->prepared_recovery, cin->recovery_failure}, stream)' in owner
+assert 'cin->prepared_recovery, cin->recovery_failure, cin->prepared_drift}, stream)' in owner
 startup = (root/'lib_src/solvers/NodalCinStartup.cpp').read_text()
 assert 'if (next->dependent[row.secondary])' in startup
 assert 'if (next->dependent[node])' in startup

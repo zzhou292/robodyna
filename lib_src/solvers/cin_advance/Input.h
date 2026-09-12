@@ -4,6 +4,7 @@
 #include "ScreenSummary.h"
 #include "GroupReport.h"
 #include "RecoveryTypes.h"
+#include "DriftTypes.h"
 #include "../../constraints/tied_shell/runtime/CinForceTransfer.h"
 #include "../FENodalStateStorage.h"
 #include "../NodalCinRuntime.h"
@@ -45,6 +46,9 @@ struct Input {
   // Null retains the private serial recovery path. Every admitted row is fresh.
   recovery::Row* prepared_recovery = nullptr;
   recovery::FailureRow* recovery_failure = nullptr;
+  // Independent dependent-drift values; the recovery key is reused only after
+  // successful recovery completion. Null retains the private serial drift.
+  drift::Row* prepared_drift = nullptr;
 };
 cudaError_t Launch(const Input&, cudaStream_t);
 } // namespace tl::fea::cin_advance

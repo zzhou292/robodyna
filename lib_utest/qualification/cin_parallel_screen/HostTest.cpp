@@ -149,7 +149,11 @@ TEST(CinParallelScreenHost, DedicatedCountedTailAndLateBudgetRetryPreserveKeys) 
   EXPECT_EQ(layout.prepared_recovery.bytes, 1161160u);
   EXPECT_EQ(layout.recovery_failure.offset, layout.prepared_recovery.offset+layout.prepared_recovery.bytes);
   EXPECT_EQ(layout.recovery_failure.bytes, 4u);
-  EXPECT_EQ(layout.device_bytes, layout.recovery_failure.offset+layout.recovery_failure.bytes);
+  const auto prior_end = layout.recovery_failure.offset+layout.recovery_failure.bytes;
+  EXPECT_EQ(layout.prepared_drift.offset, (prior_end+7u)/8u*8u);
+  EXPECT_EQ(layout.prepared_drift.count, layout.attachments);
+  EXPECT_EQ(layout.prepared_drift.bytes, 64u*layout.attachments);
+  EXPECT_EQ(layout.device_bytes, layout.prepared_drift.offset+layout.prepared_drift.bytes);
   EXPECT_EQ(layout.failure.bytes, 8u);
   EXPECT_EQ(layout.input_failure.bytes, 8u);
   auto exact = limits;

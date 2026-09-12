@@ -1,44 +1,35 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-#include "Recovery.h"
-#include "RecoveryDrift.h"
 #include "DriftValues.h"
 
-namespace tl::fea::cin_advance::recovery {
+namespace tl::fea::cin_advance::drift {
 namespace {
 __global__ void Begin(Input input) {
   if (input.control->status != NodalStatus::Ok) return;
-  if (!cin::detail::MotionPointersValid(input.model, MotionView(input))) {
-    Fail(input, NodalStatus::InvalidOutput, UINT32_MAX);
-    return;
-  }
-  *input.recovery_failure = NoFailure;
+  // The recovery phase has finished and its successful key is now dead.
+  *input.recovery_failure = recovery::NoFailure;
 }
 __global__ void PrepareRows(Input input) {
   if (input.control->status != NodalStatus::Ok) return;
   for (std::uint32_t row = blockIdx.x*blockDim.x+threadIdx.x;
        row < input.model.row_count; row += gridDim.x*blockDim.x) {
     const auto result = Prepare(input, row);
-    input.prepared_recovery[row] = result;
-    if (!result.valid) atomicMin(input.recovery_failure, row);
+    input.prepared_drift[row] = result;
+    if (result.status != NodalStatus::Ok) atomicMin(input.recovery_failure, row);
   }
 }
 __global__ void PublishRows(Input input) {
   if (input.control->status != NodalStatus::Ok) return;
   const auto first_failure = *input.recovery_failure;
   for (std::uint32_t row = blockIdx.x*blockDim.x+threadIdx.x;
-       row < input.model.row_count; row += gridDim.x*blockDim.x)
+       row < input.model.row_count; row += gridDim.x*blockDim.x) {
     Publish(input, row, first_failure);
-}
-__global__ void Complete(Input input, bool defer_drift) {
-  if (input.control->status != NodalStatus::Ok) return;
-  const auto failed = *input.recovery_failure;
-  if (failed != NoFailure) {
-    Fail(input, NodalStatus::InvalidOutput, input.model.rows[failed].secondary);
-    return;
   }
-  if (!defer_drift) Drift(input);
+}
+__global__ void CompleteRows(Input input) {
+  Complete(input);
 }
 } // namespace
+
 cudaError_t Launch(const Input& input, cudaStream_t stream) {
   Begin<<<1, 1, 0, stream>>>(input);
   auto error = cudaGetLastError();
@@ -51,10 +42,7 @@ cudaError_t Launch(const Input& input, cudaStream_t stream) {
   PublishRows<<<blocks, threads, 0, stream>>>(input);
   error = cudaGetLastError();
   if (error != cudaSuccess) return error;
-  const bool parallel_drift = input.prepared_drift != nullptr;
-  Complete<<<1, 1, 0, stream>>>(input, parallel_drift);
-  error = cudaGetLastError();
-  if (error != cudaSuccess) return error;
-  return parallel_drift ? drift::Launch(input, stream) : cudaSuccess;
+  CompleteRows<<<1, 1, 0, stream>>>(input);
+  return cudaGetLastError();
 }
-} // namespace tl::fea::cin_advance::recovery
+} // namespace tl::fea::cin_advance::drift

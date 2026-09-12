@@ -22,6 +22,7 @@ cudaError_t CinStorage::Upload(cudaStream_t stream) {
       arena, layout.prepared_transfers);
   prepared_recovery = util::ArenaPointer<cin_advance::recovery::Row>(arena, layout.prepared_recovery);
   recovery_failure = util::ArenaPointer<cin_advance::recovery::FailureRow>(arena, layout.recovery_failure);
+  prepared_drift = util::ArenaPointer<cin_advance::drift::Row>(arena, layout.prepared_drift);
   // Recovery uses its own typed tail. Its Begin/Prepare stages initialize the
   // key and every packet before any prefix publication; no startup seed is read.
   // No packet has startup meaning. The complete force-input and entry-IN stage

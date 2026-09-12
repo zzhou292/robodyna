@@ -209,7 +209,7 @@ cudaError_t FENodalState::Impl::LaunchCinAdvance(double maximum_angle,
       maximum_angle, stamp.epoch, attempt, capture,
       stamp.has_rotation_presence?fixed+3*config.node_count:nullptr,
       structural ? *structural : NodalCinStructuralStep{}, cin->failure, cin->input_failure, cin->screen, cin->group_reports,
-      cin->prepared_transfers, cin->prepared_recovery, cin->recovery_failure, cin->prepared_drift}, stream);
+      cin->prepared_transfers, cin->prepared_recovery, cin->recovery_failure}, stream);
 }
 
 NodalReport AdvanceStaggeredCin(FENodalState& owner, const NodalTrialToken& token,

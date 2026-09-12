@@ -5,6 +5,7 @@
 #include "cin_advance/ScreenSummary.h"
 #include "cin_advance/GroupReport.h"
 #include "cin_advance/RecoveryTypes.h"
+#include "cin_advance/DriftTypes.h"
 #include "../constraints/tied_shell/runtime/CinForceTransfer.h"
 #include "lib_utils/BoundedArena.h"
 #include "lib_utils/SourceIdentityIndex.h"
@@ -26,6 +27,7 @@ inline bool CinOwnerHostFits(std::size_t optional_bytes, std::size_t rigid_bytes
 struct CinLayout {
   util::ArenaRegion rows, dependent, activity, patches, work, first_witness, failure, input_failure, screen, group_reports;
   util::ArenaRegion prepared_transfers, prepared_recovery, recovery_failure;
+  util::ArenaRegion prepared_drift;
   // Tail within each of the existing accepted/trial double slabs:
   // M[n], J[n], derived inverse M[n], derived inverse J[n], SMAS[r], SINER[r], DMAST.
   std::size_t nodes = 0, attachments = 0, witnesses = 0;
@@ -61,7 +63,8 @@ struct CinLayout {
         !device.Append<cin_advance::groups::Report>(group_count, next.group_reports) ||
         !device.Append<constraints::tied_shell::cin::detail::PreparedForceRow>(r, next.prepared_transfers) ||
         !device.Append<cin_advance::recovery::Row>(r, next.prepared_recovery) ||
-        !device.Append<cin_advance::recovery::FailureRow>(1, next.recovery_failure)) return false;
+        !device.Append<cin_advance::recovery::FailureRow>(1, next.recovery_failure) ||
+        !device.Append<cin_advance::drift::Row>(r, next.prepared_drift)) return false;
     next.device_bytes = device.bytes();
     const auto tail_bytes = 2*next.state_values*sizeof(double);
     if (tail_bytes > limits.max_device_bytes-next.device_bytes) return false;

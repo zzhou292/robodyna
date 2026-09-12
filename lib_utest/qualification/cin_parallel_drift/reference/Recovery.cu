@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Recovery.h"
 #include "RecoveryDrift.h"
-#include "DriftValues.h"
 
 namespace tl::fea::cin_advance::recovery {
 namespace {
@@ -29,14 +28,14 @@ __global__ void PublishRows(Input input) {
        row < input.model.row_count; row += gridDim.x*blockDim.x)
     Publish(input, row, first_failure);
 }
-__global__ void Complete(Input input, bool defer_drift) {
+__global__ void Complete(Input input) {
   if (input.control->status != NodalStatus::Ok) return;
   const auto failed = *input.recovery_failure;
   if (failed != NoFailure) {
     Fail(input, NodalStatus::InvalidOutput, input.model.rows[failed].secondary);
     return;
   }
-  if (!defer_drift) Drift(input);
+  Drift(input);
 }
 } // namespace
 cudaError_t Launch(const Input& input, cudaStream_t stream) {
@@ -51,10 +50,7 @@ cudaError_t Launch(const Input& input, cudaStream_t stream) {
   PublishRows<<<blocks, threads, 0, stream>>>(input);
   error = cudaGetLastError();
   if (error != cudaSuccess) return error;
-  const bool parallel_drift = input.prepared_drift != nullptr;
-  Complete<<<1, 1, 0, stream>>>(input, parallel_drift);
-  error = cudaGetLastError();
-  if (error != cudaSuccess) return error;
-  return parallel_drift ? drift::Launch(input, stream) : cudaSuccess;
+  Complete<<<1, 1, 0, stream>>>(input);
+  return cudaGetLastError();
 }
 } // namespace tl::fea::cin_advance::recovery

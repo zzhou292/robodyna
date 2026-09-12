@@ -49,6 +49,9 @@ def motion_proof():
 
 
 def legacy_owner(current):
+    import runpy
+    drift = runpy.run_path(str(HERE.parent/'cin_parallel_drift/drift_proof.py'))
+    current = drift['legacy_owner'](current)
     motion_proof()
     old = (HERE/'reference/ExplicitNodalCinStep.cu').read_text()
     start = old.index('  for (std::uint32_t row = 0; row < r; ++row) {', old.index('__global__ void CompleteCin'))

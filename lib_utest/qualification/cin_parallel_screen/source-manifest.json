@@ -14,8 +14,8 @@
     },
     {
       "path": "lib_src/solvers/BUILD.bazel",
-      "bytes": 8359,
-      "sha256": "b586a6bb9ba463a00dafd0908944711faf0134816ebdf18383bbd161f2d9fedf",
+      "bytes": 8383,
+      "sha256": "2b2c8628d6eaa36e309e1caea57ff6226a8bb572237fe6d9bd067c827fa69310",
       "prior_receipts": [
         {
           "bytes": 7702,
@@ -80,13 +80,18 @@
           "prior_bytes": 8244,
           "prior_sha256": "5a0a3af4822ba53f21dd4af9e960eb01867ec5540ad7d453a21179e6114e19dd",
           "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 8359,
+          "prior_sha256": "b586a6bb9ba463a00dafd0908944711faf0134816ebdf18383bbd161f2d9fedf",
+          "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
         }
       ]
     },
     {
       "path": "lib_src/solvers/CMakeLists.txt",
-      "bytes": 1818,
-      "sha256": "8586678eaecd7283aee844dfed74cfa5d6ff59583e8bc91c350372f467f307e4",
+      "bytes": 1839,
+      "sha256": "74ece8ce48359c7305a712f8fd391d67460b19bb21d0babb7d5a6345078727a9",
       "prior_receipts": [
         {
           "bytes": 1712,
@@ -141,13 +146,18 @@
           "prior_bytes": 1794,
           "prior_sha256": "db297f7e3125b378950db1f55334020258777fc9da2a0d9e5cc5a6f8a1e3b6e6",
           "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 1818,
+          "prior_sha256": "8586678eaecd7283aee844dfed74cfa5d6ff59583e8bc91c350372f467f307e4",
+          "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
         }
       ]
     },
     {
       "path": "lib_src/solvers/ExplicitNodalCinStep.cu",
-      "bytes": 10547,
-      "sha256": "496b09d3a718295901eeef603979800431b6aeaef35c42e25d0fc3982b21003f",
+      "bytes": 10568,
+      "sha256": "7c07918c54ac3fdeb4ea1734098617289193ce9beb7e5c4b8c76f3eebcb1e13f",
       "prior_receipts": [
         {
           "bytes": 9950,
@@ -202,6 +212,11 @@
           "prior_bytes": 10867,
           "prior_sha256": "0051dd23cb0d35b9386531877e4ca07ae4d7b661131cc37716f987a6062df967",
           "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 10547,
+          "prior_sha256": "496b09d3a718295901eeef603979800431b6aeaef35c42e25d0fc3982b21003f",
+          "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
         }
       ]
     },
@@ -219,8 +234,8 @@
     },
     {
       "path": "lib_src/solvers/NodalCinLayout.h",
-      "bytes": 4636,
-      "sha256": "2254ede7999c1d12cf3db7b1a5dee02014024d099e002c4c70b80b39bb738241",
+      "bytes": 4783,
+      "sha256": "e14443f0373ba8ace2f04cdb1ad1a5f0c884ff39089a8abbb960317291539a6c",
       "prior_receipts": [
         {
           "bytes": 3988,
@@ -263,6 +278,11 @@
           "prior_bytes": 4392,
           "prior_sha256": "b59d8c568b2553d4d1f5439c424308ee739d22f82808f66abe18fdd899feaec4",
           "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 4636,
+          "prior_sha256": "2254ede7999c1d12cf3db7b1a5dee02014024d099e002c4c70b80b39bb738241",
+          "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
         }
       ]
     },
@@ -280,8 +300,8 @@
     },
     {
       "path": "lib_src/solvers/NodalCinStorage.cu",
-      "bytes": 3096,
-      "sha256": "e1af51b083ce93a5a541cfb0ec73c2747613fb7889db398eb1e2cbadd989c306",
+      "bytes": 3190,
+      "sha256": "58bfc9bb025ccfdcf263847a552f47fcddee25ee7e527812681679711588806e",
       "prior_receipts": [
         {
           "bytes": 2282,
@@ -324,13 +344,18 @@
           "prior_bytes": 2724,
           "prior_sha256": "74e6bad9b4a85e75d7e6660bfe356d5aa49372c2a8444078742f06a19bdb8b56",
           "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 3096,
+          "prior_sha256": "e1af51b083ce93a5a541cfb0ec73c2747613fb7889db398eb1e2cbadd989c306",
+          "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
         }
       ]
     },
     {
       "path": "lib_src/solvers/NodalCinStorage.h",
-      "bytes": 1917,
-      "sha256": "166c7ee4c5eeee075e0da04b7cd1278c774f7a4d4a08bdcfbc1f054f2920d31e",
+      "bytes": 1970,
+      "sha256": "c2cb8cc77f81e421f49856a8b99ea7c5ada78d728430a65ab1a02c1b823880b7",
       "prior_receipts": [
         {
           "bytes": 1620,
@@ -373,6 +398,11 @@
           "prior_bytes": 1793,
           "prior_sha256": "21cf7396ecd67a389438a03372cf7c61f0f3f4d1ab90d2abe8840c5a899bf48f",
           "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 1917,
+          "prior_sha256": "166c7ee4c5eeee075e0da04b7cd1278c774f7a4d4a08bdcfbc1f054f2920d31e",
+          "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
         }
       ]
     },
@@ -388,8 +418,8 @@
     },
     {
       "path": "lib_src/solvers/cin_advance/Input.h",
-      "bytes": 2280,
-      "sha256": "1de7ab4cc5a580676b1da69e8a208ac94fc3462be4fe41841cef814e6bd552de",
+      "bytes": 2499,
+      "sha256": "5fdc2d74da6764b9e87934e48baaa5be8da1ee4b982eff7a87c3f140eb15f9eb",
       "prior_receipts": [
         {
           "bytes": 1541,
@@ -432,6 +462,11 @@
           "prior_bytes": 1997,
           "prior_sha256": "732f5bad171fda201094777bc31380861d6ba7c23bb52fe6d49905dcbccac9d8",
           "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 2280,
+          "prior_sha256": "1de7ab4cc5a580676b1da69e8a208ac94fc3462be4fe41841cef814e6bd552de",
+          "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
         }
       ]
     },
@@ -618,8 +653,8 @@
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/HostTest.cpp",
-      "bytes": 5696,
-      "sha256": "4c93361d4e67264148b07246ce3a72344f79579c8ddae3685e362ece9bc85092",
+      "bytes": 5972,
+      "sha256": "9eb83490446a611d080eba8339fe76c4d39a9e8cad6253df4f76284e5009c209",
       "prior_receipts": [
         {
           "bytes": 5108,
@@ -650,13 +685,18 @@
           "prior_bytes": 5376,
           "prior_sha256": "50240d8d4290e00652630b0456a22373d299591a0784b55f54e1e83b5995456d",
           "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 5696,
+          "prior_sha256": "4c93361d4e67264148b07246ce3a72344f79579c8ddae3685e362ece9bc85092",
+          "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/source-manifest.json",
-      "bytes": 15301,
-      "sha256": "35a4423f54a25221e1a06a531a1500150e4494cd7ef9157865328a4b3facdc2e",
+      "bytes": 17607,
+      "sha256": "a59f6d18b35e33df8b902fa3a46b3f2413171c9458a2161aaed9bc44668a3e6a",
       "prior_receipts": [
         {
           "bytes": 4181,
@@ -711,13 +751,18 @@
           "prior_bytes": 10537,
           "prior_sha256": "c2cef632a3415169be284cc181f523aa2e8a22ade35f15f6f6bd2807bdcbcf47",
           "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 15301,
+          "prior_sha256": "35a4423f54a25221e1a06a531a1500150e4494cd7ef9157865328a4b3facdc2e",
+          "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/verify_sources.py",
       "bytes": 6359,
-      "sha256": "ac7fa131ee15a3107e4584c3f88b5220a96435b404cb3758e95914e05d99d33c",
+      "sha256": "499cdd5c6a4cf39c37dc3fd302e62312e39cc7991037a4832320c850fa362a54",
       "prior_receipts": [
         {
           "bytes": 6073,
@@ -772,6 +817,11 @@
           "prior_bytes": 6359,
           "prior_sha256": "ccd25e97ecce76585abcaffc06fb7840554aee99e7db67f524ca0e4406a7d4f3",
           "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 6359,
+          "prior_sha256": "ac7fa131ee15a3107e4584c3f88b5220a96435b404cb3758e95914e05d99d33c",
+          "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
         }
       ]
     },
@@ -787,8 +837,8 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/BUILD.bazel",
-      "bytes": 2872,
-      "sha256": "f188cc906676eaa63bba181abac8b18c22f09799f1d0891b6136b84d22405e75",
+      "bytes": 3020,
+      "sha256": "e878e4f5b936a4698cd01c3a64a7aa9847efedeee8434dfd932be8b60085250c",
       "prior_receipts": [
         {
           "bytes": 2039,
@@ -851,6 +901,11 @@
           "prior_bytes": 2718,
           "prior_sha256": "cc5b9cc843f1f2572cfab1cda271661ecf28fb86c2b189d27c6c74e467ac6cde",
           "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 2872,
+          "prior_sha256": "f188cc906676eaa63bba181abac8b18c22f09799f1d0891b6136b84d22405e75",
+          "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
         }
       ]
     },
@@ -871,8 +926,8 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/HostTest.cpp",
-      "bytes": 6207,
-      "sha256": "b8dac890a1cfa3dc996539a0a3a7c47198c687bbe1352cf3ce65ab861ec40626",
+      "bytes": 6483,
+      "sha256": "2ef42068c6c5a1691f4cef520004124d3403576a001aed54f53d51f93a315500",
       "prior_receipts": [
         {
           "bytes": 5621,
@@ -903,6 +958,11 @@
           "prior_bytes": 5887,
           "prior_sha256": "a5fc90a5f625f02b85d2f8961f760c07a381307077ef21ad3775529eb86bd500",
           "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 6207,
+          "prior_sha256": "b8dac890a1cfa3dc996539a0a3a7c47198c687bbe1352cf3ce65ab861ec40626",
+          "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
         }
       ]
     },
@@ -923,8 +983,8 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/source-manifest.json",
-      "bytes": 17383,
-      "sha256": "7b06d8f476e82f7cc5fb525f8fe4c270c55e2855f211d2909b0bf5e4cba2fca6",
+      "bytes": 19689,
+      "sha256": "b9d4523f4c6d4f1188cd014016ece672606546f4256dd74a808d6e94704fb3b4",
       "prior_receipts": [
         {
           "bytes": 4788,
@@ -979,13 +1039,18 @@
           "prior_bytes": 12225,
           "prior_sha256": "a0a980d64630aec9ab7a0b8f53765700f17b71faaae036009295c728b8658cb9",
           "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 17383,
+          "prior_sha256": "7b06d8f476e82f7cc5fb525f8fe4c270c55e2855f211d2909b0bf5e4cba2fca6",
+          "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/verify_sources.py",
       "bytes": 4833,
-      "sha256": "5cebce36a78f1ea9225d7c6da50d0442e3eb5d4c92acad2d203a21bde6e252e6",
+      "sha256": "dee03e1503b3c1e6d4f26376e42a3943175cee19291241e56c9c4225cea198a6",
       "prior_receipts": [
         {
           "bytes": 4689,
@@ -1040,6 +1105,11 @@
           "prior_bytes": 4833,
           "prior_sha256": "ba27fd74bfa2fae10bc118e2ed1a90e2402dcc17e8b1b71ea624eeb43e6317e1",
           "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 4833,
+          "prior_sha256": "5cebce36a78f1ea9225d7c6da50d0442e3eb5d4c92acad2d203a21bde6e252e6",
+          "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
         }
       ]
     },
@@ -1080,8 +1150,8 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/HostTest.cpp",
-      "bytes": 8057,
-      "sha256": "6b34a39b51f10516d4df36f11342ac6acfcc8f8291f685b4914c2a73fbfbf91e",
+      "bytes": 8333,
+      "sha256": "e7586a5d604a29c4d91f5a4940ff847f1149f4e362e47539123d62e387b2adf2",
       "prior_receipts": [
         {
           "bytes": 7469,
@@ -1112,6 +1182,11 @@
           "prior_bytes": 7737,
           "prior_sha256": "8c8d175856e249a988904787107b45b0ad7833f9f9073aa0f21b1af68c4fcf00",
           "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 8057,
+          "prior_sha256": "6b34a39b51f10516d4df36f11342ac6acfcc8f8291f685b4914c2a73fbfbf91e",
+          "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
         }
       ]
     },
@@ -1283,13 +1358,18 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_recovery/recovery_proof.py",
-      "bytes": 4677,
-      "sha256": "f6f620a9de13606b96019d066a7f1c3effe0f4aeb55b5785397d4103c47e9b98",
+      "bytes": 4820,
+      "sha256": "13519f24709f78b48eab0f37685eb4b7cae6739d6b38cfd21536ed6f637ff8df",
       "reviewed_updates": [
         {
           "prior_bytes": 4557,
           "prior_sha256": "ee8cdfbccaee7b07baa5d8eea5a0189fd77c006ccb09e30101d7f6e474f0d9ab",
           "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 4677,
+          "prior_sha256": "f6f620a9de13606b96019d066a7f1c3effe0f4aeb55b5785397d4103c47e9b98",
+          "reason": "Reviewed general dependent-drift extraction: preserve complete old orientation/drift and recovery failure order through checked reversal; append counted typed row tail and retain prior receipt history."
         }
       ]
     },
@@ -1317,6 +1397,46 @@
       "path": "lib_src/solvers/cin_advance/RecoveryDrift.h",
       "bytes": 1685,
       "sha256": "a135c31e3f197a8a0b910bb25953c1098d35df3ad312e5bd350da2cc50f4245d"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_drift/drift_proof.py",
+      "bytes": 2960,
+      "sha256": "bd6c514bc8a55c4345bd374ffde4a54cf377bfd02942e541bde2d7d0f301130a"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_drift/reference/NodalNodeStep.h",
+      "bytes": 2661,
+      "sha256": "80cca34361e54979a1d6ae100f045604f1b98c6e2ceb18caa8af12c84a5be35e"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_drift/reference/RecoveryDrift.h",
+      "bytes": 1685,
+      "sha256": "a135c31e3f197a8a0b910bb25953c1098d35df3ad312e5bd350da2cc50f4245d"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_drift/reference/Recovery.cu",
+      "bytes": 2082,
+      "sha256": "26d05a26cdb721dc713e7b8af184cac366e303abd6ed3587186259e3b97adf48"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_drift/reference/ExplicitNodalCinStep.cu",
+      "bytes": 10547,
+      "sha256": "496b09d3a718295901eeef603979800431b6aeaef35c42e25d0fc3982b21003f"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/DriftTypes.h",
+      "bytes": 654,
+      "sha256": "3ca2f18d9cdb4c4ac3b5ef9560ed8d71b5e1cec07ca337e753b500d25c39baf8"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/DriftValues.h",
+      "bytes": 2349,
+      "sha256": "cdf5baa9c72afd306255555b3ccff3ffccec34e3655c4a7f75eb43dd8bfdd554"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/Drift.cu",
+      "bytes": 1792,
+      "sha256": "42e447058a1c775e3328984be7f2bb7c077e5ef33f0e48149e8ad8e9790dc2d3"
     }
   ],
   "previous_source_receipts": [
