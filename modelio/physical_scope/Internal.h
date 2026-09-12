@@ -18,8 +18,9 @@ std::vector<Spotweld> ReadSpotwelds(const std::vector<tied_shell::SourceEvidence
 void BuildGroups(const rigid::RigidPartSource&, const tied_shell::TiedShellDeclaration&,
                  const std::vector<SourceId>&, Data&, Limits);
 void BuildRoles(const rigid::point_mass::Source&, const type13::SourceType13&,
-                const solid_source::VehicleSolidSource&, const std::vector<SourceId>&, Data&);
-void BuildEvidence(const source::CanonicalData&, const solid_source::VehicleSolidSource&,
+                const solid_source::VehicleSolidSource&, const beam18::Source*, const std::vector<SourceId>&, Data&);
+void BuildBeamRoles(const beam18::Source&, const std::vector<SourceId>&, Data&);
+void BuildEvidence(const source::CanonicalData&, const solid_source::VehicleSolidSource&, const beam18::Source*,
                    const std::vector<SourceId>&, Data&, Limits);
 std::size_t OwnedPayload(const Data&, Limits);
 } // namespace crash::modelio::physical_scope::detail

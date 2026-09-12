@@ -10,6 +10,8 @@ inline modelio::type25::Declaration WeldDeclaration() {
 }
 void PrepareBeams(const modelio::type13::SourceType13&, const fe::NodalNodeDomain&,
                   std::size_t cap, fe::type13::Model&);
+void PrepareStructuralBeams(const modelio::beam18::Source&, const fe::NodalNodeDomain&,
+                            std::size_t cap, fe::beam18::Model&);
 void PrepareSolids(const modelio::solid_source::VehicleSolidSource&, const fe::NodalNodeDomain&,
                    std::size_t cap, fe::solids::Model&);
 fe::NodalRigidGroupMember PlainMember(const fe::NodalNodeDomain&, const fe::NodalCoefficientLedger&,

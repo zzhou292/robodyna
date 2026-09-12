@@ -3,7 +3,8 @@
 
 namespace crash::modelio::physical_scope::detail {
 void BuildRoles(const rigid::point_mass::Source& masses, const type13::SourceType13& beams,
-                const solid_source::VehicleSolidSource& solids, const std::vector<SourceId>& nodes, Data& data) {
+                const solid_source::VehicleSolidSource& solids, const beam18::Source* structural,
+                const std::vector<SourceId>& nodes, Data& data) {
     const auto& plan = masses.rigid_source().source();
     const auto& canonical = plan.canonical().data();
     data.node_roles.assign(nodes.size(), 0);
@@ -31,6 +32,7 @@ void BuildRoles(const rigid::point_mass::Source& masses, const type13::SourceTyp
             }
         }
     }
+    if(structural) BuildBeamRoles(*structural,nodes,data);
     for (const auto& selected : masses.data().consumed) {
         Require(selected.record < masses.data().records.size(), "Point-mass source record index changed");
         Mark(data.node_roles, nodes, masses.data().records[selected.record].value.source_node_id, RetainedPointMass);
@@ -62,7 +64,7 @@ void BuildRoles(const rigid::point_mass::Source& masses, const type13::SourceTyp
     for (auto roles : data.node_roles) {
         data.counts.baseline_nodes += (roles & PhysicalRoles) != 0;
         data.counts.with_type25_nodes += (roles & (PhysicalRoles | ProvisionalType25)) != 0;
-        for (unsigned bit = 0; bit < 7; ++bit) data.counts.role_nodes[bit] += (roles & (1u << bit)) != 0;
+        for (unsigned bit = 0; bit < 8; ++bit) data.counts.role_nodes[bit] += (roles & (1u << bit)) != 0;
     }
     data.counts.type25_added_nodes = data.counts.with_type25_nodes - data.counts.baseline_nodes;
     std::vector<std::size_t> roots(masses.data().records.size(), SIZE_MAX);

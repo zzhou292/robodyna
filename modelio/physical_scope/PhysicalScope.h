@@ -2,6 +2,7 @@
 #include "modelio/rigid_part/point_mass/Source.h"
 #include "modelio/solid_source/VehicleSolidSource.h"
 #include "modelio/type13/SourceType13.h"
+#include "modelio/beam18/Source.h"
 
 namespace crash::modelio::physical_scope {
 namespace source = output::full_shell::source;
@@ -9,9 +10,10 @@ namespace rigid = vehicle::rigid_part;
 using SourceId = assembly::SourceId;
 enum Role : std::uint16_t {
     Shell = 1, Type13Endpoint = 2, Solid = 4, RetainedPointMass = 8,
-    ProvisionalType25 = 16, ExcludedTireShell = 32, BeamOrientation = 64
+    ProvisionalType25 = 16, ExcludedTireShell = 32, BeamOrientation = 64, Beam18Endpoint = 128
 };
-inline constexpr std::uint16_t PhysicalRoles = Shell | Type13Endpoint | Solid | RetainedPointMass;
+inline constexpr std::uint16_t PhysicalRoles = Shell | Type13Endpoint | Solid | RetainedPointMass | Beam18Endpoint;
+inline constexpr std::uint16_t KnownRoles = PhysicalRoles | ProvisionalType25 | ExcludedTireShell | BeamOrientation;
 enum class Coverage { None, Partial, Complete };
 enum class Family { Shell, Beam, Solid };
 struct Limits {
@@ -60,7 +62,7 @@ struct RigidSkin {
 };
 struct Counts {
     std::size_t baseline_nodes = 0, with_type25_nodes = 0, type25_added_nodes = 0;
-    std::size_t role_nodes[7]{};
+    std::size_t role_nodes[8]{};
     std::size_t plain_complete_before = 0, plain_complete_after = 0;
     std::size_t roots_complete_before = 0, roots_complete_after = 0;
     std::size_t optional_spotwelds = 0, outside_mass_in_baseline = 0, outside_mass_with_type25 = 0;
@@ -89,6 +91,13 @@ class PhysicalScope {
                               const type13::SourceType13&, const solid_source::VehicleSolidSource&, Limits = {});
     static PhysicalScope Prepare(const rigid::point_mass::Source&, const tied_shell::TiedShellDeclaration&,
                                  const type13::SourceType13&, const solid_source::VehicleSolidSource&, Limits = {});
+    // Complete support composition: all4980 selected solids plus all142
+    // structural beams. The retained sources supply the named authority.
+    static Forecast PreflightVehicleSupports(const rigid::point_mass::Source&, const tied_shell::TiedShellDeclaration&,
+        const type13::SourceType13&, const solid_source::VehicleSolidSource&, const beam18::Source&, Limits = {});
+    static PhysicalScope PrepareVehicleSupports(const rigid::point_mass::Source&, const tied_shell::TiedShellDeclaration&,
+        const type13::SourceType13&, const solid_source::VehicleSolidSource&, const beam18::Source&, Limits = {});
+    const beam18::Source* structural_beam_source() const noexcept;
     const Data& data() const noexcept;
     const Forecast& forecast() const noexcept;
     const rigid::point_mass::Source& point_mass_source() const noexcept;
@@ -96,6 +105,10 @@ class PhysicalScope {
     const type13::SourceType13& type13_source() const noexcept;
     const solid_source::VehicleSolidSource& solid_source() const noexcept;
   private:
+    static Forecast PreflightImpl(const rigid::point_mass::Source&, const tied_shell::TiedShellDeclaration&,
+        const type13::SourceType13&, const solid_source::VehicleSolidSource&, const beam18::Source*, Limits);
+    static PhysicalScope PrepareImpl(const rigid::point_mass::Source&, const tied_shell::TiedShellDeclaration&,
+        const type13::SourceType13&, const solid_source::VehicleSolidSource&, const beam18::Source*, Limits);
     struct Storage;
     explicit PhysicalScope(std::shared_ptr<const Storage> value) : storage_(std::move(value)) {}
     std::shared_ptr<const Storage> storage_;

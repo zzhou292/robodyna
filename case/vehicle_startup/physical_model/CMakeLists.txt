@@ -37,3 +37,5 @@ add_test(NAME vehicle_rear_solid_model COMMAND "${Python3_EXECUTABLE}" -B
 set_tests_properties(vehicle_rear_solid_model PROPERTIES TIMEOUT 120 RUN_SERIAL TRUE PROCESSORS 1)
 
 include("${CMAKE_CURRENT_LIST_DIR}/ExtendedTests.cmake")
+
+include("${CMAKE_CURRENT_LIST_DIR}/SupportsTests.cmake")

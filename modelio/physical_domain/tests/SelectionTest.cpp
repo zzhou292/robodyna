@@ -40,7 +40,7 @@ TEST(VehiclePhysicalDomainValues,SingletonAndGeneratedNamespaceCollisionsRejectW
     EXPECT_EQ(selected.groups[0].members.size(),2);
     groups=Groups();groups.back().node_set_id=0x5952000000000001ULL;
     EXPECT_THROW(selected=detail::Select(groups,Masses()),std::runtime_error);
-    groups=Groups();groups.back().members.back().roles=128;
+    groups=Groups();groups.back().members.back().roles=256;
     EXPECT_THROW(selected=detail::Select(groups,Masses()),std::runtime_error);
     EXPECT_NO_THROW(selected=detail::Select(Groups(),Masses()));
 }

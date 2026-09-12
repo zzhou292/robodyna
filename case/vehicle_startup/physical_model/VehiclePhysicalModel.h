@@ -4,6 +4,7 @@
 #include "modelio/point_mass/VehiclePointMassSource.h"
 #include "modelio/type25/VehicleType25Source.h"
 #include "lib_src/elements/solids/Model.h"
+#include "lib_src/elements/beam18/Model.h"
 #include "lib_src/constraints/NodalRigidAssemblyBinding.h"
 
 namespace crash::cases::vehicle_startup::physical_model {
@@ -15,6 +16,7 @@ struct Limits {
     std::size_t shell_map_bytes = 512u << 20, beam_bytes = 16u << 20, solid_bytes = 32u << 20;
     std::size_t beam_contribution_bytes = 32u << 20, ledger_bytes = 512u << 20;
     std::size_t part_bytes = 512u << 20, plain_bytes = 8u << 20, rigid_binding_bytes = 512u << 20;
+    std::size_t structural_beam_bytes = 32u << 20, structural_contribution_bytes = 32u << 20;
     // Explicit V4 construction ceiling, including its full-domain backing and
     // five-family temporary references. The V1 default remains32 MiB.
     static Limits ExtendedSolids() noexcept {
@@ -22,6 +24,7 @@ struct Limits {
         result.solid_bytes = 64u << 20;
         return result;
     }
+    static Limits VehicleSupports() noexcept { return ExtendedSolids(); }
 };
 struct Forecast {
     std::size_t shell_source = 0, physical_source = 0, producer_source = 0;
@@ -43,6 +46,7 @@ class VehiclePhysicalModel {
     const modelio::type25::VehicleType25Source& welds() const noexcept;
     const tl::fea::type13::Model& beams() const noexcept;
     const tl::fea::solids::Model& solids() const noexcept;
+    const tl::fea::beam18::Model* structural_beams() const noexcept;
     const tl::fea::NodalCoefficientLedger& coefficients() const noexcept;
     const tl::fea::NodalRigidGroupModel& plain_groups() const noexcept;
     const tl::fea::NodalRigidAssemblyBinding& rigid_assembly() const noexcept;

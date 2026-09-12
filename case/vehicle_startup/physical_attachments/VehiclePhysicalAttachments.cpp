@@ -24,7 +24,8 @@ Forecast VehiclePhysicalAttachments::Preflight(const physical_model::VehiclePhys
     const auto mapped = TiedCinAttachments::Forecast(post, domain, limits.attachments);
     const auto policy = physical.source_domain().policy();
     Require(((policy == modelio::physical_domain::Policy::RetainedShellAssembliesV1 && domain.node_count() == 372435) ||
-        policy == modelio::physical_domain::Policy::RetainedShellAssembliesExtendedSolidsV4) &&
+        policy == modelio::physical_domain::Policy::RetainedShellAssembliesExtendedSolidsV4 ||
+        policy == modelio::physical_domain::Policy::RetainedShellAssembliesVehicleSupportsV5) &&
         post.result().slaves().count == 11165,
         "Physical CIN requires the complete retained vehicle scope");
     Forecast f;

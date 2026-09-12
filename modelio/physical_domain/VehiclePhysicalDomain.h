@@ -3,7 +3,7 @@
 #include "lib_src/assembly/NodalNodeDomain.h"
 
 namespace crash::modelio::physical_domain {
-enum class Policy { RetainedShellAssembliesV1, RetainedShellAssembliesExtendedSolidsV4 };
+enum class Policy { RetainedShellAssembliesV1, RetainedShellAssembliesExtendedSolidsV4, RetainedShellAssembliesVehicleSupportsV5 };
 enum class GroupDisposition { Complete, Restricted, Omitted };
 struct GroupSelection {
     std::size_t source_group = SIZE_MAX;

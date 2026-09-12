@@ -11,7 +11,12 @@ void CheckSelection(const std::vector<physical_scope::Group>& groups,
     unsigned complete = 0;
     for (std::size_t i = 0; i < groups.size(); ++i) {
         const auto& group = groups[i];
-        if (!RequiresCompleteGroup(policy, group.id)) continue;
+        const bool known_extended = RequiresCompleteGroup(policy, group.id);
+        bool beam_support = false;
+        if (policy == Policy::RetainedShellAssembliesVehicleSupportsV5)
+            for (const auto& member : group.members)
+                beam_support |= (member.roles & physical_scope::Beam18Endpoint) != 0;
+        if (!known_extended && !beam_support) continue;
         const auto& selected = selection.groups[i];
         const bool complete_group = selected.source_group == i && selected.disposition == GroupDisposition::Complete &&
             selected.case_node_set_id == group.node_set_id && selected.excluded_members.empty() &&
@@ -21,7 +26,7 @@ void CheckSelection(const std::vector<physical_scope::Group>& groups,
         for (std::size_t n = 0; n < group.members.size(); ++n)
             output::Require(selected.members[n] == group.members[n].node,
                             "Extended rigid source member order changed");
-        ++complete;
+        if (known_extended) ++complete;
     }
     output::Require(complete == 6, "Extended physical profile lacks an affected original rigid group");
     unsigned added = 0;
@@ -32,7 +37,21 @@ void CheckSelection(const std::vector<physical_scope::Group>& groups,
                         "Extended antiroll original point-mass association is absent");
         ++added;
     }
-    output::Require(added == 2 && selection.counts.retained_point_masses == 150,
-                    "Extended physical point-card census changed");
+    output::Require(added == 2, "Extended physical point-card census changed");
+    const bool supports = policy == Policy::RetainedShellAssembliesVehicleSupportsV5;
+    if (supports) {
+        const std::uint64_t ids[]{2409489, 2409491, 2409492, 2409494};
+        const std::uint64_t nodes[]{2348766, 2348765, 2348729, 2348802};
+        unsigned rod_cards = 0;
+        for (const auto& mass : masses) for (unsigned i = 0; i < 4; ++i) {
+            if (mass.element != ids[i]) continue;
+            output::Require(mass.node == nodes[i] && selection.point_nodes.count(mass.node),
+                            "Vehicle support original rod point-mass association is absent");
+            ++rod_cards;
+        }
+        output::Require(rod_cards == 4, "Vehicle support rod point-card census changed");
+    }
+    output::Require(selection.counts.retained_point_masses == (supports ? 154u : 150u),
+                    "Physical profile retained point-card census changed");
 }
 } // namespace crash::modelio::physical_domain::detail

@@ -16,7 +16,8 @@ struct Forecast {
 };
 // Immutable connection between original retained joint cards and the actual
 // physical rigid/domain authority. Boundary rows stay in source(); they are
-// excluded explicitly from the 38 force operators. No auto-K, owner or clock.
+// excluded explicitly by the retained source policy (38/40/44 operators).
+// No auto-K, owner or clock.
 class VehicleJointModel {
   public:
     static Forecast Preflight(const Physical&,const Source&,Limits={});

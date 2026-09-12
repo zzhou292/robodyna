@@ -13,7 +13,7 @@ fe::NodalRigidGroupMember PlainMember(const fe::NodalNodeDomain& domain, const f
     const double physical = (c.shell.physical_inertia + c.type25.isotropic_inertia) +
                             (c.type13.isotropic_inertia - c.type13.added_inertia);
     const double added = c.shell.added_inertia + c.type13.added_inertia;
-    return {nid, n, domain.nodes()[n].position, c.mass, c.isotropic_inertia, physical, added};
+    return {nid, n, domain.nodes()[n].position, c.mass, c.isotropic_inertia, physical, added, c.beam18.isotropic_inertia};
 }
 void PreparePlain(const modelio::physical_domain::VehiclePhysicalDomain& selection,
                   const fe::NodalCoefficientLedger& ledger, std::size_t cap, fe::NodalRigidGroupModel& model) {
@@ -33,7 +33,8 @@ void PreparePlain(const modelio::physical_domain::VehiclePhysicalDomain& selecti
     auto limits = fe::NodalRigidGroupLimits::Vehicle(); limits.max_host_bytes = cap;
     const fe::NodalRigidGroupModelInput input{domain.source_instance_id(), domain.node_count(),
         groups.data(), groups.size(), {1000, .001}, limits};
-    const auto report = model.InitializePhysical(input);
+    const auto report = selection.policy() == modelio::physical_domain::Policy::RetainedShellAssembliesVehicleSupportsV5
+        ? model.InitializeNativeTotal(input) : model.InitializePhysical(input);
     if (!report) throw std::runtime_error("Original plain rigid group " + std::to_string(report.group) +
                                          " rejected: " + report.message);
 }

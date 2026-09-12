@@ -71,4 +71,33 @@ TEST(VehiclePhysicalDomainProfile, MissingLiteralPointOrGroupDoesNotCreateMassOr
     f = Fixture();
     EXPECT_NO_THROW(value = f.Prepare());
 }
+TEST(VehiclePhysicalDomainProfile, SupportsRequiresActualBeamMembersAndAllFourRodMassCards) {
+    constexpr auto supports = Policy::RetainedShellAssembliesVehicleSupportsV5;
+    EXPECT_EQ(detail::SolidPolicy(supports), solid_source::Policy::OriginalVehicleSupportsV5);
+    Fixture f;
+    physical_scope::Group beam_group;
+    beam_group.id = 2200123; beam_group.node_set_id = 2200223;
+    beam_group.members = {{9901, physical_scope::Beam18Endpoint}, {9902, physical_scope::Beam18Endpoint}};
+    f.groups.push_back(beam_group);
+    const std::uint64_t ids[]{2409489,2409491,2409492,2409494};
+    const std::uint64_t nodes[]{2348766,2348765,2348729,2348802};
+    for (unsigned i=0;i<4;++i) f.masses.push_back({ids[i],nodes[i],150+i,SIZE_MAX,physical_scope::Beam18Endpoint});
+    const auto prepare = [&] {
+        auto selected = detail::Select(f.groups,f.masses);
+        detail::CheckSelection(f.groups,f.masses,selected,supports);
+        return selected;
+    };
+    auto accepted = prepare();
+    EXPECT_EQ(accepted.counts.retained_point_masses,154u);
+    EXPECT_EQ(accepted.groups.back().members,(std::vector<std::uint64_t>{9901,9902}));
+    f.groups.back().members.push_back({9903,physical_scope::BeamOrientation});
+    EXPECT_THROW(accepted=prepare(),std::runtime_error);
+    EXPECT_EQ(accepted.groups.back().members.size(),2u);
+    f.groups.back().members.pop_back();
+    f.masses.back().node=9904;
+    EXPECT_THROW(accepted=prepare(),std::runtime_error);
+    EXPECT_EQ(accepted.point_nodes.count(nodes[3]),1u);
+    f.masses.back().node=nodes[3];
+    EXPECT_NO_THROW(accepted=prepare());
+}
 } // namespace crash::modelio::physical_domain

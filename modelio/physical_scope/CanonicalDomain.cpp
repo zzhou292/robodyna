@@ -17,7 +17,7 @@ void CheckDomain(const std::vector<std::uint64_t>& ids, const std::vector<double
         "Physical canonical source node order changed");
     std::size_t mapped = 0, declared = 0;
     for (std::size_t n = 0; n < ids.size(); ++n) {
-        Require((roles[n] & ~127u) == 0, "Physical physical source role changed");
+        Require((roles[n] & ~KnownRoles) == 0, "Physical source role changed");
         const bool required = roles[n] & (PhysicalRoles | ProvisionalType25);
         const auto index = domain.Find(ids[n]);
         if (!required && index == SIZE_MAX) continue;

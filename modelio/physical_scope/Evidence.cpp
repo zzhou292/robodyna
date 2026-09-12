@@ -2,7 +2,7 @@
 #include <set>
 
 namespace crash::modelio::physical_scope::detail {
-void BuildEvidence(const source::CanonicalData& canonical, const solid_source::VehicleSolidSource& solids,
+void BuildEvidence(const source::CanonicalData& canonical, const solid_source::VehicleSolidSource& solids, const beam18::Source* beams,
                    const std::vector<SourceId>& nodes, Data& data, Limits limits) {
     std::set<SourceId> requested;
     for (const auto* groups : {&data.plain_groups, &data.part_roots})
@@ -10,6 +10,7 @@ void BuildEvidence(const source::CanonicalData& canonical, const solid_source::V
             for (const auto& member : group.members) requested.insert(member.node);
     for (const auto& weld : data.spotwelds) requested.insert(weld.nodes.begin(), weld.nodes.end());
     for (const auto& mass : data.point_masses) requested.insert(mass.node);
+    if (beams) for (const auto& node : beams->data().nodes) requested.insert(node.id);
     Require(requested.size() <= limits.evidence_nodes, "Physical source evidence node cap exceeded");
     std::vector<std::uint32_t> evidence_index(nodes.size(), UINT32_MAX);
     data.evidence.reserve(requested.size());
@@ -20,6 +21,8 @@ void BuildEvidence(const source::CanonicalData& canonical, const solid_source::V
     }
     std::set<SourceId> selected_solids;
     for (const auto& row : solids.data().rows) selected_solids.insert(row.element_id);
+    std::set<SourceId> selected_beams;
+    if(beams) for(const auto& row:beams->data().rows) selected_beams.insert(row.element_id);
     std::size_t incidence_count = 0;
     const auto scan = [&](const char* record_name, const char* index_name, unsigned width,
                           unsigned slots, Family family) {
@@ -33,7 +36,7 @@ void BuildEvidence(const source::CanonicalData& canonical, const solid_source::V
             bool selected = false;
             if (family == Family::Shell)
                 selected = std::binary_search(canonical.selected_parts.begin(), canonical.selected_parts.end(), record[1]);
-            else if (family == Family::Beam) selected = record[1] == 2000486;
+            else if (family == Family::Beam) selected = record[1] == 2000486 || selected_beams.count(record[0]) != 0;
             else selected = selected_solids.count(record[0]) != 0;
             for (unsigned slot = 0; slot < slots; ++slot) {
                 // Beam N3=0 is an absent orientation field, not a physical node.

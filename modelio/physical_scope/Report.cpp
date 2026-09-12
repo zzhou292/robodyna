@@ -16,7 +16,8 @@ std::string ReportJson(const PhysicalScope& scope) {
     const auto& data = scope.data();
     const auto& canonical = scope.tied_source().canonical().data();
     writer.StartObject();
-    text("schema", "robo_dyna.original_physical_source_coverage.v1");
+    text("schema", scope.structural_beam_source() ? "robo_dyna.original_physical_source_coverage.v2" :
+        "robo_dyna.original_physical_source_coverage.v1");
     text("scope", "Source membership only; no complete mass ledger, DOF or runtime admission");
     text("archive_sha256", canonical.archive_sha256);
     text("member_sha256", canonical.inputs.source_member.sha256);
@@ -27,6 +28,7 @@ std::string ReportJson(const PhysicalScope& scope) {
     number("shell", Shell); number("type13_endpoint", Type13Endpoint); number("solid", Solid);
     number("retained_point_mass", RetainedPointMass); number("provisional_type25", ProvisionalType25);
     number("excluded_tire_shell", ExcludedTireShell); number("beam_orientation", BeamOrientation);
+    if(scope.structural_beam_source()) number("beam18_endpoint",Beam18Endpoint);
     writer.EndObject();
     writer.Key("excluded_tire_part_ids"); writer.StartArray();
     for (auto id : canonical.excluded_parts) writer.Uint64(id);
@@ -45,7 +47,7 @@ std::string ReportJson(const PhysicalScope& scope) {
     number("outside_mass_in_baseline", count.outside_mass_in_baseline);
     number("outside_mass_with_type25", count.outside_mass_with_type25);
     writer.Key("role_node_counts"); writer.StartArray();
-    for (auto value : count.role_nodes) writer.Uint64(value);
+    for (unsigned bit=0;bit<(scope.structural_beam_source()?8u:7u);++bit) writer.Uint64(count.role_nodes[bit]);
     writer.EndArray(); writer.EndObject();
     writer.Key("budget"); writer.StartObject();
     number("inclusive_rigid_source_reservation", scope.forecast().source_reservation);

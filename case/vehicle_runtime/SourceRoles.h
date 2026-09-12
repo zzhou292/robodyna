@@ -4,7 +4,7 @@
 namespace crash::cases::vehicle_runtime {
 enum SourceRole : std::uint8_t {
     Shell = 1, Part = 2, PlainRigid = 4, CinSecondary = 8, CinMaster = 16,
-    Type13Endpoint = 32, Type25Endpoint = 64
+    Type13Endpoint = 32, Type25Endpoint = 64, Beam18Endpoint = 128
 };
 struct SourceRoles {
     std::vector<std::uint8_t> node;

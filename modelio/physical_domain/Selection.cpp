@@ -35,7 +35,7 @@ Selection Select(const std::vector<physical_scope::Group>& groups,
         const bool retain = std::any_of(source.members.begin(), source.members.end(),
                                        [](const auto& member) { return Physical(member.roles); });
         for (const auto& member : source.members) {
-            output::Require(!(member.roles & ~127u), "Unknown physical source member role");
+            output::Require(!(member.roles & ~physical_scope::KnownRoles), "Unknown physical source member role");
             const bool represented = Physical(member.roles) || result.point_nodes.count(member.node);
             (retain && represented ? selected.members : selected.excluded_members).push_back(member.node);
         }

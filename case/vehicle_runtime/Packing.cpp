@@ -50,7 +50,8 @@ OwnerPacking PackOwner(const tl::fea::NodalCoefficientLedger& ledger,
     Require(next.capacity_bytes() <= forecast,"Actual owner packing capacities exceed preflight");
     for (std::size_t node = 0; node < count; ++node) {
         const auto flags = roles.node[node];
-        Require(!(flags & 128),"Unknown initial source role");
+        Require(bool(flags & Beam18Endpoint) == bool(ledger.nodes()[node].occurrences.beam18),
+                "Structural beam role differs from actual endpoint coefficients");
         const auto* member = rigid.FindMember(node);
         Require(bool(flags & (Part|PlainRigid)) == bool(member),"Rigid role differs from actual prepared membership");
         const auto& value = ledger.nodes()[node].coefficients;

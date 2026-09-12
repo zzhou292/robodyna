@@ -46,4 +46,17 @@ TEST(VehicleType45Profile, ProfileMismatchAndLateAxisFailureLeavePriorSourceDisp
     EXPECT_EQ(value.rows[2].disposition, Disposition::Required);
     EXPECT_NO_THROW(value = Resolve(Rows(extended), extended));
 }
+TEST(VehicleType45Profile, SupportsAdmitsAll44OnlyWithTheirActualEndpointAndAxisNodes) {
+    constexpr auto supports = Policy::OriginalDirectSdiType45VehicleSupportsV5;
+    EXPECT_EQ(detail::DomainPolicy(supports), physical_domain::Policy::RetainedShellAssembliesVehicleSupportsV5);
+    auto accepted = Resolve(Rows(supports),supports);
+    EXPECT_EQ(accepted.required,44u); EXPECT_EQ(accepted.boundaries,0u);
+    auto bad = Rows(supports); bad.rows[17].nodes[1].domain_index = SIZE_MAX;
+    EXPECT_THROW(accepted=Resolve(bad,supports),std::runtime_error);
+    EXPECT_EQ(accepted.required,44u);
+    bad = Rows(supports); bad.rows.back().nodes[2].domain_index = SIZE_MAX;
+    EXPECT_THROW(accepted=Resolve(bad,supports),std::runtime_error);
+    EXPECT_NO_THROW(accepted=Resolve(Rows(supports),supports));
+    EXPECT_THROW(Resolve(Rows(Policy::OriginalDirectSdiType45ExtendedSolidsV4),supports),std::runtime_error);
+}
 } // namespace crash::modelio::type45

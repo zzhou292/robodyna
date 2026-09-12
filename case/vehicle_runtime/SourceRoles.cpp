@@ -43,6 +43,19 @@ SourceRoles ResolveSourceRoles(const vehicle_startup::physical_attachments::Vehi
                     "TYPE13 endpoint identity differs from physical source domain");
         }
     }
+    if (const auto* structural = physical.structural_beams()) {
+        const auto* coefficients = physical.coefficients().beam18();
+        Require(coefficients && coefficients->model()->Matches(*structural) &&
+            structural->domain()->SharesStorage(domain), "Structural beam role authority differs from the ledger");
+        for (std::size_t parent = 0; parent < structural->parents().size(); ++parent)
+            for (unsigned slot = 0; slot < 2; ++slot) {
+                tl::fea::beam18::EndpointContribution endpoint;
+                Require(structural->Endpoint(parent,slot,endpoint), "Structural beam endpoint is unavailable");
+                mark(endpoint.global_node,Beam18Endpoint);
+                Require(domain.nodes()[endpoint.global_node].source_id == endpoint.source_node_id,
+                        "Structural beam endpoint identity differs from physical domain");
+            }
+    } else Require(!physical.coefficients().beam18(), "Unexpected structural beam coefficient authority");
     const auto* welds = physical.coefficients().type25();
     Require(welds, "Complete runtime source-role census requires retained TYPE25 model");
     for (std::size_t c = 0; c < welds->connection_count(); ++c) {

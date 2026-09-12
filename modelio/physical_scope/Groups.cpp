@@ -15,7 +15,7 @@ void Classify(Group& group) {
     group.covered_before = group.covered_after = group.tire_members = 0;
     std::set<SourceId> seen;
     for (const auto& member : group.members) {
-        Require(member.node && seen.insert(member.node).second && (member.roles & ~127u) == 0,
+        Require(member.node && seen.insert(member.node).second && (member.roles & ~physical_scope::KnownRoles) == 0,
                 "Invalid coverage member identity or role");
         group.covered_before += (member.roles & PhysicalRoles) != 0;
         group.covered_after += (member.roles & (PhysicalRoles | ProvisionalType25)) != 0;

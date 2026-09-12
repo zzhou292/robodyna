@@ -26,9 +26,9 @@ std::size_t OwnedPayload(const Data& data, Limits limits) {
 } // namespace crash::modelio::physical_scope::detail
 
 namespace crash::modelio::physical_scope {
-Forecast PhysicalScope::Preflight(const rigid::point_mass::Source& masses,
+Forecast PhysicalScope::PreflightImpl(const rigid::point_mass::Source& masses,
     const tied_shell::TiedShellDeclaration& tied, const type13::SourceType13& beams,
-    const solid_source::VehicleSolidSource& solids, Limits limits) {
+    const solid_source::VehicleSolidSource& solids, const beam18::Source* structural, Limits limits) {
     using namespace detail;
     const Limits hard;
     const std::size_t values[]{limits.host_bytes, limits.nodes, limits.groups, limits.members,
@@ -48,10 +48,19 @@ Forecast PhysicalScope::Preflight(const rigid::point_mass::Source& masses,
         masses.rigid_source().topology().other_rigid_member_count() <=
             limits.members - masses.rigid_source().topology().member_count(),
         "Physical source complete group members exceed cap");
+    const bool supports=solids.data().policy==solid_source::Policy::OriginalVehicleSupportsV5;
+    Require(supports==bool(structural),"Complete support source requires both V5 solids and structural beams");
+    if(structural) Require(&structural->canonical().data()==&canonical &&
+        structural->data().policy==beam18::Policy::OriginalCircularFourPointLaw44V1 &&
+        structural->data().rows.size()==142 && structural->data().canonical_endpoints.size()==146 &&
+        solids.data().rows.size()==4980,"Complete vehicle support source identity or census differs");
     Forecast result;
     result.source_reservation = masses.data().startup_budget_bytes;
     for (auto bytes : {tied.data().owned_payload_bytes, beams.data().owned_payload_bytes, solids.data().owned_payload_bytes})
         Add(result.additional_retained, bytes, 1, limits.host_bytes);
+    if(structural) Add(result.additional_retained,structural->data().owned_payload_bytes,1,limits.host_bytes);
+    // Canonical backing is already charged by the authenticated masses source;
+    // only the beam source own payload is additional.
     // Decoded node IDs, the node->evidence index, and the largest record/index
     // pair with both decoder byte temporaries. Families are traversed serially.
     std::size_t record_workspace = 0;
@@ -72,5 +81,15 @@ Forecast PhysicalScope::Preflight(const rigid::point_mass::Source& masses,
     for (auto bytes : {result.source_reservation, result.additional_retained, result.workspace, result.result_reservation})
         Add(result.total_bytes, bytes, 1, limits.host_bytes);
     return result;
+}
+Forecast PhysicalScope::Preflight(const rigid::point_mass::Source& mass,
+    const tied_shell::TiedShellDeclaration& tied,const type13::SourceType13& type13,
+    const solid_source::VehicleSolidSource& solids,Limits limits) {
+    return PreflightImpl(mass,tied,type13,solids,nullptr,limits);
+}
+Forecast PhysicalScope::PreflightVehicleSupports(const rigid::point_mass::Source& mass,
+    const tied_shell::TiedShellDeclaration& tied,const type13::SourceType13& type13,
+    const solid_source::VehicleSolidSource& solids,const beam18::Source& beams,Limits limits) {
+    return PreflightImpl(mass,tied,type13,solids,&beams,limits);
 }
 } // namespace crash::modelio::physical_scope
