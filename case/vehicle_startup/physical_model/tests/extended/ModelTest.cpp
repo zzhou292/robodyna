@@ -69,7 +69,7 @@ TEST(VehicleExtendedPhysicalOriginal, All4900NativeReferencesMaterialsAndRepeate
     EXPECT_LE(model.startup_payload_bytes(), Limits::ExtendedSolids().solid_bytes);
     RecordProperty("solid_model_owned_bytes", model.owned_payload_bytes());
     RecordProperty("solid_model_startup_bytes", model.startup_payload_bytes());
-    RecordProperty("physical_forecast", physical.forecast().total_bytes);
+    RecordProperty("physical_forecast", std::to_string(physical.forecast().total_bytes));
     RecordProperty("packing_bytes", physical.forecast().packing_bytes);
 }
 } // namespace crash::cases::vehicle_startup::physical_model::extended_test

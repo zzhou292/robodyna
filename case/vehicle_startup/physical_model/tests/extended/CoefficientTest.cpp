@@ -95,6 +95,6 @@ TEST(VehicleExtendedPhysicalOriginal, FortyRealJointOperatorsRetainBothAntirollS
         EXPECT_TRUE(row.source_id >= 2200526 && row.source_id <= 2200529);
     RecordProperty("required_joints", value.model().joints().size());
     RecordProperty("joint_boundaries", source.data().boundaries);
-    RecordProperty("joint_forecast", value.forecast().total_bytes);
+    RecordProperty("joint_forecast", std::to_string(value.forecast().total_bytes));
 }
 } // namespace crash::cases::vehicle_startup::physical_model::extended_test
