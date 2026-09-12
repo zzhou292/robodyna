@@ -3,11 +3,14 @@
 #include <cstdint>
 namespace crash::cases::vehicle_run {
 enum class ResourceProfile { Normal, ConditionalExpandedFull };
+enum class PhysicalProfile { RetainedShellAssembliesV1, ExtendedSolidsV4 };
+const char* PhysicalProfileName(PhysicalProfile);
 struct Config {
     double duration_s=.005;
     double fixed_dt_s=3e-7;
     std::size_t samples=101;
     ResourceProfile resources=ResourceProfile::Normal;
+    PhysicalProfile physical_profile=PhysicalProfile::RetainedShellAssembliesV1;
 };
 struct Horizon {
     std::uint64_t intervals=0;

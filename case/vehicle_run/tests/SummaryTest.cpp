@@ -22,6 +22,7 @@ TEST(VehicleRunSummary, StartupFailureDoesNotInventAcceptedTimeOrContactObservat
     const auto record=detail::WriteSummary(directory.path,config,Plan(config),{},result);
     const auto document=Read(directory.path/record.file);
     EXPECT_FALSE(document["session_initialized"].GetBool());
+    EXPECT_STREQ(document["physical_profile"].GetString(),"retained-shell-v1");
     EXPECT_FALSE(document.HasMember("actual_completed_time_s"));
     EXPECT_FALSE(document.HasMember("contact_observations_available"));
     EXPECT_FALSE(document.HasMember("archive_manifest_file"));
@@ -50,9 +51,14 @@ TEST(VehicleRunSummary, AcceptedPrefixPreservesLimitContactAndViewerAuthority) {
     viewer.sha256=std::string(64,'b');
     result.viewer_input=viewer;
     Config config;
-    const auto file=detail::WriteSummary(directory.path,config,Plan(config),{},result);
+    config.physical_profile=PhysicalProfile::ExtendedSolidsV4;
+    Forecast forecast;
+    forecast.joint_count=40;
+    const auto file=detail::WriteSummary(directory.path,config,Plan(config),forecast,result);
     const auto document=Read(directory.path/file.file);
     EXPECT_EQ(document["accepted_intervals"].GetUint64(),2u);
+    EXPECT_STREQ(document["physical_profile"].GetString(),"extended-solids-v4");
+    EXPECT_EQ(document["selected_joints"].GetUint64(),40u);
     EXPECT_EQ(document["actual_completed_time_s"].GetDouble(),6e-7);
     EXPECT_EQ(document["requested_duration_s"].GetDouble(),.005);
     EXPECT_EQ(document["rejected_step_limit_s"].GetDouble(),2e-7);

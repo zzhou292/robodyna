@@ -1,5 +1,6 @@
 #pragma once
 #include "OriginalPaths.h"
+#include "../Config.h"
 #include "case/vehicle_wall/VehicleWallSetup.h"
 #include "case/vehicle_startup/joints/VehicleJointModel.h"
 namespace crash::cases::vehicle_run {
@@ -10,5 +11,6 @@ struct OriginalCase {
 // Named pinned original profile. Composes existing typed source readers and
 // factories; does not parse cards, invent model rows or allocate a solver owner.
 // Search assessment uses the existing bounded CUDA startup broadphase.
-OriginalCase PrepareOriginalYaris(const OriginalPaths&,vehicle_wall::Settings);
+OriginalCase PrepareOriginalYaris(const OriginalPaths&,vehicle_wall::Settings,
+    PhysicalProfile=PhysicalProfile::RetainedShellAssembliesV1);
 } // namespace crash::cases::vehicle_run

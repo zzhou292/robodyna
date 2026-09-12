@@ -16,11 +16,19 @@ std::size_t Sum(std::size_t cap,std::initializer_list<std::size_t> values) {
 PreparedRun PreparedRun::Prepare(const vehicle_wall::VehicleWallSetup& setup,const vehicle_runtime::JointModel& joints,
     Config config,records::Identity identity) {
     const auto horizon=Plan(config);
+    const bool extended=config.physical_profile==PhysicalProfile::ExtendedSolidsV4;
+    const auto expected_domain=extended ? modelio::physical_domain::Policy::RetainedShellAssembliesExtendedSolidsV4
+        : modelio::physical_domain::Policy::RetainedShellAssembliesV1;
+    const auto expected_joints=extended ? modelio::type45::Policy::OriginalDirectSdiType45ExtendedSolidsV4
+        : modelio::type45::Policy::OriginalDirectSdiType45V1;
+    output::Require(setup.execution().model().source_domain().policy()==expected_domain &&
+        joints.source().policy()==expected_joints && joints.model().joints().size()==(extended?40u:38u),
+        "Run physical profile differs from the authenticated domain or joint composition");
     output::Require(setup.settings().requested_duration_s==config.duration_s &&
         setup.settings().mesh_profile==vehicle_wall::WallMeshProfile::EnvelopeRectangleV1 &&
         setup.settings().transverse_margin_m>=.25 && identity.run && identity.topology &&
-        !identity.owner && joints.model().joints().size()==38,
-        "Run requires matching loaded envelope/duration, a fresh run identity and all 38 retained joints");
+        !identity.owner,
+        "Run requires matching loaded envelope/duration and a fresh run identity");
     auto dynamics=vehicle_wall::LoadedWallConfig();
     output::Require((!identity.source_instance || identity.source_instance==setup.execution().physical().domain()->source_instance_id()) &&
         (!identity.configuration || identity.configuration==dynamics.startup.configuration_id) &&
@@ -64,6 +72,7 @@ PreparedRun PreparedRun::Prepare(const vehicle_wall::VehicleWallSetup& setup,con
     next->forecast.complete_host_bytes=required_host;
     next->forecast.complete_archive_bytes=required_archive;
     next->forecast.caps=caps;
+    next->forecast.joint_count=joints.model().joints().size();
     return PreparedRun(std::move(next));
 }
 const Forecast& PreparedRun::forecast() const noexcept {return data_->forecast;}

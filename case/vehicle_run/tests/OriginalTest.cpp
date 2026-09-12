@@ -7,7 +7,7 @@
 #include <sstream>
 namespace crash::cases::vehicle_run::test {
 namespace {
-OriginalCase Source() {
+OriginalCase Source(PhysicalProfile profile=PhysicalProfile::RetainedShellAssembliesV1) {
     const auto path=[](const char* name) {
         const auto value=std::getenv(name);
         output::Require(value && *value,"Explicit complete original source path required");
@@ -19,7 +19,7 @@ OriginalCase Source() {
     auto settings=vehicle_wall::LoadedWallSettings();
     settings.leading_gap_m=1e-6; // Explicit short contact gate, distinct from ordinary20mm gap.
     settings.requested_duration_s=.005;
-    return PrepareOriginalYaris(paths,settings);
+    return PrepareOriginalYaris(paths,settings,profile);
 }
 records::Identity Identity() {
     records::Identity value;
@@ -36,16 +36,42 @@ TEST(VehicleRunOriginal, ForecastRetainsCompleteSourceAndRejectsStaleRunIdentity
     EXPECT_LE(plan.forecast().complete_host_bytes,20ull*1000*1000*1000);
     EXPECT_LE(plan.forecast().complete_archive_bytes,2ull<<30);
     EXPECT_FALSE(plan.forecast().caps.expanded);
+    EXPECT_EQ(plan.forecast().joint_count,38u);
+    Config wrong_profile;
+    wrong_profile.physical_profile=PhysicalProfile::ExtendedSolidsV4;
+    EXPECT_THROW(PreparedRun::Prepare(setup,source.joints,wrong_profile,Identity()),std::exception);
     auto wrong=Identity();
     wrong.source_instance=source.setup.execution().physical().domain()->source_instance_id()+1;
     EXPECT_THROW(PreparedRun::Prepare(setup,source.joints,{},wrong),std::exception);
-    RecordProperty("complete_host_upper_bound",std::to_string(plan.forecast().complete_host_bytes));
-    RecordProperty("complete_archive_upper_bound",std::to_string(plan.forecast().complete_archive_bytes));
-    RecordProperty("device_bytes",std::to_string(plan.forecast().wall.device_bytes));
+    ::testing::Test::RecordProperty("complete_host_upper_bound",std::to_string(plan.forecast().complete_host_bytes));
+    ::testing::Test::RecordProperty("complete_archive_upper_bound",std::to_string(plan.forecast().complete_archive_bytes));
+    ::testing::Test::RecordProperty("device_bytes",std::to_string(plan.forecast().wall.device_bytes));
 }
-TEST(VehicleRunOriginal, TwoActualLoadedIntervalsExportAuthenticAcceptedPrefixAndViewerInput) {
-    const auto source=Source();
-    const auto plan=PreparedRun::Prepare(source.setup,source.joints,{},Identity());
+TEST(VehicleRunExtended, Full4900SourceForecastKeepsOriginalConnectionsAndNormalResourceCaps) {
+    const auto source=Source(PhysicalProfile::ExtendedSolidsV4);
+    Config config;
+    config.physical_profile=PhysicalProfile::ExtendedSolidsV4;
+    const auto plan=PreparedRun::Prepare(source.setup,source.joints,config,Identity());
+    const auto& model=source.setup.execution().model();
+    EXPECT_EQ(model.source_domain().source().solid_source().data().rows.size(),4900u);
+    EXPECT_EQ(model.solids().solid18_law44().size(),306u);
+    EXPECT_EQ(model.solids().solid18_law90().size(),1345u);
+    EXPECT_EQ(plan.forecast().joint_count,40u);
+    EXPECT_FALSE(plan.forecast().caps.expanded);
+    EXPECT_LE(plan.forecast().complete_host_bytes,20ull*1000*1000*1000);
+    EXPECT_LE(plan.forecast().complete_archive_bytes,2ull<<30);
+    EXPECT_THROW(PreparedRun::Prepare(source.setup,source.joints,{},Identity()),std::exception);
+    ::testing::Test::RecordProperty("physical_nodes",model.source_domain().domain().node_count());
+    ::testing::Test::RecordProperty("complete_host_upper_bound",std::to_string(plan.forecast().complete_host_bytes));
+    ::testing::Test::RecordProperty("complete_archive_upper_bound",std::to_string(plan.forecast().complete_archive_bytes));
+    ::testing::Test::RecordProperty("device_bytes",std::to_string(plan.forecast().wall.device_bytes));
+}
+namespace {
+void CheckLoadedPrefix(PhysicalProfile profile) {
+    const auto source=Source(profile);
+    Config config;
+    config.physical_profile=profile;
+    const auto plan=PreparedRun::Prepare(source.setup,source.joints,config,Identity());
     records::test::Directory temporary;
     const auto requested=std::getenv("ROBO_VEHICLE_RUN_OUTPUT");
     const auto destination=requested && *requested?std::filesystem::path(requested):temporary.path;
@@ -79,10 +105,17 @@ TEST(VehicleRunOriginal, TwoActualLoadedIntervalsExportAuthenticAcceptedPrefixAn
     EXPECT_EQ(saved.frame.stamp.epoch,2u);
     EXPECT_EQ(saved.frame.stamp.time,result.loop.progress.accepted.time_s);
     EXPECT_EQ(saved.activity.stamp().epoch,2u);
-    RecordProperty("accepted_intervals",std::to_string(result.loop.progress.accepted.epoch));
-    RecordProperty("archive_manifest_sha256",result.archive_manifest->sha256);
-    RecordProperty("viewer_input_sha256",result.viewer_input->sha256);
-    RecordProperty("completed_seconds",std::to_string(result.loop.progress.accepted.time_s));
-    RecordProperty("scope","two accepted loaded intervals through actual controller; no complete5ms claim");
+    ::testing::Test::RecordProperty("accepted_intervals",std::to_string(result.loop.progress.accepted.epoch));
+    ::testing::Test::RecordProperty("archive_manifest_sha256",result.archive_manifest->sha256);
+    ::testing::Test::RecordProperty("viewer_input_sha256",result.viewer_input->sha256);
+    ::testing::Test::RecordProperty("completed_seconds",std::to_string(result.loop.progress.accepted.time_s));
+    ::testing::Test::RecordProperty("scope","two accepted loaded intervals through actual controller; no complete5ms claim");
+}
+}
+TEST(VehicleRunOriginal, TwoActualLoadedIntervalsExportAuthenticAcceptedPrefixAndViewerInput) {
+    CheckLoadedPrefix(PhysicalProfile::RetainedShellAssembliesV1);
+}
+TEST(VehicleRunExtended, TwoActualLoadedIntervalsKeep4900SolidOwnerAndAuthenticReplay) {
+    CheckLoadedPrefix(PhysicalProfile::ExtendedSolidsV4);
 }
 } // namespace crash::cases::vehicle_run::test

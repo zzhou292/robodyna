@@ -4,7 +4,7 @@
 #include "modelio/vehicle_sections/VehicleSectionResolution.h"
 namespace crash::cases::vehicle_run::detail {
 struct OriginalSources {
-    OriginalSources(const OriginalPaths&);
+    OriginalSources(const OriginalPaths&,PhysicalProfile);
     std::string member;
     output::full_shell::source::CanonicalSource canonical;
     modelio::vehicle::VehicleSourcePlan plan;

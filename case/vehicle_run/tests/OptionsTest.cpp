@@ -26,11 +26,30 @@ TEST(VehicleRunOptions, ExplicitCompleteSourceNormalDefaultsAndDiagnosticPrefix)
     EXPECT_EQ(defaults.run_id,71u);
     EXPECT_EQ(defaults.diagnostic_intervals,0u);
     EXPECT_EQ(defaults.config.resources,ResourceProfile::Normal);
+    EXPECT_EQ(defaults.config.physical_profile,PhysicalProfile::RetainedShellAssembliesV1);
     args.insert(args.end(),{"--duration-ms","50","--diagnostic-intervals","2","--gap-m","0.000001"});
     const auto short_run=Parse(args);
     EXPECT_EQ(short_run.config.duration_s,.05);
     EXPECT_EQ(short_run.diagnostic_intervals,2u);
     EXPECT_EQ(short_run.gap_m,1e-6);
+}
+TEST(VehicleRunOptions, ExplicitPhysicalProfileIsIndependentOfResourceAllowance) {
+    auto args=Arguments();
+    args.insert(args.end(),{"--physical-profile","extended-solids-v4"});
+    const auto options=Parse(args);
+    EXPECT_EQ(options.config.physical_profile,PhysicalProfile::ExtendedSolidsV4);
+    EXPECT_EQ(options.config.resources,ResourceProfile::Normal);
+    EXPECT_EQ(options.config.duration_s,.005);
+    for(const auto* value:{"", "v4", "full-vehicle", "retained-shell-v2"}) {
+        auto invalid=Arguments();
+        invalid.insert(invalid.end(),{"--physical-profile",value});
+        EXPECT_THROW(Parse(invalid),std::invalid_argument);
+    }
+    args.insert(args.end(),{"--physical-profile","retained-shell-v1"});
+    EXPECT_THROW(Parse(args),std::invalid_argument);
+    Config bad;
+    bad.physical_profile=static_cast<PhysicalProfile>(999);
+    EXPECT_THROW(Plan(bad),std::invalid_argument);
 }
 TEST(VehicleRunOptions, MissingDuplicateOverflowAndInvalidNumericsRejectBeforeAnySourceRead) {
     for(const auto& tail:std::vector<std::vector<std::string>>{{"--run-id","72"},{"--samples","18446744073709551616"},

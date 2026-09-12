@@ -2,7 +2,15 @@
 #include "output/full_shell/FixedStepHorizon.h"
 #include <stdexcept>
 namespace crash::cases::vehicle_run {
+const char* PhysicalProfileName(PhysicalProfile profile) {
+    switch(profile) {
+        case PhysicalProfile::RetainedShellAssembliesV1:return "retained-shell-v1";
+        case PhysicalProfile::ExtendedSolidsV4:return "extended-solids-v4";
+    }
+    throw std::invalid_argument("Unknown Yaris physical profile");
+}
 Horizon Plan(const Config& config) {
+    PhysicalProfileName(config.physical_profile);
     if((config.duration_s!=.005 && config.duration_s!=.02 && config.duration_s!=.05) ||
         config.samples<2 || config.samples>1000 ||
         (config.resources!=ResourceProfile::Normal && config.resources!=ResourceProfile::ConditionalExpandedFull))

@@ -22,12 +22,15 @@ vehicle_startup::TiedSearchPostKinChk Classify(const detail::OriginalSources& so
         vehicle_startup::TiedSearchClassification::Prepare(finalized,context));
 }
 }
-OriginalCase PrepareOriginalYaris(const OriginalPaths& paths,vehicle_wall::Settings settings) {
+OriginalCase PrepareOriginalYaris(const OriginalPaths& paths,vehicle_wall::Settings settings,PhysicalProfile profile) {
+    PhysicalProfileName(profile);
     vehicle_wall::CheckSettings(settings);
-    detail::OriginalSources source(paths);
+    const bool extended=profile==PhysicalProfile::ExtendedSolidsV4;
+    detail::OriginalSources source(paths,profile);
     const auto scope=modelio::physical_scope::PhysicalScope::Prepare(source.masses,source.tied,source.beams,source.solids);
     const auto domain=modelio::physical_domain::VehiclePhysicalDomain::Prepare(scope,
-        modelio::physical_domain::Policy::RetainedShellAssembliesV1);
+        extended ? modelio::physical_domain::Policy::RetainedShellAssembliesExtendedSolidsV4
+            : modelio::physical_domain::Policy::RetainedShellAssembliesV1);
     const auto shells=vehicle_startup::VehicleShellBinding::Prepare(
         vehicle_startup::VehicleShellReferences::Prepare(source.resolution));
     const auto physical=vehicle_startup::physical_model::VehiclePhysicalModel::Prepare(domain,shells);
@@ -35,7 +38,9 @@ OriginalCase PrepareOriginalYaris(const OriginalPaths& paths,vehicle_wall::Setti
     const auto attachments=vehicle_runtime::Attachments::Prepare(physical,post);
     const auto execution=vehicle_runtime::Execution::Prepare(physical);
     const auto joints=vehicle_startup::joints::VehicleJointModel::Prepare(physical,
-        modelio::type45::VehicleType45Source::Prepare(domain,modelio::type45::Policy::OriginalDirectSdiType45V1));
+        modelio::type45::VehicleType45Source::Prepare(domain,extended
+            ? modelio::type45::Policy::OriginalDirectSdiType45ExtendedSolidsV4
+            : modelio::type45::Policy::OriginalDirectSdiType45V1));
     const auto bytes=case_data::ReadPinnedWallManifest(paths.wall_manifest);
     case_data::CanonicalWall wall;
     std::istringstream input(bytes);

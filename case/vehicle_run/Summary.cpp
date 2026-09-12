@@ -53,6 +53,8 @@ records::RecordFile WriteSummary(const std::filesystem::path& root,const Config&
     document.SetObject();
     String(document,"schema","robo_dyna.vehicle_run_summary.v1");
     String(document,"status",Name(result.loop.kind));
+    String(document,"physical_profile",PhysicalProfileName(config.physical_profile));
+    if(forecast.joint_count) Integer(document,"selected_joints",forecast.joint_count);
     String(document,"reason",result.loop.reason);
     String(document,"scope","observed accepted endpoints and host call timings; no restart or total-energy claim");
     Boolean(document,"session_initialized",result.session_initialized);

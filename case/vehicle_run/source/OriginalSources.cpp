@@ -34,7 +34,7 @@ std::string ReadOriginal(const std::filesystem::path& path,std::size_t bytes,con
         "Pinned original source member or declaration identity differs");
     return result;
 }
-OriginalSources::OriginalSources(const OriginalPaths& paths)
+OriginalSources::OriginalSources(const OriginalPaths& paths,PhysicalProfile profile)
     :member(ReadOriginal(paths.member,42846753,"67208317e6c8eb1dd43b80001508915ccaace7bc0a745e1aa5a3b33f394df301")),
      canonical(ReadCanonical(paths,member)),
      plan(modelio::vehicle::VehicleSourcePlan::Read(canonical,paths.declarations,
@@ -46,5 +46,8 @@ OriginalSources::OriginalSources(const OriginalPaths& paths)
      beams(modelio::type13::SourceType13::Read(paths.type13,
         {5150841,"c15fc2096317ac0206397ac50776f8456ddd23495e0c65aeee98e093ebd0b1b1"})),
      solids(modelio::solid_source::VehicleSolidSource::Prepare(canonical,member,
-        modelio::solid_source::Policy::OriginalAdhesive18RubberHephS6zV1)) {}
+        profile==PhysicalProfile::ExtendedSolidsV4 ? modelio::solid_source::Policy::OriginalExtendedSolidsV4
+            : modelio::solid_source::Policy::OriginalAdhesive18RubberHephS6zV1,
+        profile==PhysicalProfile::ExtendedSolidsV4 ? modelio::solid_source::Limits::ExtendedSolids()
+            : modelio::solid_source::Limits{})) {}
 } // namespace crash::cases::vehicle_run::detail

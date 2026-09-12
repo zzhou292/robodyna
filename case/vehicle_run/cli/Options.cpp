@@ -42,6 +42,13 @@ Options Parse(int argc,const char* const* argv) {
         else if(name=="--wall-manifest") result.source.wall_manifest=value;
         else if(name=="--output") result.output=value;
         else if(name=="--stop-file") result.stop_file=value;
+        else if(name=="--physical-profile") {
+            if(value==PhysicalProfileName(PhysicalProfile::RetainedShellAssembliesV1))
+                result.config.physical_profile=PhysicalProfile::RetainedShellAssembliesV1;
+            else if(value==PhysicalProfileName(PhysicalProfile::ExtendedSolidsV4))
+                result.config.physical_profile=PhysicalProfile::ExtendedSolidsV4;
+            else throw std::invalid_argument("Unknown Yaris physical profile");
+        }
         else if(name=="--duration-ms") result.config.duration_s=Real(value)/1000;
         else if(name=="--fixed-dt-s") result.config.fixed_dt_s=Real(value);
         else if(name=="--gap-m") result.gap_m=Real(value);
@@ -69,6 +76,7 @@ const char* Usage() noexcept {
     return "robo_dyna_vehicle_run --canonical DIR --scope FILE --member FILE --declarations FILE "
         "--glass-resolution FILE --type13 FILE --aux-member FILE --original-wall-member FILE "
         "--wall-manifest FILE --run-id UINT --output EMPTY_DIR "
+        "[--physical-profile retained-shell-v1|extended-solids-v4] "
         "[--duration-ms 5|20|50] [--fixed-dt-s 3e-7] [--gap-m .02] [--samples 101] "
         "[--wall-stiffness-n-m3 VALUE] [--penetration-limit-m VALUE] "
         "[--diagnostic-intervals N] [--maximum-elapsed-s SEC] [--stop-file PATH] [--forecast-only] [--conditional-full-limits]";

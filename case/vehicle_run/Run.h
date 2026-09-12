@@ -16,6 +16,7 @@ struct Forecast {
     output::physical_run::Forecast archive;
     ResourceCaps caps;
     std::size_t complete_host_bytes=0,complete_archive_bytes=0;
+    std::size_t joint_count=0;
 };
 struct Result {
     bool session_initialized=false;

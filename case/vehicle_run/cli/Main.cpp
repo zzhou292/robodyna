@@ -21,13 +21,14 @@ int main(int argc,char** argv) {
         if(options.wall_stiffness_n_m3) settings.stiffness_per_area=*options.wall_stiffness_n_m3;
         if(options.penetration_limit_m) settings.maximum_penetration_m=*options.penetration_limit_m;
         std::cout<<std::setprecision(17)<<"Preparing pinned original source using existing bounded factories"<<std::endl;
-        const auto source=run::PrepareOriginalYaris(options.source,settings);
+        const auto source=run::PrepareOriginalYaris(options.source,settings,options.config.physical_profile);
         run::records::Identity identity;
         identity.run=options.run_id;
         identity.topology=0x5941524953ULL;
         const auto prepared=run::PreparedRun::Prepare(source.setup,source.joints,options.config,identity);
         const auto& forecast=prepared.forecast();
-        std::cout<<"forecast host_bytes="<<forecast.complete_host_bytes
+        std::cout<<"forecast physical_profile="<<run::PhysicalProfileName(options.config.physical_profile)
+                 <<" host_bytes="<<forecast.complete_host_bytes
                  <<" device_bytes="<<forecast.wall.device_bytes
                  <<" archive_bytes="<<forecast.complete_archive_bytes
                  <<" intervals="<<prepared.horizon().intervals

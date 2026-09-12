@@ -126,3 +126,24 @@ selection of the larger already authorized ceilings if the measured forecast
 requires them. Exit 0 means the whole planned horizon and its artifacts finished;
 exit 2 means a valid accepted prefix; exit 3 means capture/archive/summary/receipt
 failure; exit 1 means source/configuration/startup orchestration failed.
+
+## Explicit expanded physical profile
+
+`--physical-profile extended-solids-v4` selects the original 4,900-solid source
+profile, rebuilds its canonical-ordered physical domain, and restores the two
+newly supported spherical joints. The default `retained-shell-v1` remains the
+qualified 2,412-solid / 38-joint case. The expanded profile has 40 joints; its
+four rod-joint boundaries, missing structural beams and airbag solid cells remain
+explicit. It does not imply a completed long crash trajectory.
+
+The run controller checks the actual sealed domain and joint policies before
+forecasting or allocating an owner. Profile selection does not expand resource
+allowances. The existing normal 20 GB host and 2 GiB archive caps remain in force;
+conditional full-run allowance is selected independently and used only when
+required by the complete forecast. Run summaries identify the selected profile
+and actual prepared joint count. The existing typed source/model/attachment
+factories, CUDA owner and Chrono replay remain the implementation path.
+
+The source factory and full V4 forecast/loaded-prefix tests are staged pending
+the owning extended physical-domain qualification. All 15 CLI/loop/report functions pass in
+`vehicle-extended-run-values-tests-1`; this does not admit the expanded runtime.
