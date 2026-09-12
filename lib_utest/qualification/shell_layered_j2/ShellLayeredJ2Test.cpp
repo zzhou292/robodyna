@@ -110,6 +110,8 @@ TEST(ShellLayeredJ2, BothFamiliesYieldAndRetainAtomicHistoriesOnFailure) {
   ASSERT_EQ(q::EvaluateLayeredJ2Force(f.qr,p,f.qh,f.qi,qo),q::Status::kSuccess);
   ASSERT_EQ(t::EvaluateLayeredJ2Force(f.tr,p,f.th,f.ti,to),t::Status::kSuccess);
   EXPECT_EQ(Bytes(qo),qb); EXPECT_EQ(Bytes(to),tb);
-  static_assert(sizeof(t::ForceTrial)==976,"Legacy native T3 ForceTrial layout remains pinned");
+  // Native reference placement added eight history-identity bytes in 8e5123d;
+  // see shell_placement_force/README.md for the qualified host ABI boundary.
+  static_assert(sizeof(t::ForceTrial)==984,"Placement-aware native T3 ForceTrial layout remains pinned");
 }
 } // namespace layered_j2_test
