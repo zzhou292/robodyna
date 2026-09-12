@@ -1,7 +1,8 @@
 # Optional accepted-prefix stop request
 
-The default `run_bounded.py` behavior is unchanged: a sampled GPU-growth breach
-stops only the launched process group. Growth measures the selected device's
+The default `run_bounded.py` trigger is unchanged: a sampled GPU-growth breach
+stops the launched session (see [owned-session supervision](OWNED_SESSION.md)).
+Growth measures the selected device's
 total usage relative to launch, so another job can cause that breach. The guard
 does not attribute allocations or control unrelated jobs.
 
@@ -19,9 +20,9 @@ The request uses exclusive creation and never truncates an existing file.
 It remains after the run for diagnosis; select a new path for the next run.
 
 Only GPU growth can initiate grace, and only after that sample's available
-host RAM, owned-group RSS and free-GPU checks pass. Command timeout stays hard.
+host RAM, owned-session RSS and free-GPU checks pass. Command timeout stays hard.
 During grace the existing monitoring continues; hard-limit breach, timeout,
-request failure or grace expiry uses the existing SIGTERM/SIGKILL owned-group
+request failure or grace expiry uses SIGTERM/SIGKILL owned-session
 cleanup. A later fall in GPU usage does not cancel an issued stop request.
 These remain sampled limits, not a cgroup or guarantee between samples. GPU
 polling remains every two seconds and host polling every quarter second.

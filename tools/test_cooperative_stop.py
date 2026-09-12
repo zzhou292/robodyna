@@ -53,8 +53,8 @@ class CooperativeStopTests(unittest.TestCase):
             stack.enter_context(mock.patch.object(sys, 'argv', arguments))
             stack.enter_context(mock.patch.object(runner, 'memory_info',
                                                   side_effect=memory or (lambda: good_memory)))
-            stack.enter_context(mock.patch.object(runner, 'group_usage',
-                                                  side_effect=usage or (lambda _: good_usage)))
+            stack.enter_context(mock.patch.object(runner.OwnedSession, 'usage',
+                                                  side_effect=usage or (lambda: good_usage)))
             metrics = stack.enter_context(mock.patch.object(runner, 'gpu_info',
                                                              side_effect=gpu_samples or [gpu(1), gpu(8)]))
             if spawn is not None:
@@ -118,7 +118,7 @@ class CooperativeStopTests(unittest.TestCase):
                     return dict(MemAvailable=(0 if kind == 'RAM' and calls >= 3 else 16 * runner.GIB),
                                 MemFree=8 * runner.GIB)
 
-                def usage(_):
+                def usage():
                     return dict(rss_bytes=(2 * runner.GIB if kind == 'RSS' and calls >= 3 else runner.MIB),
                                 live_cpu_ticks=0, threads=1)
 
@@ -148,6 +148,25 @@ class CooperativeStopTests(unittest.TestCase):
         self.assertEqual(report['status'], 'passed')
         self.assertEqual(report['cooperative_stop']['outcome'], 'not_requested')
         self.assertFalse(self.stop.exists())
+
+    def test_cleanup_error_preserves_original_hard_reason_and_does_not_claim_completion(self):
+        original_stop = runner.OwnedSession.stop
+
+        def failed_cleanup(session):
+            # Really stop the tiny child; inject only the reported cleanup
+            # failure so this negative control cannot leave an orphan.
+            original_stop(session)
+            raise RuntimeError('injected owned session cleanup failure')
+
+        with mock.patch.object(runner.OwnedSession, 'stop', failed_cleanup):
+            code, report, _ = self.run_guard('import time; time.sleep(30)', grace=.1)
+        self.assertEqual(code, 125)
+        self.assertEqual(report['reason'], 'cooperative stop grace expired')
+        self.assertEqual(report['cleanup_error'], 'injected owned session cleanup failure')
+        event = report['cooperative_stop']
+        self.assertEqual(event['forced_reason'], 'cooperative stop grace expired')
+        self.assertIn('termination_failed_elapsed_seconds', event)
+        self.assertNotIn('termination_completed_elapsed_seconds', event)
 
     def test_hard_breach_at_first_sample_does_not_request(self):
         code, report, _ = self.run_guard('import time; time.sleep(30)', gpu_samples=[gpu(1), gpu(26, free=6)])

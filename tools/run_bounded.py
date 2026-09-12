@@ -3,7 +3,7 @@
 
 This is a cooperative workstation guard, not a GPU memory allocator or cgroup.
 Children inherit CPU affinity and thread limits. Memory limits are sampled;
-the owned process group is terminated if a limit is exceeded. An explicit stop
+the owned session is terminated if a limit is exceeded. An explicit stop
 file permits a short controller grace for GPU growth alone; hard limits remain
 active. No other user's processes are touched. Use the same lock path for all
 builds/tests in a session. Retained telemetry is bounded; every live sample
@@ -23,9 +23,11 @@ import time
 
 if __package__:
     from .bounded_history import SampleHistory
+    from .bounded_session import OwnedSession, preflight as session_preflight
     from .bounded_stop import CooperativeStop, GPU_GROWTH_REASON
 else:
     from bounded_history import SampleHistory
+    from bounded_session import OwnedSession, preflight as session_preflight
     from bounded_stop import CooperativeStop, GPU_GROWTH_REASON
 
 MIB = 1024 * 1024
@@ -49,43 +51,6 @@ def gpu_info(index):
     total, used, free, utilization = [int(v.strip()) for v in result.stdout.strip().split(',')]
     return dict(total_bytes=total * MIB, used_bytes=used * MIB,
                 free_bytes=free * MIB, utilization_percent=utilization)
-
-
-def group_usage(pgid):
-    """Sum RSS and live CPU ticks across this job's inherited process group."""
-    rss, ticks, threads = 0, 0, 0
-    for entry in Path('/proc').iterdir():
-        if not entry.name.isdigit():
-            continue
-        try:
-            # comm can contain spaces and parentheses; fields after its final
-            # ')' start at stat field 3. pgrp=5, utime=14, stime=15, rss=24.
-            fields = (entry / 'stat').read_text().rsplit(')', 1)[1].split()
-            if int(fields[2]) != pgid:
-                continue
-            rss += int(fields[21]) * os.sysconf('SC_PAGE_SIZE')
-            ticks += int(fields[11]) + int(fields[12])
-            threads += int(fields[17])
-        except (FileNotFoundError, ProcessLookupError, PermissionError, ValueError, IndexError):
-            continue
-    return dict(rss_bytes=rss, live_cpu_ticks=ticks, threads=threads)
-
-
-def stop_group(process):
-    # Kill the entire owned process group, including compiler/test children.
-    try:
-        os.killpg(process.pid, signal.SIGTERM)
-    except ProcessLookupError:
-        return
-    try:
-        process.wait(timeout=2)
-    except subprocess.TimeoutExpired:
-        pass
-    try:
-        os.killpg(process.pid, signal.SIGKILL)
-    except ProcessLookupError:
-        pass
-    process.wait()
 
 
 def main():
@@ -132,103 +97,120 @@ def main():
         cooperative = CooperativeStop(args.cooperative_stop_file, grace_seconds)
         report['cooperative_stop'] = cooperative.record
     process = None
+    session = None
+    lock = None
     started = time.monotonic()
     def interrupted(signum, _frame):
         raise RuntimeError('runner interrupted by signal ' + str(signum))
     previous_term = signal.signal(signal.SIGTERM, interrupted)
     try:
-        with lock_path.open('a') as lock:
-            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            if cooperative is not None:
-                cooperative.preflight(args.report, lock_path)
-            available = sorted(os.sched_getaffinity(0))
-            affinity = available[:min(args.cpus, len(available))]
+        lock = lock_path.open('a')
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        if cooperative is not None:
+            cooperative.preflight(args.report, lock_path)
+        session_preflight()
+        available = sorted(os.sched_getaffinity(0))
+        affinity = available[:min(args.cpus, len(available))]
+        mem = memory_info()
+        report['initial_memory'] = mem
+        if mem['MemAvailable'] < args.min_available_gib * GIB:
+            raise RuntimeError('insufficient available host RAM before launch')
+        initial_gpu = gpu_info(args.gpu) if args.gpu is not None else None
+        if initial_gpu and initial_gpu['free_bytes'] < args.min_gpu_free_gib * GIB:
+            raise RuntimeError('insufficient free GPU memory before launch')
+        report['initial_gpu'] = initial_gpu
+        report['cpu_affinity'] = affinity
+        env = os.environ.copy()
+        env.update(OMP_NUM_THREADS='1', OPENBLAS_NUM_THREADS='1', MKL_NUM_THREADS='1',
+                   NUMEXPR_NUM_THREADS='1', CMAKE_BUILD_PARALLEL_LEVEL=str(len(affinity)),
+                   CTEST_PARALLEL_LEVEL='1')
+        if args.gpu is not None:
+            env['CUDA_DEVICE_ORDER'] = 'PCI_BUS_ID'
+            env['CUDA_VISIBLE_DEVICES'] = str(args.gpu)
+
+        def prepare_child():
+            os.sched_setaffinity(0, affinity)
+            os.nice(10)
+
+        print('bounded:', json.dumps(dict(command=command, cpus=affinity,
+                                         gpu=args.gpu)), flush=True)
+        process = subprocess.Popen(command, env=env, start_new_session=True,
+                                   preexec_fn=prepare_child)
+        session = OwnedSession(process)
+        report['process_scope'] = session.record
+        previous_gpu = initial_gpu
+        next_gpu_poll = started
+        while True:
+            now = time.monotonic()
             mem = memory_info()
-            report['initial_memory'] = mem
+            usage = session.usage()
+            if args.gpu is not None and now >= next_gpu_poll:
+                previous_gpu = gpu_info(args.gpu)
+                next_gpu_poll = now + 2
+            sample = dict(elapsed_seconds=round(now - started, 3),
+                          available_bytes=mem['MemAvailable'],
+                          free_bytes=mem['MemFree'], **usage, gpu=previous_gpu)
+            history.append(sample)
+            reason = None
             if mem['MemAvailable'] < args.min_available_gib * GIB:
-                raise RuntimeError('insufficient available host RAM before launch')
-            initial_gpu = gpu_info(args.gpu) if args.gpu is not None else None
-            if initial_gpu and initial_gpu['free_bytes'] < args.min_gpu_free_gib * GIB:
-                raise RuntimeError('insufficient free GPU memory before launch')
-            report['initial_gpu'] = initial_gpu
-            report['cpu_affinity'] = affinity
-            env = os.environ.copy()
-            env.update(OMP_NUM_THREADS='1', OPENBLAS_NUM_THREADS='1', MKL_NUM_THREADS='1',
-                       NUMEXPR_NUM_THREADS='1', CMAKE_BUILD_PARALLEL_LEVEL=str(len(affinity)),
-                       CTEST_PARALLEL_LEVEL='1')
-            if args.gpu is not None:
-                env['CUDA_DEVICE_ORDER'] = 'PCI_BUS_ID'
-                env['CUDA_VISIBLE_DEVICES'] = str(args.gpu)
-
-            def prepare_child():
-                os.sched_setaffinity(0, affinity)
-                os.nice(10)
-
-            print('bounded:', json.dumps(dict(command=command, cpus=affinity,
-                                             gpu=args.gpu)), flush=True)
-            process = subprocess.Popen(command, env=env, start_new_session=True,
-                                       preexec_fn=prepare_child)
-            previous_gpu = initial_gpu
-            next_gpu_poll = started
-            while True:
-                now = time.monotonic()
-                mem = memory_info()
-                usage = group_usage(process.pid)
-                if args.gpu is not None and now >= next_gpu_poll:
-                    previous_gpu = gpu_info(args.gpu)
-                    next_gpu_poll = now + 2
-                sample = dict(elapsed_seconds=round(now - started, 3),
-                              available_bytes=mem['MemAvailable'],
-                              free_bytes=mem['MemFree'], **usage, gpu=previous_gpu)
-                history.append(sample)
-                reason = None
-                if mem['MemAvailable'] < args.min_available_gib * GIB:
-                    reason = 'available RAM fell below reserve'
-                elif usage['rss_bytes'] > args.max_rss_gib * GIB:
-                    reason = 'job RSS exceeded budget'
-                elif previous_gpu and previous_gpu['free_bytes'] < args.min_gpu_free_gib * GIB:
-                    reason = 'free GPU memory fell below reserve'
-                elif previous_gpu and previous_gpu['used_bytes'] - initial_gpu['used_bytes'] > args.max_gpu_growth_gib * GIB:
-                    reason = GPU_GROWTH_REASON
-                elif now - started > args.timeout:
-                    reason = 'command timeout'
-                if reason:
-                    if cooperative is None or reason != GPU_GROWTH_REASON:
-                        raise RuntimeError(reason)
-                    # Timeout remains hard, including when growth has priority
-                    # in the original diagnostic ordering. A finished command
-                    # cannot be asked to finalize an accepted prefix.
-                    elapsed = time.monotonic() - started
-                    if elapsed > args.timeout:
-                        raise RuntimeError('command timeout')
-                    if cooperative.deadline is None and process.poll() is not None:
-                        raise RuntimeError(reason)
-                    cooperative.request(elapsed, sample)
-                if cooperative is not None and cooperative.deadline is not None:
-                    elapsed = time.monotonic() - started
-                    if elapsed > args.timeout:
-                        raise RuntimeError('command timeout')
-                    if cooperative.expired(elapsed):
-                        raise RuntimeError('cooperative stop grace expired')
-                if process.poll() is not None:
-                    break
-                time.sleep(0.25)
-            # Do not leave subprocesses running after the command exits.
-            stop_group(process)
-            report['exit_code'] = process.returncode
-            report['status'] = 'passed' if process.returncode == 0 else 'command_failed'
+                reason = 'available RAM fell below reserve'
+            elif usage['rss_bytes'] > args.max_rss_gib * GIB:
+                reason = 'job RSS exceeded budget'
+            elif previous_gpu and previous_gpu['free_bytes'] < args.min_gpu_free_gib * GIB:
+                reason = 'free GPU memory fell below reserve'
+            elif previous_gpu and previous_gpu['used_bytes'] - initial_gpu['used_bytes'] > args.max_gpu_growth_gib * GIB:
+                reason = GPU_GROWTH_REASON
+            elif now - started > args.timeout:
+                reason = 'command timeout'
+            if reason:
+                if cooperative is None or reason != GPU_GROWTH_REASON:
+                    raise RuntimeError(reason)
+                # Timeout remains hard, including when growth has priority
+                # in the original diagnostic ordering. A finished command
+                # cannot be asked to finalize an accepted prefix.
+                elapsed = time.monotonic() - started
+                if elapsed > args.timeout:
+                    raise RuntimeError('command timeout')
+                if cooperative.deadline is None and session.exited():
+                    raise RuntimeError(reason)
+                cooperative.request(elapsed, sample)
             if cooperative is not None and cooperative.deadline is not None:
-                cooperative.exited(time.monotonic() - started, process.returncode)
-                if process.returncode == 0:
-                    report['status'] = 'cooperatively_stopped'
-                report['reason'] = GPU_GROWTH_REASON
-    except (OSError, RuntimeError, subprocess.SubprocessError, KeyboardInterrupt) as error:
+                elapsed = time.monotonic() - started
+                if elapsed > args.timeout:
+                    raise RuntimeError('command timeout')
+                if cooperative.expired(elapsed):
+                    raise RuntimeError('cooperative stop grace expired')
+            if session.exited():
+                break
+            time.sleep(0.25)
+        # Do not leave subprocesses running after the command exits.
+        session.stop()
+        report['exit_code'] = process.returncode
+        report['status'] = 'passed' if process.returncode == 0 else 'command_failed'
+        if cooperative is not None and cooperative.deadline is not None:
+            cooperative.exited(time.monotonic() - started, process.returncode)
+            if process.returncode == 0:
+                report['status'] = 'cooperatively_stopped'
+            report['reason'] = GPU_GROWTH_REASON
+    except (OSError, RuntimeError, ValueError, subprocess.SubprocessError, KeyboardInterrupt) as error:
         if cooperative is not None:
             cooperative.forced(time.monotonic() - started, str(error))
         if process is not None:
-            stop_group(process)
+            try:
+                if session is not None:
+                    session.stop()
+                else:
+                    # Authentication itself failed. This direct child remains
+                    # unreaped and owned, but no broader session is claimed.
+                    process.kill()
+                    process.wait(timeout=2)
+                    report['cleanup_error'] = 'session authentication failed; only direct child stopped'
+            except (OSError, RuntimeError, ValueError, subprocess.SubprocessError) as cleanup_error:
+                report['cleanup_error'] = str(cleanup_error)
             if cooperative is not None and cooperative.record['outcome'] != 'not_requested':
-                cooperative.record['termination_completed_elapsed_seconds'] = time.monotonic() - started
+                key = ('termination_failed_elapsed_seconds' if 'cleanup_error' in report
+                       else 'termination_completed_elapsed_seconds')
+                cooperative.record[key] = time.monotonic() - started
         report['status'] = 'blocked_or_stopped'
         report['reason'] = str(error)
         report['exit_code'] = 125
@@ -239,7 +221,11 @@ def main():
         report['peak_sampled_rss_bytes'] = history.peak_rss_bytes
         report['samples'] = history.samples()
         report['sample_history'] = history.metadata()
-        args.report.write_text(json.dumps(report, indent=2) + '\n')
+        try:
+            args.report.write_text(json.dumps(report, indent=2) + '\n')
+        finally:
+            if lock is not None:
+                lock.close()
     return report.get('exit_code', 125)
 
 

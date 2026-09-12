@@ -95,16 +95,22 @@ class BoundedHistoryRunnerTests(unittest.TestCase):
 
             process = Process()
 
-            def stop_group(child):
-                if child.returncode is None:
-                    child.returncode = -15
+            session = mock.Mock()
+            session.record = dict(policy='owned_session_v1')
+            session.exited.side_effect = lambda: process.poll() is not None
+
+            def stop_session():
+                if process.returncode is None:
+                    process.returncode = -15
+
+            session.stop.side_effect = stop_session
 
             def memory():
                 bad = preflight or (breach == 'RAM' and count >= 11)
                 return dict(MemAvailable=(0 if bad else 16 * runner.GIB),
                             MemFree=8 * runner.GIB)
 
-            def usage(_):
+            def usage():
                 nonlocal count
                 count += 1
                 rss = 16 * runner.MIB if count == 3 else runner.MIB
@@ -135,10 +141,11 @@ class BoundedHistoryRunnerTests(unittest.TestCase):
                 stack.enter_context(mock.patch.object(runner, 'SampleHistory',
                                                       side_effect=lambda: SampleHistory(6, 2)))
                 stack.enter_context(mock.patch.object(runner, 'memory_info', side_effect=memory))
-                stack.enter_context(mock.patch.object(runner, 'group_usage', side_effect=usage))
+                session.usage.side_effect = usage
+                stack.enter_context(mock.patch.object(runner, 'OwnedSession', return_value=session))
                 stack.enter_context(mock.patch.object(runner, 'gpu_info', side_effect=gpu))
                 spawn = stack.enter_context(mock.patch.object(runner.subprocess, 'Popen', return_value=process))
-                stopped = stack.enter_context(mock.patch.object(runner, 'stop_group', side_effect=stop_group))
+                stopped = session.stop
                 stack.enter_context(mock.patch.object(runner.time, 'monotonic', side_effect=itertools.count()))
                 stack.enter_context(mock.patch.object(runner.time, 'sleep'))
                 stack.enter_context(contextlib.redirect_stdout(io.StringIO()))
