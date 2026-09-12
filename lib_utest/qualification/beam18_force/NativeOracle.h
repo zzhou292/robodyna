@@ -10,6 +10,7 @@ struct NativeState {
 struct NativeResult {
   NativeState next;
   std::array<double,85> si{};
+  std::array<double,85> cancellation_scale{};
   std::array<double,3> work_increment_j{}, work_difference_scale_j{};
   int status = -1;
 };

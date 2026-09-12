@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "NativeOracle.h"
+#include "NativeConditioning.h"
 #include "lib_utest/qualification/beam18_reference/NativeOracle.h"
 #include <vector>
 extern "C" void beam18_force_native(const double*,const double*,int,const double*,
@@ -60,6 +61,7 @@ NativeResult Native(const b::Reference& reference,const b::Material& material,co
     result.work_increment_j[k]=(values[38+k]-old_value)*moment;
     result.work_difference_scale_j[k]=(std::abs(values[38+k])+std::abs(old_value))*moment;
   }
+  SetCancellationScales(result,length);
   return result;
 }
 std::array<double,85> Values(const b::ForceTrial& trial) {
@@ -90,7 +92,9 @@ void Compare(const b::ForceTrial& actual,const NativeResult& expected) {
   const auto values=Values(actual);
   for(unsigned i=0;i<values.size();++i) {
     SCOPED_TRACE(i);
-    EXPECT_NEAR(values[i],expected.si[i],3e-10*std::max({std::abs(values[i]),std::abs(expected.si[i]),1e-20}));
+    const double relative=3e-10*std::max({std::abs(values[i]),std::abs(expected.si[i]),1e-20});
+    const double cancellation=64*std::numeric_limits<double>::epsilon()*expected.cancellation_scale[i];
+    EXPECT_NEAR(values[i],expected.si[i],relative+cancellation);
   }
   for(unsigned p=0;p<4;++p)EXPECT_EQ(actual.proposed_history.values().point[p].curve_cursor,unsigned(expected.next.cursor[p]));
   const auto& d=actual.diagnostics;

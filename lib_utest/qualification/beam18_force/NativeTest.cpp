@@ -1,9 +1,28 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "NativeOracle.h"
+#include <gtest/gtest-spi.h>
 #ifdef BEAM18_FORCE_ORIGINAL
 #include "OriginalFixture.h"
 #endif
 namespace beam18_force_test {
+TEST(Beam18ForceNative, CancellationAllowanceStillRejectsChangedEndpointForceAndFrame) {
+  const auto ref=Reference(); const auto material=Material(ref);
+  b::ForceTrial initial,trial;
+  ASSERT_EQ(b::InitializeForce(ref,material,{},initial),b::Status::Success);
+  b::PrescribedInterval virgin;
+  auto native=Native(ref,material,{},virgin,true);
+  auto input=Motion(ref,initial.proposed_history);
+  input.velocity_midpoint_m_s[1]={4.1,-3.2,2.3};
+  input.angular_velocity_midpoint_rad_s[1]={1.2,-2.3,3.4};
+  ASSERT_EQ(b::EvaluateForce(ref,material,initial.proposed_history,input,trial),b::Status::Success);
+  native=Native(ref,material,native.next,input);
+  Compare(trial,native); ASSERT_FALSE(HasFailure());
+  auto changed=trial;
+  changed.rhs_force_n[0].x+=1e-6*std::max(native.cancellation_scale[41],1.);
+  EXPECT_NONFATAL_FAILURE(Compare(changed,native),"");
+  changed=trial; changed.geometry.axis[0].x+=1e-6;
+  EXPECT_NONFATAL_FAILURE(Compare(changed,native),"");
+}
 void Trajectory(const b::Reference& ref,unsigned steps) {
   const auto material=Material(ref);b::ForceTrial accepted,next;
   ASSERT_EQ(b::InitializeForce(ref,material,{11.123,-.37,.129},accepted),b::Status::Success);
