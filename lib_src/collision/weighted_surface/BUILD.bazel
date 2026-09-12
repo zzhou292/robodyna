@@ -1,0 +1,8 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+
+cc_library(
+    name = "mapping",
+    hdrs = ["Types.h", "Mapping.h", "Adapters.h"],
+    visibility = ["//visibility:public"],
+    deps = ["//lib_src/collision:surface_contact_primitives", "//lib_src/collision:q4_surface_mapping"],
+)

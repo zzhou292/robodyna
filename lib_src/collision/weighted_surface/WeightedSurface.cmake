@@ -1,0 +1,6 @@
+if(NOT TARGET tl_weighted_surface)
+  add_library(tl_weighted_surface INTERFACE)
+  get_filename_component(_tl_weighted_root "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+  target_include_directories(tl_weighted_surface INTERFACE "${_tl_weighted_root}")
+  target_compile_features(tl_weighted_surface INTERFACE cxx_std_17)
+endif()
