@@ -80,8 +80,8 @@
       "sha256": "eb0d90c4b5979b63fade64943a0507da50c54b8d9ad59973927998c2001da845"
     },
     "lib_src/elements/beam18/resident/README.md": {
-      "bytes": 3973,
-      "sha256": "1651447620ec31295ed07cdab55f33e4f6060cde7e0c86c782b097f7fd4bfa1a"
+      "bytes": 4959,
+      "sha256": "4385dc2fe740a064390ea778204cc9371587f1a33d4ed076b573b2a9c04dbf75"
     },
     "lib_src/elements/beam18/resident/Readback.cu": {
       "bytes": 3649,
