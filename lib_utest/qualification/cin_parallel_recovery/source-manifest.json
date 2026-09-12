@@ -277,8 +277,15 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_recovery/CallerTest.cu",
-      "bytes": 2032,
-      "sha256": "c4c9cdc061caa0c76ac0d09f61bcc840edab94f87aa0ea470651d797748f6533"
+      "bytes": 2382,
+      "sha256": "285b338d4eef92a03e5affb0e4fcff2418311f0529c0247fb69575f79c803487",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 2032,
+          "prior_sha256": "c4c9cdc061caa0c76ac0d09f61bcc840edab94f87aa0ea470651d797748f6533",
+          "reason": "Fixture lifecycle correction after recovery-owning-cin_parallel_recovery-cuda-1: rebind new epoch/attempt and fresh assembly inputs, retain accepted deformation/history and all exact comparisons; no production change."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_recovery/DeviceFixture.cuh",
@@ -287,8 +294,15 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_recovery/Fixture.h",
-      "bytes": 2956,
-      "sha256": "a73f3fb055162463f6a11a84b109c42f356b005b143b15ff699745bf3ebc1a0a"
+      "bytes": 3166,
+      "sha256": "ede2b5a0fbbc07d85e26a78a6f791d0bd6f4dd6c02d39bfb361bd2ed6d1f1075",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 2956,
+          "prior_sha256": "a73f3fb055162463f6a11a84b109c42f356b005b143b15ff699745bf3ebc1a0a",
+          "reason": "Fixture lifecycle correction after recovery-owning-cin_parallel_recovery-cuda-1: rebind new epoch/attempt and fresh assembly inputs, retain accepted deformation/history and all exact comparisons; no production change."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_recovery/Frozen.cu",
@@ -307,8 +321,15 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_recovery/HostTest.cpp",
-      "bytes": 6160,
-      "sha256": "e2edc233a77957da59451178277178a4b639631077ad22b14affd014ccc34cd0"
+      "bytes": 7777,
+      "sha256": "80c3c03655822417dafeafdc0bd3892160d110477a7af5eb2160a1755c841f5a",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 6160,
+          "prior_sha256": "e2edc233a77957da59451178277178a4b639631077ad22b14affd014ccc34cd0",
+          "reason": "Fixture lifecycle correction after recovery-owning-cin_parallel_recovery-cuda-1: rebind new epoch/attempt and fresh assembly inputs, retain accepted deformation/history and all exact comparisons; no production change."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_recovery/OwnerTest.cu",
@@ -317,13 +338,18 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_recovery/README.md",
-      "bytes": 4262,
-      "sha256": "12697f331816ac37c3a56a587d52a38916b8d520f9008ca2a626a30a2a4dc8df",
+      "bytes": 4636,
+      "sha256": "9e8f288cf2b95910395caedde96537349b72f0deea9f1474bdf269a67376fec8",
       "reviewed_updates": [
         {
           "prior_bytes": 3654,
           "prior_sha256": "72c7e14f643cfecaadac42eed49956206385710ea8fb93854a06546a1a9e0735",
           "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 4262,
+          "prior_sha256": "12697f331816ac37c3a56a587d52a38916b8d520f9008ca2a626a30a2a4dc8df",
+          "reason": "Fixture lifecycle correction after recovery-owning-cin_parallel_recovery-cuda-1: rebind new epoch/attempt and fresh assembly inputs, retain accepted deformation/history and all exact comparisons; no production change."
         }
       ]
     },

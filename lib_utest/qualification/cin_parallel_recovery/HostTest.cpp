@@ -5,6 +5,42 @@
 #include <limits>
 
 namespace tl::fea::cin_recovery_test {
+TEST(CinRecoveryHost, NewIntervalRebindsEpochWithoutLosingDeformedStateOrCoefficientHistory) {
+  auto state = Population(3, true, true);
+  const auto assembly_loads = state.loads;
+  ASSERT_TRUE(cin_transfer_test::PreparedForce(state));
+  state.trial[0] = state.accepted[0]+.000125;
+  state.Accept();
+  const auto accepted = state.accepted;
+  auto stale = state;
+  EXPECT_FALSE(cin_advance::force_inputs::CheckPrefix(stale.Input()));
+  EXPECT_EQ(stale.control.status, NodalStatus::StaleTrial);
+  EXPECT_EQ(stale.control.node, UINT32_MAX);
+  packet::SameDoubles(stale.accepted, accepted);
+
+  BeginInterval(state, 7, assembly_loads);
+  EXPECT_EQ(state.epoch, 1u);
+  EXPECT_EQ(state.attempt, 7u);
+  EXPECT_EQ(state.control.rows.base_epoch, 1u);
+  EXPECT_EQ(state.control.rows.attempt, 7u);
+  EXPECT_EQ(state.control.limit.base_epoch, 1u);
+  EXPECT_EQ(state.control.limit.attempt, 7u);
+  EXPECT_EQ(state.durations.previous_drift_dt, packet::H);
+  EXPECT_EQ(state.durations.kick_dt, packet::H);
+  EXPECT_EQ(state.durations.drift_dt, packet::H);
+  EXPECT_TRUE(cin_advance::force_inputs::CheckPrefix(state.Input()));
+  const auto input = state.Input();
+  EXPECT_TRUE(cin::detail::CheckForceInputs(input.model,
+      cin_advance::force_inputs::ForceView(input)));
+  packet::SameDoubles(state.accepted, accepted);
+  packet::SameDoubles(state.trial, accepted);
+  packet::SameDoubles(state.loads, assembly_loads);
+  for (std::size_t i = 0; i < state.stiffness.size(); ++i)
+    EXPECT_EQ(state.work[i], state.stiffness[i]);
+  for (const auto value : state.capture) EXPECT_EQ(value, -91);
+  EXPECT_EQ(state.input_failure, 19u);
+}
+
 TEST(CinRecoveryHost, ReverseIndependentRowsMatchFrozenMotionAcrossBlockBoundaries) {
   for (unsigned count : {1, 2, 127, 128, 129}) {
     SCOPED_TRACE(count);

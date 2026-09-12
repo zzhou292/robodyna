@@ -20,11 +20,18 @@ TEST(CinRecoveryCuda, CompleteFrozenCallerMatchesAllFieldsForThreeIntervalsAndRe
       auto old = Population(count, groups, capture);
       if (capture) old.structural = {NodalCinStructuralProfile::NativeOrdinaryRigidTrace, .8};
       auto current = old;
+      const auto assembly_loads = old.loads;
       for (unsigned step = 0; step < 3; ++step) {
         SCOPED_TRACE(count);
+        SCOPED_TRACE(groups);
+        SCOPED_TRACE(capture);
         SCOPED_TRACE(step);
+        BeginInterval(old, step+1, assembly_loads);
+        BeginInterval(current, step+1, assembly_loads);
+        const auto accepted = current.accepted;
         RunPair(old, current, capture);
-        ASSERT_EQ(old.control.status, NodalStatus::Ok);
+        ASSERT_EQ(old.control.status, NodalStatus::Ok) << "node=" << old.control.node;
+        packet::SameDoubles(current.accepted, accepted);
         packet::SameSuccessfulPacket(old, current);
         old.Accept();
         current.Accept();

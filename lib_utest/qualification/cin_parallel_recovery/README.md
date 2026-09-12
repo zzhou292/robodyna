@@ -24,7 +24,7 @@ For the current 11,165-row V5 source the extra device allocation is 1,161,164 B.
 Existing arena caps and exact-cap rejection tests remain in force. The private
 null-tail comparison route keeps the complete serial recovery path.
 
-Six host functions compare all fields against the complete frozen old recovery,
+Seven host functions compare all fields against the complete frozen old recovery,
 including mixed and skewed geometry, source-row permutations, arbitrary domain
 node order, 128-row boundaries, nonzero inputs, signed zero, subnormals, overflow,
 first-row versus later failure, exact failed prefixes, retry and inclusive caps.
@@ -32,7 +32,12 @@ The four CUDA functions cover the complete old caller over multiple intervals,
 earlier input/ordinary/rigid failures, injected post-kick recovery/drift failure
 priority and capture, plus actual-owner last-secondary rotation failure and
 accepted-state/capture/allocation-preserving retry. All floating comparisons are
-bitwise. Tests do not relax native or owner admission.
+bitwise. Tests do not relax native or owner admission. The multi-interval
+fixture calls the existing Begin operation for each new epoch/attempt, rebuilds
+fresh assembly loads/stiffness, and retains the prior accepted deformation and
+coefficient history. A host control reproduces the StaleTrial rejection when
+Accept is followed by advance without Begin, then verifies the corrected
+lifecycle without resetting accepted state.
 
 `reference/` preserves complete sources from 223d813. `Frozen.cu` and
 `FrozenMotion.h` change only includes/namespaces; `FrozenTail.cuh` is the same old

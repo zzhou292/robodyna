@@ -12,6 +12,12 @@ namespace cin = constraints::tied_shell::cin;
 namespace tied = constraints::tied_shell;
 namespace recovery = cin_advance::recovery;
 using cin_transfer_test::Population;
+inline void BeginInterval(packet::Packet& state, std::uint64_t attempt,
+    const std::vector<double>& assembly_loads) {
+  state.Begin(attempt);
+  cin_input_test::Seed(state);
+  state.loads = assembly_loads;
+}
 inline packet::Packet MotionPacket(unsigned count, bool skewed_geometry = false) {
   auto result = Population(count, true, true);
   if (skewed_geometry) {
