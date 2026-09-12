@@ -1,0 +1,13 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+
+cc_test(
+    name = "host",
+    size = "small",
+    srcs = ["HostTest.cpp", "Oracle.h", "SerialValidation.h"],
+    deps = ["//lib_src/elements/qeph:batch_values",
+            "//lib_utest/qualification/qt_mapped:owner_fixture",
+            "//lib_src/elements:shell_batch_plasticity_storage",
+            "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+# The actual mixed-owner/CIN CUDA test reuses the owning CMake fixture sources.

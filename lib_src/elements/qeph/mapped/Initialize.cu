@@ -41,6 +41,7 @@ BatchReport QephBatch::InitializeMapped(const QephBatchConfig& config,const Shel
   next->cin_witness_count=source.witness_count;
   next->accepted_diagnostics=batch_detail::InitialDiagnostics(config,true);
   next->staging.Resize(config.element_count);
+  next->activity_staging.Resize(mapped::ActivityBytes(config.element_count));
   report=next->PendingError();
   if (report.status!=BatchStatus::Success) return report;
   auto material=std::make_unique<shell_batch_plasticity_detail::HostStorage>();

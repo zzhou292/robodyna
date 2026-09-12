@@ -3,6 +3,7 @@
 #include "Stiffness.h"
 #include "../QephBatch.h"
 #include "ObserverTypes.h"
+#include "ActivityLayout.h"
 #include "../../mapped_shell/NodeGather.h"
 #include <cstdint>
 
@@ -23,6 +24,7 @@ struct AssemblyMemory {
   // Integer diagnostic ordering only; no floating-point atomic accumulation.
   unsigned long long* failure=nullptr;
   ObserverSummary* observer=nullptr;
+  ActivityMemory activity;
 };
 inline constexpr unsigned long long NoAssemblyFailure=mapped_shell::NoAssemblyFailure;
 } // namespace tl::fea::qeph::mapped

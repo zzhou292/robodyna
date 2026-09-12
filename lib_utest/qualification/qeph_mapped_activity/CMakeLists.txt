@@ -1,0 +1,25 @@
+cmake_minimum_required(VERSION 3.22)
+project(TLQephMappedActivity LANGUAGES CXX)
+enable_testing()
+find_package(GTest REQUIRED)
+find_package(CUDAToolkit REQUIRED)
+get_filename_component(tl_root "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+include("${tl_root}/lib_src/elements/ShellMappedStartup.cmake")
+include("${tl_root}/lib_src/constraints/tied_shell/TiedCinAttachment.cmake")
+add_executable(qeph_mapped_activity_host HostTest.cpp ../qt_mapped/OwnerFixture.cpp
+  ../rigid_assembly_owner/Fixture.cpp "${tl_root}/lib_src/elements/qeph/mapped/Startup.cpp")
+target_link_libraries(qeph_mapped_activity_host PRIVATE tl_shell_mapped_startup
+  tl_tied_cin_attachment GTest::gtest_main CUDA::toolkit)
+target_compile_features(qeph_mapped_activity_host PRIVATE cxx_std_17)
+target_compile_options(qeph_mapped_activity_host PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME qeph_mapped_activity_host COMMAND qeph_mapped_activity_host)
+set_tests_properties(qeph_mapped_activity_host PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 90)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+add_test(NAME qeph_mapped_activity_source_identity COMMAND "${Python3_EXECUTABLE}" -B
+  "${CMAKE_CURRENT_LIST_DIR}/verify_sources.py")
+set_tests_properties(qeph_mapped_activity_source_identity PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)
+
+option(QEPH_ACTIVITY_CUDA "Actual mapped owner activity and compact force validation" OFF)
+if(QEPH_ACTIVITY_CUDA)
+  include("${CMAKE_CURRENT_LIST_DIR}/Cuda.cmake")
+endif()

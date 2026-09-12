@@ -3,7 +3,8 @@
 #include "lib_src/solvers/NodalTrialIdentity.h"
 
 namespace tl::fea::shell_batch_plasticity_detail {
-template<class Impl> auto ReadFailure(Impl& state, unsigned slab, double time) {
+template<class Impl, class Validate>
+auto ReadFailure(Impl& state, unsigned slab, double time, Validate validate) {
   auto report = state.PendingError();
   using Status = decltype(report.status);
   if (report.status != Status::Success) return report;
@@ -15,7 +16,12 @@ template<class Impl> auto ReadFailure(Impl& state, unsigned slab, double time) {
     report.status = result.status == SetupStatus::NonfiniteResult ? Status::NonfiniteResult : Status::InvalidInput;
     report.message = result.message;
   }
-  return report.status==Status::Success?state.ValidateMappedSections(slab):report;
+  return report.status==Status::Success?validate(slab):report;
+}
+
+template<class Impl> auto ReadFailure(Impl& state, unsigned slab, double time) {
+  return ReadFailure(state,slab,time,
+      [&state](unsigned selected) { return state.ValidateMappedSections(selected); });
 }
 
 template<class Stamp, class Value, class Diagnostics, class Batch>
