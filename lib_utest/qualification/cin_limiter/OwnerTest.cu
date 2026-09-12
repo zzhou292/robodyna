@@ -128,11 +128,13 @@ TEST(CinLimiterCuda, ActualOrdinaryChannelsBothRigidSourceKindsAndExactCapacity)
   fe::FENodalState owner;
   ASSERT_EQ(old::Initialize(owner, f, true).status, Code::Ok);
   std::size_t ordinary = f.m.size();
+  const auto rows = f.cin_model.rows();
   for (std::size_t node = 0; node < f.m.size(); ++node) {
     if (!f.present[node] || f.fixed[node] || f.rotation_fixed[node] ||
         f.binding.FindMember(node) || f.m[node] <= 0 || f.j[node] <= 0) continue;
     bool attached = false;
-    for (const auto& row : f.cin_model.rows()) {
+    for (std::size_t index = 0; index < rows.count; ++index) {
+      const auto& row = rows.data[index];
       attached |= row.secondary_domain_node == node;
       for (const auto master : row.master_domain_nodes) attached |= master == node;
     }

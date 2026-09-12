@@ -190,8 +190,18 @@
     },
     {
       "path": "lib_utest/qualification/cin_limiter/OwnerTest.cu",
-      "bytes": 9306,
-      "sha256": "d75ecdd315ac1221c249dfe07a07beb27e080d56ba1e3c1fd496de38a09de503"
+      "bytes": 9402,
+      "sha256": "f274fc66f938551e360e92ca80c7ff9ca30b1054e0901f4f6d29f690d9d408e8",
+      "reviewed_updates": [
+        {
+          "prior": {
+            "path": "lib_utest/qualification/cin_limiter/OwnerTest.cu",
+            "bytes": 9306,
+            "sha256": "d75ecdd315ac1221c249dfe07a07beb27e080d56ba1e3c1fd496de38a09de503"
+          },
+          "reason": "Root CUDA compilation found rows() is a counted view without begin/end; use its existing count/data API in test fixture traversal, preserving assertions and production."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_limiter/README.md",
@@ -424,5 +434,12 @@
       "role": "Checked composition of diagnostic and prepared-transfer proofs"
     }
   ],
-  "integration_base_commit": "223d81364d169bbc5cf49034efe953fc97d26761"
+  "integration_base_commit": "223d81364d169bbc5cf49034efe953fc97d26761",
+  "root_test_fixes": [
+    {
+      "old_manifest_sha256": "c68f797147fb9c3927f182b369e3804c43160c597870d776d362da75598f74ea",
+      "evidence": "crash-work/reports/cin-limiter-root-build-1.log",
+      "production_changed": false
+    }
+  ]
 }
