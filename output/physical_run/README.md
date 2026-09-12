@@ -128,3 +128,29 @@ loaded seven-participant acceptance with foreign-placement rejection (even with
 a reused wall binding ID), and actual free-flight rejection. These source/CUDA
 functions are authored for root qualification; author checks alone establish no
 loaded archive result.
+
+New wall writers emit `robo_dyna.vehicle_wall_setup.v2` inside the same seventh
+hashed wall file. Its bounded `physical_composition` receipt is derived from the
+actual retained physical model: named domain/solid/ledger profiles, five typed
+solid counts, physical node and rigid-group counts, selected point cards, and
+immutable initial total/point mass with exact binary64 witnesses. The total is
+the authoritative ledger total, not a sum reconstructed from diagnostic
+subtotals. Joint census is explicitly unavailable from wall setup; the separate
+run summary owns that observation. This source receipt does not certify a
+current owner, energy balance, connectivity or completed physical trajectory.
+
+`Replay::wall_composition()` returns a read-only nullable value. Historical
+setup v1 remains readable and returns null, while v2 requires the complete
+typed receipt. The reader checks profile/count coherence and canonical domain
+bounds before mesh allocation and publishes the optional value only after all
+later wall checks pass. Existing seven-file identities, per-file caps and
+whole-run reservations remain unchanged; the small fixed receipt is covered
+by the existing 32-metadata-block replay reserve and wall metadata workspace.
+
+The focused owning target `robo_dyna_wall_composition_check` / CTest
+`physical_wall_composition` covers both profiles, exact mass bits, malformed
+late fields, unknown/mixed profiles and historical absence. Root's existing
+`physical_run_wall_original` also checks actual V1 model values and a later
+wall-plane rejection with its caller receipt unchanged. Full V4 wall output
+requires the separately qualified V4 domain/model factory; codec fixtures do
+not establish the original V4 node or rigid census.

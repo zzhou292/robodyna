@@ -1,5 +1,6 @@
 include_guard(GLOBAL)
 include("${CMAKE_CURRENT_LIST_DIR}/../physical_frames/FrameArchive.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/WallComposition.cmake")
 add_library(robo_dyna_physical_run_records STATIC
   "${CMAKE_CURRENT_LIST_DIR}/ViewerInput.cpp" "${CMAKE_CURRENT_LIST_DIR}/Profile.cpp" "${CMAKE_CURRENT_LIST_DIR}/Sequence.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/Fields.cpp" "${CMAKE_CURRENT_LIST_DIR}/IntervalWriter.cpp"
@@ -10,7 +11,7 @@ add_library(robo_dyna_physical_run_records STATIC
   "${CMAKE_CURRENT_LIST_DIR}/WallFields.cpp" "${CMAKE_CURRENT_LIST_DIR}/WallRead.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/RunPrepare.cpp" "${CMAKE_CURRENT_LIST_DIR}/RunWrite.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/Replay.cpp" "${CMAKE_CURRENT_LIST_DIR}/ReplayRecords.cpp")
-target_link_libraries(robo_dyna_physical_run_records PUBLIC robo_dyna_physical_frame_archive)
+target_link_libraries(robo_dyna_physical_run_records PUBLIC robo_dyna_physical_frame_archive robo_dyna_wall_composition)
 target_include_directories(robo_dyna_physical_run_records PRIVATE "${ROBO_DYNA_TL_ROOT}")
 target_compile_features(robo_dyna_physical_run_records PUBLIC cxx_std_17)
 target_compile_options(robo_dyna_physical_run_records PRIVATE -fno-fast-math -ffp-contract=off)

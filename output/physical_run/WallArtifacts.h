@@ -1,5 +1,6 @@
 #pragma once
 #include "Types.h"
+#include "WallComposition.h"
 #include "output/full_shell/static_bundle/Types.h"
 #include <array>
 namespace chrono { class ChTriangleMeshConnected; }
@@ -21,5 +22,6 @@ Document WallDocument(const WallReceipt&);
 WallReceipt ReadWallDocument(const Value&);
 // All hashes and named source associations are checked before Chrono allocation.
 std::shared_ptr<const chrono::ChTriangleMeshConnected> ReadWallArtifacts(const std::filesystem::path&,
-    const WallReceipt&,const records::source::CanonicalData&,const records::Context&);
+    const WallReceipt&,const records::source::CanonicalData&,const records::Context&,
+    std::optional<WallComposition>* composition=nullptr);
 } // namespace crash::output::physical_run

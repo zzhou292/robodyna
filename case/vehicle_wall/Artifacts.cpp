@@ -1,4 +1,6 @@
 #include "Artifacts.h"
+#include "Composition.h"
+#include "output/BoundedArrayJson.h"
 #include "output/ArtifactIO.h"
 #include "output/MeshArchive.h"
 #include "chrono/geometry/ChTriangleMeshConnected.h"
@@ -7,6 +9,7 @@ using namespace output;
 void WriteSetupArtifacts(const std::filesystem::path& directory,const VehicleWallSetup& setup) {
     Require(std::filesystem::is_directory(directory) && std::filesystem::is_empty(directory),
         "Wall setup artifacts require an empty caller-owned directory");
+    const auto composition=physical_run::WallCompositionDocument(CaptureComposition(setup.execution().model()));
     case_data::WritePlacedCanonicalWallArtifacts(directory,setup.wall());
     const auto view=setup.selected_wall_view();
     chrono::ChTriangleMeshConnected mesh;
@@ -21,7 +24,8 @@ void WriteSetupArtifacts(const std::filesystem::path& directory,const VehicleWal
     WriteMeshFiles(directory,"selected-wall",mesh);
     Document document;
     document.SetObject();
-    String(document,"schema","robo_dyna.vehicle_wall_setup.v1");
+    String(document,"schema","robo_dyna.vehicle_wall_setup.v2");
+    array_json::Child(document,"physical_composition",composition);
     const auto& settings=setup.settings();
     String(document,"mesh_profile",settings.mesh_profile==WallMeshProfile::PlacedOriginal ?
         "placed-original" : "envelope-rectangle-v1");

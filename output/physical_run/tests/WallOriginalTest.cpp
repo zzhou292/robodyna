@@ -34,6 +34,17 @@ TEST(PhysicalRunWallOriginal, CompleteInitialPrefixRetainsSelectedMeshAndOrigina
     const auto manifest=archive.FinishPrefix("initial wall archive only; no contact interval claim");
     const auto replay=Replay::Open(directory.path,manifest,mapping.source_mapping().source().data().inputs,mapping.source_mapping().digest());
     ASSERT_TRUE(replay.wall());ASSERT_TRUE(replay.wall_mesh());
+    ASSERT_TRUE(replay.wall_composition());
+    const auto& composition=*replay.wall_composition();
+    const auto& model=setup.execution().model();
+    EXPECT_EQ(composition.profile,CompositionProfile::RetainedV1);
+    EXPECT_EQ(composition.physical_nodes,model.source_domain().domain().node_count());
+    EXPECT_EQ(composition.solid_parents,(std::array<std::uint64_t,5>{908,1309,195,0,0}));
+    EXPECT_EQ(composition.point_mass_records,model.coefficients().scope().element_mass_records);
+    EXPECT_EQ(Bits(composition.initial_mass_kg),Bits(model.coefficients().totals().mass));
+    EXPECT_EQ(Bits(composition.point_mass_kg),Bits(model.coefficients().totals().element_mass));
+    EXPECT_EQ(composition.rigid_groups,model.rigid_assembly().groups().size());
+    EXPECT_EQ(composition.rigid_members,model.rigid_assembly().members().size());
     EXPECT_EQ(replay.wall()->files[0].sha256,case_data::kCanonicalWallManifestSha256);
     EXPECT_EQ(replay.wall()->wall_binding_id,setup.settings().wall_binding_id);
     EXPECT_EQ(replay.wall_mesh()->GetNumVertices(),4u);EXPECT_EQ(replay.wall_mesh()->GetNumTriangles(),2u);
@@ -45,6 +56,24 @@ TEST(PhysicalRunWallOriginal, CompleteInitialPrefixRetainsSelectedMeshAndOrigina
         EXPECT_EQ(Bits(x.z()),Bits(view.vertices[n].position.z));
     }
     EXPECT_EQ(replay.index().accepted_intervals,0u);
+    // Parse a valid composition, then reject a later wall-plane discrepancy.
+    // The optional caller destination and prior immutable replay stay intact.
+    auto altered=*replay.wall();
+    const auto setup_bytes=ReadFile(directory.path,altered.files[6],WallFileCap);
+    auto bad_setup=array_json::Parse(setup_bytes,WallFileCap);
+    bad_setup["represented_wall_x_m"].SetDouble(setup.placement().represented_wall_x_m+1);
+    const auto temporary=WriteDocument(directory.path,"bad-wall-setup.json",bad_setup,WallFileCap);
+    const auto bad_bytes=ReadFile(directory.path,temporary,WallFileCap);
+    records::test::Overwrite(directory.path/altered.files[6].file,bad_bytes);
+    altered.files[6].bytes=bad_bytes.size();altered.files[6].sha256=Sha256(bad_bytes);
+    std::optional<WallComposition> staged=composition;
+    staged->initial_mass_kg=123;
+    EXPECT_THROW(ReadWallArtifacts(directory.path,altered,mapping.source_mapping().source().data(),
+        capture.context(),&staged),std::exception);
+    ASSERT_TRUE(staged);EXPECT_EQ(staged->initial_mass_kg,123);
+    EXPECT_EQ(Bits(replay.wall_composition()->initial_mass_kg),Bits(model.coefficients().totals().mass));
+    records::test::Overwrite(directory.path/altered.files[6].file,setup_bytes);
+    std::filesystem::remove(directory.path/temporary.file);
     const auto selected_bytes=ReadFile(directory.path,replay.wall()->files[4],WallFileCap);
     records::test::Overwrite(directory.path/replay.wall()->files[4].file,selected_bytes+"corruption");
     EXPECT_THROW(Replay::Open(directory.path,manifest,mapping.source_mapping().source().data().inputs,

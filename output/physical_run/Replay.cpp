@@ -13,6 +13,7 @@ struct Replay::Data {
     Index index;
     std::size_t host_bytes;
     std::optional<WallReceipt> wall;
+    std::optional<WallComposition> wall_composition;
     std::shared_ptr<const chrono::ChTriangleMeshConnected> wall_mesh;
 };
 Replay Replay::Open(const std::filesystem::path& root,const records::RecordFile& file,
@@ -43,9 +44,11 @@ Replay Replay::Open(const std::filesystem::path& root,const records::RecordFile&
     records::activity::ReadDeclaration(root,context,manifest.activity_declaration);
     ValidateRecords(root,context,config,index,128u<<20);
     CheckReferencedInventory(root,context,index,manifest);
-    auto wall=manifest.wall?ReadWallArtifacts(root,*manifest.wall,mapping.source().data(),context):nullptr;
+    std::optional<WallComposition> composition;
+    auto wall=manifest.wall?ReadWallArtifacts(root,*manifest.wall,mapping.source().data(),context,&composition):nullptr;
     auto data=std::make_shared<Data>(root,std::move(mapping),std::move(context),std::move(config),std::move(index),budget.bytes());
     data->wall=manifest.wall;data->wall_mesh=std::move(wall);
+    data->wall_composition=composition;
     return Replay(std::move(data));
 }
 const records::source::PreparedSourceMapping& Replay::mapping() const noexcept {return data_->mapping;}
@@ -54,6 +57,9 @@ const Configuration& Replay::configuration() const noexcept {return data_->confi
 const Index& Replay::index() const noexcept {return data_->index;}
 std::size_t Replay::peak_host_bytes() const noexcept {return data_->host_bytes;}
 const WallReceipt* Replay::wall() const noexcept {return data_->wall?&*data_->wall:nullptr;}
+const WallComposition* Replay::wall_composition() const noexcept {
+    return data_->wall_composition?&*data_->wall_composition:nullptr;
+}
 std::shared_ptr<const chrono::ChTriangleMeshConnected> Replay::wall_mesh() const noexcept {return data_->wall_mesh;}
 Sample Replay::ReadSample(std::size_t k) const {
     Require(k<data_->index.frames.size(),"Physical replay sample index is outside the run");

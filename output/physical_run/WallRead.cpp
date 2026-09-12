@@ -28,7 +28,8 @@ void FeatureRows(const Value& document,const char* name,std::size_t count,unsign
 }
 }
 std::shared_ptr<const chrono::ChTriangleMeshConnected> ReadWallArtifacts(const std::filesystem::path& root,
-    const WallReceipt& receipt,const records::source::CanonicalData& source,const records::Context& context) {
+    const WallReceipt& receipt,const records::source::CanonicalData& source,const records::Context& context,
+    std::optional<WallComposition>* composition) {
     WallDocument(receipt);
     Require(receipt.source_instance_id==context.identity().source_instance &&
         receipt.source_mapping_sha256==context.identity().source_mapping_sha256,"Physical wall belongs to another run source");
@@ -36,8 +37,8 @@ std::shared_ptr<const chrono::ChTriangleMeshConnected> ReadWallArtifacts(const s
     Require(receipt.files[0].sha256==case_data::kCanonicalWallManifestSha256,"Physical wall original source is not pinned");
     const auto setup=array_json::Parse(ReadFile(root,receipt.files[6],WallFileCap),WallFileCap);
     Unique(setup);
-    Require(Text(setup,"schema")=="robo_dyna.vehicle_wall_setup.v1" &&
-        array_json::UInt(Field(setup,"wall_binding_id"))==receipt.wall_binding_id,"Physical wall setup identity differs");
+    Require(array_json::UInt(Field(setup,"wall_binding_id"))==receipt.wall_binding_id,"Physical wall setup identity differs");
+    const auto next_composition=ReadSetupComposition(setup,context.nodes(),source.canonical_nodes);
     Hash(setup,"original_manifest_sha256",receipt.files[0].sha256);
     Hash(setup,"selected_mesh_sha256",receipt.files[4].sha256);Hash(setup,"selected_obj_sha256",receipt.files[5].sha256);
     Hash(setup,"vehicle_archive_sha256",source.archive_sha256);
@@ -69,6 +70,7 @@ std::shared_ptr<const chrono::ChTriangleMeshConnected> ReadWallArtifacts(const s
     if(profile=="placed-original")Require(receipt.files[1].sha256==receipt.files[4].sha256,
         "Placed-original profile selected a different wall mesh");
     else Require(mesh->GetNumVertices()==4 && mesh->GetNumTriangles()==2,"Envelope rectangle shape differs");
+    if(composition)*composition=next_composition;
     return mesh;
 }
 } // namespace crash::output::physical_run
