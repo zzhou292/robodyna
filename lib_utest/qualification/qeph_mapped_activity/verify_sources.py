@@ -8,7 +8,7 @@ import re
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 manifest_bytes = (here / 'source-manifest.json').read_bytes()
-assert hashlib.sha256(manifest_bytes).hexdigest() == 'efc9dfdc210e743e3258b2134eae6ad539970990c245c3a344d8ca89b3ab3cfd'
+assert hashlib.sha256(manifest_bytes).hexdigest() == 'e3367f0d6f4f99dd8c3c46fc5eb6c598eafa297a31053fca8e14eb2981976002'
 manifest = json.loads(manifest_bytes)
 for row in manifest['files']:
     path = Path(row['path'])
@@ -52,6 +52,32 @@ marker = 'SetupReport FailureHostStorage::Read(unsigned slab, std::size_t count,
 frozen_storage = (here / 'FrozenFailureStorage.cpp.txt').read_text()
 current_storage = (root / 'lib_src/elements/failure/ShellFailureStorage.cpp').read_text()
 assert frozen_storage[frozen_storage.index(marker):] == current_storage[current_storage.index(marker):]
+mixed_reader = (here / 'FrozenMixedReadback.cpp.txt').read_text()
+current_mixed_reader = (root / 'lib_src/elements/ShellMixedSectionReadback.cpp').read_text()
+assert current_mixed_reader.startswith(mixed_reader)
+expected_mixed_reader = mixed_reader.replace('#include "ShellMixedSectionStorage.h"',
+    '#include "MixedOracleSupport.h"').replace('#include "ShellLayeredSectionValues.h"',
+    '#include "SerialMixedValues.h"').replace('namespace tl::fea::shell_batch_plasticity_detail {',
+    'namespace qeph_activity_test::frozen_mixed {')
+expected_mixed_reader = '#pragma once\n' + expected_mixed_reader.replace(
+    'SetupReport MixedHostStorage::Read','inline SetupReport MixedHostStorage::Read')
+assert expected_mixed_reader == (here / 'SerialMixedReadback.h').read_text()
+mixed_values = (here / 'FrozenMixedValues.h.txt').read_text()
+expected_mixed_values = mixed_values.replace('#include "ShellBatchLayeredSection.h"',
+    '#include "lib_src/elements/ShellBatchLayeredSection.h"').replace(
+    'namespace tl::fea::shell_batch_plasticity_detail {',
+    'namespace qeph_activity_test::frozen_mixed {\nusing namespace tl::fea;')
+assert expected_mixed_values == (here / 'SerialMixedValues.h').read_text()
+portable = mixed_values.replace('#include "ShellBatchLayeredSection.h"',
+    '#include "ShellBatchLayeredSection.h"\n\n#if defined(__CUDACC__)\n'
+    '#define TL_MIXED_VALUES_HD __host__ __device__\n#else\n#define TL_MIXED_VALUES_HD\n#endif')
+portable = portable.replace('inline bool FiniteSection','TL_MIXED_VALUES_HD inline bool FiniteSection')
+portable = portable.replace('  for(double x:{d.plastic_work_density_increment',
+    '  const double values[]{d.plastic_work_density_increment').replace(
+    '      value.cumulative_plastic_work_J})if(!tl::math::Finite(x))return false;',
+    '      value.cumulative_plastic_work_J};\n  for(double x:values)if(!tl::math::Finite(x))return false;')
+assert portable + '\n#undef TL_MIXED_VALUES_HD\n' == (root / 'lib_src/elements/ShellLayeredSectionValues.h').read_text()
 print(json.dumps({'status':'passed','records':len(manifest['files']),
     'complete_frozen_functions':2,'baseline':manifest['baseline_commit'],
+    'complete_mixed_reader_and_mechanical_values':True,
     'complete_failure_values_and_full_read_unchanged':True,'numerical_execution':False}))

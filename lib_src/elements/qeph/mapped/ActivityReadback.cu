@@ -37,7 +37,7 @@ BatchReport QephBatch::Impl::ValidateMappedActivity(unsigned slab) {
         first_invalid};
   }
   const auto* failure_active = FailureActivity();
-  return mapped::ValidateSectionActivity(*physical->catalog(),plasticity->section_staging(),
+  return mapped::ValidateRoleActivity(*physical->catalog(),MixedActivityRoles(),
       config.element_count,[active](std::size_t parent) { return active[parent]; },
       [failure_active](std::size_t parent) { return failure_active[parent]; });
 }

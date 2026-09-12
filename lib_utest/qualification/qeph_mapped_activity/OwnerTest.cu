@@ -62,7 +62,7 @@ TEST(QephMappedActivityCuda,FreshCompactBufferAliasesAndStaleInputsNeverWriteOut
       q::BatchStatus::Success);
   transfers.enabled = false;
   auto* compact = static_cast<std::uint8_t*>(transfers.compact_destination);
-  auto* failure_compact = static_cast<std::uint8_t*>(transfers.compact_destinations[0]);
+  auto* failure_compact = static_cast<std::uint8_t*>(transfers.compact_destinations[1]);
   ASSERT_NE(compact,nullptr);
   ASSERT_NE(failure_compact,nullptr);
   ASSERT_NE(compact,failure_compact);

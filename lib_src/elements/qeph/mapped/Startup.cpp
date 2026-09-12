@@ -36,9 +36,10 @@ BatchReport MakeForecast(const QephBatchConfig& config,const ShellPhysicalBindin
       !host.Append<ForceTrial>(config.element_count,ignored) ||
       !host.Append<std::uint8_t>(ActivityBytes(config.element_count),ignored) ||
       !host.Append<std::uint8_t>(ActivityBytes(config.element_count),ignored) ||
+      !host.Append<std::uint8_t>(ActivityBytes(config.element_count),ignored) ||
       !host.Append<unsigned char>(sidecar_bytes,ignored) ||
       !host.Append<unsigned char>(next.proof.bytes,ignored) ||
-      !host.Append<unsigned char>(3*64,ignored)) {
+      !host.Append<unsigned char>(4*64,ignored)) {
     return {BatchStatus::ResourceLimit,"Mapped Qeph complete startup/retained host payload exceeds its cap"};
   }
   next.host_bytes=host.bytes();

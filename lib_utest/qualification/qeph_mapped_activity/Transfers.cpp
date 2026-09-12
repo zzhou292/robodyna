@@ -25,7 +25,7 @@ extern "C" cudaError_t __wrap_cudaMemcpyAsync(void* destination,const void* sour
     if (bytes == t.parents*sizeof(tl::fea::ShellBatchSectionState)) t.plastic_source = source;
     if (bytes == tl::fea::qeph::mapped::ActivityBytes(t.parents)) {
       t.compact_destination = destination;
-      if (t.compact_calls < 2) t.compact_destinations[t.compact_calls] = destination;
+      if (t.compact_calls < 3) t.compact_destinations[t.compact_calls] = destination;
       ++t.compact_calls;
     }
     if (t.fail_copy && t.calls == t.fail_copy) return cudaErrorInvalidValue;

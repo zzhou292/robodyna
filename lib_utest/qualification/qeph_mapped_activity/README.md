@@ -1,4 +1,7 @@
-Current failure-only extension: see [FAILURE_ACTIVITY.md](FAILURE_ACTIVITY.md) for the
+Current mixed-section extension: see [MIXED_ACTIVITY.md](MIXED_ACTIVITY.md).
+The following failure-only and force-only descriptions are retained historical boundaries.
+
+Previous failure-only extension: see [FAILURE_ACTIVITY.md](FAILURE_ACTIVITY.md) for the
 new phase sequence, budgets, transfer census and qualification. The following
 records the previously qualified force-only increment.
 

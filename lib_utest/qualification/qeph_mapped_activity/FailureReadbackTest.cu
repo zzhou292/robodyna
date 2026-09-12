@@ -96,15 +96,15 @@ TEST(QephFailureActivityCuda,CorruptedCompactFailureFlagsRejectBeforeForceAndKee
       q::BatchDiagnostics diagnostics;
       const auto untouched = qt_mapped_test::Bytes(diagnostics);
       Watch(n);
-      transfers.corrupt_compact_call = 1;
+      transfers.corrupt_compact_call = 2;
       transfers.corrupt_flag = raw;
       const auto report = prepared
           ? rig.qeph.CopyPreparedParentActivity(rig.owner,token,candidate.qeph,flags.data(),n)
           : rig.qeph.CopyAcceptedParentActivity(rig.owner.accepted(),flags.data(),n,&diagnostics);
       EXPECT_EQ(report.status,q::BatchStatus::NonfiniteResult);
       EXPECT_STREQ(report.message,"Failure sidecar state disagrees with its declared policy/saved section");
-      EXPECT_EQ(transfers.compact_calls,1u);
-      EXPECT_EQ(transfers.calls,3u);
+      EXPECT_EQ(transfers.compact_calls,2u);
+      EXPECT_EQ(transfers.calls,2u);
       transfers.enabled = false;
       EXPECT_EQ(flags,std::vector<std::uint8_t>(n,19));
       EXPECT_EQ(qt_mapped_test::Bytes(diagnostics),untouched);
@@ -135,10 +135,10 @@ TEST(QephFailureActivityCuda,FailurePacketCopyErrorPoisonsWithoutPublishing) {
   const auto stamp = rig.owner.accepted();
   std::vector<std::uint8_t> flags(n,19);
   Watch(n);
-  transfers.fail_copy = 3;
+  transfers.fail_copy = 2;
   EXPECT_EQ(rig.qeph.CopyPreparedParentActivity(rig.owner,token,candidate.qeph,flags.data(),n).status,
       q::BatchStatus::DeviceFailure);
-  EXPECT_EQ(transfers.calls,3u);
+  EXPECT_EQ(transfers.calls,2u);
   transfers.enabled = false;
   EXPECT_EQ(flags,std::vector<std::uint8_t>(n,19));
   EXPECT_TRUE(fe::trial_identity::SameStamp(stamp,rig.owner.accepted()));

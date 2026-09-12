@@ -6,7 +6,7 @@ find_package(CUDAToolkit REQUIRED)
 get_filename_component(tl_root "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
 include("${tl_root}/lib_src/elements/ShellMappedStartup.cmake")
 include("${tl_root}/lib_src/constraints/tied_shell/TiedCinAttachment.cmake")
-add_executable(qeph_mapped_activity_host HostTest.cpp FailureValuesTest.cpp ../qt_mapped/OwnerFixture.cpp
+add_executable(qeph_mapped_activity_host HostTest.cpp FailureValuesTest.cpp MixedValuesTest.cpp ../qt_mapped/OwnerFixture.cpp
   ../rigid_assembly_owner/Fixture.cpp "${tl_root}/lib_src/elements/qeph/mapped/Startup.cpp")
 target_link_libraries(qeph_mapped_activity_host PRIVATE tl_shell_mapped_startup
   tl_tied_cin_attachment GTest::gtest_main CUDA::toolkit)

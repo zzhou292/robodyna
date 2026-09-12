@@ -2,7 +2,7 @@ enable_language(CUDA)
 set(PHYSICAL_PUBLICATION_CUDA ON CACHE BOOL "Owning mixed physical fixture" FORCE)
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../physical_publication" physical-owner)
 add_executable(qeph_mapped_activity_cuda OwnerTest.cu FailureTest.cu KernelTest.cu Transfers.cpp
-  FailureKernelTest.cu FailureReadbackTest.cu
+  FailureKernelTest.cu FailureReadbackTest.cu MixedKernelTest.cu MixedReadbackTest.cu
   ../physical_publication/OwnerStartup.cu ../physical_publication/OwnerAttempt.cu)
 target_link_libraries(qeph_mapped_activity_cuda PRIVATE physical_publication_fixture
   tl_shell_batch_publication CUDA::cudart GTest::gtest_main)

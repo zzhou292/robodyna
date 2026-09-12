@@ -12,7 +12,7 @@ struct Transfers {
   const void* failure_source = nullptr;
   const void* plastic_source = nullptr;
   void* compact_destination = nullptr;
-  void* compact_destinations[2]{};
+  void* compact_destinations[3]{};
   std::size_t fail_copy = 0, corrupt_compact_call = 0;
   std::uint8_t corrupt_flag = 2;
   cudaStream_t stream = nullptr;

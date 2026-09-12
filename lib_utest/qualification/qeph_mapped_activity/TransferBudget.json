@@ -47,5 +47,17 @@
     "report": "crash-work/reports/qeph-activity-profile-analysis-1.json",
     "accepted_ms": 22.55,
     "prepared_ms": 22.295
+  },
+  "mixed_activity_proposal": {
+    "base": "223d813",
+    "qeph_bytes_per_query": 972294,
+    "complete_activity_bytes_per_query": 73601462,
+    "complete_queries_per_integration_step": 3,
+    "complete_activity_bytes_per_step": 220804386,
+    "saved_bytes_per_step_vs_failure_slice": 341270970,
+    "copies_per_query_all_families": 10,
+    "syncs_per_query_all_families": 9,
+    "new_timing_measured": false,
+    "actual_cuda_transfer_oracle_pending": true
   }
 }

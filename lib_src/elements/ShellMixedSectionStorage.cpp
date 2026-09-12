@@ -43,6 +43,16 @@ SetupReport HostStorage::ReadActivitySections(unsigned slab,std::size_t count,cu
   if(!failure_)return {SetupStatus::InvalidInput,"Invalid failure readback shape"};
   return failure_->CheckReadSources(slab,count,mixed_->staging());
 }
+SetupReport HostStorage::CheckActivitySectionSources(unsigned slab,std::size_t count) const noexcept {
+  const auto* catalog=Collection();
+  if(!mixed_||!catalog)return {SetupStatus::InvalidInput,"No explicit mixed section history"};
+  if(one_point_)return {SetupStatus::InvalidInput,"One-point history is unavailable"};
+  return mixed_->CheckActivitySources(slab,count,*catalog);
+}
+SetupReport HostStorage::CheckActivityFailureSources(unsigned slab,std::size_t count) const noexcept {
+  if(!failure_)return {SetupStatus::InvalidInput,"Invalid failure readback shape"};
+  return failure_->CheckActivitySources(slab,count);
+}
 SetupReport HostStorage::ReadSectionsBeforeFailure(unsigned slab,std::size_t count,cudaStream_t stream,double time) noexcept {
   const auto* catalog=Collection();
   if(!mixed_||!catalog)return {SetupStatus::InvalidInput,"No explicit mixed section history"};

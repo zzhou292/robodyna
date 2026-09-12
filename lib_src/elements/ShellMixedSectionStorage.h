@@ -17,6 +17,9 @@ class MixedHostStorage {
       const MixedLayout&,bool execution=false);
   SetupReport Read(unsigned slab,std::size_t count,cudaStream_t,const ShellBatchPlasticityBinding&,
       const ShellBatchOnePointSectionState* one_point=nullptr) noexcept;
+  // Shape/source preflight only; the caller must validate the fresh selected slab.
+  SetupReport CheckActivitySources(unsigned slab,std::size_t count,
+      const ShellBatchPlasticityBinding&) const noexcept;
   MixedDeviceStorage* device() const noexcept { return device_; }
   std::size_t device_bytes() const noexcept { return device_?layout_.bytes:0; }
   const ShellBatchLayeredSection* staging() const noexcept { return output_.data(); }

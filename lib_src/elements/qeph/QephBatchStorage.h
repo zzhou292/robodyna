@@ -67,6 +67,8 @@ void LaunchMappedAssembly(Storage*,const Slab*,NodalAssemblyView,NodalCinAssembl
     const shell_batch_plasticity_detail::MixedDeviceStorage*,bool initial);
 void LaunchMappedActivity(Storage*,std::size_t parents,unsigned slab,double time,std::uint64_t epoch,
     const shell_batch_plasticity_detail::MixedDeviceStorage*,cudaStream_t);
+void LaunchMappedMixedActivity(Storage*,std::size_t parents,unsigned slab,
+    const shell_batch_plasticity_detail::MixedDeviceStorage*,cudaStream_t);
 void LaunchMappedFailureActivity(Storage*,std::size_t parents,unsigned slab,double time,
     const shell_batch_plasticity_detail::MixedDeviceStorage*,
     const shell_batch_plasticity_detail::FailureDeviceStorage*,cudaStream_t);
@@ -104,6 +106,7 @@ struct QephBatch::Impl {
   util::BoundedStartupArray<ForceTrial,0> staging;
   util::BoundedStartupArray<std::uint8_t,0> activity_staging;
   util::BoundedStartupArray<std::uint8_t,0> failure_activity_staging;
+  util::BoundedStartupArray<std::uint8_t,0> mixed_activity_staging;
   BatchDiagnostics accepted_diagnostics,candidate_diagnostics;
   NodalPreparedView candidate_view;
   // Saved only on first numerical rest/mass binding. Pointer identity is
@@ -126,6 +129,10 @@ struct QephBatch::Impl {
   BatchReport ValidateMappedActivity(unsigned slab);
   BatchReport ReadParentActivity(unsigned slab,double time);
   BatchReport ReadMappedFailureActivity(unsigned slab,double time);
+  BatchReport ReadMappedMixedActivity(unsigned slab);
+  const std::uint8_t* MixedActivityRoles() const noexcept {
+    return mixed_activity_staging.data()+sizeof(std::uint32_t);
+  }
   const std::uint8_t* FailureActivity() const noexcept {
     return failure_activity_staging.data()+sizeof(std::uint32_t);
   }

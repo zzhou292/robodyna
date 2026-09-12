@@ -54,6 +54,9 @@ class HostStorage {
   // Fresh material staging and failure-source preflight only. The mapped
   // activity caller must validate the actual device failure slab before use.
   SetupReport ReadActivitySections(unsigned slab,std::size_t count,cudaStream_t,double time) noexcept;
+  // Mapped QEPH compact query: no typed union staging and no one-point role.
+  SetupReport CheckActivitySectionSources(unsigned slab,std::size_t count) const noexcept;
+  SetupReport CheckActivityFailureSources(unsigned slab,std::size_t count) const noexcept;
   FailureDeviceStorage* failure_device() const noexcept;
   const ShellBatchFailureState* failure_staging() const noexcept;
   std::size_t failure_device_bytes() const noexcept;

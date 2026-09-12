@@ -96,9 +96,8 @@ SetupReport FailureHostStorage::Initialize(const ShellBatchFailureBinding& bindi
   return {SetupStatus::Success, "OK"};
 }
 
-SetupReport FailureHostStorage::CheckReadSources(unsigned slab, std::size_t count,
-    const ShellBatchLayeredSection* sections) const noexcept {
-  if (!device_ || slab > 1 || count != count_ || !sections) {
+SetupReport FailureHostStorage::CheckActivitySources(unsigned slab,std::size_t count) const noexcept {
+  if (!device_ || slab > 1 || count != count_) {
     return {SetupStatus::InvalidInput, "Invalid failure readback shape"};
   }
   for (std::size_t e = 0; e < count; ++e) {
@@ -107,6 +106,12 @@ SetupReport FailureHostStorage::CheckReadSources(unsigned slab, std::size_t coun
     }
   }
   return {SetupStatus::Success, "OK"};
+}
+
+SetupReport FailureHostStorage::CheckReadSources(unsigned slab, std::size_t count,
+    const ShellBatchLayeredSection* sections) const noexcept {
+  if (!sections) return {SetupStatus::InvalidInput,"Invalid failure readback shape"};
+  return CheckActivitySources(slab,count);
 }
 
 SetupReport FailureHostStorage::Read(unsigned slab, std::size_t count,

@@ -41,24 +41,3 @@ SetupReport MixedHostStorage::Read(unsigned slab,std::size_t count,cudaStream_t 
   return {SetupStatus::Success,"OK"};
 }
 } // namespace tl::fea::shell_batch_plasticity_detail
-
-namespace tl::fea::shell_batch_plasticity_detail {
-SetupReport MixedHostStorage::CheckActivitySources(unsigned slab,std::size_t count,
-    const ShellBatchPlasticityBinding& catalog) const noexcept {
-  if(!device_||slab>1||count!=count_||!catalog.heterogeneous_sections())
-    return {SetupStatus::InvalidInput,"Mixed section readback shape is invalid"};
-  // Law/source storage is immutable after initialization. Keep actual source
-  // availability checks; numerical section validation is a separate GPU phase.
-  for(std::size_t parent=0;parent<count;++parent) {
-    ShellSectionLaw law=ShellSectionLaw::Unspecified;
-    if(!catalog.Law(family_,parent,&law))
-      return {SetupStatus::InvalidInput,"Mixed section source identity is unavailable"};
-    if(law==ShellSectionLaw::Law44Nip1)
-      return {SetupStatus::InvalidInput,"One-point history is unavailable"};
-    if(law!=ShellSectionLaw::LayeredLaw1Nip3 && law!=ShellSectionLaw::LayeredLaw44Nip3 &&
-        (law!=ShellSectionLaw::RigidSkin||!catalog.execution_sections()))
-      return {SetupStatus::InvalidInput,"Unsupported section readback law"};
-  }
-  return {SetupStatus::Success,"OK"};
-}
-} // namespace tl::fea::shell_batch_plasticity_detail

@@ -12,7 +12,9 @@ BatchReport QephBatch::Impl::ReadParentActivity(unsigned slab, double time) {
   }
   auto report = PendingError();
   if (report.status != BatchStatus::Success) return report;
-  const auto sections = plasticity->ReadActivitySections(slab,config.element_count,stream,time);
+  report = ReadMappedMixedActivity(slab);
+  if (report.status != BatchStatus::Success) return report;
+  const auto sections = plasticity->CheckActivityFailureSources(slab,config.element_count);
   using Setup = shell_batch_plasticity_detail::SetupStatus;
   if (sections.status == Setup::DeviceFailure) return Runtime(sections.cuda_status,sections.message);
   if (sections.status != Setup::Success) {
