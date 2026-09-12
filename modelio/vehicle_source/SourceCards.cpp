@@ -1,3 +1,4 @@
+#include "modelio/source_assembly/SourceFields.h"
 #include "Internal.h"
 #include <charconv>
 #include <algorithm>
@@ -24,21 +25,10 @@ void CheckSource(const assembly::SourceBlock& source,const Value& expected,const
     Require(keyword==source.keyword&&lines&&source.first_line+lines-1==source.last_line,
             "Vehicle source raw block extent/keyword changed");
 }
-std::optional<double> SourceScalar(const std::string& line, unsigned field, unsigned width) {
-    Require(width > 0 && field <= SIZE_MAX / width, "Invalid fixed-column field index");
-    const auto offset = std::size_t(field) * width;
-    const auto text = offset < line.size() ? line.substr(offset, width) : std::string{};
-    const auto begin = text.find_first_not_of(" \t"), end = text.find_last_not_of(" \t");
-    if (begin == std::string::npos) return {};
-    auto first = text.data() + begin;
-    const auto last = text.data() + end + 1;
-    if (first != last && *first == '+') ++first;
-    double value = 0;
-    const auto parsed = std::from_chars(first, last, value);
-    Require(parsed.ec == std::errc{} && parsed.ptr == last && std::isfinite(value),
-            "Invalid original numerical card field");
-    return value;
+std::optional<double> SourceScalar(const std::string& line,unsigned field,unsigned width) {
+    return assembly::reader::SourceScalar(line,field,width);
 }
+
 void CheckTypedCards(const assembly::SourceBlock& block,const std::vector<assembly::DeclarationCard>& cards,unsigned width) {
     std::map<std::size_t,std::string> original;
     std::istringstream stream(block.raw_text);std::string line;std::size_t number=block.first_line;

@@ -1,16 +1,13 @@
+#include "modelio/source_assembly/SourceFields.h"
 #include "Internal.h"
 #include "modelio/source_assembly/AuxiliarySourceCards.h"
 
 namespace crash::modelio::solid_source::detail {
-double Required(const std::string& row, unsigned column, unsigned width) {
-    const auto value = vehicle::detail::SourceScalar(row, column, width);
-    Require(value.has_value(), "Missing selected solid numerical source field");
-    return *value;
+double Required(const std::string& row,unsigned column,unsigned width) {
+    return assembly::reader::RequiredScalar(row,column,width);
 }
-void Blank(const std::string& row, unsigned first, unsigned last) {
-    Require(assembly::reader::auxiliary::BlankTail(row, 10 * last), "Extra selected solid source fields");
-    for (unsigned field = first; field < last; ++field)
-        Require(!vehicle::detail::SourceScalar(row, field), "Unsupported selected solid source option");
+void Blank(const std::string& row,unsigned first,unsigned last) {
+    assembly::reader::RequireBlankFields(row,first,last);
 }
 void ReadCurve(const tied_shell::SourceEvidence& source, Data& data) {
     Require(data.plastic_strain.empty() && data.yield_stress_pa.empty(), "Repeated adhesive curve");

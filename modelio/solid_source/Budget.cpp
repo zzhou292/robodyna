@@ -1,3 +1,4 @@
+#include "modelio/vehicle_source/OriginalAuthority.h"
 #include "Internal.h"
 #include <iterator>
 #include <type_traits>
@@ -10,17 +11,7 @@ void Add(std::size_t& bytes, std::size_t count, std::size_t width, std::size_t c
     bytes += count * width;
 }
 }
-void CheckOriginal(const source::CanonicalData& source) {
-    Require(source.archive_sha256 == "aff8194c456726a678d6cc11f644316ca70f3d9b37c4db622726b7b2985b0451" &&
-        source.inputs.canonical_manifest.sha256 == "c82f1886b8935d69ff7db4c29c700370e3a057579fab80d02664a253bc7af1c8" &&
-        source.inputs.source_member.sha256 == "67208317e6c8eb1dd43b80001508915ccaace7bc0a745e1aa5a3b33f394df301" &&
-        source.inputs.source_member.bytes == 42846753 && source.canonical_nodes == 393165,
-        "Original solid source authority changed");
-    const auto& units = source.inputs.units;
-    Require(units.mass == "t" && units.length == "mm" && units.time == "s" &&
-        units.mass_to_kg == 1000 && units.length_to_m == .001 && units.time_to_s == 1,
-        "Original solid source units changed");
-}
+void CheckOriginal(const source::CanonicalData& source) { vehicle::CheckOriginalYarisAuthority(source); }
 Forecast Budget(const source::CanonicalData& source, Policy policy, Limits limits) {
     const Limits hard = policy == Policy::OriginalExtendedSolidsV4 ? Limits::ExtendedSolids() : Limits{};
     const std::size_t value[]{limits.host_bytes, limits.member_bytes, limits.metadata_bytes,

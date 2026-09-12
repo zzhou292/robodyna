@@ -4,7 +4,7 @@ if(NOT TARGET robo_dyna_full_shell_source_mapping)
   add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../../output/full_shell" "${CMAKE_CURRENT_BINARY_DIR}/vehicle_source_io")
 endif()
 add_library(robo_dyna_vehicle_source STATIC "${CMAKE_CURRENT_LIST_DIR}/VehicleSourcePlan.cpp"
-  "${CMAKE_CURRENT_LIST_DIR}/PlanLimits.cpp" "${CMAKE_CURRENT_LIST_DIR}/PlanDeclarations.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/OriginalAuthority.cpp" "${CMAKE_CURRENT_LIST_DIR}/PlanLimits.cpp" "${CMAKE_CURRENT_LIST_DIR}/PlanDeclarations.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/PlanGeometry.cpp" "${CMAKE_CURRENT_LIST_DIR}/SourceCards.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/NumericalSourceCards.cpp")
 target_link_libraries(robo_dyna_vehicle_source PUBLIC robo_dyna_source_assembly robo_dyna_full_shell_source_mapping)
