@@ -11,7 +11,7 @@ cuda_test(
     name = "cuda",
     size = "small",
     srcs = ["CudaTest.cu", "Fixture.h", "FrozenResponse.h"],
-    deps = ["//lib_src/collision:nodal_wall_mapped", "@googletest//:gtest_main"],
+    deps = ["//lib_src/collision:nodal_wall_mapped", "@googletest//:gtest_main", "@eigen//:eigen"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true",
              "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
     tags = ["exclusive", "gpu"],
