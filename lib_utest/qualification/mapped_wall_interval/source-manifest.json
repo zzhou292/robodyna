@@ -74,8 +74,8 @@
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Layout.h",
-      "bytes": 1585,
-      "sha256": "06ed3a0cfe8800523c35ce8768036427bf0cdfb6eb91652cea51f674a4698152"
+      "bytes": 1593,
+      "sha256": "f06cb7ab668baf1d25a35e1f2cb92359e393a58704c83e1b20d2512f40f46d35"
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Layout.cpp",
@@ -170,6 +170,20 @@
           "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
           "bytes": 10235,
           "sha256": "5c238d2181ab18c65deabe38b175db91472d6a2170343901db8a6d41f0307705"
+        }
+      ]
+    }
+  ],
+  "node_status_previous_receipts": [
+    {
+      "base": "92e8cc47ef834daae4e73cfba577c575db0fc740",
+      "manifest_sha256": "3bef13c44efc2b99817ba47539bfc2954559749e6650217757f7e5f7323e9b87",
+      "reason": "Mapped node-status scheduling only: integer first-compact-index arbitration inside unchanged point/STI/force producers, ordered resets reuse Summary, exact old Control payload and null-summary serial scatter preserved. Complete old Evaluate/Scatter copied in mapped_wall_node_status; no floating math, allocation, observer, response, timestep, host caller or ownership changes. Layout change is a comment only; BUILD adds two headers.",
+      "files": [
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Layout.h",
+          "bytes": 1585,
+          "sha256": "06ed3a0cfe8800523c35ce8768036427bf0cdfb6eb91652cea51f674a4698152"
         }
       ]
     }

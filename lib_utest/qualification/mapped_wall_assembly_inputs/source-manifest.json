@@ -4,8 +4,8 @@
   "files": [
     {
       "path": "lib_src/collision/BUILD.bazel",
-      "bytes": 11452,
-      "sha256": "3f08499bf0e679e92663eefefa5a7254f06716bc9314afdfd8654f37ca83a1b2"
+      "bytes": 12597,
+      "sha256": "0e5a3426b1cdfb99f6475b31ba19fd4b0449415862bb92ea030bed17cab68e2f"
     },
     {
       "path": "lib_src/collision/NodalWallContactDiagnostics.h",
@@ -49,8 +49,8 @@
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Evaluation.cuh",
-      "bytes": 3561,
-      "sha256": "dbe4ebfe95ac764aa7b7551c9970f580a23665beb5174c6cb47d6021e3acc56c"
+      "bytes": 3847,
+      "sha256": "ee4cf936e7a462b4263905e31220c53af9403a03881de14f77e7308bedbe8882"
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Forecast.cpp",
@@ -79,8 +79,8 @@
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Layout.h",
-      "bytes": 1585,
-      "sha256": "06ed3a0cfe8800523c35ce8768036427bf0cdfb6eb91652cea51f674a4698152"
+      "bytes": 1593,
+      "sha256": "f06cb7ab668baf1d25a35e1f2cb92359e393a58704c83e1b20d2512f40f46d35"
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/ObserverReduction.cuh",
@@ -99,8 +99,8 @@
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Scatter.cuh",
-      "bytes": 2720,
-      "sha256": "69076cc6648d56d8ff7dca48993fb777fdfd7e05c2c2453f71740207e742514b"
+      "bytes": 3458,
+      "sha256": "ec57fbb07d2af65bab30f260163f74cc4b87a8a8d2abe36745a2dd4de935cc42"
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/ScatterNode.h",
@@ -169,23 +169,23 @@
     },
     {
       "path": "lib_utest/qualification/mapped_wall_interval/source-manifest.json",
-      "bytes": 7107,
-      "sha256": "3bef13c44efc2b99817ba47539bfc2954559749e6650217757f7e5f7323e9b87"
+      "bytes": 7989,
+      "sha256": "dedba994ded8e6e9e387c61f128f5bbf28261d7db72d6af008bebe1c22c5661d"
     },
     {
       "path": "lib_utest/qualification/mapped_wall_interval/verify_sources.py",
       "bytes": 2493,
-      "sha256": "7b9b901c5d8c2c78fba4a8d78390fef531ee879dacc01657dda09c2084822d18"
+      "sha256": "6a93786d078830f70b9db7bd5948430b82dbd61972baa756dea5c52faffd3487"
     },
     {
       "path": "lib_utest/qualification/mapped_wall_observers/source-manifest.json",
-      "bytes": 7420,
-      "sha256": "c0b794d46faca1a45d9f0ff59b0ce473c27170714db1e8995f84a4cf5c08ab5a"
+      "bytes": 8709,
+      "sha256": "56c4c9b683205f3478c9c95d82bdacd65392b5bb9be6b8f0332ad8ecb72c20db"
     },
     {
       "path": "lib_utest/qualification/mapped_wall_observers/verify_sources.py",
       "bytes": 2076,
-      "sha256": "3ecfad73519d1462b99e523021a592d7a14df81206197a43a778266122d88dae"
+      "sha256": "d13b142c6a7f540771aa495a0d1b68b18b7d934914bd592c1554ce1fb8dca814"
     },
     {
       "path": "lib_utest/qualification/mapped_wall_scatter/Verify.cmake",
@@ -258,6 +258,55 @@
           "path": "lib_utest/qualification/mapped_wall_observers/verify_sources.py",
           "bytes": 2076,
           "sha256": "54b186c68d44f2cafd80df7ce570e0589edc6c37608ffa4b69cfaacc538891df"
+        }
+      ]
+    }
+  ],
+  "node_status_previous_receipts": [
+    {
+      "base": "92e8cc47ef834daae4e73cfba577c575db0fc740",
+      "manifest_sha256": "fd39aac4b7275d15e047bf7a36d7ea856e118c7780139a396316d3f708c437e8",
+      "reason": "Mapped node-status scheduling only: integer first-compact-index arbitration inside unchanged point/STI/force producers, ordered resets reuse Summary, exact old Control payload and null-summary serial scatter preserved. Complete old Evaluate/Scatter copied in mapped_wall_node_status; no floating math, allocation, observer, response, timestep, host caller or ownership changes. Layout change is a comment only; BUILD adds two headers.",
+      "files": [
+        {
+          "path": "lib_src/collision/BUILD.bazel",
+          "bytes": 11452,
+          "sha256": "3f08499bf0e679e92663eefefa5a7254f06716bc9314afdfd8654f37ca83a1b2"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Evaluation.cuh",
+          "bytes": 3561,
+          "sha256": "dbe4ebfe95ac764aa7b7551c9970f580a23665beb5174c6cb47d6021e3acc56c"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Layout.h",
+          "bytes": 1585,
+          "sha256": "06ed3a0cfe8800523c35ce8768036427bf0cdfb6eb91652cea51f674a4698152"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Scatter.cuh",
+          "bytes": 2720,
+          "sha256": "69076cc6648d56d8ff7dca48993fb777fdfd7e05c2c2453f71740207e742514b"
+        },
+        {
+          "path": "lib_utest/qualification/mapped_wall_interval/source-manifest.json",
+          "bytes": 7107,
+          "sha256": "3bef13c44efc2b99817ba47539bfc2954559749e6650217757f7e5f7323e9b87"
+        },
+        {
+          "path": "lib_utest/qualification/mapped_wall_interval/verify_sources.py",
+          "bytes": 2493,
+          "sha256": "7b9b901c5d8c2c78fba4a8d78390fef531ee879dacc01657dda09c2084822d18"
+        },
+        {
+          "path": "lib_utest/qualification/mapped_wall_observers/source-manifest.json",
+          "bytes": 7420,
+          "sha256": "c0b794d46faca1a45d9f0ff59b0ce473c27170714db1e8995f84a4cf5c08ab5a"
+        },
+        {
+          "path": "lib_utest/qualification/mapped_wall_observers/verify_sources.py",
+          "bytes": 2076,
+          "sha256": "3ecfad73519d1462b99e523021a592d7a14df81206197a43a778266122d88dae"
         }
       ]
     }

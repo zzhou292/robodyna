@@ -9,7 +9,7 @@ namespace tlfea::contact::nodal_wall_mapped {
 struct Summary {
   Q4CertifiedIntegral removed_potential;
   double rate=0;
-  // Nonoverlapping assembly-input, parent and response integer arbitration.
+  // Nonoverlapping assembly-input, point, parent, response and scatter arbitration.
   // Reset between phases; each rigid trace retains its original row order.
   unsigned long long parent_failure=~0ull;
   bool points_admitted=false;

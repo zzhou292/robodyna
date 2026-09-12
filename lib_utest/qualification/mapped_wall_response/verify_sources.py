@@ -5,7 +5,7 @@ import hashlib, json, re, subprocess, sys
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 raw = (here/'source-manifest.json').read_bytes()
-assert hashlib.sha256(raw).hexdigest() == '37242d9c3e94eb6e7a5a339ba27ab9099e60d9fba2b92d87f4c7588689a43a6d'
+assert hashlib.sha256(raw).hexdigest() == 'f4bb6eb52342949a3055926852e7e153244a8c2e01d40d63152895262931fbdb'
 for row in json.loads(raw)['files']:
     path = Path(row['path'])
     assert not path.is_absolute() and '..' not in path.parts

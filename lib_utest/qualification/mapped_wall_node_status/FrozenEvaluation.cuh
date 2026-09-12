@@ -1,19 +1,15 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
-#include "Layout.h"
-#include "../NodalWallContactKernels.cuh"
-#include "ObserverReduction.cuh"
-#include "NodeStatus.cuh"
-namespace tlfea::contact::nodal_wall_mapped::parallel {
+#include "lib_src/collision/nodal_wall_mapped/Layout.h"
+#include "lib_src/collision/NodalWallContactKernels.cuh"
+#include "lib_src/collision/nodal_wall_mapped/ObserverReduction.cuh"
+namespace tlfea::contact::nodal_wall_mapped::status_frozen {
 namespace d=nodal_wall_device_detail;
 namespace fe=tl::fea;
 using Code=NodalWallDeviceStatus;
 // Stream boundaries separate writers of point shares, parent certificates and
 // global diagnostics. The optional tree changes only the global observer fold;
 // point/parent certificate arithmetic and source-order error priority stay fixed.
-static __global__ void BeginPoints(Sidecar side) {
-  if (side.summary->points_admitted) side.summary->parent_failure = ~0ull;
-}
 static __global__ void Points(d::Storage* pointer,Sidecar side,fe::DeviceNodalKinematicsView k,
     NodalWallDiagnostics identity,bool reset_base) {
   auto& storage=*pointer;
@@ -26,15 +22,17 @@ static __global__ void Points(d::Storage* pointer,Sidecar side,fe::DeviceNodalKi
     storage.node_status[i]={};
     if(side.summary->points_admitted)
       d::EvaluatePoint<true>(storage,k,identity,i,side.accepted);
-    SelectNodeFailure(storage, side, i);
   }
 }
 static __global__ void CheckPoints(d::Storage* pointer,Sidecar side) {
   auto& storage=*pointer;
   if(!side.summary->points_admitted) return;
-  CopyNodeFailure(storage, side.summary->parent_failure);
-  // Parent arbitration reuses this word only after point status consumption.
-  side.summary->parent_failure = ~0ull;
+  for(unsigned i=0;i<storage.model.node_count;++i) {
+    if(storage.node_status[i].status!=Code::Ok) {
+      storage.control=storage.node_status[i];
+      return;
+    }
+  }
 }
 static __global__ void Parents(d::Storage* pointer,Sidecar side) {
   auto& storage=*pointer;
@@ -65,8 +63,6 @@ inline void Evaluate(d::Storage* storage,Sidecar side,fe::DeviceNodalKinematicsV
     NodalWallDiagnostics identity,std::size_t nodes,std::size_t parents,cudaStream_t stream,bool reset_base,
     ObserverScratch observers={}) {
   const auto largest=nodes>parents?nodes:parents;
-  BeginPoints<<<1,1,0,stream>>>(side);
-  if(cudaPeekAtLastError()!=cudaSuccess) return;
   Points<<<Blocks(largest),d::Workers,0,stream>>>(storage,side,k,identity,reset_base);
   if(cudaPeekAtLastError()!=cudaSuccess) return;
   CheckPoints<<<1,1,0,stream>>>(storage,side);
@@ -74,7 +70,7 @@ inline void Evaluate(d::Storage* storage,Sidecar side,fe::DeviceNodalKinematicsV
   Parents<<<Blocks(parents),d::Workers,0,stream>>>(storage,side);
   if(cudaPeekAtLastError()!=cudaSuccess) return;
   if(observers.data && ObserverBlocks(nodes) && observers.count>=ObserverBlocks(nodes))
-    ReduceGlobalObservers(storage,side,k,observers,stream);
+    parallel::ReduceGlobalObservers(storage,side,k,observers,stream);
   else Finish<<<1,1,0,stream>>>(storage,side,k);
 }
-} // namespace tlfea::contact::nodal_wall_mapped::parallel
+} // namespace tlfea::contact::nodal_wall_mapped::status_frozen

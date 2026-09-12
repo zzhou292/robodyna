@@ -49,8 +49,8 @@
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Layout.h",
-      "bytes": 1585,
-      "sha256": "06ed3a0cfe8800523c35ce8768036427bf0cdfb6eb91652cea51f674a4698152"
+      "bytes": 1593,
+      "sha256": "f06cb7ab668baf1d25a35e1f2cb92359e393a58704c83e1b20d2512f40f46d35"
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
@@ -84,8 +84,8 @@
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Scatter.cuh",
-      "bytes": 2720,
-      "sha256": "69076cc6648d56d8ff7dca48993fb777fdfd7e05c2c2453f71740207e742514b"
+      "bytes": 3458,
+      "sha256": "ec57fbb07d2af65bab30f260163f74cc4b87a8a8d2abe36745a2dd4de935cc42"
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/ScatterNode.h",
@@ -131,6 +131,25 @@
       "path": "lib_utest/qualification/mapped_wall_response/reference/Sources.cpp",
       "bytes": 5160,
       "sha256": "f55e547fd86f73f3558caf9fd4059fbacda71a828443ec79050ba2613c90c516"
+    }
+  ],
+  "node_status_previous_receipts": [
+    {
+      "base": "92e8cc47ef834daae4e73cfba577c575db0fc740",
+      "manifest_sha256": "37242d9c3e94eb6e7a5a339ba27ab9099e60d9fba2b92d87f4c7588689a43a6d",
+      "reason": "Mapped node-status scheduling only: integer first-compact-index arbitration inside unchanged point/STI/force producers, ordered resets reuse Summary, exact old Control payload and null-summary serial scatter preserved. Complete old Evaluate/Scatter copied in mapped_wall_node_status; no floating math, allocation, observer, response, timestep, host caller or ownership changes. Layout change is a comment only; BUILD adds two headers.",
+      "files": [
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Layout.h",
+          "bytes": 1585,
+          "sha256": "06ed3a0cfe8800523c35ce8768036427bf0cdfb6eb91652cea51f674a4698152"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Scatter.cuh",
+          "bytes": 2720,
+          "sha256": "69076cc6648d56d8ff7dca48993fb777fdfd7e05c2c2453f71740207e742514b"
+        }
+      ]
     }
   ]
 }

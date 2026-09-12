@@ -39,8 +39,8 @@
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Scatter.cuh",
-      "bytes": 2720,
-      "sha256": "69076cc6648d56d8ff7dca48993fb777fdfd7e05c2c2453f71740207e742514b"
+      "bytes": 3458,
+      "sha256": "ec57fbb07d2af65bab30f260163f74cc4b87a8a8d2abe36745a2dd4de935cc42"
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/ScatterNode.h",
@@ -64,13 +64,13 @@
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Evaluation.cuh",
-      "bytes": 3561,
-      "sha256": "dbe4ebfe95ac764aa7b7551c9970f580a23665beb5174c6cb47d6021e3acc56c"
+      "bytes": 3847,
+      "sha256": "ee4cf936e7a462b4263905e31220c53af9403a03881de14f77e7308bedbe8882"
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Layout.h",
-      "bytes": 1585,
-      "sha256": "06ed3a0cfe8800523c35ce8768036427bf0cdfb6eb91652cea51f674a4698152"
+      "bytes": 1593,
+      "sha256": "f06cb7ab668baf1d25a35e1f2cb92359e393a58704c83e1b20d2512f40f46d35"
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Layout.cpp",
@@ -180,6 +180,30 @@
           "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
           "bytes": 10235,
           "sha256": "5c238d2181ab18c65deabe38b175db91472d6a2170343901db8a6d41f0307705"
+        }
+      ]
+    }
+  ],
+  "node_status_previous_receipts": [
+    {
+      "base": "92e8cc47ef834daae4e73cfba577c575db0fc740",
+      "manifest_sha256": "c0b794d46faca1a45d9f0ff59b0ce473c27170714db1e8995f84a4cf5c08ab5a",
+      "reason": "Mapped node-status scheduling only: integer first-compact-index arbitration inside unchanged point/STI/force producers, ordered resets reuse Summary, exact old Control payload and null-summary serial scatter preserved. Complete old Evaluate/Scatter copied in mapped_wall_node_status; no floating math, allocation, observer, response, timestep, host caller or ownership changes. Layout change is a comment only; BUILD adds two headers.",
+      "files": [
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Scatter.cuh",
+          "bytes": 2720,
+          "sha256": "69076cc6648d56d8ff7dca48993fb777fdfd7e05c2c2453f71740207e742514b"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Evaluation.cuh",
+          "bytes": 3561,
+          "sha256": "dbe4ebfe95ac764aa7b7551c9970f580a23665beb5174c6cb47d6021e3acc56c"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Layout.h",
+          "bytes": 1585,
+          "sha256": "06ed3a0cfe8800523c35ce8768036427bf0cdfb6eb91652cea51f674a4698152"
         }
       ]
     }
