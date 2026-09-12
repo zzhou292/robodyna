@@ -84,5 +84,7 @@ def legacy_owner(current):
 
 
 if __name__ == '__main__':
+    import runpy
+    witness = runpy.run_path(str(HERE.parent/'cin_limiter/witness_proof.py'))
     legacy_force_stage((ROOT/'lib_src/constraints/tied_shell/runtime/CinForceStage.h').read_text())
-    legacy_owner((ROOT/'lib_src/solvers/ExplicitNodalCinStep.cu').read_text())
+    legacy_owner(witness['legacy_owner']((ROOT/'lib_src/solvers/ExplicitNodalCinStep.cu').read_text()))

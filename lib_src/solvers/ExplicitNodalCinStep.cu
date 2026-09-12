@@ -7,6 +7,7 @@
 #include "cin_advance/Capture.h"
 #include "cin_advance/Groups.h"
 #include "cin_timestep/Screen.h"
+#include "cin_limiter/Capture.h"
 #include "NodalCinStorage.h"
 #include "NodalRigidGroupStorage.h"
 #include "NodalNodeStep.h"
@@ -70,6 +71,9 @@ __global__ void PrepareCin(const cin_advance::Input input, bool inputs_prepared,
     // Preserve the complete native/analytical bound for both success and a
     // rejected step. This existing owner control is not a second row proof.
     control->limit.dt = result.minimum_dt;
+    if (structural.capture_limiter)
+      control->structural_limiter = cin_limiter::Capture(sources, structural.factor,
+          result, epoch, attempt);
     if (durations.drift_dt > result.minimum_dt) {
       control->status = NodalStatus::StepTooLarge;
       control->node = result.limiting_node;

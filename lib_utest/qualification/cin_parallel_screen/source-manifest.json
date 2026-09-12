@@ -14,8 +14,8 @@
     },
     {
       "path": "lib_src/solvers/BUILD.bazel",
-      "bytes": 8134,
-      "sha256": "3f212ec1bf1ebeddceeaebcf27c91036e6f1262b604ce2cf0d39116a1789bd91",
+      "bytes": 8244,
+      "sha256": "5a0a3af4822ba53f21dd4af9e960eb01867ec5540ad7d453a21179e6114e19dd",
       "prior_receipts": [
         {
           "bytes": 7702,
@@ -32,12 +32,46 @@
           "sha256": "89693f691daf69947e61ff127957bfb9bfad964a34bab4468c341e1d028c6a82",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
         }
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_src/solvers/BUILD.bazel",
+          "bytes": 8167,
+          "sha256": "3cde395775be0880252bfebbdd104aeb3cc3bea0355fcfd3b113655c59ad21cd",
+          "prior_receipts": [
+            {
+              "bytes": 7702,
+              "sha256": "bc66b4930b235be274f3ee907fbfc0cf5f672842b78acd0d24afe9106a7879dd",
+              "reason": "Independent CIN group scheduling or additive qualification ownership"
+            },
+            {
+              "bytes": 7780,
+              "sha256": "e995ecffbc42c37dac61f105ee3c2e204d3b9925b88e663faf2b3ad486282e42",
+              "reason": "Integrate the qualified Seal validation header with CIN Groups.cu in the shared solver BUILD; no equation or frozen-baseline changes."
+            }
+          ],
+          "reviewed_updates": [
+            {
+              "prior_bytes": 8057,
+              "prior_sha256": "89693f691daf69947e61ff127957bfb9bfad964a34bab4468c341e1d028c6a82",
+              "reason": "Reviewed opt-in CIN limiter witness: unchanged screen arithmetic, exact checked reverse delta before prior scheduling proofs, fixed sizeof(Control) growth and additive test packaging."
+            }
+          ]
+        }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 8134,
+          "prior_sha256": "3f212ec1bf1ebeddceeaebcf27c91036e6f1262b604ce2cf0d39116a1789bd91",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        }
       ]
     },
     {
       "path": "lib_src/solvers/CMakeLists.txt",
-      "bytes": 1766,
-      "sha256": "07470169782f895fd3ec201d39a5a6b018d2af5eee6975d2a7dafe876ee354a7",
+      "bytes": 1794,
+      "sha256": "db297f7e3125b378950db1f55334020258777fc9da2a0d9e5cc5a6f8a1e3b6e6",
       "prior_receipts": [
         {
           "bytes": 1712,
@@ -49,12 +83,41 @@
           "sha256": "2f116b66ddf1153954a91cdf242182f7e4df459078323c2a8aefedf6421a3f6a",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
         }
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_src/solvers/CMakeLists.txt",
+          "bytes": 1762,
+          "sha256": "ef35bd575b2c0d06f9d0ff176c4861b7fc14e4f12614f4637c4732448ae9f25d",
+          "prior_receipts": [
+            {
+              "bytes": 1712,
+              "sha256": "635dbbf8ba32ef404a47691d59ba9ca7ca75340a34a2251b800900551458c3d6",
+              "reason": "Independent CIN group scheduling or additive qualification ownership"
+            }
+          ],
+          "reviewed_updates": [
+            {
+              "prior_bytes": 1734,
+              "prior_sha256": "2f116b66ddf1153954a91cdf242182f7e4df459078323c2a8aefedf6421a3f6a",
+              "reason": "Reviewed opt-in CIN limiter witness: unchanged screen arithmetic, exact checked reverse delta before prior scheduling proofs, fixed sizeof(Control) growth and additive test packaging."
+            }
+          ]
+        }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 1766,
+          "prior_sha256": "07470169782f895fd3ec201d39a5a6b018d2af5eee6975d2a7dafe876ee354a7",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        }
       ]
     },
     {
       "path": "lib_src/solvers/ExplicitNodalCinStep.cu",
-      "bytes": 10678,
-      "sha256": "4fb1ea8c19c91f7629d50719d1be05918263df38ccd1161ad0f4e90befe46831",
+      "bytes": 10867,
+      "sha256": "0051dd23cb0d35b9386531877e4ca07ae4d7b661131cc37716f987a6062df967",
       "prior_receipts": [
         {
           "bytes": 9950,
@@ -65,6 +128,35 @@
           "bytes": 10271,
           "sha256": "46c3f5faeba3d9d1d004b6833ecf4cb24041e5e732f93d610d56b2b21c90fc92",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        }
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_src/solvers/ExplicitNodalCinStep.cu",
+          "bytes": 10460,
+          "sha256": "abef80af50d0dd79d7f59a02a4d03518691fa037944d65067300102db17abf26",
+          "prior_receipts": [
+            {
+              "bytes": 9950,
+              "sha256": "bfa6cf08c9c6d0c3bdd58deaf69cc15348631eef37c19a40e305d187a33a91ed",
+              "reason": "Independent CIN group scheduling or additive qualification ownership"
+            }
+          ],
+          "reviewed_updates": [
+            {
+              "prior_bytes": 10271,
+              "prior_sha256": "46c3f5faeba3d9d1d004b6833ecf4cb24041e5e732f93d610d56b2b21c90fc92",
+              "reason": "Reviewed opt-in CIN limiter witness: unchanged screen arithmetic, exact checked reverse delta before prior scheduling proofs, fixed sizeof(Control) growth and additive test packaging."
+            }
+          ]
+        }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 10678,
+          "prior_sha256": "4fb1ea8c19c91f7629d50719d1be05918263df38ccd1161ad0f4e90befe46831",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
         }
       ]
     },
@@ -95,7 +187,22 @@
           "sha256": "900cb7b2c3ed5f51b5b565ed1d007c7ee01c59612774878f640b0f5c9f2d4d95",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
         }
-      ]
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_src/solvers/NodalCinLayout.h",
+          "bytes": 4178,
+          "sha256": "900cb7b2c3ed5f51b5b565ed1d007c7ee01c59612774878f640b0f5c9f2d4d95",
+          "prior_receipts": [
+            {
+              "bytes": 3988,
+              "sha256": "f8297c4f2dd66eba19e044bb0af179a25e6d526852d255cfaf820e66d776b280",
+              "reason": "Independent CIN group scheduling or additive qualification ownership"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "lib_src/solvers/NodalCinStartup.cpp",
@@ -124,7 +231,22 @@
           "sha256": "102a653cdac0f6a889f74307559d7a0912840da2207f4207285fffeb02cae323",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
         }
-      ]
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_src/solvers/NodalCinStorage.cu",
+          "bytes": 2423,
+          "sha256": "102a653cdac0f6a889f74307559d7a0912840da2207f4207285fffeb02cae323",
+          "prior_receipts": [
+            {
+              "bytes": 2282,
+              "sha256": "3ed2a87200e7efa5455a859bb2fe2aa049b483fefe5d398eeedca2a6a2cad765",
+              "reason": "Independent CIN group scheduling or additive qualification ownership"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "lib_src/solvers/NodalCinStorage.h",
@@ -141,7 +263,22 @@
           "sha256": "3b9018b15d9618998f84a3e4de0efb54c43d171074522911a6e3a652ddb920de",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
         }
-      ]
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_src/solvers/NodalCinStorage.h",
+          "bytes": 1705,
+          "sha256": "3b9018b15d9618998f84a3e4de0efb54c43d171074522911a6e3a652ddb920de",
+          "prior_receipts": [
+            {
+              "bytes": 1620,
+              "sha256": "f45647dca38c81856d15492be3637d23f5236d22d83050b97bdc442262871032",
+              "reason": "Independent CIN group scheduling or additive qualification ownership"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "lib_src/solvers/cin_advance/ForceInputs.cu",
@@ -168,7 +305,22 @@
           "sha256": "7ba5679d1ac281057b7e185d1fb19526fb0a824f90aa5fe615fb14e41b046ed6",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
         }
-      ]
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_src/solvers/cin_advance/Input.h",
+          "bytes": 1689,
+          "sha256": "7ba5679d1ac281057b7e185d1fb19526fb0a824f90aa5fe615fb14e41b046ed6",
+          "prior_receipts": [
+            {
+              "bytes": 1541,
+              "sha256": "a228f1ec0cd8d7702ffe7b124e25b3c713ea76eb4b9c2136dcdc1bc91b4525e4",
+              "reason": "Independent CIN group scheduling or additive qualification ownership"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "lib_src/solvers/cin_advance/Node.h",
@@ -177,13 +329,42 @@
     },
     {
       "path": "lib_src/solvers/cin_advance/Screen.cu",
-      "bytes": 4046,
-      "sha256": "c605ca38609b6f225707230006000bf08ff74135d11836bd29f460e7c84253b8",
+      "bytes": 4261,
+      "sha256": "bc8c600d57326cef219b603a8f24c7a7e83a11243774e52827cafec8d8d1f063",
       "prior_receipts": [
         {
           "bytes": 2688,
           "sha256": "3bf24b3e3d5049a240af851e1e1f88b1999e7bb5377fbf4df6da2155b332eb43",
           "reason": "Independent CIN group scheduling or additive qualification ownership"
+        }
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_src/solvers/cin_advance/Screen.cu",
+          "bytes": 4261,
+          "sha256": "bc8c600d57326cef219b603a8f24c7a7e83a11243774e52827cafec8d8d1f063",
+          "prior_receipts": [
+            {
+              "bytes": 2688,
+              "sha256": "3bf24b3e3d5049a240af851e1e1f88b1999e7bb5377fbf4df6da2155b332eb43",
+              "reason": "Independent CIN group scheduling or additive qualification ownership"
+            }
+          ],
+          "reviewed_updates": [
+            {
+              "prior_bytes": 4046,
+              "prior_sha256": "c605ca38609b6f225707230006000bf08ff74135d11836bd29f460e7c84253b8",
+              "reason": "Reviewed opt-in CIN limiter witness: unchanged screen arithmetic, exact checked reverse delta before prior scheduling proofs, fixed sizeof(Control) growth and additive test packaging."
+            }
+          ]
+        }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 4046,
+          "prior_sha256": "c605ca38609b6f225707230006000bf08ff74135d11836bd29f460e7c84253b8",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
         }
       ]
     },
@@ -214,13 +395,42 @@
     },
     {
       "path": "lib_src/solvers/cin_timestep/ScreenValues.h",
-      "bytes": 3921,
-      "sha256": "e75345581d3808d60e57343cd711bb5c260e6f04f10d6b44a3f38f0db4c79644",
+      "bytes": 3993,
+      "sha256": "740228821e1b9fcf8b03bfba0f8e15bd34f85620eb4aeedd988a3cae397737bb",
       "prior_receipts": [
         {
           "bytes": 3322,
           "sha256": "0c71bfcf243f76662cfc961a676674239742228565b34f29297886550f54e823",
           "reason": "Independent CIN group scheduling or additive qualification ownership"
+        }
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_src/solvers/cin_timestep/ScreenValues.h",
+          "bytes": 3993,
+          "sha256": "740228821e1b9fcf8b03bfba0f8e15bd34f85620eb4aeedd988a3cae397737bb",
+          "prior_receipts": [
+            {
+              "bytes": 3322,
+              "sha256": "0c71bfcf243f76662cfc961a676674239742228565b34f29297886550f54e823",
+              "reason": "Independent CIN group scheduling or additive qualification ownership"
+            }
+          ],
+          "reviewed_updates": [
+            {
+              "prior_bytes": 3921,
+              "prior_sha256": "e75345581d3808d60e57343cd711bb5c260e6f04f10d6b44a3f38f0db4c79644",
+              "reason": "Reviewed opt-in CIN limiter witness: unchanged screen arithmetic, exact checked reverse delta before prior scheduling proofs, fixed sizeof(Control) growth and additive test packaging."
+            }
+          ]
+        }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 3921,
+          "prior_sha256": "e75345581d3808d60e57343cd711bb5c260e6f04f10d6b44a3f38f0db4c79644",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
         }
       ]
     },
@@ -244,7 +454,22 @@
           "sha256": "506163d64b89b869e41bd5bd8f73a60559012e65adff4aa95d694a6f820c155c",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
         }
-      ]
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_utest/qualification/cin_force_inputs/BUILD.bazel",
+          "bytes": 1147,
+          "sha256": "506163d64b89b869e41bd5bd8f73a60559012e65adff4aa95d694a6f820c155c",
+          "prior_receipts": [
+            {
+              "bytes": 1072,
+              "sha256": "95e9f68747946acd523549c963946c53745d37c168ff2a6592f5943d49bc3e52",
+              "reason": "Independent CIN group scheduling or additive qualification ownership"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/Fixture.h",
@@ -261,12 +486,20 @@
           "sha256": "c2801bcfec638edef426c0cfc0fc87bf87a6965ebc092ff765367391e1177498",
           "reason": "Update legacy zero-group arena-end controls for the qualified prepared-row tail; exact caps and production remain unchanged."
         }
-      ]
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_utest/qualification/cin_force_inputs/HostTest.cpp",
+          "bytes": 5108,
+          "sha256": "c2801bcfec638edef426c0cfc0fc87bf87a6965ebc092ff765367391e1177498"
+        }
+      }
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/source-manifest.json",
-      "bytes": 6920,
-      "sha256": "39524cdf0c7cdfdd425ed7e9a8ff16867270594f41aa4340fd15573819d2ee18",
+      "bytes": 10537,
+      "sha256": "c2cef632a3415169be284cc181f523aa2e8a22ade35f15f6f6bd2807bdcbcf47",
       "prior_receipts": [
         {
           "bytes": 4181,
@@ -278,12 +511,41 @@
           "sha256": "e22c6630385489822a01fd075ad71ddfb96f3fe4fb4791d6496b6882184fa3fd",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
         }
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_utest/qualification/cin_force_inputs/source-manifest.json",
+          "bytes": 6517,
+          "sha256": "1b1e80ed4172a20bca3519749812e4bd6beb1d542382e35fa66c5d49a53f04ee",
+          "prior_receipts": [
+            {
+              "bytes": 4181,
+              "sha256": "f8304fba734d84751ef161fcf5a389c850141cd3d70b43d23c29a52fb3888a82",
+              "reason": "Independent CIN group scheduling or additive qualification ownership"
+            }
+          ],
+          "reviewed_updates": [
+            {
+              "prior_bytes": 5471,
+              "prior_sha256": "e22c6630385489822a01fd075ad71ddfb96f3fe4fb4791d6496b6882184fa3fd",
+              "reason": "Reviewed opt-in CIN limiter witness: unchanged screen arithmetic, exact checked reverse delta before prior scheduling proofs, fixed sizeof(Control) growth and additive test packaging."
+            }
+          ]
+        }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 6920,
+          "prior_sha256": "39524cdf0c7cdfdd425ed7e9a8ff16867270594f41aa4340fd15573819d2ee18",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/verify_sources.py",
       "bytes": 6359,
-      "sha256": "ca8ad3edb2af8d19aa867fac9561839562a80a07d19a756855979a7a391d2b7b",
+      "sha256": "ccd25e97ecce76585abcaffc06fb7840554aee99e7db67f524ca0e4406a7d4f3",
       "prior_receipts": [
         {
           "bytes": 6073,
@@ -294,6 +556,35 @@
           "bytes": 6213,
           "sha256": "b5a35c37b176a26c0de19b06aa0afbf4d339fbb5f732e942a58457f9205f8dea",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        }
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_utest/qualification/cin_force_inputs/verify_sources.py",
+          "bytes": 6213,
+          "sha256": "a72c02dd462f535a5aedc45f6f148c98c2d3c6fc135aa19a6ded35f3fcd55ebb",
+          "prior_receipts": [
+            {
+              "bytes": 6073,
+              "sha256": "de2b0c5d282e0d45f6f952f56f35cbe2ac63a01d5a36ac6c0b066e152b60f7bf",
+              "reason": "Independent CIN group scheduling or additive qualification ownership"
+            }
+          ],
+          "reviewed_updates": [
+            {
+              "prior_bytes": 6213,
+              "prior_sha256": "b5a35c37b176a26c0de19b06aa0afbf4d339fbb5f732e942a58457f9205f8dea",
+              "reason": "Reviewed opt-in CIN limiter witness: unchanged screen arithmetic, exact checked reverse delta before prior scheduling proofs, fixed sizeof(Control) growth and additive test packaging."
+            }
+          ]
+        }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 6359,
+          "prior_sha256": "ca8ad3edb2af8d19aa867fac9561839562a80a07d19a756855979a7a391d2b7b",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
         }
       ]
     },
@@ -332,7 +623,32 @@
           "sha256": "fbe533c93c192d1d0b5870de84b9b85837489d70423340838b00c7f737c7f3bb",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
         }
-      ]
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_ordinary/BUILD.bazel",
+          "bytes": 2418,
+          "sha256": "fbe533c93c192d1d0b5870de84b9b85837489d70423340838b00c7f737c7f3bb",
+          "prior_receipts": [
+            {
+              "bytes": 2039,
+              "sha256": "e9b1c22db965622df4af77ec16be6c7bea3125d786288c7375bef665dcbdbe94",
+              "reason": "Independent CIN group scheduling or additive qualification ownership"
+            },
+            {
+              "bytes": 2264,
+              "sha256": "8e1c4b903f156eceb7bae1b6dd48a8adb8f7632bace841b39b48c7792ba56e62",
+              "reason": "Independent CIN group scheduling or additive qualification ownership"
+            },
+            {
+              "bytes": 2264,
+              "sha256": "8e1c4b903f156eceb7bae1b6dd48a8adb8f7632bace841b39b48c7792ba56e62",
+              "reason": "Integrate corrected zero-group qualification with the existing qualified Seal-combined receipts; production and frozen baselines unchanged."
+            }
+          ]
+        }
+      }
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/Compare.cpp",
@@ -359,7 +675,15 @@
           "sha256": "0a3bef3ba0f34bc52a415d6e40cfade68ac72d4c72471ebca0d8e132be4c66d4",
           "reason": "Update legacy zero-group arena-end controls for the qualified prepared-row tail; exact caps and production remain unchanged."
         }
-      ]
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_ordinary/HostTest.cpp",
+          "bytes": 5621,
+          "sha256": "0a3bef3ba0f34bc52a415d6e40cfade68ac72d4c72471ebca0d8e132be4c66d4"
+        }
+      }
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/Packet.cpp",
@@ -378,8 +702,8 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/source-manifest.json",
-      "bytes": 7527,
-      "sha256": "a398fd1cbe9683804047dfe6e83a15a9cc12497b9874d0b570f5e933d7e2de92",
+      "bytes": 12225,
+      "sha256": "a0a980d64630aec9ab7a0b8f53765700f17b71faaae036009295c728b8658cb9",
       "prior_receipts": [
         {
           "bytes": 4788,
@@ -391,12 +715,41 @@
           "sha256": "a6547d4048c2349cf999c513dbbd7be8a0821eb11be0d8db9f377b34434bc09d",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
         }
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_ordinary/source-manifest.json",
+          "bytes": 7512,
+          "sha256": "c40a3a7386d0782804fd1ab13a6e8abeb98833b5a0ed880b8c163c2431870d87",
+          "prior_receipts": [
+            {
+              "bytes": 4788,
+              "sha256": "ebd82719851c8ec51ca5b73bd7d068fa663b0aee0cee18d54f98eddb99761405",
+              "reason": "Independent CIN group scheduling or additive qualification ownership"
+            }
+          ],
+          "reviewed_updates": [
+            {
+              "prior_bytes": 6078,
+              "prior_sha256": "a6547d4048c2349cf999c513dbbd7be8a0821eb11be0d8db9f377b34434bc09d",
+              "reason": "Reviewed opt-in CIN limiter witness: unchanged screen arithmetic, exact checked reverse delta before prior scheduling proofs, fixed sizeof(Control) growth and additive test packaging."
+            }
+          ]
+        }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 7527,
+          "prior_sha256": "a398fd1cbe9683804047dfe6e83a15a9cc12497b9874d0b570f5e933d7e2de92",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/verify_sources.py",
       "bytes": 4833,
-      "sha256": "62fff503660e838a65bdd30396805fdf2fceb718bdf29a519d2ce473c6dc88da",
+      "sha256": "ba27fd74bfa2fae10bc118e2ed1a90e2402dcc17e8b1b71ea624eeb43e6317e1",
       "prior_receipts": [
         {
           "bytes": 4689,
@@ -407,6 +760,35 @@
           "bytes": 4833,
           "sha256": "70c2e53e20be3f7731bc22a12fc11e9e966b05caf065886183275d4bf80e0447",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        }
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_ordinary/verify_sources.py",
+          "bytes": 4833,
+          "sha256": "1c42ae60d236c18a51699ee09d9089aae5b6091f678d6884be384e9984922615",
+          "prior_receipts": [
+            {
+              "bytes": 4689,
+              "sha256": "f3b08513371aaae42eaee18c6d7ff050cec19925dc1003b618d4053f9a6c3f55",
+              "reason": "Independent CIN group scheduling or additive qualification ownership"
+            }
+          ],
+          "reviewed_updates": [
+            {
+              "prior_bytes": 4833,
+              "prior_sha256": "70c2e53e20be3f7731bc22a12fc11e9e966b05caf065886183275d4bf80e0447",
+              "reason": "Reviewed opt-in CIN limiter witness: unchanged screen arithmetic, exact checked reverse delta before prior scheduling proofs, fixed sizeof(Control) growth and additive test packaging."
+            }
+          ]
+        }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 4833,
+          "prior_sha256": "62fff503660e838a65bdd30396805fdf2fceb718bdf29a519d2ce473c6dc88da",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
         }
       ]
     },
@@ -455,7 +837,15 @@
           "sha256": "21b95449515a864ac78be8bb1f2629f756ba6f2dbf31a470bd3a9595e5c5d193",
           "reason": "Update legacy zero-group arena-end controls for the qualified prepared-row tail; exact caps and production remain unchanged."
         }
-      ]
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_screen/HostTest.cpp",
+          "bytes": 7469,
+          "sha256": "21b95449515a864ac78be8bb1f2629f756ba6f2dbf31a470bd3a9595e5c5d193"
+        }
+      }
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/ValuesTest.cu",
@@ -474,8 +864,30 @@
     },
     {
       "path": "lib_utest/qualification/cin_physical_timestep/BUILD.bazel",
-      "bytes": 1617,
-      "sha256": "2c510ef407d2f5fc6549a86c00145735e752b62e703ac91d2cfcc4c5f33f36f4"
+      "bytes": 1715,
+      "sha256": "0a8ec533d1a09e2387e236a62bbc6dbdd6a7583b0641e8ed87d7114358800114",
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_utest/qualification/cin_physical_timestep/BUILD.bazel",
+          "bytes": 1715,
+          "sha256": "0a8ec533d1a09e2387e236a62bbc6dbdd6a7583b0641e8ed87d7114358800114",
+          "reviewed_updates": [
+            {
+              "prior_bytes": 1617,
+              "prior_sha256": "2c510ef407d2f5fc6549a86c00145735e752b62e703ac91d2cfcc4c5f33f36f4",
+              "reason": "Reviewed opt-in CIN limiter witness: unchanged screen arithmetic, exact checked reverse delta before prior scheduling proofs, fixed sizeof(Control) growth and additive test packaging."
+            }
+          ]
+        }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 1617,
+          "prior_sha256": "2c510ef407d2f5fc6549a86c00145735e752b62e703ac91d2cfcc4c5f33f36f4",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_physical_timestep/Fixture.h",
@@ -494,13 +906,35 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/group_proof.py",
-      "bytes": 4787,
-      "sha256": "4fbfbc618b6bb4f71b32720e745151674360b84ff75a9296a21efc7c92cfb5be",
+      "bytes": 5005,
+      "sha256": "0648b9a206aaada8e930d884ffc24bd6e34da9107820d8f9e9ccdf3f2296c319",
       "prior_receipts": [
         {
           "bytes": 4638,
           "sha256": "1a06241f6b02f41e0d16ca993ec7a0ce983175fdc74c0e756fff1a713b393429",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        }
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_groups/group_proof.py",
+          "bytes": 4869,
+          "sha256": "e588a73eb24e69651200f80bbc946dd4c96ac07625ed3ee69eb920ca5230f34f",
+          "reviewed_updates": [
+            {
+              "prior_bytes": 4638,
+              "prior_sha256": "1a06241f6b02f41e0d16ca993ec7a0ce983175fdc74c0e756fff1a713b393429",
+              "reason": "Reviewed opt-in CIN limiter witness: unchanged screen arithmetic, exact checked reverse delta before prior scheduling proofs, fixed sizeof(Control) growth and additive test packaging."
+            }
+          ]
+        }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 4787,
+          "prior_sha256": "4fbfbc618b6bb4f71b32720e745151674360b84ff75a9296a21efc7c92cfb5be",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
         }
       ]
     },
@@ -521,8 +955,15 @@
     },
     {
       "path": "lib_utest/qualification/cin_force_transfers/transfer_proof.py",
-      "bytes": 4068,
-      "sha256": "cc6012e1dc24bfbae2280e20760ea6336bd04dbab372b581ae51d20084b78b87"
+      "bytes": 4188,
+      "sha256": "d5aca7d00a07c1430c5e5a0c77d1ac319c919708bf5d459ad2cead988a7d7e3e",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 4068,
+          "prior_sha256": "cc6012e1dc24bfbae2280e20760ea6336bd04dbab372b581ae51d20084b78b87",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_force_transfers/reference/CinForceStage.h",
@@ -538,6 +979,12 @@
       "path": "lib_src/constraints/tied_shell/runtime/CinForceTransfer.h",
       "bytes": 5435,
       "sha256": "1e9745039412de8a24212aa28256769685d0edbfe9bc7808c59af1730eaa9516"
+    },
+    {
+      "path": "lib_utest/qualification/cin_limiter/witness_proof.py",
+      "bytes": 1078,
+      "sha256": "8c010a65abf5dc7b6dee1682c100fc83a55297be8f500e686425f6f67eaaf21c",
+      "role": "Checked additive witness reversal before unchanged earlier proofs"
     }
   ],
   "previous_source_receipts": [
@@ -610,5 +1057,10 @@
         "sha256": "b95aad9b0b2a24d1468d46a553c533f659ef2fb853079fc8311d7d844e4a40cc"
       }
     ]
+  },
+  "limiter_integration": {
+    "base": "223d813",
+    "incoming": "994658e",
+    "reason": "Both exact scheduling and optional witness reversals retained; no frozen baseline changes."
   }
 }

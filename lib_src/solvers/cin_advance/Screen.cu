@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Screen.h"
 #include "Groups.h"
+#include "../cin_limiter/Capture.h"
 
 namespace tl::fea::cin_advance::screen {
 namespace {
@@ -44,6 +45,9 @@ __device__ void Publish(Input input, const Summary& ordinary, bool parallel_grou
     return;
   }
   input.control->limit.dt = result.minimum_dt;
+  if (input.structural.capture_limiter)
+    input.control->structural_limiter = cin_limiter::Capture(source, input.structural.factor,
+        result, input.epoch, input.attempt);
   if (input.durations.drift_dt > result.minimum_dt) {
     input.control->status = NodalStatus::StepTooLarge;
     input.control->node = result.limiting_node;

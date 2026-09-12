@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FENodalState.h"
+#include "cin_limiter/Witness.h"
 #include <vector>
 
 namespace tl::fea {
@@ -15,6 +16,7 @@ struct Control {
   stability::StepLimit limit;
   NodalStatus status = NodalStatus::Ok;
   std::uint32_t node = UINT32_MAX;
+  cin_limiter::Witness structural_limiter;
 };
 
 // Shared velocity-first translation arithmetic for the legacy and optional

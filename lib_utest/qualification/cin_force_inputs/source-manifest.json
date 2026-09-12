@@ -22,7 +22,15 @@
           "sha256": "064991b19a42716eaad88fcaebeb0ce3907788fcaa7a0e0fc425de6ede109151",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
         }
-      ]
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_src/constraints/tied_shell/runtime/CinForceStage.h",
+          "bytes": 8237,
+          "sha256": "064991b19a42716eaad88fcaebeb0ce3907788fcaa7a0e0fc425de6ede109151"
+        }
+      }
     },
     {
       "path": "lib_src/constraints/tied_shell/runtime/CinMotionStage.h",
@@ -56,13 +64,42 @@
     },
     {
       "path": "lib_src/solvers/cin_timestep/ScreenValues.h",
-      "bytes": 3921,
-      "sha256": "e75345581d3808d60e57343cd711bb5c260e6f04f10d6b44a3f38f0db4c79644",
+      "bytes": 3993,
+      "sha256": "740228821e1b9fcf8b03bfba0f8e15bd34f85620eb4aeedd988a3cae397737bb",
       "prior_receipts": [
         {
           "bytes": 3322,
           "sha256": "0c71bfcf243f76662cfc961a676674239742228565b34f29297886550f54e823",
           "reason": "Independent CIN group scheduling or additive qualification ownership"
+        }
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_src/solvers/cin_timestep/ScreenValues.h",
+          "bytes": 3993,
+          "sha256": "740228821e1b9fcf8b03bfba0f8e15bd34f85620eb4aeedd988a3cae397737bb",
+          "prior_receipts": [
+            {
+              "bytes": 3322,
+              "sha256": "0c71bfcf243f76662cfc961a676674239742228565b34f29297886550f54e823",
+              "reason": "Independent CIN group scheduling or additive qualification ownership"
+            }
+          ],
+          "reviewed_updates": [
+            {
+              "prior_bytes": 3921,
+              "prior_sha256": "e75345581d3808d60e57343cd711bb5c260e6f04f10d6b44a3f38f0db4c79644",
+              "reason": "Reviewed opt-in CIN limiter witness: unchanged screen arithmetic, exact checked reverse delta before prior scheduling proofs, fixed sizeof(Control) growth and additive test packaging."
+            }
+          ]
+        }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 3921,
+          "prior_sha256": "e75345581d3808d60e57343cd711bb5c260e6f04f10d6b44a3f38f0db4c79644",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
         }
       ]
     },
@@ -103,13 +140,35 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/group_proof.py",
-      "bytes": 4787,
-      "sha256": "4fbfbc618b6bb4f71b32720e745151674360b84ff75a9296a21efc7c92cfb5be",
+      "bytes": 5005,
+      "sha256": "0648b9a206aaada8e930d884ffc24bd6e34da9107820d8f9e9ccdf3f2296c319",
       "prior_receipts": [
         {
           "bytes": 4638,
           "sha256": "1a06241f6b02f41e0d16ca993ec7a0ce983175fdc74c0e756fff1a713b393429",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        }
+      ],
+      "limiter_branch_receipt": {
+        "commit": "994658e",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_groups/group_proof.py",
+          "bytes": 4869,
+          "sha256": "e588a73eb24e69651200f80bbc946dd4c96ac07625ed3ee69eb920ca5230f34f",
+          "reviewed_updates": [
+            {
+              "prior_bytes": 4638,
+              "prior_sha256": "1a06241f6b02f41e0d16ca993ec7a0ce983175fdc74c0e756fff1a713b393429",
+              "reason": "Reviewed opt-in CIN limiter witness: unchanged screen arithmetic, exact checked reverse delta before prior scheduling proofs, fixed sizeof(Control) growth and additive test packaging."
+            }
+          ]
+        }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 4787,
+          "prior_sha256": "4fbfbc618b6bb4f71b32720e745151674360b84ff75a9296a21efc7c92cfb5be",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
         }
       ]
     },
@@ -130,8 +189,15 @@
     },
     {
       "path": "lib_utest/qualification/cin_force_transfers/transfer_proof.py",
-      "bytes": 4068,
-      "sha256": "cc6012e1dc24bfbae2280e20760ea6336bd04dbab372b581ae51d20084b78b87"
+      "bytes": 4188,
+      "sha256": "d5aca7d00a07c1430c5e5a0c77d1ac319c919708bf5d459ad2cead988a7d7e3e",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 4068,
+          "prior_sha256": "cc6012e1dc24bfbae2280e20760ea6336bd04dbab372b581ae51d20084b78b87",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_force_transfers/reference/CinForceStage.h",
@@ -147,6 +213,12 @@
       "path": "lib_src/constraints/tied_shell/runtime/CinForceTransfer.h",
       "bytes": 5435,
       "sha256": "1e9745039412de8a24212aa28256769685d0edbfe9bc7808c59af1730eaa9516"
+    },
+    {
+      "path": "lib_utest/qualification/cin_limiter/witness_proof.py",
+      "bytes": 1078,
+      "sha256": "8c010a65abf5dc7b6dee1682c100fc83a55297be8f500e686425f6f67eaaf21c",
+      "role": "Checked additive witness reversal before unchanged earlier proofs"
     }
   ],
   "previous_source_receipts": [
@@ -167,5 +239,10 @@
       "files": []
     }
   ],
-  "group_scheduling_compatibility": "Exact checked prior view: cin_parallel_groups/group_proof.py; original frozen gate scope retained. Independent group execution/partial private trial writes have their own qualification."
+  "group_scheduling_compatibility": "Exact checked prior view: cin_parallel_groups/group_proof.py; original frozen gate scope retained. Independent group execution/partial private trial writes have their own qualification.",
+  "limiter_integration": {
+    "base": "223d813",
+    "incoming": "994658e",
+    "reason": "Both exact scheduling and optional witness reversals retained; no frozen baseline changes."
+  }
 }

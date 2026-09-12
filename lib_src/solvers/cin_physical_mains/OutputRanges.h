@@ -18,15 +18,16 @@ template<class T> inline bool Outside(const void* output, std::size_t bytes,
 // headers are also excluded; caller outputs cannot overwrite a retained source
 // through an independently copied handle to the same immutable model/domain.
 inline bool OutsideSources(const void* output, std::size_t bytes,
-    const nodal_detail::CinStorage& cin, const nodal_detail::RigidStorage& rigid,
+    const nodal_detail::CinStorage& cin, const nodal_detail::RigidStorage* rigid,
     const std::vector<double>& staging, const std::vector<std::uint8_t>& constraints) noexcept {
-  if (!Outside(output,bytes,&cin) || !Outside(output,bytes,&rigid) ||
+  if (!Outside(output,bytes,&cin) ||
       !Outside(output,bytes,staging) || !Outside(output,bytes,constraints) ||
-      !Outside(output,bytes,rigid.properties) || !Outside(output,bytes,rigid.source_members) ||
-      !Outside(output,bytes,rigid.groups) || !Outside(output,bytes,rigid.members) ||
-      !Outside(output,bytes,rigid.member_nodes) || !Outside(output,bytes,rigid.snapshots) ||
       !Outside(output,bytes,cin.rows) || !Outside(output,bytes,cin.witnesses) ||
       !Outside(output,bytes,cin.dependent) || !Outside(output,bytes,cin.first_witness)) return false;
+  if (rigid && (!Outside(output,bytes,rigid) ||
+      !Outside(output,bytes,rigid->properties) || !Outside(output,bytes,rigid->source_members) ||
+      !Outside(output,bytes,rigid->groups) || !Outside(output,bytes,rigid->members) ||
+      !Outside(output,bytes,rigid->member_nodes) || !Outside(output,bytes,rigid->snapshots))) return false;
   const auto& model = cin.source;
   const auto* domain = model.domain();
   const auto* classification = model.classification();
@@ -38,5 +39,10 @@ inline bool OutsideSources(const void* output, std::size_t bytes,
       !Outside(output,bytes,classification->interface_decode().data,classification->interface_decode().count))
     return false;
   return true;
+}
+inline bool OutsideSources(const void* output, std::size_t bytes,
+    const nodal_detail::CinStorage& cin, const nodal_detail::RigidStorage& rigid,
+    const std::vector<double>& staging, const std::vector<std::uint8_t>& constraints) noexcept {
+  return OutsideSources(output, bytes, cin, &rigid, staging, constraints);
 }
 } // namespace tl::fea::cin_physical_mains

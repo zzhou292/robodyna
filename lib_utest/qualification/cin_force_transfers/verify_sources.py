@@ -8,7 +8,7 @@ import runpy
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 raw = (here/'source-manifest.json').read_bytes()
-assert hashlib.sha256(raw).hexdigest() == 'bd70bb5ee0d0af28062764731b86b0680b0c83255f52dd40b47ba6b58655ec8d'
+assert hashlib.sha256(raw).hexdigest() == '883c089608818d99a36ca06c82c04d09c6d123ce32c08be45a6c700399eae788'
 manifest = json.loads(raw)
 for row in manifest['files']:
     path = Path(row['path'])
@@ -19,7 +19,8 @@ for name, contents in runpy.run_path(str(here/'prepare_reference.py'))['generate
     assert (here/name).read_text() == contents, name
 proof = runpy.run_path(str(here/'transfer_proof.py'))
 proof['legacy_force_stage']((root/'lib_src/constraints/tied_shell/runtime/CinForceStage.h').read_text())
-proof['legacy_owner']((root/'lib_src/solvers/ExplicitNodalCinStep.cu').read_text())
+witness = runpy.run_path(str(here.parent/'cin_limiter/witness_proof.py'))
+proof['legacy_owner'](witness['legacy_owner']((root/'lib_src/solvers/ExplicitNodalCinStep.cu').read_text()))
 body = proof['body']
 helper = (root/'lib_src/solvers/cin_advance/ForceTransfers.h').read_text()
 proof['same'](body(helper, 'Apply'), '''

@@ -5,7 +5,7 @@ cc_library(
     testonly = True,
     hdrs = ["Fixture.h"],
     deps = ["//lib_src/solvers:cin_structural_step_values"],
-    visibility = ["//lib_utest/qualification/cin_physical_main_summary:__pkg__",
+    visibility = ["//lib_utest/qualification/cin_limiter:__pkg__", "//lib_utest/qualification/cin_physical_main_summary:__pkg__",
                   "//lib_utest/qualification/cin_parallel_screen:__pkg__"],
 )
 cc_library(
@@ -14,7 +14,7 @@ cc_library(
     hdrs = ["OwnerSupport.h"],
     deps = ["//lib_src/solvers:explicit_nodal_state",
             "//lib_utest/qualification/rigid_assembly_owner:fixture"],
-    visibility = ["//lib_utest/qualification/cin_physical_main_summary:__pkg__",
+    visibility = ["//lib_utest/qualification/cin_limiter:__pkg__", "//lib_utest/qualification/cin_physical_main_summary:__pkg__",
                   "//lib_utest/qualification/cin_parallel_screen:__pkg__"],
 )
 cc_test(

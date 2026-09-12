@@ -19,6 +19,7 @@ struct NodalCinAssemblyView;
 struct NodalCinSnapshotBuffer;
 struct NodalCinPhysicalMainBuffer;
 struct NodalCinPhysicalMainStamp;
+struct NodalCinStructuralLimit;
 enum class NodalStatus {
   Ok, InvalidInput, ResourceLimit, NotInitialized, WrongPhase, StaleTrial,
   ContributorFailure, InvalidOutput, UnsupportedRotation, StepTooLarge,
@@ -260,6 +261,9 @@ class FENodalState {
   // TT0 only: complete post-CIN virtual main coefficients, no physical node or clock.
   NodalReport CopyPreparedCinPhysicalMains(const NodalTrialToken&, NodalCinPhysicalMainBuffer,
                                           NodalCinPhysicalMainStamp*);
+  // Host-only, no extra CUDA copy/sync: requires capture_limiter on this successful
+  // prepared CIN attempt. Unchanged output on error; no commit authority.
+  NodalReport CopyPreparedCinStructuralLimit(const NodalTrialToken&, NodalCinStructuralLimit*) const;
   NodalReport BeginTrial(NodalTrialToken*, NodalAssemblyView*);
   // Host-only comparison of a retained assembly SOURCE identity with this
   // owner's current accepted buffers and immutable mass/constraint storage.

@@ -20,9 +20,12 @@ enum class NodalCinStructuralProfile : std::uint8_t {
 struct NodalCinStructuralStep {
   NodalCinStructuralProfile profile = NodalCinStructuralProfile::Disabled;
   double factor = 0;
+  // Optional small successful-screen diagnostic; never changes admission.
+  bool capture_limiter = false;
 };
 TL_CIN_STRUCTURAL_HD inline bool ValidCinStructuralStep(NodalCinStructuralStep policy) noexcept {
-  if (policy.profile == NodalCinStructuralProfile::Disabled) return policy.factor == 0;
+  if (policy.profile == NodalCinStructuralProfile::Disabled)
+    return policy.factor == 0 && !policy.capture_limiter;
   return policy.profile == NodalCinStructuralProfile::NativeOrdinaryRigidTrace &&
       std::isfinite(policy.factor) && policy.factor > 0 && policy.factor <= 1;
 }

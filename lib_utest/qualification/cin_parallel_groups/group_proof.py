@@ -10,6 +10,7 @@ import runpy
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
+LIMITER = runpy.run_path(str(HERE.parent/"cin_limiter/witness_proof.py"))
 
 def body(text, name):
     start = text.index('{', text.index(name+'('))
@@ -23,6 +24,7 @@ def same(a, b, label):
     assert re.sub(r'\s+', '', a) == re.sub(r'\s+', '', b), label
 
 def legacy_owner(current):
+    current = LIMITER["legacy_owner"](current)
     transfer = runpy.run_path(str(HERE.parent/'cin_force_transfers/transfer_proof.py'))
     current = transfer['legacy_owner'](current)
     value = current.replace('#include "cin_advance/Groups.h"\n', '')
@@ -44,6 +46,7 @@ def legacy_owner(current):
     return value
 
 def legacy_values(current):
+    current = LIMITER["legacy_values"](current)
     old = (HERE/'reference/ScreenValues.h').read_text()
     for name in ('CheckSources', 'EvaluateNode'):
         same(body(old, name), body(current, name), name)
@@ -71,6 +74,7 @@ def legacy_values(current):
     return old
 
 def legacy_kernels(current):
+    current = LIMITER["legacy_kernels"](current)
     old = (HERE/'reference/Screen.cu').read_text()
     for name in ('Begin', 'Reduce', 'Nodes'):
         same(body(current, name), body(old, name), 'screen '+name)

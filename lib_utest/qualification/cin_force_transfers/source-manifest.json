@@ -34,23 +34,51 @@
     },
     {
       "path": "lib_src/solvers/BUILD.bazel",
-      "bytes": 8134,
-      "sha256": "3f212ec1bf1ebeddceeaebcf27c91036e6f1262b604ce2cf0d39116a1789bd91"
+      "bytes": 8244,
+      "sha256": "5a0a3af4822ba53f21dd4af9e960eb01867ec5540ad7d453a21179e6114e19dd",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 8134,
+          "prior_sha256": "3f212ec1bf1ebeddceeaebcf27c91036e6f1262b604ce2cf0d39116a1789bd91",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        }
+      ]
     },
     {
       "path": "lib_src/solvers/CMakeLists.txt",
-      "bytes": 1766,
-      "sha256": "07470169782f895fd3ec201d39a5a6b018d2af5eee6975d2a7dafe876ee354a7"
+      "bytes": 1794,
+      "sha256": "db297f7e3125b378950db1f55334020258777fc9da2a0d9e5cc5a6f8a1e3b6e6",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 1766,
+          "prior_sha256": "07470169782f895fd3ec201d39a5a6b018d2af5eee6975d2a7dafe876ee354a7",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        }
+      ]
     },
     {
       "path": "lib_src/solvers/ExplicitNodalCinStep.cu",
-      "bytes": 10678,
-      "sha256": "4fb1ea8c19c91f7629d50719d1be05918263df38ccd1161ad0f4e90befe46831"
+      "bytes": 10867,
+      "sha256": "0051dd23cb0d35b9386531877e4ca07ae4d7b661131cc37716f987a6062df967",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 10678,
+          "prior_sha256": "4fb1ea8c19c91f7629d50719d1be05918263df38ccd1161ad0f4e90befe46831",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        }
+      ]
     },
     {
       "path": "lib_src/solvers/FENodalState.cu",
-      "bytes": 26929,
-      "sha256": "7d8d41eedb1ac7f4e8263f765408f99e9b146f0e58ccef79989cc09e419a0504"
+      "bytes": 26959,
+      "sha256": "506afa6522c80601bab58902c55493c061510823dea64207677baa73ddb08190",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 26929,
+          "prior_sha256": "7d8d41eedb1ac7f4e8263f765408f99e9b146f0e58ccef79989cc09e419a0504",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        }
+      ]
     },
     {
       "path": "lib_src/solvers/NodalAssemblyCinForecast.cpp",
@@ -109,13 +137,27 @@
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/source-manifest.json",
-      "bytes": 6920,
-      "sha256": "39524cdf0c7cdfdd425ed7e9a8ff16867270594f41aa4340fd15573819d2ee18"
+      "bytes": 10537,
+      "sha256": "c2cef632a3415169be284cc181f523aa2e8a22ade35f15f6f6bd2807bdcbcf47",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 6920,
+          "prior_sha256": "39524cdf0c7cdfdd425ed7e9a8ff16867270594f41aa4340fd15573819d2ee18",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/verify_sources.py",
       "bytes": 6359,
-      "sha256": "ca8ad3edb2af8d19aa867fac9561839562a80a07d19a756855979a7a391d2b7b"
+      "sha256": "ccd25e97ecce76585abcaffc06fb7840554aee99e7db67f524ca0e4406a7d4f3",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 6359,
+          "prior_sha256": "ca8ad3edb2af8d19aa867fac9561839562a80a07d19a756855979a7a391d2b7b",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_force_transfers/BUILD.bazel",
@@ -184,59 +226,101 @@
     },
     {
       "path": "lib_utest/qualification/cin_force_transfers/transfer_proof.py",
-      "bytes": 4068,
-      "sha256": "cc6012e1dc24bfbae2280e20760ea6336bd04dbab372b581ae51d20084b78b87"
+      "bytes": 4188,
+      "sha256": "d5aca7d00a07c1430c5e5a0c77d1ac319c919708bf5d459ad2cead988a7d7e3e",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 4068,
+          "prior_sha256": "cc6012e1dc24bfbae2280e20760ea6336bd04dbab372b581ae51d20084b78b87",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_capture/source-manifest.json",
-      "bytes": 23833,
-      "sha256": "da9a4c3e8b768786eb2f027ddc7fd67073916f9becba319ad5c47321a9d19380",
+      "bytes": 46167,
+      "sha256": "e1978b7c309241db3eeab6ae67e4e970159de4b476c3fb72f78be5f4eecb0c34",
       "prior_receipts": [
         {
           "bytes": 23270,
           "sha256": "7bfd9c9c0fa2cafd6af075cccf7cbc4fe84c8be4865a9dd4920fdc56c0bc0d58",
           "reason": "Update legacy zero-group arena-end controls for the qualified prepared-row tail; exact caps and production remain unchanged."
         }
+      ],
+      "reviewed_updates": [
+        {
+          "prior_bytes": 23833,
+          "prior_sha256": "da9a4c3e8b768786eb2f027ddc7fd67073916f9becba319ad5c47321a9d19380",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_capture/verify_sources.py",
       "bytes": 3992,
-      "sha256": "817e81501c262516db45ceff7a4192a9237433ded42c61541187ff04e6d6f589",
+      "sha256": "465aafc1071efc21721326590c8464e8e963bbf1c8e50192697c1e5798e3d755",
       "prior_receipts": [
         {
           "bytes": 3992,
           "sha256": "78728beb25c5441a43d92763f3ce7d9c18c8a5196ba635268acd6f635d7f9e76",
           "reason": "Update legacy zero-group arena-end controls for the qualified prepared-row tail; exact caps and production remain unchanged."
         }
+      ],
+      "reviewed_updates": [
+        {
+          "prior_bytes": 3992,
+          "prior_sha256": "817e81501c262516db45ceff7a4192a9237433ded42c61541187ff04e6d6f589",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/group_proof.py",
-      "bytes": 4787,
-      "sha256": "4fbfbc618b6bb4f71b32720e745151674360b84ff75a9296a21efc7c92cfb5be"
+      "bytes": 5005,
+      "sha256": "0648b9a206aaada8e930d884ffc24bd6e34da9107820d8f9e9ccdf3f2296c319",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 4787,
+          "prior_sha256": "4fbfbc618b6bb4f71b32720e745151674360b84ff75a9296a21efc7c92cfb5be",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/source-manifest.json",
-      "bytes": 31372,
-      "sha256": "682bafc14749d1e69a78c4f9dce52d20e5916dc6af31af8fc6189f865a0fe1c6",
+      "bytes": 55449,
+      "sha256": "4ceba665570631dd6b2294412916bbe7bb7f5af220cfab9acb7bfa1bc8f5b3ab",
       "prior_receipts": [
         {
           "bytes": 30246,
           "sha256": "7fa3d2d9e1f64a8ba619aa31c8266fb8f4e89fa6075a551ace6904ddb27e5a05",
           "reason": "Update legacy zero-group arena-end controls for the qualified prepared-row tail; exact caps and production remain unchanged."
         }
+      ],
+      "reviewed_updates": [
+        {
+          "prior_bytes": 31372,
+          "prior_sha256": "682bafc14749d1e69a78c4f9dce52d20e5916dc6af31af8fc6189f865a0fe1c6",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/verify_sources.py",
       "bytes": 3905,
-      "sha256": "939550c8a7310738bd3722befc0fdd1b59f8822183c74697c627334348cdac8f",
+      "sha256": "f8323cdf2c36215abf808e539a1ea80cbdf0d1d25e37bb1231368e67c4d6a52b",
       "prior_receipts": [
         {
           "bytes": 3905,
           "sha256": "57ed6499bbe014bf792941940a60fe380c5c86caa533772783746d8f5d8f2655",
           "reason": "Update legacy zero-group arena-end controls for the qualified prepared-row tail; exact caps and production remain unchanged."
+        }
+      ],
+      "reviewed_updates": [
+        {
+          "prior_bytes": 3905,
+          "prior_sha256": "939550c8a7310738bd3722befc0fdd1b59f8822183c74697c627334348cdac8f",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
         }
       ]
     },
@@ -247,59 +331,101 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/source-manifest.json",
-      "bytes": 7527,
-      "sha256": "a398fd1cbe9683804047dfe6e83a15a9cc12497b9874d0b570f5e933d7e2de92"
+      "bytes": 12225,
+      "sha256": "a0a980d64630aec9ab7a0b8f53765700f17b71faaae036009295c728b8658cb9",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 7527,
+          "prior_sha256": "a398fd1cbe9683804047dfe6e83a15a9cc12497b9874d0b570f5e933d7e2de92",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/verify_sources.py",
       "bytes": 4833,
-      "sha256": "62fff503660e838a65bdd30396805fdf2fceb718bdf29a519d2ce473c6dc88da"
+      "sha256": "ba27fd74bfa2fae10bc118e2ed1a90e2402dcc17e8b1b71ea624eeb43e6317e1",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 4833,
+          "prior_sha256": "62fff503660e838a65bdd30396805fdf2fceb718bdf29a519d2ce473c6dc88da",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/source-manifest.json",
-      "bytes": 25262,
-      "sha256": "36d0545065acd5f6849508f6513657db627e7d486dae7ae9754d54e304623d80",
+      "bytes": 45851,
+      "sha256": "8174a46fa85a429405478f28b5462363a4c700560c463f5f1053fefdb0adc177",
       "prior_receipts": [
         {
           "bytes": 24317,
           "sha256": "f48fd8490595946955c324c5b99c03e66f985e9e13445fb4f05a155290be3b4f",
           "reason": "Update legacy zero-group arena-end controls for the qualified prepared-row tail; exact caps and production remain unchanged."
         }
+      ],
+      "reviewed_updates": [
+        {
+          "prior_bytes": 25262,
+          "prior_sha256": "36d0545065acd5f6849508f6513657db627e7d486dae7ae9754d54e304623d80",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/verify_sources.py",
       "bytes": 6798,
-      "sha256": "ee594b2376af94b904b27d7a961c9e7258b1b774850a10cf06454449b53bc872",
+      "sha256": "459a248aeb394f8fb4cbd61c163c30d684f2a2d221aec105fe589f2a082bfaae",
       "prior_receipts": [
         {
           "bytes": 6798,
           "sha256": "438334e9e5ee4754970bc404e17b8f749a98fcfb79847e5e77c98d369666e36a",
           "reason": "Update legacy zero-group arena-end controls for the qualified prepared-row tail; exact caps and production remain unchanged."
         }
+      ],
+      "reviewed_updates": [
+        {
+          "prior_bytes": 6798,
+          "prior_sha256": "ee594b2376af94b904b27d7a961c9e7258b1b774850a10cf06454449b53bc872",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        }
       ]
     },
     {
       "path": "lib_utest/qualification/nodal_seal_rows/source-manifest.json",
-      "bytes": 12192,
-      "sha256": "d0480cd4749b486d8be97191ca34c038b2a2160b5cd4cdc2cbd2993036687f8f",
+      "bytes": 25074,
+      "sha256": "5767b53218c638d26c4981e40c2665991007a335662721169e27e6744aad1791",
       "prior_receipts": [
         {
           "bytes": 10503,
           "sha256": "3a85ffffebafd4dd438d26fa807191db9d16e680f7a044e2309bd996267323ce",
           "reason": "Update legacy zero-group arena-end controls for the qualified prepared-row tail; exact caps and production remain unchanged."
         }
+      ],
+      "reviewed_updates": [
+        {
+          "prior_bytes": 12192,
+          "prior_sha256": "d0480cd4749b486d8be97191ca34c038b2a2160b5cd4cdc2cbd2993036687f8f",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        }
       ]
     },
     {
       "path": "lib_utest/qualification/nodal_seal_rows/verify_sources.py",
       "bytes": 3815,
-      "sha256": "e897791c6e69818119dce3f4d32d0042abe834e94d234a6b62206e8c8c0e2e21",
+      "sha256": "e839793fa64a9a4c11cd513bd1ce468da59edb11f2addccf4402c20afbb862a3",
       "prior_receipts": [
         {
           "bytes": 3815,
           "sha256": "5503371c873a43ed62fabdda61aeacdebddc6baaba5891fb258d81d0e9d9fa25",
           "reason": "Update legacy zero-group arena-end controls for the qualified prepared-row tail; exact caps and production remain unchanged."
+        }
+      ],
+      "reviewed_updates": [
+        {
+          "prior_bytes": 3815,
+          "prior_sha256": "e897791c6e69818119dce3f4d32d0042abe834e94d234a6b62206e8c8c0e2e21",
+          "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
         }
       ]
     },
@@ -307,6 +433,12 @@
       "path": "lib_utest/qualification/rigid_assembly_owner/BUILD.bazel",
       "bytes": 2704,
       "sha256": "b5327def841738337537a399d13a54188479caf2831b3b97bce22c894a45a30d"
+    },
+    {
+      "path": "lib_utest/qualification/cin_limiter/witness_proof.py",
+      "bytes": 1078,
+      "sha256": "8c010a65abf5dc7b6dee1682c100fc83a55297be8f500e686425f6f67eaaf21c",
+      "role": "Checked composition of diagnostic and prepared-transfer proofs"
     }
   ]
 }

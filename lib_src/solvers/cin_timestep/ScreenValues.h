@@ -44,7 +44,7 @@ struct GroupEvaluation {
 // The exact original group body; a malformed range consumes no member. The
 // caller retains the preceding invalid-node value in that branch.
 TL_SURFACE_HD inline GroupEvaluation EvaluateGroup(const Sources& source, double factor,
-    std::uint32_t group) noexcept {
+    std::uint32_t group, double* trace_upper = nullptr) noexcept {
   GroupEvaluation out;
   const auto groups = source.rigid;
   const auto range = groups.groups[group];
@@ -68,6 +68,7 @@ TL_SURFACE_HD inline GroupEvaluation EvaluateGroup(const Sources& source, double
         source.rotation[node], trace)) return out;
   }
   if (!RigidTraceLimit(trace, factor, out.limit)) return out;
+  if (trace_upper) *trace_upper = trace;
   out.valid = true;
   return out;
 }
