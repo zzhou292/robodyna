@@ -4,8 +4,8 @@
   "files": [
     {
       "path": "lib_src/collision/BUILD.bazel",
-      "bytes": 11278,
-      "sha256": "e53654f2eb75a63091fe84f9ec8c3c7ddb8d14e4b0166b669b35808e8fd8b782"
+      "bytes": 11452,
+      "sha256": "3f08499bf0e679e92663eefefa5a7254f06716bc9314afdfd8654f37ca83a1b2"
     },
     {
       "path": "lib_src/collision/NodalWallContactDiagnostics.h",
@@ -59,8 +59,8 @@
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Initialize.cpp",
-      "bytes": 5570,
-      "sha256": "2ac3b86e2465395c99f41249bec548770e33f2909cad8986410a60f40a6c8911"
+      "bytes": 5757,
+      "sha256": "14f076fbdce7309bb51889769a8fdb0b79c1d90450256aebf45872ea0d64ab81"
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/IntervalReduction.cuh",
@@ -74,13 +74,13 @@
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Layout.cpp",
-      "bytes": 1801,
-      "sha256": "15e1ce2d30ed7d1b94d330915268e31b55279212fa7c517bf7770683020d99de"
+      "bytes": 2262,
+      "sha256": "af64e183485b18b8fcb477aced7751426119ed35c43795ec41a06b21356e7fb6"
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Layout.h",
-      "bytes": 1454,
-      "sha256": "c82174a14bef4d6fcdcbf4a86a5f62436b80324ca5cd9fa03d2e6bce758820c4"
+      "bytes": 1585,
+      "sha256": "06ed3a0cfe8800523c35ce8768036427bf0cdfb6eb91652cea51f674a4698152"
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/ObserverReduction.cuh",
@@ -89,8 +89,8 @@
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
-      "bytes": 10235,
-      "sha256": "5c238d2181ab18c65deabe38b175db91472d6a2170343901db8a6d41f0307705"
+      "bytes": 10254,
+      "sha256": "74d3a30b47603651a6a5bbfceb7ecbbb08bdec7c91887f77f1292491483daac0"
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Readback.cpp",
@@ -109,8 +109,8 @@
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Sources.cpp",
-      "bytes": 5160,
-      "sha256": "f55e547fd86f73f3558caf9fd4059fbacda71a828443ec79050ba2613c90c516"
+      "bytes": 5365,
+      "sha256": "c2e5aad75ca4acabde68e31f8880c4537bbc3aa084d3621633d3b323d3b75a6a"
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Storage.h",
@@ -169,23 +169,23 @@
     },
     {
       "path": "lib_utest/qualification/mapped_wall_interval/source-manifest.json",
-      "bytes": 5854,
-      "sha256": "d9f5c16edbec3242ebf6291201c653731df15367008ea2be47e76da8cca74de6"
+      "bytes": 7107,
+      "sha256": "3bef13c44efc2b99817ba47539bfc2954559749e6650217757f7e5f7323e9b87"
     },
     {
       "path": "lib_utest/qualification/mapped_wall_interval/verify_sources.py",
       "bytes": 2493,
-      "sha256": "317dcba4a152cff4c4c44387c52cfa78cb85e37bcbcfdf2af77f9e6aff03502b"
+      "sha256": "7b9b901c5d8c2c78fba4a8d78390fef531ee879dacc01657dda09c2084822d18"
     },
     {
       "path": "lib_utest/qualification/mapped_wall_observers/source-manifest.json",
-      "bytes": 6167,
-      "sha256": "7e483ece6926e333addbaaaccf458012a907dc90a6a38afef518db544f647f95"
+      "bytes": 7420,
+      "sha256": "c0b794d46faca1a45d9f0ff59b0ce473c27170714db1e8995f84a4cf5c08ab5a"
     },
     {
       "path": "lib_utest/qualification/mapped_wall_observers/verify_sources.py",
       "bytes": 2076,
-      "sha256": "54b186c68d44f2cafd80df7ce570e0589edc6c37608ffa4b69cfaacc538891df"
+      "sha256": "3ecfad73519d1462b99e523021a592d7a14df81206197a43a778266122d88dae"
     },
     {
       "path": "lib_utest/qualification/mapped_wall_scatter/Verify.cmake",
@@ -196,6 +196,70 @@
       "path": "lib_utest/qualification/mapped_wall_scatter/source-manifest.json",
       "bytes": 1005,
       "sha256": "72688493a88da0348c715ea8af56bab0b700e1a4335e647b814bb14f533f5950"
+    }
+  ],
+  "response_previous_receipts": [
+    {
+      "manifest_sha256": "3987ab1d7af7601ec9117d88dfb1390732ddd2babb84ee34546ca9f2908782e3",
+      "reason": "Mapped-only ordered rigid response and ordinary max scheduling, with separately counted CSR/maxima tail. Complete serial Response and CheckResponse preserved at mapped_wall_response/reference; activity, scatter, observer and interval arithmetic unchanged.",
+      "files": [
+        {
+          "path": "lib_src/collision/BUILD.bazel",
+          "bytes": 11278,
+          "sha256": "e53654f2eb75a63091fe84f9ec8c3c7ddb8d14e4b0166b669b35808e8fd8b782"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Initialize.cpp",
+          "bytes": 5570,
+          "sha256": "2ac3b86e2465395c99f41249bec548770e33f2909cad8986410a60f40a6c8911"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Layout.cpp",
+          "bytes": 1801,
+          "sha256": "15e1ce2d30ed7d1b94d330915268e31b55279212fa7c517bf7770683020d99de"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Layout.h",
+          "bytes": 1454,
+          "sha256": "c82174a14bef4d6fcdcbf4a86a5f62436b80324ca5cd9fa03d2e6bce758820c4"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
+          "bytes": 10235,
+          "sha256": "5c238d2181ab18c65deabe38b175db91472d6a2170343901db8a6d41f0307705"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Sources.cpp",
+          "bytes": 5160,
+          "sha256": "f55e547fd86f73f3558caf9fd4059fbacda71a828443ec79050ba2613c90c516"
+        }
+      ]
+    },
+    {
+      "manifest_sha256": "72b18b11dae9941f15c36079489ab2db8d549b5b98df1a797b2bd2a6ff3c3b10",
+      "reason": "Refresh delegated identity receipt after ordered response schedule qualification; prior receipt retained.",
+      "files": [
+        {
+          "path": "lib_utest/qualification/mapped_wall_interval/source-manifest.json",
+          "bytes": 5854,
+          "sha256": "d9f5c16edbec3242ebf6291201c653731df15367008ea2be47e76da8cca74de6"
+        },
+        {
+          "path": "lib_utest/qualification/mapped_wall_interval/verify_sources.py",
+          "bytes": 2493,
+          "sha256": "317dcba4a152cff4c4c44387c52cfa78cb85e37bcbcfdf2af77f9e6aff03502b"
+        },
+        {
+          "path": "lib_utest/qualification/mapped_wall_observers/source-manifest.json",
+          "bytes": 6167,
+          "sha256": "7e483ece6926e333addbaaaccf458012a907dc90a6a38afef518db544f647f95"
+        },
+        {
+          "path": "lib_utest/qualification/mapped_wall_observers/verify_sources.py",
+          "bytes": 2076,
+          "sha256": "54b186c68d44f2cafd80df7ce570e0589edc6c37608ffa4b69cfaacc538891df"
+        }
+      ]
     }
   ]
 }

@@ -16,10 +16,7 @@ bool MakeLayout(std::size_t parents,std::size_t nodes,std::size_t groups,
       !builder.Append<double>(nodes,next.inverse) ||
       !builder.Append<Summary>(1,next.summary) ||
       !builder.Append<ObserverSummary>(ObserverBlocks(nodes),next.observer) ||
-      !builder.Append<IntervalSummary>(ObserverBlocks(nodes),next.interval) ||
-      !builder.Append<std::uint32_t>(groups+1,next.response_offsets) ||
-      !builder.Append<std::uint32_t>(nodes,next.response_rows) ||
-      !builder.Append<double>(response::Blocks(nodes),next.response_maxima)) return false;
+      !builder.Append<IntervalSummary>(ObserverBlocks(nodes),next.interval)) return false;
   next.bytes=builder.bytes();
   output=next;
   return true;
@@ -33,10 +30,6 @@ Sidecar Bind(void* base,const Layout& layout) noexcept {
     ArenaPointer<double>(base,layout.traces),ArenaPointer<double>(base,layout.stiffness),
     ArenaPointer<double>(base,layout.inverse),ArenaPointer<Summary>(base,layout.summary),
     layout.bodies.count,ArenaPointer<ObserverSummary>(base,layout.observer),
-    ArenaPointer<IntervalSummary>(base,layout.interval),
-    {ArenaPointer<std::uint32_t>(base,layout.response_offsets),
-     ArenaPointer<std::uint32_t>(base,layout.response_rows),
-     ArenaPointer<double>(base,layout.response_maxima),
-     layout.response_rows.count,layout.response_maxima.count}};
+    ArenaPointer<IntervalSummary>(base,layout.interval)};
 }
 } // namespace tlfea::contact::nodal_wall_mapped

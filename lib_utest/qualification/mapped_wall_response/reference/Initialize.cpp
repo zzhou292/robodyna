@@ -52,9 +52,6 @@ NodalWallDeviceReport NodalWallMappedContact::Initialize(const NodalWallDeviceCo
     next->host.Construct<m::Summary>(layout.summary);
     next->host.Construct<m::ObserverSummary>(layout.observer);
     next->host.Construct<m::IntervalSummary>(layout.interval);
-    next->host.Construct<std::uint32_t>(layout.response_offsets);
-    next->host.Construct<std::uint32_t>(layout.response_rows);
-    next->host.Construct<double>(layout.response_maxima);
     next->local=m::Bind(next->host.data(),layout);
     tl::util::BoundedStartupArray<double,0> coordinates;
     coordinates.Resize(3*config.owner.node_count);

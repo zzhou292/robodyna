@@ -5,7 +5,7 @@ import hashlib, json, re, subprocess, sys
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 raw = (here/'source-manifest.json').read_bytes()
-assert hashlib.sha256(raw).hexdigest() == '3987ab1d7af7601ec9117d88dfb1390732ddd2babb84ee34546ca9f2908782e3'
+assert hashlib.sha256(raw).hexdigest() == 'fd39aac4b7275d15e047bf7a36d7ea856e118c7780139a396316d3f708c437e8'
 manifest = json.loads(raw)
 for row in manifest['files']:
     path = Path(row['path'])
@@ -57,8 +57,15 @@ for name in ('CheckResponse', 'FinishAssembly', 'CopyAcceptedBase', 'BeginCandid
 accepted = body(old_ops, 'AssembleAccepted')
 accepted = accepted.replace('BeginAssembly<<<1,1,0,state.stream>>>(state.device,state.remote,view);',
     'm::assembly_validation::Launch(state.device,state.remote,view,nodes,state.stream);')
+accepted = accepted.replace('CheckResponse<<<1,1,0,state.stream>>>(state.device,state.remote,view);',
+    'm::response::Launch(state.device,state.remote,view,state.stream);')
 same(accepted, body(ops, 'AssembleAccepted'), 'complete caller and all unchanged post-validation stage order')
-same((here/'reference/Layout.h').read_text(), (folder/'Layout.h').read_text(), 'no type/arena/metadata growth')
+layout = (folder/'Layout.h').read_text()
+for addition in ('#include "ResponseTypes.h"\n', '  response::Scratch response;\n',
+    '  tl::util::ArenaRegion response_offsets,response_rows,response_maxima;\n'):
+    assert addition in layout
+    layout = layout.replace(addition, '')
+same((here/'reference/Layout.h').read_text(), layout, 'old layout prefix; separate response tail owns its growth')
 kernels = (folder/'AssemblyValidation.cuh').read_text()
 launch = body(kernels, 'Launch')
 assert launch.index('Begin<<<') < launch.index('Nodes<<<') < launch.index('CopyInversePrefix<<<') < launch.index('Finish<<<')
@@ -73,7 +80,7 @@ assert 'failure/2+(failure&1)' in body(helpers, 'InversePrefix')
 subprocess.run([sys.executable, '-B', str(here.parent/'mapped_wall_interval/verify_sources.py')], check=True)
 subprocess.run(['cmake', '-DTL_ROOT='+str(root), '-P', str(here.parent/'mapped_wall_scatter/Verify.cmake')], check=True)
 print(json.dumps({'status':'passed','records':len(manifest['files']),
-    'new_arena_bytes':0,'new_host_metadata_bytes':0,
-    'unchanged':['header/mass/geometry read order','partial inverse prefix','complete caller suffix',
+    'assembly_input_new_arena_bytes':0,'assembly_input_new_host_metadata_bytes':0,
+    'unchanged':['header/mass/geometry read order','partial inverse prefix','caller suffix except separately qualified response launch',
                  'response','scatter','activity','candidate/interval arithmetic'],
     'numerical_execution':False}))

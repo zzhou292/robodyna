@@ -4,13 +4,12 @@
 #include "../RigidNormalResponse.h"
 #include "ObserverTypes.h"
 #include "IntervalTypes.h"
-#include "ResponseTypes.h"
 namespace tlfea::contact::nodal_wall_mapped {
 struct Summary {
   Q4CertifiedIntegral removed_potential;
   double rate=0;
-  // Nonoverlapping assembly-input, parent and response integer arbitration.
-  // Reset between phases; each rigid trace retains its original row order.
+  // Nonoverlapping assembly-input then parent integer arbitration. Reset between
+  // those phases; parent floating sums stay in original slot order.
   unsigned long long parent_failure=~0ull;
   bool points_admitted=false;
   bool interval_tree_used=false;
@@ -27,12 +26,10 @@ struct Sidecar {
   std::size_t groups=0;
   ObserverSummary* observer=nullptr;
   IntervalSummary* interval=nullptr;
-  response::Scratch response;
 };
 struct Layout {
   tl::util::ArenaRegion accepted,proposed,roots,bodies,traces,stiffness,inverse,summary,observer,interval;
   std::size_t bytes=0;
-  tl::util::ArenaRegion response_offsets,response_rows,response_maxima;
 };
 bool MakeLayout(std::size_t parents,std::size_t nodes,std::size_t groups,
     std::size_t cap,Layout&) noexcept;

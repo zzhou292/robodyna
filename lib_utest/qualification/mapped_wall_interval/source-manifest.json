@@ -74,23 +74,23 @@
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Layout.h",
-      "bytes": 1454,
-      "sha256": "c82174a14bef4d6fcdcbf4a86a5f62436b80324ca5cd9fa03d2e6bce758820c4"
+      "bytes": 1585,
+      "sha256": "06ed3a0cfe8800523c35ce8768036427bf0cdfb6eb91652cea51f674a4698152"
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Layout.cpp",
-      "bytes": 1801,
-      "sha256": "15e1ce2d30ed7d1b94d330915268e31b55279212fa7c517bf7770683020d99de"
+      "bytes": 2262,
+      "sha256": "af64e183485b18b8fcb477aced7751426119ed35c43795ec41a06b21356e7fb6"
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Initialize.cpp",
-      "bytes": 5570,
-      "sha256": "2ac3b86e2465395c99f41249bec548770e33f2909cad8986410a60f40a6c8911"
+      "bytes": 5757,
+      "sha256": "14f076fbdce7309bb51889769a8fdb0b79c1d90450256aebf45872ea0d64ab81"
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
-      "bytes": 10235,
-      "sha256": "5c238d2181ab18c65deabe38b175db91472d6a2170343901db8a6d41f0307705"
+      "bytes": 10254,
+      "sha256": "74d3a30b47603651a6a5bbfceb7ecbbb08bdec7c91887f77f1292491483daac0"
     },
     {
       "path": "lib_utest/qualification/mapped_wall_interval/reference/NodalWallContactDiagnostics.h",
@@ -142,6 +142,34 @@
           "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
           "bytes": 10427,
           "sha256": "4fb8522bd293e60219d17ae2ec29b8da640098183ad57951e7f11da59dc90899"
+        }
+      ]
+    }
+  ],
+  "response_previous_receipts": [
+    {
+      "manifest_sha256": "d9f5c16edbec3242ebf6291201c653731df15367008ea2be47e76da8cca74de6",
+      "reason": "Mapped-only ordered rigid response and ordinary max scheduling, with separately counted CSR/maxima tail. Complete serial Response and CheckResponse preserved at mapped_wall_response/reference; activity, scatter, observer and interval arithmetic unchanged.",
+      "files": [
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Layout.h",
+          "bytes": 1454,
+          "sha256": "c82174a14bef4d6fcdcbf4a86a5f62436b80324ca5cd9fa03d2e6bce758820c4"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Layout.cpp",
+          "bytes": 1801,
+          "sha256": "15e1ce2d30ed7d1b94d330915268e31b55279212fa7c517bf7770683020d99de"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Initialize.cpp",
+          "bytes": 5570,
+          "sha256": "2ac3b86e2465395c99f41249bec548770e33f2909cad8986410a60f40a6c8911"
+        },
+        {
+          "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
+          "bytes": 10235,
+          "sha256": "5c238d2181ab18c65deabe38b175db91472d6a2170343901db8a6d41f0307705"
         }
       ]
     }

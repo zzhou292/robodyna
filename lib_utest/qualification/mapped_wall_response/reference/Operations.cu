@@ -4,7 +4,6 @@
 #include "Scatter.cuh"
 #include "AssemblyValidation.cuh"
 #include "Kernels.cuh"
-#include "Response.cuh"
 #include "lib_src/solvers/NodalNativePhysicalCoefficients.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
 namespace tlfea::contact {
@@ -121,7 +120,7 @@ NodalWallDeviceReport NodalWallMappedContact::AssembleAccepted(fe::FENodalState&
   m::parallel::Evaluate(state.device,state.remote,view.accepted,Identity(state.config,view),
       nodes,parents,state.stream,true,{state.remote.observer,state.layout.observer.count});
   if(cudaPeekAtLastError()!=cudaSuccess) return state.ReadControl();
-  m::response::Launch(state.device,state.remote,view,state.stream);
+  CheckResponse<<<1,1,0,state.stream>>>(state.device,state.remote,view);
   if(cudaPeekAtLastError()!=cudaSuccess) return state.ReadControl();
   m::parallel::Scatter(state.device,state.remote,view,cin,nodes,state.stream);
   if(cudaPeekAtLastError()!=cudaSuccess) return state.ReadControl();

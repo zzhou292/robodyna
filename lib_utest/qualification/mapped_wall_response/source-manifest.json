@@ -1,0 +1,136 @@
+{
+  "revision": "3e0d1d4",
+  "scope": "Mapped response schedule only; immutable ordered group incidence, exact ordinary maxima, complete serial error fallback. No activity, scatter, response formula or step change.",
+  "files": [
+    {
+      "path": "lib_src/collision/NodalWallContactKernels.cuh",
+      "bytes": 4468,
+      "sha256": "929dd58ad7f312f827a97fe5413203c103d8b11afeb81f375cf4751f931eecc2"
+    },
+    {
+      "path": "lib_src/collision/RigidNormalResponse.h",
+      "bytes": 4944,
+      "sha256": "6e1ece1f09b2ad62f652cc5308ee5e1d958e9812122badfda00c1e23e6805a8f"
+    },
+    {
+      "path": "lib_src/collision/RigidNormalResponseBounds.h",
+      "bytes": 1938,
+      "sha256": "5f4436626a50b4620428d3d3fbd1fa02de67264b63f7d31ed7c6bb3c85686b5d"
+    },
+    {
+      "path": "lib_src/collision/SurfaceContactMass.h",
+      "bytes": 8476,
+      "sha256": "f7c6e09529c86f41a4581311e6deacd3fce35c4b05dff6f1d210304710e2fb28"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Activity.cpp",
+      "bytes": 5006,
+      "sha256": "591035d19301edefa4e9fc76dff9805155411043b4821a894b03c375e810e7d7"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Forecast.cpp",
+      "bytes": 7358,
+      "sha256": "08dd40c68096e11eda3528231b3011efebba7c7ab44154554ee5ce8b08f7ecc0"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Initialize.cpp",
+      "bytes": 5757,
+      "sha256": "14f076fbdce7309bb51889769a8fdb0b79c1d90450256aebf45872ea0d64ab81"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Kernels.cuh",
+      "bytes": 2906,
+      "sha256": "192313d826696d025beae8b80526f83f2cfdea9c9afe1c447718efaff659c28b"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Layout.cpp",
+      "bytes": 2262,
+      "sha256": "af64e183485b18b8fcb477aced7751426119ed35c43795ec41a06b21356e7fb6"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Layout.h",
+      "bytes": 1585,
+      "sha256": "06ed3a0cfe8800523c35ce8768036427bf0cdfb6eb91652cea51f674a4698152"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
+      "bytes": 10254,
+      "sha256": "74d3a30b47603651a6a5bbfceb7ecbbb08bdec7c91887f77f1292491483daac0"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Readback.cpp",
+      "bytes": 7444,
+      "sha256": "e7fdd526056058220a2b2f697975c739e286fdc0e660f0ec77a08b2ae5e2740d"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Response.cuh",
+      "bytes": 2726,
+      "sha256": "8f8726c80b74c207a8cbfcb3036fe6e7888027b7209a102f62711e6a64910094"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/ResponseIncidence.h",
+      "bytes": 1370,
+      "sha256": "cf00763bfdad19d2d085507f1def1f8bbc40daa2fa904bd8647da35e5888a4f4"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/ResponseTypes.h",
+      "bytes": 809,
+      "sha256": "e27c35719f5009e875b6aabe55a7200855e5ec8e3265d3bbe4272751d557636d"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/ResponseValues.h",
+      "bytes": 2809,
+      "sha256": "3188b5aca5f11cb96862bb6eb294f0136b8348b1342b7be1788b7b4e96d3f754"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Scatter.cuh",
+      "bytes": 2720,
+      "sha256": "69076cc6648d56d8ff7dca48993fb777fdfd7e05c2c2453f71740207e742514b"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/ScatterNode.h",
+      "bytes": 1257,
+      "sha256": "5d6038cd1572f828017f2ba118c77b0ee04948dbdba642f13669d37736ff2407"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/Sources.cpp",
+      "bytes": 5365,
+      "sha256": "c2e5aad75ca4acabde68e31f8880c4537bbc3aa084d3621633d3b323d3b75a6a"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_response/FrozenResponse.h",
+      "bytes": 2167,
+      "sha256": "4e04fc9213edf165899321766e5463c33f20c283bfbfb7e3dd68765a1a02cda4"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_response/reference/Initialize.cpp",
+      "bytes": 5570,
+      "sha256": "2ac3b86e2465395c99f41249bec548770e33f2909cad8986410a60f40a6c8911"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_response/reference/Kernels.cuh",
+      "bytes": 2906,
+      "sha256": "192313d826696d025beae8b80526f83f2cfdea9c9afe1c447718efaff659c28b"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_response/reference/Layout.cpp",
+      "bytes": 1801,
+      "sha256": "15e1ce2d30ed7d1b94d330915268e31b55279212fa7c517bf7770683020d99de"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_response/reference/Layout.h",
+      "bytes": 1454,
+      "sha256": "c82174a14bef4d6fcdcbf4a86a5f62436b80324ca5cd9fa03d2e6bce758820c4"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_response/reference/Operations.cu",
+      "bytes": 10235,
+      "sha256": "5c238d2181ab18c65deabe38b175db91472d6a2170343901db8a6d41f0307705"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_response/reference/Sources.cpp",
+      "bytes": 5160,
+      "sha256": "f55e547fd86f73f3558caf9fd4059fbacda71a828443ec79050ba2613c90c516"
+    }
+  ]
+}

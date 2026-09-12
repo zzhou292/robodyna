@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
-#include "ResponseIncidence.h"
 #include "../Q4ParametricContact.h"
 #include "../NodalWallWeightStartup.h"
 #include "lib_utils/SourceIdentityIndex.h"
@@ -94,8 +93,6 @@ NodalWallDeviceReport NodalWallMappedContact::Impl::PrepareSources(const NodalWa
   const auto queried=owner->ValidateFreeRotationalNodes(surface.data(),surface.size());
   if(queried.status!=fe::NodalStatus::Ok)
     return {Code::InvalidInput,"This mapped shell contact profile requires present free world surface DOFs",queried.node};
-  if(!m::response::BuildIncidence(local.roots,weights.node_count(),local.groups,local.response))
-    return {Code::InvalidInput,"Rigid contact response incidence rejected"};
   return {Code::Ok,"Complete physical shell contact source authenticated"};
 }
 } // namespace tlfea::contact
