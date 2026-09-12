@@ -19,8 +19,15 @@
     },
     {
       "path": "lib_src/constraints/tied_shell/runtime/CinForceStage.h",
-      "bytes": 8237,
-      "sha256": "064991b19a42716eaad88fcaebeb0ce3907788fcaa7a0e0fc425de6ede109151"
+      "bytes": 4464,
+      "sha256": "65355d2dfefc48e8b15b9d5eb62294d7ae4fb0e22dba301b6ff35eb41e5327f2",
+      "prior_receipts": [
+        {
+          "bytes": 8237,
+          "sha256": "064991b19a42716eaad88fcaebeb0ce3907788fcaa7a0e0fc425de6ede109151",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        }
+      ]
     },
     {
       "path": "lib_src/constraints/tied_shell/runtime/CinMotionStage.h",
@@ -101,8 +108,15 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/group_proof.py",
-      "bytes": 4638,
-      "sha256": "1a06241f6b02f41e0d16ca993ec7a0ce983175fdc74c0e756fff1a713b393429"
+      "bytes": 4787,
+      "sha256": "4fbfbc618b6bb4f71b32720e745151674360b84ff75a9296a21efc7c92cfb5be",
+      "prior_receipts": [
+        {
+          "bytes": 4638,
+          "sha256": "1a06241f6b02f41e0d16ca993ec7a0ce983175fdc74c0e756fff1a713b393429",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/reference/ExplicitNodalCinStep.cu",
@@ -118,6 +132,26 @@
       "path": "lib_utest/qualification/cin_parallel_groups/reference/Screen.cu",
       "bytes": 2688,
       "sha256": "3bf24b3e3d5049a240af851e1e1f88b1999e7bb5377fbf4df6da2155b332eb43"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_transfers/transfer_proof.py",
+      "bytes": 4068,
+      "sha256": "cc6012e1dc24bfbae2280e20760ea6336bd04dbab372b581ae51d20084b78b87"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_transfers/reference/CinForceStage.h",
+      "bytes": 8237,
+      "sha256": "064991b19a42716eaad88fcaebeb0ce3907788fcaa7a0e0fc425de6ede109151"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_transfers/reference/ExplicitNodalCinStep.cu",
+      "bytes": 10271,
+      "sha256": "46c3f5faeba3d9d1d004b6833ecf4cb24041e5e732f93d610d56b2b21c90fc92"
+    },
+    {
+      "path": "lib_src/constraints/tied_shell/runtime/CinForceTransfer.h",
+      "bytes": 5435,
+      "sha256": "1e9745039412de8a24212aa28256769685d0edbfe9bc7808c59af1730eaa9516"
     }
   ],
   "input_only_extraction": {

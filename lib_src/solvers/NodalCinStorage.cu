@@ -18,6 +18,10 @@ cudaError_t CinStorage::Upload(cudaStream_t stream) {
   screen = util::ArenaPointer<cin_advance::screen::Summary>(arena, layout.screen);
   group_reports = layout.group_reports.count
       ? util::ArenaPointer<cin_advance::groups::Report>(arena, layout.group_reports) : nullptr;
+  prepared_transfers = util::ArenaPointer<constraints::tied_shell::cin::detail::PreparedForceRow>(
+      arena, layout.prepared_transfers);
+  // No packet has startup meaning. The complete force-input and entry-IN stage
+  // precedes a full per-row overwrite before the ordered apply reads this tail.
   // Screen records are fully written by each node kernel before reduction.
   // Private keys have no startup meaning. Every successful prefix initializes
   // its own key before any worker or completion stage can read it.

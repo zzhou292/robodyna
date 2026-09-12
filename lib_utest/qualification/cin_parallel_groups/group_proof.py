@@ -6,6 +6,7 @@ offering the exact prior view to those proofs. Frozen reference bytes never move
 """
 from pathlib import Path
 import re
+import runpy
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
@@ -22,6 +23,8 @@ def same(a, b, label):
     assert re.sub(r'\s+', '', a) == re.sub(r'\s+', '', b), label
 
 def legacy_owner(current):
+    transfer = runpy.run_path(str(HERE.parent/'cin_force_transfers/transfer_proof.py'))
+    current = transfer['legacy_owner'](current)
     value = current.replace('#include "cin_advance/Groups.h"\n', '')
     value = value.replace('const cin_advance::Input input, bool groups_prepared = false)',
         'const cin_advance::Input input)')

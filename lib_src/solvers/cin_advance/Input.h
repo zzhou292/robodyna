@@ -3,6 +3,7 @@
 #include "FailureKey.h"
 #include "ScreenSummary.h"
 #include "GroupReport.h"
+#include "../../constraints/tied_shell/runtime/CinForceTransfer.h"
 #include "../FENodalStateStorage.h"
 #include "../NodalCinRuntime.h"
 #include "../../constraints/NodalRigidGroupState.h"
@@ -36,6 +37,9 @@ struct Input {
   screen::Summary* screen = nullptr;
   // Exactly groups.group_count records; null retains the frozen serial suffix.
   groups::Report* group_reports = nullptr;
+  // Exactly model.row_count packets, rewritten after complete input/entry-IN
+  // preparation each attempt. Null retains the public serial force route.
+  constraints::tied_shell::cin::detail::PreparedForceRow* prepared_transfers = nullptr;
 };
 cudaError_t Launch(const Input&, cudaStream_t);
 } // namespace tl::fea::cin_advance

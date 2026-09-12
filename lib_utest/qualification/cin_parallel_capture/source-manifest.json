@@ -9,8 +9,8 @@
     },
     {
       "path": "lib_src/solvers/BUILD.bazel",
-      "bytes": 8057,
-      "sha256": "89693f691daf69947e61ff127957bfb9bfad964a34bab4468c341e1d028c6a82",
+      "bytes": 8134,
+      "sha256": "3f212ec1bf1ebeddceeaebcf27c91036e6f1262b604ce2cf0d39116a1789bd91",
       "prior_receipts": [
         {
           "bytes": 7702,
@@ -21,66 +21,96 @@
           "bytes": 7780,
           "sha256": "e995ecffbc42c37dac61f105ee3c2e204d3b9925b88e663faf2b3ad486282e42",
           "reason": "Integrate the qualified Seal validation header with CIN Groups.cu in the shared solver BUILD; no equation or frozen-baseline changes."
+        },
+        {
+          "bytes": 8057,
+          "sha256": "89693f691daf69947e61ff127957bfb9bfad964a34bab4468c341e1d028c6a82",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
         }
       ]
     },
     {
       "path": "lib_src/solvers/CMakeLists.txt",
-      "bytes": 1734,
-      "sha256": "2f116b66ddf1153954a91cdf242182f7e4df459078323c2a8aefedf6421a3f6a",
+      "bytes": 1766,
+      "sha256": "07470169782f895fd3ec201d39a5a6b018d2af5eee6975d2a7dafe876ee354a7",
       "prior_receipts": [
         {
           "bytes": 1712,
           "sha256": "635dbbf8ba32ef404a47691d59ba9ca7ca75340a34a2251b800900551458c3d6",
           "reason": "Independent CIN group scheduling or additive qualification ownership"
+        },
+        {
+          "bytes": 1734,
+          "sha256": "2f116b66ddf1153954a91cdf242182f7e4df459078323c2a8aefedf6421a3f6a",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
         }
       ]
     },
     {
       "path": "lib_src/solvers/ExplicitNodalCinStep.cu",
-      "bytes": 10271,
-      "sha256": "46c3f5faeba3d9d1d004b6833ecf4cb24041e5e732f93d610d56b2b21c90fc92",
+      "bytes": 10678,
+      "sha256": "4fb1ea8c19c91f7629d50719d1be05918263df38ccd1161ad0f4e90befe46831",
       "prior_receipts": [
         {
           "bytes": 9950,
           "sha256": "bfa6cf08c9c6d0c3bdd58deaf69cc15348631eef37c19a40e305d187a33a91ed",
           "reason": "Independent CIN group scheduling or additive qualification ownership"
+        },
+        {
+          "bytes": 10271,
+          "sha256": "46c3f5faeba3d9d1d004b6833ecf4cb24041e5e732f93d610d56b2b21c90fc92",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
         }
       ]
     },
     {
       "path": "lib_src/solvers/NodalCinLayout.h",
-      "bytes": 4178,
-      "sha256": "900cb7b2c3ed5f51b5b565ed1d007c7ee01c59612774878f640b0f5c9f2d4d95",
+      "bytes": 4392,
+      "sha256": "b59d8c568b2553d4d1f5439c424308ee739d22f82808f66abe18fdd899feaec4",
       "prior_receipts": [
         {
           "bytes": 3988,
           "sha256": "f8297c4f2dd66eba19e044bb0af179a25e6d526852d255cfaf820e66d776b280",
           "reason": "Independent CIN group scheduling or additive qualification ownership"
+        },
+        {
+          "bytes": 4178,
+          "sha256": "900cb7b2c3ed5f51b5b565ed1d007c7ee01c59612774878f640b0f5c9f2d4d95",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
         }
       ]
     },
     {
       "path": "lib_src/solvers/NodalCinStorage.cu",
-      "bytes": 2423,
-      "sha256": "102a653cdac0f6a889f74307559d7a0912840da2207f4207285fffeb02cae323",
+      "bytes": 2724,
+      "sha256": "74e6bad9b4a85e75d7e6660bfe356d5aa49372c2a8444078742f06a19bdb8b56",
       "prior_receipts": [
         {
           "bytes": 2282,
           "sha256": "3ed2a87200e7efa5455a859bb2fe2aa049b483fefe5d398eeedca2a6a2cad765",
           "reason": "Independent CIN group scheduling or additive qualification ownership"
+        },
+        {
+          "bytes": 2423,
+          "sha256": "102a653cdac0f6a889f74307559d7a0912840da2207f4207285fffeb02cae323",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
         }
       ]
     },
     {
       "path": "lib_src/solvers/NodalCinStorage.h",
-      "bytes": 1705,
-      "sha256": "3b9018b15d9618998f84a3e4de0efb54c43d171074522911a6e3a652ddb920de",
+      "bytes": 1793,
+      "sha256": "21cf7396ecd67a389438a03372cf7c61f0f3f4d1ab90d2abe8840c5a899bf48f",
       "prior_receipts": [
         {
           "bytes": 1620,
           "sha256": "f45647dca38c81856d15492be3637d23f5236d22d83050b97bdc442262871032",
           "reason": "Independent CIN group scheduling or additive qualification ownership"
+        },
+        {
+          "bytes": 1705,
+          "sha256": "3b9018b15d9618998f84a3e4de0efb54c43d171074522911a6e3a652ddb920de",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
         }
       ]
     },
@@ -111,13 +141,18 @@
     },
     {
       "path": "lib_src/solvers/cin_advance/Input.h",
-      "bytes": 1689,
-      "sha256": "7ba5679d1ac281057b7e185d1fb19526fb0a824f90aa5fe615fb14e41b046ed6",
+      "bytes": 1997,
+      "sha256": "732f5bad171fda201094777bc31380861d6ba7c23bb52fe6d49905dcbccac9d8",
       "prior_receipts": [
         {
           "bytes": 1541,
           "sha256": "a228f1ec0cd8d7702ffe7b124e25b3c713ea76eb4b9c2136dcdc1bc91b4525e4",
           "reason": "Independent CIN group scheduling or additive qualification ownership"
+        },
+        {
+          "bytes": 1689,
+          "sha256": "7ba5679d1ac281057b7e185d1fb19526fb0a824f90aa5fe615fb14e41b046ed6",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
         }
       ]
     },
@@ -145,37 +180,52 @@
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/BUILD.bazel",
-      "bytes": 1147,
-      "sha256": "506163d64b89b869e41bd5bd8f73a60559012e65adff4aa95d694a6f820c155c",
+      "bytes": 1222,
+      "sha256": "5d45c8f9f0d21d44e561f40243b8eab8011c6859e31b67be89d6dd4d4e1f5283",
       "prior_receipts": [
         {
           "bytes": 1072,
           "sha256": "95e9f68747946acd523549c963946c53745d37c168ff2a6592f5943d49bc3e52",
           "reason": "Independent CIN group scheduling or additive qualification ownership"
+        },
+        {
+          "bytes": 1147,
+          "sha256": "506163d64b89b869e41bd5bd8f73a60559012e65adff4aa95d694a6f820c155c",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/source-manifest.json",
-      "bytes": 5471,
-      "sha256": "e22c6630385489822a01fd075ad71ddfb96f3fe4fb4791d6496b6882184fa3fd",
+      "bytes": 6920,
+      "sha256": "39524cdf0c7cdfdd425ed7e9a8ff16867270594f41aa4340fd15573819d2ee18",
       "prior_receipts": [
         {
           "bytes": 4181,
           "sha256": "f8304fba734d84751ef161fcf5a389c850141cd3d70b43d23c29a52fb3888a82",
           "reason": "Independent CIN group scheduling or additive qualification ownership"
+        },
+        {
+          "bytes": 5471,
+          "sha256": "e22c6630385489822a01fd075ad71ddfb96f3fe4fb4791d6496b6882184fa3fd",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/verify_sources.py",
-      "bytes": 6213,
-      "sha256": "b5a35c37b176a26c0de19b06aa0afbf4d339fbb5f732e942a58457f9205f8dea",
+      "bytes": 6359,
+      "sha256": "ca8ad3edb2af8d19aa867fac9561839562a80a07d19a756855979a7a391d2b7b",
       "prior_receipts": [
         {
           "bytes": 6073,
           "sha256": "de2b0c5d282e0d45f6f952f56f35cbe2ac63a01d5a36ac6c0b066e152b60f7bf",
           "reason": "Independent CIN group scheduling or additive qualification ownership"
+        },
+        {
+          "bytes": 6213,
+          "sha256": "b5a35c37b176a26c0de19b06aa0afbf4d339fbb5f732e942a58457f9205f8dea",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
         }
       ]
     },
@@ -236,8 +286,8 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/BUILD.bazel",
-      "bytes": 2418,
-      "sha256": "fbe533c93c192d1d0b5870de84b9b85837489d70423340838b00c7f737c7f3bb",
+      "bytes": 2718,
+      "sha256": "cc5b9cc843f1f2572cfab1cda271661ecf28fb86c2b189d27c6c74e467ac6cde",
       "prior_receipts": [
         {
           "bytes": 2039,
@@ -253,6 +303,11 @@
           "bytes": 2264,
           "sha256": "8e1c4b903f156eceb7bae1b6dd48a8adb8f7632bace841b39b48c7792ba56e62",
           "reason": "Integrate corrected zero-group qualification with the existing qualified Seal-combined receipts; production and frozen baselines unchanged."
+        },
+        {
+          "bytes": 2418,
+          "sha256": "fbe533c93c192d1d0b5870de84b9b85837489d70423340838b00c7f737c7f3bb",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
         }
       ]
     },
@@ -293,25 +348,35 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/source-manifest.json",
-      "bytes": 6078,
-      "sha256": "a6547d4048c2349cf999c513dbbd7be8a0821eb11be0d8db9f377b34434bc09d",
+      "bytes": 7527,
+      "sha256": "a398fd1cbe9683804047dfe6e83a15a9cc12497b9874d0b570f5e933d7e2de92",
       "prior_receipts": [
         {
           "bytes": 4788,
           "sha256": "ebd82719851c8ec51ca5b73bd7d068fa663b0aee0cee18d54f98eddb99761405",
           "reason": "Independent CIN group scheduling or additive qualification ownership"
+        },
+        {
+          "bytes": 6078,
+          "sha256": "a6547d4048c2349cf999c513dbbd7be8a0821eb11be0d8db9f377b34434bc09d",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/verify_sources.py",
       "bytes": 4833,
-      "sha256": "70c2e53e20be3f7731bc22a12fc11e9e966b05caf065886183275d4bf80e0447",
+      "sha256": "62fff503660e838a65bdd30396805fdf2fceb718bdf29a519d2ce473c6dc88da",
       "prior_receipts": [
         {
           "bytes": 4689,
           "sha256": "f3b08513371aaae42eaee18c6d7ff050cec19925dc1003b618d4053f9a6c3f55",
           "reason": "Independent CIN group scheduling or additive qualification ownership"
+        },
+        {
+          "bytes": 4833,
+          "sha256": "70c2e53e20be3f7731bc22a12fc11e9e966b05caf065886183275d4bf80e0447",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
         }
       ]
     },
@@ -322,8 +387,8 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/source-manifest.json",
-      "bytes": 19445,
-      "sha256": "1cb56ea67d0b3b9e8808df3948ffe04bf5b6d7ecb3876951425a924af6305133",
+      "bytes": 24317,
+      "sha256": "f48fd8490595946955c324c5b99c03e66f985e9e13445fb4f05a155290be3b4f",
       "prior_receipts": [
         {
           "bytes": 12332,
@@ -344,13 +409,18 @@
           "bytes": 18058,
           "sha256": "8340f68dd1593cbf00869cf4a5e9e61ac108fa500dd5606666ec22bbcce781d6",
           "reason": "Integrate corrected zero-group qualification with the existing qualified Seal-combined receipts; production and frozen baselines unchanged."
+        },
+        {
+          "bytes": 19445,
+          "sha256": "1cb56ea67d0b3b9e8808df3948ffe04bf5b6d7ecb3876951425a924af6305133",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/verify_sources.py",
       "bytes": 6798,
-      "sha256": "307c27df8f470e3b1a9e264937cb2db352a33ec12f4190f8729185c247dc81a6",
+      "sha256": "438334e9e5ee4754970bc404e17b8f749a98fcfb79847e5e77c98d369666e36a",
       "prior_receipts": [
         {
           "bytes": 6597,
@@ -371,18 +441,28 @@
           "bytes": 6798,
           "sha256": "887cd3541255b79e7922cd93a93498b85b8ceecb709e56fe8d1749b59d55ba80",
           "reason": "Integrate corrected zero-group qualification with the existing qualified Seal-combined receipts; production and frozen baselines unchanged."
+        },
+        {
+          "bytes": 6798,
+          "sha256": "307c27df8f470e3b1a9e264937cb2db352a33ec12f4190f8729185c247dc81a6",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/rigid_assembly_owner/BUILD.bazel",
-      "bytes": 2629,
-      "sha256": "602d8dfdf55e46b31858bb311e2adeea14cb6d7ff4f49aace8254fed97a1117e",
+      "bytes": 2704,
+      "sha256": "b5327def841738337537a399d13a54188479caf2831b3b97bce22c894a45a30d",
       "prior_receipts": [
         {
           "bytes": 2483,
           "sha256": "4e62583d1507f2eb92809f2256c5b433e65179aaf185afed7088bfc96752abbd",
           "reason": "Independent CIN group scheduling or additive qualification ownership"
+        },
+        {
+          "bytes": 2629,
+          "sha256": "602d8dfdf55e46b31858bb311e2adeea14cb6d7ff4f49aace8254fed97a1117e",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
         }
       ]
     },
@@ -393,8 +473,15 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/group_proof.py",
-      "bytes": 4638,
-      "sha256": "1a06241f6b02f41e0d16ca993ec7a0ce983175fdc74c0e756fff1a713b393429"
+      "bytes": 4787,
+      "sha256": "4fbfbc618b6bb4f71b32720e745151674360b84ff75a9296a21efc7c92cfb5be",
+      "prior_receipts": [
+        {
+          "bytes": 4638,
+          "sha256": "1a06241f6b02f41e0d16ca993ec7a0ce983175fdc74c0e756fff1a713b393429",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/reference/ExplicitNodalCinStep.cu",
@@ -410,6 +497,26 @@
       "path": "lib_utest/qualification/cin_parallel_groups/reference/Screen.cu",
       "bytes": 2688,
       "sha256": "3bf24b3e3d5049a240af851e1e1f88b1999e7bb5377fbf4df6da2155b332eb43"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_transfers/transfer_proof.py",
+      "bytes": 4068,
+      "sha256": "cc6012e1dc24bfbae2280e20760ea6336bd04dbab372b581ae51d20084b78b87"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_transfers/reference/CinForceStage.h",
+      "bytes": 8237,
+      "sha256": "064991b19a42716eaad88fcaebeb0ce3907788fcaa7a0e0fc425de6ede109151"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_transfers/reference/ExplicitNodalCinStep.cu",
+      "bytes": 10271,
+      "sha256": "46c3f5faeba3d9d1d004b6833ecf4cb24041e5e732f93d610d56b2b21c90fc92"
+    },
+    {
+      "path": "lib_src/constraints/tied_shell/runtime/CinForceTransfer.h",
+      "bytes": 5435,
+      "sha256": "1e9745039412de8a24212aa28256769685d0edbfe9bc7808c59af1730eaa9516"
     }
   ],
   "group_scheduling_compatibility": "Exact checked prior view: cin_parallel_groups/group_proof.py; original frozen gate scope retained. Independent group execution/partial private trial writes have their own qualification.",

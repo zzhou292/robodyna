@@ -11,7 +11,7 @@ root = here.parents[2]
 import runpy
 group_proof = runpy.run_path(str(here.parent/"cin_parallel_groups/group_proof.py"))
 raw = (here / 'source-manifest.json').read_bytes()
-assert hashlib.sha256(raw).hexdigest() == 'e22c6630385489822a01fd075ad71ddfb96f3fe4fb4791d6496b6882184fa3fd'
+assert hashlib.sha256(raw).hexdigest() == '39524cdf0c7cdfdd425ed7e9a8ff16867270594f41aa4340fd15573819d2ee18'
 manifest = json.loads(raw)
 for row in manifest['files']:
     path = Path(row['path'])
@@ -35,6 +35,8 @@ def same(a, b, label):
 
 old = (here/'serial/CinForceStage.h.txt').read_text()
 current = (root/'lib_src/constraints/tied_shell/runtime/CinForceStage.h').read_text()
+transfer_proof = runpy.run_path(str(here.parent/'cin_force_transfers/transfer_proof.py'))
+current = transfer_proof['legacy_force_stage'](current)
 frozen = old.replace('#include "CinStageTypes.h"', '#include "lib_src/constraints/tied_shell/runtime/CinStageTypes.h"')
 frozen = frozen.replace('#include "../TiedPatchForce.h"', '#include "lib_src/constraints/tied_shell/TiedPatchForce.h"')
 frozen = frozen.replace('namespace tl::constraints::tied_shell::cin {', 'namespace tl::constraints::tied_shell::cin_input_frozen {\nusing namespace cin;')

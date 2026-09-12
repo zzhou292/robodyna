@@ -2,7 +2,6 @@
 #include "NodalCinRuntime.h"
 #include "cin_advance/Node.h"
 #include "cin_advance/ForceInputs.h"
-#include "cin_advance/ForceTransfers.h"
 #include "cin_advance/Screen.h"
 #include "cin_advance/Capture.h"
 #include "cin_advance/Groups.h"
@@ -23,8 +22,7 @@ __device__ void Fail(nodal_detail::Control* control, NodalStatus status, std::ui
   control->node = node;
   if (status == NodalStatus::StepTooLarge) control->limit.dt = 0;
 }
-__global__ void PrepareCin(const cin_advance::Input input, bool inputs_prepared, bool parallel_screen,
-    bool transfers_prepared = false) {
+__global__ void PrepareCin(const cin_advance::Input input, bool inputs_prepared, bool parallel_screen) {
   auto* control = input.control;
   const auto* accepted = input.accepted;
   auto* loads = input.loads;
@@ -46,8 +44,7 @@ __global__ void PrepareCin(const cin_advance::Input input, bool inputs_prepared,
   const auto r = model.row_count;
   const cin::ForceTrial force{accepted, loads, tail, tail+n, work, work+n,
     tail+4*n, tail+4*n+r, tail+4*n+2*r, work+2*n, patches, activity};
-  auto stage = transfers_prepared ? cin_advance::force_transfers::Apply(input)
-      : inputs_prepared ? cin::detail::TransferForceTrial(model, force)
+  auto stage = inputs_prepared ? cin::detail::TransferForceTrial(model, force)
       : cin::PrepareForceTrial(model, force);
   if (!stage) {
     Fail(control, stage.status == cin::StageStatus::PendingReleaseEligibility
@@ -173,12 +170,7 @@ cudaError_t cin_advance::Launch(const Input& input, cudaStream_t stream) {
   }
   const bool parallel_screen = input.screen && screen::Blocks(input.model.node_count) &&
       input.structural.profile != NodalCinStructuralProfile::Disabled;
-  const bool parallel_transfers = parallel_inputs && input.prepared_transfers;
-  if (parallel_transfers) {
-    error = force_transfers::Launch(input, stream);
-    if (error != cudaSuccess) return error;
-  }
-  PrepareCin<<<1,1,0,stream>>>(input, parallel_inputs, parallel_screen, parallel_transfers);
+  PrepareCin<<<1,1,0,stream>>>(input, parallel_inputs, parallel_screen);
   error = cudaGetLastError();
   if (error != cudaSuccess) return error;
   if (parallel_screen) {
@@ -215,8 +207,7 @@ cudaError_t FENodalState::Impl::LaunchCinAdvance(double maximum_angle,
       trial+cin->state_offset, cin->work, cin->patches, cin->activity, groups, durations,
       maximum_angle, stamp.epoch, attempt, capture,
       stamp.has_rotation_presence?fixed+3*config.node_count:nullptr,
-      structural ? *structural : NodalCinStructuralStep{}, cin->failure, cin->input_failure, cin->screen, cin->group_reports,
-      cin->prepared_transfers}, stream);
+      structural ? *structural : NodalCinStructuralStep{}, cin->failure, cin->input_failure, cin->screen, cin->group_reports}, stream);
 }
 
 NodalReport AdvanceStaggeredCin(FENodalState& owner, const NodalTrialToken& token,

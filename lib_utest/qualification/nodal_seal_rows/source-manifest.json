@@ -17,13 +17,27 @@
     },
     {
       "path": "lib_src/solvers/BUILD.bazel",
-      "bytes": 8057,
-      "sha256": "89693f691daf69947e61ff127957bfb9bfad964a34bab4468c341e1d028c6a82"
+      "bytes": 8134,
+      "sha256": "3f212ec1bf1ebeddceeaebcf27c91036e6f1262b604ce2cf0d39116a1789bd91",
+      "prior_receipts": [
+        {
+          "bytes": 8057,
+          "sha256": "89693f691daf69947e61ff127957bfb9bfad964a34bab4468c341e1d028c6a82",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        }
+      ]
     },
     {
       "path": "lib_src/solvers/CMakeLists.txt",
-      "bytes": 1734,
-      "sha256": "2f116b66ddf1153954a91cdf242182f7e4df459078323c2a8aefedf6421a3f6a"
+      "bytes": 1766,
+      "sha256": "07470169782f895fd3ec201d39a5a6b018d2af5eee6975d2a7dafe876ee354a7",
+      "prior_receipts": [
+        {
+          "bytes": 1734,
+          "sha256": "2f116b66ddf1153954a91cdf242182f7e4df459078323c2a8aefedf6421a3f6a",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        }
+      ]
     },
     {
       "path": "lib_src/solvers/ExplicitStepStability.h",
@@ -77,33 +91,75 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_capture/source-manifest.json",
-      "bytes": 17533,
-      "sha256": "5e92db8fd95281989a8749faae3d5e89b79abd147caeb98ec142d51e2e7329fa"
+      "bytes": 23270,
+      "sha256": "7bfd9c9c0fa2cafd6af075cccf7cbc4fe84c8be4865a9dd4920fdc56c0bc0d58",
+      "prior_receipts": [
+        {
+          "bytes": 17533,
+          "sha256": "5e92db8fd95281989a8749faae3d5e89b79abd147caeb98ec142d51e2e7329fa",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_capture/verify_sources.py",
       "bytes": 3992,
-      "sha256": "5c01f6c23f21432d63f6cd8a67dd417c4d5cd2a956af245ab95186b072df32eb"
+      "sha256": "78728beb25c5441a43d92763f3ce7d9c18c8a5196ba635268acd6f635d7f9e76",
+      "prior_receipts": [
+        {
+          "bytes": 3992,
+          "sha256": "5c01f6c23f21432d63f6cd8a67dd417c4d5cd2a956af245ab95186b072df32eb",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/source-manifest.json",
-      "bytes": 23168,
-      "sha256": "a3e2e5e6133a31f076543c0fec76a0558736db95935a4fc44031f337c303a7d2"
+      "bytes": 30246,
+      "sha256": "7fa3d2d9e1f64a8ba619aa31c8266fb8f4e89fa6075a551ace6904ddb27e5a05",
+      "prior_receipts": [
+        {
+          "bytes": 23168,
+          "sha256": "a3e2e5e6133a31f076543c0fec76a0558736db95935a4fc44031f337c303a7d2",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/verify_sources.py",
       "bytes": 3905,
-      "sha256": "60a2b492732321596aa16328d405e5dee2e588ee1ff8ac72aeaae56861f8d44d"
+      "sha256": "57ed6499bbe014bf792941940a60fe380c5c86caa533772783746d8f5d8f2655",
+      "prior_receipts": [
+        {
+          "bytes": 3905,
+          "sha256": "60a2b492732321596aa16328d405e5dee2e588ee1ff8ac72aeaae56861f8d44d",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/source-manifest.json",
-      "bytes": 19445,
-      "sha256": "1cb56ea67d0b3b9e8808df3948ffe04bf5b6d7ecb3876951425a924af6305133"
+      "bytes": 24317,
+      "sha256": "f48fd8490595946955c324c5b99c03e66f985e9e13445fb4f05a155290be3b4f",
+      "prior_receipts": [
+        {
+          "bytes": 19445,
+          "sha256": "1cb56ea67d0b3b9e8808df3948ffe04bf5b6d7ecb3876951425a924af6305133",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/verify_sources.py",
       "bytes": 6798,
-      "sha256": "307c27df8f470e3b1a9e264937cb2db352a33ec12f4190f8729185c247dc81a6"
+      "sha256": "438334e9e5ee4754970bc404e17b8f749a98fcfb79847e5e77c98d369666e36a",
+      "prior_receipts": [
+        {
+          "bytes": 6798,
+          "sha256": "307c27df8f470e3b1a9e264937cb2db352a33ec12f4190f8729185c247dc81a6",
+          "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/nodal_seal_rows/BUILD.bazel",
@@ -189,6 +245,26 @@
       "path": "lib_utest/utest_step_stability_cuda.cu",
       "bytes": 7066,
       "sha256": "ade57cb4c802b90db7abab7425b7a532f8da79439fbbda9057a105f74e8760ee"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_transfers/transfer_proof.py",
+      "bytes": 4068,
+      "sha256": "cc6012e1dc24bfbae2280e20760ea6336bd04dbab372b581ae51d20084b78b87"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_transfers/reference/CinForceStage.h",
+      "bytes": 8237,
+      "sha256": "064991b19a42716eaad88fcaebeb0ce3907788fcaa7a0e0fc425de6ede109151"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_transfers/reference/ExplicitNodalCinStep.cu",
+      "bytes": 10271,
+      "sha256": "46c3f5faeba3d9d1d004b6833ecf4cb24041e5e732f93d610d56b2b21c90fc92"
+    },
+    {
+      "path": "lib_src/constraints/tied_shell/runtime/CinForceTransfer.h",
+      "bytes": 5435,
+      "sha256": "1e9745039412de8a24212aa28256769685d0edbfe9bc7808c59af1730eaa9516"
     }
   ]
 }
