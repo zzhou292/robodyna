@@ -3,19 +3,27 @@
 
 This is a cooperative workstation guard, not a GPU memory allocator or cgroup.
 Children inherit CPU affinity and thread limits. Memory limits are sampled;
-the owned process group is terminated if a limit is exceeded. No other user's
-processes are touched. Use the same lock path for all builds/tests in a session.
+the owned process group is terminated if a limit is exceeded. An explicit stop
+file permits a short controller grace for GPU growth alone; hard limits remain
+active. No other user's processes are touched. Use the same lock path for all
+builds/tests in a session.
 """
 
 import argparse
 import fcntl
 import json
+import math
 import os
 from pathlib import Path
 import signal
 import subprocess
 import sys
 import time
+
+if __package__:
+    from .bounded_stop import CooperativeStop, GPU_GROWTH_REASON
+else:
+    from bounded_stop import CooperativeStop, GPU_GROWTH_REASON
 
 MIB = 1024 * 1024
 GIB = 1024 * MIB
@@ -88,6 +96,10 @@ def main():
     parser.add_argument('--gpu', type=int, help='require and monitor this physical GPU')
     parser.add_argument('--min-gpu-free-gib', type=float, default=8)
     parser.add_argument('--max-gpu-growth-gib', type=float, default=4)
+    parser.add_argument('--cooperative-stop-file', type=Path,
+                        help='on GPU growth only, create this fresh controller stop file before killing')
+    parser.add_argument('--cooperative-stop-grace-seconds', type=float,
+                        help='positive finite grace after that request (default 30 seconds)')
     parser.add_argument('command', nargs=argparse.REMAINDER)
     args = parser.parse_args()
     command = args.command[1:] if args.command[:1] == ['--'] else args.command
@@ -95,6 +107,14 @@ def main():
             value < 0 for value in [args.min_available_gib, args.max_rss_gib,
                                    args.min_gpu_free_gib, args.max_gpu_growth_gib]):
         parser.error('provide a command and positive CPU/timeout, nonnegative memory limits')
+    if args.cooperative_stop_file is None and args.cooperative_stop_grace_seconds is not None:
+        parser.error('--cooperative-stop-grace-seconds requires --cooperative-stop-file')
+    grace_seconds = args.cooperative_stop_grace_seconds
+    if grace_seconds is None:
+        grace_seconds = 30.0
+    if args.cooperative_stop_file is not None and (
+            args.gpu is None or not math.isfinite(grace_seconds) or grace_seconds <= 0):
+        parser.error('cooperative stop requires --gpu and a finite positive grace')
     args.report.parent.mkdir(parents=True, exist_ok=True)
     lock_path = args.lock or args.report.parent / 'workstation.lock'
     lock_path.parent.mkdir(parents=True, exist_ok=True)
@@ -103,6 +123,10 @@ def main():
                   timeout_seconds=args.timeout, gpu=args.gpu,
                   min_gpu_free_gib=args.min_gpu_free_gib,
                   max_gpu_growth_gib=args.max_gpu_growth_gib), samples=[], status='preflight')
+    cooperative = None
+    if args.cooperative_stop_file is not None:
+        cooperative = CooperativeStop(args.cooperative_stop_file, grace_seconds)
+        report['cooperative_stop'] = cooperative.record
     process = None
     started = time.monotonic()
     def interrupted(signum, _frame):
@@ -111,6 +135,8 @@ def main():
     try:
         with lock_path.open('a') as lock:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            if cooperative is not None:
+                cooperative.preflight(args.report, lock_path)
             available = sorted(os.sched_getaffinity(0))
             affinity = available[:min(args.cpus, len(available))]
             mem = memory_info()
@@ -159,11 +185,27 @@ def main():
                 elif previous_gpu and previous_gpu['free_bytes'] < args.min_gpu_free_gib * GIB:
                     reason = 'free GPU memory fell below reserve'
                 elif previous_gpu and previous_gpu['used_bytes'] - initial_gpu['used_bytes'] > args.max_gpu_growth_gib * GIB:
-                    reason = 'total GPU memory growth exceeded job allowance'
+                    reason = GPU_GROWTH_REASON
                 elif now - started > args.timeout:
                     reason = 'command timeout'
                 if reason:
-                    raise RuntimeError(reason)
+                    if cooperative is None or reason != GPU_GROWTH_REASON:
+                        raise RuntimeError(reason)
+                    # Timeout remains hard, including when growth has priority
+                    # in the original diagnostic ordering. A finished command
+                    # cannot be asked to finalize an accepted prefix.
+                    elapsed = time.monotonic() - started
+                    if elapsed > args.timeout:
+                        raise RuntimeError('command timeout')
+                    if cooperative.deadline is None and process.poll() is not None:
+                        raise RuntimeError(reason)
+                    cooperative.request(elapsed, sample)
+                if cooperative is not None and cooperative.deadline is not None:
+                    elapsed = time.monotonic() - started
+                    if elapsed > args.timeout:
+                        raise RuntimeError('command timeout')
+                    if cooperative.expired(elapsed):
+                        raise RuntimeError('cooperative stop grace expired')
                 if process.poll() is not None:
                     break
                 time.sleep(0.25)
@@ -171,9 +213,18 @@ def main():
             stop_group(process)
             report['exit_code'] = process.returncode
             report['status'] = 'passed' if process.returncode == 0 else 'command_failed'
+            if cooperative is not None and cooperative.deadline is not None:
+                cooperative.exited(time.monotonic() - started, process.returncode)
+                if process.returncode == 0:
+                    report['status'] = 'cooperatively_stopped'
+                report['reason'] = GPU_GROWTH_REASON
     except (OSError, RuntimeError, subprocess.SubprocessError, KeyboardInterrupt) as error:
+        if cooperative is not None:
+            cooperative.forced(time.monotonic() - started, str(error))
         if process is not None:
             stop_group(process)
+            if cooperative is not None and cooperative.record['outcome'] != 'not_requested':
+                cooperative.record['termination_completed_elapsed_seconds'] = time.monotonic() - started
         report['status'] = 'blocked_or_stopped'
         report['reason'] = str(error)
         report['exit_code'] = 125
