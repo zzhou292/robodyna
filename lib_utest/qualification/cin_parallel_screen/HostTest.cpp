@@ -141,7 +141,11 @@ TEST(CinParallelScreenHost, DedicatedCountedTailAndLateBudgetRetryPreserveKeys) 
   EXPECT_EQ(layout.screen.bytes, 4096u);
   EXPECT_EQ(layout.screen.count, 256u);
   EXPECT_EQ(layout.screen.offset, layout.input_failure.offset+layout.input_failure.bytes);
-  EXPECT_EQ(layout.device_bytes, layout.screen.offset+layout.screen.bytes);
+  EXPECT_EQ(layout.group_reports.count, 0u);
+  EXPECT_EQ(layout.prepared_transfers.offset, layout.screen.offset+layout.screen.bytes);
+  EXPECT_EQ(layout.prepared_transfers.count, 11165u);
+  EXPECT_EQ(layout.prepared_transfers.bytes, 5716480u);
+  EXPECT_EQ(layout.device_bytes, layout.prepared_transfers.offset+layout.prepared_transfers.bytes);
   EXPECT_EQ(layout.failure.bytes, 8u);
   EXPECT_EQ(layout.input_failure.bytes, 8u);
   auto exact = limits;

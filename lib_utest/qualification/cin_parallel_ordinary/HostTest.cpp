@@ -40,7 +40,11 @@ TEST(CinParallelOrdinary, FullCountLayoutChargesIndependentKeysAndPreservesLateR
   EXPECT_EQ(layout.work.offset + layout.work.bytes, layout.failure.offset);
   EXPECT_EQ(layout.input_failure.offset, layout.failure.offset + sizeof(ca::FailureKey));
   EXPECT_EQ(layout.screen.offset, layout.input_failure.offset + sizeof(ca::FailureKey));
-  EXPECT_EQ(layout.device_bytes, layout.screen.offset + layout.screen.bytes);
+  EXPECT_EQ(layout.group_reports.count, 0u);
+  EXPECT_EQ(layout.prepared_transfers.offset, layout.screen.offset+layout.screen.bytes);
+  EXPECT_EQ(layout.prepared_transfers.count, 11165u);
+  EXPECT_EQ(layout.prepared_transfers.bytes, 5716480u);
+  EXPECT_EQ(layout.device_bytes, layout.prepared_transfers.offset+layout.prepared_transfers.bytes);
   EXPECT_EQ(layout.scratch_values, 9*nodes);
   EXPECT_EQ(layout.state_values, 4*nodes+2*rows+1);
   EXPECT_EQ(layout.optional_device_bytes, layout.device_bytes+2*layout.state_values*sizeof(double));

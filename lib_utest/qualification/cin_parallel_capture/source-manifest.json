@@ -387,8 +387,8 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/source-manifest.json",
-      "bytes": 24317,
-      "sha256": "f48fd8490595946955c324c5b99c03e66f985e9e13445fb4f05a155290be3b4f",
+      "bytes": 25262,
+      "sha256": "36d0545065acd5f6849508f6513657db627e7d486dae7ae9754d54e304623d80",
       "prior_receipts": [
         {
           "bytes": 12332,
@@ -414,13 +414,18 @@
           "bytes": 19445,
           "sha256": "1cb56ea67d0b3b9e8808df3948ffe04bf5b6d7ecb3876951425a924af6305133",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        },
+        {
+          "bytes": 24317,
+          "sha256": "f48fd8490595946955c324c5b99c03e66f985e9e13445fb4f05a155290be3b4f",
+          "reason": "Update legacy zero-group arena-end controls for the qualified prepared-row tail; exact caps and production remain unchanged."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/verify_sources.py",
       "bytes": 6798,
-      "sha256": "438334e9e5ee4754970bc404e17b8f749a98fcfb79847e5e77c98d369666e36a",
+      "sha256": "ee594b2376af94b904b27d7a961c9e7258b1b774850a10cf06454449b53bc872",
       "prior_receipts": [
         {
           "bytes": 6597,
@@ -446,6 +451,11 @@
           "bytes": 6798,
           "sha256": "307c27df8f470e3b1a9e264937cb2db352a33ec12f4190f8729185c247dc81a6",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        },
+        {
+          "bytes": 6798,
+          "sha256": "438334e9e5ee4754970bc404e17b8f749a98fcfb79847e5e77c98d369666e36a",
+          "reason": "Update legacy zero-group arena-end controls for the qualified prepared-row tail; exact caps and production remain unchanged."
         }
       ]
     },

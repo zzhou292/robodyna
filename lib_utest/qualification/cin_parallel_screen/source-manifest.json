@@ -253,8 +253,15 @@
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/HostTest.cpp",
-      "bytes": 5108,
-      "sha256": "c2801bcfec638edef426c0cfc0fc87bf87a6965ebc092ff765367391e1177498"
+      "bytes": 5376,
+      "sha256": "50240d8d4290e00652630b0456a22373d299591a0784b55f54e1e83b5995456d",
+      "prior_receipts": [
+        {
+          "bytes": 5108,
+          "sha256": "c2801bcfec638edef426c0cfc0fc87bf87a6965ebc092ff765367391e1177498",
+          "reason": "Update legacy zero-group arena-end controls for the qualified prepared-row tail; exact caps and production remain unchanged."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/source-manifest.json",
@@ -344,8 +351,15 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/HostTest.cpp",
-      "bytes": 5621,
-      "sha256": "0a3bef3ba0f34bc52a415d6e40cfade68ac72d4c72471ebca0d8e132be4c66d4"
+      "bytes": 5887,
+      "sha256": "a5fc90a5f625f02b85d2f8961f760c07a381307077ef21ad3775529eb86bd500",
+      "prior_receipts": [
+        {
+          "bytes": 5621,
+          "sha256": "0a3bef3ba0f34bc52a415d6e40cfade68ac72d4c72471ebca0d8e132be4c66d4",
+          "reason": "Update legacy zero-group arena-end controls for the qualified prepared-row tail; exact caps and production remain unchanged."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/Packet.cpp",
@@ -433,8 +447,15 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/HostTest.cpp",
-      "bytes": 7469,
-      "sha256": "21b95449515a864ac78be8bb1f2629f756ba6f2dbf31a470bd3a9595e5c5d193"
+      "bytes": 7737,
+      "sha256": "8c8d175856e249a988904787107b45b0ad7833f9f9073aa0f21b1af68c4fcf00",
+      "prior_receipts": [
+        {
+          "bytes": 7469,
+          "sha256": "21b95449515a864ac78be8bb1f2629f756ba6f2dbf31a470bd3a9595e5c5d193",
+          "reason": "Update legacy zero-group arena-end controls for the qualified prepared-row tail; exact caps and production remain unchanged."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/ValuesTest.cu",
