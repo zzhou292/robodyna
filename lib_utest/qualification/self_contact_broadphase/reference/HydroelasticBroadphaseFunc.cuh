@@ -14,7 +14,6 @@
 #pragma once
 
 #include "HydroelasticBroadphase.cuh"
-#include "broadphase/Sweep.h"
 
 // Device / kernel functions for Broadphase
 
@@ -142,12 +141,38 @@ __global__ void reorderAABBsKernel(const AABB* input, AABB* output,
   }
 }
 
-// Compatibility helpers retain their original names and semantics.
-__device__ bool isNeighborPair(int a, int b, const long long* hashes, int count) {
-  return broadphase_detail::IsNeighborPair(a,b,hashes,count);
+// Device function: binary search in sorted hash array
+__device__ bool isNeighborPair(int idA, int idB,
+                               const long long* neighborHashes, int numHashes) {
+  // Handle case with no neighbor data
+  if (numHashes == 0 || neighborHashes == nullptr)
+    return false;
+
+  // Ensure idA < idB for consistent hashing
+  if (idA > idB) {
+    int temp = idA;
+    idA      = idB;
+    idB      = temp;
+  }
+
+  long long hash = ((long long)idA << 32) | idB;
+
+  // Binary search
+  int left = 0, right = numHashes - 1;
+  while (left <= right) {
+    int mid = left + (right - left) / 2;
+    if (neighborHashes[mid] == hash)
+      return true;
+    if (neighborHashes[mid] < hash)
+      left = mid + 1;
+    else
+      right = mid - 1;
+  }
+  return false;
 }
+
 __device__ double broadphaseAxisValue(const double3& p, int axis) {
-  return broadphase_detail::AxisValue(p,axis);
+  return axis == 0 ? p.x : (axis == 1 ? p.y : p.z);
 }
 
 // Kernel to count potential collisions per element (with neighbor filtering)
@@ -160,10 +185,37 @@ __global__ void countCollisionsKernel(const AABB* sortedAABBs,
   if (i >= n)
     return;
 
-  broadphase_detail::CountPairs count;
-  broadphase_detail::VisitLater(sortedAABBs,n,i,axis,
-      broadphase_detail::LegacyFilter{neighborHashes,numHashes,elementMeshIds,enableSelfCollision},count);
-  collisionCounts[i] = count.count;
+  const AABB& Ai = sortedAABBs[i];
+  unsigned long long count = 0;
+
+  for (int j = i + 1; j < n; ++j) {
+    const AABB& Aj = sortedAABBs[j];
+
+    if (broadphaseAxisValue(Aj.min, axis) >
+        broadphaseAxisValue(Ai.max, axis))
+      break;
+
+    bool overlapX = (Ai.min.x <= Aj.max.x && Aj.min.x <= Ai.max.x);
+    bool overlapY = (Ai.min.y <= Aj.max.y && Aj.min.y <= Ai.max.y);
+    bool overlapZ = (Ai.min.z <= Aj.max.z && Aj.min.z <= Ai.max.z);
+
+    if (overlapX && overlapY && overlapZ) {
+      if (!enableSelfCollision && elementMeshIds != nullptr) {
+        int meshIdA = elementMeshIds[Ai.objectId];
+        int meshIdB = elementMeshIds[Aj.objectId];
+        if (meshIdA == meshIdB) {
+          continue;
+        }
+      }
+      // Check if they are neighbors - skip if true
+      if (!isNeighborPair(Ai.objectId, Aj.objectId, neighborHashes,
+                          numHashes)) {
+        count++;
+      }
+    }
+  }
+
+  collisionCounts[i] = count;
 }
 
 // Kernel to generate collision pairs (with neighbor filtering)
@@ -175,7 +227,33 @@ __global__ void generateCollisionPairsKernel(
   if (i >= n)
     return;
 
-  broadphase_detail::WriteLegacyPairs output{collisionPairs,collisionOffsets[i]};
-  broadphase_detail::VisitLater(sortedAABBs,n,i,axis,
-      broadphase_detail::LegacyFilter{neighborHashes,numHashes,elementMeshIds,enableSelfCollision},output);
+  const AABB& Ai = sortedAABBs[i];
+  unsigned long long writeIdx = collisionOffsets[i];
+
+  for (int j = i + 1; j < n; ++j) {
+    const AABB& Aj = sortedAABBs[j];
+
+    if (broadphaseAxisValue(Aj.min, axis) >
+        broadphaseAxisValue(Ai.max, axis))
+      break;
+
+    bool overlapX = (Ai.min.x <= Aj.max.x && Aj.min.x <= Ai.max.x);
+    bool overlapY = (Ai.min.y <= Aj.max.y && Aj.min.y <= Ai.max.y);
+    bool overlapZ = (Ai.min.z <= Aj.max.z && Aj.min.z <= Ai.max.z);
+
+    if (overlapX && overlapY && overlapZ) {
+      if (!enableSelfCollision && elementMeshIds != nullptr) {
+        int meshIdA = elementMeshIds[Ai.objectId];
+        int meshIdB = elementMeshIds[Aj.objectId];
+        if (meshIdA == meshIdB) {
+          continue;
+        }
+      }
+      // Check if they are neighbors - skip if true
+      if (!isNeighborPair(Ai.objectId, Aj.objectId, neighborHashes,
+                          numHashes)) {
+        collisionPairs[writeIdx++] = CollisionPair(Ai.objectId, Aj.objectId);
+      }
+    }
+  }
 }

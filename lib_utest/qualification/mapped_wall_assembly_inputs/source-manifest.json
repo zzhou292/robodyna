@@ -4,8 +4,8 @@
   "files": [
     {
       "path": "lib_src/collision/BUILD.bazel",
-      "bytes": 12685,
-      "sha256": "047830b5da4e181ff2cd5cb8d8cb1369119e111b688a7c77b48c0922759265ec"
+      "bytes": 14542,
+      "sha256": "77d12e0fc9d7575bb47bc5bef9a6a7e11b9dbccdc2f1c0af721dde1266fad6b6"
     },
     {
       "path": "lib_src/collision/NodalWallContactDiagnostics.h",
@@ -367,5 +367,47 @@
       "lib_utest/qualification/mapped_wall_removal_events/removal_proof.py"
     ],
     "scope": "Only generic cooperative removal event scheduling, exact checked inverse of complete Operations; original floating point folds and prior source proof history retained."
+  },
+  "self_contact_broadphase_previous_receipts": [
+    {
+      "record": {
+        "path": "lib_src/collision/BUILD.bazel",
+        "bytes": 11452,
+        "sha256": "3f08499bf0e679e92663eefefa5a7254f06716bc9314afdfd8654f37ca83a1b2"
+      },
+      "reason": "The prior record predates additive S0 binding (5e642b4) and S1 majorant (d9dd9f7) targets. Their exact f0bbbbe..30028be BUILD diff adds only two cc_library blocks. This change adds bounded self-contact broadphase targets and the legacy SAP shared-header dependency; all mapped-wall targets and mechanics remain unchanged.",
+      "adapter_base_record": {
+        "path": "lib_src/collision/BUILD.bazel",
+        "commit": "30028beda6c13e61a39d7c868a6106748665703d",
+        "bytes": 12515,
+        "sha256": "7b18306f019f4159e419f020e198d7b81c78fc09515fa2c102c95d3c0b1c338f"
+      }
+    }
+  ],
+  "contact_prerequisite_integration_review": {
+    "base": "1e6a0a2a8660d388ca96ca26552e4afca8c38a89",
+    "donor_commits": [
+      "7a629e7cbac6fa4abd5b1fefb058a7675a59fe81",
+      "f75000b5b11e2471b009f9d5d24eef56fb03acc0",
+      "0ac44625365582eb940155bd6d15309260fca924",
+      "3bd26db6d6489c99bf25b93d89e53c160b8477ea",
+      "9bf7ab5a4f59d01852b3a2a7cc236a8304e732a9"
+    ],
+    "prior_current_build_record": {
+      "path": "lib_src/collision/BUILD.bazel",
+      "bytes": 12685,
+      "sha256": "047830b5da4e181ff2cd5cb8d8cb1369119e111b688a7c77b48c0922759265ec"
+    },
+    "facet_composed_build_record": {
+      "path": "lib_src/collision/BUILD.bazel",
+      "bytes": 13385,
+      "sha256": "6fa002cad18d3d97ac8ff629debdeb5566c71816af063c8b08e4f9ba5816f984"
+    },
+    "current_build_record": {
+      "path": "lib_src/collision/BUILD.bazel",
+      "bytes": 14542,
+      "sha256": "77d12e0fc9d7575bb47bc5bef9a6a7e11b9dbccdc2f1c0af721dde1266fad6b6"
+    },
+    "scope": "Additive weighted mapping, fixed pair, physical facets and bounded broadphase build ownership only. Existing mapped-wall arithmetic, removal scheduling and prior receipt history remain unchanged."
   }
 }

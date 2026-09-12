@@ -4,7 +4,10 @@ cc_library(
     name = "fixture",
     testonly = True,
     hdrs = ["Fixture.h"],
-    visibility = ["//lib_utest/qualification/contact_facets:__pkg__"],
+    visibility = [
+        "//lib_utest/qualification/contact_facets:__pkg__",
+        "//lib_utest/qualification/self_contact_broadphase:__pkg__",
+    ],
     deps = [
         "//lib_src/collision:self_contact_surface_binding",
         "//lib_src/assembly:shell_physical_binding",

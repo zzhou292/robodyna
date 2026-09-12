@@ -21,7 +21,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "HydroelasticBroadphaseTypes.cuh"
+#include "HydroelasticCollisionTypes.cuh"
 
 namespace ANCFCPUUtils {
 class MeshManager;
@@ -29,6 +29,11 @@ class MeshManager;
 
 // Definition of GPU_ANCF3243 and data access device functions
 
+struct AABB {
+  double3 min;
+  double3 max;
+  int objectId;
+};
 
 // Opt-in bounds for linear surface primitives. All device buffers are borrowed,
 // in the same element/node order as Initialize(), and must remain alive until

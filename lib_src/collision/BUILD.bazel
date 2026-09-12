@@ -67,6 +67,34 @@ cc_library(
 )
 
 cc_library(
+    name = "broadphase_sweep",
+    hdrs = ["HydroelasticBroadphaseTypes.cuh", "HydroelasticCollisionTypes.cuh", "broadphase/Sweep.h"],
+)
+
+cc_library(
+    name = "self_contact_broadphase_values",
+    srcs = ["self_contact_broadphase/Layout.cpp"],
+    hdrs = ["SelfContactBroadphase.h", "SelfContactBroadphaseTypes.h",
+            "self_contact_broadphase/Layout.h", "self_contact_broadphase/Storage.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":broadphase_sweep", ":self_contact_surface_binding", "//lib_utils:bounded_arena"],
+)
+
+cuda_library(
+    name = "self_contact_broadphase_device",
+    srcs = ["self_contact_broadphase/Kernels.cu", "self_contact_broadphase/Sort.cu"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    deps = [":self_contact_broadphase_values"],
+)
+
+cc_library(
+    name = "self_contact_broadphase",
+    srcs = ["SelfContactBroadphase.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":self_contact_broadphase_device", "//lib_src/solvers:nodal_trial_identity"],
+)
+
+cc_library(
     name = "rigid_normal_response",
     hdrs = ["RigidNormalResponse.h", "RigidNormalResponseBounds.h"],
     deps = [":q4_contact_integration", "//lib_src/constraints:nodal_rigid_group_step_math"],
@@ -256,6 +284,7 @@ cuda_library(
     copts = ["--std=c++17", "-O3", "--use_fast_math", "--extra-device-vectorization"],
     linkopts = ["-lcudart"],
     deps = [
+        ":broadphase_sweep",
         "//lib_utils:cpu_utils",
         "//lib_utils:cuda_utils",
         "//lib_utils:mesh_manager",

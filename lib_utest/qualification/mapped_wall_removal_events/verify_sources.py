@@ -11,7 +11,7 @@ from removal_proof import legacy_operations
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 raw = (here/'source-manifest.json').read_bytes()
-assert hashlib.sha256(raw).hexdigest() == '93e32d6288f55f36b8181a3affda3740703ebc780ad76add48dec1bca0ec246d'
+assert hashlib.sha256(raw).hexdigest() == '17829697fb569bcc4d4824a7f1adcb480e01e62a229ebc499249041f65d8f81b'
 manifest = json.loads(raw)
 for row in manifest['files']:
     path = Path(row['path'])

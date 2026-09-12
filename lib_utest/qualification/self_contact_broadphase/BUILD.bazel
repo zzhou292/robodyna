@@ -1,0 +1,26 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+
+cc_library(
+    name = "oracle",
+    testonly = True,
+    hdrs = ["Oracle.h", "CudaFixture.h", "ManySource.h"],
+    deps = ["//lib_src/collision:self_contact_broadphase_values",
+            "//lib_utest/qualification/self_contact_surface:fixture", "@googletest//:gtest_main"],
+)
+cc_test(
+    name = "host",
+    size = "small",
+    srcs = ["HostTest.cpp"],
+    deps = [":oracle"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cuda_test(
+    name = "cuda",
+    size = "small",
+    srcs = ["CudaTest.cu"],
+    deps = [":oracle", "//lib_src/collision:self_contact_broadphase"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true",
+             "--ftz=false", "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+    tags = ["exclusive", "gpu"],
+)

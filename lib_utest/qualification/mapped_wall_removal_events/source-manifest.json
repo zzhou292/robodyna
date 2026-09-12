@@ -4,8 +4,8 @@
   "files": [
     {
       "path": "lib_src/collision/BUILD.bazel",
-      "bytes": 12685,
-      "sha256": "047830b5da4e181ff2cd5cb8d8cb1369119e111b688a7c77b48c0922759265ec"
+      "bytes": 14542,
+      "sha256": "77d12e0fc9d7575bb47bc5bef9a6a7e11b9dbccdc2f1c0af721dde1266fad6b6"
     },
     {
       "path": "lib_src/collision/NodalWallContactDiagnostics.h",
@@ -284,13 +284,13 @@
     },
     {
       "path": "lib_utest/qualification/mapped_wall_assembly_inputs/source-manifest.json",
-      "bytes": 15152,
-      "sha256": "39adaf1756e57cc6c3094480cb4e2210f413dafd01c29e1ed056aeea9fc0603c"
+      "bytes": 17181,
+      "sha256": "ccd092cd6b4b02fd94641b8c4b13a66dafac39904ad3786728023cdf0db26971"
     },
     {
       "path": "lib_utest/qualification/mapped_wall_assembly_inputs/verify_sources.py",
       "bytes": 5781,
-      "sha256": "090a447bc1584d0a53c28a929bf41b1f4b9a077ccc7aaf1c124daa5f397aad67"
+      "sha256": "04bcfdcea7a0a36a97ed34e368176e3460bf22e52ac5760db8c524fc424e0d43"
     },
     {
       "path": "lib_utest/qualification/mapped_wall_evaluation/Fixture.h",
@@ -374,13 +374,13 @@
     },
     {
       "path": "lib_utest/qualification/mapped_wall_node_status/source-manifest.json",
-      "bytes": 10582,
-      "sha256": "583898cf068b7590bb0964c8dcac0786fd9b131c0ce20aad7ff950db6ddf05d3"
+      "bytes": 11491,
+      "sha256": "bf9875e78e0d1e38de9953a071c07fe971a92d883649264473bca739e0721c90"
     },
     {
       "path": "lib_utest/qualification/mapped_wall_node_status/verify_sources.py",
       "bytes": 4456,
-      "sha256": "ab64372f7dff59e4b33661717cf8b0e710844c823fad3b1609acaca52afe0535"
+      "sha256": "11a56d65c2945cb4c90b654c4f120b93dff191e6d2a1dd571ebc4a88e1313836"
     },
     {
       "path": "lib_utest/qualification/mapped_wall_observers/IntervalTruth.h",
@@ -557,5 +557,36 @@
       "bytes": 1967,
       "sha256": "cec3f6ff3865dc5c89733527159bf98d7f6302c38ffb45ced5f1615a9ca28e4c"
     }
-  ]
+  ],
+  "contact_prerequisite_integration_review": {
+    "base": "1e6a0a2a8660d388ca96ca26552e4afca8c38a89",
+    "previous_records": [
+      {
+        "path": "lib_src/collision/BUILD.bazel",
+        "bytes": 12685,
+        "sha256": "047830b5da4e181ff2cd5cb8d8cb1369119e111b688a7c77b48c0922759265ec"
+      },
+      {
+        "path": "lib_utest/qualification/mapped_wall_assembly_inputs/source-manifest.json",
+        "bytes": 15152,
+        "sha256": "39adaf1756e57cc6c3094480cb4e2210f413dafd01c29e1ed056aeea9fc0603c"
+      },
+      {
+        "path": "lib_utest/qualification/mapped_wall_assembly_inputs/verify_sources.py",
+        "bytes": 5781,
+        "sha256": "090a447bc1584d0a53c28a929bf41b1f4b9a077ccc7aaf1c124daa5f397aad67"
+      },
+      {
+        "path": "lib_utest/qualification/mapped_wall_node_status/source-manifest.json",
+        "bytes": 10582,
+        "sha256": "583898cf068b7590bb0964c8dcac0786fd9b131c0ce20aad7ff950db6ddf05d3"
+      },
+      {
+        "path": "lib_utest/qualification/mapped_wall_node_status/verify_sources.py",
+        "bytes": 4456,
+        "sha256": "ab64372f7dff59e4b33661717cf8b0e710844c823fad3b1609acaca52afe0535"
+      }
+    ],
+    "scope": "Only additive contact prerequisite build/proof composition. The frozen generic removal-event arithmetic, exact old caller reversal and wall runtime remain unchanged."
+  }
 }
