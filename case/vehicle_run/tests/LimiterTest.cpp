@@ -55,7 +55,7 @@ TEST(VehicleRunSupports, ActualSuccessfulLimiterRetainsSourceThroughDiscardRetry
     EXPECT_THROW(vehicle_dynamics::StructuralLimiterReport(owner,1),std::exception);
     const auto first=vehicle_dynamics::StructuralLimiterReport(owner);
     output::Document document;
-    document.Parse(first.c_str());
+    document.Parse<rapidjson::kParseFullPrecisionFlag>(first.data(),first.size());
     ASSERT_FALSE(document.HasParseError());
     EXPECT_EQ(document["physical_nodes"].GetUint64(),376930u);
     EXPECT_EQ(document["owner_id"].GetUint64(),owner.accepted().owner_id);

@@ -7,7 +7,7 @@ import json
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 raw = (here / 'source-manifest.json').read_bytes()
-EXPECTED = 'ce09722bbe17397f0e5246eb77e89366c538db5aee5412fe12b1b4cd35d22c53'
+EXPECTED = '3ffb5228305c7e35d008835ddb3df8c00deffb887cad6841ab86010cfaa4fd8e'
 assert hashlib.sha256(raw).hexdigest() == EXPECTED
 manifest = json.loads(raw)
 for row in manifest['files']:
@@ -46,6 +46,14 @@ for path, (current, original) in counted_access.items():
     evidence = next(row['prior'] for row in manifest['files'] if row['path'] == path)
     assert len(restored) == evidence['bytes'], path
     assert hashlib.sha256(restored).hexdigest() == evidence['sha256'], path
+test_path = 'case/vehicle_run/tests/LimiterTest.cpp'
+test = (root / test_path).read_text()
+full_precision = 'document.Parse<rapidjson::kParseFullPrecisionFlag>(first.data(),first.size());'
+assert test.count(full_precision) == 1
+restored = test.replace(full_precision, 'document.Parse(first.c_str());', 1).encode()
+evidence = next(row['prior'] for row in manifest['files'] if row['path'] == test_path)
+assert len(restored) == evidence['bytes']
+assert hashlib.sha256(restored).hexdigest() == evidence['sha256']
 report = (here.parent / 'StructuralLimiterReport.cpp').read_text()
 assert 'cudaMemcpy' not in report and 'PrepareStep(' not in report and 'CommitStep(' not in report
 assert report.index('limiter::MatchesAccepted(') < report.index('limiter::SelectNodes(')

@@ -78,8 +78,14 @@
     },
     {
       "path": "case/vehicle_run/tests/LimiterTest.cpp",
-      "bytes": 4393,
-      "sha256": "c3ce64c67531c60a4323a1e48a99a3caa76c9575c1781046e722d4afa869f493"
+      "bytes": 4441,
+      "sha256": "7997692ae8d474f6332e59dfd4958d94f489d933f49c357e17a670f69163c972",
+      "prior": {
+        "commit": "b65d52234d0cf9d1faf3915e7aef0cadfb9c1a91",
+        "bytes": 4393,
+        "sha256": "c3ce64c67531c60a4323a1e48a99a3caa76c9575c1781046e722d4afa869f493"
+      },
+      "change_reason": "Use existing RapidJSON full-precision parsing for exact native double roundtrip; keep exact EXPECT_EQ unchanged."
     },
     {
       "path": "case/vehicle_run/tests/Original.cmake",
