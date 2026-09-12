@@ -1,0 +1,13 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "host_check",
+    size = "small",
+    srcs = ["TestSupport.h", "ValueTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        "//lib_src/collision/penalty_pair:values",
+        "//lib_src/collision/weighted_surface:mapping",
+        "//lib_utest/qualification/surface_jacobian_majorant:exact_oracle",
+        "@googletest//:gtest_main",
+    ],
+)
