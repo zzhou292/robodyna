@@ -1,5 +1,6 @@
 #include "Options.h"
 #include "../Run.h"
+#include "../SampledShellPlasticity.h"
 #include "../source/OriginalYaris.h"
 #include <iomanip>
 #include <iostream>
@@ -53,12 +54,16 @@ int main(int argc,char** argv) {
                      <<" solid_reported_plastic_work_sum_j="<<value.mechanics.solids.metal_plastic_work.work.accepted_increment_sum_j
                      <<" beam18_observations_available="<<(value.mechanics.available && value.mechanics.has_beam18)
                      <<" beam18_reported_plastic_work_sum_j="<<value.mechanics.beam18.plastic_work.work.accepted_increment_sum_j
-                     <<" last_prepare_wall_s="<<value.mechanics_timing.last_step[0].wall_ns*1e-9<<std::endl;
+                     <<" last_prepare_wall_s="<<value.mechanics_timing.last_step[0].wall_ns*1e-9;
+            run::detail::WriteSampledShellPlasticityProgress(std::cout, value.sampled_shell_plasticity);
+            std::cout << std::endl;
         };
         const auto result=prepared.Execute(options.output,control);
         std::cout<<"finished session_initialized="<<result.session_initialized<<" accepted="<<result.loop.progress.accepted.epoch
                  <<" actual_time_s="<<result.loop.progress.accepted.time_s
-                 <<" valid_prefix="<<result.loop.valid_manifest<<" reason="<<result.loop.reason<<std::endl;
+                 <<" valid_prefix="<<result.loop.valid_manifest<<" reason="<<result.loop.reason;
+        run::detail::WriteSampledShellPlasticityProgress(std::cout, result.loop.progress.sampled_shell_plasticity);
+        std::cout << std::endl;
         if(result.viewer_input) std::cout<<"viewer_descriptor="<<(options.output/result.viewer_input->file)
                                       <<" sha256="<<result.viewer_input->sha256<<std::endl;
         if(!result.summary_error.empty()) std::cerr<<"Summary error: "<<result.summary_error<<'\n';

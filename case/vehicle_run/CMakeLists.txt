@@ -24,6 +24,11 @@ if(ROBO_DYNA_VEHICLE_RUN_REPORT_VALUES OR ROBO_DYNA_VEHICLE_RUN_LIVE)
     tests/PhysicalSelectionTest.cpp tests/MechanicsSummaryTest.cpp tests/MechanicsDocumentTest.cpp)
   target_link_libraries(robo_dyna_vehicle_run_reports_check PRIVATE robo_dyna_vehicle_run_reports GTest::gtest_main)
   add_test(NAME vehicle_run_reports COMMAND robo_dyna_vehicle_run_reports_check)
+  include("${CMAKE_CURRENT_LIST_DIR}/../../output/physical_frames/PhysicalFrames.cmake")
+  add_executable(robo_dyna_vehicle_run_sampled_shell_check tests/SampledShellPlasticityTest.cpp)
+  target_link_libraries(robo_dyna_vehicle_run_sampled_shell_check PRIVATE
+    robo_dyna_vehicle_run_reports robo_dyna_physical_frame_values GTest::gtest_main)
+  add_test(NAME vehicle_run_sampled_shell COMMAND robo_dyna_vehicle_run_sampled_shell_check)
 endif()
 
 option(ROBO_DYNA_VEHICLE_RUN_ORIGINAL "Build complete original forecast and short loaded-prefix gates" OFF)

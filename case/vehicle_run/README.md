@@ -86,10 +86,28 @@ and mechanics summaries. Fixed scalar storage (at most 4 KiB per summary plus
 bounded copies) fits the existing 4 MiB controller reservation and the existing
 summary byte cap. Normal 20 GB host and 2 GiB archive defaults are unchanged.
 
-Detailed solid/beam point-history export and a front-detail replay camera remain
-separate work. Current frame plasticity covers shells only. Diagnostic stop
+Detailed solid/beam point-history export remains separate work. Current frame
+plasticity covers shells only. Diagnostic stop
 limits do not change the archive sample schedule, which spans the requested
 full horizon; the last accepted endpoint is always sampled before prefix export.
+
+Live progress and the additive `sampled_shell_plasticity` summary object report
+the last successfully saved shell frame's epoch/time, native equivalent plastic
+strain maximum and positive-point count. The peak spans saved samples only.
+`first_positive_saved_epoch/time_s` identifies the first positive **saved sample**,
+including epoch zero when applicable; it does not locate first physical yield
+between samples. Every stored native shell point is included, even when its
+parent is inactive. Rigid/elastic parents without applicable fields add no fake
+zero points. No-field and no-saved-frame cases are explicitly unavailable.
+
+This observer validates and scans the already captured frame, stages fewer than
+256 bytes of scalars, then publishes them only after the existing paired frame
+archive append succeeds. Failed validation or partial I/O leaves prior published
+totals unchanged. There is no extra CUDA readback, history copy, clock or archive
+format change. Fixed copies fit within 2 KiB of the existing 4 MiB controller
+reservation; the nested JSON remains inside the existing 1 MiB summary cap.
+The CLI labels these values `shell_plasticity_scope=saved_frames`, separately
+from per-accepted-interval solid/beam native plastic work.
 
 The private Operations seam is only for deterministic loop fault tests. It is
 not a public alternate solver. Host gates cover ordering, cadence, stop/failure

@@ -1,6 +1,7 @@
 #include "Session.h"
 #include "ContactSummary.h"
 #include "MechanicsSummary.h"
+#include "SampledShellPlasticity.h"
 namespace crash::cases::vehicle_run {
 PreparedRun::Session::Session(const Data& input,const std::filesystem::path& directory)
     : source(input),dynamics(vehicle_wall::LoadedWall::Prepare(input.setup,input.dynamics,{},&input.joints)),
@@ -37,7 +38,14 @@ void PreparedRun::Session::Append() {
     mechanics = next_mechanics;
 }
 void PreparedRun::Session::Capture() {capture.Capture(dynamics);}
-void PreparedRun::Session::SaveSample() {archive.Sample(*capture.frames().frame(),*capture.frames().activity());}
+void PreparedRun::Session::SaveSample() {
+    const auto& frames = capture.frames();
+    const auto* frame = frames.frame();
+    const auto* activity = frames.activity();
+    output::Require(frame && activity, "Saved shell summary requires an available accepted frame/activity pair");
+    detail::SaveShellSample(sampled_shell_plasticity, frames.context(), *frame,
+        [&] { archive.Sample(*frame, *activity); });
+}
 void PreparedRun::Session::Finish(bool complete,const std::string& reason) {
     manifest=complete?archive.Finish():archive.FinishPrefix(reason);
 }

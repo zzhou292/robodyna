@@ -11,9 +11,11 @@ struct Fake final : detail::Operations {
     bool fail_finish=false;
     unsigned discarded=0,finished=0;
     bool completed=false;
+    SampledShellPlasticityTotals sampled_shell;
     double time=0;
     std::vector<std::string> calls;
     Endpoint Accepted() const noexcept override {return accepted;}
+    SampledShellPlasticityTotals SampledShellPlasticity() const noexcept override {return sampled_shell;}
     MechanicsTotals Mechanics() const noexcept override {
         MechanicsTotals result;
         result.available = logged != 0;
@@ -47,6 +49,10 @@ struct Fake final : detail::Operations {
         if(accepted.epoch==fail_save) throw std::runtime_error("sample I/O failure");
         EXPECT_EQ(logged,accepted.epoch);
         saved=accepted.epoch;
+        sampled_shell.available = true;
+        ++sampled_shell.saved_samples;
+        sampled_shell.last_epoch = saved;
+        sampled_shell.last_time_s = accepted.time_s;
         calls.push_back("sample"+std::to_string(saved));
     }
     void Finish(bool complete,const std::string&) override {
@@ -119,7 +125,29 @@ TEST(VehicleRunLoop, OutputAndReadbackFailuresNeverPublishFalsePrefix) {
         EXPECT_EQ(result.kind,stage==1?StopKind::CaptureFailure:StopKind::ArchiveFailure);
         EXPECT_FALSE(result.valid_manifest);
         EXPECT_EQ(fake.finished,0u);
+        EXPECT_EQ(result.progress.sampled_shell_plasticity.last_epoch, fake.saved);
+        EXPECT_EQ(result.progress.sampled_shell_plasticity.saved_samples, stage == 0 ? 2u : 1u);
     }
+}
+TEST(VehicleRunLoop, LiveShellSampleTimesRemainAtLastWriteAcrossUnsampledAcceptedSteps) {
+    Fake fake;
+    Control control;
+    control.progress_period_s = 1;
+    std::vector<Progress> observations;
+    control.progress = [&](const Progress& value) { observations.push_back(value); };
+    const auto result = CheckRun(fake, control);
+    ASSERT_EQ(observations.size(), 4u);
+    EXPECT_EQ(observations[0].accepted.epoch, 1u);
+    EXPECT_EQ(observations[0].sampled_shell_plasticity.last_epoch, 0u);
+    EXPECT_EQ(observations[2].accepted.epoch, 3u);
+    EXPECT_EQ(observations[2].sampled_shell_plasticity.last_epoch, 2u);
+    EXPECT_EQ(observations[2].sampled_shell_plasticity.last_time_s, .002);
+    EXPECT_EQ(result.progress.sampled_shell_plasticity.saved_samples, 3u);
+    EXPECT_EQ(result.progress.sampled_shell_plasticity.last_epoch, 5u);
+    EXPECT_EQ(result.progress.sampled_shell_plasticity.last_time_s, result.progress.accepted.time_s);
+    Fake initial_failure;
+    initial_failure.fail_save = 0;
+    EXPECT_FALSE(CheckRun(initial_failure).progress.sampled_shell_plasticity.available);
 }
 TEST(VehicleRunLoop, ElapsedLimitAndObserverFailuresStopAtAcceptedBoundary) {
     Fake fake;

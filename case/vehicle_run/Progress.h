@@ -1,6 +1,7 @@
 #pragma once
 #include "case/vehicle_dynamics/StepTiming.h"
 #include "MechanicsTotals.h"
+#include "SampledShellPlasticityTotals.h"
 #include <cstdint>
 #include <functional>
 #include <string>
@@ -20,6 +21,7 @@ struct Progress {
     Timing timing;
     ContactTotals contact;
     MechanicsTotals mechanics;
+    SampledShellPlasticityTotals sampled_shell_plasticity;
     vehicle_dynamics::StepTimingSnapshot mechanics_timing;
 };
 struct Control {

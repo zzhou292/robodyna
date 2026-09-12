@@ -35,6 +35,7 @@ LoopResult RunLoop(Operations& operations,const Horizon& plan,const std::vector<
         progress.accepted=operations.Accepted();
         progress.contact=operations.Contact();
         progress.mechanics=operations.Mechanics();
+        progress.sampled_shell_plasticity=operations.SampledShellPlasticity();
         progress.mechanics_timing=operations.MechanicsTiming();
         progress.elapsed_s=clock()-start;
         progress.accepted_intervals_per_second=progress.elapsed_s>0?progress.accepted.epoch/progress.elapsed_s:0;

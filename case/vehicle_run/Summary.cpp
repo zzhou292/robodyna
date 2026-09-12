@@ -1,5 +1,6 @@
 #include "RunState.h"
 #include "MechanicsDocument.h"
+#include "SampledShellPlasticity.h"
 #include "output/ArtifactIO.h"
 namespace crash::cases::vehicle_run::detail {
 namespace {
@@ -85,6 +86,10 @@ records::RecordFile WriteSummary(const std::filesystem::path& root,const Config&
         Value mechanics_value;
         mechanics_value.CopyFrom(mechanics,document.GetAllocator());
         document.AddMember("accepted_mechanics",mechanics_value,document.GetAllocator());
+        auto sampled = SampledShellPlasticityDocument(progress.sampled_shell_plasticity);
+        Value sampled_value;
+        sampled_value.CopyFrom(sampled,document.GetAllocator());
+        document.AddMember("sampled_shell_plasticity",sampled_value,document.GetAllocator());
         Boolean(document,"contact_observations_available",contact.available);
         if(contact.available) {
             Number(document,"peak_observed_force_n",contact.peak_observed_force_n);

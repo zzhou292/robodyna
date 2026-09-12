@@ -10,6 +10,7 @@ struct PreparedRun::Session final : detail::Operations {
     output::physical_run::RunArchive archive;
     ContactTotals contact;
     MechanicsTotals mechanics;
+    SampledShellPlasticityTotals sampled_shell_plasticity;
     std::optional<records::RecordFile> manifest;
     std::optional<double> step_limit;
     std::optional<tlfea::contact::NodalWallDeviceStatus> contact_status;
@@ -17,6 +18,7 @@ struct PreparedRun::Session final : detail::Operations {
     Endpoint Accepted() const noexcept override;
     ContactTotals Contact() const noexcept override {return contact;}
     MechanicsTotals Mechanics() const noexcept override {return mechanics;}
+    SampledShellPlasticityTotals SampledShellPlasticity() const noexcept override {return sampled_shell_plasticity;}
     vehicle_dynamics::StepTimingSnapshot MechanicsTiming() const noexcept override {return dynamics.timing();}
     void Prepare() override;
     void Commit() override;

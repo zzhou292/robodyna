@@ -7,6 +7,9 @@
 namespace crash::cases::vehicle_run {
 namespace {
 constexpr std::size_t MappingCap=512u<<20,ControllerReserve=4u<<20;
+// Retained/staged sampled values and fixed progress/result copies fit inside
+// the existing controller allowance; no per-parent summary array is allocated.
+static_assert(8 * sizeof(SampledShellPlasticityTotals) <= 2048 && 2048 < ControllerReserve);
 std::size_t Sum(std::size_t cap,std::initializer_list<std::size_t> values) {
     tl::util::BoundedArenaLayout budget(cap);
     tl::util::ArenaRegion region;

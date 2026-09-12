@@ -4,6 +4,7 @@
 #include "../source/OriginalYaris.h"
 #include "case/CanonicalWallArtifacts.h"
 #include "output/full_shell/tests/TestSupport.h"
+#include <algorithm>
 #include <cstdlib>
 #include <iomanip>
 #include <sstream>
@@ -127,6 +128,24 @@ void CheckLoadedPrefix(PhysicalProfile profile) {
     EXPECT_EQ(saved.frame.stamp.epoch,2u);
     EXPECT_EQ(saved.frame.stamp.time,result.loop.progress.accepted.time_s);
     EXPECT_EQ(saved.activity.stamp().epoch,2u);
+    const auto& sampled = result.loop.progress.sampled_shell_plasticity;
+    ASSERT_TRUE(sampled.available);
+    ASSERT_TRUE(sampled.native_fields_available);
+    EXPECT_EQ(sampled.saved_samples, replay.index().frames.size());
+    EXPECT_EQ(sampled.last_epoch, saved.frame.stamp.epoch);
+    EXPECT_EQ(sampled.last_attempt, saved.frame.stamp.attempt);
+    EXPECT_EQ(output::Bits(sampled.last_time_s), output::Bits(saved.frame.stamp.time));
+    EXPECT_EQ(sampled.native_points, saved.frame.plastic_points.size());
+    double saved_maximum = 0;
+    std::uint64_t saved_positive_points = 0;
+    for (const double strain : saved.frame.plastic_points) {
+        saved_maximum = std::max(saved_maximum, strain);
+        saved_positive_points += strain > 0;
+    }
+    EXPECT_EQ(output::Bits(sampled.last_max_native_equivalent_plastic_strain), output::Bits(saved_maximum));
+    EXPECT_EQ(sampled.last_positive_points, saved_positive_points);
+    EXPECT_EQ(summary["sampled_shell_plasticity"]["last_saved_epoch"].GetUint64(), sampled.last_epoch);
+    EXPECT_EQ(summary["sampled_shell_plasticity"]["last_saved_positive_points"].GetUint64(), saved_positive_points);
     ::testing::Test::RecordProperty("accepted_intervals",std::to_string(result.loop.progress.accepted.epoch));
     ::testing::Test::RecordProperty("archive_manifest_sha256",result.archive_manifest->sha256);
     ::testing::Test::RecordProperty("viewer_input_sha256",result.viewer_input->sha256);
