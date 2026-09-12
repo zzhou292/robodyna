@@ -39,6 +39,27 @@ TEST(PhysicalViewerValues, ControllerDirectoryAndReceiptResolveTheSameExactAutho
     options.expected_receipt_sha256=file.sha256;
     EXPECT_NO_THROW(ReadInput(options));
 }
+TEST(PhysicalViewerValues, ExplicitRecoveryDescriptorAndReceiptHash) {
+    const char* args[]{"viewer","--recovered","recovered-samples.json","--require-frames","100",
+        "--capture-cap-gib","6"};
+    const auto options=Parse(7,const_cast<char**>(args));
+    EXPECT_TRUE(options.recovered);EXPECT_EQ(options.require_frames,100u);
+    EXPECT_EQ(options.capture_bytes,6ull<<30);
+    const char* missing[]{"viewer","--recovered"};
+    EXPECT_THROW(Parse(2,const_cast<char**>(missing)),std::exception);
+    output::full_shell::test::Directory directory;
+    output::WriteBytes(directory.path/"recovered-samples.json","{}\n");
+    auto selected=options;selected.input=directory.path/"recovered-samples.json";
+    const auto input=ReadInput(selected);
+    EXPECT_TRUE(input.recovered);EXPECT_EQ(input.receipt.sha256,output::Sha256("{}\n"));
+    EXPECT_TRUE(input.values.manifest.file.empty());
+    // Selecting bytes alone cannot turn them into a valid recovered reader.
+    EXPECT_THROW(OpenSamples(input),std::exception);
+    selected.expected_receipt_sha256=output::Sha256("foreign");
+    EXPECT_THROW(ReadInput(selected),std::exception);
+    selected.expected_receipt_sha256.clear();selected.input=directory.path;
+    EXPECT_THROW(ReadInput(selected),std::exception);
+}
 TEST(PhysicalViewerValues, BoundedCaptureCountAndImmutableInputDestination) {
     EXPECT_LT(CaptureForecast(60,2ull<<30),2ull<<30);
     EXPECT_THROW(CaptureForecast(64,2ull<<30),std::exception);

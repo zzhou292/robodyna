@@ -21,3 +21,13 @@ add_executable(robo_dyna_physical_scene_legacy_check
 target_link_libraries(robo_dyna_physical_scene_legacy_check PRIVATE robo_dyna_replay_scene GTest::gtest_main)
 add_test(NAME physical_scene_legacy COMMAND robo_dyna_physical_scene_legacy_check)
 set_tests_properties(physical_scene_legacy PROPERTIES TIMEOUT 30 RUN_SERIAL TRUE PROCESSORS 1)
+
+add_executable(robo_dyna_recovered_scene_check tests/RecoveredSceneTest.cpp)
+target_link_libraries(robo_dyna_recovered_scene_check PRIVATE robo_dyna_physical_viewer_values GTest::gtest_main)
+target_compile_options(robo_dyna_recovered_scene_check PRIVATE -fno-fast-math -ffp-contract=off)
+set(ROBO_DYNA_RECOVERED_REPLAY_INPUT "" CACHE FILEPATH "Explicit recovered-samples.json descriptor")
+if(ROBO_DYNA_RECOVERED_REPLAY_INPUT)
+  add_test(NAME recovered_scene_archive COMMAND robo_dyna_recovered_scene_check)
+  set_tests_properties(recovered_scene_archive PROPERTIES TIMEOUT 300 RUN_SERIAL TRUE PROCESSORS 1
+    ENVIRONMENT "ROBO_DYNA_RECOVERED_REPLAY_INPUT=${ROBO_DYNA_RECOVERED_REPLAY_INPUT}")
+endif()

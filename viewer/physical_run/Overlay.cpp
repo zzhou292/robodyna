@@ -11,9 +11,13 @@ class Overlay final:public chrono::vsg3d::ChGuiComponentVSG {
         const auto flags=ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoCollapse|
             ImGuiWindowFlags_AlwaysAutoResize|ImGuiWindowFlags_NoSavedSettings;
         if(ImGui::Begin("robo-dyna | Yaris mesh-wall preview",nullptr,flags)) {
-            const auto& replay=*scene.replay();const auto& index=replay.index();const auto& stamp=*scene.stamp();
-            ImGui::Text("Time %.6f ms | sample %zu / %zu",stamp.time*1000,stamp.index+1,index.frames.size());
-            ImGui::TextUnformatted(index.horizon_complete?"Requested duration complete":"Diagnostic prefix | trajectory incomplete");
+            const auto& replay=*scene.samples();const auto& stamp=*scene.stamp();
+            ImGui::Text("Time %.6f ms | sample %zu / %zu",stamp.time*1000,stamp.index+1,replay.frames().size());
+            if (replay.recovered()) {
+                ImGui::TextUnformatted("Recovered interrupted saved samples");
+                ImGui::TextUnformatted("Interval ledger unavailable | completion unknown");
+            } else ImGui::TextUnformatted(replay.normal()->index().horizon_complete?
+                "Requested duration complete":"Diagnostic prefix | trajectory incomplete");
             ImGui::TextUnformatted("Original shell assembly | deformation scale 1x");
             ImGui::TextUnformatted(replay.wall()?"Gray wireframe: mesh wall":"No wall in this recording");
             if(scene.geometry()->color_mode()==visual::ReplayColorMode::PartId) {
@@ -35,7 +39,7 @@ class Overlay final:public chrono::vsg3d::ChGuiComponentVSG {
                     ImGui::Text("%zu source shells | %zu active triangles",replay.context().parents().size(),
                         scene.geometry()->triangle_source_parents()->size());
                     ImGui::Text("Accepted epoch %llu",static_cast<unsigned long long>(stamp.epoch));
-                    if(!index.stop_reason.empty()) ImGui::TextWrapped("%s",index.stop_reason.c_str());
+                    if(!replay.stop_reason().empty()) ImGui::TextWrapped("%s",replay.stop_reason().c_str());
                     if(const auto* legend=scene.geometry()->part_legend()) {
                         for(std::size_t i=0;i<std::min<std::size_t>(8,legend->size());++i) {
                             if(i%4) ImGui::SameLine();

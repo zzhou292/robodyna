@@ -4,22 +4,11 @@ namespace crash::viewer::physical_run {
 output::Document CaptureMetadata(const Options& options,const Input& input,const visual::physical_run::Scene& scene,
         FixedReplayVisual& visual,ReplayLighting light,std::size_t image_bytes,const std::string& index_bytes) {
     using namespace output;
-    const auto& replay=*scene.replay();const auto& index=replay.index();
-    Document d;d.SetObject();String(d,"schema","robo_dyna.physical_replay_capture.v1");
-    array_json::Child(d,"input_receipt",output::physical_run::FileDocument(input.receipt));
-    array_json::Child(d,"input_archive_manifest",output::physical_run::FileDocument(input.values.manifest));
-    String(d,"source_mapping_sha256",input.values.mapping_sha256);
-    String(d,"input_authority","caller-selected controller receipt; hashes verify coherence, not physical validity");
-    Boolean(d,"complete_capture",true);Boolean(d,"input_horizon_complete",index.horizon_complete);
-    String(d,"input_stop_reason",index.stop_reason);Boolean(d,"simulation_executed_by_viewer",false);
-    Boolean(d,"interpolated_frames",false);Number(d,"deformation_scale",1);
-    Integer(d,"owner_id",replay.context().identity().owner);Integer(d,"frames",index.frames.size());
-    Integer(d,"final_epoch",index.final.epoch);Number(d,"final_time_s",index.final.time);
-    Number(d,"requested_duration_s",replay.configuration().request.requested_duration);
-    array_json::Child(d,"observation_profile",output::physical_run::ProfileDocument(replay.configuration().profile));
+    const auto& replay=*scene.samples();
+    auto d=SourceMetadata(input,replay);
     Integer(d,"presentation_peak_host_bytes",scene.forecast()->peak_host_bytes);
     String(d,"host_forecast_scope","application reader/geometry/sample workspace; renderer and PNG buffers measured separately");
-    Integer(d,"png_bytes",image_bytes);Integer(d,"capture_forecast_bytes",CaptureForecast(index.frames.size(),options.capture_bytes));
+    Integer(d,"png_bytes",image_bytes);Integer(d,"capture_forecast_bytes",CaptureForecast(replay.frames().size(),options.capture_bytes));
     String(d,"frame_index_sha256",Sha256(index_bytes));
     Boolean(d,"all_png_decoded",true);Integer(d,"renders_per_sample",2);Integer(d,"initial_warmup_renders",1);
     Number(d,"recorded_samples_per_second",options.frames_per_second);

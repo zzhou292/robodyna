@@ -22,11 +22,16 @@ std::array<double, 3> Coordinates(const std::string& text) {
 } // namespace
 Options Parse(int argc,char** argv) {
     using output::Require;
-    Require(argc>=2,"usage: robo_dyna_physical_replay RUN_DIR_OR_RECEIPT [--capture NEW_DIR] [--fps 1..60] [--color part-id|plastic-strain|uniform] [--view incident-side|wall-side | --camera-eye X,Y,Z --camera-target X,Y,Z [--camera-up y|z]] [--wireframe] [--require-frames N] [--receipt-sha256 SHA] [--capture-cap-gib 2|6]");
-    Options out;out.input=argv[1];
+    Require(argc>=2,"usage: robo_dyna_physical_replay (RUN_DIR_OR_RECEIPT | --recovered RECOVERED_DESCRIPTOR) [--capture NEW_DIR] [--fps 1..60] [--color part-id|plastic-strain|uniform] [--view incident-side|wall-side | --camera-eye X,Y,Z --camera-target X,Y,Z [--camera-up y|z]] [--wireframe] [--require-frames N] [--receipt-sha256 SHA] [--capture-cap-gib 2|6]");
+    Options out;
+    int first_option=2;
+    if (std::string(argv[1])=="--recovered") {
+        Require(argc>=3,"--recovered requires an explicit descriptor file");
+        out.recovered=true; out.input=argv[2]; first_option=3;
+    } else out.input=argv[1];
     visual::FixedCameraInput camera;
     std::set<std::string> seen;
-    for(int i=2;i<argc;++i) {
+    for(int i=first_option;i<argc;++i) {
         const std::string name=argv[i];
         Require(seen.insert(name).second,"Duplicate physical viewer option");
         if(name=="--wireframe") {out.scene.wireframe=true;continue;}

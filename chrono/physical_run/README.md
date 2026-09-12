@@ -76,3 +76,51 @@ Root gates: set `ROBO_DYNA_PHYSICAL_REPLAY_INPUT` to a preserved controller rece
 for `physical_scene_archive`; then capture every sample using installed Chrono
 mutable-face support, inspect resulting PNGs, and run the existing legacy replay
 scene and PNG smoke. Author checks do not establish actual GPU rendering.
+
+## Interrupted saved-sample review
+
+The viewer also accepts an explicit recovery descriptor:
+
+```sh
+robo_dyna_physical_replay --recovered /path/archive/recovered-samples.json \
+  --receipt-sha256 EXPECTED_SHA256 --require-frames 100 \
+  --capture /new/outside-input/capture --capture-cap-gib 6 --fps 20 --color part-id
+```
+
+This uses `output/recovered_frames::Replay` through the display-only `SampleSource`
+facade. Its recorded positions, activity, plastic values, source wall and sample
+stamps feed the same geometry and capture loop. There is no scaling, interpolation,
+physics advancement or fabricated normal run Index. The overlay says “Recovered
+interrupted saved samples” and “Interval ledger unavailable | completion unknown”.
+`Scene::Initialize(normal Replay)` and its normal `replay()` accessor remain
+compatible; `samples()` supplies the common interface and `replay()` is null for
+recovered input.
+
+Recovered capture metadata uses `robo_dyna.recovered_sample_capture.v1`, the exact
+recovery descriptor, final **saved** epoch/time, unavailable interval/continuous
+history and unknown horizon completion. `complete_capture` means every retained
+sample was rendered. It does not certify the requested simulation duration.
+Normal capture schema/fields and normal input receipts are unchanged.
+
+Root's existing physical-scene configuration may be updated with:
+
+```sh
+cmake -S chrono/physical_run -B ../crash-work/build/physical-scene-root-1 \
+  -DChrono_DIR=/home/jsonzhou/Desktop/chrono-work/crash-work/install/chrono-vsg-r1/lib/cmake/Chrono \
+  -DROBO_DYNA_TL_ROOT=/home/jsonzhou/Desktop/chrono-work/Total-Lagrangian-FEA \
+  -DROBO_DYNA_PHYSICAL_REPLAY_VIEWER=ON \
+  -DROBO_DYNA_RECOVERED_REPLAY_INPUT=/path/archive/recovered-samples.json
+cmake --build ../crash-work/build/physical-scene-root-1 --target \
+  robo_dyna_physical_replay robo_dyna_physical_viewer_values_check \
+  robo_dyna_physical_scene_check robo_dyna_recovered_scene_check -j1
+ctest --test-dir ../crash-work/build/physical-scene-root-1 --output-on-failure
+```
+
+Keep the existing configured VSG package paths and normal archive input. The new
+recovered-scene gate verifies first/last saved geometry bits/stamps, failed seek,
+wall carrier reuse and nonfabricated metadata; viewer values include explicit
+recovery selection/hash and malformed descriptor rejection. Author performed
+seven production and one viewer-test syntax check under one CPU/512 MiB.
+The three VSG units and recovered-scene test exceed that author header-memory
+allowance and remain root compile gates. Root owns linking, actual archive and
+VSG capture gates.

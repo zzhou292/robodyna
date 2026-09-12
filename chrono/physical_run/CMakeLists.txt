@@ -20,16 +20,18 @@ if(NOT EXISTS "${ROBO_DYNA_TL_ROOT}/lib_utils/BoundedArena.h")
   message(FATAL_ERROR "Physical replay needs the explicit qualified TL root")
 endif()
 include("${CMAKE_CURRENT_LIST_DIR}/../../output/physical_run/PhysicalRun.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../../output/recovered_frames/RecoveredFrames.cmake")
 set(ROBO_DYNA_FULL_SHELL_FRAME_GEOMETRY_TESTS ${ROBO_DYNA_PHYSICAL_REPLAY_TESTS})
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../full_shell" "full-shell-geometry")
-add_library(robo_dyna_physical_replay_scene STATIC Scene.cpp SceneValues.cpp SceneInitialize.cpp)
-target_link_libraries(robo_dyna_physical_replay_scene PUBLIC robo_dyna_physical_run_records
+add_library(robo_dyna_physical_replay_scene STATIC Scene.cpp SceneValues.cpp SceneInitialize.cpp SampleSource.cpp)
+target_link_libraries(robo_dyna_physical_replay_scene PUBLIC robo_dyna_physical_run_records robo_dyna_recovered_frames
   robo_dyna_full_shell_frame_geometry robo_dyna_replay_visual_values)
 target_include_directories(robo_dyna_physical_replay_scene PRIVATE "${ROBO_DYNA_TL_ROOT}")
 target_compile_options(robo_dyna_physical_replay_scene PRIVATE -fno-fast-math -ffp-contract=off)
 add_library(robo_dyna_physical_viewer_values STATIC
   "${CMAKE_CURRENT_LIST_DIR}/../../viewer/physical_run/Options.cpp"
-  "${CMAKE_CURRENT_LIST_DIR}/../../viewer/physical_run/Input.cpp")
+  "${CMAKE_CURRENT_LIST_DIR}/../../viewer/physical_run/Input.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/../../viewer/physical_run/SourceMetadata.cpp")
 target_link_libraries(robo_dyna_physical_viewer_values PUBLIC robo_dyna_physical_replay_scene)
 if(ROBO_DYNA_PHYSICAL_REPLAY_VIEWER)
   add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../../viewer/physical_run" "physical-viewer")

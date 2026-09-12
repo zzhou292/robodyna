@@ -28,7 +28,7 @@ SceneForecast Forecast(std::size_t replay,std::size_t nodes,std::size_t parents,
         "Physical replay/presentation complete host forecast exceeds cap");
     return {replay,bytes,sample.bytes(),budget.bytes()};
 }
-ScanValues Scan(const output::physical_run::Replay& replay) {
+ScanValues Scan(const SampleSource& replay) {
     ScanValues values;
     values.low.fill(std::numeric_limits<double>::infinity());
     values.high.fill(-std::numeric_limits<double>::infinity());
@@ -37,7 +37,7 @@ ScanValues Scan(const output::physical_run::Replay& replay) {
         values.low[axis]=std::min(values.low[axis],x);
         values.high[axis]=std::max(values.high[axis],x);
     };
-    for(std::size_t i=0;i<replay.index().frames.size();++i) {
+    for(std::size_t i=0;i<replay.frames().size();++i) {
         const auto sample=replay.ReadSample(i);
         for(std::size_t n=0;n<sample.frame.position_xyz.size();++n) position(n%3,sample.frame.position_xyz[n]);
         for(double p:sample.frame.plastic_points) values.plastic_maximum=std::max(values.plastic_maximum,p);

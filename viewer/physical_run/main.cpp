@@ -20,24 +20,23 @@ int main(int argc,char** argv) {
     std::filesystem::path capture_directory;
     try {
         const auto options=app::Parse(argc,argv);const auto input=app::ReadInput(options);
-        const auto root=output::physical_run::ViewerArchivePath(input.directory,input.values);
-        const auto replay=output::physical_run::Replay::Open(root,input.values.manifest,input.values.source,input.values.mapping_sha256);
-        output::Require(!options.require_frames || options.require_frames==replay.index().frames.size(),"Required sample count differs");
+        const auto replay=app::OpenSamples(input);
+        output::Require(!options.require_frames || options.require_frames==replay.frames().size(),"Required sample count differs");
         const bool capture=!options.capture.empty();
         if(capture) {
             app::CheckCaptureDestination(input.directory,options.capture);
-            app::CaptureForecast(replay.index().frames.size(),options.capture_bytes);
+            app::CaptureForecast(replay.frames().size(),options.capture_bytes);
         }
         crash::visual::physical_run::Scene scene;
         const auto initialized=scene.Initialize(replay,options.scene);
         output::Require(initialized.status==crash::visual::ReplaySceneStatus::Ok,initialized.message);
-        std::cout<<"Physical replay: "<<replay.context().nodes()<<" shell nodes, "<<replay.index().frames.size()
+        std::cout<<"Physical replay: "<<replay.context().nodes()<<" shell nodes, "<<replay.frames().size()
             <<" recorded samples, host forecast "<<scene.forecast()->peak_host_bytes<<" bytes; no physics executed"<<std::endl;
         std::unique_ptr<app::Capture> exporter;
         if(capture) {
             output::Require(std::filesystem::create_directory(options.capture),"Could not create PNG capture directory");
             capture_directory=options.capture;
-            exporter=std::make_unique<app::Capture>(capture_directory,replay.index().frames.size(),options.capture_bytes);
+            exporter=std::make_unique<app::Capture>(capture_directory,replay.frames().size(),options.capture_bytes);
         }
         auto visual=crash::viewer::CreateReplayVisual();
         app::Playback playback;
@@ -49,7 +48,7 @@ int main(int argc,char** argv) {
         while(visual->Run()) {
             const auto now=Clock::now();
             if(!first && (capture || playback.next || (!playback.paused && now>=next)) &&
-                scene.stamp()->index+1<replay.index().frames.size()) {
+                scene.stamp()->index+1<replay.frames().size()) {
                 const auto report=scene.Publish(scene.stamp()->index+1);
                 output::Require(report.status==crash::visual::ReplaySceneStatus::Ok,report.message);
                 playback.next=false;
@@ -57,7 +56,7 @@ int main(int argc,char** argv) {
             }
             if(capture) {
                 exporter->Frame(*visual,*scene.stamp());
-                if(scene.stamp()->index+1==replay.index().frames.size()) break;
+                if(scene.stamp()->index+1==replay.frames().size()) break;
             } else crash::viewer::RenderReplayFrame(*visual);
             if(first) {
                 next=now+std::chrono::duration_cast<Clock::duration>(std::chrono::duration<double>(1/options.frames_per_second));

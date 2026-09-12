@@ -5,6 +5,9 @@
 #include "chrono/physics/ChBody.h"
 namespace crash::visual::physical_run {
 ReplaySceneReport Scene::Initialize(const output::physical_run::Replay& replay,SceneOptions options) {
+    return Initialize(SampleSource(replay), options);
+}
+ReplaySceneReport Scene::Initialize(const SampleSource& replay,SceneOptions options) {
     if(impl_) return {ReplaySceneStatus::AlreadyInitialized,"Physical scene is already initialized"};
     try {
         const auto budget=Forecast(replay.peak_host_bytes(),replay.context().nodes(),replay.context().parents().size(),
@@ -29,7 +32,7 @@ ReplaySceneReport Scene::Initialize(const output::physical_run::Replay& replay,S
         auto report=next->geometry.Initialize(replay.mapping(),replay.context(),geometry);
         if(report.status!=ReplaySceneStatus::Ok) return report;
         const auto initial=replay.ReadSample(0);
-        report=next->geometry.Update(initial.frame,initial.activity,replay.index().frames[0].stamp);
+        report=next->geometry.Update(initial.frame,initial.activity,replay.frames()[0].stamp);
         if(report.status!=ReplaySceneStatus::Ok) return report;
         // This is the adapter's own non-const presentation object. No archive
         // bytes or physical owner are made mutable by binding the visual shape.

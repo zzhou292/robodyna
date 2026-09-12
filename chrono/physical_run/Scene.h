@@ -1,7 +1,7 @@
 #pragma once
 #include "chrono/full_shell/FullShellFrameGeometry.h"
 #include "chrono/ReplayFixedCamera.h"
-#include "output/physical_run/Replay.h"
+#include "SampleSource.h"
 #include <optional>
 namespace crash::visual::physical_run {
 struct SceneOptions {
@@ -27,12 +27,14 @@ class Scene {
     Scene(const Scene&)=delete;
     Scene& operator=(const Scene&)=delete;
     ReplaySceneReport Initialize(const output::physical_run::Replay&,SceneOptions={});
+    ReplaySceneReport Initialize(const SampleSource&,SceneOptions={});
     ReplaySceneReport Publish(std::size_t sample);
     chrono::ChSystem& system();
     const ReplayCamera* camera() const noexcept;
     const ReplayStamp* stamp() const noexcept;
     const full_shell::FullShellFrameGeometry* geometry() const noexcept;
-    const output::physical_run::Replay* replay() const noexcept;
+    const output::physical_run::Replay* replay() const noexcept; // null for recovered samples
+    const SampleSource* samples() const noexcept;
     std::shared_ptr<const chrono::ChVisualShapeTriangleMesh> moving_shape() const noexcept;
     const SceneForecast* forecast() const noexcept;
     double plastic_strain_maximum() const noexcept;

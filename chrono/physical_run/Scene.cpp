@@ -7,7 +7,7 @@ ReplaySceneReport Scene::Publish(std::size_t sample) {
     if(!impl_) return {ReplaySceneStatus::NotInitialized,"Physical scene is not initialized"};
     try {
         const auto next=impl_->reader.ReadSample(sample);
-        const auto report=impl_->geometry.Update(next.frame,next.activity,impl_->reader.index().frames[sample].stamp);
+        const auto report=impl_->geometry.Update(next.frame,next.activity,impl_->reader.frames()[sample].stamp);
         if(report.status!=ReplaySceneStatus::Ok) return report;
         impl_->stamp={sample,impl_->reader.context().identity().owner,next.frame.stamp.epoch,next.frame.stamp.time};
         impl_->system.SetChTime(next.frame.stamp.time);
@@ -25,7 +25,8 @@ chrono::ChSystem& Scene::system() {
 const ReplayCamera* Scene::camera() const noexcept {return impl_?&impl_->camera:nullptr;}
 const ReplayStamp* Scene::stamp() const noexcept {return impl_?&impl_->stamp:nullptr;}
 const full_shell::FullShellFrameGeometry* Scene::geometry() const noexcept {return impl_?&impl_->geometry:nullptr;}
-const output::physical_run::Replay* Scene::replay() const noexcept {return impl_?&impl_->reader:nullptr;}
+const output::physical_run::Replay* Scene::replay() const noexcept {return impl_?impl_->reader.normal():nullptr;}
+const SampleSource* Scene::samples() const noexcept {return impl_?&impl_->reader:nullptr;}
 const SceneForecast* Scene::forecast() const noexcept {return impl_?&impl_->budget:nullptr;}
 std::shared_ptr<const chrono::ChVisualShapeTriangleMesh> Scene::moving_shape() const noexcept {
     return impl_?impl_->shape:nullptr;
