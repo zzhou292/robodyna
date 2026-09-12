@@ -141,9 +141,8 @@ TL_SURFACE_HD inline bool IsCurrentLimit(const RowBounds& rows,const StepLimit& 
 // successful result seals scratch; later additions invalidate scratch, not old
 // copies of StepLimit. Check IsCurrentLimit before consuming a saved result. No operation
 // here accepts time/state. Minimum-step failure is kOutOfRange and clears out.
-namespace detail {
-TL_SURFACE_HD inline Status BeginFinalizeRows(RowBounds* rows,double safety,double minimum_dt,
-                                       double requested_dt,StepLimit* out,StepLimit& result) {
+TL_SURFACE_HD inline Status FinalizeRows(RowBounds* rows,double safety,double minimum_dt,
+                                       double requested_dt,StepLimit* out) {
   if(!out) { InvalidateRows(rows);return Status::kInvalidArgument; }
   *out={};
   if(!rows) return Status::kInvalidArgument;
@@ -152,11 +151,13 @@ TL_SURFACE_HD inline Status BeginFinalizeRows(RowBounds* rows,double safety,doub
   if(!IsFinite(safety) || safety<=0 || safety>=1 || !IsFinite(minimum_dt) || minimum_dt<=0 ||
      !IsFinite(requested_dt) || requested_dt<minimum_dt || !rows->stiffness || !rows->damping ||
      !rows->node_count || rows->capacity<rows->node_count) return Status::kInvalidArgument;
-  result={};result.base_epoch=rows->base_epoch;result.attempt=rows->attempt;result.dt=requested_dt;
-  return Status::kOk;
-}
-TL_SURFACE_HD inline Status CompleteFinalizeRows(RowBounds* rows,double safety,
-    double minimum_dt,StepLimit result,StepLimit* out) {
+  StepLimit result;result.base_epoch=rows->base_epoch;result.attempt=rows->attempt;result.dt=requested_dt;
+  for(std::uint32_t i=0;i<rows->node_count;++i) {
+    const double k=rows->stiffness[i],c=rows->damping[i];
+    if(!IsFinite(k) || k<0 || !IsFinite(c) || c<0) return Status::kInvalidArgument;
+    if(k>result.stiffness_bound) { result.stiffness_bound=k;result.stiffness_node=i; }
+    if(c>result.damping_bound) { result.damping_bound=c;result.damping_node=i; }
+  }
   const double alpha=result.stiffness_bound,beta=result.damping_bound;
   result.has_stiffness_or_damping=alpha>0 || beta>0;
   if(result.has_stiffness_or_damping) {
@@ -184,19 +185,4 @@ TL_SURFACE_HD inline Status CompleteFinalizeRows(RowBounds* rows,double safety,
   if(result.dt<minimum_dt) return Status::kOutOfRange; // Never clamp upward.
   rows->sealed=true;rows->valid=true;*out=result;return Status::kOk;
 }
-} // namespace detail
-TL_SURFACE_HD inline Status FinalizeRows(RowBounds* rows,double safety,double minimum_dt,
-                                       double requested_dt,StepLimit* out) {
-  StepLimit result;
-  const auto status=detail::BeginFinalizeRows(rows,safety,minimum_dt,requested_dt,out,result);
-  if(status!=Status::kOk) return status;
-  for(std::uint32_t i=0;i<rows->node_count;++i) {
-    const double k=rows->stiffness[i],c=rows->damping[i];
-    if(!IsFinite(k) || k<0 || !IsFinite(c) || c<0) return Status::kInvalidArgument;
-    if(k>result.stiffness_bound) { result.stiffness_bound=k;result.stiffness_node=i; }
-    if(c>result.damping_bound) { result.damping_bound=c;result.damping_node=i; }
-  }
-  return detail::CompleteFinalizeRows(rows,safety,minimum_dt,result,out);
-}
-
 }  // namespace tl::fea::stability

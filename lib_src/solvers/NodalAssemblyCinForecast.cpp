@@ -4,6 +4,7 @@
 #include "NodalRigidGroupStorage.h"
 #include "NodalForceStageCaptureLayout.h"
 #include "NodalStateLayout.h"
+#include "nodal_seal/RowLayout.h"
 #include <cmath>
 
 namespace tl::fea {
@@ -45,7 +46,7 @@ NodalAssemblyCinForecast FENodalState::ForecastAssemblyCin(const NodalStateConfi
   const auto capture_values = config.capture_force_stage_accelerations ? capture.values() : 0;
   StateLayout layout;
   if (!layout.Initialize(config.node_count,true,rigid::GroupStateValues*groups,
-      rigid.device_bytes,capture_values,sizeof(Control),config.max_device_bytes,
+      rigid.device_bytes,capture_values,nodal_seal::ControlBytes(sizeof(Control),config.node_count),config.max_device_bytes,
       attachment.state_values,attachment.device_bytes,rotation_presence)) {
     result.report = {NodalStatus::ResourceLimit,"Combined owner device layout exceeds its cap"};
     return result;

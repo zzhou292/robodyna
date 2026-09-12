@@ -44,13 +44,13 @@ cuda_library(
     name = "explicit_nodal_state",
     srcs = ["FENodalState.cu", "FENodalConstraintQueries.cu", "FENodalSnapshotReadback.cu", "FENodalForceStageReadback.cu", "ExplicitTranslationStep.cu", "ExplicitNodalStep.cu", "NodalRigidGroupStorage.cu", "NodalRigidAssemblyStorage.cpp", "NodalAssemblyCinForecast.cpp", "NodalRigidAssemblyChecks.cpp", "NodalRigidAssemblyIdentity.cpp", "ExplicitNodalRigidStep.cu",
             "NodalCinStartup.cpp", "NodalCinStorage.cu", "NodalCinState.cpp", "NodalCinReadback.cu", "NodalCinPhysicalMains.cu", "ExplicitNodalCinStep.cu", "cin_advance/ForceInputs.cu", "cin_advance/Capture.cu", "cin_advance/Screen.cu", "cin_advance/Groups.cu"],
-    hdrs = ["FENodalState.h", "FENodalStateStorage.h", "nodal_seal/Validation.cuh", "ExplicitTranslationStep.h", "ExplicitNodalStep.h", "NodalRotation.h", "NodalTrialIdentity.h",
+    hdrs = ["FENodalState.h", "FENodalStateStorage.h", "nodal_seal/Validation.cuh", "nodal_seal/Rows.cuh", "ExplicitTranslationStep.h", "ExplicitNodalStep.h", "NodalRotation.h", "NodalTrialIdentity.h",
             "NodalNodeStep.h", "NodalRigidGroupStorage.h", "ExplicitNodalRigidStep.h", "NodalSnapshotRanges.h",
             "NodalForceStageSnapshot.h", "NodalForceStageCaptureLayout.h", "NodalForceStageSnapshotRanges.h",
             "NodalCinRuntime.h", "cin_advance/FailureKey.h", "cin_advance/Input.h", "cin_advance/ForceInputs.h",
             "cin_advance/Capture.h", "cin_advance/Screen.h", "cin_advance/ScreenSummary.h", "cin_advance/GroupReport.h", "cin_advance/Groups.h", "cin_advance/Node.h", "NodalCinLayout.h", "NodalCinStorage.h", "cin_physical_mains/OutputRanges.h"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
-    deps = [":explicit_step_stability", ":nodal_state_layout", ":nodal_rigid_storage_layout", "//lib_src/math:quaternion", "//lib_src/constraints:nodal_rigid_group_step_math", "//lib_src/constraints:nodal_rigid_assembly_binding",
+    deps = [":explicit_step_stability", ":nodal_seal_row_values", ":nodal_state_layout", ":nodal_rigid_storage_layout", "//lib_src/math:quaternion", "//lib_src/constraints:nodal_rigid_group_step_math", "//lib_src/constraints:nodal_rigid_assembly_binding",
             "//lib_src/constraints/tied_shell:cin_stage", "//lib_utils:source_identity_index",
             ":cin_structural_step_values", ":cin_physical_main_values"],
 )
@@ -219,4 +219,11 @@ cuda_library(
         "//lib_utils:cuda_utils",
         "@eigen//:eigen",
     ],
+)
+
+cc_library(
+    name = "nodal_seal_row_values",
+    hdrs = ["nodal_seal/RowValues.h", "nodal_seal/RowLayout.h"],
+    deps = [":explicit_step_stability"],
+    visibility = ["//visibility:public"],
 )

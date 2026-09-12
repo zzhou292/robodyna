@@ -150,7 +150,7 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
   const std::size_t capture_values=c.capture_force_stage_accelerations?capture.values():0;
   nodal_detail::StateLayout layout;
   if(!layout.Initialize(n,rotations,group_values,rigid_layout.device_bytes,
-      capture_values,sizeof(Control),c.max_device_bytes,cin_layout.state_values,cin_layout.device_bytes,
+      capture_values,nodal_seal::ControlBytes(sizeof(Control),n),c.max_device_bytes,cin_layout.state_values,cin_layout.device_bytes,
       rotation_presence))
     return {NodalStatus::ResourceLimit,"Device byte budget or host staging extent is insufficient"};
   if (cin) {
@@ -249,7 +249,7 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
     report = allocate(&next->scratch, layout.scratch.bytes); if (report.status != NodalStatus::Ok) return report;
     report = allocate(&next->inverse, layout.inverse.bytes); if (report.status != NodalStatus::Ok) return report;
     report = allocate(&next->fixed, mask_bytes); if (report.status != NodalStatus::Ok) return report;
-    report = allocate(&next->control, sizeof(Control)); if (report.status != NodalStatus::Ok) return report;
+    report = allocate(&next->control, layout.control.bytes); if (report.status != NodalStatus::Ok) return report;
     if(next->rigid_groups) {
       report=next->Check(next->rigid_groups->Upload(next->stream));
       if(report.status!=NodalStatus::Ok) return report;
@@ -373,7 +373,8 @@ NodalReport FENodalState::SealAssembly(const NodalTrialToken& token) {
   if (s.phase != Phase::Assembling) return s.Reject(NodalStatus::WrongPhase, "Assembly is not open");
   auto report = s.Check(cudaGetLastError()); if (report.status != NodalStatus::Ok) return report;
   nodal_seal::Launch(s.control, s.scratch, static_cast<std::uint32_t>(s.config.node_count),
-      s.stamp.epoch, s.attempt, s.config.timestep_safety, s.config.minimum_dt, s.config.fixed_dt, s.has_rotations, s.stream);
+      s.stamp.epoch, s.attempt, s.config.timestep_safety, s.config.minimum_dt, s.config.fixed_dt, s.has_rotations, s.stream,
+      nodal_seal::ControlTail(s.control,s.config.node_count));
   report = s.Check(cudaGetLastError()); if (report.status != NodalStatus::Ok) return report;
   report = s.SynchronizeControl(); if (report.status != NodalStatus::Ok) return report;
   s.phase = Phase::Sealed; return Ok();

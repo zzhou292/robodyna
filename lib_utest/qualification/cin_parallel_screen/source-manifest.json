@@ -14,8 +14,8 @@
     },
     {
       "path": "lib_src/solvers/BUILD.bazel",
-      "bytes": 7809,
-      "sha256": "dc6b89f76f76dd03ba4b88ead60c95daf65adcec59f8d5f01a58cc8a036043ed",
+      "bytes": 8057,
+      "sha256": "89693f691daf69947e61ff127957bfb9bfad964a34bab4468c341e1d028c6a82",
       "prior_receipts": [
         {
           "bytes": 7702,
@@ -55,8 +55,8 @@
     },
     {
       "path": "lib_src/solvers/NodalAssemblyCinForecast.cpp",
-      "bytes": 3899,
-      "sha256": "b95aad9b0b2a24d1468d46a553c533f659ef2fb853079fc8311d7d844e4a40cc",
+      "bytes": 3977,
+      "sha256": "4e2e243008fb44903f9fea74d08e8e9026a5423e17bd9b48d09b5294a76454fc",
       "prior_receipts": [
         {
           "bytes": 3875,
@@ -480,5 +480,22 @@
       ]
     }
   ],
-  "group_scheduling_compatibility": "Exact checked prior view: cin_parallel_groups/group_proof.py; original frozen gate scope retained. Independent group execution/partial private trial writes have their own qualification."
+  "group_scheduling_compatibility": "Exact checked prior view: cin_parallel_groups/group_proof.py; original frozen gate scope retained. Independent group execution/partial private trial writes have their own qualification.",
+  "seal_row_reduction_integration": {
+    "baseline_commit": "301a750",
+    "previous_manifest_sha256": "5e612dac6396da869df0ff9d5deab10bdde796a8243f4025243e1411a85086a5",
+    "reason": "Bounded nodal seal row maxima: explicit <=8192-byte tail in the existing control allocation and matching CIN forecast; additive helper ownership only. CIN force, motion, screen, capture and all frozen baselines remain unchanged. Native/CUDA qualification is a separate root gate.",
+    "previous_records": [
+      {
+        "path": "lib_src/solvers/BUILD.bazel",
+        "bytes": 7809,
+        "sha256": "dc6b89f76f76dd03ba4b88ead60c95daf65adcec59f8d5f01a58cc8a036043ed"
+      },
+      {
+        "path": "lib_src/solvers/NodalAssemblyCinForecast.cpp",
+        "bytes": 3899,
+        "sha256": "b95aad9b0b2a24d1468d46a553c533f659ef2fb853079fc8311d7d844e4a40cc"
+      }
+    ]
+  }
 }

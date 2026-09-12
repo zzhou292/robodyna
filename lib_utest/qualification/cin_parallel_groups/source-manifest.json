@@ -29,8 +29,8 @@
     },
     {
       "path": "lib_src/solvers/BUILD.bazel",
-      "bytes": 7809,
-      "sha256": "dc6b89f76f76dd03ba4b88ead60c95daf65adcec59f8d5f01a58cc8a036043ed"
+      "bytes": 8057,
+      "sha256": "89693f691daf69947e61ff127957bfb9bfad964a34bab4468c341e1d028c6a82"
     },
     {
       "path": "lib_src/solvers/CMakeLists.txt",
@@ -44,13 +44,13 @@
     },
     {
       "path": "lib_src/solvers/FENodalState.cu",
-      "bytes": 26834,
-      "sha256": "1e932c2234f74f4aec6509352b7a72a601cb1f55b9c259637bbc98fa9ba49124"
+      "bytes": 26929,
+      "sha256": "7d8d41eedb1ac7f4e8263f765408f99e9b146f0e58ccef79989cc09e419a0504"
     },
     {
       "path": "lib_src/solvers/NodalAssemblyCinForecast.cpp",
-      "bytes": 3899,
-      "sha256": "b95aad9b0b2a24d1468d46a553c533f659ef2fb853079fc8311d7d844e4a40cc"
+      "bytes": 3977,
+      "sha256": "4e2e243008fb44903f9fea74d08e8e9026a5423e17bd9b48d09b5294a76454fc"
     },
     {
       "path": "lib_src/solvers/NodalCinLayout.h",
@@ -149,8 +149,8 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_capture/source-manifest.json",
-      "bytes": 16440,
-      "sha256": "4dc2df534ddd3555daf337bf698b34ef3feb2a00a8222c794259efca92cda47f",
+      "bytes": 17533,
+      "sha256": "5e92db8fd95281989a8749faae3d5e89b79abd147caeb98ec142d51e2e7329fa",
       "prior_receipts": [
         {
           "bytes": 14024,
@@ -172,7 +172,7 @@
     {
       "path": "lib_utest/qualification/cin_parallel_capture/verify_sources.py",
       "bytes": 3992,
-      "sha256": "55b38075b953802cd2294207acc0dcd911b900f422449b4b74f8ce91e5719c98",
+      "sha256": "5c01f6c23f21432d63f6cd8a67dd417c4d5cd2a956af245ab95186b072df32eb",
       "prior_receipts": [
         {
           "bytes": 3992,
@@ -432,8 +432,8 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/source-manifest.json",
-      "bytes": 18579,
-      "sha256": "5e612dac6396da869df0ff9d5deab10bdde796a8243f4025243e1411a85086a5",
+      "bytes": 19445,
+      "sha256": "1cb56ea67d0b3b9e8808df3948ffe04bf5b6d7ecb3876951425a924af6305133",
       "prior_receipts": [
         {
           "bytes": 17768,
@@ -455,7 +455,7 @@
     {
       "path": "lib_utest/qualification/cin_parallel_screen/verify_sources.py",
       "bytes": 6798,
-      "sha256": "2b60ab54e676e41c1e8d0b9a650ae7c0f0e02a5f5c56d1436df9f43370edeb1c",
+      "sha256": "307c27df8f470e3b1a9e264937cb2db352a33ec12f4190f8729185c247dc81a6",
       "prior_receipts": [
         {
           "bytes": 6798,
@@ -504,6 +504,48 @@
         "path": "lib_src/solvers/FENodalState.cu",
         "bytes": 28292,
         "sha256": "d7e747627b97507da58cb6f7e76be923caad6919e22d9c70a8b2ab0ccc16acc0"
+      }
+    ]
+  },
+  "seal_row_reduction_integration": {
+    "baseline_commit": "301a750",
+    "previous_manifest_sha256": "788dabd4fcfc85577d94ad46b51db2c79c4807532f7d0cbc046acb8a014d2ad6",
+    "reason": "Bounded nodal seal row maxima: explicit <=8192-byte tail in the existing control allocation and matching CIN forecast; additive helper ownership only. CIN force, motion, screen, capture and all frozen baselines remain unchanged. Native/CUDA qualification is a separate root gate.",
+    "previous_records": [
+      {
+        "path": "lib_src/solvers/BUILD.bazel",
+        "bytes": 7809,
+        "sha256": "dc6b89f76f76dd03ba4b88ead60c95daf65adcec59f8d5f01a58cc8a036043ed"
+      },
+      {
+        "path": "lib_src/solvers/FENodalState.cu",
+        "bytes": 26834,
+        "sha256": "1e932c2234f74f4aec6509352b7a72a601cb1f55b9c259637bbc98fa9ba49124"
+      },
+      {
+        "path": "lib_src/solvers/NodalAssemblyCinForecast.cpp",
+        "bytes": 3899,
+        "sha256": "b95aad9b0b2a24d1468d46a553c533f659ef2fb853079fc8311d7d844e4a40cc"
+      },
+      {
+        "path": "lib_utest/qualification/cin_parallel_capture/source-manifest.json",
+        "bytes": 16440,
+        "sha256": "4dc2df534ddd3555daf337bf698b34ef3feb2a00a8222c794259efca92cda47f"
+      },
+      {
+        "path": "lib_utest/qualification/cin_parallel_capture/verify_sources.py",
+        "bytes": 3992,
+        "sha256": "55b38075b953802cd2294207acc0dcd911b900f422449b4b74f8ce91e5719c98"
+      },
+      {
+        "path": "lib_utest/qualification/cin_parallel_screen/source-manifest.json",
+        "bytes": 18579,
+        "sha256": "5e612dac6396da869df0ff9d5deab10bdde796a8243f4025243e1411a85086a5"
+      },
+      {
+        "path": "lib_utest/qualification/cin_parallel_screen/verify_sources.py",
+        "bytes": 6798,
+        "sha256": "2b60ab54e676e41c1e8d0b9a650ae7c0f0e02a5f5c56d1436df9f43370edeb1c"
       }
     ]
   }
