@@ -199,8 +199,15 @@
     },
     {
       "path": "lib_utest/qualification/qbat_measurement_operands/README.md",
-      "bytes": 5067,
-      "sha256": "40851f72f99105db9089335e27ecf8f068006bd12555b17fde6c9e1936ad2512"
+      "bytes": 6407,
+      "sha256": "82d818cd89b7560520ea43182b93eab8309c62a9aab374242c39600f08c9d7db",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 5067,
+          "prior_sha256": "40851f72f99105db9089335e27ecf8f068006bd12555b17fde6c9e1936ad2512",
+          "reason": "Clarify standalone QBAT startup admission versus composed app retained/max-temporary accounting after actual V5 forecast: local +714040 B partitions into temporary +714008 B and retained +32 B; a count-only actual-layout query bounds the QBAT phase below the existing QEPH phase. Documentation only."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/qbat_measurement_operands/SerialFinalize.h",
@@ -236,6 +243,11 @@
       "path": "lib_utils/BoundedArena.h",
       "bytes": 3257,
       "sha256": "9db4481ad7e0c4fc77414dd8fec8677f7d968b293f025e2569acaeea59d18f0a"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_measurement_operands/footprint-receipt.json",
+      "bytes": 2510,
+      "sha256": "76b0fd60884e64f66bbafb73d91781eec1c17c7eeee0dc894800402bb5c2733f"
     }
   ]
 }

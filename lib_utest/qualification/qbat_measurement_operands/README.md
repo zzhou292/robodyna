@@ -31,10 +31,30 @@ execution retains the original serial caller and has no operand rows.
 
 The 64-bit ABI gate confirms Storage 656 -> 664 B, Layout 456 -> 480 B,
 AssemblyMemory 48 -> 56 B, and private Impl 181376 -> 181408 B. The new mapped
-device extent is `168 * parent_count + 8` bytes above baseline. Complete host
-forecast growth is `168 * parent_count + 40`, including the startup mirror and
-private descriptors. At 4250 parents these are 714008 device bytes and 714040
-host forecast bytes. Unmapped growth is only 8 device/40 host forecast bytes;
+device extent is `168 * parent_count + 8` bytes above baseline. Complete
+standalone QBAT startup forecast growth is `168 * parent_count + 40`, including
+the temporary startup mirror and retained private descriptors. At 4250 parents
+these are 714008 device bytes and 714040 standalone host admission bytes.
+`ShellMappedFootprint::MakeFootprint` partitions the latter into 714008 temporary
+bytes and 32 retained participant bytes. The app initializes participants
+sequentially and takes the maximum temporary phase in
+`case/vehicle_runtime/Forecast.cpp` and `case/vehicle_wall/RuntimeBudget.cpp`.
+Consequently the qualified V5 runtime and complete-run host bounds grow by only
+32 bytes; the QBAT temporary phase does not control either maximum. This is
+phase-based allocation accounting, not a measured RSS reduction or shared
+simultaneous storage. `InitializeMapped` retires its local HostArena after the
+synchronous startup upload before the next participant initializes.
+
+A bounded count-only query of the actual layout at 4250 parents, 376930 nodes
+and the maximum 1024 curve points bounds the new mirror by 82772920 bytes.
+Adding its 45410248-byte owner proof gives at most 128183168 temporary bytes;
+the two required QEPH result slabs alone occupy 923019712 bytes. Thus the
+non-controlling QBAT phase has at least 794836544 bytes of margin below an
+already required phase, independently of its actual curve count. Evidence:
+`crash-work/reports/qbat-forecast-margin-author-1.{json,log}` and the root V5
+`qbat-operands-vehicle-functions-1` reports. No production accounting change.
+
+Unmapped growth is only 8 device/40 standalone host forecast bytes;
 the optional packet count is zero. Existing alignment/overflow/inclusive-cap
 checks account for every allocation. No per-step allocation occurs.
 
