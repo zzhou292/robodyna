@@ -281,7 +281,7 @@
     },
     "lib_utest/qualification/solid_law44_point/source-manifest.json": {
       "bytes": 3174,
-      "sha256": "7df2bede5679ffefa1d8130d15a91ddf675393f1476bd84da2f3f944f7b15fdb"
+      "sha256": "fc8ab378b3b0dca6b5873d231696734ba5700176838c29c1197307a642320cc2"
     },
     "lib_utest/qualification/solid_law44_point/source_fixture/OriginalCurve.h": {
       "bytes": 1334,
@@ -318,5 +318,13 @@
       }
     ],
     "dependency_note": "Referenced owning verifiers passed before refresh; no underlying native or reference equation changed. Extended coefficient reference receipt mismatch existed at base51ef240."
+  },
+  "analytic_dependency_receipt": {
+    "scope": "Shared LAW44 owner adds explicit analytic solid hardening; beam caller remains explicitly tabulated. Root analytic-beam-root-tests-1 passes beam host/native/CUDA numerical gates and the LAW44 owning native identity. Preserve the previous whole-owner receipt.",
+    "prior_record": {
+      "path": "lib_utest/qualification/solid_law44_point/source-manifest.json",
+      "bytes": 3174,
+      "sha256": "7df2bede5679ffefa1d8130d15a91ddf675393f1476bd84da2f3f944f7b15fdb"
+    }
   }
 }
