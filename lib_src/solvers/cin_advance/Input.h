@@ -2,6 +2,7 @@
 #pragma once
 #include "FailureKey.h"
 #include "ScreenSummary.h"
+#include "GroupReport.h"
 #include "../FENodalStateStorage.h"
 #include "../NodalCinRuntime.h"
 #include "../../constraints/NodalRigidGroupState.h"
@@ -33,6 +34,8 @@ struct Input {
   FailureKey* input_failure = nullptr;
   // Count is Blocks(model.node_count); null preserves the private serial screen.
   screen::Summary* screen = nullptr;
+  // Exactly groups.group_count records; null retains the frozen serial suffix.
+  groups::Report* group_reports = nullptr;
 };
 cudaError_t Launch(const Input&, cudaStream_t);
 } // namespace tl::fea::cin_advance

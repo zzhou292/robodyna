@@ -25,11 +25,12 @@ struct CinStorage {
   cin_advance::FailureKey* failure = nullptr;
   cin_advance::FailureKey* input_failure = nullptr;
   cin_advance::screen::Summary* screen = nullptr;
+  cin_advance::groups::Report* group_reports = nullptr;
   cudaError_t Upload(cudaStream_t);
   cudaError_t ResetTrial(cudaStream_t);
   void InitializeState(double* state, const NodalCinStartup&, const double* inverse_mass, const NodalDofConfig&) const noexcept;
 };
-NodalReport ForecastCinStorage(const NodalCinStartup&, const NodalStateConfig&, CinLayout&) noexcept;
+NodalReport ForecastCinStorage(const NodalCinStartup&, const NodalStateConfig&, CinLayout&, std::size_t group_count = 0) noexcept;
 NodalReport PrepareCinStorage(const NodalCinStartup&, const NodalStateConfig&,
     HostNodalKinematicsView, const double*, const NodalDofConfig&,
     const NodalRigidGroupModel*, const CinLayout&, std::unique_ptr<CinStorage>&,

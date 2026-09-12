@@ -3,6 +3,7 @@
 #include "NodalCinRuntime.h"
 #include "cin_advance/FailureKey.h"
 #include "cin_advance/ScreenSummary.h"
+#include "cin_advance/GroupReport.h"
 #include "lib_utils/BoundedArena.h"
 #include "lib_utils/SourceIdentityIndex.h"
 
@@ -21,7 +22,7 @@ inline bool CinOwnerHostFits(std::size_t optional_bytes, std::size_t rigid_bytes
   return fits;
 }
 struct CinLayout {
-  util::ArenaRegion rows, dependent, activity, patches, work, first_witness, failure, input_failure, screen;
+  util::ArenaRegion rows, dependent, activity, patches, work, first_witness, failure, input_failure, screen, group_reports;
   // Tail within each of the existing accepted/trial double slabs:
   // M[n], J[n], derived inverse M[n], derived inverse J[n], SMAS[r], SINER[r], DMAST.
   std::size_t nodes = 0, attachments = 0, witnesses = 0;
@@ -29,8 +30,8 @@ struct CinLayout {
   std::size_t optional_device_bytes = 0;
   std::size_t scratch_values = 0;
   bool Initialize(std::size_t n, std::size_t r, std::size_t w,
-      const NodalCinLimits& limits, std::size_t host_control_bytes) noexcept {
-    if (!n || n > MaxActiveNodalStateNodes || !r || r > limits.max_attachments ||
+      const NodalCinLimits& limits, std::size_t host_control_bytes, std::size_t group_count = 0) noexcept {
+    if (!n || group_count > n/2 || n > MaxActiveNodalStateNodes || !r || r > limits.max_attachments ||
         limits.max_attachments > 65536 || !w || w > limits.max_witnesses ||
         limits.max_witnesses > 262144 || !limits.max_host_bytes ||
         limits.max_host_bytes > (128u << 20) || !limits.max_device_bytes ||
@@ -53,7 +54,8 @@ struct CinLayout {
         !device.Append<double>(next.scratch_values, next.work) ||
         !device.Append<cin_advance::FailureKey>(1, next.failure) ||
         !device.Append<cin_advance::FailureKey>(1, next.input_failure) ||
-        !device.Append<cin_advance::screen::Summary>(cin_advance::screen::Blocks(n), next.screen)) return false;
+        !device.Append<cin_advance::screen::Summary>(cin_advance::screen::Blocks(n), next.screen) ||
+        !device.Append<cin_advance::groups::Report>(group_count, next.group_reports)) return false;
     next.device_bytes = device.bytes();
     const auto tail_bytes = 2*next.state_values*sizeof(double);
     if (tail_bytes > limits.max_device_bytes-next.device_bytes) return false;

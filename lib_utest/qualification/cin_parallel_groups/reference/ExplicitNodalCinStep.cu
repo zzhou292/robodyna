@@ -4,7 +4,6 @@
 #include "cin_advance/ForceInputs.h"
 #include "cin_advance/Screen.h"
 #include "cin_advance/Capture.h"
-#include "cin_advance/Groups.h"
 #include "cin_timestep/Screen.h"
 #include "NodalCinStorage.h"
 #include "NodalRigidGroupStorage.h"
@@ -85,7 +84,7 @@ __global__ void AdvanceOrdinaryCin(const cin_advance::Input input) {
     }
   }
 }
-__global__ void CompleteCin(const cin_advance::Input input, bool groups_prepared = false) {
+__global__ void CompleteCin(const cin_advance::Input input) {
   auto* control = input.control;
   const auto* accepted = input.accepted;
   auto* trial = input.trial;
@@ -110,7 +109,7 @@ __global__ void CompleteCin(const cin_advance::Input input, bool groups_prepared
   cin::StageReport stage;
   // Source/owner admission proves CIN has no rigid member intersection. The
   // existing native aggregate and member arithmetic therefore stays unchanged.
-  for (std::uint32_t g = 0; !groups_prepared && g < groups.group_count; ++g) {
+  for (std::uint32_t g = 0; g < groups.group_count; ++g) {
     const auto result = capture.node
       ? rigid::PrepareGroupCandidate<true>(groups, g, accepted, trial, loads, n, durations, capture)
       : rigid::PrepareGroupCandidate<false>(groups, g, accepted, trial, loads, n, durations);
@@ -182,12 +181,7 @@ cudaError_t cin_advance::Launch(const Input& input, cudaStream_t stream) {
   AdvanceOrdinaryCin<<<blocks,threads,0,stream>>>(input);
   error = cudaGetLastError();
   if (error != cudaSuccess) return error;
-  const bool parallel_groups = input.group_reports && input.groups.group_count;
-  if (parallel_groups) {
-    error = groups::LaunchMotion(input, stream);
-    if (error != cudaSuccess) return error;
-  }
-  CompleteCin<<<1,1,0,stream>>>(input, parallel_groups);
+  CompleteCin<<<1,1,0,stream>>>(input);
   error = cudaGetLastError();
   if (error != cudaSuccess) return error;
   return capture::Launch(input, stream);
@@ -207,7 +201,7 @@ cudaError_t FENodalState::Impl::LaunchCinAdvance(double maximum_angle,
       trial+cin->state_offset, cin->work, cin->patches, cin->activity, groups, durations,
       maximum_angle, stamp.epoch, attempt, capture,
       stamp.has_rotation_presence?fixed+3*config.node_count:nullptr,
-      structural ? *structural : NodalCinStructuralStep{}, cin->failure, cin->input_failure, cin->screen, cin->group_reports}, stream);
+      structural ? *structural : NodalCinStructuralStep{}, cin->failure, cin->input_failure, cin->screen}, stream);
 }
 
 NodalReport AdvanceStaggeredCin(FENodalState& owner, const NodalTrialToken& token,

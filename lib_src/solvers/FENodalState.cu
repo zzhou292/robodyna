@@ -143,7 +143,7 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
   nodal_detail::CinLayout cin_layout;
   if (cin) {
     if (!rotations) return {NodalStatus::UnsupportedRotation, "CIN requires extended nodal state"};
-    const auto report = nodal_detail::ForecastCinStorage(*cin, c, cin_layout);
+    const auto report = nodal_detail::ForecastCinStorage(*cin, c, cin_layout, group_count);
     if (report.status != NodalStatus::Ok) return report;
   }
   const nodal_detail::ForceStageCaptureLayout capture{n,group_count};

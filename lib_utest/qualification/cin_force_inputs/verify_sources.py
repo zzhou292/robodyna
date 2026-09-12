@@ -8,8 +8,10 @@ import runpy
 
 here = Path(__file__).resolve().parent
 root = here.parents[2]
+import runpy
+group_proof = runpy.run_path(str(here.parent/"cin_parallel_groups/group_proof.py"))
 raw = (here / 'source-manifest.json').read_bytes()
-assert hashlib.sha256(raw).hexdigest() == 'f8304fba734d84751ef161fcf5a389c850141cd3d70b43d23c29a52fb3888a82'
+assert hashlib.sha256(raw).hexdigest() == 'e22c6630385489822a01fd075ad71ddfb96f3fe4fb4791d6496b6882184fa3fd'
 manifest = json.loads(raw)
 for row in manifest['files']:
     path = Path(row['path'])
@@ -64,6 +66,7 @@ same(body(current, 'PrepareForceTrial'), force[:transfer_start]+'  return detail
 
 old_owner = (here/'serial/ExplicitNodalCinStep.cu.txt').read_text()
 owner = (root/'lib_src/solvers/ExplicitNodalCinStep.cu').read_text()
+owner = group_proof["legacy_owner"](owner)
 inputs = (root/'lib_src/solvers/cin_advance/ForceInputs.h').read_text()
 prefix_start = old_owner.index('  if (control->status != NodalStatus::Ok) return;')
 prefix_end = old_owner.index('  const auto n = model.node_count;', prefix_start)

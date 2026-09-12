@@ -7,8 +7,10 @@ import re
 
 here = Path(__file__).resolve().parent
 root = here.parents[2]
+import runpy
+group_proof = runpy.run_path(str(here.parent/"cin_parallel_groups/group_proof.py"))
 raw = (here / "source-manifest.json").read_bytes()
-assert hashlib.sha256(raw).hexdigest() == "ebd82719851c8ec51ca5b73bd7d068fa663b0aee0cee18d54f98eddb99761405"
+assert hashlib.sha256(raw).hexdigest() == "a6547d4048c2349cf999c513dbbd7be8a0821eb11be0d8db9f377b34434bc09d"
 manifest = json.loads(raw)
 for row in manifest["files"]:
     path = Path(row["path"])
@@ -19,6 +21,7 @@ for row in manifest["files"]:
 
 old = (here / "serial/ExplicitNodalCinStep.cu.txt").read_text()
 current = (root / "lib_src/solvers/ExplicitNodalCinStep.cu").read_text()
+current = group_proof["legacy_owner"](current)
 extract = old[:old.index("cudaError_t FENodalState::Impl::LaunchCinAdvance")]
 extract = extract.replace("__device__ void Fail", "TL_CIN_SERIAL_DEVICE void Fail")
 extract = extract.replace("__global__ void AdvanceCin", "TL_CIN_SERIAL_KERNEL void AdvanceCin")

@@ -34,7 +34,7 @@ NodalAssemblyCinForecast FENodalState::ForecastAssemblyCin(const NodalStateConfi
   result.report = ForecastRigidStorage(binding,config,rigid);
   if (result.report.status != NodalStatus::Ok) return result;
   CinLayout attachment;
-  result.report = ForecastCinStorage(cin,config,attachment);
+  result.report = ForecastCinStorage(cin,config,attachment,binding.groups().size());
   if (result.report.status != NodalStatus::Ok) return result;
   if (!binding.domain()->SharesStorage(*cin.model->domain())) {
     result.report = {NodalStatus::InvalidInput,"Combined owner sources do not share the physical domain"};

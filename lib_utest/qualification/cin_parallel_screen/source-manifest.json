@@ -14,43 +14,99 @@
     },
     {
       "path": "lib_src/solvers/BUILD.bazel",
-      "bytes": 7702,
-      "sha256": "bc66b4930b235be274f3ee907fbfc0cf5f672842b78acd0d24afe9106a7879dd"
+      "bytes": 7780,
+      "sha256": "e995ecffbc42c37dac61f105ee3c2e204d3b9925b88e663faf2b3ad486282e42",
+      "prior_receipts": [
+        {
+          "bytes": 7702,
+          "sha256": "bc66b4930b235be274f3ee907fbfc0cf5f672842b78acd0d24afe9106a7879dd",
+          "reason": "Independent CIN group scheduling or additive qualification ownership"
+        }
+      ]
     },
     {
       "path": "lib_src/solvers/CMakeLists.txt",
-      "bytes": 1712,
-      "sha256": "635dbbf8ba32ef404a47691d59ba9ca7ca75340a34a2251b800900551458c3d6"
+      "bytes": 1734,
+      "sha256": "2f116b66ddf1153954a91cdf242182f7e4df459078323c2a8aefedf6421a3f6a",
+      "prior_receipts": [
+        {
+          "bytes": 1712,
+          "sha256": "635dbbf8ba32ef404a47691d59ba9ca7ca75340a34a2251b800900551458c3d6",
+          "reason": "Independent CIN group scheduling or additive qualification ownership"
+        }
+      ]
     },
     {
       "path": "lib_src/solvers/ExplicitNodalCinStep.cu",
-      "bytes": 9950,
-      "sha256": "bfa6cf08c9c6d0c3bdd58deaf69cc15348631eef37c19a40e305d187a33a91ed"
+      "bytes": 10271,
+      "sha256": "46c3f5faeba3d9d1d004b6833ecf4cb24041e5e732f93d610d56b2b21c90fc92",
+      "prior_receipts": [
+        {
+          "bytes": 9950,
+          "sha256": "bfa6cf08c9c6d0c3bdd58deaf69cc15348631eef37c19a40e305d187a33a91ed",
+          "reason": "Independent CIN group scheduling or additive qualification ownership"
+        }
+      ]
     },
     {
       "path": "lib_src/solvers/NodalAssemblyCinForecast.cpp",
-      "bytes": 3875,
-      "sha256": "b337d529f6d8f408ba44bdcbf19a7392c0c33d85b08eec4a930c7050a90c1766"
+      "bytes": 3899,
+      "sha256": "b95aad9b0b2a24d1468d46a553c533f659ef2fb853079fc8311d7d844e4a40cc",
+      "prior_receipts": [
+        {
+          "bytes": 3875,
+          "sha256": "b337d529f6d8f408ba44bdcbf19a7392c0c33d85b08eec4a930c7050a90c1766",
+          "reason": "Independent CIN group scheduling or additive qualification ownership"
+        }
+      ]
     },
     {
       "path": "lib_src/solvers/NodalCinLayout.h",
-      "bytes": 3988,
-      "sha256": "f8297c4f2dd66eba19e044bb0af179a25e6d526852d255cfaf820e66d776b280"
+      "bytes": 4178,
+      "sha256": "900cb7b2c3ed5f51b5b565ed1d007c7ee01c59612774878f640b0f5c9f2d4d95",
+      "prior_receipts": [
+        {
+          "bytes": 3988,
+          "sha256": "f8297c4f2dd66eba19e044bb0af179a25e6d526852d255cfaf820e66d776b280",
+          "reason": "Independent CIN group scheduling or additive qualification ownership"
+        }
+      ]
     },
     {
       "path": "lib_src/solvers/NodalCinStartup.cpp",
-      "bytes": 11980,
-      "sha256": "c89cb564f2613d281f669f9c809653ed3a5516e138b2a5f6fd49acb1ef34a416"
+      "bytes": 12018,
+      "sha256": "229f8cb9a057f4a75e7a14bb8cec0c52b5cb19f6acc44a5a33df3abf18ddd001",
+      "prior_receipts": [
+        {
+          "bytes": 11980,
+          "sha256": "c89cb564f2613d281f669f9c809653ed3a5516e138b2a5f6fd49acb1ef34a416",
+          "reason": "Independent CIN group scheduling or additive qualification ownership"
+        }
+      ]
     },
     {
       "path": "lib_src/solvers/NodalCinStorage.cu",
-      "bytes": 2282,
-      "sha256": "3ed2a87200e7efa5455a859bb2fe2aa049b483fefe5d398eeedca2a6a2cad765"
+      "bytes": 2423,
+      "sha256": "102a653cdac0f6a889f74307559d7a0912840da2207f4207285fffeb02cae323",
+      "prior_receipts": [
+        {
+          "bytes": 2282,
+          "sha256": "3ed2a87200e7efa5455a859bb2fe2aa049b483fefe5d398eeedca2a6a2cad765",
+          "reason": "Independent CIN group scheduling or additive qualification ownership"
+        }
+      ]
     },
     {
       "path": "lib_src/solvers/NodalCinStorage.h",
-      "bytes": 1620,
-      "sha256": "f45647dca38c81856d15492be3637d23f5236d22d83050b97bdc442262871032"
+      "bytes": 1705,
+      "sha256": "3b9018b15d9618998f84a3e4de0efb54c43d171074522911a6e3a652ddb920de",
+      "prior_receipts": [
+        {
+          "bytes": 1620,
+          "sha256": "f45647dca38c81856d15492be3637d23f5236d22d83050b97bdc442262871032",
+          "reason": "Independent CIN group scheduling or additive qualification ownership"
+        }
+      ]
     },
     {
       "path": "lib_src/solvers/cin_advance/ForceInputs.cu",
@@ -64,8 +120,15 @@
     },
     {
       "path": "lib_src/solvers/cin_advance/Input.h",
-      "bytes": 1541,
-      "sha256": "a228f1ec0cd8d7702ffe7b124e25b3c713ea76eb4b9c2136dcdc1bc91b4525e4"
+      "bytes": 1689,
+      "sha256": "7ba5679d1ac281057b7e185d1fb19526fb0a824f90aa5fe615fb14e41b046ed6",
+      "prior_receipts": [
+        {
+          "bytes": 1541,
+          "sha256": "a228f1ec0cd8d7702ffe7b124e25b3c713ea76eb4b9c2136dcdc1bc91b4525e4",
+          "reason": "Independent CIN group scheduling or additive qualification ownership"
+        }
+      ]
     },
     {
       "path": "lib_src/solvers/cin_advance/Node.h",
@@ -74,8 +137,15 @@
     },
     {
       "path": "lib_src/solvers/cin_advance/Screen.cu",
-      "bytes": 2688,
-      "sha256": "3bf24b3e3d5049a240af851e1e1f88b1999e7bb5377fbf4df6da2155b332eb43"
+      "bytes": 4046,
+      "sha256": "c605ca38609b6f225707230006000bf08ff74135d11836bd29f460e7c84253b8",
+      "prior_receipts": [
+        {
+          "bytes": 2688,
+          "sha256": "3bf24b3e3d5049a240af851e1e1f88b1999e7bb5377fbf4df6da2155b332eb43",
+          "reason": "Independent CIN group scheduling or additive qualification ownership"
+        }
+      ]
     },
     {
       "path": "lib_src/solvers/cin_advance/Screen.h",
@@ -104,8 +174,15 @@
     },
     {
       "path": "lib_src/solvers/cin_timestep/ScreenValues.h",
-      "bytes": 3322,
-      "sha256": "0c71bfcf243f76662cfc961a676674239742228565b34f29297886550f54e823"
+      "bytes": 3921,
+      "sha256": "e75345581d3808d60e57343cd711bb5c260e6f04f10d6b44a3f38f0db4c79644",
+      "prior_receipts": [
+        {
+          "bytes": 3322,
+          "sha256": "0c71bfcf243f76662cfc961a676674239742228565b34f29297886550f54e823",
+          "reason": "Independent CIN group scheduling or additive qualification ownership"
+        }
+      ]
     },
     {
       "path": "lib_src/solvers/cin_timestep/Sources.h",
@@ -114,8 +191,15 @@
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/BUILD.bazel",
-      "bytes": 1072,
-      "sha256": "95e9f68747946acd523549c963946c53745d37c168ff2a6592f5943d49bc3e52"
+      "bytes": 1147,
+      "sha256": "506163d64b89b869e41bd5bd8f73a60559012e65adff4aa95d694a6f820c155c",
+      "prior_receipts": [
+        {
+          "bytes": 1072,
+          "sha256": "95e9f68747946acd523549c963946c53745d37c168ff2a6592f5943d49bc3e52",
+          "reason": "Independent CIN group scheduling or additive qualification ownership"
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/Fixture.h",
@@ -129,13 +213,27 @@
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/source-manifest.json",
-      "bytes": 4181,
-      "sha256": "f8304fba734d84751ef161fcf5a389c850141cd3d70b43d23c29a52fb3888a82"
+      "bytes": 5471,
+      "sha256": "e22c6630385489822a01fd075ad71ddfb96f3fe4fb4791d6496b6882184fa3fd",
+      "prior_receipts": [
+        {
+          "bytes": 4181,
+          "sha256": "f8304fba734d84751ef161fcf5a389c850141cd3d70b43d23c29a52fb3888a82",
+          "reason": "Independent CIN group scheduling or additive qualification ownership"
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/verify_sources.py",
-      "bytes": 6073,
-      "sha256": "de2b0c5d282e0d45f6f952f56f35cbe2ac63a01d5a36ac6c0b066e152b60f7bf"
+      "bytes": 6213,
+      "sha256": "b5a35c37b176a26c0de19b06aa0afbf4d339fbb5f732e942a58457f9205f8dea",
+      "prior_receipts": [
+        {
+          "bytes": 6073,
+          "sha256": "de2b0c5d282e0d45f6f952f56f35cbe2ac63a01d5a36ac6c0b066e152b60f7bf",
+          "reason": "Independent CIN group scheduling or additive qualification ownership"
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_capture/capture_proof.py",
@@ -149,8 +247,15 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/BUILD.bazel",
-      "bytes": 2039,
-      "sha256": "e9b1c22db965622df4af77ec16be6c7bea3125d786288c7375bef665dcbdbe94"
+      "bytes": 2264,
+      "sha256": "8e1c4b903f156eceb7bae1b6dd48a8adb8f7632bace841b39b48c7792ba56e62",
+      "prior_receipts": [
+        {
+          "bytes": 2039,
+          "sha256": "e9b1c22db965622df4af77ec16be6c7bea3125d786288c7375bef665dcbdbe94",
+          "reason": "Independent CIN group scheduling or additive qualification ownership"
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/Compare.cpp",
@@ -189,13 +294,27 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/source-manifest.json",
-      "bytes": 4788,
-      "sha256": "ebd82719851c8ec51ca5b73bd7d068fa663b0aee0cee18d54f98eddb99761405"
+      "bytes": 6078,
+      "sha256": "a6547d4048c2349cf999c513dbbd7be8a0821eb11be0d8db9f377b34434bc09d",
+      "prior_receipts": [
+        {
+          "bytes": 4788,
+          "sha256": "ebd82719851c8ec51ca5b73bd7d068fa663b0aee0cee18d54f98eddb99761405",
+          "reason": "Independent CIN group scheduling or additive qualification ownership"
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/verify_sources.py",
-      "bytes": 4689,
-      "sha256": "f3b08513371aaae42eaee18c6d7ff050cec19925dc1003b618d4053f9a6c3f55"
+      "bytes": 4833,
+      "sha256": "70c2e53e20be3f7731bc22a12fc11e9e966b05caf065886183275d4bf80e0447",
+      "prior_receipts": [
+        {
+          "bytes": 4689,
+          "sha256": "f3b08513371aaae42eaee18c6d7ff050cec19925dc1003b618d4053f9a6c3f55",
+          "reason": "Independent CIN group scheduling or additive qualification ownership"
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/BUILD.bazel",
@@ -271,6 +390,26 @@
       "path": "lib_utest/qualification/cin_physical_timestep/OwnerTest.cu",
       "bytes": 5082,
       "sha256": "461e537ae92e4f47c461890ceb9ea7344ecefc3e065acad4a915e896136bb9b1"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_groups/group_proof.py",
+      "bytes": 4638,
+      "sha256": "1a06241f6b02f41e0d16ca993ec7a0ce983175fdc74c0e756fff1a713b393429"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_groups/reference/ExplicitNodalCinStep.cu",
+      "bytes": 9950,
+      "sha256": "bfa6cf08c9c6d0c3bdd58deaf69cc15348631eef37c19a40e305d187a33a91ed"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_groups/reference/ScreenValues.h",
+      "bytes": 3322,
+      "sha256": "0c71bfcf243f76662cfc961a676674239742228565b34f29297886550f54e823"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_groups/reference/Screen.cu",
+      "bytes": 2688,
+      "sha256": "3bf24b3e3d5049a240af851e1e1f88b1999e7bb5377fbf4df6da2155b332eb43"
     }
   ],
   "previous_source_receipts": [
@@ -325,5 +464,6 @@
         }
       ]
     }
-  ]
+  ],
+  "group_scheduling_compatibility": "Exact checked prior view: cin_parallel_groups/group_proof.py; original frozen gate scope retained. Independent group execution/partial private trial writes have their own qualification."
 }

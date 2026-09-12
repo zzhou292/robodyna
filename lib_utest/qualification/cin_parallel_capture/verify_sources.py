@@ -7,8 +7,10 @@ import re
 import runpy
 here = Path(__file__).resolve().parent
 root = here.parents[2]
+import runpy
+group_proof = runpy.run_path(str(here.parent/"cin_parallel_groups/group_proof.py"))
 raw = (here/'source-manifest.json').read_bytes()
-assert hashlib.sha256(raw).hexdigest() == 'fd8d366016eceb250b1dada35130693d4fdbb2e3f132cb5d39533c71ed3e477d'
+assert hashlib.sha256(raw).hexdigest() == 'b893a6bab107726a9103ecb8a8310b8fa6dacb8402d036ef183def1324acaf58'
 manifest = json.loads(raw)
 for row in manifest['files']:
     path = Path(row['path'])
@@ -19,6 +21,7 @@ for row in manifest['files']:
 proof = runpy.run_path(str(here/'capture_proof.py'))
 old, loop = proof['REFERENCE'], proof['CAPTURE']
 current = (root/'lib_src/solvers/ExplicitNodalCinStep.cu').read_text()
+current = group_proof["legacy_owner"](current)
 expected = proof['without_capture'](old)
 expected = expected.replace('#include "cin_advance/Screen.h"', '#include "cin_advance/Screen.h"\n#include "cin_advance/Capture.h"')
 old_launch = '  CompleteCin<<<1,1,0,stream>>>(input);\n  return cudaGetLastError();'

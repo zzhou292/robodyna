@@ -184,8 +184,15 @@
       "sha256": "04e99db58cb2d9e867ccf582a687db517ed24da7d9a5a4168c1517c4f21da6ca"
     },
     "lib_utest/qualification/rigid_assembly_owner/BUILD.bazel": {
-      "bytes": 2554,
-      "sha256": "7fd0e3057c5a858c6343bd1b02341717c493a22851794b1cfc9d722d57aa4ae5"
+      "bytes": 2629,
+      "sha256": "602d8dfdf55e46b31858bb311e2adeea14cb6d7ff4f49aace8254fed97a1117e",
+      "prior_receipts": [
+        {
+          "bytes": 2554,
+          "sha256": "7fd0e3057c5a858c6343bd1b02341717c493a22851794b1cfc9d722d57aa4ae5",
+          "reason": "Add CIN group qualifier fixture visibility only"
+        }
+      ]
     }
   },
   "common_publication_test_visibility": {

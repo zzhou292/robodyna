@@ -35,7 +35,7 @@ bool ValidWitness(const cin::ActiveWitness& witness, const cin::StageRow& row, s
 }
 
 NodalReport ForecastCinStorage(const NodalCinStartup& input, const NodalStateConfig& config,
-    CinLayout& output) noexcept {
+    CinLayout& output, std::size_t group_count) noexcept {
   if (!input.model || !input.model->prepared() || !input.model->domain() ||
       input.model->domain()->node_count() != config.node_count || !input.qualification_id) {
     return {NodalStatus::InvalidInput, "CIN needs a complete immutable domain and named qualification"};
@@ -45,7 +45,7 @@ NodalReport ForecastCinStorage(const NodalCinStartup& input, const NodalStateCon
   }
   CinLayout next;
   if (!next.Initialize(config.node_count, input.model->rows().count, input.witness_count,
-      input.limits, sizeof(CinStorage))) {
+      input.limits, sizeof(CinStorage), group_count)) {
     return {NodalStatus::ResourceLimit, "CIN count or complete optional payload exceeds limits"};
   }
   const auto source = input.model->forecast();

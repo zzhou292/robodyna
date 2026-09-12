@@ -2,7 +2,8 @@ load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("@rules_cuda//cuda:defs.bzl", "cuda_test")
 cc_library(
     name = "fixture", testonly = True,
-    visibility = ["//lib_utest/qualification/cin_parallel_capture:__pkg__",
+    visibility = ["//lib_utest/qualification/cin_parallel_groups:__pkg__",
+                  "//lib_utest/qualification/cin_parallel_capture:__pkg__",
                   "//lib_utest/qualification/cin_parallel_screen:__pkg__"],
     hdrs = ["Fixture.h", "Serial.h", "serial/Force.h"],
     deps = ["//lib_utest/qualification/cin_parallel_ordinary:fixture"],

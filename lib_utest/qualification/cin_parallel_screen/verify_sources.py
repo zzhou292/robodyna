@@ -8,8 +8,10 @@ import runpy
 
 here = Path(__file__).resolve().parent
 root = here.parents[2]
+import runpy
+group_proof = runpy.run_path(str(here.parent/"cin_parallel_groups/group_proof.py"))
 raw = (here / 'source-manifest.json').read_bytes()
-assert hashlib.sha256(raw).hexdigest() == 'e39805d47855e4c1ba0b02a40233ac2fafb470d7ace0719f9ef5383b50021a7f'
+assert hashlib.sha256(raw).hexdigest() == 'df4d1292008727fba8ff410ed404aea4528abb20f80efa3ff81a060504d522e2'
 manifest = json.loads(raw)
 for row in manifest['files']:
     path = Path(row['path'])
@@ -42,7 +44,7 @@ for name in ('Sources', 'Result'):
     a, b = old.index(start), sources.index(start)
     same(old[a:old.index('};', a)+2], sources[b:sources.index('};', b)+2], name)
 same(body(old, 'Include'), body(sources, 'Include'), 'strict Include sentinel/ties')
-values = (root/'lib_src/solvers/cin_timestep/ScreenValues.h').read_text()
+values = group_proof["legacy_values"]((root/'lib_src/solvers/cin_timestep/ScreenValues.h').read_text())
 check = body(old, 'Screen')
 node_start = check.index('  for (std::uint32_t node')
 group_start = check.index('  for (std::uint32_t group')
@@ -63,6 +65,7 @@ extract = extract.replace('cin_timestep::', 'cin_screen_frozen::')
 assert extract == (here/'FrozenCaller.inc').read_text(), 'complete frozen caller prefix/motion/suffix'
 same(body(old_owner, 'cin_advance::Launch'), body((here/'Frozen.cu').read_text(), 'LaunchFrozen'), 'frozen launch order')
 owner = (root/'lib_src/solvers/ExplicitNodalCinStep.cu').read_text()
+owner = group_proof["legacy_owner"](owner)
 same(body(owner, 'AdvanceOrdinaryCin'), body(old_owner, 'AdvanceOrdinaryCin'), 'ordinary motion')
 without_capture = runpy.run_path(str(here.parent/'cin_parallel_capture/capture_proof.py'))['without_capture']
 same(body(owner, 'CompleteCin'), without_capture(body(old_owner, 'CompleteCin')), 'ordered suffix before exact final copy extraction')
@@ -82,7 +85,7 @@ summary = (root/'lib_src/solvers/cin_advance/ScreenSummary.h').read_text()
 assert 'sizeof(Summary) == 16' in summary and 'MaximumBlocks = 256' in summary
 assert 'invalid_node = source.nodes-1;' in summary
 assert summary.index('summary.invalid_node != UINT32_MAX') < summary.index('EvaluateGroups(')
-kernels = (root/'lib_src/solvers/cin_advance/Screen.cu').read_text()
+kernels = group_proof["legacy_kernels"]((root/'lib_src/solvers/cin_advance/Screen.cu').read_text())
 for name in ('Begin', 'Nodes', 'Finish'):
     assert body(kernels, name).lstrip().startswith('if (input.control->status != NodalStatus::Ok) return;')
 finish = body(kernels, 'Finish')

@@ -36,48 +36,32 @@ TL_SURFACE_HD inline bool EvaluateNode(const Sources& source, double factor,
   }
   return true;
 }
-struct GroupEvaluation {
-  ScalarLimit limit;
-  std::uint32_t first_node = UINT32_MAX, last_node = UINT32_MAX;
-  bool visited = false, valid = false;
-};
-// The exact original group body; a malformed range consumes no member. The
-// caller retains the preceding invalid-node value in that branch.
-TL_SURFACE_HD inline GroupEvaluation EvaluateGroup(const Sources& source, double factor,
-    std::uint32_t group) noexcept {
-  GroupEvaluation out;
-  const auto groups = source.rigid;
-  const auto range = groups.groups[group];
-  if (range.count < 2 || range.offset > groups.member_count ||
-      range.count > groups.member_count-range.offset) return out;
-  out.visited = true;
-  out.first_node = out.last_node = groups.members[range.offset].node;
-  const auto prior = rigid::ReadGroupState(source.accepted+19*std::size_t(source.nodes)+
-      rigid::GroupStateValues*group);
-  tlfea::contact::RigidContactBody body;
-  if (tlfea::contact::PrepareRigidContactBodyFromAccepted(prior, range.mass,
-      range.principal_inertia, source.previous_drift_dt, body) != tlfea::contact::Status::kOk)
-    return out;
-  double trace = 0;
-  for (std::uint32_t local = 0; local < range.count; ++local) {
-    const auto node = groups.members[range.offset+local].node;
-    out.last_node = node;
-    if (node >= source.nodes || source.cin_secondary[node] || !groups.member_nodes[node]) return out;
-    const auto* x = source.accepted+3*node;
-    if (!AddRigidMemberTrace(body, {x[0], x[1], x[2]}, source.translation[node],
-        source.rotation[node], trace)) return out;
-  }
-  if (!RigidTraceLimit(trace, factor, out.limit)) return out;
-  out.valid = true;
-  return out;
-}
 TL_SURFACE_HD inline bool EvaluateGroups(const Sources& source, double factor,
     Result& next, std::uint32_t& invalid_node) noexcept {
-  for (std::uint32_t group = 0; group < source.rigid.group_count; ++group) {
-    const auto value = EvaluateGroup(source, factor, group);
-    if (value.visited) invalid_node = value.last_node;
-    if (!value.valid) return false;
-    Include(value.limit, value.first_node, group, next);
+  const auto groups = source.rigid;
+  for (std::uint32_t group = 0; group < groups.group_count; ++group) {
+    const auto range = groups.groups[group];
+    if (range.count < 2 || range.offset > groups.member_count ||
+        range.count > groups.member_count-range.offset) return false;
+    invalid_node = groups.members[range.offset].node;
+    const auto prior = rigid::ReadGroupState(source.accepted+19*std::size_t(source.nodes)+
+        rigid::GroupStateValues*group);
+    tlfea::contact::RigidContactBody body;
+    if (tlfea::contact::PrepareRigidContactBodyFromAccepted(prior, range.mass,
+        range.principal_inertia, source.previous_drift_dt, body) != tlfea::contact::Status::kOk)
+      return false;
+    double trace = 0;
+    for (std::uint32_t local = 0; local < range.count; ++local) {
+      const auto node = groups.members[range.offset+local].node;
+      invalid_node = node;
+      if (node >= source.nodes || source.cin_secondary[node] || !groups.member_nodes[node]) return false;
+      const auto* x = source.accepted+3*node;
+      if (!AddRigidMemberTrace(body, {x[0], x[1], x[2]}, source.translation[node],
+          source.rotation[node], trace)) return false;
+    }
+    ScalarLimit limit;
+    if (!RigidTraceLimit(trace, factor, limit)) return false;
+    Include(limit, groups.members[range.offset].node, group, next);
   }
   return true;
 }
