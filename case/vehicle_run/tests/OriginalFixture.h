@@ -3,7 +3,8 @@
 #include "output/full_shell/tests/TestSupport.h"
 #include <cstdlib>
 namespace crash::cases::vehicle_run::test {
-inline OriginalCase Source(PhysicalProfile profile=PhysicalProfile::RetainedShellAssembliesV1) {
+inline OriginalCase Source(PhysicalProfile profile=PhysicalProfile::RetainedShellAssembliesV1,
+                           const vehicle_wall::Settings* declared_settings=nullptr) {
     const auto path=[](const char* name) {
         const auto value=std::getenv(name);
         output::Require(value && *value,"Explicit complete original source path required");
@@ -15,6 +16,7 @@ inline OriginalCase Source(PhysicalProfile profile=PhysicalProfile::RetainedShel
     auto settings=vehicle_wall::LoadedWallSettings();
     settings.leading_gap_m=1e-6; // Explicit short contact gate, distinct from ordinary20mm gap.
     settings.requested_duration_s=.005;
+    if(declared_settings) settings=*declared_settings;
     return PrepareOriginalYaris(paths,settings,profile);
 }
 inline records::Identity Identity() {

@@ -72,6 +72,9 @@ void VehiclePhysicalDynamics::Storage::Prepare() {
         }
         detail::Require(advanced,"Advance physical CIN/rigid owner");
         candidate().structural_step_limit=advanced.stable_dt;
+        if(config.structural.capture_limiter)
+            detail::Require(s.owner.CopyPreparedCinStructuralLimit(token,
+                &candidate().structural_limiter),"Copy actual structural limiter");
         return true;
     });
     Timed<StepStage::BorrowPrepared>(timer,[&] {

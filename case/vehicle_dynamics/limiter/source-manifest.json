@@ -1,0 +1,87 @@
+{
+  "schema": "robo_dyna.cin_limiter_source.v1",
+  "baseline_commit": "cf3073b090f365e69c6db7198c98fd2dbfe924e4",
+  "tl_dependency": "994658e",
+  "files": [
+    {
+      "path": "case/vehicle_dynamics/StructuralLimiterReport.cmake",
+      "bytes": 525,
+      "sha256": "6bfcab3c00c2fba69076b5946a902d93d5a4b125997bfeddf5b96f3f70f67253"
+    },
+    {
+      "path": "case/vehicle_dynamics/StructuralLimiterReport.cpp",
+      "bytes": 7861,
+      "sha256": "4259e14839914efb9090da233ebe76600ad7a0d2af033cdf782279ad87d62c64"
+    },
+    {
+      "path": "case/vehicle_dynamics/StructuralLimiterReport.h",
+      "bytes": 615,
+      "sha256": "87ca49a4051e41f284ca48dcdf6ddb0493b61f8ad3774f3d10d07642c8219a42"
+    },
+    {
+      "path": "case/vehicle_dynamics/Trial.cpp",
+      "bytes": 6376,
+      "sha256": "9dce7a3337e5020960db9a636112667ac5c83d69256eaa23d3e0778a08a96401",
+      "prior": {
+        "commit": "cf3073b090f365e69c6db7198c98fd2dbfe924e4",
+        "bytes": 6172,
+        "sha256": "5de933a8dfc8e2e532283cb95f56d46dbe3aab567e9d4ce90d07318a3468eefe"
+      }
+    },
+    {
+      "path": "case/vehicle_dynamics/VehiclePhysicalDynamics.h",
+      "bytes": 3889,
+      "sha256": "97f7f56d2ddaa5f7f1631f2342bdb051cde90b84daf823fb0c71fdc2c5882c3b",
+      "prior": {
+        "commit": "cf3073b090f365e69c6db7198c98fd2dbfe924e4",
+        "bytes": 3629,
+        "sha256": "b8e3d3c60a37f089323bf4a8a532980f74e6f65555b8b1ac0053962033bab6b8"
+      }
+    },
+    {
+      "path": "case/vehicle_dynamics/limiter/HANDOFF.md",
+      "bytes": 2903,
+      "sha256": "24cfd83b02e42e6e772a77f582e1bd2486fbd2fc530cd3583bddd376996d7bf3"
+    },
+    {
+      "path": "case/vehicle_dynamics/limiter/Identity.h",
+      "bytes": 845,
+      "sha256": "6030fedb4b2ec76dc9bfcc9334082d87e8450b9a15226d55163fdbaa9bdb18ad"
+    },
+    {
+      "path": "case/vehicle_dynamics/limiter/SourceNodes.h",
+      "bytes": 3548,
+      "sha256": "609aca71f0feb553d7412d0d382111f86c5c95fc3cab73e979ced0d26db1c6a6"
+    },
+    {
+      "path": "case/vehicle_dynamics/limiter/SourceRows.h",
+      "bytes": 3817,
+      "sha256": "b720883df7424cbc2b3a208a3f3ad7f28e08bbc930d2c2e9abb67965ea9779fa"
+    },
+    {
+      "path": "case/vehicle_run/tests/LimiterTest.cpp",
+      "bytes": 4393,
+      "sha256": "c3ce64c67531c60a4323a1e48a99a3caa76c9575c1781046e722d4afa869f493"
+    },
+    {
+      "path": "case/vehicle_run/tests/Original.cmake",
+      "bytes": 3262,
+      "sha256": "3a00fae325f959f13d053d304c54b7f806bd9c8215d4b3f873258ad6bc27a5e4",
+      "prior": {
+        "commit": "cf3073b090f365e69c6db7198c98fd2dbfe924e4",
+        "bytes": 2735,
+        "sha256": "4a3d7e819c20c688c62ae7328919f5fc3a3689b265ac0847c4a8cc4a42056a1e"
+      }
+    },
+    {
+      "path": "case/vehicle_run/tests/OriginalFixture.h",
+      "bytes": 1403,
+      "sha256": "ef054392d65856d4b54b1ace9df29e362422c343aea7634e70149a5e1d628442",
+      "prior": {
+        "commit": "cf3073b090f365e69c6db7198c98fd2dbfe924e4",
+        "bytes": 1264,
+        "sha256": "3b2178f81d8b7549e8c1a9ae2b4f0dfc16879c6e349fd81e5d59e90ed6ee5ed4"
+      }
+    }
+  ]
+}

@@ -3,6 +3,7 @@
 #include "MotionSummary.h"
 #include "WallObservation.h"
 #include "StepTiming.h"
+#include "lib_src/solvers/NodalCinStructuralLimit.h"
 #include <stdexcept>
 
 namespace crash::cases::vehicle_wall { class VehicleWallStartup; class VehicleWallSetup; class LoadedWall; struct RuntimeForecast; }
@@ -26,6 +27,9 @@ struct StepObservation {
     tl::fea::ShellPhysicalDiagnostics mechanics;
     // Zero with the disabled profile; otherwise actual post-CIN local limit.
     double structural_step_limit=0;
+    // Unavailable by default. Copied from the same successful prepared owner
+    // attempt and published by the existing accepted observation swap.
+    tl::fea::NodalCinStructuralLimit structural_limiter;
     WallObservation wall;
 };
 class StepSizeError : public std::runtime_error {
