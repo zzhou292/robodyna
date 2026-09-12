@@ -123,8 +123,8 @@
     },
     {
       "path": "lib_src/materials/BUILD.bazel",
-      "bytes": 2242,
-      "sha256": "83cc785eac867f94e56430f1c335afbce6a835ce7cfec97e270dd916a01d5f4c"
+      "bytes": 2400,
+      "sha256": "c140c8b5c1c4375d31098ae3c58dfe7df012d8336f09aa470bf3fd315eb15354"
     },
     {
       "path": "lib_src/elements/t3/BUILD.bazel",
@@ -969,5 +969,18 @@
         "sha256": "dbb9431634c768813db181b4db6504d3017e001e7ddfc3fb1604a0e159d352dc"
       }
     ]
+  },
+  "selected_solid_caller_build_registration": {
+    "commit": "6dd815d143ac8a620166343552ccf7590d969744",
+    "scope": "6dd815d adds the solid_caller_values dependency to law36 and its SolidCallerValues.h target. This reviewed BUILD registration does not change T3 material, force, startup or native source bodies.",
+    "previous_manifest_sha256": "9103870dd9494cfbf7438ab5d84825d4e68a011dcd8d0362b84f81f3c7b8f92a",
+    "previous_entries": [
+      {
+        "path": "lib_src/materials/BUILD.bazel",
+        "bytes": 2242,
+        "sha256": "83cc785eac867f94e56430f1c335afbce6a835ce7cfec97e270dd916a01d5f4c"
+      }
+    ],
+    "active_verification": "resident_shell_failure CMake -> t3/T3Force.cmake -> verify_force_sources.py -> startup/native verifiers. Historical batch/mixed source maps are not executed by that chain and remain unchanged."
   }
 }
