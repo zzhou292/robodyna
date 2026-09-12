@@ -56,13 +56,11 @@ BatchReport QephBatch::CopyAcceptedParentActivity(const NodalStamp& expected,
       !state.OutputDisjoint(diagnostics,sizeof(*diagnostics))) {
     return {BatchStatus::InvalidInput,"Mapped readback output aliases retained source/state"};
   }
-  const auto report = shell_batch_plasticity_detail::ReadFailure(state,
-      state.AcceptedSlabIndex(), state.accepted_diagnostics.time,
-      [&state](unsigned slab) { return state.ValidateMappedActivity(slab); });
+  const auto report = state.ReadParentActivity(state.AcceptedSlabIndex(),state.accepted_diagnostics.time);
   if (report.status != BatchStatus::Success) return report;
   const auto* history = state.plasticity->failure_staging();
   for (std::size_t parent = 0; parent < capacity; ++parent) {
-    output[parent] = history[parent].active ? 1 : 0;
+    output[parent] = state.physical ? state.FailureActivity()[parent] : (history[parent].active ? 1 : 0);
   }
   *diagnostics = state.accepted_diagnostics;
   return {BatchStatus::Success, "Accepted parent activity copied"};
@@ -82,16 +80,14 @@ BatchReport QephBatch::CopyPreparedParentActivity(FENodalState& owner,
   if (!shell_activity_detail::JoinedOutputDisjoint(state,output,capacity))
     return {BatchStatus::InvalidInput,"Prepared activity overlaps retained joined shell sources"};
   const auto slab = 1u - state.AcceptedSlabIndex();
-  report = shell_batch_plasticity_detail::ReadFailure(state, slab, expected.time,
-      [&state](unsigned selected) { return state.ValidateMappedActivity(selected); });
+  report = state.ReadParentActivity(slab,expected.time);
   if (report.status != BatchStatus::Success) {
     state.Discard();
     return report;
   }
   const auto* history = state.plasticity->failure_staging();
   for (std::size_t parent = 0; parent < capacity; ++parent) {
-    const bool active = history[parent].active;
-    output[parent] = active ? 1 : 0;
+    output[parent] = state.physical ? state.FailureActivity()[parent] : (history[parent].active ? 1 : 0);
   }
   return {BatchStatus::Success, "Complete prepared parent activity copied"};
 }

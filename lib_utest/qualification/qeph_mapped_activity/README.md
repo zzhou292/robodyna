@@ -1,3 +1,7 @@
+Current failure-only extension: see [FAILURE_ACTIVITY.md](FAILURE_ACTIVITY.md) for the
+new phase sequence, budgets, transfer census and qualification. The following
+records the previously qualified force-only increment.
+
 # Mapped QEPH compact activity validation
 
 The measured full V5 query copied 648,188,000 bytes to produce 324,094 flags.

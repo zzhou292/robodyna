@@ -96,19 +96,6 @@ SetupReport FailureHostStorage::Initialize(const ShellBatchFailureBinding& bindi
   return {SetupStatus::Success, "OK"};
 }
 
-SetupReport FailureHostStorage::CheckReadSources(unsigned slab, std::size_t count,
-    const ShellBatchLayeredSection* sections) const noexcept {
-  if (!device_ || slab > 1 || count != count_ || !sections) {
-    return {SetupStatus::InvalidInput, "Invalid failure readback shape"};
-  }
-  for (std::size_t e = 0; e < count; ++e) {
-    if (!binding_.parent(family_, e)) {
-      return {SetupStatus::InvalidInput, "Incomplete failure readback source"};
-    }
-  }
-  return {SetupStatus::Success, "OK"};
-}
-
 SetupReport FailureHostStorage::Read(unsigned slab, std::size_t count,
     cudaStream_t stream, double time, const ShellBatchLayeredSection* sections) noexcept {
   if (!device_ || slab > 1 || count != count_ || !sections) {

@@ -62,8 +62,13 @@ TEST(QephMappedActivityCuda,FreshCompactBufferAliasesAndStaleInputsNeverWriteOut
       q::BatchStatus::Success);
   transfers.enabled = false;
   auto* compact = static_cast<std::uint8_t*>(transfers.compact_destination);
+  auto* failure_compact = static_cast<std::uint8_t*>(transfers.compact_destinations[0]);
   ASSERT_NE(compact,nullptr);
+  ASSERT_NE(failure_compact,nullptr);
+  ASSERT_NE(compact,failure_compact);
   EXPECT_EQ(rig.qeph.CopyPreparedParentActivity(rig.owner,token,candidate.qeph,compact,n).status,
+      q::BatchStatus::InvalidInput);
+  EXPECT_EQ(rig.qeph.CopyPreparedParentActivity(rig.owner,token,candidate.qeph,failure_compact,n).status,
       q::BatchStatus::InvalidInput);
   std::fill(flags.begin(),flags.end(),19);
   const auto before = flags;
@@ -82,6 +87,8 @@ TEST(QephMappedActivityCuda,FreshCompactBufferAliasesAndStaleInputsNeverWriteOut
   q::BatchDiagnostics diagnostics;
   const auto untouched = qt_mapped_test::Bytes(diagnostics);
   EXPECT_EQ(rig.qeph.CopyAcceptedParentActivity(rig.owner.accepted(),compact,n,&diagnostics).status,
+      q::BatchStatus::InvalidInput);
+  EXPECT_EQ(rig.qeph.CopyAcceptedParentActivity(rig.owner.accepted(),failure_compact,n,&diagnostics).status,
       q::BatchStatus::InvalidInput);
   EXPECT_EQ(qt_mapped_test::Bytes(diagnostics),untouched);
   Discard(rig);

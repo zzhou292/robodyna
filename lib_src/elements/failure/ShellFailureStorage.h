@@ -14,6 +14,7 @@ class FailureHostStorage {
       const ShellBatchFailureLimits&,FailureLayout&, std::size_t& host_bytes) noexcept;
   SetupReport Initialize(const ShellBatchFailureBinding&, ShellBindingFamily, std::size_t, const FailureLayout&);
   SetupReport Read(unsigned slab, std::size_t count, cudaStream_t, double time, const ShellBatchLayeredSection*) noexcept;
+  SetupReport CheckReadSources(unsigned slab, std::size_t count, const ShellBatchLayeredSection*) const noexcept;
   FailureDeviceStorage* device() const noexcept { return device_; }
   std::size_t device_bytes() const noexcept { return device_ ? layout_.bytes : 0; }
   const ShellBatchFailureBinding& binding() const noexcept { return binding_; }

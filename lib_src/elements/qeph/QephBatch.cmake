@@ -14,6 +14,8 @@ add_library(tl_qeph_batch STATIC
   "${CMAKE_CURRENT_LIST_DIR}/mapped/Readback.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/mapped/ActivityReadback.cu"
   "${CMAKE_CURRENT_LIST_DIR}/mapped/ActivityKernels.cu"
+  "${CMAKE_CURRENT_LIST_DIR}/mapped/FailureActivityReadback.cu"
+  "${CMAKE_CURRENT_LIST_DIR}/mapped/FailureActivityKernels.cu"
   "${CMAKE_CURRENT_LIST_DIR}/QephBatch.cu"
   "${CMAKE_CURRENT_LIST_DIR}/QephBatchOperations.cu"
   "${CMAKE_CURRENT_LIST_DIR}/QephBatchKernels.cu"

@@ -33,15 +33,24 @@ OnePointDeviceStorage* HostStorage::one_point_device() const noexcept {
   return one_point_?one_point_->device():nullptr;
 }
 SetupReport HostStorage::ReadSections(unsigned slab,std::size_t count,cudaStream_t stream,double time) noexcept {
+  const auto report=ReadSectionsBeforeFailure(slab,count,stream,time);
+  return report.status==SetupStatus::Success&&failure_?
+    failure_->Read(slab,count,stream,time,mixed_->staging()):report;
+}
+SetupReport HostStorage::ReadActivitySections(unsigned slab,std::size_t count,cudaStream_t stream,double time) noexcept {
+  const auto report=ReadSectionsBeforeFailure(slab,count,stream,time);
+  if(report.status!=SetupStatus::Success)return report;
+  if(!failure_)return {SetupStatus::InvalidInput,"Invalid failure readback shape"};
+  return failure_->CheckReadSources(slab,count,mixed_->staging());
+}
+SetupReport HostStorage::ReadSectionsBeforeFailure(unsigned slab,std::size_t count,cudaStream_t stream,double time) noexcept {
   const auto* catalog=Collection();
   if(!mixed_||!catalog)return {SetupStatus::InvalidInput,"No explicit mixed section history"};
   if(one_point_) {
     const auto report=one_point_->Read(slab,count,stream,*catalog,time);
     if(report.status!=SetupStatus::Success) return report;
   }
-  const auto report=mixed_->Read(slab,count,stream,*catalog,one_point_?one_point_->staging():nullptr);
-  return report.status==SetupStatus::Success&&failure_?
-    failure_->Read(slab,count,stream,time,mixed_->staging()):report;
+  return mixed_->Read(slab,count,stream,*catalog,one_point_?one_point_->staging():nullptr);
 }
 const ShellBatchLayeredSection* HostStorage::section_staging() const noexcept {
   return mixed_?mixed_->staging():nullptr;

@@ -1,0 +1,51 @@
+{
+  "scope": "V5 accepted-witness parent activity payload only; no PCIe overhead or allocation-size claim",
+  "source_counts": {
+    "qeph": 324094,
+    "t3": 21301,
+    "qbat": 4250
+  },
+  "baseline_commit": "3f8c75c",
+  "sizeof_bytes": {
+    "plastic_section": 232,
+    "elastic_section": 120,
+    "failure_state": 224,
+    "one_point_section": 224,
+    "t3_force_trial": 984,
+    "qbat_batch_result": 3216
+  },
+  "sizeof_probe_report": "crash-work/reports/accepted-witness-sizeof-author-1.json",
+  "before": {
+    "qeph": {
+      "bytes": 187002242,
+      "copies": 4,
+      "synchronizations": 3
+    },
+    "t3": {
+      "bytes": 58961168,
+      "copies": 6,
+      "synchronizations": 5
+    },
+    "qbat": {
+      "bytes": 13668000,
+      "copies": 1,
+      "synchronizations": 1
+    },
+    "total_bytes": 259631410,
+    "copies": 11,
+    "synchronizations": 9
+  },
+  "proposed_qualified_by_transfer_oracle": {
+    "qeph_bytes": 114729284,
+    "total_bytes": 187358452,
+    "saved_bytes_per_query": 72272958,
+    "copies": 11,
+    "synchronizations": 9
+  },
+  "new_timing_measured": false,
+  "historical_failure_stage": {
+    "report": "crash-work/reports/qeph-activity-profile-analysis-1.json",
+    "accepted_ms": 22.55,
+    "prepared_ms": 22.295
+  }
+}

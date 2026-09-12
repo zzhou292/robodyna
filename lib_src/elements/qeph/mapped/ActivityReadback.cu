@@ -32,8 +32,13 @@ BatchReport QephBatch::Impl::ValidateMappedActivity(unsigned slab) {
   std::uint32_t first_invalid = mapped::NoActivityFailure;
   std::memcpy(&first_invalid,activity_staging.data(),sizeof(first_invalid));
   const auto* active = activity_staging.data() + sizeof(first_invalid);
-  return mapped::FinishActivity(first_invalid,*physical->catalog(),plasticity->section_staging(),
-      plasticity->failure_staging(),config.element_count,
-      [active](std::size_t parent) { return active[parent]; });
+  if (first_invalid != mapped::NoActivityFailure) {
+    return {BatchStatus::NonfiniteResult,"Mapped Qeph force cache differs from its source/endpoint role",
+        first_invalid};
+  }
+  const auto* failure_active = FailureActivity();
+  return mapped::ValidateSectionActivity(*physical->catalog(),plasticity->section_staging(),
+      config.element_count,[active](std::size_t parent) { return active[parent]; },
+      [failure_active](std::size_t parent) { return failure_active[parent]; });
 }
 } // namespace tl::fea::qeph

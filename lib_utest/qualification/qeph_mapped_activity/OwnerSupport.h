@@ -35,11 +35,12 @@ inline void ReadOracle(Rig& rig, Oracle& oracle, const q::BatchDiagnostics* prep
 }
 inline void CheckTransfer() {
   EXPECT_EQ(transfers.force_calls,0u);
-  EXPECT_EQ(transfers.compact_calls,1u);
+  EXPECT_EQ(transfers.compact_calls,2u);
+  EXPECT_EQ(transfers.failure_calls,0u);
   EXPECT_EQ(transfers.calls,4u);
   const auto n = transfers.parents;
   EXPECT_EQ(transfers.bytes,n*(sizeof(fe::ShellBatchSectionState)+
-      sizeof(fe::sections::ShellLayeredLaw1History)+sizeof(fe::ShellBatchFailureState)) + m::ActivityBytes(n));
+      sizeof(fe::sections::ShellLayeredLaw1History)) + 2*m::ActivityBytes(n));
 }
 inline void CheckFlags(const std::vector<std::uint8_t>& flags,const Oracle& oracle) {
   ASSERT_EQ(flags.size(),oracle.histories.failures.size());

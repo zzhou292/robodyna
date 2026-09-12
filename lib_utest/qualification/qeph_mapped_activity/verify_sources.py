@@ -8,7 +8,7 @@ import re
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 manifest_bytes = (here / 'source-manifest.json').read_bytes()
-assert hashlib.sha256(manifest_bytes).hexdigest() == 'c05e879f73dd0d77d56ccb48b15be2e5079a2121b9479d83ace925f95868f5ce'
+assert hashlib.sha256(manifest_bytes).hexdigest() == 'efc9dfdc210e743e3258b2134eae6ad539970990c245c3a344d8ca89b3ab3cfd'
 manifest = json.loads(manifest_bytes)
 for row in manifest['files']:
     path = Path(row['path'])
@@ -37,6 +37,21 @@ expected = ('// Complete baseline validation bodies; only explicit State qualifi
     'namespace qeph_activity_test::serial {\nusing namespace tl::fea;\n'
     'using namespace tl::fea::qeph;\n' + results + sections + '}\n')
 assert expected == (here / 'SerialValidation.h').read_text()
+failure = (here / 'FrozenFailureValues.h.txt').read_text()
+expected_failure = failure.replace('#include "../ShellBatchFailure.h"',
+    '#include "lib_src/elements/ShellBatchFailure.h"').replace('#include "../ShellBatchPlasticity.h"',
+    '#include "lib_src/elements/ShellBatchPlasticity.h"').replace(
+    'namespace tl::fea::shell_batch_plasticity_detail {',
+    'namespace qeph_activity_test::frozen_failure {\nusing namespace tl::fea;\nnamespace material = tl::material;')
+assert expected_failure == (here / 'SerialFailureValues.h').read_text()
+current_values = (root / 'lib_src/elements/failure/ShellFailureValues.h').read_text()
+assert current_values.replace('TL_RESIDENT_FAILURE_HD inline bool ValidFailureEncoding',
+    'inline bool ValidFailureEncoding') == failure
+# Full Read retains its entire source/preflight/union/copy/validation body.
+marker = 'SetupReport FailureHostStorage::Read(unsigned slab, std::size_t count,'
+frozen_storage = (here / 'FrozenFailureStorage.cpp.txt').read_text()
+current_storage = (root / 'lib_src/elements/failure/ShellFailureStorage.cpp').read_text()
+assert frozen_storage[frozen_storage.index(marker):] == current_storage[current_storage.index(marker):]
 print(json.dumps({'status':'passed','records':len(manifest['files']),
     'complete_frozen_functions':2,'baseline':manifest['baseline_commit'],
-    'numerical_execution':False}))
+    'complete_failure_values_and_full_read_unchanged':True,'numerical_execution':False}))

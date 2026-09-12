@@ -1,15 +1,17 @@
 #pragma once
-#include "../ShellBatchFailure.h"
-#include "../ShellBatchPlasticity.h"
+#include "lib_src/elements/ShellBatchFailure.h"
+#include "lib_src/elements/ShellBatchPlasticity.h"
 #if defined(__CUDACC__)
 #define TL_RESIDENT_FAILURE_HD __host__ __device__
 #else
 #define TL_RESIDENT_FAILURE_HD
 #endif
 
-namespace tl::fea::shell_batch_plasticity_detail {
+namespace qeph_activity_test::frozen_failure {
+using namespace tl::fea;
+namespace material = tl::material;
 // Check copied bool representations before evaluating them as bool values.
-TL_RESIDENT_FAILURE_HD inline bool ValidFailureEncoding(const ShellBatchFailureState& value) noexcept {
+inline bool ValidFailureEncoding(const ShellBatchFailureState& value) noexcept {
   static_assert(sizeof(bool) == 1, "Readback flag encoding is one byte");
   if (*reinterpret_cast<const unsigned char*>(&value.active) > 1) return false;
   if (value.policy() == ShellFailurePolicy::None) return true;

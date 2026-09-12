@@ -2,14 +2,19 @@
 #pragma once
 #include <cuda_runtime.h>
 #include <cstddef>
+#include <cstdint>
 
 namespace qeph_activity_test {
 struct Transfers {
   bool enabled = false;
-  std::size_t parents = 0, calls = 0, bytes = 0, force_calls = 0, compact_calls = 0;
+  std::size_t parents = 0, calls = 0, bytes = 0, force_calls = 0, compact_calls = 0, failure_calls = 0;
   const void* force_source = nullptr;
   const void* failure_source = nullptr;
+  const void* plastic_source = nullptr;
   void* compact_destination = nullptr;
+  void* compact_destinations[2]{};
+  std::size_t fail_copy = 0, corrupt_compact_call = 0;
+  std::uint8_t corrupt_flag = 2;
   cudaStream_t stream = nullptr;
 };
 extern Transfers transfers;

@@ -9,7 +9,7 @@
 
 namespace tl::fea::shell_batch_plasticity_detail {
 // Check copied bool representations before evaluating them as bool values.
-TL_RESIDENT_FAILURE_HD inline bool ValidFailureEncoding(const ShellBatchFailureState& value) noexcept {
+inline bool ValidFailureEncoding(const ShellBatchFailureState& value) noexcept {
   static_assert(sizeof(bool) == 1, "Readback flag encoding is one byte");
   if (*reinterpret_cast<const unsigned char*>(&value.active) > 1) return false;
   if (value.policy() == ShellFailurePolicy::None) return true;

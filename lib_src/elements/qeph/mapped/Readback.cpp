@@ -12,6 +12,7 @@ bool QephBatch::Impl::OutputDisjoint(const void* output,std::size_t bytes) const
   if (!Disjoint(output,bytes,this,sizeof(*this)) ||
       !Disjoint(output,bytes,staging.data(),config.element_count*sizeof(ForceTrial)) ||
       !Disjoint(output,bytes,activity_staging.data(),activity_staging.size()) ||
+      !Disjoint(output,bytes,failure_activity_staging.data(),failure_activity_staging.size()) ||
       !shell_physical_owner::OutputDisjoint(*physical,output,bytes)) return false;
   if (!plasticity || !joined_binding || !plasticity->failure_binding()) return false;
   const ShellFormulationScope source{&*joined_binding,plasticity->section_catalog(),

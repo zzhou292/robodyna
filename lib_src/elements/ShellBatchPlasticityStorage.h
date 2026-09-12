@@ -51,6 +51,9 @@ class HostStorage {
   const ShellBatchPlasticityBinding* section_catalog() const noexcept { return Collection(); }
   bool heterogeneous_sections() const noexcept { return bool(mixed_); }
   SetupReport ReadSections(unsigned slab,std::size_t count,cudaStream_t,double time=0) noexcept;
+  // Fresh material staging and failure-source preflight only. The mapped
+  // activity caller must validate the actual device failure slab before use.
+  SetupReport ReadActivitySections(unsigned slab,std::size_t count,cudaStream_t,double time) noexcept;
   FailureDeviceStorage* failure_device() const noexcept;
   const ShellBatchFailureState* failure_staging() const noexcept;
   std::size_t failure_device_bytes() const noexcept;
@@ -76,6 +79,7 @@ class HostStorage {
   const ShellBatchSectionState* staging() const noexcept { return staging_.data(); }
   bool SameMaterialScope(const HostStorage&) const noexcept;
  private:
+  SetupReport ReadSectionsBeforeFailure(unsigned slab,std::size_t count,cudaStream_t,double time) noexcept;
   SetupReport InitializeFailureCollectionImpl(const ShellBatchFailureBinding&,const ShellBatchBinding&,
       ShellBindingFamily,std::size_t,std::size_t,std::size_t,
       const ShellBatchFailureLimits&,bool vehicle,bool execution,bool retained_physical);
