@@ -11,7 +11,7 @@ integrated app path (or this isolated worktree before integration):
 cmake -S robo-dyna/case/vehicle_startup/connectivity \
   -B crash-work/build/vehicle-v5-connectivity-root-1 \
   -DCMAKE_BUILD_TYPE=Release \
-  -DChrono_DIR=/home/jsonzhou/Desktop/chrono-work/crash-work/install/chrono-vsg-r0/lib/cmake/Chrono \
+  -DChrono_DIR=/home/jsonzhou/Desktop/chrono-work/crash-work/install/chrono-vsg-r1/lib/cmake/Chrono \
   -DROBO_DYNA_TL_ROOT=/home/jsonzhou/Desktop/chrono-work/Total-Lagrangian-FEA \
   -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc \
   -DCMAKE_CUDA_ARCHITECTURES=120 \
