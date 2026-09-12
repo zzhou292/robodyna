@@ -7,7 +7,7 @@ import json
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 raw = (here / 'source-manifest.json').read_bytes()
-EXPECTED = '14e9abb3f40965d0f57c34c45608b094e71905cd6e34f73d81f1d0fcd47c28d9'
+EXPECTED = 'ce09722bbe17397f0e5246eb77e89366c538db5aee5412fe12b1b4cd35d22c53'
 assert hashlib.sha256(raw).hexdigest() == EXPECTED
 manifest = json.loads(raw)
 for row in manifest['files']:
@@ -24,6 +24,28 @@ addition = '''        if(config.structural.capture_limiter)
 assert trial.count(addition) == 1
 prior = next(row['prior'] for row in manifest['files'] if row['path'] == trial_path)
 assert hashlib.sha256(trial.replace(addition, '', 1).encode()).hexdigest() == prior['sha256']
+# The compile correction changes only access to the actual counted-view APIs.
+# Retain and authenticate the original report/source bodies as prior evidence.
+counted_access = {
+    'case/vehicle_dynamics/limiter/SourceNodes.h': (
+        '    for(std::size_t i = 0; i < cin.count; ++i) {\n'
+        '        const auto& row = cin.data[i];',
+        '    for(const auto& row : cin) {'),
+    'case/vehicle_dynamics/limiter/SourceRows.h': (
+        '        for(std::size_t i = 0; i < type25->connection_count(); ++i) {\n'
+        '            const auto& row = type25->connections()[i];',
+        '        for(const auto& row : type25->connections()) {'),
+    'case/vehicle_dynamics/StructuralLimiterReport.cpp': (
+        '        const auto& row = rows.data[i];',
+        '        const auto& row = rows[i];'),
+}
+for path, (current, original) in counted_access.items():
+    source = (root / path).read_text()
+    assert source.count(current) == 1, path
+    restored = source.replace(current, original, 1).encode()
+    evidence = next(row['prior'] for row in manifest['files'] if row['path'] == path)
+    assert len(restored) == evidence['bytes'], path
+    assert hashlib.sha256(restored).hexdigest() == evidence['sha256'], path
 report = (here.parent / 'StructuralLimiterReport.cpp').read_text()
 assert 'cudaMemcpy' not in report and 'PrepareStep(' not in report and 'CommitStep(' not in report
 assert report.index('limiter::MatchesAccepted(') < report.index('limiter::SelectNodes(')

@@ -57,7 +57,8 @@ template<class Emit> void VisitRows(const vehicle_wall::VehicleWallSetup& setup,
         }
     }
     if(const auto* type25 = ledger.type25()) {
-        for(const auto& row : type25->connections()) {
+        for(std::size_t i = 0; i < type25->connection_count(); ++i) {
+            const auto& row = type25->connections()[i];
             if(selected.Contains(row.global_node[0]) || selected.Contains(row.global_node[1]))
                 emit("type25",row.source_element_id,0,0,0,0,0,0);
         }

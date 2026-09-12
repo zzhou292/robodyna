@@ -10,8 +10,14 @@
     },
     {
       "path": "case/vehicle_dynamics/StructuralLimiterReport.cpp",
-      "bytes": 7861,
-      "sha256": "4259e14839914efb9090da233ebe76600ad7a0d2af033cdf782279ad87d62c64"
+      "bytes": 7866,
+      "sha256": "6005bbd2ec160d75dd77ac528ee9368263575f64645b2fb5ff39d6a03090c51d",
+      "prior": {
+        "commit": "91a91b88c03c2d38b2c51ea5a37604bc493911e8",
+        "bytes": 7861,
+        "sha256": "4259e14839914efb9090da233ebe76600ad7a0d2af033cdf782279ad87d62c64"
+      },
+      "change_reason": "Index the actual CIN counted view through data; preserve complete source row order."
     },
     {
       "path": "case/vehicle_dynamics/StructuralLimiterReport.h",
@@ -50,13 +56,25 @@
     },
     {
       "path": "case/vehicle_dynamics/limiter/SourceNodes.h",
-      "bytes": 3548,
-      "sha256": "609aca71f0feb553d7412d0d382111f86c5c95fc3cab73e979ced0d26db1c6a6"
+      "bytes": 3603,
+      "sha256": "c95f6c645fddc439c3fc3b98576ae8a43bc068fdeae3e91f5e8ea57417b5fd96",
+      "prior": {
+        "commit": "91a91b88c03c2d38b2c51ea5a37604bc493911e8",
+        "bytes": 3548,
+        "sha256": "609aca71f0feb553d7412d0d382111f86c5c95fc3cab73e979ced0d26db1c6a6"
+      },
+      "change_reason": "Use the actual CIN counted view count/data API; preserve source row order."
     },
     {
       "path": "case/vehicle_dynamics/limiter/SourceRows.h",
-      "bytes": 3817,
-      "sha256": "b720883df7424cbc2b3a208a3f3ad7f28e08bbc930d2c2e9abb67965ea9779fa"
+      "bytes": 3888,
+      "sha256": "46a19d19b047637f75435b24f037a15ad25e7916a26e4239a456f45b19c1f3ff",
+      "prior": {
+        "commit": "91a91b88c03c2d38b2c51ea5a37604bc493911e8",
+        "bytes": 3817,
+        "sha256": "b720883df7424cbc2b3a208a3f3ad7f28e08bbc930d2c2e9abb67965ea9779fa"
+      },
+      "change_reason": "Use the TYPE25 model connection_count with its pointer accessor; preserve complete connection order."
     },
     {
       "path": "case/vehicle_run/tests/LimiterTest.cpp",

@@ -91,7 +91,7 @@ void Render(Sink& sink, const vehicle_wall::VehicleWallSetup& setup,
     json.Key("cin_donor_rows");json.StartArray();
     const auto rows = setup.attachments().attachments().model().rows();
     for(std::size_t i = 0; i < rows.count; ++i) {
-        const auto& row = rows[i];
+        const auto& row = rows.data[i];
         bool relevant = false;
         for(const auto node : row.master_domain_nodes) relevant |= nodes.Direct(node);
         if(!relevant) continue;

@@ -51,7 +51,8 @@ inline SourceNodes SelectNodes(const vehicle_wall::VehicleWallSetup& setup,
     result.with_donors.insert(result.with_donors.end(),result.direct.begin(),result.direct.end());
     // A secondary cannot also be a master in the admitted CIN model. One pass
     // collects the actual direct donors; no undirected transitive closure.
-    for(const auto& row : cin) {
+    for(std::size_t i = 0; i < cin.count; ++i) {
+        const auto& row = cin.data[i];
         bool contributes = false;
         for(const auto node : row.master_domain_nodes) contributes |= result.Direct(node);
         if(contributes) result.with_donors.push_back(row.secondary_domain_node);
