@@ -13,6 +13,13 @@ struct Fake final : detail::Operations {
     double time=0;
     std::vector<std::string> calls;
     Endpoint Accepted() const noexcept override {return accepted;}
+    MechanicsTotals Mechanics() const noexcept override {
+        MechanicsTotals result;
+        result.available = logged != 0;
+        result.intervals = logged;
+        result.solids.metal_plastic_work.work.accepted_increment_sum_j = logged * .125;
+        return result;
+    }
     void Prepare() override {
         calls.push_back("prepare"+std::to_string(accepted.epoch+1));
         time+=2;
@@ -97,6 +104,9 @@ TEST(VehicleRunLoop, RejectedAttemptDiscardsAndKeepsLoggedPrefixWithoutRetryOrCl
     EXPECT_EQ(fake.saved,2u);
     EXPECT_EQ(fake.finished,1u);
     EXPECT_EQ(std::count(fake.calls.begin(),fake.calls.end(),"prepare3"),1);
+    EXPECT_TRUE(result.progress.mechanics.available);
+    EXPECT_EQ(result.progress.mechanics.intervals, 2u);
+    EXPECT_EQ(result.progress.mechanics.solids.metal_plastic_work.work.accepted_increment_sum_j, .25);
 }
 TEST(VehicleRunLoop, OutputAndReadbackFailuresNeverPublishFalsePrefix) {
     for(unsigned stage=0;stage<3;++stage) {

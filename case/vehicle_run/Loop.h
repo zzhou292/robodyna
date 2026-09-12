@@ -10,6 +10,7 @@ class Operations {
     virtual ~Operations()=default;
     virtual Endpoint Accepted() const noexcept=0;
     virtual ContactTotals Contact() const noexcept {return {};}
+    virtual MechanicsTotals Mechanics() const noexcept {return {};}
     virtual vehicle_dynamics::StepTimingSnapshot MechanicsTiming() const noexcept {return {};}
     virtual void Prepare()=0;
     virtual void Commit()=0;

@@ -34,6 +34,7 @@ LoopResult RunLoop(Operations& operations,const Horizon& plan,const std::vector<
     auto refresh=[&]() {
         progress.accepted=operations.Accepted();
         progress.contact=operations.Contact();
+        progress.mechanics=operations.Mechanics();
         progress.mechanics_timing=operations.MechanicsTiming();
         progress.elapsed_s=clock()-start;
         progress.accepted_intervals_per_second=progress.elapsed_s>0?progress.accepted.epoch/progress.elapsed_s:0;

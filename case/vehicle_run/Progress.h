@@ -1,5 +1,6 @@
 #pragma once
 #include "case/vehicle_dynamics/StepTiming.h"
+#include "MechanicsTotals.h"
 #include <cstdint>
 #include <functional>
 #include <string>
@@ -18,6 +19,7 @@ struct Progress {
     double elapsed_s=0,accepted_intervals_per_second=0;
     Timing timing;
     ContactTotals contact;
+    MechanicsTotals mechanics;
     vehicle_dynamics::StepTimingSnapshot mechanics_timing;
 };
 struct Control {

@@ -1,4 +1,5 @@
 #include "RunState.h"
+#include "MechanicsDocument.h"
 #include "output/ArtifactIO.h"
 namespace crash::cases::vehicle_run::detail {
 namespace {
@@ -80,6 +81,10 @@ records::RecordFile WriteSummary(const std::filesystem::path& root,const Config&
         Number(document,"successful_archive_wall_s",progress.timing.archive_s);
         Number(document,"successful_accepted_capture_wall_s",progress.timing.capture_s);
         const auto& contact=progress.contact;
+        auto mechanics = MechanicsDocument(progress.mechanics);
+        Value mechanics_value;
+        mechanics_value.CopyFrom(mechanics,document.GetAllocator());
+        document.AddMember("accepted_mechanics",mechanics_value,document.GetAllocator());
         Boolean(document,"contact_observations_available",contact.available);
         if(contact.available) {
             Number(document,"peak_observed_force_n",contact.peak_observed_force_n);

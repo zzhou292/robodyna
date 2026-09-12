@@ -1,5 +1,6 @@
 #include "Session.h"
 #include "ContactSummary.h"
+#include "MechanicsSummary.h"
 namespace crash::cases::vehicle_run {
 PreparedRun::Session::Session(const Data& input,const std::filesystem::path& directory)
     : source(input),dynamics(vehicle_wall::LoadedWall::Prepare(input.setup,input.dynamics,{},&input.joints)),
@@ -27,8 +28,13 @@ void PreparedRun::Session::Commit() {dynamics.CommitStep();}
 void PreparedRun::Session::Discard() noexcept {dynamics.DiscardStep();}
 void PreparedRun::Session::Append() {
     const auto row=output::physical_run::CaptureAcceptedInterval(dynamics,capture.frames(),source.profile);
-    ObserveAcceptedContact(contact,dynamics.last_accepted_step(),dynamics.accepted());
+    auto next_contact = contact;
+    auto next_mechanics = mechanics;
+    ObserveAcceptedContact(next_contact, dynamics.last_accepted_step(), dynamics.accepted());
+    ObserveAcceptedMechanics(next_mechanics, dynamics.last_accepted_step(), dynamics.accepted());
     archive.Append(row);
+    contact = next_contact;
+    mechanics = next_mechanics;
 }
 void PreparedRun::Session::Capture() {capture.Capture(dynamics);}
 void PreparedRun::Session::SaveSample() {archive.Sample(*capture.frames().frame(),*capture.frames().activity());}

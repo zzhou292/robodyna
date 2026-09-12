@@ -9,12 +9,14 @@ struct PreparedRun::Session final : detail::Operations {
     vehicle_dynamics::capture::VehicleAcceptedFrames capture;
     output::physical_run::RunArchive archive;
     ContactTotals contact;
+    MechanicsTotals mechanics;
     std::optional<records::RecordFile> manifest;
     std::optional<double> step_limit;
     std::optional<tlfea::contact::NodalWallDeviceStatus> contact_status;
     std::uint32_t node=UINT32_MAX,parent=UINT32_MAX;
     Endpoint Accepted() const noexcept override;
     ContactTotals Contact() const noexcept override {return contact;}
+    MechanicsTotals Mechanics() const noexcept override {return mechanics;}
     vehicle_dynamics::StepTimingSnapshot MechanicsTiming() const noexcept override {return dynamics.timing();}
     void Prepare() override;
     void Commit() override;

@@ -46,6 +46,13 @@ int main(int argc,char** argv) {
                      <<" contact_available="<<value.contact.available
                      <<" observed_peak_force_n="<<value.contact.peak_observed_force_n
                      <<" observed_peak_penetration_m="<<value.contact.peak_observed_penetration_m
+                     <<" mechanics_available="<<value.mechanics.available
+                     <<" observed_peak_translation_departure_m="<<value.mechanics.motion.translation_departure_m.peak
+                     <<" observed_peak_velocity_departure_m_s="<<value.mechanics.motion.velocity_departure_m_s.peak
+                     <<" observed_peak_spin_component_rad_s="<<value.mechanics.motion.spin_component_rad_s.peak
+                     <<" solid_reported_plastic_work_sum_j="<<value.mechanics.solids.metal_plastic_work.work.accepted_increment_sum_j
+                     <<" beam18_observations_available="<<(value.mechanics.available && value.mechanics.has_beam18)
+                     <<" beam18_reported_plastic_work_sum_j="<<value.mechanics.beam18.plastic_work.work.accepted_increment_sum_j
                      <<" last_prepare_wall_s="<<value.mechanics_timing.last_step[0].wall_ns*1e-9<<std::endl;
         };
         const auto result=prepared.Execute(options.output,control);

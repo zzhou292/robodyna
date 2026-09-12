@@ -57,6 +57,40 @@ separate same-mask/removal potential and actual/proposed activity counts.
 They are not continuous-time maxima or a total-energy balance. The current
 versioned interval schema still marks contact/energy columns unavailable.
 
+The additive `accepted_mechanics` object in `run-summary.json` reports existing
+committed scalar diagnostics. It preserves the outer summary v1 fields and
+uses its own `robo_dyna.accepted_mechanics_summary.v1` schema. Initial-only
+prefixes say `available=false`; archives and older summaries need no new fields.
+It records all five solid families in their existing order and the optional
+structural beam's membrane/shear and flexural/torsional channels. Each work
+channel has its last signed increment, accepted-increment sum and absolute
+increment peak. These sums exclude TIME0 energy. Solid LAW36/LAW44 plastic work
+is one combined existing diagnostic, not a new per-family split. Plastic and
+hourglass work are included components of native work and must not be added to
+it again. Actual RHS kick/drift work remains separately labeled.
+
+The first positive reported plastic-work increment includes the actual accepted
+epoch/time. It does not identify a point plastic-strain maximum, damage or a
+permanent shape change. Native element timestep minima are observations, not
+the post-CIN/contact admission bound. Motion fields reuse the complete-domain
+component maxima relative to original uniform translation; during impact these
+are departures from that reference, not errors that should stay zero, fitted
+rigid-motion residuals or strains. No new magnitude threshold stops mechanics.
+No total/kinetic energy or energy-balance claim is introduced.
+
+The summary consumes `last_accepted_step()` after the existing actual interval
+authentication, without GPU readback or a new clock. Missing/stale participants,
+changed source/counts and nonfinite or overflowed values reject the update
+transactionally. Only a successful archive append publishes the new contact
+and mechanics summaries. Fixed scalar storage (at most 4 KiB per summary plus
+bounded copies) fits the existing 4 MiB controller reservation and the existing
+summary byte cap. Normal 20 GB host and 2 GiB archive defaults are unchanged.
+
+Detailed solid/beam point-history export and a front-detail replay camera remain
+separate work. Current frame plasticity covers shells only. Diagnostic stop
+limits do not change the archive sample schedule, which spans the requested
+full horizon; the last accepted endpoint is always sampled before prefix export.
+
 The private Operations seam is only for deterministic loop fault tests. It is
 not a public alternate solver. Host gates cover ordering, cadence, stop/failure
 prefixes, failed commit/output, overflow, source-phase summary checks and caps.

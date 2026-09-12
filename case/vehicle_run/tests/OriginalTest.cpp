@@ -97,6 +97,26 @@ void CheckLoadedPrefix(PhysicalProfile profile) {
     EXPECT_EQ(replay.configuration().profile.beam18,supports);
     EXPECT_EQ(composition.structural_beam_parents,supports ? 142u : 0u);
     EXPECT_EQ(composition.structural_beam_parts,supports ? 4u : 0u);
+    const auto& mechanics = result.loop.progress.mechanics;
+    ASSERT_TRUE(mechanics.available);
+    EXPECT_EQ(mechanics.intervals, result.loop.progress.accepted.epoch);
+    EXPECT_EQ(output::Bits(mechanics.last_time_s), output::Bits(result.loop.progress.accepted.time_s));
+    EXPECT_EQ(mechanics.owner_id, replay.context().identity().owner);
+    EXPECT_EQ(mechanics.source_instance_id, replay.context().identity().source_instance);
+    EXPECT_EQ(mechanics.motion.nodes, composition.physical_nodes);
+    EXPECT_EQ(mechanics.has_beam18, supports);
+    EXPECT_EQ(mechanics.beam18.parents, composition.structural_beam_parents);
+    for (std::size_t family = 0; family < mechanics.solids.parents.size(); ++family)
+        EXPECT_EQ(mechanics.solids.parents[family], composition.solid_parents[family]);
+    EXPECT_GT(mechanics.solids.native_step.last_s, 0);
+    if (supports) EXPECT_GT(mechanics.beam18.native_step.last_s, 0);
+    const auto summary_bytes = output::ReadBounded(destination / result.summary->file, SummaryByteCap);
+    output::Document summary;
+    summary.Parse(summary_bytes.c_str());
+    ASSERT_FALSE(summary.HasParseError());
+    ASSERT_TRUE(summary.HasMember("accepted_mechanics"));
+    EXPECT_EQ(summary["accepted_mechanics"]["accepted_intervals"].GetUint64(), mechanics.intervals);
+    EXPECT_EQ(summary["accepted_mechanics"]["motion"]["physical_nodes"].GetUint64(), composition.physical_nodes);
     if(supports) EXPECT_EQ(composition.solid_parts,17u);
     EXPECT_EQ(output::Bits(composition.initial_mass_kg),
         output::Bits(source.setup.execution().model().coefficients().totals().mass));
