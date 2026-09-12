@@ -29,4 +29,11 @@ void CheckInventory(const std::filesystem::path&,const records::RecordFile& mani
 // Called after source and record validation. Every inventoried file must have a
 // typed owner in those authenticated descriptors; arbitrary companions reject.
 void CheckReferencedInventory(const std::filesystem::path&,const records::Context&,const Index&,const Manifest&);
+// Exact typed owners shared by closed-run and explicitly recovered sample
+// readers. Configuration, index, interval streams and outer descriptors are
+// deliberately not included; their enclosing schema owns those obligations.
+std::vector<records::RecordFile> ReferencedSampleFiles(const std::filesystem::path&,
+    const records::Context&,const records::RecordFile& source_bundle,
+    const records::RecordFile& activity_declaration,const std::vector<FrameFiles>&,
+    const std::optional<WallReceipt>&);
 } // namespace crash::output::physical_run
