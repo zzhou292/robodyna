@@ -1,0 +1,8 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+cc_library(
+    name = "endpoint_values",
+    hdrs = ["EndpointFields.h", "EndpointAssembly.h"],
+    deps = ["//lib_src/elements:shell_batch_fields", "//lib_src/math:quaternion",
+            "//lib_src/solvers:nodal_force_assembly"],
+    visibility = ["//visibility:public"],
+)

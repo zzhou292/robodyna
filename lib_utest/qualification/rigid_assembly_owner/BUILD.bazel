@@ -19,7 +19,8 @@ cc_library(
                   "//lib_utest/qualification/type45_model:__pkg__",
                   "//lib_utest/qualification/type45_resident:__pkg__",
                   "//lib_utest/qualification/solid_resident:__pkg__",
-                  "//lib_utest/qualification/qbat_mapped:__pkg__"],
+                  "//lib_utest/qualification/qbat_mapped:__pkg__",
+                  "//lib_utest/qualification/beam18_resident:__pkg__"],
 )
 
 cc_test(

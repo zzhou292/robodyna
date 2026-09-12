@@ -1,0 +1,13 @@
+include_guard(GLOBAL)
+include("${CMAKE_CURRENT_LIST_DIR}/../Model.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../../../assembly/Beam18NodeContributions.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../../ShellPhysicalOwnerValues.cmake")
+add_library(tl_beam18_batch_values STATIC Arena.cpp Plan.cpp Upload.cpp Forecast.cpp Identity.cpp)
+target_link_libraries(tl_beam18_batch_values PUBLIC tl_beam18_model
+  tl_beam18_node_contributions tl_shell_physical_owner_values)
+target_compile_features(tl_beam18_batch_values PUBLIC cxx_std_17)
+target_compile_options(tl_beam18_batch_values PRIVATE -fno-fast-math -ffp-contract=off)
+option(TL_BEAM18_BATCH_CUDA "Build the mapped beam18 CUDA resident" OFF)
+if(TL_BEAM18_BATCH_CUDA)
+  include("${CMAKE_CURRENT_LIST_DIR}/Batch.cmake")
+endif()

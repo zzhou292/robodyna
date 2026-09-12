@@ -92,8 +92,8 @@
       "sha256": "334ab0d87813996918a8d9024e4f50ce2f3fa1a5e44fa63e649b43f7e1b01c81"
     },
     "lib_utest/qualification/beam18_force/BUILD.bazel": {
-      "bytes": 811,
-      "sha256": "cb7c74e6672e0a6f90e116372da6cb1113b782f167ec3c973e4985e738c77cd7"
+      "bytes": 882,
+      "sha256": "cd173b46cb982c972ab5b04807d4b0cece39dcc9840021665f8473180dd5f599"
     },
     "lib_utest/qualification/beam18_force/CMakeLists.txt": {
       "bytes": 3273,
@@ -333,6 +333,14 @@
       "path": "lib_utest/qualification/solid_law44_point/source-manifest.json",
       "bytes": 3174,
       "sha256": "fc8ab378b3b0dca6b5873d231696734ba5700176838c29c1197307a642320cc2"
+    }
+  },
+  "resident_fixture_visibility_followup": {
+    "scope": "Add only beam18_resident visibility to the existing beam force test_values library; no source, native or numerical changes.",
+    "prior_record": {
+      "path": "lib_utest/qualification/beam18_force/BUILD.bazel",
+      "bytes": 811,
+      "sha256": "cb7c74e6672e0a6f90e116372da6cb1113b782f167ec3c973e4985e738c77cd7"
     }
   }
 }
