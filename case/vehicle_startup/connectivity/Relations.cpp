@@ -1,6 +1,8 @@
-#include "Internal.h"
+#include "Relations.h"
+#include "output/ArtifactIO.h"
 
 namespace crash::cases::vehicle_startup::connectivity::detail {
+using output::Require;
 Relations::Relations(Data& data, const Counts& expected) : data_(data), expected_(expected) {
     data_.relations.reserve(expected.relations);
     data_.slots.reserve(expected.slots);

@@ -11,7 +11,7 @@ std::size_t Sum(std::initializer_list<std::size_t> values) {
     return result;
 }
 }
-Counts Extents(const VehiclePhysicalAttachments& source) {
+Counts Extents(const VehiclePhysicalAttachments& source, const joints::VehicleJointModel* joints) {
     const auto& physical = source.physical();
     const auto& domain = physical.source_domain().domain();
     const auto& ledger = physical.coefficients();
@@ -19,6 +19,7 @@ Counts Extents(const VehiclePhysicalAttachments& source) {
     const auto& solid = physical.solids();
     const auto& rigid = physical.rigid_assembly();
     const auto& cin = source.attachments().model();
+    const auto* structural = physical.structural_beams();
     Require(ledger.prepared() && ledger.domain()->SharesStorage(domain) &&
         ledger.shells()->Matches(shells,domain) && ledger.type13() &&
         ledger.type13()->Matches(physical.beams(),domain) && ledger.type25() &&
@@ -27,6 +28,11 @@ Counts Extents(const VehiclePhysicalAttachments& source) {
         ledger.element_mass()->Matches(physical.point_masses().contributions()) &&
         rigid.coefficients()->Matches(ledger) && cin.domain()->SharesStorage(domain) &&
         source.witnesses().runtime_mappable(), "Connectivity physical/CIN source authorities differ");
+    Require(bool(structural) == bool(ledger.beam18()), "Connectivity structural beam source presence differs");
+    if (structural)
+        Require(structural->prepared() && structural->domain()->SharesStorage(domain) &&
+            ledger.beam18()->Matches(*structural,domain), "Connectivity structural beam authority differs");
+    if (joints) CheckJoints(source,*joints);
     Counts count;
     count.nodes = domain.node_count();
     auto& family = count.by_kind;
@@ -36,6 +42,9 @@ Counts Extents(const VehiclePhysicalAttachments& source) {
     family[static_cast<std::size_t>(Kind::Solid18)] = solid.solid18().size();
     family[static_cast<std::size_t>(Kind::Solid24)] = solid.solid24().size();
     family[static_cast<std::size_t>(Kind::Solid6z)] = solid.solid6z().size();
+    family[static_cast<std::size_t>(Kind::Solid18Law44)] = solid.solid18_law44().size();
+    family[static_cast<std::size_t>(Kind::Solid18Law90)] = solid.solid18_law90().size();
+    family[static_cast<std::size_t>(Kind::Beam18)] = structural ? structural->parents().size() : 0;
     family[static_cast<std::size_t>(Kind::Type13)] = physical.beams().connection_count();
     family[static_cast<std::size_t>(Kind::Type25)] = physical.welds().model().connection_count();
     family[static_cast<std::size_t>(Kind::PartRoot)] = rigid.parts()->topology()->root_count();
@@ -45,17 +54,25 @@ Counts Extents(const VehiclePhysicalAttachments& source) {
         rigid.groups().size()-family[static_cast<std::size_t>(Kind::PartRoot)];
     family[static_cast<std::size_t>(Kind::Cin)] = cin.rows().count;
     family[static_cast<std::size_t>(Kind::PointMass)] = ledger.element_mass()->records().size();
+    if (joints) {
+        for (const auto& joint : joints->model().joints()) {
+            using Native = tl::fea::type45::Kind;
+            const auto kind = joint.property.kind == Native::Spherical ? Kind::SphericalJoint :
+                joint.property.kind == Native::Revolute ? Kind::RevoluteJoint : Kind::CylindricalJoint;
+            ++family[static_cast<std::size_t>(kind)]; // CheckJoints authenticated the closed kinds first.
+        }
+    }
     for (auto value : family) count.relations = Sum({count.relations,value});
-    constexpr std::size_t widths[]{4,3,4,8,8,6,2,2,0,0,5,1};
     for (std::size_t kind = 0; kind < KindCount; ++kind) {
-        Require(!widths[kind] || family[kind] <= SIZE_MAX/widths[kind], "Connectivity slot extent overflows");
-        count.slots = Sum({count.slots,widths[kind]*family[kind]});
+        const auto width = Width(static_cast<Kind>(kind));
+        Require(!width || family[kind] <= SIZE_MAX/width, "Connectivity slot extent overflows");
+        count.slots = Sum({count.slots,width*family[kind]});
     }
     count.slots = Sum({count.slots,rigid.members().size()});
     return count;
 }
 Forecast Budget(const VehiclePhysicalAttachments& source, const Counts& count,
-                Limits limits, std::size_t fixed) {
+                Limits limits, std::size_t fixed, const joints::VehicleJointModel* joints) {
     const Limits hard;
     Require(limits.nodes && limits.nodes <= hard.nodes && limits.relations &&
         limits.relations <= hard.relations && limits.slots && limits.slots <= hard.slots &&
@@ -68,6 +85,9 @@ Forecast Budget(const VehiclePhysicalAttachments& source, const Counts& count,
     Forecast next;
     next.extents = count;
     next.retained_source_bound = source.forecast().total_bytes;
+    // Both inputs are already prepared. CheckJoints proved shared physical
+    // backing; charge only the immutable joint payload retained in addition.
+    if (joints) next.retained_source_bound = Sum({next.retained_source_bound,joints->additional_owned_payload_bytes()});
     tl::util::BoundedArenaLayout owned(limits.extra_bytes), scratch(limits.extra_bytes);
     tl::util::ArenaRegion ignored;
     Require(owned.Append<std::byte>(fixed,ignored) &&

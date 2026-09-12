@@ -4,7 +4,8 @@
 namespace crash::cases::vehicle_startup::connectivity {
 const char* Name(Kind kind) noexcept {
     constexpr const char* names[]{"qeph","t3","qbat","solid18","solid24","solid6z",
-        "type13","type25","part_root","plain_group","cin","point_mass"};
+        "type13","type25","part_root","plain_group","cin","point_mass",
+        "solid18_law44","solid18_law90","beam18","joint_spherical","joint_revolute","joint_cylindrical"};
     const auto index = static_cast<std::size_t>(kind);
     return index < KindCount ? names[index] : "invalid";
 }
@@ -58,13 +59,13 @@ void Partition(tl::util::ConstView<tl::fea::NodalDomainNode> nodes, Data& data) 
         Require(static_cast<std::size_t>(row.kind) < KindCount && row.source_id && row.slot_count &&
             row.slot_offset == offset && row.slot_count <= data.slots.size()-offset,
             "Connectivity relation layout or identity is malformed");
-        constexpr std::size_t widths[]{4,3,4,8,8,6,2,2,0,0,5,1};
-        const auto width = widths[static_cast<std::size_t>(row.kind)];
+        const auto width = Width(row.kind);
         Require(width ? row.slot_count == width : row.slot_count >= 2 && row.slot_count <= 1024,
                 "Connectivity typed support width differs");
-        Require((row.kind <= Kind::Type25 && (row.role == Role::Constitutive ||
+        Require((IsElement(row.kind) && (row.role == Role::Constitutive ||
                     (row.kind <= Kind::Qbat && row.role == Role::RigidSkin))) ||
-                (row.kind >= Kind::PartRoot && row.kind <= Kind::Cin && row.role == Role::Constraint) ||
+                (((row.kind >= Kind::PartRoot && row.kind <= Kind::Cin) || IsJoint(row.kind)) &&
+                    row.role == Role::Constraint) ||
                 (row.kind == Kind::PointMass && row.role == Role::CoefficientOnly),
                 "Connectivity relation role does not match its typed family");
         Require((row.role == Role::RigidSkin) == (row.rigid_root_index != UINT16_MAX),

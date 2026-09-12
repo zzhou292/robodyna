@@ -1,18 +1,20 @@
 #include "Internal.h"
+#include "ElementRows.h"
 
 namespace crash::cases::vehicle_startup::connectivity::detail {
 namespace {
 template<class Parent> void Solid(Relations& output, Kind kind, std::size_t row,
-                                 const Parent& parent, std::size_t count) {
+                                 const Parent& parent,
+                                 tl::util::ConstView<tl::fea::NodalDomainNode> domain) {
     const auto& input = parent.reference.input();
-    output.Append(kind,Role::Constitutive,input.source_element_id,input.source_part_id,
-                  row,parent.domain_nodes,count);
+    AppendElementInput(output,kind,row,input,domain,parent.domain_nodes);
 }
 }
 void VisitElements(const VehiclePhysicalAttachments& source, Relations& output) {
     const auto& physical = source.physical();
     const auto& solid_source = physical.source_domain().source().solid_source().data();
     const auto& solids = physical.solids();
+    const auto domain = physical.source_domain().domain().nodes();
     for (std::size_t row = 0; row < solid_source.rows.size(); ++row) {
         const auto& declaration = solid_source.rows[row];
         const auto index = declaration.reference_index;
@@ -22,13 +24,28 @@ void VisitElements(const VehiclePhysicalAttachments& source, Relations& output) 
             const auto& parent = solids.solid18()[index];
             Require(parent.reference.input().source_element_id == declaration.element_id &&
                 parent.reference.input().source_part_id == declaration.part_id, "Connectivity Solid18 source identity differs");
-            Solid(output,Kind::Solid18,row,parent,8);
+            Solid(output,Kind::Solid18,row,parent,domain);
         } else if (declaration.family == Family::Solid24) {
             Require(index < solids.solid24().size(), "Connectivity Solid24 reference index is absent");
             const auto& parent = solids.solid24()[index];
             Require(parent.reference.input().source_element_id == declaration.element_id &&
                 parent.reference.input().source_part_id == declaration.part_id, "Connectivity Solid24 source identity differs");
-            Solid(output,Kind::Solid24,row,parent,8);
+            Solid(output,Kind::Solid24,row,parent,domain);
+        }
+        else if (declaration.family == Family::Solid18Law44) {
+            Require(index < solids.solid18_law44().size(), "Connectivity LAW44 reference index is absent");
+            const auto& parent = solids.solid18_law44()[index];
+            Require(parent.reference.input().source_element_id == declaration.element_id &&
+                parent.reference.input().source_part_id == declaration.part_id,
+                "Connectivity LAW44 source identity differs");
+            Solid(output,Kind::Solid18Law44,row,parent,domain);
+        } else if (declaration.family == Family::Solid18Law90) {
+            Require(index < solids.solid18_law90().size(), "Connectivity LAW90 reference index is absent");
+            const auto& parent = solids.solid18_law90()[index];
+            Require(parent.reference.input().source_element_id == declaration.element_id &&
+                parent.reference.input().source_part_id == declaration.part_id,
+                "Connectivity LAW90 source identity differs");
+            Solid(output,Kind::Solid18Law90,row,parent,domain);
         }
         else {
             Require(declaration.family == Family::Solid6z, "Connectivity solid family is unavailable");
@@ -38,7 +55,7 @@ void VisitElements(const VehiclePhysicalAttachments& source, Relations& output) 
                 parent.reference.input().source_part_id == declaration.part_id, "Connectivity S6Z source identity differs");
             Require(parent.domain_nodes[6] == SIZE_MAX && parent.domain_nodes[7] == SIZE_MAX,
                     "Connectivity S6Z has noncanonical tail slots");
-            Solid(output,Kind::Solid6z,row,parent,6);
+            Solid(output,Kind::Solid6z,row,parent,domain);
         }
     }
     const auto& beams = physical.beams();
@@ -66,6 +83,12 @@ void VisitElements(const VehiclePhysicalAttachments& source, Relations& output) 
     for (std::size_t row = 0; row < mass.size(); ++row) {
         const auto& record = mass[row].source;
         output.Append(Kind::PointMass,Role::CoefficientOnly,record.source_element_id,0,row,&record.domain_node,1);
+    }
+    if (const auto* structural = physical.structural_beams()) {
+        const auto parents = structural->parents();
+        for (std::size_t row = 0; row < parents.size(); ++row)
+            AppendElementInput(output,Kind::Beam18,row,parents[row].reference.input(),domain,
+                               parents[row].domain_nodes);
     }
 }
 } // namespace crash::cases::vehicle_startup::connectivity::detail

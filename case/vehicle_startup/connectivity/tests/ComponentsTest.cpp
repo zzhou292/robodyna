@@ -60,6 +60,9 @@ TEST(VehicleConnectivityValues, CompleteCompactReportHasExactCapAndPreservesSour
     output::Document doc;
     doc.Parse(text.data(),text.size());
     ASSERT_FALSE(doc.HasParseError());
+    EXPECT_STREQ(doc["schema"].GetString(),"robo_dyna.original_physical_connectivity.v1");
+    EXPECT_EQ(doc["kind_codes"].Size(),LegacyKindCount);
+    EXPECT_EQ(doc["counts"]["by_kind"].Size(),LegacyKindCount);
     ASSERT_EQ(doc["nodes"].Size(),source.nodes.size());
     ASSERT_EQ(doc["relations"].Size(),source.relations.size());
     EXPECT_EQ(doc["counts"]["joint_edges"].GetUint64(),0u);
