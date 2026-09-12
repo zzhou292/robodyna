@@ -4,6 +4,7 @@
 #include "case/CanonicalWallArtifacts.h"
 #include "output/full_shell/tests/TestSupport.h"
 #include <cstdlib>
+#include <iomanip>
 #include <sstream>
 namespace crash::cases::vehicle_run::test {
 namespace {
@@ -51,6 +52,7 @@ TEST(VehicleRunExtended, Full4900SourceForecastKeepsOriginalConnectionsAndNormal
     const auto source=Source(PhysicalProfile::ExtendedSolidsV4);
     Config config;
     config.physical_profile=PhysicalProfile::ExtendedSolidsV4;
+    config.fixed_dt_s=2e-7;
     const auto plan=PreparedRun::Prepare(source.setup,source.joints,config,Identity());
     const auto& model=source.setup.execution().model();
     EXPECT_EQ(model.source_domain().source().solid_source().data().rows.size(),4900u);
@@ -71,6 +73,9 @@ void CheckLoadedPrefix(PhysicalProfile profile) {
     const auto source=Source(profile);
     Config config;
     config.physical_profile=profile;
+    // Complete V4 assembly measures a 2.2934672909685784e-7 s post-CIN
+    // startup limit. Select a smaller physical step; keep the screen active.
+    if(profile==PhysicalProfile::ExtendedSolidsV4) config.fixed_dt_s=2e-7;
     const auto plan=PreparedRun::Prepare(source.setup,source.joints,config,Identity());
     records::test::Directory temporary;
     const auto requested=std::getenv("ROBO_VEHICLE_RUN_OUTPUT");
@@ -85,7 +90,7 @@ void CheckLoadedPrefix(PhysicalProfile profile) {
     ASSERT_TRUE(result.viewer_input)<<result.viewer_input_error;
     ASSERT_TRUE(result.summary)<<result.summary_error;
     EXPECT_EQ(result.loop.progress.accepted.epoch,2u);
-    EXPECT_EQ(result.loop.progress.accepted.time_s,6e-7);
+    EXPECT_EQ(result.loop.progress.accepted.time_s,2*config.fixed_dt_s);
     EXPECT_TRUE(result.loop.progress.contact.available);
     EXPECT_GT(result.loop.progress.contact.peak_observed_force_n,0);
     EXPECT_GT(result.loop.progress.contact.peak_observed_penetration_m,0);
@@ -98,6 +103,15 @@ void CheckLoadedPrefix(PhysicalProfile profile) {
     EXPECT_EQ(replay.context().nodes(),359785u);
     EXPECT_TRUE(replay.configuration().profile.type45);
     EXPECT_TRUE(replay.wall());
+    ASSERT_TRUE(replay.wall_composition());
+    const auto& composition=*replay.wall_composition();
+    const bool extended=profile==PhysicalProfile::ExtendedSolidsV4;
+    EXPECT_EQ(composition.profile,extended ? output::physical_run::CompositionProfile::ExtendedSolidsV4
+        : output::physical_run::CompositionProfile::RetainedV1);
+    EXPECT_EQ(composition.solid_parents,(extended ? std::array<std::uint64_t,5>{908,1991,350,306,1345}
+        : std::array<std::uint64_t,5>{908,1309,195,0,0}));
+    EXPECT_EQ(composition.physical_nodes,source.setup.execution().model().source_domain().domain().node_count());
+    EXPECT_EQ(composition.point_mass_records,extended ? 150u : 148u);
     EXPECT_EQ(replay.index().accepted_intervals,2u);
     EXPECT_FALSE(replay.index().horizon_complete);
     ASSERT_EQ(replay.index().frames.size(),2u);
@@ -108,7 +122,9 @@ void CheckLoadedPrefix(PhysicalProfile profile) {
     ::testing::Test::RecordProperty("accepted_intervals",std::to_string(result.loop.progress.accepted.epoch));
     ::testing::Test::RecordProperty("archive_manifest_sha256",result.archive_manifest->sha256);
     ::testing::Test::RecordProperty("viewer_input_sha256",result.viewer_input->sha256);
-    ::testing::Test::RecordProperty("completed_seconds",std::to_string(result.loop.progress.accepted.time_s));
+    std::ostringstream completed;
+    completed<<std::setprecision(17)<<result.loop.progress.accepted.time_s;
+    ::testing::Test::RecordProperty("completed_seconds",completed.str());
     ::testing::Test::RecordProperty("scope","two accepted loaded intervals through actual controller; no complete5ms claim");
 }
 }
