@@ -8,8 +8,8 @@ virtual node, mass, clock, owner, feature search, area or local timestep exists.
 Source identities and reference-plane admissibility remain the S0/facet
 binding's responsibility.
 
-With represented endpoint positions a,b, the declared gap must equal binary64
-`(hypot(hypot(a.x-b.x,a.y-b.y),a.z-b.z)-hA)-hB`, with signed zero equivalent.
+With represented endpoint positions a,b, the gap is computed once as binary64
+`(hypot(hypot(a.x-b.x,a.y-b.y),a.z-b.z)-hA)-hB`. There is no duplicate caller gap.
 The normal is the represented componentwise division `(a-b)/d`. A zero distance
 rejects; no fallback normal is fabricated. Nonnegative constant reference half
 thicknesses enter this distance radius only; Q4 approximation errors do not.
@@ -17,6 +17,12 @@ The positive coefficient k is explicitly supplied, with no area/material rule.
 The existing `normal_contact_detail::ApplyPenalty` supplies zero-damping normal
 force and energy. Its finite arithmetic and unilateral touching convention are
 retained; no unused mass/damping/timestep fields are exported.
+
+Host and CUDA hypot libraries can round non-axis distances differently. Each
+packet uses its own backend-computed distance and gap. A future stamped geometry
+consumer may check its distance enclosure against this output; this pure
+primitive has no such authority. There is no assertion of cross-backend bit
+identity for hypot and no widened equality tolerance or duplicate calculation.
 
 Pair forces are exactly opposite represented vectors. Natural-slot nodal forces
 use the existing `Scale(force,weight)` order. Shared nodes merge A slots then B
@@ -51,14 +57,18 @@ packet owns only bounded values, with no dynamic allocation or shared buffers.
 Six host functions pass: exact analytic force/energy/moment/work; 42 T3/Q4 nodal
 energy-gradient differences with fixed weights; shared-node cancellation,
 partial masks and the reused independent exact-dyadic bound/body-congruence
-oracle; inactive/touching/signed-zero gap; eight late invalid/overflow cases,
+oracle; inactive/touching/signed-zero radius; eight late invalid/overflow cases,
 whole-output preservation and retry; negative tangential curvature control.
 
-The optional CUDA function is authored for 12 concurrent cases plus 12 retries,
+The first optional CUDA function is authored for 12 concurrent cases plus 12 retries,
 comparing all named packet fields bitwise for supported controls and checking
 the independent exact bound after readback. Includes an exact 3-4-5 distance,
-shared masks, late NaN, gap mismatch, zero distance and bound overflow. It has
-not been compiled or executed by the author. No native donor solver is invoked
+shared masks, late NaN, invalid radius, zero distance and bound overflow. It has
+not been compiled or executed by the author. A second CUDA function covers four
+genuinely non-axis separations. It checks scalar/projection algebra using the
+backend's represented distance and derived gap, and independently checks the
+distance with long-double arithmetic. The distance-oracle roundoff bound is a
+qualification comparison, not a production contact-gap tolerance. No native donor solver is invoked
 for this algebraic utility.
 
 Root commands (inside the normal shared qualification guard):

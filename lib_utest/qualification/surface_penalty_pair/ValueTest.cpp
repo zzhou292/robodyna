@@ -54,7 +54,6 @@ TEST(SurfacePenaltyPair, FixedFeatureEnergyGradientForObliqueT3AndQ4) {
     }
     value.a.reference_half_thickness_m = .5;
     value.b.reference_half_thickness_m = .5;
-    ASSERT_TRUE(RefreshGap(value));
     ct::SurfacePenaltyPacket result;
     ASSERT_EQ(ct::EvaluateSurfacePenaltyPair(value.input(), &result), S::Ok);
     for (unsigned i = 0; i < result.count; ++i) {
@@ -65,8 +64,6 @@ TEST(SurfacePenaltyPair, FixedFeatureEnergyGradientForObliqueT3AndQ4) {
         constexpr double step = 0x1p-16;
         plus.x[3 * node + axis] += step;
         minus.x[3 * node + axis] -= step;
-        ASSERT_TRUE(RefreshGap(plus));
-        ASSERT_TRUE(RefreshGap(minus));
         ct::SurfacePenaltyPacket p, m;
         ASSERT_EQ(ct::EvaluateSurfacePenaltyPair(plus.input(), &p), S::Ok);
         ASSERT_EQ(ct::EvaluateSurfacePenaltyPair(minus.input(), &m), S::Ok);
@@ -83,7 +80,6 @@ TEST(SurfacePenaltyPair, SharedNodeCancellationMasksAndFrozenBodyCongruence) {
   value.a.translation_fixed_bits[0] = 5;
   value.b.translation_fixed_bits[0] = 5;
   value.a.translation_fixed_bits[1] = 4;
-  ASSERT_TRUE(RefreshGap(value));
   ct::SurfacePenaltyPacket result;
   ASSERT_EQ(ct::EvaluateSurfacePenaltyPair(value.input(), &result), S::Ok);
   ASSERT_EQ(result.count, 7u);
@@ -107,12 +103,11 @@ TEST(SurfacePenaltyPair, SharedNodeCancellationMasksAndFrozenBodyCongruence) {
   EXPECT_EQ(ct::EvaluateSurfacePenaltyPair(value.input(), &result), S::InconsistentMask);
   EXPECT_EQ(std::memcmp(&result, &before, sizeof(result)), 0);
 }
-TEST(SurfacePenaltyPair, InactiveTouchingAndSignedZeroGapKeepDeclaredProfile) {
+TEST(SurfacePenaltyPair, InactiveTouchingAndSignedZeroRadiusDeriveGap) {
   Case value;
   ct::SurfacePenaltyPacket result;
   value.a.reference_half_thickness_m = .125;
   value.b.reference_half_thickness_m = .125;
-  ASSERT_TRUE(RefreshGap(value));
   ASSERT_EQ(ct::EvaluateSurfacePenaltyPair(value.input(), &result), S::Ok);
   EXPECT_FALSE(result.active);
   EXPECT_DOUBLE_EQ(result.normal_force_n, 0);
@@ -120,15 +115,20 @@ TEST(SurfacePenaltyPair, InactiveTouchingAndSignedZeroGapKeepDeclaredProfile) {
   EXPECT_DOUBLE_EQ(result.normal_majorant.stiffness_n_m, 0);
   value.a.reference_half_thickness_m = .25;
   value.b.reference_half_thickness_m = .25;
-  value.gap = -0.;
   ASSERT_EQ(ct::EvaluateSurfacePenaltyPair(value.input(), &result), S::Ok);
   EXPECT_TRUE(result.active);
   EXPECT_DOUBLE_EQ(result.normal_force_n, 0);
   EXPECT_DOUBLE_EQ(result.normal_majorant.stiffness_n_m, 32);
+  EXPECT_EQ(result.gap_m, 0);
   const auto before = result;
-  value.gap = std::nextafter(0., 1.);
-  EXPECT_EQ(ct::EvaluateSurfacePenaltyPair(value.input(), &result), S::GapMismatch);
+  value.b.reference_half_thickness_m = std::numeric_limits<double>::quiet_NaN();
+  EXPECT_EQ(ct::EvaluateSurfacePenaltyPair(value.input(), &result), S::InvalidInput);
   EXPECT_EQ(std::memcmp(&result, &before, sizeof(result)), 0);
+  value.a.reference_half_thickness_m = -0.;
+  value.b.reference_half_thickness_m = .5;
+  ASSERT_EQ(ct::EvaluateSurfacePenaltyPair(value.input(), &result), S::Ok);
+  EXPECT_EQ(result.gap_m, 0);
+  EXPECT_TRUE(result.active);
 }
 TEST(SurfacePenaltyPair, LateFailuresPreserveWholePacketAndRetry) {
   Case base;
@@ -169,8 +169,6 @@ TEST(SurfacePenaltyPair, TangentialEnergyCurvatureIsOutsideNormalMajorant) {
     plus.x[3 * i] += step;
     minus.x[3 * i] -= step;
   }
-  ASSERT_TRUE(RefreshGap(plus));
-  ASSERT_TRUE(RefreshGap(minus));
   ct::SurfacePenaltyPacket p, m;
   ASSERT_EQ(ct::EvaluateSurfacePenaltyPair(plus.input(), &p), S::Ok);
   ASSERT_EQ(ct::EvaluateSurfacePenaltyPair(minus.input(), &m), S::Ok);

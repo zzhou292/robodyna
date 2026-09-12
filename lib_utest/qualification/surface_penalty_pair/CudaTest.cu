@@ -82,15 +82,12 @@ TEST(SurfacePenaltyPairCuda, ConcurrentPacketsExactFieldsRejectionsAndRetry) {
   ASSERT_EQ(ct::EvaluateSurfacePenaltyPair(input[0].input(), &seed), ct::SurfacePenaltyStatus::Ok);
   input[1].a.reference_half_thickness_m = .125;
   input[1].b.reference_half_thickness_m = .125;
-  ASSERT_TRUE(RefreshGap(input[1]));
   input[2].a.reference_half_thickness_m = .25;
   input[2].b.reference_half_thickness_m = .25;
-  input[2].gap = -0.;
   input[3].b.point.nodes[0] = 0;
   input[3].a.translation_fixed_bits[0] = 5;
   input[3].b.translation_fixed_bits[0] = 5;
   input[3].a.translation_fixed_bits[1] = 4;
-  ASSERT_TRUE(RefreshGap(input[3]));
   // Exact 3-4-5 distance exercises a non-axis represented normal.
   for (unsigned i = 0; i < 4; ++i) {
     input[4].x[3 * i] += 3;
@@ -99,13 +96,12 @@ TEST(SurfacePenaltyPairCuda, ConcurrentPacketsExactFieldsRejectionsAndRetry) {
   }
   input[4].a.reference_half_thickness_m = 3;
   input[4].b.reference_half_thickness_m = 3;
-  ASSERT_TRUE(RefreshGap(input[4]));
   input[5].v[23] = std::numeric_limits<double>::quiet_NaN();
   input[6] = input[3];
   input[6].b.translation_fixed_bits[0] = 1;
   input[7].b.point = input[7].a.point;
   input[8].b.point.nodes[3] = 8;
-  input[9].gap = std::nextafter(input[9].gap, 0.);
+  input[9].b.reference_half_thickness_m = std::numeric_limits<double>::quiet_NaN();
   input[10].k = std::numeric_limits<double>::max();
   for (unsigned i = 0; i < 4; ++i) {
     input[10].a.point.weights[i] = i ? 0 : 1;
@@ -113,7 +109,6 @@ TEST(SurfacePenaltyPairCuda, ConcurrentPacketsExactFieldsRejectionsAndRetry) {
   }
   input[11].a.point.count = input[11].b.point.count = 3;
   input[11].a.point.weights[2] = input[11].b.point.weights[2] = .5;
-  ASSERT_TRUE(RefreshGap(input[11]));
   Device<Case> device_input;
   Device<Result> device_output;
   ASSERT_EQ(cudaMalloc(&device_input.data, sizeof(input)), cudaSuccess);
@@ -136,6 +131,72 @@ TEST(SurfacePenaltyPairCuda, ConcurrentPacketsExactFieldsRejectionsAndRetry) {
       Same(actual[i].packet, expected[i].packet);
       EXPECT_TRUE(majorant_test::ExactBounds(actual[i].packet.normal_majorant));
     }
+  }
+}
+TEST(SurfacePenaltyPairCuda, NonAxisBackendDerivedGapAndIndependentDistanceOracle) {
+  constexpr unsigned count = 4;
+  const double separation[count][3]{{.3, .4, .7}, {.12345, .876, .54321},
+                                    {.1, .1, .1}, {.314159, .271828, .141421}};
+  Case input[count];
+  Result actual[count];
+  ct::SurfacePenaltyPacket seed;
+  ASSERT_EQ(ct::EvaluateSurfacePenaltyPair(input[0].input(), &seed), ct::SurfacePenaltyStatus::Ok);
+  for (unsigned i = 0; i < count; ++i) {
+    for (unsigned n = 0; n < 4; ++n) {
+      input[i].x[3 * n] += separation[i][0];
+      input[i].x[3 * n + 1] += separation[i][1];
+      input[i].x[3 * n + 2] = separation[i][2];
+    }
+    input[i].a.reference_half_thickness_m = 1;
+    input[i].b.reference_half_thickness_m = 1;
+    actual[i].packet = seed;
+  }
+  Device<Case> device_input;
+  Device<Result> device_output;
+  ASSERT_EQ(cudaMalloc(&device_input.data, sizeof(input)), cudaSuccess);
+  ASSERT_EQ(cudaMalloc(&device_output.data, sizeof(actual)), cudaSuccess);
+  ASSERT_EQ(cudaMemcpy(device_input.data, input, sizeof(input), cudaMemcpyHostToDevice), cudaSuccess);
+  ASSERT_EQ(cudaMemcpy(device_output.data, actual, sizeof(actual), cudaMemcpyHostToDevice), cudaSuccess);
+  Evaluate<<<1, 32>>>(device_input.data, device_output.data, count);
+  ASSERT_EQ(cudaGetLastError(), cudaSuccess);
+  ASSERT_EQ(cudaDeviceSynchronize(), cudaSuccess);
+  ASSERT_EQ(cudaMemcpy(actual, device_output.data, sizeof(actual), cudaMemcpyDeviceToHost), cudaSuccess);
+  for (unsigned i = 0; i < count; ++i) {
+    SCOPED_TRACE(i);
+    const auto& value = actual[i];
+    ASSERT_EQ(value.status, ct::SurfacePenaltyStatus::Ok);
+    const auto& packet = value.packet;
+    ct::WeightedPointKinematics a, b;
+    ASSERT_EQ(ct::EvaluateWeightedSurfacePoint(input[i].input().positions, input[i].input().velocities,
+        input[i].a.point, &a), ct::Status::kOk);
+    ASSERT_EQ(ct::EvaluateWeightedSurfacePoint(input[i].input().positions, input[i].input().velocities,
+        input[i].b.point, &b), ct::Status::kOk);
+    Same(packet.a.position, a.position);
+    Same(packet.a.velocity, a.velocity);
+    Same(packet.b.position, b.position);
+    Same(packet.b.velocity, b.velocity);
+    const auto delta = ct::Subtract(a.position, b.position);
+    // Independent long-double norm of the already represented displacement.
+    const long double dx = delta.x, dy = delta.y, dz = delta.z;
+    const long double norm = ::sqrtl(dx * dx + dy * dy + dz * dz);
+    const long double error = ::fabsl(static_cast<long double>(packet.distance_m) - norm);
+    EXPECT_LE(error, 8 * std::numeric_limits<double>::epsilon() * norm);
+    Same(packet.normal, ct::geometry_detail::Divide(delta, packet.distance_m));
+    EXPECT_EQ(Bits(packet.gap_m), Bits((packet.distance_m - 1) - 1));
+    const double vn = ct::Dot(ct::Subtract(a.velocity, b.velocity), packet.normal);
+    EXPECT_EQ(Bits(packet.normal_velocity_m_s), Bits(vn));
+    ct::NormalContactResponse response;
+    ASSERT_EQ(ct::normal_contact_detail::ApplyPenalty(input[i].k, packet.gap_m, vn, response), ct::Status::kOk);
+    EXPECT_EQ(Bits(packet.normal_force_n), Bits(response.force));
+    EXPECT_EQ(Bits(packet.elastic_energy_j), Bits(response.elastic_energy));
+    Same(packet.force_a_n, ct::Scale(packet.normal, response.force));
+    Same(packet.force_b_n, ct::Scale(packet.force_a_n, -1));
+    ct::WeightedNodalForces fa, fb;
+    ASSERT_EQ(ct::ProjectWeightedSurfaceForce(input[i].a.point, 8, packet.force_a_n, &fa), ct::Status::kOk);
+    ASSERT_EQ(ct::ProjectWeightedSurfaceForce(input[i].b.point, 8, packet.force_b_n, &fb), ct::Status::kOk);
+    Same(packet.endpoint_a, fa);
+    Same(packet.endpoint_b, fb);
+    EXPECT_TRUE(majorant_test::ExactBounds(packet.normal_majorant));
   }
 }
 } // namespace

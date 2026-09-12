@@ -5,7 +5,7 @@
 
 namespace tlfea::contact {
 enum class SurfacePenaltyStatus {
-  Ok, InvalidInput, OutOfRange, NonFiniteResult, ZeroDistance, GapMismatch,
+  Ok, InvalidInput, OutOfRange, NonFiniteResult, ZeroDistance,
   InconsistentMask, Unrepresentable
 };
 struct SurfacePenaltyEndpoint {
@@ -18,7 +18,6 @@ struct SurfacePenaltyInput {
   VectorView velocities;
   SurfacePenaltyEndpoint a;
   SurfacePenaltyEndpoint b;
-  double declared_gap_m = 0;
   double stiffness_n_m = 0; // Explicit positive local coefficient; no area policy.
 };
 struct SurfacePenaltyNode {

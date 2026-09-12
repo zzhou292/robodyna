@@ -6,9 +6,10 @@
 
 namespace tlfea::contact {
 // Pure fixed-feature algebra. No closest-feature search, area, effective mass,
-// timestep, history or owner admission. The declared gap must equal represented
-// RN (distance - h_A) - h_B; signed zero compares equal. No approximation error
-// inflates these radii. Zero distance is rejected rather than inventing a normal.
+// timestep, history or owner admission. Gap is derived once as represented RN
+// (distance - h_A) - h_B. No approximation error inflates these radii. Zero
+// distance is rejected rather than inventing a normal. Host/device hypot may
+// round non-axis distances differently; each packet uses its own computed gap.
 // Inputs/output must not overlap; all borrowed values share one execution space.
 // Failure preserves *output. Binary64 RN, no FMA/fast-math/reassociation/FTZ.
 TL_SURFACE_HD inline SurfacePenaltyStatus EvaluateSurfacePenaltyPair(
@@ -17,7 +18,7 @@ TL_SURFACE_HD inline SurfacePenaltyStatus EvaluateSurfacePenaltyPair(
   using namespace penalty_pair_detail;
   if (!output || !input.positions.valid() || !input.velocities.valid() ||
       input.positions.node_count != input.velocities.node_count ||
-      !IsFinite(input.declared_gap_m) || !IsFinite(input.stiffness_n_m) ||
+      !IsFinite(input.stiffness_n_m) ||
       input.stiffness_n_m <= 0)
     return S::InvalidInput;
   auto status = ValidateEndpoint(input.a, input.positions.node_count);
@@ -41,7 +42,6 @@ TL_SURFACE_HD inline SurfacePenaltyStatus EvaluateSurfacePenaltyPair(
   result.gap_m = (result.distance_m - input.a.reference_half_thickness_m) -
                  input.b.reference_half_thickness_m;
   if (!IsFinite(result.gap_m)) return S::NonFiniteResult;
-  if (result.gap_m != input.declared_gap_m) return S::GapMismatch;
   const Vec3 relative_velocity = Subtract(result.a.velocity, result.b.velocity);
   if (!IsFinite(relative_velocity)) return S::NonFiniteResult;
   result.normal_velocity_m_s = Dot(relative_velocity, result.normal);
