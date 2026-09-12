@@ -6,7 +6,8 @@ Children inherit CPU affinity and thread limits. Memory limits are sampled;
 the owned process group is terminated if a limit is exceeded. An explicit stop
 file permits a short controller grace for GPU growth alone; hard limits remain
 active. No other user's processes are touched. Use the same lock path for all
-builds/tests in a session.
+builds/tests in a session. Retained telemetry is bounded; every live sample
+still participates in limit checks and the whole-run sampled RSS peak.
 """
 
 import argparse
@@ -21,8 +22,10 @@ import sys
 import time
 
 if __package__:
+    from .bounded_history import SampleHistory
     from .bounded_stop import CooperativeStop, GPU_GROWTH_REASON
 else:
+    from bounded_history import SampleHistory
     from bounded_stop import CooperativeStop, GPU_GROWTH_REASON
 
 MIB = 1024 * 1024
@@ -123,6 +126,7 @@ def main():
                   timeout_seconds=args.timeout, gpu=args.gpu,
                   min_gpu_free_gib=args.min_gpu_free_gib,
                   max_gpu_growth_gib=args.max_gpu_growth_gib), samples=[], status='preflight')
+    history = SampleHistory()
     cooperative = None
     if args.cooperative_stop_file is not None:
         cooperative = CooperativeStop(args.cooperative_stop_file, grace_seconds)
@@ -176,7 +180,7 @@ def main():
                 sample = dict(elapsed_seconds=round(now - started, 3),
                               available_bytes=mem['MemAvailable'],
                               free_bytes=mem['MemFree'], **usage, gpu=previous_gpu)
-                report['samples'].append(sample)
+                history.append(sample)
                 reason = None
                 if mem['MemAvailable'] < args.min_available_gib * GIB:
                     reason = 'available RAM fell below reserve'
@@ -232,7 +236,9 @@ def main():
     finally:
         signal.signal(signal.SIGTERM, previous_term)
         report['elapsed_seconds'] = round(time.monotonic() - started, 3)
-        report['peak_sampled_rss_bytes'] = max((s['rss_bytes'] for s in report['samples']), default=0)
+        report['peak_sampled_rss_bytes'] = history.peak_rss_bytes
+        report['samples'] = history.samples()
+        report['sample_history'] = history.metadata()
         args.report.write_text(json.dumps(report, indent=2) + '\n')
     return report.get('exit_code', 125)
 
