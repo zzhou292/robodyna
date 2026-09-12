@@ -1,6 +1,24 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "TestSupport.h"
 namespace beam18_force_test {
+TEST(Beam18Force, AnalyticSolidMaterialCannotEnterTabulatedBeamCaller) {
+  const auto ref=Reference();const auto table=Material(ref);
+  b::Material analytic;
+  namespace solid=tl::material::law44::solid;
+  ASSERT_EQ(solid::PrepareAnalytic(table.material,{20e6,10e6,1},analytic),solid::Status::Ok);
+  ASSERT_TRUE(solid::detail::ParametersValid(analytic));
+  b::point::Result result;result.history.stress_pa[0]=123;
+  const auto saved=result;
+  EXPECT_EQ(b::point::Update(analytic,{}, {},result),solid::Status::InvalidParameters);
+  EXPECT_EQ(std::memcmp(&result,&saved,sizeof(result)),0);
+  auto prepared=table;
+  EXPECT_EQ(b::point::Prepare(analytic.material,{},prepared),solid::Status::InvalidParameters);
+  EXPECT_EQ(prepared.curve.plastic_strain,table.curve.plastic_strain);
+  b::ForceTrial trial;
+  EXPECT_EQ(b::InitializeForce(ref,analytic,{},trial),b::Status::InvalidInput);
+  EXPECT_FALSE(trial.proposed_history.prepared());
+  EXPECT_EQ(b::InitializeForce(ref,table,{},trial),b::Status::Success);
+}
 TEST(Beam18Force, BeamPointProjectionUsesThreeStressMetricAndForwardCurveCursor) {
   const auto material = Material(Reference());
   b::point::History accepted;

@@ -9,7 +9,15 @@ using Parameters = solid::Parameters;
 using Material = solid::Material;
 using Curve = solid::Curve;
 using Status = solid::Status;
-using solid::Prepare;
+namespace detail {
+TL_LAW44_SOLID_HD inline bool ParametersValid(const Parameters& p) noexcept {
+  return p.material.hardening == solid::HardeningKind::Tabulated && solid::detail::ParametersValid(p);
+}
+} // namespace detail
+TL_LAW44_SOLID_HD inline Status Prepare(Material material, Curve curve, Parameters& output) noexcept {
+  if (material.hardening != solid::HardeningKind::Tabulated) return Status::InvalidParameters;
+  return solid::Prepare(material, curve, output);
+}
 struct History {
   double stress_pa[3]{};  // XX, XY, XZ in the current beam section frame.
   double plastic_strain = 0;

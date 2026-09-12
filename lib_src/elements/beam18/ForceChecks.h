@@ -4,7 +4,7 @@
 
 namespace tl::fea::beam18::force_detail {
 TL_BEAM18_HD inline bool MaterialValid(const Reference& reference, const Material& material) noexcept {
-  if (!reference.prepared() || !tl::material::law44::solid::detail::ParametersValid(material)) return false;
+  if (!reference.prepared() || !point::detail::ParametersValid(material)) return false;
   const bool working = reference.input().units == WorkingUnits::TonneMillimetreSecond;
   const auto& m = material.material;
   return m.young_pa == reference.input().young * (working ? 1e6 : 1.) &&
@@ -27,7 +27,7 @@ TL_BEAM18_HD inline bool SameReference(const Reference& a, const Reference& b) n
 }
 TL_BEAM18_HD inline bool SameMaterial(const Material& a, const Material& b) noexcept {
   const auto& x = a.material; const auto& y = b.material;
-  return x.young_pa == y.young_pa && x.poisson_ratio == y.poisson_ratio &&
+  return x.hardening == y.hardening && x.young_pa == y.young_pa && x.poisson_ratio == y.poisson_ratio &&
       x.density_kg_m3 == y.density_kg_m3 && x.rate_c_per_s == y.rate_c_per_s &&
       x.rate_p == y.rate_p && x.cutoff_hz == y.cutoff_hz && x.native_units == y.native_units &&
       a.curve.count == b.curve.count && a.curve.plastic_strain == b.curve.plastic_strain &&

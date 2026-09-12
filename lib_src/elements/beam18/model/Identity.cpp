@@ -4,13 +4,17 @@
 namespace tl::fea::beam18::model_detail {
 namespace { bool Same(double a,double b) noexcept {return std::memcmp(&a,&b,sizeof(a))==0;} }
 bool SameMaterial(const Material& a,const Material& b) noexcept {
-  if(a.material.native_units!=b.material.native_units||a.curve.count!=b.curve.count) return false;
+  if(a.material.native_units!=b.material.native_units||a.material.hardening!=b.material.hardening||
+      a.curve.count!=b.curve.count) return false;
 #define TL_SAME(field) if(!Same(a.field,b.field)) return false
   TL_SAME(material.young_pa); TL_SAME(material.poisson_ratio); TL_SAME(material.density_kg_m3);
   TL_SAME(material.rate_c_per_s); TL_SAME(material.rate_p); TL_SAME(material.cutoff_hz);
   TL_SAME(shear_pa); TL_SAME(twice_shear_pa); TL_SAME(three_shear_pa); TL_SAME(bulk_pa);
   TL_SAME(sound_speed_m_s); TL_SAME(inverse_rate_c); TL_SAME(inverse_rate_p);
   TL_SAME(angular_cutoff_per_s); TL_SAME(stress_limit_pa); TL_SAME(stress_floor_pa);
+  TL_SAME(plastic_cap_strain); TL_SAME(failure_plastic_strain);
+  TL_SAME(material.analytic.a_pa); TL_SAME(material.analytic.b_pa); TL_SAME(material.analytic.exponent);
+  TL_SAME(material.analytic.maximum_stress_pa); TL_SAME(material.analytic.maximum_plastic_strain);
 #undef TL_SAME
   const auto count=a.curve.count;
   return count&&std::memcmp(a.curve.plastic_strain,b.curve.plastic_strain,count*sizeof(double))==0&&

@@ -18,7 +18,7 @@ TL_LAW44_SOLID_HD inline bool ValidHistory(const Parameters& p, const History& h
 // is no 3D pressure, EOS, solid return mapping or independent point clock.
 TL_LAW44_SOLID_HD inline Status Update(const Parameters& p, const History& accepted,
     const Input& input, Result& output) noexcept {
-  if (!solid::detail::ParametersValid(p)) return Status::InvalidParameters;
+  if (!detail::ParametersValid(p)) return Status::InvalidParameters;
   if (!detail::ValidHistory(p, accepted)) return Status::InvalidHistory;
   if (!tl::math::Finite(input.total_axial_strain) ||
       input.total_axial_strain > solid::detail::NativeInfinity() ||
