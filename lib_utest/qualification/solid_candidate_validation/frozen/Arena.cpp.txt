@@ -18,7 +18,6 @@ template<class Traits> bool Append(std::size_t count, util::BoundedArenaLayout& 
       device.Append<State<Traits>>(count, output.slab[0]) &&
       device.Append<State<Traits>>(count, output.slab[1]) &&
       device.Append<int>(count, output.status) &&
-      device.Append<std::uint8_t>(count, output.result_valid) &&
       host.Append<State<Traits>>(count, output.staging);
 }
 template<class Traits> DeviceFamily<Traits> Rebase(void* base,
@@ -27,8 +26,7 @@ template<class Traits> DeviceFamily<Traits> Rebase(void* base,
   return {util::ArenaPointer<typename Traits::Parent>(base, layout.parents),
       {util::ArenaPointer<State<Traits>>(base, layout.slab[0]),
        util::ArenaPointer<State<Traits>>(base, layout.slab[1])},
-      util::ArenaPointer<int>(base, layout.status), layout.parents.count,
-      util::ArenaPointer<std::uint8_t>(base, layout.result_valid)};
+      util::ArenaPointer<int>(base, layout.status), layout.parents.count};
 }
 } // namespace
 bool MakeLayout(Counts count, const BatchConfig& config, ArenaLayout& output) noexcept {

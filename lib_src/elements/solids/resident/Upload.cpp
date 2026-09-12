@@ -9,7 +9,8 @@ template<class Traits> bool CopyFamily(util::ConstView<typename Traits::Parent> 
   auto* parents = arena.Construct<typename Traits::Parent>(layout.parents);
   if (!parents || !arena.Construct<State<Traits>>(layout.slab[0]) ||
       !arena.Construct<State<Traits>>(layout.slab[1]) ||
-      !arena.Construct<int>(layout.status)) return false;
+      !arena.Construct<int>(layout.status) ||
+      !arena.Construct<std::uint8_t>(layout.result_valid)) return false;
   for (std::size_t p = 0; p < source.size(); ++p) parents[p] = source[p];
   return true;
 }

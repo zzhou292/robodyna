@@ -7,6 +7,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/../../ShellPhysicalOwner.cmake")
 add_library(tl_solid_batch STATIC
   "${CMAKE_CURRENT_LIST_DIR}/Batch.cu"
   "${CMAKE_CURRENT_LIST_DIR}/Candidate.cu"
+  "${CMAKE_CURRENT_LIST_DIR}/ResultValidation.cu"
   "${CMAKE_CURRENT_LIST_DIR}/Assembly.cu"
   "${CMAKE_CURRENT_LIST_DIR}/AssembleOperation.cu"
   "${CMAKE_CURRENT_LIST_DIR}/EvaluateOperation.cu"

@@ -24,13 +24,13 @@
     },
     {
       "path": "lib_src/elements/solids/resident/Arena.cpp",
-      "bytes": 5960,
-      "sha256": "f4065bbdaa43eef97bdf50c7d4897e2d07d0fab45c755962b7e9c966a5e32a2f"
+      "bytes": 6092,
+      "sha256": "8c74e75684ca3c8cddcbd48ddfd98d5ce7e10980484caca5491219832237a75b"
     },
     {
       "path": "lib_src/elements/solids/resident/Arena.h",
-      "bytes": 2479,
-      "sha256": "a8a03867a412a1b1f24e8a146d01d392f29e5d950833d7451503ae0174863bcd"
+      "bytes": 2533,
+      "sha256": "6c82c9f0455910a5778a63ed62e5db944e4cded406405cb12912d981b21c92ef"
     },
     {
       "path": "lib_src/elements/solids/resident/MaterialUpload.cpp",
@@ -201,6 +201,37 @@
       "path": "lib_utest/qualification/solid_law44_point/native/NativeSetup.F",
       "bytes": 2826,
       "sha256": "4c1fb347503266b91feeaac7b36103356732b93b56b46a5e8d3bd4cf7eed6d03"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/ResultValidation.h",
+      "bytes": 1287,
+      "sha256": "bbbf19bc1a9d9656b8667bc949a79ef44d0b914206baa0ba308ebef78ee1a788"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/ResultValidation.cu",
+      "bytes": 1677,
+      "sha256": "c046497643f30a09f36d12a4444653ce5e0f6e6e563c2f1733b275d5bccb5ab8"
     }
-  ]
+  ],
+  "solid_candidate_validation_registration": {
+    "baseline_commit": "dfa0a931685615243b17bbb1c21f3f3109ad6138",
+    "scope": "Fresh per-parent complete ValidResult bytes before the literal ordered five-family measurement. Actual arena/header forecast; no material, update, assembly, readback or admission change. Root CUDA remains pending at author freeze.",
+    "owning_qualifier": "lib_utest/qualification/solid_candidate_validation",
+    "prior_records": [
+      {
+        "path": "lib_src/elements/solids/resident/Arena.cpp",
+        "bytes": 5960,
+        "sha256": "f4065bbdaa43eef97bdf50c7d4897e2d07d0fab45c755962b7e9c966a5e32a2f"
+      },
+      {
+        "path": "lib_src/elements/solids/resident/Arena.h",
+        "bytes": 2479,
+        "sha256": "a8a03867a412a1b1f24e8a146d01d392f29e5d950833d7451503ae0174863bcd"
+      }
+    ],
+    "new_paths": [
+      "lib_src/elements/solids/resident/ResultValidation.h",
+      "lib_src/elements/solids/resident/ResultValidation.cu"
+    ]
+  }
 }

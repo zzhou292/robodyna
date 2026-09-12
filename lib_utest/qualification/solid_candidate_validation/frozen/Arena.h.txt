@@ -10,7 +10,6 @@ template<class Traits> struct DeviceFamily {
   State<Traits>* slab[2]{};
   int* status = nullptr;
   std::size_t count = 0;
-  std::uint8_t* result_valid = nullptr;
 };
 struct Control {
   BatchStatus status = BatchStatus::Success;
@@ -37,7 +36,7 @@ struct Storage {
   Control control;
 };
 struct FamilyLayout {
-  util::ArenaRegion parents, slab[2], status, staging, result_valid;
+  util::ArenaRegion parents, slab[2], status, staging;
 };
 struct ArenaLayout {
   util::ArenaRegion header, material36, material42, curves, scratch18;

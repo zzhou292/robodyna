@@ -22,7 +22,7 @@ cc_library(
 
 cuda_library(
     name = "batch",
-    srcs = ["Batch.cu", "Candidate.cu", "Assembly.cu", "AssembleOperation.cu",
+    srcs = ["Batch.cu", "Candidate.cu", "ResultValidation.cu", "Assembly.cu", "AssembleOperation.cu",
             "EvaluateOperation.cu", "Readback.cu", "Publication.cpp", "PublicationScope.cpp", "OutputRanges.cpp"],
     deps = [":values", "//lib_src/elements:shell_physical_owner",
             "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_force_assembly",
