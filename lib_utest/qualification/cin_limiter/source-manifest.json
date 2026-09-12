@@ -5,8 +5,8 @@
   "files": [
     {
       "path": "lib_src/solvers/BUILD.bazel",
-      "bytes": 8408,
-      "sha256": "512cdc99ea9cfb41144004313911c27c78aaa2f373ff905679edc5168cc6c7b7",
+      "bytes": 8465,
+      "sha256": "99118e36f8b9abd597233bfbfaa2a6a7888133213ba5f6bdfab4c068e340ceca",
       "prior": {
         "commit": "b0d0994eacd8050817503b7cb5c4e0da48f2717e",
         "bytes": 8057,
@@ -42,6 +42,11 @@
           "prior_bytes": 8383,
           "prior_sha256": "2b2c8628d6eaa36e309e1caea57ff6226a8bb572237fe6d9bd067c827fa69310",
           "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        },
+        {
+          "prior_bytes": 8408,
+          "prior_sha256": "512cdc99ea9cfb41144004313911c27c78aaa2f373ff905679edc5168cc6c7b7",
+          "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
         }
       ]
     },
@@ -208,8 +213,8 @@
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/source-manifest.json",
-      "bytes": 18017,
-      "sha256": "925e9ff8e49fa10203bc4b7b61b9bfc9a2969d298026f21f6d48a0148563c53b",
+      "bytes": 18410,
+      "sha256": "76209aca00f20b34e4e58e0ad57a232e12d44d1a421ada215965f82648e2dce5",
       "prior": {
         "commit": "b0d0994eacd8050817503b7cb5c4e0da48f2717e",
         "bytes": 5471,
@@ -235,13 +240,18 @@
           "prior_bytes": 17607,
           "prior_sha256": "a59f6d18b35e33df8b902fa3a46b3f2413171c9458a2161aaed9bc44668a3e6a",
           "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        },
+        {
+          "prior_bytes": 18017,
+          "prior_sha256": "925e9ff8e49fa10203bc4b7b61b9bfc9a2969d298026f21f6d48a0148563c53b",
+          "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/verify_sources.py",
       "bytes": 6359,
-      "sha256": "b54e82ebbeaa38e24f8b91623b2f696da5a22a82bb3b5060461544b35bb85d24",
+      "sha256": "0574ab1e6db59521323a024a49e4200536e7b369265785c4e0036fdb3296e28f",
       "prior": {
         "commit": "b0d0994eacd8050817503b7cb5c4e0da48f2717e",
         "bytes": 6213,
@@ -267,6 +277,11 @@
           "prior_bytes": 6359,
           "prior_sha256": "499cdd5c6a4cf39c37dc3fd302e62312e39cc7991037a4832320c850fa362a54",
           "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        },
+        {
+          "prior_bytes": 6359,
+          "prior_sha256": "b54e82ebbeaa38e24f8b91623b2f696da5a22a82bb3b5060461544b35bb85d24",
+          "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
         }
       ]
     },
@@ -312,8 +327,8 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_capture/source-manifest.json",
-      "bytes": 80389,
-      "sha256": "b57a74303427ae74a53574440b5bdd83cbd63dd3d81914254c6ff1792bab5c9e",
+      "bytes": 83536,
+      "sha256": "44b9ded0376227783e0b00b445e06de57259988500698bd3990caedd3ddd6b0d",
       "prior": {
         "commit": "b0d0994eacd8050817503b7cb5c4e0da48f2717e",
         "bytes": 17533,
@@ -349,13 +364,18 @@
           "prior_bytes": 75571,
           "prior_sha256": "289bd00510a688697651b30683fe09504256d2469eaa26621abdd27e0d010ece",
           "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        },
+        {
+          "prior_bytes": 80389,
+          "prior_sha256": "b57a74303427ae74a53574440b5bdd83cbd63dd3d81914254c6ff1792bab5c9e",
+          "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_capture/verify_sources.py",
       "bytes": 3992,
-      "sha256": "346b8dcb1d5fc542b07122daa28bda5392abf56045c8748ea97ed222b396a7f4",
+      "sha256": "5c2398cc8c5bac70d4f8dbb1ba9691cace042df9c0c2d1c51b880b51c3c58a29",
       "prior": {
         "commit": "b0d0994eacd8050817503b7cb5c4e0da48f2717e",
         "bytes": 3992,
@@ -391,6 +411,11 @@
           "prior_bytes": 3992,
           "prior_sha256": "5efa6800d993c91ef359d99a90555492cda7241ea88851baf94dfc2e71d2c76b",
           "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        },
+        {
+          "prior_bytes": 3992,
+          "prior_sha256": "346b8dcb1d5fc542b07122daa28bda5392abf56045c8748ea97ed222b396a7f4",
+          "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
         }
       ]
     },
@@ -413,8 +438,8 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/source-manifest.json",
-      "bytes": 96685,
-      "sha256": "160ca3eabc7cceab75b931ec7ccfc8a8cc04eda1ef44502c2910b080f69a9d05",
+      "bytes": 100619,
+      "sha256": "ddeaf7db4e7bf9879f2cdb5ccd407e08820fa350a5476e009c2f79edf5e740a8",
       "prior": {
         "commit": "b0d0994eacd8050817503b7cb5c4e0da48f2717e",
         "bytes": 23168,
@@ -450,13 +475,18 @@
           "prior_bytes": 88954,
           "prior_sha256": "0c15877ed5941f76fa0b47e86f742ea5b13f5165be1be770405baee3ad49a8f4",
           "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        },
+        {
+          "prior_bytes": 96685,
+          "prior_sha256": "160ca3eabc7cceab75b931ec7ccfc8a8cc04eda1ef44502c2910b080f69a9d05",
+          "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/verify_sources.py",
       "bytes": 3905,
-      "sha256": "3ffeae37e692088ad6d4f2024726575f4da5dc0bb228ac4f210690297fb52b15",
+      "sha256": "f21ecd900dff44d14e24a6b0fc81f1aca3fb545a0710737f8ef4d36148cdc32a",
       "prior": {
         "commit": "b0d0994eacd8050817503b7cb5c4e0da48f2717e",
         "bytes": 3905,
@@ -492,13 +522,18 @@
           "prior_bytes": 3905,
           "prior_sha256": "ec9dffadf95e6ddfca4b5c06c2379ebcf810796b02f960d1af5f652939918b3b",
           "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        },
+        {
+          "prior_bytes": 3905,
+          "prior_sha256": "3ffeae37e692088ad6d4f2024726575f4da5dc0bb228ac4f210690297fb52b15",
+          "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/source-manifest.json",
-      "bytes": 20099,
-      "sha256": "1dfc6a90725b7e0eb809b60f68a76bcea44aa6e63a1a7b0c2235a7b5abd7b6d0",
+      "bytes": 20492,
+      "sha256": "bef2dfd5b2284054b26d706e3156a6713cd78c67fda176f56a9c72844d3a8ef8",
       "prior": {
         "commit": "b0d0994eacd8050817503b7cb5c4e0da48f2717e",
         "bytes": 6078,
@@ -524,13 +559,18 @@
           "prior_bytes": 19689,
           "prior_sha256": "b9d4523f4c6d4f1188cd014016ece672606546f4256dd74a808d6e94704fb3b4",
           "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        },
+        {
+          "prior_bytes": 20099,
+          "prior_sha256": "1dfc6a90725b7e0eb809b60f68a76bcea44aa6e63a1a7b0c2235a7b5abd7b6d0",
+          "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/verify_sources.py",
       "bytes": 4833,
-      "sha256": "557bb4afe0e0a7121500d092d5b62de25f94b1be7fdd3d3eab50fa94208d5714",
+      "sha256": "fb785655a16a0213b358aa537b9c65b51e18fce82ef3d442092b69cac4aa5d1c",
       "prior": {
         "commit": "b0d0994eacd8050817503b7cb5c4e0da48f2717e",
         "bytes": 4833,
@@ -556,13 +596,18 @@
           "prior_bytes": 4833,
           "prior_sha256": "dee03e1503b3c1e6d4f26376e42a3943175cee19291241e56c9c4225cea198a6",
           "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        },
+        {
+          "prior_bytes": 4833,
+          "prior_sha256": "557bb4afe0e0a7121500d092d5b62de25f94b1be7fdd3d3eab50fa94208d5714",
+          "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/source-manifest.json",
-      "bytes": 78209,
-      "sha256": "6a70a416fd65139421370e7343b5e7ea10612b47003a2ff7f925e482169a3001",
+      "bytes": 80569,
+      "sha256": "d4807a952aa374fb3ce4bf82cd4136c1dfeeccf568ba96c100f7e3368ac85685",
       "prior": {
         "commit": "b0d0994eacd8050817503b7cb5c4e0da48f2717e",
         "bytes": 19445,
@@ -598,13 +643,18 @@
           "prior_bytes": 75332,
           "prior_sha256": "66ce3bb3067571123ee5e8e70807e990345cb4ef3c0fca472a41b16533b44010",
           "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        },
+        {
+          "prior_bytes": 78209,
+          "prior_sha256": "6a70a416fd65139421370e7343b5e7ea10612b47003a2ff7f925e482169a3001",
+          "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/verify_sources.py",
       "bytes": 6798,
-      "sha256": "2afae6ebbce1483adc4e2598176f56c1f4aa7d27a846a6715d9cf18f3a4a783b",
+      "sha256": "5b49f9b0dd9f4b4ca2571ed7fa4a3a0c7d4ce900ba4f1bd680797ba916827eb4",
       "prior": {
         "commit": "b0d0994eacd8050817503b7cb5c4e0da48f2717e",
         "bytes": 6798,
@@ -640,6 +690,11 @@
           "prior_bytes": 6798,
           "prior_sha256": "587a939b5121fdfbd0ecd95a6c038c591e542b1cac9de11efc26b6c6d9088448",
           "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        },
+        {
+          "prior_bytes": 6798,
+          "prior_sha256": "2afae6ebbce1483adc4e2598176f56c1f4aa7d27a846a6715d9cf18f3a4a783b",
+          "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
         }
       ]
     },
@@ -655,8 +710,8 @@
     },
     {
       "path": "lib_utest/qualification/nodal_seal_rows/source-manifest.json",
-      "bytes": 54115,
-      "sha256": "a8aa702b51128c7352c0f11b27b020b32be509999ff93bb2ebfaeae4b940223c",
+      "bytes": 57263,
+      "sha256": "90c0ce2f4307604fc23d675dff70890caf9fb0fdcf0435ca7f865345de2d6c05",
       "prior": {
         "commit": "b0d0994eacd8050817503b7cb5c4e0da48f2717e",
         "bytes": 7119,
@@ -692,13 +747,18 @@
           "prior_bytes": 42605,
           "prior_sha256": "52ea164aaf94b0ea013137f35aacccb64fe66c274f87b51e1268ce5054b714db",
           "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        },
+        {
+          "prior_bytes": 54115,
+          "prior_sha256": "a8aa702b51128c7352c0f11b27b020b32be509999ff93bb2ebfaeae4b940223c",
+          "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/nodal_seal_rows/verify_sources.py",
       "bytes": 4017,
-      "sha256": "56bffe3ee6b2074706c44c17a045f900c91ef4a34226a332f40b7ccedd08e81a",
+      "sha256": "2634ea813ebf0ba6f05f696139359e6926c3e5564a96967afc19b93fa7f25d3d",
       "prior": {
         "commit": "b0d0994eacd8050817503b7cb5c4e0da48f2717e",
         "bytes": 3815,
@@ -734,13 +794,18 @@
           "prior_bytes": 3815,
           "prior_sha256": "4353aa5810d3196d4def2a6b1a86049146ced6b8010cd3d8dcebb530eaf71eb3",
           "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        },
+        {
+          "prior_bytes": 4017,
+          "prior_sha256": "56bffe3ee6b2074706c44c17a045f900c91ef4a34226a332f40b7ccedd08e81a",
+          "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_force_transfers/source-manifest.json",
-      "bytes": 72313,
-      "sha256": "fd1f57fe198a237eb1a7dcbba7e26e455d2e359b863eec4f8ac0dc89bfee2f93",
+      "bytes": 77822,
+      "sha256": "6618bc1fc60572617e5ae3aa6f43fd6781bf5028bf06f8aed4aa7047bc7db5da",
       "role": "Checked composition of diagnostic and prepared-transfer proofs",
       "reviewed_updates": [
         {
@@ -767,13 +832,18 @@
           "prior_bytes": 60700,
           "prior_sha256": "15369c9349329724f1c5d4adc0c4edcd9c52ee067622ec1dccf6b71bdf3a7bc8",
           "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        },
+        {
+          "prior_bytes": 72313,
+          "prior_sha256": "fd1f57fe198a237eb1a7dcbba7e26e455d2e359b863eec4f8ac0dc89bfee2f93",
+          "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_force_transfers/verify_sources.py",
       "bytes": 3782,
-      "sha256": "ca1d4911214d72871bf5367eb1863acce278b00d18b4e118e512d1cac4034f6e",
+      "sha256": "6dcf934229ff66358935aa8d89e6704c8961dd8d7527a3b24197d746d83c2d7f",
       "role": "Checked composition of diagnostic and prepared-transfer proofs",
       "reviewed_updates": [
         {
@@ -800,6 +870,11 @@
           "prior_bytes": 3782,
           "prior_sha256": "882423531ae1d5dde3dc7bdcbd57a4b7fc64f953a17131049b4ce812f5a917f2",
           "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        },
+        {
+          "prior_bytes": 3782,
+          "prior_sha256": "ca1d4911214d72871bf5367eb1863acce278b00d18b4e118e512d1cac4034f6e",
+          "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
         }
       ]
     },
@@ -855,13 +930,18 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_drift/drift_proof.py",
-      "bytes": 3362,
-      "sha256": "bb3a2e8a61b09e6671b2e74d317b630476f49e887ba2fe1b7b2d979b85cb5426",
+      "bytes": 3515,
+      "sha256": "e3767742842156cd2acf6454e29de97a27fc9c8517258aa59689771076d27eca",
       "reviewed_updates": [
         {
           "prior_bytes": 2960,
           "prior_sha256": "bd6c514bc8a55c4345bd374ffde4a54cf377bfd02942e541bde2d7d0f301130a",
           "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        },
+        {
+          "prior_bytes": 3362,
+          "prior_sha256": "bb3a2e8a61b09e6671b2e74d317b630476f49e887ba2fe1b7b2d979b85cb5426",
+          "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
         }
       ]
     },

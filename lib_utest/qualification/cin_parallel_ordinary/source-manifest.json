@@ -349,13 +349,18 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_drift/drift_proof.py",
-      "bytes": 3362,
-      "sha256": "bb3a2e8a61b09e6671b2e74d317b630476f49e887ba2fe1b7b2d979b85cb5426",
+      "bytes": 3515,
+      "sha256": "e3767742842156cd2acf6454e29de97a27fc9c8517258aa59689771076d27eca",
       "reviewed_updates": [
         {
           "prior_bytes": 2960,
           "prior_sha256": "bd6c514bc8a55c4345bd374ffde4a54cf377bfd02942e541bde2d7d0f301130a",
           "reason": "Reviewed composition of reset68d3717 with drift/solid main1d3a441: unchanged production slices, exact reset then drift BUILD reversal, all earlier source proofs and both incoming digest histories retained."
+        },
+        {
+          "prior_bytes": 3362,
+          "prior_sha256": "bb3a2e8a61b09e6671b2e74d317b630476f49e887ba2fe1b7b2d979b85cb5426",
+          "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
         }
       ]
     },

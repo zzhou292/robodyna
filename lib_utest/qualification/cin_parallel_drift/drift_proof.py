@@ -8,7 +8,10 @@ ROOT = HERE.parents[2]
 
 
 def legacy_build(current):
-    """Reverse only the additive Drift.cu owner source from shared base 1d62620."""
+    """Reverse the additive drift source and its shared owner header exports."""
+    headers = ', "cin_advance/DriftTypes.h", "cin_advance/DriftValues.h"'
+    assert current.count(headers) == 1
+    current = current.replace(headers, '')
     addition = ', "cin_advance/Drift.cu"'
     assert current.count(addition) == 1
     restored = current.replace(addition, '')
