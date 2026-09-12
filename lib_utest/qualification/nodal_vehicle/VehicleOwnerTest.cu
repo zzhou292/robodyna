@@ -14,7 +14,9 @@ TEST_F(VehicleOwnerCuda, FullCapacitySparseLoadsLastNodeRollbackReadbackAndExact
   Initial tiny(1);FENodalState tiny_owner;
   auto tc=tiny.config();tc.max_nodes=MaxNodalStateNodes;tc.max_device_bytes=MaxTranslationDeviceBytes;
   ASSERT_EQ(tiny.Initialize(tiny_owner,tc).status,NodalStatus::Ok);
-  EXPECT_EQ(allocation.device_bytes-tiny_owner.allocations().device_bytes,411*(in.n-1));
+  // Full capacity reserves 256 row summaries (8192 B); one node reserves one
+  // summary (32 B). The per-node state/scratch allocation remains 411 B.
+  EXPECT_EQ(allocation.device_bytes-tiny_owner.allocations().device_bytes,411*(in.n-1)+8192-32);
   const auto initial_stamp=owner.accepted();
   std::vector<std::size_t> indices(in.n);std::iota(indices.begin(),indices.end(),0);
   EXPECT_EQ(owner.ValidateNonRigidNodes(indices.data(),indices.size()).status,NodalStatus::Ok);
