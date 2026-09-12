@@ -1,0 +1,6 @@
+include_guard(GLOBAL)
+include("${CMAKE_CURRENT_LIST_DIR}/../elements/beam18/Model.cmake")
+add_library(tl_beam18_node_contributions STATIC "${CMAKE_CURRENT_LIST_DIR}/Beam18NodeContributions.cpp")
+target_link_libraries(tl_beam18_node_contributions PUBLIC tl_beam18_model)
+target_compile_features(tl_beam18_node_contributions PUBLIC cxx_std_17)
+target_compile_options(tl_beam18_node_contributions PRIVATE -fno-fast-math -ffp-contract=off)

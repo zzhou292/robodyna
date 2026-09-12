@@ -14,10 +14,10 @@ cc_library(
     name = "nodal_coefficient_ledger",
     srcs = ["NodalCoefficientLedger.cpp", "NodalCoefficientBudget.cpp",
             "NodalCoefficientChecks.cpp", "NodalCoefficientShells.cpp",
-            "NodalCoefficientSprings.cpp", "NodalCoefficientPointMasses.cpp", "NodalCoefficientSolids.cpp"],
+            "NodalCoefficientSprings.cpp", "NodalCoefficientPointMasses.cpp", "NodalCoefficientSolids.cpp", "NodalCoefficientBeams.cpp"],
     hdrs = ["NodalCoefficientLedger.h", "NodalCoefficientTypes.h", "NodalCoefficientInternal.h"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
-    deps = [":shell_node_map", ":type13_node_contributions", ":element_mass_contributions", ":solid_node_contributions", ":nodal_node_domain",
+    deps = [":beam18_node_contributions", ":shell_node_map", ":type13_node_contributions", ":element_mass_contributions", ":solid_node_contributions", ":nodal_node_domain",
             "//lib_src/elements/type25:type25_model", "//lib_src/elements:shell_batch_binding",
             "//lib_utils:bounded_arena", "//lib_utils:source_identity_index"],
 )
@@ -101,4 +101,12 @@ cc_library(
     deps = [":nodal_coefficient_ledger", "//lib_src/constraints:nodal_rigid_assembly_binding",
             "//lib_src/elements:shell_batch_plasticity_binding",
             "//lib_utils:bounded_arena", "//lib_utils:source_identity_index"],
+)
+
+cc_library(
+    name = "beam18_node_contributions",
+    srcs = ["Beam18NodeContributions.cpp"],
+    hdrs = ["Beam18NodeContributions.h"],
+    visibility = ["//visibility:public"],
+    deps = ["//lib_src/elements/beam18:model", ":nodal_node_domain", "//lib_utils:bounded_arena"],
 )

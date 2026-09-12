@@ -6,16 +6,18 @@
 namespace tl::fea {
 struct NodalCoefficientLedger::Impl {
   Impl(NodalCoefficientSources input,const ElementMassContributions* mass,
-      const SolidNodeContributions* solid):shells(*input.shells),
+      const SolidNodeContributions* solid,const Beam18NodeContributions* beam):shells(*input.shells),
       springs(input.type25?*input.type25:tl::fea::type25::Model{}),
       beams(input.type13?*input.type13:Type13NodeContributions{}),
       masses(mass?*mass:ElementMassContributions{}),
-      solids(solid?*solid:SolidNodeContributions{}) {}
+      solids(solid?*solid:SolidNodeContributions{}),
+      beam18(beam?*beam:Beam18NodeContributions{}) {}
   ShellNodeMap shells;
   tl::fea::type25::Model springs;
   Type13NodeContributions beams;
   ElementMassContributions masses;
   SolidNodeContributions solids;
+  Beam18NodeContributions beam18;
   util::HostArena arena;
   NodalCoefficientNode* nodes=nullptr;
   NodalCoefficientTotals totals{};
@@ -41,19 +43,25 @@ CoefficientReport NodalCoefficientLedger::InitializeWithExtendedSolids(
   return InitializeImpl(input,
       CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_ElementMass_Solid18_24_6z_Law44_Law90_V4,limits);
 }
+CoefficientReport NodalCoefficientLedger::InitializeWithBeams(
+    NodalCoefficientSourcesWithBeams input,CoefficientLimits limits) noexcept {
+  return InitializeImpl(input.physical,
+      CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_ElementMass_Solid18_24_6z_Law44_Law90_Beam18_V5,
+      limits,input.beam18);
+}
 CoefficientReport NodalCoefficientLedger::InitializeImpl(NodalCoefficientSourcesWithSolids sources,
-    CoefficientOrder order,CoefficientLimits limits) noexcept try {
+    CoefficientOrder order,CoefficientLimits limits,const Beam18NodeContributions* beam) noexcept try {
   using namespace coefficient_detail;
   if(impl_) return {S::AlreadyInitialized,"Coefficient ledger is immutable"};
   const auto input=sources.structural;
   const auto* masses=sources.element_mass;
   const auto* solids=sources.solids;
   Budget budget(limits.max_host_bytes);
-  auto r=Preflight(input,masses,solids,order,limits,sizeof(Impl),budget);
+  auto r=Preflight(input,masses,solids,beam,order,limits,sizeof(Impl),budget);
   if(!r) return r;
-  r=Identities(input,masses,solids);
+  r=Identities(input,masses,solids,beam);
   if(!r) return r;
-  auto next=std::make_shared<Impl>(input,masses,solids);
+  auto next=std::make_shared<Impl>(input,masses,solids,beam);
   if(!next->arena.Initialize(budget.arena.bytes())||
       !(next->nodes=next->arena.Construct<NodalCoefficientNode>(budget.nodes)))
     return {S::ResourceLimit,"Coefficient node arena allocation failed"};
@@ -70,6 +78,7 @@ CoefficientReport NodalCoefficientLedger::InitializeImpl(NodalCoefficientSources
   scope.solid6z_parents=solids?solids->parent_count(SolidCoefficientFamily::Solid6z):0;
   scope.solid18_law44_parents=solids?solids->parent_count(SolidCoefficientFamily::Solid18Law44):0;
   scope.solid18_law90_parents=solids?solids->parent_count(SolidCoefficientFamily::Solid18Law90):0;
+  scope.beam18_parents=beam?beam->model()->parents().size():0;
   r=Shells(next->shells,next->nodes);
   if(!r) return r;
   r=Springs(input,next->nodes);
@@ -77,6 +86,8 @@ CoefficientReport NodalCoefficientLedger::InitializeImpl(NodalCoefficientSources
   r=ElementMasses(masses,next->nodes);
   if(!r) return r;
   r=Solids(solids,next->nodes);
+  if(!r) return r;
+  r=Beams(beam,next->nodes);
   if(!r) return r;
   r=Totals(next->nodes,next->shells.owner_node_count(),next->totals,scope);
   if(!r) return r;
@@ -102,6 +113,9 @@ const ElementMassContributions* NodalCoefficientLedger::element_mass() const noe
 }
 const SolidNodeContributions* NodalCoefficientLedger::solids() const noexcept {
   return impl_&&impl_->solids.prepared()?&impl_->solids:nullptr;
+}
+const Beam18NodeContributions* NodalCoefficientLedger::beam18() const noexcept {
+  return impl_&&impl_->beam18.prepared()?&impl_->beam18:nullptr;
 }
 CoefficientOrder NodalCoefficientLedger::order() const noexcept {
   return impl_?impl_->order:CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_V1;
@@ -146,6 +160,8 @@ bool NodalCoefficientLedger::Matches(const NodalCoefficientLedger& other) const 
       return MatchesWithSolids({sources,other.element_mass(),other.solids()});
     case CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_ElementMass_Solid18_24_6z_Law44_Law90_V4:
       return MatchesWithExtendedSolids({sources,other.element_mass(),other.solids()});
+    case CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_ElementMass_Solid18_24_6z_Law44_Law90_Beam18_V5:
+      return MatchesWithBeams({{sources,other.element_mass(),other.solids()},other.beam18()});
   }
   return false;
 }
@@ -155,6 +171,11 @@ bool NodalCoefficientLedger::MatchesWithSolids(NodalCoefficientSourcesWithSolids
 bool NodalCoefficientLedger::MatchesWithExtendedSolids(NodalCoefficientSourcesWithSolids sources) const noexcept {
   return MatchesSolids(sources,
       CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_ElementMass_Solid18_24_6z_Law44_Law90_V4);
+}
+bool NodalCoefficientLedger::MatchesWithBeams(NodalCoefficientSourcesWithBeams input) const noexcept {
+  return input.beam18&&beam18()&&impl_->beam18.Matches(*input.beam18)&&
+      MatchesSolids(input.physical,
+          CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_ElementMass_Solid18_24_6z_Law44_Law90_Beam18_V5);
 }
 bool NodalCoefficientLedger::MatchesSolids(NodalCoefficientSourcesWithSolids sources,CoefficientOrder expected) const noexcept {
   const auto input=sources.structural;

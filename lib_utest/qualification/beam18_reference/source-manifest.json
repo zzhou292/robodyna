@@ -3,8 +3,8 @@
   "original_fixture_sha256": "5d85548343e4190db4f6ebc5f0975f6e05921140c7403a87ba389c6445dd1644",
   "files": {
     "lib_src/elements/beam18/BUILD.bazel": {
-      "bytes": 699,
-      "sha256": "c2b85253807a853c491766e6c42870efb46c71de9f53b9d04c6c5962b07ff302"
+      "bytes": 1050,
+      "sha256": "38518caebddb50eb81d120afc4d7451545813d9ec00cb29d1df9c25dddc43090"
     },
     "lib_src/elements/beam18/Geometry.h": {
       "bytes": 2545,
@@ -158,5 +158,15 @@
       "bytes": 725,
       "sha256": "6dc1d8ec34734d9e56a31cdd2c23921a2affdde3eba3f98dd03e6705452a803a"
     }
+  },
+  "beam18_model_ledger_followup": {
+    "scope": "Additive immutable beam Model, endpoint snapshot, V5 ledger and build ownership. Existing reference/force/material formulas unchanged; V1-V4 source restrictions retained.",
+    "prior_records": [
+      {
+        "path": "lib_src/elements/beam18/BUILD.bazel",
+        "bytes": 699,
+        "sha256": "c2b85253807a853c491766e6c42870efb46c71de9f53b9d04c6c5962b07ff302"
+      }
+    ]
   }
 }

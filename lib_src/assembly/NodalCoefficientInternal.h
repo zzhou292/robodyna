@@ -14,13 +14,14 @@ struct Budget {
   std::size_t retained=0,startup=0;
   explicit Budget(std::size_t cap):arena(cap) {}
 };
-CoefficientReport Preflight(NodalCoefficientSources,const ElementMassContributions*,const SolidNodeContributions*,CoefficientOrder,CoefficientLimits,
+CoefficientReport Preflight(NodalCoefficientSources,const ElementMassContributions*,const SolidNodeContributions*,const Beam18NodeContributions*,CoefficientOrder,CoefficientLimits,
                             std::size_t implementation_bytes,Budget&) noexcept;
-CoefficientReport Identities(NodalCoefficientSources,const ElementMassContributions*,const SolidNodeContributions*);
+CoefficientReport Identities(NodalCoefficientSources,const ElementMassContributions*,const SolidNodeContributions*,const Beam18NodeContributions*);
 CoefficientReport Shells(const ShellNodeMap&,NodalCoefficientNode*) noexcept;
 CoefficientReport Springs(NodalCoefficientSources,NodalCoefficientNode*) noexcept;
 CoefficientReport ElementMasses(const ElementMassContributions*,NodalCoefficientNode*) noexcept;
 CoefficientReport Solids(const SolidNodeContributions*,NodalCoefficientNode*) noexcept;
+CoefficientReport Beams(const Beam18NodeContributions*,NodalCoefficientNode*) noexcept;
 CoefficientReport Totals(NodalCoefficientNode*,std::size_t,
                          NodalCoefficientTotals&,NodalCoefficientScope&) noexcept;
 inline bool Positive(double value) noexcept {return std::isfinite(value)&&value>0;}

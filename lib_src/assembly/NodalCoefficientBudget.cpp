@@ -4,17 +4,20 @@
 
 namespace tl::fea::coefficient_detail {
 CoefficientReport Preflight(NodalCoefficientSources input,const ElementMassContributions* masses,
-    const SolidNodeContributions* solids,CoefficientOrder order,CoefficientLimits limits,
+    const SolidNodeContributions* solids,const Beam18NodeContributions* beam,CoefficientOrder order,CoefficientLimits limits,
     std::size_t implementation_bytes,Budget& result) noexcept {
   if(!input.shells||!input.shells->prepared()||
       (input.type25&&!input.type25->prepared())||
       (input.type13&&!input.type13->prepared())||(masses&&!masses->prepared())||
-      (solids&&!solids->prepared()))
+      (solids&&!solids->prepared())||(beam&&!beam->prepared()))
     return {S::InvalidInput,"Complete prepared typed sources are required"};
+  const bool beam_order=order==
+      CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_ElementMass_Solid18_24_6z_Law44_Law90_Beam18_V5;
+  if(beam_order!=bool(beam)) return {S::IdentityMismatch,"Beam snapshot requires explicit V5 order"};
   const bool extended=order==
       CoefficientOrder::PreparedSI_Q_T_B_Type25_Type13_ElementMass_Solid18_24_6z_Law44_Law90_V4;
-  if(extended ? (!solids||solids->profile()!=SolidCoefficientProfile::ExtendedLaw44Law90) :
-      (solids&&solids->profile()!=SolidCoefficientProfile::OriginalThreeFamilies))
+  if(!beam_order&&(extended ? (!solids||solids->profile()!=SolidCoefficientProfile::ExtendedLaw44Law90) :
+      (solids&&solids->profile()!=SolidCoefficientProfile::OriginalThreeFamilies)))
     return {S::IdentityMismatch,"Solid snapshot and explicit coefficient order differ"};
   const auto& shells=*input.shells->shells();
   const auto& domain=*input.shells->domain();
@@ -24,12 +27,15 @@ CoefficientReport Preflight(NodalCoefficientSources input,const ElementMassContr
   const auto beams=input.type13?input.type13->model()->connection_count():0;
   const auto mass_records=masses?masses->records().size():0;
   const auto solid_parents=solids?solids->parents().size():0;
+  const auto beam_parents=beam?beam->model()->parents().size():0;
   if(!limits.max_nodes||limits.max_nodes>hard.max_nodes||
       !limits.max_shell_parents||limits.max_shell_parents>hard.max_shell_parents||
       !limits.max_type25_connections||limits.max_type25_connections>hard.max_type25_connections||
       !limits.max_type13_connections||limits.max_type13_connections>hard.max_type13_connections||
       !limits.max_element_mass_records||limits.max_element_mass_records>hard.max_element_mass_records||
       !limits.max_solid_parents||limits.max_solid_parents>hard.max_solid_parents||
+      !limits.max_beam18_parents||limits.max_beam18_parents>hard.max_beam18_parents||
+      beam_parents>limits.max_beam18_parents||
       !limits.max_host_bytes||limits.max_host_bytes>hard.max_host_bytes||
       domain.node_count()>limits.max_nodes||parents>limits.max_shell_parents||
       springs>limits.max_type25_connections||beams>limits.max_type13_connections||
@@ -88,10 +94,25 @@ CoefficientReport Preflight(NodalCoefficientSources input,const ElementMassContr
     if(!backing(bytes,sizeof(ElementMassContributions)))
       return {S::ResourceLimit,"Retained element mass records exceed cap"};
   }
+  if(beam) {
+    auto bytes=beam->owned_payload_bytes();
+    const auto& beam_domain=*beam->domain();
+    if(domain.SharesStorage(beam_domain)||
+        (input.type13&&input.type13->domain()->SharesStorage(beam_domain))||
+        (masses&&masses->domain()->SharesStorage(beam_domain))||
+        (solids&&solids->domain()->SharesStorage(beam_domain))) {
+      const auto shared=beam_domain.owned_payload_bytes();
+      if(shared<sizeof(NodalNodeDomain)||bytes<shared-sizeof(NodalNodeDomain))
+        return {S::ResourceLimit,"Shared beam domain payload is inconsistent"};
+      bytes-=shared-sizeof(NodalNodeDomain);
+    }
+    if(!backing(bytes,sizeof(Beam18NodeContributions)))
+      return {S::ResourceLimit,"Retained beam coefficients and material curves exceed cap"};
+  }
   // One transient source index, released before publication; sorting never
   // changes source or reduction order. Retained plus scratch is the peak.
   if(!peak.Append<unsigned char>(retained.bytes(),ignored)||
-      !peak.Append<unsigned char>(util::SourceIdentityIndex<0>::Bytes(parents+beams+mass_records+solid_parents),ignored))
+      !peak.Append<unsigned char>(util::SourceIdentityIndex<0>::Bytes(parents+beams+mass_records+solid_parents+beam_parents),ignored))
     return {S::ResourceLimit,"Coefficient identity scratch exceeds startup cap"};
   result.retained=retained.bytes();
   result.startup=peak.bytes();

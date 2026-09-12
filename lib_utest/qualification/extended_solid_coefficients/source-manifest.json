@@ -9,13 +9,13 @@
   "files": [
     {
       "path": "lib_src/assembly/BUILD.bazel",
-      "bytes": 4172,
-      "sha256": "5e8a62ac6b9e2e5f43983085125e42058fc89255bc6cfd6c5743cc3e4d2a1bf2"
+      "bytes": 4513,
+      "sha256": "f8c72a7d1d1932ba33666bf61e6aeeaabe6f21209ea33969031fe1b9ed5b0b33"
     },
     {
       "path": "lib_src/assembly/NodalCoefficientBudget.cpp",
-      "bytes": 6008,
-      "sha256": "40c370edce60940a9022c91be9ec1291ae3bf4d661d063aab0db5cc12a16fd45"
+      "bytes": 7311,
+      "sha256": "8e97245dbd27510a7397347112af4fdd2164aedce36464a98c02975dd4bc5cbb"
     },
     {
       "path": "lib_src/assembly/SolidContributionChecks.h",
@@ -80,7 +80,7 @@
     {
       "path": "lib_utest/qualification/law90_solid18_reference/owning-source-manifest.json",
       "bytes": 9227,
-      "sha256": "7765f6dc7688b6311abe4cf43a4c2a9b5076e60751921a65dc4157011dc62568"
+      "sha256": "3a17a527f001ba406697f5178e759e093c2c6892eb9bc3e2fae0856ec2f1aec9"
     },
     {
       "path": "lib_utest/qualification/law90_solid18_reference/verify_source.py",
@@ -119,8 +119,8 @@
     },
     {
       "path": "lib_utest/qualification/solid18_law44_reference/source-manifest.json",
-      "bytes": 6260,
-      "sha256": "7abcd2b38b86e19171f5119e55406335fa16d8e5c886ea07800cbd9b70e4c54f"
+      "bytes": 6382,
+      "sha256": "06defd0c6bd8bd431b79b069f5e28c0939856c945f6d17877581926bca2f9b3d"
     },
     {
       "path": "lib_utest/qualification/solid18_law44_reference/verify_source.py",
@@ -146,5 +146,33 @@
       "bytes": 780,
       "sha256": "4548685f784eeee31f62d9fbe83b706208363da40f6a285b4f4d3298cbe63163"
     }
-  ]
+  ],
+  "beam18_model_ledger_followup": {
+    "scope": "Additive immutable beam Model, endpoint snapshot, V5 ledger and build ownership. Existing reference/force/material formulas unchanged; V1-V4 source restrictions retained.",
+    "prior_records": [
+      {
+        "path": "lib_src/assembly/BUILD.bazel",
+        "bytes": 4172,
+        "sha256": "5e8a62ac6b9e2e5f43983085125e42058fc89255bc6cfd6c5743cc3e4d2a1bf2"
+      },
+      {
+        "path": "lib_src/assembly/NodalCoefficientBudget.cpp",
+        "bytes": 6008,
+        "sha256": "40c370edce60940a9022c91be9ec1291ae3bf4d661d063aab0db5cc12a16fd45"
+      }
+    ],
+    "dependency_receipt_prior_records": [
+      {
+        "path": "lib_utest/qualification/law90_solid18_reference/owning-source-manifest.json",
+        "bytes": 9227,
+        "sha256": "7765f6dc7688b6311abe4cf43a4c2a9b5076e60751921a65dc4157011dc62568"
+      },
+      {
+        "path": "lib_utest/qualification/solid18_law44_reference/source-manifest.json",
+        "bytes": 6260,
+        "sha256": "7abcd2b38b86e19171f5119e55406335fa16d8e5c886ea07800cbd9b70e4c54f"
+      }
+    ],
+    "dependency_note": "Referenced owning verifiers passed before refresh; no underlying native or reference equation changed. Extended coefficient reference receipt mismatch existed at base51ef240."
+  }
 }

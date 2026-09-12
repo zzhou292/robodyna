@@ -1,4 +1,4 @@
-load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_test", "cc_library")
 
 cc_test(
     name = "host_check",
@@ -10,4 +10,14 @@ cc_test(
         "//lib_utest/qualification/solid_law44_point:test_values",
         "@googletest//:gtest_main",
     ],
+)
+
+cc_library(
+    name = "test_values",
+    testonly = True,
+    hdrs = ["TestSupport.h"],
+    visibility = ["//lib_utest/qualification/beam18_model:__pkg__"],
+    deps = ["//lib_src/elements/beam18:force",
+            "//lib_utest/qualification/beam18_reference:test_values",
+            "//lib_utest/qualification/solid_law44_point:test_values", "@googletest//:gtest"],
 )

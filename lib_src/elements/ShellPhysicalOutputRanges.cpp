@@ -59,6 +59,19 @@ bool OutputDisjoint(const NodalCoefficientLedger& ledger,const void* output,std:
         !Range(output,bytes,spring->endpoint_mass(),2*count)) return false;
   }
   if (ledger.type13() && !Type13Ranges(*ledger.type13(),output,bytes)) return false;
+  if (const auto* beam=ledger.beam18()) {
+    const auto& model=*beam->model();
+    if(!Range(output,bytes,beam)||!Range(output,bytes,&model)||
+        !DomainRange(*model.domain(),output,bytes)||
+        !Range(output,bytes,beam->records().data(),beam->records().size())||
+        !Range(output,bytes,model.parents().data(),model.parents().size())||
+        !Range(output,bytes,model.materials().data(),model.materials().size())) return false;
+    for(const auto& material:model.materials()) {
+      const auto& curve=material.value.curve;
+      if(!Range(output,bytes,curve.plastic_strain,curve.count)||
+          !Range(output,bytes,curve.yield_stress_pa,curve.count)) return false;
+    }
+  }
   if (const auto* point=ledger.element_mass()) {
     if (!Range(output,bytes,point) || !DomainRange(*point->domain(),output,bytes) ||
         !Range(output,bytes,point->records().data(),point->records().size())) return false;

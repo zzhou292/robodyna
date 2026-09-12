@@ -21,3 +21,12 @@ cc_library(
         "//lib_src/solvers:nodal_force_assembly",
     ],
 )
+
+cc_library(
+    name = "model",
+    srcs = ["Model.cpp", "model/Budget.cpp", "model/Parents.cpp", "model/Identity.cpp"],
+    hdrs = ["Model.h", "model/Internal.h"],
+    visibility = ["//visibility:public"],
+    deps = [":force", "//lib_src/assembly:nodal_node_domain", "//lib_utils:bounded_arena",
+            "//lib_utils:source_identity_index"],
+)

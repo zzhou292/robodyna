@@ -4,8 +4,8 @@
   "shared_changes": "Only additive Bazel force/test ownership and narrow test-value visibility; reference and shared LAW44 numerical files remain unchanged. Existing raw curve/reader and reference native owners are reused.",
   "files": {
     "lib_src/elements/beam18/BUILD.bazel": {
-      "bytes": 699,
-      "sha256": "c2b85253807a853c491766e6c42870efb46c71de9f53b9d04c6c5962b07ff302"
+      "bytes": 1050,
+      "sha256": "38518caebddb50eb81d120afc4d7451545813d9ec00cb29d1df9c25dddc43090"
     },
     "lib_src/elements/beam18/FORCE.md": {
       "bytes": 3050,
@@ -92,8 +92,8 @@
       "sha256": "334ab0d87813996918a8d9024e4f50ce2f3fa1a5e44fa63e649b43f7e1b01c81"
     },
     "lib_utest/qualification/beam18_force/BUILD.bazel": {
-      "bytes": 424,
-      "sha256": "e0fdff1136a444167e0543233e15d79c1cfb6f26b9e5236c15d2f5d85c995563"
+      "bytes": 811,
+      "sha256": "cb7c74e6672e0a6f90e116372da6cb1113b782f167ec3c973e4985e738c77cd7"
     },
     "lib_utest/qualification/beam18_force/CMakeLists.txt": {
       "bytes": 3273,
@@ -276,8 +276,8 @@
       "sha256": "db426cebcec13bfd1f1e7318d85efb850f47f1a35d4f94ff3cccc951b78b586c"
     },
     "lib_utest/qualification/beam18_reference/source-manifest.json": {
-      "bytes": 7314,
-      "sha256": "154461f85dfb5e084b960c0c836f6270e9f366694b1a8355b9cf1454152fba77"
+      "bytes": 7750,
+      "sha256": "c9abf394870bbd9ae545a1478a62ace8e782414760e9e7a7bc795c0faf7135ee"
     },
     "lib_utest/qualification/solid_law44_point/source-manifest.json": {
       "bytes": 3174,
@@ -295,5 +295,28 @@
       "bytes": 1767,
       "sha256": "30aebb9db11933412622d811ccd61e8484bf330f0e88e845cc8a319a8773fb6e"
     }
+  },
+  "beam18_model_ledger_followup": {
+    "scope": "Additive immutable beam Model, endpoint snapshot, V5 ledger and build ownership. Existing reference/force/material formulas unchanged; V1-V4 source restrictions retained.",
+    "prior_records": [
+      {
+        "path": "lib_src/elements/beam18/BUILD.bazel",
+        "bytes": 699,
+        "sha256": "c2b85253807a853c491766e6c42870efb46c71de9f53b9d04c6c5962b07ff302"
+      },
+      {
+        "path": "lib_utest/qualification/beam18_force/BUILD.bazel",
+        "bytes": 424,
+        "sha256": "e0fdff1136a444167e0543233e15d79c1cfb6f26b9e5236c15d2f5d85c995563"
+      }
+    ],
+    "dependency_receipt_prior_records": [
+      {
+        "path": "lib_utest/qualification/beam18_reference/source-manifest.json",
+        "bytes": 7314,
+        "sha256": "154461f85dfb5e084b960c0c836f6270e9f366694b1a8355b9cf1454152fba77"
+      }
+    ],
+    "dependency_note": "Referenced owning verifiers passed before refresh; no underlying native or reference equation changed. Extended coefficient reference receipt mismatch existed at base51ef240."
   }
 }
