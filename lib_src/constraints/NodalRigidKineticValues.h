@@ -11,7 +11,7 @@ TL_RIGID_OBSERVATION_HD inline ObservationReport KineticValues(
   GroupKineticObservation next; next.phase=input.phase;
   auto& nodal=next.members; auto& body=next.aggregate;
   const auto w=detail::ToLocal(input.group.principal_axes,input.group.omega);
-  Sum translation,rotation,physical,added,orbital;
+  Sum translation,rotation,physical,added,orbital,unpartitioned;
   for(std::size_t i=0;i<input.metric.member_count;++i) {
     const auto& m=input.metric.members[i]; const auto motion=input.members[i];
     if(!detail::Finite(motion.velocity)||!detail::Finite(motion.omega)) return {ObservationStatus::InvalidInput,i};
@@ -20,12 +20,14 @@ TL_RIGID_OBSERVATION_HD inline ObservationReport KineticValues(
     if(!detail::Finite(arm)||!detail::Finite(tangent)||
         !translation.Add(Kinetic(m.mass_kg,motion.velocity))||!rotation.Add(Kinetic(m.total_inertia_kg_m2,motion.omega))||
         !physical.Add(Kinetic(m.physical_inertia_kg_m2,motion.omega))||!added.Add(Kinetic(m.added_inertia_kg_m2,motion.omega))||
+        !unpartitioned.Add(Kinetic(m.unpartitioned_native_inertia_kg_m2,motion.omega))||
         !orbital.Add(Kinetic(m.mass_kg,tangent))) return {ObservationStatus::NonfiniteResult,i};
   }
   nodal.translation=translation.Value(); nodal.native_rotation=rotation.Value();
   nodal.physical_rotation=physical.Value(); nodal.added_rotation=added.Value();
+  nodal.unpartitioned_native_rotation=unpartitioned.Value();
   nodal.total=nodal.translation+nodal.native_rotation;
-  nodal.inertia_partition_residual=(nodal.native_rotation-nodal.physical_rotation)-nodal.added_rotation;
+  nodal.inertia_partition_residual=((nodal.native_rotation-nodal.physical_rotation)-nodal.added_rotation)-nodal.unpartitioned_native_rotation;
   body.translation=Kinetic(metric.total_mass_kg,input.group.velocity);
   // Principal representation is equivalent to omega^T (R J R^T) omega/2,
   // including all off-diagonal terms of the current WORLD tensor.
@@ -36,6 +38,7 @@ TL_RIGID_OBSERVATION_HD inline ObservationReport KineticValues(
   body.native_member_rotation=Kinetic(metric.native_total_inertia_sum,w);
   body.physical_member_rotation=Kinetic(metric.physical_inertia_sum,w);
   body.added_member_rotation=Kinetic(metric.added_inertia_sum,w);
+  body.unpartitioned_native_member_rotation=Kinetic(metric.unpartitioned_native_inertia_sum,w);
   const auto primary_arm=detail::ToLocal(metric.principal.axes,
       detail::Subtract(metric.generated_primary_position,metric.center));
   body.primary_parallel_axis_rotation=Kinetic(regularization.primary_mass_kg,detail::Cross(w,primary_arm));
@@ -53,6 +56,7 @@ TL_RIGID_OBSERVATION_HD inline ObservationReport KineticValues(
   next.replacement=body.total-nodal.total;
   const double final_values[]{nodal.total,nodal.inertia_partition_residual,body.total,body.structural_translation,
       body.primary_translation,body.physical_member_rotation,body.added_member_rotation,
+      nodal.unpartitioned_native_rotation,body.unpartitioned_native_member_rotation,
       body.decomposition_residual,body.decomposition_roundoff_budget,next.replacement};
   for(double value:final_values) if(!Finite(value)) return {ObservationStatus::NonfiniteResult};
   if(::fabs(body.decomposition_residual)>body.decomposition_roundoff_budget)

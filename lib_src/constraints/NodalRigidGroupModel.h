@@ -10,6 +10,9 @@ struct NodalRigidGroupMember {
   std::size_t global_node=0;
   tl::math::Vec3 position{}; // Exact supplied SI reference coordinates.
   double mass_kg=0,total_inertia_kg_m2=0,physical_inertia_kg_m2=0,added_inertia_kg_m2=0;
+  // Direct source contribution whose physical/added split is unavailable.
+  // This is attribution evidence, never a replacement for authoritative total J.
+  double unpartitioned_native_inertia_kg_m2=0;
 };
 struct NodalRigidGroupInput {
   std::uint64_t source_group_id=0,source_node_set_id=0;
@@ -52,6 +55,7 @@ struct NodalRigidGroupProperties {
   rigid::PrincipalFrame principal{};
   tl::math::Vec3 raw_principal_inertia{};
   NodalRigidRegularizationLedger regularization{};
+  double unpartitioned_native_inertia_sum=0;
 };
 enum class NodalRigidGroupStatus {
   Success,AlreadyInitialized,InvalidInput,ResourceLimit,DuplicateIdentity,
@@ -81,6 +85,10 @@ class NodalRigidGroupModel {
   // Native primary/tensor corrections are unchanged. Runtime requires the
   // complete physical assembly binding, not the legacy plain-owner overload.
   NodalRigidGroupReport InitializePhysical(const NodalRigidGroupModelInput&) noexcept;
+  // Explicit physical assembly containing native-total-only source inertia.
+  // Requires physical + added + unpartitioned evidence to match total J.
+  // Legacy entry points require zero unpartitioned evidence.
+  NodalRigidGroupReport InitializeNativeTotal(const NodalRigidGroupModelInput&) noexcept;
   bool physical_coefficients() const noexcept;
   bool prepared() const noexcept;
   std::uint64_t source_instance_id() const noexcept;
@@ -93,7 +101,8 @@ class NodalRigidGroupModel {
   const NodalRigidGroupProperties* groups() const noexcept;
   const NodalRigidGroupMember* members() const noexcept;
  private:
-  NodalRigidGroupReport InitializeImpl(const NodalRigidGroupModelInput&, bool physical) noexcept;
+  NodalRigidGroupReport InitializeImpl(const NodalRigidGroupModelInput&, bool physical,
+      bool allow_unpartitioned=false) noexcept;
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };

@@ -39,12 +39,14 @@ tl::math::Matrix3 Value(const Eigen::Matrix3d& m) {
   for(unsigned i=0;i<3;++i) for(unsigned j=0;j<3;++j) out.v[3*i+j]=m(i,j);
   return out;
 }
-bool ValidMass(const NodalRigidGroupMember& m,bool physical) {
+bool ValidMass(const NodalRigidGroupMember& m,bool physical,bool allow_unpartitioned) {
   const auto admitted=physical?Nonnegative:Positive;
   if(!admitted(m.mass_kg)||!admitted(m.total_inertia_kg_m2)||
-     !admitted(m.physical_inertia_kg_m2)||!Nonnegative(m.added_inertia_kg_m2))
+     !admitted(m.physical_inertia_kg_m2)||!Nonnegative(m.added_inertia_kg_m2)||
+     !Nonnegative(m.unpartitioned_native_inertia_kg_m2)||
+     (!allow_unpartitioned&&m.unpartitioned_native_inertia_kg_m2!=0))
     return false;
-  const double partitions=m.physical_inertia_kg_m2+m.added_inertia_kg_m2;
+  const double partitions=(m.physical_inertia_kg_m2+m.added_inertia_kg_m2)+m.unpartitioned_native_inertia_kg_m2;
   // Native total J and its partitions can have different final roundoff.
   // This check does not replace the authoritative total with their sum.
   return std::isfinite(partitions)&&
@@ -72,8 +74,10 @@ Report PrepareGroup(NodalRigidGroupProperties& g,const NodalRigidGroupMember* me
     g.structural_mass_kg+=m.mass_kg;
     g.native_total_inertia_sum+=m.total_inertia_kg_m2;
     g.physical_inertia_sum+=m.physical_inertia_kg_m2; g.added_inertia_sum+=m.added_inertia_kg_m2;
+    g.unpartitioned_native_inertia_sum+=m.unpartitioned_native_inertia_kg_m2;
     if(!geometric.allFinite()||!moment.allFinite()||!admitted(g.structural_mass_kg)||
-       !admitted(g.native_total_inertia_sum)||!admitted(g.physical_inertia_sum)||!Nonnegative(g.added_inertia_sum))
+       !admitted(g.native_total_inertia_sum)||!admitted(g.physical_inertia_sum)||!Nonnegative(g.added_inertia_sum)||
+       !Nonnegative(g.unpartitioned_native_inertia_sum))
       return Fail(Status::NonfiniteResult,"Rigid group mass/centroid accumulation overflow",group,i);
   }
   if(!Positive(g.structural_mass_kg))
@@ -110,7 +114,11 @@ NodalRigidGroupReport NodalRigidGroupModel::Initialize(const NodalRigidGroupMode
 NodalRigidGroupReport NodalRigidGroupModel::InitializePhysical(const NodalRigidGroupModelInput& input) noexcept {
   return InitializeImpl(input,true);
 }
-NodalRigidGroupReport NodalRigidGroupModel::InitializeImpl(const NodalRigidGroupModelInput& input,bool physical) noexcept {
+NodalRigidGroupReport NodalRigidGroupModel::InitializeNativeTotal(const NodalRigidGroupModelInput& input) noexcept {
+  return InitializeImpl(input,true,true);
+}
+NodalRigidGroupReport NodalRigidGroupModel::InitializeImpl(const NodalRigidGroupModelInput& input,bool physical,
+    bool allow_unpartitioned) noexcept {
   if(impl_) return Fail(Status::AlreadyInitialized,"Rigid group model is immutable after initialization");
   const auto& l=input.limits;
   if(!input.source_instance_id||!input.global_node_count||!input.groups||!input.group_count||
@@ -152,7 +160,7 @@ NodalRigidGroupReport NodalRigidGroupModel::InitializeImpl(const NodalRigidGroup
         const auto& m=in.members[i];
         if(!m.source_node_id||m.global_node>=input.global_node_count||!rigid::detail::Finite(m.position))
           return Fail(Status::InvalidInput,"Rigid member identity/index/position is invalid",g,i);
-        if(!ValidMass(m,physical)) return Fail(Status::InvalidMass,"Rigid member native mass/J or partition evidence is invalid",g,i);
+        if(!ValidMass(m,physical,allow_unpartitioned)) return Fail(Status::InvalidMass,"Rigid member native mass/J or partition evidence is invalid",g,i);
         next->members.push_back(m);
       }
     }

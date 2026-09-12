@@ -4,6 +4,47 @@
 #include <vector>
 
 namespace rigid_test {
+TEST(NodalRigidGroupModel,NativeTotalAttributionKeepsTensorAndRejectsUnprovenSplits) {
+  auto members=Members();
+  fe::NodalRigidGroupInput group{1001,2001,members.data(),members.size()};
+  fe::NodalRigidGroupModel reference; ASSERT_TRUE(reference.InitializePhysical(Input(&group,1)));
+  for(auto& m:members) {
+    m.unpartitioned_native_inertia_kg_m2=m.physical_inertia_kg_m2;
+    m.physical_inertia_kg_m2=0;
+  }
+  fe::NodalRigidGroupModel model;
+  EXPECT_EQ(model.Initialize(Input(&group,1)).status,fe::NodalRigidGroupStatus::InvalidMass);
+  EXPECT_EQ(model.InitializePhysical(Input(&group,1)).status,fe::NodalRigidGroupStatus::InvalidMass);
+  ASSERT_FALSE(model.prepared());
+  ASSERT_TRUE(model.InitializeNativeTotal(Input(&group,1)));
+  EXPECT_TRUE(model.physical_coefficients());
+  const auto& actual=model.groups()[0]; const auto& old=reference.groups()[0];
+  EXPECT_EQ(actual.physical_inertia_sum,0);
+  EXPECT_EQ(actual.unpartitioned_native_inertia_sum,old.physical_inertia_sum);
+  EXPECT_EQ(actual.native_total_inertia_sum,old.native_total_inertia_sum);
+  EXPECT_EQ(actual.added_inertia_sum,old.added_inertia_sum);
+  for(unsigned i=0;i<9;++i) EXPECT_EQ(actual.raw_tensor.v[i],old.raw_tensor.v[i]);
+  for(unsigned i=0;i<members.size();++i)
+    EXPECT_EQ(model.members()[i].total_inertia_kg_m2,reference.members()[i].total_inertia_kg_m2);
+}
+TEST(NodalRigidGroupModel,NativeTotalMissingNegativeNonfiniteAndDoubleCountedEvidenceRejectAtomically) {
+  const auto original=Members();
+  for(unsigned failure=0;failure<4;++failure) {
+    auto members=original; auto& last=members.back();
+    const double native=last.physical_inertia_kg_m2;
+    last.physical_inertia_kg_m2=0; last.unpartitioned_native_inertia_kg_m2=native;
+    if(failure==0) last.unpartitioned_native_inertia_kg_m2=0;
+    if(failure==1) last.unpartitioned_native_inertia_kg_m2=-native;
+    if(failure==2) last.unpartitioned_native_inertia_kg_m2=std::numeric_limits<double>::quiet_NaN();
+    if(failure==3) last.physical_inertia_kg_m2=native;
+    fe::NodalRigidGroupInput group{1001,2001,members.data(),members.size()};
+    fe::NodalRigidGroupModel model;
+    EXPECT_EQ(model.InitializeNativeTotal(Input(&group,1)).status,fe::NodalRigidGroupStatus::InvalidMass);
+    EXPECT_FALSE(model.prepared()); EXPECT_EQ(model.members(),nullptr);
+    last.physical_inertia_kg_m2=0; last.unpartitioned_native_inertia_kg_m2=native;
+    ASSERT_TRUE(model.InitializeNativeTotal(Input(&group,1)));
+  }
+}
 TEST(NodalRigidGroupModel,NativeMassAndTensorMatchIndependentLongDoubleCalculation) {
   auto members=Members(); fe::NodalRigidGroupInput group{1001,2001,members.data(),members.size()};
   fe::NodalRigidGroupModel model; ASSERT_TRUE(model.Initialize(Input(&group,1)));

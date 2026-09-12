@@ -40,7 +40,8 @@ struct GroupKineticInput {
 struct MemberKineticChannels {
   double translation=0,native_rotation=0,physical_rotation=0,added_rotation=0;
   double total=0; // Translation + authoritative native rotation, exactly once.
-  double inertia_partition_residual=0; // Native minus supplied physical/added.
+  double inertia_partition_residual=0; // Native minus all supplied attribution.
+  double unpartitioned_native_rotation=0; // Physical/added split unavailable.
 };
 struct AggregateKineticChannels {
   double translation=0,rotation=0,total=0;
@@ -50,6 +51,7 @@ struct AggregateKineticChannels {
   double primary_parallel_axis_rotation=0,primary_isotropic_rotation=0;
   double principal_correction_rotation=0;
   double decomposition_residual=0,decomposition_roundoff_budget=0;
+  double unpartitioned_native_member_rotation=0;
 };
 struct GroupKineticObservation {
   ObservationPhase phase;

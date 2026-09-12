@@ -51,19 +51,22 @@ TL_RIGID_OBSERVATION_HD inline bool ValidMetric(GroupObservationMetric input) {
   for(unsigned a=0;a<3;++a)
     if(Get(correction.effective,a)!=Get(g.principal.inertia,a)||
         Get(correction.added,a)!=Get(r.principal_inertia_added,a)) return false;
-  Sum mass,j,physical,added;
+  Sum mass,j,physical,added,unpartitioned;
   for(std::size_t i=0;i<input.member_count;++i) {
     const auto& m=input.members[i];
     if(!m.source_node_id||!detail::Finite(m.position)||!Nonnegative(m.mass_kg)||m.mass_kg==0||
         !Nonnegative(m.total_inertia_kg_m2)||m.total_inertia_kg_m2==0||
         !Nonnegative(m.physical_inertia_kg_m2)||!Nonnegative(m.added_inertia_kg_m2)||
-        !Near(m.total_inertia_kg_m2,m.physical_inertia_kg_m2+m.added_inertia_kg_m2,64)||
+        !Nonnegative(m.unpartitioned_native_inertia_kg_m2)||
+        !Near(m.total_inertia_kg_m2,(m.physical_inertia_kg_m2+m.added_inertia_kg_m2)+m.unpartitioned_native_inertia_kg_m2,64)||
         !mass.Add(m.mass_kg)||!j.Add(m.total_inertia_kg_m2)||
-        !physical.Add(m.physical_inertia_kg_m2)||!added.Add(m.added_inertia_kg_m2)) return false;
+        !physical.Add(m.physical_inertia_kg_m2)||!added.Add(m.added_inertia_kg_m2)||
+        !unpartitioned.Add(m.unpartitioned_native_inertia_kg_m2)) return false;
   }
   const double factor=64+8*input.member_count;
   if(!Near(mass.Value(),g.structural_mass_kg,factor)||!Near(j.Value(),g.native_total_inertia_sum,factor)||
       !Near(physical.Value(),g.physical_inertia_sum,factor)||!Near(added.Value(),g.added_inertia_sum,factor)||
+      !Near(unpartitioned.Value(),g.unpartitioned_native_inertia_sum,factor)||
       !Near(g.total_mass_kg,g.structural_mass_kg+r.primary_mass_kg,factor)) return false;
   // No new eigen solve. Verify the supplied reference tensor/ledger against its
   // already prepared principal representation, allowing existing frame error.

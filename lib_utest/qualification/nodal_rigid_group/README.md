@@ -128,3 +128,20 @@ fragments now have a separate nonzero-DT1 wrapper with both member loop branches
 the existing zero-duration wrapper and stored observation tests remain intact.
 The optional `nodal_rigid_force_stage_cuda_check` needs TL_NODAL_RIGID_CUDA_CHECKS.
 This adds no owner capture and makes no complete native global-energy claim.
+# Native-total-only inertia attribution
+
+`InitializeNativeTotal` admits physical assemblies whose source provides a
+rotational inertia contribution without a physical/added split. The caller
+supplies that exact contribution in `unpartitioned_native_inertia_kg_m2`.
+All three attribution channels must agree with the independently supplied
+native total within the existing roundoff bound. Tensor construction and
+rigid dynamics continue to use native total J exactly once. The older
+initializers still reject nonzero unpartitioned contributions.
+
+The group model and kinetic observations retain this third channel explicitly;
+it is neither physical nor added inertia. The new host controls compare identical
+total-J tensors and kinetic totals across attribution changes, reject missing,
+negative, nonfinite and double-counted evidence, and verify rejection/retry.
+The bounded root run `rigid-native-total-root-tests-1` passes all 16 existing and
+extended host/native CTests. Actual beam/plain-rigid CUDA binding is qualified
+separately by `beam18_resident`.

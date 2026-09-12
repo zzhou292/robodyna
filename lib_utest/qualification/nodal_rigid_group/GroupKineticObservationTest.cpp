@@ -1,5 +1,28 @@
 #include "GroupObservationOracle.h"
 namespace rigid_observation_test {
+TEST(NodalRigidKineticObservation,UnpartitionedNativeChannelPreservesTotalAndRejectsForgedEvidence) {
+  Fixture fixture; rigid::GroupKineticObservation before,after;
+  ASSERT_TRUE(rigid::ObserveGroupKinetic(fixture.Input(),before));
+  for(auto& member:fixture.source) {
+    member.unpartitioned_native_inertia_kg_m2=member.physical_inertia_kg_m2;
+    member.physical_inertia_kg_m2=0;
+  }
+  auto group=*fixture.model.groups();
+  group.unpartitioned_native_inertia_sum=group.physical_inertia_sum; group.physical_inertia_sum=0;
+  auto input=fixture.Input(); input.metric.group=&group;
+  ASSERT_TRUE(rigid::ObserveGroupKinetic(input,after));
+  EXPECT_EQ(after.members.total,before.members.total);
+  EXPECT_EQ(after.aggregate.total,before.aggregate.total);
+  EXPECT_EQ(after.replacement,before.replacement);
+  EXPECT_EQ(after.members.unpartitioned_native_rotation,before.members.physical_rotation);
+  EXPECT_EQ(after.aggregate.unpartitioned_native_member_rotation,before.aggregate.physical_member_rotation);
+  EXPECT_EQ(after.members.physical_rotation,0); EXPECT_EQ(after.aggregate.physical_member_rotation,0);
+  EXPECT_NEAR(after.members.inertia_partition_residual,0,64*std::numeric_limits<double>::epsilon()*after.members.native_rotation);
+  const auto saved=rigid_step_test::Bytes(after);
+  group.unpartitioned_native_inertia_sum*=2;
+  EXPECT_EQ(rigid::ObserveGroupKinetic(input,after).status,Status::InvalidMetric);
+  EXPECT_EQ(rigid_step_test::Bytes(after),saved);
+}
 TEST(NodalRigidKineticObservation,DenseWorldTensorMatchesIndependentScalarDecomposition) {
   Fixture fixture; const auto input=fixture.Input(); rigid::GroupKineticObservation output;
   const auto report=rigid::ObserveGroupKinetic(input,output); ASSERT_TRUE(report)<<int(report.status);
