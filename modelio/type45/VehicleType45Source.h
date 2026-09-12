@@ -5,7 +5,7 @@
 
 namespace crash::modelio::type45 {
 namespace native = tl::fea::type45;
-enum class Policy { OriginalDirectSdiType45V1 };
+enum class Policy { OriginalDirectSdiType45V1, OriginalDirectSdiType45ExtendedSolidsV4 };
 enum class Disposition { Required, OmittedAssemblyBoundary };
 enum class NodeUse { Endpoint, InitialAxis, OriginalEvidence };
 enum class BodyKind { None, PlainGroup, PartRoot };
@@ -48,7 +48,7 @@ struct Forecast {
     std::size_t mapping_bytes = 0, result_bytes = 0, current_phase = 0, total_bytes = 0;
 };
 struct Data {
-    std::vector<Row> rows; // Original declaration order, including all six boundaries.
+    std::vector<Row> rows; // Original declaration order, including explicit assembly boundaries.
     std::array<Property, 3> properties{}; // Spherical, revolute, cylindrical.
     std::size_t required = 0, boundaries = 0, owned_payload_bytes = 0;
 };
@@ -61,7 +61,7 @@ class VehicleType45Source {
     const physical_domain::VehiclePhysicalDomain& source_domain() const noexcept;
     const Data& data() const noexcept;
     const Forecast& forecast() const noexcept;
-    Policy policy() const noexcept { return Policy::OriginalDirectSdiType45V1; }
+    Policy policy() const noexcept;
     RuntimeReadiness readiness() const noexcept { return RuntimeReadiness::RequiresOwnerTt0Context; }
   private:
     struct Storage;

@@ -11,7 +11,7 @@ struct OriginalInputs {
     tied_shell::TiedShellDeclaration tied;
     type13::SourceType13 beams;
     solid_source::VehicleSolidSource solids;
-    OriginalInputs()
+    explicit OriginalInputs(solid_source::Policy policy = solid_source::Policy::OriginalAdhesive18RubberHephS6zV1)
         : member(output::ReadBounded(vehicle::test::Canonical().data().inputs.member_root /
                      vehicle::test::Canonical().data().inputs.source_member.file, 64 * 1024 * 1024)),
           rigid(rigid::RigidPartSource::Prepare(vehicle::test::Plan(), member)),
@@ -20,7 +20,8 @@ struct OriginalInputs {
           beams(type13::SourceType13::Read(BeamPath(), {5150841,
               "c15fc2096317ac0206397ac50776f8456ddd23495e0c65aeee98e093ebd0b1b1"})),
           solids(solid_source::VehicleSolidSource::Prepare(vehicle::test::Canonical(), member,
-              solid_source::Policy::OriginalAdhesive18RubberHephS6zV1)) {}
+              policy, policy == solid_source::Policy::OriginalExtendedSolidsV4
+                  ? solid_source::Limits::ExtendedSolids() : solid_source::Limits{})) {}
     static std::filesystem::path BeamPath() {
         const auto* value = std::getenv("ROBO_DYNA_TYPE13_DECLARATION");
         output::Require(value && *value, "Explicit original TYPE13 source fixture required");

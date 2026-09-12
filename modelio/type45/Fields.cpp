@@ -1,4 +1,5 @@
 #include "Internal.h"
+#include "SourcePolicy.h"
 #include "modelio/source_assembly/AuxiliarySourceCards.h"
 #include <algorithm>
 #include <set>
@@ -71,15 +72,14 @@ void ResolveProperties(Data& data) {
         property.origin_joint_id = first->source_id;
     }
 }
-void CheckOriginal(Data& data) {
-    static constexpr std::uint64_t omitted[]{2200514, 2200515, 2200526, 2200527, 2200528, 2200529};
+void CheckOriginal(Data& data, Policy policy) {
     Require(data.rows.size() == 44, "Original joint census changed");
     std::size_t kinds[3]{};
     for (std::size_t i = 0; i < data.rows.size(); ++i) {
         auto& row = data.rows[i];
         Require(row.source_id == 2200512 + i && row.property_index < 3, "Original joint source order changed");
         ++kinds[row.property_index];
-        const bool boundary = std::binary_search(std::begin(omitted), std::end(omitted), row.source_id);
+        const bool boundary = Boundary(policy, row.source_id);
         const unsigned missing = (row.nodes[0].domain_index == SIZE_MAX) + (row.nodes[1].domain_index == SIZE_MAX);
         Require(missing == unsigned(boundary), "Original joint retained/boundary disposition changed");
         for (unsigned endpoint = 0; endpoint < 2; ++endpoint)
@@ -90,7 +90,8 @@ void CheckOriginal(Data& data) {
         row.disposition = boundary ? Disposition::OmittedAssemblyBoundary : Disposition::Required;
         data.boundaries += boundary; data.required += !boundary;
     }
-    Require(data.required == 38 && data.boundaries == 6 && kinds[0] == 17 && kinds[1] == 22 && kinds[2] == 5,
+    Require(data.required == Required(policy) && data.boundaries == 44 - Required(policy) &&
+            kinds[0] == 17 && kinds[1] == 22 && kinds[2] == 5,
             "Original joint kind/disposition census changed");
 }
 } // namespace crash::modelio::type45::detail

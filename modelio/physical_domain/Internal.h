@@ -11,6 +11,8 @@ struct Selection {
 };
 Selection Select(const std::vector<physical_scope::Group>&,
                  const std::vector<physical_scope::PointMass>&);
+void CheckSelection(const std::vector<physical_scope::Group>&,
+                    const std::vector<physical_scope::PointMass>&, const Selection&, Policy);
 void PrepareTopology(const tl::fea::rigid::NodalRigidPartTopology&, const Selection&,
                      std::size_t byte_cap, tl::fea::rigid::NodalRigidPartTopology&);
 } // namespace crash::modelio::physical_domain::detail

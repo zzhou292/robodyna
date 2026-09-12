@@ -1,4 +1,5 @@
 #include "Storage.h"
+#include "modelio/type45/SourcePolicy.h"
 #include "lib_utils/BoundedArena.h"
 namespace crash::cases::vehicle_startup::joints {
 Forecast VehicleJointModel::Preflight(const Physical& physical,const Source& source,Limits limits) {
@@ -7,7 +8,9 @@ Forecast VehicleJointModel::Preflight(const Physical& physical,const Source& sou
     const auto& data=source.data();
     output::Require(limits.host_bytes && limits.host_bytes<=Limits{}.host_bytes &&
         domain.SharesStorage(source.source_domain().domain()) && rigid.domain()->SharesStorage(domain) &&
-        data.rows.size()==44 && data.required==38 && data.boundaries==6,
+        source.source_domain().policy()==modelio::type45::detail::DomainPolicy(source.policy()) &&
+        physical.source_domain().policy()==source.source_domain().policy() && data.rows.size()==44 &&
+        data.required==modelio::type45::detail::Required(source.policy()) && data.boundaries==44-data.required,
         "Joint source must retain the exact complete physical domain and original census");
     const tl::fea::type45::ModelLimits hard;
     output::Require(limits.model.max_joints>=data.required && limits.model.max_joints<=hard.max_joints &&

@@ -3,8 +3,9 @@
 
 namespace crash::modelio::type45 {
 struct VehicleType45Source::Storage {
-    explicit Storage(const physical_domain::VehiclePhysicalDomain& source) : source(source) {}
+    Storage(const physical_domain::VehiclePhysicalDomain& source, Policy p) : source(source), policy(p) {}
     physical_domain::VehiclePhysicalDomain source;
+    Policy policy;
     Data data;
     Forecast forecast;
 };
@@ -15,12 +16,12 @@ VehicleType45Source VehicleType45Source::Prepare(const physical_domain::VehicleP
     const auto& xyz_array = physical_scope::source::FindArray(canonical, "node_positions");
     const auto ids = output::arrays::Decode<std::uint64_t>(id_array.descriptor, id_array.bytes);
     const auto xyz = output::arrays::Decode<double>(xyz_array.descriptor, xyz_array.bytes);
-    auto next = std::make_shared<Storage>(input);
+    auto next = std::make_shared<Storage>(input, policy);
     auto& data = next->data;
     data.rows = detail::Read(input.source().point_mass_source().rigid_source().data().sources, limits);
     const auto members = detail::Members(input);
     detail::Map(data.rows, ids, xyz, input.domain(), members);
-    detail::CheckOriginal(data);
+    detail::CheckOriginal(data, policy);
     detail::ResolveProperties(data);
     data.owned_payload_bytes = sizeof(VehicleType45Source) + sizeof(Storage) + 64;
     detail::Add(data.owned_payload_bytes, data.rows.capacity(), sizeof(Row), limits.host_bytes);
@@ -31,4 +32,5 @@ VehicleType45Source VehicleType45Source::Prepare(const physical_domain::VehicleP
 const physical_domain::VehiclePhysicalDomain& VehicleType45Source::source_domain() const noexcept { return storage_->source; }
 const Data& VehicleType45Source::data() const noexcept { return storage_->data; }
 const Forecast& VehicleType45Source::forecast() const noexcept { return storage_->forecast; }
+Policy VehicleType45Source::policy() const noexcept { return storage_->policy; }
 } // namespace crash::modelio::type45

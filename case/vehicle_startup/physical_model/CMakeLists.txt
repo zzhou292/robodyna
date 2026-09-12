@@ -35,3 +35,5 @@ add_test(NAME vehicle_rear_solid_model COMMAND "${Python3_EXECUTABLE}" -B
   "${ROBO_DYNA_VEHICLE_CANONICAL}" "${ROBO_DYNA_VEHICLE_SCOPE}"
   "$<TARGET_FILE:robo_dyna_vehicle_rear_model_check>" "VehicleRearSolidModel.*")
 set_tests_properties(vehicle_rear_solid_model PROPERTIES TIMEOUT 120 RUN_SERIAL TRUE PROCESSORS 1)
+
+include("${CMAKE_CURRENT_LIST_DIR}/ExtendedTests.cmake")

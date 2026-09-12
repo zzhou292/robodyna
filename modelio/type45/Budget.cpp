@@ -1,4 +1,5 @@
 #include "Internal.h"
+#include "SourcePolicy.h"
 #include <algorithm>
 
 namespace crash::modelio::type45 {
@@ -11,7 +12,8 @@ void Add(std::size_t& bytes, std::size_t count, std::size_t width, std::size_t c
 Forecast VehicleType45Source::Preflight(const physical_domain::VehiclePhysicalDomain& input, Policy policy, Limits limits) {
     using namespace detail;
     const Limits hard;
-    Require(policy == Policy::OriginalDirectSdiType45V1 && limits.host_bytes && limits.host_bytes <= hard.host_bytes &&
+    Require(input.policy() == DomainPolicy(policy), "Original TYPE45 policy differs from its physical source domain");
+    Require(limits.host_bytes && limits.host_bytes <= hard.host_bytes &&
         limits.rows && limits.rows <= hard.rows && limits.metadata_bytes && limits.metadata_bytes <= hard.metadata_bytes,
         "Invalid original TYPE45 source policy/caps");
     const auto& source = input.source();

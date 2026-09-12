@@ -4,8 +4,9 @@
 
 namespace crash::modelio::physical_domain {
 struct VehiclePhysicalDomain::Storage {
-    explicit Storage(const physical_scope::PhysicalScope& value) : source(value) {}
+    Storage(const physical_scope::PhysicalScope& value, Policy p) : source(value), policy(p) {}
     physical_scope::PhysicalScope source;
+    Policy policy;
     tl::fea::NodalNodeDomain domain;
     tl::fea::rigid::NodalRigidPartTopology topology;
     std::vector<GroupSelection> groups;
@@ -15,6 +16,7 @@ struct VehiclePhysicalDomain::Storage {
 VehiclePhysicalDomain VehiclePhysicalDomain::Prepare(const physical_scope::PhysicalScope& source, Policy policy, Limits limits) {
     const auto forecast = Preflight(source, policy, limits);
     auto selected = detail::Select(source.data().plain_groups, source.data().point_masses);
+    detail::CheckSelection(source.data().plain_groups, source.data().point_masses, selected, policy);
     const auto& canonical = source.tied_source().canonical().data();
     const auto& id_array = physical_scope::source::FindArray(canonical, "node_ids");
     const auto& xyz_array = physical_scope::source::FindArray(canonical, "node_positions");
@@ -28,7 +30,7 @@ VehiclePhysicalDomain VehiclePhysicalDomain::Prepare(const physical_scope::Physi
         if ((source.data().node_roles[n] & (physical_scope::PhysicalRoles | physical_scope::ProvisionalType25)) ||
             selected.point_nodes.count(ids[n]))
             nodes.push_back({ids[n], {xyz[3*n], xyz[3*n+1], xyz[3*n+2]}});
-    auto next = std::make_shared<Storage>(source);
+    auto next = std::make_shared<Storage>(source, policy);
     auto domain_limits = tl::fea::NodalDomainLimits::Vehicle();
     domain_limits.max_host_bytes = limits.domain_bytes;
     const auto& original = source.point_mass_source().rigid_source().topology();
@@ -54,4 +56,5 @@ const tl::fea::rigid::NodalRigidPartTopology& VehiclePhysicalDomain::topology() 
 const std::vector<GroupSelection>& VehiclePhysicalDomain::plain_groups() const noexcept { return storage_->groups; }
 Counts VehiclePhysicalDomain::counts() const noexcept { return storage_->counts; }
 const Forecast& VehiclePhysicalDomain::forecast() const noexcept { return storage_->forecast; }
+Policy VehiclePhysicalDomain::policy() const noexcept { return storage_->policy; }
 } // namespace crash::modelio::physical_domain

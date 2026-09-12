@@ -1,4 +1,5 @@
 #include "Internal.h"
+#include "modelio/physical_domain/Policy.h"
 #include "lib_utils/BoundedArena.h"
 
 namespace crash::cases::vehicle_startup::physical_model {
@@ -17,10 +18,13 @@ Forecast VehiclePhysicalModel::Preflight(const modelio::physical_domain::Vehicle
     const auto& canonical = source.source().tied_source().canonical().data();
     Require(&canonical == &shells.references().source().canonical().data(),
             "Vehicle shells and physical source do not share canonical authority");
+    const bool extended = source.policy() == modelio::physical_domain::Policy::RetainedShellAssembliesExtendedSolidsV4;
+    Require(source.source().solid_source().data().policy == modelio::physical_domain::detail::SolidPolicy(source.policy()),
+            "Physical model source-domain profile differs from its solids");
     Require(shells.shells().qeph_count() == 324094 && shells.shells().t3_count() == 21301 &&
-        shells.shells().qbat_count() == 4250 && source.domain().node_count() == 372435 &&
+        shells.shells().qbat_count() == 4250 && (extended || source.domain().node_count() == 372435) &&
         source.source().type13_source().data().beams.size() == 4442 &&
-        source.source().solid_source().data().rows.size() == 2412,
+        source.source().solid_source().data().rows.size() == (extended ? 4900u : 2412u),
         "Complete retained vehicle mechanical source count changed");
     Forecast f;
     f.shell_source = shells.forecast().total_bytes;
@@ -42,6 +46,8 @@ Forecast VehiclePhysicalModel::Preflight(const modelio::physical_domain::Vehicle
         packing.Append<tl::fea::solids::Input18>(solid.solid18.size(), ignored) &&
         packing.Append<tl::fea::solids::Input24>(solid.solid24.size(), ignored) &&
         packing.Append<tl::fea::solids::Input6z>(solid.solid6z.size(), ignored) &&
+        packing.Append<tl::fea::solids::Input18Law44>(solid.solid18_law44.size(), ignored) &&
+        packing.Append<tl::fea::solids::Input18Law90>(solid.solid18_law90.size(), ignored) &&
         packing.Append<tl::fea::NodalRigidGroupMember>(source.counts().plain_members, ignored) &&
         packing.Append<tl::fea::NodalRigidGroupInput>(source.plain_groups().size(), ignored),
         "Vehicle mechanics input packing exceeds cap");

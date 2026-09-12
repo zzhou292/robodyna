@@ -35,8 +35,11 @@ VehiclePhysicalModel VehiclePhysicalModel::Prepare(const modelio::physical_domai
     const auto beam_report = next->beam_coefficients.Initialize(next->beams, domain, beam_limits);
     Require(bool(beam_report), beam_report.message);
     auto ledger_limits = fe::CoefficientLimits::Vehicle(); ledger_limits.max_host_bytes = limits.ledger_bytes;
-    const auto ledger_report = next->ledger.InitializeWithSolids({{&next->shell_map, &next->welds.model(),
-        &next->beam_coefficients}, &next->masses.contributions(), next->solids.contributions()}, ledger_limits);
+    const fe::NodalCoefficientSourcesWithSolids input{{&next->shell_map, &next->welds.model(),
+        &next->beam_coefficients}, &next->masses.contributions(), next->solids.contributions()};
+    const auto ledger_report = next->solids.profile() == fe::solids::ModelProfile::ExtendedLaw44Law90
+        ? next->ledger.InitializeWithExtendedSolids(input, ledger_limits)
+        : next->ledger.InitializeWithSolids(input, ledger_limits);
     Require(bool(ledger_report), ledger_report.message);
     Require(!next->ledger.scope().uncovered_nodes, "Complete physical domain contains an uncovered coefficient node");
     fe::rigid::PartAssemblyLimits part_limits; part_limits.max_host_bytes = limits.part_bytes;

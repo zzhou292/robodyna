@@ -1,4 +1,5 @@
 #include "VehiclePhysicalDomain.h"
+#include "Policy.h"
 #include "output/ArtifactIO.h"
 #include "lib_utils/BoundedArena.h"
 #include <algorithm>
@@ -6,7 +7,9 @@
 namespace crash::modelio::physical_domain {
 Forecast VehiclePhysicalDomain::Preflight(const physical_scope::PhysicalScope& source, Policy policy, Limits limits) {
     const Limits hard;
-    output::Require(policy == Policy::RetainedShellAssembliesV1 && limits.host_bytes && limits.host_bytes <= hard.host_bytes &&
+    output::Require(source.solid_source().data().policy == detail::SolidPolicy(policy),
+                    "Physical domain policy and retained solid source differ");
+    output::Require(limits.host_bytes && limits.host_bytes <= hard.host_bytes &&
         limits.domain_bytes && limits.domain_bytes <= hard.domain_bytes && limits.topology_bytes &&
         limits.topology_bytes <= hard.topology_bytes, "Invalid physical domain source policy or limits");
     const auto& data = source.data();

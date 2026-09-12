@@ -22,7 +22,10 @@ Forecast VehiclePhysicalAttachments::Preflight(const physical_model::VehiclePhys
         "Physical CIN source must retain the same original canonical authority");
     const auto& domain = physical.source_domain().domain();
     const auto mapped = TiedCinAttachments::Forecast(post, domain, limits.attachments);
-    Require(domain.node_count() == 372435 && post.result().slaves().count == 11165,
+    const auto policy = physical.source_domain().policy();
+    Require(((policy == modelio::physical_domain::Policy::RetainedShellAssembliesV1 && domain.node_count() == 372435) ||
+        policy == modelio::physical_domain::Policy::RetainedShellAssembliesExtendedSolidsV4) &&
+        post.result().slaves().count == 11165,
         "Physical CIN requires the complete retained vehicle scope");
     Forecast f;
     f.physical_source = physical.forecast().total_bytes;

@@ -14,5 +14,5 @@ void ResolveProperties(Data&);
 std::vector<BodyMember> Members(const physical_domain::VehiclePhysicalDomain&);
 void Map(std::vector<Row>&, const std::vector<std::uint64_t>&, const std::vector<double>&,
          const tl::fea::NodalNodeDomain&, const std::vector<BodyMember>&);
-void CheckOriginal(Data&);
+void CheckOriginal(Data&, Policy = Policy::OriginalDirectSdiType45V1);
 } // namespace crash::modelio::type45::detail

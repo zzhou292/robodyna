@@ -3,7 +3,7 @@
 #include "lib_src/assembly/NodalNodeDomain.h"
 
 namespace crash::modelio::physical_domain {
-enum class Policy { RetainedShellAssembliesV1 };
+enum class Policy { RetainedShellAssembliesV1, RetainedShellAssembliesExtendedSolidsV4 };
 enum class GroupDisposition { Complete, Restricted, Omitted };
 struct GroupSelection {
     std::size_t source_group = SIZE_MAX;
@@ -39,6 +39,7 @@ class VehiclePhysicalDomain {
     const std::vector<GroupSelection>& plain_groups() const noexcept;
     Counts counts() const noexcept;
     const Forecast& forecast() const noexcept;
+    Policy policy() const noexcept;
   private:
     struct Storage;
     explicit VehiclePhysicalDomain(std::shared_ptr<const Storage> value) : storage_(std::move(value)) {}
