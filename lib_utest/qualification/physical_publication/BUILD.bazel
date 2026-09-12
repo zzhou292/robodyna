@@ -1,4 +1,18 @@
-load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_test", "cc_library")
+cc_library(
+    name = "fixture",
+    testonly = True,
+    srcs = ["Sources.cpp", "Constraints.cpp"],
+    hdrs = ["Fixture.h"],
+    deps = ["//lib_src/elements:shell_batch_publication",
+            "//lib_src/constraints:nodal_rigid_assembly_binding",
+            "//lib_src/constraints/tied_shell:tied_cin_attachment",
+            "//lib_src/elements/solids:model",
+            "//lib_utest/qualification/nodal_coefficients:solid_test_support",
+            "//lib_utest/qualification/qbat_catalog:fixture", "@googletest//:gtest"],
+    visibility = ["//lib_utest/qualification/beam18_publication:__pkg__"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
 cc_test(
     name = "physical_publication_host_check",
     size = "small",
