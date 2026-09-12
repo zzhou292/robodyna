@@ -15,11 +15,13 @@ void PrepareMaterial(Part& part, Data& data) {
         Require(status == tl::material::law36::Status::Ok, "Native adhesive LAW36 material rejected");
         part.law36 = material;
     } else if (part.material_law == MaterialLaw::Law44) {
-        const tl::material::law44::solid::Curve curve{data.rear_plastic_strain.data(),
-            data.rear_yield_stress_pa.data(), static_cast<std::uint32_t>(data.rear_plastic_strain.size())};
+        tl::material::law44::solid::Curve curve{};
+        if (part.law44.material.hardening == tl::material::law44::solid::HardeningKind::Tabulated)
+            curve = {data.rear_plastic_strain.data(), data.rear_yield_stress_pa.data(),
+                     static_cast<std::uint32_t>(data.rear_plastic_strain.size())};
         tl::material::law44::solid::Parameters material;
         const auto status = tl::material::law44::solid::Prepare(part.law44.material, curve, material);
-        Require(status == tl::material::law44::solid::Status::Ok, "Native rear LAW44 material rejected");
+        Require(status == tl::material::law44::solid::Status::Ok, "Native solid LAW44 material rejected");
         part.law44 = material;
     } else if (part.material_law == MaterialLaw::Law90) {
         const tl::material::law90::CurveView curve{data.foam_compression_strain.data(),

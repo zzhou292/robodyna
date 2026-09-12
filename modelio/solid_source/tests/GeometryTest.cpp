@@ -19,7 +19,8 @@ struct Geometry {
     std::string member;
     Geometry(bool wedge, std::uint64_t id = 2000477,
              Policy policy = Policy::OriginalAdhesive18RubberHephS6zV1)
-        : data(Rubber(id, policy, id == 2000509 || id == 2000521 ? "1.9990E-9" : "1.9800E-9")) {
+        : data(id == detail::AirbagPart ? Airbag() :
+               Rubber(id, policy, id == 2000509 || id == 2000521 ? "1.9990E-9" : "1.9800E-9")) {
         Resolve(data);
         std::vector<std::uint64_t> ids;
         std::vector<double> positions;
@@ -128,6 +129,32 @@ TEST(VehicleSolidGeometry, ExtendedSourceUsesSameNativeGeometryAndCarriesAntirol
         ASSERT_NO_THROW(detail::ReadGeometry(antiroll.source, antiroll.member, omitted, {}));
         EXPECT_TRUE(omitted.rows.empty());
         EXPECT_EQ(omitted.outside_solids, 1u);
+    }
+}
+TEST(VehicleSolidGeometry, SelectedAirbagKeepsEightMassSlotsAndRejectsLateTopologyFailure) {
+    for (bool repeated : {false, true}) {
+        Geometry fixture(repeated, detail::AirbagPart, Policy::OriginalVehicleSupportsV5);
+        ASSERT_NO_THROW(fixture.Prepare());
+        ASSERT_EQ(fixture.data.solid18_law44.size(), 1u);
+        const auto& ref = fixture.data.solid18_law44[0];
+        EXPECT_EQ(ref.topology() == tl::fea::solid18::law44::SourceTopology::RepeatedPairs56And78, repeated);
+        EXPECT_EQ(ref.input().profile.material_law, 44u);
+        double mass = 0;
+        for (unsigned i = 0; i < 8; ++i) {
+            EXPECT_EQ(ref.input().source_node_id[i], fixture.data.rows[0].raw_node_ids[i]);
+            EXPECT_GT(ref.mass().source_nodal_mass_kg[i], 0);
+            mass += ref.mass().source_nodal_mass_kg[i];
+            EXPECT_GT(ref.geometry().point[i].initial_volume_m3, 0);
+        }
+        EXPECT_NEAR(mass, ref.mass().element_mass_kg, 1e-11);
+        auto bad = fixture.data;
+        bad.rows.back().raw_node_ids[7] = bad.rows.back().raw_node_ids[0];
+        EXPECT_THROW(detail::PrepareReferences(fixture.source, bad, {}), std::runtime_error);
+        EXPECT_TRUE(ref.prepared());
+        Geometry retry(repeated, detail::AirbagPart, Policy::OriginalVehicleSupportsV5);
+        ASSERT_NO_THROW(retry.Prepare());
+        EXPECT_EQ(output::Bits(retry.data.solid18_law44[0].mass().element_mass_kg),
+                  output::Bits(ref.mass().element_mass_kg));
     }
 }
 } // namespace crash::modelio::solid_source::test

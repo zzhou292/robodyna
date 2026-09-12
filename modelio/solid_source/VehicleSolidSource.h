@@ -18,7 +18,8 @@ enum class Policy {
     // source/reference profile, not a complete connected-vehicle admission.
     OriginalAdhesive18ExtendedRubberHephS6zV2,
     OriginalAdhesive18ExtendedRubberRearLaw44V3,
-    OriginalExtendedSolidsV4 // V3 plus original radiator foam, actual blank-HU LAW90.
+    OriginalExtendedSolidsV4, // V3 plus original radiator foam, actual blank-HU LAW90.
+    OriginalVehicleSupportsV5 // V4 plus 80 airbag supports, explicit Isolid18 demo selection.
 };
 enum class Family { Solid18, Solid24, Solid6z, Solid18Law44, Solid18Law90 };
 enum class MaterialLaw { Law36, Law42, Law44, Law90 };
@@ -46,6 +47,10 @@ struct Part {
     tl::material::law44::solid::Parameters law44;
     tl::material::law90::PreparationInput law90_input;
     tl::material::law90::PreparedMaterial law90;
+    // Explicit airbag selection only; zero for policies without this override.
+    // hourglass_source retains the authenticated original global control block.
+    unsigned selected_isolid = 0, original_ihq = 0;
+    double original_qh = 0;
 };
 struct Row {
     std::uint64_t element_id = 0, part_id = 0;

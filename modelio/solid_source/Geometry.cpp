@@ -94,7 +94,7 @@ void ReadGeometry(const source::CanonicalData& source, const std::string& member
         } else if (SelectedRadiator(row.part_id, data.policy)) {
             Require(unique.size() == 8, "Original radiator requires eight distinct solid18 slots");
             row.family = Family::Solid18Law90;
-        } else if (SelectedRear(row.part_id, data.policy)) {
+        } else if (SelectedRear(row.part_id, data.policy) || SelectedAirbag(row.part_id, data.policy)) {
             // Keep the original eight slots. The qualified LAW44 reference
             // validates either eight distinct nodes or the exact repeated pairs.
             row.family = Family::Solid18Law44;

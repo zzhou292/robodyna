@@ -190,3 +190,69 @@ domain, coefficient ledger, groups, CIN attachments and CUDA participant require
 their corresponding extended profile gate before case selection changes.
 No foam J2 plastic-strain value, original damping override or new runtime clock
 is created.
+
+## Vehicle supports V5: original airbag source, selected Isolid18
+
+`OriginalVehicleSupportsV5` adds only PID/SID/MID2000945 to V4:17 parts,
+4,980 cells. The five family counts are908/1991/350/386/1345. The existing
+`Limits::ExtendedSolids()` declaration supplies8,192 parent slots with the
+unchanged512MiB host cap. V1 remains the default; V4 still excludes the airbag.
+This source handle does not close the vehicle's remaining constraints or admit
+any runtime participant.
+
+The80 airbag cells retain all156 source NIDs and the original eight slots.
+EIDs2167690/2167709/2167737/2167756 keep their repeated5=6 and7=8 slots.
+`Part.converter_isolid=5` records the blank ELFORM/global IHQ4 conversion;
+`selected_isolid=18` records the explicit demo choice. Original PART, SECTION,
+MAT024 and global IHQ4/QH.02 evidence remain available. The selected reference
+is the existing eight-point LAW44 Isolid18,ICP1,ISMSTR2,JHBE17 formulation;
+no trajectory equivalence with the original reduced-integration Isolid5 is
+claimed. Every reference must have eight positive integration volumes and
+native source-slot masses; rotational inertia stays zero.
+
+`AirbagMaterial.cpp` consumes SIGY20MPa,ETAN10MPa,E1000MPa,nu.3,rho1.95e-9
+tonne/mm3,C8000/P8,LCSS0 and VP0 from the original cards. It calls the existing
+`PrepareMat024Analytic`, preserving the converter's working-unit operation
+`ETAN*E/(E-ETAN)` before the one-way SI conversion. MFUNC0 has a canonical empty
+curve and cursor0. Native EPSGM and EPMAX defaults remain distinct; no synthetic
+table or corner is introduced. The rear metal's46-point curve stays unchanged.
+
+The existing factory receives the main member only. For the global hourglass
+control, `AirbagSourceReceipt.h` retains the already-audited seven original
+combine.key lines142..148. `AirbagHourglass.cpp` checks that block's byte hash,
+location and unique census against all four authenticated canonical source
+inventories, then uses the existing numerical-card reader. The commented IHQ1
+line stays a comment. No new source decoder or additional file authority is
+introduced. Owned raw evidence and appended Part metadata use the existing
+payload accounting and bounded metadata reservation.
+
+Pinned donor revision is`a62b27e6baa555d222a580d6218867d0be4d70b5`:
+`convertprops.cxx:221` supplies blank-ELFORM/IHQ4 selection;
+`convertmats.cxx:6390` supplies the analytic MAT024 conversion;
+`hm_read_prop14.F:233` supplies the original integration selection;
+`hm_read_mat44.F` and complete`SIGEPS44` supply the qualified analytic/rate
+defaults. The TL owning qualification is`solid_law44_analytic`, including its
+source receipt and all80 native reference/constructor gate. The source adapter
+does not call a force constructor.
+
+Root gate (use the integrated TL analytic dependency; actual source execution
+remains in the root resource guard):
+
+```sh
+cmake -S modelio/solid_source -B BUILD \
+  -DChrono_DIR=CHRONO_INSTALL/lib/cmake/Chrono \
+  -DROBO_DYNA_TL_ROOT=TL_ROOT \
+  -DROBO_DYNA_VEHICLE_SOLID_AIRBAG_TESTS=ON \
+  -DROBO_DYNA_VEHICLE_CANONICAL=CANONICAL_DIRECTORY \
+  -DROBO_DYNA_VEHICLE_SCOPE=SCOPE_JSON
+cmake --build BUILD --parallel 2 --target \
+  robo_dyna_vehicle_solid_fields_check robo_dyna_vehicle_airbag_solid_source_check
+ctest --test-dir BUILD -R 'vehicle_solid_fields|vehicle_airbag' --output-on-failure
+```
+
+The three actual-source functions check all80 ordered original records (SHA256
+`5e7642afe341944fff6f6bbe8c3ab5e05310f48dc387bbe2d3dfe888117c43d0`),
+156 NIDs, four repeated cells, exact represented coordinates/material units,
+unchanged4,900 previous rows/curves, explicit caps, member rejection/retry and
+immutable lifetime. Small tests separately reject changed active/global cards,
+late unsupported controls, fake curves and malformed selected topology.

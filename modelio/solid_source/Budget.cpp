@@ -13,7 +13,9 @@ void Add(std::size_t& bytes, std::size_t count, std::size_t width, std::size_t c
 }
 void CheckOriginal(const source::CanonicalData& source) { vehicle::CheckOriginalYarisAuthority(source); }
 Forecast Budget(const source::CanonicalData& source, Policy policy, Limits limits) {
-    const Limits hard = policy == Policy::OriginalExtendedSolidsV4 ? Limits::ExtendedSolids() : Limits{};
+    const bool extended = policy == Policy::OriginalExtendedSolidsV4 ||
+                          policy == Policy::OriginalVehicleSupportsV5;
+    const Limits hard = extended ? Limits::ExtendedSolids() : Limits{};
     const std::size_t value[]{limits.host_bytes, limits.member_bytes, limits.metadata_bytes,
         limits.parents, limits.nodes, limits.source_solids, limits.blocks};
     const std::size_t maximum[]{hard.host_bytes, hard.member_bytes, hard.metadata_bytes,

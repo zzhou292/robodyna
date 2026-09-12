@@ -30,6 +30,12 @@ void ReadPart(Part& part, const std::vector<tied_shell::SourceEvidence>& sources
         "Selected solid source PART/SECTION/MATERIAL association changed");
     Require(!material.cards.empty() && tied_shell::detail::CardId(material.cards[0].second, 0) == part.material_id,
             "Selected solid material identity changed");
+    if (SelectedAirbag(part.id, data.policy)) {
+        Blank(p, 3, 8);
+        Blank(s, 1, 8); // Native default uses the global IHQ4 block; retain blank ELFORM.
+        ReadAirbagMaterial(part, material, data);
+        return;
+    }
     if (SelectedRadiator(part.id, data.policy)) {
         Blank(p, 3, 8);
         Require(Required(s, 1) == 2, "Original radiator ELFORM is not two");

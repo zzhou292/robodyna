@@ -1,5 +1,6 @@
 #pragma once
 #include "../Internal.h"
+#include "../AirbagSourceReceipt.h"
 #include "output/full_shell/static_bundle/MappingArrays.h"
 #include <gtest/gtest.h>
 #include <iomanip>
@@ -58,5 +59,24 @@ inline Data Adhesive() {
 inline void Resolve(Data& data) {
     detail::ReadPart(data.parts[0], data.sources, data);
     detail::PrepareMaterial(data.parts[0], data);
+}
+inline Data Airbag() {
+    Data data;
+    data.policy = Policy::OriginalVehicleSupportsV5;
+    auto global = Evidence("*CONTROL_HOURGLASS", {Card({"4", ".02"})});
+    global.block = {"combine.key", "*CONTROL_HOURGLASS", detail::AirbagHourglassRaw,
+                    detail::AirbagHourglassHash, 142, 148};
+    global.cards[0].first = 145;
+    data.sources = {
+        Evidence("*PART", {"Original airbag", Card({"2000945", "2000945", "2000945"})}),
+        Evidence("*SECTION_SOLID", {Card({"2000945"})}),
+        Evidence("*MAT_PIECEWISE_LINEAR_PLASTICITY", {
+            Card({"2000945", "1.9500E-9", "1000", ".3", "20", "10"}),
+            Card({"8000", "8", "0", "", "0.0"}), "", ""}), global};
+    Part part;
+    part.id = part.section_id = part.material_id = 2000945;
+    part.sources = {0, 1, 2};
+    data.parts.push_back(part);
+    return data;
 }
 } // namespace crash::modelio::solid_source::test

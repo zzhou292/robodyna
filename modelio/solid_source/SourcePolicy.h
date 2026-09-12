@@ -6,6 +6,7 @@ inline constexpr std::uint64_t AdhesivePart = 2000977;
 inline constexpr std::uint64_t FirstRubberPart = 2000477;
 inline constexpr std::uint64_t LastRubberPart = 2000484;
 inline constexpr std::uint64_t RadiatorPart = 2000063;
+inline constexpr std::uint64_t AirbagPart = 2000945;
 
 struct Census {
     std::size_t parts, parents, solid18, solid24, solid6z;
@@ -16,10 +17,13 @@ inline bool Supported(Policy policy) noexcept {
     return policy == Policy::OriginalAdhesive18RubberHephS6zV1 ||
            policy == Policy::OriginalAdhesive18ExtendedRubberHephS6zV2 ||
            policy == Policy::OriginalAdhesive18ExtendedRubberRearLaw44V3 ||
-           policy == Policy::OriginalExtendedSolidsV4;
+           policy == Policy::OriginalExtendedSolidsV4 ||
+           policy == Policy::OriginalVehicleSupportsV5;
 }
 inline Census ExpectedCensus(Policy policy) {
     output::Require(Supported(policy), "Unsupported solid source resolution policy");
+    if (policy == Policy::OriginalVehicleSupportsV5)
+        return {17, 4980, 908, 1991, 350, 386, 1345};
     if (policy == Policy::OriginalExtendedSolidsV4)
         return {16, 4900, 908, 1991, 350, 306, 1345};
     if (policy == Policy::OriginalAdhesive18ExtendedRubberRearLaw44V3)
@@ -36,14 +40,19 @@ inline bool SelectedRubber(std::uint64_t id, Policy policy) noexcept {
 }
 inline bool SelectedRear(std::uint64_t id, Policy policy) noexcept {
     return (policy == Policy::OriginalAdhesive18ExtendedRubberRearLaw44V3 ||
-            policy == Policy::OriginalExtendedSolidsV4) &&
+            policy == Policy::OriginalExtendedSolidsV4 ||
+            policy == Policy::OriginalVehicleSupportsV5) &&
            (id == 2000016 || id == 2000392);
 }
 inline bool SelectedRadiator(std::uint64_t id, Policy policy) noexcept {
-    return policy == Policy::OriginalExtendedSolidsV4 && id == RadiatorPart;
+    return (policy == Policy::OriginalExtendedSolidsV4 ||
+            policy == Policy::OriginalVehicleSupportsV5) && id == RadiatorPart;
+}
+inline bool SelectedAirbag(std::uint64_t id, Policy policy) noexcept {
+    return policy == Policy::OriginalVehicleSupportsV5 && id == AirbagPart;
 }
 inline bool Selected(std::uint64_t id, Policy policy) noexcept {
     return Supported(policy) && (id == AdhesivePart || SelectedRubber(id, policy) ||
-        SelectedRear(id, policy) || SelectedRadiator(id, policy));
+        SelectedRear(id, policy) || SelectedRadiator(id, policy) || SelectedAirbag(id, policy));
 }
 } // namespace crash::modelio::solid_source::detail

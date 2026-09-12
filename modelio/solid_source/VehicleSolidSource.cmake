@@ -8,6 +8,8 @@ add_library(robo_dyna_vehicle_solid_source STATIC
   "${CMAKE_CURRENT_LIST_DIR}/Materials.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/RearMaterial.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/RadiatorMaterial.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/AirbagMaterial.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/AirbagHourglass.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/Curves.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/Geometry.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/References.cpp")
