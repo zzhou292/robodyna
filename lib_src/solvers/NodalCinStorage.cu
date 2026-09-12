@@ -20,6 +20,10 @@ cudaError_t CinStorage::Upload(cudaStream_t stream) {
       ? util::ArenaPointer<cin_advance::groups::Report>(arena, layout.group_reports) : nullptr;
   prepared_transfers = util::ArenaPointer<constraints::tied_shell::cin::detail::PreparedForceRow>(
       arena, layout.prepared_transfers);
+  prepared_recovery = util::ArenaPointer<cin_advance::recovery::Row>(arena, layout.prepared_recovery);
+  recovery_failure = util::ArenaPointer<cin_advance::recovery::FailureRow>(arena, layout.recovery_failure);
+  // Recovery uses its own typed tail. Its Begin/Prepare stages initialize the
+  // key and every packet before any prefix publication; no startup seed is read.
   // No packet has startup meaning. The complete force-input and entry-IN stage
   // precedes a full per-row overwrite before the ordered apply reads this tail.
   // Screen records are fully written by each node kernel before reduction.

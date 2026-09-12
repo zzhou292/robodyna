@@ -1,6 +1,7 @@
 """Checked serial compatibility views. No runtime or numerical test substitute."""
 from pathlib import Path
 import re
+import runpy
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
@@ -62,6 +63,8 @@ def legacy_force_stage(current):
 
 
 def legacy_owner(current):
+    recovery = runpy.run_path(str(HERE.parent/"cin_parallel_recovery/recovery_proof.py"))
+    current = recovery["legacy_owner"](current)
     value = current.replace('#include "cin_advance/ForceTransfers.h"\n', '')
     value = value.replace('bool inputs_prepared, bool parallel_screen,\n    bool transfers_prepared = false)',
                           'bool inputs_prepared, bool parallel_screen)')

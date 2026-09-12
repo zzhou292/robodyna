@@ -1,7 +1,7 @@
 load("@rules_cc//cc:defs.bzl", "cc_library")
 cc_library(
     name = "cin_stage",
-    hdrs = ["runtime/CinStageTypes.h", "runtime/CinForceStage.h", "runtime/CinForceTransfer.h", "runtime/CinMotionStage.h"],
+    hdrs = ["runtime/CinStageTypes.h", "runtime/CinForceStage.h", "runtime/CinForceTransfer.h", "runtime/CinMotionStage.h", "runtime/CinMotionRows.h"],
     deps = [":tied_cin_attachment", ":tied_shell_patch"],
     visibility = ["//visibility:public"],
 )

@@ -8,7 +8,7 @@ import runpy
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 raw = (here/'source-manifest.json').read_bytes()
-assert hashlib.sha256(raw).hexdigest() == '883c089608818d99a36ca06c82c04d09c6d123ce32c08be45a6c700399eae788'
+assert hashlib.sha256(raw).hexdigest() == '1acedeee34404c15d574c24a88433d0a77e7059af7d6e37b334c9008953be86c'
 manifest = json.loads(raw)
 for row in manifest['files']:
     path = Path(row['path'])
@@ -40,6 +40,7 @@ assert 'input.prepared_transfers[row] = next;' in leaf
 assert 'atomic' not in kernel and 'cudaMalloc' not in kernel
 assert 'if (!input.model.row_count) return cudaSuccess;' in body(kernel, 'Launch')
 owner = (root/'lib_src/solvers/ExplicitNodalCinStep.cu').read_text()
+owner = runpy.run_path(str(here.parent/"cin_parallel_recovery/recovery_proof.py"))["legacy_owner"](witness["legacy_owner"](owner))
 launch = body(owner, 'cin_advance::Launch')
 assert launch.index('force_inputs::Launch') < launch.index('force_transfers::Launch') < launch.index('PrepareCin<<<')
 assert launch.index('PrepareCin<<<') < launch.index('screen::Launch') < launch.index('AdvanceOrdinaryCin<<<')

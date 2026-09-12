@@ -3,13 +3,10 @@
 #include "cin_advance/Node.h"
 #include "cin_advance/ForceInputs.h"
 #include "cin_advance/ForceTransfers.h"
-#include "cin_advance/Recovery.h"
-#include "cin_advance/RecoveryDrift.h"
 #include "cin_advance/Screen.h"
 #include "cin_advance/Capture.h"
 #include "cin_advance/Groups.h"
 #include "cin_timestep/Screen.h"
-#include "cin_limiter/Capture.h"
 #include "NodalCinStorage.h"
 #include "NodalRigidGroupStorage.h"
 #include "NodalNodeStep.h"
@@ -73,9 +70,6 @@ __global__ void PrepareCin(const cin_advance::Input input, bool inputs_prepared,
     // Preserve the complete native/analytical bound for both success and a
     // rejected step. This existing owner control is not a second row proof.
     control->limit.dt = result.minimum_dt;
-    if (structural.capture_limiter)
-      control->structural_limiter = cin_limiter::Capture(sources, structural.factor,
-          result, epoch, attempt);
     if (durations.drift_dt > result.minimum_dt) {
       control->status = NodalStatus::StepTooLarge;
       control->node = result.limiting_node;
@@ -94,8 +88,7 @@ __global__ void AdvanceOrdinaryCin(const cin_advance::Input input) {
     }
   }
 }
-__global__ void CompleteCin(const cin_advance::Input input, bool groups_prepared = false,
-    bool defer_recovery = false) {
+__global__ void CompleteCin(const cin_advance::Input input, bool groups_prepared = false) {
   auto* control = input.control;
   const auto* accepted = input.accepted;
   auto* trial = input.trial;
@@ -140,14 +133,33 @@ __global__ void CompleteCin(const cin_advance::Input input, bool groups_prepared
       }
     }
   }
-  if (defer_recovery) return;
   stage = cin::RecoverMotionTrial(model, {patches, trial+3*n, trial+6*n,
       acceleration, angular_acceleration});
   if (!stage) {
     Fail(control, NodalStatus::InvalidOutput, stage.node);
     return;
   }
-  cin_advance::recovery::Drift(input);
+  for (std::uint32_t row = 0; row < r; ++row) {
+    const auto node = model.rows[row].secondary;
+    for (unsigned a = 0; a < 3; ++a) {
+      const auto j = 3*node+a;
+      trial[j] = accepted[j]+durations.drift_dt*trial[3*n+j];
+      // A dependent is not a prescribed fixed DOF. Its transfer is represented
+      // by the retained native loads, not a fabricated fixed reaction.
+      trial[13*n+j] = 0;
+      trial[16*n+j] = 0;
+      if (!std::isfinite(trial[j])) {
+        Fail(control, NodalStatus::InvalidOutput, node);
+        return;
+      }
+    }
+    const auto status = nodal_detail::PrepareNodeOrientation(accepted, trial, node, n,
+        durations.drift_dt, maximum_angle, false);
+    if (status != NodalStatus::Ok) {
+      Fail(control, status, node);
+      return;
+    }
+  }
 
 }
 } // namespace
@@ -183,14 +195,9 @@ cudaError_t cin_advance::Launch(const Input& input, cudaStream_t stream) {
     error = groups::LaunchMotion(input, stream);
     if (error != cudaSuccess) return error;
   }
-  const bool parallel_recovery = input.prepared_recovery && input.recovery_failure && input.model.row_count;
-  CompleteCin<<<1,1,0,stream>>>(input, parallel_groups, parallel_recovery);
+  CompleteCin<<<1,1,0,stream>>>(input, parallel_groups);
   error = cudaGetLastError();
   if (error != cudaSuccess) return error;
-  if (parallel_recovery) {
-    error = recovery::Launch(input, stream);
-    if (error != cudaSuccess) return error;
-  }
   return capture::Launch(input, stream);
 }
 
@@ -209,7 +216,7 @@ cudaError_t FENodalState::Impl::LaunchCinAdvance(double maximum_angle,
       maximum_angle, stamp.epoch, attempt, capture,
       stamp.has_rotation_presence?fixed+3*config.node_count:nullptr,
       structural ? *structural : NodalCinStructuralStep{}, cin->failure, cin->input_failure, cin->screen, cin->group_reports,
-      cin->prepared_transfers, cin->prepared_recovery, cin->recovery_failure}, stream);
+      cin->prepared_transfers}, stream);
 }
 
 NodalReport AdvanceStaggeredCin(FENodalState& owner, const NodalTrialToken& token,

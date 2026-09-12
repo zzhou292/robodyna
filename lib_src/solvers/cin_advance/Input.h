@@ -3,6 +3,7 @@
 #include "FailureKey.h"
 #include "ScreenSummary.h"
 #include "GroupReport.h"
+#include "RecoveryTypes.h"
 #include "../../constraints/tied_shell/runtime/CinForceTransfer.h"
 #include "../FENodalStateStorage.h"
 #include "../NodalCinRuntime.h"
@@ -40,6 +41,10 @@ struct Input {
   // Exactly model.row_count packets, rewritten after complete input/entry-IN
   // preparation each attempt. Null retains the public serial force route.
   constraints::tied_shell::cin::detail::PreparedForceRow* prepared_transfers = nullptr;
+  // Separate typed recovery lifetime, after all ordinary/rigid advancement.
+  // Null retains the private serial recovery path. Every admitted row is fresh.
+  recovery::Row* prepared_recovery = nullptr;
+  recovery::FailureRow* recovery_failure = nullptr;
 };
 cudaError_t Launch(const Input&, cudaStream_t);
 } // namespace tl::fea::cin_advance

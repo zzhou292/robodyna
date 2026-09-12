@@ -1,0 +1,428 @@
+{
+  "baseline_commit": "223d81364d169bbc5cf49034efe953fc97d26761",
+  "scope": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained.",
+  "files": [
+    {
+      "path": "lib_src/constraints/tied_shell/BUILD.bazel",
+      "bytes": 2031,
+      "sha256": "ee061c42c76383c5ae60520ac0d91150a0e8bf0af60059abd3593260566298b0"
+    },
+    {
+      "path": "lib_src/constraints/tied_shell/TiedPatchMotion.h",
+      "bytes": 2400,
+      "sha256": "abb80f7167c8856aedc660ef633b75c83e39eb0a4cc248db5ceb18c53135247f"
+    },
+    {
+      "path": "lib_src/constraints/tied_shell/runtime/CinMotionRows.h",
+      "bytes": 1863,
+      "sha256": "561da2520acb590ca441620e37ff6c3ae609dd6a416cfbd24087a5943f9cbd63"
+    },
+    {
+      "path": "lib_src/constraints/tied_shell/runtime/CinMotionStage.h",
+      "bytes": 790,
+      "sha256": "eaafc57c7ad81baf71024a5a4c6e576e9d01c2f46b74bac5dd744fc55fefbdb6"
+    },
+    {
+      "path": "lib_src/solvers/BUILD.bazel",
+      "bytes": 8359,
+      "sha256": "b586a6bb9ba463a00dafd0908944711faf0134816ebdf18383bbd161f2d9fedf",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 8249,
+          "prior_sha256": "84a7f54306659eb8a67479ed793cca54052942a567f96d22be562f742383662a",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
+    },
+    {
+      "path": "lib_src/solvers/CMakeLists.txt",
+      "bytes": 1818,
+      "sha256": "8586678eaecd7283aee844dfed74cfa5d6ff59583e8bc91c350372f467f307e4",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 1790,
+          "prior_sha256": "b3c24f75896dc415d76e22e83d78878a7115c135a124878b4a5b509f2cc807a1",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
+    },
+    {
+      "path": "lib_src/solvers/ExplicitNodalCinStep.cu",
+      "bytes": 10547,
+      "sha256": "496b09d3a718295901eeef603979800431b6aeaef35c42e25d0fc3982b21003f",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 10358,
+          "prior_sha256": "c9a1db445a14d829a8ba11abd95590ec619e9ac28b7b92d662bba086eab5f717",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
+    },
+    {
+      "path": "lib_src/solvers/NodalCinLayout.h",
+      "bytes": 4636,
+      "sha256": "2254ede7999c1d12cf3db7b1a5dee02014024d099e002c4c70b80b39bb738241"
+    },
+    {
+      "path": "lib_src/solvers/NodalCinStartup.cpp",
+      "bytes": 12018,
+      "sha256": "229f8cb9a057f4a75e7a14bb8cec0c52b5cb19f6acc44a5a33df3abf18ddd001"
+    },
+    {
+      "path": "lib_src/solvers/NodalCinStorage.cu",
+      "bytes": 3096,
+      "sha256": "e1af51b083ce93a5a541cfb0ec73c2747613fb7889db398eb1e2cbadd989c306"
+    },
+    {
+      "path": "lib_src/solvers/NodalCinStorage.h",
+      "bytes": 1917,
+      "sha256": "166c7ee4c5eeee075e0da04b7cd1278c774f7a4d4a08bdcfbc1f054f2920d31e"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/Input.h",
+      "bytes": 2280,
+      "sha256": "1de7ab4cc5a580676b1da69e8a208ac94fc3462be4fe41841cef814e6bd552de"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/Recovery.cu",
+      "bytes": 2082,
+      "sha256": "26d05a26cdb721dc713e7b8af184cac366e303abd6ed3587186259e3b97adf48"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/Recovery.h",
+      "bytes": 950,
+      "sha256": "84c57c9ebfb6867c66f0a3f69f2e7734ffee4294fe299460ad8803767d5b6243"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/RecoveryDrift.h",
+      "bytes": 1685,
+      "sha256": "a135c31e3f197a8a0b910bb25953c1098d35df3ad312e5bd350da2cc50f4245d"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/RecoveryTypes.h",
+      "bytes": 565,
+      "sha256": "bfd8c4ea37b1e7beb11757083e6a0676ed1e8c985add15cb26fffb4e62194793"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_inputs/BUILD.bazel",
+      "bytes": 1299,
+      "sha256": "edf8017cf13aa0439613dbbe92d27cca6df3397acb845f154d024a5078e08fb1"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_inputs/HostTest.cpp",
+      "bytes": 5696,
+      "sha256": "4c93361d4e67264148b07246ce3a72344f79579c8ddae3685e362ece9bc85092"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_inputs/source-manifest.json",
+      "bytes": 15301,
+      "sha256": "35a4423f54a25221e1a06a531a1500150e4494cd7ef9157865328a4b3facdc2e",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 8832,
+          "prior_sha256": "54863e38601d6907d07c5c409982d92585cfac558af1a3c3e8a28fd2ad686078",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_inputs/verify_sources.py",
+      "bytes": 6359,
+      "sha256": "ac7fa131ee15a3107e4584c3f88b5220a96435b404cb3758e95914e05d99d33c",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 6359,
+          "prior_sha256": "fd1fbf2756d51d1c4aee826785258030512fb8ff3811fce7b30caf348c7eb7f2",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_transfers/BUILD.bazel",
+      "bytes": 1305,
+      "sha256": "5b8d7557f0c4b8ed06769fe2fab657dd97ec079755b6c285252b8b0ad4394d90"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_transfers/HostTest.cpp",
+      "bytes": 6208,
+      "sha256": "7551366d0f2d1598c690a9f87c5976c0c4676c480cfef04d5237e2b8e467afd5"
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_transfers/source-manifest.json",
+      "bytes": 51023,
+      "sha256": "1acedeee34404c15d574c24a88433d0a77e7059af7d6e37b334c9008953be86c",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 22358,
+          "prior_sha256": "b4e73847d876023022611e84e5c3a408668d24690f4c653081e548222423e50a",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_transfers/transfer_proof.py",
+      "bytes": 4339,
+      "sha256": "a5bdad94e5ef5765be342678ed5e7891a3c3d9e694ed545a28005176bfaf4ff1",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 4219,
+          "prior_sha256": "b7f32a4c0059cd236c435cd86cac794b16d618b3cb556d8d9684255c55534d6e",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/cin_force_transfers/verify_sources.py",
+      "bytes": 3782,
+      "sha256": "e024054fb2fcd6152737e3de50eaa9e084a951c504e09dbdd3f1e99858c7c54c",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 3658,
+          "prior_sha256": "a0efbbdb8373779255df47ebee08e0c20e447fce4ecd765958125649d24ca32b",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_capture/source-manifest.json",
+      "bytes": 68487,
+      "sha256": "fdb5b593c5105694d5dc7ceed34528747261a58c4da2ec00fea5b4047b57e1c2",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 30947,
+          "prior_sha256": "7f0c4bee2b10f276b294a8458f2a394507270db7dab4028fc075ce020a45b703",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_capture/verify_sources.py",
+      "bytes": 3992,
+      "sha256": "f2903884507463f63b52fe63968c2ff0065a493cf8ac798ec8515922e35461ff",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 3992,
+          "prior_sha256": "b1467c58924d551a8a6e989858c5df45053b190a3335a31c7da94c756926e85b",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_groups/source-manifest.json",
+      "bytes": 80723,
+      "sha256": "c9e5750b607dbaac8fabdce8f57452e785bd90333ba1fa448446c8b3c858775e",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 39137,
+          "prior_sha256": "137fc83cf465a222f526d26d3d666fdb3f724f9bd2f051878c537e92c43dc3c3",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_groups/verify_sources.py",
+      "bytes": 3905,
+      "sha256": "ae06ef89979bc057144d69a5d162e0e064341cf0c95c3c926a01e8d619484924",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 3905,
+          "prior_sha256": "8547adc5f43402ac4366acc0fc81a02cefa48929161951fb927b37b79e3a3f41",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/BUILD.bazel",
+      "bytes": 2872,
+      "sha256": "f188cc906676eaa63bba181abac8b18c22f09799f1d0891b6136b84d22405e75"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/HostTest.cpp",
+      "bytes": 6207,
+      "sha256": "b8dac890a1cfa3dc996539a0a3a7c47198c687bbe1352cf3ce65ab861ec40626"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/source-manifest.json",
+      "bytes": 17383,
+      "sha256": "7b06d8f476e82f7cc5fb525f8fe4c270c55e2855f211d2909b0bf5e4cba2fca6",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 9439,
+          "prior_sha256": "541855a27d57e031931b1877cfbb20c2fc460f9db64874c91616bdb58f5f9acd",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/verify_sources.py",
+      "bytes": 4833,
+      "sha256": "5cebce36a78f1ea9225d7c6da50d0442e3eb5d4c92acad2d203a21bde6e252e6",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 4833,
+          "prior_sha256": "b02d22d7ece218c3ff7394d0c0469a03cf5c664ee2a47836506fa32347fc1791",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_recovery/BUILD.bazel",
+      "bytes": 1257,
+      "sha256": "cc5537bbf02e24d72e92835732f6864f301dacb0d689d548875c53e5c67c1486"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_recovery/CMakeLists.txt",
+      "bytes": 2603,
+      "sha256": "6b421eb754da5e5f148a4890417115bc98e595d4345910bdf4cb5346a63c9c7d"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_recovery/CallerTest.cu",
+      "bytes": 2032,
+      "sha256": "c4c9cdc061caa0c76ac0d09f61bcc840edab94f87aa0ea470651d797748f6533"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_recovery/DeviceFixture.cuh",
+      "bytes": 2705,
+      "sha256": "ee7ae512aaed4d9f94440b475c3f57312c34eae734b4f8ae61ccde952225dc9e"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_recovery/Fixture.h",
+      "bytes": 2956,
+      "sha256": "a73f3fb055162463f6a11a84b109c42f356b005b143b15ff699745bf3ebc1a0a"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_recovery/Frozen.cu",
+      "bytes": 8506,
+      "sha256": "5be6eb7634fd9d28b81f93d58cd5ac3a52a41e98a2c27f52aee971f431a17937"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_recovery/FrozenMotion.h",
+      "bytes": 2000,
+      "sha256": "d22c543606d53651c24df928d3556d4acee172a4abacdd03c3e6a6230a66557e"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_recovery/FrozenTail.cuh",
+      "bytes": 3451,
+      "sha256": "9fa52c0c2725e23e374957f9b1d47d0803257a9299c5b1d2ed75cb970043a442"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_recovery/HostTest.cpp",
+      "bytes": 6160,
+      "sha256": "e2edc233a77957da59451178277178a4b639631077ad22b14affd014ccc34cd0"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_recovery/OwnerTest.cu",
+      "bytes": 6224,
+      "sha256": "a6ef0e7241055e1208ebb02a7638ffaa76f21ea20fb1f2e7c9fbab0a0a845686"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_recovery/README.md",
+      "bytes": 4262,
+      "sha256": "12697f331816ac37c3a56a587d52a38916b8d520f9008ca2a626a30a2a4dc8df",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 3654,
+          "prior_sha256": "72c7e14f643cfecaadac42eed49956206385710ea8fb93854a06546a1a9e0735",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_recovery/TailTest.cu",
+      "bytes": 2376,
+      "sha256": "5c0b61726109047bbd3ef7920edc6c7873d851074f8b18b6d52ad7cd34b1088a"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_recovery/recovery_proof.py",
+      "bytes": 4677,
+      "sha256": "f6f620a9de13606b96019d066a7f1c3effe0f4aeb55b5785397d4103c47e9b98",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 4557,
+          "prior_sha256": "ee8cdfbccaee7b07baa5d8eea5a0189fd77c006ccb09e30101d7f6e474f0d9ab",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_recovery/reference/CinMotionStage.h",
+      "bytes": 1774,
+      "sha256": "9f8f729e802df94729fcf5392b0b06fc50d55b0f883bd9f538c531c3b21f30f3"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_recovery/reference/ExplicitNodalCinStep.cu",
+      "bytes": 10678,
+      "sha256": "4fb1ea8c19c91f7629d50719d1be05918263df38ccd1161ad0f4e90befe46831"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_recovery/reference/TiedPatchMotion.h",
+      "bytes": 2400,
+      "sha256": "abb80f7167c8856aedc660ef633b75c83e39eb0a4cc248db5ceb18c53135247f"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_screen/HostTest.cpp",
+      "bytes": 8057,
+      "sha256": "6b34a39b51f10516d4df36f11342ac6acfcc8f8291f685b4914c2a73fbfbf91e"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_screen/source-manifest.json",
+      "bytes": 67879,
+      "sha256": "ae82c40038a254702b42fcb87436945e5b19ac431cd9723b980ad74fd0ba51c3",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 32017,
+          "prior_sha256": "918ade858ac5a78b75317a590607160499f92de1e1f32157fcd0d4674f3828af",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_screen/verify_sources.py",
+      "bytes": 6798,
+      "sha256": "a0b18e70bb82b4031ca7540d6afbe644ac98f3c6a5b78b6a362191b22de18ded",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 6798,
+          "prior_sha256": "d5aaffabbc0ea1142ccb276639d9a98dbc5e44b73f26db76e520a99a2fa1e4db",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/nodal_seal_rows/source-manifest.json",
+      "bytes": 37742,
+      "sha256": "4bdcd48aa164f3341feff936c180d3cda39051b68773ada9bc4b2c30b7f835c8",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 16349,
+          "prior_sha256": "493e07091dfaad4ccdf2360b4eaa7d976716dc3764b3ce597b1aa1a9ac146fb3",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/nodal_seal_rows/verify_sources.py",
+      "bytes": 3815,
+      "sha256": "7cca37b0c4b352eadc8077bce164c514a7cbbc4572885f376b170628e77363a1",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 3815,
+          "prior_sha256": "504b28ef62e9e5c6d927ce07720c6276c7feca5a7ee16c5043d79268cfc1e5bd",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/rigid_assembly_owner/BUILD.bazel",
+      "bytes": 2781,
+      "sha256": "d4e95f41d644076f860fe76dc240887afaf3bc871431099d8f00f6cbbf6a1a6f"
+    },
+    {
+      "path": "lib_utest/qualification/cin_limiter/witness_proof.py",
+      "bytes": 1078,
+      "sha256": "8c010a65abf5dc7b6dee1682c100fc83a55297be8f500e686425f6f67eaaf21c"
+    }
+  ],
+  "recovery_integration_base": "bf1c6a4",
+  "recovery_integration_commit": "d05ad75ecb15517ca3dd1233843a5764a51f0850"
+}

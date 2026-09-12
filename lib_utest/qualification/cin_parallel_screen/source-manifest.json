@@ -14,8 +14,8 @@
     },
     {
       "path": "lib_src/solvers/BUILD.bazel",
-      "bytes": 8244,
-      "sha256": "5a0a3af4822ba53f21dd4af9e960eb01867ec5540ad7d453a21179e6114e19dd",
+      "bytes": 8359,
+      "sha256": "b586a6bb9ba463a00dafd0908944711faf0134816ebdf18383bbd161f2d9fedf",
       "prior_receipts": [
         {
           "bytes": 7702,
@@ -31,6 +31,11 @@
           "bytes": 8057,
           "sha256": "89693f691daf69947e61ff127957bfb9bfad964a34bab4468c341e1d028c6a82",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        },
+        {
+          "bytes": 8134,
+          "sha256": "3f212ec1bf1ebeddceeaebcf27c91036e6f1262b604ce2cf0d39116a1789bd91",
+          "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
         }
       ],
       "limiter_branch_receipt": {
@@ -65,13 +70,23 @@
           "prior_bytes": 8134,
           "prior_sha256": "3f212ec1bf1ebeddceeaebcf27c91036e6f1262b604ce2cf0d39116a1789bd91",
           "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        },
+        {
+          "prior_bytes": 8249,
+          "prior_sha256": "84a7f54306659eb8a67479ed793cca54052942a567f96d22be562f742383662a",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 8244,
+          "prior_sha256": "5a0a3af4822ba53f21dd4af9e960eb01867ec5540ad7d453a21179e6114e19dd",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
         }
       ]
     },
     {
       "path": "lib_src/solvers/CMakeLists.txt",
-      "bytes": 1794,
-      "sha256": "db297f7e3125b378950db1f55334020258777fc9da2a0d9e5cc5a6f8a1e3b6e6",
+      "bytes": 1818,
+      "sha256": "8586678eaecd7283aee844dfed74cfa5d6ff59583e8bc91c350372f467f307e4",
       "prior_receipts": [
         {
           "bytes": 1712,
@@ -82,6 +97,11 @@
           "bytes": 1734,
           "sha256": "2f116b66ddf1153954a91cdf242182f7e4df459078323c2a8aefedf6421a3f6a",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        },
+        {
+          "bytes": 1766,
+          "sha256": "07470169782f895fd3ec201d39a5a6b018d2af5eee6975d2a7dafe876ee354a7",
+          "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
         }
       ],
       "limiter_branch_receipt": {
@@ -111,13 +131,23 @@
           "prior_bytes": 1766,
           "prior_sha256": "07470169782f895fd3ec201d39a5a6b018d2af5eee6975d2a7dafe876ee354a7",
           "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        },
+        {
+          "prior_bytes": 1790,
+          "prior_sha256": "b3c24f75896dc415d76e22e83d78878a7115c135a124878b4a5b509f2cc807a1",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 1794,
+          "prior_sha256": "db297f7e3125b378950db1f55334020258777fc9da2a0d9e5cc5a6f8a1e3b6e6",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
         }
       ]
     },
     {
       "path": "lib_src/solvers/ExplicitNodalCinStep.cu",
-      "bytes": 10867,
-      "sha256": "0051dd23cb0d35b9386531877e4ca07ae4d7b661131cc37716f987a6062df967",
+      "bytes": 10547,
+      "sha256": "496b09d3a718295901eeef603979800431b6aeaef35c42e25d0fc3982b21003f",
       "prior_receipts": [
         {
           "bytes": 9950,
@@ -128,6 +158,11 @@
           "bytes": 10271,
           "sha256": "46c3f5faeba3d9d1d004b6833ecf4cb24041e5e732f93d610d56b2b21c90fc92",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        },
+        {
+          "bytes": 10678,
+          "sha256": "4fb1ea8c19c91f7629d50719d1be05918263df38ccd1161ad0f4e90befe46831",
+          "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
         }
       ],
       "limiter_branch_receipt": {
@@ -157,6 +192,16 @@
           "prior_bytes": 10678,
           "prior_sha256": "4fb1ea8c19c91f7629d50719d1be05918263df38ccd1161ad0f4e90befe46831",
           "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        },
+        {
+          "prior_bytes": 10358,
+          "prior_sha256": "c9a1db445a14d829a8ba11abd95590ec619e9ac28b7b92d662bba086eab5f717",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 10867,
+          "prior_sha256": "0051dd23cb0d35b9386531877e4ca07ae4d7b661131cc37716f987a6062df967",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
         }
       ]
     },
@@ -174,8 +219,8 @@
     },
     {
       "path": "lib_src/solvers/NodalCinLayout.h",
-      "bytes": 4392,
-      "sha256": "b59d8c568b2553d4d1f5439c424308ee739d22f82808f66abe18fdd899feaec4",
+      "bytes": 4636,
+      "sha256": "2254ede7999c1d12cf3db7b1a5dee02014024d099e002c4c70b80b39bb738241",
       "prior_receipts": [
         {
           "bytes": 3988,
@@ -186,6 +231,11 @@
           "bytes": 4178,
           "sha256": "900cb7b2c3ed5f51b5b565ed1d007c7ee01c59612774878f640b0f5c9f2d4d95",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        },
+        {
+          "bytes": 4392,
+          "sha256": "b59d8c568b2553d4d1f5439c424308ee739d22f82808f66abe18fdd899feaec4",
+          "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
         }
       ],
       "limiter_branch_receipt": {
@@ -202,7 +252,19 @@
             }
           ]
         }
-      }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 4636,
+          "prior_sha256": "2254ede7999c1d12cf3db7b1a5dee02014024d099e002c4c70b80b39bb738241",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 4392,
+          "prior_sha256": "b59d8c568b2553d4d1f5439c424308ee739d22f82808f66abe18fdd899feaec4",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
     },
     {
       "path": "lib_src/solvers/NodalCinStartup.cpp",
@@ -218,8 +280,8 @@
     },
     {
       "path": "lib_src/solvers/NodalCinStorage.cu",
-      "bytes": 2724,
-      "sha256": "74e6bad9b4a85e75d7e6660bfe356d5aa49372c2a8444078742f06a19bdb8b56",
+      "bytes": 3096,
+      "sha256": "e1af51b083ce93a5a541cfb0ec73c2747613fb7889db398eb1e2cbadd989c306",
       "prior_receipts": [
         {
           "bytes": 2282,
@@ -230,6 +292,11 @@
           "bytes": 2423,
           "sha256": "102a653cdac0f6a889f74307559d7a0912840da2207f4207285fffeb02cae323",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        },
+        {
+          "bytes": 2724,
+          "sha256": "74e6bad9b4a85e75d7e6660bfe356d5aa49372c2a8444078742f06a19bdb8b56",
+          "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
         }
       ],
       "limiter_branch_receipt": {
@@ -246,12 +313,24 @@
             }
           ]
         }
-      }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 3096,
+          "prior_sha256": "e1af51b083ce93a5a541cfb0ec73c2747613fb7889db398eb1e2cbadd989c306",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 2724,
+          "prior_sha256": "74e6bad9b4a85e75d7e6660bfe356d5aa49372c2a8444078742f06a19bdb8b56",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
     },
     {
       "path": "lib_src/solvers/NodalCinStorage.h",
-      "bytes": 1793,
-      "sha256": "21cf7396ecd67a389438a03372cf7c61f0f3f4d1ab90d2abe8840c5a899bf48f",
+      "bytes": 1917,
+      "sha256": "166c7ee4c5eeee075e0da04b7cd1278c774f7a4d4a08bdcfbc1f054f2920d31e",
       "prior_receipts": [
         {
           "bytes": 1620,
@@ -262,6 +341,11 @@
           "bytes": 1705,
           "sha256": "3b9018b15d9618998f84a3e4de0efb54c43d171074522911a6e3a652ddb920de",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        },
+        {
+          "bytes": 1793,
+          "sha256": "21cf7396ecd67a389438a03372cf7c61f0f3f4d1ab90d2abe8840c5a899bf48f",
+          "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
         }
       ],
       "limiter_branch_receipt": {
@@ -278,7 +362,19 @@
             }
           ]
         }
-      }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 1917,
+          "prior_sha256": "166c7ee4c5eeee075e0da04b7cd1278c774f7a4d4a08bdcfbc1f054f2920d31e",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 1793,
+          "prior_sha256": "21cf7396ecd67a389438a03372cf7c61f0f3f4d1ab90d2abe8840c5a899bf48f",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
     },
     {
       "path": "lib_src/solvers/cin_advance/ForceInputs.cu",
@@ -292,8 +388,8 @@
     },
     {
       "path": "lib_src/solvers/cin_advance/Input.h",
-      "bytes": 1997,
-      "sha256": "732f5bad171fda201094777bc31380861d6ba7c23bb52fe6d49905dcbccac9d8",
+      "bytes": 2280,
+      "sha256": "1de7ab4cc5a580676b1da69e8a208ac94fc3462be4fe41841cef814e6bd552de",
       "prior_receipts": [
         {
           "bytes": 1541,
@@ -304,6 +400,11 @@
           "bytes": 1689,
           "sha256": "7ba5679d1ac281057b7e185d1fb19526fb0a824f90aa5fe615fb14e41b046ed6",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        },
+        {
+          "bytes": 1997,
+          "sha256": "732f5bad171fda201094777bc31380861d6ba7c23bb52fe6d49905dcbccac9d8",
+          "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
         }
       ],
       "limiter_branch_receipt": {
@@ -320,7 +421,19 @@
             }
           ]
         }
-      }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 2280,
+          "prior_sha256": "1de7ab4cc5a580676b1da69e8a208ac94fc3462be4fe41841cef814e6bd552de",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 1997,
+          "prior_sha256": "732f5bad171fda201094777bc31380861d6ba7c23bb52fe6d49905dcbccac9d8",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
     },
     {
       "path": "lib_src/solvers/cin_advance/Node.h",
@@ -365,6 +478,11 @@
           "prior_bytes": 4046,
           "prior_sha256": "c605ca38609b6f225707230006000bf08ff74135d11836bd29f460e7c84253b8",
           "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        },
+        {
+          "prior_bytes": 4046,
+          "prior_sha256": "c605ca38609b6f225707230006000bf08ff74135d11836bd29f460e7c84253b8",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
         }
       ]
     },
@@ -431,6 +549,11 @@
           "prior_bytes": 3921,
           "prior_sha256": "e75345581d3808d60e57343cd711bb5c260e6f04f10d6b44a3f38f0db4c79644",
           "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        },
+        {
+          "prior_bytes": 3921,
+          "prior_sha256": "e75345581d3808d60e57343cd711bb5c260e6f04f10d6b44a3f38f0db4c79644",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
         }
       ]
     },
@@ -441,8 +564,8 @@
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/BUILD.bazel",
-      "bytes": 1222,
-      "sha256": "5d45c8f9f0d21d44e561f40243b8eab8011c6859e31b67be89d6dd4d4e1f5283",
+      "bytes": 1299,
+      "sha256": "edf8017cf13aa0439613dbbe92d27cca6df3397acb845f154d024a5078e08fb1",
       "prior_receipts": [
         {
           "bytes": 1072,
@@ -453,6 +576,11 @@
           "bytes": 1147,
           "sha256": "506163d64b89b869e41bd5bd8f73a60559012e65adff4aa95d694a6f820c155c",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        },
+        {
+          "bytes": 1222,
+          "sha256": "5d45c8f9f0d21d44e561f40243b8eab8011c6859e31b67be89d6dd4d4e1f5283",
+          "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
         }
       ],
       "limiter_branch_receipt": {
@@ -469,7 +597,19 @@
             }
           ]
         }
-      }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 1299,
+          "prior_sha256": "edf8017cf13aa0439613dbbe92d27cca6df3397acb845f154d024a5078e08fb1",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 1222,
+          "prior_sha256": "5d45c8f9f0d21d44e561f40243b8eab8011c6859e31b67be89d6dd4d4e1f5283",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/Fixture.h",
@@ -478,13 +618,18 @@
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/HostTest.cpp",
-      "bytes": 5376,
-      "sha256": "50240d8d4290e00652630b0456a22373d299591a0784b55f54e1e83b5995456d",
+      "bytes": 5696,
+      "sha256": "4c93361d4e67264148b07246ce3a72344f79579c8ddae3685e362ece9bc85092",
       "prior_receipts": [
         {
           "bytes": 5108,
           "sha256": "c2801bcfec638edef426c0cfc0fc87bf87a6965ebc092ff765367391e1177498",
           "reason": "Update legacy zero-group arena-end controls for the qualified prepared-row tail; exact caps and production remain unchanged."
+        },
+        {
+          "bytes": 5376,
+          "sha256": "50240d8d4290e00652630b0456a22373d299591a0784b55f54e1e83b5995456d",
+          "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
         }
       ],
       "limiter_branch_receipt": {
@@ -494,12 +639,24 @@
           "bytes": 5108,
           "sha256": "c2801bcfec638edef426c0cfc0fc87bf87a6965ebc092ff765367391e1177498"
         }
-      }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 5696,
+          "prior_sha256": "4c93361d4e67264148b07246ce3a72344f79579c8ddae3685e362ece9bc85092",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 5376,
+          "prior_sha256": "50240d8d4290e00652630b0456a22373d299591a0784b55f54e1e83b5995456d",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/source-manifest.json",
-      "bytes": 10537,
-      "sha256": "c2cef632a3415169be284cc181f523aa2e8a22ade35f15f6f6bd2807bdcbcf47",
+      "bytes": 15301,
+      "sha256": "35a4423f54a25221e1a06a531a1500150e4494cd7ef9157865328a4b3facdc2e",
       "prior_receipts": [
         {
           "bytes": 4181,
@@ -510,6 +667,11 @@
           "bytes": 5471,
           "sha256": "e22c6630385489822a01fd075ad71ddfb96f3fe4fb4791d6496b6882184fa3fd",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        },
+        {
+          "bytes": 6920,
+          "sha256": "39524cdf0c7cdfdd425ed7e9a8ff16867270594f41aa4340fd15573819d2ee18",
+          "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
         }
       ],
       "limiter_branch_receipt": {
@@ -539,13 +701,23 @@
           "prior_bytes": 6920,
           "prior_sha256": "39524cdf0c7cdfdd425ed7e9a8ff16867270594f41aa4340fd15573819d2ee18",
           "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        },
+        {
+          "prior_bytes": 8832,
+          "prior_sha256": "54863e38601d6907d07c5c409982d92585cfac558af1a3c3e8a28fd2ad686078",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 10537,
+          "prior_sha256": "c2cef632a3415169be284cc181f523aa2e8a22ade35f15f6f6bd2807bdcbcf47",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/verify_sources.py",
       "bytes": 6359,
-      "sha256": "ccd25e97ecce76585abcaffc06fb7840554aee99e7db67f524ca0e4406a7d4f3",
+      "sha256": "ac7fa131ee15a3107e4584c3f88b5220a96435b404cb3758e95914e05d99d33c",
       "prior_receipts": [
         {
           "bytes": 6073,
@@ -556,6 +728,11 @@
           "bytes": 6213,
           "sha256": "b5a35c37b176a26c0de19b06aa0afbf4d339fbb5f732e942a58457f9205f8dea",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        },
+        {
+          "bytes": 6359,
+          "sha256": "ca8ad3edb2af8d19aa867fac9561839562a80a07d19a756855979a7a391d2b7b",
+          "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
         }
       ],
       "limiter_branch_receipt": {
@@ -585,6 +762,16 @@
           "prior_bytes": 6359,
           "prior_sha256": "ca8ad3edb2af8d19aa867fac9561839562a80a07d19a756855979a7a391d2b7b",
           "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        },
+        {
+          "prior_bytes": 6359,
+          "prior_sha256": "fd1fbf2756d51d1c4aee826785258030512fb8ff3811fce7b30caf348c7eb7f2",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 6359,
+          "prior_sha256": "ccd25e97ecce76585abcaffc06fb7840554aee99e7db67f524ca0e4406a7d4f3",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
         }
       ]
     },
@@ -600,8 +787,8 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/BUILD.bazel",
-      "bytes": 2718,
-      "sha256": "cc5b9cc843f1f2572cfab1cda271661ecf28fb86c2b189d27c6c74e467ac6cde",
+      "bytes": 2872,
+      "sha256": "f188cc906676eaa63bba181abac8b18c22f09799f1d0891b6136b84d22405e75",
       "prior_receipts": [
         {
           "bytes": 2039,
@@ -622,6 +809,11 @@
           "bytes": 2418,
           "sha256": "fbe533c93c192d1d0b5870de84b9b85837489d70423340838b00c7f737c7f3bb",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        },
+        {
+          "bytes": 2718,
+          "sha256": "cc5b9cc843f1f2572cfab1cda271661ecf28fb86c2b189d27c6c74e467ac6cde",
+          "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
         }
       ],
       "limiter_branch_receipt": {
@@ -648,7 +840,19 @@
             }
           ]
         }
-      }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 2872,
+          "prior_sha256": "f188cc906676eaa63bba181abac8b18c22f09799f1d0891b6136b84d22405e75",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 2718,
+          "prior_sha256": "cc5b9cc843f1f2572cfab1cda271661ecf28fb86c2b189d27c6c74e467ac6cde",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/Compare.cpp",
@@ -667,13 +871,18 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/HostTest.cpp",
-      "bytes": 5887,
-      "sha256": "a5fc90a5f625f02b85d2f8961f760c07a381307077ef21ad3775529eb86bd500",
+      "bytes": 6207,
+      "sha256": "b8dac890a1cfa3dc996539a0a3a7c47198c687bbe1352cf3ce65ab861ec40626",
       "prior_receipts": [
         {
           "bytes": 5621,
           "sha256": "0a3bef3ba0f34bc52a415d6e40cfade68ac72d4c72471ebca0d8e132be4c66d4",
           "reason": "Update legacy zero-group arena-end controls for the qualified prepared-row tail; exact caps and production remain unchanged."
+        },
+        {
+          "bytes": 5887,
+          "sha256": "a5fc90a5f625f02b85d2f8961f760c07a381307077ef21ad3775529eb86bd500",
+          "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
         }
       ],
       "limiter_branch_receipt": {
@@ -683,7 +892,19 @@
           "bytes": 5621,
           "sha256": "0a3bef3ba0f34bc52a415d6e40cfade68ac72d4c72471ebca0d8e132be4c66d4"
         }
-      }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 6207,
+          "prior_sha256": "b8dac890a1cfa3dc996539a0a3a7c47198c687bbe1352cf3ce65ab861ec40626",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 5887,
+          "prior_sha256": "a5fc90a5f625f02b85d2f8961f760c07a381307077ef21ad3775529eb86bd500",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/Packet.cpp",
@@ -702,8 +923,8 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/source-manifest.json",
-      "bytes": 12225,
-      "sha256": "a0a980d64630aec9ab7a0b8f53765700f17b71faaae036009295c728b8658cb9",
+      "bytes": 17383,
+      "sha256": "7b06d8f476e82f7cc5fb525f8fe4c270c55e2855f211d2909b0bf5e4cba2fca6",
       "prior_receipts": [
         {
           "bytes": 4788,
@@ -714,6 +935,11 @@
           "bytes": 6078,
           "sha256": "a6547d4048c2349cf999c513dbbd7be8a0821eb11be0d8db9f377b34434bc09d",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        },
+        {
+          "bytes": 7527,
+          "sha256": "a398fd1cbe9683804047dfe6e83a15a9cc12497b9874d0b570f5e933d7e2de92",
+          "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
         }
       ],
       "limiter_branch_receipt": {
@@ -743,13 +969,23 @@
           "prior_bytes": 7527,
           "prior_sha256": "a398fd1cbe9683804047dfe6e83a15a9cc12497b9874d0b570f5e933d7e2de92",
           "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        },
+        {
+          "prior_bytes": 9439,
+          "prior_sha256": "541855a27d57e031931b1877cfbb20c2fc460f9db64874c91616bdb58f5f9acd",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 12225,
+          "prior_sha256": "a0a980d64630aec9ab7a0b8f53765700f17b71faaae036009295c728b8658cb9",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/verify_sources.py",
       "bytes": 4833,
-      "sha256": "ba27fd74bfa2fae10bc118e2ed1a90e2402dcc17e8b1b71ea624eeb43e6317e1",
+      "sha256": "5cebce36a78f1ea9225d7c6da50d0442e3eb5d4c92acad2d203a21bde6e252e6",
       "prior_receipts": [
         {
           "bytes": 4689,
@@ -760,6 +996,11 @@
           "bytes": 4833,
           "sha256": "70c2e53e20be3f7731bc22a12fc11e9e966b05caf065886183275d4bf80e0447",
           "reason": "Pure CIN row preparation with exact ordered application; retain frozen donors and prove the reversible scheduling/extraction delta."
+        },
+        {
+          "bytes": 4833,
+          "sha256": "62fff503660e838a65bdd30396805fdf2fceb718bdf29a519d2ce473c6dc88da",
+          "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
         }
       ],
       "limiter_branch_receipt": {
@@ -789,6 +1030,16 @@
           "prior_bytes": 4833,
           "prior_sha256": "62fff503660e838a65bdd30396805fdf2fceb718bdf29a519d2ce473c6dc88da",
           "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        },
+        {
+          "prior_bytes": 4833,
+          "prior_sha256": "b02d22d7ece218c3ff7394d0c0469a03cf5c664ee2a47836506fa32347fc1791",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 4833,
+          "prior_sha256": "ba27fd74bfa2fae10bc118e2ed1a90e2402dcc17e8b1b71ea624eeb43e6317e1",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
         }
       ]
     },
@@ -829,13 +1080,18 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/HostTest.cpp",
-      "bytes": 7737,
-      "sha256": "8c8d175856e249a988904787107b45b0ad7833f9f9073aa0f21b1af68c4fcf00",
+      "bytes": 8057,
+      "sha256": "6b34a39b51f10516d4df36f11342ac6acfcc8f8291f685b4914c2a73fbfbf91e",
       "prior_receipts": [
         {
           "bytes": 7469,
           "sha256": "21b95449515a864ac78be8bb1f2629f756ba6f2dbf31a470bd3a9595e5c5d193",
           "reason": "Update legacy zero-group arena-end controls for the qualified prepared-row tail; exact caps and production remain unchanged."
+        },
+        {
+          "bytes": 7737,
+          "sha256": "8c8d175856e249a988904787107b45b0ad7833f9f9073aa0f21b1af68c4fcf00",
+          "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
         }
       ],
       "limiter_branch_receipt": {
@@ -845,7 +1101,19 @@
           "bytes": 7469,
           "sha256": "21b95449515a864ac78be8bb1f2629f756ba6f2dbf31a470bd3a9595e5c5d193"
         }
-      }
+      },
+      "reviewed_updates": [
+        {
+          "prior_bytes": 8057,
+          "prior_sha256": "6b34a39b51f10516d4df36f11342ac6acfcc8f8291f685b4914c2a73fbfbf91e",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 7737,
+          "prior_sha256": "8c8d175856e249a988904787107b45b0ad7833f9f9073aa0f21b1af68c4fcf00",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/ValuesTest.cu",
@@ -886,6 +1154,11 @@
           "prior_bytes": 1617,
           "prior_sha256": "2c510ef407d2f5fc6549a86c00145735e752b62e703ac91d2cfcc4c5f33f36f4",
           "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        },
+        {
+          "prior_bytes": 1617,
+          "prior_sha256": "2c510ef407d2f5fc6549a86c00145735e752b62e703ac91d2cfcc4c5f33f36f4",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
         }
       ]
     },
@@ -935,6 +1208,11 @@
           "prior_bytes": 4787,
           "prior_sha256": "4fbfbc618b6bb4f71b32720e745151674360b84ff75a9296a21efc7c92cfb5be",
           "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        },
+        {
+          "prior_bytes": 4787,
+          "prior_sha256": "4fbfbc618b6bb4f71b32720e745151674360b84ff75a9296a21efc7c92cfb5be",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
         }
       ]
     },
@@ -955,13 +1233,30 @@
     },
     {
       "path": "lib_utest/qualification/cin_force_transfers/transfer_proof.py",
-      "bytes": 4188,
-      "sha256": "d5aca7d00a07c1430c5e5a0c77d1ac319c919708bf5d459ad2cead988a7d7e3e",
+      "bytes": 4339,
+      "sha256": "a5bdad94e5ef5765be342678ed5e7891a3c3d9e694ed545a28005176bfaf4ff1",
       "reviewed_updates": [
         {
           "prior_bytes": 4068,
           "prior_sha256": "cc6012e1dc24bfbae2280e20760ea6336bd04dbab372b581ae51d20084b78b87",
           "reason": "Reviewed integration of limiter994658e with active223d813 CIN prepared-row transfer: same source calculations, witness reversal before transfer reversal, both incoming histories retained."
+        },
+        {
+          "prior_bytes": 4219,
+          "prior_sha256": "b7f32a4c0059cd236c435cd86cac794b16d618b3cb556d8d9684255c55534d6e",
+          "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        },
+        {
+          "prior_bytes": 4188,
+          "prior_sha256": "d5aca7d00a07c1430c5e5a0c77d1ac319c919708bf5d459ad2cead988a7d7e3e",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ],
+      "prior_receipts": [
+        {
+          "bytes": 4068,
+          "sha256": "cc6012e1dc24bfbae2280e20760ea6336bd04dbab372b581ae51d20084b78b87",
+          "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
         }
       ]
     },
@@ -985,6 +1280,43 @@
       "bytes": 1078,
       "sha256": "8c010a65abf5dc7b6dee1682c100fc83a55297be8f500e686425f6f67eaaf21c",
       "role": "Checked additive witness reversal before unchanged earlier proofs"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_recovery/recovery_proof.py",
+      "bytes": 4677,
+      "sha256": "f6f620a9de13606b96019d066a7f1c3effe0f4aeb55b5785397d4103c47e9b98",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 4557,
+          "prior_sha256": "ee8cdfbccaee7b07baa5d8eea5a0189fd77c006ccb09e30101d7f6e474f0d9ab",
+          "reason": "Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
+        }
+      ]
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_recovery/reference/ExplicitNodalCinStep.cu",
+      "bytes": 10678,
+      "sha256": "4fb1ea8c19c91f7629d50719d1be05918263df38ccd1161ad0f4e90befe46831"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_recovery/reference/CinMotionStage.h",
+      "bytes": 1774,
+      "sha256": "9f8f729e802df94729fcf5392b0b06fc50d55b0f883bd9f538c531c3b21f30f3"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_recovery/reference/TiedPatchMotion.h",
+      "bytes": 2400,
+      "sha256": "abb80f7167c8856aedc660ef633b75c83e39eb0a4cc248db5ceb18c53135247f"
+    },
+    {
+      "path": "lib_src/constraints/tied_shell/runtime/CinMotionRows.h",
+      "bytes": 1863,
+      "sha256": "561da2520acb590ca441620e37ff6c3ae609dd6a416cfbd24087a5943f9cbd63"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/RecoveryDrift.h",
+      "bytes": 1685,
+      "sha256": "a135c31e3f197a8a0b910bb25953c1098d35df3ad312e5bd350da2cc50f4245d"
     }
   ],
   "previous_source_receipts": [
@@ -1062,5 +1394,7 @@
     "base": "223d813",
     "incoming": "994658e",
     "reason": "Both exact scheduling and optional witness reversals retained; no frozen baseline changes."
-  }
+  },
+  "recovery_integration_base": "bf1c6a4",
+  "recovery_integration_commit": "d05ad75ecb15517ca3dd1233843a5764a51f0850"
 }

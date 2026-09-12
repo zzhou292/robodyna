@@ -101,7 +101,11 @@ TEST(CinPreparedForceRows, ActualV5TailAndExactCapsAreCountedBeforeAllocation) {
   EXPECT_EQ(layout.prepared_transfers.count, 11165u);
   EXPECT_EQ(layout.prepared_transfers.bytes, 5716480u);
   EXPECT_EQ(layout.prepared_transfers.offset, layout.group_reports.offset+layout.group_reports.bytes);
-  EXPECT_EQ(layout.device_bytes, layout.prepared_transfers.offset+layout.prepared_transfers.bytes);
+  EXPECT_EQ(layout.prepared_recovery.offset, layout.prepared_transfers.offset+layout.prepared_transfers.bytes);
+  EXPECT_EQ(layout.prepared_recovery.bytes, 1161160u);
+  EXPECT_EQ(layout.recovery_failure.offset, layout.prepared_recovery.offset+layout.prepared_recovery.bytes);
+  EXPECT_EQ(layout.recovery_failure.bytes, 4u);
+  EXPECT_EQ(layout.device_bytes, layout.recovery_failure.offset+layout.recovery_failure.bytes);
   EXPECT_EQ(layout.optional_device_bytes, layout.device_bytes+2*layout.state_values*sizeof(double));
   const auto before = layout;
   limits.max_device_bytes = layout.optional_device_bytes;

@@ -3,22 +3,20 @@
 #include "cin_advance/Node.h"
 #include "cin_advance/ForceInputs.h"
 #include "cin_advance/ForceTransfers.h"
-#include "cin_advance/Recovery.h"
-#include "cin_advance/RecoveryDrift.h"
 #include "cin_advance/Screen.h"
 #include "cin_advance/Capture.h"
 #include "cin_advance/Groups.h"
 #include "cin_timestep/Screen.h"
-#include "cin_limiter/Capture.h"
 #include "NodalCinStorage.h"
 #include "NodalRigidGroupStorage.h"
 #include "NodalNodeStep.h"
 #include "NodalForceStageCaptureLayout.h"
 #include "ExplicitNodalStep.h"
 #include "../constraints/NodalRigidGroupCandidate.h"
-#include "../constraints/tied_shell/runtime/CinMotionStage.h"
+#include "FrozenMotion.h"
 
-namespace tl::fea {
+namespace tl::fea::cin_recovery_test {
+using namespace cin_advance;
 namespace {
 namespace cin = constraints::tied_shell::cin;
 __device__ void Fail(nodal_detail::Control* control, NodalStatus status, std::uint32_t node) {
@@ -73,9 +71,6 @@ __global__ void PrepareCin(const cin_advance::Input input, bool inputs_prepared,
     // Preserve the complete native/analytical bound for both success and a
     // rejected step. This existing owner control is not a second row proof.
     control->limit.dt = result.minimum_dt;
-    if (structural.capture_limiter)
-      control->structural_limiter = cin_limiter::Capture(sources, structural.factor,
-          result, epoch, attempt);
     if (durations.drift_dt > result.minimum_dt) {
       control->status = NodalStatus::StepTooLarge;
       control->node = result.limiting_node;
@@ -94,8 +89,7 @@ __global__ void AdvanceOrdinaryCin(const cin_advance::Input input) {
     }
   }
 }
-__global__ void CompleteCin(const cin_advance::Input input, bool groups_prepared = false,
-    bool defer_recovery = false) {
+__global__ void CompleteCin(const cin_advance::Input input, bool groups_prepared = false) {
   auto* control = input.control;
   const auto* accepted = input.accepted;
   auto* trial = input.trial;
@@ -140,19 +134,38 @@ __global__ void CompleteCin(const cin_advance::Input input, bool groups_prepared
       }
     }
   }
-  if (defer_recovery) return;
-  stage = cin::RecoverMotionTrial(model, {patches, trial+3*n, trial+6*n,
+  stage = constraints::tied_shell::cin_recovery_frozen::RecoverMotionTrial(model, {patches, trial+3*n, trial+6*n,
       acceleration, angular_acceleration});
   if (!stage) {
     Fail(control, NodalStatus::InvalidOutput, stage.node);
     return;
   }
-  cin_advance::recovery::Drift(input);
+  for (std::uint32_t row = 0; row < r; ++row) {
+    const auto node = model.rows[row].secondary;
+    for (unsigned a = 0; a < 3; ++a) {
+      const auto j = 3*node+a;
+      trial[j] = accepted[j]+durations.drift_dt*trial[3*n+j];
+      // A dependent is not a prescribed fixed DOF. Its transfer is represented
+      // by the retained native loads, not a fabricated fixed reaction.
+      trial[13*n+j] = 0;
+      trial[16*n+j] = 0;
+      if (!std::isfinite(trial[j])) {
+        Fail(control, NodalStatus::InvalidOutput, node);
+        return;
+      }
+    }
+    const auto status = nodal_detail::PrepareNodeOrientation(accepted, trial, node, n,
+        durations.drift_dt, maximum_angle, false);
+    if (status != NodalStatus::Ok) {
+      Fail(control, status, node);
+      return;
+    }
+  }
 
 }
 } // namespace
 
-cudaError_t cin_advance::Launch(const Input& input, cudaStream_t stream) {
+cudaError_t LaunchFrozen(const Input& input, cudaStream_t stream) {
   const bool parallel_inputs = input.input_failure != nullptr;
   auto error = cudaSuccess;
   if (parallel_inputs) {
@@ -183,52 +196,10 @@ cudaError_t cin_advance::Launch(const Input& input, cudaStream_t stream) {
     error = groups::LaunchMotion(input, stream);
     if (error != cudaSuccess) return error;
   }
-  const bool parallel_recovery = input.prepared_recovery && input.recovery_failure && input.model.row_count;
-  CompleteCin<<<1,1,0,stream>>>(input, parallel_groups, parallel_recovery);
+  CompleteCin<<<1,1,0,stream>>>(input, parallel_groups);
   error = cudaGetLastError();
   if (error != cudaSuccess) return error;
-  if (parallel_recovery) {
-    error = recovery::Launch(input, stream);
-    if (error != cudaSuccess) return error;
-  }
   return capture::Launch(input, stream);
 }
 
-cudaError_t FENodalState::Impl::LaunchCinAdvance(double maximum_angle,
-    const NodalCinStructuralStep* structural) {
-  const rigid::StepDurations durations{stamp.epoch == 0 ? 0 : config.fixed_dt,
-      candidate_kick_dt, config.fixed_dt};
-  const auto groups = rigid_groups ? rigid_groups->device : rigid::GroupDeviceView{};
-  rigid::AccelerationSink capture;
-  if (config.capture_force_stage_accelerations) {
-    const nodal_detail::ForceStageCaptureLayout layout{config.node_count, groups.group_count};
-    capture = layout.Sink(scratch);
-  }
-  return cin_advance::Launch({control, accepted, trial, scratch, fixed, cin->device,
-      trial+cin->state_offset, cin->work, cin->patches, cin->activity, groups, durations,
-      maximum_angle, stamp.epoch, attempt, capture,
-      stamp.has_rotation_presence?fixed+3*config.node_count:nullptr,
-      structural ? *structural : NodalCinStructuralStep{}, cin->failure, cin->input_failure, cin->screen, cin->group_reports,
-      cin->prepared_transfers, cin->prepared_recovery, cin->recovery_failure}, stream);
-}
-
-NodalReport AdvanceStaggeredCin(FENodalState& owner, const NodalTrialToken& token,
-    const NodalCinAdmission& admission) {
-  if (!owner.impl_) return {NodalStatus::NotInitialized, "Owner is not initialized"};
-  auto& state = *owner.impl_;
-  if (!state.cin || !admission.no_explicit_interface_release_event ||
-      admission.qualification_id != state.cin->qualification_id) {
-    return state.Reject(NodalStatus::MissingStepAdmission, "Missing CIN no-release qualification");
-  }
-  if (!ValidCinStructuralStep(admission.structural)) {
-    return state.Reject(NodalStatus::MissingStepAdmission, "Invalid physical CIN structural profile");
-  }
-  const auto* structural = admission.structural.profile == NodalCinStructuralProfile::Disabled
-      ? nullptr : &admission.structural;
-  const NodalStepAdmission declared{admission.owner_id, admission.base_epoch, admission.attempt,
-    admission.maximum_dt, admission.maximum_rotation_increment,
-    NodalStepAdmissionKind::RestrictedHistoryTrajectory, admission.qualification_id, 0};
-  return state.AdvanceSealedNodal(token.owner_id_, token.base_epoch_, token.attempt_, declared,
-      NodalTemporalScheme::StaggeredHalfKickStart, bool(state.rigid_groups), true, structural);
-}
-} // namespace tl::fea
+} // namespace tl::fea::cin_recovery_test
