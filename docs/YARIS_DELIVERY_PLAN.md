@@ -1,270 +1,149 @@
-# Robo-dyna: Yaris delivery plan
+# Robo-dyna: remaining Yaris work and product roadmap
 
-Updated 2026-09-10 for the full-shell milestone, against robo-dyna `687cee0`
-and TL-FEA `7e6f50c`.
-This is the concise delivery roadmap. The workspace
-[active execution plan](../../planning/CURRENT_EXECUTION_PLAN.md) tracks current
-runs and integration order; [execution status](../../planning/EXECUTION_STATUS.md)
-retains the detailed qualification history and failed attempts.
+Updated 2026-09-12 from main sources, frozen drafts, the completed 10,000-step
+run, and independent contact/runtime/model reviews. The execution order lives in
+[CURRENT_EXECUTION_PLAN.md](../../planning/CURRENT_EXECUTION_PLAN.md); persistent
+project facts live in [WORKSPACE_MEMORY.md](../../planning/WORKSPACE_MEMORY.md).
 
-The first vehicle deliverable remains the original **2010 Yaris coarse V1l at
-35 mph into a stationary finite triangle-mesh wall through 200 ms**, with accepted
-deformation archives and an inspected video. The longer-term product direction
-is LS-DYNA-like CAE functionality. The full vehicle is not running.
+## What is already delivered
 
-**Prior engineering estimate: about 30% toward that vehicle deliverable.**
-This older estimate has not been recalibrated for the new full-shell milestone.
-This reflects implemented capabilities and remaining model coverage, not test
-counts, code volume or the fraction of the requested physical duration. It is
-not an estimate of coverage of all LS-DYNA functionality.
+The original coarse 2010 Yaris **selected V5 assembly** hits a finite triangle
+mesh wall at 35 mph using TL-FEA CUDA explicit dynamics, with one accepted/trial
+state and clock. QEPH/T3/QBAT shells, layered plasticity, five solid families,
+structural beams, joints, original connections, rigid groups and CIN ties are
+integrated. Chrono replays exact saved shell states with original part colors.
 
-## Verified current result
+The completed run reached **10,000 steps / 2 ms**, at **200 ns**, in 102.44 minutes.
+Its 41 saved states occupy an approximately 815 MB run directory; peak sampled
+RSS was 3.736 GB. First saved positive shell plastic strain is at 0.55 ms; the
+final maximum is **1.94975% at 76 positive native points**. All 349,645 shell
+parents remain active; reported solid/structural-beam plastic work is zero.
+This demonstrates local shell plastic response, not fracture or a settled
+permanent shape. The configured 5 ms envelope was intentionally stopped at 2 ms.
 
-The complete selected **six-part component** runs with **915 shells / 1,030
-nodes**, all six internal nodal-rigid groups, six source materials/sections and
-two curves. Native QEPH/T3 shell mechanics, source-derived layered plasticity,
-rigid-group dynamics, finite mesh-wall contact and accepted output share one
-TL-FEA CUDA state and one accepted/trial transaction. External connections are
-explicitly released and recorded; this is a detached component, not a closed
-vehicle structure.
+Both 8.2-second, 1280x720/30 FPS videos pass exact replay, hashes, probe and full
+decoding. They use physical deformation scale 1 and actual timestamp overlays:
+[impact detail](../../crash-work/renders/yaris-wallremoval-10000-review-1/impact-detail-video/movie.mp4)
+and [overview](../../crash-work/renders/yaris-wallremoval-10000-review-1/overview-video/movie.mp4).
 
-Its latest **8 m/s** response completes **1.953125 ms** with **104 accepted
-frames** and a **533,688,100-byte** complete bundle. Maximum layer plastic strain
-is **0.03909795535** (3.910%), cumulative plastic work is **11.19804231 J**, and
-221 parents have yielded. The
-[physical-scale Chrono video](../../crash-work/renders/source-assembly-native-2ms-1.mp4)
-has passed frame inspection, video probing and full decode. The
-[accepted bundle](../../crash-work/runs/source-assembly-native-2ms-1/manifest.json)
-retains all source mappings, native material histories, groups, contact and
-phase-labelled diagnostics. Completion refers to this declared component
-horizon, not the 200 ms full-vehicle target or a settled residual shape.
+## Remaining capabilities
 
-Independent native layered recurrence and large-rotation qualification are
-complete within their declared domains. An explicit native shell-frame/normal
-rotation policy replaces the unsuitable ordinary-shell total-quaternion proxy;
-physical spin, torque, inertia, rigid-member rotation bounds and the remaining
-material/contact guards are retained. Native agreement does not imply harmless
-local spin or establish physical calibration. See the
-[layered rotation qualification](../../planning/LAYERED_NATIVE_ROTATION_QUALIFICATION.md)
-and [plasticity review](../../planning/PLASTICITY_CORRECTNESS_REVIEW.md).
+| Priority / piece | Existing work to reuse | Work still required and owning modules | Completion gate |
+| --- | --- | --- | --- |
+| P0: interpret the current response | Accepted shell fields, motion/contact summaries, original IDs and the qualified V5 connectivity graph. | App analysis/output: identify yielded EID/PID/materials and load paths; distinguish local strain, rigid motion and permanent deformation. TL diagnostic producers supply missing quantities. | Reproduce 2 ms extrema from saved fields; reconcile source/mass identities; show loaded force transfer in relevant front structures. One graph component alone is insufficient. |
+| P0: finish a bounded throughput pass | Two isolated CIN master-gather and solid-measurement drafts; existing incidence/gather, exact comparison and profiler. | TL `solvers/cin_advance` and `elements/solids/resident`: finish qualification and integration. Then profile the deformed workload before further optimization. | Frozen CPU/CUDA numerical equivalence including plastic/failure states, rollback/retry, exact cap accounting, affected owning gates and exact V5 outputs. Demonstrate measured whole-step benefit; no physics or timestep changes. |
+| P0: vehicle self-contact | Qualified S0 source binding and S1 Jacobian majorant; frozen physical-facet, pair and bounded-broadphase code. | TL `collision` implements a two-sided contributor; app `modelio` resolves selection/defaults and `case/vehicle_dynamics` composes it into the existing transaction. | Complete feature discovery, equal/opposite force and virtual work, actual rigid/CIN response and STI, same-attempt receipt, no tunneling in covered motion, failure-atomic discard/retry and bounded storage. |
+| P0: contact coverage for folding | Existing finite planar mesh-wall law, physical source maps and weighted queries. | Qualify the named fixed physical-facet approximation, vertex-face and edge-edge queries, crossings, thickness/offsets, feature ownership, initial overlaps and local exclusions. Add friction/source-law support in a distinct increment. | Tiny exhaustive geometry oracle; grazing/crossing/degenerate cases; adjacent and tied features; removal changes ownership; wall/contact mesh and timestep refinement; sliding dissipation when friction is enabled. |
+| P0: energy and stability evidence | Native force/work/HG/plastic increments, contact/removal diagnostics, fixed-step limiter and source attribution. | TL exposes missing scheme-consistent observations; app `case/vehicle_run` and output assemble a TIME0-to-current energy/momentum ledger and histories. | Free-flight and elastic conservation, plastic unloading, contact work/impulse and removal accounting; count physical/rigid/CIN contributions once. Define tolerances before tests and show timestep refinement. Native plastic/HG work are included components, not additional energy to double-count. |
+| P1: damage and connection behavior | Constant/TAB1 shell failure; TYPE13 plastic/failure and TYPE25 force/couple failure; common activity/removal and rollback. | Report accepted connection/failure events through app output. Qualify loaded failure and changed load paths; explicitly resolve any new rupture/erosion policy. | Native failure-step/next-step timing, load transfer after failure, contact ownership after removal, no stale forces/history, source-policy provenance. Current TYPE25 huge default limits are not calibrated tearing. |
+| P1: physical checkpoint/restart | Source authentication, bounded binary I/O, typed participant state/history and one publisher. | New versioned checkpoint adapter spanning TL owner/participants and app run/output. Visualization archives and frozen executables are not restart checkpoints. | Uninterrupted versus resumed coordinates, staggered velocity phase, quaternions, all histories/activity/constraints and next accepted results agree; reject incompatible/corrupt files and incomplete writes. Forecast storage before allocation. |
+| P1: longer reviewed runs | Standalone run CLI, independent sampling, cooperative prefix closure and automated Chrono capture/encoding. | Complete 5 ms, then an admitted 10/20 ms trajectory; progress to 50/100/200 ms only as contact, output and runtime gates support it. Add explicit horizon admission where absent. | No unexplained energy growth/crossing/penetration failure; inspect deformation and load paths; preserve exact archives, stable memory and a useful part-colored video at each promotion. |
+| P2: richer engineering results | Shell geometry/plasticity/activity, part and plastic-color modes, solid/beam scalar summaries and typed accepted-result readers. | Bounded stress/strain, solid/beam geometry and point histories, connector-event/contact-force/energy charts; app output schemas and Chrono adapters. | Known-field export/replay checks, units and unavailable-field semantics, corruption tests, no fabricated fields or second solver in the viewer. |
 
-The connected source increment is implemented: **seven complete parts /
-959 shells / 1,093 nodes**, including the whole **63-node bracket PID 2000204**
-and original **spotweld WID 2101297**. The bracket adds 44 shells, rather than
-only the weld endpoint. The same six rigid groups remain active. Source-unit
-TYPE25 property resolution, native connector recurrence, combined nodal mass/
-inertia, resident history and joint publication have passed their owning gates.
-The seven-part impact completes **0.9765625 ms / 16,384 intervals at 4h**,
-with **104 frames / 560,717,430 bytes**. Maximum PLA is **2.650%**, plastic work
-**4.400 J**, and 120 shell parents have yielded. All frames authenticate in the
-owning reader; twelve altered-archive cases and 32 affected legacy CUDA functions
-also pass. The original weld has sampled peak force **638.34 N**, final force
-**475.89 N**, and remains active. Its attached 30-node bracket patch departs
-from free flight by up to **2.16649 mm**, while remaining elastic. The separate
-33-node source patch remains in exact free flight at every saved sample; neither
-bracket patch has saved wall contact. External vehicle supports remain released.
-The [independent load-transfer report](../../crash-work/reports/source-seven-part-load-transfer-final-1.md)
-records timing, signed work, source identities and the limits of sparse samples.
+## Contact design decisions
 
-The [complete seven-part overview](../../crash-work/renders/source-seven-part-native-1ms-1.mp4)
-and [labelled detail view](../../crash-work/renders/source-seven-part-native-1ms-detail-1.mp4)
-pass image/hash, probe/full-decode and visual checks. The detail enlarges a crop
-of the same rendered image by 2x; physical deformation remains 1x, with original
-per-frame time and color legend retained. Here `h = 2^-26 s`; seven-part contact
-admits 4h and rejects 8h under its unchanged certificate. This completes the
-requested four-step milestone; the full vehicle deliverable remains outstanding.
+The current participant is a **fixed-X finite planar mesh-wall penalty**, with
+zero thickness offset, friction and damping. The selected wall is an authenticated
+mesh; this is not an arbitrary mesh-to-mesh contact engine. It cannot stop car
+panels intersecting each other during folding.
 
-## Current delivery cadence
+Keep the first self-contact scope explicit: frictionless, reference-thickness,
+fixed physical facets derived from Q4/T3 parents. Virtual facet vertices retain
+original-parent interpolation weights and introduce no new mechanical nodes or
+mass. Compose velocity and transpose-force maps consistently; measure/refine
+faceting error and retain its conservative search bounds. Reuse existing query
+and broadphase utilities. Display triangles do not become physical contact data.
+An exact bilinear profile is a later, separately qualified capability.
 
-The next major user milestone is now the **full original Yaris shell assembly
-impact**, with tires optional, longer physical deformation and stable colors
-per source part. The [full-shell execution plan](../../planning/FULL_YARIS_SHELL_DEMO.md)
-sets the source-driven module and test sequence. Initial physical target: 20 ms
-at source 35 mph, then 50 ms as the admitted contact/mechanics permit. Whole-shell
-startup/free flight and first contact precede that longer demo. The archive cap
-is now **2 GiB per run**; RAM stays at **20 GB**. The existing smaller component
-runs remain regression and diagnostic clients of those same modules.
+S0 already qualifies **341,143 centered parents / 8,502 offset exclusions**;
+that census is not the original contact-card selection. Resolve the original
+861-PID contact set and its explicit shell/solid intersection. Do not hide
+unsupported offsets, solid exterior faces, beam surfaces, or CIN-dependent
+features. Define active-use thickness/area ownership and narrow topology/tie/
+rigid exclusions. Same part ID or a shared corner cannot exclude whole parts.
 
-Full-source scope is now authenticated: omitting exactly the eight tire body/
-tread parts retains **349,645 shells / 359,785 nodes / 867 parts**. Vehicle-sized
-node storage, indexed shell binding, immutable material catalog and Chrono scene
-are merged and pass source-sized qualification. Stable original-PID colors are
-implemented; the inspected [colored component preview](../../crash-work/renders/source-seven-part-part-colors-1.mp4)
-reuses the prior seven-part simulation. It is not a full-shell run.
+Frozen pair `0ac4462` (weighted-map dependency `7a629e7`), physical facets
+`3bd26db` and broadphase `9bf7ab5` are reusable but unintegrated. Complete their
+hardware gates, triangle vertex-face/edge-edge queries and bounded crossing
+checks. Swept bounding boxes alone do not establish collision detection between
+endpoints; rigid arcs and feature changes need coverage too. Add force/STI before
+the existing kick/CIN screen and candidate validation before the common commit.
+Persistent friction/history must join that same publication protocol.
+See [the contact design](../../planning/DEFORMABLE_SELF_CONTACT_PLAN.md).
 
-Native analytic LAW44 and native two-member rigid dynamics are qualified.
-Actual original pure/mixed analytic source declarations now pass the V2 reader/
-binding tests; V1 archives retain their table-only contract. Explicit vehicle
-rigid owner capacity passes all eight focused root CPU/CUDA test groups, up to
-1,024 groups / 8,192 members, including full-node capture and rejection/retry.
-Native layered LAW1 point/NIP3 and rotating Q/T force adapters are qualified.
-Vehicle Q/T resident storage passes eleven host/CUDA functions at all 328,344
-quads /21,301 triangles /359,785 nodes. The corresponding mesh-wall owner passes
-nine host/CUDA functions. These synthetic capacity/transaction tests preserve
-legacy profiles; they do not establish original-vehicle mechanics admission.
-Mixed host tags and per-parent resident LAW1/LAW44 dispatch are qualified.
-Original V3 elastic/mixed fixtures pass24 host and eight actual CUDA functions,
-including earlier source regressions. The elastic population covers27,177 retained
-shells; these fixture gates do not admit a whole-population wall/archive run.
+## Selected-model coverage and failure limits
 
-The separate constant-plastic-strain failure leaf passes seven native CPU/CUDA
-functions and three owning Bazel value functions. Parent failure/removal semantics
-remain the next failure block. Ordered rigid PART/extra-node raw startup and
-Iflag2 merges are integrated at TL `9c0755a`:seven new value/native functions and
-31 legacy rigid startup/step functions pass. Source topology, final combined
-coefficients and rigid-part owner admission remain separate.
+V5 includes 867 shell parts / 349,645 shells, 376,930 physical nodes, 4,980 solids,
+142 structural beams, 4,442 TYPE13 connections, 2,828 TYPE25 welds, 154 mass cards,
+44 joints, 779 rigid groups and 11,165 CIN rows. Its qualified graph has **one
+potential load-transfer component**, not seven disconnected components. It does
+not prove constrained-DOF rank or loaded transfer after changing activity.
 
-Binary frame/interval records and the complete static source/mapping bundle are
-qualified. The static bundle passes 35 root host tests and measures 144,417,279 B
-across 31 files, preserving the complete original key and canonical arrays.
-Wall/configuration/run metadata remain separate budget obligations under 2 GiB.
-The neutral complete-frame Chrono adapter passes eight host functions and all35
-shared scene functions, including actual component archives. Native, inapplicable
-and unavailable plastic fields have explicit types. Live component binary capture
-and parity passes seven host and four actual CUDA functions; all ten affected
-legacy writer functions also pass; full-shell run publication and complete
-run reader/replay remain to be integrated.
+Selected mass is **704.35196065175535 kg**, not full vehicle curb mass. Original
+source omissions remain explicit: eight tire parts / 8,812 shells; 10,254 solids
+and 101 beam records across 14 non-shell PIDs; the orientation-only mass and
+auxiliary/setup dispositions. Original 4,685 beams include 4,442 TYPE13 records,
+142 structural beams and 101 omitted records. Tires remain optional for the
+requested shell demo. Complete original-deck coverage is a separate milestone.
 
-The [population design](../../planning/FULL_SHELL_POPULATION_ARCHITECTURE.md)
-keeps one complete batch per native formulation and selects the material law per
-parent. A material ID does not create another solver participant or another mass
-contribution. Remaining full-source physics includes failure/glass, rigid-part and membrane
-roles, beam/tie load paths and contact for longer folding. The immutable
-[vehicle source plan](../../planning/FULL_VEHICLE_SOURCE_BINDING.md) is implemented
-and passes four actual-source C++ and nine Python checks. It retains all349,645
-parents while exposing278,301 supported declarations and71,344 shells with
-explicit unresolved roles. Actual native reference construction is the next
-gate; declaration coverage is not runtime admission.
+Material and damage scope is branch-specific. Solid LAW44 EPMAX behavior does
+not authorize general solid erosion. The airbag-solid execution choice retains
+original Isolid5 metadata while explicitly choosing Isolid18. Four seat-disk
+rigid groups retain their restricted policy. TYPE25 default rupture limits are
+huge finite values (+/-1e30 N and +/-1e27 N m); do not claim calibrated weld
+tearing. Existing TYPE13/TYPE25 event diagnostics should be exported before
+adding new failure mechanisms. Removed-shell degeneracy remains a numerical
+admission boundary requiring attention during severe collapse.
 
-User priority: **functionality first, performance afterward**. The next
-engineering objective is the full selected Yaris shell assembly with its
-required mechanics and contact. The existing seven-part impact through roughly
-2 ms remains a video/diagnostic checkpoint, without delaying source integration.
-Run source/connection integration, needed contact, and independent correctness/
-replay work in parallel. Profiling and throughput optimization are deferred.
+## Runtime, timestep and output policy
 
-| Next milestone | Work and ownership | Exit evidence |
-| --- | --- | --- |
-| Compile the full shell and its load paths | Audit every retained original shell, material/section and connection, including explicit tire/nonshell exclusions and released interfaces. Reuse TL shell, rigid-group and TYPE25 contributors and add required beam/tie/material branches through the same CUDA owner. | Authenticated complete source selection, correct units and combined mass/inertia, loaded connection tests and shared-step rejection/retry. |
-| Admit the full selected shell assembly | Extend node/shell/connector/contact/output capacities to actual source counts. Node, Q/T and wall capacities now pass the complete-count gates; source material, connection and publication coverage remain independent. | Complete source coverage, bounded storage, meaningful capacity/rejection tests and measured memory within the existing workstation allowance; full-shell free flight. |
-| Support the needed folding contact | Implement required self-contact, feature/edge handling, thickness and friction in TL collision modules, reusing existing geometry/query/law utilities. | Loaded shell/contact cases, force/moment balance, crossing/sliding tests and failed-step preservation before assembly integration. |
-| Extend and visualize full-shell crushing | Integrate whole-shell first contact, then progress through 5 ms toward a 20 ms source-speed impact and later 50 ms. Keep smaller cases as targeted integration/regression checks. | Accounted load paths, stable accepted histories, force/plasticity diagnostics and inspected physical-scale videos with distinct part colors. |
-| Verify alongside implementation | Extend the existing comparator with connector phase, motion, force/couple, signed work and combined M/J. Use selected smaller-step runs where a changed mechanism or unresolved response requires them. | Meaningful positive/negative fixtures and matching-time comparisons without mixing phases or inferring convergence from matching totals alone. Until qualified, the current comparator rejects seven-part archives. |
+The measured 2 ms run sustained **1.630309 steps/s**. Prepare accounts for about
+612.196 ms/step; commit, archive and sampled capture together took 11.724 s out
+of 6,133.807 s after startup. Lowering video output quality is not the primary
+performance opportunity.
 
-The [performance backlog](../../planning/PERFORMANCE_NEXT_INTEGRATION.md) remains
-deferred until after functional progress. Reactivate only the minimum necessary
-work if measured runtime or memory prevents the next functional milestone.
-Resource monitoring and source-capacity qualification remain active; there is
-no scheduled kernel optimization or benchmark campaign in this cycle.
+| Physical duration | Approximate steps at 200 ns | Current-rate wall time |
+| --- | ---: | ---: |
+| 5 ms | 25,000 | 4.26 h |
+| 10 ms | 50,000 | 8.52 h |
+| 20 ms | 100,000 | 17.04 h |
+| 50 ms | 250,000 | 42.60 h |
+| 100 ms | 500,000 | 85.19 h |
+| 200 ms | 1,000,000 | 170.38 h |
 
-The 5 ms target requires an explicit geometry/contact-domain extension: at
-8 m/s, the free source patch travels 40 mm, beyond the current 20 mm displacement
-bound. Inspect impending self-contact and finite-wall coverage before qualifying
-that extension. Preserve the isolated source patch until its real connection is
-restored, and retain the existing workstation memory envelope as capacity grows.
+These are linear estimates, excluding startup/rendering and future contact cost;
+they are neither delivery ETAs nor evidence that those cases are admitted.
+The binary64 endpoint rule can add one step. The present CLI names only
+0.5/5/20/50 ms; 10/100/200 ms need configuration/output admission work.
 
-Independent source semantics, numerical review and reader work can proceed in
-parallel. Serialize heavy builds, simulations and rendering. Preserve concise
-integration checkpoints and batch the relevant owning regressions there; repeat
-long runs only when a change, failure or unresolved physical question warrants
-it. The [assembly engine design](../../planning/SOURCE_ASSEMBLY_WALL_ENGINE.md)
-and [pilot assessment](../../planning/SOURCE_ASSEMBLY_PILOT_ASSESSMENT.md) contain
-the implementation and comparison details.
+All 10,000 accepted rows admit 200 ns under the post-CIN scalar screen; its
+minimum is approximately 229.346729 ns. The separate native solid diagnostic is
+approximately 188.513 ns, and TYPE45 automatic stiffness depends on dt squared.
+The successful short-run source witness is a rear engine-mount tube, not proof
+of an unchanged winner throughout 2 ms. Resolve these scopes and perform
+sensitivity checks before any timestep change. No mass scaling, skipped checks,
+Yaris special cases or changed material/contact laws count as optimization.
 
-Stored midpoint kinetic energy, optional force-stage kinetic observations,
-endpoint geometry and native work have distinct timing and meanings. Connector
-kinetic subtotals are already included in total nodal mass/inertia accounting;
-they must not be added twice. Native connector work remains separate from shell
-and stabilization work. Constraint reaction work and all stabilization work are
-not automatically dissipation. No arbitrary global energy threshold substitutes
-for these distinctions. See the
-[phase-explicit observation design](../../planning/SOURCE_ASSEMBLY_COLLOCATED_OBSERVATION.md).
+Use normal 20 GB host / 2 GiB archive limits; conditional 60 GB / 6 GiB only when
+a full-run forecast requires them. Keep the existing shared workstation guard,
+32 GiB available RAM and GPU limits. Runtime sampling and video playback cadence
+remain independent of the physical timestep. Add restart before routine multi-day
+runs; monitor allocation/soak behavior without claiming the absence of all leaks.
 
-## Architecture and reuse
+## Broader robo-dyna product, after the selected Yaris demonstration
 
-| Owner | Responsibility and retained boundary |
-| --- | --- |
-| TL-FEA `lib_src/elements`, materials and constraints | Native QEPH/T3 reference/history arithmetic, layered material updates, rigid groups and TYPE25 connector mechanics. OpenRadioss supplies independently pinned reference code and qualification; it is not a production solver runtime. |
-| TL-FEA `lib_src/solvers` and collision | Sole CUDA physical-state owner, native mass/inertia, force assembly, contact, temporal scheme and common commit/rollback. No second clock or independent participant advance. |
-| robo-dyna `modelio`, `case` and `output` | Authenticated source inventory, explicit policies/boundaries, immutable startup composition, thin execution loop, accepted archives and diagnostics. Reuse shared utilities; keep modules focused and source mappings complete. |
-| Chrono and robo-dyna replay adapters | Reuse mesh, geometry, scene and rendering infrastructure. Read accepted TL state at its recorded phase; replay does not run another dynamics solver. |
+The longer-term LS-DYNA-like goal also needs a reusable case/deck model beyond
+the currently source-pinned Yaris workflow, explicit support matrices for material,
+element, section, connection and contact options, and reproducible validation
+cases. Tire/road and omitted component mechanics, richer fracture/contact laws,
+general loads/boundaries and useful analysis workflows belong here when needed.
+Implicit/quasistatic or additional coupled-physics solvers would be separate
+algorithms with their own gates; they are not prerequisites for explicit Yaris
+impact. A general GUI/preprocessor and packaging can follow stable case APIs.
+Formal LS-DYNA/physical-test accuracy comparison remains deferred by the user.
 
-Resident typed shell arenas and mesh-wall contact still admit bounded
-**1,024-parent / 2,048-node** collections, including the actual six- and seven-part
-inventories. Vehicle-sized host binding/material catalogs and nodal/rigid owners
-are now separately qualified; those larger capacities do not imply resident or
-contact admission. Legacy defaults remain compatibility settings. Each owner
-retains independent count/byte admission, preallocated stepping storage,
-failed-readback atomicity and last-entry rollback tests.
-See [collection scaling](../../planning/SHELL_COLLECTION_SCALING.md) and
-[module contracts](../../planning/MODULAR_ARCHITECTURE.md).
-
-## Remaining vehicle milestones
-
-1. **Accounted connected structures:** qualify appreciable transfer through the
-   original weld and subsequent required ties, welds and attachments. Preserve
-   original cards, complete selected parts and explicit released interfaces.
-2. **Folding and broader contact:** add the needed shell self-contact, thickness,
-   feature/edge handling, adjacency exclusions, friction and moving footprint
-   coverage. The current finite planar mesh-wall domain does not cover general
-   vehicle folding contact.
-3. **Whole-model mechanics readiness:** resolve the actual required shell, solid,
-   beam, nonmetal, failure, joint, mass and other source semantics. Reconcile
-   mass/COM/inertia and all load paths before whole-vehicle startup; unsupported
-   active mechanics cannot disappear behind a geometry import.
-4. **Measured vehicle execution:** qualify state, element, connector, contact and
-   output capacities independently. Grow representative workloads, retain
-   numerical parity gates and measure bytes/entity, step time and peak resources.
-   Extend accepted vehicle horizons toward 20, 50, 100 and 200 ms only as the
-   applicable mechanics and contact gates pass.
-5. **Delivery and replay:** provide repeatable case setup, complete accepted
-   bundles, selected refinement evidence, qualified restart when introduced,
-   and an inspected full-vehicle crash/deformation video.
-
-Each new mechanism needs an independent numerical/source reference where
-available, a physically meaningful loaded case, source/capacity rejection,
-whole-step rollback and exact retry, plus the affected owning integration tests.
-Keep the [vehicle design](../../planning/YARIS_RIGID_WALL_DESIGN.md) and
-[test catalog](../../planning/YARIS_TEST_GATES.md) as detailed references, with
-this roadmap and the active plan determining current priority. Source keyword
-counts are not feature counts, and historical coupon tolerances do not become
-universal acceptance rules for the vehicle.
-
-## Historical evidence retained
-
-These records describe earlier bounded milestones. Their old capacities,
-resource allowances, pending-work statements and test totals are historical.
-
-| Record | What it established |
-| --- | --- |
-| [Original model audit](../../crash-work/reports/yaris-progress-audit-1.json) | Canonical geometry: 393,165 nodes, 358,457 shells, 15,234 solids, 4,685 beams and 919 parts. Geometry import alone did not admit vehicle mechanics. |
-| [Rotational foundation](../../crash-work/reports/rotary-foundation-checkpoint.json) and [Q4 force checkpoint](../../crash-work/reports/q4-force-checkpoint.json) | Earlier small prescribed/coupon force, rotation and transaction gates, with their original restricted domains. |
-| [Elastic/contact checkpoint](../../crash-work/reports/elastic-contact-foundations-checkpoint.json) | Supplied-mass contact rigs and restricted elastic/contact foundations; these were not full deforming-vehicle results. |
-| [Original-part plastic video](../../crash-work/renders/source-part-plastic-wall-h-1.mp4) and [sensitivity assessment](../../planning/SOURCE_PART_PLASTICITY_SENSITIVITY.md) | Complete 117-node / 94-shell part response through 7.8125 ms, separation and irreversible history. Local refinement differences prevent a blanket convergence claim. |
-| [Earlier six-part prefix video](../../crash-work/renders/source-assembly-plastic-prefix-1.mp4) | Accepted response through the former approximately 0.513 ms total-quaternion stop; superseded for current horizon/domain claims by the native-rotation qualification and 1.953125 ms result above. |
-| [Shell scaling review](../../planning/YARIS_SHELL_SCALING_REVIEW.md) | Earlier formulation/performance experiments, not a forecast of current whole-vehicle throughput. |
-
-Immutable runs and failed reports remain preserved. The version history of this
-file retains the former detailed backlog; do not treat its superseded next-step
-statements as active requirements.
-
-## Workstation and publication limits
-
-The user permits autonomous local branches, commits and workspace directories;
-**no pushes**. Preserve unrelated repository changes and frozen evidence.
-Use the shared `crash-work/reports/workstation.lock` and
-`Total-Lagrangian-FEA/tools/run_bounded.py` for heavy work:
-
-- Numerical runs: **2 affinity CPUs**, with declared stage-specific RAM/VRAM caps.
-- Builds: **8 affinity CPUs / 4 compiler workers**, **18 GiB** process-group RSS guard.
-- Rendering: **4 affinity CPUs**, bounded frame/output budgets.
-- Overall user RAM ceiling: **20 GB**; retain at least **32 GiB available host
-  RAM** and **8 GiB free VRAM**. Small host-only author checks use their separately
-  assigned lower limits and do not run GPU work.
-
-Forecast active storage and complete archive/ledger costs before admission;
-frame count alone does not bound a long interval ledger. Stop at a numerical or
-resource failure, preserve the accepted prefix, and diagnose its exact source
-entity. Performance changes must preserve the qualified mechanics and accepted
-results before their speedup is promoted. Refresh this roadmap when the next
-capability or completion boundary changes.
+Retain TL-FEA ownership of CUDA mechanics, state and the single clock. Robo-dyna
+owns source/model/case/output composition. Chrono owns reused infrastructure and
+accepted-state visualization. OpenRadioss remains a pinned reference donor, not
+the runtime. Reuse existing utilities and add focused modules with meaningful
+tests; avoid a parallel solver hierarchy or one large integration script.
