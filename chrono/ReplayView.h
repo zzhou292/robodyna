@@ -5,12 +5,13 @@
 namespace crash::visual {
 // Fixed presentation choices for source-wall replay. IncidentSide retains the
 // original camera. WallSide views the same geometry from the opposite X side.
-enum class ReplayView { IncidentSide, WallSide };
+enum class ReplayView { IncidentSide, WallSide, ExplicitFixed };
 
 constexpr const char* ReplayViewName(ReplayView view) noexcept {
     switch (view) {
         case ReplayView::IncidentSide: return "incident-side";
         case ReplayView::WallSide: return "wall-side";
+        case ReplayView::ExplicitFixed: return "explicit-fixed";
     }
     return nullptr;
 }

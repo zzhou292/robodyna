@@ -42,7 +42,8 @@ output::Document CaptureMetadata(const Options& options,const Input& input,const
     if(replay.wall()) array_json::Child(d,"wall_receipt",output::physical_run::WallDocument(*replay.wall()));
     const auto& camera=*scene.camera();
     FiniteArray(d,"camera_position",camera.position.data(),3);FiniteArray(d,"camera_target",camera.target.data(),3);
-    String(d,"camera_view",visual::ReplayViewName(camera.view));String(d,"camera_vertical","Z");
+    String(d,"camera_view",visual::ReplayViewName(camera.view));
+    String(d,"camera_vertical",camera.vertical==visual::ReplayVertical::Y?"Y":"Z");
     Number(d,"camera_vertical_fov_degrees",camera.vertical_fov_degrees);
     Number(d,"light_azimuth",light.azimuth);Number(d,"light_elevation",light.elevation);
     const auto dimensions=visual.FramebufferSize();Integer(d,"width",dimensions[0]);Integer(d,"height",dimensions[1]);

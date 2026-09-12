@@ -44,6 +44,22 @@ robo_dyna_physical_replay RUN_DIR --capture NEW_OUTPUT --color plastic-strain
 
 Optional flags: `--view incident-side|wall-side`, `--fps 1..60`, `--wireframe`,
 `--require-frames N`, `--receipt-sha256 SHA`, `--capture-cap-gib 2|6`.
+To frame a detail, supply both `--camera-eye X,Y,Z` and `--camera-target X,Y,Z`
+in the archive's world coordinates in metres. For example:
+
+```
+robo_dyna_physical_replay RUN_DIR --camera-eye -1.2,-1.8,1.0 --camera-target 0.2,0,0.5 --capture NEW_OUTPUT
+```
+
+The optional `--camera-up y|z` uses Chrono's existing axis-up camera; Z is the
+default. It requires the complete eye/target pair. Explicit cameras cannot be
+combined with `--view`. Nonfinite coordinates, coincident eye/target, an
+up-parallel or unrepresentable camera basis are rejected. The fixed camera and
+40-degree field of view change only presentation; archive geometry is unchanged.
+The capture's existing position/target/FOV fields record the actual camera, with
+`camera_view: explicit-fixed` and its actual Y/Z vertical. Default captures keep
+their existing camera fields and values. No input receipt schema changes.
+
 Playback fps selects how quickly stored samples are displayed; accepted times
 remain their actual archive times. Initial-only and stopped accepted prefixes
 are labeled as such. No deformation scaling or interpolation flag exists.

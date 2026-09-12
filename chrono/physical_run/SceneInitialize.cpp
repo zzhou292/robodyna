@@ -13,9 +13,14 @@ ReplaySceneReport Scene::Initialize(const output::physical_run::Replay& replay,S
         auto next=std::make_unique<Impl>(replay);
         next->budget=budget;
         next->plastic_maximum=scan.plastic_maximum;
+        if (options.fixed_camera) {
+            output::Require(MakeFixedCamera(*options.fixed_camera, next->camera),
+                "Invalid explicit physical replay camera");
+        } else {
         // Fit the complete archived motion and wall with room around the model.
-        output::Require(MakeBoundsCamera(scan.low,scan.high,{-1.,-1.,.45},.85,ReplayVertical::Z,
-            options.view,next->camera),"Invalid physical replay camera bounds");
+            output::Require(MakeBoundsCamera(scan.low,scan.high,{-1.,-1.,.45},.85,ReplayVertical::Z,
+                options.view,next->camera),"Invalid physical replay camera bounds");
+        }
         full_shell::FrameGeometryOptions geometry;
         geometry.geometry=ReplayGeometryLimits::Vehicle();
         geometry.colors=options.colors;

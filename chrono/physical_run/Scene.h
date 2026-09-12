@@ -1,12 +1,15 @@
 #pragma once
 #include "chrono/full_shell/FullShellFrameGeometry.h"
+#include "chrono/ReplayFixedCamera.h"
 #include "output/physical_run/Replay.h"
+#include <optional>
 namespace crash::visual::physical_run {
 struct SceneOptions {
     ReplayColorMode colors=ReplayColorMode::PartId;
     ReplayView view=ReplayView::IncidentSide;
     bool wireframe=false;
     std::size_t host_bytes=1024u<<20;
+    std::optional<FixedCameraInput> fixed_camera;
 };
 // Application-owned reader, geometry and transient sample workspace. VSG /
 // Vulkan driver buffers are outside this value forecast and measured at render.
