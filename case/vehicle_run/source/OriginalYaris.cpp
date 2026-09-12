@@ -33,7 +33,9 @@ OriginalCase PrepareOriginalYaris(const OriginalPaths& paths,vehicle_wall::Setti
             : modelio::physical_domain::Policy::RetainedShellAssembliesV1);
     const auto shells=vehicle_startup::VehicleShellBinding::Prepare(
         vehicle_startup::VehicleShellReferences::Prepare(source.resolution));
-    const auto physical=vehicle_startup::physical_model::VehiclePhysicalModel::Prepare(domain,shells);
+    const auto model_limits=extended ? vehicle_startup::physical_model::Limits::ExtendedSolids()
+        : vehicle_startup::physical_model::Limits{};
+    const auto physical=vehicle_startup::physical_model::VehiclePhysicalModel::Prepare(domain,shells,model_limits);
     const auto post=Classify(source,paths);
     const auto attachments=vehicle_runtime::Attachments::Prepare(physical,post);
     const auto execution=vehicle_runtime::Execution::Prepare(physical);
