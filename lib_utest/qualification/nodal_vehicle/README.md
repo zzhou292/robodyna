@@ -62,3 +62,24 @@ Retain the existing nodal step/temporal/capacity, rigid owner and prepared
 snapshot/capture regressions; their 2,048-node fixtures keep their old constants.
 Only the old oversized-budget rejection assertion now targets the new explicit
 256 MiB hard cap: larger budgets are an intentional new capability.
+
+## Parallel assembly validation
+
+`nodal_seal/Validation.cuh` checks the independent six-component force/couple
+rows with GPU workers. An integer minimum selects the earliest failing node;
+the original axis order chooses its status. Identity/contributor precedence and
+serial `FinalizeRows` arithmetic stay unchanged. The existing control's node
+field is transient scratch, so there is no new storage or allocation.
+
+`SealOrderTest.cu` drives the real owner across 513 nodes with mixed NaN,
+infinity, finite rotational loads and signed zero, comparing against the frozen
+serial node/axis scan from TL `01a9a39`. It checks legacy and rotational owners,
+retry, unchanged accepted fields/allocation, and stale-identity versus contributor
+failure precedence. Existing maximum-capacity analytic motion and complete
+rollback tests also pass. Root evidence: `nodal-seal-root-tests-1` retains the
+passing capacity and serial-comparison gates plus a test-only fault-injection
+failure; `nodal-seal-root-tests-2` passes both corrected seal tests. The failed
+fixture had deliberately advanced the row epoch and then incorrectly expected
+the existing monotonic row reset to accept an older epoch. Its replacement
+mutates assembly identity, which is reset each trial. Production did not change
+between those runs. Full-model timing is a separate gate.

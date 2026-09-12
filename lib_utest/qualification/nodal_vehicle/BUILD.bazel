@@ -11,7 +11,7 @@ cc_test(
 cuda_test(
     name = "nodal_vehicle_owner_check",
     size = "medium",
-    srcs = ["VehicleOwnerFixture.h", "VehicleOwnerFixture.cu", "VehicleOwnerTest.cu"],
+    srcs = ["VehicleOwnerFixture.h", "VehicleOwnerFixture.cu", "VehicleOwnerTest.cu", "SealOrderTest.cu"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
     tags = ["exclusive", "gpu"],
     deps = ["//lib_src/solvers:explicit_nodal_state", "@googletest//:gtest_main"],

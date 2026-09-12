@@ -5,6 +5,7 @@
 #include "NodalForceStageCaptureLayout.h"
 #include "NodalStateLayout.h"
 #include "NodalCinStorage.h"
+#include "nodal_seal/Validation.cuh"
 #include <atomic>
 #include <cmath>
 #include <cstring>
@@ -32,35 +33,6 @@ __global__ void ResetTrial(Control* c, std::uint64_t epoch, std::uint64_t attemp
   c->limit = {}; c->node = UINT32_MAX; c->status = NodalStatus::Ok;
   if (stability::ResetRows(&c->rows, epoch, attempt) != sc::Status::kOk)
     c->status = NodalStatus::InvalidOutput;
-}
-__global__ void SealTrial(Control* c, const double* scratch, std::uint32_t n,
-                          std::uint64_t epoch, std::uint64_t attempt,
-                          double safety, double minimum_dt, double h, bool rotations) {
-  if (c->status != NodalStatus::Ok) return;
-  if (c->assembly.base_epoch != epoch || c->assembly.attempt != attempt ||
-      c->rows.base_epoch != epoch || c->rows.attempt != attempt) {
-    c->status = NodalStatus::StaleTrial; return;
-  }
-  if (c->assembly.status != sc::Status::kOk) {
-    c->status = NodalStatus::ContributorFailure; c->node = c->assembly.node; return;
-  }
-  for (std::uint32_t i = 0; i < n; ++i) {
-    for (unsigned axis = 0; axis < 6; ++axis) {
-      const double value = scratch[axis*n+i];
-      if (!sc::IsFinite(value)) { c->status = NodalStatus::InvalidOutput; c->node = i; return; }
-      if (!rotations && axis >= 3 && value != 0) { c->status = NodalStatus::UnsupportedRotation; c->node = i; return; }
-    }
-  }
-  const auto status = stability::FinalizeRows(&c->rows, safety, minimum_dt, h, &c->limit);
-  if (status != sc::Status::kOk) {
-    c->status = status == sc::Status::kOutOfRange ? NodalStatus::StepTooLarge : NodalStatus::InvalidOutput;
-    return;
-  }
-  if (!stability::IsCurrentLimit(c->rows, c->limit)) { c->status = NodalStatus::StaleTrial; return; }
-  if (c->limit.dt < h) {
-    c->status = NodalStatus::StepTooLarge;
-    c->node = c->limit.stiffness_bound > 0 ? c->limit.stiffness_node : c->limit.damping_node;
-  }
 }
 }  // namespace
 
@@ -400,8 +372,8 @@ NodalReport FENodalState::SealAssembly(const NodalTrialToken& token) {
     return s.Reject(NodalStatus::StaleTrial, "Trial token belongs to another owner or attempt");
   if (s.phase != Phase::Assembling) return s.Reject(NodalStatus::WrongPhase, "Assembly is not open");
   auto report = s.Check(cudaGetLastError()); if (report.status != NodalStatus::Ok) return report;
-  SealTrial<<<1,1,0,s.stream>>>(s.control, s.scratch, static_cast<std::uint32_t>(s.config.node_count),
-      s.stamp.epoch, s.attempt, s.config.timestep_safety, s.config.minimum_dt, s.config.fixed_dt, s.has_rotations);
+  nodal_seal::Launch(s.control, s.scratch, static_cast<std::uint32_t>(s.config.node_count),
+      s.stamp.epoch, s.attempt, s.config.timestep_safety, s.config.minimum_dt, s.config.fixed_dt, s.has_rotations, s.stream);
   report = s.Check(cudaGetLastError()); if (report.status != NodalStatus::Ok) return report;
   report = s.SynchronizeControl(); if (report.status != NodalStatus::Ok) return report;
   s.phase = Phase::Sealed; return Ok();

@@ -13,7 +13,7 @@ option(TL_NODAL_VEHICLE_ENABLE_CUDA "Actual vehicle-sized owner allocation/step/
 if(TL_NODAL_VEHICLE_ENABLE_CUDA)
   enable_language(CUDA)
   add_subdirectory("${TL_ROOT}/lib_src/solvers" nodal-owner)
-  add_executable(nodal_vehicle_owner_check VehicleOwnerFixture.cu VehicleOwnerTest.cu)
+  add_executable(nodal_vehicle_owner_check VehicleOwnerFixture.cu VehicleOwnerTest.cu SealOrderTest.cu)
   target_link_libraries(nodal_vehicle_owner_check PRIVATE tl_explicit_nodal_state GTest::gtest_main)
   set_target_properties(nodal_vehicle_owner_check PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
   target_compile_options(nodal_vehicle_owner_check PRIVATE
