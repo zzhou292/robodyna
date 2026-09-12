@@ -1,5 +1,24 @@
 # Accepted replay video evidence
 
+## Complete Yaris contact onset
+
+The complete selected V5 assembly has an actual Chrono
+[overview clip](../../crash-work/renders/yaris-supports512-overview-video-1/yaris-contact-onset.mp4)
+and [front-detail clip](../../crash-work/renders/yaris-supports512-front-detail-video-1/yaris-contact-onset.mp4).
+Both show the same four accepted states through 512 steps /102.4 microseconds,
+with original PID colors and physical deformation scale 1. These are early
+elastic-contact observations; all archived shell plastic strains are zero.
+The close view shows the local bumper response; the overview retains the
+whole selected assembly and finite mesh wall.
+
+Each saved state is held for one second: four seconds, 120 encoded frames at
+30 FPS, 1280×720 H.264/yuv420p, no audio. The saved physical times are uneven,
+so no single physical playback factor is asserted and no states are interpolated.
+Each video's adjacent `manifest.json` binds the PNG/capture hashes and physical
+timestamps. FFprobe and complete FFmpeg `-xerror` decode pass in
+`supports512-video-encode-1`. The larger 0.5 ms trajectory remains a separate
+in-progress run; these clips do not depict that future result.
+
 ## Elastic coupon R1
 
 The [elastic coupon MP4](../../crash-work/renders/elastic-coupon-video-r1-20260909/elastic-coupon.mp4)
