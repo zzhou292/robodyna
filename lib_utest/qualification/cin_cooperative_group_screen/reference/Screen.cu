@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Screen.h"
 #include "Groups.h"
-#include "GroupScreen.cuh"
 #include "../cin_limiter/Capture.h"
 
 namespace tl::fea::cin_advance::screen {
@@ -73,8 +72,11 @@ __global__ void Finish(Input input, bool parallel_groups) {
 }
 __global__ void EvaluateGroups(Input input) {
   if (input.control->status != NodalStatus::Ok || input.screen[0].invalid_node != UINT32_MAX) return;
-  __shared__ group_screen::Tile tile;
-  group_screen::ScreenGroup(input, blockIdx.x, tile);
+  const auto source = Sources(input);
+  for (std::uint32_t group = blockIdx.x*blockDim.x+threadIdx.x;
+       group < input.groups.group_count; group += gridDim.x*blockDim.x) {
+    input.group_reports[group] = groups::ScreenGroup(source, input.structural.factor, group);
+  }
 }
 __global__ void FinishGroups(Input input) {
   if (input.control->status == NodalStatus::Ok) Publish(input, input.screen[0], true);
@@ -91,7 +93,8 @@ cudaError_t Launch(const Input& input, cudaStream_t stream) {
   Finish<<<1, Threads, 0, stream>>>(input, parallel_groups);
   error = cudaGetLastError();
   if (error != cudaSuccess || !parallel_groups) return error;
-  EvaluateGroups<<<input.groups.group_count, group_screen::Threads, 0, stream>>>(input);
+  const auto blocks = 1+(input.groups.group_count-1)/groups::Threads;
+  EvaluateGroups<<<blocks, groups::Threads, 0, stream>>>(input);
   error = cudaGetLastError();
   if (error != cudaSuccess) return error;
   FinishGroups<<<1, 1, 0, stream>>>(input);

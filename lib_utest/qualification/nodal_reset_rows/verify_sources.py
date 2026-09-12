@@ -7,7 +7,7 @@ import runpy
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 raw = (here / 'source-manifest.json').read_bytes()
-EXPECTED = '6903aa9c3f88da97d0f11f3d5433a428965e612d6574e5e32f6276ac8e9c39b6'
+EXPECTED = '6fe865022bf16edb86ac68ffa959ed81cf39cf1158a767a271ebd3dea06aeb26'
 assert hashlib.sha256(raw).hexdigest() == EXPECTED
 manifest = json.loads(raw)
 for row in manifest['files']:

@@ -49,7 +49,7 @@ cuda_library(
             "NodalNodeStep.h", "NodalRigidGroupStorage.h", "ExplicitNodalRigidStep.h", "NodalSnapshotRanges.h",
             "NodalForceStageSnapshot.h", "NodalForceStageCaptureLayout.h", "NodalForceStageSnapshotRanges.h",
             "NodalCinRuntime.h", "cin_advance/FailureKey.h", "cin_advance/Input.h", "cin_advance/ForceInputs.h", "cin_advance/ForceTransfers.h", "cin_advance/Recovery.h", "cin_advance/RecoveryTypes.h", "cin_advance/RecoveryDrift.h", "cin_advance/DriftTypes.h", "cin_advance/DriftValues.h",
-            "cin_advance/Capture.h", "cin_advance/Screen.h", "cin_advance/ScreenSummary.h", "cin_advance/GroupReport.h", "cin_advance/Groups.h", "cin_advance/Node.h", "NodalCinLayout.h", "NodalCinStorage.h", "cin_physical_mains/OutputRanges.h"],
+            "cin_advance/Capture.h", "cin_advance/Screen.h", "cin_advance/ScreenSummary.h", "cin_advance/GroupReport.h", "cin_advance/Groups.h", "cin_advance/GroupResponse.h", "cin_advance/GroupScreenValues.h", "cin_advance/GroupScreen.cuh", "cin_advance/Node.h", "NodalCinLayout.h", "NodalCinStorage.h", "cin_physical_mains/OutputRanges.h"],
     copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
     deps = [":explicit_step_stability", ":nodal_seal_row_values", ":nodal_state_layout", ":nodal_rigid_storage_layout", "//lib_src/math:quaternion", "//lib_src/constraints:nodal_rigid_group_step_math", "//lib_src/constraints:nodal_rigid_assembly_binding",
             "//lib_src/constraints/tied_shell:cin_stage", "//lib_utils:source_identity_index",

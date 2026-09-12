@@ -171,8 +171,8 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/group_proof.py",
-      "bytes": 5005,
-      "sha256": "0648b9a206aaada8e930d884ffc24bd6e34da9107820d8f9e9ccdf3f2296c319",
+      "bytes": 5264,
+      "sha256": "dbf23734a9b0efb18935cdc879470d1cb399b9233b98a8a42bcf698782aef442",
       "prior_receipts": [
         {
           "bytes": 4638,
@@ -206,7 +206,26 @@
           "prior_sha256": "4fbfbc618b6bb4f71b32720e745151674360b84ff75a9296a21efc7c92cfb5be",
           "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
         }
-      ]
+      ],
+      "cooperative_group_prior_receipt": {
+        "baseline": "21729f3",
+        "reason": "Cooperative group-local response scheduling from 21729f3; literal source/axis-order trace preserved by checked response reader; complete previous receipt retained.",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_groups/group_proof.py",
+          "bytes": 5005,
+          "sha256": "0648b9a206aaada8e930d884ffc24bd6e34da9107820d8f9e9ccdf3f2296c319"
+        }
+      },
+      "cooperative_composition_prior": {
+        "main": "b1415d3",
+        "group": "c0eed45",
+        "reset_packaging": "cd966d16",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_groups/group_proof.py",
+          "bytes": 5005,
+          "sha256": "0648b9a206aaada8e930d884ffc24bd6e34da9107820d8f9e9ccdf3f2296c319"
+        }
+      }
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/reference/ExplicitNodalCinStep.cu",
@@ -366,6 +385,71 @@
       "path": "lib_src/solvers/cin_advance/Drift.cu",
       "bytes": 1792,
       "sha256": "42e447058a1c775e3328984be7f2bb7c077e5ef33f0e48149e8ad8e9790dc2d3"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/GroupResponse.h",
+      "bytes": 1953,
+      "sha256": "b85781632ff111e9889284f5566283bb9b9ad081be45c36420c0521fda6e8002"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/GroupScreenValues.h",
+      "bytes": 4176,
+      "sha256": "63809336cadb7d4366f5c2a2daf4ba155f0c055e1eca49004b9fe396575618a1"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/GroupScreen.cuh",
+      "bytes": 1558,
+      "sha256": "3d926a2a8d66787dd5181d3d231b89279331c89e54e65ac8b543ef14ccf1d147"
+    },
+    {
+      "path": "lib_utest/qualification/cin_cooperative_group_screen/cooperative_proof.py",
+      "bytes": 4569,
+      "sha256": "6aed8dda96daf6813ff4536b50932059399be26b00d6694aa9f203e28e86b436",
+      "cooperative_composition_prior": {
+        "main": "b1415d3",
+        "group": "c0eed45",
+        "reset_packaging": "cd966d16",
+        "record": {
+          "path": "lib_utest/qualification/cin_cooperative_group_screen/cooperative_proof.py",
+          "bytes": 4267,
+          "sha256": "d476cc182be813c750cf980d550d1bdedca6aad969c1b965037a295fed5f63da"
+        }
+      }
+    },
+    {
+      "path": "lib_utest/qualification/cin_cooperative_group_screen/reference/Rigid.h",
+      "bytes": 2514,
+      "sha256": "cf3de0fe21e006c656f0e75d6668bf6f8fba52e79a80064cd630fe6f40c1f89a"
+    },
+    {
+      "path": "lib_utest/qualification/cin_cooperative_group_screen/reference/Screen.cu",
+      "bytes": 4261,
+      "sha256": "bc8c600d57326cef219b603a8f24c7a7e83a11243774e52827cafec8d8d1f063"
+    },
+    {
+      "path": "lib_utest/qualification/cin_cooperative_group_screen/reference/Groups.h",
+      "bytes": 2870,
+      "sha256": "16fbb5cef91be992aae4af136fb3dbc8099201dc3a109f20a75683305d8d9705"
+    },
+    {
+      "path": "lib_utest/qualification/cin_cooperative_group_screen/reference/ScreenSummary.h",
+      "bytes": 2770,
+      "sha256": "91e7b83f25b4a75de9a70eb7e98c47a5804f00c2efd2db698371f008d9431a09"
+    },
+    {
+      "path": "lib_utest/qualification/cin_cooperative_group_screen/reference/ScreenValues.h",
+      "bytes": 3993,
+      "sha256": "740228821e1b9fcf8b03bfba0f8e15bd34f85620eb4aeedd988a3cae397737bb"
+    },
+    {
+      "path": "lib_utest/qualification/cin_cooperative_group_screen/reference/Screen.h",
+      "bytes": 846,
+      "sha256": "a07f4bd744e2b9f86f89bda8f4cb91e3cf574a98da2157136e4fbc42f72d68f9"
+    },
+    {
+      "path": "lib_utest/qualification/cin_cooperative_group_screen/reference/Capture.h",
+      "bytes": 2896,
+      "sha256": "171f2333d32377e3b95db869a5367e91a1a9378232fa1f615f04d366631b739c"
     }
   ],
   "previous_source_receipts": [
@@ -393,5 +477,35 @@
     "reason": "Both exact scheduling and optional witness reversals retained; no frozen baseline changes."
   },
   "recovery_integration_base": "bf1c6a4",
-  "recovery_integration_commit": "d05ad75ecb15517ca3dd1233843a5764a51f0850"
+  "recovery_integration_commit": "d05ad75ecb15517ca3dd1233843a5764a51f0850",
+  "cooperative_group_integration": {
+    "main_commit": "b1415d3",
+    "cooperative_commit": "c0eed45",
+    "main_manifest": {
+      "bytes": 18410,
+      "sha256": "76209aca00f20b34e4e58e0ad57a232e12d44d1a421ada215965f82648e2dce5"
+    },
+    "cooperative_manifest": {
+      "bytes": 19090,
+      "sha256": "c4dbb52a41ed8c191000382f276e2cbf730523dc61d7c82c1ec7d12a0c54dc6d"
+    },
+    "scope": "Union of qualified drift/reset and exact cooperative screen, no arithmetic changes; existing histories and strict inverse proofs retained."
+  },
+  "cooperative_group_registration": {
+    "baseline": "21729f3",
+    "reason": "Cooperative group-local response scheduling from 21729f3; literal source/axis-order trace preserved by checked response reader; complete previous receipt retained.",
+    "paths": [
+      "lib_src/solvers/cin_advance/GroupResponse.h",
+      "lib_src/solvers/cin_advance/GroupScreenValues.h",
+      "lib_src/solvers/cin_advance/GroupScreen.cuh",
+      "lib_utest/qualification/cin_cooperative_group_screen/cooperative_proof.py",
+      "lib_utest/qualification/cin_cooperative_group_screen/reference/Rigid.h",
+      "lib_utest/qualification/cin_cooperative_group_screen/reference/Screen.cu",
+      "lib_utest/qualification/cin_cooperative_group_screen/reference/Groups.h",
+      "lib_utest/qualification/cin_cooperative_group_screen/reference/ScreenSummary.h",
+      "lib_utest/qualification/cin_cooperative_group_screen/reference/ScreenValues.h",
+      "lib_utest/qualification/cin_cooperative_group_screen/reference/Screen.h",
+      "lib_utest/qualification/cin_cooperative_group_screen/reference/Capture.h"
+    ]
+  }
 }

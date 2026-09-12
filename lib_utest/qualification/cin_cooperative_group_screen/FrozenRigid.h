@@ -1,26 +1,16 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
-#include "Ordinary.h"
+#include "lib_src/solvers/cin_timestep/Ordinary.h"
 #include "lib_src/collision/RigidNormalResponse.h"
 
-namespace tl::fea::cin_timestep {
+namespace tl::fea::cooperative_test::frozen {
+using namespace cin_timestep;
 // Reuses the qualified actual force-frame response and outward-rounded positive
 // arithmetic. The body operator is the rigid projection of diag(kN I3,kR I3).
 // Its trace majorizes its largest eigenvalue; this is an analytical surrogate
 // screen, not parity with the inconsistent native RBYM timestep branch.
-namespace detail {
-struct DirectRigidResponse {
-  TL_SURFACE_HD bool operator()(const tlfea::contact::RigidContactBody& body,
-      tl::math::Vec3 position, tl::math::Vec3 axis,
-      tlfea::contact::RigidNormalResponse& output) const noexcept {
-    return tlfea::contact::EvaluateRigidNormalResponse(body, position, axis, output) ==
-        tlfea::contact::Status::kOk;
-  }
-};
-template<class ReadResponse>
-TL_SURFACE_HD inline bool AddRigidMemberTraceWithResponse(const tlfea::contact::RigidContactBody& body,
-    tl::math::Vec3 position, double translation, double rotation, double& trace,
-    ReadResponse read_response) noexcept {
+TL_SURFACE_HD inline bool AddRigidMemberTrace(const tlfea::contact::RigidContactBody& body,
+    tl::math::Vec3 position, double translation, double rotation, double& trace) noexcept {
   namespace contact = tlfea::contact;
   namespace arithmetic = contact::mass_detail;
   if (!std::isfinite(translation) || translation < 0 ||
@@ -30,7 +20,7 @@ TL_SURFACE_HD inline bool AddRigidMemberTraceWithResponse(const tlfea::contact::
   const tl::math::Vec3 axes[]{{1,0,0}, {0,1,0}, {0,0,1}};
   for (const auto axis : axes) {
     contact::RigidNormalResponse response;
-    if (!read_response(body, position, axis, response) ||
+    if (contact::EvaluateRigidNormalResponse(body, position, axis, response) != contact::Status::kOk ||
         contact::AccumulateRigidContactTrace(translation, response, next) != contact::Status::kOk)
       return false;
   }
@@ -45,12 +35,6 @@ TL_SURFACE_HD inline bool AddRigidMemberTraceWithResponse(const tlfea::contact::
   }
   trace = next;
   return true;
-}
-} // namespace detail
-TL_SURFACE_HD inline bool AddRigidMemberTrace(const tlfea::contact::RigidContactBody& body,
-    tl::math::Vec3 position, double translation, double rotation, double& trace) noexcept {
-  return detail::AddRigidMemberTraceWithResponse(body, position, translation, rotation,
-      trace, detail::DirectRigidResponse{});
 }
 TL_SURFACE_HD inline bool RigidTraceLimit(double trace, double factor, ScalarLimit& output) noexcept {
   if (!std::isfinite(trace) || trace < 0 || !std::isfinite(factor) || factor <= 0 || factor > 1)

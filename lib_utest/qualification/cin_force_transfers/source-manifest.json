@@ -53,8 +53,8 @@
     },
     {
       "path": "lib_src/solvers/BUILD.bazel",
-      "bytes": 8465,
-      "sha256": "99118e36f8b9abd597233bfbfaa2a6a7888133213ba5f6bdfab4c068e340ceca",
+      "bytes": 8562,
+      "sha256": "16843f9c7888e4516cd2e9ee4c81eb79bb7b7403516e8ac4fd4c69861731d816",
       "reviewed_updates": [
         {
           "prior_bytes": 8134,
@@ -103,7 +103,26 @@
           "sha256": "3f212ec1bf1ebeddceeaebcf27c91036e6f1262b604ce2cf0d39116a1789bd91",
           "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
         }
-      ]
+      ],
+      "cooperative_group_prior_receipt": {
+        "baseline": "21729f3",
+        "reason": "Cooperative group-local response scheduling from 21729f3; literal source/axis-order trace preserved by checked response reader; complete previous receipt retained.",
+        "record": {
+          "path": "lib_src/solvers/BUILD.bazel",
+          "bytes": 8359,
+          "sha256": "b586a6bb9ba463a00dafd0908944711faf0134816ebdf18383bbd161f2d9fedf"
+        }
+      },
+      "cooperative_composition_prior": {
+        "main": "b1415d3",
+        "group": "c0eed45",
+        "reset_packaging": "cd966d16",
+        "record": {
+          "path": "lib_src/solvers/BUILD.bazel",
+          "bytes": 8465,
+          "sha256": "99118e36f8b9abd597233bfbfaa2a6a7888133213ba5f6bdfab4c068e340ceca"
+        }
+      }
     },
     {
       "path": "lib_src/solvers/CMakeLists.txt",
@@ -377,8 +396,8 @@
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/source-manifest.json",
-      "bytes": 18410,
-      "sha256": "76209aca00f20b34e4e58e0ad57a232e12d44d1a421ada215965f82648e2dce5",
+      "bytes": 23486,
+      "sha256": "c54531f229af51cbd8245284a34d083d2f7d355f563bafd26d053997beffba1f",
       "reviewed_updates": [
         {
           "prior_bytes": 6920,
@@ -417,12 +436,31 @@
           "sha256": "39524cdf0c7cdfdd425ed7e9a8ff16867270594f41aa4340fd15573819d2ee18",
           "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
         }
-      ]
+      ],
+      "cooperative_group_prior_receipt": {
+        "baseline": "21729f3",
+        "reason": "Cooperative group-local response scheduling from 21729f3; literal source/axis-order trace preserved by checked response reader; complete previous receipt retained.",
+        "record": {
+          "path": "lib_utest/qualification/cin_force_inputs/source-manifest.json",
+          "bytes": 15301,
+          "sha256": "35a4423f54a25221e1a06a531a1500150e4494cd7ef9157865328a4b3facdc2e"
+        }
+      },
+      "cooperative_composition_prior": {
+        "main": "b1415d3",
+        "group": "c0eed45",
+        "reset_packaging": "cd966d16",
+        "record": {
+          "path": "lib_utest/qualification/cin_force_inputs/source-manifest.json",
+          "bytes": 18410,
+          "sha256": "76209aca00f20b34e4e58e0ad57a232e12d44d1a421ada215965f82648e2dce5"
+        }
+      }
     },
     {
       "path": "lib_utest/qualification/cin_force_inputs/verify_sources.py",
       "bytes": 6359,
-      "sha256": "0574ab1e6db59521323a024a49e4200536e7b369265785c4e0036fdb3296e28f",
+      "sha256": "174a526f9ce92b87ef76958df0971f9dff5251cf897ed10e86c23d9bf4e150ed",
       "reviewed_updates": [
         {
           "prior_bytes": 6359,
@@ -461,7 +499,26 @@
           "sha256": "ca8ad3edb2af8d19aa867fac9561839562a80a07d19a756855979a7a391d2b7b",
           "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
         }
-      ]
+      ],
+      "cooperative_group_prior_receipt": {
+        "baseline": "21729f3",
+        "reason": "Cooperative group-local response scheduling from 21729f3; literal source/axis-order trace preserved by checked response reader; complete previous receipt retained.",
+        "record": {
+          "path": "lib_utest/qualification/cin_force_inputs/verify_sources.py",
+          "bytes": 6359,
+          "sha256": "ac7fa131ee15a3107e4584c3f88b5220a96435b404cb3758e95914e05d99d33c"
+        }
+      },
+      "cooperative_composition_prior": {
+        "main": "b1415d3",
+        "group": "c0eed45",
+        "reset_packaging": "cd966d16",
+        "record": {
+          "path": "lib_utest/qualification/cin_force_inputs/verify_sources.py",
+          "bytes": 6359,
+          "sha256": "0574ab1e6db59521323a024a49e4200536e7b369265785c4e0036fdb3296e28f"
+        }
+      }
     },
     {
       "path": "lib_utest/qualification/cin_force_transfers/BUILD.bazel",
@@ -602,8 +659,8 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_capture/source-manifest.json",
-      "bytes": 83536,
-      "sha256": "44b9ded0376227783e0b00b445e06de57259988500698bd3990caedd3ddd6b0d",
+      "bytes": 95412,
+      "sha256": "f353684b1e2617c61cbcc473c00c070f6ba9a092eb4715b49a3a8b0b25175f73",
       "prior_receipts": [
         {
           "bytes": 23270,
@@ -657,12 +714,31 @@
           "prior_sha256": "b57a74303427ae74a53574440b5bdd83cbd63dd3d81914254c6ff1792bab5c9e",
           "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
         }
-      ]
+      ],
+      "cooperative_group_prior_receipt": {
+        "baseline": "21729f3",
+        "reason": "Cooperative group-local response scheduling from 21729f3; literal source/axis-order trace preserved by checked response reader; complete previous receipt retained.",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_capture/source-manifest.json",
+          "bytes": 68487,
+          "sha256": "fdb5b593c5105694d5dc7ceed34528747261a58c4da2ec00fea5b4047b57e1c2"
+        }
+      },
+      "cooperative_composition_prior": {
+        "main": "b1415d3",
+        "group": "c0eed45",
+        "reset_packaging": "cd966d16",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_capture/source-manifest.json",
+          "bytes": 83536,
+          "sha256": "44b9ded0376227783e0b00b445e06de57259988500698bd3990caedd3ddd6b0d"
+        }
+      }
     },
     {
       "path": "lib_utest/qualification/cin_parallel_capture/verify_sources.py",
       "bytes": 3992,
-      "sha256": "5c2398cc8c5bac70d4f8dbb1ba9691cace042df9c0c2d1c51b880b51c3c58a29",
+      "sha256": "3e4f7b7d2fdbbbe8fe63b9611cb55ecce7a2279db5f60772c8782dfabe538e86",
       "prior_receipts": [
         {
           "bytes": 3992,
@@ -716,12 +792,31 @@
           "prior_sha256": "346b8dcb1d5fc542b07122daa28bda5392abf56045c8748ea97ed222b396a7f4",
           "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
         }
-      ]
+      ],
+      "cooperative_group_prior_receipt": {
+        "baseline": "21729f3",
+        "reason": "Cooperative group-local response scheduling from 21729f3; literal source/axis-order trace preserved by checked response reader; complete previous receipt retained.",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_capture/verify_sources.py",
+          "bytes": 3992,
+          "sha256": "f2903884507463f63b52fe63968c2ff0065a493cf8ac798ec8515922e35461ff"
+        }
+      },
+      "cooperative_composition_prior": {
+        "main": "b1415d3",
+        "group": "c0eed45",
+        "reset_packaging": "cd966d16",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_capture/verify_sources.py",
+          "bytes": 3992,
+          "sha256": "5c2398cc8c5bac70d4f8dbb1ba9691cace042df9c0c2d1c51b880b51c3c58a29"
+        }
+      }
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/group_proof.py",
-      "bytes": 5005,
-      "sha256": "0648b9a206aaada8e930d884ffc24bd6e34da9107820d8f9e9ccdf3f2296c319",
+      "bytes": 5264,
+      "sha256": "dbf23734a9b0efb18935cdc879470d1cb399b9233b98a8a42bcf698782aef442",
       "reviewed_updates": [
         {
           "prior_bytes": 4787,
@@ -733,12 +828,31 @@
           "prior_sha256": "4fbfbc618b6bb4f71b32720e745151674360b84ff75a9296a21efc7c92cfb5be",
           "reason": "Frozen recovery branch receipt: Reviewed integration of frozen recovery d05ad75 onto bf1c6a4: retain optional default-off limiter capture, exact witness/recovery/transfer proof composition, and both incoming source histories."
         }
-      ]
+      ],
+      "cooperative_group_prior_receipt": {
+        "baseline": "21729f3",
+        "reason": "Cooperative group-local response scheduling from 21729f3; literal source/axis-order trace preserved by checked response reader; complete previous receipt retained.",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_groups/group_proof.py",
+          "bytes": 5005,
+          "sha256": "0648b9a206aaada8e930d884ffc24bd6e34da9107820d8f9e9ccdf3f2296c319"
+        }
+      },
+      "cooperative_composition_prior": {
+        "main": "b1415d3",
+        "group": "c0eed45",
+        "reset_packaging": "cd966d16",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_groups/group_proof.py",
+          "bytes": 5005,
+          "sha256": "0648b9a206aaada8e930d884ffc24bd6e34da9107820d8f9e9ccdf3f2296c319"
+        }
+      }
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/source-manifest.json",
-      "bytes": 100619,
-      "sha256": "ddeaf7db4e7bf9879f2cdb5ccd407e08820fa350a5476e009c2f79edf5e740a8",
+      "bytes": 114232,
+      "sha256": "ca5267d848c795ace51e8d1b0276d52c51c9eadb0bc9ca99d9312f5d677caab7",
       "prior_receipts": [
         {
           "bytes": 30246,
@@ -792,12 +906,31 @@
           "prior_sha256": "160ca3eabc7cceab75b931ec7ccfc8a8cc04eda1ef44502c2910b080f69a9d05",
           "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
         }
-      ]
+      ],
+      "cooperative_group_prior_receipt": {
+        "baseline": "21729f3",
+        "reason": "Cooperative group-local response scheduling from 21729f3; literal source/axis-order trace preserved by checked response reader; complete previous receipt retained.",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_groups/source-manifest.json",
+          "bytes": 80723,
+          "sha256": "c9e5750b607dbaac8fabdce8f57452e785bd90333ba1fa448446c8b3c858775e"
+        }
+      },
+      "cooperative_composition_prior": {
+        "main": "b1415d3",
+        "group": "c0eed45",
+        "reset_packaging": "cd966d16",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_groups/source-manifest.json",
+          "bytes": 100619,
+          "sha256": "ddeaf7db4e7bf9879f2cdb5ccd407e08820fa350a5476e009c2f79edf5e740a8"
+        }
+      }
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/verify_sources.py",
       "bytes": 3905,
-      "sha256": "f21ecd900dff44d14e24a6b0fc81f1aca3fb545a0710737f8ef4d36148cdc32a",
+      "sha256": "189e53417e09e1cda5fbe56db750a73f48868ad1e6f8352815087ab62eaaffe8",
       "prior_receipts": [
         {
           "bytes": 3905,
@@ -851,7 +984,26 @@
           "prior_sha256": "3ffeae37e692088ad6d4f2024726575f4da5dc0bb228ac4f210690297fb52b15",
           "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
         }
-      ]
+      ],
+      "cooperative_group_prior_receipt": {
+        "baseline": "21729f3",
+        "reason": "Cooperative group-local response scheduling from 21729f3; literal source/axis-order trace preserved by checked response reader; complete previous receipt retained.",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_groups/verify_sources.py",
+          "bytes": 3905,
+          "sha256": "ae06ef89979bc057144d69a5d162e0e064341cf0c95c3c926a01e8d619484924"
+        }
+      },
+      "cooperative_composition_prior": {
+        "main": "b1415d3",
+        "group": "c0eed45",
+        "reset_packaging": "cd966d16",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_groups/verify_sources.py",
+          "bytes": 3905,
+          "sha256": "f21ecd900dff44d14e24a6b0fc81f1aca3fb545a0710737f8ef4d36148cdc32a"
+        }
+      }
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/BUILD.bazel",
@@ -884,8 +1036,8 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/source-manifest.json",
-      "bytes": 20492,
-      "sha256": "bef2dfd5b2284054b26d706e3156a6713cd78c67fda176f56a9c72844d3a8ef8",
+      "bytes": 26380,
+      "sha256": "5d07a3fbabf6a8784878be193c9d9501d7e7afa4bc219a1d962ef6ad971c8d72",
       "reviewed_updates": [
         {
           "prior_bytes": 7527,
@@ -924,12 +1076,31 @@
           "sha256": "a398fd1cbe9683804047dfe6e83a15a9cc12497b9874d0b570f5e933d7e2de92",
           "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
         }
-      ]
+      ],
+      "cooperative_group_prior_receipt": {
+        "baseline": "21729f3",
+        "reason": "Cooperative group-local response scheduling from 21729f3; literal source/axis-order trace preserved by checked response reader; complete previous receipt retained.",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_ordinary/source-manifest.json",
+          "bytes": 17383,
+          "sha256": "7b06d8f476e82f7cc5fb525f8fe4c270c55e2855f211d2909b0bf5e4cba2fca6"
+        }
+      },
+      "cooperative_composition_prior": {
+        "main": "b1415d3",
+        "group": "c0eed45",
+        "reset_packaging": "cd966d16",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_ordinary/source-manifest.json",
+          "bytes": 20492,
+          "sha256": "bef2dfd5b2284054b26d706e3156a6713cd78c67fda176f56a9c72844d3a8ef8"
+        }
+      }
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/verify_sources.py",
       "bytes": 4833,
-      "sha256": "fb785655a16a0213b358aa537b9c65b51e18fce82ef3d442092b69cac4aa5d1c",
+      "sha256": "4ff725c21fd5d27d6fdec1612899822d9c9a03acc64ab4dcce08335731bc531c",
       "reviewed_updates": [
         {
           "prior_bytes": 4833,
@@ -968,12 +1139,31 @@
           "sha256": "62fff503660e838a65bdd30396805fdf2fceb718bdf29a519d2ce473c6dc88da",
           "reason": "Exact parallel CIN recovery with typed fresh rows and source-prefix publication; frozen native arithmetic, drift/orientation/capture and all previous receipts retained."
         }
-      ]
+      ],
+      "cooperative_group_prior_receipt": {
+        "baseline": "21729f3",
+        "reason": "Cooperative group-local response scheduling from 21729f3; literal source/axis-order trace preserved by checked response reader; complete previous receipt retained.",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_ordinary/verify_sources.py",
+          "bytes": 4833,
+          "sha256": "5cebce36a78f1ea9225d7c6da50d0442e3eb5d4c92acad2d203a21bde6e252e6"
+        }
+      },
+      "cooperative_composition_prior": {
+        "main": "b1415d3",
+        "group": "c0eed45",
+        "reset_packaging": "cd966d16",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_ordinary/verify_sources.py",
+          "bytes": 4833,
+          "sha256": "fb785655a16a0213b358aa537b9c65b51e18fce82ef3d442092b69cac4aa5d1c"
+        }
+      }
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/source-manifest.json",
-      "bytes": 80569,
-      "sha256": "d4807a952aa374fb3ce4bf82cd4136c1dfeeccf568ba96c100f7e3368ac85685",
+      "bytes": 91525,
+      "sha256": "8b3f0e1648b5248d3443b36f7584fc1a54f05e73f3395fe5d0fe5ee63b60f9b5",
       "prior_receipts": [
         {
           "bytes": 24317,
@@ -1027,12 +1217,31 @@
           "prior_sha256": "6a70a416fd65139421370e7343b5e7ea10612b47003a2ff7f925e482169a3001",
           "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
         }
-      ]
+      ],
+      "cooperative_group_prior_receipt": {
+        "baseline": "21729f3",
+        "reason": "Cooperative group-local response scheduling from 21729f3; literal source/axis-order trace preserved by checked response reader; complete previous receipt retained.",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_screen/source-manifest.json",
+          "bytes": 67879,
+          "sha256": "ae82c40038a254702b42fcb87436945e5b19ac431cd9723b980ad74fd0ba51c3"
+        }
+      },
+      "cooperative_composition_prior": {
+        "main": "b1415d3",
+        "group": "c0eed45",
+        "reset_packaging": "cd966d16",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_screen/source-manifest.json",
+          "bytes": 80569,
+          "sha256": "d4807a952aa374fb3ce4bf82cd4136c1dfeeccf568ba96c100f7e3368ac85685"
+        }
+      }
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/verify_sources.py",
       "bytes": 6798,
-      "sha256": "5b49f9b0dd9f4b4ca2571ed7fa4a3a0c7d4ce900ba4f1bd680797ba916827eb4",
+      "sha256": "271618d9aeabb554d193b6c7a2c06c59c8b1b86167d063e991a4695270f8926c",
       "prior_receipts": [
         {
           "bytes": 6798,
@@ -1086,12 +1295,31 @@
           "prior_sha256": "2afae6ebbce1483adc4e2598176f56c1f4aa7d27a846a6715d9cf18f3a4a783b",
           "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
         }
-      ]
+      ],
+      "cooperative_group_prior_receipt": {
+        "baseline": "21729f3",
+        "reason": "Cooperative group-local response scheduling from 21729f3; literal source/axis-order trace preserved by checked response reader; complete previous receipt retained.",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_screen/verify_sources.py",
+          "bytes": 6798,
+          "sha256": "a0b18e70bb82b4031ca7540d6afbe644ac98f3c6a5b78b6a362191b22de18ded"
+        }
+      },
+      "cooperative_composition_prior": {
+        "main": "b1415d3",
+        "group": "c0eed45",
+        "reset_packaging": "cd966d16",
+        "record": {
+          "path": "lib_utest/qualification/cin_parallel_screen/verify_sources.py",
+          "bytes": 6798,
+          "sha256": "5b49f9b0dd9f4b4ca2571ed7fa4a3a0c7d4ce900ba4f1bd680797ba916827eb4"
+        }
+      }
     },
     {
       "path": "lib_utest/qualification/nodal_seal_rows/source-manifest.json",
-      "bytes": 57263,
-      "sha256": "90c0ce2f4307604fc23d675dff70890caf9fb0fdcf0435ca7f865345de2d6c05",
+      "bytes": 64161,
+      "sha256": "421d7463c4202bccc924a207709aa0896495e23e8e43e4297613df531dbd2d6e",
       "prior_receipts": [
         {
           "bytes": 10503,
@@ -1145,12 +1373,31 @@
           "prior_sha256": "a8aa702b51128c7352c0f11b27b020b32be509999ff93bb2ebfaeae4b940223c",
           "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
         }
-      ]
+      ],
+      "cooperative_group_prior_receipt": {
+        "baseline": "21729f3",
+        "reason": "Cooperative group-local response scheduling from 21729f3; literal source/axis-order trace preserved by checked response reader; complete previous receipt retained.",
+        "record": {
+          "path": "lib_utest/qualification/nodal_seal_rows/source-manifest.json",
+          "bytes": 37742,
+          "sha256": "4bdcd48aa164f3341feff936c180d3cda39051b68773ada9bc4b2c30b7f835c8"
+        }
+      },
+      "cooperative_composition_prior": {
+        "main": "b1415d3",
+        "group": "c0eed45",
+        "reset_packaging": "cd966d16",
+        "record": {
+          "path": "lib_utest/qualification/nodal_seal_rows/source-manifest.json",
+          "bytes": 57263,
+          "sha256": "90c0ce2f4307604fc23d675dff70890caf9fb0fdcf0435ca7f865345de2d6c05"
+        }
+      }
     },
     {
       "path": "lib_utest/qualification/nodal_seal_rows/verify_sources.py",
       "bytes": 4017,
-      "sha256": "2634ea813ebf0ba6f05f696139359e6926c3e5564a96967afc19b93fa7f25d3d",
+      "sha256": "487782de35b7de3542e687584058680c661a12fd572bb503f1273249fbde0d88",
       "prior_receipts": [
         {
           "bytes": 3815,
@@ -1204,7 +1451,26 @@
           "prior_sha256": "56bffe3ee6b2074706c44c17a045f900c91ef4a34226a332f40b7ccedd08e81a",
           "reason": "Central owner Bazel export of the existing DriftTypes.h and DriftValues.h headers; checked drift/reset BUILD reversal preserves both frozen baseline and all earlier reviewed source identities. No numerical or layout changes."
         }
-      ]
+      ],
+      "cooperative_group_prior_receipt": {
+        "baseline": "21729f3",
+        "reason": "Cooperative group-local response scheduling from 21729f3; literal source/axis-order trace preserved by checked response reader; complete previous receipt retained.",
+        "record": {
+          "path": "lib_utest/qualification/nodal_seal_rows/verify_sources.py",
+          "bytes": 3815,
+          "sha256": "7cca37b0c4b352eadc8077bce164c514a7cbbc4572885f376b170628e77363a1"
+        }
+      },
+      "cooperative_composition_prior": {
+        "main": "b1415d3",
+        "group": "c0eed45",
+        "reset_packaging": "cd966d16",
+        "record": {
+          "path": "lib_utest/qualification/nodal_seal_rows/verify_sources.py",
+          "bytes": 4017,
+          "sha256": "2634ea813ebf0ba6f05f696139359e6926c3e5564a96967afc19b93fa7f25d3d"
+        }
+      }
     },
     {
       "path": "lib_utest/qualification/rigid_assembly_owner/BUILD.bazel",
@@ -1329,8 +1595,103 @@
       "path": "lib_src/solvers/cin_advance/Drift.cu",
       "bytes": 1792,
       "sha256": "42e447058a1c775e3328984be7f2bb7c077e5ef33f0e48149e8ad8e9790dc2d3"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/GroupResponse.h",
+      "bytes": 1953,
+      "sha256": "b85781632ff111e9889284f5566283bb9b9ad081be45c36420c0521fda6e8002"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/GroupScreenValues.h",
+      "bytes": 4176,
+      "sha256": "63809336cadb7d4366f5c2a2daf4ba155f0c055e1eca49004b9fe396575618a1"
+    },
+    {
+      "path": "lib_src/solvers/cin_advance/GroupScreen.cuh",
+      "bytes": 1558,
+      "sha256": "3d926a2a8d66787dd5181d3d231b89279331c89e54e65ac8b543ef14ccf1d147"
+    },
+    {
+      "path": "lib_utest/qualification/cin_cooperative_group_screen/cooperative_proof.py",
+      "bytes": 4569,
+      "sha256": "6aed8dda96daf6813ff4536b50932059399be26b00d6694aa9f203e28e86b436",
+      "cooperative_composition_prior": {
+        "main": "b1415d3",
+        "group": "c0eed45",
+        "reset_packaging": "cd966d16",
+        "record": {
+          "path": "lib_utest/qualification/cin_cooperative_group_screen/cooperative_proof.py",
+          "bytes": 4267,
+          "sha256": "d476cc182be813c750cf980d550d1bdedca6aad969c1b965037a295fed5f63da"
+        }
+      }
+    },
+    {
+      "path": "lib_utest/qualification/cin_cooperative_group_screen/reference/Rigid.h",
+      "bytes": 2514,
+      "sha256": "cf3de0fe21e006c656f0e75d6668bf6f8fba52e79a80064cd630fe6f40c1f89a"
+    },
+    {
+      "path": "lib_utest/qualification/cin_cooperative_group_screen/reference/Screen.cu",
+      "bytes": 4261,
+      "sha256": "bc8c600d57326cef219b603a8f24c7a7e83a11243774e52827cafec8d8d1f063"
+    },
+    {
+      "path": "lib_utest/qualification/cin_cooperative_group_screen/reference/Groups.h",
+      "bytes": 2870,
+      "sha256": "16fbb5cef91be992aae4af136fb3dbc8099201dc3a109f20a75683305d8d9705"
+    },
+    {
+      "path": "lib_utest/qualification/cin_cooperative_group_screen/reference/ScreenSummary.h",
+      "bytes": 2770,
+      "sha256": "91e7b83f25b4a75de9a70eb7e98c47a5804f00c2efd2db698371f008d9431a09"
+    },
+    {
+      "path": "lib_utest/qualification/cin_cooperative_group_screen/reference/ScreenValues.h",
+      "bytes": 3993,
+      "sha256": "740228821e1b9fcf8b03bfba0f8e15bd34f85620eb4aeedd988a3cae397737bb"
+    },
+    {
+      "path": "lib_utest/qualification/cin_cooperative_group_screen/reference/Screen.h",
+      "bytes": 846,
+      "sha256": "a07f4bd744e2b9f86f89bda8f4cb91e3cf574a98da2157136e4fbc42f72d68f9"
+    },
+    {
+      "path": "lib_utest/qualification/cin_cooperative_group_screen/reference/Capture.h",
+      "bytes": 2896,
+      "sha256": "171f2333d32377e3b95db869a5367e91a1a9378232fa1f615f04d366631b739c"
     }
   ],
   "recovery_integration_base": "bf1c6a4",
-  "recovery_integration_commit": "d05ad75ecb15517ca3dd1233843a5764a51f0850"
+  "recovery_integration_commit": "d05ad75ecb15517ca3dd1233843a5764a51f0850",
+  "cooperative_group_integration": {
+    "main_commit": "b1415d3",
+    "cooperative_commit": "c0eed45",
+    "main_manifest": {
+      "bytes": 77822,
+      "sha256": "6618bc1fc60572617e5ae3aa6f43fd6781bf5028bf06f8aed4aa7047bc7db5da"
+    },
+    "cooperative_manifest": {
+      "bytes": 61203,
+      "sha256": "6da72e1471ece2377e13783b915f54292fa251062250e661dbf59c13fa0c4182"
+    },
+    "scope": "Union of qualified drift/reset and exact cooperative screen, no arithmetic changes; existing histories and strict inverse proofs retained."
+  },
+  "cooperative_group_registration": {
+    "baseline": "21729f3",
+    "reason": "Cooperative group-local response scheduling from 21729f3; literal source/axis-order trace preserved by checked response reader; complete previous receipt retained.",
+    "paths": [
+      "lib_src/solvers/cin_advance/GroupResponse.h",
+      "lib_src/solvers/cin_advance/GroupScreenValues.h",
+      "lib_src/solvers/cin_advance/GroupScreen.cuh",
+      "lib_utest/qualification/cin_cooperative_group_screen/cooperative_proof.py",
+      "lib_utest/qualification/cin_cooperative_group_screen/reference/Rigid.h",
+      "lib_utest/qualification/cin_cooperative_group_screen/reference/Screen.cu",
+      "lib_utest/qualification/cin_cooperative_group_screen/reference/Groups.h",
+      "lib_utest/qualification/cin_cooperative_group_screen/reference/ScreenSummary.h",
+      "lib_utest/qualification/cin_cooperative_group_screen/reference/ScreenValues.h",
+      "lib_utest/qualification/cin_cooperative_group_screen/reference/Screen.h",
+      "lib_utest/qualification/cin_cooperative_group_screen/reference/Capture.h"
+    ]
+  }
 }

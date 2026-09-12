@@ -92,6 +92,11 @@ def legacy_owner(current):
 
 
 def legacy_build(current):
+    # Reverse the independently checked cooperative header registration first;
+    # retain the exact old drift/reset inverses and final whole-file digest.
+    if '"cin_advance/GroupResponse.h"' in current:
+        cooperative = runpy.run_path(str(HERE.parent / 'cin_cooperative_group_screen/cooperative_proof.py'))
+        current = cooperative['legacy_build'](current)
     addition = ' "nodal_reset/Reset.cuh",'
     assert current.count(addition) == 1
     restored = current.replace(addition, '')

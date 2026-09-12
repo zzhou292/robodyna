@@ -74,6 +74,10 @@ def legacy_values(current):
     return old
 
 def legacy_kernels(current):
+    # First prove/reverse the bounded cooperative member-response schedule.
+    cooperative = runpy.run_path(str(HERE.parent/'cin_cooperative_group_screen/cooperative_proof.py'))
+    cooperative['prove']()
+    current = cooperative['legacy_kernels'](current)
     current = LIMITER["legacy_kernels"](current)
     old = (HERE/'reference/Screen.cu').read_text()
     for name in ('Begin', 'Reduce', 'Nodes'):
