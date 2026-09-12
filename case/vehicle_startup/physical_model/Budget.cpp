@@ -6,7 +6,8 @@ namespace crash::cases::vehicle_startup::physical_model {
 Forecast VehiclePhysicalModel::Preflight(const modelio::physical_domain::VehiclePhysicalDomain& source,
                                          const VehicleShellBinding& shells, Limits limits) {
     using detail::Require;
-    const Limits hard;
+    const bool extended = source.policy() == modelio::physical_domain::Policy::RetainedShellAssembliesExtendedSolidsV4;
+    const Limits hard = extended ? Limits::ExtendedSolids() : Limits{};
     const std::size_t requested[]{limits.host_bytes, limits.shell_map_bytes, limits.beam_bytes,
         limits.solid_bytes, limits.beam_contribution_bytes, limits.ledger_bytes, limits.part_bytes,
         limits.plain_bytes, limits.rigid_binding_bytes};
@@ -18,7 +19,6 @@ Forecast VehiclePhysicalModel::Preflight(const modelio::physical_domain::Vehicle
     const auto& canonical = source.source().tied_source().canonical().data();
     Require(&canonical == &shells.references().source().canonical().data(),
             "Vehicle shells and physical source do not share canonical authority");
-    const bool extended = source.policy() == modelio::physical_domain::Policy::RetainedShellAssembliesExtendedSolidsV4;
     Require(source.source().solid_source().data().policy == modelio::physical_domain::detail::SolidPolicy(source.policy()),
             "Physical model source-domain profile differs from its solids");
     Require(shells.shells().qeph_count() == 324094 && shells.shells().t3_count() == 21301 &&

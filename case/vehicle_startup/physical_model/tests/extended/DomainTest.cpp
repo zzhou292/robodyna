@@ -29,6 +29,7 @@ TEST(VehicleExtendedPhysicalOriginal, ExactCanonicalDomainAndCompleteAffectedGro
         ++n;
     }
     EXPECT_EQ(n, domain.node_count());
+    EXPECT_EQ(domain.node_count(), 376634u);
     std::size_t affected = 0, complete = 0, restricted = 0, omitted = 0, members = 0;
     for (const auto& selected : source.plain_groups()) {
         const auto& original = scope.plain_groups.at(selected.source_group);
@@ -59,6 +60,8 @@ TEST(VehicleExtendedPhysicalOriginal, ExactCanonicalDomainAndCompleteAffectedGro
     EXPECT_EQ(counts.complete_groups, complete); EXPECT_EQ(counts.restricted_groups, restricted);
     EXPECT_EQ(counts.omitted_groups, omitted); EXPECT_EQ(counts.plain_members, members);
     EXPECT_EQ(complete + restricted + omitted, 759u); EXPECT_EQ(counts.retained_point_masses, 150u);
+    EXPECT_EQ(complete, 733u); EXPECT_EQ(restricted, 22u); EXPECT_EQ(omitted, 4u);
+    EXPECT_EQ(members, 7473u);
     const auto& original = Inputs().rigid.topology();
     const auto& topology = source.topology();
     ASSERT_EQ(topology.part_count(), 22u); ASSERT_EQ(topology.root_count(), 20u);

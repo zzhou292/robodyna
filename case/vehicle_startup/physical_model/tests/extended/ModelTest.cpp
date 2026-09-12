@@ -65,7 +65,8 @@ TEST(VehicleExtendedPhysicalOriginal, All4900NativeReferencesMaterialsAndRepeate
     EXPECT_EQ(physical.beams().connection_count(), 4442u);
     EXPECT_TRUE(physical.welds().domain().SharesStorage(domain));
     EXPECT_EQ(physical.welds().model().connection_count(), 2828u);
-    EXPECT_LE(model.startup_payload_bytes(), Limits{}.solid_bytes);
+    EXPECT_GT(model.startup_payload_bytes(), Limits{}.solid_bytes);
+    EXPECT_LE(model.startup_payload_bytes(), Limits::ExtendedSolids().solid_bytes);
     RecordProperty("solid_model_owned_bytes", model.owned_payload_bytes());
     RecordProperty("solid_model_startup_bytes", model.startup_payload_bytes());
     RecordProperty("physical_forecast", physical.forecast().total_bytes);

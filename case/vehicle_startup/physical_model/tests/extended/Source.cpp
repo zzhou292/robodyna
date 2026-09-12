@@ -19,8 +19,8 @@ const domain_source::VehiclePhysicalDomain& Domain() {
 const VehiclePhysicalModel& Model() {
     static const auto value = [] {
         std::cout << "Extended physical model complete preflight=" <<
-            VehiclePhysicalModel::Preflight(Domain(), test::Shells()).total_bytes << std::endl;
-        return VehiclePhysicalModel::Prepare(Domain(), test::Shells());
+            VehiclePhysicalModel::Preflight(Domain(), test::Shells(), Limits::ExtendedSolids()).total_bytes << std::endl;
+        return VehiclePhysicalModel::Prepare(Domain(), test::Shells(), Limits::ExtendedSolids());
     }();
     return value;
 }

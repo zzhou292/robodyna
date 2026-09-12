@@ -15,6 +15,13 @@ struct Limits {
     std::size_t shell_map_bytes = 512u << 20, beam_bytes = 16u << 20, solid_bytes = 32u << 20;
     std::size_t beam_contribution_bytes = 32u << 20, ledger_bytes = 512u << 20;
     std::size_t part_bytes = 512u << 20, plain_bytes = 8u << 20, rigid_binding_bytes = 512u << 20;
+    // Explicit V4 construction ceiling, including its full-domain backing and
+    // five-family temporary references. The V1 default remains32 MiB.
+    static Limits ExtendedSolids() noexcept {
+        Limits result;
+        result.solid_bytes = 64u << 20;
+        return result;
+    }
 };
 struct Forecast {
     std::size_t shell_source = 0, physical_source = 0, producer_source = 0;

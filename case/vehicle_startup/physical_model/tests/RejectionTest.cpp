@@ -2,6 +2,7 @@
 
 namespace crash::cases::vehicle_startup::physical_model::test {
 TEST(VehiclePhysicalModelOriginal,ExactCapsAndLateRigidFailurePreservePublishedModelAndRetry) {
+    EXPECT_THROW(VehiclePhysicalModel::Preflight(Source(), Shells(), Limits::ExtendedSolids()), std::runtime_error);
     auto model = Actual();
     const auto* before = model.coefficients().nodes().data();
     Limits cap; cap.host_bytes = model.forecast().total_bytes - 1;

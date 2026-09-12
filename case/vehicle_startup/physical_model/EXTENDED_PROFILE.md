@@ -33,13 +33,18 @@ single complete additive ledger. Physical CIN attachment admission accepts this
 sealed domain profile and retains all11165 rows plus the existing exact no-rigid
 intersection checks; its source/model maps are rebuilt, never appended.
 
-Current source/domain/model caps are unchanged. In particular the full-domain
-solid-model construction must pass the existing32 MiB cap; the prior solid-only
-4900-source test's128 MiB allowance is not reused as production authority. The
-first root gate measures actual full-domain and group counts and model startup
-bytes. No radiator-node increment or complete-group census is guessed here.
-If the checked full layout exceeds a cap, an explicit measured limit follow-up
-is required before the factory can admit the profile.
+The first root source gate measured376634 domain nodes,733 complete/22
+restricted/four omitted plain groups,7473 plain member occurrences and150 mass
+cards. The domain owns18,078,664 bytes and the source forecast is489,506,376
+bytes. That gate passed the old three full-model tests, but the V4 model rejected
+the32 MiB solid cap in its lower-bound preflight before borrowed reference reads.
+
+`physical_model::Limits::ExtendedSolids()` now explicitly supplies a64 MiB solid
+construction cap, accepted only for the sealed V4 domain policy. The V1 default
+and hard ceiling remain32 MiB. Overall model/source/workstation/archive limits
+are unchanged. The root retry records the exact complete model startup footprint;
+64 MiB is a ceiling, not an observed payload or successful-runtime claim. Tests
+require32 MiB rejection, one-byte-short rejection and exact measured-cap retry.
 
 Airbag80 cells and two structural rod parts72 beams remain outside4900. Four
 rod joints, remaining restricted groups and other omitted source paths stay
