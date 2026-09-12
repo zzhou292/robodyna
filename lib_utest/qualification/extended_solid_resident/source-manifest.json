@@ -8,13 +8,13 @@
     },
     {
       "path": "lib_src/elements/solids/resident/Arena.cpp",
-      "bytes": 5878,
-      "sha256": "90f30e8c669d731ec36c6ac3e0df8f7c0eca21c05a4649c2b83a69972fe7d31e"
+      "bytes": 5960,
+      "sha256": "f4065bbdaa43eef97bdf50c7d4897e2d07d0fab45c755962b7e9c966a5e32a2f"
     },
     {
       "path": "lib_src/elements/solids/resident/Arena.h",
-      "bytes": 2440,
-      "sha256": "2246280c958dc237059ce2cd26aa310fda75215995ff046bcfcff25d6c8228fd"
+      "bytes": 2479,
+      "sha256": "a8a03867a412a1b1f24e8a146d01d392f29e5d950833d7451503ae0174863bcd"
     },
     {
       "path": "lib_src/elements/solids/resident/AssembleOperation.cu",
@@ -83,8 +83,8 @@
     },
     {
       "path": "lib_src/elements/solids/resident/MaterialUpload.cpp",
-      "bytes": 4637,
-      "sha256": "97bb645d4a85fdf74c8a5194a7de5ce8bf3d19c1fb7deefb3df585b3b8490896"
+      "bytes": 4762,
+      "sha256": "9bac819b841fe450c6fd384e691c3043ab1c6e488565ca5c2d23b2e1b5e57e83"
     },
     {
       "path": "lib_src/elements/solids/resident/MaterialUpload.h",
@@ -108,8 +108,8 @@
     },
     {
       "path": "lib_src/elements/solids/resident/Plan.cpp",
-      "bytes": 4315,
-      "sha256": "531dc608c869220652dacfb4f9b161046a49ed5b6b46bd9ad2a416bb13a953de"
+      "bytes": 4454,
+      "sha256": "6beccbd7afb75d915852147f5f123304249abbe1dc9ae6d88665e3a6cb7f73e8"
     },
     {
       "path": "lib_src/elements/solids/resident/Publication.cpp",
@@ -193,8 +193,8 @@
     },
     {
       "path": "lib_utest/qualification/extended_solid_resident/BUILD.bazel",
-      "bytes": 943,
-      "sha256": "4e53f1c1fc5a4275a5189f46e7c51e149c17e41dde6d5aa7a7a89a5ec1d0200e"
+      "bytes": 1020,
+      "sha256": "7f49e79638c1dbb0d66e27b1f4a94e24cd4aaeebb225fe48e166718f8a76df9d"
     },
     {
       "path": "lib_utest/qualification/extended_solid_resident/BudgetTest.cpp",
@@ -253,13 +253,13 @@
     },
     {
       "path": "lib_utest/qualification/extended_solid_resident/OwnerFixture.cpp",
-      "bytes": 2840,
-      "sha256": "eae20ac8a3865fdb60fe0a94a35391fb4dc400b0e217c9cc2fdc7a1cbff154e1"
+      "bytes": 3256,
+      "sha256": "569e1754d28e4c24261f0924890a550484eea287ecbe4a2f74b90798810a089b"
     },
     {
       "path": "lib_utest/qualification/extended_solid_resident/OwnerFixture.h",
-      "bytes": 1694,
-      "sha256": "bd50a6461075c433c8b82785bf832c90563295b5094475eededdd1cffbdf0773"
+      "bytes": 1726,
+      "sha256": "93167609785000e80c3787511cd8972b272977a8a269f691c8cf5c9940846ab9"
     },
     {
       "path": "lib_utest/qualification/extended_solid_resident/OwnerFixtureTest.cpp",

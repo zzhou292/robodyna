@@ -1,12 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "lib_src/materials/law44/solid/Curve.h"
+#include "Hardening.h"
 
 namespace tl::material::law44::solid {
 namespace detail {
-TL_LAW44_SOLID_HD inline double NativeInfinity() noexcept {
-  return static_cast<double>(1e20f);  // CONSTANT_MOD default-REAL INFINITY.
-}
 TL_LAW44_SOLID_HD inline bool Positive(double x) noexcept {
   return tl::math::Finite(x) && x > 0;
 }
@@ -32,29 +30,53 @@ TL_LAW44_SOLID_HD inline bool Coefficients(Material m, Parameters& p) noexcept {
   p.angular_cutoff_per_s = 2 * ::atan2(0., -1.) * m.cutoff_hz;
   p.stress_limit_pa = NativeInfinity() * stress_scale;
   p.stress_floor_pa = 1e-20 * stress_scale;
-  return Positive(p.bulk_pa) && Positive(p.shear_pa) && Positive(p.twice_shear_pa) &&
+  return HardeningCoefficients(m, stress_scale, p) &&
+      Positive(p.bulk_pa) && Positive(p.shear_pa) && Positive(p.twice_shear_pa) &&
       Positive(p.three_shear_pa) && Positive(p.sound_speed_m_s) &&
       Positive(p.inverse_rate_c) && Positive(p.inverse_rate_p) &&
       Positive(p.angular_cutoff_per_s) && Positive(p.stress_limit_pa) && Positive(p.stress_floor_pa);
 }
 TL_LAW44_SOLID_HD inline bool ParametersValid(const Parameters& p) noexcept {
   Parameters expected{};
-  return CurveShape(p.curve) && Coefficients(p.material, expected) &&
+  const bool shape = p.material.hardening == HardeningKind::Tabulated
+      ? CurveShape(p.curve) : EmptyCurve(p.curve);
+  return shape && Coefficients(p.material, expected) &&
       p.bulk_pa == expected.bulk_pa && p.shear_pa == expected.shear_pa &&
       p.twice_shear_pa == expected.twice_shear_pa && p.three_shear_pa == expected.three_shear_pa &&
       p.sound_speed_m_s == expected.sound_speed_m_s && p.inverse_rate_c == expected.inverse_rate_c &&
       p.inverse_rate_p == expected.inverse_rate_p &&
       p.angular_cutoff_per_s == expected.angular_cutoff_per_s &&
-      p.stress_limit_pa == expected.stress_limit_pa && p.stress_floor_pa == expected.stress_floor_pa;
+      p.stress_limit_pa == expected.stress_limit_pa && p.stress_floor_pa == expected.stress_floor_pa &&
+      p.plastic_cap_strain == expected.plastic_cap_strain &&
+      p.failure_plastic_strain == expected.failure_plastic_strain;
 }
 }  // namespace detail
 TL_LAW44_SOLID_HD inline Status Prepare(Material material, Curve curve,
                                        Parameters& output) noexcept {
   Parameters p{};
   if (!detail::Coefficients(material, p)) return Status::InvalidParameters;
-  if (!detail::CurveValid(curve)) return Status::InvalidCurve;
+  if (material.hardening == HardeningKind::Tabulated ? !detail::CurveValid(curve)
+      : !detail::EmptyCurve(curve)) return Status::InvalidCurve;
   p.curve = curve;
   output = p;
   return Status::Ok;
+}
+TL_LAW44_SOLID_HD inline Status PrepareAnalytic(Material material, AnalyticHardening hardening,
+    Parameters& output) noexcept {
+  material.hardening = HardeningKind::Analytic;
+  material.analytic = hardening;
+  return Prepare(material, {}, output);
+}
+// MAT024 converter values are supplied in the declared native working units.
+// Preserve ETAN*E/(E-ETAN) before the one-way stress conversion to SI.
+TL_LAW44_SOLID_HD inline Status PrepareMat024Analytic(Material material,
+    double young_working, double yield_working, double tangent_working,
+    Parameters& output) noexcept {
+  const double scale = material.native_units == WorkingUnits::SI ? 1 : 1e6;
+  if (!detail::Positive(young_working) || !detail::Positive(yield_working) ||
+      !detail::NonnegativeHardening(tangent_working) || tangent_working >= young_working ||
+      young_working * scale != material.young_pa) return Status::InvalidParameters;
+  const double b = tangent_working * young_working / (young_working - tangent_working);
+  return PrepareAnalytic(material, {yield_working * scale, b * scale, 1, 0, 0}, output);
 }
 }  // namespace tl::material::law44::solid

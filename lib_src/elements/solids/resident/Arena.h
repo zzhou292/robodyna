@@ -49,6 +49,7 @@ struct Counts {
   std::size_t solid18 = 0, solid24 = 0, solid6z = 0;
   std::size_t material36 = 0, material42 = 0, curve_points = 0;
   std::size_t solid18_law44 = 0, solid18_law90 = 0, material44 = 0, material90 = 0;
+  std::size_t analytic_material44 = 0;
 };
 bool MakeLayout(Counts, const BatchConfig&, ArenaLayout&) noexcept;
 BatchReport Plan(const BatchConfig&, const Model&, ArenaLayout&) noexcept;

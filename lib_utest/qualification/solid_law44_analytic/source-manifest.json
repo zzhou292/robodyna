@@ -1,0 +1,206 @@
+{
+  "schema": "tlfea.solid-law44-analytic-identity.v1",
+  "native_revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "files": [
+    {
+      "path": "lib_src/elements/solid18/law44/ForceChecks.h",
+      "bytes": 4566,
+      "sha256": "e0af7af5867cbb814c487e02509765d9ca18b65975dd69fb2bcb4e655a6a159d"
+    },
+    {
+      "path": "lib_src/elements/solids/model/ExtendedIdentity.cpp",
+      "bytes": 4501,
+      "sha256": "abce1d8cb49f81ca7dd78d7c954052dfbdda976ad4aaccda1530195442b3de99"
+    },
+    {
+      "path": "lib_src/elements/solids/model/Internal.h",
+      "bytes": 4810,
+      "sha256": "605a1a99b30a2b486ae814d773b5f0bf1300e1aef24b9917672aec13f218cf35"
+    },
+    {
+      "path": "lib_src/elements/solids/model/Materials.cpp",
+      "bytes": 5086,
+      "sha256": "a10281f6fa50efc3fbb30bcd1f899a234ecc591f138f048e00ce701216ec07a3"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/Arena.cpp",
+      "bytes": 5960,
+      "sha256": "f4065bbdaa43eef97bdf50c7d4897e2d07d0fab45c755962b7e9c966a5e32a2f"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/Arena.h",
+      "bytes": 2479,
+      "sha256": "a8a03867a412a1b1f24e8a146d01d392f29e5d950833d7451503ae0174863bcd"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/MaterialUpload.cpp",
+      "bytes": 4762,
+      "sha256": "9bac819b841fe450c6fd384e691c3043ab1c6e488565ca5c2d23b2e1b5e57e83"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/Plan.cpp",
+      "bytes": 4454,
+      "sha256": "6beccbd7afb75d915852147f5f123304249abbe1dc9ae6d88665e3a6cb7f73e8"
+    },
+    {
+      "path": "lib_src/materials/law44/solid/BUILD.bazel",
+      "bytes": 298,
+      "sha256": "d20a12403f4546290330de178f77ace3676790c092fae80c36520cf3734bf421"
+    },
+    {
+      "path": "lib_src/materials/law44/solid/Hardening.h",
+      "bytes": 2156,
+      "sha256": "e20abfb80de32f64af50870c5571d1efdee9fd71c320c800c20bbe41b8613079"
+    },
+    {
+      "path": "lib_src/materials/law44/solid/Prepare.h",
+      "bytes": 4317,
+      "sha256": "44348d454660540fabf73f5ab78db4300b799e8bf7841a154f3b4896d93c293b"
+    },
+    {
+      "path": "lib_src/materials/law44/solid/Types.h",
+      "bytes": 2688,
+      "sha256": "2f1a299635a1489259cfdd523e1d5db281363c6f9ec2c78b0e3242bf141ecdad"
+    },
+    {
+      "path": "lib_src/materials/law44/solid/Update.h",
+      "bytes": 6937,
+      "sha256": "b4130f30dae34a4bf0007cf8c9b77dcd322ce6e1cfd6af849682604116416527"
+    },
+    {
+      "path": "lib_utest/qualification/extended_solid_model/BUILD.bazel",
+      "bytes": 1443,
+      "sha256": "8fe4a9a3935624e387dc5fbaa03cc7997be516324b1a11df484e40a357f81102"
+    },
+    {
+      "path": "lib_utest/qualification/extended_solid_resident/BUILD.bazel",
+      "bytes": 1020,
+      "sha256": "7f49e79638c1dbb0d66e27b1f4a94e24cd4aaeebb225fe48e166718f8a76df9d"
+    },
+    {
+      "path": "lib_utest/qualification/extended_solid_resident/OwnerFixture.cpp",
+      "bytes": 3256,
+      "sha256": "569e1754d28e4c24261f0924890a550484eea287ecbe4a2f74b90798810a089b"
+    },
+    {
+      "path": "lib_utest/qualification/extended_solid_resident/OwnerFixture.h",
+      "bytes": 1726,
+      "sha256": "93167609785000e80c3787511cd8972b272977a8a269f691c8cf5c9940846ab9"
+    },
+    {
+      "path": "lib_utest/qualification/solid18_law44_startup/verify_source.py",
+      "bytes": 2190,
+      "sha256": "787b60c2386a4f1ac14c692652e86fe870efd0dbbe26797d5550c31e3f6d8ed8"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law44_analytic/BUILD.bazel",
+      "bytes": 761,
+      "sha256": "ef714288d3dc91b63f641f393880343befed693c857310f6deef46a4c3e14ff1"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law44_analytic/CMakeLists.txt",
+      "bytes": 5652,
+      "sha256": "8ad67dc0244f96990d3d6584c335c8f54809976c8fb27667364578b35682b1c7"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law44_analytic/CudaTest.cu",
+      "bytes": 2392,
+      "sha256": "767946bb9aa6b057767705ec1984dd36aebd142e2238c86c5b685a4c2571b5f7"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law44_analytic/HostTest.cpp",
+      "bytes": 4075,
+      "sha256": "f3ddaefdf5766677510c5f57d52fff3c6d049db82329ce69f9a953399cfc9cc7"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law44_analytic/ModelTest.cpp",
+      "bytes": 4076,
+      "sha256": "0911ed2f3a23dc682e36e2c1167e4a20648d172cf6b63fbc1542f7e4f77141b4"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law44_analytic/NativeOracle.cpp",
+      "bytes": 2003,
+      "sha256": "09baf40f4b4a7ef960288fe46971efeb51e50f2e530edaeee0f9bdab2de312ec"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law44_analytic/NativeOracle.h",
+      "bytes": 322,
+      "sha256": "793821e19e40f0bc8647ac28d34cb86b015f2979580d0b4bae23db6cecd5b7cc"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law44_analytic/NativeTest.cpp",
+      "bytes": 1814,
+      "sha256": "9520e8373da6536d3dd22515122e17b1d6845a9f166399a8e2d6beb2765f8a6f"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law44_analytic/OriginalReferenceTest.cpp",
+      "bytes": 2174,
+      "sha256": "6d1ec397bb5043c5fd33f7d89d14483432fb6647ccb69abe15d19400c3076251"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law44_analytic/OwnerFixtureTest.cpp",
+      "bytes": 866,
+      "sha256": "9446b650e452bb87d8a1ac2b71574b74083bf37539ba0de099613123b61d2ed2"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law44_analytic/README.md",
+      "bytes": 4601,
+      "sha256": "0ad074a38ae8c38d5a3003db724d7be201c7f2d1a5f6d8702d6c29a83dd52301"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law44_analytic/ResidentTest.cu",
+      "bytes": 4503,
+      "sha256": "844fa451e7024922f6e07ded6b50776b978c46cedce2b7c15e5efcf8f8dbe0fb"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law44_analytic/TestSupport.h",
+      "bytes": 1320,
+      "sha256": "d89635899fb502d4f23ff2045ede44f09fab5cd66a4297538cb02346f6cf60d9"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law44_analytic/source_fixture/export_fixture.py",
+      "bytes": 3550,
+      "sha256": "fa1b642f2be21046a8bb8a196a431cf2da5ea2944aca45787e10c3ee8c7ea5dc"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law44_analytic/source_fixture/prepare_fixture.py",
+      "bytes": 5695,
+      "sha256": "26aa033ef4307270556ec21b7b63a8d6ad60d011270884cc179306a385fdec82"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law44_analytic/source_fixture/source-receipt.json",
+      "bytes": 6754,
+      "sha256": "129533240c7675eae671853d897c67f8ad03ce1bce91369d186df1fef32b3b79"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law44_analytic/verify_source.py",
+      "bytes": 1287,
+      "sha256": "07db6507bfad4b9d1548b8de2bcb1ce27f476ec54ed01a15c0b8e479925ff5b7"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law44_point/BUILD.bazel",
+      "bytes": 648,
+      "sha256": "603f2accd5bf1e06090e589c0550056daa242babb76f3a9cfbad836808a0a62e"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law44_point/native/CMakeLists.txt",
+      "bytes": 1599,
+      "sha256": "afdfc68f53366e3811a1c7e63ad46539048c09823e9622ffffecd11e7fb3a863"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law44_point/native/NativeAnalytic.F90",
+      "bytes": 1311,
+      "sha256": "cc0ee75474366561a173580d7a760444bd65e822b0141ea30cfbec8a61dacd68"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law44_point/native/NativePoint.F90",
+      "bytes": 5546,
+      "sha256": "149787abce7603e14d4ef395fa0cebac51501ba9ff5610e962f3073a8e2ac0b6"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law44_point/native/NativeSetup.F",
+      "bytes": 2826,
+      "sha256": "4c1fb347503266b91feeaac7b36103356732b93b56b46a5e8d3bd4cf7eed6d03"
+    }
+  ]
+}

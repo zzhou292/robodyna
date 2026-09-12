@@ -31,7 +31,11 @@ TL_SOLID18_HD inline bool SameMaterial(const Material& a, const Material& b) noe
       x.native_units == y.native_units && SameScalar(x.young_pa,y.young_pa) &&
       SameScalar(x.poisson_ratio,y.poisson_ratio) && SameScalar(x.density_kg_m3,y.density_kg_m3) &&
       SameScalar(x.rate_c_per_s,y.rate_c_per_s) && SameScalar(x.rate_p,y.rate_p) &&
-      SameScalar(x.cutoff_hz,y.cutoff_hz);
+      SameScalar(x.cutoff_hz,y.cutoff_hz) && x.hardening == y.hardening &&
+      SameScalar(x.analytic.a_pa,y.analytic.a_pa) && SameScalar(x.analytic.b_pa,y.analytic.b_pa) &&
+      SameScalar(x.analytic.exponent,y.analytic.exponent) &&
+      SameScalar(x.analytic.maximum_stress_pa,y.analytic.maximum_stress_pa) &&
+      SameScalar(x.analytic.maximum_plastic_strain,y.analytic.maximum_plastic_strain);
 }
 TL_SOLID18_HD inline bool Nonnegative(double value) noexcept {
   return tl::math::Finite(value) && value >= 0;
@@ -43,7 +47,7 @@ TL_SOLID18_HD inline bool ValidHistory(const Reference& reference, const Materia
     if (!solid18::detail::Positive(p.density_kg_m3) || !solid18::detail::Positive(p.storage_volume_m3) ||
         !SameScalar(p.initial_volume_m3,reference.geometry().point[ip].initial_volume_m3) ||
         !tl::math::Finite(p.energy_density_j_m3) || !Nonnegative(p.plastic_work_j) ||
-        !Nonnegative(p.bulk_pressure_pa) || !point::detail::HistoryValid(p.material,material.curve)) return false;
+        !Nonnegative(p.bulk_pressure_pa) || !point::detail::HistoryValid(p.material,material)) return false;
   }
   const auto& g = values.global;
   for (double stress : g.stress_pa) if (!tl::math::Finite(stress)) return false;

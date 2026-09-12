@@ -14,6 +14,15 @@ namespace tl::material::law44::solid {
 // Controls conversion of the native finite stress cap and EM20 stress floors.
 // All public dimensional values are SI, including the borrowed curve.
 enum class WorkingUnits : std::uint8_t { SI, TonneMillimetreSecond };
+enum class HardeningKind : std::uint8_t { Tabulated, Analytic };
+struct AnalyticHardening {
+  double a_pa = 0;
+  double b_pa = 0;
+  double exponent = 0;
+  // Zero selects the actual finite native reader default, not IEEE infinity.
+  double maximum_stress_pa = 0;
+  double maximum_plastic_strain = 0;
+};
 struct Curve {
   const double* plastic_strain = nullptr;
   const double* yield_stress_pa = nullptr;
@@ -27,6 +36,8 @@ struct Material {
   double rate_p = 0;
   double cutoff_hz = 0;
   WorkingUnits native_units = WorkingUnits::SI;
+  HardeningKind hardening = HardeningKind::Tabulated;
+  AnalyticHardening analytic{};
 };
 struct Parameters {
   Material material{};
@@ -41,6 +52,8 @@ struct Parameters {
   double angular_cutoff_per_s = 0;
   double stress_limit_pa = 0;
   double stress_floor_pa = 0;
+  double plastic_cap_strain = 0;       // Native EPSGM; distinct from EPMAX.
+  double failure_plastic_strain = 0;   // Native EPMAX.
 };
 struct History {
   // Current native material frame: XX, YY, ZZ, XY, YZ, ZX.

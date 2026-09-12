@@ -9,7 +9,7 @@ if(NOT status EQUAL 0)
   message(FATAL_ERROR "LAW44 source authentication failed")
 endif()
 file(MAKE_DIRECTORY "${modules}")
-add_library(solid_law44_native STATIC NativeSetup.F NativeInterface.F NativePoint.F90
+add_library(solid_law44_native STATIC NativeSetup.F NativeInterface.F NativePoint.F90 NativeAnalytic.F90
   "${prepared}/sigeps44.F" "${prepared}/mstrain_rate.F" "${prepared}/vinter.F"
   "${prepared}/constant_mod.F" "${prepared}/precision_mod.F90")
 set_target_properties(solid_law44_native PROPERTIES Fortran_MODULE_DIRECTORY "${modules}")

@@ -1,20 +1,30 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "OwnerFixture.h"
 namespace extended_resident_test {
-OwnerFixture::OwnerFixture() {
+OwnerFixture::OwnerFixture(bool analytic44) {
   auto& f=Mechanics();
   s::Input18Law44 rear;
   auto source=f.source.a;
   source.profile=fe::solid18::law44::Profile();
   source.source_element_id=19100;source.source_part_id=2000016;source.source_material_id=2000016;
   source.density_kg_m3=7.89e-9*1e12;
+  if (analytic44) {
+    source.source_part_id = source.source_section_id = source.source_material_id = 2000945;
+    source.density_kg_m3 = 1.95e-9 * 1e12;
+  }
   source.source_node_id[5]=source.source_node_id[4];source.position_m[5]=source.position_m[4];
   source.source_node_id[7]=source.source_node_id[6];source.position_m[7]=source.position_m[6];
   EXPECT_EQ(fe::solid18::law44::InitializeReference(source,rear.reference),fe::solid18::Status::Success);
   const tl::material::law44::solid::Material steel{50e9,.3,source.density_kg_m3,8000,8,10000,
     tl::material::law44::solid::WorkingUnits::TonneMillimetreSecond};
-  EXPECT_EQ(tl::material::law44::solid::Prepare(steel,{rear_x,rear_y,3},rear.material),
-    tl::material::law44::solid::Status::Ok);
+  if (analytic44) {
+    auto material = steel; material.young_pa = 1e9;
+    EXPECT_EQ(tl::material::law44::solid::PrepareMat024Analytic(material, 1000, 20, 10, rear.material),
+      tl::material::law44::solid::Status::Ok);
+  } else {
+    EXPECT_EQ(tl::material::law44::solid::Prepare(steel,{rear_x,rear_y,3},rear.material),
+      tl::material::law44::solid::Status::Ok);
+  }
   s::Input18Law90 foam;
   source=f.source.a;
   source.profile=fe::solid18::total_strain::Law90Profile();

@@ -46,7 +46,8 @@ bool MakeLayout(Counts count, const BatchConfig& config, ArenaLayout& output) no
       bool(count.solid18) != bool(count.material36) ||
       bool(count.solid24 || count.solid6z) != bool(count.material42) ||
       count.curve_points > limits.max_curve_points ||
-      bool(count.material36 || count.material44 || count.material90) != bool(count.curve_points) ||
+      count.analytic_material44 > count.material44 ||
+      bool(count.material36 || count.material44 - count.analytic_material44 || count.material90) != bool(count.curve_points) ||
       config.owner.node_count > limits.max_nodes) return false;
   ArenaLayout next;
   util::BoundedArenaLayout device(limits.max_device_bytes);

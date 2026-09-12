@@ -28,8 +28,8 @@
       "sha256": "e8723ec22532e7697f9d9d6154c93389647988f8060a1aa087e47033ff07e71a"
     },
     "lib_src/materials/law44/solid/Update.h": {
-      "bytes": 5892,
-      "sha256": "99676ad8a988d5c0727e9db8ffb8fb30e6726564323187603d8e61c9108459c9"
+      "bytes": 6937,
+      "sha256": "b4130f30dae34a4bf0007cf8c9b77dcd322ce6e1cfd6af849682604116416527"
     },
     "lib_utest/qualification/solid18_law44_force/BUILD.bazel": {
       "bytes": 965,
@@ -65,7 +65,7 @@
     },
     "lib_utest/qualification/solid18_law44_force/source-manifest.json": {
       "bytes": 9194,
-      "sha256": "e61690b93f2dfdad90b0130a6f63dbdbdb8cb1fddeea648bbc7d42df9afb976d"
+      "sha256": "e1fca2af106f43adef2b0994d4463813e6d54b08acd3d27163a6706c0da02ee0"
     },
     "lib_utest/qualification/solid18_law44_reference/source-manifest.json": {
       "bytes": 6382,
@@ -112,16 +112,16 @@
       "sha256": "c230fd68f2e28fb32ef02f73dc58d6a427c3bf3d4eeafc612ec10c3a0dce159e"
     },
     "lib_utest/qualification/solid18_law44_startup/verify_source.py": {
-      "bytes": 1806,
-      "sha256": "8db567d3cdc5452c81af0335eabfe5223b3e38afbb0b8a34b19187e8cae08877"
+      "bytes": 2190,
+      "sha256": "787b60c2386a4f1ac14c692652e86fe870efd0dbbe26797d5550c31e3f6d8ed8"
     },
     "lib_utest/qualification/solid_law44_point/native/NativePoint.F90": {
-      "bytes": 5090,
-      "sha256": "bb91f690e1cb24f687f23fded8bf2b7296fdf7dd4916db0735423c9bea5653d2"
+      "bytes": 5546,
+      "sha256": "149787abce7603e14d4ef395fa0cebac51501ba9ff5610e962f3073a8e2ac0b6"
     },
     "lib_utest/qualification/solid_law44_point/source-manifest.json": {
       "bytes": 3174,
-      "sha256": "7df2bede5679ffefa1d8130d15a91ddf675393f1476bd84da2f3f944f7b15fdb"
+      "sha256": "fc8ab378b3b0dca6b5873d231696734ba5700176838c29c1197307a642320cc2"
     }
   },
   "schedule_sources": [
@@ -150,18 +150,6 @@
   ],
   "unchanged_arithmetic": [
     {
-      "path": "lib_src/materials/law44/solid/Update.h",
-      "begin": "  Result r{};\n",
-      "end": "  return Status::Ok;\n}",
-      "sha256": "bc6e54a94617d03b72924d1a2cf1d96604bac3d9c0bbf2a317d7a9f4158d1c98"
-    },
-    {
-      "path": "lib_utest/qualification/solid_law44_point/native/NativePoint.F90",
-      "begin": "  scale_s=one\n",
-      "end": "\nend subroutine",
-      "sha256": "1a4ec4a948ce1c6544ef5656e54358c438e3d0e71dc9b23d1085f8adc40709c1"
-    },
-    {
       "path": "lib_utest/qualification/solid18_law44_force/native/NativeCaller.F",
       "begin": "      ALLOCATE(G)\n",
       "end": "      END\n",
@@ -172,6 +160,24 @@
       "begin": "  voln=current_volume\n",
       "end": "\nend subroutine",
       "sha256": "512f429a18ba34fc2de51babea5c633d14c013e312fa0bd890851c30dae63bfc"
+    }
+  ],
+  "additive_analytic_branches": [
+    {
+      "path": "lib_src/materials/law44/solid/Update.h",
+      "begin": "  Result r{};\n",
+      "end": "  return Status::Ok;\n}",
+      "sha256": "10ba4aedc3a6b3a71876c505c8e11d8b113c09469b981815e44ddd7fb22fd531",
+      "prior_table_only_sha256": "bc6e54a94617d03b72924d1a2cf1d96604bac3d9c0bbf2a317d7a9f4158d1c98",
+      "scope": "Additive MFUNC0 branch; retained table/native regressions required. Complete donors unchanged."
+    },
+    {
+      "path": "lib_utest/qualification/solid_law44_point/native/NativePoint.F90",
+      "begin": "  scale_s=one\n",
+      "end": "\nend subroutine",
+      "sha256": "c58ec2ac4dbc4b218874c588b0aec0756695623a0adec3fa857205964af21064",
+      "prior_table_only_sha256": "1a4ec4a948ce1c6544ef5656e54358c438e3d0e71dc9b23d1085f8adc40709c1",
+      "scope": "Additive MFUNC0 branch; retained table/native regressions required. Complete donors unchanged."
     }
   ]
 }

@@ -14,7 +14,7 @@ struct OwnerFixture {
   tl::material::law90::PreparationInput foam_input;
   double rear_x[3]{0,.2,.4},rear_y[3]{270e6,350e6,450e6};
   double foam_x[3]{0,.2,.4},foam_y[3]{0,10e6,50e6};
-  OwnerFixture();
+  explicit OwnerFixture(bool analytic44 = false);
   auto& Mechanics() { return legacy.mechanics; }
   auto Witnesses() const { return legacy.Witnesses(); }
   s::BatchConfig Configuration() const {

@@ -2,9 +2,10 @@
 module LAW44_SOLID_NATIVE_VALUES
   implicit none
   private
+  public :: law44_solid_values
 contains
 subroutine law44_solid_values(npts,curve,material,units,base,cursor,motion,amu_value, &
-                             values,next_cursor,prepared,status)
+                             values,next_cursor,prepared,status,analytic)
   use iso_c_binding, only: c_double,c_int
   use law44_solid_setup
   use law44_solid_interface
@@ -13,10 +14,12 @@ subroutine law44_solid_values(npts,curve,material,units,base,cursor,motion,amu_v
   integer(c_int),value :: npts,units,cursor
   real(c_double),intent(in) :: curve(2,npts+1),material(7),base(14),motion(7)
   real(c_double),value :: amu_value
+  real(c_double),intent(in),optional :: analytic(5)
   real(c_double),intent(out) :: values(19),prepared(26)
   integer(c_int),intent(out) :: next_cursor,status
   integer,parameter :: nel=1
-  integer :: i,npf(2),kfunc(1),ipm(13,1),mat(1),ngl(1),vartmp(1,1),israte
+  integer :: i,npf(2),kfunc(1),ipm(13,1),mat(1),ngl(1),vartmp(1,1),israte,mfunc
+  real(c_double) :: raw_analytic(5)
   real(c_double) :: uparam(24),raw(7),omega,scale_s,scale_rho,scale_v,tf(2,npts+1)
   real(c_double) :: sig(1,6),strain(1,6),dt1,asrate,vis(1),ssp(1),epsd(1)
   real(c_double) :: ep1(1),ep2(1),ep3(1),ep4(1),ep5(1),ep6(1)
@@ -29,7 +32,11 @@ subroutine law44_solid_values(npts,curve,material,units,base,cursor,motion,amu_v
   real(c_double) :: dpla(mvsiz),defp(1),yld(1),et(1),amu(1),dpdm(mvsiz)
   real(c_double) :: voln(1),eint(1),uvar(1,1),pm(9,1)
   status=1
-  if(npts<2.or.npts>1024.or.cursor<0.or.cursor>=npts-1) return
+  if(present(analytic)) then
+    if(npts/=0.or.cursor/=0) return
+  else
+    if(npts<2.or.npts>1024.or.cursor<0.or.cursor>=npts-1) return
+  endif
   if(motion(7)<0.or.(units/=0.and.units/=1)) return
   scale_s=one
   scale_rho=one
@@ -44,7 +51,16 @@ subroutine law44_solid_values(npts,curve,material,units,base,cursor,motion,amu_v
   raw(3)=material(3)/scale_rho
   raw(7)=material(7)/scale_s
   call law44_solid_globals()
-  call prepare_law44(raw,uparam,omega)
+  mfunc=1
+  if(present(analytic)) then
+    raw_analytic=analytic
+    raw_analytic(1:2)=analytic(1:2)/scale_s
+    raw_analytic(4)=analytic(4)/scale_s
+    call prepare_law44(raw,uparam,omega,raw_analytic)
+    mfunc=0
+  else
+    call prepare_law44(raw,uparam,omega)
+  endif
   prepared(1:24)=uparam
   prepared(25)=omega
   prepared(26)=warning_count
@@ -98,11 +114,11 @@ subroutine law44_solid_values(npts,curve,material,units,base,cursor,motion,amu_v
   et=-789d0
   yld=zero
   dpla=zero
-  call L44S_REF_SIGEPS44(nel,24,1,1,kfunc,npf,tf,zero,dt1,uparam,rho0,rho, &
+  call L44S_REF_SIGEPS44(nel,24,1,mfunc,kfunc,npf,tf,zero,dt1,uparam,rho0,rho, &
       voln,eint,0,dpdm,ep1,ep2,ep3,ep4,ep5,ep6,de1,de2,de3,de4,de5,de6, &
       es1,es2,es3,es4,es5,es6,so1,so2,so3,so4,so5,so6, &
       s1,s2,s3,s4,s5,s6,sv1,sv2,sv3,sv4,sv5,sv6,ssp,vis,uvar,off,ngl,0, &
-      ipm,mat,epsd,1,yld,defp,dpla,amu,israte,asrate,1,vartmp,et)
+      ipm,mat,epsd,1,yld,defp,dpla,amu,israte,asrate,mfunc,vartmp,et)
   values(1:6)=[s1(1),s2(1),s3(1),s4(1),s5(1),s6(1)]*scale_s
   values(7:12)=strain(1,:)
   values(13)=defp(1)

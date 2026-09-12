@@ -11,7 +11,7 @@
     },
     {
       "path": "../../../lib_src/materials/law44/solid/Prepare.h",
-      "sha256": "5606f4b4029d75545cc459847282db3da061155dbd23e2527112ce0f87d1718c"
+      "sha256": "44348d454660540fabf73f5ab78db4300b799e8bf7841a154f3b4896d93c293b"
     },
     {
       "path": "../../../lib_src/materials/law44/solid/Rate.h",
@@ -23,11 +23,11 @@
     },
     {
       "path": "../../../lib_src/materials/law44/solid/Types.h",
-      "sha256": "2c63069e5c1e3ae83e54e2a01fb5c193328c477b4eaee92437a5aca631d0c93f"
+      "sha256": "2f1a299635a1489259cfdd523e1d5db281363c6f9ec2c78b0e3242bf141ecdad"
     },
     {
       "path": "../../../lib_src/materials/law44/solid/Update.h",
-      "sha256": "99676ad8a988d5c0727e9db8ffb8fb30e6726564323187603d8e61c9108459c9"
+      "sha256": "b4130f30dae34a4bf0007cf8c9b77dcd322ce6e1cfd6af849682604116416527"
     },
     {
       "path": "CudaTest.cu",
@@ -59,11 +59,11 @@
     },
     {
       "path": "native/NativePoint.F90",
-      "sha256": "bb91f690e1cb24f687f23fded8bf2b7296fdf7dd4916db0735423c9bea5653d2"
+      "sha256": "149787abce7603e14d4ef395fa0cebac51501ba9ff5610e962f3073a8e2ac0b6"
     },
     {
       "path": "native/NativeSetup.F",
-      "sha256": "94539a8e77b8455e635c8acf10a27822998f1e3c18ef12023b14431a5f836967"
+      "sha256": "4c1fb347503266b91feeaac7b36103356732b93b56b46a5e8d3bd4cf7eed6d03"
     },
     {
       "path": "native/prepare_sources.py",

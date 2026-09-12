@@ -60,6 +60,11 @@ struct CurveSpan { const double* x=nullptr; const double* y=nullptr; std::size_t
 inline CurveSpan Curve(const solid18::Material& m) { return {m.curve.plastic_strain,m.curve.yield_stress_pa,m.curve.count}; }
 inline CurveSpan Curve(const solid24::Material&) { return {}; }
 inline CurveSpan Curve(const solid18::law44::Material& m) { return {m.curve.plastic_strain,m.curve.yield_stress_pa,m.curve.count}; }
+template<class Material> inline bool RequiresCurve(const Material&) { return true; }
+inline bool RequiresCurve(const solid24::Material&) { return false; }
+inline bool RequiresCurve(const solid18::law44::Material& m) {
+  return m.material.hardening != tl::material::law44::solid::HardeningKind::Analytic;
+}
 inline CurveSpan Curve(const tl::material::law90::PreparedMaterial& m) {
   const auto c=m.curve(); return {c.compression_strain,c.stress_pa,c.count};
 }

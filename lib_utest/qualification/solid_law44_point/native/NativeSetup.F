@@ -11,8 +11,9 @@
 
 ! Inputs are original scalar values in the chosen working units. All native
 ! default/CA0/modulus expressions below are exact HM_READ_MAT44 excerpts.
-      SUBROUTINE PREPARE_LAW44(RAW,UPARAM,OMEGA)
+      SUBROUTINE PREPARE_LAW44(RAW,UPARAM,OMEGA,ANALYTIC)
       REAL(C_DOUBLE),INTENT(IN) :: RAW(7)
+      REAL(C_DOUBLE),INTENT(IN),OPTIONAL :: ANALYTIC(5)
       REAL(C_DOUBLE),INTENT(OUT) :: UPARAM(24),OMEGA
       REAL(C_DOUBLE) E,NU,RHO0,CA,CB,CN,CC,CP,SIGM,EPSM,EPSR1,
      . EPSR2,EPSP_REF,ASRATE,EPSGM,YLD_SCALE,YLD_SCALE_UNIT,
@@ -41,6 +42,14 @@
       ISRAT=1
       ISRATE=0
       IFUNC=1
+      IF(PRESENT(ANALYTIC)) THEN
+        CA=ANALYTIC(1)
+        CB=ANALYTIC(2)
+        CN=ANALYTIC(3)
+        SIGM=ANALYTIC(4)
+        EPSM=ANALYTIC(5)
+        IFUNC=0
+      ENDIF
       YLD_SCALE=ZERO
       FISOKIN=ZERO
       UNITAB%FAC_T_WORK=ONE

@@ -30,5 +30,11 @@ for source in manifest['unchanged_arithmetic']:
     selected = text[begin:end].encode()
     if hashlib.sha256(selected).hexdigest() != source['sha256']:
         raise RuntimeError('Previously qualified arithmetic changed: ' + source['path'])
+for source in manifest.get('additive_analytic_branches', []):
+    text = (TL / source['path']).read_text()
+    begin = text.index(source['begin'])
+    end = text.index(source['end'], begin)
+    if hashlib.sha256(text[begin:end].encode()).hexdigest() != source['sha256']:
+        raise RuntimeError('Explicit analytic branch container changed: ' + source['path'])
 subprocess.run([sys.executable, '-B', str(ROOT.parent / 'solid18_law44_force/verify_source.py')], check=True)
-print('Rear TT0 source schedules, unchanged material/caller arithmetic and strict ordinary entries PASS')
+print('Rear TT0 schedules, unchanged force/work slices, explicit analytic material branches and strict ordinary entries PASS')

@@ -4,6 +4,7 @@ cc_library(
     testonly = True,
     srcs = ["OwnerFixture.cpp"],
     hdrs = ["Fixture.h", "OwnerFixture.h"],
+    visibility = ["//lib_utest/qualification/solid_law44_analytic:__pkg__"],
     deps = ["//lib_src/elements/solids/resident:values",
             "//lib_utest/qualification/extended_solid_model:fixture",
             "//lib_utest/qualification/solid_resident:test_values", "@googletest//:gtest"],

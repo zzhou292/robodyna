@@ -10,6 +10,12 @@ bool Same(const solid18::law44::Material& a, const solid18::law44::Material& b) 
   if (!Same(a.material.rate_c_per_s, b.material.rate_c_per_s)) return false;
   if (!Same(a.material.rate_p, b.material.rate_p)) return false;
   if (!Same(a.material.cutoff_hz, b.material.cutoff_hz)) return false;
+  if (a.material.hardening != b.material.hardening) return false;
+  if (!Same(a.material.analytic.a_pa, b.material.analytic.a_pa)) return false;
+  if (!Same(a.material.analytic.b_pa, b.material.analytic.b_pa)) return false;
+  if (!Same(a.material.analytic.exponent, b.material.analytic.exponent)) return false;
+  if (!Same(a.material.analytic.maximum_stress_pa, b.material.analytic.maximum_stress_pa)) return false;
+  if (!Same(a.material.analytic.maximum_plastic_strain, b.material.analytic.maximum_plastic_strain)) return false;
   if (!Same(a.shear_pa, b.shear_pa)) return false;
   if (!Same(a.twice_shear_pa, b.twice_shear_pa)) return false;
   if (!Same(a.three_shear_pa, b.three_shear_pa)) return false;
@@ -20,6 +26,8 @@ bool Same(const solid18::law44::Material& a, const solid18::law44::Material& b) 
   if (!Same(a.angular_cutoff_per_s, b.angular_cutoff_per_s)) return false;
   if (!Same(a.stress_limit_pa, b.stress_limit_pa)) return false;
   if (!Same(a.stress_floor_pa, b.stress_floor_pa)) return false;
+  if (!Same(a.plastic_cap_strain, b.plastic_cap_strain)) return false;
+  if (!Same(a.failure_plastic_strain, b.failure_plastic_strain)) return false;
   return SameCurves(Curve(a), Curve(b));
 }
 bool Same(const tl::material::law90::PreparedMaterial& a,

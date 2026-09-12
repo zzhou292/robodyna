@@ -8,10 +8,19 @@ namespace detail {
 TL_LAW44_SOLID_HD inline bool HistoryValid(const History& h, Curve c) noexcept {
   if (!tl::math::Finite(h.plastic_strain) || h.plastic_strain < 0 ||
       !tl::math::Finite(h.filtered_rate_per_s) || h.filtered_rate_per_s < 0 ||
-      h.curve_cursor >= c.count - 1) return false;
+      c.count < 2 || h.curve_cursor >= c.count - 1) return false;
   for (unsigned i = 0; i < 6; ++i) {
     if (!tl::math::Finite(h.stress_pa[i]) || !tl::math::Finite(h.engineering_strain[i])) return false;
   }
+  return true;
+}
+TL_LAW44_SOLID_HD inline bool HistoryValid(const History& h, const Parameters& p) noexcept {
+  if (p.material.hardening == HardeningKind::Tabulated) return HistoryValid(h, p.curve);
+  if (p.material.hardening != HardeningKind::Analytic || !EmptyCurve(p.curve) ||
+      h.curve_cursor != 0 || !tl::math::Finite(h.plastic_strain) || h.plastic_strain < 0 ||
+      !tl::math::Finite(h.filtered_rate_per_s) || h.filtered_rate_per_s < 0) return false;
+  for (unsigned i = 0; i < 6; ++i)
+    if (!tl::math::Finite(h.stress_pa[i]) || !tl::math::Finite(h.engineering_strain[i])) return false;
   return true;
 }
 }  // namespace detail
@@ -21,7 +30,7 @@ namespace detail {
 TL_LAW44_SOLID_HD inline Status UpdateValues(const Parameters& p, const History& accepted,
     const Input& in, Result& output, bool initialization) noexcept {
   if (!detail::ParametersValid(p)) return Status::InvalidParameters;
-  if (!detail::HistoryValid(accepted, p.curve)) return Status::InvalidHistory;
+  if (!detail::HistoryValid(accepted, p)) return Status::InvalidHistory;
   if (!tl::math::Finite(in.dt_s) || in.dt_s < 0 || (!initialization && in.dt_s == 0) ||
       !tl::math::Finite(in.relative_density) ||
       in.relative_density < -1) return Status::InvalidInput;
@@ -51,24 +60,32 @@ TL_LAW44_SOLID_HD inline Status UpdateValues(const Parameters& p, const History&
   }
   for (unsigned i = 3; i < 6; ++i) stress[i] = accepted.stress_pa[i] + p.shear_pa * increment[i];
   double yield = 0, slope = 0;
-  if (!detail::CurveValue(p.curve, accepted.plastic_strain, r.history.curve_cursor,
-                          yield, slope)) return Status::InvalidCurve;
+  const bool analytic = p.material.hardening == HardeningKind::Analytic;
+  if (!analytic && !detail::CurveValue(p.curve, accepted.plastic_strain, r.history.curve_cursor,
+                                      yield, slope)) return Status::InvalidCurve;
   const double cap = p.stress_limit_pa * rate_factor;  // Native ICC1.
   double hardening = p.material.young_pa;
   if (accepted.plastic_strain > 0) {
-    yield = yield * rate_factor;  // YSCALE1/CA0; source SIGY is not added.
-    hardening = failure_factor * (slope * rate_factor);
+    if (analytic) {
+      const auto& a = p.material.analytic;
+      yield = (a.a_pa + a.b_pa * ::pow(accepted.plastic_strain, a.exponent)) * rate_factor;
+      hardening = failure_factor * a.exponent * a.b_pa * rate_factor /
+          ::pow(accepted.plastic_strain, 1 - a.exponent);
+    } else {
+      yield = yield * rate_factor;  // YSCALE1/CA0; source SIGY is not added.
+      hardening = failure_factor * (slope * rate_factor);
+    }
     if (!tl::math::Finite(yield) || !tl::math::Finite(cap)) return Status::NonfiniteResult;
     yield = failure_factor * ::fmin(cap, yield);
   } else {
-    yield = failure_factor * yield * rate_factor;
+    yield = failure_factor * (analytic ? p.material.analytic.a_pa : yield) * rate_factor;
   }
-  if (accepted.plastic_strain >= detail::NativeInfinity()) {
+  if (accepted.plastic_strain >= p.plastic_cap_strain) {
     yield = failure_factor * cap;  // EPSGM reached, then EPMAX below.
     hardening = 0;
   }
   r.yield_stress_pa = yield;
-  if (accepted.plastic_strain >= detail::NativeInfinity()) yield = 0;
+  if (accepted.plastic_strain >= p.failure_plastic_strain) yield = 0;
   const double square = .5 * (stress[0]*stress[0] + stress[1]*stress[1] +
                              stress[2]*stress[2]) + stress[3]*stress[3] +
                         stress[4]*stress[4] + stress[5]*stress[5];
@@ -80,7 +97,7 @@ TL_LAW44_SOLID_HD inline Status UpdateValues(const Parameters& p, const History&
   double ratio = ::fmin(1., yield / vm_floor);
   r.plastic_increment = (1 - ratio) * equivalent / ::fmax(denominator, p.stress_floor_pa);
   yield = yield + r.plastic_increment * hardening;
-  if (accepted.plastic_strain >= detail::NativeInfinity()) yield = 0;
+  if (accepted.plastic_strain >= p.failure_plastic_strain) yield = 0;
   if (!tl::math::Finite(yield)) return Status::NonfiniteResult;
   ratio = ::fmin(1., yield / vm_floor);
   for (double& value : stress) value = value * ratio;
@@ -90,7 +107,7 @@ TL_LAW44_SOLID_HD inline Status UpdateValues(const Parameters& p, const History&
   r.sound_speed_m_s = p.sound_speed_m_s;
   r.yield_stress_pa = ::fmax(r.yield_stress_pa, yield);
   r.tangent_factor = r.plastic_increment > 0 ? hardening / (hardening + p.material.young_pa) : 1;
-  if (!detail::HistoryValid(r.history, p.curve) || !tl::math::Finite(r.plastic_increment) ||
+  if (!detail::HistoryValid(r.history, p) || !tl::math::Finite(r.plastic_increment) ||
       !tl::math::Finite(r.yield_stress_pa) || !tl::math::Finite(r.tangent_factor)) return Status::NonfiniteResult;
   output = r;
   return Status::Ok;

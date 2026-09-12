@@ -60,9 +60,12 @@ BatchReport Plan(const BatchConfig& config, const Model& model,
   for (const auto& material : model.materials36())
     if (!add_curve(material.value.curve.count))
       return {BatchStatus::ResourceLimit, "Solid owned curve pool exceeds admitted scope"};
-  for (const auto& material : model.materials44())
+  for (const auto& material : model.materials44()) {
+    if (material.value.material.hardening == tl::material::law44::solid::HardeningKind::Analytic)
+      ++count.analytic_material44;
     if (!add_curve(material.value.curve.count))
       return {BatchStatus::ResourceLimit, "Solid owned curve pool exceeds admitted scope"};
+  }
   for (const auto& material : model.materials90())
     if (!add_curve(material.value.curve().count))
       return {BatchStatus::ResourceLimit, "Solid owned curve pool exceeds admitted scope"};

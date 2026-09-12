@@ -20,9 +20,11 @@ ModelReport PlanMaterials(ModelInput input, ModelLimits limits, Scratch& scratch
       return Error(ModelStatus::MaterialMismatch, "One source MID declares different material laws", input, i);
     const auto report = Visit(input, i, [&](const auto& parent, std::size_t) -> ModelReport {
       const auto curve = Curve(parent.material);
-      if (Law(parent.material) != MaterialLaw::Law42 &&
+      if (RequiresCurve(parent.material) &&
           (curve.count < 2 || curve.count > 1024 || !Range(curve.x, curve.count) || !Range(curve.y, curve.count)))
         return Error(ModelStatus::InvalidInput, "Material curve range is invalid", input, i);
+      if (!RequiresCurve(parent.material) && (curve.count || curve.x || curve.y))
+        return Error(ModelStatus::InvalidInput, "Curve-free material must have an empty curve", input, i);
       if (first == i) {
         if (curve.count > limits.max_curve_points-layout.curve_points)
           return Error(ModelStatus::ResourceLimit, "Owned material curve pool exceeds cap", input, i);
@@ -38,6 +40,7 @@ ModelReport PlanMaterials(ModelInput input, ModelLimits limits, Scratch& scratch
   return {};
 }
 CurveSpan CopyCurve(CurveSpan curve, std::size_t& cursor, Storage& out) {
+  if (!curve.count) return {};
   auto* x = out.curves+cursor;
   auto* y = x+curve.count;
   cursor += 2*curve.count;
@@ -47,6 +50,7 @@ CurveSpan CopyCurve(CurveSpan curve, std::size_t& cursor, Storage& out) {
 }
 bool SameCurves(CurveSpan a, CurveSpan b) noexcept {
   if (a.count != b.count) return false;
+  if (!a.count) return !a.x && !a.y && !b.x && !b.y;
   for (std::size_t i = 0; i < a.count; ++i)
     if (!Same(a.x[i], b.x[i]) || !Same(a.y[i], b.y[i])) return false;
   return true;

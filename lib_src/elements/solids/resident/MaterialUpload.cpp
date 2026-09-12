@@ -15,6 +15,7 @@ std::size_t Offset90(const Model& model) noexcept {
   return offset;
 }
 void CopyCurve(const double* x, const double* y, std::size_t count, double*& next) {
+  if (!count) return;
   for (std::size_t p = 0; p < count; ++p) {
     next[p] = x[p];
     next[count + p] = y[p];
@@ -36,6 +37,7 @@ solid18::law44::Material ExpectedMaterial44(const Model& model, std::size_t inde
   auto offset = Offset44(model);
   for (std::size_t m = 0; m < index; ++m) offset += 2 * model.materials44()[m].value.curve.count;
   auto result = model.materials44()[index].value;
+  if (result.material.hardening == tl::material::law44::solid::HardeningKind::Analytic) return result;
   result.curve.plastic_strain = curves + offset;
   result.curve.yield_stress_pa = curves + offset + result.curve.count;
   return result;
