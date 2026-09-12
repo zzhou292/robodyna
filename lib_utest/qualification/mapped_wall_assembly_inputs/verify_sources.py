@@ -5,7 +5,7 @@ import hashlib, json, re, subprocess, sys
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 raw = (here/'source-manifest.json').read_bytes()
-assert hashlib.sha256(raw).hexdigest() == 'ea08ed05a1b3a5d838b4c46e155e4a97f5a57490752d34045e67f5c6b9059ea3'
+assert hashlib.sha256(raw).hexdigest() == '39adaf1756e57cc6c3094480cb4e2210f413dafd01c29e1ed056aeea9fc0603c'
 manifest = json.loads(raw)
 for row in manifest['files']:
     path = Path(row['path'])
@@ -51,6 +51,9 @@ for name in ('Response', 'StageStiffness', 'RemovedPotential'):
     same(body(old, name), body(current, name), name)
 old_ops = (here/'reference/Operations.cu').read_text()
 ops = (folder/'Operations.cu').read_text()
+sys.path.insert(0, str(here.parent/'mapped_wall_removal_events'))
+from removal_proof import legacy_operations
+ops = legacy_operations(ops)
 for name in ('CheckResponse', 'FinishAssembly', 'CopyAcceptedBase', 'BeginCandidate',
              'FinishCandidate', 'Identity', 'Check', 'ReadControl', 'EvaluateCandidate'):
     same(body(old_ops, name), body(ops, name), name)

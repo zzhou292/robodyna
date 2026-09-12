@@ -5,7 +5,7 @@ import hashlib, json, re, subprocess, sys
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 raw = (here/'source-manifest.json').read_bytes()
-assert hashlib.sha256(raw).hexdigest() == "dedba994ded8e6e9e387c61f128f5bbf28261d7db72d6af008bebe1c22c5661d"
+assert hashlib.sha256(raw).hexdigest() == "70f76b140dca9c2725f3d25f454a6df2337359f595c76375449d36140518aa91"
 manifest = json.loads(raw)
 for row in manifest['files']:
     path = Path(row['path'])
@@ -34,6 +34,9 @@ apply = body((root/'lib_src/collision/nodal_wall_mapped/IntervalFinalizer.h').re
 apply = apply[apply.index('  if (!Radius(d.kick_work'):]
 assert re.sub(r'\s+', '', post) == re.sub(r'\s+', '', apply)
 operations = (root/'lib_src/collision/nodal_wall_mapped/Operations.cu').read_text()
+sys.path.insert(0, str(here.parent/'mapped_wall_removal_events'))
+from removal_proof import legacy_operations
+operations = legacy_operations(operations)
 assert operations.count('parallel::MeasureInterval(') == 1
 assert '{state.remote.interval,state.layout.interval.count}' in operations
 assert 'd::MeasureInterval(*storage,view)' not in operations

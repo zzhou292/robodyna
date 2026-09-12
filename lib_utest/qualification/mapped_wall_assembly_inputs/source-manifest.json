@@ -4,8 +4,8 @@
   "files": [
     {
       "path": "lib_src/collision/BUILD.bazel",
-      "bytes": 12597,
-      "sha256": "0e5a3426b1cdfb99f6475b31ba19fd4b0449415862bb92ea030bed17cab68e2f"
+      "bytes": 12685,
+      "sha256": "047830b5da4e181ff2cd5cb8d8cb1369119e111b688a7c77b48c0922759265ec"
     },
     {
       "path": "lib_src/collision/NodalWallContactDiagnostics.h",
@@ -89,8 +89,8 @@
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
-      "bytes": 10254,
-      "sha256": "74d3a30b47603651a6a5bbfceb7ecbbb08bdec7c91887f77f1292491483daac0"
+      "bytes": 10298,
+      "sha256": "b5cfde17f11340f1ea575b64f34a7fee026fd3ceb1165c8044788ce47484e120"
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Readback.cpp",
@@ -169,23 +169,23 @@
     },
     {
       "path": "lib_utest/qualification/mapped_wall_interval/source-manifest.json",
-      "bytes": 7989,
-      "sha256": "dedba994ded8e6e9e387c61f128f5bbf28261d7db72d6af008bebe1c22c5661d"
+      "bytes": 9394,
+      "sha256": "70f76b140dca9c2725f3d25f454a6df2337359f595c76375449d36140518aa91"
     },
     {
       "path": "lib_utest/qualification/mapped_wall_interval/verify_sources.py",
-      "bytes": 2493,
-      "sha256": "6a93786d078830f70b9db7bd5948430b82dbd61972baa756dea5c52faffd3487"
+      "bytes": 2646,
+      "sha256": "ad6a404982e29e1346e5501c7edf91f2a7f7e817b2a3c034f2e625c492871682"
     },
     {
       "path": "lib_utest/qualification/mapped_wall_observers/source-manifest.json",
-      "bytes": 8709,
-      "sha256": "56c4c9b683205f3478c9c95d82bdacd65392b5bb9be6b8f0332ad8ecb72c20db"
+      "bytes": 9334,
+      "sha256": "5d5b14a036bbdf08e568c090946667ba88364713a3a49919a6a3b6cedc3382c8"
     },
     {
       "path": "lib_utest/qualification/mapped_wall_observers/verify_sources.py",
       "bytes": 2076,
-      "sha256": "d13b142c6a7f540771aa495a0d1b68b18b7d934914bd592c1554ce1fb8dca814"
+      "sha256": "3dee73f14dea9f5157b2cf1994405d0641706b9aa648416f85a14633b96b2002"
     },
     {
       "path": "lib_utest/qualification/mapped_wall_scatter/Verify.cmake",
@@ -196,6 +196,21 @@
       "path": "lib_utest/qualification/mapped_wall_scatter/source-manifest.json",
       "bytes": 1005,
       "sha256": "72688493a88da0348c715ea8af56bab0b700e1a4335e647b814bb14f533f5950"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/RemovalEvents.h",
+      "bytes": 2685,
+      "sha256": "131b8f083ea638661f60b82edb153400d883236e3ca2dbe34a473cd28b386806"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/RemovalEvents.cuh",
+      "bytes": 1634,
+      "sha256": "506091e79556ebc2fefe735412515d045e6f1eb2df39c08527b07c865b4bc70a"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_removal_events/removal_proof.py",
+      "bytes": 786,
+      "sha256": "b05b563193a3201026ec7d593507b1b6c5f5678b0b0dc64c4197f850f388f55b"
     }
   ],
   "response_previous_receipts": [
@@ -310,5 +325,47 @@
         }
       ]
     }
-  ]
+  ],
+  "removal_event_schedule_review": {
+    "base": "edab8e17e6d6e641f77f093fdb258d98152db492",
+    "prior_manifest_sha256": "ea08ed05a1b3a5d838b4c46e155e4a97f5a57490752d34045e67f5c6b9059ea3",
+    "prior_records": [
+      {
+        "path": "lib_src/collision/BUILD.bazel",
+        "bytes": 12597,
+        "sha256": "0e5a3426b1cdfb99f6475b31ba19fd4b0449415862bb92ea030bed17cab68e2f"
+      },
+      {
+        "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
+        "bytes": 10254,
+        "sha256": "74d3a30b47603651a6a5bbfceb7ecbbb08bdec7c91887f77f1292491483daac0"
+      },
+      {
+        "path": "lib_utest/qualification/mapped_wall_interval/source-manifest.json",
+        "bytes": 7989,
+        "sha256": "dedba994ded8e6e9e387c61f128f5bbf28261d7db72d6af008bebe1c22c5661d"
+      },
+      {
+        "path": "lib_utest/qualification/mapped_wall_interval/verify_sources.py",
+        "bytes": 2493,
+        "sha256": "6a93786d078830f70b9db7bd5948430b82dbd61972baa756dea5c52faffd3487"
+      },
+      {
+        "path": "lib_utest/qualification/mapped_wall_observers/source-manifest.json",
+        "bytes": 8709,
+        "sha256": "56c4c9b683205f3478c9c95d82bdacd65392b5bb9be6b8f0332ad8ecb72c20db"
+      },
+      {
+        "path": "lib_utest/qualification/mapped_wall_observers/verify_sources.py",
+        "bytes": 2076,
+        "sha256": "d13b142c6a7f540771aa495a0d1b68b18b7d934914bd592c1554ce1fb8dca814"
+      }
+    ],
+    "added_paths": [
+      "lib_src/collision/nodal_wall_mapped/RemovalEvents.h",
+      "lib_src/collision/nodal_wall_mapped/RemovalEvents.cuh",
+      "lib_utest/qualification/mapped_wall_removal_events/removal_proof.py"
+    ],
+    "scope": "Only generic cooperative removal event scheduling, exact checked inverse of complete Operations; original floating point folds and prior source proof history retained."
+  }
 }

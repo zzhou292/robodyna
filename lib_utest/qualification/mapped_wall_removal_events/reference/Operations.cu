@@ -5,7 +5,6 @@
 #include "AssemblyValidation.cuh"
 #include "Kernels.cuh"
 #include "Response.cuh"
-#include "RemovalEvents.cuh"
 #include "lib_src/solvers/NodalNativePhysicalCoefficients.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
 namespace tlfea::contact {
@@ -47,7 +46,8 @@ __global__ void BeginCandidate(d::Storage* pointer,m::Sidecar side,fe::NodalPrep
 }
 __global__ void FinishCandidate(d::Storage* pointer,m::Sidecar side,fe::NodalPreparedView view) {
   auto& storage=*pointer;
-  if(m::removal_events::RemovedPotential(storage,side) && !threadIdx.x) {
+  if(storage.control.status==Code::Ok &&
+      m::RemovedPotential(storage,side)) {
     storage.result.diagnostics.stiffness_rate_bound=side.summary->rate;
     storage.result.diagnostics.valid=true;
   }
@@ -178,7 +178,7 @@ NodalWallDeviceReport NodalWallMappedContact::EvaluateCandidate(fe::FENodalState
   m::parallel::MeasureInterval(state.device,view,state.shadow.model.node_count,state.stream,
       {state.remote.interval,state.layout.interval.count},&state.remote.summary->interval_tree_used);
   if(cudaPeekAtLastError()!=cudaSuccess) return state.ReadControl();
-  FinishCandidate<<<1,m::removal_events::Threads,0,state.stream>>>(state.device,state.remote,view);
+  FinishCandidate<<<1,1,0,state.stream>>>(state.device,state.remote,view);
   report=state.ReadControl();
   if(report.status!=Code::Ok) return report;
   NodalWallMappedDiagnostics next;

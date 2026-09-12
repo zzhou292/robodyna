@@ -84,8 +84,8 @@
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
-      "bytes": 10254,
-      "sha256": "74d3a30b47603651a6a5bbfceb7ecbbb08bdec7c91887f77f1292491483daac0"
+      "bytes": 10298,
+      "sha256": "b5cfde17f11340f1ea575b64f34a7fee026fd3ceb1165c8044788ce47484e120"
     },
     {
       "path": "lib_utest/qualification/mapped_wall_observers/reference/NodalWallContactEvaluation.cuh",
@@ -207,5 +207,18 @@
         }
       ]
     }
-  ]
+  ],
+  "removal_event_schedule_review": {
+    "base": "edab8e17e6d6e641f77f093fdb258d98152db492",
+    "prior_manifest_sha256": "56c4c9b683205f3478c9c95d82bdacd65392b5bb9be6b8f0332ad8ecb72c20db",
+    "prior_records": [
+      {
+        "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
+        "bytes": 10254,
+        "sha256": "74d3a30b47603651a6a5bbfceb7ecbbb08bdec7c91887f77f1292491483daac0"
+      }
+    ],
+    "added_paths": [],
+    "scope": "Only generic cooperative removal event scheduling, exact checked inverse of complete Operations; original floating point folds and prior source proof history retained."
+  }
 }

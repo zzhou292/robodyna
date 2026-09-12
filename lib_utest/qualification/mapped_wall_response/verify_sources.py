@@ -5,7 +5,7 @@ import hashlib, json, re, subprocess, sys
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 raw = (here/'source-manifest.json').read_bytes()
-assert hashlib.sha256(raw).hexdigest() == 'f4bb6eb52342949a3055926852e7e153244a8c2e01d40d63152895262931fbdb'
+assert hashlib.sha256(raw).hexdigest() == 'd02aa696e0567b1a3f4af3dde15adf4d03c38198193a10250b9fc418856bbd78'
 for row in json.loads(raw)['files']:
     path = Path(row['path'])
     assert not path.is_absolute() and '..' not in path.parts
@@ -32,6 +32,9 @@ same(old, current, 'complete old kernels and serial fallback unchanged')
 same(body(old, 'Response'), body(frozen, 'Response'), 'complete frozen response')
 old_ops = (here/'reference/Operations.cu').read_text()
 ops = (wall/'Operations.cu').read_text()
+sys.path.insert(0, str(here.parent/'mapped_wall_removal_events'))
+from removal_proof import legacy_operations
+ops = legacy_operations(ops)
 same(body(old_ops, 'CheckResponse').replace('m::Response', 'Response'),
     body(frozen, 'CheckResponse'), 'complete frozen check')
 expected = old_ops.replace('#include "Kernels.cuh"', '#include "Kernels.cuh"\n#include "Response.cuh"')

@@ -303,6 +303,7 @@ cuda_library(
             "nodal_wall_mapped/Kernels.cuh", "nodal_wall_mapped/Evaluation.cuh",
             "nodal_wall_mapped/ResponseTypes.h", "nodal_wall_mapped/ResponseIncidence.h",
             "nodal_wall_mapped/ResponseValues.h", "nodal_wall_mapped/Response.cuh",
+            "nodal_wall_mapped/RemovalEvents.h", "nodal_wall_mapped/RemovalEvents.cuh",
             "nodal_wall_mapped/AssemblyValidation.h", "nodal_wall_mapped/AssemblyValidation.cuh",
             "nodal_wall_mapped/ObserverTypes.h", "nodal_wall_mapped/ObserverValues.h", "nodal_wall_mapped/ObserverReduction.cuh",
             "nodal_wall_mapped/IntervalTypes.h", "nodal_wall_mapped/IntervalProof.h",

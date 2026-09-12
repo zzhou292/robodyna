@@ -54,8 +54,8 @@
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
-      "bytes": 10254,
-      "sha256": "74d3a30b47603651a6a5bbfceb7ecbbb08bdec7c91887f77f1292491483daac0"
+      "bytes": 10298,
+      "sha256": "b5cfde17f11340f1ea575b64f34a7fee026fd3ceb1165c8044788ce47484e120"
     },
     {
       "path": "lib_src/collision/nodal_wall_mapped/Readback.cpp",
@@ -131,6 +131,21 @@
       "path": "lib_utest/qualification/mapped_wall_response/reference/Sources.cpp",
       "bytes": 5160,
       "sha256": "f55e547fd86f73f3558caf9fd4059fbacda71a828443ec79050ba2613c90c516"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/RemovalEvents.h",
+      "bytes": 2685,
+      "sha256": "131b8f083ea638661f60b82edb153400d883236e3ca2dbe34a473cd28b386806"
+    },
+    {
+      "path": "lib_src/collision/nodal_wall_mapped/RemovalEvents.cuh",
+      "bytes": 1634,
+      "sha256": "506091e79556ebc2fefe735412515d045e6f1eb2df39c08527b07c865b4bc70a"
+    },
+    {
+      "path": "lib_utest/qualification/mapped_wall_removal_events/removal_proof.py",
+      "bytes": 786,
+      "sha256": "b05b563193a3201026ec7d593507b1b6c5f5678b0b0dc64c4197f850f388f55b"
     }
   ],
   "node_status_previous_receipts": [
@@ -151,5 +166,22 @@
         }
       ]
     }
-  ]
+  ],
+  "removal_event_schedule_review": {
+    "base": "edab8e17e6d6e641f77f093fdb258d98152db492",
+    "prior_manifest_sha256": "f4bb6eb52342949a3055926852e7e153244a8c2e01d40d63152895262931fbdb",
+    "prior_records": [
+      {
+        "path": "lib_src/collision/nodal_wall_mapped/Operations.cu",
+        "bytes": 10254,
+        "sha256": "74d3a30b47603651a6a5bbfceb7ecbbb08bdec7c91887f77f1292491483daac0"
+      }
+    ],
+    "added_paths": [
+      "lib_src/collision/nodal_wall_mapped/RemovalEvents.h",
+      "lib_src/collision/nodal_wall_mapped/RemovalEvents.cuh",
+      "lib_utest/qualification/mapped_wall_removal_events/removal_proof.py"
+    ],
+    "scope": "Only generic cooperative removal event scheduling, exact checked inverse of complete Operations; original floating point folds and prior source proof history retained."
+  }
 }
