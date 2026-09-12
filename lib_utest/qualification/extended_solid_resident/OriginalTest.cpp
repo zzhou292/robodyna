@@ -44,8 +44,10 @@ TEST(ExtendedResidentOriginal, All4063ConstructorsKeepActualRearAndBlankHuFoamNa
   s::Model model;ASSERT_TRUE(model.Initialize(domain,{777,{old.a.data(),old.a.size()},
       {old.b.data(),old.b.size()},{old.c.data(),old.c.size()},{rear.data(),rear.size()},
       {foam.data(),foam.size()},s::ModelProfile::ExtendedLaw44Law90}));
-  auto config=Config(domain.node_count());config.startup.uniform_velocity={15.6464,0,0};
-  s::BatchForecast forecast;ASSERT_TRUE(s::Batch::Forecast(config,model,forecast));
+  auto config=Config(domain.node_count());
+  config.startup={fe::ShellBatchStartupKind::ReferenceUniformTranslation,{15.6464,0,0}};
+  s::BatchForecast forecast;const auto forecast_report=s::Batch::Forecast(config,model,forecast);
+  ASSERT_TRUE(forecast_report)<<forecast_report.message;
   s::Batch batch;auto report=batch.InitializeJoined(config,model);ASSERT_TRUE(report)<<report.message;
   Results results(model);s::BatchDiagnostics diagnostics;
   report=s::BatchQualificationPeer::ReadConstructed(batch,results.Buffers(),diagnostics);ASSERT_TRUE(report)<<report.message;

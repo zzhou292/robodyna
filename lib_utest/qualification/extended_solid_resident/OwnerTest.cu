@@ -83,7 +83,12 @@ TEST_F(ExtendedResidentCuda, LastFoamReadbackFailureKeepsAcceptedStateAndWholeOu
     Results next(rig.fixture.model);
     if(!attempt) {
       const auto bad=std::numeric_limits<double>::quiet_NaN();
-      ASSERT_EQ(cudaMemcpy(Peer::PreparedLastLaw90CacheField(rig.batch),&bad,sizeof(bad),cudaMemcpyHostToDevice),cudaSuccess);
+      auto* fault=Peer::PreparedLastLaw90CacheField(rig.batch);
+      ASSERT_EQ(cudaMemcpyAsync(fault,&bad,sizeof(bad),cudaMemcpyHostToDevice,prepared.stream),cudaSuccess);
+      double observed=0;
+      ASSERT_EQ(cudaMemcpyAsync(&observed,fault,sizeof(observed),cudaMemcpyDeviceToHost,prepared.stream),cudaSuccess);
+      ASSERT_EQ(cudaStreamSynchronize(prepared.stream),cudaSuccess);
+      ASSERT_TRUE(std::isnan(observed));
       next.rear[0].cache.rhs_force_n[0].x=123;
       next.foam[0].cache.rhs_force_n[7].z=456;
       EXPECT_EQ(rig.batch.CopyPreparedResults(candidate,next.Buffers()).status,s::BatchStatus::NonfiniteResult);

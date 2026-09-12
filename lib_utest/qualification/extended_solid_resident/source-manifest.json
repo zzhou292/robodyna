@@ -248,8 +248,8 @@
     },
     {
       "path": "lib_utest/qualification/extended_solid_resident/OriginalTest.cpp",
-      "bytes": 4546,
-      "sha256": "672e5827478bb35a3e887d98c1f20c9c0877ccc341ce835dd7b0d820a72cec8a"
+      "bytes": 4660,
+      "sha256": "8af5f0bd55605f0d0cfc902633491685e0593afacf956b99f1d58e2a30a0cd64"
     },
     {
       "path": "lib_utest/qualification/extended_solid_resident/OwnerFixture.cpp",
@@ -268,8 +268,8 @@
     },
     {
       "path": "lib_utest/qualification/extended_solid_resident/OwnerTest.cu",
-      "bytes": 8253,
-      "sha256": "3b3671fb0f17a7f76e5eb709304bcdcfce4c2f7bdcae9f43875dcf85fc2d2762"
+      "bytes": 8553,
+      "sha256": "e61cf6df845f6499399502bb2bfd471f149079ccc4c50521869a18dcf131f94e"
     },
     {
       "path": "lib_utest/qualification/extended_solid_resident/README.md",
