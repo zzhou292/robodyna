@@ -141,8 +141,15 @@
     },
     {
       "path": "lib_src/elements/qbat/BUILD.bazel",
-      "bytes": 3785,
-      "sha256": "8f134023478d7f0e8871e4be50a6f412c9d70e175be410ee42c78746ad3a35d1"
+      "bytes": 3856,
+      "sha256": "af0a6e83253b08579bfe63032d35a30052b964f4ebb67e1103a7c5adb5438236",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 3785,
+          "prior_sha256": "8f134023478d7f0e8871e4be50a6f412c9d70e175be410ee42c78746ad3a35d1",
+          "reason": "Reviewed mapped-only QBAT measurement operand staging: unchanged native work expression/force/history/full-result predicate; exact ordered diagnostics and existing error priority; explicit 168B/parent tail and narrow reusable test-header exports. Complete older frozen caller and baseline digests retained."
+        }
+      ]
     },
     {
       "path": "lib_src/elements/qbat/QbatBatch.cmake",
@@ -196,13 +203,27 @@
     },
     {
       "path": "lib_src/elements/qbat/mapped/AssemblyLayout.h",
-      "bytes": 1997,
-      "sha256": "846675b1e210b7592349ed1a7bf349aca09e6e327feded0914e401de86a7865f"
+      "bytes": 2217,
+      "sha256": "abd0315ef78872c9140fca53a9efea9516ade062b3e113ef2b3da1804fd138aa",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 1997,
+          "prior_sha256": "846675b1e210b7592349ed1a7bf349aca09e6e327feded0914e401de86a7865f",
+          "reason": "Reviewed mapped-only QBAT measurement operand staging: unchanged native work expression/force/history/full-result predicate; exact ordered diagnostics and existing error priority; explicit 168B/parent tail and narrow reusable test-header exports. Complete older frozen caller and baseline digests retained."
+        }
+      ]
     },
     {
       "path": "lib_src/elements/qbat/mapped/AssemblyTypes.h",
-      "bytes": 1413,
-      "sha256": "26f2d9a5999eaa0744da5e4061f9820958407dd297249133292063511598be72"
+      "bytes": 1485,
+      "sha256": "f7447afa15f15b65280e8cf07ef8f239e6c4e76017cd1db0bb1526d09dac0440",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 1413,
+          "prior_sha256": "26f2d9a5999eaa0744da5e4061f9820958407dd297249133292063511598be72",
+          "reason": "Reviewed mapped-only QBAT measurement operand staging: unchanged native work expression/force/history/full-result predicate; exact ordered diagnostics and existing error priority; explicit 168B/parent tail and narrow reusable test-header exports. Complete older frozen caller and baseline digests retained."
+        }
+      ]
     },
     {
       "path": "lib_src/elements/qbat/mapped/AssemblyValues.h",
@@ -221,13 +242,27 @@
     },
     {
       "path": "lib_src/elements/qbat/mapped/Measurement.cu",
-      "bytes": 2694,
-      "sha256": "f2e289b4f8af3a93212d4c84e7ca884b5c38bb6396be628849c823c95d1ed9a1"
+      "bytes": 2240,
+      "sha256": "917ee0b0eecf83016ab119985d256abd4ae38b31a93d226d0df04a2404733fc3",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 2694,
+          "prior_sha256": "f2e289b4f8af3a93212d4c84e7ca884b5c38bb6396be628849c823c95d1ed9a1",
+          "reason": "Reviewed mapped-only QBAT measurement operand staging: unchanged native work expression/force/history/full-result predicate; exact ordered diagnostics and existing error priority; explicit 168B/parent tail and narrow reusable test-header exports. Complete older frozen caller and baseline digests retained."
+        }
+      ]
     },
     {
       "path": "lib_src/elements/qbat/mapped/Measurement.h",
-      "bytes": 1515,
-      "sha256": "90c74c7e0261c4118df87c8686f2cd4794074267c5d4a8ec163a08110188590a"
+      "bytes": 2923,
+      "sha256": "4c997f59b21ea029d8a1e9d0f01b4074780ab1476ec26371459b8f244a0747f5",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 1515,
+          "prior_sha256": "90c74c7e0261c4118df87c8686f2cd4794074267c5d4a8ec163a08110188590a",
+          "reason": "Reviewed mapped-only QBAT measurement operand staging: unchanged native work expression/force/history/full-result predicate; exact ordered diagnostics and existing error priority; explicit 168B/parent tail and narrow reusable test-header exports. Complete older frozen caller and baseline digests retained."
+        }
+      ]
     },
     {
       "path": "lib_src/elements/qbat/mapped/Publication.cpp",
@@ -266,8 +301,15 @@
     },
     {
       "path": "lib_utest/qualification/qbat_mapped_gather/BUILD.bazel",
-      "bytes": 1024,
-      "sha256": "dfc0c99386cd515085c607561640ee847d0ce0333967295ba3afabfe91920e8b"
+      "bytes": 1129,
+      "sha256": "e4c9ce678ca5fdabf83b152305df2f1b102bc4faca98d217e8af39e30e94021a",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 1024,
+          "prior_sha256": "dfc0c99386cd515085c607561640ee847d0ce0333967295ba3afabfe91920e8b",
+          "reason": "Reviewed mapped-only QBAT measurement operand staging: unchanged native work expression/force/history/full-result predicate; exact ordered diagnostics and existing error priority; explicit 168B/parent tail and narrow reusable test-header exports. Complete older frozen caller and baseline digests retained."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/qbat_mapped_gather/CMakeLists.txt",
@@ -311,8 +353,15 @@
     },
     {
       "path": "lib_utest/qualification/qbat_resident/BUILD.bazel",
-      "bytes": 1222,
-      "sha256": "2ca11cb74eda732b63dcd216a7321331dcc3267586059e61cd2eed94bf0a30ab"
+      "bytes": 1303,
+      "sha256": "8e7334b2d9b88620a62390e134628ee1d8fcee961054a5a8fd30a85294b863b8",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 1222,
+          "prior_sha256": "2ca11cb74eda732b63dcd216a7321331dcc3267586059e61cd2eed94bf0a30ab",
+          "reason": "Reviewed mapped-only QBAT measurement operand staging: unchanged native work expression/force/history/full-result predicate; exact ordered diagnostics and existing error priority; explicit 168B/parent tail and narrow reusable test-header exports. Complete older frozen caller and baseline digests retained."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/qbat_resident/ResultValues.h",

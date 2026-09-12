@@ -2,7 +2,8 @@ load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("@rules_cuda//cuda:defs.bzl", "cuda_test")
 cc_library(
     name = "fixture", testonly = True,
-    hdrs = ["Fixture.h", "SerialMeasure.h"],
+    visibility = ["//lib_utest/qualification/qbat_measurement_operands:__pkg__"],
+    hdrs = ["Fixture.h", "SerialMeasure.h", "SerialCandidate.cuh"],
     deps = ["//lib_src/elements/qbat:batch_values", "//lib_utest/qualification/qbat_force:fixture", "@googletest//:gtest"],
 )
 cc_test(

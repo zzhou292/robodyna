@@ -1,0 +1,41 @@
+cmake_minimum_required(VERSION 3.22)
+project(TLQbatMeasurementOperands LANGUAGES CXX)
+enable_testing()
+find_package(GTest REQUIRED)
+find_package(CUDAToolkit REQUIRED)
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
+get_filename_component(tl_root "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
+add_executable(qbat_measurement_host HostTest.cpp LayoutTest.cpp
+  "${tl_root}/lib_src/elements/qbat/QbatBatchArena.cpp"
+  "${tl_root}/lib_src/elements/qbat/QbatBatchIdentity.cpp")
+target_include_directories(qbat_measurement_host PRIVATE "${tl_root}")
+target_link_libraries(qbat_measurement_host PRIVATE GTest::gtest_main CUDA::toolkit)
+target_compile_features(qbat_measurement_host PRIVATE cxx_std_17)
+target_compile_options(qbat_measurement_host PRIVATE -fno-fast-math -ffp-contract=off)
+add_test(NAME qbat_measurement_host COMMAND qbat_measurement_host)
+set_tests_properties(qbat_measurement_host PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+option(QBAT_MEASUREMENT_CUDA "Frozen full caller and actual owner rollback" OFF)
+if(QBAT_MEASUREMENT_CUDA)
+  enable_language(CUDA)
+  add_subdirectory("${tl_root}/lib_src/solvers" nodal-owner)
+  include("${tl_root}/lib_src/elements/qbat/QbatBatch.cmake")
+  include("${tl_root}/lib_src/constraints/NodalRigidAssemblyBinding.cmake")
+  add_executable(qbat_measurement_cuda CudaTest.cu)
+  target_link_libraries(qbat_measurement_cuda PRIVATE tl_qbat_batch GTest::gtest_main CUDA::cudart)
+  set_target_properties(qbat_measurement_cuda PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED ON)
+  target_compile_options(qbat_measurement_cuda PRIVATE --fmad=false --prec-div=true --prec-sqrt=true --ftz=false -Xcompiler=-fno-fast-math,-ffp-contract=off)
+  add_test(NAME qbat_measurement_cuda COMMAND qbat_measurement_cuda)
+  set_tests_properties(qbat_measurement_cuda PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+  add_executable(qbat_measurement_owner OwnerTest.cu
+    ../qbat_mapped/OwnerFixture.cu ../rigid_assembly_owner/Fixture.cpp)
+  target_link_libraries(qbat_measurement_owner PRIVATE tl_qbat_batch tl_nodal_rigid_assembly_binding
+    tl_tied_cin_attachment GTest::gtest_main CUDA::cudart)
+  set_target_properties(qbat_measurement_owner PROPERTIES CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED ON)
+  target_compile_options(qbat_measurement_owner PRIVATE
+    "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>"
+    "$<$<COMPILE_LANGUAGE:CXX>:-fno-fast-math;-ffp-contract=off>")
+  add_test(NAME qbat_measurement_owner COMMAND qbat_measurement_owner)
+  set_tests_properties(qbat_measurement_owner PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+endif()
+add_test(NAME qbat_measurement_source_identity
+  COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_LIST_DIR}/verify_sources.py")

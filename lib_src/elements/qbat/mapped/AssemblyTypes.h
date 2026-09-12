@@ -4,6 +4,7 @@
 #include "../../ShellNodalStiffness.h"
 #include "../../mapped_shell/NodeGather.h"
 #include "../../mapped_shell/ObserverTypes.h"
+#include "MeasurementTypes.h"
 namespace tl::fea::qbat::mapped {
 struct AssemblyParent {
   shell_nodal_stiffness::Packet<4> stiffness;
@@ -19,6 +20,7 @@ struct AssemblyMemory {
   AssemblyNode* node=nullptr;
   unsigned long long* failure=nullptr;
   MaximumSummary* maximum=nullptr;
+  MeasurementParent* measurement=nullptr;
 };
 struct ForceAccess {
   const BatchResult* accepted;

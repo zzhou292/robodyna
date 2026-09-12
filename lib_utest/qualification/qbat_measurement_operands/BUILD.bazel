@@ -1,0 +1,25 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+cc_library(
+    name = "fixture", testonly = True,
+    hdrs = ["Fixture.h", "SerialFinalize.h"],
+    deps = ["//lib_src/elements/qbat:batch_values",
+            "//lib_utest/qualification/qbat_mapped_gather:fixture", "@googletest//:gtest"],
+)
+cc_test(
+    name = "host", size = "small",
+    srcs = ["HostTest.cpp", "LayoutTest.cpp"],
+    deps = [":fixture", "@googletest//:gtest_main"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+)
+cuda_test(
+    name = "cuda", size = "small",
+    srcs = ["CudaTest.cu", "DeviceFixture.cuh"],
+    deps = [":fixture", "//lib_src/elements/qbat:batch",
+            "//lib_utest/qualification/qbat_resident:test_support", "@googletest//:gtest_main"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false",
+             "-Xcompiler=-fno-fast-math,-ffp-contract=off"],
+    tags = ["exclusive", "gpu"],
+)
+# The real CIN/rigid owner fixture uses the owning CMake target, as do the
+# retained native/full-publication QBAT resident qualification gates.

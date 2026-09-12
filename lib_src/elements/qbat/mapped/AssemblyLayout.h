@@ -4,7 +4,7 @@
 #include "lib_utils/BoundedArena.h"
 namespace tl::fea::qbat::mapped {
 struct AssemblyLayout {
-  util::ArenaRegion offsets,incidence,parent,node,failure,maximum;
+  util::ArenaRegion offsets,incidence,parent,node,failure,maximum,measurement;
   std::size_t bytes=0;
   bool Initialize(std::size_t base,std::size_t parents,std::size_t nodes,std::size_t cap) noexcept {
     if(!parents || parents>UINT32_MAX/4 || !nodes || nodes>=UINT32_MAX) return false;
@@ -17,21 +17,24 @@ struct AssemblyLayout {
         !layout.Append<AssemblyParent>(parents,next.parent) ||
         !layout.Append<AssemblyNode>(nodes,next.node) ||
         !layout.Append<unsigned long long>(1,next.failure) ||
-        !layout.Append<MaximumSummary>(MaximumBlocks(nodes),next.maximum)) return false;
+        !layout.Append<MaximumSummary>(MaximumBlocks(nodes),next.maximum) ||
+        !layout.Append<MeasurementParent>(parents,next.measurement)) return false;
     next.bytes=layout.bytes(); *this=next; return true;
   }
   bool Construct(util::HostArena& arena,AssemblyMemory& out) const noexcept {
     if(!bytes) {out={}; return true;}
     out={arena.Construct<std::uint32_t>(offsets),arena.Construct<std::uint32_t>(incidence),
       arena.Construct<AssemblyParent>(parent),arena.Construct<AssemblyNode>(node),
-      arena.Construct<unsigned long long>(failure),arena.Construct<MaximumSummary>(maximum)};
-    return out.offsets && out.incidence && out.parent && out.node && out.failure && out.maximum;
+      arena.Construct<unsigned long long>(failure),arena.Construct<MaximumSummary>(maximum),
+      arena.Construct<MeasurementParent>(measurement)};
+    return out.offsets && out.incidence && out.parent && out.node && out.failure && out.maximum && out.measurement;
   }
   AssemblyMemory Rebase(void* base) const noexcept {
     if(!bytes) return {};
     return {util::ArenaPointer<std::uint32_t>(base,offsets),util::ArenaPointer<std::uint32_t>(base,incidence),
       util::ArenaPointer<AssemblyParent>(base,parent),util::ArenaPointer<AssemblyNode>(base,node),
-      util::ArenaPointer<unsigned long long>(base,failure),util::ArenaPointer<MaximumSummary>(base,maximum)};
+      util::ArenaPointer<unsigned long long>(base,failure),util::ArenaPointer<MaximumSummary>(base,maximum),
+      util::ArenaPointer<MeasurementParent>(base,measurement)};
   }
 };
 } // namespace tl::fea::qbat::mapped
