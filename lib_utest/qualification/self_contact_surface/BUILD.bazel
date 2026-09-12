@@ -1,4 +1,17 @@
-load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+
+cc_library(
+    name = "fixture",
+    testonly = True,
+    hdrs = ["Fixture.h"],
+    visibility = ["//lib_utest/qualification/contact_facets:__pkg__"],
+    deps = [
+        "//lib_src/collision:self_contact_surface_binding",
+        "//lib_src/assembly:shell_physical_binding",
+        "//lib_utest/qualification/qbat_catalog:fixture",
+        "@googletest//:gtest",
+    ],
+)
 
 cc_test(
     name = "host_check",

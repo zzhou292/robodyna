@@ -1,0 +1,14 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+cc_test(
+    name = "host_check",
+    size = "small",
+    srcs = ["Fixture.h", "BindingTest.cpp", "MappingTest.cpp", "ApproximationTest.cpp", "RigidSkinTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        "//lib_src/collision:fixed_contact_facets",
+        "//lib_src/collision/weighted_surface:mapping",
+        "//lib_utest/qualification/self_contact_surface:fixture",
+        "//lib_utest/qualification/shell_execution:fixture",
+        "@googletest//:gtest_main",
+    ],
+)

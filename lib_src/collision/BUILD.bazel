@@ -14,6 +14,26 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
+    name = "fixed_contact_facets",
+    srcs = [
+        "FixedContactFacetBinding.cpp",
+        "contact_facets/Layout.cpp",
+        "contact_facets/Templates.cpp",
+        "contact_facets/Keys.cpp",
+        "contact_facets/Approximation.cpp",
+    ],
+    hdrs = ["FixedContactFacetTypes.h", "FixedContactFacetBinding.h", "FixedContactFacetValues.h", "contact_facets/Storage.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        ":self_contact_surface_binding",
+        ":q4_contact_integration",
+        "//lib_src/collision/weighted_surface:mapping",
+        "//lib_src/solvers:nodal_trial_identity",
+        "//lib_utils:bounded_arena",
+    ],
+)
+
+cc_library(
     name = "surface_jacobian_majorant",
     hdrs = [
         "SurfaceJacobianMajorantTypes.h",
