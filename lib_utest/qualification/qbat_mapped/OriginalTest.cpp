@@ -55,11 +55,14 @@ TEST(QbatMappedOriginal,All4250QuadsKeepSourceOrderAcrossScrambledLargerPhysical
   config.storage_limits=fe::ShellResidentLimits::Vehicle();
   config.max_device_bytes=fe::MaxVehicleShellResidentDeviceBytes;
   batch::Layout layout;
-  ASSERT_TRUE(layout.Initialize(config.element_count,nodes.size(),catalog.curve_point_count(),config.max_device_bytes));
+  // BuildModel owns the mapped incidence too, matching the production forecast.
+  ASSERT_TRUE(layout.InitializeMapped(config.element_count,nodes.size(),catalog.curve_point_count(),config.max_device_bytes));
   tl::util::HostArena arena;
   ASSERT_TRUE(arena.Initialize(layout.bytes));
   auto* storage=layout.Construct(arena);
   ASSERT_NE(storage,nullptr);
+  ASSERT_NE(storage->assembly.offsets,nullptr);
+  ASSERT_NE(storage->assembly.incidence,nullptr);
   qb::BatchDiagnostics diagnostics;
   ASSERT_EQ(mapped::BuildModel(config,physical,*storage,diagnostics).status,qb::BatchStatus::Success);
   ASSERT_EQ(shells.qeph_count(),0u);
@@ -67,10 +70,22 @@ TEST(QbatMappedOriginal,All4250QuadsKeepSourceOrderAcrossScrambledLargerPhysical
   ASSERT_EQ(config.element_count,4250u);
   EXPECT_EQ(storage->model.mass[0],2);
   EXPECT_EQ(storage->model.inertia[0],0);
+  EXPECT_EQ(storage->assembly.offsets[0],0u);
+  EXPECT_EQ(storage->assembly.offsets[1],0u); // Extra point mass has no shell incidence.
+  EXPECT_EQ(storage->assembly.offsets[nodes.size()],4*config.element_count);
   for (std::size_t node=0;node<nodes.size();++node) {
     SCOPED_TRACE(node);
     EXPECT_EQ(Bits(storage->model.mass[node]),Bits(ledger.nodes()[node].coefficients.mass));
     EXPECT_EQ(Bits(storage->model.inertia[node]),Bits(ledger.nodes()[node].coefficients.isotropic_inertia));
+    const auto begin=storage->assembly.offsets[node],end=storage->assembly.offsets[node+1];
+    ASSERT_LE(begin,end);
+    ASSERT_LE(end,4*config.element_count);
+    for (auto entry=begin;entry<end;++entry) {
+      const auto key=storage->assembly.incidence[entry];
+      ASSERT_LT(key,4*config.element_count);
+      EXPECT_EQ(storage->model.element[key/4].nodes[key%4],node);
+      if (entry>begin) EXPECT_LT(storage->assembly.incidence[entry-1],key);
+    }
   }
   for (std::size_t parent=0;parent<config.element_count;++parent) {
     SCOPED_TRACE(parent);
