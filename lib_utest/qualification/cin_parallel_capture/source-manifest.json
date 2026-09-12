@@ -9,13 +9,18 @@
     },
     {
       "path": "lib_src/solvers/BUILD.bazel",
-      "bytes": 7780,
-      "sha256": "e995ecffbc42c37dac61f105ee3c2e204d3b9925b88e663faf2b3ad486282e42",
+      "bytes": 7809,
+      "sha256": "dc6b89f76f76dd03ba4b88ead60c95daf65adcec59f8d5f01a58cc8a036043ed",
       "prior_receipts": [
         {
           "bytes": 7702,
           "sha256": "bc66b4930b235be274f3ee907fbfc0cf5f672842b78acd0d24afe9106a7879dd",
           "reason": "Independent CIN group scheduling or additive qualification ownership"
+        },
+        {
+          "bytes": 7780,
+          "sha256": "e995ecffbc42c37dac61f105ee3c2e204d3b9925b88e663faf2b3ad486282e42",
+          "reason": "Integrate the qualified Seal validation header with CIN Groups.cu in the shared solver BUILD; no equation or frozen-baseline changes."
         }
       ]
     },
@@ -307,25 +312,35 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/source-manifest.json",
-      "bytes": 17768,
-      "sha256": "df4d1292008727fba8ff410ed404aea4528abb20f80efa3ff81a060504d522e2",
+      "bytes": 18058,
+      "sha256": "8340f68dd1593cbf00869cf4a5e9e61ac108fa500dd5606666ec22bbcce781d6",
       "prior_receipts": [
         {
           "bytes": 12332,
           "sha256": "e39805d47855e4c1ba0b02a40233ac2fafb470d7ace0719f9ef5383b50021a7f",
           "reason": "Independent CIN group scheduling or additive qualification ownership"
+        },
+        {
+          "bytes": 17768,
+          "sha256": "df4d1292008727fba8ff410ed404aea4528abb20f80efa3ff81a060504d522e2",
+          "reason": "Propagate the Seal-combined nested identity receipt and its verifier hash; source equations and frozen baselines unchanged."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/verify_sources.py",
       "bytes": 6798,
-      "sha256": "bdf3fdae891c22b4e024b93bd0958276430c0560804130bca1e4d70f7f8f6127",
+      "sha256": "887cd3541255b79e7922cd93a93498b85b8ceecb709e56fe8d1749b59d55ba80",
       "prior_receipts": [
         {
           "bytes": 6597,
           "sha256": "05f83ef5771519ddfd4da673b050bc1df09cbd1df0165449928e7f6cda71b018",
           "reason": "Independent CIN group scheduling or additive qualification ownership"
+        },
+        {
+          "bytes": 6798,
+          "sha256": "bdf3fdae891c22b4e024b93bd0958276430c0560804130bca1e4d70f7f8f6127",
+          "reason": "Propagate the Seal-combined nested identity receipt and its verifier hash; source equations and frozen baselines unchanged."
         }
       ]
     },

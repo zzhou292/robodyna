@@ -14,13 +14,18 @@
     },
     {
       "path": "lib_src/solvers/BUILD.bazel",
-      "bytes": 7780,
-      "sha256": "e995ecffbc42c37dac61f105ee3c2e204d3b9925b88e663faf2b3ad486282e42",
+      "bytes": 7809,
+      "sha256": "dc6b89f76f76dd03ba4b88ead60c95daf65adcec59f8d5f01a58cc8a036043ed",
       "prior_receipts": [
         {
           "bytes": 7702,
           "sha256": "bc66b4930b235be274f3ee907fbfc0cf5f672842b78acd0d24afe9106a7879dd",
           "reason": "Independent CIN group scheduling or additive qualification ownership"
+        },
+        {
+          "bytes": 7780,
+          "sha256": "e995ecffbc42c37dac61f105ee3c2e204d3b9925b88e663faf2b3ad486282e42",
+          "reason": "Integrate the qualified Seal validation header with CIN Groups.cu in the shared solver BUILD; no equation or frozen-baseline changes."
         }
       ]
     },

@@ -11,7 +11,7 @@ root = here.parents[2]
 import runpy
 group_proof = runpy.run_path(str(here.parent/"cin_parallel_groups/group_proof.py"))
 raw = (here / 'source-manifest.json').read_bytes()
-assert hashlib.sha256(raw).hexdigest() == 'df4d1292008727fba8ff410ed404aea4528abb20f80efa3ff81a060504d522e2'
+assert hashlib.sha256(raw).hexdigest() == '8340f68dd1593cbf00869cf4a5e9e61ac108fa500dd5606666ec22bbcce781d6'
 manifest = json.loads(raw)
 for row in manifest['files']:
     path = Path(row['path'])
