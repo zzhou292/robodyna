@@ -6,3 +6,18 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = ["//lib_src/math:fixed3_operations"],
 )
+
+cc_library(
+    name = "force",
+    hdrs = [
+        "Force.h", "ForceAssembly.h", "ForceChecks.h", "ForceDamping.h",
+        "ForceKinematics.h", "ForceSection.h", "ForceStiffness.h", "ForceTypes.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":reference",
+        "//lib_src/materials/law44/beam:point",
+        "//lib_src/math:fixed3_operations",
+        "//lib_src/solvers:nodal_force_assembly",
+    ],
+)

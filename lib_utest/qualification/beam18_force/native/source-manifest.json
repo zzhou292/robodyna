@@ -1,0 +1,97 @@
+{
+  "revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "scope": "Complete selected beam callers and leaves. PFORC3 retained as call-order evidence; minimal private scalar dimensions/tags, excluded callees terminate. Material reader/VINTER and reference setup reuse already qualified owners.",
+  "sources": [
+    {
+      "source": "engine/source/elements/beam/main_beam18.F",
+      "path": "original/engine/source/elements/beam/main_beam18.F",
+      "bytes": 14606,
+      "sha256": "4d42989e0f7773c76c240020bf563ebdd748a2c6c110e7742c8834d2a810c305",
+      "git_blob_sha1": "e832568f14c503f9880bb17ebd818222d042ff8c"
+    },
+    {
+      "source": "engine/source/elements/beam/mulaw_ib.F",
+      "path": "original/engine/source/elements/beam/mulaw_ib.F",
+      "bytes": 10509,
+      "sha256": "dcdacdf8a58e93fdb3aca73e87e887547b4100fdc48e72dc9a09e6dab8e1c52e",
+      "git_blob_sha1": "3e1148609a24b99c604c81f40f9f5c9692d629b5"
+    },
+    {
+      "source": "engine/source/elements/beam/pforc3.F",
+      "path": "original/engine/source/elements/beam/pforc3.F",
+      "bytes": 19033,
+      "sha256": "f30fefa03d52b4cafc84817f1fcbd4e979f0b1e63278d0ad3da72b223d02c547",
+      "git_blob_sha1": "2d600290b3503b54029f2a7b2e8d41c1446dc32b"
+    },
+    {
+      "source": "engine/source/elements/beam/pcurv3.F",
+      "path": "original/engine/source/elements/beam/pcurv3.F",
+      "bytes": 6957,
+      "sha256": "5ba58081df8b904de7b42997fb4354cd46c7dcb66d6e084590a1a1b83101d832",
+      "git_blob_sha1": "95fa08c505367d58ccac430d80113eee1bbf1f82"
+    },
+    {
+      "source": "engine/source/elements/beam/pdefo3.F",
+      "path": "original/engine/source/elements/beam/pdefo3.F",
+      "bytes": 4012,
+      "sha256": "8ef847d9d753ccdf3b41ae985aa45b7a1b794457e0d5fa7f961fcef20b5697eb",
+      "git_blob_sha1": "329183c39de32bec7c834cb741d1b57885c86ec3"
+    },
+    {
+      "source": "engine/source/elements/beam/pdlen3.F",
+      "path": "original/engine/source/elements/beam/pdlen3.F",
+      "bytes": 9077,
+      "sha256": "5b202bcc784a6bfa2416985a22009f1865fa582fd115fe0fccd416ebf2251f19",
+      "git_blob_sha1": "82793b109af7f14340e738405a8aa4b419ddd74c"
+    },
+    {
+      "source": "engine/source/elements/beam/pevec3.F",
+      "path": "original/engine/source/elements/beam/pevec3.F",
+      "bytes": 5756,
+      "sha256": "3ede65e19fefc5e9cf924c55245263ca9cbb5e4050be46e0c3de3210b31a67d7",
+      "git_blob_sha1": "6d6dbc9bd0f8e3a53f265cf213be22ea2d624bfd"
+    },
+    {
+      "source": "engine/source/elements/beam/pfcum3.F",
+      "path": "original/engine/source/elements/beam/pfcum3.F",
+      "bytes": 5365,
+      "sha256": "bd05a335ae87fc0e1f5ea294522de5a5247324fe5f83a12e935626b97339c822",
+      "git_blob_sha1": "da7399e88c8f79e6265095ce1f21d12007ca6964"
+    },
+    {
+      "source": "engine/source/elements/beam/pfint3.F",
+      "path": "original/engine/source/elements/beam/pfint3.F",
+      "bytes": 4947,
+      "sha256": "e9a63d663930a13dd7329571afdae3fa1391b58d999673efe33429691e105ddd",
+      "git_blob_sha1": "7458d9bbe002bd93befc550eb483359f0715bc2d"
+    },
+    {
+      "source": "engine/source/elements/beam/pmcum3.F",
+      "path": "original/engine/source/elements/beam/pmcum3.F",
+      "bytes": 4508,
+      "sha256": "1f627a1a20bcac6286ffbaea3644142072b3dffd6dfea222d567f5c351a55567",
+      "git_blob_sha1": "79ba6b49ab32a7955e8eeac7bdcc5d4afddfda66"
+    },
+    {
+      "source": "engine/source/elements/beam/pdamp3.F",
+      "path": "original/engine/source/elements/beam/pdamp3.F",
+      "bytes": 4471,
+      "sha256": "832f326d3b2cff3e53475836dd4932b13a574287115e489b6bee441208c59d7c",
+      "git_blob_sha1": "63c64b9bb10c73642a5404c0b94a9aaf77105c37"
+    },
+    {
+      "source": "starter/source/elements/beam/pibuf3.F",
+      "path": "original/starter/source/elements/beam/pibuf3.F",
+      "bytes": 2922,
+      "sha256": "0a1bfff6677faa2f35b1682fee69622ef69d84e00f0a380f33e0ed0b1e96a6e5",
+      "git_blob_sha1": "083299b947be5822440e6d3270106b701174cfa5"
+    },
+    {
+      "source": "engine/source/materials/mat/mat044/sigeps44pi.F",
+      "path": "original/engine/source/materials/mat/mat044/sigeps44pi.F",
+      "bytes": 9150,
+      "sha256": "fb15b9c9bd2770ba3aba4aaccfb6c969256f23a7b33fa60d3e92f6c67db59d02",
+      "git_blob_sha1": "768fbab7becb2caa8de7bdeeee7e81cb85ae8976"
+    }
+  ]
+}

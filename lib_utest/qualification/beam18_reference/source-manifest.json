@@ -3,8 +3,8 @@
   "original_fixture_sha256": "5d85548343e4190db4f6ebc5f0975f6e05921140c7403a87ba389c6445dd1644",
   "files": {
     "lib_src/elements/beam18/BUILD.bazel": {
-      "bytes": 262,
-      "sha256": "8f1217aaf7418a127d99e4a0fc63e99dcdd3f548aab0b5d42280de90d6fe8012"
+      "bytes": 699,
+      "sha256": "c2b85253807a853c491766e6c42870efb46c71de9f53b9d04c6c5962b07ff302"
     },
     "lib_src/elements/beam18/Geometry.h": {
       "bytes": 2545,
@@ -35,8 +35,8 @@
       "sha256": "2b855aefd3e69b468209f70c0a1fbd7e8064a0238ceb37cd18e1d549c329fb2f"
     },
     "lib_utest/qualification/beam18_reference/BUILD.bazel": {
-      "bytes": 272,
-      "sha256": "ea37794943c6ee77c7cb113becd2491c7d277bc85b3cde8d6f2f68890f5b2b8a"
+      "bytes": 522,
+      "sha256": "d71993098ddb8110a7556ce642ab82e524a9f07ecbcdbb52e2b3a72369c2d089"
     },
     "lib_utest/qualification/beam18_reference/CMakeLists.txt": {
       "bytes": 3046,

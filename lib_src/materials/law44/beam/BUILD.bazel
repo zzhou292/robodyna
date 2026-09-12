@@ -1,0 +1,7 @@
+load("@rules_cc//cc:defs.bzl", "cc_library")
+cc_library(
+    name = "point",
+    hdrs = ["Types.h", "Update.h"],
+    visibility = ["//visibility:public"],
+    deps = ["//lib_src/materials/law44/solid:point"],
+)

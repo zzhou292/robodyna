@@ -4,7 +4,10 @@ cc_library(
     testonly = True,
     hdrs = ["TestSupport.h", "source_fixture/OriginalCurve.h"],
     deps = ["//lib_src/materials/law44/solid:point", "@googletest//:gtest"],
-    visibility = ["//lib_utest/qualification/solid18_law44_force:__pkg__"],
+    visibility = [
+        "//lib_utest/qualification/solid18_law44_force:__pkg__",
+        "//lib_utest/qualification/beam18_force:__pkg__",
+    ],
 )
 cc_test(
     name = "host_check",

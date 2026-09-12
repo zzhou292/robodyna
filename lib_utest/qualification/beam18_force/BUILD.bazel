@@ -1,0 +1,13 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+
+cc_test(
+    name = "host_check",
+    srcs = ["HostTest.cpp", "TestSupport.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        "//lib_src/elements/beam18:force",
+        "//lib_utest/qualification/beam18_reference:test_values",
+        "//lib_utest/qualification/solid_law44_point:test_values",
+        "@googletest//:gtest_main",
+    ],
+)
