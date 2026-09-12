@@ -1,0 +1,9 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+
+cc_test(
+    name = "host_check",
+    size = "small",
+    srcs = ["ExactOracle.h", "ExactOracle.cpp", "ValueTest.cpp", "CongruenceTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:surface_jacobian_majorant", "@googletest//:gtest_main"],
+)

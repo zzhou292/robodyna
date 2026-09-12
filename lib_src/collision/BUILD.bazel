@@ -14,6 +14,17 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
+    name = "surface_jacobian_majorant",
+    hdrs = [
+        "SurfaceJacobianMajorantTypes.h",
+        "SurfaceJacobianMajorantValues.h",
+        "surface_majorant/Bounds.h",
+        "surface_majorant/Support.h",
+    ],
+    deps = [":surface_contact_primitives"],
+)
+
+cc_library(
     name = "self_contact_surface_binding",
     srcs = [
         "SelfContactSurfaceBinding.cpp",
