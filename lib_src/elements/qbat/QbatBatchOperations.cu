@@ -102,7 +102,7 @@ BatchReport Batch::EvaluateCandidate(FENodalState& owner,const NodalTrialToken& 
   }
   s.last_candidate_attempt=view.attempt;
   const auto identity=batch_detail::CandidateIdentity(s.config,view);
-  batch_detail::LaunchCandidate(s.storage,s.accepted,s.trial,view,identity,s.config.element_count);
+  batch_detail::LaunchCandidate(s.storage,s.accepted,s.trial,view,identity,s.config.element_count,s.physical?count:0);
   report=s.ReadControl();
   if(report.status!=BatchStatus::Success) return report;
   s.candidate_diagnostics=s.control.diagnostics;

@@ -1,0 +1,323 @@
+{
+  "schema": "qbat-mapped-gather-source-v1",
+  "baseline_commit": "01a9a393dab74b35535ec9a36b8adb875402dc99",
+  "baselines": [
+    {
+      "path": "lib_src/elements/qbat/mapped/Kernels.cu",
+      "fixture": "SerialAssembly.cuh",
+      "bytes": 3937,
+      "sha256": "17f9eb6be50f45278563f001f7826892abc1d88e9ee7d130efc767e4e76b8a7d",
+      "wrappers": [
+        [
+          "#include \"Stiffness.h\"",
+          "#include \"lib_src/elements/qbat/mapped/Stiffness.h\""
+        ],
+        [
+          "#include \"../QbatBatchStorage.h\"",
+          "#include \"lib_src/elements/qbat/QbatBatchStorage.h\""
+        ],
+        [
+          "#include \"../QbatBatchResultChecks.h\"",
+          "#include \"lib_src/elements/qbat/QbatBatchResultChecks.h\""
+        ],
+        [
+          "#include \"../../ShellBatchFields.h\"",
+          "#include \"lib_src/elements/ShellBatchFields.h\""
+        ],
+        [
+          "#include \"../../../solvers/NodalForceAssembly.h\"",
+          "#include \"lib_src/solvers/NodalForceAssembly.h\""
+        ],
+        [
+          "namespace tl::fea::qbat::batch_detail {",
+          "namespace qbat_gather_test::serial {\nusing namespace tl::fea;\nusing namespace tl::fea::qbat;\nusing namespace tl::fea::qbat::batch_detail;"
+        ],
+        [
+          "} // namespace tl::fea::qbat::batch_detail",
+          "} // namespace qbat_gather_test::serial"
+        ]
+      ]
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchKernels.cu",
+      "fixture": "SerialCandidate.cuh",
+      "bytes": 6000,
+      "sha256": "7f5553de4d8abaeb1d8b87ac9bf2275c45399004a6ca956a98b35b0cfbd8e9c1",
+      "wrappers": [
+        [
+          "#include \"QbatBatchStorage.h\"",
+          "#include \"lib_src/elements/qbat/QbatBatchStorage.h\""
+        ],
+        [
+          "#include \"QbatBatchAdvance.h\"",
+          "#include \"lib_src/elements/qbat/QbatBatchAdvance.h\""
+        ],
+        [
+          "#include \"QbatBatchMeasure.h\"",
+          "#include \"SerialMeasure.h\""
+        ],
+        [
+          "#include \"../../solvers/NodalForceAssembly.h\"",
+          "#include \"lib_src/solvers/NodalForceAssembly.h\""
+        ],
+        [
+          "#include \"../../solvers/NodalNativePhysicalCoefficients.h\"",
+          "#include \"lib_src/solvers/NodalNativePhysicalCoefficients.h\""
+        ],
+        [
+          "namespace tl::fea::qbat::batch_detail {",
+          "namespace qbat_gather_test::serial_candidate {\nusing namespace tl::fea;\nusing namespace tl::fea::qbat;\nusing namespace tl::fea::qbat::batch_detail;"
+        ],
+        [
+          "} // namespace tl::fea::qbat::batch_detail",
+          "} // namespace qbat_gather_test::serial_candidate"
+        ],
+        [
+          "if(!Measure(s.model",
+          "if(!serial::Measure(s.model"
+        ]
+      ]
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchMeasure.h",
+      "fixture": "SerialMeasure.h",
+      "bytes": 3325,
+      "sha256": "a808b5dbf1c76726f2863433bfe13d4f430758c90277cc22ab27493b7072663a",
+      "wrappers": [
+        [
+          "#include \"QbatBatchResultChecks.h\"",
+          "#include \"lib_src/elements/qbat/QbatBatchResultChecks.h\""
+        ],
+        [
+          "#include \"../ShellBatchFields.h\"",
+          "#include \"lib_src/elements/ShellBatchFields.h\""
+        ],
+        [
+          "namespace tl::fea::qbat::batch_detail {",
+          "namespace qbat_gather_test::serial {\nusing namespace tl::fea;\nusing namespace tl::fea::qbat;\nusing namespace tl::fea::qbat::batch_detail;"
+        ],
+        [
+          "} // namespace tl::fea::qbat::batch_detail",
+          "} // namespace qbat_gather_test::serial"
+        ]
+      ]
+    }
+  ],
+  "files": [
+    {
+      "path": "lib_src/elements/ShellMappedNode.h",
+      "bytes": 1643,
+      "sha256": "8014b9f504f830f98b90d8377503619effa4d263e9e712ff7d210d504fa8fb82"
+    },
+    {
+      "path": "lib_src/elements/ShellNodalStiffness.h",
+      "bytes": 1955,
+      "sha256": "15087328d3b101ced21f68e7aed07b4cfe659bf5c88f9f0dc3ae39badd17af62"
+    },
+    {
+      "path": "lib_src/elements/mapped_shell/BUILD.bazel",
+      "bytes": 858,
+      "sha256": "b650ce891e05bdf0c8776f26176a0c5815c9374f1fe0ef1b2663782b8695563a"
+    },
+    {
+      "path": "lib_src/elements/mapped_shell/Incidence.h",
+      "bytes": 1912,
+      "sha256": "4bfc856ff5f5eff80bc5e4fddd0908aae5cd5a7912c34319ff8273a24fc531c9"
+    },
+    {
+      "path": "lib_src/elements/mapped_shell/Kernels.cuh",
+      "bytes": 7133,
+      "sha256": "5239a0adb6c9f756873c56902a5780a8c3321bb5fcb10ca75121c2af083bf019"
+    },
+    {
+      "path": "lib_src/elements/mapped_shell/NodeGather.h",
+      "bytes": 4350,
+      "sha256": "5cdd3e53259077da0f969a0b31c64ff57e08f5b6f3e39673ff36b5b648ee533c"
+    },
+    {
+      "path": "lib_src/elements/mapped_shell/ObserverTypes.h",
+      "bytes": 1450,
+      "sha256": "b8b82445c51d640c3006ba54a307631c39af3cf98f6e94d2fa474eac74d5d462"
+    },
+    {
+      "path": "lib_src/elements/qbat/BUILD.bazel",
+      "bytes": 3785,
+      "sha256": "8f134023478d7f0e8871e4be50a6f412c9d70e175be410ee42c78746ad3a35d1"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatch.cmake",
+      "bytes": 1134,
+      "sha256": "deee7da8a30603b3ddf0ca9a8e5d11a934664d12952702d9fa3efd4b1f9685a3"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchAdvance.h",
+      "bytes": 1880,
+      "sha256": "e981390ed6eaea1d28ca19d8e51b98b981c55b695b1b9059315ba53a98482c2b"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchArena.cpp",
+      "bytes": 2130,
+      "sha256": "109951b63322bcd7c599d965082a729770117419faabfea5b60e547574e62707"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchArena.h",
+      "bytes": 2094,
+      "sha256": "8654104b598c47f160e7ed5ce1354b173b10ad77ed8210725d9c3037aeb8b8b5"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchKernels.cu",
+      "bytes": 6129,
+      "sha256": "755bfffbf597f3192d96a2867a05aef759a7e2f6760f0ceddc36cac186d62f77"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchMeasure.h",
+      "bytes": 4404,
+      "sha256": "808d4ac30a2607d2dcdf949f851e99964cfceb772ad2213b9f4f928c506cf034"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchOperations.cu",
+      "bytes": 6165,
+      "sha256": "cc0694fcf62164568669091afb13a3575fe2f9663078d876bc3ec800b942f30f"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchResultChecks.h",
+      "bytes": 5294,
+      "sha256": "d6d332ba3ef01a1339107bf73311508553162d01688d4b0139e4a0ec4d603af0"
+    },
+    {
+      "path": "lib_src/elements/qbat/QbatBatchStorage.h",
+      "bytes": 2957,
+      "sha256": "71bc0b667a644918ce5526e7125cfcf8b5de3183b08839bcdccc541661350bc0"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/Assemble.cu",
+      "bytes": 3292,
+      "sha256": "7d28d2ed3c21bc1fe0cd440ffb41690b3430dfd3bbaf94e02df4c3a9b407e0cf"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/AssemblyLayout.h",
+      "bytes": 1997,
+      "sha256": "846675b1e210b7592349ed1a7bf349aca09e6e327feded0914e401de86a7865f"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/AssemblyTypes.h",
+      "bytes": 1413,
+      "sha256": "26f2d9a5999eaa0744da5e4061f9820958407dd297249133292063511598be72"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/AssemblyValues.h",
+      "bytes": 1550,
+      "sha256": "e539af3fc98b220767eaa08a8019a9662c7daba2847c89509a3a47deb6b1fa66"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/Initialize.cu",
+      "bytes": 2695,
+      "sha256": "77bbc0e3c5e59038bea0458308053c7c6f9e65565a3536df3b0deacaa29838cf"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/Kernels.cu",
+      "bytes": 1161,
+      "sha256": "dacab7e1dd3ae4fdd8a30737ea7614a1ab557b62584405ad5c2aab7529fe2d13"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/Measurement.cu",
+      "bytes": 2694,
+      "sha256": "f2e289b4f8af3a93212d4c84e7ca884b5c38bb6396be628849c823c95d1ed9a1"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/Measurement.h",
+      "bytes": 1515,
+      "sha256": "90c74c7e0261c4118df87c8686f2cd4794074267c5d4a8ec163a08110188590a"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/Publication.cpp",
+      "bytes": 1744,
+      "sha256": "c05a7b91889aa81c848fac6ba4d2428adc9cbb0f3c5373dd8296e1ebf788a314"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/Startup.cpp",
+      "bytes": 6010,
+      "sha256": "e929456063f3c9712567287bf6821cc098d2fd395c6c5448abffd92e9964caaa"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/Startup.h",
+      "bytes": 770,
+      "sha256": "0d3e80fc16372d182a42044f52e2994e4fb13af8cb45fd3464692e44734a043e"
+    },
+    {
+      "path": "lib_src/elements/qbat/mapped/Stiffness.h",
+      "bytes": 2698,
+      "sha256": "4f685662547ad4e7fde8f6440c1ddbff6130d3067ffed2d3d6fc0f2987eead91"
+    },
+    {
+      "path": "lib_src/solvers/NodalForceAssembly.h",
+      "bytes": 3219,
+      "sha256": "334ab0d87813996918a8d9024e4f50ce2f3fa1a5e44fa63e649b43f7e1b01c81"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_force/BUILD.bazel",
+      "bytes": 1079,
+      "sha256": "e007f6b6fc733ec8525ce387fcdd0c2b87f64cca415df092ebba5fc9f4531f3c"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_force/Fixture.h",
+      "bytes": 4696,
+      "sha256": "9e76f3acf7deddc1caec0bf10b76a960dba2c83b00e821a224b60426341c5733"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_mapped_gather/BUILD.bazel",
+      "bytes": 1024,
+      "sha256": "dfc0c99386cd515085c607561640ee847d0ce0333967295ba3afabfe91920e8b"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_mapped_gather/CMakeLists.txt",
+      "bytes": 1936,
+      "sha256": "8f90ef2058e97a31e8c968ed6c3ca6a1bbeda25d8b8f88819cdd659bd0029b5c"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_mapped_gather/CudaTest.cu",
+      "bytes": 5502,
+      "sha256": "bfad9f2bccfedc091a4357ffd5eed002cb4e9bc8a62d8247413e9dfef9f50140"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_mapped_gather/DeviceFixture.cuh",
+      "bytes": 2660,
+      "sha256": "dcbd7fba27651417257596d303f31cf30fbc9600979f338491002dfa5e895e98"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_mapped_gather/Fixture.h",
+      "bytes": 6451,
+      "sha256": "e8928d084d1b9e677dfa679ab5e9d99562359961d8b2f7eab9e416969a4f5f70"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_mapped_gather/HostTest.cpp",
+      "bytes": 5014,
+      "sha256": "0ffe3ca4ef14f74fd7461e3b2061fda3f4d1526865cd5ebca2ed401e73a64ea3"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_mapped_gather/SerialAssembly.cuh",
+      "bytes": 4109,
+      "sha256": "dd5b5110e4c284cbe14b812a7c120e30f4e3676acb1255672bf2285e9c149006"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_mapped_gather/SerialCandidate.cuh",
+      "bytes": 6168,
+      "sha256": "bb3f0539bdce52c0d3718cd1a426d255aee9b54c40a13891997867d76805ad06"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_mapped_gather/SerialMeasure.h",
+      "bytes": 3456,
+      "sha256": "d637d814db465edee2fc75aa363bc1c610ed296286cafc4ab2561bab5e2e9c13"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_resident/BUILD.bazel",
+      "bytes": 1222,
+      "sha256": "2ca11cb74eda732b63dcd216a7321331dcc3267586059e61cd2eed94bf0a30ab"
+    },
+    {
+      "path": "lib_utest/qualification/qbat_resident/ResultValues.h",
+      "bytes": 2834,
+      "sha256": "18a045c3848f4bdab974a0c6e072cabbf6dc7c8ef86e637bc0f23478f3535818"
+    }
+  ]
+}

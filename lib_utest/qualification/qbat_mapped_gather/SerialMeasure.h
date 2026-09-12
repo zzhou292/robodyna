@@ -1,23 +1,21 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
-#include "QbatBatchResultChecks.h"
-#include "../ShellBatchFields.h"
+#include "lib_src/elements/qbat/QbatBatchResultChecks.h"
+#include "lib_src/elements/ShellBatchFields.h"
 
-namespace tl::fea::qbat::batch_detail {
-struct ResultValidation {
-  TL_QBAT_HD bool operator()(std::size_t,const BatchResult& value,const Material& material,
-      double time,std::uint64_t epoch) const noexcept { return ValidResult(value,material,time,epoch); }
-};
-template<class Validation>
-TL_QBAT_HD inline bool MeasureParents(const Model& model,const Slab& accepted,const Slab& trial,
-    const NodalPreparedView& view,BatchDiagnostics& diagnostics,const Validation& valid) noexcept {
+namespace qbat_gather_test::serial {
+using namespace tl::fea;
+using namespace tl::fea::qbat;
+using namespace tl::fea::qbat::batch_detail;
+TL_QBAT_HD inline bool Measure(const Model& model,const Slab& accepted,const Slab& trial,
+    const NodalPreparedView& view,BatchDiagnostics& diagnostics) noexcept {
   auto& d=diagnostics;
   d.element_count=model.config.element_count;
   for(std::size_t parent=0;parent<model.config.element_count;++parent) {
     const auto& old=accepted.element[parent];
     const auto& now=trial.element[parent];
     const auto& element=model.element[parent];
-    if(!valid(parent,now,element.material,d.time,d.epoch)) return false;
+    if(!ValidResult(now,element.material,d.time,d.epoch)) return false;
     if(now.history.element_active) ++d.active_count;
     if(old.history.element_active&&!now.history.element_active) ++d.newly_removed_count;
     const double area=now.kinematics.geometry.area_m2/element.reference.quadrilateral().area;
@@ -45,36 +43,17 @@ TL_QBAT_HD inline bool MeasureParents(const Model& model,const Slab& accepted,co
           view,model.config.owner.fixed_dt,d.internal_kick_work,d.internal_drift_work);
     }
   }
-  return true;
-}
-TL_QBAT_HD inline bool NodeDisplacement(const Model& model,const NodalPreparedView& view,
-    std::size_t node,double& output) noexcept {
-  const auto delta=shell_batch_fields::Difference(
-    shell_batch_fields::ReadVector(view.kinematics.position_xyz,node),model.initial_position[node]);
-  const double magnitude=::sqrt(shell_batch_fields::Dot(delta,delta));
-  if(!tl::math::Finite(magnitude)) return false;
-  output=magnitude;
-  return true;
-}
-TL_QBAT_HD inline bool MeasureDisplacement(const Model& model,const NodalPreparedView& view,
-    BatchDiagnostics& d) noexcept {
   for(std::size_t node=0;node<model.config.owner.node_count;++node) {
-    double magnitude=0;
-    if(!NodeDisplacement(model,view,node,magnitude)) return false;
+    const auto delta=shell_batch_fields::Difference(
+        shell_batch_fields::ReadVector(view.kinematics.position_xyz,node),model.initial_position[node]);
+    const double magnitude=::sqrt(shell_batch_fields::Dot(delta,delta));
+    if(!tl::math::Finite(magnitude)) return false;
     if(magnitude>d.maximum_displacement) d.maximum_displacement=magnitude;
   }
-  return true;
-}
-TL_QBAT_HD inline bool ValidMeasurement(const BatchDiagnostics& d) noexcept {
   const double values[]{d.plastic_work_j,d.plastic_work_increment_j,d.numerical_viscous_work_j,
       d.numerical_viscous_work_increment_j,d.internal_kick_work,d.internal_drift_work,
       d.minimum_area_ratio,d.minimum_thickness_ratio,d.maximum_displacement,d.maximum_absolute_strain};
   return detail::FiniteValues(values)&&detail::FiniteValues(d.internal_work_j)&&
       detail::FiniteValues(d.internal_work_increment_j)&&detail::Positive(d.minimum_native_dt);
 }
-TL_QBAT_HD inline bool Measure(const Model& model,const Slab& accepted,const Slab& trial,
-    const NodalPreparedView& view,BatchDiagnostics& d) noexcept {
-  return MeasureParents(model,accepted,trial,view,d,ResultValidation{}) &&
-      MeasureDisplacement(model,view,d) && ValidMeasurement(d);
-}
-} // namespace tl::fea::qbat::batch_detail
+} // namespace qbat_gather_test::serial

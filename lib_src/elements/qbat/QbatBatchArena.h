@@ -2,6 +2,7 @@
 #pragma once
 #include "QbatBatchTypes.h"
 #include "../ShellBatchArenaLayout.h"
+#include "mapped/AssemblyLayout.h"
 
 namespace tl::fea::qbat::batch_detail {
 struct Element {
@@ -34,6 +35,7 @@ struct Storage {
   Slab slab[2];
   Control control;
   Status* candidate_status=nullptr;
+  mapped::AssemblyMemory assembly;
 };
 static_assert(std::is_trivially_copyable_v<Storage>);
 static_assert(sizeof(Storage)<=2048,"No capacity-sized device header fields");
@@ -44,9 +46,12 @@ struct Layout {
   using Common=shell_batch_detail::BatchArenaLayout<Storage,Element,BatchResult,Vec3,Status>;
   Common common;
   util::ArenaRegion curve_x,curve_y;
+  mapped::AssemblyLayout assembly;
   std::size_t bytes=0;
   bool Initialize(std::size_t parents,std::size_t nodes,std::size_t points,
                   std::size_t cap) noexcept;
+  bool InitializeMapped(std::size_t parents,std::size_t nodes,std::size_t points,
+                        std::size_t cap) noexcept;
   Storage* Construct(util::HostArena&) const noexcept;
   Storage Rebase(const Storage&,void* device) const noexcept;
 };

@@ -2,6 +2,7 @@
 #include "Startup.h"
 #include "../QbatBatchStorage.h"
 #include <cmath>
+#include "../../mapped_shell/Incidence.h"
 
 namespace tl::fea::qbat::mapped {
 BatchReport Validate(const BatchConfig& config,const ShellPhysicalBinding& physical,
@@ -38,7 +39,7 @@ BatchReport MakeForecast(const BatchConfig& config,const ShellPhysicalBinding& p
   const auto valid=Validate(config,physical,source);
   if (valid.status!=BatchStatus::Success) return valid;
   Forecast next;
-  if (!next.device.Initialize(config.element_count,config.owner.node_count,
+  if (!next.device.InitializeMapped(config.element_count,config.owner.node_count,
       physical.catalog()->curve_point_count(),config.max_device_bytes)) {
     return {BatchStatus::ResourceLimit,"Mapped QBAT device arena exceeds its explicit cap"};
   }
@@ -89,6 +90,10 @@ BatchReport BuildModel(const BatchConfig& config,const ShellPhysicalBinding& phy
   for (std::size_t parent=0;parent<config.element_count;++parent) {
     auto& element=model.element[parent];
     for (auto& node:element.nodes) node=physical.mapping()->owner_index(node);
+  }
+  if(!mapped_shell::BuildIncidence<4>(model.element,config.element_count,config.owner.node_count,
+      storage.assembly.offsets,config.owner.node_count+1,storage.assembly.incidence,4*config.element_count)) {
+    return {BatchStatus::InvalidInput,"Mapped QBAT source incidence is invalid"};
   }
   next.valid=true;
   output=next;

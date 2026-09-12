@@ -18,14 +18,30 @@ struct AssemblyNode {
 };
 inline constexpr unsigned long long NoAssemblyFailure = ~0ull;
 
+// Typed read-only access keeps each family's actual force member names and
+// section-role authority outside the shared scalar accumulation.
+template<class ForceTrial> struct MixedForceAccess {
+  const ForceTrial* accepted;
+  const ShellSectionLaw* law;
+  TL_MAPPED_GATHER_HD bool Skip(std::size_t parent) const noexcept {
+    return law[parent] == ShellSectionLaw::RigidSkin;
+  }
+  TL_MAPPED_GATHER_HD const auto* Force(std::size_t parent, unsigned slot) const noexcept {
+    return accepted[parent].internal_force + slot;
+  }
+  TL_MAPPED_GATHER_HD const auto* Couple(std::size_t parent, unsigned slot) const noexcept {
+    return accepted[parent].internal_couple + slot;
+  }
+};
+
 // Same numerical leaves as serial scatter, with the actual incoming values as
 // the starting point. Each node retains source-parent/local-slot addition order.
-template<unsigned Slots, class Memory, class ForceTrial, class BatchStatus>
-TL_MAPPED_GATHER_HD inline std::uint32_t GatherNode(std::size_t node,
-    const Memory& memory, const ForceTrial* accepted, const ShellSectionLaw* law,
+template<unsigned Slots, class Memory, class BatchStatus, class Access>
+TL_MAPPED_GATHER_HD inline std::uint32_t GatherNodeValues(std::size_t node,
+    const Memory& memory, const Access& access,
     const DeviceNodalForceView& forces, const double* translation,
     const double* rotation, AssemblyNode& output) noexcept {
-  static_assert(Slots == 3 || Slots == 4, "Only the qualified T3/QEPH slots");
+  static_assert(Slots == 3 || Slots == 4, "Only the qualified three- or four-node shell slots");
   AssemblyNode next;
   const double* arrays[]{forces.force_x, forces.force_y, forces.force_z,
       forces.couple_x, forces.couple_y, forces.couple_z, translation, rotation};
@@ -44,13 +60,12 @@ TL_MAPPED_GATHER_HD inline std::uint32_t GatherNode(std::size_t node,
     const auto parent = incidence / Slots;
     const auto slot = incidence % Slots;
     if (memory.parent[parent].status != BatchStatus::Success) break;
-    if (law[parent] == ShellSectionLaw::RigidSkin) continue;
-    const auto& force = accepted[parent];
+    if (access.Skip(parent)) continue;
     const auto& stiffness = memory.parent[parent].stiffness;
     const shell_nodal_stiffness::Packet<1> packet{
         {stiffness.translation[slot]}, {stiffness.rotation[slot]}};
-    if (AccumulateNodalForces<1>(local_node, force.internal_force + slot,
-            force.internal_couple + slot, local, -1) != NodalForceAssemblyStatus::Success ||
+    if (AccumulateNodalForces<1>(local_node, access.Force(parent, slot),
+            access.Couple(parent, slot), local, -1) != NodalForceAssemblyStatus::Success ||
         !shell_nodal_stiffness::Add(local_node, packet, &next.value[6], &next.value[7], 1)) {
       return parent;
     }
@@ -58,6 +73,16 @@ TL_MAPPED_GATHER_HD inline std::uint32_t GatherNode(std::size_t node,
   }
   output = next;
   return UINT32_MAX;
+}
+
+// Existing QEPH/T3 callers retain the same interface and role semantics.
+template<unsigned Slots, class Memory, class ForceTrial, class BatchStatus>
+TL_MAPPED_GATHER_HD inline std::uint32_t GatherNode(std::size_t node,
+    const Memory& memory, const ForceTrial* accepted, const ShellSectionLaw* law,
+    const DeviceNodalForceView& forces, const double* translation,
+    const double* rotation, AssemblyNode& output) noexcept {
+  return GatherNodeValues<Slots, Memory, BatchStatus>(node, memory,
+      MixedForceAccess<ForceTrial>{accepted, law}, forces, translation, rotation, output);
 }
 
 TL_MAPPED_GATHER_HD inline void PublishNode(std::size_t node, const AssemblyNode& value,

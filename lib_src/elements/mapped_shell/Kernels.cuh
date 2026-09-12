@@ -5,16 +5,16 @@
 #include "../../solvers/NodalCinRuntime.h"
 
 namespace tl::fea::mapped_shell {
-// Two private family adapters supply storage types and their unchanged parent
-// validation. This is the common ordered-gather schedule, not a participant API.
+// Private typed family adapters supply read-only force/role access and unchanged
+// parent validation. This schedule owns no participant or material semantics.
 template<class Family>
 __global__ void BeginAssembly(typename Family::Storage* storage, NodalAssemblyView view,
-    NodalCinAssemblyView cin, const shell_batch_plasticity_detail::MixedDeviceStorage* mixed) {
+    NodalCinAssemblyView cin, const typename Family::Context* context) {
   using BatchStatus = typename Family::BatchStatus;
   auto& state = *storage;
   state.control = {};
   const auto& memory = state.assembly;
-  if (!state.model.mapped || !mixed || !memory.offsets || !memory.incidence ||
+  if (!state.model.mapped || !Family::ValidContext(context) || !memory.offsets || !memory.incidence ||
       !memory.parent || !memory.node || !memory.failure ||
       view.result->base_epoch != view.accepted.base_epoch || view.result->attempt != view.attempt ||
       view.bounds->base_epoch != view.accepted.base_epoch || view.bounds->attempt != view.attempt ||
@@ -37,14 +37,14 @@ __global__ void BeginAssembly(typename Family::Storage* storage, NodalAssemblyVi
 
 template<class Family>
 __global__ void PrepareParents(typename Family::Storage* storage, const typename Family::Slab* accepted,
-    NodalAssemblyView view, const shell_batch_plasticity_detail::MixedDeviceStorage* mixed, bool initial) {
+    NodalAssemblyView view, const typename Family::Context* context, bool initial) {
   using BatchStatus = typename Family::BatchStatus;
   auto& state = *storage;
   if (state.control.status != BatchStatus::Success) return;
   for (std::size_t parent = blockIdx.x * blockDim.x + threadIdx.x;
       parent < state.model.config.element_count; parent += blockDim.x * gridDim.x) {
     auto& record = state.assembly.parent[parent];
-    record = Family::Prepare(state.model, accepted->element[parent], parent, mixed->law[parent], view, initial);
+    record = Family::Prepare(state.model, accepted->element[parent], parent, context, view, initial);
     if (record.status != BatchStatus::Success) atomicMin(state.assembly.failure, 2ull * parent);
   }
 }
@@ -52,14 +52,14 @@ __global__ void PrepareParents(typename Family::Storage* storage, const typename
 template<class Family>
 __global__ void GatherNodes(typename Family::Storage* storage, const typename Family::Slab* accepted,
     NodalAssemblyView view, NodalCinAssemblyView cin,
-    const shell_batch_plasticity_detail::MixedDeviceStorage* mixed) {
+    const typename Family::Context* context) {
   using BatchStatus = typename Family::BatchStatus;
   auto& state = *storage;
   if (state.control.status != BatchStatus::Success) return;
   for (std::size_t node = blockIdx.x * blockDim.x + threadIdx.x;
       node < state.model.config.owner.node_count; node += blockDim.x * gridDim.x) {
-    const auto parent = GatherNode<Family::Slots, typename Family::Memory,
-        typename Family::ForceTrial, BatchStatus>(node, state.assembly, accepted->element, mixed->law,
+    const auto parent = GatherNodeValues<Family::Slots, typename Family::Memory, BatchStatus>(
+        node, state.assembly, Family::Access(accepted, context),
         view.forces, cin.translational_stiffness, cin.rotational_stiffness, state.assembly.node[node]);
     if (parent != UINT32_MAX) atomicMin(state.assembly.failure, 2ull * parent + 1);
   }
@@ -98,15 +98,35 @@ __global__ void PublishNodes(typename Family::Storage* storage, NodalAssemblyVie
 }
 
 template<class Family>
+void LaunchAssemblyValues(typename Family::Storage* storage, const typename Family::Slab* accepted,
+    NodalAssemblyView view, NodalCinAssemblyView cin,
+    const typename Family::Context* context, bool initial) {
+  // One stream, fixed grid-stride ownership. Only diagnostic integer minima are
+  // atomic; every floating-point addition remains in source incidence order.
+  BeginAssembly<Family><<<1, 1, 0, view.stream>>>(storage, view, cin, context);
+  PrepareParents<Family><<<256, 128, 0, view.stream>>>(storage, accepted, view, context, initial);
+  GatherNodes<Family><<<256, 128, 0, view.stream>>>(storage, accepted, view, cin, context);
+  FinishAssembly<Family><<<1, 1, 0, view.stream>>>(storage, view);
+  PublishNodes<Family><<<256, 128, 0, view.stream>>>(storage, view, cin);
+}
+// Preserve the already-qualified QEPH/T3 public wrappers. QBAT supplies its
+// own context-free typed adapter to LaunchAssemblyValues instead.
+template<class Family> struct MixedAssemblyFamily : Family {
+  using Context = shell_batch_plasticity_detail::MixedDeviceStorage;
+  __device__ static bool ValidContext(const Context* value) { return value != nullptr; }
+  template<class Model, class Result>
+  __device__ static auto Prepare(const Model& model, const Result& result,
+      std::size_t parent, const Context* context, const NodalAssemblyView& view, bool initial) {
+    return Family::Prepare(model, result, parent, context->law[parent], view, initial);
+  }
+  __device__ static auto Access(const typename Family::Slab* accepted, const Context* context) {
+    return MixedForceAccess<typename Family::ForceTrial>{accepted->element, context->law};
+  }
+};
+template<class Family>
 void LaunchAssembly(typename Family::Storage* storage, const typename Family::Slab* accepted,
     NodalAssemblyView view, NodalCinAssemblyView cin,
     const shell_batch_plasticity_detail::MixedDeviceStorage* mixed, bool initial) {
-  // One stream, fixed grid-stride ownership. Only diagnostic integer minima are
-  // atomic; every floating-point addition remains in source incidence order.
-  BeginAssembly<Family><<<1, 1, 0, view.stream>>>(storage, view, cin, mixed);
-  PrepareParents<Family><<<256, 128, 0, view.stream>>>(storage, accepted, view, mixed, initial);
-  GatherNodes<Family><<<256, 128, 0, view.stream>>>(storage, accepted, view, cin, mixed);
-  FinishAssembly<Family><<<1, 1, 0, view.stream>>>(storage, view);
-  PublishNodes<Family><<<256, 128, 0, view.stream>>>(storage, view, cin);
+  LaunchAssemblyValues<MixedAssemblyFamily<Family>>(storage, accepted, view, cin, mixed, initial);
 }
 } // namespace tl::fea::mapped_shell

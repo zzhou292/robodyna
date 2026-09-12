@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-#include "QbatBatchStorage.h"
-#include "QbatBatchAdvance.h"
-#include "QbatBatchMeasure.h"
-#include "../../solvers/NodalForceAssembly.h"
-#include "../../solvers/NodalNativePhysicalCoefficients.h"
+#include "lib_src/elements/qbat/QbatBatchStorage.h"
+#include "lib_src/elements/qbat/QbatBatchAdvance.h"
+#include "SerialMeasure.h"
+#include "lib_src/solvers/NodalForceAssembly.h"
+#include "lib_src/solvers/NodalNativePhysicalCoefficients.h"
 
-namespace tl::fea::qbat::batch_detail {
+namespace qbat_gather_test::serial_candidate {
+using namespace tl::fea;
+using namespace tl::fea::qbat;
+using namespace tl::fea::qbat::batch_detail;
 namespace {
 namespace contact=tlfea::contact;
 __global__ void MarkFailure(NodalAssemblyView view) {
@@ -98,7 +101,7 @@ __global__ void FinalizeCandidate(Storage* storage,const Slab* accepted,const Sl
     s.control.element_status=s.candidate_status[parent];
     return;
   }
-  if(!Measure(s.model,*accepted,*trial,view,s.control.diagnostics)) {
+  if(!serial::Measure(s.model,*accepted,*trial,view,s.control.diagnostics)) {
     s.control.status=BatchStatus::NonfiniteResult;
     return;
   }
@@ -109,13 +112,12 @@ void LaunchAssembly(Storage* storage,const Slab* accepted,NodalAssemblyView view
   Assemble<<<1,1,0,view.stream>>>(storage,accepted,view,initial);
 }
 void LaunchCandidate(Storage* storage,const Slab* accepted,Slab* trial,NodalPreparedView view,
-    BatchDiagnostics diagnostics,std::size_t count,std::size_t mapped_nodes) {
+    BatchDiagnostics diagnostics,std::size_t count) {
   constexpr unsigned threads=64;
   const unsigned blocks=1u+static_cast<unsigned>((count-1)/threads);
   CandidateElements<<<blocks,threads,0,view.stream>>>(storage,accepted,trial,view);
   if(cudaPeekAtLastError()!=cudaSuccess) return;
-  if(mapped_nodes) LaunchMappedMeasurements(storage,accepted,trial,view,diagnostics,mapped_nodes);
-  else FinalizeCandidate<<<1,1,0,view.stream>>>(storage,accepted,trial,view,diagnostics);
+  FinalizeCandidate<<<1,1,0,view.stream>>>(storage,accepted,trial,view,diagnostics);
 }
 void LaunchFailure(NodalAssemblyView view) { MarkFailure<<<1,1,0,view.stream>>>(view); }
-} // namespace tl::fea::qbat::batch_detail
+} // namespace qbat_gather_test::serial_candidate

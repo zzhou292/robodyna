@@ -11,7 +11,8 @@
 
 namespace tl::fea::qbat::batch_detail {
 void LaunchAssembly(Storage*,const Slab*,NodalAssemblyView,bool initial);
-void LaunchCandidate(Storage*,const Slab*,Slab*,NodalPreparedView,BatchDiagnostics,std::size_t count);
+void LaunchCandidate(Storage*,const Slab*,Slab*,NodalPreparedView,BatchDiagnostics,std::size_t count,std::size_t mapped_nodes=0);
+void LaunchMappedMeasurements(Storage*,const Slab*,const Slab*,NodalPreparedView,BatchDiagnostics,std::size_t nodes);
 void LaunchFailure(NodalAssemblyView);
 void LaunchMappedAssembly(Storage*,const Slab*,NodalAssemblyView,NodalCinAssemblyView,bool initial);
 } // namespace tl::fea::qbat::batch_detail
