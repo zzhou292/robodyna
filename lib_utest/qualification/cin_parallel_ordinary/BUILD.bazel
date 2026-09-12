@@ -47,6 +47,12 @@ filegroup(
 )
 
 filegroup(
+    name = "serial_host_source",
+    srcs = ["SerialHost.cpp"],
+    visibility = ["//lib_utest/qualification/cin_parallel_groups:__pkg__"],
+)
+
+filegroup(
     name = "owner_test_sources",
     srcs = ["OwnerTest.cu"],
     visibility = ["//lib_utest/qualification/cin_parallel_groups:__pkg__",

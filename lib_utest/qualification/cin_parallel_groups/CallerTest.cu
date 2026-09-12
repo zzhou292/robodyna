@@ -65,9 +65,7 @@ TEST(CinParallelGroupsCuda, FrozenFullCallerMatchesThreeIntervalsAcrossGroupBloc
       SCOPED_TRACE(capture);
       SCOPED_TRACE(screen);
       SCOPED_TRACE(count);
-      packet::Packet serial(true, capture);
-      if (count != 2) PopulateGroups(serial, count);
-      ReverseGroups(serial); // Group ordinal priority differs from node order.
+      auto serial = MakePacket(count, capture);
       auto parallel = serial;
       if (screen) serial.structural = parallel.structural =
           {NodalCinStructuralProfile::NativeOrdinaryRigidTrace, .8};

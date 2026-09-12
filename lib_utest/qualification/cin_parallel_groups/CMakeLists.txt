@@ -8,7 +8,7 @@ get_filename_component(tl_root "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
 set(packet_dir "${CMAKE_CURRENT_LIST_DIR}/../cin_parallel_ordinary")
 include("${tl_root}/lib_src/constraints/tied_shell/TiedCinAttachment.cmake")
 add_executable(cin_parallel_groups_host ScreenTest.cpp MotionTest.cpp LayoutTest.cpp
-  "${packet_dir}/Packet.cpp" "${packet_dir}/Compare.cpp")
+  "${packet_dir}/Packet.cpp" "${packet_dir}/Compare.cpp" "${packet_dir}/SerialHost.cpp")
 target_include_directories(cin_parallel_groups_host PRIVATE "${tl_root}" "${tl_root}/lib_src/solvers")
 target_link_libraries(cin_parallel_groups_host PRIVATE tl_tied_cin_attachment GTest::gtest_main CUDA::toolkit)
 target_compile_features(cin_parallel_groups_host PRIVATE cxx_std_17)

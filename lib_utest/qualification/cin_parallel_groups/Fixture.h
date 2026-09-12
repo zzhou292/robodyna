@@ -50,4 +50,12 @@ inline void ReverseGroups(packet::Packet& p) {
         p.accepted[19*packet::Nodes+rigid::GroupStateValues*(p.groups.size()-1-g)+a]);
   p.Begin(p.attempt);
 }
+inline packet::Packet MakePacket(unsigned count, bool capture) {
+  // Only the original two-body case starts with physical zero-M/J members.
+  // Building a zero-group case from it would leave those nodes ordinary/free.
+  packet::Packet result(count == 2, capture);
+  if (count != 2) PopulateGroups(result, count);
+  ReverseGroups(result);
+  return result;
+}
 } // namespace tl::fea::cin_group_test

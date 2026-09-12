@@ -149,47 +149,115 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_capture/source-manifest.json",
-      "bytes": 14875,
-      "sha256": "79d7d2be3954bdac33bcfc8f816a04f73731531ad30c8caeac653a452550f3a6",
+      "bytes": 16440,
+      "sha256": "4dc2df534ddd3555daf337bf698b34ef3feb2a00a8222c794259efca92cda47f",
       "prior_receipts": [
         {
           "bytes": 14024,
           "sha256": "b893a6bab107726a9103ecb8a8310b8fa6dacb8402d036ef183def1324acaf58",
           "reason": "Propagate the Seal-combined nested identity receipt and its verifier hash; source equations and frozen baselines unchanged."
+        },
+        {
+          "bytes": 14024,
+          "sha256": "b893a6bab107726a9103ecb8a8310b8fa6dacb8402d036ef183def1324acaf58",
+          "reason": "Correct zero-group qualification fixture and bind the exact serial-host admission control; production and frozen baselines unchanged."
+        },
+        {
+          "bytes": 14875,
+          "sha256": "79d7d2be3954bdac33bcfc8f816a04f73731531ad30c8caeac653a452550f3a6",
+          "reason": "Integrate corrected zero-group qualification with the existing qualified Seal-combined receipts; production and frozen baselines unchanged."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_capture/verify_sources.py",
       "bytes": 3992,
-      "sha256": "3f51b0572aea7a686eb942520304ea223f2bdad295b5f1e692bcf3c310876475",
+      "sha256": "55b38075b953802cd2294207acc0dcd911b900f422449b4b74f8ce91e5719c98",
       "prior_receipts": [
         {
           "bytes": 3992,
           "sha256": "13d3f160e31caad6f280229930a82825bcdc8a8906345aafbac27cc99e7a49c3",
           "reason": "Propagate the Seal-combined nested identity receipt and its verifier hash; source equations and frozen baselines unchanged."
+        },
+        {
+          "bytes": 3992,
+          "sha256": "13d3f160e31caad6f280229930a82825bcdc8a8906345aafbac27cc99e7a49c3",
+          "reason": "Correct zero-group qualification fixture and bind the exact serial-host admission control; production and frozen baselines unchanged."
+        },
+        {
+          "bytes": 3992,
+          "sha256": "3f51b0572aea7a686eb942520304ea223f2bdad295b5f1e692bcf3c310876475",
+          "reason": "Integrate corrected zero-group qualification with the existing qualified Seal-combined receipts; production and frozen baselines unchanged."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/BUILD.bazel",
-      "bytes": 1302,
-      "sha256": "94db370cbc10cec2e68d3911375b9627d3a686cb91f0ad6968fcf0d5e879c632"
+      "bytes": 1384,
+      "sha256": "d49b50931d19d0dd176aadea4cce6fcfae415ffdf6b7005b34e1c42f7bdb11f8",
+      "prior_receipts": [
+        {
+          "bytes": 1302,
+          "sha256": "94db370cbc10cec2e68d3911375b9627d3a686cb91f0ad6968fcf0d5e879c632",
+          "reason": "Correct zero-group qualification fixture and bind the exact serial-host admission control; production and frozen baselines unchanged."
+        },
+        {
+          "bytes": 1302,
+          "sha256": "94db370cbc10cec2e68d3911375b9627d3a686cb91f0ad6968fcf0d5e879c632",
+          "reason": "Integrate corrected zero-group qualification with the existing qualified Seal-combined receipts; production and frozen baselines unchanged."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/CMakeLists.txt",
-      "bytes": 3308,
-      "sha256": "88ccd7eda3fbcb20e112714852f4f2aaffb32b0471a9295e06e816aa0a9ca55e"
+      "bytes": 3339,
+      "sha256": "a1a396f676e35bc4f110f9ee0c63ffdcc7fea930e5ad84728ccef29db2112e8f",
+      "prior_receipts": [
+        {
+          "bytes": 3308,
+          "sha256": "88ccd7eda3fbcb20e112714852f4f2aaffb32b0471a9295e06e816aa0a9ca55e",
+          "reason": "Correct zero-group qualification fixture and bind the exact serial-host admission control; production and frozen baselines unchanged."
+        },
+        {
+          "bytes": 3308,
+          "sha256": "88ccd7eda3fbcb20e112714852f4f2aaffb32b0471a9295e06e816aa0a9ca55e",
+          "reason": "Integrate corrected zero-group qualification with the existing qualified Seal-combined receipts; production and frozen baselines unchanged."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/CallerTest.cu",
-      "bytes": 6338,
-      "sha256": "b9943fa29d5d5d0b7b558843d890c7c61b9783f75537bc490e85821742c0dac8"
+      "bytes": 6209,
+      "sha256": "09b05796fefc05b86f331fdc51f22a803549f64f0b0e6ef279e36f4ef2d2ebcb",
+      "prior_receipts": [
+        {
+          "bytes": 6338,
+          "sha256": "b9943fa29d5d5d0b7b558843d890c7c61b9783f75537bc490e85821742c0dac8",
+          "reason": "Correct zero-group qualification fixture and bind the exact serial-host admission control; production and frozen baselines unchanged."
+        },
+        {
+          "bytes": 6338,
+          "sha256": "b9943fa29d5d5d0b7b558843d890c7c61b9783f75537bc490e85821742c0dac8",
+          "reason": "Integrate corrected zero-group qualification with the existing qualified Seal-combined receipts; production and frozen baselines unchanged."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/Fixture.h",
-      "bytes": 2361,
-      "sha256": "0a80423cc671a6a55cb523cb0402058c2c515fe07f45b303401855a073ce8f83"
+      "bytes": 2720,
+      "sha256": "52dbb7923a688590fc458af54f0c3527d11e79b90ae510fe7d202597adab3c3c",
+      "prior_receipts": [
+        {
+          "bytes": 2361,
+          "sha256": "0a80423cc671a6a55cb523cb0402058c2c515fe07f45b303401855a073ce8f83",
+          "reason": "Correct zero-group qualification fixture and bind the exact serial-host admission control; production and frozen baselines unchanged."
+        },
+        {
+          "bytes": 2361,
+          "sha256": "0a80423cc671a6a55cb523cb0402058c2c515fe07f45b303401855a073ce8f83",
+          "reason": "Integrate corrected zero-group qualification with the existing qualified Seal-combined receipts; production and frozen baselines unchanged."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/Frozen.cu",
@@ -223,8 +291,20 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/MotionTest.cpp",
-      "bytes": 2435,
-      "sha256": "074aec98c4cd3707e7c459ffcf1c559389c76e1f3415a870c4451bd33daf35a9"
+      "bytes": 3609,
+      "sha256": "925010d7c91abb9349fc8b37696196d47ab4b812711db7f5764840e1c4b8295c",
+      "prior_receipts": [
+        {
+          "bytes": 2435,
+          "sha256": "074aec98c4cd3707e7c459ffcf1c559389c76e1f3415a870c4451bd33daf35a9",
+          "reason": "Correct zero-group qualification fixture and bind the exact serial-host admission control; production and frozen baselines unchanged."
+        },
+        {
+          "bytes": 2435,
+          "sha256": "074aec98c4cd3707e7c459ffcf1c559389c76e1f3415a870c4451bd33daf35a9",
+          "reason": "Integrate corrected zero-group qualification with the existing qualified Seal-combined receipts; production and frozen baselines unchanged."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/OwnerTest.cu",
@@ -233,8 +313,20 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/README.md",
-      "bytes": 4172,
-      "sha256": "4f91f92ce83fc237846db8b026bfd8e25ccbb3a50bf59a69246f104babdc4539"
+      "bytes": 4725,
+      "sha256": "4ca43957a583746c5ddf39b8f87faba44045bc61f3bc6af97b7f63502f889699",
+      "prior_receipts": [
+        {
+          "bytes": 4172,
+          "sha256": "4f91f92ce83fc237846db8b026bfd8e25ccbb3a50bf59a69246f104babdc4539",
+          "reason": "Correct zero-group qualification fixture and bind the exact serial-host admission control; production and frozen baselines unchanged."
+        },
+        {
+          "bytes": 4172,
+          "sha256": "4f91f92ce83fc237846db8b026bfd8e25ccbb3a50bf59a69246f104babdc4539",
+          "reason": "Integrate corrected zero-group qualification with the existing qualified Seal-combined receipts; production and frozen baselines unchanged."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_groups/ScreenTest.cpp",
@@ -278,8 +370,20 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/BUILD.bazel",
-      "bytes": 2264,
-      "sha256": "8e1c4b903f156eceb7bae1b6dd48a8adb8f7632bace841b39b48c7792ba56e62"
+      "bytes": 2418,
+      "sha256": "fbe533c93c192d1d0b5870de84b9b85837489d70423340838b00c7f737c7f3bb",
+      "prior_receipts": [
+        {
+          "bytes": 2264,
+          "sha256": "8e1c4b903f156eceb7bae1b6dd48a8adb8f7632bace841b39b48c7792ba56e62",
+          "reason": "Correct zero-group qualification fixture and bind the exact serial-host admission control; production and frozen baselines unchanged."
+        },
+        {
+          "bytes": 2264,
+          "sha256": "8e1c4b903f156eceb7bae1b6dd48a8adb8f7632bace841b39b48c7792ba56e62",
+          "reason": "Integrate corrected zero-group qualification with the existing qualified Seal-combined receipts; production and frozen baselines unchanged."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/Compare.cpp",
@@ -328,25 +432,45 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/source-manifest.json",
-      "bytes": 18058,
-      "sha256": "8340f68dd1593cbf00869cf4a5e9e61ac108fa500dd5606666ec22bbcce781d6",
+      "bytes": 18579,
+      "sha256": "5e612dac6396da869df0ff9d5deab10bdde796a8243f4025243e1411a85086a5",
       "prior_receipts": [
         {
           "bytes": 17768,
           "sha256": "df4d1292008727fba8ff410ed404aea4528abb20f80efa3ff81a060504d522e2",
           "reason": "Propagate the Seal-combined nested identity receipt and its verifier hash; source equations and frozen baselines unchanged."
+        },
+        {
+          "bytes": 17768,
+          "sha256": "df4d1292008727fba8ff410ed404aea4528abb20f80efa3ff81a060504d522e2",
+          "reason": "Correct zero-group qualification fixture and bind the exact serial-host admission control; production and frozen baselines unchanged."
+        },
+        {
+          "bytes": 18058,
+          "sha256": "8340f68dd1593cbf00869cf4a5e9e61ac108fa500dd5606666ec22bbcce781d6",
+          "reason": "Integrate corrected zero-group qualification with the existing qualified Seal-combined receipts; production and frozen baselines unchanged."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/verify_sources.py",
       "bytes": 6798,
-      "sha256": "887cd3541255b79e7922cd93a93498b85b8ceecb709e56fe8d1749b59d55ba80",
+      "sha256": "2b60ab54e676e41c1e8d0b9a650ae7c0f0e02a5f5c56d1436df9f43370edeb1c",
       "prior_receipts": [
         {
           "bytes": 6798,
           "sha256": "bdf3fdae891c22b4e024b93bd0958276430c0560804130bca1e4d70f7f8f6127",
           "reason": "Propagate the Seal-combined nested identity receipt and its verifier hash; source equations and frozen baselines unchanged."
+        },
+        {
+          "bytes": 6798,
+          "sha256": "bdf3fdae891c22b4e024b93bd0958276430c0560804130bca1e4d70f7f8f6127",
+          "reason": "Correct zero-group qualification fixture and bind the exact serial-host admission control; production and frozen baselines unchanged."
+        },
+        {
+          "bytes": 6798,
+          "sha256": "887cd3541255b79e7922cd93a93498b85b8ceecb709e56fe8d1749b59d55ba80",
+          "reason": "Integrate corrected zero-group qualification with the existing qualified Seal-combined receipts; production and frozen baselines unchanged."
         }
       ]
     },
@@ -354,6 +478,16 @@
       "path": "lib_utest/qualification/rigid_assembly_owner/BUILD.bazel",
       "bytes": 2629,
       "sha256": "602d8dfdf55e46b31858bb311e2adeea14cb6d7ff4f49aace8254fed97a1117e"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/SerialHost.cpp",
+      "bytes": 559,
+      "sha256": "7d4b22ae3d2accd766d25bfcd90ac9e167f8a7e3daf99eb2e9877ef2f84d6f03"
+    },
+    {
+      "path": "lib_utest/qualification/cin_parallel_ordinary/serial/Kernel.inc",
+      "bytes": 6691,
+      "sha256": "94e30ef6f852c297eaf4f01cf93fc7f9241e1a2f3fc269719c6a1debb9465dfa"
     }
   ],
   "integration": {

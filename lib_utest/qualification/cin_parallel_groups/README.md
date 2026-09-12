@@ -31,7 +31,7 @@ the applicable partial-output contract on failure, then compare all successful
 retry fields bitwise. Screen errors retain the old key/bound behavior; an
 orientation rotation-limit failure clears the bound as before.
 
-Six host functions cover reverse group completion/order, 0/1/2/64/65/129 groups,
+Seven host functions cover reverse group completion/order, 0/1/2/64/65/129 groups,
 zero M/J physical members, two-member and general bodies, half/full kicks,
 capture on/off, exact ties, malformed ranges, late orientation/candidate
 failure, untouched output and exact host/device caps. CUDA tests compare the
@@ -41,6 +41,14 @@ The actual PART/plain/CIN owner tests cover ordinary and later-body failure,
 all accepted node/CIN/group fields, capture, failed readback and stable allocation
 across epoch-zero and full-kick retry. The test packet adapter allocates guard
 storage only for qualification; the actual owner test exercises retained scratch.
+
+The first root GPU gate correctly rejected the original zero-group fixture at
+node 267: it removed the two original groups but retained their zero-M/J member
+coefficients. `MakePacket` now starts the zero-group population from the ordinary
+fixture. A host regression reproduces that malformed packet's exact failure,
+then runs every positive CUDA fixture through the complete frozen serial host
+caller for three intervals before device comparison. No production equation,
+oracle arithmetic, numerical tolerance, or positive two-group source changed.
 
 `prepare_reference.py` changes namespace/include spelling, aliases the existing
 summary ABI and qualifies calls to suppress ADL. The entire frozen caller prefix

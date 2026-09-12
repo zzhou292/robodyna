@@ -236,13 +236,23 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_ordinary/BUILD.bazel",
-      "bytes": 2264,
-      "sha256": "8e1c4b903f156eceb7bae1b6dd48a8adb8f7632bace841b39b48c7792ba56e62",
+      "bytes": 2418,
+      "sha256": "fbe533c93c192d1d0b5870de84b9b85837489d70423340838b00c7f737c7f3bb",
       "prior_receipts": [
         {
           "bytes": 2039,
           "sha256": "e9b1c22db965622df4af77ec16be6c7bea3125d786288c7375bef665dcbdbe94",
           "reason": "Independent CIN group scheduling or additive qualification ownership"
+        },
+        {
+          "bytes": 2264,
+          "sha256": "8e1c4b903f156eceb7bae1b6dd48a8adb8f7632bace841b39b48c7792ba56e62",
+          "reason": "Independent CIN group scheduling or additive qualification ownership"
+        },
+        {
+          "bytes": 2264,
+          "sha256": "8e1c4b903f156eceb7bae1b6dd48a8adb8f7632bace841b39b48c7792ba56e62",
+          "reason": "Integrate corrected zero-group qualification with the existing qualified Seal-combined receipts; production and frozen baselines unchanged."
         }
       ]
     },
@@ -312,8 +322,8 @@
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/source-manifest.json",
-      "bytes": 18058,
-      "sha256": "8340f68dd1593cbf00869cf4a5e9e61ac108fa500dd5606666ec22bbcce781d6",
+      "bytes": 18579,
+      "sha256": "5e612dac6396da869df0ff9d5deab10bdde796a8243f4025243e1411a85086a5",
       "prior_receipts": [
         {
           "bytes": 12332,
@@ -324,13 +334,23 @@
           "bytes": 17768,
           "sha256": "df4d1292008727fba8ff410ed404aea4528abb20f80efa3ff81a060504d522e2",
           "reason": "Propagate the Seal-combined nested identity receipt and its verifier hash; source equations and frozen baselines unchanged."
+        },
+        {
+          "bytes": 17768,
+          "sha256": "df4d1292008727fba8ff410ed404aea4528abb20f80efa3ff81a060504d522e2",
+          "reason": "Independent CIN group scheduling or additive qualification ownership"
+        },
+        {
+          "bytes": 18058,
+          "sha256": "8340f68dd1593cbf00869cf4a5e9e61ac108fa500dd5606666ec22bbcce781d6",
+          "reason": "Integrate corrected zero-group qualification with the existing qualified Seal-combined receipts; production and frozen baselines unchanged."
         }
       ]
     },
     {
       "path": "lib_utest/qualification/cin_parallel_screen/verify_sources.py",
       "bytes": 6798,
-      "sha256": "887cd3541255b79e7922cd93a93498b85b8ceecb709e56fe8d1749b59d55ba80",
+      "sha256": "2b60ab54e676e41c1e8d0b9a650ae7c0f0e02a5f5c56d1436df9f43370edeb1c",
       "prior_receipts": [
         {
           "bytes": 6597,
@@ -341,6 +361,16 @@
           "bytes": 6798,
           "sha256": "bdf3fdae891c22b4e024b93bd0958276430c0560804130bca1e4d70f7f8f6127",
           "reason": "Propagate the Seal-combined nested identity receipt and its verifier hash; source equations and frozen baselines unchanged."
+        },
+        {
+          "bytes": 6798,
+          "sha256": "bdf3fdae891c22b4e024b93bd0958276430c0560804130bca1e4d70f7f8f6127",
+          "reason": "Independent CIN group scheduling or additive qualification ownership"
+        },
+        {
+          "bytes": 6798,
+          "sha256": "887cd3541255b79e7922cd93a93498b85b8ceecb709e56fe8d1749b59d55ba80",
+          "reason": "Integrate corrected zero-group qualification with the existing qualified Seal-combined receipts; production and frozen baselines unchanged."
         }
       ]
     },

@@ -5,6 +5,34 @@
 #include <gtest/gtest.h>
 
 namespace tl::fea::cin_group_test {
+TEST(CinParallelGroupsFixture, OriginalZeroMassMembersCannotBecomeOrdinaryFreeNodes) {
+  packet::Packet wrong(true, false);
+  PopulateGroups(wrong, 0);
+  const auto node = packet::Nodes-5;
+  ASSERT_EQ(wrong.trial[wrong.TailOffset()+node], 0);
+  ASSERT_EQ(wrong.member_nodes[node], 0);
+  packet::RunSerialHost(wrong.Input());
+  EXPECT_EQ(wrong.control.status, NodalStatus::InvalidOutput);
+  EXPECT_EQ(wrong.control.node, node);
+  // Exact same factory as CUDA: complete frozen serial input/transfer/motion,
+  // not merely the group helper, must admit every positive packet first.
+  for (bool capture : {false, true}) for (bool screen : {false, true}) {
+    for (unsigned count : {0, 2, 65, 129}) {
+      SCOPED_TRACE(capture);
+      SCOPED_TRACE(screen);
+      SCOPED_TRACE(count);
+      auto p = MakePacket(count, capture);
+      if (screen) p.structural = {NodalCinStructuralProfile::NativeOrdinaryRigidTrace, .8};
+      for (unsigned step = 0; step < 3; ++step) {
+        SCOPED_TRACE(step);
+        p.Begin(step+1);
+        packet::RunSerialHost(p.Input());
+        ASSERT_EQ(p.control.status, NodalStatus::Ok) << p.control.node;
+        p.Accept();
+      }
+    }
+  }
+}
 TEST(CinParallelGroupsMotion, FrozenGroupBodyMatchesHalfFullKickCaptureAndZeroCoefficientMembers) {
   for (bool capture : {false, true}) {
     for (unsigned count : {2, 65, 129}) {
