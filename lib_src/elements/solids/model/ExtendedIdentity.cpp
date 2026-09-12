@@ -3,6 +3,8 @@
 
 namespace tl::fea::solids::model_detail {
 bool Same(const solid18::law44::Material& a, const solid18::law44::Material& b) noexcept {
+  if (!tl::material::law44::solid::detail::PreparedHardeningValid(a) ||
+      !tl::material::law44::solid::detail::PreparedHardeningValid(b)) return false;
   if (a.material.native_units != b.material.native_units) return false;
   if (!Same(a.material.young_pa, b.material.young_pa)) return false;
   if (!Same(a.material.poisson_ratio, b.material.poisson_ratio)) return false;

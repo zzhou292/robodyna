@@ -40,8 +40,6 @@ TL_LAW44_SOLID_HD inline bool Coefficients(Material m, Parameters& p,
 TL_LAW44_SOLID_HD inline bool ParametersValid(const Parameters& p) noexcept {
   Parameters expected{};
   const bool analytic = p.material.hardening == HardeningKind::Analytic;
-  const bool receipt = analytic ? p.analytic_preparation.Matches(p.material, p.plastic_cap_strain)
-                               : !p.analytic_preparation.initialized();
   const bool shape = p.material.hardening == HardeningKind::Tabulated
       ? CurveShape(p.curve) : EmptyCurve(p.curve);
   const Parameters* admitted = nullptr;
@@ -50,7 +48,7 @@ TL_LAW44_SOLID_HD inline bool ParametersValid(const Parameters& p) noexcept {
   // identity check for the immutable host-prepared material uploaded by Model.
   if (analytic) admitted = &p;
 #endif
-  return receipt && shape && Coefficients(p.material, expected, admitted) &&
+  return PreparedHardeningValid(p) && shape && Coefficients(p.material, expected, admitted) &&
       p.bulk_pa == expected.bulk_pa && p.shear_pa == expected.shear_pa &&
       p.twice_shear_pa == expected.twice_shear_pa && p.three_shear_pa == expected.three_shear_pa &&
       p.sound_speed_m_s == expected.sound_speed_m_s && p.inverse_rate_c == expected.inverse_rate_c &&

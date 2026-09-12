@@ -25,8 +25,12 @@ TL_SOLID18_HD inline bool ValidMaterial(const Reference& reference, const Materi
 TL_SOLID18_HD inline bool SameMaterial(const Material& a, const Material& b) noexcept {
   const auto& x = a.material;
   const auto& y = b.material;
-  // Prepared derived fields are authenticated separately by ParametersValid.
-  return a.curve.plastic_strain == b.curve.plastic_strain &&
+  // History identity includes the sealed limits, even before a subsequent
+  // point update or readback performs complete derived-field validation.
+  return point::detail::PreparedHardeningValid(a) && point::detail::PreparedHardeningValid(b) &&
+      SameScalar(a.plastic_cap_strain,b.plastic_cap_strain) &&
+      SameScalar(a.failure_plastic_strain,b.failure_plastic_strain) &&
+      a.curve.plastic_strain == b.curve.plastic_strain &&
       a.curve.yield_stress_pa == b.curve.yield_stress_pa && a.curve.count == b.curve.count &&
       x.native_units == y.native_units && SameScalar(x.young_pa,y.young_pa) &&
       SameScalar(x.poisson_ratio,y.poisson_ratio) && SameScalar(x.density_kg_m3,y.density_kg_m3) &&

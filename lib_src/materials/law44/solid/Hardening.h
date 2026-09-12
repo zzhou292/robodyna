@@ -19,6 +19,11 @@ TL_LAW44_SOLID_HD inline bool EmptyAnalytic(const AnalyticHardening& a) noexcept
 TL_LAW44_SOLID_HD inline bool NonnegativeHardening(double x) noexcept {
   return tl::math::Finite(x) && x >= 0;
 }
+TL_LAW44_SOLID_HD inline bool PreparedHardeningValid(const Parameters& p) noexcept {
+  if (p.material.hardening == HardeningKind::Analytic)
+    return p.analytic_preparation.Matches(p.material, p.plastic_cap_strain);
+  return p.material.hardening == HardeningKind::Tabulated && !p.analytic_preparation.initialized();
+}
 // Exact selected HM_READ_MAT44 default and EPSGM operations in native units.
 // Public coefficients are SI; the strain thresholds remain dimensionless.
 TL_LAW44_SOLID_HD inline bool HardeningCoefficients(Material m, double scale,

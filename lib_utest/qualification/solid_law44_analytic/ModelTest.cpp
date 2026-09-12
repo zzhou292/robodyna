@@ -3,6 +3,7 @@
 #include "lib_utest/qualification/extended_solid_model/Fixture.h"
 #include "lib_utest/qualification/extended_solid_model/ResidentConfig.h"
 #include "lib_src/elements/solids/resident/MaterialUpload.h"
+#include "lib_src/elements/solids/resident/ResultChecks.h"
 
 namespace law44_analytic_test {
 namespace solids = tl::fea::solids;
@@ -73,5 +74,63 @@ TEST(SolidLaw44AnalyticModel, EmptyCurveArenaExactCapsRelocationAndNoncanonicalR
   config.limits.max_device_bytes += 1;
   ASSERT_TRUE(resident::Plan(config, model, unchanged));
   EXPECT_EQ(unchanged.bytes, layout.bytes);
+}
+TEST(SolidLaw44AnalyticModel, MissingAndForeignReceiptsCannotBeRepairedByModelCopy) {
+  const auto table = law44_solid_test::Parameters();
+  auto forged_table = table;
+  forged_table.analytic_preparation = Airbag().analytic_preparation;
+  EXPECT_FALSE(law::detail::ParametersValid(forged_table));
+  EXPECT_FALSE(tl::fea::solid18::law44::detail::SameMaterial(table, forged_table));
+  for (bool foreign : {false, true}) {
+    extended_model_test::Fixture f; SetAnalytic(f);
+    const auto admitted = f.input44[0].material;
+    const auto domain = f.Domain();
+    f.input44[0].material.analytic_preparation = foreign ? Capped(.6).analytic_preparation : law::AnalyticPreparation{};
+    solids::Model model;
+    EXPECT_EQ(model.Initialize(domain, f.Input()).status, solids::ModelStatus::InvalidInput);
+    EXPECT_FALSE(model.prepared());
+    f.input44[0].material = admitted;
+    ASSERT_TRUE(model.Initialize(domain, f.Input()));
+    EXPECT_TRUE(law::detail::PreparedHardeningValid(model.materials44()[0].value));
+  }
+}
+TEST(SolidLaw44AnalyticModel, HistoryAndCacheIdentityRejectLostReceiptBeforeRetry) {
+  extended_model_test::Fixture f; SetAnalytic(f);
+  const auto domain = f.Domain();
+  solids::Model model;
+  ASSERT_TRUE(model.Initialize(domain, f.Input()));
+  const auto& parent = model.solid18_law44()[0];
+  const auto& material = model.materials44()[0].value;
+  namespace rear = tl::fea::solid18::law44;
+  rear::ForceTrial initial;
+  ASSERT_EQ(rear::InitializeForce(parent.reference, material, {}, initial), tl::fea::solid18::Status::Success);
+  resident::State<resident::Traits18Law44> accepted;
+  accepted.history = initial.proposed_history;
+  ASSERT_TRUE(resident::Traits18Law44::Capture(initial, accepted.cache));
+  ASSERT_TRUE(resident::ValidResult(parent, material, accepted, 0, 0));
+  resident::Traits18Law44::Interval interval;
+  interval.dt_s = 1e-6;
+  interval.sample_index = 1;
+  for (unsigned n = 0; n < 8; ++n) interval.position_endpoint_m[n] = parent.reference.input().position_m[n];
+  for (bool foreign : {false, true}) {
+    auto corrupt = accepted;
+    auto& history_material = const_cast<law::Parameters&>(corrupt.history.material());
+    history_material.analytic_preparation = foreign ? Capped(.6).analytic_preparation : law::AnalyticPreparation{};
+    EXPECT_FALSE(tl::fea::solid18::law44::detail::SameMaterial(material, history_material));
+    EXPECT_FALSE(resident::ValidResult(parent, material, corrupt, 0, 0));
+    auto unchanged = initial;
+    unchanged.rhs_force_n[0].x = 917;
+    EXPECT_EQ(rear::EvaluateForce(parent.reference, corrupt.history, interval, material, unchanged),
+              tl::fea::solid18::Status::InvalidInput);
+    EXPECT_EQ(unchanged.rhs_force_n[0].x, 917);
+    EXPECT_EQ(unchanged.proposed_history.stamp().sample_index, 0u);
+  }
+  rear::ForceTrial next;
+  ASSERT_EQ(rear::EvaluateForce(parent.reference, accepted.history, interval, material, next),
+            tl::fea::solid18::Status::Success);
+  resident::State<resident::Traits18Law44> retry;
+  retry.history = next.proposed_history;
+  ASSERT_TRUE(resident::Traits18Law44::Capture(next, retry.cache));
+  EXPECT_TRUE(resident::ValidResult(parent, material, retry, interval.dt_s, 1));
 }
 } // namespace law44_analytic_test
