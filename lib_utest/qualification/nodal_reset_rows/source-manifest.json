@@ -265,8 +265,15 @@
     },
     {
       "path": "lib_utest/qualification/nodal_reset_rows/BUILD.bazel",
-      "bytes": 1287,
-      "sha256": "72035fbb50e69f649123089da0784bebe16a4ada6642c3dcb80c5c584ed4834f"
+      "bytes": 1414,
+      "sha256": "4df5d05a50d3b330a9cc463746e2f01d1484c4837ec37ea1fa6caebd009e5fe5",
+      "reviewed_updates": [
+        {
+          "prior_bytes": 1287,
+          "prior_sha256": "72035fbb50e69f649123089da0784bebe16a4ada6642c3dcb80c5c584ed4834f",
+          "reason": "Use the existing nodal-seal shared host_fixture includes pattern to export generated FrozenStability.h to both reset host and CUDA qualifiers; no production changes."
+        }
+      ]
     },
     {
       "path": "lib_utest/qualification/nodal_reset_rows/CMakeLists.txt",
