@@ -16,6 +16,18 @@ caller scope is unchanged. EPSGM is derived in native stress units and remains
 distinct from EPMAX. Native yield/tangent expressions, including H=E at PLA=0,
 are executed before the unchanged radial return and pressure operations.
 
+Prepared analytic EPSGM has an exact immutable receipt retaining its source
+A/B/n, stress/plastic limits, native units and computed cap bits. Host admission
+still recomputes all preparation coefficients exactly. Device admission checks
+that receipt and uses the uploaded cap: host libm and CUDA libdevice need not
+return the same last bit from fractional `pow`. No numerical tolerance or new
+cap is introduced. A changed declaration or even a one-ULP cap edit fails exact
+receipt matching. The receipt is56 bytes (Parameters272 bytes) on the owning
+64-bit target and is included by all existing actual-size model/resident
+forecasts. It is prepared-value consistency, not a replacement for immutable
+source/model identity. Device preparation remains local to its execution
+environment; production Model prepares once on the host and uploads that value.
+
 The Model copies scalar identity and retains no curve bytes for an analytic
 material. Mixed table/analytic MID collisions or changed repeated MID values
 reject. Resident upload/readback preserves empty pointers and authenticates the

@@ -39,6 +39,38 @@ struct Material {
   HardeningKind hardening = HardeningKind::Tabulated;
   AnalyticHardening analytic{};
 };
+struct Parameters;
+namespace detail {
+TL_LAW44_SOLID_HD bool HardeningCoefficients(Material, double, Parameters&, const Parameters*) noexcept;
+}
+// The prepared EPSGM is an immutable value, including its host libm rounding.
+// Device admission checks this exact receipt instead of recalculating pow with
+// a different libm. Ordinary public field edits cannot update the receipt.
+class AnalyticPreparation {
+ public:
+  TL_LAW44_SOLID_HD bool initialized() const noexcept { return initialized_; }
+  TL_LAW44_SOLID_HD bool Matches(const Material& material, double cap) const noexcept {
+    if (!initialized_ || material.hardening != HardeningKind::Analytic ||
+        material.native_units != units_) return false;
+    const auto& a = material.analytic;
+    return Same(a.a_pa, hardening_.a_pa) && Same(a.b_pa, hardening_.b_pa) &&
+        Same(a.exponent, hardening_.exponent) && Same(a.maximum_stress_pa, hardening_.maximum_stress_pa) &&
+        Same(a.maximum_plastic_strain, hardening_.maximum_plastic_strain) && Same(cap, plastic_cap_);
+  }
+ private:
+  TL_LAW44_SOLID_HD static bool Same(double a, double b) noexcept {
+    const auto* x = reinterpret_cast<const unsigned char*>(&a);
+    const auto* y = reinterpret_cast<const unsigned char*>(&b);
+    for (unsigned i = 0; i < sizeof(double); ++i) if (x[i] != y[i]) return false;
+    return true;
+  }
+  AnalyticHardening hardening_{};
+  double plastic_cap_ = 0;
+  WorkingUnits units_ = WorkingUnits::SI;
+  bool initialized_ = false;
+  friend TL_LAW44_SOLID_HD bool detail::HardeningCoefficients(
+      Material, double, Parameters&, const Parameters*) noexcept;
+};
 struct Parameters {
   Material material{};
   Curve curve{};  // Immutable backing belongs to the caller.
@@ -54,6 +86,7 @@ struct Parameters {
   double stress_floor_pa = 0;
   double plastic_cap_strain = 0;       // Native EPSGM; distinct from EPMAX.
   double failure_plastic_strain = 0;   // Native EPMAX.
+  AnalyticPreparation analytic_preparation{};
 };
 struct History {
   // Current native material frame: XX, YY, ZZ, XY, YZ, ZX.

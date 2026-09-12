@@ -7,10 +7,12 @@ struct Packet {
   law::Parameters material, device_coefficients;
   law::Result constructor, accepted, rejected, retry;
   law::Status status[4]{};
+  law::Result forged_output[3];
+  law::Status forged_status[3]{};
 };
 __global__ void Advance(Packet* packet, double invalid) {
   auto& p = *packet;
-  law::detail::Coefficients(p.material.material, p.device_coefficients);
+  law::detail::Coefficients(p.material.material, p.device_coefficients, &p.material);
   auto input = Motion(0); input.dt_s = 0;
   p.status[0] = law::Initialize(p.material, input, p.constructor);
   law::History history;
@@ -23,6 +25,14 @@ __global__ void Advance(Packet* packet, double invalid) {
   input = Motion(320); input.engineering_rate_per_s[5] = invalid;
   p.status[2] = law::Update(p.material, history, input, p.rejected);
   p.status[3] = law::Update(p.material, history, Motion(320), p.retry);
+  for (unsigned fault = 0; fault < 3; ++fault) {
+    auto forged = p.material;
+    if (fault == 0) forged.plastic_cap_strain = ::nextafter(forged.plastic_cap_strain, invalid);
+    if (fault == 1) forged.material.analytic.exponent = ::nextafter(forged.material.analytic.exponent, invalid);
+    if (fault == 2) forged.analytic_preparation = {};
+    p.forged_output[fault] = p.accepted;
+    p.forged_status[fault] = law::Update(forged, history, Motion(320), p.forged_output[fault]);
+  }
 }
 }
 TEST(SolidLaw44AnalyticCuda, NativeEmptyCurveConstructorTrajectoryAndLateRetry) {
@@ -51,6 +61,12 @@ TEST(SolidLaw44AnalyticCuda, NativeEmptyCurveConstructorTrajectoryAndLateRetry) 
     ASSERT_EQ(host.status[0], law::Status::Ok); ASSERT_EQ(host.status[1], law::Status::Ok);
     EXPECT_EQ(host.status[2], law::Status::InvalidInput); ASSERT_EQ(host.status[3], law::Status::Ok);
     Same(host.accepted, host.rejected);
+    for (unsigned fault = 0; fault < 3; ++fault) {
+      SCOPED_TRACE(fault);
+      EXPECT_EQ(host.forged_status[fault], law::Status::InvalidParameters);
+      Same(host.accepted, host.forged_output[fault]);
+    }
+    EXPECT_TRUE(Bits(host.material.plastic_cap_strain, material.plastic_cap_strain));
     auto input = Motion(0); input.dt_s = 0;
     law44_solid_test::Compare(host.constructor, Native(material, {}, input, true).result, material, {}, input);
     law::History native, previous;

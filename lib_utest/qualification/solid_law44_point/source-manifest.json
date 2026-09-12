@@ -11,7 +11,7 @@
     },
     {
       "path": "../../../lib_src/materials/law44/solid/Prepare.h",
-      "sha256": "44348d454660540fabf73f5ab78db4300b799e8bf7841a154f3b4896d93c293b"
+      "sha256": "568758cd942a5bbcdd61fa41328e35ba2563ffe2e9592d525d63deaf787b6995"
     },
     {
       "path": "../../../lib_src/materials/law44/solid/Rate.h",
@@ -23,7 +23,7 @@
     },
     {
       "path": "../../../lib_src/materials/law44/solid/Types.h",
-      "sha256": "2f1a299635a1489259cfdd523e1d5db281363c6f9ec2c78b0e3242bf141ecdad"
+      "sha256": "6f8358dd50c4291b4da9811c3bcf4b1f9c2c9771cfacf7ea2b2dd3be75d11835"
     },
     {
       "path": "../../../lib_src/materials/law44/solid/Update.h",

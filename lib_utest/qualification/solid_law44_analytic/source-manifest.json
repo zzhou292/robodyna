@@ -49,18 +49,18 @@
     },
     {
       "path": "lib_src/materials/law44/solid/Hardening.h",
-      "bytes": 2156,
-      "sha256": "e20abfb80de32f64af50870c5571d1efdee9fd71c320c800c20bbe41b8613079"
+      "bytes": 2599,
+      "sha256": "08eaa4e67df3cc130368886090148f7f08e21a9c5879b8980beed3055f4dd903"
     },
     {
       "path": "lib_src/materials/law44/solid/Prepare.h",
-      "bytes": 4317,
-      "sha256": "44348d454660540fabf73f5ab78db4300b799e8bf7841a154f3b4896d93c293b"
+      "bytes": 4896,
+      "sha256": "568758cd942a5bbcdd61fa41328e35ba2563ffe2e9592d525d63deaf787b6995"
     },
     {
       "path": "lib_src/materials/law44/solid/Types.h",
-      "bytes": 2688,
-      "sha256": "2f1a299635a1489259cfdd523e1d5db281363c6f9ec2c78b0e3242bf141ecdad"
+      "bytes": 4350,
+      "sha256": "6f8358dd50c4291b4da9811c3bcf4b1f9c2c9771cfacf7ea2b2dd3be75d11835"
     },
     {
       "path": "lib_src/materials/law44/solid/Update.h",
@@ -104,13 +104,13 @@
     },
     {
       "path": "lib_utest/qualification/solid_law44_analytic/CudaTest.cu",
-      "bytes": 2392,
-      "sha256": "767946bb9aa6b057767705ec1984dd36aebd142e2238c86c5b685a4c2571b5f7"
+      "bytes": 4392,
+      "sha256": "931725452c9623bee4b70801a18328473dcdc83dfb4bd57b121120ee1a87fb81"
     },
     {
       "path": "lib_utest/qualification/solid_law44_analytic/HostTest.cpp",
-      "bytes": 4075,
-      "sha256": "f3ddaefdf5766677510c5f57d52fff3c6d049db82329ce69f9a953399cfc9cc7"
+      "bytes": 6060,
+      "sha256": "5a600eaf708d9c4705262385a5ef9cafb77ac601402ab961136cc1cb89d41ac7"
     },
     {
       "path": "lib_utest/qualification/solid_law44_analytic/ModelTest.cpp",
@@ -144,8 +144,8 @@
     },
     {
       "path": "lib_utest/qualification/solid_law44_analytic/README.md",
-      "bytes": 4601,
-      "sha256": "0ad074a38ae8c38d5a3003db724d7be201c7f2d1a5f6d8702d6c29a83dd52301"
+      "bytes": 5454,
+      "sha256": "3f1e0e0561f339946ee623e1a26774e958c82920103b7b139e11a5fed0fd7cbb"
     },
     {
       "path": "lib_utest/qualification/solid_law44_analytic/ResidentTest.cu",
@@ -154,8 +154,8 @@
     },
     {
       "path": "lib_utest/qualification/solid_law44_analytic/TestSupport.h",
-      "bytes": 1320,
-      "sha256": "d89635899fb502d4f23ff2045ede44f09fab5cd66a4297538cb02346f6cf60d9"
+      "bytes": 1343,
+      "sha256": "0d07a42fa39bcb241d638403e256103898ecef6a802f8e96b07a835124e7ae7c"
     },
     {
       "path": "lib_utest/qualification/solid_law44_analytic/source_fixture/export_fixture.py",

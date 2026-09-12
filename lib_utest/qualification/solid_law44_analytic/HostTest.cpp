@@ -82,4 +82,37 @@ TEST(SolidLaw44Analytic, StressCapPrecedesSeparatePlasticFailureAndZeroStrainUse
   ASSERT_EQ(law::Update(p, h, in, failed), law::Status::Ok);
   for (double stress : failed.history.stress_pa) EXPECT_EQ(stress, 0);
 }
+TEST(SolidLaw44Analytic, PreparedLimitReceiptPreservesBitsAndRejectsChangedDeclarations) {
+  const auto p = Capped(.6);
+  ASSERT_TRUE(p.analytic_preparation.Matches(p.material, p.plastic_cap_strain));
+  law::Parameters portable;
+  ASSERT_TRUE(law::detail::Coefficients(p.material, portable, &p));
+  EXPECT_TRUE(Bits(portable.plastic_cap_strain, p.plastic_cap_strain));
+  EXPECT_TRUE(law::detail::ParametersValid(portable));
+  const auto table = law44_solid_test::Parameters();
+  EXPECT_FALSE(table.analytic_preparation.initialized());
+  for (unsigned fault = 0; fault < 8; ++fault) {
+    SCOPED_TRACE(fault);
+    auto changed = p;
+    if (fault == 0) changed.plastic_cap_strain = std::nextafter(p.plastic_cap_strain, INFINITY);
+    if (fault == 1) changed.material.analytic.a_pa = std::nextafter(p.material.analytic.a_pa, INFINITY);
+    if (fault == 2) changed.material.analytic.b_pa = std::nextafter(p.material.analytic.b_pa, INFINITY);
+    if (fault == 3) changed.material.analytic.exponent = std::nextafter(.6, INFINITY);
+    if (fault == 4) changed.material.analytic.maximum_stress_pa = 25e6;
+    if (fault == 5) changed.material.analytic.maximum_plastic_strain = .7;
+    if (fault == 6) changed.material.native_units = law::WorkingUnits::SI;
+    if (fault == 7) changed.analytic_preparation = {};
+    EXPECT_FALSE(law::detail::ParametersValid(changed));
+    law::Parameters scratch;
+    EXPECT_FALSE(law::detail::Coefficients(changed.material, scratch, &changed));
+    law::Result result; result.yield_stress_pa = 731;
+    const auto before = result;
+    EXPECT_EQ(law::Update(changed, {}, Motion(0), result), law::Status::InvalidParameters);
+    Same(result, before);
+  }
+  EXPECT_TRUE(law::detail::ParametersValid(p));
+  static_assert(std::is_trivially_copyable<law::Parameters>::value, "Prepared values must remain upload-safe");
+  RecordProperty("parameters_bytes", sizeof(law::Parameters));
+  RecordProperty("analytic_preparation_bytes", sizeof(law::AnalyticPreparation));
+}
 } // namespace law44_analytic_test

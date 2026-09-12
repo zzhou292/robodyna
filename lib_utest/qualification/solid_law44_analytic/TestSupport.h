@@ -3,6 +3,7 @@
 #include "lib_utest/qualification/solid_law44_point/TestSupport.h"
 #include <cstring>
 #include <limits>
+#include <type_traits>
 
 namespace law44_analytic_test {
 namespace law = tl::material::law44::solid;

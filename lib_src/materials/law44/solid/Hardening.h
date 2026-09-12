@@ -22,7 +22,7 @@ TL_LAW44_SOLID_HD inline bool NonnegativeHardening(double x) noexcept {
 // Exact selected HM_READ_MAT44 default and EPSGM operations in native units.
 // Public coefficients are SI; the strain thresholds remain dimensionless.
 TL_LAW44_SOLID_HD inline bool HardeningCoefficients(Material m, double scale,
-    Parameters& p) noexcept {
+    Parameters& p, const Parameters* admitted = nullptr) noexcept {
   p.plastic_cap_strain = NativeInfinity();
   p.failure_plastic_strain = NativeInfinity();
   if (m.hardening == HardeningKind::Tabulated) return EmptyAnalytic(m.analytic);
@@ -34,10 +34,18 @@ TL_LAW44_SOLID_HD inline bool HardeningCoefficients(Material m, double scale,
   const double cap = a.maximum_stress_pa == 0 ? NativeInfinity() : a.maximum_stress_pa / scale;
   p.stress_limit_pa = cap * scale;
   if (a.maximum_plastic_strain != 0) p.failure_plastic_strain = a.maximum_plastic_strain;
-  if (a.exponent != 0 && a.b_pa != 0) {
+  if (admitted) {
+    if (!admitted->analytic_preparation.Matches(m, admitted->plastic_cap_strain)) return false;
+    p.plastic_cap_strain = admitted->plastic_cap_strain;
+  } else if (a.exponent != 0 && a.b_pa != 0) {
     p.plastic_cap_strain = ::pow((cap - a.a_pa / scale) / (a.b_pa / scale), 1 / a.exponent);
   }
-  return tl::math::Finite(p.stress_limit_pa) && p.stress_limit_pa > 0 &&
-      tl::math::Finite(p.plastic_cap_strain) && p.plastic_cap_strain >= 0;
+  if (!tl::math::Finite(p.stress_limit_pa) || p.stress_limit_pa <= 0 ||
+      !tl::math::Finite(p.plastic_cap_strain) || p.plastic_cap_strain < 0) return false;
+  p.analytic_preparation.hardening_ = a;
+  p.analytic_preparation.plastic_cap_ = p.plastic_cap_strain;
+  p.analytic_preparation.units_ = m.native_units;
+  p.analytic_preparation.initialized_ = true;
+  return true;
 }
 } // namespace tl::material::law44::solid::detail
