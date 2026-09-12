@@ -3,7 +3,7 @@
 #include <cstdint>
 namespace crash::cases::vehicle_run {
 enum class ResourceProfile { Normal, ConditionalExpandedFull };
-enum class PhysicalProfile { RetainedShellAssembliesV1, ExtendedSolidsV4 };
+enum class PhysicalProfile { RetainedShellAssembliesV1, ExtendedSolidsV4, VehicleSupportsV5 };
 const char* PhysicalProfileName(PhysicalProfile);
 struct Config {
     double duration_s=.005;

@@ -27,6 +27,27 @@ AcceptedCaptureScope CaptureAccess::Scope(VehiclePhysicalStartup& run) {
             actual.automatic_stiffness_initialized==common.automatic_stiffness_initialized,
             "Accepted joint publication differs from actual batch");
     }
+    const auto* model=s.execution.model().structural_beams();
+    output::Require(bool(s.beam18)==bool(model) && out.diagnostics.has_beam18==bool(s.beam18),
+        "Accepted structural beam participant differs from actual retained startup");
+    if(s.beam18) {
+        out.beam18_source_instance_id=model->source_instance_id();
+        out.beam18_parent_count=model->parents().size();
+        tl::fea::beam18::BatchDiagnostics actual;
+        RequireSuccess(s.beam18->CopyAcceptedDiagnostics(out.stamp,&actual));
+        const auto& common=out.diagnostics.beam18;
+        output::Require(actual.valid && actual.owner_id==common.owner_id && actual.epoch==common.epoch &&
+            actual.attempt==common.attempt && actual.base_epoch==common.base_epoch && actual.phase==common.phase &&
+            actual.source_instance_id==out.beam18_source_instance_id && actual.parent_count==out.beam18_parent_count &&
+            actual.configuration_id==common.configuration_id && actual.qualification_id==common.qualification_id &&
+            output::Bits(actual.time)==output::Bits(common.time) &&
+            output::Bits(actual.velocity_time)==output::Bits(common.velocity_time) &&
+            output::Bits(actual.base_time)==output::Bits(common.base_time) &&
+            output::Bits(actual.base_velocity_time)==output::Bits(common.base_velocity_time) &&
+            output::Bits(actual.kick_dt)==output::Bits(common.kick_dt) &&
+            actual.has_completed_interval==common.has_completed_interval,
+            "Accepted structural beam publication differs from actual batch");
+    }
     return out;
 }
 tl::fea::NodalStamp CaptureAccess::Nodes(VehiclePhysicalStartup& run,double* x,double* v,std::size_t count) {

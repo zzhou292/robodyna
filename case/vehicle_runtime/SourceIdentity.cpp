@@ -1,10 +1,12 @@
 #include "SourceIdentity.h"
+#include "BeamRuntime.h"
 #include "output/ArtifactIO.h"
 namespace crash::cases::vehicle_runtime::detail {
 void CheckSource(const Execution& execution,const Attachments& attachments) {
     using output::Require;
     const auto& model = execution.model();
     const auto& physical = execution.physical();
+    CheckBeamSource(execution);
     Require(model.SharesStorage(attachments.physical()),
         "Initial runtime inputs must retain the exact same physical model backing");
     Require(physical.prepared() && physical.execution() && physical.catalog()->execution_sections() &&

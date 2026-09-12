@@ -46,8 +46,11 @@ OriginalSources::OriginalSources(const OriginalPaths& paths,PhysicalProfile prof
      beams(modelio::type13::SourceType13::Read(paths.type13,
         {5150841,"c15fc2096317ac0206397ac50776f8456ddd23495e0c65aeee98e093ebd0b1b1"})),
      solids(modelio::solid_source::VehicleSolidSource::Prepare(canonical,member,
-        profile==PhysicalProfile::ExtendedSolidsV4 ? modelio::solid_source::Policy::OriginalExtendedSolidsV4
-            : modelio::solid_source::Policy::OriginalAdhesive18RubberHephS6zV1,
-        profile==PhysicalProfile::ExtendedSolidsV4 ? modelio::solid_source::Limits::ExtendedSolids()
-            : modelio::solid_source::Limits{})) {}
+        SelectPhysical(profile).solids,
+        SelectPhysical(profile).extended ? modelio::solid_source::Limits::ExtendedSolids()
+            : modelio::solid_source::Limits{})) {
+    if(SelectPhysical(profile).structural_beams)
+        structural_beams.emplace(modelio::beam18::Source::Prepare(canonical,member,
+            modelio::beam18::Policy::OriginalCircularFourPointLaw44V1));
+}
 } // namespace crash::cases::vehicle_run::detail

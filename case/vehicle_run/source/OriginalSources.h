@@ -1,5 +1,7 @@
 #pragma once
 #include "OriginalYaris.h"
+#include "PhysicalSelection.h"
+#include <optional>
 #include "modelio/physical_scope/PhysicalScope.h"
 #include "modelio/vehicle_sections/VehicleSectionResolution.h"
 namespace crash::cases::vehicle_run::detail {
@@ -14,6 +16,7 @@ struct OriginalSources {
     modelio::tied_shell::TiedShellDeclaration tied;
     modelio::type13::SourceType13 beams;
     modelio::solid_source::VehicleSolidSource solids;
+    std::optional<modelio::beam18::Source> structural_beams;
 };
 std::string ReadOriginal(const std::filesystem::path&,std::size_t,const char* sha256);
 }

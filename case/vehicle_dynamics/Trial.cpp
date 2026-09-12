@@ -41,6 +41,11 @@ void VehiclePhysicalDynamics::Storage::Prepare() {
     Timed<StepStage::AssembleSolids>(timer,[&] {
         return s.solids.AssembleAccepted(s.owner,token,assembly);
     },"Solid accepted assembly");
+    if(s.beam18) {
+        Timed<StepStage::AssembleBeam18>(timer,[&] {
+            return s.beam18->AssembleAccepted(s.owner,token,assembly);
+        },"Structural beam accepted assembly");
+    }
     if(s.type45) {
         Timed<StepStage::AssembleType45>(timer,[&] {
             return s.type45->AssembleAccepted(s.owner,token,assembly);
@@ -94,6 +99,11 @@ void VehiclePhysicalDynamics::Storage::Evaluate() {
     Timed<StepStage::EvaluateSolids>(timer,[&] {
         return s.solids.EvaluateCandidate(s.owner,token,prepared,&d.solids);
     },"Solid candidate");
+    if(s.beam18) {
+        Timed<StepStage::EvaluateBeam18>(timer,[&] {
+            return s.beam18->EvaluateCandidate(s.owner,token,prepared,&d.beam18);
+        },"Structural beam candidate");
+    }
     if(s.type45) {
         Timed<StepStage::EvaluateType45>(timer,[&] {
             return s.type45->EvaluateCandidate(s.owner,token,prepared,&d.type45);
@@ -101,7 +111,7 @@ void VehiclePhysicalDynamics::Storage::Evaluate() {
     }
     timer.Measure<StepStage::PreparePublication>([&] {
         detail::Require(s.publication.PreparePhysical(s.owner,token,
-            {&d.qeph,&d.t3,&d.qbat,&d.type25,&d.type13,&d.solids,s.type45 ? &d.type45 : nullptr},
+            {&d.qeph,&d.t3,&d.qbat,&d.type25,&d.type13,&d.solids,s.type45 ? &d.type45 : nullptr,s.beam18 ? &d.beam18 : nullptr},
             &candidate().mechanics),"Prepare complete publication");
         return true;
     });

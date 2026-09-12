@@ -6,6 +6,7 @@ const char* PhysicalProfileName(PhysicalProfile profile) {
     switch(profile) {
         case PhysicalProfile::RetainedShellAssembliesV1:return "retained-shell-v1";
         case PhysicalProfile::ExtendedSolidsV4:return "extended-solids-v4";
+        case PhysicalProfile::VehicleSupportsV5:return "vehicle-supports-v5";
     }
     throw std::invalid_argument("Unknown Yaris physical profile");
 }

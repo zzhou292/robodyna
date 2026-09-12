@@ -13,7 +13,7 @@ struct InitialInspection {
     std::size_t shell_parents = 0, material_points = 0, rigid_skins = 0;
     std::size_t one_point_parents = 0, three_point_parents = 0, four_point_parents = 0;
     std::size_t type25_connections = 0, type13_connections = 0, solid_parents = 0;
-    std::size_t type45_joints = 0;
+    std::size_t type45_joints = 0, structural_beams = 0;
 };
 // One initial physical owner and its complete immutable source composition.
 // The public surface deliberately has no interval advance or mutable owner.

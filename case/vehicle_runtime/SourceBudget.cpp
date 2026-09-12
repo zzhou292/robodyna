@@ -6,8 +6,9 @@ std::size_t SourceBytes(const Execution& execution,const Attachments& attachment
     // CheckSource established actual shared app/native backing before any discount.
     // Keep older immutable app producer bounds conservatively; replace the model
     // constructor's independent native caps/temporary packing by its complete
-    // actual physical handle plus retained solid reference model. TYPE13 and all
-    // nodal coefficient producers are already retained by that physical graph.
+    // actual physical handle plus retained solid reference model. TYPE13,
+    // beam18's Model and all nodal coefficient producers are already retained
+    // by that physical graph.
     const auto& model = execution.model().forecast();
     const auto& cin = attachments.attachments().forecast();
     const auto& roster = attachments.witnesses().data();

@@ -28,11 +28,11 @@ void VehiclePhysicalStartup::Storage::InitializePublication() {
     if(type45) {
         detail::RequireSuccess(publication.InitializePhysicalWithJoints(owner,execution.physical(),
             execution.model().rigid_assembly(),detail::Witnesses(attachments),joint_model->model(),
-            {&qeph,&t3,&qbat,&type25,&type13,&solids,type45.get()},c.publication,config.limits.publisher));
+            {&qeph,&t3,&qbat,&type25,&type13,&solids,type45.get(),beam18.get()},c.publication,config.limits.publisher));
         return;
     }
     detail::RequireSuccess(publication.InitializePhysical(owner,execution.physical(),
         execution.model().rigid_assembly(),detail::Witnesses(attachments),
-        {&qeph,&t3,&qbat,&type25,&type13,&solids},c.publication,config.limits.publisher));
+        {&qeph,&t3,&qbat,&type25,&type13,&solids,nullptr,beam18.get()},c.publication,config.limits.publisher));
 }
 } // namespace crash::cases::vehicle_runtime

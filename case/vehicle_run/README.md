@@ -3,7 +3,7 @@
 `PreparedRun` orchestrates the existing `LoadedWall`/`VehiclePhysicalDynamics`,
 accepted capture, and physical run archive. It creates one physical owner and
 uses its actual fixed step, acceptance stamp, constitutive histories and clock.
-The input is an immutable actual wall setup and the complete 38-joint model.
+The input is an immutable actual wall setup and its complete selected joint model.
 The named loaded profile requires `EnvelopeRectangleV1` and at least 0.25 m
 transverse margin, with the exact 35 mph source profile. The usual gap is 0.02 m;
 the two-interval original qualification deliberately uses 1 µm to reach contact.
@@ -144,6 +144,34 @@ required by the complete forecast. Run summaries identify the selected profile
 and actual prepared joint count. The existing typed source/model/attachment
 factories, CUDA owner and Chrono replay remain the implementation path.
 
-The source factory and full V4 forecast/loaded-prefix tests are staged pending
-the owning extended physical-domain qualification. All 15 CLI/loop/report functions pass in
-`vehicle-extended-run-values-tests-1`; this does not admit the expanded runtime.
+The V4 source, full owner, two loaded intervals and authenticated replay passed
+the root qualification at app `3ea02b3`. This is a short accepted prefix, not a
+completed 5 ms trajectory.
+
+## Complete vehicle supports profile
+
+`--physical-profile vehicle-supports-v5` selects the sealed V5 source/domain:
+4,980 solids (908/1,991/350/386/1,345 in the five existing families), 142
+structural beam18 parents, 154 point-mass records and all 44 retained joints.
+The beam source keeps its original two force endpoints; N3 remains orientation
+evidence. `PhysicalSelection` pairs the original solid, physical-domain and
+joint policies. The source factory reuses the immutable original beam source
+and named physical-scope factory; the controller rejects a profile whose actual
+sealed model, joint policy or beam availability differs.
+
+Runtime adds one distinct beam18 participant to the same nodal owner and common
+publisher. Its native stiffness/forces/couples enter the accepted assembly before
+CIN transfer and the existing structural screen. Candidate histories commit or
+discard with all other participants. The archive profile reflects actual beam
+availability and retains the authenticated V5 wall composition. No new clock,
+source parser, beam spring surrogate or separate publication is introduced.
+
+Root's source/model/CIN gate measured 376,930 nodes, 779 rigid groups with 12,961
+members, and 704.35196065175535 kg including 1.5537032763072669 kg from beam18.
+Production derives counts from those retained sources. This runtime increment's
+full-source checks remain root-owned: `vehicle_run_supports_forecast`, then
+`vehicle_run_supports_initial`, then `vehicle_run_supports_loaded_prefix`. The
+last gate requests 5 ms but deliberately ends at two accepted 2e-7 s intervals
+with a 1 µm gap, keeping the actual post-CIN timestep screen enabled. A rejection
+records the measured limit; this authoring does not certify the selected step.
+Normal host/archive/device caps and default/V4 selection remain unchanged.

@@ -26,6 +26,7 @@ struct VehiclePhysicalStartup::Storage {
     tl::fea::type13::Batch type13;
     tl::fea::solids::Batch solids;
     std::unique_ptr<tl::fea::type45::Batch> type45;
+    std::unique_ptr<tl::fea::beam18::Batch> beam18;
     tl::fea::ShellBatchPublication publication;
     void InitializeOwner();
     void InitializeParticipants();
@@ -36,6 +37,8 @@ struct VehiclePhysicalStartup::Storage {
     void InspectShells(InitialInspection&);
     void InspectConnections(InitialInspection&);
     void InspectSolids(InitialInspection&);
+    void InitializeStructuralBeams();
+    void InspectStructuralBeams(InitialInspection&);
     void InitializeJoints();
     void InspectJoints(InitialInspection&);
 };

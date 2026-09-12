@@ -2,6 +2,7 @@
 #include "ParticipantConfigs.h"
 #include "Packing.h"
 #include "JointRuntime.h"
+#include "BeamRuntime.h"
 #include "lib_src/elements/ShellBatchLayeredSection.h"
 #include "lib_utils/BoundedArena.h"
 #include "output/ArtifactIO.h"
@@ -21,6 +22,7 @@ Forecast ForecastStartup(const Config& config,const Execution& execution,const A
                                    attachments.forecast().total_bytes};
     out.app_fixed_bytes = fixed_bytes;
     if(joints) ForecastJoints(config,execution,attachments,*joints,out);
+    ForecastStructuralBeams(config,execution,attachments,out);
     out.retained_source_upper_bound = SourceBytes(execution,attachments,config.limits.host_bytes);
     const auto nodes = physical.domain()->node_count();
     out.packing_bytes = PackingBytes(nodes,config.limits.host_bytes);
@@ -79,6 +81,9 @@ Forecast ForecastStartup(const Config& config,const Execution& execution,const A
             device.Append<std::byte>(out.joints.device_bytes,unused),
             "Complete joint runtime exceeds the physical host/device cap");
     }
+    if(out.has_beam18) Require(host.Append<std::byte>(out.structural_beam_incremental_host_bytes,unused) &&
+        device.Append<std::byte>(out.structural_beams.device_bytes,unused),
+        "Complete structural beam participant exceeds runtime cap");
     out.peak_temporary_bytes = std::max(out.peak_temporary_bytes,
         out.publisher.startup_host_bytes-out.publisher.owned_host_bytes);
     // Native readbacks require complete family shapes. Visit channels/families
@@ -97,6 +102,8 @@ Forecast ForecastStartup(const Config& config,const Execution& execution,const A
     out.readback_temporary_bytes = *std::max_element(std::begin(reads),std::end(reads));
     if(joints) out.readback_temporary_bytes=std::max(out.readback_temporary_bytes,
         joints->model().joints().size()*sizeof(fe::type45::Result));
+    if(out.has_beam18) out.readback_temporary_bytes=std::max(out.readback_temporary_bytes,
+        execution.model().structural_beams()->parents().size()*sizeof(fe::beam18::Result));
     out.peak_temporary_bytes = std::max(out.peak_temporary_bytes,out.readback_temporary_bytes);
     out.retained_host_upper_bound = host.bytes();
     Require(host.Append<std::byte>(out.peak_temporary_bytes,unused),"Peak runtime host phase exceeds cap");

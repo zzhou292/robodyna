@@ -5,7 +5,9 @@ namespace crash::cases::vehicle_run {
 struct PreparedRun::Data {
     Data(const vehicle_wall::VehicleWallSetup& s,const vehicle_runtime::JointModel& j,
         output::physical_frames::Mapping m,Config c,records::Identity id)
-        : setup(s),joints(j),mapping(std::move(m)),config(c),identity(std::move(id)) {}
+        : setup(s),joints(j),mapping(std::move(m)),config(c),identity(std::move(id)) {
+        profile.beam18=s.execution().model().structural_beams()!=nullptr;
+    }
     vehicle_wall::VehicleWallSetup setup;
     vehicle_runtime::JointModel joints;
     output::physical_frames::Mapping mapping;

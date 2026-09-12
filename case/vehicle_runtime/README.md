@@ -77,3 +77,55 @@ The V4 inspection must report 4900 parents with family counts
 908/1991/350/306/1345, preserve epoch zero on repeated reads, and match the exact
 forecasted device allocation. These V4 runtime checks remain root-owned and
 pending this adapter's freeze.
+
+## V5 structural beam participant
+
+The sealed V5 domain requires the exact retained `structural_beams()` Model and
+its `ledger.beam18()` contribution. `BeamRuntime` authenticates their shared
+backing before forecasting or construction. It uses the native Batch forecast
+and discounts only the Model payload already charged by the complete ledger;
+the separate Batch handle and all incremental staging remain charged. Beam
+readback participates in the maximum sequential temporary reservation.
+
+`InitializeStructuralBeams` owns a separate typed beam18 Batch and its native
+TT0 cache. The common publisher claims it together with the existing producers
+and optional joints. The existing epoch-zero shell/connection pointer-binding
+trial remains unchanged. Reverse destruction releases the publication, beam
+and joint batches, then the owner and retained sources. Initial inspection and
+`CaptureAccess` authenticate actual beam source/count/stamp and complete typed
+readbacks. The app never reconstructs beam force or inertia equations.
+
+The controller's `vehicle_run_supports_forecast` checks exact inclusive host and
+device caps plus a 141-parent beam-cap rejection before owner allocation.
+`vehicle_run_supports_initial` checks all eight participant kinds, repeated
+epoch-zero inspection, actual beam capture identity and failed replacement
+without losing the prior owner. The separate two-interval loaded-prefix gate
+checks single-owner assembly/publication and authenticated archive/replay.
+These full-source/CUDA gates are authored for root execution; author checks
+cover only C++ syntax and small CLI/profile/loop values.
+
+Author handoff: 17 host functions pass (12 CLI/loop, one source-policy pairing,
+four contact/summary regressions). All 21 changed/new C++ translation units pass
+syntax against TL `01a9a39` and archive dependency `6c20dc5`; peak sampled syntax
+RSS is 410,763,264 bytes. Reports are `vehicle-supports-runtime-host-tests-1`,
+`vehicle-supports-runtime-profile-tests-2`, `vehicle-supports-runtime-report-tests-2`
+and `vehicle-supports-runtime-syntax-2`. Disposable direct-link attempts omitted
+ArtifactIO/BoundedArrayIO dependencies; their first reports preserve those link
+failures, and the passing retries use the actual implementations. Owning CMake
+already links both dependencies. No native/CUDA or original-source run was
+performed by the author.
+
+Root can reuse the configured `case/vehicle_run` live/original build and pinned
+source fixture arguments. Build `robo_dyna_vehicle_run_original_check`, then run
+these CTests separately under the workstation guard, inspecting the forecast
+before the first allocation:
+
+```
+ctest --test-dir BUILD -R '^vehicle_run_supports_forecast$' --output-on-failure
+ctest --test-dir BUILD -R '^vehicle_run_supports_initial$' --output-on-failure
+ctest --test-dir BUILD -R '^vehicle_run_supports_loaded_prefix$' --output-on-failure
+```
+
+Also rerun `vehicle_run_values`, `vehicle_run_reports` and the existing V1/V4
+forecast/loaded-prefix gates as affected regressions. The loaded test can retain
+its archive via the existing `ROBO_VEHICLE_RUN_OUTPUT` empty-directory option.

@@ -79,4 +79,17 @@ TEST(VehicleRunOptions, ExplicitWallControlsKeepUnitsAndRejectInvalidValuesBefor
         EXPECT_THROW(Parse(duplicate),std::exception);
     }
 }
+TEST(VehicleRunOptions, VehicleSupportsV5IsExplicitAndKeepsNormalResourceDefaults) {
+    auto args=Arguments();
+    args.insert(args.end(),{"--physical-profile","vehicle-supports-v5"});
+    const auto options=Parse(args);
+    EXPECT_EQ(options.config.physical_profile,PhysicalProfile::VehicleSupportsV5);
+    EXPECT_STREQ(PhysicalProfileName(options.config.physical_profile),"vehicle-supports-v5");
+    EXPECT_EQ(options.config.resources,ResourceProfile::Normal);
+    EXPECT_EQ(options.config.samples,101u);
+    EXPECT_EQ(options.config.fixed_dt_s,3e-7);
+    EXPECT_NE(std::string(cli::Usage()).find("vehicle-supports-v5"),std::string::npos);
+    args.insert(args.end(),{"--physical-profile","extended-solids-v4"});
+    EXPECT_THROW(Parse(args),std::invalid_argument);
+}
 } // namespace crash::cases::vehicle_run::test

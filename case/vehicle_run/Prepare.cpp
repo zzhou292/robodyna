@@ -1,4 +1,5 @@
 #include "RunState.h"
+#include "source/PhysicalSelection.h"
 #include "case/vehicle_runtime/ParticipantConfigs.h"
 #include "lib_utils/BoundedArena.h"
 #include "output/ArtifactIO.h"
@@ -16,13 +17,12 @@ std::size_t Sum(std::size_t cap,std::initializer_list<std::size_t> values) {
 PreparedRun PreparedRun::Prepare(const vehicle_wall::VehicleWallSetup& setup,const vehicle_runtime::JointModel& joints,
     Config config,records::Identity identity) {
     const auto horizon=Plan(config);
-    const bool extended=config.physical_profile==PhysicalProfile::ExtendedSolidsV4;
-    const auto expected_domain=extended ? modelio::physical_domain::Policy::RetainedShellAssembliesExtendedSolidsV4
-        : modelio::physical_domain::Policy::RetainedShellAssembliesV1;
-    const auto expected_joints=extended ? modelio::type45::Policy::OriginalDirectSdiType45ExtendedSolidsV4
-        : modelio::type45::Policy::OriginalDirectSdiType45V1;
-    output::Require(setup.execution().model().source_domain().policy()==expected_domain &&
-        joints.source().policy()==expected_joints && joints.model().joints().size()==(extended?40u:38u),
+    const auto selected=detail::SelectPhysical(config.physical_profile);
+    const bool has_beams=setup.execution().model().structural_beams()!=nullptr;
+    output::Require(setup.execution().model().source_domain().policy()==selected.domain &&
+        joints.source().policy()==selected.joints &&
+        joints.model().joints().size()==modelio::type45::detail::Required(selected.joints) &&
+        has_beams==selected.structural_beams,
         "Run physical profile differs from the authenticated domain or joint composition");
     output::Require(setup.settings().requested_duration_s==config.duration_s &&
         setup.settings().mesh_profile==vehicle_wall::WallMeshProfile::EnvelopeRectangleV1 &&
@@ -51,7 +51,7 @@ PreparedRun PreparedRun::Prepare(const vehicle_wall::VehicleWallSetup& setup,con
     const auto capture=output::physical_frames::PhysicalAcceptedFrames::Preflight(mapping,context);
     const auto probe_request=output::physical_run::MakeWallRequest(context,horizon.intervals,config.duration_s,
         config.samples,records::FullRunByteCap-CompanionByteCap);
-    const auto probe=output::physical_run::RunArchive::PreflightWithWall(setup,mapping,context,probe_request,{true,true});
+    const auto probe=output::physical_run::RunArchive::PreflightWithWall(setup,mapping,context,probe_request,{true,true,has_beams});
     const auto shared_wall=Sum(maximum_host,{setup.forecast().shared_source_upper_bound,
         setup.forecast().retained_setup_bytes});
     output::Require(probe.shared_wall_setup_upper_bound==shared_wall &&

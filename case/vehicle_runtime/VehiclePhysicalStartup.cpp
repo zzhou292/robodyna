@@ -42,6 +42,10 @@ tl::fea::NodalAllocationInfo VehiclePhysicalStartup::Storage::Allocations() cons
         out.device_bytes += type45->allocations().device_bytes;
         out.device_allocations += type45->allocations().device_allocations;
     }
+    if(beam18) {
+        out.device_bytes += beam18->allocations().device_bytes;
+        out.device_allocations += beam18->allocations().device_allocations;
+    }
     return out;
 }
 InitialInspection VehiclePhysicalStartup::InspectInitial() {
@@ -55,12 +59,15 @@ InitialInspection VehiclePhysicalStartup::InspectInitial() {
     storage_->InspectConnections(out);
     storage_->InspectSolids(out);
     storage_->InspectJoints(out);
+    storage_->InspectStructuralBeams(out);
     tl::fea::ShellPhysicalDiagnostics diagnostics;
     detail::RequireSuccess(storage_->publication.CopyAcceptedPhysicalDiagnostics(out.stamp,&diagnostics));
     output::Require(diagnostics.valid && !diagnostics.kinetic_available,
                     "Initial common publication diagnostics are invalid");
     output::Require(diagnostics.has_type45==bool(storage_->type45),
                     "Initial publication joint availability differs from its participant scope");
+    output::Require(diagnostics.has_beam18==bool(storage_->beam18),
+                    "Initial publication beam availability differs from its participant scope");
     output::Require(storage_->owner.accepted().epoch==0 && storage_->owner.accepted().time==0 &&
                     storage_->Allocations().device_bytes==out.allocations.device_bytes,
                     "Initial readback changed clock or explicit allocations");

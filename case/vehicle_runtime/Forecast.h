@@ -19,6 +19,9 @@ struct Forecast {
     std::size_t joint_source_bytes = 0;
     tl::fea::type45::BatchForecast joints;
     tl::fea::ShellPhysicalPublicationForecast publisher;
+    bool has_beam18 = false;
+    tl::fea::beam18::BatchForecast structural_beams;
+    std::size_t structural_beam_incremental_host_bytes = 0;
 };
 namespace detail {
 std::size_t SourceBytes(const Execution&,const Attachments&,std::size_t cap);

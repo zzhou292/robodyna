@@ -10,7 +10,7 @@ namespace {
 c::NodalWallMappedSource ContactSource(vehicle_dynamics::ExecutionAccess::State& state) {
     return {&state.execution.physical(),&state.execution.model().rigid_assembly(),
         vehicle_runtime::detail::Witnesses(state.attachments),&state.publication,
-        {&state.qeph,&state.t3,&state.qbat,&state.type25,&state.type13,&state.solids,state.type45.get()},
+        {&state.qeph,&state.t3,&state.qbat,&state.type25,&state.type13,&state.solids,state.type45.get(),state.beam18.get()},
         {state.config.configuration_id,state.config.qualification_id,vehicle_runtime::detail::InitialTranslation()}};
 }
 }

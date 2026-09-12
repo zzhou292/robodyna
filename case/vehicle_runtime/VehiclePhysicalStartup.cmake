@@ -15,6 +15,9 @@ include("${ROBO_DYNA_TL_ROOT}/lib_src/elements/ShellBatchPublication.cmake")
 if(NOT TARGET tl_type45_batch)
   include("${ROBO_DYNA_TL_ROOT}/lib_src/elements/type45/resident/Batch.cmake")
 endif()
+if(NOT TARGET tl_beam18_batch)
+  include("${ROBO_DYNA_TL_ROOT}/lib_src/elements/beam18/resident/Batch.cmake")
+endif()
 add_library(robo_dyna_vehicle_runtime_values STATIC
   "${CMAKE_CURRENT_LIST_DIR}/Config.cpp" "${CMAKE_CURRENT_LIST_DIR}/Packing.cpp")
 target_link_libraries(robo_dyna_vehicle_runtime_values PUBLIC robo_dyna_artifact_io
@@ -29,6 +32,8 @@ add_library(robo_dyna_vehicle_physical_startup STATIC
   "${CMAKE_CURRENT_LIST_DIR}/SourceBudget.cpp" "${CMAKE_CURRENT_LIST_DIR}/Forecast.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/JointRuntime.cpp" "${CMAKE_CURRENT_LIST_DIR}/InitializeJoints.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/InspectJoints.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/BeamRuntime.cpp" "${CMAKE_CURRENT_LIST_DIR}/InitializeStructuralBeams.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/InspectStructuralBeams.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/ParticipantConfigs.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/InitializeOwner.cpp" "${CMAKE_CURRENT_LIST_DIR}/InitializeParticipants.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/InitializePublication.cpp"
@@ -36,6 +41,6 @@ add_library(robo_dyna_vehicle_physical_startup STATIC
   "${CMAKE_CURRENT_LIST_DIR}/InspectConnections.cpp" "${CMAKE_CURRENT_LIST_DIR}/InspectSolids.cpp")
 target_link_libraries(robo_dyna_vehicle_physical_startup PUBLIC robo_dyna_vehicle_runtime_values
   robo_dyna_vehicle_shell_execution robo_dyna_vehicle_physical_attachments tl_shell_batch_publication
-  robo_dyna_vehicle_joint_model tl_type45_batch)
+  robo_dyna_vehicle_joint_model tl_type45_batch tl_beam18_batch)
 target_compile_features(robo_dyna_vehicle_physical_startup PUBLIC cxx_std_17)
 target_compile_options(robo_dyna_vehicle_physical_startup PRIVATE -fno-fast-math -ffp-contract=off)

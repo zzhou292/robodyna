@@ -12,5 +12,6 @@ void VehiclePhysicalStartup::Storage::InitializeParticipants() {
     detail::RequireSuccess(type13.InitializeMapped(c.type13,physical,execution.model().rigid_assembly(),
         owner,source,config.limits.beams));
     detail::RequireSuccess(solids.InitializeJoined(c.solids,execution.model().solids()));
+    InitializeStructuralBeams();
 }
 } // namespace crash::cases::vehicle_runtime
