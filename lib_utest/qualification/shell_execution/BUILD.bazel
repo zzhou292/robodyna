@@ -25,7 +25,8 @@ cc_test(
 cc_library(
     name = "fixture",
     testonly = True,
-    visibility = ["//lib_utest/qualification/qt_mapped:__pkg__"],
+    visibility = ["//lib_utest/qualification/qt_mapped:__pkg__",
+                  "//lib_utest/qualification/self_contact_surface:__pkg__"],
     hdrs = ["Fixture.h"],
     deps = ["//lib_src/assembly:shell_physical_binding", "//lib_src/assembly:shell_execution_binding",
             "//lib_utest/qualification/qbat_catalog:fixture", "@googletest//:gtest_main"],

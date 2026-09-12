@@ -14,6 +14,28 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
+    name = "self_contact_surface_binding",
+    srcs = [
+        "SelfContactSurfaceBinding.cpp",
+        "self_contact/Features.cpp",
+        "self_contact/Layout.cpp",
+        "self_contact/Queries.cpp",
+        "self_contact/Sources.cpp",
+    ],
+    hdrs = ["SelfContactSurfaceBinding.h", "SelfContactSurfaceTypes.h", "self_contact/Storage.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        ":q4_surface_mapping",
+        "//lib_src/assembly:shell_physical_binding",
+        "//lib_src/elements:shell_physical_owner_values",
+        "//lib_src/elements:shell_batch_plasticity_binding",
+        "//lib_src/solvers:nodal_trial_identity",
+        "//lib_utils:bounded_arena",
+        "//lib_utils:source_identity_index",
+    ],
+)
+
+cc_library(
     name = "rigid_normal_response",
     hdrs = ["RigidNormalResponse.h", "RigidNormalResponseBounds.h"],
     deps = [":q4_contact_integration", "//lib_src/constraints:nodal_rigid_group_step_math"],

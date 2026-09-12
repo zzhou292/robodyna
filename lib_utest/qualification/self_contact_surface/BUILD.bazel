@@ -1,0 +1,16 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+
+cc_test(
+    name = "host_check",
+    size = "small",
+    srcs = ["Fixture.h", "HostTest.cpp", "ExecutionTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        "//lib_src/collision:self_contact_surface_binding",
+        "//lib_src/assembly:shell_physical_binding",
+        "//lib_src/assembly:shell_execution_binding",
+        "//lib_utest/qualification/qbat_catalog:fixture",
+        "//lib_utest/qualification/shell_execution:fixture",
+        "@googletest//:gtest_main",
+    ],
+)

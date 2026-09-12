@@ -5,6 +5,7 @@ cc_library(
     testonly = True,
     hdrs = ["Fixture.h"],
     visibility = ["//lib_utest/qualification/qbat_mapped:__pkg__",
+                  "//lib_utest/qualification/self_contact_surface:__pkg__",
                   "//lib_utest/qualification/physical_publication:__pkg__",
                   "//lib_utest/qualification/qbat_resident:__pkg__",
                   "//lib_utest/qualification/shell_physical_binding:__pkg__",
