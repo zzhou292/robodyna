@@ -5,6 +5,7 @@
 #include "../type13/resident/Storage.h"
 #include "../solids/resident/Storage.h"
 #include "../type45/resident/Storage.h"
+#include "../beam18/resident/Storage.h"
 
 namespace tl::fea {
 namespace {
@@ -29,7 +30,8 @@ bool ShellBatchPublication::Impl::PhysicalUsable() const noexcept {
       (!connector || !connector->impl_ || connector->impl_->usable) &&
       (!physical->beams || !physical->beams->impl_ || physical->beams->impl_->usable) &&
       (!physical->solids || !physical->solids->impl_ || physical->solids->impl_->usable) &&
-      (!physical->joints || !physical->joints->impl_ || physical->joints->impl_->usable);
+      (!physical->joints || !physical->joints->impl_ || physical->joints->impl_->usable) &&
+      (!physical->structural_beams || !physical->structural_beams->impl_ || physical->structural_beams->impl_->usable);
 }
 bool ShellBatchPublication::Impl::SamePhysicalScope(const NodalStamp& stamp) const noexcept {
   if (!usable || !physical || !physical->owner ||
@@ -37,7 +39,7 @@ bool ShellBatchPublication::Impl::SamePhysicalScope(const NodalStamp& stamp) con
       !trial_identity::SameStamp(stamp,physical->owner->accepted())) return false;
   const auto& binding = physical->binding;
   if (!CompletePhysicalParticipants(binding,{qbatch,tbatch,bbatch,connector,
-      physical->beams,physical->solids})) return false;
+      physical->beams,physical->solids,physical->joints,physical->structural_beams})) return false;
   if (qbatch && (!qbatch->impl_ || !qbatch->MappedBinding() ||
       !qbatch->MappedBinding()->Matches(binding) || !Claimed(*qbatch->impl_,stamp,scope))) return false;
   if (tbatch && (!tbatch->impl_ || !tbatch->MappedBinding() ||
@@ -54,6 +56,9 @@ bool ShellBatchPublication::Impl::SamePhysicalScope(const NodalStamp& stamp) con
   if (physical->solids && (!physical->solids->impl_ ||
       !Claimed(*physical->solids->impl_,stamp,scope) ||
       !physical->solids->impl_->model.contributions()->Matches(*binding.coefficients()->solids()))) return false;
+  if (physical->structural_beams && (!physical->structural_beams->impl_ ||
+      !Claimed(*physical->structural_beams->impl_,stamp,scope) ||
+      !binding.coefficients()->beam18()->Matches(physical->structural_beams->impl_->model,*binding.domain()))) return false;
   if (bool(physical->joints)!=physical->joint_model.prepared()) return false;
   if (physical->joints && (!physical->joints->impl_ ||
       !Claimed(*physical->joints->impl_,stamp,scope) ||
@@ -71,7 +76,8 @@ ShellPublicationReport ShellBatchPublication::Impl::PreflightPhysical(FENodalSta
   if (bool(candidates.qeph) != bool(qbatch) || bool(candidates.t3) != bool(tbatch) ||
       bool(candidates.qbat) != bool(bbatch) || bool(candidates.type25) != bool(connector) ||
       bool(candidates.type13) != bool(physical->beams) || bool(candidates.solids) != bool(physical->solids) ||
-      bool(candidates.type45) != bool(physical->joints))
+      bool(candidates.type45) != bool(physical->joints) ||
+      bool(candidates.beam18) != bool(physical->structural_beams))
     return {S::NotJoined,"Every declared physical candidate is required exactly once"};
   const auto borrowed = owner.BorrowPrepared(token,&authentic);
   if (borrowed.status != NodalStatus::Ok) return Nodal(borrowed);
@@ -105,6 +111,11 @@ ShellPublicationReport ShellBatchPublication::Impl::PreflightPhysical(FENodalSta
     const auto checked=PhysicalReport(physical->joints->PreflightPublication(owner,token,authentic,
         *candidates.type45,scope));
     if (checked.status!=S::Success) return checked;
+  }
+  if (physical->structural_beams) {
+    const auto checked = PhysicalReport(physical->structural_beams->PreflightPublication(owner,token,authentic,
+        *candidates.beam18,scope));
+    if (checked.status != S::Success) return checked;
   }
   return Ok();
 }

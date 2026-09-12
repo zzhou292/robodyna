@@ -6,6 +6,7 @@
 #include "../type13/resident/Storage.h"
 #include "../solids/resident/Storage.h"
 #include "../type45/resident/Storage.h"
+#include "../beam18/resident/Storage.h"
 
 namespace tl::fea {
 void ShellBatchPublication::Impl::CapturePhysicalDiagnostics(ShellPhysicalDiagnostics& output,bool prepared) const noexcept {
@@ -22,6 +23,8 @@ void ShellBatchPublication::Impl::CapturePhysicalDiagnostics(ShellPhysicalDiagno
       physical->solids->impl_->accepted_diagnostics;
   if (physical->joints) output.type45 = prepared ? physical->joints->impl_->candidate_diagnostics :
       physical->joints->impl_->accepted_diagnostics;
+  if (physical->structural_beams) output.beam18 = prepared ? physical->structural_beams->impl_->candidate_diagnostics :
+      physical->structural_beams->impl_->accepted_diagnostics;
 }
 bool ShellBatchPublication::Impl::PhysicalOutputDisjoint(const void* output,std::size_t bytes) const noexcept {
   using trial_identity::Disjoint;
@@ -49,6 +52,9 @@ bool ShellBatchPublication::Impl::PhysicalOutputDisjoint(const void* output,std:
   if (physical->joints && (!physical->joints->impl_ ||
       !physical->joints->impl_->OutputDisjoint(output,bytes) ||
       !Disjoint(output,bytes,physical->joints,sizeof(*physical->joints)))) return false;
+  if (physical->structural_beams && (!physical->structural_beams->impl_ ||
+      !physical->structural_beams->impl_->OutputDisjoint(output,bytes) ||
+      !Disjoint(output,bytes,physical->structural_beams,sizeof(*physical->structural_beams)))) return false;
   return true;
 }
 ShellPublicationReport ShellBatchPublication::CopyAcceptedPhysicalDiagnostics(const NodalStamp& expected,
@@ -81,6 +87,7 @@ ShellPublicationReport ShellBatchPublication::ValidatePhysicalSources(const FENo
       state.qbatch!=participants.qeph || state.tbatch!=participants.t3 ||
       state.bbatch!=participants.qbat || state.connector!=participants.type25 ||
       source.beams!=participants.type13 || source.solids!=participants.solids || source.joints!=participants.type45 ||
+      source.structural_beams!=participants.beam18 ||
       source.identity.configuration_id!=identity.configuration_id ||
       source.identity.qualification_id!=identity.qualification_id ||
       !shell_startup_detail::SameStartup(source.identity.startup,identity.startup))

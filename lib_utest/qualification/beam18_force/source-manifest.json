@@ -92,8 +92,8 @@
       "sha256": "334ab0d87813996918a8d9024e4f50ce2f3fa1a5e44fa63e649b43f7e1b01c81"
     },
     "lib_utest/qualification/beam18_force/BUILD.bazel": {
-      "bytes": 882,
-      "sha256": "cd173b46cb982c972ab5b04807d4b0cece39dcc9840021665f8473180dd5f599"
+      "bytes": 956,
+      "sha256": "6b20c250854f62ae859596002fd4ff83952396ff2be682515753dc5b98c43e60"
     },
     "lib_utest/qualification/beam18_force/CMakeLists.txt": {
       "bytes": 3273,
@@ -319,6 +319,14 @@
     ],
     "dependency_note": "Referenced owning verifiers passed before refresh; no underlying native or reference equation changed. Extended coefficient reference receipt mismatch existed at base51ef240."
   },
+  "resident_fixture_visibility_followup": {
+    "scope": "Add only beam18_resident visibility to the existing beam force test_values library; no source, native or numerical changes.",
+    "prior_record": {
+      "path": "lib_utest/qualification/beam18_force/BUILD.bazel",
+      "bytes": 811,
+      "sha256": "cb7c74e6672e0a6f90e116372da6cb1113b782f167ec3c973e4985e738c77cd7"
+    }
+  },
   "analytic_dependency_receipt": {
     "scope": "Shared LAW44 owner adds explicit analytic solid hardening; beam caller remains explicitly tabulated. Root analytic-beam-root-tests-1 passes beam host/native/CUDA numerical gates and the LAW44 owning native identity. Preserve the previous whole-owner receipt.",
     "prior_record": {
@@ -335,12 +343,12 @@
       "sha256": "fc8ab378b3b0dca6b5873d231696734ba5700176838c29c1197307a642320cc2"
     }
   },
-  "resident_fixture_visibility_followup": {
-    "scope": "Add only beam18_resident visibility to the existing beam force test_values library; no source, native or numerical changes.",
+  "common_publication_test_visibility": {
+    "scope": "Add only beam18_publication access to existing test_values; native and production arithmetic unchanged.",
     "prior_record": {
       "path": "lib_utest/qualification/beam18_force/BUILD.bazel",
-      "bytes": 811,
-      "sha256": "cb7c74e6672e0a6f90e116372da6cb1113b782f167ec3c973e4985e738c77cd7"
+      "bytes": 882,
+      "sha256": "cd173b46cb982c972ab5b04807d4b0cece39dcc9840021665f8473180dd5f599"
     }
   }
 }

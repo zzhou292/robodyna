@@ -15,6 +15,7 @@ struct PhysicalState {
   type13::Batch* beams = nullptr;
   solids::Batch* solids = nullptr;
   type45::Batch* joints = nullptr;
+  beam18::Batch* structural_beams = nullptr;
   ShellPhysicalPublicationIdentity identity;
   ShellPhysicalPublicationForecast forecast;
   NodalStamp accepted_stamp;

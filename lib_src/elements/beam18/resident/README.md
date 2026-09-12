@@ -61,3 +61,19 @@ Plain rigid groups consuming beam native-total inertia use the separately
 qualified `InitializeNativeTotal` API. Its unpartitioned channel comes directly
 from the beam ledger partition. The beam producer supplies no fabricated
 physical/added split, and this resident does not manufacture one.
+# Qualified common publication
+
+The common physical publisher now admits one structural beam participant for
+every nonempty V5 beam ledger. Startup authenticates the exact beam Model,
+coefficients, rigid assembly, CIN roster and owner before claiming any batch.
+Accepted force assembly and candidate material history use the existing owner;
+all participants preflight before its sole commit. Publishing beam history after
+that commit is an infallible slab swap. Shared discard, poisoning, source alias
+checks and accepted diagnostic readback include beams.
+
+Root `beam18-publication-root-tests-1` passes all six CTests, including four
+actual mixed-family CUDA functions with loaded beam/shell forces, real plain
+and PART endpoints, missing/foreign candidates, late failure, unchanged accepted
+fields and retry. `beam18-resident-root-tests-1` separately covers independent
+native histories and all142 original constructors. Full-vehicle runtime
+qualification remains owned by robo-dyna.

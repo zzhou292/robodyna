@@ -34,6 +34,7 @@ struct ShellBatchPublication::Impl {
       if(physical->beams) physical->beams->DiscardTrial();
       if(physical->solids) physical->solids->DiscardTrial();
       if(physical->joints) physical->joints->DiscardTrial();
+      if(physical->structural_beams) physical->structural_beams->DiscardTrial();
     }
   }
   void Poison() noexcept {
@@ -46,6 +47,7 @@ struct ShellBatchPublication::Impl {
       if(physical->beams) physical->beams->Poison();
       if(physical->solids) physical->solids->Poison();
       if(physical->joints) physical->joints->Poison();
+      if(physical->structural_beams) physical->structural_beams->Poison();
     }
     Discard();
   }

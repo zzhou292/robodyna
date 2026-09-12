@@ -161,6 +161,7 @@ cuda_library(
         "//lib_src/elements/type25:type25_batch",
         "//lib_src/elements/type13/resident:type13_batch", "//lib_src/elements/solids/resident:batch",
         "//lib_src/elements/type45/resident:batch",
+        "//lib_src/elements/beam18/resident:batch",
         "//lib_src/assembly:shell_physical_binding", "//lib_src/constraints:nodal_rigid_assembly_binding",
         "//lib_src/assembly:nodal_mass_binding",
         "//lib_src/solvers:explicit_nodal_state", "//lib_src/solvers:nodal_trial_identity",

@@ -3,8 +3,8 @@
   "files": [
     {
       "path": "lib_src/elements/publication/PhysicalStartup.cpp",
-      "bytes": 8200,
-      "sha256": "d2cb62f7fe11b3f7aa8055c9f5773174730258f40afcd6c9eb1bffc576ff557e"
+      "bytes": 9266,
+      "sha256": "121dbb02d7971c61ea35745da09bef2fcf5c9b9f79a37470c39e31055d164976"
     },
     {
       "path": "lib_src/elements/solids/resident/Arena.cpp",
@@ -118,8 +118,8 @@
     },
     {
       "path": "lib_src/elements/solids/resident/PublicationScope.cpp",
-      "bytes": 3032,
-      "sha256": "015471d6b9d55e653f8550feb7e2553bdc2e0793bbf7dbf25ff3af5060e1047f"
+      "bytes": 3159,
+      "sha256": "8396edae629074e02cee53bdca45b4afbbe5bb131fdd821c9fc6dab55aff93e8"
     },
     {
       "path": "lib_src/elements/solids/resident/README.md",
@@ -291,5 +291,20 @@
       "bytes": 880,
       "sha256": "34e3bf5728eb1d895079fe4cd7f317d243cbadfdef646abb119624e821f37d3e"
     }
-  ]
+  ],
+  "beam18_publication_extension": {
+    "scope": "Add exact V5 beam participant to complete physical publication; retain actual solid contribution/model/ledger identity and native forces. Existing common mixed-family host/CUDA gates pass in beam18-common-root-tests-1 before this receipt refresh.",
+    "prior_records": [
+      {
+        "path": "lib_src/elements/publication/PhysicalStartup.cpp",
+        "bytes": 8200,
+        "sha256": "d2cb62f7fe11b3f7aa8055c9f5773174730258f40afcd6c9eb1bffc576ff557e"
+      },
+      {
+        "path": "lib_src/elements/solids/resident/PublicationScope.cpp",
+        "bytes": 3032,
+        "sha256": "015471d6b9d55e653f8550feb7e2553bdc2e0793bbf7dbf25ff3af5060e1047f"
+      }
+    ]
+  }
 }

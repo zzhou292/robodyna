@@ -7,6 +7,7 @@
 #include "type13/resident/Batch.h"
 #include "solids/resident/Batch.h"
 #include "type45/resident/Batch.h"
+#include "beam18/resident/Batch.h"
 
 namespace tl::fea {
 namespace qeph { class QephBatch; }
@@ -24,6 +25,7 @@ struct ShellPhysicalParticipants {
   type13::Batch* type13 = nullptr;
   solids::Batch* solids = nullptr;
   type45::Batch* type45 = nullptr; // Optional explicit constraint model, no mass producer.
+  beam18::Batch* beam18 = nullptr;
 };
 struct ShellPhysicalCandidates {
   const qeph::BatchDiagnostics* qeph = nullptr;
@@ -33,6 +35,7 @@ struct ShellPhysicalCandidates {
   const type13::BatchDiagnostics* type13 = nullptr;
   const solids::BatchDiagnostics* solids = nullptr;
   const type45::BatchDiagnostics* type45 = nullptr;
+  const beam18::BatchDiagnostics* beam18 = nullptr;
 };
 // Typed participant diagnostics are retained without recomputing their signed
 // work. Kinetic energy is explicitly unavailable: immutable startup coefficients
@@ -50,6 +53,8 @@ struct ShellPhysicalDiagnostics {
   bool valid = false, kinetic_available = false;
   type45::BatchDiagnostics type45;
   bool has_type45 = false;
+  beam18::BatchDiagnostics beam18;
+  bool has_beam18 = false;
 };
 struct ShellPhysicalPublicationIdentity {
   std::uint64_t configuration_id = 0, qualification_id = 0;

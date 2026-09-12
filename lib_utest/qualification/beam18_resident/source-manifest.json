@@ -120,8 +120,8 @@
       "sha256": "4d7f7f44cce9eb504d231541c38a9bf9515f5de480113cdd1517e95b654a8eff"
     },
     "lib_utest/qualification/beam18_force/BUILD.bazel": {
-      "bytes": 882,
-      "sha256": "cd173b46cb982c972ab5b04807d4b0cece39dcc9840021665f8473180dd5f599"
+      "bytes": 956,
+      "sha256": "6b20c250854f62ae859596002fd4ff83952396ff2be682515753dc5b98c43e60"
     },
     "lib_utest/qualification/beam18_resident/AssemblyChecks.cu": {
       "bytes": 1726,
@@ -186,6 +186,14 @@
     "lib_utest/qualification/rigid_assembly_owner/BUILD.bazel": {
       "bytes": 2554,
       "sha256": "7fd0e3057c5a858c6343bd1b02341717c493a22851794b1cfc9d722d57aa4ae5"
+    }
+  },
+  "common_publication_test_visibility": {
+    "scope": "Add only beam18_publication access to existing test_values; native and production arithmetic unchanged.",
+    "prior_record": {
+      "path": "lib_utest/qualification/beam18_force/BUILD.bazel",
+      "bytes": 882,
+      "sha256": "cd173b46cb982c972ab5b04807d4b0cece39dcc9840021665f8473180dd5f599"
     }
   }
 }

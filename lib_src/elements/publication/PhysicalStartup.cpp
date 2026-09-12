@@ -5,6 +5,7 @@
 #include "../type13/resident/Storage.h"
 #include "../solids/resident/Storage.h"
 #include "../type45/resident/Storage.h"
+#include "../beam18/resident/Storage.h"
 #include <new>
 
 namespace tl::fea {
@@ -40,6 +41,7 @@ ShellPublicationReport ShellBatchPublication::InitializePhysicalImpl(FENodalStat
   physical.beams = p.type13;
   physical.solids = p.solids;
   physical.joints = p.type45;
+  physical.structural_beams = p.beam18;
   physical.identity = identity;
   physical.forecast = forecast;
   physical.accepted_stamp = owner.accepted();
@@ -102,6 +104,21 @@ ShellPublicationReport ShellBatchPublication::InitializePhysicalImpl(FENodalStat
     checked=PhysicalReport(p.type45->PreflightAttach(owner,binding,cin,*joints,config,this));
     if (checked.status!=S::Success) return checked;
   }
+  if (p.beam18) {
+    if (!p.beam18->impl_) return {S::NotInitialized,"Declared structural beam participant is not initialized"};
+    const auto& beam = *p.beam18->impl_;
+    auto config = beam.config;
+    config.owner = owner.accepted();
+    config.configuration_id = configuration;
+    config.qualification_id = qualification;
+    config.startup = startup;
+    config.profile = beam18::BatchProfile::PhysicalCinCircularFourPointLaw44V1;
+    config.cin_attachment_count = cin.range_count;
+    config.cin_witness_count = cin.witness_count;
+    checked = PhysicalReport(p.beam18->PreflightAttach(owner,*binding.coefficients(),rigid,
+        cin,beam.model,config,this));
+    if (checked.status != S::Success) return checked;
+  }
   // Includes the actual CIN roster and current epoch-zero M/J, with dependent
   // zero inertia retained. No constrained inverse is reconstructed here.
   auto nodal = owner.ValidateRigidAssemblyBinding(rigid);
@@ -123,6 +140,7 @@ ShellPublicationReport ShellBatchPublication::InitializePhysicalImpl(FENodalStat
   accepted.has_type13 = p.type13 != nullptr;
   accepted.has_solids = p.solids != nullptr;
   accepted.has_type45 = p.type45 != nullptr;
+  accepted.has_beam18 = p.beam18 != nullptr;
   if (p.qeph) accepted.qeph = p.qeph->impl_->accepted_diagnostics;
   if (p.t3) accepted.t3 = p.t3->impl_->accepted_diagnostics;
   if (p.qbat) accepted.qbat = p.qbat->impl_->accepted_diagnostics;
@@ -133,6 +151,7 @@ ShellPublicationReport ShellBatchPublication::InitializePhysicalImpl(FENodalStat
   if (p.type13) accepted.type13 = p.type13->impl_->accepted_diagnostics;
   if (p.solids) accepted.solids = p.solids->impl_->accepted_diagnostics;
   if (p.type45) accepted.type45 = p.type45->impl_->accepted_diagnostics;
+  if (p.beam18) accepted.beam18 = p.beam18->impl_->accepted_diagnostics;
   accepted.valid = true;
   // All allocations, readbacks and participant checks precede the first claim.
   // These private claims and the final pointer move cannot fail.
@@ -143,6 +162,7 @@ ShellPublicationReport ShellBatchPublication::InitializePhysicalImpl(FENodalStat
   if (p.type13) p.type13->AttachPublication(this);
   if (p.solids) p.solids->AttachPublication(this);
   if (p.type45) p.type45->AttachPublication(this,physical.binding);
+  if (p.beam18) p.beam18->AttachPublication(this);
   impl_ = std::move(next);
   return Ok();
 } catch (const std::bad_alloc&) {
@@ -153,5 +173,6 @@ void ShellBatchPublication::Impl::ReleasePhysical() noexcept {
   if (physical->beams) physical->beams->ReleasePublication(scope);
   if (physical->solids) physical->solids->ReleasePublication(scope);
   if (physical->joints) physical->joints->ReleasePublication(scope);
+  if (physical->structural_beams) physical->structural_beams->ReleasePublication(scope);
 }
 } // namespace tl::fea
