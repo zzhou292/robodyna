@@ -1,4 +1,5 @@
 #include "Source.h"
+#include "case/vehicle_startup/physical_attachments/tests/PreparePost.h"
 #include "modelio/vehicle_source/tests/TestSupport.h"
 #include <iostream>
 #include <set>
@@ -44,6 +45,15 @@ const VehicleShellExecution& Execution() {
         std::cout << "V5 shell execution complete preflight=" << VehicleShellExecution::Preflight(model).total_bytes << std::endl;
         return VehicleShellExecution::Prepare(model);
     }();
+    return value;
+}
+const vehicle_runtime::Attachments& PhysicalAttachments() {
+    static const auto post =
+        physical_attachments::test::PreparePost(
+            physical_model::supports_test::Scope(),
+            physical_model::supports_test::Inputs().member);
+    static const auto value = vehicle_runtime::Attachments::Prepare(
+        physical_model::supports_test::Model(), post);
     return value;
 }
 const Selection& Inventory() {

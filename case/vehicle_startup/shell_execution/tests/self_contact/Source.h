@@ -3,6 +3,7 @@
 #include "../../../physical_model/tests/supports/Support.h"
 #include "lib_src/collision/SelfContactSurfaceBinding.h"
 #include "modelio/self_contact/OriginalSelection.h"
+#include "case/vehicle_self_contact/VehicleSelfContactSetup.h"
 #include <vector>
 
 namespace crash::cases::vehicle_startup::shell_execution::self_contact_test {
@@ -17,6 +18,7 @@ struct NativeParent {
 NativeParent Native(const fe::ShellPhysicalBinding&, const fe::ShellPlasticityParentInput&);
 std::uint64_t NativeNodeId(const fe::ShellPhysicalBinding&, const fe::ShellPlasticityParentInput&, unsigned local);
 const VehicleShellExecution& Execution();
+const vehicle_runtime::Attachments& PhysicalAttachments();
 struct Selection {
     std::vector<contact::SelfContactParentSelection> centered, excluded;
 };
