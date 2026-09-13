@@ -67,16 +67,20 @@ SelfContactActiveUseReport MakeLayout(const FixedContactFacetBinding& facets,
     if (!source.rigid->prepared() || !source.rigid->domain() ||
         !source.rigid->domain()->Matches(*surface.physical()->domain()))
       return Fail(S::IdentityMismatch, "Rigid binding does not use the complete S0 domain");
+    const auto* execution = surface.physical()->execution();
+    const auto* actual = execution ? execution->rigid() : nullptr;
+    if (!actual || !actual->prepared() ||
+        actual->groups().data() != source.rigid->groups().data() ||
+        actual->members().data() != source.rigid->members().data())
+      return Fail(S::IdentityMismatch,
+          "Supplied rigid source is not S0 execution's actual binding");
   }
   if (const auto* execution = surface.physical()->execution()) {
     const auto* actual = execution->rigid();
     if (actual && actual->prepared()) {
-      if ((!source.rigid && actual->groups().size()) ||
-          (source.rigid &&
-           (actual->groups().data() != source.rigid->groups().data() ||
-            actual->members().data() != source.rigid->members().data())))
+      if (!source.rigid && actual->groups().size())
         return Fail(S::IdentityMismatch,
-            "Supplied rigid source is not S0 execution's actual binding");
+            "S0 execution rigid authority was omitted from the source");
     }
   }
   const bool any_cin = source.cin.model || source.cin.ranges || source.cin.witnesses ||

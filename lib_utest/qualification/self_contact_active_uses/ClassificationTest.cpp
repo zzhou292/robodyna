@@ -55,14 +55,36 @@ TEST(SelfContactActiveUses, OnlyLocalVfIncidenceExcludesSamePidSharedCornerTopol
   EXPECT_FALSE(pair.excluded);
 }
 
-TEST(SelfContactActiveUses, CompletePartAndPlainBodiesExcludeButDifferentPartialAndMixedAdmit) {
-  {
-    Fixture fixture(2);
-    Rigid rigid(fixture, {{10,11,12,13,14}});
+TEST(SelfContactActiveUses, SameParentRemoteVfNeedsAuthenticatedCurrentRegularity) {
+  for (const unsigned level : {0u,2u}) {
+    Fixture fixture(level);
     c::SelfContactActiveUseBinding uses;
-    ASSERT_EQ(uses.Initialize(fixture.facets,{&rigid.binding,{}}).status, Code::Ok);
+    ASSERT_EQ(uses.Initialize(fixture.facets).status,Code::Ok);
+    const auto vertex = fixture.VertexUse(100,uses,11);
+    ASSERT_NE(vertex,SIZE_MAX);
+    const auto remote = fixture.RemoteFacet(
+        100,uses.vertex_uses()[vertex].feature,uses);
+    ASSERT_NE(remote,SIZE_MAX) << "level " << level;
+    auto active = fixture.Active(uses);
+    c::SelfContactPairClassification pair;
+    ASSERT_EQ(uses.ClassifyVertexFace(vertex,remote,
+        fixture.FacePoint(remote,uses),View(active),&pair).status,Code::Ok);
+    EXPECT_EQ(pair.status,
+        c::SelfContactPairStatus::SameParentNeedsCurrentRegularity);
+    EXPECT_FALSE(pair.local_incidence);
+    EXPECT_FALSE(pair.excluded);
+    EXPECT_EQ(pair.admitted_force_area_m2.value,0);
+  }
+}
+
+TEST(SelfContactActiveUses, ActualPartAndPlainBodiesUseExactExecutionAuthority) {
+  {
+    ExecutionFixture fixture(2,ExecutionRigidMode::MergedParts);
+    c::SelfContactActiveUseBinding uses;
+    ASSERT_EQ(uses.Initialize(fixture.facets,{&fixture.rigid,{}}).status,Code::Ok);
     const auto vertex = fixture.VertexUse(100, uses, 10);
-    const auto facet = fixture.RemoteFacet(200, uses.vertex_uses()[vertex].feature, uses);
+    const auto facet = fixture.RemoteFacet(300,uses.vertex_uses()[vertex].feature,uses);
+    ASSERT_NE(facet,SIZE_MAX);
     auto active = fixture.Active(uses);
     c::SelfContactPairClassification pair;
     ASSERT_EQ(uses.ClassifyVertexFace(vertex,facet,fixture.FacePoint(facet,uses),
@@ -70,12 +92,13 @@ TEST(SelfContactActiveUses, CompletePartAndPlainBodiesExcludeButDifferentPartial
     EXPECT_EQ(pair.status,c::SelfContactPairStatus::ExcludedSameRigidGroup);
   }
   {
-    Fixture fixture(2,false,true);
-    Rigid rigid(fixture, {{20,21}}, {10,11,12,13,14});
+    ExecutionFixture fixture(2,ExecutionRigidMode::PartAndPlain);
     c::SelfContactActiveUseBinding uses;
-    ASSERT_EQ(uses.Initialize(fixture.facets,{&rigid.binding,{}}).status, Code::Ok);
-    const auto vertex = fixture.VertexUse(100, uses, 10);
-    const auto facet = fixture.RemoteFacet(200, uses.vertex_uses()[vertex].feature, uses);
+    ASSERT_EQ(uses.Initialize(fixture.facets,{&fixture.rigid,{}}).status,Code::Ok);
+    const auto vertex = fixture.VertexUse(300,uses,20);
+    const auto facet = fixture.RemoteFacet(fixture.second_plain_parent,
+        uses.vertex_uses()[vertex].feature,uses);
+    ASSERT_NE(facet,SIZE_MAX);
     auto active = fixture.Active(uses);
     c::SelfContactPairClassification pair;
     ASSERT_EQ(uses.ClassifyVertexFace(vertex,facet,fixture.FacePoint(facet,uses),
@@ -84,12 +107,12 @@ TEST(SelfContactActiveUses, CompletePartAndPlainBodiesExcludeButDifferentPartial
     EXPECT_EQ(pair.endpoint_support[0].complete_rigid_group,1u);
   }
   {
-    Fixture fixture(2,false,true);
-    Rigid rigid(fixture, {{10,11,12,13,14},{20,21,22,23}});
+    ExecutionFixture fixture(2,ExecutionRigidMode::SeparateParts);
     c::SelfContactActiveUseBinding uses;
-    ASSERT_EQ(uses.Initialize(fixture.facets,{&rigid.binding,{}}).status, Code::Ok);
+    ASSERT_EQ(uses.Initialize(fixture.facets,{&fixture.rigid,{}}).status,Code::Ok);
     const auto vertex = fixture.VertexUse(100, uses, 10);
-    const auto facet = fixture.RemoteFacet(101, uses.vertex_uses()[vertex].feature, uses);
+    const auto facet = fixture.RemoteFacet(300,uses.vertex_uses()[vertex].feature,uses);
+    ASSERT_NE(facet,SIZE_MAX);
     auto active = fixture.Active(uses);
     c::SelfContactPairClassification pair;
     ASSERT_EQ(uses.ClassifyVertexFace(vertex,facet,fixture.FacePoint(facet,uses),
@@ -99,30 +122,46 @@ TEST(SelfContactActiveUses, CompletePartAndPlainBodiesExcludeButDifferentPartial
         pair.endpoint_support[1].complete_rigid_group);
   }
   {
-    Fixture fixture(2);
-    Rigid rigid(fixture, {{10,11}});
+    ExecutionFixture fixture(2,ExecutionRigidMode::PartAndPlain);
     c::SelfContactActiveUseBinding uses;
-    ASSERT_EQ(uses.Initialize(fixture.facets,{&rigid.binding,{}}).status, Code::Ok);
+    ASSERT_EQ(uses.Initialize(fixture.facets,{&fixture.rigid,{}}).status,Code::Ok);
     const auto vertex = fixture.VertexUse(100, uses, 10);
-    const auto facet = fixture.RemoteFacet(200, uses.vertex_uses()[vertex].feature, uses);
+    const auto facet = fixture.RemoteFacet(300,uses.vertex_uses()[vertex].feature,uses);
+    ASSERT_NE(facet,SIZE_MAX);
     auto active = fixture.Active(uses);
     c::SelfContactPairClassification pair;
     ASSERT_EQ(uses.ClassifyVertexFace(vertex,facet,fixture.FacePoint(facet,uses),
         View(active),&pair).status,Code::Ok);
     EXPECT_EQ(pair.status,c::SelfContactPairStatus::AdmittedVertexFace);
-    EXPECT_EQ(pair.endpoint_support[1].status,
-        c::SelfContactSupportStatus::AdmittedPartialOrMixedRigid);
+    ASSERT_EQ(fixture.rigid.groups().size(),2u);
+    EXPECT_EQ(fixture.rigid.groups()[0].source_id,
+        fixture.rigid.groups()[1].source_id);
+    EXPECT_NE(fixture.rigid.groups()[0].source_kind,
+        fixture.rigid.groups()[1].source_kind);
   }
   {
-    Fixture fixture(2);
-    Rigid rigid(fixture, {{10,11},{12,13}});
+    ExecutionFixture fixture(2,ExecutionRigidMode::SeparateParts);
     c::SelfContactActiveUseBinding uses;
-    ASSERT_EQ(uses.Initialize(fixture.facets,{&rigid.binding,{}}).status, Code::Ok);
-    const auto vertex = fixture.VertexUse(200, uses, 14);
-    const auto facet = fixture.RemoteFacet(100, uses.vertex_uses()[vertex].feature, uses);
-    auto active = fixture.Active(uses);
+    ASSERT_EQ(uses.Initialize(fixture.facets,{&fixture.rigid,{}}).status,Code::Ok);
+    const auto vertex=fixture.VertexUse(300,uses,21);
+    const auto facet=fixture.RemoteFacet(
+        fixture.mixed_parent,uses.vertex_uses()[vertex].feature,uses);
+    ASSERT_NE(vertex,SIZE_MAX);
+    ASSERT_NE(facet,SIZE_MAX);
+    auto active=fixture.Active(uses);
     c::SelfContactPairClassification pair;
-    ASSERT_EQ(uses.ClassifyVertexFace(vertex,facet,fixture.FacePoint(facet,uses),
+    auto mixed=fixture.FacePoint(facet,uses);
+    ASSERT_EQ(uses.ClassifyVertexFace(vertex,facet,mixed,
+        View(active),&pair).status,Code::Ok);
+    EXPECT_EQ(pair.status,c::SelfContactPairStatus::AdmittedVertexFace);
+    EXPECT_EQ(pair.endpoint_support[1].status,
+        c::SelfContactSupportStatus::AdmittedPartialOrMixedRigid);
+    auto partial=mixed;
+    for (unsigned slot=0;slot<partial.count;++slot) {
+      const auto source_id=fixture.domain.nodes()[partial.nodes[slot]].source_id;
+      partial.weights[slot]=source_id == 20 ? 0 : .5;
+    }
+    ASSERT_EQ(uses.ClassifyVertexFace(vertex,facet,partial,
         View(active),&pair).status,Code::Ok);
     EXPECT_EQ(pair.status,c::SelfContactPairStatus::AdmittedVertexFace);
     EXPECT_EQ(pair.endpoint_support[1].status,
@@ -148,42 +187,40 @@ TEST(SelfContactActiveUses, EveryStandaloneEeCaseHasNoInventedForceArea) {
   c::SelfContactPairClassification pair;
   for (const auto edge_case : cases) {
     ASSERT_EQ(uses.ClassifyEdgeEdge(first,a,second,b,edge_case,View(active),
-        nullptr,&pair).status,Code::Ok);
+        &pair).status,Code::Ok);
     EXPECT_EQ(pair.status,c::SelfContactPairStatus::UnadmittedEdgeEdgeForceArea);
     EXPECT_EQ(pair.admitted_force_area_m2.value,0);
   }
-  const auto vertex = fixture.VertexUse(100,uses,10);
-  const auto facet = fixture.RemoteFacet(101,uses.vertex_uses()[vertex].feature,uses);
-  c::SelfContactPairClassification vf;
-  ASSERT_EQ(uses.ClassifyVertexFace(vertex,facet,fixture.FacePoint(facet,uses),
-      View(active),&vf).status,Code::Ok);
-  ASSERT_EQ(vf.status,c::SelfContactPairStatus::AdmittedVertexFace);
-  std::size_t covered_first = SIZE_MAX;
-  const auto first_parent = fixture.Parent(100,uses);
+}
+
+TEST(SelfContactActiveUses, SameParentRemoteEeAlsoNeedsCurrentRegularity) {
+  Fixture fixture(2);
+  c::SelfContactActiveUseBinding uses;
+  ASSERT_EQ(uses.Initialize(fixture.facets).status,Code::Ok);
+  const auto parent = fixture.Parent(100,uses);
+  std::size_t first = SIZE_MAX, second = SIZE_MAX;
   for (std::size_t i = 0; i < uses.edge_uses().size(); ++i) {
-    const auto& edge = uses.edge_uses()[i];
-    const auto& feature = uses.edges()[edge.feature];
-    if (edge.parent == first_parent &&
-        (feature.vertices[0] == uses.vertex_uses()[vertex].feature ||
-         feature.vertices[1] == uses.vertex_uses()[vertex].feature)) {
-      covered_first = i;
-      break;
+    if (uses.edge_uses()[i].parent != parent) continue;
+    for (std::size_t j = i+1; j < uses.edge_uses().size(); ++j) {
+      if (uses.edge_uses()[j].parent != parent) continue;
+      const auto& a = uses.edges()[uses.edge_uses()[i].feature];
+      const auto& b = uses.edges()[uses.edge_uses()[j].feature];
+      bool incident = false;
+      for (const auto av : a.vertices) for (const auto bv : b.vertices)
+        incident = incident || av == bv;
+      if (!incident) { first = i; second = j; break; }
     }
+    if (first != SIZE_MAX) break;
   }
-  ASSERT_NE(covered_first,SIZE_MAX);
-  const auto covered_second = uses.facet_uses()[facet].edge_uses[0];
-  const auto covered_a = Midpoint(uses.edge_uses()[covered_first]);
-  const auto covered_b = Midpoint(uses.edge_uses()[covered_second]);
-  auto unauthenticated = vf;
-  unauthenticated.binding_identity = nullptr;
-  ASSERT_EQ(uses.ClassifyEdgeEdge(covered_first,covered_a,covered_second,covered_b,
-      cases[0],View(active),&unauthenticated,&pair).status,Code::Ok);
-  EXPECT_EQ(pair.status,c::SelfContactPairStatus::UnadmittedEdgeEdgeForceArea);
-  ASSERT_EQ(uses.ClassifyEdgeEdge(covered_first,covered_a,covered_second,covered_b,
-      cases[0],View(active),
-      &vf,&pair).status,Code::Ok);
+  ASSERT_NE(first,SIZE_MAX);
+  auto active = fixture.Active(uses);
+  c::SelfContactPairClassification pair;
+  ASSERT_EQ(uses.ClassifyEdgeEdge(first,Midpoint(uses.edge_uses()[first]),
+      second,Midpoint(uses.edge_uses()[second]),
+      c::SelfContactEdgeEdgeCase::StrictInteriorInteriorMinimum,
+      View(active),&pair).status,Code::Ok);
   EXPECT_EQ(pair.status,
-      c::SelfContactPairStatus::CoveredByIndependentAdmittedVertexFace);
+      c::SelfContactPairStatus::SameParentNeedsCurrentRegularity);
   EXPECT_EQ(pair.admitted_force_area_m2.value,0);
 }
 } // namespace active_use_test

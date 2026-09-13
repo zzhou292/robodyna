@@ -34,6 +34,37 @@ long double DirectedSum(const c::SelfContactActiveUseBinding& uses, std::size_t 
     if (use.parent == parent) sum += use.directed_vf_area_m2.value;
   return sum;
 }
+long double AdmittedEventSum(const Fixture& fixture,
+    const c::SelfContactActiveUseBinding& uses, std::uint64_t vertex_eid,
+    std::uint64_t face_eid) {
+  const auto vertex_parent = fixture.Parent(vertex_eid,uses);
+  const auto face_parent = fixture.Parent(face_eid,uses);
+  EXPECT_NE(vertex_parent,SIZE_MAX);
+  EXPECT_NE(face_parent,SIZE_MAX);
+  const auto facet = uses.parents()[face_parent].facet_offset;
+  const auto point = fixture.FacePoint(facet,uses);
+  auto active = fixture.Active(uses);
+  const c::SelfContactActivityView view{
+      active.data(),active.data(),active.size()};
+  long double sum = 0;
+  std::size_t events = 0;
+  for (std::size_t i = 0; i < uses.vertex_uses().size(); ++i) {
+    if (uses.vertex_uses()[i].parent != vertex_parent) continue;
+    c::SelfContactPairClassification pair;
+    EXPECT_EQ(uses.ClassifyVertexFace(i,facet,point,view,&pair).status,Code::Ok);
+    EXPECT_EQ(pair.status,c::SelfContactPairStatus::AdmittedVertexFace);
+    EXPECT_EQ(pair.admitted_force_area_m2.value,
+        uses.vertex_uses()[i].directed_vf_area_m2.value);
+    sum += pair.admitted_force_area_m2.value;
+    ++events;
+  }
+  EXPECT_EQ(events,uses.parents()[vertex_parent].arity == 4 ?
+      std::size_t((1u << uses.parents()[vertex_parent].level)+1)*
+          ((1u << uses.parents()[vertex_parent].level)+1) :
+      std::size_t((1u << uses.parents()[vertex_parent].level)+1)*
+          ((1u << uses.parents()[vertex_parent].level)+2)/2);
+  return sum;
+}
 void CheckAreas(unsigned level, bool warped) {
   Fixture fixture(level, warped);
   c::SelfContactActiveUseBinding uses;
@@ -83,27 +114,35 @@ TEST(SelfContactActiveUses, CertifiedNativeAndCenterAreasGiveExactParentDualSums
 
 TEST(SelfContactActiveUses, NineLevelCombinationsRemainBidirectionallyHalfArea) {
   constexpr long double pressure = 1234567.890123456789L;
-  for (unsigned first_level = 0; first_level <= 2; ++first_level) {
-    Fixture first(first_level, true);
-    c::SelfContactActiveUseBinding a;
-    ASSERT_EQ(a.Initialize(first.facets).status, Code::Ok);
-    const auto pa = first.Parent(100, a);
-    for (unsigned second_level = 0; second_level <= 2; ++second_level) {
-      Fixture second(second_level, false);
-      c::SelfContactActiveUseBinding b;
-      ASSERT_EQ(b.Initialize(second.facets).status, Code::Ok);
-      const auto pb = second.Parent(200, b);
-      const long double area_a = IndependentArea(first, a.parents()[pa]);
-      const long double area_b = IndependentArea(second, b.parents()[pb]);
-      const long double represented = DirectedSum(a, pa)+DirectedSum(b, pb);
-      const long double expected = .5L*(area_a+area_b);
+  struct Pair { std::uint64_t first, second; bool warped; };
+  constexpr Pair pairs[]{{100,101,false},{200,201,false},{100,201,true}};
+  for (const auto kind : pairs) {
+    for (unsigned first_level = 0; first_level <= 2; ++first_level) {
+      Fixture first(first_level,kind.warped,true);
+      c::SelfContactActiveUseBinding a;
+      ASSERT_EQ(a.Initialize(first.facets).status,Code::Ok);
+      const auto pa = first.Parent(kind.first,a);
+      for (unsigned second_level = 0; second_level <= 2; ++second_level) {
+        Fixture second(second_level,kind.warped,true);
+        c::SelfContactActiveUseBinding b;
+        ASSERT_EQ(b.Initialize(second.facets).status,Code::Ok);
+        const auto pb = second.Parent(kind.second,b);
+        const long double area_a = IndependentArea(first,a.parents()[pa]);
+        const long double area_b = IndependentArea(second,b.parents()[pb]);
+        const long double represented =
+            AdmittedEventSum(first,a,kind.first,kind.second)+
+            AdmittedEventSum(second,b,kind.second,kind.first);
+        const long double expected = .5L*(area_a+area_b);
       const long double tolerance =
           64*std::numeric_limits<double>::epsilon()*(area_a+area_b);
-      EXPECT_LE(std::fabs(represented-expected), tolerance);
-      // Uniform pressure and summed directed event resultants are the same
-      // identity; no implementation force or penalty call is used here.
-      EXPECT_LE(std::fabs(pressure*represented-pressure*expected),
-          pressure*tolerance);
+        EXPECT_LE(std::fabs(represented-expected),tolerance)
+            << kind.first << " " << kind.second << " "
+            << first_level << " " << second_level;
+        // Uniform pressure and summed directed event resultants are the same
+        // identity; no implementation force or penalty call is used here.
+        EXPECT_LE(std::fabs(pressure*represented-pressure*expected),
+            pressure*tolerance);
+      }
     }
   }
 }

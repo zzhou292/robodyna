@@ -146,6 +146,9 @@ struct SelfContactResolvedEdgeUse {
 enum class SelfContactTiedStatus : std::uint8_t {
   NotRelated,
   PartialOrUnauthenticatedLocalSupportNotExcluded,
+  // Startup rows/witnesses are necessary but insufficient. Exclusion still
+  // requires runtime owner-authenticated witness activity, active master
+  // participation, and authoritative no-release state.
   CompleteLocalSupportNeedsRuntimeActivity
 };
 enum class SelfContactPairKind : std::uint8_t { VertexFace, EdgeEdge };
@@ -158,12 +161,16 @@ enum class SelfContactEdgeEdgeCase : std::uint8_t {
 };
 enum class SelfContactPairStatus : std::uint8_t {
   InactiveParent,
-  UnsupportedCinSecondary,
   ExcludedLocalIncidence,
+  // Nonincident uses of one physical parent require an authenticated current
+  // regularity/geometry policy; canonical reference topology is insufficient.
+  SameParentNeedsCurrentRegularity,
+  UnsupportedCinSecondary,
   ExcludedSameRigidGroup,
   UnresolvedTiedSupportNotExcluded,
   AdmittedVertexFace,
-  CoveredByIndependentAdmittedVertexFace,
+  // No line area or topology-only VF coverage is inferred. A runtime owner may
+  // cover the exact EE event only with independently authenticated geometry.
   UnadmittedEdgeEdgeForceArea
 };
 struct SelfContactPairClassification {

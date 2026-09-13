@@ -105,16 +105,18 @@ bool ActivityOutputDisjoint(const void* output, std::size_t bytes,
       Disjoint(output, bytes, activity.current, activity.parent_count);
 }
 SelfContactPairStatus CommonStatus(SelfContactPairClassification& next,
-    bool edge_edge, bool independent_vf) noexcept {
+    bool edge_edge) noexcept {
   const auto unsupported = SelfContactSupportStatus::UnsupportedCinSecondary;
   if (!next.active[0] || !next.active[1]) return SelfContactPairStatus::InactiveParent;
-  if (next.endpoint_support[0].status == unsupported ||
-      next.endpoint_support[1].status == unsupported)
-    return SelfContactPairStatus::UnsupportedCinSecondary;
   if (next.local_incidence) {
     next.excluded = true;
     return SelfContactPairStatus::ExcludedLocalIncidence;
   }
+  if (next.parent[0] == next.parent[1])
+    return SelfContactPairStatus::SameParentNeedsCurrentRegularity;
+  if (next.endpoint_support[0].status == unsupported ||
+      next.endpoint_support[1].status == unsupported)
+    return SelfContactPairStatus::UnsupportedCinSecondary;
   if (next.endpoint_support[0].status == SelfContactSupportStatus::CompleteRigidGroup &&
       next.endpoint_support[1].status == SelfContactSupportStatus::CompleteRigidGroup &&
       next.endpoint_support[0].complete_rigid_group ==
@@ -125,8 +127,7 @@ SelfContactPairStatus CommonStatus(SelfContactPairClassification& next,
   if (next.tied == SelfContactTiedStatus::CompleteLocalSupportNeedsRuntimeActivity)
     return SelfContactPairStatus::UnresolvedTiedSupportNotExcluded;
   if (!edge_edge) return SelfContactPairStatus::AdmittedVertexFace;
-  return independent_vf ? SelfContactPairStatus::CoveredByIndependentAdmittedVertexFace :
-      SelfContactPairStatus::UnadmittedEdgeEdgeForceArea;
+  return SelfContactPairStatus::UnadmittedEdgeEdgeForceArea;
 }
 }
 
@@ -221,7 +222,7 @@ SelfContactActiveUseReport SelfContactActiveUseBinding::ClassifyVertexFace(
       first_parent, vertex.point, second_parent, face_point);
   if (next.active[0] && next.active[1])
     next.candidate_directed_area_m2 = vertex.directed_vf_area_m2;
-  next.status = CommonStatus(next, false, false);
+  next.status = CommonStatus(next, false);
   if (next.status == SelfContactPairStatus::AdmittedVertexFace)
     next.admitted_force_area_m2 = next.candidate_directed_area_m2;
   *output = next;
@@ -232,14 +233,11 @@ SelfContactActiveUseReport SelfContactActiveUseBinding::ClassifyEdgeEdge(
     std::size_t first_index, const WeightedSurfacePoint& first_point,
     std::size_t second_index, const WeightedSurfacePoint& second_point,
     SelfContactEdgeEdgeCase edge_case, SelfContactActivityView activity,
-    const SelfContactPairClassification* independent_vf,
     SelfContactPairClassification* output) const noexcept {
   using tl::fea::trial_identity::Disjoint;
   if (!output || !OutputDisjoint(output, sizeof(*output)) ||
       !Disjoint(output, sizeof(*output), &first_point, sizeof(first_point)) ||
       !Disjoint(output, sizeof(*output), &second_point, sizeof(second_point)) ||
-      (independent_vf && !Disjoint(output, sizeof(*output), independent_vf,
-          sizeof(*independent_vf))) ||
       !active_use::ValidateActivity(impl_ ? impl_->forecast : SelfContactActiveUseForecast{},
           activity) ||
       !ActivityOutputDisjoint(output, sizeof(*output), activity))
@@ -281,32 +279,7 @@ SelfContactActiveUseReport SelfContactActiveUseBinding::ClassifyEdgeEdge(
     if (av == bv) next.local_incidence = true;
   next.tied = active_use::TiedStatus(impl_->inventory, impl_->forecast,
       first_parent, first_point, second_parent, second_point);
-  bool covered = independent_vf &&
-      independent_vf->binding_identity == impl_.get() &&
-      independent_vf->kind == SelfContactPairKind::VertexFace &&
-      independent_vf->status == SelfContactPairStatus::AdmittedVertexFace &&
-      independent_vf->feature[1] < impl_->forecast.facets &&
-      !independent_vf->excluded &&
-      independent_vf->admitted_force_area_m2.value > 0;
-  if (covered) {
-    const auto& vf_facet = impl_->inventory.facets[independent_vf->feature[1]];
-    const bool forward = independent_vf->parent[0] == first.parent &&
-        independent_vf->parent[1] == second.parent &&
-        (a.vertices[0] == independent_vf->feature[0] ||
-         a.vertices[1] == independent_vf->feature[0]) &&
-        (vf_facet.edge_features[0] == second.feature ||
-         vf_facet.edge_features[1] == second.feature ||
-         vf_facet.edge_features[2] == second.feature);
-    const bool reverse = independent_vf->parent[0] == second.parent &&
-        independent_vf->parent[1] == first.parent &&
-        (b.vertices[0] == independent_vf->feature[0] ||
-         b.vertices[1] == independent_vf->feature[0]) &&
-        (vf_facet.edge_features[0] == first.feature ||
-         vf_facet.edge_features[1] == first.feature ||
-         vf_facet.edge_features[2] == first.feature);
-    covered = forward || reverse;
-  }
-  next.status = CommonStatus(next, true, covered);
+  next.status = CommonStatus(next, true);
   *output = next;
   return {};
 }

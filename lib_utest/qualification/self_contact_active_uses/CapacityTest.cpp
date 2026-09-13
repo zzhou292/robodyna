@@ -64,6 +64,13 @@ TEST(SelfContactActiveUses, EveryExactCountCapAndOneByteShortRejectThenRetry) {
   c::SelfContactActiveUseLimits exact_limits;
   exact_limits.max_cin_rows=1;
   exact_limits.max_cin_witnesses=1;
+  auto late_range=tie.ranges;
+  late_range[0].count=2;
+  auto late=tie.Source();
+  late.ranges=late_range.data();
+  EXPECT_EQ(exact_cin.Initialize(distinct.facets,{nullptr,late},exact_limits).status,
+      Code::IdentityMismatch);
+  EXPECT_FALSE(exact_cin.prepared());
   EXPECT_EQ(exact_cin.Initialize(distinct.facets,tied_source,exact_limits).status,
       Code::Ok);
 }
@@ -98,6 +105,39 @@ TEST(SelfContactActiveUses, PermutedSourceSelectionHasIdenticalCanonicalInventor
         b.parents()[b.vertex_uses()[i].parent].source.source_parent_id);
     EXPECT_EQ(a.vertex_uses()[i].directed_vf_area_m2.value,
         b.vertex_uses()[i].directed_vf_area_m2.value);
+  }
+  for (std::size_t i=0;i<a.facet_uses().size();++i) {
+    const auto& x=a.facet_uses()[i];
+    const auto& y=b.facet_uses()[i];
+    EXPECT_EQ(a.parents()[x.parent].source.source_parent_id,
+        b.parents()[y.parent].source.source_parent_id);
+    EXPECT_EQ(x.local_facet,y.local_facet);
+    for (unsigned slot=0;slot<3;++slot) {
+      EXPECT_EQ(x.vertex_features[slot],y.vertex_features[slot]);
+      EXPECT_EQ(x.edge_features[slot],y.edge_features[slot]);
+      EXPECT_EQ(x.vertex_uses[slot],y.vertex_uses[slot]);
+      EXPECT_EQ(x.edge_uses[slot],y.edge_uses[slot]);
+    }
+  }
+  for (std::size_t i=0;i<a.edge_uses().size();++i) {
+    const auto& x=a.edge_uses()[i];
+    const auto& y=b.edge_uses()[i];
+    EXPECT_TRUE(c::SameFacetEdgeKey(x.key,y.key));
+    EXPECT_EQ(a.parents()[x.parent].source.source_parent_id,
+        b.parents()[y.parent].source.source_parent_id);
+    EXPECT_EQ(x.feature,y.feature);
+    EXPECT_EQ(x.facet_valence,y.facet_valence);
+    for (unsigned endpoint=0;endpoint<2;++endpoint) {
+      EXPECT_EQ(x.endpoints[endpoint].count,y.endpoints[endpoint].count);
+      EXPECT_EQ(x.endpoint_support[endpoint].status,
+          y.endpoint_support[endpoint].status);
+      for (unsigned slot=0;slot<x.endpoints[endpoint].count;++slot) {
+        EXPECT_EQ(x.endpoints[endpoint].nodes[slot],
+            y.endpoints[endpoint].nodes[slot]);
+        EXPECT_EQ(x.endpoints[endpoint].weights[slot],
+            y.endpoints[endpoint].weights[slot]);
+      }
+    }
   }
 }
 

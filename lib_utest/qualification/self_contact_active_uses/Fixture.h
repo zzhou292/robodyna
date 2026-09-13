@@ -54,6 +54,12 @@ struct Fixture {
         source.geometry.q[1].nodes[i] = 5+i;
         source.geometry.q[1].reference.node_ids[i] = 20+i;
       }
+      for (unsigned i = 0; i < 3; ++i) {
+        source.triangles[1].nodes[i] = 5+i;
+        source.triangles[1].reference.node_ids[i] = 20+i;
+        source.triangles[1].reference.position[i] =
+            source.geometry.q[1].reference.position[i];
+      }
       geometry.shells.node_count = 9;
     }
     EXPECT_EQ(shells.InitializeFormulations(geometry).status,
@@ -128,6 +134,229 @@ struct Fixture {
   std::vector<std::uint8_t> Active(const c::SelfContactActiveUseBinding& uses,
       std::uint8_t value = 1) const {
     return std::vector<std::uint8_t>(uses.parents().size(), value);
+  }
+};
+
+enum class ExecutionRigidMode { MergedParts, SeparateParts, PartAndPlain };
+
+struct ExecutionSource {
+  qbat_catalog_test::Fixture base;
+  std::array<fe::ShellT3BindingInput,4> triangles;
+  std::array<fe::ShellPlasticityParentInput,7> parents;
+  std::size_t node_count=9;
+  ExecutionSource() {
+    std::copy(base.triangles.begin(),base.triangles.end(),triangles.begin());
+    std::copy(base.parents.begin(),base.parents.end(),parents.begin());
+    auto& material=base.materials[0];
+    material.curve_id=0;
+    material.law=fe::ShellSectionLaw::RigidSkin;
+    base.sections[0].through_thickness_points=0;
+    base.sections[0].formulation=fe::ShellSectionFormulation::Nonconstitutive;
+    triangles[3]=triangles[0];
+    triangles[3].source_parent_id=300;
+    triangles[3].nodes={5,6,7};
+    const tl::math::Vec3 x[]{{.2,0,0},{.24,0,0},{.2,.02,0}};
+    for (unsigned n=0;n<3;++n) {
+      triangles[3].reference.node_ids[n]=20+n;
+      triangles[3].reference.position[n]=x[n];
+    }
+    triangles[2].nodes={0,5,8};
+    triangles[2].reference.node_ids[0]=10;
+    triangles[2].reference.node_ids[1]=20;
+    triangles[2].reference.node_ids[2]=32;
+    triangles[2].reference.position[0]=base.geometry.q[0].reference.position[0];
+    triangles[2].reference.position[1]=x[0];
+    triangles[2].reference.position[2]={.4,.02,0};
+    parents[6]={fe::ShellBindingFamily::T3,3,300,2000,1000,1000};
+  }
+  fe::ShellFormulationCollectionInput Geometry() const {
+    return {{base.geometry.q.data(),triangles.data(),2,4,node_count},
+        &base.geometry.b,1};
+  }
+  fe::ShellBatchPlasticityBindingInput Catalog() const {
+    return {&base.curve,base.materials.data(),base.sections.data(),
+        parents.data(),1,3,3,7};
+  }
+  std::array<fe::ShellFailureParentInput,7> Failures() const {
+    std::array<fe::ShellFailureParentInput,7> rows;
+    for (std::size_t i=0;i<rows.size();++i) {
+      rows[i].source=parents[i];
+      if (parents[i].material_id != 1000) {
+        rows[i].policy=fe::ShellFailurePolicy::ConstantAllPoints;
+        rows[i].constant.failure_strain=2.5;
+      }
+    }
+    return rows;
+  }
+};
+
+// Qualification fixture whose contact surface retains the exact rigid
+// authority used by ShellPhysicalBinding::InitializeExecution.
+struct ExecutionFixture {
+  ExecutionSource source;
+  fe::ShellBatchBinding shells;
+  fe::ShellBatchPlasticityBinding catalog;
+  fe::ShellBatchFailureBinding failure;
+  fe::NodalNodeDomain domain;
+  fe::ShellNodeMap map;
+  fe::NodalCoefficientLedger ledger;
+  fe::rigid::NodalRigidPartTopology topology;
+  fe::rigid::NodalRigidPartAssemblyModel parts;
+  fe::NodalRigidGroupModel plain;
+  fe::NodalRigidAssemblyBinding rigid;
+  fe::ShellExecutionBinding execution;
+  fe::ShellPhysicalBinding physical;
+  c::SelfContactSurfaceBinding surface;
+  c::FixedContactFacetBinding facets;
+  std::vector<c::SelfContactParentSelection> selection;
+  std::uint64_t second_plain_parent = 0;
+  std::uint64_t mixed_parent = 0;
+
+  explicit ExecutionFixture(unsigned level, ExecutionRigidMode mode) {
+    for (auto& q : source.base.geometry.q)
+      q.reference.placement = fe::ShellReferencePlacement::Centered;
+    for (auto& t : source.triangles)
+      t.reference.placement = fe::ShellReferencePlacement::Centered;
+    if (mode == ExecutionRigidMode::PartAndPlain) {
+      // The added child and one native T3 are ordinary execution parents on
+      // the same plain rigid group. Numeric source ID 1000 deliberately
+      // collides with the independent PART source ID 1000.
+      source.parents[6].material_id = 1001;
+      source.parents[6].section_id = 1001;
+      const auto child = source.triangles[3];
+      source.triangles[2].nodes = child.nodes;
+      source.triangles[2].reference = child.reference;
+      source.node_count=8;
+      for (auto& parent : source.parents) {
+        if (parent.family == fe::ShellBindingFamily::T3 &&
+            parent.family_index == 2) {
+          parent.source_part_id = 3000;
+          parent.material_id = 1001;
+          parent.section_id = 1001;
+          second_plain_parent = parent.source_parent_id;
+        }
+      }
+    }
+    for (const auto& parent : source.parents)
+      if (parent.family == fe::ShellBindingFamily::T3 &&
+          parent.family_index == 2)
+        mixed_parent=parent.source_parent_id;
+    EXPECT_EQ(shells.InitializeFormulations(source.Geometry()).status,
+        fe::ShellBindingStatus::Success);
+    EXPECT_EQ(catalog.InitializeExecutionCatalog(shells, source.Catalog()).status,
+        fe::ShellPlasticityBindingStatus::Success);
+    std::vector<fe::NodalDomainNode> nodes;
+    for (std::size_t n = shells.node_count(); n-- > 0;) {
+      const auto& node = shells.nodes()[n];
+      nodes.push_back({node.source_id, node.position});
+    }
+    EXPECT_TRUE(domain.Initialize({77, nodes.data(), nodes.size()}));
+    EXPECT_TRUE(map.Initialize(shells, domain));
+    EXPECT_TRUE(ledger.Initialize({&map, nullptr, nullptr}));
+    const std::array<std::uint64_t,8> ids{{10,11,12,13,14,20,21,22}};
+    const std::array<std::uint64_t,8> expected{{10,11,12,13,14,20,21,22}};
+    const fe::rigid::PartTopologyPartInput declarations[]{
+        {1000, ids.data(), 5}, {2000, ids.data()+5, 3}};
+    const fe::rigid::PartTopologyMerge merge{1000,2000};
+    fe::rigid::PartTopologyInput input;
+    input.source_instance_id = 77;
+    input.parts = declarations;
+    input.part_count = mode == ExecutionRigidMode::PartAndPlain ? 1 : 2;
+    input.expected_members = expected.data();
+    input.expected_member_count =
+        mode == ExecutionRigidMode::PartAndPlain ? 5 : expected.size();
+    input.other_rigid_members =
+        mode == ExecutionRigidMode::PartAndPlain ? ids.data()+5 : nullptr;
+    input.other_rigid_member_count =
+        mode == ExecutionRigidMode::PartAndPlain ? 3 : 0;
+    input.merges = mode == ExecutionRigidMode::MergedParts ? &merge : nullptr;
+    input.merge_count = mode == ExecutionRigidMode::MergedParts ? 1 : 0;
+    EXPECT_TRUE(topology.Initialize(input));
+    EXPECT_TRUE(parts.Initialize(topology, ledger, {1000,.001}));
+    if (mode == ExecutionRigidMode::PartAndPlain) {
+      std::array<fe::NodalRigidGroupMember,3> members;
+      for (unsigned i = 0; i < members.size(); ++i) {
+        const auto node = domain.Find(ids[5+i]);
+        const auto& coefficient = ledger.nodes()[node].coefficients;
+        members[i] = {ids[5+i], node, domain.nodes()[node].position,
+            coefficient.mass, coefficient.isotropic_inertia,
+            coefficient.shell.physical_inertia,
+            coefficient.shell.added_inertia, 0};
+      }
+      const fe::NodalRigidGroupInput group{
+          1000, 9910, members.data(), members.size()};
+      EXPECT_TRUE(plain.InitializePhysical(
+          {89,domain.node_count(),&group,1,{1000,.001}}));
+      EXPECT_TRUE(rigid.Initialize(parts, &plain));
+    } else {
+      EXPECT_TRUE(rigid.Initialize(parts));
+    }
+    EXPECT_EQ(execution.Initialize(catalog, ledger, rigid).status,
+        fe::ShellPlasticityBindingStatus::Success);
+    const auto failures = source.Failures();
+    EXPECT_EQ(failure.InitializeExecution(catalog, failures.data(),
+        failures.size()).status, fe::ShellPlasticityBindingStatus::Success);
+    EXPECT_TRUE(physical.InitializeExecution(
+        {&shells,&catalog,&failure,nullptr}, ledger, execution));
+    for (std::size_t row = 0; row < catalog.parent_count(); ++row) {
+      const auto& parent = *catalog.parent(row);
+      selection.push_back({row,parent.family,parent.family_index,
+          parent.source_parent_id,parent.source_part_id});
+    }
+    EXPECT_EQ(surface.Initialize(physical,
+        {selection.data(),selection.size()}).status,
+        c::SelfContactSurfaceStatus::Ok);
+    EXPECT_EQ(facets.Initialize(surface,{{},level}).status,
+        c::FixedContactFacetStatus::Ok);
+  }
+  std::size_t Parent(std::uint64_t eid,
+      const c::SelfContactActiveUseBinding& uses) const {
+    for (std::size_t p = 0; p < uses.parents().size(); ++p)
+      if (uses.parents()[p].source.source_parent_id == eid) return p;
+    return SIZE_MAX;
+  }
+  std::size_t VertexUse(std::uint64_t eid,
+      const c::SelfContactActiveUseBinding& uses,
+      std::uint64_t source_nid = 0) const {
+    const auto parent = Parent(eid, uses);
+    for (std::size_t i = 0; i < uses.vertex_uses().size(); ++i) {
+      const auto& use = uses.vertex_uses()[i];
+      if (use.parent != parent) continue;
+      if (!source_nid || (use.key.kind == c::FacetVertexKind::SourceVertex &&
+          use.key.first == source_nid)) return i;
+    }
+    return SIZE_MAX;
+  }
+  std::size_t RemoteFacet(std::uint64_t eid, std::uint32_t vertex_feature,
+      const c::SelfContactActiveUseBinding& uses) const {
+    const auto parent = Parent(eid, uses);
+    if (parent == SIZE_MAX) return SIZE_MAX;
+    const auto& use = uses.parents()[parent];
+    for (std::size_t i = use.facet_offset;
+         i < std::size_t(use.facet_offset)+use.facet_count; ++i) {
+      bool incident = false;
+      for (const auto feature : uses.facet_uses()[i].vertex_features)
+        incident = incident || feature == vertex_feature;
+      if (!incident) return i;
+    }
+    return SIZE_MAX;
+  }
+  c::WeightedSurfacePoint FacePoint(std::size_t index,
+      const c::SelfContactActiveUseBinding& uses) const {
+    const auto& use = uses.facet_uses()[index];
+    const auto& parent = uses.parents()[use.parent];
+    c::FixedContactFacet facet;
+    EXPECT_EQ(facets.Describe(parent.surface_parent,use.local_facet,&facet).status,
+        c::FixedContactFacetStatus::Ok);
+    constexpr std::array<double,3> barycentric{{1./3,1./3,1./3}};
+    c::WeightedSurfacePoint point;
+    EXPECT_EQ(c::ComposeFacetPoint(facet,barycentric.data(),
+        domain.node_count(),&point),c::Status::kOk);
+    return point;
+  }
+  std::vector<std::uint8_t> Active(
+      const c::SelfContactActiveUseBinding& uses) const {
+    return std::vector<std::uint8_t>(uses.parents().size(),1);
   }
 };
 

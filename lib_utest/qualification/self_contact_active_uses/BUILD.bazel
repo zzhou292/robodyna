@@ -6,6 +6,7 @@ cc_test(
     srcs = [
         "ActivityTest.cpp",
         "AreaTest.cpp",
+        "AuthorityTest.cpp",
         "CapacityTest.cpp",
         "CinTieTest.cpp",
         "ClassificationTest.cpp",
@@ -13,6 +14,7 @@ cc_test(
     ],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [
+        "//lib_src/assembly:shell_execution_binding",
         "//lib_src/collision:self_contact_active_uses",
         "//lib_src/constraints:nodal_rigid_part_topology",
         "//lib_src/constraints/tied_shell:tied_post_kinchk",
@@ -21,8 +23,19 @@ cc_test(
     ],
 )
 
-genrule(
+cc_test(
     name = "source_check",
+    size = "small",
+    srcs = ["SourceProofTest.cpp"],
+    data = [
+        "verify_sources.py",
+        "//lib_src/collision:self_contact_active_use_source_proof",
+    ],
+    deps = ["@googletest//:gtest_main"],
+)
+
+genrule(
+    name = "source_artifact",
     srcs = [
         "verify_sources.py",
         "//lib_src/collision:self_contact_active_use_source_proof",

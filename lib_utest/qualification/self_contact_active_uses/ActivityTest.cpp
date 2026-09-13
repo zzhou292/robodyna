@@ -62,6 +62,16 @@ TEST(SelfContactActiveUses, RemovedThickUseContributesNoFutureRadiusOrAreaAndNev
       {removed_base.data(),removed_base.data(),removed_base.size()}, &held).status,
       Code::Ok);
   EXPECT_TRUE(held.active);
+
+  auto invalid = base;
+  invalid[uses.vertex_uses()[thin].parent] = 2;
+  held.reference_half_thickness_m = 654;
+  const auto invalid_before = held;
+  EXPECT_EQ(uses.ResolveVertexUse(thin,
+      {base.data(),invalid.data(),base.size()},&held).status,Code::InvalidInput);
+  EXPECT_EQ(std::memcmp(&held,&invalid_before,sizeof(held)),0);
+  ASSERT_EQ(uses.ResolveVertexUse(thin,
+      {base.data(),base.data(),base.size()},&held).status,Code::Ok);
 }
 
 TEST(SelfContactActiveUses, CoincidentIndependentSourceLayersRemainDistinctAndAdmitted) {

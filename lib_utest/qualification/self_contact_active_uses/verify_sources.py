@@ -11,6 +11,7 @@ values = (collision / "SelfContactActiveUseValues.h").read_text()
 binding = (collision / "SelfContactActiveUseBinding.cpp").read_text()
 build = (collision / "self_contact_active_use/Build.cpp").read_text()
 queries = (collision / "self_contact_active_use/Queries.cpp").read_text()
+layout = (collision / "self_contact_active_use/Layout.cpp").read_text()
 public = (collision / "SelfContactActiveUseBinding.h").read_text()
 
 assert 'SymmetricDirectedVertexDualReferenceV1' in types
@@ -32,9 +33,12 @@ assert 'source_part_id' not in queries
 assert 'UnsupportedCinSecondary' in queries
 assert 'CompleteLocalSupportNeedsRuntimeActivity' in queries
 assert 'UnadmittedEdgeEdgeForceArea' in queries
-assert 'CoveredByIndependentAdmittedVertexFace' in queries
-assert 'independent_vf->binding_identity == impl_.get()' in queries
-assert 'vf_facet.edge_features' in queries
+assert 'SameParentNeedsCurrentRegularity' in queries
+assert 'next.parent[0] == next.parent[1]' in queries
+assert 'CoveredByIndependentAdmittedVertexFace' not in types
+assert 'independent_vf' not in queries
+assert 'surface.physical()->execution()' in layout
+assert "Supplied rigid source is not S0 execution's actual binding" in layout
 for text in (binding, build, queries):
     for forbidden in ('cudaMalloc', 'cudaFree', 'ApplyPenalty',
                       'AssembleAccepted', 'AdvanceStaggeredCin'):

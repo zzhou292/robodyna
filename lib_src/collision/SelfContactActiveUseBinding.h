@@ -43,13 +43,12 @@ class SelfContactActiveUseBinding {
   SelfContactActiveUseReport ClassifyVertexFace(std::size_t vertex_use,
       std::size_t facet_use, const WeightedSurfacePoint& face_point,
       SelfContactActivityView, SelfContactPairClassification*) const noexcept;
-  // EE has no force area in this policy. A nonincident EE can only be marked
-  // covered by passing a separately admitted VF classification.
+  // EE has no force area in this policy. Runtime geometry/event evidence is
+  // outside this binding, so every nonlocal EE remains explicitly unadmitted.
   SelfContactActiveUseReport ClassifyEdgeEdge(std::size_t first_edge_use,
       const WeightedSurfacePoint& first_point, std::size_t second_edge_use,
       const WeightedSurfacePoint& second_point, SelfContactEdgeEdgeCase,
       SelfContactActivityView,
-      const SelfContactPairClassification* independent_vf,
       SelfContactPairClassification*) const noexcept;
  private:
   struct Impl;
