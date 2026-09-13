@@ -359,6 +359,7 @@ bool Same(const contact::SelfContactActiveUseForecast& a,
         a.node_roles == b.node_roles && a.cin_rows == b.cin_rows &&
         a.cin_witnesses == b.cin_witnesses &&
         a.arena_bytes == b.arena_bytes &&
+        a.startup_index_bytes == b.startup_index_bytes &&
         a.retained_facet_bytes == b.retained_facet_bytes &&
         a.retained_rigid_bytes == b.retained_rigid_bytes &&
         a.retained_cin_bytes == b.retained_cin_bytes &&
