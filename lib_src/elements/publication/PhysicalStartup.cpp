@@ -45,8 +45,7 @@ ShellPublicationReport ShellBatchPublication::InitializePhysicalImpl(FENodalStat
   physical.identity = identity;
   physical.forecast = forecast;
   physical.accepted_stamp = owner.accepted();
-  physical.attachment_count = cin.range_count;
-  physical.witness_count = cin.witness_count;
+  physical.SetCinCounts(cin.range_count,cin.witness_count);
   next->scope = this;
   next->qbatch = p.qeph;
   next->tbatch = p.t3;

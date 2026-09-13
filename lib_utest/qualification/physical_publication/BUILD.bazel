@@ -26,5 +26,21 @@ cc_test(
             "//lib_utest/qualification/qbat_catalog:fixture", "@googletest//:gtest_main"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
 )
+cc_test(
+    name = "scratch_participation_source_proof",
+    size = "small",
+    srcs = ["ParticipationSourceProofTest.cpp"],
+    data = [
+        "Cuda.cmake",
+        "ParticipationTest.cu",
+        "verify_participation_sources.py",
+        "//lib_src/elements:BUILD.bazel",
+        "//lib_src/elements:ShellBatchPublication.cmake",
+        "//lib_src/elements:publication/PhysicalTransaction.cpp",
+        "//lib_src/elements:publication/ShellPhysicalScratchParticipation.cpp",
+        "//lib_src/elements:publication/ShellPhysicalScratchParticipation.h",
+    ],
+    deps = ["@googletest//:gtest_main"],
+)
 # The complete actual-owner CUDA transaction uses the owning CMake target,
 # reusing named participant observation helpers without copying native oracles.

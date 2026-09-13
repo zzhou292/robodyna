@@ -6,6 +6,7 @@
 #include "lib_src/elements/publication/PhysicalState.h"
 
 namespace physical_publication_test {
+inline constexpr std::uint64_t MappedWallSource = 720,SelfContactSource = 721;
 template<class Report> bool Good(const Report& report) {
   using Status = decltype(report.status);
   EXPECT_EQ(report.status,Status::Success) << report.message;
@@ -31,11 +32,16 @@ struct Rig {
   fe::type13::Batch beams;
   fe::solids::Batch solids;
   fe::ShellBatchPublication publication; // Destroy before all borrowed objects.
+  // Concrete contact modules will own these privately. Their fixture lifetime
+  // ends before the publication that registered them.
+  fe::ShellPhysicalScratchParticipation mapped_wall_participation;
+  fe::ShellPhysicalScratchParticipation self_contact_participation;
   fe::ShellPhysicalParticipants Participants() { return {&qeph,&t3,&qbat,&welds,&beams,&solids}; }
   fe::ShellFormulationParticipants Shells() { return {&qeph,&t3,&qbat,&welds}; }
   bool Initialize(bool initialize_solids = true,bool attach = true);
   bool InitializeSolids();
   bool Attach();
+  bool ConfigureScratch(bool mapped_wall,bool self_contact);
   bool Begin(fe::NodalTrialToken&,fe::NodalAssemblyView&);
   bool Advance(const fe::NodalTrialToken&,const fe::NodalAssemblyView&,fe::NodalPreparedView&);
   bool Evaluate(const fe::NodalTrialToken&,const fe::NodalPreparedView&,fe::ShellPhysicalDiagnostics&,bool include_solids = true);

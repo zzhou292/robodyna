@@ -30,6 +30,7 @@ struct ShellBatchPublication::Impl {
     if(connector) connector->DiscardTrial();
     if(bbatch) bbatch->DiscardTrial();
     if(physical) {
+      physical->DiscardScratchParticipation();
       physical->candidate={};
       if(physical->beams) physical->beams->DiscardTrial();
       if(physical->solids) physical->solids->DiscardTrial();

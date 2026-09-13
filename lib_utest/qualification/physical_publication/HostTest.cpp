@@ -3,6 +3,7 @@
 #include "lib_src/elements/publication/PhysicalChecks.h"
 #include "lib_src/elements/publication/PhysicalState.h"
 #include "lib_src/elements/ShellPhysicalOwner.h"
+#include <type_traits>
 
 namespace physical_publication_test {
 TEST(PhysicalPublicationValues, CompleteRealFamilySourcesAndCoincidentWitnesses) {
@@ -54,6 +55,8 @@ TEST(PhysicalPublicationValues, ExactBudgetAndLateFailureRetry) {
   ASSERT_EQ(fe::ShellBatchPublication::ForecastPhysical(source.physical,1,limits,forecast).status,
       fe::ShellPublicationStatus::Success);
   EXPECT_EQ(forecast.device_bytes,0u);
+  EXPECT_EQ(forecast.owned_host_bytes,6880u);
+  EXPECT_EQ(forecast.startup_host_bytes,8704u);
   EXPECT_GT(forecast.startup_host_bytes,forecast.owned_host_bytes);
   RecordProperty("owned_host_bytes",std::to_string(forecast.owned_host_bytes));
   RecordProperty("tiny_startup_host_bytes",std::to_string(forecast.startup_host_bytes));
@@ -103,5 +106,70 @@ TEST(PhysicalPublicationValues, CompleteTypedDiagnosticComparisonIncludesLastSol
   changed.kinetic_available = true;
   EXPECT_FALSE(fe::shell_publication_detail::SamePhysicalDiagnostics(value,changed));
   EXPECT_TRUE(fe::shell_publication_detail::SamePhysicalDiagnostics(value,value));
+}
+TEST(PhysicalPublicationValues,
+     ScratchRosterHasFixedAbiNonforgeableReceiptAndExactSeparateCap) {
+  using Kind=fe::ShellPhysicalScratchContributorKind;
+  using Receipt=fe::ShellPhysicalScratchParticipationReceipt;
+  using Issuer=fe::ShellPhysicalScratchParticipation;
+  EXPECT_EQ(static_cast<unsigned>(Kind::MappedWall),0u);
+  EXPECT_EQ(static_cast<unsigned>(Kind::SelfContact),1u);
+  EXPECT_EQ(static_cast<unsigned>(fe::ShellPublicationStatus::NonfiniteResult),8u);
+  EXPECT_EQ(static_cast<unsigned>(fe::ShellPublicationStatus::ParticipationFailure),9u);
+  EXPECT_FALSE(std::is_aggregate_v<Receipt>);
+  EXPECT_TRUE(std::is_default_constructible_v<Receipt>);
+  EXPECT_TRUE(std::is_copy_constructible_v<Receipt>);
+  EXPECT_FALSE((std::is_constructible_v<Receipt,std::uint64_t,
+      std::uint64_t,bool>));
+  EXPECT_FALSE((std::is_constructible_v<Receipt,fe::NodalValidationReceipt>));
+  EXPECT_FALSE((std::is_convertible_v<fe::NodalValidationReceipt,Receipt>));
+  EXPECT_FALSE(Receipt{}.valid());
+  static_assert(sizeof(Issuer)==96);
+  static_assert(sizeof(Receipt)==264);
+  static_assert(sizeof(fe::ShellPhysicalScratchRoster)==32);
+  RecordProperty("scratch_participation_issuer_bytes",std::to_string(sizeof(Issuer)));
+  RecordProperty("scratch_participation_receipt_bytes",std::to_string(sizeof(Receipt)));
+  RecordProperty("scratch_participation_roster_bytes",
+      std::to_string(sizeof(fe::ShellPhysicalScratchRoster)));
+
+  auto* wall=reinterpret_cast<Issuer*>(std::uintptr_t{4096});
+  auto* self=reinterpret_cast<Issuer*>(std::uintptr_t{8192});
+  constexpr std::uint64_t wall_source=720,self_source=721;
+  fe::ShellPhysicalScratchParticipationForecast forecast;
+  const auto untouched=forecast;
+  EXPECT_EQ(fe::ShellBatchPublication::ForecastPhysicalScratchParticipation(
+      {},{},forecast).status,fe::ShellPublicationStatus::InvalidInput);
+  EXPECT_EQ(forecast.total_host_bytes,untouched.total_host_bytes);
+  fe::ShellPhysicalScratchRoster self_only{{},{self,self_source}};
+  ASSERT_EQ(fe::ShellBatchPublication::ForecastPhysicalScratchParticipation(
+      self_only,{},forecast).status,fe::ShellPublicationStatus::Success);
+  EXPECT_EQ(forecast.publication_host_bytes,112u);
+  EXPECT_EQ(forecast.total_host_bytes,208u);
+  RecordProperty("scratch_participation_publication_bytes",
+      std::to_string(forecast.publication_host_bytes));
+  RecordProperty("scratch_participation_self_only_total_bytes",
+      std::to_string(forecast.total_host_bytes));
+  EXPECT_EQ(forecast.configured_issuer_host_bytes,sizeof(Issuer));
+  EXPECT_EQ(forecast.total_host_bytes,
+      forecast.publication_host_bytes+sizeof(Issuer));
+  const auto exact=forecast;
+  fe::ShellPhysicalScratchParticipationLimits cap{exact.total_host_bytes-1};
+  EXPECT_EQ(fe::ShellBatchPublication::ForecastPhysicalScratchParticipation(
+      self_only,cap,forecast).status,fe::ShellPublicationStatus::ResourceLimit);
+  EXPECT_EQ(forecast.total_host_bytes,exact.total_host_bytes);
+  ++cap.max_host_bytes;
+  EXPECT_EQ(fe::ShellBatchPublication::ForecastPhysicalScratchParticipation(
+      self_only,cap,forecast).status,fe::ShellPublicationStatus::Success);
+  fe::ShellPhysicalScratchRoster both{{wall,wall_source},
+                                      {self,self_source}};
+  ASSERT_EQ(fe::ShellBatchPublication::ForecastPhysicalScratchParticipation(
+      both,{},forecast).status,fe::ShellPublicationStatus::Success);
+  EXPECT_EQ(forecast.total_host_bytes,304u);
+  RecordProperty("scratch_participation_wall_self_total_bytes",
+      std::to_string(forecast.total_host_bytes));
+  EXPECT_EQ(forecast.configured_issuer_host_bytes,2*sizeof(Issuer));
+  both.self_contact.issuer=wall;
+  EXPECT_EQ(fe::ShellBatchPublication::ForecastPhysicalScratchParticipation(
+      both,{},forecast).status,fe::ShellPublicationStatus::InvalidInput);
 }
 } // namespace physical_publication_test

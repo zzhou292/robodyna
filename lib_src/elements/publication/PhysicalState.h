@@ -5,9 +5,32 @@
 #include "../../constraints/NodalRigidAssemblyBinding.h"
 
 namespace tl::fea::shell_publication_detail {
+struct PhysicalScratchParticipationState;
+
+union PhysicalRuntimeState {
+  struct {
+    std::size_t attachment_count, witness_count;
+  } cin;
+  struct {
+    PhysicalScratchParticipationState* state;
+    std::size_t configured_marker;
+  } scratch;
+  constexpr PhysicalRuntimeState() noexcept : cin{0,~std::size_t{0}} {}
+};
+static_assert(sizeof(PhysicalRuntimeState)==2*sizeof(std::size_t),
+    "Optional scratch roster reuses the old physical CIN count header");
+
 struct PhysicalState {
   PhysicalState(const ShellPhysicalBinding& p,const NodalRigidAssemblyBinding& r,const type45::Model* j=nullptr)
       : binding(p),rigid(r),joint_model(j?*j:type45::Model{}) {}
+  ~PhysicalState();
+  PhysicalState(const PhysicalState&)=delete;
+  PhysicalState& operator=(const PhysicalState&)=delete;
+  void SetCinCounts(std::size_t,std::size_t) noexcept;
+  bool HasScratchParticipation() const noexcept;
+  PhysicalScratchParticipationState* ScratchParticipation() noexcept;
+  const PhysicalScratchParticipationState* ScratchParticipation() const noexcept;
+  void DiscardScratchParticipation() noexcept;
   ShellPhysicalBinding binding;
   NodalRigidAssemblyBinding rigid;
   type45::Model joint_model;
@@ -20,7 +43,7 @@ struct PhysicalState {
   ShellPhysicalPublicationForecast forecast;
   NodalStamp accepted_stamp;
   ShellPhysicalDiagnostics accepted,candidate;
-  std::size_t attachment_count = 0,witness_count = 0;
+  PhysicalRuntimeState runtime;
 };
 bool SamePhysicalDiagnostics(const ShellPhysicalDiagnostics&,
     const ShellPhysicalDiagnostics&) noexcept;

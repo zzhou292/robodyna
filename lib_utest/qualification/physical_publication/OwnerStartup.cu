@@ -58,4 +58,11 @@ bool Rig::Attach() {
   return Good(publication.InitializePhysical(owner,fixture.physical,fixture.rigid,
       fixture.WitnessSource(),Participants(),fixture.Identity()));
 }
+bool Rig::ConfigureScratch(bool mapped_wall,bool self_contact) {
+  fe::ShellPhysicalScratchRoster roster;
+  if(mapped_wall) roster.mapped_wall={&mapped_wall_participation,MappedWallSource};
+  if(self_contact) roster.self_contact={&self_contact_participation,SelfContactSource};
+  return Good(publication.ConfigurePhysicalScratchParticipation(owner,fixture.physical,
+      Participants(),fixture.Identity(),roster));
+}
 } // namespace physical_publication_test

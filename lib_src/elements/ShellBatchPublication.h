@@ -5,6 +5,7 @@
 #include "type25/Type25Batch.h"
 #include "qbat/QbatBatch.h"
 #include "ShellPhysicalPublication.h"
+#include "publication/ShellPhysicalScratchParticipation.h"
 #include <memory>
 
 namespace tl::fea {
@@ -50,7 +51,7 @@ struct ShellFormulationCandidates {
 };
 enum class ShellPublicationStatus {
   Success,InvalidInput,NotInitialized,NotJoined,StaleTrial,ResourceLimit,
-  DeviceFailure,NodalFailure,NonfiniteResult,
+  DeviceFailure,NodalFailure,NonfiniteResult,ParticipationFailure,
 };
 struct ShellPublicationReport {
   ShellPublicationStatus status=ShellPublicationStatus::InvalidInput;
@@ -108,6 +109,13 @@ class ShellBatchPublication {
   static ShellPublicationReport ForecastPhysical(const ShellPhysicalBinding&,
       std::size_t cin_attachments,const ShellPublicationLimits&,
       ShellPhysicalPublicationForecast&) noexcept;
+  // Exact fixed host footprint for the optional two-slot scratch roster.  This
+  // forecast is separate so an absent roster preserves the old physical
+  // publication forecast and allocation behavior exactly.
+  static ShellPublicationReport ForecastPhysicalScratchParticipation(
+      const ShellPhysicalScratchRoster&,
+      const ShellPhysicalScratchParticipationLimits&,
+      ShellPhysicalScratchParticipationForecast&) noexcept;
   ShellPublicationReport InitializePhysical(FENodalState&,const ShellPhysicalBinding&,
       const NodalRigidAssemblyBinding&,const NodalCinWitnessSource&,
       const ShellPhysicalParticipants&,const ShellPhysicalPublicationIdentity&,
@@ -119,8 +127,22 @@ class ShellBatchPublication {
       const NodalRigidAssemblyBinding&,const NodalCinWitnessSource&,const type45::Model&,
       const ShellPhysicalParticipants&,const ShellPhysicalPublicationIdentity&,
       const ShellPublicationLimits& limits={});
+  // One-time opt-in before interval 1.  The actual physical binding,
+  // participants, publication identity and owner are reauthenticated before
+  // either fixed roster slot is bound. Configured issuers remain alive through
+  // all transaction calls; destroying one revokes its mandatory slot. No call
+  // preserves every legacy path.
+  ShellPublicationReport ConfigurePhysicalScratchParticipation(
+      FENodalState&,const ShellPhysicalBinding&,const ShellPhysicalParticipants&,
+      const ShellPhysicalPublicationIdentity&,const ShellPhysicalScratchRoster&,
+      const ShellPhysicalScratchParticipationLimits& limits={}) noexcept;
   ShellPublicationReport PreparePhysical(FENodalState&,const NodalTrialToken&,
       const ShellPhysicalCandidates&,ShellPhysicalDiagnostics*);
+  // Called after every configured contact candidate check.  Exact fixed-roster
+  // receipts are sealed privately for this already prepared attempt.
+  ShellPublicationReport SealPhysicalScratchParticipation(
+      FENodalState&,const NodalTrialToken&,
+      const ShellPhysicalScratchReceiptRoster&) noexcept;
   ShellPublicationReport CommitPhysical(FENodalState&,const NodalTrialToken&,
       const ShellPhysicalDiagnostics&,const NodalValidationReceipt&) noexcept;
   ShellPublicationReport CopyAcceptedPhysicalDiagnostics(const NodalStamp&,
@@ -158,6 +180,19 @@ class ShellBatchPublication {
   void DiscardTrial() noexcept;
   NodalAllocationInfo allocations() const noexcept;
  private:
+  friend class ShellPhysicalScratchParticipation;
+  ShellPublicationReport RecordPhysicalScratchAssembly(
+      ShellPhysicalScratchParticipation&,std::uint64_t,FENodalState&,
+      const NodalTrialToken&,const NodalAssemblyView&) noexcept;
+  ShellPublicationReport SealPhysicalScratchCandidate(
+      ShellPhysicalScratchParticipation&,std::uint64_t,FENodalState&,
+      const NodalTrialToken&,const NodalPreparedView&,
+      ShellPhysicalScratchParticipationReceipt*) noexcept;
+  ShellPublicationReport ValidatePhysicalScratchSeal(
+      FENodalState&,const NodalPreparedView&) const noexcept;
+  void ConsumePhysicalScratchSeal() noexcept;
+  void ReleasePhysicalScratchParticipation(
+      ShellPhysicalScratchParticipation&) noexcept;
   ShellPublicationReport InitializePhysicalImpl(FENodalState&,const ShellPhysicalBinding&,
       const NodalRigidAssemblyBinding&,const NodalCinWitnessSource&,const type45::Model*,
       const ShellPhysicalParticipants&,const ShellPhysicalPublicationIdentity&,const ShellPublicationLimits&);

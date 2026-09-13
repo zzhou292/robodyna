@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.22)
 project(TLPhysicalPublication LANGUAGES CXX C)
 enable_testing()
 find_package(GTest REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
 get_filename_component(TL_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../.." ABSOLUTE)
 option(PHYSICAL_PUBLICATION_CUDA "Complete physical owner transaction gate" OFF)
 if(PHYSICAL_PUBLICATION_CUDA)
@@ -34,6 +35,7 @@ else()
   target_sources(physical_publication_host PRIVATE
     "${TL_ROOT}/lib_src/elements/publication/PhysicalValues.cpp"
     "${TL_ROOT}/lib_src/elements/publication/PhysicalForecast.cpp"
+    "${TL_ROOT}/lib_src/elements/publication/ShellPhysicalScratchParticipation.cpp"
     "${TL_ROOT}/lib_src/elements/ShellBatchPublicationValues.cpp"
     "${TL_ROOT}/lib_src/elements/qeph/QephBatchIdentity.cpp"
     "${TL_ROOT}/lib_src/elements/t3/T3BatchIdentity.cpp"
@@ -46,6 +48,17 @@ endif()
 target_compile_options(physical_publication_host PRIVATE -fno-fast-math -ffp-contract=off)
 add_test(NAME physical_publication_host COMMAND physical_publication_host)
 set_tests_properties(physical_publication_host PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+add_test(NAME physical_scratch_participation_source
+  COMMAND "${Python3_EXECUTABLE}" -B
+          "${CMAKE_CURRENT_LIST_DIR}/verify_participation_sources.py")
+add_test(NAME physical_scratch_participation_syntax
+  COMMAND "${Python3_EXECUTABLE}" -B
+          "${CMAKE_CURRENT_LIST_DIR}/check_participation_syntax.py"
+          --compiler "${CMAKE_CXX_COMPILER}"
+          --output "${CMAKE_CURRENT_BINARY_DIR}/participation-syntax")
+set_tests_properties(physical_scratch_participation_source
+  physical_scratch_participation_syntax
+  PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
 
 add_executable(type13_mapped_legacy_host "${CMAKE_CURRENT_LIST_DIR}/../type13_resident/HostTest.cpp")
 target_link_libraries(type13_mapped_legacy_host PRIVATE tl_type13_batch_values GTest::gtest_main)

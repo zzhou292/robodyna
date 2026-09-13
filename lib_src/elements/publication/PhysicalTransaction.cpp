@@ -80,7 +80,17 @@ ShellPublicationReport ShellBatchPublication::CommitPhysical(FENodalState& owner
       receipt.attempt != authentic.attempt || receipt.qualification_id != physical.identity.qualification_id)
     return fail({S::StaleTrial,"Physical capture receipt differs from the authentic interval"});
   auto nodal = CompleteNodalValidation(owner,token,receipt);
-  if (nodal.status == NodalStatus::Ok) nodal = owner.Commit(token);
+  if (nodal.status != NodalStatus::Ok) return fail(Nodal(nodal));
+  if (physical.HasScratchParticipation()) {
+    const auto participation=ValidatePhysicalScratchSeal(owner,authentic);
+    if (participation.status!=S::Success) return fail(participation);
+    // Consume only fixed host attempt scratch after the existing owner
+    // validation and before its commit. Thus all old failure ordering is
+    // retained and owner success is still followed solely by existing
+    // infallible material/diagnostic publications below.
+    ConsumePhysicalScratchSeal();
+  }
+  nodal = owner.Commit(token);
   if (nodal.status != NodalStatus::Ok) return fail(Nodal(nodal));
   // The only owner commit has succeeded. Nothing below allocates, reads CUDA,
   // validates arithmetic, calls user code, or returns a fallible status.

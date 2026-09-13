@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "ShellBatchPublicationImpl.h"
+#include "publication/PhysicalScratchParticipationState.h"
 #include "qeph/QephBatchStorage.h"
 #include "t3/T3BatchStorage.h"
 #include "ShellBatchStartup.h"
@@ -15,6 +16,12 @@ using namespace shell_publication_detail;
 ShellBatchPublication::ShellBatchPublication()=default;
 ShellBatchPublication::~ShellBatchPublication() {
   if(!impl_) return;
+  if(impl_->physical) {
+    if(auto* participation=impl_->physical->ScratchParticipation()) {
+      for(auto& entry:participation->entries)
+        if(entry.issuer) ReleasePhysicalScratchParticipation(*entry.issuer);
+    }
+  }
   impl_->ReleasePhysical();
   // Borrowed participants must outlive this coordinator, including destruction.
   if(impl_->qbatch&&impl_->qbatch->impl_->publication_scope==this) impl_->qbatch->impl_->publication_scope=nullptr;
