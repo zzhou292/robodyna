@@ -27,6 +27,9 @@ for token in (
     "NodalPreparedView prepared_",
     "RecordAcceptedAssembly",
     "SealCandidate",
+    "RecordSelfContactAcceptedAssembly",
+    "SealSelfContactCandidate",
+    "friend class ::tlfea::contact::SelfContactTransaction",
     "ShellPhysicalScratchReceiptRoster",
 ):
     require(header, token, HEADER)
@@ -47,6 +50,8 @@ for token in (
     "SealPhysicalScratchParticipation",
     "ValidatePhysicalScratchSeal",
     "ConsumePhysicalScratchSeal",
+    "Self-contact assembly can be recorded only by its transaction",
+    "Self-contact candidate can be sealed only by its transaction",
 ):
     require(source, token, SOURCE)
 require(transaction, "ValidatePhysicalScratchSeal(owner,authentic)", TRANSACTION)

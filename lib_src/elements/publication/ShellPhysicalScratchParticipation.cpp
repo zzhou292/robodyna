@@ -215,6 +215,31 @@ ShellPhysicalScratchParticipation::RecordAcceptedAssembly(
   if (!publication_)
     return {ShellPublicationStatus::NotInitialized,
             "Scratch participation issuer is not configured"};
+  if (kind_==ShellPhysicalScratchContributorKind::SelfContact) {
+    if (owner_) owner_->Discard();
+    else owner.Discard();
+    publication_->DiscardTrial();
+    return {ShellPublicationStatus::ParticipationFailure,
+            "Self-contact assembly can be recorded only by its transaction"};
+  }
+  return publication_->RecordPhysicalScratchAssembly(
+      *this,source_id,owner,token,view);
+}
+
+ShellPublicationReport
+ShellPhysicalScratchParticipation::RecordSelfContactAcceptedAssembly(
+    std::uint64_t source_id,FENodalState& owner,const NodalTrialToken& token,
+    const NodalAssemblyView& view) noexcept {
+  if (!publication_)
+    return {ShellPublicationStatus::NotInitialized,
+            "Scratch participation issuer is not configured"};
+  if (kind_!=ShellPhysicalScratchContributorKind::SelfContact) {
+    if (owner_) owner_->Discard();
+    else owner.Discard();
+    publication_->DiscardTrial();
+    return {ShellPublicationStatus::ParticipationFailure,
+            "Transaction authority belongs only to SelfContact"};
+  }
   return publication_->RecordPhysicalScratchAssembly(
       *this,source_id,owner,token,view);
 }
@@ -284,6 +309,32 @@ ShellPublicationReport ShellPhysicalScratchParticipation::SealCandidate(
   if (!publication_)
     return {ShellPublicationStatus::NotInitialized,
             "Scratch participation issuer is not configured"};
+  if (kind_==ShellPhysicalScratchContributorKind::SelfContact) {
+    if (owner_) owner_->Discard();
+    else owner.Discard();
+    publication_->DiscardTrial();
+    return {ShellPublicationStatus::ParticipationFailure,
+            "Self-contact candidate can be sealed only by its transaction"};
+  }
+  return publication_->SealPhysicalScratchCandidate(
+      *this,source_id,owner,token,prepared,output);
+}
+
+ShellPublicationReport
+ShellPhysicalScratchParticipation::SealSelfContactCandidate(
+    std::uint64_t source_id,FENodalState& owner,const NodalTrialToken& token,
+    const NodalPreparedView& prepared,
+    ShellPhysicalScratchParticipationReceipt* output) noexcept {
+  if (!publication_)
+    return {ShellPublicationStatus::NotInitialized,
+            "Scratch participation issuer is not configured"};
+  if (kind_!=ShellPhysicalScratchContributorKind::SelfContact) {
+    if (owner_) owner_->Discard();
+    else owner.Discard();
+    publication_->DiscardTrial();
+    return {ShellPublicationStatus::ParticipationFailure,
+            "Transaction authority belongs only to SelfContact"};
+  }
   return publication_->SealPhysicalScratchCandidate(
       *this,source_id,owner,token,prepared,output);
 }

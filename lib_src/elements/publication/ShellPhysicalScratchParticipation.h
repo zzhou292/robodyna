@@ -5,6 +5,10 @@
 #include <cstddef>
 #include <cstdint>
 
+namespace tlfea::contact {
+class SelfContactTransaction;
+}
+
 namespace tl::fea {
 
 class ShellBatchPublication;
@@ -63,14 +67,14 @@ class ShellPhysicalScratchParticipation {
   ShellPhysicalScratchParticipation& operator=(
       ShellPhysicalScratchParticipation&&) = delete;
 
-  // Call only after this configured contributor has successfully assembled its
-  // complete accepted force/STI contribution on the supplied actual view.
+  // Mapped-wall public path only. SelfContact always rejects here; its
+  // transaction is the sole friend allowed to record accepted force/STI.
   ShellPublicationReport RecordAcceptedAssembly(
       std::uint64_t source_id, FENodalState&, const NodalTrialToken&,
       const NodalAssemblyView&) noexcept;
-  // Call only after the contributor's complete candidate/activity/interval
-  // checks have succeeded on this exact prepared view.  Output is unchanged on
-  // failure.  A final typed receipt is issued only after both phases.
+  // Mapped-wall public path only. SelfContact always rejects here; its
+  // transaction seals only after complete candidate/activity/interval checks.
+  // Output is unchanged on failure.
   ShellPublicationReport SealCandidate(
       std::uint64_t source_id, FENodalState&, const NodalTrialToken&,
       const NodalPreparedView&,
@@ -86,7 +90,15 @@ class ShellPhysicalScratchParticipation {
 
  private:
   friend class ShellBatchPublication;
+  friend class ::tlfea::contact::SelfContactTransaction;
   enum class Phase : std::uint8_t { Idle, AssemblyRecorded, CandidateSealed };
+  ShellPublicationReport RecordSelfContactAcceptedAssembly(
+      std::uint64_t source_id, FENodalState&, const NodalTrialToken&,
+      const NodalAssemblyView&) noexcept;
+  ShellPublicationReport SealSelfContactCandidate(
+      std::uint64_t source_id, FENodalState&, const NodalTrialToken&,
+      const NodalPreparedView&,
+      ShellPhysicalScratchParticipationReceipt*) noexcept;
   void Bind(ShellBatchPublication&, FENodalState&,
       ShellPhysicalScratchContributorKind, std::uint64_t,
       std::size_t witness_count) noexcept;

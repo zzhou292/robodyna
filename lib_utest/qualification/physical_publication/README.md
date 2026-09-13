@@ -23,11 +23,13 @@ Seven CUDA functions cover late attach rejection before any claim, duplicate
 claims, stale activity source and alias rejection, capture rejection, all named
 accepted histories/activity/forces/nodal/rigid/CIN fields across rollback,
 last-contributor numerical failure after the other five candidates, changed last
-solid diagnostic rejection, plus self-only and wall+self fixed-roster
-participation. The latter uses the actual owner/token/assembly/prepared fixture
-to reject missing, duplicate, stale/replayed, foreign source/owner/token/stream,
-candidate-without-assembly, duplicate seal and late structural/validation
-failure before successful half-kick and ordinary retries.
+solid diagnostic rejection, plus mapped-wall fixed-roster participation and
+raw SelfContact public-claim rejection. The generic mapped-wall path uses the
+actual owner/token/assembly/prepared fixture to reject missing, duplicate,
+stale/replayed, foreign source/owner/token/stream, candidate-without-assembly,
+duplicate seal and late structural/validation failure. The owning
+self-contact transaction CUDA qualifier separately covers successful
+SelfContact half-kick and ordinary retries.
 Snapshots compare named double bits, not aggregate padding.
 
 Run the owning gate on a CUDA workstation:
@@ -86,12 +88,19 @@ immutable source/profile ID unchanged as their nonzero source IDs. A wall-only
 legacy case that does not configure a roster follows the byte/output-compatible
 old path.
 
-After each contact's successful accepted force/STI assembly, its private issuer
-calls `RecordAcceptedAssembly`. After structural `PreparePhysical` and that
-contact's successful candidate/activity/crossing checks, it calls
-`SealCandidate` and returns the typed receipt to the app. The app passes the
+After mapped-wall accepted force/STI assembly, its private issuer calls the
+public mapped-wall methods. The self-contact transaction instead uses the
+issuer's private friend methods after force assembly and after structural,
+candidate/activity/crossing checks. It returns the typed receipt only inside
+its transaction receipt. The app passes the
 fixed receipt slots to `SealPhysicalScratchParticipation`, then calls the
 existing `CommitPhysical` with its independent case-validation receipt. Common
 discard revokes both issuers; retry begins from the fresh owner token. No
 contact operation, receipt publication, allocation, or callback occurs after
 owner success.
+
+The SelfContact slot is now stricter than the mapped-wall slot: its public
+issuer methods always reject and revoke the trial. Only the fixed
+`SelfContactTransaction` friend path can record assembly and seal a candidate,
+so a caller cannot use the generic issuer as an unconditional self-contact
+completion claim.
