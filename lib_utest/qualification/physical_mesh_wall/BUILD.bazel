@@ -1,4 +1,10 @@
 load("@rules_cc//cc:defs.bzl", "cc_test")
+filegroup(
+    name = "publication_participation_source_files",
+    srcs = ["BUILD.bazel", "CMakeLists.txt", "ParticipationTest.cu"],
+    visibility = ["//lib_utest/qualification/physical_publication:__pkg__"],
+)
+
 cc_test(
     name = "value_check",
     size = "small",

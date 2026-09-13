@@ -14,7 +14,7 @@ struct NodalWallMappedSource {
   const tl::fea::ShellPhysicalBinding* physical=nullptr;
   const tl::fea::NodalRigidAssemblyBinding* rigid=nullptr;
   tl::fea::NodalCinWitnessSource cin;
-  const tl::fea::ShellBatchPublication* publication=nullptr;
+  tl::fea::ShellBatchPublication* publication=nullptr;
   tl::fea::ShellPhysicalParticipants participants;
   tl::fea::ShellPhysicalPublicationIdentity identity;
 };
@@ -32,6 +32,32 @@ struct NodalWallMappedDiagnostics {
   bool prepared_activity_available=false,valid=false;
   // Execution-route observation only; false for base/serial interval results.
   bool interval_tree_used=false;
+};
+class NodalWallMappedContact;
+// Candidate-completion authority minted only after the concrete mapped wall
+// has validated its actual prepared geometry, activity and interval result.
+class NodalWallMappedTransactionReceipt {
+ public:
+  NodalWallMappedTransactionReceipt() noexcept = default;
+  bool valid() const noexcept {
+    return transaction_!=nullptr && owner_!=nullptr && wall_binding_id_!=0 &&
+        attempt_!=0 && participation_.valid();
+  }
+  std::uint64_t wall_binding_id() const noexcept { return wall_binding_id_; }
+  tl::fea::ShellPhysicalScratchReceiptRoster scratch_receipts()
+      const noexcept {
+    return valid()
+        ? tl::fea::ShellPhysicalScratchReceiptRoster{&participation_,nullptr}
+        : tl::fea::ShellPhysicalScratchReceiptRoster{};
+  }
+
+ private:
+  friend class NodalWallMappedContact;
+  const NodalWallMappedContact* transaction_=nullptr;
+  const tl::fea::FENodalState* owner_=nullptr;
+  std::uint64_t wall_binding_id_=0;
+  std::uint64_t owner_id_=0,base_epoch_=0,attempt_=0;
+  tl::fea::ShellPhysicalScratchParticipationReceipt participation_;
 };
 // Physical finite-wall scratch contributor. No accepted material/contact state,
 // clock, owner commit or participant claim is added. Explicit zero damping,
@@ -57,6 +83,12 @@ class NodalWallMappedContact {
   NodalWallDeviceReport EvaluateCandidate(tl::fea::FENodalState&,const tl::fea::NodalTrialToken&,
       const tl::fea::NodalPreparedView&,const tl::fea::ShellPhysicalDiagnostics&,
       NodalWallMappedDiagnostics*);
+  NodalWallDeviceReport EvaluateCandidate(tl::fea::FENodalState&,const tl::fea::NodalTrialToken&,
+      const tl::fea::NodalPreparedView&,const tl::fea::ShellPhysicalDiagnostics&,
+      NodalWallMappedDiagnostics*,NodalWallMappedTransactionReceipt*);
+  // Available only after successful immutable wall initialization.  The
+  // wall-binding identity is retained from config; callers supply no source ID.
+  tl::fea::ShellPhysicalScratchRosterEntry roster_entry() noexcept;
   // Failure-atomic exact-capacity records. row.valid and local timestep remain
   // unavailable for mapped nodes; no fake independent member response is stored.
   NodalWallDeviceReport CopyResults(const NodalWallMappedDiagnostics&,
@@ -64,7 +96,11 @@ class NodalWallMappedContact {
   void DiscardTrial() noexcept;
   tl::fea::NodalAllocationInfo allocations() const noexcept;
  private:
+  void DiscardLocal() noexcept;
+  NodalWallDeviceReport FailConfigured(
+      NodalWallDeviceReport) noexcept;
   struct Impl;
   std::unique_ptr<Impl> impl_;
+  tl::fea::ShellPhysicalScratchParticipation participation_;
 };
 } // namespace tlfea::contact

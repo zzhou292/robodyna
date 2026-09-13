@@ -2,6 +2,7 @@
 #include "../ShellBatchPublicationImpl.h"
 #include "../ShellPhysicalOwner.h"
 #include "PhysicalScratchParticipationState.h"
+#include <atomic>
 #include <limits>
 #include <new>
 
@@ -45,27 +46,56 @@ bool RosterShape(const ShellPhysicalScratchRoster& roster,
       (!Complete(roster.mapped_wall) || !Complete(roster.self_contact) ||
        roster.mapped_wall.issuer != roster.self_contact.issuer);
 }
+std::uint64_t NextIssuerLifetime() noexcept {
+  static std::atomic<std::uint64_t> next{1};
+  const auto value=next.fetch_add(1,std::memory_order_relaxed);
+  return value ? value : next.fetch_add(1,std::memory_order_relaxed);
+}
 }  // namespace
 
 namespace shell_publication_detail {
+static_assert(alignof(PhysicalScratchParticipationState) >= 2,
+    "Scratch participation pointer must provide one tag bit");
+
+void PhysicalRuntimeState::SetScratchParticipation(
+    PhysicalScratchParticipationState* state) noexcept {
+  if (!state) {
+    tagged=payload=0;
+    return;
+  }
+  const auto address=reinterpret_cast<std::uintptr_t>(state);
+  tagged=address|ScratchTag;
+  payload=0;
+}
+PhysicalScratchParticipationState*
+PhysicalRuntimeState::ScratchParticipation() noexcept {
+  if (!HasScratchParticipation()) return nullptr;
+  return reinterpret_cast<PhysicalScratchParticipationState*>(
+      tagged&~ScratchTag);
+}
+const PhysicalScratchParticipationState*
+PhysicalRuntimeState::ScratchParticipation() const noexcept {
+  if (!HasScratchParticipation()) return nullptr;
+  return reinterpret_cast<const PhysicalScratchParticipationState*>(
+      tagged&~ScratchTag);
+}
 PhysicalState::~PhysicalState() {
-  if (HasScratchParticipation()) delete runtime.scratch.state;
+  delete runtime.ScratchParticipation();
 }
 void PhysicalState::SetCinCounts(std::size_t attachments,
                                  std::size_t witnesses) noexcept {
-  runtime.cin = {attachments,witnesses};
+  runtime.SetCinCounts(attachments,witnesses);
 }
 bool PhysicalState::HasScratchParticipation() const noexcept {
-  return runtime.scratch.configured_marker == 0 &&
-      runtime.scratch.state != nullptr;
+  return runtime.HasScratchParticipation();
 }
 PhysicalScratchParticipationState*
 PhysicalState::ScratchParticipation() noexcept {
-  return HasScratchParticipation() ? runtime.scratch.state : nullptr;
+  return runtime.ScratchParticipation();
 }
 const PhysicalScratchParticipationState*
 PhysicalState::ScratchParticipation() const noexcept {
-  return HasScratchParticipation() ? runtime.scratch.state : nullptr;
+  return runtime.ScratchParticipation();
 }
 void PhysicalState::DiscardScratchParticipation() noexcept {
   auto* participation = ScratchParticipation();
@@ -84,6 +114,8 @@ void PhysicalState::DiscardScratchParticipation() noexcept {
 }
 }  // namespace shell_publication_detail
 
+ShellPhysicalScratchParticipation::ShellPhysicalScratchParticipation() noexcept
+    :lifetime_id_(NextIssuerLifetime()) {}
 ShellPhysicalScratchParticipation::~ShellPhysicalScratchParticipation() noexcept {
   if (publication_) publication_->ReleasePhysicalScratchParticipation(*this);
 }
@@ -95,6 +127,7 @@ void ShellPhysicalScratchParticipation::Bind(
   owner_=&owner;
   kind_=kind;
   source_id_=source_id;
+  binding_id_=NextIssuerLifetime();
   witness_count_=witness_count;
   phase_=Phase::Idle;
 }
@@ -105,6 +138,7 @@ void ShellPhysicalScratchParticipation::Unbind(
   owner_=nullptr;
   stream_=nullptr;
   source_id_=0;
+  binding_id_=0;
   owner_id_=base_epoch_=attempt_=0;
   last_base_epoch_=last_attempt_=generation_=0;
   witness_count_=0;
@@ -194,8 +228,8 @@ ShellBatchPublication::ConfigurePhysicalScratchParticipation(
   if (!participation)
     return {S::ResourceLimit,
             "Scratch participation fixed host allocation failed"};
-  participation->cin_attachment_count=physical.runtime.cin.attachment_count;
-  participation->cin_witness_count=physical.runtime.cin.witness_count;
+  participation->cin_attachment_count=physical.runtime.CinAttachmentCount();
+  participation->cin_witness_count=physical.runtime.CinWitnessCount();
   for (std::size_t slot=0;slot<PhysicalScratchKindCount;++slot) {
     const auto kind=Kind(slot);
     const auto& entry=RosterEntry(roster,kind);
@@ -204,7 +238,7 @@ ShellBatchPublication::ConfigurePhysicalScratchParticipation(
       entry.issuer->Bind(*this,owner,kind,entry.source_id,
                          participation->cin_witness_count);
   }
-  physical.runtime.scratch={participation,0};
+  physical.runtime.SetScratchParticipation(participation);
   return Ok();
 }
 
@@ -212,18 +246,35 @@ ShellPublicationReport
 ShellPhysicalScratchParticipation::RecordAcceptedAssembly(
     std::uint64_t source_id,FENodalState& owner,const NodalTrialToken& token,
     const NodalAssemblyView& view) noexcept {
+  (void)source_id;
+  (void)token;
+  (void)view;
   if (!publication_)
     return {ShellPublicationStatus::NotInitialized,
             "Scratch participation issuer is not configured"};
-  if (kind_==ShellPhysicalScratchContributorKind::SelfContact) {
+  if (owner_) owner_->Discard();
+  else owner.Discard();
+  publication_->DiscardTrial();
+  return {ShellPublicationStatus::ParticipationFailure,
+          "Scratch assembly can be recorded only by its concrete transaction"};
+}
+
+ShellPublicationReport
+ShellPhysicalScratchParticipation::RecordMappedWallAcceptedAssembly(
+    FENodalState& owner,const NodalTrialToken& token,
+    const NodalAssemblyView& view) noexcept {
+  if (!publication_)
+    return {ShellPublicationStatus::NotInitialized,
+            "Mapped-wall scratch issuer is not configured"};
+  if (kind_!=ShellPhysicalScratchContributorKind::MappedWall) {
     if (owner_) owner_->Discard();
     else owner.Discard();
     publication_->DiscardTrial();
     return {ShellPublicationStatus::ParticipationFailure,
-            "Self-contact assembly can be recorded only by its transaction"};
+            "Mapped-wall authority belongs only to MappedWall"};
   }
   return publication_->RecordPhysicalScratchAssembly(
-      *this,source_id,owner,token,view);
+      *this,source_id_,owner,token,view);
 }
 
 ShellPublicationReport
@@ -306,18 +357,37 @@ ShellPublicationReport ShellPhysicalScratchParticipation::SealCandidate(
     std::uint64_t source_id,FENodalState& owner,const NodalTrialToken& token,
     const NodalPreparedView& prepared,
     ShellPhysicalScratchParticipationReceipt* output) noexcept {
+  (void)source_id;
+  (void)token;
+  (void)prepared;
+  (void)output;
   if (!publication_)
     return {ShellPublicationStatus::NotInitialized,
             "Scratch participation issuer is not configured"};
-  if (kind_==ShellPhysicalScratchContributorKind::SelfContact) {
+  if (owner_) owner_->Discard();
+  else owner.Discard();
+  publication_->DiscardTrial();
+  return {ShellPublicationStatus::ParticipationFailure,
+          "Scratch candidate can be sealed only by its concrete transaction"};
+}
+
+ShellPublicationReport
+ShellPhysicalScratchParticipation::SealMappedWallCandidate(
+    FENodalState& owner,const NodalTrialToken& token,
+    const NodalPreparedView& prepared,
+    ShellPhysicalScratchParticipationReceipt* output) noexcept {
+  if (!publication_)
+    return {ShellPublicationStatus::NotInitialized,
+            "Mapped-wall scratch issuer is not configured"};
+  if (kind_!=ShellPhysicalScratchContributorKind::MappedWall) {
     if (owner_) owner_->Discard();
     else owner.Discard();
     publication_->DiscardTrial();
     return {ShellPublicationStatus::ParticipationFailure,
-            "Self-contact candidate can be sealed only by its transaction"};
+            "Mapped-wall authority belongs only to MappedWall"};
   }
   return publication_->SealPhysicalScratchCandidate(
-      *this,source_id,owner,token,prepared,output);
+      *this,source_id_,owner,token,prepared,output);
 }
 
 ShellPublicationReport
@@ -401,6 +471,8 @@ ShellPublicationReport ShellBatchPublication::SealPhysicalScratchCandidate(
   next.owner_=&owner;
   next.kind_=issuer.kind_;
   next.source_id_=issuer.source_id_;
+  next.issuer_lifetime_id_=issuer.lifetime_id_;
+  next.binding_id_=issuer.binding_id_;
   next.generation_=issuer.generation_+1;
   next.prepared_=authentic;
   issuer.generation_=next.generation_;
@@ -459,11 +531,15 @@ ShellPublicationReport ShellBatchPublication::SealPhysicalScratchParticipation(
     }
     if (!expected.issuer || !receipt)
       return fail({S::ParticipationFailure,
-                   "Configured contact kind is missing its final receipt"});
+          kind==ShellPhysicalScratchContributorKind::MappedWall
+              ? "Configured MappedWall is missing its final receipt"
+              : "Configured SelfContact is missing its final receipt"});
     const auto& issuer=*expected.issuer;
     if (!receipt->valid() || receipt->issuer_!=expected.issuer ||
         receipt->publication_!=this || receipt->owner_!=&owner ||
         receipt->kind_!=kind || receipt->source_id_!=expected.source_id ||
+        receipt->issuer_lifetime_id_!=issuer.lifetime_id_ ||
+        receipt->binding_id_!=issuer.binding_id_ ||
         receipt->generation_!=issuer.generation_ ||
         issuer.phase_!=ShellPhysicalScratchParticipation::Phase::CandidateSealed ||
         issuer.publication_!=this || issuer.owner_!=&owner ||
@@ -474,7 +550,9 @@ ShellPublicationReport ShellBatchPublication::SealPhysicalScratchParticipation(
         issuer.attempt_!=authentic.attempt || issuer.stream_!=authentic.stream ||
         !trial_identity::SamePrepared(receipt->prepared_,authentic))
       return fail({S::ParticipationFailure,
-                   "Scratch receipt is stale, foreign, replayed or mismatched"});
+          kind==ShellPhysicalScratchContributorKind::MappedWall
+              ? "MappedWall receipt is stale, foreign, replayed or mismatched"
+              : "SelfContact receipt is stale, foreign, replayed or mismatched"});
     generations[slot]=receipt->generation_;
   }
   participation->sealed_owner=&owner;

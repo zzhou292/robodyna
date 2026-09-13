@@ -28,7 +28,7 @@ if(PHYSICAL_MESH_WALL_CUDA)
   set(PHYSICAL_PUBLICATION_CUDA ON CACHE BOOL "Reuse complete owner fixture" FORCE)
   add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../physical_publication" physical-publication)
   include("${TL_ROOT}/lib_src/collision/NodalWallMappedContact.cmake")
-  add_executable(physical_mesh_wall_cuda OwnerTest.cu
+  add_executable(physical_mesh_wall_cuda OwnerTest.cu ParticipationTest.cu
     "${CMAKE_CURRENT_LIST_DIR}/../physical_publication/OwnerStartup.cu"
     "${CMAKE_CURRENT_LIST_DIR}/../physical_publication/OwnerAttempt.cu"
     "${CMAKE_CURRENT_LIST_DIR}/../physical_publication/OwnerSnapshot.cu")

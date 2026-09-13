@@ -95,11 +95,34 @@ NodalWallDeviceReport NodalWallMappedContact::Initialize(const NodalWallDeviceCo
     return {Code::ResourceLimit,"Mapped contact startup allocation failed"};
   }
 }
-void NodalWallMappedContact::DiscardTrial() noexcept {
+fe::ShellPhysicalScratchRosterEntry
+NodalWallMappedContact::roster_entry() noexcept {
+  if(!impl_) return {};
+  return {&participation_,impl_->config.wall_binding_id};
+}
+void NodalWallMappedContact::DiscardLocal() noexcept {
   if(impl_) {
     impl_->has_base=false;
     impl_->has_results=false;
+    impl_->available={};
+    impl_->base={};
+    impl_->base_stamp={};
+    impl_->stream=nullptr;
   }
+  participation_.DiscardTrial();
+}
+NodalWallDeviceReport NodalWallMappedContact::FailConfigured(
+    NodalWallDeviceReport report) noexcept {
+  if(!participation_.configured()) return report;
+  auto* owner=impl_?impl_->owner:nullptr;
+  auto* publication=impl_?impl_->publication:nullptr;
+  if(owner) owner->Discard();
+  if(publication) publication->DiscardTrial();
+  DiscardLocal();
+  return report;
+}
+void NodalWallMappedContact::DiscardTrial() noexcept {
+  DiscardLocal();
 }
 fe::NodalAllocationInfo NodalWallMappedContact::allocations() const noexcept {
   return impl_?fe::NodalAllocationInfo{impl_->forecast.device_bytes,2}:fe::NodalAllocationInfo{};

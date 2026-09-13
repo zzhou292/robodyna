@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Fixture.h"
 #include "lib_src/elements/publication/PhysicalChecks.h"
+#include "lib_src/elements/publication/PhysicalScratchParticipationState.h"
 #include "lib_src/elements/publication/PhysicalState.h"
 #include "lib_src/elements/ShellPhysicalOwner.h"
+#include <cstring>
 #include <type_traits>
 
 namespace physical_publication_test {
@@ -124,8 +126,8 @@ TEST(PhysicalPublicationValues,
   EXPECT_FALSE((std::is_constructible_v<Receipt,fe::NodalValidationReceipt>));
   EXPECT_FALSE((std::is_convertible_v<fe::NodalValidationReceipt,Receipt>));
   EXPECT_FALSE(Receipt{}.valid());
-  static_assert(sizeof(Issuer)==96);
-  static_assert(sizeof(Receipt)==264);
+  static_assert(sizeof(Issuer)==112);
+  static_assert(sizeof(Receipt)==280);
   static_assert(sizeof(fe::ShellPhysicalScratchRoster)==32);
   RecordProperty("scratch_participation_issuer_bytes",std::to_string(sizeof(Issuer)));
   RecordProperty("scratch_participation_receipt_bytes",std::to_string(sizeof(Receipt)));
@@ -144,7 +146,7 @@ TEST(PhysicalPublicationValues,
   ASSERT_EQ(fe::ShellBatchPublication::ForecastPhysicalScratchParticipation(
       self_only,{},forecast).status,fe::ShellPublicationStatus::Success);
   EXPECT_EQ(forecast.publication_host_bytes,112u);
-  EXPECT_EQ(forecast.total_host_bytes,208u);
+  EXPECT_EQ(forecast.total_host_bytes,224u);
   RecordProperty("scratch_participation_publication_bytes",
       std::to_string(forecast.publication_host_bytes));
   RecordProperty("scratch_participation_self_only_total_bytes",
@@ -164,12 +166,55 @@ TEST(PhysicalPublicationValues,
                                       {self,self_source}};
   ASSERT_EQ(fe::ShellBatchPublication::ForecastPhysicalScratchParticipation(
       both,{},forecast).status,fe::ShellPublicationStatus::Success);
-  EXPECT_EQ(forecast.total_host_bytes,304u);
+  EXPECT_EQ(forecast.total_host_bytes,336u);
   RecordProperty("scratch_participation_wall_self_total_bytes",
       std::to_string(forecast.total_host_bytes));
   EXPECT_EQ(forecast.configured_issuer_host_bytes,2*sizeof(Issuer));
   both.self_contact.issuer=wall;
   EXPECT_EQ(fe::ShellBatchPublication::ForecastPhysicalScratchParticipation(
       both,{},forecast).status,fe::ShellPublicationStatus::InvalidInput);
+}
+TEST(PhysicalPublicationValues,
+     TaggedPhysicalRuntimeSupportsZeroWitnessByteCopyAndBothDestructionPaths) {
+  using Runtime=fe::shell_publication_detail::PhysicalRuntimeState;
+  using State=fe::shell_publication_detail::PhysicalScratchParticipationState;
+  static_assert(sizeof(Runtime)==2*sizeof(std::size_t));
+  static_assert(std::is_trivially_copyable_v<Runtime>);
+
+  Runtime absent;
+  absent.SetCinCounts(17,0);
+  EXPECT_FALSE(absent.HasScratchParticipation());
+  EXPECT_EQ(absent.CinAttachmentCount(),17u);
+  EXPECT_EQ(absent.CinWitnessCount(),0u);
+  std::array<unsigned char,sizeof(Runtime)> bytes{};
+  std::memcpy(bytes.data(),&absent,sizeof(absent));
+  Runtime absent_copy;
+  std::memcpy(&absent_copy,bytes.data(),sizeof(absent_copy));
+  EXPECT_FALSE(absent_copy.HasScratchParticipation());
+  EXPECT_EQ(absent_copy.CinAttachmentCount(),17u);
+  EXPECT_EQ(absent_copy.CinWitnessCount(),0u);
+
+  State state;
+  absent.SetScratchParticipation(&state);
+  EXPECT_TRUE(absent.HasScratchParticipation());
+  EXPECT_EQ(absent.ScratchParticipation(),&state);
+  std::memcpy(bytes.data(),&absent,sizeof(absent));
+  Runtime present_copy;
+  std::memcpy(&present_copy,bytes.data(),sizeof(present_copy));
+  EXPECT_TRUE(present_copy.HasScratchParticipation());
+  EXPECT_EQ(present_copy.ScratchParticipation(),&state);
+  present_copy.SetScratchParticipation(nullptr);
+  EXPECT_FALSE(present_copy.HasScratchParticipation());
+  EXPECT_EQ(present_copy.CinAttachmentCount(),0u);
+  EXPECT_EQ(present_copy.CinWitnessCount(),0u);
+
+  {
+    fe::shell_publication_detail::PhysicalState physical{{},{}};
+    physical.SetCinCounts(0,0);
+  }
+  {
+    fe::shell_publication_detail::PhysicalState physical{{},{}};
+    physical.runtime.SetScratchParticipation(new State);
+  }
 }
 } // namespace physical_publication_test

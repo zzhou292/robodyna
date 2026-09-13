@@ -32,9 +32,12 @@ cc_test(
     srcs = ["ParticipationSourceProofTest.cpp"],
     data = [
         "Cuda.cmake",
+        "HostTest.cpp",
         "ParticipationTest.cu",
         "verify_participation_sources.py",
+        "//lib_src/collision:nodal_wall_mapped_publication_source_files",
         "//lib_src/elements:scratch_participation_source_files",
+        "//lib_utest/qualification/physical_mesh_wall:publication_participation_source_files",
     ],
     deps = ["@googletest//:gtest_main"],
 )

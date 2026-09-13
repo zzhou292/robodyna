@@ -31,7 +31,7 @@ struct NodalWallMappedContact::Impl {
   Impl& operator=(const Impl&)=delete;
   tl::fea::ShellPhysicalBinding physical;
   tl::fea::NodalRigidAssemblyBinding rigid;
-  const tl::fea::ShellBatchPublication* publication=nullptr;
+  tl::fea::ShellBatchPublication* publication=nullptr;
   tl::fea::ShellPhysicalParticipants participants;
   tl::fea::FENodalState* owner=nullptr;
   tl::fea::ShellPhysicalPublicationIdentity identity;

@@ -6,6 +6,7 @@
 #include <cstdint>
 
 namespace tlfea::contact {
+class NodalWallMappedContact;
 class SelfContactTransaction;
 }
 
@@ -35,7 +36,8 @@ class ShellPhysicalScratchParticipationReceipt {
   std::uint64_t generation() const noexcept { return generation_; }
   bool valid() const noexcept {
     return issuer_ != nullptr && publication_ != nullptr && owner_ != nullptr &&
-        source_id_ != 0 && generation_ != 0 && prepared_.attempt != 0;
+        source_id_ != 0 && issuer_lifetime_id_ != 0 && binding_id_ != 0 &&
+        generation_ != 0 && prepared_.attempt != 0;
   }
 
  private:
@@ -46,7 +48,8 @@ class ShellPhysicalScratchParticipationReceipt {
   const FENodalState* owner_ = nullptr;
   ShellPhysicalScratchContributorKind kind_ =
       ShellPhysicalScratchContributorKind::MappedWall;
-  std::uint64_t source_id_ = 0, generation_ = 0;
+  std::uint64_t source_id_ = 0, issuer_lifetime_id_ = 0;
+  std::uint64_t binding_id_ = 0, generation_ = 0;
   NodalPreparedView prepared_;
 };
 
@@ -56,7 +59,7 @@ class ShellPhysicalScratchParticipationReceipt {
 // owner commit, or device operation.  Calls are serialized with the owner.
 class ShellPhysicalScratchParticipation {
  public:
-  ShellPhysicalScratchParticipation() noexcept = default;
+  ShellPhysicalScratchParticipation() noexcept;
   ~ShellPhysicalScratchParticipation() noexcept;
   ShellPhysicalScratchParticipation(
       const ShellPhysicalScratchParticipation&) = delete;
@@ -67,14 +70,11 @@ class ShellPhysicalScratchParticipation {
   ShellPhysicalScratchParticipation& operator=(
       ShellPhysicalScratchParticipation&&) = delete;
 
-  // Mapped-wall public path only. SelfContact always rejects here; its
-  // transaction is the sole friend allowed to record accepted force/STI.
+  // Deliberately closed public probes.  Neither roster kind can self-attest
+  // completion through an exposed issuer; concrete transactions are friends.
   ShellPublicationReport RecordAcceptedAssembly(
       std::uint64_t source_id, FENodalState&, const NodalTrialToken&,
       const NodalAssemblyView&) noexcept;
-  // Mapped-wall public path only. SelfContact always rejects here; its
-  // transaction seals only after complete candidate/activity/interval checks.
-  // Output is unchanged on failure.
   ShellPublicationReport SealCandidate(
       std::uint64_t source_id, FENodalState&, const NodalTrialToken&,
       const NodalPreparedView&,
@@ -90,8 +90,15 @@ class ShellPhysicalScratchParticipation {
 
  private:
   friend class ShellBatchPublication;
+  friend class ::tlfea::contact::NodalWallMappedContact;
   friend class ::tlfea::contact::SelfContactTransaction;
   enum class Phase : std::uint8_t { Idle, AssemblyRecorded, CandidateSealed };
+  ShellPublicationReport RecordMappedWallAcceptedAssembly(
+      FENodalState&, const NodalTrialToken&,
+      const NodalAssemblyView&) noexcept;
+  ShellPublicationReport SealMappedWallCandidate(
+      FENodalState&, const NodalTrialToken&, const NodalPreparedView&,
+      ShellPhysicalScratchParticipationReceipt*) noexcept;
   ShellPublicationReport RecordSelfContactAcceptedAssembly(
       std::uint64_t source_id, FENodalState&, const NodalTrialToken&,
       const NodalAssemblyView&) noexcept;
@@ -110,7 +117,7 @@ class ShellPhysicalScratchParticipation {
   cudaStream_t stream_ = nullptr;
   std::uint64_t source_id_ = 0, owner_id_ = 0, base_epoch_ = 0;
   std::uint64_t attempt_ = 0, last_base_epoch_ = 0, last_attempt_ = 0;
-  std::uint64_t generation_ = 0;
+  std::uint64_t lifetime_id_ = 0, binding_id_ = 0, generation_ = 0;
   std::size_t witness_count_ = 0;
   ShellPhysicalScratchContributorKind kind_ =
       ShellPhysicalScratchContributorKind::MappedWall;
@@ -139,7 +146,9 @@ struct ShellPhysicalScratchParticipationLimits {
 struct ShellPhysicalScratchParticipationForecast {
   // Publication-owned fixed roster/seal state is allocated once at
   // configuration.  Issuers are caller-owned fixed objects, normally embedded
-  // in the concrete contact modules.
+  // in the concrete contact modules. A complete contact forecast already
+  // charges its embedded issuer, so composition adds publication_host_bytes,
+  // not total_host_bytes; total is the standalone roster admission cap.
   std::size_t publication_host_bytes = 0;
   std::size_t configured_issuer_host_bytes = 0;
   std::size_t total_host_bytes = 0;

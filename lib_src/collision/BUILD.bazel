@@ -14,6 +14,18 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
+    name = "nodal_wall_mapped_publication_source_files",
+    srcs = [
+        "BUILD.bazel",
+        "NodalWallMappedContact.cmake",
+        "NodalWallMappedContact.h",
+        "nodal_wall_mapped/Initialize.cpp",
+        "nodal_wall_mapped/Operations.cu",
+        "nodal_wall_mapped/Storage.h",
+    ],
+)
+
+filegroup(
     name = "fixed_triangle_feature_discovery_sources",
     srcs = [
         "BUILD.bazel",
