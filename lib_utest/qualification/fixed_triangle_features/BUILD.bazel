@@ -1,0 +1,20 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+
+cc_test(
+    name = "host",
+    size = "small",
+    srcs = [
+        "AdapterTest.cpp",
+        "CapacityTest.cpp",
+        "ExhaustiveTest.cpp",
+        "Fixture.h",
+        "GeometryTest.cpp",
+        "IntersectionTest.cpp",
+        "OracleTest.cpp",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        "//lib_src/collision:fixed_triangle_feature_discovery",
+        "@googletest//:gtest_main",
+    ],
+)

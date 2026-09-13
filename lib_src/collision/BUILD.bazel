@@ -14,6 +14,25 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
+    name = "fixed_triangle_feature_discovery",
+    srcs = [
+        "fixed_triangle_features/Discovery.cpp",
+        "fixed_triangle_features/Geometry.cpp",
+    ],
+    hdrs = [
+        "FixedTriangleFeatureDiscovery.h",
+        "FixedTriangleFeatureTypes.h",
+        "fixed_triangle_features/Geometry.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        ":fixed_contact_facets",
+        ":surface_contact_primitives",
+        "//lib_src/collision/weighted_surface:mapping",
+    ],
+)
+
+cc_library(
     name = "fixed_contact_facets",
     srcs = [
         "FixedContactFacetBinding.cpp",
