@@ -129,7 +129,7 @@ struct Fixture {
         << surface_report.message;
     if (surface_report.status != c::SelfContactSurfaceStatus::Ok)
       return false;
-    const auto facet_report = facets.Initialize(surface, {{}, 1});
+    const auto facet_report = facets.Initialize(surface, {{}, 0});
     EXPECT_EQ(facet_report.status, c::FixedContactFacetStatus::Ok)
         << facet_report.message;
     if (facet_report.status != c::FixedContactFacetStatus::Ok)

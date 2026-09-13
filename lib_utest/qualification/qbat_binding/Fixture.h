@@ -48,9 +48,9 @@ struct Fixture {
   explicit Fixture(bool contact = false) : contact_geometry(contact) {
     const tl::math::Vec3 x[]{
         {0,0,0},{.04,0,0},{.04,.02,0},{0,.02,0},
-        contact ? tl::math::Vec3{.01,.005,.00025}
+        contact ? tl::math::Vec3{.01,.003,.00025}
                          : tl::math::Vec3{.05,.01,0},
-        {.03,.005,.00025},{.02,.015,.00025}};
+        {.03,.003,.00025},{.02,.006,.00025}};
     for(unsigned layer=0;layer<2;++layer) {
       q[layer].source_parent_id=100+layer;
       q[layer].nodes={0,1,2,3};
