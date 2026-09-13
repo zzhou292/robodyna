@@ -1,0 +1,34 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_python//python:defs.bzl", "py_test")
+
+cc_test(
+    name = "host_check",
+    size = "small",
+    srcs = ["ValueTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        "//lib_src/collision:self_contact_force_values",
+        "@googletest//:gtest_main",
+    ],
+)
+
+py_test(
+    name = "source_check",
+    size = "small",
+    srcs = ["verify_sources.py"],
+    data = [
+        "CMakeLists.txt",
+        "//lib_src/collision:self_contact_force_assembly_source_proof",
+    ],
+    main = "verify_sources.py",
+)
+
+filegroup(
+    name = "root_cuda_sources",
+    srcs = [
+        "CMakeLists.txt",
+        "CudaTest.cu",
+        "README.md",
+        "check_syntax.py",
+    ],
+)

@@ -115,6 +115,9 @@ bool SelfContactActiveUseBinding::SharesStorage(
     const SelfContactActiveUseBinding& other) const noexcept {
   return impl_ && impl_ == other.impl_;
 }
+const void* SelfContactActiveUseBinding::identity() const noexcept {
+  return impl_.get();
+}
 bool SelfContactActiveUseBinding::OutputDisjoint(const void* output,
     std::size_t bytes) const noexcept {
   using tl::fea::trial_identity::Disjoint;

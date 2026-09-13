@@ -116,6 +116,79 @@ cc_library(
 )
 
 filegroup(
+    name = "self_contact_force_assembly_source_proof",
+    srcs = [
+        "BUILD.bazel",
+        "SelfContactForceAssembly.cmake",
+        "SelfContactForceAssembly.h",
+        "SelfContactForceTypes.h",
+        "SelfContactForceValues.h",
+        "self_contact_force/Initialize.cpp",
+        "self_contact_force/Layout.cpp",
+        "self_contact_force/Operations.cu",
+        "self_contact_force/Source.cpp",
+        "self_contact_force/Storage.h",
+        "self_contact_force/Values.cpp",
+    ],
+)
+
+cc_library(
+    name = "self_contact_force_values",
+    srcs = [
+        "self_contact_force/Source.cpp",
+        "self_contact_force/Values.cpp",
+    ],
+    hdrs = [
+        "SelfContactForceTypes.h",
+        "SelfContactForceValues.h",
+        "self_contact_force/Storage.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        ":fixed_triangle_feature_discovery",
+        ":self_contact_active_uses",
+        "//lib_src/elements:shell_physical_owner_values",
+        "//lib_src/solvers:explicit_nodal_state",
+        "//lib_utils:bounded_arena",
+    ],
+)
+
+cuda_library(
+    name = "self_contact_force_device",
+    srcs = ["self_contact_force/Operations.cu"],
+    hdrs = ["SelfContactForceAssembly.h"],
+    copts = [
+        "--std=c++17",
+        "--fmad=false",
+        "--prec-div=true",
+        "--prec-sqrt=true",
+        "--ftz=false",
+        "-Xcompiler=-fno-fast-math,-ffp-contract=off",
+    ],
+    deps = [
+        ":self_contact_force_values",
+        "//lib_src/collision/penalty_pair:values",
+        "//lib_src/elements:shell_physical_owner",
+        "//lib_src/solvers:explicit_nodal_state",
+        "//lib_src/solvers:nodal_native_physical_coefficients",
+        "//lib_src/solvers:nodal_trial_identity",
+    ],
+)
+
+cc_library(
+    name = "self_contact_force_assembly",
+    srcs = [
+        "self_contact_force/Initialize.cpp",
+        "self_contact_force/Layout.cpp",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        ":self_contact_force_device",
+        "//lib_src/elements:shell_physical_owner",
+    ],
+)
+
+filegroup(
     name = "self_contact_current_regularity_source_proof",
     srcs = [
         "BUILD.bazel",
