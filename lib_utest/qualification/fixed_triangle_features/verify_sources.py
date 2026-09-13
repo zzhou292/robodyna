@@ -66,7 +66,8 @@ assert "closest.weights[i] == 0" not in geometry
 assert "closest.weights[i] == 1" not in geometry
 assert "exact::ClosestStratum(" in geometry
 assert "on_edge.parameter > 0 && on_edge.parameter < 1" in geometry
-assert "weight > 0 && weight < 1" in geometry
+assert "RepresentedFaceWeights" in geometry
+assert "representation_error_m" in geometry
 assert "SameFeatureKey" in discovery
 assert "std::sort(impl_->raw_features.get()" in discovery
 assert "impl_->complete = true" in discovery
@@ -113,8 +114,8 @@ for required in (
     "ExactVertexIdentityIgnoresRoundedSmallNonzeroWeight",
     "AdversarialExactEdgeStillDeduplicatesAcrossTargetSeam",
     "ClosedBoundaryNextafterAndOutsideVoronoiRegionsStayExact",
-    "UnrepresentableFaceAndEdgeInteriorsRejectAllPermutations",
-    "UnrepresentableInteriorFailurePreservesPublicationAndRetries",
+    "RoundedBoundaryCollapsePublishesEnclosedExactStratumMapping",
+    "RoundedInteriorRepresentationPublishesAndBoundaryRetrySucceeds",
 ):
     assert required in tests, required
 

@@ -168,20 +168,6 @@ SelfContactTransactionReport VertexFaceEvent(
   return {};
 }
 
-bool SameParent(const FixedTriangleKey& a,
-                const FixedTriangleKey& b) noexcept {
-  return a.source_instance_id == b.source_instance_id &&
-      a.parent_eid == b.parent_eid;
-}
-
-bool SameParentPair(const FixedTriangleFeatureCandidate& a,
-                    const FixedTriangleFeatureCandidate& b) noexcept {
-  return (SameParent(a.triangles[0], b.triangles[0]) &&
-          SameParent(a.triangles[1], b.triangles[1])) ||
-      (SameParent(a.triangles[0], b.triangles[1]) &&
-       SameParent(a.triangles[1], b.triangles[0]));
-}
-
 SelfContactTransactionReport CoveredByAdmittedVertexFace(
     const SelfContactActiveUseBinding& active_use,
     const SelfContactCurrentRegularity& regularity,
@@ -196,7 +182,7 @@ SelfContactTransactionReport CoveredByAdmittedVertexFace(
     const auto& candidate = features.data[i];
     if (candidate.key.kind !=
             FixedTriangleCandidateKind::VertexFace ||
-        !SameParentPair(candidate, edge_edge))
+        !ExactFacetPair(candidate, edge_edge))
       continue;
     bool admitted = false;
     const auto report = VertexFaceEvent(

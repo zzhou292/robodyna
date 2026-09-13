@@ -8,6 +8,8 @@ namespace tlfea::contact::fixed_triangle_features {
 struct PairFeatureResult {
   std::size_t feature_tasks = 0;
   std::size_t feature_count = 0;
+  FixedTriangleArithmeticReason arithmetic_reason =
+      FixedTriangleArithmeticReason::None;
 };
 
 int Compare(const FacetVertexKey& a, const FacetVertexKey& b) noexcept;

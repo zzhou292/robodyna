@@ -210,6 +210,30 @@ TEST(SelfContactTransactionValues,
 }
 
 TEST(SelfContactTransactionValues,
+     EeCoverageRequiresTheSameExactFixedFacetPair) {
+  c::FixedTriangleFeatureCandidate vf;
+  vf.key.kind = c::FixedTriangleCandidateKind::VertexFace;
+  vf.triangles[0] = {17, 100, 1, 3};
+  vf.triangles[1] = {17, 200, 1, 7};
+  c::FixedTriangleFeatureCandidate ee;
+  ee.key.SetEdgeEdge();
+  ee.triangles[0] = vf.triangles[1];
+  ee.triangles[1] = vf.triangles[0];
+  EXPECT_TRUE(sct::ExactFacetPair(vf, ee));
+
+  // Parent-pair equality is insufficient: this EE may be spatially unrelated
+  // to the admitted VF and has no independently authenticated force area.
+  ee.triangles[0].local_facet++;
+  EXPECT_FALSE(sct::ExactFacetPair(vf, ee));
+  ee.triangles[0] = vf.triangles[1];
+  ee.triangles[0].level++;
+  EXPECT_FALSE(sct::ExactFacetPair(vf, ee));
+  ee.triangles[0] = vf.triangles[1];
+  ee.triangles[0].source_instance_id++;
+  EXPECT_FALSE(sct::ExactFacetPair(vf, ee));
+}
+
+TEST(SelfContactTransactionValues,
      LocalIntersectionNeedsNoCallerAdmissionButNonlocalDoes) {
   const auto pair = Pair(10, 20);
   c::RepresentedIntervalResult result;

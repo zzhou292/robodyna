@@ -17,6 +17,9 @@ bool Good(c::SelfContactTransactionReport report) {
   EXPECT_EQ(report.status, c::SelfContactTransactionStatus::Ok)
       << report.message << " candidate=" << report.candidate
       << " pair=" << report.pair
+      << " discovery_task=" << report.discovery_task
+      << " discovery_reason="
+      << static_cast<unsigned>(report.discovery_reason)
       << " crossing_reason="
       << static_cast<unsigned>(report.crossing_reason);
   return report.status == c::SelfContactTransactionStatus::Ok;
@@ -25,7 +28,16 @@ bool Good(c::SelfContactTransactionReport report) {
 struct Fixture {
   explicit Fixture(bool single = false, bool crossing = false)
       : rig(false, 2.5, !single),
-        single_parent(single), pass_through(crossing) {}
+        single_parent(single), pass_through(crossing) {
+    if (pass_through) {
+      rig.external_force_source_node = 14;
+      const auto apex = rig.fixture.domain.Find(14);
+      const double mass =
+          rig.fixture.ledger.nodes()[apex].coefficients.mass;
+      rig.external_force_z_n =
+          -2 * mass * .00075 / (p::H * p::H);
+    }
+  }
   p::Rig rig;
   fe::ShellBatchPlasticityBinding execution_catalog;
   fe::ShellBatchFailureBinding execution_failure;

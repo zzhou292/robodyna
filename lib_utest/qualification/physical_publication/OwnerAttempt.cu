@@ -33,6 +33,22 @@ bool Rig::Advance(const fe::NodalTrialToken& token,const fe::NodalAssemblyView& 
   force += 10;
   if (cudaMemcpyAsync(assembly.forces.force_x+node,&force,sizeof(force),cudaMemcpyHostToDevice,assembly.stream) != cudaSuccess ||
       cudaStreamSynchronize(assembly.stream) != cudaSuccess) return false;
+  if (external_force_source_node) {
+    const auto external = fixture.domain.Find(external_force_source_node);
+    if (external == SIZE_MAX) return false;
+    double force_z = 0;
+    if (cudaMemcpyAsync(&force_z, assembly.forces.force_z + external,
+                        sizeof(force_z), cudaMemcpyDeviceToHost,
+                        assembly.stream) != cudaSuccess ||
+        cudaStreamSynchronize(assembly.stream) != cudaSuccess)
+      return false;
+    force_z += external_force_z_n;
+    if (cudaMemcpyAsync(assembly.forces.force_z + external, &force_z,
+                        sizeof(force_z), cudaMemcpyHostToDevice,
+                        assembly.stream) != cudaSuccess ||
+        cudaStreamSynchronize(assembly.stream) != cudaSuccess)
+      return false;
+  }
   return Good(owner.SealAssembly(token)) &&
       Good(fe::AdvanceStaggeredCin(owner,token,{assembly.owner_id,assembly.accepted.base_epoch,
           assembly.attempt,Qualification,H,.2,true})) &&

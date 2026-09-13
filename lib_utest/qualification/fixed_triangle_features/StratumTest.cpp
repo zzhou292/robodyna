@@ -134,11 +134,16 @@ void CheckAllTargetPermutations(
     for (unsigned reversed = 0; reversed < 2; ++reversed) {
       const ct::FixedTrianglePair pair[1]{{reversed, 1u - reversed}};
       const auto report = discovery.Discover(triangles, 2, pair, 1);
-      ASSERT_EQ(report.status, ct::FixedTriangleDiscoveryStatus::Ok);
+      ASSERT_EQ(report.status, ct::FixedTriangleDiscoveryStatus::Ok)
+          << "task=" << report.input_task
+          << " reason="
+          << static_cast<unsigned>(report.arithmetic_reason);
       ASSERT_EQ(report.feature_tasks, 15u);
       const auto* value =
           FindSourceVertex(discovery.features(), ft::Vertex(source_ids[0]));
       ASSERT_NE(value, nullptr);
+      EXPECT_TRUE(std::isfinite(value->representation_error_m));
+      EXPECT_GE(value->representation_error_m, 0);
       const auto& stratum = value->key.vertex_face.target;
       ASSERT_EQ(stratum.kind, expected.kind);
       if (expected.kind == ct::FixedTriangleStratumKind::Vertex)
@@ -199,39 +204,32 @@ void CheckAllTargetPermutations(
   }
 }
 
-void ExpectUnrepresentableAllPermutations(
+void ExpectRepresentedAllPermutations(
     ct::Vec3 query, const ct::Vec3 (&target_points)[3],
     const std::uint64_t (&target_ids)[3]) {
-  const std::array<std::array<unsigned, 3>, 6> permutations{{
-      {{0, 1, 2}}, {{0, 2, 1}}, {{1, 0, 2}},
-      {{1, 2, 0}}, {{2, 0, 1}}, {{2, 1, 0}},
-  }};
   const ct::Vec3 source_points[3]{
       query, {query.x + 4, query.y, query.z},
       {query.x, query.y + 4, query.z}};
   const std::uint64_t source_ids[3]{50, 51, 52};
+  CheckAllTargetPermutations(
+      source_points, source_ids, target_points, target_ids,
+      Oracle(query, target_points));
+
   ct::FixedTriangleFeatureDiscovery discovery;
   ft::Initialize(&discovery);
-  for (const auto& permutation : permutations) {
-    ct::Vec3 points[3];
-    std::uint64_t ids[3];
-    for (unsigned i = 0; i < 3; ++i) {
-      points[i] = target_points[permutation[i]];
-      ids[i] = target_ids[permutation[i]];
-    }
-    const ct::CurrentFixedTriangle triangles[2]{
-        ft::Triangle(100, 0, source_points, source_ids),
-        ft::Triangle(200, 0, points, ids)};
-    for (unsigned reversed = 0; reversed < 2; ++reversed) {
-      const ct::FixedTrianglePair pair[1]{{reversed, 1u - reversed}};
-      const auto report = discovery.Discover(triangles, 2, pair, 1);
-      EXPECT_EQ(report.status,
-                ct::FixedTriangleDiscoveryStatus::NonFiniteResult);
-      EXPECT_EQ(report.input_pair, 0u);
-      EXPECT_FALSE(discovery.features().complete);
-      EXPECT_FALSE(discovery.intersections().complete);
-    }
-  }
+  const ct::CurrentFixedTriangle triangles[2]{
+      ft::Triangle(100, 0, source_points, source_ids),
+      ft::Triangle(200, 0, target_points, target_ids)};
+  const ct::FixedTrianglePair pair[1]{{0, 1}};
+  const auto report = discovery.Discover(triangles, 2, pair, 1);
+  ASSERT_EQ(report.status, ct::FixedTriangleDiscoveryStatus::Ok)
+      << "task=" << report.input_task
+      << " reason="
+      << static_cast<unsigned>(report.arithmetic_reason);
+  const auto* value =
+      FindSourceVertex(discovery.features(), ft::Vertex(50));
+  ASSERT_NE(value, nullptr);
+  EXPECT_GT(value->representation_error_m, 0);
 }
 
 TEST(FixedTriangleStratum,
@@ -394,7 +392,7 @@ TEST(FixedTriangleStratum,
 }
 
 TEST(FixedTriangleStratum,
-     UnrepresentableFaceAndEdgeInteriorsRejectAllPermutations) {
+     RoundedBoundaryCollapsePublishesEnclosedExactStratumMapping) {
   const ct::Vec3 target[3]{{0, 0, 0}, {2, 0, 0}, {0, 2, 0}};
   const std::uint64_t target_ids[3]{1, 2, 3};
   const double smallest = std::nextafter(0.0, 1.0);
@@ -402,19 +400,35 @@ TEST(FixedTriangleStratum,
   const ct::Vec3 exact_face{1, smallest, 1};
   ASSERT_EQ(Oracle(exact_face, target).kind,
             ct::FixedTriangleStratumKind::Face);
-  ExpectUnrepresentableAllPermutations(
+  ExpectRepresentedAllPermutations(
       exact_face, target, target_ids);
 
   const ct::Vec3 exact_edge{smallest, -1, 1};
   const auto edge = Oracle(exact_edge, target);
   ASSERT_EQ(edge.kind, ct::FixedTriangleStratumKind::Edge);
   ASSERT_EQ(edge.local, 0u);
-  ExpectUnrepresentableAllPermutations(
-      exact_edge, target, target_ids);
+  const ct::Vec3 edge_source[3]{
+      exact_edge, {exact_edge.x + 4, exact_edge.y, exact_edge.z},
+      {exact_edge.x, exact_edge.y + 4, exact_edge.z}};
+  const std::uint64_t source_ids[3]{50, 51, 52};
+  const ct::CurrentFixedTriangle triangles[2]{
+      ft::Triangle(100, 0, edge_source, source_ids),
+      ft::Triangle(200, 0, target, target_ids)};
+  const ct::FixedTrianglePair pair[1]{{0, 1}};
+  ct::FixedTriangleFeatureDiscovery discovery;
+  ft::Initialize(&discovery);
+  const auto report = discovery.Discover(triangles, 2, pair, 1);
+  EXPECT_EQ(report.status,
+            ct::FixedTriangleDiscoveryStatus::NonFiniteResult);
+  EXPECT_EQ(report.input_pair, 0u);
+  EXPECT_EQ(report.input_task, 0u);
+  EXPECT_EQ(report.arithmetic_reason,
+            ct::FixedTriangleArithmeticReason::
+                EdgeInteriorRepresentation);
 }
 
 TEST(FixedTriangleStratum,
-     UnrepresentableInteriorFailurePreservesPublicationAndRetries) {
+     RoundedInteriorRepresentationPublishesAndBoundaryRetrySucceeds) {
   const ct::Vec3 target_points[3]{
       {0, 0, 0}, {2, 0, 0}, {0, 2, 0}};
   const std::uint64_t target_ids[3]{1, 2, 3};
@@ -438,20 +452,20 @@ TEST(FixedTriangleStratum,
   ASSERT_EQ(report.status, ct::FixedTriangleDiscoveryStatus::Ok);
   const auto previous = discovery.features();
   ASSERT_TRUE(previous.complete);
-  const auto previous_count = previous.count;
-  const auto previous_key = previous.data[0].key;
 
   make_source(
       {1, std::nextafter(0.0, 1.0), 1}, source_points);
   triangles[0] =
       ft::Triangle(100, 0, source_points, source_ids);
   report = discovery.Discover(triangles, 2, pair, 1);
-  EXPECT_EQ(report.status,
-            ct::FixedTriangleDiscoveryStatus::NonFiniteResult);
+  EXPECT_EQ(report.status, ct::FixedTriangleDiscoveryStatus::Ok);
   ASSERT_TRUE(discovery.features().complete);
-  ASSERT_EQ(discovery.features().count, previous_count);
-  EXPECT_TRUE(ft::Same(discovery.features().data[0].key,
-                       previous_key));
+  const auto* represented =
+      FindSourceVertex(discovery.features(), ft::Vertex(50));
+  ASSERT_NE(represented, nullptr);
+  EXPECT_EQ(represented->key.vertex_face.target.kind,
+            ct::FixedTriangleStratumKind::Face);
+  EXPECT_GT(represented->representation_error_m, 0);
 
   make_source({1, 0, 1}, source_points);
   triangles[0] =

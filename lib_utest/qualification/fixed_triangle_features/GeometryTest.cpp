@@ -108,6 +108,9 @@ TEST(FixedTriangleFeatures, DegenerateCurrentTriangleRejectsAllPublication) {
   EXPECT_EQ(report.status,
             ct::FixedTriangleDiscoveryStatus::DegenerateTriangle);
   EXPECT_EQ(report.input_pair, SIZE_MAX);
+  EXPECT_EQ(report.input_task, SIZE_MAX);
+  EXPECT_EQ(report.arithmetic_reason,
+            ct::FixedTriangleArithmeticReason::TriangleValidation);
   EXPECT_FALSE(discovery.features().complete);
   EXPECT_FALSE(discovery.intersections().complete);
 }

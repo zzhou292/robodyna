@@ -287,6 +287,8 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
         S::DiscoveryFailure, discovery.message,
         SIZE_MAX, discovery.input_pair);
     report.discovery_status = discovery.status;
+    report.discovery_task = discovery.input_task;
+    report.discovery_reason = discovery.arithmetic_reason;
     return state.Fail(report);
   }
   auto edge_policy = sct::ValidateCandidateEdgePolicy(

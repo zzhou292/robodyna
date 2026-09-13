@@ -44,6 +44,9 @@ struct SelfContactTransactionReport {
       SelfContactCurrentRegularityStatus::Ok;
   FixedTriangleDiscoveryStatus discovery_status =
       FixedTriangleDiscoveryStatus::Ok;
+  std::size_t discovery_task = SIZE_MAX;
+  FixedTriangleArithmeticReason discovery_reason =
+      FixedTriangleArithmeticReason::None;
   RepresentedIntervalStatus crossing_status =
       RepresentedIntervalStatus::Ok;
   RepresentedIntervalReason crossing_reason =

@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <tuple>
 
 namespace tlfea::contact {
@@ -166,6 +167,39 @@ bool EdgesIncident(const FacetEdgeKey& a,
 
 bool Valid(const exact::Sign& value) noexcept {
   return value.valid;
+}
+
+double InteriorUnit(double value) noexcept {
+  const double lower = std::nextafter(0.0, 1.0);
+  const double upper = std::nextafter(1.0, 0.0);
+  return value <= 0 ? lower : (value >= 1 ? upper : value);
+}
+
+bool RepresentedFaceWeights(const double input[3],
+                            double output[3]) noexcept {
+  double sum = 0;
+  unsigned anchor = 0;
+  for (unsigned i = 0; i < 3; ++i) {
+    output[i] = InteriorUnit(input[i]);
+    sum += output[i];
+    if (output[i] > output[anchor]) anchor = i;
+  }
+  if (!std::isfinite(sum) || sum <= 0) return false;
+  for (unsigned i = 0; i < 3; ++i) output[i] /= sum;
+  const unsigned first = (anchor + 1) % 3;
+  const unsigned second = (anchor + 2) % 3;
+  output[anchor] = 1 - (output[first] + output[second]);
+  return output[0] > 0 && output[0] < 1 &&
+      output[1] > 0 && output[1] < 1 &&
+      output[2] > 0 && output[2] < 1;
+}
+
+double RepresentationError(Vec3 rounded, Vec3 represented) noexcept {
+  const double value =
+      geometry_detail::Length(Subtract(rounded, represented));
+  return value == 0 ? 0
+                    : std::nextafter(value,
+                                     std::numeric_limits<double>::infinity());
 }
 
 int ProjectionAxis(const CurrentFixedTriangle& triangle,
@@ -597,14 +631,20 @@ FixedTriangleDiscoveryStatus AddVertexFace(
   TrianglePointGeometry closest;
   const auto status = ClosestPointOnTriangle(
       vertex_triangle.vertices[vertex], canonical_face.geometry, &closest);
-  if (status != Status::kOk)
+  if (status != Status::kOk) {
+    result->arithmetic_reason =
+        FixedTriangleArithmeticReason::ClosestPoint;
     return status == Status::kNonFiniteResult
                ? FixedTriangleDiscoveryStatus::NonFiniteResult
                : FixedTriangleDiscoveryStatus::InvalidInput;
+  }
   exact::ClosestTriangleStratum stratum;
   if (!exact::ClosestStratum(vertex_triangle.vertices[vertex],
-                             canonical_face.vertices, &stratum))
+                             canonical_face.vertices, &stratum)) {
+    result->arithmetic_reason =
+        FixedTriangleArithmeticReason::ExactClosestStratum;
     return FixedTriangleDiscoveryStatus::NonFiniteResult;
+  }
   if (VertexInTriangleTopology(vertex_triangle.vertex_keys[vertex],
                                face_triangle))
     return FixedTriangleDiscoveryStatus::Ok;
@@ -649,18 +689,24 @@ FixedTriangleDiscoveryStatus AddVertexFace(
     SegmentPointGeometry on_edge;
     const auto edge_status = ClosestPointOnSegment(
         vertex_triangle.vertices[vertex], edge_geometry, &on_edge);
-    if (edge_status != Status::kOk)
+    if (edge_status != Status::kOk) {
+      result->arithmetic_reason =
+          FixedTriangleArithmeticReason::EdgeClosestPoint;
       return edge_status == Status::kNonFiniteResult
                  ? FixedTriangleDiscoveryStatus::NonFiniteResult
                  : FixedTriangleDiscoveryStatus::InvalidInput;
+    }
     const double complement = 1 - on_edge.parameter;
     if (!(on_edge.parameter > 0 && on_edge.parameter < 1 &&
           complement > 0 && complement < 1) ||
         !Same(on_edge.point,
               geometry_detail::Blend(edge_geometry.vertices[0],
                                      edge_geometry.vertices[1],
-                                     on_edge.parameter)))
+                                     on_edge.parameter))) {
+      result->arithmetic_reason =
+          FixedTriangleArithmeticReason::EdgeInteriorRepresentation;
       return FixedTriangleDiscoveryStatus::NonFiniteResult;
+    }
     candidate.key.vertex_face.target.SetEdge(
         face_triangle.edge_keys[edge]);
     candidate.points[1] = on_edge.point;
@@ -677,19 +723,31 @@ FixedTriangleDiscoveryStatus AddVertexFace(
         candidate.face_weights[i] = on_edge.parameter;
     }
   } else {
-    for (double weight : closest.weights)
-      if (!(weight > 0 && weight < 1))
-        return FixedTriangleDiscoveryStatus::NonFiniteResult;
-    if (closest.weights[0] +
-            (closest.weights[1] + closest.weights[2]) !=
-        1)
+    double represented_weights[3];
+    if (!RepresentedFaceWeights(
+            closest.weights, represented_weights)) {
+      result->arithmetic_reason =
+          FixedTriangleArithmeticReason::FaceInteriorRepresentation;
       return FixedTriangleDiscoveryStatus::NonFiniteResult;
+    }
     const Vec3 represented = Add(
-        Add(Scale(canonical_face.vertices[0], closest.weights[0]),
-            Scale(canonical_face.vertices[1], closest.weights[1])),
-        Scale(canonical_face.vertices[2], closest.weights[2]));
-    if (!Same(represented, closest.point))
+        Add(Scale(canonical_face.vertices[0], represented_weights[0]),
+            Scale(canonical_face.vertices[1], represented_weights[1])),
+        Scale(canonical_face.vertices[2], represented_weights[2]));
+    candidate.representation_error_m =
+        RepresentationError(closest.point, represented);
+    candidate.points[1] = represented;
+    candidate.distance_m = geometry_detail::Length(
+        Subtract(candidate.points[0], represented));
+    for (unsigned i = 0; i < 3; ++i)
+      candidate.face_weights[canonical_face.original_local[i]] =
+          represented_weights[i];
+    if (!IsFinite(represented) || !IsFinite(candidate.distance_m) ||
+        !IsFinite(candidate.representation_error_m)) {
+      result->arithmetic_reason =
+          FixedTriangleArithmeticReason::FaceInteriorRepresentation;
       return FixedTriangleDiscoveryStatus::NonFiniteResult;
+    }
     candidate.key.vertex_face.target.SetFace(face_triangle.key);
   }
   output[result->feature_count++] = candidate;
@@ -713,10 +771,13 @@ FixedTriangleDiscoveryStatus AddEdgeEdge(
   SegmentPairGeometry closest;
   const auto status = ClosestPointsBetweenSegments(
       first_geometry, second_geometry, &closest);
-  if (status != Status::kOk)
+  if (status != Status::kOk) {
+    result->arithmetic_reason =
+        FixedTriangleArithmeticReason::SegmentClosestPoints;
     return status == Status::kNonFiniteResult
                ? FixedTriangleDiscoveryStatus::NonFiniteResult
                : FixedTriangleDiscoveryStatus::InvalidInput;
+  }
   if (EdgesIncident(a.edge_keys[edge_a], b.edge_keys[edge_b]))
     return FixedTriangleDiscoveryStatus::Ok;
   if (result->feature_count >= capacity)

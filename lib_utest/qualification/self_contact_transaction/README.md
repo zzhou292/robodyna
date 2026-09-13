@@ -38,6 +38,19 @@ intersection directly, so disjoint triangles whose AABBs merely touch do not
 exhaust subdivision work. Empty broadphase, discovery, event, crossing, and
 policy publications are valid and still produce mandatory participation.
 
+Exact closest-stratum predicates remain the feature identity authority.
+If an ordinary binary64 face projection rounds onto its exact boundary,
+discovery publishes deterministic strictly interior represented weights and
+an explicit upper reconstruction error instead of calling the rounded point
+exact. An edge parameter for which no two positive binary64 endpoint weights
+exist remains an actionable `EdgeInteriorRepresentation` failure. Discovery
+reports the exact pair, directed task, and arithmetic reason.
+
+An unforced EE still contributes no line area and no force. A penetrating EE
+may share an admitted VF policy only on the same exact fixed-facet pair;
+parent-pair-only coverage is rejected because a remote VF cannot prove force
+coverage for an unrelated EE elsewhere on the same parents.
+
 The final nonaggregate `SelfContactTransactionReceipt` is tied to the exact
 owner/base/attempt/source/configuration/qualification/active-use identities.
 Only that receipt can expose the private typed physical receipt in a
@@ -85,4 +98,6 @@ That target uses real `FENodalState`, physical publication, current regularity,
 fixed discovery, represented crossing, VF force and CIN STI. It covers missing
 mandatory receipt rollback/retry, initial half-kick, ordinary interval and
 allocation stability, plus an exact pass-through unresolved-reason rollback
-and deterministic retry. CUDA execution is intentionally left to the parent.
+and deterministic retry. That pass-through is driven by a token-authenticated
+assembled nodal force, not an inconsistent initial nodal velocity. CUDA
+execution is intentionally left to the parent.

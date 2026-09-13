@@ -38,6 +38,8 @@ struct Rig {
   // ends before the publication that registered them.
   fe::ShellPhysicalScratchParticipation mapped_wall_participation;
   fe::ShellPhysicalScratchParticipation self_contact_participation;
+  std::uint64_t external_force_source_node = 0;
+  double external_force_z_n = 0;
   fe::ShellPhysicalParticipants Participants() { return {&qeph,&t3,&qbat,&welds,&beams,&solids}; }
   fe::ShellFormulationParticipants Shells() { return {&qeph,&t3,&qbat,&welds}; }
   bool Initialize(bool initialize_solids = true,bool attach = true);

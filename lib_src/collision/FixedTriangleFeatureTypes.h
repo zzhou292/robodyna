@@ -110,6 +110,10 @@ struct FixedTriangleFeatureCandidate {
   double face_weights[3] = {1, 0, 0};
   double edge_parameters[2] = {0, 0};
   double distance_m = 0;
+  // Upper bound on the binary64 distance between the unconstrained rounded
+  // closest-point evaluation and the deterministic point represented by the
+  // published weights/parameters. Zero means the representations coincide.
+  double representation_error_m = 0;
 };
 
 enum class FixedTriangleIntersectionKind : std::uint8_t {
@@ -154,9 +158,24 @@ enum class FixedTriangleDiscoveryStatus : std::uint8_t {
   IdentityMismatch,
 };
 
+enum class FixedTriangleArithmeticReason : std::uint8_t {
+  None,
+  TriangleValidation,
+  IntersectionPredicate,
+  ClosestPoint,
+  ExactClosestStratum,
+  EdgeClosestPoint,
+  EdgeInteriorRepresentation,
+  FaceInteriorRepresentation,
+  SegmentClosestPoints,
+};
+
 struct FixedTriangleDiscoveryReport {
   FixedTriangleDiscoveryStatus status = FixedTriangleDiscoveryStatus::Ok;
   std::size_t input_pair = SIZE_MAX;
+  std::size_t input_task = SIZE_MAX;
+  FixedTriangleArithmeticReason arithmetic_reason =
+      FixedTriangleArithmeticReason::None;
   // Every valid, non-failing broad pair executes exactly six directed
   // vertex-face tasks and nine edge-edge tasks.  Local incidence can suppress
   // publication, but never removes work from this count.

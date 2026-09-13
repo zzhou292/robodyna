@@ -395,6 +395,8 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
     auto report = Failure(S::DiscoveryFailure, discovery.message);
     report.discovery_status = discovery.status;
     report.pair = discovery.input_pair;
+    report.discovery_task = discovery.input_task;
+    report.discovery_reason = discovery.arithmetic_reason;
     return state.Fail(report);
   }
 

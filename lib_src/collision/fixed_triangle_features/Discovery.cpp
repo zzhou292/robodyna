@@ -79,7 +79,8 @@ bool EdgeLedgerLess(const EdgeLedgerEntry& a,
 
 bool SameCandidateValue(const FixedTriangleFeatureCandidate& a,
                         const FixedTriangleFeatureCandidate& b) noexcept {
-  if (!ft::SameFeatureKey(a, b) || a.distance_m != b.distance_m)
+  if (!ft::SameFeatureKey(a, b) || a.distance_m != b.distance_m ||
+      a.representation_error_m != b.representation_error_m)
     return false;
   for (unsigned i = 0; i < 2; ++i) {
     if (!Same(a.points[i], b.points[i]) ||
@@ -375,6 +376,8 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::Discover(
         ft::ValidateTriangle(impl_->triangle_ledger[i].value);
     if (status != FixedTriangleDiscoveryStatus::Ok) {
       report.status = status;
+      report.arithmetic_reason =
+          FixedTriangleArithmeticReason::TriangleValidation;
       report.message = Message(status);
       return report;
     }
@@ -489,6 +492,8 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::Discover(
     if (status != FixedTriangleDiscoveryStatus::Ok) {
       report.status = status;
       report.input_pair = i;
+      report.arithmetic_reason =
+          FixedTriangleArithmeticReason::IntersectionPredicate;
       report.message = Message(status);
       return report;
     }
@@ -501,6 +506,9 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::Discover(
     if (status != FixedTriangleDiscoveryStatus::Ok) {
       report.status = status;
       report.input_pair = i;
+      report.input_task =
+          pair.feature_tasks ? pair.feature_tasks - 1 : SIZE_MAX;
+      report.arithmetic_reason = pair.arithmetic_reason;
       report.message = Message(status);
       return report;
     }

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
 
+#include <cmath>
 #include <tuple>
 
 namespace tlfea::contact::self_contact_transaction {
@@ -121,7 +122,9 @@ std::size_t AcceptedVertexFace(
             accepted.endpoints[0], UINT32_MAX) != Status::kOk ||
         ValidateWeightedSurfacePoint(
             accepted.endpoints[1], UINT32_MAX) != Status::kOk ||
-        !face_weights_valid || face_sum != 1 ||
+        !face_weights_valid || std::fabs(face_sum - 1) > 1e-12 ||
+        !IsFinite(certificate.discovery.representation_error_m) ||
+        certificate.discovery.representation_error_m < 0 ||
         accepted.classification.kind !=
             SelfContactPairKind::VertexFace ||
         accepted.classification.status !=
@@ -196,6 +199,18 @@ bool Same(const FixedTriangleIntersection& a,
 bool Same(const FixedTriangleFeatureKey& a,
           const FixedTriangleFeatureKey& b) noexcept {
   return fixed_triangle_features::Compare(a, b) == 0;
+}
+
+bool ExactFacetPair(const FixedTriangleFeatureCandidate& a,
+                    const FixedTriangleFeatureCandidate& b) noexcept {
+  const auto same = [](const FixedTriangleKey& first,
+                       const FixedTriangleKey& second) {
+    return fixed_triangle_features::Compare(first, second) == 0;
+  };
+  return (same(a.triangles[0], b.triangles[0]) &&
+          same(a.triangles[1], b.triangles[1])) ||
+      (same(a.triangles[0], b.triangles[1]) &&
+       same(a.triangles[1], b.triangles[0]));
 }
 
 SelfContactTransactionReport ValidateCandidatePublications(

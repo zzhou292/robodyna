@@ -139,6 +139,8 @@ SelfContactTransactionReport ValidateCandidateEdgePolicy(
     FixedTriangleFeatureView,
     const FixedContactFacet*, const std::uint32_t* triangle_order,
     std::size_t facet_count, SelfContactActivityView) noexcept;
+bool ExactFacetPair(const FixedTriangleFeatureCandidate&,
+                    const FixedTriangleFeatureCandidate&) noexcept;
 
 }  // namespace tlfea::contact::self_contact_transaction
 
