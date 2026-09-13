@@ -153,6 +153,8 @@ SelfContactTransactionReport VertexFaceEvent(
   SelfContactForceEvent event;
   event.feature = feature.key;
   event.source_order = source_order;
+  event.vertex_use = static_cast<std::uint32_t>(vertex_use);
+  event.facet_use = static_cast<std::uint32_t>(target_facet);
   event.endpoints[0] = active_use.vertex_uses()[vertex_use].point;
   event.endpoints[1] = face_point;
   event.classification = classification;

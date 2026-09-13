@@ -28,8 +28,9 @@ transaction = TRANSACTION.read_text()
 for token in (
     "AuthenticateAssemblyView(token, view)",
     "AssemblyRangeDisjoint(",
-    "owner, token, view, activity, events",
-    "This safe slice requires every self-contact parent active",
+    "owner, token, view, activity,",
+    "{state.buffers.accepted_events, event_count}",
+    "This slice rejects removal until authenticated activity integration",
 ):
     require(transaction, token, TRANSACTION)
 require(candidate, "state.force.Authenticates(assembly.force_)", CANDIDATE)
