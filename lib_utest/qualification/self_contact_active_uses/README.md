@@ -2,7 +2,8 @@
 
 `SelfContactActiveUseBinding` is the isolated host value/profile slice named
 `SymmetricDirectedVertexDualReferenceV1`. It retains S0 and fixed facets, plus
-an optional actual `NodalRigidAssemblyBinding` and complete copied
+the actual execution `NodalRigidAssemblyBinding` when rigid groups are present
+and the complete copied
 `TiedCinAttachmentModel` range/witness roster. It adds no force, penalty,
 broadphase, narrowphase, crossing algorithm, CUDA state, runtime participant,
 accepted history, or second clock.
@@ -33,9 +34,14 @@ stores no activity state and therefore cannot create a second acceptance clock.
 
 VF excludes only direct canonical vertex/facet incidence. EE excludes only
 shared endpoint incidence. PID equality and whole-parent shared-corner
-adjacency are ignored. Same-body exclusion requires every nonzero weighted slot
+adjacency are ignored. A nonincident pair from the same physical parent returns
+`SameParentNeedsCurrentRegularity` with zero force area; only a later
+owner-authenticated current-regularity result may turn that case into an own-
+parent exclusion. Same-body exclusion requires every nonzero weighted slot
 of both exact endpoint maps to be a member of one identical actual rigid group
-ordinal. Different, partial, ordinary/rigid, and mixed-group maps remain
+ordinal from the exact binding retained by the physical execution. A missing
+execution authority or counterfeit domain-equivalent rigid binding rejects
+initialization. Different, partial, ordinary/rigid, and mixed-group maps remain
 admitted. Any nonzero CIN-secondary slot is explicitly
 `UnsupportedCinSecondary`; zero slots do not count, and CIN masters remain
 admitted.
@@ -55,16 +61,18 @@ excluded.
 
 EE owns no line area or effective mass. Strict interior-interior minima,
 EE-only penetration/crossing, geometric ties, coplanar overlap, and zero
-distance all return `UnadmittedEdgeEdgeForceArea`. A nonincident EE may only be
-marked `CoveredByIndependentAdmittedVertexFace` when supplied a separately
-admitted VF classification; it still receives zero EE force area.
+distance all return `UnadmittedEdgeEdgeForceArea`. This topology/area slice has
+no exact runtime geometry receipt capable of proving that an EE is already
+covered by a VF event, so it never suppresses a nonlocal EE.
 
 ## Qualification
 
 The host target covers independent long-double T3/Q4 formulas; flat and warped
-Q4/T3/mixed dual sums at levels 0/1/2; all nine level pairs; pressure/resultant
-identity; removal/no-redistribution/reactivation; coincident layers; local and
-remote incidence; same PID; PART/plain/different/partial/mixed rigid support;
+Q4/T3/mixed dual sums at levels 0/1/2; 27 event-level combinations across all
+nine level pairs per family pairing; bidirectional pressure/resultant identity;
+removal/no-redistribution/reactivation; coincident layers; local, remote and
+same-parent incidence; same PID; exact execution PART/plain authority,
+counterfeit/source-kind collision rejection, and different/partial/mixed support;
 CIN secondary/master and local/unrelated ties; every explicit EE status;
 permutation/deduplication; checked overflow; all count caps; exact
 one-byte-short; alias/output preservation; and retry. The source target proves
