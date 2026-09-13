@@ -4,8 +4,8 @@
   "files": [
     {
       "path": "lib_src/collision/BUILD.bazel",
-      "bytes": 14542,
-      "sha256": "77d12e0fc9d7575bb47bc5bef9a6a7e11b9dbccdc2f1c0af721dde1266fad6b6"
+      "bytes": 15403,
+      "sha256": "28418c4c8c616279f507f0a76f31813befa59fb0847a3511f72e964c651d58a2"
     },
     {
       "path": "lib_src/collision/HydroelasticBroadphase.cmake",
@@ -109,13 +109,13 @@
     },
     {
       "path": "lib_utest/qualification/mapped_wall_assembly_inputs/source-manifest.json",
-      "bytes": 17181,
-      "sha256": "ccd092cd6b4b02fd94641b8c4b13a66dafac39904ad3786728023cdf0db26971"
+      "bytes": 17887,
+      "sha256": "0c3035cb0e5ca24a9dc614a84fca0aab34bc40f779238c4381129e29cab7897d"
     },
     {
       "path": "lib_utest/qualification/mapped_wall_assembly_inputs/verify_sources.py",
-      "bytes": 5781,
-      "sha256": "04bcfdcea7a0a36a97ed34e368176e3460bf22e52ac5760db8c524fc424e0d43"
+      "bytes": 6621,
+      "sha256": "f28b86ee1ed802a38cd47dcf40768a44b1c8768a0c7b28ec37a5ec81c81a3204"
     },
     {
       "path": "lib_utest/qualification/qbat_binding/Fixture.h",
@@ -228,6 +228,41 @@
       }
     ],
     "reason": "Compose the frozen broadphase with the later qualified mapped-wall removal proof and the additive fixed-facet fixture. Production broadphase/SAP bytes are unchanged; only complete build/proof identities and narrow fixture visibility are updated.",
+    "discovery_crossing_build_composition": {
+      "previous_record": {
+        "path": "lib_src/collision/BUILD.bazel",
+        "bytes": 14542,
+        "sha256": "77d12e0fc9d7575bb47bc5bef9a6a7e11b9dbccdc2f1c0af721dde1266fad6b6"
+      },
+      "current_record": {
+        "path": "lib_src/collision/BUILD.bazel",
+        "bytes": 15403,
+        "sha256": "28418c4c8c616279f507f0a76f31813befa59fb0847a3511f72e964c651d58a2"
+      },
+      "feature_commit": "5eeaedd",
+      "crossing_commit": "23261ee",
+      "reason": "Two new host-only cc_library rules are additive. Their own verifiers authenticate complete sources and dependencies; checked reversal below restores the exact previously qualified broadphase build identity without changing any broadphase target.",
+      "mapped_wall_proof_previous": {
+        "manifest": {
+          "bytes": 17181,
+          "sha256": "ccd092cd6b4b02fd94641b8c4b13a66dafac39904ad3786728023cdf0db26971"
+        },
+        "verifier": {
+          "bytes": 5781,
+          "sha256": "04bcfdcea7a0a36a97ed34e368176e3460bf22e52ac5760db8c524fc424e0d43"
+        }
+      },
+      "mapped_wall_proof_current": {
+        "manifest": {
+          "bytes": 17887,
+          "sha256": "0c3035cb0e5ca24a9dc614a84fca0aab34bc40f779238c4381129e29cab7897d"
+        },
+        "verifier": {
+          "bytes": 6621,
+          "sha256": "f28b86ee1ed802a38cd47dcf40768a44b1c8768a0c7b28ec37a5ec81c81a3204"
+        }
+      }
+    },
     "cuda13_fixture_correction": {
       "failed_report": "crash-work/reports/self-contact-prerequisite-tests-1.json",
       "previous_record": {

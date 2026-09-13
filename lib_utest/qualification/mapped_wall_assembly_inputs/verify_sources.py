@@ -5,13 +5,35 @@ import hashlib, json, re, subprocess, sys
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 raw = (here/'source-manifest.json').read_bytes()
-assert hashlib.sha256(raw).hexdigest() == 'ccd092cd6b4b02fd94641b8c4b13a66dafac39904ad3786728023cdf0db26971'
+assert hashlib.sha256(raw).hexdigest() == '0c3035cb0e5ca24a9dc614a84fca0aab34bc40f779238c4381129e29cab7897d'
 manifest = json.loads(raw)
 for row in manifest['files']:
     path = Path(row['path'])
     assert not path.is_absolute() and '..' not in path.parts
     data = (root/path).read_bytes()
     assert len(data) == row['bytes'] and hashlib.sha256(data).hexdigest() == row['sha256'], path
+
+def without_rule(text, name):
+    marker = 'cc_library(\n    name = "' + name + '",'
+    begin = text.index(marker)
+    depth = 0
+    end = text.index('(', begin)
+    while end < len(text):
+        depth += (text[end] == '(') - (text[end] == ')')
+        end += 1
+        if depth == 0:
+            break
+    assert end <= len(text) and text[end:end + 2] == '\n\n', name
+    return text[:begin] + text[end + 2:]
+
+composition = manifest['discovery_crossing_build_composition']
+build = (root/composition['current_record']['path']).read_text()
+restored = without_rule(build, 'fixed_triangle_feature_discovery')
+restored = without_rule(restored, 'represented_interval_crossing')
+old = restored.encode()
+previous = composition['previous_record']
+assert len(old) == previous['bytes']
+assert hashlib.sha256(old).hexdigest() == previous['sha256']
 
 def body(text, name):
     start = text.index('{', text.index(name+'('))

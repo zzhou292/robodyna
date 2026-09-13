@@ -4,8 +4,8 @@
   "files": [
     {
       "path": "lib_src/collision/BUILD.bazel",
-      "bytes": 14542,
-      "sha256": "77d12e0fc9d7575bb47bc5bef9a6a7e11b9dbccdc2f1c0af721dde1266fad6b6"
+      "bytes": 15403,
+      "sha256": "28418c4c8c616279f507f0a76f31813befa59fb0847a3511f72e964c651d58a2"
     },
     {
       "path": "lib_src/collision/NodalWallContactDiagnostics.h",
@@ -409,5 +409,20 @@
       "sha256": "77d12e0fc9d7575bb47bc5bef9a6a7e11b9dbccdc2f1c0af721dde1266fad6b6"
     },
     "scope": "Additive weighted mapping, fixed pair, physical facets and bounded broadphase build ownership only. Existing mapped-wall arithmetic, removal scheduling and prior receipt history remain unchanged."
+  },
+  "discovery_crossing_build_composition": {
+    "previous_record": {
+      "path": "lib_src/collision/BUILD.bazel",
+      "bytes": 14542,
+      "sha256": "77d12e0fc9d7575bb47bc5bef9a6a7e11b9dbccdc2f1c0af721dde1266fad6b6"
+    },
+    "current_record": {
+      "path": "lib_src/collision/BUILD.bazel",
+      "bytes": 15403,
+      "sha256": "28418c4c8c616279f507f0a76f31813befa59fb0847a3511f72e964c651d58a2"
+    },
+    "feature_commit": "5eeaedd",
+    "crossing_commit": "23261ee",
+    "scope": "Checked removal of the two additive host-only cc_library rules restores the exact prior mapped-wall collision build identity. No mapped-wall source, dependency, arithmetic, target, or execution path changes."
   }
 }
