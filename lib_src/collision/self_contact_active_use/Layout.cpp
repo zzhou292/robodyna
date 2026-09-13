@@ -175,7 +175,7 @@ SelfContactActiveUseReport MakeLayout(const FixedContactFacetBinding& facets,
     return Fail(S::ResourceLimit, "Active-use binding and retained source exceed the byte cap");
   next.forecast.owned_payload_bytes = budget.bytes();
   constexpr std::size_t fixed_staging =
-      sizeof(Layout) + sizeof(BuildScratch) + sizeof(FixedContactFacet) +
+      sizeof(Layout) + sizeof(BuildScratch) +
       sizeof(FixedContactFacetReadCursor) +
       MaxLocalVertices*sizeof(LocalVertex) + MaxLocalEdges*sizeof(LocalEdge) +
       (sizeof(SelfContactFacetVertexUse) > sizeof(SelfContactFacetEdgeUse) ?

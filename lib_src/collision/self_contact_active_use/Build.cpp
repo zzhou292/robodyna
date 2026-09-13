@@ -298,9 +298,8 @@ SelfContactActiveUseReport Build(const FixedContactFacetBinding& facets,
   if (facet_offset != forecast.facets)
     return Fail(S::IdentityMismatch, "Parent facet ranges do not cover the inventory");
 
-  FixedContactFacet source_facet;
   FixedContactFacetReadCursor facet_reader;
-  if (facet_reader.Initialize(facets, &source_facet).status !=
+  if (facet_reader.Initialize(facets).status !=
       FixedContactFacetStatus::Ok)
     return Fail(S::IdentityMismatch,
         "Fixed facet descriptor cursor could not be prepared");
@@ -311,11 +310,14 @@ SelfContactActiveUseReport Build(const FixedContactFacetBinding& facets,
     std::array<LocalEdge, MaxLocalEdges> local_edges{};
     std::size_t vertex_count = 0, edge_count = 0;
     for (std::uint32_t local = 0; local < parent.facet_count; ++local) {
-      const auto report = facet_reader.Describe(parent.surface_parent, local);
-      const auto& facet = source_facet;
-      if (report.status != FixedContactFacetStatus::Ok ||
-          facet.source.source_parent_id != parent.source.source_parent_id)
+      const auto descriptor =
+          facet_reader.Describe(parent.surface_parent, local);
+      if (descriptor.report.status != FixedContactFacetStatus::Ok ||
+          !descriptor.facet ||
+          descriptor.facet->source.source_parent_id !=
+              parent.source.source_parent_id)
         return Fail(S::IdentityMismatch, "Fixed facet descriptor differs from its parent", p, local);
+      const auto& facet = *descriptor.facet;
       auto& incidence = out.facets[std::size_t(parent.facet_offset)+local];
       incidence.parent = static_cast<std::uint32_t>(p);
       incidence.local_facet = local;

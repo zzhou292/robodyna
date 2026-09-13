@@ -2,9 +2,15 @@
 #include "Fixture.h"
 #include <chrono>
 #include <iostream>
+#include <type_traits>
 
 namespace active_use_test {
 namespace {
+static_assert(!std::is_copy_constructible_v<c::FixedContactFacetReadCursor>);
+static_assert(!std::is_copy_assignable_v<c::FixedContactFacetReadCursor>);
+static_assert(!std::is_move_constructible_v<c::FixedContactFacetReadCursor>);
+static_assert(!std::is_move_assignable_v<c::FixedContactFacetReadCursor>);
+
 struct CoincidentLayerScale {
   qbat_catalog_test::Fixture seed;
   std::vector<fe::ShellT3BindingInput> triangles;
@@ -163,7 +169,8 @@ ScaleSample MeasureCoincidentLayers(std::size_t layers) {
 
 TEST(SelfContactActiveUses, AuthenticatedFacetCursorMatchesCheckedDescriptor) {
   CoincidentLayerScale fixture(8192);
-  c::FixedContactFacet checked, cursor_output;
+  c::FixedContactFacet checked;
+  const c::FixedContactFacet* cursor_output = nullptr;
   std::size_t checked_count = 0, cursor_count = 0;
   const auto checked_begin = std::chrono::steady_clock::now();
   for (std::size_t parent = 0;
@@ -180,37 +187,70 @@ TEST(SelfContactActiveUses, AuthenticatedFacetCursorMatchesCheckedDescriptor) {
           std::chrono::steady_clock::now()-checked_begin).count();
   c::FixedContactFacetReadCursor cursor;
   const auto cursor_begin = std::chrono::steady_clock::now();
-  ASSERT_EQ(cursor.Initialize(fixture.facets, &cursor_output).status,
+  ASSERT_EQ(cursor.Initialize(fixture.facets).status,
       c::FixedContactFacetStatus::Ok);
   for (std::size_t parent = 0;
        parent < fixture.surface.parents().size(); ++parent)
     for (unsigned local = 0;
          local < fixture.facets.facet_count(parent); ++local) {
-      ASSERT_EQ(cursor.Describe(parent, local).status,
+      const auto descriptor = cursor.Describe(parent, local);
+      ASSERT_EQ(descriptor.report.status,
           c::FixedContactFacetStatus::Ok);
+      ASSERT_NE(descriptor.facet, nullptr);
+      cursor_output = descriptor.facet;
       ++cursor_count;
     }
   const auto cursor_us =
       std::chrono::duration_cast<std::chrono::microseconds>(
           std::chrono::steady_clock::now()-cursor_begin).count();
   EXPECT_EQ(checked_count, cursor_count);
-  ExpectSameFacet(checked, cursor_output);
-  const auto before = cursor_output.source.source_parent_id;
-  EXPECT_EQ(cursor.Describe(SIZE_MAX, 0).status,
+  ASSERT_NE(cursor_output, nullptr);
+  ExpectSameFacet(checked, *cursor_output);
+  const auto invalid = cursor.Describe(SIZE_MAX, 0);
+  EXPECT_EQ(invalid.report.status,
       c::FixedContactFacetStatus::OutOfRange);
-  EXPECT_EQ(cursor_output.source.source_parent_id, before);
-  EXPECT_EQ(cursor.Initialize(fixture.facets, &cursor_output).status,
+  EXPECT_EQ(invalid.facet, nullptr);
+  const auto retried = cursor.Describe(0, 0);
+  EXPECT_EQ(retried.report.status, c::FixedContactFacetStatus::Ok);
+  EXPECT_NE(retried.facet, nullptr);
+  EXPECT_EQ(cursor.Initialize(fixture.facets).status,
       c::FixedContactFacetStatus::AlreadyInitialized);
-  c::FixedContactFacetReadCursor rejected;
-  EXPECT_EQ(rejected.Initialize(fixture.facets,
-      reinterpret_cast<c::FixedContactFacet*>(&fixture.facets)).status,
+  c::FixedContactFacetBinding absent;
+  c::FixedContactFacetReadCursor retry;
+  EXPECT_EQ(retry.Initialize(absent).status,
       c::FixedContactFacetStatus::InvalidInput);
+  const auto unavailable = retry.Describe(0, 0);
+  EXPECT_EQ(unavailable.report.status,
+      c::FixedContactFacetStatus::InvalidInput);
+  EXPECT_EQ(unavailable.facet, nullptr);
+  EXPECT_EQ(retry.Initialize(fixture.facets).status,
+      c::FixedContactFacetStatus::Ok);
   EXPECT_LT(cursor_us, checked_us);
   std::cout << "facet-descriptor-scale parents="
             << fixture.surface.parents().size()
             << " descriptors=" << checked_count
             << " checked_us=" << checked_us
             << " cursor_us=" << cursor_us << '\n';
+}
+
+TEST(SelfContactActiveUses, FacetCursorRetainsSourceAndExpiresViews) {
+  c::FixedContactFacetReadCursor cursor;
+  {
+    Fixture fixture(2);
+    ASSERT_EQ(cursor.Initialize(fixture.facets).status,
+        c::FixedContactFacetStatus::Ok);
+    const auto first = cursor.Describe(0, 0);
+    ASSERT_EQ(first.report.status, c::FixedContactFacetStatus::Ok);
+    ASSERT_NE(first.facet, nullptr);
+    const auto* borrowed = first.facet;
+    const auto second = cursor.Describe(1, 0);
+    ASSERT_EQ(second.report.status, c::FixedContactFacetStatus::Ok);
+    ASSERT_NE(second.facet, nullptr);
+    EXPECT_EQ(second.facet, borrowed);
+  }
+  const auto retained = cursor.Describe(0, 0);
+  EXPECT_EQ(retained.report.status, c::FixedContactFacetStatus::Ok);
+  EXPECT_NE(retained.facet, nullptr);
 }
 
 TEST(SelfContactActiveUses, CoincidentLayerStartupScalesWithoutFeatureUseScans) {

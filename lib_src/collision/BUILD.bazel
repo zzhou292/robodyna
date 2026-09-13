@@ -74,6 +74,8 @@ cc_library(
 filegroup(
     name = "self_contact_active_use_source_proof",
     srcs = [
+        "FixedContactFacetBinding.cpp",
+        "FixedContactFacetBinding.h",
         "SelfContactActiveUseBinding.cpp",
         "SelfContactActiveUseBinding.cmake",
         "SelfContactActiveUseBinding.h",

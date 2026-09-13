@@ -2,6 +2,7 @@
 #pragma once
 #include "FixedContactFacetTypes.h"
 #include "SelfContactSurfaceBinding.h"
+#include <optional>
 
 namespace tlfea::contact {
 class FixedContactFacetReadCursor;
@@ -42,17 +43,31 @@ class FixedContactFacetBinding {
   std::shared_ptr<const Impl> impl_;
 };
 
-// Startup-only borrowed descriptor cursor. Initialize authenticates its one
-// fixed output address against every retained source range once; subsequent
-// Describe calls cannot redirect writes and allocate no storage.
+struct FixedContactFacetReadResult {
+  FixedContactFacetReport report;
+  // Borrowed from the cursor. Null on failure and expires when Describe is
+  // called again or the cursor is destroyed.
+  const FixedContactFacet* facet = nullptr;
+};
+
+// Startup-only descriptor cursor. Initialize authenticates the cursor's owned
+// output address once and retains the immutable source handle. Describe cannot
+// redirect writes and allocates no storage.
 class FixedContactFacetReadCursor {
  public:
-  FixedContactFacetReport Initialize(const FixedContactFacetBinding&,
-      FixedContactFacet*) noexcept;
-  FixedContactFacetReport Describe(std::size_t parent,
-      unsigned local_facet) const noexcept;
+  FixedContactFacetReadCursor() = default;
+  FixedContactFacetReadCursor(const FixedContactFacetReadCursor&) = delete;
+  FixedContactFacetReadCursor(FixedContactFacetReadCursor&&) = delete;
+  FixedContactFacetReadCursor& operator=(
+      const FixedContactFacetReadCursor&) = delete;
+  FixedContactFacetReadCursor& operator=(
+      FixedContactFacetReadCursor&&) = delete;
+  FixedContactFacetReport Initialize(
+      const FixedContactFacetBinding&) noexcept;
+  FixedContactFacetReadResult Describe(std::size_t parent,
+      unsigned local_facet) noexcept;
  private:
-  const FixedContactFacetBinding* binding_ = nullptr;
-  FixedContactFacet* output_ = nullptr;
+  std::optional<FixedContactFacetBinding> binding_;
+  FixedContactFacet current_;
 };
 } // namespace tlfea::contact

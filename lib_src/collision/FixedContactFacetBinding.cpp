@@ -88,27 +88,26 @@ FixedContactFacetReport FixedContactFacetBinding::DescribeDisjoint(
   return {};
 }
 FixedContactFacetReport FixedContactFacetReadCursor::Initialize(
-    const FixedContactFacetBinding& binding,
-    FixedContactFacet* output) noexcept {
+    const FixedContactFacetBinding& binding) noexcept {
   using S = FixedContactFacetStatus;
-  using tl::fea::trial_identity::Disjoint;
   if (binding_)
     return {S::AlreadyInitialized, "Facet descriptor cursor is immutable"};
-  if (!output || !Disjoint(this, sizeof(*this), output, sizeof(*output)) ||
-      !binding.OutputDisjoint(this, sizeof(*this)) ||
-      !binding.OutputDisjoint(output, sizeof(*output)))
+  if (!binding.OutputDisjoint(this, sizeof(*this)))
     return {S::InvalidInput,
-        "Facet descriptor cursor/output aliases retained source or is absent"};
-  binding_ = &binding;
-  output_ = output;
+        "Facet descriptor cursor aliases retained source or source is absent"};
+  binding_.emplace(binding);
   return {};
 }
-FixedContactFacetReport FixedContactFacetReadCursor::Describe(
-    std::size_t parent, unsigned local) const noexcept {
-  if (!binding_ || !output_)
-    return {FixedContactFacetStatus::InvalidInput,
-        "Facet descriptor cursor is absent"};
-  return binding_->DescribeDisjoint(parent, local, output_);
+FixedContactFacetReadResult FixedContactFacetReadCursor::Describe(
+    std::size_t parent, unsigned local) noexcept {
+  current_ = {};
+  if (!binding_)
+    return {{FixedContactFacetStatus::InvalidInput,
+        "Facet descriptor cursor is absent"}, nullptr};
+  const auto report =
+      binding_->DescribeDisjoint(parent, local, &current_);
+  return {report,
+      report.status == FixedContactFacetStatus::Ok ? &current_ : nullptr};
 }
 Status FixedContactFacetBinding::Approximation(std::size_t parent, VectorView positions,
     FacetApproximationBound* output) const noexcept {

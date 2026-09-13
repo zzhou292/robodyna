@@ -30,13 +30,15 @@ binding's deterministic parent order. `current<=base` is mandatory. An inactive
 parent resolves to zero thickness/area without redistribution. The binding
 stores no activity state and therefore cannot create a second acceptance clock.
 
-Startup authenticates one fixed descriptor output address against the retained
-facet/S0 source, then traverses each facet descriptor once. Canonical
-feature-use ordering remains key then source EID: transient `uint32` source
-ordinals are sorted, incidences are remapped directly, and the large immutable
-use payloads are permuted in one linear pass. `startup_index_bytes` forecasts
-these two transient ordinal arrays; they are capped with the complete startup
-payload and retire before immutable publication. No query uses them or
+Startup uses a noncopyable/nonmovable fixed-facet cursor which validates its
+own address once, retains a shared immutable facet binding handle, and owns its
+descriptor slot. Each successful `Describe` returns a borrowed const facet
+pointer which expires at the next `Describe` call or cursor destruction.
+Canonical feature-use ordering remains key then source EID: transient `uint32`
+source ordinals are sorted, incidences are remapped directly, and the large
+immutable use payloads are permuted in one linear pass. `startup_index_bytes`
+forecasts these two transient ordinal arrays; they are capped with the complete
+startup payload and retire before immutable publication. No query uses them or
 allocates storage.
 
 ## Exclusion and unresolved policy

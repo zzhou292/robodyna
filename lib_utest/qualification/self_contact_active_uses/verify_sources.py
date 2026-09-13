@@ -13,6 +13,8 @@ build = (collision / "self_contact_active_use/Build.cpp").read_text()
 queries = (collision / "self_contact_active_use/Queries.cpp").read_text()
 layout = (collision / "self_contact_active_use/Layout.cpp").read_text()
 public = (collision / "SelfContactActiveUseBinding.h").read_text()
+facet_public = (collision / "FixedContactFacetBinding.h").read_text()
+facet_binding = (collision / "FixedContactFacetBinding.cpp").read_text()
 
 assert 'SymmetricDirectedVertexDualReferenceV1' in types
 assert 'Q4CenterAreaContactModel' in types
@@ -27,9 +29,31 @@ assert 'q4_bounds::DividePositive' in build and 'q4_bounds::Certify' in build
 assert 'use.facet_valence' in build and 'use.directed_vf_area_m2' in build
 assert 'FixedContactFacetReadCursor facet_reader' in build
 assert 'facets.Describe' not in build
+assert 'facet_reader.Initialize(facets)' in build
+assert 'descriptor.facet' in build
 assert 'std::sort(out.vertex_uses' not in build
 assert 'std::sort(scratch.vertex_order' in build
 assert 'startup_index_bytes' in layout
+cursor_public = facet_public[
+    facet_public.index('class FixedContactFacetReadCursor {'):]
+for deleted in (
+        'FixedContactFacetReadCursor(const FixedContactFacetReadCursor&) = delete',
+        'FixedContactFacetReadCursor(FixedContactFacetReadCursor&&) = delete',
+        'const FixedContactFacetReadCursor&) = delete',
+        'FixedContactFacetReadCursor&&) = delete'):
+    assert deleted in cursor_public
+assert 'std::optional<FixedContactFacetBinding> binding_' in cursor_public
+assert 'FixedContactFacet current_' in cursor_public
+assert 'FixedContactFacet*' not in cursor_public[
+    cursor_public.index('FixedContactFacetReport Initialize('):
+    cursor_public.index(' private:')]
+cursor_binding = facet_binding[
+    facet_binding.index('FixedContactFacetReadCursor::Initialize('):
+    facet_binding.index('Status FixedContactFacetBinding::Approximation(')]
+assert cursor_binding.count('binding.OutputDisjoint(this, sizeof(*this))') == 1
+assert 'binding_.emplace(binding)' in cursor_binding
+assert 'current_ = {}' in cursor_binding
+assert 'report.status == FixedContactFacetStatus::Ok ? &current_ : nullptr' in cursor_binding
 assert 'CountSelfContactActiveUses' in values
 assert 'numeric_limits<std::size_t>::max()' in values
 assert 'activity.current[i] > activity.base[i]' in build
@@ -61,6 +85,12 @@ cmake = (collision / "SelfContactActiveUseBinding.cmake").read_text()
 bazel = (collision / "BUILD.bazel").read_text()
 assert 'tl_self_contact_active_uses' in cmake
 assert 'name = "self_contact_active_uses"' in bazel
+source_group = bazel[bazel.index(
+    'name = "self_contact_active_use_source_proof"'):
+    bazel.index('cc_library(', bazel.index(
+        'name = "self_contact_active_use_source_proof"'))]
+assert '"FixedContactFacetBinding.cpp"' in source_group
+assert '"FixedContactFacetBinding.h"' in source_group
 qualification_cmake = (here / "CMakeLists.txt").read_text()
 qualification_bazel = (here / "BUILD.bazel").read_text()
 assert "ScalingTest.cpp" in qualification_cmake
