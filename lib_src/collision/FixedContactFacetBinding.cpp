@@ -97,4 +97,37 @@ Status FixedContactFacetBinding::Approximation(std::size_t parent, VectorView po
       native.arity == 4 ? impl_->forecast.q4_template_vertices : impl_->forecast.t3_template_vertices,
       positions, output);
 }
+Status FixedContactFacetBinding::SummarizeApproximation(VectorView positions,
+    FacetApproximationSummary* output) const noexcept {
+  if (!output || !positions.valid() || !OutputDisjoint(output, sizeof(*output))) return Status::kInvalidArgument;
+  if (positions.node_count != impl_->surface.physical()->domain()->node_count()) return Status::kInvalidArgument;
+  const auto last = (positions.node_count - 1) * positions.node_stride + 2 * positions.component_stride;
+  if (last >= SIZE_MAX / sizeof(double)) return Status::kInvalidArgument;
+  const auto extent = (last + 1) * sizeof(double);
+  if (!tl::fea::trial_identity::Disjoint(output, sizeof(*output), positions.data, extent)) return Status::kInvalidArgument;
+  FacetApproximationSummary next;
+  next.parents = impl_->forecast.parents;
+  for (std::size_t parent = 0; parent < impl_->forecast.parents; ++parent) {
+    const auto& native = impl_->surface.parents()[parent];
+    FacetApproximationBound bound;
+    const auto status = contact_facets::MeasureApproximation(native, impl_->config.level,
+        native.arity == 4 ? impl_->templates.q4_vertices : impl_->templates.t3_vertices,
+        native.arity == 4 ? impl_->forecast.q4_template_vertices : impl_->forecast.t3_template_vertices,
+        positions, &bound);
+    if (status != Status::kOk) return status;
+    next.positive_bilinear_parents += bound.bilinear_error_upper_m > 0;
+    next.positive_vertex_roundoff_parents += bound.vertex_roundoff_upper_m > 0;
+    const auto maximum = [&](double value, double& current, std::size_t& witness) {
+      if (value > current) { current = value; witness = parent; }
+    };
+    maximum(bound.bilinear_error_upper_m, next.maximum_bilinear_error_upper_m,
+        next.maximum_bilinear_parent);
+    maximum(bound.vertex_roundoff_upper_m, next.maximum_vertex_roundoff_upper_m,
+        next.maximum_vertex_roundoff_parent);
+    maximum(bound.total_error_upper_m, next.maximum_total_error_upper_m,
+        next.maximum_total_parent);
+  }
+  *output = next;
+  return Status::kOk;
+}
 } // namespace tlfea::contact

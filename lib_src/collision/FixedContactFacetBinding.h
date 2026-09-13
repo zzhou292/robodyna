@@ -29,6 +29,10 @@ class FixedContactFacetBinding {
   // admission is implied. A degenerate native surface can have zero error.
   Status Approximation(std::size_t parent, VectorView positions,
       FacetApproximationBound*) const noexcept;
+  // Complete parent inventory with one source/output alias preflight. This is
+  // startup/current-geometry evidence, not a regularity or contact receipt.
+  Status SummarizeApproximation(VectorView positions,
+      FacetApproximationSummary*) const noexcept;
  private:
   struct Impl;
   std::shared_ptr<const Impl> impl_;

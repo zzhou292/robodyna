@@ -154,4 +154,54 @@ TEST(FixedFacetApproximation, LateInvalidAndUnrepresentableBoundsPreserveThenRet
       ct::Status::kInvalidArgument);
   EXPECT_EQ(binding.Approximation(parent, View(positions), &output), ct::Status::kOk);
 }
+TEST(FixedFacetApproximation, CompleteSummaryMatchesEveryParentAndPreservesFailureOutput) {
+  Fixture fixture;
+  const auto parent = fixture.Parent(100);
+  ct::FixedContactFacetBinding binding;
+  ASSERT_EQ(binding.Initialize(fixture.surface, {{}, 2}).status, S::Ok);
+  const ct::Vec3 points[]{{0,0,0},{2,0,0},{3,4,2},{0,2,0}};
+  auto positions = fixture.Positions(parent, points);
+  ct::FacetApproximationSummary summary;
+  ASSERT_EQ(binding.SummarizeApproximation(View(positions), &summary), ct::Status::kOk);
+  EXPECT_EQ(summary.parents, fixture.surface.parents().size());
+  std::size_t positive_bilinear = 0, positive_roundoff = 0;
+  double maximum_bilinear = 0, maximum_roundoff = 0, maximum_total = 0;
+  std::size_t bilinear_parent = SIZE_MAX, roundoff_parent = SIZE_MAX, total_parent = SIZE_MAX;
+  for (std::size_t p = 0; p < fixture.surface.parents().size(); ++p) {
+    ct::FacetApproximationBound bound;
+    ASSERT_EQ(binding.Approximation(p, View(positions), &bound), ct::Status::kOk);
+    positive_bilinear += bound.bilinear_error_upper_m > 0;
+    positive_roundoff += bound.vertex_roundoff_upper_m > 0;
+    const auto update = [&](double value, double& current, std::size_t& witness) {
+      if (value > current) { current = value; witness = p; }
+    };
+    update(bound.bilinear_error_upper_m, maximum_bilinear, bilinear_parent);
+    update(bound.vertex_roundoff_upper_m, maximum_roundoff, roundoff_parent);
+    update(bound.total_error_upper_m, maximum_total, total_parent);
+  }
+  EXPECT_EQ(summary.positive_bilinear_parents, positive_bilinear);
+  EXPECT_EQ(summary.positive_vertex_roundoff_parents, positive_roundoff);
+  EXPECT_EQ(summary.maximum_bilinear_error_upper_m, maximum_bilinear);
+  EXPECT_EQ(summary.maximum_vertex_roundoff_upper_m, maximum_roundoff);
+  EXPECT_EQ(summary.maximum_total_error_upper_m, maximum_total);
+  EXPECT_EQ(summary.maximum_bilinear_parent, bilinear_parent);
+  EXPECT_EQ(summary.maximum_vertex_roundoff_parent, roundoff_parent);
+  EXPECT_EQ(summary.maximum_total_parent, total_parent);
+
+  const auto old = qbat_binding_test::Bytes(summary);
+  const auto bad_node = 3 * fixture.surface.parents()[parent].q4.nodes[0];
+  const auto old_position = positions[bad_node];
+  positions[bad_node] =
+      std::numeric_limits<double>::quiet_NaN();
+  EXPECT_EQ(binding.SummarizeApproximation(View(positions), &summary),
+      ct::Status::kInvalidArgument);
+  EXPECT_EQ(qbat_binding_test::Bytes(summary), old);
+  EXPECT_EQ(binding.SummarizeApproximation(View(positions),
+      reinterpret_cast<ct::FacetApproximationSummary*>(positions.data())),
+      ct::Status::kInvalidArgument);
+  positions[bad_node] = old_position;
+  EXPECT_EQ(binding.SummarizeApproximation(View(positions), &summary),
+      ct::Status::kOk);
+  EXPECT_EQ(qbat_binding_test::Bytes(summary), old);
+}
 } // namespace facet_test

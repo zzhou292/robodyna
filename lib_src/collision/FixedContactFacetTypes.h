@@ -64,4 +64,15 @@ struct FacetApproximationBound {
   double vertex_roundoff_upper_m = 0;
   double total_error_upper_m = 0;
 };
+struct FacetApproximationSummary {
+  std::size_t parents = 0;
+  std::size_t positive_bilinear_parents = 0;
+  std::size_t positive_vertex_roundoff_parents = 0;
+  double maximum_bilinear_error_upper_m = 0;
+  double maximum_vertex_roundoff_upper_m = 0;
+  double maximum_total_error_upper_m = 0;
+  std::size_t maximum_bilinear_parent = SIZE_MAX;
+  std::size_t maximum_vertex_roundoff_parent = SIZE_MAX;
+  std::size_t maximum_total_parent = SIZE_MAX;
+};
 } // namespace tlfea::contact

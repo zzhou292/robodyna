@@ -41,6 +41,11 @@ vertices. It does not enclose a subsequent closest-point implementation or all
 rounding in a composed witness. Overflow or unrepresentable positive terms
 reject without changing output. Degenerate geometry can have zero error: this
 query does not establish current regularity or collision admissibility.
+`SummarizeApproximation` applies the same operation to every retained parent
+after one complete source/output/position alias preflight. It publishes counts,
+maxima and parent witnesses only after every row succeeds. This avoids repeated
+deep owner-alias checks in a full-source census; it does not add per-parent
+storage, regularity, closest-point or contact acceptance.
 
 The error is quality/search metadata, **not an added physical radius or gap**.
 Making it configuration-dependent contact thickness would require its missing
@@ -59,12 +64,13 @@ allocator bookkeeping and process RSS remain outside this payload convention.
 Default limits admit 2,048 parents/65,536 facets/64 MiB; explicit Vehicle limits
 admit 524,288 parents/16,777,216 facets/2 GiB. These do not alter workstation caps.
 
-Eleven host functions cover all three shell families and rigid-skin roles;
+Twelve host functions cover all three shell families and rigid-skin roles;
 level/count/byte caps and retry; retained lifetime and output aliases; reversed
 Q4/T3 edges and distinct coincident layers; warped composed mapping, force,
 moment and virtual work; affine/current warped enclosures at every level;
 independent exact dyadic probes, hidden signed cancellation, three-component
-norms, represented vertex rounding, and late invalid/overflow/subnormal bounds.
+norms, represented vertex rounding, complete summary parity, and late
+invalid/overflow/subnormal bounds.
 The exact dyadic qualifier requires a host long-double significand of at least
 64 bits; production has no long-double dependency.
 
@@ -92,15 +98,18 @@ build. Prior failed evidence is retained: missing test `<climits>` (attempt 1),
 then an overstrict zero-roundoff assertion (attempt 2); no numerical rule was
 relaxed to resolve either.
 
-## Original source gate still pending
+## Original source gate
 
-Reuse the actual prepared V5 S0 subset, including its unsupported-plane receipt.
-For each level log every forecast, iterate all retained parents and compare
-source/role/thickness and boundary keys against S0. Stream descriptors instead
-of allocating a facet soup. Query actual stamped current positions one parent
-at a time, report quality-bound extrema independently of thickness, and retain
-all failed geometry/budget evidence. No actual V5 warp census was run here.
-Uniform all-shell upper inventory is 328,344 Q4 plus 21,301 T3, hence
-677,989 / 2,711,956 / 10,847,824 facets; the admitted S0 subset determines the
-real counts. Adaptive refinement, pair ownership, CCD and owner integration
-remain separate increments.
+The composed original contact-card intersection contains 337,092 centered
+parents in 842 PIDs and excludes no selected offset parent: 315,963 Q4 plus
+21,129 T3. Levels 0/1/2 contain exactly 653,055 / 2,612,220 / 10,448,880
+facets. All three complete approximation summaries pass. Maximum Q4 polynomial
+enclosures are 4.42058 / 1.10514 / 0.276286 mm at EID 2252780; represented
+vertex roundoff remains below 3.73e-15 m. Evidence:
+`self-contact-selection-tests-3`. The earlier source-scale implementation timed
+out because it repeated the deep alias proof for each parent; its failed receipt
+is retained as `self-contact-selection-tests-2`.
+
+These are reference-geometry approximation bounds, not thickness inflation,
+regularity, narrowphase, crossing or force evidence. Adaptive refinement, pair
+ownership, CCD and owner integration remain separate increments.
