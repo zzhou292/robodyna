@@ -155,6 +155,34 @@ void CheckAllTargetPermutations(
             ft::Triangle(200, 0, target_points, target_ids).key));
       const auto weights =
           RebasedWeights(*value, triangles[1], target_ids);
+      if (expected.kind == ct::FixedTriangleStratumKind::Vertex) {
+        for (unsigned i = 0; i < 3; ++i)
+          EXPECT_EQ(weights[i], i == expected.local ? 1 : 0);
+      } else if (expected.kind == ct::FixedTriangleStratumKind::Edge) {
+        EXPECT_GT(value->edge_parameters[0], 0);
+        EXPECT_LT(value->edge_parameters[0], 1);
+        const auto& edge_key = stratum.edge;
+        for (unsigned i = 0; i < 3; ++i) {
+          if (target_ids[i] == edge_key.endpoints[0].first)
+            EXPECT_EQ(weights[i], 1 - value->edge_parameters[0]);
+          else if (target_ids[i] == edge_key.endpoints[1].first)
+            EXPECT_EQ(weights[i], value->edge_parameters[0]);
+          else
+            EXPECT_EQ(weights[i], 0);
+        }
+      } else {
+        for (double weight : weights) {
+          EXPECT_GT(weight, 0);
+          EXPECT_LT(weight, 1);
+        }
+      }
+      const ct::Vec3 represented = ct::Add(
+          ct::Add(ct::Scale(target_points[0], weights[0]),
+                  ct::Scale(target_points[1], weights[1])),
+          ct::Scale(target_points[2], weights[2]));
+      EXPECT_EQ(value->points[1].x, represented.x);
+      EXPECT_EQ(value->points[1].y, represented.y);
+      EXPECT_EQ(value->points[1].z, represented.z);
       if (!have_baseline) {
         baseline_key = value->key;
         baseline_point = value->points[1];
@@ -167,6 +195,41 @@ void CheckAllTargetPermutations(
         EXPECT_EQ(value->points[1].z, baseline_point.z);
         EXPECT_EQ(weights, baseline_weights);
       }
+    }
+  }
+}
+
+void ExpectUnrepresentableAllPermutations(
+    ct::Vec3 query, const ct::Vec3 (&target_points)[3],
+    const std::uint64_t (&target_ids)[3]) {
+  const std::array<std::array<unsigned, 3>, 6> permutations{{
+      {{0, 1, 2}}, {{0, 2, 1}}, {{1, 0, 2}},
+      {{1, 2, 0}}, {{2, 0, 1}}, {{2, 1, 0}},
+  }};
+  const ct::Vec3 source_points[3]{
+      query, {query.x + 4, query.y, query.z},
+      {query.x, query.y + 4, query.z}};
+  const std::uint64_t source_ids[3]{50, 51, 52};
+  ct::FixedTriangleFeatureDiscovery discovery;
+  ft::Initialize(&discovery);
+  for (const auto& permutation : permutations) {
+    ct::Vec3 points[3];
+    std::uint64_t ids[3];
+    for (unsigned i = 0; i < 3; ++i) {
+      points[i] = target_points[permutation[i]];
+      ids[i] = target_ids[permutation[i]];
+    }
+    const ct::CurrentFixedTriangle triangles[2]{
+        ft::Triangle(100, 0, source_points, source_ids),
+        ft::Triangle(200, 0, points, ids)};
+    for (unsigned reversed = 0; reversed < 2; ++reversed) {
+      const ct::FixedTrianglePair pair[1]{{reversed, 1u - reversed}};
+      const auto report = discovery.Discover(triangles, 2, pair, 1);
+      EXPECT_EQ(report.status,
+                ct::FixedTriangleDiscoveryStatus::NonFiniteResult);
+      EXPECT_EQ(report.input_pair, 0u);
+      EXPECT_FALSE(discovery.features().complete);
+      EXPECT_FALSE(discovery.intersections().complete);
     }
   }
 }
@@ -237,29 +300,59 @@ TEST(FixedTriangleStratum,
   const std::uint64_t source_ids[3]{50, 51, 52};
   const std::uint64_t first_ids[3]{1, 2, 3};
   const std::uint64_t second_ids[3]{2, 1, 4};
-  const ct::CurrentFixedTriangle triangles[3]{
-      ft::Triangle(100, 0, source, source_ids),
-      ft::Triangle(200, 0, first, first_ids),
-      ft::Triangle(300, 0, second, second_ids)};
-  const ct::FixedTrianglePair pairs[2]{{0, 1}, {0, 2}};
+  const std::array<std::array<unsigned, 3>, 6> permutations{{
+      {{0, 1, 2}}, {{0, 2, 1}}, {{1, 0, 2}},
+      {{1, 2, 0}}, {{2, 0, 1}}, {{2, 1, 0}},
+  }};
+  const std::array<std::array<ct::FixedTrianglePair, 2>, 3> pair_orders{{
+      {{{0, 1}, {0, 2}}},
+      {{{1, 0}, {2, 0}}},
+      {{{2, 0}, {1, 0}}},
+  }};
   ct::FixedTriangleFeatureDiscovery discovery;
   ft::Initialize(&discovery, ft::Limits(2));
-  const auto report = discovery.Discover(triangles, 3, pairs, 2);
-  ASSERT_EQ(report.status, ct::FixedTriangleDiscoveryStatus::Ok);
-  EXPECT_EQ(report.feature_tasks, 30u);
-  EXPECT_LT(report.feature_candidates, report.raw_feature_candidates);
-  std::size_t matches = 0;
-  for (std::size_t i = 0; i < discovery.features().count; ++i) {
-    const auto& value = discovery.features().data[i];
-    if (value.key.kind == ct::FixedTriangleCandidateKind::VertexFace &&
-        ft::Same(value.key.vertex_face.vertex, ft::Vertex(50)) &&
-        value.key.vertex_face.target.kind ==
-            ct::FixedTriangleStratumKind::Edge &&
-        ft::Same(value.key.vertex_face.target.edge,
-                 triangles[1].edge_keys[0]))
-      ++matches;
+  const auto canonical_first =
+      ft::Triangle(200, 0, first, first_ids);
+  for (const auto& first_permutation : permutations) {
+    for (const auto& second_permutation : permutations) {
+      ct::Vec3 first_points[3], second_points[3];
+      std::uint64_t first_permuted_ids[3], second_permuted_ids[3];
+      for (unsigned i = 0; i < 3; ++i) {
+        first_points[i] = first[first_permutation[i]];
+        first_permuted_ids[i] = first_ids[first_permutation[i]];
+        second_points[i] = second[second_permutation[i]];
+        second_permuted_ids[i] = second_ids[second_permutation[i]];
+      }
+      const ct::CurrentFixedTriangle triangles[3]{
+          ft::Triangle(100, 0, source, source_ids),
+          ft::Triangle(200, 0, first_points, first_permuted_ids),
+          ft::Triangle(300, 0, second_points, second_permuted_ids)};
+      for (const auto& pairs : pair_orders) {
+        const auto report =
+            discovery.Discover(triangles, 3, pairs.data(), pairs.size());
+        ASSERT_EQ(report.status, ct::FixedTriangleDiscoveryStatus::Ok);
+        EXPECT_EQ(report.feature_tasks, 30u);
+        EXPECT_LT(report.feature_candidates,
+                  report.raw_feature_candidates);
+        std::size_t matches = 0;
+        for (std::size_t i = 0; i < discovery.features().count; ++i) {
+          const auto& value = discovery.features().data[i];
+          if (value.key.kind ==
+                  ct::FixedTriangleCandidateKind::VertexFace &&
+              ft::Same(value.key.vertex_face.vertex, ft::Vertex(50)) &&
+              value.key.vertex_face.target.kind ==
+                  ct::FixedTriangleStratumKind::Edge &&
+              ft::Same(value.key.vertex_face.target.edge,
+                       canonical_first.edge_keys[0])) {
+            EXPECT_GT(value.edge_parameters[0], 0);
+            EXPECT_LT(value.edge_parameters[0], 1);
+            ++matches;
+          }
+        }
+        EXPECT_EQ(matches, 1u);
+      }
+    }
   }
-  EXPECT_EQ(matches, 1u);
 }
 
 TEST(FixedTriangleStratum,
@@ -298,6 +391,80 @@ TEST(FixedTriangleStratum,
   ASSERT_EQ(outside.local, 0u);
   CheckAllTargetPermutations(
       outside_source, source_ids, target, target_ids, outside);
+}
+
+TEST(FixedTriangleStratum,
+     UnrepresentableFaceAndEdgeInteriorsRejectAllPermutations) {
+  const ct::Vec3 target[3]{{0, 0, 0}, {2, 0, 0}, {0, 2, 0}};
+  const std::uint64_t target_ids[3]{1, 2, 3};
+  const double smallest = std::nextafter(0.0, 1.0);
+
+  const ct::Vec3 exact_face{1, smallest, 1};
+  ASSERT_EQ(Oracle(exact_face, target).kind,
+            ct::FixedTriangleStratumKind::Face);
+  ExpectUnrepresentableAllPermutations(
+      exact_face, target, target_ids);
+
+  const ct::Vec3 exact_edge{smallest, -1, 1};
+  const auto edge = Oracle(exact_edge, target);
+  ASSERT_EQ(edge.kind, ct::FixedTriangleStratumKind::Edge);
+  ASSERT_EQ(edge.local, 0u);
+  ExpectUnrepresentableAllPermutations(
+      exact_edge, target, target_ids);
+}
+
+TEST(FixedTriangleStratum,
+     UnrepresentableInteriorFailurePreservesPublicationAndRetries) {
+  const ct::Vec3 target_points[3]{
+      {0, 0, 0}, {2, 0, 0}, {0, 2, 0}};
+  const std::uint64_t target_ids[3]{1, 2, 3};
+  const std::uint64_t source_ids[3]{50, 51, 52};
+  const ct::FixedTrianglePair pair[1]{{0, 1}};
+  ct::FixedTriangleFeatureDiscovery discovery;
+  ft::Initialize(&discovery);
+
+  const auto make_source = [](ct::Vec3 query,
+                              ct::Vec3 (&points)[3]) {
+    points[0] = query;
+    points[1] = {query.x + 4, query.y, query.z};
+    points[2] = {query.x, query.y + 4, query.z};
+  };
+  ct::Vec3 source_points[3];
+  make_source({1, 0.5, 1}, source_points);
+  ct::CurrentFixedTriangle triangles[2]{
+      ft::Triangle(100, 0, source_points, source_ids),
+      ft::Triangle(200, 0, target_points, target_ids)};
+  auto report = discovery.Discover(triangles, 2, pair, 1);
+  ASSERT_EQ(report.status, ct::FixedTriangleDiscoveryStatus::Ok);
+  const auto previous = discovery.features();
+  ASSERT_TRUE(previous.complete);
+  const auto previous_count = previous.count;
+  const auto previous_key = previous.data[0].key;
+
+  make_source(
+      {1, std::nextafter(0.0, 1.0), 1}, source_points);
+  triangles[0] =
+      ft::Triangle(100, 0, source_points, source_ids);
+  report = discovery.Discover(triangles, 2, pair, 1);
+  EXPECT_EQ(report.status,
+            ct::FixedTriangleDiscoveryStatus::NonFiniteResult);
+  ASSERT_TRUE(discovery.features().complete);
+  ASSERT_EQ(discovery.features().count, previous_count);
+  EXPECT_TRUE(ft::Same(discovery.features().data[0].key,
+                       previous_key));
+
+  make_source({1, 0, 1}, source_points);
+  triangles[0] =
+      ft::Triangle(100, 0, source_points, source_ids);
+  report = discovery.Discover(triangles, 2, pair, 1);
+  ASSERT_EQ(report.status, ct::FixedTriangleDiscoveryStatus::Ok);
+  const auto* edge =
+      FindSourceVertex(discovery.features(), ft::Vertex(50));
+  ASSERT_NE(edge, nullptr);
+  ASSERT_EQ(edge->key.vertex_face.target.kind,
+            ct::FixedTriangleStratumKind::Edge);
+  EXPECT_GT(edge->edge_parameters[0], 0);
+  EXPECT_LT(edge->edge_parameters[0], 1);
 }
 
 }  // namespace

@@ -98,7 +98,8 @@ struct FixedTriangleFeatureKey {
 // force mapping are intentionally absent.  For VertexFace, points[0] is the
 // canonical vertex and points[1] is its closest face point.  For EdgeEdge,
 // edges and points are in canonical edge-key order.  Edge parameters use each
-// FacetEdgeKey's canonical endpoint order.
+// FacetEdgeKey's canonical endpoint order.  A VertexFace candidate targeting
+// an Edge publishes that target parameter in edge_parameters[0].
 struct FixedTriangleFeatureCandidate {
   FixedTriangleFeatureKey key;
   // Deterministically selected producing facet/task provenance.  This is a

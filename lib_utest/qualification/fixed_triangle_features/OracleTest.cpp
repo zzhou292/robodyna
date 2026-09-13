@@ -504,9 +504,9 @@ TEST(FixedTriangleOracle,
   const std::array<std::array<ct::Vec3, 3>, 3> cases{{
       {{{0, 1, 1}, {2, 1, 1}, {0, 3, 1}}},
       {{{1, 0, 0}, {3, 0, 0}, {3, -2, 0}}},
-      {{{0, std::nextafter(0.0, 1.0), 1},
-        {2, std::nextafter(0.0, 1.0),
-         std::nextafter(1.0, 2.0)},
+      {{{0, std::nextafter(0.25, 1.0), 1},
+        {2, std::nextafter(0.25, 1.0),
+         1.0 + std::ldexp(1.0, -20)},
         {0, 2, 1}}},
   }};
   const auto canonical_a =
@@ -514,7 +514,10 @@ TEST(FixedTriangleOracle,
   ct::FixedTriangleFeatureDiscovery discovery;
   ft::Initialize(&discovery);
 
-  for (const auto& source_b : cases) {
+  for (std::size_t case_index = 0; case_index < cases.size();
+       ++case_index) {
+    SCOPED_TRACE(case_index);
+    const auto& source_b = cases[case_index];
     const ct::Vec3 canonical_b_points[3]{
         source_b[0], source_b[1], source_b[2]};
     const auto canonical_b =

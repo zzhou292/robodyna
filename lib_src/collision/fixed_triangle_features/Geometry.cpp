@@ -644,29 +644,52 @@ FixedTriangleDiscoveryStatus AddVertexFace(
             canonical_face.original_local[canonical_next]]);
     if (edge >= 3)
       return FixedTriangleDiscoveryStatus::IdentityMismatch;
+    const auto edge_geometry =
+        CanonicalEdgeGeometry(face_triangle, edge);
     SegmentPointGeometry on_edge;
     const auto edge_status = ClosestPointOnSegment(
-        vertex_triangle.vertices[vertex],
-        CanonicalEdgeGeometry(face_triangle, edge), &on_edge);
+        vertex_triangle.vertices[vertex], edge_geometry, &on_edge);
     if (edge_status != Status::kOk)
       return edge_status == Status::kNonFiniteResult
                  ? FixedTriangleDiscoveryStatus::NonFiniteResult
                  : FixedTriangleDiscoveryStatus::InvalidInput;
+    const double complement = 1 - on_edge.parameter;
+    if (!(on_edge.parameter > 0 && on_edge.parameter < 1 &&
+          complement > 0 && complement < 1) ||
+        !Same(on_edge.point,
+              geometry_detail::Blend(edge_geometry.vertices[0],
+                                     edge_geometry.vertices[1],
+                                     on_edge.parameter)))
+      return FixedTriangleDiscoveryStatus::NonFiniteResult;
     candidate.key.vertex_face.target.SetEdge(
         face_triangle.edge_keys[edge]);
     candidate.points[1] = on_edge.point;
     candidate.distance_m = on_edge.distance;
+    candidate.edge_parameters[0] = on_edge.parameter;
     for (double& weight : candidate.face_weights)
       weight = 0;
     for (unsigned i = 0; i < 3; ++i) {
       if (Same(face_triangle.vertex_keys[i],
                face_triangle.edge_keys[edge].endpoints[0]))
-        candidate.face_weights[i] = 1 - on_edge.parameter;
+        candidate.face_weights[i] = complement;
       if (Same(face_triangle.vertex_keys[i],
                face_triangle.edge_keys[edge].endpoints[1]))
         candidate.face_weights[i] = on_edge.parameter;
     }
   } else {
+    for (double weight : closest.weights)
+      if (!(weight > 0 && weight < 1))
+        return FixedTriangleDiscoveryStatus::NonFiniteResult;
+    if (closest.weights[0] +
+            (closest.weights[1] + closest.weights[2]) !=
+        1)
+      return FixedTriangleDiscoveryStatus::NonFiniteResult;
+    const Vec3 represented = Add(
+        Add(Scale(canonical_face.vertices[0], closest.weights[0]),
+            Scale(canonical_face.vertices[1], closest.weights[1])),
+        Scale(canonical_face.vertices[2], closest.weights[2]));
+    if (!Same(represented, closest.point))
+      return FixedTriangleDiscoveryStatus::NonFiniteResult;
     candidate.key.vertex_face.target.SetFace(face_triangle.key);
   }
   output[result->feature_count++] = candidate;
