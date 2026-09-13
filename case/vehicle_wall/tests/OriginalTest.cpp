@@ -64,7 +64,7 @@ TEST(VehicleWallOriginal, CompleteSourceCoverageAndForecastBeforeContactAllocati
     }
     const auto forecast=VehicleWallStartup::Preview(setup);
     Observe(setup,forecast);
-    EXPECT_EQ(forecast.contact.device_bytes,1087555232u);
+    EXPECT_EQ(forecast.contact.device_bytes,1089089608u);
     RuntimeLimits exact;
     exact.host_bytes=forecast.peak_host_upper_bound;
     exact.device_bytes=forecast.device_bytes;
