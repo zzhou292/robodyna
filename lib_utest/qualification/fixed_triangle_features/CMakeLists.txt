@@ -11,7 +11,8 @@ add_executable(fixed_triangle_features_host
   ExhaustiveTest.cpp
   GeometryTest.cpp
   IntersectionTest.cpp
-  OracleTest.cpp)
+  OracleTest.cpp
+  StratumTest.cpp)
 target_link_libraries(fixed_triangle_features_host PRIVATE
   tl_fixed_triangle_feature_discovery GTest::gtest_main)
 target_compile_options(fixed_triangle_features_host PRIVATE

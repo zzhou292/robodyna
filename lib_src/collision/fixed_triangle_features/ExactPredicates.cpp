@@ -9,9 +9,10 @@ namespace tlfea::contact::fixed_triangle_features::exact {
 namespace {
 
 // A finite binary64 coordinate needs at most 2098 aligned bits.  A 3D
-// orientation determinant needs fewer than 6304 bits, including subtraction
-// carries.  Keep an explicit margin while retaining bounded stack arithmetic.
-constexpr unsigned kLimbs = 112;
+// orientation determinant needs fewer than 6304 bits.  The closest-region
+// tests multiply two exact dot products and need fewer than 8410 bits,
+// including subtraction carries.  Keep an explicit fixed margin.
+constexpr unsigned kLimbs = 144;
 
 struct Integer {
   std::uint64_t limbs[kLimbs]{};
@@ -223,6 +224,22 @@ double Component(Vec3 value, int axis) noexcept {
   return axis == 0 ? value.x : (axis == 1 ? value.y : value.z);
 }
 
+struct Integer3 {
+  Integer x;
+  Integer y;
+  Integer z;
+};
+
+Integer3 Subtract(Integer3 a, Integer3 b) noexcept {
+  return {Subtract(a.x, b.x), Subtract(a.y, b.y),
+          Subtract(a.z, b.z)};
+}
+
+Integer Dot(Integer3 a, Integer3 b) noexcept {
+  return Add(Add(Multiply(a.x, b.x), Multiply(a.y, b.y)),
+             Multiply(a.z, b.z));
+}
+
 }  // namespace
 
 Sign Orient2D(Vec3 a, Vec3 b, Vec3 c, int dropped_axis) noexcept {
@@ -278,6 +295,93 @@ Sign Orient3D(Vec3 a, Vec3 b, Vec3 c, Vec3 d) noexcept {
   const Integer third = Multiply(
       adz, Subtract(Multiply(bdx, cdy), Multiply(bdy, cdx)));
   return Result(Add(Subtract(first, second), third));
+}
+
+bool ClosestStratum(Vec3 point, const Vec3 (&triangle)[3],
+                    ClosestTriangleStratum* output) noexcept {
+  if (!output)
+    return false;
+  const double values[12]{
+      point.x, point.y, point.z,
+      triangle[0].x, triangle[0].y, triangle[0].z,
+      triangle[1].x, triangle[1].y, triangle[1].z,
+      triangle[2].x, triangle[2].y, triangle[2].z};
+  const int exponent = MinimumExponent(values, 12);
+  const Integer3 p{Aligned(point.x, exponent),
+                   Aligned(point.y, exponent),
+                   Aligned(point.z, exponent)};
+  const Integer3 a{Aligned(triangle[0].x, exponent),
+                   Aligned(triangle[0].y, exponent),
+                   Aligned(triangle[0].z, exponent)};
+  const Integer3 b{Aligned(triangle[1].x, exponent),
+                   Aligned(triangle[1].y, exponent),
+                   Aligned(triangle[1].z, exponent)};
+  const Integer3 c{Aligned(triangle[2].x, exponent),
+                   Aligned(triangle[2].y, exponent),
+                   Aligned(triangle[2].z, exponent)};
+  const Integer3 ab = Subtract(b, a);
+  const Integer3 ac = Subtract(c, a);
+  const Integer d1 = Dot(ab, Subtract(p, a));
+  const Integer d2 = Dot(ac, Subtract(p, a));
+  const Integer d3 = Dot(ab, Subtract(p, b));
+  const Integer d4 = Dot(ac, Subtract(p, b));
+  const Integer d5 = Dot(ab, Subtract(p, c));
+  const Integer d6 = Dot(ac, Subtract(p, c));
+  const Sign s1 = Result(d1);
+  const Sign s2 = Result(d2);
+  const Sign s3 = Result(d3);
+  const Sign s4 = Result(d4);
+  const Sign s5 = Result(d5);
+  const Sign s6 = Result(d6);
+  if (!s1.valid || !s2.valid || !s3.valid || !s4.valid ||
+      !s5.valid || !s6.valid)
+    return false;
+  const Sign at_b = Result(Subtract(d4, d3));
+  const Sign at_c = Result(Subtract(d5, d6));
+  if (!at_b.valid || !at_c.valid)
+    return false;
+
+  if (s1.value <= 0 && s2.value <= 0) {
+    *output = {ClosestStratumKind::Vertex, 0};
+    return true;
+  }
+  if (s3.value >= 0 && at_b.value <= 0) {
+    *output = {ClosestStratumKind::Vertex, 1};
+    return true;
+  }
+  const Integer vc =
+      Subtract(Multiply(d1, d4), Multiply(d3, d2));
+  const Sign svc = Result(vc);
+  if (!svc.valid)
+    return false;
+  if (svc.value <= 0 && s1.value >= 0 && s3.value <= 0) {
+    *output = {ClosestStratumKind::Edge, 0};
+    return true;
+  }
+  if (s6.value >= 0 && at_c.value <= 0) {
+    *output = {ClosestStratumKind::Vertex, 2};
+    return true;
+  }
+  const Integer vb =
+      Subtract(Multiply(d5, d2), Multiply(d1, d6));
+  const Sign svb = Result(vb);
+  if (!svb.valid)
+    return false;
+  if (svb.value <= 0 && s2.value >= 0 && s6.value <= 0) {
+    *output = {ClosestStratumKind::Edge, 2};
+    return true;
+  }
+  const Integer va =
+      Subtract(Multiply(d3, d6), Multiply(d5, d4));
+  const Sign sva = Result(va);
+  if (!sva.valid)
+    return false;
+  if (sva.value <= 0 && at_b.value >= 0 && at_c.value >= 0) {
+    *output = {ClosestStratumKind::Edge, 1};
+    return true;
+  }
+  *output = {ClosestStratumKind::Face, 0};
+  return true;
 }
 
 }  // namespace tlfea::contact::fixed_triangle_features::exact

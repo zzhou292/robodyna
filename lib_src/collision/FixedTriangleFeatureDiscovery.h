@@ -26,6 +26,9 @@ Status EvaluateCurrentFixedTriangle(const FixedContactFacet& facet,
 // complete publication.  Every previously borrowed view expires immediately
 // on entry to Discover, including when the new query fails; callers may borrow
 // the preserved publication again through features()/intersections().
+// VF target strata use an exact finite-binary64 Voronoi partition, never
+// rounded barycentric zero tests.  Represented points and producer-local
+// barycentrics are evaluated in immutable target-vertex-key order and rebased.
 // Geometry uses closed represented-coordinate boundaries: exact zero is a
 // touch/coplanarity predicate and an adjacent nonzero representable value is
 // not widened by a tolerance.  Current triangles at or below the

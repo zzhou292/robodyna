@@ -62,6 +62,9 @@ assert discovery.count("EvaluatePairFeaturesOnce(") == 1
 assert discovery.index("report.raw_feature_candidates +=") < discovery.index(
     "impl_->features[i] = impl_->raw_features[i]")
 assert "long double" not in geometry
+assert "closest.weights[i] == 0" not in geometry
+assert "closest.weights[i] == 1" not in geometry
+assert "exact::ClosestStratum(" in geometry
 assert "SameFeatureKey" in discovery
 assert "std::sort(impl_->raw_features.get()" in discovery
 assert "impl_->complete = true" in discovery
@@ -83,6 +86,8 @@ for path in HERE.glob("*Test.cpp"):
     if path.name != "SourceProofTest.cpp":
         assert path.name in qualification_cmake, path.name
 assert 'name = "source_proof"' in qualification_bazel
+assert '"SourceProofTest.cpp"' in qualification_bazel
+assert "sh_test(" not in qualification_bazel
 for required in (
     "CompleteVFBothOrientationsAndEEAreDeterministic",
     "TransversePiercingIsExplicitWhenAllBoundaryQueriesArePositive",
@@ -102,6 +107,10 @@ for required in (
     "CanonicalTargetEdgeAndEdgePairDeduplicateAcrossFacetSeam",
     "GlobalLedgerRejectsConflictsOutsideDirectPairContexts",
     "OwnedPublicationAndControlAliasesRejectAndPreservePublication",
+    "ExactEdgeIdentityIgnoresRoundedPositiveBoundaryWeight",
+    "ExactVertexIdentityIgnoresRoundedSmallNonzeroWeight",
+    "AdversarialExactEdgeStillDeduplicatesAcrossTargetSeam",
+    "ClosedBoundaryNextafterAndOutsideVoronoiRegionsStayExact",
 ):
     assert required in tests, required
 

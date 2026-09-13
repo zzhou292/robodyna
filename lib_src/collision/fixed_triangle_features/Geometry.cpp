@@ -93,14 +93,41 @@ FixedTriangleDiscoveryStatus ValidateTriangleImpl(
                           : FixedTriangleDiscoveryStatus::Ok;
 }
 
-TriangleGeometry Geometry(const CurrentFixedTriangle& value) noexcept {
-  TriangleGeometry result;
-  result.face_id = 1;
+struct CanonicalTriangleGeometry {
+  TriangleGeometry geometry;
+  Vec3 vertices[3];
+  unsigned original_local[3] = {0, 1, 2};
+};
+
+CanonicalTriangleGeometry CanonicalGeometry(
+    const CurrentFixedTriangle& value) noexcept {
+  CanonicalTriangleGeometry result;
+  for (unsigned i = 0; i < 3; ++i)
+    for (unsigned j = i + 1; j < 3; ++j)
+      if (Compare(value.vertex_keys[result.original_local[j]],
+                  value.vertex_keys[result.original_local[i]]) < 0)
+        std::swap(result.original_local[i], result.original_local[j]);
+  result.geometry.face_id = 1;
   for (unsigned i = 0; i < 3; ++i) {
-    result.vertices[i] = value.vertices[i];
-    result.vertex_ids[i] = i;
+    result.vertices[i] = value.vertices[result.original_local[i]];
+    result.geometry.vertices[i] = result.vertices[i];
+    result.geometry.vertex_ids[i] = i;
   }
   return result;
+}
+
+unsigned EdgeWithEndpoints(const CurrentFixedTriangle& triangle,
+                           const FacetVertexKey& a,
+                           const FacetVertexKey& b) noexcept {
+  for (unsigned edge = 0; edge < 3; ++edge) {
+    const auto& candidate = triangle.edge_keys[edge];
+    if ((Same(candidate.endpoints[0], a) &&
+         Same(candidate.endpoints[1], b)) ||
+        (Same(candidate.endpoints[0], b) &&
+         Same(candidate.endpoints[1], a)))
+      return edge;
+  }
+  return 3;
 }
 
 Vec3 VertexValue(const CurrentFixedTriangle& triangle,
@@ -566,13 +593,18 @@ FixedTriangleDiscoveryStatus AddVertexFace(
     FixedTriangleFeatureCandidate* output, std::size_t capacity,
     PairFeatureResult* result) noexcept {
   ++result->feature_tasks;
+  const auto canonical_face = CanonicalGeometry(face_triangle);
   TrianglePointGeometry closest;
   const auto status = ClosestPointOnTriangle(
-      vertex_triangle.vertices[vertex], Geometry(face_triangle), &closest);
+      vertex_triangle.vertices[vertex], canonical_face.geometry, &closest);
   if (status != Status::kOk)
     return status == Status::kNonFiniteResult
                ? FixedTriangleDiscoveryStatus::NonFiniteResult
                : FixedTriangleDiscoveryStatus::InvalidInput;
+  exact::ClosestTriangleStratum stratum;
+  if (!exact::ClosestStratum(vertex_triangle.vertices[vertex],
+                             canonical_face.vertices, &stratum))
+    return FixedTriangleDiscoveryStatus::NonFiniteResult;
   if (VertexInTriangleTopology(vertex_triangle.vertex_keys[vertex],
                                face_triangle))
     return FixedTriangleDiscoveryStatus::Ok;
@@ -590,23 +622,28 @@ FixedTriangleDiscoveryStatus AddVertexFace(
   candidate.points[1] = closest.point;
   candidate.distance_m = closest.distance;
   for (unsigned i = 0; i < 3; ++i)
-    candidate.face_weights[i] = closest.weights[i];
+    candidate.face_weights[canonical_face.original_local[i]] =
+        closest.weights[i];
 
-  int target_vertex = -1;
-  int zero_weight = -1;
-  for (unsigned i = 0; i < 3; ++i) {
-    if (closest.weights[i] == 1)
-      target_vertex = static_cast<int>(i);
-    if (closest.weights[i] == 0)
-      zero_weight = static_cast<int>(i);
-  }
-  if (target_vertex >= 0) {
+  if (stratum.kind == exact::ClosestStratumKind::Vertex) {
+    const unsigned target_vertex =
+        canonical_face.original_local[stratum.local];
     candidate.key.vertex_face.target.SetVertex(
         face_triangle.vertex_keys[target_vertex]);
     candidate.points[1] = face_triangle.vertices[target_vertex];
-  } else if (zero_weight >= 0) {
-    const unsigned edge =
-        (static_cast<unsigned>(zero_weight) + 1) % 3;
+    for (double& weight : candidate.face_weights)
+      weight = 0;
+    candidate.face_weights[target_vertex] = 1;
+  } else if (stratum.kind == exact::ClosestStratumKind::Edge) {
+    const unsigned canonical_next = (stratum.local + 1) % 3;
+    const unsigned edge = EdgeWithEndpoints(
+        face_triangle,
+        face_triangle.vertex_keys[
+            canonical_face.original_local[stratum.local]],
+        face_triangle.vertex_keys[
+            canonical_face.original_local[canonical_next]]);
+    if (edge >= 3)
+      return FixedTriangleDiscoveryStatus::IdentityMismatch;
     SegmentPointGeometry on_edge;
     const auto edge_status = ClosestPointOnSegment(
         vertex_triangle.vertices[vertex],
