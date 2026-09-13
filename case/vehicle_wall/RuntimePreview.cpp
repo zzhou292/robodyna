@@ -1,5 +1,6 @@
 #include "RuntimeData.h"
 #include "RuntimeBudget.h"
+#include "WallParticipation.h"
 #include "case/vehicle_runtime/ParticipantConfigs.h"
 #include "output/ArtifactIO.h"
 namespace crash::cases::vehicle_wall {
@@ -25,7 +26,9 @@ RuntimeForecast VehicleWallStartup::Preview(const VehicleWallSetup& setup,
     const auto report=tlfea::contact::NodalWallMappedContact::Forecast(contact_config,*setup.geometry().weights(),
         source,contact,limits.contact);
     output::Require(report.status==tlfea::contact::NodalWallDeviceStatus::Ok,report.message);
-    return detail::ComposeForecast(dynamics,setup.forecast(),contact,
+    const auto participation=detail::ForecastWallParticipation(
+        contact_config.wall_binding_id,limits.participation);
+    return detail::ComposeForecast(dynamics,setup.forecast(),contact,participation,
         sizeof(Data)+sizeof(VehicleWallStartup)+256,limits);
 }
 } // namespace crash::cases::vehicle_wall

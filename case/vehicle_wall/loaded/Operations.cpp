@@ -20,7 +20,8 @@ void Assemble(tlfea::contact::NodalWallMappedContact& contact,tl::fea::FENodalSt
 }
 void Evaluate(tlfea::contact::NodalWallMappedContact& contact,tl::fea::FENodalState& owner,
     const tl::fea::NodalTrialToken& token,const tl::fea::NodalPreparedView& prepared,
-    const tl::fea::ShellPhysicalDiagnostics& materials,vehicle_dynamics::WallObservation& output) {
+    const tl::fea::ShellPhysicalDiagnostics& materials,vehicle_dynamics::WallObservation& output,
+    tlfea::contact::NodalWallMappedTransactionReceipt& receipt) {
     const auto& base=output.accepted.contact;
     output::Require(output.enabled && output.accepted.valid && base.valid &&
         base.phase==tlfea::contact::NodalWallDevicePhase::AcceptedBase &&
@@ -28,8 +29,10 @@ void Evaluate(tlfea::contact::NodalWallMappedContact& contact,tl::fea::FENodalSt
         base.attempt==prepared.attempt,
         "Prepared wall stage requires the same attempt's accepted contact observation");
     auto next=output;
-    Check(contact.EvaluateCandidate(owner,token,prepared,materials,&next.prepared),
+    tlfea::contact::NodalWallMappedTransactionReceipt completed;
+    Check(contact.EvaluateCandidate(owner,token,prepared,materials,&next.prepared,&completed),
         "Prepared finite mesh wall work and activity");
     output=next;
+    receipt=completed;
 }
 } // namespace crash::cases::vehicle_wall::loaded

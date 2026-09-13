@@ -103,19 +103,23 @@ TEST(VehicleWallValues, CompleteBudgetChargesRetainedOnceAndMaximumScratchWithEx
     setup.geometry.temporary_bytes=500;
     tl::fea::ShellMappedFootprint contact{10,900,60,200,1160};
     auto limits=RuntimeLimits{};
-    const auto result=detail::ComposeForecast(dynamics,setup,contact,7,limits);
-    EXPECT_EQ(result.retained_host_upper_bound,1537);
-    EXPECT_EQ(result.peak_host_upper_bound,2037);
+    const tl::fea::ShellPhysicalScratchParticipationForecast participation{13,99,112};
+    ASSERT_GT(participation.total_host_bytes,participation.publication_host_bytes);
+    const auto result=detail::ComposeForecast(dynamics,setup,contact,participation,7,limits);
+    EXPECT_EQ(result.retained_host_upper_bound,1537+participation.publication_host_bytes);
+    EXPECT_EQ(result.peak_host_upper_bound,2037+participation.publication_host_bytes);
     EXPECT_EQ(result.device_bytes,110);
-    limits.host_bytes=2037;limits.device_bytes=110;
-    EXPECT_EQ(detail::ComposeForecast(dynamics,setup,contact,7,limits).device_bytes,110);
+    EXPECT_EQ(result.participation.publication_host_bytes,participation.publication_host_bytes);
+    limits.host_bytes=result.peak_host_upper_bound;limits.device_bytes=110;
+    EXPECT_EQ(detail::ComposeForecast(dynamics,setup,contact,participation,7,limits).device_bytes,110);
     --limits.host_bytes;
-    EXPECT_THROW(detail::ComposeForecast(dynamics,setup,contact,7,limits),std::runtime_error);
+    EXPECT_THROW(detail::ComposeForecast(dynamics,setup,contact,participation,7,limits),std::runtime_error);
     ++limits.host_bytes;--limits.device_bytes;
-    EXPECT_THROW(detail::ComposeForecast(dynamics,setup,contact,7,limits),std::runtime_error);
+    EXPECT_THROW(detail::ComposeForecast(dynamics,setup,contact,participation,7,limits),std::runtime_error);
     ++limits.device_bytes;
-    EXPECT_EQ(detail::ComposeForecast(dynamics,setup,contact,7,limits).peak_host_upper_bound,2037);
+    EXPECT_EQ(detail::ComposeForecast(dynamics,setup,contact,participation,7,limits).peak_host_upper_bound,
+        result.peak_host_upper_bound);
     ++setup.shared_source_upper_bound;
-    EXPECT_THROW(detail::ComposeForecast(dynamics,setup,contact,7,limits),std::runtime_error);
+    EXPECT_THROW(detail::ComposeForecast(dynamics,setup,contact,participation,7,limits),std::runtime_error);
 }
 } // namespace crash::cases::vehicle_wall::test

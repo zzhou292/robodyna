@@ -16,7 +16,8 @@ target_link_libraries(robo_dyna_vehicle_wall_setup PUBLIC robo_dyna_vehicle_wall
   robo_dyna_wall_composition)
 target_compile_options(robo_dyna_vehicle_wall_setup PRIVATE -fno-fast-math -ffp-contract=off)
 add_library(robo_dyna_vehicle_wall_startup STATIC
-  "${CMAKE_CURRENT_LIST_DIR}/RuntimePreview.cpp" "${CMAKE_CURRENT_LIST_DIR}/VehicleWallStartup.cpp")
+  "${CMAKE_CURRENT_LIST_DIR}/RuntimePreview.cpp" "${CMAKE_CURRENT_LIST_DIR}/VehicleWallStartup.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/WallParticipation.cpp")
 target_link_libraries(robo_dyna_vehicle_wall_startup PUBLIC robo_dyna_vehicle_wall_setup
   robo_dyna_vehicle_physical_dynamics tl_nodal_wall_mapped)
 target_compile_options(robo_dyna_vehicle_wall_startup PRIVATE -fno-fast-math -ffp-contract=off)

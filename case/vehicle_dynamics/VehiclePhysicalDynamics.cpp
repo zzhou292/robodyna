@@ -80,6 +80,13 @@ void VehiclePhysicalDynamics::CommitStep() {
     auto& state=s.state();
     const auto& view=s.prepared;
     tl::fea::ShellPublicationReport report;
+    if(s.wall) {
+        report=s.wall->Seal(state.owner,s.token,state.publication);
+        if(static_cast<int>(report.status)!=0) {
+            s.Discard();
+            detail::Require(report,"Physical scratch participation");
+        }
+    }
     s.timer.Measure<StepStage::Commit>([&] {
         report=state.publication.CommitPhysical(state.owner,s.token,s.candidate().mechanics,
             {view.owner_id,view.kinematics.base_epoch,view.attempt,s.config.startup.qualification_id,true});

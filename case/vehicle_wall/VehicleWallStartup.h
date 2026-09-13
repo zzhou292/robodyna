@@ -8,9 +8,11 @@ struct RuntimeLimits {
     std::size_t host_bytes=std::size_t{20}*1000*1000*1000;
     std::size_t device_bytes=std::size_t{8}<<30;
     tlfea::contact::NodalWallMappedLimits contact=tlfea::contact::NodalWallMappedLimits::Vehicle();
+    tl::fea::ShellPhysicalScratchParticipationLimits participation;
 };
 struct RuntimeForecast {
     tl::fea::ShellMappedFootprint contact;
+    tl::fea::ShellPhysicalScratchParticipationForecast participation;
     std::size_t retained_host_upper_bound=0,peak_host_upper_bound=0,device_bytes=0;
 };
 // Initial contact source/activity authentication on the actual existing owner.

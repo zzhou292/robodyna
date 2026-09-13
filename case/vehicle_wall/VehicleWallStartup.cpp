@@ -1,6 +1,7 @@
 #include "RuntimeData.h"
 #include "RuntimeBudget.h"
 #include "RuntimeIdentity.h"
+#include "WallParticipation.h"
 #include "case/vehicle_dynamics/Storage.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
 #include "output/ArtifactIO.h"
@@ -31,7 +32,9 @@ RuntimeForecast VehicleWallStartup::Preflight(const VehicleWallSetup& setup,
     output::Require(checked.status==c::NodalWallDeviceStatus::Ok,checked.message);
     output::Require(dynamics.allocations().device_bytes==dynamics.forecast().startup.device_bytes,
         "Actual owner allocation differs from the retained dynamics forecast");
-    return detail::ComposeForecast(dynamics.forecast(),setup.forecast(),contact,
+    const auto participation=detail::ForecastWallParticipation(
+        config.wall_binding_id,limits.participation);
+    return detail::ComposeForecast(dynamics.forecast(),setup.forecast(),contact,participation,
         sizeof(Data)+sizeof(VehicleWallStartup)+256,limits);
 }
 VehicleWallStartup VehicleWallStartup::Prepare(const VehicleWallSetup& setup,
@@ -47,9 +50,17 @@ VehicleWallStartup VehicleWallStartup::Prepare(const VehicleWallSetup& setup,
     const auto prepared=next->contact.Initialize(config,setup.selected_wall_view(),*setup.geometry().weights(),
         source,state.owner,setup.placement().projected_wall_box,limits.contact);
     output::Require(prepared.status==c::NodalWallDeviceStatus::Ok,prepared.message);
+    const auto entry=next->contact.roster_entry();
+    output::Require(entry.issuer && entry.source_id==config.wall_binding_id,
+        "Actual mapped wall did not expose its immutable roster identity");
+    const auto configured=state.publication.ConfigurePhysicalScratchParticipation(
+        state.owner,*source.physical,source.participants,source.identity,
+        {entry,{}},limits.participation);
+    output::Require(configured.status==tl::fea::ShellPublicationStatus::Success,
+        configured.message);
     output::Require(next->contact.allocations().device_bytes==forecast.contact.device_bytes &&
         tl::fea::trial_identity::SameStamp(state.owner.accepted(),next->initial_stamp),
-        "Wall initialization changed accepted state or disagreed with its exact device forecast");
+        "Wall initialization/roster changed accepted state or disagreed with its exact forecast");
     return VehicleWallStartup(std::move(next));
 }
 VehicleWallStartup::VehicleWallStartup(std::unique_ptr<Data> value) : data_(std::move(value)) {}

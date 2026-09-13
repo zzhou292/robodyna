@@ -30,6 +30,8 @@ TEST(VehicleLoadedWallOriginal, FirstNonzeroContactUsesActualCompleteOwnerAndDis
     const auto forecast=LoadedWall::Preflight(setup,config,{},&joints);
     RecordProperty("complete_host_upper_bound",std::to_string(forecast.peak_host_upper_bound));
     RecordProperty("complete_device_bytes",std::to_string(forecast.device_bytes));
+    RecordProperty("scratch_publication_host_bytes",
+        std::to_string(forecast.participation.publication_host_bytes));
     std::cout<<"Loaded complete preview before owner allocation: host="<<forecast.peak_host_upper_bound
              <<" device="<<forecast.device_bytes<<" joints="<<joints.model().joints().size()<<std::endl;
     RuntimeLimits short_cap;
@@ -59,6 +61,7 @@ TEST(VehicleLoadedWallOriginal, FirstNonzeroContactUsesActualCompleteOwnerAndDis
     EXPECT_THROW(simulation.last_accepted_step(),std::runtime_error);
     const auto retry=simulation.PrepareStep();
     EXPECT_TRUE(retry.mechanics.type45.automatic_stiffness_initialized);
+    EXPECT_EQ(retry.wall.prepared.contact.kick_dt,.5*initial.fixed_dt);
     EXPECT_EQ(retry.wall.prepared.contact.resultant.value,rejected.wall.prepared.contact.resultant.value);
     EXPECT_EQ(retry.wall.prepared.contact.potential.value,rejected.wall.prepared.contact.potential.value);
     EXPECT_EQ(retry.wall.prepared.contact.drift_work,rejected.wall.prepared.contact.drift_work);
@@ -66,6 +69,7 @@ TEST(VehicleLoadedWallOriginal, FirstNonzeroContactUsesActualCompleteOwnerAndDis
     simulation.CommitStep();
     EXPECT_EQ(simulation.accepted().epoch,1);
     const auto loaded=simulation.PrepareStep();
+    EXPECT_EQ(loaded.wall.prepared.contact.kick_dt,initial.fixed_dt);
     EXPECT_GT(loaded.wall.accepted.contact.resultant.value,0);
     EXPECT_GT(loaded.wall.accepted.current_response_rate_upper,0);
     EXPECT_TRUE(loaded.wall.prepared.prepared_activity_available);

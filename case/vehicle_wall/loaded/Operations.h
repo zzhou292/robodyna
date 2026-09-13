@@ -7,5 +7,6 @@ void Assemble(tlfea::contact::NodalWallMappedContact&,tl::fea::FENodalState&,
     const tl::fea::NodalTrialToken&,const tl::fea::NodalAssemblyView&,vehicle_dynamics::WallObservation&);
 void Evaluate(tlfea::contact::NodalWallMappedContact&,tl::fea::FENodalState&,
     const tl::fea::NodalTrialToken&,const tl::fea::NodalPreparedView&,
-    const tl::fea::ShellPhysicalDiagnostics&,vehicle_dynamics::WallObservation&);
+    const tl::fea::ShellPhysicalDiagnostics&,vehicle_dynamics::WallObservation&,
+    tlfea::contact::NodalWallMappedTransactionReceipt&);
 } // namespace crash::cases::vehicle_wall::loaded
