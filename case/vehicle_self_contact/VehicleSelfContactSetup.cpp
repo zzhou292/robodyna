@@ -81,7 +81,7 @@ std::size_t Difference(std::size_t total,
     return total;
 }
 
-std::size_t SharedSourceBytes(
+std::size_t SharedSourceReservation(
     const vehicle_runtime::Execution& execution,
     const vehicle_runtime::Attachments& attachments,
     std::size_t cap) {
@@ -112,6 +112,53 @@ std::size_t SharedSourceBytes(
     return budget.bytes();
 }
 
+std::size_t SelectedSharedReservation(
+    const vehicle_runtime::Execution& execution,
+    const vehicle_runtime::Attachments& attachments,
+    std::size_t cap) {
+    const auto& physical = execution.physical();
+    const auto& cin_model = attachments.attachments().model();
+    const auto cin = cin_model.forecast();
+    output::Require(cin.model_payload_bytes >=
+            sizeof(tl::constraints::tied_shell::TiedCinAttachmentModel),
+        "Retained selected CIN model reservation is invalid");
+    auto retained_cin = cin.model_payload_bytes -
+        sizeof(tl::constraints::tied_shell::TiedCinAttachmentModel);
+    if (!cin_model.domain()->SharesStorage(*physical.domain()))
+        retained_cin = Add({retained_cin, cin.domain_payload_bytes}, cap,
+            "Retained selected CIN domain reservation exceeds host cap");
+    retained_cin = Add(
+        {retained_cin, cin.post_kinchk_payload_bytes}, cap,
+        "Retained selected CIN reservation exceeds host cap");
+    // The active-use binding authenticates the execution's already-retained
+    // rigid assembly, so its incremental rigid reservation is zero.
+    return Add({physical.owned_payload_bytes(), retained_cin}, cap,
+        "Selected shared-source reservation exceeds host cap");
+}
+
+void AdmitOuterBeforeSelected(
+    const vehicle_runtime::Execution& execution,
+    const vehicle_runtime::Attachments& attachments,
+    const modelio::self_contact::OriginalSelection& original,
+    std::size_t fixed_bytes, SetupLimits& limits) {
+    output::Require(limits.host_bytes &&
+            limits.host_bytes <= (std::size_t{40} << 30),
+        "Invalid vehicle self-contact setup host cap");
+    const auto shared =
+        SharedSourceReservation(execution, attachments, limits.host_bytes);
+    const auto base = Add({shared, original.data().owned_payload_bytes,
+            fixed_bytes, std::size_t{256}},
+        limits.host_bytes,
+        "Retained vehicle source leaves no selected-source capacity");
+    const auto selected_shared = SelectedSharedReservation(
+        execution, attachments, limits.host_bytes);
+    const auto selected_outer_cap = Add(
+        {limits.host_bytes - base, selected_shared}, limits.host_bytes,
+        "Mapped selected-source outer cap overflows");
+    limits.selected.host_bytes =
+        std::min(limits.selected.host_bytes, selected_outer_cap);
+}
+
 SetupForecast ComposeForecast(
     const vehicle_runtime::Execution& execution,
     const vehicle_runtime::Attachments& attachments,
@@ -123,25 +170,28 @@ SetupForecast ComposeForecast(
         "Invalid vehicle self-contact setup host cap");
     SetupForecast result;
     result.selected = selected;
-    result.shared_vehicle_source_bytes =
-        SharedSourceBytes(execution, attachments, limits.host_bytes);
-    result.retained_original_selection_bytes =
+    result.shared_vehicle_source_reservation_bytes =
+        SharedSourceReservation(execution, attachments, limits.host_bytes);
+    result.retained_original_selection_reservation_bytes =
         original.data().owned_payload_bytes;
-    result.selected_incremental_bytes = Difference(
-        selected.retained_bytes,
-        {selected.shared_physical_bytes, selected.shared_rigid_bytes,
-         selected.shared_cin_bytes},
+    result.selected_incremental_reservation_bytes = Difference(
+        selected.retained_reservation_bytes,
+        {selected.shared_physical_reservation_bytes,
+         selected.shared_rigid_reservation_bytes,
+         selected.shared_cin_reservation_bytes},
         "Selected self-contact shared-source forecast is invalid");
-    result.retained_setup_bytes = Add(
-        {result.shared_vehicle_source_bytes,
-         result.retained_original_selection_bytes,
-         result.selected_incremental_bytes, fixed_bytes,
+    result.retained_setup_reservation_bytes = Add(
+        {result.shared_vehicle_source_reservation_bytes,
+         result.retained_original_selection_reservation_bytes,
+         result.selected_incremental_reservation_bytes, fixed_bytes,
          std::size_t{256}},
         limits.host_bytes,
         "Vehicle self-contact retained setup exceeds host cap");
-    result.peak_temporary_bytes = selected.peak_temporary_bytes;
-    result.peak_host_bytes = Add(
-        {result.retained_setup_bytes, result.peak_temporary_bytes},
+    result.peak_temporary_reservation_bytes =
+        selected.peak_temporary_reservation_bytes;
+    result.peak_host_reservation_bytes = Add(
+        {result.retained_setup_reservation_bytes,
+         result.peak_temporary_reservation_bytes},
         limits.host_bytes,
         "Vehicle self-contact setup peak exceeds host cap");
     return result;
@@ -171,8 +221,8 @@ SetupForecast VehicleSelfContactSetup::Preflight(
     const modelio::self_contact::OriginalSelection& original,
     Config config, SetupLimits limits) {
     CheckSource(execution, attachments, original);
-    limits.selected.host_bytes =
-        std::min(limits.selected.host_bytes, limits.host_bytes);
+    AdmitOuterBeforeSelected(execution, attachments, original,
+        sizeof(Data) + sizeof(VehicleSelfContactSetup), limits);
     const auto selected = SelectedSelfContactSource::Preflight(
         execution.physical(), original.data(),
         Support(execution, attachments), config, limits.selected);
@@ -186,8 +236,8 @@ VehicleSelfContactSetup VehicleSelfContactSetup::Prepare(
     const modelio::self_contact::OriginalSelection& original,
     Config config, SetupLimits limits) {
     CheckSource(execution, attachments, original);
-    limits.selected.host_bytes =
-        std::min(limits.selected.host_bytes, limits.host_bytes);
+    AdmitOuterBeforeSelected(execution, attachments, original,
+        sizeof(Data) + sizeof(VehicleSelfContactSetup), limits);
     const auto support = Support(execution, attachments);
     auto selected = SelectedSelfContactSource::Prepare(
         execution.physical(), original.data(), support,

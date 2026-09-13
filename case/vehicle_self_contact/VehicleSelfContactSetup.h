@@ -12,12 +12,14 @@ struct SetupLimits {
 
 struct SetupForecast {
     SourceForecast selected;
-    std::size_t shared_vehicle_source_bytes = 0;
-    std::size_t retained_original_selection_bytes = 0;
-    std::size_t selected_incremental_bytes = 0;
-    std::size_t retained_setup_bytes = 0;
-    std::size_t peak_temporary_bytes = 0;
-    std::size_t peak_host_bytes = 0;
+    // Reservations/upper bounds, not measured resident memory. Shared source
+    // values can include prior-construction/retired CIN allocations.
+    std::size_t shared_vehicle_source_reservation_bytes = 0;
+    std::size_t retained_original_selection_reservation_bytes = 0;
+    std::size_t selected_incremental_reservation_bytes = 0;
+    std::size_t retained_setup_reservation_bytes = 0;
+    std::size_t peak_temporary_reservation_bytes = 0;
+    std::size_t peak_host_reservation_bytes = 0;
 };
 
 class SetupIdentity {

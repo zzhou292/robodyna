@@ -99,18 +99,46 @@ void CheckLevel(unsigned level) {
     EXPECT_EQ(topology.parent_local_edge_uses, expected.edge_uses);
     EXPECT_EQ(source.facets().forecast().facets, expected.facets);
     EXPECT_EQ(source.active_uses().forecast().facets, expected.facets);
-    EXPECT_EQ(source.census().support.vertex_uses.ordinary,
+    const auto& support = source.census().support;
+    EXPECT_EQ(
+        support.vf_parent_local_vertex_use_support_occurrences.ordinary,
         expected.vertex_uses);
-    EXPECT_EQ(source.census().support.edge_endpoints.ordinary,
+    EXPECT_EQ(support.ee_stored_endpoint_support_occurrences.ordinary,
         2 * expected.edge_uses);
-    EXPECT_EQ(source.census().support.all_weighted_supports.total,
+    EXPECT_EQ(support.combined_stored_support_occurrences.total,
         expected.vertex_uses + 2 * expected.edge_uses);
-    EXPECT_TRUE(source.census().support.complete_static_cin_roster);
-    EXPECT_FALSE(source.census().support.runtime_activity_and_release_pending);
+    EXPECT_TRUE(support.complete_static_cin_roster);
+    EXPECT_FALSE(support.runtime_activity_and_release_pending);
+    EXPECT_TRUE(support.parent_activity_pending);
+    EXPECT_EQ(support.parent_activity_pending_parents, expected.parents);
+    EXPECT_TRUE(support.same_parent_regularity_pending);
+    EXPECT_EQ(support.same_parent_regularity_pending_edge_uses,
+        expected.edge_uses);
+    EXPECT_TRUE(support.nonlocal_ee_force_area_pending);
+    EXPECT_EQ(support.nonlocal_ee_force_area_pending_edge_uses,
+        expected.edge_uses);
+    EXPECT_EQ(support.runtime_tied_exclusions, 0u);
     EXPECT_EQ(source.census().reference_area.q4_parent_area_m2.lower > 0,
         true);
     EXPECT_EQ(source.census().reference_area.t3_parent_area_m2.lower > 0,
         true);
+    EXPECT_TRUE(
+        source.census().reference_area.directed_partition_certified);
+    EXPECT_LE(source.census().reference_area
+                  .directed_partition_difference_m2.lower,
+        0);
+    EXPECT_GE(source.census().reference_area
+                  .directed_partition_difference_m2.upper,
+        0);
+    EXPECT_EQ(source.census().runtime_coefficients
+                  .applied_source_friction_fields,
+        0u);
+    EXPECT_EQ(source.census().runtime_coefficients
+                  .applied_source_damping_fields,
+        0u);
+    EXPECT_EQ(source.census().runtime_coefficients
+                  .applied_source_soft_fields,
+        0u);
 
     original.selected_part_ids.clear();
     original.parts.clear();
@@ -178,10 +206,22 @@ TEST(VehicleSelfContactValues,
 
     const auto forecast = SelectedSelfContactSource::Preflight(
         fixture.physical, original, {}, {2});
+    EXPECT_GE(forecast.declared_inventory_reservation_bytes,
+        forecast.copied_inventory_capacity_bytes);
+    EXPECT_GT(forecast.declared_validation_scratch_reservation_bytes, 0u);
+    Limits declared_short;
+    declared_short.host_bytes =
+        forecast.declared_inventory_reservation_bytes +
+        forecast.declared_validation_scratch_reservation_bytes - 1;
+    EXPECT_THROW(SelectedSelfContactSource::Preflight(
+        fixture.physical, original, {}, {2}, declared_short),
+        std::runtime_error);
+    EXPECT_EQ(&saved.surface().parents()[0], identity);
     Limits exact;
-    exact.host_bytes = forecast.peak_host_bytes;
+    exact.host_bytes = forecast.peak_host_reservation_bytes;
     EXPECT_EQ(SelectedSelfContactSource::Preflight(
-        fixture.physical, original, {}, {2}, exact).peak_host_bytes,
+        fixture.physical, original, {}, {2}, exact)
+                  .peak_host_reservation_bytes,
         exact.host_bytes);
     --exact.host_bytes;
     EXPECT_THROW(SelectedSelfContactSource::Preflight(
@@ -190,7 +230,8 @@ TEST(VehicleSelfContactValues,
     ++exact.host_bytes;
     const auto retried = SelectedSelfContactSource::Prepare(
         fixture.physical, original, {}, {2}, exact);
-    EXPECT_EQ(retried.forecast().peak_host_bytes, exact.host_bytes);
+    EXPECT_EQ(retried.forecast().peak_host_reservation_bytes,
+        exact.host_bytes);
 
     Limits short_count;
     short_count.active_uses.max_facets =

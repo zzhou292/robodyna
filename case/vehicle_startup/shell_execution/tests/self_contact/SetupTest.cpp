@@ -16,6 +16,12 @@ tlfea::contact::SelfContactActiveUseSource SupportSource() {
          roster.witnesses.size()}};
 }
 
+const app_contact::VehicleSelfContactSetup& LevelZeroSetup() {
+    static const auto value = app_contact::VehicleSelfContactSetup::Prepare(
+        Execution(), PhysicalAttachments(), OriginalContactSelection(), {0});
+    return value;
+}
+
 void CheckSupportPartition(const app_contact::SupportRoleCounts& counts) {
     EXPECT_EQ(counts.total, counts.ordinary + counts.rigid +
         counts.cin_master + counts.cin_secondary);
@@ -26,17 +32,19 @@ void CheckSupportPartition(const app_contact::SupportRoleCounts& counts) {
 }  // namespace
 
 TEST(VehicleSelfContactSource,
-     AppOwnedOriginalSelectionActiveUsesAndAreasAtEveryFixedLevel) {
+     LevelZeroMaterializationAndLevelOneTwoPreflightForecasts) {
     const auto& execution = Execution();
     const auto& attachments = PhysicalAttachments();
     const auto& original = OriginalContactSelection();
     const auto& fields = original.data().source_fields;
     ASSERT_EQ(fields.slave_set_id, 1000002u);
-    ASSERT_EQ(fields.master_set_id, 5000002u);
+    ASSERT_EQ(fields.master_set_id, 0u);
     ASSERT_EQ(fields.static_friction, .2);
     ASSERT_EQ(fields.dynamic_friction, .1);
     ASSERT_EQ(fields.decay_coefficient, .001);
     ASSERT_EQ(fields.soft, 1);
+    ASSERT_TRUE(fields.ignore_initial_penetration.has_value());
+    EXPECT_EQ(*fields.ignore_initial_penetration, 1);
     const std::size_t expected_facets[3]{
         653055, 2612220, 10448880};
     const std::size_t expected_vertex_uses[3]{
@@ -45,8 +53,39 @@ TEST(VehicleSelfContactSource,
         1643202, 5245569, 18327798};
 
     for (unsigned level = 0; level <= 2; ++level) {
-        const auto setup = app_contact::VehicleSelfContactSetup::Prepare(
-            execution, attachments, original, {level});
+        if (level) {
+            const auto forecast =
+                app_contact::VehicleSelfContactSetup::Preflight(
+                    execution, attachments, original, {level});
+            const auto& active = forecast.selected.active_uses;
+            EXPECT_EQ(active.parents, 337092u);
+            EXPECT_EQ(active.facets, expected_facets[level]);
+            EXPECT_EQ(active.vertex_uses, expected_vertex_uses[level]);
+            EXPECT_EQ(active.edge_uses, expected_edge_uses[level]);
+            tlfea::contact::SelfContactActiveUseCounts expected;
+            ASSERT_TRUE(tlfea::contact::CountSelfContactActiveUses(
+                {315963, 21129, ContactSurface().vertices().size(),
+                 ContactSurface().edges().size(), level}, &expected));
+            EXPECT_EQ(active.vertices, expected.vertices);
+            EXPECT_EQ(active.edges, expected.edges);
+            std::cout << "Preflight-only selected self-contact level="
+                      << level << " parents=" << active.parents
+                      << " facets_forecast=" << active.facets
+                      << " vertex_uses_forecast=" << active.vertex_uses
+                      << " edge_uses_forecast=" << active.edge_uses
+                      << " (active-use inventory not materialized)\n";
+            RecordProperty("level_" + std::to_string(level) +
+                    "_facets_forecast",
+                std::to_string(active.facets));
+            RecordProperty("level_" + std::to_string(level) +
+                    "_canonical_vertices_forecast",
+                std::to_string(active.vertices));
+            RecordProperty("level_" + std::to_string(level) +
+                    "_canonical_edges_forecast",
+                std::to_string(active.edges));
+            continue;
+        }
+        const auto& setup = LevelZeroSetup();
         ASSERT_TRUE(setup.MatchesSource(
             execution, attachments, original));
         ASSERT_TRUE(setup.identity());
@@ -121,16 +160,37 @@ TEST(VehicleSelfContactSource,
             cin.witness_count * sizeof(*cin.witnesses)), 0);
 
         const auto& support = setup.census().support;
-        CheckSupportPartition(support.vertex_uses);
-        CheckSupportPartition(support.edge_endpoints);
-        CheckSupportPartition(support.all_weighted_supports);
-        EXPECT_EQ(support.vertex_uses.total,
+        CheckSupportPartition(
+            support.vf_parent_local_vertex_use_support_occurrences);
+        CheckSupportPartition(
+            support.ee_stored_endpoint_support_occurrences);
+        CheckSupportPartition(
+            support.combined_stored_support_occurrences);
+        EXPECT_EQ(
+            support.vf_parent_local_vertex_use_support_occurrences.total,
             expected_vertex_uses[level]);
-        EXPECT_EQ(support.edge_endpoints.total,
+        EXPECT_EQ(support.ee_stored_endpoint_support_occurrences.total,
             2 * expected_edge_uses[level]);
         EXPECT_TRUE(support.complete_static_cin_roster);
         EXPECT_TRUE(support.runtime_activity_and_release_pending);
-        EXPECT_EQ(support.admitted_runtime_tied_exclusions, 0u);
+        EXPECT_TRUE(support.parent_activity_pending);
+        EXPECT_EQ(support.parent_activity_pending_parents, 337092u);
+        EXPECT_TRUE(support.same_parent_regularity_pending);
+        EXPECT_EQ(support.same_parent_regularity_pending_edge_uses,
+            expected_edge_uses[level]);
+        EXPECT_TRUE(support.nonlocal_ee_force_area_pending);
+        EXPECT_EQ(support.nonlocal_ee_force_area_pending_edge_uses,
+            expected_edge_uses[level]);
+        EXPECT_EQ(support.runtime_tied_exclusions, 0u);
+        EXPECT_EQ(setup.census().runtime_coefficients
+                      .applied_source_friction_fields,
+            0u);
+        EXPECT_EQ(setup.census().runtime_coefficients
+                      .applied_source_damping_fields,
+            0u);
+        EXPECT_EQ(setup.census().runtime_coefficients
+                      .applied_source_soft_fields,
+            0u);
         EXPECT_GT(
             setup.census().reference_area.q4_parent_area_m2.lower, 0);
         EXPECT_GT(
@@ -139,8 +199,17 @@ TEST(VehicleSelfContactSource,
             setup.census().reference_area.total_parent_area_m2.lower, 0);
         EXPECT_GT(
             setup.census().reference_area.directed_vertex_area_m2.lower, 0);
+        EXPECT_TRUE(
+            setup.census().reference_area.directed_partition_certified);
+        EXPECT_LE(setup.census().reference_area
+                      .directed_partition_difference_m2.lower,
+            0);
+        EXPECT_GE(setup.census().reference_area
+                      .directed_partition_difference_m2.upper,
+            0);
 
-        std::cout << "Selected self-contact setup level=" << level
+        std::cout << "Materialized selected self-contact setup level="
+                  << level
                   << " parents=" << topology.parents
                   << " facets=" << topology.facets
                   << " canonical_vertices=" << topology.canonical_vertices
@@ -148,13 +217,16 @@ TEST(VehicleSelfContactSource,
                   << " vertex_uses=" << topology.parent_local_vertex_uses
                   << " edge_uses=" << topology.parent_local_edge_uses
                   << " ordinary="
-                  << support.all_weighted_supports.ordinary
-                  << " rigid=" << support.all_weighted_supports.rigid
+                  << support.combined_stored_support_occurrences.ordinary
+                  << " rigid="
+                  << support.combined_stored_support_occurrences.rigid
                   << " cin_master="
-                  << support.all_weighted_supports.cin_master
+                  << support.combined_stored_support_occurrences.cin_master
                   << " cin_secondary="
-                  << support.all_weighted_supports.cin_secondary
-                  << " setup_peak=" << setup.forecast().peak_host_bytes
+                  << support.combined_stored_support_occurrences
+                         .cin_secondary
+                  << " setup_peak_reservation="
+                  << setup.forecast().peak_host_reservation_bytes
                   << '\n';
         RecordProperty("level_" + std::to_string(level) + "_facets",
             std::to_string(topology.facets));
@@ -165,16 +237,21 @@ TEST(VehicleSelfContactSource,
                 "_canonical_edges",
             std::to_string(topology.canonical_edges));
         RecordProperty("level_" + std::to_string(level) +
-                "_weighted_supports",
-            std::to_string(support.all_weighted_supports.total));
+                "_stored_support_occurrences",
+            std::to_string(
+                support.combined_stored_support_occurrences.total));
         RecordProperty("level_" + std::to_string(level) + "_ordinary",
-            std::to_string(support.all_weighted_supports.ordinary));
+            std::to_string(
+                support.combined_stored_support_occurrences.ordinary));
         RecordProperty("level_" + std::to_string(level) + "_rigid",
-            std::to_string(support.all_weighted_supports.rigid));
+            std::to_string(
+                support.combined_stored_support_occurrences.rigid));
         RecordProperty("level_" + std::to_string(level) + "_cin_master",
-            std::to_string(support.all_weighted_supports.cin_master));
+            std::to_string(
+                support.combined_stored_support_occurrences.cin_master));
         RecordProperty("level_" + std::to_string(level) + "_cin_secondary",
-            std::to_string(support.all_weighted_supports.cin_secondary));
+            std::to_string(
+                support.combined_stored_support_occurrences.cin_secondary));
     }
 }
 
@@ -187,12 +264,14 @@ TEST(VehicleSelfContactSource,
     const auto forecast = app_contact::VehicleSelfContactSetup::Preflight(
         execution, attachments, original, config);
     app_contact::SetupLimits exact;
-    exact.host_bytes = forecast.peak_host_bytes;
+    exact.host_bytes = forecast.peak_host_reservation_bytes;
     EXPECT_EQ(app_contact::VehicleSelfContactSetup::Preflight(
-        execution, attachments, original, config, exact).peak_host_bytes,
+        execution, attachments, original, config, exact)
+                  .peak_host_reservation_bytes,
         exact.host_bytes);
-    auto setup = app_contact::VehicleSelfContactSetup::Prepare(
-        execution, attachments, original, config, exact);
+    const auto& setup = LevelZeroSetup();
+    ASSERT_EQ(setup.forecast().peak_host_reservation_bytes,
+        exact.host_bytes);
     const auto identity = setup.identity();
     const auto* first = &setup.surface().parents()[0];
     auto short_limit = exact;
@@ -227,12 +306,11 @@ TEST(VehicleSelfContactSource,
         std::runtime_error);
     EXPECT_TRUE(setup.MatchesSource(execution, attachments, original));
 
-    const auto retried = app_contact::VehicleSelfContactSetup::Prepare(
+    const auto retried = app_contact::VehicleSelfContactSetup::Preflight(
         execution, attachments, original, config, exact);
-    EXPECT_EQ(retried.forecast().peak_host_bytes, exact.host_bytes);
-    EXPECT_FALSE(identity.Matches(retried.identity()));
-    EXPECT_TRUE(retried.MatchesSource(
-        execution, attachments, original));
+    EXPECT_EQ(retried.peak_host_reservation_bytes, exact.host_bytes);
+    EXPECT_TRUE(identity.Matches(setup.identity()));
+    EXPECT_TRUE(setup.MatchesSource(execution, attachments, original));
 }
 
 }  // namespace crash::cases::vehicle_startup::shell_execution::self_contact_test

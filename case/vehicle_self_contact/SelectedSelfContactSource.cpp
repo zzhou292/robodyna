@@ -17,6 +17,7 @@ struct Plan {
     contact::SelfContactSurfaceBinding surface;
     contact::FixedContactFacetBinding facets;
     contact::SelfContactActiveUsePreflight active;
+    contact::SelfContactActiveUseLimits active_limits;
     SourceForecast forecast;
 };
 
@@ -80,6 +81,55 @@ std::size_t InventoryBytes(const SourceInventory& value) {
     return bytes.bytes();
 }
 
+struct DeclaredInventoryReservation {
+    std::size_t inventory = 0;
+    std::size_t validation_scratch = 0;
+};
+
+DeclaredInventoryReservation DeclareInventoryReservation(
+    const modelio::self_contact::Data& original, std::size_t host_cap) {
+    using Id = modelio::self_contact::SourceId;
+    using Pair = std::pair<Id, std::size_t>;
+    using Parent = contact::SelfContactParentSelection;
+    using output::Require;
+    Require(original.parts.size() == original.counts.selected_parts &&
+            original.selected_part_ids.size() ==
+                original.counts.selected_parts,
+        "Original self-contact declared part count differs before allocation");
+    tl::util::ArenaRegion unused;
+    tl::util::BoundedArenaLayout inventory(host_cap);
+    const auto retained_parts = original.counts.retained_shell_parts;
+    const auto selected_parts = original.counts.selected_parts;
+    const auto retained_shells = original.counts.retained_shells;
+    Require(inventory.Append<Id>(retained_parts, unused) &&
+            inventory.Append<Id>(retained_parts, unused) &&
+            inventory.Append<Id>(retained_parts, unused) &&
+            inventory.Append<Id>(
+                original.counts.excluded_shell_parts, unused) &&
+            inventory.Append<Id>(original.counts.non_shell_parts, unused) &&
+            inventory.Append<Id>(selected_parts, unused) &&
+            inventory.Append<Id>(selected_parts, unused) &&
+            inventory.Append<Parent>(retained_shells, unused) &&
+            inventory.Append<Parent>(retained_shells, unused),
+        "Declared selected self-contact inventory exceeds outer host cap");
+
+    tl::util::BoundedArenaLayout scratch(host_cap);
+    Require(scratch.Append<Id>(selected_parts, unused) &&
+            scratch.Append<Id>(retained_parts, unused) &&
+            scratch.Append<std::size_t>(retained_parts, unused) &&
+            scratch.Append<Pair>(retained_parts, unused) &&
+            scratch.Append<std::size_t>(retained_parts, unused) &&
+            scratch.Append<std::size_t>(retained_parts, unused) &&
+            scratch.Append<std::size_t>(retained_parts, unused) &&
+            scratch.Append<std::uint64_t>(retained_shells, unused),
+        "Declared selected self-contact validation scratch exceeds outer host cap");
+    tl::util::BoundedArenaLayout combined(host_cap);
+    Require(combined.Append<std::byte>(inventory.bytes(), unused) &&
+            combined.Append<std::byte>(scratch.bytes(), unused),
+        "Declared selected self-contact inventory and scratch exceed outer host cap");
+    return {inventory.bytes(), scratch.bytes()};
+}
+
 SourceInventory BuildInventory(const fe::ShellPhysicalBinding& physical,
     const modelio::self_contact::Data& original,
     std::size_t* temporary_bytes) {
@@ -108,6 +158,10 @@ SourceInventory BuildInventory(const fe::ShellPhysicalBinding& physical,
         original.counts.excluded_shell_parts);
     result.unsupported_non_shell_part_ids.reserve(
         original.counts.non_shell_parts);
+    result.unsupported_solid_part_ids.reserve(
+        original.counts.selected_parts);
+    result.unsupported_beam_part_ids.reserve(
+        original.counts.selected_parts);
     for (std::size_t i = 0; i < original.parts.size(); ++i) {
         const auto& part = original.parts[i];
         Require(part.part_id && part.part_id == original.selected_part_ids[i],
@@ -317,20 +371,25 @@ SourceForecast ComposeForecast(const fe::ShellPhysicalBinding& physical,
     const contact::SelfContactSurfaceForecast& surface,
     const contact::FixedContactFacetForecast& facets,
     const contact::SelfContactActiveUseForecast& active,
+    DeclaredInventoryReservation declared,
     std::size_t selection_scratch, Limits limits,
     std::size_t fixed_bytes) {
     SourceForecast result;
     result.surface = surface;
     result.facets = facets;
     result.active_uses = active;
-    result.shared_physical_bytes = physical.owned_payload_bytes();
+    result.declared_inventory_reservation_bytes = declared.inventory;
+    result.declared_validation_scratch_reservation_bytes =
+        declared.validation_scratch;
+    result.shared_physical_reservation_bytes =
+        physical.owned_payload_bytes();
     output::Require(surface.retained_source_bytes +
             sizeof(fe::ShellPhysicalBinding) ==
-            result.shared_physical_bytes,
+            result.shared_physical_reservation_bytes,
         "S0 retained physical forecast differs from the actual binding");
-    result.shared_rigid_bytes = active.retained_rigid_bytes;
-    result.shared_cin_bytes = active.retained_cin_bytes;
-    result.copied_inventory_bytes = InventoryBytes(inventory);
+    result.shared_rigid_reservation_bytes = active.retained_rigid_bytes;
+    result.shared_cin_reservation_bytes = active.retained_cin_bytes;
+    result.copied_inventory_capacity_bytes = InventoryBytes(inventory);
 
     const auto surface_new = Difference(surface.owned_payload_bytes,
         {surface.retained_source_bytes,
@@ -345,13 +404,16 @@ SourceForecast ComposeForecast(const fe::ShellPhysicalBinding& physical,
          active.retained_cin_bytes,
          sizeof(contact::SelfContactActiveUseBinding)},
         "Invalid incremental active-use forecast");
-    result.new_binding_bytes = Add(
+    result.new_binding_reservation_bytes = Add(
         {surface_new, facet_new, active_new}, limits.host_bytes,
         "Selected self-contact immutable bindings exceed host cap");
-    result.retained_bytes = Add(
-        {result.shared_physical_bytes, result.shared_rigid_bytes,
-         result.shared_cin_bytes, result.copied_inventory_bytes,
-         result.new_binding_bytes, fixed_bytes, std::size_t{256}},
+    result.retained_reservation_bytes = Add(
+        {result.shared_physical_reservation_bytes,
+         result.shared_rigid_reservation_bytes,
+         result.shared_cin_reservation_bytes,
+         result.copied_inventory_capacity_bytes,
+         result.new_binding_reservation_bytes, fixed_bytes,
+         std::size_t{256}},
         limits.host_bytes,
         "Selected self-contact retained source exceeds host cap");
     const auto surface_scratch = Difference(surface.startup_payload_bytes,
@@ -360,10 +422,11 @@ SourceForecast ComposeForecast(const fe::ShellPhysicalBinding& physical,
         {facets.owned_payload_bytes}, "Invalid facet startup forecast");
     const auto active_scratch = Difference(active.startup_payload_bytes,
         {active.owned_payload_bytes}, "Invalid active-use startup forecast");
-    result.peak_temporary_bytes = std::max(
+    result.peak_temporary_reservation_bytes = std::max(
         {selection_scratch, surface_scratch, facet_scratch, active_scratch});
-    result.peak_host_bytes = Add(
-        {result.retained_bytes, result.peak_temporary_bytes},
+    result.peak_host_reservation_bytes = Add(
+        {result.retained_reservation_bytes,
+         result.peak_temporary_reservation_bytes},
         limits.host_bytes,
         "Selected self-contact startup exceeds host cap");
     return result;
@@ -377,11 +440,30 @@ Plan BuildPlan(const fe::ShellPhysicalBinding& physical,
     Require(config.facet_level <= 2 && limits.host_bytes &&
             limits.host_bytes <= (std::size_t{32} << 30),
         "Selected self-contact requires explicit level 0/1/2 and bounded host limits");
+    const auto declared =
+        DeclareInventoryReservation(original, limits.host_bytes);
+    Add({physical.owned_payload_bytes(), declared.inventory,
+            declared.validation_scratch},
+        limits.host_bytes,
+        "Declared selected self-contact construction exceeds outer host cap");
     Plan plan;
     plan.config = config;
     std::size_t selection_scratch = 0;
     plan.inventory = BuildInventory(
         physical, original, &selection_scratch);
+    const auto retained_inventory_base = Add(
+        {InventoryBytes(plan.inventory)},
+        limits.host_bytes,
+        "Selected self-contact inventory exceeds outer host cap");
+    const auto phase_limit = Difference(limits.host_bytes,
+        {retained_inventory_base},
+        "Selected self-contact inventory leaves no phase capacity");
+    limits.surface.max_host_bytes =
+        std::min(limits.surface.max_host_bytes, phase_limit);
+    limits.facets.max_host_bytes =
+        std::min(limits.facets.max_host_bytes, phase_limit);
+    limits.active_uses.max_host_bytes =
+        std::min(limits.active_uses.max_host_bytes, phase_limit);
     const contact::SelfContactSurfaceInput input{
         plan.inventory.selected_parents.data(),
         plan.inventory.selected_parents.size(),
@@ -392,6 +474,9 @@ Plan BuildPlan(const fe::ShellPhysicalBinding& physical,
     Require(surface.report.status ==
             contact::SelfContactSurfaceStatus::Ok,
         surface.report.message);
+    Add({retained_inventory_base, surface.forecast.startup_payload_bytes},
+        limits.host_bytes,
+        "Selected self-contact S0 startup exceeds outer host cap");
     Require(plan.surface.Initialize(physical, input, limits.surface).status ==
             contact::SelfContactSurfaceStatus::Ok,
         "Selected self-contact S0 initialization failed after preflight");
@@ -402,6 +487,9 @@ Plan BuildPlan(const fe::ShellPhysicalBinding& physical,
         plan.surface, facet_config, limits.facets);
     Require(facets.report.status == contact::FixedContactFacetStatus::Ok,
         facets.report.message);
+    Add({retained_inventory_base, facets.forecast.startup_payload_bytes},
+        limits.host_bytes,
+        "Selected fixed-facet startup exceeds outer host cap");
     Require(plan.facets.Initialize(
                 plan.surface, facet_config, limits.facets).status ==
             contact::FixedContactFacetStatus::Ok,
@@ -411,9 +499,14 @@ Plan BuildPlan(const fe::ShellPhysicalBinding& physical,
     Require(plan.active.report.status ==
             contact::SelfContactActiveUseStatus::Ok,
         plan.active.report.message);
+    Add({retained_inventory_base,
+            plan.active.forecast.startup_payload_bytes},
+        limits.host_bytes,
+        "Selected active-use startup exceeds outer host cap");
     plan.forecast = ComposeForecast(physical, plan.inventory,
         surface.forecast, facets.forecast, plan.active.forecast,
-        selection_scratch, limits, fixed_bytes);
+        declared, selection_scratch, limits, fixed_bytes);
+    plan.active_limits = limits.active_uses;
     return plan;
 }
 
@@ -506,15 +599,18 @@ Census BuildCensus(const SourceInventory& inventory,
         }
     }
     for (const auto& use : active.vertex_uses()) {
-        AddSupport(use.support, result.support.vertex_uses);
+        AddSupport(use.support,
+            result.support.vf_parent_local_vertex_use_support_occurrences);
         Accumulate(use.directed_vf_area_m2,
             result.reference_area.directed_vertex_area_m2);
     }
     for (const auto& use : active.edge_uses())
         for (const auto& endpoint : use.endpoint_support)
-            AddSupport(endpoint, result.support.edge_endpoints);
-    result.support.all_weighted_supports = Sum(
-        result.support.vertex_uses, result.support.edge_endpoints);
+            AddSupport(endpoint,
+                result.support.ee_stored_endpoint_support_occurrences);
+    result.support.combined_stored_support_occurrences = Sum(
+        result.support.vf_parent_local_vertex_use_support_occurrences,
+        result.support.ee_stored_endpoint_support_occurrences);
     const auto cin = active.cin();
     result.support.cin_rows = forecast.cin_rows;
     result.support.cin_witnesses = forecast.cin_witnesses;
@@ -525,6 +621,28 @@ Census BuildCensus(const SourceInventory& inventory,
          (forecast.cin_rows && cin.model));
     result.support.runtime_activity_and_release_pending =
         forecast.cin_rows != 0;
+    result.support.parent_activity_pending_parents = topology.parents;
+    result.support.same_parent_regularity_pending_edge_uses =
+        topology.parent_local_edge_uses;
+    result.support.nonlocal_ee_force_area_pending_edge_uses =
+        topology.parent_local_edge_uses;
+
+    contact::Q4IntegralInterval doubled;
+    contact::Q4IntegralInterval difference;
+    const auto& directed = result.reference_area.directed_vertex_area_m2;
+    const auto& parent = result.reference_area.total_parent_area_m2;
+    const auto doubled_value = 2 * directed.value;
+    output::Require(std::isfinite(doubled_value) &&
+            contact::q4_bounds::Scale(
+                {directed.lower, directed.upper}, 2, &doubled) &&
+            contact::q4_bounds::Certify(doubled_value, doubled,
+                &result.reference_area.twice_directed_vertex_area_m2) &&
+            contact::q4_bounds::Add(doubled,
+                {-parent.upper, -parent.lower}, &difference) &&
+            difference.lower <= 0 && difference.upper >= 0,
+        "Directed VF area does not certify the selected parent-area partition");
+    result.reference_area.directed_partition_difference_m2 = difference;
+    result.reference_area.directed_partition_certified = true;
     output::Require(topology.parents == active.parents().size() &&
             topology.facets == active.facet_uses().size() &&
             topology.canonical_vertices == active.vertices().size() &&
@@ -533,9 +651,10 @@ Census BuildCensus(const SourceInventory& inventory,
                 active.vertex_uses().size() &&
             topology.parent_local_edge_uses ==
                 active.edge_uses().size() &&
-            result.support.vertex_uses.total ==
+            result.support.vf_parent_local_vertex_use_support_occurrences
+                    .total ==
                 topology.parent_local_vertex_uses &&
-            result.support.edge_endpoints.total ==
+            result.support.ee_stored_endpoint_support_occurrences.total ==
                 2 * topology.parent_local_edge_uses &&
             result.support.complete_static_cin_roster,
         "Selected self-contact active-use census is incomplete");
@@ -581,7 +700,7 @@ SelectedSelfContactSource SelectedSelfContactSource::Prepare(
         sizeof(Data) + sizeof(SelectedSelfContactSource));
     contact::SelfContactActiveUseBinding active;
     const auto report = active.Initialize(
-        plan.facets, support, limits.active_uses);
+        plan.facets, support, plan.active_limits);
     output::Require(report.status ==
             contact::SelfContactActiveUseStatus::Ok,
         report.message);

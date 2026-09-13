@@ -28,5 +28,13 @@ if(ROBO_DYNA_VEHICLE_SELF_CONTACT_SOURCE_ORIGINAL)
   if(NOT ROBO_DYNA_VEHICLE_EXECUTION_ORIGINAL)
     message(FATAL_ERROR "Self-contact source census requires the authenticated original fixture")
   endif()
+  if(NOT DEFINED CMAKE_CUDA_COMPILER OR
+      "${CMAKE_CUDA_COMPILER}" STREQUAL "" OR
+      NOT DEFINED CMAKE_CUDA_ARCHITECTURES OR
+      "${CMAKE_CUDA_ARCHITECTURES}" STREQUAL "")
+    message(FATAL_ERROR
+      "Self-contact source census requires explicit CMAKE_CUDA_COMPILER and CMAKE_CUDA_ARCHITECTURES")
+  endif()
+  enable_language(CUDA)
   include("${CMAKE_CURRENT_LIST_DIR}/SelfContactTests.cmake")
 endif()

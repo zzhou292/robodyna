@@ -77,15 +77,23 @@ struct SupportRoleCounts {
 };
 
 struct SupportCensus {
-    SupportRoleCounts vertex_uses;
-    SupportRoleCounts edge_endpoints;
-    SupportRoleCounts all_weighted_supports;
+    // Source support classifications, not contacts or force coverage.
+    SupportRoleCounts vf_parent_local_vertex_use_support_occurrences;
+    // Stored parent-local EE endpoints; nonlocal pairing/force area is unadmitted.
+    SupportRoleCounts ee_stored_endpoint_support_occurrences;
+    SupportRoleCounts combined_stored_support_occurrences;
     std::size_t cin_rows = 0, cin_witnesses = 0;
     // Static complete witness support is retained. It is not a runtime tied
     // exclusion: current master activity and release remain pending.
     bool complete_static_cin_roster = false;
     bool runtime_activity_and_release_pending = false;
-    std::size_t admitted_runtime_tied_exclusions = 0;
+    bool parent_activity_pending = true;
+    std::size_t parent_activity_pending_parents = 0;
+    bool same_parent_regularity_pending = true;
+    std::size_t same_parent_regularity_pending_edge_uses = 0;
+    bool nonlocal_ee_force_area_pending = true;
+    std::size_t nonlocal_ee_force_area_pending_edge_uses = 0;
+    std::size_t runtime_tied_exclusions = 0;
 };
 
 struct ReferenceAreaCensus {
@@ -93,6 +101,16 @@ struct ReferenceAreaCensus {
     contact::Q4CertifiedIntegral t3_parent_area_m2;
     contact::Q4CertifiedIntegral total_parent_area_m2;
     contact::Q4CertifiedIntegral directed_vertex_area_m2;
+    contact::Q4CertifiedIntegral twice_directed_vertex_area_m2;
+    contact::Q4IntegralInterval directed_partition_difference_m2;
+    bool directed_partition_certified = false;
+};
+
+struct RuntimeCoefficientCensus {
+    // Original FS/FD/DC/SOFT/IGNORE remain source provenance only.
+    std::size_t applied_source_friction_fields = 0;
+    std::size_t applied_source_damping_fields = 0;
+    std::size_t applied_source_soft_fields = 0;
 };
 
 struct Census {
@@ -100,20 +118,25 @@ struct Census {
     TopologyCensus topology;
     SupportCensus support;
     ReferenceAreaCensus reference_area;
+    RuntimeCoefficientCensus runtime_coefficients;
 };
 
 struct SourceForecast {
     contact::SelfContactSurfaceForecast surface;
     contact::FixedContactFacetForecast facets;
     contact::SelfContactActiveUseForecast active_uses;
-    std::size_t shared_physical_bytes = 0;
-    std::size_t shared_rigid_bytes = 0;
-    std::size_t shared_cin_bytes = 0;
-    std::size_t copied_inventory_bytes = 0;
-    std::size_t new_binding_bytes = 0;
-    std::size_t retained_bytes = 0;
-    std::size_t peak_temporary_bytes = 0;
-    std::size_t peak_host_bytes = 0;
+    // Reservations/upper bounds, not measured resident memory. In particular,
+    // shared CIN/source values may include prior-construction retired scratch.
+    std::size_t declared_inventory_reservation_bytes = 0;
+    std::size_t declared_validation_scratch_reservation_bytes = 0;
+    std::size_t shared_physical_reservation_bytes = 0;
+    std::size_t shared_rigid_reservation_bytes = 0;
+    std::size_t shared_cin_reservation_bytes = 0;
+    std::size_t copied_inventory_capacity_bytes = 0;
+    std::size_t new_binding_reservation_bytes = 0;
+    std::size_t retained_reservation_bytes = 0;
+    std::size_t peak_temporary_reservation_bytes = 0;
+    std::size_t peak_host_reservation_bytes = 0;
 };
 
 // Immutable selected-shell source. This lower seam accepts already-authenticated
