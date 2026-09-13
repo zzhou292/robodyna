@@ -80,7 +80,8 @@ qualification_bazel = (HERE / "BUILD.bazel").read_text()
 qualification_cmake = (HERE / "CMakeLists.txt").read_text()
 for path in HERE.glob("*Test.cpp"):
     assert f'"{path.name}"' in qualification_bazel, path.name
-    assert path.name in qualification_cmake, path.name
+    if path.name != "SourceProofTest.cpp":
+        assert path.name in qualification_cmake, path.name
 assert 'name = "source_proof"' in qualification_bazel
 for required in (
     "CompleteVFBothOrientationsAndEEAreDeterministic",

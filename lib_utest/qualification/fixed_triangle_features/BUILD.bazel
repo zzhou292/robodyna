@@ -20,10 +20,12 @@ cc_test(
     ],
 )
 
-sh_test(
+cc_test(
     name = "source_proof",
-    srcs = ["verify_sources.py"],
+    size = "small",
+    srcs = ["SourceProofTest.cpp"],
     data = [
+        "verify_sources.py",
         "AdapterTest.cpp",
         "BUILD.bazel",
         "CMakeLists.txt",
@@ -36,4 +38,5 @@ sh_test(
         "check_syntax.py",
         "//lib_src/collision:fixed_triangle_feature_discovery_sources",
     ],
+    deps = ["@googletest//:gtest_main"],
 )
