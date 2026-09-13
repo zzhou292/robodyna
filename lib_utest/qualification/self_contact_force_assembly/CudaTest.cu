@@ -27,17 +27,57 @@ bool Good(c::SelfContactForceReport report) {
 
 struct Fixture {
   explicit Fixture(bool surface_rigid = false) : rig(surface_rigid) {
-    EXPECT_EQ(execution.Initialize(
-        rig.fixture.catalog, rig.fixture.ledger,
-        rig.fixture.rigid).status,
-        fe::ShellPlasticityBindingStatus::Success);
+    qbat_catalog_test::Fixture declaration;
+    for (unsigned row = 0; row < 2; ++row) {
+      declaration.materials[row].curve_id = 0;
+      declaration.materials[row].hardening =
+          tl::material::ShellPlasticityHardeningKind::LinearLaw44;
+      declaration.materials[row].linear = {10e6, 0};
+      declaration.materials[row].rate = declaration.materials[2].rate;
+    }
+    const fe::ShellPlasticityParentInput parents[]{
+        {fe::ShellBindingFamily::Qeph, 0, 100, 1000, 1000, 1000},
+        {fe::ShellBindingFamily::Qeph, 1, 101, 1001, 1001, 1001},
+        {fe::ShellBindingFamily::T3, 0, 102, 2000524, 2000524, 2000524},
+        {fe::ShellBindingFamily::Qbat, 0, 103, 2000524, 2000524, 2000524}};
+    const auto catalog_report = execution_catalog.InitializeExecutionCatalog(
+        rig.fixture.source.shells,
+        {nullptr, declaration.materials.data(), declaration.sections.data(),
+         parents, 0, 3, 3, 4});
+    EXPECT_EQ(catalog_report.status,
+        fe::ShellPlasticityBindingStatus::Success)
+        << catalog_report.message;
+    if (catalog_report.status != fe::ShellPlasticityBindingStatus::Success)
+      return;
+    fe::ShellFailureParentInput failures[4];
+    for (unsigned row = 0; row < 4; ++row)
+      failures[row] = qbat_catalog_test::Failure(parents[row]);
+    failures[2].constant.failure_strain = 2.5;
+    for (unsigned row = 0; row < 2; ++row) {
+      failures[row].policy = fe::ShellFailurePolicy::Tab1AnyPoint;
+      failures[row].constant = {};
+      failures[row].tab1.table = {{-1, 0, 1}, 1};
+    }
+    const auto failure_report = execution_failure.InitializeExecution(
+        execution_catalog, failures, 4);
+    EXPECT_EQ(failure_report.status,
+        fe::ShellPlasticityBindingStatus::Success)
+        << failure_report.message;
+    if (failure_report.status != fe::ShellPlasticityBindingStatus::Success)
+      return;
+    const auto execution_report = execution.Initialize(
+        execution_catalog, rig.fixture.ledger,
+        rig.fixture.rigid);
+    EXPECT_EQ(execution_report.status,
+        fe::ShellPlasticityBindingStatus::Success)
+        << execution_report.message << " entry=" << execution_report.entry;
     EXPECT_TRUE(physical.InitializeExecution(
-        {&rig.fixture.source.shells, &rig.fixture.catalog,
-         &rig.fixture.failure, nullptr},
+        {&rig.fixture.source.shells, &execution_catalog,
+         &execution_failure, nullptr},
         rig.fixture.ledger, execution));
     for (std::size_t row = 0;
-         row < rig.fixture.catalog.parent_count(); ++row) {
-      const auto& parent = *rig.fixture.catalog.parent(row);
+         row < execution_catalog.parent_count(); ++row) {
+      const auto& parent = *execution_catalog.parent(row);
       // The physical fixture deliberately keeps two unsupported top/bottom
       // QEPH layers. This self-contact profile selects only its centered
       // native T3 and QBAT parents; no offset is silently reinterpreted.
@@ -65,6 +105,8 @@ struct Fixture {
   }
 
   p::Rig rig;
+  fe::ShellBatchPlasticityBinding execution_catalog;
+  fe::ShellBatchFailureBinding execution_failure;
   fe::ShellExecutionBinding execution;
   fe::ShellPhysicalBinding physical;
   c::SelfContactSurfaceBinding surface;
@@ -75,10 +117,11 @@ struct Fixture {
   std::vector<std::uint8_t> activity;
   c::SelfContactForceConfig config;
 
-  bool Initialize(c::SelfContactForceLimits limits = {}) {
+  bool Initialize(c::SelfContactForceLimits limits = {},
+                  double stiffness_per_area_n_m3 = 2e9) {
     if (!rig.Initialize()) return false;
     config.owner = rig.owner.accepted();
-    config.stiffness_per_area_n_m3 = 2e9;
+    config.stiffness_per_area_n_m3 = stiffness_per_area_n_m3;
     config.event_capacity = 64;
     config.configuration_id = p::Configuration;
     config.qualification_id = p::Qualification;
@@ -436,7 +479,7 @@ TEST(SelfContactForceCuda,
 TEST(SelfContactForceCuda,
      DuplicateStaleForeignFinalEventNaNAndNodeSumOverflowRollbackRetry) {
   Fixture f;
-  ASSERT_TRUE(f.Initialize());
+  ASSERT_TRUE(f.Initialize({}, 1e308));
   auto events = f.Events();
   ASSERT_GE(events.size(), 2u);
   fe::NodalTrialToken token;
@@ -522,22 +565,24 @@ TEST(SelfContactForceCuda,
       f.rig.owner, token, assembly,
       {events.data(), events.size()}, &receipt)));
   ASSERT_TRUE(after.Read(assembly, cin));
-  std::size_t failure_node = SIZE_MAX;
-  unsigned failure_channel = 0;
-  double failure_increment = 0;
+  struct OverflowSeed {
+    unsigned channel;
+    std::size_t node;
+    double value;
+  };
+  std::vector<OverflowSeed> overflow_seeds;
   for (unsigned channel = 0; channel < 3; ++channel)
     for (std::size_t node = 0; node < before.nodes; ++node) {
       const double increment =
           after.values[channel * before.nodes + node] -
           before.values[channel * before.nodes + node];
-      if (std::abs(increment) > std::abs(failure_increment)) {
-        failure_increment = increment;
-        failure_node = node;
-        failure_channel = channel;
-      }
+      if (increment != 0)
+        overflow_seeds.push_back(
+            {channel, node,
+             std::copysign(std::numeric_limits<double>::max(),
+                           increment)});
     }
-  ASSERT_NE(failure_node, SIZE_MAX);
-  ASSERT_NE(failure_increment, 0);
+  ASSERT_FALSE(overflow_seeds.empty());
   const auto prior_attempt = receipt.diagnostics().attempt;
   f.Discard();
 
@@ -546,13 +591,11 @@ TEST(SelfContactForceCuda,
   double* force_channels[]{
       assembly.forces.force_x, assembly.forces.force_y,
       assembly.forces.force_z};
-  const double overflowing =
-      std::copysign(std::numeric_limits<double>::max(),
-                    failure_increment);
-  ASSERT_EQ(cudaMemcpyAsync(
-      force_channels[failure_channel] + failure_node, &overflowing,
-      sizeof(overflowing), cudaMemcpyHostToDevice,
-      assembly.stream), cudaSuccess);
+  for (const auto& seed : overflow_seeds)
+    ASSERT_EQ(cudaMemcpyAsync(
+        force_channels[seed.channel] + seed.node, &seed.value,
+        sizeof(seed.value), cudaMemcpyHostToDevice,
+        assembly.stream), cudaSuccess);
   ASSERT_TRUE(before.Read(assembly, cin));
   EXPECT_EQ(f.force.AssembleAccepted(
       f.rig.owner, token, assembly,
@@ -635,10 +678,29 @@ TEST(SelfContactForceCuda,
     ASSERT_FALSE(events.empty());
     f.rig.fixture.fixed[fixed_node] = mask;
     if (mask == 7) f.rig.fixture.im[fixed_node] = 0;
-    ASSERT_TRUE(f.Initialize());
+    fe::FENodalState owner;
+    const auto cin_startup = f.rig.fixture.CinStartup();
+    ASSERT_TRUE(p::Good(owner.Initialize(
+        f.rig.fixture.OwnerConfig(),
+        {f.rig.fixture.x.data(), f.rig.fixture.v.data(),
+         f.rig.fixture.w.data(), f.rig.fixture.domain.node_count(),
+         f.rig.fixture.q.data()},
+        f.rig.fixture.im.data(),
+        {f.rig.fixture.fixed.data(),
+         f.rig.fixture.rotation_fixed.data(),
+         f.rig.fixture.ij.data(), f.rig.fixture.present.data()},
+        f.rig.fixture.rigid, &cin_startup)));
+    c::SelfContactForceAssembly force;
+    c::SelfContactForceConfig config;
+    config.owner = owner.accepted();
+    config.stiffness_per_area_n_m3 = 2e9;
+    config.event_capacity = 64;
+    config.configuration_id = p::Configuration;
+    config.qualification_id = p::Qualification;
+    ASSERT_TRUE(Good(force.Initialize(config, f.uses, owner)));
     fe::NodalTrialToken token;
     fe::NodalAssemblyView assembly;
-    ASSERT_TRUE(f.rig.Begin(token, assembly));
+    ASSERT_TRUE(p::Good(owner.BeginTrial(&token, &assembly)));
     std::uint8_t actual_mask = 0;
     ASSERT_EQ(cudaMemcpyAsync(
         &actual_mask, assembly.translation_fixed_bits + fixed_node,
@@ -647,13 +709,14 @@ TEST(SelfContactForceCuda,
     ASSERT_EQ(cudaStreamSynchronize(assembly.stream), cudaSuccess);
     ASSERT_EQ(actual_mask, mask);
     c::SelfContactForceAssemblyReceipt receipt;
-    ASSERT_TRUE(Good(f.force.AssembleAccepted(
-        f.rig.owner, token, assembly,
+    ASSERT_TRUE(Good(force.AssembleAccepted(
+        owner, token, assembly,
         {events.data(), events.size()}, &receipt)));
     EXPECT_TRUE(receipt.diagnostics().valid);
     // Force XYZ remain full reaction channels. Only the represented STI
     // majorant projects the fixed world components inside the pair primitive.
-    f.Discard();
+    force.DiscardTrial();
+    owner.Discard();
   }
 }
 
