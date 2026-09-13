@@ -34,11 +34,7 @@ cc_test(
         "Cuda.cmake",
         "ParticipationTest.cu",
         "verify_participation_sources.py",
-        "//lib_src/elements:BUILD.bazel",
-        "//lib_src/elements:ShellBatchPublication.cmake",
-        "//lib_src/elements:publication/PhysicalTransaction.cpp",
-        "//lib_src/elements:publication/ShellPhysicalScratchParticipation.cpp",
-        "//lib_src/elements:publication/ShellPhysicalScratchParticipation.h",
+        "//lib_src/elements:scratch_participation_source_files",
     ],
     deps = ["@googletest//:gtest_main"],
 )
