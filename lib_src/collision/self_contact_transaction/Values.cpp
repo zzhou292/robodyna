@@ -91,27 +91,12 @@ bool LocallyExcluded(FixedTriangleIntersectionView values,
   return false;
 }
 
-const SelfContactCrossingDecision* Decision(
-    const CandidateValidationInput& input,
-    const RepresentedIntervalPairKey& key,
-    std::size_t* count) noexcept {
-  const SelfContactCrossingDecision* result = nullptr;
-  *count = 0;
-  for (std::size_t i = 0; i < input.decision_count; ++i) {
-    if (self_contact_transaction::Compare(
-            input.decisions[i].pair, key) != 0) continue;
-    result = input.decisions + i;
-    ++*count;
-  }
-  return result;
-}
-
-bool RepresentedByAcceptedVertexFace(
+std::size_t AcceptedVertexFace(
     const RepresentedIntervalResult& crossing,
-    const AcceptedEventIdentity* events,
+    const AcceptedEventCertificate* events,
     std::size_t event_count) noexcept {
   if (crossing.feature.kind != RepresentedFeatureKind::VertexFace)
-    return false;
+    return SIZE_MAX;
   FixedTriangleFeatureKey key;
   key.vertex_face.vertex = crossing.feature.vertex;
   key.vertex_face.target.SetFace({
@@ -119,9 +104,50 @@ bool RepresentedByAcceptedVertexFace(
       crossing.feature.face.parent_eid,
       crossing.feature.face.level,
       crossing.feature.face.local_facet});
-  for (std::size_t event = 0; event < event_count; ++event)
-    if (Same(events[event].feature, key)) return true;
-  return false;
+  for (std::size_t event = 0; event < event_count; ++event) {
+    const auto& certificate = events[event];
+    const auto& accepted = certificate.event;
+    double face_sum = 0;
+    bool face_weights_valid = true;
+    for (double weight : certificate.discovery.face_weights) {
+      face_weights_valid = face_weights_valid &&
+          IsFinite(weight) && weight >= 0 && weight <= 1;
+      face_sum += weight;
+    }
+    if (!Same(accepted.feature, key) ||
+        !Same(certificate.discovery.key, key) ||
+        accepted.source_order != event ||
+        ValidateWeightedSurfacePoint(
+            accepted.endpoints[0], UINT32_MAX) != Status::kOk ||
+        ValidateWeightedSurfacePoint(
+            accepted.endpoints[1], UINT32_MAX) != Status::kOk ||
+        !face_weights_valid || face_sum != 1 ||
+        accepted.classification.kind !=
+            SelfContactPairKind::VertexFace ||
+        accepted.classification.status !=
+            SelfContactPairStatus::AdmittedVertexFace ||
+        accepted.classification.excluded ||
+        accepted.classification.local_incidence ||
+        !accepted.classification.active[0] ||
+        !accepted.classification.active[1] ||
+        !PositiveSelfContactArea(
+            accepted.classification.admitted_force_area_m2) ||
+        accepted.classification.candidate_directed_area_m2.value !=
+            accepted.classification.admitted_force_area_m2.value ||
+        accepted.classification.candidate_directed_area_m2.lower !=
+            accepted.classification.admitted_force_area_m2.lower ||
+        accepted.classification.candidate_directed_area_m2.upper !=
+            accepted.classification.admitted_force_area_m2.upper ||
+        accepted.classification.candidate_directed_area_m2.error !=
+            accepted.classification.admitted_force_area_m2.error ||
+        ((certificate.discovery.local_features[0] == 3) ==
+         (certificate.discovery.local_features[1] == 3)) ||
+        certificate.vertex_facet == UINT32_MAX ||
+        certificate.target_facet == UINT32_MAX)
+      continue;
+    return event;
+  }
+  return SIZE_MAX;
 }
 
 SelfContactTransactionReport Failure(
@@ -171,15 +197,18 @@ bool Same(const FixedTriangleFeatureKey& a,
 
 SelfContactTransactionReport ValidateCandidatePublications(
     const CandidateValidationInput& input) noexcept {
-  if (!input.canonical_pairs || !input.pair_count ||
+  if ((input.pair_count && !input.canonical_pairs) ||
       !input.features.complete || !input.intersections.complete ||
       !input.crossings.complete ||
       (input.features.count && !input.features.data) ||
       (input.intersections.count && !input.intersections.data) ||
-      !input.crossings.data ||
+      (input.crossings.count && !input.crossings.data) ||
       input.crossings.count != input.pair_count ||
-      (input.decision_count && !input.decisions) ||
-      (input.accepted_event_count && !input.accepted_events))
+      (input.accepted_event_count && !input.accepted_events) ||
+      !input.outcome_count ||
+      (input.pair_count &&
+       (!input.outcomes ||
+        input.outcome_capacity < input.pair_count)))
     return Failure(SelfContactTransactionStatus::InvalidInput,
         "Candidate publications or bounded ranges are incomplete");
 
@@ -222,38 +251,125 @@ SelfContactTransactionReport ValidateCandidatePublications(
         return Failure(SelfContactTransactionStatus::IdentityMismatch,
             "Required current intersection lacks its interval crossing",
             intersection);
+      return Failure(SelfContactTransactionStatus::CandidateRejected,
+          "Nonlocal current triangle intersection is rejected",
+          intersection);
     }
   }
 
-  std::size_t required_decisions = 0;
   for (std::size_t pair = 0; pair < input.crossings.count; ++pair) {
     const auto& crossing = input.crossings.data[pair];
-    if (crossing.classification !=
-            RepresentedIntervalClassification::CertifiedCrossingContact ||
-        LocallyExcluded(input.intersections, crossing.key))
+    auto& outcome = input.outcomes[pair];
+    outcome = {};
+    outcome.pair = crossing.key;
+    if (crossing.classification ==
+        RepresentedIntervalClassification::CertifiedSeparated) {
+      outcome.disposition =
+          SelfContactCandidateDisposition::CertifiedSeparated;
       continue;
-    ++required_decisions;
-    std::size_t count = 0;
-    const auto* decision = Decision(input, crossing.key, &count);
-    if (!decision || count != 1)
-      return Failure(SelfContactTransactionStatus::UnresolvedCandidate,
-          "Nonlocal crossing lacks one exact policy decision", pair);
-    if (decision->disposition ==
-        SelfContactCrossingDisposition::RejectCandidate)
+    }
+    if (LocallyExcluded(input.intersections, crossing.key)) {
+      outcome.disposition =
+          SelfContactCandidateDisposition::ExcludedLocalIntersection;
+      continue;
+    }
+    const auto accepted = AcceptedVertexFace(
+        crossing, input.accepted_events,
+        input.accepted_event_count);
+    if (accepted == SIZE_MAX)
       return Failure(SelfContactTransactionStatus::CandidateRejected,
-          "Crossing policy rejected the prepared candidate", pair);
-    if (decision->disposition !=
-            SelfContactCrossingDisposition::
-                RepresentedByAcceptedVertexFace ||
-        !RepresentedByAcceptedVertexFace(
-            crossing, input.accepted_events,
-            input.accepted_event_count))
-      return Failure(SelfContactTransactionStatus::IdentityMismatch,
-          "Crossing is not represented by an accepted VF force event", pair);
+          crossing.feature.kind == RepresentedFeatureKind::EdgeEdge
+              ? "Nonlocal EE crossing has no force-area policy"
+              : "Crossing lacks its full accepted VF event certificate",
+          pair);
+    outcome.disposition =
+        SelfContactCandidateDisposition::RepresentedByAcceptedVertexFace;
+    outcome.accepted_event = accepted;
+    outcome.source_order =
+        input.accepted_events[accepted].event.source_order;
   }
-  if (input.decision_count != required_decisions)
+  *input.outcome_count = input.pair_count;
+  return {};
+}
+
+SelfContactTransactionReport ExpandFacetPairs(
+    const SelfContactPairKey* keys, std::size_t key_count,
+    const std::uint32_t* surface_to_active,
+    std::size_t surface_parents,
+    const std::uint32_t* parent_facet_offsets,
+    std::size_t parents, FixedTrianglePair* output,
+    std::size_t capacity, std::size_t* output_count) noexcept {
+  if ((key_count && !keys) || !surface_to_active ||
+      !surface_parents || !parent_facet_offsets || !parents ||
+      !output || !capacity || !output_count)
+    return Failure(SelfContactTransactionStatus::InvalidInput,
+        "Facet expansion inputs or fixed storage are invalid");
+  if (parent_facet_offsets[0] != 0)
     return Failure(SelfContactTransactionStatus::IdentityMismatch,
-        "Crossing decision roster has missing or foreign entries");
+        "Parent facet offsets do not begin at zero");
+  for (std::size_t parent = 0; parent < parents; ++parent)
+    if (parent_facet_offsets[parent + 1] <=
+        parent_facet_offsets[parent])
+      return Failure(SelfContactTransactionStatus::IdentityMismatch,
+          "Parent facet offsets are not strictly increasing", parent);
+
+  std::size_t required = 0;
+  for (std::size_t pair = 0; pair < key_count; ++pair) {
+    if (pair && keys[pair - 1] >= keys[pair])
+      return Failure(SelfContactTransactionStatus::IdentityMismatch,
+          "Broadphase pair keys are not complete canonical order", pair);
+    const auto first_surface = FirstSurfaceParent(keys[pair]);
+    const auto second_surface = SecondSurfaceParent(keys[pair]);
+    if (first_surface >= surface_parents ||
+        second_surface >= surface_parents ||
+        first_surface >= second_surface)
+      return Failure(SelfContactTransactionStatus::IdentityMismatch,
+          "Broadphase pair key is not a canonical S0 pair", pair);
+    const auto first = surface_to_active[first_surface];
+    const auto second = surface_to_active[second_surface];
+    if (first >= parents || second >= parents || first == second)
+      return Failure(SelfContactTransactionStatus::IdentityMismatch,
+          "Broadphase pair cannot map to two selected active-use parents",
+          pair);
+    const std::size_t first_facets =
+        parent_facet_offsets[first + 1] -
+        parent_facet_offsets[first];
+    const std::size_t second_facets =
+        parent_facet_offsets[second + 1] -
+        parent_facet_offsets[second];
+    if (first_facets &&
+        second_facets > (capacity - required) / first_facets)
+      return Failure(SelfContactTransactionStatus::ResourceLimit,
+          "Complete parent-pair facet expansion exceeds capacity", pair);
+    required += first_facets * second_facets;
+  }
+
+  std::size_t write = 0;
+  for (std::size_t pair = 0; pair < key_count; ++pair) {
+    const auto first =
+        surface_to_active[FirstSurfaceParent(keys[pair])];
+    const auto second =
+        surface_to_active[SecondSurfaceParent(keys[pair])];
+    for (std::uint32_t a = parent_facet_offsets[first];
+         a < parent_facet_offsets[first + 1]; ++a) {
+      for (std::uint32_t b = parent_facet_offsets[second];
+           b < parent_facet_offsets[second + 1]; ++b) {
+        output[write++] = a < b ? FixedTrianglePair{a, b}
+                                : FixedTrianglePair{b, a};
+      }
+    }
+  }
+  std::sort(output, output + write,
+            [](FixedTrianglePair a, FixedTrianglePair b) {
+              return a.first < b.first ||
+                  (a.first == b.first && a.second < b.second);
+            });
+  for (std::size_t pair = 1; pair < write; ++pair)
+    if (output[pair - 1].first == output[pair].first &&
+        output[pair - 1].second == output[pair].second)
+      return Failure(SelfContactTransactionStatus::IdentityMismatch,
+          "Complete facet expansion contains a duplicate pair", pair);
+  *output_count = write;
   return {};
 }
 

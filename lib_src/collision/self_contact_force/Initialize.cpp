@@ -97,6 +97,14 @@ SelfContactForceReport SelfContactForceAssembly::Initialize(
             SIZE_MAX, UINT64_MAX, authenticated.node,
             SurfacePenaltyStatus::InvalidInput, authenticated.status,
             authenticated.message};
+  cudaStream_t owner_stream = nullptr;
+  auto stream_report = owner.BorrowOwnerStream(&owner_stream);
+  if (stream_report.status == fe::NodalStatus::Ok)
+    stream_report = owner.ValidateOwnerStream(owner_stream);
+  if (stream_report.status != fe::NodalStatus::Ok)
+    return {S::OwnerFailure, SIZE_MAX, UINT64_MAX,
+            stream_report.node, SurfacePenaltyStatus::InvalidInput,
+            stream_report.status, stream_report.message};
 
   auto next = std::make_unique<Impl>(binding);
   next->assembler_identity = NewAssemblerIdentity();
@@ -133,9 +141,11 @@ SelfContactForceReport SelfContactForceAssembly::Initialize(
       cudaMalloc(&next->device, layout.bytes));
   if (checked.status != S::Ok) return checked;
   next->remote = scf::Bind(next->device, layout);
-  checked = next->Check(cudaMemcpy(
+  checked = next->Check(cudaMemcpyAsync(
       next->device, next->host.data(), layout.bytes,
-      cudaMemcpyHostToDevice));
+      cudaMemcpyHostToDevice, owner_stream));
+  if (checked.status != S::Ok) return checked;
+  checked = next->Check(cudaStreamSynchronize(owner_stream));
   if (checked.status != S::Ok) return checked;
   impl_ = std::move(next);
   return {};

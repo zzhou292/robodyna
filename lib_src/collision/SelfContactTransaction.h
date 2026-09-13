@@ -8,8 +8,10 @@
 namespace tlfea::contact {
 
 // Fixed-capacity runtime composition for one self-contact source. It privately
-// owns the force assembler and exactly one physical scratch issuer. It owns no
-// accepted state, contact history, timestep policy, or independent clock.
+// owns broadphase/readback/expansion, accepted and candidate feature discovery,
+// current regularity, crossing, exact event certificates, the force assembler,
+// and exactly one physical scratch issuer. Snapshots are attempt scratch, not
+// accepted state or an independent clock.
 class SelfContactTransaction {
  public:
   SelfContactTransaction() noexcept;
@@ -33,6 +35,7 @@ class SelfContactTransaction {
       const tl::fea::ShellPhysicalBinding&,
       const tl::fea::ShellPhysicalParticipants&,
       const tl::fea::ShellPhysicalPublicationIdentity&,
+      cudaStream_t owner_stream,
       SelfContactTransactionLimits = {});
 
   // The sole externally visible issuer capability. The publisher still
@@ -43,8 +46,6 @@ class SelfContactTransaction {
       tl::fea::FENodalState&,
       const tl::fea::NodalTrialToken&,
       const tl::fea::NodalAssemblyView&,
-      SelfContactActivityView,
-      SelfContactForceEventView,
       SelfContactAcceptedAssemblyReceipt*);
 
   // Requires the common physical candidate to have been prepared already.
@@ -55,8 +56,11 @@ class SelfContactTransaction {
       const tl::fea::NodalTrialToken&,
       const tl::fea::NodalPreparedView&,
       const SelfContactAcceptedAssemblyReceipt&,
-      const SelfContactCandidateEvidence&,
       SelfContactTransactionReceipt*);
+
+  // Borrowed policy publication for the currently sealed candidate. It is
+  // revoked by discard, a new accepted assembly, failure, or destruction.
+  SelfContactCandidatePolicyView policy_outcomes() const noexcept;
 
   // Contact-local composition. Common transaction abandonment still calls the
   // owner and ShellBatchPublication discard operations.

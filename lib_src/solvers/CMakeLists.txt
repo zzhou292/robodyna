@@ -5,7 +5,7 @@ find_package(CUDAToolkit REQUIRED)
 get_filename_component(TL_NODAL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../.." ABSOLUTE)
 include("${CMAKE_CURRENT_LIST_DIR}/../constraints/NodalRigidAssemblyBinding.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../constraints/tied_shell/TiedCinAttachment.cmake")
-add_library(tl_explicit_nodal_state STATIC FENodalState.cu FENodalConstraintQueries.cu FENodalSnapshotReadback.cu FENodalForceStageReadback.cu ExplicitTranslationStep.cu ExplicitNodalStep.cu
+add_library(tl_explicit_nodal_state STATIC FENodalState.cu NodalOwnerStream.cpp FENodalConstraintQueries.cu FENodalSnapshotReadback.cu FENodalForceStageReadback.cu ExplicitTranslationStep.cu ExplicitNodalStep.cu
   NodalRigidGroupStorage.cu NodalRigidAssemblyStorage.cpp NodalAssemblyCinForecast.cpp NodalRigidAssemblyChecks.cpp NodalRigidAssemblyIdentity.cpp ExplicitNodalRigidStep.cu NodalCinStartup.cpp NodalCinStorage.cu NodalCinState.cpp
   NodalCinReadback.cu NodalCinPhysicalMains.cu NodalCinStructuralLimit.cpp ExplicitNodalCinStep.cu cin_advance/ForceInputs.cu cin_advance/Capture.cu cin_advance/Screen.cu cin_advance/Groups.cu
   cin_advance/ForceTransfers.cu cin_advance/Recovery.cu cin_advance/Drift.cu)

@@ -24,14 +24,6 @@ SelfContactTransactionReport Failure(
   return result;
 }
 
-bool ValidRange(const void* pointer, std::size_t count,
-                std::size_t width) noexcept {
-  if (!count) return pointer == nullptr;
-  if (!pointer || count > SIZE_MAX / width) return false;
-  const auto address = reinterpret_cast<std::uintptr_t>(pointer);
-  return count * width <= UINTPTR_MAX - address;
-}
-
 RepresentedTrianglePathKey PathKey(
     const FixedTriangleKey& key) noexcept {
   return {key.source_instance_id, key.parent_eid,
@@ -108,26 +100,12 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
     const fe::NodalTrialToken& token,
     const fe::NodalPreparedView& prepared,
     const SelfContactAcceptedAssemblyReceipt& assembly,
-    const SelfContactCandidateEvidence& evidence,
     SelfContactTransactionReceipt* output) {
   if (!impl_)
     return Failure(S::NotInitialized,
         "Self-contact transaction is not initialized");
   auto& state = *impl_;
   using fe::trial_identity::Disjoint;
-  const auto triangle_bytes =
-      evidence.triangle_count <=
-          SIZE_MAX / sizeof(SelfContactCandidateTriangle)
-      ? evidence.triangle_count *
-          sizeof(SelfContactCandidateTriangle) : SIZE_MAX;
-  const auto pair_bytes =
-      evidence.pair_count <= SIZE_MAX / sizeof(FixedTrianglePair)
-      ? evidence.pair_count * sizeof(FixedTrianglePair) : SIZE_MAX;
-  const auto decision_bytes =
-      evidence.decision_count <=
-          SIZE_MAX / sizeof(SelfContactCrossingDecision)
-      ? evidence.decision_count *
-          sizeof(SelfContactCrossingDecision) : SIZE_MAX;
   const auto& diagnostics = assembly.force_.diagnostics();
   const bool same_assembly =
       assembly.valid() && assembly.transaction_ == this &&
@@ -145,6 +123,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
       diagnostics.owner_id == state.owner_id &&
       diagnostics.base_epoch == state.base_epoch &&
       diagnostics.attempt == state.attempt &&
+      diagnostics.event_count == state.accepted_event_count &&
       diagnostics.configuration_id ==
           state.config.force.configuration_id &&
       diagnostics.qualification_id ==
@@ -157,43 +136,9 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
       !Disjoint(output, sizeof(*output), this, sizeof(*this)) ||
       !Disjoint(output, sizeof(*output), &token, sizeof(token)) ||
       !Disjoint(output, sizeof(*output), &prepared, sizeof(prepared)) ||
-      !Disjoint(output, sizeof(*output), &assembly, sizeof(assembly)) ||
-      !Disjoint(output, sizeof(*output), &evidence, sizeof(evidence)) ||
-      !evidence.regularity || !evidence.discovery ||
-      !evidence.crossing || !evidence.triangle_count ||
-      evidence.triangle_count >
-          state.storage_forecast.candidate_triangle_capacity ||
-      !evidence.pair_count ||
-      evidence.pair_count >
-          state.storage_forecast.candidate_pair_capacity ||
-      !ValidRange(evidence.triangles, evidence.triangle_count,
-                  sizeof(SelfContactCandidateTriangle)) ||
-      !ValidRange(evidence.pairs, evidence.pair_count,
-                  sizeof(FixedTrianglePair)) ||
-      !ValidRange(evidence.decisions, evidence.decision_count,
-                  sizeof(SelfContactCrossingDecision)) ||
-      !Disjoint(evidence.triangles, triangle_bytes,
-                state.arena.data(), state.arena.bytes()) ||
-      !Disjoint(evidence.pairs, pair_bytes,
-                state.arena.data(), state.arena.bytes()) ||
-      (evidence.decision_count &&
-       !Disjoint(evidence.decisions, decision_bytes,
-                 state.arena.data(), state.arena.bytes())) ||
-      !Disjoint(output, sizeof(*output),
-                evidence.triangles, triangle_bytes) ||
-      !Disjoint(output, sizeof(*output),
-                evidence.pairs, pair_bytes) ||
-      (evidence.decision_count &&
-       !Disjoint(output, sizeof(*output),
-                 evidence.decisions, decision_bytes)) ||
-      !Disjoint(output, sizeof(*output),
-                evidence.regularity, sizeof(*evidence.regularity)) ||
-      !Disjoint(output, sizeof(*output),
-                evidence.discovery, sizeof(*evidence.discovery)) ||
-      !Disjoint(output, sizeof(*output),
-                evidence.crossing, sizeof(*evidence.crossing)))
+      !Disjoint(output, sizeof(*output), &assembly, sizeof(assembly)))
     return state.Fail(Failure(S::InvalidInput,
-        "Candidate transaction receipt, evidence or bounded ranges are invalid"));
+        "Candidate transaction receipt or output is invalid"));
 
   const auto node_count =
       state.active_use.facets()->surface()->physical()->
@@ -230,20 +175,21 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
         "Candidate owner/token/view differs from accepted assembly"));
   }
 
-  if (!evidence.regularity->binding() ||
-      !evidence.regularity->binding()->SharesStorage(
-          state.active_use)) {
-    return state.Fail(Failure(S::IdentityMismatch,
-        "Current regularity retains a foreign active-use source"));
-  }
+  if (state.has_rigid_motion)
+    return state.Fail(Failure(S::UnsupportedMotion,
+        "Rigid-arc motion is not representable by LinearNodalV1"));
   const VectorView current_positions{
       state.buffers.prepared_positions,
       static_cast<std::uint32_t>(node_count), 3, 1};
   const SelfContactActivityView activity{
-      state.buffers.activity, state.buffers.activity,
+      state.buffers.activity_base, state.buffers.activity_current,
       state.active_use.parents().size()};
+  for (std::size_t parent = 0; parent < activity.parent_count; ++parent)
+    if (activity.base[parent] != 1 || activity.current[parent] != 1)
+      return state.Fail(Failure(S::UnsupportedActivity,
+          "This slice rejects removal until authenticated activity integration"));
   SelfContactCurrentRegularityReceipt regularity_receipt;
-  const auto regularity = evidence.regularity->Certify(
+  const auto regularity = state.regularity.Certify(
       current_positions, activity, &regularity_receipt);
   if (regularity.status !=
       SelfContactCurrentRegularityStatus::Ok) {
@@ -253,7 +199,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
     report.candidate = regularity.parent;
     return state.Fail(report);
   }
-  const auto regularity_results = evidence.regularity->results();
+  const auto regularity_results = state.regularity.results();
   if (!CompleteRegularity(
           state.active_use, regularity_receipt,
           regularity_results))
@@ -264,77 +210,56 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
       state.buffers.accepted_positions,
       static_cast<std::uint32_t>(node_count), 3, 1};
   const auto parents = state.active_use.parents();
-  const auto* facets = state.active_use.facets();
-  for (std::size_t candidate = 0;
-       candidate < evidence.triangle_count; ++candidate) {
-    const auto declaration = evidence.triangles[candidate];
-    if (declaration.active_use_parent >= parents.size()) {
-      return state.Fail(Failure(S::InvalidInput,
-          "Candidate triangle parent is out of range", candidate));
-    }
-    const auto& parent = parents[declaration.active_use_parent];
-    if (declaration.local_facet >= parent.facet_count) {
-      return state.Fail(Failure(S::InvalidInput,
-          "Candidate local facet is out of range", candidate));
-    }
-    FixedContactFacet facet;
-    const auto described = facets->Describe(
-        parent.surface_parent, declaration.local_facet, &facet);
-    if (described.status != FixedContactFacetStatus::Ok) {
-      return state.Fail(Failure(S::DiscoveryFailure,
-          described.message, candidate));
-    }
-    CurrentFixedTriangle base;
-    if (EvaluateCurrentFixedTriangle(
-            facet, base_positions, &base) != Status::kOk ||
-        EvaluateCurrentFixedTriangle(
-            facet, current_positions,
-            state.buffers.current_triangles + candidate) !=
-            Status::kOk) {
-      return state.Fail(Failure(S::DiscoveryFailure,
-          "Actual owner facet geometry cannot be represented",
-          candidate));
-    }
-    const auto& current =
-        state.buffers.current_triangles[candidate];
-    if (!sct::Same(base.key, current.key)) {
+  const auto triangles = state.facet_count;
+  auto evaluated = sct::EvaluateCompleteTriangles(
+      state.buffers.facet_descriptors, triangles,
+      base_positions, state.buffers.accepted_triangles);
+  if (evaluated.status != S::Ok) return state.Fail(evaluated);
+  evaluated = sct::EvaluateCompleteTriangles(
+      state.buffers.facet_descriptors, triangles,
+      current_positions, state.buffers.prepared_triangles);
+  if (evaluated.status != S::Ok) return state.Fail(evaluated);
+  for (std::size_t triangle = 0; triangle < triangles; ++triangle) {
+    if (!sct::Same(state.buffers.accepted_triangles[triangle].key,
+                   state.buffers.prepared_triangles[triangle].key))
       return state.Fail(Failure(S::IdentityMismatch,
-          "Accepted and prepared facet identities differ",
-          candidate));
-    }
-    MakePath(base, current,
-             state.buffers.represented_paths + candidate);
-    for (std::size_t prior = 0; prior < candidate; ++prior) {
-      if (sct::Same(
-              state.buffers.current_triangles[prior].key,
-              current.key))
-        return state.Fail(Failure(S::IdentityMismatch,
-            "Candidate triangle roster repeats an exact facet",
-            candidate));
-    }
+          "Accepted and prepared facet identities differ", triangle));
+    MakePath(state.buffers.accepted_triangles[triangle],
+             state.buffers.prepared_triangles[triangle],
+             state.buffers.represented_paths + triangle);
   }
 
-  bool all_referenced = true;
-  for (std::size_t triangle = 0;
-       triangle < evidence.triangle_count; ++triangle) {
-    bool referenced = false;
-    for (std::size_t pair = 0; pair < evidence.pair_count; ++pair)
-      referenced = referenced ||
-          evidence.pairs[pair].first == triangle ||
-          evidence.pairs[pair].second == triangle;
-    all_referenced = all_referenced && referenced;
+  const VectorView accepted_device{
+      authentic.base_kinematics.position_xyz,
+      static_cast<std::uint32_t>(node_count), 3, 1};
+  const VectorView prepared_device{
+      authentic.kinematics.position_xyz,
+      static_cast<std::uint32_t>(node_count), 3, 1};
+  const auto broadphase = state.broadphase.Evaluate(
+      {accepted_device, prepared_device,
+       SelfContactBoundsMotion::LinearNodalEndpoints,
+       state.config.broadphase_axis}, state.stream);
+  if (broadphase.status != SelfContactBroadphaseStatus::Ok) {
+    auto report = Failure(S::BroadphaseFailure, broadphase.message);
+    report.broadphase_status = broadphase.status;
+    report.candidate = broadphase.parent;
+    return state.Fail(report);
   }
-  if (!all_referenced)
-    return state.Fail(Failure(S::InvalidInput,
-        "Candidate triangle roster contains an unqueried facet"));
+  auto expanded = sct::ReadAndExpandBroadphase(
+      state.broadphase, state.stream,
+      state.buffers.candidate_broadphase_pairs,
+      state.storage_forecast.broadphase_pair_capacity,
+      state.buffers.surface_to_active, state.surface_parent_count,
+      state.buffers.parent_facet_offsets, parents.size(),
+      state.buffers.candidate_facet_pairs,
+      state.storage_forecast.candidate_pair_capacity,
+      &state.candidate_broadphase_pair_count,
+      &state.candidate_facet_pair_count);
+  if (expanded.status != S::Ok) return state.Fail(expanded);
 
-  for (std::size_t pair = 0; pair < evidence.pair_count; ++pair) {
-    const auto value = evidence.pairs[pair];
-    if (value.first >= evidence.triangle_count ||
-        value.second >= evidence.triangle_count ||
-        value.first == value.second)
-      return state.Fail(Failure(S::InvalidInput,
-          "Candidate pair is invalid", SIZE_MAX, pair));
+  for (std::size_t pair = 0;
+       pair < state.candidate_facet_pair_count; ++pair) {
+    const auto value = state.buffers.candidate_facet_pairs[pair];
     state.buffers.represented_pairs[pair] =
         {value.first, value.second};
     state.buffers.canonical_pairs[pair] = PairKey(
@@ -342,18 +267,21 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
         state.buffers.represented_paths[value.second].key);
   }
   std::sort(state.buffers.canonical_pairs,
-            state.buffers.canonical_pairs + evidence.pair_count,
+            state.buffers.canonical_pairs +
+                state.candidate_facet_pair_count,
             PairLess);
-  for (std::size_t pair = 1; pair < evidence.pair_count; ++pair)
+  for (std::size_t pair = 1;
+       pair < state.candidate_facet_pair_count; ++pair)
     if (sct::Compare(state.buffers.canonical_pairs[pair - 1],
                      state.buffers.canonical_pairs[pair]) == 0)
       return state.Fail(Failure(S::IdentityMismatch,
           "Candidate pair roster repeats an exact pair",
           SIZE_MAX, pair));
 
-  const auto discovery = evidence.discovery->Discover(
-      state.buffers.current_triangles, evidence.triangle_count,
-      evidence.pairs, evidence.pair_count);
+  const auto discovery = state.candidate_discovery.Discover(
+      state.buffers.prepared_triangles, triangles,
+      state.buffers.candidate_facet_pairs,
+      state.candidate_facet_pair_count);
   if (discovery.status != FixedTriangleDiscoveryStatus::Ok) {
     auto report = Failure(
         S::DiscoveryFailure, discovery.message,
@@ -361,9 +289,16 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
     report.discovery_status = discovery.status;
     return state.Fail(report);
   }
-  const auto crossing = evidence.crossing->Certify(
-      state.buffers.represented_paths, evidence.triangle_count,
-      state.buffers.represented_pairs, evidence.pair_count);
+  auto edge_policy = sct::ValidateCandidateEdgePolicy(
+      state.active_use, state.candidate_discovery.features(),
+      state.buffers.facet_descriptors,
+      state.buffers.triangle_order, triangles, activity);
+  if (edge_policy.status != S::Ok)
+    return state.Fail(edge_policy);
+  const auto crossing = state.crossing.Certify(
+      state.buffers.represented_paths, triangles,
+      state.buffers.represented_pairs,
+      state.candidate_facet_pair_count);
   if (crossing.status != RepresentedIntervalStatus::Ok) {
     auto report = Failure(
         S::CrossingFailure, crossing.message,
@@ -371,14 +306,18 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
     report.crossing_status = crossing.status;
     return state.Fail(report);
   }
+  std::size_t policy_outcomes = 0;
   auto validated = sct::ValidateCandidatePublications({
-      state.buffers.canonical_pairs, evidence.pair_count,
-      evidence.discovery->features(),
-      evidence.discovery->intersections(),
-      evidence.crossing->results(),
-      evidence.decisions, evidence.decision_count,
-      state.buffers.accepted_events,
-      state.accepted_event_count});
+      state.buffers.canonical_pairs,
+      state.candidate_facet_pair_count,
+      state.candidate_discovery.features(),
+      state.candidate_discovery.intersections(),
+      state.crossing.results(),
+      state.buffers.accepted_certificates,
+      state.accepted_event_count,
+      state.buffers.policy_outcomes,
+      state.storage_forecast.policy_outcome_capacity,
+      &policy_outcomes});
   if (validated.status != S::Ok) return state.Fail(validated);
 
   fe::ShellPhysicalScratchParticipationReceipt participation;
@@ -393,6 +332,8 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
   }
 
   state.phase = Impl::Phase::CandidateSealed;
+  state.policy_outcome_count = policy_outcomes;
+  state.policy_complete = true;
   SelfContactTransactionReceipt next;
   next.transaction_ = this;
   next.owner_ = &owner;
@@ -405,6 +346,10 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
   next.attempt_ = state.attempt;
   next.regularity_generation_ =
       regularity_receipt.generation();
+  next.broadphase_pairs_ =
+      state.candidate_broadphase_pair_count;
+  next.facet_pairs_ = state.candidate_facet_pair_count;
+  next.policy_outcomes_ = state.policy_outcome_count;
   next.participation_ = participation;
   *output = next;
   return {};

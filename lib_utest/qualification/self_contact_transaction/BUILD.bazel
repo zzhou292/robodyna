@@ -21,6 +21,7 @@ cc_test(
         "check_syntax.py",
         "verify_sources.py",
         "//lib_src/collision:self_contact_transaction_source_proof",
+        "//lib_src/solvers:nodal_owner_stream_source_proof",
     ],
     deps = ["@googletest//:gtest_main"],
 )

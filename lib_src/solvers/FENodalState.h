@@ -285,6 +285,13 @@ class FENodalState {
   // destinations and their contents are deliberately not validated. This
   // neither grants assembly/commit authority nor consumes pending CUDA errors.
   NodalReport ValidateAcceptedAssemblySources(const NodalAssemblyView&) const noexcept;
+  // Startup-only identity check for a nondefault stream already owned by this
+  // state. It grants no trial, device-pointer, assembly, or publication access.
+  // The caller retains no right to use the stream after owner destruction.
+  NodalReport ValidateOwnerStream(cudaStream_t) const noexcept;
+  // Narrow startup accessor. The returned stream remains owner-borrowed and is
+  // authenticated again by consumers before they retain it.
+  NodalReport BorrowOwnerStream(cudaStream_t*) const noexcept;
   // Read-only startup predicate over this actual owner's immutable membership.
   // Count/range validation precedes member lookup. No CUDA call, allocation,
   // phase change or force/publication authority; queries may repeat indices.

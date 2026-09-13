@@ -13,6 +13,16 @@ filegroup(
     ],
 )
 
+filegroup(
+    name = "nodal_owner_stream_source_proof",
+    srcs = [
+        "BUILD.bazel",
+        "CMakeLists.txt",
+        "FENodalState.h",
+        "NodalOwnerStream.cpp",
+    ],
+)
+
 cc_library(
     name = "nodal_state_layout",
     hdrs = ["NodalStateLimits.h", "NodalStateLayout.h"],
@@ -52,7 +62,7 @@ cc_library(
 
 cuda_library(
     name = "explicit_nodal_state",
-    srcs = ["FENodalState.cu", "FENodalConstraintQueries.cu", "FENodalSnapshotReadback.cu", "FENodalForceStageReadback.cu", "ExplicitTranslationStep.cu", "ExplicitNodalStep.cu", "NodalRigidGroupStorage.cu", "NodalRigidAssemblyStorage.cpp", "NodalAssemblyCinForecast.cpp", "NodalRigidAssemblyChecks.cpp", "NodalRigidAssemblyIdentity.cpp", "ExplicitNodalRigidStep.cu",
+    srcs = ["FENodalState.cu", "NodalOwnerStream.cpp", "FENodalConstraintQueries.cu", "FENodalSnapshotReadback.cu", "FENodalForceStageReadback.cu", "ExplicitTranslationStep.cu", "ExplicitNodalStep.cu", "NodalRigidGroupStorage.cu", "NodalRigidAssemblyStorage.cpp", "NodalAssemblyCinForecast.cpp", "NodalRigidAssemblyChecks.cpp", "NodalRigidAssemblyIdentity.cpp", "ExplicitNodalRigidStep.cu",
             "NodalCinStartup.cpp", "NodalCinStorage.cu", "NodalCinState.cpp", "NodalCinReadback.cu", "NodalCinPhysicalMains.cu", "NodalCinStructuralLimit.cpp", "ExplicitNodalCinStep.cu", "cin_advance/ForceInputs.cu", "cin_advance/Capture.cu", "cin_advance/Screen.cu", "cin_advance/Groups.cu",
             "cin_advance/ForceTransfers.cu", "cin_advance/Recovery.cu", "cin_advance/Drift.cu"],
     hdrs = ["FENodalState.h", "FENodalStateStorage.h", "NodalCinStructuralLimit.h", "cin_limiter/Witness.h", "cin_limiter/Capture.h", "nodal_seal/Validation.cuh", "nodal_reset/Reset.cuh", "nodal_seal/Rows.cuh", "ExplicitTranslationStep.h", "ExplicitNodalStep.h", "NodalRotation.h", "NodalTrialIdentity.h",

@@ -28,6 +28,8 @@ common = [
     "-std=c++17",
     "-fno-fast-math",
     "-ffp-contract=off",
+    "-x",
+    "c++",
     "-I",
     str(root),
     "-I",
@@ -41,8 +43,12 @@ sources = [
     root / "lib_src/collision/self_contact_transaction/Arena.cpp",
     root / "lib_src/collision/self_contact_transaction/Layout.cpp",
     root / "lib_src/collision/self_contact_transaction/Values.cpp",
+    root / "lib_src/collision/self_contact_transaction/Source.cpp",
     root / "lib_src/collision/self_contact_transaction/Transaction.cpp",
     root / "lib_src/collision/self_contact_transaction/Candidate.cpp",
+    root / "lib_src/solvers/NodalOwnerStream.cpp",
+    root / "lib_src/collision/self_contact_force/Initialize.cpp",
+    root / "lib_utest/qualification/self_contact_transaction/CudaTest.cu",
 ]
 for source in sources:
     subprocess.run([*common, str(source)], check=True)

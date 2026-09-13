@@ -214,9 +214,11 @@ filegroup(
         "self_contact_transaction/Arena.cpp",
         "self_contact_transaction/Candidate.cpp",
         "self_contact_transaction/Layout.cpp",
+        "self_contact_transaction/Source.cpp",
         "self_contact_transaction/Storage.h",
         "self_contact_transaction/Transaction.cpp",
         "self_contact_transaction/Values.cpp",
+        "self_contact_force/Initialize.cpp",
     ],
 )
 
@@ -236,6 +238,7 @@ cc_library(
         ":fixed_triangle_feature_discovery",
         ":represented_interval_crossing",
         ":self_contact_current_regularity",
+        ":self_contact_broadphase_values",
         ":self_contact_force_values",
         "//lib_src/elements:shell_batch_publication",
         "//lib_utils:bounded_arena",
@@ -247,6 +250,7 @@ cc_library(
     srcs = [
         "self_contact_transaction/Candidate.cpp",
         "self_contact_transaction/Layout.cpp",
+        "self_contact_transaction/Source.cpp",
         "self_contact_transaction/Transaction.cpp",
     ],
     hdrs = [
@@ -256,7 +260,10 @@ cc_library(
     ],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [
+        ":fixed_contact_facets",
         ":self_contact_force_assembly",
+        ":self_contact_broadphase",
+        ":self_contact_current_regularity",
         ":self_contact_transaction_values",
         "//lib_src/elements:shell_batch_publication",
         "//lib_src/solvers:nodal_trial_identity",
