@@ -1,0 +1,40 @@
+{
+  "baseline_commit": "e05404b4065da631a7d246e14572f8d87e367ded",
+  "scope": "Authenticated original automatic-single-surface part-set resolution and canonical shell/solid/beam census only; source friction/damping fields are provenance, not an executed law.",
+  "files": [
+    {"path": "modelio/self_contact/OriginalSelection.h", "bytes": 3379, "sha256": "c6f403d765fe54364c252f3b496e9c471f4f80203dd64777422ab259b820750f"},
+    {"path": "modelio/self_contact/Internal.h", "bytes": 805, "sha256": "234a77a994be51104966047217bb15614fed4f2b6e686655a470f76b7cd5f3e4"},
+    {"path": "modelio/self_contact/Budget.cpp", "bytes": 3143, "sha256": "8068a30584c9515913b7745f220064837426f6d2de27166b7c3c86f83d5dca60"},
+    {"path": "modelio/self_contact/Sources.cpp", "bytes": 4802, "sha256": "c4d2cb91cf6a2a11f48ff40f02601c08cfbe763862b1650906e261dc0201d5e5"},
+    {"path": "modelio/self_contact/Cards.cpp", "bytes": 7912, "sha256": "3ef91d889212e9659d147cc8a750bf2d59dcbaa3bfc763c5ee51e1ac6595902e"},
+    {"path": "modelio/self_contact/Census.cpp", "bytes": 3677, "sha256": "c45507ec57afb922712f01016e1dac57d7327dd943365875db13d3a820134a7c"},
+    {"path": "modelio/self_contact/OriginalSelection.cpp", "bytes": 1622, "sha256": "5b67bc748e42d62e075bc2903aa27b83a3c53ed324e6bbee8ae8c7d01455b232"},
+    {"path": "modelio/self_contact/OriginalSelection.cmake", "bytes": 682, "sha256": "2bc76bfd518e880ce725b061385f39db60e39495cdc758e7e38167d3f0b94246"},
+    {"path": "modelio/self_contact/CMakeLists.txt", "bytes": 2123, "sha256": "50b1b9f03c7d0211b8b0b1ace29cddd039662de03d043b9e36b73ba0ba2eeaed"},
+    {"path": "modelio/self_contact/README.md", "bytes": 1801, "sha256": "b6774ce74ac5ad8a6a77496d31ab95ee189a5aed0be2f4925d4508c99511b315"},
+    {"path": "modelio/self_contact/tests/SelectionTest.cpp", "bytes": 7124, "sha256": "3566bd59f692476bedd52f791bf03a29e2c9369de5d7dca17bd245bdea9026e8"},
+    {"path": "modelio/self_contact/tests/OriginalTest.cpp", "bytes": 6063, "sha256": "bac707c0fb0de8a661fa7acc1b2c511a185fc119daed0f46c4691018bdd8e150"},
+    {"path": "modelio/self_contact/tests/actual_fixture.py", "bytes": 2082, "sha256": "9299ea853231e461efd5c5981c26f7cdf67c29397720bec0d8109b2c6d994cab"},
+    {"path": "modelio/tied_shell/Internal.h", "bytes": 1617, "sha256": "a14645cec75a9fc720341b5202fd82389a5e1b20865bc1dd526d06fc71a278c8"},
+    {"path": "modelio/tied_shell/SourceCards.cpp", "bytes": 8017, "sha256": "af11ccc4d70ade92f925580c2d50775f0fa78f3237baee520fa952d2f0cb1781"},
+    {"path": "modelio/tied_shell/TiedShellDeclaration.h", "bytes": 4688, "sha256": "9902a20de2f50d5f9f678c3ec31ea1372ecba1d80568bbe9cf6757d9148c67b5"},
+    {"path": "modelio/source_assembly/AuxiliarySourceCards.h", "bytes": 2806, "sha256": "b1a51cd02ca003e2fcde319e14b2c8968b5fdd09a3ac5fbca2a387361f6fb29a"},
+    {"path": "modelio/source_assembly/JsonReader.h", "bytes": 1930, "sha256": "a5255b1f9d2cd88801d0820c8865ca2b828eabfbb721d00a935b8a7c6d735cb0"},
+    {"path": "output/full_shell/static_bundle/Types.h", "bytes": 3470, "sha256": "b265ee56b976326bf71b3c6d8df8abc14f3419c27379d974e1fea98a2134ce6f"},
+    {"path": "output/full_shell/static_bundle/CanonicalSpecs.cpp", "bytes": 1689, "sha256": "1a7d7f8590023da254a2d736f67baed6f95463906db82b5d6ec665d3daaed411"},
+    {"path": "models/yaris_coarse_v1l.json", "bytes": 4920, "sha256": "83783f21eeed7f1dc6abca3c25ec14947156634eddef50704df673505a64e8d5"}
+  ],
+  "independent_census": {
+    "report": "crash-work/reports/self-contact-source-independent-census-1.json",
+    "selected_parts": 861,
+    "shell_parts": 850,
+    "retained_shell_parts": 842,
+    "excluded_shell_parts": 8,
+    "non_shell_parts": 11,
+    "shells": 345904,
+    "retained_shells": 337092,
+    "excluded_shells": 8812,
+    "solids": 2952,
+    "beams": 0
+  }
+}
