@@ -138,6 +138,14 @@ struct RepresentedIntervalForecast {
   std::size_t path_index_capacity = 0;
   std::size_t pair_capacity = 0;
   std::size_t result_capacity = 0;
+  std::size_t vertex_ledger_capacity = 0;
+  std::size_t dfs_frame_capacity = 0;
+  std::size_t path_index_bytes = 0;
+  std::size_t pair_bytes = 0;
+  std::size_t result_bytes = 0;
+  std::size_t vertex_ledger_bytes = 0;
+  std::size_t dfs_frame_bytes = 0;
+  std::size_t exact_scratch_bytes = 0;
   std::size_t owned_host_bytes = 0;
 };
 

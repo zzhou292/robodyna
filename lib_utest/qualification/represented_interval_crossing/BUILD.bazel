@@ -4,14 +4,39 @@ cc_test(
     name = "host_check",
     size = "small",
     srcs = [
+        "DeepTest.cpp",
         "FailureTest.cpp",
         "Fixture.h",
         "GeometryTest.cpp",
+        "IdentityTest.cpp",
         "InvarianceTest.cpp",
+        "Oracle.cpp",
+        "Oracle.h",
+        "OracleTest.cpp",
     ],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [
         "//lib_src/collision:represented_interval_crossing",
         "@googletest//:gtest_main",
     ],
+)
+
+py_test(
+    name = "source_identity",
+    srcs = ["verify_sources.py"],
+    data = [
+        "BUILD.bazel",
+        "CMakeLists.txt",
+        "DeepTest.cpp",
+        "FailureTest.cpp",
+        "GeometryTest.cpp",
+        "IdentityTest.cpp",
+        "InvarianceTest.cpp",
+        "Oracle.cpp",
+        "Oracle.h",
+        "OracleTest.cpp",
+        "//lib_src/collision:represented_interval_crossing_source_proof",
+    ],
+    main = "verify_sources.py",
+    python_version = "PY3",
 )

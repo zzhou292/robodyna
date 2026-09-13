@@ -49,6 +49,17 @@ cc_library(
     ],
 )
 
+filegroup(
+    name = "represented_interval_crossing_source_proof",
+    srcs = [
+        "BUILD.bazel",
+        "RepresentedIntervalCrossing.cmake",
+        "RepresentedIntervalCrossing.cpp",
+        "RepresentedIntervalCrossing.h",
+        "RepresentedIntervalCrossingTypes.h",
+    ],
+)
+
 cc_library(
     name = "represented_interval_crossing",
     srcs = ["RepresentedIntervalCrossing.cpp"],

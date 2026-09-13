@@ -13,7 +13,7 @@ namespace tlfea::contact {
 //
 // A crossing/contact certificate contains an exact dyadic time at which exact
 // predicates prove the two closed triangles intersect.  A separation
-// certificate covers the complete interval with recursively partitioned,
+// certificate covers the complete interval with iteratively partitioned,
 // linear-path endpoint enclosures and a nondegeneracy proof.  Those enclosures
 // are separation-only evidence: swept AABB overlap is never called a crossing.
 //
@@ -21,6 +21,9 @@ namespace tlfea::contact {
 // successful, explicit Unresolved records.  Malformed identity/input and total
 // capacity exhaustion fail the whole call.  Failed calls preserve the previous
 // immutable complete publication; a successful call replaces it atomically.
+// results() is borrowed: its view expires on the next successful Certify, move,
+// or destruction.  Every failed Certify preserves the prior view's address,
+// count, completeness and bytes.
 class RepresentedIntervalCrossing {
  public:
   RepresentedIntervalCrossing() noexcept;

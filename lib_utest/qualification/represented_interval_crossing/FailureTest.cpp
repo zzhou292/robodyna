@@ -88,9 +88,21 @@ TEST(RepresentedIntervalCrossing,
 TEST(RepresentedIntervalCrossing,
      HostByteCapMinusOneRejectsWithoutInitializationThenRetriesExactly) {
   ct::RepresentedIntervalLimits limits;
+  limits.max_depth = 52;
   const auto plan = ct::RepresentedIntervalCrossing::Preflight(limits);
   ASSERT_EQ(plan.report.status, S::Ok);
   ASSERT_GT(plan.forecast.owned_host_bytes, 0u);
+  EXPECT_EQ(plan.forecast.vertex_ledger_capacity, 3 * limits.max_paths);
+  EXPECT_EQ(plan.forecast.dfs_frame_capacity, limits.max_depth + 1);
+  EXPECT_GT(plan.forecast.vertex_ledger_bytes, 0u);
+  EXPECT_GT(plan.forecast.dfs_frame_bytes, 0u);
+  EXPECT_GT(plan.forecast.exact_scratch_bytes, 0u);
+  EXPECT_GT(plan.forecast.owned_host_bytes,
+            plan.forecast.path_index_bytes + plan.forecast.pair_bytes +
+                plan.forecast.result_bytes +
+                plan.forecast.vertex_ledger_bytes +
+                plan.forecast.dfs_frame_bytes +
+                plan.forecast.exact_scratch_bytes);
   limits.max_host_bytes = plan.forecast.owned_host_bytes - 1;
   ct::RepresentedIntervalCrossing owner;
   EXPECT_EQ(owner.Initialize(limits).status, S::ResourceLimit);

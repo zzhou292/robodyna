@@ -63,8 +63,16 @@ bool Same(const RepresentedTrianglePathKey& a,
   return Compare(a, b) == 0;
 }
 
-bool Same(Vec3 a, Vec3 b) noexcept {
-  return a.x == b.x && a.y == b.y && a.z == b.z;
+bool SameBits(double a, double b) noexcept {
+  std::uint64_t aa = 0, bb = 0;
+  std::memcpy(&aa, &a, sizeof(aa));
+  std::memcpy(&bb, &b, sizeof(bb));
+  return aa == bb;
+}
+
+bool SameBits(Vec3 a, Vec3 b) noexcept {
+  return SameBits(a.x, b.x) && SameBits(a.y, b.y) &&
+         SameBits(a.z, b.z);
 }
 
 bool AddSize(std::size_t a, std::size_t b, std::size_t* output) noexcept {
@@ -101,6 +109,18 @@ struct CanonicalPair {
   std::size_t input_pair = SIZE_MAX;
   RepresentedIntervalPairKey key;
 };
+
+struct VertexLedgerRow {
+  FacetVertexKey key;
+  Vec3 endpoint[2];
+  RepresentedMotion motion = RepresentedMotion::LinearNodalV1;
+  std::size_t input_path = SIZE_MAX;
+};
+
+bool VertexLedgerLess(const VertexLedgerRow& a,
+                      const VertexLedgerRow& b) noexcept {
+  return Compare(a.key, b.key) < 0;
+}
 
 bool PairLess(const CanonicalPair& a, const CanonicalPair& b) noexcept {
   return Compare(a.key, b.key) < 0;
@@ -482,19 +502,20 @@ bool RegularCell(const ExactTriangle samples[3]) {
   return false;
 }
 
-bool SweptBoxesSeparated(const ExactTriangle endpoint_a[2],
-                         const ExactTriangle endpoint_b[2]) {
+bool SweptBoxesSeparated(const ExactTriangle samples_a[3],
+                         const ExactTriangle samples_b[3]) {
   for (unsigned component = 0; component < 3; ++component) {
-    Dyadic minimum_a = Component(endpoint_a[0].vertex[0], component);
+    Dyadic minimum_a = Component(samples_a[0].vertex[0], component);
     Dyadic maximum_a = minimum_a;
-    Dyadic minimum_b = Component(endpoint_b[0].vertex[0], component);
+    Dyadic minimum_b = Component(samples_b[0].vertex[0], component);
     Dyadic maximum_b = minimum_b;
     for (unsigned endpoint = 0; endpoint < 2; ++endpoint) {
+      const unsigned sample = endpoint * 2;
       for (unsigned vertex = 0; vertex < 3; ++vertex) {
         const Dyadic a =
-            Component(endpoint_a[endpoint].vertex[vertex], component);
+            Component(samples_a[sample].vertex[vertex], component);
         const Dyadic b =
-            Component(endpoint_b[endpoint].vertex[vertex], component);
+            Component(samples_b[sample].vertex[vertex], component);
         if (Compare(a, minimum_a) < 0)
           minimum_a = a;
         if (Compare(a, maximum_a) > 0)
@@ -536,39 +557,51 @@ RepresentedIntervalResult Unresolved(const RepresentedIntervalPairKey& key,
   return result;
 }
 
-struct PairContext {
-  const RepresentedTrianglePath& a;
-  const RepresentedTrianglePath& b;
-  RepresentedIntervalLimits limits;
-  RepresentedIntervalPairKey key;
-  std::size_t work = 0;
+struct ExactScratch {
+  ExactTriangle a[3];
+  ExactTriangle b[3];
 };
 
-RepresentedIntervalResult Visit(PairContext* context, Cell cell) {
-  if (context->work >= context->limits.max_work_per_pair)
-    return Unresolved(context->key,
-                      RepresentedIntervalReason::WorkExhausted,
-                      context->work);
-  ++context->work;
+enum class CellDisposition : std::uint8_t {
+  Separated,
+  Crossing,
+  Split,
+  Unresolved,
+};
 
+struct CellEvaluation {
+  CellDisposition disposition = CellDisposition::Split;
+  RepresentedIntervalReason reason = RepresentedIntervalReason::None;
+  RepresentedIntervalResult crossing;
+};
+
+CellEvaluation EvaluateCell(const RepresentedTrianglePath& path_a,
+                            const RepresentedTrianglePath& path_b,
+                            const RepresentedIntervalPairKey& key, Cell cell,
+                            ExactScratch* scratch) {
   const DyadicTime times[3] = {Lower(cell), Middle(cell), Upper(cell)};
-  ExactTriangle a[3], b[3];
+  bool degenerate = false;
   for (unsigned sample = 0; sample < 3; ++sample) {
-    a[sample] = At(context->a, times[sample]);
-    b[sample] = At(context->b, times[sample]);
-    if (Degenerate(a[sample]) || Degenerate(b[sample]))
-      return Unresolved(context->key,
-                        RepresentedIntervalReason::DegenerateGeometry,
-                        context->work);
+    scratch->a[sample] = At(path_a, times[sample]);
+    scratch->b[sample] = At(path_b, times[sample]);
+    degenerate = degenerate || Degenerate(scratch->a[sample]) ||
+                 Degenerate(scratch->b[sample]);
   }
   for (unsigned sample = 0; sample < 3; ++sample) {
-    const auto intersection = Intersects(a[sample], b[sample]);
+    if (Degenerate(scratch->a[sample]) ||
+        Degenerate(scratch->b[sample]))
+      continue;
+    const auto intersection =
+        Intersects(scratch->a[sample], scratch->b[sample]);
     if (!intersection.intersects)
       continue;
-    RepresentedIntervalResult result;
-    result.key = context->key;
-    result.feature =
-        IntersectionFeature(context->a, context->b, a[sample], b[sample]);
+    CellEvaluation evaluation;
+    evaluation.disposition = CellDisposition::Crossing;
+    auto& result = evaluation.crossing;
+    result.key = key;
+    result.feature = IntersectionFeature(path_a, path_b,
+                                         scratch->a[sample],
+                                         scratch->b[sample]);
     result.classification =
         RepresentedIntervalClassification::CertifiedCrossingContact;
     result.reason = RepresentedIntervalReason::None;
@@ -577,73 +610,95 @@ RepresentedIntervalResult Visit(PairContext* context, Cell cell) {
                               : RepresentedIntersectionGeometry::Transverse;
     result.witness_time_numerator = times[sample].numerator;
     result.witness_time_depth = times[sample].depth;
-    result.work = context->work;
-    return result;
+    return evaluation;
   }
+  if (degenerate)
+    return {CellDisposition::Unresolved,
+            RepresentedIntervalReason::DegenerateGeometry, {}};
+  if (RegularCell(scratch->a) && RegularCell(scratch->b) &&
+      SweptBoxesSeparated(scratch->a, scratch->b)) {
+    return {CellDisposition::Separated, RepresentedIntervalReason::None, {}};
+  }
+  return {};
+}
 
-  const ExactTriangle regular_a[3] = {a[0], a[1], a[2]};
-  const ExactTriangle regular_b[3] = {b[0], b[1], b[2]};
-  if (RegularCell(regular_a) && RegularCell(regular_b)) {
-    const ExactTriangle endpoints_a[2] = {a[0], a[2]};
-    const ExactTriangle endpoints_b[2] = {b[0], b[2]};
-    if (SweptBoxesSeparated(endpoints_a, endpoints_b)) {
-      RepresentedIntervalResult result;
-      result.key = context->key;
-      result.classification =
-          RepresentedIntervalClassification::CertifiedSeparated;
-      result.reason = RepresentedIntervalReason::None;
-      result.work = context->work;
-      return result;
-    }
-  }
-
-  if (cell.depth >= context->limits.max_depth)
-    return Unresolved(context->key,
-                      RepresentedIntervalReason::WorkExhausted,
-                      context->work);
-  const Cell left{cell.lower * 2, cell.lower + cell.upper,
-                  cell.depth + 1};
-  const Cell right{cell.lower + cell.upper, cell.upper * 2,
-                   cell.depth + 1};
-  auto first = Visit(context, left);
-  if (first.classification ==
-      RepresentedIntervalClassification::CertifiedCrossingContact) {
-    first.work = context->work;
-    return first;
-  }
-  auto second = Visit(context, right);
-  if (second.classification ==
-      RepresentedIntervalClassification::CertifiedCrossingContact) {
-    second.work = context->work;
-    return second;
-  }
-  if (first.classification ==
-          RepresentedIntervalClassification::CertifiedSeparated &&
-      second.classification ==
-          RepresentedIntervalClassification::CertifiedSeparated) {
-    first.work = context->work;
-    return first;
-  }
-  const auto reason =
-      ReasonPriority(first.reason) >= ReasonPriority(second.reason)
-          ? first.reason
-          : second.reason;
-  return Unresolved(context->key, reason, context->work);
+void RaiseReason(RepresentedIntervalReason candidate,
+                 RepresentedIntervalReason* current) noexcept {
+  if (ReasonPriority(candidate) > ReasonPriority(*current))
+    *current = candidate;
 }
 
 RepresentedIntervalResult CertifyPair(
     const RepresentedTrianglePath& a, const RepresentedTrianglePath& b,
-    RepresentedIntervalLimits limits, RepresentedIntervalPairKey key) noexcept {
+    RepresentedIntervalLimits limits, RepresentedIntervalPairKey key,
+    std::vector<Cell>* dfs, ExactScratch* scratch) noexcept {
   if (a.motion != RepresentedMotion::LinearNodalV1 ||
       b.motion != RepresentedMotion::LinearNodalV1)
     return Unresolved(key, RepresentedIntervalReason::UnsupportedMotion, 0);
-  PairContext context{a, b, limits, key};
+  std::size_t work = 0;
+  bool all_leaves_separated = true;
+  RepresentedIntervalReason unresolved = RepresentedIntervalReason::None;
+  dfs->clear();
+  dfs->push_back({});
   try {
-    return Visit(&context, {});
+    while (!dfs->empty()) {
+      if (work >= limits.max_work_per_pair) {
+        all_leaves_separated = false;
+        RaiseReason(RepresentedIntervalReason::WorkExhausted, &unresolved);
+        break;
+      }
+      const Cell cell = dfs->back();
+      dfs->pop_back();
+      ++work;
+      auto evaluation = EvaluateCell(a, b, key, cell, scratch);
+      if (evaluation.disposition == CellDisposition::Crossing) {
+        evaluation.crossing.work = work;
+        dfs->clear();
+        return evaluation.crossing;
+      }
+      if (evaluation.disposition == CellDisposition::Separated)
+        continue;
+      if (evaluation.disposition == CellDisposition::Unresolved) {
+        all_leaves_separated = false;
+        RaiseReason(evaluation.reason, &unresolved);
+        continue;
+      }
+      if (cell.depth >= limits.max_depth) {
+        all_leaves_separated = false;
+        RaiseReason(RepresentedIntervalReason::WorkExhausted, &unresolved);
+        continue;
+      }
+      const Cell right{cell.lower + cell.upper, cell.upper * 2,
+                       cell.depth + 1};
+      const Cell left{cell.lower * 2, cell.lower + cell.upper,
+                      cell.depth + 1};
+      if (dfs->size() + 2 > dfs->capacity()) {
+        all_leaves_separated = false;
+        RaiseReason(RepresentedIntervalReason::ExactArithmeticRange,
+                    &unresolved);
+        break;
+      }
+      dfs->push_back(right);
+      dfs->push_back(left);
+    }
   } catch (...) {
+    dfs->clear();
     return Unresolved(key, RepresentedIntervalReason::ExactArithmeticRange,
-                      context.work);
+                      work);
   }
+  dfs->clear();
+  if (all_leaves_separated) {
+    RepresentedIntervalResult result;
+    result.key = key;
+    result.classification =
+        RepresentedIntervalClassification::CertifiedSeparated;
+    result.reason = RepresentedIntervalReason::None;
+    result.work = work;
+    return result;
+  }
+  if (unresolved == RepresentedIntervalReason::None)
+    unresolved = RepresentedIntervalReason::WorkExhausted;
+  return Unresolved(key, unresolved, work);
 }
 
 bool KnownMotion(RepresentedMotion motion) noexcept {
@@ -652,26 +707,82 @@ bool KnownMotion(RepresentedMotion motion) noexcept {
          motion == RepresentedMotion::Nonlinear;
 }
 
+bool CanonicalVertexKey(const FacetVertexKey& key,
+                        const RepresentedTrianglePathKey& path) noexcept {
+  if (key.source_instance_id != path.source_instance_id ||
+      key.denominator == 0)
+    return false;
+  if (key.kind == FacetVertexKind::SourceVertex)
+    return key.second == 0 && key.numerator == 0 &&
+           key.denominator == 1 && key.level == 0 && key.grid_i == 0 &&
+           key.grid_j == 0;
+  if (key.kind == FacetVertexKind::SourceEdge)
+    return key.first < key.second && key.numerator > 0 &&
+           key.numerator < key.denominator &&
+           (key.denominator & (key.denominator - 1)) == 0 &&
+           key.denominator <= (1u << path.level) &&
+           (key.denominator == 1 || (key.numerator & 1u)) &&
+           key.level == 0 && key.grid_i == 0 && key.grid_j == 0;
+  if (key.kind == FacetVertexKind::ParentInterior) {
+    const unsigned n = 1u << path.level;
+    return key.first == path.parent_eid && key.second == 0 &&
+           key.numerator == 0 && key.denominator == 1 &&
+           key.level == path.level && key.grid_i <= n && key.grid_j <= n;
+  }
+  return false;
+}
+
+bool SameTrajectory(const RepresentedVertexPath& a,
+                    const RepresentedVertexPath& b) noexcept {
+  return Same(a.key, b.key) && SameBits(a.endpoint[0], b.endpoint[0]) &&
+         SameBits(a.endpoint[1], b.endpoint[1]);
+}
+
+bool CompatiblePath(const RepresentedTrianglePath& a,
+                    const RepresentedTrianglePath& b) noexcept {
+  if (a.motion != b.motion)
+    return false;
+  for (const auto& vertex : a.vertices) {
+    bool found = false;
+    for (const auto& other : b.vertices)
+      found = found || SameTrajectory(vertex, other);
+    if (!found)
+      return false;
+  }
+  for (const auto& edge : a.edge_keys) {
+    bool found = false;
+    for (const auto& other : b.edge_keys)
+      found = found || Compare(edge, other) == 0;
+    if (!found)
+      return false;
+  }
+  return true;
+}
+
 RepresentedIntervalStatus ValidatePath(
     const RepresentedTrianglePath& path) noexcept {
-  if (!KnownMotion(path.motion))
+  if (!KnownMotion(path.motion) || path.key.level > 2)
     return RepresentedIntervalStatus::InvalidInput;
   for (unsigned i = 0; i < 3; ++i) {
     if (!IsFinite(path.vertices[i].endpoint[0]) ||
-        !IsFinite(path.vertices[i].endpoint[1]))
+        !IsFinite(path.vertices[i].endpoint[1]) ||
+        !CanonicalVertexKey(path.vertices[i].key, path.key))
       return RepresentedIntervalStatus::InvalidInput;
     for (unsigned j = 0; j < i; ++j)
       if (Same(path.vertices[i].key, path.vertices[j].key))
         return RepresentedIntervalStatus::InvalidInput;
     const unsigned next = (i + 1) % 3;
+    const auto& edge = path.edge_keys[i];
     const bool edge_matches =
-        (Same(path.edge_keys[i].endpoints[0], path.vertices[i].key) &&
-         Same(path.edge_keys[i].endpoints[1],
-              path.vertices[next].key)) ||
-        (Same(path.edge_keys[i].endpoints[1], path.vertices[i].key) &&
-         Same(path.edge_keys[i].endpoints[0],
-              path.vertices[next].key));
-    if (!edge_matches)
+        (Same(edge.endpoints[0], path.vertices[i].key) &&
+         Same(edge.endpoints[1], path.vertices[next].key)) ||
+        (Same(edge.endpoints[1], path.vertices[i].key) &&
+         Same(edge.endpoints[0], path.vertices[next].key));
+    const bool parent_matches =
+        edge.parent_boundary ? edge.parent_eid == 0
+                             : edge.parent_eid == path.key.parent_eid;
+    if (!edge_matches || Compare(edge.endpoints[0], edge.endpoints[1]) >= 0 ||
+        !parent_matches)
       return RepresentedIntervalStatus::InvalidInput;
   }
   return RepresentedIntervalStatus::Ok;
@@ -710,6 +821,9 @@ struct RepresentedIntervalCrossing::Impl {
   RepresentedIntervalForecast forecast;
   std::vector<std::uint32_t> path_indices;
   std::vector<CanonicalPair> pairs;
+  std::vector<VertexLedgerRow> vertex_ledger;
+  std::vector<Cell> dfs;
+  std::unique_ptr<ExactScratch> exact_scratch;
   std::vector<RepresentedIntervalResult> published;
   std::vector<RepresentedIntervalResult> staging;
   bool complete = false;
@@ -727,22 +841,43 @@ RepresentedIntervalPreflight RepresentedIntervalCrossing::Preflight(
   RepresentedIntervalPreflight result;
   if (!limits.max_paths || !limits.max_input_pairs || !limits.max_results ||
       !limits.max_work_per_pair || !limits.max_total_work ||
-      limits.max_depth > 52) {
+      limits.max_depth > 52 || limits.max_paths > UINT32_MAX) {
     result.report = Failure(RepresentedIntervalStatus::InvalidInput);
     return result;
   }
   result.forecast.path_index_capacity = limits.max_paths;
   result.forecast.pair_capacity = limits.max_input_pairs;
   result.forecast.result_capacity = limits.max_results;
-  std::size_t paths = 0, pairs = 0, results = 0, total = sizeof(Impl);
-  if (!MultiplySize(limits.max_paths, sizeof(std::uint32_t), &paths) ||
-      !MultiplySize(limits.max_input_pairs, sizeof(CanonicalPair), &pairs) ||
+  result.forecast.dfs_frame_capacity =
+      static_cast<std::size_t>(limits.max_depth) + 1;
+  if (!MultiplySize(limits.max_paths, 3,
+                    &result.forecast.vertex_ledger_capacity) ||
+      !MultiplySize(limits.max_paths, sizeof(std::uint32_t),
+                    &result.forecast.path_index_bytes) ||
+      !MultiplySize(limits.max_input_pairs, sizeof(CanonicalPair),
+                    &result.forecast.pair_bytes) ||
       !MultiplySize(limits.max_results,
-                    2 * sizeof(RepresentedIntervalResult), &results) ||
-      !AddSize(total, paths, &total) || !AddSize(total, pairs, &total) ||
-      !AddSize(total, results, &total)) {
+                    2 * sizeof(RepresentedIntervalResult),
+                    &result.forecast.result_bytes) ||
+      !MultiplySize(result.forecast.vertex_ledger_capacity,
+                    sizeof(VertexLedgerRow),
+                    &result.forecast.vertex_ledger_bytes) ||
+      !MultiplySize(result.forecast.dfs_frame_capacity, sizeof(Cell),
+                    &result.forecast.dfs_frame_bytes)) {
     result.report = Failure(RepresentedIntervalStatus::ResourceLimit);
     return result;
+  }
+  result.forecast.exact_scratch_bytes = sizeof(ExactScratch);
+  std::size_t total = sizeof(Impl);
+  const std::size_t regions[]{
+      result.forecast.path_index_bytes, result.forecast.pair_bytes,
+      result.forecast.result_bytes, result.forecast.vertex_ledger_bytes,
+      result.forecast.dfs_frame_bytes, result.forecast.exact_scratch_bytes};
+  for (const auto bytes : regions) {
+    if (!AddSize(total, bytes, &total)) {
+      result.report = Failure(RepresentedIntervalStatus::ResourceLimit);
+      return result;
+    }
   }
   result.forecast.owned_host_bytes = total;
   if (total > limits.max_host_bytes) {
@@ -764,8 +899,19 @@ RepresentedIntervalReport RepresentedIntervalCrossing::Initialize(
     next->forecast = plan.forecast;
     next->path_indices.reserve(limits.max_paths);
     next->pairs.reserve(limits.max_input_pairs);
+    next->vertex_ledger.reserve(plan.forecast.vertex_ledger_capacity);
+    next->dfs.reserve(plan.forecast.dfs_frame_capacity);
+    next->exact_scratch = std::make_unique<ExactScratch>();
     next->published.reserve(limits.max_results);
     next->staging.reserve(limits.max_results);
+    if (next->path_indices.capacity() != limits.max_paths ||
+        next->pairs.capacity() != limits.max_input_pairs ||
+        next->vertex_ledger.capacity() !=
+            plan.forecast.vertex_ledger_capacity ||
+        next->dfs.capacity() != plan.forecast.dfs_frame_capacity ||
+        next->published.capacity() != limits.max_results ||
+        next->staging.capacity() != limits.max_results)
+      return Failure(RepresentedIntervalStatus::ResourceLimit);
     impl_ = std::move(next);
   } catch (...) {
     return Failure(RepresentedIntervalStatus::ResourceLimit);
@@ -794,21 +940,49 @@ RepresentedIntervalReport RepresentedIntervalCrossing::Certify(
     return report;
   }
   std::size_t path_bytes = 0, pair_bytes = 0;
+  const auto disjoint_from_owned = [&](const void* data,
+                                       std::size_t bytes) noexcept {
+    if (!RangeDisjoint(data, bytes, &storage, sizeof(storage)) ||
+        !RangeDisjoint(data, bytes, storage.exact_scratch.get(),
+                       sizeof(ExactScratch)))
+      return false;
+    struct Range {
+      const void* data;
+      std::size_t count;
+      std::size_t element;
+    };
+    const Range ranges[]{
+        {storage.path_indices.data(), storage.path_indices.capacity(),
+         sizeof(std::uint32_t)},
+        {storage.pairs.data(), storage.pairs.capacity(),
+         sizeof(CanonicalPair)},
+        {storage.vertex_ledger.data(), storage.vertex_ledger.capacity(),
+         sizeof(VertexLedgerRow)},
+        {storage.dfs.data(), storage.dfs.capacity(), sizeof(Cell)},
+        {storage.published.data(), storage.published.capacity(),
+         sizeof(RepresentedIntervalResult)},
+        {storage.staging.data(), storage.staging.capacity(),
+         sizeof(RepresentedIntervalResult)}};
+    for (const auto& range : ranges) {
+      std::size_t owned_bytes = 0;
+      if (!MultiplySize(range.count, range.element, &owned_bytes) ||
+          !RangeDisjoint(data, bytes, range.data, owned_bytes))
+        return false;
+    }
+    return true;
+  };
   if (!MultiplySize(path_count, sizeof(*paths), &path_bytes) ||
       !MultiplySize(pair_count, sizeof(*pairs), &pair_bytes) ||
-      (!storage.published.empty() &&
-       (!RangeDisjoint(paths, path_bytes, storage.published.data(),
-                       storage.published.size() *
-                           sizeof(RepresentedIntervalResult)) ||
-        !RangeDisjoint(pairs, pair_bytes, storage.published.data(),
-                       storage.published.size() *
-                           sizeof(RepresentedIntervalResult))))) {
+      !RangeDisjoint(paths, path_bytes, pairs, pair_bytes) ||
+      !disjoint_from_owned(paths, path_bytes) ||
+      !disjoint_from_owned(pairs, pair_bytes)) {
     report.status = RepresentedIntervalStatus::InvalidInput;
     report.message = Message(report.status);
     return report;
   }
 
   storage.path_indices.clear();
+  storage.vertex_ledger.clear();
   for (std::size_t i = 0; i < path_count; ++i) {
     const auto status = ValidatePath(paths[i]);
     if (status != RepresentedIntervalStatus::Ok) {
@@ -818,17 +992,38 @@ RepresentedIntervalReport RepresentedIntervalCrossing::Certify(
       return report;
     }
     storage.path_indices.push_back(static_cast<std::uint32_t>(i));
+    for (const auto& vertex : paths[i].vertices)
+      storage.vertex_ledger.push_back(
+          {vertex.key, {vertex.endpoint[0], vertex.endpoint[1]},
+           paths[i].motion, i});
   }
   std::sort(storage.path_indices.begin(), storage.path_indices.end(),
             [&](std::uint32_t a, std::uint32_t b) {
               return Compare(paths[a].key, paths[b].key) < 0;
             });
   for (std::size_t i = 1; i < storage.path_indices.size(); ++i) {
-    if (Same(paths[storage.path_indices[i - 1]].key,
-             paths[storage.path_indices[i]].key)) {
+    const auto previous = storage.path_indices[i - 1];
+    const auto current = storage.path_indices[i];
+    if (Same(paths[previous].key, paths[current].key) &&
+        !CompatiblePath(paths[previous], paths[current])) {
       report.status = RepresentedIntervalStatus::IdentityMismatch;
-      report.input_path = storage.path_indices[i];
+      report.input_path = current;
       report.message = Message(report.status);
+      return report;
+    }
+  }
+  std::sort(storage.vertex_ledger.begin(), storage.vertex_ledger.end(),
+            VertexLedgerLess);
+  for (std::size_t i = 1; i < storage.vertex_ledger.size(); ++i) {
+    const auto& previous = storage.vertex_ledger[i - 1];
+    const auto& current = storage.vertex_ledger[i];
+    if (Compare(previous.key, current.key) == 0 &&
+        (previous.motion != current.motion ||
+         !SameBits(previous.endpoint[0], current.endpoint[0]) ||
+         !SameBits(previous.endpoint[1], current.endpoint[1]))) {
+      report.status = RepresentedIntervalStatus::IdentityMismatch;
+      report.input_path = current.input_path;
+      report.message = "inconsistent vertex trajectory identity";
       return report;
     }
   }
@@ -836,7 +1031,8 @@ RepresentedIntervalReport RepresentedIntervalCrossing::Certify(
   storage.pairs.clear();
   for (std::size_t i = 0; i < pair_count; ++i) {
     if (pairs[i].first >= path_count || pairs[i].second >= path_count ||
-        pairs[i].first == pairs[i].second) {
+        pairs[i].first == pairs[i].second ||
+        Same(paths[pairs[i].first].key, paths[pairs[i].second].key)) {
       report.status = RepresentedIntervalStatus::InvalidInput;
       report.input_pair = i;
       report.message = Message(report.status);
@@ -868,7 +1064,7 @@ RepresentedIntervalReport RepresentedIntervalCrossing::Certify(
     for (const auto& pair : storage.pairs) {
       auto result =
           CertifyPair(paths[pair.first], paths[pair.second], storage.limits,
-                      pair.key);
+                      pair.key, &storage.dfs, storage.exact_scratch.get());
       if (result.work > storage.limits.max_total_work - report.work) {
         report.status = RepresentedIntervalStatus::ResourceLimit;
         report.input_pair = pair.input_pair;
