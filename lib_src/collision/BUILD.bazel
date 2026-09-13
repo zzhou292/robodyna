@@ -33,6 +33,17 @@ cc_library(
 )
 
 cc_library(
+    name = "represented_interval_crossing",
+    srcs = ["RepresentedIntervalCrossing.cpp"],
+    hdrs = [
+        "RepresentedIntervalCrossing.h",
+        "RepresentedIntervalCrossingTypes.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":fixed_contact_facets"],
+)
+
+cc_library(
     name = "fixed_contact_facets",
     srcs = [
         "FixedContactFacetBinding.cpp",

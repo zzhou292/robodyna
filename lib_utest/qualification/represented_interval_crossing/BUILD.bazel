@@ -1,0 +1,17 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+
+cc_test(
+    name = "host_check",
+    size = "small",
+    srcs = [
+        "FailureTest.cpp",
+        "Fixture.h",
+        "GeometryTest.cpp",
+        "InvarianceTest.cpp",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        "//lib_src/collision:represented_interval_crossing",
+        "@googletest//:gtest_main",
+    ],
+)
