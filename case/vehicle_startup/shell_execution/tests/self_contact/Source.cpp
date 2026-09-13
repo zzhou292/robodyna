@@ -1,5 +1,7 @@
 #include "Source.h"
+#include "modelio/vehicle_source/tests/TestSupport.h"
 #include <iostream>
+#include <set>
 #include <stdexcept>
 
 namespace crash::cases::vehicle_startup::shell_execution::self_contact_test {
@@ -62,6 +64,51 @@ const Selection& Inventory() {
     }();
     return value;
 }
+const modelio::self_contact::OriginalSelection& OriginalContactSelection() {
+    static const auto value = [] {
+        const auto read = [](const char* variable, std::size_t bytes) {
+            const auto* path = std::getenv(variable);
+            if (!path || !*path)
+                throw std::runtime_error("Missing original self-contact member");
+            auto value = output::ReadBounded(path, bytes);
+            if (value.size() != bytes)
+                throw std::runtime_error("Original self-contact member extent differs");
+            return value;
+        };
+        const auto auxiliary = read("ROBO_SELF_CONTACT_AUX_MEMBER", 44991);
+        const auto combine = read("ROBO_SELF_CONTACT_COMBINE_MEMBER", 10577);
+        return modelio::self_contact::OriginalSelection::Prepare(
+            modelio::vehicle::test::Canonical(), auxiliary, combine);
+    }();
+    return value;
+}
+const Selection& ContactInventory() {
+    static const auto value = [] {
+        const auto& physical = Execution().physical();
+        const auto& source = OriginalContactSelection().data();
+        const std::set<std::uint64_t> selected(
+            source.selected_part_ids.begin(), source.selected_part_ids.end());
+        Selection next;
+        next.centered.reserve(source.counts.retained_shells);
+        next.excluded.reserve(source.counts.retained_shells);
+        for (std::size_t row = 0;
+             row < physical.catalog()->parent_count(); ++row) {
+            const auto& parent = *physical.catalog()->parent(row);
+            if (!selected.count(parent.source_part_id)) continue;
+            const contact::SelfContactParentSelection value{
+                row, parent.family, parent.family_index,
+                parent.source_parent_id, parent.source_part_id};
+            (Native(physical, parent).centered
+                ? next.centered : next.excluded).push_back(value);
+        }
+        if (next.centered.size() + next.excluded.size() !=
+            source.counts.retained_shells)
+            throw std::runtime_error(
+                "Original contact set and physical shell catalog differ");
+        return next;
+    }();
+    return value;
+}
 const contact::SelfContactSurfaceBinding& Surface() {
     static const auto value = [] {
         const auto& physical = Execution().physical();
@@ -78,6 +125,30 @@ const contact::SelfContactSurfaceBinding& Surface() {
         contact::SelfContactSurfaceBinding next;
         const auto report = next.Initialize(physical,input,limits);
         if (report.status != contact::SelfContactSurfaceStatus::Ok) throw std::runtime_error(report.message);
+        return next;
+    }();
+    return value;
+}
+const contact::SelfContactSurfaceBinding& ContactSurface() {
+    static const auto value = [] {
+        const auto& physical = Execution().physical();
+        const auto input = Input(ContactInventory().centered);
+        const auto limits = contact::SelfContactSurfaceLimits::Vehicle();
+        const auto preflight =
+            contact::SelfContactSurfaceBinding::Preflight(
+                physical, input, limits);
+        if (preflight.report.status !=
+            contact::SelfContactSurfaceStatus::Ok)
+            throw std::runtime_error(preflight.report.message);
+        contact::SelfContactSurfaceBinding next;
+        const auto report = next.Initialize(physical, input, limits);
+        if (report.status != contact::SelfContactSurfaceStatus::Ok)
+            throw std::runtime_error(report.message);
+        std::cout << "Original contact-set centered parents="
+                  << input.parent_count
+                  << " excluded_offsets=" << ContactInventory().excluded.size()
+                  << " startup=" << preflight.forecast.startup_payload_bytes
+                  << std::endl;
         return next;
     }();
     return value;

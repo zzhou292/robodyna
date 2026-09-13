@@ -2,6 +2,7 @@
 #include "../../VehicleShellExecution.h"
 #include "../../../physical_model/tests/supports/Support.h"
 #include "lib_src/collision/SelfContactSurfaceBinding.h"
+#include "modelio/self_contact/OriginalSelection.h"
 #include <vector>
 
 namespace crash::cases::vehicle_startup::shell_execution::self_contact_test {
@@ -20,8 +21,11 @@ struct Selection {
     std::vector<contact::SelfContactParentSelection> centered, excluded;
 };
 const Selection& Inventory();
+const modelio::self_contact::OriginalSelection& OriginalContactSelection();
+const Selection& ContactInventory();
 inline contact::SelfContactSurfaceInput Input(const std::vector<contact::SelfContactParentSelection>& rows) {
     return {rows.data(),rows.size(),contact::SelfContactSurfaceProfile::FrictionlessReferenceThicknessShellSubsetV1};
 }
 const contact::SelfContactSurfaceBinding& Surface();
+const contact::SelfContactSurfaceBinding& ContactSurface();
 } // namespace crash::cases::vehicle_startup::shell_execution::self_contact_test
