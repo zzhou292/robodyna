@@ -15,6 +15,7 @@ cc_test(
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [
         "//lib_src/collision:fixed_triangle_feature_discovery",
+        "//lib_utest/qualification/contact_facets:fixture",
         "@googletest//:gtest_main",
     ],
 )
