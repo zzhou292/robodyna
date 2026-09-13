@@ -3,6 +3,10 @@
 
 namespace physical_publication_test {
 bool Rig::Initialize(bool initialize_solids,bool attach) {
+  return InitializeAgainst(fixture.physical,initialize_solids,attach);
+}
+bool Rig::InitializeAgainst(const fe::ShellPhysicalBinding& physical,
+    bool initialize_solids,bool attach) {
   const auto cin = fixture.CinStartup();
   if (!Good(owner.Initialize(fixture.OwnerConfig(),
       {fixture.x.data(),fixture.v.data(),fixture.w.data(),fixture.domain.node_count(),fixture.q.data()},
@@ -11,24 +15,24 @@ bool Rig::Initialize(bool initialize_solids,bool attach) {
   fe::qeph::QephBatchConfig q;
   q.owner = owner.accepted(); q.configuration_id = Configuration; q.qualification_id = Qualification;
   q.element_count = 2; q.usage = fe::qeph::BatchUsage::CoupledForces;
-  if (!Good(qeph.InitializeMapped(q,fixture.physical,owner,fixture.WitnessSource()))) return false;
+  if (!Good(qeph.InitializeMapped(q,physical,owner,fixture.WitnessSource()))) return false;
   fe::t3::T3BatchConfig t;
   t.owner = owner.accepted(); t.configuration_id = Configuration; t.qualification_id = Qualification;
   t.element_count = 1; t.usage = fe::t3::BatchUsage::CoupledForces;
-  if (!Good(t3.InitializeMapped(t,fixture.physical,owner,fixture.WitnessSource()))) return false;
+  if (!Good(t3.InitializeMapped(t,physical,owner,fixture.WitnessSource()))) return false;
   fe::qbat::BatchConfig b;
   b.owner = owner.accepted(); b.configuration_id = Configuration; b.qualification_id = Qualification;
   b.element_count = 1; b.usage = fe::qbat::BatchUsage::CoupledForces;
-  if (!Good(qbat.InitializeMapped(b,fixture.physical,owner,fixture.WitnessSource()))) return false;
+  if (!Good(qbat.InitializeMapped(b,physical,owner,fixture.WitnessSource()))) return false;
   fe::type25::BatchConfig w;
   w.owner = owner.accepted(); w.configuration_id = Configuration; w.qualification_id = Qualification;
   w.element_count = 2;
-  if (!Good(welds.InitializeMapped(w,fixture.physical,owner,fixture.WitnessSource(),fe::type25::CapacityProfile::Legacy)))
+  if (!Good(welds.InitializeMapped(w,physical,owner,fixture.WitnessSource(),fe::type25::CapacityProfile::Legacy)))
     return false;
   fe::type13::BatchConfig beam;
   beam.owner = owner.accepted(); beam.configuration_id = Configuration; beam.qualification_id = Qualification;
   beam.assembly = fe::type13::BatchAssembly::CinNativeStiffness;
-  if (!Good(beams.InitializeMapped(beam,fixture.physical,fixture.rigid,owner,fixture.WitnessSource()))) return false;
+  if (!Good(beams.InitializeMapped(beam,physical,fixture.rigid,owner,fixture.WitnessSource()))) return false;
   if (initialize_solids && !InitializeSolids()) return false;
   // Existing mapped/TYPE13 startup APIs bind their live initial cache on the
   // first actual accepted assembly. Discard this proof; no owner step occurs.
@@ -42,7 +46,7 @@ bool Rig::Initialize(bool initialize_solids,bool attach) {
       !Good(beams.AssembleMappedAccepted(owner,token,assembly))) return false;
   owner.Discard();
   qeph.DiscardTrial(); t3.DiscardTrial(); qbat.DiscardTrial(); welds.DiscardTrial(); beams.DiscardTrial();
-  return !attach || Attach();
+  return !attach || AttachAgainst(physical);
 }
 bool Rig::InitializeSolids() {
   fe::solids::BatchConfig config;
@@ -55,7 +59,10 @@ bool Rig::InitializeSolids() {
   return Good(solids.InitializeJoined(config,fixture.solids));
 }
 bool Rig::Attach() {
-  return Good(publication.InitializePhysical(owner,fixture.physical,fixture.rigid,
+  return AttachAgainst(fixture.physical);
+}
+bool Rig::AttachAgainst(const fe::ShellPhysicalBinding& physical) {
+  return Good(publication.InitializePhysical(owner,physical,fixture.rigid,
       fixture.WitnessSource(),Participants(),fixture.Identity()));
 }
 bool Rig::ConfigureScratch(bool mapped_wall,bool self_contact) {

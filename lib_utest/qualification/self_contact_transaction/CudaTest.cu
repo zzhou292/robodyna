@@ -22,6 +22,10 @@ bool Good(c::SelfContactTransactionReport report) {
 
 struct Fixture {
   p::Rig rig;
+  fe::ShellBatchPlasticityBinding execution_catalog;
+  fe::ShellBatchFailureBinding execution_failure;
+  fe::ShellExecutionBinding execution;
+  fe::ShellPhysicalBinding physical;
   c::SelfContactSurfaceBinding surface;
   c::FixedContactFacetBinding facets;
   c::SelfContactActiveUseBinding uses;
@@ -32,11 +36,69 @@ struct Fixture {
   std::vector<c::SelfContactParentSelection> selection;
   std::vector<std::uint8_t> activity;
   c::SelfContactTransactionConfig config;
+  bool authority_prepared = false;
 
-  Fixture() {
+  bool PrepareExecutionAuthority() {
+    qbat_catalog_test::Fixture declaration;
+    for (unsigned row = 0; row < 2; ++row) {
+      declaration.materials[row].curve_id = 0;
+      declaration.materials[row].hardening =
+          tl::material::ShellPlasticityHardeningKind::LinearLaw44;
+      declaration.materials[row].linear = {10e6, 0};
+      declaration.materials[row].rate = declaration.materials[2].rate;
+    }
+    const fe::ShellPlasticityParentInput parents[]{
+        {fe::ShellBindingFamily::Qeph, 0, 100, 1000, 1000, 1000},
+        {fe::ShellBindingFamily::Qeph, 1, 101, 1001, 1001, 1001},
+        {fe::ShellBindingFamily::T3, 0, 102, 2000524, 2000524, 2000524},
+        {fe::ShellBindingFamily::Qbat, 0, 103, 2000524, 2000524, 2000524}};
+    const auto catalog_report =
+        execution_catalog.InitializeExecutionCatalog(
+            rig.fixture.source.shells,
+            {nullptr, declaration.materials.data(),
+             declaration.sections.data(), parents, 0, 3, 3, 4});
+    EXPECT_EQ(catalog_report.status,
+              fe::ShellPlasticityBindingStatus::Success)
+        << catalog_report.message;
+    if (catalog_report.status !=
+        fe::ShellPlasticityBindingStatus::Success)
+      return false;
+
+    fe::ShellFailureParentInput failures[4];
+    for (unsigned row = 0; row < 4; ++row)
+      failures[row] = qbat_catalog_test::Failure(parents[row]);
+    failures[2].constant.failure_strain = 2.5;
+    for (unsigned row = 0; row < 2; ++row) {
+      failures[row].policy = fe::ShellFailurePolicy::Tab1AnyPoint;
+      failures[row].constant = {};
+      failures[row].tab1.table = {{-1, 0, 1}, 1};
+    }
+    const auto failure_report = execution_failure.InitializeExecution(
+        execution_catalog, failures, 4);
+    EXPECT_EQ(failure_report.status,
+              fe::ShellPlasticityBindingStatus::Success)
+        << failure_report.message;
+    if (failure_report.status !=
+        fe::ShellPlasticityBindingStatus::Success)
+      return false;
+
+    const auto execution_report = execution.Initialize(
+        execution_catalog, rig.fixture.ledger, rig.fixture.rigid);
+    EXPECT_EQ(execution_report.status,
+              fe::ShellPlasticityBindingStatus::Success)
+        << execution_report.message << " entry=" << execution_report.entry;
+    if (execution_report.status !=
+        fe::ShellPlasticityBindingStatus::Success)
+      return false;
+    const auto physical_report = physical.InitializeExecution(
+        {&rig.fixture.source.shells, &execution_catalog,
+         &execution_failure, nullptr},
+        rig.fixture.ledger, execution);
+    if (!p::Good(physical_report)) return false;
+
     for (std::size_t row = 0;
-         row < rig.fixture.catalog.parent_count(); ++row) {
-      const auto& parent = *rig.fixture.catalog.parent(row);
+         row < execution_catalog.parent_count(); ++row) {
+      const auto& parent = *execution_catalog.parent(row);
       if (parent.family != fe::ShellBindingFamily::T3 &&
           parent.family != fe::ShellBindingFamily::Qbat)
         continue;
@@ -44,25 +106,44 @@ struct Fixture {
           row, parent.family, parent.family_index,
           parent.source_parent_id, parent.source_part_id});
     }
-    EXPECT_EQ(surface.Initialize(
-        rig.fixture.physical,
-        {selection.data(), selection.size()}).status,
-        c::SelfContactSurfaceStatus::Ok);
-    EXPECT_EQ(facets.Initialize(surface, {{}, 1}).status,
-        c::FixedContactFacetStatus::Ok);
+    const auto surface_report = surface.Initialize(
+        physical, {selection.data(), selection.size()});
+    EXPECT_EQ(surface_report.status, c::SelfContactSurfaceStatus::Ok)
+        << surface_report.message;
+    if (surface_report.status != c::SelfContactSurfaceStatus::Ok)
+      return false;
+    const auto facet_report = facets.Initialize(surface, {{}, 1});
+    EXPECT_EQ(facet_report.status, c::FixedContactFacetStatus::Ok)
+        << facet_report.message;
+    if (facet_report.status != c::FixedContactFacetStatus::Ok)
+      return false;
     const auto cin = rig.fixture.WitnessSource();
     c::SelfContactActiveUseSource source;
     source.rigid = &rig.fixture.rigid;
     source.cin = {
         cin.model, cin.ranges, cin.witnesses,
         cin.range_count, cin.witness_count};
-    EXPECT_EQ(uses.Initialize(facets, source).status,
-        c::SelfContactActiveUseStatus::Ok);
+    const auto use_report = uses.Initialize(facets, source);
+    EXPECT_EQ(use_report.status, c::SelfContactActiveUseStatus::Ok)
+        << use_report.message << " parent=" << use_report.parent
+        << " feature=" << use_report.feature;
+    if (use_report.status != c::SelfContactActiveUseStatus::Ok)
+      return false;
     activity.assign(uses.parents().size(), 1);
+    authority_prepared = true;
+    return true;
+  }
+
+  bool InitializeInfrastructure() {
+    if (!authority_prepared && !PrepareExecutionAuthority()) return false;
+    // Owner, q/t/qbat/PART/plain/CIN mapped participants and publication all
+    // consume the same execution-authenticated physical authority retained by
+    // surface/facets/uses.
+    return rig.InitializeAgainst(physical);
   }
 
   bool Initialize(c::SelfContactTransactionLimits limits = {}) {
-    if (!rig.Initialize()) return false;
+    if (!InitializeInfrastructure()) return false;
     config.force.owner = rig.owner.accepted();
     config.force.startup = rig.fixture.Identity().startup;
     config.force.stiffness_per_area_n_m3 = 2e9;
@@ -75,14 +156,14 @@ struct Fixture {
     if (!Good(plan.report)) return false;
     if (!Good(transaction.Initialize(
             config, uses, rig.owner, rig.publication,
-            rig.fixture.physical, rig.Participants(),
+            physical, rig.Participants(),
             rig.fixture.Identity(), limits)))
       return false;
     fe::ShellPhysicalScratchRoster roster{
         {}, transaction.roster_entry()};
     if (!p::Good(
             rig.publication.ConfigurePhysicalScratchParticipation(
-                rig.owner, rig.fixture.physical, rig.Participants(),
+                rig.owner, physical, rig.Participants(),
                 rig.fixture.Identity(), roster,
                 limits.participation)))
       return false;
@@ -222,7 +303,7 @@ struct Fixture {
 TEST(SelfContactTransactionCuda,
      ExactForecastCapMinusOneAndRosterEntryAreStable) {
   Fixture fixture;
-  ASSERT_TRUE(fixture.rig.Initialize());
+  ASSERT_TRUE(fixture.InitializeInfrastructure());
   fixture.config.force.owner = fixture.rig.owner.accepted();
   fixture.config.force.stiffness_per_area_n_m3 = 2e9;
   fixture.config.force.event_capacity = 16;
@@ -252,7 +333,7 @@ TEST(SelfContactTransactionCuda,
   ++limits.max_startup_host_bytes;
   ASSERT_TRUE(Good(fixture.transaction.Initialize(
       fixture.config, fixture.uses, fixture.rig.owner,
-      fixture.rig.publication, fixture.rig.fixture.physical,
+      fixture.rig.publication, fixture.physical,
       fixture.rig.Participants(), fixture.rig.fixture.Identity(),
       limits)));
   const auto entry = fixture.transaction.roster_entry();

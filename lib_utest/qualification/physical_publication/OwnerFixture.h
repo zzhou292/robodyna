@@ -39,8 +39,13 @@ struct Rig {
   fe::ShellPhysicalParticipants Participants() { return {&qeph,&t3,&qbat,&welds,&beams,&solids}; }
   fe::ShellFormulationParticipants Shells() { return {&qeph,&t3,&qbat,&welds}; }
   bool Initialize(bool initialize_solids = true,bool attach = true);
+  // Opt-in execution-authority path. Legacy publication qualifications keep
+  // using fixture.physical through Initialize/Attach.
+  bool InitializeAgainst(const fe::ShellPhysicalBinding&,
+      bool initialize_solids = true,bool attach = true);
   bool InitializeSolids();
   bool Attach();
+  bool AttachAgainst(const fe::ShellPhysicalBinding&);
   bool ConfigureScratch(bool mapped_wall,bool self_contact);
   bool Begin(fe::NodalTrialToken&,fe::NodalAssemblyView&);
   bool Advance(const fe::NodalTrialToken&,const fe::NodalAssemblyView&,fe::NodalPreparedView&);

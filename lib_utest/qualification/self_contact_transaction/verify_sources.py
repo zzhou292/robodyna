@@ -11,6 +11,9 @@ CMAKE = ROOT / "lib_src/collision/SelfContactTransaction.cmake"
 BAZEL = ROOT / "lib_src/collision/BUILD.bazel"
 QUAL_CMAKE = Path(__file__).resolve().parent / "CMakeLists.txt"
 QUAL_BAZEL = Path(__file__).resolve().parent / "BUILD.bazel"
+CUDA = Path(__file__).resolve().parent / "CudaTest.cu"
+OWNER = (Path(__file__).resolve().parent /
+         "../physical_publication/OwnerStartup.cu").resolve()
 
 
 def require(text: str, token: str, where: Path) -> None:
@@ -95,5 +98,30 @@ for token in (
     require(QUAL_CMAKE.read_text(), token, QUAL_CMAKE)
 for token in ("host_check", "source_check", "root_cuda_sources"):
     require(QUAL_BAZEL.read_text(), token, QUAL_BAZEL)
+
+cuda = CUDA.read_text()
+for token in (
+    "InitializeExecutionCatalog",
+    "InitializeExecution",
+    "execution.Initialize",
+    "rig.InitializeAgainst(physical)",
+    "surface.Initialize(\n        physical",
+    "publication.ConfigurePhysicalScratchParticipation(\n"
+    "                rig.owner, physical",
+):
+    require(cuda, token, CUDA)
+if "rig.fixture.physical" in cuda:
+    raise RuntimeError(
+        f"{CUDA}: transaction fixture fell back to legacy physical authority")
+
+owner = OWNER.read_text()
+for token in (
+    "InitializeAgainst(const fe::ShellPhysicalBinding& physical",
+    "InitializeMapped(q,physical",
+    "InitializeMapped(t,physical",
+    "InitializeMapped(b,physical",
+    "InitializePhysical(owner,physical",
+):
+    require(owner, token, OWNER)
 
 print("fixed self-contact transaction source proof: PASS")
