@@ -10,6 +10,11 @@ import zipfile
 
 
 canonical, scope, binary = map(Path, sys.argv[1:4])
+test_filter = (
+    sys.argv[4]
+    if len(sys.argv) > 4
+    else "OriginalSelfContactSelectionActual.*"
+)
 prefix = "2010-toyota-yaris-coarse-v1l/"
 members = {
     "set-yaris-coarse-v1l.key": (
@@ -55,7 +60,7 @@ with tempfile.TemporaryDirectory(prefix="robo-self-contact-source-") as temporar
             str(canonical),
             str(scope),
             str(binary),
-            "OriginalSelfContactSelectionActual.*",
+            test_filter,
         ],
         env=environment,
         check=False,
