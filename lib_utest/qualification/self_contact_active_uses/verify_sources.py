@@ -35,6 +35,9 @@ assert 'CompleteLocalSupportNeedsRuntimeActivity' in queries
 assert 'UnadmittedEdgeEdgeForceArea' in queries
 assert 'SameParentNeedsCurrentRegularity' in queries
 assert 'next.parent[0] == next.parent[1]' in queries
+assert queries.count('next.activity_base_identity = activity.base') == 2
+assert queries.count('next.activity_current_identity = activity.current') == 2
+assert queries.count('next.activity_parent_count = activity.parent_count') == 2
 assert 'CoveredByIndependentAdmittedVertexFace' not in types
 assert 'independent_vf' not in queries
 assert 'surface.physical()->execution()' in layout
@@ -47,6 +50,8 @@ for text in (build, queries):
     assert 'std::vector' not in text
 assert 'ClassifyVertexFace' in public and 'ClassifyEdgeEdge' in public
 assert 'SelfContactActivityView' in public
+assert 'Authenticates(const SelfContactPairClassification&)' in public
+assert 'pair.binding_identity == impl_.get()' in binding
 cmake = (collision / "SelfContactActiveUseBinding.cmake").read_text()
 bazel = (collision / "BUILD.bazel").read_text()
 assert 'tl_self_contact_active_uses' in cmake

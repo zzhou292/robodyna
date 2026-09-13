@@ -297,6 +297,32 @@ Sign Orient3D(Vec3 a, Vec3 b, Vec3 c, Vec3 d) noexcept {
   return Result(Add(Subtract(first, second), third));
 }
 
+Sign DirectedTriangle(Vec3 a, Vec3 b, Vec3 c,
+                      Vec3 direction) noexcept {
+  const double values[12]{
+      a.x, a.y, a.z, b.x, b.y, b.z,
+      c.x, c.y, c.z, direction.x, direction.y, direction.z};
+  const int exponent = MinimumExponent(values, 12);
+  const Integer3 ai{Aligned(a.x, exponent), Aligned(a.y, exponent),
+                    Aligned(a.z, exponent)};
+  const Integer3 bi{Aligned(b.x, exponent), Aligned(b.y, exponent),
+                    Aligned(b.z, exponent)};
+  const Integer3 ci{Aligned(c.x, exponent), Aligned(c.y, exponent),
+                    Aligned(c.z, exponent)};
+  const Integer3 di{Aligned(direction.x, exponent),
+                    Aligned(direction.y, exponent),
+                    Aligned(direction.z, exponent)};
+  const Integer3 ab = Subtract(bi, ai);
+  const Integer3 ac = Subtract(ci, ai);
+  const Integer first = Multiply(
+      di.x, Subtract(Multiply(ab.y, ac.z), Multiply(ab.z, ac.y)));
+  const Integer second = Multiply(
+      di.y, Subtract(Multiply(ab.z, ac.x), Multiply(ab.x, ac.z)));
+  const Integer third = Multiply(
+      di.z, Subtract(Multiply(ab.x, ac.y), Multiply(ab.y, ac.x)));
+  return Result(Add(Add(first, second), third));
+}
+
 bool ClosestStratum(Vec3 point, const Vec3 (&triangle)[3],
                     ClosestTriangleStratum* output) noexcept {
   if (!output)

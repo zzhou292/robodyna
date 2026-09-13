@@ -122,6 +122,10 @@ bool SelfContactActiveUseBinding::OutputDisjoint(const void* output,
     return false;
   return true;
 }
+bool SelfContactActiveUseBinding::Authenticates(
+    const SelfContactPairClassification& pair) const noexcept {
+  return impl_ && pair.binding_identity == impl_.get();
+}
 SelfContactActiveUseReport SelfContactActiveUseBinding::ClassifySupport(
     const WeightedSurfacePoint& point,
     SelfContactSupportClassification* output) const noexcept {

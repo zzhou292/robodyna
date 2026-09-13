@@ -33,6 +33,7 @@ class SelfContactActiveUseBinding {
   tl::util::ConstView<SelfContactFacetEdgeUse> edge_uses() const noexcept;
   bool SharesStorage(const SelfContactActiveUseBinding&) const noexcept;
   bool OutputDisjoint(const void*, std::size_t) const noexcept;
+  bool Authenticates(const SelfContactPairClassification&) const noexcept;
 
   SelfContactActiveUseReport ClassifySupport(const WeightedSurfacePoint&,
       SelfContactSupportClassification*) const noexcept;

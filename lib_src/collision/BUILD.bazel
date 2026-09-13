@@ -113,6 +113,47 @@ cc_library(
     ],
 )
 
+filegroup(
+    name = "self_contact_current_regularity_source_proof",
+    srcs = [
+        "BUILD.bazel",
+        "SelfContactCurrentRegularity.cmake",
+        "SelfContactCurrentRegularity.cpp",
+        "SelfContactCurrentRegularity.h",
+        "SelfContactCurrentRegularityTypes.h",
+        "SelfContactCurrentRegularityValues.h",
+        "self_contact_current_regularity/Layout.cpp",
+        "self_contact_current_regularity/Query.cpp",
+        "self_contact_current_regularity/Source.cpp",
+        "self_contact_current_regularity/Storage.h",
+        "self_contact_current_regularity/Values.cpp",
+    ],
+)
+
+cc_library(
+    name = "self_contact_current_regularity",
+    srcs = [
+        "SelfContactCurrentRegularity.cpp",
+        "self_contact_current_regularity/Layout.cpp",
+        "self_contact_current_regularity/Query.cpp",
+        "self_contact_current_regularity/Source.cpp",
+        "self_contact_current_regularity/Values.cpp",
+    ],
+    hdrs = [
+        "SelfContactCurrentRegularity.h",
+        "SelfContactCurrentRegularityTypes.h",
+        "SelfContactCurrentRegularityValues.h",
+        "self_contact_current_regularity/Storage.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        ":fixed_triangle_feature_discovery",
+        ":self_contact_active_uses",
+        "//lib_src/solvers:nodal_trial_identity",
+        "//lib_utils:bounded_arena",
+    ],
+)
+
 cc_library(
     name = "fixed_contact_facets",
     srcs = [

@@ -171,10 +171,19 @@ enum class SelfContactPairStatus : std::uint8_t {
   AdmittedVertexFace,
   // No line area or topology-only VF coverage is inferred. A runtime owner may
   // cover the exact EE event only with independently authenticated geometry.
-  UnadmittedEdgeEdgeForceArea
+  UnadmittedEdgeEdgeForceArea,
+  // Added only by the current-regularity receipt consumer.  The active-use
+  // classifier itself never emits this decision.
+  ExcludedRegularOwnParent
 };
 struct SelfContactPairClassification {
   const void* binding_identity = nullptr;
+  // Exact activity input identity used by the active-use query.  It permits a
+  // later geometry receipt to reject a pair from another activity view even
+  // when the byte values happen to agree.
+  const std::uint8_t* activity_base_identity = nullptr;
+  const std::uint8_t* activity_current_identity = nullptr;
+  std::size_t activity_parent_count = 0;
   SelfContactPairKind kind = SelfContactPairKind::VertexFace;
   SelfContactEdgeEdgeCase edge_edge_case =
       SelfContactEdgeEdgeCase::StrictInteriorInteriorMinimum;

@@ -15,6 +15,10 @@ struct Sign {
 // arithmetic; it allocates no memory and never depends on long-double width.
 Sign Orient2D(Vec3 a, Vec3 b, Vec3 c, int dropped_axis) noexcept;
 Sign Orient3D(Vec3 a, Vec3 b, Vec3 c, Vec3 d) noexcept;
+// Exact sign of ((b-a) x (c-a)) dot direction.  Unlike constructing
+// a+direction and calling Orient3D, this does not round the chart direction
+// through a translated point.
+Sign DirectedTriangle(Vec3 a, Vec3 b, Vec3 c, Vec3 direction) noexcept;
 
 enum class ClosestStratumKind {
   Vertex,

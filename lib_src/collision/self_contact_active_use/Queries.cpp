@@ -202,6 +202,9 @@ SelfContactActiveUseReport SelfContactActiveUseBinding::ClassifyVertexFace(
         "VF face map does not match its parent-local original slots"};
   SelfContactPairClassification next;
   next.binding_identity = impl_.get();
+  next.activity_base_identity = activity.base;
+  next.activity_current_identity = activity.current;
+  next.activity_parent_count = activity.parent_count;
   next.kind = SelfContactPairKind::VertexFace;
   next.parent[0] = vertex.parent; next.parent[1] = facet.parent;
   next.feature[0] = vertex.feature;
@@ -257,6 +260,9 @@ SelfContactActiveUseReport SelfContactActiveUseBinding::ClassifyEdgeEdge(
         "EE point map does not match its parent-local original slots"};
   SelfContactPairClassification next;
   next.binding_identity = impl_.get();
+  next.activity_base_identity = activity.base;
+  next.activity_current_identity = activity.current;
+  next.activity_parent_count = activity.parent_count;
   next.kind = SelfContactPairKind::EdgeEdge;
   next.edge_edge_case = edge_case;
   next.parent[0] = first.parent; next.parent[1] = second.parent;
