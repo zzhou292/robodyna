@@ -19,7 +19,6 @@ template<class Traits> bool Append(std::size_t count, util::BoundedArenaLayout& 
       device.Append<State<Traits>>(count, output.slab[1]) &&
       device.Append<int>(count, output.status) &&
       device.Append<std::uint8_t>(count, output.result_valid) &&
-      device.Append<MeasurementOperands<Traits::nodes>>(count, output.measurement) &&
       host.Append<State<Traits>>(count, output.staging);
 }
 template<class Traits> DeviceFamily<Traits> Rebase(void* base,
@@ -29,8 +28,7 @@ template<class Traits> DeviceFamily<Traits> Rebase(void* base,
       {util::ArenaPointer<State<Traits>>(base, layout.slab[0]),
        util::ArenaPointer<State<Traits>>(base, layout.slab[1])},
       util::ArenaPointer<int>(base, layout.status), layout.parents.count,
-      util::ArenaPointer<std::uint8_t>(base, layout.result_valid),
-      util::ArenaPointer<MeasurementOperands<Traits::nodes>>(base, layout.measurement)};
+      util::ArenaPointer<std::uint8_t>(base, layout.result_valid)};
 }
 } // namespace
 bool MakeLayout(Counts count, const BatchConfig& config, ArenaLayout& output) noexcept {
@@ -70,10 +68,6 @@ bool MakeLayout(Counts count, const BatchConfig& config, ArenaLayout& output) no
       !Append<Traits18Law90>(count.solid18_law90, device, host, next.solid18_law90) ||
       !device.Append<ExtendedScratch<Traits18Law44>>(Scratch18Count(count.solid18_law44), next.scratch44) ||
       !device.Append<ExtendedScratch<Traits18Law90>>(Scratch18Count(count.solid18_law90), next.scratch90) ||
-      !device.Append<std::uint32_t>(config.owner.node_count + 1, next.assembly_offsets) ||
-      !device.Append<std::uint32_t>(8*(count.solid18 + count.solid24 + count.solid18_law44 +
-          count.solid18_law90) + 6*count.solid6z, next.assembly_incidence) ||
-      !device.Append<AssemblyNode>(config.owner.node_count, next.assembly_nodes) ||
       !shell_physical_owner::ForecastProof(config.owner.node_count,
           config.cin_attachment_count, limits.max_host_bytes, next.proof)) return false;
   next.bytes = device.bytes();
@@ -98,10 +92,6 @@ Storage RebasedHeader(void* base, const ArenaLayout& layout) noexcept {
     next.scratch44 = util::ArenaPointer<ExtendedScratch<Traits18Law44>>(base, layout.scratch44);
   if (layout.scratch90.count)
     next.scratch90 = util::ArenaPointer<ExtendedScratch<Traits18Law90>>(base, layout.scratch90);
-  next.assembly = {util::ArenaPointer<std::uint32_t>(base, layout.assembly_offsets),
-      util::ArenaPointer<std::uint32_t>(base, layout.assembly_incidence),
-      util::ArenaPointer<AssemblyNode>(base, layout.assembly_nodes),
-      layout.assembly_incidence.count, layout.bytes};
   next.solid18_law44 = Rebase<Traits18Law44>(base, layout.solid18_law44);
   next.solid18_law90 = Rebase<Traits18Law90>(base, layout.solid18_law90);
   next.solid18 = Rebase<Traits18>(base, layout.solid18);

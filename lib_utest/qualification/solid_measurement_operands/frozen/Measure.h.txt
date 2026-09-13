@@ -2,7 +2,7 @@
 #pragma once
 #include "DeviceFamilies.h"
 #include "ResultValidation.h"
-#include "MeasurementWork.h"
+#include "../../ShellBatchFields.h"
 
 namespace tl::fea::solids::batch_detail {
 TL_BRICK_HD inline double NativeDt(const Cache18& c) noexcept {
@@ -59,8 +59,17 @@ TL_BRICK_HD inline bool MeasureFamilyWithCheck(Storage& state, unsigned accepted
     if (NativeDt(cache) < diagnostics.minimum_native_dt_s)
       diagnostics.minimum_native_dt_s = NativeDt(cache);
     if (view) {
-      AccumulateMeasurementWork<Traits>(parent, family.slab[accepted][p].cache, *view,
-          diagnostics.internal_kick_work_j, diagnostics.internal_drift_work_j);
+      for (unsigned n = 0; n < Traits::nodes; ++n) {
+        namespace fields = shell_batch_fields;
+        const auto node = parent.domain_nodes[n];
+        const auto v0 = fields::ReadVector(view->base_kinematics.velocity_xyz, node);
+        const auto v1 = fields::ReadVector(view->kinematics.velocity_xyz, node);
+        const auto dx = fields::Difference(fields::ReadVector(view->kinematics.position_xyz, node),
+            fields::ReadVector(view->base_kinematics.position_xyz, node));
+        const auto rhs = family.slab[accepted][p].cache.rhs_force_n[n];
+        diagnostics.internal_kick_work_j += view->kick_dt * fields::Dot(rhs, fields::Mean(v0, v1));
+        diagnostics.internal_drift_work_j += fields::Dot(rhs, dx);
+      }
     }
     const double finite[]{diagnostics.native_internal_work_increment_j[family_index],
         diagnostics.physical_hourglass_work_increment_j[family_index], diagnostics.plastic_work_increment_j,

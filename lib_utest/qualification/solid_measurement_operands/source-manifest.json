@@ -1,0 +1,214 @@
+{
+  "schema": "solid-measurement-operands-source-v1",
+  "baseline_commit": "edab8e17e6d6e641f77f093fdb258d98152db492",
+  "scope": "Fresh independent scalar and accepted-RHS operands in the existing five result-validation launches; exact serial family/parent/slot additions, failure order, caps, and ownership retained. Source/host/shaped author evidence only; no CUDA or native execution claim.",
+  "files": [
+    {
+      "path": "lib_src/elements/solids/resident/Arena.cpp",
+      "bytes": 6894,
+      "sha256": "1f7befcee6b44fd49593960b4b51309d533a80f03d97bc809c661002450208b5"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/Arena.h",
+      "bytes": 2765,
+      "sha256": "fa2451d4d2a2cad34077cc97c92f2a44853ff277ca3e1fc3212bb8fd74ac712a"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/Candidate.cu",
+      "bytes": 6304,
+      "sha256": "a05387f92ddff49ea3b56e63746402b0a86cad1111ebddcdd44d66da9d83f63c"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/Measure.h",
+      "bytes": 4940,
+      "sha256": "6f2044a50ea5aeb5b2322b55feab61e87b4535334f4bfcd0a3c17526045ba888"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/MeasurementTypes.h",
+      "bytes": 698,
+      "sha256": "ef4af0d53f3f91735b881200f73ed1a9c158a9d065ff63c921e44a3f9c0409e9"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/MeasurementValues.h",
+      "bytes": 3755,
+      "sha256": "d3729d9fd1c51980534b341867bc4774628f3dee435a26328c2e0d4e3418447e"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/MeasurementWork.h",
+      "bytes": 1212,
+      "sha256": "6ae7f6d8268c0cc109511ecdbcc19f0861910b1822dfab80bbc64ee37ea930e9"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/ResultValidation.cu",
+      "bytes": 2676,
+      "sha256": "beba0aaa9adf5039ea9f24451efc2fd7f8bf29b4516a096983f04264b644972f"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/Storage.h",
+      "bytes": 2469,
+      "sha256": "04504ce6b0e27b588218b352272ad8e989c9009faf4d3c0b556a1e82cf005e64"
+    },
+    {
+      "path": "lib_src/elements/solids/resident/Upload.cpp",
+      "bytes": 3016,
+      "sha256": "8dc3c56c85e4e4a075a941b1806a32d09370d3aa0146b32a331aa9f27dcd6550"
+    },
+    {
+      "path": "lib_utest/qualification/extended_solid_resident/source-manifest.json",
+      "bytes": 17974,
+      "sha256": "5611adca035b7130065fc37e16ab89ef3c73c42cee98e20a43d8e3c600aa8961"
+    },
+    {
+      "path": "lib_utest/qualification/extended_solid_resident/verify_sources.py",
+      "bytes": 880,
+      "sha256": "34e3bf5728eb1d895079fe4cd7f317d243cbadfdef646abb119624e821f37d3e"
+    },
+    {
+      "path": "lib_utest/qualification/solid_candidate_validation/source-manifest.json",
+      "bytes": 14659,
+      "sha256": "a6ac531d9ff3200a6dd68878170a74debec4dcaf5c4c11c844384d3bbdc6f501"
+    },
+    {
+      "path": "lib_utest/qualification/solid_candidate_validation/verify_sources.py",
+      "bytes": 3220,
+      "sha256": "9c8bcdc1918a574ef167185ee6c215fcd9185dcb6de487aefa0baf155217c656"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law44_analytic/source-manifest.json",
+      "bytes": 11176,
+      "sha256": "7e1b6730877e14740a360103575e9cc8e237e749fb76d7713fefb08fab71dafc"
+    },
+    {
+      "path": "lib_utest/qualification/solid_law44_analytic/verify_source.py",
+      "bytes": 1287,
+      "sha256": "07db6507bfad4b9d1548b8de2bcb1ce27f476ec54ed01a15c0b8e479925ff5b7"
+    },
+    {
+      "path": "lib_utest/qualification/solid_measurement_operands/BudgetTest.cpp",
+      "bytes": 4693,
+      "sha256": "cc466417647e700b3e07f210dc423c63e25c0bbe77821e21640ef5db2754d068"
+    },
+    {
+      "path": "lib_utest/qualification/solid_measurement_operands/CMakeLists.txt",
+      "bytes": 3189,
+      "sha256": "da32c898b1d819c4b74ddf0f54404dcf0df9b2772400638dc21e6d76d0c27300"
+    },
+    {
+      "path": "lib_utest/qualification/solid_measurement_operands/CudaTest.cu",
+      "bytes": 9162,
+      "sha256": "1558307f66e0dda356ab372731843fddaa587e7c384266679d9439cf912eb0b4"
+    },
+    {
+      "path": "lib_utest/qualification/solid_measurement_operands/CurrentCandidate.cu",
+      "bytes": 404,
+      "sha256": "758018ac2b78061e81c3326b3ac4fa10a2c3aadb7eea3c960b511c9b46c2b21b"
+    },
+    {
+      "path": "lib_utest/qualification/solid_measurement_operands/HostTest.cpp",
+      "bytes": 6500,
+      "sha256": "89caf1bd6da85e2b4f2d061948b234269d49e4ac0fdd517c96968571ced00d8b"
+    },
+    {
+      "path": "lib_utest/qualification/solid_measurement_operands/README.md",
+      "bytes": 6498,
+      "sha256": "87bf187a1932c383a411330cd9ff059be1ad8a32791bbfa81e070b3a1af17c90"
+    },
+    {
+      "path": "lib_utest/qualification/solid_measurement_operands/TestSupport.h",
+      "bytes": 2478,
+      "sha256": "5894d2ec32c14a22151f847d614668d4b676bff87d3981416a447915b50ff95b"
+    },
+    {
+      "path": "lib_utest/qualification/solid_measurement_operands/baseline.json",
+      "bytes": 1188,
+      "sha256": "d1f4948f38aca191d59892f1ae2e5ebec774ba4b6b810a0743f0ae1fcfa66e82"
+    },
+    {
+      "path": "lib_utest/qualification/solid_measurement_operands/check_syntax.py",
+      "bytes": 4424,
+      "sha256": "0719598b6b4991d4cf35ec7bb61906ca1aef3234b410f2be4d012351deaa22be"
+    },
+    {
+      "path": "lib_utest/qualification/solid_measurement_operands/frozen/Arena.cpp.txt",
+      "bytes": 6092,
+      "sha256": "8c74e75684ca3c8cddcbd48ddfd98d5ce7e10980484caca5491219832237a75b"
+    },
+    {
+      "path": "lib_utest/qualification/solid_measurement_operands/frozen/Arena.h.txt",
+      "bytes": 2533,
+      "sha256": "6c82c9f0455910a5778a63ed62e5db944e4cded406405cb12912d981b21c92ef"
+    },
+    {
+      "path": "lib_utest/qualification/solid_measurement_operands/frozen/Candidate.cu.txt",
+      "bytes": 6129,
+      "sha256": "e1d3d78ed9cb3c9d535c1582154c9c20af7fd8e8e5adfcba808e162225f1f919"
+    },
+    {
+      "path": "lib_utest/qualification/solid_measurement_operands/frozen/Measure.h.txt",
+      "bytes": 5519,
+      "sha256": "61e259f1e7d097246d0ab7cfde6d41e83ba2c78cb29b325a3c6ecff5a821e0fc"
+    },
+    {
+      "path": "lib_utest/qualification/solid_measurement_operands/frozen/ResultValidation.cu.txt",
+      "bytes": 1677,
+      "sha256": "c046497643f30a09f36d12a4444653ce5e0f6e6e563c2f1733b275d5bccb5ab8"
+    },
+    {
+      "path": "lib_utest/qualification/solid_measurement_operands/frozen/native_base/Arena.cpp.txt",
+      "bytes": 6720,
+      "sha256": "29321a4edf5acd52494d737848a8ffce99fdac14c0ffcf8d08993f9fd50f1359"
+    },
+    {
+      "path": "lib_utest/qualification/solid_measurement_operands/frozen/native_base/Arena.h.txt",
+      "bytes": 2661,
+      "sha256": "806622a1eb38b1ead65a23ccb5abc7ffde64a8af0ed79020da8c09b2a45490cc"
+    },
+    {
+      "path": "lib_utest/qualification/solid_measurement_operands/frozen/native_base/Storage.h.txt",
+      "bytes": 2305,
+      "sha256": "50e315041056160be295c9c53e236972c79763f75a337b6f966f3877cb5003cf"
+    },
+    {
+      "path": "lib_utest/qualification/solid_measurement_operands/frozen/native_base/Upload.cpp.txt",
+      "bytes": 2934,
+      "sha256": "28c147a7162d29f25bc0ae134c333fb2fa78f60e5e1794e7d410d5121afd2bbe"
+    },
+    {
+      "path": "lib_utest/qualification/solid_measurement_operands/generate_oracle.py",
+      "bytes": 1476,
+      "sha256": "d82b71189af1e645acd4c033a03e221e2852e75b9a3fc212a39da6ba1fea4e2b"
+    },
+    {
+      "path": "lib_utest/qualification/solid_measurement_operands/integration-baseline.json",
+      "bytes": 1065,
+      "sha256": "0ff7b0455dd5b2a438a35e0e423d6248e259c429bf0c9552f239f825fc7b9328"
+    },
+    {
+      "path": "lib_utest/qualification/solid_measurement_operands/integration_proof.py",
+      "bytes": 2634,
+      "sha256": "f66292e2d861d5853a20aca27bb631894bf3d40ff7c40a3550c98f454d3649f7"
+    },
+    {
+      "path": "lib_utest/qualification/solid_measurement_operands/operand_proof.py",
+      "bytes": 13336,
+      "sha256": "6cf297d26896b180f8fba8533f5a82900a0dd76d6a40d07e2552207f431699ee"
+    }
+  ],
+  "frozen_baseline": {
+    "manifest": "lib_utest/qualification/solid_measurement_operands/baseline.json",
+    "sha256": "d1f4948f38aca191d59892f1ae2e5ebec774ba4b6b810a0743f0ae1fcfa66e82",
+    "complete_files": 5
+  },
+  "composed_proofs": [
+    "lib_utest/qualification/solid_candidate_validation/verify_sources.py",
+    "lib_utest/qualification/extended_solid_resident/verify_sources.py",
+    "lib_utest/qualification/solid_law44_analytic/verify_source.py"
+  ],
+  "test_only_review": [
+    {
+      "path": "lib_utest/qualification/solid_measurement_operands/CudaTest.cu",
+      "reason": "Brace the family-specific GTest ASSERT branch so macro expansion is unambiguous; add one frozen-caller device comparison for sensitive accepted-RHS cancellation and derived overflow. No production formula, tolerance, or admission change."
+    }
+  ],
+  "integration_base_commit": "90a4a8060966358714049a775e4f9f7e7838481e"
+}
