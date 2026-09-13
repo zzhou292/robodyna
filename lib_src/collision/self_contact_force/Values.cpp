@@ -62,8 +62,7 @@ SelfContactForceReport BuildSelfContactForceIncidence(
               "Event source order is invalid"};
     if (event &&
         fixed_triangle_features::Compare(events[event - 1].feature,
-                                         events[event].feature) == 0 &&
-        events[event - 1].source_order == events[event].source_order)
+                                         events[event].feature) == 0)
       return {S::DuplicateEvent, event, events[event].source_order,
               UINT32_MAX, SurfacePenaltyStatus::InvalidInput,
               tl::fea::NodalStatus::Ok,

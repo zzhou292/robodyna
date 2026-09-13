@@ -90,7 +90,7 @@ TEST(SelfContactForceValues,
      DuplicateCapsAndAliasesRejectWithoutSummaryPublication) {
   std::array<c::SelfContactForceEvent, 2> duplicate{{
       Event(10, 1, {0, 1, 2}, {2, 3, 4}),
-      Event(10, 1, {0, 4, 5}, {5, 6, 7})}};
+      Event(10, 2, {0, 4, 5}, {5, 6, 7})}};
   std::array<c::SelfContactForceIncidence, 16> incidence;
   std::array<c::SelfContactForceNodeIncidence, 8> nodes;
   c::SelfContactForceIncidenceSummary summary{71, 73};
