@@ -22,10 +22,14 @@ struct Fixture {
   type13_model_test::Fixture beam_input;
   spring::PropertyInput spring_property;
   std::array<spring::ConnectionInput,2> spring_input;
-  Fixture() {
+  explicit Fixture(bool contact_geometry = false)
+      : shell_input(contact_geometry) {
     EXPECT_EQ(shells.InitializeFormulations(shell_input.Input()).status,fe::ShellBindingStatus::Success);
-    nodes.resize(7);
-    for(std::size_t n=0;n<5;++n) nodes[map[n]]={shells.nodes()[n].source_id,shells.nodes()[n].position};
+    nodes.resize(contact_geometry ? 9 : 7);
+    for(std::size_t n=0;n<shells.node_count();++n) {
+      const auto destination = n < map.size() ? map[n] : 7 + n - map.size();
+      nodes[destination]={shells.nodes()[n].source_id,shells.nodes()[n].position};
+    }
     nodes[2]={777,{0,0,0}}; // Deliberately no admitted coefficient producer.
     nodes[6]={55,{.06,0,0}};
     beam_input.nodes={{10,map[0],{0,0,0}},{11,map[1],{40,0,0}},

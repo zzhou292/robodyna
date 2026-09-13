@@ -290,7 +290,8 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
     return state.Fail(report);
   }
   auto edge_policy = sct::ValidateCandidateEdgePolicy(
-      state.active_use, state.candidate_discovery.features(),
+      state.active_use, state.regularity, regularity_receipt,
+      state.candidate_discovery.features(),
       state.buffers.facet_descriptors,
       state.buffers.triangle_order, triangles, activity);
   if (edge_policy.status != S::Ok)

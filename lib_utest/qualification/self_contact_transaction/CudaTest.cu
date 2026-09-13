@@ -24,7 +24,8 @@ bool Good(c::SelfContactTransactionReport report) {
 
 struct Fixture {
   explicit Fixture(bool single = false, bool crossing = false)
-      : single_parent(single), pass_through(crossing) {}
+      : rig(false, 2.5, !single),
+        single_parent(single), pass_through(crossing) {}
   p::Rig rig;
   fe::ShellBatchPlasticityBinding execution_catalog;
   fe::ShellBatchFailureBinding execution_failure;
@@ -139,18 +140,6 @@ struct Fixture {
 
   bool InitializeInfrastructure() {
     if (!authority_prepared && !PrepareExecutionAuthority()) return false;
-    if (!single_parent) {
-      // Place the actual accepted T3 apex just above the Q4 face.  This is an
-      // owner-state change only: immutable reference area and thickness remain
-      // those authenticated by active-use startup.
-      const auto apex = rig.fixture.domain.Find(14);
-      if (apex == SIZE_MAX) return false;
-      rig.fixture.x[3 * apex] = .03;
-      rig.fixture.x[3 * apex + 1] = .01;
-      rig.fixture.x[3 * apex + 2] = .00025;
-      if (pass_through)
-        rig.fixture.v[3 * apex + 2] = -.00075 / p::H;
-    }
     // Owner, q/t/qbat/PART/plain/CIN mapped participants and publication all
     // consume the same execution-authenticated physical authority retained by
     // surface/facets/uses.

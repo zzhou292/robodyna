@@ -133,7 +133,10 @@ SelfContactTransactionReport BuildAcceptedEvents(
     SelfContactForceEvent*, AcceptedEventCertificate*,
     std::size_t capacity, std::size_t* count) noexcept;
 SelfContactTransactionReport ValidateCandidateEdgePolicy(
-    const SelfContactActiveUseBinding&, FixedTriangleFeatureView,
+    const SelfContactActiveUseBinding&,
+    const SelfContactCurrentRegularity&,
+    const SelfContactCurrentRegularityReceipt&,
+    FixedTriangleFeatureView,
     const FixedContactFacet*, const std::uint32_t* triangle_order,
     std::size_t facet_count, SelfContactActivityView) noexcept;
 

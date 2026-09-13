@@ -40,7 +40,8 @@ struct Fixture {
   std::vector<std::uint8_t> fixed,rotation_fixed,present;
   bool surface_rigid=false;
   double t3_failure=2.5;
-  explicit Fixture(bool surface_rigid=false,double t3_failure=2.5);
+  explicit Fixture(bool surface_rigid=false,double t3_failure=2.5,
+                   bool contact_geometry=false);
   void PrepareSources();
   void PrepareConstraints();
   void PrepareMaterials();

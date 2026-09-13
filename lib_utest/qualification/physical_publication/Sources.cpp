@@ -4,7 +4,8 @@
 #include "lib_src/materials/law42/Prepare.h"
 
 namespace physical_publication_test {
-Fixture::Fixture(bool surface,double failure) : surface_rigid(surface),t3_failure(failure) {
+Fixture::Fixture(bool surface,double failure,bool contact_geometry)
+    : source(contact_geometry),surface_rigid(surface),t3_failure(failure) {
   source.nodes.push_back({778,{.06,-.01,.003}});
   source.nodes.push_back({901,{.02,.01,.001}});
   EXPECT_TRUE(domain.Initialize({1,source.nodes.data(),source.nodes.size()}));

@@ -10,7 +10,8 @@ struct SolidFixture : Fixture {
   fe::solid18::ReferenceInput a;
   fe::solid24::ReferenceInput b;
   fe::solid6z::ReferenceInput c;
-  SolidFixture() {
+  explicit SolidFixture(bool contact_geometry = false)
+      : Fixture(contact_geometry) {
     a.source_element_id=9100; a.source_part_id=9200;
     a.source_section_id=9201; a.source_material_id=9202;
     a.density_kg_m3=1070;

@@ -44,8 +44,13 @@ struct Fixture {
   std::array<fe::ShellQephBindingInput,2> q;
   fe::ShellT3BindingInput t;
   fe::ShellQbatBindingInput b;
-  Fixture() {
-    const tl::math::Vec3 x[]{{0,0,0},{.04,0,0},{.04,.02,0},{0,.02,0},{.05,.01,0}};
+  bool contact_geometry = false;
+  explicit Fixture(bool contact = false) : contact_geometry(contact) {
+    const tl::math::Vec3 x[]{
+        {0,0,0},{.04,0,0},{.04,.02,0},{0,.02,0},
+        contact ? tl::math::Vec3{.01,.005,.00025}
+                         : tl::math::Vec3{.05,.01,0},
+        {.03,.005,.00025},{.02,.015,.00025}};
     for(unsigned layer=0;layer<2;++layer) {
       q[layer].source_parent_id=100+layer;
       q[layer].nodes={0,1,2,3};
@@ -71,7 +76,9 @@ struct Fixture {
     membrane.poisson_ratio=.35;
     membrane.thickness=.0005;
     b.reference.initial_a11_pa=membrane.young_modulus/(1-membrane.poisson_ratio*membrane.poisson_ratio);
-    t.nodes={1,4,2};
+    t.nodes = contact
+        ? std::array<std::size_t,3>{4,5,6}
+        : std::array<std::size_t,3>{1,4,2};
     t.source_parent_id=102;
     t.reference.density=1000;
     t.reference.young_modulus=250e6;
@@ -79,11 +86,12 @@ struct Fixture {
     t.reference.thickness=.0005;
     for(unsigned n=0;n<3;++n) {
       t.reference.position[n]=x[t.nodes[n]];
-      t.reference.node_ids[n]=10+t.nodes[n];
+      t.reference.node_ids[n] = contact
+          ? 14 + n : 10 + t.nodes[n];
     }
   }
   fe::ShellFormulationCollectionInput Input() const {
-    return {{q.data(),&t,2,1,5},&b,1};
+    return {{q.data(),&t,2,1,contact_geometry ? 7u : 5u},&b,1};
   }
 };
 inline void Reduction(const Binding& binding) {

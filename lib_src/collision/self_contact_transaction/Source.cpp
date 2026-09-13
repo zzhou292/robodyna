@@ -168,6 +168,50 @@ SelfContactTransactionReport VertexFaceEvent(
   return {};
 }
 
+bool SameParent(const FixedTriangleKey& a,
+                const FixedTriangleKey& b) noexcept {
+  return a.source_instance_id == b.source_instance_id &&
+      a.parent_eid == b.parent_eid;
+}
+
+bool SameParentPair(const FixedTriangleFeatureCandidate& a,
+                    const FixedTriangleFeatureCandidate& b) noexcept {
+  return (SameParent(a.triangles[0], b.triangles[0]) &&
+          SameParent(a.triangles[1], b.triangles[1])) ||
+      (SameParent(a.triangles[0], b.triangles[1]) &&
+       SameParent(a.triangles[1], b.triangles[0]));
+}
+
+SelfContactTransactionReport CoveredByAdmittedVertexFace(
+    const SelfContactActiveUseBinding& active_use,
+    const SelfContactCurrentRegularity& regularity,
+    const SelfContactCurrentRegularityReceipt& regularity_receipt,
+    FixedTriangleFeatureView features,
+    const FixedTriangleFeatureCandidate& edge_edge,
+    const FixedContactFacet* descriptors,
+    const std::uint32_t* triangle_order, std::size_t facet_count,
+    SelfContactActivityView activity, bool* covered) noexcept {
+  *covered = false;
+  for (std::size_t i = 0; i < features.count; ++i) {
+    const auto& candidate = features.data[i];
+    if (candidate.key.kind !=
+            FixedTriangleCandidateKind::VertexFace ||
+        !SameParentPair(candidate, edge_edge))
+      continue;
+    bool admitted = false;
+    const auto report = VertexFaceEvent(
+        active_use, regularity, regularity_receipt, candidate,
+        descriptors, triangle_order, facet_count, activity,
+        0, nullptr, nullptr, &admitted);
+    if (report.status != S::Ok) return report;
+    if (admitted) {
+      *covered = true;
+      return {};
+    }
+  }
+  return {};
+}
+
 bool EdgePoint(
     const SelfContactActiveUseBinding& active_use,
     const FixedContactFacet* descriptors,
@@ -434,13 +478,7 @@ SelfContactTransactionReport BuildAcceptedEvents(
   std::size_t required = 0;
   for (std::size_t feature = 0; feature < features.count; ++feature) {
     const auto& value = features.data[feature];
-    if (value.key.kind == FixedTriangleCandidateKind::EdgeEdge) {
-      const auto checked = CheckEdgeEdge(
-          active_use, value, descriptors, triangle_order,
-          facet_count, activity);
-      if (checked.status != S::Ok) return checked;
-      continue;
-    }
+    if (value.key.kind == FixedTriangleCandidateKind::EdgeEdge) continue;
     bool admitted = false;
     const auto checked = VertexFaceEvent(
         active_use, regularity, regularity_receipt, value,
@@ -448,6 +486,21 @@ SelfContactTransactionReport BuildAcceptedEvents(
         required, nullptr, nullptr, &admitted);
     if (checked.status != S::Ok) return checked;
     required += admitted;
+  }
+  for (std::size_t feature = 0; feature < features.count; ++feature) {
+    const auto& value = features.data[feature];
+    if (value.key.kind != FixedTriangleCandidateKind::EdgeEdge) continue;
+    const auto checked = CheckEdgeEdge(
+        active_use, value, descriptors, triangle_order,
+        facet_count, activity);
+    if (checked.status == S::Ok) continue;
+    if (checked.status != S::CandidateRejected) return checked;
+    bool covered = false;
+    const auto coverage = CoveredByAdmittedVertexFace(
+        active_use, regularity, regularity_receipt, features, value,
+        descriptors, triangle_order, facet_count, activity, &covered);
+    if (coverage.status != S::Ok) return coverage;
+    if (!covered) return checked;
   }
   if (required > capacity)
     return Failure(S::ResourceLimit,
@@ -477,6 +530,8 @@ SelfContactTransactionReport BuildAcceptedEvents(
 
 SelfContactTransactionReport ValidateCandidateEdgePolicy(
     const SelfContactActiveUseBinding& active_use,
+    const SelfContactCurrentRegularity& regularity,
+    const SelfContactCurrentRegularityReceipt& regularity_receipt,
     FixedTriangleFeatureView features,
     const FixedContactFacet* descriptors,
     const std::uint32_t* triangle_order, std::size_t facet_count,
@@ -492,7 +547,15 @@ SelfContactTransactionReport ValidateCandidateEdgePolicy(
     const auto checked = CheckEdgeEdge(
         active_use, features.data[feature], descriptors,
         triangle_order, facet_count, activity);
-    if (checked.status != S::Ok) return checked;
+    if (checked.status == S::Ok) continue;
+    if (checked.status != S::CandidateRejected) return checked;
+    bool covered = false;
+    const auto coverage = CoveredByAdmittedVertexFace(
+        active_use, regularity, regularity_receipt, features,
+        features.data[feature], descriptors, triangle_order,
+        facet_count, activity, &covered);
+    if (coverage.status != S::Ok) return coverage;
+    if (!covered) return checked;
   }
   return {};
 }
