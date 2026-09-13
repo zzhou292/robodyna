@@ -1,5 +1,4 @@
 load("@rules_cc//cc:defs.bzl", "cc_test")
-load("@rules_python//python:defs.bzl", "py_test")
 
 cc_test(
     name = "host_check",
@@ -12,15 +11,16 @@ cc_test(
     ],
 )
 
-py_test(
+cc_test(
     name = "source_check",
     size = "small",
-    srcs = ["verify_sources.py"],
+    srcs = ["SourceProofTest.cpp"],
     data = [
+        "verify_sources.py",
         "CMakeLists.txt",
         "//lib_src/collision:self_contact_force_assembly_source_proof",
     ],
-    main = "verify_sources.py",
+    deps = ["@googletest//:gtest_main"],
 )
 
 filegroup(

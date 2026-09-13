@@ -139,6 +139,7 @@ cc_library(
         "self_contact_force/Values.cpp",
     ],
     hdrs = [
+        "SelfContactForceAssembly.h",
         "SelfContactForceTypes.h",
         "SelfContactForceValues.h",
         "self_contact_force/Storage.h",
@@ -147,6 +148,7 @@ cc_library(
     deps = [
         ":fixed_triangle_feature_discovery",
         ":self_contact_active_uses",
+        "//lib_src/collision/penalty_pair:values",
         "//lib_src/elements:shell_physical_owner_values",
         "//lib_src/solvers:explicit_nodal_state",
         "//lib_utils:bounded_arena",

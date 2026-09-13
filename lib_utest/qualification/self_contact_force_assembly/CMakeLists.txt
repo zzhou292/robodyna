@@ -49,6 +49,7 @@ if(SELF_CONTACT_FORCE_CUDA)
     "${CMAKE_CURRENT_LIST_DIR}/../physical_publication/OwnerSnapshot.cu")
   target_link_libraries(self_contact_force_cuda PRIVATE
     physical_publication_fixture
+    tl_shell_batch_publication
     tl_self_contact_force_assembly
     CUDA::cudart GTest::gtest_main)
   set_target_properties(self_contact_force_cuda PROPERTIES
