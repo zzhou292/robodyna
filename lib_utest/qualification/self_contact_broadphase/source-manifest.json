@@ -4,8 +4,8 @@
   "files": [
     {
       "path": "lib_src/collision/BUILD.bazel",
-      "bytes": 15403,
-      "sha256": "28418c4c8c616279f507f0a76f31813befa59fb0847a3511f72e964c651d58a2"
+      "bytes": 16292,
+      "sha256": "947dfc8bc16212bb337cc1932717a34b333b371f432078efd067d8d2402ba90b"
     },
     {
       "path": "lib_src/collision/HydroelasticBroadphase.cmake",
@@ -109,13 +109,13 @@
     },
     {
       "path": "lib_utest/qualification/mapped_wall_assembly_inputs/source-manifest.json",
-      "bytes": 17887,
-      "sha256": "0c3035cb0e5ca24a9dc614a84fca0aab34bc40f779238c4381129e29cab7897d"
+      "bytes": 18000,
+      "sha256": "e1b152d7d325cd9676b95c059ff8f79c91efc8a3b36812b7f4e501e7ce3a69f6"
     },
     {
       "path": "lib_utest/qualification/mapped_wall_assembly_inputs/verify_sources.py",
-      "bytes": 6621,
-      "sha256": "f28b86ee1ed802a38cd47dcf40768a44b1c8768a0c7b28ec37a5ec81c81a3204"
+      "bytes": 6856,
+      "sha256": "a760b2dd419e03cc9343beac5ba499281d22390ea6de37019d28584b719f91d4"
     },
     {
       "path": "lib_utest/qualification/qbat_binding/Fixture.h",
@@ -236,12 +236,14 @@
       },
       "current_record": {
         "path": "lib_src/collision/BUILD.bazel",
-        "bytes": 15403,
-        "sha256": "28418c4c8c616279f507f0a76f31813befa59fb0847a3511f72e964c651d58a2"
+        "bytes": 16292,
+        "sha256": "947dfc8bc16212bb337cc1932717a34b333b371f432078efd067d8d2402ba90b"
       },
-      "feature_commit": "5eeaedd",
-      "crossing_commit": "23261ee",
-      "reason": "Two new host-only cc_library rules are additive. Their own verifiers authenticate complete sources and dependencies; checked reversal below restores the exact previously qualified broadphase build identity without changing any broadphase target.",
+      "feature_commit": "5e904fa",
+      "feature_proof_commit": "fa324be",
+      "crossing_commit": "8ceff1a",
+      "crossing_proof_commit": "8f14a89",
+      "reason": "Two new host-only cc_library rules and their source-proof filegroups are additive. Their own verifiers authenticate complete sources and dependencies; checked reversal below restores the exact previously qualified broadphase build identity without changing any broadphase target.",
       "mapped_wall_proof_previous": {
         "manifest": {
           "bytes": 17181,
@@ -254,12 +256,12 @@
       },
       "mapped_wall_proof_current": {
         "manifest": {
-          "bytes": 17887,
-          "sha256": "0c3035cb0e5ca24a9dc614a84fca0aab34bc40f779238c4381129e29cab7897d"
+          "bytes": 18000,
+          "sha256": "e1b152d7d325cd9676b95c059ff8f79c91efc8a3b36812b7f4e501e7ce3a69f6"
         },
         "verifier": {
-          "bytes": 6621,
-          "sha256": "f28b86ee1ed802a38cd47dcf40768a44b1c8768a0c7b28ec37a5ec81c81a3204"
+          "bytes": 6856,
+          "sha256": "a760b2dd419e03cc9343beac5ba499281d22390ea6de37019d28584b719f91d4"
         }
       }
     },

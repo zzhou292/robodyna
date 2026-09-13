@@ -4,8 +4,8 @@
   "files": [
     {
       "path": "lib_src/collision/BUILD.bazel",
-      "bytes": 15403,
-      "sha256": "28418c4c8c616279f507f0a76f31813befa59fb0847a3511f72e964c651d58a2"
+      "bytes": 16292,
+      "sha256": "947dfc8bc16212bb337cc1932717a34b333b371f432078efd067d8d2402ba90b"
     },
     {
       "path": "lib_src/collision/NodalWallContactDiagnostics.h",
@@ -418,11 +418,13 @@
     },
     "current_record": {
       "path": "lib_src/collision/BUILD.bazel",
-      "bytes": 15403,
-      "sha256": "28418c4c8c616279f507f0a76f31813befa59fb0847a3511f72e964c651d58a2"
+      "bytes": 16292,
+      "sha256": "947dfc8bc16212bb337cc1932717a34b333b371f432078efd067d8d2402ba90b"
     },
-    "feature_commit": "5eeaedd",
-    "crossing_commit": "23261ee",
-    "scope": "Checked removal of the two additive host-only cc_library rules restores the exact prior mapped-wall collision build identity. No mapped-wall source, dependency, arithmetic, target, or execution path changes."
+    "feature_commit": "5e904fa",
+    "feature_proof_commit": "fa324be",
+    "crossing_commit": "8ceff1a",
+    "crossing_proof_commit": "8f14a89",
+    "scope": "Checked removal of the two additive host-only cc_library rules and their source-proof filegroups restores the exact prior mapped-wall collision build identity. No mapped-wall source, dependency, arithmetic, target, or execution path changes."
   }
 }
