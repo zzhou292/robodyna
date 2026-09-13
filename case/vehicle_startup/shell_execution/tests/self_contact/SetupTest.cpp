@@ -1,4 +1,6 @@
 #include "Source.h"
+#include "lib_src/collision/SelfContactCurrentRegularity.h"
+#include <cfloat>
 #include <cstring>
 #include <iostream>
 
@@ -253,6 +255,64 @@ TEST(VehicleSelfContactSource,
             std::to_string(
                 support.combined_stored_support_occurrences.cin_secondary));
     }
+}
+
+TEST(VehicleSelfContactSource,
+     InitialSelectedSourceHasCompleteCurrentRegularity) {
+    const auto& setup = LevelZeroSetup();
+    const auto* domain = setup.surface().physical()->domain();
+    ASSERT_NE(domain, nullptr);
+    std::vector<double> positions(3 * domain->node_count());
+    for (std::size_t node = 0; node < domain->node_count(); ++node) {
+        const auto point = domain->nodes()[node].position;
+        positions[3 * node] = point.x;
+        positions[3 * node + 1] = point.y;
+        positions[3 * node + 2] = point.z;
+    }
+    std::vector<std::uint8_t> activity(
+        setup.active_uses().parents().size(), 1);
+    tlfea::contact::SelfContactCurrentRegularity regularity;
+    const auto initialized = regularity.Initialize(
+        setup.active_uses(),
+        tlfea::contact::SelfContactCurrentRegularityLimits::Vehicle());
+    ASSERT_EQ(initialized.status,
+        tlfea::contact::SelfContactCurrentRegularityStatus::Ok)
+        << initialized.message;
+    tlfea::contact::SelfContactCurrentRegularityReceipt receipt;
+    const tlfea::contact::SelfContactActivityView active{
+        activity.data(), activity.data(), activity.size()};
+    const auto report = regularity.Certify(
+        {positions.data(), domain->node_count(), 3, 1},
+        active, &receipt);
+    ASSERT_EQ(report.status,
+        tlfea::contact::SelfContactCurrentRegularityStatus::Ok)
+        << report.message << " parent=" << report.parent
+        << " facet=" << report.facet;
+    ASSERT_TRUE(receipt.prepared());
+    ASSERT_TRUE(receipt.MatchesInputs(
+        {positions.data(), domain->node_count(), 3, 1}, active));
+    const auto view = regularity.results();
+    ASSERT_TRUE(view.complete);
+    ASSERT_EQ(view.count, 337092u);
+    EXPECT_EQ(view.summary.parents, 337092u);
+    EXPECT_EQ(view.summary.facets, 653055u);
+    EXPECT_EQ(view.summary.facets_evaluated, 653055u);
+    EXPECT_EQ(view.summary.certified_parents, 337092u);
+    EXPECT_EQ(view.summary.active_parents, 337092u);
+    EXPECT_EQ(view.summary.removing_parents, 0u);
+    EXPECT_EQ(view.summary.skipped_parents, 0u);
+    EXPECT_GT(view.summary.minimum_scaled_jacobian_quality,
+        64 * DBL_EPSILON);
+    EXPECT_GT(
+        view.summary.certified_current_area_enclosure_m2.lower, 0);
+    std::cout << "Initial selected self-contact regularity parents="
+              << view.summary.certified_parents
+              << " facets=" << view.summary.facets_evaluated
+              << " minimum_scaled_jacobian="
+              << view.summary.minimum_scaled_jacobian_quality
+              << " maximum_approximation_m="
+              << view.summary.maximum_approximation_upper_m
+              << '\n';
 }
 
 TEST(VehicleSelfContactSource,
