@@ -23,6 +23,9 @@ TEST(SelfContactActiveUses, EveryExactCountCapAndOneByteShortRejectThenRetry) {
   Fixture fixture(2);
   const auto plan = c::SelfContactActiveUseBinding::Preflight(fixture.facets);
   ASSERT_EQ(plan.report.status,Code::Ok);
+  EXPECT_EQ(plan.forecast.startup_index_bytes,
+      sizeof(std::uint32_t)*
+          (plan.forecast.vertex_uses+plan.forecast.edge_uses));
   auto expect_cap = [&](auto reduce) {
     c::SelfContactActiveUseLimits limits;
     reduce(limits);
@@ -139,6 +142,26 @@ TEST(SelfContactActiveUses, PermutedSourceSelectionHasIdenticalCanonicalInventor
       }
     }
   }
+  const auto af=a.forecast(),bf=b.forecast();
+  EXPECT_EQ(std::memcmp(&af,&bf,sizeof(af)),0);
+  std::vector<c::SelfContactParentUse> ap(
+      a.parents().begin(),a.parents().end());
+  std::vector<c::SelfContactParentUse> bp(
+      b.parents().begin(),b.parents().end());
+  for (std::size_t i=0;i<ap.size();++i)
+    ap[i].surface_parent=bp[i].surface_parent=0;
+  EXPECT_EQ(std::memcmp(ap.data(),bp.data(),
+      ap.size()*sizeof(c::SelfContactParentUse)),0);
+  EXPECT_EQ(std::memcmp(a.facet_uses().data(),b.facet_uses().data(),
+      a.facet_uses().size()*sizeof(c::SelfContactFacetUse)),0);
+  EXPECT_EQ(std::memcmp(a.vertices().data(),b.vertices().data(),
+      a.vertices().size()*sizeof(c::SelfContactVertexFeature)),0);
+  EXPECT_EQ(std::memcmp(a.edges().data(),b.edges().data(),
+      a.edges().size()*sizeof(c::SelfContactEdgeFeature)),0);
+  EXPECT_EQ(std::memcmp(a.vertex_uses().data(),b.vertex_uses().data(),
+      a.vertex_uses().size()*sizeof(c::SelfContactFacetVertexUse)),0);
+  EXPECT_EQ(std::memcmp(a.edge_uses().data(),b.edge_uses().data(),
+      a.edge_uses().size()*sizeof(c::SelfContactFacetEdgeUse)),0);
 }
 
 TEST(SelfContactActiveUses, QueryAliasAddressAndLateIndexFailuresPreserveOutput) {

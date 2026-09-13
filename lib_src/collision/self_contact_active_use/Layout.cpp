@@ -154,6 +154,16 @@ SelfContactActiveUseReport MakeLayout(const FixedContactFacetBinding& facets,
     next.forecast.retained_cin_bytes += cin.post_kinchk_payload_bytes;
   }
 
+  tl::util::BoundedArenaLayout startup_arena(limits.max_host_bytes);
+  if (!startup_arena.Append<std::uint32_t>(
+          counts.vertex_uses, next.vertex_order) ||
+      !startup_arena.Append<std::uint32_t>(
+          counts.edge_uses, next.edge_order))
+    return Fail(S::ResourceLimit,
+        "Active-use canonical-order indexes exceed the byte cap");
+  next.startup_arena_bytes = startup_arena.bytes();
+  next.forecast.startup_index_bytes = startup_arena.bytes();
+
   tl::util::BoundedArenaLayout budget(limits.max_host_bytes);
   tl::util::ArenaRegion ignored;
   if (!budget.Append<std::byte>(sizeof(SelfContactActiveUseBinding) +
@@ -164,12 +174,16 @@ SelfContactActiveUseReport MakeLayout(const FixedContactFacetBinding& facets,
       !budget.Append<std::byte>(next.forecast.arena_bytes, ignored))
     return Fail(S::ResourceLimit, "Active-use binding and retained source exceed the byte cap");
   next.forecast.owned_payload_bytes = budget.bytes();
-  constexpr std::size_t scratch =
-      sizeof(Layout) + sizeof(FixedContactFacet) +
+  constexpr std::size_t fixed_staging =
+      sizeof(Layout) + sizeof(BuildScratch) + sizeof(FixedContactFacet) +
+      sizeof(FixedContactFacetReadCursor) +
       MaxLocalVertices*sizeof(LocalVertex) + MaxLocalEdges*sizeof(LocalEdge) +
+      (sizeof(SelfContactFacetVertexUse) > sizeof(SelfContactFacetEdgeUse) ?
+          sizeof(SelfContactFacetVertexUse) : sizeof(SelfContactFacetEdgeUse)) +
       sizeof(Q4MaterialMeasure) + sizeof(T3MaterialMeasure) +
       12*sizeof(double) + 4*sizeof(std::uint32_t);
-  if (!budget.Append<std::byte>(scratch, ignored))
+  if (!budget.Append<std::byte>(next.forecast.startup_index_bytes, ignored) ||
+      !budget.Append<std::byte>(fixed_staging, ignored))
     return Fail(S::ResourceLimit, "Typed active-use startup staging exceeds the byte cap");
   next.forecast.startup_payload_bytes = budget.bytes();
   output = next;

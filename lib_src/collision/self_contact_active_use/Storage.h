@@ -22,7 +22,13 @@ inline constexpr std::size_t MaxLocalVertices = 25, MaxLocalEdges = 56;
 struct Layout {
   tl::util::ArenaRegion parents, facets, vertices, edges, vertex_uses, edge_uses;
   tl::util::ArenaRegion node_roles, cin_ranges, cin_witnesses;
+  tl::util::ArenaRegion vertex_order, edge_order;
+  std::size_t startup_arena_bytes = 0;
   SelfContactActiveUseForecast forecast;
+};
+struct BuildScratch {
+  std::uint32_t* vertex_order = nullptr;
+  std::uint32_t* edge_order = nullptr;
 };
 struct Inventory {
   SelfContactParentUse* parents = nullptr;
@@ -40,7 +46,7 @@ SelfContactActiveUseReport MakeLayout(const FixedContactFacetBinding&,
     SelfContactActiveUseSource, SelfContactActiveUseLimits, std::size_t,
     Layout&) noexcept;
 SelfContactActiveUseReport Build(const FixedContactFacetBinding&,
-    SelfContactActiveUseSource, const Layout&, Inventory&) noexcept;
+    SelfContactActiveUseSource, const Layout&, BuildScratch, Inventory&) noexcept;
 SelfContactActiveUseReport Classify(const Inventory&,
     const SelfContactActiveUseForecast&, const WeightedSurfacePoint&,
     SelfContactSupportClassification&) noexcept;

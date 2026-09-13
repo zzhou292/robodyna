@@ -52,6 +52,11 @@ FixedContactFacetReport FixedContactFacetBinding::Describe(std::size_t parent, u
     FixedContactFacet* output) const noexcept {
   using S = FixedContactFacetStatus;
   if (!output || !OutputDisjoint(output, sizeof(*output))) return {S::InvalidInput, "Facet output aliases source or binding is absent"};
+  return DescribeDisjoint(parent, local, output);
+}
+FixedContactFacetReport FixedContactFacetBinding::DescribeDisjoint(
+    std::size_t parent, unsigned local, FixedContactFacet* output) const noexcept {
+  using S = FixedContactFacetStatus;
   if (local >= facet_count(parent)) return {S::OutOfRange, "Physical parent or facet index is out of range"};
   const auto& native = impl_->surface.parents()[parent];
   const auto* vertices = native.arity == 4 ? impl_->templates.q4_vertices : impl_->templates.t3_vertices;
@@ -81,6 +86,29 @@ FixedContactFacetReport FixedContactFacetBinding::Describe(std::size_t parent, u
   }
   *output = next;
   return {};
+}
+FixedContactFacetReport FixedContactFacetReadCursor::Initialize(
+    const FixedContactFacetBinding& binding,
+    FixedContactFacet* output) noexcept {
+  using S = FixedContactFacetStatus;
+  using tl::fea::trial_identity::Disjoint;
+  if (binding_)
+    return {S::AlreadyInitialized, "Facet descriptor cursor is immutable"};
+  if (!output || !Disjoint(this, sizeof(*this), output, sizeof(*output)) ||
+      !binding.OutputDisjoint(this, sizeof(*this)) ||
+      !binding.OutputDisjoint(output, sizeof(*output)))
+    return {S::InvalidInput,
+        "Facet descriptor cursor/output aliases retained source or is absent"};
+  binding_ = &binding;
+  output_ = output;
+  return {};
+}
+FixedContactFacetReport FixedContactFacetReadCursor::Describe(
+    std::size_t parent, unsigned local) const noexcept {
+  if (!binding_ || !output_)
+    return {FixedContactFacetStatus::InvalidInput,
+        "Facet descriptor cursor is absent"};
+  return binding_->DescribeDisjoint(parent, local, output_);
 }
 Status FixedContactFacetBinding::Approximation(std::size_t parent, VectorView positions,
     FacetApproximationBound* output) const noexcept {

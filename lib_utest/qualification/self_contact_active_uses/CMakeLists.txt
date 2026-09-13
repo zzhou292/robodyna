@@ -7,7 +7,7 @@ get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
 include("${TL_ROOT}/lib_src/collision/SelfContactActiveUseBinding.cmake")
 add_executable(self_contact_active_uses_host
   AreaTest.cpp ActivityTest.cpp AuthorityTest.cpp ClassificationTest.cpp
-  CinTieTest.cpp CapacityTest.cpp)
+  CinTieTest.cpp CapacityTest.cpp ScalingTest.cpp)
 target_link_libraries(self_contact_active_uses_host PRIVATE
   tl_self_contact_active_uses GTest::gtest_main)
 target_compile_options(self_contact_active_uses_host PRIVATE

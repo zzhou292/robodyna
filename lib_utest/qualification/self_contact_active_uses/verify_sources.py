@@ -25,6 +25,11 @@ t3 = build[build.index('SurfaceTriangle parent;'):build.index('bool Dual(')]
 assert 'PrepareT3MaterialMeasure' in t3 and 'measure.area_enclosure()' in t3
 assert 'q4_bounds::DividePositive' in build and 'q4_bounds::Certify' in build
 assert 'use.facet_valence' in build and 'use.directed_vf_area_m2' in build
+assert 'FixedContactFacetReadCursor facet_reader' in build
+assert 'facets.Describe' not in build
+assert 'std::sort(out.vertex_uses' not in build
+assert 'std::sort(scratch.vertex_order' in build
+assert 'startup_index_bytes' in layout
 assert 'CountSelfContactActiveUses' in values
 assert 'numeric_limits<std::size_t>::max()' in values
 assert 'activity.current[i] > activity.base[i]' in build

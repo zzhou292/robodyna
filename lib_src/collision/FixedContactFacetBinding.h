@@ -4,6 +4,7 @@
 #include "SelfContactSurfaceBinding.h"
 
 namespace tlfea::contact {
+class FixedContactFacetReadCursor;
 // Immutable geometry profile, independent of rendering. Retains the complete
 // native S0 authority and one small shared template; virtual vertices add no
 // physical DOFs. Descriptors are values, not owner/contact admission receipts.
@@ -34,7 +35,24 @@ class FixedContactFacetBinding {
   Status SummarizeApproximation(VectorView positions,
       FacetApproximationSummary*) const noexcept;
  private:
+  FixedContactFacetReport DescribeDisjoint(std::size_t, unsigned,
+      FixedContactFacet*) const noexcept;
+  friend class FixedContactFacetReadCursor;
   struct Impl;
   std::shared_ptr<const Impl> impl_;
+};
+
+// Startup-only borrowed descriptor cursor. Initialize authenticates its one
+// fixed output address against every retained source range once; subsequent
+// Describe calls cannot redirect writes and allocate no storage.
+class FixedContactFacetReadCursor {
+ public:
+  FixedContactFacetReport Initialize(const FixedContactFacetBinding&,
+      FixedContactFacet*) noexcept;
+  FixedContactFacetReport Describe(std::size_t parent,
+      unsigned local_facet) const noexcept;
+ private:
+  const FixedContactFacetBinding* binding_ = nullptr;
+  FixedContactFacet* output_ = nullptr;
 };
 } // namespace tlfea::contact

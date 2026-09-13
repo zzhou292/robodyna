@@ -48,8 +48,22 @@ SelfContactActiveUseReport SelfContactActiveUseBinding::Initialize(
       !inventory.vertex_uses || !inventory.edge_uses || !inventory.node_roles ||
       !inventory.cin_ranges || !inventory.cin_witnesses)
     return {S::ResourceLimit, SIZE_MAX, SIZE_MAX, "Active-use arena construction failed"};
-  report = active_use::Build(facets, source, layout, inventory);
-  if (report.status != S::Ok) return report;
+  {
+    tl::util::HostArena startup;
+    if (!startup.Initialize(layout.startup_arena_bytes))
+      return {S::ResourceLimit, SIZE_MAX, SIZE_MAX,
+          "Active-use canonical-order index allocation failed"};
+    active_use::BuildScratch scratch;
+    scratch.vertex_order =
+        startup.Construct<std::uint32_t>(layout.vertex_order);
+    scratch.edge_order =
+        startup.Construct<std::uint32_t>(layout.edge_order);
+    if (!scratch.vertex_order || !scratch.edge_order)
+      return {S::ResourceLimit, SIZE_MAX, SIZE_MAX,
+          "Active-use canonical-order index construction failed"};
+    report = active_use::Build(facets, source, layout, scratch, inventory);
+    if (report.status != S::Ok) return report;
+  } // Canonical-order indexes retire before immutable publication.
   if (layout.forecast.cin_rows)
     inventory.cin_rows = next->cin_model.rows().data;
   next->forecast = layout.forecast;

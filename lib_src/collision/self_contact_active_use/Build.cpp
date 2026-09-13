@@ -112,6 +112,47 @@ bool Dual(Q4CertifiedIntegral area, std::uint32_t valence, std::uint32_t facets,
     return false;
   return dual.lower > 0 && directed.lower > 0;
 }
+
+// std::sort moves only these uint32 source ordinals. The payload permutation
+// below is linear and each record is copied once per nontrivial cycle.
+constexpr std::uint32_t VisitedOrder = std::uint32_t{1} << 31;
+bool InvertOrder(std::uint32_t* order, std::size_t count) noexcept {
+  if (!order || count >= VisitedOrder) return false;
+  for (std::uint32_t start = 0; start < count; ++start) {
+    if (order[start] & VisitedOrder) continue;
+    std::uint32_t previous = start;
+    std::uint32_t current = order[start];
+    while (current != start) {
+      if (current >= count || (order[current] & VisitedOrder)) return false;
+      const auto next = order[current];
+      order[current] = previous | VisitedOrder;
+      previous = current;
+      current = next;
+    }
+    order[start] = previous | VisitedOrder;
+  }
+  for (std::size_t i = 0; i < count; ++i) order[i] &= ~VisitedOrder;
+  return true;
+}
+template<class T>
+bool ApplyOrder(T* values, std::uint32_t* order, std::size_t count) noexcept {
+  if (!values || !order) return false;
+  for (std::size_t destination = 0; destination < count; ++destination) {
+    if (order[destination] == destination) continue;
+    T saved = values[destination];
+    std::size_t current = destination;
+    while (order[current] != destination) {
+      const auto source = order[current];
+      if (source >= count) return false;
+      values[current] = values[source];
+      order[current] = static_cast<std::uint32_t>(current);
+      current = source;
+    }
+    values[current] = saved;
+    order[current] = static_cast<std::uint32_t>(current);
+  }
+  return true;
+}
 }
 
 SelfContactActiveUseReport Classify(const Inventory& inventory,
@@ -175,7 +216,8 @@ bool ValidateActivity(const SelfContactActiveUseForecast& forecast,
 }
 
 SelfContactActiveUseReport Build(const FixedContactFacetBinding& facets,
-    SelfContactActiveUseSource source, const Layout& layout, Inventory& out) noexcept {
+    SelfContactActiveUseSource source, const Layout& layout,
+    BuildScratch scratch, Inventory& out) noexcept {
   const auto& forecast = layout.forecast;
   const auto& surface = *facets.surface();
   const auto& domain = *surface.physical()->domain();
@@ -256,6 +298,12 @@ SelfContactActiveUseReport Build(const FixedContactFacetBinding& facets,
   if (facet_offset != forecast.facets)
     return Fail(S::IdentityMismatch, "Parent facet ranges do not cover the inventory");
 
+  FixedContactFacet source_facet;
+  FixedContactFacetReadCursor facet_reader;
+  if (facet_reader.Initialize(facets, &source_facet).status !=
+      FixedContactFacetStatus::Ok)
+    return Fail(S::IdentityMismatch,
+        "Fixed facet descriptor cursor could not be prepared");
   std::size_t vertex_cursor = 0, edge_cursor = 0;
   for (std::size_t p = 0; p < forecast.parents; ++p) {
     const auto& parent = out.parents[p];
@@ -263,11 +311,14 @@ SelfContactActiveUseReport Build(const FixedContactFacetBinding& facets,
     std::array<LocalEdge, MaxLocalEdges> local_edges{};
     std::size_t vertex_count = 0, edge_count = 0;
     for (std::uint32_t local = 0; local < parent.facet_count; ++local) {
-      FixedContactFacet facet;
-      const auto report = facets.Describe(parent.surface_parent, local, &facet);
+      const auto report = facet_reader.Describe(parent.surface_parent, local);
+      const auto& facet = source_facet;
       if (report.status != FixedContactFacetStatus::Ok ||
           facet.source.source_parent_id != parent.source.source_parent_id)
         return Fail(S::IdentityMismatch, "Fixed facet descriptor differs from its parent", p, local);
+      auto& incidence = out.facets[std::size_t(parent.facet_offset)+local];
+      incidence.parent = static_cast<std::uint32_t>(p);
+      incidence.local_facet = local;
       for (unsigned slot = 0; slot < 3; ++slot) {
         std::size_t found = vertex_count;
         for (std::size_t i = 0; i < vertex_count; ++i)
@@ -282,6 +333,11 @@ SelfContactActiveUseReport Build(const FixedContactFacetBinding& facets,
           return Fail(S::IdentityMismatch, "One parent-local vertex key has conflicting weighted maps", p);
         }
         ++local_vertices[found].valence;
+        if (vertex_cursor+found > UINT32_MAX)
+          return Fail(S::IdentityMismatch, "Facet vertex-use ordinal is unrepresentable", p, local);
+        // Provisional source-order use ordinal; remapped after index sorting.
+        incidence.vertex_uses[slot] =
+            static_cast<std::uint32_t>(vertex_cursor+found);
 
         const auto& key = facet.edge_keys[slot];
         std::size_t edge_found = edge_count;
@@ -309,6 +365,10 @@ SelfContactActiveUseReport Build(const FixedContactFacetBinding& facets,
           return Fail(S::IdentityMismatch, "One parent-local edge key has conflicting weighted maps", p);
         }
         ++local_edges[edge_found].valence;
+        if (edge_cursor+edge_found > UINT32_MAX)
+          return Fail(S::IdentityMismatch, "Facet edge-use ordinal is unrepresentable", p, local);
+        incidence.edge_uses[slot] =
+            static_cast<std::uint32_t>(edge_cursor+edge_found);
       }
     }
     if (vertex_count > forecast.vertex_uses ||
@@ -345,20 +405,59 @@ SelfContactActiveUseReport Build(const FixedContactFacetBinding& facets,
   if (vertex_cursor != forecast.vertex_uses || edge_cursor != forecast.edge_uses)
     return Fail(S::IdentityMismatch, "Parent-local feature uses do not fill their exact forecast");
 
-  std::sort(out.vertex_uses, out.vertex_uses+forecast.vertex_uses,
-      [&](const auto& a, const auto& b) {
+  if (!scratch.vertex_order || !scratch.edge_order ||
+      forecast.vertex_uses >= VisitedOrder || forecast.edge_uses >= VisitedOrder)
+    return Fail(S::ResourceLimit, "Canonical-order index range is unrepresentable");
+  for (std::size_t i = 0; i < forecast.vertex_uses; ++i)
+    scratch.vertex_order[i] = static_cast<std::uint32_t>(i);
+  for (std::size_t i = 0; i < forecast.edge_uses; ++i)
+    scratch.edge_order[i] = static_cast<std::uint32_t>(i);
+  std::sort(scratch.vertex_order,
+      scratch.vertex_order+forecast.vertex_uses,
+      [&](std::uint32_t ai, std::uint32_t bi) {
+        const auto& a = out.vertex_uses[ai];
+        const auto& b = out.vertex_uses[bi];
         if (Less(a.key, b.key)) return true;
         if (Less(b.key, a.key)) return false;
         return out.parents[a.parent].source.source_parent_id <
             out.parents[b.parent].source.source_parent_id;
       });
-  std::sort(out.edge_uses, out.edge_uses+forecast.edge_uses,
-      [&](const auto& a, const auto& b) {
+  std::sort(scratch.edge_order,
+      scratch.edge_order+forecast.edge_uses,
+      [&](std::uint32_t ai, std::uint32_t bi) {
+        const auto& a = out.edge_uses[ai];
+        const auto& b = out.edge_uses[bi];
         if (Less(a.key, b.key)) return true;
         if (Less(b.key, a.key)) return false;
         return out.parents[a.parent].source.source_parent_id <
             out.parents[b.parent].source.source_parent_id;
       });
+  // Convert destination->source to source->destination long enough to remap
+  // the facet incidences captured during the only descriptor traversal.
+  if (!InvertOrder(scratch.vertex_order, forecast.vertex_uses) ||
+      !InvertOrder(scratch.edge_order, forecast.edge_uses))
+    return Fail(S::IdentityMismatch, "Canonical-order index is not a permutation");
+  for (std::size_t f = 0; f < forecast.facets; ++f) {
+    auto& facet = out.facets[f];
+    for (unsigned slot = 0; slot < 3; ++slot) {
+      if (facet.vertex_uses[slot] >= forecast.vertex_uses ||
+          facet.edge_uses[slot] >= forecast.edge_uses)
+        return Fail(S::IdentityMismatch,
+            "Facet source-order feature use is absent", facet.parent,
+            facet.local_facet);
+      facet.vertex_uses[slot] =
+          scratch.vertex_order[facet.vertex_uses[slot]];
+      facet.edge_uses[slot] =
+          scratch.edge_order[facet.edge_uses[slot]];
+    }
+  }
+  if (!InvertOrder(scratch.vertex_order, forecast.vertex_uses) ||
+      !InvertOrder(scratch.edge_order, forecast.edge_uses) ||
+      !ApplyOrder(out.vertex_uses, scratch.vertex_order,
+          forecast.vertex_uses) ||
+      !ApplyOrder(out.edge_uses, scratch.edge_order, forecast.edge_uses))
+    return Fail(S::IdentityMismatch,
+        "Canonical feature-use payload permutation failed");
 
   std::size_t vertex_feature = 0;
   for (std::size_t i = 0; i < forecast.vertex_uses;) {
@@ -399,72 +498,56 @@ SelfContactActiveUseReport Build(const FixedContactFacetBinding& facets,
   if (edge_feature != forecast.edges)
     return Fail(S::IdentityMismatch, "Canonical edge deduplication differs from exact topology");
 
-  auto find_vertex = [&](const FacetVertexKey& key) {
-    std::size_t low = 0, high = forecast.vertices;
-    while (low < high) {
-      const auto middle = low+(high-low)/2;
-      if (Less(out.vertices[middle].key, key)) low = middle+1;
-      else high = middle;
+  for (std::size_t e = 0; e < forecast.edges; ++e)
+    out.edges[e].vertices[0] = out.edges[e].vertices[1] = UINT32_MAX;
+  for (std::size_t f = 0; f < forecast.facets; ++f) {
+    auto& facet = out.facets[f];
+    for (unsigned slot = 0; slot < 3; ++slot) {
+      if (facet.vertex_uses[slot] >= forecast.vertex_uses ||
+          facet.edge_uses[slot] >= forecast.edge_uses)
+        return Fail(S::IdentityMismatch, "Facet feature use is absent",
+            facet.parent, facet.local_facet);
+      const auto& vertex = out.vertex_uses[facet.vertex_uses[slot]];
+      const auto& edge = out.edge_uses[facet.edge_uses[slot]];
+      if (vertex.parent != facet.parent || edge.parent != facet.parent ||
+          vertex.feature >= forecast.vertices || edge.feature >= forecast.edges)
+        return Fail(S::IdentityMismatch, "Facet feature use is absent",
+            facet.parent, facet.local_facet);
+      facet.vertex_features[slot] = vertex.feature;
+      facet.edge_features[slot] = edge.feature;
     }
-    return low < forecast.vertices && SameFacetVertexKey(out.vertices[low].key, key)
-        ? low : SIZE_MAX;
-  };
-  auto find_edge = [&](const FacetEdgeKey& key) {
-    std::size_t low = 0, high = forecast.edges;
-    while (low < high) {
-      const auto middle = low+(high-low)/2;
-      if (Less(out.edges[middle].key, key)) low = middle+1;
-      else high = middle;
-    }
-    return low < forecast.edges && SameFacetEdgeKey(out.edges[low].key, key)
-        ? low : SIZE_MAX;
-  };
-  auto find_vertex_use = [&](std::size_t feature, std::size_t parent) {
-    const auto& row = out.vertices[feature];
-    for (std::size_t u = row.use_offset; u < row.use_offset+row.use_count; ++u)
-      if (out.vertex_uses[u].parent == parent) return u;
-    return SIZE_MAX;
-  };
-  auto find_edge_use = [&](std::size_t feature, std::size_t parent) {
-    const auto& row = out.edges[feature];
-    for (std::size_t u = row.use_offset; u < row.use_offset+row.use_count; ++u)
-      if (out.edge_uses[u].parent == parent) return u;
-    return SIZE_MAX;
-  };
-  for (std::size_t e = 0; e < forecast.edges; ++e) {
-    const auto a = find_vertex(out.edges[e].key.endpoints[0]);
-    const auto b = find_vertex(out.edges[e].key.endpoints[1]);
-    if (a == SIZE_MAX || b == SIZE_MAX || a > UINT32_MAX || b > UINT32_MAX)
-      return Fail(S::IdentityMismatch, "Canonical edge endpoint vertex is absent", SIZE_MAX, e);
-    out.edges[e].vertices[0] = static_cast<std::uint32_t>(a);
-    out.edges[e].vertices[1] = static_cast<std::uint32_t>(b);
-  }
-  for (std::size_t p = 0; p < forecast.parents; ++p) {
-    const auto& parent = out.parents[p];
-    for (std::uint32_t local = 0; local < parent.facet_count; ++local) {
-      const auto index = std::size_t(parent.facet_offset)+local;
-      FixedContactFacet source_facet;
-      if (facets.Describe(parent.surface_parent, local, &source_facet).status !=
-          FixedContactFacetStatus::Ok)
-        return Fail(S::IdentityMismatch, "Fixed facet could not be replayed", p, local);
-      auto& facet = out.facets[index];
-      facet.parent = static_cast<std::uint32_t>(p);
-      facet.local_facet = local;
-      for (unsigned slot = 0; slot < 3; ++slot) {
-        const auto vertex = find_vertex(source_facet.vertex_keys[slot]);
-        const auto edge = find_edge(source_facet.edge_keys[slot]);
-        const auto vu = vertex == SIZE_MAX ? SIZE_MAX : find_vertex_use(vertex, p);
-        const auto eu = edge == SIZE_MAX ? SIZE_MAX : find_edge_use(edge, p);
-        if (vertex == SIZE_MAX || edge == SIZE_MAX || vu == SIZE_MAX || eu == SIZE_MAX ||
-            vertex > UINT32_MAX || edge > UINT32_MAX || vu > UINT32_MAX || eu > UINT32_MAX)
-          return Fail(S::IdentityMismatch, "Facet feature use is absent", p, local);
-        facet.vertex_features[slot] = static_cast<std::uint32_t>(vertex);
-        facet.edge_features[slot] = static_cast<std::uint32_t>(edge);
-        facet.vertex_uses[slot] = static_cast<std::uint32_t>(vu);
-        facet.edge_uses[slot] = static_cast<std::uint32_t>(eu);
+    // Every canonical edge endpoint is authenticated directly by a facet that
+    // uses it. Repeated incidences must resolve to the identical vertex feature.
+    for (unsigned slot = 0; slot < 3; ++slot) {
+      auto& edge = out.edges[facet.edge_features[slot]];
+      for (unsigned endpoint = 0; endpoint < 2; ++endpoint) {
+        std::uint32_t vertex = UINT32_MAX;
+        for (unsigned candidate = 0; candidate < 3; ++candidate) {
+          const auto feature = facet.vertex_features[candidate];
+          if (SameFacetVertexKey(edge.key.endpoints[endpoint],
+                  out.vertices[feature].key)) {
+            vertex = feature;
+            break;
+          }
+        }
+        if (vertex == UINT32_MAX)
+          return Fail(S::IdentityMismatch,
+              "Canonical edge endpoint vertex is absent", facet.parent,
+              facet.edge_features[slot]);
+        if (edge.vertices[endpoint] == UINT32_MAX)
+          edge.vertices[endpoint] = vertex;
+        else if (edge.vertices[endpoint] != vertex)
+          return Fail(S::IdentityMismatch,
+              "Canonical edge endpoint vertex conflicts", facet.parent,
+              facet.edge_features[slot]);
       }
     }
   }
+  for (std::size_t e = 0; e < forecast.edges; ++e)
+    if (out.edges[e].vertices[0] == UINT32_MAX ||
+        out.edges[e].vertices[1] == UINT32_MAX)
+      return Fail(S::IdentityMismatch,
+          "Canonical edge endpoint vertex is absent", SIZE_MAX, e);
   return {};
 }
 } // namespace tlfea::contact::active_use

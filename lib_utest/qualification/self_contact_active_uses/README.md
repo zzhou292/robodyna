@@ -30,6 +30,15 @@ binding's deterministic parent order. `current<=base` is mandatory. An inactive
 parent resolves to zero thickness/area without redistribution. The binding
 stores no activity state and therefore cannot create a second acceptance clock.
 
+Startup authenticates one fixed descriptor output address against the retained
+facet/S0 source, then traverses each facet descriptor once. Canonical
+feature-use ordering remains key then source EID: transient `uint32` source
+ordinals are sorted, incidences are remapped directly, and the large immutable
+use payloads are permuted in one linear pass. `startup_index_bytes` forecasts
+these two transient ordinal arrays; they are capped with the complete startup
+payload and retire before immutable publication. No query uses them or
+allocates storage.
+
 ## Exclusion and unresolved policy
 
 VF excludes only direct canonical vertex/facet incidence. EE excludes only
@@ -75,7 +84,9 @@ same-parent incidence; same PID; exact execution PART/plain authority,
 counterfeit/source-kind collision rejection, and different/partial/mixed support;
 CIN secondary/master and local/unrelated ties; every explicit EE status;
 permutation/deduplication; checked overflow; all count caps; exact
-one-byte-short; alias/output preservation; and retry. The source target proves
+one-byte-short; alias/output preservation; retry; byte-exact canonical output
+under source permutation; and coincident-layer startup count/timing scaling.
+The source target proves
 the no-mechanics/no-allocation boundary and selected arithmetic/API tokens.
 
 Author host/source gate:
