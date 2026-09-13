@@ -19,3 +19,21 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+sh_test(
+    name = "source_proof",
+    srcs = ["verify_sources.py"],
+    data = [
+        "AdapterTest.cpp",
+        "BUILD.bazel",
+        "CMakeLists.txt",
+        "CapacityTest.cpp",
+        "ExhaustiveTest.cpp",
+        "Fixture.h",
+        "GeometryTest.cpp",
+        "IntersectionTest.cpp",
+        "OracleTest.cpp",
+        "check_syntax.py",
+        "//lib_src/collision:fixed_triangle_feature_discovery_sources",
+    ],
+)

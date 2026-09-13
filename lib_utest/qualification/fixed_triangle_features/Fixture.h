@@ -50,6 +50,9 @@ inline ct::FixedTriangleFeatureLimits Limits(std::size_t pairs,
                                               std::size_t intersections) {
   ct::FixedTriangleFeatureLimits result;
   result.max_input_pairs = pairs;
+  result.max_triangle_references = 2 * pairs;
+  result.max_vertex_references = 6 * pairs;
+  result.max_edge_references = 6 * pairs;
   result.max_raw_feature_candidates = raw_features;
   result.max_feature_candidates = features;
   result.max_raw_intersections = raw_intersections;
@@ -93,6 +96,28 @@ inline bool Same(const ct::FacetEdgeKey& a,
          Same(a.endpoints[1], b.endpoints[1]);
 }
 
+inline bool Same(const ct::FixedTriangleStratumKey& a,
+                 const ct::FixedTriangleStratumKey& b) {
+  if (a.kind != b.kind)
+    return false;
+  if (a.kind == ct::FixedTriangleStratumKind::Vertex)
+    return Same(a.vertex, b.vertex);
+  if (a.kind == ct::FixedTriangleStratumKind::Edge)
+    return Same(a.edge, b.edge);
+  return Same(a.face, b.face);
+}
+
+inline bool Same(const ct::FixedTriangleFeatureKey& a,
+                 const ct::FixedTriangleFeatureKey& b) {
+  if (a.kind != b.kind)
+    return false;
+  if (a.kind == ct::FixedTriangleCandidateKind::VertexFace)
+    return Same(a.vertex_face.vertex, b.vertex_face.vertex) &&
+           Same(a.vertex_face.target, b.vertex_face.target);
+  return Same(a.edge_edge.edges[0], b.edge_edge.edges[0]) &&
+         Same(a.edge_edge.edges[1], b.edge_edge.edges[1]);
+}
+
 struct Task {
   std::uint64_t first_eid = 0;
   unsigned first_local = 0;
@@ -120,7 +145,7 @@ inline Task TaskOf(const ct::FixedTriangleFeatureCandidate& value) {
           value.triangles[0].local_facet,
           value.triangles[1].parent_eid,
           value.triangles[1].local_facet,
-          value.kind,
+          value.key.kind,
           value.local_features[0],
           value.local_features[1]};
 }

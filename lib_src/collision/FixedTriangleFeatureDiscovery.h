@@ -22,13 +22,17 @@ Status EvaluateCurrentFixedTriangle(const FixedContactFacet& facet,
 //
 // Published records are sorted and deduplicated by immutable source-feature
 // keys, independent of pair/catalog order.  Every capacity is checked after a
-// complete count; failure revokes publication and never returns a prefix.
+// complete count; failure never publishes a prefix and preserves the previous
+// complete publication.  Every previously borrowed view expires immediately
+// on entry to Discover, including when the new query fails; callers may borrow
+// the preserved publication again through features()/intersections().
 // Geometry uses closed represented-coordinate boundaries: exact zero is a
 // touch/coplanarity predicate and an adjacent nonzero representable value is
 // not widened by a tolerance.  Current triangles at or below the
 // SurfaceContactGeometry scale-aware degeneracy threshold reject the query.
-// Input arrays and coordinates are borrowed for the duration of Discover and
-// must not alias this object's storage or be concurrently mutated.
+// Input arrays and coordinates are borrowed for the duration of Discover,
+// checked against every owned staging/publication/ledger range, and must not
+// be concurrently mutated.  Discover allocates no memory.
 class FixedTriangleFeatureDiscovery {
  public:
   FixedTriangleFeatureDiscovery() noexcept;

@@ -38,6 +38,7 @@ int main() {
 
 sources = [
     consumer,
+    ROOT / "lib_src/collision/fixed_triangle_features/ExactPredicates.cpp",
     ROOT / "lib_src/collision/fixed_triangle_features/Geometry.cpp",
     ROOT / "lib_src/collision/fixed_triangle_features/Discovery.cpp",
 ]
@@ -55,4 +56,4 @@ for source in sources:
     print("PASS C++ source shape", source.relative_to(ROOT)
           if source.is_relative_to(ROOT) else source.name, flush=True)
 
-print("PASS: 3 C++ source-shaped units; no NVCC, CUDA, GPU, or numerical claim")
+print("PASS: 4 C++ source-shaped units; no NVCC, CUDA, GPU, or numerical claim")

@@ -1,6 +1,7 @@
 include_guard(GLOBAL)
 include("${CMAKE_CURRENT_LIST_DIR}/FixedContactFacetBinding.cmake")
 add_library(tl_fixed_triangle_feature_discovery STATIC
+  "${CMAKE_CURRENT_LIST_DIR}/fixed_triangle_features/ExactPredicates.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/fixed_triangle_features/Geometry.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/fixed_triangle_features/Discovery.cpp")
 target_link_libraries(tl_fixed_triangle_feature_discovery

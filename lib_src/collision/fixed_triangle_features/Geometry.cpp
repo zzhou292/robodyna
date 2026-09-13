@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Geometry.h"
 
+#include "ExactPredicates.h"
 #include "../FixedTriangleFeatureDiscovery.h"
 #include "../SurfaceContactGeometry.h"
 #include "../weighted_surface/Mapping.h"
@@ -34,8 +35,8 @@ bool Same(Vec3 a, Vec3 b) noexcept {
   return a.x == b.x && a.y == b.y && a.z == b.z;
 }
 
-bool SameTriangleValue(const CurrentFixedTriangle& a,
-                       const CurrentFixedTriangle& b) noexcept {
+bool SameTriangleValueImpl(const CurrentFixedTriangle& a,
+                           const CurrentFixedTriangle& b) noexcept {
   if (!Same(a.key, b.key))
     return false;
   for (unsigned i = 0; i < 3; ++i) {
@@ -47,7 +48,7 @@ bool SameTriangleValue(const CurrentFixedTriangle& a,
   return true;
 }
 
-FixedTriangleDiscoveryStatus ValidateTriangle(
+FixedTriangleDiscoveryStatus ValidateTriangleImpl(
     const CurrentFixedTriangle& value) noexcept {
   TriangleGeometry triangle;
   triangle.face_id = 1;
@@ -74,6 +75,12 @@ FixedTriangleDiscoveryStatus ValidateTriangle(
     if (Compare(value.edge_keys[i].endpoints[1],
                 value.edge_keys[i].endpoints[0]) <= 0)
       return FixedTriangleDiscoveryStatus::InvalidInput;
+    if (value.edge_keys[i].parent_boundary !=
+        (value.edge_keys[i].parent_eid == 0))
+      return FixedTriangleDiscoveryStatus::InvalidInput;
+    if (!value.edge_keys[i].parent_boundary &&
+        value.edge_keys[i].parent_eid != value.key.parent_eid)
+      return FixedTriangleDiscoveryStatus::InvalidInput;
   }
   TrianglePointGeometry point;
   const auto status =
@@ -86,17 +93,6 @@ FixedTriangleDiscoveryStatus ValidateTriangle(
                           : FixedTriangleDiscoveryStatus::Ok;
 }
 
-FixedTriangleDiscoveryStatus ValidateSharedFeatureValues(
-    const CurrentFixedTriangle& a,
-    const CurrentFixedTriangle& b) noexcept {
-  for (unsigned i = 0; i < 3; ++i)
-    for (unsigned j = 0; j < 3; ++j)
-      if (Same(a.vertex_keys[i], b.vertex_keys[j]) &&
-          !Same(a.vertices[i], b.vertices[j]))
-        return FixedTriangleDiscoveryStatus::IdentityMismatch;
-  return FixedTriangleDiscoveryStatus::Ok;
-}
-
 TriangleGeometry Geometry(const CurrentFixedTriangle& value) noexcept {
   TriangleGeometry result;
   result.face_id = 1;
@@ -107,10 +103,19 @@ TriangleGeometry Geometry(const CurrentFixedTriangle& value) noexcept {
   return result;
 }
 
-SegmentGeometry EdgeGeometry(const CurrentFixedTriangle& value,
-                             unsigned edge) noexcept {
-  const unsigned next = (edge + 1) % 3;
-  return {{value.vertices[edge], value.vertices[next]}, {edge, next}};
+Vec3 VertexValue(const CurrentFixedTriangle& triangle,
+                 const FacetVertexKey& key) noexcept {
+  for (unsigned i = 0; i < 3; ++i)
+    if (Same(triangle.vertex_keys[i], key))
+      return triangle.vertices[i];
+  return {};
+}
+
+SegmentGeometry CanonicalEdgeGeometry(
+    const CurrentFixedTriangle& triangle, unsigned edge) noexcept {
+  return {{VertexValue(triangle, triangle.edge_keys[edge].endpoints[0]),
+           VertexValue(triangle, triangle.edge_keys[edge].endpoints[1])},
+          {0, 1}};
 }
 
 bool VertexInTriangleTopology(const FacetVertexKey& vertex,
@@ -132,241 +137,229 @@ bool EdgesIncident(const FacetEdgeKey& a,
   return false;
 }
 
-double CanonicalEdgeParameter(const CurrentFixedTriangle& triangle,
-                              unsigned edge, double parameter) noexcept {
-  return Same(triangle.vertex_keys[edge],
-              triangle.edge_keys[edge].endpoints[0])
-             ? parameter
-             : 1 - parameter;
+bool Valid(const exact::Sign& value) noexcept {
+  return value.valid;
 }
 
-struct L2 {
-  long double x = 0;
-  long double y = 0;
-};
-
-struct L3 {
-  long double x = 0;
-  long double y = 0;
-  long double z = 0;
-};
-
-L3 ToLong(Vec3 value) noexcept {
-  return {value.x, value.y, value.z};
-}
-
-L3 Subtract(L3 a, L3 b) noexcept {
-  return {a.x - b.x, a.y - b.y, a.z - b.z};
-}
-
-L3 Add(L3 a, L3 b) noexcept {
-  return {a.x + b.x, a.y + b.y, a.z + b.z};
-}
-
-L3 Scale(L3 a, long double scale) noexcept {
-  return {a.x * scale, a.y * scale, a.z * scale};
-}
-
-long double Dot(L3 a, L3 b) noexcept {
-  return a.x * b.x + a.y * b.y + a.z * b.z;
-}
-
-L3 Cross(L3 a, L3 b) noexcept {
-  return {a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z,
-          a.x * b.y - a.y * b.x};
-}
-
-long double Cross(L2 a, L2 b) noexcept {
-  return a.x * b.y - a.y * b.x;
-}
-
-L2 Subtract(L2 a, L2 b) noexcept {
-  return {a.x - b.x, a.y - b.y};
-}
-
-long double Orient(L2 a, L2 b, L2 p) noexcept {
-  return Cross(Subtract(b, a), Subtract(p, a));
-}
-
-int DominantAxis(L3 normal) noexcept {
-  const long double x = std::fabs(normal.x);
-  const long double y = std::fabs(normal.y);
-  const long double z = std::fabs(normal.z);
-  return x >= y && x >= z ? 0 : (y >= z ? 1 : 2);
-}
-
-L2 Project(L3 value, int drop) noexcept {
-  if (drop == 0)
-    return {value.y, value.z};
-  if (drop == 1)
-    return {value.x, value.z};
-  return {value.x, value.y};
-}
-
-bool InClosedTriangle(L2 point, const L2* triangle) noexcept {
-  const long double a = Orient(triangle[0], triangle[1], point);
-  const long double b = Orient(triangle[1], triangle[2], point);
-  const long double c = Orient(triangle[2], triangle[0], point);
-  return (a >= 0 && b >= 0 && c >= 0) ||
-         (a <= 0 && b <= 0 && c <= 0);
-}
-
-bool PointOnSegment(L2 point, L2 a, L2 b) noexcept {
-  if (Orient(a, b, point) != 0)
-    return false;
-  return point.x >= std::min(a.x, b.x) &&
-         point.x <= std::max(a.x, b.x) &&
-         point.y >= std::min(a.y, b.y) &&
-         point.y <= std::max(a.y, b.y);
-}
-
-struct Witnesses {
-  L3 values[48];
-  std::size_t count = 0;
-
-  void Add(L3 value) noexcept {
-    if (count < 48)
-      values[count++] = value;
-  }
-};
-
-void SegmentSegmentWitnesses(L3 a0, L3 a1, L3 b0, L3 b1, int drop,
-                             Witnesses* output) noexcept {
-  const L2 p = Project(a0, drop);
-  const L2 p1 = Project(a1, drop);
-  const L2 q = Project(b0, drop);
-  const L2 q1 = Project(b1, drop);
-  const L2 r = Subtract(p1, p);
-  const L2 s = Subtract(q1, q);
-  const long double denominator = Cross(r, s);
-  const L2 qp = Subtract(q, p);
-  if (denominator != 0) {
-    const long double t = Cross(qp, s) / denominator;
-    const long double u = Cross(qp, r) / denominator;
-    if (t >= 0 && t <= 1 && u >= 0 && u <= 1)
-      output->Add(Add(a0, Scale(Subtract(a1, a0), t)));
-    return;
-  }
-  if (Cross(qp, r) != 0)
-    return;
-  if (PointOnSegment(p, q, q1))
-    output->Add(a0);
-  if (PointOnSegment(p1, q, q1))
-    output->Add(a1);
-  if (PointOnSegment(q, p, p1))
-    output->Add(b0);
-  if (PointOnSegment(q1, p, p1))
-    output->Add(b1);
-}
-
-bool CoplanarPositiveArea(const L3* a, const L3* b, int drop,
-                          bool* separated) noexcept {
-  L2 p[3], q[3];
-  for (unsigned i = 0; i < 3; ++i) {
-    p[i] = Project(a[i], drop);
-    q[i] = Project(b[i], drop);
-  }
-  bool strict_on_every_axis = true;
-  for (unsigned owner = 0; owner < 2; ++owner) {
-    const L2* axes = owner == 0 ? p : q;
-    for (unsigned edge = 0; edge < 3; ++edge) {
-      const L2 delta = Subtract(axes[(edge + 1) % 3], axes[edge]);
-      const L2 axis{-delta.y, delta.x};
-      long double min_p = axis.x * p[0].x + axis.y * p[0].y;
-      long double max_p = min_p;
-      long double min_q = axis.x * q[0].x + axis.y * q[0].y;
-      long double max_q = min_q;
-      for (unsigned i = 1; i < 3; ++i) {
-        const long double pp = axis.x * p[i].x + axis.y * p[i].y;
-        const long double qq = axis.x * q[i].x + axis.y * q[i].y;
-        min_p = std::min(min_p, pp);
-        max_p = std::max(max_p, pp);
-        min_q = std::min(min_q, qq);
-        max_q = std::max(max_q, qq);
-      }
-      const long double overlap =
-          std::min(max_p, max_q) - std::max(min_p, min_q);
-      if (overlap < 0) {
-        *separated = true;
-        return false;
-      }
-      if (overlap == 0)
-        strict_on_every_axis = false;
+int ProjectionAxis(const CurrentFixedTriangle& triangle,
+                   bool* valid) noexcept {
+  for (int drop = 0; drop < 3; ++drop) {
+    const auto sign = exact::Orient2D(
+        triangle.vertices[0], triangle.vertices[1],
+        triangle.vertices[2], drop);
+    if (!Valid(sign)) {
+      *valid = false;
+      return 0;
+    }
+    if (sign.value) {
+      *valid = true;
+      return drop;
     }
   }
-  *separated = false;
-  return strict_on_every_axis;
+  *valid = false;
+  return 0;
 }
 
-void CoplanarWitnesses(const L3* a, const L3* b, int drop,
-                       Witnesses* output) noexcept {
-  L2 p[3], q[3];
-  for (unsigned i = 0; i < 3; ++i) {
-    p[i] = Project(a[i], drop);
-    q[i] = Project(b[i], drop);
-  }
-  for (unsigned i = 0; i < 3; ++i) {
-    if (InClosedTriangle(p[i], q))
-      output->Add(a[i]);
-    if (InClosedTriangle(q[i], p))
-      output->Add(b[i]);
-    for (unsigned j = 0; j < 3; ++j)
-      SegmentSegmentWitnesses(a[i], a[(i + 1) % 3], b[j],
-                              b[(j + 1) % 3], drop, output);
-  }
-}
-
-long double PlaneSide(L3 point, L3 origin, L3 normal) noexcept {
-  return Dot(Subtract(point, origin), normal);
-}
-
-void SegmentTriangleWitnesses(L3 p0, L3 p1, const L3* triangle,
-                              L3 normal, int drop,
-                              Witnesses* output) noexcept {
-  const long double s0 = PlaneSide(p0, triangle[0], normal);
-  const long double s1 = PlaneSide(p1, triangle[0], normal);
-  L2 projected[3];
-  for (unsigned i = 0; i < 3; ++i)
-    projected[i] = Project(triangle[i], drop);
-  if (s0 == 0 && s1 == 0) {
-    if (InClosedTriangle(Project(p0, drop), projected))
-      output->Add(p0);
-    if (InClosedTriangle(Project(p1, drop), projected))
-      output->Add(p1);
-    for (unsigned i = 0; i < 3; ++i)
-      SegmentSegmentWitnesses(p0, p1, triangle[i],
-                              triangle[(i + 1) % 3], drop, output);
-    return;
-  }
-  if ((s0 > 0 && s1 > 0) || (s0 < 0 && s1 < 0))
-    return;
-  const long double denominator = s0 - s1;
-  if (denominator == 0)
-    return;
-  const long double parameter = s0 / denominator;
-  if (parameter < 0 || parameter > 1)
-    return;
-  const L3 point = Add(p0, Scale(Subtract(p1, p0), parameter));
-  if (InClosedTriangle(Project(point, drop), projected))
-    output->Add(point);
-}
-
-bool SamePoint(L3 point, Vec3 value) noexcept {
-  return point.x == static_cast<long double>(value.x) &&
-         point.y == static_cast<long double>(value.y) &&
-         point.z == static_cast<long double>(value.z);
-}
-
-bool PointOnSegment(L3 point, Vec3 first, Vec3 second) noexcept {
-  const L3 a = ToLong(first);
-  const L3 b = ToLong(second);
-  const L3 edge = Subtract(b, a);
-  const L3 delta = Subtract(point, a);
-  const L3 cross = Cross(edge, delta);
-  if (cross.x != 0 || cross.y != 0 || cross.z != 0)
+bool OnSegment(Vec3 point, Vec3 a, Vec3 b, int drop,
+               bool* valid) noexcept {
+  const auto orientation = exact::Orient2D(a, b, point, drop);
+  if (!Valid(orientation)) {
+    *valid = false;
     return false;
-  const long double projection = Dot(delta, edge);
-  return projection >= 0 && projection <= Dot(edge, edge);
+  }
+  *valid = true;
+  if (orientation.value)
+    return false;
+  const auto first = [drop](Vec3 value) {
+    return drop == 0 ? value.y : value.x;
+  };
+  const auto second = [drop](Vec3 value) {
+    return drop == 2 ? value.y : value.z;
+  };
+  return first(point) >= std::min(first(a), first(b)) &&
+         first(point) <= std::max(first(a), first(b)) &&
+         second(point) >= std::min(second(a), second(b)) &&
+         second(point) <= std::max(second(a), second(b));
+}
+
+bool PointInTriangle(Vec3 point, const CurrentFixedTriangle& triangle,
+                     int drop, bool* valid) noexcept {
+  int signs[3];
+  for (unsigned i = 0; i < 3; ++i) {
+    const auto sign = exact::Orient2D(
+        triangle.vertices[i], triangle.vertices[(i + 1) % 3],
+        point, drop);
+    if (!Valid(sign)) {
+      *valid = false;
+      return false;
+    }
+    signs[i] = sign.value;
+  }
+  *valid = true;
+  return (signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0) ||
+         (signs[0] <= 0 && signs[1] <= 0 && signs[2] <= 0);
+}
+
+enum class SegmentIntersection { None, Point, Overlap };
+
+SegmentIntersection IntersectSegments(
+    Vec3 a0, Vec3 a1, Vec3 b0, Vec3 b1, int drop,
+    bool* valid) noexcept {
+  const auto ab0 = exact::Orient2D(a0, a1, b0, drop);
+  const auto ab1 = exact::Orient2D(a0, a1, b1, drop);
+  const auto ba0 = exact::Orient2D(b0, b1, a0, drop);
+  const auto ba1 = exact::Orient2D(b0, b1, a1, drop);
+  if (!Valid(ab0) || !Valid(ab1) || !Valid(ba0) || !Valid(ba1)) {
+    *valid = false;
+    return SegmentIntersection::None;
+  }
+  *valid = true;
+  if (!ab0.value && !ab1.value && !ba0.value && !ba1.value) {
+    const auto coordinate = [drop, a0, a1, b0, b1](Vec3 value) {
+      const double ax = drop == 0 ? a0.y : a0.x;
+      const double ay = drop == 0 ? a1.y : a1.x;
+      const double bx = drop == 0 ? b0.y : b0.x;
+      const double by = drop == 0 ? b1.y : b1.x;
+      const bool use_first =
+          std::max(ax, ay) != std::min(ax, ay) ||
+          std::max(bx, by) != std::min(bx, by);
+      if (use_first)
+        return drop == 0 ? value.y : value.x;
+      return drop == 2 ? value.y : value.z;
+    };
+    const double lo = std::max(
+        std::min(coordinate(a0), coordinate(a1)),
+        std::min(coordinate(b0), coordinate(b1)));
+    const double hi = std::min(
+        std::max(coordinate(a0), coordinate(a1)),
+        std::max(coordinate(b0), coordinate(b1)));
+    return lo > hi ? SegmentIntersection::None
+                   : (lo == hi ? SegmentIntersection::Point
+                               : SegmentIntersection::Overlap);
+  }
+  bool on = false;
+  if (!ab0.value && OnSegment(b0, a0, a1, drop, &on) && on)
+    return SegmentIntersection::Point;
+  if (!ab1.value && OnSegment(b1, a0, a1, drop, &on) && on)
+    return SegmentIntersection::Point;
+  if (!ba0.value && OnSegment(a0, b0, b1, drop, &on) && on)
+    return SegmentIntersection::Point;
+  if (!ba1.value && OnSegment(a1, b0, b1, drop, &on) && on)
+    return SegmentIntersection::Point;
+  return ab0.value * ab1.value < 0 && ba0.value * ba1.value < 0
+             ? SegmentIntersection::Point
+             : SegmentIntersection::None;
+}
+
+struct CoplanarClassification {
+  bool valid = false;
+  bool intersects = false;
+  bool positive_area = false;
+};
+
+CoplanarClassification ClassifyCoplanar(
+    const CurrentFixedTriangle& a,
+    const CurrentFixedTriangle& b, int drop) noexcept {
+  CoplanarClassification result;
+  result.valid = true;
+  result.intersects = true;
+  result.positive_area = true;
+  const CurrentFixedTriangle* triangles[2]{&a, &b};
+  for (unsigned owner = 0; owner < 2; ++owner) {
+    const auto& source = *triangles[owner];
+    const auto& other = *triangles[1 - owner];
+    for (unsigned edge = 0; edge < 3; ++edge) {
+      const unsigned next = (edge + 1) % 3;
+      const unsigned opposite = (edge + 2) % 3;
+      const auto interior = exact::Orient2D(
+          source.vertices[edge], source.vertices[next],
+          source.vertices[opposite], drop);
+      if (!Valid(interior) || !interior.value) {
+        result.valid = false;
+        return result;
+      }
+      bool any_inside = false;
+      bool any_on = false;
+      for (unsigned vertex = 0; vertex < 3; ++vertex) {
+        const auto side = exact::Orient2D(
+            source.vertices[edge], source.vertices[next],
+            other.vertices[vertex], drop);
+        if (!Valid(side)) {
+          result.valid = false;
+          return result;
+        }
+        const int normalized = side.value * interior.value;
+        any_inside = any_inside || normalized > 0;
+        any_on = any_on || normalized == 0;
+      }
+      if (!any_inside && !any_on) {
+        result.intersects = false;
+        result.positive_area = false;
+        return result;
+      }
+      if (!any_inside)
+        result.positive_area = false;
+    }
+  }
+  return result;
+}
+
+bool CoplanarSegmentTriangleIntersects(
+    Vec3 p0, Vec3 p1, const CurrentFixedTriangle& triangle,
+    int drop, bool* valid) noexcept {
+  if (PointInTriangle(p0, triangle, drop, valid) ||
+      PointInTriangle(p1, triangle, drop, valid))
+    return *valid;
+  if (!*valid)
+    return false;
+  for (unsigned edge = 0; edge < 3; ++edge) {
+    const auto relation = IntersectSegments(
+        p0, p1, triangle.vertices[edge],
+        triangle.vertices[(edge + 1) % 3], drop, valid);
+    if (!*valid || relation != SegmentIntersection::None)
+      return *valid;
+  }
+  return false;
+}
+
+bool SegmentTriangleIntersects(
+    Vec3 p0, Vec3 p1, const CurrentFixedTriangle& triangle,
+    int drop, bool* valid) noexcept {
+  const auto side0 = exact::Orient3D(
+      triangle.vertices[0], triangle.vertices[1],
+      triangle.vertices[2], p0);
+  const auto side1 = exact::Orient3D(
+      triangle.vertices[0], triangle.vertices[1],
+      triangle.vertices[2], p1);
+  if (!Valid(side0) || !Valid(side1)) {
+    *valid = false;
+    return false;
+  }
+  if (side0.value && side0.value == side1.value) {
+    *valid = true;
+    return false;
+  }
+  if (!side0.value && !side1.value)
+    return CoplanarSegmentTriangleIntersects(
+        p0, p1, triangle, drop, valid);
+  if (!side0.value || !side1.value) {
+    const Vec3 point = !side0.value ? p0 : p1;
+    return PointInTriangle(point, triangle, drop, valid);
+  }
+  int around[3];
+  for (unsigned edge = 0; edge < 3; ++edge) {
+    const auto sign = exact::Orient3D(
+        p0, p1, triangle.vertices[edge],
+        triangle.vertices[(edge + 1) % 3]);
+    if (!Valid(sign)) {
+      *valid = false;
+      return false;
+    }
+    around[edge] = sign.value;
+  }
+  *valid = true;
+  return (around[0] >= 0 && around[1] >= 0 && around[2] >= 0) ||
+         (around[0] <= 0 && around[1] <= 0 && around[2] <= 0);
 }
 
 struct SharedTopology {
@@ -395,90 +388,174 @@ SharedTopology FindSharedTopology(const CurrentFixedTriangle& a,
   return result;
 }
 
-FixedTriangleLocalExclusion LocalIntersectionExclusion(
-    const CurrentFixedTriangle& a, const CurrentFixedTriangle& b,
-    const Witnesses& witnesses, bool positive_area) noexcept {
-  if (Same(a.key, b.key))
-    return FixedTriangleLocalExclusion::IdenticalFace;
-  if (positive_area || witnesses.count == 0)
-    return FixedTriangleLocalExclusion::None;
-  const auto shared = FindSharedTopology(a, b);
-  if (shared.edge_a >= 0) {
-    const unsigned next_a = (shared.edge_a + 1) % 3;
-    const unsigned next_b = (shared.edge_b + 1) % 3;
-    bool local = true;
-    for (std::size_t i = 0; i < witnesses.count; ++i) {
-      local = local &&
-              PointOnSegment(witnesses.values[i],
-                             a.vertices[shared.edge_a],
-                             a.vertices[next_a]) &&
-              PointOnSegment(witnesses.values[i],
-                             b.vertices[shared.edge_b],
-                             b.vertices[next_b]);
-    }
-    if (local)
-      return FixedTriangleLocalExclusion::SharedEdgeOnly;
-  }
-  if (shared.vertex_a >= 0) {
-    bool local = true;
-    for (std::size_t i = 0; i < witnesses.count; ++i) {
-      local = local &&
-              SamePoint(witnesses.values[i],
-                        a.vertices[shared.vertex_a]) &&
-              SamePoint(witnesses.values[i],
-                        b.vertices[shared.vertex_b]);
-    }
-    if (local)
-      return FixedTriangleLocalExclusion::SharedVertexOnly;
-  }
-  return FixedTriangleLocalExclusion::None;
+bool EdgeContains(const CurrentFixedTriangle& triangle, unsigned edge,
+                  const FacetVertexKey& vertex) noexcept {
+  return Same(triangle.vertex_keys[edge], vertex) ||
+         Same(triangle.vertex_keys[(edge + 1) % 3], vertex);
 }
 
-bool ClassifyIntersection(const CurrentFixedTriangle& a,
-                          const CurrentFixedTriangle& b,
-                          FixedTriangleIntersection* output) noexcept {
-  L3 av[3], bv[3];
+bool OnlySharedCoplanarVertex(
+    const CurrentFixedTriangle& a, const CurrentFixedTriangle& b,
+    const SharedTopology& shared, int drop, bool* valid) noexcept {
+  const FacetVertexKey& vertex = a.vertex_keys[shared.vertex_a];
   for (unsigned i = 0; i < 3; ++i) {
-    av[i] = ToLong(a.vertices[i]);
-    bv[i] = ToLong(b.vertices[i]);
+    if (i != static_cast<unsigned>(shared.vertex_a) &&
+        PointInTriangle(a.vertices[i], b, drop, valid))
+      return false;
+    if (!*valid)
+      return false;
+    if (i != static_cast<unsigned>(shared.vertex_b) &&
+        PointInTriangle(b.vertices[i], a, drop, valid))
+      return false;
+    if (!*valid)
+      return false;
   }
-  const L3 normal_a = Cross(Subtract(av[1], av[0]),
-                            Subtract(av[2], av[0]));
-  const L3 normal_b = Cross(Subtract(bv[1], bv[0]),
-                            Subtract(bv[2], bv[0]));
-  bool coplanar = true;
-  for (unsigned i = 0; i < 3; ++i)
-    coplanar = coplanar && PlaneSide(bv[i], av[0], normal_a) == 0;
+  for (unsigned i = 0; i < 3; ++i) {
+    for (unsigned j = 0; j < 3; ++j) {
+      const auto relation = IntersectSegments(
+          a.vertices[i], a.vertices[(i + 1) % 3],
+          b.vertices[j], b.vertices[(j + 1) % 3], drop, valid);
+      if (!*valid)
+        return false;
+      if (relation == SegmentIntersection::Overlap)
+        return false;
+      if (relation == SegmentIntersection::Point &&
+          (!EdgeContains(a, i, vertex) ||
+           !EdgeContains(b, j, vertex)))
+        return false;
+    }
+  }
+  return true;
+}
 
-  Witnesses witnesses;
+bool OnlySharedTransverseVertex(
+    const CurrentFixedTriangle& a, const CurrentFixedTriangle& b,
+    const SharedTopology& shared, int drop_a, int drop_b,
+    bool* valid) noexcept {
+  const FacetVertexKey& vertex = a.vertex_keys[shared.vertex_a];
+  const CurrentFixedTriangle* source[2]{&a, &b};
+  const CurrentFixedTriangle* target[2]{&b, &a};
+  const int drops[2]{drop_b, drop_a};
+  for (unsigned owner = 0; owner < 2; ++owner) {
+    for (unsigned edge = 0; edge < 3; ++edge) {
+      if (!SegmentTriangleIntersects(
+              source[owner]->vertices[edge],
+              source[owner]->vertices[(edge + 1) % 3],
+              *target[owner], drops[owner], valid)) {
+        if (!*valid)
+          return false;
+        continue;
+      }
+      if (!EdgeContains(*source[owner], edge, vertex))
+        return false;
+      const unsigned other =
+          Same(source[owner]->vertex_keys[edge], vertex)
+              ? (edge + 1) % 3
+              : edge;
+      const auto side = exact::Orient3D(
+          target[owner]->vertices[0], target[owner]->vertices[1],
+          target[owner]->vertices[2],
+          source[owner]->vertices[other]);
+      if (!Valid(side)) {
+        *valid = false;
+        return false;
+      }
+      if (!side.value)
+        return false;
+    }
+  }
+  return true;
+}
+
+FixedTriangleDiscoveryStatus ClassifyIntersection(
+    const CurrentFixedTriangle& a, const CurrentFixedTriangle& b,
+    FixedTriangleIntersection* output, bool* intersects) noexcept {
+  int sides[3];
+  bool coplanar = true;
+  for (unsigned i = 0; i < 3; ++i) {
+    const auto side = exact::Orient3D(
+        a.vertices[0], a.vertices[1], a.vertices[2], b.vertices[i]);
+    if (!Valid(side))
+      return FixedTriangleDiscoveryStatus::NonFiniteResult;
+    sides[i] = side.value;
+    coplanar = coplanar && !side.value;
+  }
+  bool valid = false;
+  const int drop_a = ProjectionAxis(a, &valid);
+  if (!valid)
+    return FixedTriangleDiscoveryStatus::DegenerateTriangle;
   bool positive_area = false;
   if (coplanar) {
-    bool separated = false;
-    const int drop = DominantAxis(normal_a);
-    positive_area =
-        CoplanarPositiveArea(av, bv, drop, &separated);
-    if (separated)
-      return false;
-    CoplanarWitnesses(av, bv, drop, &witnesses);
+    const auto classification = ClassifyCoplanar(a, b, drop_a);
+    if (!classification.valid)
+      return FixedTriangleDiscoveryStatus::NonFiniteResult;
+    if (!classification.intersects) {
+      *intersects = false;
+      return FixedTriangleDiscoveryStatus::Ok;
+    }
+    positive_area = classification.positive_area;
     output->kind = positive_area
                        ? FixedTriangleIntersectionKind::CoplanarOverlap
                        : FixedTriangleIntersectionKind::CoplanarTouch;
   } else {
-    const int drop_a = DominantAxis(normal_a);
-    const int drop_b = DominantAxis(normal_b);
-    for (unsigned i = 0; i < 3; ++i) {
-      SegmentTriangleWitnesses(av[i], av[(i + 1) % 3], bv,
-                               normal_b, drop_b, &witnesses);
-      SegmentTriangleWitnesses(bv[i], bv[(i + 1) % 3], av,
-                               normal_a, drop_a, &witnesses);
+    bool all_positive = true;
+    bool all_negative = true;
+    for (int side : sides) {
+      all_positive = all_positive && side > 0;
+      all_negative = all_negative && side < 0;
     }
-    if (witnesses.count == 0)
-      return false;
+    if (all_positive || all_negative) {
+      *intersects = false;
+      return FixedTriangleDiscoveryStatus::Ok;
+    }
+    const int drop_b = ProjectionAxis(b, &valid);
+    if (!valid)
+      return FixedTriangleDiscoveryStatus::DegenerateTriangle;
+    bool found = false;
+    for (unsigned i = 0; i < 3 && !found; ++i)
+      found = SegmentTriangleIntersects(
+          a.vertices[i], a.vertices[(i + 1) % 3], b, drop_b, &valid);
+    for (unsigned i = 0; i < 3 && !found; ++i)
+      found = SegmentTriangleIntersects(
+          b.vertices[i], b.vertices[(i + 1) % 3], a, drop_a, &valid);
+    if (!valid)
+      return FixedTriangleDiscoveryStatus::NonFiniteResult;
+    if (!found) {
+      *intersects = false;
+      return FixedTriangleDiscoveryStatus::Ok;
+    }
     output->kind = FixedTriangleIntersectionKind::Transverse;
   }
-  output->local_exclusion =
-      LocalIntersectionExclusion(a, b, witnesses, positive_area);
-  return true;
+
+  output->local_exclusion = FixedTriangleLocalExclusion::None;
+  if (Same(a.key, b.key)) {
+    output->local_exclusion =
+        FixedTriangleLocalExclusion::IdenticalFace;
+  } else if (!positive_area) {
+    const auto shared = FindSharedTopology(a, b);
+    if (shared.edge_a >= 0) {
+      output->local_exclusion =
+          FixedTriangleLocalExclusion::SharedEdgeOnly;
+    } else if (shared.vertex_a >= 0) {
+      bool only = false;
+      if (coplanar) {
+        only = OnlySharedCoplanarVertex(
+            a, b, shared, drop_a, &valid);
+      } else {
+        const int drop_b = ProjectionAxis(b, &valid);
+        if (valid)
+          only = OnlySharedTransverseVertex(
+              a, b, shared, drop_a, drop_b, &valid);
+      }
+      if (!valid)
+        return FixedTriangleDiscoveryStatus::NonFiniteResult;
+      if (only)
+        output->local_exclusion =
+            FixedTriangleLocalExclusion::SharedVertexOnly;
+    }
+  }
+  *intersects = true;
+  return FixedTriangleDiscoveryStatus::Ok;
 }
 
 FixedTriangleDiscoveryStatus AddVertexFace(
@@ -486,11 +563,9 @@ FixedTriangleDiscoveryStatus AddVertexFace(
     const CurrentFixedTriangle& face_triangle, bool vertex_is_first,
     const CurrentFixedTriangle& canonical_first,
     const CurrentFixedTriangle& canonical_second,
-    PairResult* output) noexcept {
-  ++output->feature_task_count;
-  if (VertexInTriangleTopology(vertex_triangle.vertex_keys[vertex],
-                               face_triangle))
-    return FixedTriangleDiscoveryStatus::Ok;
+    FixedTriangleFeatureCandidate* output, std::size_t capacity,
+    PairFeatureResult* result) noexcept {
+  ++result->feature_tasks;
   TrianglePointGeometry closest;
   const auto status = ClosestPointOnTriangle(
       vertex_triangle.vertices[vertex], Geometry(face_triangle), &closest);
@@ -498,62 +573,110 @@ FixedTriangleDiscoveryStatus AddVertexFace(
     return status == Status::kNonFiniteResult
                ? FixedTriangleDiscoveryStatus::NonFiniteResult
                : FixedTriangleDiscoveryStatus::InvalidInput;
-  auto& result = output->features[output->feature_count++];
-  result.kind = FixedTriangleCandidateKind::VertexFace;
-  result.triangles[0] = canonical_first.key;
-  result.triangles[1] = canonical_second.key;
-  result.local_features[vertex_is_first ? 0 : 1] = vertex;
-  result.local_features[vertex_is_first ? 1 : 0] = 3;
-  result.vertex = vertex_triangle.vertex_keys[vertex];
-  result.face = face_triangle.key;
-  result.points[0] = vertex_triangle.vertices[vertex];
-  result.points[1] = closest.point;
-  result.distance_m = closest.distance;
+  if (VertexInTriangleTopology(vertex_triangle.vertex_keys[vertex],
+                               face_triangle))
+    return FixedTriangleDiscoveryStatus::Ok;
+  if (result->feature_count >= capacity)
+    return FixedTriangleDiscoveryStatus::ResourceLimit;
+  FixedTriangleFeatureCandidate candidate;
+  candidate.key.kind = FixedTriangleCandidateKind::VertexFace;
+  candidate.key.vertex_face.vertex =
+      vertex_triangle.vertex_keys[vertex];
+  candidate.triangles[0] = canonical_first.key;
+  candidate.triangles[1] = canonical_second.key;
+  candidate.local_features[vertex_is_first ? 0 : 1] = vertex;
+  candidate.local_features[vertex_is_first ? 1 : 0] = 3;
+  candidate.points[0] = vertex_triangle.vertices[vertex];
+  candidate.points[1] = closest.point;
+  candidate.distance_m = closest.distance;
   for (unsigned i = 0; i < 3; ++i)
-    result.face_weights[i] = closest.weights[i];
+    candidate.face_weights[i] = closest.weights[i];
+
+  int target_vertex = -1;
+  int zero_weight = -1;
+  for (unsigned i = 0; i < 3; ++i) {
+    if (closest.weights[i] == 1)
+      target_vertex = static_cast<int>(i);
+    if (closest.weights[i] == 0)
+      zero_weight = static_cast<int>(i);
+  }
+  if (target_vertex >= 0) {
+    candidate.key.vertex_face.target.SetVertex(
+        face_triangle.vertex_keys[target_vertex]);
+    candidate.points[1] = face_triangle.vertices[target_vertex];
+  } else if (zero_weight >= 0) {
+    const unsigned edge =
+        (static_cast<unsigned>(zero_weight) + 1) % 3;
+    SegmentPointGeometry on_edge;
+    const auto edge_status = ClosestPointOnSegment(
+        vertex_triangle.vertices[vertex],
+        CanonicalEdgeGeometry(face_triangle, edge), &on_edge);
+    if (edge_status != Status::kOk)
+      return edge_status == Status::kNonFiniteResult
+                 ? FixedTriangleDiscoveryStatus::NonFiniteResult
+                 : FixedTriangleDiscoveryStatus::InvalidInput;
+    candidate.key.vertex_face.target.SetEdge(
+        face_triangle.edge_keys[edge]);
+    candidate.points[1] = on_edge.point;
+    candidate.distance_m = on_edge.distance;
+    for (double& weight : candidate.face_weights)
+      weight = 0;
+    for (unsigned i = 0; i < 3; ++i) {
+      if (Same(face_triangle.vertex_keys[i],
+               face_triangle.edge_keys[edge].endpoints[0]))
+        candidate.face_weights[i] = 1 - on_edge.parameter;
+      if (Same(face_triangle.vertex_keys[i],
+               face_triangle.edge_keys[edge].endpoints[1]))
+        candidate.face_weights[i] = on_edge.parameter;
+    }
+  } else {
+    candidate.key.vertex_face.target.SetFace(face_triangle.key);
+  }
+  output[result->feature_count++] = candidate;
   return FixedTriangleDiscoveryStatus::Ok;
 }
 
 FixedTriangleDiscoveryStatus AddEdgeEdge(
     const CurrentFixedTriangle& a, unsigned edge_a,
     const CurrentFixedTriangle& b, unsigned edge_b,
-    PairResult* output) noexcept {
-  ++output->feature_task_count;
-  if (EdgesIncident(a.edge_keys[edge_a], b.edge_keys[edge_b]))
-    return FixedTriangleDiscoveryStatus::Ok;
+    FixedTriangleFeatureCandidate* output, std::size_t capacity,
+    PairFeatureResult* result) noexcept {
+  ++result->feature_tasks;
+  const bool a_first =
+      Compare(a.edge_keys[edge_a], b.edge_keys[edge_b]) <= 0;
+  const auto first_geometry = a_first
+                                  ? CanonicalEdgeGeometry(a, edge_a)
+                                  : CanonicalEdgeGeometry(b, edge_b);
+  const auto second_geometry = a_first
+                                   ? CanonicalEdgeGeometry(b, edge_b)
+                                   : CanonicalEdgeGeometry(a, edge_a);
   SegmentPairGeometry closest;
   const auto status = ClosestPointsBetweenSegments(
-      EdgeGeometry(a, edge_a), EdgeGeometry(b, edge_b), &closest);
+      first_geometry, second_geometry, &closest);
   if (status != Status::kOk)
     return status == Status::kNonFiniteResult
                ? FixedTriangleDiscoveryStatus::NonFiniteResult
                : FixedTriangleDiscoveryStatus::InvalidInput;
-  auto& result = output->features[output->feature_count++];
-  result.kind = FixedTriangleCandidateKind::EdgeEdge;
-  result.triangles[0] = a.key;
-  result.triangles[1] = b.key;
-  result.local_features[0] = edge_a;
-  result.local_features[1] = edge_b;
-  const double parameter_a =
-      CanonicalEdgeParameter(a, edge_a, closest.parameter_a);
-  const double parameter_b =
-      CanonicalEdgeParameter(b, edge_b, closest.parameter_b);
-  if (Compare(a.edge_keys[edge_a], b.edge_keys[edge_b]) <= 0) {
-    result.edges[0] = a.edge_keys[edge_a];
-    result.edges[1] = b.edge_keys[edge_b];
-    result.points[0] = closest.point_a;
-    result.points[1] = closest.point_b;
-    result.edge_parameters[0] = parameter_a;
-    result.edge_parameters[1] = parameter_b;
-  } else {
-    result.edges[0] = b.edge_keys[edge_b];
-    result.edges[1] = a.edge_keys[edge_a];
-    result.points[0] = closest.point_b;
-    result.points[1] = closest.point_a;
-    result.edge_parameters[0] = parameter_b;
-    result.edge_parameters[1] = parameter_a;
-  }
-  result.distance_m = closest.distance;
+  if (EdgesIncident(a.edge_keys[edge_a], b.edge_keys[edge_b]))
+    return FixedTriangleDiscoveryStatus::Ok;
+  if (result->feature_count >= capacity)
+    return FixedTriangleDiscoveryStatus::ResourceLimit;
+  FixedTriangleFeatureCandidate candidate;
+  candidate.key.SetEdgeEdge();
+  candidate.key.edge_edge.edges[0] =
+      a_first ? a.edge_keys[edge_a] : b.edge_keys[edge_b];
+  candidate.key.edge_edge.edges[1] =
+      a_first ? b.edge_keys[edge_b] : a.edge_keys[edge_a];
+  candidate.triangles[0] = a.key;
+  candidate.triangles[1] = b.key;
+  candidate.local_features[0] = edge_a;
+  candidate.local_features[1] = edge_b;
+  candidate.points[0] = closest.point_a;
+  candidate.points[1] = closest.point_b;
+  candidate.edge_parameters[0] = closest.parameter_a;
+  candidate.edge_parameters[1] = closest.parameter_b;
+  candidate.distance_m = closest.distance;
+  output[result->feature_count++] = candidate;
   return FixedTriangleDiscoveryStatus::Ok;
 }
 
@@ -588,31 +711,53 @@ int Compare(const FixedTriangleKey& a, const FixedTriangleKey& b) noexcept {
   return aa < bb ? -1 : (bb < aa ? 1 : 0);
 }
 
-bool FeatureLess(const FixedTriangleFeatureCandidate& a,
-                 const FixedTriangleFeatureCandidate& b) noexcept {
+int Compare(const FixedTriangleStratumKey& a,
+            const FixedTriangleStratumKey& b) noexcept {
+  int value = ScalarCompare(a.kind, b.kind);
+  if (!value && a.kind == FixedTriangleStratumKind::Vertex)
+    value = Compare(a.vertex, b.vertex);
+  if (!value && a.kind == FixedTriangleStratumKind::Edge)
+    value = Compare(a.edge, b.edge);
+  if (!value && a.kind == FixedTriangleStratumKind::Face)
+    value = Compare(a.face, b.face);
+  return value;
+}
+
+int Compare(const FixedTriangleFeatureKey& a,
+            const FixedTriangleFeatureKey& b) noexcept {
+  int value = ScalarCompare(a.kind, b.kind);
+  if (!value && a.kind == FixedTriangleCandidateKind::VertexFace)
+    value = Compare(a.vertex_face.vertex, b.vertex_face.vertex);
+  if (!value && a.kind == FixedTriangleCandidateKind::VertexFace)
+    value = Compare(a.vertex_face.target, b.vertex_face.target);
+  if (!value && a.kind == FixedTriangleCandidateKind::EdgeEdge)
+    value = Compare(a.edge_edge.edges[0], b.edge_edge.edges[0]);
+  if (!value && a.kind == FixedTriangleCandidateKind::EdgeEdge)
+    value = Compare(a.edge_edge.edges[1], b.edge_edge.edges[1]);
+  return value;
+}
+
+bool ProducerLess(const FixedTriangleFeatureCandidate& a,
+                  const FixedTriangleFeatureCandidate& b) noexcept {
   int value = Compare(a.triangles[0], b.triangles[0]);
   if (!value)
     value = Compare(a.triangles[1], b.triangles[1]);
   if (!value)
-    value = ScalarCompare(a.kind, b.kind);
-  if (!value)
     value = ScalarCompare(a.local_features[0], b.local_features[0]);
   if (!value)
     value = ScalarCompare(a.local_features[1], b.local_features[1]);
-  if (!value && a.kind == FixedTriangleCandidateKind::VertexFace)
-    value = Compare(a.vertex, b.vertex);
-  if (!value && a.kind == FixedTriangleCandidateKind::VertexFace)
-    value = Compare(a.face, b.face);
-  if (!value && a.kind == FixedTriangleCandidateKind::EdgeEdge)
-    value = Compare(a.edges[0], b.edges[0]);
-  if (!value && a.kind == FixedTriangleCandidateKind::EdgeEdge)
-    value = Compare(a.edges[1], b.edges[1]);
   return value < 0;
 }
 
-bool SameFeatureTask(const FixedTriangleFeatureCandidate& a,
-                     const FixedTriangleFeatureCandidate& b) noexcept {
-  return !FeatureLess(a, b) && !FeatureLess(b, a);
+bool FeatureLess(const FixedTriangleFeatureCandidate& a,
+                 const FixedTriangleFeatureCandidate& b) noexcept {
+  const int value = Compare(a.key, b.key);
+  return value ? value < 0 : ProducerLess(a, b);
+}
+
+bool SameFeatureKey(const FixedTriangleFeatureCandidate& a,
+                    const FixedTriangleFeatureCandidate& b) noexcept {
+  return Compare(a.key, b.key) == 0;
 }
 
 bool IntersectionLess(const FixedTriangleIntersection& a,
@@ -627,49 +772,80 @@ bool SameIntersectionPair(const FixedTriangleIntersection& a,
   return !IntersectionLess(a, b) && !IntersectionLess(b, a);
 }
 
-FixedTriangleDiscoveryStatus EvaluatePair(const CurrentFixedTriangle& input_a,
-                                          const CurrentFixedTriangle& input_b,
-                                          PairResult* output) noexcept {
-  if (!output)
+bool SameTriangleValue(const CurrentFixedTriangle& a,
+                       const CurrentFixedTriangle& b) noexcept {
+  return SameTriangleValueImpl(a, b);
+}
+
+FixedTriangleDiscoveryStatus ValidateTriangle(
+    const CurrentFixedTriangle& value) noexcept {
+  return ValidateTriangleImpl(value);
+}
+
+std::size_t CountPairFeatureCandidates(
+    const CurrentFixedTriangle& a,
+    const CurrentFixedTriangle& b) noexcept {
+  std::size_t result = 0;
+  for (unsigned vertex = 0; vertex < 3; ++vertex) {
+    result += !VertexInTriangleTopology(a.vertex_keys[vertex], b);
+    result += !VertexInTriangleTopology(b.vertex_keys[vertex], a);
+  }
+  for (unsigned edge_a = 0; edge_a < 3; ++edge_a)
+    for (unsigned edge_b = 0; edge_b < 3; ++edge_b)
+      result += !EdgesIncident(a.edge_keys[edge_a], b.edge_keys[edge_b]);
+  return result;
+}
+
+FixedTriangleDiscoveryStatus EvaluatePairFeaturesOnce(
+    const CurrentFixedTriangle& input_a,
+    const CurrentFixedTriangle& input_b,
+    FixedTriangleFeatureCandidate* output, std::size_t output_capacity,
+    PairFeatureResult* result) noexcept {
+  if (!result || (output_capacity && !output))
     return FixedTriangleDiscoveryStatus::InvalidInput;
-  *output = {};
+  *result = {};
   const CurrentFixedTriangle* a = &input_a;
   const CurrentFixedTriangle* b = &input_b;
   if (Compare(b->key, a->key) < 0)
     std::swap(a, b);
-  if (Same(a->key, b->key) && !SameTriangleValue(*a, *b))
-    return FixedTriangleDiscoveryStatus::IdentityMismatch;
-  auto status = ValidateTriangle(*a);
-  if (status != FixedTriangleDiscoveryStatus::Ok)
-    return status;
-  status = ValidateTriangle(*b);
-  if (status != FixedTriangleDiscoveryStatus::Ok)
-    return status;
-  status = ValidateSharedFeatureValues(*a, *b);
-  if (status != FixedTriangleDiscoveryStatus::Ok)
-    return status;
-
-  output->intersection.triangles[0] = a->key;
-  output->intersection.triangles[1] = b->key;
-  output->intersects =
-      ClassifyIntersection(*a, *b, &output->intersection);
-
+  FixedTriangleDiscoveryStatus status =
+      FixedTriangleDiscoveryStatus::Ok;
   for (unsigned vertex = 0; vertex < 3; ++vertex) {
-    status = AddVertexFace(*a, vertex, *b, true, *a, *b, output);
+    status = AddVertexFace(*a, vertex, *b, true, *a, *b, output,
+                           output_capacity, result);
     if (status != FixedTriangleDiscoveryStatus::Ok)
       return status;
-    status = AddVertexFace(*b, vertex, *a, false, *a, *b, output);
+    status = AddVertexFace(*b, vertex, *a, false, *a, *b, output,
+                           output_capacity, result);
     if (status != FixedTriangleDiscoveryStatus::Ok)
       return status;
   }
   for (unsigned edge_a = 0; edge_a < 3; ++edge_a) {
     for (unsigned edge_b = 0; edge_b < 3; ++edge_b) {
-      status = AddEdgeEdge(*a, edge_a, *b, edge_b, output);
+      status = AddEdgeEdge(*a, edge_a, *b, edge_b, output,
+                           output_capacity, result);
       if (status != FixedTriangleDiscoveryStatus::Ok)
         return status;
     }
   }
   return FixedTriangleDiscoveryStatus::Ok;
+}
+
+FixedTriangleDiscoveryStatus ClassifyPairIntersection(
+    const CurrentFixedTriangle& input_a,
+    const CurrentFixedTriangle& input_b,
+    FixedTriangleIntersection* output, bool* intersects) noexcept {
+  if (!output || !intersects)
+    return FixedTriangleDiscoveryStatus::InvalidInput;
+  *output = {};
+  *intersects = false;
+  const CurrentFixedTriangle* a = &input_a;
+  const CurrentFixedTriangle* b = &input_b;
+  if (Compare(b->key, a->key) < 0)
+    std::swap(a, b);
+  output->triangles[0] = a->key;
+  output->triangles[1] = b->key;
+  return ClassifyIntersection(*a, *b, output, intersects);
 }
 
 }  // namespace fixed_triangle_features
