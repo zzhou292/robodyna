@@ -21,10 +21,12 @@ cc_test(
     ],
 )
 
-py_test(
+cc_test(
     name = "source_identity",
-    srcs = ["verify_sources.py"],
+    size = "small",
+    srcs = ["SourceIdentityTest.cpp"],
     data = [
+        "verify_sources.py",
         "BUILD.bazel",
         "CMakeLists.txt",
         "DeepTest.cpp",
@@ -37,6 +39,5 @@ py_test(
         "OracleTest.cpp",
         "//lib_src/collision:represented_interval_crossing_source_proof",
     ],
-    main = "verify_sources.py",
-    python_version = "PY3",
+    deps = ["@googletest//:gtest_main"],
 )
