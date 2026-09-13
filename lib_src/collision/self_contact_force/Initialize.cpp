@@ -2,11 +2,25 @@
 #include "Storage.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
 
+#include <atomic>
 #include <new>
 
 namespace tlfea::contact {
 namespace fe = tl::fea;
 namespace scf = self_contact_force;
+namespace {
+std::atomic<std::uint64_t> next_assembler_identity{1};
+
+std::uint64_t NewAssemblerIdentity() noexcept {
+  auto value = next_assembler_identity.load(std::memory_order_relaxed);
+  while (value != UINT64_MAX) {
+    if (next_assembler_identity.compare_exchange_weak(
+            value, value + 1, std::memory_order_relaxed))
+      return value;
+  }
+  return 0;
+}
+}  // namespace
 
 SelfContactForceAssembly::SelfContactForceAssembly() noexcept = default;
 SelfContactForceAssembly::~SelfContactForceAssembly() = default;
@@ -19,6 +33,7 @@ SelfContactForceReport SelfContactForceAssembly::Impl::Check(
     cudaError_t code) noexcept {
   if (code == cudaSuccess) return {};
   usable = false;
+  if (owner) owner->Discard();
   return {SelfContactForceStatus::DeviceFailure, SIZE_MAX, UINT64_MAX,
           UINT32_MAX, SurfacePenaltyStatus::InvalidInput,
           fe::NodalStatus::DeviceFailure, cudaGetErrorString(code)};
@@ -29,7 +44,9 @@ bool SelfContactForceAssembly::Impl::OutputDisjoint(
   using fe::trial_identity::Disjoint;
   return output && binding.OutputDisjoint(output, bytes) &&
       Disjoint(output, bytes, this, sizeof(*this)) &&
-      Disjoint(output, bytes, host.data(), host.bytes());
+      Disjoint(output, bytes, host.data(), host.bytes()) &&
+      Disjoint(output, bytes, device, layout.bytes) &&
+      owner && Disjoint(output, bytes, owner, sizeof(*owner));
 }
 
 SelfContactForceReport SelfContactForceAssembly::Initialize(
@@ -82,6 +99,11 @@ SelfContactForceReport SelfContactForceAssembly::Initialize(
             authenticated.message};
 
   auto next = std::make_unique<Impl>(binding);
+  next->assembler_identity = NewAssemblerIdentity();
+  if (!next->assembler_identity)
+    return {S::ResourceLimit, SIZE_MAX, UINT64_MAX, UINT32_MAX,
+            SurfacePenaltyStatus::InvalidInput, fe::NodalStatus::Ok,
+            "Force assembler identities are exhausted"};
   next->owner = &owner;
   next->config = config;
   next->storage_forecast = preflight.forecast;
@@ -126,6 +148,22 @@ SelfContactForceReport SelfContactForceAssembly::Initialize(
 
 void SelfContactForceAssembly::DiscardTrial() noexcept {
   if (impl_) impl_->stream = nullptr;
+}
+
+bool SelfContactForceAssembly::Authenticates(
+    const SelfContactForceAssemblyReceipt& receipt) const noexcept {
+  return impl_ && receipt.assembler_ == this &&
+      receipt.assembler_identity_ == impl_->assembler_identity &&
+      receipt.diagnostics_.valid && impl_->usable && impl_->stream &&
+      receipt.diagnostics_.owner_id == impl_->config.owner.owner_id &&
+      receipt.diagnostics_.base_epoch == impl_->last_base_epoch &&
+      receipt.diagnostics_.attempt == impl_->last_attempt &&
+      receipt.diagnostics_.configuration_id ==
+          impl_->config.configuration_id &&
+      receipt.diagnostics_.qualification_id ==
+          impl_->config.qualification_id &&
+      receipt.diagnostics_.active_use_identity ==
+          impl_->binding.identity();
 }
 
 fe::NodalAllocationInfo SelfContactForceAssembly::allocations() const noexcept {

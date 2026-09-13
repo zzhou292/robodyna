@@ -32,10 +32,11 @@ TL_SURFACE_HD inline bool RepresentedSelfContactStiffness(
   return true;
 }
 
-// Scratch-only host canonicalization. Events sort by immutable feature key,
-// then source order. Incidence sorts by physical node and canonical event
-// ordinal; one event contributes at most once to one physical node even when
-// its two endpoint maps share that node.
+// Scratch-only host canonicalization. An empty event batch publishes an exact
+// zero summary without requiring event/incidence/node storage. Nonempty events
+// sort by immutable feature key, then source order. Incidence sorts by physical
+// node and canonical event ordinal; one event contributes at most once to one
+// physical node even when its two endpoint maps share that node.
 SelfContactForceReport BuildSelfContactForceIncidence(
     SelfContactForceEvent* events, std::size_t event_count,
     std::uint32_t node_count,

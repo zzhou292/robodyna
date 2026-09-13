@@ -56,6 +56,33 @@ bool TargetBelongsToFacet(const SelfContactActiveUseBinding& binding,
       !fixed_triangle_features::Compare(target.face, expected);
 }
 
+bool SameClassification(
+    const SelfContactPairClassification& a,
+    const SelfContactPairClassification& b) noexcept {
+  if (a.binding_identity != b.binding_identity ||
+      a.activity_base_identity != b.activity_base_identity ||
+      a.activity_current_identity != b.activity_current_identity ||
+      a.activity_parent_count != b.activity_parent_count ||
+      a.kind != b.kind || a.edge_edge_case != b.edge_edge_case ||
+      a.status != b.status || a.tied != b.tied ||
+      a.local_incidence != b.local_incidence ||
+      a.excluded != b.excluded ||
+      !SameSupport(a.endpoint_support[0], b.endpoint_support[0]) ||
+      !SameSupport(a.endpoint_support[1], b.endpoint_support[1]))
+    return false;
+  for (unsigned endpoint = 0; endpoint < 2; ++endpoint)
+    if (a.parent[endpoint] != b.parent[endpoint] ||
+        a.feature[endpoint] != b.feature[endpoint] ||
+        a.active[endpoint] != b.active[endpoint] ||
+        !SameBits(a.reference_half_thickness_m[endpoint],
+                  b.reference_half_thickness_m[endpoint]))
+      return false;
+  return SameCertificate(a.candidate_directed_area_m2,
+                         b.candidate_directed_area_m2) &&
+      SameCertificate(a.admitted_force_area_m2,
+                      b.admitted_force_area_m2);
+}
+
 }  // namespace
 
 bool SamePoint(const WeightedSurfacePoint& a,
@@ -87,37 +114,39 @@ bool SameCertificate(Q4CertifiedIntegral a,
 SelfContactForceReport ValidateEvent(
     const SelfContactActiveUseBinding& binding,
     const SelfContactForceEvent& event,
+    SelfContactActivityView activity,
     std::size_t canonical_event) noexcept {
   const auto& pair = event.classification;
   const auto parents = binding.parents();
   const auto facets = binding.facet_uses();
   if (event.feature.kind != FixedTriangleCandidateKind::VertexFace ||
-      !binding.Authenticates(pair) ||
-      pair.binding_identity != binding.identity() ||
-      pair.kind != SelfContactPairKind::VertexFace ||
-      pair.status != SelfContactPairStatus::AdmittedVertexFace ||
-      pair.excluded || pair.local_incidence ||
-      !pair.active[0] || !pair.active[1] ||
-      pair.parent[0] == pair.parent[1] ||
-      pair.parent[0] >= parents.size() || pair.parent[1] >= parents.size() ||
-      pair.feature[0] >= binding.vertices().size() ||
-      pair.feature[1] >= facets.size() ||
-      facets[pair.feature[1]].parent != pair.parent[1] ||
-      pair.endpoint_support[0].status ==
+      event.vertex_use >= binding.vertex_uses().size() ||
+      event.facet_use >= facets.size())
+    return Invalid(event, canonical_event,
+                   "Event kind or exact active-use ordinals are invalid");
+
+  SelfContactPairClassification regenerated;
+  const auto classified = binding.ClassifyVertexFace(
+      event.vertex_use, event.facet_use, event.endpoints[1],
+      activity, &regenerated);
+  if (classified.status != SelfContactActiveUseStatus::Ok)
+    return Invalid(event, canonical_event,
+                   "Event cannot be regenerated from the supplied activity",
+                   S::StaleAttempt);
+  if (!SameClassification(regenerated, pair))
+    return Invalid(event, canonical_event,
+                   "Caller classification differs from exact regeneration");
+  if (!binding.Authenticates(regenerated) ||
+      regenerated.status != SelfContactPairStatus::AdmittedVertexFace ||
+      regenerated.excluded || regenerated.local_incidence ||
+      !regenerated.active[0] || !regenerated.active[1] ||
+      regenerated.parent[0] == regenerated.parent[1] ||
+      regenerated.endpoint_support[0].status ==
           SelfContactSupportStatus::UnsupportedCinSecondary ||
-      pair.endpoint_support[1].status ==
+      regenerated.endpoint_support[1].status ==
           SelfContactSupportStatus::UnsupportedCinSecondary)
     return Invalid(event, canonical_event,
-                   "Event is not an authenticated admitted directed VF pair");
-  if (!pair.activity_base_identity || !pair.activity_current_identity ||
-      pair.activity_parent_count != parents.size() ||
-      pair.activity_base_identity[pair.parent[0]] != 1 ||
-      pair.activity_base_identity[pair.parent[1]] != 1 ||
-      pair.activity_current_identity[pair.parent[0]] != 1 ||
-      pair.activity_current_identity[pair.parent[1]] != 1)
-    return Invalid(event, canonical_event,
-                   "Event active-use activity identity is stale",
-                   S::StaleAttempt);
+                   "Regenerated event is not an admitted directed VF pair");
 
   const auto& first_parent = parents[pair.parent[0]];
   const auto& second_parent = parents[pair.parent[1]];
@@ -130,25 +159,21 @@ SelfContactForceReport ValidateEvent(
     return Invalid(event, canonical_event,
                    "Event maps or thickness differ from retained parents");
 
-  const SelfContactFacetVertexUse* vertex = nullptr;
+  const auto& vertex = binding.vertex_uses()[event.vertex_use];
+  if (vertex.parent != pair.parent[0] ||
+      vertex.feature != pair.feature[0] ||
+      facets[event.facet_use].parent != pair.parent[1] ||
+      pair.feature[1] != event.facet_use)
+    return Invalid(event, canonical_event,
+                   "Regenerated event ordinals differ from retained uses");
   const auto& feature = binding.vertices()[pair.feature[0]];
-  for (std::size_t i = feature.use_offset;
-       i < std::size_t(feature.use_offset) + feature.use_count; ++i) {
-    if (i >= binding.vertex_uses().size())
-      return Invalid(event, canonical_event,
-          "Retained vertex-use range is invalid");
-    const auto& candidate = binding.vertex_uses()[i];
-    if (candidate.parent == pair.parent[0] &&
-        candidate.feature == pair.feature[0]) {
-      if (vertex) return Invalid(event, canonical_event,
-          "Retained vertex-use identity is ambiguous");
-      vertex = &candidate;
-    }
-  }
-  if (!vertex || !SamePoint(vertex->point, event.endpoints[0]) ||
+  if (event.vertex_use < feature.use_offset ||
+      event.vertex_use >=
+          std::size_t(feature.use_offset) + feature.use_count ||
+      !SamePoint(vertex.point, event.endpoints[0]) ||
       fixed_triangle_features::Compare(
-          vertex->key, event.feature.vertex_face.vertex) ||
-      !SameCertificate(vertex->directed_vf_area_m2,
+          vertex.key, event.feature.vertex_face.vertex) ||
+      !SameCertificate(vertex.directed_vf_area_m2,
                        pair.candidate_directed_area_m2) ||
       !SameCertificate(pair.candidate_directed_area_m2,
                        pair.admitted_force_area_m2) ||
@@ -156,19 +181,9 @@ SelfContactForceReport ValidateEvent(
     return Invalid(event, canonical_event,
                    "Event vertex map, feature or directed area is unauthenticated");
 
-  SelfContactSupportClassification first_support, second_support;
-  auto report = binding.ClassifySupport(event.endpoints[0], &first_support);
-  if (report.status != SelfContactActiveUseStatus::Ok)
-    return Invalid(event, canonical_event,
-                   "Event first support cannot be authenticated");
-  report = binding.ClassifySupport(event.endpoints[1], &second_support);
-  if (report.status != SelfContactActiveUseStatus::Ok ||
-      !SameSupport(first_support, pair.endpoint_support[0]) ||
-      !SameSupport(second_support, pair.endpoint_support[1]) ||
-      second_support.status ==
-          SelfContactSupportStatus::UnsupportedCinSecondary)
-    return Invalid(event, canonical_event,
-                   "Event support classification differs from retained source");
+  // Immutable facet data authenticates target membership and provenance. The
+  // exact discovered target stratum still requires the discovery receipt that
+  // intentionally lives outside this accepted-state force contributor.
   if (!TargetBelongsToFacet(binding, pair,
                             event.feature.vertex_face.target))
     return Invalid(event, canonical_event,

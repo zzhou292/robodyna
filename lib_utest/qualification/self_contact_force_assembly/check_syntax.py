@@ -33,13 +33,15 @@ void Shape(SelfContactForceAssembly& force,
            tl::fea::FENodalState& owner,
            const tl::fea::NodalTrialToken& token,
            const tl::fea::NodalAssemblyView& view,
+           SelfContactActivityView activity,
            SelfContactForceEventView events) {
   SelfContactForceConfig config;
   auto plan = SelfContactForceAssembly::Forecast(config, binding);
   (void)plan;
   SelfContactForceAssemblyReceipt receipt;
   (void)force.Initialize(config, binding, owner);
-  (void)force.AssembleAccepted(owner, token, view, events, &receipt);
+  (void)force.AssembleAccepted(
+      owner, token, view, activity, events, &receipt);
   force.DiscardTrial();
   (void)force.allocations();
 }

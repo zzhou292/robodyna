@@ -14,8 +14,14 @@ NodalReport BorrowAssembly(FENodalState& owner,const NodalTrialToken& token,
       !Disjoint(output,sizeof(*output),&view,sizeof(view))) {
     return {NodalStatus::InvalidInput,"Physical contributor CIN output/extent is invalid"};
   }
-  const auto authenticated=native_physical_coefficients::AuthenticateAccepted(owner,expected,view);
+  const auto authenticated=owner.AuthenticateAssemblyView(token,view);
   if (authenticated.status!=NodalStatus::Ok) return authenticated;
+  if (!trial_identity::SameStamp(owner.accepted(),expected))
+    return {NodalStatus::StaleTrial,
+            "Physical contributor accepted owner scope differs"};
+  if (!owner.AssemblyRangeDisjoint(token,view,output,sizeof(*output)))
+    return {NodalStatus::InvalidInput,
+            "Physical contributor CIN output aliases owner storage"};
   NodalCinAssemblyView next;
   const auto report=owner.BorrowCinAssembly(token,&next);
   if (report.status!=NodalStatus::Ok) return report;

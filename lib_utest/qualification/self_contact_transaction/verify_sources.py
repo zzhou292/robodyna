@@ -25,6 +25,14 @@ header = HEADER.read_text()
 types = TYPES.read_text()
 candidate = CANDIDATE.read_text()
 transaction = TRANSACTION.read_text()
+for token in (
+    "AuthenticateAssemblyView(token, view)",
+    "AssemblyRangeDisjoint(",
+    "owner, token, view, activity, events",
+    "This safe slice requires every self-contact parent active",
+):
+    require(transaction, token, TRANSACTION)
+require(candidate, "state.force.Authenticates(assembly.force_)", CANDIDATE)
 
 storage_path = ROOT / "lib_src/collision/self_contact_transaction/Storage.h"
 storage = storage_path.read_text()

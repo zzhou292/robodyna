@@ -233,6 +233,8 @@ struct Fixture {
         continue;
       c::SelfContactForceEvent event;
       event.source_order = 900;
+      event.vertex_use = static_cast<std::uint32_t>(vertex_use);
+      event.facet_use = static_cast<std::uint32_t>(facet_index);
       event.endpoints[0] = uses.vertex_uses()[vertex_use].point;
       event.endpoints[1] = point;
       event.classification = classification;

@@ -229,6 +229,10 @@ NodalReport FENodalState::InitializeImpl(const NodalStateConfig& c, HostNodalKin
     next->stamp.temporal_scheme = c.temporal_scheme;
     next->has_rotations = rotations; next->has_component_constraints = component_constraints;
     next->stamp.has_rotations = rotations; next->state_values = state_values;
+    next->scratch_values = layout.scratch.count;
+    next->inverse_values = layout.inverse.count;
+    next->fixed_bytes = layout.fixed.bytes;
+    next->control_bytes = layout.control.bytes;
     next->stamp.has_rotation_presence = rotation_presence;
     if (!next->stamp.owner_id) return {NodalStatus::HistoryLimit, "Owner identities exhausted"};
     auto report = next->Check(cudaStreamCreateWithFlags(&next->stream, cudaStreamNonBlocking));
@@ -311,6 +315,63 @@ NodalAssemblyView FENodalState::Impl::AcceptedAssemblySources() const noexcept {
   }
   return view;
 }
+NodalAssemblyView FENodalState::Impl::ActiveAssemblyView() const noexcept {
+  const auto n = config.node_count;
+  auto view = AcceptedAssemblySources();
+  view.forces = {scratch, scratch+n, scratch+2*n, scratch+3*n,
+                 scratch+4*n, scratch+5*n, n, stamp.epoch};
+  view.bounds = &control->rows;
+  view.result = &control->assembly;
+  view.attempt = attempt;
+  return view;
+}
+NodalReport FENodalState::AuthenticateAssemblyView(
+    const NodalTrialToken& token,
+    const NodalAssemblyView& view) const noexcept {
+  if (!impl_) return {NodalStatus::NotInitialized, "Owner is not initialized"};
+  const auto& s = *impl_;
+  if (!s.usable) return {NodalStatus::DeviceFailure, "CUDA owner is poisoned"};
+  if (!s.Matches(token.owner_id_, token.base_epoch_, token.attempt_))
+    return {NodalStatus::StaleTrial,
+            "Assembly token belongs to another owner or attempt"};
+  if (s.phase != Phase::Assembling)
+    return {NodalStatus::WrongPhase, "Common nodal assembly is not open"};
+  if (!trial_identity::SameAssembly(view, s.ActiveAssemblyView()))
+    return {NodalStatus::StaleTrial,
+            "Assembly view differs from the exact live owner capability"};
+  return Ok();
+}
+bool FENodalState::AssemblyRangeDisjoint(
+    const NodalTrialToken& token, const NodalAssemblyView& view,
+    const void* range, std::size_t bytes) const noexcept {
+  if (!range || !bytes ||
+      AuthenticateAssemblyView(token, view).status != NodalStatus::Ok)
+    return false;
+  const auto& s = *impl_;
+  using trial_identity::Disjoint;
+  const auto separate = [&](const void* storage,
+                            std::size_t storage_bytes) noexcept {
+    return !storage || !storage_bytes ||
+        Disjoint(range, bytes, storage, storage_bytes);
+  };
+  if (!separate(this, sizeof(*this)) ||
+      !separate(impl_.get(), sizeof(*impl_)) ||
+      !separate(s.staging.data(), s.staging.capacity()*sizeof(double)) ||
+      !separate(s.constraint_staging.data(),
+                s.constraint_staging.capacity()*sizeof(std::uint8_t)) ||
+      !separate(s.accepted, s.state_values*sizeof(double)) ||
+      !separate(s.trial, s.state_values*sizeof(double)) ||
+      !separate(s.scratch, s.scratch_values*sizeof(double)) ||
+      !separate(s.inverse, s.inverse_values*sizeof(double)) ||
+      !separate(s.fixed, s.fixed_bytes) ||
+      !separate(s.control, s.control_bytes))
+    return false;
+  if (s.rigid_groups &&
+      !separate(s.rigid_groups->arena, s.rigid_groups->immutable_bytes))
+    return false;
+  return !s.cin ||
+      separate(s.cin->arena, s.cin->layout.device_bytes);
+}
 NodalReport FENodalState::ValidateAcceptedAssemblySources(const NodalAssemblyView& retained) const noexcept {
   if (!impl_) return {NodalStatus::NotInitialized, "Owner is not initialized"};
   const auto& s = *impl_;
@@ -351,10 +412,7 @@ NodalReport FENodalState::BeginTrial(NodalTrialToken* token, NodalAssemblyView* 
   report = s.Check(cudaGetLastError()); if (report.status != NodalStatus::Ok) return report;
   report = s.SynchronizeControl(); if (report.status != NodalStatus::Ok) return report;
   token->owner_id_ = s.stamp.owner_id; token->base_epoch_ = s.stamp.epoch; token->attempt_ = s.attempt;
-  *view = s.AcceptedAssemblySources();
-  view->forces = {s.scratch, s.scratch+n, s.scratch+2*n, s.scratch+3*n, s.scratch+4*n, s.scratch+5*n, n, s.stamp.epoch};
-  view->bounds = &s.control->rows; view->result = &s.control->assembly;
-  view->attempt = s.attempt;
+  *view = s.ActiveAssemblyView();
   s.phase = Phase::Assembling; return Ok();
 }
 

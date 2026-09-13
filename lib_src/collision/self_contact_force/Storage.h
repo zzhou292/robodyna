@@ -70,6 +70,7 @@ bool SameCertificate(Q4CertifiedIntegral, Q4CertifiedIntegral) noexcept;
 SelfContactForceReport ValidateEvent(
     const SelfContactActiveUseBinding&,
     const SelfContactForceEvent&,
+    SelfContactActivityView,
     std::size_t canonical_event) noexcept;
 
 }  // namespace tlfea::contact::self_contact_force
@@ -92,6 +93,7 @@ struct SelfContactForceAssembly::Impl {
   void* device = nullptr;
   self_contact_force::Control control;
   cudaStream_t stream = nullptr;
+  std::uint64_t assembler_identity = 0;
   std::uint64_t last_attempt = 0, last_base_epoch = 0;
   bool usable = true;
 

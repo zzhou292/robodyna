@@ -86,6 +86,15 @@ TEST(SelfContactForceValues,
          incidence[i - 1].event < incidence[i].event));
 }
 
+TEST(SelfContactForceValues, EmptyBatchPublishesExactEmptySummary) {
+  c::SelfContactForceIncidenceSummary summary{71, 73};
+  const auto report = c::BuildSelfContactForceIncidence(
+      nullptr, 0, 8, nullptr, 0, nullptr, 0, &summary);
+  EXPECT_EQ(report.status, c::SelfContactForceStatus::Ok);
+  EXPECT_EQ(summary.incidences, 0u);
+  EXPECT_EQ(summary.touched_nodes, 0u);
+}
+
 TEST(SelfContactForceValues,
      DuplicateCapsAndAliasesRejectWithoutSummaryPublication) {
   std::array<c::SelfContactForceEvent, 2> duplicate{{

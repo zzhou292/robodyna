@@ -36,6 +36,15 @@ inline bool SameAssemblySources(const NodalAssemblyView& a,const NodalAssemblyVi
     a.temporal_scheme==b.temporal_scheme&&a.velocity_phase==b.velocity_phase&&
     a.position_time==b.position_time&&a.velocity_time==b.velocity_time&&SameRigidGroupInfo(a.rigid_groups,b.rigid_groups);
 }
+inline bool SameAssembly(const NodalAssemblyView& a,const NodalAssemblyView& b) noexcept {
+  return SameAssemblySources(a,b)&&
+    a.forces.force_x==b.forces.force_x&&a.forces.force_y==b.forces.force_y&&
+    a.forces.force_z==b.forces.force_z&&a.forces.couple_x==b.forces.couple_x&&
+    a.forces.couple_y==b.forces.couple_y&&a.forces.couple_z==b.forces.couple_z&&
+    a.forces.node_count==b.forces.node_count&&
+    a.forces.base_epoch==b.forces.base_epoch&&
+    a.bounds==b.bounds&&a.result==b.result&&a.attempt==b.attempt;
+}
 inline bool ValidKinematics(const DeviceNodalKinematicsView& v,std::size_t n,std::uint64_t epoch) noexcept {
   return v.node_count==n&&v.base_epoch==epoch&&v.position_xyz&&v.velocity_xyz&&
     v.angular_velocity_xyz&&v.orientation_wxyz;

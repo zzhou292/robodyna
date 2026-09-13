@@ -131,6 +131,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
   const auto& diagnostics = assembly.force_.diagnostics();
   const bool same_assembly =
       assembly.valid() && assembly.transaction_ == this &&
+      state.force.Authenticates(assembly.force_) &&
       assembly.owner_ == &owner &&
       assembly.active_use_identity_ == state.active_use.identity() &&
       assembly.source_id_ == state.config.source_id &&

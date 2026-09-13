@@ -176,6 +176,12 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
   const std::size_t event_bytes =
       events.count <= SIZE_MAX / sizeof(SelfContactForceEvent)
       ? events.count * sizeof(SelfContactForceEvent) : SIZE_MAX;
+  const auto authenticated = owner.AuthenticateAssemblyView(token, view);
+  if (authenticated.status != fe::NodalStatus::Ok) {
+    auto report = Failure(S::OwnerFailure, authenticated.message);
+    report.owner_status = authenticated.status;
+    return state.Fail(report);
+  }
   if (&owner != state.owner || !output ||
       !state.OutputDisjoint(output, sizeof(*output)) ||
       !Disjoint(output, sizeof(*output), this, sizeof(*this)) ||
@@ -197,10 +203,18 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
                 state.arena.data(), state.arena.bytes()) ||
       !Disjoint(activity.current, activity_bytes,
                 state.arena.data(), state.arena.bytes()) ||
+      !owner.AssemblyRangeDisjoint(
+          token, view, output, sizeof(*output)) ||
+      !owner.AssemblyRangeDisjoint(
+          token, view, activity.base, activity_bytes) ||
+      !owner.AssemblyRangeDisjoint(
+          token, view, activity.current, activity_bytes) ||
       (events.count &&
        (!Disjoint(output, sizeof(*output), events.data, event_bytes) ||
         !Disjoint(events.data, event_bytes,
-                  state.arena.data(), state.arena.bytes()))))
+                  state.arena.data(), state.arena.bytes()) ||
+        !owner.AssemblyRangeDisjoint(
+            token, view, events.data, event_bytes))))
     return state.Fail(Failure(S::InvalidInput,
         "Accepted transaction owner, activity, events or output are invalid"));
 
@@ -222,7 +236,7 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
 
   SelfContactForceAssemblyReceipt force_receipt;
   const auto force = state.force.AssembleAccepted(
-      owner, token, view, events, &force_receipt);
+      owner, token, view, activity, events, &force_receipt);
   if (force.status != SelfContactForceStatus::Ok) {
     auto report = Failure(S::ForceFailure, force.message);
     report.force_status = force.status;

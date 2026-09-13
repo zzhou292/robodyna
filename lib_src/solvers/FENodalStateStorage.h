@@ -60,6 +60,7 @@ struct FENodalState::Impl {
   NodalReport Reject(NodalStatus, const char*, std::uint32_t = UINT32_MAX);
   bool Matches(std::uint64_t owner, std::uint64_t epoch, std::uint64_t trial) const;
   NodalAssemblyView AcceptedAssemblySources() const noexcept;
+  NodalAssemblyView ActiveAssemblyView() const noexcept;
   NodalReport AdvanceSealedNodal(std::uint64_t owner, std::uint64_t epoch, std::uint64_t trial,
                                 const NodalStepAdmission&, NodalTemporalScheme, bool with_rigid_groups=false,
                                 bool with_cin=false, const NodalCinStructuralStep* structural=nullptr);
@@ -78,6 +79,8 @@ struct FENodalState::Impl {
   bool usable = true;
   bool has_rotations = false, has_component_constraints = false;
   std::size_t state_values = 0;
+  std::size_t scratch_values = 0, inverse_values = 0;
+  std::size_t fixed_bytes = 0, control_bytes = 0;
   nodal_detail::Phase phase = nodal_detail::Phase::Idle;
   cudaStream_t stream = nullptr;
   double *accepted = nullptr, *trial = nullptr, *scratch = nullptr, *inverse = nullptr;

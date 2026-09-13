@@ -21,6 +21,14 @@ unsigned Blocks(std::size_t count) noexcept {
       blocks > MaximumBlocks ? MaximumBlocks : blocks);
 }
 
+bool ValidRange(const void* pointer, std::size_t count,
+                std::size_t width) noexcept {
+  if (!count) return true;
+  if (!pointer || count > SIZE_MAX / width) return false;
+  const auto address = reinterpret_cast<std::uintptr_t>(pointer);
+  return count * width <= UINTPTR_MAX - address;
+}
+
 __device__ void Fail(scf::Control& control,
                      SelfContactForceStatus status,
                      std::uint32_t event = UINT32_MAX,
@@ -389,6 +397,7 @@ SelfContactForceReport SelfContactForceAssembly::AssembleAccepted(
     fe::FENodalState& owner,
     const fe::NodalTrialToken& token,
     const fe::NodalAssemblyView& view,
+    SelfContactActivityView activity,
     SelfContactForceEventView events,
     SelfContactForceAssemblyReceipt* output) {
   using S = SelfContactForceStatus;
@@ -403,27 +412,66 @@ SelfContactForceReport SelfContactForceAssembly::AssembleAccepted(
             fe::NodalStatus::DeviceFailure,
             "Self-contact force assembly is CUDA-poisoned"};
   using fe::trial_identity::Disjoint;
+  const auto authenticated = owner.AuthenticateAssemblyView(token, view);
+  if (authenticated.status != fe::NodalStatus::Ok)
+    return OwnerReport(authenticated);
+  const auto parents = state.binding.parents().size();
+  const std::size_t activity_bytes = parents;
+  const std::size_t event_bytes =
+      events.count <= SIZE_MAX / sizeof(SelfContactForceEvent)
+      ? events.count * sizeof(SelfContactForceEvent) : SIZE_MAX;
   if (&owner != state.owner || !output ||
       events.count > state.storage_forecast.event_capacity ||
-      (events.count && (!events.data ||
-       events.count > SIZE_MAX / sizeof(SelfContactForceEvent))) ||
+      activity.parent_count != parents ||
+      !ValidRange(activity.base, parents, sizeof(std::uint8_t)) ||
+      !ValidRange(activity.current, parents, sizeof(std::uint8_t)) ||
+      !ValidRange(events.data, events.count,
+                  sizeof(SelfContactForceEvent)) ||
       !state.OutputDisjoint(output, sizeof(*output)) ||
       !Disjoint(output, sizeof(*output), this, sizeof(*this)) ||
       !Disjoint(output, sizeof(*output), &token, sizeof(token)) ||
-      !Disjoint(output, sizeof(*output), &view, sizeof(view)))
+      !Disjoint(output, sizeof(*output), &view, sizeof(view)) ||
+      !owner.AssemblyRangeDisjoint(
+          token, view, output, sizeof(*output)) ||
+      !Disjoint(activity.base, activity_bytes, this, sizeof(*this)) ||
+      !Disjoint(activity.current, activity_bytes, this, sizeof(*this)) ||
+      !state.OutputDisjoint(activity.base, activity_bytes) ||
+      !state.OutputDisjoint(activity.current, activity_bytes) ||
+      !owner.AssemblyRangeDisjoint(
+          token, view, activity.base, activity_bytes) ||
+      !owner.AssemblyRangeDisjoint(
+          token, view, activity.current, activity_bytes) ||
+      (activity.base != activity.current &&
+       !Disjoint(activity.base, activity_bytes,
+                 activity.current, activity_bytes)))
     return {S::InvalidInput, SIZE_MAX, UINT64_MAX, UINT32_MAX,
             SurfacePenaltyStatus::InvalidInput, fe::NodalStatus::Ok,
-            "Force events, output or owner alias/capacity is invalid"};
-  const std::size_t event_bytes =
-      events.count * sizeof(SelfContactForceEvent);
+            "Force activity, events, output or owner alias/capacity is invalid"};
   if (events.count &&
       (!Disjoint(output, sizeof(*output), events.data, event_bytes) ||
+       !Disjoint(events.data, event_bytes, this, sizeof(*this)) ||
+       !Disjoint(events.data, event_bytes, &owner, sizeof(owner)) ||
+       !Disjoint(events.data, event_bytes, &token, sizeof(token)) ||
+       !Disjoint(events.data, event_bytes, &view, sizeof(view)) ||
+       !Disjoint(events.data, event_bytes,
+                 activity.base, activity_bytes) ||
+       !Disjoint(events.data, event_bytes,
+                 activity.current, activity_bytes) ||
        !Disjoint(events.data, event_bytes, state.host.data(),
                  state.host.bytes()) ||
-       !state.OutputDisjoint(events.data, event_bytes)))
+       !state.OutputDisjoint(events.data, event_bytes) ||
+       !owner.AssemblyRangeDisjoint(
+           token, view, events.data, event_bytes)))
     return {S::InvalidInput, SIZE_MAX, UINT64_MAX, UINT32_MAX,
             SurfacePenaltyStatus::InvalidInput, fe::NodalStatus::Ok,
-            "Force events overlap output or retained staging"};
+            "Force events overlap activity, owner or retained staging"};
+  for (std::size_t parent = 0; parent < parents; ++parent)
+    if (activity.base[parent] > 1 ||
+        activity.current[parent] > activity.base[parent])
+      return {S::StaleAttempt, SIZE_MAX, UINT64_MAX, UINT32_MAX,
+              SurfacePenaltyStatus::InvalidInput,
+              fe::NodalStatus::StaleTrial,
+              "Supplied activity source is stale or invalid"};
 
   const auto stamp = owner.accepted();
   if (!fe::native_physical_coefficients::SameOwnerScope(
@@ -437,7 +485,7 @@ SelfContactForceReport SelfContactForceAssembly::AssembleAccepted(
             SurfacePenaltyStatus::InvalidInput, fe::NodalStatus::StaleTrial,
             "Self-contact accepted base is skipped, stale or consumed"};
 
-  SelfContactForceIncidenceSummary incidence_summary;
+  SelfContactForceIncidenceSummary incidence_summary{};
   if (events.count) {
     std::copy_n(events.data, events.count, state.local.events);
     auto report = BuildSelfContactForceIncidence(
@@ -449,45 +497,9 @@ SelfContactForceReport SelfContactForceAssembly::AssembleAccepted(
         state.storage_forecast.touched_node_capacity,
         &incidence_summary);
     if (report.status != S::Ok) return report;
-    const auto& first = state.local.events[0].classification;
-    if (!first.activity_base_identity ||
-        !first.activity_current_identity ||
-        first.activity_parent_count != state.binding.parents().size() ||
-        !Disjoint(output, sizeof(*output),
-                  first.activity_base_identity,
-                  first.activity_parent_count) ||
-        !Disjoint(output, sizeof(*output),
-                  first.activity_current_identity,
-                  first.activity_parent_count))
-      return {S::IdentityMismatch, 0,
-              state.local.events[0].source_order, UINT32_MAX,
-              SurfacePenaltyStatus::InvalidInput, fe::NodalStatus::Ok,
-              "Event activity authority differs from active-use source"};
-    for (std::size_t parent = 0;
-         parent < first.activity_parent_count; ++parent)
-      if (first.activity_base_identity[parent] > 1 ||
-          first.activity_current_identity[parent] >
-              first.activity_base_identity[parent])
-        return {S::StaleAttempt, 0,
-                state.local.events[0].source_order, UINT32_MAX,
-                SurfacePenaltyStatus::InvalidInput,
-                fe::NodalStatus::StaleTrial,
-                "Event activity source is stale or invalid"};
     for (std::size_t event = 0; event < events.count; ++event) {
-      const auto& classification =
-          state.local.events[event].classification;
-      if (classification.activity_base_identity !=
-              first.activity_base_identity ||
-          classification.activity_current_identity !=
-              first.activity_current_identity ||
-          classification.activity_parent_count !=
-              first.activity_parent_count)
-        return {S::IdentityMismatch, event,
-                state.local.events[event].source_order, UINT32_MAX,
-                SurfacePenaltyStatus::InvalidInput, fe::NodalStatus::Ok,
-                "Event batch uses multiple activity authorities"};
       const auto report = scf::ValidateEvent(
-          state.binding, state.local.events[event], event);
+          state.binding, state.local.events[event], activity, event);
       if (report.status != S::Ok) return report;
     }
   }
@@ -576,7 +588,8 @@ SelfContactForceReport SelfContactForceAssembly::AssembleAccepted(
   report = state.ReadControlAndDiagnostics(diagnostics);
   if (report.status != S::Ok) return report;
   SelfContactForceAssemblyReceipt next;
-  next.assembler_identity_ = state.device;
+  next.assembler_ = this;
+  next.assembler_identity_ = state.assembler_identity;
   next.diagnostics_ = diagnostics;
   *output = next;
   return {};

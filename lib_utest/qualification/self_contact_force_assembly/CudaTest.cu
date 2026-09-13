@@ -11,6 +11,8 @@
 #include <cmath>
 #include <cstring>
 #include <limits>
+#include <new>
+#include <type_traits>
 #include <vector>
 
 namespace self_contact_force_cuda_test {
@@ -143,11 +145,14 @@ struct Fixture {
     return point;
   }
 
+  c::SelfContactActivityView Activity() const {
+    return {activity.data(), activity.data(), activity.size()};
+  }
+
   std::vector<c::SelfContactForceEvent> Events(
       std::size_t maximum = 8) {
     std::vector<c::SelfContactForceEvent> result;
-    const c::SelfContactActivityView state{
-        activity.data(), activity.data(), activity.size()};
+    const auto state = Activity();
     // A resolved T3 edge-midpoint against a QBAT map 0.2 mm inboard supplies
     // one deterministic active mechanics control. Candidate-geometry
     // authentication is intentionally the next slice; this fixture exercises
@@ -200,6 +205,8 @@ struct Fixture {
               c::SelfContactPairStatus::AdmittedVertexFace) {
         c::SelfContactForceEvent event;
         event.source_order = 900;
+        event.vertex_use = static_cast<std::uint32_t>(active_vertex);
+        event.facet_use = static_cast<std::uint32_t>(active_facet);
         event.endpoints[0] =
             uses.vertex_uses()[active_vertex].point;
         event.endpoints[1] = point;
@@ -230,6 +237,8 @@ struct Fixture {
           continue;
         c::SelfContactForceEvent event;
         event.source_order = 1000 + result.size();
+        event.vertex_use = static_cast<std::uint32_t>(vertex);
+        event.facet_use = static_cast<std::uint32_t>(facet);
         event.endpoints[0] = uses.vertex_uses()[vertex].point;
         event.endpoints[1] = point;
         event.classification = classification;
@@ -321,6 +330,11 @@ TEST(SelfContactForceCuda,
   EXPECT_EQ(forecast.forecast.device_allocations, 1u);
   EXPECT_EQ(forecast.forecast.incidence_capacity,
             8 * f.config.event_capacity);
+  ASSERT_GE(f.uses.forecast().owned_payload_bytes,
+            sizeof(c::SelfContactActiveUseBinding));
+  EXPECT_EQ(forecast.forecast.retained_active_use_bytes,
+            f.uses.forecast().owned_payload_bytes -
+                sizeof(c::SelfContactActiveUseBinding));
   auto limit = c::SelfContactForceLimits{};
   limit.max_device_bytes = forecast.forecast.device_bytes - 1;
   EXPECT_EQ(f.force.Initialize(
@@ -337,6 +351,127 @@ TEST(SelfContactForceCuda,
       f.config, f.uses, f.rig.owner)));
   EXPECT_EQ(f.force.allocations().device_bytes,
             forecast.forecast.device_bytes);
+}
+
+TEST(SelfContactForceCuda,
+     EmptyBatchPreservesEveryForceAndCinChannelExactly) {
+  Fixture f;
+  ASSERT_TRUE(f.Initialize());
+  fe::NodalTrialToken token;
+  fe::NodalAssemblyView assembly;
+  ASSERT_TRUE(f.rig.Begin(token, assembly));
+  fe::NodalCinAssemblyView cin;
+  ASSERT_TRUE(p::Good(f.rig.owner.BorrowCinAssembly(token, &cin)));
+  AssemblySnapshot before(f.rig.fixture.domain.node_count()), after(before.nodes);
+  ASSERT_TRUE(before.Read(assembly, cin));
+  c::SelfContactForceAssemblyReceipt receipt;
+  ASSERT_TRUE(Good(f.force.AssembleAccepted(
+      f.rig.owner, token, assembly, f.Activity(), {nullptr, 0},
+      &receipt)));
+  ASSERT_TRUE(receipt.prepared());
+  EXPECT_EQ(receipt.diagnostics().event_count, 0u);
+  EXPECT_EQ(receipt.diagnostics().active_count, 0u);
+  EXPECT_EQ(receipt.diagnostics().first_source_order, UINT64_MAX);
+  EXPECT_EQ(receipt.diagnostics().last_source_order, UINT64_MAX);
+  ASSERT_TRUE(after.Read(assembly, cin));
+  EXPECT_EQ(after.values, before.values);
+  f.Discard();
+}
+
+TEST(SelfContactForceCuda,
+     ExactOwnerViewRejectsForgedSourcesDestinationsStreamAndToken) {
+  Fixture f;
+  ASSERT_TRUE(f.Initialize());
+  fe::NodalTrialToken token;
+  fe::NodalAssemblyView assembly;
+  ASSERT_TRUE(f.rig.Begin(token, assembly));
+  EXPECT_EQ(f.rig.owner.AuthenticateAssemblyView(token, assembly).status,
+            fe::NodalStatus::Ok);
+  for (unsigned kind = 0; kind < 9; ++kind) {
+    SCOPED_TRACE(kind);
+    auto forged = assembly;
+    if (kind == 0)
+      forged.accepted.position_xyz = assembly.forces.force_x;
+    if (kind == 1)
+      forged.mass.inverse_mass = assembly.forces.force_x;
+    if (kind == 2)
+      forged.forces.force_x =
+          const_cast<double*>(assembly.accepted.position_xyz);
+    if (kind == 3)
+      forged.bounds = reinterpret_cast<fe::stability::RowBounds*>(
+          forged.forces.force_x);
+    if (kind == 4)
+      forged.result = reinterpret_cast<fe::NodalAssemblyResult*>(
+          forged.forces.force_x);
+    if (kind == 5) forged.stream = nullptr;
+    if (kind == 6) ++forged.forces.node_count;
+    if (kind == 7) ++forged.forces.base_epoch;
+    if (kind == 8) ++forged.attempt;
+    EXPECT_EQ(
+        f.rig.owner.AuthenticateAssemblyView(token, forged).status,
+        fe::NodalStatus::StaleTrial);
+    c::SelfContactForceAssemblyReceipt receipt;
+    const auto report = f.force.AssembleAccepted(
+        f.rig.owner, token, forged, f.Activity(), {nullptr, 0},
+        &receipt);
+    EXPECT_EQ(report.status, c::SelfContactForceStatus::OwnerFailure);
+    EXPECT_FALSE(receipt.prepared());
+  }
+  fe::NodalTrialToken forged_token;
+  EXPECT_EQ(f.rig.owner.AuthenticateAssemblyView(
+      forged_token, assembly).status, fe::NodalStatus::StaleTrial);
+  c::SelfContactForceAssemblyReceipt receipt;
+  EXPECT_EQ(f.force.AssembleAccepted(
+      f.rig.owner, forged_token, assembly, f.Activity(), {nullptr, 0},
+      &receipt).status, c::SelfContactForceStatus::OwnerFailure);
+
+  fe::NodalCinAssemblyView cin;
+  ASSERT_TRUE(p::Good(f.rig.owner.BorrowCinAssembly(token, &cin)));
+  EXPECT_FALSE(f.rig.owner.AssemblyRangeDisjoint(
+      token, assembly, cin.translational_stiffness, sizeof(double)));
+  EXPECT_EQ(f.force.AssembleAccepted(
+      f.rig.owner, token, assembly, f.Activity(),
+      {reinterpret_cast<const c::SelfContactForceEvent*>(
+           cin.translational_stiffness), 1},
+      &receipt).status, c::SelfContactForceStatus::InvalidInput);
+  EXPECT_EQ(f.force.AssembleAccepted(
+      f.rig.owner, token, assembly, f.Activity(), {nullptr, 0},
+      reinterpret_cast<c::SelfContactForceAssemblyReceipt*>(
+          cin.rotational_stiffness)).status,
+      c::SelfContactForceStatus::InvalidInput);
+  ASSERT_TRUE(Good(f.force.AssembleAccepted(
+      f.rig.owner, token, assembly, f.Activity(), {nullptr, 0},
+      &receipt)));
+  f.Discard();
+}
+
+TEST(SelfContactForceCuda,
+     DiagnosticReceiptCannotAuthenticateAfterAssemblerAddressReuse) {
+  Fixture f;
+  ASSERT_TRUE(f.Initialize());
+  using Storage = std::aligned_storage_t<
+      sizeof(c::SelfContactForceAssembly),
+      alignof(c::SelfContactForceAssembly)>;
+  Storage storage;
+  auto* first = new (&storage) c::SelfContactForceAssembly;
+  ASSERT_TRUE(Good(first->Initialize(
+      f.config, f.uses, f.rig.owner)));
+  fe::NodalTrialToken token;
+  fe::NodalAssemblyView assembly;
+  ASSERT_TRUE(f.rig.Begin(token, assembly));
+  c::SelfContactForceAssemblyReceipt receipt;
+  ASSERT_TRUE(Good(first->AssembleAccepted(
+      f.rig.owner, token, assembly, f.Activity(), {nullptr, 0},
+      &receipt)));
+  EXPECT_TRUE(first->Authenticates(receipt));
+  first->~SelfContactForceAssembly();
+  f.rig.owner.Discard();
+  EXPECT_TRUE(receipt.prepared());
+  auto* replacement = new (&storage) c::SelfContactForceAssembly;
+  ASSERT_TRUE(Good(replacement->Initialize(
+      f.config, f.uses, f.rig.owner)));
+  EXPECT_FALSE(replacement->Authenticates(receipt));
+  replacement->~SelfContactForceAssembly();
 }
 
 TEST(SelfContactForceCuda,
@@ -371,6 +506,7 @@ TEST(SelfContactForceCuda,
     c::SelfContactForceAssemblyReceipt receipt;
     ASSERT_TRUE(Good(f.force.AssembleAccepted(
         f.rig.owner, token, assembly,
+        f.Activity(),
         {events.data(), events.size()}, &receipt)));
     ASSERT_TRUE(receipt.prepared());
     const auto& diagnostics = receipt.diagnostics();
@@ -490,6 +626,7 @@ TEST(SelfContactForceCuda,
   duplicate[1] = duplicate[0];
   EXPECT_EQ(f.force.AssembleAccepted(
       f.rig.owner, token, assembly,
+      f.Activity(),
       {duplicate.data(), duplicate.size()}, &receipt).status,
       c::SelfContactForceStatus::DuplicateEvent);
   EXPECT_FALSE(receipt.prepared());
@@ -497,6 +634,7 @@ TEST(SelfContactForceCuda,
   foreign.back().classification.binding_identity = nullptr;
   EXPECT_EQ(f.force.AssembleAccepted(
       f.rig.owner, token, assembly,
+      f.Activity(),
       {foreign.data(), foreign.size()}, &receipt).status,
       c::SelfContactForceStatus::IdentityMismatch);
   auto same_body = events;
@@ -505,6 +643,7 @@ TEST(SelfContactForceCuda,
   same_body.back().classification.excluded = true;
   EXPECT_EQ(f.force.AssembleAccepted(
       f.rig.owner, token, assembly,
+      f.Activity(),
       {same_body.data(), same_body.size()}, &receipt).status,
       c::SelfContactForceStatus::IdentityMismatch);
   auto secondary = events;
@@ -514,14 +653,45 @@ TEST(SelfContactForceCuda,
       c::SelfContactSupportStatus::UnsupportedCinSecondary;
   EXPECT_EQ(f.force.AssembleAccepted(
       f.rig.owner, token, assembly,
+      f.Activity(),
       {secondary.data(), secondary.size()}, &receipt).status,
+      c::SelfContactForceStatus::IdentityMismatch);
+  auto tied = events;
+  tied.back().classification.tied =
+      c::SelfContactTiedStatus::CompleteLocalSupportNeedsRuntimeActivity;
+  EXPECT_EQ(f.force.AssembleAccepted(
+      f.rig.owner, token, assembly, f.Activity(),
+      {tied.data(), tied.size()}, &receipt).status,
+      c::SelfContactForceStatus::IdentityMismatch);
+  auto area = events;
+  area.back().classification.admitted_force_area_m2.value =
+      std::nextafter(
+          area.back().classification.admitted_force_area_m2.value,
+          HUGE_VAL);
+  EXPECT_EQ(f.force.AssembleAccepted(
+      f.rig.owner, token, assembly, f.Activity(),
+      {area.data(), area.size()}, &receipt).status,
+      c::SelfContactForceStatus::IdentityMismatch);
+  auto endpoint = events;
+  endpoint.back().endpoints[0] = endpoint.back().endpoints[1];
+  EXPECT_NE(f.force.AssembleAccepted(
+      f.rig.owner, token, assembly, f.Activity(),
+      {endpoint.data(), endpoint.size()}, &receipt).status,
+      c::SelfContactForceStatus::Ok);
+  auto foreign_activity = f.activity;
+  EXPECT_EQ(f.force.AssembleAccepted(
+      f.rig.owner, token, assembly,
+      {foreign_activity.data(), foreign_activity.data(),
+       foreign_activity.size()},
+      {events.data(), events.size()}, &receipt).status,
       c::SelfContactForceStatus::IdentityMismatch);
   const auto parent = events.back().classification.parent[0];
   f.activity[parent] = 0;
   EXPECT_EQ(f.force.AssembleAccepted(
       f.rig.owner, token, assembly,
+      f.Activity(),
       {events.data(), events.size()}, &receipt).status,
-      c::SelfContactForceStatus::StaleAttempt);
+      c::SelfContactForceStatus::IdentityMismatch);
   f.activity[parent] = 1;
 
   fe::NodalCinAssemblyView cin;
@@ -544,6 +714,7 @@ TEST(SelfContactForceCuda,
   ASSERT_TRUE(before.Read(assembly, cin));
   const auto failed_event = f.force.AssembleAccepted(
       f.rig.owner, token, assembly,
+      f.Activity(),
       {final_event.data(), final_event.size()}, &receipt);
   EXPECT_EQ(failed_event.status, c::SelfContactForceStatus::EventFailure);
   EXPECT_EQ(failed_event.event, 0u);
@@ -563,6 +734,7 @@ TEST(SelfContactForceCuda,
   ASSERT_TRUE(before.Read(assembly, cin));
   ASSERT_TRUE(Good(f.force.AssembleAccepted(
       f.rig.owner, token, assembly,
+      f.Activity(),
       {events.data(), events.size()}, &receipt)));
   ASSERT_TRUE(after.Read(assembly, cin));
   struct OverflowSeed {
@@ -599,6 +771,7 @@ TEST(SelfContactForceCuda,
   ASSERT_TRUE(before.Read(assembly, cin));
   EXPECT_EQ(f.force.AssembleAccepted(
       f.rig.owner, token, assembly,
+      f.Activity(),
       {events.data(), events.size()}, &receipt).status,
       c::SelfContactForceStatus::AssemblyFailure);
   ASSERT_TRUE(after.Read(assembly, cin));
@@ -609,6 +782,7 @@ TEST(SelfContactForceCuda,
   ASSERT_TRUE(f.rig.Begin(token, assembly));
   ASSERT_TRUE(Good(f.force.AssembleAccepted(
       f.rig.owner, token, assembly,
+      f.Activity(),
       {events.data(), events.size()}, &receipt)));
   EXPECT_TRUE(receipt.prepared());
   f.Discard();
@@ -647,6 +821,7 @@ TEST(SelfContactForceCuda,
   c::SelfContactForceAssemblyReceipt receipt;
   ASSERT_TRUE(Good(f.force.AssembleAccepted(
       f.rig.owner, token, assembly,
+      f.Activity(),
       {events.data(), events.size()}, &receipt)));
   ASSERT_EQ(cudaMemcpyAsync(
       &after_sti, cin.translational_stiffness + master,
@@ -711,6 +886,7 @@ TEST(SelfContactForceCuda,
     c::SelfContactForceAssemblyReceipt receipt;
     ASSERT_TRUE(Good(force.AssembleAccepted(
         owner, token, assembly,
+        f.Activity(),
         {events.data(), events.size()}, &receipt)));
     EXPECT_TRUE(receipt.diagnostics().valid);
     // Force XYZ remain full reaction channels. Only the represented STI

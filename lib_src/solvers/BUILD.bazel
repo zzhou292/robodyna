@@ -3,6 +3,16 @@ load("@rules_cuda//cuda:defs.bzl", "cuda_library")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "nodal_assembly_authentication_source_proof",
+    srcs = [
+        "FENodalState.cu",
+        "FENodalState.h",
+        "FENodalStateStorage.h",
+        "NodalTrialIdentity.h",
+    ],
+)
+
 cc_library(
     name = "nodal_state_layout",
     hdrs = ["NodalStateLimits.h", "NodalStateLayout.h"],

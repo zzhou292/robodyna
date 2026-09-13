@@ -265,6 +265,18 @@ class FENodalState {
   // prepared CIN attempt. Unchanged output on error; no commit authority.
   NodalReport CopyPreparedCinStructuralLimit(const NodalTrialToken&, NodalCinStructuralLimit*) const;
   NodalReport BeginTrial(NodalTrialToken*, NodalAssemblyView*);
+  // Host-only exact authentication of the currently open assembly capability.
+  // The token, owner phase/attempt, accepted sources, every force destination,
+  // bounds/result control address, count/stamp, masks and stream must equal this
+  // owner's private live view. No CUDA call/error consumption or phase change.
+  NodalReport AuthenticateAssemblyView(
+      const NodalTrialToken&, const NodalAssemblyView&) const noexcept;
+  // Exact live-view authentication plus a range predicate over this owner,
+  // its host staging, all nodal allocations, rigid metadata and the complete
+  // CIN device arena. This compares addresses only and never dereferences the
+  // supplied range.
+  bool AssemblyRangeDisjoint(const NodalTrialToken&,
+      const NodalAssemblyView&, const void*, std::size_t) const noexcept;
   // Host-only comparison of a retained assembly SOURCE identity with this
   // owner's current accepted buffers and immutable mass/constraint storage.
   // It may inspect pointer values after that view expires, but never reads

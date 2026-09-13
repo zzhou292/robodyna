@@ -139,8 +139,12 @@ SelfContactForcePreflight Preflight(
   forecast.host_arena_bytes = layout.bytes;
   forecast.device_bytes = layout.bytes;
   forecast.device_allocations = 1;
+  const auto retained = binding.forecast().owned_payload_bytes;
+  if (retained < sizeof(SelfContactActiveUseBinding))
+    return Fail(S::IdentityMismatch,
+                "Retained active-use byte forecast is invalid");
   forecast.retained_active_use_bytes =
-      binding.forecast().owned_payload_bytes;
+      retained - sizeof(SelfContactActiveUseBinding);
   forecast.owned_host_bytes = owner_bytes;
   if (!Add(64, forecast.owned_host_bytes) ||
       !Add(layout.bytes, forecast.owned_host_bytes))

@@ -9,6 +9,8 @@
 
 namespace tlfea::contact {
 
+class SelfContactTransaction;
+
 // Accepted-state, memoryless CUDA scratch contributor for an explicit bounded
 // batch of already discovered/resolved directed VF events. It owns no
 // broadphase, crossing query, candidate geometry, history or commit.
@@ -34,14 +36,21 @@ class SelfContactForceAssembly {
       tl::fea::FENodalState&,
       const tl::fea::NodalTrialToken&,
       const tl::fea::NodalAssemblyView&,
+      SelfContactActivityView,
       SelfContactForceEventView,
       SelfContactForceAssemblyReceipt*);
 
+  // Any CUDA failure poisons this assembler and discards the owner attempt.
+  // Asynchronous failure does not promise unchanged force/STI scratch.
   void DiscardTrial() noexcept;
+  // The sole host authority check for a diagnostic receipt. A replacement
+  // assembler at the same address receives a different startup identity.
+  bool Authenticates(const SelfContactForceAssemblyReceipt&) const noexcept;
   tl::fea::NodalAllocationInfo allocations() const noexcept;
   SelfContactForceForecast forecast() const noexcept;
 
  private:
+  friend class SelfContactTransaction;
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };

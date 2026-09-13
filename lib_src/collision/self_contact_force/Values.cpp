@@ -29,8 +29,7 @@ SelfContactForceReport BuildSelfContactForceIncidence(
     SelfContactForceNodeIncidence* nodes, std::size_t node_capacity,
     SelfContactForceIncidenceSummary* summary) noexcept {
   using S = SelfContactForceStatus;
-  if (!events || !event_count || !node_count || !incidences || !nodes ||
-      !summary || event_count > UINT32_MAX ||
+  if (!summary || !node_count || event_count > UINT32_MAX ||
       event_count > SIZE_MAX / sizeof(*events) ||
       incidence_capacity > SIZE_MAX / sizeof(*incidences) ||
       node_capacity > SIZE_MAX / sizeof(*nodes))
@@ -38,6 +37,15 @@ SelfContactForceReport BuildSelfContactForceIncidence(
             SurfacePenaltyStatus::InvalidInput,
             tl::fea::NodalStatus::Ok,
             "Incidence inputs are invalid"};
+  if (!event_count) {
+    *summary = {};
+    return {};
+  }
+  if (!events || !incidences || !nodes)
+    return {S::InvalidInput, SIZE_MAX, UINT64_MAX, UINT32_MAX,
+            SurfacePenaltyStatus::InvalidInput,
+            tl::fea::NodalStatus::Ok,
+            "Nonempty incidence inputs are absent"};
   using tl::fea::trial_identity::Disjoint;
   const auto event_bytes = event_count * sizeof(*events);
   const auto incidence_bytes = incidence_capacity * sizeof(*incidences);

@@ -121,6 +121,8 @@ class SelfContactTransaction;
 class SelfContactAcceptedAssemblyReceipt {
  public:
   SelfContactAcceptedAssemblyReceipt() noexcept = default;
+  // Diagnostic shape only. SealCandidate additionally authenticates the
+  // embedded force receipt against its live assembler startup identity.
   bool valid() const noexcept {
     return transaction_ != nullptr && owner_ != nullptr && source_id_ != 0 &&
         attempt_ != 0 && force_.prepared();

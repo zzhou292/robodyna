@@ -84,6 +84,9 @@ struct SelfContactForcePreflight {
 struct SelfContactForceEvent {
   FixedTriangleFeatureKey feature;
   std::uint64_t source_order = UINT64_MAX;
+  // Exact active-use ordinals used to regenerate the complete classification.
+  std::uint32_t vertex_use = UINT32_MAX;
+  std::uint32_t facet_use = UINT32_MAX;
   WeightedSurfacePoint endpoints[2];
   SelfContactPairClassification classification;
 };
@@ -142,8 +145,12 @@ class SelfContactForceAssembly;
 class SelfContactForceAssemblyReceipt {
  public:
   SelfContactForceAssemblyReceipt() noexcept = default;
+  // Diagnostic completeness only. Authority consumers must ask the live
+  // assembler to authenticate its nonrepeating startup identity; this value
+  // alone cannot authorize work, including after assembler destruction.
   bool prepared() const noexcept {
-    return assembler_identity_ != nullptr && diagnostics_.valid;
+    return assembler_ != nullptr && assembler_identity_ != 0 &&
+        diagnostics_.valid;
   }
   const SelfContactForceDiagnostics& diagnostics() const noexcept {
     return diagnostics_;
@@ -151,7 +158,8 @@ class SelfContactForceAssemblyReceipt {
 
  private:
   friend class SelfContactForceAssembly;
-  const void* assembler_identity_ = nullptr;
+  const SelfContactForceAssembly* assembler_ = nullptr;
+  std::uint64_t assembler_identity_ = 0;
   SelfContactForceDiagnostics diagnostics_;
 };
 

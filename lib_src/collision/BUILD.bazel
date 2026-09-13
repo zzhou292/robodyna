@@ -129,6 +129,8 @@ filegroup(
         "self_contact_force/Source.cpp",
         "self_contact_force/Storage.h",
         "self_contact_force/Values.cpp",
+        "//lib_src/elements:ShellPhysicalOwnerAssembly.cpp",
+        "//lib_src/solvers:nodal_assembly_authentication_source_proof",
     ],
 )
 
