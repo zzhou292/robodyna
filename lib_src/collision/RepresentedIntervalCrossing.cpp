@@ -75,6 +75,13 @@ bool SameBits(Vec3 a, Vec3 b) noexcept {
          SameBits(a.z, b.z);
 }
 
+bool StaticPath(const RepresentedTrianglePath& path) noexcept {
+  for (const auto& vertex : path.vertices)
+    if (!SameBits(vertex.endpoint[0], vertex.endpoint[1]))
+      return false;
+  return true;
+}
+
 bool AddSize(std::size_t a, std::size_t b, std::size_t* output) noexcept {
   if (a > SIZE_MAX - b)
     return false;
@@ -641,6 +648,23 @@ RepresentedIntervalResult CertifyPair(
   dfs->clear();
   dfs->push_back({});
   try {
+    if (StaticPath(a) && StaticPath(b)) {
+      auto evaluation = EvaluateCell(a, b, key, {}, scratch);
+      dfs->clear();
+      if (evaluation.disposition == CellDisposition::Crossing) {
+        evaluation.crossing.work = 1;
+        return evaluation.crossing;
+      }
+      if (evaluation.disposition == CellDisposition::Unresolved)
+        return Unresolved(key, evaluation.reason, 1);
+      RepresentedIntervalResult result;
+      result.key = key;
+      result.classification =
+          RepresentedIntervalClassification::CertifiedSeparated;
+      result.reason = RepresentedIntervalReason::None;
+      result.work = 1;
+      return result;
+    }
     while (!dfs->empty()) {
       if (work >= limits.max_work_per_pair) {
         all_leaves_separated = false;

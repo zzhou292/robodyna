@@ -80,7 +80,7 @@ required = (
     "CheckedTotalWorkExhaustionPreservesPublicationAndAllowsRetry",
     "ResultCapMinusOneFailureIsAtomicAndSubsetRetrySucceeds",
     "DeepDyadicAffineContactUsesOwnedIterativeStack",
-    "MaxDepth52ExhaustionIsBoundedAndNeverFalseSeparated",
+    "StaticDisjointTouchingBoxesUseExactGeometryCertificate",
     "NondyadicIsolatedContactRemainsUnresolvedNeverSeparated",
     "ExtremeBinary64ExponentsInterpolateWithoutFalseRangeResult",
     "IndependentExactRationalOracleChecksStaticSatAndFeatures",

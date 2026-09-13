@@ -26,7 +26,7 @@ TEST(RepresentedIntervalCrossing,
 }
 
 TEST(RepresentedIntervalCrossing,
-     MaxDepth52ExhaustionIsBoundedAndNeverFalseSeparated) {
+     StaticDisjointTouchingBoxesUseExactGeometryCertificate) {
   ct::RepresentedIntervalLimits limits;
   limits.max_depth = 52;
   limits.max_work_per_pair = 53;
@@ -40,9 +40,9 @@ TEST(RepresentedIntervalCrossing,
   const auto a = Static(10, BaseTriangle());
   const auto b = Static(20, diagonal);
   const auto result = One(owner, {a, b});
-  EXPECT_EQ(result.classification, C::Unresolved);
-  EXPECT_EQ(result.reason, R::WorkExhausted);
-  EXPECT_EQ(result.work, 53u);
+  EXPECT_EQ(result.classification, C::CertifiedSeparated);
+  EXPECT_EQ(result.reason, R::None);
+  EXPECT_EQ(result.work, 1u);
   for (std::uint64_t numerator = 0; numerator <= 8; ++numerator)
     EXPECT_FALSE(ExactOracleAt(a, b, numerator, 8).intersects);
 }

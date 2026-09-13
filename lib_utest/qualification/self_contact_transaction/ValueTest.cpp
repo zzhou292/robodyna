@@ -123,9 +123,13 @@ TEST(SelfContactTransactionValues,
 
   result.classification =
       c::RepresentedIntervalClassification::Unresolved;
-  EXPECT_EQ(sct::ValidateCandidatePublications(
-      Input(&pair, 1, &result, &outcome, &outcome_count)).status,
-      c::SelfContactTransactionStatus::UnresolvedCandidate);
+  result.reason = c::RepresentedIntervalReason::WorkExhausted;
+  const auto unresolved = sct::ValidateCandidatePublications(
+      Input(&pair, 1, &result, &outcome, &outcome_count));
+  EXPECT_EQ(unresolved.status,
+            c::SelfContactTransactionStatus::UnresolvedCandidate);
+  EXPECT_EQ(unresolved.crossing_reason,
+            c::RepresentedIntervalReason::WorkExhausted);
   result.key = Pair(10, 30);
   EXPECT_EQ(sct::ValidateCandidatePublications(
       Input(&pair, 1, &result, &outcome, &outcome_count)).status,
@@ -179,10 +183,26 @@ TEST(SelfContactTransactionValues,
       c::SelfContactTransactionStatus::Ok);
   EXPECT_EQ(outcome.accepted_event, 0u);
   EXPECT_EQ(outcome.source_order, 0u);
+
+  event.event.source_order = 1;
+  EXPECT_EQ(sct::ValidateCandidatePublications(input).status,
+      c::SelfContactTransactionStatus::CandidateRejected);
+  event.event.source_order = 0;
+
   event.discovery.face_weights[0] = .5;
+  EXPECT_EQ(sct::ValidateCandidatePublications(input).status,
+      c::SelfContactTransactionStatus::CandidateRejected);
+  event.discovery.face_weights[0] = 1;
+
   event.event.feature.vertex_face.vertex.first++;
   EXPECT_EQ(sct::ValidateCandidatePublications(input).status,
       c::SelfContactTransactionStatus::CandidateRejected);
+  event.event.feature = Feature();
+
+  event.event.classification.admitted_force_area_m2.lower = 2;
+  EXPECT_EQ(sct::ValidateCandidatePublications(input).status,
+      c::SelfContactTransactionStatus::CandidateRejected);
+  event.event.classification.admitted_force_area_m2.lower = 1;
 
   result.feature.kind = c::RepresentedFeatureKind::EdgeEdge;
   EXPECT_EQ(sct::ValidateCandidatePublications(input).status,

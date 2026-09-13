@@ -20,7 +20,8 @@ TEST(RepresentedIntervalCrossing,
   auto owner = Owner(limits);
   const auto result =
       One(owner, {Static(10, BaseTriangle()),
-                  Static(20, DiagonalSeparated())});
+                  Path(20, DiagonalSeparated(),
+                       DiagonalSeparated(.125))});
   EXPECT_EQ(result.classification, C::Unresolved);
   EXPECT_EQ(result.reason, R::WorkExhausted);
   EXPECT_EQ(result.work, 3u);
@@ -40,8 +41,9 @@ TEST(RepresentedIntervalCrossing,
   const auto before = Bytes(before_view.data, before_view.count);
 
   std::vector<ct::RepresentedTrianglePath> expensive{
-      Static(10, BaseTriangle()), Static(20, DiagonalSeparated()),
-      Static(30, DiagonalSeparated(.125))};
+      Static(10, BaseTriangle()),
+      Path(20, DiagonalSeparated(), DiagonalSeparated(.125)),
+      Path(30, DiagonalSeparated(.125), DiagonalSeparated(.25))};
   const ct::RepresentedTrianglePair pairs[]{{0, 1}, {0, 2}};
   const auto failed =
       owner.Certify(expensive.data(), expensive.size(), pairs, 2);

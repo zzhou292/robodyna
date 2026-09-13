@@ -46,6 +46,8 @@ struct SelfContactTransactionReport {
       FixedTriangleDiscoveryStatus::Ok;
   RepresentedIntervalStatus crossing_status =
       RepresentedIntervalStatus::Ok;
+  RepresentedIntervalReason crossing_reason =
+      RepresentedIntervalReason::None;
   tl::fea::ShellPublicationStatus publication_status =
       tl::fea::ShellPublicationStatus::Success;
   tl::fea::NodalStatus owner_status = tl::fea::NodalStatus::Ok;

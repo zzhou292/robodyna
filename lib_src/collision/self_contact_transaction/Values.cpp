@@ -152,10 +152,13 @@ std::size_t AcceptedVertexFace(
 
 SelfContactTransactionReport Failure(
     SelfContactTransactionStatus status, const char* message,
-    std::size_t pair = SIZE_MAX) noexcept {
+    std::size_t pair = SIZE_MAX,
+    RepresentedIntervalReason crossing_reason =
+        RepresentedIntervalReason::None) noexcept {
   SelfContactTransactionReport result;
   result.status = status;
   result.pair = pair;
+  result.crossing_reason = crossing_reason;
   result.message = message;
   return result;
 }
@@ -223,7 +226,8 @@ SelfContactTransactionReport ValidateCandidatePublications(
     if (input.crossings.data[pair].classification ==
         RepresentedIntervalClassification::Unresolved)
       return Failure(SelfContactTransactionStatus::UnresolvedCandidate,
-          "Represented interval candidate remains unresolved", pair);
+          "Represented interval candidate remains unresolved", pair,
+          input.crossings.data[pair].reason);
   }
 
   for (std::size_t feature = 0;

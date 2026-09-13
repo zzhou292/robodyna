@@ -33,8 +33,10 @@ interval crossing. Unresolved results fail. The fixed policy rejects nonlocal
 intersections and EE crossings and admits a VF crossing only through the full
 transaction-owned accepted event certificate (feature, maps/weights, area,
 classification, and canonical source order). Local fixed-facet exclusions
-remain explicit. Empty broadphase, discovery, event, crossing, and policy
-publications are valid and still produce mandatory participation.
+remain explicit. Exactly static, nondegenerate paths use exact triangle
+intersection directly, so disjoint triangles whose AABBs merely touch do not
+exhaust subdivision work. Empty broadphase, discovery, event, crossing, and
+policy publications are valid and still produce mandatory participation.
 
 The final nonaggregate `SelfContactTransactionReceipt` is tied to the exact
 owner/base/attempt/source/configuration/qualification/active-use identities.
@@ -82,4 +84,5 @@ ctest --test-dir <cuda-build> --output-on-failure
 That target uses real `FENodalState`, physical publication, current regularity,
 fixed discovery, represented crossing, VF force and CIN STI. It covers missing
 mandatory receipt rollback/retry, initial half-kick, ordinary interval and
-allocation stability. CUDA execution is intentionally left to the parent.
+allocation stability, plus an exact pass-through unresolved-reason rollback
+and deterministic retry. CUDA execution is intentionally left to the parent.

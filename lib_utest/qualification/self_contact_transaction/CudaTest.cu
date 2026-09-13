@@ -16,12 +16,15 @@ namespace p = physical_publication_test;
 bool Good(c::SelfContactTransactionReport report) {
   EXPECT_EQ(report.status, c::SelfContactTransactionStatus::Ok)
       << report.message << " candidate=" << report.candidate
-      << " pair=" << report.pair;
+      << " pair=" << report.pair
+      << " crossing_reason="
+      << static_cast<unsigned>(report.crossing_reason);
   return report.status == c::SelfContactTransactionStatus::Ok;
 }
 
 struct Fixture {
-  explicit Fixture(bool single = false) : single_parent(single) {}
+  explicit Fixture(bool single = false, bool crossing = false)
+      : single_parent(single), pass_through(crossing) {}
   p::Rig rig;
   fe::ShellBatchPlasticityBinding execution_catalog;
   fe::ShellBatchFailureBinding execution_failure;
@@ -35,6 +38,7 @@ struct Fixture {
   c::SelfContactTransactionConfig config;
   cudaStream_t owner_stream = nullptr;
   bool single_parent = false;
+  bool pass_through = false;
   bool authority_prepared = false;
 
   bool PrepareExecutionAuthority() {
@@ -135,6 +139,18 @@ struct Fixture {
 
   bool InitializeInfrastructure() {
     if (!authority_prepared && !PrepareExecutionAuthority()) return false;
+    if (!single_parent) {
+      // Place the actual accepted T3 apex just above the Q4 face.  This is an
+      // owner-state change only: immutable reference area and thickness remain
+      // those authenticated by active-use startup.
+      const auto apex = rig.fixture.domain.Find(14);
+      if (apex == SIZE_MAX) return false;
+      rig.fixture.x[3 * apex] = .03;
+      rig.fixture.x[3 * apex + 1] = .01;
+      rig.fixture.x[3 * apex + 2] = .00025;
+      if (pass_through)
+        rig.fixture.v[3 * apex + 2] = -.00075 / p::H;
+    }
     // Owner, q/t/qbat/PART/plain/CIN mapped participants and publication all
     // consume the same execution-authenticated physical authority retained by
     // surface/facets/uses.
@@ -189,8 +205,8 @@ struct Fixture {
          vertex < uses.vertex_uses().size(); ++vertex) {
       const auto& use = uses.vertex_uses()[vertex];
       if (use.parent == t3 &&
-          use.key.kind == c::FacetVertexKind::SourceEdge &&
-          use.key.first == 11 && use.key.second == 12) {
+          use.key.kind == c::FacetVertexKind::SourceVertex &&
+          use.key.first == 14) {
         vertex_use = vertex;
         break;
       }
@@ -205,18 +221,6 @@ struct Fixture {
       for (const auto vertex : use.vertex_features)
         incident = incident || vertex == feature;
       if (incident) continue;
-      const auto& parent = uses.parents()[qbat];
-      c::WeightedSurfacePoint point;
-      point.count = parent.arity;
-      constexpr double inward = .005;
-      for (unsigned slot = 0; slot < parent.arity; ++slot) {
-        point.nodes[slot] = parent.nodes[slot];
-        const auto x =
-            rig.fixture.domain.nodes()[parent.nodes[slot]].position.x;
-        point.weights[slot] =
-            x < .02 ? .5 * inward : .5 * (1 - inward);
-      }
-      (void)point;
       return uses.vertex_uses()[vertex_use].point.nodes[0];
     }
     return UINT32_MAX;
@@ -383,6 +387,12 @@ TEST(SelfContactTransactionCuda,
     EXPECT_GT(accepted.broadphase_pairs(), 0u);
     EXPECT_GT(accepted.facet_pairs(), 0u);
     EXPECT_GT(accepted.diagnostics().event_count, 0u);
+    EXPECT_GT(accepted.diagnostics().active_count, 0u);
+    EXPECT_EQ(accepted.diagnostics().first_source_order, 0u);
+    EXPECT_EQ(accepted.diagnostics().last_source_order,
+              accepted.diagnostics().event_count - 1);
+    EXPECT_GT(
+        accepted.diagnostics().maximum_represented_stiffness_n_m, 0);
     ASSERT_EQ(cudaMemcpyAsync(
         &after_sti, cin.translational_stiffness + node,
         sizeof(after_sti), cudaMemcpyDeviceToHost,
@@ -433,6 +443,50 @@ TEST(SelfContactTransactionCuda,
               allocation.device_bytes);
     EXPECT_EQ(fixture.transaction.allocations().device_allocations,
               allocation.device_allocations);
+  }
+}
+
+TEST(SelfContactTransactionCuda,
+     ExactPassThroughUnresolvedReasonRollsBackAndRetriesExactly) {
+  Fixture fixture(false, true);
+  auto limits = c::SelfContactTransactionLimits{};
+  limits.crossing.max_depth = 4;
+  limits.crossing.max_work_per_pair = 31;
+  limits.crossing.max_total_work = 31 * 64;
+  ASSERT_TRUE(fixture.Initialize(limits));
+  p::Snapshot before, after;
+  ASSERT_TRUE(fixture.rig.Read(before));
+
+  std::size_t failed_pair = SIZE_MAX;
+  for (unsigned retry = 0; retry < 2; ++retry) {
+    fe::NodalTrialToken token;
+    fe::NodalAssemblyView assembly;
+    ASSERT_TRUE(fixture.rig.Begin(token, assembly));
+    c::SelfContactAcceptedAssemblyReceipt accepted;
+    ASSERT_TRUE(Good(fixture.transaction.AssembleAccepted(
+        fixture.rig.owner, token, assembly, &accepted)));
+    ASSERT_GT(accepted.diagnostics().active_count, 0u);
+
+    fe::NodalPreparedView prepared;
+    fe::ShellPhysicalDiagnostics common;
+    ASSERT_TRUE(fixture.Prepare(
+        token, assembly, prepared, common));
+    c::SelfContactTransactionReceipt unchanged;
+    const auto report = fixture.transaction.SealCandidate(
+        fixture.rig.owner, token, prepared, accepted, &unchanged);
+    EXPECT_EQ(report.status,
+              c::SelfContactTransactionStatus::UnresolvedCandidate);
+    EXPECT_EQ(report.crossing_reason,
+              c::RepresentedIntervalReason::WorkExhausted);
+    EXPECT_FALSE(unchanged.valid());
+    EXPECT_NE(report.pair, SIZE_MAX);
+    if (!retry)
+      failed_pair = report.pair;
+    else
+      EXPECT_EQ(report.pair, failed_pair);
+    EXPECT_EQ(fixture.rig.owner.accepted().epoch, 0u);
+    ASSERT_TRUE(fixture.rig.Read(after));
+    p::Exact(before, after);
   }
 }
 
