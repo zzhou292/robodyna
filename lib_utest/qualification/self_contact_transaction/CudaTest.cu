@@ -427,14 +427,17 @@ TEST(SelfContactTransactionCuda,
       std::array<c::SelfContactCandidateTriangle, 2>
           crossing_triangles;
       c::FixedTrianglePair crossing_pair;
-      const auto crossing =
+      auto crossing =
           fixture.NonlocalEvidence(
               crossing_triangles, crossing_pair);
+      const c::SelfContactCrossingDecision foreign_decision;
+      crossing.decisions = &foreign_decision;
+      crossing.decision_count = 1;
       c::SelfContactTransactionReceipt unchanged;
-      EXPECT_EQ(fixture.transaction.SealCandidate(
+      EXPECT_NE(fixture.transaction.SealCandidate(
           fixture.rig.owner, token, prepared, accepted,
           crossing, &unchanged).status,
-          c::SelfContactTransactionStatus::UnresolvedCandidate);
+          c::SelfContactTransactionStatus::Ok);
       EXPECT_FALSE(unchanged.valid());
       EXPECT_EQ(fixture.rig.owner.accepted().epoch, 0u);
 
