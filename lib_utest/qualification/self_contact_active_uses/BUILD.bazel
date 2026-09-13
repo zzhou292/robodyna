@@ -28,6 +28,7 @@ cc_test(
         "CinTieTest.cpp",
         "ClassificationTest.cpp",
         "Fixture.h",
+        "ScalingTest.cpp",
     ],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [
@@ -45,6 +46,9 @@ cc_test(
     size = "small",
     srcs = ["SourceProofTest.cpp"],
     data = [
+        "BUILD.bazel",
+        "CMakeLists.txt",
+        "ScalingTest.cpp",
         "verify_sources.py",
         "//lib_src/collision:self_contact_active_use_source_proof",
     ],
@@ -54,6 +58,9 @@ cc_test(
 genrule(
     name = "source_artifact",
     srcs = [
+        "BUILD.bazel",
+        "CMakeLists.txt",
+        "ScalingTest.cpp",
         "verify_sources.py",
         "//lib_src/collision:self_contact_active_use_source_proof",
     ],

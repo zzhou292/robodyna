@@ -61,6 +61,11 @@ cmake = (collision / "SelfContactActiveUseBinding.cmake").read_text()
 bazel = (collision / "BUILD.bazel").read_text()
 assert 'tl_self_contact_active_uses' in cmake
 assert 'name = "self_contact_active_uses"' in bazel
+qualification_cmake = (here / "CMakeLists.txt").read_text()
+qualification_bazel = (here / "BUILD.bazel").read_text()
+assert "ScalingTest.cpp" in qualification_cmake
+assert "ScalingTest.cpp" in qualification_bazel
+assert 'name = "source_check"' in qualification_bazel
 print(json.dumps({
     "status": "passed",
     "policy": "SymmetricDirectedVertexDualReferenceV1",
