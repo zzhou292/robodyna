@@ -26,13 +26,19 @@ decoding. They use physical deformation scale 1 and actual timestamp overlays:
 [impact detail](../../crash-work/renders/yaris-wallremoval-10000-review-1/impact-detail-video/movie.mp4)
 and [overview](../../crash-work/renders/yaris-wallremoval-10000-review-1/overview-video/movie.mp4).
 
+The authenticated saved-response analyzer maps all 76 positive native points to
+49 active parents of PID/MID/SID 2000003 (`2_bumperplastic`), with the peak at
+EID 2324558. Their direct static incidence remains inside that bumper shell part;
+it does not establish reaction transfer into rails. The complete bounded report
+is `crash-work/reports/yaris-wallremoval-10000-impact-analysis-3.json`.
+
 ## Remaining capabilities
 
 | Priority / piece | Existing work to reuse | Work still required and owning modules | Completion gate |
 | --- | --- | --- | --- |
-| P0: interpret the current response | Accepted shell fields, motion/contact summaries, original IDs and the qualified V5 connectivity graph. | App analysis/output: identify yielded EID/PID/materials and load paths; distinguish local strain, rigid motion and permanent deformation. TL diagnostic producers supply missing quantities. | Reproduce 2 ms extrema from saved fields; reconcile source/mass identities; show loaded force transfer in relevant front structures. One graph component alone is insufficient. |
+| P0: interpret the current response | The focused authenticated analyzer now reports sampled parent/part/material/section plasticity and direct static incidence from Replay/Context and the V5 graph. | TL/app diagnostics must add online connector/body reactions, scheme-correct energy/momentum and loaded force/moment paths; saved positions cannot establish residual shape. | M0 reproduces all 2 ms extrema and source joins. Remaining gate is measured transfer beyond the bumper skin in controlled/full-front loading; one weak graph component remains insufficient. |
 | P0: finish a bounded throughput pass | Two isolated CIN master-gather and solid-measurement drafts; existing incidence/gather, exact comparison and profiler. | TL `solvers/cin_advance` and `elements/solids/resident`: finish qualification and integration. Then profile the deformed workload before further optimization. | Frozen CPU/CUDA numerical equivalence including plastic/failure states, rollback/retry, exact cap accounting, affected owning gates and exact V5 outputs. Demonstrate measured whole-step benefit; no physics or timestep changes. |
-| P0: vehicle self-contact | Qualified S0 source binding and S1 Jacobian majorant; frozen physical-facet, pair and bounded-broadphase code. | TL `collision` implements a two-sided contributor; app `modelio` resolves selection/defaults and `case/vehicle_dynamics` composes it into the existing transaction. | Complete feature discovery, equal/opposite force and virtual work, actual rigid/CIN response and STI, same-attempt receipt, no tunneling in covered motion, failure-atomic discard/retry and bounded storage. |
+| P0: vehicle self-contact | Qualified S0/S1 plus locally composed pair/facet/broadphase and bounded approximation summary at TL `79bcf15`; app `34d58e5` qualifies the actual source intersection/facet inventory. Neither branch is merged or runtime-active. | TL `collision` implements feature discovery and a two-sided contributor; app `case/vehicle_dynamics` composes it into the existing transaction. | Complete current regularity/VF/EE/intersection/crossing discovery, equal/opposite force and virtual work, actual rigid/CIN response and STI, same-attempt receipt, no tunneling in covered motion, failure-atomic discard/retry and bounded storage. |
 | P0: contact coverage for folding | Existing finite planar mesh-wall law, physical source maps and weighted queries. | Qualify the named fixed physical-facet approximation, vertex-face and edge-edge queries, crossings, thickness/offsets, feature ownership, initial overlaps and local exclusions. Add friction/source-law support in a distinct increment. | Tiny exhaustive geometry oracle; grazing/crossing/degenerate cases; adjacent and tied features; removal changes ownership; wall/contact mesh and timestep refinement; sliding dissipation when friction is enabled. |
 | P0: energy and stability evidence | Native force/work/HG/plastic increments, contact/removal diagnostics, fixed-step limiter and source attribution. | TL exposes missing scheme-consistent observations; app `case/vehicle_run` and output assemble a TIME0-to-current energy/momentum ledger and histories. | Free-flight and elastic conservation, plastic unloading, contact work/impulse and removal accounting; count physical/rigid/CIN contributions once. Define tolerances before tests and show timestep refinement. Native plastic/HG work are included components, not additional energy to double-count. |
 | P1: damage and connection behavior | Constant/TAB1 shell failure; TYPE13 plastic/failure and TYPE25 force/couple failure; common activity/removal and rollback. | Report accepted connection/failure events through app output. Qualify loaded failure and changed load paths; explicitly resolve any new rupture/erosion policy. | Native failure-step/next-step timing, load transfer after failure, contact ownership after removal, no stale forces/history, source-policy provenance. Current TYPE25 huge default limits are not calibrated tearing. |
@@ -55,19 +61,22 @@ faceting error and retain its conservative search bounds. Reuse existing query
 and broadphase utilities. Display triangles do not become physical contact data.
 An exact bilinear profile is a later, separately qualified capability.
 
-S0 already qualifies **341,143 centered parents / 8,502 offset exclusions**;
-that census is not the original contact-card selection. Resolve the original
-861-PID contact set and its explicit shell/solid intersection. Do not hide
-unsupported offsets, solid exterior faces, beam surfaces, or CIN-dependent
-features. Define active-use thickness/area ownership and narrow topology/tie/
-rigid exclusions. Same part ID or a shared corner cannot exclude whole parts.
+S0's all-shell census is **341,143 centered parents / 8,502 offset exclusions**.
+The authenticated original 861-PID automatic set resolves to 337,092 retained
+shell parents in 842 PIDs, all centered, plus 2,952 selected solids in 11
+non-shell PIDs and zero beams. The eight selected tire PIDs / 8,812 shells remain
+explicitly omitted. Levels 0/1/2 contain 653,055 / 2,612,220 / 10,448,880
+facets; maximum reference faceting bounds are 4.42058 / 1.10514 / 0.276286 mm.
+Solid exterior faces remain unsupported. Define active-use thickness/area
+ownership and narrow topology/tie/rigid exclusions. Same part ID or a shared
+corner cannot exclude whole parts.
 
-Frozen pair `0ac4462` (weighted-map dependency `7a629e7`), physical facets
-`3bd26db` and broadphase `9bf7ab5` are reusable but unintegrated. Complete their
-hardware gates, triangle vertex-face/edge-edge queries and bounded crossing
-checks. Swept bounding boxes alone do not establish collision detection between
-endpoints; rigid arcs and feature changes need coverage too. Add force/STI before
-the existing kick/CIN screen and candidate validation before the common commit.
+Pair `0ac4462` (weighted-map dependency `7a629e7`), physical facets `3bd26db`
+and broadphase `9bf7ab5` are composed and focused host/CUDA/Bazel-qualified on
+the local TL branch. Complete triangle vertex-face/edge-edge queries and bounded
+crossing checks next. Swept bounding boxes alone do not establish collision
+detection between endpoints; rigid arcs and feature changes need coverage too.
+Add force/STI before the existing kick/CIN screen and candidate validation before the common commit.
 Persistent friction/history must join that same publication protocol.
 See [the contact design](../../planning/DEFORMABLE_SELF_CONTACT_PLAN.md).
 
