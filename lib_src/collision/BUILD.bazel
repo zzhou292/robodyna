@@ -71,6 +71,48 @@ cc_library(
     deps = [":fixed_contact_facets"],
 )
 
+filegroup(
+    name = "self_contact_active_use_source_proof",
+    srcs = [
+        "SelfContactActiveUseBinding.cpp",
+        "SelfContactActiveUseBinding.cmake",
+        "SelfContactActiveUseBinding.h",
+        "SelfContactActiveUseTypes.h",
+        "SelfContactActiveUseValues.h",
+        "self_contact_active_use/Build.cpp",
+        "self_contact_active_use/Layout.cpp",
+        "self_contact_active_use/Queries.cpp",
+        "self_contact_active_use/Storage.h",
+        "BUILD.bazel",
+    ],
+)
+
+cc_library(
+    name = "self_contact_active_uses",
+    srcs = [
+        "SelfContactActiveUseBinding.cpp",
+        "self_contact_active_use/Build.cpp",
+        "self_contact_active_use/Layout.cpp",
+        "self_contact_active_use/Queries.cpp",
+    ],
+    hdrs = [
+        "SelfContactActiveUseBinding.h",
+        "SelfContactActiveUseTypes.h",
+        "SelfContactActiveUseValues.h",
+        "self_contact_active_use/Storage.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        ":fixed_contact_facets",
+        ":q4_parametric_contact_types",
+        ":surface_material_measure",
+        "//lib_src/constraints:nodal_rigid_assembly_binding",
+        "//lib_src/constraints/tied_shell:cin_stage",
+        "//lib_src/solvers:nodal_trial_identity",
+        "//lib_utils:bounded_arena",
+    ],
+)
+
 cc_library(
     name = "fixed_contact_facets",
     srcs = [

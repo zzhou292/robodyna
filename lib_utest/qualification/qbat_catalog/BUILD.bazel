@@ -8,6 +8,7 @@ cc_library(
                   "//lib_utest/qualification/self_contact_surface:__pkg__",
                   "//lib_utest/qualification/physical_publication:__pkg__",
                   "//lib_utest/qualification/qbat_resident:__pkg__",
+                  "//lib_utest/qualification/self_contact_active_uses:__pkg__",
                   "//lib_utest/qualification/shell_physical_binding:__pkg__",
                   "//lib_utest/qualification/shell_execution:__pkg__"],
     deps = ["//lib_src/elements:shell_formulation_scope",

@@ -1,0 +1,32 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+
+cc_test(
+    name = "host_check",
+    size = "small",
+    srcs = [
+        "ActivityTest.cpp",
+        "AreaTest.cpp",
+        "CapacityTest.cpp",
+        "CinTieTest.cpp",
+        "ClassificationTest.cpp",
+        "Fixture.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        "//lib_src/collision:self_contact_active_uses",
+        "//lib_src/constraints:nodal_rigid_part_topology",
+        "//lib_src/constraints/tied_shell:tied_post_kinchk",
+        "//lib_utest/qualification/qbat_catalog:fixture",
+        "@googletest//:gtest_main",
+    ],
+)
+
+genrule(
+    name = "source_check",
+    srcs = [
+        "verify_sources.py",
+        "//lib_src/collision:self_contact_active_use_source_proof",
+    ],
+    outs = ["source-proof.json"],
+    cmd = "python3 -B $(location verify_sources.py) > $@",
+)
