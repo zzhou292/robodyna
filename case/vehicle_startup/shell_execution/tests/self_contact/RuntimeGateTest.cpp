@@ -38,6 +38,7 @@ constexpr std::size_t RuntimeHostCap =
     std::size_t{20} * 1000 * 1000 * 1000;
 constexpr std::size_t RuntimeDeviceCap = std::size_t{8} << 30;
 constexpr std::size_t InitialTransactionArenaBytes = 1484682936;
+constexpr std::size_t AcceptedEventCensusCapacity = 1000000;
 constexpr std::uint64_t SelfSourceId = 0x563553454c464354ull;
 
 static_assert(CompleteCrossingWork / WorkPerPair == FacetPairs);
@@ -51,7 +52,7 @@ std::size_t EventHashSlots(std::size_t events) {
     return 2 * events;
 }
 
-app::RuntimeLimits RuntimeLimits(std::size_t events) {
+app::RuntimeLimits RuntimeLimits(std::size_t event_ledger_capacity) {
     const c::SelfContactTransactionLimits::ExactCensus census{
         Nodes, Parents, Parents, MaximumFamilyParents, Facets,
         ParentPairs, FacetPairs, 0};
@@ -60,7 +61,8 @@ app::RuntimeLimits RuntimeLimits(std::size_t events) {
     result.device_bytes = RuntimeDeviceCap;
     result.transaction =
         c::SelfContactTransactionLimits::Vehicle(
-            census, Chunk, events, EventHashSlots(events), 0,
+            census, Chunk, event_ledger_capacity,
+            EventHashSlots(event_ledger_capacity), 0,
             WorkPerPair, WorkPerChunk, CompleteCrossingWork, 20,
             RuntimeHostCap, RuntimeDeviceCap, RuntimeHostCap);
     // Vehicle() builds the generic count/work shape.  Keep the top-level
@@ -94,7 +96,8 @@ vehicle_dynamics::Config DynamicsConfig() {
 
 void CheckExactForecast(
     const app::RuntimeForecast& forecast,
-    std::size_t events) {
+    std::size_t event_ledger_capacity,
+    std::size_t force_event_capacity) {
     const auto& transaction = forecast.transaction;
     EXPECT_EQ(forecast.identity.source_id, SelfSourceId);
     EXPECT_NE(forecast.identity.owner_id, 0u);
@@ -113,9 +116,15 @@ void CheckExactForecast(
     EXPECT_EQ(transaction.broadphase_pair_capacity, ParentPairs);
     EXPECT_EQ(transaction.complete_facet_pair_capacity, FacetPairs);
     EXPECT_EQ(transaction.facet_pair_chunk_capacity, Chunk);
-    EXPECT_EQ(transaction.accepted_event_ledger_capacity, events);
-    EXPECT_EQ(transaction.event_hash_capacity, EventHashSlots(events));
-    EXPECT_EQ(transaction.accepted_event_capacity, events);
+    EXPECT_EQ(
+        transaction.accepted_event_ledger_capacity,
+        event_ledger_capacity);
+    EXPECT_EQ(
+        transaction.event_hash_capacity,
+        EventHashSlots(event_ledger_capacity));
+    EXPECT_EQ(
+        transaction.accepted_event_capacity,
+        force_event_capacity);
     EXPECT_EQ(transaction.policy_outcome_capacity, 0u);
     EXPECT_EQ(
         transaction.complete_crossing_work_capacity,
@@ -123,7 +132,7 @@ void CheckExactForecast(
     EXPECT_LE(forecast.peak_host_upper_bound, RuntimeHostCap);
     EXPECT_LE(forecast.device_bytes, RuntimeDeviceCap);
     EXPECT_GT(transaction.participation.publication_host_bytes, 0u);
-    if (events == 1)
+    if (event_ledger_capacity == 1 && force_event_capacity == 1)
         EXPECT_EQ(
             transaction.candidate_arena_bytes,
             InitialTransactionArenaBytes);
@@ -387,7 +396,7 @@ TEST(VehicleSelfContactRuntime,
     const auto& joints = physical_model::supports_test::Joints();
     const auto forecast = app::SelfContactOnly::Preflight(
         setup, dynamics_config, config, limits, &joints);
-    ASSERT_NO_FATAL_FAILURE(CheckExactForecast(forecast, 1));
+    ASSERT_NO_FATAL_FAILURE(CheckExactForecast(forecast, 1, 1));
     auto dynamics = app::SelfContactOnly::Prepare(
         setup, dynamics_config, config, limits, &joints);
     ASSERT_NO_FATAL_FAILURE(
@@ -413,7 +422,8 @@ TEST(VehicleSelfContactRuntime,
     const auto& joints = physical_model::supports_test::Joints();
     std::size_t required_events = 0;
     {
-        const auto limits = RuntimeLimits(1);
+        const auto limits =
+            RuntimeLimits(AcceptedEventCensusCapacity);
         auto dynamics = app::SelfContactOnly::Prepare(
             setup, dynamics_config, RuntimeConfig(1),
             limits, &joints);
@@ -446,7 +456,8 @@ TEST(VehicleSelfContactRuntime,
         const auto forecast = app::SelfContactOnly::Preflight(
             setup, dynamics_config, config, limits, &joints);
         ASSERT_NO_FATAL_FAILURE(
-            CheckExactForecast(forecast, required_events));
+            CheckExactForecast(
+                forecast, required_events, required_events));
         auto dynamics = app::SelfContactOnly::Prepare(
             setup, dynamics_config, config, limits, &joints);
         ASSERT_NO_FATAL_FAILURE(
