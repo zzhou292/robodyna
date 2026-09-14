@@ -8,6 +8,7 @@
 #include "lib_src/solvers/NodalTrialIdentity.h"
 
 #include <cstdlib>
+#include <chrono>
 #include <iostream>
 #include <limits>
 #include <sstream>
@@ -31,15 +32,21 @@ constexpr std::size_t ParentPairs = 1584464;
 constexpr std::size_t FacetPairs = 5989248;
 constexpr std::size_t Chunk = 4096;
 constexpr std::size_t WorkPerPair = 4095;
-constexpr std::size_t WorkPerChunk = Chunk * WorkPerPair;
+constexpr std::size_t WorkPerChunk = std::size_t{1} << 20;
 constexpr std::size_t CompleteCrossingWork =
     FacetPairs * WorkPerPair;
 constexpr std::size_t RuntimeHostCap =
     std::size_t{20} * 1000 * 1000 * 1000;
 constexpr std::size_t RuntimeDeviceCap = std::size_t{8} << 30;
-constexpr std::size_t InitialTransactionArenaBytes = 1484682936;
+constexpr std::size_t InitialTransactionArenaBytes = 1542092504;
 constexpr std::size_t AcceptedEventCensusCapacity = 1000000;
 constexpr std::uint64_t SelfSourceId = 0x563553454c464354ull;
+
+double Seconds(
+    std::chrono::steady_clock::time_point start) {
+    return std::chrono::duration<double>(
+        std::chrono::steady_clock::now() - start).count();
+}
 
 static_assert(CompleteCrossingWork / WorkPerPair == FacetPairs);
 static_assert(SelfSourceId != wall::Settings{}.wall_binding_id);
@@ -204,6 +211,12 @@ void PrintFailure(const app::SelfContactStageError& error) {
         << " facet1_motion="
         << static_cast<unsigned>(
                report.offending_motion[1].motion)
+        << " feature_distance_m="
+        << report.offending_feature_distance_m
+        << " edge_parameter0="
+        << report.offending_edge_parameters[0]
+        << " edge_parameter1="
+        << report.offending_edge_parameters[1]
         << " reason=" << report.message << '\n';
 }
 
@@ -297,7 +310,10 @@ void CheckStableAttempt(
     const auto allocations = dynamics.allocations();
     const auto self_allocations =
         dynamics.self_contact_allocations();
+    const auto first_start = std::chrono::steady_clock::now();
     const auto first = dynamics.PrepareStep();
+    std::cout << "V5_SELF_CONTACT_PHASE first_attempt_s="
+              << Seconds(first_start) << '\n';
     ASSERT_NO_FATAL_FAILURE(CheckCandidate(first));
     EXPECT_TRUE(fe::trial_identity::SameStamp(
         dynamics.accepted(), initial));
@@ -310,7 +326,10 @@ void CheckStableAttempt(
     EXPECT_EQ(
         dynamics.self_contact_allocations().device.device_bytes,
         self_allocations.device.device_bytes);
+    const auto retry_start = std::chrono::steady_clock::now();
     const auto retry = dynamics.PrepareStep();
+    std::cout << "V5_SELF_CONTACT_PHASE retry_attempt_s="
+              << Seconds(retry_start) << '\n';
     ASSERT_NO_FATAL_FAILURE(CheckCandidate(retry));
     EXPECT_EQ(
         retry.self_contact.accepted_force.event_count,
@@ -384,7 +403,10 @@ void CheckWallForecastUnchanged(
 
 TEST(VehicleSelfContactRuntime,
      FullV5ForecastStartupOwnsExactIdentityAndMemory) {
+    const auto setup_start = std::chrono::steady_clock::now();
     const auto& setup = LevelZeroSetup();
+    std::cout << "V5_SELF_CONTACT_PHASE setup_s="
+              << Seconds(setup_start) << '\n';
     ASSERT_EQ(setup.physical().domain()->node_count(), Nodes);
     ASSERT_EQ(setup.active_uses().parents().size(), Parents);
     ASSERT_EQ(setup.counts().q4_parents, MaximumFamilyParents);
@@ -393,11 +415,17 @@ TEST(VehicleSelfContactRuntime,
     const auto config = RuntimeConfig(1);
     const auto dynamics_config = DynamicsConfig();
     const auto& joints = physical_model::supports_test::Joints();
+    const auto preflight_start = std::chrono::steady_clock::now();
     const auto forecast = app::SelfContactOnly::Preflight(
         setup, dynamics_config, config, limits, &joints);
+    std::cout << "V5_SELF_CONTACT_PHASE preflight_s="
+              << Seconds(preflight_start) << '\n';
     ASSERT_NO_FATAL_FAILURE(CheckExactForecast(forecast, 1, 1));
+    const auto prepare_start = std::chrono::steady_clock::now();
     auto dynamics = app::SelfContactOnly::Prepare(
         setup, dynamics_config, config, limits, &joints);
+    std::cout << "V5_SELF_CONTACT_PHASE prepare_s="
+              << Seconds(prepare_start) << '\n';
     ASSERT_NO_FATAL_FAILURE(
         CheckInstalledStartup(forecast, dynamics));
     RecordProperty(
@@ -416,16 +444,23 @@ TEST(VehicleSelfContactRuntime,
 
 TEST(VehicleSelfContactRuntime,
      FullV5OneAttemptIsTypedFailClosedAndRetryStable) {
+    const auto setup_start = std::chrono::steady_clock::now();
     const auto& setup = LevelZeroSetup();
+    std::cout << "V5_SELF_CONTACT_PHASE setup_s="
+              << Seconds(setup_start) << '\n';
     const auto dynamics_config = DynamicsConfig();
     const auto& joints = physical_model::supports_test::Joints();
     std::size_t required_events = 0;
     {
         const auto limits =
             RuntimeLimits(AcceptedEventCensusCapacity);
+        const auto prepare_start =
+            std::chrono::steady_clock::now();
         auto dynamics = app::SelfContactOnly::Prepare(
             setup, dynamics_config, RuntimeConfig(1),
             limits, &joints);
+        std::cout << "V5_SELF_CONTACT_PHASE prepare_s="
+                  << Seconds(prepare_start) << '\n';
         const auto initial = dynamics.accepted();
         const auto allocations = dynamics.allocations();
         try {

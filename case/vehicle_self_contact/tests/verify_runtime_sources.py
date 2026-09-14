@@ -124,7 +124,7 @@ def main() -> None:
         "self_contact_transaction" / "CudaTest.cu").read_text()
     for control in [
             "SingleParentZeroPairZeroEventStillParticipatesAndCommits",
-            "MandatoryReceiptRollbackRetryHalfKickAndOrdinaryKeepNonzeroForceSti",
+            "AcceptedInteriorEeForceCandidateRetryAndRollbackKeepForceSti",
             "ActualT3RemovalFiltersCandidateAndLongInactiveRetryCommits",
             "ExactPassThroughUnresolvedReasonRollsBackAndRetriesExactly"]:
         require(control in transaction_cuda,
@@ -143,7 +143,7 @@ def main() -> None:
         case / "vehicle_startup" / "shell_execution" / "tests" /
         "self_contact" / "RuntimeGateTest.cpp").read_text()
     for value in ["376930", "337092", "315963", "653055",
-                  "1584464", "5989248", "4096", "1484682936"]:
+                  "1584464", "5989248", "4096", "1542092504"]:
         require(value in gate,
                 f"actual runtime gate is missing exact value {value}")
     require("SelfContactTransactionLimits::Vehicle(" in gate and
