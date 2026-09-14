@@ -13,7 +13,8 @@ template<class Report> bool Good(const Report& report) {
   return report.status == Status::Success;
 }
 inline bool Good(const fe::NodalReport& report) {
-  EXPECT_EQ(report.status,fe::NodalStatus::Ok) << report.message;
+  EXPECT_EQ(report.status,fe::NodalStatus::Ok)
+      << report.message << " node=" << report.node;
   return report.status == fe::NodalStatus::Ok;
 }
 struct Snapshot {

@@ -116,41 +116,98 @@ struct Fixture {
 
   bool PrepareExecutionAuthority() {
     qbat_catalog_test::Fixture declaration;
+    std::array<fe::ShellPlasticityMaterialInput,4> materials;
+    std::array<fe::ShellPlasticitySectionInput,4> sections;
+    std::copy(declaration.materials.begin(), declaration.materials.end(),
+              materials.begin());
+    std::copy(declaration.sections.begin(), declaration.sections.end(),
+              sections.begin());
     for (unsigned row = 0; row < 2; ++row) {
-      declaration.materials[row].curve_id = 0;
-      declaration.materials[row].hardening =
+      materials[row].curve_id = 0;
+      materials[row].hardening =
           tl::material::ShellPlasticityHardeningKind::LinearLaw44;
-      declaration.materials[row].linear = {10e6, 0};
-      declaration.materials[row].rate = declaration.materials[2].rate;
+      materials[row].linear = {10e6, 0};
+      materials[row].rate = materials[2].rate;
     }
-    const fe::ShellPlasticityParentInput parents[]{
+    const bool rigid_contact =
+        rig.fixture.contact_constraints ==
+            p::ContactConstraintLayout::SameMergedParts ||
+        rig.fixture.contact_constraints ==
+            p::ContactConstraintLayout::MergedPartAndPlain;
+    const bool same_merged_parts =
+        rig.fixture.contact_constraints ==
+            p::ContactConstraintLayout::SameMergedParts;
+    if (rigid_contact) {
+      materials[3] = materials[2];
+      materials[3].material_id = 3000;
+      materials[3].curve_id = 0;
+      materials[3].hardening =
+          tl::material::ShellPlasticityHardeningKind::Tabulated;
+      materials[3].rate = {};
+      materials[3].linear = {};
+      materials[3].law = fe::ShellSectionLaw::RigidSkin;
+      sections[3] = sections[2];
+      sections[3].section_id = 3000;
+      sections[3].through_thickness_points = 0;
+      sections[3].formulation =
+          fe::ShellSectionFormulation::Nonconstitutive;
+    }
+    std::array<fe::ShellPlasticityParentInput,5> parents{{
         {fe::ShellBindingFamily::Qeph, 0, 100, 1000, 1000, 1000},
         {fe::ShellBindingFamily::Qeph, 1, 101, 1001, 1001, 1001},
         {fe::ShellBindingFamily::T3, 0, 102, 2000524, 2000524, 2000524},
-        {fe::ShellBindingFamily::Qbat, 0, 103, 2000524, 2000524, 2000524}};
+        {fe::ShellBindingFamily::Qbat, 0, 103, 2000524, 2000524, 2000524},
+        {fe::ShellBindingFamily::T3, 1, 104, 2000524, 2000524, 2000524}}};
+    if (rigid_contact) {
+      parents[2].source_part_id = 3000;
+      parents[2].material_id = 3000;
+      parents[2].section_id = 3000;
+      if (same_merged_parts) {
+        parents[4].source_part_id = 3001;
+        parents[4].material_id = 3000;
+        parents[4].section_id = 3000;
+      }
+    }
+    const std::size_t parent_count=rigid_contact ? parents.size() : 4;
     const auto catalog_report =
         execution_catalog.InitializeExecutionCatalog(
             rig.fixture.source.shells,
-            {nullptr, declaration.materials.data(),
-             declaration.sections.data(), parents, 0, 3, 3, 4});
+            {nullptr, materials.data(), sections.data(), parents.data(),
+             0, rigid_contact ? 4u : 3u,
+             rigid_contact ? 4u : 3u, parent_count});
     EXPECT_EQ(catalog_report.status,
               fe::ShellPlasticityBindingStatus::Success)
-        << catalog_report.message;
+        << catalog_report.message << " entry=" << catalog_report.entry
+        << " family=" << static_cast<int>(catalog_report.family);
     if (catalog_report.status !=
         fe::ShellPlasticityBindingStatus::Success)
       return false;
 
-    fe::ShellFailureParentInput failures[4];
-    for (unsigned row = 0; row < 4; ++row)
+    fe::ShellFailureParentInput failures[5];
+    for (std::size_t row=0;row<parent_count;++row)
       failures[row] = qbat_catalog_test::Failure(parents[row]);
-    failures[2].constant.failure_strain = t3_failure;
-    for (unsigned row = 0; row < 2; ++row) {
-      failures[row].policy = fe::ShellFailurePolicy::Tab1AnyPoint;
-      failures[row].constant = {};
-      failures[row].tab1.table = {{-1, 0, 1}, 1};
+    if (rigid_contact) {
+      failures[2] = {};
+      failures[2].source = parents[2];
+      if (same_merged_parts) {
+        failures[4] = {};
+        failures[4].source = parents[4];
+      }
+      for (const unsigned row : {0u,1u}) {
+        failures[row].policy = fe::ShellFailurePolicy::Tab1AnyPoint;
+        failures[row].constant = {};
+        failures[row].tab1.table = {{-1, 0, 1}, 1};
+      }
+    } else {
+      failures[2].constant.failure_strain = t3_failure;
+      for (unsigned row = 0; row < 2; ++row) {
+        failures[row].policy = fe::ShellFailurePolicy::Tab1AnyPoint;
+        failures[row].constant = {};
+        failures[row].tab1.table = {{-1, 0, 1}, 1};
+      }
     }
     const auto failure_report = execution_failure.InitializeExecution(
-        execution_catalog, failures, 4);
+        execution_catalog, failures, parent_count);
     EXPECT_EQ(failure_report.status,
               fe::ShellPlasticityBindingStatus::Success)
         << failure_report.message;
@@ -175,9 +232,13 @@ struct Fixture {
     for (std::size_t row = 0;
          row < execution_catalog.parent_count(); ++row) {
       const auto& parent = *execution_catalog.parent(row);
-      if (parent.family != fe::ShellBindingFamily::T3 &&
-          parent.family != fe::ShellBindingFamily::Qbat)
+      if (rigid_contact) {
+        if (parent.family != fe::ShellBindingFamily::T3)
+          continue;
+      } else if (parent.family != fe::ShellBindingFamily::T3 &&
+                 parent.family != fe::ShellBindingFamily::Qbat) {
         continue;
+      }
       if (single_parent && !selection.empty()) continue;
       selection.push_back({
           row, parent.family, parent.family_index,
@@ -590,6 +651,8 @@ TEST(SelfContactTransactionCuda,
   EXPECT_EQ(binding.groups()[1].source_kind,
             fe::RigidBindingSourceKind::NodalGroup);
   EXPECT_EQ(binding.groups()[0].source_id,binding.groups()[1].source_id);
+  ASSERT_NE(fixture.Parent(102),SIZE_MAX);
+  ASSERT_NE(fixture.Parent(104),SIZE_MAX);
 
   fe::NodalTrialToken token;
   fe::NodalAssemblyView assembly;
@@ -641,11 +704,15 @@ TEST(SelfContactTransactionCuda,
     expected_angular[g]=DenseAngularAcceleration(group,moment);
     merged_contact_acceleration[g]=c::Scale(contact_force,1/group.mass_kg);
   }
-  EXPECT_GE(contacted_nodes[1],2u);
-  EXPECT_GT(Norm(merged_contact_acceleration[1]),0);
-  EXPECT_GT(Norm(c::Subtract(endpoint_inverse_sum[1],
-                         merged_contact_acceleration[1])),
-            1e-6*Norm(merged_contact_acceleration[1]));
+  // The fully rigid T3 face contributes multiple weighted PART nodes. The
+  // opposite ordinary T3 contributes its contacting vertex to the partial
+  // plain group; its third node remains ordinary, so this is not an
+  // unsupported complete plain-rigid shell skin.
+  EXPECT_GE(contacted_nodes[0],2u);
+  EXPECT_GT(Norm(merged_contact_acceleration[0]),0);
+  EXPECT_GT(Norm(c::Subtract(endpoint_inverse_sum[0],
+                         merged_contact_acceleration[0])),
+            1e-6*Norm(merged_contact_acceleration[0]));
   const double contact_scale=accepted.diagnostics().maximum_force_norm_n;
   Near(contact_resultant,accepted.diagnostics().equal_opposite_residual_n,
        contact_scale);

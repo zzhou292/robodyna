@@ -6,7 +6,10 @@
 namespace physical_publication_test {
 Fixture::Fixture(bool surface,double failure,bool contact_geometry,
                  ContactConstraintLayout constraints)
-    : source(contact_geometry),surface_rigid(surface),t3_failure(failure),
+    : source(contact_geometry,
+             constraints == ContactConstraintLayout::SameMergedParts ||
+             constraints == ContactConstraintLayout::MergedPartAndPlain),
+      surface_rigid(surface),t3_failure(failure),
       contact_constraints(constraints) {
   source.nodes.push_back({778,{.06,-.01,.003}});
   source.nodes.push_back({901,{.02,.01,.001}});
@@ -64,14 +67,36 @@ void Fixture::PrepareSources() {
   auto native = beam_material.Input();
   native.units = {1,1,1};
   const fe::type13::ModelPropertyInput declaration{200,native};
-  fe::type13::ModelNode beam_nodes[3];
-  const std::uint64_t ids[]{901,13,12};
-  for (unsigned slot = 0; slot < 3; ++slot) {
-    const auto node = domain.Find(ids[slot]);
-    beam_nodes[slot] = {ids[slot],node,domain.nodes()[node].position};
+  const bool rigid_contact =
+      contact_constraints == ContactConstraintLayout::SameMergedParts ||
+      contact_constraints == ContactConstraintLayout::MergedPartAndPlain;
+  fe::type13::ModelReport beam_report;
+  if (rigid_contact) {
+    fe::type13::ModelNode beam_nodes[4];
+    const std::uint64_t ids[]{9302,9303,9304,9305};
+    for (unsigned slot = 0; slot < 4; ++slot) {
+      const auto node = domain.Find(ids[slot]);
+      beam_nodes[slot] = {ids[slot],node,domain.nodes()[node].position};
+    }
+    // The pair collectively gives every non-contact CIN master a genuine
+    // rotational source without assigning any contact node to rigid+CIN.
+    const fe::type13::ModelConnection connections[]{
+        {8000,0,{0,1,2}},{8001,0,{2,3,0}}};
+    beam_report = beams.Initialize(
+        {1,{1,1,1},beam_nodes,&declaration,connections,
+         4,1,2,domain.node_count()});
+  } else {
+    fe::type13::ModelNode beam_nodes[3];
+    const std::uint64_t ids[]{901,13,12};
+    for (unsigned slot = 0; slot < 3; ++slot) {
+      const auto node = domain.Find(ids[slot]);
+      beam_nodes[slot] = {ids[slot],node,domain.nodes()[node].position};
+    }
+    const fe::type13::ModelConnection connection{8000,0,{0,1,2}};
+    beam_report = beams.Initialize(
+        {1,{1,1,1},beam_nodes,&declaration,&connection,
+         3,1,1,domain.node_count()});
   }
-  const fe::type13::ModelConnection connection{8000,0,{0,1,2}};
-  const auto beam_report = beams.Initialize({1,{1,1,1},beam_nodes,&declaration,&connection,3,1,1,domain.node_count()});
   EXPECT_TRUE(beam_report) << beam_report.message;
   EXPECT_TRUE(beam_coefficients.Initialize(beams,domain));
 

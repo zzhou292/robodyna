@@ -4,11 +4,11 @@
 namespace physical_publication_test {
 void Fixture::PrepareConstraints() {
   if (contact_constraints == ContactConstraintLayout::SameMergedParts) {
-    const std::uint64_t qbat[]{10,11,12,13};
-    const std::uint64_t t3[]{14,15,16};
-    const std::uint64_t expected[]{10,11,12,13,14,15,16};
+    const std::uint64_t first_t3[]{14,15,16,777};
+    const std::uint64_t second_t3[]{17,18,19};
+    const std::uint64_t expected[]{14,15,16,777,17,18,19};
     const fe::rigid::PartTopologyPartInput declarations[]{
-        {3000,qbat,4},{3001,t3,3}};
+        {3000,first_t3,4},{3001,second_t3,3}};
     const fe::rigid::PartTopologyMerge merge{3000,3001};
     fe::rigid::PartTopologyInput input;
     input.source_instance_id=1;
@@ -18,32 +18,38 @@ void Fixture::PrepareConstraints() {
     input.expected_member_count=7;
     input.merges=&merge;
     input.merge_count=1;
-    EXPECT_TRUE(topology.Initialize(input));
+    const auto topology_report = topology.Initialize(input);
+    EXPECT_TRUE(topology_report) << topology_report.message
+        << " row=" << topology_report.row
+        << " member=" << topology_report.member;
     EXPECT_TRUE(parts.Initialize(topology,ledger,{1000,.001}));
     EXPECT_TRUE(rigid.Initialize(parts));
   } else if (contact_constraints ==
              ContactConstraintLayout::MergedPartAndPlain) {
     const std::uint64_t first[]{14,15};
-    const std::uint64_t second[]{16,778};
-    const std::uint64_t expected[]{14,15,16,778};
-    const std::uint64_t plain_ids[]{10,11,12,13};
+    const std::uint64_t second[]{16,777,778};
+    const std::uint64_t expected[]{14,15,16,777,778};
+    const std::uint64_t plain_ids[]{17,18,55};
     const fe::rigid::PartTopologyPartInput declarations[]{
-        {3000,first,2},{3001,second,2}};
+        {3000,first,2},{3001,second,3}};
     const fe::rigid::PartTopologyMerge merge{3000,3001};
     fe::rigid::PartTopologyInput input;
     input.source_instance_id=1;
     input.parts=declarations;
     input.part_count=2;
     input.expected_members=expected;
-    input.expected_member_count=4;
+    input.expected_member_count=5;
     input.other_rigid_members=plain_ids;
-    input.other_rigid_member_count=4;
+    input.other_rigid_member_count=3;
     input.merges=&merge;
     input.merge_count=1;
-    EXPECT_TRUE(topology.Initialize(input));
+    const auto topology_report = topology.Initialize(input);
+    EXPECT_TRUE(topology_report) << topology_report.message
+        << " row=" << topology_report.row
+        << " member=" << topology_report.member;
     EXPECT_TRUE(parts.Initialize(topology,ledger,{1000,.001}));
-    fe::NodalRigidGroupMember group_members[4];
-    for (unsigned row=0;row<4;++row) {
+    fe::NodalRigidGroupMember group_members[3];
+    for (unsigned row=0;row<3;++row) {
       const auto node=domain.Find(plain_ids[row]);
       const auto& value=ledger.nodes()[node].coefficients;
       group_members[row]={plain_ids[row],node,domain.nodes()[node].position,
@@ -55,7 +61,7 @@ void Fixture::PrepareConstraints() {
     // Deliberate numeric collision with PART 3000. Source kind and actual
     // membership, rather than this integer, distinguish the two bodies.
     const fe::NodalRigidGroupInput group{
-        3000,501,group_members,4};
+        3000,501,group_members,3};
     const auto plain_report=plain.InitializeNativeTotal(
         {29,domain.node_count(),&group,1,{1000,.001}});
     EXPECT_TRUE(plain_report) << plain_report.message << " group="
@@ -138,22 +144,30 @@ void Fixture::PrepareMaterials() {
     declaration.materials[row].linear = {10e6,0};
     declaration.materials[row].rate = declaration.materials[2].rate;
   }
-  const fe::ShellPlasticityParentInput parents[]{
+  const std::array<fe::ShellPlasticityParentInput,5> parents{{
       {fe::ShellBindingFamily::Qeph,0,100,1000,1000,1000},
       {fe::ShellBindingFamily::Qeph,1,101,1001,1001,1001},
       {fe::ShellBindingFamily::T3,0,102,2000524,2000524,2000524},
-      {fe::ShellBindingFamily::Qbat,0,103,2000524,2000524,2000524}};
+      {fe::ShellBindingFamily::Qbat,0,103,2000524,2000524,2000524},
+      {fe::ShellBindingFamily::T3,1,104,2000524,2000524,2000524}}};
+  const bool rigid_contact =
+      contact_constraints == ContactConstraintLayout::SameMergedParts ||
+      contact_constraints == ContactConstraintLayout::MergedPartAndPlain;
+  const std::size_t parent_count=rigid_contact ? parents.size() : 4;
   EXPECT_EQ(catalog.InitializeFormulations(source.shells,{nullptr,declaration.materials.data(),
-      declaration.sections.data(),parents,0,3,3,4}).status,fe::ShellPlasticityBindingStatus::Success);
-  fe::ShellFailureParentInput policies[4];
-  for (unsigned row = 0; row < 4; ++row) policies[row] = qbat_catalog_test::Failure(parents[row]);
+      declaration.sections.data(),parents.data(),0,3,3,parent_count}).status,
+      fe::ShellPlasticityBindingStatus::Success);
+  fe::ShellFailureParentInput policies[5];
+  for (std::size_t row=0;row<parent_count;++row)
+    policies[row]=qbat_catalog_test::Failure(parents[row]);
   policies[2].constant.failure_strain=t3_failure;
   for (unsigned row = 0; row < 2; ++row) {
     policies[row].policy = fe::ShellFailurePolicy::Tab1AnyPoint;
     policies[row].constant = {};
     policies[row].tab1.table = {{-1,0,1},1};
   }
-  EXPECT_EQ(failure.Initialize(catalog,policies,4).status,fe::ShellPlasticityBindingStatus::Success);
+  EXPECT_EQ(failure.Initialize(catalog,policies,parent_count).status,
+      fe::ShellPlasticityBindingStatus::Success);
   EXPECT_TRUE(physical.Initialize({&source.shells,&catalog,&failure,nullptr},ledger));
 }
 } // namespace physical_publication_test

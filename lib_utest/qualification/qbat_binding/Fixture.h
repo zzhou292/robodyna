@@ -39,13 +39,17 @@ template<class R> Mass Term(const R& reference,unsigned n) {
       reference.physical_inertia[n],reference.added_inertia[n]};
 }
 // Three physical layers use one shared Q4 node set. A separate T3 contributes
-// at the edge. These are explicit small synthetic layers, not a source model.
+// at the edge. The contact-only option adds a second distinct centered T3 for
+// rigid self-contact fixtures. These are small synthetic layers, not a model.
 struct Fixture {
   std::array<fe::ShellQephBindingInput,2> q;
   fe::ShellT3BindingInput t;
+  std::array<fe::ShellT3BindingInput,2> contact_t;
   fe::ShellQbatBindingInput b;
   bool contact_geometry = false;
-  explicit Fixture(bool contact = false) : contact_geometry(contact) {
+  bool distinct_contact_t3 = false;
+  explicit Fixture(bool contact = false, bool distinct_t3 = false)
+      : contact_geometry(contact),distinct_contact_t3(distinct_t3) {
     const tl::math::Vec3 x[]{
         {0,0,0},{.04,0,0},{.04,.02,0},{0,.02,0},
         contact ? tl::math::Vec3{.01,.003,.00025}
@@ -60,7 +64,8 @@ struct Fixture {
       input.poisson_ratio=.25;
       input.thickness=.002;
       input.placement=layer?fe::ShellReferencePlacement::BottomReferencePlane:
-          fe::ShellReferencePlacement::TopReferencePlane;
+          (contact ? fe::ShellReferencePlacement::Centered :
+                     fe::ShellReferencePlacement::TopReferencePlane);
       for(unsigned n=0;n<4;++n) {
         input.position[n]=x[n];
         input.node_ids[n]=10+n;
@@ -89,9 +94,22 @@ struct Fixture {
       t.reference.node_ids[n] = contact
           ? 14 + n : 10 + t.nodes[n];
     }
+    contact_t[0]=t;
+    contact_t[1]=t;
+    contact_t[1].source_parent_id=104;
+    contact_t[1].nodes={7,8,9};
+    const tl::math::Vec3 second[]{
+        {.02,.004,.0005},{.03,.004,.02},{.02,.006,.02}};
+    for (unsigned n=0;n<3;++n) {
+      contact_t[1].reference.node_ids[n]=17+n;
+      contact_t[1].reference.position[n]=second[n];
+    }
   }
   fe::ShellFormulationCollectionInput Input() const {
-    return {{q.data(),&t,2,1,contact_geometry ? 7u : 5u},&b,1};
+    return {{q.data(),distinct_contact_t3 ? contact_t.data() : &t,
+             2,distinct_contact_t3 ? 2u : 1u,
+             distinct_contact_t3 ? 10u : (contact_geometry ? 7u : 5u)},
+            &b,1};
   }
 };
 inline void Reduction(const Binding& binding) {

@@ -177,7 +177,12 @@ allocation stability, plus an exact pass-through unresolved-reason rollback
 and deterministic retry. It also covers actual T3 removal, long-inactive
 participation, stale accepted authority, forged physical diagnostics, and
 exact rollback/retry. Dedicated accepted-stage rigid gates retain genuine execution-owned
-merged PART and plain declarations. One proves a discovered same-body VF is
+merged PART and plain declarations. Their contact-only source uses two
+distinct centered T3 parents: the same-body case makes both legal rigid skins
+on merged original PARTs, while the different-body case keeps one PART skin
+and one ordinary T3 with partial plain-rigid support. QBAT/QEPH remain ordinary,
+and separate TYPE13 incidence supplies all non-contact CIN masters with real
+rotational source. One proves a discovered same-body VF is
 removed before event/force/STI publication; another proves a transaction-owned
 VF produces equal/opposite nodal loads and that the actual owner uses each
 body's merged resultant/moment before its dense anisotropic inverse. The latter

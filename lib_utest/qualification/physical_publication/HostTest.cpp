@@ -44,10 +44,17 @@ TEST(PhysicalPublicationValues,
   Fixture same(false,2.5,true,
       ContactConstraintLayout::SameMergedParts);
   ASSERT_FALSE(::testing::Test::HasFailure());
+  EXPECT_EQ(same.source.shells.t3_count(),2u);
+  EXPECT_EQ(same.beams.connection_count(),2u);
+  EXPECT_EQ(same.topology.part_count(),2u);
   ASSERT_EQ(same.rigid.groups().size(),1u);
   EXPECT_EQ(same.rigid.groups()[0].source_kind,
             fe::RigidBindingSourceKind::Part);
   EXPECT_EQ(same.rigid.groups()[0].member_count,7u);
+  for (const auto id : {14u,15u,16u,17u,18u,19u,777u})
+    EXPECT_TRUE(same.rigid.FindMember(same.domain.Find(id)));
+  for (const auto id : {10u,11u,12u,13u})
+    EXPECT_FALSE(same.rigid.FindMember(same.domain.Find(id)));
 
   Fixture separate(false,2.5,true,
       ContactConstraintLayout::MergedPartAndPlain);
@@ -59,6 +66,11 @@ TEST(PhysicalPublicationValues,
             fe::RigidBindingSourceKind::NodalGroup);
   EXPECT_EQ(separate.rigid.groups()[0].source_id,
             separate.rigid.groups()[1].source_id);
+  for (const auto id : {14u,15u,16u,777u,778u,17u,18u,55u})
+    EXPECT_TRUE(separate.rigid.FindMember(separate.domain.Find(id)));
+  EXPECT_FALSE(separate.rigid.FindMember(separate.domain.Find(19)));
+  for (const auto id : {10u,11u,12u,13u})
+    EXPECT_FALSE(separate.rigid.FindMember(separate.domain.Find(id)));
   for (const auto master:separate.cin.rows().data[0].master_domain_nodes)
     EXPECT_FALSE(separate.rigid.FindMember(master));
 }
