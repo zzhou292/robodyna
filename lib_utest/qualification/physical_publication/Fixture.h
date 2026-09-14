@@ -49,7 +49,8 @@ struct Fixture {
   ContactConstraintLayout contact_constraints=ContactConstraintLayout::Legacy;
   explicit Fixture(bool surface_rigid=false,double t3_failure=2.5,
                    bool contact_geometry=false,
-                   ContactConstraintLayout=ContactConstraintLayout::Legacy);
+                   ContactConstraintLayout=ContactConstraintLayout::Legacy,
+                   bool interior_edge_contact=false);
   void PrepareSources();
   void PrepareConstraints();
   void PrepareMaterials();

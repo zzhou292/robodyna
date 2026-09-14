@@ -2,6 +2,7 @@
 #include "../physical_publication/OwnerFixture.h"
 #include "lib_src/collision/SelfContactTransaction.h"
 #include "lib_src/collision/FixedContactFacetValues.h"
+#include "lib_src/collision/SurfaceContactGeometry.h"
 
 #include <gtest/gtest.h>
 
@@ -25,6 +26,26 @@ bool Good(c::SelfContactTransactionReport report) {
       << " crossing_reason="
       << static_cast<unsigned>(report.crossing_reason);
   return report.status == c::SelfContactTransactionStatus::Ok;
+}
+
+void CheckInteriorEeGeometry(const p::Rig& rig) {
+  const auto& geometry = rig.fixture.source.shell_input;
+  const auto point = [](const tl::math::Vec3& value) {
+    return c::Vec3{value.x, value.y, value.z};
+  };
+  c::SegmentGeometry segments[2];
+  segments[0].vertices[0] = point(geometry.t.reference.position[0]);
+  segments[0].vertices[1] = point(geometry.t.reference.position[1]);
+  segments[1].vertices[0] = point(geometry.q[0].reference.position[3]);
+  segments[1].vertices[1] = point(geometry.q[0].reference.position[0]);
+  c::SegmentPairGeometry closest;
+  ASSERT_EQ(c::ClosestPointsBetweenSegments(
+      segments[0], segments[1], &closest), c::Status::kOk);
+  EXPECT_GT(closest.parameter_a, 0);
+  EXPECT_LT(closest.parameter_a, 1);
+  EXPECT_GT(closest.parameter_b, 0);
+  EXPECT_LT(closest.parameter_b, 1);
+  EXPECT_NEAR(closest.distance, .00025, 1e-15);
 }
 
 struct AssemblyFields {
@@ -85,9 +106,13 @@ struct Fixture {
                    double t3_failure = 2.5,
                    p::ContactConstraintLayout constraints =
                        p::ContactConstraintLayout::Legacy)
-      : rig(false, t3_failure, !single, constraints),
+      : rig(false, t3_failure, !single, constraints,
+            !single && constraints == p::ContactConstraintLayout::Legacy),
         single_parent(single), pass_through(crossing),
         t3_failure(t3_failure) {
+    if (!single &&
+        constraints == p::ContactConstraintLayout::Legacy)
+      CheckInteriorEeGeometry(rig);
     if (pass_through) {
       rig.external_force_source_node = 14;
       const auto apex = rig.fixture.domain.Find(14);

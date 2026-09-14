@@ -48,13 +48,21 @@ struct Fixture {
   fe::ShellQbatBindingInput b;
   bool contact_geometry = false;
   bool distinct_contact_t3 = false;
-  explicit Fixture(bool contact = false, bool distinct_t3 = false)
-      : contact_geometry(contact),distinct_contact_t3(distinct_t3) {
+  bool interior_edge_contact = false;
+  explicit Fixture(bool contact = false, bool distinct_t3 = false,
+                   bool interior_ee = false)
+      : contact_geometry(contact || interior_ee),
+        distinct_contact_t3(distinct_t3),
+        interior_edge_contact(interior_ee) {
     const tl::math::Vec3 x[]{
         {0,0,0},{.04,0,0},{.04,.02,0},{0,.02,0},
-        contact ? tl::math::Vec3{.01,.003,.00025}
-                         : tl::math::Vec3{.05,.01,0},
-        {.03,.003,.00025},{.02,.006,.00025}};
+        interior_ee ? tl::math::Vec3{-.01,.01,.00025}
+                    : (contact ? tl::math::Vec3{.01,.003,.00025}
+                               : tl::math::Vec3{.05,.01,0}),
+        interior_ee ? tl::math::Vec3{.02,.01,.00025}
+                    : tl::math::Vec3{.03,.003,.00025},
+        interior_ee ? tl::math::Vec3{.01,.015,.00025}
+                    : tl::math::Vec3{.02,.006,.00025}};
     for(unsigned layer=0;layer<2;++layer) {
       q[layer].source_parent_id=100+layer;
       q[layer].nodes={0,1,2,3};
@@ -64,7 +72,7 @@ struct Fixture {
       input.poisson_ratio=.25;
       input.thickness=.002;
       input.placement=layer?fe::ShellReferencePlacement::BottomReferencePlane:
-          (contact ? fe::ShellReferencePlacement::Centered :
+          (contact_geometry ? fe::ShellReferencePlacement::Centered :
                      fe::ShellReferencePlacement::TopReferencePlane);
       for(unsigned n=0;n<4;++n) {
         input.position[n]=x[n];
@@ -81,7 +89,7 @@ struct Fixture {
     membrane.poisson_ratio=.35;
     membrane.thickness=.0005;
     b.reference.initial_a11_pa=membrane.young_modulus/(1-membrane.poisson_ratio*membrane.poisson_ratio);
-    t.nodes = contact
+    t.nodes = contact_geometry
         ? std::array<std::size_t,3>{4,5,6}
         : std::array<std::size_t,3>{1,4,2};
     t.source_parent_id=102;
@@ -91,7 +99,7 @@ struct Fixture {
     t.reference.thickness=.0005;
     for(unsigned n=0;n<3;++n) {
       t.reference.position[n]=x[t.nodes[n]];
-      t.reference.node_ids[n] = contact
+      t.reference.node_ids[n] = contact_geometry
           ? 14 + n : 10 + t.nodes[n];
     }
     contact_t[0]=t;

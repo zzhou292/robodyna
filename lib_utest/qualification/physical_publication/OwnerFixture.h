@@ -26,8 +26,10 @@ struct Rig {
   explicit Rig(bool surface_rigid=false,double t3_failure=2.5,
                bool contact_geometry=false,
                ContactConstraintLayout constraints=
-                   ContactConstraintLayout::Legacy)
-      : fixture(surface_rigid,t3_failure,contact_geometry,constraints) {}
+                   ContactConstraintLayout::Legacy,
+               bool interior_edge_contact=false)
+      : fixture(surface_rigid,t3_failure,contact_geometry,constraints,
+                interior_edge_contact) {}
   Fixture fixture;
   fe::FENodalState owner;
   fe::qeph::QephBatch qeph;

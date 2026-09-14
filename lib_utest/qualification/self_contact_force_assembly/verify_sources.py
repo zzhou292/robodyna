@@ -12,6 +12,7 @@ public = (COLLISION / "SelfContactForceAssembly.h").read_text()
 types = (COLLISION / "SelfContactForceTypes.h").read_text()
 values = (COLLISION / "SelfContactForceValues.h").read_text()
 operations = (COLLISION / "self_contact_force/Operations.cu").read_text()
+penalty_values = (COLLISION / "penalty_pair/Values.h").read_text()
 source = (COLLISION / "self_contact_force/Source.cpp").read_text()
 layout = (COLLISION / "self_contact_force/Layout.cpp").read_text()
 initialize = (COLLISION / "self_contact_force/Initialize.cpp").read_text()
@@ -37,6 +38,8 @@ assert "RepresentedSelfContactStiffness" in values
 assert "mass_detail::UpperProduct" in values
 assert "BuildSelfContactForceIncidence" in values
 assert "EvaluateSurfacePenaltyPair" in operations
+assert "if (result.distance_m == 0) return S::ZeroDistance;" in penalty_values
+assert "status.status = SelfContactForceStatus::EventFailure;" in operations
 assert "view.accepted.position_xyz" in operations
 assert "view.accepted.velocity_xyz" in operations
 assert "view.translation_fixed_bits[node]" in operations

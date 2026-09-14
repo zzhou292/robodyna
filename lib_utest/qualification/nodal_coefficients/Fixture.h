@@ -23,10 +23,13 @@ struct Fixture {
   spring::PropertyInput spring_property;
   std::array<spring::ConnectionInput,2> spring_input;
   explicit Fixture(bool contact_geometry = false,
-                   bool distinct_contact_t3 = false)
-      : shell_input(contact_geometry,distinct_contact_t3) {
+                   bool distinct_contact_t3 = false,
+                   bool interior_edge_contact = false)
+      : shell_input(contact_geometry,distinct_contact_t3,
+                    interior_edge_contact) {
     EXPECT_EQ(shells.InitializeFormulations(shell_input.Input()).status,fe::ShellBindingStatus::Success);
-    nodes.resize(distinct_contact_t3 ? 12 : (contact_geometry ? 9 : 7));
+    nodes.resize(distinct_contact_t3 ? 12 :
+        ((contact_geometry || interior_edge_contact) ? 9 : 7));
     for(std::size_t n=0;n<shells.node_count();++n) {
       const auto destination = n < map.size() ? map[n] : 7 + n - map.size();
       nodes[destination]={shells.nodes()[n].source_id,shells.nodes()[n].position};

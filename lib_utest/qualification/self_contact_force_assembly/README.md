@@ -19,6 +19,9 @@ coefficient is derived internally as the checked outward product
 `stiffness_per_area_n_m3 * admitted_force_area_m2.value`; callers cannot supply
 pair stiffness, effective mass, line area, damping, friction or approximation
 radius.
+An authenticated zero-distance EE area does not invent a force direction:
+surface-pair evaluation returns `ZeroDistance`, the event batch fails closed,
+and candidate force/STI publication does not occur.
 
 All force, potential, moment and represented-majorant arithmetic executes in
 CUDA kernels on the actual owner stream. Every event has a private

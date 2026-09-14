@@ -5,10 +5,12 @@
 
 namespace physical_publication_test {
 Fixture::Fixture(bool surface,double failure,bool contact_geometry,
-                 ContactConstraintLayout constraints)
+                 ContactConstraintLayout constraints,
+                 bool interior_edge_contact)
     : source(contact_geometry,
              constraints == ContactConstraintLayout::SameMergedParts ||
-             constraints == ContactConstraintLayout::MergedPartAndPlain),
+             constraints == ContactConstraintLayout::MergedPartAndPlain,
+             interior_edge_contact),
       surface_rigid(surface),t3_failure(failure),
       contact_constraints(constraints) {
   source.nodes.push_back({778,{.06,-.01,.003}});
