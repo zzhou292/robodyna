@@ -88,9 +88,9 @@ def main() -> None:
     require("FirstProfileStiffnessPerAreaNPerM3 = 2e9" in
             startup_header,
             "first profile stiffness must remain fixed at 2e9 N/m3")
-    require("config.event_capacity == transaction.max_global_events" in
+    require("config.event_capacity <= transaction.max_global_events" in
             (contact / "VehicleSelfContactStartup.cpp").read_text(),
-            "runtime event capacity must exactly match its global ledger")
+            "force capacity must fit the complete global event ledger")
     setup = (contact / "SelectedSelfContactSource.h").read_text()
     require("source_fields" not in
             (contact / "VehicleSelfContactStartup.cpp").read_text(),

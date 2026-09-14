@@ -68,12 +68,11 @@ app::RuntimeLimits RuntimeLimits(std::size_t event_ledger_capacity) {
     // Vehicle() builds the generic count/work shape.  Keep the top-level
     // 20 GB/8 GiB transaction admission while respecting each existing
     // production component's narrower declared profile.
-    const auto activity =
-        c::SelfContactPhysicalActivityLimits::Vehicle();
-    result.transaction.activity.max_host_bytes =
-        activity.max_host_bytes;
+    result.transaction.activity.max_selected_parents = 1000000;
+    result.transaction.activity.max_family_parents = 1000000;
+    result.transaction.activity.max_host_bytes = std::size_t{512} << 20;
     result.transaction.activity.max_startup_host_bytes =
-        activity.max_startup_host_bytes;
+        std::size_t{512} << 20;
     result.transaction.broadphase.max_host_bytes =
         std::size_t{2} << 30;
     result.transaction.broadphase.max_device_bytes =

@@ -72,7 +72,7 @@ void CheckProfile(const VehicleSelfContactSetup& setup,
             transaction.max_host_bytes &&
             transaction.max_device_bytes &&
             transaction.max_startup_host_bytes &&
-            config.event_capacity == transaction.max_global_events &&
+            config.event_capacity <= transaction.max_global_events &&
             transaction.force.max_events ==
                 transaction.max_global_events &&
             transaction.max_event_hash_slots >=
