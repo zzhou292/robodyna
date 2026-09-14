@@ -289,10 +289,10 @@ cc_library(
     deps = [
         ":fixed_triangle_feature_discovery",
         ":represented_interval_crossing",
+        ":self_contact_broadphase",
         ":self_contact_current_regularity",
-        ":self_contact_physical_activity_values",
-        ":self_contact_broadphase_values",
-        ":self_contact_force_values",
+        ":self_contact_force_assembly",
+        ":self_contact_physical_activity",
         "//lib_src/elements:shell_batch_publication",
         "//lib_utils:bounded_arena",
     ],
