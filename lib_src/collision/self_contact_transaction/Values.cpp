@@ -208,18 +208,36 @@ bool SameCandidateValue(
 
 bool SameCertificate(const AcceptedEventCertificate& a,
                      const AcceptedEventCertificate& b) noexcept {
+  const bool boundary_vertex_face =
+      a.kind == AcceptedEventCertificateKind::VertexFace &&
+      b.kind == AcceptedEventCertificateKind::VertexFace &&
+      a.event.feature.kind ==
+          FixedTriangleCandidateKind::VertexFace &&
+      b.event.feature.kind ==
+          FixedTriangleCandidateKind::VertexFace &&
+      a.event.feature.vertex_face.target.kind !=
+          FixedTriangleStratumKind::Face &&
+      b.event.feature.vertex_face.target.kind !=
+          FixedTriangleStratumKind::Face;
+  auto first_classification = a.event.classification;
+  auto second_classification = b.event.classification;
+  if (boundary_vertex_face)
+    second_classification.feature[1] =
+        first_classification.feature[1];
   if (a.kind != b.kind ||
       !self_contact_transaction::Same(
           a.event.feature, b.event.feature) ||
       a.event.vertex_use != b.event.vertex_use ||
-      a.event.facet_use != b.event.facet_use ||
+      (!boundary_vertex_face &&
+       a.event.facet_use != b.event.facet_use) ||
       a.event.edge_use[0] != b.event.edge_use[0] ||
       a.event.edge_use[1] != b.event.edge_use[1] ||
       !Same(a.event.endpoints[0], b.event.endpoints[0]) ||
       !Same(a.event.endpoints[1], b.event.endpoints[1]) ||
-      !Same(a.event.classification, b.event.classification))
+      !Same(first_classification, second_classification))
     return false;
-  if (a.kind == AcceptedEventCertificateKind::EdgeEdge)
+  if (a.kind == AcceptedEventCertificateKind::EdgeEdge ||
+      boundary_vertex_face)
     return true;
   return SameCandidateValue(a.discovery, b.discovery) &&
       a.target_facet == b.target_facet;

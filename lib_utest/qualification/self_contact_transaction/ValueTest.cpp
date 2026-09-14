@@ -879,6 +879,35 @@ TEST(SelfContactTransactionValues,
       c::SelfContactTransactionStatus::Ok);
   EXPECT_EQ(count,1u);
 
+  auto boundary=Certificate(100);
+  boundary.event.feature.vertex_face.target.SetEdge(Edge(6,7,20));
+  boundary.discovery.key=boundary.event.feature;
+  boundary.event.classification.parent[0]=6;
+  boundary.event.classification.parent[1]=7;
+  boundary.event.classification.feature[1]=3;
+  auto boundary_seam=boundary;
+  boundary_seam.event.facet_use=4;
+  boundary_seam.event.classification.feature[1]=4;
+  boundary_seam.discovery.triangles[1].local_facet=1;
+  boundary_seam.target_facet=4;
+  hash.fill(UINT32_MAX);
+  count=0;
+  ASSERT_EQ(sct::MergeAcceptedEventChunk(
+      &boundary,1,ledger.data(),ledger.size(),
+      hash.data(),hash.size(),&count).status,
+      c::SelfContactTransactionStatus::Ok);
+  EXPECT_EQ(sct::MergeAcceptedEventChunk(
+      &boundary_seam,1,ledger.data(),ledger.size(),
+      hash.data(),hash.size(),&count).status,
+      c::SelfContactTransactionStatus::Ok);
+  EXPECT_EQ(count,1u);
+
+  hash.fill(UINT32_MAX);
+  count=0;
+  ASSERT_EQ(sct::MergeAcceptedEventChunk(
+      &high,1,ledger.data(),ledger.size(),
+      hash.data(),hash.size(),&count).status,
+      c::SelfContactTransactionStatus::Ok);
   auto mismatched=high;
   mismatched.event.classification.admitted_force_area_m2.value=3;
   EXPECT_EQ(sct::MergeAcceptedEventChunk(
