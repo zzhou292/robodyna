@@ -14,6 +14,9 @@ and prepared triangles, canonical parent-pair cursors/heap, fixed facet-pair
 and exact-geometry chunks, a global accepted-event certificate/hash ledger,
 optional detailed policy outcomes, and snapshots. It does not allocate the
 complete facet-pair, feature-task, intersection, crossing, or policy arrays.
+Static descriptor population authenticates one
+`FixedContactFacetReadCursor`, then immediately copies each borrowed facet;
+it does not repeat the binding-level checked `Describe` path per facet.
 The activity authority separately owns one exact
 accepted/current and complete-family readback arena. The caller can obtain only the immutable roster entry
 and a borrowed post-seal policy publication.

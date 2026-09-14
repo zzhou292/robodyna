@@ -538,6 +538,14 @@ SelfContactTransactionReport InitializeStaticPipeline(
   if (!parents.size() || active_use.facet_uses().size() != facets)
     return Failure(S::IdentityMismatch,
         "Active-use parent/facet inventory is incomplete");
+  const auto* facet_binding = active_use.facets();
+  if (!facet_binding)
+    return Failure(S::IdentityMismatch,
+        "Active-use facet binding is absent");
+  FixedContactFacetReadCursor facet_reader;
+  const auto initialized = facet_reader.Initialize(*facet_binding);
+  if (initialized.status != FixedContactFacetStatus::Ok)
+    return Failure(S::DiscoveryFailure, initialized.message);
   std::size_t next_facet = 0;
   for (std::size_t parent = 0; parent < parents.size(); ++parent) {
     const auto& value = parents[parent];
@@ -561,11 +569,13 @@ SelfContactTransactionReport InitializeStaticPipeline(
           parent);
     for (std::uint32_t local = 0; local < value.facet_count; ++local) {
       const auto global = next_facet + local;
-      const auto described = active_use.facets()->Describe(
-          value.surface_parent, local,
-          buffers.facet_descriptors + global);
-      if (described.status != FixedContactFacetStatus::Ok)
-        return Failure(S::DiscoveryFailure, described.message, global);
+      const auto described =
+          facet_reader.Describe(value.surface_parent, local);
+      if (described.report.status != FixedContactFacetStatus::Ok ||
+          !described.facet)
+        return Failure(
+            S::DiscoveryFailure, described.report.message, global);
+      buffers.facet_descriptors[global] = *described.facet;
       const auto& use = active_use.facet_uses()[global];
       if (use.parent != parent || use.local_facet != local ||
           buffers.facet_descriptors[global].source.source_parent_id !=

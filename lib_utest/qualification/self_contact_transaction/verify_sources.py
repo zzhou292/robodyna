@@ -198,6 +198,20 @@ source = (
 values = (
     ROOT / "lib_src/collision/self_contact_transaction/Values.cpp").read_text()
 for token in (
+    "FixedContactFacetReadCursor facet_reader",
+    "facet_reader.Initialize(*facet_binding)",
+    "facet_reader.Describe(value.surface_parent, local)",
+    "buffers.facet_descriptors[global] = *described.facet",
+):
+    require(source, token, storage_path)
+if "active_use.facets()->Describe(" in source:
+    raise RuntimeError(
+        f"{storage_path}: transaction startup retains checked per-facet Describe")
+if source.index("facet_reader.Describe(") > source.index(
+        "buffers.facet_descriptors[global] = *described.facet"):
+    raise RuntimeError(
+        f"{storage_path}: borrowed facet is not copied immediately after read")
+for token in (
     "AcceptedEventCertificateKind::EdgeEdge",
     "SelfContactPairStatus::AdmittedEdgeEdge",
     "SameEdgeEdgeCertificateIdentity",
