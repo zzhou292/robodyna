@@ -12,6 +12,8 @@ BROADPHASE = ROOT / "lib_src/collision/SelfContactBroadphase.cpp"
 BROADPHASE_TYPES = ROOT / "lib_src/collision/SelfContactBroadphaseTypes.h"
 CMAKE = ROOT / "lib_src/collision/SelfContactTransaction.cmake"
 BAZEL = ROOT / "lib_src/collision/BUILD.bazel"
+FILTER_HEADER = ROOT / "lib_src/collision/SelfContactFilterCertificates.h"
+FILTER_SOURCE = ROOT / "lib_src/collision/SelfContactFilterCertificates.cpp"
 QUAL_CMAKE = Path(__file__).resolve().parent / "CMakeLists.txt"
 QUAL_BAZEL = Path(__file__).resolve().parent / "BUILD.bazel"
 CUDA = Path(__file__).resolve().parent / "CudaTest.cu"
@@ -149,17 +151,27 @@ for forbidden in (
 
 arena_path = ROOT / "lib_src/collision/self_contact_transaction/Arena.cpp"
 arena = arena_path.read_text()
+filter_header = FILTER_HEADER.read_text()
+filter_source = FILTER_SOURCE.read_text()
 for token in (
     "CertifiedLinearFacetPrismSeparation(",
     "ProjectionBounds(",
     "CrossAxis(",
-    "FacetPrismSeparationAxis::EdgeCross",
+    "SelfContactFacetPrismSeparationAxis::EdgeCross",
     "std::nextafter(",
     "thickness * norm_l1",
     "first_thickness, second_thickness, axis",
 ):
-    require(arena, token, arena_path)
-require(storage, "CertifiedLinearFacetPrismSeparation(", storage_path)
+    require(filter_source, token, FILTER_SOURCE)
+for token in (
+    "SelfContactFacetFilterCategory",
+    "CoordinateAabbSeparated",
+    "FaceAxisSeparated",
+    "EdgeCrossAxisSeparated",
+    "ExactRemaining",
+    "ClassifyAcceptedFacetPair(",
+):
+    require(filter_header + filter_source, token, FILTER_HEADER)
 require(candidate, "sct::CertifiedLinearFacetPrismSeparation(", CANDIDATE)
 for forbidden in ("activity_base", "activity_current"):
     if forbidden in storage or forbidden in arena:
@@ -213,11 +225,11 @@ for path in (
             raise RuntimeError(
                 f"{path}: forbidden per-attempt allocation token {forbidden!r}")
 
-source = (
-    ROOT / "lib_src/collision/self_contact_transaction/Source.cpp").read_text()
+source_path = ROOT / "lib_src/collision/self_contact_transaction/Source.cpp"
+source = source_path.read_text()
 values = (
     ROOT / "lib_src/collision/self_contact_transaction/Values.cpp").read_text()
-require(source, "CertifiedLinearFacetPrismSeparation(", storage_path)
+require(source, "ClassifyAcceptedFacetPair(", source_path)
 for token in (
     "FixedContactFacetReadCursor facet_reader",
     "facet_reader.Initialize(*facet_binding)",
@@ -267,6 +279,7 @@ for wiring in (CMAKE, BAZEL):
                   "self_contact_transaction/Values.cpp"):
         require(text, token, wiring)
     require(text, "self_contact_physical_activity", wiring)
+    require(text, "self_contact_filter_certificates", wiring)
 
 for token in (
     "SELF_CONTACT_TRANSACTION_CUDA",

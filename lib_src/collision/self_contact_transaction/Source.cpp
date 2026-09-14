@@ -39,50 +39,6 @@ SelfContactTransactionReport FeatureFailure(
   return report;
 }
 
-double Component(Vec3 value, unsigned axis) noexcept {
-  return axis == 0 ? value.x : (axis == 1 ? value.y : value.z);
-}
-
-bool InflatedFacetBoundsSeparated(
-    const CurrentFixedTriangle& first, double first_thickness,
-    const CurrentFixedTriangle& second, double second_thickness,
-    bool* valid) noexcept {
-  *valid = std::isfinite(first_thickness) && first_thickness > 0 &&
-      std::isfinite(second_thickness) && second_thickness > 0;
-  if (!*valid) return false;
-  const double infinity = std::numeric_limits<double>::infinity();
-  for (unsigned axis = 0; axis < 3; ++axis) {
-    double first_lower = Component(first.vertices[0], axis);
-    double first_upper = first_lower;
-    double second_lower = Component(second.vertices[0], axis);
-    double second_upper = second_lower;
-    for (unsigned vertex = 0; vertex < 3; ++vertex) {
-      const auto a = Component(first.vertices[vertex], axis);
-      const auto b = Component(second.vertices[vertex], axis);
-      if (!std::isfinite(a) || !std::isfinite(b)) {
-        *valid = false;
-        return false;
-      }
-      first_lower = std::min(first_lower, a);
-      first_upper = std::max(first_upper, a);
-      second_lower = std::min(second_lower, b);
-      second_upper = std::max(second_upper, b);
-    }
-    first_lower = std::nextafter(
-        first_lower - first_thickness, -infinity);
-    first_upper = std::nextafter(
-        first_upper + first_thickness, infinity);
-    second_lower = std::nextafter(
-        second_lower - second_thickness, -infinity);
-    second_upper = std::nextafter(
-        second_upper + second_thickness, infinity);
-    if (first_upper < second_lower ||
-        second_upper < first_lower)
-      return true;
-  }
-  return false;
-}
-
 FixedTriangleKey DescriptorKey(
     const FixedContactFacet& value) noexcept {
   return {value.source_instance_id, value.source.source_parent_id,
@@ -775,10 +731,6 @@ SelfContactTransactionReport FilterAcceptedFacetPairs(
       return Failure(S::IdentityMismatch,
           "Rigid facet-pair filter received an invalid exact pair",
           SIZE_MAX, pair);
-    const auto action = ClassifyCandidatePairMotion(
-        motion[value.first], {}, motion[value.second], {});
-    if (action == PairMotionAction::ExcludedSameRigidGroup)
-      continue;
     const auto first_parent = facet_uses[value.first].parent;
     const auto second_parent = facet_uses[value.second].parent;
     if (first_parent >= parents.size() ||
@@ -786,29 +738,20 @@ SelfContactTransactionReport FilterAcceptedFacetPairs(
       return Failure(S::IdentityMismatch,
           "Accepted facet pair has no active parent",
           SIZE_MAX, pair);
-    bool valid = false;
-    if (InflatedFacetBoundsSeparated(
-            triangles[value.first],
-            parents[first_parent].reference_half_thickness_m,
-            triangles[value.second],
-            parents[second_parent].reference_half_thickness_m,
-            &valid))
-      continue;
-    if (!valid)
+    const auto filtered = ClassifyAcceptedFacetPair(
+        triangles[value.first],
+        parents[first_parent].reference_half_thickness_m,
+        motion[value.first].complete_rigid_group,
+        triangles[value.second],
+        parents[second_parent].reference_half_thickness_m,
+        motion[value.second].complete_rigid_group);
+    if (filtered.status != SelfContactFacetFilterStatus::Ok)
       return Failure(S::IdentityMismatch,
-          "Accepted facet bound or thickness is invalid",
+          "Accepted facet filter input is invalid",
           SIZE_MAX, pair);
-    if (CertifiedLinearFacetPrismSeparation(
-            triangles[value.first], triangles[value.first],
-            parents[first_parent].reference_half_thickness_m,
-            triangles[value.second], triangles[value.second],
-            parents[second_parent].reference_half_thickness_m,
-            true, nullptr, &valid))
+    if (filtered.category !=
+        SelfContactFacetFilterCategory::ExactRemaining)
       continue;
-    if (!valid)
-      return Failure(S::IdentityMismatch,
-          "Accepted facet prism certificate input is invalid",
-          SIZE_MAX, pair);
     pairs[write++] = value;
   }
   *pair_count = write;

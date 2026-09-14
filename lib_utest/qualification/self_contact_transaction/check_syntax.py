@@ -40,6 +40,7 @@ common = [
 ]
 sources = [
     probe,
+    root / "lib_src/collision/SelfContactFilterCertificates.cpp",
     root / "lib_src/collision/self_contact_transaction/Arena.cpp",
     root / "lib_src/collision/self_contact_transaction/Limits.cpp",
     root / "lib_src/collision/self_contact_transaction/Layout.cpp",

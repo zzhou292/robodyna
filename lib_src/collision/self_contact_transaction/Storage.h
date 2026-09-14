@@ -2,11 +2,16 @@
 #pragma once
 
 #include "../SelfContactTransaction.h"
+#include "../SelfContactFilterCertificates.h"
 #include "../SelfContactPhysicalActivity.h"
 #include "../fixed_triangle_features/Geometry.h"
 #include "lib_utils/BoundedArena.h"
 
 namespace tlfea::contact::self_contact_transaction {
+
+using FacetPrismSeparationAxis =
+    SelfContactFacetPrismSeparationAxis;
+using ::tlfea::contact::CertifiedLinearFacetPrismSeparation;
 
 enum class AcceptedEventCertificateKind : std::uint8_t {
   VertexFace,
@@ -41,23 +46,9 @@ enum class PairMotionAction : std::uint8_t {
   UnsupportedRigidArc,
 };
 
-enum class FacetPrismSeparationAxis : std::uint8_t {
-  None,
-  FaceNormal,
-  EdgeCross,
-};
-
 PairMotionAction ClassifyCandidatePairMotion(
     const MotionSupport&, const SelfContactSweptParentBounds&,
     const MotionSupport&, const SelfContactSweptParentBounds&) noexcept;
-bool CertifiedLinearFacetPrismSeparation(
-    const CurrentFixedTriangle& first_base,
-    const CurrentFixedTriangle& first_current, double first_thickness,
-    const CurrentFixedTriangle& second_base,
-    const CurrentFixedTriangle& second_current, double second_thickness,
-    bool include_edge_axes,
-    FacetPrismSeparationAxis* axis,
-    bool* valid) noexcept;
 
 struct FacetPairCursor {
   std::uint32_t first_begin = 0;

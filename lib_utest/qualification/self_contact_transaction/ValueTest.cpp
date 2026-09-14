@@ -6,6 +6,7 @@
 #include <array>
 #include <algorithm>
 #include <iostream>
+#include <limits>
 #include <type_traits>
 #include <vector>
 
@@ -335,6 +336,66 @@ TEST(SelfContactTransactionValues,
   EXPECT_EQ(sct::ClassifyCandidatePairMotion(
       rigid_a, near, rigid_b, near),
       sct::PairMotionAction::UnsupportedRigidArc);
+}
+
+TEST(SelfContactTransactionValues,
+     AcceptedFacetFilterCategoriesAreDisjointAndFailClosed) {
+  constexpr double thickness = 0.01;
+  auto first = Triangle(
+      10, {1, 2, 3},
+      {{{0, 0, 0}, {1, 0, 1}, {0, 1, 1}}});
+  auto aabb = first;
+  auto face = first;
+  auto edge = first;
+  auto touching = Triangle(
+      20, {4, 5, 6},
+      {{{0, 0, 0.02}, {1, 0, 0.02}, {0, 1, 0.02}}});
+  for (auto& vertex : aabb.vertices)
+    vertex.x += 2;
+  for (auto& vertex : face.vertices) {
+    vertex.x -= 0.0625;
+    vertex.y -= 0.0625;
+    vertex.z += 0.0625;
+  }
+  edge.vertices[0] = {-0.25, -1, -0.5};
+  edge.vertices[1] = {0.25, -0.5, -0.5};
+  edge.vertices[2] = {1, 1, 0.25};
+  auto planar = Triangle(
+      30, {7, 8, 9},
+      {{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}}});
+
+  const std::array<c::SelfContactFacetFilterResult, 5> results{{
+      c::ClassifyAcceptedFacetPair(
+          first, thickness, 7, first, thickness, 7),
+      c::ClassifyAcceptedFacetPair(
+          first, thickness, UINT32_MAX, aabb, thickness, UINT32_MAX),
+      c::ClassifyAcceptedFacetPair(
+          first, thickness, UINT32_MAX, face, thickness, UINT32_MAX),
+      c::ClassifyAcceptedFacetPair(
+          first, thickness, UINT32_MAX, edge, thickness, UINT32_MAX),
+      c::ClassifyAcceptedFacetPair(
+          planar, thickness, UINT32_MAX,
+          touching, thickness, UINT32_MAX),
+  }};
+  std::array<std::size_t, 5> counts{};
+  for (const auto result : results) {
+    ASSERT_EQ(result.status, c::SelfContactFacetFilterStatus::Ok);
+    ++counts[static_cast<unsigned>(result.category)];
+  }
+  for (const auto count : counts)
+    EXPECT_EQ(count, 1u);
+
+  auto nonfinite = first;
+  nonfinite.vertices[0].x =
+      std::numeric_limits<double>::quiet_NaN();
+  EXPECT_EQ(c::ClassifyAcceptedFacetPair(
+      nonfinite, thickness, UINT32_MAX,
+      first, thickness, UINT32_MAX).status,
+      c::SelfContactFacetFilterStatus::InvalidInput);
+  EXPECT_EQ(c::ClassifyAcceptedFacetPair(
+      first, std::numeric_limits<double>::infinity(), UINT32_MAX,
+      first, thickness, UINT32_MAX).status,
+      c::SelfContactFacetFilterStatus::InvalidInput);
 }
 
 TEST(SelfContactTransactionValues,

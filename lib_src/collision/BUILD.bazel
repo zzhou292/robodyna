@@ -62,6 +62,27 @@ cc_library(
 )
 
 filegroup(
+    name = "self_contact_filter_certificate_sources",
+    srcs = [
+        "BUILD.bazel",
+        "SelfContactFilterCertificates.cmake",
+        "SelfContactFilterCertificates.cpp",
+        "SelfContactFilterCertificates.h",
+    ],
+)
+
+cc_library(
+    name = "self_contact_filter_certificates",
+    srcs = ["SelfContactFilterCertificates.cpp"],
+    hdrs = [
+        "FixedTriangleFeatureTypes.h",
+        "SelfContactFilterCertificates.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":fixed_contact_facets"],
+)
+
+filegroup(
     name = "represented_interval_crossing_source_proof",
     srcs = [
         "BUILD.bazel",
@@ -258,6 +279,9 @@ filegroup(
         "SelfContactTransaction.cmake",
         "SelfContactTransaction.h",
         "SelfContactTransactionTypes.h",
+        "SelfContactFilterCertificates.cmake",
+        "SelfContactFilterCertificates.cpp",
+        "SelfContactFilterCertificates.h",
         "self_contact_transaction/Arena.cpp",
         "self_contact_transaction/Candidate.cpp",
         "self_contact_transaction/Limits.cpp",
@@ -291,6 +315,7 @@ cc_library(
         ":represented_interval_crossing",
         ":self_contact_broadphase",
         ":self_contact_current_regularity",
+        ":self_contact_filter_certificates",
         ":self_contact_force_assembly",
         ":self_contact_physical_activity",
         "//lib_src/elements:shell_batch_publication",
@@ -316,6 +341,7 @@ cc_library(
         ":self_contact_force_assembly",
         ":self_contact_broadphase",
         ":self_contact_current_regularity",
+        ":self_contact_filter_certificates",
         ":self_contact_physical_activity",
         ":self_contact_transaction_values",
         "//lib_src/elements:shell_batch_publication",
