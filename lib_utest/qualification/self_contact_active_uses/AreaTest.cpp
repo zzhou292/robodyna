@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #include "Fixture.h"
+#include "lib_src/collision/Q4ContactBounds.h"
 #include <cfloat>
 #include <cmath>
 #include <limits>
@@ -34,6 +35,37 @@ long double DirectedSum(const c::SelfContactActiveUseBinding& uses, std::size_t 
   for (const auto& use : uses.vertex_uses())
     if (use.parent == parent) sum += use.directed_vf_area_m2.value;
   return sum;
+}
+std::size_t EdgeUse(std::uint64_t eid, const Fixture& fixture,
+    const c::SelfContactActiveUseBinding& uses) {
+  const auto parent = fixture.Parent(eid,uses);
+  for (std::size_t i=0;i<uses.edge_uses().size();++i)
+    if (uses.edge_uses()[i].parent == parent) return i;
+  return SIZE_MAX;
+}
+c::WeightedSurfacePoint EdgePoint(
+    const c::SelfContactFacetEdgeUse& edge,double parameter) {
+  c::WeightedSurfacePoint point;
+  point.count=edge.endpoints[0].count;
+  for (unsigned slot=0;slot<point.count;++slot) {
+    point.nodes[slot]=edge.endpoints[0].nodes[slot];
+    point.weights[slot]=(1-parameter)*edge.endpoints[0].weights[slot]+
+        parameter*edge.endpoints[1].weights[slot];
+  }
+  return point;
+}
+bool SameCertificate(c::Q4CertifiedIntegral a,c::Q4CertifiedIntegral b) {
+  return a.value == b.value && a.lower == b.lower &&
+      a.upper == b.upper && a.error == b.error;
+}
+c::Q4CertifiedIntegral SumCertificate(
+    c::Q4CertifiedIntegral a,c::Q4CertifiedIntegral b) {
+  c::Q4IntegralInterval interval;
+  c::Q4CertifiedIntegral result;
+  EXPECT_TRUE(c::q4_bounds::Add(
+      {a.lower,a.upper},{b.lower,b.upper},&interval));
+  EXPECT_TRUE(c::q4_bounds::Certify(a.value+b.value,interval,&result));
+  return result;
 }
 struct AreaSum {
   long double value=0,lower=0,upper=0;
@@ -124,6 +156,100 @@ TEST(SelfContactActiveUses, CertifiedNativeAndCenterAreasGiveExactParentDualSums
   EXPECT_STREQ(c::Q4CenterAreaContactModel, "center-area-uniform-natural-v1");
   EXPECT_STREQ(c::SymmetricDirectedVertexDualReferenceV1,
       "SymmetricDirectedVertexDualReferenceV1");
+  EXPECT_STREQ(c::SymmetricDirectedVertexAndEdgePointDualReferenceV2,
+      "SymmetricDirectedVertexAndEdgePointDualReferenceV2");
+}
+
+TEST(SelfContactActiveUses,
+     EdgePointAreaInterpolatesExactlySymmetricallyAndConverges) {
+  double refinement_coupon[3]{};
+  for (unsigned level=0;level<=2;++level) {
+    Fixture fixture(level,false,true);
+    c::SelfContactActiveUseBinding uses;
+    ASSERT_EQ(uses.Initialize(fixture.facets).status,Code::Ok);
+    EXPECT_EQ(uses.policy(),c::SelfContactActiveUsePolicy::
+        SymmetricDirectedVertexAndEdgePointDualReferenceV2);
+    const auto first=EdgeUse(100,fixture,uses);
+    const auto second=EdgeUse(101,fixture,uses);
+    ASSERT_NE(first,SIZE_MAX);
+    ASSERT_NE(second,SIZE_MAX);
+    const auto& a=uses.edge_uses()[first];
+    const auto& b=uses.edge_uses()[second];
+    for (const auto* edge : {&a,&b})
+      for (unsigned endpoint=0;endpoint<2;++endpoint) {
+        bool found=false;
+        for (const auto& vertex:uses.vertex_uses())
+          if (vertex.parent == edge->parent &&
+              c::SameFacetVertexKey(
+                  vertex.key,edge->key.endpoints[endpoint])) {
+            EXPECT_TRUE(SameCertificate(
+                edge->directed_endpoint_dual_area_m2[endpoint],
+                vertex.directed_vf_area_m2));
+            found=true;
+            break;
+          }
+        EXPECT_TRUE(found);
+      }
+    constexpr double parameter_a=.78927;
+    constexpr double parameter_b=.340809;
+    const auto point_a=EdgePoint(a,parameter_a);
+    const auto point_b=EdgePoint(b,parameter_b);
+    auto active=fixture.Active(uses);
+    const c::SelfContactActivityView view{
+        active.data(),active.data(),active.size()};
+    c::SelfContactPairClassification forward,reverse;
+    ASSERT_EQ(uses.ClassifyEdgeEdge(
+        first,point_a,second,point_b,
+        c::SelfContactEdgeEdgeCase::StrictInteriorInteriorMinimum,
+        view,&forward).status,Code::Ok) << "level " << level;
+    ASSERT_EQ(uses.ClassifyEdgeEdge(
+        second,point_b,first,point_a,
+        c::SelfContactEdgeEdgeCase::StrictInteriorInteriorMinimum,
+        view,&reverse).status,Code::Ok);
+    ASSERT_EQ(forward.status,c::SelfContactPairStatus::AdmittedEdgeEdge);
+    ASSERT_EQ(reverse.status,c::SelfContactPairStatus::AdmittedEdgeEdge);
+    EXPECT_TRUE(SameCertificate(
+        forward.admitted_force_area_m2,
+        reverse.admitted_force_area_m2));
+    const double expected_a=
+        (1-parameter_a)*a.directed_endpoint_dual_area_m2[0].value+
+        parameter_a*a.directed_endpoint_dual_area_m2[1].value;
+    const double expected_b=
+        (1-parameter_b)*b.directed_endpoint_dual_area_m2[0].value+
+        parameter_b*b.directed_endpoint_dual_area_m2[1].value;
+    EXPECT_EQ(forward.admitted_force_area_m2.value,
+        expected_a+expected_b);
+    EXPECT_GT(forward.admitted_force_area_m2.lower,0);
+    EXPECT_LE(forward.admitted_force_area_m2.lower,
+              forward.admitted_force_area_m2.value);
+    EXPECT_GE(forward.admitted_force_area_m2.upper,
+              forward.admitted_force_area_m2.value);
+
+    c::SelfContactPairClassification endpoint;
+    ASSERT_EQ(uses.ClassifyEdgeEdge(
+        first,a.endpoints[0],second,b.endpoints[0],
+        c::SelfContactEdgeEdgeCase::ZeroDistance,
+        view,&endpoint).status,Code::Ok);
+    const auto endpoint_sum=SumCertificate(
+        a.directed_endpoint_dual_area_m2[0],
+        b.directed_endpoint_dual_area_m2[0]);
+    EXPECT_TRUE(SameCertificate(
+        endpoint.admitted_force_area_m2,endpoint_sum));
+
+    double maximum[2]{};
+    for (const auto& edge:uses.edge_uses()) {
+      const unsigned side=edge.parent == fixture.Parent(100,uses) ? 0 :
+          (edge.parent == fixture.Parent(101,uses) ? 1 : 2);
+      if (side == 2) continue;
+      maximum[side]=std::max(maximum[side],
+          std::max(edge.directed_endpoint_dual_area_m2[0].value,
+                   edge.directed_endpoint_dual_area_m2[1].value));
+    }
+    refinement_coupon[level]=maximum[0]+maximum[1];
+  }
+  EXPECT_GT(refinement_coupon[0],refinement_coupon[1]);
+  EXPECT_GT(refinement_coupon[1],refinement_coupon[2]);
+  EXPECT_LT(refinement_coupon[2],.5*refinement_coupon[0]);
 }
 
 TEST(SelfContactActiveUses, NineLevelCombinationsRemainBidirectionallyHalfArea) {

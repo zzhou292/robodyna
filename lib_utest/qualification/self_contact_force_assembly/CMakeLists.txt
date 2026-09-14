@@ -31,7 +31,7 @@ set_tests_properties(
   self_contact_force_values self_contact_force_source
   self_contact_force_shaped_syntax
   PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 90
-  LABELS "m2;self-contact-source-shape")
+  LABELS "m2;self-contact-source-shape;symmetric-edge-area")
 
 option(SELF_CONTACT_FORCE_CUDA
   "Build actual physical-owner CUDA qualification" OFF)

@@ -499,7 +499,7 @@ TEST(SelfContactTransactionCuda,
 }
 
 TEST(SelfContactTransactionCuda,
-     MandatoryReceiptRollbackRetryHalfKickAndOrdinaryKeepNonzeroForceSti) {
+     AcceptedInteriorEeForceCandidateRetryAndRollbackKeepForceSti) {
   Fixture fixture;
   ASSERT_TRUE(fixture.Initialize());
   const auto node = fixture.ProbeNode();
@@ -544,6 +544,10 @@ TEST(SelfContactTransactionCuda,
     EXPECT_GT(accepted.broadphase_pairs(), 0u);
     EXPECT_GT(accepted.facet_pairs(), 0u);
     EXPECT_GT(accepted.diagnostics().event_count, 0u);
+    EXPECT_GT(accepted.diagnostics().edge_edge_event_count,0u);
+    EXPECT_EQ(accepted.diagnostics().vertex_face_event_count+
+              accepted.diagnostics().edge_edge_event_count,
+              accepted.diagnostics().event_count);
     EXPECT_GT(accepted.diagnostics().active_count, 0u);
     EXPECT_EQ(accepted.diagnostics().first_source_order, 0u);
     EXPECT_EQ(accepted.diagnostics().last_source_order,

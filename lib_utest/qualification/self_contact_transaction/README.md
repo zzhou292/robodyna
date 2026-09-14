@@ -24,12 +24,12 @@ parent, runs the complete current broadphase, validates its full device pair
 readback and validates its strict device order. A fixed cursor heap merges
 every active parent Cartesian expansion into immutable facet-key order and
 materializes one bounded chunk at a time. Every chunk executes all six VF and
-nine EE tasks per facet pair. EE coverage remains local to the same exact
-facet pair; nonlocal intersections reject. Admitted VF certificates merge
+nine EE tasks per facet pair. Nonlocal intersections still reject. Admitted VF
+and strict interior/zero-distance EE certificates merge
 through a fixed-capacity global hash ledger, where repeated keys must agree.
 The complete unique event count is known before the force cap is checked, then
 certificates are sorted and assigned global canonical source order. Only
-then does it run the existing deterministic VF force/STI implementation and
+then does it run the existing deterministic VF+EE force/STI implementation and
 record the same owner/token/view on the private issuer. There is no public
 event, triangle, pair, discovery, crossing, or source-order input.
 Every later failure discards owner, common publication, force and issuer trial
@@ -44,9 +44,12 @@ long-inactive parents,
 rebuilds every exact fixed facet, and reruns discovery and represented
 interval crossing on the same canonical chunks. Global canonical vertex/edge
 coordinate ledgers are checked before chunking. Unresolved results fail. The fixed policy rejects nonlocal
-intersections and EE crossings and admits a VF crossing only through the full
-transaction-owned accepted event certificate (feature, maps/weights, area,
-classification, and canonical source order). Local fixed-facet exclusions
+intersections and admits a VF or EE crossing only through the full
+transaction-owned accepted event certificate (exact feature and facet
+provenance, maps/weights, area, classification, and canonical source order).
+Candidate EE proximity additionally requires the same accepted EE key and
+exact producing facet/local-edge provenance; a VF on the same facet or parent pair provides no
+coverage. Local fixed-facet exclusions
 remain explicit. Per-pair outcomes can be retained in full when the caller
 reserves the exact census; otherwise no partial outcome view is published and
 the complete canonical counts/digest are folded into `policy_summary()`.
@@ -63,10 +66,11 @@ exact. An edge parameter for which no two positive binary64 endpoint weights
 exist remains an actionable `EdgeInteriorRepresentation` failure. Discovery
 reports the exact pair, directed task, and arithmetic reason.
 
-An unforced EE still contributes no line area and no force. A penetrating EE
-may share an admitted VF policy only on the same exact fixed-facet pair;
-parent-pair-only coverage is rejected because a remote VF cannot prove force
-coverage for an unrelated EE elsewhere on the same parents.
+An admitted EE contributes the sum of both authenticated directed edge-point
+dual areas, never line area or caller-provided scaling. A penetrating strict
+interior or zero-distance EE becomes one canonical symmetric force event.
+Other EE geometry cases remain unadmitted, and neither same-facet nor
+same-parent VF proximity can stand in for the exact accepted EE certificate.
 
 The final nonaggregate `SelfContactTransactionReceipt` is tied to the exact
 owner/base/attempt/source/configuration/qualification/active-use identities.
@@ -107,8 +111,8 @@ plus exact readback, cursor, heap, arena, component, startup, and device bytes.
 
 For the measured V5 shape (376,930 owner nodes, 337,092 selected parents,
 653,055 facets, 1,584,464 parent pairs and 5,989,248 facet pairs), a 4,096-pair
-chunk and folded policy use exactly 1,484,682,936 transaction-arena bytes with
-one event slot. One million force/event/certificate slots use 2,996,681,424
+chunk and folded policy use exactly 1,542,092,504 transaction-arena bytes with
+one event slot. One million force/event/certificate slots use 3,086,090,960
 arena bytes. The fixed subranges include 12,675,712 parent-key bytes,
 44,364,992 cursor bytes, 6,337,856 heap bytes, and 32,768 facet-pair chunk
 bytes. The actual event ledger capacity must come from a complete streamed
@@ -171,7 +175,7 @@ ctest --test-dir <cuda-build> --output-on-failure
 ```
 
 That target uses real `FENodalState`, physical publication, current regularity,
-fixed discovery, represented crossing, VF force and CIN STI. It covers missing
+fixed discovery, represented crossing, VF+EE force and CIN STI. It covers missing
 mandatory receipt rollback/retry, initial half-kick, ordinary interval and
 allocation stability, plus an exact pass-through unresolved-reason rollback
 and deterministic retry. It also covers actual T3 removal, long-inactive

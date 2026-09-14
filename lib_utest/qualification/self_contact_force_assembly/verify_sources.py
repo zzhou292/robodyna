@@ -28,6 +28,7 @@ assert "AssembleAccepted(" in public and "DiscardTrial()" in public
 assert "stiffness_per_area_n_m3" in types
 assert "vertex_use = UINT32_MAX" in types
 assert "facet_use = UINT32_MAX" in types
+assert "edge_use[2]" in types
 assert "Diagnostic completeness only" in types
 for forbidden in ("effective_mass", "line_area", "damping", "friction",
                   "approximation_radius"):
@@ -58,6 +59,10 @@ assert "Duplicate canonical self-contact feature" in (
     COLLISION / "self_contact_force/Values.cpp").read_text()
 assert "AdmittedVertexFace" in source
 assert "ClassifyVertexFace(" in source
+assert "AdmittedEdgeEdge" in source
+assert "ClassifyEdgeEdge(" in source
+assert "event.edge_use[0]" in source
+assert "event.feature.edge_edge.edges[0]" in source
 assert "SameClassification(" in source
 assert "UnsupportedCinSecondary" in source
 assert "PositiveSelfContactArea" in source
@@ -79,8 +84,10 @@ assert "nodal_assembly_authentication_source_proof" in bazel
 qualification_cmake = (HERE / "CMakeLists.txt").read_text()
 assert "SELF_CONTACT_FORCE_CUDA" in qualification_cmake
 assert "rigid-cin-response" in qualification_cmake
+assert "symmetric-edge-area" in qualification_cmake
 cuda = (HERE / "CudaTest.cu").read_text()
 for gate in (
+    "OrdinaryVfEeInitialHalfKickPreservesCouplesStiBalanceAndRollback",
     "EventPermutationPreservesCanonicalAssemblyAndAllocationExactly",
     "ActualCinMasterGetsDenseForceMomentAndStiWhileSecondaryGetsNone",
     "ActualOwnerPartialAndFullyFixedMasksKeepFullReactionChannels",
@@ -91,6 +98,7 @@ for gate in (
 qualification_bazel = (HERE / "BUILD.bazel").read_text()
 assert '":root_cuda_sources"' in qualification_bazel
 assert "m2-rigid-cin-response" in qualification_bazel
+assert "symmetric-edge-area" in qualification_bazel
 
 print(json.dumps({
     "status": "passed",

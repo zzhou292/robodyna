@@ -65,6 +65,8 @@ struct SelfContactTransactionReport {
   // Populated for an exact facet-pair motion failure.  Partial/mixed support
   // can name up to the four actual groups present in one shell-parent map.
   SelfContactFacetMotionIdentity offending_motion[2];
+  double offending_feature_distance_m = 0;
+  double offending_edge_parameters[2] = {0, 0};
   SelfContactForceStatus force_status = SelfContactForceStatus::Ok;
   SelfContactPhysicalActivityStatus activity_status =
       SelfContactPhysicalActivityStatus::Ok;
@@ -89,6 +91,7 @@ struct SelfContactTransactionReport {
 
 enum class SelfContactTransactionNonlocalPolicy : std::uint8_t {
   AcceptedVertexFaceOnlyRejectIntersectionAndEdgeV1,
+  AcceptedSymmetricVfEeRejectIntersectionV2,
 };
 
 struct SelfContactTransactionConfig {
@@ -100,7 +103,7 @@ struct SelfContactTransactionConfig {
   unsigned broadphase_axis = 0;
   SelfContactTransactionNonlocalPolicy nonlocal_policy =
       SelfContactTransactionNonlocalPolicy::
-          AcceptedVertexFaceOnlyRejectIntersectionAndEdgeV1;
+          AcceptedSymmetricVfEeRejectIntersectionV2;
 };
 
 struct SelfContactTransactionLimits {
@@ -217,10 +220,11 @@ enum class SelfContactCandidateDisposition : std::uint8_t {
   ExcludedSameRigidGroup,
   ExcludedLocalIntersection,
   RepresentedByAcceptedVertexFace,
+  RepresentedByAcceptedEdgeEdge,
 };
 
 // Read-only result of the transaction's fixed fail-closed policy. The
-// accepted_event ordinal is meaningful only for represented VF crossings.
+// accepted_event ordinal is meaningful for represented VF and EE crossings.
 struct SelfContactCandidatePolicyOutcome {
   RepresentedIntervalPairKey pair;
   SelfContactCandidateDisposition disposition =
@@ -241,6 +245,7 @@ struct SelfContactCandidatePolicySummary {
   std::size_t excluded_same_rigid_group = 0;
   std::size_t excluded_local_intersection = 0;
   std::size_t represented_by_accepted_vf = 0;
+  std::size_t represented_by_accepted_ee = 0;
   // FNV-1a over canonical pair identity, disposition and accepted source
   // order. It is a deterministic completeness diagnostic, not authority.
   std::uint64_t digest = 1469598103934665603ull;

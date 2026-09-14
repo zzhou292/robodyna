@@ -8,11 +8,19 @@
 
 namespace tlfea::contact::self_contact_transaction {
 
+enum class AcceptedEventCertificateKind : std::uint8_t {
+  VertexFace,
+  EdgeEdge,
+};
+
 struct AcceptedEventCertificate {
+  AcceptedEventCertificateKind kind =
+      AcceptedEventCertificateKind::VertexFace;
   SelfContactForceEvent event;
   FixedTriangleFeatureCandidate discovery;
   std::uint32_t vertex_facet = UINT32_MAX;
   std::uint32_t target_facet = UINT32_MAX;
+  std::uint32_t edge_facet[2]{UINT32_MAX, UINT32_MAX};
 };
 
 struct MotionSupport {
@@ -279,7 +287,8 @@ SelfContactTransactionReport ValidateCandidateEdgePolicy(
     const SelfContactCurrentRegularityReceipt&,
     FixedTriangleFeatureView,
     const FixedContactFacet*, const std::uint32_t* triangle_order,
-    std::size_t facet_count, SelfContactActivityView) noexcept;
+    std::size_t facet_count, SelfContactActivityView,
+    const AcceptedEventCertificate*, std::size_t) noexcept;
 bool ExactFacetPair(const FixedTriangleFeatureCandidate&,
                     const FixedTriangleFeatureCandidate&) noexcept;
 SelfContactTransactionReport MergeAcceptedEventChunk(

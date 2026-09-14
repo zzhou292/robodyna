@@ -17,6 +17,7 @@ facet_public = (collision / "FixedContactFacetBinding.h").read_text()
 facet_binding = (collision / "FixedContactFacetBinding.cpp").read_text()
 
 assert 'SymmetricDirectedVertexDualReferenceV1' in types
+assert 'SymmetricDirectedVertexAndEdgePointDualReferenceV2' in types
 assert 'Q4CenterAreaContactModel' in types
 q4 = build[build.index('if (source.arity == 4)'):build.index('SurfaceTriangle parent;')]
 assert 'PrepareQ4MaterialMeasure' in q4
@@ -27,6 +28,8 @@ t3 = build[build.index('SurfaceTriangle parent;'):build.index('bool Dual(')]
 assert 'PrepareT3MaterialMeasure' in t3 and 'measure.area_enclosure()' in t3
 assert 'q4_bounds::DividePositive' in build and 'q4_bounds::Certify' in build
 assert 'use.facet_valence' in build and 'use.directed_vf_area_m2' in build
+assert 'use.directed_endpoint_dual_area_m2[endpoint]' in build
+assert 'endpoint_use.directed_vf_area_m2' in build
 assert 'FixedContactFacetReadCursor facet_reader' in build
 assert 'facets.Describe' not in build
 assert 'facet_reader.Initialize(facets)' in build
@@ -62,6 +65,10 @@ assert 'source_part_id' not in queries
 assert 'UnsupportedCinSecondary' in queries
 assert 'CompleteLocalSupportNeedsRuntimeActivity' in queries
 assert 'UnadmittedEdgeEdgeForceArea' in queries
+assert 'AdmittedEdgeEdge' in queries
+assert 'EdgeParameter' in queries
+assert 'InterpolateArea' in queries
+assert 'q4_bounds::Add' in queries
 assert 'SameParentNeedsCurrentRegularity' in queries
 assert 'next.parent[0] == next.parent[1]' in queries
 assert queries.count('next.activity_base_identity = activity.base') == 2
@@ -98,9 +105,11 @@ assert "ScalingTest.cpp" in qualification_bazel
 assert 'name = "source_check"' in qualification_bazel
 assert "self-contact-refinement" in qualification_cmake
 assert "m2-self-contact-refinement" in qualification_bazel
+assert "symmetric-edge-area" in qualification_cmake
+assert "symmetric-edge-area" in qualification_bazel
 print(json.dumps({
     "status": "passed",
-    "policy": "SymmetricDirectedVertexDualReferenceV1",
+    "policy": "SymmetricDirectedVertexAndEdgePointDualReferenceV2",
     "q4_measure": "center-area-uniform-natural-v1",
     "allocation_per_query": False,
     "mechanics_execution": False,

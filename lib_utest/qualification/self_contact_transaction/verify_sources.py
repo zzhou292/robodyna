@@ -131,7 +131,7 @@ for token in (
     "scratch_receipts()",
     "class SelfContactAcceptedAssemblyReceipt",
     "SelfContactAcceptedActivityReceipt activity_",
-    "AcceptedVertexFaceOnlyRejectIntersectionAndEdgeV1",
+    "AcceptedSymmetricVfEeRejectIntersectionV2",
 ):
     require(types, token, TYPES)
 for forbidden in (
@@ -193,6 +193,26 @@ for path in (
             raise RuntimeError(
                 f"{path}: forbidden per-attempt allocation token {forbidden!r}")
 
+source = (
+    ROOT / "lib_src/collision/self_contact_transaction/Source.cpp").read_text()
+values = (
+    ROOT / "lib_src/collision/self_contact_transaction/Values.cpp").read_text()
+for token in (
+    "AcceptedEventCertificateKind::EdgeEdge",
+    "SelfContactPairStatus::AdmittedEdgeEdge",
+    "SameEdgeEdgeCertificateIdentity",
+    "Complete accepted VF+EE event set",
+):
+    require(source + values, token, storage_path)
+if "CoveredByAdmittedVertexFace" in source:
+    raise RuntimeError(
+        f"{storage_path}: EE policy retains facet-broadened VF coverage")
+for token in (
+    "RepresentedByAcceptedEdgeEdge",
+    "EE crossing lacks its exact accepted EE certificate",
+):
+    require(values, token, storage_path)
+
 for wiring in (CMAKE, BAZEL):
     text = wiring.read_text()
     for token in ("self_contact_transaction/Arena.cpp",
@@ -216,6 +236,8 @@ for token in ("host_check", "source_check", "root_cuda_sources"):
     require(QUAL_BAZEL.read_text(), token, QUAL_BAZEL)
 require(QUAL_BAZEL.read_text(), '":root_cuda_sources"', QUAL_BAZEL)
 require(QUAL_BAZEL.read_text(), "m2-rigid-cin-response", QUAL_BAZEL)
+require(QUAL_CMAKE.read_text(), "symmetric-edge-area", QUAL_CMAKE)
+require(QUAL_BAZEL.read_text(), "symmetric-edge-area", QUAL_BAZEL)
 
 cuda = CUDA.read_text()
 for token in (
@@ -239,6 +261,7 @@ for forbidden in ("SelfContactCandidateEvidence",
         raise RuntimeError(
             f"{CUDA}: caller still supplies authority {forbidden!r}")
 for token in (
+    "AcceptedInteriorEeForceCandidateRetryAndRollbackKeepForceSti",
     "ActualT3RemovalFiltersCandidateAndLongInactiveRetryCommits",
     "ActualMergedRigidBodyExcludesDiscoveredVfBeforeForceOrSti",
     "ActualMergedPartAndPlainBodiesUseMergedWrenchesBeforeInverseResponse",

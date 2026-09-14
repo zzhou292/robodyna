@@ -8,9 +8,13 @@
 namespace tlfea::contact {
 inline constexpr const char* SymmetricDirectedVertexDualReferenceV1 =
     "SymmetricDirectedVertexDualReferenceV1";
+inline constexpr const char*
+    SymmetricDirectedVertexAndEdgePointDualReferenceV2 =
+        "SymmetricDirectedVertexAndEdgePointDualReferenceV2";
 
 enum class SelfContactActiveUsePolicy {
-  SymmetricDirectedVertexDualReferenceV1
+  SymmetricDirectedVertexDualReferenceV1,
+  SymmetricDirectedVertexAndEdgePointDualReferenceV2
 };
 enum class SelfContactActiveUseStatus {
   Ok, AlreadyInitialized, InvalidInput, ResourceLimit, IdentityMismatch,
@@ -121,6 +125,9 @@ struct SelfContactFacetEdgeUse {
   FacetEdgeKey key;
   WeightedSurfacePoint endpoints[2];
   SelfContactSupportClassification endpoint_support[2];
+  // Exact parent-local vertex-use authority at the canonical edge endpoints.
+  // These are directed half-dual areas, not line area or mass-scaled weights.
+  Q4CertifiedIntegral directed_endpoint_dual_area_m2[2];
 };
 
 // The two arrays are aligned with SelfContactActiveUseBinding::parents().
@@ -144,6 +151,7 @@ struct SelfContactResolvedEdgeUse {
   bool active = false;
   double reference_half_thickness_m = 0;
   Q4CertifiedIntegral reference_area_m2;
+  Q4CertifiedIntegral directed_endpoint_dual_area_m2[2];
 };
 
 enum class SelfContactTiedStatus : std::uint8_t {
@@ -175,6 +183,7 @@ enum class SelfContactPairStatus : std::uint8_t {
   // No line area or topology-only VF coverage is inferred. A runtime owner may
   // cover the exact EE event only with independently authenticated geometry.
   UnadmittedEdgeEdgeForceArea,
+  AdmittedEdgeEdge,
   // Added only by the current-regularity receipt consumer.  The active-use
   // classifier itself never emits this decision.
   ExcludedRegularOwnParent
@@ -198,6 +207,8 @@ struct SelfContactPairClassification {
   std::uint32_t feature[2]{UINT32_MAX, UINT32_MAX};
   bool active[2]{}, local_incidence = false, excluded = false;
   double reference_half_thickness_m[2]{};
+  // VF: one directed vertex area. EE: the symmetric sum of the two
+  // authenticated directed edge-point areas.
   Q4CertifiedIntegral candidate_directed_area_m2;
   Q4CertifiedIntegral admitted_force_area_m2;
 };

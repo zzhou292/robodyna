@@ -63,7 +63,7 @@ bool MakeLayout(std::size_t nodes, std::size_t surface_parents,
   if (!Product(nodes, 3, &vector_values) ||
       !Product(facets, 3, &identity_references) ||
       !Product(pair_chunk_capacity, 2, &chunk_paths) ||
-      !Product(pair_chunk_capacity, 6, &chunk_events) ||
+      !Product(pair_chunk_capacity, 15, &chunk_events) ||
       identity_references > UINT32_MAX)
     return false;
   tl::util::BoundedArenaLayout builder(max_bytes);

@@ -30,6 +30,11 @@ SelfContactTransactionReport FeatureFailure(
   report.candidate = candidate;
   report.offending_motion[0].facet = feature.triangles[0];
   report.offending_motion[1].facet = feature.triangles[1];
+  report.offending_feature_distance_m = feature.distance_m;
+  report.offending_edge_parameters[0] =
+      feature.edge_parameters[0];
+  report.offending_edge_parameters[1] =
+      feature.edge_parameters[1];
   return report;
 }
 
@@ -315,6 +320,7 @@ SelfContactTransactionReport VertexFaceEvent(
   event.endpoints[1] = face_point;
   event.classification = classification;
   *output = event;
+  certificate->kind = AcceptedEventCertificateKind::VertexFace;
   certificate->event = event;
   certificate->discovery = feature;
   certificate->vertex_facet =
@@ -324,43 +330,13 @@ SelfContactTransactionReport VertexFaceEvent(
   return {};
 }
 
-SelfContactTransactionReport CoveredByAdmittedVertexFace(
-    const SelfContactActiveUseBinding& active_use,
-    const SelfContactCurrentRegularity& regularity,
-    const SelfContactCurrentRegularityReceipt& regularity_receipt,
-    FixedTriangleFeatureView features,
-    const FixedTriangleFeatureCandidate& edge_edge,
-    const FixedContactFacet* descriptors,
-    const std::uint32_t* triangle_order, std::size_t facet_count,
-    SelfContactActivityView activity, bool* covered) noexcept {
-  *covered = false;
-  for (std::size_t i = 0; i < features.count; ++i) {
-    const auto& candidate = features.data[i];
-    if (candidate.key.kind !=
-            FixedTriangleCandidateKind::VertexFace ||
-        !ExactFacetPair(candidate, edge_edge))
-      continue;
-    bool admitted = false;
-    const auto report = VertexFaceEvent(
-        active_use, regularity, regularity_receipt, candidate,
-        descriptors, triangle_order, facet_count, activity,
-        0, nullptr, nullptr, &admitted);
-    if (report.status != S::Ok) return report;
-    if (admitted) {
-      *covered = true;
-      return {};
-    }
-  }
-  return {};
-}
-
 bool EdgePoint(
     const SelfContactActiveUseBinding& active_use,
     const FixedContactFacet* descriptors,
     const std::uint32_t* triangle_order, std::size_t facet_count,
     const FixedTriangleFeatureCandidate& feature,
     unsigned canonical_edge, WeightedSurfacePoint* point,
-    std::size_t* edge_use) noexcept {
+    std::size_t* edge_use, std::size_t* edge_facet) noexcept {
   const auto& key = feature.key.edge_edge.edges[canonical_edge];
   const auto facets = active_use.facet_uses();
   for (unsigned side = 0; side < 2; ++side) {
@@ -372,6 +348,7 @@ bool EdgePoint(
       if (fixed_triangle_features::Compare(
               descriptors[triangle].edge_keys[local], key) != 0)
         continue;
+      if (feature.local_features[side] != local) return false;
       double weights[3]{};
       const double parameter = feature.edge_parameters[canonical_edge];
       if (!std::isfinite(parameter) ||
@@ -400,35 +377,64 @@ bool EdgePoint(
                             point) != Status::kOk)
         return false;
       *edge_use = facets[triangle].edge_uses[local];
+      *edge_facet = triangle;
       return *edge_use < active_use.edge_uses().size();
     }
   }
   return false;
 }
 
-SelfContactTransactionReport CheckEdgeEdge(
+SelfContactTransactionReport EdgeEdgeEvent(
     const SelfContactActiveUseBinding& active_use,
+    const SelfContactCurrentRegularity& regularity,
+    const SelfContactCurrentRegularityReceipt& regularity_receipt,
     const FixedTriangleFeatureCandidate& feature,
     const FixedContactFacet* descriptors,
     const std::uint32_t* triangle_order, std::size_t facet_count,
-    SelfContactActivityView activity) noexcept {
+    SelfContactActivityView activity, std::uint64_t source_order,
+    SelfContactForceEvent* output,
+    AcceptedEventCertificate* certificate,
+    bool* admitted) noexcept {
+  *admitted = false;
   WeightedSurfacePoint points[2];
   std::size_t edge_uses[2]{};
+  std::size_t edge_facets[2]{};
   if (!EdgePoint(active_use, descriptors, triangle_order, facet_count,
-                 feature, 0, points, edge_uses) ||
+                 feature, 0, points, edge_uses, edge_facets) ||
       !EdgePoint(active_use, descriptors, triangle_order, facet_count,
-                 feature, 1, points + 1, edge_uses + 1))
+                 feature, 1, points + 1, edge_uses + 1, edge_facets + 1))
     return Failure(S::IdentityMismatch,
         "EE provenance cannot be mapped to exact active uses");
   SelfContactPairClassification classification;
-  const auto edge_case = feature.distance_m == 0
-      ? SelfContactEdgeEdgeCase::ZeroDistance
-      : SelfContactEdgeEdgeCase::StrictInteriorInteriorMinimum;
+  const bool strict_interior =
+      feature.edge_parameters[0] > 0 &&
+      feature.edge_parameters[0] < 1 &&
+      feature.edge_parameters[1] > 0 &&
+      feature.edge_parameters[1] < 1;
+  const auto edge_case =
+      feature.distance_m == 0
+          ? SelfContactEdgeEdgeCase::ZeroDistance
+          : (strict_interior
+                 ? SelfContactEdgeEdgeCase::StrictInteriorInteriorMinimum
+                 : SelfContactEdgeEdgeCase::
+                       EdgeEdgeOnlyPenetrationOrCrossing);
   const auto classified = active_use.ClassifyEdgeEdge(
       edge_uses[0], points[0], edge_uses[1], points[1],
       edge_case, activity, &classification);
   if (classified.status != SelfContactActiveUseStatus::Ok)
     return Failure(S::IdentityMismatch, classified.message);
+  if (classification.status ==
+      SelfContactPairStatus::SameParentNeedsCurrentRegularity) {
+    SelfContactPairClassification excluded;
+    const auto resolved = regularity.ExcludeCertifiedOwnParent(
+        classification, regularity_receipt, &excluded);
+    if (resolved.status != SelfContactCurrentRegularityStatus::Ok) {
+      auto report = Failure(S::RegularityFailure, resolved.message);
+      report.regularity_status = resolved.status;
+      return report;
+    }
+    classification = excluded;
+  }
   if (!std::isfinite(feature.distance_m) ||
       feature.distance_m < 0)
     return Failure(S::DiscoveryFailure,
@@ -444,8 +450,47 @@ SelfContactTransactionReport CheckEdgeEdge(
     return {};
   if (classification.status == SelfContactPairStatus::InactiveParent)
     return {};
-  return Failure(S::CandidateRejected,
-      "Nonlocal EE contact has no declared force-area policy");
+  if (classification.status != SelfContactPairStatus::AdmittedEdgeEdge)
+    return Failure(S::CandidateRejected,
+        "Nonlocal EE contact lacks strict authenticated edge-point area");
+
+  *admitted = true;
+  if (!output) return {};
+  if (edge_uses[0] > UINT32_MAX || edge_uses[1] > UINT32_MAX ||
+      edge_facets[0] > UINT32_MAX || edge_facets[1] > UINT32_MAX)
+    return Failure(S::ResourceLimit,
+        "EE active-use provenance is unrepresentable");
+  SelfContactForceEvent event;
+  event.feature = feature.key;
+  event.source_order = source_order;
+  event.edge_use[0] = static_cast<std::uint32_t>(edge_uses[0]);
+  event.edge_use[1] = static_cast<std::uint32_t>(edge_uses[1]);
+  event.endpoints[0] = points[0];
+  event.endpoints[1] = points[1];
+  event.classification = classification;
+  *output = event;
+  certificate->kind = AcceptedEventCertificateKind::EdgeEdge;
+  certificate->event = event;
+  certificate->discovery = feature;
+  certificate->edge_facet[0] =
+      static_cast<std::uint32_t>(edge_facets[0]);
+  certificate->edge_facet[1] =
+      static_cast<std::uint32_t>(edge_facets[1]);
+  return {};
+}
+
+bool SameEdgeEdgeCertificateIdentity(
+    const FixedTriangleFeatureCandidate& a,
+    const FixedTriangleFeatureCandidate& b) noexcept {
+  if (a.key.kind != FixedTriangleCandidateKind::EdgeEdge ||
+      b.key.kind != FixedTriangleCandidateKind::EdgeEdge ||
+      !self_contact_transaction::Same(a.key, b.key) ||
+      !self_contact_transaction::Same(a.triangles[0], b.triangles[0]) ||
+      !self_contact_transaction::Same(a.triangles[1], b.triangles[1]) ||
+      a.local_features[0] != b.local_features[0] ||
+      a.local_features[1] != b.local_features[1])
+    return false;
+  return true;
 }
 
 }  // namespace
@@ -759,48 +804,44 @@ SelfContactTransactionReport BuildAcceptedEvents(
   std::size_t required = 0;
   for (std::size_t feature = 0; feature < features.count; ++feature) {
     const auto& value = features.data[feature];
-    if (value.key.kind == FixedTriangleCandidateKind::EdgeEdge) continue;
     bool admitted = false;
-    const auto checked = VertexFaceEvent(
-        active_use, regularity, regularity_receipt, value,
-        descriptors, triangle_order, facet_count, activity,
-        required, nullptr, nullptr, &admitted);
-    if (checked.status != S::Ok) return checked;
-    required += admitted;
-  }
-  for (std::size_t feature = 0; feature < features.count; ++feature) {
-    const auto& value = features.data[feature];
-    if (value.key.kind != FixedTriangleCandidateKind::EdgeEdge) continue;
-    const auto checked = CheckEdgeEdge(
-        active_use, value, descriptors, triangle_order,
-        facet_count, activity);
-    if (checked.status == S::Ok) continue;
-    if (checked.status != S::CandidateRejected) return checked;
-    bool covered = false;
-    const auto coverage = CoveredByAdmittedVertexFace(
-        active_use, regularity, regularity_receipt, features, value,
-        descriptors, triangle_order, facet_count, activity, &covered);
-    if (coverage.status != S::Ok) return coverage;
-    if (!covered)
+    const auto checked =
+        value.key.kind == FixedTriangleCandidateKind::VertexFace
+            ? VertexFaceEvent(
+                  active_use, regularity, regularity_receipt, value,
+                  descriptors, triangle_order, facet_count, activity,
+                  required, nullptr, nullptr, &admitted)
+            : EdgeEdgeEvent(
+                  active_use, regularity, regularity_receipt, value,
+                  descriptors, triangle_order, facet_count, activity,
+                  required, nullptr, nullptr, &admitted);
+    if (checked.status != S::Ok)
       return FeatureFailure(checked, value, feature);
+    required += admitted;
   }
   if (required > capacity)
     return Failure(S::ResourceLimit,
-        "Complete accepted VF event set exceeds its exact capacity",
+        "Complete accepted VF+EE event set exceeds its exact capacity",
         required);
 
   std::size_t written = 0;
   for (std::size_t feature = 0; feature < features.count; ++feature) {
     const auto& value = features.data[feature];
-    if (value.key.kind != FixedTriangleCandidateKind::VertexFace)
-      continue;
     bool admitted = false;
-    const auto checked = VertexFaceEvent(
-        active_use, regularity, regularity_receipt, value,
-        descriptors, triangle_order, facet_count, activity,
-        written, events + written, certificates + written,
-        &admitted);
-    if (checked.status != S::Ok) return checked;
+    const auto checked =
+        value.key.kind == FixedTriangleCandidateKind::VertexFace
+            ? VertexFaceEvent(
+                  active_use, regularity, regularity_receipt, value,
+                  descriptors, triangle_order, facet_count, activity,
+                  written, events + written, certificates + written,
+                  &admitted)
+            : EdgeEdgeEvent(
+                  active_use, regularity, regularity_receipt, value,
+                  descriptors, triangle_order, facet_count, activity,
+                  written, events + written, certificates + written,
+                  &admitted);
+    if (checked.status != S::Ok)
+      return FeatureFailure(checked, value, feature);
     written += admitted;
   }
   if (written != required)
@@ -817,29 +858,45 @@ SelfContactTransactionReport ValidateCandidateEdgePolicy(
     FixedTriangleFeatureView features,
     const FixedContactFacet* descriptors,
     const std::uint32_t* triangle_order, std::size_t facet_count,
-    SelfContactActivityView activity) noexcept {
+    SelfContactActivityView activity,
+    const AcceptedEventCertificate* accepted,
+    std::size_t accepted_count) noexcept {
   if (!features.complete || (features.count && !features.data) ||
-      !descriptors || !triangle_order)
+      !descriptors || !triangle_order ||
+      (accepted_count && !accepted))
     return Failure(S::InvalidInput,
         "Candidate feature publication is incomplete");
   for (std::size_t feature = 0; feature < features.count; ++feature) {
     if (features.data[feature].key.kind !=
         FixedTriangleCandidateKind::EdgeEdge)
       continue;
-    const auto checked = CheckEdgeEdge(
-        active_use, features.data[feature], descriptors,
-        triangle_order, facet_count, activity);
-    if (checked.status == S::Ok) continue;
-    if (checked.status != S::CandidateRejected) return checked;
-    bool covered = false;
-    const auto coverage = CoveredByAdmittedVertexFace(
-        active_use, regularity, regularity_receipt, features,
+    bool admitted = false;
+    const auto checked = EdgeEdgeEvent(
+        active_use, regularity, regularity_receipt,
         features.data[feature], descriptors, triangle_order,
-        facet_count, activity, &covered);
-    if (coverage.status != S::Ok) return coverage;
-    if (!covered)
+        facet_count, activity, 0, nullptr, nullptr, &admitted);
+    if (checked.status != S::Ok)
+      return FeatureFailure(checked, features.data[feature], feature);
+    if (!admitted) continue;
+    bool exact = false;
+    for (std::size_t event = 0; event < accepted_count; ++event) {
+      const auto& certificate = accepted[event];
+      if (certificate.kind == AcceptedEventCertificateKind::EdgeEdge &&
+          certificate.event.feature.kind ==
+              FixedTriangleCandidateKind::EdgeEdge &&
+          certificate.event.classification.status ==
+              SelfContactPairStatus::AdmittedEdgeEdge &&
+          SameEdgeEdgeCertificateIdentity(
+              certificate.discovery, features.data[feature])) {
+        exact = true;
+        break;
+      }
+    }
+    if (!exact)
       return FeatureFailure(
-          checked, features.data[feature], feature);
+          Failure(S::CandidateRejected,
+              "Candidate EE lacks the same exact accepted EE certificate"),
+          features.data[feature], feature);
   }
   return {};
 }

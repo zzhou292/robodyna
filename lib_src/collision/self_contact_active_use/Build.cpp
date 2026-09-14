@@ -378,6 +378,7 @@ SelfContactActiveUseReport Build(const FixedContactFacetBinding& facets,
         edge_count > forecast.edge_uses ||
         edge_cursor > forecast.edge_uses-edge_count)
       return Fail(S::IdentityMismatch, "Parent-local feature count exceeds forecast", p);
+    const std::size_t parent_vertex_begin = vertex_cursor;
     for (std::size_t i = 0; i < vertex_count; ++i) {
       auto& use = out.vertex_uses[vertex_cursor++];
       use.parent = static_cast<std::uint32_t>(p);
@@ -401,6 +402,24 @@ SelfContactActiveUseReport Build(const FixedContactFacetBinding& facets,
         auto support = Classify(out, forecast, use.endpoints[endpoint],
             use.endpoint_support[endpoint]);
         if (support.status != S::Ok) return support;
+        std::size_t vertex = 0;
+        while (vertex < vertex_count &&
+            !SameFacetVertexKey(
+                local_edges[i].key.endpoints[endpoint],
+                local_vertices[vertex].key))
+          ++vertex;
+        if (vertex == vertex_count)
+          return Fail(S::IdentityMismatch,
+              "Parent-local edge endpoint has no exact vertex use", p, i);
+        const auto& endpoint_use =
+            out.vertex_uses[parent_vertex_begin + vertex];
+        if (endpoint_use.parent != p ||
+            !SamePoint(endpoint_use.point, use.endpoints[endpoint]) ||
+            !(endpoint_use.directed_vf_area_m2.lower > 0))
+          return Fail(S::IdentityMismatch,
+              "Parent-local edge endpoint vertex authority differs", p, i);
+        use.directed_endpoint_dual_area_m2[endpoint] =
+            endpoint_use.directed_vf_area_m2;
       }
     }
   }

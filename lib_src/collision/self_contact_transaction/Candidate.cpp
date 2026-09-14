@@ -682,7 +682,9 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
           state.active_use, state.regularity, regularity_receipt,
           state.candidate_discovery.features(),
           state.buffers.facet_descriptors,
-          state.buffers.triangle_order, triangles, activity);
+          state.buffers.triangle_order, triangles, activity,
+          state.buffers.accepted_certificates,
+          state.accepted_event_count);
       if (edge_policy.status != S::Ok)
         return state.Fail(edge_policy);
       const auto crossing = state.crossing.Certify(

@@ -78,15 +78,16 @@ struct SelfContactForcePreflight {
   SelfContactForceForecast forecast;
 };
 
-// One already-discovered and active-use-resolved directed VF event. Geometry
-// discovery and a same-attempt candidate receipt intentionally remain outside
-// this accepted-state scratch contributor.
+// One already-discovered and active-use-resolved VF or symmetric EE event.
+// Geometry discovery and a same-attempt candidate receipt intentionally remain
+// outside this accepted-state scratch contributor.
 struct SelfContactForceEvent {
   FixedTriangleFeatureKey feature;
   std::uint64_t source_order = UINT64_MAX;
   // Exact active-use ordinals used to regenerate the complete classification.
   std::uint32_t vertex_use = UINT32_MAX;
   std::uint32_t facet_use = UINT32_MAX;
+  std::uint32_t edge_use[2]{UINT32_MAX, UINT32_MAX};
   WeightedSurfacePoint endpoints[2];
   SelfContactPairClassification classification;
 };
@@ -114,6 +115,8 @@ struct SelfContactForceIncidenceSummary {
 
 struct SelfContactForceDiagnostics {
   std::size_t event_count = 0;
+  std::size_t vertex_face_event_count = 0;
+  std::size_t edge_edge_event_count = 0;
   std::size_t active_count = 0;
   Vec3 endpoint_a_resultant_n;
   Vec3 endpoint_b_resultant_n;

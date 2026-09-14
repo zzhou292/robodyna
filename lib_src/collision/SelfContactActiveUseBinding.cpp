@@ -86,7 +86,8 @@ SelfContactCinWitnessSource SelfContactActiveUseBinding::cin() const noexcept {
       impl_->forecast.cin_witnesses};
 }
 SelfContactActiveUsePolicy SelfContactActiveUseBinding::policy() const noexcept {
-  return SelfContactActiveUsePolicy::SymmetricDirectedVertexDualReferenceV1;
+  return SelfContactActiveUsePolicy::
+      SymmetricDirectedVertexAndEdgePointDualReferenceV2;
 }
 SelfContactActiveUseForecast SelfContactActiveUseBinding::forecast() const noexcept {
   return impl_ ? impl_->forecast : SelfContactActiveUseForecast{};

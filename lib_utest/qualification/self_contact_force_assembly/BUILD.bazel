@@ -3,7 +3,7 @@ load("@rules_cc//cc:defs.bzl", "cc_test")
 cc_test(
     name = "host_check",
     size = "small",
-    tags = ["m2-self-contact-source-shape"],
+    tags = ["m2-self-contact-source-shape", "symmetric-edge-area"],
     srcs = ["ValueTest.cpp"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [
@@ -15,7 +15,7 @@ cc_test(
 cc_test(
     name = "source_check",
     size = "small",
-    tags = ["m2-rigid-cin-response"],
+    tags = ["m2-rigid-cin-response", "symmetric-edge-area"],
     srcs = ["SourceProofTest.cpp"],
     data = [
         "verify_sources.py",

@@ -49,7 +49,7 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
       config.broadphase_axis > 2 ||
       config.nonlocal_policy !=
           SelfContactTransactionNonlocalPolicy::
-              AcceptedVertexFaceOnlyRejectIntersectionAndEdgeV1 ||
+              AcceptedSymmetricVfEeRejectIntersectionV2 ||
       config.force.configuration_id != identity.configuration_id ||
       config.force.qualification_id != identity.qualification_id ||
       !fe::shell_startup_detail::SameStartup(

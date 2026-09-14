@@ -119,9 +119,78 @@ SelfContactForceReport ValidateEvent(
   const auto& pair = event.classification;
   const auto parents = binding.parents();
   const auto facets = binding.facet_uses();
+  if (event.feature.kind == FixedTriangleCandidateKind::EdgeEdge) {
+    if (event.vertex_use != UINT32_MAX ||
+        event.facet_use != UINT32_MAX ||
+        event.edge_use[0] >= binding.edge_uses().size() ||
+        event.edge_use[1] >= binding.edge_uses().size() ||
+        fixed_triangle_features::Compare(
+            event.feature.edge_edge.edges[0],
+            event.feature.edge_edge.edges[1]) >= 0)
+      return Invalid(event, canonical_event,
+                     "EE event ordinals or canonical edge order are invalid");
+
+    SelfContactPairClassification regenerated;
+    const auto classified = binding.ClassifyEdgeEdge(
+        event.edge_use[0], event.endpoints[0],
+        event.edge_use[1], event.endpoints[1],
+        pair.edge_edge_case, activity, &regenerated);
+    if (classified.status != SelfContactActiveUseStatus::Ok)
+      return Invalid(event, canonical_event,
+                     "EE event cannot be regenerated from supplied activity",
+                     S::StaleAttempt);
+    if (!SameClassification(regenerated, pair))
+      return Invalid(event, canonical_event,
+                     "Caller EE classification differs from exact regeneration");
+    if (!binding.Authenticates(regenerated) ||
+        regenerated.kind != SelfContactPairKind::EdgeEdge ||
+        regenerated.status != SelfContactPairStatus::AdmittedEdgeEdge ||
+        regenerated.excluded || regenerated.local_incidence ||
+        !regenerated.active[0] || !regenerated.active[1] ||
+        regenerated.parent[0] == regenerated.parent[1] ||
+        (regenerated.edge_edge_case !=
+             SelfContactEdgeEdgeCase::StrictInteriorInteriorMinimum &&
+         regenerated.edge_edge_case !=
+             SelfContactEdgeEdgeCase::ZeroDistance))
+      return Invalid(event, canonical_event,
+                     "Regenerated event is not an admitted symmetric EE pair");
+
+    const auto edge_uses = binding.edge_uses();
+    const auto edge_features = binding.edges();
+    for (unsigned side = 0; side < 2; ++side) {
+      if (pair.parent[side] >= parents.size() ||
+          pair.feature[side] >= edge_features.size())
+        return Invalid(event, canonical_event,
+                       "EE parent or feature ordinal is out of range");
+      const auto& parent = parents[pair.parent[side]];
+      const auto& use = edge_uses[event.edge_use[side]];
+      const auto& feature = edge_features[pair.feature[side]];
+      if (!MapMatchesParent(parent, event.endpoints[side]) ||
+          !SameBits(pair.reference_half_thickness_m[side],
+                    parent.reference_half_thickness_m) ||
+          use.parent != pair.parent[side] ||
+          use.feature != pair.feature[side] ||
+          event.edge_use[side] < feature.use_offset ||
+          event.edge_use[side] >=
+              std::size_t(feature.use_offset) + feature.use_count ||
+          fixed_triangle_features::Compare(
+              use.key, event.feature.edge_edge.edges[side]) != 0)
+        return Invalid(event, canonical_event,
+                       "EE map, provenance or retained edge use differs");
+    }
+    if (!SameCertificate(pair.candidate_directed_area_m2,
+                         pair.admitted_force_area_m2) ||
+        !PositiveSelfContactArea(pair.admitted_force_area_m2))
+      return Invalid(event, canonical_event,
+                     "EE symmetric directed edge-point area is unauthenticated");
+    return {};
+  }
+
   if (event.feature.kind != FixedTriangleCandidateKind::VertexFace ||
       event.vertex_use >= binding.vertex_uses().size() ||
-      event.facet_use >= facets.size())
+      event.facet_use >= facets.size() ||
+      event.edge_use[0] != UINT32_MAX ||
+      event.edge_use[1] != UINT32_MAX)
     return Invalid(event, canonical_event,
                    "Event kind or exact active-use ordinals are invalid");
 

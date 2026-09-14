@@ -45,8 +45,9 @@ class SelfContactActiveUseBinding {
   SelfContactActiveUseReport ClassifyVertexFace(std::size_t vertex_use,
       std::size_t facet_use, const WeightedSurfacePoint& face_point,
       SelfContactActivityView, SelfContactPairClassification*) const noexcept;
-  // EE has no force area in this policy. Runtime geometry/event evidence is
-  // outside this binding, so every nonlocal EE remains explicitly unadmitted.
+  // Strict interior and zero-distance EE queries derive a symmetric force area
+  // only from each exact edge use's certified endpoint directed dual areas.
+  // Other EE geometry cases remain explicitly unadmitted.
   SelfContactActiveUseReport ClassifyEdgeEdge(std::size_t first_edge_use,
       const WeightedSurfacePoint& first_point, std::size_t second_edge_use,
       const WeightedSurfacePoint& second_point, SelfContactEdgeEdgeCase,

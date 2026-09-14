@@ -169,7 +169,8 @@ TEST(SelfContactActiveUses, ActualPartAndPlainBodiesUseExactExecutionAuthority) 
   }
 }
 
-TEST(SelfContactActiveUses, EveryStandaloneEeCaseHasNoInventedForceArea) {
+TEST(SelfContactActiveUses,
+     StandaloneEeAreaRequiresAuthenticatedStrictOrZeroDistanceCase) {
   Fixture fixture(2,false,true);
   c::SelfContactActiveUseBinding uses;
   ASSERT_EQ(uses.Initialize(fixture.facets).status, Code::Ok);
@@ -188,9 +189,32 @@ TEST(SelfContactActiveUses, EveryStandaloneEeCaseHasNoInventedForceArea) {
   for (const auto edge_case : cases) {
     ASSERT_EQ(uses.ClassifyEdgeEdge(first,a,second,b,edge_case,View(active),
         &pair).status,Code::Ok);
-    EXPECT_EQ(pair.status,c::SelfContactPairStatus::UnadmittedEdgeEdgeForceArea);
-    EXPECT_EQ(pair.admitted_force_area_m2.value,0);
+    const bool admitted =
+        edge_case == c::SelfContactEdgeEdgeCase::
+                         StrictInteriorInteriorMinimum ||
+        edge_case == c::SelfContactEdgeEdgeCase::ZeroDistance;
+    EXPECT_EQ(pair.status, admitted
+        ? c::SelfContactPairStatus::AdmittedEdgeEdge
+        : c::SelfContactPairStatus::UnadmittedEdgeEdgeForceArea);
+    if (admitted) {
+      EXPECT_GT(pair.admitted_force_area_m2.lower,0);
+      EXPECT_LE(pair.admitted_force_area_m2.lower,
+                pair.admitted_force_area_m2.value);
+      EXPECT_GE(pair.admitted_force_area_m2.upper,
+                pair.admitted_force_area_m2.value);
+    } else {
+      EXPECT_EQ(pair.admitted_force_area_m2.value,0);
+    }
   }
+
+  const auto invented = fixture.FacePoint(
+      uses.parents()[uses.edge_uses()[first].parent].facet_offset,uses);
+  pair.status = c::SelfContactPairStatus::AdmittedVertexFace;
+  EXPECT_EQ(uses.ClassifyEdgeEdge(
+      first,invented,second,b,
+      c::SelfContactEdgeEdgeCase::StrictInteriorInteriorMinimum,
+      View(active),&pair).status,Code::InvalidInput);
+  EXPECT_EQ(pair.status,c::SelfContactPairStatus::AdmittedVertexFace);
 }
 
 TEST(SelfContactActiveUses, SameParentRemoteEeAlsoNeedsCurrentRegularity) {

@@ -1,7 +1,7 @@
 # Symmetric directed active feature uses
 
 `SelfContactActiveUseBinding` is the isolated host value/profile slice named
-`SymmetricDirectedVertexDualReferenceV1`. It retains S0 and fixed facets, plus
+`SymmetricDirectedVertexAndEdgePointDualReferenceV2`. It retains S0 and fixed facets, plus
 the actual execution `NodalRigidAssemblyBinding` when rigid groups are present
 and the complete copied
 `TiedCinAttachmentModel` range/witness roster. It adds no force, penalty,
@@ -24,6 +24,16 @@ represents half of its vertex-side parent area; both orientations represent
 helpers. Canonical vertex/edge records only deduplicate topology. Parent uses
 retain independent source identity, map, area, half-thickness, support, and
 activity. Coincident source layers do not weld.
+
+Each parent-local edge use copies the certified `D/2` values from its two
+exact parent-local vertex-use endpoints. At an authenticated represented edge
+parameter `t`, its directed edge-point area is `(1-t)D0/2+tD1/2`, with value
+and lower/upper bounds evaluated through conservative binary64 certificate
+arithmetic. The canonical parameter is recovered from the weighted map and
+accepted only when every original parent slot lies in the outward represented
+endpoint-interpolation enclosure. A canonical EE event sums one such directed area from each side.
+This is a symmetric half-dual-patch measure: it is neither line area nor
+mass-scaled, and no caller-provided area or policy bit participates.
 
 Activity is a pure caller-stamped `{base,current}` byte view aligned with the
 binding's deterministic parent order. `current<=base` is mandatory. An inactive
@@ -70,11 +80,13 @@ runtime classifier must consume that evidence from the owner transaction, not
 caller-fabricated flags. Partial, mismatched, and unrelated relations are not
 excluded.
 
-EE owns no line area or effective mass. Strict interior-interior minima,
-EE-only penetration/crossing, geometric ties, coplanar overlap, and zero
-distance all return `UnadmittedEdgeEdgeForceArea`. This topology/area slice has
-no exact runtime geometry receipt capable of proving that an EE is already
-covered by a VF event, so it never suppresses a nonlocal EE.
+EE owns no line area or effective mass. Authenticated strict
+interior-interior and zero-distance edge points return `AdmittedEdgeEdge` with
+the symmetric directed edge-point sum. EE-only penetration/crossing,
+geometric ties, and coplanar overlap remain
+`UnadmittedEdgeEdgeForceArea`. A weighted parent point that is not the exact
+represented interpolation of the retained edge endpoints is invalid; callers
+cannot invent an area by supplying an interior parent map or a status bit.
 
 ## Qualification
 
@@ -87,6 +99,8 @@ compile-time absence of an area-owned inverse-mass response; coincident layers; 
 same-parent incidence; same PID; exact execution PART/plain authority,
 counterfeit/source-kind collision rejection, and different/partial/mixed support;
 CIN secondary/master and local/unrelated ties; every explicit EE status;
+level-0/1/2 edge interpolation, swapped symmetry, endpoint limits, positive
+certified intervals and a refinement convergence coupon;
 permutation/deduplication; checked overflow; all count caps; exact
 one-byte-short; alias/output preservation; retry; byte-exact canonical output
 under source permutation; and coincident-layer startup count/timing scaling.

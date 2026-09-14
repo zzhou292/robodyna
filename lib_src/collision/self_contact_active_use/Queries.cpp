@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
+#include "../Q4ContactBounds.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
+
+#include <cmath>
+#include <cstring>
 
 namespace tlfea::contact::active_use {
 namespace {
@@ -104,6 +108,124 @@ bool ActivityOutputDisjoint(const void* output, std::size_t bytes,
   return Disjoint(output, bytes, activity.base, activity.parent_count) &&
       Disjoint(output, bytes, activity.current, activity.parent_count);
 }
+bool SameBits(double a, double b) noexcept {
+  std::uint64_t aa = 0, bb = 0;
+  std::memcpy(&aa, &a, sizeof(aa));
+  std::memcpy(&bb, &b, sizeof(bb));
+  return aa == bb;
+}
+bool SamePoint(const WeightedSurfacePoint& a,
+    const WeightedSurfacePoint& b) noexcept {
+  if (a.count != b.count) return false;
+  for (unsigned slot = 0; slot < 4; ++slot)
+    if (a.nodes[slot] != b.nodes[slot] ||
+        !SameBits(a.weights[slot], b.weights[slot]))
+      return false;
+  return true;
+}
+bool EdgeParameter(const SelfContactFacetEdgeUse& edge,
+    const WeightedSurfacePoint& point, double* output) noexcept {
+  if (!output || point.count != edge.endpoints[0].count ||
+      point.count != edge.endpoints[1].count)
+    return false;
+  for (unsigned slot = 0; slot < point.count; ++slot)
+    if (point.nodes[slot] != edge.endpoints[0].nodes[slot] ||
+        point.nodes[slot] != edge.endpoints[1].nodes[slot])
+      return false;
+  if (SamePoint(point, edge.endpoints[0])) {
+    *output = 0;
+    return true;
+  }
+  if (SamePoint(point, edge.endpoints[1])) {
+    *output = 1;
+    return true;
+  }
+  for (unsigned pivot = 0; pivot < point.count; ++pivot) {
+    const double denominator =
+        edge.endpoints[1].weights[pivot] -
+        edge.endpoints[0].weights[pivot];
+    if (denominator == 0) continue;
+    const double parameter =
+        (point.weights[pivot] - edge.endpoints[0].weights[pivot]) /
+        denominator;
+    if (!std::isfinite(parameter) || parameter < 0 || parameter > 1)
+      continue;
+    Q4IntegralInterval complement;
+    if (!q4_bounds::Difference(1, parameter, &complement))
+      continue;
+    bool authenticated = true;
+    for (unsigned slot = 0; slot < point.count; ++slot) {
+      Q4IntegralInterval first, second, represented;
+      if (!q4_bounds::MultiplyPositive(
+              {edge.endpoints[0].weights[slot],
+               edge.endpoints[0].weights[slot]},
+              complement, &first) ||
+          !q4_bounds::MultiplyPositive(
+              {edge.endpoints[1].weights[slot],
+               edge.endpoints[1].weights[slot]},
+              {parameter, parameter}, &second) ||
+          !q4_bounds::Add(first, second, &represented) ||
+          point.weights[slot] < represented.lower ||
+          point.weights[slot] > represented.upper) {
+        authenticated = false;
+        break;
+      }
+    }
+    if (authenticated) {
+      *output = parameter;
+      return true;
+    }
+  }
+  return false;
+}
+bool ValidArea(Q4CertifiedIntegral area) noexcept {
+  Q4CertifiedIntegral checked;
+  return std::isfinite(area.error) && area.error >= 0 &&
+      area.value > 0 && area.lower > 0 &&
+      q4_bounds::Certify(
+          area.value, {area.lower, area.upper}, &checked) &&
+      checked.error <= area.error;
+}
+bool InterpolateArea(const SelfContactFacetEdgeUse& edge,
+    double parameter, Q4CertifiedIntegral* output) noexcept {
+  if (!output || !ValidArea(edge.directed_endpoint_dual_area_m2[0]) ||
+      !ValidArea(edge.directed_endpoint_dual_area_m2[1]) ||
+      !std::isfinite(parameter) || parameter < 0 || parameter > 1)
+    return false;
+  if (parameter == 0) {
+    *output = edge.directed_endpoint_dual_area_m2[0];
+    return true;
+  }
+  if (parameter == 1) {
+    *output = edge.directed_endpoint_dual_area_m2[1];
+    return true;
+  }
+  const double complement = 1 - parameter;
+  Q4IntegralInterval complement_interval, first, second, sum;
+  const double value =
+      complement * edge.directed_endpoint_dual_area_m2[0].value +
+      parameter * edge.directed_endpoint_dual_area_m2[1].value;
+  return q4_bounds::Difference(1, parameter, &complement_interval) &&
+      q4_bounds::MultiplyPositive(
+             {edge.directed_endpoint_dual_area_m2[0].lower,
+              edge.directed_endpoint_dual_area_m2[0].upper},
+             complement_interval, &first) &&
+      q4_bounds::MultiplyPositive(
+          {edge.directed_endpoint_dual_area_m2[1].lower,
+           edge.directed_endpoint_dual_area_m2[1].upper},
+          {parameter, parameter}, &second) &&
+      q4_bounds::Add(first, second, &sum) &&
+      q4_bounds::Certify(value, sum, output) &&
+      output->lower > 0;
+}
+bool AddArea(Q4CertifiedIntegral a, Q4CertifiedIntegral b,
+    Q4CertifiedIntegral* output) noexcept {
+  Q4IntegralInterval sum;
+  return ValidArea(a) && ValidArea(b) &&
+      q4_bounds::Add({a.lower, a.upper}, {b.lower, b.upper}, &sum) &&
+      q4_bounds::Certify(a.value + b.value, sum, output) &&
+      output->lower > 0;
+}
 SelfContactPairStatus CommonStatus(SelfContactPairClassification& next,
     bool edge_edge) noexcept {
   const auto unsupported = SelfContactSupportStatus::UnsupportedCinSecondary;
@@ -173,6 +295,10 @@ SelfContactActiveUseReport SelfContactActiveUseBinding::ResolveEdgeUse(
   if (next.active) {
     next.reference_half_thickness_m = parent.reference_half_thickness_m;
     next.reference_area_m2 = parent.reference_area_m2;
+    next.directed_endpoint_dual_area_m2[0] =
+        use.directed_endpoint_dual_area_m2[0];
+    next.directed_endpoint_dual_area_m2[1] =
+        use.directed_endpoint_dual_area_m2[1];
   }
   *output = next;
   return {};
@@ -252,12 +378,15 @@ SelfContactActiveUseReport SelfContactActiveUseBinding::ClassifyEdgeEdge(
   const auto& second = impl_->inventory.edge_uses[second_index];
   const auto& first_parent = impl_->inventory.parents[first.parent];
   const auto& second_parent = impl_->inventory.parents[second.parent];
+  double edge_parameter[2]{};
   if (!active_use::MapMatchesParent(first_parent, first_point) ||
       !active_use::MapMatchesParent(second_parent, second_point) ||
       ValidateWeightedSurfacePoint(first_point, impl_->forecast.node_roles) != Status::kOk ||
-      ValidateWeightedSurfacePoint(second_point, impl_->forecast.node_roles) != Status::kOk)
+      ValidateWeightedSurfacePoint(second_point, impl_->forecast.node_roles) != Status::kOk ||
+      !EdgeParameter(first, first_point, edge_parameter) ||
+      !EdgeParameter(second, second_point, edge_parameter + 1))
     return {S::InvalidInput, SIZE_MAX, SIZE_MAX,
-        "EE point map does not match its parent-local original slots"};
+        "EE point is not an exact authenticated point on its edge use"};
   SelfContactPairClassification next;
   next.binding_identity = impl_.get();
   next.activity_base_identity = activity.base;
@@ -286,6 +415,21 @@ SelfContactActiveUseReport SelfContactActiveUseBinding::ClassifyEdgeEdge(
   next.tied = active_use::TiedStatus(impl_->inventory, impl_->forecast,
       first_parent, first_point, second_parent, second_point);
   next.status = CommonStatus(next, true);
+  const bool area_case =
+      edge_case == SelfContactEdgeEdgeCase::StrictInteriorInteriorMinimum ||
+      edge_case == SelfContactEdgeEdgeCase::ZeroDistance;
+  if (next.status == SelfContactPairStatus::UnadmittedEdgeEdgeForceArea &&
+      area_case) {
+    Q4CertifiedIntegral edge_point_area[2];
+    if (!InterpolateArea(first, edge_parameter[0], edge_point_area) ||
+        !InterpolateArea(second, edge_parameter[1], edge_point_area + 1) ||
+        !AddArea(edge_point_area[0], edge_point_area[1],
+                 &next.candidate_directed_area_m2))
+      return {S::Unrepresentable, SIZE_MAX, SIZE_MAX,
+          "Symmetric directed edge-point area is unrepresentable"};
+    next.admitted_force_area_m2 = next.candidate_directed_area_m2;
+    next.status = SelfContactPairStatus::AdmittedEdgeEdge;
+  }
   *output = next;
   return {};
 }

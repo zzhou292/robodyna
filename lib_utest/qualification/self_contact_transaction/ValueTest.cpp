@@ -38,6 +38,18 @@ c::FixedTriangleFeatureKey Feature() {
   return result;
 }
 
+c::FacetEdgeKey Edge(std::uint64_t first,std::uint64_t second,
+                     std::uint64_t parent) {
+  c::FacetEdgeKey result;
+  result.parent_eid=parent;
+  result.endpoints[0]=Vertex(first);
+  result.endpoints[1]=Vertex(second);
+  if (c::fixed_triangle_features::Compare(
+          result.endpoints[1],result.endpoints[0]) < 0)
+    std::swap(result.endpoints[0],result.endpoints[1]);
+  return result;
+}
+
 c::FixedContactFacet Facet(std::uint64_t eid,
                            unsigned local = 0) {
   c::FixedContactFacet result;
@@ -79,6 +91,46 @@ sct::AcceptedEventCertificate Certificate(
   result.discovery.face_weights[0] = 1;
   result.vertex_facet = 2;
   result.target_facet = 3;
+  return result;
+}
+
+sct::AcceptedEventCertificate EdgeCertificate() {
+  sct::AcceptedEventCertificate result;
+  result.kind=sct::AcceptedEventCertificateKind::EdgeEdge;
+  result.event.feature.SetEdgeEdge();
+  result.event.feature.edge_edge.edges[0]=Edge(1,2,10);
+  result.event.feature.edge_edge.edges[1]=Edge(3,4,20);
+  result.event.source_order=0;
+  result.event.edge_use[0]=4;
+  result.event.edge_use[1]=5;
+  for (unsigned endpoint=0;endpoint<2;++endpoint) {
+    result.event.endpoints[endpoint].count=3;
+    result.event.endpoints[endpoint].nodes[0]=3*endpoint;
+    result.event.endpoints[endpoint].nodes[1]=3*endpoint+1;
+    result.event.endpoints[endpoint].nodes[2]=3*endpoint+2;
+    result.event.endpoints[endpoint].weights[0]=.5;
+    result.event.endpoints[endpoint].weights[1]=.5;
+  }
+  auto& pair=result.event.classification;
+  pair.kind=c::SelfContactPairKind::EdgeEdge;
+  pair.edge_edge_case=
+      c::SelfContactEdgeEdgeCase::StrictInteriorInteriorMinimum;
+  pair.status=c::SelfContactPairStatus::AdmittedEdgeEdge;
+  pair.active[0]=pair.active[1]=true;
+  pair.reference_half_thickness_m[0]=.1;
+  pair.reference_half_thickness_m[1]=.1;
+  pair.candidate_directed_area_m2={1,1,1,0};
+  pair.admitted_force_area_m2={1,1,1,0};
+  result.discovery.key=result.event.feature;
+  result.discovery.triangles[0]={17,10,0,0};
+  result.discovery.triangles[1]={17,20,0,0};
+  result.discovery.local_features[0]=0;
+  result.discovery.local_features[1]=1;
+  result.discovery.edge_parameters[0]=.5;
+  result.discovery.edge_parameters[1]=.5;
+  result.discovery.distance_m=.1;
+  result.edge_facet[0]=1;
+  result.edge_facet[1]=2;
   return result;
 }
 
@@ -344,6 +396,8 @@ TEST(SelfContactTransactionValues,
   event.event.classification.candidate_directed_area_m2 = {1, 1, 1, 0};
   event.event.classification.admitted_force_area_m2 = {1, 1, 1, 0};
   event.discovery.key = Feature();
+  event.discovery.triangles[0] = {17,10,0,0};
+  event.discovery.triangles[1] = {17,20,0,0};
   event.discovery.local_features[0] = 0;
   event.discovery.local_features[1] = 3;
   event.discovery.face_weights[0] = 1;
@@ -393,8 +447,8 @@ TEST(SelfContactTransactionValues,
   ee.triangles[1] = vf.triangles[0];
   EXPECT_TRUE(sct::ExactFacetPair(vf, ee));
 
-  // Parent-pair equality is insufficient: this EE may be spatially unrelated
-  // to the admitted VF and has no independently authenticated force area.
+  // Parent-pair equality is insufficient: coverage requires the same exact
+  // accepted EE feature and producing fixed-facet certificate.
   ee.triangles[0].local_facet++;
   EXPECT_FALSE(sct::ExactFacetPair(vf, ee));
   ee.triangles[0] = vf.triangles[1];
@@ -403,6 +457,37 @@ TEST(SelfContactTransactionValues,
   ee.triangles[0] = vf.triangles[1];
   ee.triangles[0].source_instance_id++;
   EXPECT_FALSE(sct::ExactFacetPair(vf, ee));
+}
+
+TEST(SelfContactTransactionValues,
+     EeCrossingRequiresExactAcceptedFeatureAndFacetCertificate) {
+  const auto pair=Pair(10,20);
+  auto certificate=EdgeCertificate();
+  c::RepresentedIntervalResult result;
+  result.key=pair;
+  result.classification=
+      c::RepresentedIntervalClassification::CertifiedCrossingContact;
+  result.feature.kind=c::RepresentedFeatureKind::EdgeEdge;
+  result.feature.edges[0]=certificate.event.feature.edge_edge.edges[0];
+  result.feature.edges[1]=certificate.event.feature.edge_edge.edges[1];
+  c::SelfContactCandidatePolicyOutcome outcome;
+  std::size_t count=0;
+  auto input=Input(&pair,1,&result,&outcome,&count);
+  input.accepted_events=&certificate;
+  input.accepted_event_count=1;
+  ASSERT_EQ(sct::ValidateCandidatePublications(input).status,
+      c::SelfContactTransactionStatus::Ok);
+  EXPECT_EQ(outcome.disposition,
+      c::SelfContactCandidateDisposition::RepresentedByAcceptedEdgeEdge);
+  EXPECT_EQ(outcome.accepted_event,0u);
+
+  certificate.discovery.triangles[0].local_facet=1;
+  EXPECT_EQ(sct::ValidateCandidatePublications(input).status,
+      c::SelfContactTransactionStatus::CandidateRejected);
+  certificate.discovery.triangles[0].local_facet=0;
+  certificate.kind=sct::AcceptedEventCertificateKind::VertexFace;
+  EXPECT_EQ(sct::ValidateCandidatePublications(input).status,
+      c::SelfContactTransactionStatus::CandidateRejected);
 }
 
 TEST(SelfContactTransactionValues,
@@ -705,7 +790,7 @@ TEST(SelfContactTransactionValues,
 
 TEST(SelfContactTransactionValues,
      FoldedPolicyIsChunkBoundaryInvariant) {
-  std::array<c::SelfContactCandidatePolicyOutcome, 3> values{};
+  std::array<c::SelfContactCandidatePolicyOutcome, 4> values{};
   for (std::size_t i = 0; i < values.size(); ++i) {
     values[i].pair = Pair(10 + i, 20 + i);
     values[i].disposition = i == 0
@@ -713,20 +798,25 @@ TEST(SelfContactTransactionValues,
         : (i == 1
             ? c::SelfContactCandidateDisposition::
                 ExcludedLocalIntersection
-            : c::SelfContactCandidateDisposition::
-                RepresentedByAcceptedVertexFace);
-    values[i].accepted_event = i == 2 ? 4 : SIZE_MAX;
-    values[i].source_order = i == 2 ? 4 : UINT64_MAX;
+            : (i == 2
+                ? c::SelfContactCandidateDisposition::
+                    RepresentedByAcceptedVertexFace
+                : c::SelfContactCandidateDisposition::
+                    RepresentedByAcceptedEdgeEdge));
+    values[i].accepted_event = i >= 2 ? 4+i : SIZE_MAX;
+    values[i].source_order = i >= 2 ? 4+i : UINT64_MAX;
   }
   c::SelfContactCandidatePolicySummary whole;
   c::SelfContactCandidatePolicySummary chunks;
   sct::FoldPolicyOutcomes(values.data(), values.size(), &whole);
   sct::FoldPolicyOutcomes(values.data(), 1, &chunks);
-  sct::FoldPolicyOutcomes(values.data() + 1, 2, &chunks);
+  sct::FoldPolicyOutcomes(
+      values.data() + 1, values.size() - 1, &chunks);
   EXPECT_EQ(whole.outcomes, chunks.outcomes);
   EXPECT_EQ(whole.certified_separated, 1u);
   EXPECT_EQ(whole.excluded_local_intersection, 1u);
   EXPECT_EQ(whole.represented_by_accepted_vf, 1u);
+  EXPECT_EQ(whole.represented_by_accepted_ee, 1u);
   EXPECT_EQ(whole.digest, chunks.digest);
 }
 

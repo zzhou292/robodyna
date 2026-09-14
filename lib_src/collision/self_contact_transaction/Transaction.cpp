@@ -472,7 +472,7 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
         state.buffers.triangle_order, state.facet_count,
         activity, state.buffers.chunk_events,
         state.buffers.chunk_certificates,
-        6 * state.storage_forecast.facet_pair_chunk_capacity,
+        15 * state.storage_forecast.facet_pair_chunk_capacity,
         &chunk_events);
     if (events.status != S::Ok) {
       if (events.candidate != SIZE_MAX) {

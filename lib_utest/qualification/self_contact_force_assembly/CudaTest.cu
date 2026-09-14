@@ -225,6 +225,80 @@ struct Fixture {
         result.push_back(event);
       }
     }
+    for (std::size_t first=0;
+         first<uses.edge_uses().size() && result.size()<maximum;
+         ++first) {
+      for (std::size_t second=first+1;
+           second<uses.edge_uses().size();++second) {
+        const auto position=[&](const c::WeightedSurfacePoint& point) {
+          c::Vec3 value;
+          for (unsigned slot=0;slot<point.count;++slot) {
+            const auto source=
+                rig.fixture.domain.nodes()[point.nodes[slot]].position;
+            value.x+=point.weights[slot]*source.x;
+            value.y+=point.weights[slot]*source.y;
+            value.z+=point.weights[slot]*source.z;
+          }
+          return value;
+        };
+        c::SegmentGeometry segments[2];
+        const std::size_t edge_indexes[]{first,second};
+        for (unsigned side=0;side<2;++side)
+          for (unsigned endpoint=0;endpoint<2;++endpoint)
+            segments[side].vertices[endpoint]=position(
+                uses.edge_uses()[edge_indexes[side]].endpoints[endpoint]);
+        c::SegmentPairGeometry closest;
+        if (c::ClosestPointsBetweenSegments(
+                segments[0],segments[1],&closest) != c::Status::kOk)
+          continue;
+        const double parameters[]{
+            closest.parameter_a,closest.parameter_b};
+        const auto edge_point=[](
+            const c::SelfContactFacetEdgeUse& edge,double parameter) {
+          c::WeightedSurfacePoint point;
+          point.count=edge.endpoints[0].count;
+          for (unsigned slot=0;slot<point.count;++slot) {
+            point.nodes[slot]=edge.endpoints[0].nodes[slot];
+            point.weights[slot]=
+                (1-parameter)*edge.endpoints[0].weights[slot]+
+                parameter*edge.endpoints[1].weights[slot];
+          }
+          return point;
+        };
+        const auto a=edge_point(uses.edge_uses()[first],parameters[0]);
+        const auto b=edge_point(uses.edge_uses()[second],parameters[1]);
+        const bool strict=parameters[0]>0 && parameters[0]<1 &&
+            parameters[1]>0 && parameters[1]<1;
+        if (!strict || !(closest.distance > 0)) continue;
+        c::SelfContactPairClassification classification;
+        if (uses.ClassifyEdgeEdge(
+                first,a,second,b,
+                c::SelfContactEdgeEdgeCase::
+                    StrictInteriorInteriorMinimum,
+                state,&classification).status !=
+                c::SelfContactActiveUseStatus::Ok ||
+            classification.status !=
+                c::SelfContactPairStatus::AdmittedEdgeEdge)
+          continue;
+        if (!(closest.distance <
+              classification.reference_half_thickness_m[0]+
+              classification.reference_half_thickness_m[1]))
+          continue;
+        c::SelfContactForceEvent event;
+        event.feature.SetEdgeEdge();
+        event.feature.edge_edge.edges[0]=uses.edge_uses()[first].key;
+        event.feature.edge_edge.edges[1]=uses.edge_uses()[second].key;
+        event.source_order=901;
+        event.edge_use[0]=static_cast<std::uint32_t>(first);
+        event.edge_use[1]=static_cast<std::uint32_t>(second);
+        event.endpoints[0]=a;
+        event.endpoints[1]=b;
+        event.classification=classification;
+        result.push_back(event);
+        first=uses.edge_uses().size();
+        break;
+      }
+    }
     for (std::size_t vertex = 0;
          vertex < uses.vertex_uses().size() &&
              result.size() < maximum; ++vertex) {
@@ -485,11 +559,15 @@ TEST(SelfContactForceCuda,
 }
 
 TEST(SelfContactForceCuda,
-     OrdinaryInitialHalfKickAndIntervalPreserveCouplesStirAndBalance) {
+     OrdinaryVfEeInitialHalfKickPreservesCouplesStiBalanceAndRollback) {
   Fixture f;
   ASSERT_TRUE(f.Initialize());
   const auto events = f.Events();
   ASSERT_FALSE(events.empty());
+  ASSERT_TRUE(std::any_of(events.begin(),events.end(),[](const auto& event) {
+    return event.feature.kind ==
+        c::FixedTriangleCandidateKind::EdgeEdge;
+  }));
   auto ordered = events;
   std::vector<c::SelfContactForceIncidence> incidence(8 * events.size());
   std::vector<c::SelfContactForceNodeIncidence> node_ranges(
@@ -521,6 +599,10 @@ TEST(SelfContactForceCuda,
     ASSERT_TRUE(receipt.prepared());
     const auto& diagnostics = receipt.diagnostics();
     EXPECT_EQ(diagnostics.event_count, events.size());
+    EXPECT_GT(diagnostics.edge_edge_event_count,0u);
+    EXPECT_EQ(diagnostics.vertex_face_event_count+
+              diagnostics.edge_edge_event_count,
+              diagnostics.event_count);
     EXPECT_GT(diagnostics.active_count, 0u);
     EXPECT_GT(diagnostics.maximum_force_norm_n, 0);
     EXPECT_GT(diagnostics.maximum_sti_diagonal_n_m, 0);
@@ -677,6 +759,10 @@ TEST(SelfContactForceCuda,
   ASSERT_TRUE(f.Initialize({}, 1e308));
   auto events = f.Events();
   ASSERT_GE(events.size(), 2u);
+  ASSERT_TRUE(std::any_of(events.begin(),events.end(),[](const auto& event) {
+    return event.feature.kind ==
+        c::FixedTriangleCandidateKind::EdgeEdge;
+  }));
   fe::NodalTrialToken token;
   fe::NodalAssemblyView assembly;
   ASSERT_TRUE(f.rig.Begin(token, assembly));
