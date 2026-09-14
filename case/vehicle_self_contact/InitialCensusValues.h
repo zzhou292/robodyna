@@ -57,6 +57,8 @@ struct InitialFacetFilterCensus {
     std::size_t coordinate_aabb_separated = 0;
     std::size_t face_axis_separated = 0;
     std::size_t edge_cross_axis_separated = 0;
+    std::size_t vertex_edge_axis_separated = 0;
+    std::size_t vertex_vertex_axis_separated = 0;
     std::size_t exact_remaining = 0;
     std::uint64_t category_hash = 0;
     std::uint64_t source_identity_hash = 0;

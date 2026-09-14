@@ -319,6 +319,12 @@ InitialCensusValueReport CountInitialFacetFilterCensus(
                   case Category::EdgeCrossAxisSeparated:
                     category = &next.edge_cross_axis_separated;
                     break;
+                  case Category::VertexEdgeAxisSeparated:
+                    category = &next.vertex_edge_axis_separated;
+                    break;
+                  case Category::VertexVertexAxisSeparated:
+                    category = &next.vertex_vertex_axis_separated;
+                    break;
                   case Category::ExactRemaining:
                     category = &next.exact_remaining;
                     break;
@@ -341,6 +347,8 @@ InitialCensusValueReport CountInitialFacetFilterCensus(
         !Add(next.coordinate_aabb_separated, accounted) ||
         !Add(next.face_axis_separated, accounted) ||
         !Add(next.edge_cross_axis_separated, accounted) ||
+        !Add(next.vertex_edge_axis_separated, accounted) ||
+        !Add(next.vertex_vertex_axis_separated, accounted) ||
         !Add(next.exact_remaining, accounted) ||
         accounted != next.represented_facet_pairs)
         return Failure(Status::Unrepresentable,

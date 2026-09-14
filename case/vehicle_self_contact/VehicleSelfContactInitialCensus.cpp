@@ -140,6 +140,10 @@ bool Same(const InitialFacetFilterCensus& first,
         first.face_axis_separated == second.face_axis_separated &&
         first.edge_cross_axis_separated ==
             second.edge_cross_axis_separated &&
+        first.vertex_edge_axis_separated ==
+            second.vertex_edge_axis_separated &&
+        first.vertex_vertex_axis_separated ==
+            second.vertex_vertex_axis_separated &&
         first.exact_remaining == second.exact_remaining &&
         first.category_hash == second.category_hash &&
         first.source_identity_hash == second.source_identity_hash &&

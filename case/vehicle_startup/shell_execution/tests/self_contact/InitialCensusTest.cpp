@@ -93,6 +93,8 @@ TEST(VehicleSelfContactInitialCensus,
               filters.coordinate_aabb_separated +
               filters.face_axis_separated +
               filters.edge_cross_axis_separated +
+              filters.vertex_edge_axis_separated +
+              filters.vertex_vertex_axis_separated +
               filters.exact_remaining,
               filters.represented_facet_pairs);
     EXPECT_EQ(filters.source_identity_hash,
@@ -166,6 +168,10 @@ TEST(VehicleSelfContactInitialCensus,
               << filters.face_axis_separated
               << " edge_cross_axis_separated="
               << filters.edge_cross_axis_separated
+              << " vertex_edge_axis_separated="
+              << filters.vertex_edge_axis_separated
+              << " vertex_vertex_axis_separated="
+              << filters.vertex_vertex_axis_separated
               << " exact_remaining="
               << filters.exact_remaining
               << " filter_hash=" << filters.category_hash
@@ -233,6 +239,10 @@ TEST(VehicleSelfContactInitialCensus,
         std::to_string(filters.face_axis_separated));
     RecordProperty("edge_cross_axis_separated",
         std::to_string(filters.edge_cross_axis_separated));
+    RecordProperty("vertex_edge_axis_separated",
+        std::to_string(filters.vertex_edge_axis_separated));
+    RecordProperty("vertex_vertex_axis_separated",
+        std::to_string(filters.vertex_vertex_axis_separated));
     RecordProperty("exact_remaining",
         std::to_string(filters.exact_remaining));
     RecordProperty("filter_hash",

@@ -227,6 +227,8 @@ def main() -> None:
     for token in [
             "excluded_same_rigid_group", "coordinate_aabb_separated",
             "face_axis_separated", "edge_cross_axis_separated",
+            "vertex_edge_axis_separated",
+            "vertex_vertex_axis_separated",
             "exact_remaining", "category_hash",
             "geometry_evaluation_us", "filter_census_us",
             "rerun_filter_hash"]:

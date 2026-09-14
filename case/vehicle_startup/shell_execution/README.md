@@ -87,7 +87,8 @@ GPU lock and finite timeouts. No `IGNORE=1` path exists.
 Its existing fixture starts one virgin owner, reads the accepted coordinates
 and complete broadphase keys once, expands all level-0 facet pairs, and calls
 TL's production accepted/candidate filter certificates in order: same rigid,
-coordinate AABB, face axis, then edge-cross axis. It publishes disjoint counts,
+coordinate AABB, face, edge-cross, vertex-edge, then vertex-vertex axes. It
+publishes disjoint counts,
 `exact_remaining`, source/category hashes, and timings, then repeats only the
 already-owned key/filter pass to prove determinism. It does not construct an
 event arena, discover fixed-triangle features, run represented-interval
