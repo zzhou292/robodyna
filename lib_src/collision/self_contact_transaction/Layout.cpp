@@ -40,9 +40,6 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
       !config.source_id || !identity.configuration_id ||
       !identity.qualification_id ||
       config.broadphase_axis > 2 ||
-      config.activity_policy !=
-          SelfContactTransactionActivityPolicy::
-              RequireAllSelectedParentsActiveV1 ||
       config.nonlocal_policy !=
           SelfContactTransactionNonlocalPolicy::
               AcceptedVertexFaceOnlyRejectIntersectionAndEdgeV1 ||
@@ -78,6 +75,19 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
   if (force.report.status != SelfContactForceStatus::Ok) {
     auto result = Failure(S::ForceFailure, force.report.message);
     result.report.force_status = force.report.status;
+    return result;
+  }
+  const auto activity = SelfContactPhysicalActivity::Forecast(
+      active_use, *surface->physical(), limits.activity);
+  if (activity.report.status !=
+      SelfContactPhysicalActivityStatus::Ok) {
+    auto result = Failure(
+        activity.report.status ==
+                SelfContactPhysicalActivityStatus::ResourceLimit
+            ? S::ResourceLimit : S::ActivityFailure,
+        activity.report.message);
+    result.report.activity_status = activity.report.status;
+    result.report.candidate = activity.report.parent;
     return result;
   }
 
@@ -159,6 +169,7 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
         "Transaction candidate arena exceeds its fixed profile");
 
   SelfContactTransactionForecast forecast;
+  forecast.activity = activity.forecast;
   forecast.force = force.forecast;
   forecast.broadphase = broadphase.forecast;
   forecast.accepted_discovery = accepted_discovery.forecast;
@@ -169,7 +180,6 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
   forecast.surface_parent_map_capacity = surface_parents;
   forecast.parent_facet_offset_count = parents + 1;
   forecast.facet_descriptor_capacity = facets;
-  forecast.parent_activity_bytes = 2 * parents;
   if (nodes > SIZE_MAX / 6)
     return Failure(S::ResourceLimit,
         "Transaction snapshot value count overflowed");
@@ -198,10 +208,14 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
 
   if (force.forecast.owned_host_bytes <
       sizeof(SelfContactForceAssembly) ||
+      activity.forecast.owned_host_bytes <
+          sizeof(SelfContactPhysicalActivity) ||
       broadphase.forecast.owned_host_bytes <
           sizeof(SelfContactBroadphase) ||
       regularity.forecast.owned_payload_bytes <
           sizeof(SelfContactCurrentRegularity) ||
+      activity.forecast.startup_host_bytes <
+          activity.forecast.owned_host_bytes ||
       force.forecast.startup_host_bytes <
           force.forecast.owned_host_bytes ||
       broadphase.forecast.startup_host_bytes <
@@ -212,7 +226,10 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
         "A component forecast is smaller than its retained handle");
   forecast.owned_host_bytes =
       sizeof(SelfContactTransaction) + sizeof(Impl);
-  if (!Add(force.forecast.owned_host_bytes -
+  if (!Add(activity.forecast.owned_host_bytes -
+               sizeof(SelfContactPhysicalActivity),
+           &forecast.owned_host_bytes) ||
+      !Add(force.forecast.owned_host_bytes -
                sizeof(SelfContactForceAssembly),
            &forecast.owned_host_bytes) ||
       !Add(layout.bytes, &forecast.owned_host_bytes) ||
@@ -237,6 +254,8 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
   const std::size_t startup_scratch = std::max({
       force.forecast.startup_host_bytes -
           force.forecast.owned_host_bytes,
+      activity.forecast.startup_host_bytes -
+          activity.forecast.owned_host_bytes,
       broadphase.forecast.startup_host_bytes -
           broadphase.forecast.owned_host_bytes,
       regularity.forecast.startup_payload_bytes -

@@ -316,21 +316,29 @@ SelfContactTransactionReport ExpandFacetPairs(
     const std::uint32_t* surface_to_active,
     std::size_t surface_parents,
     const std::uint32_t* parent_facet_offsets,
-    std::size_t parents, FixedTrianglePair* output,
+    std::size_t parents, SelfContactActivityView activity,
+    FixedTrianglePair* output,
     std::size_t capacity, std::size_t* output_count) noexcept {
   if ((key_count && !keys) || !surface_to_active ||
       !surface_parents || !parent_facet_offsets || !parents ||
+      !activity.base || !activity.current ||
+      activity.parent_count != parents ||
       !output || !capacity || !output_count)
     return Failure(SelfContactTransactionStatus::InvalidInput,
         "Facet expansion inputs or fixed storage are invalid");
   if (parent_facet_offsets[0] != 0)
     return Failure(SelfContactTransactionStatus::IdentityMismatch,
         "Parent facet offsets do not begin at zero");
-  for (std::size_t parent = 0; parent < parents; ++parent)
+  for (std::size_t parent = 0; parent < parents; ++parent) {
+    if (activity.base[parent] > 1 ||
+        activity.current[parent] > activity.base[parent])
+      return Failure(SelfContactTransactionStatus::ActivityFailure,
+          "Facet expansion activity is invalid", parent);
     if (parent_facet_offsets[parent + 1] <=
         parent_facet_offsets[parent])
       return Failure(SelfContactTransactionStatus::IdentityMismatch,
           "Parent facet offsets are not strictly increasing", parent);
+  }
 
   std::size_t required = 0;
   for (std::size_t pair = 0; pair < key_count; ++pair) {
@@ -350,6 +358,8 @@ SelfContactTransactionReport ExpandFacetPairs(
       return Failure(SelfContactTransactionStatus::IdentityMismatch,
           "Broadphase pair cannot map to two selected active-use parents",
           pair);
+    if (!activity.current[first] || !activity.current[second])
+      continue;
     const std::size_t first_facets =
         parent_facet_offsets[first + 1] -
         parent_facet_offsets[first];
@@ -369,6 +379,8 @@ SelfContactTransactionReport ExpandFacetPairs(
         surface_to_active[FirstSurfaceParent(keys[pair])];
     const auto second =
         surface_to_active[SecondSurfaceParent(keys[pair])];
+    if (!activity.current[first] || !activity.current[second])
+      continue;
     for (std::uint32_t a = parent_facet_offsets[first];
          a < parent_facet_offsets[first + 1]; ++a) {
       for (std::uint32_t b = parent_facet_offsets[second];

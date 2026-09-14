@@ -2,6 +2,7 @@
 #pragma once
 
 #include "../SelfContactTransaction.h"
+#include "../SelfContactPhysicalActivity.h"
 #include "../fixed_triangle_features/Geometry.h"
 #include "lib_utils/BoundedArena.h"
 
@@ -19,8 +20,6 @@ struct Layout {
   tl::util::ArenaRegion accepted_velocities;
   tl::util::ArenaRegion prepared_positions;
   tl::util::ArenaRegion prepared_velocities;
-  tl::util::ArenaRegion activity_base;
-  tl::util::ArenaRegion activity_current;
   tl::util::ArenaRegion surface_to_active;
   tl::util::ArenaRegion parent_facet_offsets;
   tl::util::ArenaRegion facet_descriptors;
@@ -45,8 +44,6 @@ struct Buffers {
   double* accepted_velocities = nullptr;
   double* prepared_positions = nullptr;
   double* prepared_velocities = nullptr;
-  std::uint8_t* activity_base = nullptr;
-  std::uint8_t* activity_current = nullptr;
   std::uint32_t* surface_to_active = nullptr;
   std::uint32_t* parent_facet_offsets = nullptr;
   FixedContactFacet* facet_descriptors = nullptr;
@@ -103,6 +100,7 @@ SelfContactTransactionReport ExpandFacetPairs(
     const SelfContactPairKey*, std::size_t,
     const std::uint32_t* surface_to_active, std::size_t surface_parents,
     const std::uint32_t* parent_facet_offsets, std::size_t parents,
+    SelfContactActivityView,
     FixedTrianglePair*, std::size_t capacity,
     std::size_t* output_count) noexcept;
 
@@ -119,10 +117,15 @@ SelfContactTransactionReport ReadAndExpandBroadphase(
     const std::uint32_t* surface_to_active,
     std::size_t surface_parents,
     const std::uint32_t* parent_facet_offsets,
-    std::size_t parents, FixedTrianglePair*,
+    std::size_t parents, SelfContactActivityView, FixedTrianglePair*,
     std::size_t facet_pair_capacity,
     std::size_t* broadphase_count,
     std::size_t* facet_pair_count) noexcept;
+bool CompleteRegularity(
+    const SelfContactActiveUseBinding&,
+    const SelfContactCurrentRegularityReceipt&,
+    SelfContactCurrentRegularityView,
+    SelfContactActivityView) noexcept;
 SelfContactTransactionReport BuildAcceptedEvents(
     const SelfContactActiveUseBinding&,
     const SelfContactCurrentRegularity&,
@@ -164,6 +167,7 @@ struct SelfContactTransaction::Impl {
   self_contact_transaction::Layout layout;
   tl::util::HostArena arena;
   self_contact_transaction::Buffers buffers;
+  SelfContactPhysicalActivity physical_activity;
   SelfContactBroadphase broadphase;
   FixedTriangleFeatureDiscovery accepted_discovery;
   FixedTriangleFeatureDiscovery candidate_discovery;
@@ -171,6 +175,7 @@ struct SelfContactTransaction::Impl {
   RepresentedIntervalCrossing crossing;
   SelfContactForceAssembly force;
   tl::fea::ShellPhysicalScratchParticipation participation;
+  SelfContactPreparedActivityReceipt prepared_activity;
   std::size_t surface_parent_count = 0;
   std::size_t facet_count = 0;
   std::size_t accepted_broadphase_pair_count = 0;

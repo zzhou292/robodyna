@@ -6,6 +6,7 @@
 #include "SelfContactBroadphase.h"
 #include "SelfContactCurrentRegularity.h"
 #include "SelfContactForceAssembly.h"
+#include "SelfContactPhysicalActivityTypes.h"
 #include "lib_src/elements/ShellBatchPublication.h"
 
 #include <cstddef>
@@ -20,6 +21,7 @@ enum class SelfContactTransactionStatus : std::uint8_t {
   InvalidInput,
   ResourceLimit,
   IdentityMismatch,
+  ActivityFailure,
   UnsupportedActivity,
   UnsupportedMotion,
   BroadphaseFailure,
@@ -38,6 +40,8 @@ struct SelfContactTransactionReport {
   std::size_t candidate = SIZE_MAX;
   std::size_t pair = SIZE_MAX;
   SelfContactForceStatus force_status = SelfContactForceStatus::Ok;
+  SelfContactPhysicalActivityStatus activity_status =
+      SelfContactPhysicalActivityStatus::Ok;
   SelfContactBroadphaseStatus broadphase_status =
       SelfContactBroadphaseStatus::Ok;
   SelfContactCurrentRegularityStatus regularity_status =
@@ -57,10 +61,6 @@ struct SelfContactTransactionReport {
   const char* message = "OK";
 };
 
-enum class SelfContactTransactionActivityPolicy : std::uint8_t {
-  RequireAllSelectedParentsActiveV1,
-};
-
 enum class SelfContactTransactionNonlocalPolicy : std::uint8_t {
   AcceptedVertexFaceOnlyRejectIntersectionAndEdgeV1,
 };
@@ -72,15 +72,13 @@ struct SelfContactTransactionConfig {
   // Canonical broadphase sweep axis. Pair and event publication remains
   // independent of this choice.
   unsigned broadphase_axis = 0;
-  SelfContactTransactionActivityPolicy activity_policy =
-      SelfContactTransactionActivityPolicy::
-          RequireAllSelectedParentsActiveV1;
   SelfContactTransactionNonlocalPolicy nonlocal_policy =
       SelfContactTransactionNonlocalPolicy::
           AcceptedVertexFaceOnlyRejectIntersectionAndEdgeV1;
 };
 
 struct SelfContactTransactionLimits {
+  SelfContactPhysicalActivityLimits activity;
   SelfContactForceLimits force;
   SelfContactBroadphaseLimits broadphase;
   FixedTriangleFeatureLimits accepted_discovery;
@@ -96,6 +94,7 @@ struct SelfContactTransactionLimits {
 };
 
 struct SelfContactTransactionForecast {
+  SelfContactPhysicalActivityForecast activity;
   SelfContactForceForecast force;
   SelfContactBroadphaseForecast broadphase;
   FixedTriangleFeatureForecast accepted_discovery;
@@ -106,7 +105,6 @@ struct SelfContactTransactionForecast {
   std::size_t surface_parent_map_capacity = 0;
   std::size_t parent_facet_offset_count = 0;
   std::size_t facet_descriptor_capacity = 0;
-  std::size_t parent_activity_bytes = 0;
   std::size_t accepted_snapshot_values = 0;
   std::size_t prepared_snapshot_values = 0;
   std::size_t broadphase_pair_capacity = 0;
@@ -125,6 +123,11 @@ struct SelfContactTransactionForecast {
 struct SelfContactTransactionPreflight {
   SelfContactTransactionReport report;
   SelfContactTransactionForecast forecast;
+};
+
+struct SelfContactTransactionAllocationInfo {
+  SelfContactPhysicalActivityAllocationInfo activity;
+  tl::fea::NodalAllocationInfo device;
 };
 
 enum class SelfContactCandidateDisposition : std::uint8_t {
@@ -158,7 +161,7 @@ class SelfContactAcceptedAssemblyReceipt {
   // embedded force receipt against its live assembler startup identity.
   bool valid() const noexcept {
     return transaction_ != nullptr && owner_ != nullptr && source_id_ != 0 &&
-        attempt_ != 0 && force_.prepared();
+        attempt_ != 0 && force_.prepared() && activity_.valid();
   }
   const SelfContactForceDiagnostics& diagnostics() const noexcept {
     return force_.diagnostics();
@@ -185,6 +188,7 @@ class SelfContactAcceptedAssemblyReceipt {
   std::size_t broadphase_pairs_ = 0;
   std::size_t facet_pairs_ = 0;
   std::size_t discovered_features_ = 0;
+  SelfContactAcceptedActivityReceipt activity_;
   SelfContactForceAssemblyReceipt force_;
 };
 
@@ -195,7 +199,7 @@ class SelfContactTransactionReceipt {
   SelfContactTransactionReceipt() noexcept = default;
   bool valid() const noexcept {
     return transaction_ != nullptr && owner_ != nullptr && source_id_ != 0 &&
-        attempt_ != 0 && participation_.valid();
+        attempt_ != 0 && participation_.valid() && activity_.valid();
   }
   std::uint64_t source_id() const noexcept { return source_id_; }
   std::uint64_t regularity_generation() const noexcept {
@@ -207,6 +211,15 @@ class SelfContactTransactionReceipt {
   std::size_t facet_pairs() const noexcept { return facet_pairs_; }
   std::size_t policy_outcomes() const noexcept {
     return policy_outcomes_;
+  }
+  std::size_t active_parents() const noexcept {
+    return active_parents_;
+  }
+  std::size_t removing_parents() const noexcept {
+    return removing_parents_;
+  }
+  std::size_t skipped_parents() const noexcept {
+    return skipped_parents_;
   }
   tl::fea::ShellPhysicalScratchReceiptRoster scratch_receipts()
       const noexcept {
@@ -230,6 +243,10 @@ class SelfContactTransactionReceipt {
   std::size_t broadphase_pairs_ = 0;
   std::size_t facet_pairs_ = 0;
   std::size_t policy_outcomes_ = 0;
+  std::size_t active_parents_ = 0;
+  std::size_t removing_parents_ = 0;
+  std::size_t skipped_parents_ = 0;
+  SelfContactPreparedActivityReceipt activity_;
   tl::fea::ShellPhysicalScratchParticipationReceipt participation_;
 };
 

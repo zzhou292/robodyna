@@ -60,8 +60,11 @@ TEST(SelfContactTransactionValues,
   EXPECT_FALSE(std::is_aggregate_v<Assembly>);
   EXPECT_TRUE(std::is_default_constructible_v<Receipt>);
   EXPECT_TRUE(std::is_copy_constructible_v<Receipt>);
-  EXPECT_FALSE(Receipt{}.valid());
-  EXPECT_EQ(Receipt{}.scratch_receipts().self_contact, nullptr);
+  EXPECT_EQ(Receipt{}.source_id(), 0u);
+  EXPECT_FALSE((std::is_constructible_v<
+      Assembly, c::SelfContactAcceptedActivityReceipt>));
+  EXPECT_FALSE((std::is_constructible_v<
+      Receipt, c::SelfContactPreparedActivityReceipt>));
   EXPECT_FALSE((std::is_constructible_v<
       Receipt, tl::fea::ShellPhysicalScratchParticipationReceipt>));
   EXPECT_FALSE((std::is_convertible_v<
@@ -78,6 +81,7 @@ TEST(SelfContactTransactionValues,
   using Candidate = c::SelfContactTransactionReport
       (c::SelfContactTransaction::*)(
           tl::fea::FENodalState&, const tl::fea::NodalTrialToken&,
+          const tl::fea::ShellPhysicalDiagnostics&,
           const tl::fea::NodalPreparedView&,
           const c::SelfContactAcceptedAssemblyReceipt&,
           c::SelfContactTransactionReceipt*);
@@ -279,14 +283,19 @@ TEST(SelfContactTransactionValues,
   const std::uint32_t map[]{0, 1};
   // Parent 0 has two T3-like facets; parent 1 has four Q4-like facets.
   const std::uint32_t offsets[]{0, 2, 6};
+  const std::uint8_t all_active[]{1, 1};
+  const c::SelfContactActivityView activity{
+      all_active, all_active, 2};
   std::array<c::FixedTrianglePair, 8> pairs{};
   std::size_t count = 99;
   EXPECT_EQ(sct::ExpandFacetPairs(
-      &key, 1, map, 2, offsets, 2, pairs.data(), 7, &count).status,
+      &key, 1, map, 2, offsets, 2, activity,
+      pairs.data(), 7, &count).status,
       c::SelfContactTransactionStatus::ResourceLimit);
   EXPECT_EQ(count, 99u);
   ASSERT_EQ(sct::ExpandFacetPairs(
-      &key, 1, map, 2, offsets, 2, pairs.data(), 8, &count).status,
+      &key, 1, map, 2, offsets, 2, activity,
+      pairs.data(), 8, &count).status,
       c::SelfContactTransactionStatus::Ok);
   EXPECT_EQ(count, 8u);
   for (std::size_t i = 0; i < pairs.size(); ++i) {
@@ -297,8 +306,16 @@ TEST(SelfContactTransactionValues,
   const c::SelfContactPairKey duplicate[]{key, key};
   EXPECT_EQ(sct::ExpandFacetPairs(
       duplicate, 2, map, 2, offsets, 2,
-      pairs.data(), pairs.size(), &count).status,
+      activity, pairs.data(), pairs.size(), &count).status,
       c::SelfContactTransactionStatus::IdentityMismatch);
+
+  const std::uint8_t removing[]{0, 1};
+  ASSERT_EQ(sct::ExpandFacetPairs(
+      &key, 1, map, 2, offsets, 2,
+      {all_active, removing, 2},
+      pairs.data(), pairs.size(), &count).status,
+      c::SelfContactTransactionStatus::Ok);
+  EXPECT_EQ(count, 0u);
 }
 
 }  // namespace

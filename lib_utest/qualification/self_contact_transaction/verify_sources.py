@@ -28,16 +28,25 @@ transaction = TRANSACTION.read_text()
 for token in (
     "AuthenticateAssemblyView(token, view)",
     "AssemblyRangeDisjoint(",
+    "physical_activity.CaptureAccepted(",
+    "activity_receipt.activity()",
     "owner, token, view, activity,",
     "{state.buffers.accepted_events, event_count}",
-    "This slice rejects removal until authenticated activity integration",
 ):
     require(transaction, token, TRANSACTION)
 require(candidate, "state.force.Authenticates(assembly.force_)", CANDIDATE)
+for token in (
+    "physical_activity.CapturePrepared(",
+    "physical_diagnostics, prepared",
+    "assembly.activity_",
+    "activity_receipt.activity()",
+):
+    require(candidate, token, CANDIDATE)
 
 storage_path = ROOT / "lib_src/collision/self_contact_transaction/Storage.h"
 storage = storage_path.read_text()
 for token in ("SelfContactForceAssembly force",
+              "SelfContactPhysicalActivity physical_activity",
               "SelfContactBroadphase broadphase",
               "FixedTriangleFeatureDiscovery accepted_discovery",
               "FixedTriangleFeatureDiscovery candidate_discovery",
@@ -68,13 +77,27 @@ for forbidden in (
 
 for token in (
     "class SelfContactTransactionReceipt",
+    "SelfContactPreparedActivityReceipt activity_",
     "ShellPhysicalScratchParticipationReceipt participation_",
     "scratch_receipts()",
     "class SelfContactAcceptedAssemblyReceipt",
-    "RequireAllSelectedParentsActiveV1",
+    "SelfContactAcceptedActivityReceipt activity_",
     "AcceptedVertexFaceOnlyRejectIntersectionAndEdgeV1",
 ):
     require(types, token, TYPES)
+for forbidden in (
+    "RequireAllSelectedParentsActiveV1",
+    "parent_activity_bytes",
+):
+    if forbidden in types:
+        raise RuntimeError(f"{TYPES}: retains obsolete activity seam {forbidden!r}")
+
+arena_path = ROOT / "lib_src/collision/self_contact_transaction/Arena.cpp"
+arena = arena_path.read_text()
+for forbidden in ("activity_base", "activity_current"):
+    if forbidden in storage or forbidden in arena:
+        raise RuntimeError(
+            f"{storage_path}: retains duplicate transaction activity storage")
 
 for token in (
     "CopyAccepted",
@@ -116,6 +139,7 @@ for wiring in (CMAKE, BAZEL):
                   "self_contact_transaction/Transaction.cpp",
                   "self_contact_transaction/Values.cpp"):
         require(text, token, wiring)
+    require(text, "self_contact_physical_activity", wiring)
 
 for token in (
     "SELF_CONTACT_TRANSACTION_CUDA",
@@ -147,6 +171,13 @@ for forbidden in ("SelfContactCandidateEvidence",
     if forbidden in cuda:
         raise RuntimeError(
             f"{CUDA}: caller still supplies authority {forbidden!r}")
+for token in (
+    "ActualT3RemovalFiltersCandidateAndLongInactiveRetryCommits",
+    "common, prepared, accepted",
+    "removing_parents()",
+    "skipped_parents()",
+):
+    require(cuda, token, CUDA)
 
 nodal_header = (ROOT / "lib_src/solvers/FENodalState.h").read_text()
 nodal_source = (ROOT / "lib_src/solvers/NodalOwnerStream.cpp").read_text()

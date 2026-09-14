@@ -42,42 +42,6 @@ bool PairLess(const RepresentedIntervalPairKey& a,
   return sct::Compare(a, b) < 0;
 }
 
-bool CompleteRegularity(
-    const SelfContactActiveUseBinding& active_use,
-    const SelfContactCurrentRegularityReceipt& receipt,
-    SelfContactCurrentRegularityView view) noexcept {
-  const auto parents = active_use.parents();
-  const auto source_instance_id =
-      active_use.facets()->surface()->physical()->
-          domain()->source_instance_id();
-  if (!receipt.prepared() || !view.complete ||
-      view.count != parents.size() ||
-      view.summary.generation != receipt.generation() ||
-      view.summary.parents != parents.size() ||
-      view.summary.certified_parents != parents.size() ||
-      view.summary.active_parents != parents.size() ||
-      view.summary.removing_parents || view.summary.skipped_parents)
-    return false;
-  for (std::size_t parent = 0; parent < parents.size(); ++parent) {
-    const auto& expected = parents[parent];
-    const auto& result = view.data[parent];
-    if (result.source_instance_id != source_instance_id ||
-        result.source_eid != expected.source.source_parent_id ||
-        result.binding_parent != parent ||
-        result.surface_parent != expected.surface_parent ||
-        result.arity != expected.arity ||
-        result.level != expected.level ||
-        result.facet_count != expected.facet_count ||
-        result.facets_evaluated != result.facet_count ||
-        result.state != SelfContactCurrentParentState::Active ||
-        result.chart ==
-            SelfContactCurrentChartStatus::SkippedLongInactive ||
-        !result.geometry_evaluated)
-      return false;
-  }
-  return true;
-}
-
 void MakePath(const CurrentFixedTriangle& base,
               const CurrentFixedTriangle& current,
               RepresentedTrianglePath* output) noexcept {
@@ -98,6 +62,7 @@ void MakePath(const CurrentFixedTriangle& base,
 SelfContactTransactionReport SelfContactTransaction::SealCandidate(
     fe::FENodalState& owner,
     const fe::NodalTrialToken& token,
+    const fe::ShellPhysicalDiagnostics& physical_diagnostics,
     const fe::NodalPreparedView& prepared,
     const SelfContactAcceptedAssemblyReceipt& assembly,
     SelfContactTransactionReceipt* output) {
@@ -106,7 +71,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
         "Self-contact transaction is not initialized");
   auto& state = *impl_;
   using fe::trial_identity::Disjoint;
-  const auto& diagnostics = assembly.force_.diagnostics();
+  const auto& force_diagnostics = assembly.force_.diagnostics();
   const bool same_assembly =
       assembly.valid() && assembly.transaction_ == this &&
       state.force.Authenticates(assembly.force_) &&
@@ -120,21 +85,24 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
       assembly.owner_id_ == state.owner_id &&
       assembly.base_epoch_ == state.base_epoch &&
       assembly.attempt_ == state.attempt &&
-      diagnostics.owner_id == state.owner_id &&
-      diagnostics.base_epoch == state.base_epoch &&
-      diagnostics.attempt == state.attempt &&
-      diagnostics.event_count == state.accepted_event_count &&
-      diagnostics.configuration_id ==
+      force_diagnostics.owner_id == state.owner_id &&
+      force_diagnostics.base_epoch == state.base_epoch &&
+      force_diagnostics.attempt == state.attempt &&
+      force_diagnostics.event_count == state.accepted_event_count &&
+      force_diagnostics.configuration_id ==
           state.config.force.configuration_id &&
-      diagnostics.qualification_id ==
+      force_diagnostics.qualification_id ==
           state.config.force.qualification_id &&
-      diagnostics.active_use_identity == state.active_use.identity();
+      force_diagnostics.active_use_identity == state.active_use.identity() &&
+      assembly.activity_.valid();
   if (&owner != state.owner || !output ||
       state.phase != Impl::Phase::AssemblyRecorded ||
       !same_assembly ||
       !state.OutputDisjoint(output, sizeof(*output)) ||
       !Disjoint(output, sizeof(*output), this, sizeof(*this)) ||
       !Disjoint(output, sizeof(*output), &token, sizeof(token)) ||
+      !Disjoint(output, sizeof(*output), &physical_diagnostics,
+                sizeof(physical_diagnostics)) ||
       !Disjoint(output, sizeof(*output), &prepared, sizeof(prepared)) ||
       !Disjoint(output, sizeof(*output), &assembly, sizeof(assembly)))
     return state.Fail(Failure(S::InvalidInput,
@@ -178,16 +146,26 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
   if (state.has_rigid_motion)
     return state.Fail(Failure(S::UnsupportedMotion,
         "Rigid-arc motion is not representable by LinearNodalV1"));
+  SelfContactPreparedActivityReceipt activity_receipt;
+  const auto captured = state.physical_activity.CapturePrepared(
+      owner, token, physical_diagnostics, prepared,
+      assembly.activity_, &activity_receipt);
+  if (captured.status != SelfContactPhysicalActivityStatus::Ok) {
+    auto report = Failure(S::ActivityFailure, captured.message);
+    report.activity_status = captured.status;
+    report.publication_status = captured.publication_status;
+    report.owner_status = captured.owner_status;
+    report.candidate = captured.parent;
+    return state.Fail(report);
+  }
+  const auto activity = activity_receipt.activity();
+  if (!activity.base || !activity.current ||
+      activity.parent_count != state.active_use.parents().size())
+    return state.Fail(Failure(S::ActivityFailure,
+        "Prepared physical activity receipt is incomplete"));
   const VectorView current_positions{
       state.buffers.prepared_positions,
       static_cast<std::uint32_t>(node_count), 3, 1};
-  const SelfContactActivityView activity{
-      state.buffers.activity_base, state.buffers.activity_current,
-      state.active_use.parents().size()};
-  for (std::size_t parent = 0; parent < activity.parent_count; ++parent)
-    if (activity.base[parent] != 1 || activity.current[parent] != 1)
-      return state.Fail(Failure(S::UnsupportedActivity,
-          "This slice rejects removal until authenticated activity integration"));
   SelfContactCurrentRegularityReceipt regularity_receipt;
   const auto regularity = state.regularity.Certify(
       current_positions, activity, &regularity_receipt);
@@ -200,9 +178,9 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
     return state.Fail(report);
   }
   const auto regularity_results = state.regularity.results();
-  if (!CompleteRegularity(
+  if (!sct::CompleteRegularity(
           state.active_use, regularity_receipt,
-          regularity_results))
+          regularity_results, activity))
     return state.Fail(Failure(S::RegularityFailure,
         "Current regularity publication is incomplete or unresolved"));
 
@@ -251,6 +229,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
       state.storage_forecast.broadphase_pair_capacity,
       state.buffers.surface_to_active, state.surface_parent_count,
       state.buffers.parent_facet_offsets, parents.size(),
+      activity,
       state.buffers.candidate_facet_pairs,
       state.storage_forecast.candidate_pair_capacity,
       &state.candidate_broadphase_pair_count,
@@ -335,6 +314,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
   }
 
   state.phase = Impl::Phase::CandidateSealed;
+  state.prepared_activity = activity_receipt;
   state.policy_outcome_count = policy_outcomes;
   state.policy_complete = true;
   SelfContactTransactionReceipt next;
@@ -353,6 +333,13 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
       state.candidate_broadphase_pair_count;
   next.facet_pairs_ = state.candidate_facet_pair_count;
   next.policy_outcomes_ = state.policy_outcome_count;
+  next.active_parents_ =
+      regularity_results.summary.active_parents;
+  next.removing_parents_ =
+      regularity_results.summary.removing_parents;
+  next.skipped_parents_ =
+      regularity_results.summary.skipped_parents;
+  next.activity_ = activity_receipt;
   next.participation_ = participation;
   *output = next;
   return {};

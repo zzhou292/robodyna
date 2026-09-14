@@ -26,9 +26,11 @@ bool Good(c::SelfContactTransactionReport report) {
 }
 
 struct Fixture {
-  explicit Fixture(bool single = false, bool crossing = false)
-      : rig(false, 2.5, !single),
-        single_parent(single), pass_through(crossing) {
+  explicit Fixture(bool single = false, bool crossing = false,
+                   double t3_failure = 2.5)
+      : rig(false, t3_failure, !single),
+        single_parent(single), pass_through(crossing),
+        t3_failure(t3_failure) {
     if (pass_through) {
       rig.external_force_source_node = 14;
       const auto apex = rig.fixture.domain.Find(14);
@@ -52,6 +54,7 @@ struct Fixture {
   cudaStream_t owner_stream = nullptr;
   bool single_parent = false;
   bool pass_through = false;
+  double t3_failure = 2.5;
   bool authority_prepared = false;
 
   bool PrepareExecutionAuthority() {
@@ -83,7 +86,7 @@ struct Fixture {
     fe::ShellFailureParentInput failures[4];
     for (unsigned row = 0; row < 4; ++row)
       failures[row] = qbat_catalog_test::Failure(parents[row]);
-    failures[2].constant.failure_strain = 2.5;
+    failures[2].constant.failure_strain = t3_failure;
     for (unsigned row = 0; row < 2; ++row) {
       failures[row].policy = fe::ShellFailurePolicy::Tab1AnyPoint;
       failures[row].constant = {};
@@ -227,6 +230,18 @@ struct Fixture {
     return UINT32_MAX;
   }
 
+  bool DriveT3Removal() {
+    const auto apex = rig.fixture.domain.Find(14);
+    if (apex == SIZE_MAX) return false;
+    const double mass =
+        rig.fixture.ledger.nodes()[apex].coefficients.mass;
+    if (!(mass > 0)) return false;
+    rig.external_force_source_node = 14;
+    rig.external_force_z_n =
+        -2 * mass * .00075 / (p::H * p::H);
+    return true;
+  }
+
   bool Prepare(const fe::NodalTrialToken& token,
                const fe::NodalAssemblyView& assembly,
                fe::NodalPreparedView& prepared,
@@ -277,6 +292,12 @@ TEST(SelfContactTransactionCuda,
       fixture.config, fixture.uses, fixture.rig.fixture.Identity(),
       limits).report.status, c::SelfContactTransactionStatus::ResourceLimit);
   ++limits.max_host_bytes;
+  limits.activity.max_host_bytes =
+      exact.forecast.activity.owned_host_bytes - 1;
+  EXPECT_EQ(c::SelfContactTransaction::Forecast(
+      fixture.config, fixture.uses, fixture.rig.fixture.Identity(),
+      limits).report.status, c::SelfContactTransactionStatus::ResourceLimit);
+  ++limits.activity.max_host_bytes;
   limits.max_device_bytes = exact.forecast.device_bytes - 1;
   EXPECT_EQ(c::SelfContactTransaction::Forecast(
       fixture.config, fixture.uses, fixture.rig.fixture.Identity(),
@@ -306,9 +327,11 @@ TEST(SelfContactTransactionCuda,
   const auto entry = fixture.transaction.roster_entry();
   EXPECT_NE(entry.issuer, nullptr);
   EXPECT_EQ(entry.source_id, p::SelfContactSource);
-  EXPECT_EQ(fixture.transaction.allocations().device_allocations, 2u);
-  EXPECT_EQ(fixture.transaction.allocations().device_bytes,
+  EXPECT_EQ(fixture.transaction.allocations().device.device_allocations, 2u);
+  EXPECT_EQ(fixture.transaction.allocations().device.device_bytes,
             exact.forecast.device_bytes);
+  EXPECT_EQ(fixture.transaction.allocations().activity.host_bytes,
+            exact.forecast.activity.arena_bytes);
 }
 
 TEST(SelfContactTransactionCuda,
@@ -330,7 +353,7 @@ TEST(SelfContactTransactionCuda,
   ASSERT_TRUE(fixture.Prepare(token, assembly, prepared, common));
   c::SelfContactTransactionReceipt receipt;
   ASSERT_TRUE(Good(fixture.transaction.SealCandidate(
-      fixture.rig.owner, token, prepared, accepted, &receipt)));
+      fixture.rig.owner, token, common, prepared, accepted, &receipt)));
   EXPECT_EQ(receipt.broadphase_pairs(), 0u);
   EXPECT_EQ(receipt.facet_pairs(), 0u);
   EXPECT_EQ(receipt.policy_outcomes(), 0u);
@@ -355,7 +378,7 @@ TEST(SelfContactTransactionCuda,
     ASSERT_TRUE(fixture.rig.Begin(token, assembly));
     c::SelfContactTransactionReceipt unchanged;
     EXPECT_NE(fixture.transaction.SealCandidate(
-        fixture.rig.owner, token, {}, {}, &unchanged).status,
+        fixture.rig.owner, token, {}, {}, {}, &unchanged).status,
         c::SelfContactTransactionStatus::Ok);
     EXPECT_FALSE(unchanged.valid());
     EXPECT_EQ(fixture.rig.owner.accepted().epoch, 0u);
@@ -420,7 +443,7 @@ TEST(SelfContactTransactionCuda,
       ASSERT_TRUE(fixture.Prepare(token, assembly, prepared, common));
       c::SelfContactTransactionReceipt unchanged;
       EXPECT_NE(fixture.transaction.SealCandidate(
-          fixture.rig.owner, token, {}, accepted,
+          fixture.rig.owner, token, common, {}, accepted,
           &unchanged).status,
           c::SelfContactTransactionStatus::Ok);
       EXPECT_FALSE(unchanged.valid());
@@ -433,18 +456,98 @@ TEST(SelfContactTransactionCuda,
     }
     c::SelfContactTransactionReceipt receipt;
     ASSERT_TRUE(Good(fixture.transaction.SealCandidate(
-        fixture.rig.owner, token, prepared, accepted, &receipt)));
+        fixture.rig.owner, token, common, prepared, accepted, &receipt)));
     ASSERT_TRUE(receipt.valid());
     ASSERT_TRUE(fixture.Commit(token, prepared, common, receipt));
     EXPECT_EQ(fixture.rig.owner.accepted().epoch,
               static_cast<std::uint64_t>(interval + 1));
     EXPECT_EQ(p::Bits(fixture.rig.owner.accepted().reaction_kick_dt),
               p::Bits(interval ? p::H : .5 * p::H));
-    EXPECT_EQ(fixture.transaction.allocations().device_bytes,
-              allocation.device_bytes);
-    EXPECT_EQ(fixture.transaction.allocations().device_allocations,
-              allocation.device_allocations);
+    EXPECT_EQ(fixture.transaction.allocations().device.device_bytes,
+              allocation.device.device_bytes);
+    EXPECT_EQ(fixture.transaction.allocations().device.device_allocations,
+              allocation.device.device_allocations);
+    EXPECT_EQ(fixture.transaction.allocations().activity.host_bytes,
+              allocation.activity.host_bytes);
   }
+}
+
+TEST(SelfContactTransactionCuda,
+     ActualT3RemovalFiltersCandidateAndLongInactiveRetryCommits) {
+  Fixture fixture(false, false, 1.e-12);
+  ASSERT_TRUE(fixture.DriveT3Removal());
+  ASSERT_TRUE(fixture.Initialize());
+  p::Snapshot before, after;
+  ASSERT_TRUE(fixture.rig.Read(before));
+
+  fe::NodalTrialToken token;
+  fe::NodalAssemblyView assembly;
+  c::SelfContactAcceptedAssemblyReceipt accepted;
+  ASSERT_TRUE(fixture.rig.Begin(token, assembly));
+  ASSERT_TRUE(Good(fixture.transaction.AssembleAccepted(
+      fixture.rig.owner, token, assembly, &accepted)));
+  fe::NodalPreparedView prepared;
+  fe::ShellPhysicalDiagnostics common;
+  ASSERT_TRUE(fixture.Prepare(token, assembly, prepared, common));
+  auto forged = common;
+  ++forged.t3.attempt;
+  c::SelfContactTransactionReceipt unchanged;
+  const auto rejected = fixture.transaction.SealCandidate(
+      fixture.rig.owner, token, forged, prepared, accepted, &unchanged);
+  EXPECT_EQ(rejected.status,
+            c::SelfContactTransactionStatus::ActivityFailure);
+  EXPECT_FALSE(unchanged.valid());
+  EXPECT_FALSE(accepted.valid());
+  EXPECT_EQ(fixture.rig.owner.accepted().epoch, 0u);
+  ASSERT_TRUE(fixture.rig.Read(after));
+  p::Exact(before, after);
+
+  ASSERT_TRUE(fixture.rig.Begin(token, assembly));
+  ASSERT_TRUE(Good(fixture.transaction.AssembleAccepted(
+      fixture.rig.owner, token, assembly, &accepted)));
+  ASSERT_TRUE(fixture.Prepare(token, assembly, prepared, common));
+  c::SelfContactTransactionReceipt removal;
+  ASSERT_TRUE(Good(fixture.transaction.SealCandidate(
+      fixture.rig.owner, token, common, prepared, accepted, &removal)));
+  EXPECT_FALSE(accepted.valid());
+  EXPECT_EQ(removal.active_parents(), 1u);
+  EXPECT_EQ(removal.removing_parents(), 1u);
+  EXPECT_EQ(removal.skipped_parents(), 0u);
+  EXPECT_EQ(removal.facet_pairs(), 0u);
+  EXPECT_EQ(removal.policy_outcomes(), 0u);
+  const auto expired = accepted;
+  ASSERT_TRUE(fixture.Commit(token, prepared, common, removal));
+  EXPECT_EQ(fixture.rig.owner.accepted().epoch, 1u);
+
+  c::SelfContactAcceptedAssemblyReceipt inactive;
+  ASSERT_TRUE(fixture.rig.Begin(token, assembly));
+  ASSERT_TRUE(Good(fixture.transaction.AssembleAccepted(
+      fixture.rig.owner, token, assembly, &inactive)));
+  EXPECT_EQ(inactive.facet_pairs(), 0u);
+  EXPECT_EQ(inactive.diagnostics().event_count, 0u);
+  ASSERT_TRUE(fixture.Prepare(token, assembly, prepared, common));
+  EXPECT_NE(fixture.transaction.SealCandidate(
+      fixture.rig.owner, token, common, prepared, expired,
+      &unchanged).status, c::SelfContactTransactionStatus::Ok);
+  EXPECT_FALSE(unchanged.valid());
+  EXPECT_EQ(fixture.rig.owner.accepted().epoch, 1u);
+
+  ASSERT_TRUE(fixture.rig.Begin(token, assembly));
+  ASSERT_TRUE(Good(fixture.transaction.AssembleAccepted(
+      fixture.rig.owner, token, assembly, &inactive)));
+  ASSERT_TRUE(fixture.Prepare(token, assembly, prepared, common));
+  c::SelfContactTransactionReceipt long_inactive;
+  ASSERT_TRUE(Good(fixture.transaction.SealCandidate(
+      fixture.rig.owner, token, common, prepared, inactive,
+      &long_inactive)));
+  EXPECT_EQ(long_inactive.active_parents(), 1u);
+  EXPECT_EQ(long_inactive.removing_parents(), 0u);
+  EXPECT_EQ(long_inactive.skipped_parents(), 1u);
+  EXPECT_EQ(long_inactive.facet_pairs(), 0u);
+  EXPECT_EQ(long_inactive.policy_outcomes(), 0u);
+  ASSERT_TRUE(fixture.Commit(
+      token, prepared, common, long_inactive));
+  EXPECT_EQ(fixture.rig.owner.accepted().epoch, 2u);
 }
 
 TEST(SelfContactTransactionCuda,
@@ -474,7 +577,7 @@ TEST(SelfContactTransactionCuda,
         token, assembly, prepared, common));
     c::SelfContactTransactionReceipt unchanged;
     const auto report = fixture.transaction.SealCandidate(
-        fixture.rig.owner, token, prepared, accepted, &unchanged);
+        fixture.rig.owner, token, common, prepared, accepted, &unchanged);
     EXPECT_EQ(report.status,
               c::SelfContactTransactionStatus::UnresolvedCandidate);
     EXPECT_EQ(report.crossing_reason,

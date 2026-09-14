@@ -32,8 +32,6 @@ bool MakeLayout(std::size_t nodes, std::size_t surface_parents,
       !builder.Append<double>(vector_values, next.accepted_velocities) ||
       !builder.Append<double>(vector_values, next.prepared_positions) ||
       !builder.Append<double>(vector_values, next.prepared_velocities) ||
-      !builder.Append<std::uint8_t>(parents, next.activity_base) ||
-      !builder.Append<std::uint8_t>(parents, next.activity_current) ||
       !builder.Append<std::uint32_t>(
           surface_parents, next.surface_to_active) ||
       !builder.Append<std::uint32_t>(
@@ -78,8 +76,6 @@ Buffers Bind(void* base, const Layout& layout) noexcept {
       ArenaPointer<double>(base, layout.accepted_velocities),
       ArenaPointer<double>(base, layout.prepared_positions),
       ArenaPointer<double>(base, layout.prepared_velocities),
-      ArenaPointer<std::uint8_t>(base, layout.activity_base),
-      ArenaPointer<std::uint8_t>(base, layout.activity_current),
       ArenaPointer<std::uint32_t>(base, layout.surface_to_active),
       ArenaPointer<std::uint32_t>(base, layout.parent_facet_offsets),
       ArenaPointer<FixedContactFacet>(base, layout.facet_descriptors),

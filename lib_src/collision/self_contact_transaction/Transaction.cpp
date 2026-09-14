@@ -21,42 +21,6 @@ SelfContactTransactionReport Failure(S status,
   return result;
 }
 
-bool CompleteRegularity(
-    const SelfContactActiveUseBinding& active_use,
-    const SelfContactCurrentRegularityReceipt& receipt,
-    SelfContactCurrentRegularityView view) noexcept {
-  const auto parents = active_use.parents();
-  const auto source_instance_id =
-      active_use.facets()->surface()->physical()->
-          domain()->source_instance_id();
-  if (!receipt.prepared() || !view.complete ||
-      view.count != parents.size() ||
-      view.summary.generation != receipt.generation() ||
-      view.summary.parents != parents.size() ||
-      view.summary.certified_parents != parents.size() ||
-      view.summary.active_parents != parents.size() ||
-      view.summary.removing_parents || view.summary.skipped_parents)
-    return false;
-  for (std::size_t parent = 0; parent < parents.size(); ++parent) {
-    const auto& expected = parents[parent];
-    const auto& result = view.data[parent];
-    if (result.source_instance_id != source_instance_id ||
-        result.source_eid != expected.source.source_parent_id ||
-        result.binding_parent != parent ||
-        result.surface_parent != expected.surface_parent ||
-        result.arity != expected.arity ||
-        result.level != expected.level ||
-        result.facet_count != expected.facet_count ||
-        result.facets_evaluated != result.facet_count ||
-        result.state != SelfContactCurrentParentState::Active ||
-        result.chart ==
-            SelfContactCurrentChartStatus::SkippedLongInactive ||
-        !result.geometry_evaluated)
-      return false;
-  }
-  return true;
-}
-
 }  // namespace
 
 SelfContactTransaction::SelfContactTransaction() noexcept = default;
@@ -72,8 +36,10 @@ bool SelfContactTransaction::Impl::OutputDisjoint(
 }
 
 void SelfContactTransaction::Impl::DiscardLocal() noexcept {
+  physical_activity.DiscardTrial();
   force.DiscardTrial();
   participation.DiscardTrial();
+  prepared_activity = {};
   accepted_broadphase_pair_count = 0;
   candidate_broadphase_pair_count = 0;
   accepted_facet_pair_count = 0;
@@ -159,8 +125,6 @@ SelfContactTransactionReport SelfContactTransaction::Initialize(
       !next->arena.Construct<double>(layout.accepted_velocities) ||
       !next->arena.Construct<double>(layout.prepared_positions) ||
       !next->arena.Construct<double>(layout.prepared_velocities) ||
-      !next->arena.Construct<std::uint8_t>(layout.activity_base) ||
-      !next->arena.Construct<std::uint8_t>(layout.activity_current) ||
       !next->arena.Construct<std::uint32_t>(
           layout.surface_to_active) ||
       !next->arena.Construct<std::uint32_t>(
@@ -202,6 +166,17 @@ SelfContactTransactionReport SelfContactTransaction::Initialize(
       &next->has_rigid_motion);
   if (pipeline.status != S::Ok) return pipeline;
 
+  const auto activity = next->physical_activity.Initialize(
+      active_use, owner, publication, physical, participants,
+      identity, limits.activity);
+  if (activity.status != SelfContactPhysicalActivityStatus::Ok) {
+    auto report = Failure(S::ActivityFailure, activity.message);
+    report.activity_status = activity.status;
+    report.publication_status = activity.publication_status;
+    report.owner_status = activity.owner_status;
+    report.candidate = activity.parent;
+    return report;
+  }
   const auto broadphase = next->broadphase.Initialize(
       *active_use.facets()->surface(), limits.broadphase,
       owner_stream);
@@ -308,12 +283,22 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
     report.owner_status = fe::NodalStatus::InvalidInput;
     return state.Fail(report);
   }
-  for (std::size_t parent = 0; parent < parents; ++parent) {
-    if (state.buffers.activity_base[parent] != 1)
-      return state.Fail(Failure(S::UnsupportedActivity,
-          "This slice rejects removal until authenticated activity integration"));
-    state.buffers.activity_current[parent] = 1;
+  SelfContactAcceptedActivityReceipt activity_receipt;
+  const auto captured = state.physical_activity.CaptureAccepted(
+      owner, token, view, &activity_receipt);
+  if (captured.status != SelfContactPhysicalActivityStatus::Ok) {
+    auto report = Failure(S::ActivityFailure, captured.message);
+    report.activity_status = captured.status;
+    report.publication_status = captured.publication_status;
+    report.owner_status = captured.owner_status;
+    report.candidate = captured.parent;
+    return state.Fail(report);
   }
+  const auto activity = activity_receipt.activity();
+  if (!activity.base || activity.current != activity.base ||
+      activity.parent_count != parents)
+    return state.Fail(Failure(S::ActivityFailure,
+        "Accepted physical activity receipt is incomplete"));
 
   const auto node_count =
       state.active_use.facets()->surface()->physical()->
@@ -340,9 +325,6 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
   const VectorView accepted_positions{
       state.buffers.accepted_positions,
       static_cast<std::uint32_t>(node_count), 3, 1};
-  const SelfContactActivityView activity{
-      state.buffers.activity_base, state.buffers.activity_current,
-      parents};
   SelfContactCurrentRegularityReceipt regularity_receipt;
   const auto regularity = state.regularity.Certify(
       accepted_positions, activity, &regularity_receipt);
@@ -354,9 +336,9 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
     report.candidate = regularity.parent;
     return state.Fail(report);
   }
-  if (!CompleteRegularity(
+  if (!sct::CompleteRegularity(
           state.active_use, regularity_receipt,
-          state.regularity.results()))
+          state.regularity.results(), activity))
     return state.Fail(Failure(S::RegularityFailure,
         "Accepted regularity publication is incomplete or unresolved"));
 
@@ -382,6 +364,7 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
       state.storage_forecast.broadphase_pair_capacity,
       state.buffers.surface_to_active, state.surface_parent_count,
       state.buffers.parent_facet_offsets, parents,
+      activity,
       state.buffers.accepted_facet_pairs,
       state.storage_forecast.candidate_pair_capacity,
       &state.accepted_broadphase_pair_count,
@@ -455,6 +438,7 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
   next.facet_pairs_ = state.accepted_facet_pair_count;
   next.discovered_features_ =
       state.accepted_discovery.features().count;
+  next.activity_ = activity_receipt;
   next.force_ = force_receipt;
   *output = next;
   return {};
@@ -470,18 +454,20 @@ SelfContactTransactionForecast SelfContactTransaction::forecast()
       SelfContactTransactionForecast{};
 }
 
-fe::NodalAllocationInfo SelfContactTransaction::allocations()
+SelfContactTransactionAllocationInfo SelfContactTransaction::allocations()
     const noexcept {
-  return impl_ ? fe::NodalAllocationInfo{
-      impl_->storage_forecast.device_bytes,
-      impl_->storage_forecast.device_allocations}
-      : fe::NodalAllocationInfo{};
+  return impl_ ? SelfContactTransactionAllocationInfo{
+      impl_->physical_activity.allocations(),
+      {impl_->storage_forecast.device_bytes,
+       impl_->storage_forecast.device_allocations}}
+      : SelfContactTransactionAllocationInfo{};
 }
 
 SelfContactCandidatePolicyView
 SelfContactTransaction::policy_outcomes() const noexcept {
   if (!impl_ || !impl_->policy_complete ||
-      impl_->phase != Impl::Phase::CandidateSealed)
+      impl_->phase != Impl::Phase::CandidateSealed ||
+      !impl_->prepared_activity.valid())
     return {};
   return {impl_->policy_outcome_count
               ? impl_->buffers.policy_outcomes : nullptr,

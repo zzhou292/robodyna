@@ -48,12 +48,13 @@ class SelfContactTransaction {
       const tl::fea::NodalAssemblyView&,
       SelfContactAcceptedAssemblyReceipt*);
 
-  // Requires the common physical candidate to have been prepared already.
-  // Actual accepted/prepared owner coordinates are copied into fixed private
-  // storage, then regularity, discovery, and interval crossing are rerun.
+  // Requires and authenticates the exact common diagnostics produced by
+  // PreparePhysical. Actual accepted/prepared owner coordinates and physical
+  // activity are captured before regularity, discovery, and interval crossing.
   SelfContactTransactionReport SealCandidate(
       tl::fea::FENodalState&,
       const tl::fea::NodalTrialToken&,
+      const tl::fea::ShellPhysicalDiagnostics&,
       const tl::fea::NodalPreparedView&,
       const SelfContactAcceptedAssemblyReceipt&,
       SelfContactTransactionReceipt*);
@@ -68,7 +69,7 @@ class SelfContactTransaction {
 
   bool initialized() const noexcept { return bool(impl_); }
   SelfContactTransactionForecast forecast() const noexcept;
-  tl::fea::NodalAllocationInfo allocations() const noexcept;
+  SelfContactTransactionAllocationInfo allocations() const noexcept;
 
  private:
   struct Impl;

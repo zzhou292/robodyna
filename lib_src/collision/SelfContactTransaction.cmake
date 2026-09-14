@@ -2,6 +2,7 @@ include_guard(GLOBAL)
 include("${CMAKE_CURRENT_LIST_DIR}/SelfContactForceAssembly.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/SelfContactBroadphase.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/SelfContactCurrentRegularity.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/SelfContactPhysicalActivity.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/RepresentedIntervalCrossing.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../elements/ShellBatchPublication.cmake")
 
@@ -16,6 +17,7 @@ target_link_libraries(tl_self_contact_transaction PUBLIC
   tl_self_contact_force_assembly
   tl_self_contact_broadphase
   tl_self_contact_current_regularity
+  tl_self_contact_physical_activity
   tl_represented_interval_crossing
   tl_shell_batch_publication)
 target_compile_features(tl_self_contact_transaction PUBLIC cxx_std_17)

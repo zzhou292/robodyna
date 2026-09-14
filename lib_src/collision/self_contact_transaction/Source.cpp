@@ -140,8 +140,7 @@ SelfContactTransactionReport VertexFaceEvent(
     classification = excluded;
   }
   if (classification.status == SelfContactPairStatus::InactiveParent)
-    return Failure(S::UnsupportedActivity,
-        "Internal all-active seam produced an inactive VF parent");
+    return {};
   if (AllowedExclusion(classification.status)) return {};
   if (classification.status !=
       SelfContactPairStatus::AdmittedVertexFace)
@@ -287,8 +286,7 @@ SelfContactTransactionReport CheckEdgeEdge(
   if (gap > 0 || AllowedExclusion(classification.status))
     return {};
   if (classification.status == SelfContactPairStatus::InactiveParent)
-    return Failure(S::UnsupportedActivity,
-        "Internal all-active seam produced an inactive EE parent");
+    return {};
   return Failure(S::CandidateRejected,
       "Nonlocal EE contact has no declared force-area policy");
 }
@@ -299,8 +297,7 @@ SelfContactTransactionReport InitializeStaticPipeline(
     const SelfContactActiveUseBinding& active_use, Buffers buffers,
     std::size_t surface_parents, std::size_t facets,
     bool* has_rigid_motion) noexcept {
-  if (!has_rigid_motion || !buffers.activity_base ||
-      !buffers.activity_current || !buffers.surface_to_active ||
+  if (!has_rigid_motion || !buffers.surface_to_active ||
       !buffers.parent_facet_offsets || !buffers.facet_descriptors ||
       !buffers.triangle_order)
     return Failure(S::InvalidInput,
@@ -363,13 +360,78 @@ SelfContactTransactionReport InitializeStaticPipeline(
             buffers.facet_descriptors[buffers.triangle_order[i]]))
       return Failure(S::IdentityMismatch,
           "Complete facet identities are not unique", i);
-  std::fill_n(buffers.activity_base, parents.size(), std::uint8_t{1});
-  std::fill_n(buffers.activity_current, parents.size(), std::uint8_t{1});
   *has_rigid_motion = false;
   for (const auto& use : active_use.vertex_uses())
     *has_rigid_motion = *has_rigid_motion ||
         RigidSupport(use.support.status);
   return {};
+}
+
+bool CompleteRegularity(
+    const SelfContactActiveUseBinding& active_use,
+    const SelfContactCurrentRegularityReceipt& receipt,
+    SelfContactCurrentRegularityView view,
+    SelfContactActivityView activity) noexcept {
+  const auto parents = active_use.parents();
+  const auto source_instance_id =
+      active_use.facets()->surface()->physical()->
+          domain()->source_instance_id();
+  if (!receipt.prepared() || !view.complete ||
+      !activity.base || !activity.current ||
+      activity.parent_count != parents.size() ||
+      view.count != parents.size() ||
+      view.summary.generation != receipt.generation() ||
+      view.summary.parents != parents.size())
+    return false;
+
+  std::size_t active = 0;
+  std::size_t removing = 0;
+  std::size_t skipped = 0;
+  std::size_t certified = 0;
+  std::size_t facets_evaluated = 0;
+  for (std::size_t parent = 0; parent < parents.size(); ++parent) {
+    if (activity.base[parent] > 1 ||
+        activity.current[parent] > activity.base[parent])
+      return false;
+    const auto& expected = parents[parent];
+    const auto& result = view.data[parent];
+    if (result.source_instance_id != source_instance_id ||
+        result.source_eid != expected.source.source_parent_id ||
+        result.binding_parent != parent ||
+        result.surface_parent != expected.surface_parent ||
+        result.arity != expected.arity ||
+        result.level != expected.level ||
+        result.facet_count != expected.facet_count)
+      return false;
+    if (!activity.base[parent]) {
+      ++skipped;
+      if (result.state !=
+              SelfContactCurrentParentState::LongInactiveSkipped ||
+          result.chart !=
+              SelfContactCurrentChartStatus::SkippedLongInactive ||
+          result.geometry_evaluated || result.facets_evaluated)
+        return false;
+      continue;
+    }
+    ++certified;
+    active += activity.current[parent] != 0;
+    removing += activity.current[parent] == 0;
+    facets_evaluated += expected.facet_count;
+    const auto expected_state = activity.current[parent]
+        ? SelfContactCurrentParentState::Active
+        : SelfContactCurrentParentState::Removing;
+    if (result.state != expected_state ||
+        result.chart ==
+            SelfContactCurrentChartStatus::SkippedLongInactive ||
+        !result.geometry_evaluated ||
+        result.facets_evaluated != result.facet_count)
+      return false;
+  }
+  return view.summary.certified_parents == certified &&
+      view.summary.active_parents == active &&
+      view.summary.removing_parents == removing &&
+      view.summary.skipped_parents == skipped &&
+      view.summary.facets_evaluated == facets_evaluated;
 }
 
 SelfContactTransactionReport EvaluateCompleteTriangles(
@@ -393,7 +455,8 @@ SelfContactTransactionReport ReadAndExpandBroadphase(
     const std::uint32_t* surface_to_active,
     std::size_t surface_parents,
     const std::uint32_t* parent_facet_offsets,
-    std::size_t parents, FixedTrianglePair* facet_pairs,
+    std::size_t parents, SelfContactActivityView activity,
+    FixedTrianglePair* facet_pairs,
     std::size_t facet_pair_capacity,
     std::size_t* broadphase_count,
     std::size_t* facet_pair_count) noexcept {
@@ -434,6 +497,7 @@ SelfContactTransactionReport ReadAndExpandBroadphase(
   return ExpandFacetPairs(
       host_keys, *broadphase_count, surface_to_active,
       surface_parents, parent_facet_offsets, parents,
+      activity,
       facet_pairs, facet_pair_capacity, facet_pair_count);
 }
 

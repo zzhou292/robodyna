@@ -3,19 +3,23 @@
 `SelfContactTransaction` privately owns the complete fixed-facet source path:
 one `SelfContactBroadphase`, accepted and candidate
 `FixedTriangleFeatureDiscovery` instances, current regularity, represented
-interval crossing, one `SelfContactForceAssembly`, and exactly one
-`ShellPhysicalScratchParticipation`. Startup reauthenticates the retained
+interval crossing, one `SelfContactForceAssembly`, exactly one
+`ShellPhysicalScratchParticipation`, and one
+`SelfContactPhysicalActivity`. Startup reauthenticates the retained
 active-use physical binding, actual publication owner/participants, startup,
 configuration and qualification IDs, and the owner's nondefault stream. It
 preallocates both device owners plus host device-key readback, the complete
 surface-parent map, parent/facet offsets, descriptors, triangles, paths,
 accepted/candidate facet pairs, exact events/certificates, policy outcomes,
-snapshots, and activity. The caller can obtain only the immutable roster entry
+and snapshots. The activity authority separately owns one exact
+accepted/current and complete-family readback arena. The caller can obtain only the immutable roster entry
 and a borrowed post-seal policy publication.
 
-Accepted assembly copies the actual owner snapshot, certifies every selected
+Accepted assembly first captures activity from the actual QEPH/T3/QBAT
+participant assembly. It copies the actual owner snapshot, certifies every selected
 parent, runs the complete current broadphase, validates its full device pair
-readback, expands every S0 pair to every facet pair, discovers all fixed
+readback, filters inactive parent pairs, expands every remaining S0 pair to
+every facet pair, discovers all fixed
 features, constructs each admitted directed VF event from the exact discovery
 weights and active-use classifier, and assigns canonical source order. Only
 then does it run the existing deterministic VF force/STI implementation and
@@ -24,10 +28,12 @@ event, triangle, pair, discovery, crossing, or source-order input.
 Every later failure discards owner, common publication, force and issuer trial
 scratch. Caller output changes only after both operations succeed.
 
-Candidate sealing copies actual
+Candidate sealing requires the exact `ShellPhysicalDiagnostics` returned by
+`PreparePhysical`, captures publication-authenticated prepared activity, and copies actual
 accepted and prepared positions from `FENodalState` into fixed startup storage,
 runs a complete swept broadphase over the authenticated linear endpoints,
-expands every returned pair, runs current regularity over every active parent,
+filters inactive pairs and runs current regularity over active, removing, and
+long-inactive parents,
 rebuilds every exact fixed facet, and reruns complete discovery and represented
 interval crossing. Unresolved results fail. The fixed policy rejects nonlocal
 intersections and EE crossings and admits a VF crossing only through the full
@@ -56,15 +62,32 @@ owner/base/attempt/source/configuration/qualification/active-use identities.
 Only that receipt can expose the private typed physical receipt in a
 `ShellPhysicalScratchReceiptRoster`.
 
-This slice intentionally retains a private all-one activity seam and rejects
-any internally unsupported removal state. It accepts no public activity
-pointers. Integration with the parallel activity-authority work must replace
-only that private seam with the physical-publication-authenticated,
-active-use-ordered base/current receipt. Integration with the parallel complete
-assembly-view authentication must replace the accepted source-only check used
-before broadphase; the force owner remains the final full-view consumer.
+No transaction-owned all-one activity array remains. Accepted and prepared
+activity receipts stay private inside transaction receipts, become stale on
+discard/publication/generation change, permit `1->0` removal and `0->0`
+long inactivity, and reject `0->1` reactivation. Removing and long-inactive
+parents remain represented in regularity but own no candidate facet pairs,
+events, or policy outcomes.
 Rigid-arc/nonlinear paths are explicit candidate failures rather than being
 misrepresented as endpoint chords.
+
+## Caller migration
+
+Remove `config.activity_policy`; the physical publication is now the only
+activity authority. Pass the exact common diagnostics returned by
+`PreparePhysical` before the prepared view:
+
+```cpp
+transaction.SealCandidate(
+    owner, token, common_diagnostics, prepared, accepted, &receipt);
+```
+
+Tune activity capacity through `limits.activity`. Forecast activity storage is
+`forecast.activity`; the old `forecast.parent_activity_bytes` field is gone.
+Allocation reporting is split into `allocations().activity` for the one host
+activity arena and `allocations().device` for transaction device ownership.
+CMake and Bazel users need no new direct dependency when they already consume
+`tl_self_contact_transaction` or `//lib_src/collision:self_contact_transaction`.
 
 ## Author host gate
 
@@ -98,6 +121,8 @@ That target uses real `FENodalState`, physical publication, current regularity,
 fixed discovery, represented crossing, VF force and CIN STI. It covers missing
 mandatory receipt rollback/retry, initial half-kick, ordinary interval and
 allocation stability, plus an exact pass-through unresolved-reason rollback
-and deterministic retry. That pass-through is driven by a token-authenticated
+and deterministic retry. It also covers actual T3 removal, long-inactive
+participation, stale accepted authority, forged physical diagnostics, and
+exact rollback/retry. The pass-through is driven by a token-authenticated
 assembled nodal force, not an inconsistent initial nodal velocity. CUDA
 execution is intentionally left to the parent.
