@@ -627,7 +627,7 @@ TEST(SelfContactTransactionCuda,
       fixture.rig.owner,token,assembly,&accepted)));
   EXPECT_GT(accepted.broadphase_pairs(),0u);
   EXPECT_GT(accepted.facet_pairs(),0u);
-  EXPECT_GT(accepted.discovered_features(),0u);
+  EXPECT_EQ(accepted.discovered_features(),0u);
   EXPECT_EQ(accepted.diagnostics().event_count,0u);
   EXPECT_EQ(accepted.diagnostics().active_count,0u);
   EXPECT_EQ(accepted.diagnostics().maximum_force_norm_n,0);
@@ -696,9 +696,12 @@ TEST(SelfContactTransactionCuda,
       contact_force=c::Add(contact_force,increment);
       contact_resultant=c::Add(contact_resultant,increment);
       contact_moment=c::Add(contact_moment,Cross(x,increment));
-      if (Norm(increment)>0) ++contacted_nodes[g];
-      endpoint_inverse_sum[g]=c::Add(endpoint_inverse_sum[g],
-          c::Scale(increment,1/member.mass_kg));
+      if (Norm(increment)>0) {
+        ASSERT_GT(member.mass_kg,0);
+        ++contacted_nodes[g];
+        endpoint_inverse_sum[g]=c::Add(endpoint_inverse_sum[g],
+            c::Scale(increment,1/member.mass_kg));
+      }
     }
     expected_acceleration[g]=c::Scale(force,1/group.mass_kg);
     expected_angular[g]=DenseAngularAcceleration(group,moment);

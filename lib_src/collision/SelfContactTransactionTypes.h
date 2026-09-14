@@ -117,7 +117,7 @@ struct SelfContactTransactionLimits {
   // geometry are materialized only in chunks. max_candidate_pairs is the
   // complete facet-pair census cap, not an allocation shape.
   std::size_t max_candidate_pairs = 65536;
-  std::size_t max_facet_pair_chunk = 4096;
+  std::size_t max_facet_pair_chunk = 1024;
   // The certificate ledger is independent of the force publication cap. This
   // permits a complete count before an exact force-capacity rejection.
   std::size_t max_global_events = 4096;
@@ -126,9 +126,9 @@ struct SelfContactTransactionLimits {
   // addressable per-pair publication.
   std::size_t max_policy_outcomes = 4096;
   std::size_t max_stream_crossing_work = 1u << 20;
-  std::size_t max_host_bytes = 128u << 20;
+  std::size_t max_host_bytes = 512u << 20;
   std::size_t max_device_bytes = 64u << 20;
-  std::size_t max_startup_host_bytes = 512u << 20;
+  std::size_t max_startup_host_bytes = 1u << 30;
 
   struct ExactCensus {
     std::size_t nodes = 0;

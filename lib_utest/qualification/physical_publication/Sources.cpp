@@ -41,11 +41,15 @@ Fixture::Fixture(bool surface,double failure,bool contact_geometry,
 void Fixture::PrepareSources() {
   auto property = source.spring_property;
   for (auto& damping : property.property.damping) damping = 0;
+  const bool rigid_contact =
+      contact_constraints == ContactConstraintLayout::SameMergedParts ||
+      contact_constraints == ContactConstraintLayout::MergedPartAndPlain;
   fe::type25::ConnectionInput connections[2];
   for (unsigned row = 0; row < 2; ++row) {
     auto& connection = connections[row];
     connection.source_element_id = 19000+row;
-    const std::uint64_t ends[]{901,row && !surface_rigid ? 14u : 12u};
+    const std::uint64_t ends[]{
+        901,row && !surface_rigid && !rigid_contact ? 14u : 12u};
     for (unsigned slot = 0; slot < 2; ++slot) {
       const auto node = domain.Find(ends[slot]);
       connection.global_node[slot] = node;
@@ -67,9 +71,6 @@ void Fixture::PrepareSources() {
   auto native = beam_material.Input();
   native.units = {1,1,1};
   const fe::type13::ModelPropertyInput declaration{200,native};
-  const bool rigid_contact =
-      contact_constraints == ContactConstraintLayout::SameMergedParts ||
-      contact_constraints == ContactConstraintLayout::MergedPartAndPlain;
   fe::type13::ModelReport beam_report;
   if (rigid_contact) {
     fe::type13::ModelNode beam_nodes[4];

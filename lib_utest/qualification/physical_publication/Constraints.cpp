@@ -26,12 +26,12 @@ void Fixture::PrepareConstraints() {
     EXPECT_TRUE(rigid.Initialize(parts));
   } else if (contact_constraints ==
              ContactConstraintLayout::MergedPartAndPlain) {
-    const std::uint64_t first[]{14,15};
-    const std::uint64_t second[]{16,777,778};
+    const std::uint64_t first[]{14,15,16};
+    const std::uint64_t second[]{777,778};
     const std::uint64_t expected[]{14,15,16,777,778};
     const std::uint64_t plain_ids[]{17,18,55};
     const fe::rigid::PartTopologyPartInput declarations[]{
-        {3000,first,2},{3001,second,3}};
+        {3000,first,3},{3001,second,2}};
     const fe::rigid::PartTopologyMerge merge{3000,3001};
     fe::rigid::PartTopologyInput input;
     input.source_instance_id=1;
