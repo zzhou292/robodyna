@@ -54,6 +54,7 @@ cc_library(
         "fixed_triangle_features/Geometry.h",
     ],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    linkopts = ["-pthread"],
     deps = [
         ":fixed_contact_facets",
         ":surface_contact_primitives",

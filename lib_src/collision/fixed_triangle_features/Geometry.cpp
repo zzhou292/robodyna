@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstring>
 #include <limits>
 #include <tuple>
 
@@ -650,6 +651,8 @@ FixedTriangleDiscoveryStatus AddVertexFace(
   if (result->feature_count >= capacity)
     return FixedTriangleDiscoveryStatus::ResourceLimit;
   FixedTriangleFeatureCandidate candidate;
+  std::memset(&candidate, 0, sizeof(candidate));
+  candidate.face_weights[0] = 1;
   candidate.key.kind = FixedTriangleCandidateKind::VertexFace;
   candidate.key.vertex_face.vertex =
       vertex_triangle.vertex_keys[vertex];
@@ -781,6 +784,8 @@ FixedTriangleDiscoveryStatus AddEdgeEdge(
   if (result->feature_count >= capacity)
     return FixedTriangleDiscoveryStatus::ResourceLimit;
   FixedTriangleFeatureCandidate candidate;
+  std::memset(&candidate, 0, sizeof(candidate));
+  candidate.face_weights[0] = 1;
   candidate.key.SetEdgeEdge();
   candidate.key.edge_edge.edges[0] =
       a_first ? a.edge_keys[edge_a] : b.edge_keys[edge_b];

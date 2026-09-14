@@ -277,6 +277,10 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
               sizeof(SelfContactBroadphase) ||
       regularity.forecast.owned_payload_bytes <
           sizeof(SelfContactCurrentRegularity) ||
+      accepted_discovery.forecast.startup_host_bytes <
+          accepted_discovery.forecast.owned_host_bytes ||
+      candidate_discovery.forecast.startup_host_bytes <
+          candidate_discovery.forecast.owned_host_bytes ||
       activity.forecast.startup_host_bytes <
           activity.forecast.owned_host_bytes ||
       force.forecast.startup_host_bytes <
@@ -336,7 +340,13 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
       regularity.forecast.startup_payload_bytes -
           regularity.forecast.owned_payload_bytes});
   forecast.startup_host_bytes = forecast.owned_host_bytes;
-  if (!Add(startup_scratch, &forecast.startup_host_bytes) ||
+  if (!Add(accepted_discovery.forecast.startup_host_bytes -
+               accepted_discovery.forecast.owned_host_bytes,
+           &forecast.startup_host_bytes) ||
+      !Add(candidate_discovery.forecast.startup_host_bytes -
+               candidate_discovery.forecast.owned_host_bytes,
+           &forecast.startup_host_bytes) ||
+      !Add(startup_scratch, &forecast.startup_host_bytes) ||
       forecast.startup_host_bytes > limits.max_startup_host_bytes)
     return Failure(S::ResourceLimit,
         "Transaction complete startup payload exceeds its cap");

@@ -26,7 +26,8 @@ SelfContactTransactionLimits SelfContactTransactionLimits::Vehicle(
     unsigned crossing_depth,
     std::size_t max_host_bytes,
     std::size_t max_device_bytes,
-    std::size_t max_startup_host_bytes) noexcept {
+    std::size_t max_startup_host_bytes,
+    unsigned discovery_worker_count) noexcept {
   SelfContactTransactionLimits result;
   const auto invalid = [&]() noexcept {
     result.max_host_bytes = 0;
@@ -50,6 +51,9 @@ SelfContactTransactionLimits SelfContactTransactionLimits::Vehicle(
       crossing_work_per_chunk > crossing_work_complete ||
       crossing_depth > 52 || !max_host_bytes ||
       !max_device_bytes || !max_startup_host_bytes ||
+      !discovery_worker_count ||
+      discovery_worker_count >
+          FixedTriangleFeatureMaximumWorkerCount ||
       !Product(facet_pair_chunk, 2, &twice_chunk) ||
       !Product(facet_pair_chunk, 6, &six_chunk) ||
       !Product(facet_pair_chunk, 15, &fifteen_chunk))
@@ -71,7 +75,8 @@ SelfContactTransactionLimits SelfContactTransactionLimits::Vehicle(
   result.accepted_discovery = {
       facet_pair_chunk, twice_chunk, six_chunk, six_chunk,
       fifteen_chunk, fifteen_chunk,
-      facet_pair_chunk, facet_pair_chunk, max_host_bytes};
+      facet_pair_chunk, facet_pair_chunk, max_host_bytes,
+      discovery_worker_count};
   result.candidate_discovery = result.accepted_discovery;
   result.regularity = {
       census.selected_parents, census.facets, max_host_bytes};

@@ -157,7 +157,8 @@ struct SelfContactTransactionLimits {
       unsigned crossing_depth,
       std::size_t max_host_bytes,
       std::size_t max_device_bytes,
-      std::size_t max_startup_host_bytes) noexcept;
+      std::size_t max_startup_host_bytes,
+      unsigned discovery_worker_count = 1) noexcept;
 };
 
 struct SelfContactTransactionForecast {

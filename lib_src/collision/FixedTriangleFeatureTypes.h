@@ -227,6 +227,8 @@ struct FixedTriangleDiscoveryReport {
   std::size_t exact_executed_tasks = 0;
 };
 
+inline constexpr unsigned FixedTriangleFeatureMaximumWorkerCount = 8;
+
 struct FixedTriangleFeatureLimits {
   std::size_t max_input_pairs = 4096;
   std::size_t max_triangle_references = 2 * 4096;
@@ -237,6 +239,9 @@ struct FixedTriangleFeatureLimits {
   std::size_t max_raw_intersections = 4096;
   std::size_t max_intersections = 4096;
   std::size_t max_host_bytes = 64u << 20;
+  // Total persistent startup worker threads. The caller only stages and
+  // canonically reduces pair results; it is not counted as a worker.
+  unsigned worker_count = 1;
 };
 
 struct FixedTriangleFeatureForecast {
@@ -249,6 +254,15 @@ struct FixedTriangleFeatureForecast {
   std::size_t raw_intersection_capacity = 0;
   std::size_t intersection_publication_capacity = 0;
   std::size_t owned_host_bytes = 0;
+  // Appended worker diagnostics preserve the original forecast prefix.
+  std::size_t pair_status_capacity = 0;
+  std::size_t pair_status_bytes = 0;
+  unsigned worker_count = 0;
+  std::size_t worker_metadata_bytes = 0;
+  // Includes each explicitly mapped worker stack and its guard page.
+  std::size_t worker_stack_bytes = 0;
+  // Workers and their stacks persist, so this equals owned_host_bytes.
+  std::size_t startup_host_bytes = 0;
 };
 
 struct FixedTriangleFeaturePreflight {

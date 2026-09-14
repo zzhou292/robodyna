@@ -60,14 +60,33 @@ for required in (
     assert required in text, required
 
 discovery = production[6].read_text()
-assert discovery.index("report.raw_feature_candidates +=") < discovery.index(
-    "EvaluatePairFeaturesMaskedOnce(")
+discover_impl = discovery[discovery.index(
+    "\nFixedTriangleDiscoveryReport "
+    "FixedTriangleFeatureDiscovery::DiscoverImpl("):]
+assert discover_impl.index("report.raw_feature_candidates +=") < (
+    discover_impl.index("impl_->RunWorkers("))
 assert discovery.count("EvaluatePairFeaturesMaskedOnce(") == 1
+assert discovery.count("pthread_create(") == 1
+assert "std::async" not in discovery
+assert "std::thread" not in discovery
+for forbidden in ("pthread_create(", "mmap(", "new (", "malloc("):
+    assert forbidden not in discover_impl, forbidden
 assert "Feature task mask omits a nonlocal or nonexistent task" in discovery
 assert "ft::PairLocalFeatureTaskMask(" in discovery
 assert "report.exact_executed_tasks +=" in discovery
-assert discovery.index("report.raw_feature_candidates +=") < discovery.index(
+assert discover_impl.index("report.raw_feature_candidates +=") < (
+    discover_impl.index(
     "impl_->features[i] = impl_->raw_features[i]")
+)
+assert "RunWorkers(triangles, pairs, pair_count)" in discover_impl
+assert "next_pair.fetch_add(" in discovery
+assert "stage.raw_feature_offset" in discovery
+assert "stage.expected_feature_count" in discovery
+assert "busy.compare_exchange_strong(" in discovery
+assert "Impl::Phase::Warm" in discovery
+assert "pthread_join(" in discovery
+assert "FixedTriangleFeatureMaximumWorkerCount" in text
+assert "kWorkerStackBytes" in discovery
 assert "long double" not in geometry
 assert "closest.weights[i] == 0" not in geometry
 assert "closest.weights[i] == 1" not in geometry
@@ -87,6 +106,8 @@ bazel = (COLLISION / "BUILD.bazel").read_text()
 for source in ("ExactPredicates.cpp", "Geometry.cpp", "Discovery.cpp"):
     assert source in cmake and source in bazel
 assert "fixed_triangle_feature_discovery" in bazel
+assert "Threads::Threads" in cmake
+assert '"-pthread"' in bazel
 
 tests = "\n".join(path.read_text() for path in HERE.glob("*Test.cpp"))
 qualification_bazel = (HERE / "BUILD.bazel").read_text()
@@ -127,6 +148,9 @@ for required in (
     "ClosedBoundaryNextafterAndOutsideVoronoiRegionsStayExact",
     "RoundedBoundaryCollapsePublishesEnclosedExactStratumMapping",
     "RoundedInteriorRepresentationPublishesAndBoundaryRetrySucceeds",
+    "WorkerCountsMatchAcrossMasksCapsPermutationsAndRetries",
+    "EarliestExactFailureMatchesSerialAndPreservesPublication",
+    "PreflightBoundsMetadataStacksAndRepeatedDestruction",
 ):
     assert required in tests, required
 

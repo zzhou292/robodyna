@@ -4,13 +4,22 @@
 #include "Geometry.h"
 
 #include <algorithm>
+#include <atomic>
+#include <cerrno>
 #include <cstdint>
+#include <cstring>
 #include <limits>
 #include <new>
+#include <pthread.h>
+#include <semaphore.h>
+#include <sys/mman.h>
+#include <unistd.h>
 
 namespace tlfea::contact {
 namespace ft = fixed_triangle_features;
 namespace {
+
+constexpr std::size_t kWorkerStackBytes = 1u << 20;
 
 bool CheckedBytes(std::size_t count, std::size_t width,
                   std::size_t* total) noexcept {
@@ -64,8 +73,16 @@ struct EdgeLedgerEntry {
   Vec3 endpoints[2];
 };
 
-struct PairIntersectionStage {
-  FixedTriangleIntersection value;
+struct PairEvaluationStage {
+  FixedTriangleIntersection intersection;
+  ft::PairFeatureResult feature;
+  FixedTriangleFeatureTaskMask mask;
+  std::size_t raw_feature_offset = 0;
+  std::size_t expected_feature_count = 0;
+  FixedTriangleDiscoveryStatus intersection_status =
+      FixedTriangleDiscoveryStatus::Ok;
+  FixedTriangleDiscoveryStatus feature_status =
+      FixedTriangleDiscoveryStatus::Ok;
   bool intersects = false;
 };
 
@@ -137,9 +154,51 @@ const char* Message(FixedTriangleDiscoveryStatus status) noexcept {
   return "Unknown fixed-triangle discovery status";
 }
 
+FixedTriangleDiscoveryReport FreshReport() noexcept {
+  FixedTriangleDiscoveryReport result;
+  std::memset(&result, 0, sizeof(result));
+  result.input_pair = SIZE_MAX;
+  result.input_task = SIZE_MAX;
+  result.message = Message(result.status);
+  return result;
+}
+
+bool Wait(sem_t* semaphore) noexcept {
+  if (!semaphore)
+    return false;
+  while (sem_wait(semaphore) != 0) {
+    if (errno != EINTR)
+      return false;
+  }
+  return true;
+}
+
+std::size_t PageBytes() noexcept {
+  const long value = sysconf(_SC_PAGESIZE);
+  return value > 0 ? static_cast<std::size_t>(value) : 0;
+}
+
 }  // namespace
 
 struct FixedTriangleFeatureDiscovery::Impl {
+  enum class Phase : unsigned {
+    Constructing,
+    Warm,
+    Running,
+    Failed,
+    Stopping,
+  };
+
+  struct WorkerSlot {
+    Impl* owner = nullptr;
+    pthread_t thread{};
+    void* stack_mapping = nullptr;
+    sem_t start{};
+    bool start_initialized = false;
+    bool started = false;
+    bool failed = false;
+  };
+
   FixedTriangleFeatureLimits limits;
   FixedTriangleFeatureForecast forecast;
   std::unique_ptr<TriangleLedgerEntry[]> triangle_ledger;
@@ -147,12 +206,26 @@ struct FixedTriangleFeatureDiscovery::Impl {
   std::unique_ptr<EdgeLedgerEntry[]> edge_ledger;
   std::unique_ptr<FixedTriangleFeatureCandidate[]> raw_features;
   std::unique_ptr<FixedTriangleFeatureCandidate[]> features;
-  std::unique_ptr<PairIntersectionStage[]> pair_intersections;
+  std::unique_ptr<PairEvaluationStage[]> pair_status;
   std::unique_ptr<FixedTriangleIntersection[]> raw_intersections;
   std::unique_ptr<FixedTriangleIntersection[]> intersections;
+  std::unique_ptr<WorkerSlot[]> workers;
+  sem_t completed{};
+  bool completed_initialized = false;
+  std::size_t started_workers = 0;
+  std::atomic<std::size_t> next_pair{0};
+  std::atomic<bool> stop{false};
+  std::atomic<bool> pool_failed{false};
+  std::atomic<bool> busy{false};
+  std::atomic<Phase> phase{Phase::Constructing};
+  const CurrentFixedTriangle* job_triangles = nullptr;
+  const FixedTrianglePair* job_pairs = nullptr;
+  std::size_t job_pair_count = 0;
   std::size_t feature_count = 0;
   std::size_t intersection_count = 0;
   bool complete = false;
+
+  ~Impl() { Shutdown(); }
 
   bool InputDisjoint(const void* input,
                      std::size_t bytes) const noexcept {
@@ -170,15 +243,199 @@ struct FixedTriangleFeatureDiscovery::Impl {
            separated(edge_ledger, limits.max_edge_references) &&
            separated(raw_features, limits.max_raw_feature_candidates) &&
            separated(features, limits.max_feature_candidates) &&
-           separated(pair_intersections, limits.max_input_pairs) &&
+           separated(pair_status, limits.max_input_pairs) &&
            separated(raw_intersections, limits.max_raw_intersections) &&
-           separated(intersections, limits.max_intersections);
+           separated(intersections, limits.max_intersections) &&
+           separated(workers, limits.worker_count) &&
+           WorkerStacksDisjoint(input, bytes);
   }
 
   void PublishEmpty() noexcept {
     feature_count = 0;
     intersection_count = 0;
     complete = true;
+  }
+
+  bool WorkerStacksDisjoint(const void* input,
+                            std::size_t bytes) const noexcept {
+    if (!workers)
+      return false;
+    const std::size_t mapping_bytes =
+        kWorkerStackBytes + PageBytes();
+    if (mapping_bytes < kWorkerStackBytes)
+      return false;
+    for (unsigned i = 0; i < limits.worker_count; ++i)
+      if (!workers[i].stack_mapping ||
+          !Disjoint(input, bytes, workers[i].stack_mapping,
+                    mapping_bytes))
+        return false;
+    return true;
+  }
+
+  static void* WorkerEntry(void* opaque) noexcept {
+    auto* worker = static_cast<WorkerSlot*>(opaque);
+    if (!worker || !worker->owner)
+      return nullptr;
+    auto& owner = *worker->owner;
+    for (;;) {
+      if (!Wait(&worker->start)) {
+        worker->failed = true;
+        owner.pool_failed.store(true, std::memory_order_release);
+        owner.phase.store(Phase::Failed, std::memory_order_release);
+        return nullptr;
+      }
+      if (owner.stop.load(std::memory_order_acquire))
+        return nullptr;
+      worker->failed = false;
+      try {
+        owner.EvaluateJobs();
+      } catch (...) {
+        worker->failed = true;
+        owner.pool_failed.store(true, std::memory_order_release);
+      }
+      if (sem_post(&owner.completed) != 0) {
+        worker->failed = true;
+        owner.pool_failed.store(true, std::memory_order_release);
+        owner.phase.store(Phase::Failed, std::memory_order_release);
+        return nullptr;
+      }
+    }
+  }
+
+  void EvaluateJobs() {
+    for (;;) {
+      const std::size_t pair =
+          next_pair.fetch_add(1, std::memory_order_relaxed);
+      if (pair >= job_pair_count)
+        return;
+      auto& stage = pair_status[pair];
+      const auto input = job_pairs[pair];
+      const auto& first = job_triangles[input.first];
+      const auto& second = job_triangles[input.second];
+      stage.intersection_status = ft::ClassifyPairIntersection(
+          first, second, &stage.intersection, &stage.intersects);
+      if (stage.intersection_status !=
+          FixedTriangleDiscoveryStatus::Ok)
+        continue;
+      stage.feature_status = ft::EvaluatePairFeaturesMaskedOnce(
+          first, second, stage.mask,
+          raw_features.get() + stage.raw_feature_offset,
+          stage.expected_feature_count, &stage.feature);
+    }
+  }
+
+  bool RunWorkers(const CurrentFixedTriangle* triangles,
+                  const FixedTrianglePair* pairs,
+                  std::size_t pair_count) noexcept {
+    Phase expected = Phase::Warm;
+    if (!phase.compare_exchange_strong(
+            expected, Phase::Running, std::memory_order_acq_rel))
+      return false;
+    job_triangles = triangles;
+    job_pairs = pairs;
+    job_pair_count = pair_count;
+    next_pair.store(0, std::memory_order_relaxed);
+    pool_failed.store(false, std::memory_order_release);
+    std::size_t posted = 0;
+    for (; posted < started_workers; ++posted)
+      if (sem_post(&workers[posted].start) != 0)
+        break;
+    bool failed = posted != started_workers;
+    for (std::size_t i = 0; i < posted; ++i)
+      if (!Wait(&completed))
+        failed = true;
+    failed = failed ||
+        pool_failed.load(std::memory_order_acquire);
+    phase.store(failed ? Phase::Failed : Phase::Warm,
+                std::memory_order_release);
+    return !failed;
+  }
+
+  bool StartWorkers() noexcept {
+    const std::size_t page_bytes = PageBytes();
+    if (!page_bytes || kWorkerStackBytes < PTHREAD_STACK_MIN ||
+        kWorkerStackBytes % page_bytes ||
+        sem_init(&completed, 0, 0) != 0)
+      return false;
+    completed_initialized = true;
+    const std::size_t mapping_bytes =
+        kWorkerStackBytes + page_bytes;
+    for (unsigned i = 0; i < limits.worker_count; ++i) {
+      auto& worker = workers[i];
+      worker.owner = this;
+      if (sem_init(&worker.start, 0, 0) != 0)
+        return false;
+      worker.start_initialized = true;
+#ifdef MAP_STACK
+      constexpr int stack_flag = MAP_STACK;
+#else
+      constexpr int stack_flag = 0;
+#endif
+      worker.stack_mapping = mmap(
+          nullptr, mapping_bytes, PROT_READ | PROT_WRITE,
+          MAP_PRIVATE | MAP_ANONYMOUS | stack_flag, -1, 0);
+      if (worker.stack_mapping == MAP_FAILED) {
+        worker.stack_mapping = nullptr;
+        return false;
+      }
+      auto* stack = static_cast<unsigned char*>(
+          worker.stack_mapping) + page_bytes;
+      std::memset(stack, 0, kWorkerStackBytes);
+      if (mprotect(worker.stack_mapping, page_bytes, PROT_NONE) != 0)
+        return false;
+      pthread_attr_t attributes;
+      if (pthread_attr_init(&attributes) != 0)
+        return false;
+      const int guard_status =
+          pthread_attr_setguardsize(&attributes, 0);
+      const int stack_status = guard_status
+          ? guard_status
+          : pthread_attr_setstack(
+                &attributes, stack, kWorkerStackBytes);
+      const int create_status = stack_status
+          ? stack_status
+          : pthread_create(&worker.thread, &attributes,
+                           &Impl::WorkerEntry, &worker);
+      pthread_attr_destroy(&attributes);
+      if (create_status != 0)
+        return false;
+      worker.started = true;
+      ++started_workers;
+    }
+    phase.store(Phase::Warm, std::memory_order_release);
+    // Dispatch one empty generation so every thread, stack and semaphore path
+    // is live before Initialize publishes the object.
+    return RunWorkers(nullptr, nullptr, 0);
+  }
+
+  void Shutdown() noexcept {
+    phase.store(Phase::Stopping, std::memory_order_release);
+    stop.store(true, std::memory_order_release);
+    if (workers) {
+      for (std::size_t i = 0; i < started_workers; ++i)
+        if (workers[i].started)
+          sem_post(&workers[i].start);
+      for (std::size_t i = 0; i < started_workers; ++i) {
+        if (workers[i].started)
+          pthread_join(workers[i].thread, nullptr);
+        workers[i].started = false;
+      }
+      const std::size_t page_bytes = PageBytes();
+      const std::size_t mapping_bytes =
+          kWorkerStackBytes + page_bytes;
+      for (unsigned i = 0; i < limits.worker_count; ++i) {
+        if (workers[i].start_initialized)
+          sem_destroy(&workers[i].start);
+        workers[i].start_initialized = false;
+        if (workers[i].stack_mapping && page_bytes)
+          munmap(workers[i].stack_mapping, mapping_bytes);
+        workers[i].stack_mapping = nullptr;
+      }
+    }
+    started_workers = 0;
+    if (completed_initialized)
+      sem_destroy(&completed);
+    completed_initialized = false;
   }
 };
 
@@ -188,7 +445,8 @@ FixedTriangleFeatureDiscovery::~FixedTriangleFeatureDiscovery() = default;
 
 FixedTriangleFeaturePreflight FixedTriangleFeatureDiscovery::Preflight(
     FixedTriangleFeatureLimits limits) noexcept {
-  FixedTriangleFeaturePreflight result;
+  FixedTriangleFeaturePreflight result{};
+  result.report = FreshReport();
   result.forecast.triangle_ledger_capacity =
       limits.max_triangle_references;
   result.forecast.vertex_ledger_capacity =
@@ -202,9 +460,34 @@ FixedTriangleFeaturePreflight FixedTriangleFeatureDiscovery::Preflight(
   result.forecast.raw_intersection_capacity = limits.max_raw_intersections;
   result.forecast.intersection_publication_capacity =
       limits.max_intersections;
+  result.forecast.pair_status_capacity = limits.max_input_pairs;
+  result.forecast.worker_count = limits.worker_count;
   std::size_t bytes = sizeof(Impl);
   std::size_t maximum_tasks = 0;
   std::size_t maximum_triangle_references = 0;
+  std::size_t pair_status_bytes = 0;
+  std::size_t worker_metadata_bytes = 0;
+  std::size_t worker_stack_bytes = 0;
+  const std::size_t page_bytes = PageBytes();
+  const bool worker_shape_ok =
+      page_bytes &&
+      kWorkerStackBytes >= static_cast<std::size_t>(PTHREAD_STACK_MIN) &&
+      kWorkerStackBytes % page_bytes == 0 &&
+      kWorkerStackBytes <= SIZE_MAX - page_bytes &&
+      CheckedProduct(limits.max_input_pairs,
+                     sizeof(PairEvaluationStage),
+                     &pair_status_bytes) &&
+      CheckedProduct(limits.worker_count, sizeof(Impl::WorkerSlot),
+                     &worker_metadata_bytes) &&
+      CheckedProduct(limits.worker_count,
+                     kWorkerStackBytes + page_bytes,
+                     &worker_stack_bytes);
+  result.forecast.pair_status_bytes =
+      worker_shape_ok ? pair_status_bytes : SIZE_MAX;
+  result.forecast.worker_metadata_bytes =
+      worker_shape_ok ? worker_metadata_bytes : SIZE_MAX;
+  result.forecast.worker_stack_bytes =
+      worker_shape_ok ? worker_stack_bytes : SIZE_MAX;
   const bool pair_product_ok =
       CheckedProduct(limits.max_input_pairs, 15, &maximum_tasks) &&
       CheckedProduct(limits.max_input_pairs, 2,
@@ -222,15 +505,23 @@ FixedTriangleFeaturePreflight FixedTriangleFeatureDiscovery::Preflight(
       CheckedBytes(limits.max_feature_candidates,
                    sizeof(FixedTriangleFeatureCandidate), &bytes) &&
       CheckedBytes(limits.max_input_pairs,
-                   sizeof(PairIntersectionStage), &bytes) &&
+                   sizeof(PairEvaluationStage), &bytes) &&
       CheckedBytes(limits.max_raw_intersections,
                    sizeof(FixedTriangleIntersection), &bytes) &&
       CheckedBytes(limits.max_intersections,
-                   sizeof(FixedTriangleIntersection), &bytes);
+                   sizeof(FixedTriangleIntersection), &bytes) &&
+      CheckedBytes(limits.worker_count,
+                   sizeof(Impl::WorkerSlot), &bytes) &&
+      CheckedBytes(limits.worker_count,
+                   kWorkerStackBytes + page_bytes, &bytes);
   result.forecast.owned_host_bytes = arithmetic_ok ? bytes : SIZE_MAX;
+  result.forecast.startup_host_bytes =
+      result.forecast.owned_host_bytes;
   if (!limits.max_input_pairs || !limits.max_triangle_references ||
       !limits.max_vertex_references || !limits.max_edge_references ||
       !limits.max_raw_feature_candidates || !limits.max_raw_intersections ||
+      !limits.worker_count ||
+      limits.worker_count > FixedTriangleFeatureMaximumWorkerCount ||
       !pair_product_ok ||
       limits.max_raw_feature_candidates >
           maximum_tasks ||
@@ -239,7 +530,8 @@ FixedTriangleFeaturePreflight FixedTriangleFeatureDiscovery::Preflight(
           limits.max_raw_feature_candidates ||
       limits.max_intersections > limits.max_raw_intersections) {
     result.report.status = FixedTriangleDiscoveryStatus::InvalidInput;
-  } else if (!arithmetic_ok || bytes > limits.max_host_bytes) {
+  } else if (!worker_shape_ok || !arithmetic_ok ||
+             bytes > limits.max_host_bytes) {
     result.report.status = FixedTriangleDiscoveryStatus::ResourceLimit;
   }
   result.report.message = Message(result.report.status);
@@ -249,7 +541,7 @@ FixedTriangleFeaturePreflight FixedTriangleFeatureDiscovery::Preflight(
 FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::Initialize(
     FixedTriangleFeatureLimits limits) noexcept {
   if (impl_) {
-    FixedTriangleDiscoveryReport report;
+    auto report = FreshReport();
     report.status = FixedTriangleDiscoveryStatus::AlreadyInitialized;
     report.message = Message(report.status);
     return report;
@@ -259,7 +551,7 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::Initialize(
     return preflight.report;
   auto next = std::unique_ptr<Impl>(new (std::nothrow) Impl);
   if (!next) {
-    FixedTriangleDiscoveryReport report;
+    auto report = FreshReport();
     report.status = FixedTriangleDiscoveryStatus::ResourceLimit;
     report.message = "Feature discovery control allocation failed";
     return report;
@@ -277,25 +569,52 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::Initialize(
   if (limits.max_feature_candidates)
     next->features.reset(new (std::nothrow)
         FixedTriangleFeatureCandidate[limits.max_feature_candidates]);
-  next->pair_intersections.reset(new (std::nothrow)
-      PairIntersectionStage[limits.max_input_pairs]);
+  next->pair_status.reset(new (std::nothrow)
+      PairEvaluationStage[limits.max_input_pairs]);
   next->raw_intersections.reset(new (std::nothrow)
       FixedTriangleIntersection[limits.max_raw_intersections]);
   if (limits.max_intersections)
     next->intersections.reset(new (std::nothrow)
         FixedTriangleIntersection[limits.max_intersections]);
+  next->workers.reset(new (std::nothrow)
+      Impl::WorkerSlot[limits.worker_count]);
   if (!next->triangle_ledger || !next->vertex_ledger ||
       !next->edge_ledger || !next->raw_features ||
       (limits.max_feature_candidates && !next->features) ||
-      !next->pair_intersections || !next->raw_intersections ||
-      (limits.max_intersections && !next->intersections)) {
-    FixedTriangleDiscoveryReport report;
+      !next->pair_status || !next->raw_intersections ||
+      (limits.max_intersections && !next->intersections) ||
+      !next->workers) {
+    auto report = FreshReport();
     report.status = FixedTriangleDiscoveryStatus::ResourceLimit;
     report.message = "Feature discovery bounded arena allocation failed";
     return report;
   }
+  std::memset(next->raw_features.get(), 0,
+              limits.max_raw_feature_candidates *
+                  sizeof(*next->raw_features.get()));
+  if (limits.max_feature_candidates)
+    std::memset(next->features.get(), 0,
+                limits.max_feature_candidates *
+                    sizeof(*next->features.get()));
+  std::memset(next->pair_status.get(), 0,
+              limits.max_input_pairs *
+                  sizeof(*next->pair_status.get()));
+  std::memset(next->raw_intersections.get(), 0,
+              limits.max_raw_intersections *
+                  sizeof(*next->raw_intersections.get()));
+  if (limits.max_intersections)
+    std::memset(next->intersections.get(), 0,
+                limits.max_intersections *
+                    sizeof(*next->intersections.get()));
+  if (!next->StartWorkers()) {
+    auto report = FreshReport();
+    report.status = FixedTriangleDiscoveryStatus::ResourceLimit;
+    report.message =
+        "Feature discovery persistent worker startup failed";
+    return report;
+  }
   impl_ = std::move(next);
-  return {};
+  return FreshReport();
 }
 
 FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::Discover(
@@ -317,10 +636,28 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::DiscoverImpl(
     const CurrentFixedTriangle* triangles, std::size_t triangle_count,
     const FixedTrianglePair* pairs, std::size_t pair_count,
     const FixedTriangleFeatureTaskMask* masks, bool masked) noexcept {
-  FixedTriangleDiscoveryReport report;
+  auto report = FreshReport();
   if (!impl_) {
     report.status = FixedTriangleDiscoveryStatus::NotInitialized;
     report.message = Message(report.status);
+    return report;
+  }
+  bool expected_idle = false;
+  if (!impl_->busy.compare_exchange_strong(
+          expected_idle, true, std::memory_order_acq_rel)) {
+    report.status = FixedTriangleDiscoveryStatus::InvalidInput;
+    report.message =
+        "Feature discovery does not accept concurrent calls";
+    return report;
+  }
+  struct BusyRelease {
+    std::atomic<bool>* value;
+    ~BusyRelease() { value->store(false, std::memory_order_release); }
+  } busy_release{&impl_->busy};
+  if (impl_->phase.load(std::memory_order_acquire) !=
+      Impl::Phase::Warm) {
+    report.status = FixedTriangleDiscoveryStatus::ResourceLimit;
+    report.message = "Feature discovery worker pool is unavailable";
     return report;
   }
   // All previously borrowed views expire at this entry.  Staging remains
@@ -502,6 +839,8 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::DiscoverImpl(
   report.edges = unique_edges;
 
   for (std::size_t i = 0; i < pair_count; ++i) {
+    auto& stage = impl_->pair_status[i];
+    std::memset(&stage, 0, sizeof(stage));
     const auto mask = masked ? masks[i] : FixedTriangleFeatureTaskMask{};
     const auto unsupported =
         static_cast<std::uint16_t>(
@@ -526,8 +865,11 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::DiscoverImpl(
       return report;
     }
     report.local_masked_tasks += Popcount15(mask.local_tasks);
+    stage.mask = mask;
+    stage.raw_feature_offset = report.raw_feature_candidates;
     const std::size_t count = ft::CountPairFeatureCandidates(
         triangles[pairs[i].first], triangles[pairs[i].second]);
+    stage.expected_feature_count = count;
     if (count > std::numeric_limits<std::size_t>::max() -
                     report.raw_feature_candidates) {
       report.status = FixedTriangleDiscoveryStatus::ResourceLimit;
@@ -544,50 +886,47 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::DiscoverImpl(
     return report;
   }
 
+  if (!impl_->RunWorkers(triangles, pairs, pair_count)) {
+    report.status = FixedTriangleDiscoveryStatus::ResourceLimit;
+    report.message =
+        "Feature discovery persistent worker execution failed";
+    return report;
+  }
+
   std::size_t feature_write = 0;
   for (std::size_t i = 0; i < pair_count; ++i) {
-    auto& intersection = impl_->pair_intersections[i];
-    auto status = ft::ClassifyPairIntersection(
-        triangles[pairs[i].first], triangles[pairs[i].second],
-        &intersection.value, &intersection.intersects);
-    if (status != FixedTriangleDiscoveryStatus::Ok) {
-      report.status = status;
+    const auto& stage = impl_->pair_status[i];
+    if (stage.intersection_status !=
+        FixedTriangleDiscoveryStatus::Ok) {
+      report.status = stage.intersection_status;
       report.input_pair = i;
       report.arithmetic_reason =
           FixedTriangleArithmeticReason::IntersectionPredicate;
-      report.message = Message(status);
+      report.message = Message(report.status);
       return report;
     }
-    ft::PairFeatureResult pair;
-    const auto mask =
-        masked ? masks[i] : FixedTriangleFeatureTaskMask{};
-    status = ft::EvaluatePairFeaturesMaskedOnce(
-        triangles[pairs[i].first], triangles[pairs[i].second],
-        mask,
-        impl_->raw_features.get() + feature_write,
-        report.raw_feature_candidates - feature_write, &pair);
+    const auto& pair = stage.feature;
     report.feature_tasks += pair.feature_tasks;
     report.exact_executed_tasks += pair.feature_tasks;
-    if (status != FixedTriangleDiscoveryStatus::Ok) {
-      report.status = status;
+    if (stage.feature_status != FixedTriangleDiscoveryStatus::Ok) {
+      report.status = stage.feature_status;
       report.input_pair = i;
       report.input_task = pair.input_task;
       report.arithmetic_reason = pair.arithmetic_reason;
-      report.message = Message(status);
+      report.message = Message(report.status);
       return report;
     }
-    const std::size_t expected = ft::CountPairFeatureCandidates(
-        triangles[pairs[i].first], triangles[pairs[i].second]);
     if (pair.feature_tasks !=
-            15 - Popcount15(mask.local_tasks) ||
-        pair.feature_count != expected) {
+            15 - Popcount15(stage.mask.local_tasks) ||
+        pair.feature_count != stage.expected_feature_count ||
+        stage.raw_feature_offset != feature_write) {
       report.status = FixedTriangleDiscoveryStatus::IdentityMismatch;
       report.input_pair = i;
       report.message = "Fixed-triangle task materialization disagrees";
       return report;
     }
     feature_write += pair.feature_count;
-    if (intersection.intersects) {
+    if (stage.intersects) {
       if (report.raw_intersections == SIZE_MAX) {
         report.status = FixedTriangleDiscoveryStatus::ResourceLimit;
         report.input_pair = i;
@@ -620,9 +959,9 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::DiscoverImpl(
 
   std::size_t intersection_write = 0;
   for (std::size_t i = 0; i < pair_count; ++i)
-    if (impl_->pair_intersections[i].intersects)
+    if (impl_->pair_status[i].intersects)
       impl_->raw_intersections[intersection_write++] =
-          impl_->pair_intersections[i].value;
+          impl_->pair_status[i].intersection;
 
   std::sort(impl_->raw_features.get(),
             impl_->raw_features.get() + feature_write, ft::FeatureLess);
@@ -695,7 +1034,8 @@ FixedTriangleFeatureForecast FixedTriangleFeatureDiscovery::forecast()
 
 FixedTriangleFeatureView FixedTriangleFeatureDiscovery::features()
     const noexcept {
-  if (!impl_ || !impl_->complete)
+  if (!impl_ || impl_->busy.load(std::memory_order_acquire) ||
+      !impl_->complete)
     return {};
   return {impl_->feature_count ? impl_->features.get() : nullptr,
           impl_->feature_count, true};
@@ -703,7 +1043,8 @@ FixedTriangleFeatureView FixedTriangleFeatureDiscovery::features()
 
 FixedTriangleIntersectionView FixedTriangleFeatureDiscovery::intersections()
     const noexcept {
-  if (!impl_ || !impl_->complete)
+  if (!impl_ || impl_->busy.load(std::memory_order_acquire) ||
+      !impl_->complete)
     return {};
   return {impl_->intersection_count ? impl_->intersections.get() : nullptr,
           impl_->intersection_count, true};

@@ -40,7 +40,10 @@ Status EvaluateCurrentFixedTriangle(const FixedContactFacet& facet,
 // SurfaceContactGeometry scale-aware degeneracy threshold reject the query.
 // Input arrays and coordinates are borrowed for the duration of Discover,
 // checked against every owned staging/publication/ledger range, and must not
-// be concurrently mutated.  Discover allocates no memory.
+// be concurrently mutated. Initialize creates and warms the configured
+// bounded persistent worker pool. Discover allocates no memory and parallelizes
+// only independent pair geometry after canonical output offsets are fixed.
+// The object is externally nonconcurrent; overlapping calls fail closed.
 class FixedTriangleFeatureDiscovery {
  public:
   FixedTriangleFeatureDiscovery() noexcept;
