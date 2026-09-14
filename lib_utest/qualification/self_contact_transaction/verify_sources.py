@@ -216,8 +216,16 @@ for token in (
     "SelfContactPairStatus::AdmittedEdgeEdge",
     "SameEdgeEdgeCertificateIdentity",
     "Complete accepted VF+EE event set",
+    "HashEventIdentity",
+    "CompareSelfContactForceEventIdentity",
+    "SameSelfContactForceEventIdentity",
+    "SameParentPair(certificate.discovery, crossing.key)",
+    "SameVertexFaceOwners(",
 ):
     require(source + values, token, storage_path)
+if "Hash(input[i].event.feature, &hash)" in values:
+    raise RuntimeError(
+        f"{storage_path}: accepted ledger hashes geometry without ownership")
 if "CoveredByAdmittedVertexFace" in source:
     raise RuntimeError(
         f"{storage_path}: EE policy retains facet-broadened VF coverage")

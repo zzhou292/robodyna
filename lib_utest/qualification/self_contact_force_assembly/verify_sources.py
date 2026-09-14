@@ -58,7 +58,9 @@ assert "cudaMalloc" in initialize
 assert "owner->Discard()" in initialize
 assert "assembler_identity" in initialize
 assert "Authenticates(" in initialize
-assert "Duplicate canonical self-contact feature" in (
+assert "CompareSelfContactForceEventIdentity" in values
+assert "classification.parent[side]" in values
+assert "Duplicate canonical self-contact event identity" in (
     COLLISION / "self_contact_force/Values.cpp").read_text()
 assert "AdmittedVertexFace" in source
 assert "ClassifyVertexFace(" in source

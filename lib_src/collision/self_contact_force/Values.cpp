@@ -10,9 +10,10 @@ namespace {
 
 bool EventLess(const SelfContactForceEvent& a,
                const SelfContactForceEvent& b) noexcept {
-  const int feature =
-      fixed_triangle_features::Compare(a.feature, b.feature);
-  return feature < 0 || (!feature && a.source_order < b.source_order);
+  const int identity =
+      CompareSelfContactForceEventIdentity(a, b);
+  return identity < 0 ||
+      (!identity && a.source_order < b.source_order);
 }
 
 bool IncidenceLess(const SelfContactForceIncidence& a,
@@ -68,13 +69,12 @@ SelfContactForceReport BuildSelfContactForceIncidence(
               SurfacePenaltyStatus::InvalidInput,
               tl::fea::NodalStatus::Ok,
               "Event source order is invalid"};
-    if (event &&
-        fixed_triangle_features::Compare(events[event - 1].feature,
-                                         events[event].feature) == 0)
+    if (event && SameSelfContactForceEventIdentity(
+                     events[event - 1], events[event]))
       return {S::DuplicateEvent, event, events[event].source_order,
               UINT32_MAX, SurfacePenaltyStatus::InvalidInput,
               tl::fea::NodalStatus::Ok,
-              "Duplicate canonical self-contact feature"};
+              "Duplicate canonical self-contact event identity"};
   }
 
   std::size_t incidence_count = 0;

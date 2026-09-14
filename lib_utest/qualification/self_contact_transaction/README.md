@@ -29,7 +29,10 @@ every active parent Cartesian expansion into immutable facet-key order and
 materializes one bounded chunk at a time. Every chunk executes all six VF and
 nine EE tasks per facet pair. Nonlocal intersections still reject. Admitted VF
 and strict interior/zero-distance EE certificates merge
-through a fixed-capacity global hash ledger, where repeated keys must agree.
+through a fixed-capacity global hash ledger. Identity is the geometric feature
+plus both ordered active-parent ordinals. Thus shared boundary geometry under
+distinct parent-local area ownership remains distinct, while one repeated
+owner identity must agree in every immutable map, area and classification.
 The complete unique event count is known before the force cap is checked, then
 certificates are sorted and assigned global canonical source order. Only
 then does it run the existing deterministic VF+EE force/STI implementation and
@@ -50,9 +53,11 @@ coordinate ledgers are checked before chunking. Unresolved results fail. The fix
 intersections and admits a VF or EE crossing only through the full
 transaction-owned accepted event certificate (exact feature and facet
 provenance, maps/weights, area, classification, and canonical source order).
-Candidate EE proximity additionally requires the same accepted EE key and
-exact producing facet/local-edge provenance; a VF on the same facet or parent pair provides no
-coverage. Local fixed-facet exclusions
+Crossing lookup scans the complete same-feature certificate range. EE coverage
+requires the same physical parent-owner pair but permits an incident-facet
+seam on that pair. VF coverage retains the exact target face and the source
+vertex's physical owner. An unrelated owner certificate provides no coverage.
+Local fixed-facet exclusions
 remain explicit. Per-pair outcomes can be retained in full when the caller
 reserves the exact census; otherwise no partial outcome view is published and
 the complete canonical counts/digest are folded into `policy_summary()`.

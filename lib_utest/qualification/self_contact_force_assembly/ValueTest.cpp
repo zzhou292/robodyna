@@ -86,6 +86,34 @@ TEST(SelfContactForceValues,
          incidence[i - 1].event < incidence[i].event));
 }
 
+TEST(SelfContactForceValues,
+     SameGeometryWithDistinctOrderedParentsHasDistinctIncidence) {
+  std::array<c::SelfContactForceEvent, 2> events{{
+      Event(10, 8, {0, 1, 2}, {2, 3, 4}),
+      Event(10, 7, {0, 4, 5}, {5, 6, 7})}};
+  events[0].classification.parent[0] = 4;
+  events[0].classification.parent[1] = 5;
+  events[1].classification.parent[0] = 2;
+  events[1].classification.parent[1] = 3;
+  std::array<c::SelfContactForceIncidence, 16> incidence;
+  std::array<c::SelfContactForceNodeIncidence, 8> nodes;
+  c::SelfContactForceIncidenceSummary summary;
+  ASSERT_EQ(c::BuildSelfContactForceIncidence(
+      events.data(), events.size(), 8, incidence.data(),
+      incidence.size(), nodes.data(), nodes.size(), &summary).status,
+      c::SelfContactForceStatus::Ok);
+  EXPECT_EQ(events[0].classification.parent[0], 2u);
+  EXPECT_EQ(events[1].classification.parent[0], 4u);
+  EXPECT_GT(summary.incidences, 0u);
+
+  events[1].classification.parent[0] = 2;
+  events[1].classification.parent[1] = 3;
+  EXPECT_EQ(c::BuildSelfContactForceIncidence(
+      events.data(), events.size(), 8, incidence.data(),
+      incidence.size(), nodes.data(), nodes.size(), &summary).status,
+      c::SelfContactForceStatus::DuplicateEvent);
+}
+
 TEST(SelfContactForceValues, EmptyBatchPublishesExactEmptySummary) {
   c::SelfContactForceIncidenceSummary summary{71, 73};
   const auto report = c::BuildSelfContactForceIncidence(

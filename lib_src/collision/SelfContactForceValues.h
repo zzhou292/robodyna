@@ -3,8 +3,32 @@
 
 #include "SelfContactForceTypes.h"
 #include "Q4ContactBounds.h"
+#include "fixed_triangle_features/Geometry.h"
 
 namespace tlfea::contact {
+
+inline int CompareSelfContactForceEventIdentity(
+    const SelfContactForceEvent& a,
+    const SelfContactForceEvent& b) noexcept {
+  const int feature =
+      fixed_triangle_features::Compare(a.feature, b.feature);
+  if (feature) return feature;
+  for (unsigned side = 0; side < 2; ++side) {
+    if (a.classification.parent[side] <
+        b.classification.parent[side])
+      return -1;
+    if (b.classification.parent[side] <
+        a.classification.parent[side])
+      return 1;
+  }
+  return 0;
+}
+
+inline bool SameSelfContactForceEventIdentity(
+    const SelfContactForceEvent& a,
+    const SelfContactForceEvent& b) noexcept {
+  return CompareSelfContactForceEventIdentity(a, b) == 0;
+}
 
 TL_SURFACE_HD inline bool PositiveSelfContactArea(
     Q4CertifiedIntegral area) noexcept {
@@ -34,9 +58,10 @@ TL_SURFACE_HD inline bool RepresentedSelfContactStiffness(
 
 // Scratch-only host canonicalization. An empty event batch publishes an exact
 // zero summary without requiring event/incidence/node storage. Nonempty events
-// sort by immutable feature key, then source order. Incidence sorts by physical
-// node and canonical event ordinal; one event contributes at most once to one
-// physical node even when its two endpoint maps share that node.
+// sort by immutable feature plus ordered active-parent ownership, then source
+// order. Incidence sorts by physical node and canonical event ordinal; one
+// event contributes at most once to one physical node even when its two
+// endpoint maps share that node.
 SelfContactForceReport BuildSelfContactForceIncidence(
     SelfContactForceEvent* events, std::size_t event_count,
     std::uint32_t node_count,

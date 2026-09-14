@@ -410,6 +410,27 @@ TEST(SelfContactTransactionValues,
   EXPECT_EQ(outcome.accepted_event, 0u);
   EXPECT_EQ(outcome.source_order, 0u);
 
+  auto unrelated = event;
+  unrelated.event.classification.parent[0] = 1;
+  unrelated.event.classification.parent[1] = 2;
+  unrelated.discovery.triangles[0].parent_eid = 30;
+  event.event.classification.parent[0] = 3;
+  event.event.classification.parent[1] = 4;
+  event.event.source_order = 1;
+  std::array<sct::AcceptedEventCertificate, 2> owners{
+      unrelated, event};
+  input.accepted_events = owners.data();
+  input.accepted_event_count = owners.size();
+  EXPECT_EQ(sct::ValidateCandidatePublications(input).status,
+      c::SelfContactTransactionStatus::Ok);
+  EXPECT_EQ(outcome.accepted_event, 1u);
+  EXPECT_EQ(outcome.source_order, 1u);
+  event.event.classification.parent[0] = 0;
+  event.event.classification.parent[1] = 0;
+  event.event.source_order = 0;
+  input.accepted_events = &event;
+  input.accepted_event_count = 1;
+
   event.event.source_order = 1;
   EXPECT_EQ(sct::ValidateCandidatePublications(input).status,
       c::SelfContactTransactionStatus::CandidateRejected);
@@ -480,6 +501,27 @@ TEST(SelfContactTransactionValues,
   EXPECT_EQ(outcome.disposition,
       c::SelfContactCandidateDisposition::RepresentedByAcceptedEdgeEdge);
   EXPECT_EQ(outcome.accepted_event,0u);
+
+  auto unrelated=certificate;
+  unrelated.event.classification.parent[0]=1;
+  unrelated.event.classification.parent[1]=2;
+  unrelated.discovery.triangles[0].parent_eid=30;
+  unrelated.discovery.triangles[1].parent_eid=40;
+  certificate.event.classification.parent[0]=3;
+  certificate.event.classification.parent[1]=4;
+  certificate.event.source_order=1;
+  std::array<sct::AcceptedEventCertificate,2> owners{
+      unrelated,certificate};
+  input.accepted_events=owners.data();
+  input.accepted_event_count=owners.size();
+  ASSERT_EQ(sct::ValidateCandidatePublications(input).status,
+      c::SelfContactTransactionStatus::Ok);
+  EXPECT_EQ(outcome.accepted_event,1u);
+  certificate.event.classification.parent[0]=0;
+  certificate.event.classification.parent[1]=0;
+  certificate.event.source_order=0;
+  input.accepted_events=&certificate;
+  input.accepted_event_count=1;
 
   certificate.discovery.triangles[0].local_facet=1;
   EXPECT_EQ(sct::ValidateCandidatePublications(input).status,
@@ -757,6 +799,98 @@ TEST(SelfContactTransactionValues,
       hash.data(), hash.size(), &count).status,
       c::SelfContactTransactionStatus::Ok);
   EXPECT_EQ(count, 1u);
+}
+
+TEST(SelfContactTransactionValues,
+     EventIdentityRetainsOwnersAndDedupsOnlyExactOwnerEvents) {
+  auto high=EdgeCertificate();
+  high.event.classification.parent[0]=4;
+  high.event.classification.parent[1]=5;
+  auto low=high;
+  low.event.classification.parent[0]=2;
+  low.event.classification.parent[1]=3;
+  low.event.classification.candidate_directed_area_m2={2,2,2,0};
+  low.event.classification.admitted_force_area_m2={2,2,2,0};
+  std::array<sct::AcceptedEventCertificate,2> ledger{};
+  std::array<std::uint32_t,7> hash;
+  hash.fill(UINT32_MAX);
+  std::size_t count=0;
+  ASSERT_EQ(sct::MergeAcceptedEventChunk(
+      &high,1,ledger.data(),ledger.size(),
+      hash.data(),hash.size(),&count).status,
+      c::SelfContactTransactionStatus::Ok);
+  ASSERT_EQ(sct::MergeAcceptedEventChunk(
+      &low,1,ledger.data(),ledger.size(),
+      hash.data(),hash.size(),&count).status,
+      c::SelfContactTransactionStatus::Ok);
+  ASSERT_EQ(count,2u);
+  std::array<c::SelfContactForceEvent,2> events;
+  ASSERT_EQ(sct::FinalizeAcceptedEventLedger(
+      ledger.data(),count,events.data(),events.size()).status,
+      c::SelfContactTransactionStatus::Ok);
+  EXPECT_EQ(events[0].classification.parent[0],2u);
+  EXPECT_EQ(events[0].classification.admitted_force_area_m2.value,2);
+  EXPECT_EQ(events[0].source_order,0u);
+  EXPECT_EQ(events[1].classification.parent[0],4u);
+  EXPECT_EQ(events[1].source_order,1u);
+
+  std::array<sct::AcceptedEventCertificate,2> reversed_ledger{};
+  std::array<std::uint32_t,7> reversed_hash;
+  reversed_hash.fill(UINT32_MAX);
+  std::size_t reversed_count=0;
+  ASSERT_EQ(sct::MergeAcceptedEventChunk(
+      &low,1,reversed_ledger.data(),reversed_ledger.size(),
+      reversed_hash.data(),reversed_hash.size(),
+      &reversed_count).status,
+      c::SelfContactTransactionStatus::Ok);
+  ASSERT_EQ(sct::MergeAcceptedEventChunk(
+      &high,1,reversed_ledger.data(),reversed_ledger.size(),
+      reversed_hash.data(),reversed_hash.size(),
+      &reversed_count).status,
+      c::SelfContactTransactionStatus::Ok);
+  std::array<c::SelfContactForceEvent,2> reversed_events;
+  ASSERT_EQ(sct::FinalizeAcceptedEventLedger(
+      reversed_ledger.data(),reversed_count,
+      reversed_events.data(),reversed_events.size()).status,
+      c::SelfContactTransactionStatus::Ok);
+  for (unsigned event=0;event<events.size();++event) {
+    EXPECT_EQ(c::CompareSelfContactForceEventIdentity(
+        events[event],reversed_events[event]),0);
+    EXPECT_EQ(events[event].source_order,
+              reversed_events[event].source_order);
+    EXPECT_EQ(events[event].classification.
+                  admitted_force_area_m2.value,
+              reversed_events[event].classification.
+                  admitted_force_area_m2.value);
+  }
+
+  auto seam=high;
+  seam.discovery.triangles[0].local_facet++;
+  seam.edge_facet[0]++;
+  hash.fill(UINT32_MAX);
+  count=0;
+  ASSERT_EQ(sct::MergeAcceptedEventChunk(
+      &high,1,ledger.data(),ledger.size(),
+      hash.data(),hash.size(),&count).status,
+      c::SelfContactTransactionStatus::Ok);
+  EXPECT_EQ(sct::MergeAcceptedEventChunk(
+      &seam,1,ledger.data(),ledger.size(),
+      hash.data(),hash.size(),&count).status,
+      c::SelfContactTransactionStatus::Ok);
+  EXPECT_EQ(count,1u);
+
+  auto mismatched=high;
+  mismatched.event.classification.admitted_force_area_m2.value=3;
+  EXPECT_EQ(sct::MergeAcceptedEventChunk(
+      &mismatched,1,ledger.data(),ledger.size(),
+      hash.data(),hash.size(),&count).status,
+      c::SelfContactTransactionStatus::IdentityMismatch);
+  mismatched=high;
+  mismatched.event.endpoints[0].weights[0]=.25;
+  EXPECT_EQ(sct::MergeAcceptedEventChunk(
+      &mismatched,1,ledger.data(),ledger.size(),
+      hash.data(),hash.size(),&count).status,
+      c::SelfContactTransactionStatus::IdentityMismatch);
 }
 
 TEST(SelfContactTransactionValues,

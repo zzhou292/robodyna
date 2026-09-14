@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
+#include "../SelfContactForceValues.h"
 
 #include <algorithm>
 #include <cmath>
@@ -117,6 +118,13 @@ void Hash(const FixedTriangleFeatureKey& key,
     Hash(key.edge_edge.edges[0], hash);
     Hash(key.edge_edge.edges[1], hash);
   }
+}
+
+void HashEventIdentity(const SelfContactForceEvent& event,
+                       std::uint64_t* hash) noexcept {
+  Hash(event.feature, hash);
+  HashValue(event.classification.parent[0], hash);
+  HashValue(event.classification.parent[1], hash);
 }
 
 bool Same(Vec3 a, Vec3 b) noexcept {
@@ -246,6 +254,49 @@ bool LocallyExcluded(FixedTriangleIntersectionView values,
   return false;
 }
 
+bool SameParentOwner(
+    const FixedTriangleKey& triangle,
+    const RepresentedTrianglePathKey& path) noexcept {
+  return triangle.source_instance_id == path.source_instance_id &&
+      triangle.parent_eid == path.parent_eid;
+}
+
+bool SameParentPair(
+    const FixedTriangleFeatureCandidate& discovery,
+    const RepresentedIntervalPairKey& crossing) noexcept {
+  return
+      (SameParentOwner(discovery.triangles[0], crossing.paths[0]) &&
+       SameParentOwner(discovery.triangles[1], crossing.paths[1])) ||
+      (SameParentOwner(discovery.triangles[0], crossing.paths[1]) &&
+       SameParentOwner(discovery.triangles[1], crossing.paths[0]));
+}
+
+bool SameVertexFaceOwners(
+    const FixedTriangleFeatureCandidate& discovery,
+    const FixedTriangleFeatureKey& key,
+    const RepresentedIntervalPairKey& crossing) noexcept {
+  if (key.vertex_face.target.kind !=
+          FixedTriangleStratumKind::Face ||
+      ((discovery.local_features[0] == 3) ==
+       (discovery.local_features[1] == 3)))
+    return false;
+  const unsigned target =
+      discovery.local_features[0] == 3 ? 0 : 1;
+  const auto& target_key = key.vertex_face.target.face;
+  if (!self_contact_transaction::Same(
+          discovery.triangles[target], target_key))
+    return false;
+  for (unsigned path = 0; path < 2; ++path)
+    if (self_contact_transaction::Compare(
+            crossing.paths[path],
+            {target_key.source_instance_id, target_key.parent_eid,
+             target_key.level, target_key.local_facet}) == 0)
+      return SameParentOwner(
+          discovery.triangles[1 - target],
+          crossing.paths[1 - path]);
+  return false;
+}
+
 std::size_t AcceptedFeature(
     const RepresentedIntervalResult& crossing,
     const AcceptedEventCertificate* events,
@@ -280,101 +331,104 @@ std::size_t AcceptedFeature(
       !self_contact_transaction::Same(
           events[lower].event.feature, key))
     return SIZE_MAX;
-  const auto& certificate = events[lower];
-  const auto& accepted = certificate.event;
-  if (!self_contact_transaction::Same(
-          certificate.discovery.key, key) ||
-      (crossing.feature.kind == RepresentedFeatureKind::VertexFace &&
-       self_contact_transaction::Compare(
-           PairKey(certificate.discovery.triangles[0],
-                   certificate.discovery.triangles[1]),
-           crossing.key) != 0) ||
-      accepted.source_order != lower ||
-      ValidateWeightedSurfacePoint(
-          accepted.endpoints[0], UINT32_MAX) != Status::kOk ||
-      ValidateWeightedSurfacePoint(
-          accepted.endpoints[1], UINT32_MAX) != Status::kOk ||
-      !IsFinite(certificate.discovery.representation_error_m) ||
-      certificate.discovery.representation_error_m < 0 ||
-      accepted.classification.excluded ||
-      accepted.classification.local_incidence ||
-      !accepted.classification.active[0] ||
-      !accepted.classification.active[1] ||
-      !PositiveSelfContactArea(
-          accepted.classification.admitted_force_area_m2) ||
-      !Same(accepted.classification.candidate_directed_area_m2,
-            accepted.classification.admitted_force_area_m2))
-    return SIZE_MAX;
+  for (std::size_t candidate = lower;
+       candidate < event_count &&
+       self_contact_transaction::Same(
+           events[candidate].event.feature, key);
+       ++candidate) {
+    const auto& certificate = events[candidate];
+    const auto& accepted = certificate.event;
+    if (!self_contact_transaction::Same(
+            certificate.discovery.key, key) ||
+        accepted.source_order != candidate ||
+        ValidateWeightedSurfacePoint(
+            accepted.endpoints[0], UINT32_MAX) != Status::kOk ||
+        ValidateWeightedSurfacePoint(
+            accepted.endpoints[1], UINT32_MAX) != Status::kOk ||
+        !IsFinite(certificate.discovery.representation_error_m) ||
+        certificate.discovery.representation_error_m < 0 ||
+        accepted.classification.excluded ||
+        accepted.classification.local_incidence ||
+        !accepted.classification.active[0] ||
+        !accepted.classification.active[1] ||
+        !PositiveSelfContactArea(
+            accepted.classification.admitted_force_area_m2) ||
+        !Same(accepted.classification.candidate_directed_area_m2,
+              accepted.classification.admitted_force_area_m2))
+      continue;
 
-  if (crossing.feature.kind == RepresentedFeatureKind::EdgeEdge) {
-    const bool strict_interior =
-        certificate.discovery.edge_parameters[0] > 0 &&
-        certificate.discovery.edge_parameters[0] < 1 &&
-        certificate.discovery.edge_parameters[1] > 0 &&
-        certificate.discovery.edge_parameters[1] < 1;
-    const bool boundary_minimum =
-        certificate.discovery.edge_parameters[0] == 0 ||
-        certificate.discovery.edge_parameters[0] == 1 ||
-        certificate.discovery.edge_parameters[1] == 0 ||
-        certificate.discovery.edge_parameters[1] == 1;
-    const double gap =
-        (certificate.discovery.distance_m -
-         accepted.classification.reference_half_thickness_m[0]) -
-        accepted.classification.reference_half_thickness_m[1];
-    if (certificate.kind != AcceptedEventCertificateKind::EdgeEdge ||
-        accepted.feature.kind != FixedTriangleCandidateKind::EdgeEdge ||
-        accepted.vertex_use != UINT32_MAX ||
-        accepted.facet_use != UINT32_MAX ||
-        accepted.edge_use[0] == UINT32_MAX ||
-        accepted.edge_use[1] == UINT32_MAX ||
-        certificate.vertex_facet != UINT32_MAX ||
-        certificate.target_facet != UINT32_MAX ||
-        certificate.edge_facet[0] == UINT32_MAX ||
-        certificate.edge_facet[1] == UINT32_MAX ||
-        accepted.classification.kind != SelfContactPairKind::EdgeEdge ||
+    if (crossing.feature.kind == RepresentedFeatureKind::EdgeEdge) {
+      const bool strict_interior =
+          certificate.discovery.edge_parameters[0] > 0 &&
+          certificate.discovery.edge_parameters[0] < 1 &&
+          certificate.discovery.edge_parameters[1] > 0 &&
+          certificate.discovery.edge_parameters[1] < 1;
+      const bool boundary_minimum =
+          certificate.discovery.edge_parameters[0] == 0 ||
+          certificate.discovery.edge_parameters[0] == 1 ||
+          certificate.discovery.edge_parameters[1] == 0 ||
+          certificate.discovery.edge_parameters[1] == 1;
+      const double gap =
+          (certificate.discovery.distance_m -
+           accepted.classification.reference_half_thickness_m[0]) -
+          accepted.classification.reference_half_thickness_m[1];
+      if (!SameParentPair(certificate.discovery, crossing.key) ||
+          certificate.kind != AcceptedEventCertificateKind::EdgeEdge ||
+          accepted.feature.kind != FixedTriangleCandidateKind::EdgeEdge ||
+          accepted.vertex_use != UINT32_MAX ||
+          accepted.facet_use != UINT32_MAX ||
+          accepted.edge_use[0] == UINT32_MAX ||
+          accepted.edge_use[1] == UINT32_MAX ||
+          certificate.vertex_facet != UINT32_MAX ||
+          certificate.target_facet != UINT32_MAX ||
+          certificate.edge_facet[0] == UINT32_MAX ||
+          certificate.edge_facet[1] == UINT32_MAX ||
+          accepted.classification.kind != SelfContactPairKind::EdgeEdge ||
+          accepted.classification.status !=
+              SelfContactPairStatus::AdmittedEdgeEdge ||
+          !IsFinite(certificate.discovery.distance_m) ||
+          certificate.discovery.distance_m < 0 ||
+          !IsFinite(certificate.discovery.edge_parameters[0]) ||
+          !IsFinite(certificate.discovery.edge_parameters[1]) ||
+          certificate.discovery.edge_parameters[0] < 0 ||
+          certificate.discovery.edge_parameters[0] > 1 ||
+          certificate.discovery.edge_parameters[1] < 0 ||
+          certificate.discovery.edge_parameters[1] > 1 ||
+          !(certificate.discovery.distance_m == 0 ||
+            strict_interior || boundary_minimum) ||
+          !IsFinite(gap) || gap > 0)
+        continue;
+      *edge_edge = true;
+      return candidate;
+    }
+
+    double face_sum = 0;
+    bool face_weights_valid = true;
+    for (double weight : certificate.discovery.face_weights) {
+      face_weights_valid = face_weights_valid &&
+          IsFinite(weight) && weight >= 0 && weight <= 1;
+      face_sum += weight;
+    }
+    if (!SameVertexFaceOwners(
+            certificate.discovery, key, crossing.key) ||
+        certificate.kind != AcceptedEventCertificateKind::VertexFace ||
+        accepted.feature.kind != FixedTriangleCandidateKind::VertexFace ||
+        accepted.edge_use[0] != UINT32_MAX ||
+        accepted.edge_use[1] != UINT32_MAX ||
+        !face_weights_valid || std::fabs(face_sum - 1) > 1e-12 ||
+        accepted.classification.kind !=
+            SelfContactPairKind::VertexFace ||
         accepted.classification.status !=
-            SelfContactPairStatus::AdmittedEdgeEdge ||
-        !IsFinite(certificate.discovery.distance_m) ||
-        certificate.discovery.distance_m < 0 ||
-        !IsFinite(certificate.discovery.edge_parameters[0]) ||
-        !IsFinite(certificate.discovery.edge_parameters[1]) ||
-        certificate.discovery.edge_parameters[0] < 0 ||
-        certificate.discovery.edge_parameters[0] > 1 ||
-        certificate.discovery.edge_parameters[1] < 0 ||
-        certificate.discovery.edge_parameters[1] > 1 ||
-        !(certificate.discovery.distance_m == 0 ||
-          strict_interior || boundary_minimum) ||
-        !IsFinite(gap) || gap > 0)
-      return SIZE_MAX;
-    *edge_edge = true;
-    return lower;
+            SelfContactPairStatus::AdmittedVertexFace ||
+        certificate.vertex_facet == UINT32_MAX ||
+        certificate.target_facet == UINT32_MAX ||
+        certificate.edge_facet[0] != UINT32_MAX ||
+        certificate.edge_facet[1] != UINT32_MAX)
+      continue;
+    *edge_edge = false;
+    return candidate;
   }
-
-  double face_sum = 0;
-  bool face_weights_valid = true;
-  for (double weight : certificate.discovery.face_weights) {
-    face_weights_valid = face_weights_valid &&
-        IsFinite(weight) && weight >= 0 && weight <= 1;
-    face_sum += weight;
-  }
-  if (certificate.kind != AcceptedEventCertificateKind::VertexFace ||
-      accepted.feature.kind != FixedTriangleCandidateKind::VertexFace ||
-      accepted.edge_use[0] != UINT32_MAX ||
-      accepted.edge_use[1] != UINT32_MAX ||
-      !face_weights_valid || std::fabs(face_sum - 1) > 1e-12 ||
-      accepted.classification.kind !=
-          SelfContactPairKind::VertexFace ||
-      accepted.classification.status !=
-          SelfContactPairStatus::AdmittedVertexFace ||
-      ((certificate.discovery.local_features[0] == 3) ==
-       (certificate.discovery.local_features[1] == 3)) ||
-      certificate.vertex_facet == UINT32_MAX ||
-      certificate.target_facet == UINT32_MAX ||
-      certificate.edge_facet[0] != UINT32_MAX ||
-      certificate.edge_facet[1] != UINT32_MAX)
-    return SIZE_MAX;
-  *edge_edge = false;
-  return lower;
+  return SIZE_MAX;
 }
 
 SelfContactTransactionReport Failure(
@@ -514,7 +568,7 @@ SelfContactTransactionReport MergeAcceptedEventChunk(
                    "Global accepted-event ledger is incomplete");
   for (std::size_t i = 0; i < input_count; ++i) {
     std::uint64_t hash = 1469598103934665603ull;
-    Hash(input[i].event.feature, &hash);
+    HashEventIdentity(input[i].event, &hash);
     std::size_t slot = hash % hash_capacity;
     bool inserted = false;
     for (std::size_t probe = 0; probe < hash_capacity; ++probe) {
@@ -533,9 +587,8 @@ SelfContactTransactionReport MergeAcceptedEventChunk(
       if (value >= *ledger_count)
         return Failure(SelfContactTransactionStatus::IdentityMismatch,
             "Accepted-event hash index is corrupt", slot);
-      if (self_contact_transaction::Same(
-              ledger[value].event.feature,
-              input[i].event.feature)) {
+      if (SameSelfContactForceEventIdentity(
+              ledger[value].event, input[i].event)) {
         if (!SameCertificate(ledger[value], input[i]))
           return Failure(SelfContactTransactionStatus::IdentityMismatch,
               "Repeated immutable event identity disagrees", value);
@@ -567,13 +620,13 @@ SelfContactTransactionReport FinalizeAcceptedEventLedger(
   std::sort(certificates, certificates + count,
             [](const AcceptedEventCertificate& a,
                const AcceptedEventCertificate& b) {
-              return fixed_triangle_features::Compare(
-                  a.event.feature, b.event.feature) < 0;
+              return CompareSelfContactForceEventIdentity(
+                  a.event, b.event) < 0;
             });
   for (std::size_t i = 0; i < count; ++i) {
-    if (i && fixed_triangle_features::Compare(
-                 certificates[i - 1].event.feature,
-                 certificates[i].event.feature) >= 0)
+    if (i && CompareSelfContactForceEventIdentity(
+                 certificates[i - 1].event,
+                 certificates[i].event) >= 0)
       return Failure(SelfContactTransactionStatus::IdentityMismatch,
           "Final accepted-event ledger is not unique", i);
     certificates[i].event.source_order = i;

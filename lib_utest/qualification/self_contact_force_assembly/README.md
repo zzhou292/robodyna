@@ -13,8 +13,10 @@ weighted maps, support roles, activity identities, reference thickness and
 positive certified directed area. Each EE event regenerates both exact
 edge-use ordinals and weighted edge points, authenticates the canonical
 `FixedTriangleEdgeEdgeKey` against retained endpoint provenance, and requires
-the positive symmetric directed edge-point certificate. Canonical fixed-feature key then source order
-defines event arithmetic. Duplicate feature/source identities reject. The represented
+the positive symmetric directed edge-point certificate. Canonical fixed-feature
+key plus both ordered active-parent ordinals, then source order, defines event
+arithmetic. Shared geometry under distinct parent-local ownership remains
+distinct; duplicate geometry-and-owner identities reject. The represented
 coefficient is derived internally as the checked outward product
 `stiffness_per_area_n_m3 * admitted_force_area_m2.value`; callers cannot supply
 pair stiffness, effective mass, line area, damping, friction or approximation
