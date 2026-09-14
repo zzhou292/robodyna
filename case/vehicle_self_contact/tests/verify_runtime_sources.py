@@ -88,6 +88,9 @@ def main() -> None:
     require("FirstProfileStiffnessPerAreaNPerM3 = 2e9" in
             startup_header,
             "first profile stiffness must remain fixed at 2e9 N/m3")
+    require("config.event_capacity == transaction.max_global_events" in
+            (contact / "VehicleSelfContactStartup.cpp").read_text(),
+            "runtime event capacity must exactly match its global ledger")
     setup = (contact / "SelectedSelfContactSource.h").read_text()
     require("source_fields" not in
             (contact / "VehicleSelfContactStartup.cpp").read_text(),
@@ -130,6 +133,43 @@ def main() -> None:
             "const auto expired = accepted" in transaction_cuda and
             "forged.t3.attempt" in transaction_cuda,
             "missing/stale/late transaction rollback controls are absent")
+
+    error = (contact / "SelfContactStageError.h").read_text()
+    require("SelfContactTransactionReport report_" in error and
+            "required_events() const noexcept" in error and
+            "report.candidate > configured_event_capacity" in error,
+            "app stage error must preserve the typed exact event count")
+    gate = (
+        case / "vehicle_startup" / "shell_execution" / "tests" /
+        "self_contact" / "RuntimeGateTest.cpp").read_text()
+    for value in ["376930", "337092", "315963", "653055",
+                  "1584464", "5989248", "4096", "1484682936"]:
+        require(value in gate,
+                f"actual runtime gate is missing exact value {value}")
+    require("SelfContactTransactionLimits::Vehicle(" in gate and
+            "V5_SELF_CONTACT_RUNTIME" in gate and
+            "SelfContactOnly::Preflight(" in gate and
+            "SelfContactOnly::Prepare(" in gate and
+            "LoadedWallSelfContact::Prepare(" in gate,
+            "actual self-only/wall+self runtime gate is incomplete")
+    require("IGNORE=1" not in gate,
+            "runtime gate must not bypass any transaction result")
+    fixture_cmake = (
+        case / "vehicle_startup" / "shell_execution" /
+        "SelfContactTests.cmake").read_text()
+    for name in [
+            "vehicle_self_contact_runtime_${runtime_gate}",
+            "vehicle_wall_self_contact_runtime_${runtime_gate}",
+            "FullV5ForecastStartupOwnsExactIdentityAndMemory",
+            "FullV5OneAttemptIsTypedFailClosedAndRetryStable",
+            "FullV5CombinedForecastStartupOwnsBothFixedSlotsOnce",
+            "FullV5CombinedAttemptSealsBothReceiptsAndRetries"]:
+        require(name in fixture_cmake,
+                f"runtime CTest registration is missing: {name}")
+    require("RESOURCE_LOCK vehicle_self_contact_gpu" in fixture_cmake and
+            "TIMEOUT ${runtime_timeout}" in fixture_cmake and
+            "RuntimeGateTest.cpp" in fixture_cmake,
+            "runtime gates need source proof and finite serialized properties")
 
     print("vehicle self-contact runtime source/CMake/Bazel proof passed")
 

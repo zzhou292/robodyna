@@ -9,6 +9,7 @@ void Assemble(
     tlfea::contact::SelfContactTransaction&,
     tl::fea::FENodalState&, const tl::fea::NodalTrialToken&,
     const tl::fea::NodalAssemblyView&,
+    std::size_t event_capacity,
     vehicle_dynamics::SelfContactObservation&,
     tlfea::contact::SelfContactAcceptedAssemblyReceipt&);
 
@@ -17,6 +18,7 @@ void SealCandidate(
     tl::fea::FENodalState&, const tl::fea::NodalTrialToken&,
     const tl::fea::ShellPhysicalDiagnostics&,
     const tl::fea::NodalPreparedView&,
+    std::size_t event_capacity,
     vehicle_dynamics::SelfContactObservation&,
     tlfea::contact::SelfContactAcceptedAssemblyReceipt&,
     tlfea::contact::SelfContactTransactionReceipt&);

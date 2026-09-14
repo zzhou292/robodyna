@@ -185,8 +185,10 @@ SelfContactOnly::Prepare(
         VehicleSelfContactStartup::PrepareUnconfigured(
             setup, dynamics, config, limits);
     const auto entry = contact.roster_entry();
+    auto installed_forecast = forecast;
+    installed_forecast.identity = contact.forecast().identity;
     auto stages = std::make_unique<detail::SelfContactStages>(
-        std::move(contact), forecast);
+        std::move(contact), installed_forecast);
     auto& state = dynamics.storage_->state();
     const auto source = Source(state);
     const auto configured =
@@ -266,9 +268,12 @@ LoadedWallSelfContact::Prepare(
     auto wall_stages =
         std::make_unique<vehicle_wall::LoadedWall::Stages>(
             std::move(wall), forecast.wall, intervals);
+    auto installed_self_forecast = forecast.self_contact;
+    installed_self_forecast.identity =
+        self_contact.forecast().identity;
     auto self_stages =
         std::make_unique<detail::SelfContactStages>(
-            std::move(self_contact), forecast.self_contact);
+            std::move(self_contact), installed_self_forecast);
 
     auto& state = dynamics.storage_->state();
     const auto source = Source(state);

@@ -11,10 +11,12 @@ struct SelfContactObservation {
     tlfea::contact::SelfContactForceDiagnostics accepted_force;
     std::size_t accepted_broadphase_pairs = 0;
     std::size_t accepted_facet_pairs = 0;
+    std::size_t accepted_discovered_features = 0;
     std::uint64_t regularity_generation = 0;
     std::size_t candidate_broadphase_pairs = 0;
     std::size_t candidate_facet_pairs = 0;
     std::size_t policy_outcomes = 0;
+    tlfea::contact::SelfContactCandidatePolicySummary policy_summary;
     std::size_t active_parents = 0;
     std::size_t removing_parents = 0;
     std::size_t skipped_parents = 0;

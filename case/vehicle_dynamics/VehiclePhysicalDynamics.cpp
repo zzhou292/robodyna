@@ -76,6 +76,12 @@ const vehicle_self_contact::RuntimeForecast*
 VehiclePhysicalDynamics::self_contact_forecast() const noexcept {
     return storage_->self_contact ? &storage_->self_contact->forecast() : nullptr;
 }
+tlfea::contact::SelfContactTransactionAllocationInfo
+VehiclePhysicalDynamics::self_contact_allocations() const noexcept {
+    return storage_->self_contact
+        ? storage_->self_contact->allocations()
+        : tlfea::contact::SelfContactTransactionAllocationInfo{};
+}
 bool VehiclePhysicalDynamics::has_prepared_step() const noexcept { return storage_->pending; }
 const StepObservation& VehiclePhysicalDynamics::PrepareStep() {
     auto& s=*storage_;

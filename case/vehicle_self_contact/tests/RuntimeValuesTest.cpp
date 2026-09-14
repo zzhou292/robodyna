@@ -1,4 +1,5 @@
 #include "../RuntimeBudget.h"
+#include "../SelfContactStageError.h"
 #include "case/vehicle_dynamics/StepTiming.h"
 
 #include <gtest/gtest.h>
@@ -85,6 +86,27 @@ TEST(VehicleSelfContactRuntimeValues,
         detail::ComposeForecast(
             dynamics, setup, transaction, 10, limits),
         std::runtime_error);
+}
+
+TEST(VehicleSelfContactRuntimeValues,
+     TypedAcceptedCapacityFailureExposesCountWithoutTextParsing) {
+    tlfea::contact::SelfContactTransactionReport report;
+    report.status =
+        tlfea::contact::SelfContactTransactionStatus::ResourceLimit;
+    report.candidate = 37;
+    report.pair = 91;
+    report.message = "opaque";
+    const SelfContactStageError error(
+        report, SelfContactRuntimeStage::AcceptedAssembly, 1);
+    EXPECT_EQ(error.required_events(), 37u);
+    EXPECT_EQ(error.report().candidate, 37u);
+    EXPECT_EQ(error.report().pair, 91u);
+    EXPECT_EQ(error.stage(),
+              SelfContactRuntimeStage::AcceptedAssembly);
+
+    const SelfContactStageError candidate(
+        report, SelfContactRuntimeStage::CandidateSeal, 1);
+    EXPECT_EQ(candidate.required_events(), 0u);
 }
 
 }  // namespace crash::cases::vehicle_self_contact::test

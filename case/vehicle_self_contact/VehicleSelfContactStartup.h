@@ -22,8 +22,19 @@ struct RuntimeLimits {
     tlfea::contact::SelfContactTransactionLimits transaction;
 };
 
+struct RuntimeIdentity {
+    std::uint64_t source_id = 0;
+    std::uint64_t owner_id = 0;
+    std::uint64_t configuration_id = 0;
+    std::uint64_t qualification_id = 0;
+    std::uint64_t physical_source_instance_id = 0;
+    const void* active_use_identity = nullptr;
+    std::size_t roster_entries = 0;
+};
+
 struct RuntimeForecast {
     tlfea::contact::SelfContactTransactionForecast transaction;
+    RuntimeIdentity identity;
     std::size_t retained_host_upper_bound = 0;
     std::size_t peak_host_upper_bound = 0;
     std::size_t device_bytes = 0;

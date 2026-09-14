@@ -14,6 +14,7 @@ void SelfContactStages::Assemble(
     receipt_ = {};
     runtime::Assemble(
         contact.data_->transaction, owner, token, assembly,
+        budget_.transaction.accepted_event_capacity,
         observation, accepted_);
 }
 
@@ -26,6 +27,7 @@ void SelfContactStages::SealCandidate(
     receipt_ = {};
     runtime::SealCandidate(
         contact.data_->transaction, owner, token, common, prepared,
+        budget_.transaction.accepted_event_capacity,
         observation, accepted_, receipt_);
 }
 

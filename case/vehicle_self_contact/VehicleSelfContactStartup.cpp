@@ -72,6 +72,11 @@ void CheckProfile(const VehicleSelfContactSetup& setup,
             transaction.max_host_bytes &&
             transaction.max_device_bytes &&
             transaction.max_startup_host_bytes &&
+            config.event_capacity == transaction.max_global_events &&
+            transaction.force.max_events ==
+                transaction.max_global_events &&
+            transaction.max_event_hash_slots >=
+                transaction.max_global_events &&
             transaction.activity.max_selected_parents &&
             transaction.activity.max_family_parents &&
             transaction.force.max_events &&
@@ -88,6 +93,20 @@ void CheckProfile(const VehicleSelfContactSetup& setup,
             transaction.crossing.max_results &&
             transaction.participation.max_host_bytes,
         "Self-contact runtime requires explicit nonzero transaction capacities");
+}
+
+RuntimeIdentity RuntimeSourceIdentity(
+    const VehicleSelfContactSetup& setup, RuntimeConfig config,
+    const tl::fea::NodalStamp& owner,
+    const tl::fea::ShellPhysicalPublicationIdentity& publication) noexcept {
+    return {
+        config.source_id,
+        owner.owner_id,
+        publication.configuration_id,
+        publication.qualification_id,
+        setup.physical().domain()->source_instance_id(),
+        setup.active_uses().identity(),
+        1};
 }
 
 void CheckSource(
@@ -124,9 +143,12 @@ RuntimeForecast VehicleSelfContactStartup::Preview(
         TransactionConfig(config, owner, identity),
         setup.active_uses(), identity, limits.transaction);
     Check(transaction.report);
-    return detail::ComposeForecast(
+    auto result = detail::ComposeForecast(
         dynamics, setup.forecast(), transaction.forecast,
         sizeof(Data) + sizeof(VehicleSelfContactStartup) + 256, limits);
+    result.identity =
+        RuntimeSourceIdentity(setup, config, owner, identity);
+    return result;
 }
 
 RuntimeForecast VehicleSelfContactStartup::Preflight(
@@ -151,9 +173,12 @@ RuntimeForecast VehicleSelfContactStartup::Preflight(
         dynamics.allocations().device_bytes ==
             dynamics.forecast().startup.device_bytes,
         "Actual owner allocation differs from retained dynamics forecast");
-    return detail::ComposeForecast(
+    auto result = detail::ComposeForecast(
         dynamics.forecast(), setup.forecast(), transaction.forecast,
         sizeof(Data) + sizeof(VehicleSelfContactStartup) + 256, limits);
+    result.identity = RuntimeSourceIdentity(
+        setup, config, state.owner.accepted(), source.identity);
+    return result;
 }
 
 VehicleSelfContactStartup
