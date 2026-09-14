@@ -45,19 +45,28 @@ SelfContactCurrentFacetStatus EvaluateCurrentFacetRegularity(
       64 * DBL_EPSILON * largest_edge_squared)
     return S::Degenerate;
 
-  const auto orientation =
-      fixed_triangle_features::exact::DirectedTriangle(
-          vertices[0], vertices[1], vertices[2], chart_direction);
-  if (!orientation.valid) return S::Unrepresentable;
-  if (orientation.value <= 0) return S::Reversed;
-
   material_detail::CrossBounds first, second, cross;
   Q4IntegralInterval norm, directed;
-  if (!material_detail::Edge(vertices[1], vertices[0], 1, &first) ||
-      !material_detail::Edge(vertices[2], vertices[0], 1, &second) ||
-      !material_detail::Cross(first, second, &cross) ||
-      !material_detail::Norm(cross, &norm) ||
-      !material_detail::Dot(cross, chart_direction, &directed))
+  const bool bounded =
+      material_detail::Edge(vertices[1], vertices[0], 1, &first) &&
+      material_detail::Edge(vertices[2], vertices[0], 1, &second) &&
+      material_detail::Cross(first, second, &cross) &&
+      material_detail::Norm(cross, &norm) &&
+      material_detail::Dot(cross, chart_direction, &directed);
+  // The outward interval is an exact sign filter.  Only an interval touching
+  // zero needs the fixed-capacity dyadic predicate; no classification depends
+  // on an unguarded floating-point sign.
+  fixed_triangle_features::exact::Sign orientation;
+  if (bounded && directed.lower > 0)
+    orientation = {1, true};
+  else if (bounded && directed.upper < 0)
+    orientation = {-1, true};
+  else
+    orientation = fixed_triangle_features::exact::DirectedTriangle(
+        vertices[0], vertices[1], vertices[2], chart_direction);
+  if (!orientation.valid) return S::Unrepresentable;
+  if (orientation.value <= 0) return S::Reversed;
+  if (!bounded)
     return S::Unrepresentable;
   const Vec3 nominal = geometry_detail::Cross(ab, ac);
   const double nominal_norm = geometry_detail::Length(nominal);

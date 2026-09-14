@@ -100,13 +100,16 @@ SelfContactCurrentRegularity::Initialize(
   auto report = current_regularity::MakeLayout(
       binding, limits, sizeof(Impl), layout);
   if (report.status != S::Ok) return report;
-  report = current_regularity::ValidateSource(binding, layout.forecast);
-  if (report.status != S::Ok) return report;
 
   auto next = std::make_unique<Impl>(binding);
+  if (next->facet_reader.Initialize(*binding.facets()).status !=
+          FixedContactFacetStatus::Ok)
+    return Fail(S::IdentityMismatch,
+        "Current facet cursor could not retain initialized authority",
+        layout.forecast.parents, layout.forecast.facets);
   if (!next->arena.Initialize(layout.forecast.arena_bytes))
     return Fail(S::ResourceLimit,
-        "Current result/facet staging allocation failed",
+        "Current result/template allocation failed",
         layout.forecast.parents, layout.forecast.facets);
   auto& storage = next->storage;
   storage.first_results =
@@ -115,14 +118,24 @@ SelfContactCurrentRegularity::Initialize(
   storage.second_results =
       next->arena.Construct<SelfContactCurrentParentResult>(
           layout.second_results);
-  storage.facet_staging =
-      next->arena.Construct<CurrentFixedTriangle>(
-          layout.facet_staging);
+  const auto fixed = binding.facets()->forecast();
+  storage.templates.q4 =
+      next->arena.Construct<current_regularity::FacetTemplate>(
+          layout.q4_templates);
+  storage.templates.t3 =
+      next->arena.Construct<current_regularity::FacetTemplate>(
+          layout.t3_templates);
+  storage.templates.q4_count = fixed.q4_template_facets;
+  storage.templates.t3_count = fixed.t3_template_facets;
   if (!storage.first_results || !storage.second_results ||
-      !storage.facet_staging)
+      !storage.templates.q4 || !storage.templates.t3)
     return Fail(S::ResourceLimit,
-        "Typed current result/facet staging construction failed",
+        "Typed current result/template construction failed",
         layout.forecast.parents, layout.forecast.facets);
+  report = current_regularity::ValidateSource(
+      binding, layout.forecast, &storage.templates,
+      &next->facet_reader);
+  if (report.status != S::Ok) return report;
   next->publication = storage.first_results;
   next->staging = storage.second_results;
   next->forecast = layout.forecast;
@@ -189,7 +202,8 @@ SelfContactCurrentRegularity::Certify(
   SelfContactCurrentRegularitySummary summary;
   auto report = current_regularity::RunQuery(
       impl_->binding, impl_->forecast, positions, activity,
-      impl_->staging, impl_->storage.facet_staging, &summary);
+      impl_->staging, impl_->storage.templates,
+      impl_->facet_reader, &summary);
   if (report.status != S::Ok) return report;
 
   const std::uint64_t generation = impl_->generation + 1;

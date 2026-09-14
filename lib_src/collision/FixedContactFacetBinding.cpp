@@ -111,7 +111,15 @@ FixedContactFacetReadResult FixedContactFacetReadCursor::Describe(
 }
 Status FixedContactFacetBinding::Approximation(std::size_t parent, VectorView positions,
     FacetApproximationBound* output) const noexcept {
-  if (!output || !positions.valid() || !OutputDisjoint(output, sizeof(*output))) return Status::kInvalidArgument;
+  if (!output || !positions.valid() ||
+      !OutputDisjoint(output, sizeof(*output)))
+    return Status::kInvalidArgument;
+  return ApproximationDisjoint(parent, positions, output);
+}
+Status FixedContactFacetBinding::ApproximationDisjoint(
+    std::size_t parent, VectorView positions,
+    FacetApproximationBound* output) const noexcept {
+  if (!output || !positions.valid()) return Status::kInvalidArgument;
   if (parent >= impl_->forecast.parents) return Status::kOutOfRange;
   if (positions.node_count != impl_->surface.physical()->domain()->node_count()) return Status::kInvalidArgument;
   const auto last = (positions.node_count - 1) * positions.node_stride + 2 * positions.component_stride;
@@ -123,6 +131,17 @@ Status FixedContactFacetBinding::Approximation(std::size_t parent, VectorView po
       native.arity == 4 ? impl_->templates.q4_vertices : impl_->templates.t3_vertices,
       native.arity == 4 ? impl_->forecast.q4_template_vertices : impl_->forecast.t3_template_vertices,
       positions, output);
+}
+FixedContactFacetApproximationReadResult
+FixedContactFacetReadCursor::Approximation(
+    std::size_t parent, VectorView positions) noexcept {
+  if (!binding_)
+    return {Status::kInvalidArgument, {}};
+  FacetApproximationBound approximation;
+  const auto status =
+      binding_->ApproximationDisjoint(parent, positions, &approximation);
+  return {status, status == Status::kOk
+                      ? approximation : FacetApproximationBound{}};
 }
 Status FixedContactFacetBinding::SummarizeApproximation(VectorView positions,
     FacetApproximationSummary* output) const noexcept {

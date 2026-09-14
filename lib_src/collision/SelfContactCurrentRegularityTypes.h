@@ -127,6 +127,8 @@ struct SelfContactCurrentRegularityForecast {
   std::size_t parents = 0;
   std::size_t facets = 0;
   std::size_t publication_records = 0;
+  // Retained CurrentFixedTriangle records.  Compact-template profiles report
+  // zero and use one fixed-size query-local vertex value instead.
   std::size_t facet_staging_records = 0;
   std::size_t arena_bytes = 0;
   std::size_t retained_active_use_bytes = 0;

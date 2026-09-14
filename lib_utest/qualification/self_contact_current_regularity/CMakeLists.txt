@@ -8,7 +8,7 @@ include("${TL_ROOT}/lib_src/collision/SelfContactCurrentRegularity.cmake")
 
 add_executable(self_contact_current_regularity_host
   ActivityReceiptTest.cpp CapacityIdentityTest.cpp FailureTest.cpp
-  GeometryTest.cpp ValuesTest.cpp)
+  GeometryTest.cpp ScalingTest.cpp ValuesTest.cpp)
 target_link_libraries(self_contact_current_regularity_host PRIVATE
   tl_self_contact_current_regularity GTest::gtest_main)
 target_compile_features(self_contact_current_regularity_host PRIVATE cxx_std_17)

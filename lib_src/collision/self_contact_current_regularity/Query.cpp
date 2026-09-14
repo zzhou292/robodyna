@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
 
-#include "../FixedTriangleFeatureDiscovery.h"
 #include "../Q4SurfaceMapping.h"
 #include "../SurfaceContactGeometry.h"
 #include "../SurfaceMaterialMeasure.h"
+#include "../weighted_surface/Mapping.h"
 
 #include <algorithm>
 #include <cfloat>
@@ -105,6 +105,25 @@ SelfContactCurrentRegularityReport FacetFailure(
       "Represented current facet input is invalid", parent, facet);
 }
 
+Status EvaluateTemplate(
+    const SelfContactParentUse& parent,
+    const FacetTemplate& facet, VectorView positions,
+    Vec3 (&vertices)[3]) noexcept {
+  for (unsigned vertex = 0; vertex < 3; ++vertex) {
+    WeightedSurfacePoint point;
+    point.count = parent.arity;
+    for (unsigned slot = 0; slot < parent.arity; ++slot) {
+      point.nodes[slot] = parent.nodes[slot];
+      point.weights[slot] = facet.weights[vertex][slot];
+    }
+    const auto status =
+        EvaluateWeightedSurfacePosition(
+            positions, point, &vertices[vertex]);
+    if (status != Status::kOk) return status;
+  }
+  return Status::kOk;
+}
+
 }  // namespace
 
 SelfContactCurrentRegularityReport RunQuery(
@@ -112,9 +131,10 @@ SelfContactCurrentRegularityReport RunQuery(
     const SelfContactCurrentRegularityForecast& forecast,
     VectorView positions, SelfContactActivityView activity,
     SelfContactCurrentParentResult* staging,
-    CurrentFixedTriangle* facet_staging,
+    const Templates& templates,
+    FixedContactFacetReadCursor& facet_reader,
     SelfContactCurrentRegularitySummary* summary_output) noexcept {
-  if (!staging || !facet_staging || !summary_output ||
+  if (!staging || !templates.q4 || !templates.t3 || !summary_output ||
       !activity.base || !activity.current ||
       activity.parent_count != forecast.parents)
     return Fail(S::InvalidInput, forecast,
@@ -162,14 +182,15 @@ SelfContactCurrentRegularityReport RunQuery(
     auto report = ParentChart(parent, positions, forecast, result);
     if (report.status != S::Ok) return report;
     result.geometry_evaluated = true;
-    const auto approximation_status =
-        fixed->Approximation(parent.surface_parent, positions,
-                             &result.approximation);
-    if (approximation_status != Status::kOk)
-      return Fail(approximation_status == Status::kInvalidArgument
+    const auto approximation =
+        facet_reader.Approximation(
+            parent.surface_parent, positions);
+    if (approximation.status != Status::kOk)
+      return Fail(approximation.status == Status::kInvalidArgument
                       ? S::InvalidInput : S::Unrepresentable,
           forecast, "Current fixed-facet approximation could not be certified",
           p);
+    result.approximation = approximation.approximation;
 
     bool have_facet = false;
     for (std::uint32_t local = 0; local < parent.facet_count; ++local) {
@@ -178,19 +199,18 @@ SelfContactCurrentRegularityReport RunQuery(
         return Fail(S::IdentityMismatch, forecast,
             "Current parent facet range exceeds retained inventory",
             p, local);
-      FixedContactFacet descriptor;
-      if (fixed->Describe(parent.surface_parent, local, &descriptor).status !=
-              FixedContactFacetStatus::Ok ||
-          descriptor.source_instance_id != source_instance_id ||
-          descriptor.source.source_parent_id != result.source_eid ||
-          descriptor.level != result.level ||
-          descriptor.local_facet != local)
+      const auto* facet_templates =
+          parent.arity == 4 ? templates.q4 : templates.t3;
+      const auto template_count =
+          parent.arity == 4 ? templates.q4_count : templates.t3_count;
+      if (local >= template_count)
         return Fail(S::IdentityMismatch, forecast,
-            "Current facet replay differs from initialized authority",
+            "Current facet index exceeds retained immutable template",
             p, local);
-      auto& triangle = facet_staging[global];
+      Vec3 vertices[3];
       const auto evaluation =
-          EvaluateCurrentFixedTriangle(descriptor, positions, &triangle);
+          EvaluateTemplate(
+              parent, facet_templates[local], positions, vertices);
       if (evaluation != Status::kOk)
         return Fail(evaluation == Status::kInvalidArgument
                         ? S::InvalidInput : S::Unrepresentable,
@@ -198,7 +218,7 @@ SelfContactCurrentRegularityReport RunQuery(
             p, local);
       SelfContactCurrentFacetWitness witness;
       const auto facet_status = EvaluateCurrentFacetRegularity(
-          triangle.vertices, result.chart_direction, &witness);
+          vertices, result.chart_direction, &witness);
       if (facet_status != SelfContactCurrentFacetStatus::Ok)
         return FacetFailure(facet_status, forecast, p, local);
 

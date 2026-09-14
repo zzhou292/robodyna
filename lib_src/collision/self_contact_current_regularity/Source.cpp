@@ -3,6 +3,8 @@
 
 #include "../FixedContactFacetValues.h"
 
+#include <cstring>
+
 namespace tlfea::contact::current_regularity {
 namespace {
 
@@ -33,11 +35,31 @@ bool Same(const WeightedSurfacePoint& a,
   return true;
 }
 
+void CopyTemplate(const FixedContactFacet& source,
+                  FacetTemplate& destination) noexcept {
+  for (unsigned vertex = 0; vertex < 3; ++vertex)
+    std::memcpy(destination.weights[vertex],
+                source.vertices[vertex].weights,
+                sizeof(destination.weights[vertex]));
+}
+
+bool SameTemplate(const FacetTemplate& expected,
+                  const FixedContactFacet& source) noexcept {
+  for (unsigned vertex = 0; vertex < 3; ++vertex)
+    if (std::memcmp(expected.weights[vertex],
+                    source.vertices[vertex].weights,
+                    sizeof(expected.weights[vertex])) != 0)
+      return false;
+  return true;
+}
+
 }  // namespace
 
 SelfContactCurrentRegularityReport ValidateSource(
     const SelfContactActiveUseBinding& binding,
-    const SelfContactCurrentRegularityForecast& forecast) noexcept {
+    const SelfContactCurrentRegularityForecast& forecast,
+    Templates* templates,
+    FixedContactFacetReadCursor* retained_reader) noexcept {
   const auto* fixed = binding.facets();
   if (!fixed || !fixed->surface() ||
       forecast.parents != binding.parents().size() ||
@@ -47,11 +69,27 @@ SelfContactCurrentRegularityReport ValidateSource(
   if (surface.parents().size() != forecast.parents)
     return Fail(forecast,
         "Active-use parents do not cover the complete S0 surface");
+  const auto fixed_forecast = fixed->forecast();
+  if (templates &&
+      (!templates->q4 || !templates->t3 ||
+       templates->q4_count != fixed_forecast.q4_template_facets ||
+       templates->t3_count != fixed_forecast.t3_template_facets))
+    return Fail(forecast,
+        "Current compact template storage differs from fixed authority");
+  FixedContactFacetReadCursor local_reader;
+  auto* reader =
+      retained_reader ? retained_reader : &local_reader;
+  if (!retained_reader &&
+      reader->Initialize(*fixed).status != FixedContactFacetStatus::Ok)
+    return Fail(forecast,
+        "Fixed facet descriptor cursor could not authenticate its source");
   const auto source_instance_id =
       surface.physical()->domain()->source_instance_id();
 
   std::size_t facet_cursor = 0;
   std::uint64_t previous_eid = 0;
+  bool have_q4_template = false;
+  bool have_t3_template = false;
   for (std::size_t p = 0; p < forecast.parents; ++p) {
     const auto& parent = binding.parents()[p];
     if (!parent.source.source_parent_id ||
@@ -82,9 +120,15 @@ SelfContactCurrentRegularityReport ValidateSource(
 
     for (std::uint32_t local = 0; local < parent.facet_count; ++local) {
       const auto index = facet_cursor + local;
-      FixedContactFacet descriptor;
-      if (fixed->Describe(parent.surface_parent, local, &descriptor).status !=
-              FixedContactFacetStatus::Ok ||
+      const auto described =
+          reader->Describe(parent.surface_parent, local);
+      if (described.report.status != FixedContactFacetStatus::Ok ||
+          !described.facet)
+        return Fail(forecast,
+            "Fixed facet descriptor does not authenticate its parent",
+            p, local);
+      const auto& descriptor = *described.facet;
+      if (
           descriptor.source_instance_id != source_instance_id ||
           descriptor.parent_index != parent.surface_parent ||
           descriptor.source.source_parent_id !=
@@ -144,7 +188,23 @@ SelfContactCurrentRegularityReport ValidateSource(
                 p, local);
         }
       }
+      if (templates) {
+        auto* retained =
+            parent.arity == 4 ? templates->q4 : templates->t3;
+        const bool have =
+            parent.arity == 4 ? have_q4_template : have_t3_template;
+        if (!have)
+          CopyTemplate(descriptor, retained[local]);
+        else if (!SameTemplate(retained[local], descriptor))
+          return Fail(forecast,
+              "Parent facet weights differ from immutable fixed template",
+              p, local);
+      }
     }
+    if (parent.arity == 4)
+      have_q4_template = true;
+    else
+      have_t3_template = true;
     facet_cursor += parent.facet_count;
   }
   if (facet_cursor != forecast.facets)

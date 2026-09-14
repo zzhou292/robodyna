@@ -2,6 +2,7 @@
 #include "Fixture.h"
 
 #include <cstring>
+#include <utility>
 
 namespace current_regularity_test {
 
@@ -13,7 +14,7 @@ TEST(SelfContactCurrentRegularity,
   EXPECT_EQ(plan.forecast.parents,fixture.uses.parents().size());
   EXPECT_EQ(plan.forecast.facets,fixture.uses.facet_uses().size());
   EXPECT_EQ(plan.forecast.publication_records,2*plan.forecast.parents);
-  EXPECT_EQ(plan.forecast.facet_staging_records,plan.forecast.facets);
+  EXPECT_EQ(plan.forecast.facet_staging_records,0u);
 
   c::SelfContactCurrentRegularityLimits parent_cap;
   parent_cap.max_parents=plan.forecast.parents-1;
@@ -162,6 +163,30 @@ TEST(SelfContactCurrentRegularity,
       wrong_positions,fixture.Activity(),&receipt).status,
       Status::InvalidInput);
   EXPECT_FALSE(fixture.regularity.results().complete);
+}
+
+TEST(SelfContactCurrentRegularity,
+    RetainedBindingAndCompactTemplatesOutliveOriginalHandles) {
+  c::SelfContactCurrentRegularity retained;
+  std::vector<double> positions;
+  std::vector<std::uint8_t> base;
+  std::vector<std::uint8_t> current;
+  {
+    Fixture fixture(2, true);
+    positions = fixture.positions;
+    base = fixture.base;
+    current = fixture.current;
+    ASSERT_EQ(retained.Initialize(fixture.uses).status, Status::Ok);
+  }
+  c::SelfContactCurrentRegularity moved = std::move(retained);
+  c::SelfContactCurrentRegularityReceipt receipt;
+  const c::VectorView view{
+      positions.data(), static_cast<std::uint32_t>(positions.size()/3), 3, 1};
+  const c::SelfContactActivityView activity{
+      base.data(), current.data(), base.size()};
+  ASSERT_EQ(moved.Certify(view, activity, &receipt).status, Status::Ok);
+  EXPECT_TRUE(moved.results().complete);
+  EXPECT_EQ(moved.results().summary.certified_parents, base.size());
 }
 
 } // namespace current_regularity_test

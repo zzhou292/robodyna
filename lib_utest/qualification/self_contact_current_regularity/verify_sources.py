@@ -37,20 +37,27 @@ query = production[8].read_text()
 all_production = "\n".join(path.read_text() for path in production)
 
 assert "SelfContactActiveUseBinding binding" in production[4].read_text()
-assert "ValidateSource(binding, layout.forecast)" in lifecycle
+assert "ValidateSource(" in lifecycle
+assert "&storage.templates" in lifecycle
 assert "strict deterministic source-EID order" in source
 assert "facet_cursor != forecast.facets" in source
 assert "publication_records = 2 *" in layout
-assert "facet_staging_records = next.forecast.facets" in layout
-assert "CurrentFixedTriangle" in layout
+assert "facet_staging_records = 0" in layout
+assert "FixedContactFacetReadCursor local_reader" in source
+assert "reader->Describe" in source
+assert "fixed->Describe" not in source
+assert "FacetTemplate" in layout
+assert "facet_templates[local]" in query
+assert "CurrentFixedTriangle" not in query
 assert "PrepareQ4MaterialMeasure" in query
 assert "CertifiedQ4FixedDirection" in query
 assert "PrepareT3MaterialMeasure" in query
 assert "activity.current[p] > activity.base[p]" in query
 assert "LongInactiveSkipped" in query
-assert "fixed->Approximation" in query
+assert "facet_reader.Approximation" in query
 assert "EvaluateCurrentFacetRegularity" in query
 assert "DirectedTriangle" in values
+assert "directed.lower > 0" in values
 assert "64 * DBL_EPSILON" in values
 assert "FacetOrientationMismatch" in query
 assert "FacetDegenerate" in query
@@ -119,6 +126,9 @@ for required in (
     "ExactParentFacetAndByteCapsRejectOneShortThenRetry",
     "QueryAliasesAndLateParentFailurePreserveCompletePublicationThenRetry",
     "PermutedSelectionPublishesIdenticalSourceEidOrderedSummary",
+    "RetainedBindingAndCompactTemplatesOutliveOriginalHandles",
+    "RepresentativeQ4T3CensusHasBoundedLinearStartupAndQuery",
+    "CompactFacetPathMatchesIndependentDescriptorBaselineExactly",
 ):
     assert required in tests, required
 assert "cpp_dec_float<100>" in (HERE / "Oracle.h").read_text()

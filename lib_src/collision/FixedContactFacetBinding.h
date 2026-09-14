@@ -38,6 +38,8 @@ class FixedContactFacetBinding {
  private:
   FixedContactFacetReport DescribeDisjoint(std::size_t, unsigned,
       FixedContactFacet*) const noexcept;
+  Status ApproximationDisjoint(std::size_t, VectorView,
+      FacetApproximationBound*) const noexcept;
   friend class FixedContactFacetReadCursor;
   struct Impl;
   std::shared_ptr<const Impl> impl_;
@@ -50,9 +52,14 @@ struct FixedContactFacetReadResult {
   const FixedContactFacet* facet = nullptr;
 };
 
-// Startup-only descriptor cursor. Initialize authenticates the cursor's owned
-// output address once and retains the immutable source handle. Describe cannot
-// redirect writes and allocates no storage.
+struct FixedContactFacetApproximationReadResult {
+  Status status = Status::kInvalidArgument;
+  FacetApproximationBound approximation;
+};
+
+// Authenticated descriptor/current-geometry cursor. Initialize authenticates
+// its owned descriptor address once and retains the immutable source handle.
+// Reads cannot redirect writes and allocate no storage.
 class FixedContactFacetReadCursor {
  public:
   FixedContactFacetReadCursor() = default;
@@ -66,6 +73,8 @@ class FixedContactFacetReadCursor {
       const FixedContactFacetBinding&) noexcept;
   FixedContactFacetReadResult Describe(std::size_t parent,
       unsigned local_facet) noexcept;
+  FixedContactFacetApproximationReadResult Approximation(
+      std::size_t parent, VectorView positions) noexcept;
  private:
   std::optional<FixedContactFacetBinding> binding_;
   FixedContactFacet current_;

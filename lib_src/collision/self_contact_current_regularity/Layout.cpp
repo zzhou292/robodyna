@@ -59,17 +59,25 @@ SelfContactCurrentRegularityReport MakeLayout(
     return Fail(S::ResourceLimit,
         "Checked current publication count overflowed");
   next.forecast.publication_records = 2 * next.forecast.parents;
-  next.forecast.facet_staging_records = next.forecast.facets;
+  // Runtime facet geometry is one fixed-size stack value, never a
+  // facet-count-sized retained staging array.
+  next.forecast.facet_staging_records = 0;
+  const auto fixed = binding.facets()->forecast();
+  if (!fixed.q4_template_facets || !fixed.t3_template_facets)
+    return Fail(S::IdentityMismatch,
+        "Fixed-facet template inventory is incomplete");
 
   tl::util::BoundedArenaLayout arena(limits.max_host_bytes);
   if (!arena.Append<SelfContactCurrentParentResult>(
           next.forecast.parents, next.first_results) ||
       !arena.Append<SelfContactCurrentParentResult>(
           next.forecast.parents, next.second_results) ||
-      !arena.Append<CurrentFixedTriangle>(
-          next.forecast.facets, next.facet_staging))
+      !arena.Append<FacetTemplate>(
+          fixed.q4_template_facets, next.q4_templates) ||
+      !arena.Append<FacetTemplate>(
+          fixed.t3_template_facets, next.t3_templates))
     return Fail(S::ResourceLimit,
-        "Preallocated current result/facet staging exceeds the byte cap");
+        "Preallocated current results/templates exceed the byte cap");
   next.forecast.arena_bytes = arena.bytes();
 
   const auto retained = binding.forecast().owned_payload_bytes;
@@ -92,9 +100,11 @@ SelfContactCurrentRegularityReport MakeLayout(
         "Current binding, retained source and arena exceed the byte cap");
   next.forecast.owned_payload_bytes = budget.bytes();
   constexpr std::size_t scratch =
-      sizeof(Layout) + sizeof(FixedContactFacet) +
+      sizeof(Layout) + sizeof(FixedContactFacetReadCursor) +
       sizeof(Q4MaterialMeasure) + sizeof(T3MaterialMeasure) +
-      sizeof(SelfContactCurrentRegularitySummary) + 16*sizeof(double);
+      sizeof(SelfContactCurrentRegularitySummary) +
+      sizeof(WeightedSurfacePoint) + 3*sizeof(Vec3) +
+      sizeof(SelfContactCurrentFacetWitness);
   if (!budget.Append<std::byte>(scratch, ignored))
     return Fail(S::ResourceLimit,
         "Typed current geometry startup/query scratch exceeds the byte cap");
