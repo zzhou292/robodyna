@@ -25,6 +25,7 @@ struct Selection {
 const Selection& Inventory();
 const modelio::self_contact::OriginalSelection& OriginalContactSelection();
 const Selection& ContactInventory();
+const vehicle_self_contact::VehicleSelfContactSetup& LevelZeroSetup();
 inline contact::SelfContactSurfaceInput Input(const std::vector<contact::SelfContactParentSelection>& rows) {
     return {rows.data(),rows.size(),contact::SelfContactSurfaceProfile::FrictionlessReferenceThicknessShellSubsetV1};
 }

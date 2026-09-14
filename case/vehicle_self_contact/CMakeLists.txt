@@ -10,7 +10,7 @@ if(NOT EXISTS "${ROBO_DYNA_TL_ROOT}/lib_src/collision/SelfContactActiveUseBindin
 endif()
 include("${CMAKE_CURRENT_LIST_DIR}/VehicleSelfContactValues.cmake")
 add_executable(robo_dyna_vehicle_self_contact_values_check
-  tests/SelectedSourceTest.cpp)
+  tests/SelectedSourceTest.cpp tests/InitialCensusValuesTest.cpp)
 target_link_libraries(robo_dyna_vehicle_self_contact_values_check PRIVATE
   robo_dyna_vehicle_self_contact_values GTest::gtest_main)
 target_compile_options(robo_dyna_vehicle_self_contact_values_check PRIVATE

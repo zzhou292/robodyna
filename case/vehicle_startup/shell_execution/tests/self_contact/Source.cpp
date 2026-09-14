@@ -92,6 +92,13 @@ const modelio::self_contact::OriginalSelection& OriginalContactSelection() {
     }();
     return value;
 }
+const vehicle_self_contact::VehicleSelfContactSetup& LevelZeroSetup() {
+    static const auto value =
+        vehicle_self_contact::VehicleSelfContactSetup::Prepare(
+            Execution(), PhysicalAttachments(),
+            OriginalContactSelection(), {0});
+    return value;
+}
 const Selection& ContactInventory() {
     static const auto value = [] {
         const auto& physical = Execution().physical();

@@ -19,12 +19,6 @@ tlfea::contact::SelfContactActiveUseSource SupportSource() {
          roster.witnesses.size()}};
 }
 
-const app_contact::VehicleSelfContactSetup& LevelZeroSetup() {
-    static const auto value = app_contact::VehicleSelfContactSetup::Prepare(
-        Execution(), PhysicalAttachments(), OriginalContactSelection(), {0});
-    return value;
-}
-
 void CheckSupportPartition(const app_contact::SupportRoleCounts& counts) {
     EXPECT_EQ(counts.total, counts.ordinary + counts.rigid +
         counts.cin_master + counts.cin_secondary);
