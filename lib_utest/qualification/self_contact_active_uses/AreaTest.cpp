@@ -3,6 +3,7 @@
 #include <cfloat>
 #include <cmath>
 #include <limits>
+#include <type_traits>
 
 namespace active_use_test {
 namespace {
@@ -34,7 +35,10 @@ long double DirectedSum(const c::SelfContactActiveUseBinding& uses, std::size_t 
     if (use.parent == parent) sum += use.directed_vf_area_m2.value;
   return sum;
 }
-long double AdmittedEventSum(const Fixture& fixture,
+struct AreaSum {
+  long double value=0,lower=0,upper=0;
+};
+AreaSum AdmittedEventSum(const Fixture& fixture,
     const c::SelfContactActiveUseBinding& uses, std::uint64_t vertex_eid,
     std::uint64_t face_eid) {
   const auto vertex_parent = fixture.Parent(vertex_eid,uses);
@@ -46,7 +50,7 @@ long double AdmittedEventSum(const Fixture& fixture,
   auto active = fixture.Active(uses);
   const c::SelfContactActivityView view{
       active.data(),active.data(),active.size()};
-  long double sum = 0;
+  AreaSum sum;
   std::size_t events = 0;
   for (std::size_t i = 0; i < uses.vertex_uses().size(); ++i) {
     if (uses.vertex_uses()[i].parent != vertex_parent) continue;
@@ -55,7 +59,9 @@ long double AdmittedEventSum(const Fixture& fixture,
     EXPECT_EQ(pair.status,c::SelfContactPairStatus::AdmittedVertexFace);
     EXPECT_EQ(pair.admitted_force_area_m2.value,
         uses.vertex_uses()[i].directed_vf_area_m2.value);
-    sum += pair.admitted_force_area_m2.value;
+    sum.value += pair.admitted_force_area_m2.value;
+    sum.lower += pair.admitted_force_area_m2.lower;
+    sum.upper += pair.admitted_force_area_m2.upper;
     ++events;
   }
   EXPECT_EQ(events,uses.parents()[vertex_parent].arity == 4 ?
@@ -65,6 +71,9 @@ long double AdmittedEventSum(const Fixture& fixture,
           ((1u << uses.parents()[vertex_parent].level)+2)/2);
   return sum;
 }
+template<class T,class=void> struct HasInverseEffectiveMass : std::false_type {};
+template<class T> struct HasInverseEffectiveMass<T,std::void_t<
+    decltype(T{}.inverse_effective_mass)>> : std::true_type {};
 void CheckAreas(unsigned level, bool warped) {
   Fixture fixture(level, warped);
   c::SelfContactActiveUseBinding uses;
@@ -80,10 +89,13 @@ void CheckAreas(unsigned level, bool warped) {
     const long double bound = 48*std::numeric_limits<double>::epsilon()*scale;
     EXPECT_LE(std::fabs(directed-.5L*oracle), bound)
         << parent.source.source_parent_id;
+    long double directed_lower=0,directed_upper=0;
     long double dual = 0;
     std::size_t valence = 0;
     for (const auto& use : uses.vertex_uses()) if (use.parent == p) {
       dual += use.dual_area_m2.value;
+      directed_lower += use.directed_vf_area_m2.lower;
+      directed_upper += use.directed_vf_area_m2.upper;
       valence += use.facet_valence;
       EXPECT_EQ(use.directed_vf_area_m2.value, use.dual_area_m2.value/2);
       EXPECT_LE(use.directed_vf_area_m2.lower, use.directed_vf_area_m2.value);
@@ -91,6 +103,8 @@ void CheckAreas(unsigned level, bool warped) {
     }
     EXPECT_EQ(valence, 3*parent.facet_count);
     EXPECT_LE(std::fabs(dual-oracle), 2*bound);
+    EXPECT_LE(directed_lower,.5L*oracle);
+    EXPECT_GE(directed_upper,.5L*oracle);
     EXPECT_EQ(parent.area_model, parent.arity == 4 ?
         c::SelfContactReferenceAreaModel::Q4CenterAreaContactModel :
         c::SelfContactReferenceAreaModel::T3CertifiedNativeArea);
@@ -129,21 +143,55 @@ TEST(SelfContactActiveUses, NineLevelCombinationsRemainBidirectionallyHalfArea) 
         const auto pb = second.Parent(kind.second,b);
         const long double area_a = IndependentArea(first,a.parents()[pa]);
         const long double area_b = IndependentArea(second,b.parents()[pb]);
-        const long double represented =
-            AdmittedEventSum(first,a,kind.first,kind.second)+
+        const auto directed_a=
+            AdmittedEventSum(first,a,kind.first,kind.second);
+        const auto directed_b=
             AdmittedEventSum(second,b,kind.second,kind.first);
+        const AreaSum represented{
+            directed_a.value+directed_b.value,
+            directed_a.lower+directed_b.lower,
+            directed_a.upper+directed_b.upper};
         const long double expected = .5L*(area_a+area_b);
       const long double tolerance =
           64*std::numeric_limits<double>::epsilon()*(area_a+area_b);
-        EXPECT_LE(std::fabs(represented-expected),tolerance)
+        EXPECT_LE(std::fabs(represented.value-expected),tolerance)
             << kind.first << " " << kind.second << " "
             << first_level << " " << second_level;
+        EXPECT_LE(represented.lower,expected);
+        EXPECT_GE(represented.upper,expected);
         // Uniform pressure and summed directed event resultants are the same
         // identity; no implementation force or penalty call is used here.
-        EXPECT_LE(std::fabs(pressure*represented-pressure*expected),
+        EXPECT_LE(std::fabs(pressure*represented.value-pressure*expected),
             pressure*tolerance);
+        EXPECT_LE(pressure*represented.lower,pressure*expected);
+        EXPECT_GE(pressure*represented.upper,pressure*expected);
       }
     }
   }
+}
+
+TEST(SelfContactActiveUses,
+     RemovedVfHasNoForceAreaAndAreaAuthorityHasNoMassResponse) {
+  static_assert(!HasInverseEffectiveMass<c::SelfContactParentUse>::value);
+  static_assert(!HasInverseEffectiveMass<c::SelfContactPairClassification>::value);
+  Fixture fixture(2,false,true);
+  c::SelfContactActiveUseBinding uses;
+  ASSERT_EQ(uses.Initialize(fixture.facets).status,Code::Ok);
+  const auto vertex=fixture.VertexUse(100,uses,10);
+  const auto facet=fixture.RemoteFacet(
+      101,uses.vertex_uses()[vertex].feature,uses);
+  ASSERT_NE(vertex,SIZE_MAX);
+  ASSERT_NE(facet,SIZE_MAX);
+  auto base=fixture.Active(uses),current=base;
+  current[uses.vertex_uses()[vertex].parent]=0;
+  c::SelfContactPairClassification pair;
+  ASSERT_EQ(uses.ClassifyVertexFace(vertex,facet,
+      fixture.FacePoint(facet,uses),
+      {base.data(),current.data(),base.size()},&pair).status,Code::Ok);
+  EXPECT_EQ(pair.status,c::SelfContactPairStatus::InactiveParent);
+  EXPECT_EQ(pair.candidate_directed_area_m2.value,0);
+  EXPECT_EQ(pair.admitted_force_area_m2.value,0);
+  EXPECT_EQ(pair.admitted_force_area_m2.lower,0);
+  EXPECT_EQ(pair.admitted_force_area_m2.upper,0);
 }
 } // namespace active_use_test

@@ -123,6 +123,15 @@ mandatory receipt rollback/retry, initial half-kick, ordinary interval and
 allocation stability, plus an exact pass-through unresolved-reason rollback
 and deterministic retry. It also covers actual T3 removal, long-inactive
 participation, stale accepted authority, forged physical diagnostics, and
-exact rollback/retry. The pass-through is driven by a token-authenticated
+exact rollback/retry. Dedicated accepted-stage rigid gates retain genuine execution-owned
+merged PART and plain declarations. One proves a discovered same-body VF is
+removed before event/force/STI publication; another proves a transaction-owned
+VF produces equal/opposite nodal loads and that the actual owner uses each
+body's merged resultant/moment before its dense anisotropic inverse. The latter
+also carries a deliberate PART/plain numeric-ID collision and distinguishes
+the merged response from an endpoint-wise inverse sum. They discard rather
+than claim interval acceptance because candidate sealing deliberately reports
+`UnsupportedMotion` while rigid arcs remain outside `LinearNodalV1`; nonlinear
+rigid interval admission remains a full-V5 dependency. The pass-through is driven by a token-authenticated
 assembled nodal force, not an inconsistent initial nodal velocity. CUDA
 execution is intentionally left to the parent.

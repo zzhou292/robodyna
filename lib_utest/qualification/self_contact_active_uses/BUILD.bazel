@@ -20,6 +20,7 @@ cc_library(
 cc_test(
     name = "host_check",
     size = "small",
+    tags = ["m2-self-contact-refinement"],
     srcs = [
         "ActivityTest.cpp",
         "AreaTest.cpp",
@@ -44,6 +45,7 @@ cc_test(
 cc_test(
     name = "source_check",
     size = "small",
+    tags = ["m2-self-contact-refinement"],
     srcs = ["SourceProofTest.cpp"],
     data = [
         "BUILD.bazel",

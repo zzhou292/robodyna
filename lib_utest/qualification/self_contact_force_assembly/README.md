@@ -89,7 +89,10 @@ The authored CUDA fixture covers exact caps/allocation stability; ordinary,
 partial-axis and fully fixed owner masks; shared-node incidence; equal/opposite
 resultant, global moment and independent virtual-work checks; initial half-kick
 and ordinary interval phase identity; preservation of incoming force/couple/
-STI; actual PART/plain and CIN-master support/transfer; duplicate, stale,
+STI; exact canonical results under input-event permutation; actual PART/plain
+and CIN-master support/transfer; independent dense master force, moment and
+STI enclosure with an actual surface CIN secondary rejected and unchanged;
+committed partial/full fixed reactions; duplicate, stale,
 foreign, same-body-excluded and CIN-secondary rejection; final-event NaN,
 node-sum overflow, complete rollback/retry and stable allocations. CUDA
 execution remains a root-only gate. No energy-conservation claim is made.

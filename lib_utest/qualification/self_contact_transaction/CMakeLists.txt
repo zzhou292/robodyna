@@ -33,7 +33,8 @@ set_tests_properties(
   self_contact_transaction_values
   self_contact_transaction_source
   self_contact_transaction_syntax
-  PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120)
+  PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120
+  LABELS "m2;self-contact-source-shape")
 
 option(SELF_CONTACT_TRANSACTION_CUDA
   "Build actual owner/publication self-contact transaction gate" OFF)
@@ -61,5 +62,6 @@ if(SELF_CONTACT_TRANSACTION_CUDA)
   add_test(NAME self_contact_transaction_cuda
     COMMAND self_contact_transaction_cuda)
   set_tests_properties(self_contact_transaction_cuda PROPERTIES
-    RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 300)
+    RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 300
+    LABELS "m2;rigid-cin-response")
 endif()

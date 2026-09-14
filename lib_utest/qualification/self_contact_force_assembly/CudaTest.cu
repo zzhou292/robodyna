@@ -28,7 +28,12 @@ bool Good(c::SelfContactForceReport report) {
 }
 
 struct Fixture {
-  explicit Fixture(bool surface_rigid = false) : rig(surface_rigid) {
+  explicit Fixture(bool surface_rigid = false,
+      p::ContactConstraintLayout constraints =
+          p::ContactConstraintLayout::Legacy)
+      : rig(surface_rigid, 2.5,
+            constraints == p::ContactConstraintLayout::SurfaceCinSecondary,
+            constraints) {
     qbat_catalog_test::Fixture declaration;
     for (unsigned row = 0; row < 2; ++row) {
       declaration.materials[row].curve_id = 0;
@@ -312,6 +317,11 @@ struct AssemblySnapshot {
               view.stream) != cudaSuccess)
         return false;
     return cudaStreamSynchronize(view.stream) == cudaSuccess;
+  }
+  c::Vec3 Vector(unsigned channel, std::size_t node) const {
+    return {values[channel * nodes + node],
+            values[(channel + 1) * nodes + node],
+            values[(channel + 2) * nodes + node]};
   }
 };
 
@@ -613,6 +623,55 @@ TEST(SelfContactForceCuda,
 }
 
 TEST(SelfContactForceCuda,
+     EventPermutationPreservesCanonicalAssemblyAndAllocationExactly) {
+  Fixture f;
+  ASSERT_TRUE(f.Initialize());
+  const auto ordered=f.Events(32);
+  ASSERT_GT(ordered.size(),1u);
+  auto reversed=ordered;
+  std::reverse(reversed.begin(),reversed.end());
+  const auto allocation=f.force.allocations();
+  std::vector<double> reference;
+  c::SelfContactForceDiagnostics first_diagnostics;
+  for (unsigned pass=0;pass<2;++pass) {
+    fe::NodalTrialToken token;
+    fe::NodalAssemblyView assembly;
+    ASSERT_TRUE(f.rig.Begin(token,assembly));
+    fe::NodalCinAssemblyView cin;
+    ASSERT_TRUE(p::Good(f.rig.owner.BorrowCinAssembly(token,&cin)));
+    AssemblySnapshot before(f.rig.fixture.domain.node_count()),after(before.nodes);
+    ASSERT_TRUE(before.Read(assembly,cin));
+    const auto& events=pass ? reversed : ordered;
+    c::SelfContactForceAssemblyReceipt receipt;
+    ASSERT_TRUE(Good(f.force.AssembleAccepted(
+        f.rig.owner,token,assembly,f.Activity(),
+        {events.data(),events.size()},&receipt)));
+    ASSERT_TRUE(after.Read(assembly,cin));
+    std::vector<double> increment(after.values.size());
+    for (std::size_t i=0;i<increment.size();++i)
+      increment[i]=after.values[i]-before.values[i];
+    if (!pass) {
+      reference=increment;
+      first_diagnostics=receipt.diagnostics();
+    } else {
+      EXPECT_EQ(increment,reference);
+      EXPECT_EQ(receipt.diagnostics().first_source_order,
+                first_diagnostics.first_source_order);
+      EXPECT_EQ(receipt.diagnostics().last_source_order,
+                first_diagnostics.last_source_order);
+      EXPECT_EQ(receipt.diagnostics().event_count,
+                first_diagnostics.event_count);
+      EXPECT_EQ(receipt.diagnostics().active_count,
+                first_diagnostics.active_count);
+    }
+    EXPECT_EQ(f.force.allocations().device_bytes,allocation.device_bytes);
+    EXPECT_EQ(f.force.allocations().device_allocations,
+              allocation.device_allocations);
+    f.Discard();
+  }
+}
+
+TEST(SelfContactForceCuda,
      DuplicateStaleForeignFinalEventNaNAndNodeSumOverflowRollbackRetry) {
   Fixture f;
   ASSERT_TRUE(f.Initialize({}, 1e308));
@@ -838,6 +897,196 @@ TEST(SelfContactForceCuda,
 }
 
 TEST(SelfContactForceCuda,
+     ActualCinMasterGetsDenseForceMomentAndStiWhileSecondaryGetsNone) {
+  Fixture f(false,p::ContactConstraintLayout::SurfaceCinSecondary);
+  ASSERT_TRUE(f.Initialize());
+  const auto events=f.Events(32);
+  auto selected=events.end();
+  unsigned master_endpoint=2;
+  for (auto event=events.begin();event!=events.end();++event)
+    for (unsigned endpoint=0;endpoint<2;++endpoint)
+      if (event->classification.endpoint_support[endpoint].status ==
+          c::SelfContactSupportStatus::AdmittedCinMaster) {
+        selected=event;
+        master_endpoint=endpoint;
+        break;
+      }
+  ASSERT_NE(selected,events.end());
+  ASSERT_LT(master_endpoint,2u);
+  const auto secondary=f.rig.fixture.domain.Find(14);
+  ASSERT_NE(secondary,SIZE_MAX);
+  for (const auto& event:events)
+    for (const auto& point:event.endpoints)
+      for (unsigned slot=0;slot<point.count;++slot)
+        EXPECT_TRUE(point.nodes[slot]!=secondary || point.weights[slot]==0);
+
+  std::size_t secondary_vertex=SIZE_MAX,master_facet=SIZE_MAX;
+  for (std::size_t vertex=0;vertex<f.uses.vertex_uses().size();++vertex)
+    if (f.uses.vertex_uses()[vertex].key.kind ==
+            c::FacetVertexKind::SourceVertex &&
+        f.uses.vertex_uses()[vertex].key.first==14) {
+      secondary_vertex=vertex;
+      break;
+    }
+  for (std::size_t facet=0;facet<f.uses.facet_uses().size();++facet)
+    if (f.uses.parents()[f.uses.facet_uses()[facet].parent].
+            source.source_parent_id==103) {
+      master_facet=facet;
+      break;
+    }
+  ASSERT_NE(secondary_vertex,SIZE_MAX);
+  ASSERT_NE(master_facet,SIZE_MAX);
+  auto master_point=f.FacePoint(master_facet);
+  c::SelfContactPairClassification rejected;
+  ASSERT_EQ(f.uses.ClassifyVertexFace(secondary_vertex,master_facet,
+      master_point,f.Activity(),&rejected).status,
+      c::SelfContactActiveUseStatus::Ok);
+  EXPECT_EQ(rejected.endpoint_support[0].status,
+      c::SelfContactSupportStatus::UnsupportedCinSecondary);
+  EXPECT_EQ(rejected.status,c::SelfContactPairStatus::UnsupportedCinSecondary);
+  EXPECT_EQ(rejected.admitted_force_area_m2.value,0);
+
+  fe::NodalTrialToken token;
+  fe::NodalAssemblyView assembly;
+  ASSERT_TRUE(f.rig.Begin(token,assembly));
+  fe::NodalCinAssemblyView cin;
+  ASSERT_TRUE(p::Good(f.rig.owner.BorrowCinAssembly(token,&cin)));
+  AssemblySnapshot before(f.rig.fixture.domain.node_count()),after(before.nodes);
+  ASSERT_TRUE(before.Read(assembly,cin));
+  std::vector<double> kinematics(6*before.nodes);
+  ASSERT_EQ(cudaMemcpyAsync(kinematics.data(),assembly.accepted.position_xyz,
+      3*before.nodes*sizeof(double),cudaMemcpyDeviceToHost,assembly.stream),
+      cudaSuccess);
+  ASSERT_EQ(cudaMemcpyAsync(kinematics.data()+3*before.nodes,
+      assembly.accepted.velocity_xyz,3*before.nodes*sizeof(double),
+      cudaMemcpyDeviceToHost,assembly.stream),cudaSuccess);
+  ASSERT_EQ(cudaStreamSynchronize(assembly.stream),cudaSuccess);
+
+  const auto weighted=[&](const c::WeightedSurfacePoint& point) {
+    c::Vec3 value;
+    for (unsigned slot=0;slot<point.count;++slot) {
+      const auto node=point.nodes[slot];
+      value.x+=point.weights[slot]*kinematics[3*node];
+      value.y+=point.weights[slot]*kinematics[3*node+1];
+      value.z+=point.weights[slot]*kinematics[3*node+2];
+    }
+    return value;
+  };
+  const auto a=weighted(selected->endpoints[0]);
+  const auto b=weighted(selected->endpoints[1]);
+  const c::Vec3 separation{a.x-b.x,a.y-b.y,a.z-b.z};
+  const double distance=std::hypot(
+      std::hypot(separation.x,separation.y),separation.z);
+  ASSERT_GT(distance,0);
+  const c::Vec3 normal{
+      separation.x/distance,separation.y/distance,separation.z/distance};
+  const double gap=(distance-
+      selected->classification.reference_half_thickness_m[0])-
+      selected->classification.reference_half_thickness_m[1];
+  ASSERT_LT(gap,0);
+  const double stiffness=std::nextafter(
+      f.config.stiffness_per_area_n_m3*
+          selected->classification.admitted_force_area_m2.value,HUGE_VAL);
+  const double magnitude=stiffness*(-gap);
+  const c::Vec3 endpoint_force[]{
+      {magnitude*normal.x,magnitude*normal.y,magnitude*normal.z},
+      {-magnitude*normal.x,-magnitude*normal.y,-magnitude*normal.z}};
+  std::vector<c::Vec3> expected_force(before.nodes);
+  std::vector<long double> jacobian_norm(before.nodes);
+  long double norm_sum=0;
+  for (unsigned endpoint=0;endpoint<2;++endpoint) {
+    const auto& point=selected->endpoints[endpoint];
+    for (unsigned slot=0;slot<point.count;++slot) {
+      const auto node=point.nodes[slot];
+      const double weight=point.weights[slot];
+      expected_force[node]=c::Add(expected_force[node],
+          c::Scale(endpoint_force[endpoint],weight));
+      const long double x=weight*normal.x;
+      const long double y=weight*normal.y;
+      const long double z=weight*normal.z;
+      jacobian_norm[node]=std::sqrt(x*x+y*y+z*z);
+      norm_sum+=jacobian_norm[node];
+    }
+  }
+
+  c::SelfContactForceAssemblyReceipt receipt;
+  ASSERT_TRUE(Good(f.force.AssembleAccepted(
+      f.rig.owner,token,assembly,f.Activity(),{&*selected,1},&receipt)));
+  ASSERT_EQ(receipt.diagnostics().attempt,assembly.attempt);
+  ASSERT_TRUE(after.Read(assembly,cin));
+  c::Vec3 actual_master_resultant,expected_master_resultant;
+  c::Vec3 actual_master_moment,expected_master_moment;
+  long double actual_master_sti=0,expected_master_sti=0;
+  for (std::size_t node=0;node<before.nodes;++node) {
+    const auto increment=c::Subtract(after.Vector(0,node),
+                                     before.Vector(0,node));
+    const double force_scale=1+receipt.diagnostics().maximum_force_norm_n;
+    EXPECT_NEAR(increment.x,expected_force[node].x,2e-12*force_scale);
+    EXPECT_NEAR(increment.y,expected_force[node].y,2e-12*force_scale);
+    EXPECT_NEAR(increment.z,expected_force[node].z,2e-12*force_scale);
+    const long double exact_sti=
+        static_cast<long double>(stiffness)*jacobian_norm[node]*norm_sum;
+    const double sti_increment=
+        after.values[6*before.nodes+node]-
+        before.values[6*before.nodes+node];
+    const long double sti_roundoff=64*DBL_EPSILON*(
+        std::fabs(after.values[6*before.nodes+node])+
+        std::fabs(before.values[6*before.nodes+node])+
+        std::fabs(static_cast<double>(exact_sti)))+DBL_TRUE_MIN;
+    EXPECT_GE(static_cast<long double>(sti_increment)+sti_roundoff,
+              exact_sti);
+    EXPECT_LE(static_cast<long double>(sti_increment),
+              exact_sti+sti_roundoff);
+    bool master=false;
+    for (unsigned slot=0;
+         slot<selected->endpoints[master_endpoint].count;++slot)
+      master=master ||
+          selected->endpoints[master_endpoint].nodes[slot]==node;
+    if (master) {
+      const c::Vec3 x{kinematics[3*node],kinematics[3*node+1],
+                      kinematics[3*node+2]};
+      actual_master_resultant=c::Add(actual_master_resultant,increment);
+      expected_master_resultant=c::Add(
+          expected_master_resultant,expected_force[node]);
+      const auto actual_moment=c::Vec3{
+          x.y*increment.z-x.z*increment.y,
+          x.z*increment.x-x.x*increment.z,
+          x.x*increment.y-x.y*increment.x};
+      const auto expected_moment=c::Vec3{
+          x.y*expected_force[node].z-x.z*expected_force[node].y,
+          x.z*expected_force[node].x-x.x*expected_force[node].z,
+          x.x*expected_force[node].y-x.y*expected_force[node].x};
+      actual_master_moment=c::Add(actual_master_moment,actual_moment);
+      expected_master_moment=c::Add(expected_master_moment,expected_moment);
+      actual_master_sti+=sti_increment;
+      expected_master_sti+=exact_sti;
+    }
+  }
+  const double scale=1+receipt.diagnostics().maximum_force_norm_n;
+  EXPECT_NEAR(actual_master_resultant.x,expected_master_resultant.x,
+              2e-12*scale);
+  EXPECT_NEAR(actual_master_resultant.y,expected_master_resultant.y,
+              2e-12*scale);
+  EXPECT_NEAR(actual_master_resultant.z,expected_master_resultant.z,
+              2e-12*scale);
+  EXPECT_NEAR(actual_master_moment.x,expected_master_moment.x,2e-12*scale);
+  EXPECT_NEAR(actual_master_moment.y,expected_master_moment.y,2e-12*scale);
+  EXPECT_NEAR(actual_master_moment.z,expected_master_moment.z,2e-12*scale);
+  const long double master_sti_roundoff=
+      128*DBL_EPSILON*(std::fabs(actual_master_sti)+
+                       std::fabs(expected_master_sti))+DBL_TRUE_MIN;
+  EXPECT_GE(actual_master_sti+master_sti_roundoff,expected_master_sti);
+  EXPECT_LE(actual_master_sti,expected_master_sti+master_sti_roundoff);
+  EXPECT_EQ(after.Vector(0,secondary).x,before.Vector(0,secondary).x);
+  EXPECT_EQ(after.Vector(0,secondary).y,before.Vector(0,secondary).y);
+  EXPECT_EQ(after.Vector(0,secondary).z,before.Vector(0,secondary).z);
+  EXPECT_EQ(after.values[6*before.nodes+secondary],
+            before.values[6*before.nodes+secondary]);
+  ASSERT_TRUE(f.Commit(token,assembly));
+  EXPECT_EQ(f.rig.owner.accepted().epoch,1u);
+}
+
+TEST(SelfContactForceCuda,
      ActualOwnerPartialAndFullyFixedMasksKeepFullReactionChannels) {
   for (const std::uint8_t mask : {std::uint8_t{1}, std::uint8_t{7}}) {
     Fixture f;
@@ -891,8 +1140,44 @@ TEST(SelfContactForceCuda,
     EXPECT_TRUE(receipt.diagnostics().valid);
     // Force XYZ remain full reaction channels. Only the represented STI
     // majorant projects the fixed world components inside the pair primitive.
-    force.DiscardTrial();
-    owner.Discard();
+    double assembled_force[3]{};
+    double* channels[]{
+        assembly.forces.force_x,assembly.forces.force_y,
+        assembly.forces.force_z};
+    for (unsigned axis=0;axis<3;++axis)
+      ASSERT_EQ(cudaMemcpyAsync(assembled_force+axis,
+          channels[axis]+fixed_node,sizeof(double),cudaMemcpyDeviceToHost,
+          assembly.stream),cudaSuccess);
+    fe::NodalCinAssemblyView cin;
+    ASSERT_TRUE(p::Good(owner.BorrowCinAssembly(token,&cin)));
+    ASSERT_EQ(cudaMemsetAsync(cin.witness_activity,1,cin.witness_count,
+                             assembly.stream),cudaSuccess);
+    ASSERT_EQ(cudaStreamSynchronize(assembly.stream),cudaSuccess);
+    ASSERT_TRUE(p::Good(owner.SealAssembly(token)));
+    ASSERT_TRUE(p::Good(fe::AdvanceStaggeredCin(owner,token,
+        {assembly.owner_id,assembly.accepted.base_epoch,assembly.attempt,
+         p::Qualification,p::H,.2,true})));
+    fe::NodalPreparedView prepared;
+    ASSERT_TRUE(p::Good(owner.BorrowPrepared(token,&prepared)));
+    ASSERT_EQ(prepared.attempt,receipt.diagnostics().attempt);
+    ASSERT_TRUE(p::Good(fe::CompleteNodalValidation(owner,token,
+        {prepared.owner_id,prepared.kinematics.base_epoch,prepared.attempt,
+         p::Qualification,true})));
+    ASSERT_TRUE(p::Good(owner.Commit(token)));
+    std::vector<double> accepted_x(3*f.rig.fixture.domain.node_count());
+    std::vector<double> accepted_v(accepted_x.size());
+    std::vector<double> reactions(accepted_x.size());
+    fe::NodalStamp stamp;
+    ASSERT_TRUE(p::Good(owner.CopyAccepted(
+        {accepted_x.data(),accepted_v.data(),
+         f.rig.fixture.domain.node_count(),nullptr,nullptr,reactions.data(),
+         nullptr},&stamp)));
+    for (unsigned axis=0;axis<3;++axis) {
+      const double expected=(mask&(1u<<axis)) ? -assembled_force[axis] : 0;
+      EXPECT_NEAR(reactions[3*fixed_node+axis],expected,
+                  2e-12*(1+std::abs(expected)));
+    }
+    EXPECT_EQ(stamp.reaction_kick_dt,.5*p::H);
   }
 }
 

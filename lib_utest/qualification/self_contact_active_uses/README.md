@@ -81,7 +81,9 @@ covered by a VF event, so it never suppresses a nonlocal EE.
 The host target covers independent long-double T3/Q4 formulas; flat and warped
 Q4/T3/mixed dual sums at levels 0/1/2; 27 event-level combinations across all
 nine level pairs per family pairing; bidirectional pressure/resultant identity;
-removal/no-redistribution/reactivation; coincident layers; local, remote and
+explicit summed lower/upper enclosures for every parent and refined directed
+pressure resultant; removal/no-force-area/no-redistribution/reactivation;
+compile-time absence of an area-owned inverse-mass response; coincident layers; local, remote and
 same-parent incidence; same PID; exact execution PART/plain authority,
 counterfeit/source-kind collision rejection, and different/partial/mixed support;
 CIN secondary/master and local/unrelated ties; every explicit EE status;

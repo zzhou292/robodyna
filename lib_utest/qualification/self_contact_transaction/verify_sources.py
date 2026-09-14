@@ -153,10 +153,13 @@ for token in (
     "SELF_CONTACT_TRANSACTION_CUDA",
     "CudaTest.cu",
     "tl_self_contact_transaction",
+    "rigid-cin-response",
 ):
     require(QUAL_CMAKE.read_text(), token, QUAL_CMAKE)
 for token in ("host_check", "source_check", "root_cuda_sources"):
     require(QUAL_BAZEL.read_text(), token, QUAL_BAZEL)
+require(QUAL_BAZEL.read_text(), '":root_cuda_sources"', QUAL_BAZEL)
+require(QUAL_BAZEL.read_text(), "m2-rigid-cin-response", QUAL_BAZEL)
 
 cuda = CUDA.read_text()
 for token in (
@@ -181,6 +184,13 @@ for forbidden in ("SelfContactCandidateEvidence",
             f"{CUDA}: caller still supplies authority {forbidden!r}")
 for token in (
     "ActualT3RemovalFiltersCandidateAndLongInactiveRetryCommits",
+    "ActualMergedRigidBodyExcludesDiscoveredVfBeforeForceOrSti",
+    "ActualMergedPartAndPlainBodiesUseMergedWrenchesBeforeInverseResponse",
+    "ContactConstraintLayout::SameMergedParts",
+    "ContactConstraintLayout::MergedPartAndPlain",
+    "CopyPreparedForceStage",
+    "endpoint_inverse_sum",
+    "SelfContactTransactionStatus::UnsupportedMotion",
     "common, prepared, accepted",
     "removing_parents()",
     "skipped_parents()",

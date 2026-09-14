@@ -23,8 +23,10 @@ struct Snapshot {
 };
 struct Rig {
   explicit Rig(bool surface_rigid=false,double t3_failure=2.5,
-               bool contact_geometry=false)
-      : fixture(surface_rigid,t3_failure,contact_geometry) {}
+               bool contact_geometry=false,
+               ContactConstraintLayout constraints=
+                   ContactConstraintLayout::Legacy)
+      : fixture(surface_rigid,t3_failure,contact_geometry,constraints) {}
   Fixture fixture;
   fe::FENodalState owner;
   fe::qeph::QephBatch qeph;

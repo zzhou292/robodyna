@@ -4,8 +4,10 @@
 #include "lib_src/materials/law42/Prepare.h"
 
 namespace physical_publication_test {
-Fixture::Fixture(bool surface,double failure,bool contact_geometry)
-    : source(contact_geometry),surface_rigid(surface),t3_failure(failure) {
+Fixture::Fixture(bool surface,double failure,bool contact_geometry,
+                 ContactConstraintLayout constraints)
+    : source(contact_geometry),surface_rigid(surface),t3_failure(failure),
+      contact_constraints(constraints) {
   source.nodes.push_back({778,{.06,-.01,.003}});
   source.nodes.push_back({901,{.02,.01,.001}});
   EXPECT_TRUE(domain.Initialize({1,source.nodes.data(),source.nodes.size()}));
@@ -27,8 +29,11 @@ Fixture::Fixture(bool surface,double failure,bool contact_geometry)
     im[node] = m[node] > 0 ? 1/m[node] : 0;
     ij[node] = j[node] > 0 ? 1/j[node] : 0;
   }
-  im[domain.Find(901)] = 0;
-  ij[domain.Find(901)] = 0;
+  const auto secondary = contact_constraints ==
+          ContactConstraintLayout::SurfaceCinSecondary
+      ? domain.Find(14) : domain.Find(901);
+  im[secondary] = 0;
+  ij[secondary] = 0;
 }
 void Fixture::PrepareSources() {
   auto property = source.spring_property;

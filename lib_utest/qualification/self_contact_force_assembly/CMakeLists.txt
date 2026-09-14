@@ -30,7 +30,8 @@ add_test(NAME self_contact_force_shaped_syntax
 set_tests_properties(
   self_contact_force_values self_contact_force_source
   self_contact_force_shaped_syntax
-  PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 90)
+  PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 90
+  LABELS "m2;self-contact-source-shape")
 
 option(SELF_CONTACT_FORCE_CUDA
   "Build actual physical-owner CUDA qualification" OFF)
@@ -58,5 +59,6 @@ if(SELF_CONTACT_FORCE_CUDA)
     "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>")
   add_test(NAME self_contact_force_cuda COMMAND self_contact_force_cuda)
   set_tests_properties(self_contact_force_cuda PROPERTIES
-    RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 240)
+    RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 240
+    LABELS "m2;rigid-cin-response")
 endif()

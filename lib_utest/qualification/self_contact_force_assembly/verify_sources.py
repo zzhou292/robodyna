@@ -76,8 +76,21 @@ assert "owner.AuthenticateAssemblyView(token,view)" in physical_owner
 assert "tl_self_contact_force_assembly" in cmake
 assert 'name = "self_contact_force_assembly"' in bazel
 assert "nodal_assembly_authentication_source_proof" in bazel
-assert "SELF_CONTACT_FORCE_CUDA" in (
-    HERE / "CMakeLists.txt").read_text()
+qualification_cmake = (HERE / "CMakeLists.txt").read_text()
+assert "SELF_CONTACT_FORCE_CUDA" in qualification_cmake
+assert "rigid-cin-response" in qualification_cmake
+cuda = (HERE / "CudaTest.cu").read_text()
+for gate in (
+    "EventPermutationPreservesCanonicalAssemblyAndAllocationExactly",
+    "ActualCinMasterGetsDenseForceMomentAndStiWhileSecondaryGetsNone",
+    "ActualOwnerPartialAndFullyFixedMasksKeepFullReactionChannels",
+    "SurfaceCinSecondary",
+    "CompleteNodalValidation",
+):
+    assert gate in cuda
+qualification_bazel = (HERE / "BUILD.bazel").read_text()
+assert '":root_cuda_sources"' in qualification_bazel
+assert "m2-rigid-cin-response" in qualification_bazel
 
 print(json.dumps({
     "status": "passed",

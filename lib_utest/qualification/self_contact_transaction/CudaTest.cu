@@ -5,7 +5,9 @@
 
 #include <gtest/gtest.h>
 
+#include <algorithm>
 #include <array>
+#include <cmath>
 #include <vector>
 
 namespace self_contact_transaction_cuda_test {
@@ -25,10 +27,65 @@ bool Good(c::SelfContactTransactionReport report) {
   return report.status == c::SelfContactTransactionStatus::Ok;
 }
 
+struct AssemblyFields {
+  std::size_t nodes=0;
+  std::vector<double> values;
+  explicit AssemblyFields(std::size_t count) : nodes(count),values(8*count) {}
+  bool Read(const fe::NodalAssemblyView& view,
+            const fe::NodalCinAssemblyView& cin) {
+    double* source[]{
+        view.forces.force_x,view.forces.force_y,view.forces.force_z,
+        view.forces.couple_x,view.forces.couple_y,view.forces.couple_z,
+        cin.translational_stiffness,cin.rotational_stiffness};
+    for (unsigned channel=0;channel<8;++channel)
+      if (cudaMemcpyAsync(values.data()+channel*nodes,source[channel],
+              nodes*sizeof(double),cudaMemcpyDeviceToHost,view.stream) !=
+          cudaSuccess)
+        return false;
+    return cudaStreamSynchronize(view.stream) == cudaSuccess;
+  }
+  c::Vec3 Vector(unsigned channel,std::size_t node) const {
+    return {values[channel*nodes+node],
+            values[(channel+1)*nodes+node],
+            values[(channel+2)*nodes+node]};
+  }
+};
+
+c::Vec3 Cross(c::Vec3 a,c::Vec3 b) {
+  return {a.y*b.z-a.z*b.y,a.z*b.x-a.x*b.z,a.x*b.y-a.y*b.x};
+}
+double Norm(c::Vec3 a) {
+  return std::sqrt(a.x*a.x+a.y*a.y+a.z*a.z);
+}
+void Near(c::Vec3 actual,c::Vec3 expected,double scale=1) {
+  const double tolerance=2e-12*std::max({1.,scale,Norm(expected)});
+  EXPECT_NEAR(actual.x,expected.x,tolerance);
+  EXPECT_NEAR(actual.y,expected.y,tolerance);
+  EXPECT_NEAR(actual.z,expected.z,tolerance);
+}
+c::Vec3 DenseAngularAcceleration(const fe::RigidBindingGroup& body,
+                                 c::Vec3 moment) {
+  c::Vec3 result;
+  const auto& axes=body.principal.axes;
+  const double inverse[]{
+      1/body.principal.inertia.x,1/body.principal.inertia.y,
+      1/body.principal.inertia.z};
+  for (unsigned axis=0;axis<3;++axis) {
+    const c::Vec3 column{
+        axes.v[axis],axes.v[3+axis],axes.v[6+axis]};
+    const double local=column.x*moment.x+column.y*moment.y+
+        column.z*moment.z;
+    result=c::Add(result,c::Scale(column,inverse[axis]*local));
+  }
+  return result;
+}
+
 struct Fixture {
   explicit Fixture(bool single = false, bool crossing = false,
-                   double t3_failure = 2.5)
-      : rig(false, t3_failure, !single),
+                   double t3_failure = 2.5,
+                   p::ContactConstraintLayout constraints =
+                       p::ContactConstraintLayout::Legacy)
+      : rig(false, t3_failure, !single, constraints),
         single_parent(single), pass_through(crossing),
         t3_failure(t3_failure) {
     if (pass_through) {
@@ -270,6 +327,18 @@ struct Fixture {
              prepared.kinematics.base_epoch,
              prepared.attempt, p::Qualification, true}));
   }
+
+  void Discard() {
+    rig.owner.Discard();
+    rig.publication.DiscardTrial();
+    rig.qeph.DiscardTrial();
+    rig.t3.DiscardTrial();
+    rig.qbat.DiscardTrial();
+    rig.welds.DiscardTrial();
+    rig.beams.DiscardTrial();
+    rig.solids.DiscardTrial();
+    transaction.DiscardTrial();
+  }
 };
 
 TEST(SelfContactTransactionCuda,
@@ -473,6 +542,143 @@ TEST(SelfContactTransactionCuda,
     EXPECT_EQ(fixture.transaction.allocations().activity.host_bytes,
               allocation.activity.host_bytes);
   }
+}
+
+TEST(SelfContactTransactionCuda,
+     ActualMergedRigidBodyExcludesDiscoveredVfBeforeForceOrSti) {
+  Fixture fixture(false,false,2.5,
+      p::ContactConstraintLayout::SameMergedParts);
+  ASSERT_TRUE(fixture.Initialize());
+  ASSERT_EQ(fixture.rig.fixture.rigid.groups().size(),1u);
+  EXPECT_EQ(fixture.rig.fixture.rigid.groups()[0].source_kind,
+            fe::RigidBindingSourceKind::Part);
+  EXPECT_EQ(fixture.rig.fixture.topology.part_count(),2u);
+
+  fe::NodalTrialToken token;
+  fe::NodalAssemblyView assembly;
+  ASSERT_TRUE(fixture.rig.Begin(token,assembly));
+  fe::NodalCinAssemblyView cin;
+  ASSERT_TRUE(p::Good(fixture.rig.owner.BorrowCinAssembly(token,&cin)));
+  AssemblyFields before(fixture.rig.fixture.domain.node_count()),after(before.nodes);
+  ASSERT_TRUE(before.Read(assembly,cin));
+  c::SelfContactAcceptedAssemblyReceipt accepted;
+  ASSERT_TRUE(Good(fixture.transaction.AssembleAccepted(
+      fixture.rig.owner,token,assembly,&accepted)));
+  EXPECT_GT(accepted.broadphase_pairs(),0u);
+  EXPECT_GT(accepted.facet_pairs(),0u);
+  EXPECT_GT(accepted.discovered_features(),0u);
+  EXPECT_EQ(accepted.diagnostics().event_count,0u);
+  EXPECT_EQ(accepted.diagnostics().active_count,0u);
+  EXPECT_EQ(accepted.diagnostics().maximum_force_norm_n,0);
+  EXPECT_EQ(accepted.diagnostics().maximum_sti_diagonal_n_m,0);
+  ASSERT_TRUE(after.Read(assembly,cin));
+  EXPECT_EQ(after.values,before.values);
+
+  fixture.Discard();
+  EXPECT_EQ(fixture.rig.owner.accepted().epoch,0u);
+}
+
+TEST(SelfContactTransactionCuda,
+     ActualMergedPartAndPlainBodiesUseMergedWrenchesBeforeInverseResponse) {
+  Fixture fixture(false,false,2.5,
+      p::ContactConstraintLayout::MergedPartAndPlain);
+  ASSERT_TRUE(fixture.Initialize());
+  const auto& binding=fixture.rig.fixture.rigid;
+  ASSERT_EQ(binding.groups().size(),2u);
+  ASSERT_EQ(fixture.rig.fixture.topology.part_count(),2u);
+  EXPECT_EQ(binding.groups()[0].source_kind,fe::RigidBindingSourceKind::Part);
+  EXPECT_EQ(binding.groups()[1].source_kind,
+            fe::RigidBindingSourceKind::NodalGroup);
+  EXPECT_EQ(binding.groups()[0].source_id,binding.groups()[1].source_id);
+
+  fe::NodalTrialToken token;
+  fe::NodalAssemblyView assembly;
+  ASSERT_TRUE(fixture.rig.Begin(token,assembly));
+  fe::NodalCinAssemblyView cin;
+  ASSERT_TRUE(p::Good(fixture.rig.owner.BorrowCinAssembly(token,&cin)));
+  AssemblyFields before(fixture.rig.fixture.domain.node_count()),after(before.nodes);
+  ASSERT_TRUE(before.Read(assembly,cin));
+  c::SelfContactAcceptedAssemblyReceipt accepted;
+  ASSERT_TRUE(Good(fixture.transaction.AssembleAccepted(
+      fixture.rig.owner,token,assembly,&accepted)));
+  ASSERT_GT(accepted.diagnostics().event_count,0u);
+  ASSERT_GT(accepted.diagnostics().active_count,0u);
+  ASSERT_TRUE(after.Read(assembly,cin));
+
+  std::vector<double> positions(3*after.nodes);
+  ASSERT_EQ(cudaMemcpyAsync(positions.data(),assembly.accepted.position_xyz,
+      positions.size()*sizeof(double),cudaMemcpyDeviceToHost,assembly.stream),
+      cudaSuccess);
+  ASSERT_EQ(cudaStreamSynchronize(assembly.stream),cudaSuccess);
+  std::array<c::Vec3,2> expected_acceleration{},expected_angular{};
+  c::Vec3 contact_resultant,contact_moment;
+  std::array<std::size_t,2> contacted_nodes{};
+  std::array<c::Vec3,2> endpoint_inverse_sum{},merged_contact_acceleration{};
+  for (std::size_t g=0;g<binding.groups().size();++g) {
+    const auto& group=binding.groups()[g];
+    c::Vec3 force,moment,contact_force;
+    for (std::size_t slot=0;slot<group.member_count;++slot) {
+      const auto& member=
+          binding.members()[group.member_offset+slot];
+      const auto node=member.domain_node;
+      const c::Vec3 x{positions[3*node],positions[3*node+1],
+                      positions[3*node+2]};
+      const auto node_force=after.Vector(0,node);
+      const auto node_couple=after.Vector(3,node);
+      force=c::Add(force,node_force);
+      moment=c::Add(moment,c::Add(node_couple,
+          Cross(c::Subtract(x,{group.center.x,group.center.y,group.center.z}),
+                node_force)));
+      const auto increment=c::Subtract(node_force,before.Vector(0,node));
+      contact_force=c::Add(contact_force,increment);
+      contact_resultant=c::Add(contact_resultant,increment);
+      contact_moment=c::Add(contact_moment,Cross(x,increment));
+      if (Norm(increment)>0) ++contacted_nodes[g];
+      endpoint_inverse_sum[g]=c::Add(endpoint_inverse_sum[g],
+          c::Scale(increment,1/member.mass_kg));
+    }
+    expected_acceleration[g]=c::Scale(force,1/group.mass_kg);
+    expected_angular[g]=DenseAngularAcceleration(group,moment);
+    merged_contact_acceleration[g]=c::Scale(contact_force,1/group.mass_kg);
+  }
+  EXPECT_GE(contacted_nodes[1],2u);
+  EXPECT_GT(Norm(merged_contact_acceleration[1]),0);
+  EXPECT_GT(Norm(c::Subtract(endpoint_inverse_sum[1],
+                         merged_contact_acceleration[1])),
+            1e-6*Norm(merged_contact_acceleration[1]));
+  const double contact_scale=accepted.diagnostics().maximum_force_norm_n;
+  Near(contact_resultant,accepted.diagnostics().equal_opposite_residual_n,
+       contact_scale);
+  Near(contact_moment,accepted.diagnostics().global_moment_n_m,
+       contact_scale);
+  Near(contact_resultant,{},contact_scale);
+
+  fe::NodalPreparedView prepared;
+  fe::ShellPhysicalDiagnostics common;
+  ASSERT_TRUE(fixture.Prepare(token,assembly,prepared,common));
+  std::vector<double> force_stage(6*after.nodes);
+  std::array<fe::NodalRigidGroupAccelerationSnapshot,2> actual;
+  fe::NodalPreparedView captured;
+  ASSERT_EQ(fixture.rig.owner.CopyPreparedForceStage(token,
+      {force_stage.data(),force_stage.data()+3*after.nodes,after.nodes,
+       actual.data(),actual.size()},&captured).status,fe::NodalStatus::Ok);
+  EXPECT_EQ(captured.attempt,prepared.attempt);
+  for (std::size_t g=0;g<actual.size();++g) {
+    EXPECT_EQ(actual[g].source_kind,binding.groups()[g].source_kind);
+    EXPECT_EQ(actual[g].source_group_id,binding.groups()[g].source_id);
+    Near({actual[g].acceleration.x,actual[g].acceleration.y,
+          actual[g].acceleration.z},expected_acceleration[g]);
+    Near({actual[g].angular_acceleration.x,actual[g].angular_acceleration.y,
+          actual[g].angular_acceleration.z},expected_angular[g]);
+  }
+  c::SelfContactTransactionReceipt unsupported;
+  const auto rigid_interval=fixture.transaction.SealCandidate(
+      fixture.rig.owner,token,common,prepared,accepted,&unsupported);
+  EXPECT_EQ(rigid_interval.status,
+            c::SelfContactTransactionStatus::UnsupportedMotion);
+  EXPECT_FALSE(unsupported.valid());
+  fixture.Discard();
+  EXPECT_EQ(fixture.rig.owner.accepted().epoch,0u);
 }
 
 TEST(SelfContactTransactionCuda,

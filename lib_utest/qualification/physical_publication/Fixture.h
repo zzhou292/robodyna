@@ -15,6 +15,12 @@ namespace tied = tl::constraints::tied_shell;
 inline constexpr std::uint64_t Configuration = 718,Qualification = 719;
 inline constexpr double H = 0x1p-28;
 using qbat_binding_test::Bits;
+enum class ContactConstraintLayout {
+  Legacy,
+  SurfaceCinSecondary,
+  SameMergedParts,
+  MergedPartAndPlain,
+};
 struct Fixture {
   coefficient_test::SolidFixture source;
   fe::NodalNodeDomain domain;
@@ -40,8 +46,10 @@ struct Fixture {
   std::vector<std::uint8_t> fixed,rotation_fixed,present;
   bool surface_rigid=false;
   double t3_failure=2.5;
+  ContactConstraintLayout contact_constraints=ContactConstraintLayout::Legacy;
   explicit Fixture(bool surface_rigid=false,double t3_failure=2.5,
-                   bool contact_geometry=false);
+                   bool contact_geometry=false,
+                   ContactConstraintLayout=ContactConstraintLayout::Legacy);
   void PrepareSources();
   void PrepareConstraints();
   void PrepareMaterials();
@@ -58,6 +66,8 @@ struct Fixture {
     c.max_device_bytes = 4u << 20;
     c.temporal_scheme = fe::NodalTemporalScheme::StaggeredHalfKickStart;
     c.rigid_limits = fe::NodalRigidOwnerLimits::VehicleAssembly();
+    c.capture_force_stage_accelerations =
+        contact_constraints == ContactConstraintLayout::MergedPartAndPlain;
     return c;
   }
   fe::ShellPhysicalPublicationIdentity Identity() const { return {Configuration,Qualification,{}}; }

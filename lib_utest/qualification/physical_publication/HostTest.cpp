@@ -32,6 +32,36 @@ TEST(PhysicalPublicationValues, CompleteRealFamilySourcesAndCoincidentWitnesses)
   EXPECT_NE(source.witnesses[0].source_element_id,source.witnesses[1].source_element_id);
   EXPECT_NE(source.witnesses[1].source_element_id,source.witnesses[2].source_element_id);
 }
+TEST(PhysicalPublicationValues,
+     ContactAcceptanceLayoutsKeepRigidAndCinRolesDisjoint) {
+  Fixture cin_surface(false,2.5,true,
+      ContactConstraintLayout::SurfaceCinSecondary);
+  ASSERT_FALSE(::testing::Test::HasFailure());
+  EXPECT_EQ(cin_surface.cin.rows().data[0].secondary_domain_node,
+            cin_surface.domain.Find(14));
+  EXPECT_FALSE(cin_surface.rigid.FindMember(cin_surface.domain.Find(14)));
+
+  Fixture same(false,2.5,true,
+      ContactConstraintLayout::SameMergedParts);
+  ASSERT_FALSE(::testing::Test::HasFailure());
+  ASSERT_EQ(same.rigid.groups().size(),1u);
+  EXPECT_EQ(same.rigid.groups()[0].source_kind,
+            fe::RigidBindingSourceKind::Part);
+  EXPECT_EQ(same.rigid.groups()[0].member_count,7u);
+
+  Fixture separate(false,2.5,true,
+      ContactConstraintLayout::MergedPartAndPlain);
+  ASSERT_FALSE(::testing::Test::HasFailure());
+  ASSERT_EQ(separate.rigid.groups().size(),2u);
+  EXPECT_EQ(separate.rigid.groups()[0].source_kind,
+            fe::RigidBindingSourceKind::Part);
+  EXPECT_EQ(separate.rigid.groups()[1].source_kind,
+            fe::RigidBindingSourceKind::NodalGroup);
+  EXPECT_EQ(separate.rigid.groups()[0].source_id,
+            separate.rigid.groups()[1].source_id);
+  for (const auto master:separate.cin.rows().data[0].master_domain_nodes)
+    EXPECT_FALSE(separate.rigid.FindMember(master));
+}
 TEST(PhysicalPublicationValues, MandatoryPresenceAndLateSolidOmission) {
   Fixture source;
   // Presence validation is value-only and never dereferences these markers.

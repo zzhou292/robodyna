@@ -96,6 +96,8 @@ qualification_bazel = (here / "BUILD.bazel").read_text()
 assert "ScalingTest.cpp" in qualification_cmake
 assert "ScalingTest.cpp" in qualification_bazel
 assert 'name = "source_check"' in qualification_bazel
+assert "self-contact-refinement" in qualification_cmake
+assert "m2-self-contact-refinement" in qualification_bazel
 print(json.dumps({
     "status": "passed",
     "policy": "SymmetricDirectedVertexDualReferenceV1",
