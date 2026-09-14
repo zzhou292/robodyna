@@ -27,9 +27,10 @@ parent, runs the complete current broadphase, validates its full device pair
 readback and validates its strict device order. A fixed cursor heap merges
 every active parent Cartesian expansion into immutable facet-key order and
 materializes one bounded chunk at a time. Same-rigid, outward inflated
-coordinate-AABB, and outward interval face-normal/edge-cross prism
-certificates remove only provably separated pairs; every remaining pair
-executes all six VF and nine EE tasks. Nonlocal intersections still reject.
+coordinate-AABB, and outward interval face-normal, edge-cross, vertex-edge
+and vertex-vertex prism certificates remove only provably separated pairs;
+every remaining pair executes all six VF and nine EE tasks. Nonlocal
+intersections still reject.
 Admitted VF and strict interior/zero-distance EE certificates merge
 through a fixed-capacity global hash ledger. Identity is the geometric feature
 plus both ordered active-parent ordinals. Thus shared boundary geometry under
@@ -51,7 +52,7 @@ filters inactive pairs and runs current regularity over active, removing, and
 long-inactive parents,
 rebuilds every exact fixed facet, and reruns discovery and represented
 interval crossing on the same canonical chunks that lack a complete swept
-prism separation certificate. Global canonical vertex/edge
+closest-feature prism separation certificate. Global canonical vertex/edge
 coordinate ledgers are checked before chunking. Unresolved results fail. The fixed policy rejects nonlocal
 intersections and admits a VF or EE crossing only through the full
 transaction-owned accepted event certificate (exact feature and facet
@@ -72,6 +73,11 @@ policy publications are valid and still produce mandatory participation.
 The prism prefilter first projects both facets' accepted and prepared vertices
 onto each represented endpoint face normal, then tests every 3x3 edge
 cross-edge family across the four represented endpoint-state combinations.
+It next constructs every directed vertex-edge point-line axis as the
+division-free triple product `e x ((v - e0) x e)`, in both facet directions,
+and finally every represented vertex-pair difference axis. These candidate
+axes cover rounded-prism closest vertex-edge and vertex-vertex directions that
+need not be triangle SAT axes.
 Directed `nextafter` intervals contain every binary64 product and sum;
 endpoint projection hulls contain every `LinearNodalV1` vertex for the full
 step. Each projection is inflated separately by its authenticated physical
@@ -83,6 +89,18 @@ and nonfinite or overflowed arithmetic remain on the exact path. The prism
 certificate is called only for `LinearNodalV1`; overlapping rigid arcs retain
 their conservative swept-box unresolved path rather than using endpoint
 chords.
+
+The public axis-limit overload enables cumulative face, edge-cross,
+vertex-edge and vertex-vertex stages. The original Boolean
+`CertifiedLinearFacetPrismSeparation` symbol remains source- and
+binary-compatible and retains its original face/edge-only meaning. Existing
+filter-category numeric values 0 through 4 are fixed; vertex-edge and
+vertex-vertex are appended as 5 and 6. This permits the vehicle census to adopt
+the new disjoint categories separately without changing the old ABI values.
+On the supported 64-bit ABI, the public summary is intentionally extended
+from 112 to 128 bytes: the two counters append at offsets 112 and 120 without
+moving the original prefix. Summary consumers must rebuild; host compilation
+freezes that new layout and both old/new function signatures.
 
 Exact closest-stratum predicates remain the feature identity authority.
 If an ordinary binary64 face projection rounds onto its exact boundary,
@@ -148,14 +166,17 @@ admission.
 Asymptotic storage is `O(nodes + facets + parent_pairs + event_cap +
 chunk*(feature/work caps))`, not `O(facet_pairs)`. Traversal is
 `O(facet_pairs log parent_pairs)` before exact geometry. The expected
-full-V5 performance blocker is CPU exact work: 89,838,720 VF/EE tasks plus up
-to 5,989,248 multiprecision interval certificates when no represented axis can
-separate the input. Chunking makes that worst case representable and
-failure-atomic; the bounded coordinate/face/edge-axis passes reduce both
-counts without changing arena storage. Candidate summaries refine
+full-V5 performance blocker is CPU exact work. The shared production-filter
+census currently has 5,989,248 represented pairs: 53,845 same-rigid, 950,099
+coordinate-AABB, 604,617 face-axis, 610,080 edge-cross, and 3,770,607
+exact remaining (63%). The closest-feature categories require a fresh parent
+vehicle qualification before those measured counts change. Chunking makes the
+worst case representable and failure-atomic; all bounded axis passes reduce
+work without changing arena storage. Candidate summaries refine
 `motion_certified_linear_separated` with
 `axis_certified_linear_separated` and
-`edge_axis_certified_linear_separated`.
+`edge_axis_certified_linear_separated`, plus the disjoint
+`vertex_edge_axis_separated` and `vertex_vertex_axis_separated` counts.
 
 ## Caller migration
 
@@ -189,16 +210,18 @@ ctest --test-dir <host-build> --output-on-failure
 
 The `unit` label retains the existing value, exact-cap, source and shaped C++
 checks. The `coupon` label adds a medium 262,144-decision host stream and a
-10,240-pair geometry traversal, both using a fixed 257-pair chunk. It measures
-streamed, same-rigid, AABB/face-axis/edge-axis separated, exact-discovery task,
-proximity event, crossing-pair/work, and elapsed counts. The geometry
-regression compares coordinate-only, coordinate+face-axis, and full prism
-passes. All retain 19,200 contact observations. Face axes reduce exact tasks
-and crossing work from 115,200/7,680 to 38,400/2,560; edge-cross axes reduce
-them again to 19,200/1,280. One measured Release traversal was
-1.017/0.412/0.158 s respectively. It also proves edge-axis-only separation,
-touching, nearly parallel/degenerate, huge/subnormal arithmetic, and swept
-motion crossing stay conservative, plus owner-aware VF/EE deduplication
+12,800-pair geometry traversal, both using a fixed 257-pair chunk. It measures
+streamed, same-rigid, AABB/face/edge/vertex-edge/vertex-vertex separated,
+exact-discovery task, proximity event, crossing-pair/work, and elapsed counts.
+The geometry regression benchmarks cumulative baseline, face, edge, VE and VV
+passes. All retain exactly 19,200 contact observations. Exact tasks and
+crossing work fall through
+153,600/10,240, 76,800/5,120, 57,600/3,840,
+38,400/2,560 and 19,200/1,280. One measured Release traversal was
+1.449/0.794/0.533/0.343/0.187 s respectively. It also proves edge-, VE- and
+VV-only separation, touching, nearly parallel/degenerate, huge/subnormal
+arithmetic, and endpoint-crossing linear sweeps stay conservative, plus
+owner-aware VF/EE deduplication
 across chunks, strict input order, the complete count, and fixed policy digest
 `7261953295680066653`. Forecast plus authored storage is asserted below
 512 MiB. It invokes no NVCC or GPU.

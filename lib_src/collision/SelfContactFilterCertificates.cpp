@@ -113,12 +113,29 @@ Vec3 CrossAxis(Vec3 first, Vec3 second) noexcept {
       first.x * second.y - first.y * second.x};
 }
 
+Vec3 Difference(Vec3 first, Vec3 second) noexcept {
+  return {
+      first.x - second.x,
+      first.y - second.y,
+      first.z - second.z};
+}
+
 Vec3 FaceAxis(const CurrentFixedTriangle& triangle) noexcept {
-  const Vec3 second{
-      triangle.vertices[2].x - triangle.vertices[0].x,
-      triangle.vertices[2].y - triangle.vertices[0].y,
-      triangle.vertices[2].z - triangle.vertices[0].z};
+  const Vec3 second = Difference(
+      triangle.vertices[2], triangle.vertices[0]);
   return CrossAxis(EdgeAxis(triangle, 0), second);
+}
+
+Vec3 VertexEdgeAxis(
+    Vec3 vertex, const CurrentFixedTriangle& triangle,
+    unsigned edge) noexcept {
+  const auto edge_axis = EdgeAxis(triangle, edge);
+  const auto vertex_from_start = Difference(
+      vertex, triangle.vertices[edge]);
+  // e x ((v - e0) x e) is division-free, perpendicular to the line, and
+  // points along the represented line-to-vertex displacement.
+  return CrossAxis(
+      edge_axis, CrossAxis(vertex_from_start, edge_axis));
 }
 
 bool InflateProjection(
@@ -202,14 +219,17 @@ bool CertifiedLinearFacetPrismSeparation(
     const CurrentFixedTriangle& first_current, double first_thickness,
     const CurrentFixedTriangle& second_base,
     const CurrentFixedTriangle& second_current, double second_thickness,
-    bool include_edge_axes,
+    SelfContactFacetPrismAxisLimit axis_limit,
     SelfContactFacetPrismSeparationAxis* separated_axis,
     bool* valid) noexcept {
   if (!valid)
     return false;
   if (separated_axis)
     *separated_axis = SelfContactFacetPrismSeparationAxis::None;
-  *valid = std::isfinite(first_thickness) && first_thickness > 0 &&
+  *valid = static_cast<std::uint8_t>(axis_limit) <=
+          static_cast<std::uint8_t>(
+              SelfContactFacetPrismAxisLimit::VertexVertex) &&
+      std::isfinite(first_thickness) && first_thickness > 0 &&
       std::isfinite(second_thickness) && second_thickness > 0 &&
       Finite(first_base) && Finite(first_current) &&
       Finite(second_base) && Finite(second_current);
@@ -235,7 +255,7 @@ bool CertifiedLinearFacetPrismSeparation(
       return true;
     }
   }
-  if (!include_edge_axes)
+  if (axis_limit == SelfContactFacetPrismAxisLimit::FaceNormal)
     return false;
 
   // Test every 3x3 edge cross-edge family for all four represented endpoint
@@ -273,7 +293,96 @@ bool CertifiedLinearFacetPrismSeparation(
       }
     }
   }
+  if (axis_limit == SelfContactFacetPrismAxisLimit::EdgeCross)
+    return false;
+
+  // Closest vertex-edge directions are not generally triangle SAT axes after
+  // physical thickness inflation. Construct all represented perpendicular
+  // point-line directions at every endpoint-state combination. AxisSeparates
+  // still projects both complete endpoint triangles, so no generated axis is
+  // assumed to remain a closest-feature direction during linear motion.
+  for (unsigned first_state_index = 0;
+       first_state_index < first_state_count; ++first_state_index) {
+    const auto* first_state = first_states[first_state_index];
+    for (unsigned second_state_index = 0;
+         second_state_index < second_state_count; ++second_state_index) {
+      const auto* second_state = second_states[second_state_index];
+      for (unsigned vertex = 0; vertex < 3; ++vertex) {
+        for (unsigned edge = 0; edge < 3; ++edge) {
+          const auto first_vertex_axis = VertexEdgeAxis(
+              first_state->vertices[vertex], *second_state, edge);
+          if (AxisSeparates(
+                  first_base, first_current,
+                  second_base, second_current,
+                  first_thickness, second_thickness,
+                  first_vertex_axis)) {
+            if (separated_axis)
+              *separated_axis =
+                  SelfContactFacetPrismSeparationAxis::VertexEdge;
+            return true;
+          }
+          const auto second_vertex_axis = VertexEdgeAxis(
+              second_state->vertices[vertex], *first_state, edge);
+          if (AxisSeparates(
+                  first_base, first_current,
+                  second_base, second_current,
+                  first_thickness, second_thickness,
+                  second_vertex_axis)) {
+            if (separated_axis)
+              *separated_axis =
+                  SelfContactFacetPrismSeparationAxis::VertexEdge;
+            return true;
+          }
+        }
+      }
+    }
+  }
+  if (axis_limit == SelfContactFacetPrismAxisLimit::VertexEdge)
+    return false;
+
+  // A represented vertex difference supplies the remaining closest
+  // vertex-vertex candidate direction. As above, every fixed candidate axis
+  // is tested against endpoint projection hulls for the whole linear sweep.
+  for (unsigned first_state_index = 0;
+       first_state_index < first_state_count; ++first_state_index) {
+    const auto* first_state = first_states[first_state_index];
+    for (unsigned second_state_index = 0;
+         second_state_index < second_state_count; ++second_state_index) {
+      const auto* second_state = second_states[second_state_index];
+      for (const auto first_vertex : first_state->vertices) {
+        for (const auto second_vertex : second_state->vertices) {
+          const auto axis = Difference(first_vertex, second_vertex);
+          if (AxisSeparates(
+                  first_base, first_current,
+                  second_base, second_current,
+                  first_thickness, second_thickness, axis)) {
+            if (separated_axis)
+              *separated_axis =
+                  SelfContactFacetPrismSeparationAxis::VertexVertex;
+            return true;
+          }
+        }
+      }
+    }
+  }
   return false;
+}
+
+bool CertifiedLinearFacetPrismSeparation(
+    const CurrentFixedTriangle& first_base,
+    const CurrentFixedTriangle& first_current, double first_thickness,
+    const CurrentFixedTriangle& second_base,
+    const CurrentFixedTriangle& second_current, double second_thickness,
+    bool include_edge_axes,
+    SelfContactFacetPrismSeparationAxis* separated_axis,
+    bool* valid) noexcept {
+  return CertifiedLinearFacetPrismSeparation(
+      first_base, first_current, first_thickness,
+      second_base, second_current, second_thickness,
+      include_edge_axes
+          ? SelfContactFacetPrismAxisLimit::EdgeCross
+          : SelfContactFacetPrismAxisLimit::FaceNormal,
+      separated_axis, valid);
 }
 
 SelfContactFacetFilterResult ClassifyAcceptedFacetPair(
@@ -301,18 +410,33 @@ SelfContactFacetFilterResult ClassifyAcceptedFacetPair(
   const bool separated = CertifiedLinearFacetPrismSeparation(
       first, first, first_thickness,
       second, second, second_thickness,
-      true, &axis, &valid);
+      SelfContactFacetPrismAxisLimit::VertexVertex,
+      &axis, &valid);
   if (!valid)
     return {SelfContactFacetFilterStatus::InvalidInput,
             SelfContactFacetFilterCategory::ExactRemaining};
   if (!separated)
     return {SelfContactFacetFilterStatus::Ok,
             SelfContactFacetFilterCategory::ExactRemaining};
-  return {
-      SelfContactFacetFilterStatus::Ok,
-      axis == SelfContactFacetPrismSeparationAxis::FaceNormal
-          ? SelfContactFacetFilterCategory::FaceAxisSeparated
-          : SelfContactFacetFilterCategory::EdgeCrossAxisSeparated};
+  SelfContactFacetFilterCategory category =
+      SelfContactFacetFilterCategory::ExactRemaining;
+  switch (axis) {
+    case SelfContactFacetPrismSeparationAxis::FaceNormal:
+      category = SelfContactFacetFilterCategory::FaceAxisSeparated;
+      break;
+    case SelfContactFacetPrismSeparationAxis::EdgeCross:
+      category = SelfContactFacetFilterCategory::EdgeCrossAxisSeparated;
+      break;
+    case SelfContactFacetPrismSeparationAxis::VertexEdge:
+      category = SelfContactFacetFilterCategory::VertexEdgeAxisSeparated;
+      break;
+    case SelfContactFacetPrismSeparationAxis::VertexVertex:
+      category = SelfContactFacetFilterCategory::VertexVertexAxisSeparated;
+      break;
+    case SelfContactFacetPrismSeparationAxis::None:
+      break;
+  }
+  return {SelfContactFacetFilterStatus::Ok, category};
 }
 
 }  // namespace tlfea::contact

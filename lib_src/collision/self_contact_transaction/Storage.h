@@ -11,6 +11,8 @@ namespace tlfea::contact::self_contact_transaction {
 
 using FacetPrismSeparationAxis =
     SelfContactFacetPrismSeparationAxis;
+using FacetPrismAxisLimit =
+    SelfContactFacetPrismAxisLimit;
 using ::tlfea::contact::CertifiedLinearFacetPrismSeparation;
 
 enum class AcceptedEventCertificateKind : std::uint8_t {

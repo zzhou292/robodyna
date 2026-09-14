@@ -260,6 +260,9 @@ struct SelfContactCandidatePolicySummary {
   std::uint64_t digest = 1469598103934665603ull;
   bool complete = false;
   bool detailed_publication = false;
+  // Appended disjoint refinements preserve every original member offset.
+  std::size_t vertex_edge_axis_separated = 0;
+  std::size_t vertex_vertex_axis_separated = 0;
 };
 
 class SelfContactTransaction;

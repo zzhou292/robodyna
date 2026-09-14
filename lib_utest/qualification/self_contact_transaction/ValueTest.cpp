@@ -5,6 +5,7 @@
 
 #include <array>
 #include <algorithm>
+#include <cstddef>
 #include <iostream>
 #include <limits>
 #include <type_traits>
@@ -13,6 +14,61 @@
 namespace {
 namespace c = tlfea::contact;
 namespace sct = tlfea::contact::self_contact_transaction;
+
+static_assert(sizeof(c::SelfContactFacetFilterCategory) == 1);
+static_assert(static_cast<unsigned>(
+    c::SelfContactFacetFilterCategory::ExcludedSameRigidGroup) == 0);
+static_assert(static_cast<unsigned>(
+    c::SelfContactFacetFilterCategory::CoordinateAabbSeparated) == 1);
+static_assert(static_cast<unsigned>(
+    c::SelfContactFacetFilterCategory::FaceAxisSeparated) == 2);
+static_assert(static_cast<unsigned>(
+    c::SelfContactFacetFilterCategory::EdgeCrossAxisSeparated) == 3);
+static_assert(static_cast<unsigned>(
+    c::SelfContactFacetFilterCategory::ExactRemaining) == 4);
+static_assert(static_cast<unsigned>(
+    c::SelfContactFacetFilterCategory::VertexEdgeAxisSeparated) == 5);
+static_assert(static_cast<unsigned>(
+    c::SelfContactFacetFilterCategory::VertexVertexAxisSeparated) == 6);
+static_assert(static_cast<unsigned>(
+    c::SelfContactFacetPrismSeparationAxis::None) == 0);
+static_assert(static_cast<unsigned>(
+    c::SelfContactFacetPrismSeparationAxis::FaceNormal) == 1);
+static_assert(static_cast<unsigned>(
+    c::SelfContactFacetPrismSeparationAxis::EdgeCross) == 2);
+static_assert(static_cast<unsigned>(
+    c::SelfContactFacetPrismSeparationAxis::VertexEdge) == 3);
+static_assert(static_cast<unsigned>(
+    c::SelfContactFacetPrismSeparationAxis::VertexVertex) == 4);
+static_assert(offsetof(
+    c::SelfContactCandidatePolicySummary, digest) == 96);
+static_assert(offsetof(
+    c::SelfContactCandidatePolicySummary, complete) == 104);
+static_assert(offsetof(
+    c::SelfContactCandidatePolicySummary,
+    vertex_edge_axis_separated) == 112);
+static_assert(offsetof(
+    c::SelfContactCandidatePolicySummary,
+    vertex_vertex_axis_separated) == 120);
+static_assert(sizeof(c::SelfContactCandidatePolicySummary) == 128);
+
+using LegacyPrismCertificate = bool (*)(
+    const c::CurrentFixedTriangle&, const c::CurrentFixedTriangle&, double,
+    const c::CurrentFixedTriangle&, const c::CurrentFixedTriangle&, double,
+    bool, c::SelfContactFacetPrismSeparationAxis*, bool*) noexcept;
+using ExtendedPrismCertificate = bool (*)(
+    const c::CurrentFixedTriangle&, const c::CurrentFixedTriangle&, double,
+    const c::CurrentFixedTriangle&, const c::CurrentFixedTriangle&, double,
+    c::SelfContactFacetPrismAxisLimit,
+    c::SelfContactFacetPrismSeparationAxis*, bool*) noexcept;
+constexpr LegacyPrismCertificate LegacyPrismCertificateEntry =
+    static_cast<LegacyPrismCertificate>(
+        &c::CertifiedLinearFacetPrismSeparation);
+constexpr ExtendedPrismCertificate ExtendedPrismCertificateEntry =
+    static_cast<ExtendedPrismCertificate>(
+        &c::CertifiedLinearFacetPrismSeparation);
+static_assert(LegacyPrismCertificateEntry != nullptr);
+static_assert(ExtendedPrismCertificateEntry != nullptr);
 
 c::RepresentedTrianglePathKey Path(std::uint64_t eid,
                                    unsigned facet = 0) {
@@ -347,6 +403,10 @@ TEST(SelfContactTransactionValues,
   auto aabb = first;
   auto face = first;
   auto edge = first;
+  auto vertex_edge_first = first;
+  auto vertex_edge_second = first;
+  auto vertex_vertex_first = first;
+  auto vertex_vertex_second = first;
   auto touching = Triangle(
       20, {4, 5, 6},
       {{{0, 0, 0.02}, {1, 0, 0.02}, {0, 1, 0.02}}});
@@ -360,11 +420,52 @@ TEST(SelfContactTransactionValues,
   edge.vertices[0] = {-0.25, -1, -0.5};
   edge.vertices[1] = {0.25, -0.5, -0.5};
   edge.vertices[2] = {1, 1, 0.25};
+  const c::Vec3 vertex_edge_first_points[3]{
+      {-0.7617271175557994, -0.9854918156065067,
+       -0.5687134555287552},
+      {-0.7158959051133422, 0.4952591442811507,
+       -0.938635023308946},
+      {-0.6630144249741934, -0.3375527983865929,
+       -0.4822709565245622},
+  };
+  const c::Vec3 vertex_edge_second_points[3]{
+      {-0.699936476378623, 0.07336418345847506,
+       -1.4577573753456794},
+      {-0.5297783238983161, -1.0961427534549402,
+       -0.9422850565170009},
+      {-0.7545209025989622, -0.7210003196383497,
+       -0.6793528800202036},
+  };
+  const c::Vec3 vertex_vertex_first_points[3]{
+      {0, 0, 0},
+      {-0.05620322369963638, 0.016125484251891486,
+       0.10471122170959381},
+      {-0.054441030886089786, -0.15764697103506448,
+       -0.16959380631479207},
+  };
+  const c::Vec3 vertex_vertex_second_points[3]{
+      {0.022402691787493437, 0.020240403023466674,
+       0.0057644742154427343},
+      {0.0016407555274286429, 0.10513512125221264,
+       0.17366994826653179},
+      {0.16934954727284365, 0.12577252251265236,
+       0.0056955278101172291},
+  };
+  for (unsigned vertex = 0; vertex < 3; ++vertex) {
+    vertex_edge_first.vertices[vertex] =
+        vertex_edge_first_points[vertex];
+    vertex_edge_second.vertices[vertex] =
+        vertex_edge_second_points[vertex];
+    vertex_vertex_first.vertices[vertex] =
+        vertex_vertex_first_points[vertex];
+    vertex_vertex_second.vertices[vertex] =
+        vertex_vertex_second_points[vertex];
+  }
   auto planar = Triangle(
       30, {7, 8, 9},
       {{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}}});
 
-  const std::array<c::SelfContactFacetFilterResult, 5> results{{
+  const std::array<c::SelfContactFacetFilterResult, 7> results{{
       c::ClassifyAcceptedFacetPair(
           first, thickness, 7, first, thickness, 7),
       c::ClassifyAcceptedFacetPair(
@@ -374,10 +475,16 @@ TEST(SelfContactTransactionValues,
       c::ClassifyAcceptedFacetPair(
           first, thickness, UINT32_MAX, edge, thickness, UINT32_MAX),
       c::ClassifyAcceptedFacetPair(
+          vertex_edge_first, thickness, UINT32_MAX,
+          vertex_edge_second, thickness, UINT32_MAX),
+      c::ClassifyAcceptedFacetPair(
+          vertex_vertex_first, thickness, UINT32_MAX,
+          vertex_vertex_second, thickness, UINT32_MAX),
+      c::ClassifyAcceptedFacetPair(
           planar, thickness, UINT32_MAX,
           touching, thickness, UINT32_MAX),
   }};
-  std::array<std::size_t, 5> counts{};
+  std::array<std::size_t, 7> counts{};
   for (const auto result : results) {
     ASSERT_EQ(result.status, c::SelfContactFacetFilterStatus::Ok);
     ++counts[static_cast<unsigned>(result.category)];

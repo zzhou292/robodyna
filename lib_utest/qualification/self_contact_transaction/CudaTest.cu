@@ -636,6 +636,13 @@ TEST(SelfContactTransactionCuda,
               policy.motion_certified_linear_separated);
     EXPECT_LE(policy.edge_axis_certified_linear_separated,
               policy.axis_certified_linear_separated);
+    EXPECT_LE(policy.vertex_edge_axis_separated,
+              policy.axis_certified_linear_separated -
+                  policy.edge_axis_certified_linear_separated);
+    EXPECT_LE(policy.vertex_vertex_axis_separated,
+              policy.axis_certified_linear_separated -
+                  policy.edge_axis_certified_linear_separated -
+                  policy.vertex_edge_axis_separated);
     EXPECT_GT(policy.exact_crossing_pairs,0u);
     EXPECT_GT(policy.exact_crossing_work,0u);
     EXPECT_LT(policy.exact_crossing_pairs,policy.outcomes);

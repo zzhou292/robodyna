@@ -647,12 +647,24 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
                 state.buffers.accepted_triangles[value.second],
                 state.buffers.prepared_triangles[value.second],
                 parents[second_parent].reference_half_thickness_m,
-                true, &separated_axis, &valid)) {
+                sct::FacetPrismAxisLimit::VertexVertex,
+                &separated_axis, &valid)) {
           action = sct::PairMotionAction::CertifiedLinearSeparation;
           ++summary.axis_certified_linear_separated;
-          if (separated_axis ==
-              sct::FacetPrismSeparationAxis::EdgeCross)
-            ++summary.edge_axis_certified_linear_separated;
+          switch (separated_axis) {
+            case sct::FacetPrismSeparationAxis::EdgeCross:
+              ++summary.edge_axis_certified_linear_separated;
+              break;
+            case sct::FacetPrismSeparationAxis::VertexEdge:
+              ++summary.vertex_edge_axis_separated;
+              break;
+            case sct::FacetPrismSeparationAxis::VertexVertex:
+              ++summary.vertex_vertex_axis_separated;
+              break;
+            case sct::FacetPrismSeparationAxis::FaceNormal:
+            case sct::FacetPrismSeparationAxis::None:
+              break;
+          }
         }
         if (!valid)
           return state.Fail(Failure(
@@ -875,6 +887,13 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
           summary.motion_certified_linear_separated ||
       summary.edge_axis_certified_linear_separated >
           summary.axis_certified_linear_separated ||
+      summary.vertex_edge_axis_separated >
+          summary.axis_certified_linear_separated -
+              summary.edge_axis_certified_linear_separated ||
+      summary.vertex_vertex_axis_separated >
+          summary.axis_certified_linear_separated -
+              summary.edge_axis_certified_linear_separated -
+              summary.vertex_edge_axis_separated ||
       summary.motion_certified_linear_separated > summary.outcomes ||
       summary.motion_excluded_same_rigid_group >
           summary.outcomes -

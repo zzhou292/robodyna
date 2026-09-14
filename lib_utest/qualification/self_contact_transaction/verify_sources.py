@@ -18,6 +18,7 @@ QUAL_CMAKE = Path(__file__).resolve().parent / "CMakeLists.txt"
 QUAL_BAZEL = Path(__file__).resolve().parent / "BUILD.bazel"
 CUDA = Path(__file__).resolve().parent / "CudaTest.cu"
 MEDIUM = Path(__file__).resolve().parent / "MediumCouponTest.cpp"
+VALUE_TEST = Path(__file__).resolve().parent / "ValueTest.cpp"
 OWNER = (Path(__file__).resolve().parent /
          "../physical_publication/OwnerStartup.cu").resolve()
 
@@ -138,6 +139,8 @@ for token in (
     "motion_certified_linear_separated",
     "axis_certified_linear_separated",
     "edge_axis_certified_linear_separated",
+    "vertex_edge_axis_separated",
+    "vertex_vertex_axis_separated",
     "exact_crossing_pairs",
     "exact_crossing_work",
 ):
@@ -157,7 +160,13 @@ for token in (
     "CertifiedLinearFacetPrismSeparation(",
     "ProjectionBounds(",
     "CrossAxis(",
+    "VertexEdgeAxis(",
+    "CrossAxis(vertex_from_start, edge_axis)",
+    "Difference(first_vertex, second_vertex)",
     "SelfContactFacetPrismSeparationAxis::EdgeCross",
+    "SelfContactFacetPrismSeparationAxis::VertexEdge",
+    "SelfContactFacetPrismSeparationAxis::VertexVertex",
+    "SelfContactFacetPrismAxisLimit::VertexVertex",
     "std::nextafter(",
     "thickness * norm_l1",
     "first_thickness, second_thickness, axis",
@@ -168,11 +177,34 @@ for token in (
     "CoordinateAabbSeparated",
     "FaceAxisSeparated",
     "EdgeCrossAxisSeparated",
+    "VertexEdgeAxisSeparated",
+    "VertexVertexAxisSeparated",
     "ExactRemaining",
     "ClassifyAcceptedFacetPair(",
 ):
     require(filter_header + filter_source, token, FILTER_HEADER)
+for token in (
+    "ExactRemaining = 4",
+    "VertexEdgeAxisSeparated = 5",
+    "VertexVertexAxisSeparated = 6",
+    "Source- and binary-compatible original entry point",
+):
+    require(filter_header, token, FILTER_HEADER)
+for token in (
+    "LegacyPrismCertificateEntry",
+    "ExtendedPrismCertificateEntry",
+    "vertex_edge_axis_separated) == 112",
+    "vertex_vertex_axis_separated) == 120",
+    "sizeof(c::SelfContactCandidatePolicySummary) == 128",
+):
+    require(VALUE_TEST.read_text(), token, VALUE_TEST)
 require(candidate, "sct::CertifiedLinearFacetPrismSeparation(", CANDIDATE)
+for token in (
+    "sct::FacetPrismAxisLimit::VertexVertex",
+    "summary.vertex_edge_axis_separated",
+    "summary.vertex_vertex_axis_separated",
+):
+    require(candidate, token, CANDIDATE)
 for forbidden in ("activity_base", "activity_current"):
     if forbidden in storage or forbidden in arena:
         raise RuntimeError(
@@ -303,15 +335,18 @@ require(QUAL_BAZEL.read_text(), "prism-axis-certificate", QUAL_BAZEL)
 for token in (
     "DecisionCount = 262144",
     "ChunkCapacity = 257",
-    "GeometryPairCount = 10240",
+    "GeometryPairCount = 12800",
     "ExpectedPolicyDigest",
     "ClassifyCandidatePairMotion(",
     "CertifiedLinearFacetPrismSeparation(",
     "geometry_baseline",
     "geometry_face_axes",
-    "geometry_face_edge_axes",
-    "full_prism.exact_discovery_tasks",
-    "full_prism.crossing_work",
+    "geometry_edge_axes",
+    "geometry_vertex_edge_axes",
+    "geometry_vertex_vertex_axes",
+    "vertex_edge_axes.exact_discovery_tasks",
+    "vertex_vertex_axes.crossing_work",
+    "ClosestFeatureAxesAreIncrementalAndSweepConservative",
     "MergeAcceptedEventChunk(",
     "FinalizeAcceptedEventLedger(",
     "summary.digest, ExpectedPolicyDigest",
@@ -357,6 +392,8 @@ for token in (
     "motion_certified_linear_separated",
     "axis_certified_linear_separated",
     "edge_axis_certified_linear_separated",
+    "vertex_edge_axis_separated",
+    "vertex_vertex_axis_separated",
     "exact_crossing_pairs",
     "exact_crossing_work",
 ):

@@ -7,15 +7,20 @@
 
 namespace tlfea::contact {
 
-// Disjoint, ordered disposition of one represented accepted-geometry facet
-// pair. ExactRemaining means that these conservative certificates proved no
-// exclusion; it does not run feature discovery or interval crossing.
+// Disjoint disposition of one represented accepted-geometry facet pair.
+// Classification order is documented below; numeric values preserve the
+// original ABI rather than encoding that order. ExactRemaining means that
+// these conservative certificates proved no exclusion; it does not run
+// feature discovery or interval crossing.
 enum class SelfContactFacetFilterCategory : std::uint8_t {
-  ExcludedSameRigidGroup,
-  CoordinateAabbSeparated,
-  FaceAxisSeparated,
-  EdgeCrossAxisSeparated,
-  ExactRemaining,
+  ExcludedSameRigidGroup = 0,
+  CoordinateAabbSeparated = 1,
+  FaceAxisSeparated = 2,
+  EdgeCrossAxisSeparated = 3,
+  ExactRemaining = 4,
+  // Appended values preserve the numeric ABI of the original categories.
+  VertexEdgeAxisSeparated = 5,
+  VertexVertexAxisSeparated = 6,
 };
 
 enum class SelfContactFacetFilterStatus : std::uint8_t {
@@ -31,9 +36,20 @@ struct SelfContactFacetFilterResult {
 };
 
 enum class SelfContactFacetPrismSeparationAxis : std::uint8_t {
-  None,
-  FaceNormal,
-  EdgeCross,
+  None = 0,
+  FaceNormal = 1,
+  EdgeCross = 2,
+  VertexEdge = 3,
+  VertexVertex = 4,
+};
+
+// Ordered optional-axis limit. Face normals are always tested; each value
+// additionally enables every preceding family.
+enum class SelfContactFacetPrismAxisLimit : std::uint8_t {
+  FaceNormal = 0,
+  EdgeCross = 1,
+  VertexEdge = 2,
+  VertexVertex = 3,
 };
 
 // Production conservative prism certificate used by candidate filtering.
@@ -45,13 +61,25 @@ bool CertifiedLinearFacetPrismSeparation(
     const CurrentFixedTriangle& first_current, double first_thickness,
     const CurrentFixedTriangle& second_base,
     const CurrentFixedTriangle& second_current, double second_thickness,
+    SelfContactFacetPrismAxisLimit axis_limit,
+    SelfContactFacetPrismSeparationAxis* axis,
+    bool* valid) noexcept;
+
+// Source- and binary-compatible original entry point. false tests face
+// normals; true additionally tests edge-cross axes.
+bool CertifiedLinearFacetPrismSeparation(
+    const CurrentFixedTriangle& first_base,
+    const CurrentFixedTriangle& first_current, double first_thickness,
+    const CurrentFixedTriangle& second_base,
+    const CurrentFixedTriangle& second_current, double second_thickness,
     bool include_edge_axes,
     SelfContactFacetPrismSeparationAxis* axis,
     bool* valid) noexcept;
 
 // Production accepted-geometry filter. This is the same ordered certificate
 // path used before accepted feature discovery: same rigid group, coordinate
-// AABB, face axes, edge-cross axes, then exact work remaining.
+// AABB, face, edge-cross, vertex-edge and vertex-vertex axes, then exact work
+// remaining.
 SelfContactFacetFilterResult ClassifyAcceptedFacetPair(
     const CurrentFixedTriangle& first, double first_thickness,
     std::uint32_t first_complete_rigid_group,
