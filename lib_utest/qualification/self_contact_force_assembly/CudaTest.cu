@@ -900,19 +900,89 @@ TEST(SelfContactForceCuda,
      ActualCinMasterGetsDenseForceMomentAndStiWhileSecondaryGetsNone) {
   Fixture f(false,p::ContactConstraintLayout::SurfaceCinSecondary);
   ASSERT_TRUE(f.Initialize());
-  const auto events=f.Events(32);
+  auto events=f.Events(32);
+  std::size_t close_vertex=SIZE_MAX,close_facet=SIZE_MAX;
+  for (std::size_t vertex=0;vertex<f.uses.vertex_uses().size();++vertex)
+    if (f.uses.vertex_uses()[vertex].key.kind ==
+            c::FacetVertexKind::SourceVertex &&
+        f.uses.vertex_uses()[vertex].key.first==15) {
+      close_vertex=vertex;
+      break;
+    }
+  for (std::size_t facet=0;facet<f.uses.facet_uses().size();++facet)
+    if (f.uses.parents()[f.uses.facet_uses()[facet].parent].
+            source.source_parent_id==103) {
+      close_facet=facet;
+      break;
+    }
+  ASSERT_NE(close_vertex,SIZE_MAX);
+  ASSERT_NE(close_facet,SIZE_MAX);
+  const auto& close_use=f.uses.facet_uses()[close_facet];
+  const auto& close_parent=f.uses.parents()[close_use.parent];
+  c::WeightedSurfacePoint close_point;
+  close_point.count=close_parent.arity;
+  for (unsigned slot=0;slot<close_parent.arity;++slot) {
+    close_point.nodes[slot]=close_parent.nodes[slot];
+    switch (f.rig.fixture.domain.nodes()[close_parent.nodes[slot]].source_id) {
+      case 10: close_point.weights[slot]=.2125; break;
+      case 11: close_point.weights[slot]=.6375; break;
+      case 12: close_point.weights[slot]=.1125; break;
+      case 13: close_point.weights[slot]=.0375; break;
+      default: FAIL() << "Unexpected Q4 source node";
+    }
+  }
+  c::SelfContactPairClassification close_classification;
+  ASSERT_EQ(f.uses.ClassifyVertexFace(
+      close_vertex,close_facet,close_point,f.Activity(),
+      &close_classification).status,c::SelfContactActiveUseStatus::Ok);
+  ASSERT_EQ(close_classification.status,
+      c::SelfContactPairStatus::AdmittedVertexFace);
+  c::SelfContactForceEvent close_event;
+  close_event.source_order=800;
+  close_event.vertex_use=static_cast<std::uint32_t>(close_vertex);
+  close_event.facet_use=static_cast<std::uint32_t>(close_facet);
+  close_event.endpoints[0]=f.uses.vertex_uses()[close_vertex].point;
+  close_event.endpoints[1]=close_point;
+  close_event.classification=close_classification;
+  close_event.feature.vertex_face.vertex=
+      f.uses.vertex_uses()[close_vertex].key;
+  close_event.feature.vertex_face.target.SetFace({
+      f.rig.fixture.domain.source_instance_id(),
+      close_parent.source.source_parent_id,1,close_use.local_facet});
+  events.push_back(close_event);
   auto selected=events.end();
   unsigned master_endpoint=2;
+  double selected_gap=HUGE_VAL;
+  const auto accepted_point=[&](const c::WeightedSurfacePoint& point) {
+    c::Vec3 value;
+    for (unsigned slot=0;slot<point.count;++slot) {
+      const auto node=point.nodes[slot];
+      value.x+=point.weights[slot]*f.rig.fixture.x[3*node];
+      value.y+=point.weights[slot]*f.rig.fixture.x[3*node+1];
+      value.z+=point.weights[slot]*f.rig.fixture.x[3*node+2];
+    }
+    return value;
+  };
   for (auto event=events.begin();event!=events.end();++event)
     for (unsigned endpoint=0;endpoint<2;++endpoint)
       if (event->classification.endpoint_support[endpoint].status ==
           c::SelfContactSupportStatus::AdmittedCinMaster) {
-        selected=event;
-        master_endpoint=endpoint;
-        break;
+        const auto a=accepted_point(event->endpoints[0]);
+        const auto b=accepted_point(event->endpoints[1]);
+        const double distance=std::hypot(
+            std::hypot(a.x-b.x,a.y-b.y),a.z-b.z);
+        const double gap=(distance-
+            event->classification.reference_half_thickness_m[0])-
+            event->classification.reference_half_thickness_m[1];
+        if (gap<selected_gap) {
+          selected=event;
+          master_endpoint=endpoint;
+          selected_gap=gap;
+        }
       }
   ASSERT_NE(selected,events.end());
   ASSERT_LT(master_endpoint,2u);
+  ASSERT_LT(selected_gap,0);
   const auto secondary=f.rig.fixture.domain.Find(14);
   ASSERT_NE(secondary,SIZE_MAX);
   for (const auto& event:events)
