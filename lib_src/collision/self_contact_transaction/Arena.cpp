@@ -36,6 +36,18 @@ bool Finite(const CurrentFixedTriangle& triangle) noexcept {
   return true;
 }
 
+bool SameGeometry(
+    const CurrentFixedTriangle& first,
+    const CurrentFixedTriangle& second) noexcept {
+  for (unsigned vertex = 0; vertex < 3; ++vertex) {
+    const auto a = first.vertices[vertex];
+    const auto b = second.vertices[vertex];
+    if (a.x != b.x || a.y != b.y || a.z != b.z)
+      return false;
+  }
+  return true;
+}
+
 bool ProductInterval(double a, double b, Interval* output) noexcept {
   const double value = a * b;
   if (!std::isfinite(value))
@@ -70,7 +82,9 @@ bool ProjectionBounds(
   bool first = true;
   Interval next;
   const CurrentFixedTriangle* endpoints[2]{&base, &current};
-  for (const auto* triangle : endpoints) {
+  const unsigned endpoint_count = SameGeometry(base, current) ? 1 : 2;
+  for (unsigned endpoint = 0; endpoint < endpoint_count; ++endpoint) {
+    const auto* triangle = endpoints[endpoint];
     for (const auto point : triangle->vertices) {
       Interval projection;
       if (!DotInterval(point, axis, &projection))
@@ -88,19 +102,42 @@ bool ProjectionBounds(
   return true;
 }
 
-Vec3 FaceAxis(const CurrentFixedTriangle& triangle) noexcept {
-  const Vec3 first{
-      triangle.vertices[1].x - triangle.vertices[0].x,
-      triangle.vertices[1].y - triangle.vertices[0].y,
-      triangle.vertices[1].z - triangle.vertices[0].z};
-  const Vec3 second{
-      triangle.vertices[2].x - triangle.vertices[0].x,
-      triangle.vertices[2].y - triangle.vertices[0].y,
-      triangle.vertices[2].z - triangle.vertices[0].z};
+Vec3 EdgeAxis(
+    const CurrentFixedTriangle& triangle, unsigned edge) noexcept {
+  const auto& first = triangle.vertices[edge];
+  const auto& second = triangle.vertices[(edge + 1) % 3];
+  return {
+      second.x - first.x,
+      second.y - first.y,
+      second.z - first.z};
+}
+
+Vec3 CrossAxis(Vec3 first, Vec3 second) noexcept {
   return {
       first.y * second.z - first.z * second.y,
       first.z * second.x - first.x * second.z,
       first.x * second.y - first.y * second.x};
+}
+
+Vec3 FaceAxis(const CurrentFixedTriangle& triangle) noexcept {
+  const Vec3 second{
+      triangle.vertices[2].x - triangle.vertices[0].x,
+      triangle.vertices[2].y - triangle.vertices[0].y,
+      triangle.vertices[2].z - triangle.vertices[0].z};
+  return CrossAxis(EdgeAxis(triangle, 0), second);
+}
+
+bool InflateProjection(
+    double thickness, double norm_l1, Interval* interval) noexcept {
+  const double margin = Up(thickness * norm_l1);
+  if (!std::isfinite(margin))
+    return false;
+  const double lower = Down(interval->lower - margin);
+  const double upper = Up(interval->upper + margin);
+  if (!std::isfinite(lower) || !std::isfinite(upper))
+    return false;
+  *interval = {lower, upper};
+  return true;
 }
 
 bool AxisSeparates(
@@ -108,7 +145,8 @@ bool AxisSeparates(
     const CurrentFixedTriangle& first_current,
     const CurrentFixedTriangle& second_base,
     const CurrentFixedTriangle& second_current,
-    double thickness, Vec3 axis) noexcept {
+    double first_thickness, double second_thickness,
+    Vec3 axis) noexcept {
   if (!IsFinite(axis))
     return false;
   const double norm_l1 = Up(Up(
@@ -120,15 +158,11 @@ bool AxisSeparates(
   if (!ProjectionBounds(first_base, first_current, axis, &first) ||
       !ProjectionBounds(second_base, second_current, axis, &second))
     return false;
-  const double margin = Up(thickness * norm_l1);
-  if (!std::isfinite(margin))
+  if (!InflateProjection(first_thickness, norm_l1, &first) ||
+      !InflateProjection(second_thickness, norm_l1, &second))
     return false;
-  const double first_limit = Up(first.upper + margin);
-  const double second_limit = Up(second.upper + margin);
-  return (std::isfinite(first_limit) &&
-          first_limit < second.lower) ||
-      (std::isfinite(second_limit) &&
-       second_limit < first.lower);
+  return first.upper < second.lower ||
+      second.upper < first.lower;
 }
 
 }  // namespace
@@ -158,39 +192,80 @@ PairMotionAction ClassifyCandidatePairMotion(
                    : PairMotionAction::UnsupportedRigidArc;
 }
 
-bool CertifiedSweptFacetSlabSeparation(
+bool CertifiedLinearFacetPrismSeparation(
     const CurrentFixedTriangle& first_base,
     const CurrentFixedTriangle& first_current, double first_thickness,
     const CurrentFixedTriangle& second_base,
     const CurrentFixedTriangle& second_current, double second_thickness,
+    bool include_edge_axes,
+    FacetPrismSeparationAxis* separated_axis,
     bool* valid) noexcept {
   if (!valid)
     return false;
+  if (separated_axis)
+    *separated_axis = FacetPrismSeparationAxis::None;
   *valid = std::isfinite(first_thickness) && first_thickness > 0 &&
       std::isfinite(second_thickness) && second_thickness > 0 &&
       Finite(first_base) && Finite(first_current) &&
       Finite(second_base) && Finite(second_current);
   if (!*valid)
     return false;
-  const double thickness = Up(first_thickness + second_thickness);
-  if (!std::isfinite(thickness)) {
-    *valid = false;
-    return false;
-  }
   // For LinearNodalV1, every vertex projection lies in the hull of its two
-  // endpoint projections.  The intervals enclose all rounded dot operations,
-  // and thickness*|axis|_1 overbounds the Euclidean normal inflation.  Thus a
-  // strict interval gap on any represented endpoint face axis is a
-  // separation-only certificate for the complete swept pair.  Equality,
-  // including coordinate-AABB touching, is deliberately not rejected.
+  // endpoint projections. The intervals enclose all rounded dot operations,
+  // and each half-thickness*|axis|_1 overbounds its Euclidean projection.
+  // Any finite nonzero represented axis is itself a valid hyperplane, even
+  // when rounded edge construction differs from the mathematical edge. Thus
+  // a strict interval gap certifies the complete swept pair. Equality,
+  // degenerate axes, and nonfinite/overflowed arithmetic remain unresolved.
   const Vec3 axes[4]{
       FaceAxis(first_base), FaceAxis(first_current),
       FaceAxis(second_base), FaceAxis(second_current)};
-  for (const auto axis : axes)
+  for (const auto axis : axes) {
     if (AxisSeparates(
             first_base, first_current, second_base, second_current,
-            thickness, axis))
+            first_thickness, second_thickness, axis)) {
+      if (separated_axis)
+        *separated_axis = FacetPrismSeparationAxis::FaceNormal;
       return true;
+    }
+  }
+  if (!include_edge_axes)
+    return false;
+
+  // Test every 3x3 edge cross-edge family for all four represented endpoint
+  // state combinations. Endpoint projection hulls, not endpoint chords,
+  // bound both linear swept triangular prisms.
+  const CurrentFixedTriangle* first_states[2]{
+      &first_base, &first_current};
+  const CurrentFixedTriangle* second_states[2]{
+      &second_base, &second_current};
+  const unsigned first_state_count =
+      SameGeometry(first_base, first_current) ? 1 : 2;
+  const unsigned second_state_count =
+      SameGeometry(second_base, second_current) ? 1 : 2;
+  for (unsigned first_state_index = 0;
+       first_state_index < first_state_count; ++first_state_index) {
+    const auto* first_state = first_states[first_state_index];
+    for (unsigned second_state_index = 0;
+         second_state_index < second_state_count; ++second_state_index) {
+      const auto* second_state = second_states[second_state_index];
+      for (unsigned first_edge = 0; first_edge < 3; ++first_edge) {
+        const auto first_axis = EdgeAxis(*first_state, first_edge);
+        for (unsigned second_edge = 0; second_edge < 3; ++second_edge) {
+          const auto axis = CrossAxis(
+              first_axis, EdgeAxis(*second_state, second_edge));
+          if (AxisSeparates(
+                  first_base, first_current,
+                  second_base, second_current,
+                  first_thickness, second_thickness, axis)) {
+            if (separated_axis)
+              *separated_axis = FacetPrismSeparationAxis::EdgeCross;
+            return true;
+          }
+        }
+      }
+    }
+  }
   return false;
 }
 

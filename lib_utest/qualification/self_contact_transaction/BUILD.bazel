@@ -15,7 +15,11 @@ cc_test(
 cc_test(
     name = "medium_coupon",
     size = "medium",
-    tags = ["coupon", "m2-self-contact-medium"],
+    tags = [
+        "coupon",
+        "m2-self-contact-medium",
+        "prism-axis-certificate",
+    ],
     srcs = ["MediumCouponTest.cpp"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [

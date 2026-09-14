@@ -247,9 +247,11 @@ struct SelfContactCandidatePolicySummary {
   std::size_t represented_by_accepted_vf = 0;
   std::size_t represented_by_accepted_ee = 0;
   // Motion-filter accounting proves which candidate pairs bypassed exact
-  // represented-interval work.  The three counts partition outcomes on every
-  // successful candidate seal.
+  // represented-interval work. The motion/excluded/exact counts partition
+  // outcomes; the axis counts refine the motion-certified subset.
   std::size_t motion_certified_linear_separated = 0;
+  std::size_t axis_certified_linear_separated = 0;
+  std::size_t edge_axis_certified_linear_separated = 0;
   std::size_t motion_excluded_same_rigid_group = 0;
   std::size_t exact_crossing_pairs = 0;
   std::size_t exact_crossing_work = 0;

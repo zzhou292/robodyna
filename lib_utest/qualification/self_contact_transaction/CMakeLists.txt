@@ -41,7 +41,7 @@ add_test(NAME self_contact_transaction_medium_coupon
   COMMAND self_contact_transaction_medium_coupon)
 set_tests_properties(self_contact_transaction_medium_coupon PROPERTIES
   RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30
-  LABELS "coupon;m2;self-contact-medium")
+  LABELS "coupon;m2;self-contact-medium;prism-axis-certificate")
 
 add_test(NAME self_contact_transaction_source
   COMMAND "${Python3_EXECUTABLE}" -B

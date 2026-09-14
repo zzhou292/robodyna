@@ -27,10 +27,10 @@ parent, runs the complete current broadphase, validates its full device pair
 readback and validates its strict device order. A fixed cursor heap merges
 every active parent Cartesian expansion into immutable facet-key order and
 materializes one bounded chunk at a time. Same-rigid, outward inflated
-coordinate-AABB, and outward interval face-slab certificates remove only
-provably separated pairs; every remaining pair executes all six VF and nine EE
-tasks. Nonlocal intersections still reject. Admitted VF
-and strict interior/zero-distance EE certificates merge
+coordinate-AABB, and outward interval face-normal/edge-cross prism
+certificates remove only provably separated pairs; every remaining pair
+executes all six VF and nine EE tasks. Nonlocal intersections still reject.
+Admitted VF and strict interior/zero-distance EE certificates merge
 through a fixed-capacity global hash ledger. Identity is the geometric feature
 plus both ordered active-parent ordinals. Thus shared boundary geometry under
 distinct parent-local area ownership remains distinct, while one repeated
@@ -51,7 +51,7 @@ filters inactive pairs and runs current regularity over active, removing, and
 long-inactive parents,
 rebuilds every exact fixed facet, and reruns discovery and represented
 interval crossing on the same canonical chunks that lack a complete swept
-slab certificate. Global canonical vertex/edge
+prism separation certificate. Global canonical vertex/edge
 coordinate ledgers are checked before chunking. Unresolved results fail. The fixed policy rejects nonlocal
 intersections and admits a VF or EE crossing only through the full
 transaction-owned accepted event certificate (exact feature and facet
@@ -69,13 +69,20 @@ intersection directly, so disjoint triangles whose AABBs merely touch do not
 exhaust subdivision work. Empty broadphase, discovery, event, crossing, and
 policy publications are valid and still produce mandatory participation.
 
-The slab prefilter projects both facets' accepted and prepared vertices onto
-each represented endpoint face normal. Directed `nextafter` intervals contain
-every binary64 product and sum; endpoint projection hulls contain every
-`LinearNodalV1` vertex for the full step. The sum of physical half-thicknesses
-is inflated by the axis L1 norm, which overbounds its Euclidean projection.
-Only a strict interval gap is skipped. Equality and coordinate-AABB touching
-remain on the exact path, and nonfinite arithmetic cannot certify separation.
+The prism prefilter first projects both facets' accepted and prepared vertices
+onto each represented endpoint face normal, then tests every 3x3 edge
+cross-edge family across the four represented endpoint-state combinations.
+Directed `nextafter` intervals contain every binary64 product and sum;
+endpoint projection hulls contain every `LinearNodalV1` vertex for the full
+step. Each projection is inflated separately by its authenticated physical
+half-thickness times the axis L1 norm, which overbounds Euclidean axis length.
+Any actual finite nonzero represented axis is a valid separating hyperplane;
+it need not equal an ideal real-arithmetic edge cross product. Only a strict
+interval gap is skipped. Equality, degenerate axes, coordinate-AABB touching,
+and nonfinite or overflowed arithmetic remain on the exact path. The prism
+certificate is called only for `LinearNodalV1`; overlapping rigid arcs retain
+their conservative swept-box unresolved path rather than using endpoint
+chords.
 
 Exact closest-stratum predicates remain the feature identity authority.
 If an ordinary binary64 face projection rounds onto its exact boundary,
@@ -142,9 +149,13 @@ Asymptotic storage is `O(nodes + facets + parent_pairs + event_cap +
 chunk*(feature/work caps))`, not `O(facet_pairs)`. Traversal is
 `O(facet_pairs log parent_pairs)` before exact geometry. The expected
 full-V5 performance blocker is CPU exact work: 89,838,720 VF/EE tasks plus up
-to 5,989,248 multiprecision interval certificates when no slab can separate
-the input. Chunking makes that worst case representable and failure-atomic;
-the bounded slab pass reduces both counts without changing storage.
+to 5,989,248 multiprecision interval certificates when no represented axis can
+separate the input. Chunking makes that worst case representable and
+failure-atomic; the bounded coordinate/face/edge-axis passes reduce both
+counts without changing arena storage. Candidate summaries refine
+`motion_certified_linear_separated` with
+`axis_certified_linear_separated` and
+`edge_axis_certified_linear_separated`.
 
 ## Caller migration
 
@@ -179,14 +190,18 @@ ctest --test-dir <host-build> --output-on-failure
 The `unit` label retains the existing value, exact-cap, source and shaped C++
 checks. The `coupon` label adds a medium 262,144-decision host stream and a
 10,240-pair geometry traversal, both using a fixed 257-pair chunk. It measures
-streamed, same-rigid, AABB/slab-separated, exact-discovery task, proximity
-event, crossing-pair/work, and elapsed counts. The geometry regression keeps
-all 38,400 event observations while reducing exact tasks and crossing work
-from 115,200/7,680 to 38,400/2,560; the measured Release traversal was
-0.876 s before and 0.296 s after. It also proves touching and swept crossing
-stay exact, owner-aware VF/EE deduplication across chunks, strict input order,
-the complete count, and fixed policy digest `7261953295680066653`. Forecast
-plus authored storage is asserted below 512 MiB. It invokes no NVCC or GPU.
+streamed, same-rigid, AABB/face-axis/edge-axis separated, exact-discovery task,
+proximity event, crossing-pair/work, and elapsed counts. The geometry
+regression compares coordinate-only, coordinate+face-axis, and full prism
+passes. All retain 19,200 contact observations. Face axes reduce exact tasks
+and crossing work from 115,200/7,680 to 38,400/2,560; edge-cross axes reduce
+them again to 19,200/1,280. One measured Release traversal was
+1.017/0.412/0.158 s respectively. It also proves edge-axis-only separation,
+touching, nearly parallel/degenerate, huge/subnormal arithmetic, and swept
+motion crossing stay conservative, plus owner-aware VF/EE deduplication
+across chunks, strict input order, the complete count, and fixed policy digest
+`7261953295680066653`. Forecast plus authored storage is asserted below
+512 MiB. It invokes no NVCC or GPU.
 Run either tier explicitly
 with `ctest --test-dir <host-build> -L '^(unit|coupon)$'
 --output-on-failure`; normal CTest includes both.

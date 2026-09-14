@@ -635,22 +635,29 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
             second_parent >= parents.size())
           return state.Fail(Failure(
               S::IdentityMismatch,
-              "Candidate facet slab has no active parent",
+              "Candidate facet prism has no active parent",
               SIZE_MAX, state.candidate_facet_pair_count + pair));
         bool valid = false;
-        if (sct::CertifiedSweptFacetSlabSeparation(
+        sct::FacetPrismSeparationAxis separated_axis =
+            sct::FacetPrismSeparationAxis::None;
+        if (sct::CertifiedLinearFacetPrismSeparation(
                 state.buffers.accepted_triangles[value.first],
                 state.buffers.prepared_triangles[value.first],
                 parents[first_parent].reference_half_thickness_m,
                 state.buffers.accepted_triangles[value.second],
                 state.buffers.prepared_triangles[value.second],
                 parents[second_parent].reference_half_thickness_m,
-                &valid))
+                true, &separated_axis, &valid)) {
           action = sct::PairMotionAction::CertifiedLinearSeparation;
+          ++summary.axis_certified_linear_separated;
+          if (separated_axis ==
+              sct::FacetPrismSeparationAxis::EdgeCross)
+            ++summary.edge_axis_certified_linear_separated;
+        }
         if (!valid)
           return state.Fail(Failure(
               S::IdentityMismatch,
-              "Candidate facet slab certificate input is invalid",
+              "Candidate facet prism certificate input is invalid",
               SIZE_MAX, state.candidate_facet_pair_count + pair));
       }
       state.buffers.chunk_raw_canonical_pairs[pair] = key;
@@ -864,7 +871,11 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
       summary.outcomes != state.candidate_facet_pair_count)
     return state.Fail(Failure(S::IdentityMismatch,
         "Candidate canonical stream lacks its complete receipt"));
-  if (summary.motion_certified_linear_separated > summary.outcomes ||
+  if (summary.axis_certified_linear_separated >
+          summary.motion_certified_linear_separated ||
+      summary.edge_axis_certified_linear_separated >
+          summary.axis_certified_linear_separated ||
+      summary.motion_certified_linear_separated > summary.outcomes ||
       summary.motion_excluded_same_rigid_group >
           summary.outcomes -
               summary.motion_certified_linear_separated ||

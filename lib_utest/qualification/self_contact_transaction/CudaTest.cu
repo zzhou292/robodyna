@@ -632,6 +632,10 @@ TEST(SelfContactTransactionCuda,
     const auto& policy = receipt.policy_summary();
     EXPECT_TRUE(policy.complete);
     EXPECT_GT(policy.motion_certified_linear_separated,0u);
+    EXPECT_LE(policy.axis_certified_linear_separated,
+              policy.motion_certified_linear_separated);
+    EXPECT_LE(policy.edge_axis_certified_linear_separated,
+              policy.axis_certified_linear_separated);
     EXPECT_GT(policy.exact_crossing_pairs,0u);
     EXPECT_GT(policy.exact_crossing_work,0u);
     EXPECT_LT(policy.exact_crossing_pairs,policy.outcomes);

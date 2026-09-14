@@ -134,6 +134,8 @@ for token in (
     "SelfContactAcceptedActivityReceipt activity_",
     "AcceptedSymmetricVfEeRejectIntersectionV2",
     "motion_certified_linear_separated",
+    "axis_certified_linear_separated",
+    "edge_axis_certified_linear_separated",
     "exact_crossing_pairs",
     "exact_crossing_work",
 ):
@@ -148,14 +150,17 @@ for forbidden in (
 arena_path = ROOT / "lib_src/collision/self_contact_transaction/Arena.cpp"
 arena = arena_path.read_text()
 for token in (
-    "CertifiedSweptFacetSlabSeparation(",
+    "CertifiedLinearFacetPrismSeparation(",
     "ProjectionBounds(",
+    "CrossAxis(",
+    "FacetPrismSeparationAxis::EdgeCross",
     "std::nextafter(",
     "thickness * norm_l1",
+    "first_thickness, second_thickness, axis",
 ):
     require(arena, token, arena_path)
-require(storage, "CertifiedSweptFacetSlabSeparation(", storage_path)
-require(candidate, "sct::CertifiedSweptFacetSlabSeparation(", CANDIDATE)
+require(storage, "CertifiedLinearFacetPrismSeparation(", storage_path)
+require(candidate, "sct::CertifiedLinearFacetPrismSeparation(", CANDIDATE)
 for forbidden in ("activity_base", "activity_current"):
     if forbidden in storage or forbidden in arena:
         raise RuntimeError(
@@ -212,7 +217,7 @@ source = (
     ROOT / "lib_src/collision/self_contact_transaction/Source.cpp").read_text()
 values = (
     ROOT / "lib_src/collision/self_contact_transaction/Values.cpp").read_text()
-require(source, "CertifiedSweptFacetSlabSeparation(", storage_path)
+require(source, "CertifiedLinearFacetPrismSeparation(", storage_path)
 for token in (
     "FixedContactFacetReadCursor facet_reader",
     "facet_reader.Initialize(*facet_binding)",
@@ -280,17 +285,20 @@ require(QUAL_BAZEL.read_text(), '":root_cuda_sources"', QUAL_BAZEL)
 require(QUAL_BAZEL.read_text(), "m2-rigid-cin-response", QUAL_BAZEL)
 require(QUAL_CMAKE.read_text(), "symmetric-edge-area", QUAL_CMAKE)
 require(QUAL_BAZEL.read_text(), "symmetric-edge-area", QUAL_BAZEL)
+require(QUAL_CMAKE.read_text(), "prism-axis-certificate", QUAL_CMAKE)
+require(QUAL_BAZEL.read_text(), "prism-axis-certificate", QUAL_BAZEL)
 for token in (
     "DecisionCount = 262144",
     "ChunkCapacity = 257",
     "GeometryPairCount = 10240",
     "ExpectedPolicyDigest",
     "ClassifyCandidatePairMotion(",
-    "CertifiedSweptFacetSlabSeparation(",
+    "CertifiedLinearFacetPrismSeparation(",
     "geometry_baseline",
-    "geometry_optimized",
-    "optimized.exact_discovery_tasks",
-    "optimized.crossing_work",
+    "geometry_face_axes",
+    "geometry_face_edge_axes",
+    "full_prism.exact_discovery_tasks",
+    "full_prism.crossing_work",
     "MergeAcceptedEventChunk(",
     "FinalizeAcceptedEventLedger(",
     "summary.digest, ExpectedPolicyDigest",
@@ -334,6 +342,8 @@ for token in (
     "skipped_parents()",
     "boundary_vertex_edge_event_count",
     "motion_certified_linear_separated",
+    "axis_certified_linear_separated",
+    "edge_axis_certified_linear_separated",
     "exact_crossing_pairs",
     "exact_crossing_work",
 ):

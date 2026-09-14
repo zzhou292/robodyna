@@ -10,6 +10,7 @@
 #include <cmath>
 #include <cstdint>
 #include <iostream>
+#include <limits>
 #include <memory>
 
 namespace {
@@ -140,6 +141,13 @@ c::CurrentFixedTriangle Triangle(std::size_t ordinal, c::Vec3 shift) {
   return result;
 }
 
+void SetEdgeAxisSeparatedGeometry(
+    c::CurrentFixedTriangle* triangle) {
+  triangle->vertices[0] = {-0.25, -1, -0.5};
+  triangle->vertices[1] = {0.25, -0.5, -0.5};
+  triangle->vertices[2] = {1, 1, 0.25};
+}
+
 c::SelfContactSweptParentBounds Bounds(
     const c::CurrentFixedTriangle& triangle) {
   c::SelfContactSweptParentBounds result{
@@ -183,7 +191,8 @@ struct GeometryMetrics {
   std::size_t streamed_pairs = 0;
   std::size_t same_rigid = 0;
   std::size_t aabb_separated = 0;
-  std::size_t slab_separated = 0;
+  std::size_t face_axis_separated = 0;
+  std::size_t edge_axis_separated = 0;
   std::size_t exact_discovery_pairs = 0;
   std::size_t exact_discovery_tasks = 0;
   std::size_t feature_events = 0;
@@ -196,6 +205,12 @@ struct GeometryMetrics {
   std::uint64_t elapsed_us = 0;
 };
 
+enum class GeometryFilter {
+  CoordinateOnly,
+  FaceAxes,
+  FaceAndEdgeAxes,
+};
+
 struct GeometryStorage {
   std::unique_ptr<c::CurrentFixedTriangle[]> triangles{
       new c::CurrentFixedTriangle[GeometryTriangleCount]};
@@ -205,7 +220,7 @@ struct GeometryStorage {
 };
 
 GeometryMetrics RunGeometryPipeline(
-    GeometryStorage& storage, bool use_slab_filter,
+    GeometryStorage& storage, GeometryFilter filter,
     c::FixedTriangleFeatureDiscovery* discovery,
     c::RepresentedIntervalCrossing* crossing) {
   const auto started = std::chrono::steady_clock::now();
@@ -268,9 +283,9 @@ GeometryMetrics RunGeometryPipeline(
     ++metrics.streamed_pairs;
     const auto first = static_cast<std::uint32_t>(2 * pair);
     const auto second = first + 1;
-    const auto residue = pair % 8;
-    const auto& first_motion = residue == 0 ? rigid : linear;
-    const auto& second_motion = residue == 0 ? rigid : linear;
+    const auto residue = pair % 16;
+    const auto& first_motion = residue < 2 ? rigid : linear;
+    const auto& second_motion = residue < 2 ? rigid : linear;
     const auto action = sct::ClassifyCandidatePairMotion(
         first_motion, Bounds(storage.triangles[first]),
         second_motion, Bounds(storage.triangles[second]));
@@ -284,14 +299,26 @@ GeometryMetrics RunGeometryPipeline(
       continue;
     }
     EXPECT_EQ(action, sct::PairMotionAction::LinearNodalV1);
-    if (use_slab_filter) {
+    if (filter != GeometryFilter::CoordinateOnly) {
       bool valid = false;
-      if (sct::CertifiedSweptFacetSlabSeparation(
+      sct::FacetPrismSeparationAxis separated_axis =
+          sct::FacetPrismSeparationAxis::None;
+      if (sct::CertifiedLinearFacetPrismSeparation(
               storage.triangles[first], storage.triangles[first],
               GeometryHalfThickness,
               storage.triangles[second], storage.triangles[second],
-              GeometryHalfThickness, &valid)) {
-        ++metrics.slab_separated;
+              GeometryHalfThickness,
+              filter == GeometryFilter::FaceAndEdgeAxes,
+              &separated_axis, &valid)) {
+        if (separated_axis ==
+            sct::FacetPrismSeparationAxis::FaceNormal)
+          ++metrics.face_axis_separated;
+        else {
+          EXPECT_EQ(
+              separated_axis,
+              sct::FacetPrismSeparationAxis::EdgeCross);
+          ++metrics.edge_axis_separated;
+        }
         ++metrics.candidate_direct_separation;
         continue;
       }
@@ -469,14 +496,18 @@ TEST(SelfContactTransactionMediumCoupon,
   for (std::size_t pair = 0; pair < GeometryPairCount; ++pair) {
     const auto first = 2 * pair;
     storage.triangles[first] = Triangle(first, {});
+    const auto residue = pair % 16;
     c::Vec3 shift;
-    if (pair % 8 == 1)
+    if (residue >= 2 && residue <= 3)
       shift = {2, 0, 0};
-    else if (pair % 8 >= 2 && pair % 8 <= 5)
+    else if (residue >= 4 && residue <= 11)
       shift = {-0.0625, -0.0625, 0.0625};
     else
       shift = {-0.00390625, -0.00390625, 0.00390625};
     storage.triangles[first + 1] = Triangle(first + 1, shift);
+    if (residue >= 12 && residue <= 13)
+      SetEdgeAxisSeparatedGeometry(
+          storage.triangles.get() + first + 1);
   }
 
   c::FixedTriangleFeatureLimits discovery_limits;
@@ -512,7 +543,7 @@ TEST(SelfContactTransactionMediumCoupon,
             512u << 20);
 
   const auto baseline = RunGeometryPipeline(
-      storage, false, &discovery, &crossing);
+      storage, GeometryFilter::CoordinateOnly, &discovery, &crossing);
   std::cout << "geometry_baseline"
             << " streamed_pairs=" << baseline.streamed_pairs
             << " same_rigid=" << baseline.same_rigid
@@ -534,61 +565,122 @@ TEST(SelfContactTransactionMediumCoupon,
   EXPECT_EQ(baseline.same_rigid, GeometryPairCount / 8);
   EXPECT_EQ(baseline.aabb_separated, GeometryPairCount / 8);
   EXPECT_EQ(baseline.exact_discovery_pairs,
-            6 * GeometryPairCount / 8);
+            3 * GeometryPairCount / 4);
   EXPECT_EQ(baseline.exact_discovery_tasks,
             15 * baseline.exact_discovery_pairs);
   EXPECT_EQ(baseline.crossing_pairs,
             baseline.exact_discovery_pairs);
 
-  const auto optimized = RunGeometryPipeline(
-      storage, true, &discovery, &crossing);
-  std::cout << "geometry_optimized"
-            << " streamed_pairs=" << optimized.streamed_pairs
-            << " same_rigid=" << optimized.same_rigid
-            << " aabb_separated=" << optimized.aabb_separated
-            << " slab_separated=" << optimized.slab_separated
+  const auto face_axes = RunGeometryPipeline(
+      storage, GeometryFilter::FaceAxes, &discovery, &crossing);
+  std::cout << "geometry_face_axes"
+            << " streamed_pairs=" << face_axes.streamed_pairs
+            << " same_rigid=" << face_axes.same_rigid
+            << " aabb_separated=" << face_axes.aabb_separated
+            << " face_axis_separated="
+            << face_axes.face_axis_separated
             << " exact_discovery_pairs="
-            << optimized.exact_discovery_pairs
+            << face_axes.exact_discovery_pairs
             << " exact_discovery_tasks="
-            << optimized.exact_discovery_tasks
-            << " feature_events=" << optimized.feature_events
-            << " intersection_events=" << optimized.intersection_events
+            << face_axes.exact_discovery_tasks
+            << " feature_events=" << face_axes.feature_events
+            << " intersection_events=" << face_axes.intersection_events
             << " candidate_direct_separation="
-            << optimized.candidate_direct_separation
-            << " crossing_pairs=" << optimized.crossing_pairs
-            << " crossing_work=" << optimized.crossing_work
-            << " exact_discovery_us=" << optimized.exact_discovery_us
-            << " crossing_us=" << optimized.crossing_us
-            << " elapsed_us=" << optimized.elapsed_us << '\n';
-  EXPECT_EQ(optimized.streamed_pairs, GeometryPairCount);
-  EXPECT_EQ(optimized.same_rigid, GeometryPairCount / 8);
-  EXPECT_EQ(optimized.aabb_separated, GeometryPairCount / 8);
-  EXPECT_EQ(optimized.slab_separated, GeometryPairCount / 2);
-  EXPECT_EQ(optimized.exact_discovery_pairs,
+            << face_axes.candidate_direct_separation
+            << " crossing_pairs=" << face_axes.crossing_pairs
+            << " crossing_work=" << face_axes.crossing_work
+            << " exact_discovery_us=" << face_axes.exact_discovery_us
+            << " crossing_us=" << face_axes.crossing_us
+            << " elapsed_us=" << face_axes.elapsed_us << '\n';
+  EXPECT_EQ(face_axes.streamed_pairs, GeometryPairCount);
+  EXPECT_EQ(face_axes.same_rigid, GeometryPairCount / 8);
+  EXPECT_EQ(face_axes.aabb_separated, GeometryPairCount / 8);
+  EXPECT_EQ(face_axes.face_axis_separated, GeometryPairCount / 2);
+  EXPECT_EQ(face_axes.edge_axis_separated, 0u);
+  EXPECT_EQ(face_axes.exact_discovery_pairs,
             GeometryPairCount / 4);
-  EXPECT_EQ(optimized.exact_discovery_tasks,
-            15 * optimized.exact_discovery_pairs);
-  EXPECT_EQ(optimized.feature_events, baseline.feature_events);
-  EXPECT_EQ(optimized.intersection_events,
+  EXPECT_EQ(face_axes.exact_discovery_tasks,
+            15 * face_axes.exact_discovery_pairs);
+  EXPECT_EQ(face_axes.feature_events, baseline.feature_events);
+  EXPECT_EQ(face_axes.intersection_events,
             baseline.intersection_events);
-  EXPECT_EQ(optimized.candidate_direct_separation,
-            optimized.aabb_separated + optimized.slab_separated);
-  EXPECT_EQ(optimized.crossing_pairs,
-            optimized.exact_discovery_pairs);
+  EXPECT_EQ(face_axes.candidate_direct_separation,
+            face_axes.aabb_separated +
+                face_axes.face_axis_separated);
+  EXPECT_EQ(face_axes.crossing_pairs,
+            face_axes.exact_discovery_pairs);
   EXPECT_EQ(
-      optimized.same_rigid + optimized.aabb_separated +
-          optimized.slab_separated + optimized.exact_discovery_pairs,
-      optimized.streamed_pairs);
-  EXPECT_LE(3 * optimized.exact_discovery_tasks,
+      face_axes.same_rigid + face_axes.aabb_separated +
+          face_axes.face_axis_separated +
+          face_axes.exact_discovery_pairs,
+      face_axes.streamed_pairs);
+  EXPECT_LE(3 * face_axes.exact_discovery_tasks,
             baseline.exact_discovery_tasks);
-  EXPECT_LE(3 * optimized.crossing_work,
+  EXPECT_LE(3 * face_axes.crossing_work,
             baseline.crossing_work);
-  EXPECT_LT(optimized.elapsed_us,
+  EXPECT_LT(face_axes.elapsed_us,
             3 * baseline.elapsed_us / 4 + 10000);
+
+  const auto full_prism = RunGeometryPipeline(
+      storage, GeometryFilter::FaceAndEdgeAxes,
+      &discovery, &crossing);
+  std::cout << "geometry_face_edge_axes"
+            << " streamed_pairs=" << full_prism.streamed_pairs
+            << " same_rigid=" << full_prism.same_rigid
+            << " aabb_separated=" << full_prism.aabb_separated
+            << " face_axis_separated="
+            << full_prism.face_axis_separated
+            << " edge_axis_separated="
+            << full_prism.edge_axis_separated
+            << " exact_discovery_pairs="
+            << full_prism.exact_discovery_pairs
+            << " exact_discovery_tasks="
+            << full_prism.exact_discovery_tasks
+            << " feature_events=" << full_prism.feature_events
+            << " intersection_events="
+            << full_prism.intersection_events
+            << " candidate_direct_separation="
+            << full_prism.candidate_direct_separation
+            << " crossing_pairs=" << full_prism.crossing_pairs
+            << " crossing_work=" << full_prism.crossing_work
+            << " exact_discovery_us="
+            << full_prism.exact_discovery_us
+            << " crossing_us=" << full_prism.crossing_us
+            << " elapsed_us=" << full_prism.elapsed_us << '\n';
+  EXPECT_EQ(full_prism.streamed_pairs, GeometryPairCount);
+  EXPECT_EQ(full_prism.same_rigid, GeometryPairCount / 8);
+  EXPECT_EQ(full_prism.aabb_separated, GeometryPairCount / 8);
+  EXPECT_EQ(full_prism.face_axis_separated,
+            GeometryPairCount / 2);
+  EXPECT_EQ(full_prism.edge_axis_separated,
+            GeometryPairCount / 8);
+  EXPECT_EQ(full_prism.exact_discovery_pairs,
+            GeometryPairCount / 8);
+  EXPECT_EQ(full_prism.exact_discovery_tasks,
+            15 * full_prism.exact_discovery_pairs);
+  EXPECT_EQ(full_prism.feature_events, baseline.feature_events);
+  EXPECT_EQ(full_prism.intersection_events,
+            baseline.intersection_events);
+  EXPECT_EQ(full_prism.candidate_direct_separation,
+            full_prism.aabb_separated +
+                full_prism.face_axis_separated +
+                full_prism.edge_axis_separated);
+  EXPECT_EQ(full_prism.crossing_pairs,
+            full_prism.exact_discovery_pairs);
+  EXPECT_EQ(
+      full_prism.same_rigid + full_prism.aabb_separated +
+          full_prism.face_axis_separated +
+          full_prism.edge_axis_separated +
+          full_prism.exact_discovery_pairs,
+      full_prism.streamed_pairs);
+  EXPECT_LE(2 * full_prism.exact_discovery_tasks,
+            face_axes.exact_discovery_tasks);
+  EXPECT_LE(2 * full_prism.crossing_work,
+            face_axes.crossing_work);
 }
 
 TEST(SelfContactTransactionMediumCoupon,
-     SlabCertificateKeepsTouchAndCrossingInExactTraversal) {
+     PrismCertificateKeepsUnresolvedGeometryInExactTraversal) {
   auto first = Triangle(0, {});
   auto second = Triangle(1, {});
   first.vertices[0] = {0, 0, 0};
@@ -599,27 +691,112 @@ TEST(SelfContactTransactionMediumCoupon,
   second.vertices[2] = {0, 1, 0.02};
 
   bool valid = false;
-  EXPECT_FALSE(sct::CertifiedSweptFacetSlabSeparation(
-      first, first, 0.01, second, second, 0.01, &valid));
+  sct::FacetPrismSeparationAxis axis =
+      sct::FacetPrismSeparationAxis::None;
+  EXPECT_FALSE(sct::CertifiedLinearFacetPrismSeparation(
+      first, first, 0.01, second, second, 0.01,
+      true, &axis, &valid));
   EXPECT_TRUE(valid);
+  EXPECT_EQ(axis, sct::FacetPrismSeparationAxis::None);
 
   auto separated = second;
   for (auto& vertex : separated.vertices)
     vertex.z = 0.021;
-  EXPECT_TRUE(sct::CertifiedSweptFacetSlabSeparation(
-      first, first, 0.01, separated, separated, 0.01, &valid));
+  EXPECT_TRUE(sct::CertifiedLinearFacetPrismSeparation(
+      first, first, 0.01, separated, separated, 0.01,
+      true, &axis, &valid));
   EXPECT_TRUE(valid);
+  EXPECT_EQ(axis, sct::FacetPrismSeparationAxis::FaceNormal);
 
   auto crossed = separated;
   for (auto& vertex : crossed.vertices)
     vertex.z = -0.021;
-  EXPECT_FALSE(sct::CertifiedSweptFacetSlabSeparation(
-      first, first, 0.01, separated, crossed, 0.01, &valid));
+  EXPECT_FALSE(sct::CertifiedLinearFacetPrismSeparation(
+      first, first, 0.01, separated, crossed, 0.01,
+      true, &axis, &valid));
   EXPECT_TRUE(valid);
+  EXPECT_EQ(axis, sct::FacetPrismSeparationAxis::None);
 
-  EXPECT_FALSE(sct::CertifiedSweptFacetSlabSeparation(
-      first, first, NAN, separated, separated, 0.01, &valid));
+  EXPECT_FALSE(sct::CertifiedLinearFacetPrismSeparation(
+      first, first, NAN, separated, separated, 0.01,
+      true, &axis, &valid));
   EXPECT_FALSE(valid);
+}
+
+TEST(SelfContactTransactionMediumCoupon,
+     EdgeCrossAxisCertifiesOnlyStrictFiniteSeparation) {
+  auto first = Triangle(0, {});
+  auto second = Triangle(1, {});
+  SetEdgeAxisSeparatedGeometry(&second);
+  bool valid = false;
+  sct::FacetPrismSeparationAxis axis =
+      sct::FacetPrismSeparationAxis::None;
+
+  EXPECT_FALSE(sct::CertifiedLinearFacetPrismSeparation(
+      first, first, GeometryHalfThickness,
+      second, second, GeometryHalfThickness,
+      false, &axis, &valid));
+  EXPECT_TRUE(valid);
+  EXPECT_EQ(axis, sct::FacetPrismSeparationAxis::None);
+  EXPECT_TRUE(sct::CertifiedLinearFacetPrismSeparation(
+      first, first, GeometryHalfThickness,
+      second, second, GeometryHalfThickness,
+      true, &axis, &valid));
+  EXPECT_TRUE(valid);
+  EXPECT_EQ(axis, sct::FacetPrismSeparationAxis::EdgeCross);
+
+  auto crossing = first;
+  EXPECT_FALSE(sct::CertifiedLinearFacetPrismSeparation(
+      first, first, GeometryHalfThickness,
+      second, crossing, GeometryHalfThickness,
+      true, &axis, &valid));
+  EXPECT_TRUE(valid);
+  EXPECT_EQ(axis, sct::FacetPrismSeparationAxis::None);
+
+  auto nearly_parallel = first;
+  nearly_parallel.vertices[2].z =
+      std::nextafter(nearly_parallel.vertices[2].z, INFINITY);
+  EXPECT_FALSE(sct::CertifiedLinearFacetPrismSeparation(
+      first, first, GeometryHalfThickness,
+      nearly_parallel, nearly_parallel, GeometryHalfThickness,
+      true, &axis, &valid));
+  EXPECT_TRUE(valid);
+  EXPECT_EQ(axis, sct::FacetPrismSeparationAxis::None);
+
+  auto degenerate = first;
+  degenerate.vertices[1] = degenerate.vertices[0];
+  degenerate.vertices[2] = degenerate.vertices[0];
+  EXPECT_FALSE(sct::CertifiedLinearFacetPrismSeparation(
+      degenerate, degenerate, GeometryHalfThickness,
+      degenerate, degenerate, GeometryHalfThickness,
+      true, &axis, &valid));
+  EXPECT_TRUE(valid);
+  EXPECT_EQ(axis, sct::FacetPrismSeparationAxis::None);
+
+  const double tiny = std::numeric_limits<double>::denorm_min();
+  for (unsigned vertex = 0; vertex < 3; ++vertex) {
+    degenerate.vertices[vertex] = {
+        (vertex & 1) ? tiny : 0,
+        (vertex & 2) ? tiny : 0,
+        tiny};
+  }
+  EXPECT_FALSE(sct::CertifiedLinearFacetPrismSeparation(
+      degenerate, degenerate, tiny,
+      degenerate, degenerate, tiny,
+      true, &axis, &valid));
+  EXPECT_TRUE(valid);
+  EXPECT_EQ(axis, sct::FacetPrismSeparationAxis::None);
+
+  const double huge = std::numeric_limits<double>::max();
+  degenerate.vertices[0] = {huge, huge, huge};
+  degenerate.vertices[1] = {-huge, huge, huge};
+  degenerate.vertices[2] = {huge, -huge, huge};
+  EXPECT_FALSE(sct::CertifiedLinearFacetPrismSeparation(
+      degenerate, degenerate, GeometryHalfThickness,
+      degenerate, degenerate, GeometryHalfThickness,
+      true, &axis, &valid));
+  EXPECT_TRUE(valid);
+  EXPECT_EQ(axis, sct::FacetPrismSeparationAxis::None);
 }
 
 }  // namespace
