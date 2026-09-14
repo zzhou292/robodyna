@@ -174,6 +174,16 @@ class ShellBatchPublication {
   ShellPublicationReport ValidatePhysicalSources(const FENodalState&,
       const ShellPhysicalBinding&,const ShellPhysicalParticipants&,
       const ShellPhysicalPublicationIdentity&) const noexcept;
+  // Read-only central proof that every actual physical participant completed
+  // accepted assembly into this exact live owner/token/view. No raw assembly
+  // view or participant pointer can independently establish this fact.
+  ShellPublicationReport ValidatePhysicalAssembly(FENodalState&,
+      const NodalTrialToken&,const NodalAssemblyView&) const noexcept;
+  // Read-only proof that PreparePhysical retained this exact complete typed
+  // diagnostic packet and authentic prepared owner view.
+  ShellPublicationReport ValidatePhysicalCandidate(FENodalState&,
+      const NodalTrialToken&,const ShellPhysicalDiagnostics&,
+      const NodalPreparedView&) noexcept;
   bool PhysicalOutputDisjoint(const void*,std::size_t) const noexcept;
   // Discards coordinator and every material scratch; caller still owns nodal
   // Discard when abandoning a trial outside Prepare/Commit.

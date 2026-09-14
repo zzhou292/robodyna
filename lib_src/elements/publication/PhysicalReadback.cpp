@@ -95,6 +95,64 @@ ShellPublicationReport ShellBatchPublication::ValidatePhysicalSources(const FENo
   ShellPhysicalDiagnostics accepted;
   return CopyAcceptedPhysicalDiagnostics(owner.accepted(),&accepted);
 }
+ShellPublicationReport ShellBatchPublication::ValidatePhysicalAssembly(
+    FENodalState& owner,const NodalTrialToken& token,
+    const NodalAssemblyView& view) const noexcept {
+  if (!impl_ || !impl_->physical)
+    return {S::NotInitialized,"Physical publication is not initialized"};
+  const auto authenticated=owner.AuthenticateAssemblyView(token,view);
+  if (authenticated.status!=NodalStatus::Ok)
+    return {authenticated.status==NodalStatus::DeviceFailure?S::NodalFailure:S::StaleTrial,
+        authenticated.message,authenticated.status};
+  const auto& state=*impl_;
+  if (state.physical->owner!=&owner ||
+      !state.SamePhysicalScope(owner.accepted()))
+    return {S::NotJoined,"Physical assembly owner or complete publication scope differs"};
+  const auto exact=[&](const auto& participant) noexcept {
+    return participant.usable && participant.bound &&
+        participant.publication_scope==this &&
+        participant.assembled_epoch==view.accepted.base_epoch &&
+        participant.assembled_attempt==view.attempt &&
+        participant.stream==view.stream;
+  };
+  if ((state.qbatch&&(!state.qbatch->impl_||!exact(*state.qbatch->impl_))) ||
+      (state.tbatch&&(!state.tbatch->impl_||!exact(*state.tbatch->impl_))) ||
+      (state.bbatch&&(!state.bbatch->impl_||!exact(*state.bbatch->impl_))) ||
+      (state.connector&&(!state.connector->impl_||!exact(*state.connector->impl_))) ||
+      (state.physical->beams&&
+       (!state.physical->beams->impl_||!exact(*state.physical->beams->impl_))) ||
+      (state.physical->solids&&
+       (!state.physical->solids->impl_||!exact(*state.physical->solids->impl_))) ||
+      (state.physical->joints&&
+       (!state.physical->joints->impl_||!exact(*state.physical->joints->impl_))) ||
+      (state.physical->structural_beams&&
+       (!state.physical->structural_beams->impl_||
+        !exact(*state.physical->structural_beams->impl_))))
+    return {S::StaleTrial,
+        "Every actual physical participant must assemble this exact accepted attempt"};
+  return Ok();
+}
+ShellPublicationReport ShellBatchPublication::ValidatePhysicalCandidate(
+    FENodalState& owner,const NodalTrialToken& token,
+    const ShellPhysicalDiagnostics& expected,
+    const NodalPreparedView& retained) noexcept {
+  if (!impl_ || !impl_->physical)
+    return {S::NotInitialized,"Physical publication is not initialized"};
+  auto& state=*impl_;
+  if (!state.pending ||
+      !SamePhysicalDiagnostics(expected,state.physical->candidate))
+    return {S::StaleTrial,
+        "Physical diagnostics are not the exact prepared publication candidate"};
+  NodalPreparedView authentic;
+  const auto checked=state.PreflightPhysical(
+      owner,token,Candidates(expected),authentic);
+  if (checked.status!=S::Success) return checked;
+  if (!trial_identity::SamePrepared(retained,authentic) ||
+      !trial_identity::SamePrepared(retained,state.candidate_view))
+    return {S::StaleTrial,
+        "Prepared view differs from the exact physical publication candidate"};
+  return Ok();
+}
 bool ShellBatchPublication::PhysicalOutputDisjoint(const void* output,std::size_t bytes) const noexcept {
   return impl_ && impl_->physical && impl_->PhysicalOutputDisjoint(output,bytes);
 }

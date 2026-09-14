@@ -205,6 +205,53 @@ cc_library(
 )
 
 filegroup(
+    name = "self_contact_physical_activity_source_proof",
+    srcs = [
+        "BUILD.bazel",
+        "SelfContactPhysicalActivity.cmake",
+        "SelfContactPhysicalActivity.h",
+        "SelfContactPhysicalActivityTypes.h",
+        "self_contact_physical_activity/Activity.cpp",
+        "self_contact_physical_activity/Layout.cpp",
+        "self_contact_physical_activity/Storage.h",
+        "self_contact_physical_activity/Values.cpp",
+        "//lib_src/elements:ShellBatchPublication.h",
+        "//lib_src/elements:publication/PhysicalReadback.cpp",
+    ],
+)
+
+cc_library(
+    name = "self_contact_physical_activity_values",
+    srcs = [
+        "self_contact_physical_activity/Layout.cpp",
+        "self_contact_physical_activity/Values.cpp",
+    ],
+    hdrs = [
+        "SelfContactPhysicalActivity.h",
+        "SelfContactPhysicalActivityTypes.h",
+        "self_contact_physical_activity/Storage.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        ":self_contact_active_uses",
+        "//lib_src/assembly:shell_physical_binding",
+        "//lib_src/elements:shell_batch_publication",
+        "//lib_utils:bounded_arena",
+    ],
+)
+
+cc_library(
+    name = "self_contact_physical_activity",
+    srcs = ["self_contact_physical_activity/Activity.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        ":self_contact_physical_activity_values",
+        "//lib_src/elements:shell_batch_publication",
+        "//lib_src/solvers:nodal_trial_identity",
+    ],
+)
+
+filegroup(
     name = "self_contact_transaction_source_proof",
     srcs = [
         "BUILD.bazel",
