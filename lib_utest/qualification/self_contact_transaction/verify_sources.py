@@ -147,6 +147,15 @@ for forbidden in (
 
 arena_path = ROOT / "lib_src/collision/self_contact_transaction/Arena.cpp"
 arena = arena_path.read_text()
+for token in (
+    "CertifiedSweptFacetSlabSeparation(",
+    "ProjectionBounds(",
+    "std::nextafter(",
+    "thickness * norm_l1",
+):
+    require(arena, token, arena_path)
+require(storage, "CertifiedSweptFacetSlabSeparation(", storage_path)
+require(candidate, "sct::CertifiedSweptFacetSlabSeparation(", CANDIDATE)
 for forbidden in ("activity_base", "activity_current"):
     if forbidden in storage or forbidden in arena:
         raise RuntimeError(
@@ -203,6 +212,7 @@ source = (
     ROOT / "lib_src/collision/self_contact_transaction/Source.cpp").read_text()
 values = (
     ROOT / "lib_src/collision/self_contact_transaction/Values.cpp").read_text()
+require(source, "CertifiedSweptFacetSlabSeparation(", storage_path)
 for token in (
     "FixedContactFacetReadCursor facet_reader",
     "facet_reader.Initialize(*facet_binding)",
@@ -273,8 +283,14 @@ require(QUAL_BAZEL.read_text(), "symmetric-edge-area", QUAL_BAZEL)
 for token in (
     "DecisionCount = 262144",
     "ChunkCapacity = 257",
+    "GeometryPairCount = 10240",
     "ExpectedPolicyDigest",
     "ClassifyCandidatePairMotion(",
+    "CertifiedSweptFacetSlabSeparation(",
+    "geometry_baseline",
+    "geometry_optimized",
+    "optimized.exact_discovery_tasks",
+    "optimized.crossing_work",
     "MergeAcceptedEventChunk(",
     "FinalizeAcceptedEventLedger(",
     "summary.digest, ExpectedPolicyDigest",

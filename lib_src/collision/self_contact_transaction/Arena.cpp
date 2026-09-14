@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
 
+#include <algorithm>
+#include <cmath>
+#include <limits>
+
 namespace tlfea::contact::self_contact_transaction {
 namespace {
 
@@ -8,6 +12,123 @@ bool Product(std::size_t a, std::size_t b, std::size_t* output) noexcept {
   if (!output || (a && b > SIZE_MAX / a)) return false;
   *output = a * b;
   return true;
+}
+
+double Down(double value) noexcept {
+  return std::nextafter(
+      value, -std::numeric_limits<double>::infinity());
+}
+
+double Up(double value) noexcept {
+  return std::nextafter(
+      value, std::numeric_limits<double>::infinity());
+}
+
+struct Interval {
+  double lower = 0;
+  double upper = 0;
+};
+
+bool Finite(const CurrentFixedTriangle& triangle) noexcept {
+  for (const auto point : triangle.vertices)
+    if (!IsFinite(point))
+      return false;
+  return true;
+}
+
+bool ProductInterval(double a, double b, Interval* output) noexcept {
+  const double value = a * b;
+  if (!std::isfinite(value))
+    return false;
+  *output = {Down(value), Up(value)};
+  return std::isfinite(output->lower) &&
+      std::isfinite(output->upper);
+}
+
+bool AddInterval(Interval a, Interval b, Interval* output) noexcept {
+  const double lower = Down(a.lower + b.lower);
+  const double upper = Up(a.upper + b.upper);
+  if (!std::isfinite(lower) || !std::isfinite(upper))
+    return false;
+  *output = {lower, upper};
+  return true;
+}
+
+bool DotInterval(Vec3 point, Vec3 axis, Interval* output) noexcept {
+  Interval x, y, z, sum;
+  return ProductInterval(point.x, axis.x, &x) &&
+      ProductInterval(point.y, axis.y, &y) &&
+      ProductInterval(point.z, axis.z, &z) &&
+      AddInterval(x, y, &sum) &&
+      AddInterval(sum, z, output);
+}
+
+bool ProjectionBounds(
+    const CurrentFixedTriangle& base,
+    const CurrentFixedTriangle& current, Vec3 axis,
+    Interval* output) noexcept {
+  bool first = true;
+  Interval next;
+  const CurrentFixedTriangle* endpoints[2]{&base, &current};
+  for (const auto* triangle : endpoints) {
+    for (const auto point : triangle->vertices) {
+      Interval projection;
+      if (!DotInterval(point, axis, &projection))
+        return false;
+      if (first) {
+        next = projection;
+        first = false;
+      } else {
+        next.lower = std::min(next.lower, projection.lower);
+        next.upper = std::max(next.upper, projection.upper);
+      }
+    }
+  }
+  *output = next;
+  return true;
+}
+
+Vec3 FaceAxis(const CurrentFixedTriangle& triangle) noexcept {
+  const Vec3 first{
+      triangle.vertices[1].x - triangle.vertices[0].x,
+      triangle.vertices[1].y - triangle.vertices[0].y,
+      triangle.vertices[1].z - triangle.vertices[0].z};
+  const Vec3 second{
+      triangle.vertices[2].x - triangle.vertices[0].x,
+      triangle.vertices[2].y - triangle.vertices[0].y,
+      triangle.vertices[2].z - triangle.vertices[0].z};
+  return {
+      first.y * second.z - first.z * second.y,
+      first.z * second.x - first.x * second.z,
+      first.x * second.y - first.y * second.x};
+}
+
+bool AxisSeparates(
+    const CurrentFixedTriangle& first_base,
+    const CurrentFixedTriangle& first_current,
+    const CurrentFixedTriangle& second_base,
+    const CurrentFixedTriangle& second_current,
+    double thickness, Vec3 axis) noexcept {
+  if (!IsFinite(axis))
+    return false;
+  const double norm_l1 = Up(Up(
+      std::fabs(axis.x) + std::fabs(axis.y)) +
+      std::fabs(axis.z));
+  if (!std::isfinite(norm_l1) || !(norm_l1 > 0))
+    return false;
+  Interval first, second;
+  if (!ProjectionBounds(first_base, first_current, axis, &first) ||
+      !ProjectionBounds(second_base, second_current, axis, &second))
+    return false;
+  const double margin = Up(thickness * norm_l1);
+  if (!std::isfinite(margin))
+    return false;
+  const double first_limit = Up(first.upper + margin);
+  const double second_limit = Up(second.upper + margin);
+  return (std::isfinite(first_limit) &&
+          first_limit < second.lower) ||
+      (std::isfinite(second_limit) &&
+       second_limit < first.lower);
 }
 
 }  // namespace
@@ -35,6 +156,42 @@ PairMotionAction ClassifyCandidatePairMotion(
                      : PairMotionAction::LinearNodalV1;
   return separated ? PairMotionAction::CertifiedRigidArcSeparation
                    : PairMotionAction::UnsupportedRigidArc;
+}
+
+bool CertifiedSweptFacetSlabSeparation(
+    const CurrentFixedTriangle& first_base,
+    const CurrentFixedTriangle& first_current, double first_thickness,
+    const CurrentFixedTriangle& second_base,
+    const CurrentFixedTriangle& second_current, double second_thickness,
+    bool* valid) noexcept {
+  if (!valid)
+    return false;
+  *valid = std::isfinite(first_thickness) && first_thickness > 0 &&
+      std::isfinite(second_thickness) && second_thickness > 0 &&
+      Finite(first_base) && Finite(first_current) &&
+      Finite(second_base) && Finite(second_current);
+  if (!*valid)
+    return false;
+  const double thickness = Up(first_thickness + second_thickness);
+  if (!std::isfinite(thickness)) {
+    *valid = false;
+    return false;
+  }
+  // For LinearNodalV1, every vertex projection lies in the hull of its two
+  // endpoint projections.  The intervals enclose all rounded dot operations,
+  // and thickness*|axis|_1 overbounds the Euclidean normal inflation.  Thus a
+  // strict interval gap on any represented endpoint face axis is a
+  // separation-only certificate for the complete swept pair.  Equality,
+  // including coordinate-AABB touching, is deliberately not rejected.
+  const Vec3 axes[4]{
+      FaceAxis(first_base), FaceAxis(first_current),
+      FaceAxis(second_base), FaceAxis(second_current)};
+  for (const auto axis : axes)
+    if (AxisSeparates(
+            first_base, first_current, second_base, second_current,
+            thickness, axis))
+      return true;
+  return false;
 }
 
 bool MakeLayout(std::size_t nodes, std::size_t surface_parents,

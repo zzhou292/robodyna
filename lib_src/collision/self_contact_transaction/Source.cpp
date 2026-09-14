@@ -798,6 +798,17 @@ SelfContactTransactionReport FilterAcceptedFacetPairs(
       return Failure(S::IdentityMismatch,
           "Accepted facet bound or thickness is invalid",
           SIZE_MAX, pair);
+    if (CertifiedSweptFacetSlabSeparation(
+            triangles[value.first], triangles[value.first],
+            parents[first_parent].reference_half_thickness_m,
+            triangles[value.second], triangles[value.second],
+            parents[second_parent].reference_half_thickness_m,
+            &valid))
+      continue;
+    if (!valid)
+      return Failure(S::IdentityMismatch,
+          "Accepted facet slab certificate input is invalid",
+          SIZE_MAX, pair);
     pairs[write++] = value;
   }
   *pair_count = write;

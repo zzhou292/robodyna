@@ -621,11 +621,38 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
       const auto key = PairKey(
           PathKey(state.buffers.prepared_triangles[value.first].key),
           PathKey(state.buffers.prepared_triangles[value.second].key));
-      const auto action = sct::ClassifyCandidatePairMotion(
+      auto action = sct::ClassifyCandidatePairMotion(
           state.buffers.facet_motion[value.first],
           state.buffers.swept_facet_bounds[value.first],
           state.buffers.facet_motion[value.second],
           state.buffers.swept_facet_bounds[value.second]);
+      if (action == sct::PairMotionAction::LinearNodalV1) {
+        const auto first_parent =
+            state.buffers.facet_motion[value.first].parent;
+        const auto second_parent =
+            state.buffers.facet_motion[value.second].parent;
+        if (first_parent >= parents.size() ||
+            second_parent >= parents.size())
+          return state.Fail(Failure(
+              S::IdentityMismatch,
+              "Candidate facet slab has no active parent",
+              SIZE_MAX, state.candidate_facet_pair_count + pair));
+        bool valid = false;
+        if (sct::CertifiedSweptFacetSlabSeparation(
+                state.buffers.accepted_triangles[value.first],
+                state.buffers.prepared_triangles[value.first],
+                parents[first_parent].reference_half_thickness_m,
+                state.buffers.accepted_triangles[value.second],
+                state.buffers.prepared_triangles[value.second],
+                parents[second_parent].reference_half_thickness_m,
+                &valid))
+          action = sct::PairMotionAction::CertifiedLinearSeparation;
+        if (!valid)
+          return state.Fail(Failure(
+              S::IdentityMismatch,
+              "Candidate facet slab certificate input is invalid",
+              SIZE_MAX, state.candidate_facet_pair_count + pair));
+      }
       state.buffers.chunk_raw_canonical_pairs[pair] = key;
       state.buffers.chunk_motion_actions[pair] = action;
       if (pair && sct::Compare(

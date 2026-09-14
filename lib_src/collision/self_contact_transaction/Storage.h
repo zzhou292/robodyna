@@ -44,6 +44,12 @@ enum class PairMotionAction : std::uint8_t {
 PairMotionAction ClassifyCandidatePairMotion(
     const MotionSupport&, const SelfContactSweptParentBounds&,
     const MotionSupport&, const SelfContactSweptParentBounds&) noexcept;
+bool CertifiedSweptFacetSlabSeparation(
+    const CurrentFixedTriangle& first_base,
+    const CurrentFixedTriangle& first_current, double first_thickness,
+    const CurrentFixedTriangle& second_base,
+    const CurrentFixedTriangle& second_current, double second_thickness,
+    bool* valid) noexcept;
 
 struct FacetPairCursor {
   std::uint32_t first_begin = 0;

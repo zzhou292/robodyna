@@ -7,6 +7,7 @@ find_package(CUDAToolkit REQUIRED)
 get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
 
 include("${TL_ROOT}/lib_src/collision/FixedTriangleFeatureDiscovery.cmake")
+include("${TL_ROOT}/lib_src/collision/RepresentedIntervalCrossing.cmake")
 add_executable(self_contact_transaction_values
   ValueTest.cpp
   "${TL_ROOT}/lib_src/collision/self_contact_transaction/Values.cpp"
@@ -30,7 +31,8 @@ add_executable(self_contact_transaction_medium_coupon
 target_include_directories(self_contact_transaction_medium_coupon PRIVATE
   "${TL_ROOT}" "${CUDAToolkit_INCLUDE_DIRS}" "/usr/include/eigen3")
 target_link_libraries(self_contact_transaction_medium_coupon PRIVATE
-  tl_fixed_triangle_feature_discovery GTest::gtest_main)
+  tl_fixed_triangle_feature_discovery
+  tl_represented_interval_crossing GTest::gtest_main)
 target_compile_features(
   self_contact_transaction_medium_coupon PRIVATE cxx_std_17)
 target_compile_options(self_contact_transaction_medium_coupon PRIVATE
