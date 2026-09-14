@@ -139,6 +139,21 @@ def main() -> None:
             "const auto expired = accepted" in transaction_cuda and
             "forged.t3.attempt" in transaction_cuda,
             "missing/stale/late transaction rollback controls are absent")
+    active_area = (
+        args.tl_root / "lib_utest" / "qualification" /
+        "self_contact_active_uses" / "AreaTest.cpp").read_text()
+    active_classification = (
+        args.tl_root / "lib_utest" / "qualification" /
+        "self_contact_active_uses" / "ClassificationTest.cpp").read_text()
+    for control in [
+            "EdgePointAreaInterpolatesExactlySymmetricallyAndConverges",
+            "SymmetricDirectedVertexAndEdgePointDualReferenceV2"]:
+        require(control in active_area,
+                f"synthetic active-use mechanics coupon is missing {control}")
+    require("StandaloneEeAreaRequiresAuthenticatedClosestPointCase" in
+            active_classification and
+            "BoundaryVertexEdgeMinimum" in active_classification,
+            "synthetic strict/boundary active-use policy proof is absent")
 
     error = (contact / "SelfContactStageError.h").read_text()
     require("SelfContactTransactionReport report_" in error and
@@ -177,6 +192,32 @@ def main() -> None:
             'LABELS "acceptance-v5;' in fixture_cmake and
             "RuntimeGateTest.cpp" in fixture_cmake,
             "runtime gates need source proof and finite serialized properties")
+    real_geometry = (
+        case / "vehicle_startup" / "shell_execution" / "tests" /
+        "self_contact" / "RealGeometryTest.cpp").read_text()
+    for token in [
+            "2100084", "2279821", "2288735",
+            "FixedContactFacet", "FixedTriangleFeatureDiscovery",
+            "StrictInteriorInteriorMinimum",
+            "BoundaryVertexEdgeMinimum",
+            "AdjacentFacetSeamsCanonicalizeWithoutDroppingParentLocalOwners",
+            "c82f1886b8935d69ff7db4c29c700370e3a057579fab80d02664a253bc7af1c8",
+            "a96bc12b9c8467253da0898565c7875ad80f58f963b45d1dc405f5dddab76b1d"]:
+        require(token in real_geometry,
+                f"authenticated real-geometry coupon is missing {token}")
+    require("VehiclePhysicalDynamics" not in real_geometry and
+            ".78927" not in real_geometry and
+            ".340809" not in real_geometry and
+            ".679739" not in real_geometry,
+            "real geometry coupon must not load dynamics or copy diagnostic parameters")
+    real_cmake = (contact / "CMakeLists.txt").read_text()
+    require("vehicle_self_contact_real_geometry_coupon" in real_cmake and
+            '"RealYarisSelfContactGeometry.*"' in real_cmake and
+            "RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30" in real_cmake and
+            'LABELS "coupon;real-geometry"' in real_cmake and
+            "FixedTriangleFeatureDiscovery.cmake" in real_cmake and
+            "ROBO_DYNA_VEHICLE_SELF_CONTACT_REAL_GEOMETRY" in real_cmake,
+            "bounded authenticated real-geometry CTest registration is absent")
     acceptance_guard = fixture_cmake.find(
         "if(ROBO_DYNA_ENABLE_V5_SELF_CONTACT_ACCEPTANCE)")
     self_loop = fixture_cmake.find(

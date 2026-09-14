@@ -93,3 +93,46 @@ miniature V5. Actual small runtime mechanics are qualified by TL's
 parents/facets and covers mixed separated/contact decisions, VF, boundary
 vertex-edge, strict EE, same-body exclusion, force/STI, and candidate
 rollback/retry without loading canonical V5 data.
+
+The `vehicle_self_contact_real_geometry_coupon` is a separate bounded host
+bridge between those tiers. The existing authenticated source wrapper checks
+and extracts the pinned original member, and the existing `CanonicalSource`
+and `VehicleSourcePlan` readers authenticate the complete source authority.
+The focused fixture extracts only the three blocker parents and their
+edge-incident neighborhood from that backing. Coordinates, source node IDs,
+PID/MID/SID and section thickness are source-derived; diagnostic coordinates
+or edge parameters are not copied into the test.
+
+The small function sends EID/facets `2100084:0` versus `2279821:1` and
+`2100084:0` versus `2288735:0` through typed `FixedContactFacet` evaluation and
+`FixedTriangleFeatureDiscovery`. It checks the source-derived distance against
+an independent long-double segment oracle, including the published
+representation-error allowance, and distinguishes strict interior EE from
+boundary vertex-edge EE. Same-PID disconnected parents remain discoverable.
+The medium function adds only facets incident on the four discovered canonical
+edges. It checks deterministic seam deduplication while retaining a separate
+positive parent-local area owner for each source EID.
+
+This coupon deliberately does not construct `VehiclePhysicalDynamics`.
+Complete area/force/STI policy remains in TL's synthetic physical
+`self_contact_active_uses` and `self_contact_transaction_cuda` coupons; the
+source proof binds those policy tests to this real source-ID/hash extraction.
+Build and run the real bridge independently of shell execution and physical
+dynamics with:
+
+```sh
+cmake -S case/vehicle_self_contact -B <build> \
+  -DChrono_DIR=<chrono-package> -DROBO_DYNA_TL_ROOT=<tl-source> \
+  -DROBO_DYNA_VEHICLE_SELF_CONTACT_REAL_GEOMETRY=ON \
+  -DROBO_DYNA_VEHICLE_CANONICAL=<canonical-directory> \
+  -DROBO_DYNA_VEHICLE_SCOPE=<scope-report> \
+  -DROBO_DYNA_VEHICLE_DECLARATIONS=<declaration-report>
+cmake --build <build> --target \
+  robo_dyna_vehicle_self_contact_real_geometry_check -j1
+ctest --test-dir <build> -L real-geometry \
+  --output-on-failure -j1
+```
+
+It is labelled `coupon;real-geometry`, has a 30-second timeout, and leaves the
+full `acceptance-v5` suite opt-in. It does not enable original contact settings
+and has no `IGNORE=1` route.
