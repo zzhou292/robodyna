@@ -507,6 +507,9 @@ TEST(SelfContactTransactionCuda,
       fixture.rig.owner, token, assembly, &accepted)));
   EXPECT_EQ(accepted.broadphase_pairs(), 0u);
   EXPECT_EQ(accepted.facet_pairs(), 0u);
+  EXPECT_EQ(accepted.potential_tasks(), 0u);
+  EXPECT_EQ(accepted.local_masked_tasks(), 0u);
+  EXPECT_EQ(accepted.exact_executed_tasks(), 0u);
   EXPECT_EQ(accepted.diagnostics().event_count, 0u);
 
   fe::NodalPreparedView prepared;
@@ -517,6 +520,9 @@ TEST(SelfContactTransactionCuda,
       fixture.rig.owner, token, common, prepared, accepted, &receipt)));
   EXPECT_EQ(receipt.broadphase_pairs(), 0u);
   EXPECT_EQ(receipt.facet_pairs(), 0u);
+  EXPECT_EQ(receipt.potential_tasks(), 0u);
+  EXPECT_EQ(receipt.local_masked_tasks(), 0u);
+  EXPECT_EQ(receipt.exact_executed_tasks(), 0u);
   EXPECT_EQ(receipt.policy_outcomes(), 0u);
   const auto policy = fixture.transaction.policy_outcomes();
   EXPECT_TRUE(policy.complete);
@@ -574,6 +580,9 @@ TEST(SelfContactTransactionCuda,
         fixture.rig.owner, token, assembly, &accepted)));
     EXPECT_GT(accepted.broadphase_pairs(), 0u);
     EXPECT_GT(accepted.facet_pairs(), 0u);
+    EXPECT_EQ(accepted.potential_tasks(),
+              accepted.local_masked_tasks() +
+                  accepted.exact_executed_tasks());
     EXPECT_GT(accepted.diagnostics().event_count, 0u);
     EXPECT_GT(accepted.diagnostics().vertex_face_event_count,0u);
     EXPECT_GT(
@@ -629,6 +638,9 @@ TEST(SelfContactTransactionCuda,
     ASSERT_TRUE(Good(fixture.transaction.SealCandidate(
         fixture.rig.owner, token, common, prepared, accepted, &receipt)));
     ASSERT_TRUE(receipt.valid());
+    EXPECT_EQ(receipt.potential_tasks(),
+              receipt.local_masked_tasks() +
+                  receipt.exact_executed_tasks());
     const auto& policy = receipt.policy_summary();
     EXPECT_TRUE(policy.complete);
     EXPECT_GT(policy.motion_certified_linear_separated,0u);

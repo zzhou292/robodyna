@@ -8,6 +8,7 @@ namespace tlfea::contact::fixed_triangle_features {
 struct PairFeatureResult {
   std::size_t feature_tasks = 0;
   std::size_t feature_count = 0;
+  std::size_t input_task = SIZE_MAX;
   FixedTriangleArithmeticReason arithmetic_reason =
       FixedTriangleArithmeticReason::None;
 };
@@ -35,9 +36,19 @@ FixedTriangleDiscoveryStatus ValidateTriangle(
 std::size_t CountPairFeatureCandidates(
     const CurrentFixedTriangle& first,
     const CurrentFixedTriangle& second) noexcept;
+FixedTriangleFeatureTaskMask PairLocalFeatureTaskMask(
+    const CurrentFixedTriangle& first,
+    const CurrentFixedTriangle& second) noexcept;
 FixedTriangleDiscoveryStatus EvaluatePairFeaturesOnce(
     const CurrentFixedTriangle& first,
     const CurrentFixedTriangle& second,
+    FixedTriangleFeatureCandidate* output,
+    std::size_t output_capacity,
+    PairFeatureResult* result) noexcept;
+FixedTriangleDiscoveryStatus EvaluatePairFeaturesMaskedOnce(
+    const CurrentFixedTriangle& first,
+    const CurrentFixedTriangle& second,
+    FixedTriangleFeatureTaskMask mask,
     FixedTriangleFeatureCandidate* output,
     std::size_t output_capacity,
     PairFeatureResult* result) noexcept;

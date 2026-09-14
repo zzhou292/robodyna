@@ -13,6 +13,7 @@ add_library(tl_self_contact_transaction STATIC
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/Layout.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/Values.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/Streaming.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/TaskMask.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/Source.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/Transaction.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/Candidate.cpp")

@@ -401,6 +401,18 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
       assembly.owner_id_ == state.owner_id &&
       assembly.base_epoch_ == state.base_epoch &&
       assembly.attempt_ == state.attempt &&
+      assembly.broadphase_pairs_ ==
+          state.accepted_broadphase_pair_count &&
+      assembly.facet_pairs_ ==
+          state.accepted_facet_pair_count &&
+      assembly.discovered_features_ ==
+          state.accepted_feature_observation_count &&
+      assembly.potential_tasks_ ==
+          state.accepted_potential_task_count &&
+      assembly.local_masked_tasks_ ==
+          state.accepted_local_masked_task_count &&
+      assembly.exact_executed_tasks_ ==
+          state.accepted_exact_executed_task_count &&
       force_diagnostics.owner_id == state.owner_id &&
       force_diagnostics.base_epoch == state.base_epoch &&
       force_diagnostics.attempt == state.attempt &&
@@ -605,6 +617,9 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
   SelfContactCandidatePolicySummary summary;
   std::size_t policy_outcomes = 0;
   std::size_t crossing_work = 0;
+  std::size_t potential_tasks = 0;
+  std::size_t local_masked_tasks = 0;
+  std::size_t exact_executed_tasks = 0;
   bool retain_detailed = true;
   for (;;) {
     const FixedTrianglePair* pairs = nullptr;
@@ -715,13 +730,26 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
       state.buffers.chunk_canonical_pairs[pair_count] = key;
       ++pair_count;
     }
+    if (pair_count >
+        SIZE_MAX - summary.exact_crossing_pairs)
+      return state.Fail(Failure(
+          S::ResourceLimit,
+          "Candidate exact crossing pair count overflowed"));
     summary.exact_crossing_pairs += pair_count;
 
     std::size_t validated_count = 0;
     if (pair_count) {
-      const auto discovery = state.candidate_discovery.Discover(
+      auto masked = sct::BuildLocalFeatureTaskMasks(
+          state.buffers.facet_descriptors, triangles,
+          state.buffers.facet_pair_chunk, pair_count,
+          state.buffers.chunk_feature_task_masks,
+          state.storage_forecast.feature_task_mask_capacity);
+      if (masked.status != S::Ok)
+        return state.Fail(masked);
+      const auto discovery = state.candidate_discovery.DiscoverMasked(
           state.buffers.prepared_triangles, triangles,
-          state.buffers.facet_pair_chunk, pair_count);
+          state.buffers.facet_pair_chunk, pair_count,
+          state.buffers.chunk_feature_task_masks);
       if (discovery.status != FixedTriangleDiscoveryStatus::Ok) {
         auto report = Failure(
             S::DiscoveryFailure, discovery.message,
@@ -731,6 +759,18 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
         report.discovery_reason = discovery.arithmetic_reason;
         return state.Fail(report);
       }
+      if (discovery.potential_tasks >
+              SIZE_MAX - potential_tasks ||
+          discovery.local_masked_tasks >
+              SIZE_MAX - local_masked_tasks ||
+          discovery.exact_executed_tasks >
+              SIZE_MAX - exact_executed_tasks)
+        return state.Fail(Failure(
+            S::ResourceLimit,
+            "Candidate feature task diagnostics overflowed"));
+      potential_tasks += discovery.potential_tasks;
+      local_masked_tasks += discovery.local_masked_tasks;
+      exact_executed_tasks += discovery.exact_executed_tasks;
       auto edge_policy = sct::ValidateCandidateEdgePolicy(
           state.active_use, state.regularity, regularity_receipt,
           state.candidate_discovery.features(),
@@ -901,9 +941,14 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
       summary.exact_crossing_pairs !=
           summary.outcomes -
               summary.motion_certified_linear_separated -
-              summary.motion_excluded_same_rigid_group)
+              summary.motion_excluded_same_rigid_group ||
+      summary.exact_crossing_pairs > SIZE_MAX / 15 ||
+      potential_tasks != 15 * summary.exact_crossing_pairs ||
+      local_masked_tasks > potential_tasks ||
+      exact_executed_tasks !=
+          potential_tasks - local_masked_tasks)
     return state.Fail(Failure(S::IdentityMismatch,
-        "Candidate motion filter lacks complete work accounting"));
+        "Candidate motion/local-task filter lacks complete work accounting"));
   summary.exact_crossing_work = crossing_work;
   summary.complete = true;
   summary.detailed_publication =
@@ -942,6 +987,9 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
   next.broadphase_pairs_ =
       state.candidate_broadphase_pair_count;
   next.facet_pairs_ = state.candidate_facet_pair_count;
+  next.potential_tasks_ = potential_tasks;
+  next.local_masked_tasks_ = local_masked_tasks;
+  next.exact_executed_tasks_ = exact_executed_tasks;
   next.policy_outcomes_ = state.policy_summary.outcomes;
   next.policy_summary_ = state.policy_summary;
   next.active_parents_ =

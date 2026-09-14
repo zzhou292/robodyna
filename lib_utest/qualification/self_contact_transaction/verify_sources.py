@@ -8,6 +8,7 @@ TYPES = ROOT / "lib_src/collision/SelfContactTransactionTypes.h"
 CANDIDATE = ROOT / "lib_src/collision/self_contact_transaction/Candidate.cpp"
 TRANSACTION = ROOT / "lib_src/collision/self_contact_transaction/Transaction.cpp"
 STREAMING = ROOT / "lib_src/collision/self_contact_transaction/Streaming.cpp"
+TASK_MASK = ROOT / "lib_src/collision/self_contact_transaction/TaskMask.cpp"
 BROADPHASE = ROOT / "lib_src/collision/SelfContactBroadphase.cpp"
 BROADPHASE_TYPES = ROOT / "lib_src/collision/SelfContactBroadphaseTypes.h"
 CMAKE = ROOT / "lib_src/collision/SelfContactTransaction.cmake"
@@ -32,6 +33,7 @@ header = HEADER.read_text()
 types = TYPES.read_text()
 candidate = CANDIDATE.read_text()
 transaction = TRANSACTION.read_text()
+task_mask = TASK_MASK.read_text()
 layout_path = ROOT / "lib_src/collision/self_contact_transaction/Layout.cpp"
 layout = layout_path.read_text()
 for token in (
@@ -46,6 +48,8 @@ for token in (
     "candidate_source.Finish(",
     "MergeAcceptedEventChunk(",
     "FinalizeAcceptedEventLedger(",
+    "BuildLocalFeatureTaskMasks(",
+    "accepted_discovery.DiscoverMasked(",
 ):
     require(transaction, token, TRANSACTION)
 require(candidate, "state.force.Authenticates(assembly.force_)", CANDIDATE)
@@ -104,6 +108,7 @@ for token in ("SelfContactForceAssembly force",
 for token in ("accepted_rigid_groups", "prepared_rigid_groups",
               "node_rigid_groups", "parent_motion", "facet_motion",
               "chunk_crossings", "chunk_motion_actions",
+              "chunk_feature_task_masks",
               "swept_parent_bounds",
               "swept_facet_bounds"):
     require(storage, token, storage_path)
@@ -143,6 +148,11 @@ for token in (
     "vertex_vertex_axis_separated",
     "exact_crossing_pairs",
     "exact_crossing_work",
+    "feature_task_mask_capacity",
+    "feature_task_mask_bytes",
+    "potential_tasks()",
+    "local_masked_tasks()",
+    "exact_executed_tasks()",
 ):
     require(types, token, TYPES)
 for forbidden in (
@@ -215,6 +225,8 @@ for token in (
     "CopyPrepared",
     "state.regularity.Certify",
     "state.candidate_discovery.Discover",
+    "state.candidate_discovery.DiscoverMasked",
+    "BuildLocalFeatureTaskMasks(",
     "state.crossing.Certify",
     "state.broadphase.Evaluate",
     "ValidateCandidatePublications",
@@ -248,6 +260,7 @@ for path in (
     CANDIDATE,
     TRANSACTION,
     STREAMING,
+    TASK_MASK,
     ROOT / "lib_src/collision/self_contact_transaction/Source.cpp",
 ):
     text = path.read_text()
@@ -262,6 +275,20 @@ source = source_path.read_text()
 values = (
     ROOT / "lib_src/collision/self_contact_transaction/Values.cpp").read_text()
 require(source, "ClassifyAcceptedFacetPair(", source_path)
+for token in (
+    "FixedTriangleVertexFaceTaskSlot(",
+    "FixedTriangleEdgeEdgeTaskSlot(",
+    "EdgesShareEndpoint(",
+    "Validate the complete chunk before publishing any mask",
+):
+    require(task_mask, token, TASK_MASK)
+for forbidden in (
+    "same_pid", "tied", "rigid", "regularity", "coordinate",
+):
+    if forbidden in task_mask.lower():
+        raise RuntimeError(
+            f"{TASK_MASK}: local mask depends on forbidden remote policy {forbidden!r}")
+
 for token in (
     "FixedContactFacetReadCursor facet_reader",
     "facet_reader.Initialize(*facet_binding)",
@@ -307,6 +334,7 @@ for wiring in (CMAKE, BAZEL):
                   "self_contact_transaction/Limits.cpp",
                   "self_contact_transaction/Source.cpp",
                   "self_contact_transaction/Streaming.cpp",
+                  "self_contact_transaction/TaskMask.cpp",
                   "self_contact_transaction/Transaction.cpp",
                   "self_contact_transaction/Values.cpp"):
         require(text, token, wiring)
@@ -332,6 +360,8 @@ require(QUAL_CMAKE.read_text(), "symmetric-edge-area", QUAL_CMAKE)
 require(QUAL_BAZEL.read_text(), "symmetric-edge-area", QUAL_BAZEL)
 require(QUAL_CMAKE.read_text(), "prism-axis-certificate", QUAL_CMAKE)
 require(QUAL_BAZEL.read_text(), "prism-axis-certificate", QUAL_BAZEL)
+require(QUAL_CMAKE.read_text(), "local-feature-task-mask", QUAL_CMAKE)
+require(QUAL_BAZEL.read_text(), "local-feature-task-mask", QUAL_BAZEL)
 for token in (
     "DecisionCount = 262144",
     "ChunkCapacity = 257",
@@ -346,6 +376,9 @@ for token in (
     "geometry_vertex_vertex_axes",
     "vertex_edge_axes.exact_discovery_tasks",
     "vertex_vertex_axes.crossing_work",
+    "geometry_local_mask",
+    "local_mask.local_masked_tasks",
+    "local_mask.feature_events",
     "ClosestFeatureAxesAreIncrementalAndSweepConservative",
     "MergeAcceptedEventChunk(",
     "FinalizeAcceptedEventLedger(",
@@ -396,6 +429,12 @@ for token in (
     "vertex_vertex_axis_separated",
     "exact_crossing_pairs",
     "exact_crossing_work",
+    "accepted.potential_tasks()",
+    "accepted.local_masked_tasks()",
+    "accepted.exact_executed_tasks()",
+    "receipt.potential_tasks()",
+    "receipt.local_masked_tasks()",
+    "receipt.exact_executed_tasks()",
 ):
     require(cuda, token, CUDA)
 

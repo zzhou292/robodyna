@@ -46,6 +46,7 @@ sources = [
     root / "lib_src/collision/self_contact_transaction/Layout.cpp",
     root / "lib_src/collision/self_contact_transaction/Values.cpp",
     root / "lib_src/collision/self_contact_transaction/Streaming.cpp",
+    root / "lib_src/collision/self_contact_transaction/TaskMask.cpp",
     root / "lib_src/collision/self_contact_transaction/Source.cpp",
     root / "lib_src/collision/self_contact_transaction/Transaction.cpp",
     root / "lib_src/collision/self_contact_transaction/Candidate.cpp",

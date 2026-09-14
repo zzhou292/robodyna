@@ -108,6 +108,7 @@ struct Layout {
   tl::util::ArenaRegion facet_pair_cursors;
   tl::util::ArenaRegion facet_pair_heap;
   tl::util::ArenaRegion facet_pair_chunk;
+  tl::util::ArenaRegion chunk_feature_task_masks;
   tl::util::ArenaRegion chunk_paths;
   tl::util::ArenaRegion chunk_represented_pairs;
   tl::util::ArenaRegion chunk_canonical_pairs;
@@ -149,6 +150,7 @@ struct Buffers {
   FacetPairCursor* facet_pair_cursors = nullptr;
   std::uint32_t* facet_pair_heap = nullptr;
   FixedTrianglePair* facet_pair_chunk = nullptr;
+  FixedTriangleFeatureTaskMask* chunk_feature_task_masks = nullptr;
   RepresentedTrianglePath* chunk_paths = nullptr;
   RepresentedTrianglePair* chunk_represented_pairs = nullptr;
   RepresentedIntervalPairKey* chunk_canonical_pairs = nullptr;
@@ -266,6 +268,10 @@ SelfContactTransactionReport FilterAcceptedFacetPairs(
     const CurrentFixedTriangle*, const MotionSupport*,
     std::size_t facets,
     FixedTrianglePair*, std::size_t* pair_count) noexcept;
+SelfContactTransactionReport BuildLocalFeatureTaskMasks(
+    const FixedContactFacet*, std::size_t facets,
+    const FixedTrianglePair*, std::size_t pair_count,
+    FixedTriangleFeatureTaskMask*, std::size_t mask_capacity) noexcept;
 SelfContactTransactionReport EvaluateCompleteTriangles(
     const FixedContactFacet*, std::size_t, VectorView,
     CurrentFixedTriangle*) noexcept;
@@ -354,6 +360,9 @@ struct SelfContactTransaction::Impl {
   std::size_t candidate_facet_pair_count = 0;
   std::size_t accepted_event_count = 0;
   std::size_t accepted_feature_observation_count = 0;
+  std::size_t accepted_potential_task_count = 0;
+  std::size_t accepted_local_masked_task_count = 0;
+  std::size_t accepted_exact_executed_task_count = 0;
   std::size_t policy_outcome_count = 0;
   SelfContactCandidatePolicySummary policy_summary;
   bool policy_complete = false;

@@ -116,6 +116,24 @@ c::FixedContactFacet Facet(std::uint64_t eid,
   return result;
 }
 
+c::FixedContactFacet TopologyFacet(
+    std::uint64_t eid, unsigned local,
+    std::array<std::uint64_t, 3> vertices) {
+  auto result = Facet(eid, local);
+  for (unsigned i = 0; i < 3; ++i)
+    result.vertex_keys[i] = Vertex(vertices[i]);
+  for (unsigned i = 0; i < 3; ++i) {
+    auto a = result.vertex_keys[i];
+    auto b = result.vertex_keys[(i + 1) % 3];
+    if (c::fixed_triangle_features::Compare(b, a) < 0)
+      std::swap(a, b);
+    result.edge_keys[i].parent_boundary = true;
+    result.edge_keys[i].endpoints[0] = a;
+    result.edge_keys[i].endpoints[1] = b;
+  }
+  return result;
+}
+
 sct::AcceptedEventCertificate Certificate(
     std::uint64_t vertex) {
   sct::AcceptedEventCertificate result;
@@ -277,6 +295,9 @@ TEST(SelfContactTransactionValues,
       15, 4, 4, 8, 2, 6, 3, 7, 8, 16, 6,
       SIZE_MAX, layout));
   ASSERT_GT(layout.bytes, 0u);
+  EXPECT_EQ(layout.chunk_feature_task_masks.count, 3u);
+  EXPECT_EQ(layout.chunk_feature_task_masks.bytes,
+            3 * sizeof(c::FixedTriangleFeatureTaskMask));
   const auto exact = layout.bytes;
   sct::Layout unchanged = layout;
   EXPECT_FALSE(sct::MakeLayout(
@@ -287,6 +308,46 @@ TEST(SelfContactTransactionValues,
       15, 4, 4, 8, 2, 6, 3, 7, 8, 16, 6,
       exact, layout));
   EXPECT_EQ(layout.bytes, exact);
+}
+
+TEST(SelfContactTransactionValues,
+     AuthenticatedLocalTaskMasksAreCanonicalAndCapacityAtomic) {
+  const c::FixedContactFacet facets[]{
+      TopologyFacet(100, 0, {1, 2, 3}),
+      TopologyFacet(200, 0, {12, 13, 1}),
+      TopologyFacet(100, 1, {21, 22, 23})};
+  const c::FixedTrianglePair pairs[]{{1, 0}, {0, 2}};
+  std::array<c::FixedTriangleFeatureTaskMask, 2> masks{{
+      {0x1234u}, {0x5678u}}};
+
+  auto report = sct::BuildLocalFeatureTaskMasks(
+      facets, std::size(facets), pairs, std::size(pairs),
+      masks.data(), masks.size() - 1);
+  EXPECT_EQ(report.status, c::SelfContactTransactionStatus::ResourceLimit);
+  EXPECT_EQ(masks[0].local_tasks, 0x1234u);
+  EXPECT_EQ(masks[1].local_tasks, 0x5678u);
+
+  report = sct::BuildLocalFeatureTaskMasks(
+      facets, std::size(facets), pairs, std::size(pairs),
+      masks.data(), masks.size());
+  ASSERT_EQ(report.status, c::SelfContactTransactionStatus::Ok);
+  const std::uint16_t shared_vertex =
+      c::FixedTriangleFeatureTaskBit(0) |
+      c::FixedTriangleFeatureTaskBit(5) |
+      c::FixedTriangleFeatureTaskBit(7) |
+      c::FixedTriangleFeatureTaskBit(8) |
+      c::FixedTriangleFeatureTaskBit(13) |
+      c::FixedTriangleFeatureTaskBit(14);
+  EXPECT_EQ(masks[0].local_tasks, shared_vertex);
+  // Same source parent alone is not local incidence.
+  EXPECT_EQ(masks[1].local_tasks, 0u);
+
+  const c::FixedTrianglePair reversed[]{{0, 1}};
+  c::FixedTriangleFeatureTaskMask orientation;
+  ASSERT_EQ(sct::BuildLocalFeatureTaskMasks(
+      facets, std::size(facets), reversed, 1, &orientation, 1).status,
+      c::SelfContactTransactionStatus::Ok);
+  EXPECT_EQ(orientation.local_tasks, masks[0].local_tasks);
 }
 
 TEST(SelfContactTransactionValues,
@@ -308,6 +369,14 @@ TEST(SelfContactTransactionValues,
             15 * chunk);
   EXPECT_EQ(limits.crossing.max_paths, 2 * chunk);
   EXPECT_EQ(limits.max_policy_outcomes, 0u);
+
+  auto overflow = census;
+  overflow.facet_pairs = SIZE_MAX / 15 + 1;
+  const auto rejected = c::SelfContactTransactionLimits::Vehicle(
+      overflow, chunk, 1, 2, 0, 4095, per_chunk_work,
+      complete_work, 20, 64ull << 30, 8ull << 30,
+      96ull << 30);
+  EXPECT_EQ(rejected.max_host_bytes, 0u);
 
   sct::Layout minimum;
   ASSERT_TRUE(sct::MakeLayout(
@@ -335,6 +404,8 @@ TEST(SelfContactTransactionValues,
             << census.parent_pairs * sizeof(std::uint32_t)
             << " chunk_pair_bytes="
             << chunk * sizeof(c::FixedTrianglePair)
+            << " chunk_task_mask_bytes="
+            << chunk * sizeof(c::FixedTriangleFeatureTaskMask)
             << '\n';
 }
 

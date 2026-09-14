@@ -14,7 +14,8 @@ add_executable(self_contact_transaction_values
   "${TL_ROOT}/lib_src/collision/self_contact_transaction/Values.cpp"
   "${TL_ROOT}/lib_src/collision/self_contact_transaction/Arena.cpp"
   "${TL_ROOT}/lib_src/collision/self_contact_transaction/Limits.cpp"
-  "${TL_ROOT}/lib_src/collision/self_contact_transaction/Streaming.cpp")
+  "${TL_ROOT}/lib_src/collision/self_contact_transaction/Streaming.cpp"
+  "${TL_ROOT}/lib_src/collision/self_contact_transaction/TaskMask.cpp")
 target_include_directories(self_contact_transaction_values PRIVATE
   "${TL_ROOT}" "${CUDAToolkit_INCLUDE_DIRS}" "/usr/include/eigen3")
 target_link_libraries(self_contact_transaction_values PRIVATE
@@ -29,7 +30,8 @@ add_test(NAME self_contact_transaction_values
 add_executable(self_contact_transaction_medium_coupon
   MediumCouponTest.cpp
   "${TL_ROOT}/lib_src/collision/self_contact_transaction/Values.cpp"
-  "${TL_ROOT}/lib_src/collision/self_contact_transaction/Arena.cpp")
+  "${TL_ROOT}/lib_src/collision/self_contact_transaction/Arena.cpp"
+  "${TL_ROOT}/lib_src/collision/self_contact_transaction/TaskMask.cpp")
 target_include_directories(self_contact_transaction_medium_coupon PRIVATE
   "${TL_ROOT}" "${CUDAToolkit_INCLUDE_DIRS}" "/usr/include/eigen3")
 target_link_libraries(self_contact_transaction_medium_coupon PRIVATE
@@ -44,7 +46,7 @@ add_test(NAME self_contact_transaction_medium_coupon
   COMMAND self_contact_transaction_medium_coupon)
 set_tests_properties(self_contact_transaction_medium_coupon PROPERTIES
   RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30
-  LABELS "coupon;m2;self-contact-medium;prism-axis-certificate")
+  LABELS "coupon;m2;self-contact-medium;prism-axis-certificate;local-feature-task-mask")
 
 add_test(NAME self_contact_transaction_source
   COMMAND "${Python3_EXECUTABLE}" -B

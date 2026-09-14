@@ -29,6 +29,13 @@ bool CheckedProduct(std::size_t count, std::size_t width,
   return true;
 }
 
+unsigned Popcount15(std::uint16_t value) noexcept {
+  unsigned result = 0;
+  for (unsigned slot = 0; slot < 15; ++slot)
+    result += (value >> slot) & 1u;
+  return result;
+}
+
 bool Disjoint(const void* a, std::size_t a_bytes, const void* b,
               std::size_t b_bytes) noexcept {
   if (!a || !b)
@@ -294,6 +301,22 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::Initialize(
 FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::Discover(
     const CurrentFixedTriangle* triangles, std::size_t triangle_count,
     const FixedTrianglePair* pairs, std::size_t pair_count) noexcept {
+  return DiscoverImpl(
+      triangles, triangle_count, pairs, pair_count, nullptr, false);
+}
+
+FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::DiscoverMasked(
+    const CurrentFixedTriangle* triangles, std::size_t triangle_count,
+    const FixedTrianglePair* pairs, std::size_t pair_count,
+    const FixedTriangleFeatureTaskMask* masks) noexcept {
+  return DiscoverImpl(
+      triangles, triangle_count, pairs, pair_count, masks, true);
+}
+
+FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::DiscoverImpl(
+    const CurrentFixedTriangle* triangles, std::size_t triangle_count,
+    const FixedTrianglePair* pairs, std::size_t pair_count,
+    const FixedTriangleFeatureTaskMask* masks, bool masked) noexcept {
   FixedTriangleDiscoveryReport report;
   if (!impl_) {
     report.status = FixedTriangleDiscoveryStatus::NotInitialized;
@@ -306,20 +329,29 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::Discover(
     impl_->PublishEmpty();
     return report;
   }
-  if (!triangles || !triangle_count || !pairs) {
+  if (!triangles || !triangle_count || !pairs ||
+      (masked && !masks)) {
     report.status = FixedTriangleDiscoveryStatus::InvalidInput;
     report.message = Message(report.status);
     return report;
   }
   std::size_t triangle_bytes = 0;
   std::size_t pair_bytes = 0;
+  std::size_t mask_bytes = 0;
   if (!CheckedProduct(triangle_count, sizeof(*triangles),
                       &triangle_bytes) ||
       !CheckedProduct(pair_count, sizeof(*pairs), &pair_bytes) ||
+      (masked &&
+       !CheckedProduct(pair_count, sizeof(*masks), &mask_bytes)) ||
       !impl_->InputDisjoint(triangles, triangle_bytes) ||
       !impl_->InputDisjoint(pairs, pair_bytes) ||
+      (masked && !impl_->InputDisjoint(masks, mask_bytes)) ||
       !Disjoint(triangles, triangle_bytes, this, sizeof(*this)) ||
-      !Disjoint(pairs, pair_bytes, this, sizeof(*this))) {
+      !Disjoint(pairs, pair_bytes, this, sizeof(*this)) ||
+      (masked &&
+       (!Disjoint(masks, mask_bytes, this, sizeof(*this)) ||
+        !Disjoint(masks, mask_bytes, triangles, triangle_bytes) ||
+        !Disjoint(masks, mask_bytes, pairs, pair_bytes)))) {
     report.status = FixedTriangleDiscoveryStatus::InvalidInput;
     report.message = "Fixed-triangle input range aliases owned storage";
     return report;
@@ -327,6 +359,11 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::Discover(
   if (pair_count > impl_->limits.max_input_pairs) {
     report.status = FixedTriangleDiscoveryStatus::ResourceLimit;
     report.message = Message(report.status);
+    return report;
+  }
+  if (!CheckedProduct(pair_count, 15, &report.potential_tasks)) {
+    report.status = FixedTriangleDiscoveryStatus::ResourceLimit;
+    report.message = "Fixed-triangle potential task count overflow";
     return report;
   }
   if (!CheckedProduct(pair_count, 2, &report.triangle_references)) {
@@ -465,6 +502,30 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::Discover(
   report.edges = unique_edges;
 
   for (std::size_t i = 0; i < pair_count; ++i) {
+    const auto mask = masked ? masks[i] : FixedTriangleFeatureTaskMask{};
+    const auto unsupported =
+        static_cast<std::uint16_t>(
+            mask.local_tasks & ~FixedTriangleFeatureTaskBits);
+    const auto local = ft::PairLocalFeatureTaskMask(
+        triangles[pairs[i].first], triangles[pairs[i].second]);
+    const auto remote =
+        static_cast<std::uint16_t>(
+            mask.local_tasks & ~local.local_tasks);
+    if (unsupported || remote) {
+      const auto invalid =
+          static_cast<std::uint16_t>(unsupported | remote);
+      report.status = FixedTriangleDiscoveryStatus::InvalidInput;
+      report.input_pair = i;
+      for (unsigned slot = 0; slot < 16; ++slot)
+        if (invalid & static_cast<std::uint16_t>(1u << slot)) {
+          report.input_task = slot;
+          break;
+        }
+      report.message =
+          "Feature task mask omits a nonlocal or nonexistent task";
+      return report;
+    }
+    report.local_masked_tasks += Popcount15(mask.local_tasks);
     const std::size_t count = ft::CountPairFeatureCandidates(
         triangles[pairs[i].first], triangles[pairs[i].second]);
     if (count > std::numeric_limits<std::size_t>::max() -
@@ -498,23 +559,28 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::Discover(
       return report;
     }
     ft::PairFeatureResult pair;
-    status = ft::EvaluatePairFeaturesOnce(
+    const auto mask =
+        masked ? masks[i] : FixedTriangleFeatureTaskMask{};
+    status = ft::EvaluatePairFeaturesMaskedOnce(
         triangles[pairs[i].first], triangles[pairs[i].second],
+        mask,
         impl_->raw_features.get() + feature_write,
         report.raw_feature_candidates - feature_write, &pair);
     report.feature_tasks += pair.feature_tasks;
+    report.exact_executed_tasks += pair.feature_tasks;
     if (status != FixedTriangleDiscoveryStatus::Ok) {
       report.status = status;
       report.input_pair = i;
-      report.input_task =
-          pair.feature_tasks ? pair.feature_tasks - 1 : SIZE_MAX;
+      report.input_task = pair.input_task;
       report.arithmetic_reason = pair.arithmetic_reason;
       report.message = Message(status);
       return report;
     }
     const std::size_t expected = ft::CountPairFeatureCandidates(
         triangles[pairs[i].first], triangles[pairs[i].second]);
-    if (pair.feature_tasks != 15 || pair.feature_count != expected) {
+    if (pair.feature_tasks !=
+            15 - Popcount15(mask.local_tasks) ||
+        pair.feature_count != expected) {
       report.status = FixedTriangleDiscoveryStatus::IdentityMismatch;
       report.input_pair = i;
       report.message = "Fixed-triangle task materialization disagrees";
@@ -534,6 +600,15 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::Discover(
   if (feature_write != report.raw_feature_candidates) {
     report.status = FixedTriangleDiscoveryStatus::IdentityMismatch;
     report.message = "Complete fixed-triangle feature count disagrees";
+    return report;
+  }
+  if (report.local_masked_tasks >
+          report.potential_tasks ||
+      report.exact_executed_tasks !=
+          report.potential_tasks - report.local_masked_tasks ||
+      report.feature_tasks != report.exact_executed_tasks) {
+    report.status = FixedTriangleDiscoveryStatus::IdentityMismatch;
+    report.message = "Fixed-triangle task accounting disagrees";
     return report;
   }
   if (report.raw_intersections >

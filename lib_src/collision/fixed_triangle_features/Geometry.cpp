@@ -626,7 +626,6 @@ FixedTriangleDiscoveryStatus AddVertexFace(
     const CurrentFixedTriangle& canonical_second,
     FixedTriangleFeatureCandidate* output, std::size_t capacity,
     PairFeatureResult* result) noexcept {
-  ++result->feature_tasks;
   const auto canonical_face = CanonicalGeometry(face_triangle);
   TrianglePointGeometry closest;
   const auto status = ClosestPointOnTriangle(
@@ -759,7 +758,6 @@ FixedTriangleDiscoveryStatus AddEdgeEdge(
     const CurrentFixedTriangle& b, unsigned edge_b,
     FixedTriangleFeatureCandidate* output, std::size_t capacity,
     PairFeatureResult* result) noexcept {
-  ++result->feature_tasks;
   const bool a_first =
       Compare(a.edge_keys[edge_a], b.edge_keys[edge_b]) <= 0;
   const auto first_geometry = a_first
@@ -917,12 +915,38 @@ std::size_t CountPairFeatureCandidates(
   return result;
 }
 
-FixedTriangleDiscoveryStatus EvaluatePairFeaturesOnce(
+FixedTriangleFeatureTaskMask PairLocalFeatureTaskMask(
+    const CurrentFixedTriangle& input_a,
+    const CurrentFixedTriangle& input_b) noexcept {
+  const CurrentFixedTriangle* a = &input_a;
+  const CurrentFixedTriangle* b = &input_b;
+  if (Compare(b->key, a->key) < 0)
+    std::swap(a, b);
+  FixedTriangleFeatureTaskMask result;
+  for (unsigned vertex = 0; vertex < 3; ++vertex) {
+    if (VertexInTriangleTopology(a->vertex_keys[vertex], *b))
+      result.local_tasks |= FixedTriangleFeatureTaskBit(
+          FixedTriangleVertexFaceTaskSlot(0, vertex));
+    if (VertexInTriangleTopology(b->vertex_keys[vertex], *a))
+      result.local_tasks |= FixedTriangleFeatureTaskBit(
+          FixedTriangleVertexFaceTaskSlot(1, vertex));
+  }
+  for (unsigned edge_a = 0; edge_a < 3; ++edge_a)
+    for (unsigned edge_b = 0; edge_b < 3; ++edge_b)
+      if (EdgesIncident(a->edge_keys[edge_a], b->edge_keys[edge_b]))
+        result.local_tasks |= FixedTriangleFeatureTaskBit(
+            FixedTriangleEdgeEdgeTaskSlot(edge_a, edge_b));
+  return result;
+}
+
+FixedTriangleDiscoveryStatus EvaluatePairFeaturesMaskedOnce(
     const CurrentFixedTriangle& input_a,
     const CurrentFixedTriangle& input_b,
+    FixedTriangleFeatureTaskMask mask,
     FixedTriangleFeatureCandidate* output, std::size_t output_capacity,
     PairFeatureResult* result) noexcept {
-  if (!result || (output_capacity && !output))
+  if (!result || (output_capacity && !output) ||
+      (mask.local_tasks & ~FixedTriangleFeatureTaskBits))
     return FixedTriangleDiscoveryStatus::InvalidInput;
   *result = {};
   const CurrentFixedTriangle* a = &input_a;
@@ -932,24 +956,54 @@ FixedTriangleDiscoveryStatus EvaluatePairFeaturesOnce(
   FixedTriangleDiscoveryStatus status =
       FixedTriangleDiscoveryStatus::Ok;
   for (unsigned vertex = 0; vertex < 3; ++vertex) {
-    status = AddVertexFace(*a, vertex, *b, true, *a, *b, output,
-                           output_capacity, result);
-    if (status != FixedTriangleDiscoveryStatus::Ok)
-      return status;
-    status = AddVertexFace(*b, vertex, *a, false, *a, *b, output,
-                           output_capacity, result);
-    if (status != FixedTriangleDiscoveryStatus::Ok)
-      return status;
+    const unsigned first_task =
+        FixedTriangleVertexFaceTaskSlot(0, vertex);
+    if (!(mask.local_tasks &
+          FixedTriangleFeatureTaskBit(first_task))) {
+      result->input_task = first_task;
+      ++result->feature_tasks;
+      status = AddVertexFace(*a, vertex, *b, true, *a, *b, output,
+                             output_capacity, result);
+      if (status != FixedTriangleDiscoveryStatus::Ok)
+        return status;
+    }
+    const unsigned second_task =
+        FixedTriangleVertexFaceTaskSlot(1, vertex);
+    if (!(mask.local_tasks &
+          FixedTriangleFeatureTaskBit(second_task))) {
+      result->input_task = second_task;
+      ++result->feature_tasks;
+      status = AddVertexFace(*b, vertex, *a, false, *a, *b, output,
+                             output_capacity, result);
+      if (status != FixedTriangleDiscoveryStatus::Ok)
+        return status;
+    }
   }
   for (unsigned edge_a = 0; edge_a < 3; ++edge_a) {
     for (unsigned edge_b = 0; edge_b < 3; ++edge_b) {
+      const unsigned task =
+          FixedTriangleEdgeEdgeTaskSlot(edge_a, edge_b);
+      if (mask.local_tasks & FixedTriangleFeatureTaskBit(task))
+        continue;
+      result->input_task = task;
+      ++result->feature_tasks;
       status = AddEdgeEdge(*a, edge_a, *b, edge_b, output,
                            output_capacity, result);
       if (status != FixedTriangleDiscoveryStatus::Ok)
         return status;
     }
   }
+  result->input_task = SIZE_MAX;
   return FixedTriangleDiscoveryStatus::Ok;
+}
+
+FixedTriangleDiscoveryStatus EvaluatePairFeaturesOnce(
+    const CurrentFixedTriangle& input_a,
+    const CurrentFixedTriangle& input_b,
+    FixedTriangleFeatureCandidate* output, std::size_t output_capacity,
+    PairFeatureResult* result) noexcept {
+  return EvaluatePairFeaturesMaskedOnce(
+      input_a, input_b, {}, output, output_capacity, result);
 }
 
 FixedTriangleDiscoveryStatus ClassifyPairIntersection(

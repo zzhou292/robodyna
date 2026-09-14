@@ -40,6 +40,7 @@ SelfContactTransactionLimits SelfContactTransactionLimits::Vehicle(
   if (!census.nodes || !census.surface_parents ||
       !census.selected_parents || !census.maximum_family_parents ||
       !census.facets || !facet_pair_chunk ||
+      census.facet_pairs > SIZE_MAX / 15 ||
       !event_ledger_capacity ||
       census.accepted_events > event_ledger_capacity ||
       event_ledger_capacity > UINT32_MAX ||

@@ -46,6 +46,9 @@ void SelfContactTransaction::Impl::DiscardLocal() noexcept {
   candidate_facet_pair_count = 0;
   accepted_event_count = 0;
   accepted_feature_observation_count = 0;
+  accepted_potential_task_count = 0;
+  accepted_local_masked_task_count = 0;
+  accepted_exact_executed_task_count = 0;
   policy_outcome_count = 0;
   policy_summary = {};
   policy_complete = false;
@@ -167,6 +170,8 @@ SelfContactTransactionReport SelfContactTransaction::Initialize(
           layout.facet_pair_heap) ||
       !next->arena.Construct<FixedTrianglePair>(
           layout.facet_pair_chunk) ||
+      !next->arena.Construct<FixedTriangleFeatureTaskMask>(
+          layout.chunk_feature_task_masks) ||
       !next->arena.Construct<RepresentedTrianglePath>(
           layout.chunk_paths) ||
       !next->arena.Construct<RepresentedTrianglePair>(
@@ -433,6 +438,9 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
               UINT32_MAX);
   std::size_t event_count = 0;
   std::size_t feature_observations = 0;
+  std::size_t potential_tasks = 0;
+  std::size_t local_masked_tasks = 0;
+  std::size_t exact_executed_tasks = 0;
   for (;;) {
     const FixedTrianglePair* pairs = nullptr;
     std::size_t pair_count = 0;
@@ -445,9 +453,14 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
         state.buffers.facet_motion, state.facet_count,
         state.buffers.facet_pair_chunk, &pair_count);
     if (filtered.status != S::Ok) return state.Fail(filtered);
-    const auto discovery = state.accepted_discovery.Discover(
+    auto masked = sct::BuildLocalFeatureTaskMasks(
+        state.buffers.facet_descriptors, state.facet_count,
+        pairs, pair_count, state.buffers.chunk_feature_task_masks,
+        state.storage_forecast.feature_task_mask_capacity);
+    if (masked.status != S::Ok) return state.Fail(masked);
+    const auto discovery = state.accepted_discovery.DiscoverMasked(
         state.buffers.accepted_triangles, state.facet_count,
-        pairs, pair_count);
+        pairs, pair_count, state.buffers.chunk_feature_task_masks);
     if (discovery.status != FixedTriangleDiscoveryStatus::Ok) {
       auto report = Failure(S::DiscoveryFailure, discovery.message);
       report.discovery_status = discovery.status;
@@ -458,6 +471,18 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
       report.discovery_reason = discovery.arithmetic_reason;
       return state.Fail(report);
     }
+    if (discovery.potential_tasks >
+            SIZE_MAX - potential_tasks ||
+        discovery.local_masked_tasks >
+            SIZE_MAX - local_masked_tasks ||
+        discovery.exact_executed_tasks >
+            SIZE_MAX - exact_executed_tasks)
+      return state.Fail(Failure(
+          S::ResourceLimit,
+          "Accepted feature task diagnostics overflowed"));
+    potential_tasks += discovery.potential_tasks;
+    local_masked_tasks += discovery.local_masked_tasks;
+    exact_executed_tasks += discovery.exact_executed_tasks;
     if (discovery.feature_candidates >
         SIZE_MAX - feature_observations)
       return state.Fail(Failure(
@@ -508,6 +533,10 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
           state.accepted_facet_pair_count)
     return state.Fail(Failure(S::IdentityMismatch,
         "Accepted canonical stream lacks its complete receipt"));
+  if (local_masked_tasks > potential_tasks ||
+      exact_executed_tasks != potential_tasks - local_masked_tasks)
+    return state.Fail(Failure(S::IdentityMismatch,
+        "Accepted local feature mask accounting is incomplete"));
   auto events = sct::FinalizeAcceptedEventLedger(
       state.buffers.accepted_certificates, event_count,
       state.buffers.accepted_events,
@@ -537,6 +566,9 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
   state.accepted_event_count = event_count;
   state.accepted_feature_observation_count =
       feature_observations;
+  state.accepted_potential_task_count = potential_tasks;
+  state.accepted_local_masked_task_count = local_masked_tasks;
+  state.accepted_exact_executed_task_count = exact_executed_tasks;
   state.owner_id = view.owner_id;
   state.base_epoch = view.accepted.base_epoch;
   state.attempt = view.attempt;
@@ -558,6 +590,12 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
   next.facet_pairs_ = state.accepted_facet_pair_count;
   next.discovered_features_ =
       state.accepted_feature_observation_count;
+  next.potential_tasks_ =
+      state.accepted_potential_task_count;
+  next.local_masked_tasks_ =
+      state.accepted_local_masked_task_count;
+  next.exact_executed_tasks_ =
+      state.accepted_exact_executed_task_count;
   next.activity_ = activity_receipt;
   next.force_ = force_receipt;
   *output = next;

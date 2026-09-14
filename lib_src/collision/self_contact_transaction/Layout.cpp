@@ -59,6 +59,7 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
       !limits.max_global_events ||
       limits.max_global_events > UINT32_MAX ||
       limits.max_event_hash_slots < limits.max_global_events ||
+      limits.max_candidate_pairs > SIZE_MAX / 15 ||
       !limits.max_stream_crossing_work ||
       !limits.max_host_bytes || !limits.max_device_bytes ||
       !limits.max_startup_host_bytes)
@@ -214,6 +215,8 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
       limits.max_facet_pair_chunk;
   forecast.facet_pair_chunk_capacity =
       limits.max_facet_pair_chunk;
+  forecast.feature_task_mask_capacity =
+      limits.max_facet_pair_chunk;
   forecast.parent_pair_cursor_capacity =
       broadphase.forecast.pair_capacity;
   forecast.accepted_event_ledger_capacity =
@@ -246,7 +249,10 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
                &forecast.streaming_cursor_bytes) ||
       !Product(forecast.parent_pair_cursor_capacity,
                sizeof(std::uint32_t),
-               &forecast.streaming_heap_bytes))
+               &forecast.streaming_heap_bytes) ||
+      !Product(forecast.feature_task_mask_capacity,
+               sizeof(FixedTriangleFeatureTaskMask),
+               &forecast.feature_task_mask_bytes))
     return Failure(S::ResourceLimit,
         "Transaction streaming byte forecast overflowed");
   forecast.candidate_arena_bytes = layout.bytes;

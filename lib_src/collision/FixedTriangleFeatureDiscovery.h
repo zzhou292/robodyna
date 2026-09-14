@@ -15,8 +15,13 @@ Status EvaluateCurrentFixedTriangle(const FixedContactFacet& facet,
                                     VectorView positions,
                                     CurrentFixedTriangle* output) noexcept;
 
-// Bounded host discovery for fixed physical triangles.  A query evaluates all
-// six VF orientations and all nine EE pairs for every supplied triangle pair.
+// Bounded host discovery for fixed physical triangles.  Discover evaluates
+// all six VF orientations and all nine EE pairs for every supplied pair.
+// DiscoverMasked accepts one caller-owned 15-bit local-incidence mask per
+// pair.  A set bit may omit only the exact canonical-vertex/canonical-edge
+// incidence documented by FixedTriangleFeatureTaskMask; remote omissions and
+// bit 15 reject the query before geometry.  Pair masks use canonical
+// FixedTriangleKey side order, independent of pair input orientation.
 // It also performs a separate triangle/triangle intersection classification,
 // because positive VF/EE boundary distances do not rule out a piercing.
 //
@@ -51,6 +56,10 @@ class FixedTriangleFeatureDiscovery {
   FixedTriangleDiscoveryReport Discover(
       const CurrentFixedTriangle* triangles, std::size_t triangle_count,
       const FixedTrianglePair* pairs, std::size_t pair_count) noexcept;
+  FixedTriangleDiscoveryReport DiscoverMasked(
+      const CurrentFixedTriangle* triangles, std::size_t triangle_count,
+      const FixedTrianglePair* pairs, std::size_t pair_count,
+      const FixedTriangleFeatureTaskMask* masks) noexcept;
 
   bool initialized() const noexcept { return bool(impl_); }
   FixedTriangleFeatureForecast forecast() const noexcept;
@@ -58,6 +67,10 @@ class FixedTriangleFeatureDiscovery {
   FixedTriangleIntersectionView intersections() const noexcept;
 
  private:
+  FixedTriangleDiscoveryReport DiscoverImpl(
+      const CurrentFixedTriangle*, std::size_t,
+      const FixedTrianglePair*, std::size_t,
+      const FixedTriangleFeatureTaskMask*, bool) noexcept;
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };

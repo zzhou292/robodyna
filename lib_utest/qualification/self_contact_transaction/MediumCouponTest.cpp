@@ -231,6 +231,30 @@ void MakeStaticPath(const c::CurrentFixedTriangle& triangle,
   }
 }
 
+c::FixedContactFacet FacetOf(
+    const c::CurrentFixedTriangle& triangle) {
+  c::FixedContactFacet result;
+  result.source_instance_id = triangle.key.source_instance_id;
+  result.source.source_parent_id = triangle.key.parent_eid;
+  result.level = triangle.key.level;
+  result.local_facet = triangle.key.local_facet;
+  for (unsigned local = 0; local < 3; ++local) {
+    result.vertex_keys[local] = triangle.vertex_keys[local];
+    result.edge_keys[local] = triangle.edge_keys[local];
+  }
+  return result;
+}
+
+void RebuildEdges(c::CurrentFixedTriangle* triangle) {
+  for (unsigned edge = 0; edge < 3; ++edge) {
+    const auto first = triangle->vertex_keys[edge].first;
+    const auto second =
+        triangle->vertex_keys[(edge + 1) % 3].first;
+    triangle->edge_keys[edge] =
+        Edge(first, second, triangle->key.parent_eid);
+  }
+}
+
 struct GeometryMetrics {
   std::size_t streamed_pairs = 0;
   std::size_t same_rigid = 0;
@@ -240,6 +264,8 @@ struct GeometryMetrics {
   std::size_t vertex_edge_axis_separated = 0;
   std::size_t vertex_vertex_axis_separated = 0;
   std::size_t exact_discovery_pairs = 0;
+  std::size_t potential_tasks = 0;
+  std::size_t local_masked_tasks = 0;
   std::size_t exact_discovery_tasks = 0;
   std::size_t feature_events = 0;
   std::size_t intersection_events = 0;
@@ -262,7 +288,10 @@ enum class GeometryFilter {
 struct GeometryStorage {
   std::unique_ptr<c::CurrentFixedTriangle[]> triangles{
       new c::CurrentFixedTriangle[GeometryTriangleCount]};
+  std::unique_ptr<c::FixedContactFacet[]> descriptors{
+      new c::FixedContactFacet[GeometryTriangleCount]};
   std::array<c::FixedTrianglePair, ChunkCapacity> discovery_pairs;
+  std::array<c::FixedTriangleFeatureTaskMask, ChunkCapacity> task_masks;
   std::array<c::RepresentedTrianglePath, 2 * ChunkCapacity> paths;
   std::array<c::RepresentedTrianglePair, ChunkCapacity> crossing_pairs;
 };
@@ -270,7 +299,8 @@ struct GeometryStorage {
 GeometryMetrics RunGeometryPipeline(
     GeometryStorage& storage, GeometryFilter filter,
     c::FixedTriangleFeatureDiscovery* discovery,
-    c::RepresentedIntervalCrossing* crossing) {
+    c::RepresentedIntervalCrossing* crossing,
+    bool local_mask = false) {
   const auto started = std::chrono::steady_clock::now();
   GeometryMetrics metrics;
   sct::MotionSupport linear;
@@ -280,10 +310,23 @@ GeometryMetrics RunGeometryPipeline(
 
   auto flush = [&](std::size_t count) {
     if (!count) return;
+    if (local_mask) {
+      const auto built = sct::BuildLocalFeatureTaskMasks(
+          storage.descriptors.get(), GeometryTriangleCount,
+          storage.discovery_pairs.data(), count,
+          storage.task_masks.data(), storage.task_masks.size());
+      ASSERT_EQ(built.status, c::SelfContactTransactionStatus::Ok)
+          << built.message << " pair=" << built.pair;
+    }
     const auto discovery_started = std::chrono::steady_clock::now();
-    const auto found = discovery->Discover(
-        storage.triangles.get(), GeometryTriangleCount,
-        storage.discovery_pairs.data(), count);
+    const auto found = local_mask
+        ? discovery->DiscoverMasked(
+              storage.triangles.get(), GeometryTriangleCount,
+              storage.discovery_pairs.data(), count,
+              storage.task_masks.data())
+        : discovery->Discover(
+              storage.triangles.get(), GeometryTriangleCount,
+              storage.discovery_pairs.data(), count);
     metrics.exact_discovery_us += static_cast<std::uint64_t>(
         std::chrono::duration_cast<std::chrono::microseconds>(
             std::chrono::steady_clock::now() - discovery_started).count());
@@ -292,6 +335,8 @@ GeometryMetrics RunGeometryPipeline(
         << " task=" << found.input_task << " reason="
         << static_cast<unsigned>(found.arithmetic_reason);
     metrics.exact_discovery_pairs += count;
+    metrics.potential_tasks += found.potential_tasks;
+    metrics.local_masked_tasks += found.local_masked_tasks;
     metrics.exact_discovery_tasks += found.feature_tasks;
     const auto features = discovery->features();
     ASSERT_TRUE(features.complete);
@@ -416,6 +461,9 @@ void PrintGeometryMetrics(
             << metrics.vertex_vertex_axis_separated
             << " exact_discovery_pairs="
             << metrics.exact_discovery_pairs
+            << " potential_tasks=" << metrics.potential_tasks
+            << " local_masked_tasks="
+            << metrics.local_masked_tasks
             << " exact_discovery_tasks="
             << metrics.exact_discovery_tasks
             << " feature_events=" << metrics.feature_events
@@ -638,8 +686,10 @@ TEST(SelfContactTransactionMediumCoupon,
   EXPECT_LT(discovery.forecast().owned_host_bytes +
                 crossing.forecast().owned_host_bytes +
                 sizeof(c::CurrentFixedTriangle) * GeometryTriangleCount +
+                sizeof(c::FixedContactFacet) * GeometryTriangleCount +
                 sizeof(storage.discovery_pairs) + sizeof(storage.paths) +
-                sizeof(storage.crossing_pairs),
+                sizeof(storage.crossing_pairs) +
+                sizeof(storage.task_masks),
             512u << 20);
 
   const auto baseline = RunGeometryPipeline(
@@ -776,6 +826,69 @@ TEST(SelfContactTransactionMediumCoupon,
             vertex_edge_axes.exact_discovery_tasks);
   EXPECT_EQ(2 * vertex_vertex_axes.crossing_work,
             vertex_edge_axes.crossing_work);
+
+  // Add only canonical topology after the geometric filter comparison:
+  // half of the final exact pairs share one vertex and half share one edge.
+  // The unmasked pass is the observation oracle; the local-mask pass must
+  // remove only its 6/11 local tasks and preserve every nonlocal contact and
+  // exact triangle-intersection observation.
+  for (std::size_t pair = 0; pair < GeometryPairCount; ++pair) {
+    const auto first = 2 * pair;
+    const auto second = first + 1;
+    const auto residue = pair % 20;
+    if (residue == 18) {
+      storage.triangles[second].vertex_keys[0] =
+          storage.triangles[first].vertex_keys[0];
+      storage.triangles[second].vertices[0] =
+          storage.triangles[first].vertices[0];
+      RebuildEdges(storage.triangles.get() + second);
+    } else if (residue == 19) {
+      storage.triangles[second].vertex_keys[0] =
+          storage.triangles[first].vertex_keys[0];
+      storage.triangles[second].vertex_keys[1] =
+          storage.triangles[first].vertex_keys[1];
+      storage.triangles[second].vertices[0] =
+          storage.triangles[first].vertices[0];
+      storage.triangles[second].vertices[1] =
+          storage.triangles[first].vertices[1];
+      RebuildEdges(storage.triangles.get() + second);
+      storage.triangles[first].edge_keys[0] = Edge(
+          storage.triangles[first].vertex_keys[0].first,
+          storage.triangles[first].vertex_keys[1].first, 0);
+      storage.triangles[second].edge_keys[0] =
+          storage.triangles[first].edge_keys[0];
+    }
+  }
+  for (std::size_t triangle = 0;
+       triangle < GeometryTriangleCount; ++triangle)
+    storage.descriptors[triangle] =
+        FacetOf(storage.triangles[triangle]);
+
+  const auto local_oracle = RunGeometryPipeline(
+      storage, GeometryFilter::VertexVertexAxes,
+      &discovery, &crossing);
+  const auto local_mask = RunGeometryPipeline(
+      storage, GeometryFilter::VertexVertexAxes,
+      &discovery, &crossing, true);
+  PrintGeometryMetrics("geometry_local_mask", local_mask);
+  EXPECT_EQ(local_oracle.exact_discovery_pairs,
+            GeometryPairCount / 10);
+  EXPECT_EQ(local_oracle.potential_tasks,
+            15 * local_oracle.exact_discovery_pairs);
+  EXPECT_EQ(local_oracle.local_masked_tasks, 0u);
+  EXPECT_EQ(local_mask.potential_tasks,
+            local_oracle.potential_tasks);
+  EXPECT_EQ(local_mask.local_masked_tasks,
+            17 * GeometryPairCount / 20);
+  EXPECT_EQ(local_mask.exact_discovery_tasks,
+            local_mask.potential_tasks -
+                local_mask.local_masked_tasks);
+  EXPECT_EQ(local_mask.feature_events,
+            local_oracle.feature_events);
+  EXPECT_EQ(local_mask.intersection_events,
+            local_oracle.intersection_events);
+  EXPECT_EQ(local_mask.crossing_work,
+            local_oracle.crossing_work);
 }
 
 TEST(SelfContactTransactionMediumCoupon,

@@ -203,6 +203,9 @@ struct SelfContactTransactionForecast {
   std::size_t startup_host_bytes = 0;
   std::size_t device_bytes = 0;
   std::size_t device_allocations = 0;
+  // One caller-owned fixed 15-bit mask per materialized facet-pair slot.
+  std::size_t feature_task_mask_capacity = 0;
+  std::size_t feature_task_mask_bytes = 0;
 };
 
 struct SelfContactTransactionPreflight {
@@ -286,6 +289,15 @@ class SelfContactAcceptedAssemblyReceipt {
   std::size_t discovered_features() const noexcept {
     return discovered_features_;
   }
+  std::size_t potential_tasks() const noexcept {
+    return potential_tasks_;
+  }
+  std::size_t local_masked_tasks() const noexcept {
+    return local_masked_tasks_;
+  }
+  std::size_t exact_executed_tasks() const noexcept {
+    return exact_executed_tasks_;
+  }
 
  private:
   friend class SelfContactTransaction;
@@ -301,6 +313,9 @@ class SelfContactAcceptedAssemblyReceipt {
   std::size_t broadphase_pairs_ = 0;
   std::size_t facet_pairs_ = 0;
   std::size_t discovered_features_ = 0;
+  std::size_t potential_tasks_ = 0;
+  std::size_t local_masked_tasks_ = 0;
+  std::size_t exact_executed_tasks_ = 0;
   SelfContactAcceptedActivityReceipt activity_;
   SelfContactForceAssemblyReceipt force_;
 };
@@ -322,6 +337,15 @@ class SelfContactTransactionReceipt {
     return broadphase_pairs_;
   }
   std::size_t facet_pairs() const noexcept { return facet_pairs_; }
+  std::size_t potential_tasks() const noexcept {
+    return potential_tasks_;
+  }
+  std::size_t local_masked_tasks() const noexcept {
+    return local_masked_tasks_;
+  }
+  std::size_t exact_executed_tasks() const noexcept {
+    return exact_executed_tasks_;
+  }
   std::size_t policy_outcomes() const noexcept {
     return policy_outcomes_;
   }
@@ -358,6 +382,9 @@ class SelfContactTransactionReceipt {
   std::uint64_t regularity_generation_ = 0;
   std::size_t broadphase_pairs_ = 0;
   std::size_t facet_pairs_ = 0;
+  std::size_t potential_tasks_ = 0;
+  std::size_t local_masked_tasks_ = 0;
+  std::size_t exact_executed_tasks_ = 0;
   std::size_t policy_outcomes_ = 0;
   SelfContactCandidatePolicySummary policy_summary_;
   std::size_t active_parents_ = 0;

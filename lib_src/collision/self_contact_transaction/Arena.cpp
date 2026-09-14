@@ -110,6 +110,8 @@ bool MakeLayout(std::size_t nodes, std::size_t surface_parents,
           broadphase_pair_capacity, next.facet_pair_heap) ||
       !builder.Append<FixedTrianglePair>(
           pair_chunk_capacity, next.facet_pair_chunk) ||
+      !builder.Append<FixedTriangleFeatureTaskMask>(
+          pair_chunk_capacity, next.chunk_feature_task_masks) ||
       !builder.Append<RepresentedTrianglePath>(
           chunk_paths, next.chunk_paths) ||
       !builder.Append<RepresentedTrianglePair>(
@@ -175,6 +177,8 @@ Buffers Bind(void* base, const Layout& layout) noexcept {
       ArenaPointer<FacetPairCursor>(base, layout.facet_pair_cursors),
       ArenaPointer<std::uint32_t>(base, layout.facet_pair_heap),
       ArenaPointer<FixedTrianglePair>(base, layout.facet_pair_chunk),
+      ArenaPointer<FixedTriangleFeatureTaskMask>(
+          base, layout.chunk_feature_task_masks),
       ArenaPointer<RepresentedTrianglePath>(base, layout.chunk_paths),
       ArenaPointer<RepresentedTrianglePair>(
           base, layout.chunk_represented_pairs),

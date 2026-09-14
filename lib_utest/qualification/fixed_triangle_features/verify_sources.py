@@ -43,7 +43,11 @@ assert "for (unsigned vertex = 0; vertex < 3; ++vertex)" in geometry
 assert geometry.count("AddVertexFace(") >= 3
 assert "for (unsigned edge_a = 0; edge_a < 3; ++edge_a)" in geometry
 assert "for (unsigned edge_b = 0; edge_b < 3; ++edge_b)" in geometry
-assert geometry.count("++result->feature_tasks;") == 2
+assert geometry.count("++result->feature_tasks;") == 3
+assert "PairLocalFeatureTaskMask(" in geometry
+assert "EvaluatePairFeaturesMaskedOnce(" in geometry
+assert "FixedTriangleVertexFaceTaskSlot(0, vertex)" in geometry
+assert "FixedTriangleEdgeEdgeTaskSlot(edge_a, edge_b)" in geometry
 assert "if (Same(a->key, b->key))\n    return" not in geometry
 for required in (
     "CoplanarOverlap",
@@ -57,8 +61,11 @@ for required in (
 
 discovery = production[6].read_text()
 assert discovery.index("report.raw_feature_candidates +=") < discovery.index(
-    "EvaluatePairFeaturesOnce(")
-assert discovery.count("EvaluatePairFeaturesOnce(") == 1
+    "EvaluatePairFeaturesMaskedOnce(")
+assert discovery.count("EvaluatePairFeaturesMaskedOnce(") == 1
+assert "Feature task mask omits a nonlocal or nonexistent task" in discovery
+assert "ft::PairLocalFeatureTaskMask(" in discovery
+assert "report.exact_executed_tasks +=" in discovery
 assert discovery.index("report.raw_feature_candidates +=") < discovery.index(
     "impl_->features[i] = impl_->raw_features[i]")
 assert "long double" not in geometry
@@ -96,6 +103,10 @@ for required in (
     "TransversePiercingIsExplicitWhenAllBoundaryQueriesArePositive",
     "SharedCornerDoesNotHideRemoteTransverseIntersection",
     "ExactFeatureCapPassesAndMinusOneRejectsNoPrefix",
+    "AllFifteenSlotsMapAndIntersectionRemainsComplete",
+    "SharedVertexAndSharedEdgePreserveEveryNonlocalObservation",
+    "CoincidentDistinctIdsAndSameParentRemoteFeaturesStayUnmasked",
+    "ExecutedNonlocalCapsPassExactlyAndMinusOnePublishesNoPrefix",
     "EverySmallMeshTaskEqualsIndependentLocalIncidenceEnumeration",
     "EveryVFAndEEValueMatchesIndependentDecimal100Geometry",
     "AllTrianglePermutationsAndPairReversalsMatchDecimal100Geometry",
@@ -124,6 +135,7 @@ print(json.dumps({
     "production_files": len(production),
     "cuda_or_gpu_execution": False,
     "whole_parent_exclusions": False,
-    "feature_tasks_per_pair": 15,
+    "unmasked_feature_tasks_per_pair": 15,
+    "masked_tasks": "exact-local-incidence-only",
     "candidate_publication": "complete-count/sort/deduplicate/no-prefix",
 }, sort_keys=True))

@@ -11,6 +11,7 @@ add_executable(fixed_triangle_features_host
   ExhaustiveTest.cpp
   GeometryTest.cpp
   IntersectionTest.cpp
+  MaskTest.cpp
   OracleTest.cpp
   StratumTest.cpp)
 target_link_libraries(fixed_triangle_features_host PRIVATE

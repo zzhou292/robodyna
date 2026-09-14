@@ -33,6 +33,32 @@ struct FixedTrianglePair {
   std::uint32_t second = 0;
 };
 
+// Optional local-incidence mask for one exact triangle pair.  Bit one means
+// that the corresponding task is omitted.  Slots are defined in canonical
+// FixedTriangleKey order: 2*v is canonical-first vertex v -> second face,
+// 2*v+1 is second vertex v -> first face, and 6+3*ea+eb is first edge ea
+// against second edge eb.  Bit 15 is outside the fixed task roster.
+struct FixedTriangleFeatureTaskMask {
+  std::uint16_t local_tasks = 0;
+};
+
+constexpr unsigned FixedTriangleVertexFaceTaskSlot(
+    unsigned source_side, unsigned local_vertex) noexcept {
+  return 2 * local_vertex + source_side;
+}
+
+constexpr unsigned FixedTriangleEdgeEdgeTaskSlot(
+    unsigned first_local_edge, unsigned second_local_edge) noexcept {
+  return 6 + 3 * first_local_edge + second_local_edge;
+}
+
+constexpr std::uint16_t FixedTriangleFeatureTaskBit(
+    unsigned slot) noexcept {
+  return slot < 15 ? static_cast<std::uint16_t>(1u << slot) : 0;
+}
+
+constexpr std::uint16_t FixedTriangleFeatureTaskBits = 0x7fffu;
+
 enum class FixedTriangleCandidateKind : std::uint8_t {
   VertexFace,
   EdgeEdge,
@@ -176,9 +202,10 @@ struct FixedTriangleDiscoveryReport {
   std::size_t input_task = SIZE_MAX;
   FixedTriangleArithmeticReason arithmetic_reason =
       FixedTriangleArithmeticReason::None;
-  // Every valid, non-failing broad pair executes exactly six directed
-  // vertex-face tasks and nine edge-edge tasks.  Local incidence can suppress
-  // publication, but never removes work from this count.
+  // Executed feature tasks. Discover executes exactly six directed VF and
+  // nine EE tasks per valid pair. DiscoverMasked omits authenticated local
+  // incidence before geometry and keeps this as an alias of
+  // exact_executed_tasks.
   std::size_t feature_tasks = 0;
   std::size_t triangle_references = 0;
   std::size_t triangles = 0;
@@ -191,6 +218,13 @@ struct FixedTriangleDiscoveryReport {
   std::size_t raw_intersections = 0;
   std::size_t intersections = 0;
   const char* message = "OK";
+  // Appended diagnostics retain the original report prefix.  Discover has
+  // potential==exact_executed and local_masked==0.  DiscoverMasked partitions
+  // potential tasks into caller-authenticated local omissions and executions
+  // for a successful complete query.
+  std::size_t potential_tasks = 0;
+  std::size_t local_masked_tasks = 0;
+  std::size_t exact_executed_tasks = 0;
 };
 
 struct FixedTriangleFeatureLimits {

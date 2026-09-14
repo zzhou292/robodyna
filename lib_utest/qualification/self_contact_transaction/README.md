@@ -28,9 +28,13 @@ readback and validates its strict device order. A fixed cursor heap merges
 every active parent Cartesian expansion into immutable facet-key order and
 materializes one bounded chunk at a time. Same-rigid, outward inflated
 coordinate-AABB, and outward interval face-normal, edge-cross, vertex-edge
-and vertex-vertex prism certificates remove only provably separated pairs;
-every remaining pair executes all six VF and nine EE tasks. Nonlocal
-intersections still reject.
+and vertex-vertex prism certificates remove only provably separated pairs.
+For every remaining exact facet pair, the transaction compares only the
+authenticated `FixedContactFacet` canonical vertex and edge keys. It masks a
+directed VF task exactly when its source vertex belongs to the target facet,
+and masks an EE task exactly when the two canonical edges share an endpoint.
+Every other VF/EE task executes. Triangle intersection classification still
+runs for every remaining pair, so nonlocal intersections still reject.
 Admitted VF and strict interior/zero-distance EE certificates merge
 through a fixed-capacity global hash ledger. Identity is the geometric feature
 plus both ordered active-parent ordinals. Thus shared boundary geometry under
@@ -120,6 +124,10 @@ The final nonaggregate `SelfContactTransactionReceipt` is tied to the exact
 owner/base/attempt/source/configuration/qualification/active-use identities.
 Only that receipt can expose the private typed physical receipt in a
 `ShellPhysicalScratchReceiptRoster`.
+Accepted and candidate receipts separately report `potential_tasks`,
+`local_masked_tasks`, and `exact_executed_tasks`; the latter two exactly
+partition the first. These counters are diagnostics over the complete chunk
+stream, not caller authority.
 
 No transaction-owned all-one activity array remains. Accepted and prepared
 activity receipts stay private inside transaction receipts, become stale on
@@ -155,22 +163,25 @@ plus exact readback, cursor, heap, arena, component, startup, and device bytes.
 
 For the measured V5 shape (376,930 owner nodes, 337,092 selected parents,
 653,055 facets, 1,584,464 parent pairs and 5,989,248 facet pairs), a 4,096-pair
-chunk and folded policy use exactly 1,542,092,504 transaction-arena bytes with
-one event slot. One million force/event/certificate slots use 3,086,090,960
+chunk and folded policy use exactly 1,542,100,696 transaction-arena bytes with
+one event slot. One million force/event/certificate slots use 3,086,099,152
 arena bytes. The fixed subranges include 12,675,712 parent-key bytes,
 44,364,992 cursor bytes, 6,337,856 heap bytes, and 32,768 facet-pair chunk
-bytes. The actual event ledger capacity must come from a complete streamed
+bytes, plus 8,192 bytes for one 15-bit local-task mask per chunk slot. The
+actual event ledger capacity must come from a complete streamed
 census; the earlier broadphase receipt explicitly did not run feature/force
 admission.
 
 Asymptotic storage is `O(nodes + facets + parent_pairs + event_cap +
 chunk*(feature/work caps))`, not `O(facet_pairs)`. Traversal is
 `O(facet_pairs log parent_pairs)` before exact geometry. The expected
-full-V5 performance blocker is CPU exact work. The shared production-filter
-census currently has 5,989,248 represented pairs: 53,845 same-rigid, 950,099
-coordinate-AABB, 604,617 face-axis, 610,080 edge-cross, and 3,770,607
-exact remaining (63%). The closest-feature categories require a fresh parent
-vehicle qualification before those measured counts change. Chunking makes the
+full-V5 performance blocker is CPU exact work. The actual V5 production-filter
+census has 5,989,248 represented pairs and 3,586,014 exact remaining after
+every conservative axis; the complete axis census takes 73.6 seconds. The full
+parent census also records 1,311,961 pairs sharing a canonical vertex and
+641,983 sharing a canonical edge. Those parent counts are topology prevalence
+only: task masks are built independently for each surviving exact facet pair
+and never broaden to a whole parent pair. Chunking makes the
 worst case representable and failure-atomic; all bounded axis passes reduce
 work without changing arena storage. Candidate summaries refine
 `motion_certified_linear_separated` with
@@ -225,6 +236,11 @@ owner-aware VF/EE deduplication
 across chunks, strict input order, the complete count, and fixed policy digest
 `7261953295680066653`. Forecast plus authored storage is asserted below
 512 MiB. It invokes no NVCC or GPU.
+After the axis comparison, a local-topology stage gives the final 1,280 exact
+pairs alternating shared-vertex and shared-edge incidence. Its authenticated
+masks remove 10,880 of 19,200 potential tasks, execute 8,320 nonlocal tasks,
+and preserve all 8,320 nonlocal contact observations, all 1,280 intersection
+observations, and the complete crossing work relative to its unmasked oracle.
 Run either tier explicitly
 with `ctest --test-dir <host-build> -L '^(unit|coupon)$'
 --output-on-failure`; normal CTest includes both.
