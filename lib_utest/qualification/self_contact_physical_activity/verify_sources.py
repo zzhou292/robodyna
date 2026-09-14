@@ -97,14 +97,20 @@ for token in (
 ):
     require(cuda, token, CUDA)
 
-for transaction in (
-    ROOT / "lib_src/collision/SelfContactTransaction.h",
-    ROOT / "lib_src/collision/SelfContactTransactionTypes.h",
-    ROOT / "lib_src/collision/self_contact_transaction/Transaction.cpp",
-    ROOT / "lib_src/collision/self_contact_transaction/Candidate.cpp",
-):
-    if "SelfContactPhysicalActivity" in transaction.read_text():
-        raise RuntimeError(
-            f"{transaction}: isolated authority edited transaction composition")
+transaction_types = ROOT / "lib_src/collision/SelfContactTransactionTypes.h"
+transaction_storage = (
+    ROOT / "lib_src/collision/self_contact_transaction/Storage.h")
+transaction_accepted = (
+    ROOT / "lib_src/collision/self_contact_transaction/Transaction.cpp")
+transaction_prepared = (
+    ROOT / "lib_src/collision/self_contact_transaction/Candidate.cpp")
+require(transaction_types.read_text(), "SelfContactPhysicalActivityForecast",
+        transaction_types)
+require(transaction_storage.read_text(),
+        "SelfContactPhysicalActivity physical_activity", transaction_storage)
+require(transaction_accepted.read_text(),
+        "physical_activity.CaptureAccepted", transaction_accepted)
+require(transaction_prepared.read_text(),
+        "physical_activity.CapturePrepared", transaction_prepared)
 
 print("self-contact physical activity source proof: PASS")
