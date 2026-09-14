@@ -142,4 +142,69 @@ RuntimeForecast ComposeForecast(
     return result;
 }
 
+CombinedRuntimeBudget ComposeCombinedBudget(
+    std::size_t wall_retained_host,
+    std::size_t wall_peak_host,
+    std::size_t wall_device_bytes,
+    std::size_t wall_publication_host,
+    const SetupForecast& self_setup,
+    const RuntimeForecast& self_contact,
+    const tl::fea::ShellPhysicalScratchParticipationForecast&
+        participation,
+    std::size_t self_fixed,
+    std::size_t host_limit,
+    std::size_t device_limit) {
+    output::Require(
+        wall_retained_host >= wall_publication_host &&
+            IncrementalTransactionHost(
+                self_contact.transaction) >=
+                self_contact.transaction.participation
+                    .publication_host_bytes &&
+            wall_peak_host >= wall_retained_host &&
+            self_contact.peak_host_upper_bound >=
+                self_contact.retained_host_upper_bound &&
+            participation.publication_host_bytes &&
+            participation.configured_issuer_host_bytes >=
+                2 * sizeof(
+                    tl::fea::ShellPhysicalScratchParticipation),
+        "Wall+self component forecast partition is invalid");
+
+    const auto wall_without_publication =
+        wall_retained_host - wall_publication_host;
+    const auto transaction_without_publication =
+        IncrementalTransactionHost(self_contact.transaction) -
+        self_contact.transaction.participation
+            .publication_host_bytes;
+    tl::util::BoundedArenaLayout host(host_limit);
+    tl::util::BoundedArenaLayout device(device_limit);
+    tl::util::ArenaRegion unused;
+    for (const auto bytes : {
+             wall_without_publication,
+             IncrementalSetupHost(self_setup),
+             transaction_without_publication,
+             participation.publication_host_bytes,
+             self_fixed})
+        output::Require(
+            host.Append<std::byte>(bytes, unused),
+            "Complete retained wall+self runtime exceeds host cap");
+
+    CombinedRuntimeBudget result;
+    result.retained_host_upper_bound = host.bytes();
+    const auto scratch = std::max(
+        wall_peak_host - wall_retained_host,
+        self_contact.peak_host_upper_bound -
+            self_contact.retained_host_upper_bound);
+    output::Require(
+        host.Append<std::byte>(scratch, unused),
+        "Complete wall+self runtime peak exceeds host cap");
+    result.peak_host_upper_bound = host.bytes();
+    output::Require(
+        device.Append<std::byte>(wall_device_bytes, unused) &&
+            device.Append<std::byte>(
+                self_contact.transaction.device_bytes, unused),
+        "Complete wall+self runtime exceeds device cap");
+    result.device_bytes = device.bytes();
+    return result;
+}
+
 }  // namespace crash::cases::vehicle_self_contact::detail

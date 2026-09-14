@@ -63,3 +63,33 @@ arguments as `case/vehicle_startup/physical_model`, adding
 `ctest --test-dir BUILD --output-on-failure -R '^vehicle_shell_execution_'`.
 The original source runner reuses the existing authenticated canonical fixture
 reader and full physical-model test source construction.
+
+## Self-contact test tiers
+
+Full canonical V5 runtime startup and one-attempt tests are acceptance tests,
+not unit tests. They are unregistered by default even when
+`ROBO_DYNA_VEHICLE_SELF_CONTACT_SOURCE_ORIGINAL=ON`. Reconfigure an existing
+parent build explicitly with:
+
+```sh
+cmake -S <same-source> -B <same-build> \
+  -DROBO_DYNA_ENABLE_V5_SELF_CONTACT_ACCEPTANCE=ON
+ctest --test-dir <same-build> -L acceptance-v5 --output-on-failure -j1
+```
+
+The self-only startup/attempt tests require the authenticated V5 fixture. The
+wall+self counterparts additionally require
+`ROBO_DYNA_VEHICLE_WALL_MANIFEST`; without it those two tests remain
+unregistered. All four use the `acceptance-v5` label and retain their serialized
+GPU lock and finite timeouts. No `IGNORE=1` path exists.
+
+The standalone `case/vehicle_self_contact` build keeps normal CTest small:
+`unit` covers values and source proof, while `coupon` uses synthetic forecasts
+to verify the self-only budget, the combined two-slot wall+self publication
+charge, and mapped-wall-before-self-contact receipt order. The factory APIs
+require a complete physical model, so this host coupon does not invent a
+miniature V5. Actual small runtime mechanics are qualified by TL's
+`self_contact_transaction_cuda` coupon: it uses only a few physical
+parents/facets and covers mixed separated/contact decisions, VF, boundary
+vertex-edge, strict EE, same-body exclusion, force/STI, and candidate
+rollback/retry without loading canonical V5 data.

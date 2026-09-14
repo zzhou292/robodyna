@@ -1,5 +1,6 @@
 #include "../RuntimeBudget.h"
 #include "../SelfContactStageError.h"
+#include "case/vehicle_dynamics/ScratchReceiptRoster.h"
 #include "case/vehicle_dynamics/StepTiming.h"
 
 #include <gtest/gtest.h>
@@ -107,6 +108,76 @@ TEST(VehicleSelfContactRuntimeValues,
     const SelfContactStageError candidate(
         report, SelfContactRuntimeStage::CandidateSeal, 1);
     EXPECT_EQ(candidate.required_events(), 0u);
+}
+
+TEST(VehicleSelfContactRuntimeCoupon,
+     SyntheticSelfOnlyAndWallSelfBudgetsChargeTwoSlotsOnce) {
+    SetupForecast setup;
+    setup.shared_vehicle_source_reservation_bytes = 1000;
+    setup.retained_setup_reservation_bytes = 1300;
+
+    RuntimeForecast self;
+    auto& transaction = self.transaction;
+    transaction.activity.arena_bytes = 50;
+    transaction.activity.owned_host_bytes = 80;
+    transaction.activity.startup_host_bytes = 80;
+    transaction.broadphase.retained_source_bytes = 100;
+    transaction.broadphase.owned_host_bytes = 140;
+    transaction.broadphase.startup_host_bytes = 140;
+    transaction.regularity.retained_active_use_bytes = 200;
+    transaction.regularity.owned_payload_bytes = 240;
+    transaction.regularity.startup_payload_bytes = 240;
+    transaction.force.owned_host_bytes = 100;
+    transaction.force.retained_active_use_bytes = 200;
+    transaction.force.startup_host_bytes = 1000;
+    transaction.participation.publication_host_bytes = 40;
+    transaction.owned_host_bytes =
+        detail::TransactionChargesBroadphaseBacking() ? 1000 : 900;
+    transaction.startup_host_bytes = 1700;
+    transaction.device_bytes = 300;
+    self.retained_host_upper_bound = 2500;
+    self.peak_host_upper_bound = 2800;
+
+    tl::fea::ShellPhysicalScratchParticipationForecast participation;
+    participation.publication_host_bytes = 60;
+    participation.configured_issuer_host_bytes =
+        2 * sizeof(tl::fea::ShellPhysicalScratchParticipation);
+    participation.total_host_bytes =
+        participation.publication_host_bytes +
+        participation.configured_issuer_host_bytes;
+    const auto combined = detail::ComposeCombinedBudget(
+        1600, 1800, 100, 40, setup, self, participation,
+        10, 5000, 500);
+    EXPECT_EQ(combined.retained_host_upper_bound, 2590u);
+    EXPECT_EQ(combined.peak_host_upper_bound, 2890u);
+    EXPECT_EQ(combined.device_bytes, 400u);
+    EXPECT_EQ(participation.publication_host_bytes, 60u);
+    EXPECT_EQ(participation.configured_issuer_host_bytes,
+        2 * sizeof(tl::fea::ShellPhysicalScratchParticipation));
+
+    EXPECT_EQ(detail::ComposeCombinedBudget(
+        1600, 1800, 100, 40, setup, self, participation,
+        10, combined.peak_host_upper_bound, 500)
+        .peak_host_upper_bound, combined.peak_host_upper_bound);
+    EXPECT_THROW(detail::ComposeCombinedBudget(
+        1600, 1800, 100, 40, setup, self, participation,
+        10, combined.peak_host_upper_bound - 1, 500),
+        std::runtime_error);
+}
+
+TEST(VehicleSelfContactRuntimeCoupon,
+     CommitRosterPreservesMappedWallThenSelfContactSlots) {
+    tl::fea::ShellPhysicalScratchParticipationReceipt wall_receipt;
+    tl::fea::ShellPhysicalScratchParticipationReceipt self_receipt;
+    const tl::fea::ShellPhysicalScratchReceiptRoster wall{
+        &wall_receipt, nullptr};
+    const tl::fea::ShellPhysicalScratchReceiptRoster self_contact{
+        nullptr, &self_receipt};
+    const auto combined =
+        vehicle_dynamics::detail::ComposeScratchReceipts(
+            wall, self_contact);
+    EXPECT_EQ(combined.mapped_wall, &wall_receipt);
+    EXPECT_EQ(combined.self_contact, &self_receipt);
 }
 
 }  // namespace crash::cases::vehicle_self_contact::test

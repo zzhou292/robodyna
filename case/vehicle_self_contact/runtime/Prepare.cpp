@@ -6,11 +6,8 @@
 #include "case/vehicle_dynamics/Storage.h"
 #include "case/vehicle_runtime/ParticipantConfigs.h"
 #include "case/vehicle_wall/loaded/Stages.h"
-#include "lib_utils/BoundedArena.h"
 #include "output/ArtifactIO.h"
 #include "output/full_shell/FixedStepHorizon.h"
-
-#include <algorithm>
 
 namespace crash::cases::vehicle_self_contact {
 namespace {
@@ -99,60 +96,22 @@ WallSelfContactForecast ComposeCombined(
     const auto participation = CombinedParticipation(
         wall_setup.settings().wall_binding_id, config.source_id,
         limits.participation);
-    output::Require(
-        wall.retained_host_upper_bound >=
-                wall.participation.publication_host_bytes &&
-            detail::IncrementalTransactionHost(
-                self_contact.transaction) >=
-                self_contact.transaction.participation
-                    .publication_host_bytes &&
-            wall.peak_host_upper_bound >=
-                wall.retained_host_upper_bound &&
-            self_contact.peak_host_upper_bound >=
-                self_contact.retained_host_upper_bound,
-        "Wall+self component forecast partition is invalid");
-
-    const auto wall_without_publication =
-        wall.retained_host_upper_bound -
-        wall.participation.publication_host_bytes;
-    const auto transaction_without_publication =
-        detail::IncrementalTransactionHost(
-            self_contact.transaction) -
-        self_contact.transaction.participation
-            .publication_host_bytes;
-    tl::util::BoundedArenaLayout host(limits.host_bytes);
-    tl::util::BoundedArenaLayout device(limits.device_bytes);
-    tl::util::ArenaRegion unused;
-    for (const auto bytes : {
-             wall_without_publication,
-             detail::IncrementalSetupHost(self_setup.forecast()),
-             transaction_without_publication,
-             participation.publication_host_bytes,
-             self_fixed})
-        output::Require(
-            host.Append<std::byte>(bytes, unused),
-            "Complete retained wall+self runtime exceeds host cap");
-
+    const auto budget = detail::ComposeCombinedBudget(
+        wall.retained_host_upper_bound,
+        wall.peak_host_upper_bound,
+        wall.device_bytes,
+        wall.participation.publication_host_bytes,
+        self_setup.forecast(), self_contact, participation,
+        self_fixed, limits.host_bytes, limits.device_bytes);
     WallSelfContactForecast result;
     result.wall = wall;
     result.self_contact = self_contact;
     result.participation = participation;
-    result.retained_host_upper_bound = host.bytes();
-    const auto scratch = std::max(
-        wall.peak_host_upper_bound -
-            wall.retained_host_upper_bound,
-        self_contact.peak_host_upper_bound -
-            self_contact.retained_host_upper_bound);
-    output::Require(
-        host.Append<std::byte>(scratch, unused),
-        "Complete wall+self runtime peak exceeds host cap");
-    result.peak_host_upper_bound = host.bytes();
-    output::Require(
-        device.Append<std::byte>(wall.device_bytes, unused) &&
-            device.Append<std::byte>(
-                self_contact.transaction.device_bytes, unused),
-        "Complete wall+self runtime exceeds device cap");
-    result.device_bytes = device.bytes();
+    result.retained_host_upper_bound =
+        budget.retained_host_upper_bound;
+    result.peak_host_upper_bound =
+        budget.peak_host_upper_bound;
+    result.device_bytes = budget.device_bytes;
     return result;
 }
 

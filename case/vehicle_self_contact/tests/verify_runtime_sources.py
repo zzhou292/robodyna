@@ -43,13 +43,17 @@ def main() -> None:
         "candidate transaction")
 
     commit = (dynamics / "VehiclePhysicalDynamics.cpp").read_text()
+    receipt_slots = (
+        dynamics / "ScratchReceiptRoster.h").read_text()
     require(commit.count("SealPhysicalScratchParticipation(") == 1,
             "dynamics must seal the merged scratch roster exactly once")
-    ordered(
-        commit,
-        ["receipts.mapped_wall", "receipts.self_contact",
-         "SealPhysicalScratchParticipation(", "CommitPhysical("],
-        "common commit")
+    require("ComposeScratchReceipts(" in commit and
+            "return {wall.mapped_wall, self_contact.self_contact}" in
+            receipt_slots,
+            "common commit must preserve mapped-wall then self-contact slots")
+    ordered(commit, ["ComposeScratchReceipts(",
+                     "SealPhysicalScratchParticipation(",
+                     "CommitPhysical("], "common commit")
     ordered(
         commit,
         ["if(wall) wall->Discard()",
@@ -73,9 +77,11 @@ def main() -> None:
          "VehicleSelfContactStartup::PrepareUnconfigured",
          "{wall_entry, self_entry}"],
         "combined startup")
-    require("wall_without_publication" in prepare and
-            "transaction_without_publication" in prepare and
-            "participation.publication_host_bytes" in prepare,
+    budget = (contact / "RuntimeBudget.cpp").read_text()
+    require("wall_without_publication" in budget and
+            "transaction_without_publication" in budget and
+            "participation.publication_host_bytes" in budget and
+            "ComposeCombinedBudget(" in prepare,
             "combined forecast must replace standalone publication charges")
 
     startup_header = (
@@ -168,8 +174,46 @@ def main() -> None:
                 f"runtime CTest registration is missing: {name}")
     require("RESOURCE_LOCK vehicle_self_contact_gpu" in fixture_cmake and
             "TIMEOUT ${runtime_timeout}" in fixture_cmake and
+            'LABELS "acceptance-v5;' in fixture_cmake and
             "RuntimeGateTest.cpp" in fixture_cmake,
             "runtime gates need source proof and finite serialized properties")
+    acceptance_guard = fixture_cmake.find(
+        "if(ROBO_DYNA_ENABLE_V5_SELF_CONTACT_ACCEPTANCE)")
+    self_loop = fixture_cmake.find(
+        "foreach(runtime_gate IN ITEMS startup one_attempt)",
+        acceptance_guard)
+    wall_guard = fixture_cmake.find(
+        'if(EXISTS "${ROBO_DYNA_VEHICLE_WALL_MANIFEST}")',
+        self_loop)
+    wall_loop = fixture_cmake.find(
+        "foreach(runtime_gate IN ITEMS startup one_attempt)",
+        wall_guard)
+    require(acceptance_guard >= 0 and
+            acceptance_guard < self_loop < wall_guard < wall_loop,
+            "full V5 runtime registration is not acceptance/manifest guarded")
+    root_cmake = (args.app_root / "CMakeLists.txt").read_text()
+    shell_cmake = (
+        case / "vehicle_startup" / "shell_execution" /
+        "CMakeLists.txt").read_text()
+    for text in (root_cmake, shell_cmake):
+        require("option(ROBO_DYNA_ENABLE_V5_SELF_CONTACT_ACCEPTANCE" in text,
+                "V5 acceptance cache option is missing")
+        require(
+            '"Register full canonical V5 self-contact runtime acceptance tests" OFF)'
+            in text,
+            "V5 acceptance cache option must default OFF")
+
+    runtime_values = (contact / "tests" / "RuntimeValuesTest.cpp").read_text()
+    for token in ("ComposeCombinedBudget(",
+                  "ComposeScratchReceipts(",
+                  "VehicleSelfContactRuntimeCoupon",
+                  "2 * sizeof(tl::fea::ShellPhysicalScratchParticipation)"):
+        require(token in runtime_values,
+                f"small app runtime coupon is missing {token}")
+    contact_cmake = (contact / "CMakeLists.txt").read_text()
+    require('LABELS "unit"' in contact_cmake and
+            'LABELS "coupon"' in contact_cmake,
+            "small app runtime tiers need unit/coupon labels")
 
     print("vehicle self-contact runtime source/CMake/Bazel proof passed")
 

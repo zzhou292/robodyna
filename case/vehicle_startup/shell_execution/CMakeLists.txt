@@ -23,7 +23,14 @@ option(ROBO_DYNA_VEHICLE_EXECUTION_ORIGINAL "Complete authenticated retained ori
 if(ROBO_DYNA_VEHICLE_EXECUTION_ORIGINAL)
   include("${CMAKE_CURRENT_LIST_DIR}/OriginalTests.cmake")
 endif()
+option(ROBO_DYNA_ENABLE_V5_SELF_CONTACT_ACCEPTANCE
+  "Register full canonical V5 self-contact runtime acceptance tests" OFF)
 option(ROBO_DYNA_VEHICLE_SELF_CONTACT_SOURCE_ORIGINAL "Complete V5 centered-shell self-contact source census" OFF)
+if(ROBO_DYNA_ENABLE_V5_SELF_CONTACT_ACCEPTANCE AND
+   NOT ROBO_DYNA_VEHICLE_SELF_CONTACT_SOURCE_ORIGINAL)
+  message(FATAL_ERROR
+    "V5 self-contact acceptance requires the original self-contact source fixture")
+endif()
 if(ROBO_DYNA_VEHICLE_SELF_CONTACT_SOURCE_ORIGINAL)
   if(NOT ROBO_DYNA_VEHICLE_EXECUTION_ORIGINAL)
     message(FATAL_ERROR "Self-contact source census requires the authenticated original fixture")

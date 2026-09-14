@@ -18,7 +18,7 @@ target_compile_options(robo_dyna_vehicle_self_contact_values_check PRIVATE
 add_test(NAME vehicle_self_contact_values
   COMMAND robo_dyna_vehicle_self_contact_values_check)
 set_tests_properties(vehicle_self_contact_values PROPERTIES
-  RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 90)
+  RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 90 LABELS "unit")
 
 add_executable(robo_dyna_vehicle_self_contact_runtime_values_check
   tests/RuntimeValuesTest.cpp RuntimeBudget.cpp)
@@ -29,16 +29,23 @@ target_compile_options(
   robo_dyna_vehicle_self_contact_runtime_values_check PRIVATE
   -fno-fast-math -ffp-contract=off)
 add_test(NAME vehicle_self_contact_runtime_values
-  COMMAND robo_dyna_vehicle_self_contact_runtime_values_check)
+  COMMAND robo_dyna_vehicle_self_contact_runtime_values_check
+    "--gtest_filter=VehicleSelfContactRuntimeValues.*")
 set_tests_properties(vehicle_self_contact_runtime_values PROPERTIES
-  RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 90)
+  RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 90 LABELS "unit")
+
+add_test(NAME vehicle_self_contact_runtime_coupon
+  COMMAND robo_dyna_vehicle_self_contact_runtime_values_check
+    "--gtest_filter=VehicleSelfContactRuntimeCoupon.*")
+set_tests_properties(vehicle_self_contact_runtime_coupon PROPERTIES
+  RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30 LABELS "coupon")
 
 add_test(NAME vehicle_self_contact_runtime_source_proof
   COMMAND "${Python3_EXECUTABLE}" -B
     "${CMAKE_CURRENT_LIST_DIR}/tests/verify_runtime_sources.py"
     "${CMAKE_CURRENT_LIST_DIR}/../.." "${ROBO_DYNA_TL_ROOT}")
 set_tests_properties(vehicle_self_contact_runtime_source_proof PROPERTIES
-  RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)
+  RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30 LABELS "unit")
 
 option(ROBO_DYNA_VEHICLE_SELF_CONTACT_RUNTIME
   "Build the opt-in self-only and wall+self runtime factories" OFF)

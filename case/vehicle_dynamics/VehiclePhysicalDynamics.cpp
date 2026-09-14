@@ -1,4 +1,5 @@
 #include "Storage.h"
+#include "ScratchReceiptRoster.h"
 #include "Reports.h"
 #include "lib_utils/BoundedArena.h"
 #include <cmath>
@@ -100,15 +101,13 @@ void VehiclePhysicalDynamics::CommitStep() {
     const auto& view=s.prepared;
     tl::fea::ShellPublicationReport report;
     if(s.wall || s.self_contact) {
-        tl::fea::ShellPhysicalScratchReceiptRoster receipts;
-        if(s.wall) {
-            const auto wall=s.wall->scratch_receipts();
-            receipts.mapped_wall=wall.mapped_wall;
-        }
-        if(s.self_contact) {
-            const auto self=s.self_contact->scratch_receipts();
-            receipts.self_contact=self.self_contact;
-        }
+        const auto wall=s.wall?s.wall->scratch_receipts():
+            tl::fea::ShellPhysicalScratchReceiptRoster{};
+        const auto self_contact=s.self_contact?
+            s.self_contact->scratch_receipts():
+            tl::fea::ShellPhysicalScratchReceiptRoster{};
+        const auto receipts=detail::ComposeScratchReceipts(
+            wall,self_contact);
         report=state.publication.SealPhysicalScratchParticipation(
             state.owner,s.token,receipts);
         if(static_cast<int>(report.status)!=0) {

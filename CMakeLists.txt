@@ -3,6 +3,8 @@ project(RoboDyna LANGUAGES NONE)
 option(ROBO_DYNA_ENABLE_FULL_SHELL_RECORD_CHECKS "Build bounded binary full-shell visualization record checks without CUDA" OFF)
 option(ROBO_DYNA_ENABLE_SOURCE_ASSEMBLY_INPUT_CHECKS "Build authenticated assembly declaration and TL startup-input checks without dynamics" OFF)
 option(ROBO_DYNA_ENABLE_SOURCE_ASSEMBLY_STARTUP_CHECKS "Build complete source assembly shell/material/rigid startup without dynamics" OFF)
+option(ROBO_DYNA_ENABLE_V5_SELF_CONTACT_ACCEPTANCE
+  "Register full canonical V5 self-contact runtime acceptance tests" OFF)
 find_package(Python3 3.8 REQUIRED COMPONENTS Interpreter)
 enable_testing()
 add_test(NAME yaris_wall_import
