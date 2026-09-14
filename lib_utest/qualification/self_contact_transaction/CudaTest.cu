@@ -238,7 +238,7 @@ struct Fixture {
     if (!(mass > 0)) return false;
     rig.external_force_source_node = 14;
     rig.external_force_z_n =
-        -2 * mass * .00075 / (p::H * p::H);
+        -2 * mass * .01 / (p::H * p::H);
     return true;
   }
 
@@ -506,6 +506,11 @@ TEST(SelfContactTransactionCuda,
   ASSERT_TRUE(Good(fixture.transaction.AssembleAccepted(
       fixture.rig.owner, token, assembly, &accepted)));
   ASSERT_TRUE(fixture.Prepare(token, assembly, prepared, common));
+  std::uint8_t prepared_t3_activity = 1;
+  ASSERT_TRUE(p::Good(fixture.rig.t3.CopyPreparedParentActivity(
+      fixture.rig.owner, token, common.t3,
+      &prepared_t3_activity, 1)));
+  ASSERT_EQ(prepared_t3_activity, 0u);
   c::SelfContactTransactionReceipt removal;
   ASSERT_TRUE(Good(fixture.transaction.SealCandidate(
       fixture.rig.owner, token, common, prepared, accepted, &removal)));
