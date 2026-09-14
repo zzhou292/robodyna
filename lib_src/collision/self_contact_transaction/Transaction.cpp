@@ -474,7 +474,19 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
         state.buffers.chunk_certificates,
         6 * state.storage_forecast.facet_pair_chunk_capacity,
         &chunk_events);
-    if (events.status != S::Ok) return state.Fail(events);
+    if (events.status != S::Ok) {
+      if (events.candidate != SIZE_MAX) {
+        const auto chunk_feature_base =
+            feature_observations - discovery.feature_candidates;
+        if (events.candidate >
+            SIZE_MAX - chunk_feature_base)
+          return state.Fail(Failure(
+              S::ResourceLimit,
+              "Accepted feature diagnostic ordinal overflowed"));
+        events.candidate += chunk_feature_base;
+      }
+      return state.Fail(events);
+    }
     events = sct::MergeAcceptedEventChunk(
         state.buffers.chunk_certificates, chunk_events,
         state.buffers.accepted_certificates,

@@ -23,6 +23,16 @@ SelfContactTransactionReport Failure(
   return result;
 }
 
+SelfContactTransactionReport FeatureFailure(
+    SelfContactTransactionReport report,
+    const FixedTriangleFeatureCandidate& feature,
+    std::size_t candidate) noexcept {
+  report.candidate = candidate;
+  report.offending_motion[0].facet = feature.triangles[0];
+  report.offending_motion[1].facet = feature.triangles[1];
+  return report;
+}
+
 FixedTriangleKey DescriptorKey(
     const FixedContactFacet& value) noexcept {
   return {value.source_instance_id, value.source.source_parent_id,
@@ -771,7 +781,8 @@ SelfContactTransactionReport BuildAcceptedEvents(
         active_use, regularity, regularity_receipt, features, value,
         descriptors, triangle_order, facet_count, activity, &covered);
     if (coverage.status != S::Ok) return coverage;
-    if (!covered) return checked;
+    if (!covered)
+      return FeatureFailure(checked, value, feature);
   }
   if (required > capacity)
     return Failure(S::ResourceLimit,
@@ -826,7 +837,9 @@ SelfContactTransactionReport ValidateCandidateEdgePolicy(
         features.data[feature], descriptors, triangle_order,
         facet_count, activity, &covered);
     if (coverage.status != S::Ok) return coverage;
-    if (!covered) return checked;
+    if (!covered)
+      return FeatureFailure(
+          checked, features.data[feature], feature);
   }
   return {};
 }
