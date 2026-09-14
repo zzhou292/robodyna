@@ -107,8 +107,10 @@ struct Fixture {
     for (std::size_t row = 0;
          row < execution_catalog.parent_count(); ++row) {
       const auto& parent = *execution_catalog.parent(row);
-      if (t3_only &&
-          parent.family != fe::ShellBindingFamily::T3)
+      if (parent.family != fe::ShellBindingFamily::T3 &&
+          parent.family != fe::ShellBindingFamily::Qbat)
+        continue;
+      if (t3_only && parent.family != fe::ShellBindingFamily::T3)
         continue;
       selection.push_back({
           row, parent.family, parent.family_index,
@@ -205,6 +207,18 @@ struct Fixture {
           parents[parent].source.family_index == family_index)
         return parent;
     return SIZE_MAX;
+  }
+
+  bool DriveT3Removal() {
+    const auto apex = rig.fixture.domain.Find(14);
+    if (apex == SIZE_MAX) return false;
+    const double mass =
+        rig.fixture.ledger.nodes()[apex].coefficients.mass;
+    if (!(mass > 0)) return false;
+    rig.external_force_source_node = 14;
+    rig.external_force_z_n =
+        -2 * mass * .00075 / (p::H * p::H);
+    return true;
   }
 
   bool MatchesAccepted(
@@ -422,6 +436,7 @@ TEST(SelfContactPhysicalActivityCuda,
 TEST(SelfContactPhysicalActivityCuda,
      ActualMixedRemovalLastParentAndLongInactive) {
   Fixture mixed(1.e-12);
+  ASSERT_TRUE(mixed.DriveT3Removal());
   ASSERT_TRUE(mixed.Initialize());
   bool removed = false;
   bool long_inactive = false;
@@ -455,6 +470,7 @@ TEST(SelfContactPhysicalActivityCuda,
   EXPECT_TRUE(long_inactive);
 
   Fixture last(1.e-12, true);
+  ASSERT_TRUE(last.DriveT3Removal());
   ASSERT_TRUE(last.Initialize());
   bool last_removed = false;
   for (unsigned step = 0; step < 64 && !last_removed; ++step) {

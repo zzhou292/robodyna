@@ -55,6 +55,8 @@ if(SELF_CONTACT_PHYSICAL_ACTIVITY_CUDA)
     physical_publication_fixture
     tl_self_contact_physical_activity
     CUDA::cudart GTest::gtest_main)
+  target_link_options(self_contact_physical_activity_cuda PRIVATE
+    "LINKER:--wrap=cudaMemcpyAsync")
   set_target_properties(self_contact_physical_activity_cuda PROPERTIES
     CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
   target_compile_options(self_contact_physical_activity_cuda PRIVATE
