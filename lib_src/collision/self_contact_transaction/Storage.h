@@ -35,6 +35,7 @@ struct MotionSupport {
 
 enum class PairMotionAction : std::uint8_t {
   LinearNodalV1,
+  CertifiedLinearSeparation,
   ExcludedSameRigidGroup,
   CertifiedRigidArcSeparation,
   UnsupportedRigidArc,
@@ -253,8 +254,10 @@ SelfContactTransactionReport InitializeStaticPipeline(
     const SelfContactActiveUseBinding&, Buffers,
     std::size_t nodes, std::size_t surface_parents,
     std::size_t facets) noexcept;
-SelfContactTransactionReport FilterSameRigidFacetPairs(
-    const MotionSupport*, std::size_t facets,
+SelfContactTransactionReport FilterAcceptedFacetPairs(
+    const SelfContactActiveUseBinding&,
+    const CurrentFixedTriangle*, const MotionSupport*,
+    std::size_t facets,
     FixedTrianglePair*, std::size_t* pair_count) noexcept;
 SelfContactTransactionReport EvaluateCompleteTriangles(
     const FixedContactFacet*, std::size_t, VectorView,

@@ -287,6 +287,8 @@ TEST(SelfContactTransactionValues,
       {-1, -1, -1}, {1, 1, 1}};
   const c::SelfContactSweptParentBounds far{
       {3, -1, -1}, {4, 1, 1}};
+  const c::SelfContactSweptParentBounds touching{
+      {1, -1, -1}, {2, 1, 1}};
   sct::MotionSupport ordinary;
   sct::MotionSupport rigid_a;
   rigid_a.motion = c::SelfContactFacetMotion::CompleteRigidGroup;
@@ -305,6 +307,12 @@ TEST(SelfContactTransactionValues,
   EXPECT_EQ(sct::ClassifyCandidatePairMotion(
       ordinary, near, ordinary, near),
       sct::PairMotionAction::LinearNodalV1);
+  EXPECT_EQ(sct::ClassifyCandidatePairMotion(
+      ordinary, near, ordinary, touching),
+      sct::PairMotionAction::LinearNodalV1);
+  EXPECT_EQ(sct::ClassifyCandidatePairMotion(
+      ordinary, near, ordinary, far),
+      sct::PairMotionAction::CertifiedLinearSeparation);
   EXPECT_EQ(sct::ClassifyCandidatePairMotion(
       rigid_a, near, rigid_a, near),
       sct::PairMotionAction::ExcludedSameRigidGroup);

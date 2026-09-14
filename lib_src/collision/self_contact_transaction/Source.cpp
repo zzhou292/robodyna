@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 namespace tlfea::contact::self_contact_transaction {
 namespace {
@@ -36,6 +37,50 @@ SelfContactTransactionReport FeatureFailure(
   report.offending_edge_parameters[1] =
       feature.edge_parameters[1];
   return report;
+}
+
+double Component(Vec3 value, unsigned axis) noexcept {
+  return axis == 0 ? value.x : (axis == 1 ? value.y : value.z);
+}
+
+bool InflatedFacetBoundsSeparated(
+    const CurrentFixedTriangle& first, double first_thickness,
+    const CurrentFixedTriangle& second, double second_thickness,
+    bool* valid) noexcept {
+  *valid = std::isfinite(first_thickness) && first_thickness > 0 &&
+      std::isfinite(second_thickness) && second_thickness > 0;
+  if (!*valid) return false;
+  const double infinity = std::numeric_limits<double>::infinity();
+  for (unsigned axis = 0; axis < 3; ++axis) {
+    double first_lower = Component(first.vertices[0], axis);
+    double first_upper = first_lower;
+    double second_lower = Component(second.vertices[0], axis);
+    double second_upper = second_lower;
+    for (unsigned vertex = 0; vertex < 3; ++vertex) {
+      const auto a = Component(first.vertices[vertex], axis);
+      const auto b = Component(second.vertices[vertex], axis);
+      if (!std::isfinite(a) || !std::isfinite(b)) {
+        *valid = false;
+        return false;
+      }
+      first_lower = std::min(first_lower, a);
+      first_upper = std::max(first_upper, a);
+      second_lower = std::min(second_lower, b);
+      second_upper = std::max(second_upper, b);
+    }
+    first_lower = std::nextafter(
+        first_lower - first_thickness, -infinity);
+    first_upper = std::nextafter(
+        first_upper + first_thickness, infinity);
+    second_lower = std::nextafter(
+        second_lower - second_thickness, -infinity);
+    second_upper = std::nextafter(
+        second_upper + second_thickness, infinity);
+    if (first_upper < second_lower ||
+        second_upper < first_lower)
+      return true;
+  }
+  return false;
 }
 
 FixedTriangleKey DescriptorKey(
@@ -709,12 +754,19 @@ SelfContactTransactionReport InitializeStaticPipeline(
   return {};
 }
 
-SelfContactTransactionReport FilterSameRigidFacetPairs(
+SelfContactTransactionReport FilterAcceptedFacetPairs(
+    const SelfContactActiveUseBinding& active_use,
+    const CurrentFixedTriangle* triangles,
     const MotionSupport* motion, std::size_t facets,
     FixedTrianglePair* pairs, std::size_t* pair_count) noexcept {
-  if (!motion || !facets || !pairs || !pair_count)
+  if (!triangles || !motion || !facets || !pairs || !pair_count)
     return Failure(S::InvalidInput,
-        "Rigid facet-pair filter storage is incomplete");
+        "Accepted facet-pair filter storage is incomplete");
+  const auto facet_uses = active_use.facet_uses();
+  const auto parents = active_use.parents();
+  if (facet_uses.size() != facets)
+    return Failure(S::IdentityMismatch,
+        "Accepted facet-pair filter inventory is incomplete");
   std::size_t write = 0;
   for (std::size_t pair = 0; pair < *pair_count; ++pair) {
     const auto value = pairs[pair];
@@ -727,6 +779,25 @@ SelfContactTransactionReport FilterSameRigidFacetPairs(
         motion[value.first], {}, motion[value.second], {});
     if (action == PairMotionAction::ExcludedSameRigidGroup)
       continue;
+    const auto first_parent = facet_uses[value.first].parent;
+    const auto second_parent = facet_uses[value.second].parent;
+    if (first_parent >= parents.size() ||
+        second_parent >= parents.size())
+      return Failure(S::IdentityMismatch,
+          "Accepted facet pair has no active parent",
+          SIZE_MAX, pair);
+    bool valid = false;
+    if (InflatedFacetBoundsSeparated(
+            triangles[value.first],
+            parents[first_parent].reference_half_thickness_m,
+            triangles[value.second],
+            parents[second_parent].reference_half_thickness_m,
+            &valid))
+      continue;
+    if (!valid)
+      return Failure(S::IdentityMismatch,
+          "Accepted facet bound or thickness is invalid",
+          SIZE_MAX, pair);
     pairs[write++] = value;
   }
   *pair_count = write;

@@ -440,7 +440,8 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
     if (streamed.status != S::Ok) return state.Fail(streamed);
     if (!pair_count) break;
     const auto streamed_pair_count = pair_count;
-    auto filtered = sct::FilterSameRigidFacetPairs(
+    auto filtered = sct::FilterAcceptedFacetPairs(
+        state.active_use, state.buffers.accepted_triangles,
         state.buffers.facet_motion, state.facet_count,
         state.buffers.facet_pair_chunk, &pair_count);
     if (filtered.status != S::Ok) return state.Fail(filtered);

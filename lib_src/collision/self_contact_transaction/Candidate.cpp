@@ -648,6 +648,8 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
       }
       if (action == sct::PairMotionAction::ExcludedSameRigidGroup)
         continue;
+      if (action == sct::PairMotionAction::CertifiedLinearSeparation)
+        continue;
       state.buffers.facet_pair_chunk[pair_count] = value;
       MakePath(state.buffers.accepted_triangles[value.first],
                state.buffers.prepared_triangles[value.first],
@@ -706,7 +708,9 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
       std::size_t raw_pair = 0;
       for (std::size_t pair = 0; pair < pair_count; ++pair) {
         while (state.buffers.chunk_motion_actions[raw_pair] ==
-               sct::PairMotionAction::ExcludedSameRigidGroup)
+                   sct::PairMotionAction::ExcludedSameRigidGroup ||
+               state.buffers.chunk_motion_actions[raw_pair] ==
+                   sct::PairMotionAction::CertifiedLinearSeparation)
           ++raw_pair;
         const auto action =
             state.buffers.chunk_motion_actions[raw_pair];
@@ -775,6 +779,14 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
             state.buffers.chunk_raw_canonical_pairs[pair];
         outcome.disposition =
             SelfContactCandidateDisposition::ExcludedSameRigidGroup;
+      } else if (state.buffers.chunk_motion_actions[pair] ==
+                 sct::PairMotionAction::CertifiedLinearSeparation) {
+        auto& outcome = state.buffers.chunk_policy_outcomes[pair];
+        outcome = {};
+        outcome.pair =
+            state.buffers.chunk_raw_canonical_pairs[pair];
+        outcome.disposition =
+            SelfContactCandidateDisposition::CertifiedSeparated;
       } else {
         if (validated_index >= validated_count ||
             sct::Compare(

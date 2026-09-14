@@ -22,9 +22,6 @@ PairMotionAction ClassifyCandidatePairMotion(
       first.complete_rigid_group != UINT32_MAX &&
       first.complete_rigid_group == second.complete_rigid_group)
     return PairMotionAction::ExcludedSameRigidGroup;
-  if (first.motion == SelfContactFacetMotion::LinearNodalV1 &&
-      second.motion == SelfContactFacetMotion::LinearNodalV1)
-    return PairMotionAction::LinearNodalV1;
   const bool separated =
       first_bounds.upper.x < second_bounds.lower.x ||
       second_bounds.upper.x < first_bounds.lower.x ||
@@ -32,6 +29,10 @@ PairMotionAction ClassifyCandidatePairMotion(
       second_bounds.upper.y < first_bounds.lower.y ||
       first_bounds.upper.z < second_bounds.lower.z ||
       second_bounds.upper.z < first_bounds.lower.z;
+  if (first.motion == SelfContactFacetMotion::LinearNodalV1 &&
+      second.motion == SelfContactFacetMotion::LinearNodalV1)
+    return separated ? PairMotionAction::CertifiedLinearSeparation
+                     : PairMotionAction::LinearNodalV1;
   return separated ? PairMotionAction::CertifiedRigidArcSeparation
                    : PairMotionAction::UnsupportedRigidArc;
 }

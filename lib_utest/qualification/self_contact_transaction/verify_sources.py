@@ -57,12 +57,12 @@ for token in (
     "CopyPreparedRigidGroups(",
     "ConservativeSweptParentBounds",
     "ClassifyCandidatePairMotion(",
-    "FilterSameRigidFacetPairs(",
+    "FilterAcceptedFacetPairs(",
     "DescribeMotionFailure(",
 ):
-    require(candidate if token != "FilterSameRigidFacetPairs(" else
+    require(candidate if token != "FilterAcceptedFacetPairs(" else
             transaction, token,
-            CANDIDATE if token != "FilterSameRigidFacetPairs(" else
+            CANDIDATE if token != "FilterAcceptedFacetPairs(" else
             TRANSACTION)
 if BROADPHASE.exists() and BROADPHASE_TYPES.exists():
     for token in ("ConservativeSweptParentBounds",
