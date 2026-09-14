@@ -33,7 +33,8 @@ struct Fixture {
           p::ContactConstraintLayout::Legacy)
       : rig(surface_rigid, 2.5,
             constraints == p::ContactConstraintLayout::SurfaceCinSecondary,
-            constraints) {
+            constraints,
+            constraints == p::ContactConstraintLayout::Legacy) {
     qbat_catalog_test::Fixture declaration;
     for (unsigned row = 0; row < 2; ++row) {
       declaration.materials[row].curve_id = 0;
@@ -265,14 +266,22 @@ struct Fixture {
           }
           return point;
         };
-        const auto a=edge_point(uses.edge_uses()[first],parameters[0]);
-        const auto b=edge_point(uses.edge_uses()[second],parameters[1]);
+        auto first_use=first;
+        auto second_use=second;
+        auto a=edge_point(uses.edge_uses()[first],parameters[0]);
+        auto b=edge_point(uses.edge_uses()[second],parameters[1]);
         const bool strict=parameters[0]>0 && parameters[0]<1 &&
             parameters[1]>0 && parameters[1]<1;
         if (!strict || !(closest.distance > 0)) continue;
+        if (c::fixed_triangle_features::Compare(
+                uses.edge_uses()[first_use].key,
+                uses.edge_uses()[second_use].key)>0) {
+          std::swap(first_use,second_use);
+          std::swap(a,b);
+        }
         c::SelfContactPairClassification classification;
         if (uses.ClassifyEdgeEdge(
-                first,a,second,b,
+                first_use,a,second_use,b,
                 c::SelfContactEdgeEdgeCase::
                     StrictInteriorInteriorMinimum,
                 state,&classification).status !=
@@ -286,11 +295,11 @@ struct Fixture {
           continue;
         c::SelfContactForceEvent event;
         event.feature.SetEdgeEdge();
-        event.feature.edge_edge.edges[0]=uses.edge_uses()[first].key;
-        event.feature.edge_edge.edges[1]=uses.edge_uses()[second].key;
+        event.feature.edge_edge.edges[0]=uses.edge_uses()[first_use].key;
+        event.feature.edge_edge.edges[1]=uses.edge_uses()[second_use].key;
         event.source_order=901;
-        event.edge_use[0]=static_cast<std::uint32_t>(first);
-        event.edge_use[1]=static_cast<std::uint32_t>(second);
+        event.edge_use[0]=static_cast<std::uint32_t>(first_use);
+        event.edge_use[1]=static_cast<std::uint32_t>(second_use);
         event.endpoints[0]=a;
         event.endpoints[1]=b;
         event.classification=classification;
