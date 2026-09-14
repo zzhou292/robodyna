@@ -87,10 +87,48 @@ struct SelfContactTransactionLimits {
   RepresentedIntervalLimits crossing;
   tl::fea::ShellPhysicalScratchParticipationLimits participation;
   std::size_t max_candidate_triangles = 4096;
-  std::size_t max_candidate_pairs = 4096;
+  // Complete parent keys remain resident, but facet pairs and their exact
+  // geometry are materialized only in chunks. max_candidate_pairs is the
+  // complete facet-pair census cap, not an allocation shape.
+  std::size_t max_candidate_pairs = 65536;
+  std::size_t max_facet_pair_chunk = 4096;
+  // The certificate ledger is independent of the force publication cap. This
+  // permits a complete count before an exact force-capacity rejection.
+  std::size_t max_global_events = 4096;
+  std::size_t max_event_hash_slots = 8192;
+  // Zero folds all outcomes into the complete summary without retaining an
+  // addressable per-pair publication.
+  std::size_t max_policy_outcomes = 4096;
+  std::size_t max_stream_crossing_work = 1u << 20;
   std::size_t max_host_bytes = 128u << 20;
   std::size_t max_device_bytes = 64u << 20;
   std::size_t max_startup_host_bytes = 512u << 20;
+
+  struct ExactCensus {
+    std::size_t nodes = 0;
+    std::size_t surface_parents = 0;
+    std::size_t selected_parents = 0;
+    std::size_t maximum_family_parents = 0;
+    std::size_t facets = 0;
+    std::size_t parent_pairs = 0;
+    std::size_t facet_pairs = 0;
+    std::size_t accepted_events = 0;
+  };
+
+  // Generic vehicle-scale construction. Counts and caps come from a prior
+  // exact census; there are deliberately no model-specific constants here.
+  static SelfContactTransactionLimits Vehicle(
+      const ExactCensus&, std::size_t facet_pair_chunk,
+      std::size_t event_ledger_capacity,
+      std::size_t event_hash_slots,
+      std::size_t policy_outcome_capacity,
+      std::size_t crossing_work_per_pair,
+      std::size_t crossing_work_per_chunk,
+      std::size_t crossing_work_complete,
+      unsigned crossing_depth,
+      std::size_t max_host_bytes,
+      std::size_t max_device_bytes,
+      std::size_t max_startup_host_bytes) noexcept;
 };
 
 struct SelfContactTransactionForecast {
@@ -109,10 +147,20 @@ struct SelfContactTransactionForecast {
   std::size_t prepared_snapshot_values = 0;
   std::size_t broadphase_pair_capacity = 0;
   std::size_t candidate_triangle_capacity = 0;
+  std::size_t complete_facet_pair_capacity = 0;
   std::size_t candidate_pair_capacity = 0;
+  std::size_t facet_pair_chunk_capacity = 0;
+  std::size_t parent_pair_cursor_capacity = 0;
+  std::size_t accepted_event_ledger_capacity = 0;
+  std::size_t event_hash_capacity = 0;
   std::size_t accepted_event_capacity = 0;
   std::size_t accepted_certificate_capacity = 0;
   std::size_t policy_outcome_capacity = 0;
+  std::size_t policy_chunk_capacity = 0;
+  std::size_t complete_crossing_work_capacity = 0;
+  std::size_t broadphase_pair_readback_bytes = 0;
+  std::size_t streaming_cursor_bytes = 0;
+  std::size_t streaming_heap_bytes = 0;
   std::size_t candidate_arena_bytes = 0;
   std::size_t shared_backing_discount_bytes = 0;
   std::size_t owned_host_bytes = 0;
@@ -151,6 +199,18 @@ struct SelfContactCandidatePolicyView {
   const SelfContactCandidatePolicyOutcome* data = nullptr;
   std::size_t count = 0;
   bool complete = false;
+};
+
+struct SelfContactCandidatePolicySummary {
+  std::size_t outcomes = 0;
+  std::size_t certified_separated = 0;
+  std::size_t excluded_local_intersection = 0;
+  std::size_t represented_by_accepted_vf = 0;
+  // FNV-1a over canonical pair identity, disposition and accepted source
+  // order. It is a deterministic completeness diagnostic, not authority.
+  std::uint64_t digest = 1469598103934665603ull;
+  bool complete = false;
+  bool detailed_publication = false;
 };
 
 class SelfContactTransaction;
@@ -213,6 +273,9 @@ class SelfContactTransactionReceipt {
   std::size_t policy_outcomes() const noexcept {
     return policy_outcomes_;
   }
+  const SelfContactCandidatePolicySummary& policy_summary() const noexcept {
+    return policy_summary_;
+  }
   std::size_t active_parents() const noexcept {
     return active_parents_;
   }
@@ -244,6 +307,7 @@ class SelfContactTransactionReceipt {
   std::size_t broadphase_pairs_ = 0;
   std::size_t facet_pairs_ = 0;
   std::size_t policy_outcomes_ = 0;
+  SelfContactCandidatePolicySummary policy_summary_;
   std::size_t active_parents_ = 0;
   std::size_t removing_parents_ = 0;
   std::size_t skipped_parents_ = 0;

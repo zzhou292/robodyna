@@ -25,6 +25,13 @@ bool Add(std::size_t value, std::size_t* total) noexcept {
   return true;
 }
 
+bool Product(std::size_t a, std::size_t b,
+             std::size_t* output) noexcept {
+  if (!output || (a && b > SIZE_MAX / a)) return false;
+  *output = a * b;
+  return true;
+}
+
 }  // namespace
 
 SelfContactTransactionPreflight SelfContactTransaction::Forecast(
@@ -48,6 +55,11 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
       !fe::shell_startup_detail::SameStartup(
           config.force.startup, identity.startup) ||
       !limits.max_candidate_triangles || !limits.max_candidate_pairs ||
+      !limits.max_facet_pair_chunk ||
+      !limits.max_global_events ||
+      limits.max_global_events > UINT32_MAX ||
+      limits.max_event_hash_slots < limits.max_global_events ||
+      !limits.max_stream_crossing_work ||
       !limits.max_host_bytes || !limits.max_device_bytes ||
       !limits.max_startup_host_bytes)
     return Failure(S::InvalidInput,
@@ -60,13 +72,16 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
   const auto facets = active_use.facet_uses().size();
   if (!surface_parents || !parents || !facets ||
       facets > limits.max_candidate_triangles ||
-      facets > limits.crossing.max_paths ||
-      limits.max_candidate_pairs >
+      limits.max_facet_pair_chunk >
           limits.accepted_discovery.max_input_pairs ||
-      limits.max_candidate_pairs >
+      limits.max_facet_pair_chunk >
           limits.candidate_discovery.max_input_pairs ||
-      limits.max_candidate_pairs > limits.crossing.max_input_pairs ||
-      limits.max_candidate_pairs > limits.crossing.max_results)
+      limits.max_facet_pair_chunk > limits.crossing.max_input_pairs ||
+      limits.max_facet_pair_chunk > limits.crossing.max_results ||
+      limits.max_facet_pair_chunk > SIZE_MAX / 2 ||
+      2 * limits.max_facet_pair_chunk > limits.crossing.max_paths ||
+      limits.crossing.max_total_work >
+          limits.max_stream_crossing_work)
     return Failure(S::ResourceLimit,
         "Complete parent/facet pipeline exceeds a fixed count cap");
 
@@ -163,7 +178,9 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
   if (!sct::MakeLayout(
           nodes, surface_parents, parents, facets,
           broadphase.forecast.pair_capacity,
-          limits.max_candidate_pairs, config.force.event_capacity,
+          limits.max_facet_pair_chunk, config.force.event_capacity,
+          limits.max_global_events, limits.max_event_hash_slots,
+          limits.max_policy_outcomes,
           limits.max_host_bytes, layout))
     return Failure(S::ResourceLimit,
         "Transaction candidate arena exceeds its fixed profile");
@@ -189,12 +206,39 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
       broadphase.forecast.pair_capacity;
   forecast.candidate_triangle_capacity =
       facets;
-  forecast.candidate_pair_capacity = limits.max_candidate_pairs;
+  forecast.complete_facet_pair_capacity =
+      limits.max_candidate_pairs;
+  forecast.candidate_pair_capacity =
+      limits.max_facet_pair_chunk;
+  forecast.facet_pair_chunk_capacity =
+      limits.max_facet_pair_chunk;
+  forecast.parent_pair_cursor_capacity =
+      broadphase.forecast.pair_capacity;
+  forecast.accepted_event_ledger_capacity =
+      limits.max_global_events;
+  forecast.event_hash_capacity =
+      limits.max_event_hash_slots;
   forecast.accepted_event_capacity =
       config.force.event_capacity;
   forecast.accepted_certificate_capacity =
-      config.force.event_capacity;
-  forecast.policy_outcome_capacity = limits.max_candidate_pairs;
+      limits.max_global_events;
+  forecast.policy_outcome_capacity =
+      limits.max_policy_outcomes;
+  forecast.policy_chunk_capacity =
+      limits.max_facet_pair_chunk;
+  forecast.complete_crossing_work_capacity =
+      limits.max_stream_crossing_work;
+  if (!Product(forecast.broadphase_pair_capacity,
+               sizeof(SelfContactPairKey),
+               &forecast.broadphase_pair_readback_bytes) ||
+      !Product(forecast.parent_pair_cursor_capacity,
+               sizeof(sct::FacetPairCursor),
+               &forecast.streaming_cursor_bytes) ||
+      !Product(forecast.parent_pair_cursor_capacity,
+               sizeof(std::uint32_t),
+               &forecast.streaming_heap_bytes))
+    return Failure(S::ResourceLimit,
+        "Transaction streaming byte forecast overflowed");
   forecast.candidate_arena_bytes = layout.bytes;
   if (!Add(force.forecast.device_bytes, &forecast.device_bytes) ||
       !Add(broadphase.forecast.device_bytes,

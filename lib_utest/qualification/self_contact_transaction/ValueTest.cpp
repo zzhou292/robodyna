@@ -4,7 +4,10 @@
 #include <gtest/gtest.h>
 
 #include <array>
+#include <algorithm>
+#include <iostream>
 #include <type_traits>
+#include <vector>
 
 namespace {
 namespace c = tlfea::contact;
@@ -24,6 +27,7 @@ c::FacetVertexKey Vertex(std::uint64_t id) {
   c::FacetVertexKey result;
   result.source_instance_id = 17;
   result.first = id;
+  result.denominator = 1;
   return result;
 }
 
@@ -31,6 +35,70 @@ c::FixedTriangleFeatureKey Feature() {
   c::FixedTriangleFeatureKey result;
   result.vertex_face.vertex = Vertex(100);
   result.vertex_face.target.SetFace({17, 20, 0, 0});
+  return result;
+}
+
+c::FixedContactFacet Facet(std::uint64_t eid,
+                           unsigned local = 0) {
+  c::FixedContactFacet result;
+  result.source_instance_id = 17;
+  result.source.source_parent_id = eid;
+  result.local_facet = local;
+  return result;
+}
+
+sct::AcceptedEventCertificate Certificate(
+    std::uint64_t vertex) {
+  sct::AcceptedEventCertificate result;
+  result.event.feature = Feature();
+  result.event.feature.vertex_face.vertex.first = vertex;
+  result.event.vertex_use = 2;
+  result.event.facet_use = 3;
+  result.event.endpoints[0].count = 3;
+  result.event.endpoints[1].count = 3;
+  for (unsigned endpoint = 0; endpoint < 2; ++endpoint) {
+    result.event.endpoints[endpoint].nodes[0] = 1;
+    result.event.endpoints[endpoint].nodes[1] = 2;
+    result.event.endpoints[endpoint].nodes[2] = 3;
+    result.event.endpoints[endpoint].weights[0] = 1;
+  }
+  result.event.classification.kind = c::SelfContactPairKind::VertexFace;
+  result.event.classification.status =
+      c::SelfContactPairStatus::AdmittedVertexFace;
+  result.event.classification.active[0] = true;
+  result.event.classification.active[1] = true;
+  result.event.classification.candidate_directed_area_m2 =
+      {1, 1, 1, 0};
+  result.event.classification.admitted_force_area_m2 =
+      {1, 1, 1, 0};
+  result.discovery.key = result.event.feature;
+  result.discovery.triangles[0] = {17, vertex, 0, 0};
+  result.discovery.triangles[1] = {17, 20, 0, 0};
+  result.discovery.local_features[0] = 0;
+  result.discovery.local_features[1] = 3;
+  result.discovery.face_weights[0] = 1;
+  result.vertex_facet = 2;
+  result.target_facet = 3;
+  return result;
+}
+
+c::CurrentFixedTriangle Triangle(
+    std::uint64_t eid,
+    std::array<std::uint64_t, 3> vertices,
+    std::array<c::Vec3, 3> points) {
+  c::CurrentFixedTriangle result;
+  result.key = {17, eid, 0, 0};
+  for (unsigned i = 0; i < 3; ++i) {
+    result.vertex_keys[i] = Vertex(vertices[i]);
+    result.vertices[i] = points[i];
+    auto a = result.vertex_keys[i];
+    auto b = result.vertex_keys[(i + 1) % 3];
+    if (c::fixed_triangle_features::Compare(b, a) < 0)
+      std::swap(a, b);
+    result.edge_keys[i].parent_boundary = true;
+    result.edge_keys[i].endpoints[0] = a;
+    result.edge_keys[i].endpoints[1] = b;
+  }
   return result;
 }
 
@@ -97,16 +165,68 @@ TEST(SelfContactTransactionValues,
      CandidateArenaHasExactInclusiveCap) {
   sct::Layout layout;
   ASSERT_TRUE(sct::MakeLayout(
-      15, 4, 4, 8, 6, 6, 7, SIZE_MAX, layout));
+      15, 4, 4, 8, 6, 3, 7, 8, 16, 6,
+      SIZE_MAX, layout));
   ASSERT_GT(layout.bytes, 0u);
   const auto exact = layout.bytes;
   sct::Layout unchanged = layout;
   EXPECT_FALSE(sct::MakeLayout(
-      15, 4, 4, 8, 6, 6, 7, exact - 1, layout));
+      15, 4, 4, 8, 6, 3, 7, 8, 16, 6,
+      exact - 1, layout));
   EXPECT_EQ(layout.bytes, unchanged.bytes);
   ASSERT_TRUE(sct::MakeLayout(
-      15, 4, 4, 8, 6, 6, 7, exact, layout));
+      15, 4, 4, 8, 6, 3, 7, 8, 16, 6,
+      exact, layout));
   EXPECT_EQ(layout.bytes, exact);
+}
+
+TEST(SelfContactTransactionValues,
+     MeasuredV5CountsConstructGenericBoundedVehicleShape) {
+  const c::SelfContactTransactionLimits::ExactCensus census{
+      376930, 337092, 337092, 315963, 653055,
+      1584464, 5989248, 0};
+  constexpr std::size_t chunk = 4096;
+  constexpr std::size_t per_chunk_work = chunk * 4095;
+  constexpr std::size_t complete_work = 5989248ull * 4095;
+  const auto limits = c::SelfContactTransactionLimits::Vehicle(
+      census, chunk, 1, 2, 0, 4095, per_chunk_work,
+      complete_work, 20, 64ull << 30, 8ull << 30,
+      96ull << 30);
+  EXPECT_EQ(limits.broadphase.max_pairs, 1584464u);
+  EXPECT_EQ(limits.max_candidate_pairs, 5989248u);
+  EXPECT_EQ(limits.max_facet_pair_chunk, chunk);
+  EXPECT_EQ(limits.accepted_discovery.max_raw_feature_candidates,
+            15 * chunk);
+  EXPECT_EQ(limits.crossing.max_paths, 2 * chunk);
+  EXPECT_EQ(limits.max_policy_outcomes, 0u);
+
+  sct::Layout minimum;
+  ASSERT_TRUE(sct::MakeLayout(
+      census.nodes, census.surface_parents,
+      census.selected_parents, census.facets,
+      census.parent_pairs, chunk, 1, 1, 2, 0,
+      SIZE_MAX, minimum));
+  sct::Layout million_events;
+  ASSERT_TRUE(sct::MakeLayout(
+      census.nodes, census.surface_parents,
+      census.selected_parents, census.facets,
+      census.parent_pairs, chunk,
+      1000000, 1000000, 2000000, 0,
+      SIZE_MAX, million_events));
+  EXPECT_GT(minimum.bytes, 0u);
+  EXPECT_GT(million_events.bytes, minimum.bytes);
+  std::cout << "V5_STREAMING_ARENA minimum_event_bytes="
+            << minimum.bytes
+            << " million_event_bytes=" << million_events.bytes
+            << " parent_key_bytes="
+            << census.parent_pairs * sizeof(c::SelfContactPairKey)
+            << " cursor_bytes="
+            << census.parent_pairs * sizeof(sct::FacetPairCursor)
+            << " heap_bytes="
+            << census.parent_pairs * sizeof(std::uint32_t)
+            << " chunk_pair_bytes="
+            << chunk * sizeof(c::FixedTrianglePair)
+            << '\n';
 }
 
 TEST(SelfContactTransactionValues,
@@ -316,6 +436,250 @@ TEST(SelfContactTransactionValues,
       pairs.data(), pairs.size(), &count).status,
       c::SelfContactTransactionStatus::Ok);
   EXPECT_EQ(count, 0u);
+}
+
+TEST(SelfContactTransactionValues,
+     CanonicalChunksEqualWholeBatchTinyOracle) {
+  const c::SelfContactPairKey keys[]{
+      (std::uint64_t{0} << 32) | 1,
+      (std::uint64_t{0} << 32) | 2,
+      (std::uint64_t{1} << 32) | 2};
+  const std::uint32_t map[]{0, 1, 2};
+  const std::uint32_t offsets[]{0, 2, 4, 6};
+  const std::uint8_t active[]{1, 1, 1};
+  std::array<c::FixedContactFacet, 6> descriptors{
+      Facet(10, 0), Facet(10, 1),
+      Facet(20, 0), Facet(20, 1),
+      Facet(30, 0), Facet(30, 1)};
+  std::array<c::FixedTrianglePair, 12> whole{};
+  std::size_t whole_count = 0;
+  ASSERT_EQ(sct::ExpandFacetPairs(
+      keys, 3, map, 3, offsets, 3, {active, active, 3},
+      whole.data(), whole.size(), &whole_count).status,
+      c::SelfContactTransactionStatus::Ok);
+
+  std::array<sct::FacetPairCursor, 3> cursors{};
+  std::array<std::uint32_t, 3> heap{};
+  std::array<c::FixedTrianglePair, 3> chunk{};
+  sct::StreamingCandidateSource stream;
+  ASSERT_EQ(stream.Initialize(
+      descriptors.data(), descriptors.size(),
+      cursors.data(), cursors.size(),
+      heap.data(), heap.size(),
+      chunk.data(), chunk.size(), whole.size()).status,
+      c::SelfContactTransactionStatus::Ok);
+  ASSERT_EQ(stream.Begin(
+      keys, 3, map, 3, offsets, 3,
+      {active, active, 3}).status,
+      c::SelfContactTransactionStatus::Ok);
+  std::vector<c::FixedTrianglePair> streamed;
+  for (;;) {
+    const c::FixedTrianglePair* values = nullptr;
+    std::size_t count = 0;
+    ASSERT_EQ(stream.Next(&values, &count).status,
+              c::SelfContactTransactionStatus::Ok);
+    if (!count) break;
+    streamed.insert(streamed.end(), values, values + count);
+  }
+  sct::StreamingCandidateSourceReceipt receipt;
+  ASSERT_EQ(stream.Finish(&receipt).status,
+            c::SelfContactTransactionStatus::Ok);
+  EXPECT_TRUE(stream.Authenticates(receipt));
+  EXPECT_EQ(receipt.parent_pairs(), 3u);
+  EXPECT_EQ(receipt.facet_pairs(), whole_count);
+  ASSERT_EQ(streamed.size(), whole_count);
+  for (std::size_t i = 0; i < whole_count; ++i) {
+    EXPECT_EQ(streamed[i].first, whole[i].first);
+    EXPECT_EQ(streamed[i].second, whole[i].second);
+  }
+  const c::SelfContactPairKey duplicate[]{keys[0], keys[0]};
+  EXPECT_EQ(stream.Begin(
+      duplicate, 2, map, 3, offsets, 3,
+      {active, active, 3}).status,
+      c::SelfContactTransactionStatus::IdentityMismatch);
+  EXPECT_FALSE(stream.Authenticates(receipt));
+}
+
+TEST(SelfContactTransactionValues,
+     MillionParentPairsUseBoundedChunksAndCompleteReceipt) {
+  constexpr std::size_t parents = 1415;
+  const std::size_t pair_count = parents * (parents - 1) / 2;
+  ASSERT_GT(pair_count, 1000000u);
+  std::vector<c::FixedContactFacet> descriptors;
+  std::vector<std::uint32_t> map(parents);
+  std::vector<std::uint32_t> offsets(parents + 1);
+  std::vector<std::uint8_t> active(parents, 1);
+  descriptors.reserve(parents);
+  for (std::size_t parent = 0; parent < parents; ++parent) {
+    descriptors.push_back(Facet(1000 + parent));
+    map[parent] = parent;
+    offsets[parent] = parent;
+  }
+  offsets[parents] = parents;
+  std::vector<c::SelfContactPairKey> keys;
+  keys.reserve(pair_count);
+  for (std::uint32_t first = 0; first < parents; ++first)
+    for (std::uint32_t second = first + 1;
+         second < parents; ++second)
+      keys.push_back((std::uint64_t{first} << 32) | second);
+  std::vector<sct::FacetPairCursor> cursors(pair_count);
+  std::vector<std::uint32_t> heap(pair_count);
+  std::array<c::FixedTrianglePair, 257> chunk{};
+  sct::StreamingCandidateSource stream;
+  ASSERT_EQ(stream.Initialize(
+      descriptors.data(), descriptors.size(),
+      cursors.data(), cursors.size(), heap.data(), heap.size(),
+      chunk.data(), chunk.size(), pair_count).status,
+      c::SelfContactTransactionStatus::Ok);
+  ASSERT_EQ(stream.Begin(
+      keys.data(), keys.size(), map.data(), parents,
+      offsets.data(), parents, {active.data(), active.data(), parents}).status,
+      c::SelfContactTransactionStatus::Ok);
+  sct::StreamingCandidateSourceReceipt premature;
+  EXPECT_EQ(stream.Finish(&premature).status,
+            c::SelfContactTransactionStatus::IdentityMismatch);
+  std::size_t emitted = 0;
+  for (;;) {
+    const c::FixedTrianglePair* values = nullptr;
+    std::size_t count = 0;
+    ASSERT_EQ(stream.Next(&values, &count).status,
+              c::SelfContactTransactionStatus::Ok);
+    if (!count) break;
+    ASSERT_LE(count, chunk.size());
+    for (std::size_t i = 1; i < count; ++i) {
+      EXPECT_TRUE(values[i - 1].first < values[i].first ||
+          (values[i - 1].first == values[i].first &&
+           values[i - 1].second < values[i].second));
+    }
+    emitted += count;
+  }
+  sct::StreamingCandidateSourceReceipt receipt;
+  ASSERT_EQ(stream.Finish(&receipt).status,
+            c::SelfContactTransactionStatus::Ok);
+  EXPECT_EQ(emitted, pair_count);
+  EXPECT_EQ(receipt.facet_pairs(), pair_count);
+  EXPECT_TRUE(stream.Authenticates(receipt));
+  EXPECT_FALSE(sct::StreamingCandidateSourceReceipt{}.complete());
+}
+
+TEST(SelfContactTransactionValues,
+     CrossChunkEventDedupIdentityAndExactForceCapAreAtomic) {
+  auto first = Certificate(100);
+  auto second = Certificate(90);
+  std::array<sct::AcceptedEventCertificate, 2> ledger{};
+  std::array<std::uint32_t, 5> hash{};
+  hash.fill(UINT32_MAX);
+  std::size_t count = 0;
+  ASSERT_EQ(sct::MergeAcceptedEventChunk(
+      &first, 1, ledger.data(), ledger.size(),
+      hash.data(), hash.size(), &count).status,
+      c::SelfContactTransactionStatus::Ok);
+  ASSERT_EQ(sct::MergeAcceptedEventChunk(
+      &first, 1, ledger.data(), ledger.size(),
+      hash.data(), hash.size(), &count).status,
+      c::SelfContactTransactionStatus::Ok);
+  EXPECT_EQ(count, 1u);
+  ASSERT_EQ(sct::MergeAcceptedEventChunk(
+      &second, 1, ledger.data(), ledger.size(),
+      hash.data(), hash.size(), &count).status,
+      c::SelfContactTransactionStatus::Ok);
+  EXPECT_EQ(count, 2u);
+
+  std::array<c::SelfContactForceEvent, 2> output{};
+  output[0].source_order = 777;
+  const auto short_cap = sct::FinalizeAcceptedEventLedger(
+      ledger.data(), count, output.data(), 1);
+  EXPECT_EQ(short_cap.status,
+            c::SelfContactTransactionStatus::ResourceLimit);
+  EXPECT_EQ(short_cap.candidate, 2u);
+  EXPECT_EQ(output[0].source_order, 777u);
+  ASSERT_EQ(sct::FinalizeAcceptedEventLedger(
+      ledger.data(), count, output.data(), 2).status,
+      c::SelfContactTransactionStatus::Ok);
+  EXPECT_EQ(output[0].feature.vertex_face.vertex.first, 90u);
+  EXPECT_EQ(output[0].source_order, 0u);
+  EXPECT_EQ(output[1].source_order, 1u);
+
+  hash.fill(UINT32_MAX);
+  count = 0;
+  ASSERT_EQ(sct::MergeAcceptedEventChunk(
+      &first, 1, ledger.data(), ledger.size(),
+      hash.data(), hash.size(), &count).status,
+      c::SelfContactTransactionStatus::Ok);
+  first.discovery.distance_m = 1;
+  EXPECT_EQ(sct::MergeAcceptedEventChunk(
+      &first, 1, ledger.data(), ledger.size(),
+      hash.data(), hash.size(), &count).status,
+      c::SelfContactTransactionStatus::IdentityMismatch);
+  first.discovery.distance_m = 0;
+  hash.fill(UINT32_MAX);
+  count = 0;
+  EXPECT_EQ(sct::MergeAcceptedEventChunk(
+      &first, 1, ledger.data(), ledger.size(),
+      hash.data(), hash.size(), &count).status,
+      c::SelfContactTransactionStatus::Ok);
+  EXPECT_EQ(count, 1u);
+}
+
+TEST(SelfContactTransactionValues,
+     CompleteIdentityLedgerCatchesCrossChunkVertexMismatch) {
+  std::array<c::CurrentFixedTriangle, 2> triangles{
+      Triangle(10, {1, 2, 3},
+               {{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}}}),
+      Triangle(20, {1, 4, 5},
+               {{{0, 0, 0}, {2, 0, 0}, {0, 2, 0}}})};
+  std::array<std::uint32_t, 6> vertex_order{};
+  std::array<std::uint32_t, 6> edge_order{};
+  for (std::uint32_t i = 0; i < 6; ++i)
+    vertex_order[i] = edge_order[i] = i;
+  std::sort(vertex_order.begin(), vertex_order.end(),
+            [&](std::uint32_t a, std::uint32_t b) {
+              return c::fixed_triangle_features::Compare(
+                  triangles[a / 3].vertex_keys[a % 3],
+                  triangles[b / 3].vertex_keys[b % 3]) < 0;
+            });
+  std::sort(edge_order.begin(), edge_order.end(),
+            [&](std::uint32_t a, std::uint32_t b) {
+              return c::fixed_triangle_features::Compare(
+                  triangles[a / 3].edge_keys[a % 3],
+                  triangles[b / 3].edge_keys[b % 3]) < 0;
+            });
+  EXPECT_EQ(sct::ValidateCompleteTriangleIdentities(
+      triangles.data(), triangles.size(),
+      vertex_order.data(), edge_order.data()).status,
+      c::SelfContactTransactionStatus::Ok);
+  triangles[1].vertices[0].z = 1;
+  EXPECT_EQ(sct::ValidateCompleteTriangleIdentities(
+      triangles.data(), triangles.size(),
+      vertex_order.data(), edge_order.data()).status,
+      c::SelfContactTransactionStatus::IdentityMismatch);
+}
+
+TEST(SelfContactTransactionValues,
+     FoldedPolicyIsChunkBoundaryInvariant) {
+  std::array<c::SelfContactCandidatePolicyOutcome, 3> values{};
+  for (std::size_t i = 0; i < values.size(); ++i) {
+    values[i].pair = Pair(10 + i, 20 + i);
+    values[i].disposition = i == 0
+        ? c::SelfContactCandidateDisposition::CertifiedSeparated
+        : (i == 1
+            ? c::SelfContactCandidateDisposition::
+                ExcludedLocalIntersection
+            : c::SelfContactCandidateDisposition::
+                RepresentedByAcceptedVertexFace);
+    values[i].accepted_event = i == 2 ? 4 : SIZE_MAX;
+    values[i].source_order = i == 2 ? 4 : UINT64_MAX;
+  }
+  c::SelfContactCandidatePolicySummary whole;
+  c::SelfContactCandidatePolicySummary chunks;
+  sct::FoldPolicyOutcomes(values.data(), values.size(), &whole);
+  sct::FoldPolicyOutcomes(values.data(), 1, &chunks);
+  sct::FoldPolicyOutcomes(values.data() + 1, 2, &chunks);
+  EXPECT_EQ(whole.outcomes, chunks.outcomes);
+  EXPECT_EQ(whole.certified_separated, 1u);
+  EXPECT_EQ(whole.excluded_local_intersection, 1u);
+  EXPECT_EQ(whole.represented_by_accepted_vf, 1u);
+  EXPECT_EQ(whole.digest, chunks.digest);
 }
 
 }  // namespace

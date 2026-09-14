@@ -8,20 +8,27 @@ interval crossing, one `SelfContactForceAssembly`, exactly one
 `SelfContactPhysicalActivity`. Startup reauthenticates the retained
 active-use physical binding, actual publication owner/participants, startup,
 configuration and qualification IDs, and the owner's nondefault stream. It
-preallocates both device owners plus host device-key readback, the complete
-surface-parent map, parent/facet offsets, descriptors, triangles, paths,
-accepted/candidate facet pairs, exact events/certificates, policy outcomes,
-and snapshots. The activity authority separately owns one exact
+preallocates both device owners plus one complete host device-key readback,
+the complete surface-parent map, parent/facet offsets, descriptors, accepted
+and prepared triangles, canonical parent-pair cursors/heap, fixed facet-pair
+and exact-geometry chunks, a global accepted-event certificate/hash ledger,
+optional detailed policy outcomes, and snapshots. It does not allocate the
+complete facet-pair, feature-task, intersection, crossing, or policy arrays.
+The activity authority separately owns one exact
 accepted/current and complete-family readback arena. The caller can obtain only the immutable roster entry
 and a borrowed post-seal policy publication.
 
 Accepted assembly first captures activity from the actual QEPH/T3/QBAT
 participant assembly. It copies the actual owner snapshot, certifies every selected
 parent, runs the complete current broadphase, validates its full device pair
-readback, filters inactive parent pairs, expands every remaining S0 pair to
-every facet pair, discovers all fixed
-features, constructs each admitted directed VF event from the exact discovery
-weights and active-use classifier, and assigns canonical source order. Only
+readback and validates its strict device order. A fixed cursor heap merges
+every active parent Cartesian expansion into immutable facet-key order and
+materializes one bounded chunk at a time. Every chunk executes all six VF and
+nine EE tasks per facet pair. EE coverage remains local to the same exact
+facet pair; nonlocal intersections reject. Admitted VF certificates merge
+through a fixed-capacity global hash ledger, where repeated keys must agree.
+The complete unique event count is known before the force cap is checked, then
+certificates are sorted and assigned global canonical source order. Only
 then does it run the existing deterministic VF force/STI implementation and
 record the same owner/token/view on the private issuer. There is no public
 event, triangle, pair, discovery, crossing, or source-order input.
@@ -34,12 +41,16 @@ accepted and prepared positions from `FENodalState` into fixed startup storage,
 runs a complete swept broadphase over the authenticated linear endpoints,
 filters inactive pairs and runs current regularity over active, removing, and
 long-inactive parents,
-rebuilds every exact fixed facet, and reruns complete discovery and represented
-interval crossing. Unresolved results fail. The fixed policy rejects nonlocal
+rebuilds every exact fixed facet, and reruns discovery and represented
+interval crossing on the same canonical chunks. Global canonical vertex/edge
+coordinate ledgers are checked before chunking. Unresolved results fail. The fixed policy rejects nonlocal
 intersections and EE crossings and admits a VF crossing only through the full
 transaction-owned accepted event certificate (feature, maps/weights, area,
 classification, and canonical source order). Local fixed-facet exclusions
-remain explicit. Exactly static, nondegenerate paths use exact triangle
+remain explicit. Per-pair outcomes can be retained in full when the caller
+reserves the exact census; otherwise no partial outcome view is published and
+the complete canonical counts/digest are folded into `policy_summary()`.
+Exactly static, nondegenerate paths use exact triangle
 intersection directly, so disjoint triangles whose AABBs merely touch do not
 exhaust subdivision work. Empty broadphase, discovery, event, crossing, and
 policy publications are valid and still produce mandatory participation.
@@ -71,6 +82,31 @@ events, or policy outcomes.
 Rigid-arc/nonlinear paths are explicit candidate failures rather than being
 misrepresented as endpoint chords.
 
+## Vehicle-scale limits and memory
+
+`SelfContactTransactionLimits::Vehicle` takes caller-supplied exact census
+counts and explicit chunk/event/policy/work/byte caps. It derives all component
+count limits with checked arithmetic; it contains no Yaris constants. Forecast
+reports complete parent/facet caps separately from allocated chunk capacities,
+plus exact readback, cursor, heap, arena, component, startup, and device bytes.
+
+For the measured V5 shape (376,930 owner nodes, 337,092 selected parents,
+653,055 facets, 1,584,464 parent pairs and 5,989,248 facet pairs), a 4,096-pair
+chunk and folded policy use exactly 1,401,633,232 transaction-arena bytes with
+one event slot. One million force/event/certificate slots use 2,913,631,720
+arena bytes. The fixed subranges include 12,675,712 parent-key bytes,
+44,364,992 cursor bytes, 6,337,856 heap bytes, and 32,768 facet-pair chunk
+bytes. The actual event ledger capacity must come from a complete streamed
+census; the earlier broadphase receipt explicitly did not run feature/force
+admission.
+
+Asymptotic storage is `O(nodes + facets + parent_pairs + event_cap +
+chunk*(feature/work caps))`, not `O(facet_pairs)`. Traversal is
+`O(facet_pairs log parent_pairs)` before exact geometry. The expected
+full-V5 performance blocker is CPU exact work: 89,838,720 VF/EE tasks plus up
+to 5,989,248 multiprecision interval certificates. Chunking makes that work
+representable and failure-atomic; it does not make it fast.
+
 ## Caller migration
 
 Remove `config.activity_policy`; the physical publication is now the only
@@ -101,7 +137,9 @@ cmake --build <host-build> --parallel 1
 ctest --test-dir <host-build> --output-on-failure
 ```
 
-This gate runs value, exact-cap, crossing-policy, source and C++ syntax tests.
+This gate runs value, exact-cap, crossing-policy, million-parent-pair
+streaming, chunk-boundary event/identity/fold equivalence, source and C++
+syntax tests.
 It invokes no NVCC or GPU.
 
 ## Root CUDA gate

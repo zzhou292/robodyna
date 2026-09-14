@@ -37,11 +37,6 @@ RepresentedIntervalPairKey PairKey(
   return {{a, b}};
 }
 
-bool PairLess(const RepresentedIntervalPairKey& a,
-              const RepresentedIntervalPairKey& b) noexcept {
-  return sct::Compare(a, b) < 0;
-}
-
 void MakePath(const CurrentFixedTriangle& base,
               const CurrentFixedTriangle& current,
               RepresentedTrianglePath* output) noexcept {
@@ -184,27 +179,22 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
     return state.Fail(Failure(S::RegularityFailure,
         "Current regularity publication is incomplete or unresolved"));
 
-  const VectorView base_positions{
-      state.buffers.accepted_positions,
-      static_cast<std::uint32_t>(node_count), 3, 1};
   const auto parents = state.active_use.parents();
   const auto triangles = state.facet_count;
   auto evaluated = sct::EvaluateCompleteTriangles(
       state.buffers.facet_descriptors, triangles,
-      base_positions, state.buffers.accepted_triangles);
-  if (evaluated.status != S::Ok) return state.Fail(evaluated);
-  evaluated = sct::EvaluateCompleteTriangles(
-      state.buffers.facet_descriptors, triangles,
       current_positions, state.buffers.prepared_triangles);
+  if (evaluated.status != S::Ok) return state.Fail(evaluated);
+  evaluated = sct::ValidateCompleteTriangleIdentities(
+      state.buffers.prepared_triangles, triangles,
+      state.buffers.vertex_identity_order,
+      state.buffers.edge_identity_order);
   if (evaluated.status != S::Ok) return state.Fail(evaluated);
   for (std::size_t triangle = 0; triangle < triangles; ++triangle) {
     if (!sct::Same(state.buffers.accepted_triangles[triangle].key,
                    state.buffers.prepared_triangles[triangle].key))
       return state.Fail(Failure(S::IdentityMismatch,
           "Accepted and prepared facet identities differ", triangle));
-    MakePath(state.buffers.accepted_triangles[triangle],
-             state.buffers.prepared_triangles[triangle],
-             state.buffers.represented_paths + triangle);
   }
 
   const VectorView accepted_device{
@@ -223,84 +213,160 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
     report.candidate = broadphase.parent;
     return state.Fail(report);
   }
-  auto expanded = sct::ReadAndExpandBroadphase(
+  auto expanded = sct::ReadBroadphase(
       state.broadphase, state.stream,
-      state.buffers.candidate_broadphase_pairs,
+      state.buffers.broadphase_pairs,
       state.storage_forecast.broadphase_pair_capacity,
-      state.buffers.surface_to_active, state.surface_parent_count,
-      state.buffers.parent_facet_offsets, parents.size(),
-      activity,
-      state.buffers.candidate_facet_pairs,
-      state.storage_forecast.candidate_pair_capacity,
-      &state.candidate_broadphase_pair_count,
-      &state.candidate_facet_pair_count);
+      &state.candidate_broadphase_pair_count);
   if (expanded.status != S::Ok) return state.Fail(expanded);
-
-  for (std::size_t pair = 0;
-       pair < state.candidate_facet_pair_count; ++pair) {
-    const auto value = state.buffers.candidate_facet_pairs[pair];
-    state.buffers.represented_pairs[pair] =
-        {value.first, value.second};
-    state.buffers.canonical_pairs[pair] = PairKey(
-        state.buffers.represented_paths[value.first].key,
-        state.buffers.represented_paths[value.second].key);
-  }
-  std::sort(state.buffers.canonical_pairs,
-            state.buffers.canonical_pairs +
-                state.candidate_facet_pair_count,
-            PairLess);
-  for (std::size_t pair = 1;
-       pair < state.candidate_facet_pair_count; ++pair)
-    if (sct::Compare(state.buffers.canonical_pairs[pair - 1],
-                     state.buffers.canonical_pairs[pair]) == 0)
-      return state.Fail(Failure(S::IdentityMismatch,
-          "Candidate pair roster repeats an exact pair",
-          SIZE_MAX, pair));
-
-  const auto discovery = state.candidate_discovery.Discover(
-      state.buffers.prepared_triangles, triangles,
-      state.buffers.candidate_facet_pairs,
-      state.candidate_facet_pair_count);
-  if (discovery.status != FixedTriangleDiscoveryStatus::Ok) {
-    auto report = Failure(
-        S::DiscoveryFailure, discovery.message,
-        SIZE_MAX, discovery.input_pair);
-    report.discovery_status = discovery.status;
-    report.discovery_task = discovery.input_task;
-    report.discovery_reason = discovery.arithmetic_reason;
-    return state.Fail(report);
-  }
-  auto edge_policy = sct::ValidateCandidateEdgePolicy(
-      state.active_use, state.regularity, regularity_receipt,
-      state.candidate_discovery.features(),
-      state.buffers.facet_descriptors,
-      state.buffers.triangle_order, triangles, activity);
-  if (edge_policy.status != S::Ok)
-    return state.Fail(edge_policy);
-  const auto crossing = state.crossing.Certify(
-      state.buffers.represented_paths, triangles,
-      state.buffers.represented_pairs,
-      state.candidate_facet_pair_count);
-  if (crossing.status != RepresentedIntervalStatus::Ok) {
-    auto report = Failure(
-        S::CrossingFailure, crossing.message,
-        crossing.input_path, crossing.input_pair);
-    report.crossing_status = crossing.status;
-    return state.Fail(report);
-  }
+  auto streamed = state.candidate_source.Begin(
+      state.buffers.broadphase_pairs,
+      state.candidate_broadphase_pair_count,
+      state.buffers.surface_to_active, state.surface_parent_count,
+      state.buffers.parent_facet_offsets, parents.size(), activity);
+  if (streamed.status != S::Ok) return state.Fail(streamed);
+  SelfContactCandidatePolicySummary summary;
   std::size_t policy_outcomes = 0;
-  auto validated = sct::ValidateCandidatePublications({
-      state.buffers.canonical_pairs,
-      state.candidate_facet_pair_count,
-      state.candidate_discovery.features(),
-      state.candidate_discovery.intersections(),
-      state.crossing.results(),
-      state.buffers.accepted_certificates,
-      state.accepted_event_count,
-      state.buffers.policy_outcomes,
-      state.storage_forecast.policy_outcome_capacity,
-      &policy_outcomes});
-  if (validated.status != S::Ok) return state.Fail(validated);
+  std::size_t crossing_work = 0;
+  bool retain_detailed = true;
+  for (;;) {
+    const FixedTrianglePair* pairs = nullptr;
+    std::size_t pair_count = 0;
+    streamed = state.candidate_source.Next(&pairs, &pair_count);
+    if (streamed.status != S::Ok) return state.Fail(streamed);
+    if (!pair_count) break;
+
+    for (std::size_t pair = 0; pair < pair_count; ++pair) {
+      const auto value = pairs[pair];
+      MakePath(state.buffers.accepted_triangles[value.first],
+               state.buffers.prepared_triangles[value.first],
+               state.buffers.chunk_paths + 2 * pair);
+      MakePath(state.buffers.accepted_triangles[value.second],
+               state.buffers.prepared_triangles[value.second],
+               state.buffers.chunk_paths + 2 * pair + 1);
+      state.buffers.chunk_represented_pairs[pair] = {
+          static_cast<std::uint32_t>(2 * pair),
+          static_cast<std::uint32_t>(2 * pair + 1)};
+      state.buffers.chunk_canonical_pairs[pair] = PairKey(
+          state.buffers.chunk_paths[2 * pair].key,
+          state.buffers.chunk_paths[2 * pair + 1].key);
+      if (pair && sct::Compare(
+              state.buffers.chunk_canonical_pairs[pair - 1],
+              state.buffers.chunk_canonical_pairs[pair]) >= 0)
+        return state.Fail(Failure(S::IdentityMismatch,
+            "Candidate chunk is not strict immutable pair order",
+            SIZE_MAX, state.candidate_facet_pair_count + pair));
+    }
+
+    const auto discovery = state.candidate_discovery.Discover(
+        state.buffers.prepared_triangles, triangles,
+        pairs, pair_count);
+    if (discovery.status != FixedTriangleDiscoveryStatus::Ok) {
+      auto report = Failure(
+          S::DiscoveryFailure, discovery.message,
+          SIZE_MAX,
+          discovery.input_pair == SIZE_MAX
+              ? SIZE_MAX
+              : state.candidate_facet_pair_count +
+                    discovery.input_pair);
+      report.discovery_status = discovery.status;
+      report.discovery_task = discovery.input_task;
+      report.discovery_reason = discovery.arithmetic_reason;
+      return state.Fail(report);
+    }
+    auto edge_policy = sct::ValidateCandidateEdgePolicy(
+        state.active_use, state.regularity, regularity_receipt,
+        state.candidate_discovery.features(),
+        state.buffers.facet_descriptors,
+        state.buffers.triangle_order, triangles, activity);
+    if (edge_policy.status != S::Ok)
+      return state.Fail(edge_policy);
+    const auto crossing = state.crossing.Certify(
+        state.buffers.chunk_paths, 2 * pair_count,
+        state.buffers.chunk_represented_pairs, pair_count);
+    if (crossing.status != RepresentedIntervalStatus::Ok) {
+      auto report = Failure(
+          S::CrossingFailure, crossing.message,
+          crossing.input_path,
+          crossing.input_pair == SIZE_MAX
+              ? SIZE_MAX
+              : state.candidate_facet_pair_count +
+                    crossing.input_pair);
+      report.crossing_status = crossing.status;
+      return state.Fail(report);
+    }
+    const auto crossing_results = state.crossing.results();
+    if (!crossing_results.complete ||
+        crossing_results.count != pair_count)
+      return state.Fail(Failure(S::CrossingFailure,
+          "Crossing chunk publication is incomplete"));
+    for (std::size_t pair = 0; pair < pair_count; ++pair) {
+      const auto work = crossing_results.data[pair].work;
+      if (work >
+          state.storage_forecast.complete_crossing_work_capacity -
+              crossing_work) {
+        auto report = Failure(
+            S::CrossingFailure,
+            "Complete crossing stream exceeds its hard work cap",
+            SIZE_MAX, state.candidate_facet_pair_count + pair);
+        report.crossing_status =
+            RepresentedIntervalStatus::ResourceLimit;
+        return state.Fail(report);
+      }
+      crossing_work += work;
+    }
+    std::size_t chunk_outcomes = 0;
+    auto validated = sct::ValidateCandidatePublications({
+        state.buffers.chunk_canonical_pairs,
+        pair_count,
+        state.candidate_discovery.features(),
+        state.candidate_discovery.intersections(),
+        crossing_results,
+        state.buffers.accepted_certificates,
+        state.accepted_event_count,
+        state.buffers.chunk_policy_outcomes,
+        state.storage_forecast.policy_chunk_capacity,
+        &chunk_outcomes});
+    if (validated.status != S::Ok) {
+      if (validated.pair != SIZE_MAX)
+        validated.pair += state.candidate_facet_pair_count;
+      return state.Fail(validated);
+    }
+    if (chunk_outcomes != pair_count)
+      return state.Fail(Failure(S::IdentityMismatch,
+          "Policy chunk does not cover every facet pair"));
+    sct::FoldPolicyOutcomes(
+        state.buffers.chunk_policy_outcomes, chunk_outcomes,
+        &summary);
+    if (retain_detailed &&
+        chunk_outcomes <=
+            state.storage_forecast.policy_outcome_capacity -
+                policy_outcomes) {
+      std::copy_n(state.buffers.chunk_policy_outcomes,
+                  chunk_outcomes,
+                  state.buffers.policy_outcomes + policy_outcomes);
+      policy_outcomes += chunk_outcomes;
+    } else {
+      retain_detailed = false;
+      policy_outcomes = 0;
+    }
+    state.candidate_facet_pair_count += pair_count;
+  }
+  sct::StreamingCandidateSourceReceipt stream_receipt;
+  streamed = state.candidate_source.Finish(&stream_receipt);
+  if (streamed.status != S::Ok ||
+      !state.candidate_source.Authenticates(stream_receipt) ||
+      stream_receipt.parent_pairs() !=
+          state.candidate_broadphase_pair_count ||
+      stream_receipt.facet_pairs() !=
+          state.candidate_facet_pair_count ||
+      summary.outcomes != state.candidate_facet_pair_count)
+    return state.Fail(Failure(S::IdentityMismatch,
+        "Candidate canonical stream lacks its complete receipt"));
+  summary.complete = true;
+  summary.detailed_publication =
+      retain_detailed &&
+      policy_outcomes == state.candidate_facet_pair_count;
 
   fe::ShellPhysicalScratchParticipationReceipt participation;
   const auto sealed = state.participation.SealSelfContactCandidate(
@@ -315,8 +381,10 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
 
   state.phase = Impl::Phase::CandidateSealed;
   state.prepared_activity = activity_receipt;
-  state.policy_outcome_count = policy_outcomes;
-  state.policy_complete = true;
+  state.policy_outcome_count =
+      summary.detailed_publication ? policy_outcomes : 0;
+  state.policy_summary = summary;
+  state.policy_complete = summary.detailed_publication;
   SelfContactTransactionReceipt next;
   next.transaction_ = this;
   next.owner_ = &owner;
@@ -332,7 +400,8 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
   next.broadphase_pairs_ =
       state.candidate_broadphase_pair_count;
   next.facet_pairs_ = state.candidate_facet_pair_count;
-  next.policy_outcomes_ = state.policy_outcome_count;
+  next.policy_outcomes_ = state.policy_summary.outcomes;
+  next.policy_summary_ = state.policy_summary;
   next.active_parents_ =
       regularity_results.summary.active_parents;
   next.removing_parents_ =

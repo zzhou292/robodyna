@@ -61,7 +61,10 @@ class SelfContactTransaction {
 
   // Borrowed policy publication for the currently sealed candidate. It is
   // revoked by discard, a new accepted assembly, failure, or destruction.
+  // Large streams may publish only policy_summary(); this view is complete
+  // only when the caller reserved the entire detailed outcome census.
   SelfContactCandidatePolicyView policy_outcomes() const noexcept;
+  SelfContactCandidatePolicySummary policy_summary() const noexcept;
 
   // Contact-local composition. Common transaction abandonment still calls the
   // owner and ShellBatchPublication discard operations.

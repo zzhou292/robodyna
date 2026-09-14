@@ -260,9 +260,11 @@ filegroup(
         "SelfContactTransactionTypes.h",
         "self_contact_transaction/Arena.cpp",
         "self_contact_transaction/Candidate.cpp",
+        "self_contact_transaction/Limits.cpp",
         "self_contact_transaction/Layout.cpp",
         "self_contact_transaction/Source.cpp",
         "self_contact_transaction/Storage.h",
+        "self_contact_transaction/Streaming.cpp",
         "self_contact_transaction/Transaction.cpp",
         "self_contact_transaction/Values.cpp",
         "self_contact_force/Initialize.cpp",
@@ -273,6 +275,9 @@ cc_library(
     name = "self_contact_transaction_values",
     srcs = [
         "self_contact_transaction/Arena.cpp",
+        "self_contact_transaction/Limits.cpp",
+        "self_contact_transaction/Layout.cpp",
+        "self_contact_transaction/Streaming.cpp",
         "self_contact_transaction/Values.cpp",
     ],
     hdrs = [
@@ -297,7 +302,6 @@ cc_library(
     name = "self_contact_transaction",
     srcs = [
         "self_contact_transaction/Candidate.cpp",
-        "self_contact_transaction/Layout.cpp",
         "self_contact_transaction/Source.cpp",
         "self_contact_transaction/Transaction.cpp",
     ],

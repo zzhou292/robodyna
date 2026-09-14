@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
 
+#include <algorithm>
 #include <cmath>
 #include <tuple>
 
@@ -63,6 +64,155 @@ bool PairPresent(const RepresentedIntervalPairKey* values,
       self_contact_transaction::Compare(values[lower], key) == 0;
 }
 
+template <class T>
+void HashValue(T value, std::uint64_t* hash) noexcept {
+  std::uint64_t bits = static_cast<std::uint64_t>(value);
+  for (unsigned byte = 0; byte < sizeof(bits); ++byte) {
+    *hash ^= static_cast<unsigned char>(bits >> (8 * byte));
+    *hash *= 1099511628211ull;
+  }
+}
+
+void Hash(const FacetVertexKey& key, std::uint64_t* hash) noexcept {
+  HashValue(key.source_instance_id, hash);
+  HashValue(key.kind, hash);
+  HashValue(key.first, hash);
+  HashValue(key.second, hash);
+  HashValue(key.numerator, hash);
+  HashValue(key.denominator, hash);
+  HashValue(key.level, hash);
+  HashValue(key.grid_i, hash);
+  HashValue(key.grid_j, hash);
+}
+
+void Hash(const FacetEdgeKey& key, std::uint64_t* hash) noexcept {
+  HashValue(key.parent_boundary, hash);
+  HashValue(key.parent_eid, hash);
+  Hash(key.endpoints[0], hash);
+  Hash(key.endpoints[1], hash);
+}
+
+void Hash(const FixedTriangleKey& key, std::uint64_t* hash) noexcept {
+  HashValue(key.source_instance_id, hash);
+  HashValue(key.parent_eid, hash);
+  HashValue(key.level, hash);
+  HashValue(key.local_facet, hash);
+}
+
+void Hash(const FixedTriangleFeatureKey& key,
+          std::uint64_t* hash) noexcept {
+  HashValue(key.kind, hash);
+  if (key.kind == FixedTriangleCandidateKind::VertexFace) {
+    Hash(key.vertex_face.vertex, hash);
+    HashValue(key.vertex_face.target.kind, hash);
+    if (key.vertex_face.target.kind ==
+        FixedTriangleStratumKind::Vertex)
+      Hash(key.vertex_face.target.vertex, hash);
+    else if (key.vertex_face.target.kind ==
+             FixedTriangleStratumKind::Edge)
+      Hash(key.vertex_face.target.edge, hash);
+    else
+      Hash(key.vertex_face.target.face, hash);
+  } else {
+    Hash(key.edge_edge.edges[0], hash);
+    Hash(key.edge_edge.edges[1], hash);
+  }
+}
+
+bool Same(Vec3 a, Vec3 b) noexcept {
+  return a.x == b.x && a.y == b.y && a.z == b.z;
+}
+
+bool Same(const WeightedSurfacePoint& a,
+          const WeightedSurfacePoint& b) noexcept {
+  if (a.count != b.count) return false;
+  for (unsigned i = 0; i < 4; ++i)
+    if (a.nodes[i] != b.nodes[i] ||
+        a.weights[i] != b.weights[i])
+      return false;
+  return true;
+}
+
+bool Same(const Q4CertifiedIntegral& a,
+          const Q4CertifiedIntegral& b) noexcept {
+  return a.value == b.value && a.lower == b.lower &&
+      a.upper == b.upper && a.error == b.error;
+}
+
+bool Same(const SelfContactSupportClassification& a,
+          const SelfContactSupportClassification& b) noexcept {
+  return a.status == b.status &&
+      a.complete_rigid_group == b.complete_rigid_group &&
+      a.nonzero_slots == b.nonzero_slots &&
+      a.rigid_slots == b.rigid_slots &&
+      a.cin_master_slots == b.cin_master_slots;
+}
+
+bool Same(const SelfContactPairClassification& a,
+          const SelfContactPairClassification& b) noexcept {
+  if (a.binding_identity != b.binding_identity ||
+      a.activity_base_identity != b.activity_base_identity ||
+      a.activity_current_identity != b.activity_current_identity ||
+      a.activity_parent_count != b.activity_parent_count ||
+      a.kind != b.kind || a.edge_edge_case != b.edge_edge_case ||
+      a.status != b.status || a.tied != b.tied ||
+      a.local_incidence != b.local_incidence ||
+      a.excluded != b.excluded ||
+      !Same(a.candidate_directed_area_m2,
+            b.candidate_directed_area_m2) ||
+      !Same(a.admitted_force_area_m2,
+            b.admitted_force_area_m2))
+    return false;
+  for (unsigned i = 0; i < 2; ++i)
+    if (!Same(a.endpoint_support[i], b.endpoint_support[i]) ||
+        a.parent[i] != b.parent[i] ||
+        a.feature[i] != b.feature[i] ||
+        a.active[i] != b.active[i] ||
+        a.reference_half_thickness_m[i] !=
+            b.reference_half_thickness_m[i])
+      return false;
+  return true;
+}
+
+bool SameCandidateValue(
+    const FixedTriangleFeatureCandidate& a,
+    const FixedTriangleFeatureCandidate& b) noexcept {
+  if (!self_contact_transaction::Same(a.key, b.key) ||
+      a.distance_m != b.distance_m ||
+      a.representation_error_m != b.representation_error_m)
+    return false;
+  for (unsigned i = 0; i < 2; ++i)
+    if (!Same(a.points[i], b.points[i]) ||
+        a.edge_parameters[i] != b.edge_parameters[i])
+      return false;
+  if (a.key.kind == FixedTriangleCandidateKind::VertexFace) {
+    const unsigned target_a = a.local_features[0] == 3 ? 0 : 1;
+    const unsigned target_b = b.local_features[0] == 3 ? 0 : 1;
+    if (fixed_triangle_features::Compare(
+            a.triangles[target_a],
+            b.triangles[target_b]) == 0)
+      for (unsigned i = 0; i < 3; ++i)
+        if (a.face_weights[i] != b.face_weights[i])
+          return false;
+  }
+  return true;
+}
+
+bool SameCertificate(const AcceptedEventCertificate& a,
+                     const AcceptedEventCertificate& b) noexcept {
+  if (!SameCandidateValue(a.discovery, b.discovery) ||
+      !self_contact_transaction::Same(
+          a.event.feature, b.event.feature) ||
+      a.event.vertex_use != b.event.vertex_use ||
+      a.event.facet_use != b.event.facet_use ||
+      !Same(a.event.endpoints[0], b.event.endpoints[0]) ||
+      !Same(a.event.endpoints[1], b.event.endpoints[1]) ||
+      !Same(a.event.classification, b.event.classification) ||
+      a.target_facet != b.target_facet)
+    return false;
+  return true;
+}
+
 const RepresentedIntervalResult* Crossing(
     RepresentedIntervalResultView values,
     const RepresentedIntervalPairKey& key) noexcept {
@@ -105,52 +255,62 @@ std::size_t AcceptedVertexFace(
       crossing.feature.face.parent_eid,
       crossing.feature.face.level,
       crossing.feature.face.local_facet});
-  for (std::size_t event = 0; event < event_count; ++event) {
-    const auto& certificate = events[event];
-    const auto& accepted = certificate.event;
-    double face_sum = 0;
-    bool face_weights_valid = true;
-    for (double weight : certificate.discovery.face_weights) {
-      face_weights_valid = face_weights_valid &&
-          IsFinite(weight) && weight >= 0 && weight <= 1;
-      face_sum += weight;
-    }
-    if (!Same(accepted.feature, key) ||
-        !Same(certificate.discovery.key, key) ||
-        accepted.source_order != event ||
-        ValidateWeightedSurfacePoint(
-            accepted.endpoints[0], UINT32_MAX) != Status::kOk ||
-        ValidateWeightedSurfacePoint(
-            accepted.endpoints[1], UINT32_MAX) != Status::kOk ||
-        !face_weights_valid || std::fabs(face_sum - 1) > 1e-12 ||
-        !IsFinite(certificate.discovery.representation_error_m) ||
-        certificate.discovery.representation_error_m < 0 ||
-        accepted.classification.kind !=
-            SelfContactPairKind::VertexFace ||
-        accepted.classification.status !=
-            SelfContactPairStatus::AdmittedVertexFace ||
-        accepted.classification.excluded ||
-        accepted.classification.local_incidence ||
-        !accepted.classification.active[0] ||
-        !accepted.classification.active[1] ||
-        !PositiveSelfContactArea(
-            accepted.classification.admitted_force_area_m2) ||
-        accepted.classification.candidate_directed_area_m2.value !=
-            accepted.classification.admitted_force_area_m2.value ||
-        accepted.classification.candidate_directed_area_m2.lower !=
-            accepted.classification.admitted_force_area_m2.lower ||
-        accepted.classification.candidate_directed_area_m2.upper !=
-            accepted.classification.admitted_force_area_m2.upper ||
-        accepted.classification.candidate_directed_area_m2.error !=
-            accepted.classification.admitted_force_area_m2.error ||
-        ((certificate.discovery.local_features[0] == 3) ==
-         (certificate.discovery.local_features[1] == 3)) ||
-        certificate.vertex_facet == UINT32_MAX ||
-        certificate.target_facet == UINT32_MAX)
-      continue;
-    return event;
+  std::size_t lower = 0, upper = event_count;
+  while (lower < upper) {
+    const auto middle = lower + (upper - lower) / 2;
+    if (fixed_triangle_features::Compare(
+            events[middle].event.feature, key) < 0)
+      lower = middle + 1;
+    else
+      upper = middle;
   }
-  return SIZE_MAX;
+  if (lower == event_count ||
+      !self_contact_transaction::Same(
+          events[lower].event.feature, key))
+    return SIZE_MAX;
+  const auto& certificate = events[lower];
+  const auto& accepted = certificate.event;
+  double face_sum = 0;
+  bool face_weights_valid = true;
+  for (double weight : certificate.discovery.face_weights) {
+    face_weights_valid = face_weights_valid &&
+        IsFinite(weight) && weight >= 0 && weight <= 1;
+    face_sum += weight;
+  }
+  if (!self_contact_transaction::Same(
+          certificate.discovery.key, key) ||
+      accepted.source_order != lower ||
+      ValidateWeightedSurfacePoint(
+          accepted.endpoints[0], UINT32_MAX) != Status::kOk ||
+      ValidateWeightedSurfacePoint(
+          accepted.endpoints[1], UINT32_MAX) != Status::kOk ||
+      !face_weights_valid || std::fabs(face_sum - 1) > 1e-12 ||
+      !IsFinite(certificate.discovery.representation_error_m) ||
+      certificate.discovery.representation_error_m < 0 ||
+      accepted.classification.kind !=
+          SelfContactPairKind::VertexFace ||
+      accepted.classification.status !=
+          SelfContactPairStatus::AdmittedVertexFace ||
+      accepted.classification.excluded ||
+      accepted.classification.local_incidence ||
+      !accepted.classification.active[0] ||
+      !accepted.classification.active[1] ||
+      !PositiveSelfContactArea(
+          accepted.classification.admitted_force_area_m2) ||
+      accepted.classification.candidate_directed_area_m2.value !=
+          accepted.classification.admitted_force_area_m2.value ||
+      accepted.classification.candidate_directed_area_m2.lower !=
+          accepted.classification.admitted_force_area_m2.lower ||
+      accepted.classification.candidate_directed_area_m2.upper !=
+          accepted.classification.admitted_force_area_m2.upper ||
+      accepted.classification.candidate_directed_area_m2.error !=
+          accepted.classification.admitted_force_area_m2.error ||
+      ((certificate.discovery.local_features[0] == 3) ==
+       (certificate.discovery.local_features[1] == 3)) ||
+      certificate.vertex_facet == UINT32_MAX ||
+      certificate.target_facet == UINT32_MAX)
+    return SIZE_MAX;
+  return lower;
 }
 
 SelfContactTransactionReport Failure(
@@ -211,6 +371,184 @@ bool ExactFacetPair(const FixedTriangleFeatureCandidate& a,
           same(a.triangles[1], b.triangles[1])) ||
       (same(a.triangles[0], b.triangles[1]) &&
        same(a.triangles[1], b.triangles[0]));
+}
+
+SelfContactTransactionReport ValidateCompleteTriangleIdentities(
+    const CurrentFixedTriangle* triangles, std::size_t count,
+    const std::uint32_t* vertex_order,
+    const std::uint32_t* edge_order) noexcept {
+  if (!triangles || !count || !vertex_order || !edge_order ||
+      count > UINT32_MAX / 3)
+    return Failure(SelfContactTransactionStatus::InvalidInput,
+        "Complete triangle identity ledger is absent");
+  const auto same_point = [](Vec3 a, Vec3 b) noexcept {
+    return a.x == b.x && a.y == b.y && a.z == b.z;
+  };
+  const auto canonical_endpoint =
+      [](const CurrentFixedTriangle& triangle, unsigned edge,
+         unsigned endpoint) noexcept {
+        const auto& key =
+            triangle.edge_keys[edge].endpoints[endpoint];
+        for (unsigned vertex = 0; vertex < 3; ++vertex)
+          if (fixed_triangle_features::Compare(
+                  triangle.vertex_keys[vertex], key) == 0)
+            return triangle.vertices[vertex];
+        return Vec3{};
+      };
+  for (std::size_t i = 0; i < 3 * count; ++i) {
+    if (vertex_order[i] >= 3 * count ||
+        edge_order[i] >= 3 * count)
+      return Failure(SelfContactTransactionStatus::IdentityMismatch,
+          "Complete triangle identity order is out of range", i);
+    if (!i) continue;
+    const auto old_vertex = vertex_order[i - 1];
+    const auto new_vertex = vertex_order[i];
+    const auto& old_triangle = triangles[old_vertex / 3];
+    const auto& new_triangle = triangles[new_vertex / 3];
+    if (fixed_triangle_features::Compare(
+            old_triangle.vertex_keys[old_vertex % 3],
+            new_triangle.vertex_keys[new_vertex % 3]) == 0 &&
+        !same_point(old_triangle.vertices[old_vertex % 3],
+                    new_triangle.vertices[new_vertex % 3]))
+      return Failure(SelfContactTransactionStatus::IdentityMismatch,
+          "Canonical vertex has inconsistent current coordinates",
+          new_vertex);
+
+    const auto old_edge = edge_order[i - 1];
+    const auto new_edge = edge_order[i];
+    const auto& old_edge_triangle = triangles[old_edge / 3];
+    const auto& new_edge_triangle = triangles[new_edge / 3];
+    if (fixed_triangle_features::Compare(
+            old_edge_triangle.edge_keys[old_edge % 3],
+            new_edge_triangle.edge_keys[new_edge % 3]) != 0)
+      continue;
+    if (!same_point(canonical_endpoint(
+                        old_edge_triangle, old_edge % 3, 0),
+                    canonical_endpoint(
+                        new_edge_triangle, new_edge % 3, 0)) ||
+        !same_point(canonical_endpoint(
+                        old_edge_triangle, old_edge % 3, 1),
+                    canonical_endpoint(
+                        new_edge_triangle, new_edge % 3, 1)))
+      return Failure(SelfContactTransactionStatus::IdentityMismatch,
+          "Canonical edge has inconsistent current coordinates",
+          new_edge);
+  }
+  return {};
+}
+
+SelfContactTransactionReport MergeAcceptedEventChunk(
+    const AcceptedEventCertificate* input, std::size_t input_count,
+    AcceptedEventCertificate* ledger, std::size_t ledger_capacity,
+    std::uint32_t* hash_slots, std::size_t hash_capacity,
+    std::size_t* ledger_count) noexcept {
+  if ((input_count && !input) || !ledger || !ledger_capacity ||
+      !hash_slots || !hash_capacity || !ledger_count ||
+      *ledger_count > ledger_capacity ||
+      ledger_capacity > UINT32_MAX)
+    return Failure(SelfContactTransactionStatus::InvalidInput,
+                   "Global accepted-event ledger is incomplete");
+  for (std::size_t i = 0; i < input_count; ++i) {
+    std::uint64_t hash = 1469598103934665603ull;
+    Hash(input[i].event.feature, &hash);
+    std::size_t slot = hash % hash_capacity;
+    bool inserted = false;
+    for (std::size_t probe = 0; probe < hash_capacity; ++probe) {
+      const auto value = hash_slots[slot];
+      if (value == UINT32_MAX) {
+        if (*ledger_count == ledger_capacity)
+          return Failure(SelfContactTransactionStatus::ResourceLimit,
+              "Complete accepted-event ledger exceeds its hard cap",
+              *ledger_count);
+        ledger[*ledger_count] = input[i];
+        hash_slots[slot] =
+            static_cast<std::uint32_t>((*ledger_count)++);
+        inserted = true;
+        break;
+      }
+      if (value >= *ledger_count)
+        return Failure(SelfContactTransactionStatus::IdentityMismatch,
+            "Accepted-event hash index is corrupt", slot);
+      if (self_contact_transaction::Same(
+              ledger[value].event.feature,
+              input[i].event.feature)) {
+        if (!SameCertificate(ledger[value], input[i]))
+          return Failure(SelfContactTransactionStatus::IdentityMismatch,
+              "Repeated immutable event identity disagrees", value);
+        inserted = true;
+        break;
+      }
+      slot = slot + 1 == hash_capacity ? 0 : slot + 1;
+    }
+    if (!inserted)
+      return Failure(SelfContactTransactionStatus::ResourceLimit,
+          "Accepted-event hash ledger has no free slot", i);
+  }
+  return {};
+}
+
+SelfContactTransactionReport FinalizeAcceptedEventLedger(
+    AcceptedEventCertificate* certificates, std::size_t count,
+    SelfContactForceEvent* events,
+    std::size_t force_capacity) noexcept {
+  if ((count && (!certificates || !events)))
+    return Failure(SelfContactTransactionStatus::InvalidInput,
+        "Accepted-event finalization storage is absent");
+  if (count > force_capacity) {
+    auto report = Failure(SelfContactTransactionStatus::ResourceLimit,
+        "Complete accepted VF event set exceeds force capacity");
+    report.candidate = count;
+    return report;
+  }
+  std::sort(certificates, certificates + count,
+            [](const AcceptedEventCertificate& a,
+               const AcceptedEventCertificate& b) {
+              return fixed_triangle_features::Compare(
+                  a.event.feature, b.event.feature) < 0;
+            });
+  for (std::size_t i = 0; i < count; ++i) {
+    if (i && fixed_triangle_features::Compare(
+                 certificates[i - 1].event.feature,
+                 certificates[i].event.feature) >= 0)
+      return Failure(SelfContactTransactionStatus::IdentityMismatch,
+          "Final accepted-event ledger is not unique", i);
+    certificates[i].event.source_order = i;
+    events[i] = certificates[i].event;
+  }
+  return {};
+}
+
+void FoldPolicyOutcomes(
+    const SelfContactCandidatePolicyOutcome* values,
+    std::size_t count,
+    SelfContactCandidatePolicySummary* summary) noexcept {
+  if (!summary || (count && !values)) return;
+  for (std::size_t i = 0; i < count; ++i) {
+    const auto& value = values[i];
+    HashValue(value.pair.paths[0].source_instance_id,
+              &summary->digest);
+    HashValue(value.pair.paths[0].parent_eid, &summary->digest);
+    HashValue(value.pair.paths[0].level, &summary->digest);
+    HashValue(value.pair.paths[0].local_facet, &summary->digest);
+    HashValue(value.pair.paths[1].source_instance_id,
+              &summary->digest);
+    HashValue(value.pair.paths[1].parent_eid, &summary->digest);
+    HashValue(value.pair.paths[1].level, &summary->digest);
+    HashValue(value.pair.paths[1].local_facet, &summary->digest);
+    HashValue(value.disposition, &summary->digest);
+    HashValue(value.accepted_event, &summary->digest);
+    HashValue(value.source_order, &summary->digest);
+    ++summary->outcomes;
+    if (value.disposition ==
+        SelfContactCandidateDisposition::CertifiedSeparated)
+      ++summary->certified_separated;
+    else if (value.disposition ==
+             SelfContactCandidateDisposition::
+                 ExcludedLocalIntersection)
+      ++summary->excluded_local_intersection;
+    else
+      ++summary->represented_by_accepted_vf;
+  }
 }
 
 SelfContactTransactionReport ValidateCandidatePublications(

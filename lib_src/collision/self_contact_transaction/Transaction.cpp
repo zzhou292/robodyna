@@ -45,7 +45,9 @@ void SelfContactTransaction::Impl::DiscardLocal() noexcept {
   accepted_facet_pair_count = 0;
   candidate_facet_pair_count = 0;
   accepted_event_count = 0;
+  accepted_feature_observation_count = 0;
   policy_outcome_count = 0;
+  policy_summary = {};
   policy_complete = false;
   owner_id = base_epoch = attempt = 0;
   stream = nullptr;
@@ -114,8 +116,12 @@ SelfContactTransactionReport SelfContactTransaction::Initialize(
   if (!sct::MakeLayout(
           nodes, surface_parents, active_use.parents().size(), facets,
           preflight.forecast.broadphase_pair_capacity,
-          limits.max_candidate_pairs,
-          config.force.event_capacity, limits.max_host_bytes, layout) ||
+          limits.max_facet_pair_chunk,
+          config.force.event_capacity,
+          limits.max_global_events,
+          limits.max_event_hash_slots,
+          limits.max_policy_outcomes,
+          limits.max_host_bytes, layout) ||
       layout.bytes != preflight.forecast.candidate_arena_bytes ||
       !next->arena.Initialize(layout.bytes))
     return Failure(S::ResourceLimit,
@@ -132,28 +138,40 @@ SelfContactTransactionReport SelfContactTransaction::Initialize(
       !next->arena.Construct<FixedContactFacet>(
           layout.facet_descriptors) ||
       !next->arena.Construct<std::uint32_t>(layout.triangle_order) ||
+      !next->arena.Construct<std::uint32_t>(
+          layout.vertex_identity_order) ||
+      !next->arena.Construct<std::uint32_t>(
+          layout.edge_identity_order) ||
       !next->arena.Construct<CurrentFixedTriangle>(
           layout.accepted_triangles) ||
       !next->arena.Construct<CurrentFixedTriangle>(
           layout.prepared_triangles) ||
+      !next->arena.Construct<SelfContactPairKey>(
+          layout.broadphase_pairs) ||
+      !next->arena.Construct<sct::FacetPairCursor>(
+          layout.facet_pair_cursors) ||
+      !next->arena.Construct<std::uint32_t>(
+          layout.facet_pair_heap) ||
+      !next->arena.Construct<FixedTrianglePair>(
+          layout.facet_pair_chunk) ||
       !next->arena.Construct<RepresentedTrianglePath>(
-          layout.represented_paths) ||
-      !next->arena.Construct<SelfContactPairKey>(
-          layout.accepted_broadphase_pairs) ||
-      !next->arena.Construct<SelfContactPairKey>(
-          layout.candidate_broadphase_pairs) ||
-      !next->arena.Construct<FixedTrianglePair>(
-          layout.accepted_facet_pairs) ||
-      !next->arena.Construct<FixedTrianglePair>(
-          layout.candidate_facet_pairs) ||
+          layout.chunk_paths) ||
       !next->arena.Construct<RepresentedTrianglePair>(
-          layout.represented_pairs) ||
+          layout.chunk_represented_pairs) ||
       !next->arena.Construct<RepresentedIntervalPairKey>(
-          layout.canonical_pairs) ||
+          layout.chunk_canonical_pairs) ||
+      !next->arena.Construct<SelfContactForceEvent>(
+          layout.chunk_events) ||
+      !next->arena.Construct<sct::AcceptedEventCertificate>(
+          layout.chunk_certificates) ||
       !next->arena.Construct<SelfContactForceEvent>(
           layout.accepted_events) ||
       !next->arena.Construct<sct::AcceptedEventCertificate>(
           layout.accepted_certificates) ||
+      !next->arena.Construct<std::uint32_t>(
+          layout.accepted_event_hash) ||
+      !next->arena.Construct<SelfContactCandidatePolicyOutcome>(
+          layout.chunk_policy_outcomes) ||
       !next->arena.Construct<SelfContactCandidatePolicyOutcome>(
           layout.policy_outcomes))
     return Failure(S::ResourceLimit,
@@ -164,6 +182,16 @@ SelfContactTransactionReport SelfContactTransaction::Initialize(
   auto pipeline = sct::InitializeStaticPipeline(
       active_use, next->buffers, surface_parents, facets,
       &next->has_rigid_motion);
+  if (pipeline.status != S::Ok) return pipeline;
+  pipeline = next->candidate_source.Initialize(
+      next->buffers.facet_descriptors, facets,
+      next->buffers.facet_pair_cursors,
+      preflight.forecast.parent_pair_cursor_capacity,
+      next->buffers.facet_pair_heap,
+      preflight.forecast.parent_pair_cursor_capacity,
+      next->buffers.facet_pair_chunk,
+      preflight.forecast.facet_pair_chunk_capacity,
+      preflight.forecast.complete_facet_pair_capacity);
   if (pipeline.status != S::Ok) return pipeline;
 
   const auto activity = next->physical_activity.Initialize(
@@ -346,6 +374,11 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
       state.buffers.facet_descriptors, state.facet_count,
       accepted_positions, state.buffers.accepted_triangles);
   if (evaluated.status != S::Ok) return state.Fail(evaluated);
+  evaluated = sct::ValidateCompleteTriangleIdentities(
+      state.buffers.accepted_triangles, state.facet_count,
+      state.buffers.vertex_identity_order,
+      state.buffers.edge_identity_order);
+  if (evaluated.status != S::Ok) return state.Fail(evaluated);
   const VectorView accepted_device{
       view.accepted.position_xyz,
       static_cast<std::uint32_t>(node_count), 3, 1};
@@ -358,42 +391,84 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
     report.candidate = broadphase.parent;
     return state.Fail(report);
   }
-  auto expanded = sct::ReadAndExpandBroadphase(
+  auto expanded = sct::ReadBroadphase(
       state.broadphase, view.stream,
-      state.buffers.accepted_broadphase_pairs,
+      state.buffers.broadphase_pairs,
       state.storage_forecast.broadphase_pair_capacity,
-      state.buffers.surface_to_active, state.surface_parent_count,
-      state.buffers.parent_facet_offsets, parents,
-      activity,
-      state.buffers.accepted_facet_pairs,
-      state.storage_forecast.candidate_pair_capacity,
-      &state.accepted_broadphase_pair_count,
-      &state.accepted_facet_pair_count);
+      &state.accepted_broadphase_pair_count);
   if (expanded.status != S::Ok) return state.Fail(expanded);
-  const auto discovery = state.accepted_discovery.Discover(
-      state.buffers.accepted_triangles, state.facet_count,
-      state.buffers.accepted_facet_pairs,
-      state.accepted_facet_pair_count);
-  if (discovery.status != FixedTriangleDiscoveryStatus::Ok) {
-    auto report = Failure(S::DiscoveryFailure, discovery.message);
-    report.discovery_status = discovery.status;
-    report.pair = discovery.input_pair;
-    report.discovery_task = discovery.input_task;
-    report.discovery_reason = discovery.arithmetic_reason;
-    return state.Fail(report);
-  }
-
+  auto streamed = state.candidate_source.Begin(
+      state.buffers.broadphase_pairs,
+      state.accepted_broadphase_pair_count,
+      state.buffers.surface_to_active, state.surface_parent_count,
+      state.buffers.parent_facet_offsets, parents, activity);
+  if (streamed.status != S::Ok) return state.Fail(streamed);
+  std::fill_n(state.buffers.accepted_event_hash,
+              state.storage_forecast.event_hash_capacity,
+              UINT32_MAX);
   std::size_t event_count = 0;
-  auto events = sct::BuildAcceptedEvents(
-      state.active_use, state.regularity, regularity_receipt,
-      state.accepted_discovery.features(),
-      state.accepted_discovery.intersections(),
-      state.buffers.facet_descriptors,
-      state.buffers.triangle_order, state.facet_count,
-      activity, state.buffers.accepted_events,
-      state.buffers.accepted_certificates,
-      state.storage_forecast.accepted_event_capacity,
-      &event_count);
+  std::size_t feature_observations = 0;
+  for (;;) {
+    const FixedTrianglePair* pairs = nullptr;
+    std::size_t pair_count = 0;
+    streamed = state.candidate_source.Next(&pairs, &pair_count);
+    if (streamed.status != S::Ok) return state.Fail(streamed);
+    if (!pair_count) break;
+    const auto discovery = state.accepted_discovery.Discover(
+        state.buffers.accepted_triangles, state.facet_count,
+        pairs, pair_count);
+    if (discovery.status != FixedTriangleDiscoveryStatus::Ok) {
+      auto report = Failure(S::DiscoveryFailure, discovery.message);
+      report.discovery_status = discovery.status;
+      report.pair = discovery.input_pair == SIZE_MAX
+          ? SIZE_MAX
+          : state.accepted_facet_pair_count + discovery.input_pair;
+      report.discovery_task = discovery.input_task;
+      report.discovery_reason = discovery.arithmetic_reason;
+      return state.Fail(report);
+    }
+    if (discovery.feature_candidates >
+        SIZE_MAX - feature_observations)
+      return state.Fail(Failure(
+          S::ResourceLimit,
+          "Accepted feature observation count overflowed"));
+    feature_observations += discovery.feature_candidates;
+    std::size_t chunk_events = 0;
+    auto events = sct::BuildAcceptedEvents(
+        state.active_use, state.regularity, regularity_receipt,
+        state.accepted_discovery.features(),
+        state.accepted_discovery.intersections(),
+        state.buffers.facet_descriptors,
+        state.buffers.triangle_order, state.facet_count,
+        activity, state.buffers.chunk_events,
+        state.buffers.chunk_certificates,
+        6 * state.storage_forecast.facet_pair_chunk_capacity,
+        &chunk_events);
+    if (events.status != S::Ok) return state.Fail(events);
+    events = sct::MergeAcceptedEventChunk(
+        state.buffers.chunk_certificates, chunk_events,
+        state.buffers.accepted_certificates,
+        state.storage_forecast.accepted_event_ledger_capacity,
+        state.buffers.accepted_event_hash,
+        state.storage_forecast.event_hash_capacity,
+        &event_count);
+    if (events.status != S::Ok) return state.Fail(events);
+    state.accepted_facet_pair_count += pair_count;
+  }
+  sct::StreamingCandidateSourceReceipt stream_receipt;
+  streamed = state.candidate_source.Finish(&stream_receipt);
+  if (streamed.status != S::Ok ||
+      !state.candidate_source.Authenticates(stream_receipt) ||
+      stream_receipt.parent_pairs() !=
+          state.accepted_broadphase_pair_count ||
+      stream_receipt.facet_pairs() !=
+          state.accepted_facet_pair_count)
+    return state.Fail(Failure(S::IdentityMismatch,
+        "Accepted canonical stream lacks its complete receipt"));
+  auto events = sct::FinalizeAcceptedEventLedger(
+      state.buffers.accepted_certificates, event_count,
+      state.buffers.accepted_events,
+      state.storage_forecast.accepted_event_capacity);
   if (events.status != S::Ok) return state.Fail(events);
   SelfContactForceAssemblyReceipt force_receipt;
   const auto force = state.force.AssembleAccepted(
@@ -417,6 +492,8 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
   }
 
   state.accepted_event_count = event_count;
+  state.accepted_feature_observation_count =
+      feature_observations;
   state.owner_id = view.owner_id;
   state.base_epoch = view.accepted.base_epoch;
   state.attempt = view.attempt;
@@ -437,7 +514,7 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
       state.accepted_broadphase_pair_count;
   next.facet_pairs_ = state.accepted_facet_pair_count;
   next.discovered_features_ =
-      state.accepted_discovery.features().count;
+      state.accepted_feature_observation_count;
   next.activity_ = activity_receipt;
   next.force_ = force_receipt;
   *output = next;
@@ -472,6 +549,15 @@ SelfContactTransaction::policy_outcomes() const noexcept {
   return {impl_->policy_outcome_count
               ? impl_->buffers.policy_outcomes : nullptr,
           impl_->policy_outcome_count, true};
+}
+
+SelfContactCandidatePolicySummary
+SelfContactTransaction::policy_summary() const noexcept {
+  if (!impl_ || !impl_->policy_summary.complete ||
+      impl_->phase != Impl::Phase::CandidateSealed ||
+      !impl_->prepared_activity.valid())
+    return {};
+  return impl_->policy_summary;
 }
 
 }  // namespace tlfea::contact

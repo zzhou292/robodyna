@@ -299,7 +299,8 @@ SelfContactTransactionReport InitializeStaticPipeline(
     bool* has_rigid_motion) noexcept {
   if (!has_rigid_motion || !buffers.surface_to_active ||
       !buffers.parent_facet_offsets || !buffers.facet_descriptors ||
-      !buffers.triangle_order)
+      !buffers.triangle_order || !buffers.vertex_identity_order ||
+      !buffers.edge_identity_order)
     return Failure(S::InvalidInput,
         "Static transaction pipeline storage is incomplete");
   std::fill_n(buffers.surface_to_active, surface_parents, UINT32_MAX);
@@ -336,6 +337,14 @@ SelfContactTransactionReport InitializeStaticPipeline(
             "Facet descriptor differs from active-use incidence", global);
       buffers.triangle_order[global] =
           static_cast<std::uint32_t>(global);
+      for (unsigned local_vertex = 0; local_vertex < 3; ++local_vertex) {
+        const auto encoded =
+            static_cast<std::uint32_t>(3 * global + local_vertex);
+        buffers.vertex_identity_order[3 * global + local_vertex] =
+            encoded;
+        buffers.edge_identity_order[3 * global + local_vertex] =
+            encoded;
+      }
     }
     next_facet += value.facet_count;
   }
@@ -360,6 +369,22 @@ SelfContactTransactionReport InitializeStaticPipeline(
             buffers.facet_descriptors[buffers.triangle_order[i]]))
       return Failure(S::IdentityMismatch,
           "Complete facet identities are not unique", i);
+  std::sort(
+      buffers.vertex_identity_order,
+      buffers.vertex_identity_order + 3 * facets,
+      [&](std::uint32_t a, std::uint32_t b) {
+        return fixed_triangle_features::Compare(
+            buffers.facet_descriptors[a / 3].vertex_keys[a % 3],
+            buffers.facet_descriptors[b / 3].vertex_keys[b % 3]) < 0;
+      });
+  std::sort(
+      buffers.edge_identity_order,
+      buffers.edge_identity_order + 3 * facets,
+      [&](std::uint32_t a, std::uint32_t b) {
+        return fixed_triangle_features::Compare(
+            buffers.facet_descriptors[a / 3].edge_keys[a % 3],
+            buffers.facet_descriptors[b / 3].edge_keys[b % 3]) < 0;
+      });
   *has_rigid_motion = false;
   for (const auto& use : active_use.vertex_uses())
     *has_rigid_motion = *has_rigid_motion ||
@@ -449,22 +474,13 @@ SelfContactTransactionReport EvaluateCompleteTriangles(
   return {};
 }
 
-SelfContactTransactionReport ReadAndExpandBroadphase(
+SelfContactTransactionReport ReadBroadphase(
     const SelfContactBroadphase& broadphase, cudaStream_t stream,
     SelfContactPairKey* host_keys, std::size_t broadphase_capacity,
-    const std::uint32_t* surface_to_active,
-    std::size_t surface_parents,
-    const std::uint32_t* parent_facet_offsets,
-    std::size_t parents, SelfContactActivityView activity,
-    FixedTrianglePair* facet_pairs,
-    std::size_t facet_pair_capacity,
-    std::size_t* broadphase_count,
-    std::size_t* facet_pair_count) noexcept {
-  if (!stream || !host_keys || !surface_to_active ||
-      !parent_facet_offsets || !facet_pairs ||
-      !broadphase_count || !facet_pair_count)
+    std::size_t* broadphase_count) noexcept {
+  if (!stream || !host_keys || !broadphase_count)
     return Failure(S::InvalidInput,
-        "Broadphase readback/expansion storage is incomplete");
+        "Broadphase readback storage is incomplete");
   const auto pairs = broadphase.pairs();
   if (!pairs.complete || pairs.count > broadphase_capacity ||
       pairs.count > SIZE_MAX ||
@@ -494,11 +510,7 @@ SelfContactTransactionReport ReadAndExpandBroadphase(
     }
   }
   *broadphase_count = static_cast<std::size_t>(pairs.count);
-  return ExpandFacetPairs(
-      host_keys, *broadphase_count, surface_to_active,
-      surface_parents, parent_facet_offsets, parents,
-      activity,
-      facet_pairs, facet_pair_capacity, facet_pair_count);
+  return {};
 }
 
 SelfContactTransactionReport BuildAcceptedEvents(

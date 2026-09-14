@@ -15,6 +15,41 @@ struct AcceptedEventCertificate {
   std::uint32_t target_facet = UINT32_MAX;
 };
 
+struct FacetPairCursor {
+  std::uint32_t first_begin = 0;
+  std::uint32_t first_end = 0;
+  std::uint32_t second_begin = 0;
+  std::uint32_t second_end = 0;
+  std::uint32_t first = 0;
+  std::uint32_t second = 0;
+  std::uint32_t parent_pair = UINT32_MAX;
+};
+
+class StreamingCandidateSource;
+
+class StreamingCandidateSourceReceipt {
+ public:
+  StreamingCandidateSourceReceipt() noexcept = default;
+  bool complete() const noexcept {
+    return source_ != nullptr && identity_ != 0 &&
+        emitted_facet_pairs_ == required_facet_pairs_;
+  }
+  std::size_t parent_pairs() const noexcept { return parent_pairs_; }
+  std::size_t facet_pairs() const noexcept {
+    return required_facet_pairs_;
+  }
+  std::size_t chunks() const noexcept { return chunks_; }
+
+ private:
+  friend class StreamingCandidateSource;
+  const StreamingCandidateSource* source_ = nullptr;
+  std::uint64_t identity_ = 0;
+  std::size_t parent_pairs_ = 0;
+  std::size_t required_facet_pairs_ = 0;
+  std::size_t emitted_facet_pairs_ = 0;
+  std::size_t chunks_ = 0;
+};
+
 struct Layout {
   tl::util::ArenaRegion accepted_positions;
   tl::util::ArenaRegion accepted_velocities;
@@ -24,17 +59,23 @@ struct Layout {
   tl::util::ArenaRegion parent_facet_offsets;
   tl::util::ArenaRegion facet_descriptors;
   tl::util::ArenaRegion triangle_order;
+  tl::util::ArenaRegion vertex_identity_order;
+  tl::util::ArenaRegion edge_identity_order;
   tl::util::ArenaRegion accepted_triangles;
   tl::util::ArenaRegion prepared_triangles;
-  tl::util::ArenaRegion represented_paths;
-  tl::util::ArenaRegion accepted_broadphase_pairs;
-  tl::util::ArenaRegion candidate_broadphase_pairs;
-  tl::util::ArenaRegion accepted_facet_pairs;
-  tl::util::ArenaRegion candidate_facet_pairs;
-  tl::util::ArenaRegion represented_pairs;
-  tl::util::ArenaRegion canonical_pairs;
+  tl::util::ArenaRegion broadphase_pairs;
+  tl::util::ArenaRegion facet_pair_cursors;
+  tl::util::ArenaRegion facet_pair_heap;
+  tl::util::ArenaRegion facet_pair_chunk;
+  tl::util::ArenaRegion chunk_paths;
+  tl::util::ArenaRegion chunk_represented_pairs;
+  tl::util::ArenaRegion chunk_canonical_pairs;
+  tl::util::ArenaRegion chunk_events;
+  tl::util::ArenaRegion chunk_certificates;
   tl::util::ArenaRegion accepted_events;
   tl::util::ArenaRegion accepted_certificates;
+  tl::util::ArenaRegion accepted_event_hash;
+  tl::util::ArenaRegion chunk_policy_outcomes;
   tl::util::ArenaRegion policy_outcomes;
   std::size_t bytes = 0;
 };
@@ -48,27 +89,80 @@ struct Buffers {
   std::uint32_t* parent_facet_offsets = nullptr;
   FixedContactFacet* facet_descriptors = nullptr;
   std::uint32_t* triangle_order = nullptr;
+  std::uint32_t* vertex_identity_order = nullptr;
+  std::uint32_t* edge_identity_order = nullptr;
   CurrentFixedTriangle* accepted_triangles = nullptr;
   CurrentFixedTriangle* prepared_triangles = nullptr;
-  RepresentedTrianglePath* represented_paths = nullptr;
-  SelfContactPairKey* accepted_broadphase_pairs = nullptr;
-  SelfContactPairKey* candidate_broadphase_pairs = nullptr;
-  FixedTrianglePair* accepted_facet_pairs = nullptr;
-  FixedTrianglePair* candidate_facet_pairs = nullptr;
-  RepresentedTrianglePair* represented_pairs = nullptr;
-  RepresentedIntervalPairKey* canonical_pairs = nullptr;
+  SelfContactPairKey* broadphase_pairs = nullptr;
+  FacetPairCursor* facet_pair_cursors = nullptr;
+  std::uint32_t* facet_pair_heap = nullptr;
+  FixedTrianglePair* facet_pair_chunk = nullptr;
+  RepresentedTrianglePath* chunk_paths = nullptr;
+  RepresentedTrianglePair* chunk_represented_pairs = nullptr;
+  RepresentedIntervalPairKey* chunk_canonical_pairs = nullptr;
+  SelfContactForceEvent* chunk_events = nullptr;
+  AcceptedEventCertificate* chunk_certificates = nullptr;
   SelfContactForceEvent* accepted_events = nullptr;
   AcceptedEventCertificate* accepted_certificates = nullptr;
+  std::uint32_t* accepted_event_hash = nullptr;
+  SelfContactCandidatePolicyOutcome* chunk_policy_outcomes = nullptr;
   SelfContactCandidatePolicyOutcome* policy_outcomes = nullptr;
 };
 
 bool MakeLayout(std::size_t nodes, std::size_t surface_parents,
                 std::size_t parents, std::size_t facets,
                 std::size_t broadphase_pair_capacity,
-                std::size_t pair_capacity,
-                std::size_t event_capacity, std::size_t max_bytes,
+                std::size_t pair_chunk_capacity,
+                std::size_t event_capacity,
+                std::size_t event_ledger_capacity,
+                std::size_t event_hash_capacity,
+                std::size_t policy_outcome_capacity,
+                std::size_t max_bytes,
                 Layout&) noexcept;
 Buffers Bind(void*, const Layout&) noexcept;
+
+class StreamingCandidateSource {
+ public:
+  SelfContactTransactionReport Initialize(
+      const FixedContactFacet*, std::size_t facets,
+      FacetPairCursor*, std::size_t cursor_capacity,
+      std::uint32_t* heap, std::size_t heap_capacity,
+      FixedTrianglePair* chunk, std::size_t chunk_capacity,
+      std::size_t complete_pair_capacity) noexcept;
+  SelfContactTransactionReport Begin(
+      const SelfContactPairKey*, std::size_t,
+      const std::uint32_t* surface_to_active,
+      std::size_t surface_parents,
+      const std::uint32_t* parent_facet_offsets,
+      std::size_t parents, SelfContactActivityView) noexcept;
+  SelfContactTransactionReport Next(
+      const FixedTrianglePair**, std::size_t*) noexcept;
+  SelfContactTransactionReport Finish(
+      StreamingCandidateSourceReceipt*) noexcept;
+  bool Authenticates(
+      const StreamingCandidateSourceReceipt&) const noexcept;
+
+ private:
+  const FixedContactFacet* descriptors_ = nullptr;
+  FacetPairCursor* cursors_ = nullptr;
+  std::uint32_t* heap_ = nullptr;
+  FixedTrianglePair* chunk_ = nullptr;
+  std::size_t facets_ = 0;
+  std::size_t cursor_capacity_ = 0;
+  std::size_t heap_capacity_ = 0;
+  std::size_t chunk_capacity_ = 0;
+  std::size_t complete_pair_capacity_ = 0;
+  std::size_t heap_count_ = 0;
+  std::size_t parent_pair_count_ = 0;
+  std::size_t required_facet_pairs_ = 0;
+  std::size_t emitted_facet_pairs_ = 0;
+  std::size_t chunks_ = 0;
+  std::uint64_t identity_ = 0;
+  FixedTrianglePair previous_;
+  bool have_previous_ = false;
+  bool initialized_ = false;
+  bool active_ = false;
+};
 
 int Compare(const RepresentedTrianglePathKey&,
             const RepresentedTrianglePathKey&) noexcept;
@@ -111,16 +205,14 @@ SelfContactTransactionReport InitializeStaticPipeline(
 SelfContactTransactionReport EvaluateCompleteTriangles(
     const FixedContactFacet*, std::size_t, VectorView,
     CurrentFixedTriangle*) noexcept;
-SelfContactTransactionReport ReadAndExpandBroadphase(
+SelfContactTransactionReport ValidateCompleteTriangleIdentities(
+    const CurrentFixedTriangle*, std::size_t,
+    const std::uint32_t* vertex_order,
+    const std::uint32_t* edge_order) noexcept;
+SelfContactTransactionReport ReadBroadphase(
     const SelfContactBroadphase&, cudaStream_t,
     SelfContactPairKey*, std::size_t broadphase_capacity,
-    const std::uint32_t* surface_to_active,
-    std::size_t surface_parents,
-    const std::uint32_t* parent_facet_offsets,
-    std::size_t parents, SelfContactActivityView, FixedTrianglePair*,
-    std::size_t facet_pair_capacity,
-    std::size_t* broadphase_count,
-    std::size_t* facet_pair_count) noexcept;
+    std::size_t* broadphase_count) noexcept;
 bool CompleteRegularity(
     const SelfContactActiveUseBinding&,
     const SelfContactCurrentRegularityReceipt&,
@@ -144,6 +236,17 @@ SelfContactTransactionReport ValidateCandidateEdgePolicy(
     std::size_t facet_count, SelfContactActivityView) noexcept;
 bool ExactFacetPair(const FixedTriangleFeatureCandidate&,
                     const FixedTriangleFeatureCandidate&) noexcept;
+SelfContactTransactionReport MergeAcceptedEventChunk(
+    const AcceptedEventCertificate*, std::size_t,
+    AcceptedEventCertificate*, std::size_t ledger_capacity,
+    std::uint32_t*, std::size_t hash_capacity,
+    std::size_t*) noexcept;
+SelfContactTransactionReport FinalizeAcceptedEventLedger(
+    AcceptedEventCertificate*, std::size_t,
+    SelfContactForceEvent*, std::size_t force_capacity) noexcept;
+void FoldPolicyOutcomes(
+    const SelfContactCandidatePolicyOutcome*, std::size_t,
+    SelfContactCandidatePolicySummary*) noexcept;
 
 }  // namespace tlfea::contact::self_contact_transaction
 
@@ -167,6 +270,7 @@ struct SelfContactTransaction::Impl {
   self_contact_transaction::Layout layout;
   tl::util::HostArena arena;
   self_contact_transaction::Buffers buffers;
+  self_contact_transaction::StreamingCandidateSource candidate_source;
   SelfContactPhysicalActivity physical_activity;
   SelfContactBroadphase broadphase;
   FixedTriangleFeatureDiscovery accepted_discovery;
@@ -183,7 +287,9 @@ struct SelfContactTransaction::Impl {
   std::size_t accepted_facet_pair_count = 0;
   std::size_t candidate_facet_pair_count = 0;
   std::size_t accepted_event_count = 0;
+  std::size_t accepted_feature_observation_count = 0;
   std::size_t policy_outcome_count = 0;
+  SelfContactCandidatePolicySummary policy_summary;
   bool policy_complete = false;
   bool has_rigid_motion = false;
   std::uint64_t owner_id = 0;

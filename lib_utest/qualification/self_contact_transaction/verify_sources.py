@@ -7,6 +7,7 @@ HEADER = ROOT / "lib_src/collision/SelfContactTransaction.h"
 TYPES = ROOT / "lib_src/collision/SelfContactTransactionTypes.h"
 CANDIDATE = ROOT / "lib_src/collision/self_contact_transaction/Candidate.cpp"
 TRANSACTION = ROOT / "lib_src/collision/self_contact_transaction/Transaction.cpp"
+STREAMING = ROOT / "lib_src/collision/self_contact_transaction/Streaming.cpp"
 CMAKE = ROOT / "lib_src/collision/SelfContactTransaction.cmake"
 BAZEL = ROOT / "lib_src/collision/BUILD.bazel"
 QUAL_CMAKE = Path(__file__).resolve().parent / "CMakeLists.txt"
@@ -34,6 +35,11 @@ for token in (
     "activity_receipt.activity()",
     "owner, token, view, activity,",
     "{state.buffers.accepted_events, event_count}",
+    "candidate_source.Begin(",
+    "candidate_source.Next(",
+    "candidate_source.Finish(",
+    "MergeAcceptedEventChunk(",
+    "FinalizeAcceptedEventLedger(",
 ):
     require(transaction, token, TRANSACTION)
 require(candidate, "state.force.Authenticates(assembly.force_)", CANDIDATE)
@@ -58,6 +64,7 @@ for token in ("SelfContactForceAssembly force",
               "SelfContactBroadphase broadphase",
               "FixedTriangleFeatureDiscovery accepted_discovery",
               "FixedTriangleFeatureDiscovery candidate_discovery",
+              "StreamingCandidateSource candidate_source",
               "SelfContactCurrentRegularity regularity",
               "RepresentedIntervalCrossing crossing",
               "ShellPhysicalScratchParticipation participation"):
@@ -115,9 +122,21 @@ for token in (
     "state.crossing.Certify",
     "state.broadphase.Evaluate",
     "ValidateCandidatePublications",
+    "FoldPolicyOutcomes(",
     "participation.SealSelfContactCandidate",
 ):
     require(candidate, token, CANDIDATE)
+
+for forbidden in (
+    "accepted_facet_pairs",
+    "candidate_facet_pairs",
+    "accepted_broadphase_pairs",
+    "candidate_broadphase_pairs",
+    "buffers.represented_paths",
+):
+    if forbidden in transaction or forbidden in candidate:
+        raise RuntimeError(
+            f"transaction retains whole-batch range {forbidden!r}")
 
 force_call = transaction.index("force.AssembleAccepted")
 accepted_broadphase = transaction.index("broadphase.Evaluate")
@@ -130,6 +149,7 @@ if not accepted_broadphase < accepted_events < force_call < record_call:
 for path in (
     CANDIDATE,
     TRANSACTION,
+    STREAMING,
     ROOT / "lib_src/collision/self_contact_transaction/Source.cpp",
 ):
     text = path.read_text()
@@ -143,7 +163,9 @@ for wiring in (CMAKE, BAZEL):
     text = wiring.read_text()
     for token in ("self_contact_transaction/Arena.cpp",
                   "self_contact_transaction/Candidate.cpp",
+                  "self_contact_transaction/Limits.cpp",
                   "self_contact_transaction/Source.cpp",
+                  "self_contact_transaction/Streaming.cpp",
                   "self_contact_transaction/Transaction.cpp",
                   "self_contact_transaction/Values.cpp"):
         require(text, token, wiring)
