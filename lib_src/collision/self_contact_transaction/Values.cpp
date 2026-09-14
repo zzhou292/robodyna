@@ -201,7 +201,6 @@ bool SameCandidateValue(
 bool SameCertificate(const AcceptedEventCertificate& a,
                      const AcceptedEventCertificate& b) noexcept {
   if (a.kind != b.kind ||
-      !SameCandidateValue(a.discovery, b.discovery) ||
       !self_contact_transaction::Same(
           a.event.feature, b.event.feature) ||
       a.event.vertex_use != b.event.vertex_use ||
@@ -212,10 +211,10 @@ bool SameCertificate(const AcceptedEventCertificate& a,
       !Same(a.event.endpoints[1], b.event.endpoints[1]) ||
       !Same(a.event.classification, b.event.classification))
     return false;
-  return a.kind == AcceptedEventCertificateKind::VertexFace
-      ? a.target_facet == b.target_facet
-      : (a.edge_facet[0] == b.edge_facet[0] &&
-         a.edge_facet[1] == b.edge_facet[1]);
+  if (a.kind == AcceptedEventCertificateKind::EdgeEdge)
+    return true;
+  return SameCandidateValue(a.discovery, b.discovery) &&
+      a.target_facet == b.target_facet;
 }
 
 const RepresentedIntervalResult* Crossing(
@@ -283,12 +282,13 @@ std::size_t AcceptedFeature(
     return SIZE_MAX;
   const auto& certificate = events[lower];
   const auto& accepted = certificate.event;
-  if (self_contact_transaction::Compare(
-          PairKey(certificate.discovery.triangles[0],
-                  certificate.discovery.triangles[1]),
-          crossing.key) != 0 ||
-      !self_contact_transaction::Same(
+  if (!self_contact_transaction::Same(
           certificate.discovery.key, key) ||
+      (crossing.feature.kind == RepresentedFeatureKind::VertexFace &&
+       self_contact_transaction::Compare(
+           PairKey(certificate.discovery.triangles[0],
+                   certificate.discovery.triangles[1]),
+           crossing.key) != 0) ||
       accepted.source_order != lower ||
       ValidateWeightedSurfacePoint(
           accepted.endpoints[0], UINT32_MAX) != Status::kOk ||
@@ -312,6 +312,11 @@ std::size_t AcceptedFeature(
         certificate.discovery.edge_parameters[0] < 1 &&
         certificate.discovery.edge_parameters[1] > 0 &&
         certificate.discovery.edge_parameters[1] < 1;
+    const bool boundary_minimum =
+        certificate.discovery.edge_parameters[0] == 0 ||
+        certificate.discovery.edge_parameters[0] == 1 ||
+        certificate.discovery.edge_parameters[1] == 0 ||
+        certificate.discovery.edge_parameters[1] == 1;
     const double gap =
         (certificate.discovery.distance_m -
          accepted.classification.reference_half_thickness_m[0]) -
@@ -337,7 +342,8 @@ std::size_t AcceptedFeature(
         certificate.discovery.edge_parameters[0] > 1 ||
         certificate.discovery.edge_parameters[1] < 0 ||
         certificate.discovery.edge_parameters[1] > 1 ||
-        !(certificate.discovery.distance_m == 0 || strict_interior) ||
+        !(certificate.discovery.distance_m == 0 ||
+          strict_interior || boundary_minimum) ||
         !IsFinite(gap) || gap > 0)
       return SIZE_MAX;
     *edge_edge = true;

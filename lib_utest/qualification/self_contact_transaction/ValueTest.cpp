@@ -447,8 +447,8 @@ TEST(SelfContactTransactionValues,
   ee.triangles[1] = vf.triangles[0];
   EXPECT_TRUE(sct::ExactFacetPair(vf, ee));
 
-  // Parent-pair equality is insufficient: coverage requires the same exact
-  // accepted EE feature and producing fixed-facet certificate.
+  // Parent-pair equality is insufficient for boundary-EE deduplication by an
+  // admitted VF: its producing fixed-facet pair must also be exact.
   ee.triangles[0].local_facet++;
   EXPECT_FALSE(sct::ExactFacetPair(vf, ee));
   ee.triangles[0] = vf.triangles[1];
@@ -460,7 +460,7 @@ TEST(SelfContactTransactionValues,
 }
 
 TEST(SelfContactTransactionValues,
-     EeCrossingRequiresExactAcceptedFeatureAndFacetCertificate) {
+     EeCrossingRequiresExactAcceptedCanonicalFeature) {
   const auto pair=Pair(10,20);
   auto certificate=EdgeCertificate();
   c::RepresentedIntervalResult result;
@@ -483,8 +483,13 @@ TEST(SelfContactTransactionValues,
 
   certificate.discovery.triangles[0].local_facet=1;
   EXPECT_EQ(sct::ValidateCandidatePublications(input).status,
-      c::SelfContactTransactionStatus::CandidateRejected);
+      c::SelfContactTransactionStatus::Ok);
   certificate.discovery.triangles[0].local_facet=0;
+  const auto edge=certificate.event.feature.edge_edge.edges[0];
+  certificate.event.feature.edge_edge.edges[0].endpoints[0].first++;
+  EXPECT_EQ(sct::ValidateCandidatePublications(input).status,
+      c::SelfContactTransactionStatus::CandidateRejected);
+  certificate.event.feature.edge_edge.edges[0]=edge;
   certificate.kind=sct::AcceptedEventCertificateKind::VertexFace;
   EXPECT_EQ(sct::ValidateCandidatePublications(input).status,
       c::SelfContactTransactionStatus::CandidateRejected);
