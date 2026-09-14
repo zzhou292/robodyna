@@ -55,10 +55,157 @@ std::size_t TriangleIndex(
       ? order[lower] : SIZE_MAX;
 }
 
-bool RigidSupport(SelfContactSupportStatus status) noexcept {
-  return status ==
-          SelfContactSupportStatus::AdmittedPartialOrMixedRigid ||
-      status == SelfContactSupportStatus::CompleteRigidGroup;
+bool AddRigidGroup(std::uint32_t group,
+                   MotionSupport* output) noexcept {
+  for (unsigned i = 0; i < output->rigid_group_count; ++i)
+    if (output->rigid_groups[i] == group) return true;
+  if (output->rigid_group_count == 4) return false;
+  output->rigid_groups[output->rigid_group_count++] = group;
+  return true;
+}
+
+void SortRigidGroups(MotionSupport* output) noexcept {
+  std::sort(output->rigid_groups,
+            output->rigid_groups + output->rigid_group_count);
+}
+
+bool PointMotion(const WeightedSurfacePoint& point,
+                 const SelfContactSupportClassification& support,
+                 const std::uint32_t* node_rigid_groups,
+                 std::size_t nodes, MotionSupport* output) noexcept {
+  if (!node_rigid_groups || !output ||
+      ValidateWeightedSurfacePoint(point, nodes) != Status::kOk)
+    return false;
+  MotionSupport next;
+  std::size_t nonzero = 0, rigid = 0;
+  std::uint32_t common = UINT32_MAX;
+  bool same = true;
+  for (unsigned slot = 0; slot < point.count; ++slot) {
+    if (point.weights[slot] == 0) continue;
+    ++nonzero;
+    const auto group = node_rigid_groups[point.nodes[slot]];
+    if (group == UINT32_MAX) {
+      same = false;
+      continue;
+    }
+    ++rigid;
+    if (!AddRigidGroup(group, &next)) return false;
+    if (common == UINT32_MAX) common = group;
+    else if (common != group) same = false;
+  }
+  if (nonzero != support.nonzero_slots ||
+      rigid != support.rigid_slots)
+    return false;
+  if (!rigid) {
+    if (support.status ==
+            SelfContactSupportStatus::CompleteRigidGroup ||
+        support.status ==
+            SelfContactSupportStatus::AdmittedPartialOrMixedRigid)
+      return false;
+    next.motion = SelfContactFacetMotion::LinearNodalV1;
+  } else if (rigid == nonzero && same) {
+    if (support.status !=
+            SelfContactSupportStatus::UnsupportedCinSecondary &&
+        (support.status !=
+             SelfContactSupportStatus::CompleteRigidGroup ||
+         support.complete_rigid_group != common))
+      return false;
+    next.motion = SelfContactFacetMotion::CompleteRigidGroup;
+    next.complete_rigid_group = common;
+  } else {
+    if (support.status !=
+            SelfContactSupportStatus::UnsupportedCinSecondary &&
+        support.status !=
+            SelfContactSupportStatus::AdmittedPartialOrMixedRigid)
+      return false;
+    next.motion = SelfContactFacetMotion::PartialOrMixedRigid;
+  }
+  SortRigidGroups(&next);
+  *output = next;
+  return true;
+}
+
+bool FacetMotion(const SelfContactActiveUseBinding& active_use,
+                 std::size_t facet,
+                 const std::uint32_t* node_rigid_groups,
+                 std::size_t nodes, MotionSupport* output) noexcept {
+  if (!output || facet >= active_use.facet_uses().size()) return false;
+  const auto& use = active_use.facet_uses()[facet];
+  MotionSupport next;
+  next.parent = use.parent;
+  bool all_linear = true, all_complete = true;
+  std::uint32_t common = UINT32_MAX;
+  for (unsigned vertex = 0; vertex < 3; ++vertex) {
+    if (use.vertex_uses[vertex] >= active_use.vertex_uses().size())
+      return false;
+    const auto& value =
+        active_use.vertex_uses()[use.vertex_uses[vertex]];
+    if (value.parent != use.parent) return false;
+    MotionSupport point;
+    if (!PointMotion(value.point, value.support,
+                     node_rigid_groups, nodes, &point))
+      return false;
+    all_linear = all_linear &&
+        point.motion == SelfContactFacetMotion::LinearNodalV1;
+    all_complete = all_complete &&
+        point.motion == SelfContactFacetMotion::CompleteRigidGroup;
+    if (point.motion == SelfContactFacetMotion::CompleteRigidGroup) {
+      if (common == UINT32_MAX)
+        common = point.complete_rigid_group;
+      else if (common != point.complete_rigid_group)
+        all_complete = false;
+    }
+    for (unsigned group = 0;
+         group < point.rigid_group_count; ++group)
+      if (!AddRigidGroup(point.rigid_groups[group], &next))
+        return false;
+  }
+  if (all_linear) {
+    next.motion = SelfContactFacetMotion::LinearNodalV1;
+  } else if (all_complete && common != UINT32_MAX) {
+    next.motion = SelfContactFacetMotion::CompleteRigidGroup;
+    next.complete_rigid_group = common;
+  } else {
+    next.motion = SelfContactFacetMotion::PartialOrMixedRigid;
+  }
+  SortRigidGroups(&next);
+  *output = next;
+  return true;
+}
+
+bool ParentMotion(const SelfContactParentUse& parent,
+                  const std::uint32_t* node_rigid_groups,
+                  std::size_t nodes, std::uint32_t parent_index,
+                  MotionSupport* output) noexcept {
+  if (!node_rigid_groups || !output ||
+      (parent.arity != 3 && parent.arity != 4))
+    return false;
+  MotionSupport next;
+  next.parent = parent_index;
+  bool all_rigid = true;
+  std::uint32_t common = UINT32_MAX;
+  for (unsigned slot = 0; slot < parent.arity; ++slot) {
+    if (parent.nodes[slot] >= nodes) return false;
+    const auto group = node_rigid_groups[parent.nodes[slot]];
+    if (group == UINT32_MAX) {
+      all_rigid = false;
+      continue;
+    }
+    if (!AddRigidGroup(group, &next)) return false;
+    if (common == UINT32_MAX) common = group;
+    else if (common != group) all_rigid = false;
+  }
+  if (!next.rigid_group_count) {
+    next.motion = SelfContactFacetMotion::LinearNodalV1;
+  } else if (all_rigid && next.rigid_group_count == 1) {
+    next.motion = SelfContactFacetMotion::CompleteRigidGroup;
+    next.complete_rigid_group = common;
+  } else {
+    next.motion = SelfContactFacetMotion::PartialOrMixedRigid;
+  }
+  SortRigidGroups(&next);
+  *output = next;
+  return true;
 }
 
 bool AllowedExclusion(SelfContactPairStatus status) noexcept {
@@ -295,14 +442,42 @@ SelfContactTransactionReport CheckEdgeEdge(
 
 SelfContactTransactionReport InitializeStaticPipeline(
     const SelfContactActiveUseBinding& active_use, Buffers buffers,
-    std::size_t surface_parents, std::size_t facets,
-    bool* has_rigid_motion) noexcept {
-  if (!has_rigid_motion || !buffers.surface_to_active ||
+    std::size_t nodes, std::size_t surface_parents,
+    std::size_t facets) noexcept {
+  if (!nodes || !buffers.node_rigid_groups ||
+      !buffers.surface_to_active ||
       !buffers.parent_facet_offsets || !buffers.facet_descriptors ||
+      !buffers.parent_motion || !buffers.facet_motion ||
       !buffers.triangle_order || !buffers.vertex_identity_order ||
       !buffers.edge_identity_order)
     return Failure(S::InvalidInput,
         "Static transaction pipeline storage is incomplete");
+  std::fill_n(buffers.node_rigid_groups, nodes, UINT32_MAX);
+  if (const auto* rigid = active_use.rigid()) {
+    const auto groups = rigid->groups();
+    const auto members = rigid->members();
+    for (std::size_t group = 0; group < groups.size(); ++group) {
+      const auto& value = groups[group];
+      if (group > UINT32_MAX ||
+          value.member_offset > members.size() ||
+          value.member_count >
+              members.size() - value.member_offset)
+        return Failure(S::IdentityMismatch,
+            "Actual rigid binding group range is invalid", group);
+      for (std::size_t local = 0;
+           local < value.member_count; ++local) {
+        const auto node =
+            members[value.member_offset + local].domain_node;
+        if (node >= nodes ||
+            buffers.node_rigid_groups[node] != UINT32_MAX)
+          return Failure(S::IdentityMismatch,
+              "Actual rigid binding membership is outside or duplicated",
+              group, local);
+        buffers.node_rigid_groups[node] =
+            static_cast<std::uint32_t>(group);
+      }
+    }
+  }
   std::fill_n(buffers.surface_to_active, surface_parents, UINT32_MAX);
   const auto parents = active_use.parents();
   if (!parents.size() || active_use.facet_uses().size() != facets)
@@ -322,6 +497,13 @@ SelfContactTransactionReport InitializeStaticPipeline(
         static_cast<std::uint32_t>(parent);
     buffers.parent_facet_offsets[parent] =
         static_cast<std::uint32_t>(next_facet);
+    if (!ParentMotion(
+            value, buffers.node_rigid_groups, nodes,
+            static_cast<std::uint32_t>(parent),
+            buffers.parent_motion + parent))
+      return Failure(S::IdentityMismatch,
+          "Parent rigid-motion support differs from actual binding",
+          parent);
     for (std::uint32_t local = 0; local < value.facet_count; ++local) {
       const auto global = next_facet + local;
       const auto described = active_use.facets()->Describe(
@@ -335,6 +517,13 @@ SelfContactTransactionReport InitializeStaticPipeline(
               value.source.source_parent_id)
         return Failure(S::IdentityMismatch,
             "Facet descriptor differs from active-use incidence", global);
+      if (!FacetMotion(
+              active_use, global, buffers.node_rigid_groups,
+              nodes, buffers.facet_motion + global) ||
+          buffers.facet_motion[global].parent != parent)
+        return Failure(S::IdentityMismatch,
+            "Facet rigid-motion support differs from authenticated active use",
+            parent, global);
       buffers.triangle_order[global] =
           static_cast<std::uint32_t>(global);
       for (unsigned local_vertex = 0; local_vertex < 3; ++local_vertex) {
@@ -385,10 +574,30 @@ SelfContactTransactionReport InitializeStaticPipeline(
             buffers.facet_descriptors[a / 3].edge_keys[a % 3],
             buffers.facet_descriptors[b / 3].edge_keys[b % 3]) < 0;
       });
-  *has_rigid_motion = false;
-  for (const auto& use : active_use.vertex_uses())
-    *has_rigid_motion = *has_rigid_motion ||
-        RigidSupport(use.support.status);
+  return {};
+}
+
+SelfContactTransactionReport FilterSameRigidFacetPairs(
+    const MotionSupport* motion, std::size_t facets,
+    FixedTrianglePair* pairs, std::size_t* pair_count) noexcept {
+  if (!motion || !facets || !pairs || !pair_count)
+    return Failure(S::InvalidInput,
+        "Rigid facet-pair filter storage is incomplete");
+  std::size_t write = 0;
+  for (std::size_t pair = 0; pair < *pair_count; ++pair) {
+    const auto value = pairs[pair];
+    if (value.first >= facets || value.second >= facets ||
+        value.first == value.second)
+      return Failure(S::IdentityMismatch,
+          "Rigid facet-pair filter received an invalid exact pair",
+          SIZE_MAX, pair);
+    const auto action = ClassifyCandidatePairMotion(
+        motion[value.first], {}, motion[value.second], {});
+    if (action == PairMotionAction::ExcludedSameRigidGroup)
+      continue;
+    pairs[write++] = value;
+  }
+  *pair_count = write;
   return {};
 }
 

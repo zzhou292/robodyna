@@ -35,10 +35,36 @@ enum class SelfContactTransactionStatus : std::uint8_t {
   CandidateRejected,
 };
 
+enum class SelfContactFacetMotion : std::uint8_t {
+  LinearNodalV1,
+  CompleteRigidGroup,
+  PartialOrMixedRigid,
+};
+
+struct SelfContactRigidGroupIdentity {
+  std::size_t binding_group = SIZE_MAX;
+  tl::fea::RigidBindingSourceKind source_kind =
+      tl::fea::RigidBindingSourceKind::NodalGroup;
+  std::uint64_t source_group_id = 0;
+  std::uint64_t source_node_set_id = 0;
+};
+
+struct SelfContactFacetMotionIdentity {
+  FixedTriangleKey facet;
+  std::size_t active_parent = SIZE_MAX;
+  SelfContactFacetMotion motion =
+      SelfContactFacetMotion::LinearNodalV1;
+  std::size_t rigid_group_count = 0;
+  SelfContactRigidGroupIdentity rigid_groups[4];
+};
+
 struct SelfContactTransactionReport {
   SelfContactTransactionStatus status = SelfContactTransactionStatus::Ok;
   std::size_t candidate = SIZE_MAX;
   std::size_t pair = SIZE_MAX;
+  // Populated for an exact facet-pair motion failure.  Partial/mixed support
+  // can name up to the four actual groups present in one shell-parent map.
+  SelfContactFacetMotionIdentity offending_motion[2];
   SelfContactForceStatus force_status = SelfContactForceStatus::Ok;
   SelfContactPhysicalActivityStatus activity_status =
       SelfContactPhysicalActivityStatus::Ok;
@@ -153,6 +179,13 @@ struct SelfContactTransactionForecast {
   std::size_t parent_pair_cursor_capacity = 0;
   std::size_t accepted_event_ledger_capacity = 0;
   std::size_t event_hash_capacity = 0;
+  std::size_t rigid_group_snapshot_capacity = 0;
+  std::size_t node_rigid_group_capacity = 0;
+  std::size_t parent_motion_capacity = 0;
+  std::size_t facet_motion_capacity = 0;
+  std::size_t swept_parent_bound_capacity = 0;
+  std::size_t swept_facet_bound_capacity = 0;
+  std::size_t candidate_crossing_capacity = 0;
   std::size_t accepted_event_capacity = 0;
   std::size_t accepted_certificate_capacity = 0;
   std::size_t policy_outcome_capacity = 0;
@@ -181,6 +214,7 @@ struct SelfContactTransactionAllocationInfo {
 
 enum class SelfContactCandidateDisposition : std::uint8_t {
   CertifiedSeparated,
+  ExcludedSameRigidGroup,
   ExcludedLocalIntersection,
   RepresentedByAcceptedVertexFace,
 };
@@ -204,6 +238,7 @@ struct SelfContactCandidatePolicyView {
 struct SelfContactCandidatePolicySummary {
   std::size_t outcomes = 0;
   std::size_t certified_separated = 0;
+  std::size_t excluded_same_rigid_group = 0;
   std::size_t excluded_local_intersection = 0;
   std::size_t represented_by_accepted_vf = 0;
   // FNV-1a over canonical pair identity, disposition and accepted source

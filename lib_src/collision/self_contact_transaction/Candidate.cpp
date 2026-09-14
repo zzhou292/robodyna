@@ -4,6 +4,8 @@
 #include "lib_src/solvers/NodalTrialIdentity.h"
 
 #include <algorithm>
+#include <cmath>
+#include <limits>
 
 namespace tlfea::contact {
 namespace {
@@ -39,10 +41,14 @@ RepresentedIntervalPairKey PairKey(
 
 void MakePath(const CurrentFixedTriangle& base,
               const CurrentFixedTriangle& current,
+              const sct::MotionSupport& motion,
               RepresentedTrianglePath* output) noexcept {
   RepresentedTrianglePath next;
   next.key = PathKey(current.key);
-  next.motion = RepresentedMotion::LinearNodalV1;
+  next.motion =
+      motion.motion == SelfContactFacetMotion::LinearNodalV1
+      ? RepresentedMotion::LinearNodalV1
+      : RepresentedMotion::RigidArc;
   for (unsigned vertex = 0; vertex < 3; ++vertex) {
     next.vertices[vertex].key = current.vertex_keys[vertex];
     next.vertices[vertex].endpoint[0] = base.vertices[vertex];
@@ -50,6 +56,321 @@ void MakePath(const CurrentFixedTriangle& base,
     next.edge_keys[vertex] = current.edge_keys[vertex];
   }
   *output = next;
+}
+
+double Down(double value) noexcept {
+  return std::nextafter(
+      value, -std::numeric_limits<double>::infinity());
+}
+
+double Up(double value) noexcept {
+  return std::nextafter(
+      value, std::numeric_limits<double>::infinity());
+}
+
+double Component(Vec3 value, unsigned component) noexcept {
+  return component == 0 ? value.x :
+      (component == 1 ? value.y : value.z);
+}
+
+double Component(tl::math::Vec3 value,
+                 unsigned component) noexcept {
+  return component == 0 ? value.x :
+      (component == 1 ? value.y : value.z);
+}
+
+void SetComponent(Vec3* value, unsigned component,
+                  double next) noexcept {
+  if (component == 0) value->x = next;
+  else if (component == 1) value->y = next;
+  else value->z = next;
+}
+
+bool NodeSweepBounds(
+    std::uint32_t node, VectorView base, VectorView current,
+    const std::uint32_t* node_rigid_groups,
+    const fe::NodalRigidGroupSnapshot* accepted_groups,
+    const fe::NodalRigidGroupSnapshot* prepared_groups,
+    std::size_t group_count, double duration,
+    double kick_duration,
+    SelfContactSweptParentBounds* output) noexcept {
+  if (!output || !node_rigid_groups ||
+      node >= base.node_count || node >= current.node_count)
+    return false;
+  const auto first = base.at(node);
+  const auto second = current.at(node);
+  const auto group = node_rigid_groups[node];
+  SelfContactSweptParentBounds next;
+  if (group == UINT32_MAX) {
+    for (unsigned component = 0; component < 3; ++component) {
+      const auto a = Component(first, component);
+      const auto b = Component(second, component);
+      SetComponent(&next.lower, component, std::min(a, b));
+      SetComponent(&next.upper, component, std::max(a, b));
+    }
+    *output = next;
+    return IsFinite(next.lower) && IsFinite(next.upper);
+  }
+  if (group >= group_count || !accepted_groups ||
+      !prepared_groups || !(duration > 0) ||
+      !(kick_duration > 0) ||
+      !std::isfinite(duration) ||
+      !std::isfinite(kick_duration) ||
+      duration > 2 * kick_duration)
+    return false;
+  const auto& accepted = accepted_groups[group].state;
+  const auto& prepared = prepared_groups[group].state;
+  const double increment = duration * std::hypot(
+      std::hypot(prepared.omega.x, prepared.omega.y),
+      prepared.omega.z);
+  constexpr double Pi = 3.141592653589793238462643383279502884;
+  if (!std::isfinite(increment) || increment >= Pi)
+    return false;
+  const auto arm_norm = [](Vec3 point, tl::math::Vec3 center) {
+    return Up(Up(std::fabs(point.x - center.x) +
+                 std::fabs(point.y - center.y)) +
+              std::fabs(point.z - center.z));
+  };
+  const double arm = std::max(
+      arm_norm(first, accepted.center),
+      arm_norm(second, prepared.center));
+  // The admitted owner step has |omega|*drift_dt < pi and
+  // drift_dt/kick_dt <= 2.  Both its cross-product fallback and
+  // finite-velocity two-member branch keep the complete second-order
+  // relative drift below 12*|r0|, including the half-kick startup.  L1
+  // radius plus outward rounding deliberately overbounds every orientation;
+  // this box can prove only separation, never crossing.
+  const double radius = Up(12 * arm);
+  if (!std::isfinite(radius)) return false;
+  for (unsigned component = 0; component < 3; ++component) {
+    const auto a = Component(accepted.center, component);
+    const auto b = Component(prepared.center, component);
+    SetComponent(&next.lower, component,
+                 Down(std::min(a, b) - radius));
+    SetComponent(&next.upper, component,
+                 Up(std::max(a, b) + radius));
+  }
+  *output = next;
+  return IsFinite(next.lower) && IsFinite(next.upper);
+}
+
+bool PointSweepBounds(
+    const WeightedSurfacePoint& point, VectorView base,
+    VectorView current, const std::uint32_t* node_rigid_groups,
+    const fe::NodalRigidGroupSnapshot* accepted_groups,
+    const fe::NodalRigidGroupSnapshot* prepared_groups,
+    std::size_t group_count, double duration,
+    double kick_duration,
+    SelfContactSweptParentBounds* output) noexcept {
+  if (!output ||
+      ValidateWeightedSurfacePoint(point, base.node_count) != Status::kOk)
+    return false;
+  SelfContactSweptParentBounds next;
+  for (unsigned component = 0; component < 3; ++component) {
+    double lower = 0, upper = 0;
+    for (unsigned slot = 0; slot < point.count; ++slot) {
+      if (point.weights[slot] == 0) continue;
+      SelfContactSweptParentBounds node;
+      if (!NodeSweepBounds(
+              point.nodes[slot], base, current,
+              node_rigid_groups, accepted_groups, prepared_groups,
+              group_count, duration, kick_duration, &node))
+        return false;
+      const double weight = point.weights[slot];
+      lower = Down(lower + Down(
+          weight * Component(node.lower, component)));
+      upper = Up(upper + Up(
+          weight * Component(node.upper, component)));
+    }
+    SetComponent(&next.lower, component, lower);
+    SetComponent(&next.upper, component, upper);
+  }
+  *output = next;
+  return IsFinite(next.lower) && IsFinite(next.upper);
+}
+
+SelfContactTransactionReport BuildSweptBounds(
+    const SelfContactActiveUseBinding& active_use,
+    const FixedContactFacet* descriptors, std::size_t facets,
+    const sct::MotionSupport* parent_motion,
+    const std::uint32_t* node_rigid_groups,
+    const fe::NodalRigidGroupSnapshot* accepted_groups,
+    const fe::NodalRigidGroupSnapshot* prepared_groups,
+    std::size_t group_count, VectorView base, VectorView current,
+    double duration, double kick_duration,
+    SelfContactSweptParentBounds* facet_bounds,
+    SelfContactSweptParentBounds* parent_bounds,
+    std::size_t surface_parents) noexcept {
+  if (!descriptors || !facets || !parent_motion ||
+      !node_rigid_groups ||
+      !facet_bounds || !parent_bounds || !surface_parents)
+    return Failure(S::InvalidInput,
+        "Rigid swept-bound storage is incomplete");
+  const double infinity = std::numeric_limits<double>::infinity();
+  for (std::size_t parent = 0; parent < surface_parents; ++parent)
+    parent_bounds[parent] = {{infinity, infinity, infinity},
+                             {-infinity, -infinity, -infinity}};
+  for (std::size_t facet = 0; facet < facets; ++facet) {
+    const auto& use = active_use.facet_uses()[facet];
+    if (use.parent >= active_use.parents().size())
+      return Failure(S::IdentityMismatch,
+          "Swept facet has no active-use parent", facet);
+    SelfContactSweptParentBounds next{
+        {infinity, infinity, infinity},
+        {-infinity, -infinity, -infinity}};
+    bool bounded = true;
+    for (unsigned vertex = 0; vertex < 3; ++vertex) {
+      SelfContactSweptParentBounds point;
+      if (!PointSweepBounds(
+              descriptors[facet].vertices[vertex],
+              base, current, node_rigid_groups,
+              accepted_groups, prepared_groups, group_count,
+              duration, kick_duration, &point)) {
+        bounded = false;
+        break;
+      }
+      for (unsigned component = 0; component < 3; ++component) {
+        SetComponent(&next.lower, component, std::min(
+            Component(next.lower, component),
+            Component(point.lower, component)));
+        SetComponent(&next.upper, component, std::max(
+            Component(next.upper, component),
+            Component(point.upper, component)));
+      }
+    }
+    const double thickness =
+        active_use.parents()[use.parent].reference_half_thickness_m;
+    if (!std::isfinite(thickness) || !(thickness > 0))
+      return Failure(S::IdentityMismatch,
+          "Swept facet thickness is invalid", facet);
+    if (bounded) {
+      for (unsigned component = 0; component < 3; ++component) {
+        SetComponent(&next.lower, component,
+            Down(Component(next.lower, component) - thickness));
+        SetComponent(&next.upper, component,
+            Up(Component(next.upper, component) + thickness));
+      }
+    } else {
+      const double maximum = std::numeric_limits<double>::max();
+      next = {{-maximum, -maximum, -maximum},
+              {maximum, maximum, maximum}};
+    }
+    if (!IsFinite(next.lower) || !IsFinite(next.upper))
+      return Failure(S::UnsupportedMotion,
+          "Outward rigid swept facet bound overflowed", facet);
+    facet_bounds[facet] = next;
+    const auto surface = active_use.parents()[use.parent].surface_parent;
+    if (surface >= surface_parents)
+      return Failure(S::IdentityMismatch,
+          "Swept facet surface-parent identity is invalid", facet);
+    for (unsigned component = 0; component < 3; ++component) {
+      SetComponent(&parent_bounds[surface].lower, component, std::min(
+          Component(parent_bounds[surface].lower, component),
+          Component(next.lower, component)));
+      SetComponent(&parent_bounds[surface].upper, component, std::max(
+          Component(parent_bounds[surface].upper, component),
+          Component(next.upper, component)));
+    }
+  }
+  // Preserve the existing ordinary LinearNodalV1 broadphase box exactly:
+  // endpoint corner union followed by one directed thickness inflation.
+  for (std::size_t parent = 0;
+       parent < active_use.parents().size(); ++parent) {
+    if (parent_motion[parent].motion !=
+        SelfContactFacetMotion::LinearNodalV1)
+      continue;
+    const auto& value = active_use.parents()[parent];
+    if ((value.arity != 3 && value.arity != 4) ||
+        value.surface_parent >= surface_parents)
+      return Failure(S::IdentityMismatch,
+          "Linear swept parent identity is invalid", parent);
+    SelfContactSweptParentBounds next{
+        {infinity, infinity, infinity},
+        {-infinity, -infinity, -infinity}};
+    for (unsigned slot = 0; slot < value.arity; ++slot) {
+      if (value.nodes[slot] >= base.node_count)
+        return Failure(S::IdentityMismatch,
+            "Linear swept parent node is invalid", parent);
+      const auto first = base.at(value.nodes[slot]);
+      const auto second = current.at(value.nodes[slot]);
+      for (unsigned component = 0; component < 3; ++component) {
+        SetComponent(&next.lower, component, std::min(
+            Component(next.lower, component),
+            std::min(Component(first, component),
+                     Component(second, component))));
+        SetComponent(&next.upper, component, std::max(
+            Component(next.upper, component),
+            std::max(Component(first, component),
+                     Component(second, component))));
+      }
+    }
+    for (unsigned component = 0; component < 3; ++component) {
+      SetComponent(&next.lower, component,
+          Down(Component(next.lower, component) -
+               value.reference_half_thickness_m));
+      SetComponent(&next.upper, component,
+          Up(Component(next.upper, component) +
+             value.reference_half_thickness_m));
+    }
+    parent_bounds[value.surface_parent] = next;
+  }
+  for (std::size_t parent = 0; parent < surface_parents; ++parent)
+    if (!IsFinite(parent_bounds[parent].lower) ||
+        !IsFinite(parent_bounds[parent].upper))
+      return Failure(S::IdentityMismatch,
+          "Complete swept parent roster has an empty bound", parent);
+  return {};
+}
+
+bool SameRigidSnapshotIdentity(
+    const fe::RigidBindingGroup& binding,
+    const fe::NodalRigidGroupSnapshot& snapshot) noexcept {
+  return binding.source_kind == snapshot.source_kind &&
+      binding.source_id == snapshot.source_group_id &&
+      binding.source_node_set_id == snapshot.source_node_set_id;
+}
+
+void DescribeMotionFailure(
+    const SelfContactActiveUseBinding& active_use,
+    const CurrentFixedTriangle* triangles,
+    const sct::MotionSupport* motion, FixedTrianglePair pair,
+    SelfContactTransactionReport* report) noexcept {
+  const auto* rigid = active_use.rigid();
+  const std::uint32_t facets[2]{pair.first, pair.second};
+  for (unsigned side = 0; side < 2; ++side) {
+    const auto facet = facets[side];
+    auto& output = report->offending_motion[side];
+    output.facet = triangles[facet].key;
+    output.active_parent = motion[facet].parent;
+    output.motion = motion[facet].motion;
+    output.rigid_group_count = motion[facet].rigid_group_count;
+    for (unsigned group = 0;
+         group < motion[facet].rigid_group_count; ++group) {
+      const auto index = motion[facet].rigid_groups[group];
+      auto& identity = output.rigid_groups[group];
+      identity.binding_group = index;
+      if (rigid && index < rigid->groups().size()) {
+        const auto& value = rigid->groups()[index];
+        identity.source_kind = value.source_kind;
+        identity.source_group_id = value.source_id;
+        identity.source_node_set_id = value.source_node_set_id;
+      }
+    }
+  }
+}
+
+bool PairPresent(const RepresentedIntervalPairKey* pairs,
+                 std::size_t count,
+                 const RepresentedIntervalPairKey& key) noexcept {
+  std::size_t lower = 0, upper = count;
+  while (lower < upper) {
+    const auto middle = lower + (upper - lower) / 2;
+    if (sct::Compare(pairs[middle], key) < 0)
+      lower = middle + 1;
+    else
+      upper = middle;
+  }
+  return lower < count && sct::Compare(pairs[lower], key) == 0;
 }
 
 }  // namespace
@@ -138,9 +459,54 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
         "Candidate owner/token/view differs from accepted assembly"));
   }
 
-  if (state.has_rigid_motion)
-    return state.Fail(Failure(S::UnsupportedMotion,
-        "Rigid-arc motion is not representable by LinearNodalV1"));
+  if (state.rigid_group_count) {
+    const auto* rigid = state.active_use.rigid();
+    if (!rigid ||
+        rigid->groups().size() != state.rigid_group_count ||
+        authentic.temporal_scheme !=
+            fe::NodalTemporalScheme::StaggeredHalfKickStart)
+      return state.Fail(Failure(S::IdentityMismatch,
+          "Candidate rigid owner scope differs from active use"));
+    fe::NodalStamp rigid_base_stamp;
+    owner_report = owner.CopyAcceptedRigidGroups(
+        {state.buffers.accepted_rigid_groups,
+         state.rigid_group_count},
+        &rigid_base_stamp);
+    if (owner_report.status != fe::NodalStatus::Ok) {
+      auto report = Failure(S::OwnerFailure, owner_report.message);
+      report.owner_status = owner_report.status;
+      return state.Fail(report);
+    }
+    fe::NodalPreparedView rigid_prepared;
+    owner_report = owner.CopyPreparedRigidGroups(
+        token,
+        {state.buffers.prepared_rigid_groups,
+         state.rigid_group_count},
+        &rigid_prepared);
+    if (owner_report.status != fe::NodalStatus::Ok) {
+      auto report = Failure(S::OwnerFailure, owner_report.message);
+      report.owner_status = owner_report.status;
+      return state.Fail(report);
+    }
+    if (!fe::trial_identity::SameStamp(
+            base_stamp, rigid_base_stamp) ||
+        !fe::trial_identity::SamePrepared(
+            authentic, rigid_prepared))
+      return state.Fail(Failure(S::IdentityMismatch,
+          "Rigid snapshots differ from candidate owner identity"));
+    for (std::size_t group = 0;
+         group < state.rigid_group_count; ++group)
+      if (!SameRigidSnapshotIdentity(
+              rigid->groups()[group],
+              state.buffers.accepted_rigid_groups[group]) ||
+          !SameRigidSnapshotIdentity(
+              rigid->groups()[group],
+              state.buffers.prepared_rigid_groups[group]))
+        return state.Fail(Failure(S::IdentityMismatch,
+            "Rigid snapshot group identity differs from actual binding",
+            group));
+  }
+
   SelfContactPreparedActivityReceipt activity_receipt;
   const auto captured = state.physical_activity.CapturePrepared(
       owner, token, physical_diagnostics, prepared,
@@ -160,6 +526,9 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
         "Prepared physical activity receipt is incomplete"));
   const VectorView current_positions{
       state.buffers.prepared_positions,
+      static_cast<std::uint32_t>(node_count), 3, 1};
+  const VectorView base_positions{
+      state.buffers.accepted_positions,
       static_cast<std::uint32_t>(node_count), 3, 1};
   SelfContactCurrentRegularityReceipt regularity_receipt;
   const auto regularity = state.regularity.Certify(
@@ -196,17 +565,25 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
       return state.Fail(Failure(S::IdentityMismatch,
           "Accepted and prepared facet identities differ", triangle));
   }
+  const double duration = authentic.proposed_time - authentic.base_time;
+  auto bounded = BuildSweptBounds(
+      state.active_use, state.buffers.facet_descriptors, triangles,
+      state.buffers.parent_motion,
+      state.buffers.node_rigid_groups,
+      state.buffers.accepted_rigid_groups,
+      state.buffers.prepared_rigid_groups,
+      state.rigid_group_count, base_positions, current_positions,
+      duration, authentic.kick_dt,
+      state.buffers.swept_facet_bounds,
+      state.buffers.swept_parent_bounds,
+      state.surface_parent_count);
+  if (bounded.status != S::Ok) return state.Fail(bounded);
 
-  const VectorView accepted_device{
-      authentic.base_kinematics.position_xyz,
-      static_cast<std::uint32_t>(node_count), 3, 1};
-  const VectorView prepared_device{
-      authentic.kinematics.position_xyz,
-      static_cast<std::uint32_t>(node_count), 3, 1};
   const auto broadphase = state.broadphase.Evaluate(
-      {accepted_device, prepared_device,
-       SelfContactBoundsMotion::LinearNodalEndpoints,
-       state.config.broadphase_axis}, state.stream);
+      {{}, {}, SelfContactBoundsMotion::ConservativeSweptParentBounds,
+       state.config.broadphase_axis,
+       state.buffers.swept_parent_bounds,
+       state.surface_parent_count}, state.stream);
   if (broadphase.status != SelfContactBroadphaseStatus::Ok) {
     auto report = Failure(S::BroadphaseFailure, broadphase.message);
     report.broadphase_status = broadphase.status;
@@ -231,126 +608,204 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
   bool retain_detailed = true;
   for (;;) {
     const FixedTrianglePair* pairs = nullptr;
-    std::size_t pair_count = 0;
-    streamed = state.candidate_source.Next(&pairs, &pair_count);
+    std::size_t streamed_pair_count = 0;
+    streamed = state.candidate_source.Next(
+        &pairs, &streamed_pair_count);
     if (streamed.status != S::Ok) return state.Fail(streamed);
-    if (!pair_count) break;
+    if (!streamed_pair_count) break;
 
-    for (std::size_t pair = 0; pair < pair_count; ++pair) {
+    std::size_t pair_count = 0;
+    for (std::size_t pair = 0;
+         pair < streamed_pair_count; ++pair) {
       const auto value = pairs[pair];
-      MakePath(state.buffers.accepted_triangles[value.first],
-               state.buffers.prepared_triangles[value.first],
-               state.buffers.chunk_paths + 2 * pair);
-      MakePath(state.buffers.accepted_triangles[value.second],
-               state.buffers.prepared_triangles[value.second],
-               state.buffers.chunk_paths + 2 * pair + 1);
-      state.buffers.chunk_represented_pairs[pair] = {
-          static_cast<std::uint32_t>(2 * pair),
-          static_cast<std::uint32_t>(2 * pair + 1)};
-      state.buffers.chunk_canonical_pairs[pair] = PairKey(
-          state.buffers.chunk_paths[2 * pair].key,
-          state.buffers.chunk_paths[2 * pair + 1].key);
+      const auto key = PairKey(
+          PathKey(state.buffers.prepared_triangles[value.first].key),
+          PathKey(state.buffers.prepared_triangles[value.second].key));
+      const auto action = sct::ClassifyCandidatePairMotion(
+          state.buffers.facet_motion[value.first],
+          state.buffers.swept_facet_bounds[value.first],
+          state.buffers.facet_motion[value.second],
+          state.buffers.swept_facet_bounds[value.second]);
+      state.buffers.chunk_raw_canonical_pairs[pair] = key;
+      state.buffers.chunk_motion_actions[pair] = action;
       if (pair && sct::Compare(
-              state.buffers.chunk_canonical_pairs[pair - 1],
-              state.buffers.chunk_canonical_pairs[pair]) >= 0)
+              state.buffers.chunk_raw_canonical_pairs[pair - 1],
+              key) >= 0)
         return state.Fail(Failure(S::IdentityMismatch,
             "Candidate chunk is not strict immutable pair order",
             SIZE_MAX, state.candidate_facet_pair_count + pair));
-    }
-
-    const auto discovery = state.candidate_discovery.Discover(
-        state.buffers.prepared_triangles, triangles,
-        pairs, pair_count);
-    if (discovery.status != FixedTriangleDiscoveryStatus::Ok) {
-      auto report = Failure(
-          S::DiscoveryFailure, discovery.message,
-          SIZE_MAX,
-          discovery.input_pair == SIZE_MAX
-              ? SIZE_MAX
-              : state.candidate_facet_pair_count +
-                    discovery.input_pair);
-      report.discovery_status = discovery.status;
-      report.discovery_task = discovery.input_task;
-      report.discovery_reason = discovery.arithmetic_reason;
-      return state.Fail(report);
-    }
-    auto edge_policy = sct::ValidateCandidateEdgePolicy(
-        state.active_use, state.regularity, regularity_receipt,
-        state.candidate_discovery.features(),
-        state.buffers.facet_descriptors,
-        state.buffers.triangle_order, triangles, activity);
-    if (edge_policy.status != S::Ok)
-      return state.Fail(edge_policy);
-    const auto crossing = state.crossing.Certify(
-        state.buffers.chunk_paths, 2 * pair_count,
-        state.buffers.chunk_represented_pairs, pair_count);
-    if (crossing.status != RepresentedIntervalStatus::Ok) {
-      auto report = Failure(
-          S::CrossingFailure, crossing.message,
-          crossing.input_path,
-          crossing.input_pair == SIZE_MAX
-              ? SIZE_MAX
-              : state.candidate_facet_pair_count +
-                    crossing.input_pair);
-      report.crossing_status = crossing.status;
-      return state.Fail(report);
-    }
-    const auto crossing_results = state.crossing.results();
-    if (!crossing_results.complete ||
-        crossing_results.count != pair_count)
-      return state.Fail(Failure(S::CrossingFailure,
-          "Crossing chunk publication is incomplete"));
-    for (std::size_t pair = 0; pair < pair_count; ++pair) {
-      const auto work = crossing_results.data[pair].work;
-      if (work >
-          state.storage_forecast.complete_crossing_work_capacity -
-              crossing_work) {
+      if (action == sct::PairMotionAction::UnsupportedRigidArc) {
         auto report = Failure(
-            S::CrossingFailure,
-            "Complete crossing stream exceeds its hard work cap",
-            SIZE_MAX, state.candidate_facet_pair_count + pair);
-        report.crossing_status =
-            RepresentedIntervalStatus::ResourceLimit;
+            S::UnsupportedMotion,
+            "Rigid-arc swept facet boxes overlap; exact arc crossing is unresolved",
+            value.first, state.candidate_facet_pair_count + pair);
+        report.crossing_reason =
+            RepresentedIntervalReason::UnsupportedMotion;
+        DescribeMotionFailure(
+            state.active_use, state.buffers.prepared_triangles,
+            state.buffers.facet_motion, value, &report);
         return state.Fail(report);
       }
-      crossing_work += work;
+      if (action == sct::PairMotionAction::ExcludedSameRigidGroup)
+        continue;
+      state.buffers.facet_pair_chunk[pair_count] = value;
+      MakePath(state.buffers.accepted_triangles[value.first],
+               state.buffers.prepared_triangles[value.first],
+               state.buffers.facet_motion[value.first],
+               state.buffers.chunk_paths + 2 * pair_count);
+      MakePath(state.buffers.accepted_triangles[value.second],
+               state.buffers.prepared_triangles[value.second],
+               state.buffers.facet_motion[value.second],
+               state.buffers.chunk_paths + 2 * pair_count + 1);
+      state.buffers.chunk_represented_pairs[pair_count] = {
+          static_cast<std::uint32_t>(2 * pair_count),
+          static_cast<std::uint32_t>(2 * pair_count + 1)};
+      state.buffers.chunk_canonical_pairs[pair_count] = key;
+      ++pair_count;
     }
-    std::size_t chunk_outcomes = 0;
-    auto validated = sct::ValidateCandidatePublications({
-        state.buffers.chunk_canonical_pairs,
-        pair_count,
-        state.candidate_discovery.features(),
-        state.candidate_discovery.intersections(),
-        crossing_results,
-        state.buffers.accepted_certificates,
-        state.accepted_event_count,
-        state.buffers.chunk_policy_outcomes,
-        state.storage_forecast.policy_chunk_capacity,
-        &chunk_outcomes});
-    if (validated.status != S::Ok) {
-      if (validated.pair != SIZE_MAX)
-        validated.pair += state.candidate_facet_pair_count;
-      return state.Fail(validated);
+
+    std::size_t validated_count = 0;
+    if (pair_count) {
+      const auto discovery = state.candidate_discovery.Discover(
+          state.buffers.prepared_triangles, triangles,
+          state.buffers.facet_pair_chunk, pair_count);
+      if (discovery.status != FixedTriangleDiscoveryStatus::Ok) {
+        auto report = Failure(
+            S::DiscoveryFailure, discovery.message,
+            SIZE_MAX, discovery.input_pair);
+        report.discovery_status = discovery.status;
+        report.discovery_task = discovery.input_task;
+        report.discovery_reason = discovery.arithmetic_reason;
+        return state.Fail(report);
+      }
+      auto edge_policy = sct::ValidateCandidateEdgePolicy(
+          state.active_use, state.regularity, regularity_receipt,
+          state.candidate_discovery.features(),
+          state.buffers.facet_descriptors,
+          state.buffers.triangle_order, triangles, activity);
+      if (edge_policy.status != S::Ok)
+        return state.Fail(edge_policy);
+      const auto crossing = state.crossing.Certify(
+          state.buffers.chunk_paths, 2 * pair_count,
+          state.buffers.chunk_represented_pairs, pair_count);
+      if (crossing.status != RepresentedIntervalStatus::Ok) {
+        auto report = Failure(
+            S::CrossingFailure, crossing.message,
+            crossing.input_path, crossing.input_pair);
+        report.crossing_status = crossing.status;
+        return state.Fail(report);
+      }
+      const auto raw_crossings = state.crossing.results();
+      if (!raw_crossings.complete ||
+          raw_crossings.count != pair_count ||
+          (pair_count && !raw_crossings.data))
+        return state.Fail(Failure(S::CrossingFailure,
+            "Crossing chunk publication is incomplete"));
+      std::size_t raw_pair = 0;
+      for (std::size_t pair = 0; pair < pair_count; ++pair) {
+        while (state.buffers.chunk_motion_actions[raw_pair] ==
+               sct::PairMotionAction::ExcludedSameRigidGroup)
+          ++raw_pair;
+        const auto action =
+            state.buffers.chunk_motion_actions[raw_pair];
+        const auto& value = raw_crossings.data[pair];
+        if (action ==
+            sct::PairMotionAction::CertifiedRigidArcSeparation) {
+          if (value.classification !=
+                  RepresentedIntervalClassification::Unresolved ||
+              value.reason !=
+                  RepresentedIntervalReason::UnsupportedMotion)
+            return state.Fail(Failure(S::IdentityMismatch,
+                "Rigid-arc separator did not replace one exact unsupported crossing",
+                SIZE_MAX,
+                state.candidate_facet_pair_count + raw_pair));
+          state.buffers.chunk_crossings[pair] = {};
+          state.buffers.chunk_crossings[pair].key = value.key;
+          state.buffers.chunk_crossings[pair].classification =
+              RepresentedIntervalClassification::CertifiedSeparated;
+          state.buffers.chunk_crossings[pair].reason =
+              RepresentedIntervalReason::None;
+        } else {
+          state.buffers.chunk_crossings[pair] = value;
+        }
+        const auto work = value.work;
+        if (work >
+            state.storage_forecast.complete_crossing_work_capacity -
+                crossing_work) {
+          auto report = Failure(
+              S::CrossingFailure,
+              "Complete crossing stream exceeds its hard work cap",
+              SIZE_MAX,
+              state.candidate_facet_pair_count + raw_pair);
+          report.crossing_status =
+              RepresentedIntervalStatus::ResourceLimit;
+          return state.Fail(report);
+        }
+        crossing_work += work;
+        ++raw_pair;
+      }
+      auto validated = sct::ValidateCandidatePublications({
+          state.buffers.chunk_canonical_pairs,
+          pair_count,
+          state.candidate_discovery.features(),
+          state.candidate_discovery.intersections(),
+          {state.buffers.chunk_crossings, pair_count, true},
+          state.buffers.accepted_certificates,
+          state.accepted_event_count,
+          state.buffers.chunk_validated_outcomes,
+          state.storage_forecast.policy_chunk_capacity,
+          &validated_count});
+      if (validated.status != S::Ok)
+        return state.Fail(validated);
+      if (validated_count != pair_count)
+        return state.Fail(Failure(S::IdentityMismatch,
+            "Policy chunk does not cover every crossing-required pair"));
     }
-    if (chunk_outcomes != pair_count)
+
+    std::size_t validated_index = 0;
+    for (std::size_t pair = 0;
+         pair < streamed_pair_count; ++pair) {
+      if (state.buffers.chunk_motion_actions[pair] ==
+          sct::PairMotionAction::ExcludedSameRigidGroup) {
+        auto& outcome = state.buffers.chunk_policy_outcomes[pair];
+        outcome = {};
+        outcome.pair =
+            state.buffers.chunk_raw_canonical_pairs[pair];
+        outcome.disposition =
+            SelfContactCandidateDisposition::ExcludedSameRigidGroup;
+      } else {
+        if (validated_index >= validated_count ||
+            sct::Compare(
+                state.buffers.chunk_validated_outcomes[
+                    validated_index].pair,
+                state.buffers.chunk_raw_canonical_pairs[pair]) != 0)
+          return state.Fail(Failure(S::IdentityMismatch,
+              "Motion-filtered policy outcome identity differs",
+              SIZE_MAX,
+              state.candidate_facet_pair_count + pair));
+        state.buffers.chunk_policy_outcomes[pair] =
+            state.buffers.chunk_validated_outcomes[validated_index++];
+      }
+    }
+    if (validated_index != validated_count)
       return state.Fail(Failure(S::IdentityMismatch,
-          "Policy chunk does not cover every facet pair"));
+          "Motion-filtered policy outcomes are incomplete"));
     sct::FoldPolicyOutcomes(
-        state.buffers.chunk_policy_outcomes, chunk_outcomes,
+        state.buffers.chunk_policy_outcomes, streamed_pair_count,
         &summary);
     if (retain_detailed &&
-        chunk_outcomes <=
+        streamed_pair_count <=
             state.storage_forecast.policy_outcome_capacity -
                 policy_outcomes) {
       std::copy_n(state.buffers.chunk_policy_outcomes,
-                  chunk_outcomes,
+                  streamed_pair_count,
                   state.buffers.policy_outcomes + policy_outcomes);
-      policy_outcomes += chunk_outcomes;
+      policy_outcomes += streamed_pair_count;
     } else {
       retain_detailed = false;
       policy_outcomes = 0;
     }
-    state.candidate_facet_pair_count += pair_count;
+    state.candidate_facet_pair_count += streamed_pair_count;
   }
   sct::StreamingCandidateSourceReceipt stream_receipt;
   streamed = state.candidate_source.Finish(&stream_receipt);

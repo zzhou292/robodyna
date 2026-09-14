@@ -544,6 +544,10 @@ void FoldPolicyOutcomes(
       ++summary->certified_separated;
     else if (value.disposition ==
              SelfContactCandidateDisposition::
+                 ExcludedSameRigidGroup)
+      ++summary->excluded_same_rigid_group;
+    else if (value.disposition ==
+             SelfContactCandidateDisposition::
                  ExcludedLocalIntersection)
       ++summary->excluded_local_intersection;
     else

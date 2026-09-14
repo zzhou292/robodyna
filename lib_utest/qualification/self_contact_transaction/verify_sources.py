@@ -8,6 +8,8 @@ TYPES = ROOT / "lib_src/collision/SelfContactTransactionTypes.h"
 CANDIDATE = ROOT / "lib_src/collision/self_contact_transaction/Candidate.cpp"
 TRANSACTION = ROOT / "lib_src/collision/self_contact_transaction/Transaction.cpp"
 STREAMING = ROOT / "lib_src/collision/self_contact_transaction/Streaming.cpp"
+BROADPHASE = ROOT / "lib_src/collision/SelfContactBroadphase.cpp"
+BROADPHASE_TYPES = ROOT / "lib_src/collision/SelfContactBroadphaseTypes.h"
 CMAKE = ROOT / "lib_src/collision/SelfContactTransaction.cmake"
 BAZEL = ROOT / "lib_src/collision/BUILD.bazel"
 QUAL_CMAKE = Path(__file__).resolve().parent / "CMakeLists.txt"
@@ -51,6 +53,23 @@ for token in (
 ):
     require(candidate, token, CANDIDATE)
 for token in (
+    "CopyAcceptedRigidGroups(",
+    "CopyPreparedRigidGroups(",
+    "ConservativeSweptParentBounds",
+    "ClassifyCandidatePairMotion(",
+    "FilterSameRigidFacetPairs(",
+    "DescribeMotionFailure(",
+):
+    require(candidate if token != "FilterSameRigidFacetPairs(" else
+            transaction, token,
+            CANDIDATE if token != "FilterSameRigidFacetPairs(" else
+            TRANSACTION)
+if BROADPHASE.exists() and BROADPHASE_TYPES.exists():
+    for token in ("ConservativeSweptParentBounds",
+                  "swept_parent_bounds", "staged_bounds"):
+        require(BROADPHASE.read_text() + BROADPHASE_TYPES.read_text(),
+                token, BROADPHASE)
+for token in (
     "broadphase.forecast.retained_source_bytes",
     "force.forecast.retained_active_use_bytes",
     "shared_backing_discount_bytes",
@@ -59,6 +78,15 @@ for token in (
 
 storage_path = ROOT / "lib_src/collision/self_contact_transaction/Storage.h"
 storage = storage_path.read_text()
+for forbidden in ("has_rigid_motion",):
+    for text in (
+        candidate, transaction,
+        (ROOT / "lib_src/collision/self_contact_transaction/Source.cpp").read_text(),
+        storage,
+    ):
+        if forbidden in text:
+            raise RuntimeError(
+                f"transaction retains global rigid-motion rejection {forbidden!r}")
 for token in ("SelfContactForceAssembly force",
               "SelfContactPhysicalActivity physical_activity",
               "SelfContactBroadphase broadphase",
@@ -68,6 +96,12 @@ for token in ("SelfContactForceAssembly force",
               "SelfContactCurrentRegularity regularity",
               "RepresentedIntervalCrossing crossing",
               "ShellPhysicalScratchParticipation participation"):
+    require(storage, token, storage_path)
+for token in ("accepted_rigid_groups", "prepared_rigid_groups",
+              "node_rigid_groups", "parent_motion", "facet_motion",
+              "chunk_crossings", "chunk_motion_actions",
+              "swept_parent_bounds",
+              "swept_facet_bounds"):
     require(storage, token, storage_path)
 
 for token in (

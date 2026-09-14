@@ -48,6 +48,7 @@ sources = [
     root / "lib_src/collision/self_contact_transaction/Source.cpp",
     root / "lib_src/collision/self_contact_transaction/Transaction.cpp",
     root / "lib_src/collision/self_contact_transaction/Candidate.cpp",
+    root / "lib_src/collision/SelfContactBroadphase.cpp",
     root / "lib_src/solvers/NodalOwnerStream.cpp",
     root / "lib_src/collision/self_contact_force/Initialize.cpp",
     root / "lib_utest/qualification/self_contact_transaction/CudaTest.cu",

@@ -15,6 +15,27 @@ struct AcceptedEventCertificate {
   std::uint32_t target_facet = UINT32_MAX;
 };
 
+struct MotionSupport {
+  SelfContactFacetMotion motion =
+      SelfContactFacetMotion::LinearNodalV1;
+  std::uint32_t parent = UINT32_MAX;
+  std::uint32_t complete_rigid_group = UINT32_MAX;
+  std::uint32_t rigid_groups[4]{
+      UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX};
+  std::uint8_t rigid_group_count = 0;
+};
+
+enum class PairMotionAction : std::uint8_t {
+  LinearNodalV1,
+  ExcludedSameRigidGroup,
+  CertifiedRigidArcSeparation,
+  UnsupportedRigidArc,
+};
+
+PairMotionAction ClassifyCandidatePairMotion(
+    const MotionSupport&, const SelfContactSweptParentBounds&,
+    const MotionSupport&, const SelfContactSweptParentBounds&) noexcept;
+
 struct FacetPairCursor {
   std::uint32_t first_begin = 0;
   std::uint32_t first_end = 0;
@@ -49,15 +70,19 @@ class StreamingCandidateSourceReceipt {
   std::size_t emitted_facet_pairs_ = 0;
   std::size_t chunks_ = 0;
 };
-
 struct Layout {
   tl::util::ArenaRegion accepted_positions;
   tl::util::ArenaRegion accepted_velocities;
   tl::util::ArenaRegion prepared_positions;
   tl::util::ArenaRegion prepared_velocities;
+  tl::util::ArenaRegion accepted_rigid_groups;
+  tl::util::ArenaRegion prepared_rigid_groups;
+  tl::util::ArenaRegion node_rigid_groups;
   tl::util::ArenaRegion surface_to_active;
   tl::util::ArenaRegion parent_facet_offsets;
   tl::util::ArenaRegion facet_descriptors;
+  tl::util::ArenaRegion parent_motion;
+  tl::util::ArenaRegion facet_motion;
   tl::util::ArenaRegion triangle_order;
   tl::util::ArenaRegion vertex_identity_order;
   tl::util::ArenaRegion edge_identity_order;
@@ -70,8 +95,14 @@ struct Layout {
   tl::util::ArenaRegion chunk_paths;
   tl::util::ArenaRegion chunk_represented_pairs;
   tl::util::ArenaRegion chunk_canonical_pairs;
+  tl::util::ArenaRegion chunk_raw_canonical_pairs;
+  tl::util::ArenaRegion chunk_motion_actions;
+  tl::util::ArenaRegion chunk_crossings;
+  tl::util::ArenaRegion chunk_validated_outcomes;
   tl::util::ArenaRegion chunk_events;
   tl::util::ArenaRegion chunk_certificates;
+  tl::util::ArenaRegion swept_parent_bounds;
+  tl::util::ArenaRegion swept_facet_bounds;
   tl::util::ArenaRegion accepted_events;
   tl::util::ArenaRegion accepted_certificates;
   tl::util::ArenaRegion accepted_event_hash;
@@ -85,9 +116,14 @@ struct Buffers {
   double* accepted_velocities = nullptr;
   double* prepared_positions = nullptr;
   double* prepared_velocities = nullptr;
+  tl::fea::NodalRigidGroupSnapshot* accepted_rigid_groups = nullptr;
+  tl::fea::NodalRigidGroupSnapshot* prepared_rigid_groups = nullptr;
+  std::uint32_t* node_rigid_groups = nullptr;
   std::uint32_t* surface_to_active = nullptr;
   std::uint32_t* parent_facet_offsets = nullptr;
   FixedContactFacet* facet_descriptors = nullptr;
+  MotionSupport* parent_motion = nullptr;
+  MotionSupport* facet_motion = nullptr;
   std::uint32_t* triangle_order = nullptr;
   std::uint32_t* vertex_identity_order = nullptr;
   std::uint32_t* edge_identity_order = nullptr;
@@ -100,8 +136,14 @@ struct Buffers {
   RepresentedTrianglePath* chunk_paths = nullptr;
   RepresentedTrianglePair* chunk_represented_pairs = nullptr;
   RepresentedIntervalPairKey* chunk_canonical_pairs = nullptr;
+  RepresentedIntervalPairKey* chunk_raw_canonical_pairs = nullptr;
+  PairMotionAction* chunk_motion_actions = nullptr;
+  RepresentedIntervalResult* chunk_crossings = nullptr;
+  SelfContactCandidatePolicyOutcome* chunk_validated_outcomes = nullptr;
   SelfContactForceEvent* chunk_events = nullptr;
   AcceptedEventCertificate* chunk_certificates = nullptr;
+  SelfContactSweptParentBounds* swept_parent_bounds = nullptr;
+  SelfContactSweptParentBounds* swept_facet_bounds = nullptr;
   SelfContactForceEvent* accepted_events = nullptr;
   AcceptedEventCertificate* accepted_certificates = nullptr;
   std::uint32_t* accepted_event_hash = nullptr;
@@ -111,6 +153,7 @@ struct Buffers {
 
 bool MakeLayout(std::size_t nodes, std::size_t surface_parents,
                 std::size_t parents, std::size_t facets,
+                std::size_t rigid_groups,
                 std::size_t broadphase_pair_capacity,
                 std::size_t pair_chunk_capacity,
                 std::size_t event_capacity,
@@ -200,8 +243,11 @@ SelfContactTransactionReport ExpandFacetPairs(
 
 SelfContactTransactionReport InitializeStaticPipeline(
     const SelfContactActiveUseBinding&, Buffers,
-    std::size_t surface_parents, std::size_t facets,
-    bool* has_rigid_motion) noexcept;
+    std::size_t nodes, std::size_t surface_parents,
+    std::size_t facets) noexcept;
+SelfContactTransactionReport FilterSameRigidFacetPairs(
+    const MotionSupport*, std::size_t facets,
+    FixedTrianglePair*, std::size_t* pair_count) noexcept;
 SelfContactTransactionReport EvaluateCompleteTriangles(
     const FixedContactFacet*, std::size_t, VectorView,
     CurrentFixedTriangle*) noexcept;
@@ -282,6 +328,7 @@ struct SelfContactTransaction::Impl {
   SelfContactPreparedActivityReceipt prepared_activity;
   std::size_t surface_parent_count = 0;
   std::size_t facet_count = 0;
+  std::size_t rigid_group_count = 0;
   std::size_t accepted_broadphase_pair_count = 0;
   std::size_t candidate_broadphase_pair_count = 0;
   std::size_t accepted_facet_pair_count = 0;
@@ -291,7 +338,6 @@ struct SelfContactTransaction::Impl {
   std::size_t policy_outcome_count = 0;
   SelfContactCandidatePolicySummary policy_summary;
   bool policy_complete = false;
-  bool has_rigid_motion = false;
   std::uint64_t owner_id = 0;
   std::uint64_t base_epoch = 0;
   std::uint64_t attempt = 0;

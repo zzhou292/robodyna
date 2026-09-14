@@ -79,8 +79,23 @@ discard/publication/generation change, permit `1->0` removal and `0->0`
 long inactivity, and reject `0->1` reactivation. Removing and long-inactive
 parents remain represented in regularity but own no candidate facet pairs,
 events, or policy outcomes.
-Rigid-arc/nonlinear paths are explicit candidate failures rather than being
-misrepresented as endpoint chords.
+Rigid motion is classified per active-use parent and fixed facet from the
+actual rigid binding. Complete support on the same exact binding group is
+removed before accepted event discovery and candidate crossing; numeric source
+ID equality is never used as body identity. Ordinary/CIN-master-only facets
+retain `LinearNodalV1` even when unrelated rigid parents exist.
+
+Candidate broadphase uses fixed host/device storage for outward swept parent
+boxes built from the owner-authenticated accepted/prepared rigid snapshots.
+The bound covers the admitted rigid owner drift (including the first half-kick)
+with a rotation-invariant support radius and is refined to fixed-facet boxes.
+A disjoint box is a conservative separation certificate only. Overlapping
+different-body or partial/mixed rigid boxes report the exact parent/facet and
+actual group identities as `UnsupportedMotion`; no endpoint chord is passed to
+the represented crossing code. The remaining limitation is deliberate:
+overlapping rigid arcs have no exact crossing/contact certificate yet, so a
+candidate containing one cannot commit even though accepted-state force still
+uses the actual rigid owner response.
 
 ## Vehicle-scale limits and memory
 
@@ -92,8 +107,8 @@ plus exact readback, cursor, heap, arena, component, startup, and device bytes.
 
 For the measured V5 shape (376,930 owner nodes, 337,092 selected parents,
 653,055 facets, 1,584,464 parent pairs and 5,989,248 facet pairs), a 4,096-pair
-chunk and folded policy use exactly 1,401,633,232 transaction-arena bytes with
-one event slot. One million force/event/certificate slots use 2,913,631,720
+chunk and folded policy use exactly 1,484,682,936 transaction-arena bytes with
+one event slot. One million force/event/certificate slots use 2,996,681,424
 arena bytes. The fixed subranges include 12,675,712 parent-key bytes,
 44,364,992 cursor bytes, 6,337,856 heap bytes, and 32,768 facet-pair chunk
 bytes. The actual event ledger capacity must come from a complete streamed

@@ -55,8 +55,10 @@ SelfContactBroadphaseReport MakeLayout(const SelfContactSurfaceBinding& source,
   // Impl includes the retained source handle, forecast/layout and host scalar
   // readback. Startup/query descriptors are accounted by their represented types.
   if (!host.Append<std::byte>(sizeof(SelfContactBroadphase) + implementation_bytes, ignored) ||
-      !host.Append<std::byte>(f.retained_source_bytes, ignored))
+      !host.Append<std::byte>(f.retained_source_bytes, ignored) ||
+      !host.Append<AABB>(f.parents, ignored))
     return {S::ResourceLimit, "Retained broadphase and source exceed host cap"};
+  f.conservative_bounds_host_bytes = f.parents * sizeof(AABB);
   f.owned_host_bytes = host.bytes();
   f.startup_scratch_bytes = next.parents.bytes + QueryStagingBytes;
   if (!host.Append<std::byte>(f.startup_scratch_bytes, ignored))

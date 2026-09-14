@@ -70,6 +70,8 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
   const auto surface_parents = surface->parents().size();
   const auto parents = active_use.parents().size();
   const auto facets = active_use.facet_uses().size();
+  const auto rigid_groups = active_use.rigid()
+      ? active_use.rigid()->groups().size() : 0;
   if (!surface_parents || !parents || !facets ||
       facets > limits.max_candidate_triangles ||
       limits.max_facet_pair_chunk >
@@ -176,7 +178,7 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
 
   sct::Layout layout;
   if (!sct::MakeLayout(
-          nodes, surface_parents, parents, facets,
+          nodes, surface_parents, parents, facets, rigid_groups,
           broadphase.forecast.pair_capacity,
           limits.max_facet_pair_chunk, config.force.event_capacity,
           limits.max_global_events, limits.max_event_hash_slots,
@@ -218,6 +220,14 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
       limits.max_global_events;
   forecast.event_hash_capacity =
       limits.max_event_hash_slots;
+  forecast.rigid_group_snapshot_capacity = rigid_groups;
+  forecast.node_rigid_group_capacity = nodes;
+  forecast.parent_motion_capacity = parents;
+  forecast.facet_motion_capacity = facets;
+  forecast.swept_parent_bound_capacity = surface_parents;
+  forecast.swept_facet_bound_capacity = facets;
+  forecast.candidate_crossing_capacity =
+      limits.max_facet_pair_chunk;
   forecast.accepted_event_capacity =
       config.force.event_capacity;
   forecast.accepted_certificate_capacity =

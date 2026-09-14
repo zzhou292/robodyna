@@ -113,8 +113,11 @@ SelfContactTransactionReport SelfContactTransaction::Initialize(
   const auto surface_parents =
       active_use.facets()->surface()->parents().size();
   const auto facets = active_use.facet_uses().size();
+  const auto rigid_groups = active_use.rigid()
+      ? active_use.rigid()->groups().size() : 0;
   if (!sct::MakeLayout(
           nodes, surface_parents, active_use.parents().size(), facets,
+          rigid_groups,
           preflight.forecast.broadphase_pair_capacity,
           limits.max_facet_pair_chunk,
           config.force.event_capacity,
@@ -131,12 +134,22 @@ SelfContactTransactionReport SelfContactTransaction::Initialize(
       !next->arena.Construct<double>(layout.accepted_velocities) ||
       !next->arena.Construct<double>(layout.prepared_positions) ||
       !next->arena.Construct<double>(layout.prepared_velocities) ||
+      !next->arena.Construct<fe::NodalRigidGroupSnapshot>(
+          layout.accepted_rigid_groups) ||
+      !next->arena.Construct<fe::NodalRigidGroupSnapshot>(
+          layout.prepared_rigid_groups) ||
+      !next->arena.Construct<std::uint32_t>(
+          layout.node_rigid_groups) ||
       !next->arena.Construct<std::uint32_t>(
           layout.surface_to_active) ||
       !next->arena.Construct<std::uint32_t>(
           layout.parent_facet_offsets) ||
       !next->arena.Construct<FixedContactFacet>(
           layout.facet_descriptors) ||
+      !next->arena.Construct<sct::MotionSupport>(
+          layout.parent_motion) ||
+      !next->arena.Construct<sct::MotionSupport>(
+          layout.facet_motion) ||
       !next->arena.Construct<std::uint32_t>(layout.triangle_order) ||
       !next->arena.Construct<std::uint32_t>(
           layout.vertex_identity_order) ||
@@ -160,10 +173,22 @@ SelfContactTransactionReport SelfContactTransaction::Initialize(
           layout.chunk_represented_pairs) ||
       !next->arena.Construct<RepresentedIntervalPairKey>(
           layout.chunk_canonical_pairs) ||
+      !next->arena.Construct<RepresentedIntervalPairKey>(
+          layout.chunk_raw_canonical_pairs) ||
+      !next->arena.Construct<sct::PairMotionAction>(
+          layout.chunk_motion_actions) ||
+      !next->arena.Construct<RepresentedIntervalResult>(
+          layout.chunk_crossings) ||
+      !next->arena.Construct<SelfContactCandidatePolicyOutcome>(
+          layout.chunk_validated_outcomes) ||
       !next->arena.Construct<SelfContactForceEvent>(
           layout.chunk_events) ||
       !next->arena.Construct<sct::AcceptedEventCertificate>(
           layout.chunk_certificates) ||
+      !next->arena.Construct<SelfContactSweptParentBounds>(
+          layout.swept_parent_bounds) ||
+      !next->arena.Construct<SelfContactSweptParentBounds>(
+          layout.swept_facet_bounds) ||
       !next->arena.Construct<SelfContactForceEvent>(
           layout.accepted_events) ||
       !next->arena.Construct<sct::AcceptedEventCertificate>(
@@ -179,9 +204,9 @@ SelfContactTransactionReport SelfContactTransaction::Initialize(
   next->buffers = sct::Bind(next->arena.data(), layout);
   next->surface_parent_count = surface_parents;
   next->facet_count = facets;
+  next->rigid_group_count = rigid_groups;
   auto pipeline = sct::InitializeStaticPipeline(
-      active_use, next->buffers, surface_parents, facets,
-      &next->has_rigid_motion);
+      active_use, next->buffers, nodes, surface_parents, facets);
   if (pipeline.status != S::Ok) return pipeline;
   pipeline = next->candidate_source.Initialize(
       next->buffers.facet_descriptors, facets,
@@ -414,6 +439,11 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
     streamed = state.candidate_source.Next(&pairs, &pair_count);
     if (streamed.status != S::Ok) return state.Fail(streamed);
     if (!pair_count) break;
+    const auto streamed_pair_count = pair_count;
+    auto filtered = sct::FilterSameRigidFacetPairs(
+        state.buffers.facet_motion, state.facet_count,
+        state.buffers.facet_pair_chunk, &pair_count);
+    if (filtered.status != S::Ok) return state.Fail(filtered);
     const auto discovery = state.accepted_discovery.Discover(
         state.buffers.accepted_triangles, state.facet_count,
         pairs, pair_count);
@@ -453,7 +483,7 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
         state.storage_forecast.event_hash_capacity,
         &event_count);
     if (events.status != S::Ok) return state.Fail(events);
-    state.accepted_facet_pair_count += pair_count;
+    state.accepted_facet_pair_count += streamed_pair_count;
   }
   sct::StreamingCandidateSourceReceipt stream_receipt;
   streamed = state.candidate_source.Finish(&stream_receipt);

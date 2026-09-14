@@ -165,17 +165,17 @@ TEST(SelfContactTransactionValues,
      CandidateArenaHasExactInclusiveCap) {
   sct::Layout layout;
   ASSERT_TRUE(sct::MakeLayout(
-      15, 4, 4, 8, 6, 3, 7, 8, 16, 6,
+      15, 4, 4, 8, 2, 6, 3, 7, 8, 16, 6,
       SIZE_MAX, layout));
   ASSERT_GT(layout.bytes, 0u);
   const auto exact = layout.bytes;
   sct::Layout unchanged = layout;
   EXPECT_FALSE(sct::MakeLayout(
-      15, 4, 4, 8, 6, 3, 7, 8, 16, 6,
+      15, 4, 4, 8, 2, 6, 3, 7, 8, 16, 6,
       exact - 1, layout));
   EXPECT_EQ(layout.bytes, unchanged.bytes);
   ASSERT_TRUE(sct::MakeLayout(
-      15, 4, 4, 8, 6, 3, 7, 8, 16, 6,
+      15, 4, 4, 8, 2, 6, 3, 7, 8, 16, 6,
       exact, layout));
   EXPECT_EQ(layout.bytes, exact);
 }
@@ -204,13 +204,13 @@ TEST(SelfContactTransactionValues,
   ASSERT_TRUE(sct::MakeLayout(
       census.nodes, census.surface_parents,
       census.selected_parents, census.facets,
-      census.parent_pairs, chunk, 1, 1, 2, 0,
+      779, census.parent_pairs, chunk, 1, 1, 2, 0,
       SIZE_MAX, minimum));
   sct::Layout million_events;
   ASSERT_TRUE(sct::MakeLayout(
       census.nodes, census.surface_parents,
       census.selected_parents, census.facets,
-      census.parent_pairs, chunk,
+      779, census.parent_pairs, chunk,
       1000000, 1000000, 2000000, 0,
       SIZE_MAX, million_events));
   EXPECT_GT(minimum.bytes, 0u);
@@ -227,6 +227,54 @@ TEST(SelfContactTransactionValues,
             << " chunk_pair_bytes="
             << chunk * sizeof(c::FixedTrianglePair)
             << '\n';
+}
+
+TEST(SelfContactTransactionValues,
+     PairMotionIsScopedAndRigidBoxesOnlyProveSeparation) {
+  const c::SelfContactSweptParentBounds near{
+      {-1, -1, -1}, {1, 1, 1}};
+  const c::SelfContactSweptParentBounds far{
+      {3, -1, -1}, {4, 1, 1}};
+  sct::MotionSupport ordinary;
+  sct::MotionSupport rigid_a;
+  rigid_a.motion = c::SelfContactFacetMotion::CompleteRigidGroup;
+  rigid_a.complete_rigid_group = 7;
+  rigid_a.rigid_groups[0] = 7;
+  rigid_a.rigid_group_count = 1;
+  auto rigid_b = rigid_a;
+  rigid_b.complete_rigid_group = 9;
+  rigid_b.rigid_groups[0] = 9;
+  sct::MotionSupport partial;
+  partial.motion = c::SelfContactFacetMotion::PartialOrMixedRigid;
+  partial.rigid_groups[0] = 7;
+  partial.rigid_group_count = 1;
+
+  // An unrelated rigid facet elsewhere cannot change an ordinary pair.
+  EXPECT_EQ(sct::ClassifyCandidatePairMotion(
+      ordinary, near, ordinary, near),
+      sct::PairMotionAction::LinearNodalV1);
+  EXPECT_EQ(sct::ClassifyCandidatePairMotion(
+      rigid_a, near, rigid_a, near),
+      sct::PairMotionAction::ExcludedSameRigidGroup);
+  EXPECT_EQ(sct::ClassifyCandidatePairMotion(
+      rigid_a, near, rigid_b, far),
+      sct::PairMotionAction::CertifiedRigidArcSeparation);
+  EXPECT_EQ(sct::ClassifyCandidatePairMotion(
+      rigid_a, near, rigid_b, near),
+      sct::PairMotionAction::UnsupportedRigidArc);
+  EXPECT_EQ(sct::ClassifyCandidatePairMotion(
+      partial, near, ordinary, near),
+      sct::PairMotionAction::UnsupportedRigidArc);
+  EXPECT_EQ(sct::ClassifyCandidatePairMotion(
+      partial, near, ordinary, far),
+      sct::PairMotionAction::CertifiedRigidArcSeparation);
+
+  // Numeric source-ID collisions do not merge different actual group rows.
+  rigid_b.complete_rigid_group = 8;
+  rigid_b.rigid_groups[0] = 8;
+  EXPECT_EQ(sct::ClassifyCandidatePairMotion(
+      rigid_a, near, rigid_b, near),
+      sct::PairMotionAction::UnsupportedRigidArc);
 }
 
 TEST(SelfContactTransactionValues,

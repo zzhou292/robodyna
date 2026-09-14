@@ -12,8 +12,33 @@ bool Product(std::size_t a, std::size_t b, std::size_t* output) noexcept {
 
 }  // namespace
 
+PairMotionAction ClassifyCandidatePairMotion(
+    const MotionSupport& first,
+    const SelfContactSweptParentBounds& first_bounds,
+    const MotionSupport& second,
+    const SelfContactSweptParentBounds& second_bounds) noexcept {
+  if (first.motion == SelfContactFacetMotion::CompleteRigidGroup &&
+      second.motion == SelfContactFacetMotion::CompleteRigidGroup &&
+      first.complete_rigid_group != UINT32_MAX &&
+      first.complete_rigid_group == second.complete_rigid_group)
+    return PairMotionAction::ExcludedSameRigidGroup;
+  if (first.motion == SelfContactFacetMotion::LinearNodalV1 &&
+      second.motion == SelfContactFacetMotion::LinearNodalV1)
+    return PairMotionAction::LinearNodalV1;
+  const bool separated =
+      first_bounds.upper.x < second_bounds.lower.x ||
+      second_bounds.upper.x < first_bounds.lower.x ||
+      first_bounds.upper.y < second_bounds.lower.y ||
+      second_bounds.upper.y < first_bounds.lower.y ||
+      first_bounds.upper.z < second_bounds.lower.z ||
+      second_bounds.upper.z < first_bounds.lower.z;
+  return separated ? PairMotionAction::CertifiedRigidArcSeparation
+                   : PairMotionAction::UnsupportedRigidArc;
+}
+
 bool MakeLayout(std::size_t nodes, std::size_t surface_parents,
                 std::size_t parents, std::size_t facets,
+                std::size_t rigid_groups,
                 std::size_t broadphase_pair_capacity,
                 std::size_t pair_chunk_capacity,
                 std::size_t event_capacity,
@@ -47,12 +72,22 @@ bool MakeLayout(std::size_t nodes, std::size_t surface_parents,
       !builder.Append<double>(vector_values, next.accepted_velocities) ||
       !builder.Append<double>(vector_values, next.prepared_positions) ||
       !builder.Append<double>(vector_values, next.prepared_velocities) ||
+      !builder.Append<tl::fea::NodalRigidGroupSnapshot>(
+          rigid_groups, next.accepted_rigid_groups) ||
+      !builder.Append<tl::fea::NodalRigidGroupSnapshot>(
+          rigid_groups, next.prepared_rigid_groups) ||
+      !builder.Append<std::uint32_t>(
+          nodes, next.node_rigid_groups) ||
       !builder.Append<std::uint32_t>(
           surface_parents, next.surface_to_active) ||
       !builder.Append<std::uint32_t>(
           parents + 1, next.parent_facet_offsets) ||
       !builder.Append<FixedContactFacet>(
           facets, next.facet_descriptors) ||
+      !builder.Append<MotionSupport>(
+          parents, next.parent_motion) ||
+      !builder.Append<MotionSupport>(
+          facets, next.facet_motion) ||
       !builder.Append<std::uint32_t>(facets, next.triangle_order) ||
       !builder.Append<std::uint32_t>(
           identity_references, next.vertex_identity_order) ||
@@ -76,10 +111,22 @@ bool MakeLayout(std::size_t nodes, std::size_t surface_parents,
           pair_chunk_capacity, next.chunk_represented_pairs) ||
       !builder.Append<RepresentedIntervalPairKey>(
           pair_chunk_capacity, next.chunk_canonical_pairs) ||
+      !builder.Append<RepresentedIntervalPairKey>(
+          pair_chunk_capacity, next.chunk_raw_canonical_pairs) ||
+      !builder.Append<PairMotionAction>(
+          pair_chunk_capacity, next.chunk_motion_actions) ||
+      !builder.Append<RepresentedIntervalResult>(
+          pair_chunk_capacity, next.chunk_crossings) ||
+      !builder.Append<SelfContactCandidatePolicyOutcome>(
+          pair_chunk_capacity, next.chunk_validated_outcomes) ||
       !builder.Append<SelfContactForceEvent>(
           chunk_events, next.chunk_events) ||
       !builder.Append<AcceptedEventCertificate>(
           chunk_events, next.chunk_certificates) ||
+      !builder.Append<SelfContactSweptParentBounds>(
+          surface_parents, next.swept_parent_bounds) ||
+      !builder.Append<SelfContactSweptParentBounds>(
+          facets, next.swept_facet_bounds) ||
       !builder.Append<SelfContactForceEvent>(
           event_capacity, next.accepted_events) ||
       !builder.Append<AcceptedEventCertificate>(
@@ -103,9 +150,16 @@ Buffers Bind(void* base, const Layout& layout) noexcept {
       ArenaPointer<double>(base, layout.accepted_velocities),
       ArenaPointer<double>(base, layout.prepared_positions),
       ArenaPointer<double>(base, layout.prepared_velocities),
+      ArenaPointer<tl::fea::NodalRigidGroupSnapshot>(
+          base, layout.accepted_rigid_groups),
+      ArenaPointer<tl::fea::NodalRigidGroupSnapshot>(
+          base, layout.prepared_rigid_groups),
+      ArenaPointer<std::uint32_t>(base, layout.node_rigid_groups),
       ArenaPointer<std::uint32_t>(base, layout.surface_to_active),
       ArenaPointer<std::uint32_t>(base, layout.parent_facet_offsets),
       ArenaPointer<FixedContactFacet>(base, layout.facet_descriptors),
+      ArenaPointer<MotionSupport>(base, layout.parent_motion),
+      ArenaPointer<MotionSupport>(base, layout.facet_motion),
       ArenaPointer<std::uint32_t>(base, layout.triangle_order),
       ArenaPointer<std::uint32_t>(base, layout.vertex_identity_order),
       ArenaPointer<std::uint32_t>(base, layout.edge_identity_order),
@@ -121,9 +175,21 @@ Buffers Bind(void* base, const Layout& layout) noexcept {
           base, layout.chunk_represented_pairs),
       ArenaPointer<RepresentedIntervalPairKey>(
           base, layout.chunk_canonical_pairs),
+      ArenaPointer<RepresentedIntervalPairKey>(
+          base, layout.chunk_raw_canonical_pairs),
+      ArenaPointer<PairMotionAction>(
+          base, layout.chunk_motion_actions),
+      ArenaPointer<RepresentedIntervalResult>(
+          base, layout.chunk_crossings),
+      ArenaPointer<SelfContactCandidatePolicyOutcome>(
+          base, layout.chunk_validated_outcomes),
       ArenaPointer<SelfContactForceEvent>(base, layout.chunk_events),
       ArenaPointer<AcceptedEventCertificate>(
           base, layout.chunk_certificates),
+      ArenaPointer<SelfContactSweptParentBounds>(
+          base, layout.swept_parent_bounds),
+      ArenaPointer<SelfContactSweptParentBounds>(
+          base, layout.swept_facet_bounds),
       ArenaPointer<SelfContactForceEvent>(base, layout.accepted_events),
       ArenaPointer<AcceptedEventCertificate>(
           base, layout.accepted_certificates),

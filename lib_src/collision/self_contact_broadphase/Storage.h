@@ -8,6 +8,8 @@ struct SelfContactBroadphase::Impl {
   SelfContactSurfaceBinding source;
   self_contact_broadphase::Layout layout;
   self_contact_broadphase::Control host_control;
+  tl::util::HostArena conservative_bounds;
+  AABB* staged_bounds = nullptr;
   void* device = nullptr;
   bool usable = true, complete = false;
   std::uint64_t pair_count = 0;
