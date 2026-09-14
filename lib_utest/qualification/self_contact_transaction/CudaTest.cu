@@ -105,11 +105,12 @@ struct Fixture {
   explicit Fixture(bool single = false, bool crossing = false,
                    double t3_failure = 2.5,
                    p::ContactConstraintLayout constraints =
-                       p::ContactConstraintLayout::Legacy)
+                       p::ContactConstraintLayout::Legacy,
+                   unsigned facet_level = 0)
       : rig(false, t3_failure, !single, constraints,
             !single && constraints == p::ContactConstraintLayout::Legacy),
         single_parent(single), pass_through(crossing),
-        t3_failure(t3_failure) {
+        t3_failure(t3_failure), facet_level(facet_level) {
     if (!single &&
         constraints == p::ContactConstraintLayout::Legacy)
       CheckInteriorEeGeometry(rig);
@@ -137,6 +138,7 @@ struct Fixture {
   bool single_parent = false;
   bool pass_through = false;
   double t3_failure = 2.5;
+  unsigned facet_level = 0;
   bool authority_prepared = false;
 
   bool PrepareExecutionAuthority() {
@@ -275,7 +277,8 @@ struct Fixture {
         << surface_report.message;
     if (surface_report.status != c::SelfContactSurfaceStatus::Ok)
       return false;
-    const auto facet_report = facets.Initialize(surface, {{}, 0});
+    const auto facet_report =
+        facets.Initialize(surface, {{}, facet_level});
     EXPECT_EQ(facet_report.status, c::FixedContactFacetStatus::Ok)
         << facet_report.message;
     if (facet_report.status != c::FixedContactFacetStatus::Ok)
@@ -525,7 +528,10 @@ TEST(SelfContactTransactionCuda,
 
 TEST(SelfContactTransactionCuda,
      AcceptedInteriorEeForceCandidateRetryAndRollbackKeepForceSti) {
-  Fixture fixture;
+  // Level one keeps the physical fixture small while producing one mixed
+  // candidate stream: exact contact pairs and strict swept-box separations.
+  Fixture fixture(false, false, 2.5,
+                  p::ContactConstraintLayout::Legacy, 1);
   ASSERT_TRUE(fixture.Initialize());
   const auto node = fixture.ProbeNode();
   ASSERT_NE(node, UINT32_MAX);
@@ -569,6 +575,9 @@ TEST(SelfContactTransactionCuda,
     EXPECT_GT(accepted.broadphase_pairs(), 0u);
     EXPECT_GT(accepted.facet_pairs(), 0u);
     EXPECT_GT(accepted.diagnostics().event_count, 0u);
+    EXPECT_GT(accepted.diagnostics().vertex_face_event_count,0u);
+    EXPECT_GT(
+        accepted.diagnostics().boundary_vertex_edge_event_count,0u);
     EXPECT_GT(accepted.diagnostics().edge_edge_event_count,0u);
     EXPECT_EQ(accepted.diagnostics().vertex_face_event_count+
               accepted.diagnostics().edge_edge_event_count,
@@ -620,6 +629,17 @@ TEST(SelfContactTransactionCuda,
     ASSERT_TRUE(Good(fixture.transaction.SealCandidate(
         fixture.rig.owner, token, common, prepared, accepted, &receipt)));
     ASSERT_TRUE(receipt.valid());
+    const auto& policy = receipt.policy_summary();
+    EXPECT_TRUE(policy.complete);
+    EXPECT_GT(policy.motion_certified_linear_separated,0u);
+    EXPECT_GT(policy.exact_crossing_pairs,0u);
+    EXPECT_GT(policy.exact_crossing_work,0u);
+    EXPECT_LT(policy.exact_crossing_pairs,policy.outcomes);
+    EXPECT_EQ(
+        policy.outcomes,
+        policy.motion_certified_linear_separated +
+            policy.motion_excluded_same_rigid_group +
+            policy.exact_crossing_pairs);
     ASSERT_TRUE(fixture.Commit(token, prepared, common, receipt));
     EXPECT_EQ(fixture.rig.owner.accepted().epoch,
               static_cast<std::uint64_t>(interval + 1));

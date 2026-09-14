@@ -15,6 +15,7 @@ BAZEL = ROOT / "lib_src/collision/BUILD.bazel"
 QUAL_CMAKE = Path(__file__).resolve().parent / "CMakeLists.txt"
 QUAL_BAZEL = Path(__file__).resolve().parent / "BUILD.bazel"
 CUDA = Path(__file__).resolve().parent / "CudaTest.cu"
+MEDIUM = Path(__file__).resolve().parent / "MediumCouponTest.cpp"
 OWNER = (Path(__file__).resolve().parent /
          "../physical_publication/OwnerStartup.cu").resolve()
 
@@ -132,6 +133,9 @@ for token in (
     "class SelfContactAcceptedAssemblyReceipt",
     "SelfContactAcceptedActivityReceipt activity_",
     "AcceptedSymmetricVfEeRejectIntersectionV2",
+    "motion_certified_linear_separated",
+    "exact_crossing_pairs",
+    "exact_crossing_work",
 ):
     require(types, token, TYPES)
 for forbidden in (
@@ -157,6 +161,8 @@ for token in (
     "state.broadphase.Evaluate",
     "ValidateCandidatePublications",
     "FoldPolicyOutcomes(",
+    "summary.exact_crossing_pairs += pair_count",
+    "summary.exact_crossing_work = crossing_work",
     "participation.SealSelfContactCandidate",
 ):
     require(candidate, token, CANDIDATE)
@@ -250,8 +256,12 @@ for wiring in (CMAKE, BAZEL):
 for token in (
     "SELF_CONTACT_TRANSACTION_CUDA",
     "CudaTest.cu",
+    "MediumCouponTest.cpp",
+    "self_contact_transaction_medium_coupon",
     "tl_self_contact_transaction",
     "rigid-cin-response",
+    'LABELS "unit;',
+    'LABELS "coupon;',
 ):
     require(QUAL_CMAKE.read_text(), token, QUAL_CMAKE)
 for token in ("host_check", "source_check", "root_cuda_sources"):
@@ -260,6 +270,17 @@ require(QUAL_BAZEL.read_text(), '":root_cuda_sources"', QUAL_BAZEL)
 require(QUAL_BAZEL.read_text(), "m2-rigid-cin-response", QUAL_BAZEL)
 require(QUAL_CMAKE.read_text(), "symmetric-edge-area", QUAL_CMAKE)
 require(QUAL_BAZEL.read_text(), "symmetric-edge-area", QUAL_BAZEL)
+for token in (
+    "DecisionCount = 262144",
+    "ChunkCapacity = 257",
+    "ExpectedPolicyDigest",
+    "ClassifyCandidatePairMotion(",
+    "MergeAcceptedEventChunk(",
+    "FinalizeAcceptedEventLedger(",
+    "summary.digest, ExpectedPolicyDigest",
+    "sizeof(FixedStorage) < 512u * 1024u",
+):
+    require(MEDIUM.read_text(), token, MEDIUM)
 
 cuda = CUDA.read_text()
 for token in (
@@ -295,6 +316,10 @@ for token in (
     "common, prepared, accepted",
     "removing_parents()",
     "skipped_parents()",
+    "boundary_vertex_edge_event_count",
+    "motion_certified_linear_separated",
+    "exact_crossing_pairs",
+    "exact_crossing_work",
 ):
     require(cuda, token, CUDA)
 

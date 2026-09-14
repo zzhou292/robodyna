@@ -23,6 +23,24 @@ target_compile_options(self_contact_transaction_values PRIVATE
 add_test(NAME self_contact_transaction_values
   COMMAND self_contact_transaction_values)
 
+add_executable(self_contact_transaction_medium_coupon
+  MediumCouponTest.cpp
+  "${TL_ROOT}/lib_src/collision/self_contact_transaction/Values.cpp"
+  "${TL_ROOT}/lib_src/collision/self_contact_transaction/Arena.cpp")
+target_include_directories(self_contact_transaction_medium_coupon PRIVATE
+  "${TL_ROOT}" "${CUDAToolkit_INCLUDE_DIRS}" "/usr/include/eigen3")
+target_link_libraries(self_contact_transaction_medium_coupon PRIVATE
+  tl_fixed_triangle_feature_discovery GTest::gtest_main)
+target_compile_features(
+  self_contact_transaction_medium_coupon PRIVATE cxx_std_17)
+target_compile_options(self_contact_transaction_medium_coupon PRIVATE
+  -fno-fast-math -ffp-contract=off)
+add_test(NAME self_contact_transaction_medium_coupon
+  COMMAND self_contact_transaction_medium_coupon)
+set_tests_properties(self_contact_transaction_medium_coupon PROPERTIES
+  RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30
+  LABELS "coupon;m2;self-contact-medium")
+
 add_test(NAME self_contact_transaction_source
   COMMAND "${Python3_EXECUTABLE}" -B
     "${CMAKE_CURRENT_LIST_DIR}/verify_sources.py")
@@ -36,7 +54,7 @@ set_tests_properties(
   self_contact_transaction_source
   self_contact_transaction_syntax
   PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120
-  LABELS "m2;self-contact-source-shape;symmetric-edge-area")
+  LABELS "unit;m2;self-contact-source-shape;symmetric-edge-area")
 
 option(SELF_CONTACT_TRANSACTION_CUDA
   "Build actual owner/publication self-contact transaction gate" OFF)
@@ -65,5 +83,5 @@ if(SELF_CONTACT_TRANSACTION_CUDA)
     COMMAND self_contact_transaction_cuda)
   set_tests_properties(self_contact_transaction_cuda PROPERTIES
     RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 300
-    LABELS "m2;rigid-cin-response")
+    LABELS "coupon;m2;rigid-cin-response")
 endif()

@@ -646,10 +646,14 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
             state.buffers.facet_motion, value, &report);
         return state.Fail(report);
       }
-      if (action == sct::PairMotionAction::ExcludedSameRigidGroup)
+      if (action == sct::PairMotionAction::ExcludedSameRigidGroup) {
+        ++summary.motion_excluded_same_rigid_group;
         continue;
-      if (action == sct::PairMotionAction::CertifiedLinearSeparation)
+      }
+      if (action == sct::PairMotionAction::CertifiedLinearSeparation) {
+        ++summary.motion_certified_linear_separated;
         continue;
+      }
       state.buffers.facet_pair_chunk[pair_count] = value;
       MakePath(state.buffers.accepted_triangles[value.first],
                state.buffers.prepared_triangles[value.first],
@@ -665,6 +669,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
       state.buffers.chunk_canonical_pairs[pair_count] = key;
       ++pair_count;
     }
+    summary.exact_crossing_pairs += pair_count;
 
     std::size_t validated_count = 0;
     if (pair_count) {
@@ -832,6 +837,17 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
       summary.outcomes != state.candidate_facet_pair_count)
     return state.Fail(Failure(S::IdentityMismatch,
         "Candidate canonical stream lacks its complete receipt"));
+  if (summary.motion_certified_linear_separated > summary.outcomes ||
+      summary.motion_excluded_same_rigid_group >
+          summary.outcomes -
+              summary.motion_certified_linear_separated ||
+      summary.exact_crossing_pairs !=
+          summary.outcomes -
+              summary.motion_certified_linear_separated -
+              summary.motion_excluded_same_rigid_group)
+    return state.Fail(Failure(S::IdentityMismatch,
+        "Candidate motion filter lacks complete work accounting"));
+  summary.exact_crossing_work = crossing_work;
   summary.complete = true;
   summary.detailed_publication =
       retain_detailed &&

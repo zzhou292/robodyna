@@ -3,8 +3,20 @@ load("@rules_cc//cc:defs.bzl", "cc_test")
 cc_test(
     name = "host_check",
     size = "small",
-    tags = ["m2-self-contact-source-shape", "symmetric-edge-area"],
+    tags = ["unit", "m2-self-contact-source-shape", "symmetric-edge-area"],
     srcs = ["ValueTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [
+        "//lib_src/collision:self_contact_transaction_values",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "medium_coupon",
+    size = "medium",
+    tags = ["coupon", "m2-self-contact-medium"],
+    srcs = ["MediumCouponTest.cpp"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [
         "//lib_src/collision:self_contact_transaction_values",
@@ -15,7 +27,7 @@ cc_test(
 cc_test(
     name = "source_check",
     size = "small",
-    tags = ["m2-rigid-cin-response", "symmetric-edge-area"],
+    tags = ["unit", "m2-rigid-cin-response", "symmetric-edge-area"],
     srcs = ["SourceProofTest.cpp"],
     data = [
         "BUILD.bazel",

@@ -246,6 +246,13 @@ struct SelfContactCandidatePolicySummary {
   std::size_t excluded_local_intersection = 0;
   std::size_t represented_by_accepted_vf = 0;
   std::size_t represented_by_accepted_ee = 0;
+  // Motion-filter accounting proves which candidate pairs bypassed exact
+  // represented-interval work.  The three counts partition outcomes on every
+  // successful candidate seal.
+  std::size_t motion_certified_linear_separated = 0;
+  std::size_t motion_excluded_same_rigid_group = 0;
+  std::size_t exact_crossing_pairs = 0;
+  std::size_t exact_crossing_work = 0;
   // FNV-1a over canonical pair identity, disposition and accepted source
   // order. It is a deterministic completeness diagnostic, not authority.
   std::uint64_t digest = 1469598103934665603ull;

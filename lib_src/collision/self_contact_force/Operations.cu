@@ -197,9 +197,13 @@ __global__ void ReduceDiagnostics(scf::Buffers buffers,
   for (std::size_t event = 0; event < event_count; ++event) {
     const auto& packet = buffers.packets[event];
     const auto& source = buffers.events[event];
-    if (source.feature.kind == FixedTriangleCandidateKind::VertexFace)
+    if (source.feature.kind == FixedTriangleCandidateKind::VertexFace) {
       ++out.vertex_face_event_count;
-    else if (source.feature.kind == FixedTriangleCandidateKind::EdgeEdge)
+      if (source.feature.vertex_face.target.kind ==
+              FixedTriangleStratumKind::Edge &&
+          source.feature.vertex_face.target.edge.parent_boundary)
+        ++out.boundary_vertex_edge_event_count;
+    } else if (source.feature.kind == FixedTriangleCandidateKind::EdgeEdge)
       ++out.edge_edge_event_count;
     bool valid = packet.valid;
     double represented = 0;

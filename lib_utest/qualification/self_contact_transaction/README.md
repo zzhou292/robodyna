@@ -164,10 +164,15 @@ cmake --build <host-build> --parallel 1
 ctest --test-dir <host-build> --output-on-failure
 ```
 
-This gate runs value, exact-cap, crossing-policy, million-parent-pair
-streaming, chunk-boundary event/identity/fold equivalence, source and C++
-syntax tests.
-It invokes no NVCC or GPU.
+The `unit` label retains the existing value, exact-cap, source and shaped C++
+checks. The `coupon` label adds a medium 262,144-decision host stream. It uses a
+257-pair fixed chunk (well below 512 KiB of authored storage), proves strict
+separation versus touching inflated boxes, same-rigid exclusion, direct linear
+separation folding, owner-aware VF/EE deduplication across chunks, strict input
+order, the complete count, and the fixed policy digest
+`7261953295680066653`. It invokes no NVCC or GPU. Run either tier explicitly
+with `ctest --test-dir <host-build> -L '^(unit|coupon)$'
+--output-on-failure`; normal CTest includes both.
 
 ## Root CUDA gate
 
@@ -204,4 +209,10 @@ than claim interval acceptance because candidate sealing deliberately reports
 `UnsupportedMotion` while rigid arcs remain outside `LinearNodalV1`; nonlinear
 rigid interval admission remains a full-V5 dependency. The pass-through is driven by a token-authenticated
 assembled nodal force, not an inconsistent initial nodal velocity. CUDA
-execution is intentionally left to the parent.
+execution is intentionally left to the parent. The small level-one physical
+coupon additionally combines strict EE, boundary vertex-edge and VF contact
+events with conservative fixed-facet separations. Its receipt diagnostic proves
+those separated linear pairs bypass represented-interval work while exact
+contact pairs still publish nonzero force and CIN STI. The same bounded CUDA
+binary retains the actual same-body exclusion and crossing rollback/retry
+controls; no canonical V5 data is loaded.

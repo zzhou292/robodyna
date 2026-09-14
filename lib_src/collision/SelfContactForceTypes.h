@@ -116,6 +116,7 @@ struct SelfContactForceIncidenceSummary {
 struct SelfContactForceDiagnostics {
   std::size_t event_count = 0;
   std::size_t vertex_face_event_count = 0;
+  std::size_t boundary_vertex_edge_event_count = 0;
   std::size_t edge_edge_event_count = 0;
   std::size_t active_count = 0;
   Vec3 endpoint_a_resultant_n;
