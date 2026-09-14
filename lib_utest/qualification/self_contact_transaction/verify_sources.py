@@ -25,6 +25,8 @@ header = HEADER.read_text()
 types = TYPES.read_text()
 candidate = CANDIDATE.read_text()
 transaction = TRANSACTION.read_text()
+layout_path = ROOT / "lib_src/collision/self_contact_transaction/Layout.cpp"
+layout = layout_path.read_text()
 for token in (
     "AuthenticateAssemblyView(token, view)",
     "AssemblyRangeDisjoint(",
@@ -42,6 +44,12 @@ for token in (
     "activity_receipt.activity()",
 ):
     require(candidate, token, CANDIDATE)
+for token in (
+    "broadphase.forecast.retained_source_bytes",
+    "force.forecast.retained_active_use_bytes",
+    "shared_backing_discount_bytes",
+):
+    require(layout, token, layout_path)
 
 storage_path = ROOT / "lib_src/collision/self_contact_transaction/Storage.h"
 storage = storage_path.read_text()

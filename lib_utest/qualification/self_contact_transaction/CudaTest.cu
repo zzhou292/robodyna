@@ -287,6 +287,9 @@ TEST(SelfContactTransactionCuda,
       fixture.config, fixture.uses, fixture.rig.fixture.Identity(),
       limits);
   ASSERT_TRUE(Good(exact.report));
+  EXPECT_EQ(exact.forecast.shared_backing_discount_bytes,
+            exact.forecast.broadphase.retained_source_bytes +
+                exact.forecast.force.retained_active_use_bytes);
   limits.max_host_bytes = exact.forecast.owned_host_bytes - 1;
   EXPECT_EQ(c::SelfContactTransaction::Forecast(
       fixture.config, fixture.uses, fixture.rig.fixture.Identity(),

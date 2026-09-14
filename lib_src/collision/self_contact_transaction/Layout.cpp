@@ -212,6 +212,9 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
           sizeof(SelfContactPhysicalActivity) ||
       broadphase.forecast.owned_host_bytes <
           sizeof(SelfContactBroadphase) ||
+      broadphase.forecast.retained_source_bytes >
+          broadphase.forecast.owned_host_bytes -
+              sizeof(SelfContactBroadphase) ||
       regularity.forecast.owned_payload_bytes <
           sizeof(SelfContactCurrentRegularity) ||
       activity.forecast.startup_host_bytes <
@@ -234,7 +237,8 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
            &forecast.owned_host_bytes) ||
       !Add(layout.bytes, &forecast.owned_host_bytes) ||
       !Add(broadphase.forecast.owned_host_bytes -
-               sizeof(SelfContactBroadphase),
+               sizeof(SelfContactBroadphase) -
+               broadphase.forecast.retained_source_bytes,
            &forecast.owned_host_bytes) ||
       !Add(accepted_discovery.forecast.owned_host_bytes,
            &forecast.owned_host_bytes) ||
@@ -251,9 +255,20 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
     return Failure(S::ResourceLimit,
         "Transaction complete host payload exceeds its cap");
 
-  const std::size_t startup_scratch = std::max({
+  const std::size_t force_startup_delta =
       force.forecast.startup_host_bytes -
-          force.forecast.owned_host_bytes,
+      force.forecast.owned_host_bytes;
+  if (force.forecast.retained_active_use_bytes >
+          force_startup_delta ||
+      !Add(broadphase.forecast.retained_source_bytes,
+           &forecast.shared_backing_discount_bytes) ||
+      !Add(force.forecast.retained_active_use_bytes,
+           &forecast.shared_backing_discount_bytes))
+    return Failure(S::ResourceLimit,
+        "Shared transaction backing discount is invalid");
+  const std::size_t startup_scratch = std::max({
+      force_startup_delta -
+          force.forecast.retained_active_use_bytes,
       activity.forecast.startup_host_bytes -
           activity.forecast.owned_host_bytes,
       broadphase.forecast.startup_host_bytes -

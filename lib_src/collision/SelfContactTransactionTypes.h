@@ -114,6 +114,7 @@ struct SelfContactTransactionForecast {
   std::size_t accepted_certificate_capacity = 0;
   std::size_t policy_outcome_capacity = 0;
   std::size_t candidate_arena_bytes = 0;
+  std::size_t shared_backing_discount_bytes = 0;
   std::size_t owned_host_bytes = 0;
   std::size_t startup_host_bytes = 0;
   std::size_t device_bytes = 0;
