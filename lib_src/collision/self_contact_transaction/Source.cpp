@@ -417,7 +417,7 @@ SelfContactTransactionReport EdgeEdgeEvent(
           : (strict_interior
                  ? SelfContactEdgeEdgeCase::StrictInteriorInteriorMinimum
                  : SelfContactEdgeEdgeCase::
-                       EdgeEdgeOnlyPenetrationOrCrossing);
+                       BoundaryVertexEdgeMinimum);
   const auto classified = active_use.ClassifyEdgeEdge(
       edge_uses[0], points[0], edge_uses[1], points[1],
       edge_case, activity, &classification);

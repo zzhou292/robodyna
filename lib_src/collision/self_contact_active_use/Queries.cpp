@@ -417,6 +417,7 @@ SelfContactActiveUseReport SelfContactActiveUseBinding::ClassifyEdgeEdge(
   next.status = CommonStatus(next, true);
   const bool area_case =
       edge_case == SelfContactEdgeEdgeCase::StrictInteriorInteriorMinimum ||
+      edge_case == SelfContactEdgeEdgeCase::BoundaryVertexEdgeMinimum ||
       edge_case == SelfContactEdgeEdgeCase::ZeroDistance;
   if (next.status == SelfContactPairStatus::UnadmittedEdgeEdgeForceArea &&
       area_case) {

@@ -151,6 +151,8 @@ SelfContactForceReport ValidateEvent(
         (regenerated.edge_edge_case !=
              SelfContactEdgeEdgeCase::StrictInteriorInteriorMinimum &&
          regenerated.edge_edge_case !=
+             SelfContactEdgeEdgeCase::BoundaryVertexEdgeMinimum &&
+         regenerated.edge_edge_case !=
              SelfContactEdgeEdgeCase::ZeroDistance))
       return Invalid(event, canonical_event,
                      "Regenerated event is not an admitted symmetric EE pair");

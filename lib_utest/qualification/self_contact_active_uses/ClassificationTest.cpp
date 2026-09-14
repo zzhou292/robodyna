@@ -170,7 +170,7 @@ TEST(SelfContactActiveUses, ActualPartAndPlainBodiesUseExactExecutionAuthority) 
 }
 
 TEST(SelfContactActiveUses,
-     StandaloneEeAreaRequiresAuthenticatedStrictOrZeroDistanceCase) {
+     StandaloneEeAreaRequiresAuthenticatedClosestPointCase) {
   Fixture fixture(2,false,true);
   c::SelfContactActiveUseBinding uses;
   ASSERT_EQ(uses.Initialize(fixture.facets).status, Code::Ok);
@@ -181,6 +181,7 @@ TEST(SelfContactActiveUses,
   auto active = fixture.Active(uses);
   constexpr c::SelfContactEdgeEdgeCase cases[]{
       c::SelfContactEdgeEdgeCase::StrictInteriorInteriorMinimum,
+      c::SelfContactEdgeEdgeCase::BoundaryVertexEdgeMinimum,
       c::SelfContactEdgeEdgeCase::EdgeEdgeOnlyPenetrationOrCrossing,
       c::SelfContactEdgeEdgeCase::UnresolvedGeometricTie,
       c::SelfContactEdgeEdgeCase::CoplanarOverlap,
@@ -192,6 +193,8 @@ TEST(SelfContactActiveUses,
     const bool admitted =
         edge_case == c::SelfContactEdgeEdgeCase::
                          StrictInteriorInteriorMinimum ||
+        edge_case == c::SelfContactEdgeEdgeCase::
+                         BoundaryVertexEdgeMinimum ||
         edge_case == c::SelfContactEdgeEdgeCase::ZeroDistance;
     EXPECT_EQ(pair.status, admitted
         ? c::SelfContactPairStatus::AdmittedEdgeEdge

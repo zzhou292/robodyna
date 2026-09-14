@@ -165,6 +165,7 @@ enum class SelfContactTiedStatus : std::uint8_t {
 enum class SelfContactPairKind : std::uint8_t { VertexFace, EdgeEdge };
 enum class SelfContactEdgeEdgeCase : std::uint8_t {
   StrictInteriorInteriorMinimum,
+  BoundaryVertexEdgeMinimum,
   EdgeEdgeOnlyPenetrationOrCrossing,
   UnresolvedGeometricTie,
   CoplanarOverlap,
