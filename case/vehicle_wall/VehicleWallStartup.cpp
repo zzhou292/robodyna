@@ -37,7 +37,8 @@ RuntimeForecast VehicleWallStartup::Preflight(const VehicleWallSetup& setup,
     return detail::ComposeForecast(dynamics.forecast(),setup.forecast(),contact,participation,
         sizeof(Data)+sizeof(VehicleWallStartup)+256,limits);
 }
-VehicleWallStartup VehicleWallStartup::Prepare(const VehicleWallSetup& setup,
+VehicleWallStartup VehicleWallStartup::PrepareUnconfigured(
+    const VehicleWallSetup& setup,
     vehicle_dynamics::VehiclePhysicalDynamics& dynamics, RuntimeLimits limits) {
     const auto forecast=Preflight(setup,dynamics,limits);
     auto& state=dynamics.storage_->state();
@@ -53,15 +54,26 @@ VehicleWallStartup VehicleWallStartup::Prepare(const VehicleWallSetup& setup,
     const auto entry=next->contact.roster_entry();
     output::Require(entry.issuer && entry.source_id==config.wall_binding_id,
         "Actual mapped wall did not expose its immutable roster identity");
+    output::Require(next->contact.allocations().device_bytes==forecast.contact.device_bytes &&
+        tl::fea::trial_identity::SameStamp(state.owner.accepted(),next->initial_stamp),
+        "Wall initialization changed accepted state or disagreed with its exact forecast");
+    return VehicleWallStartup(std::move(next));
+}
+VehicleWallStartup VehicleWallStartup::Prepare(const VehicleWallSetup& setup,
+    vehicle_dynamics::VehiclePhysicalDynamics& dynamics, RuntimeLimits limits) {
+    auto result=PrepareUnconfigured(setup,dynamics,limits);
+    auto& state=dynamics.storage_->state();
+    const auto source=ContactSource(state);
+    const auto entry=result.roster_entry();
     const auto configured=state.publication.ConfigurePhysicalScratchParticipation(
         state.owner,*source.physical,source.participants,source.identity,
         {entry,{}},limits.participation);
     output::Require(configured.status==tl::fea::ShellPublicationStatus::Success,
         configured.message);
-    output::Require(next->contact.allocations().device_bytes==forecast.contact.device_bytes &&
-        tl::fea::trial_identity::SameStamp(state.owner.accepted(),next->initial_stamp),
-        "Wall initialization/roster changed accepted state or disagreed with its exact forecast");
-    return VehicleWallStartup(std::move(next));
+    output::Require(tl::fea::trial_identity::SameStamp(
+        state.owner.accepted(),result.initial_stamp()),
+        "Wall roster configuration changed accepted state");
+    return result;
 }
 VehicleWallStartup::VehicleWallStartup(std::unique_ptr<Data> value) : data_(std::move(value)) {}
 VehicleWallStartup::~VehicleWallStartup()=default;
@@ -72,5 +84,10 @@ const VehicleWallSetup& VehicleWallStartup::setup() const noexcept { return data
 const tl::fea::NodalStamp& VehicleWallStartup::initial_stamp() const noexcept { return data_->initial_stamp; }
 tl::fea::NodalAllocationInfo VehicleWallStartup::contact_allocations() const noexcept {
     return data_->contact.allocations();
+}
+tl::fea::ShellPhysicalScratchRosterEntry
+VehicleWallStartup::roster_entry() noexcept {
+    return data_ ? data_->contact.roster_entry()
+                 : tl::fea::ShellPhysicalScratchRosterEntry{};
 }
 } // namespace crash::cases::vehicle_wall

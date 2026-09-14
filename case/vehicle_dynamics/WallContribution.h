@@ -15,8 +15,8 @@ class WallContribution {
         const tl::fea::NodalAssemblyView&,WallObservation&)=0;
     virtual void Evaluate(tl::fea::FENodalState&,const tl::fea::NodalTrialToken&,
         const tl::fea::NodalPreparedView&,const tl::fea::ShellPhysicalDiagnostics&,WallObservation&)=0;
-    virtual tl::fea::ShellPublicationReport Seal(tl::fea::FENodalState&,
-        const tl::fea::NodalTrialToken&,tl::fea::ShellBatchPublication&) noexcept=0;
+    virtual tl::fea::ShellPhysicalScratchReceiptRoster
+        scratch_receipts() const noexcept=0;
     virtual void Discard() noexcept=0;
     virtual const vehicle_wall::VehicleWallSetup& setup() const noexcept=0;
     virtual const vehicle_wall::RuntimeForecast& forecast() const noexcept=0;

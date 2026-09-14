@@ -1,6 +1,7 @@
 #pragma once
 #include "VehiclePhysicalDynamics.h"
 #include "ExecutionAccess.h"
+#include "SelfContactContribution.h"
 #include "WallContribution.h"
 #include "../vehicle_startup/TiedCinWitnessActivity.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
@@ -14,6 +15,7 @@ struct VehiclePhysicalDynamics::Storage {
     StepTimer timer;
     std::unique_ptr<vehicle_startup::TiedCinWitnessActivity> activity;
     std::unique_ptr<detail::WallContribution> wall;
+    std::unique_ptr<detail::SelfContactContribution> self_contact;
     std::array<Fields,2> fields;
     std::array<StepObservation,2> observations;
     tl::fea::NodalTrialToken token;

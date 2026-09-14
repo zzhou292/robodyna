@@ -16,12 +16,9 @@ void LoadedWall::Stages::Evaluate(tl::fea::FENodalState& owner,const tl::fea::No
     receipt={};
     loaded::Evaluate(contact.data_->contact,owner,token,prepared,materials,output,receipt);
 }
-tl::fea::ShellPublicationReport LoadedWall::Stages::Seal(tl::fea::FENodalState& owner,
-    const tl::fea::NodalTrialToken& token,tl::fea::ShellBatchPublication& publication) noexcept {
-    const auto receipts=receipt.scratch_receipts();
-    const auto report=publication.SealPhysicalScratchParticipation(owner,token,receipts);
-    receipt={};
-    return report;
+tl::fea::ShellPhysicalScratchReceiptRoster
+LoadedWall::Stages::scratch_receipts() const noexcept {
+    return receipt.scratch_receipts();
 }
 void LoadedWall::Stages::Discard() noexcept {
     receipt={};

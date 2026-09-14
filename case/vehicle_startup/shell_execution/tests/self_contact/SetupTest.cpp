@@ -1,4 +1,5 @@
 #include "Source.h"
+#include "case/vehicle_self_contact/VehicleSelfContactStartup.h"
 #include "lib_src/collision/SelfContactCurrentRegularity.h"
 #include <cfloat>
 #include <cstring>
@@ -193,6 +194,15 @@ TEST(VehicleSelfContactSource,
         EXPECT_EQ(setup.census().runtime_coefficients
                       .applied_source_soft_fields,
             0u);
+        const auto runtime_shape =
+            app_contact::VehicleSelfContactStartup::SourceShape(setup);
+        EXPECT_EQ(runtime_shape.facet_level, 0u);
+        EXPECT_EQ(runtime_shape.physical_nodes, 372435u);
+        EXPECT_EQ(runtime_shape.selected_parents, 337092u);
+        EXPECT_EQ(runtime_shape.fixed_facets, 653055u);
+        EXPECT_EQ(runtime_shape.applied_original_friction_fields, 0u);
+        EXPECT_EQ(runtime_shape.applied_original_damping_fields, 0u);
+        EXPECT_EQ(runtime_shape.applied_original_soft_fields, 0u);
         EXPECT_GT(
             setup.census().reference_area.q4_parent_area_m2.lower, 0);
         EXPECT_GT(

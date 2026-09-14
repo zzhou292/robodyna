@@ -57,6 +57,13 @@ void VehiclePhysicalDynamics::Storage::Prepare() {
             return true;
         });
     }
+    if(self_contact) {
+        timer.Measure<StepStage::AssembleSelfContact>([&] {
+            self_contact->Assemble(
+                s.owner,token,assembly,candidate().self_contact);
+            return true;
+        });
+    }
     Timed<StepStage::UploadWitness>(timer,[&] {
         return activity->UploadAttempt(s.owner,token);
     },"Actual accepted CIN witness upload");
@@ -121,6 +128,14 @@ void VehiclePhysicalDynamics::Storage::Evaluate() {
     if(wall) {
         timer.Measure<StepStage::EvaluateWall>([&] {
             wall->Evaluate(s.owner,token,prepared,candidate().mechanics,candidate().wall);
+            return true;
+        });
+    }
+    if(self_contact) {
+        timer.Measure<StepStage::EvaluateSelfContact>([&] {
+            self_contact->SealCandidate(
+                s.owner,token,candidate().mechanics,prepared,
+                candidate().self_contact);
             return true;
         });
     }

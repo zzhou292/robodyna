@@ -2,6 +2,9 @@
 #include "VehicleWallSetup.h"
 #include "case/vehicle_dynamics/VehiclePhysicalDynamics.h"
 #include "lib_src/collision/NodalWallMappedContact.h"
+namespace crash::cases::vehicle_self_contact {
+class LoadedWallSelfContact;
+}
 namespace crash::cases::vehicle_wall {
 class LoadedWall;
 struct RuntimeLimits {
@@ -38,7 +41,12 @@ class VehicleWallStartup {
     tl::fea::NodalAllocationInfo contact_allocations() const noexcept;
   private:
     friend class LoadedWall;
+    friend class crash::cases::vehicle_self_contact::LoadedWallSelfContact;
     struct Data;
+    static VehicleWallStartup PrepareUnconfigured(
+        const VehicleWallSetup&,vehicle_dynamics::VehiclePhysicalDynamics&,
+        RuntimeLimits);
+    tl::fea::ShellPhysicalScratchRosterEntry roster_entry() noexcept;
     explicit VehicleWallStartup(std::unique_ptr<Data>);
     std::unique_ptr<Data> data_;
 };

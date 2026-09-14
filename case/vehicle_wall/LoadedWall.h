@@ -16,6 +16,7 @@ class LoadedWall {
         vehicle_dynamics::Config=LoadedWallConfig(),RuntimeLimits={},
         const vehicle_runtime::JointModel* = nullptr);
   private:
+    friend class crash::cases::vehicle_self_contact::LoadedWallSelfContact;
     struct Stages;
 };
 } // namespace crash::cases::vehicle_wall

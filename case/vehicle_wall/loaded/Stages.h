@@ -14,8 +14,8 @@ struct LoadedWall::Stages final : vehicle_dynamics::detail::WallContribution {
     void Evaluate(tl::fea::FENodalState&,const tl::fea::NodalTrialToken&,
         const tl::fea::NodalPreparedView&,const tl::fea::ShellPhysicalDiagnostics&,
         vehicle_dynamics::WallObservation&) override;
-    tl::fea::ShellPublicationReport Seal(tl::fea::FENodalState&,
-        const tl::fea::NodalTrialToken&,tl::fea::ShellBatchPublication&) noexcept override;
+    tl::fea::ShellPhysicalScratchReceiptRoster
+        scratch_receipts() const noexcept override;
     void Discard() noexcept override;
     const VehicleWallSetup& setup() const noexcept override { return contact.setup(); }
     const RuntimeForecast& forecast() const noexcept override { return budget; }

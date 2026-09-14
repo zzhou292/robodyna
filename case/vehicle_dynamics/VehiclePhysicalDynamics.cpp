@@ -55,6 +55,11 @@ tl::fea::NodalAllocationInfo VehiclePhysicalDynamics::allocations() const noexce
         result.device_bytes+=wall.device_bytes;
         result.device_allocations+=wall.device_allocations;
     }
+    if(storage_->self_contact) {
+        const auto self=storage_->self_contact->allocations().device;
+        result.device_bytes+=self.device_bytes;
+        result.device_allocations+=self.device_allocations;
+    }
     return result;
 }
 const vehicle_wall::VehicleWallSetup* VehiclePhysicalDynamics::wall_setup() const noexcept {
@@ -62,6 +67,14 @@ const vehicle_wall::VehicleWallSetup* VehiclePhysicalDynamics::wall_setup() cons
 }
 const vehicle_wall::RuntimeForecast* VehiclePhysicalDynamics::wall_forecast() const noexcept {
     return storage_->wall ? &storage_->wall->forecast() : nullptr;
+}
+const vehicle_self_contact::VehicleSelfContactSetup*
+VehiclePhysicalDynamics::self_contact_setup() const noexcept {
+    return storage_->self_contact ? &storage_->self_contact->setup() : nullptr;
+}
+const vehicle_self_contact::RuntimeForecast*
+VehiclePhysicalDynamics::self_contact_forecast() const noexcept {
+    return storage_->self_contact ? &storage_->self_contact->forecast() : nullptr;
 }
 bool VehiclePhysicalDynamics::has_prepared_step() const noexcept { return storage_->pending; }
 const StepObservation& VehiclePhysicalDynamics::PrepareStep() {
@@ -80,8 +93,18 @@ void VehiclePhysicalDynamics::CommitStep() {
     auto& state=s.state();
     const auto& view=s.prepared;
     tl::fea::ShellPublicationReport report;
-    if(s.wall) {
-        report=s.wall->Seal(state.owner,s.token,state.publication);
+    if(s.wall || s.self_contact) {
+        tl::fea::ShellPhysicalScratchReceiptRoster receipts;
+        if(s.wall) {
+            const auto wall=s.wall->scratch_receipts();
+            receipts.mapped_wall=wall.mapped_wall;
+        }
+        if(s.self_contact) {
+            const auto self=s.self_contact->scratch_receipts();
+            receipts.self_contact=self.self_contact;
+        }
+        report=state.publication.SealPhysicalScratchParticipation(
+            state.owner,s.token,receipts);
         if(static_cast<int>(report.status)!=0) {
             s.Discard();
             detail::Require(report,"Physical scratch participation");
@@ -104,6 +127,7 @@ const StepObservation& VehiclePhysicalDynamics::last_accepted_step() const {
 void VehiclePhysicalDynamics::Storage::Discard() noexcept {
     timer.Measure<StepStage::Discard>([&] {
         if(wall) wall->Discard();
+        if(self_contact) self_contact->Discard();
         state().owner.Discard();
         state().publication.DiscardTrial();
         pending=false;

@@ -1,12 +1,20 @@
 #pragma once
 #include "../vehicle_runtime/VehiclePhysicalStartup.h"
 #include "MotionSummary.h"
+#include "SelfContactObservation.h"
 #include "WallObservation.h"
 #include "StepTiming.h"
 #include "lib_src/solvers/NodalCinStructuralLimit.h"
 #include <stdexcept>
 
 namespace crash::cases::vehicle_wall { class VehicleWallStartup; class VehicleWallSetup; class LoadedWall; struct RuntimeForecast; }
+namespace crash::cases::vehicle_self_contact {
+class VehicleSelfContactStartup;
+class VehicleSelfContactSetup;
+class SelfContactOnly;
+class LoadedWallSelfContact;
+struct RuntimeForecast;
+}
 namespace crash::cases::vehicle_dynamics {
 namespace capture { class VehicleAcceptedFrames; }
 struct Config {
@@ -31,6 +39,7 @@ struct StepObservation {
     // attempt and published by the existing accepted observation swap.
     tl::fea::NodalCinStructuralLimit structural_limiter;
     WallObservation wall;
+    SelfContactObservation self_contact;
 };
 class StepSizeError : public std::runtime_error {
   public:
@@ -67,6 +76,10 @@ class VehiclePhysicalDynamics {
     // remain immutable and valid while the dynamics object is alive.
     const vehicle_wall::VehicleWallSetup* wall_setup() const noexcept;
     const vehicle_wall::RuntimeForecast* wall_forecast() const noexcept;
+    const vehicle_self_contact::VehicleSelfContactSetup*
+        self_contact_setup() const noexcept;
+    const vehicle_self_contact::RuntimeForecast*
+        self_contact_forecast() const noexcept;
     const StepObservation& PrepareStep();
     void CommitStep();
     void DiscardStep() noexcept;
@@ -76,6 +89,9 @@ class VehiclePhysicalDynamics {
     friend class capture::VehicleAcceptedFrames;
     friend class vehicle_wall::VehicleWallStartup;
     friend class vehicle_wall::LoadedWall;
+    friend class vehicle_self_contact::VehicleSelfContactStartup;
+    friend class vehicle_self_contact::SelfContactOnly;
+    friend class vehicle_self_contact::LoadedWallSelfContact;
     struct Storage;
     explicit VehiclePhysicalDynamics(std::unique_ptr<Storage>);
     std::unique_ptr<Storage> storage_;
