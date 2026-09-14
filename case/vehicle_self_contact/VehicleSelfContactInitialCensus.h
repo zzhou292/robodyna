@@ -45,6 +45,8 @@ struct InitialCensusForecast {
     std::size_t surface_to_active_host_bytes = 0;
     std::size_t active_parent_host_bytes = 0;
     std::size_t pair_key_host_bytes = 0;
+    std::size_t accepted_position_host_bytes = 0;
+    std::size_t represented_triangle_host_bytes = 0;
     std::size_t fixed_workspace_host_bytes = 0;
     std::size_t app_fixed_host_bytes = 0;
     // Exact sequential census reservation. Broadphase host fields retain the
@@ -63,15 +65,21 @@ struct InitialCensusResult {
     InitialCensusSourceIdentity source;
     InitialCensusForecast forecast;
     InitialFacetCapacityCensus capacity;
+    InitialFacetFilterCensus filters;
     std::uint64_t probe_required_pairs = 0;
     std::uint64_t cap_minus_one_required_pairs = 0;
     std::uint64_t exact_pair_count = 0;
     std::uint64_t rerun_pair_key_hash = 0;
+    std::uint64_t rerun_filter_hash = 0;
+    std::uint64_t geometry_evaluation_us = 0;
+    std::uint64_t filter_census_us = 0;
+    std::uint64_t rerun_filter_census_us = 0;
     bool count_before_cap_observed = false;
     bool cap_minus_one_reproduced_required_count = false;
     bool exact_capacity_succeeded = false;
     bool complete_device_pair_keys = false;
     bool deterministic_rerun = false;
+    bool deterministic_filter_rerun = false;
     bool accepted_owner_unchanged = false;
 };
 

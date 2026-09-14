@@ -1,6 +1,7 @@
 #include "InitialCensusValues.h"
 
 #include <algorithm>
+#include <cmath>
 #include <limits>
 
 namespace crash::cases::vehicle_self_contact {
@@ -205,6 +206,149 @@ InitialCensusValueReport CountInitialFacetCapacity(
     next.feature_discovery_performed = false;
     next.intersection_processing_performed = false;
     next.force_admission_performed = false;
+    *output = next;
+    return {};
+}
+
+InitialCensusValueReport CountInitialFacetFilterCensus(
+    const Key* keys, std::size_t key_count,
+    const std::uint32_t* surface_to_active,
+    std::size_t surface_parent_count,
+    const InitialCensusParentRow* active_parents,
+    std::size_t active_parent_count,
+    const tlfea::contact::CurrentFixedTriangle* triangles,
+    std::size_t triangle_count, std::uint64_t source_identity_hash,
+    InitialFacetFilterCensus* output) noexcept {
+    if (!output || (key_count && !keys) || !surface_to_active ||
+        !active_parents || !triangles || !surface_parent_count ||
+        surface_parent_count != active_parent_count ||
+        surface_parent_count > UINT32_MAX || !triangle_count ||
+        !source_identity_hash)
+        return Failure(Status::InvalidInput,
+            "Initial filter census storage or extent is invalid");
+
+    std::size_t next_facet = 0;
+    for (std::size_t active = 0; active < active_parent_count; ++active) {
+        const auto& parent = active_parents[active];
+        if (!ValidParent(parent) ||
+            parent.surface_parent >= surface_parent_count ||
+            surface_to_active[parent.surface_parent] != active ||
+            parent.facet_offset != next_facet ||
+            parent.facet_count > triangle_count - next_facet ||
+            !std::isfinite(parent.reference_half_thickness_m) ||
+            !(parent.reference_half_thickness_m > 0))
+            return Failure(Status::IdentityMismatch,
+                "Filter parent row does not match the complete facet roster",
+                active);
+        next_facet += parent.facet_count;
+    }
+    if (next_facet != triangle_count)
+        return Failure(Status::IdentityMismatch,
+            "Filter parent rows do not cover accepted represented geometry");
+    for (std::size_t surface = 0; surface < surface_parent_count; ++surface) {
+        const auto active = surface_to_active[surface];
+        if (active >= active_parent_count ||
+            active_parents[active].surface_parent != surface)
+            return Failure(Status::IdentityMismatch,
+                "Filter S0 map is not one complete permutation", surface);
+    }
+
+    InitialFacetFilterCensus next;
+    next.category_hash = 14695981039346656037ULL;
+    next.source_identity_hash = source_identity_hash;
+    Hash(source_identity_hash, next.category_hash);
+    Hash(key_count, next.category_hash);
+    Hash(triangle_count, next.category_hash);
+    Key previous = 0;
+    for (std::size_t pair = 0; pair < key_count; ++pair) {
+        const auto key = keys[pair];
+        const auto first_surface =
+            tlfea::contact::FirstSurfaceParent(key);
+        const auto second_surface =
+            tlfea::contact::SecondSurfaceParent(key);
+        if ((pair && key <= previous) ||
+            first_surface >= second_surface ||
+            second_surface >= surface_parent_count)
+            return Failure(Status::InvalidPairKey,
+                "Filter keys are not sorted unique canonical S0 pairs",
+                SIZE_MAX, pair);
+        previous = key;
+        const auto first_active = surface_to_active[first_surface];
+        const auto second_active = surface_to_active[second_surface];
+        if (first_active >= active_parent_count ||
+            second_active >= active_parent_count ||
+            first_active == second_active)
+            return Failure(Status::IdentityMismatch,
+                "Filter pair cannot map to two active-use parents",
+                SIZE_MAX, pair);
+        const auto& first = active_parents[first_active];
+        const auto& second = active_parents[second_active];
+        for (std::size_t first_local = 0;
+             first_local < first.facet_count; ++first_local) {
+            const auto first_facet = first.facet_offset + first_local;
+            for (std::size_t second_local = 0;
+                 second_local < second.facet_count; ++second_local) {
+                const auto second_facet =
+                    second.facet_offset + second_local;
+                const auto filtered =
+                    tlfea::contact::ClassifyAcceptedFacetPair(
+                        triangles[first_facet],
+                        first.reference_half_thickness_m,
+                        first.complete_rigid_group,
+                        triangles[second_facet],
+                        second.reference_half_thickness_m,
+                        second.complete_rigid_group);
+                if (filtered.status !=
+                    tlfea::contact::SelfContactFacetFilterStatus::Ok)
+                    return Failure(Status::IdentityMismatch,
+                        "Production facet filter rejected represented geometry",
+                        SIZE_MAX, pair);
+                std::size_t* category = nullptr;
+                using Category =
+                    tlfea::contact::SelfContactFacetFilterCategory;
+                switch (filtered.category) {
+                  case Category::ExcludedSameRigidGroup:
+                    category = &next.excluded_same_rigid_group;
+                    break;
+                  case Category::CoordinateAabbSeparated:
+                    category = &next.coordinate_aabb_separated;
+                    break;
+                  case Category::FaceAxisSeparated:
+                    category = &next.face_axis_separated;
+                    break;
+                  case Category::EdgeCrossAxisSeparated:
+                    category = &next.edge_cross_axis_separated;
+                    break;
+                  case Category::ExactRemaining:
+                    category = &next.exact_remaining;
+                    break;
+                }
+                if (!category || !Add(1, *category) ||
+                    !Add(1, next.represented_facet_pairs))
+                    return Failure(Status::Unrepresentable,
+                        "Initial filter category count overflows",
+                        SIZE_MAX, pair);
+                Hash(key, next.category_hash);
+                Hash(first_facet, next.category_hash);
+                Hash(second_facet, next.category_hash);
+                Hash(static_cast<std::uint8_t>(filtered.category),
+                     next.category_hash);
+            }
+        }
+    }
+    std::size_t accounted = 0;
+    if (!Add(next.excluded_same_rigid_group, accounted) ||
+        !Add(next.coordinate_aabb_separated, accounted) ||
+        !Add(next.face_axis_separated, accounted) ||
+        !Add(next.edge_cross_axis_separated, accounted) ||
+        !Add(next.exact_remaining, accounted) ||
+        accounted != next.represented_facet_pairs)
+        return Failure(Status::Unrepresentable,
+            "Initial filter categories do not partition facet pairs");
+    next.complete_disjoint_accounting = true;
+    next.production_certificates_used = true;
+    next.feature_discovery_performed = false;
+    next.interval_crossing_performed = false;
     *output = next;
     return {};
 }

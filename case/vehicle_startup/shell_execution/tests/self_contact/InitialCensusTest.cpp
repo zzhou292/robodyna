@@ -10,7 +10,7 @@ namespace {
 namespace app_contact = crash::cases::vehicle_self_contact;
 
 TEST(VehicleSelfContactInitialCensus,
-     ActualV5OwnerCountBeforeCapExactRetryAndLevel0Expansion) {
+     ActualV5OwnerCountBeforeCapAndPrismRetentionCensus) {
     const auto& setup = LevelZeroSetup();
     auto dynamics =
         vehicle_dynamics::VehiclePhysicalDynamics::Prepare(
@@ -66,7 +66,9 @@ TEST(VehicleSelfContactInitialCensus,
     EXPECT_EQ(census.forecast.fixed_workspace_host_bytes,
               census.forecast.surface_to_active_host_bytes +
               census.forecast.active_parent_host_bytes +
-              census.forecast.pair_key_host_bytes);
+              census.forecast.pair_key_host_bytes +
+              census.forecast.accepted_position_host_bytes +
+              census.forecast.represented_triangle_host_bytes);
 
     const auto& capacity = census.capacity;
     EXPECT_EQ(capacity.current_inflated_aabb_overlap_parent_pairs,
@@ -83,9 +85,31 @@ TEST(VehicleSelfContactInitialCensus,
     EXPECT_FALSE(capacity.feature_discovery_performed);
     EXPECT_FALSE(capacity.intersection_processing_performed);
     EXPECT_FALSE(capacity.force_admission_performed);
+    const auto& filters = census.filters;
+    EXPECT_EQ(filters.represented_facet_pairs,
+              capacity.level0_facet_pairs);
+    EXPECT_EQ(filters.represented_facet_pairs, 5989248u);
+    EXPECT_EQ(filters.excluded_same_rigid_group +
+              filters.coordinate_aabb_separated +
+              filters.face_axis_separated +
+              filters.edge_cross_axis_separated +
+              filters.exact_remaining,
+              filters.represented_facet_pairs);
+    EXPECT_EQ(filters.source_identity_hash,
+              capacity.surface_active_source_hash);
+    EXPECT_TRUE(filters.complete_disjoint_accounting);
+    EXPECT_TRUE(filters.production_certificates_used);
+    EXPECT_FALSE(filters.feature_discovery_performed);
+    EXPECT_FALSE(filters.interval_crossing_performed);
+    EXPECT_GT(filters.category_hash, 0u);
+    EXPECT_GT(census.geometry_evaluation_us, 0u);
+    EXPECT_GT(census.filter_census_us, 0u);
     EXPECT_TRUE(census.deterministic_rerun);
     EXPECT_EQ(census.rerun_pair_key_hash,
               capacity.pair_key_hash);
+    EXPECT_TRUE(census.deterministic_filter_rerun);
+    EXPECT_EQ(census.rerun_filter_hash,
+              filters.category_hash);
     EXPECT_TRUE(census.accepted_owner_unchanged);
     EXPECT_EQ(dynamics.accepted().owner_id, initial.owner_id);
     EXPECT_EQ(dynamics.accepted().epoch, 0u);
@@ -132,10 +156,30 @@ TEST(VehicleSelfContactInitialCensus,
               << " pair_hash=" << capacity.pair_key_hash
               << " source_hash="
               << capacity.surface_active_source_hash
+              << " represented_facet_pairs="
+              << filters.represented_facet_pairs
+              << " excluded_same_rigid_group="
+              << filters.excluded_same_rigid_group
+              << " coordinate_aabb_separated="
+              << filters.coordinate_aabb_separated
+              << " face_axis_separated="
+              << filters.face_axis_separated
+              << " edge_cross_axis_separated="
+              << filters.edge_cross_axis_separated
+              << " exact_remaining="
+              << filters.exact_remaining
+              << " filter_hash=" << filters.category_hash
+              << " geometry_evaluation_us="
+              << census.geometry_evaluation_us
+              << " filter_census_us="
+              << census.filter_census_us
+              << " rerun_filter_census_us="
+              << census.rerun_filter_census_us
               << " complete_device_keys=1"
               << " sorted_unique_keys=1"
               << " no_self_or_reversed_keys=1"
               << " deterministic_rerun=1"
+              << " deterministic_filter_rerun=1"
               << " host_pair_bytes="
               << census.forecast.pair_key_host_bytes
               << " census_workspace_host="
@@ -165,6 +209,7 @@ TEST(VehicleSelfContactInitialCensus,
               << " feature_discovery=0"
               << " intersection_processing=0"
               << " force_admission=0"
+              << " interval_crossing=0"
               << '\n';
     RecordProperty("required_parent_pairs",
         std::to_string(census.probe_required_pairs));
@@ -180,6 +225,22 @@ TEST(VehicleSelfContactInitialCensus,
         std::to_string(capacity.pair_key_hash));
     RecordProperty("source_hash",
         std::to_string(capacity.surface_active_source_hash));
+    RecordProperty("excluded_same_rigid_group",
+        std::to_string(filters.excluded_same_rigid_group));
+    RecordProperty("coordinate_aabb_separated",
+        std::to_string(filters.coordinate_aabb_separated));
+    RecordProperty("face_axis_separated",
+        std::to_string(filters.face_axis_separated));
+    RecordProperty("edge_cross_axis_separated",
+        std::to_string(filters.edge_cross_axis_separated));
+    RecordProperty("exact_remaining",
+        std::to_string(filters.exact_remaining));
+    RecordProperty("filter_hash",
+        std::to_string(filters.category_hash));
+    RecordProperty("geometry_evaluation_us",
+        std::to_string(census.geometry_evaluation_us));
+    RecordProperty("filter_census_us",
+        std::to_string(census.filter_census_us));
     RecordProperty("broadphase_device_bytes",
         std::to_string(census.forecast.exact.device_bytes));
     RecordProperty("census_peak_host_reservation_bytes",

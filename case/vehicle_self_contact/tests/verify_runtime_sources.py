@@ -210,6 +210,41 @@ def main() -> None:
             ".340809" not in real_geometry and
             ".679739" not in real_geometry,
             "real geometry coupon must not load dynamics or copy diagnostic parameters")
+    census_values = (contact / "InitialCensusValues.cpp").read_text()
+    census_header = (
+        contact / "VehicleSelfContactInitialCensus.h").read_text()
+    census_source = (
+        contact / "VehicleSelfContactInitialCensus.cpp").read_text()
+    tl_filter_header = (
+        args.tl_root / "lib_src" / "collision" /
+        "SelfContactFilterCertificates.h").read_text()
+    tl_filter_source = (
+        args.tl_root / "lib_src" / "collision" /
+        "SelfContactFilterCertificates.cpp").read_text()
+    tl_transaction_source = (
+        args.tl_root / "lib_src" / "collision" /
+        "self_contact_transaction" / "Source.cpp").read_text()
+    for token in [
+            "excluded_same_rigid_group", "coordinate_aabb_separated",
+            "face_axis_separated", "edge_cross_axis_separated",
+            "exact_remaining", "category_hash",
+            "geometry_evaluation_us", "filter_census_us",
+            "rerun_filter_hash"]:
+        require(token in census_header + census_values,
+                f"actual V5 filter census is missing {token}")
+    require("ClassifyAcceptedFacetPair(" in census_values and
+            "ClassifyAcceptedFacetPair(" in tl_filter_header and
+            "ClassifyAcceptedFacetPair(" in tl_filter_source and
+            "ClassifyAcceptedFacetPair(" in tl_transaction_source,
+            "app and transaction must share the production filter certificate")
+    require("FixedTriangleFeatureDiscovery " not in census_source and
+            ".Discover(" not in census_source and
+            "RepresentedIntervalCrossing" not in census_source,
+            "actual filter census must not invoke exact traversal")
+    require('LABELS "coupon;real-geometry;v5-filter-census"' in
+            fixture_cmake and
+            "TIMEOUT 120" in fixture_cmake,
+            "actual filter census needs its bounded coupon registration")
     real_cmake = (contact / "CMakeLists.txt").read_text()
     require("vehicle_self_contact_real_geometry_coupon" in real_cmake and
             '"RealYarisSelfContactGeometry.*"' in real_cmake and

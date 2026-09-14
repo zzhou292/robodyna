@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 #include <array>
+#include <limits>
 
 namespace crash::cases::vehicle_self_contact {
 namespace {
@@ -10,6 +11,14 @@ using Key = tlfea::contact::SelfContactPairKey;
 
 constexpr Key Pair(std::uint32_t first, std::uint32_t second) {
     return (std::uint64_t{first} << 32) | second;
+}
+
+tlfea::contact::CurrentFixedTriangle Triangle(
+    std::array<tlfea::contact::Vec3, 3> vertices) {
+    tlfea::contact::CurrentFixedTriangle result;
+    for (unsigned vertex = 0; vertex < 3; ++vertex)
+        result.vertices[vertex] = vertices[vertex];
+    return result;
 }
 
 struct Fixture {
@@ -94,6 +103,88 @@ TEST(InitialCensusValues,
         source.parents.data(), source.parents.size(), &output);
     EXPECT_EQ(report.status, InitialCensusValueStatus::IdentityMismatch);
     EXPECT_EQ(output.level0_facet_pairs, 99u);
+}
+
+TEST(InitialCensusValues,
+     ProductionFacetFiltersPartitionTouchingAndRejectNonfiniteGeometry) {
+    constexpr std::size_t ParentCount = 10;
+    constexpr double thickness = 0.01;
+    std::array<std::uint32_t, ParentCount> map{};
+    std::array<InitialCensusParentRow, ParentCount> parents{};
+    std::array<tlfea::contact::CurrentFixedTriangle, ParentCount> triangles{};
+    for (std::size_t parent = 0; parent < ParentCount; ++parent) {
+        map[parent] = parent;
+        auto& row = parents[parent];
+        row.source_parent_id = 100 + parent;
+        row.surface_parent = parent;
+        row.facet_count = 1;
+        row.vertices[0] = 3 * parent;
+        row.vertices[1] = 3 * parent + 1;
+        row.vertices[2] = 3 * parent + 2;
+        row.arity = 3;
+        row.facet_offset = parent;
+        row.reference_half_thickness_m = thickness;
+        triangles[parent] = Triangle(
+            {{{0, 0, 0}, {1, 0, 1}, {0, 1, 1}}});
+    }
+    parents[0].complete_rigid_group = 7;
+    parents[1].complete_rigid_group = 7;
+    for (auto& vertex : triangles[3].vertices)
+        vertex.x += 2;
+    for (auto& vertex : triangles[5].vertices) {
+        vertex.x -= 0.0625;
+        vertex.y -= 0.0625;
+        vertex.z += 0.0625;
+    }
+    triangles[7] = Triangle(
+        {{{-0.25, -1, -0.5},
+          {0.25, -0.5, -0.5},
+          {1, 1, 0.25}}});
+    triangles[8] = Triangle(
+        {{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}}});
+    triangles[9] = Triangle(
+        {{{0, 0, 0.02}, {1, 0, 0.02}, {0, 1, 0.02}}});
+    const std::array<Key, 5> keys{{
+        Pair(0, 1), Pair(2, 3), Pair(4, 5),
+        Pair(6, 7), Pair(8, 9)}};
+
+    InitialFacetFilterCensus census;
+    auto report = CountInitialFacetFilterCensus(
+        keys.data(), keys.size(), map.data(), map.size(),
+        parents.data(), parents.size(), triangles.data(), triangles.size(),
+        12345, &census);
+    ASSERT_EQ(report.status, InitialCensusValueStatus::Ok)
+        << report.message;
+    EXPECT_EQ(census.represented_facet_pairs, 5u);
+    EXPECT_EQ(census.excluded_same_rigid_group, 1u);
+    EXPECT_EQ(census.coordinate_aabb_separated, 1u);
+    EXPECT_EQ(census.face_axis_separated, 1u);
+    EXPECT_EQ(census.edge_cross_axis_separated, 1u);
+    EXPECT_EQ(census.exact_remaining, 1u);
+    EXPECT_TRUE(census.complete_disjoint_accounting);
+    EXPECT_TRUE(census.production_certificates_used);
+    EXPECT_FALSE(census.feature_discovery_performed);
+    EXPECT_FALSE(census.interval_crossing_performed);
+    EXPECT_NE(census.category_hash, 0u);
+
+    auto rerun = census;
+    rerun.category_hash = 0;
+    ASSERT_EQ(CountInitialFacetFilterCensus(
+        keys.data(), keys.size(), map.data(), map.size(),
+        parents.data(), parents.size(), triangles.data(), triangles.size(),
+        12345, &rerun).status, InitialCensusValueStatus::Ok);
+    EXPECT_EQ(rerun.category_hash, census.category_hash);
+
+    triangles[9].vertices[0].x =
+        std::numeric_limits<double>::quiet_NaN();
+    InitialFacetFilterCensus unchanged;
+    unchanged.exact_remaining = 99;
+    report = CountInitialFacetFilterCensus(
+        keys.data(), keys.size(), map.data(), map.size(),
+        parents.data(), parents.size(), triangles.data(), triangles.size(),
+        12345, &unchanged);
+    EXPECT_EQ(report.status, InitialCensusValueStatus::IdentityMismatch);
+    EXPECT_EQ(unchanged.exact_remaining, 99u);
 }
 
 }  // namespace

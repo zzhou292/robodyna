@@ -83,6 +83,23 @@ wall+self counterparts additionally require
 unregistered. All four use the `acceptance-v5` label and retain their serialized
 GPU lock and finite timeouts. No `IGNORE=1` path exists.
 
+`vehicle_self_contact_initial_census` is the bounded actual-geometry bridge.
+Its existing fixture starts one virgin owner, reads the accepted coordinates
+and complete broadphase keys once, expands all level-0 facet pairs, and calls
+TL's production accepted/candidate filter certificates in order: same rigid,
+coordinate AABB, face axis, then edge-cross axis. It publishes disjoint counts,
+`exact_remaining`, source/category hashes, and timings, then repeats only the
+already-owned key/filter pass to prove determinism. It does not construct an
+event arena, discover fixed-triangle features, run represented-interval
+crossing, step physical state, assemble force, or enable V5 runtime acceptance.
+CTest labels it `coupon;real-geometry;v5-filter-census`, serializes its GPU use,
+and enforces a 120-second timeout:
+
+```sh
+ctest --test-dir <build> -R '^vehicle_self_contact_initial_census$' \
+  --output-on-failure -j1
+```
+
 The standalone `case/vehicle_self_contact` build keeps normal CTest small:
 `unit` covers values and source proof, while `coupon` uses synthetic forecasts
 to verify the self-only budget, the combined two-slot wall+self publication

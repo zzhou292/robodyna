@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lib_src/collision/SelfContactBroadphaseTypes.h"
+#include "lib_src/collision/SelfContactFilterCertificates.h"
 #include <cstddef>
 #include <cstdint>
 
@@ -17,6 +18,8 @@ struct InitialCensusParentRow {
     std::uint32_t vertices[4]{UINT32_MAX, UINT32_MAX,
                               UINT32_MAX, UINT32_MAX};
     std::uint8_t arity = 0;
+    std::uint32_t facet_offset = 0;
+    double reference_half_thickness_m = 0;
 };
 
 enum class InitialCensusValueStatus {
@@ -46,6 +49,23 @@ struct InitialFacetCapacityCensus {
     bool force_admission_performed = false;
 };
 
+// Disjoint production-certificate census over every represented level-0
+// facet pair expanded from the complete parent-key readback.
+struct InitialFacetFilterCensus {
+    std::size_t represented_facet_pairs = 0;
+    std::size_t excluded_same_rigid_group = 0;
+    std::size_t coordinate_aabb_separated = 0;
+    std::size_t face_axis_separated = 0;
+    std::size_t edge_cross_axis_separated = 0;
+    std::size_t exact_remaining = 0;
+    std::uint64_t category_hash = 0;
+    std::uint64_t source_identity_hash = 0;
+    bool complete_disjoint_accounting = false;
+    bool production_certificates_used = false;
+    bool feature_discovery_performed = false;
+    bool interval_crossing_performed = false;
+};
+
 struct InitialCensusValueReport {
     InitialCensusValueStatus status = InitialCensusValueStatus::Ok;
     const char* message = "OK";
@@ -62,5 +82,16 @@ InitialCensusValueReport CountInitialFacetCapacity(
     const InitialCensusParentRow* active_parents,
     std::size_t active_parent_count,
     InitialFacetCapacityCensus* output) noexcept;
+
+// Allocation-free expansion/certificate pass. The triangle roster is the
+// complete accepted-owner represented geometry in active-use facet order.
+InitialCensusValueReport CountInitialFacetFilterCensus(
+    const tlfea::contact::SelfContactPairKey* keys, std::size_t key_count,
+    const std::uint32_t* surface_to_active, std::size_t surface_parent_count,
+    const InitialCensusParentRow* active_parents,
+    std::size_t active_parent_count,
+    const tlfea::contact::CurrentFixedTriangle* triangles,
+    std::size_t triangle_count, std::uint64_t source_identity_hash,
+    InitialFacetFilterCensus* output) noexcept;
 
 }  // namespace crash::cases::vehicle_self_contact

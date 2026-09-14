@@ -3,10 +3,12 @@
 #include "case/vehicle_dynamics/Storage.h"
 #include "case/vehicle_runtime/ParticipantConfigs.h"
 #include "case/vehicle_runtime/Reports.h"
+#include "lib_src/collision/FixedTriangleFeatureDiscovery.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
 #include "lib_utils/BoundedArena.h"
 #include "output/ArtifactIO.h"
 #include <algorithm>
+#include <chrono>
 #include <limits>
 #include <string>
 
@@ -29,6 +31,8 @@ struct WorkspaceRegions {
     tl::util::ArenaRegion surface_to_active;
     tl::util::ArenaRegion active_parents;
     tl::util::ArenaRegion pair_keys;
+    tl::util::ArenaRegion accepted_positions;
+    tl::util::ArenaRegion represented_triangles;
     std::size_t bytes = 0;
 };
 
@@ -125,6 +129,30 @@ bool Same(const InitialFacetCapacityCensus& first,
             second.force_admission_performed;
 }
 
+bool Same(const InitialFacetFilterCensus& first,
+          const InitialFacetFilterCensus& second) noexcept {
+    return first.represented_facet_pairs ==
+            second.represented_facet_pairs &&
+        first.excluded_same_rigid_group ==
+            second.excluded_same_rigid_group &&
+        first.coordinate_aabb_separated ==
+            second.coordinate_aabb_separated &&
+        first.face_axis_separated == second.face_axis_separated &&
+        first.edge_cross_axis_separated ==
+            second.edge_cross_axis_separated &&
+        first.exact_remaining == second.exact_remaining &&
+        first.category_hash == second.category_hash &&
+        first.source_identity_hash == second.source_identity_hash &&
+        first.complete_disjoint_accounting ==
+            second.complete_disjoint_accounting &&
+        first.production_certificates_used ==
+            second.production_certificates_used &&
+        first.feature_discovery_performed ==
+            second.feature_discovery_performed &&
+        first.interval_crossing_performed ==
+            second.interval_crossing_performed;
+}
+
 bool SameParentSource(const fe::ShellPlasticityParentInput& first,
                       const fe::ShellPlasticityParentInput& second) noexcept {
     return first.family == second.family &&
@@ -186,16 +214,24 @@ std::uint32_t CompleteRigidGroup(
     return common;
 }
 
-WorkspaceRegions ForecastWorkspace(std::size_t parents,
+WorkspaceRegions ForecastWorkspace(std::size_t nodes,
+                                   std::size_t parents,
+                                   std::size_t facets,
                                    std::size_t pairs,
                                    std::size_t host_cap) {
+    if (nodes > std::numeric_limits<std::size_t>::max() / 3)
+        CapacityFailure(pairs,
+            "Initial V5 accepted-position extent overflows");
     WorkspaceRegions result;
     tl::util::BoundedArenaLayout layout(host_cap);
     if (!layout.Append<std::uint32_t>(
             parents, result.surface_to_active) ||
         !layout.Append<InitialCensusParentRow>(
             parents, result.active_parents) ||
-        !layout.Append<Key>(pairs, result.pair_keys))
+        !layout.Append<Key>(pairs, result.pair_keys) ||
+        !layout.Append<double>(3 * nodes, result.accepted_positions) ||
+        !layout.Append<contact::CurrentFixedTriangle>(
+            facets, result.represented_triangles))
         CapacityFailure(pairs,
             "Initial V5 census fixed host workspace exceeds its hard cap");
     result.bytes = layout.bytes();
@@ -414,12 +450,17 @@ InitialCensusResult VehicleSelfContactInitialCensus::Measure(
         setup, exact_capacity, limits, required,
         "Exact broadphase cannot fit the TL 2GiB device hard cap");
     const auto workspace = ForecastWorkspace(
-        V5SelectedParents, exact_capacity, limits.max_host_bytes);
+        initial_stamp.node_count, V5SelectedParents,
+        V5Level0Facets, exact_capacity, limits.max_host_bytes);
     result.forecast.surface_to_active_host_bytes =
         workspace.surface_to_active.bytes;
     result.forecast.active_parent_host_bytes =
         workspace.active_parents.bytes;
     result.forecast.pair_key_host_bytes = workspace.pair_keys.bytes;
+    result.forecast.accepted_position_host_bytes =
+        workspace.accepted_positions.bytes;
+    result.forecast.represented_triangle_host_bytes =
+        workspace.represented_triangles.bytes;
     result.forecast.fixed_workspace_host_bytes = workspace.bytes;
     ComposePeakForecast(result, limits);
 
@@ -474,8 +515,15 @@ InitialCensusResult VehicleSelfContactInitialCensus::Measure(
             host.Construct<InitialCensusParentRow>(
                 workspace.active_parents);
         auto* host_keys = host.Construct<Key>(workspace.pair_keys);
+        auto* accepted_positions =
+            host.Construct<double>(workspace.accepted_positions);
+        auto* represented_triangles =
+            host.Construct<contact::CurrentFixedTriangle>(
+                workspace.represented_triangles);
         output::Require(surface_to_active && active_parents &&
-                host_keys && host.bytes() == workspace.bytes,
+                host_keys && accepted_positions &&
+                represented_triangles &&
+                host.bytes() == workspace.bytes,
             "Initial V5 census fixed host layout differs from forecast");
         std::fill_n(surface_to_active, V5SelectedParents,
                     UINT32_MAX);
@@ -497,7 +545,8 @@ InitialCensusResult VehicleSelfContactInitialCensus::Measure(
                     parent.arity == surface.arity &&
                     parent.facet_count ==
                         setup.facets().facet_count(
-                            parent.surface_parent),
+                            parent.surface_parent) &&
+                    parent.facet_offset <= UINT32_MAX,
                 "Active-use parent source/facets differ from S0");
             surface_to_active[parent.surface_parent] =
                 static_cast<std::uint32_t>(active_parent);
@@ -506,6 +555,9 @@ InitialCensusResult VehicleSelfContactInitialCensus::Measure(
             row.surface_parent =
                 static_cast<std::uint32_t>(parent.surface_parent);
             row.facet_count = parent.facet_count;
+            row.facet_offset = parent.facet_offset;
+            row.reference_half_thickness_m =
+                parent.reference_half_thickness_m;
             row.complete_rigid_group =
                 CompleteRigidGroup(*rigid, parent);
             row.arity = static_cast<std::uint8_t>(parent.arity);
@@ -516,8 +568,14 @@ InitialCensusResult VehicleSelfContactInitialCensus::Measure(
                 host_keys, pairs.device_keys,
                 workspace.pair_keys.bytes,
                 cudaMemcpyDeviceToHost, owner_stream) == cudaSuccess &&
+                cudaMemcpyAsync(
+                    accepted_positions,
+                    assembly.accepted.position_xyz,
+                    workspace.accepted_positions.bytes,
+                    cudaMemcpyDeviceToHost,
+                    owner_stream) == cudaSuccess &&
                 cudaStreamSynchronize(owner_stream) == cudaSuccess,
-            "Complete initial broadphase pair readback failed");
+            "Complete initial pair/accepted-geometry readback failed");
         auto counted = CountInitialFacetCapacity(
             host_keys, exact_capacity, surface_to_active,
             V5SelectedParents, active_parents, V5SelectedParents,
@@ -527,6 +585,65 @@ InitialCensusResult VehicleSelfContactInitialCensus::Measure(
             counted.message);
         result.source.surface_active_source_hash =
             result.capacity.surface_active_source_hash;
+        const auto geometry_started =
+            std::chrono::steady_clock::now();
+        contact::FixedContactFacetReadCursor facet_reader;
+        auto facet_report = facet_reader.Initialize(setup.facets());
+        output::Require(facet_report.status ==
+                contact::FixedContactFacetStatus::Ok,
+            facet_report.message);
+        const contact::VectorView accepted_view{
+            accepted_positions,
+            static_cast<std::uint32_t>(initial_stamp.node_count), 3, 1};
+        for (std::size_t active_parent = 0;
+             active_parent < active_uses.size(); ++active_parent) {
+            const auto& parent = active_uses[active_parent];
+            const auto& row = active_parents[active_parent];
+            output::Require(row.facet_offset <= V5Level0Facets &&
+                    row.facet_count <=
+                        V5Level0Facets - row.facet_offset,
+                "Accepted represented facet range is invalid");
+            for (std::uint32_t local = 0;
+                 local < row.facet_count; ++local) {
+                const auto facet = row.facet_offset + local;
+                const auto described =
+                    facet_reader.Describe(parent.surface_parent, local);
+                output::Require(described.report.status ==
+                        contact::FixedContactFacetStatus::Ok &&
+                        described.facet && facet < active.facet_uses().size() &&
+                        active.facet_uses()[facet].parent == active_parent &&
+                        active.facet_uses()[facet].local_facet == local,
+                    "Accepted represented facet identity is incomplete");
+                output::Require(contact::EvaluateCurrentFixedTriangle(
+                        *described.facet, accepted_view,
+                        represented_triangles + facet) ==
+                        contact::Status::kOk,
+                    "Accepted owner facet geometry cannot be represented");
+            }
+        }
+        result.geometry_evaluation_us =
+            static_cast<std::uint64_t>(
+                std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::steady_clock::now() -
+                    geometry_started).count());
+        const auto filter_started =
+            std::chrono::steady_clock::now();
+        counted = CountInitialFacetFilterCensus(
+            host_keys, exact_capacity, surface_to_active,
+            V5SelectedParents, active_parents, V5SelectedParents,
+            represented_triangles, V5Level0Facets,
+            result.capacity.surface_active_source_hash,
+            &result.filters);
+        result.filter_census_us =
+            static_cast<std::uint64_t>(
+                std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::steady_clock::now() -
+                    filter_started).count());
+        output::Require(counted.status ==
+                InitialCensusValueStatus::Ok &&
+                result.filters.represented_facet_pairs ==
+                    result.capacity.level0_facet_pairs,
+            counted.message);
         result.exact_pair_count = pairs.count;
         result.exact_capacity_succeeded = true;
         result.complete_device_pair_keys = true;
@@ -552,8 +669,27 @@ InitialCensusResult VehicleSelfContactInitialCensus::Measure(
                 InitialCensusValueStatus::Ok &&
                 Same(result.capacity, rerun),
             "Initial broadphase rerun hash/census differs");
+        InitialFacetFilterCensus rerun_filters;
+        const auto rerun_filter_started =
+            std::chrono::steady_clock::now();
+        counted = CountInitialFacetFilterCensus(
+            host_keys, exact_capacity, surface_to_active,
+            V5SelectedParents, active_parents, V5SelectedParents,
+            represented_triangles, V5Level0Facets,
+            rerun.surface_active_source_hash, &rerun_filters);
+        result.rerun_filter_census_us =
+            static_cast<std::uint64_t>(
+                std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::steady_clock::now() -
+                    rerun_filter_started).count());
+        output::Require(counted.status ==
+                InitialCensusValueStatus::Ok &&
+                Same(result.filters, rerun_filters),
+            "Initial production filter rerun hash/census differs");
         result.rerun_pair_key_hash = rerun.pair_key_hash;
+        result.rerun_filter_hash = rerun_filters.category_hash;
         result.deterministic_rerun = true;
+        result.deterministic_filter_rerun = true;
     }
 
     state.owner.Discard();
