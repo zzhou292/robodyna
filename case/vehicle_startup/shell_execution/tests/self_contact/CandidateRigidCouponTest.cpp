@@ -150,8 +150,9 @@ constexpr std::uint64_t NonlinearLinearEid = 2100124;
 constexpr std::uint64_t NonlinearMixedEid = 2209533;
 constexpr std::uint64_t ExhaustedLinearFirstEid = 2100002;
 constexpr std::uint64_t ExhaustedLinearSecondEid = 2288690;
-constexpr std::uint64_t PersistentLinearFirstEid = 2100002;
+constexpr std::uint64_t PersistentLinearFirstEid = 2100074;
 constexpr std::uint64_t PersistentLinearSecondEid = 2288693;
+constexpr std::uint64_t CanonicalPersistentLinearFirstEid = 2100002;
 constexpr unsigned CouponLocalFacet = 0;
 constexpr unsigned AffineMixedLocalFacet = 1;
 constexpr double PhysicalStepS = 2e-7;
@@ -1555,6 +1556,7 @@ TEST(VehicleSelfContactAcceptedAssemblyCoupon,
                    first, second) == 0;
     };
     std::size_t accepted_matches = 0;
+    std::size_t accepted_feature_matches = 0;
     for (std::size_t certificate_index = 0;
          certificate_index <
              snapshot.accepted_certificates.size();
@@ -1571,10 +1573,22 @@ TEST(VehicleSelfContactAcceptedAssemblyCoupon,
                            accepted[1].key) &&
              same_triangle(certificate.discovery.triangles[1],
                            accepted[0].key));
-        if (!same_pair) continue;
-        ++accepted_matches;
+        const auto prepared_match = std::find_if(
+            geometry.features.begin(), geometry.features.end(),
+            [&](const auto& feature) {
+                return contact::fixed_triangle_features::Compare(
+                           certificate.discovery.key,
+                           feature.key) == 0;
+            });
+        const bool same_feature =
+            prepared_match != geometry.features.end();
+        if (!same_pair && !same_feature) continue;
+        accepted_matches += same_pair;
+        accepted_feature_matches += same_feature;
         std::cout << std::setprecision(17)
                   << "V5_LINEAR_PERSISTENT_ACCEPTED"
+                  << " same_pair=" << same_pair
+                  << " same_feature=" << same_feature
                   << " kind="
                   << static_cast<unsigned>(
                          certificate.discovery.key.kind)
@@ -1620,6 +1634,14 @@ TEST(VehicleSelfContactAcceptedAssemblyCoupon,
                   << " endpoints="
                   << certificate.event.endpoints[0].count << ","
                   << certificate.event.endpoints[1].count
+                  << " triangles="
+                  << certificate.discovery.triangles[0].parent_eid
+                  << ":"
+                  << certificate.discovery.triangles[0].local_facet
+                  << ","
+                  << certificate.discovery.triangles[1].parent_eid
+                  << ":"
+                  << certificate.discovery.triangles[1].local_facet
                   << " key=";
         if (certificate.discovery.key.kind ==
             contact::FixedTriangleCandidateKind::EdgeEdge) {
@@ -1688,6 +1710,8 @@ TEST(VehicleSelfContactAcceptedAssemblyCoupon,
               << " intersections="
               << geometry.intersections.size()
               << " accepted_matches=" << accepted_matches
+              << " accepted_feature_matches="
+              << accepted_feature_matches
               << " half_thicknesses="
               << facets[0].reference_half_thickness_m << ","
               << facets[1].reference_half_thickness_m
@@ -1771,6 +1795,53 @@ TEST(VehicleSelfContactAcceptedAssemblyCoupon,
             CertifiedSeparated);
     EXPECT_FALSE(separated.exact_common_translation);
     EXPECT_GT(separated.strict_gap_lower_m, 0);
+
+    const std::size_t canonical_parents[2]{
+        ParentOrdinal(active, CanonicalPersistentLinearFirstEid),
+        ParentOrdinal(active, PersistentLinearSecondEid)};
+    std::array<contact::FixedContactFacet, 2> canonical_facets;
+    std::array<contact::CurrentFixedTriangle, 2>
+        canonical_accepted;
+    std::array<contact::CurrentFixedTriangle, 2>
+        canonical_prepared;
+    for (unsigned side = 0; side < 2; ++side) {
+        const auto& parent =
+            active.parents()[canonical_parents[side]];
+        ASSERT_EQ(setup.facets().Describe(
+                      parent.surface_parent, AffineMixedLocalFacet,
+                      &canonical_facets[side]).status,
+                  contact::FixedContactFacetStatus::Ok);
+        ASSERT_EQ(contact::EvaluateCurrentFixedTriangle(
+                      canonical_facets[side], accepted_positions,
+                      &canonical_accepted[side]),
+                  contact::Status::kOk);
+        ASSERT_EQ(contact::EvaluateCurrentFixedTriangle(
+                      canonical_facets[side], prepared_positions,
+                      &canonical_prepared[side]),
+                  contact::Status::kOk);
+    }
+    contact::FixedTriangleFeatureTaskMask canonical_mask;
+    ASSERT_EQ(contact::BuildFixedTriangleFeatureTaskMask(
+                  canonical_prepared[0], canonical_prepared[1],
+                  &canonical_mask),
+              contact::FixedTriangleDiscoveryStatus::Ok);
+    const auto canonical_geometry =
+        Discover(canonical_prepared, canonical_mask);
+    const auto canonical_persistent =
+        sct::CertifyPersistentLinearContact(
+            canonical_accepted[0], canonical_prepared[0],
+            canonical_facets[0].reference_half_thickness_m,
+            canonical_accepted[1], canonical_prepared[1],
+            canonical_facets[1].reference_half_thickness_m,
+            {canonical_geometry.features.data(),
+             canonical_geometry.features.size(), true},
+            snapshot.accepted_certificates.data(),
+            snapshot.accepted_certificates.size());
+    EXPECT_EQ(
+        canonical_persistent.status,
+        sct::PersistentLinearContactStatus::CertifiedContact);
+    EXPECT_EQ(canonical_persistent.feature.kind,
+              contact::RepresentedFeatureKind::EdgeEdge);
     dynamics.DiscardStep();
 }
 

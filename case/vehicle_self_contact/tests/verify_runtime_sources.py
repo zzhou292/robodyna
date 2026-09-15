@@ -230,7 +230,9 @@ def main() -> None:
             "QualificationAccess::AcceptedCertificates(",
             "V5_LINEAR_PERSISTENT_CERTIFICATE",
             "V5_LINEAR_PERSISTENT_ACCEPTED",
-            "V5_LINEAR_PERSISTENT_BITS"]:
+            "V5_LINEAR_PERSISTENT_BITS",
+            "accepted_feature_matches",
+            "canonical_persistent.status"]:
         require(token in candidate_coupon,
                 f"residual-translation coupon is missing {token}")
     require("CandidateRigidCouponTest.cpp" in fixture_cmake and
