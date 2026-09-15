@@ -76,6 +76,22 @@ TEST(SelfContactActiveUses, EveryExactCountCapAndOneByteShortRejectThenRetry) {
   EXPECT_FALSE(exact_cin.prepared());
   EXPECT_EQ(exact_cin.Initialize(distinct.facets,tied_source,exact_limits).status,
       Code::Ok);
+  const auto tied_plan=c::SelfContactActiveUseBinding::Preflight(
+      distinct.facets,tied_source);
+  ASSERT_EQ(tied_plan.report.status,Code::Ok);
+  EXPECT_EQ(tied_plan.forecast.cin_index_bytes,
+      2*sizeof(std::uint32_t)*tied_plan.forecast.node_roles+
+      sizeof(std::uint32_t)*tied_plan.forecast.cin_rows);
+  c::SelfContactActiveUseLimits tied_bytes;
+  tied_bytes.max_host_bytes=tied_plan.forecast.startup_payload_bytes-1;
+  c::SelfContactActiveUseBinding short_cin_bytes;
+  EXPECT_EQ(short_cin_bytes.Initialize(
+      distinct.facets,tied_source,tied_bytes).status,Code::ResourceLimit);
+  ++tied_bytes.max_host_bytes;
+  ASSERT_EQ(short_cin_bytes.Initialize(
+      distinct.facets,tied_source,tied_bytes).status,Code::Ok);
+  EXPECT_EQ(short_cin_bytes.forecast().cin_index_bytes,
+      tied_plan.forecast.cin_index_bytes);
 }
 
 TEST(SelfContactActiveUses, PermutedSourceSelectionHasIdenticalCanonicalInventory) {

@@ -26,6 +26,7 @@ cc_test(
         "AreaTest.cpp",
         "AuthorityTest.cpp",
         "CapacityTest.cpp",
+        "CinIndexTest.cpp",
         "CinTieTest.cpp",
         "ClassificationTest.cpp",
         "Fixture.h",

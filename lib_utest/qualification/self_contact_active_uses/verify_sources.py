@@ -71,6 +71,14 @@ assert 'InterpolateArea' in queries
 assert 'q4_bounds::Add' in queries
 assert 'SameParentNeedsCurrentRegularity' in queries
 assert 'next.parent[0] == next.parent[1]' in queries
+directional = queries[
+    queries.index('SelfContactTiedStatus DirectionalTied('):
+    queries.index('SelfContactTiedStatus TiedStatus(')]
+assert 'inventory.cin_node_rows[node]' in directional
+assert 'inventory.cin_row_indices[i]' in directional
+assert 'r < forecast.cin_rows' not in directional
+assert 'A stable counting fill preserves source row order' in build
+assert 'cin_index_bytes' in types and 'cin_index_bytes' in layout
 assert queries.count('next.activity_base_identity = activity.base') == 2
 assert queries.count('next.activity_current_identity = activity.current') == 2
 assert queries.count('next.activity_parent_count = activity.parent_count') == 2
@@ -102,6 +110,8 @@ qualification_cmake = (here / "CMakeLists.txt").read_text()
 qualification_bazel = (here / "BUILD.bazel").read_text()
 assert "ScalingTest.cpp" in qualification_cmake
 assert "ScalingTest.cpp" in qualification_bazel
+assert "CinIndexTest.cpp" in qualification_cmake
+assert "CinIndexTest.cpp" in qualification_bazel
 assert 'name = "source_check"' in qualification_bazel
 assert "self-contact-refinement" in qualification_cmake
 assert "m2-self-contact-refinement" in qualification_bazel

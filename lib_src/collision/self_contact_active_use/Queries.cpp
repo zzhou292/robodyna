@@ -56,7 +56,10 @@ SelfContactTiedStatus DirectionalTied(const Inventory& inventory,
     if (secondary.weights[slot] == 0) continue;
     const auto node = secondary.nodes[slot];
     bool matched = false, local = false;
-    for (std::size_t r = 0; r < forecast.cin_rows; ++r) {
+    const auto indexed = inventory.cin_node_rows[node];
+    for (std::size_t i = indexed.offset;
+         i < std::size_t(indexed.offset)+indexed.count; ++i) {
+      const auto r = inventory.cin_row_indices[i];
       const auto& row = rows[r];
       if (row.secondary_domain_node != node ||
           row.master_source.element_id != master_parent.source.source_parent_id)

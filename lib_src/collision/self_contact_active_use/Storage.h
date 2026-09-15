@@ -8,6 +8,9 @@ struct NodeRole {
   std::uint32_t rigid_group = UINT32_MAX;
   std::uint8_t cin_secondary = 0, cin_master = 0;
 };
+struct CinRowRange {
+  std::uint32_t offset = 0, count = 0;
+};
 struct LocalVertex {
   FacetVertexKey key;
   WeightedSurfacePoint point;
@@ -22,6 +25,7 @@ inline constexpr std::size_t MaxLocalVertices = 25, MaxLocalEdges = 56;
 struct Layout {
   tl::util::ArenaRegion parents, facets, vertices, edges, vertex_uses, edge_uses;
   tl::util::ArenaRegion node_roles, cin_ranges, cin_witnesses;
+  tl::util::ArenaRegion cin_node_rows, cin_row_indices;
   tl::util::ArenaRegion vertex_order, edge_order;
   std::size_t startup_arena_bytes = 0;
   SelfContactActiveUseForecast forecast;
@@ -41,6 +45,8 @@ struct Inventory {
   const tl::constraints::tied_shell::CinAttachmentRow* cin_rows = nullptr;
   tl::constraints::tied_shell::cin::WitnessRange* cin_ranges = nullptr;
   tl::constraints::tied_shell::cin::ActiveWitness* cin_witnesses = nullptr;
+  CinRowRange* cin_node_rows = nullptr;
+  std::uint32_t* cin_row_indices = nullptr;
 };
 SelfContactActiveUseReport MakeLayout(const FixedContactFacetBinding&,
     SelfContactActiveUseSource, SelfContactActiveUseLimits, std::size_t,

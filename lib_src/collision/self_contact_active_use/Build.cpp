@@ -238,6 +238,10 @@ SelfContactActiveUseReport Build(const FixedContactFacetBinding& facets,
   }
   if (forecast.cin_rows) {
     const auto rows = source.cin.model->rows();
+    if (!rows.data || rows.count != forecast.cin_rows ||
+        !out.cin_node_rows || !out.cin_row_indices)
+      return Fail(S::IdentityMismatch,
+          "CIN row roster or secondary-node index storage is absent");
     out.cin_rows = rows.data;
     std::size_t offset = 0;
     for (std::size_t r = 0; r < forecast.cin_rows; ++r) {
@@ -246,9 +250,13 @@ SelfContactActiveUseReport Build(const FixedContactFacetBinding& facets,
           range.count > forecast.cin_witnesses-offset)
         return Fail(S::IdentityMismatch, "CIN witness ranges are not a complete source-ordered roster", r);
       const auto& row = rows.data[r];
-      if (row.secondary_domain_node >= forecast.node_roles ||
-          out.node_roles[row.secondary_domain_node].cin_secondary)
-        return Fail(S::IdentityMismatch, "CIN secondary role is outside or duplicated", r);
+      if (row.secondary_domain_node >= forecast.node_roles)
+        return Fail(S::IdentityMismatch, "CIN secondary role is outside S0", r);
+      auto& node_rows = out.cin_node_rows[row.secondary_domain_node];
+      if (node_rows.count == UINT32_MAX)
+        return Fail(S::ResourceLimit,
+            "CIN secondary-node row count is unrepresentable", r);
+      ++node_rows.count;
       out.node_roles[row.secondary_domain_node].cin_secondary = 1;
       for (const auto node : row.master_domain_nodes) {
         if (node >= forecast.node_roles)
@@ -265,6 +273,58 @@ SelfContactActiveUseReport Build(const FixedContactFacetBinding& facets,
     }
     if (offset != forecast.cin_witnesses)
       return Fail(S::IdentityMismatch, "CIN source has trailing witnesses");
+
+    std::size_t indexed_rows = 0;
+    for (std::size_t node = 0; node < forecast.node_roles; ++node) {
+      auto& range = out.cin_node_rows[node];
+      if (indexed_rows > forecast.cin_rows ||
+          indexed_rows > UINT32_MAX ||
+          range.count > forecast.cin_rows-indexed_rows)
+        return Fail(S::IdentityMismatch,
+            "CIN secondary-node counts do not cover the row roster",
+            SIZE_MAX, node);
+      range.offset = static_cast<std::uint32_t>(indexed_rows);
+      indexed_rows += range.count;
+    }
+    if (indexed_rows != forecast.cin_rows)
+      return Fail(S::IdentityMismatch,
+          "CIN secondary-node counts do not exactly cover all rows");
+
+    // A stable counting fill preserves source row order within every node.
+    // Offsets serve as bounded cursors until the immutable ranges are restored.
+    for (std::size_t r = 0; r < forecast.cin_rows; ++r) {
+      auto& range =
+          out.cin_node_rows[rows.data[r].secondary_domain_node];
+      const auto destination = range.offset++;
+      if (destination >= forecast.cin_rows || r > UINT32_MAX)
+        return Fail(S::IdentityMismatch,
+            "CIN secondary-node row index fill is out of range", r);
+      out.cin_row_indices[destination] = static_cast<std::uint32_t>(r);
+    }
+    indexed_rows = 0;
+    for (std::size_t node = 0; node < forecast.node_roles; ++node) {
+      auto& range = out.cin_node_rows[node];
+      if (range.offset != indexed_rows+range.count)
+        return Fail(S::IdentityMismatch,
+            "CIN secondary-node row index did not fill exactly",
+            SIZE_MAX, node);
+      range.offset = static_cast<std::uint32_t>(indexed_rows);
+      for (std::size_t i = indexed_rows;
+           i < indexed_rows+range.count; ++i) {
+        const auto row_index = out.cin_row_indices[i];
+        if (row_index >= forecast.cin_rows ||
+            rows.data[row_index].secondary_domain_node != node ||
+            (i != indexed_rows &&
+             out.cin_row_indices[i-1] >= row_index))
+          return Fail(S::IdentityMismatch,
+              "CIN secondary-node row index is not an exact stable partition",
+              SIZE_MAX, node);
+      }
+      indexed_rows += range.count;
+    }
+    if (indexed_rows != forecast.cin_rows)
+      return Fail(S::IdentityMismatch,
+          "CIN secondary-node row index has trailing entries");
   }
 
   for (std::size_t p = 0; p < forecast.parents; ++p) {

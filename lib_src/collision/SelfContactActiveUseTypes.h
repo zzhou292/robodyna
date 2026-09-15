@@ -60,6 +60,8 @@ struct SelfContactActiveUseForecast : SelfContactActiveUseCounts {
   std::size_t arena_bytes = 0;
   std::size_t retained_facet_bytes = 0, retained_rigid_bytes = 0;
   std::size_t retained_cin_bytes = 0;
+  // Immutable domain-node -> source-ordered CIN row index.
+  std::size_t cin_index_bytes = 0;
   // Transient uint32 source-order indexes used to canonicalize feature uses.
   // This allocation retires before the immutable binding is published.
   std::size_t startup_index_bytes = 0;

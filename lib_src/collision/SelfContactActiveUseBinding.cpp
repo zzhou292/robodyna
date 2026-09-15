@@ -44,9 +44,17 @@ SelfContactActiveUseReport SelfContactActiveUseBinding::Initialize(
       next->arena.Construct<tl::constraints::tied_shell::cin::WitnessRange>(layout.cin_ranges);
   inventory.cin_witnesses =
       next->arena.Construct<tl::constraints::tied_shell::cin::ActiveWitness>(layout.cin_witnesses);
+  if (layout.forecast.cin_rows) {
+    inventory.cin_node_rows =
+        next->arena.Construct<active_use::CinRowRange>(layout.cin_node_rows);
+    inventory.cin_row_indices =
+        next->arena.Construct<std::uint32_t>(layout.cin_row_indices);
+  }
   if (!inventory.parents || !inventory.facets || !inventory.vertices || !inventory.edges ||
       !inventory.vertex_uses || !inventory.edge_uses || !inventory.node_roles ||
-      !inventory.cin_ranges || !inventory.cin_witnesses)
+      !inventory.cin_ranges || !inventory.cin_witnesses ||
+      (layout.forecast.cin_rows &&
+       (!inventory.cin_node_rows || !inventory.cin_row_indices)))
     return {S::ResourceLimit, SIZE_MAX, SIZE_MAX, "Active-use arena construction failed"};
   {
     tl::util::HostArena startup;

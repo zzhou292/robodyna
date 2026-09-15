@@ -115,9 +115,16 @@ SelfContactActiveUseReport MakeLayout(const FixedContactFacetBinding& facets,
       !arena.Append<tl::constraints::tied_shell::cin::WitnessRange>(
           next.forecast.cin_rows, next.cin_ranges) ||
       !arena.Append<tl::constraints::tied_shell::cin::ActiveWitness>(
-          next.forecast.cin_witnesses, next.cin_witnesses))
+          next.forecast.cin_witnesses, next.cin_witnesses) ||
+      !arena.Append<CinRowRange>(
+          next.forecast.cin_rows ? next.forecast.node_roles : 0,
+          next.cin_node_rows) ||
+      !arena.Append<std::uint32_t>(
+          next.forecast.cin_rows, next.cin_row_indices))
     return Fail(S::ResourceLimit, "Exact immutable active-use arena exceeds the byte cap");
   next.forecast.arena_bytes = arena.bytes();
+  next.forecast.cin_index_bytes =
+      next.cin_node_rows.bytes + next.cin_row_indices.bytes;
 
   const auto facet_bytes = facets.forecast().owned_payload_bytes;
   if (facet_bytes < sizeof(FixedContactFacetBinding))
