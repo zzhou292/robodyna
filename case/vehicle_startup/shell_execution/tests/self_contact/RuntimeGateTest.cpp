@@ -40,6 +40,7 @@ constexpr std::size_t RuntimeHostCap =
 constexpr std::size_t RuntimeDeviceCap = std::size_t{8} << 30;
 constexpr std::size_t InitialTransactionArenaBytes = 1542092504;
 constexpr std::size_t AcceptedEventCensusCapacity = 1000000;
+constexpr unsigned DiscoveryWorkers = 4;
 constexpr std::uint64_t SelfSourceId = 0x563553454c464354ull;
 
 double Seconds(
@@ -71,7 +72,8 @@ app::RuntimeLimits RuntimeLimits(std::size_t event_ledger_capacity) {
             census, Chunk, event_ledger_capacity,
             EventHashSlots(event_ledger_capacity), 0,
             WorkPerPair, WorkPerChunk, CompleteCrossingWork, 20,
-            RuntimeHostCap, RuntimeDeviceCap, RuntimeHostCap);
+            RuntimeHostCap, RuntimeDeviceCap, RuntimeHostCap,
+            DiscoveryWorkers);
     // Vehicle() builds the generic count/work shape.  Keep the top-level
     // 20 GB/8 GiB transaction admission while respecting each existing
     // production component's narrower declared profile.
@@ -132,6 +134,12 @@ void CheckExactForecast(
         transaction.accepted_event_capacity,
         force_event_capacity);
     EXPECT_EQ(transaction.policy_outcome_capacity, 0u);
+    EXPECT_EQ(
+        transaction.accepted_discovery.worker_count,
+        DiscoveryWorkers);
+    EXPECT_EQ(
+        transaction.candidate_discovery.worker_count,
+        DiscoveryWorkers);
     EXPECT_EQ(
         transaction.complete_crossing_work_capacity,
         CompleteCrossingWork);
