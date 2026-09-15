@@ -52,6 +52,15 @@ assert "EvaluatePairFeaturesMaskedOnce(" in geometry
 assert "FixedTriangleVertexFaceTaskSlot(0, vertex)" in geometry
 assert "FixedTriangleEdgeEdgeTaskSlot(edge_a, edge_b)" in geometry
 assert "if (Same(a->key, b->key))\n    return" not in geometry
+transverse_cone = geometry[
+    geometry.index("bool CoplanarIncidentEdgeHasPositiveOverlap("):
+    geometry.index("bool OnlySharedCoplanarVertex(")]
+assert transverse_cone.count("exact::Orient2D(") == 2
+for forbidden in ("epsilon", "nextafter", "fabs", "tolerance"):
+    assert forbidden not in transverse_cone, forbidden
+assert "CoplanarIncidentEdgeHasPositiveOverlap(" in geometry[
+    geometry.index("bool OnlySharedTransverseVertex("):
+    geometry.index("FixedTriangleDiscoveryStatus ClassifyIntersection(")]
 for required in (
     "CoplanarOverlap",
     "CoplanarTouch",
@@ -138,6 +147,8 @@ for required in (
     "ExhaustiveTransverseGridMatchesIndependentDecimal100PlaneClipping",
     "ParallelCollinearAndNearParallelEdgeRecordsSurviveAllReversals",
     "ExactBoundaryAndAdjacentRepresentableCoordinatesHaveExplicitClasses",
+    "AuthenticatedCouponSharedVertexOnlyIsPermutationInvariant",
+    "ExactNearSharedSegmentAndNoncanonicalCoincidenceStayNonlocal",
     "DegeneracyBoundaryIsClosedAndNextafterAboveRetriesSuccessfully",
     "ExactIntersectionCapPassesAndMinusOneRejectsThenRetries",
     "RawIntersectionStagingMinusOneCountsAllThenRetries",

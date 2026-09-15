@@ -152,6 +152,10 @@ enum class FixedTriangleIntersectionKind : std::uint8_t {
 // None means that the intersection needs a later explicit admission/rejection
 // policy.  Same PID, same parent, coordinate coincidence, body and tie guesses
 // are not represented and therefore cannot cause an exclusion here.
+// SharedVertexOnly means the complete exact intersection set is the shared
+// canonical vertex.  This includes a transverse plane cut along an incident
+// edge when that edge leaves the other triangle's exact vertex tangent cone;
+// any positive-length or positive-area overlap remains unexcluded.
 enum class FixedTriangleLocalExclusion : std::uint8_t {
   None,
   IdenticalFace,

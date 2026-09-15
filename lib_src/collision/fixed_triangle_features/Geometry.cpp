@@ -456,6 +456,39 @@ bool EdgeContains(const CurrentFixedTriangle& triangle, unsigned edge,
          Same(triangle.vertex_keys[(edge + 1) % 3], vertex);
 }
 
+bool CoplanarIncidentEdgeHasPositiveOverlap(
+    Vec3 other, const CurrentFixedTriangle& target,
+    const FacetVertexKey& shared_vertex, int drop,
+    bool* valid) noexcept {
+  // The target is the intersection of three projected exact half-planes.
+  // At its shared vertex, the nonincident half-plane is strict.  A ray from
+  // that vertex therefore overlaps the target for positive length exactly
+  // when it is on the interior side of both incident edge lines.  Orient2D
+  // is exact dyadic arithmetic, so boundary rays and one-ULP departures have
+  // deterministic classes without constructing or rounding an intersection.
+  for (unsigned edge = 0; edge < 3; ++edge) {
+    if (!EdgeContains(target, edge, shared_vertex))
+      continue;
+    const unsigned next = (edge + 1) % 3;
+    const unsigned opposite = (edge + 2) % 3;
+    const auto interior = exact::Orient2D(
+        target.vertices[edge], target.vertices[next],
+        target.vertices[opposite], drop);
+    const auto side = exact::Orient2D(
+        target.vertices[edge], target.vertices[next], other, drop);
+    if (!Valid(interior) || !Valid(side) || !interior.value) {
+      *valid = false;
+      return false;
+    }
+    if (side.value * interior.value < 0) {
+      *valid = true;
+      return false;
+    }
+  }
+  *valid = true;
+  return true;
+}
+
 bool OnlySharedCoplanarVertex(
     const CurrentFixedTriangle& a, const CurrentFixedTriangle& b,
     const SharedTopology& shared, int drop, bool* valid) noexcept {
@@ -522,7 +555,12 @@ bool OnlySharedTransverseVertex(
         *valid = false;
         return false;
       }
-      if (!side.value)
+      if (!side.value &&
+          CoplanarIncidentEdgeHasPositiveOverlap(
+              source[owner]->vertices[other], *target[owner],
+              vertex, drops[owner], valid))
+        return false;
+      if (!*valid)
         return false;
     }
   }

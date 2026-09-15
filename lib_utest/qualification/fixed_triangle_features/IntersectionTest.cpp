@@ -37,6 +37,28 @@ ct::CurrentFixedTriangle PermutedTriangle(
   return ft::Triangle(eid, 0, permuted_points, permuted_ids);
 }
 
+ct::CurrentFixedTriangle PermutedQuadFacetZero(
+    std::uint64_t eid, const ct::Vec3 (&points)[3],
+    const std::uint64_t (&ids)[3],
+    const std::array<unsigned, 3>& permutation) {
+  auto result = PermutedTriangle(eid, points, ids, permutation);
+  for (auto& edge : result.edge_keys) {
+    const auto first = edge.endpoints[0].first;
+    const auto second = edge.endpoints[1].first;
+    if ((first == ids[0] && second == ids[2]) ||
+        (first == ids[2] && second == ids[0])) {
+      edge.parent_boundary = false;
+      edge.parent_eid = eid;
+    }
+  }
+  return result;
+}
+
+const std::array<std::array<unsigned, 3>, 6> kPermutations{{
+    {{0, 1, 2}}, {{0, 2, 1}}, {{1, 0, 2}},
+    {{1, 2, 0}}, {{2, 0, 1}}, {{2, 1, 0}},
+}};
+
 TEST(FixedTriangleIntersections,
      TransversePiercingIsExplicitWhenAllBoundaryQueriesArePositive) {
   const ct::Vec3 pa[3]{{-2, -2, 0}, {2, -2, 0}, {0, 2, 0}};
@@ -119,6 +141,74 @@ TEST(FixedTriangleIntersections,
             ct::FixedTriangleLocalExclusion::None);
 }
 
+TEST(FixedTriangleIntersections,
+     AuthenticatedCouponSharedVertexOnlyIsPermutationInvariant) {
+  // Exact binary64 representations of the authenticated metre coordinates
+  // for EID 2125365 facet 0 and EID 2348922 facet 0.
+  const ct::Vec3 first[3]{
+      {-0x1.a1fb9b974ab4ep-1, 0x1.6679db384a744p-2,
+       0x1.75f4df3a8d9a8p-1},
+      {-0x1.a22be15a4d7e6p-1, 0x1.780e974784ceep-2,
+       0x1.768be550fd1dap-1},
+      {-0x1.9fcd20da960e2p-1, 0x1.70e3f7e1a3739p-2,
+       0x1.6f22ccde95772p-1},
+  };
+  const ct::Vec3 second[3]{
+      {-0x1.a9721ca801666p-1, 0x1.780e974784ceep-2,
+       0x1.7438479a1d781p-1},
+      {-0x1.a7135c2849f62p-1, 0x1.70e3f7e1a3739p-2,
+       0x1.6ccf2f27b5d19p-1},
+      {-0x1.9fcd20da960e2p-1, 0x1.70e3f7e1a3739p-2,
+       0x1.6f22ccde95772p-1},
+  };
+  const std::uint64_t first_ids[3]{2120447, 2352113, 2352112};
+  const std::uint64_t second_ids[3]{2352127, 2352111, 2352112};
+
+  for (const auto& first_permutation : kPermutations) {
+    for (const auto& second_permutation : kPermutations) {
+      const auto a = PermutedQuadFacetZero(
+          2125365, first, first_ids, first_permutation);
+      const auto b = PermutedQuadFacetZero(
+          2348922, second, second_ids, second_permutation);
+      for (unsigned swapped = 0; swapped < 2; ++swapped) {
+        const auto value =
+            swapped ? DiscoverIntersection(b, a)
+                    : DiscoverIntersection(a, b);
+        EXPECT_EQ(value.kind,
+                  ct::FixedTriangleIntersectionKind::Transverse);
+        EXPECT_EQ(value.local_exclusion,
+                  ct::FixedTriangleLocalExclusion::SharedVertexOnly);
+      }
+    }
+  }
+}
+
+TEST(FixedTriangleIntersections,
+     ExactNearSharedSegmentAndNoncanonicalCoincidenceStayNonlocal) {
+  const ct::Vec3 target[3]{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}};
+  const ct::Vec3 short_crossing[3]{
+      {0, 0, 0}, {0x1p-20, 0, 0}, {0, -1, 1}};
+  const ct::Vec3 point_only[3]{
+      {0, 0, 0}, {-1, 0, 1}, {0, -1, 1}};
+  const std::uint64_t target_ids[3]{1, 2, 3};
+  const std::uint64_t shared_ids[3]{1, 12, 13};
+  const std::uint64_t distinct_ids[3]{11, 12, 13};
+
+  auto value = DiscoverIntersection(
+      ft::Triangle(100, 0, target, target_ids),
+      ft::Triangle(200, 0, short_crossing, shared_ids));
+  EXPECT_EQ(value.kind, ct::FixedTriangleIntersectionKind::Transverse);
+  EXPECT_EQ(value.local_exclusion,
+            ct::FixedTriangleLocalExclusion::None);
+
+  value = DiscoverIntersection(
+      ft::Triangle(100, 0, target, target_ids),
+      ft::Triangle(200, 0, point_only, distinct_ids));
+  EXPECT_EQ(value.kind, ct::FixedTriangleIntersectionKind::Transverse);
+  EXPECT_EQ(value.local_exclusion,
+            ct::FixedTriangleLocalExclusion::None);
+}
+
 TEST(FixedTriangleIntersections, IdenticalFaceIsTheOnlyWholeFaceExclusion) {
   const ct::Vec3 points[3]{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}};
   const std::uint64_t ids[3]{1, 2, 3};
@@ -138,10 +228,6 @@ TEST(FixedTriangleIntersections, IdenticalFaceIsTheOnlyWholeFaceExclusion) {
 
 TEST(FixedTriangleIntersections,
      CoplanarAndTransverseClassesAreInvariantUnderAllPermutationsAndPairOrder) {
-  const std::array<std::array<unsigned, 3>, 6> permutations{{
-      {{0, 1, 2}}, {{0, 2, 1}}, {{1, 0, 2}},
-      {{1, 2, 0}}, {{2, 0, 1}}, {{2, 1, 0}},
-  }};
   const ct::Vec3 base[3]{{0, 0, 0}, {4, 0, 0}, {0, 4, 0}};
   const ct::Vec3 contained[3]{{0.5, 0.5, 0}, {1, 0.5, 0},
                               {0.5, 1, 0}};
@@ -167,8 +253,8 @@ TEST(FixedTriangleIntersections,
   ft::Initialize(&discovery);
   for (const auto& test : cases) {
     ct::Vec3 other[3]{test.points[0], test.points[1], test.points[2]};
-    for (const auto& pa : permutations) {
-      for (const auto& pb : permutations) {
+    for (const auto& pa : kPermutations) {
+      for (const auto& pb : kPermutations) {
         ct::CurrentFixedTriangle triangles[2]{
             PermutedTriangle(100, base, ia, pa),
             PermutedTriangle(200, other, ib, pb)};
