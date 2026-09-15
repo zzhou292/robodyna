@@ -146,6 +146,18 @@ double NextUp(double value) noexcept {
       value, std::numeric_limits<double>::infinity());
 }
 
+double DyadicUpper(const Dyadic& value) {
+  if (value.numerator < 0)
+    return std::numeric_limits<double>::infinity();
+  if (value.numerator == 0)
+    return 0;
+  const double rounded = std::ldexp(
+      value.numerator.convert_to<double>(), value.exponent);
+  return std::isfinite(rounded)
+      ? NextUp(rounded)
+      : std::numeric_limits<double>::infinity();
+}
+
 double ResidualL1Upper(
     Vec3 base, Vec3 prepared, Vec3 reference) noexcept {
   double bound = 0;
@@ -286,7 +298,8 @@ bool ExactFeatureSquaredDistance(
     const FixedTriangleFeatureCandidate& feature,
     const CurrentFixedTriangle& first,
     const CurrentFixedTriangle& second,
-    Dyadic* output) {
+    Dyadic* output,
+    Dyadic* normalization_error = nullptr) {
   if (!output)
     return false;
   const CurrentFixedTriangle* triangles[2]{
@@ -295,6 +308,8 @@ bool ExactFeatureSquaredDistance(
   if (!triangles[0] || !triangles[1])
     return false;
   ExactPoint points[2];
+  if (normalization_error)
+    *normalization_error = {};
   if (feature.key.kind ==
       FixedTriangleCandidateKind::VertexFace) {
     const bool first_vertex =
@@ -312,20 +327,48 @@ bool ExactFeatureSquaredDistance(
     points[source] = ExactValue(
         triangles[source]->vertices[
             feature.local_features[source]]);
-    Dyadic weight_sum;
+    unsigned adjusted = 0;
     for (unsigned vertex = 0; vertex < 3; ++vertex) {
       const double weight = feature.face_weights[vertex];
       if (!std::isfinite(weight) || weight < 0 || weight > 1)
         return false;
-      weight_sum = Add(weight_sum, Exact(weight));
+      if (weight > feature.face_weights[adjusted] ||
+          (weight == feature.face_weights[adjusted] &&
+           fixed_triangle_features::Compare(
+               triangles[target]->vertex_keys[vertex],
+               triangles[target]->vertex_keys[adjusted]) < 0))
+        adjusted = vertex;
+    }
+    Dyadic normalized_weights[3];
+    Dyadic other_sum;
+    for (unsigned vertex = 0; vertex < 3; ++vertex)
+      if (vertex != adjusted) {
+        normalized_weights[vertex] =
+            Exact(feature.face_weights[vertex]);
+        other_sum = Add(
+            other_sum, normalized_weights[vertex]);
+      }
+    normalized_weights[adjusted] =
+        Subtract(Exact(1), other_sum);
+    if (normalized_weights[adjusted].numerator < 0 ||
+        Compare(normalized_weights[adjusted], Exact(1)) > 0)
+      return false;
+    for (unsigned vertex = 0; vertex < 3; ++vertex)
       points[target] = Add(
           points[target],
           Scale(ExactValue(
                     triangles[target]->vertices[vertex]),
-                Exact(weight)));
+                normalized_weights[vertex]));
+    if (normalization_error) {
+      const auto published =
+          ExactValue(feature.points[1]);
+      for (unsigned component = 0; component < 3; ++component)
+        *normalization_error = Add(
+            *normalization_error,
+            Absolute(Subtract(
+                points[target].component[component],
+                published.component[component])));
     }
-    if (Compare(weight_sum, Exact(1)) != 0)
-      return false;
   } else if (feature.key.kind ==
              FixedTriangleCandidateKind::EdgeEdge) {
     if (feature.local_features[0] >= 3 ||
@@ -812,6 +855,41 @@ std::size_t PersistentAcceptedFeature(
           first_owner <= 0 && second_owner <= 0 &&
           (first_owner < 0 || second_owner < 0);
     }
+    if (!exact_pair &&
+        crossing.feature.kind ==
+            RepresentedFeatureKind::VertexFace &&
+        certificate.discovery.key.vertex_face.target.kind ==
+            FixedTriangleStratumKind::Face &&
+        ((certificate.discovery.local_features[0] == 3) !=
+         (certificate.discovery.local_features[1] == 3))) {
+      const unsigned accepted_target =
+          certificate.discovery.local_features[0] == 3 ? 0 : 1;
+      const auto& face =
+          certificate.discovery.key.vertex_face.target.face;
+      const RepresentedTrianglePathKey face_path{
+          face.source_instance_id, face.parent_eid,
+          face.level, face.local_facet};
+      unsigned crossing_target = 2;
+      for (unsigned side = 0; side < 2; ++side)
+        if (self_contact_transaction::Compare(
+                crossing.key.paths[side], face_path) == 0)
+          crossing_target = side;
+      exact_pair =
+          crossing_target < 2 &&
+          self_contact_transaction::Same(
+              certificate.discovery.triangles[accepted_target],
+              face) &&
+          self_contact_transaction::Compare(
+              {certificate.discovery.triangles[
+                   1 - accepted_target].source_instance_id,
+               certificate.discovery.triangles[
+                   1 - accepted_target].parent_eid,
+               certificate.discovery.triangles[
+                   1 - accepted_target].level,
+               certificate.discovery.triangles[
+                   1 - accepted_target].local_facet},
+              crossing.key.paths[1 - crossing_target]) < 0;
+    }
     const bool edge_edge =
         crossing.feature.kind ==
             RepresentedFeatureKind::EdgeEdge &&
@@ -1122,9 +1200,14 @@ PersistentLinearContactResult CertifyPersistentLinearContact(
               FixedTriangleStratumKind::Face)
         continue;
       Dyadic squared_distance;
+      Dyadic normalization_error;
       if (!ExactFeatureSquaredDistance(
               feature, first_prepared, second_prepared,
-              &squared_distance))
+              &squared_distance, &normalization_error))
+        continue;
+      const double normalization_error_upper =
+          DyadicUpper(normalization_error);
+      if (!std::isfinite(normalization_error_upper))
         continue;
       const auto available = Subtract(
           Subtract(thickness, residual),
@@ -1204,9 +1287,12 @@ PersistentLinearContactResult CertifyPersistentLinearContact(
 
       result.feature = publication.feature;
       result.accepted_certificate = accepted;
+      result.face_weight_normalization_upper_m =
+          normalization_error_upper;
       result.prepared_distance_upper_m = NextUp(
           feature.distance_m +
-          feature.representation_error_m);
+          feature.representation_error_m +
+          normalization_error_upper);
       const double residual_upper = NextUp(
           result.first_residual_upper_m +
           result.second_residual_upper_m);

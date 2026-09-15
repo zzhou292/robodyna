@@ -448,8 +448,11 @@ for token in (
     "FixedTriangleFeatureTaskBits",
     "CertifyPersistentLinearContact(",
     "ExactFeatureSquaredDistance(",
+    "normalized_weights[adjusted]",
+    "DyadicUpper(normalization_error)",
     "Multiply(available, available)",
     "first_owner <= 0 && second_owner <= 0",
+    "crossing_target < 2",
 ):
     require(values, token, storage_path)
 for token in (
@@ -547,6 +550,8 @@ for token in (
     "ResidualTranslationSubtractsRepresentationErrorStrictly",
     "ExactCommonMotionPublishesMatchingPersistentEdgeEdge",
     "ExactCommonMotionPublishesMatchingPersistentVertexFace",
+    "PersistentVertexFaceNormalizesDyadicWeightsExactly",
+    "PersistentVertexFaceNormalizesOnlyCanonicalSourceOwner",
     "PersistentContactRejectsFeatureSwitchAndSeamIdentity",
     "PersistentContactRejectsCrossingAndContactLoss",
     "PersistentContactUsesStrictNearThresholdBound",

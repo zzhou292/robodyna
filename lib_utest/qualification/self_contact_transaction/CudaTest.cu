@@ -1044,6 +1044,57 @@ TEST(SelfContactTransactionCuda,
     EXPECT_EQ(result.feature.kind,
               c::RepresentedFeatureKind::EdgeEdge);
   }
+
+  c::FixedTriangleFeatureCandidate face_feature;
+  face_feature.key.vertex_face.vertex =
+      first_prepared.vertex_keys[0];
+  face_feature.key.vertex_face.target.SetFace(
+      close_prepared.key);
+  face_feature.triangles[0] = first_prepared.key;
+  face_feature.triangles[1] = close_prepared.key;
+  face_feature.local_features[0] = 0;
+  face_feature.local_features[1] = 3;
+  face_feature.points[0] = first_prepared.vertices[0];
+  face_feature.points[1] = close_prepared.vertices[0];
+  face_feature.face_weights[0] = 1;
+  face_feature.face_weights[1] = 0;
+  face_feature.face_weights[2] =
+      std::numeric_limits<double>::denorm_min();
+  face_feature.distance_m = .15;
+  sct::AcceptedEventCertificate face_accepted = accepted;
+  face_accepted.kind =
+      sct::AcceptedEventCertificateKind::VertexFace;
+  face_accepted.discovery = face_feature;
+  face_accepted.event.feature = face_feature.key;
+  face_accepted.event.vertex_use = 1;
+  face_accepted.event.facet_use = 2;
+  face_accepted.event.edge_use[0] = UINT32_MAX;
+  face_accepted.event.edge_use[1] = UINT32_MAX;
+  face_accepted.vertex_facet = 1;
+  face_accepted.target_facet = 2;
+  face_accepted.edge_facet[0] = UINT32_MAX;
+  face_accepted.edge_facet[1] = UINT32_MAX;
+  face_accepted.event.classification.kind =
+      c::SelfContactPairKind::VertexFace;
+  face_accepted.event.classification.status =
+      c::SelfContactPairStatus::AdmittedVertexFace;
+  sct::PersistentLinearContactResult face_reference;
+  for (unsigned repeat = 0; repeat < 64; ++repeat) {
+    const auto result = sct::CertifyPersistentLinearContact(
+        first_base, first_prepared, .1,
+        close_base, close_prepared, .1,
+        {&face_feature, 1, true}, &face_accepted, 1);
+    ASSERT_EQ(
+        result.status,
+        sct::PersistentLinearContactStatus::CertifiedContact);
+    ASSERT_GT(result.face_weight_normalization_upper_m, 0);
+    if (!repeat)
+      face_reference = result;
+    EXPECT_EQ(result.face_weight_normalization_upper_m,
+              face_reference.face_weight_normalization_upper_m);
+    EXPECT_EQ(result.strict_thickness_margin_lower_m,
+              face_reference.strict_thickness_margin_lower_m);
+  }
 }
 
 TEST(SelfContactTransactionCuda,

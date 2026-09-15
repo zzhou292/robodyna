@@ -150,7 +150,9 @@ enum class PersistentLinearContactStatus : std::uint8_t {
 // translation, H0+H1 bounds its whole-interval relative motion. Certification
 // requires an exact accepted-ledger feature identity. EE producing facets must
 // either match exactly or normalize componentwise to the ledger's lower
-// canonical seam owners; crossed or noncanonical provenance is ambiguous.
+// canonical seam owners. VF permits only a lower canonical source-vertex
+// owner while retaining the exact target face. Crossed, target-face, or
+// noncanonical provenance is ambiguous.
 // Strictly, d_i + representation_error_i + H0 + H1 < h0 + h1.
 struct PersistentLinearContactResult {
   PersistentLinearContactStatus status =
@@ -160,6 +162,7 @@ struct PersistentLinearContactResult {
   double first_residual_upper_m = 0;
   double second_residual_upper_m = 0;
   double prepared_distance_upper_m = 0;
+  double face_weight_normalization_upper_m = 0;
   double strict_thickness_margin_lower_m = 0;
   std::size_t accepted_certificate = SIZE_MAX;
   std::size_t bounded_feature_count = 0;
