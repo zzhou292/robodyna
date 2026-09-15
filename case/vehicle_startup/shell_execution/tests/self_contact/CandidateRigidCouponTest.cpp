@@ -150,9 +150,10 @@ constexpr std::uint64_t NonlinearLinearEid = 2100124;
 constexpr std::uint64_t NonlinearMixedEid = 2209533;
 constexpr std::uint64_t ExhaustedLinearFirstEid = 2100002;
 constexpr std::uint64_t ExhaustedLinearSecondEid = 2288690;
-constexpr std::uint64_t PersistentLinearFirstEid = 2100074;
-constexpr std::uint64_t PersistentLinearSecondEid = 2288693;
+constexpr std::uint64_t PersistentLinearFirstEid = 2100082;
+constexpr std::uint64_t PersistentLinearSecondEid = 2288743;
 constexpr std::uint64_t CanonicalPersistentLinearFirstEid = 2100002;
+constexpr std::uint64_t CanonicalPersistentLinearSecondEid = 2288693;
 constexpr unsigned CouponLocalFacet = 0;
 constexpr unsigned AffineMixedLocalFacet = 1;
 constexpr double PhysicalStepS = 2e-7;
@@ -1438,7 +1439,7 @@ TEST(VehicleSelfContactAcceptedAssemblyCoupon,
     for (unsigned side = 0; side < 2; ++side) {
         const auto& parent = active.parents()[parent_ordinals[side]];
         ASSERT_EQ(setup.facets().Describe(
-                      parent.surface_parent, AffineMixedLocalFacet,
+                      parent.surface_parent, CouponLocalFacet,
                       &facets[side]).status,
                   contact::FixedContactFacetStatus::Ok);
     }
@@ -1514,7 +1515,7 @@ TEST(VehicleSelfContactAcceptedAssemblyCoupon,
     if (persistent.status ==
         sct::PersistentLinearContactStatus::CertifiedContact) {
         EXPECT_EQ(persistent.feature.kind,
-                  contact::RepresentedFeatureKind::EdgeEdge);
+                  contact::RepresentedFeatureKind::VertexFace);
         EXPECT_LT(persistent.accepted_certificate,
                   snapshot.accepted_certificates.size());
     }
@@ -1631,6 +1632,13 @@ TEST(VehicleSelfContactAcceptedAssemblyCoupon,
                   << certificate.discovery.edge_parameters[0]
                   << ","
                   << certificate.discovery.edge_parameters[1]
+                  << " face_weights=" << std::hexfloat
+                  << certificate.discovery.face_weights[0]
+                  << ","
+                  << certificate.discovery.face_weights[1]
+                  << ","
+                  << certificate.discovery.face_weights[2]
+                  << std::defaultfloat
                   << " endpoints="
                   << certificate.event.endpoints[0].count << ","
                   << certificate.event.endpoints[1].count
@@ -1670,6 +1678,11 @@ TEST(VehicleSelfContactAcceptedAssemblyCoupon,
                   << " distance_m=" << feature.distance_m
                   << " error_m="
                   << feature.representation_error_m
+                  << " face_weights=" << std::hexfloat
+                  << feature.face_weights[0] << ","
+                  << feature.face_weights[1] << ","
+                  << feature.face_weights[2]
+                  << std::defaultfloat
                   << " key=";
         if (feature.key.kind ==
             contact::FixedTriangleCandidateKind::EdgeEdge) {
@@ -1697,6 +1710,8 @@ TEST(VehicleSelfContactAcceptedAssemblyCoupon,
               << persistent.accepted_certificate
               << " persistent_margin_m="
               << persistent.strict_thickness_margin_lower_m
+              << " persistent_weight_normalization_m="
+              << persistent.face_weight_normalization_upper_m
               << " persistent_bounded="
               << persistent.bounded_feature_count
               << " persistent_exact_accepted="
@@ -1798,7 +1813,7 @@ TEST(VehicleSelfContactAcceptedAssemblyCoupon,
 
     const std::size_t canonical_parents[2]{
         ParentOrdinal(active, CanonicalPersistentLinearFirstEid),
-        ParentOrdinal(active, PersistentLinearSecondEid)};
+        ParentOrdinal(active, CanonicalPersistentLinearSecondEid)};
     std::array<contact::FixedContactFacet, 2> canonical_facets;
     std::array<contact::CurrentFixedTriangle, 2>
         canonical_accepted;
@@ -1842,6 +1857,286 @@ TEST(VehicleSelfContactAcceptedAssemblyCoupon,
         sct::PersistentLinearContactStatus::CertifiedContact);
     EXPECT_EQ(canonical_persistent.feature.kind,
               contact::RepresentedFeatureKind::EdgeEdge);
+
+    enum class FamilyOwnerPattern : unsigned {
+        Exact,
+        LowerOneSide,
+        LowerTwoSides,
+        UpperOneSide,
+        UpperTwoSides,
+        Crossed,
+        Count,
+    };
+    constexpr std::uint64_t FirstFamilyBegin = 2100070;
+    constexpr std::uint64_t FirstFamilyEnd = 2100090;
+    constexpr std::uint64_t SecondFamilyBegin = 2288735;
+    constexpr std::uint64_t SecondFamilyEnd = 2288750;
+    std::vector<std::size_t> first_family;
+    std::vector<std::size_t> second_family;
+    for (std::size_t parent = 0;
+         parent < active.parents().size(); ++parent) {
+        const auto eid =
+            active.parents()[parent].source.source_parent_id;
+        if (eid >= FirstFamilyBegin && eid <= FirstFamilyEnd)
+            first_family.push_back(parent);
+        if (eid >= SecondFamilyBegin && eid <= SecondFamilyEnd)
+            second_family.push_back(parent);
+    }
+    std::array<std::size_t, static_cast<unsigned>(
+        FamilyOwnerPattern::Count)> pattern_counts{};
+    std::array<bool, static_cast<unsigned>(
+        FamilyOwnerPattern::Count)> pattern_printed{};
+    std::array<std::size_t, 4> persistent_status_counts{};
+    std::size_t family_facet_pairs = 0;
+    std::size_t family_pairs_with_ledger = 0;
+    const auto canonical_pair = [](const auto& feature) {
+        std::array<contact::FixedTriangleKey, 2> result{
+            feature.triangles[0], feature.triangles[1]};
+        if (contact::fixed_triangle_features::Compare(
+                result[1], result[0]) < 0)
+            std::swap(result[0], result[1]);
+        return result;
+    };
+    for (const auto first_parent : first_family)
+        for (const auto second_parent : second_family) {
+            const auto& first_use =
+                active.parents()[first_parent];
+            const auto& second_use =
+                active.parents()[second_parent];
+            for (unsigned first_local = 0;
+                 first_local < first_use.facet_count;
+                 ++first_local)
+                for (unsigned second_local = 0;
+                     second_local < second_use.facet_count;
+                     ++second_local) {
+                    ++family_facet_pairs;
+                    std::array<contact::FixedContactFacet, 2>
+                        family_facets;
+                    ASSERT_EQ(setup.facets().Describe(
+                                  first_use.surface_parent,
+                                  first_local,
+                                  &family_facets[0]).status,
+                              contact::FixedContactFacetStatus::Ok);
+                    ASSERT_EQ(setup.facets().Describe(
+                                  second_use.surface_parent,
+                                  second_local,
+                                  &family_facets[1]).status,
+                              contact::FixedContactFacetStatus::Ok);
+                    std::array<contact::CurrentFixedTriangle, 2>
+                        family_accepted;
+                    std::array<contact::CurrentFixedTriangle, 2>
+                        family_prepared;
+                    for (unsigned side = 0; side < 2; ++side) {
+                        ASSERT_EQ(
+                            contact::EvaluateCurrentFixedTriangle(
+                                family_facets[side],
+                                accepted_positions,
+                                &family_accepted[side]),
+                            contact::Status::kOk);
+                        ASSERT_EQ(
+                            contact::EvaluateCurrentFixedTriangle(
+                                family_facets[side],
+                                prepared_positions,
+                                &family_prepared[side]),
+                            contact::Status::kOk);
+                    }
+                    contact::FixedTriangleFeatureTaskMask
+                        family_mask;
+                    ASSERT_EQ(
+                        contact::BuildFixedTriangleFeatureTaskMask(
+                            family_prepared[0],
+                            family_prepared[1],
+                            &family_mask),
+                        contact::FixedTriangleDiscoveryStatus::Ok);
+                    const auto family_geometry =
+                        Discover(family_prepared, family_mask);
+                    bool matched_ledger = false;
+                    for (const auto& feature :
+                         family_geometry.features) {
+                        const auto lower = std::lower_bound(
+                            snapshot.accepted_certificates.begin(),
+                            snapshot.accepted_certificates.end(),
+                            feature.key,
+                            [](const auto& certificate,
+                               const auto& key) {
+                                return contact::
+                                           fixed_triangle_features::
+                                               Compare(
+                                                   certificate.event.
+                                                       feature,
+                                                   key) < 0;
+                            });
+                        const auto candidate_pair =
+                            canonical_pair(feature);
+                        for (auto certificate = lower;
+                             certificate !=
+                                 snapshot.accepted_certificates.end() &&
+                             contact::fixed_triangle_features::Compare(
+                                 certificate->event.feature,
+                                 feature.key) == 0;
+                             ++certificate) {
+                            matched_ledger = true;
+                            const auto accepted_pair =
+                                canonical_pair(
+                                    certificate->discovery);
+                            const int first_owner =
+                                contact::fixed_triangle_features::
+                                    Compare(
+                                        accepted_pair[0],
+                                        candidate_pair[0]);
+                            const int second_owner =
+                                contact::fixed_triangle_features::
+                                    Compare(
+                                        accepted_pair[1],
+                                        candidate_pair[1]);
+                            FamilyOwnerPattern pattern;
+                            if (!first_owner && !second_owner)
+                                pattern = FamilyOwnerPattern::Exact;
+                            else if (first_owner <= 0 &&
+                                     second_owner <= 0)
+                                pattern =
+                                    first_owner < 0 &&
+                                            second_owner < 0
+                                        ? FamilyOwnerPattern::
+                                              LowerTwoSides
+                                        : FamilyOwnerPattern::
+                                              LowerOneSide;
+                            else if (first_owner >= 0 &&
+                                     second_owner >= 0)
+                                pattern =
+                                    first_owner > 0 &&
+                                            second_owner > 0
+                                        ? FamilyOwnerPattern::
+                                              UpperTwoSides
+                                        : FamilyOwnerPattern::
+                                              UpperOneSide;
+                            else
+                                pattern =
+                                    FamilyOwnerPattern::Crossed;
+                            const auto index =
+                                static_cast<unsigned>(pattern);
+                            ++pattern_counts[index];
+                            if (!pattern_printed[index]) {
+                                pattern_printed[index] = true;
+                                std::cout
+                                    << "V5_LINEAR_FAMILY_PATTERN"
+                                    << " class=" << index
+                                    << " candidate="
+                                    << first_use.source.
+                                           source_parent_id
+                                    << ":" << first_local << ","
+                                    << second_use.source.
+                                           source_parent_id
+                                    << ":" << second_local
+                                    << " kind="
+                                    << static_cast<unsigned>(
+                                           feature.key.kind)
+                                    << " distance_m="
+                                    << std::setprecision(17)
+                                    << feature.distance_m
+                                    << " accepted="
+                                    << accepted_pair[0].parent_eid
+                                    << ":"
+                                    << accepted_pair[0].local_facet
+                                    << ","
+                                    << accepted_pair[1].parent_eid
+                                    << ":"
+                                    << accepted_pair[1].local_facet
+                                    << '\n';
+                            }
+                        }
+                    }
+                    if (!matched_ledger) continue;
+                    ++family_pairs_with_ledger;
+                    const auto family_persistent =
+                        sct::CertifyPersistentLinearContact(
+                            family_accepted[0], family_prepared[0],
+                            family_facets[0].
+                                reference_half_thickness_m,
+                            family_accepted[1], family_prepared[1],
+                            family_facets[1].
+                                reference_half_thickness_m,
+                            {family_geometry.features.data(),
+                             family_geometry.features.size(), true},
+                            snapshot.accepted_certificates.data(),
+                            snapshot.accepted_certificates.size());
+                    const auto family_status =
+                        static_cast<unsigned>(
+                            family_persistent.status);
+                    ++persistent_status_counts[family_status];
+                    if (family_persistent.status !=
+                        sct::PersistentLinearContactStatus::
+                            CertifiedContact) {
+                        const auto family_residual =
+                            sct::CertifyLinearResidualSeparation(
+                                family_accepted[0],
+                                family_prepared[0],
+                                family_facets[0].
+                                    reference_half_thickness_m,
+                                family_accepted[1],
+                                family_prepared[1],
+                                family_facets[1].
+                                    reference_half_thickness_m,
+                                {family_geometry.features.data(),
+                                 family_geometry.features.size(),
+                                 true},
+                                {family_geometry.intersections.data(),
+                                 family_geometry.intersections.size(),
+                                 true});
+                        std::cout
+                            << "V5_LINEAR_FAMILY_UNRESOLVED"
+                            << " candidate="
+                            << first_use.source.source_parent_id
+                            << ":" << first_local << ","
+                            << second_use.source.source_parent_id
+                            << ":" << second_local
+                            << " persistent_status="
+                            << family_status
+                            << " residual_status="
+                            << static_cast<unsigned>(
+                                   family_residual.status)
+                            << " bounded="
+                            << family_persistent.
+                                   bounded_feature_count
+                            << " exact_accepted="
+                            << family_persistent.
+                                   exact_accepted_candidate_count
+                            << " full_accepted="
+                            << family_persistent.
+                                   full_accepted_candidate_count
+                            << " features="
+                            << family_geometry.features.size()
+                            << " intersections="
+                            << family_geometry.intersections.size()
+                            << " local_tasks="
+                            << family_mask.local_tasks << '\n';
+                    }
+                }
+        }
+    std::cout << "V5_LINEAR_FAMILY_SUMMARY"
+              << " facet_pairs=" << family_facet_pairs
+              << " ledger_pairs=" << family_pairs_with_ledger;
+    for (unsigned pattern = 0;
+         pattern < static_cast<unsigned>(
+             FamilyOwnerPattern::Count);
+         ++pattern)
+        std::cout << " pattern" << pattern << "="
+                  << pattern_counts[pattern];
+    for (unsigned status = 0;
+         status < persistent_status_counts.size(); ++status)
+        std::cout << " status" << status << "="
+                  << persistent_status_counts[status];
+    std::cout << '\n';
+    EXPECT_EQ(
+        persistent_status_counts[static_cast<unsigned>(
+            sct::PersistentLinearContactStatus::
+                CertifiedContact)],
+        family_pairs_with_ledger);
+    EXPECT_EQ(
+        persistent_status_counts[static_cast<unsigned>(
+            sct::PersistentLinearContactStatus::
+                PotentialChange)],
+        0u);
     dynamics.DiscardStep();
 }
 

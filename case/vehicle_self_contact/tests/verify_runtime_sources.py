@@ -230,7 +230,10 @@ def main() -> None:
             "V5_LINEAR_PERSISTENT_ACCEPTED",
             "V5_LINEAR_PERSISTENT_BITS",
             "accepted_feature_matches",
-            "canonical_persistent.status"]:
+            "canonical_persistent.status",
+            "V5_LINEAR_FAMILY_PATTERN",
+            "V5_LINEAR_FAMILY_SUMMARY",
+            "V5_LINEAR_FAMILY_UNRESOLVED"]:
         require(token in candidate_coupon,
                 f"residual-translation coupon is missing {token}")
     require("CandidateRigidCouponTest.cpp" in fixture_cmake and
