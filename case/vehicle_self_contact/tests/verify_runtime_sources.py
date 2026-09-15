@@ -204,9 +204,15 @@ def main() -> None:
             "PartialOrMixedRigid", "shared_vertices",
             "accepted_minimum_nonlocal_m",
             "prepared_minimum_nonlocal_m",
-            "V5_CANDIDATE_142_RIGID_GROUP"]:
+            "V5_CANDIDATE_142_RIGID_GROUP",
+            "Candidate143MixedFacetHasExactAffineRepresentedMotion",
+            "AffineMixedLocalFacet = 1",
+            "CertifyRigidFacetAffineMotion(",
+            "first.certified_affine = affine[0]",
+            "second.certified_affine = affine[1]",
+            "endpoint_chord_substitution=0"]:
         require(token in candidate_coupon,
-                f"candidate-142 coupon is missing {token}")
+                f"candidate rigid coupon is missing {token}")
     require("CandidateRigidCouponTest.cpp" in fixture_cmake and
             "vehicle_self_contact_candidate_rigid_coupon" in fixture_cmake and
             '"coupon;real-geometry;v5-candidate"' in fixture_cmake,
@@ -217,10 +223,20 @@ def main() -> None:
     tl_values = (
         args.tl_root / "lib_src" / "collision" /
         "self_contact_transaction" / "Values.cpp").read_text()
+    tl_arena = (
+        args.tl_root / "lib_src" / "collision" /
+        "self_contact_transaction" / "Arena.cpp").read_text()
+    tl_rigid_sweep = (
+        args.tl_root / "lib_src" / "collision" /
+        "self_contact_transaction" / "RigidSweep.cpp").read_text()
     require("LocallyExcluded(" in tl_candidate and
             "crossing_pair_count" in tl_candidate and
             "RepresentedIntervalReason::UnsupportedMotion" in tl_values,
             "TL does not apply exact local incidence before unsupported motion")
+    require("first.certified_affine && second.certified_affine" in tl_arena and
+            "CertifyRigidPointAffineMotion(" in tl_rigid_sweep and
+            "represented_q[component]" in tl_rigid_sweep,
+            "TL does not exactly certify represented affine rigid motion")
     real_geometry = (
         case / "vehicle_startup" / "shell_execution" / "tests" /
         "self_contact" / "RealGeometryTest.cpp").read_text()

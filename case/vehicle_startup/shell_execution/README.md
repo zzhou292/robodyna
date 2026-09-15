@@ -219,6 +219,18 @@ intersection, with coordinate-only overlap, or with any nonlocal intersection
 continues to fail closed as `UnsupportedMotion`; work exhaustion is not
 converted to a local exclusion.
 
+The same authenticated coupon separately reproduces immediately adjacent
+pair 143, `2100005:0` versus `2100048:1`. Its second facet retains the
+conservative `PartialOrMixedRigid` source label and overlapping swept box, but
+all three represented vertices pass TL's exact composed-curvature certificate.
+For each represented point it evaluates
+`sum_j weight_j*(omega_j x (omega_j x (x0_j-c0_j)))` as fixed-capacity exact
+dyadic integers. Both facet trajectories are therefore affine, so
+`ClassifyCandidatePairMotion` selects the existing exact linear
+prism/discovery/represented-crossing path. The result follows from the
+authenticated polynomial and zero prepared spin, not EID matching, a
+tolerance, or endpoint-chord substitution.
+
 The source-only real-geometry coupon deliberately does not construct
 `VehiclePhysicalDynamics`.
 Complete area/force/STI policy remains in TL's synthetic physical

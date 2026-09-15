@@ -82,6 +82,7 @@ namespace sct = tlfea::contact::self_contact_transaction;
 constexpr std::uint64_t LinearEid = 2100005;
 constexpr std::uint64_t MixedEid = 2100048;
 constexpr unsigned CouponLocalFacet = 0;
+constexpr unsigned AffineMixedLocalFacet = 1;
 constexpr double PhysicalStepS = 2e-7;
 
 double Down(double value) {
@@ -682,6 +683,103 @@ TEST(VehicleSelfContactCandidateCoupon,
                   << prepared.state.omega.y << ","
                   << prepared.state.omega.z << '\n';
     }
+    dynamics.DiscardStep();
+}
+
+TEST(VehicleSelfContactCandidateCoupon,
+     Candidate143MixedFacetHasExactAffineRepresentedMotion) {
+    const auto& setup = LevelZeroSetup();
+    const auto& active = setup.active_uses();
+    const auto* rigid = active.rigid();
+    ASSERT_NE(rigid, nullptr);
+    const std::size_t parent_ordinals[2]{
+        ParentOrdinal(active, LinearEid),
+        ParentOrdinal(active, MixedEid)};
+    std::array<contact::FixedContactFacet, 2> facets;
+    const unsigned local_facets[2]{
+        CouponLocalFacet, AffineMixedLocalFacet};
+    for (unsigned side = 0; side < 2; ++side) {
+        const auto& parent = active.parents()[parent_ordinals[side]];
+        ASSERT_LT(local_facets[side], parent.facet_count);
+        ASSERT_EQ(setup.facets().Describe(
+                      parent.surface_parent, local_facets[side],
+                      &facets[side]).status,
+                  contact::FixedContactFacetStatus::Ok);
+    }
+
+    auto dynamics_config = vehicle_wall::LoadedWallConfig();
+    dynamics_config.startup.reserved_step_s = PhysicalStepS;
+    auto dynamics = dynamics::VehiclePhysicalDynamics::Prepare(
+        Execution(), PhysicalAttachments(), dynamics_config,
+        &physical_model::supports_test::Joints());
+    const auto snapshot =
+        vehicle_self_contact::CandidateRigidCouponAccess::Prepare(
+            dynamics);
+    const auto node_count =
+        static_cast<std::uint32_t>(dynamics.accepted().node_count);
+    const contact::VectorView accepted_positions{
+        snapshot.accepted->position.data(), node_count, 3, 1};
+    const contact::VectorView prepared_positions{
+        snapshot.prepared->position.data(), node_count, 3, 1};
+    std::vector<std::uint32_t> node_groups(node_count, UINT32_MAX);
+    for (std::uint32_t node = 0; node < node_count; ++node)
+        node_groups[node] = RigidGroup(*rigid, node);
+
+    bool affine[2]{};
+    for (unsigned side = 0; side < 2; ++side) {
+        ASSERT_EQ(sct::CertifyRigidFacetAffineMotion(
+                      facets[side], accepted_positions,
+                      prepared_positions, node_groups.data(),
+                      snapshot.accepted_groups.data(),
+                      snapshot.prepared_groups.data(),
+                      snapshot.accepted_groups.size(),
+                      snapshot.prepared_view.rigid_member_trajectory,
+                      PhysicalStepS, affine + side),
+                  sct::RigidMemberSweepStatus::Ok);
+        EXPECT_TRUE(affine[side]);
+    }
+    EXPECT_EQ(FacetMotion(facets[0], *rigid),
+              contact::SelfContactFacetMotion::LinearNodalV1);
+    EXPECT_EQ(FacetMotion(facets[1], *rigid),
+              contact::SelfContactFacetMotion::PartialOrMixedRigid);
+
+    const contact::SelfContactSweptParentBounds swept[2]{
+        FacetBounds(facets[0], *snapshot.accepted,
+                    *snapshot.prepared, *rigid, snapshot),
+        FacetBounds(facets[1], *snapshot.accepted,
+                    *snapshot.prepared, *rigid, snapshot)};
+    EXPECT_TRUE(Overlap(swept[0], swept[1]));
+    sct::MotionSupport first;
+    first.motion = contact::SelfContactFacetMotion::LinearNodalV1;
+    first.certified_affine = affine[0];
+    sct::MotionSupport second;
+    second.motion =
+        contact::SelfContactFacetMotion::PartialOrMixedRigid;
+    second.certified_affine = affine[1];
+    EXPECT_EQ(sct::ClassifyCandidatePairMotion(
+                  first, swept[0], second, swept[1]),
+              sct::PairMotionAction::LinearNodalV1);
+
+    std::cout << std::setprecision(17)
+              << "V5_CANDIDATE_143"
+              << " pair_index=143"
+              << " first_eid=" << LinearEid
+              << " first_local=" << CouponLocalFacet
+              << " first_motion="
+              << static_cast<unsigned>(first.motion)
+              << " first_affine=" << affine[0]
+              << " second_eid=" << MixedEid
+              << " second_local=" << AffineMixedLocalFacet
+              << " second_motion="
+              << static_cast<unsigned>(second.motion)
+              << " second_affine=" << affine[1]
+              << " represented_action="
+              << static_cast<unsigned>(
+                     sct::ClassifyCandidatePairMotion(
+                         first, swept[0], second, swept[1]))
+              << " swept_boxes_overlap=1"
+              << " endpoint_chord_substitution=0"
+              << '\n';
     dynamics.DiscardStep();
 }
 
