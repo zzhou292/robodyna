@@ -453,6 +453,9 @@ NodalReport FENodalState::BorrowPrepared(const NodalTrialToken& token, NodalPrep
   out->base_time = s.stamp.time; out->base_velocity_time = s.stamp.velocity_time;
   out->velocity_time = s.candidate_velocity_time; out->kick_dt = s.candidate_kick_dt;
   out->rigid_groups=s.stamp.rigid_groups;
+  out->rigid_member_trajectory = s.rigid_groups
+      ? NodalRigidMemberTrajectory::EndpointCorrectedSecondOrderDriftV1
+      : NodalRigidMemberTrajectory::None;
   out->base_kinematics = {s.accepted, s.accepted+3*n,
                           s.has_rotations ? s.accepted+6*n : s.scratch+8*n,
                           n, s.stamp.epoch, s.has_rotations ? s.accepted+9*n : nullptr};

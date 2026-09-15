@@ -52,6 +52,23 @@ PairMotionAction ClassifyCandidatePairMotion(
     const MotionSupport&, const SelfContactSweptParentBounds&,
     const MotionSupport&, const SelfContactSweptParentBounds&) noexcept;
 
+enum class RigidMemberSweepStatus : std::uint8_t {
+  Ok,
+  InvalidInput,
+  UnsupportedTrajectory,
+  RotationLimit,
+  NonfiniteResult,
+};
+
+// Host value function used by candidate sealing after the owner snapshots and
+// NodalPreparedView have independently authenticated identity and timing.
+RigidMemberSweepStatus BuildRigidMemberSweepBounds(
+    Vec3 accepted_member, Vec3 prepared_member,
+    const tl::fea::NodalRigidGroupSnapshot& accepted_group,
+    const tl::fea::NodalRigidGroupSnapshot& prepared_group,
+    tl::fea::NodalRigidMemberTrajectory trajectory,
+    double duration, SelfContactSweptParentBounds*) noexcept;
+
 struct FacetPairCursor {
   std::uint32_t first_begin = 0;
   std::uint32_t first_end = 0;

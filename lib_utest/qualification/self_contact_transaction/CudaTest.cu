@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "../physical_publication/OwnerFixture.h"
 #include "lib_src/collision/SelfContactTransaction.h"
+#include "lib_src/collision/self_contact_transaction/Storage.h"
 #include "lib_src/collision/FixedContactFacetValues.h"
 #include "lib_src/collision/SurfaceContactGeometry.h"
 
@@ -18,6 +19,7 @@
 namespace self_contact_transaction_cuda_test {
 namespace c = tlfea::contact;
 namespace fe = tl::fea;
+namespace sct = tlfea::contact::self_contact_transaction;
 namespace p = physical_publication_test;
 
 bool Good(c::SelfContactTransactionReport report) {
@@ -620,6 +622,61 @@ struct Fixture {
     transaction.DiscardTrial();
   }
 };
+
+TEST(SelfContactTransactionCuda,
+     CertifiedRigidSweepsSeparateDistantBodiesButNotOverlappingArcs) {
+  const auto group = [](std::uint64_t id, c::Vec3 center,
+                        c::Vec3 omega) {
+    fe::NodalRigidGroupSnapshot result;
+    result.source_kind = fe::RigidBindingSourceKind::Part;
+    result.source_group_id = id;
+    result.source_node_set_id = id + 100;
+    result.state.center = {center.x, center.y, center.z};
+    result.state.omega = {omega.x, omega.y, omega.z};
+    return result;
+  };
+  constexpr auto trajectory =
+      fe::NodalRigidMemberTrajectory::
+          EndpointCorrectedSecondOrderDriftV1;
+  const auto accepted_a = group(1, {0, 0, 0}, {});
+  const auto prepared_a = group(1, {.01, 0, 0}, {0, 0, .001});
+  const auto accepted_b = group(2, {100, 0, 0}, {});
+  const auto prepared_b = group(2, {100.01, 0, 0}, {0, 0, -.001});
+  c::SelfContactSweptParentBounds a, distant, overlapping;
+  ASSERT_EQ(sct::BuildRigidMemberSweepBounds(
+      {1, 0, 0}, {1.01, .00001, 0},
+      accepted_a, prepared_a, trajectory, .01, &a),
+      sct::RigidMemberSweepStatus::Ok);
+  ASSERT_EQ(sct::BuildRigidMemberSweepBounds(
+      {101, 0, 0}, {101.01, -.00001, 0},
+      accepted_b, prepared_b, trajectory, .01, &distant),
+      sct::RigidMemberSweepStatus::Ok);
+  auto overlap_accepted = group(2, {.5, 0, 0}, {});
+  auto overlap_prepared = group(2, {.51, 0, 0}, {0, 0, -.001});
+  ASSERT_EQ(sct::BuildRigidMemberSweepBounds(
+      {1, 0, 0}, {1.01, .000005, 0},
+      overlap_accepted, overlap_prepared,
+      trajectory, .01, &overlapping),
+      sct::RigidMemberSweepStatus::Ok);
+
+  sct::MotionSupport rigid_a;
+  rigid_a.motion = c::SelfContactFacetMotion::CompleteRigidGroup;
+  rigid_a.complete_rigid_group = 0;
+  rigid_a.rigid_groups[0] = 0;
+  rigid_a.rigid_group_count = 1;
+  auto rigid_b = rigid_a;
+  rigid_b.complete_rigid_group = 1;
+  rigid_b.rigid_groups[0] = 1;
+  EXPECT_EQ(sct::ClassifyCandidatePairMotion(
+      rigid_a, a, rigid_b, distant),
+      sct::PairMotionAction::CertifiedRigidArcSeparation);
+  EXPECT_EQ(sct::ClassifyCandidatePairMotion(
+      rigid_a, a, rigid_b, overlapping),
+      sct::PairMotionAction::UnsupportedRigidArc);
+  EXPECT_EQ(sct::ClassifyCandidatePairMotion(
+      rigid_a, a, rigid_a, overlapping),
+      sct::PairMotionAction::ExcludedSameRigidGroup);
+}
 
 TEST(SelfContactTransactionCuda,
      ExactForecastCapMinusOneAndRosterEntryAreStable) {

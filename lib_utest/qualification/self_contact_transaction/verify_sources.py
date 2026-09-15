@@ -7,6 +7,7 @@ ROOT = Path(__file__).resolve().parents[3]
 HEADER = ROOT / "lib_src/collision/SelfContactTransaction.h"
 TYPES = ROOT / "lib_src/collision/SelfContactTransactionTypes.h"
 CANDIDATE = ROOT / "lib_src/collision/self_contact_transaction/Candidate.cpp"
+RIGID_SWEEP = ROOT / "lib_src/collision/self_contact_transaction/RigidSweep.cpp"
 TRANSACTION = ROOT / "lib_src/collision/self_contact_transaction/Transaction.cpp"
 STREAMING = ROOT / "lib_src/collision/self_contact_transaction/Streaming.cpp"
 TASK_MASK = ROOT / "lib_src/collision/self_contact_transaction/TaskMask.cpp"
@@ -22,6 +23,8 @@ CUDA = Path(__file__).resolve().parent / "CudaTest.cu"
 MEDIUM = Path(__file__).resolve().parent / "MediumCouponTest.cpp"
 ACCEPTED_TEST = Path(__file__).resolve().parent / "AcceptedEventTest.cpp"
 VALUE_TEST = Path(__file__).resolve().parent / "ValueTest.cpp"
+RIGID_SWEEP_TEST = (
+    Path(__file__).resolve().parent / "RigidSweepBoundsTest.cpp")
 OWNER = (Path(__file__).resolve().parent /
          "../physical_publication/OwnerStartup.cu").resolve()
 
@@ -34,6 +37,7 @@ def require(text: str, token: str, where: Path) -> None:
 header = HEADER.read_text()
 types = TYPES.read_text()
 candidate = CANDIDATE.read_text()
+rigid_sweep = RIGID_SWEEP.read_text()
 transaction = TRANSACTION.read_text()
 task_mask = TASK_MASK.read_text()
 require(task_mask, "BuildFixedTriangleFeatureTaskMask(", TASK_MASK)
@@ -76,11 +80,23 @@ for token in (
     "ClassifyCandidatePairMotion(",
     "FilterAcceptedFacetPairs(",
     "DescribeMotionFailure(",
+    "BuildRigidMemberSweepBounds(",
 ):
     require(candidate if token != "FilterAcceptedFacetPairs(" else
             transaction, token,
             CANDIDATE if token != "FilterAcceptedFacetPairs(" else
             TRANSACTION)
+if "12 * arm" in candidate or "12*arm" in candidate:
+    raise RuntimeError(
+        f"{CANDIDATE}: retains group-scale rigid support-radius inflation")
+for token in (
+    "EndpointCorrectedSecondOrderDriftV1",
+    "x(u) = (1-u)x0 + u*x1",
+    "h^2*|q_i|/8",
+    "std::nextafter(",
+    "return R::RotationLimit",
+):
+    require(rigid_sweep, token, RIGID_SWEEP)
 if BROADPHASE.exists() and BROADPHASE_TYPES.exists():
     for token in ("ConservativeSweptParentBounds",
                   "swept_parent_bounds", "staged_bounds"):
@@ -377,6 +393,7 @@ for wiring in (CMAKE, BAZEL):
     for token in ("self_contact_transaction/Arena.cpp",
                   "self_contact_transaction/Candidate.cpp",
                   "self_contact_transaction/Limits.cpp",
+                  "self_contact_transaction/RigidSweep.cpp",
                   "self_contact_transaction/Source.cpp",
                   "self_contact_transaction/Streaming.cpp",
                   "self_contact_transaction/TaskMask.cpp",
@@ -389,6 +406,7 @@ for wiring in (CMAKE, BAZEL):
 for token in (
     "SELF_CONTACT_TRANSACTION_CUDA",
     "CudaTest.cu",
+    "RigidSweepBoundsTest.cpp",
     "AcceptedEventTest.cpp",
     "MediumCouponTest.cpp",
     "self_contact_transaction_medium_coupon",
@@ -450,6 +468,14 @@ for token in (
 ):
     require(VALUE_TEST.read_text(), token, VALUE_TEST)
 for token in (
+    "ZeroSpinIsTightOutwardRoundedTranslation",
+    "TinyAngleInflationScalesQuadraticallyPerMember",
+    "EndpointsAndCompleteCertifiedQuadraticStayContained",
+    "UnsupportedRotationAndNonfiniteInputsLeaveOutputUnchanged",
+    "MotionCertificateIsPartOfPreparedOwnerIdentity",
+):
+    require(RIGID_SWEEP_TEST.read_text(), token, RIGID_SWEEP_TEST)
+for token in (
     "OnePrivatePassRetainsLateFailurePriorityAndCountPublication",
     "ShortPrivateCapacityCountsCompletelyWithoutOverwritingGuard",
     "EXPECT_EQ(count, 777u)",
@@ -484,11 +510,14 @@ for token in (
     "ActualT3RemovalFiltersCandidateAndLongInactiveRetryCommits",
     "ActualMergedRigidBodyExcludesDiscoveredVfBeforeForceOrSti",
     "ActualMergedPartAndPlainBodiesUseMergedWrenchesBeforeInverseResponse",
+    "CertifiedRigidSweepsSeparateDistantBodiesButNotOverlappingArcs",
     "ContactConstraintLayout::SameMergedParts",
     "ContactConstraintLayout::MergedPartAndPlain",
     "CopyPreparedForceStage",
     "endpoint_inverse_sum",
     "SelfContactTransactionStatus::UnsupportedMotion",
+    "PairMotionAction::UnsupportedRigidArc",
+    "PairMotionAction::CertifiedRigidArcSeparation",
     "common, prepared, accepted",
     "removing_parents()",
     "skipped_parents()",

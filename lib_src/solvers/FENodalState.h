@@ -28,6 +28,24 @@ enum class NodalStatus {
 };
 enum class NodalTemporalScheme { VelocityFirst, StaggeredHalfKickStart };
 enum class NodalVelocityPhase { Collocated, PreviousMidpoint };
+// Continuous contact interpretation authenticated by BorrowPrepared.  The
+// discrete owner still advances only endpoints; None grants no interval claim.
+enum class NodalRigidMemberTrajectory : std::uint8_t {
+  None,
+  // For u in [0,1], h=proposed_time-base_time, accepted/prepared member
+  // endpoints x0/x1 and group centers c0/c1, and the prepared primary spin w:
+  //
+  // x(u)=c(u)+(1-u)(x0-c0)+u(x1-c1)
+  //      -.5*u*(1-u)*h^2*w x (w x (x0-c0)),
+  // c(u)=(1-u)c0+u*c1.
+  //
+  // Thus both binary64 endpoints are exact.  In exact arithmetic the ordinary
+  // (>2 member) cross-product branch reduces to its constant-spin,
+  // second-order drift recurrence.  Any two-member finite-velocity or
+  // binary64 endpoint residual remains in the authenticated linear endpoint
+  // term; it is not silently replaced by an endpoint chord.
+  EndpointCorrectedSecondOrderDriftV1,
+};
 constexpr bool IsCollocatedNodalTiming(NodalTemporalScheme scheme,NodalVelocityPhase phase) noexcept {
   return scheme==NodalTemporalScheme::VelocityFirst && phase==NodalVelocityPhase::Collocated;
 }
@@ -161,6 +179,8 @@ struct NodalPreparedView {
   NodalVelocityPhase base_velocity_phase = NodalVelocityPhase::Collocated;
   double base_time = 0, velocity_time = 0, base_velocity_time = 0, kick_dt = 0;
   NodalRigidGroupInfo rigid_groups{};
+  NodalRigidMemberTrajectory rigid_member_trajectory =
+      NodalRigidMemberTrajectory::None;
 };
 TL_SURFACE_HD inline void RecordNodalAssemblyFailure(
     const NodalAssemblyView& view, tlfea::contact::Status status,

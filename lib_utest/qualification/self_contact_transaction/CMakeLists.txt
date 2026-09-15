@@ -12,9 +12,11 @@ include("${TL_ROOT}/lib_src/collision/SelfContactFilterCertificates.cmake")
 include("${TL_ROOT}/lib_src/collision/SelfContactCurrentRegularity.cmake")
 add_executable(self_contact_transaction_values
   ValueTest.cpp
+  RigidSweepBoundsTest.cpp
   "${TL_ROOT}/lib_src/collision/self_contact_transaction/Values.cpp"
   "${TL_ROOT}/lib_src/collision/self_contact_transaction/Arena.cpp"
   "${TL_ROOT}/lib_src/collision/self_contact_transaction/Limits.cpp"
+  "${TL_ROOT}/lib_src/collision/self_contact_transaction/RigidSweep.cpp"
   "${TL_ROOT}/lib_src/collision/self_contact_transaction/Streaming.cpp"
   "${TL_ROOT}/lib_src/collision/self_contact_transaction/TaskMask.cpp")
 target_include_directories(self_contact_transaction_values PRIVATE

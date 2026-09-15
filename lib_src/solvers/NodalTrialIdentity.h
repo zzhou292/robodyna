@@ -23,7 +23,8 @@ inline bool SamePrepared(const NodalPreparedView& a,const NodalPreparedView& b) 
     a.stream==b.stream&&a.owner_id==b.owner_id&&a.attempt==b.attempt&&a.proposed_time==b.proposed_time&&
     a.temporal_scheme==b.temporal_scheme&&a.velocity_phase==b.velocity_phase&&a.base_velocity_phase==b.base_velocity_phase&&
     a.base_time==b.base_time&&a.velocity_time==b.velocity_time&&a.base_velocity_time==b.base_velocity_time&&a.kick_dt==b.kick_dt&&
-    SameRigidGroupInfo(a.rigid_groups,b.rigid_groups);
+    SameRigidGroupInfo(a.rigid_groups,b.rigid_groups)&&
+    a.rigid_member_trajectory==b.rigid_member_trajectory;
 }
 // Source identity only: a retained record is not permission to dereference an
 // expired view or reuse its attempt/force destinations. No device access.

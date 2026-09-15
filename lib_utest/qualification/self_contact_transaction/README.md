@@ -156,8 +156,28 @@ retain `LinearNodalV1` even when unrelated rigid parents exist.
 
 Candidate broadphase uses fixed host/device storage for outward swept parent
 boxes built from the owner-authenticated accepted/prepared rigid snapshots.
-The bound covers the admitted rigid owner drift (including the first half-kick)
-with a rotation-invariant support radius and is refined to fixed-facet boxes.
+The owner now authenticates the sole admitted continuous member interpretation
+as `EndpointCorrectedSecondOrderDriftV1`.  With normalized interval coordinate
+`u`, duration `h`, copied member endpoints `x0,x1`, accepted group center `c0`,
+and prepared primary spin `w`, it is
+`x(u)=(1-u)x0+u*x1-.5*u*(1-u)*h^2*q`, where
+`q=w x (w x (x0-c0))`.  This is not an endpoint chord: for the ordinary
+cross-product member recurrence it reduces in exact arithmetic to
+`x0+u*h*(w x r0)+.5*(u*h)^2*q` plus the group's center translation.  The
+linear endpoint term retains the exact binary64 owner endpoint, including the
+two-member finite-velocity branch and recurrence roundoff, instead of guessing
+a different terminal rotation.
+
+Each member AABB starts with its own endpoint coordinate hull and inflates
+coordinate `i` by only `h^2*|q_i|/8`, because
+`0 <= u*(1-u) <= 1/4`.  Interval cross products surround every binary64
+product/sum/subtraction with directed `nextafter`, followed by directed
+duration, deviation, thickness, and box-face rounding.  Tiny-angle inflation
+therefore scales as `O((h|w|)^2*|r0|)` rather than the former angle-independent
+`12*|r|` group-scale radius.  Zero-spin motion is the outward-rounded
+translation endpoint hull.  Nonfinite arithmetic, a missing authenticated
+trajectory tag, and rotation increments outside the admitted `< pi` domain
+fail closed.
 A disjoint box is a conservative separation certificate only. Overlapping
 different-body or partial/mixed rigid boxes report the exact parent/facet and
 actual group identities as `UnsupportedMotion`; no endpoint chord is passed to
@@ -167,6 +187,17 @@ candidate containing one cannot commit even though accepted-state force still
 uses the actual rigid owner response.
 
 ## Vehicle-scale limits and memory
+
+The failed full-V5 direct 200 ns attempt reported an exact candidate
+broadphase requirement of 648,295,598 parent pairs despite a 2,000,000-pair
+capacity.  That was not evidence for a larger cap: every rigid member had been
+replaced by a group-center box inflated by `12*arm`, independent of the tiny
+angular increment, so distant bodies acquired overlapping group-scale boxes.
+No pair cap, collision policy, timestep, or physics setting is changed here.
+A V5 retry must remeasure the candidate parent-pair census with these
+per-member quadratic bounds.  It can still stop deliberately at the first
+genuinely overlapping different-body rigid arc, because exact rigid-arc
+crossing/contact admission remains unsupported.
 
 `SelfContactTransactionLimits::Vehicle` takes caller-supplied exact census
 counts and explicit chunk/event/policy/work/byte caps. Its optional final

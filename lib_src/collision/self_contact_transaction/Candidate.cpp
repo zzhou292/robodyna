@@ -91,7 +91,9 @@ bool NodeSweepBounds(
     const std::uint32_t* node_rigid_groups,
     const fe::NodalRigidGroupSnapshot* accepted_groups,
     const fe::NodalRigidGroupSnapshot* prepared_groups,
-    std::size_t group_count, double duration,
+    std::size_t group_count,
+    fe::NodalRigidMemberTrajectory rigid_trajectory,
+    double duration,
     double kick_duration,
     SelfContactSweptParentBounds* output) noexcept {
   if (!output || !node_rigid_groups ||
@@ -118,40 +120,11 @@ bool NodeSweepBounds(
       !std::isfinite(kick_duration) ||
       duration > 2 * kick_duration)
     return false;
-  const auto& accepted = accepted_groups[group].state;
-  const auto& prepared = prepared_groups[group].state;
-  const double increment = duration * std::hypot(
-      std::hypot(prepared.omega.x, prepared.omega.y),
-      prepared.omega.z);
-  constexpr double Pi = 3.141592653589793238462643383279502884;
-  if (!std::isfinite(increment) || increment >= Pi)
-    return false;
-  const auto arm_norm = [](Vec3 point, tl::math::Vec3 center) {
-    return Up(Up(std::fabs(point.x - center.x) +
-                 std::fabs(point.y - center.y)) +
-              std::fabs(point.z - center.z));
-  };
-  const double arm = std::max(
-      arm_norm(first, accepted.center),
-      arm_norm(second, prepared.center));
-  // The admitted owner step has |omega|*drift_dt < pi and
-  // drift_dt/kick_dt <= 2.  Both its cross-product fallback and
-  // finite-velocity two-member branch keep the complete second-order
-  // relative drift below 12*|r0|, including the half-kick startup.  L1
-  // radius plus outward rounding deliberately overbounds every orientation;
-  // this box can prove only separation, never crossing.
-  const double radius = Up(12 * arm);
-  if (!std::isfinite(radius)) return false;
-  for (unsigned component = 0; component < 3; ++component) {
-    const auto a = Component(accepted.center, component);
-    const auto b = Component(prepared.center, component);
-    SetComponent(&next.lower, component,
-                 Down(std::min(a, b) - radius));
-    SetComponent(&next.upper, component,
-                 Up(std::max(a, b) + radius));
-  }
-  *output = next;
-  return IsFinite(next.lower) && IsFinite(next.upper);
+  return sct::BuildRigidMemberSweepBounds(
+      first, second, accepted_groups[group],
+      prepared_groups[group], rigid_trajectory,
+      duration, output) ==
+      sct::RigidMemberSweepStatus::Ok;
 }
 
 bool PointSweepBounds(
@@ -159,7 +132,9 @@ bool PointSweepBounds(
     VectorView current, const std::uint32_t* node_rigid_groups,
     const fe::NodalRigidGroupSnapshot* accepted_groups,
     const fe::NodalRigidGroupSnapshot* prepared_groups,
-    std::size_t group_count, double duration,
+    std::size_t group_count,
+    fe::NodalRigidMemberTrajectory rigid_trajectory,
+    double duration,
     double kick_duration,
     SelfContactSweptParentBounds* output) noexcept {
   if (!output ||
@@ -174,7 +149,8 @@ bool PointSweepBounds(
       if (!NodeSweepBounds(
               point.nodes[slot], base, current,
               node_rigid_groups, accepted_groups, prepared_groups,
-              group_count, duration, kick_duration, &node))
+              group_count, rigid_trajectory,
+              duration, kick_duration, &node))
         return false;
       const double weight = point.weights[slot];
       lower = Down(lower + Down(
@@ -197,6 +173,7 @@ SelfContactTransactionReport BuildSweptBounds(
     const fe::NodalRigidGroupSnapshot* accepted_groups,
     const fe::NodalRigidGroupSnapshot* prepared_groups,
     std::size_t group_count, VectorView base, VectorView current,
+    fe::NodalRigidMemberTrajectory rigid_trajectory,
     double duration, double kick_duration,
     SelfContactSweptParentBounds* facet_bounds,
     SelfContactSweptParentBounds* parent_bounds,
@@ -225,7 +202,7 @@ SelfContactTransactionReport BuildSweptBounds(
               descriptors[facet].vertices[vertex],
               base, current, node_rigid_groups,
               accepted_groups, prepared_groups, group_count,
-              duration, kick_duration, &point)) {
+              rigid_trajectory, duration, kick_duration, &point)) {
         bounded = false;
         break;
       }
@@ -585,6 +562,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
       state.buffers.accepted_rigid_groups,
       state.buffers.prepared_rigid_groups,
       state.rigid_group_count, base_positions, current_positions,
+      authentic.rigid_member_trajectory,
       duration, authentic.kick_dt,
       state.buffers.swept_facet_bounds,
       state.buffers.swept_parent_bounds,
