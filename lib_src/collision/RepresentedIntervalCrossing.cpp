@@ -83,13 +83,6 @@ bool SameBits(Vec3 a, Vec3 b) noexcept {
          SameBits(a.z, b.z);
 }
 
-bool StaticPath(const RepresentedTrianglePath& path) noexcept {
-  for (const auto& vertex : path.vertices)
-    if (!SameBits(vertex.endpoint[0], vertex.endpoint[1]))
-      return false;
-  return true;
-}
-
 bool AddSize(std::size_t a, std::size_t b, std::size_t* output) noexcept {
   if (a > SIZE_MAX - b)
     return false;
@@ -314,6 +307,28 @@ ExactTriangle At(const RepresentedTrianglePath& path, DyadicTime time) {
   for (unsigned i = 0; i < 3; ++i)
     result.vertex[i] = At(path.vertices[i], time);
   return result;
+}
+
+bool CommonTranslation(
+    const RepresentedTrianglePath& a,
+    const RepresentedTrianglePath& b) {
+  Dyadic reference[3];
+  for (unsigned component = 0; component < 3; ++component) {
+    reference[component] = Subtract(
+        Exact(Component(a.vertices[0].endpoint[1], component)),
+        Exact(Component(a.vertices[0].endpoint[0], component)));
+  }
+  const RepresentedTrianglePath* paths[2]{&a, &b};
+  for (const auto* path : paths)
+    for (const auto& vertex : path->vertices)
+      for (unsigned component = 0; component < 3; ++component) {
+        const auto displacement = Subtract(
+            Exact(Component(vertex.endpoint[1], component)),
+            Exact(Component(vertex.endpoint[0], component)));
+        if (Compare(displacement, reference[component]) != 0)
+          return false;
+      }
+  return true;
 }
 
 ExactVec3 Edge(const ExactTriangle& triangle, unsigned edge) {
@@ -719,7 +734,12 @@ RepresentedIntervalResult CertifyPair(
   RepresentedIntervalReason unresolved = RepresentedIntervalReason::None;
   dfs[dfs_size++] = {};
   try {
-    if (StaticPath(a) && StaticPath(b)) {
+    // A bit-exact common translation preserves every relative point,
+    // segment and triangle predicate over the complete represented interval.
+    // Test the exact binary64-real displacements rather than rounded double
+    // differences: a single static exact evaluation is then a whole-interval
+    // certificate, even when the absolute swept AABBs overlap.
+    if (CommonTranslation(a, b)) {
       auto evaluation = EvaluateCell(a, b, key, {}, scratch);
       if (evaluation.disposition == CellDisposition::Crossing) {
         evaluation.crossing.work = 1;

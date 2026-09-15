@@ -59,6 +59,51 @@ TEST(RepresentedIntervalCrossing,
 }
 
 TEST(RepresentedIntervalCrossing,
+     CommonTranslationMinimalTotalCapRollsBackAndRetriesExactly) {
+  ct::RepresentedIntervalLimits limits;
+  limits.max_paths = 3;
+  limits.max_input_pairs = 2;
+  limits.max_results = 2;
+  limits.max_work_per_pair = 1;
+  limits.max_total_work = 1;
+  auto owner = Owner(limits);
+  const auto translate = [](std::array<ct::Vec3, 3> value) {
+    for (auto& point : value)
+      point.x += 4;
+    return value;
+  };
+  const auto first_base = BaseTriangle();
+  const auto second_base = DiagonalSeparated();
+  const auto third_base = DiagonalSeparated(2);
+  const auto first =
+      Path(10, first_base, translate(first_base), 100);
+  const auto second =
+      Path(20, second_base, translate(second_base), 200);
+  const auto third =
+      Path(30, third_base, translate(third_base), 300);
+  ASSERT_EQ(One(owner, {first, second}).classification,
+            C::CertifiedSeparated);
+  const auto prior = owner.results();
+  const auto bytes = Bytes(prior.data, prior.count);
+
+  const std::array<ct::RepresentedTrianglePath, 3> paths{
+      first, second, third};
+  const ct::RepresentedTrianglePair pairs[]{{0, 1}, {0, 2}};
+  const auto failed =
+      owner.Certify(paths.data(), paths.size(), pairs, 2);
+  EXPECT_EQ(failed.status, S::ResourceLimit);
+  EXPECT_EQ(failed.input_pair, 1u);
+  EXPECT_EQ(failed.work, 1u);
+  const auto after = owner.results();
+  EXPECT_TRUE(after.complete);
+  EXPECT_EQ(Bytes(after.data, after.count), bytes);
+
+  const auto retry = One(owner, {first, third});
+  EXPECT_EQ(retry.classification, C::CertifiedSeparated);
+  EXPECT_EQ(retry.work, 1u);
+}
+
+TEST(RepresentedIntervalCrossing,
      ResultCapMinusOneFailureIsAtomicAndSubsetRetrySucceeds) {
   ct::RepresentedIntervalLimits limits;
   limits.max_results = 1;

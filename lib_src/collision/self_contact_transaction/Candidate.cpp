@@ -1093,8 +1093,19 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
           state.buffers.chunk_validated_outcomes,
           state.storage_forecast.policy_chunk_capacity,
           &validated_count});
-      if (validated.status != S::Ok)
+      if (validated.status != S::Ok) {
+        if (validated.pair < pair_count) {
+          const auto facet_pair =
+              state.buffers.facet_pair_chunk[validated.pair];
+          DescribeMotionFailure(
+              state.active_use, state.buffers.prepared_triangles,
+              state.buffers.facet_motion,
+              state.buffers.facet_quadratic,
+              state.buffers.swept_facet_bounds,
+              facet_pair, &validated);
+        }
         return state.Fail(validated);
+      }
       if (validated_count != pair_count)
         return state.Fail(Failure(S::IdentityMismatch,
             "Policy chunk does not cover every crossing-required pair"));

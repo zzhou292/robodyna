@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "../physical_publication/OwnerFixture.h"
+#include "lib_src/collision/RepresentedIntervalCrossing.h"
 #include "lib_src/collision/SelfContactTransaction.h"
 #include "lib_src/collision/self_contact_transaction/Storage.h"
 #include "lib_src/collision/FixedContactFacetValues.h"
@@ -784,6 +785,88 @@ TEST(SelfContactTransactionCuda,
                 elevated, elevated, contact_q, .01,
                 1, 4095, 20).status,
             sct::NonlinearSeparationStatus::CertifiedSeparated);
+}
+
+TEST(SelfContactTransactionCuda,
+     CommonTranslationCertificateIsDeterministicAtMinimalCap) {
+  const auto vertex = [](std::uint64_t id) {
+    c::FacetVertexKey result;
+    result.source_instance_id = 17;
+    result.first = id;
+    return result;
+  };
+  const auto path = [&](std::uint64_t eid,
+                        const std::array<c::Vec3, 3>& base,
+                        const std::array<c::Vec3, 3>& current,
+                        std::uint64_t vertex_base) {
+    c::RepresentedTrianglePath result;
+    result.key = {17, eid, 0, 0};
+    for (unsigned i = 0; i < 3; ++i) {
+      result.vertices[i].key = vertex(vertex_base + i);
+      result.vertices[i].endpoint[0] = base[i];
+      result.vertices[i].endpoint[1] = current[i];
+    }
+    for (unsigned i = 0; i < 3; ++i) {
+      auto& edge = result.edge_keys[i];
+      edge.parent_boundary = true;
+      edge.endpoints[0] = result.vertices[i].key;
+      edge.endpoints[1] = result.vertices[(i + 1) % 3].key;
+      if (edge.endpoints[1].first < edge.endpoints[0].first)
+        std::swap(edge.endpoints[0], edge.endpoints[1]);
+    }
+    return result;
+  };
+  const auto translate = [](std::array<c::Vec3, 3> value) {
+    for (auto& point : value) {
+      point.x += 4;
+      point.y -= 3;
+      point.z += 2;
+    }
+    return value;
+  };
+  const std::array<c::Vec3, 3> first{{
+      {0, 0, 0}, {2, 0, 0}, {0, 2, 0}}};
+  const std::array<c::Vec3, 3> second{{
+      {1.5, 1.5, 0}, {3.5, 1.5, 0}, {1.5, 3.5, 0}}};
+  const std::array<c::RepresentedTrianglePath, 2> paths{
+      path(10, first, translate(first), 100),
+      path(20, second, translate(second), 200)};
+  const c::RepresentedTrianglePair pair{0, 1};
+  c::RepresentedIntervalResult reference;
+  bool have_reference = false;
+  for (unsigned workers : {1u, 4u}) {
+    c::RepresentedIntervalLimits limits;
+    limits.max_paths = 2;
+    limits.max_input_pairs = 1;
+    limits.max_results = 1;
+    limits.max_work_per_pair = 1;
+    limits.max_total_work = 1;
+    limits.max_depth = 20;
+    limits.worker_count = workers;
+    c::RepresentedIntervalCrossing crossing;
+    ASSERT_EQ(crossing.Initialize(limits).status,
+              c::RepresentedIntervalStatus::Ok);
+    for (unsigned repeat = 0; repeat < 16; ++repeat) {
+      const auto report =
+          crossing.Certify(paths.data(), paths.size(), &pair, 1);
+      ASSERT_EQ(report.status, c::RepresentedIntervalStatus::Ok);
+      ASSERT_EQ(crossing.results().count, 1u);
+      const auto result = crossing.results().data[0];
+      EXPECT_EQ(
+          result.classification,
+          c::RepresentedIntervalClassification::CertifiedSeparated);
+      EXPECT_EQ(result.reason, c::RepresentedIntervalReason::None);
+      EXPECT_EQ(result.work, 1u);
+      if (!have_reference) {
+        reference = result;
+        have_reference = true;
+      } else {
+        EXPECT_EQ(std::memcmp(
+                      &result, &reference, sizeof(result)),
+                  0);
+      }
+    }
+  }
 }
 
 TEST(SelfContactTransactionCuda,

@@ -45,6 +45,11 @@ assert pair_body.index("RepresentedMotion::LinearNodalV1") < pair_body.index(
 )
 assert "RepresentedIntervalReason::UnsupportedMotion" in pair_body
 assert "SweptBoxesSeparated" in source
+assert "bool CommonTranslation(" in source
+assert "Compare(displacement, reference[component])" in source
+assert pair_body.index("CommonTranslation(a, b)") < pair_body.index(
+    "while (dfs_size)"
+)
 assert "CertifiedCrossingContact" not in source[
     source.index("bool SweptBoxesSeparated"):
     source.index("int ReasonPriority")
@@ -109,9 +114,12 @@ required = (
     "UnsupportedRigidArcIsUnresolvedBeforeEndpointBoxReasoning",
     "PerPairWorkExhaustionPublishesExplicitUnresolvedRecord",
     "CheckedTotalWorkExhaustionPreservesPublicationAndAllowsRetry",
+    "CommonTranslationMinimalTotalCapRollsBackAndRetriesExactly",
     "ResultCapMinusOneFailureIsAtomicAndSubsetRetrySucceeds",
     "DeepDyadicAffineContactUsesOwnedIterativeStack",
     "StaticDisjointTouchingBoxesUseExactGeometryCertificate",
+    "ExactCommonTranslationCertifiesSeparatedYarisGeometryInOneVisit",
+    "ExactCommonTranslationKeepsActualContactAndFeatureRepresented",
     "NondyadicIsolatedContactRemainsUnresolvedNeverSeparated",
     "ExtremeBinary64ExponentsInterpolateWithoutFalseRangeResult",
     "IndependentExactRationalOracleChecksStaticSatAndFeatures",

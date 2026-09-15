@@ -570,6 +570,7 @@ for token in (
     "CertifiedRigidSweepsSeparateDistantBodiesButNotOverlappingArcs",
     "ExactAffineMixedCertificateAndDecisionAreRepeatable",
     "NonlinearSubdivisionDecisionIsRepeatableAndFailClosed",
+    "CommonTranslationCertificateIsDeterministicAtMinimalCap",
     "ExactLocalIntersectionPrecedesOnlyUnsupportedMotion",
     "ContactConstraintLayout::SameMergedParts",
     "ContactConstraintLayout::MergedPartAndPlain",
