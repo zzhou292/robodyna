@@ -1240,7 +1240,7 @@ TEST(RealYarisSelfContactGeometry,
 }
 
 TEST(RealYarisSelfContactGeometry,
-     FirstAcceptedNonlocalIntersectionIsTransverseAndPolicyUnresolved) {
+     FirstAcceptedIntersectionIsExactSharedVertexOnly) {
     const auto& authority = Authority();
     EXPECT_EQ(authority.data().inputs.canonical_manifest.sha256,
               "c82f1886b8935d69ff7db4c29c700370e3a057579fab80d02664a253bc7af1c8");
@@ -1355,8 +1355,8 @@ TEST(RealYarisSelfContactGeometry,
     EXPECT_EQ(intersection.kind,
               contact::FixedTriangleIntersectionKind::Transverse);
     EXPECT_EQ(intersection.local_exclusion,
-              contact::FixedTriangleLocalExclusion::None);
-    EXPECT_TRUE(contact::RequiresIntersectionAdmission(intersection));
+              contact::FixedTriangleLocalExclusion::SharedVertexOnly);
+    EXPECT_FALSE(contact::RequiresIntersectionAdmission(intersection));
 
     std::set<unsigned> emitted_tasks;
     std::size_t vf_vertex = 0, vf_edge = 0, vf_face = 0, ee = 0;
@@ -1537,8 +1537,8 @@ TEST(RealYarisSelfContactGeometry,
               << IntersectionSecondEid << ":0"
               << " pid=" << first_parent.pid
               << " kind=Transverse"
-              << " local_exclusion=None"
-              << " requires_admission=1"
+              << " local_exclusion=SharedVertexOnly"
+              << " requires_admission=0"
               << " local_mask=0x" << std::hex
               << mask.local_tasks << std::dec
               << " masked_shared_vertex_tasks=" << masked_tasks
@@ -1570,7 +1570,7 @@ TEST(RealYarisSelfContactGeometry,
               << " deterministic_hash=" << hash
               << " swapped_hash=" << DiscoveryHash(swapped)
               << " permuted_hash=" << DiscoveryHash(permuted)
-              << " tl_policy=reject_nonlocal_intersection_before_features"
+              << " tl_policy=exclude_exact_shared_vertex"
               << '\n';
 }
 
