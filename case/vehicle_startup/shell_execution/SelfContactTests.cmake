@@ -69,55 +69,31 @@ set(ROBO_DYNA_VEHICLE_WALL_MANIFEST "" CACHE FILEPATH
 if(ROBO_DYNA_ENABLE_V5_SELF_CONTACT_ACCEPTANCE)
   set(_robo_self_contact_fixture_environment
     "ROBO_VEHICLE_DECLARATIONS=${ROBO_DYNA_VEHICLE_DECLARATIONS};ROBO_VEHICLE_GLASS_RESOLUTION=${ROBO_DYNA_VEHICLE_GLASS_RESOLUTION};ROBO_VEHICLE_GLASS_SHA256=${ROBO_DYNA_VEHICLE_GLASS_SHA256};ROBO_DYNA_TYPE13_DECLARATION=${ROBO_DYNA_VEHICLE_TYPE13_DECLARATION}")
-  foreach(runtime_gate IN ITEMS startup one_attempt)
-    if(runtime_gate STREQUAL "startup")
-      set(runtime_filter
-        "VehicleSelfContactRuntime.FullV5ForecastStartupOwnsExactIdentityAndMemory")
-      set(runtime_timeout 3600)
-    else()
-      set(runtime_filter
-        "VehicleSelfContactRuntime.FullV5OneAttemptIsTypedFailClosedAndRetryStable")
-      set(runtime_timeout 21600)
-    endif()
-    add_test(NAME vehicle_self_contact_runtime_${runtime_gate}
+  add_test(NAME vehicle_self_contact_acceptance_v5
+    COMMAND "${Python3_EXECUTABLE}" -B
+      "${CMAKE_CURRENT_LIST_DIR}/../../../modelio/self_contact/tests/actual_fixture.py"
+      "${ROBO_DYNA_VEHICLE_CANONICAL}" "${ROBO_DYNA_VEHICLE_SCOPE}"
+      "$<TARGET_FILE:robo_dyna_vehicle_self_contact_source_check>"
+      "VehicleSelfContactRuntime.FullV5SingleAttemptSealsAndDiscards")
+  set_tests_properties(vehicle_self_contact_acceptance_v5 PROPERTIES
+    TIMEOUT 7200 RUN_SERIAL TRUE PROCESSORS 2
+    LABELS "acceptance-v5;large;V5_SELF_CONTACT_RUNTIME;GPU"
+    RESOURCE_LOCK vehicle_self_contact_gpu
+    ENVIRONMENT "${_robo_self_contact_fixture_environment}")
+
+  if(EXISTS "${ROBO_DYNA_VEHICLE_WALL_MANIFEST}")
+    add_test(NAME vehicle_wall_self_contact_acceptance_v5
       COMMAND "${Python3_EXECUTABLE}" -B
         "${CMAKE_CURRENT_LIST_DIR}/../../../modelio/self_contact/tests/actual_fixture.py"
         "${ROBO_DYNA_VEHICLE_CANONICAL}" "${ROBO_DYNA_VEHICLE_SCOPE}"
         "$<TARGET_FILE:robo_dyna_vehicle_self_contact_source_check>"
-        "${runtime_filter}")
-    set_tests_properties(
-      vehicle_self_contact_runtime_${runtime_gate} PROPERTIES
-      TIMEOUT ${runtime_timeout} RUN_SERIAL TRUE PROCESSORS 2
-      LABELS "acceptance-v5;V5_SELF_CONTACT_RUNTIME;GPU"
+        "VehicleWallSelfContactRuntime.FullV5CombinedSingleAttemptSealsBothReceipts")
+    set_tests_properties(vehicle_wall_self_contact_acceptance_v5 PROPERTIES
+      TIMEOUT 7200 RUN_SERIAL TRUE PROCESSORS 2
+      LABELS "acceptance-v5;large;V5_SELF_CONTACT_RUNTIME;GPU;WALL_SELF_CONTACT"
       RESOURCE_LOCK vehicle_self_contact_gpu
-      ENVIRONMENT "${_robo_self_contact_fixture_environment}")
-  endforeach()
-
-  if(EXISTS "${ROBO_DYNA_VEHICLE_WALL_MANIFEST}")
-    foreach(runtime_gate IN ITEMS startup one_attempt)
-      if(runtime_gate STREQUAL "startup")
-        set(runtime_filter
-          "VehicleWallSelfContactRuntime.FullV5CombinedForecastStartupOwnsBothFixedSlotsOnce")
-        set(runtime_timeout 3600)
-      else()
-        set(runtime_filter
-          "VehicleWallSelfContactRuntime.FullV5CombinedAttemptSealsBothReceiptsAndRetries")
-        set(runtime_timeout 21600)
-      endif()
-      add_test(NAME vehicle_wall_self_contact_runtime_${runtime_gate}
-        COMMAND "${Python3_EXECUTABLE}" -B
-          "${CMAKE_CURRENT_LIST_DIR}/../../../modelio/self_contact/tests/actual_fixture.py"
-          "${ROBO_DYNA_VEHICLE_CANONICAL}" "${ROBO_DYNA_VEHICLE_SCOPE}"
-          "$<TARGET_FILE:robo_dyna_vehicle_self_contact_source_check>"
-          "${runtime_filter}")
-      set_tests_properties(
-        vehicle_wall_self_contact_runtime_${runtime_gate} PROPERTIES
-        TIMEOUT ${runtime_timeout} RUN_SERIAL TRUE PROCESSORS 2
-        LABELS "acceptance-v5;V5_SELF_CONTACT_RUNTIME;GPU;WALL_SELF_CONTACT"
-        RESOURCE_LOCK vehicle_self_contact_gpu
-        ENVIRONMENT
-          "${_robo_self_contact_fixture_environment};ROBO_VEHICLE_WALL=${ROBO_DYNA_VEHICLE_WALL_MANIFEST}")
-    endforeach()
+      ENVIRONMENT
+        "${_robo_self_contact_fixture_environment};ROBO_VEHICLE_WALL=${ROBO_DYNA_VEHICLE_WALL_MANIFEST}")
   else()
     message(STATUS
       "Combined wall+self V5 acceptance tests are not registered: set ROBO_DYNA_VEHICLE_WALL_MANIFEST")

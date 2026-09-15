@@ -181,17 +181,15 @@ def main() -> None:
         case / "vehicle_startup" / "shell_execution" /
         "SelfContactTests.cmake").read_text()
     for name in [
-            "vehicle_self_contact_runtime_${runtime_gate}",
-            "vehicle_wall_self_contact_runtime_${runtime_gate}",
-            "FullV5ForecastStartupOwnsExactIdentityAndMemory",
-            "FullV5OneAttemptIsTypedFailClosedAndRetryStable",
-            "FullV5CombinedForecastStartupOwnsBothFixedSlotsOnce",
-            "FullV5CombinedAttemptSealsBothReceiptsAndRetries"]:
+            "vehicle_self_contact_acceptance_v5",
+            "vehicle_wall_self_contact_acceptance_v5",
+            "FullV5SingleAttemptSealsAndDiscards",
+            "FullV5CombinedSingleAttemptSealsBothReceipts"]:
         require(name in fixture_cmake,
                 f"runtime CTest registration is missing: {name}")
     require("RESOURCE_LOCK vehicle_self_contact_gpu" in fixture_cmake and
-            "TIMEOUT ${runtime_timeout}" in fixture_cmake and
-            'LABELS "acceptance-v5;' in fixture_cmake and
+            "TIMEOUT 7200" in fixture_cmake and
+            'LABELS "acceptance-v5;large;' in fixture_cmake and
             "RuntimeGateTest.cpp" in fixture_cmake,
             "runtime gates need source proof and finite serialized properties")
     candidate_coupon = (
@@ -366,17 +364,18 @@ def main() -> None:
             "bounded authenticated real-geometry CTest registration is absent")
     acceptance_guard = fixture_cmake.find(
         "if(ROBO_DYNA_ENABLE_V5_SELF_CONTACT_ACCEPTANCE)")
-    self_loop = fixture_cmake.find(
-        "foreach(runtime_gate IN ITEMS startup one_attempt)",
+    self_acceptance = fixture_cmake.find(
+        "add_test(NAME vehicle_self_contact_acceptance_v5",
         acceptance_guard)
     wall_guard = fixture_cmake.find(
         'if(EXISTS "${ROBO_DYNA_VEHICLE_WALL_MANIFEST}")',
-        self_loop)
-    wall_loop = fixture_cmake.find(
-        "foreach(runtime_gate IN ITEMS startup one_attempt)",
+        self_acceptance)
+    wall_acceptance = fixture_cmake.find(
+        "add_test(NAME vehicle_wall_self_contact_acceptance_v5",
         wall_guard)
     require(acceptance_guard >= 0 and
-            acceptance_guard < self_loop < wall_guard < wall_loop,
+            acceptance_guard < self_acceptance <
+            wall_guard < wall_acceptance,
             "full V5 runtime registration is not acceptance/manifest guarded")
     root_cmake = (args.app_root / "CMakeLists.txt").read_text()
     shell_cmake = (

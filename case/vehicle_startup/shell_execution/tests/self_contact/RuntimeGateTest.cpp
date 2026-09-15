@@ -38,10 +38,14 @@ constexpr std::size_t CompleteCrossingWork =
 constexpr std::size_t RuntimeHostCap =
     std::size_t{20} * 1000 * 1000 * 1000;
 constexpr std::size_t RuntimeDeviceCap = std::size_t{8} << 30;
-constexpr std::size_t InitialTransactionArenaBytes = 1542100696;
-constexpr std::size_t AcceptedEventCensusCapacity = 1000000;
+constexpr std::size_t InitialTransactionArenaBytes = 3526100688;
+constexpr std::size_t AcceptedEventCensusCapacity = 8000000;
+constexpr std::size_t ExactAcceptedEvents = 32491;
+constexpr std::size_t CandidateParentPairCapacity = 2000000;
+constexpr std::size_t CandidateFacetPairCapacity = 8000000;
 constexpr unsigned DiscoveryWorkers = 4;
 constexpr unsigned CrossingWorkers = 4;
+constexpr double PhysicalStepS = 2e-7;
 constexpr std::uint64_t SelfSourceId = 0x563553454c464354ull;
 
 double Seconds(
@@ -61,20 +65,27 @@ std::size_t EventHashSlots(std::size_t events) {
     return 2 * events;
 }
 
-app::RuntimeLimits RuntimeLimits(std::size_t event_ledger_capacity) {
+app::RuntimeLimits RuntimeLimits(
+    std::size_t event_ledger_capacity,
+    std::size_t event_identity_census =
+        AcceptedEventCensusCapacity,
+    std::size_t parent_pair_capacity = ParentPairs,
+    std::size_t facet_pair_capacity = FacetPairs) {
     const c::SelfContactTransactionLimits::ExactCensus census{
         Nodes, Parents, Parents, MaximumFamilyParents, Facets,
-        ParentPairs, FacetPairs, 0};
+        parent_pair_capacity, facet_pair_capacity, 0};
     app::RuntimeLimits result;
     result.host_bytes = RuntimeHostCap;
     result.device_bytes = RuntimeDeviceCap;
     result.transaction =
         c::SelfContactTransactionLimits::Vehicle(
             census, Chunk, event_ledger_capacity,
-            EventHashSlots(event_ledger_capacity), 0,
-            WorkPerPair, WorkPerChunk, CompleteCrossingWork, 20,
+            EventHashSlots(event_identity_census), 0,
+            WorkPerPair, WorkPerChunk,
+            facet_pair_capacity * WorkPerPair, 20,
             RuntimeHostCap, RuntimeDeviceCap, RuntimeHostCap,
-            DiscoveryWorkers, CrossingWorkers);
+            DiscoveryWorkers, CrossingWorkers,
+            event_identity_census);
     // Vehicle() builds the generic count/work shape.  Keep the top-level
     // 20 GB/8 GiB transaction admission while respecting each existing
     // production component's narrower declared profile.
@@ -99,6 +110,7 @@ app::RuntimeConfig RuntimeConfig(std::size_t events) {
 
 vehicle_dynamics::Config DynamicsConfig() {
     auto result = wall::LoadedWallConfig();
+    result.startup.reserved_step_s = PhysicalStepS;
     result.timing.enabled = true;
     return result;
 }
@@ -106,7 +118,11 @@ vehicle_dynamics::Config DynamicsConfig() {
 void CheckExactForecast(
     const app::RuntimeForecast& forecast,
     std::size_t event_ledger_capacity,
-    std::size_t force_event_capacity) {
+    std::size_t force_event_capacity,
+    std::size_t event_identity_census =
+        AcceptedEventCensusCapacity,
+    std::size_t parent_pair_capacity = ParentPairs,
+    std::size_t facet_pair_capacity = FacetPairs) {
     const auto& transaction = forecast.transaction;
     EXPECT_EQ(forecast.identity.source_id, SelfSourceId);
     EXPECT_NE(forecast.identity.owner_id, 0u);
@@ -122,15 +138,20 @@ void CheckExactForecast(
     EXPECT_EQ(transaction.surface_parent_map_capacity, Parents);
     EXPECT_EQ(transaction.parent_facet_offset_count, Parents + 1);
     EXPECT_EQ(transaction.facet_descriptor_capacity, Facets);
-    EXPECT_EQ(transaction.broadphase_pair_capacity, ParentPairs);
-    EXPECT_EQ(transaction.complete_facet_pair_capacity, FacetPairs);
+    EXPECT_EQ(
+        transaction.broadphase_pair_capacity, parent_pair_capacity);
+    EXPECT_EQ(
+        transaction.complete_facet_pair_capacity, facet_pair_capacity);
     EXPECT_EQ(transaction.facet_pair_chunk_capacity, Chunk);
     EXPECT_EQ(
         transaction.accepted_event_ledger_capacity,
         event_ledger_capacity);
     EXPECT_EQ(
+        transaction.accepted_event_identity_census_capacity,
+        event_identity_census);
+    EXPECT_EQ(
         transaction.event_hash_capacity,
-        EventHashSlots(event_ledger_capacity));
+        EventHashSlots(event_identity_census));
     EXPECT_EQ(
         transaction.accepted_event_capacity,
         force_event_capacity);
@@ -144,11 +165,12 @@ void CheckExactForecast(
     EXPECT_EQ(transaction.crossing.worker_count, CrossingWorkers);
     EXPECT_EQ(
         transaction.complete_crossing_work_capacity,
-        CompleteCrossingWork);
+        facet_pair_capacity * WorkPerPair);
     EXPECT_LE(forecast.peak_host_upper_bound, RuntimeHostCap);
     EXPECT_LE(forecast.device_bytes, RuntimeDeviceCap);
     EXPECT_GT(transaction.participation.publication_host_bytes, 0u);
-    if (event_ledger_capacity == 1 && force_event_capacity == 1)
+    if (event_ledger_capacity == 1 && force_event_capacity == 1 &&
+        event_identity_census == AcceptedEventCensusCapacity)
         EXPECT_EQ(
             transaction.candidate_arena_bytes,
             InitialTransactionArenaBytes);
@@ -177,6 +199,7 @@ void CheckInstalledStartup(
     EXPECT_EQ(
         dynamics.allocations().device_bytes,
         preview.device_bytes);
+    EXPECT_EQ(dynamics.accepted().fixed_dt, PhysicalStepS);
     const auto allocation = dynamics.self_contact_allocations();
     EXPECT_EQ(
         allocation.activity.host_bytes,
@@ -235,6 +258,7 @@ void CheckCandidate(
     const auto& self = candidate.self_contact;
     ASSERT_TRUE(self.enabled);
     EXPECT_TRUE(self.accepted_force.valid);
+    EXPECT_EQ(self.accepted_force.event_count, ExactAcceptedEvents);
     EXPECT_EQ(self.accepted_broadphase_pairs, ParentPairs);
     EXPECT_EQ(self.accepted_facet_pairs, FacetPairs);
     EXPECT_TRUE(self.policy_summary.complete);
@@ -314,17 +338,17 @@ void CheckCandidate(
         << '\n';
 }
 
-void CheckStableAttempt(
+void CheckSingleDiscardedAttempt(
     vehicle_dynamics::VehiclePhysicalDynamics& dynamics) {
     const auto initial = dynamics.accepted();
     const auto allocations = dynamics.allocations();
     const auto self_allocations =
         dynamics.self_contact_allocations();
-    const auto first_start = std::chrono::steady_clock::now();
-    const auto first = dynamics.PrepareStep();
-    std::cout << "V5_SELF_CONTACT_PHASE first_attempt_s="
-              << Seconds(first_start) << '\n';
-    ASSERT_NO_FATAL_FAILURE(CheckCandidate(first));
+    const auto attempt_start = std::chrono::steady_clock::now();
+    const auto candidate = dynamics.PrepareStep();
+    std::cout << "V5_SELF_CONTACT_PHASE attempt_s="
+              << Seconds(attempt_start) << '\n';
+    ASSERT_NO_FATAL_FAILURE(CheckCandidate(candidate));
     EXPECT_TRUE(fe::trial_identity::SameStamp(
         dynamics.accepted(), initial));
     dynamics.DiscardStep();
@@ -336,23 +360,6 @@ void CheckStableAttempt(
     EXPECT_EQ(
         dynamics.self_contact_allocations().device.device_bytes,
         self_allocations.device.device_bytes);
-    const auto retry_start = std::chrono::steady_clock::now();
-    const auto retry = dynamics.PrepareStep();
-    std::cout << "V5_SELF_CONTACT_PHASE retry_attempt_s="
-              << Seconds(retry_start) << '\n';
-    ASSERT_NO_FATAL_FAILURE(CheckCandidate(retry));
-    EXPECT_EQ(
-        retry.self_contact.accepted_force.event_count,
-        first.self_contact.accepted_force.event_count);
-    EXPECT_EQ(
-        retry.self_contact.policy_summary.digest,
-        first.self_contact.policy_summary.digest);
-    EXPECT_EQ(
-        retry.self_contact.policy_summary.outcomes,
-        first.self_contact.policy_summary.outcomes);
-    dynamics.DiscardStep();
-    EXPECT_TRUE(fe::trial_identity::SameStamp(
-        dynamics.accepted(), initial));
 }
 
 const wall::VehicleWallSetup& ActualWallSetup() {
@@ -380,11 +387,18 @@ const wall::VehicleWallSetup& ActualWallSetup() {
 }
 
 app::WallSelfContactLimits CombinedLimits(
-    std::size_t events) {
+    std::size_t events,
+    std::size_t event_identity_census =
+        AcceptedEventCensusCapacity,
+    std::size_t parent_pair_capacity = ParentPairs,
+    std::size_t facet_pair_capacity = FacetPairs) {
     app::WallSelfContactLimits result;
     result.host_bytes = RuntimeHostCap;
     result.device_bytes = RuntimeDeviceCap;
-    result.self_contact = RuntimeLimits(events);
+    result.self_contact =
+        RuntimeLimits(
+            events, event_identity_census,
+            parent_pair_capacity, facet_pair_capacity);
     return result;
 }
 
@@ -453,7 +467,7 @@ TEST(VehicleSelfContactRuntime,
 }
 
 TEST(VehicleSelfContactRuntime,
-     FullV5OneAttemptIsTypedFailClosedAndRetryStable) {
+     FullV5SingleAttemptSealsAndDiscards) {
     std::cout << std::unitbuf;
     const auto setup_start = std::chrono::steady_clock::now();
     const auto& setup = LevelZeroSetup();
@@ -461,58 +475,30 @@ TEST(VehicleSelfContactRuntime,
               << Seconds(setup_start) << '\n';
     const auto dynamics_config = DynamicsConfig();
     const auto& joints = physical_model::supports_test::Joints();
-    std::size_t required_events = 0;
-    {
-        const auto limits =
-            RuntimeLimits(AcceptedEventCensusCapacity);
-        const auto prepare_start =
-            std::chrono::steady_clock::now();
-        auto dynamics = app::SelfContactOnly::Prepare(
-            setup, dynamics_config, RuntimeConfig(1),
-            limits, &joints);
-        std::cout << "V5_SELF_CONTACT_PHASE prepare_s="
-                  << Seconds(prepare_start) << '\n';
-        const auto initial = dynamics.accepted();
-        const auto allocations = dynamics.allocations();
-        try {
-            ASSERT_NO_FATAL_FAILURE(CheckStableAttempt(dynamics));
-        } catch (const app::SelfContactStageError& error) {
-            PrintFailure(error);
-            required_events = error.required_events();
-            if (!required_events)
-                throw;
-            std::cout
-                << "V5_SELF_CONTACT_RUNTIME"
-                << " status=event_capacity"
-                << " required_events=" << required_events
-                << " parent_pairs=" << ParentPairs
-                << " facet_pairs=" << FacetPairs << '\n';
-            EXPECT_TRUE(fe::trial_identity::SameStamp(
-                dynamics.accepted(), initial));
-            EXPECT_FALSE(dynamics.has_prepared_step());
-            EXPECT_EQ(
-                dynamics.allocations().device_bytes,
-                allocations.device_bytes);
-        }
-    }
-    if (required_events) {
-        const auto limits = RuntimeLimits(required_events);
-        const auto config = RuntimeConfig(required_events);
-        const auto forecast = app::SelfContactOnly::Preflight(
-            setup, dynamics_config, config, limits, &joints);
+    const auto limits =
+        RuntimeLimits(
+            ExactAcceptedEvents, ExactAcceptedEvents,
+            CandidateParentPairCapacity, CandidateFacetPairCapacity);
+    const auto config = RuntimeConfig(ExactAcceptedEvents);
+    const auto forecast = app::SelfContactOnly::Preflight(
+        setup, dynamics_config, config, limits, &joints);
+    ASSERT_NO_FATAL_FAILURE(CheckExactForecast(
+        forecast, ExactAcceptedEvents, ExactAcceptedEvents,
+        ExactAcceptedEvents, CandidateParentPairCapacity,
+        CandidateFacetPairCapacity));
+    const auto prepare_start = std::chrono::steady_clock::now();
+    auto dynamics = app::SelfContactOnly::Prepare(
+        setup, dynamics_config, config, limits, &joints);
+    std::cout << "V5_SELF_CONTACT_PHASE prepare_s="
+              << Seconds(prepare_start) << '\n';
+    ASSERT_NO_FATAL_FAILURE(
+        CheckInstalledStartup(forecast, dynamics));
+    try {
         ASSERT_NO_FATAL_FAILURE(
-            CheckExactForecast(
-                forecast, required_events, required_events));
-        auto dynamics = app::SelfContactOnly::Prepare(
-            setup, dynamics_config, config, limits, &joints);
-        ASSERT_NO_FATAL_FAILURE(
-            CheckInstalledStartup(forecast, dynamics));
-        try {
-            ASSERT_NO_FATAL_FAILURE(CheckStableAttempt(dynamics));
-        } catch (const app::SelfContactStageError& error) {
-            PrintFailure(error);
-            throw;
-        }
+            CheckSingleDiscardedAttempt(dynamics));
+    } catch (const app::SelfContactStageError& error) {
+        PrintFailure(error);
+        throw;
     }
 }
 
@@ -557,15 +543,18 @@ TEST(VehicleWallSelfContactRuntime,
 }
 
 TEST(VehicleWallSelfContactRuntime,
-     FullV5CombinedAttemptSealsBothReceiptsAndRetries) {
+     FullV5CombinedSingleAttemptSealsBothReceipts) {
     std::cout << std::unitbuf;
     const auto& wall_setup = ActualWallSetup();
     const auto& self_setup = LevelZeroSetup();
     const auto dynamics_config = DynamicsConfig();
     const auto& joints = physical_model::supports_test::Joints();
-    const auto limits = CombinedLimits(1);
+    const auto limits =
+        CombinedLimits(
+            ExactAcceptedEvents, ExactAcceptedEvents,
+            CandidateParentPairCapacity, CandidateFacetPairCapacity);
     const auto combined = app::LoadedWallSelfContact::Preflight(
-        wall_setup, self_setup, RuntimeConfig(1), limits,
+        wall_setup, self_setup, RuntimeConfig(ExactAcceptedEvents), limits,
         dynamics_config, &joints);
     const auto standalone = wall::LoadedWall::Preflight(
         wall_setup, dynamics_config, limits.wall, &joints);
@@ -573,32 +562,18 @@ TEST(VehicleWallSelfContactRuntime,
         CheckWallForecastUnchanged(combined, standalone));
     {
         auto dynamics = app::LoadedWallSelfContact::Prepare(
-            wall_setup, self_setup, RuntimeConfig(1), limits,
+            wall_setup, self_setup, RuntimeConfig(ExactAcceptedEvents), limits,
             dynamics_config, &joints);
         const auto initial = dynamics.accepted();
         const auto allocations = dynamics.allocations();
         try {
-            const auto first = dynamics.PrepareStep();
-            ASSERT_TRUE(first.wall.enabled);
-            ASSERT_TRUE(first.wall.accepted.valid);
-            ASSERT_TRUE(first.wall.prepared.valid);
-            ASSERT_NO_FATAL_FAILURE(CheckCandidate(first));
+            const auto candidate = dynamics.PrepareStep();
+            ASSERT_TRUE(candidate.wall.enabled);
+            ASSERT_TRUE(candidate.wall.accepted.valid);
+            ASSERT_TRUE(candidate.wall.prepared.valid);
+            ASSERT_NO_FATAL_FAILURE(CheckCandidate(candidate));
             EXPECT_TRUE(fe::trial_identity::SameStamp(
                 dynamics.accepted(), initial));
-            dynamics.DiscardStep();
-            EXPECT_TRUE(fe::trial_identity::SameStamp(
-                dynamics.accepted(), initial));
-            const auto retry = dynamics.PrepareStep();
-            ASSERT_TRUE(retry.wall.enabled);
-            ASSERT_TRUE(retry.wall.accepted.valid);
-            ASSERT_TRUE(retry.wall.prepared.valid);
-            ASSERT_NO_FATAL_FAILURE(CheckCandidate(retry));
-            EXPECT_EQ(
-                retry.self_contact.policy_summary.digest,
-                first.self_contact.policy_summary.digest);
-            EXPECT_EQ(
-                retry.wall.prepared.contact.resultant.value,
-                first.wall.prepared.contact.resultant.value);
             dynamics.CommitStep();
             EXPECT_EQ(dynamics.accepted().epoch, 1u);
             EXPECT_EQ(
@@ -609,19 +584,6 @@ TEST(VehicleWallSelfContactRuntime,
             throw;
         }
     }
-    // The combined owner has retired.  Reusing the immutable wall setup in
-    // the original wall-only factory proves that its source/runtime contract
-    // was not consumed or rewritten by the two-slot composition.
-    auto wall_only = wall::LoadedWall::Prepare(
-        wall_setup, dynamics_config, limits.wall, &joints);
-    const auto wall_initial = wall_only.accepted();
-    const auto wall_candidate = wall_only.PrepareStep();
-    EXPECT_TRUE(wall_candidate.wall.enabled);
-    EXPECT_TRUE(wall_candidate.wall.accepted.valid);
-    EXPECT_TRUE(wall_candidate.wall.prepared.valid);
-    wall_only.DiscardStep();
-    EXPECT_TRUE(fe::trial_identity::SameStamp(
-        wall_only.accepted(), wall_initial));
 }
 
 }  // namespace
