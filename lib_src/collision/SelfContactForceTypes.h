@@ -9,6 +9,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <type_traits>
 
 namespace tlfea::contact {
 
@@ -81,6 +82,13 @@ struct SelfContactForcePreflight {
 // One already-discovered and active-use-resolved VF or symmetric EE event.
 // Geometry discovery and a same-attempt candidate receipt intentionally remain
 // outside this accepted-state scratch contributor.
+struct SelfContactForceEventIdentity {
+  FixedTriangleFeatureKey feature;
+  std::uint32_t parent[2]{UINT32_MAX, UINT32_MAX};
+};
+
+static_assert(std::is_trivially_copyable_v<SelfContactForceEventIdentity>);
+
 struct SelfContactForceEvent {
   FixedTriangleFeatureKey feature;
   std::uint64_t source_order = UINT64_MAX;

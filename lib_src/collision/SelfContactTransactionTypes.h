@@ -35,6 +35,12 @@ enum class SelfContactTransactionStatus : std::uint8_t {
   CandidateRejected,
 };
 
+enum class SelfContactTransactionCountKind : std::uint8_t {
+  None,
+  ExactAcceptedEvents,
+  AcceptedEventsLowerBound,
+};
+
 enum class SelfContactFacetMotion : std::uint8_t {
   LinearNodalV1,
   CompleteRigidGroup,
@@ -62,6 +68,10 @@ struct SelfContactTransactionReport {
   SelfContactTransactionStatus status = SelfContactTransactionStatus::Ok;
   std::size_t candidate = SIZE_MAX;
   std::size_t pair = SIZE_MAX;
+  // Resource-limit event counts are either the complete exact requirement or
+  // a typed lower bound when the compact identity census itself was exhausted.
+  SelfContactTransactionCountKind count_kind =
+      SelfContactTransactionCountKind::None;
   // Populated for an exact facet-pair motion failure.  Partial/mixed support
   // can name up to the four actual groups present in one shell-parent map.
   SelfContactFacetMotionIdentity offending_motion[2];
@@ -121,9 +131,11 @@ struct SelfContactTransactionLimits {
   // complete facet-pair census cap, not an allocation shape.
   std::size_t max_candidate_pairs = 65536;
   std::size_t max_facet_pair_chunk = 1024;
-  // The certificate ledger is independent of the force publication cap. This
-  // permits a complete count before an exact force-capacity rejection.
+  // Full certificates and force events never exceed this profile cap or the
+  // configured force capacity.
   std::size_t max_global_events = 4096;
+  // The compact exact identity census is independent of the full event cap.
+  std::size_t max_event_identity_census = 4096;
   std::size_t max_event_hash_slots = 8192;
   // Zero folds all outcomes into the complete summary without retaining an
   // addressable per-pair publication.
@@ -159,7 +171,10 @@ struct SelfContactTransactionLimits {
       std::size_t max_device_bytes,
       std::size_t max_startup_host_bytes,
       unsigned discovery_worker_count = 1,
-      unsigned crossing_worker_count = 1) noexcept;
+      unsigned crossing_worker_count = 1,
+      // Zero preserves the former behavior: the full event cap is also the
+      // compact identity-census cap.
+      std::size_t event_identity_census = 0) noexcept;
 };
 
 struct SelfContactTransactionForecast {
@@ -182,6 +197,9 @@ struct SelfContactTransactionForecast {
   std::size_t candidate_pair_capacity = 0;
   std::size_t facet_pair_chunk_capacity = 0;
   std::size_t parent_pair_cursor_capacity = 0;
+  std::size_t accepted_event_identity_census_capacity = 0;
+  std::size_t event_identity_hash_capacity = 0;
+  // Compatibility aliases for the full certificate ledger and identity hash.
   std::size_t accepted_event_ledger_capacity = 0;
   std::size_t event_hash_capacity = 0;
   std::size_t rigid_group_snapshot_capacity = 0;

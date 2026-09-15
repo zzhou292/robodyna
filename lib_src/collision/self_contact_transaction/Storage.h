@@ -120,6 +120,7 @@ struct Layout {
   tl::util::ArenaRegion chunk_certificates;
   tl::util::ArenaRegion swept_parent_bounds;
   tl::util::ArenaRegion swept_facet_bounds;
+  tl::util::ArenaRegion accepted_event_identities;
   tl::util::ArenaRegion accepted_events;
   tl::util::ArenaRegion accepted_certificates;
   tl::util::ArenaRegion accepted_event_hash;
@@ -162,6 +163,7 @@ struct Buffers {
   AcceptedEventCertificate* chunk_certificates = nullptr;
   SelfContactSweptParentBounds* swept_parent_bounds = nullptr;
   SelfContactSweptParentBounds* swept_facet_bounds = nullptr;
+  SelfContactForceEventIdentity* accepted_event_identities = nullptr;
   SelfContactForceEvent* accepted_events = nullptr;
   AcceptedEventCertificate* accepted_certificates = nullptr;
   std::uint32_t* accepted_event_hash = nullptr;
@@ -175,7 +177,7 @@ bool MakeLayout(std::size_t nodes, std::size_t surface_parents,
                 std::size_t broadphase_pair_capacity,
                 std::size_t pair_chunk_capacity,
                 std::size_t event_capacity,
-                std::size_t event_ledger_capacity,
+                std::size_t event_identity_census_capacity,
                 std::size_t event_hash_capacity,
                 std::size_t policy_outcome_capacity,
                 std::size_t max_bytes,
@@ -307,6 +309,16 @@ SelfContactTransactionReport ValidateCandidateEdgePolicy(
     const AcceptedEventCertificate*, std::size_t) noexcept;
 bool ExactFacetPair(const FixedTriangleFeatureCandidate&,
                     const FixedTriangleFeatureCandidate&) noexcept;
+SelfContactTransactionReport MergeAcceptedEventIdentityChunk(
+    const SelfContactForceEventIdentity*, std::size_t,
+    SelfContactForceEventIdentity*, std::size_t census_capacity,
+    std::uint32_t*, std::size_t hash_capacity,
+    std::size_t*) noexcept;
+SelfContactTransactionReport CanonicalizeAcceptedEventIdentityCensus(
+    SelfContactForceEventIdentity*, std::size_t) noexcept;
+SelfContactTransactionReport VerifyAcceptedEventIdentityChunk(
+    const AcceptedEventCertificate*, std::size_t,
+    const SelfContactForceEventIdentity*, std::size_t) noexcept;
 SelfContactTransactionReport MergeAcceptedEventChunk(
     const AcceptedEventCertificate*, std::size_t,
     AcceptedEventCertificate*, std::size_t ledger_capacity,

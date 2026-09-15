@@ -11,7 +11,8 @@ configuration and qualification IDs, and the owner's nondefault stream. It
 preallocates both device owners plus one complete host device-key readback,
 the complete surface-parent map, parent/facet offsets, descriptors, accepted
 and prepared triangles, canonical parent-pair cursors/heap, fixed facet-pair
-and exact-geometry chunks, a global accepted-event certificate/hash ledger,
+and exact-geometry chunks, a global compact accepted-event identity/hash
+census, a force-sized full certificate/event ledger,
 optional detailed policy outcomes, and snapshots. It does not allocate the
 complete facet-pair, feature-task, intersection, crossing, or policy arrays.
 Static descriptor population authenticates one
@@ -35,8 +36,8 @@ directed VF task exactly when its source vertex belongs to the target facet,
 and masks an EE task exactly when the two canonical edges share an endpoint.
 Every other VF/EE task executes. Triangle intersection classification still
 runs for every remaining pair, so nonlocal intersections still reject.
-Admitted VF and strict interior/zero-distance EE certificates merge
-through a fixed-capacity global hash ledger. Each maximum-15-event discovery
+Admitted VF and strict interior/zero-distance EE identities merge
+through a fixed-capacity global hash census. Each maximum-15-event discovery
 chunk is classified and written in one transaction-private pass; a short
 private capacity keeps validating without writing so a later canonical feature
 error retains priority, and no failed pass publishes a receipt or event count.
@@ -46,10 +47,14 @@ support, tied, incidence, regularity and area policy.
 Identity is the geometric feature plus both ordered active-parent ordinals.
 Thus shared boundary geometry under distinct parent-local area ownership
 remains distinct, while one repeated owner identity must agree in every
-immutable map, area and classification. Global merge still deduplicates the
-complete stream, and finalization knows the complete unique event count before
-checking the exact force cap. Certificates are then sorted and assigned global
-canonical source order. Only
+immutable map, area and classification. The first global merge stores only the
+240-byte canonical feature plus ordered active-owner identity and completes
+the stream before checking the exact force cap. A census-cap failure is
+reported only as a typed lower bound. When the exact count fits force
+capacity, the deterministic stream runs a second time: every identity is
+checked against the sorted census and full certificates are deduplicated with
+exact immutable-payload comparison. Certificates are then sorted and assigned
+global canonical source order. Only
 then does it run the existing deterministic VF+EE force/STI implementation and
 record the same owner/token/view on the private issuer. There is no public
 event, triangle, pair, discovery, crossing, or source-order input.
@@ -164,23 +169,30 @@ uses the actual rigid owner response.
 ## Vehicle-scale limits and memory
 
 `SelfContactTransactionLimits::Vehicle` takes caller-supplied exact census
-counts and explicit chunk/event/policy/work/byte caps. It derives all component
+counts and explicit chunk/event/policy/work/byte caps. Its optional final
+identity-census argument separates compact counting from `max_global_events`;
+zero preserves the former equal-cap behavior. It derives all component
 count limits with checked arithmetic; it contains no Yaris constants. Forecast
 reports complete parent/facet caps separately from allocated chunk capacities,
 plus exact readback, cursor, heap, arena, component, startup, and device bytes.
 
 For the measured V5 shape (376,930 owner nodes, 337,092 selected parents,
 653,055 facets, 1,584,464 parent pairs and 5,989,248 facet pairs), a 4,096-pair
-chunk and folded policy use exactly 1,542,100,696 transaction-arena bytes with
-one event slot. One million force/event/certificate slots use 3,086,099,152
-arena bytes. The fixed subranges include 12,675,712 parent-key bytes,
+chunk and folded policy use exactly 1,542,100,936 transaction-arena bytes with
+one identity and one force slot. An 8,000,000-identity census, 16,000,000 hash
+slots, and one full force/certificate slot use 3,526,100,688 arena bytes. Each
+identity is exactly 240 bytes on the supported 64-bit ABI. The fixed subranges
+include 12,675,712 parent-key bytes,
 44,364,992 cursor bytes, 6,337,856 heap bytes, and 32,768 facet-pair chunk
 bytes, plus 8,192 bytes for one 15-bit local-task mask per chunk slot. The
-actual event ledger capacity must come from a complete streamed
-census; the earlier broadphase receipt explicitly did not run feature/force
+identity census capacity is an explicit bounded profile; an exhausted census
+reports only a lower bound, while a completed census reports the exact event
+requirement before the force-cap decision. The earlier broadphase
+census alone still does not run feature/force
 admission.
 
-Asymptotic storage is `O(nodes + facets + parent_pairs + event_cap +
+Asymptotic storage is
+`O(nodes + facets + parent_pairs + identity_census + force_event_cap +
 chunk*(feature/work caps))`, not `O(facet_pairs)`. Traversal is
 `O(facet_pairs log parent_pairs)` before exact geometry. The expected
 full-V5 performance blocker is CPU exact work. The actual V5 production-filter

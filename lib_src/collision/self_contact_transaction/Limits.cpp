@@ -28,7 +28,8 @@ SelfContactTransactionLimits SelfContactTransactionLimits::Vehicle(
     std::size_t max_device_bytes,
     std::size_t max_startup_host_bytes,
     unsigned discovery_worker_count,
-    unsigned crossing_worker_count) noexcept {
+    unsigned crossing_worker_count,
+    std::size_t event_identity_census) noexcept {
   SelfContactTransactionLimits result;
   const auto invalid = [&]() noexcept {
     result.max_host_bytes = 0;
@@ -39,14 +40,19 @@ SelfContactTransactionLimits SelfContactTransactionLimits::Vehicle(
   std::size_t twice_chunk = 0;
   std::size_t six_chunk = 0;
   std::size_t fifteen_chunk = 0;
+  const std::size_t identity_census_capacity =
+      event_identity_census
+          ? event_identity_census : event_ledger_capacity;
   if (!census.nodes || !census.surface_parents ||
       !census.selected_parents || !census.maximum_family_parents ||
       !census.facets || !facet_pair_chunk ||
       census.facet_pairs > SIZE_MAX / 15 ||
       !event_ledger_capacity ||
-      census.accepted_events > event_ledger_capacity ||
-      event_ledger_capacity > UINT32_MAX ||
-      event_hash_slots < event_ledger_capacity ||
+      !identity_census_capacity ||
+      event_ledger_capacity > identity_census_capacity ||
+      census.accepted_events > identity_census_capacity ||
+      identity_census_capacity > UINT32_MAX ||
+      event_hash_slots < identity_census_capacity ||
       !crossing_work_per_pair || !crossing_work_per_chunk ||
       !crossing_work_complete ||
       crossing_work_per_chunk > crossing_work_complete ||
@@ -92,6 +98,7 @@ SelfContactTransactionLimits SelfContactTransactionLimits::Vehicle(
   result.max_candidate_pairs = facet_pair_capacity;
   result.max_facet_pair_chunk = facet_pair_chunk;
   result.max_global_events = event_ledger_capacity;
+  result.max_event_identity_census = identity_census_capacity;
   result.max_event_hash_slots = event_hash_slots;
   result.max_policy_outcomes = policy_outcome_capacity;
   result.max_stream_crossing_work = crossing_work_complete;

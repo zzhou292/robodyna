@@ -74,57 +74,9 @@ void HashValue(T value, std::uint64_t* hash) noexcept {
   }
 }
 
-void Hash(const FacetVertexKey& key, std::uint64_t* hash) noexcept {
-  HashValue(key.source_instance_id, hash);
-  HashValue(key.kind, hash);
-  HashValue(key.first, hash);
-  HashValue(key.second, hash);
-  HashValue(key.numerator, hash);
-  HashValue(key.denominator, hash);
-  HashValue(key.level, hash);
-  HashValue(key.grid_i, hash);
-  HashValue(key.grid_j, hash);
-}
-
-void Hash(const FacetEdgeKey& key, std::uint64_t* hash) noexcept {
-  HashValue(key.parent_boundary, hash);
-  HashValue(key.parent_eid, hash);
-  Hash(key.endpoints[0], hash);
-  Hash(key.endpoints[1], hash);
-}
-
-void Hash(const FixedTriangleKey& key, std::uint64_t* hash) noexcept {
-  HashValue(key.source_instance_id, hash);
-  HashValue(key.parent_eid, hash);
-  HashValue(key.level, hash);
-  HashValue(key.local_facet, hash);
-}
-
-void Hash(const FixedTriangleFeatureKey& key,
-          std::uint64_t* hash) noexcept {
-  HashValue(key.kind, hash);
-  if (key.kind == FixedTriangleCandidateKind::VertexFace) {
-    Hash(key.vertex_face.vertex, hash);
-    HashValue(key.vertex_face.target.kind, hash);
-    if (key.vertex_face.target.kind ==
-        FixedTriangleStratumKind::Vertex)
-      Hash(key.vertex_face.target.vertex, hash);
-    else if (key.vertex_face.target.kind ==
-             FixedTriangleStratumKind::Edge)
-      Hash(key.vertex_face.target.edge, hash);
-    else
-      Hash(key.vertex_face.target.face, hash);
-  } else {
-    Hash(key.edge_edge.edges[0], hash);
-    Hash(key.edge_edge.edges[1], hash);
-  }
-}
-
 void HashEventIdentity(const SelfContactForceEvent& event,
                        std::uint64_t* hash) noexcept {
-  Hash(event.feature, hash);
-  HashValue(event.classification.parent[0], hash);
-  HashValue(event.classification.parent[1], hash);
+  HashSelfContactForceEventIdentity(event, hash);
 }
 
 bool Same(Vec3 a, Vec3 b) noexcept {
@@ -573,6 +525,119 @@ SelfContactTransactionReport ValidateCompleteTriangleIdentities(
   return {};
 }
 
+SelfContactTransactionReport MergeAcceptedEventIdentityChunk(
+    const SelfContactForceEventIdentity* input,
+    std::size_t input_count,
+    SelfContactForceEventIdentity* census,
+    std::size_t census_capacity,
+    std::uint32_t* hash_slots, std::size_t hash_capacity,
+    std::size_t* census_count) noexcept {
+  if ((input_count && !input) || !census || !census_capacity ||
+      !hash_slots || !hash_capacity || !census_count ||
+      *census_count > census_capacity ||
+      census_capacity > UINT32_MAX ||
+      hash_capacity < census_capacity)
+    return Failure(SelfContactTransactionStatus::InvalidInput,
+                   "Accepted-event identity census is incomplete");
+  for (std::size_t i = 0; i < input_count; ++i) {
+    std::uint64_t hash = 1469598103934665603ull;
+    HashSelfContactForceEventIdentity(input[i], &hash);
+    std::size_t slot = hash % hash_capacity;
+    bool inserted = false;
+    // Hashes select probe order only. Every occupied slot is resolved by the
+    // complete canonical feature and both ordered owner ordinals.
+    for (std::size_t probe = 0; probe < hash_capacity; ++probe) {
+      const auto value = hash_slots[slot];
+      if (value == UINT32_MAX) {
+        if (*census_count == census_capacity) {
+          auto report = Failure(
+              SelfContactTransactionStatus::ResourceLimit,
+              "Accepted-event identity census exceeds its hard cap");
+          report.candidate = census_capacity + 1;
+          report.count_kind =
+              SelfContactTransactionCountKind::
+                  AcceptedEventsLowerBound;
+          return report;
+        }
+        census[*census_count] = input[i];
+        hash_slots[slot] =
+            static_cast<std::uint32_t>((*census_count)++);
+        inserted = true;
+        break;
+      }
+      if (value >= *census_count)
+        return Failure(SelfContactTransactionStatus::IdentityMismatch,
+            "Accepted-event identity hash index is corrupt", slot);
+      if (SameSelfContactForceEventIdentity(
+              census[value], input[i])) {
+        inserted = true;
+        break;
+      }
+      slot = slot + 1 == hash_capacity ? 0 : slot + 1;
+    }
+    if (!inserted) {
+      auto report = Failure(
+          SelfContactTransactionStatus::ResourceLimit,
+          "Accepted-event identity hash census has no free slot");
+      report.candidate = *census_count + 1;
+      report.count_kind =
+          SelfContactTransactionCountKind::
+              AcceptedEventsLowerBound;
+      return report;
+    }
+  }
+  return {};
+}
+
+SelfContactTransactionReport
+CanonicalizeAcceptedEventIdentityCensus(
+    SelfContactForceEventIdentity* census,
+    std::size_t count) noexcept {
+  if (count && !census)
+    return Failure(SelfContactTransactionStatus::InvalidInput,
+        "Accepted-event identity census is absent");
+  if (count > 1)
+    std::sort(census, census + count,
+              [](const SelfContactForceEventIdentity& a,
+                 const SelfContactForceEventIdentity& b) {
+                return CompareSelfContactForceEventIdentity(a, b) < 0;
+              });
+  for (std::size_t i = 1; i < count; ++i)
+    if (CompareSelfContactForceEventIdentity(
+            census[i - 1], census[i]) >= 0)
+      return Failure(SelfContactTransactionStatus::IdentityMismatch,
+          "Canonical accepted-event identity census is not unique", i);
+  return {};
+}
+
+SelfContactTransactionReport VerifyAcceptedEventIdentityChunk(
+    const AcceptedEventCertificate* input, std::size_t input_count,
+    const SelfContactForceEventIdentity* census,
+    std::size_t census_count) noexcept {
+  if ((input_count && !input) || (census_count && !census))
+    return Failure(SelfContactTransactionStatus::InvalidInput,
+        "Accepted-event identity verification storage is absent");
+  for (std::size_t i = 0; i < input_count; ++i) {
+    const auto identity =
+        SelfContactForceEventIdentityOf(input[i].event);
+    std::size_t lower = 0, upper = census_count;
+    while (lower < upper) {
+      const auto middle = lower + (upper - lower) / 2;
+      if (CompareSelfContactForceEventIdentity(
+              census[middle], identity) < 0)
+        lower = middle + 1;
+      else
+        upper = middle;
+    }
+    if (lower == census_count ||
+        !SameSelfContactForceEventIdentity(
+            census[lower], identity))
+      return Failure(SelfContactTransactionStatus::IdentityMismatch,
+          "Verification pass produced an uncensused event identity", i);
+  }
+  return {};
+}
+
 SelfContactTransactionReport MergeAcceptedEventChunk(
     const AcceptedEventCertificate* input, std::size_t input_count,
     AcceptedEventCertificate* ledger, std::size_t ledger_capacity,
@@ -633,6 +698,8 @@ SelfContactTransactionReport FinalizeAcceptedEventLedger(
     auto report = Failure(SelfContactTransactionStatus::ResourceLimit,
         "Complete accepted VF+EE event set exceeds force capacity");
     report.candidate = count;
+    report.count_kind =
+        SelfContactTransactionCountKind::ExactAcceptedEvents;
     return report;
   }
   std::sort(certificates, certificates + count,

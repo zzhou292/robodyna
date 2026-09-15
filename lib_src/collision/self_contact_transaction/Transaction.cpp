@@ -124,7 +124,7 @@ SelfContactTransactionReport SelfContactTransaction::Initialize(
           preflight.forecast.broadphase_pair_capacity,
           limits.max_facet_pair_chunk,
           config.force.event_capacity,
-          limits.max_global_events,
+          limits.max_event_identity_census,
           limits.max_event_hash_slots,
           limits.max_policy_outcomes,
           limits.max_host_bytes, layout) ||
@@ -194,6 +194,8 @@ SelfContactTransactionReport SelfContactTransaction::Initialize(
           layout.swept_parent_bounds) ||
       !next->arena.Construct<SelfContactSweptParentBounds>(
           layout.swept_facet_bounds) ||
+      !next->arena.Construct<SelfContactForceEventIdentity>(
+          layout.accepted_event_identities) ||
       !next->arena.Construct<SelfContactForceEvent>(
           layout.accepted_events) ||
       !next->arena.Construct<sct::AcceptedEventCertificate>(
@@ -434,9 +436,11 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
       state.buffers.parent_facet_offsets, parents, activity);
   if (streamed.status != S::Ok) return state.Fail(streamed);
   std::fill_n(state.buffers.accepted_event_hash,
-              state.storage_forecast.event_hash_capacity,
+              state.storage_forecast.event_identity_hash_capacity,
               UINT32_MAX);
   std::size_t event_count = 0;
+  SelfContactTransactionReport census_limit;
+  bool census_exceeded = false;
   std::size_t feature_observations = 0;
   std::size_t potential_tasks = 0;
   std::size_t local_masked_tasks = 0;
@@ -513,14 +517,28 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
       }
       return state.Fail(events);
     }
-    events = sct::MergeAcceptedEventChunk(
-        state.buffers.chunk_certificates, chunk_events,
-        state.buffers.accepted_certificates,
-        state.storage_forecast.accepted_event_ledger_capacity,
-        state.buffers.accepted_event_hash,
-        state.storage_forecast.event_hash_capacity,
-        &event_count);
-    if (events.status != S::Ok) return state.Fail(events);
+    if (!census_exceeded) {
+      for (std::size_t event = 0; event < chunk_events; ++event) {
+        const auto identity = SelfContactForceEventIdentityOf(
+            state.buffers.chunk_certificates[event].event);
+        events = sct::MergeAcceptedEventIdentityChunk(
+            &identity, 1, state.buffers.accepted_event_identities,
+            state.storage_forecast.
+                accepted_event_identity_census_capacity,
+            state.buffers.accepted_event_hash,
+            state.storage_forecast.event_identity_hash_capacity,
+            &event_count);
+        if (events.status == S::ResourceLimit &&
+            events.count_kind ==
+                SelfContactTransactionCountKind::
+                    AcceptedEventsLowerBound) {
+          census_limit = events;
+          census_exceeded = true;
+          break;
+        }
+        if (events.status != S::Ok) return state.Fail(events);
+      }
+    }
     state.accepted_facet_pair_count += streamed_pair_count;
   }
   sct::StreamingCandidateSourceReceipt stream_receipt;
@@ -537,7 +555,145 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
       exact_executed_tasks != potential_tasks - local_masked_tasks)
     return state.Fail(Failure(S::IdentityMismatch,
         "Accepted local feature mask accounting is incomplete"));
-  auto events = sct::FinalizeAcceptedEventLedger(
+  if (census_exceeded) return state.Fail(census_limit);
+  if (event_count >
+      state.storage_forecast.accepted_event_capacity) {
+    auto report = Failure(S::ResourceLimit,
+        "Complete accepted VF+EE event set exceeds force capacity");
+    report.candidate = event_count;
+    report.count_kind =
+        SelfContactTransactionCountKind::ExactAcceptedEvents;
+    return state.Fail(report);
+  }
+  auto events = sct::CanonicalizeAcceptedEventIdentityCensus(
+      state.buffers.accepted_event_identities, event_count);
+  if (events.status != S::Ok) return state.Fail(events);
+
+  streamed = state.candidate_source.Begin(
+      state.buffers.broadphase_pairs,
+      state.accepted_broadphase_pair_count,
+      state.buffers.surface_to_active, state.surface_parent_count,
+      state.buffers.parent_facet_offsets, parents, activity);
+  if (streamed.status != S::Ok) return state.Fail(streamed);
+  std::fill_n(state.buffers.accepted_event_hash,
+              state.storage_forecast.event_hash_capacity,
+              UINT32_MAX);
+  std::size_t verified_event_count = 0;
+  std::size_t verified_facet_pair_count = 0;
+  std::size_t verified_feature_observations = 0;
+  std::size_t verified_potential_tasks = 0;
+  std::size_t verified_local_masked_tasks = 0;
+  std::size_t verified_exact_executed_tasks = 0;
+  for (;;) {
+    const FixedTrianglePair* pairs = nullptr;
+    std::size_t pair_count = 0;
+    streamed = state.candidate_source.Next(&pairs, &pair_count);
+    if (streamed.status != S::Ok) return state.Fail(streamed);
+    if (!pair_count) break;
+    const auto streamed_pair_count = pair_count;
+    auto filtered = sct::FilterAcceptedFacetPairs(
+        state.active_use, state.buffers.accepted_triangles,
+        state.buffers.facet_motion, state.facet_count,
+        state.buffers.facet_pair_chunk, &pair_count);
+    if (filtered.status != S::Ok) return state.Fail(filtered);
+    auto masked = sct::BuildLocalFeatureTaskMasks(
+        state.buffers.facet_descriptors, state.facet_count,
+        pairs, pair_count, state.buffers.chunk_feature_task_masks,
+        state.storage_forecast.feature_task_mask_capacity);
+    if (masked.status != S::Ok) return state.Fail(masked);
+    const auto discovery = state.accepted_discovery.DiscoverMasked(
+        state.buffers.accepted_triangles, state.facet_count,
+        pairs, pair_count, state.buffers.chunk_feature_task_masks);
+    if (discovery.status != FixedTriangleDiscoveryStatus::Ok) {
+      auto report = Failure(S::DiscoveryFailure, discovery.message);
+      report.discovery_status = discovery.status;
+      report.pair = discovery.input_pair == SIZE_MAX
+          ? SIZE_MAX
+          : verified_facet_pair_count + discovery.input_pair;
+      report.discovery_task = discovery.input_task;
+      report.discovery_reason = discovery.arithmetic_reason;
+      return state.Fail(report);
+    }
+    if (discovery.potential_tasks >
+            SIZE_MAX - verified_potential_tasks ||
+        discovery.local_masked_tasks >
+            SIZE_MAX - verified_local_masked_tasks ||
+        discovery.exact_executed_tasks >
+            SIZE_MAX - verified_exact_executed_tasks ||
+        discovery.feature_candidates >
+            SIZE_MAX - verified_feature_observations)
+      return state.Fail(Failure(
+          S::ResourceLimit,
+          "Accepted verification diagnostics overflowed"));
+    verified_potential_tasks += discovery.potential_tasks;
+    verified_local_masked_tasks += discovery.local_masked_tasks;
+    verified_exact_executed_tasks +=
+        discovery.exact_executed_tasks;
+    const auto chunk_feature_base =
+        verified_feature_observations;
+    verified_feature_observations +=
+        discovery.feature_candidates;
+    std::size_t chunk_events = 0;
+    events = sct::BuildAcceptedEvents(
+        state.active_use, state.regularity, regularity_receipt,
+        state.accepted_discovery.features(),
+        state.accepted_discovery.intersections(),
+        state.buffers.facet_descriptors,
+        state.buffers.triangle_order, state.facet_count,
+        activity, state.buffers.chunk_events,
+        state.buffers.chunk_certificates,
+        15 * state.storage_forecast.facet_pair_chunk_capacity,
+        &chunk_events);
+    if (events.status != S::Ok) {
+      if (events.candidate != SIZE_MAX) {
+        if (events.candidate >
+            SIZE_MAX - chunk_feature_base)
+          return state.Fail(Failure(
+              S::ResourceLimit,
+              "Accepted verification feature ordinal overflowed"));
+        events.candidate += chunk_feature_base;
+      }
+      return state.Fail(events);
+    }
+    events = sct::VerifyAcceptedEventIdentityChunk(
+        state.buffers.chunk_certificates, chunk_events,
+        state.buffers.accepted_event_identities, event_count);
+    if (events.status != S::Ok) return state.Fail(events);
+    events = sct::MergeAcceptedEventChunk(
+        state.buffers.chunk_certificates, chunk_events,
+        state.buffers.accepted_certificates,
+        state.storage_forecast.accepted_event_ledger_capacity,
+        state.buffers.accepted_event_hash,
+        state.storage_forecast.event_hash_capacity,
+        &verified_event_count);
+    if (events.status != S::Ok) return state.Fail(events);
+    verified_facet_pair_count += streamed_pair_count;
+  }
+  sct::StreamingCandidateSourceReceipt verification_receipt;
+  streamed = state.candidate_source.Finish(&verification_receipt);
+  if (streamed.status != S::Ok ||
+      !state.candidate_source.Authenticates(
+          verification_receipt) ||
+      verification_receipt.parent_pairs() !=
+          state.accepted_broadphase_pair_count ||
+      verification_receipt.facet_pairs() !=
+          verified_facet_pair_count ||
+      verified_facet_pair_count !=
+          state.accepted_facet_pair_count ||
+      verified_event_count != event_count ||
+      verified_feature_observations != feature_observations ||
+      verified_potential_tasks != potential_tasks ||
+      verified_local_masked_tasks != local_masked_tasks ||
+      verified_exact_executed_tasks != exact_executed_tasks)
+    return state.Fail(Failure(S::IdentityMismatch,
+        "Accepted verification stream differs from its census"));
+  if (verified_local_masked_tasks > verified_potential_tasks ||
+      verified_exact_executed_tasks !=
+          verified_potential_tasks - verified_local_masked_tasks)
+    return state.Fail(Failure(S::IdentityMismatch,
+        "Accepted verification feature accounting is incomplete"));
+
+  events = sct::FinalizeAcceptedEventLedger(
       state.buffers.accepted_certificates, event_count,
       state.buffers.accepted_events,
       state.storage_forecast.accepted_event_capacity);

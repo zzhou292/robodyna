@@ -52,6 +52,9 @@ for token in (
     "candidate_source.Begin(",
     "candidate_source.Next(",
     "candidate_source.Finish(",
+    "MergeAcceptedEventIdentityChunk(",
+    "CanonicalizeAcceptedEventIdentityCensus(",
+    "VerifyAcceptedEventIdentityChunk(",
     "MergeAcceptedEventChunk(",
     "FinalizeAcceptedEventLedger(",
     "BuildLocalFeatureTaskMasks(",
@@ -115,6 +118,7 @@ for token in ("accepted_rigid_groups", "prepared_rigid_groups",
               "node_rigid_groups", "parent_motion", "facet_motion",
               "chunk_crossings", "chunk_motion_actions",
               "chunk_feature_task_masks",
+              "accepted_event_identities",
               "swept_parent_bounds",
               "swept_facet_bounds"):
     require(storage, token, storage_path)
@@ -156,6 +160,10 @@ for token in (
     "exact_crossing_work",
     "feature_task_mask_capacity",
     "feature_task_mask_bytes",
+    "max_event_identity_census",
+    "accepted_event_identity_census_capacity",
+    "event_identity_hash_capacity",
+    "AcceptedEventsLowerBound",
     "unsigned discovery_worker_count = 1",
     "unsigned crossing_worker_count = 1",
     "potential_tasks()",
@@ -340,6 +348,8 @@ for token in (
     "SameEdgeEdgeCertificateIdentity",
     "Complete accepted VF+EE event set",
     "HashEventIdentity",
+    "HashSelfContactForceEventIdentity",
+    "SelfContactForceEventIdentityOf",
     "CompareSelfContactForceEventIdentity",
     "SameSelfContactForceEventIdentity",
     "SameParentPair(certificate.discovery, crossing.key)",
@@ -395,6 +405,8 @@ require(QUAL_CMAKE.read_text(), "prism-axis-certificate", QUAL_CMAKE)
 require(QUAL_BAZEL.read_text(), "prism-axis-certificate", QUAL_BAZEL)
 require(QUAL_CMAKE.read_text(), "local-feature-task-mask", QUAL_CMAKE)
 require(QUAL_BAZEL.read_text(), "local-feature-task-mask", QUAL_BAZEL)
+require(QUAL_CMAKE.read_text(), "exact-event-census", QUAL_CMAKE)
+require(QUAL_BAZEL.read_text(), "exact-event-census", QUAL_BAZEL)
 for token in (
     "DecisionCount = 262144",
     "ChunkCapacity = 257",
@@ -426,6 +438,13 @@ for token in (
     "sizeof(FixedStorage) < 512u * 1024u",
 ):
     require(MEDIUM.read_text(), token, MEDIUM)
+for token in (
+    "MillionSyntheticIdentitiesUseBoundedCompactStorage",
+    "sizeof(c::SelfContactForceEventIdentity) == 240",
+    "AcceptedEventsLowerBound",
+    "MergeAcceptedEventIdentityChunk(",
+):
+    require(VALUE_TEST.read_text(), token, VALUE_TEST)
 for token in (
     "OnePrivatePassRetainsLateFailurePriorityAndCountPublication",
     "ShortPrivateCapacityCountsCompletelyWithoutOverwritingGuard",

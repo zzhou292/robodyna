@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #include "lib_src/collision/self_contact_transaction/Storage.h"
+#include "lib_src/collision/SelfContactForceValues.h"
 
 #include <gtest/gtest.h>
 
@@ -51,6 +52,9 @@ static_assert(offsetof(
     c::SelfContactCandidatePolicySummary,
     vertex_vertex_axis_separated) == 120);
 static_assert(sizeof(c::SelfContactCandidatePolicySummary) == 128);
+static_assert(
+    std::is_trivially_copyable_v<c::SelfContactForceEventIdentity>);
+static_assert(sizeof(c::SelfContactForceEventIdentity) == 240);
 
 using LegacyPrismCertificate = bool (*)(
     const c::CurrentFixedTriangle&, const c::CurrentFixedTriangle&, double,
@@ -298,6 +302,10 @@ TEST(SelfContactTransactionValues,
   EXPECT_EQ(layout.chunk_feature_task_masks.count, 3u);
   EXPECT_EQ(layout.chunk_feature_task_masks.bytes,
             3 * sizeof(c::FixedTriangleFeatureTaskMask));
+  EXPECT_EQ(layout.accepted_event_identities.count, 8u);
+  EXPECT_EQ(layout.accepted_events.count, 7u);
+  EXPECT_EQ(layout.accepted_certificates.count, 7u);
+  EXPECT_EQ(layout.accepted_event_hash.count, 16u);
   const auto exact = layout.bytes;
   sct::Layout unchanged = layout;
   EXPECT_FALSE(sct::MakeLayout(
@@ -379,6 +387,28 @@ TEST(SelfContactTransactionValues,
           96ull << 30, 4);
   EXPECT_EQ(compatible_default.accepted_discovery.worker_count, 4u);
   EXPECT_EQ(compatible_default.crossing.worker_count, 1u);
+  const auto compact_census =
+      c::SelfContactTransactionLimits::Vehicle(
+          census, chunk, 1, 16000000, 0, 4095,
+          per_chunk_work, complete_work, 20,
+          64ull << 30, 8ull << 30, 96ull << 30,
+          4, 4, 8000000);
+  EXPECT_EQ(compact_census.max_global_events, 1u);
+  EXPECT_EQ(
+      compact_census.max_event_identity_census, 8000000u);
+  EXPECT_EQ(compact_census.max_event_hash_slots, 16000000u);
+  EXPECT_EQ(compact_census.force.max_events, 1u);
+  auto over_force_census = census;
+  over_force_census.accepted_events = 2;
+  const auto count_before_force =
+      c::SelfContactTransactionLimits::Vehicle(
+          over_force_census, chunk, 1, 16, 0, 4095,
+          per_chunk_work, complete_work, 20,
+          64ull << 30, 8ull << 30, 96ull << 30,
+          4, 4, 8);
+  EXPECT_NE(count_before_force.max_host_bytes, 0u);
+  EXPECT_EQ(count_before_force.max_global_events, 1u);
+  EXPECT_EQ(count_before_force.max_event_identity_census, 8u);
 
   auto overflow = census;
   overflow.facet_pairs = SIZE_MAX / 15 + 1;
@@ -405,18 +435,31 @@ TEST(SelfContactTransactionValues,
       census.selected_parents, census.facets,
       779, census.parent_pairs, chunk, 1, 1, 2, 0,
       SIZE_MAX, minimum));
-  sct::Layout million_events;
+  sct::Layout eight_million_identity_census;
   ASSERT_TRUE(sct::MakeLayout(
       census.nodes, census.surface_parents,
       census.selected_parents, census.facets,
       779, census.parent_pairs, chunk,
-      1000000, 1000000, 2000000, 0,
-      SIZE_MAX, million_events));
+      1, 8000000, 16000000, 0,
+      SIZE_MAX, eight_million_identity_census));
   EXPECT_GT(minimum.bytes, 0u);
-  EXPECT_GT(million_events.bytes, minimum.bytes);
+  EXPECT_GT(eight_million_identity_census.bytes, minimum.bytes);
+  const auto exact_identity_bytes =
+      eight_million_identity_census.bytes;
+  auto unchanged = eight_million_identity_census;
+  EXPECT_FALSE(sct::MakeLayout(
+      census.nodes, census.surface_parents,
+      census.selected_parents, census.facets,
+      779, census.parent_pairs, chunk,
+      1, 8000000, 16000000, 0,
+      exact_identity_bytes - 1, unchanged));
+  EXPECT_EQ(unchanged.bytes, exact_identity_bytes);
   std::cout << "V5_STREAMING_ARENA minimum_event_bytes="
             << minimum.bytes
-            << " million_event_bytes=" << million_events.bytes
+            << " eight_million_identity_bytes="
+            << eight_million_identity_census.bytes
+            << " event_identity_size="
+            << sizeof(c::SelfContactForceEventIdentity)
             << " parent_key_bytes="
             << census.parent_pairs * sizeof(c::SelfContactPairKey)
             << " cursor_bytes="
@@ -1011,6 +1054,144 @@ TEST(SelfContactTransactionValues,
 }
 
 TEST(SelfContactTransactionValues,
+     CompactIdentityCensusDeduplicatesOwnersAndResolvesHashCollisions) {
+  auto event = Certificate(100).event;
+  event.classification.parent[0] = 2;
+  event.classification.parent[1] = 3;
+  const auto identity = c::SelfContactForceEventIdentityOf(event);
+  EXPECT_EQ(c::CompareSelfContactForceEventIdentity(
+                identity,
+                c::SelfContactForceEventIdentityOf(event)),
+            0);
+
+  std::array<int, 3> first_owner{{-1, -1, -1}};
+  c::SelfContactForceEventIdentity collision[2];
+  bool found = false;
+  for (std::uint32_t owner = 0; owner < 100 && !found; ++owner) {
+    auto candidate = identity;
+    candidate.parent[0] = owner;
+    std::uint64_t value = 1469598103934665603ull;
+    c::HashSelfContactForceEventIdentity(candidate, &value);
+    const auto bucket = value % first_owner.size();
+    if (first_owner[bucket] >= 0) {
+      collision[0] = identity;
+      collision[0].parent[0] =
+          static_cast<std::uint32_t>(first_owner[bucket]);
+      collision[1] = candidate;
+      found = true;
+    } else {
+      first_owner[bucket] = static_cast<int>(owner);
+    }
+  }
+  ASSERT_TRUE(found);
+  ASSERT_NE(collision[0].parent[0], collision[1].parent[0]);
+
+  std::array<c::SelfContactForceEventIdentity, 2> census;
+  std::array<std::uint32_t, 3> hash;
+  hash.fill(UINT32_MAX);
+  std::size_t count = 0;
+  ASSERT_EQ(sct::MergeAcceptedEventIdentityChunk(
+      collision, 1, census.data(), census.size(),
+      hash.data(), hash.size(), &count).status,
+      c::SelfContactTransactionStatus::Ok);
+  ASSERT_EQ(sct::MergeAcceptedEventIdentityChunk(
+      collision + 1, 1, census.data(), census.size(),
+      hash.data(), hash.size(), &count).status,
+      c::SelfContactTransactionStatus::Ok);
+  ASSERT_EQ(sct::MergeAcceptedEventIdentityChunk(
+      collision, 1, census.data(), census.size(),
+      hash.data(), hash.size(), &count).status,
+      c::SelfContactTransactionStatus::Ok);
+  EXPECT_EQ(count, 2u);
+}
+
+TEST(SelfContactTransactionValues,
+     CensusLowerBoundAndFullVerificationKeepDifferentSemantics) {
+  std::array<c::SelfContactForceEventIdentity, 2> census;
+  std::array<std::uint32_t, 3> identity_hash;
+  identity_hash.fill(UINT32_MAX);
+  std::size_t count = 0;
+  auto certificate = Certificate(100);
+  for (std::uint32_t owner = 0; owner < 2; ++owner) {
+    certificate.event.classification.parent[0] = owner;
+    const auto identity =
+        c::SelfContactForceEventIdentityOf(certificate.event);
+    ASSERT_EQ(sct::MergeAcceptedEventIdentityChunk(
+        &identity, 1, census.data(), census.size(),
+        identity_hash.data(), identity_hash.size(), &count).status,
+        c::SelfContactTransactionStatus::Ok);
+  }
+  certificate.event.classification.parent[0] = 2;
+  const auto overflow_identity =
+      c::SelfContactForceEventIdentityOf(certificate.event);
+  const auto overflow = sct::MergeAcceptedEventIdentityChunk(
+      &overflow_identity, 1, census.data(), census.size(),
+      identity_hash.data(), identity_hash.size(), &count);
+  EXPECT_EQ(overflow.status,
+            c::SelfContactTransactionStatus::ResourceLimit);
+  EXPECT_EQ(overflow.candidate, 3u);
+  EXPECT_EQ(overflow.count_kind,
+            c::SelfContactTransactionCountKind::
+                AcceptedEventsLowerBound);
+  EXPECT_EQ(count, 2u);
+
+  certificate = Certificate(100);
+  certificate.event.classification.parent[0] = 7;
+  certificate.event.classification.parent[1] = 8;
+  auto forged = certificate;
+  forged.event.classification.admitted_force_area_m2.value = 3;
+  auto one_identity =
+      c::SelfContactForceEventIdentityOf(certificate.event);
+  ASSERT_EQ(sct::CanonicalizeAcceptedEventIdentityCensus(
+      &one_identity, 1).status,
+      c::SelfContactTransactionStatus::Ok);
+  const std::array<sct::AcceptedEventCertificate, 2> verification{
+      certificate, forged};
+  EXPECT_EQ(sct::VerifyAcceptedEventIdentityChunk(
+      verification.data(), verification.size(), &one_identity, 1).status,
+      c::SelfContactTransactionStatus::Ok);
+
+  std::array<sct::AcceptedEventCertificate, 1> full_ledger;
+  std::array<std::uint32_t, 2> full_hash;
+  full_hash.fill(UINT32_MAX);
+  std::size_t full_count = 0;
+  ASSERT_EQ(sct::MergeAcceptedEventChunk(
+      &certificate, 1, full_ledger.data(), full_ledger.size(),
+      full_hash.data(), full_hash.size(), &full_count).status,
+      c::SelfContactTransactionStatus::Ok);
+  EXPECT_EQ(sct::MergeAcceptedEventChunk(
+      &forged, 1, full_ledger.data(), full_ledger.size(),
+      full_hash.data(), full_hash.size(), &full_count).status,
+      c::SelfContactTransactionStatus::IdentityMismatch);
+}
+
+TEST(SelfContactTransactionValues,
+     MillionSyntheticIdentitiesUseBoundedCompactStorage) {
+  constexpr std::size_t identity_count = 1000000;
+  constexpr std::size_t hash_count = 2000000;
+  std::vector<c::SelfContactForceEventIdentity> census(identity_count);
+  std::vector<std::uint32_t> hash(hash_count, UINT32_MAX);
+  c::SelfContactForceEventIdentity identity;
+  identity.feature = Feature();
+  identity.parent[1] = 1000001;
+  std::size_t count = 0;
+  c::SelfContactTransactionReport report;
+  for (std::uint32_t owner = 0; owner < identity_count; ++owner) {
+    identity.parent[0] = owner;
+    report = sct::MergeAcceptedEventIdentityChunk(
+        &identity, 1, census.data(), census.size(),
+        hash.data(), hash.size(), &count);
+    if (report.status != c::SelfContactTransactionStatus::Ok)
+      break;
+  }
+  ASSERT_EQ(report.status, c::SelfContactTransactionStatus::Ok);
+  EXPECT_EQ(count, identity_count);
+  EXPECT_LT(census.size() * sizeof(census[0]) +
+                hash.size() * sizeof(hash[0]),
+            256ull << 20);
+}
+
+TEST(SelfContactTransactionValues,
      CrossChunkEventDedupIdentityAndExactForceCapAreAtomic) {
   auto first = Certificate(100);
   auto second = Certificate(90);
@@ -1040,6 +1221,9 @@ TEST(SelfContactTransactionValues,
   EXPECT_EQ(short_cap.status,
             c::SelfContactTransactionStatus::ResourceLimit);
   EXPECT_EQ(short_cap.candidate, 2u);
+  EXPECT_EQ(short_cap.count_kind,
+            c::SelfContactTransactionCountKind::
+                ExactAcceptedEvents);
   EXPECT_EQ(output[0].source_order, 777u);
   ASSERT_EQ(sct::FinalizeAcceptedEventLedger(
       ledger.data(), count, output.data(), 2).status,

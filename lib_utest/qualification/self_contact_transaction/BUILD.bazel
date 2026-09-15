@@ -3,10 +3,16 @@ load("@rules_cc//cc:defs.bzl", "cc_test")
 cc_test(
     name = "host_check",
     size = "small",
-    tags = ["unit", "m2-self-contact-source-shape", "symmetric-edge-area"],
+    tags = [
+        "unit",
+        "m2-self-contact-source-shape",
+        "symmetric-edge-area",
+        "exact-event-census",
+    ],
     srcs = ["ValueTest.cpp"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [
+        "//lib_src/collision:self_contact_force_values",
         "//lib_src/collision:self_contact_transaction_values",
         "@googletest//:gtest_main",
     ],
@@ -40,7 +46,12 @@ cc_test(
 cc_test(
     name = "source_check",
     size = "small",
-    tags = ["unit", "m2-rigid-cin-response", "symmetric-edge-area"],
+    tags = [
+        "unit",
+        "m2-rigid-cin-response",
+        "symmetric-edge-area",
+        "exact-event-census",
+    ],
     srcs = ["SourceProofTest.cpp"],
     data = [
         "AcceptedEventTest.cpp",

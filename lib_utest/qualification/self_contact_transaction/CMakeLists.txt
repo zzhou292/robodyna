@@ -67,7 +67,7 @@ set_tests_properties(
   self_contact_transaction_source
   self_contact_transaction_syntax
   PROPERTIES RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 120
-  LABELS "unit;m2;self-contact-source-shape;symmetric-edge-area")
+  LABELS "unit;m2;self-contact-source-shape;symmetric-edge-area;exact-event-census")
 
 option(SELF_CONTACT_TRANSACTION_CUDA
   "Build actual owner/publication self-contact transaction gate" OFF)

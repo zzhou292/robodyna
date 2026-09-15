@@ -47,16 +47,18 @@ bool MakeLayout(std::size_t nodes, std::size_t surface_parents,
                 std::size_t broadphase_pair_capacity,
                 std::size_t pair_chunk_capacity,
                 std::size_t event_capacity,
-                std::size_t event_ledger_capacity,
+                std::size_t event_identity_census_capacity,
                 std::size_t event_hash_capacity,
                 std::size_t policy_outcome_capacity,
                 std::size_t max_bytes,
                 Layout& output) noexcept {
   if (!nodes || !surface_parents || !parents || !facets ||
       !broadphase_pair_capacity || !pair_chunk_capacity ||
-      !event_capacity || !event_ledger_capacity ||
-      !event_hash_capacity || event_capacity > event_ledger_capacity ||
-      event_ledger_capacity > UINT32_MAX ||
+      !event_capacity || !event_identity_census_capacity ||
+      !event_hash_capacity ||
+      event_capacity > event_identity_census_capacity ||
+      event_identity_census_capacity > UINT32_MAX ||
+      event_hash_capacity < event_identity_census_capacity ||
       nodes > UINT32_MAX ||
       surface_parents > UINT32_MAX || parents >= UINT32_MAX ||
       facets > UINT32_MAX || pair_chunk_capacity > UINT32_MAX)
@@ -134,10 +136,13 @@ bool MakeLayout(std::size_t nodes, std::size_t surface_parents,
           surface_parents, next.swept_parent_bounds) ||
       !builder.Append<SelfContactSweptParentBounds>(
           facets, next.swept_facet_bounds) ||
+      !builder.Append<SelfContactForceEventIdentity>(
+          event_identity_census_capacity,
+          next.accepted_event_identities) ||
       !builder.Append<SelfContactForceEvent>(
           event_capacity, next.accepted_events) ||
       !builder.Append<AcceptedEventCertificate>(
-          event_ledger_capacity, next.accepted_certificates) ||
+          event_capacity, next.accepted_certificates) ||
       !builder.Append<std::uint32_t>(
           event_hash_capacity, next.accepted_event_hash) ||
       !builder.Append<SelfContactCandidatePolicyOutcome>(
@@ -199,6 +204,8 @@ Buffers Bind(void* base, const Layout& layout) noexcept {
           base, layout.swept_parent_bounds),
       ArenaPointer<SelfContactSweptParentBounds>(
           base, layout.swept_facet_bounds),
+      ArenaPointer<SelfContactForceEventIdentity>(
+          base, layout.accepted_event_identities),
       ArenaPointer<SelfContactForceEvent>(base, layout.accepted_events),
       ArenaPointer<AcceptedEventCertificate>(
           base, layout.accepted_certificates),

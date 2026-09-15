@@ -57,8 +57,11 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
       !limits.max_candidate_triangles || !limits.max_candidate_pairs ||
       !limits.max_facet_pair_chunk ||
       !limits.max_global_events ||
-      limits.max_global_events > UINT32_MAX ||
-      limits.max_event_hash_slots < limits.max_global_events ||
+      !limits.max_event_identity_census ||
+      limits.max_global_events > limits.max_event_identity_census ||
+      limits.max_event_identity_census > UINT32_MAX ||
+      limits.max_event_hash_slots <
+          limits.max_event_identity_census ||
       limits.max_candidate_pairs > SIZE_MAX / 15 ||
       !limits.max_stream_crossing_work ||
       !limits.max_host_bytes || !limits.max_device_bytes ||
@@ -75,6 +78,7 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
       ? active_use.rigid()->groups().size() : 0;
   if (!surface_parents || !parents || !facets ||
       facets > limits.max_candidate_triangles ||
+      config.force.event_capacity > limits.max_global_events ||
       limits.max_facet_pair_chunk >
           limits.accepted_discovery.max_input_pairs ||
       limits.max_facet_pair_chunk >
@@ -182,7 +186,8 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
           nodes, surface_parents, parents, facets, rigid_groups,
           broadphase.forecast.pair_capacity,
           limits.max_facet_pair_chunk, config.force.event_capacity,
-          limits.max_global_events, limits.max_event_hash_slots,
+          limits.max_event_identity_census,
+          limits.max_event_hash_slots,
           limits.max_policy_outcomes,
           limits.max_host_bytes, layout))
     return Failure(S::ResourceLimit,
@@ -219,10 +224,14 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
       limits.max_facet_pair_chunk;
   forecast.parent_pair_cursor_capacity =
       broadphase.forecast.pair_capacity;
-  forecast.accepted_event_ledger_capacity =
-      limits.max_global_events;
-  forecast.event_hash_capacity =
+  forecast.accepted_event_identity_census_capacity =
+      limits.max_event_identity_census;
+  forecast.event_identity_hash_capacity =
       limits.max_event_hash_slots;
+  forecast.accepted_event_ledger_capacity =
+      config.force.event_capacity;
+  forecast.event_hash_capacity =
+      forecast.event_identity_hash_capacity;
   forecast.rigid_group_snapshot_capacity = rigid_groups;
   forecast.node_rigid_group_capacity = nodes;
   forecast.parent_motion_capacity = parents;
@@ -234,7 +243,7 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
   forecast.accepted_event_capacity =
       config.force.event_capacity;
   forecast.accepted_certificate_capacity =
-      limits.max_global_events;
+      config.force.event_capacity;
   forecast.policy_outcome_capacity =
       limits.max_policy_outcomes;
   forecast.policy_chunk_capacity =
