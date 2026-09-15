@@ -81,6 +81,8 @@ namespace sct = tlfea::contact::self_contact_transaction;
 
 constexpr std::uint64_t LinearEid = 2100005;
 constexpr std::uint64_t MixedEid = 2100048;
+constexpr std::uint64_t NonlinearLinearEid = 2100124;
+constexpr std::uint64_t NonlinearMixedEid = 2209533;
 constexpr unsigned CouponLocalFacet = 0;
 constexpr unsigned AffineMixedLocalFacet = 1;
 constexpr double PhysicalStepS = 2e-7;
@@ -780,6 +782,238 @@ TEST(VehicleSelfContactCandidateCoupon,
               << " swept_boxes_overlap=1"
               << " endpoint_chord_substitution=0"
               << '\n';
+    dynamics.DiscardStep();
+}
+
+TEST(VehicleSelfContactCandidateCoupon,
+     Candidate2694SourceTopologyAndPhysicalOnlyBaseline) {
+    const auto& setup = LevelZeroSetup();
+    const auto& active = setup.active_uses();
+    const auto* rigid = active.rigid();
+    ASSERT_NE(rigid, nullptr);
+    const std::size_t parent_ordinals[2]{
+        ParentOrdinal(active, NonlinearLinearEid),
+        ParentOrdinal(active, NonlinearMixedEid)};
+    std::array<contact::FixedContactFacet, 2> facets;
+    for (unsigned side = 0; side < 2; ++side) {
+        const auto& parent = active.parents()[parent_ordinals[side]];
+        ASSERT_LT(CouponLocalFacet, parent.facet_count);
+        ASSERT_EQ(setup.facets().Describe(
+                      parent.surface_parent, CouponLocalFacet,
+                      &facets[side]).status,
+                  contact::FixedContactFacetStatus::Ok);
+    }
+
+    auto dynamics_config = vehicle_wall::LoadedWallConfig();
+    dynamics_config.startup.reserved_step_s = PhysicalStepS;
+    auto dynamics = dynamics::VehiclePhysicalDynamics::Prepare(
+        Execution(), PhysicalAttachments(), dynamics_config,
+        &physical_model::supports_test::Joints());
+    const auto snapshot =
+        vehicle_self_contact::CandidateRigidCouponAccess::Prepare(
+            dynamics);
+    const auto node_count =
+        static_cast<std::uint32_t>(dynamics.accepted().node_count);
+    const contact::VectorView accepted_positions{
+        snapshot.accepted->position.data(), node_count, 3, 1};
+    const contact::VectorView prepared_positions{
+        snapshot.prepared->position.data(), node_count, 3, 1};
+    std::array<contact::CurrentFixedTriangle, 2> accepted_triangles;
+    std::array<contact::CurrentFixedTriangle, 2> prepared_triangles;
+    for (unsigned side = 0; side < 2; ++side) {
+        ASSERT_EQ(contact::EvaluateCurrentFixedTriangle(
+                      facets[side], accepted_positions,
+                      &accepted_triangles[side]),
+                  contact::Status::kOk);
+        ASSERT_EQ(contact::EvaluateCurrentFixedTriangle(
+                      facets[side], prepared_positions,
+                      &prepared_triangles[side]),
+                  contact::Status::kOk);
+    }
+    EXPECT_EQ(FacetMotion(facets[0], *rigid),
+              contact::SelfContactFacetMotion::LinearNodalV1);
+    EXPECT_EQ(FacetMotion(facets[1], *rigid),
+              contact::SelfContactFacetMotion::PartialOrMixedRigid);
+
+    contact::FixedTriangleFeatureTaskMask accepted_mask;
+    contact::FixedTriangleFeatureTaskMask prepared_mask;
+    ASSERT_EQ(contact::BuildFixedTriangleFeatureTaskMask(
+                  accepted_triangles[0], accepted_triangles[1],
+                  &accepted_mask),
+              contact::FixedTriangleDiscoveryStatus::Ok);
+    ASSERT_EQ(contact::BuildFixedTriangleFeatureTaskMask(
+                  prepared_triangles[0], prepared_triangles[1],
+                  &prepared_mask),
+              contact::FixedTriangleDiscoveryStatus::Ok);
+    const auto accepted_geometry =
+        Discover(accepted_triangles, accepted_mask);
+    const auto prepared_geometry =
+        Discover(prepared_triangles, prepared_mask);
+    const double contact_thickness =
+        facets[0].reference_half_thickness_m +
+        facets[1].reference_half_thickness_m;
+    const double accepted_minimum =
+        MinimumDistance(accepted_geometry);
+    const double prepared_minimum =
+        MinimumDistance(prepared_geometry);
+    unsigned shared_vertices = 0;
+    for (const auto& first : facets[0].vertex_keys)
+        for (const auto& second : facets[1].vertex_keys)
+            shared_vertices +=
+                contact::SameFacetVertexKey(first, second);
+
+    std::vector<std::uint32_t> node_groups(node_count, UINT32_MAX);
+    for (std::uint32_t node = 0; node < node_count; ++node)
+        node_groups[node] = RigidGroup(*rigid, node);
+    bool affine[2]{};
+    sct::FacetQuadraticCoefficients coefficients[2];
+    for (unsigned side = 0; side < 2; ++side) {
+        ASSERT_EQ(sct::BuildRigidFacetQuadraticCoefficients(
+                      facets[side], accepted_positions,
+                      prepared_positions, node_groups.data(),
+                      snapshot.accepted_groups.data(),
+                      snapshot.prepared_groups.data(),
+                      snapshot.accepted_groups.size(),
+                      snapshot.prepared_view.rigid_member_trajectory,
+                      PhysicalStepS, coefficients + side,
+                      affine + side),
+                  sct::RigidMemberSweepStatus::Ok);
+    }
+    EXPECT_TRUE(affine[0]);
+    // This physical-only snapshot intentionally omits the accepted
+    // self-contact assembly that produces the receipt's nonzero group spin.
+    EXPECT_TRUE(affine[1]);
+    const contact::SelfContactSweptParentBounds swept[2]{
+        FacetBounds(facets[0], *snapshot.accepted,
+                    *snapshot.prepared, *rigid, snapshot),
+        FacetBounds(facets[1], *snapshot.accepted,
+                    *snapshot.prepared, *rigid, snapshot)};
+    EXPECT_TRUE(Overlap(swept[0], swept[1]));
+    const auto nonlinear = sct::CertifyQuadraticFacetSeparation(
+        accepted_triangles[0], prepared_triangles[0],
+        coefficients[0], facets[0].reference_half_thickness_m,
+        accepted_triangles[1], prepared_triangles[1],
+        coefficients[1], facets[1].reference_half_thickness_m,
+        PhysicalStepS, 4095, 20);
+    EXPECT_EQ(nonlinear.status,
+              sct::NonlinearSeparationStatus::CertifiedSeparated);
+
+    std::cout << std::setprecision(17)
+              << "V5_CANDIDATE_2694"
+              << " pair_index=2694"
+              << " candidate_facet=222"
+              << " first_eid=" << NonlinearLinearEid
+              << " first_local=0 first_motion="
+              << static_cast<unsigned>(
+                     FacetMotion(facets[0], *rigid))
+              << " first_affine=" << affine[0]
+              << " second_eid=" << NonlinearMixedEid
+              << " second_local=0 second_motion="
+              << static_cast<unsigned>(
+                     FacetMotion(facets[1], *rigid))
+              << " second_affine=" << affine[1]
+              << " accepted_local_mask=0x" << std::hex
+              << accepted_mask.local_tasks
+              << " prepared_local_mask=0x"
+              << prepared_mask.local_tasks << std::dec
+              << " shared_vertices=" << shared_vertices
+              << " accepted_intersections="
+              << accepted_geometry.intersections.size()
+              << " prepared_intersections="
+              << prepared_geometry.intersections.size()
+              << " accepted_minimum_m=" << accepted_minimum
+              << " prepared_minimum_m=" << prepared_minimum
+              << " contact_thickness_m=" << contact_thickness
+              << " swept_boxes_overlap=1"
+              << " physical_only_baseline=1"
+              << " accepted_self_contact_assembly_included=0"
+              << " nonlinear_status="
+              << static_cast<unsigned>(nonlinear.status)
+              << " nonlinear_work=" << nonlinear.work
+              << " nonlinear_depth=" << nonlinear.deepest
+              << '\n';
+    for (unsigned side = 0; side < 2; ++side) {
+        const auto& parent = active.parents()[parent_ordinals[side]];
+        std::cout << "V5_CANDIDATE_2694_PARENT"
+                  << " side=" << side
+                  << " active_parent=" << parent_ordinals[side]
+                  << " surface_parent=" << parent.surface_parent
+                  << " active_facet_use="
+                  << parent.facet_offset + CouponLocalFacet
+                  << " eid=" << parent.source.source_parent_id
+                  << " pid=" << parent.source.source_part_id
+                  << " half_thickness_m="
+                  << parent.reference_half_thickness_m
+                  << " nodes=";
+        for (unsigned slot = 0; slot < parent.arity; ++slot) {
+            if (slot) std::cout << ",";
+            const auto node = parent.nodes[slot];
+            std::cout << NativeNodeId(
+                             setup.physical(), parent.source, slot)
+                      << "/" << node << "@"
+                      << RigidGroup(*rigid, node);
+        }
+        std::cout << '\n';
+        for (unsigned vertex = 0; vertex < 3; ++vertex) {
+            std::cout << "V5_CANDIDATE_2694_VERTEX"
+                      << " side=" << side
+                      << " local=" << vertex
+                      << " accepted="
+                      << accepted_triangles[side].vertices[vertex].x
+                      << "," << accepted_triangles[side].vertices[vertex].y
+                      << "," << accepted_triangles[side].vertices[vertex].z
+                      << " prepared="
+                      << prepared_triangles[side].vertices[vertex].x
+                      << "," << prepared_triangles[side].vertices[vertex].y
+                      << "," << prepared_triangles[side].vertices[vertex].z
+                      << " contributors=";
+            const auto& point = facets[side].vertices[vertex];
+            for (unsigned slot = 0; slot < point.count; ++slot) {
+                if (point.weights[slot] == 0) continue;
+                const auto node = point.nodes[slot];
+                const auto group = RigidGroup(*rigid, node);
+                std::cout << node << "*" << point.weights[slot]
+                          << "@" << group;
+                if (group != UINT32_MAX) {
+                    const auto accepted =
+                        Point(*snapshot.accepted, node);
+                    std::cout << "/q=";
+                    for (unsigned component = 0;
+                         component < 3; ++component) {
+                        if (component) std::cout << ",";
+                        std::cout << static_cast<double>(
+                            QuadraticComponent(
+                                accepted,
+                                snapshot.accepted_groups[group],
+                                snapshot.prepared_groups[group],
+                                component));
+                    }
+                }
+                std::cout << ";";
+            }
+            std::cout << '\n';
+            std::cout << std::hexfloat
+                      << "V5_CANDIDATE_2694_EXACT_Q_INTERVAL"
+                      << " side=" << side
+                      << " local=" << vertex;
+            for (unsigned component = 0;
+                 component < 3; ++component)
+                std::cout << " q" << component << "=["
+                          << coefficients[side].q[vertex][component].lower
+                          << ","
+                          << coefficients[side].q[vertex][component].upper
+                          << "]";
+            std::cout << std::defaultfloat << '\n';
+        }
+        std::cout << "V5_CANDIDATE_2694_SWEPT_BOX"
+                  << " side=" << side
+                  << " lower=" << swept[side].lower.x << ","
+                  << swept[side].lower.y << ","
+                  << swept[side].lower.z
+                  << " upper=" << swept[side].upper.x << ","
+                  << swept[side].upper.y << ","
+                  << swept[side].upper.z << '\n';
+    }
     dynamics.DiscardStep();
 }
 

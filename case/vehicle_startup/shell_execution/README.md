@@ -231,6 +231,24 @@ prism/discovery/represented-crossing path. The result follows from the
 authenticated polynomial and zero prepared spin, not EID matching, a
 tolerance, or endpoint-chord substitution.
 
+For receipt pair 2694, the coupon also isolates source facets `2100124:0`
+and `2209533:0`. They have no shared canonical vertex and no local task mask;
+accepted/prepared endpoint discovery has no intersection and reports
+`0.010390410835049144 m` minimum distance against `0.00353 m` combined
+thickness. Their conservative swept boxes nevertheless overlap. The first
+active facet use is transaction facet `222`; the second is `138371`, with
+domain node `199834` in rigid binding group `154`.
+
+The small physical-only preparation deliberately does not run the accepted
+self-contact transaction. It therefore prints an explicit
+`accepted_self_contact_assembly_included=0` baseline: group 154 has zero
+curvature there, unlike the full receipt's post-assembly prepared owner.
+This prevents the source coupon from falsely presenting pre-contact
+coefficients as the authenticated failing candidate. TL's production
+diagnostics now publish nonlinear work/depth exhaustion from the actual
+prepared owner, while the general exact-dyadic/subdivision tests cover the
+nonzero-curvature certificate without rerunning full V5.
+
 The source-only real-geometry coupon deliberately does not construct
 `VehiclePhysicalDynamics`.
 Complete area/force/STI policy remains in TL's synthetic physical

@@ -213,6 +213,16 @@ def main() -> None:
             "endpoint_chord_substitution=0"]:
         require(token in candidate_coupon,
                 f"candidate rigid coupon is missing {token}")
+    for token in [
+            "Candidate2694SourceTopologyAndPhysicalOnlyBaseline",
+            "2100124", "2209533",
+            "candidate_facet=222",
+            "accepted_self_contact_assembly_included=0",
+            "BuildRigidFacetQuadraticCoefficients(",
+            "CertifyQuadraticFacetSeparation(",
+            "V5_CANDIDATE_2694_EXACT_Q_INTERVAL"]:
+        require(token in candidate_coupon,
+                f"candidate-2694 baseline coupon is missing {token}")
     require("CandidateRigidCouponTest.cpp" in fixture_cmake and
             "vehicle_self_contact_candidate_rigid_coupon" in fixture_cmake and
             '"coupon;real-geometry;v5-candidate"' in fixture_cmake,
@@ -237,6 +247,10 @@ def main() -> None:
             "CertifyRigidPointAffineMotion(" in tl_rigid_sweep and
             "represented_q[component]" in tl_rigid_sweep,
             "TL does not exactly certify represented affine rigid motion")
+    require("CertifyQuadraticFacetSeparation(" in tl_rigid_sweep and
+            "SubdivideSeparation(" in tl_rigid_sweep and
+            "nonlinear_subdivision_work_per_pair" in tl_candidate,
+            "TL does not bound nonlinear represented separation")
     real_geometry = (
         case / "vehicle_startup" / "shell_execution" / "tests" /
         "self_contact" / "RealGeometryTest.cpp").read_text()
