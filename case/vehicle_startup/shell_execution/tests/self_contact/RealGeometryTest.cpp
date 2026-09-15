@@ -37,10 +37,19 @@ constexpr std::uint64_t IntersectionFirstEid = 2125365;
 constexpr std::uint64_t IntersectionSecondEid = 2348922;
 constexpr std::uint64_t IntersectionSharedNode = 2352112;
 constexpr std::uint16_t IntersectionLocalTaskMask = 0x6c30;
+constexpr std::uint64_t FullV5SecondIntersectionFirstEid = 2382006;
+constexpr std::uint64_t FullV5SecondIntersectionSecondEid = 2382159;
+constexpr std::uint16_t FullV5SecondIntersectionLocalTaskMask = 0x775b;
 constexpr std::array<std::uint64_t, 4> IntersectionFirstNodes{
     2120447, 2352113, 2352112, 2352118};
 constexpr std::array<std::uint64_t, 4> IntersectionSecondNodes{
     2352127, 2352111, 2352112, 2352113};
+constexpr std::array<std::uint64_t, 4>
+    FullV5SecondIntersectionFirstNodes{
+        2402419, 2402384, 2402383, 2402420};
+constexpr std::array<std::uint64_t, 4>
+    FullV5SecondIntersectionSecondNodes{
+        2402419, 2402383, 2402385, 2402534};
 
 void Require(bool condition, const char* message) {
     if (!condition) throw std::runtime_error(message);
@@ -131,7 +140,8 @@ class AuthenticatedGeometry {
         }
         for (const auto eid :
              {AnchorEid, StrictEid, BoundaryEid, IntersectionFirstEid,
-              IntersectionSecondEid})
+              IntersectionSecondEid, FullV5SecondIntersectionFirstEid,
+              FullV5SecondIntersectionSecondEid})
             Require(FindCanonical(eid) != SIZE_MAX,
                     "Required real-Yaris parent is absent");
     }
@@ -1572,6 +1582,213 @@ TEST(RealYarisSelfContactGeometry,
               << " permuted_hash=" << DiscoveryHash(permuted)
               << " tl_policy=exclude_exact_shared_vertex"
               << '\n';
+}
+
+TEST(RealYarisSelfContactGeometry,
+     FullV5SecondAcceptedIntersectionIsBoundaryToParentDiagonal) {
+    const auto& authority = Authority();
+    EXPECT_EQ(authority.data().inputs.canonical_manifest.sha256,
+              "c82f1886b8935d69ff7db4c29c700370e3a057579fab80d02664a253bc7af1c8");
+    EXPECT_EQ(authority.data().archive_sha256,
+              "aff8194c456726a678d6cc11f644316ca70f3d9b37c4db622726b7b2985b0451");
+    EXPECT_EQ(authority.plan().identity().sha256,
+              "a96bc12b9c8467253da0898565c7875ad80f58f963b45d1dc405f5dddab76b1d");
+
+    GeometrySet geometry({
+        authority.Read(FullV5SecondIntersectionFirstEid),
+        authority.Read(FullV5SecondIntersectionSecondEid)});
+    ASSERT_EQ(geometry.parents.size(), 2u);
+    const auto& first_parent = geometry.parents[0];
+    const auto& second_parent = geometry.parents[1];
+    const auto first_facet = geometry.Facet(
+        FullV5SecondIntersectionFirstEid, 0);
+    const auto second_facet = geometry.Facet(
+        FullV5SecondIntersectionSecondEid, 0);
+    const std::vector<contact::CurrentFixedTriangle> triangles{
+        geometry.Evaluate(first_facet),
+        geometry.Evaluate(second_facet)};
+    EXPECT_EQ(first_parent.eid,
+              FullV5SecondIntersectionFirstEid);
+    EXPECT_EQ(second_parent.eid,
+              FullV5SecondIntersectionSecondEid);
+    EXPECT_EQ(first_parent.pid, 2000893u);
+    EXPECT_EQ(second_parent.pid, 2000893u);
+    EXPECT_EQ(first_parent.mid, second_parent.mid);
+    EXPECT_EQ(first_parent.sid, second_parent.sid);
+    EXPECT_EQ(first_parent.arity, 4u);
+    EXPECT_EQ(second_parent.arity, 4u);
+    EXPECT_EQ(first_parent.node_ids,
+              FullV5SecondIntersectionFirstNodes);
+    EXPECT_EQ(second_parent.node_ids,
+              FullV5SecondIntersectionSecondNodes);
+    EXPECT_EQ(SharedNodes(first_parent, second_parent), 2u);
+    ASSERT_TRUE(Same(triangles[0].vertex_keys[0],
+                     triangles[1].vertex_keys[0]));
+    ASSERT_TRUE(Same(triangles[0].vertex_keys[2],
+                     triangles[1].vertex_keys[1]));
+    for (unsigned axis = 0; axis < 3; ++axis) {
+        const auto coordinate = [axis](contact::Vec3 point) {
+            return axis == 0 ? point.x : axis == 1 ? point.y : point.z;
+        };
+        EXPECT_EQ(coordinate(triangles[0].vertices[0]),
+                  coordinate(triangles[1].vertices[0]));
+        EXPECT_EQ(coordinate(triangles[0].vertices[2]),
+                  coordinate(triangles[1].vertices[1]));
+    }
+    const auto& diagonal = first_facet.edge_keys[2];
+    const auto& boundary = second_facet.edge_keys[0];
+    EXPECT_FALSE(diagonal.parent_boundary);
+    EXPECT_EQ(diagonal.parent_eid,
+              FullV5SecondIntersectionFirstEid);
+    EXPECT_TRUE(boundary.parent_boundary);
+    EXPECT_EQ(boundary.parent_eid, 0u);
+    EXPECT_FALSE(Same(diagonal, boundary));
+    EXPECT_TRUE(Same(diagonal.endpoints[0], boundary.endpoints[0]));
+    EXPECT_TRUE(Same(diagonal.endpoints[1], boundary.endpoints[1]));
+
+    contact::FixedTriangleFeatureTaskMask mask;
+    ASSERT_EQ(contact::BuildFixedTriangleFeatureTaskMask(
+                  triangles[0], triangles[1], &mask),
+              contact::FixedTriangleDiscoveryStatus::Ok);
+    EXPECT_EQ(mask.local_tasks,
+              FullV5SecondIntersectionLocalTaskMask);
+    const auto discovered = DiscoverMasked(triangles, {{0, 1}}, {mask});
+    EXPECT_EQ(discovered.report.potential_tasks, 15u);
+    EXPECT_EQ(discovered.report.local_masked_tasks, 11u);
+    EXPECT_EQ(discovered.report.exact_executed_tasks, 4u);
+    EXPECT_EQ(discovered.report.feature_tasks, 4u);
+    EXPECT_EQ(discovered.report.raw_feature_candidates, 4u);
+    ASSERT_EQ(discovered.features.size(), 4u);
+    ASSERT_EQ(discovered.intersections.size(), 1u);
+    const auto& intersection = discovered.intersections[0];
+    EXPECT_EQ(intersection.kind,
+              contact::FixedTriangleIntersectionKind::Transverse);
+    EXPECT_EQ(intersection.local_exclusion,
+              contact::FixedTriangleLocalExclusion::SharedEdgeOnly);
+    EXPECT_FALSE(contact::RequiresIntersectionAdmission(intersection));
+
+    const double thickness_distance =
+        .5 * (first_parent.thickness_m +
+              second_parent.thickness_m);
+    std::set<unsigned> emitted_tasks;
+    double minimum_feature_distance =
+        std::numeric_limits<double>::infinity();
+    for (const auto& feature : discovered.features) {
+        const auto task = FeatureTask(feature);
+        EXPECT_EQ(mask.local_tasks &
+                      contact::FixedTriangleFeatureTaskBit(task),
+                  0u);
+        EXPECT_TRUE(emitted_tasks.insert(task).second);
+        EXPECT_GT(feature.distance_m, thickness_distance);
+        EXPECT_EQ(feature.representation_error_m, 0);
+        minimum_feature_distance =
+            std::min(minimum_feature_distance, feature.distance_m);
+    }
+    EXPECT_EQ(emitted_tasks,
+              (std::set<unsigned>{2, 5, 7, 11}));
+
+    const auto oracle = TriangleIntersection(
+        triangles[0], triangles[1], first_parent.positions[0]);
+    const LongVec3 shared[2]{
+        ToLong(first_parent.positions[0]),
+        ToLong(first_parent.positions[2])};
+    const long double expected_segment_length =
+        Length(Subtract(shared[1], shared[0]));
+    EXPECT_GT(oracle.plane_cross_sine, 0);
+    EXPECT_GT(oracle.segment_length, 0);
+    EXPECT_LE(std::fabs(
+                  oracle.segment_length - expected_segment_length),
+              32 * oracle.tolerance);
+    EXPECT_LE(oracle.cut_mismatch, 32 * oracle.tolerance);
+    for (const auto endpoint : oracle.endpoints)
+        EXPECT_LE(std::min(
+                      Length(Subtract(endpoint, shared[0])),
+                      Length(Subtract(endpoint, shared[1]))),
+                  32 * oracle.tolerance);
+    for (const auto vertex : shared)
+        EXPECT_LE(std::min(
+                      Length(Subtract(vertex, oracle.endpoints[0])),
+                      Length(Subtract(vertex, oracle.endpoints[1]))),
+                  32 * oracle.tolerance);
+
+    contact::FixedTriangleFeatureTaskMask swapped_mask;
+    ASSERT_EQ(contact::BuildFixedTriangleFeatureTaskMask(
+                  triangles[1], triangles[0], &swapped_mask),
+              contact::FixedTriangleDiscoveryStatus::Ok);
+    EXPECT_EQ(swapped_mask.local_tasks, mask.local_tasks);
+    const auto swapped =
+        DiscoverMasked(triangles, {{1, 0}}, {swapped_mask});
+    const std::vector<contact::CurrentFixedTriangle> permuted_triangles{
+        triangles[1], triangles[0]};
+    contact::FixedTriangleFeatureTaskMask permuted_mask;
+    ASSERT_EQ(contact::BuildFixedTriangleFeatureTaskMask(
+                  permuted_triangles[0], permuted_triangles[1],
+                  &permuted_mask),
+              contact::FixedTriangleDiscoveryStatus::Ok);
+    EXPECT_EQ(permuted_mask.local_tasks, mask.local_tasks);
+    const auto permuted = DiscoverMasked(
+        permuted_triangles, {{0, 1}}, {permuted_mask});
+    const auto hash = DiscoveryHash(discovered);
+    EXPECT_EQ(DiscoveryHash(swapped), hash);
+    EXPECT_EQ(DiscoveryHash(permuted), hash);
+
+    std::cout << std::setprecision(17) << std::hexfloat;
+    for (const auto& parent : geometry.parents) {
+        std::cout << "V5_SECOND_INTERSECTION_PARENT"
+                  << " eid=" << parent.eid
+                  << " canonical=" << parent.canonical
+                  << " pid=" << parent.pid
+                  << " mid=" << parent.mid
+                  << " sid=" << parent.sid
+                  << " arity=" << parent.arity
+                  << " material_points=" << parent.material_points
+                  << " thickness_m=" << parent.thickness_m
+                  << " nodes=";
+        for (unsigned i = 0; i < parent.arity; ++i) {
+            if (i) std::cout << ",";
+            std::cout << parent.node_ids[i];
+        }
+        std::cout << " positions=";
+        for (unsigned i = 0; i < parent.arity; ++i) {
+            if (i) std::cout << ";";
+            std::cout << parent.positions[i].x << ","
+                      << parent.positions[i].y << ","
+                      << parent.positions[i].z;
+        }
+        std::cout << '\n';
+    }
+    std::cout << std::defaultfloat
+              << "V5_SECOND_INTERSECTION_DISCOVERY"
+              << " shared_nodes="
+              << SharedNodes(first_parent, second_parent)
+              << " shared_segment=boundary_to_parent_diagonal"
+              << " local_mask=0x" << std::hex << mask.local_tasks
+              << std::dec
+              << " features=" << discovered.features.size()
+              << " intersections=" << discovered.intersections.size()
+              << " kind=Transverse"
+              << " local_exclusion=SharedEdgeOnly"
+              << " requires_admission=0"
+              << " thickness_distance_m=" << thickness_distance
+              << " minimum_feature_distance_m="
+              << minimum_feature_distance
+              << " segment_length_m=" << oracle.segment_length
+              << " expected_segment_length_m="
+              << expected_segment_length
+              << " cut_mismatch_m=" << oracle.cut_mismatch
+              << " plane_cross_sine=" << oracle.plane_cross_sine
+              << " deterministic_hash=" << hash
+              << '\n';
+    for (const auto& feature : discovered.features) {
+        std::cout << std::setprecision(17)
+                  << "V5_SECOND_INTERSECTION_FEATURE"
+                  << " task=" << FeatureTask(feature)
+                  << " stratum=" << FeatureStratum(feature)
+                  << " distance_m=" << feature.distance_m
+                  << " edge_parameters="
+                  << feature.edge_parameters[0] << ","
+                  << feature.edge_parameters[1] << '\n';
+    }
 }
 
 TEST(RealYarisSelfContactGeometry,

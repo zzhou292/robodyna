@@ -198,12 +198,15 @@ def main() -> None:
     for token in [
             "2100084", "2279821", "2288735",
             "2125365", "2348922", "2352112", "0x6c30",
+            "2382006", "2382159", "2402419", "2402383", "0x775b",
             "FixedContactFacet", "FixedTriangleFeatureDiscovery",
             "DiscoverMasked", "TriangleIntersection",
             "DiscoveryHash", "zero_nonparallel_ee",
             "StrictInteriorInteriorMinimum",
             "BoundaryVertexEdgeMinimum",
-            "FirstAcceptedNonlocalIntersectionIsTransverseAndPolicyUnresolved",
+            "FirstAcceptedIntersectionIsExactSharedVertexOnly",
+            "FullV5SecondAcceptedIntersectionIsBoundaryToParentDiagonal",
+            "SharedEdgeOnly",
             "AdjacentFacetSeamsCanonicalizeWithoutDroppingParentLocalOwners",
             "c82f1886b8935d69ff7db4c29c700370e3a057579fab80d02664a253bc7af1c8",
             "a96bc12b9c8467253da0898565c7875ad80f58f963b45d1dc405f5dddab76b1d"]:

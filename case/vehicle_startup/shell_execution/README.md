@@ -147,15 +147,13 @@ shared-vertex VF tasks and four edge pairs incident through that vertex are
 masked, while nine nonlocal tasks execute.
 
 Production exact intersection classification is `Transverse` with
-`local_exclusion=None`, so it requires later policy. An independent
-long-double plane-cut oracle finds a degenerate intersection segment: both
-endpoints are the source-derived position of vertex `2352112`; the two plane
-normals are nonparallel (normalized cross magnitude
-`0.999999999935844330616`). The conservative nonlocal classification is
-material: the long-double error-bounded plane cut classifies one
-selected-facet edge as lying in the other facet's plane, while the opposite
-cut reaches only the shared point, so production does not certify a
-shared-vertex-only exclusion.
+`local_exclusion=SharedVertexOnly`, so it does not require later admission. An
+independent long-double plane-cut oracle finds a degenerate intersection
+segment: both endpoints are the source-derived position of vertex `2352112`;
+the two plane normals are nonparallel (normalized cross magnitude
+`0.999999999935844330616`). Production's exact tangent-cone check proves that
+the complete intersection set is that canonical shared vertex; any
+positive-length departure remains fail-closed.
 
 The nine unmasked candidates are three VF-to-edge, one VF-to-face, two strict
 interior EE and three boundary EE records. All representation errors and all
@@ -166,16 +164,36 @@ thickness contact and no zero-distance nonlocal EE (parallel or nonparallel).
 Each record has a recognized VF/strict/boundary geometry class, but this coupon
 does not construct active-use authority and therefore does not claim an event
 admission. Swapped pair order and a permuted triangle catalog reproduce
-deterministic hash `4506431050749076252`.
+deterministic hash `8971061864684255070`.
+
+The coupon additionally qualifies the accepted-stage failure exposed by the
+8,000,000-entry census at pair index 1409: EID/facets `2382006:0` and
+`2382159:0`, both PID/MID/SID `2000893`. Their authenticated Q4 node rows are
+`2402419,2402384,2402383,2402420` and
+`2402419,2402383,2402385,2402534`. The selected facets share canonical
+vertices `2402419` and `2402383`. Their exact common segment is the first
+parent's fixed-facet triangulation diagonal but the second parent's physical
+boundary, so their `FacetEdgeKey` values intentionally differ despite equal
+canonical endpoint keys.
+
+Production now recognizes that endpoint topology as
+`local_exclusion=SharedEdgeOnly` only after exact intersection classification
+has ruled out positive area. Coordinate-only coincident segments remain
+nonlocal. The exact mask is `0x775b`; all four unmasked features are separated,
+with minimum distance `0.0060364117806370014 m` above the authenticated
+`0.00165 m` thickness distance. The independent plane-cut oracle reproduces
+only the shared `0.018139717452543137 m` segment with zero cut mismatch.
+Swapped pair order and triangle-catalog permutation reproduce deterministic
+hash `2184554811619657670`.
 
 This coupon deliberately does not construct `VehiclePhysicalDynamics`.
 Complete area/force/STI policy remains in TL's synthetic physical
 `self_contact_active_uses` and `self_contact_transaction_cuda` coupons; the
 source proof binds those policy tests to this real source-ID/hash extraction.
-Current TL transaction policy rejects every
-`RequiresIntersectionAdmission` record before processing feature events, so
-this accepted-state pair is a candidate rejection under the existing policy;
-the geometry-class mapping above does not override that rule.
+The transaction still rejects every `RequiresIntersectionAdmission` record
+before processing feature events. These two coupons avoid that policy only
+through exact local topology; no admission, force, or acceptance rule is
+weakened.
 Build and run the real bridge independently of shell execution and physical
 dynamics with:
 
