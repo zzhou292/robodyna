@@ -223,8 +223,20 @@ def main() -> None:
             "V5_CANDIDATE_2694_EXACT_Q_INTERVAL"]:
         require(token in candidate_coupon,
                 f"candidate-2694 baseline coupon is missing {token}")
+    for token in [
+            "RoundedResidualPairUsesAuthenticatedPreparedBits",
+            "PrepareAcceptedAssembly",
+            "CertifyLinearResidualSeparation(",
+            "EXPECT_FALSE(residual.exact_common_translation)",
+            "V5_LINEAR_RESIDUAL_CERTIFICATE",
+            "V5_LINEAR_RESIDUAL_BITS"]:
+        require(token in candidate_coupon,
+                f"residual-translation coupon is missing {token}")
     require("CandidateRigidCouponTest.cpp" in fixture_cmake and
             "vehicle_self_contact_candidate_rigid_coupon" in fixture_cmake and
+            "vehicle_self_contact_residual_translation_coupon" in
+            fixture_cmake and
+            "VehicleSelfContactAcceptedAssemblyCoupon.*" in fixture_cmake and
             '"coupon;real-geometry;v5-candidate"' in fixture_cmake,
             "candidate-142 coupon registration is incomplete")
     tl_candidate = (

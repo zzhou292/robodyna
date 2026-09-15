@@ -1,6 +1,7 @@
 #include "Source.h"
 
 #include "case/vehicle_dynamics/Storage.h"
+#include "case/vehicle_self_contact/SelfContactFactories.h"
 #include "case/vehicle_wall/LoadedWall.h"
 #include "lib_src/collision/FixedContactFacetValues.h"
 #include "lib_src/collision/FixedTriangleFeatureDiscovery.h"
@@ -29,6 +30,12 @@ struct CandidateRigidCouponSnapshot {
     tl::fea::NodalPreparedView prepared_view;
     std::vector<tl::fea::NodalRigidGroupSnapshot> accepted_groups;
     std::vector<tl::fea::NodalRigidGroupSnapshot> prepared_groups;
+};
+
+struct AcceptedAssemblyCouponSnapshot {
+    std::vector<double> accepted_positions;
+    std::vector<double> prepared_positions;
+    tl::fea::NodalPreparedView prepared_view;
 };
 
 class CandidateRigidCouponAccess {
@@ -67,6 +74,40 @@ class CandidateRigidCouponAccess {
                 "Coupon rigid snapshots differ from the prepared owner");
         return result;
     }
+
+    static AcceptedAssemblyCouponSnapshot PrepareAcceptedAssembly(
+        vehicle_dynamics::VehiclePhysicalDynamics& dynamics) {
+        auto& storage = *dynamics.storage_;
+        storage.Prepare();
+        auto& owner = storage.state().owner;
+        const auto nodes = storage.startup.accepted().node_count;
+        AcceptedAssemblyCouponSnapshot result;
+        result.accepted_positions.resize(3 * nodes);
+        result.prepared_positions.resize(3 * nodes);
+        std::vector<double> accepted_velocities(3 * nodes);
+        std::vector<double> prepared_velocities(3 * nodes);
+        tl::fea::NodalStamp accepted_stamp;
+        auto report = owner.CopyAccepted(
+            {result.accepted_positions.data(),
+             accepted_velocities.data(), nodes},
+            &accepted_stamp);
+        if (report.status != tl::fea::NodalStatus::Ok)
+            throw std::runtime_error(report.message);
+        report = owner.CopyPrepared(
+            storage.token,
+            {result.prepared_positions.data(),
+             prepared_velocities.data(), nodes},
+            &result.prepared_view);
+        if (report.status != tl::fea::NodalStatus::Ok)
+            throw std::runtime_error(report.message);
+        if (!tl::fea::trial_identity::SameStamp(
+                accepted_stamp, storage.stamp) ||
+            !tl::fea::trial_identity::SamePrepared(
+                result.prepared_view, storage.prepared))
+            throw std::runtime_error(
+                "Accepted-assembly coupon differs from owner identity");
+        return result;
+    }
 };
 
 }  // namespace crash::cases::vehicle_self_contact
@@ -89,6 +130,51 @@ constexpr std::uint64_t ExhaustedLinearSecondEid = 2288690;
 constexpr unsigned CouponLocalFacet = 0;
 constexpr unsigned AffineMixedLocalFacet = 1;
 constexpr double PhysicalStepS = 2e-7;
+constexpr std::size_t FullAcceptedEvents = 32491;
+constexpr std::size_t FullParentPairCapacity = 2000000;
+constexpr std::size_t FullFacetPairCapacity = 8000000;
+constexpr std::size_t FullHostBytes =
+    std::size_t{20} * 1000 * 1000 * 1000;
+constexpr std::size_t FullDeviceBytes = std::size_t{8} << 30;
+constexpr std::uint64_t SelfContactSourceId =
+    0x563553454c464354ull;
+
+vehicle_self_contact::RuntimeLimits
+FullAcceptedAssemblyLimits() {
+    const auto& setup = LevelZeroSetup();
+    const contact::SelfContactTransactionLimits::ExactCensus census{
+        setup.physical().domain()->node_count(),
+        setup.active_uses().parents().size(),
+        setup.active_uses().parents().size(),
+        setup.counts().q4_parents,
+        setup.active_uses().facet_uses().size(),
+        FullParentPairCapacity, FullFacetPairCapacity, 0};
+    vehicle_self_contact::RuntimeLimits result;
+    result.host_bytes = FullHostBytes;
+    result.device_bytes = FullDeviceBytes;
+    result.transaction =
+        contact::SelfContactTransactionLimits::Vehicle(
+            census, 4096, FullAcceptedEvents,
+            2 * FullAcceptedEvents, 0,
+            4095, std::size_t{1} << 20,
+            FullFacetPairCapacity * 4095, 20,
+            FullHostBytes, FullDeviceBytes, FullHostBytes,
+            4, 4, FullAcceptedEvents);
+    result.transaction.activity.max_selected_parents = 1000000;
+    result.transaction.activity.max_family_parents = 1000000;
+    result.transaction.activity.max_host_bytes =
+        std::size_t{512} << 20;
+    result.transaction.activity.max_startup_host_bytes =
+        std::size_t{512} << 20;
+    result.transaction.broadphase.max_host_bytes =
+        std::size_t{2} << 30;
+    result.transaction.broadphase.max_device_bytes =
+        std::size_t{2} << 30;
+    result.transaction.regularity.max_host_bytes =
+        contact::SelfContactCurrentRegularityLimits::Vehicle()
+            .max_host_bytes;
+    return result;
+}
 
 double Down(double value) {
     return std::nextafter(
@@ -1311,6 +1397,127 @@ TEST(VehicleSelfContactCandidateCoupon,
                   << static_cast<unsigned>(result.reason)
                   << " work=" << result.work << '\n';
     }
+    dynamics.DiscardStep();
+}
+
+TEST(VehicleSelfContactAcceptedAssemblyCoupon,
+     RoundedResidualPairUsesAuthenticatedPreparedBits) {
+    const auto& setup = LevelZeroSetup();
+    const auto& active = setup.active_uses();
+    const std::size_t parent_ordinals[2]{
+        ParentOrdinal(active, ExhaustedLinearFirstEid),
+        ParentOrdinal(active, ExhaustedLinearSecondEid)};
+    std::array<contact::FixedContactFacet, 2> facets;
+    for (unsigned side = 0; side < 2; ++side) {
+        const auto& parent = active.parents()[parent_ordinals[side]];
+        ASSERT_EQ(setup.facets().Describe(
+                      parent.surface_parent, CouponLocalFacet,
+                      &facets[side]).status,
+                  contact::FixedContactFacetStatus::Ok);
+    }
+
+    auto dynamics_config = vehicle_wall::LoadedWallConfig();
+    dynamics_config.startup.reserved_step_s = PhysicalStepS;
+    const vehicle_self_contact::RuntimeConfig runtime_config{
+        SelfContactSourceId, FullAcceptedEvents, 0};
+    auto dynamics =
+        vehicle_self_contact::SelfContactOnly::Prepare(
+            setup, dynamics_config, runtime_config,
+            FullAcceptedAssemblyLimits(),
+            &physical_model::supports_test::Joints());
+    const auto snapshot =
+        vehicle_self_contact::CandidateRigidCouponAccess::
+            PrepareAcceptedAssembly(dynamics);
+    ASSERT_EQ(snapshot.accepted_positions.size(),
+              snapshot.prepared_positions.size());
+    const auto node_count = static_cast<std::uint32_t>(
+        snapshot.accepted_positions.size() / 3);
+    const contact::VectorView accepted_positions{
+        snapshot.accepted_positions.data(), node_count, 3, 1};
+    const contact::VectorView prepared_positions{
+        snapshot.prepared_positions.data(), node_count, 3, 1};
+    std::array<contact::CurrentFixedTriangle, 2> accepted;
+    std::array<contact::CurrentFixedTriangle, 2> prepared;
+    for (unsigned side = 0; side < 2; ++side) {
+        ASSERT_EQ(contact::EvaluateCurrentFixedTriangle(
+                      facets[side], accepted_positions,
+                      &accepted[side]),
+                  contact::Status::kOk);
+        ASSERT_EQ(contact::EvaluateCurrentFixedTriangle(
+                      facets[side], prepared_positions,
+                      &prepared[side]),
+                  contact::Status::kOk);
+    }
+
+    contact::FixedTriangleFeatureTaskMask mask;
+    ASSERT_EQ(contact::BuildFixedTriangleFeatureTaskMask(
+                  prepared[0], prepared[1], &mask),
+              contact::FixedTriangleDiscoveryStatus::Ok);
+    ASSERT_EQ(mask.local_tasks, 0u);
+    const auto geometry = Discover(prepared, mask);
+    ASSERT_EQ(geometry.features.size(), 15u);
+    ASSERT_TRUE(geometry.intersections.empty());
+    const contact::FixedTriangleFeatureView feature_view{
+        geometry.features.data(), geometry.features.size(), true};
+    const contact::FixedTriangleIntersectionView intersection_view{
+        nullptr, 0, true};
+    const auto residual =
+        sct::CertifyLinearResidualSeparation(
+            accepted[0], prepared[0],
+            facets[0].reference_half_thickness_m,
+            accepted[1], prepared[1],
+            facets[1].reference_half_thickness_m,
+            feature_view, intersection_view);
+    EXPECT_EQ(
+        residual.status,
+        sct::LinearResidualSeparationStatus::
+            CertifiedSeparated);
+    EXPECT_FALSE(residual.exact_common_translation);
+    EXPECT_GT(residual.first_residual_upper_m, 0);
+    EXPECT_GT(residual.second_residual_upper_m, 0);
+    EXPECT_GT(residual.strict_gap_lower_m, 0);
+
+    const std::array<contact::RepresentedTrianglePath, 2> paths{
+        RepresentedPath(accepted[0], prepared[0]),
+        RepresentedPath(accepted[1], prepared[1])};
+    const auto exact_cap_one = Cross(paths, 1, 20);
+    EXPECT_EQ(
+        exact_cap_one.classification,
+        contact::RepresentedIntervalClassification::Unresolved);
+    EXPECT_EQ(exact_cap_one.reason,
+              contact::RepresentedIntervalReason::WorkExhausted);
+    EXPECT_EQ(exact_cap_one.work, 1u);
+
+    std::cout << std::setprecision(17) << std::hexfloat
+              << "V5_LINEAR_RESIDUAL_CERTIFICATE"
+              << " reference="
+              << residual.reference_translation.x << ","
+              << residual.reference_translation.y << ","
+              << residual.reference_translation.z
+              << " first_residual_upper_m="
+              << residual.first_residual_upper_m
+              << " second_residual_upper_m="
+              << residual.second_residual_upper_m
+              << " prepared_distance_lower_m="
+              << residual.prepared_distance_lower_m
+              << " strict_gap_lower_m="
+              << residual.strict_gap_lower_m
+              << std::defaultfloat << '\n';
+    for (unsigned side = 0; side < 2; ++side)
+        for (unsigned vertex = 0; vertex < 3; ++vertex)
+            std::cout << std::hexfloat
+                      << "V5_LINEAR_RESIDUAL_BITS"
+                      << " side=" << side
+                      << " vertex=" << vertex
+                      << " accepted="
+                      << accepted[side].vertices[vertex].x << ","
+                      << accepted[side].vertices[vertex].y << ","
+                      << accepted[side].vertices[vertex].z
+                      << " prepared="
+                      << prepared[side].vertices[vertex].x << ","
+                      << prepared[side].vertices[vertex].y << ","
+                      << prepared[side].vertices[vertex].z
+                      << std::defaultfloat << '\n';
     dynamics.DiscardStep();
 }
 
