@@ -4,6 +4,7 @@
 #include "case/vehicle_wall/LoadedWall.h"
 #include "lib_src/collision/FixedContactFacetValues.h"
 #include "lib_src/collision/FixedTriangleFeatureDiscovery.h"
+#include "lib_src/collision/RepresentedIntervalCrossing.h"
 #include "lib_src/collision/self_contact_transaction/Storage.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
 
@@ -83,6 +84,8 @@ constexpr std::uint64_t LinearEid = 2100005;
 constexpr std::uint64_t MixedEid = 2100048;
 constexpr std::uint64_t NonlinearLinearEid = 2100124;
 constexpr std::uint64_t NonlinearMixedEid = 2209533;
+constexpr std::uint64_t ExhaustedLinearFirstEid = 2100002;
+constexpr std::uint64_t ExhaustedLinearSecondEid = 2288690;
 constexpr unsigned CouponLocalFacet = 0;
 constexpr unsigned AffineMixedLocalFacet = 1;
 constexpr double PhysicalStepS = 2e-7;
@@ -378,6 +381,52 @@ void PrintEdgeKey(const contact::FacetEdgeKey& key) {
     PrintVertexKey(key.endpoints[0]);
     std::cout << "-";
     PrintVertexKey(key.endpoints[1]);
+}
+
+contact::RepresentedTrianglePath RepresentedPath(
+    const contact::CurrentFixedTriangle& accepted,
+    const contact::CurrentFixedTriangle& prepared) {
+    contact::RepresentedTrianglePath result;
+    result.key = {
+        prepared.key.source_instance_id, prepared.key.parent_eid,
+        prepared.key.level, prepared.key.local_facet};
+    result.motion = contact::RepresentedMotion::LinearNodalV1;
+    for (unsigned vertex = 0; vertex < 3; ++vertex) {
+        result.vertices[vertex].key = prepared.vertex_keys[vertex];
+        result.vertices[vertex].endpoint[0] =
+            accepted.vertices[vertex];
+        result.vertices[vertex].endpoint[1] =
+            prepared.vertices[vertex];
+        result.edge_keys[vertex] = prepared.edge_keys[vertex];
+    }
+    return result;
+}
+
+contact::RepresentedIntervalResult Cross(
+    const std::array<contact::RepresentedTrianglePath, 2>& paths,
+    std::size_t work, unsigned depth) {
+    contact::RepresentedIntervalLimits limits;
+    limits.max_paths = 2;
+    limits.max_input_pairs = 1;
+    limits.max_results = 1;
+    limits.max_work_per_pair = work;
+    limits.max_total_work = work;
+    limits.max_depth = depth;
+    limits.max_host_bytes = 16u << 20;
+    contact::RepresentedIntervalCrossing crossing;
+    const auto initialized = crossing.Initialize(limits);
+    if (initialized.status != contact::RepresentedIntervalStatus::Ok)
+        throw std::runtime_error(initialized.message);
+    const contact::RepresentedTrianglePair pair{0, 1};
+    const auto report =
+        crossing.Certify(paths.data(), paths.size(), &pair, 1);
+    if (report.status != contact::RepresentedIntervalStatus::Ok)
+        throw std::runtime_error(report.message);
+    const auto results = crossing.results();
+    if (!results.complete || results.count != 1)
+        throw std::runtime_error(
+            "Coupon represented crossing result is incomplete");
+    return results.data[0];
 }
 
 TEST(VehicleSelfContactCandidateCoupon,
@@ -1013,6 +1062,254 @@ TEST(VehicleSelfContactCandidateCoupon,
                   << " upper=" << swept[side].upper.x << ","
                   << swept[side].upper.y << ","
                   << swept[side].upper.z << '\n';
+    }
+    dynamics.DiscardStep();
+}
+
+TEST(VehicleSelfContactCandidateCoupon,
+     ExhaustedLinearPairReproducesFromAuthenticatedYarisState) {
+    const auto& setup = LevelZeroSetup();
+    const auto& active = setup.active_uses();
+    const auto* rigid = active.rigid();
+    ASSERT_NE(rigid, nullptr);
+    const std::size_t parent_ordinals[2]{
+        ParentOrdinal(active, ExhaustedLinearFirstEid),
+        ParentOrdinal(active, ExhaustedLinearSecondEid)};
+    std::array<contact::FixedContactFacet, 2> facets;
+    for (unsigned side = 0; side < 2; ++side) {
+        const auto& parent = active.parents()[parent_ordinals[side]];
+        ASSERT_LT(CouponLocalFacet, parent.facet_count);
+        ASSERT_EQ(setup.facets().Describe(
+                      parent.surface_parent, CouponLocalFacet,
+                      &facets[side]).status,
+                  contact::FixedContactFacetStatus::Ok);
+        EXPECT_EQ(FacetMotion(facets[side], *rigid),
+                  contact::SelfContactFacetMotion::LinearNodalV1);
+    }
+
+    auto dynamics_config = vehicle_wall::LoadedWallConfig();
+    dynamics_config.startup.reserved_step_s = PhysicalStepS;
+    auto dynamics = dynamics::VehiclePhysicalDynamics::Prepare(
+        Execution(), PhysicalAttachments(), dynamics_config,
+        &physical_model::supports_test::Joints());
+    const auto snapshot =
+        vehicle_self_contact::CandidateRigidCouponAccess::Prepare(
+            dynamics);
+    EXPECT_EQ(snapshot.prepared_view.proposed_time -
+                  snapshot.prepared_view.base_time,
+              PhysicalStepS);
+    const auto node_count =
+        static_cast<std::uint32_t>(dynamics.accepted().node_count);
+    const contact::VectorView accepted_positions{
+        snapshot.accepted->position.data(), node_count, 3, 1};
+    const contact::VectorView prepared_positions{
+        snapshot.prepared->position.data(), node_count, 3, 1};
+    std::array<contact::CurrentFixedTriangle, 2> accepted_triangles;
+    std::array<contact::CurrentFixedTriangle, 2> prepared_triangles;
+    for (unsigned side = 0; side < 2; ++side) {
+        ASSERT_EQ(contact::EvaluateCurrentFixedTriangle(
+                      facets[side], accepted_positions,
+                      &accepted_triangles[side]),
+                  contact::Status::kOk);
+        ASSERT_EQ(contact::EvaluateCurrentFixedTriangle(
+                      facets[side], prepared_positions,
+                      &prepared_triangles[side]),
+                  contact::Status::kOk);
+    }
+
+    contact::FixedTriangleFeatureTaskMask accepted_mask;
+    contact::FixedTriangleFeatureTaskMask prepared_mask;
+    ASSERT_EQ(contact::BuildFixedTriangleFeatureTaskMask(
+                  accepted_triangles[0], accepted_triangles[1],
+                  &accepted_mask),
+              contact::FixedTriangleDiscoveryStatus::Ok);
+    ASSERT_EQ(contact::BuildFixedTriangleFeatureTaskMask(
+                  prepared_triangles[0], prepared_triangles[1],
+                  &prepared_mask),
+              contact::FixedTriangleDiscoveryStatus::Ok);
+    const auto accepted_geometry =
+        Discover(accepted_triangles, accepted_mask);
+    const auto prepared_geometry =
+        Discover(prepared_triangles, prepared_mask);
+    const double thickness =
+        facets[0].reference_half_thickness_m +
+        facets[1].reference_half_thickness_m;
+    const double accepted_minimum =
+        MinimumDistance(accepted_geometry);
+    const double prepared_minimum =
+        MinimumDistance(prepared_geometry);
+    ASSERT_FALSE(accepted_geometry.features.empty());
+    ASSERT_FALSE(prepared_geometry.features.empty());
+    const auto closest = [](const EndpointGeometry& geometry)
+        -> const contact::FixedTriangleFeatureCandidate& {
+        return *std::min_element(
+            geometry.features.begin(), geometry.features.end(),
+            [](const auto& first, const auto& second) {
+                return first.distance_m < second.distance_m;
+            });
+    };
+    const auto& accepted_closest = closest(accepted_geometry);
+    const auto& prepared_closest = closest(prepared_geometry);
+    unsigned shared_vertices = 0;
+    unsigned shared_edges = 0;
+    for (const auto& first : facets[0].vertex_keys)
+        for (const auto& second : facets[1].vertex_keys)
+            shared_vertices +=
+                contact::SameFacetVertexKey(first, second);
+    for (const auto& first : facets[0].edge_keys)
+        for (const auto& second : facets[1].edge_keys)
+            shared_edges +=
+                contact::SameFacetEdgeKey(first, second);
+    EXPECT_EQ(accepted_mask.local_tasks, 0u);
+    EXPECT_EQ(prepared_mask.local_tasks, 0u);
+    EXPECT_EQ(shared_vertices, 0u);
+    EXPECT_EQ(shared_edges, 0u);
+    EXPECT_TRUE(accepted_geometry.intersections.empty());
+    EXPECT_TRUE(prepared_geometry.intersections.empty());
+    EXPECT_GT(accepted_minimum, thickness);
+    EXPECT_GT(prepared_minimum, thickness);
+
+    bool prism_valid = false;
+    sct::FacetPrismSeparationAxis prism_axis =
+        sct::FacetPrismSeparationAxis::None;
+    const bool prism_separated =
+        sct::CertifiedLinearFacetPrismSeparation(
+            accepted_triangles[0], prepared_triangles[0],
+            facets[0].reference_half_thickness_m,
+            accepted_triangles[1], prepared_triangles[1],
+            facets[1].reference_half_thickness_m,
+            sct::FacetPrismAxisLimit::VertexVertex,
+            &prism_axis, &prism_valid);
+    EXPECT_TRUE(prism_valid);
+    EXPECT_FALSE(prism_separated);
+
+    const std::array<contact::RepresentedTrianglePath, 2> paths{
+        RepresentedPath(
+            accepted_triangles[0], prepared_triangles[0]),
+        RepresentedPath(
+            accepted_triangles[1], prepared_triangles[1])};
+    const auto production = Cross(paths, 4095, 20);
+    EXPECT_EQ(
+        production.classification,
+        contact::RepresentedIntervalClassification::CertifiedSeparated);
+    EXPECT_EQ(
+        production.reason,
+        contact::RepresentedIntervalReason::None);
+    EXPECT_EQ(production.work, 1u);
+
+    std::cout << std::setprecision(17)
+              << "V5_LINEAR_EXHAUSTED_PAIR"
+              << " dt_s="
+              << snapshot.prepared_view.proposed_time -
+                     snapshot.prepared_view.base_time
+              << " accepted_local_mask=0x" << std::hex
+              << accepted_mask.local_tasks
+              << " prepared_local_mask=0x"
+              << prepared_mask.local_tasks << std::dec
+              << " accepted_features="
+              << accepted_geometry.features.size()
+              << " prepared_features="
+              << prepared_geometry.features.size()
+              << " accepted_closest_kind="
+              << static_cast<unsigned>(accepted_closest.key.kind)
+              << " accepted_closest_local="
+              << accepted_closest.local_features[0] << ","
+              << accepted_closest.local_features[1]
+              << " accepted_closest_error_m="
+              << accepted_closest.representation_error_m
+              << " prepared_closest_kind="
+              << static_cast<unsigned>(prepared_closest.key.kind)
+              << " prepared_closest_local="
+              << prepared_closest.local_features[0] << ","
+              << prepared_closest.local_features[1]
+              << " prepared_closest_error_m="
+              << prepared_closest.representation_error_m
+              << " accepted_intersections="
+              << accepted_geometry.intersections.size()
+              << " prepared_intersections="
+              << prepared_geometry.intersections.size()
+              << " thickness_m=" << thickness
+              << " accepted_minimum_m=" << accepted_minimum
+              << " prepared_minimum_m=" << prepared_minimum
+              << " shared_vertices=" << shared_vertices
+              << " shared_edges=" << shared_edges
+              << " prism_separated=" << prism_separated
+              << " prism_axis="
+              << static_cast<unsigned>(prism_axis)
+              << " production_classification="
+              << static_cast<unsigned>(production.classification)
+              << " production_reason="
+              << static_cast<unsigned>(production.reason)
+              << " production_work=" << production.work
+              << " legacy_work_exhausted=4095"
+              << " classification=separated_common_translation"
+              << '\n';
+    for (unsigned side = 0; side < 2; ++side) {
+        const auto& parent = active.parents()[parent_ordinals[side]];
+        std::cout << "V5_LINEAR_EXHAUSTED_PARENT"
+                  << " side=" << side
+                  << " active_parent=" << parent_ordinals[side]
+                  << " surface_parent=" << parent.surface_parent
+                  << " active_facet_use="
+                  << parent.facet_offset + CouponLocalFacet
+                  << " eid=" << parent.source.source_parent_id
+                  << " pid=" << parent.source.source_part_id
+                  << " mid=" << parent.source.material_id
+                  << " sid=" << parent.source.section_id
+                  << " arity=" << parent.arity
+                  << " half_thickness_m="
+                  << parent.reference_half_thickness_m
+                  << " nodes=";
+        for (unsigned slot = 0; slot < parent.arity; ++slot) {
+            if (slot) std::cout << ",";
+            const auto node = parent.nodes[slot];
+            std::cout << NativeNodeId(
+                             setup.physical(), parent.source, slot)
+                      << "/" << node << "@"
+                      << RigidGroup(*rigid, node);
+        }
+        std::cout << '\n';
+        for (unsigned vertex = 0; vertex < 3; ++vertex) {
+            std::cout << "V5_LINEAR_EXHAUSTED_VERTEX"
+                      << " side=" << side
+                      << " local=" << vertex
+                      << " key=";
+            PrintVertexKey(facets[side].vertex_keys[vertex]);
+            std::cout << " accepted="
+                      << accepted_triangles[side].vertices[vertex].x
+                      << ","
+                      << accepted_triangles[side].vertices[vertex].y
+                      << ","
+                      << accepted_triangles[side].vertices[vertex].z
+                      << " prepared="
+                      << prepared_triangles[side].vertices[vertex].x
+                      << ","
+                      << prepared_triangles[side].vertices[vertex].y
+                      << ","
+                      << prepared_triangles[side].vertices[vertex].z
+                      << '\n';
+        }
+    }
+    for (unsigned depth = 0; depth <= 11; ++depth) {
+        const auto complete_tree =
+            (std::size_t{1} << (depth + 1)) - 1;
+        const auto result = Cross(paths, complete_tree, depth);
+        EXPECT_EQ(
+            result.classification,
+            contact::RepresentedIntervalClassification::
+                CertifiedSeparated);
+        EXPECT_EQ(
+            result.reason,
+            contact::RepresentedIntervalReason::None);
+        EXPECT_EQ(result.work, 1u);
+        std::cout << "V5_LINEAR_EXHAUSTED_PROGRESS"
+                  << " depth=" << depth
+                  << " cap=" << complete_tree
+                  << " classification="
+                  << static_cast<unsigned>(result.classification)
+                  << " reason="
+                  << static_cast<unsigned>(result.reason)
+                  << " work=" << result.work << '\n';
     }
     dynamics.DiscardStep();
 }
