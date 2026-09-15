@@ -495,6 +495,41 @@ ResidualLinearCertificate(
        intersects ? 1u : 0u, true});
 }
 
+sct::PersistentLinearContactResult
+PersistentLinearCertificate(
+    const CurrentFixedTriangle& first_base,
+    const CurrentFixedTriangle& first_prepared,
+    double first_half_thickness,
+    const CurrentFixedTriangle& second_base,
+    const CurrentFixedTriangle& second_prepared,
+    double second_half_thickness,
+    FixedTriangleFeatureTaskMask mask,
+    FixedTriangleFeatureView features,
+    const sct::AcceptedEventCertificate* accepted,
+    std::size_t accepted_count) noexcept {
+  auto result = sct::CertifyPersistentLinearContact(
+      first_base, first_prepared, first_half_thickness,
+      second_base, second_prepared, second_half_thickness,
+      features, accepted, accepted_count);
+  if (result.status ==
+          sct::PersistentLinearContactStatus::CertifiedContact ||
+      mask.local_tasks)
+    return result;
+
+  FixedTriangleFeatureCandidate local_features[15];
+  fixed_triangle_features::PairFeatureResult feature_result;
+  if (fixed_triangle_features::EvaluatePairFeaturesOnce(
+          first_prepared, second_prepared,
+          local_features, 15, &feature_result) !=
+          FixedTriangleDiscoveryStatus::Ok ||
+      feature_result.feature_count != 15)
+    return result;
+  return sct::CertifyPersistentLinearContact(
+      first_base, first_prepared, first_half_thickness,
+      second_base, second_prepared, second_half_thickness,
+      {local_features, 15, true}, accepted, accepted_count);
+}
+
 }  // namespace
 
 SelfContactTransactionReport SelfContactTransaction::SealCandidate(
@@ -1027,6 +1062,57 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
             ++raw_pair;
             continue;
           }
+          const auto persistent =
+              PersistentLinearCertificate(
+                  state.buffers.accepted_triangles[
+                      facet_pair.first],
+                  state.buffers.prepared_triangles[
+                      facet_pair.first],
+                  parents[first_parent].
+                      reference_half_thickness_m,
+                  state.buffers.accepted_triangles[
+                      facet_pair.second],
+                  state.buffers.prepared_triangles[
+                      facet_pair.second],
+                  parents[second_parent].
+                      reference_half_thickness_m,
+                  state.buffers.chunk_feature_task_masks[pair],
+                  features,
+                  state.buffers.accepted_certificates,
+                  state.accepted_event_count);
+          if (persistent.status ==
+              sct::PersistentLinearContactStatus::InvalidInput)
+            return state.Fail(Failure(
+                S::IdentityMismatch,
+                "Persistent linear contact input is invalid",
+                SIZE_MAX,
+                state.candidate_facet_pair_count + raw_pair));
+          if (persistent.status ==
+              sct::PersistentLinearContactStatus::
+                  CertifiedContact) {
+            state.buffers.chunk_motion_actions[raw_pair] =
+                sct::PairMotionAction::
+                    CertifiedPersistentLinearContact;
+            auto& local_result =
+                state.buffers.chunk_crossings[pair];
+            local_result = {};
+            local_result.key =
+                state.buffers.chunk_canonical_pairs[pair];
+            local_result.feature = persistent.feature;
+            local_result.classification =
+                RepresentedIntervalClassification::
+                    CertifiedCrossingContact;
+            local_result.reason =
+                RepresentedIntervalReason::None;
+            local_result.geometry =
+                RepresentedIntersectionGeometry::
+                    PersistentPhysicalContact;
+            local_result.witness_time_numerator = 0;
+            local_result.witness_time_depth = 0;
+            local_result.work = 1;
+            ++raw_pair;
+            continue;
+          }
         }
         if (action == sct::PairMotionAction::UnsupportedRigidArc) {
           const auto first_parent =
@@ -1137,8 +1223,11 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
         const auto action =
             state.buffers.chunk_motion_actions[raw_pair];
         if (action ==
-            sct::PairMotionAction::
-                CertifiedResidualLinearSeparation) {
+                sct::PairMotionAction::
+                    CertifiedResidualLinearSeparation ||
+            action ==
+                sct::PairMotionAction::
+                    CertifiedPersistentLinearContact) {
           ++raw_pair;
           continue;
         }

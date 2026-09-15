@@ -30,6 +30,20 @@ struct AcceptedEventCertificate {
   std::uint32_t edge_facet[2]{UINT32_MAX, UINT32_MAX};
 };
 
+struct AcceptedEventCertificateView {
+  const AcceptedEventCertificate* data = nullptr;
+  std::size_t count = 0;
+  bool complete = false;
+};
+
+// Internal qualification-only read access. This never supplies authority to
+// production policy and is available only through this private storage header.
+class QualificationAccess {
+ public:
+  static AcceptedEventCertificateView AcceptedCertificates(
+      const SelfContactTransaction&) noexcept;
+};
+
 struct MotionSupport {
   SelfContactFacetMotion motion =
       SelfContactFacetMotion::LinearNodalV1;
@@ -78,6 +92,7 @@ enum class PairMotionAction : std::uint8_t {
   CertifiedRigidArcSeparation,
   UnsupportedRigidArc,
   CertifiedResidualLinearSeparation,
+  CertifiedPersistentLinearContact,
 };
 
 PairMotionAction ClassifyCandidatePairMotion(
@@ -122,6 +137,45 @@ LinearResidualSeparationResult CertifyLinearResidualSeparation(
     double second_half_thickness_m,
     FixedTriangleFeatureView prepared_features,
     FixedTriangleIntersectionView prepared_intersections) noexcept;
+
+enum class PersistentLinearContactStatus : std::uint8_t {
+  CertifiedContact,
+  PotentialChange,
+  IncompleteFeatureRoster,
+  InvalidInput,
+};
+
+// Tracks one immutable material VF or EE feature using its prepared
+// barycentric/edge parameters. After removing the exact binary64 reference
+// translation, H0+H1 bounds its whole-interval relative motion. Certification
+// requires an exact accepted-ledger feature and facet-pair identity match and,
+// strictly, d_i + representation_error_i + H0 + H1 < h0 + h1.
+struct PersistentLinearContactResult {
+  PersistentLinearContactStatus status =
+      PersistentLinearContactStatus::InvalidInput;
+  RepresentedFeaturePathKey feature;
+  Vec3 reference_translation;
+  double first_residual_upper_m = 0;
+  double second_residual_upper_m = 0;
+  double prepared_distance_upper_m = 0;
+  double strict_thickness_margin_lower_m = 0;
+  std::size_t accepted_certificate = SIZE_MAX;
+  std::size_t bounded_feature_count = 0;
+  std::size_t exact_accepted_candidate_count = 0;
+  std::size_t full_accepted_candidate_count = 0;
+  bool exact_common_translation = false;
+};
+
+PersistentLinearContactResult CertifyPersistentLinearContact(
+    const CurrentFixedTriangle& first_base,
+    const CurrentFixedTriangle& first_prepared,
+    double first_half_thickness_m,
+    const CurrentFixedTriangle& second_base,
+    const CurrentFixedTriangle& second_prepared,
+    double second_half_thickness_m,
+    FixedTriangleFeatureView prepared_features,
+    const AcceptedEventCertificate* accepted_certificates,
+    std::size_t accepted_certificate_count) noexcept;
 
 enum class RigidMemberSweepStatus : std::uint8_t {
   Ok,
@@ -521,3 +575,18 @@ struct SelfContactTransaction::Impl {
 };
 
 }  // namespace tlfea::contact
+
+namespace tlfea::contact::self_contact_transaction {
+
+inline AcceptedEventCertificateView
+QualificationAccess::AcceptedCertificates(
+    const SelfContactTransaction& owner) noexcept {
+  if (!owner.impl_ ||
+      owner.impl_->phase !=
+          SelfContactTransaction::Impl::Phase::AssemblyRecorded)
+    return {};
+  return {owner.impl_->buffers.accepted_certificates,
+          owner.impl_->accepted_event_count, true};
+}
+
+}  // namespace tlfea::contact::self_contact_transaction

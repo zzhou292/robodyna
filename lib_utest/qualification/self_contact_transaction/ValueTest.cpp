@@ -279,6 +279,34 @@ sct::LinearResidualSeparationResult ResidualCertificate(
        geometry.intersection_count, true});
 }
 
+sct::AcceptedEventCertificate AcceptedCertificate(
+    const c::FixedTriangleFeatureCandidate& feature) {
+  sct::AcceptedEventCertificate result =
+      feature.key.kind ==
+              c::FixedTriangleCandidateKind::EdgeEdge
+          ? EdgeCertificate()
+          : Certificate(feature.key.vertex_face.vertex.first);
+  result.discovery = feature;
+  result.event.feature = feature.key;
+  result.event.source_order = 0;
+  result.event.classification.reference_half_thickness_m[0] = .1;
+  result.event.classification.reference_half_thickness_m[1] = .1;
+  return result;
+}
+
+const c::FixedTriangleFeatureCandidate& FirstEdgeEdge(
+    const PreparedPairFeatures& geometry) {
+  const auto found = std::find_if(
+      geometry.values.begin(),
+      geometry.values.begin() + geometry.count,
+      [](const auto& feature) {
+        return feature.key.kind ==
+            c::FixedTriangleCandidateKind::EdgeEdge;
+      });
+  EXPECT_NE(found, geometry.values.begin() + geometry.count);
+  return *found;
+}
+
 sct::CandidateValidationInput Input(
     const c::RepresentedIntervalPairKey* pair,
     std::size_t pair_count,
@@ -471,6 +499,241 @@ TEST(SelfContactTransactionValues,
           {geometry.values.data(), geometry.count, true},
           {nullptr, 0, true}).status,
       sct::LinearResidualSeparationStatus::PotentialContact);
+}
+
+TEST(SelfContactTransactionValues,
+     ExactCommonMotionPublishesMatchingPersistentEdgeEdge) {
+  const auto first = Triangle(
+      10, {1, 2, 3},
+      {{{0, 0, 0}, {2, 0, 0}, {0, 2, 0}}});
+  const auto second = Triangle(
+      20, {4, 5, 6},
+      {{{0, 0, .15}, {2, 0, .15}, {0, 2, .15}}});
+  const auto geometry = DiscoverPreparedPair(first, second);
+  ASSERT_EQ(geometry.count, 15u);
+  const auto accepted =
+      AcceptedCertificate(FirstEdgeEdge(geometry));
+  const auto result = sct::CertifyPersistentLinearContact(
+      first, first, .1, second, second, .1,
+      {geometry.values.data(), geometry.count, true},
+      &accepted, 1);
+  ASSERT_EQ(
+      result.status,
+      sct::PersistentLinearContactStatus::CertifiedContact);
+  EXPECT_TRUE(result.exact_common_translation);
+  EXPECT_EQ(result.feature.kind,
+            c::RepresentedFeatureKind::EdgeEdge);
+  EXPECT_EQ(c::fixed_triangle_features::Compare(
+                result.feature.edges[0],
+                accepted.discovery.key.edge_edge.edges[0]), 0);
+  EXPECT_EQ(c::fixed_triangle_features::Compare(
+                result.feature.edges[1],
+                accepted.discovery.key.edge_edge.edges[1]), 0);
+  EXPECT_EQ(result.accepted_certificate, 0u);
+  EXPECT_GT(result.strict_thickness_margin_lower_m, 0);
+}
+
+TEST(SelfContactTransactionValues,
+     ExactCommonMotionPublishesMatchingPersistentVertexFace) {
+  const auto first = Triangle(
+      10, {1, 2, 3},
+      {{{0, 0, 0}, {.2, 0, 0}, {0, .2, 0}}});
+  const auto second = Triangle(
+      20, {4, 5, 6},
+      {{{-1, -1, .15}, {3, -1, .15}, {-1, 3, .15}}});
+  const auto geometry = DiscoverPreparedPair(first, second);
+  const auto found = std::find_if(
+      geometry.values.begin(),
+      geometry.values.begin() + geometry.count,
+      [](const auto& feature) {
+        return feature.key.kind ==
+                   c::FixedTriangleCandidateKind::VertexFace &&
+            feature.key.vertex_face.target.kind ==
+                   c::FixedTriangleStratumKind::Face;
+      });
+  ASSERT_NE(found, geometry.values.begin() + geometry.count);
+  const auto accepted = AcceptedCertificate(*found);
+  const auto result = sct::CertifyPersistentLinearContact(
+      first, first, .1, second, second, .1,
+      {geometry.values.data(), geometry.count, true},
+      &accepted, 1);
+  ASSERT_EQ(
+      result.status,
+      sct::PersistentLinearContactStatus::CertifiedContact);
+  EXPECT_EQ(result.feature.kind,
+            c::RepresentedFeatureKind::VertexFace);
+  EXPECT_EQ(c::fixed_triangle_features::Compare(
+                result.feature.vertex,
+                accepted.discovery.key.vertex_face.vertex), 0);
+  EXPECT_EQ(result.feature.face.parent_eid,
+            accepted.discovery.key.vertex_face.target.face.parent_eid);
+}
+
+TEST(SelfContactTransactionValues,
+     PersistentContactRejectsFeatureSwitchAndSeamIdentity) {
+  const auto first = Triangle(
+      10, {1, 2, 3},
+      {{{0, 0, 0}, {2, 0, 0}, {0, 2, 0}}});
+  const auto second = Triangle(
+      20, {4, 5, 6},
+      {{{0, 0, .15}, {2, 0, .15}, {0, 2, .15}}});
+  const auto geometry = DiscoverPreparedPair(first, second);
+  ASSERT_EQ(geometry.count, 15u);
+  auto switched =
+      AcceptedCertificate(FirstEdgeEdge(geometry));
+  switched.discovery.key.edge_edge.edges[0] =
+      second.edge_keys[2];
+  switched.event.feature = switched.discovery.key;
+  EXPECT_EQ(
+      sct::CertifyPersistentLinearContact(
+          first, first, .1, second, second, .1,
+          {geometry.values.data(), geometry.count, true},
+          &switched, 1).status,
+      sct::PersistentLinearContactStatus::PotentialChange);
+
+  auto seam = AcceptedCertificate(FirstEdgeEdge(geometry));
+  seam.discovery.triangles[1].local_facet = 1;
+  EXPECT_EQ(
+      sct::CertifyPersistentLinearContact(
+          first, first, .1, second, second, .1,
+          {geometry.values.data(), geometry.count, true},
+          &seam, 1).status,
+      sct::PersistentLinearContactStatus::PotentialChange);
+
+  auto exact = AcceptedCertificate(FirstEdgeEdge(geometry));
+  exact.event.source_order = 1;
+  const sct::AcceptedEventCertificate seam_then_exact[]{
+      seam, exact};
+  const auto selected = sct::CertifyPersistentLinearContact(
+      first, first, .1, second, second, .1,
+      {geometry.values.data(), geometry.count, true},
+      seam_then_exact, 2);
+  EXPECT_EQ(
+      selected.status,
+      sct::PersistentLinearContactStatus::CertifiedContact);
+  EXPECT_EQ(selected.accepted_certificate, 1u);
+}
+
+TEST(SelfContactTransactionValues,
+     PersistentContactRejectsCrossingAndContactLoss) {
+  const auto first = Triangle(
+      10, {1, 2, 3},
+      {{{0, 0, 0}, {2, 0, 0}, {0, 2, 0}}});
+  const auto second_prepared = Triangle(
+      20, {4, 5, 6},
+      {{{0, 0, -.15}, {2, 0, -.15}, {0, 2, -.15}}});
+  const auto crossing_base = Triangle(
+      20, {4, 5, 6},
+      {{{0, 0, .15}, {2, 0, .15}, {0, 2, .15}}});
+  const auto crossing_geometry =
+      DiscoverPreparedPair(first, second_prepared);
+  const auto crossing_accepted =
+      AcceptedCertificate(FirstEdgeEdge(crossing_geometry));
+  EXPECT_EQ(
+      sct::CertifyPersistentLinearContact(
+          first, first, .1,
+          crossing_base, second_prepared, .1,
+          {crossing_geometry.values.data(),
+           crossing_geometry.count, true},
+          &crossing_accepted, 1).status,
+      sct::PersistentLinearContactStatus::PotentialChange);
+
+  const auto lost = Triangle(
+      20, {4, 5, 6},
+      {{{0, 0, .21}, {2, 0, .21}, {0, 2, .21}}});
+  const auto lost_geometry = DiscoverPreparedPair(first, lost);
+  const auto lost_accepted =
+      AcceptedCertificate(FirstEdgeEdge(lost_geometry));
+  EXPECT_EQ(
+      sct::CertifyPersistentLinearContact(
+          first, first, .1, lost, lost, .1,
+          {lost_geometry.values.data(),
+           lost_geometry.count, true},
+          &lost_accepted, 1).status,
+      sct::PersistentLinearContactStatus::PotentialChange);
+}
+
+TEST(SelfContactTransactionValues,
+     PersistentContactUsesStrictNearThresholdBound) {
+  const auto first = Triangle(
+      10, {1, 2, 3},
+      {{{0, 0, 0}, {2, 0, 0}, {0, 2, 0}}});
+  const auto classify = [&](double distance) {
+    const auto second = Triangle(
+        20, {4, 5, 6},
+        {{{0, 0, distance}, {2, 0, distance},
+          {0, 2, distance}}});
+    const auto geometry =
+        DiscoverPreparedPair(first, second);
+    const auto accepted =
+        AcceptedCertificate(FirstEdgeEdge(geometry));
+    return sct::CertifyPersistentLinearContact(
+        first, first, .1, second, second, .1,
+        {geometry.values.data(), geometry.count, true},
+        &accepted, 1).status;
+  };
+  EXPECT_EQ(
+      classify(.2),
+      sct::PersistentLinearContactStatus::PotentialChange);
+  EXPECT_EQ(
+      classify(std::nextafter(.2, 0.0)),
+      sct::PersistentLinearContactStatus::CertifiedContact);
+}
+
+TEST(SelfContactTransactionValues,
+     PersistentPublicationRequiresExactAcceptedCertificate) {
+  const auto first = Triangle(
+      10, {1, 2, 3},
+      {{{0, 0, 0}, {2, 0, 0}, {0, 2, 0}}});
+  const auto second = Triangle(
+      20, {4, 5, 6},
+      {{{0, 0, .15}, {2, 0, .15}, {0, 2, .15}}});
+  const auto geometry = DiscoverPreparedPair(first, second);
+  auto authority = EdgeCertificate();
+  authority.discovery = FirstEdgeEdge(geometry);
+  authority.event.feature = authority.discovery.key;
+  authority.event.classification.reference_half_thickness_m[0] = .1;
+  authority.event.classification.reference_half_thickness_m[1] = .1;
+  const auto persistent = sct::CertifyPersistentLinearContact(
+      first, first, .1, second, second, .1,
+      {geometry.values.data(), geometry.count, true},
+      &authority, 1);
+  ASSERT_EQ(
+      persistent.status,
+      sct::PersistentLinearContactStatus::CertifiedContact);
+
+  c::RepresentedIntervalResult crossing;
+  crossing.key = Pair(10, 20);
+  crossing.feature = persistent.feature;
+  crossing.classification =
+      c::RepresentedIntervalClassification::
+          CertifiedCrossingContact;
+  crossing.reason = c::RepresentedIntervalReason::None;
+  crossing.geometry =
+      c::RepresentedIntersectionGeometry::
+          PersistentPhysicalContact;
+  c::SelfContactCandidatePolicyOutcome outcome;
+  std::size_t count = 0;
+  auto input = Input(
+      &crossing.key, 1, &crossing, &outcome, &count);
+  input.accepted_events = &authority;
+  input.accepted_event_count = 1;
+  EXPECT_EQ(
+      sct::ValidateCandidatePublications(input).status,
+      c::SelfContactTransactionStatus::Ok);
+  EXPECT_EQ(
+      outcome.disposition,
+      c::SelfContactCandidateDisposition::
+          RepresentedByAcceptedEdgeEdge);
+
+  auto mismatch = authority;
+  mismatch.discovery.key.edge_edge.edges[0] =
+      second.edge_keys[2];
+  mismatch.event.feature = mismatch.discovery.key;
+  input.accepted_events = &mismatch;
+  EXPECT_EQ(
+      sct::ValidateCandidatePublications(input).status,
+      c::SelfContactTransactionStatus::CandidateRejected);
 }
 
 TEST(SelfContactTransactionValues,

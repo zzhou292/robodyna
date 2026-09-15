@@ -951,6 +951,85 @@ TEST(SelfContactTransactionCuda,
     EXPECT_EQ(result.strict_gap_lower_m,
               reference.strict_gap_lower_m);
   }
+
+  const auto close_base = triangle(20, 200, .15);
+  auto close_prepared = close_base;
+  for (auto& point : close_prepared.vertices)
+    point.x += translation;
+  std::array<c::FixedTriangleFeatureCandidate, 15>
+      close_features;
+  c::fixed_triangle_features::PairFeatureResult
+      close_feature_result;
+  ASSERT_EQ(
+      c::fixed_triangle_features::EvaluatePairFeaturesOnce(
+          first_prepared, close_prepared,
+          close_features.data(), close_features.size(),
+          &close_feature_result),
+      c::FixedTriangleDiscoveryStatus::Ok);
+  const auto persistent_found = std::find_if(
+      close_features.begin(),
+      close_features.begin() + close_feature_result.feature_count,
+      [](const auto& feature) {
+        return feature.key.kind ==
+            c::FixedTriangleCandidateKind::EdgeEdge;
+      });
+  ASSERT_NE(persistent_found,
+            close_features.begin() +
+                close_feature_result.feature_count);
+  const auto persistent_feature = *persistent_found;
+  sct::AcceptedEventCertificate accepted;
+  accepted.kind = sct::AcceptedEventCertificateKind::EdgeEdge;
+  accepted.discovery = persistent_feature;
+  accepted.event.feature = persistent_feature.key;
+  accepted.event.source_order = 0;
+  accepted.event.edge_use[0] = 1;
+  accepted.event.edge_use[1] = 2;
+  accepted.edge_facet[0] = 1;
+  accepted.edge_facet[1] = 2;
+  for (unsigned endpoint = 0; endpoint < 2; ++endpoint) {
+    accepted.event.endpoints[endpoint].count = 3;
+    accepted.event.endpoints[endpoint].nodes[0] =
+        3 * endpoint;
+    accepted.event.endpoints[endpoint].nodes[1] =
+        3 * endpoint + 1;
+    accepted.event.endpoints[endpoint].nodes[2] =
+        3 * endpoint + 2;
+    accepted.event.endpoints[endpoint].weights[0] = .5;
+    accepted.event.endpoints[endpoint].weights[1] = .5;
+  }
+  accepted.event.classification.kind =
+      c::SelfContactPairKind::EdgeEdge;
+  accepted.event.classification.status =
+      c::SelfContactPairStatus::AdmittedEdgeEdge;
+  accepted.event.classification.active[0] = true;
+  accepted.event.classification.active[1] = true;
+  accepted.event.classification.reference_half_thickness_m[0] =
+      .1;
+  accepted.event.classification.reference_half_thickness_m[1] =
+      .1;
+  accepted.event.classification.candidate_directed_area_m2 =
+      {1, 1, 1, 0};
+  accepted.event.classification.admitted_force_area_m2 =
+      {1, 1, 1, 0};
+  sct::PersistentLinearContactResult persistent_reference;
+  for (unsigned repeat = 0; repeat < 64; ++repeat) {
+    const auto result = sct::CertifyPersistentLinearContact(
+        first_base, first_prepared, .1,
+        close_base, close_prepared, .1,
+        {&persistent_feature, 1, true}, &accepted, 1);
+    ASSERT_EQ(
+        result.status,
+        sct::PersistentLinearContactStatus::CertifiedContact);
+    ASSERT_FALSE(result.exact_common_translation);
+    if (!repeat)
+      persistent_reference = result;
+    EXPECT_EQ(result.feature.kind,
+              persistent_reference.feature.kind);
+    EXPECT_EQ(result.accepted_certificate,
+              persistent_reference.accepted_certificate);
+    EXPECT_EQ(result.strict_thickness_margin_lower_m,
+              persistent_reference.strict_thickness_margin_lower_m);
+  }
 }
 
 TEST(SelfContactTransactionCuda,

@@ -7,6 +7,10 @@
 
 namespace tlfea::contact {
 
+namespace self_contact_transaction {
+class QualificationAccess;
+}
+
 // Fixed-capacity runtime composition for one self-contact source. It privately
 // owns broadphase/readback/expansion, accepted and candidate feature discovery,
 // current regularity, crossing, exact event certificates, the force assembler,
@@ -83,6 +87,7 @@ class SelfContactTransaction {
   SelfContactTransactionAllocationInfo allocations() const noexcept;
 
  private:
+  friend class self_contact_transaction::QualificationAccess;
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };

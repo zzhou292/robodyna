@@ -163,6 +163,12 @@ for token in ("SelfContactForceAssembly force",
               "RepresentedIntervalCrossing crossing",
               "ShellPhysicalScratchParticipation participation"):
     require(storage, token, storage_path)
+for token in (
+    "class QualificationAccess",
+    "AcceptedEventCertificateView",
+    "Impl::Phase::AssemblyRecorded",
+):
+    require(storage, token, storage_path)
 for token in ("accepted_rigid_groups", "prepared_rigid_groups",
               "node_rigid_groups", "parent_motion", "facet_motion",
               "chunk_crossings", "chunk_motion_actions",
@@ -440,12 +446,18 @@ for token in (
     "SquaredDistance(",
     "Multiply(margin, margin)",
     "FixedTriangleFeatureTaskBits",
+    "CertifyPersistentLinearContact(",
+    "ExactFeatureSquaredDistance(",
+    "Multiply(available, available)",
 ):
     require(values, token, storage_path)
 for token in (
     "CertifiedResidualLinearSeparation",
     "CertifyLinearResidualSeparation(",
     "local_result.work = 1",
+    "CertifiedPersistentLinearContact",
+    "PersistentLinearCertificate(",
+    "PersistentPhysicalContact",
 ):
     require(candidate + storage, token, CANDIDATE)
 
@@ -532,6 +544,12 @@ for token in (
     "ResidualTranslationFailsClosedOnOverflow",
     "ResidualTranslationPreservesContactAndUnequalMotion",
     "ResidualTranslationSubtractsRepresentationErrorStrictly",
+    "ExactCommonMotionPublishesMatchingPersistentEdgeEdge",
+    "ExactCommonMotionPublishesMatchingPersistentVertexFace",
+    "PersistentContactRejectsFeatureSwitchAndSeamIdentity",
+    "PersistentContactRejectsCrossingAndContactLoss",
+    "PersistentContactUsesStrictNearThresholdBound",
+    "PersistentPublicationRequiresExactAcceptedCertificate",
 ):
     require(VALUE_TEST.read_text(), token, VALUE_TEST)
 for token in (
@@ -589,6 +607,7 @@ for token in (
     "NonlinearSubdivisionDecisionIsRepeatableAndFailClosed",
     "CommonTranslationCertificateIsDeterministicAtMinimalCap",
     "ResidualTranslationCertificateIsDeterministic",
+    "CertifyPersistentLinearContact(",
     "ExactLocalIntersectionPrecedesOnlyUnsupportedMotion",
     "ContactConstraintLayout::SameMergedParts",
     "ContactConstraintLayout::MergedPartAndPlain",

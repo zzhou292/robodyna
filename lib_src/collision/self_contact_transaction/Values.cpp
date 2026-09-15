@@ -223,6 +223,147 @@ Dyadic SquaredDistance(Vec3 first, Vec3 second) {
   return result;
 }
 
+struct ExactPoint {
+  Dyadic component[3];
+};
+
+ExactPoint ExactValue(Vec3 value) {
+  ExactPoint result;
+  result.component[0] = Exact(value.x);
+  result.component[1] = Exact(value.y);
+  result.component[2] = Exact(value.z);
+  return result;
+}
+
+ExactPoint Add(ExactPoint first, ExactPoint second) {
+  ExactPoint result;
+  for (unsigned component = 0; component < 3; ++component)
+    result.component[component] = Add(
+        first.component[component], second.component[component]);
+  return result;
+}
+
+ExactPoint Scale(ExactPoint point, const Dyadic& scale) {
+  for (auto& component : point.component)
+    component = Multiply(component, scale);
+  return point;
+}
+
+Dyadic SquaredDistance(
+    const ExactPoint& first, const ExactPoint& second) {
+  Dyadic result;
+  for (unsigned component = 0; component < 3; ++component) {
+    const auto difference = Subtract(
+        first.component[component],
+        second.component[component]);
+    result = Add(result, Multiply(difference, difference));
+  }
+  return result;
+}
+
+const CurrentFixedTriangle* FeatureTriangle(
+    const FixedTriangleKey& key,
+    const CurrentFixedTriangle& first,
+    const CurrentFixedTriangle& second) noexcept {
+  if (fixed_triangle_features::Compare(key, first.key) == 0)
+    return &first;
+  if (fixed_triangle_features::Compare(key, second.key) == 0)
+    return &second;
+  return nullptr;
+}
+
+const Vec3* VertexValue(
+    const CurrentFixedTriangle& triangle,
+    const FacetVertexKey& key) noexcept {
+  for (unsigned vertex = 0; vertex < 3; ++vertex)
+    if (fixed_triangle_features::Compare(
+            triangle.vertex_keys[vertex], key) == 0)
+      return triangle.vertices + vertex;
+  return nullptr;
+}
+
+bool ExactFeatureSquaredDistance(
+    const FixedTriangleFeatureCandidate& feature,
+    const CurrentFixedTriangle& first,
+    const CurrentFixedTriangle& second,
+    Dyadic* output) {
+  if (!output)
+    return false;
+  const CurrentFixedTriangle* triangles[2]{
+      FeatureTriangle(feature.triangles[0], first, second),
+      FeatureTriangle(feature.triangles[1], first, second)};
+  if (!triangles[0] || !triangles[1])
+    return false;
+  ExactPoint points[2];
+  if (feature.key.kind ==
+      FixedTriangleCandidateKind::VertexFace) {
+    const bool first_vertex =
+        feature.local_features[0] < 3 &&
+        feature.local_features[1] == 3;
+    const bool second_vertex =
+        feature.local_features[1] < 3 &&
+        feature.local_features[0] == 3;
+    if (first_vertex == second_vertex ||
+        feature.key.vertex_face.target.kind !=
+            FixedTriangleStratumKind::Face)
+      return false;
+    const unsigned source = second_vertex ? 1 : 0;
+    const unsigned target = 1 - source;
+    points[source] = ExactValue(
+        triangles[source]->vertices[
+            feature.local_features[source]]);
+    Dyadic weight_sum;
+    for (unsigned vertex = 0; vertex < 3; ++vertex) {
+      const double weight = feature.face_weights[vertex];
+      if (!std::isfinite(weight) || weight < 0 || weight > 1)
+        return false;
+      weight_sum = Add(weight_sum, Exact(weight));
+      points[target] = Add(
+          points[target],
+          Scale(ExactValue(
+                    triangles[target]->vertices[vertex]),
+                Exact(weight)));
+    }
+    if (Compare(weight_sum, Exact(1)) != 0)
+      return false;
+  } else if (feature.key.kind ==
+             FixedTriangleCandidateKind::EdgeEdge) {
+    if (feature.local_features[0] >= 3 ||
+        feature.local_features[1] >= 3)
+      return false;
+    const auto& first_edge =
+        triangles[0]->edge_keys[feature.local_features[0]];
+    const auto& second_edge =
+        triangles[1]->edge_keys[feature.local_features[1]];
+    const bool first_key_first =
+        fixed_triangle_features::Compare(
+            first_edge, second_edge) <= 0;
+    for (unsigned side = 0; side < 2; ++side) {
+      const auto& edge =
+          triangles[side]->edge_keys[
+              feature.local_features[side]];
+      const auto* begin =
+          VertexValue(*triangles[side], edge.endpoints[0]);
+      const auto* end =
+          VertexValue(*triangles[side], edge.endpoints[1]);
+      const unsigned parameter =
+          (side == 0) == first_key_first ? 0 : 1;
+      const double t = feature.edge_parameters[parameter];
+      if (!begin || !end || !std::isfinite(t) ||
+          t < 0 || t > 1)
+        return false;
+      points[side] = Add(
+          Scale(ExactValue(*begin),
+                Subtract(Exact(1), Exact(t))),
+          Scale(ExactValue(*end), Exact(t)));
+    }
+  } else {
+    return false;
+  }
+  *output = SquaredDistance(points[0], points[1]);
+  return true;
+}
+
 unsigned FeatureTaskSlot(
     const FixedTriangleFeatureCandidate& feature) noexcept {
   if (feature.key.kind ==
@@ -599,6 +740,98 @@ std::size_t AcceptedFeature(
   return SIZE_MAX;
 }
 
+std::size_t PersistentAcceptedFeature(
+    const RepresentedIntervalResult& crossing,
+    const AcceptedEventCertificate* events,
+    std::size_t event_count) noexcept {
+  FixedTriangleFeatureKey key;
+  if (crossing.feature.kind ==
+      RepresentedFeatureKind::VertexFace) {
+    key.vertex_face.vertex = crossing.feature.vertex;
+    key.vertex_face.target.SetFace({
+        crossing.feature.face.source_instance_id,
+        crossing.feature.face.parent_eid,
+        crossing.feature.face.level,
+        crossing.feature.face.local_facet});
+  } else if (crossing.feature.kind ==
+             RepresentedFeatureKind::EdgeEdge) {
+    key.SetEdgeEdge();
+    key.edge_edge.edges[0] = crossing.feature.edges[0];
+    key.edge_edge.edges[1] = crossing.feature.edges[1];
+  } else {
+    return SIZE_MAX;
+  }
+  std::size_t lower = 0, upper = event_count;
+  while (lower < upper) {
+    const auto middle = lower + (upper - lower) / 2;
+    if (fixed_triangle_features::Compare(
+            events[middle].event.feature, key) < 0)
+      lower = middle + 1;
+    else
+      upper = middle;
+  }
+  const auto same_path = [](
+      const FixedTriangleKey& triangle,
+      const RepresentedTrianglePathKey& path) {
+    return self_contact_transaction::Compare(
+        path, {triangle.source_instance_id,
+               triangle.parent_eid, triangle.level,
+               triangle.local_facet}) == 0;
+  };
+  for (std::size_t candidate = lower;
+       candidate < event_count &&
+       self_contact_transaction::Same(
+           events[candidate].event.feature, key);
+       ++candidate) {
+    const auto& certificate = events[candidate];
+    const auto& accepted = certificate.event;
+    const bool exact_pair =
+        (same_path(certificate.discovery.triangles[0],
+                   crossing.key.paths[0]) &&
+         same_path(certificate.discovery.triangles[1],
+                   crossing.key.paths[1])) ||
+        (same_path(certificate.discovery.triangles[0],
+                   crossing.key.paths[1]) &&
+         same_path(certificate.discovery.triangles[1],
+                   crossing.key.paths[0]));
+    const bool edge_edge =
+        crossing.feature.kind ==
+            RepresentedFeatureKind::EdgeEdge &&
+        certificate.kind ==
+            AcceptedEventCertificateKind::EdgeEdge &&
+        accepted.classification.kind ==
+            SelfContactPairKind::EdgeEdge &&
+        accepted.classification.status ==
+            SelfContactPairStatus::AdmittedEdgeEdge;
+    const bool vertex_face =
+        crossing.feature.kind ==
+            RepresentedFeatureKind::VertexFace &&
+        certificate.kind ==
+            AcceptedEventCertificateKind::VertexFace &&
+        accepted.classification.kind ==
+            SelfContactPairKind::VertexFace &&
+        accepted.classification.status ==
+            SelfContactPairStatus::AdmittedVertexFace;
+    const double gap =
+        (certificate.discovery.distance_m -
+         accepted.classification.reference_half_thickness_m[0]) -
+        accepted.classification.reference_half_thickness_m[1];
+    if (exact_pair && (edge_edge || vertex_face) &&
+        self_contact_transaction::Same(
+            certificate.discovery.key, key) &&
+        accepted.source_order == candidate &&
+        !accepted.classification.excluded &&
+        !accepted.classification.local_incidence &&
+        accepted.classification.active[0] &&
+        accepted.classification.active[1] &&
+        IsFinite(certificate.discovery.distance_m) &&
+        certificate.discovery.distance_m >= 0 &&
+        IsFinite(gap) && gap <= 0)
+      return candidate;
+  }
+  return SIZE_MAX;
+}
+
 SelfContactTransactionReport Failure(
     SelfContactTransactionStatus status, const char* message,
     std::size_t pair = SIZE_MAX,
@@ -787,6 +1020,191 @@ LinearResidualSeparationResult CertifyLinearResidualSeparation(
         residual_upper);
     result.status =
         LinearResidualSeparationStatus::CertifiedSeparated;
+    return result;
+  } catch (...) {
+    return result;
+  }
+}
+
+PersistentLinearContactResult CertifyPersistentLinearContact(
+    const CurrentFixedTriangle& first_base,
+    const CurrentFixedTriangle& first_prepared,
+    double first_half_thickness_m,
+    const CurrentFixedTriangle& second_base,
+    const CurrentFixedTriangle& second_prepared,
+    double second_half_thickness_m,
+    FixedTriangleFeatureView prepared_features,
+    const AcceptedEventCertificate* accepted_certificates,
+    std::size_t accepted_certificate_count) noexcept {
+  PersistentLinearContactResult result;
+  if (!Same(first_base.key, first_prepared.key) ||
+      !Same(second_base.key, second_prepared.key) ||
+      !prepared_features.complete ||
+      (prepared_features.count && !prepared_features.data) ||
+      (accepted_certificate_count && !accepted_certificates) ||
+      !std::isfinite(first_half_thickness_m) ||
+      !(first_half_thickness_m > 0) ||
+      !std::isfinite(second_half_thickness_m) ||
+      !(second_half_thickness_m > 0))
+    return result;
+  result.reference_translation = {
+      first_prepared.vertices[0].x - first_base.vertices[0].x,
+      first_prepared.vertices[0].y - first_base.vertices[0].y,
+      first_prepared.vertices[0].z - first_base.vertices[0].z};
+  if (!IsFinite(result.reference_translation))
+    return result;
+
+  try {
+    const auto first_residual = TriangleResidualL1(
+        first_base, first_prepared,
+        result.reference_translation);
+    const auto second_residual = TriangleResidualL1(
+        second_base, second_prepared,
+        result.reference_translation);
+    result.exact_common_translation =
+        first_residual.numerator == 0 &&
+        second_residual.numerator == 0;
+    result.first_residual_upper_m =
+        TriangleResidualL1Upper(
+            first_base, first_prepared,
+            result.reference_translation);
+    result.second_residual_upper_m =
+        TriangleResidualL1Upper(
+            second_base, second_prepared,
+            result.reference_translation);
+    if (!std::isfinite(result.first_residual_upper_m) ||
+        !std::isfinite(result.second_residual_upper_m))
+      return result;
+    const auto thickness = Add(
+        Exact(first_half_thickness_m),
+        Exact(second_half_thickness_m));
+    const auto residual =
+        Add(first_residual, second_residual);
+    const auto pair =
+        PairKey(first_prepared.key, second_prepared.key);
+    bool saw_exact_pair = false;
+    for (std::size_t feature_index = 0;
+         feature_index < prepared_features.count;
+         ++feature_index) {
+      const auto& feature =
+          prepared_features.data[feature_index];
+      if (Compare(PairKey(feature.triangles[0],
+                          feature.triangles[1]),
+                  pair) != 0)
+        continue;
+      saw_exact_pair = true;
+      if (!std::isfinite(feature.distance_m) ||
+          feature.distance_m < 0 ||
+          !std::isfinite(feature.representation_error_m) ||
+          feature.representation_error_m < 0)
+        return result;
+      if (feature.key.kind ==
+              FixedTriangleCandidateKind::VertexFace &&
+          feature.key.vertex_face.target.kind !=
+              FixedTriangleStratumKind::Face)
+        continue;
+      Dyadic squared_distance;
+      if (!ExactFeatureSquaredDistance(
+              feature, first_prepared, second_prepared,
+              &squared_distance))
+        continue;
+      const auto available = Subtract(
+          Subtract(thickness, residual),
+          Exact(feature.representation_error_m));
+      if (available.numerator <= 0 ||
+          Compare(squared_distance,
+                  Multiply(available, available)) >= 0)
+        continue;
+      ++result.bounded_feature_count;
+
+      std::size_t lower = 0;
+      std::size_t upper = accepted_certificate_count;
+      while (lower < upper) {
+        const auto middle = lower + (upper - lower) / 2;
+        if (fixed_triangle_features::Compare(
+                accepted_certificates[middle].event.feature,
+                feature.key) < 0)
+          lower = middle + 1;
+        else
+          upper = middle;
+      }
+      for (std::size_t i = lower;
+           i < accepted_certificate_count &&
+           Same(accepted_certificates[i].event.feature,
+                feature.key);
+           ++i)
+        if (Same(accepted_certificates[i].discovery.key,
+                 feature.key) &&
+            ExactFacetPair(
+                accepted_certificates[i].discovery,
+                feature))
+          ++result.exact_accepted_candidate_count;
+
+      RepresentedIntervalResult publication;
+      publication.key = pair;
+      if (feature.key.kind ==
+          FixedTriangleCandidateKind::VertexFace) {
+        publication.feature.kind =
+            RepresentedFeatureKind::VertexFace;
+        publication.feature.vertex =
+            feature.key.vertex_face.vertex;
+        const auto& face =
+            feature.key.vertex_face.target.face;
+        publication.feature.face = {
+            face.source_instance_id, face.parent_eid,
+            face.level, face.local_facet};
+      } else {
+        publication.feature.kind =
+            RepresentedFeatureKind::EdgeEdge;
+        publication.feature.edges[0] =
+            feature.key.edge_edge.edges[0];
+        publication.feature.edges[1] =
+            feature.key.edge_edge.edges[1];
+      }
+      const std::size_t accepted = PersistentAcceptedFeature(
+          publication, accepted_certificates,
+          accepted_certificate_count);
+      Dyadic accepted_squared_distance;
+      if (accepted == SIZE_MAX)
+        continue;
+      ++result.full_accepted_candidate_count;
+      if (!ExactFeatureSquaredDistance(
+              accepted_certificates[accepted].discovery,
+              first_base, second_base,
+              &accepted_squared_distance))
+        continue;
+      if (result.status ==
+              PersistentLinearContactStatus::CertifiedContact &&
+          fixed_triangle_features::Compare(
+              accepted_certificates[
+                  result.accepted_certificate].discovery.key,
+              feature.key) <= 0)
+        continue;
+
+      result.feature = publication.feature;
+      result.accepted_certificate = accepted;
+      result.prepared_distance_upper_m = NextUp(
+          feature.distance_m +
+          feature.representation_error_m);
+      const double residual_upper = NextUp(
+          result.first_residual_upper_m +
+          result.second_residual_upper_m);
+      result.strict_thickness_margin_lower_m = NextDown(
+          NextDown(
+              first_half_thickness_m +
+              second_half_thickness_m) -
+          NextUp(result.prepared_distance_upper_m +
+                 residual_upper));
+      result.status =
+          PersistentLinearContactStatus::CertifiedContact;
+    }
+    if (result.status ==
+        PersistentLinearContactStatus::CertifiedContact)
+      return result;
+    result.status = saw_exact_pair
+        ? PersistentLinearContactStatus::PotentialChange
+        : PersistentLinearContactStatus::
+              IncompleteFeatureRoster;
     return result;
   } catch (...) {
     return result;
@@ -1177,9 +1595,21 @@ SelfContactTransactionReport ValidateCandidatePublications(
       continue;
     }
     bool edge_edge = false;
-    const auto accepted = AcceptedFeature(
-        crossing, input.accepted_events,
-        input.accepted_event_count, &edge_edge);
+    std::size_t accepted = SIZE_MAX;
+    if (crossing.geometry ==
+        RepresentedIntersectionGeometry::
+            PersistentPhysicalContact) {
+      accepted = PersistentAcceptedFeature(
+          crossing, input.accepted_events,
+          input.accepted_event_count);
+      edge_edge =
+          crossing.feature.kind ==
+          RepresentedFeatureKind::EdgeEdge;
+    } else {
+      accepted = AcceptedFeature(
+          crossing, input.accepted_events,
+          input.accepted_event_count, &edge_edge);
+    }
     if (accepted == SIZE_MAX)
       return Failure(SelfContactTransactionStatus::CandidateRejected,
           crossing.feature.kind == RepresentedFeatureKind::EdgeEdge

@@ -83,6 +83,7 @@ enum class RepresentedIntersectionGeometry : std::uint8_t {
   None,
   Transverse,
   Coplanar,
+  PersistentPhysicalContact,
 };
 
 struct RepresentedIntervalResult {

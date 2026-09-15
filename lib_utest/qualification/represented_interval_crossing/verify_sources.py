@@ -116,6 +116,7 @@ required = (
     "CheckedTotalWorkExhaustionPreservesPublicationAndAllowsRetry",
     "CommonTranslationMinimalTotalCapRollsBackAndRetriesExactly",
     "RoundedResidualMinimalCapFailureRollsBackExactly",
+    "PersistentProxyMinimalCapFailureRollsBackExactly",
     "ResultCapMinusOneFailureIsAtomicAndSubsetRetrySucceeds",
     "DeepDyadicAffineContactUsesOwnedIterativeStack",
     "StaticDisjointTouchingBoxesUseExactGeometryCertificate",
