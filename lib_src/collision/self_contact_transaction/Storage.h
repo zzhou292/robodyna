@@ -148,8 +148,10 @@ enum class PersistentLinearContactStatus : std::uint8_t {
 // Tracks one immutable material VF or EE feature using its prepared
 // barycentric/edge parameters. After removing the exact binary64 reference
 // translation, H0+H1 bounds its whole-interval relative motion. Certification
-// requires an exact accepted-ledger feature and facet-pair identity match and,
-// strictly, d_i + representation_error_i + H0 + H1 < h0 + h1.
+// requires an exact accepted-ledger feature identity. EE producing facets must
+// either match exactly or normalize componentwise to the ledger's lower
+// canonical seam owners; crossed or noncanonical provenance is ambiguous.
+// Strictly, d_i + representation_error_i + H0 + H1 < h0 + h1.
 struct PersistentLinearContactResult {
   PersistentLinearContactStatus status =
       PersistentLinearContactStatus::InvalidInput;

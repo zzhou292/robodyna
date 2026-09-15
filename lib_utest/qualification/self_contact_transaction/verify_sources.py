@@ -449,6 +449,7 @@ for token in (
     "CertifyPersistentLinearContact(",
     "ExactFeatureSquaredDistance(",
     "Multiply(available, available)",
+    "first_owner <= 0 && second_owner <= 0",
 ):
     require(values, token, storage_path)
 for token in (
@@ -549,6 +550,7 @@ for token in (
     "PersistentContactRejectsFeatureSwitchAndSeamIdentity",
     "PersistentContactRejectsCrossingAndContactLoss",
     "PersistentContactUsesStrictNearThresholdBound",
+    "PersistentContactCanonicalizesEqualMinimaAcrossPermutation",
     "PersistentPublicationRequiresExactAcceptedCertificate",
 ):
     require(VALUE_TEST.read_text(), token, VALUE_TEST)

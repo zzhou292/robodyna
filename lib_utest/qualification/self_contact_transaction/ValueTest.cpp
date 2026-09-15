@@ -600,6 +600,37 @@ TEST(SelfContactTransactionValues,
           &seam, 1).status,
       sct::PersistentLinearContactStatus::PotentialChange);
 
+  auto canonical_seam =
+      AcceptedCertificate(FirstEdgeEdge(geometry));
+  canonical_seam.discovery.triangles[0].parent_eid = 9;
+  const auto normalized =
+      sct::CertifyPersistentLinearContact(
+          first, first, .1, second, second, .1,
+          {geometry.values.data(), geometry.count, true},
+          &canonical_seam, 1);
+  EXPECT_EQ(
+      normalized.status,
+      sct::PersistentLinearContactStatus::CertifiedContact);
+  EXPECT_EQ(normalized.accepted_certificate, 0u);
+
+  auto ambiguous = canonical_seam;
+  ambiguous.discovery.triangles[1].parent_eid = 21;
+  EXPECT_EQ(
+      sct::CertifyPersistentLinearContact(
+          first, first, .1, second, second, .1,
+          {geometry.values.data(), geometry.count, true},
+          &ambiguous, 1).status,
+      sct::PersistentLinearContactStatus::PotentialChange);
+
+  auto two_sided_seam = canonical_seam;
+  two_sided_seam.discovery.triangles[1].parent_eid = 19;
+  EXPECT_EQ(
+      sct::CertifyPersistentLinearContact(
+          first, first, .1, second, second, .1,
+          {geometry.values.data(), geometry.count, true},
+          &two_sided_seam, 1).status,
+      sct::PersistentLinearContactStatus::CertifiedContact);
+
   auto exact = AcceptedCertificate(FirstEdgeEdge(geometry));
   exact.event.source_order = 1;
   const sct::AcceptedEventCertificate seam_then_exact[]{
@@ -681,6 +712,56 @@ TEST(SelfContactTransactionValues,
 }
 
 TEST(SelfContactTransactionValues,
+     PersistentContactCanonicalizesEqualMinimaAcrossPermutation) {
+  const auto first = Triangle(
+      10, {1, 2, 3},
+      {{{0, 0, 0}, {2, 0, 0}, {0, 2, 0}}});
+  const auto second = Triangle(
+      20, {4, 5, 6},
+      {{{0, 0, .15}, {2, 0, .15}, {0, 2, .15}}});
+  const auto geometry = DiscoverPreparedPair(first, second);
+  std::array<c::FixedTriangleFeatureCandidate, 2> features;
+  std::size_t count = 0;
+  for (std::size_t i = 0; i < geometry.count && count < 2; ++i)
+    if (geometry.values[i].key.kind ==
+        c::FixedTriangleCandidateKind::EdgeEdge)
+      features[count++] = geometry.values[i];
+  ASSERT_EQ(count, 2u);
+  std::array<sct::AcceptedEventCertificate, 2> accepted{
+      AcceptedCertificate(features[0]),
+      AcceptedCertificate(features[1])};
+  std::sort(
+      accepted.begin(), accepted.end(),
+      [](const auto& left, const auto& right) {
+        return c::fixed_triangle_features::Compare(
+                   left.event.feature,
+                   right.event.feature) < 0;
+      });
+  for (std::size_t i = 0; i < accepted.size(); ++i)
+    accepted[i].event.source_order = i;
+  const auto expected = sct::CertifyPersistentLinearContact(
+      first, first, .1, second, second, .1,
+      {features.data(), features.size(), true},
+      accepted.data(), accepted.size());
+  ASSERT_EQ(
+      expected.status,
+      sct::PersistentLinearContactStatus::CertifiedContact);
+  std::swap(features[0], features[1]);
+  const auto permuted = sct::CertifyPersistentLinearContact(
+      first, first, .1, second, second, .1,
+      {features.data(), features.size(), true},
+      accepted.data(), accepted.size());
+  ASSERT_EQ(
+      permuted.status,
+      sct::PersistentLinearContactStatus::CertifiedContact);
+  EXPECT_EQ(
+      c::fixed_triangle_features::Compare(
+          accepted[expected.accepted_certificate].event.feature,
+          accepted[permuted.accepted_certificate].event.feature),
+      0);
+}
+
+TEST(SelfContactTransactionValues,
      PersistentPublicationRequiresExactAcceptedCertificate) {
   const auto first = Triangle(
       10, {1, 2, 3},
@@ -725,6 +806,34 @@ TEST(SelfContactTransactionValues,
       outcome.disposition,
       c::SelfContactCandidateDisposition::
           RepresentedByAcceptedEdgeEdge);
+
+  auto canonical_seam = authority;
+  canonical_seam.discovery.triangles[0].parent_eid = 9;
+  input.accepted_events = &canonical_seam;
+  EXPECT_EQ(
+      sct::ValidateCandidatePublications(input).status,
+      c::SelfContactTransactionStatus::Ok);
+
+  auto two_sided_seam = canonical_seam;
+  two_sided_seam.discovery.triangles[1].parent_eid = 19;
+  input.accepted_events = &two_sided_seam;
+  EXPECT_EQ(
+      sct::ValidateCandidatePublications(input).status,
+      c::SelfContactTransactionStatus::Ok);
+
+  auto reverse_seam = authority;
+  reverse_seam.discovery.triangles[0].parent_eid = 11;
+  input.accepted_events = &reverse_seam;
+  EXPECT_EQ(
+      sct::ValidateCandidatePublications(input).status,
+      c::SelfContactTransactionStatus::CandidateRejected);
+
+  auto crossed_seam = canonical_seam;
+  crossed_seam.discovery.triangles[1].parent_eid = 21;
+  input.accepted_events = &crossed_seam;
+  EXPECT_EQ(
+      sct::ValidateCandidatePublications(input).status,
+      c::SelfContactTransactionStatus::CandidateRejected);
 
   auto mismatch = authority;
   mismatch.discovery.key.edge_edge.edges[0] =

@@ -785,7 +785,7 @@ std::size_t PersistentAcceptedFeature(
        ++candidate) {
     const auto& certificate = events[candidate];
     const auto& accepted = certificate.event;
-    const bool exact_pair =
+    bool exact_pair =
         (same_path(certificate.discovery.triangles[0],
                    crossing.key.paths[0]) &&
          same_path(certificate.discovery.triangles[1],
@@ -794,6 +794,24 @@ std::size_t PersistentAcceptedFeature(
                    crossing.key.paths[1]) &&
          same_path(certificate.discovery.triangles[1],
                    crossing.key.paths[0]));
+    if (!exact_pair &&
+        crossing.feature.kind ==
+            RepresentedFeatureKind::EdgeEdge) {
+      auto accepted_paths = PairKey(
+          certificate.discovery.triangles[0],
+          certificate.discovery.triangles[1]);
+      const int first_owner =
+          self_contact_transaction::Compare(
+              accepted_paths.paths[0],
+              crossing.key.paths[0]);
+      const int second_owner =
+          self_contact_transaction::Compare(
+              accepted_paths.paths[1],
+              crossing.key.paths[1]);
+      exact_pair =
+          first_owner <= 0 && second_owner <= 0 &&
+          (first_owner < 0 || second_owner < 0);
+    }
     const bool edge_edge =
         crossing.feature.kind ==
             RepresentedFeatureKind::EdgeEdge &&
@@ -1168,7 +1186,10 @@ PersistentLinearContactResult CertifyPersistentLinearContact(
       if (accepted == SIZE_MAX)
         continue;
       ++result.full_accepted_candidate_count;
-      if (!ExactFeatureSquaredDistance(
+      if (ExactFacetPair(
+              accepted_certificates[accepted].discovery,
+              feature) &&
+          !ExactFeatureSquaredDistance(
               accepted_certificates[accepted].discovery,
               first_base, second_base,
               &accepted_squared_distance))

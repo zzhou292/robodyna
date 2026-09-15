@@ -1030,6 +1030,20 @@ TEST(SelfContactTransactionCuda,
     EXPECT_EQ(result.strict_thickness_margin_lower_m,
               persistent_reference.strict_thickness_margin_lower_m);
   }
+  accepted.discovery.triangles[0].parent_eid = 9;
+  accepted.discovery.triangles[1].parent_eid = 19;
+  for (unsigned repeat = 0; repeat < 64; ++repeat) {
+    const auto result = sct::CertifyPersistentLinearContact(
+        first_base, first_prepared, .1,
+        close_base, close_prepared, .1,
+        {&persistent_feature, 1, true}, &accepted, 1);
+    ASSERT_EQ(
+        result.status,
+        sct::PersistentLinearContactStatus::CertifiedContact);
+    EXPECT_EQ(result.accepted_certificate, 0u);
+    EXPECT_EQ(result.feature.kind,
+              c::RepresentedFeatureKind::EdgeEdge);
+  }
 }
 
 TEST(SelfContactTransactionCuda,
@@ -1311,7 +1325,7 @@ TEST(SelfContactTransactionCuda,
                   policy.edge_axis_certified_linear_separated -
                   policy.vertex_edge_axis_separated);
     EXPECT_GT(policy.exact_crossing_pairs,0u);
-    EXPECT_GT(policy.exact_crossing_work,0u);
+    EXPECT_GT(policy.represented_by_accepted_ee, 0u);
     EXPECT_LT(policy.exact_crossing_pairs,policy.outcomes);
     EXPECT_EQ(
         policy.outcomes,
