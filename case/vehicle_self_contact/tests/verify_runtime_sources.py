@@ -164,7 +164,7 @@ def main() -> None:
         case / "vehicle_startup" / "shell_execution" / "tests" /
         "self_contact" / "RuntimeGateTest.cpp").read_text()
     for value in ["376930", "337092", "315963", "653055",
-                  "1584464", "5989248", "4096", "1542092504"]:
+                  "1584464", "5989248", "4096", "1542100696"]:
         require(value in gate,
                 f"actual runtime gate is missing exact value {value}")
     require("SelfContactTransactionLimits::Vehicle(" in gate and
@@ -245,6 +245,8 @@ def main() -> None:
             "potential_tasks", "local_masked_tasks",
             "exact_executed_tasks", "raw_feature_candidates",
             "feature_candidates", "raw_intersections", "intersections",
+            "nonlocal_intersections", "first_nonlocal_intersection",
+            "RequiresIntersectionAdmission",
             "feature_hash", "intersection_hash", "discovery_us",
             "exact_tasks_per_second"]:
         require(token in sample_header + sample_source,
@@ -256,7 +258,7 @@ def main() -> None:
             "app and transaction must share the production filter certificate")
     require("BuildFixedTriangleFeatureTaskMask(" in sample_source and
             ".DiscoverMasked(" in sample_source and
-            "InitialExactFeatureSampleCapacity = 65536" in sample_header and
+            "InitialExactFeatureSampleCapacity = 262144" in sample_header and
             "InitialExactFeatureChunkCapacity = 4096" in sample_header and
             "InitialExactFeatureChunkCapacity, 4" in census_source and
             "InitialExactFeatureRerunThresholdUs" in census_source and

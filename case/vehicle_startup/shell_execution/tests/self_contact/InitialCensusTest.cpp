@@ -133,6 +133,8 @@ TEST(VehicleSelfContactInitialCensus,
               sample.raw_feature_candidates);
     EXPECT_LE(sample.intersections,
               sample.raw_intersections);
+    EXPECT_LE(sample.nonlocal_intersections,
+              sample.intersections);
     EXPECT_LE(sample.raw_intersections,
               sample.sampled_pairs);
     EXPECT_GT(sample.feature_hash, 0u);
@@ -271,6 +273,16 @@ TEST(VehicleSelfContactInitialCensus,
               << sample.raw_intersections
               << " sampled_unique_intersections="
               << sample.intersections
+              << " sampled_nonlocal_intersections="
+              << sample.nonlocal_intersections
+              << " first_nonlocal_parent0="
+              << sample.first_nonlocal_intersection[0].parent_eid
+              << " first_nonlocal_facet0="
+              << sample.first_nonlocal_intersection[0].local_facet
+              << " first_nonlocal_parent1="
+              << sample.first_nonlocal_intersection[1].parent_eid
+              << " first_nonlocal_facet1="
+              << sample.first_nonlocal_intersection[1].local_facet
               << " sampled_feature_hash="
               << sample.feature_hash
               << " sampled_intersection_hash="

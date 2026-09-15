@@ -14,6 +14,14 @@ namespace contact = tlfea::contact;
 constexpr std::uint64_t HashBasis = 14695981039346656037ULL;
 constexpr std::uint64_t HashPrime = 1099511628211ULL;
 
+bool Same(const contact::FixedTriangleKey& first,
+          const contact::FixedTriangleKey& second) noexcept {
+    return first.source_instance_id == second.source_instance_id &&
+        first.parent_eid == second.parent_eid &&
+        first.level == second.level &&
+        first.local_facet == second.local_facet;
+}
+
 template <class T,
           std::enable_if_t<std::is_integral_v<T>, int> = 0>
 void Hash(T value, std::uint64_t& hash) noexcept {
@@ -250,9 +258,24 @@ InitialFeatureSampleReport DiscoverInitialFeatureSample(
         Hash(intersections.count,
              next.complete.intersection_hash);
         for (std::size_t intersection = 0;
-             intersection < intersections.count; ++intersection)
+             intersection < intersections.count; ++intersection) {
+            if (contact::RequiresIntersectionAdmission(
+                    intersections.data[intersection])) {
+                if (!next.complete.nonlocal_intersections) {
+                    next.complete.first_nonlocal_intersection[0] =
+                        intersections.data[intersection].triangles[0];
+                    next.complete.first_nonlocal_intersection[1] =
+                        intersections.data[intersection].triangles[1];
+                }
+                if (!Add(1, next.complete.nonlocal_intersections))
+                    return {InitialFeatureSampleStatus::Unrepresentable,
+                            begin + intersection, SIZE_MAX,
+                            contact::FixedTriangleArithmeticReason::None,
+                            "Initial nonlocal intersection count overflows"};
+            }
             Hash(intersections.data[intersection],
                  next.complete.intersection_hash);
+        }
         if (!begin) {
             next.worker_prefix = next.complete;
             next.worker_prefix_pairs = count;
@@ -280,6 +303,12 @@ bool SameInitialFeatureSampleIdentity(
         first.feature_candidates == second.feature_candidates &&
         first.raw_intersections == second.raw_intersections &&
         first.intersections == second.intersections &&
+        first.nonlocal_intersections ==
+            second.nonlocal_intersections &&
+        Same(first.first_nonlocal_intersection[0],
+             second.first_nonlocal_intersection[0]) &&
+        Same(first.first_nonlocal_intersection[1],
+             second.first_nonlocal_intersection[1]) &&
         first.feature_hash == second.feature_hash &&
         first.intersection_hash == second.intersection_hash;
 }

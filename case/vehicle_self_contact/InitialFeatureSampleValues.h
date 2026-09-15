@@ -6,7 +6,7 @@
 
 namespace crash::cases::vehicle_self_contact {
 
-inline constexpr std::size_t InitialExactFeatureSampleCapacity = 65536;
+inline constexpr std::size_t InitialExactFeatureSampleCapacity = 262144;
 inline constexpr std::size_t InitialExactFeatureChunkCapacity = 4096;
 inline constexpr std::size_t InitialExactFeatureHostByteCap =
     std::size_t{128} << 20;
@@ -22,6 +22,8 @@ struct InitialFeatureSampleIdentity {
     std::size_t feature_candidates = 0;
     std::size_t raw_intersections = 0;
     std::size_t intersections = 0;
+    std::size_t nonlocal_intersections = 0;
+    tlfea::contact::FixedTriangleKey first_nonlocal_intersection[2];
     std::uint64_t feature_hash = 0;
     std::uint64_t intersection_hash = 0;
 };
