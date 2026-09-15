@@ -61,7 +61,8 @@ assert "owner->Discard()" in initialize
 assert "assembler_identity" in initialize
 assert "Authenticates(" in initialize
 assert "CompareSelfContactForceEventIdentity" in values
-assert "classification.parent[side]" in values
+assert "event.classification.parent" in values
+assert "identity.parent[0]" in values
 assert "Duplicate canonical self-contact event identity" in (
     COLLISION / "self_contact_force/Values.cpp").read_text()
 assert "AdmittedVertexFace" in source
