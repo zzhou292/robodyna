@@ -454,6 +454,7 @@ TEST(VehicleSelfContactRuntime,
 
 TEST(VehicleSelfContactRuntime,
      FullV5OneAttemptIsTypedFailClosedAndRetryStable) {
+    std::cout << std::unitbuf;
     const auto setup_start = std::chrono::steady_clock::now();
     const auto& setup = LevelZeroSetup();
     std::cout << "V5_SELF_CONTACT_PHASE setup_s="
@@ -557,6 +558,7 @@ TEST(VehicleWallSelfContactRuntime,
 
 TEST(VehicleWallSelfContactRuntime,
      FullV5CombinedAttemptSealsBothReceiptsAndRetries) {
+    std::cout << std::unitbuf;
     const auto& wall_setup = ActualWallSetup();
     const auto& self_setup = LevelZeroSetup();
     const auto dynamics_config = DynamicsConfig();
