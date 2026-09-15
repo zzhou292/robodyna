@@ -308,6 +308,9 @@ struct FixedTriangleFeatureDiscovery::Impl {
           next_pair.fetch_add(1, std::memory_order_relaxed);
       if (pair >= job_pair_count)
         return;
+      // Dynamic scheduling chooses only which worker owns this ordinal.
+      // Every ordinal has one writer and all report/publication folds below
+      // revisit pair_status in canonical input order after all sem_wait joins.
       auto& stage = pair_status[pair];
       const auto input = job_pairs[pair];
       const auto& first = job_triangles[input.first];

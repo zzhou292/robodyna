@@ -273,6 +273,10 @@ __global__ void StageNodes(scf::Buffers buffers,
                            std::size_t touched_nodes,
                            fe::NodalAssemblyView view,
                            fe::NodalCinAssemblyView cin) {
+  // Determinism contract: BuildSelfContactForceIncidence publishes strictly
+  // increasing node rows and event ordinals.  One CUDA thread owns each row
+  // and folds its incidences in that canonical order.  Floating atomics are
+  // forbidden here; changing the scheduler cannot change an add sequence.
   for (std::size_t compact = blockIdx.x * blockDim.x + threadIdx.x;
        compact < touched_nodes; compact += blockDim.x * gridDim.x) {
     auto& status = buffers.node_status[compact];
@@ -550,6 +554,10 @@ SelfContactForceReport SelfContactForceAssembly::AssembleAccepted(
     if (report.status != S::Ok) return report;
   }
 
+  // Every transfer and kernel below is submitted to the authenticated owner
+  // stream.  CUDA block/warp execution order is unspecified; cross-kernel
+  // dependencies are the explicit stream order, and each parallel phase has
+  // disjoint writers before its single-thread canonical checker/reducer.
   Begin<<<1, 1, 0, state.stream>>>(
       state.remote, events.count, state.config, view, cin);
   report = state.Check(cudaGetLastError());

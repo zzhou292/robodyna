@@ -3,6 +3,7 @@
 
 from pathlib import Path
 import json
+import re
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
@@ -53,6 +54,7 @@ assert "majorant->diagonal_n_m" in operations
 assert "couple_x" in operations and "couple_z" in operations
 assert "rotational_stiffness[node]" not in operations
 assert "atomicAdd" not in operations
+assert not re.findall(r"\batomic[A-Za-z0-9_]*\s*\(", operations)
 assert "cudaMalloc" not in operations
 assert "cudaMalloc" in initialize
 assert "owner->Discard()" in initialize
@@ -100,6 +102,33 @@ for gate in (
     "CompleteNodalValidation",
 ):
     assert gate in cuda
+for proof in (
+    "One CUDA thread owns each row",
+    "folds its incidences in that canonical order",
+    "Floating atomics are",
+    "disjoint writers before its single-thread canonical checker/reducer",
+):
+    assert proof in operations
+force_values = (
+    COLLISION / "self_contact_force/Values.cpp").read_text()
+assert "std::sort(events, events + event_count, EventLess)" in force_values
+assert (
+    "std::sort(incidences, incidences + incidence_count, IncidenceLess)"
+    in force_values)
+for proof in (
+    "for (unsigned pass = 0; pass < 32; ++pass)",
+    "PriorStreamWork",
+    "cudaStreamWaitEvent",
+    "CompareSelfContactForceEventIdentity(",
+    "DiagnosticBits(",
+):
+    assert proof in cuda
+for proof in (
+    "self_contact_force_determinism_cuda",
+    'LABELS "coupon;determinism;cuda"',
+    "TIMEOUT 240",
+):
+    assert proof in qualification_cmake
 qualification_bazel = (HERE / "BUILD.bazel").read_text()
 assert '":root_cuda_sources"' in qualification_bazel
 assert "m2-rigid-cin-response" in qualification_bazel

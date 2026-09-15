@@ -95,6 +95,18 @@ TEST(RepresentedIntervalParallel,
   const auto permuted = Evaluate(4, paths, reversed, limits);
   EXPECT_EQ(permuted.results, serial.results);
   EXPECT_TRUE(permuted.complete);
+  for (unsigned repetition = 0; repetition < 32; ++repetition) {
+    auto varied = pairs;
+    const auto shift = repetition % varied.size();
+    std::rotate(varied.begin(), varied.begin() + shift, varied.end());
+    if (repetition & 1)
+      std::reverse(varied.begin(), varied.end());
+    const unsigned workers[]{1, 2, 4};
+    const auto observation = Evaluate(
+        workers[repetition % 3], paths, varied, limits);
+    EXPECT_EQ(observation.results, serial.results);
+    EXPECT_TRUE(observation.complete);
+  }
 }
 
 TEST(RepresentedIntervalParallel,

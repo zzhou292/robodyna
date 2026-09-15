@@ -9,6 +9,10 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstdint>
+#include <cstring>
+#include <new>
+#include <type_traits>
 #include <vector>
 
 namespace self_contact_transaction_cuda_test {
@@ -27,6 +31,38 @@ bool Good(c::SelfContactTransactionReport report) {
       << static_cast<unsigned>(report.crossing_reason);
   return report.status == c::SelfContactTransactionStatus::Ok;
 }
+
+struct PriorStreamWork {
+  cudaStream_t stream = nullptr;
+  cudaEvent_t completed = nullptr;
+  void* scratch = nullptr;
+
+  ~PriorStreamWork() {
+    if (stream) cudaStreamSynchronize(stream);
+    if (completed) cudaEventDestroy(completed);
+    if (scratch) cudaFree(scratch);
+    if (stream) cudaStreamDestroy(stream);
+  }
+
+  bool Queue(cudaStream_t target, unsigned repetition) {
+    constexpr std::size_t Bytes = 1u << 20;
+    if (cudaStreamCreateWithFlags(
+            &stream, cudaStreamNonBlocking) != cudaSuccess ||
+        cudaEventCreateWithFlags(
+            &completed, cudaEventDisableTiming) != cudaSuccess ||
+        cudaMalloc(&scratch, Bytes) != cudaSuccess)
+      return false;
+    const auto passes = 1 + repetition % 7;
+    const auto bytes = (1 + repetition % 4) * (Bytes / 4);
+    for (unsigned pass = 0; pass < passes; ++pass)
+      if (cudaMemsetAsync(
+              scratch, static_cast<int>(repetition + pass),
+              bytes, stream) != cudaSuccess)
+        return false;
+    return cudaEventRecord(completed, stream) == cudaSuccess &&
+        cudaStreamWaitEvent(target, completed, 0) == cudaSuccess;
+  }
+};
 
 void CheckInteriorEeGeometry(const p::Rig& rig) {
   const auto& geometry = rig.fixture.source.shell_input;
@@ -72,6 +108,151 @@ struct AssemblyFields {
   }
 };
 
+void Append(c::Vec3 value, std::vector<std::uint64_t>* output) {
+  output->push_back(p::Bits(value.x));
+  output->push_back(p::Bits(value.y));
+  output->push_back(p::Bits(value.z));
+}
+
+std::vector<std::uint64_t> FieldBits(const AssemblyFields& fields) {
+  std::vector<std::uint64_t> result;
+  result.reserve(fields.values.size());
+  for (const auto value : fields.values)
+    result.push_back(p::Bits(value));
+  return result;
+}
+
+std::vector<std::uint64_t> DiagnosticBits(
+    const c::SelfContactForceDiagnostics& value) {
+  std::vector<std::uint64_t> result{
+      value.event_count, value.vertex_face_event_count,
+      value.boundary_vertex_edge_event_count, value.edge_edge_event_count,
+      value.active_count};
+  Append(value.endpoint_a_resultant_n, &result);
+  Append(value.endpoint_b_resultant_n, &result);
+  Append(value.equal_opposite_residual_n, &result);
+  Append(value.global_moment_n_m, &result);
+  result.insert(result.end(), {
+      p::Bits(value.potential_j),
+      p::Bits(value.maximum_force_norm_n),
+      p::Bits(value.maximum_sti_diagonal_n_m),
+      p::Bits(value.maximum_represented_stiffness_n_m),
+      value.base_epoch, value.attempt,
+      value.configuration_id, value.qualification_id,
+      value.first_source_order, value.last_source_order,
+      static_cast<std::uint64_t>(value.temporal_scheme),
+      static_cast<std::uint64_t>(value.velocity_phase),
+      p::Bits(value.position_time), p::Bits(value.velocity_time),
+      static_cast<std::uint64_t>(value.valid)});
+  // owner_id and active_use_identity are lifetime identities. The coupon
+  // authenticates them against each fresh fixture instead of comparing
+  // unrelated object addresses/IDs as numerical output.
+  return result;
+}
+
+std::vector<std::uint64_t> PolicySummaryBits(
+    const c::SelfContactCandidatePolicySummary& value) {
+  return {
+      value.outcomes, value.certified_separated,
+      value.excluded_same_rigid_group,
+      value.excluded_local_intersection,
+      value.represented_by_accepted_vf,
+      value.represented_by_accepted_ee,
+      value.motion_certified_linear_separated,
+      value.axis_certified_linear_separated,
+      value.edge_axis_certified_linear_separated,
+      value.motion_excluded_same_rigid_group,
+      value.exact_crossing_pairs, value.exact_crossing_work,
+      value.digest, static_cast<std::uint64_t>(value.complete),
+      static_cast<std::uint64_t>(value.detailed_publication),
+      value.vertex_edge_axis_separated,
+      value.vertex_vertex_axis_separated};
+}
+
+std::vector<std::uint64_t> PolicyOutcomeBits(
+    c::SelfContactCandidatePolicyView view,
+    std::vector<std::uint64_t>* event_order) {
+  std::vector<std::uint64_t> result{
+      view.count, static_cast<std::uint64_t>(view.complete)};
+  for (std::size_t i = 0; i < view.count; ++i) {
+    const auto& value = view.data[i];
+    for (const auto& path : value.pair.paths) {
+      result.push_back(path.source_instance_id);
+      result.push_back(path.parent_eid);
+      result.push_back(path.level);
+      result.push_back(path.local_facet);
+    }
+    result.push_back(static_cast<std::uint64_t>(value.disposition));
+    result.push_back(value.accepted_event);
+    result.push_back(value.source_order);
+    if (value.disposition ==
+            c::SelfContactCandidateDisposition::
+                RepresentedByAcceptedVertexFace ||
+        value.disposition ==
+            c::SelfContactCandidateDisposition::
+                RepresentedByAcceptedEdgeEdge) {
+      EXPECT_NE(value.accepted_event, SIZE_MAX);
+      EXPECT_NE(value.source_order, UINT64_MAX);
+      event_order->push_back(value.accepted_event);
+      event_order->push_back(value.source_order);
+    }
+  }
+  return result;
+}
+
+std::vector<std::uint64_t> AcceptedReceiptBits(
+    const c::SelfContactAcceptedAssemblyReceipt& value) {
+  auto result = DiagnosticBits(value.diagnostics());
+  result.insert(result.end(), {
+      value.broadphase_pairs(), value.facet_pairs(),
+      value.discovered_features(), value.potential_tasks(),
+      value.local_masked_tasks(), value.exact_executed_tasks(),
+      static_cast<std::uint64_t>(value.valid())});
+  return result;
+}
+
+std::vector<std::uint64_t> TransactionReceiptBits(
+    const c::SelfContactTransactionReceipt& value) {
+  auto result = PolicySummaryBits(value.policy_summary());
+  result.insert(result.end(), {
+      value.source_id(), value.regularity_generation(),
+      value.broadphase_pairs(), value.facet_pairs(),
+      value.potential_tasks(), value.local_masked_tasks(),
+      value.exact_executed_tasks(), value.policy_outcomes(),
+      value.active_parents(), value.removing_parents(),
+      value.skipped_parents(),
+      static_cast<std::uint64_t>(value.valid())});
+  return result;
+}
+
+std::vector<std::uint64_t> StampBits(const fe::NodalStamp& value) {
+  return {
+      value.epoch, value.node_count, p::Bits(value.time),
+      p::Bits(value.fixed_dt), static_cast<std::uint64_t>(value.has_rotations),
+      static_cast<std::uint64_t>(value.reactions_valid),
+      value.reaction_base_epoch, p::Bits(value.reaction_time),
+      static_cast<std::uint64_t>(value.temporal_scheme),
+      static_cast<std::uint64_t>(value.velocity_phase),
+      p::Bits(value.velocity_time), p::Bits(value.reaction_kick_dt),
+      value.rigid_groups.source_instance_id,
+      value.rigid_groups.group_count, value.rigid_groups.member_count,
+      value.rigid_groups.part_group_count,
+      value.rigid_groups.plain_source_instance_id,
+      static_cast<std::uint64_t>(value.has_rotation_presence)};
+}
+
+struct DeterminismObservation {
+  std::vector<std::uint64_t> fields;
+  std::vector<std::uint64_t> rollback_receipt;
+  std::vector<std::uint64_t> accepted_receipt;
+  std::vector<std::uint64_t> transaction_receipt;
+  std::vector<std::uint64_t> policy_summary;
+  std::vector<std::uint64_t> policy_outcomes;
+  std::vector<std::uint64_t> canonical_event_order;
+  std::vector<std::uint64_t> accepted_state;
+  std::vector<std::uint64_t> final_stamp;
+};
+
 c::Vec3 Cross(c::Vec3 a,c::Vec3 b) {
   return {a.y*b.z-a.z*b.y,a.z*b.x-a.x*b.z,a.x*b.y-a.y*b.x};
 }
@@ -106,11 +287,13 @@ struct Fixture {
                    double t3_failure = 2.5,
                    p::ContactConstraintLayout constraints =
                        p::ContactConstraintLayout::Legacy,
-                   unsigned facet_level = 0)
+                   unsigned facet_level = 0,
+                   unsigned input_permutation = 0)
       : rig(false, t3_failure, !single, constraints,
             !single && constraints == p::ContactConstraintLayout::Legacy),
         single_parent(single), pass_through(crossing),
-        t3_failure(t3_failure), facet_level(facet_level) {
+        t3_failure(t3_failure), facet_level(facet_level),
+        input_permutation(input_permutation) {
     if (!single &&
         constraints == p::ContactConstraintLayout::Legacy)
       CheckInteriorEeGeometry(rig);
@@ -139,6 +322,7 @@ struct Fixture {
   bool pass_through = false;
   double t3_failure = 2.5;
   unsigned facet_level = 0;
+  unsigned input_permutation = 0;
   bool authority_prepared = false;
 
   bool PrepareExecutionAuthority() {
@@ -270,6 +454,13 @@ struct Fixture {
       selection.push_back({
           row, parent.family, parent.family_index,
           parent.source_parent_id, parent.source_part_id});
+    }
+    if (selection.size() > 1) {
+      const auto shift = input_permutation % selection.size();
+      std::rotate(selection.begin(), selection.begin() + shift,
+                  selection.end());
+      if (input_permutation & 1)
+        std::reverse(selection.begin(), selection.end());
     }
     const auto surface_report = surface.Initialize(
         physical, {selection.data(), selection.size()});
@@ -904,6 +1095,150 @@ TEST(SelfContactTransactionCuda,
   ASSERT_TRUE(fixture.Commit(
       token, prepared, common, long_inactive));
   EXPECT_EQ(fixture.rig.owner.accepted().epoch, 2u);
+}
+
+TEST(SelfContactTransactionCuda,
+     AlgorithmicDeterminismAcrossSchedulingWorkersAndLifetimes) {
+  using Storage = std::aligned_storage_t<
+      sizeof(Fixture), alignof(Fixture)>;
+  Storage fixture_storage;
+  DeterminismObservation reference;
+  bool have_reference = false;
+  constexpr unsigned Workers[]{1, 2, 4};
+
+  for (unsigned repetition = 0; repetition < 32; ++repetition) {
+    SCOPED_TRACE(repetition);
+    // Reuse the exact same enclosing address while reconstructing every owner,
+    // transaction, worker pool and CUDA allocation on every repetition.
+    auto* fixture = new (&fixture_storage) Fixture(
+        false, false, 2.5, p::ContactConstraintLayout::Legacy,
+        1, repetition);
+    struct DestroyFixture {
+      Fixture* value;
+      ~DestroyFixture() { value->~Fixture(); }
+    } destroy{fixture};
+
+    const auto workers = Workers[repetition % 3];
+    c::SelfContactTransactionLimits limits;
+    limits.accepted_discovery.worker_count = workers;
+    limits.candidate_discovery.worker_count = workers;
+    limits.crossing.worker_count = workers;
+    fixture->config.broadphase_axis = repetition % 3;
+    ASSERT_TRUE(fixture->Initialize(limits));
+    EXPECT_LT(fixture->transaction.forecast().owned_host_bytes,
+              512u << 20);
+
+    p::Snapshot initial, rolled_back;
+    ASSERT_TRUE(fixture->rig.Read(initial));
+    fe::NodalTrialToken token;
+    fe::NodalAssemblyView assembly;
+    ASSERT_TRUE(fixture->rig.Begin(token, assembly));
+    PriorStreamWork first_perturbation;
+    ASSERT_TRUE(first_perturbation.Queue(
+        assembly.stream, 2 * repetition));
+    c::SelfContactAcceptedAssemblyReceipt rolled_back_receipt;
+    ASSERT_TRUE(Good(fixture->transaction.AssembleAccepted(
+        fixture->rig.owner, token, assembly,
+        &rolled_back_receipt)));
+    fe::NodalPreparedView prepared;
+    fe::ShellPhysicalDiagnostics common;
+    ASSERT_TRUE(fixture->Prepare(
+        token, assembly, prepared, common));
+    EXPECT_EQ(fixture->rig.publication.CommitPhysical(
+        fixture->rig.owner, token, common,
+        {prepared.owner_id, prepared.kinematics.base_epoch,
+         prepared.attempt, p::Qualification, true}).status,
+        fe::ShellPublicationStatus::ParticipationFailure);
+    ASSERT_TRUE(fixture->rig.Read(rolled_back));
+    p::Exact(initial, rolled_back);
+
+    ASSERT_TRUE(fixture->rig.Begin(token, assembly));
+    fe::NodalCinAssemblyView cin;
+    ASSERT_TRUE(p::Good(
+        fixture->rig.owner.BorrowCinAssembly(token, &cin)));
+    AssemblyFields before(fixture->rig.fixture.domain.node_count()),
+                   after(before.nodes);
+    ASSERT_TRUE(before.Read(assembly, cin));
+    PriorStreamWork retry_perturbation;
+    ASSERT_TRUE(retry_perturbation.Queue(
+        assembly.stream, 2 * repetition + 1));
+    c::SelfContactAcceptedAssemblyReceipt accepted;
+    ASSERT_TRUE(Good(fixture->transaction.AssembleAccepted(
+        fixture->rig.owner, token, assembly, &accepted)));
+    ASSERT_TRUE(after.Read(assembly, cin));
+    EXPECT_EQ(accepted.diagnostics().owner_id, assembly.owner_id);
+    EXPECT_EQ(accepted.diagnostics().active_use_identity,
+              fixture->uses.identity());
+    ASSERT_GT(accepted.diagnostics().event_count, 0u);
+    EXPECT_EQ(accepted.diagnostics().first_source_order, 0u);
+    EXPECT_EQ(accepted.diagnostics().last_source_order,
+              accepted.diagnostics().event_count - 1);
+
+    ASSERT_TRUE(fixture->Prepare(
+        token, assembly, prepared, common));
+    c::SelfContactTransactionReceipt receipt;
+    ASSERT_TRUE(Good(fixture->transaction.SealCandidate(
+        fixture->rig.owner, token, common, prepared, accepted,
+        &receipt)));
+    const auto summary = fixture->transaction.policy_summary();
+    const auto outcomes = fixture->transaction.policy_outcomes();
+    ASSERT_TRUE(summary.complete);
+    ASSERT_TRUE(summary.detailed_publication);
+    ASSERT_TRUE(outcomes.complete);
+    ASSERT_EQ(outcomes.count, summary.outcomes);
+    ASSERT_GT(outcomes.count, 0u);
+
+    DeterminismObservation observation;
+    observation.fields = FieldBits(after);
+    observation.rollback_receipt =
+        AcceptedReceiptBits(rolled_back_receipt);
+    observation.accepted_receipt = AcceptedReceiptBits(accepted);
+    observation.transaction_receipt =
+        TransactionReceiptBits(receipt);
+    observation.policy_summary = PolicySummaryBits(summary);
+    observation.policy_outcomes = PolicyOutcomeBits(
+        outcomes, &observation.canonical_event_order);
+    ASSERT_FALSE(observation.canonical_event_order.empty());
+    for (std::size_t i = 0;
+         i < observation.canonical_event_order.size(); i += 2) {
+      EXPECT_LT(observation.canonical_event_order[i],
+                accepted.diagnostics().event_count);
+      EXPECT_LT(observation.canonical_event_order[i + 1],
+                accepted.diagnostics().event_count);
+    }
+
+    ASSERT_TRUE(fixture->Commit(
+        token, prepared, common, receipt));
+    p::Snapshot final;
+    ASSERT_TRUE(fixture->rig.Read(final));
+    EXPECT_NE(final.stamp.owner_id, 0u);
+    EXPECT_EQ(final.stamp.epoch, 1u);
+    observation.accepted_state = final.values;
+    observation.final_stamp = StampBits(final.stamp);
+
+    if (!have_reference) {
+      reference = observation;
+      have_reference = true;
+    } else {
+      EXPECT_EQ(observation.fields, reference.fields);
+      EXPECT_EQ(observation.rollback_receipt,
+                reference.rollback_receipt);
+      EXPECT_EQ(observation.accepted_receipt,
+                reference.accepted_receipt);
+      EXPECT_EQ(observation.transaction_receipt,
+                reference.transaction_receipt);
+      EXPECT_EQ(observation.policy_summary,
+                reference.policy_summary);
+      EXPECT_EQ(observation.policy_outcomes,
+                reference.policy_outcomes);
+      EXPECT_EQ(observation.canonical_event_order,
+                reference.canonical_event_order);
+      EXPECT_EQ(observation.accepted_state,
+                reference.accepted_state);
+      EXPECT_EQ(observation.final_stamp,
+                reference.final_stamp);
+    }
+  }
 }
 
 TEST(SelfContactTransactionCuda,

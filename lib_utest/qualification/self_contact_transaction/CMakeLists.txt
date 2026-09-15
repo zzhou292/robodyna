@@ -87,8 +87,15 @@ if(SELF_CONTACT_TRANSACTION_CUDA)
   target_compile_options(self_contact_transaction_cuda PRIVATE
     "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>")
   add_test(NAME self_contact_transaction_cuda
-    COMMAND self_contact_transaction_cuda)
+    COMMAND self_contact_transaction_cuda
+      "--gtest_filter=-SelfContactTransactionCuda.AlgorithmicDeterminismAcrossSchedulingWorkersAndLifetimes")
   set_tests_properties(self_contact_transaction_cuda PROPERTIES
     RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 300
     LABELS "coupon;m2;rigid-cin-response")
+  add_test(NAME self_contact_determinism_cuda
+    COMMAND self_contact_transaction_cuda
+      "--gtest_filter=SelfContactTransactionCuda.AlgorithmicDeterminismAcrossSchedulingWorkersAndLifetimes")
+  set_tests_properties(self_contact_determinism_cuda PROPERTIES
+    RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 600
+    LABELS "coupon;determinism;cuda")
 endif()

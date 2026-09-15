@@ -136,6 +136,31 @@ TEST(FixedTriangleParallel,
                 4, triangles.data(), triangles.size(),
                 reversed_pairs.data(), reversed_pairs.size(),
                 reversed_masks.data()).features);
+  for (unsigned repetition = 0; repetition < 32; ++repetition) {
+    auto permuted_pairs = pairs;
+    auto permuted_masks = masks;
+    const auto shift = repetition % permuted_pairs.size();
+    std::rotate(permuted_pairs.begin(),
+                permuted_pairs.begin() + shift,
+                permuted_pairs.end());
+    std::rotate(permuted_masks.begin(),
+                permuted_masks.begin() + shift,
+                permuted_masks.end());
+    if (repetition & 1) {
+      std::reverse(permuted_pairs.begin(), permuted_pairs.end());
+      std::reverse(permuted_masks.begin(), permuted_masks.end());
+    }
+    const unsigned workers[]{1, 2, 4};
+    const auto observation = EvaluateObservation(
+        workers[repetition % 3],
+        triangles.data(), triangles.size(),
+        permuted_pairs.data(), permuted_pairs.size(),
+        permuted_masks.data());
+    EXPECT_EQ(observation.features, serial_masked.features);
+    EXPECT_EQ(observation.intersections, serial_masked.intersections);
+    EXPECT_TRUE(observation.features_complete);
+    EXPECT_TRUE(observation.intersections_complete);
+  }
 
   const auto capped = EvaluateObservation(
       1, triangles.data(), triangles.size(),

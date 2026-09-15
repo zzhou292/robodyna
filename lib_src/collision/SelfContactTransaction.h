@@ -12,6 +12,14 @@ namespace tlfea::contact {
 // current regularity, crossing, exact event certificates, the force assembler,
 // and exactly one physical scratch issuer. Snapshots are attempt scratch, not
 // accepted state or an independent clock.
+//
+// CUDA execution order is inherently nondeterministic. This composition does
+// not infer determinism from launch order or timing: broadphase publishes
+// sorted integer pair keys, CPU workers have one writer per canonical pair,
+// force/STI uses one writer per canonical node and fixed event-order folds,
+// and all device phases use the authenticated owner stream. Under identical
+// binary64 inputs and build flags, those algorithmic rules define bitwise
+// output determinism; elapsed time is never part of acceptance.
 class SelfContactTransaction {
  public:
   SelfContactTransaction() noexcept;

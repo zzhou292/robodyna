@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Focused source proof for the fixed self-contact transaction."""
 from pathlib import Path
+import re
 
 ROOT = Path(__file__).resolve().parents[3]
 HEADER = ROOT / "lib_src/collision/SelfContactTransaction.h"
@@ -449,6 +450,131 @@ for token in (
     "receipt.exact_executed_tasks()",
 ):
     require(cuda, token, CUDA)
+
+# Determinism is an algorithm/source contract, not a conclusion drawn from one
+# CUDA run. The only self-contact broadphase atomic is an order-independent
+# integer minimum; accepted force/STI contains no atomics of any kind.
+broadphase_kernels_path = (
+    ROOT / "lib_src/collision/self_contact_broadphase/Kernels.cu")
+broadphase_sort_path = (
+    ROOT / "lib_src/collision/self_contact_broadphase/Sort.cu")
+broadphase_layout_path = (
+    ROOT / "lib_src/collision/self_contact_broadphase/Layout.h")
+force_operations_path = (
+    ROOT / "lib_src/collision/self_contact_force/Operations.cu")
+force_values_path = (
+    ROOT / "lib_src/collision/self_contact_force/Values.cpp")
+discovery_path = (
+    ROOT / "lib_src/collision/fixed_triangle_features/Discovery.cpp")
+crossing_path = ROOT / "lib_src/collision/RepresentedIntervalCrossing.cpp"
+participation_path = (
+    ROOT / "lib_src/elements/publication/"
+    "ShellPhysicalScratchParticipation.cpp")
+
+broadphase_kernels = broadphase_kernels_path.read_text()
+broadphase_sort = broadphase_sort_path.read_text()
+broadphase_layout = broadphase_layout_path.read_text()
+force_operations = force_operations_path.read_text()
+force_values = force_values_path.read_text()
+discovery_source = discovery_path.read_text()
+crossing_source = crossing_path.read_text()
+participation_source = participation_path.read_text()
+atomic_call = re.compile(r"\batomic[A-Za-z0-9_]*\s*\(")
+if atomic_call.findall(force_operations):
+    raise RuntimeError(
+        f"{force_operations_path}: accepted force/STI uses an atomic")
+if atomic_call.findall(broadphase_kernels) != ["atomicMin("]:
+    raise RuntimeError(
+        f"{broadphase_kernels_path}: unexpected broadphase atomic set")
+for token in (
+    "std::uint32_t invalid_parent",
+    "std::uint64_t count",
+):
+    require(broadphase_layout, token, broadphase_layout_path)
+for token in (
+    "atomicMin(&control->invalid_parent",
+    "keys[offset++] =",
+    "WriteCanonical output{keys, offsets[i]}",
+    "VisitLater(boxes, n, i, axis",
+):
+    require(broadphase_kernels, token, broadphase_kernels_path)
+for token in (
+    "DeviceRadixSort::SortPairs",
+    "DeviceScan::ExclusiveSum",
+    "DeviceRadixSort::SortKeys",
+):
+    require(broadphase_sort, token, broadphase_sort_path)
+
+for token in (
+    "std::sort(events, events + event_count, EventLess)",
+    "std::sort(incidences, incidences + incidence_count, IncidenceLess)",
+):
+    require(force_values, token, force_values_path)
+for token in (
+    "One CUDA thread owns each row",
+    "folds its incidences in that canonical order",
+    "Floating atomics are",
+    "Every transfer and kernel below is submitted to the authenticated owner",
+    "disjoint writers before its single-thread canonical checker/reducer",
+):
+    require(force_operations, token, force_operations_path)
+launches = (
+    "Begin<<<", "EvaluateEvents<<<", "CheckEvents<<<",
+    "ReduceDiagnostics<<<", "StageNodes<<<", "CheckNodes<<<",
+    "PublishNodes<<<", "Finish<<<")
+cursor = -1
+for launch in launches:
+    next_cursor = force_operations.index(launch)
+    if next_cursor <= cursor:
+        raise RuntimeError(
+            f"{force_operations_path}: CUDA phases are not in fixed order")
+    cursor = next_cursor
+if force_operations.count(", state.stream>>>") < 8:
+    raise RuntimeError(
+        f"{force_operations_path}: force phases do not share one stream")
+
+for text, path, writer_proof in (
+    (discovery_source, discovery_path, "one writer"),
+    (crossing_source, crossing_path, "one staging/status writer"),
+):
+    for token in (
+        "next_pair.fetch_add(1, std::memory_order_relaxed)",
+        writer_proof,
+        "canonical",
+    ):
+        require(text, token, path)
+    if text.index("RunWorkers(") >= text.rindex("std::sort"):
+        raise RuntimeError(
+            f"{path}: worker results are not canonically reduced")
+for token in (
+    "for (std::size_t slot=0;slot<PhysicalScratchKindCount;++slot)",
+    "issuer.stream_=view.stream",
+    "issuer.stream_!=authentic.stream",
+):
+    require(participation_source, token, participation_path)
+for token in (
+    "CUDA execution order is inherently nondeterministic",
+    "algorithmic rules define bitwise",
+):
+    require(header, token, HEADER)
+for token in (
+    "AlgorithmicDeterminismAcrossSchedulingWorkersAndLifetimes",
+    "for (unsigned repetition = 0; repetition < 32; ++repetition)",
+    "constexpr unsigned Workers[]{1, 2, 4}",
+    "PriorStreamWork",
+    "cudaStreamWaitEvent",
+    "PolicyOutcomeBits",
+    "canonical_event_order",
+    "p::Exact(initial, rolled_back)",
+    "new (&fixture_storage) Fixture",
+):
+    require(cuda, token, CUDA)
+for token in (
+    "self_contact_determinism_cuda",
+    'LABELS "coupon;determinism;cuda"',
+    "TIMEOUT 600",
+):
+    require(QUAL_CMAKE.read_text(), token, QUAL_CMAKE)
 
 nodal_header = (ROOT / "lib_src/solvers/FENodalState.h").read_text()
 nodal_source = (ROOT / "lib_src/solvers/NodalOwnerStream.cpp").read_text()

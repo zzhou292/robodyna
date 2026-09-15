@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <cstdint>
 #include <cstring>
 #include <limits>
 #include <new>
@@ -26,6 +27,38 @@ bool Good(c::SelfContactForceReport report) {
       << " source=" << report.source_order << " node=" << report.node;
   return report.status == c::SelfContactForceStatus::Ok;
 }
+
+struct PriorStreamWork {
+  cudaStream_t stream = nullptr;
+  cudaEvent_t completed = nullptr;
+  void* scratch = nullptr;
+
+  ~PriorStreamWork() {
+    if (stream) cudaStreamSynchronize(stream);
+    if (completed) cudaEventDestroy(completed);
+    if (scratch) cudaFree(scratch);
+    if (stream) cudaStreamDestroy(stream);
+  }
+
+  bool Queue(cudaStream_t target, unsigned repetition) {
+    constexpr std::size_t Bytes = 1u << 20;
+    if (cudaStreamCreateWithFlags(
+            &stream, cudaStreamNonBlocking) != cudaSuccess ||
+        cudaEventCreateWithFlags(
+            &completed, cudaEventDisableTiming) != cudaSuccess ||
+        cudaMalloc(&scratch, Bytes) != cudaSuccess)
+      return false;
+    const auto passes = 1 + repetition % 7;
+    const auto bytes = (1 + repetition % 4) * (Bytes / 4);
+    for (unsigned pass = 0; pass < passes; ++pass)
+      if (cudaMemsetAsync(
+              scratch, static_cast<int>(repetition + pass),
+              bytes, stream) != cudaSuccess)
+        return false;
+    return cudaEventRecord(completed, stream) == cudaSuccess &&
+        cudaStreamWaitEvent(target, completed, 0) == cudaSuccess;
+  }
+};
 
 struct Fixture {
   explicit Fixture(bool surface_rigid = false,
@@ -408,6 +441,39 @@ struct AssemblySnapshot {
   }
 };
 
+std::vector<std::uint64_t> DiagnosticBits(
+    const c::SelfContactForceDiagnostics& value) {
+  std::vector<std::uint64_t> result{
+      value.event_count, value.vertex_face_event_count,
+      value.boundary_vertex_edge_event_count, value.edge_edge_event_count,
+      value.active_count};
+  const auto append_vector = [&](c::Vec3 vector) {
+    result.push_back(p::Bits(vector.x));
+    result.push_back(p::Bits(vector.y));
+    result.push_back(p::Bits(vector.z));
+  };
+  append_vector(value.endpoint_a_resultant_n);
+  append_vector(value.endpoint_b_resultant_n);
+  append_vector(value.equal_opposite_residual_n);
+  append_vector(value.global_moment_n_m);
+  result.insert(result.end(), {
+      p::Bits(value.potential_j),
+      p::Bits(value.maximum_force_norm_n),
+      p::Bits(value.maximum_sti_diagonal_n_m),
+      p::Bits(value.maximum_represented_stiffness_n_m),
+      value.owner_id, value.base_epoch,
+      value.configuration_id, value.qualification_id,
+      value.first_source_order, value.last_source_order,
+      reinterpret_cast<std::uintptr_t>(value.active_use_identity),
+      static_cast<std::uint64_t>(value.temporal_scheme),
+      static_cast<std::uint64_t>(value.velocity_phase),
+      p::Bits(value.position_time), p::Bits(value.velocity_time),
+      static_cast<std::uint64_t>(value.valid)});
+  // attempt is authenticated and checked separately. Repeated discarded
+  // trials intentionally receive distinct attempt identities.
+  return result;
+}
+
 TEST(SelfContactForceCuda,
      ExactForecastCapsSourceAuthorityAliasesAndStableAllocation) {
   Fixture f;
@@ -717,45 +783,71 @@ TEST(SelfContactForceCuda,
      EventPermutationPreservesCanonicalAssemblyAndAllocationExactly) {
   Fixture f;
   ASSERT_TRUE(f.Initialize());
-  const auto ordered=f.Events(32);
-  ASSERT_GT(ordered.size(),1u);
-  auto reversed=ordered;
-  std::reverse(reversed.begin(),reversed.end());
-  const auto allocation=f.force.allocations();
+  const auto ordered = f.Events(32);
+  ASSERT_GT(ordered.size(), 1u);
+  const auto allocation = f.force.allocations();
   std::vector<double> reference;
-  c::SelfContactForceDiagnostics first_diagnostics;
-  for (unsigned pass=0;pass<2;++pass) {
+  std::vector<std::uint64_t> reference_diagnostics;
+  std::vector<c::SelfContactForceEvent> reference_order;
+  for (unsigned pass = 0; pass < 32; ++pass) {
+    SCOPED_TRACE(pass);
+    auto events = ordered;
+    std::uint64_t permutation = 0x9e3779b97f4a7c15ull ^ pass;
+    for (std::size_t remaining = events.size(); remaining > 1; --remaining) {
+      permutation =
+          permutation * 6364136223846793005ull + 1442695040888963407ull;
+      std::swap(events[remaining - 1],
+                events[permutation % remaining]);
+    }
+    auto canonical = events;
+    std::vector<c::SelfContactForceIncidence> incidences(
+        8 * canonical.size());
+    std::vector<c::SelfContactForceNodeIncidence> nodes(
+        f.rig.fixture.domain.node_count());
+    c::SelfContactForceIncidenceSummary summary;
+    ASSERT_EQ(c::BuildSelfContactForceIncidence(
+        canonical.data(), canonical.size(),
+        f.rig.fixture.domain.node_count(),
+        incidences.data(), incidences.size(),
+        nodes.data(), nodes.size(), &summary).status,
+        c::SelfContactForceStatus::Ok);
+    if (!pass) {
+      reference_order = canonical;
+    } else {
+      ASSERT_EQ(canonical.size(), reference_order.size());
+      for (std::size_t event = 0; event < canonical.size(); ++event) {
+        EXPECT_EQ(c::CompareSelfContactForceEventIdentity(
+                      canonical[event], reference_order[event]), 0);
+        EXPECT_EQ(canonical[event].source_order,
+                  reference_order[event].source_order);
+      }
+    }
+
     fe::NodalTrialToken token;
     fe::NodalAssemblyView assembly;
-    ASSERT_TRUE(f.rig.Begin(token,assembly));
+    ASSERT_TRUE(f.rig.Begin(token, assembly));
     fe::NodalCinAssemblyView cin;
-    ASSERT_TRUE(p::Good(f.rig.owner.BorrowCinAssembly(token,&cin)));
-    AssemblySnapshot before(f.rig.fixture.domain.node_count()),after(before.nodes);
-    ASSERT_TRUE(before.Read(assembly,cin));
-    const auto& events=pass ? reversed : ordered;
+    ASSERT_TRUE(p::Good(f.rig.owner.BorrowCinAssembly(token, &cin)));
+    AssemblySnapshot before(f.rig.fixture.domain.node_count()),
+                     after(before.nodes);
+    ASSERT_TRUE(before.Read(assembly, cin));
+    PriorStreamWork perturbation;
+    ASSERT_TRUE(perturbation.Queue(assembly.stream, pass));
     c::SelfContactForceAssemblyReceipt receipt;
     ASSERT_TRUE(Good(f.force.AssembleAccepted(
-        f.rig.owner,token,assembly,f.Activity(),
-        {events.data(),events.size()},&receipt)));
-    ASSERT_TRUE(after.Read(assembly,cin));
-    std::vector<double> increment(after.values.size());
-    for (std::size_t i=0;i<increment.size();++i)
-      increment[i]=after.values[i]-before.values[i];
+        f.rig.owner, token, assembly, f.Activity(),
+        {events.data(), events.size()}, &receipt)));
+    ASSERT_TRUE(after.Read(assembly, cin));
+    EXPECT_EQ(receipt.diagnostics().attempt, assembly.attempt);
+    const auto diagnostics = DiagnosticBits(receipt.diagnostics());
     if (!pass) {
-      reference=increment;
-      first_diagnostics=receipt.diagnostics();
+      reference = after.values;
+      reference_diagnostics = diagnostics;
     } else {
-      EXPECT_EQ(increment,reference);
-      EXPECT_EQ(receipt.diagnostics().first_source_order,
-                first_diagnostics.first_source_order);
-      EXPECT_EQ(receipt.diagnostics().last_source_order,
-                first_diagnostics.last_source_order);
-      EXPECT_EQ(receipt.diagnostics().event_count,
-                first_diagnostics.event_count);
-      EXPECT_EQ(receipt.diagnostics().active_count,
-                first_diagnostics.active_count);
+      EXPECT_EQ(after.values, reference);
+      EXPECT_EQ(diagnostics, reference_diagnostics);
     }
-    EXPECT_EQ(f.force.allocations().device_bytes,allocation.device_bytes);
+    EXPECT_EQ(f.force.allocations().device_bytes, allocation.device_bytes);
     EXPECT_EQ(f.force.allocations().device_allocations,
               allocation.device_allocations);
     f.Discard();

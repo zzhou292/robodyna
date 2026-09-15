@@ -1017,6 +1017,9 @@ struct RepresentedIntervalCrossing::Impl {
           next_pair.fetch_add(1, std::memory_order_relaxed);
       if (pair_index >= job_pair_count)
         return;
+      // Scheduling affects only worker ownership. Each canonical pair index
+      // has one staging/status writer and private DFS/exact scratch; the host
+      // folds staging in increasing pair_index order after all workers join.
       const auto& pair = pairs[pair_index];
       const auto result = CertifyPair(
           job_paths[pair.first], job_paths[pair.second], limits, pair.key,

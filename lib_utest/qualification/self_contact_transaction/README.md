@@ -247,6 +247,16 @@ with `ctest --test-dir <host-build> -L '^(unit|coupon)$'
 
 ## Root CUDA gate
 
+CUDA block, warp, and independent-stream execution order is inherently
+nondeterministic. The supported contract is algorithmic output determinism,
+not repeatable timing or an assumed scheduler: broadphase uses one
+order-independent integer minimum and sorted integer pair keys; discovery and
+crossing workers stage one canonical pair each and are reduced in fixed order;
+force/STI has one writer per canonical node and folds canonical event
+incidences without floating atomics; owner/publication phases are explicitly
+sequenced on the authenticated owner stream. Timing is diagnostic only and
+never gates correctness.
+
 The parent CUDA workstation owns:
 
 ```sh
@@ -257,6 +267,21 @@ cmake -S lib_utest/qualification/self_contact_transaction \
 cmake --build <cuda-build> --parallel 1
 ctest --test-dir <cuda-build> --output-on-failure
 ```
+
+`self_contact_determinism_cuda` is the bounded repeated coupon
+(`coupon;determinism;cuda`). It reconstructs the complete owner, transaction,
+persistent worker pools, and CUDA allocations at the same enclosing address
+32 times; varies selected-parent input order, broadphase axis, and discovery/
+crossing worker counts 1/2/4; and inserts independent nonblocking-stream work
+plus an explicit event wait before each attempt. A forced missing-participation
+commit must roll back exactly before retry. The coupon compares force, couple,
+and CIN STI arrays by binary64 bits, stable diagnostics and receipts, canonical
+event-source order, detailed candidate-policy outcomes/digest, final accepted
+state, and final accepted stamp. A separate force coupon permutes the input
+event batch 32 times under the same scheduling perturbation. Neither coupon
+uses elapsed time as an oracle. Fresh owner IDs and retained-object addresses
+are authenticated per lifetime and excluded from cross-lifetime numerical
+comparison; every other stamp/diagnostic field is compared by value or bits.
 
 That target uses real `FENodalState`, physical publication, current regularity,
 fixed discovery, represented crossing, VF+EE force and CIN STI. It covers missing

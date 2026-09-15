@@ -57,8 +57,16 @@ if(SELF_CONTACT_FORCE_CUDA)
     CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
   target_compile_options(self_contact_force_cuda PRIVATE
     "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>")
-  add_test(NAME self_contact_force_cuda COMMAND self_contact_force_cuda)
+  add_test(NAME self_contact_force_cuda
+    COMMAND self_contact_force_cuda
+      "--gtest_filter=-SelfContactForceCuda.EventPermutationPreservesCanonicalAssemblyAndAllocationExactly")
   set_tests_properties(self_contact_force_cuda PROPERTIES
     RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 240
     LABELS "m2;rigid-cin-response")
+  add_test(NAME self_contact_force_determinism_cuda
+    COMMAND self_contact_force_cuda
+      "--gtest_filter=SelfContactForceCuda.EventPermutationPreservesCanonicalAssemblyAndAllocationExactly")
+  set_tests_properties(self_contact_force_determinism_cuda PROPERTIES
+    RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 240
+    LABELS "coupon;determinism;cuda")
 endif()
