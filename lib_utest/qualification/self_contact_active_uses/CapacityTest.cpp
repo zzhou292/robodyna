@@ -142,6 +142,7 @@ TEST(SelfContactActiveUses, PermutedSourceSelectionHasIdenticalCanonicalInventor
     const auto& x=a.edge_uses()[i];
     const auto& y=b.edge_uses()[i];
     EXPECT_TRUE(c::SameFacetEdgeKey(x.key,y.key));
+    EXPECT_EQ(x.parent,y.parent);
     EXPECT_EQ(a.parents()[x.parent].source.source_parent_id,
         b.parents()[y.parent].source.source_parent_id);
     EXPECT_EQ(x.feature,y.feature);
@@ -150,7 +151,23 @@ TEST(SelfContactActiveUses, PermutedSourceSelectionHasIdenticalCanonicalInventor
       EXPECT_EQ(x.endpoints[endpoint].count,y.endpoints[endpoint].count);
       EXPECT_EQ(x.endpoint_support[endpoint].status,
           y.endpoint_support[endpoint].status);
-      for (unsigned slot=0;slot<x.endpoints[endpoint].count;++slot) {
+      EXPECT_EQ(x.endpoint_support[endpoint].complete_rigid_group,
+          y.endpoint_support[endpoint].complete_rigid_group);
+      EXPECT_EQ(x.endpoint_support[endpoint].nonzero_slots,
+          y.endpoint_support[endpoint].nonzero_slots);
+      EXPECT_EQ(x.endpoint_support[endpoint].rigid_slots,
+          y.endpoint_support[endpoint].rigid_slots);
+      EXPECT_EQ(x.endpoint_support[endpoint].cin_master_slots,
+          y.endpoint_support[endpoint].cin_master_slots);
+      EXPECT_EQ(x.directed_endpoint_dual_area_m2[endpoint].value,
+          y.directed_endpoint_dual_area_m2[endpoint].value);
+      EXPECT_EQ(x.directed_endpoint_dual_area_m2[endpoint].lower,
+          y.directed_endpoint_dual_area_m2[endpoint].lower);
+      EXPECT_EQ(x.directed_endpoint_dual_area_m2[endpoint].upper,
+          y.directed_endpoint_dual_area_m2[endpoint].upper);
+      EXPECT_EQ(x.directed_endpoint_dual_area_m2[endpoint].error,
+          y.directed_endpoint_dual_area_m2[endpoint].error);
+      for (unsigned slot=0;slot<4;++slot) {
         EXPECT_EQ(x.endpoints[endpoint].nodes[slot],
             y.endpoints[endpoint].nodes[slot]);
         EXPECT_EQ(x.endpoints[endpoint].weights[slot],
@@ -176,8 +193,6 @@ TEST(SelfContactActiveUses, PermutedSourceSelectionHasIdenticalCanonicalInventor
       a.edges().size()*sizeof(c::SelfContactEdgeFeature)),0);
   EXPECT_EQ(std::memcmp(a.vertex_uses().data(),b.vertex_uses().data(),
       a.vertex_uses().size()*sizeof(c::SelfContactFacetVertexUse)),0);
-  EXPECT_EQ(std::memcmp(a.edge_uses().data(),b.edge_uses().data(),
-      a.edge_uses().size()*sizeof(c::SelfContactFacetEdgeUse)),0);
 }
 
 TEST(SelfContactActiveUses, QueryAliasAddressAndLateIndexFailuresPreserveOutput) {

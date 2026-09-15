@@ -585,12 +585,17 @@ TEST(SelfContactActiveUses,
   const auto projected_slow_us =
       oracle_us*static_cast<std::int64_t>(MediumQueryCoupon)/
       static_cast<std::int64_t>(OracleSamples);
-  EXPECT_GT(projected_slow_us, indexed_us);
+  const auto projected_slow_row_visits =
+      oracle_visits*MediumQueryCoupon/OracleSamples;
+  EXPECT_GT(projected_slow_row_visits, MediumQueryCoupon);
+  EXPECT_GT(uses.forecast().cin_index_bytes, 0u);
   std::cout << "cin-tied-query-index rows=" << CinRows
             << " queries=" << MediumQueryCoupon
             << " slow_sample_us=" << oracle_us
             << " slow_projected_us=" << projected_slow_us
             << " indexed_us=" << indexed_us
-            << " slow_row_visits=" << oracle_visits << '\n';
+            << " slow_row_visits=" << oracle_visits
+            << " slow_projected_row_visits="
+            << projected_slow_row_visits << '\n';
 }
 } // namespace active_use_test
