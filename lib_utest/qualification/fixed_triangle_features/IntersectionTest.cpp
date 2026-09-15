@@ -54,6 +54,18 @@ ct::CurrentFixedTriangle PermutedQuadFacetZero(
   return result;
 }
 
+const ct::FacetEdgeKey& EdgeWithNodeIds(
+    const ct::CurrentFixedTriangle& triangle,
+    std::uint64_t first, std::uint64_t second) {
+  const auto lower = std::min(first, second);
+  const auto upper = std::max(first, second);
+  for (const auto& edge : triangle.edge_keys)
+    if (edge.endpoints[0].first == lower &&
+        edge.endpoints[1].first == upper)
+      return edge;
+  throw std::runtime_error("Required test edge is absent");
+}
+
 const std::array<std::array<unsigned, 3>, 6> kPermutations{{
     {{0, 1, 2}}, {{0, 2, 1}}, {{1, 0, 2}},
     {{1, 2, 0}}, {{2, 0, 1}}, {{2, 1, 0}},
@@ -184,12 +196,68 @@ TEST(FixedTriangleIntersections,
 }
 
 TEST(FixedTriangleIntersections,
+     AuthenticatedBoundaryToParentDiagonalIsSharedEdgeOnly) {
+  // Exact binary64 representations of the authenticated metre coordinates
+  // for EID 2382006 facet 0 and EID 2382159 facet 0.
+  const ct::Vec3 first[3]{
+      {-0x1.afdcef59bf8fp+1, 0x1.18a50e6cd5406p-2,
+       0x1.19dd20d7e6dc5p+0},
+      {-0x1.b04bd33d29563p+1, 0x1.18deb65942e76p-2,
+       0x1.1d296a5c952c5p+0},
+      {-0x1.adaec0724b77p+1, 0x1.18df5c1b89c95p-2,
+       0x1.1b7580b59d056p+0},
+  };
+  const ct::Vec3 second[3]{
+      first[0],
+      first[2],
+      {-0x1.adb2c91588278p+1, 0x1.119439327ba84p-2,
+       0x1.1b7d2effc7cbep+0},
+  };
+  const std::uint64_t first_ids[3]{2402419, 2402384, 2402383};
+  const std::uint64_t second_ids[3]{2402419, 2402383, 2402385};
+
+  for (const auto& first_permutation : kPermutations) {
+    for (const auto& second_permutation : kPermutations) {
+      const auto a = PermutedQuadFacetZero(
+          2382006, first, first_ids, first_permutation);
+      const auto b = PermutedTriangle(
+          2382159, second, second_ids, second_permutation);
+      const auto& diagonal =
+          EdgeWithNodeIds(a, first_ids[0], first_ids[2]);
+      const auto& boundary =
+          EdgeWithNodeIds(b, second_ids[0], second_ids[1]);
+      EXPECT_FALSE(diagonal.parent_boundary);
+      EXPECT_EQ(diagonal.parent_eid, 2382006u);
+      EXPECT_TRUE(boundary.parent_boundary);
+      EXPECT_EQ(boundary.parent_eid, 0u);
+      EXPECT_FALSE(ft::Same(diagonal, boundary));
+      EXPECT_TRUE(ft::Same(
+          diagonal.endpoints[0], boundary.endpoints[0]));
+      EXPECT_TRUE(ft::Same(
+          diagonal.endpoints[1], boundary.endpoints[1]));
+      for (unsigned swapped = 0; swapped < 2; ++swapped) {
+        const auto value =
+            swapped ? DiscoverIntersection(b, a)
+                    : DiscoverIntersection(a, b);
+        EXPECT_EQ(value.kind,
+                  ct::FixedTriangleIntersectionKind::Transverse);
+        EXPECT_EQ(value.local_exclusion,
+                  ct::FixedTriangleLocalExclusion::SharedEdgeOnly);
+        EXPECT_FALSE(ct::RequiresIntersectionAdmission(value));
+      }
+    }
+  }
+}
+
+TEST(FixedTriangleIntersections,
      ExactNearSharedSegmentAndNoncanonicalCoincidenceStayNonlocal) {
   const ct::Vec3 target[3]{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}};
   const ct::Vec3 short_crossing[3]{
       {0, 0, 0}, {0x1p-20, 0, 0}, {0, -1, 1}};
   const ct::Vec3 point_only[3]{
       {0, 0, 0}, {-1, 0, 1}, {0, -1, 1}};
+  const ct::Vec3 coordinate_edge_only[3]{
+      {0, 0, 0}, {1, 0, 0}, {0, -1, 1}};
   const std::uint64_t target_ids[3]{1, 2, 3};
   const std::uint64_t shared_ids[3]{1, 12, 13};
   const std::uint64_t distinct_ids[3]{11, 12, 13};
@@ -204,6 +272,13 @@ TEST(FixedTriangleIntersections,
   value = DiscoverIntersection(
       ft::Triangle(100, 0, target, target_ids),
       ft::Triangle(200, 0, point_only, distinct_ids));
+  EXPECT_EQ(value.kind, ct::FixedTriangleIntersectionKind::Transverse);
+  EXPECT_EQ(value.local_exclusion,
+            ct::FixedTriangleLocalExclusion::None);
+
+  value = DiscoverIntersection(
+      ft::Triangle(100, 0, target, target_ids),
+      ft::Triangle(200, 0, coordinate_edge_only, distinct_ids));
   EXPECT_EQ(value.kind, ct::FixedTriangleIntersectionKind::Transverse);
   EXPECT_EQ(value.local_exclusion,
             ct::FixedTriangleLocalExclusion::None);

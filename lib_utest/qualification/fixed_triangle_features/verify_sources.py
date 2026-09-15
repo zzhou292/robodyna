@@ -148,6 +148,7 @@ for required in (
     "ParallelCollinearAndNearParallelEdgeRecordsSurviveAllReversals",
     "ExactBoundaryAndAdjacentRepresentableCoordinatesHaveExplicitClasses",
     "AuthenticatedCouponSharedVertexOnlyIsPermutationInvariant",
+    "AuthenticatedBoundaryToParentDiagonalIsSharedEdgeOnly",
     "ExactNearSharedSegmentAndNoncanonicalCoincidenceStayNonlocal",
     "DegeneracyBoundaryIsClosedAndNextafterAboveRetriesSuccessfully",
     "ExactIntersectionCapPassesAndMinusOneRejectsThenRetries",

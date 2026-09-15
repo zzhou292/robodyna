@@ -156,6 +156,11 @@ enum class FixedTriangleIntersectionKind : std::uint8_t {
 // canonical vertex.  This includes a transverse plane cut along an incident
 // edge when that edge leaves the other triangle's exact vertex tangent cone;
 // any positive-length or positive-area overlap remains unexcluded.
+// SharedEdgeOnly means the complete exact intersection set is the segment
+// between two shared canonical vertices.  The two facet-edge keys may differ
+// when a source-parent boundary meets a parent-local tessellation edge; the
+// shared endpoint topology is still exact.  Coordinate-only coincidence and
+// every positive-area overlap remain unexcluded.
 enum class FixedTriangleLocalExclusion : std::uint8_t {
   None,
   IdenticalFace,

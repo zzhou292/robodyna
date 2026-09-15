@@ -29,6 +29,12 @@ bool Same(const FacetEdgeKey& a, const FacetEdgeKey& b) noexcept {
   return Compare(a, b) == 0;
 }
 
+bool SameEndpoints(const FacetEdgeKey& a,
+                   const FacetEdgeKey& b) noexcept {
+  return Same(a.endpoints[0], b.endpoints[0]) &&
+      Same(a.endpoints[1], b.endpoints[1]);
+}
+
 bool Same(const FixedTriangleKey& a, const FixedTriangleKey& b) noexcept {
   return Compare(a, b) == 0;
 }
@@ -441,7 +447,12 @@ SharedTopology FindSharedTopology(const CurrentFixedTriangle& a,
         result.vertex_a = static_cast<int>(i);
         result.vertex_b = static_cast<int>(j);
       }
-      if (Same(a.edge_keys[i], b.edge_keys[j]) && result.edge_a < 0) {
+      // A physical parent boundary and another parent's fixed-facet
+      // tessellation edge intentionally have different FacetEdgeKeys.  Two
+      // shared canonical endpoints nevertheless identify the same exact
+      // fixed-triangle segment for local intersection classification.
+      if (SameEndpoints(a.edge_keys[i], b.edge_keys[j]) &&
+          result.edge_a < 0) {
         result.edge_a = static_cast<int>(i);
         result.edge_b = static_cast<int>(j);
       }
