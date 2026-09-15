@@ -1,6 +1,7 @@
 #pragma once
 
 #include "InitialCensusValues.h"
+#include "InitialFeatureSampleValues.h"
 #include "VehicleSelfContactSetup.h"
 #include "case/vehicle_dynamics/VehiclePhysicalDynamics.h"
 #include "lib_src/collision/SelfContactBroadphase.h"
@@ -47,8 +48,12 @@ struct InitialCensusForecast {
     std::size_t pair_key_host_bytes = 0;
     std::size_t accepted_position_host_bytes = 0;
     std::size_t represented_triangle_host_bytes = 0;
+    std::size_t exact_sample_pair_host_bytes = 0;
+    std::size_t feature_task_mask_host_bytes = 0;
     std::size_t fixed_workspace_host_bytes = 0;
     std::size_t app_fixed_host_bytes = 0;
+    tlfea::contact::FixedTriangleFeatureForecast
+        exact_feature_discovery;
     // Exact sequential census reservation. Broadphase host fields retain the
     // source charge defined by that TL module; this is not a process RSS claim.
     std::size_t peak_census_host_reservation_bytes = 0;
@@ -66,6 +71,7 @@ struct InitialCensusResult {
     InitialCensusForecast forecast;
     InitialFacetCapacityCensus capacity;
     InitialFacetFilterCensus filters;
+    InitialFeatureSampleResult feature_sample;
     std::uint64_t probe_required_pairs = 0;
     std::uint64_t cap_minus_one_required_pairs = 0;
     std::uint64_t exact_pair_count = 0;
@@ -74,12 +80,16 @@ struct InitialCensusResult {
     std::uint64_t geometry_evaluation_us = 0;
     std::uint64_t filter_census_us = 0;
     std::uint64_t rerun_filter_census_us = 0;
+    std::uint64_t feature_sample_rerun_us = 0;
+    std::uint64_t worker_one_prefix_us = 0;
     bool count_before_cap_observed = false;
     bool cap_minus_one_reproduced_required_count = false;
     bool exact_capacity_succeeded = false;
     bool complete_device_pair_keys = false;
     bool deterministic_rerun = false;
     bool deterministic_filter_rerun = false;
+    bool deterministic_feature_sample = false;
+    bool worker_one_prefix_identity = false;
     bool accepted_owner_unchanged = false;
 };
 
@@ -98,8 +108,10 @@ class InitialCensusCapacityError : public std::runtime_error {
 
 // One initial, current-motion count gate over the already-created dynamics
 // owner. It creates no model, physical binding, participant, attachment or
-// second state owner. The opened owner trial is always discarded; no force,
-// feature, intersection or interval publication is attempted.
+// second state owner. The opened owner trial is always discarded. It performs
+// only a bounded exact feature/intersection sample after the complete filter
+// census; no force decision, interval crossing, event arena or dynamics step
+// is attempted.
 class VehicleSelfContactInitialCensus {
   public:
     static InitialCensusResult Measure(

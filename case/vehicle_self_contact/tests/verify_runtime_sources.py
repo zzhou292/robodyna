@@ -215,6 +215,12 @@ def main() -> None:
         contact / "VehicleSelfContactInitialCensus.h").read_text()
     census_source = (
         contact / "VehicleSelfContactInitialCensus.cpp").read_text()
+    sample_header = (
+        contact / "InitialFeatureSampleValues.h").read_text()
+    sample_source = (
+        contact / "InitialFeatureSampleValues.cpp").read_text()
+    values_cmake = (
+        contact / "VehicleSelfContactValues.cmake").read_text()
     tl_filter_header = (
         args.tl_root / "lib_src" / "collision" /
         "SelfContactFilterCertificates.h").read_text()
@@ -229,23 +235,39 @@ def main() -> None:
             "face_axis_separated", "edge_cross_axis_separated",
             "vertex_edge_axis_separated",
             "vertex_vertex_axis_separated",
-            "exact_remaining", "category_hash",
+            "exact_remaining", "exact_sample_count",
+            "exact_sample_hash", "category_hash",
             "geometry_evaluation_us", "filter_census_us",
             "rerun_filter_hash"]:
         require(token in census_header + census_values,
                 f"actual V5 filter census is missing {token}")
+    for token in [
+            "potential_tasks", "local_masked_tasks",
+            "exact_executed_tasks", "raw_feature_candidates",
+            "feature_candidates", "raw_intersections", "intersections",
+            "feature_hash", "intersection_hash", "discovery_us",
+            "exact_tasks_per_second"]:
+        require(token in sample_header + sample_source,
+                f"actual V5 exact sample is missing {token}")
     require("ClassifyAcceptedFacetPair(" in census_values and
             "ClassifyAcceptedFacetPair(" in tl_filter_header and
             "ClassifyAcceptedFacetPair(" in tl_filter_source and
             "ClassifyAcceptedFacetPair(" in tl_transaction_source,
             "app and transaction must share the production filter certificate")
-    require("FixedTriangleFeatureDiscovery " not in census_source and
-            ".Discover(" not in census_source and
-            "RepresentedIntervalCrossing" not in census_source,
-            "actual filter census must not invoke exact traversal")
-    require('LABELS "coupon;real-geometry;v5-filter-census"' in
+    require("BuildFixedTriangleFeatureTaskMask(" in sample_source and
+            ".DiscoverMasked(" in sample_source and
+            "InitialExactFeatureSampleCapacity = 65536" in sample_header and
+            "InitialExactFeatureChunkCapacity = 4096" in sample_header and
+            "InitialExactFeatureChunkCapacity, 4" in census_source and
+            "InitialExactFeatureRerunThresholdUs" in census_source and
+            "InitialFeatureSampleValues.cpp" in values_cmake,
+            "actual exact sample must use bounded shared-mask discovery")
+    require("RepresentedIntervalCrossing" not in census_source + sample_source and
+            "SelfContactForce" not in sample_source,
+            "actual exact sample must stop before crossing and dynamics")
+    require('LABELS "coupon;real-geometry;v5-exact-sample"' in
             fixture_cmake and
-            "TIMEOUT 120" in fixture_cmake,
+            "TIMEOUT 180" in fixture_cmake,
             "actual filter census needs its bounded coupon registration")
     real_cmake = (contact / "CMakeLists.txt").read_text()
     require("vehicle_self_contact_real_geometry_coupon" in real_cmake and

@@ -63,12 +63,17 @@ TEST(VehicleSelfContactInitialCensus,
               std::size_t{2} << 30);
     EXPECT_LE(census.forecast.peak_census_host_reservation_bytes,
               std::size_t{2} << 30);
+    EXPECT_EQ(census.forecast.exact_feature_discovery.worker_count, 4u);
+    EXPECT_LE(census.forecast.exact_feature_discovery.owned_host_bytes,
+              app_contact::InitialExactFeatureHostByteCap);
     EXPECT_EQ(census.forecast.fixed_workspace_host_bytes,
               census.forecast.surface_to_active_host_bytes +
               census.forecast.active_parent_host_bytes +
               census.forecast.pair_key_host_bytes +
               census.forecast.accepted_position_host_bytes +
-              census.forecast.represented_triangle_host_bytes);
+              census.forecast.represented_triangle_host_bytes +
+              census.forecast.exact_sample_pair_host_bytes +
+              census.forecast.feature_task_mask_host_bytes);
 
     const auto& capacity = census.capacity;
     EXPECT_EQ(capacity.current_inflated_aabb_overlap_parent_pairs,
@@ -104,6 +109,9 @@ TEST(VehicleSelfContactInitialCensus,
     EXPECT_FALSE(filters.feature_discovery_performed);
     EXPECT_FALSE(filters.interval_crossing_performed);
     EXPECT_GT(filters.category_hash, 0u);
+    EXPECT_EQ(filters.exact_sample_count,
+              app_contact::InitialExactFeatureSampleCapacity);
+    EXPECT_GT(filters.exact_sample_hash, 0u);
     EXPECT_GT(census.geometry_evaluation_us, 0u);
     EXPECT_GT(census.filter_census_us, 0u);
     EXPECT_TRUE(census.deterministic_rerun);
@@ -112,6 +120,36 @@ TEST(VehicleSelfContactInitialCensus,
     EXPECT_TRUE(census.deterministic_filter_rerun);
     EXPECT_EQ(census.rerun_filter_hash,
               filters.category_hash);
+    const auto& sample = census.feature_sample.complete;
+    EXPECT_EQ(sample.sampled_pairs, filters.exact_sample_count);
+    EXPECT_EQ(sample.potential_tasks,
+              15 * sample.sampled_pairs);
+    EXPECT_EQ(sample.potential_tasks,
+              sample.local_masked_tasks +
+              sample.exact_executed_tasks);
+    EXPECT_EQ(sample.raw_feature_candidates,
+              sample.exact_executed_tasks);
+    EXPECT_LE(sample.feature_candidates,
+              sample.raw_feature_candidates);
+    EXPECT_LE(sample.intersections,
+              sample.raw_intersections);
+    EXPECT_LE(sample.raw_intersections,
+              sample.sampled_pairs);
+    EXPECT_GT(sample.feature_hash, 0u);
+    EXPECT_GT(sample.intersection_hash, 0u);
+    EXPECT_GT(census.feature_sample.task_mask_build_us, 0u);
+    EXPECT_GT(census.feature_sample.discovery_us, 0u);
+    EXPECT_GT(census.feature_sample.exact_tasks_per_second, 0u);
+    EXPECT_TRUE(census.deterministic_feature_sample);
+    if (census.feature_sample.discovery_us <
+            app_contact::InitialExactFeatureRerunThresholdUs) {
+        EXPECT_GT(census.feature_sample_rerun_us, 0u);
+        EXPECT_FALSE(census.worker_one_prefix_identity);
+    } else {
+        EXPECT_EQ(census.feature_sample_rerun_us, 0u);
+        EXPECT_TRUE(census.worker_one_prefix_identity);
+        EXPECT_GT(census.worker_one_prefix_us, 0u);
+    }
     EXPECT_TRUE(census.accepted_owner_unchanged);
     EXPECT_EQ(dynamics.accepted().owner_id, initial.owner_id);
     EXPECT_EQ(dynamics.accepted().epoch, 0u);
@@ -174,6 +212,10 @@ TEST(VehicleSelfContactInitialCensus,
               << filters.vertex_vertex_axis_separated
               << " exact_remaining="
               << filters.exact_remaining
+              << " exact_sample_count="
+              << filters.exact_sample_count
+              << " exact_sample_hash="
+              << filters.exact_sample_hash
               << " filter_hash=" << filters.category_hash
               << " geometry_evaluation_us="
               << census.geometry_evaluation_us
@@ -212,8 +254,40 @@ TEST(VehicleSelfContactInitialCensus,
               << census.forecast.physical_owner_device_bytes
               << " total_explicit_device_peak="
               << census.forecast.peak_total_explicit_device_bytes
-              << " feature_discovery=0"
-              << " intersection_processing=0"
+              << " feature_discovery_host="
+              << census.forecast.exact_feature_discovery.
+                    owned_host_bytes
+              << " sampled_potential_tasks="
+              << sample.potential_tasks
+              << " sampled_local_masked_tasks="
+              << sample.local_masked_tasks
+              << " sampled_exact_executed_tasks="
+              << sample.exact_executed_tasks
+              << " sampled_raw_features="
+              << sample.raw_feature_candidates
+              << " sampled_unique_features="
+              << sample.feature_candidates
+              << " sampled_raw_intersections="
+              << sample.raw_intersections
+              << " sampled_unique_intersections="
+              << sample.intersections
+              << " sampled_feature_hash="
+              << sample.feature_hash
+              << " sampled_intersection_hash="
+              << sample.intersection_hash
+              << " task_mask_build_us="
+              << census.feature_sample.task_mask_build_us
+              << " feature_discovery_us="
+              << census.feature_sample.discovery_us
+              << " feature_discovery_rerun_us="
+              << census.feature_sample_rerun_us
+              << " worker_one_prefix_us="
+              << census.worker_one_prefix_us
+              << " exact_tasks_per_second="
+              << census.feature_sample.exact_tasks_per_second
+              << " deterministic_feature_sample=1"
+              << " feature_discovery=1"
+              << " intersection_processing=1"
               << " force_admission=0"
               << " interval_crossing=0"
               << '\n';
@@ -245,12 +319,25 @@ TEST(VehicleSelfContactInitialCensus,
         std::to_string(filters.vertex_vertex_axis_separated));
     RecordProperty("exact_remaining",
         std::to_string(filters.exact_remaining));
+    RecordProperty("exact_sample_count",
+        std::to_string(filters.exact_sample_count));
+    RecordProperty("exact_sample_hash",
+        std::to_string(filters.exact_sample_hash));
     RecordProperty("filter_hash",
         std::to_string(filters.category_hash));
     RecordProperty("geometry_evaluation_us",
         std::to_string(census.geometry_evaluation_us));
     RecordProperty("filter_census_us",
         std::to_string(census.filter_census_us));
+    RecordProperty("feature_discovery_us",
+        std::to_string(census.feature_sample.discovery_us));
+    RecordProperty("exact_tasks_per_second",
+        std::to_string(
+            census.feature_sample.exact_tasks_per_second));
+    RecordProperty("sample_feature_hash",
+        std::to_string(sample.feature_hash));
+    RecordProperty("sample_intersection_hash",
+        std::to_string(sample.intersection_hash));
     RecordProperty("broadphase_device_bytes",
         std::to_string(census.forecast.exact.device_bytes));
     RecordProperty("census_peak_host_reservation_bytes",

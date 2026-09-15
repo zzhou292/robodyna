@@ -33,8 +33,8 @@ add_test(NAME vehicle_self_contact_initial_census COMMAND "${Python3_EXECUTABLE}
   "$<TARGET_FILE:robo_dyna_vehicle_self_contact_source_check>"
   "VehicleSelfContactInitialCensus.*")
 set_tests_properties(vehicle_self_contact_initial_census PROPERTIES
-  TIMEOUT 120 RUN_SERIAL TRUE PROCESSORS 2
-  LABELS "coupon;real-geometry;v5-filter-census"
+  TIMEOUT 180 RUN_SERIAL TRUE PROCESSORS 4
+  LABELS "coupon;real-geometry;v5-exact-sample"
   RESOURCE_LOCK vehicle_self_contact_gpu
   ENVIRONMENT "ROBO_VEHICLE_DECLARATIONS=${ROBO_DYNA_VEHICLE_DECLARATIONS};ROBO_VEHICLE_GLASS_RESOLUTION=${ROBO_DYNA_VEHICLE_GLASS_RESOLUTION};ROBO_VEHICLE_GLASS_SHA256=${ROBO_DYNA_VEHICLE_GLASS_SHA256};ROBO_DYNA_TYPE13_DECLARATION=${ROBO_DYNA_VEHICLE_TYPE13_DECLARATION}")
 

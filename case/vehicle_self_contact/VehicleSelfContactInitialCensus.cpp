@@ -33,6 +33,8 @@ struct WorkspaceRegions {
     tl::util::ArenaRegion pair_keys;
     tl::util::ArenaRegion accepted_positions;
     tl::util::ArenaRegion represented_triangles;
+    tl::util::ArenaRegion exact_sample_pairs;
+    tl::util::ArenaRegion feature_task_masks;
     std::size_t bytes = 0;
 };
 
@@ -145,6 +147,8 @@ bool Same(const InitialFacetFilterCensus& first,
         first.vertex_vertex_axis_separated ==
             second.vertex_vertex_axis_separated &&
         first.exact_remaining == second.exact_remaining &&
+        first.exact_sample_count == second.exact_sample_count &&
+        first.exact_sample_hash == second.exact_sample_hash &&
         first.category_hash == second.category_hash &&
         first.source_identity_hash == second.source_identity_hash &&
         first.complete_disjoint_accounting ==
@@ -235,7 +239,13 @@ WorkspaceRegions ForecastWorkspace(std::size_t nodes,
         !layout.Append<Key>(pairs, result.pair_keys) ||
         !layout.Append<double>(3 * nodes, result.accepted_positions) ||
         !layout.Append<contact::CurrentFixedTriangle>(
-            facets, result.represented_triangles))
+            facets, result.represented_triangles) ||
+        !layout.Append<contact::FixedTrianglePair>(
+            InitialExactFeatureSampleCapacity,
+            result.exact_sample_pairs) ||
+        !layout.Append<contact::FixedTriangleFeatureTaskMask>(
+            InitialExactFeatureChunkCapacity,
+            result.feature_task_masks))
         CapacityFailure(pairs,
             "Initial V5 census fixed host workspace exceeds its hard cap");
     result.bytes = layout.bytes();
@@ -249,6 +259,8 @@ void ComposePeakForecast(InitialCensusResult& result,
     std::size_t retained_with_workspace =
         forecast.exact.owned_host_bytes;
     if (!Add(forecast.fixed_workspace_host_bytes,
+             retained_with_workspace) ||
+        !Add(forecast.exact_feature_discovery.owned_host_bytes,
              retained_with_workspace))
         CapacityFailure(result.probe_required_pairs,
             "Initial V5 census retained host forecast overflows");
@@ -289,6 +301,18 @@ void CheckLimits(InitialCensusLimits limits) {
                 hard.max_broadphase_device_bytes &&
             limits.broadphase_axis <= 2,
         "Initial V5 census limits exceed INT_MAX/2GiB hard scope");
+}
+
+[[noreturn]] void FeatureSampleFailure(
+    const InitialFeatureSampleReport& report) {
+    throw std::runtime_error(
+        "Initial exact feature sample failed (pair=" +
+        std::to_string(report.pair) +
+        ", task=" + std::to_string(report.task) +
+        ", arithmetic_reason=" +
+        std::to_string(static_cast<unsigned>(
+            report.arithmetic_reason)) +
+        "): " + report.message);
 }
 
 }  // namespace
@@ -453,6 +477,16 @@ InitialCensusResult VehicleSelfContactInitialCensus::Measure(
     result.forecast.exact = PreflightBroadphase(
         setup, exact_capacity, limits, required,
         "Exact broadphase cannot fit the TL 2GiB device hard cap");
+    const auto feature_limits = InitialFeatureSampleDiscoveryLimits(
+        InitialExactFeatureChunkCapacity, 4);
+    const auto feature_preflight =
+        contact::FixedTriangleFeatureDiscovery::Preflight(
+            feature_limits);
+    output::Require(feature_preflight.report.status ==
+            contact::FixedTriangleDiscoveryStatus::Ok,
+        feature_preflight.report.message);
+    result.forecast.exact_feature_discovery =
+        feature_preflight.forecast;
     const auto workspace = ForecastWorkspace(
         initial_stamp.node_count, V5SelectedParents,
         V5Level0Facets, exact_capacity, limits.max_host_bytes);
@@ -465,6 +499,10 @@ InitialCensusResult VehicleSelfContactInitialCensus::Measure(
         workspace.accepted_positions.bytes;
     result.forecast.represented_triangle_host_bytes =
         workspace.represented_triangles.bytes;
+    result.forecast.exact_sample_pair_host_bytes =
+        workspace.exact_sample_pairs.bytes;
+    result.forecast.feature_task_mask_host_bytes =
+        workspace.feature_task_masks.bytes;
     result.forecast.fixed_workspace_host_bytes = workspace.bytes;
     ComposePeakForecast(result, limits);
 
@@ -524,9 +562,16 @@ InitialCensusResult VehicleSelfContactInitialCensus::Measure(
         auto* represented_triangles =
             host.Construct<contact::CurrentFixedTriangle>(
                 workspace.represented_triangles);
+        auto* exact_sample_pairs =
+            host.Construct<contact::FixedTrianglePair>(
+                workspace.exact_sample_pairs);
+        auto* feature_task_masks =
+            host.Construct<contact::FixedTriangleFeatureTaskMask>(
+                workspace.feature_task_masks);
         output::Require(surface_to_active && active_parents &&
                 host_keys && accepted_positions &&
-                represented_triangles &&
+                represented_triangles && exact_sample_pairs &&
+                feature_task_masks &&
                 host.bytes() == workspace.bytes,
             "Initial V5 census fixed host layout differs from forecast");
         std::fill_n(surface_to_active, V5SelectedParents,
@@ -637,6 +682,8 @@ InitialCensusResult VehicleSelfContactInitialCensus::Measure(
             V5SelectedParents, active_parents, V5SelectedParents,
             represented_triangles, V5Level0Facets,
             result.capacity.surface_active_source_hash,
+            exact_sample_pairs,
+            InitialExactFeatureSampleCapacity,
             &result.filters);
         result.filter_census_us =
             static_cast<std::uint64_t>(
@@ -680,7 +727,10 @@ InitialCensusResult VehicleSelfContactInitialCensus::Measure(
             host_keys, exact_capacity, surface_to_active,
             V5SelectedParents, active_parents, V5SelectedParents,
             represented_triangles, V5Level0Facets,
-            rerun.surface_active_source_hash, &rerun_filters);
+            rerun.surface_active_source_hash,
+            exact_sample_pairs,
+            InitialExactFeatureSampleCapacity,
+            &rerun_filters);
         result.rerun_filter_census_us =
             static_cast<std::uint64_t>(
                 std::chrono::duration_cast<std::chrono::microseconds>(
@@ -694,6 +744,99 @@ InitialCensusResult VehicleSelfContactInitialCensus::Measure(
         result.rerun_filter_hash = rerun_filters.category_hash;
         result.deterministic_rerun = true;
         result.deterministic_filter_rerun = true;
+
+        output::Require(result.filters.exact_sample_count ==
+                std::min(result.filters.exact_remaining,
+                    InitialExactFeatureSampleCapacity) &&
+                result.filters.exact_sample_count > 0 &&
+                result.filters.exact_sample_hash != 0,
+            "Initial exact feature sample retention is incomplete");
+        bool qualify_with_worker_one = false;
+        {
+            contact::FixedTriangleFeatureDiscovery discovery;
+            const auto feature_report =
+                discovery.Initialize(feature_limits);
+            output::Require(feature_report.status ==
+                    contact::FixedTriangleDiscoveryStatus::Ok &&
+                    discovery.forecast().owned_host_bytes ==
+                        result.forecast.exact_feature_discovery.
+                            owned_host_bytes &&
+                    discovery.forecast().worker_count == 4,
+                feature_report.message);
+            const auto sampled = DiscoverInitialFeatureSample(
+                discovery, represented_triangles, V5Level0Facets,
+                exact_sample_pairs,
+                result.filters.exact_sample_count,
+                feature_task_masks,
+                InitialExactFeatureChunkCapacity,
+                &result.feature_sample);
+            if (sampled.status != InitialFeatureSampleStatus::Ok)
+                FeatureSampleFailure(sampled);
+            output::Require(
+                result.feature_sample.complete.sampled_pairs ==
+                    result.filters.exact_sample_count &&
+                result.feature_sample.complete.potential_tasks ==
+                    result.feature_sample.complete.local_masked_tasks +
+                    result.feature_sample.complete.exact_executed_tasks &&
+                result.feature_sample.complete.feature_hash != 0 &&
+                result.feature_sample.complete.intersection_hash != 0,
+                "Initial exact feature sample accounting is incomplete");
+            if (result.feature_sample.discovery_us <
+                    InitialExactFeatureRerunThresholdUs) {
+                InitialFeatureSampleResult rerun_sample;
+                const auto rerun_report =
+                    DiscoverInitialFeatureSample(
+                        discovery, represented_triangles,
+                        V5Level0Facets, exact_sample_pairs,
+                        result.filters.exact_sample_count,
+                        feature_task_masks,
+                        InitialExactFeatureChunkCapacity,
+                        &rerun_sample);
+                if (rerun_report.status !=
+                        InitialFeatureSampleStatus::Ok)
+                    FeatureSampleFailure(rerun_report);
+                output::Require(
+                    SameInitialFeatureSampleIdentity(
+                        result.feature_sample.complete,
+                        rerun_sample.complete),
+                    "Initial exact feature sample rerun differs");
+                result.feature_sample_rerun_us =
+                    rerun_sample.discovery_us;
+                result.deterministic_feature_sample = true;
+            } else {
+                qualify_with_worker_one = true;
+            }
+        }
+        if (qualify_with_worker_one) {
+            const auto worker_one_limits =
+                InitialFeatureSampleDiscoveryLimits(
+                    InitialExactFeatureChunkCapacity, 1);
+            contact::FixedTriangleFeatureDiscovery worker_one;
+            const auto worker_one_report =
+                worker_one.Initialize(worker_one_limits);
+            output::Require(worker_one_report.status ==
+                    contact::FixedTriangleDiscoveryStatus::Ok,
+                worker_one_report.message);
+            InitialFeatureSampleResult prefix;
+            const auto prefix_report =
+                DiscoverInitialFeatureSample(
+                    worker_one, represented_triangles,
+                    V5Level0Facets, exact_sample_pairs,
+                    result.feature_sample.worker_prefix_pairs,
+                    feature_task_masks,
+                    InitialExactFeatureChunkCapacity, &prefix);
+            if (prefix_report.status !=
+                    InitialFeatureSampleStatus::Ok)
+                FeatureSampleFailure(prefix_report);
+            output::Require(
+                SameInitialFeatureSampleIdentity(
+                    result.feature_sample.worker_prefix,
+                    prefix.complete),
+                "Initial exact feature worker-1 prefix differs");
+            result.worker_one_prefix_us = prefix.discovery_us;
+            result.worker_one_prefix_identity = true;
+            result.deterministic_feature_sample = true;
+        }
     }
 
     state.owner.Discard();

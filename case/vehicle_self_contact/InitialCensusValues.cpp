@@ -218,12 +218,15 @@ InitialCensusValueReport CountInitialFacetFilterCensus(
     std::size_t active_parent_count,
     const tlfea::contact::CurrentFixedTriangle* triangles,
     std::size_t triangle_count, std::uint64_t source_identity_hash,
+    tlfea::contact::FixedTrianglePair* exact_sample,
+    std::size_t exact_sample_capacity,
     InitialFacetFilterCensus* output) noexcept {
     if (!output || (key_count && !keys) || !surface_to_active ||
         !active_parents || !triangles || !surface_parent_count ||
         surface_parent_count != active_parent_count ||
         surface_parent_count > UINT32_MAX || !triangle_count ||
-        !source_identity_hash)
+        !source_identity_hash ||
+        (exact_sample_capacity && !exact_sample))
         return Failure(Status::InvalidInput,
             "Initial filter census storage or extent is invalid");
 
@@ -255,10 +258,13 @@ InitialCensusValueReport CountInitialFacetFilterCensus(
 
     InitialFacetFilterCensus next;
     next.category_hash = 14695981039346656037ULL;
+    next.exact_sample_hash = 14695981039346656037ULL;
     next.source_identity_hash = source_identity_hash;
     Hash(source_identity_hash, next.category_hash);
     Hash(key_count, next.category_hash);
     Hash(triangle_count, next.category_hash);
+    Hash(source_identity_hash, next.exact_sample_hash);
+    Hash(triangle_count, next.exact_sample_hash);
     Key previous = 0;
     for (std::size_t pair = 0; pair < key_count; ++pair) {
         const auto key = keys[pair];
@@ -327,6 +333,19 @@ InitialCensusValueReport CountInitialFacetFilterCensus(
                     break;
                   case Category::ExactRemaining:
                     category = &next.exact_remaining;
+                    if (next.exact_sample_count <
+                            exact_sample_capacity) {
+                        if (first_facet > UINT32_MAX ||
+                            second_facet > UINT32_MAX)
+                            return Failure(Status::Unrepresentable,
+                                "Exact sample facet index is unrepresentable",
+                                SIZE_MAX, pair);
+                        exact_sample[next.exact_sample_count++] = {
+                            static_cast<std::uint32_t>(first_facet),
+                            static_cast<std::uint32_t>(second_facet)};
+                        Hash(first_facet, next.exact_sample_hash);
+                        Hash(second_facet, next.exact_sample_hash);
+                    }
                     break;
                 }
                 if (!category || !Add(1, *category) ||
@@ -353,6 +372,7 @@ InitialCensusValueReport CountInitialFacetFilterCensus(
         accounted != next.represented_facet_pairs)
         return Failure(Status::Unrepresentable,
             "Initial filter categories do not partition facet pairs");
+    Hash(next.exact_sample_count, next.exact_sample_hash);
     next.complete_disjoint_accounting = true;
     next.production_certificates_used = true;
     next.feature_discovery_performed = false;

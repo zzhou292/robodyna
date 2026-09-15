@@ -60,6 +60,8 @@ struct InitialFacetFilterCensus {
     std::size_t vertex_edge_axis_separated = 0;
     std::size_t vertex_vertex_axis_separated = 0;
     std::size_t exact_remaining = 0;
+    std::size_t exact_sample_count = 0;
+    std::uint64_t exact_sample_hash = 0;
     std::uint64_t category_hash = 0;
     std::uint64_t source_identity_hash = 0;
     bool complete_disjoint_accounting = false;
@@ -87,6 +89,9 @@ InitialCensusValueReport CountInitialFacetCapacity(
 
 // Allocation-free expansion/certificate pass. The triangle roster is the
 // complete accepted-owner represented geometry in active-use facet order.
+// When sample storage is supplied, the first exact-remaining pairs are copied
+// in canonical census order up to its fixed capacity and hashed with source
+// identity; the complete category pass is never shortened by that cap.
 InitialCensusValueReport CountInitialFacetFilterCensus(
     const tlfea::contact::SelfContactPairKey* keys, std::size_t key_count,
     const std::uint32_t* surface_to_active, std::size_t surface_parent_count,
@@ -94,6 +99,8 @@ InitialCensusValueReport CountInitialFacetFilterCensus(
     std::size_t active_parent_count,
     const tlfea::contact::CurrentFixedTriangle* triangles,
     std::size_t triangle_count, std::uint64_t source_identity_hash,
+    tlfea::contact::FixedTrianglePair* exact_sample,
+    std::size_t exact_sample_capacity,
     InitialFacetFilterCensus* output) noexcept;
 
 }  // namespace crash::cases::vehicle_self_contact

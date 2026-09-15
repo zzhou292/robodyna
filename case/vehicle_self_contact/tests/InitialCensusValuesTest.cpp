@@ -1,6 +1,8 @@
 #include "../InitialCensusValues.h"
+#include "../InitialFeatureSampleValues.h"
 
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <array>
 #include <limits>
 
@@ -18,6 +20,30 @@ tlfea::contact::CurrentFixedTriangle Triangle(
     tlfea::contact::CurrentFixedTriangle result;
     for (unsigned vertex = 0; vertex < 3; ++vertex)
         result.vertices[vertex] = vertices[vertex];
+    return result;
+}
+
+tlfea::contact::CurrentFixedTriangle FeatureTriangle(
+    std::uint64_t eid, double z, std::uint64_t first_vertex) {
+    namespace contact = tlfea::contact;
+    contact::CurrentFixedTriangle result;
+    result.key = {1, eid, 0, 0};
+    result.vertices[0] = {0, 0, z};
+    result.vertices[1] = {1, 0, z};
+    result.vertices[2] = {0, 1, z};
+    for (unsigned local = 0; local < 3; ++local) {
+        result.vertex_keys[local].source_instance_id = 1;
+        result.vertex_keys[local].first = first_vertex + local;
+    }
+    for (unsigned edge = 0; edge < 3; ++edge) {
+        auto first = result.vertex_keys[edge];
+        auto second = result.vertex_keys[(edge + 1) % 3];
+        if (second.first < first.first)
+            std::swap(first, second);
+        result.edge_keys[edge].endpoints[0] = first;
+        result.edge_keys[edge].endpoints[1] = second;
+        result.edge_keys[edge].parent_boundary = true;
+    }
     return result;
 }
 
@@ -152,7 +178,7 @@ TEST(InitialCensusValues,
     auto report = CountInitialFacetFilterCensus(
         keys.data(), keys.size(), map.data(), map.size(),
         parents.data(), parents.size(), triangles.data(), triangles.size(),
-        12345, &census);
+        12345, nullptr, 0, &census);
     ASSERT_EQ(report.status, InitialCensusValueStatus::Ok)
         << report.message;
     EXPECT_EQ(census.represented_facet_pairs, 5u);
@@ -172,7 +198,8 @@ TEST(InitialCensusValues,
     ASSERT_EQ(CountInitialFacetFilterCensus(
         keys.data(), keys.size(), map.data(), map.size(),
         parents.data(), parents.size(), triangles.data(), triangles.size(),
-        12345, &rerun).status, InitialCensusValueStatus::Ok);
+        12345, nullptr, 0, &rerun).status,
+        InitialCensusValueStatus::Ok);
     EXPECT_EQ(rerun.category_hash, census.category_hash);
 
     triangles[9].vertices[0].x =
@@ -182,9 +209,141 @@ TEST(InitialCensusValues,
     report = CountInitialFacetFilterCensus(
         keys.data(), keys.size(), map.data(), map.size(),
         parents.data(), parents.size(), triangles.data(), triangles.size(),
-        12345, &unchanged);
+        12345, nullptr, 0, &unchanged);
     EXPECT_EQ(report.status, InitialCensusValueStatus::IdentityMismatch);
     EXPECT_EQ(unchanged.exact_remaining, 99u);
+}
+
+TEST(InitialCensusValues,
+     ExactSampleRetainsDeterministicPrefixAtCapAndCapMinusOne) {
+    constexpr std::size_t Count = 3;
+    std::array<std::uint32_t, Count> map{{0, 1, 2}};
+    std::array<InitialCensusParentRow, Count> parents{};
+    std::array<tlfea::contact::CurrentFixedTriangle, Count> triangles{};
+    for (std::size_t parent = 0; parent < Count; ++parent) {
+        parents[parent].source_parent_id = 100 + parent;
+        parents[parent].surface_parent = parent;
+        parents[parent].facet_count = 1;
+        parents[parent].arity = 3;
+        parents[parent].facet_offset = parent;
+        parents[parent].reference_half_thickness_m = 0.01;
+        for (unsigned local = 0; local < 3; ++local)
+            parents[parent].vertices[local] =
+                static_cast<std::uint32_t>(3 * parent + local);
+        triangles[parent] = Triangle(
+            {{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}}});
+    }
+    const std::array<Key, Count> keys{{
+        Pair(0, 1), Pair(0, 2), Pair(1, 2)}};
+    std::array<tlfea::contact::FixedTrianglePair, 2> sample{};
+    InitialFacetFilterCensus exact;
+    auto report = CountInitialFacetFilterCensus(
+        keys.data(), keys.size(), map.data(), map.size(),
+        parents.data(), parents.size(), triangles.data(),
+        triangles.size(), 12345, sample.data(), sample.size(), &exact);
+    ASSERT_EQ(report.status, InitialCensusValueStatus::Ok)
+        << report.message;
+    ASSERT_EQ(exact.exact_remaining, Count);
+    ASSERT_EQ(exact.exact_sample_count, sample.size());
+    EXPECT_EQ(sample[0].first, 0u);
+    EXPECT_EQ(sample[0].second, 1u);
+    EXPECT_EQ(sample[1].first, 0u);
+    EXPECT_EQ(sample[1].second, 2u);
+    EXPECT_NE(exact.exact_sample_hash, 0u);
+
+    InitialFacetFilterCensus rerun;
+    ASSERT_EQ(CountInitialFacetFilterCensus(
+        keys.data(), keys.size(), map.data(), map.size(),
+        parents.data(), parents.size(), triangles.data(),
+        triangles.size(), 12345, sample.data(), sample.size(),
+        &rerun).status, InitialCensusValueStatus::Ok);
+    EXPECT_EQ(rerun.exact_sample_count, exact.exact_sample_count);
+    EXPECT_EQ(rerun.exact_sample_hash, exact.exact_sample_hash);
+
+    InitialFacetFilterCensus short_sample;
+    ASSERT_EQ(CountInitialFacetFilterCensus(
+        keys.data(), keys.size(), map.data(), map.size(),
+        parents.data(), parents.size(), triangles.data(),
+        triangles.size(), 12345, sample.data(), sample.size() - 1,
+        &short_sample).status, InitialCensusValueStatus::Ok);
+    EXPECT_EQ(short_sample.exact_remaining, exact.exact_remaining);
+    EXPECT_EQ(short_sample.exact_sample_count, sample.size() - 1);
+    EXPECT_NE(short_sample.exact_sample_hash, exact.exact_sample_hash);
+    EXPECT_EQ(sample[0].first, 0u);
+    EXPECT_EQ(sample[0].second, 1u);
+}
+
+TEST(InitialFeatureSampleValues,
+     WorkerOneAndFourProduceIdenticalChunkedPrefix) {
+    namespace contact = tlfea::contact;
+    std::array<contact::CurrentFixedTriangle, 5> triangles{};
+    for (std::size_t triangle = 0; triangle < triangles.size(); ++triangle)
+        triangles[triangle] = FeatureTriangle(
+            100 + triangle, 0.01 * triangle, 10 * triangle + 1);
+    const std::array<contact::FixedTrianglePair, 4> pairs{{
+        {0, 1}, {0, 2}, {1, 3}, {2, 4}}};
+    constexpr std::size_t Chunk = 2;
+    std::array<contact::FixedTriangleFeatureTaskMask, Chunk> masks{};
+
+    contact::FixedTriangleFeatureDiscovery worker_one;
+    auto initialized = worker_one.Initialize(
+        InitialFeatureSampleDiscoveryLimits(Chunk, 1));
+    ASSERT_EQ(initialized.status,
+              contact::FixedTriangleDiscoveryStatus::Ok)
+        << initialized.message;
+    InitialFeatureSampleResult one;
+    auto report = DiscoverInitialFeatureSample(
+        worker_one, triangles.data(), triangles.size(),
+        pairs.data(), pairs.size(), masks.data(), masks.size(), &one);
+    ASSERT_EQ(report.status, InitialFeatureSampleStatus::Ok)
+        << report.message;
+
+    contact::FixedTriangleFeatureDiscovery worker_four;
+    initialized = worker_four.Initialize(
+        InitialFeatureSampleDiscoveryLimits(Chunk, 4));
+    ASSERT_EQ(initialized.status,
+              contact::FixedTriangleDiscoveryStatus::Ok)
+        << initialized.message;
+    InitialFeatureSampleResult four;
+    report = DiscoverInitialFeatureSample(
+        worker_four, triangles.data(), triangles.size(),
+        pairs.data(), pairs.size(), masks.data(), masks.size(), &four);
+    ASSERT_EQ(report.status, InitialFeatureSampleStatus::Ok)
+        << report.message;
+    EXPECT_TRUE(SameInitialFeatureSampleIdentity(
+        one.complete, four.complete));
+    EXPECT_TRUE(SameInitialFeatureSampleIdentity(
+        one.worker_prefix, four.worker_prefix));
+    EXPECT_EQ(four.complete.potential_tasks, 15 * pairs.size());
+    EXPECT_EQ(four.complete.exact_executed_tasks,
+              four.complete.potential_tasks);
+    EXPECT_GT(four.complete.feature_hash, 0u);
+    EXPECT_GT(four.complete.intersection_hash, 0u);
+}
+
+TEST(InitialFeatureSampleValues,
+     ProductionChunkPreflightPassesExactlyAndCapMinusOneFails) {
+    namespace contact = tlfea::contact;
+    auto limits = InitialFeatureSampleDiscoveryLimits(
+        InitialExactFeatureChunkCapacity, 4);
+    const auto bounded =
+        contact::FixedTriangleFeatureDiscovery::Preflight(limits);
+    ASSERT_EQ(bounded.report.status,
+              contact::FixedTriangleDiscoveryStatus::Ok)
+        << bounded.report.message;
+    EXPECT_EQ(bounded.forecast.worker_count, 4u);
+    EXPECT_LE(bounded.forecast.owned_host_bytes,
+              InitialExactFeatureHostByteCap);
+
+    limits.max_host_bytes = bounded.forecast.owned_host_bytes;
+    EXPECT_EQ(contact::FixedTriangleFeatureDiscovery::Preflight(
+                  limits).report.status,
+              contact::FixedTriangleDiscoveryStatus::Ok);
+    ASSERT_GT(limits.max_host_bytes, 0u);
+    --limits.max_host_bytes;
+    EXPECT_EQ(contact::FixedTriangleFeatureDiscovery::Preflight(
+                  limits).report.status,
+              contact::FixedTriangleDiscoveryStatus::ResourceLimit);
 }
 
 }  // namespace

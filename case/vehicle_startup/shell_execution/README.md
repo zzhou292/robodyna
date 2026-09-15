@@ -88,13 +88,19 @@ Its existing fixture starts one virgin owner, reads the accepted coordinates
 and complete broadphase keys once, expands all level-0 facet pairs, and calls
 TL's production accepted/candidate filter certificates in order: same rigid,
 coordinate AABB, face, edge-cross, vertex-edge, then vertex-vertex axes. It
-publishes disjoint counts,
-`exact_remaining`, source/category hashes, and timings, then repeats only the
-already-owned key/filter pass to prove determinism. It does not construct an
-event arena, discover fixed-triangle features, run represented-interval
-crossing, step physical state, assemble force, or enable V5 runtime acceptance.
-CTest labels it `coupon;real-geometry;v5-filter-census`, serializes its GPU use,
-and enforces a 120-second timeout:
+publishes disjoint counts and retains the first 65,536 `exact_remaining` facet
+pairs, with source/category/sample hashes, in the preflighted fixed host arena
+during that same pass. After the existing already-owned key/filter rerun, it
+runs only those pairs through TL's shared local-task-mask builder and bounded
+fixed-triangle discovery in 4,096-pair chunks on four persistent workers. The
+coupon reports potential/masked/executed tasks, raw/unique features and
+intersections, deterministic output hashes, typed microsecond timings and exact
+tasks/s. A sub-120-second discovery is repeated once; otherwise its first chunk
+is qualified against one worker. It does not construct an event arena, make an
+active-use force decision, run represented-interval crossing, step physical
+state, assemble force, or enable V5 runtime acceptance. CTest labels it
+`coupon;real-geometry;v5-exact-sample`, serializes its GPU use, and enforces a
+180-second timeout:
 
 ```sh
 ctest --test-dir <build> -R '^vehicle_self_contact_initial_census$' \
