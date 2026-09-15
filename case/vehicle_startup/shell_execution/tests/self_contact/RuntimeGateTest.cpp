@@ -38,7 +38,7 @@ constexpr std::size_t CompleteCrossingWork =
 constexpr std::size_t RuntimeHostCap =
     std::size_t{20} * 1000 * 1000 * 1000;
 constexpr std::size_t RuntimeDeviceCap = std::size_t{8} << 30;
-constexpr std::size_t InitialTransactionArenaBytes = 1542092504;
+constexpr std::size_t InitialTransactionArenaBytes = 1542100696;
 constexpr std::size_t AcceptedEventCensusCapacity = 1000000;
 constexpr unsigned DiscoveryWorkers = 4;
 constexpr unsigned CrossingWorkers = 4;
