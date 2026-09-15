@@ -904,9 +904,17 @@ SelfContactTransactionReport BuildAcceptedEvents(
     return Failure(S::InvalidInput,
         "Accepted event activity publication is invalid");
   for (std::size_t i = 0; i < intersections.count; ++i)
-    if (RequiresIntersectionAdmission(intersections.data[i]))
-      return Failure(S::CandidateRejected,
-          "Accepted nonlocal triangle intersection is rejected", i);
+    if (RequiresIntersectionAdmission(intersections.data[i])) {
+      auto report = Failure(
+          S::CandidateRejected,
+          "Accepted nonlocal triangle intersection is rejected",
+          SIZE_MAX, i);
+      report.offending_motion[0].facet =
+          intersections.data[i].triangles[0];
+      report.offending_motion[1].facet =
+          intersections.data[i].triangles[1];
+      return report;
+    }
 
   // The chunk arrays are transaction-private maximum storage: discovery can
   // publish at most one event for each of its 15 tasks per input pair.  Write
