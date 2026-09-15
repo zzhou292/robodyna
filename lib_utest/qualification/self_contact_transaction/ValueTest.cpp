@@ -51,7 +51,7 @@ static_assert(offsetof(
 static_assert(offsetof(
     c::SelfContactCandidatePolicySummary,
     vertex_vertex_axis_separated) == 120);
-static_assert(sizeof(c::SelfContactCandidatePolicySummary) == 128);
+static_assert(sizeof(c::SelfContactCandidatePolicySummary) == 176);
 static_assert(
     std::is_trivially_copyable_v<c::SelfContactForceEventIdentity>);
 static_assert(sizeof(c::SelfContactForceEventIdentity) == 240);
@@ -379,6 +379,15 @@ TEST(SelfContactTransactionValues,
   EXPECT_EQ(limits.candidate_discovery.worker_count, 4u);
   EXPECT_EQ(limits.crossing.max_paths, 2 * chunk);
   EXPECT_EQ(limits.crossing.worker_count, 4u);
+  EXPECT_EQ(
+      limits.max_nonlinear_subdivision_work_per_pair, 4095u);
+  EXPECT_EQ(
+      limits.max_nonlinear_subdivision_work_per_chunk,
+      per_chunk_work);
+  EXPECT_EQ(
+      limits.max_stream_nonlinear_subdivision_work,
+      complete_work);
+  EXPECT_EQ(limits.max_nonlinear_subdivision_depth, 20u);
   EXPECT_EQ(limits.max_policy_outcomes, 0u);
   const auto compatible_default =
       c::SelfContactTransactionLimits::Vehicle(

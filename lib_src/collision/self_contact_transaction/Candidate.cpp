@@ -170,6 +170,7 @@ SelfContactTransactionReport BuildSweptBounds(
     const FixedContactFacet* descriptors, std::size_t facets,
     const sct::MotionSupport* parent_motion,
     sct::MotionSupport* facet_motion,
+    sct::FacetQuadraticCoefficients* facet_quadratic,
     const std::uint32_t* node_rigid_groups,
     const fe::NodalRigidGroupSnapshot* accepted_groups,
     const fe::NodalRigidGroupSnapshot* prepared_groups,
@@ -180,6 +181,7 @@ SelfContactTransactionReport BuildSweptBounds(
     SelfContactSweptParentBounds* parent_bounds,
     std::size_t surface_parents) noexcept {
   if (!descriptors || !facets || !parent_motion || !facet_motion ||
+      !facet_quadratic ||
       !node_rigid_groups ||
       !facet_bounds || !parent_bounds || !surface_parents)
     return Failure(S::InvalidInput,
@@ -197,10 +199,12 @@ SelfContactTransactionReport BuildSweptBounds(
         {infinity, infinity, infinity},
         {-infinity, -infinity, -infinity}};
     bool certified_affine = false;
-    const auto affine_status = sct::CertifyRigidFacetAffineMotion(
+    const auto affine_status =
+        sct::BuildRigidFacetQuadraticCoefficients(
         descriptors[facet], base, current, node_rigid_groups,
         accepted_groups, prepared_groups, group_count,
-        rigid_trajectory, duration, &certified_affine);
+        rigid_trajectory, duration, facet_quadratic + facet,
+        &certified_affine);
     facet_motion[facet].certified_affine =
         affine_status == sct::RigidMemberSweepStatus::Ok &&
         certified_affine;
@@ -324,7 +328,10 @@ bool SameRigidSnapshotIdentity(
 void DescribeMotionFailure(
     const SelfContactActiveUseBinding& active_use,
     const CurrentFixedTriangle* triangles,
-    const sct::MotionSupport* motion, FixedTrianglePair pair,
+    const sct::MotionSupport* motion,
+    const sct::FacetQuadraticCoefficients* coefficients,
+    const SelfContactSweptParentBounds* swept_bounds,
+    FixedTrianglePair pair,
     SelfContactTransactionReport* report) noexcept {
   const auto* rigid = active_use.rigid();
   const std::uint32_t facets[2]{pair.first, pair.second};
@@ -334,6 +341,24 @@ void DescribeMotionFailure(
     output.facet = triangles[facet].key;
     output.active_parent = motion[facet].parent;
     output.motion = motion[facet].motion;
+    if (coefficients && coefficients[facet].complete)
+      for (unsigned vertex = 0; vertex < 3; ++vertex)
+        for (unsigned component = 0; component < 3; ++component) {
+          SetComponent(
+              &report->offending_quadratic_lower[side][vertex],
+              component,
+              coefficients[facet].q[vertex][component].lower);
+          SetComponent(
+              &report->offending_quadratic_upper[side][vertex],
+              component,
+              coefficients[facet].q[vertex][component].upper);
+        }
+    if (swept_bounds)
+      report->offending_swept_bounds[side] = swept_bounds[facet];
+    if (motion[facet].parent < active_use.parents().size())
+      report->offending_half_thickness_m[side] =
+          active_use.parents()[motion[facet].parent].
+              reference_half_thickness_m;
     output.rigid_group_count = motion[facet].rigid_group_count;
     for (unsigned group = 0;
          group < motion[facet].rigid_group_count; ++group) {
@@ -632,6 +657,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
       state.active_use, state.buffers.facet_descriptors, triangles,
       state.buffers.parent_motion,
       state.buffers.facet_motion,
+      state.buffers.facet_quadratic,
       state.buffers.node_rigid_groups,
       state.buffers.accepted_rigid_groups,
       state.buffers.prepared_rigid_groups,
@@ -672,6 +698,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
   SelfContactCandidatePolicySummary summary;
   std::size_t policy_outcomes = 0;
   std::size_t crossing_work = 0;
+  std::size_t nonlinear_work = 0;
   std::size_t potential_tasks = 0;
   std::size_t local_masked_tasks = 0;
   std::size_t exact_executed_tasks = 0;
@@ -685,6 +712,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
     if (!streamed_pair_count) break;
 
     std::size_t pair_count = 0;
+    std::size_t chunk_nonlinear_work = 0;
     for (std::size_t pair = 0;
          pair < streamed_pair_count; ++pair) {
       const auto value = pairs[pair];
@@ -696,6 +724,86 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
           state.buffers.swept_facet_bounds[value.first],
           state.buffers.facet_motion[value.second],
           state.buffers.swept_facet_bounds[value.second]);
+      state.buffers.chunk_nonlinear_results[pair] = {};
+      if (action == sct::PairMotionAction::UnsupportedRigidArc) {
+        const auto first_parent =
+            state.buffers.facet_motion[value.first].parent;
+        const auto second_parent =
+            state.buffers.facet_motion[value.second].parent;
+        if (first_parent >= parents.size() ||
+            second_parent >= parents.size())
+          return state.Fail(Failure(
+              S::IdentityMismatch,
+              "Nonlinear candidate facet has no active parent",
+              SIZE_MAX, state.candidate_facet_pair_count + pair));
+        const auto chunk_remaining =
+            state.storage_forecast.nonlinear_subdivision_work_per_chunk >
+                    chunk_nonlinear_work
+                ? state.storage_forecast.
+                      nonlinear_subdivision_work_per_chunk -
+                      chunk_nonlinear_work
+                : 0;
+        const auto complete_remaining =
+            state.storage_forecast.
+                        complete_nonlinear_subdivision_work_capacity >
+                    nonlinear_work
+                ? state.storage_forecast.
+                      complete_nonlinear_subdivision_work_capacity -
+                      nonlinear_work
+                : 0;
+        const auto allowed = std::min({
+            state.storage_forecast.
+                nonlinear_subdivision_work_per_pair,
+            chunk_remaining, complete_remaining});
+        auto nonlinear = allowed
+            ? sct::CertifyQuadraticFacetSeparation(
+                  state.buffers.accepted_triangles[value.first],
+                  state.buffers.prepared_triangles[value.first],
+                  state.buffers.facet_quadratic[value.first],
+                  parents[first_parent].reference_half_thickness_m,
+                  state.buffers.accepted_triangles[value.second],
+                  state.buffers.prepared_triangles[value.second],
+                  state.buffers.facet_quadratic[value.second],
+                  parents[second_parent].reference_half_thickness_m,
+                  duration, allowed,
+                  state.storage_forecast.nonlinear_subdivision_depth)
+            : sct::NonlinearSeparationResult{
+                  sct::NonlinearSeparationStatus::WorkExhausted, 0, 0};
+        if (nonlinear.status ==
+            sct::NonlinearSeparationStatus::InvalidInput)
+          return state.Fail(Failure(
+              S::IdentityMismatch,
+              "Nonlinear subdivision certificate input is invalid",
+              value.first,
+              state.candidate_facet_pair_count + pair));
+        state.buffers.chunk_nonlinear_results[pair] = nonlinear;
+        ++summary.nonlinear_subdivision_pairs;
+        if (nonlinear.work > SIZE_MAX - chunk_nonlinear_work ||
+            nonlinear.work > SIZE_MAX - nonlinear_work ||
+            nonlinear.work > SIZE_MAX -
+                summary.nonlinear_subdivision_work)
+          return state.Fail(Failure(
+              S::ResourceLimit,
+              "Nonlinear subdivision work accounting overflowed",
+              value.first,
+              state.candidate_facet_pair_count + pair));
+        chunk_nonlinear_work += nonlinear.work;
+        nonlinear_work += nonlinear.work;
+        summary.nonlinear_subdivision_work += nonlinear.work;
+        if (nonlinear.status ==
+            sct::NonlinearSeparationStatus::CertifiedSeparated) {
+          action = sct::PairMotionAction::CertifiedRigidArcSeparation;
+          ++summary.motion_certified_nonlinear_separated;
+        } else {
+          ++summary.nonlinear_subdivision_unresolved;
+          if (nonlinear.status ==
+              sct::NonlinearSeparationStatus::WorkExhausted)
+            ++summary.nonlinear_subdivision_work_exhausted;
+          if (nonlinear.status ==
+              sct::NonlinearSeparationStatus::DepthExhausted)
+            ++summary.nonlinear_subdivision_depth_exhausted;
+        }
+      }
       if (action == sct::PairMotionAction::LinearNodalV1) {
         const auto first_parent =
             state.buffers.facet_motion[value.first].parent;
@@ -841,14 +949,27 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
           if (!locally_resolved) {
             auto report = Failure(
                 S::UnsupportedMotion,
-                "Rigid-arc swept facet boxes overlap; exact arc crossing is unresolved",
+                "Quadratic subdivision did not certify rigid-arc separation; crossing remains unresolved",
                 facet_pair.first,
                 state.candidate_facet_pair_count + raw_pair);
             report.crossing_reason =
                 RepresentedIntervalReason::UnsupportedMotion;
+            const auto nonlinear =
+                state.buffers.chunk_nonlinear_results[raw_pair];
+            report.nonlinear_subdivision_work = nonlinear.work;
+            report.nonlinear_subdivision_depth = nonlinear.deepest;
+            report.nonlinear_subdivision_work_exhausted =
+                nonlinear.status ==
+                sct::NonlinearSeparationStatus::WorkExhausted;
+            report.nonlinear_subdivision_depth_exhausted =
+                nonlinear.status ==
+                sct::NonlinearSeparationStatus::DepthExhausted;
             DescribeMotionFailure(
                 state.active_use, state.buffers.prepared_triangles,
-                state.buffers.facet_motion, facet_pair, &report);
+                state.buffers.facet_motion,
+                state.buffers.facet_quadratic,
+                state.buffers.swept_facet_bounds,
+                facet_pair, &report);
             return state.Fail(report);
           }
           auto& local_result = state.buffers.chunk_crossings[pair];
@@ -1065,6 +1186,18 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
       summary.motion_excluded_same_rigid_group >
           summary.outcomes -
               summary.motion_certified_linear_separated ||
+      summary.motion_certified_nonlinear_separated >
+          summary.nonlinear_subdivision_pairs ||
+      summary.nonlinear_subdivision_unresolved !=
+          summary.nonlinear_subdivision_pairs -
+              summary.motion_certified_nonlinear_separated ||
+      summary.nonlinear_subdivision_work_exhausted >
+          summary.nonlinear_subdivision_unresolved ||
+      summary.nonlinear_subdivision_depth_exhausted >
+          summary.nonlinear_subdivision_unresolved ||
+      summary.nonlinear_subdivision_work >
+          state.storage_forecast.
+              complete_nonlinear_subdivision_work_capacity ||
       summary.exact_crossing_pairs !=
           summary.outcomes -
               summary.motion_certified_linear_separated -

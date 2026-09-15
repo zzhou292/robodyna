@@ -64,6 +64,14 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
           limits.max_event_identity_census ||
       limits.max_candidate_pairs > SIZE_MAX / 15 ||
       !limits.max_stream_crossing_work ||
+      !limits.max_nonlinear_subdivision_work_per_pair ||
+      !limits.max_nonlinear_subdivision_work_per_chunk ||
+      !limits.max_stream_nonlinear_subdivision_work ||
+      limits.max_nonlinear_subdivision_work_per_pair >
+          limits.max_nonlinear_subdivision_work_per_chunk ||
+      limits.max_nonlinear_subdivision_work_per_chunk >
+          limits.max_stream_nonlinear_subdivision_work ||
+      limits.max_nonlinear_subdivision_depth > 52 ||
       !limits.max_host_bytes || !limits.max_device_bytes ||
       !limits.max_startup_host_bytes)
     return Failure(S::InvalidInput,
@@ -236,6 +244,7 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
   forecast.node_rigid_group_capacity = nodes;
   forecast.parent_motion_capacity = parents;
   forecast.facet_motion_capacity = facets;
+  forecast.facet_quadratic_capacity = facets;
   forecast.swept_parent_bound_capacity = surface_parents;
   forecast.swept_facet_bound_capacity = facets;
   forecast.candidate_crossing_capacity =
@@ -250,6 +259,14 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
       limits.max_facet_pair_chunk;
   forecast.complete_crossing_work_capacity =
       limits.max_stream_crossing_work;
+  forecast.nonlinear_subdivision_work_per_pair =
+      limits.max_nonlinear_subdivision_work_per_pair;
+  forecast.nonlinear_subdivision_work_per_chunk =
+      limits.max_nonlinear_subdivision_work_per_chunk;
+  forecast.complete_nonlinear_subdivision_work_capacity =
+      limits.max_stream_nonlinear_subdivision_work;
+  forecast.nonlinear_subdivision_depth =
+      limits.max_nonlinear_subdivision_depth;
   if (!Product(forecast.broadphase_pair_capacity,
                sizeof(SelfContactPairKey),
                &forecast.broadphase_pair_readback_bytes) ||

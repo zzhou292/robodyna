@@ -185,6 +185,32 @@ trajectory, arithmetic-envelope failure, or other unrepresentable curvature
 stays on the rigid-arc path and remains unsupported when its swept boxes
 overlap. The certificate does not substitute an endpoint chord for curvature.
 
+For finite nonzero curvature, candidate sealing attempts a bounded quadratic
+subdivision certificate before reporting unsupported motion. Exact dyadic
+represented coefficients are rounded once to outward binary64 intervals. For
+each coordinate the path becomes quadratic Bernstein controls
+`b0=x0`, `b2=x1`, and `b1=(x0+x1)/2-h^2*q/4`.
+Synchronous de Casteljau subdivision at `1/2` encloses each linear+quadratic
+or quadratic+quadratic facet pair over the same time interval. Every node
+tests coordinate, face, edge-cross, vertex-edge, and vertex-vertex axes.
+Outward projection of every Bernstein control and
+`half_thickness*|axis|_1` makes strict disjointness a conservative SAT proof,
+even though a tested axis is only a finite candidate direction. Both children
+must certify separation. Any overlapping leaf, arithmetic failure, depth
+limit, or work limit remains typed `UnsupportedMotion`; it is never converted
+to contact admission or a separated result.
+
+`max_nonlinear_subdivision_work_per_pair`,
+`max_nonlinear_subdivision_work_per_chunk`,
+`max_stream_nonlinear_subdivision_work`, and
+`max_nonlinear_subdivision_depth` are explicit limits and forecast values.
+The generic vehicle builder uses its caller-provided represented-crossing
+work/depth shape for these independent counters. Policy summaries publish
+nonlinear pair/work totals, certified separations, unresolved leaves, and
+work/depth exhaustion. A typed failure report also retains both facets'
+per-vertex coefficient intervals, swept bounds, half-thicknesses, work, and
+deepest interval. Subdivision allocates no memory.
+
 Each member AABB starts with its own endpoint coordinate hull and inflates
 coordinate `i` by only `h^2*|q_i|/8`, because
 `0 <= u*(1-u) <= 1/4`.  Interval cross products surround every binary64

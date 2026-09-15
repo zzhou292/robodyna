@@ -102,6 +102,13 @@ SelfContactTransactionLimits SelfContactTransactionLimits::Vehicle(
   result.max_event_hash_slots = event_hash_slots;
   result.max_policy_outcomes = policy_outcome_capacity;
   result.max_stream_crossing_work = crossing_work_complete;
+  result.max_nonlinear_subdivision_work_per_pair =
+      crossing_work_per_pair;
+  result.max_nonlinear_subdivision_work_per_chunk =
+      crossing_work_per_chunk;
+  result.max_stream_nonlinear_subdivision_work =
+      crossing_work_complete;
+  result.max_nonlinear_subdivision_depth = crossing_depth;
   result.max_host_bytes = max_host_bytes;
   result.max_device_bytes = max_device_bytes;
   result.max_startup_host_bytes = max_startup_host_bytes;

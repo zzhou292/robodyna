@@ -40,6 +40,14 @@ types = TYPES.read_text()
 candidate = CANDIDATE.read_text()
 rigid_sweep = RIGID_SWEEP.read_text()
 arena = ARENA.read_text()
+for token in (
+    "max_nonlinear_subdivision_work_per_pair",
+    "max_nonlinear_subdivision_work_per_chunk",
+    "max_stream_nonlinear_subdivision_work",
+    "max_nonlinear_subdivision_depth",
+    "motion_certified_nonlinear_separated",
+):
+    require(types, token, TYPES)
 transaction = TRANSACTION.read_text()
 task_mask = TASK_MASK.read_text()
 require(task_mask, "BuildFixedTriangleFeatureTaskMask(", TASK_MASK)
@@ -83,7 +91,12 @@ for token in (
     "FilterAcceptedFacetPairs(",
     "DescribeMotionFailure(",
     "BuildRigidMemberSweepBounds(",
-    "CertifyRigidFacetAffineMotion(",
+    "BuildRigidFacetQuadraticCoefficients(",
+    "CertifyQuadraticFacetSeparation(",
+    "nonlinear_subdivision_work_per_pair",
+    "nonlinear_subdivision_work_exhausted",
+    "offending_quadratic_lower",
+    "offending_swept_bounds",
 ):
     require(candidate if token != "FilterAcceptedFacetPairs(" else
             transaction, token,
@@ -99,6 +112,10 @@ for token in (
     "Every finite binary64 value is an integer multiple of 2^-1074",
     "CertifyRigidPointAffineMotion(",
     "CertifyRigidFacetAffineMotion(",
+    "BuildRigidFacetQuadraticCoefficients(",
+    "CertifyQuadraticFacetSeparation(",
+    "ExactCoefficientBounds(",
+    "SubdivideSeparation(",
     "represented_q[component]",
     "std::nextafter(",
     "R::RotationLimit",
@@ -251,7 +268,7 @@ for token in (
     "ExtendedPrismCertificateEntry",
     "vertex_edge_axis_separated) == 112",
     "vertex_vertex_axis_separated) == 120",
-    "sizeof(c::SelfContactCandidatePolicySummary) == 128",
+    "sizeof(c::SelfContactCandidatePolicySummary) == 176",
 ):
     require(VALUE_TEST.read_text(), token, VALUE_TEST)
 require(candidate, "sct::CertifiedLinearFacetPrismSeparation(", CANDIDATE)
@@ -286,11 +303,11 @@ for token in (
     "LocallyExcluded(",
     "crossing_pair_count",
     "RepresentedIntervalReason::UnsupportedMotion",
-    "Rigid-arc swept facet boxes overlap; exact arc crossing is unresolved",
+    "Quadratic subdivision did not certify rigid-arc separation",
 ):
     require(candidate, token, CANDIDATE)
 if candidate.index("state.candidate_discovery.DiscoverMasked") > candidate.index(
-        "Rigid-arc swept facet boxes overlap; exact arc crossing is unresolved"):
+        "Quadratic subdivision did not certify rigid-arc separation"):
     raise RuntimeError(
         f"{CANDIDATE}: unsupported motion precedes exact local geometry")
 
@@ -501,6 +518,9 @@ for token in (
     "UnsupportedRotationAndNonfiniteInputsLeaveOutputUnchanged",
     "MotionCertificateIsPartOfPreparedOwnerIdentity",
     "ExactRepresentedAffineCertificateComposesWeightedCurvature",
+    "DyadicQuadraticSubdivisionIsConservativeBoundedAndSymmetric",
+    "PotentialNonlinearContactNeverCertifiesSeparated",
+    "SmallDyadicOracleNeverFindsContactBehindSeparation",
     "CertifyRigidPointAffineMotion(",
     "CertifyRigidFacetAffineMotion(",
 ):
@@ -542,6 +562,7 @@ for token in (
     "ActualMergedPartAndPlainBodiesUseMergedWrenchesBeforeInverseResponse",
     "CertifiedRigidSweepsSeparateDistantBodiesButNotOverlappingArcs",
     "ExactAffineMixedCertificateAndDecisionAreRepeatable",
+    "NonlinearSubdivisionDecisionIsRepeatableAndFailClosed",
     "ExactLocalIntersectionPrecedesOnlyUnsupportedMotion",
     "ContactConstraintLayout::SameMergedParts",
     "ContactConstraintLayout::MergedPartAndPlain",

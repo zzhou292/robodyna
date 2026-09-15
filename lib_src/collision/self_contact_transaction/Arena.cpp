@@ -98,6 +98,8 @@ bool MakeLayout(std::size_t nodes, std::size_t surface_parents,
           parents, next.parent_motion) ||
       !builder.Append<MotionSupport>(
           facets, next.facet_motion) ||
+      !builder.Append<FacetQuadraticCoefficients>(
+          facets, next.facet_quadratic) ||
       !builder.Append<std::uint32_t>(facets, next.triangle_order) ||
       !builder.Append<std::uint32_t>(
           identity_references, next.vertex_identity_order) ||
@@ -127,6 +129,8 @@ bool MakeLayout(std::size_t nodes, std::size_t surface_parents,
           pair_chunk_capacity, next.chunk_raw_canonical_pairs) ||
       !builder.Append<PairMotionAction>(
           pair_chunk_capacity, next.chunk_motion_actions) ||
+      !builder.Append<NonlinearSeparationResult>(
+          pair_chunk_capacity, next.chunk_nonlinear_results) ||
       !builder.Append<RepresentedIntervalResult>(
           pair_chunk_capacity, next.chunk_crossings) ||
       !builder.Append<SelfContactCandidatePolicyOutcome>(
@@ -175,6 +179,8 @@ Buffers Bind(void* base, const Layout& layout) noexcept {
       ArenaPointer<FixedContactFacet>(base, layout.facet_descriptors),
       ArenaPointer<MotionSupport>(base, layout.parent_motion),
       ArenaPointer<MotionSupport>(base, layout.facet_motion),
+      ArenaPointer<FacetQuadraticCoefficients>(
+          base, layout.facet_quadratic),
       ArenaPointer<std::uint32_t>(base, layout.triangle_order),
       ArenaPointer<std::uint32_t>(base, layout.vertex_identity_order),
       ArenaPointer<std::uint32_t>(base, layout.edge_identity_order),
@@ -196,6 +202,8 @@ Buffers Bind(void* base, const Layout& layout) noexcept {
           base, layout.chunk_raw_canonical_pairs),
       ArenaPointer<PairMotionAction>(
           base, layout.chunk_motion_actions),
+      ArenaPointer<NonlinearSeparationResult>(
+          base, layout.chunk_nonlinear_results),
       ArenaPointer<RepresentedIntervalResult>(
           base, layout.chunk_crossings),
       ArenaPointer<SelfContactCandidatePolicyOutcome>(

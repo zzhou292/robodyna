@@ -61,6 +61,28 @@ c::WeightedSurfacePoint Point(
   return point;
 }
 
+c::CurrentFixedTriangle TriangleAt(c::Vec3 center) {
+  c::CurrentFixedTriangle triangle;
+  triangle.vertices[0] = {
+      center.x - .02, center.y - .01, center.z};
+  triangle.vertices[1] = {
+      center.x + .02, center.y - .01, center.z};
+  triangle.vertices[2] = {
+      center.x, center.y + .02, center.z};
+  return triangle;
+}
+
+sct::FacetQuadraticCoefficients Coefficients(c::Vec3 q) {
+  sct::FacetQuadraticCoefficients result;
+  result.complete = true;
+  for (unsigned vertex = 0; vertex < 3; ++vertex) {
+    result.q[vertex][0] = {q.x, q.x};
+    result.q[vertex][1] = {q.y, q.y};
+    result.q[vertex][2] = {q.z, q.z};
+  }
+  return result;
+}
+
 double Component(c::Vec3 value, unsigned component) {
   return component == 0 ? value.x :
       (component == 1 ? value.y : value.z);
@@ -304,6 +326,98 @@ TEST(SelfContactRigidSweepBounds,
       node_groups, &accepted_group, &prepared_group, 1,
       Trajectory, .01, &affine), sct::RigidMemberSweepStatus::Ok);
   EXPECT_FALSE(affine);
+  sct::FacetQuadraticCoefficients exact_coefficients;
+  ASSERT_EQ(sct::BuildRigidFacetQuadraticCoefficients(
+      facet, View(accepted_values, 4), View(prepared_values, 4),
+      node_groups, &accepted_group, &prepared_group, 1,
+      Trajectory, .01, &exact_coefficients, &affine),
+      sct::RigidMemberSweepStatus::Ok);
+  EXPECT_EQ(exact_coefficients.q[2][0].lower, 0);
+  EXPECT_EQ(exact_coefficients.q[2][0].upper, 0);
+  EXPECT_EQ(exact_coefficients.q[2][1].lower, -1);
+  EXPECT_EQ(exact_coefficients.q[2][1].upper, -1);
+  EXPECT_EQ(exact_coefficients.q[2][2].lower, 0);
+  EXPECT_EQ(exact_coefficients.q[2][2].upper, 0);
+}
+
+TEST(SelfContactRigidSweepBounds,
+     DyadicQuadraticSubdivisionIsConservativeBoundedAndSymmetric) {
+  constexpr double Thickness = .01;
+  const auto first_accepted = TriangleAt({-1, 0, 0});
+  const auto first_prepared = TriangleAt({1, 0, 0});
+  const auto second_accepted = TriangleAt({1, 0, 0});
+  const auto second_prepared = TriangleAt({-1, 0, 0});
+  const auto first_q = Coefficients({0, -8, 0});
+  const auto second_q = Coefficients({0, 8, 0});
+  const auto separated = sct::CertifyQuadraticFacetSeparation(
+      first_accepted, first_prepared, first_q, Thickness,
+      second_accepted, second_prepared, second_q, Thickness,
+      1, 4095, 20);
+  EXPECT_EQ(separated.status,
+            sct::NonlinearSeparationStatus::CertifiedSeparated);
+  EXPECT_GT(separated.work, 1u);
+
+  const auto permuted = sct::CertifyQuadraticFacetSeparation(
+      second_accepted, second_prepared, second_q, Thickness,
+      first_accepted, first_prepared, first_q, Thickness,
+      1, 4095, 20);
+  EXPECT_EQ(permuted.status, separated.status);
+  EXPECT_EQ(permuted.work, separated.work);
+  EXPECT_EQ(permuted.deepest, separated.deepest);
+
+  const auto work_exhausted = sct::CertifyQuadraticFacetSeparation(
+      first_accepted, first_prepared, first_q, Thickness,
+      second_accepted, second_prepared, second_q, Thickness,
+      1, 1, 20);
+  EXPECT_EQ(work_exhausted.status,
+            sct::NonlinearSeparationStatus::WorkExhausted);
+  EXPECT_EQ(work_exhausted.work, 1u);
+
+  const auto depth_exhausted = sct::CertifyQuadraticFacetSeparation(
+      first_accepted, first_prepared, first_q, Thickness,
+      second_accepted, second_prepared, second_q, Thickness,
+      1, 4095, 0);
+  EXPECT_EQ(depth_exhausted.status,
+            sct::NonlinearSeparationStatus::DepthExhausted);
+  EXPECT_EQ(depth_exhausted.deepest, 0u);
+}
+
+TEST(SelfContactRigidSweepBounds,
+     PotentialNonlinearContactNeverCertifiesSeparated) {
+  constexpr double Thickness = .01;
+  const auto fixed = TriangleAt({0, 0, 0});
+  const auto moving = TriangleAt({0, 0, 1});
+  // z(u)=1-.5*u*(1-u)*8 touches z=0 at u=.5.
+  const auto result = sct::CertifyQuadraticFacetSeparation(
+      fixed, fixed, Coefficients({}), Thickness,
+      moving, moving, Coefficients({0, 0, 8}), Thickness,
+      1, 4095, 20);
+  EXPECT_NE(result.status,
+            sct::NonlinearSeparationStatus::CertifiedSeparated);
+}
+
+TEST(SelfContactRigidSweepBounds,
+     SmallDyadicOracleNeverFindsContactBehindSeparation) {
+  constexpr double Thickness = .03125;
+  const auto fixed = TriangleAt({0, 0, 0});
+  for (int endpoint = 1; endpoint <= 4; ++endpoint)
+    for (int q = -16; q <= 16; ++q) {
+      const auto moving = TriangleAt(
+          {0, 0, static_cast<double>(endpoint)});
+      const auto result = sct::CertifyQuadraticFacetSeparation(
+          fixed, fixed, Coefficients({}), Thickness,
+          moving, moving,
+          Coefficients({0, 0, static_cast<double>(q)}),
+          Thickness, 1, 4095, 20);
+      if (result.status !=
+          sct::NonlinearSeparationStatus::CertifiedSeparated)
+        continue;
+      for (unsigned sample = 0; sample <= 1024; ++sample) {
+        const double u = static_cast<double>(sample) / 1024;
+        const double z = endpoint - .5 * u * (1 - u) * q;
+        EXPECT_GT(std::fabs(z), 2 * Thickness);
+      }
+    }
 }
 
 }  // namespace

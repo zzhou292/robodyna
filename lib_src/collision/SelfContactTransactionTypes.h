@@ -75,6 +75,10 @@ struct SelfContactTransactionReport {
   // Populated for an exact facet-pair motion failure.  Partial/mixed support
   // can name up to the four actual groups present in one shell-parent map.
   SelfContactFacetMotionIdentity offending_motion[2];
+  Vec3 offending_quadratic_lower[2][3];
+  Vec3 offending_quadratic_upper[2][3];
+  SelfContactSweptParentBounds offending_swept_bounds[2];
+  double offending_half_thickness_m[2]{};
   double offending_feature_distance_m = 0;
   double offending_edge_parameters[2] = {0, 0};
   SelfContactForceStatus force_status = SelfContactForceStatus::Ok;
@@ -93,6 +97,10 @@ struct SelfContactTransactionReport {
       RepresentedIntervalStatus::Ok;
   RepresentedIntervalReason crossing_reason =
       RepresentedIntervalReason::None;
+  std::size_t nonlinear_subdivision_work = 0;
+  unsigned nonlinear_subdivision_depth = 0;
+  bool nonlinear_subdivision_work_exhausted = false;
+  bool nonlinear_subdivision_depth_exhausted = false;
   tl::fea::ShellPublicationStatus publication_status =
       tl::fea::ShellPublicationStatus::Success;
   tl::fea::NodalStatus owner_status = tl::fea::NodalStatus::Ok;
@@ -141,6 +149,10 @@ struct SelfContactTransactionLimits {
   // addressable per-pair publication.
   std::size_t max_policy_outcomes = 4096;
   std::size_t max_stream_crossing_work = 1u << 20;
+  std::size_t max_nonlinear_subdivision_work_per_pair = 4095;
+  std::size_t max_nonlinear_subdivision_work_per_chunk = 1u << 20;
+  std::size_t max_stream_nonlinear_subdivision_work = 1u << 24;
+  unsigned max_nonlinear_subdivision_depth = 20;
   std::size_t max_host_bytes = 512u << 20;
   std::size_t max_device_bytes = 64u << 20;
   std::size_t max_startup_host_bytes = 1u << 30;
@@ -206,6 +218,7 @@ struct SelfContactTransactionForecast {
   std::size_t node_rigid_group_capacity = 0;
   std::size_t parent_motion_capacity = 0;
   std::size_t facet_motion_capacity = 0;
+  std::size_t facet_quadratic_capacity = 0;
   std::size_t swept_parent_bound_capacity = 0;
   std::size_t swept_facet_bound_capacity = 0;
   std::size_t candidate_crossing_capacity = 0;
@@ -214,6 +227,10 @@ struct SelfContactTransactionForecast {
   std::size_t policy_outcome_capacity = 0;
   std::size_t policy_chunk_capacity = 0;
   std::size_t complete_crossing_work_capacity = 0;
+  std::size_t nonlinear_subdivision_work_per_pair = 0;
+  std::size_t nonlinear_subdivision_work_per_chunk = 0;
+  std::size_t complete_nonlinear_subdivision_work_capacity = 0;
+  unsigned nonlinear_subdivision_depth = 0;
   std::size_t broadphase_pair_readback_bytes = 0;
   std::size_t streaming_cursor_bytes = 0;
   std::size_t streaming_heap_bytes = 0;
@@ -286,6 +303,12 @@ struct SelfContactCandidatePolicySummary {
   // Appended disjoint refinements preserve every original member offset.
   std::size_t vertex_edge_axis_separated = 0;
   std::size_t vertex_vertex_axis_separated = 0;
+  std::size_t motion_certified_nonlinear_separated = 0;
+  std::size_t nonlinear_subdivision_pairs = 0;
+  std::size_t nonlinear_subdivision_work = 0;
+  std::size_t nonlinear_subdivision_unresolved = 0;
+  std::size_t nonlinear_subdivision_work_exhausted = 0;
+  std::size_t nonlinear_subdivision_depth_exhausted = 0;
 };
 
 class SelfContactTransaction;

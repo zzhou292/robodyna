@@ -44,6 +44,33 @@ struct MotionSupport {
   bool certified_affine = false;
 };
 
+struct DirectedInterval {
+  double lower = 0;
+  double upper = 0;
+};
+
+// Exact represented dyadic q, rounded once to an outward binary64 interval
+// for each vertex coordinate. Ordinary contributors add exact zero.
+struct FacetQuadraticCoefficients {
+  DirectedInterval q[3][3];
+  bool complete = false;
+};
+
+enum class NonlinearSeparationStatus : std::uint8_t {
+  CertifiedSeparated,
+  PotentialContact,
+  WorkExhausted,
+  DepthExhausted,
+  InvalidInput,
+};
+
+struct NonlinearSeparationResult {
+  NonlinearSeparationStatus status =
+      NonlinearSeparationStatus::InvalidInput;
+  std::size_t work = 0;
+  unsigned deepest = 0;
+};
+
 enum class PairMotionAction : std::uint8_t {
   LinearNodalV1,
   CertifiedLinearSeparation,
@@ -90,6 +117,25 @@ RigidMemberSweepStatus CertifyRigidFacetAffineMotion(
     std::size_t group_count,
     tl::fea::NodalRigidMemberTrajectory trajectory,
     double duration, bool* affine) noexcept;
+
+RigidMemberSweepStatus BuildRigidFacetQuadraticCoefficients(
+    const FixedContactFacet&, VectorView accepted, VectorView prepared,
+    const std::uint32_t* node_rigid_groups,
+    const tl::fea::NodalRigidGroupSnapshot* accepted_groups,
+    const tl::fea::NodalRigidGroupSnapshot* prepared_groups,
+    std::size_t group_count,
+    tl::fea::NodalRigidMemberTrajectory trajectory,
+    double duration, FacetQuadraticCoefficients*, bool* affine) noexcept;
+
+NonlinearSeparationResult CertifyQuadraticFacetSeparation(
+    const CurrentFixedTriangle& first_accepted,
+    const CurrentFixedTriangle& first_prepared,
+    const FacetQuadraticCoefficients&, double first_thickness,
+    const CurrentFixedTriangle& second_accepted,
+    const CurrentFixedTriangle& second_prepared,
+    const FacetQuadraticCoefficients&, double second_thickness,
+    double duration, std::size_t max_work,
+    unsigned max_depth) noexcept;
 
 struct FacetPairCursor {
   std::uint32_t first_begin = 0;
@@ -138,6 +184,7 @@ struct Layout {
   tl::util::ArenaRegion facet_descriptors;
   tl::util::ArenaRegion parent_motion;
   tl::util::ArenaRegion facet_motion;
+  tl::util::ArenaRegion facet_quadratic;
   tl::util::ArenaRegion triangle_order;
   tl::util::ArenaRegion vertex_identity_order;
   tl::util::ArenaRegion edge_identity_order;
@@ -153,6 +200,7 @@ struct Layout {
   tl::util::ArenaRegion chunk_canonical_pairs;
   tl::util::ArenaRegion chunk_raw_canonical_pairs;
   tl::util::ArenaRegion chunk_motion_actions;
+  tl::util::ArenaRegion chunk_nonlinear_results;
   tl::util::ArenaRegion chunk_crossings;
   tl::util::ArenaRegion chunk_validated_outcomes;
   tl::util::ArenaRegion chunk_events;
@@ -181,6 +229,7 @@ struct Buffers {
   FixedContactFacet* facet_descriptors = nullptr;
   MotionSupport* parent_motion = nullptr;
   MotionSupport* facet_motion = nullptr;
+  FacetQuadraticCoefficients* facet_quadratic = nullptr;
   std::uint32_t* triangle_order = nullptr;
   std::uint32_t* vertex_identity_order = nullptr;
   std::uint32_t* edge_identity_order = nullptr;
@@ -196,6 +245,7 @@ struct Buffers {
   RepresentedIntervalPairKey* chunk_canonical_pairs = nullptr;
   RepresentedIntervalPairKey* chunk_raw_canonical_pairs = nullptr;
   PairMotionAction* chunk_motion_actions = nullptr;
+  NonlinearSeparationResult* chunk_nonlinear_results = nullptr;
   RepresentedIntervalResult* chunk_crossings = nullptr;
   SelfContactCandidatePolicyOutcome* chunk_validated_outcomes = nullptr;
   SelfContactForceEvent* chunk_events = nullptr;

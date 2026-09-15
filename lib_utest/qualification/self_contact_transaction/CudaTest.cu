@@ -727,6 +727,54 @@ TEST(SelfContactTransactionCuda,
 }
 
 TEST(SelfContactTransactionCuda,
+     NonlinearSubdivisionDecisionIsRepeatableAndFailClosed) {
+  const auto triangle = [](double x, double y) {
+    c::CurrentFixedTriangle value;
+    value.vertices[0] = {x - .02, y - .01, 0};
+    value.vertices[1] = {x + .02, y - .01, 0};
+    value.vertices[2] = {x, y + .02, 0};
+    return value;
+  };
+  const auto coefficients = [](double qy) {
+    sct::FacetQuadraticCoefficients value;
+    value.complete = true;
+    for (unsigned vertex = 0; vertex < 3; ++vertex)
+      value.q[vertex][1] = {qy, qy};
+    return value;
+  };
+  const auto first_accepted = triangle(-1, 0);
+  const auto first_prepared = triangle(1, 0);
+  const auto second_accepted = triangle(1, 0);
+  const auto second_prepared = triangle(-1, 0);
+  sct::NonlinearSeparationResult reference;
+  for (unsigned repeat = 0; repeat < 64; ++repeat) {
+    const auto result = sct::CertifyQuadraticFacetSeparation(
+        first_accepted, first_prepared, coefficients(-8), .01,
+        second_accepted, second_prepared, coefficients(8), .01,
+        1, 4095, 20);
+    EXPECT_EQ(result.status,
+              sct::NonlinearSeparationStatus::CertifiedSeparated);
+    if (!repeat) reference = result;
+    EXPECT_EQ(result.status, reference.status);
+    EXPECT_EQ(result.work, reference.work);
+    EXPECT_EQ(result.deepest, reference.deepest);
+  }
+
+  const auto fixed = triangle(0, 0);
+  const auto moving = triangle(0, 0);
+  auto contact_q = coefficients(0);
+  for (unsigned vertex = 0; vertex < 3; ++vertex)
+    contact_q.q[vertex][2] = {8, 8};
+  auto elevated = moving;
+  for (auto& vertex : elevated.vertices) vertex.z = 1;
+  EXPECT_NE(sct::CertifyQuadraticFacetSeparation(
+                fixed, fixed, coefficients(0), .01,
+                elevated, elevated, contact_q, .01,
+                1, 4095, 20).status,
+            sct::NonlinearSeparationStatus::CertifiedSeparated);
+}
+
+TEST(SelfContactTransactionCuda,
      ExactLocalIntersectionPrecedesOnlyUnsupportedMotion) {
   const c::RepresentedIntervalPairKey pair{{
       {17, 10, 0, 0}, {17, 20, 0, 0}}};
@@ -785,6 +833,15 @@ TEST(SelfContactTransactionCuda,
       fixture.config, fixture.uses, fixture.rig.fixture.Identity(),
       limits);
   ASSERT_TRUE(Good(exact.report));
+  EXPECT_EQ(exact.forecast.nonlinear_subdivision_work_per_pair,
+            limits.max_nonlinear_subdivision_work_per_pair);
+  EXPECT_EQ(exact.forecast.nonlinear_subdivision_work_per_chunk,
+            limits.max_nonlinear_subdivision_work_per_chunk);
+  EXPECT_EQ(
+      exact.forecast.complete_nonlinear_subdivision_work_capacity,
+      limits.max_stream_nonlinear_subdivision_work);
+  EXPECT_EQ(exact.forecast.nonlinear_subdivision_depth,
+            limits.max_nonlinear_subdivision_depth);
   EXPECT_EQ(exact.forecast.shared_backing_discount_bytes,
             exact.forecast.broadphase.retained_source_bytes +
                 exact.forecast.force.retained_active_use_bytes);
