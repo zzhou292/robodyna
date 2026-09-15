@@ -124,6 +124,8 @@ struct RepresentedIntervalReport {
   const char* message = "OK";
 };
 
+inline constexpr unsigned RepresentedIntervalMaximumWorkerCount = 8;
+
 struct RepresentedIntervalLimits {
   std::size_t max_paths = 2048;
   std::size_t max_input_pairs = 4096;
@@ -132,6 +134,9 @@ struct RepresentedIntervalLimits {
   std::size_t max_total_work = 1u << 20;
   unsigned max_depth = 20;
   std::size_t max_host_bytes = 64u << 20;
+  // Total persistent startup worker threads. The caller validates, stages and
+  // canonically reduces pair results; it is not counted as a worker.
+  unsigned worker_count = 1;
 };
 
 struct RepresentedIntervalForecast {
@@ -139,14 +144,25 @@ struct RepresentedIntervalForecast {
   std::size_t pair_capacity = 0;
   std::size_t result_capacity = 0;
   std::size_t vertex_ledger_capacity = 0;
+  // Per-worker capacity. dfs_frame_bytes sums this arena over all workers.
   std::size_t dfs_frame_capacity = 0;
   std::size_t path_index_bytes = 0;
   std::size_t pair_bytes = 0;
   std::size_t result_bytes = 0;
   std::size_t vertex_ledger_bytes = 0;
   std::size_t dfs_frame_bytes = 0;
+  // Sum of one fixed ExactScratch object per worker.
   std::size_t exact_scratch_bytes = 0;
   std::size_t owned_host_bytes = 0;
+  // Appended worker diagnostics preserve the original forecast prefix.
+  std::size_t pair_status_capacity = 0;
+  std::size_t pair_status_bytes = 0;
+  unsigned worker_count = 0;
+  std::size_t worker_metadata_bytes = 0;
+  // Includes every explicitly mapped worker stack and its guard page.
+  std::size_t worker_stack_bytes = 0;
+  // Workers, exact scratch and stacks persist after Initialize.
+  std::size_t startup_host_bytes = 0;
 };
 
 struct RepresentedIntervalPreflight {

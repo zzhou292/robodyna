@@ -2,16 +2,24 @@
 #include "RepresentedIntervalCrossing.h"
 
 #include <algorithm>
+#include <atomic>
 #include <boost/multiprecision/cpp_int.hpp>
+#include <cerrno>
 #include <cstring>
 #include <limits>
 #include <new>
+#include <pthread.h>
+#include <semaphore.h>
+#include <sys/mman.h>
 #include <tuple>
+#include <unistd.h>
 #include <utility>
 #include <vector>
 
 namespace tlfea::contact {
 namespace {
+
+constexpr std::size_t kWorkerStackBytes = 2u << 20;
 
 template <class T>
 int ScalarCompare(const T& a, const T& b) noexcept {
@@ -108,6 +116,21 @@ bool RangeDisjoint(const void* a, std::size_t a_bytes, const void* b,
   if (aa > UINTPTR_MAX - a_bytes || bb > UINTPTR_MAX - b_bytes)
     return false;
   return aa + a_bytes <= bb || bb + b_bytes <= aa;
+}
+
+bool Wait(sem_t* semaphore) noexcept {
+  if (!semaphore)
+    return false;
+  while (sem_wait(semaphore) != 0) {
+    if (errno != EINTR)
+      return false;
+  }
+  return true;
+}
+
+std::size_t PageBytes() noexcept {
+  const long value = sysconf(_SC_PAGESIZE);
+  return value > 0 ? static_cast<std::size_t>(value) : 0;
 }
 
 struct CanonicalPair {
@@ -553,6 +576,54 @@ int ReasonPriority(RepresentedIntervalReason reason) noexcept {
   }
 }
 
+void CopyKey(const FacetVertexKey& source,
+             FacetVertexKey* target) noexcept {
+  target->source_instance_id = source.source_instance_id;
+  target->first = source.first;
+  target->second = source.second;
+  target->kind = source.kind;
+  target->numerator = source.numerator;
+  target->denominator = source.denominator;
+  target->level = source.level;
+  target->grid_i = source.grid_i;
+  target->grid_j = source.grid_j;
+}
+
+void CopyKey(const FacetEdgeKey& source,
+             FacetEdgeKey* target) noexcept {
+  CopyKey(source.endpoints[0], &target->endpoints[0]);
+  CopyKey(source.endpoints[1], &target->endpoints[1]);
+  target->parent_eid = source.parent_eid;
+  target->parent_boundary = source.parent_boundary;
+}
+
+void CopyKey(const RepresentedTrianglePathKey& source,
+             RepresentedTrianglePathKey* target) noexcept {
+  target->source_instance_id = source.source_instance_id;
+  target->parent_eid = source.parent_eid;
+  target->level = source.level;
+  target->local_facet = source.local_facet;
+}
+
+void StoreResult(const RepresentedIntervalResult& source,
+                 RepresentedIntervalResult* target) noexcept {
+  std::fill_n(reinterpret_cast<unsigned char*>(target), sizeof(*target),
+              static_cast<unsigned char>(0));
+  CopyKey(source.key.paths[0], &target->key.paths[0]);
+  CopyKey(source.key.paths[1], &target->key.paths[1]);
+  target->feature.kind = source.feature.kind;
+  CopyKey(source.feature.vertex, &target->feature.vertex);
+  CopyKey(source.feature.face, &target->feature.face);
+  CopyKey(source.feature.edges[0], &target->feature.edges[0]);
+  CopyKey(source.feature.edges[1], &target->feature.edges[1]);
+  target->classification = source.classification;
+  target->reason = source.reason;
+  target->geometry = source.geometry;
+  target->witness_time_numerator = source.witness_time_numerator;
+  target->witness_time_depth = source.witness_time_depth;
+  target->work = source.work;
+}
+
 RepresentedIntervalResult Unresolved(const RepresentedIntervalPairKey& key,
                                      RepresentedIntervalReason reason,
                                      std::size_t work) noexcept {
@@ -638,19 +709,18 @@ void RaiseReason(RepresentedIntervalReason candidate,
 RepresentedIntervalResult CertifyPair(
     const RepresentedTrianglePath& a, const RepresentedTrianglePath& b,
     RepresentedIntervalLimits limits, RepresentedIntervalPairKey key,
-    std::vector<Cell>* dfs, ExactScratch* scratch) noexcept {
+    Cell* dfs, std::size_t dfs_capacity, ExactScratch* scratch) noexcept {
   if (a.motion != RepresentedMotion::LinearNodalV1 ||
       b.motion != RepresentedMotion::LinearNodalV1)
     return Unresolved(key, RepresentedIntervalReason::UnsupportedMotion, 0);
   std::size_t work = 0;
+  std::size_t dfs_size = 0;
   bool all_leaves_separated = true;
   RepresentedIntervalReason unresolved = RepresentedIntervalReason::None;
-  dfs->clear();
-  dfs->push_back({});
+  dfs[dfs_size++] = {};
   try {
     if (StaticPath(a) && StaticPath(b)) {
       auto evaluation = EvaluateCell(a, b, key, {}, scratch);
-      dfs->clear();
       if (evaluation.disposition == CellDisposition::Crossing) {
         evaluation.crossing.work = 1;
         return evaluation.crossing;
@@ -665,19 +735,17 @@ RepresentedIntervalResult CertifyPair(
       result.work = 1;
       return result;
     }
-    while (!dfs->empty()) {
+    while (dfs_size) {
       if (work >= limits.max_work_per_pair) {
         all_leaves_separated = false;
         RaiseReason(RepresentedIntervalReason::WorkExhausted, &unresolved);
         break;
       }
-      const Cell cell = dfs->back();
-      dfs->pop_back();
+      const Cell cell = dfs[--dfs_size];
       ++work;
       auto evaluation = EvaluateCell(a, b, key, cell, scratch);
       if (evaluation.disposition == CellDisposition::Crossing) {
         evaluation.crossing.work = work;
-        dfs->clear();
         return evaluation.crossing;
       }
       if (evaluation.disposition == CellDisposition::Separated)
@@ -696,21 +764,19 @@ RepresentedIntervalResult CertifyPair(
                        cell.depth + 1};
       const Cell left{cell.lower * 2, cell.lower + cell.upper,
                       cell.depth + 1};
-      if (dfs->size() + 2 > dfs->capacity()) {
+      if (dfs_size + 2 > dfs_capacity) {
         all_leaves_separated = false;
         RaiseReason(RepresentedIntervalReason::ExactArithmeticRange,
                     &unresolved);
         break;
       }
-      dfs->push_back(right);
-      dfs->push_back(left);
+      dfs[dfs_size++] = right;
+      dfs[dfs_size++] = left;
     }
   } catch (...) {
-    dfs->clear();
     return Unresolved(key, RepresentedIntervalReason::ExactArithmeticRange,
                       work);
   }
-  dfs->clear();
   if (all_leaves_separated) {
     RepresentedIntervalResult result;
     result.key = key;
@@ -830,8 +896,18 @@ const char* Message(RepresentedIntervalStatus status) noexcept {
   return "invalid status";
 }
 
-RepresentedIntervalReport Failure(RepresentedIntervalStatus status) noexcept {
+RepresentedIntervalReport FreshReport() noexcept {
   RepresentedIntervalReport result;
+  std::fill_n(reinterpret_cast<unsigned char*>(&result), sizeof(result),
+              static_cast<unsigned char>(0));
+  result.input_path = SIZE_MAX;
+  result.input_pair = SIZE_MAX;
+  result.message = Message(RepresentedIntervalStatus::Ok);
+  return result;
+}
+
+RepresentedIntervalReport Failure(RepresentedIntervalStatus status) noexcept {
+  RepresentedIntervalReport result = FreshReport();
   result.status = status;
   result.message = Message(status);
   return result;
@@ -840,17 +916,229 @@ RepresentedIntervalReport Failure(RepresentedIntervalStatus status) noexcept {
 }  // namespace
 
 struct RepresentedIntervalCrossing::Impl {
+  enum class Phase : unsigned {
+    Constructing,
+    Warm,
+    Running,
+    Failed,
+    Stopping,
+  };
+
+  struct PairStatus {
+    bool complete = false;
+  };
+
+  struct WorkerSlot {
+    Impl* owner = nullptr;
+    std::size_t index = 0;
+    pthread_t thread{};
+    void* stack_mapping = nullptr;
+    sem_t start{};
+    bool start_initialized = false;
+    bool started = false;
+    bool failed = false;
+  };
+
   explicit Impl(RepresentedIntervalLimits input) : limits(input) {}
+  ~Impl() { Shutdown(); }
+
   RepresentedIntervalLimits limits;
   RepresentedIntervalForecast forecast;
   std::vector<std::uint32_t> path_indices;
   std::vector<CanonicalPair> pairs;
   std::vector<VertexLedgerRow> vertex_ledger;
-  std::vector<Cell> dfs;
-  std::unique_ptr<ExactScratch> exact_scratch;
   std::vector<RepresentedIntervalResult> published;
   std::vector<RepresentedIntervalResult> staging;
+  std::unique_ptr<PairStatus[]> pair_status;
+  std::unique_ptr<WorkerSlot[]> workers;
+  std::unique_ptr<Cell[]> dfs_frames;
+  std::unique_ptr<ExactScratch[]> exact_scratch;
+  sem_t completed{};
+  bool completed_initialized = false;
+  std::size_t started_workers = 0;
+  std::atomic<std::size_t> next_pair{0};
+  std::atomic<bool> stop{false};
+  std::atomic<bool> pool_failed{false};
+  std::atomic<bool> busy{false};
+  std::atomic<Phase> phase{Phase::Constructing};
+  const RepresentedTrianglePath* job_paths = nullptr;
+  std::size_t job_pair_count = 0;
   bool complete = false;
+
+  bool WorkerStacksDisjoint(const void* input,
+                            std::size_t bytes) const noexcept {
+    if (!bytes)
+      return true;
+    if (!input || !workers)
+      return false;
+    const std::size_t page_bytes = PageBytes();
+    if (!page_bytes || kWorkerStackBytes > SIZE_MAX - page_bytes)
+      return false;
+    const std::size_t mapping_bytes = kWorkerStackBytes + page_bytes;
+    for (unsigned i = 0; i < limits.worker_count; ++i)
+      if (!workers[i].stack_mapping ||
+          !RangeDisjoint(input, bytes, workers[i].stack_mapping,
+                         mapping_bytes))
+        return false;
+    return true;
+  }
+
+  static void* WorkerEntry(void* opaque) noexcept {
+    auto* worker = static_cast<WorkerSlot*>(opaque);
+    if (!worker || !worker->owner)
+      return nullptr;
+    auto& owner = *worker->owner;
+    for (;;) {
+      if (!Wait(&worker->start)) {
+        worker->failed = true;
+        owner.pool_failed.store(true, std::memory_order_release);
+        owner.phase.store(Phase::Failed, std::memory_order_release);
+        return nullptr;
+      }
+      if (owner.stop.load(std::memory_order_acquire))
+        return nullptr;
+      worker->failed = false;
+      owner.EvaluateJobs(worker->index);
+      if (sem_post(&owner.completed) != 0) {
+        worker->failed = true;
+        owner.pool_failed.store(true, std::memory_order_release);
+        owner.phase.store(Phase::Failed, std::memory_order_release);
+        return nullptr;
+      }
+    }
+  }
+
+  void EvaluateJobs(std::size_t worker_index) noexcept {
+    Cell* dfs = dfs_frames.get() +
+        worker_index * forecast.dfs_frame_capacity;
+    ExactScratch* scratch = exact_scratch.get() + worker_index;
+    for (;;) {
+      const std::size_t pair_index =
+          next_pair.fetch_add(1, std::memory_order_relaxed);
+      if (pair_index >= job_pair_count)
+        return;
+      const auto& pair = pairs[pair_index];
+      const auto result = CertifyPair(
+          job_paths[pair.first], job_paths[pair.second], limits, pair.key,
+          dfs, forecast.dfs_frame_capacity, scratch);
+      StoreResult(result, &staging[pair_index]);
+      pair_status[pair_index].complete = true;
+    }
+  }
+
+  bool RunWorkers(const RepresentedTrianglePath* paths,
+                  std::size_t pair_count) noexcept {
+    Phase expected = Phase::Warm;
+    if (!phase.compare_exchange_strong(
+            expected, Phase::Running, std::memory_order_acq_rel))
+      return false;
+    job_paths = paths;
+    job_pair_count = pair_count;
+    next_pair.store(0, std::memory_order_relaxed);
+    pool_failed.store(false, std::memory_order_release);
+    std::size_t posted = 0;
+    for (; posted < started_workers; ++posted)
+      if (sem_post(&workers[posted].start) != 0)
+        break;
+    bool failed = posted != started_workers;
+    for (std::size_t i = 0; i < posted; ++i)
+      if (!Wait(&completed))
+        failed = true;
+    failed = failed || pool_failed.load(std::memory_order_acquire);
+    phase.store(failed ? Phase::Failed : Phase::Warm,
+                std::memory_order_release);
+    return !failed;
+  }
+
+  bool StartWorkers() noexcept {
+    const std::size_t page_bytes = PageBytes();
+    if (!page_bytes ||
+        kWorkerStackBytes < static_cast<std::size_t>(PTHREAD_STACK_MIN) ||
+        kWorkerStackBytes % page_bytes ||
+        kWorkerStackBytes > SIZE_MAX - page_bytes ||
+        sem_init(&completed, 0, 0) != 0)
+      return false;
+    completed_initialized = true;
+    const std::size_t mapping_bytes = kWorkerStackBytes + page_bytes;
+    for (unsigned i = 0; i < limits.worker_count; ++i) {
+      auto& worker = workers[i];
+      worker.owner = this;
+      worker.index = i;
+      if (sem_init(&worker.start, 0, 0) != 0)
+        return false;
+      worker.start_initialized = true;
+#ifdef MAP_STACK
+      constexpr int stack_flag = MAP_STACK;
+#else
+      constexpr int stack_flag = 0;
+#endif
+      worker.stack_mapping = mmap(
+          nullptr, mapping_bytes, PROT_READ | PROT_WRITE,
+          MAP_PRIVATE | MAP_ANONYMOUS | stack_flag, -1, 0);
+      if (worker.stack_mapping == MAP_FAILED) {
+        worker.stack_mapping = nullptr;
+        return false;
+      }
+      auto* stack = static_cast<unsigned char*>(worker.stack_mapping) +
+          page_bytes;
+      std::memset(stack, 0, kWorkerStackBytes);
+      if (mprotect(worker.stack_mapping, page_bytes, PROT_NONE) != 0)
+        return false;
+      pthread_attr_t attributes;
+      if (pthread_attr_init(&attributes) != 0)
+        return false;
+      const int guard_status =
+          pthread_attr_setguardsize(&attributes, 0);
+      const int stack_status = guard_status
+          ? guard_status
+          : pthread_attr_setstack(
+                &attributes, stack, kWorkerStackBytes);
+      const int create_status = stack_status
+          ? stack_status
+          : pthread_create(
+                &worker.thread, &attributes, &Impl::WorkerEntry, &worker);
+      pthread_attr_destroy(&attributes);
+      if (create_status != 0)
+        return false;
+      worker.started = true;
+      ++started_workers;
+    }
+    phase.store(Phase::Warm, std::memory_order_release);
+    // Exercise every thread, stack and semaphore before publication.
+    return RunWorkers(nullptr, 0);
+  }
+
+  void Shutdown() noexcept {
+    phase.store(Phase::Stopping, std::memory_order_release);
+    stop.store(true, std::memory_order_release);
+    if (workers) {
+      for (std::size_t i = 0; i < started_workers; ++i)
+        if (workers[i].started)
+          sem_post(&workers[i].start);
+      for (std::size_t i = 0; i < started_workers; ++i) {
+        if (workers[i].started)
+          pthread_join(workers[i].thread, nullptr);
+        workers[i].started = false;
+      }
+      const std::size_t page_bytes = PageBytes();
+      const std::size_t mapping_bytes =
+          page_bytes && kWorkerStackBytes <= SIZE_MAX - page_bytes
+              ? kWorkerStackBytes + page_bytes
+              : 0;
+      for (unsigned i = 0; i < limits.worker_count; ++i) {
+        if (workers[i].start_initialized)
+          sem_destroy(&workers[i].start);
+        workers[i].start_initialized = false;
+        if (workers[i].stack_mapping && mapping_bytes)
+          munmap(workers[i].stack_mapping, mapping_bytes);
+        workers[i].stack_mapping = nullptr;
+      }
+    }
+    started_workers = 0;
+    if (completed_initialized)
+      sem_destroy(&completed);
+    completed_initialized = false;
+  }
 };
 
 RepresentedIntervalCrossing::RepresentedIntervalCrossing() noexcept = default;
@@ -862,18 +1150,25 @@ RepresentedIntervalCrossing& RepresentedIntervalCrossing::operator=(
 
 RepresentedIntervalPreflight RepresentedIntervalCrossing::Preflight(
     RepresentedIntervalLimits limits) noexcept {
-  RepresentedIntervalPreflight result;
+  RepresentedIntervalPreflight result{};
+  result.report = FreshReport();
   if (!limits.max_paths || !limits.max_input_pairs || !limits.max_results ||
       !limits.max_work_per_pair || !limits.max_total_work ||
-      limits.max_depth > 52 || limits.max_paths > UINT32_MAX) {
+      limits.max_depth > 52 || limits.max_paths > UINT32_MAX ||
+      !limits.worker_count ||
+      limits.worker_count > RepresentedIntervalMaximumWorkerCount) {
     result.report = Failure(RepresentedIntervalStatus::InvalidInput);
     return result;
   }
   result.forecast.path_index_capacity = limits.max_paths;
   result.forecast.pair_capacity = limits.max_input_pairs;
   result.forecast.result_capacity = limits.max_results;
+  result.forecast.pair_status_capacity = limits.max_input_pairs;
+  result.forecast.worker_count = limits.worker_count;
   result.forecast.dfs_frame_capacity =
       static_cast<std::size_t>(limits.max_depth) + 1;
+  std::size_t all_dfs_frames = 0;
+  const std::size_t page_bytes = PageBytes();
   if (!MultiplySize(limits.max_paths, 3,
                     &result.forecast.vertex_ledger_capacity) ||
       !MultiplySize(limits.max_paths, sizeof(std::uint32_t),
@@ -886,17 +1181,35 @@ RepresentedIntervalPreflight RepresentedIntervalCrossing::Preflight(
       !MultiplySize(result.forecast.vertex_ledger_capacity,
                     sizeof(VertexLedgerRow),
                     &result.forecast.vertex_ledger_bytes) ||
-      !MultiplySize(result.forecast.dfs_frame_capacity, sizeof(Cell),
-                    &result.forecast.dfs_frame_bytes)) {
+      !MultiplySize(result.forecast.dfs_frame_capacity,
+                    limits.worker_count, &all_dfs_frames) ||
+      !MultiplySize(all_dfs_frames, sizeof(Cell),
+                    &result.forecast.dfs_frame_bytes) ||
+      !MultiplySize(limits.worker_count, sizeof(ExactScratch),
+                    &result.forecast.exact_scratch_bytes) ||
+      !MultiplySize(limits.max_input_pairs, sizeof(Impl::PairStatus),
+                    &result.forecast.pair_status_bytes) ||
+      !MultiplySize(limits.worker_count, sizeof(Impl::WorkerSlot),
+                    &result.forecast.worker_metadata_bytes) ||
+      !page_bytes ||
+      kWorkerStackBytes <
+          static_cast<std::size_t>(PTHREAD_STACK_MIN) ||
+      kWorkerStackBytes % page_bytes ||
+      kWorkerStackBytes > SIZE_MAX - page_bytes ||
+      !MultiplySize(limits.worker_count,
+                    kWorkerStackBytes + page_bytes,
+                    &result.forecast.worker_stack_bytes)) {
     result.report = Failure(RepresentedIntervalStatus::ResourceLimit);
     return result;
   }
-  result.forecast.exact_scratch_bytes = sizeof(ExactScratch);
   std::size_t total = sizeof(Impl);
   const std::size_t regions[]{
       result.forecast.path_index_bytes, result.forecast.pair_bytes,
       result.forecast.result_bytes, result.forecast.vertex_ledger_bytes,
-      result.forecast.dfs_frame_bytes, result.forecast.exact_scratch_bytes};
+      result.forecast.dfs_frame_bytes, result.forecast.exact_scratch_bytes,
+      result.forecast.pair_status_bytes,
+      result.forecast.worker_metadata_bytes,
+      result.forecast.worker_stack_bytes};
   for (const auto bytes : regions) {
     if (!AddSize(total, bytes, &total)) {
       result.report = Failure(RepresentedIntervalStatus::ResourceLimit);
@@ -908,6 +1221,7 @@ RepresentedIntervalPreflight RepresentedIntervalCrossing::Preflight(
     result.report = Failure(RepresentedIntervalStatus::ResourceLimit);
     return result;
   }
+  result.forecast.startup_host_bytes = total;
   return result;
 }
 
@@ -924,23 +1238,33 @@ RepresentedIntervalReport RepresentedIntervalCrossing::Initialize(
     next->path_indices.reserve(limits.max_paths);
     next->pairs.reserve(limits.max_input_pairs);
     next->vertex_ledger.reserve(plan.forecast.vertex_ledger_capacity);
-    next->dfs.reserve(plan.forecast.dfs_frame_capacity);
-    next->exact_scratch = std::make_unique<ExactScratch>();
     next->published.reserve(limits.max_results);
     next->staging.reserve(limits.max_results);
+    const std::size_t all_dfs_frames =
+        plan.forecast.dfs_frame_bytes / sizeof(Cell);
+    next->pair_status.reset(new (std::nothrow)
+        Impl::PairStatus[limits.max_input_pairs]);
+    next->workers.reset(new (std::nothrow)
+        Impl::WorkerSlot[limits.worker_count]);
+    next->dfs_frames.reset(new (std::nothrow) Cell[all_dfs_frames]);
+    next->exact_scratch.reset(new (std::nothrow)
+        ExactScratch[limits.worker_count]);
     if (next->path_indices.capacity() != limits.max_paths ||
         next->pairs.capacity() != limits.max_input_pairs ||
         next->vertex_ledger.capacity() !=
             plan.forecast.vertex_ledger_capacity ||
-        next->dfs.capacity() != plan.forecast.dfs_frame_capacity ||
         next->published.capacity() != limits.max_results ||
-        next->staging.capacity() != limits.max_results)
+        next->staging.capacity() != limits.max_results ||
+        !next->pair_status || !next->workers || !next->dfs_frames ||
+        !next->exact_scratch)
+      return Failure(RepresentedIntervalStatus::ResourceLimit);
+    if (!next->StartWorkers())
       return Failure(RepresentedIntervalStatus::ResourceLimit);
     impl_ = std::move(next);
   } catch (...) {
     return Failure(RepresentedIntervalStatus::ResourceLimit);
   }
-  return {};
+  return FreshReport();
 }
 
 RepresentedIntervalReport RepresentedIntervalCrossing::Certify(
@@ -949,9 +1273,28 @@ RepresentedIntervalReport RepresentedIntervalCrossing::Certify(
   if (!impl_)
     return Failure(RepresentedIntervalStatus::NotInitialized);
   auto& storage = *impl_;
-  RepresentedIntervalReport report;
+  RepresentedIntervalReport report = FreshReport();
   report.input_paths = path_count;
   report.input_pairs = pair_count;
+  bool expected_idle = false;
+  if (!storage.busy.compare_exchange_strong(
+          expected_idle, true, std::memory_order_acq_rel)) {
+    report.status = RepresentedIntervalStatus::InvalidInput;
+    report.message =
+        "represented interval crossing does not accept concurrent calls";
+    return report;
+  }
+  struct BusyRelease {
+    std::atomic<bool>* value;
+    ~BusyRelease() { value->store(false, std::memory_order_release); }
+  } busy_release{&storage.busy};
+  if (storage.phase.load(std::memory_order_acquire) !=
+      Impl::Phase::Warm) {
+    report.status = RepresentedIntervalStatus::ResourceLimit;
+    report.message =
+        "represented interval crossing worker pool is unavailable";
+    return report;
+  }
   if ((path_count && !paths) || (pair_count && !pairs) ||
       path_count > storage.limits.max_paths ||
       pair_count > storage.limits.max_input_pairs) {
@@ -968,7 +1311,14 @@ RepresentedIntervalReport RepresentedIntervalCrossing::Certify(
                                        std::size_t bytes) noexcept {
     if (!RangeDisjoint(data, bytes, &storage, sizeof(storage)) ||
         !RangeDisjoint(data, bytes, storage.exact_scratch.get(),
-                       sizeof(ExactScratch)))
+                       storage.forecast.exact_scratch_bytes) ||
+        !RangeDisjoint(data, bytes, storage.dfs_frames.get(),
+                       storage.forecast.dfs_frame_bytes) ||
+        !RangeDisjoint(data, bytes, storage.pair_status.get(),
+                       storage.forecast.pair_status_bytes) ||
+        !RangeDisjoint(data, bytes, storage.workers.get(),
+                       storage.forecast.worker_metadata_bytes) ||
+        !storage.WorkerStacksDisjoint(data, bytes))
       return false;
     struct Range {
       const void* data;
@@ -982,7 +1332,6 @@ RepresentedIntervalReport RepresentedIntervalCrossing::Certify(
          sizeof(CanonicalPair)},
         {storage.vertex_ledger.data(), storage.vertex_ledger.capacity(),
          sizeof(VertexLedgerRow)},
-        {storage.dfs.data(), storage.dfs.capacity(), sizeof(Cell)},
         {storage.published.data(), storage.published.capacity(),
          sizeof(RepresentedIntervalResult)},
         {storage.staging.data(), storage.staging.capacity(),
@@ -1085,33 +1434,50 @@ RepresentedIntervalReport RepresentedIntervalCrossing::Certify(
 
   storage.staging.clear();
   try {
-    for (const auto& pair : storage.pairs) {
-      auto result =
-          CertifyPair(paths[pair.first], paths[pair.second], storage.limits,
-                      pair.key, &storage.dfs, storage.exact_scratch.get());
-      if (result.work > storage.limits.max_total_work - report.work) {
-        report.status = RepresentedIntervalStatus::ResourceLimit;
-        report.input_pair = pair.input_pair;
-        report.message = Message(report.status);
-        storage.staging.clear();
-        return report;
-      }
-      report.work += result.work;
-      if (result.classification ==
-          RepresentedIntervalClassification::CertifiedSeparated)
-        ++report.certified_separated;
-      else if (result.classification ==
-               RepresentedIntervalClassification::CertifiedCrossingContact)
-        ++report.certified_crossing_contact;
-      else
-        ++report.unresolved;
-      storage.staging.push_back(result);
-    }
+    storage.staging.resize(storage.pairs.size());
   } catch (...) {
     report.status = RepresentedIntervalStatus::ResourceLimit;
     report.message = Message(report.status);
     storage.staging.clear();
     return report;
+  }
+  for (std::size_t pair = 0; pair < storage.pairs.size(); ++pair)
+    storage.pair_status[pair].complete = false;
+  if (!storage.RunWorkers(paths, storage.pairs.size())) {
+    report.status = RepresentedIntervalStatus::ResourceLimit;
+    report.message =
+        "represented interval crossing persistent worker execution failed";
+    storage.staging.clear();
+    return report;
+  }
+  for (std::size_t pair_index = 0;
+       pair_index < storage.pairs.size(); ++pair_index) {
+    const auto& pair = storage.pairs[pair_index];
+    if (!storage.pair_status[pair_index].complete) {
+      report.status = RepresentedIntervalStatus::ResourceLimit;
+      report.input_pair = pair.input_pair;
+      report.message =
+          "represented interval crossing worker result is incomplete";
+      storage.staging.clear();
+      return report;
+    }
+    const auto& result = storage.staging[pair_index];
+    if (result.work > storage.limits.max_total_work - report.work) {
+      report.status = RepresentedIntervalStatus::ResourceLimit;
+      report.input_pair = pair.input_pair;
+      report.message = Message(report.status);
+      storage.staging.clear();
+      return report;
+    }
+    report.work += result.work;
+    if (result.classification ==
+        RepresentedIntervalClassification::CertifiedSeparated)
+      ++report.certified_separated;
+    else if (result.classification ==
+             RepresentedIntervalClassification::CertifiedCrossingContact)
+      ++report.certified_crossing_contact;
+    else
+      ++report.unresolved;
   }
   storage.published.swap(storage.staging);
   storage.staging.clear();
@@ -1126,7 +1492,7 @@ RepresentedIntervalForecast RepresentedIntervalCrossing::forecast() const
 
 RepresentedIntervalResultView RepresentedIntervalCrossing::results() const
     noexcept {
-  if (!impl_)
+  if (!impl_ || impl_->busy.load(std::memory_order_acquire))
     return {};
   return {impl_->published.data(), impl_->published.size(), impl_->complete};
 }

@@ -27,7 +27,8 @@ SelfContactTransactionLimits SelfContactTransactionLimits::Vehicle(
     std::size_t max_host_bytes,
     std::size_t max_device_bytes,
     std::size_t max_startup_host_bytes,
-    unsigned discovery_worker_count) noexcept {
+    unsigned discovery_worker_count,
+    unsigned crossing_worker_count) noexcept {
   SelfContactTransactionLimits result;
   const auto invalid = [&]() noexcept {
     result.max_host_bytes = 0;
@@ -54,6 +55,9 @@ SelfContactTransactionLimits SelfContactTransactionLimits::Vehicle(
       !discovery_worker_count ||
       discovery_worker_count >
           FixedTriangleFeatureMaximumWorkerCount ||
+      !crossing_worker_count ||
+      crossing_worker_count >
+          RepresentedIntervalMaximumWorkerCount ||
       !Product(facet_pair_chunk, 2, &twice_chunk) ||
       !Product(facet_pair_chunk, 6, &six_chunk) ||
       !Product(facet_pair_chunk, 15, &fifteen_chunk))
@@ -83,7 +87,7 @@ SelfContactTransactionLimits SelfContactTransactionLimits::Vehicle(
   result.crossing = {
       twice_chunk, facet_pair_chunk, facet_pair_chunk,
       crossing_work_per_pair, crossing_work_per_chunk,
-      crossing_depth, max_host_bytes};
+      crossing_depth, max_host_bytes, crossing_worker_count};
   result.max_candidate_triangles = census.facets;
   result.max_candidate_pairs = facet_pair_capacity;
   result.max_facet_pair_chunk = facet_pair_chunk;

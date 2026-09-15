@@ -8,7 +8,7 @@ include("${TL_ROOT}/lib_src/collision/RepresentedIntervalCrossing.cmake")
 
 add_executable(represented_interval_crossing_host
   GeometryTest.cpp InvarianceTest.cpp FailureTest.cpp IdentityTest.cpp
-  DeepTest.cpp OracleTest.cpp Oracle.cpp)
+  DeepTest.cpp OracleTest.cpp ParallelTest.cpp Oracle.cpp)
 target_link_libraries(represented_interval_crossing_host
   PRIVATE tl_represented_interval_crossing GTest::gtest_main)
 target_compile_features(represented_interval_crossing_host PRIVATE cxx_std_17)

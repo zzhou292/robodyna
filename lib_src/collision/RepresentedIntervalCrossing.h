@@ -24,6 +24,10 @@ namespace tlfea::contact {
 // results() is borrowed: its view expires on the next successful Certify, move,
 // or destruction.  Every failed Certify preserves the prior view's address,
 // count, completeness and bytes.
+// Initialize creates and warms the configured bounded persistent worker pool.
+// Certify allocates no memory, creates no threads, and parallelizes only
+// independent pair certificates. The object is externally nonconcurrent;
+// overlapping calls fail closed and results() does not expose a live write.
 class RepresentedIntervalCrossing {
  public:
   RepresentedIntervalCrossing() noexcept;

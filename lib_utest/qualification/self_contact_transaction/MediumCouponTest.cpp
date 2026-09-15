@@ -277,6 +277,7 @@ struct GeometryMetrics {
   std::uint64_t elapsed_us = 0;
   std::uint64_t feature_digest = 1469598103934665603ull;
   std::uint64_t intersection_digest = 1469598103934665603ull;
+  std::uint64_t crossing_digest = 1469598103934665603ull;
 };
 
 enum class GeometryFilter {
@@ -385,6 +386,12 @@ GeometryMetrics RunGeometryPipeline(
     ASSERT_EQ(crossed.status, c::RepresentedIntervalStatus::Ok);
     metrics.crossing_pairs += crossed.input_pairs;
     metrics.crossing_work += crossed.work;
+    const auto crossings = crossing->results();
+    ASSERT_TRUE(crossings.complete);
+    ASSERT_EQ(crossings.count, count);
+    HashBytes(crossings.data,
+              crossings.count * sizeof(*crossings.data),
+              &metrics.crossing_digest);
   };
 
   std::size_t pending = 0;
@@ -493,7 +500,9 @@ void PrintGeometryMetrics(
             << " elapsed_us=" << metrics.elapsed_us
             << " feature_digest=" << metrics.feature_digest
             << " intersection_digest="
-            << metrics.intersection_digest << '\n';
+            << metrics.intersection_digest
+            << " crossing_digest="
+            << metrics.crossing_digest << '\n';
 }
 
 void ExpectSameGeometryObservations(
@@ -523,6 +532,7 @@ void ExpectSameGeometryObservations(
   EXPECT_EQ(actual.feature_digest, expected.feature_digest);
   EXPECT_EQ(actual.intersection_digest,
             expected.intersection_digest);
+  EXPECT_EQ(actual.crossing_digest, expected.crossing_digest);
 }
 
 struct FixedStorage {
@@ -737,9 +747,16 @@ TEST(SelfContactTransactionMediumCoupon,
   c::RepresentedIntervalCrossing crossing;
   ASSERT_EQ(crossing.Initialize(crossing_limits).status,
             c::RepresentedIntervalStatus::Ok);
+  auto parallel_crossing_limits = crossing_limits;
+  parallel_crossing_limits.worker_count = 4;
+  c::RepresentedIntervalCrossing parallel_crossing;
+  ASSERT_EQ(parallel_crossing.Initialize(
+                parallel_crossing_limits).status,
+            c::RepresentedIntervalStatus::Ok);
   EXPECT_LT(discovery.forecast().owned_host_bytes +
                 parallel_discovery.forecast().owned_host_bytes +
                 crossing.forecast().owned_host_bytes +
+                parallel_crossing.forecast().owned_host_bytes +
                 sizeof(c::CurrentFixedTriangle) * GeometryTriangleCount +
                 sizeof(c::FixedContactFacet) * GeometryTriangleCount +
                 sizeof(storage.discovery_pairs) + sizeof(storage.paths) +
@@ -953,6 +970,17 @@ TEST(SelfContactTransactionMediumCoupon,
   EXPECT_GT(parallel_local_mask.exact_discovery_tasks,
             15 * ChunkCapacity);
   ExpectSameGeometryObservations(local_mask, parallel_local_mask);
+
+  const auto parallel_crossing_local_mask = RunGeometryPipeline(
+      storage, GeometryFilter::VertexVertexAxes,
+      &parallel_discovery, &parallel_crossing, true);
+  PrintGeometryMetrics(
+      "geometry_local_mask_crossing_worker4",
+      parallel_crossing_local_mask);
+  EXPECT_GT(parallel_crossing_local_mask.crossing_work,
+            ChunkCapacity);
+  ExpectSameGeometryObservations(
+      parallel_local_mask, parallel_crossing_local_mask);
 }
 
 TEST(SelfContactTransactionMediumCoupon,

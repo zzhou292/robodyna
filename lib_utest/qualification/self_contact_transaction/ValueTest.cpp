@@ -361,7 +361,7 @@ TEST(SelfContactTransactionValues,
   const auto limits = c::SelfContactTransactionLimits::Vehicle(
       census, chunk, 1, 2, 0, 4095, per_chunk_work,
       complete_work, 20, 64ull << 30, 8ull << 30,
-      96ull << 30, 4);
+      96ull << 30, 4, 4);
   EXPECT_EQ(limits.broadphase.max_pairs, 1584464u);
   EXPECT_EQ(limits.max_candidate_pairs, 5989248u);
   EXPECT_EQ(limits.max_facet_pair_chunk, chunk);
@@ -370,7 +370,15 @@ TEST(SelfContactTransactionValues,
   EXPECT_EQ(limits.accepted_discovery.worker_count, 4u);
   EXPECT_EQ(limits.candidate_discovery.worker_count, 4u);
   EXPECT_EQ(limits.crossing.max_paths, 2 * chunk);
+  EXPECT_EQ(limits.crossing.worker_count, 4u);
   EXPECT_EQ(limits.max_policy_outcomes, 0u);
+  const auto compatible_default =
+      c::SelfContactTransactionLimits::Vehicle(
+          census, chunk, 1, 2, 0, 4095, per_chunk_work,
+          complete_work, 20, 64ull << 30, 8ull << 30,
+          96ull << 30, 4);
+  EXPECT_EQ(compatible_default.accepted_discovery.worker_count, 4u);
+  EXPECT_EQ(compatible_default.crossing.worker_count, 1u);
 
   auto overflow = census;
   overflow.facet_pairs = SIZE_MAX / 15 + 1;
@@ -384,6 +392,12 @@ TEST(SelfContactTransactionValues,
       complete_work, 20, 64ull << 30, 8ull << 30,
       96ull << 30, 9);
   EXPECT_EQ(bad_workers.max_host_bytes, 0u);
+  const auto bad_crossing_workers =
+      c::SelfContactTransactionLimits::Vehicle(
+          census, chunk, 1, 2, 0, 4095, per_chunk_work,
+          complete_work, 20, 64ull << 30, 8ull << 30,
+          96ull << 30, 4, 9);
+  EXPECT_EQ(bad_crossing_workers.max_host_bytes, 0u);
 
   sct::Layout minimum;
   ASSERT_TRUE(sct::MakeLayout(

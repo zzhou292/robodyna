@@ -288,7 +288,9 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
       broadphase.forecast.startup_host_bytes <
           broadphase.forecast.owned_host_bytes ||
       regularity.forecast.startup_payload_bytes <
-          regularity.forecast.owned_payload_bytes)
+          regularity.forecast.owned_payload_bytes ||
+      crossing.forecast.startup_host_bytes <
+          crossing.forecast.owned_host_bytes)
     return Failure(S::ResourceLimit,
         "A component forecast is smaller than its retained handle");
   forecast.owned_host_bytes =
@@ -345,6 +347,9 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
            &forecast.startup_host_bytes) ||
       !Add(candidate_discovery.forecast.startup_host_bytes -
                candidate_discovery.forecast.owned_host_bytes,
+           &forecast.startup_host_bytes) ||
+      !Add(crossing.forecast.startup_host_bytes -
+               crossing.forecast.owned_host_bytes,
            &forecast.startup_host_bytes) ||
       !Add(startup_scratch, &forecast.startup_host_bytes) ||
       forecast.startup_host_bytes > limits.max_startup_host_bytes)

@@ -16,7 +16,8 @@ test_cmake = (here / "CMakeLists.txt").read_text()
 test_bazel = (here / "BUILD.bazel").read_text()
 test_sources = (
     "GeometryTest.cpp", "InvarianceTest.cpp", "FailureTest.cpp",
-    "IdentityTest.cpp", "DeepTest.cpp", "OracleTest.cpp", "Oracle.cpp",
+    "IdentityTest.cpp", "DeepTest.cpp", "OracleTest.cpp",
+    "ParallelTest.cpp", "Oracle.cpp",
 )
 tests = "\n".join((here / name).read_text() for name in test_sources)
 
@@ -40,7 +41,7 @@ body_start = source.index("RepresentedIntervalResult CertifyPair")
 body_end = source.index("bool KnownMotion", body_start)
 pair_body = source[body_start:body_end]
 assert pair_body.index("RepresentedMotion::LinearNodalV1") < pair_body.index(
-    "dfs->clear()"
+    "dfs[dfs_size++]"
 )
 assert "RepresentedIntervalReason::UnsupportedMotion" in pair_body
 assert "SweptBoxesSeparated" in source
@@ -53,16 +54,46 @@ assert "RigidArc" in types and "Nonlinear" in types
 assert "max_work_per_pair" in source and "max_total_work" in source
 assert "storage.published.swap(storage.staging)" in source
 assert "RepresentedIntervalResult Visit(" not in source
-assert "std::vector<Cell>* dfs" in source
-assert "std::unique_ptr<ExactScratch>" in source
-assert "vertex_ledger.reserve" in source and "dfs.reserve" in source
+assert "Cell* dfs, std::size_t dfs_capacity" in source
+assert "std::unique_ptr<ExactScratch[]>" in source
+assert "std::unique_ptr<Cell[]>" in source
+assert "vertex_ledger.reserve" in source
 assert "vertex_ledger_capacity" in types and "exact_scratch_bytes" in types
 assert "limits.max_paths > UINT32_MAX" in source
 assert "inconsistent vertex trajectory identity" in source
-assert "storage.staging.data()" in source and "storage.dfs.data()" in source
+assert "storage.staging.data()" in source and "storage.dfs_frames.get()" in source
 assert "view expires on the next successful Certify" in public
+assert "persistent worker pool" in public
+assert "find_package(Threads REQUIRED)" in cmake
+assert "Threads::Threads" in cmake and '"-pthread"' in bazel
+assert "mmap(" in source and "mprotect(" in source
+assert "pthread_attr_setstack" in source and "pthread_create" in source
+assert "pthread_join" in source
+assert "worker_stack_bytes" in types and "pair_status_bytes" in types
+assert "RepresentedIntervalMaximumWorkerCount = 8" in types
+certify_start = source.index(
+    "RepresentedIntervalReport RepresentedIntervalCrossing::Certify(")
+certify_end = source.index(
+    "RepresentedIntervalForecast RepresentedIntervalCrossing::forecast()",
+    certify_start)
+certify_body = source[certify_start:certify_end]
+for forbidden in ("pthread_create", "pthread_join", "mmap(", "new (",
+                  "make_unique", ".reserve("):
+    assert forbidden not in certify_body, forbidden
+assert certify_body.index("storage.pairs.size() > storage.limits.max_results") < (
+    certify_body.index("storage.staging.resize(storage.pairs.size())"))
+assert "storage.RunWorkers" in certify_body
+assert "storage.busy.compare_exchange_strong" in certify_body
+assert "impl_->busy.load(std::memory_order_acquire)" in source
 assert "boost::multiprecision::cpp_rational" in (
     here / "Oracle.cpp").read_text()
+for required_parallel in (
+    "WorkerCountsMatchMixedCertificatesAndVariedPairOrder",
+    "CanonicalTotalWorkFailureMatchesSerialAndRollsBackExactly",
+    "InvalidInputReportsAndPriorPublicationMatchExactly",
+    "PreflightBoundsPersistentWorkerStorageAndDestruction",
+):
+    assert required_parallel in tests
 
 required = (
     "PassThroughWithSeparatedEndpointsCertifiesMiddleContact",
