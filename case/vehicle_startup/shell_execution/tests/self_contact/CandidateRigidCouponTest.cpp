@@ -1,7 +1,9 @@
 #include "Source.h"
 
 #include "case/vehicle_dynamics/Storage.h"
+#include "case/vehicle_self_contact/RuntimeData.h"
 #include "case/vehicle_self_contact/SelfContactFactories.h"
+#include "case/vehicle_self_contact/runtime/Stages.h"
 #include "case/vehicle_wall/LoadedWall.h"
 #include "lib_src/collision/FixedContactFacetValues.h"
 #include "lib_src/collision/FixedTriangleFeatureDiscovery.h"
@@ -35,6 +37,9 @@ struct CandidateRigidCouponSnapshot {
 struct AcceptedAssemblyCouponSnapshot {
     std::vector<double> accepted_positions;
     std::vector<double> prepared_positions;
+    std::vector<
+        tlfea::contact::self_contact_transaction::
+            AcceptedEventCertificate> accepted_certificates;
     tl::fea::NodalPreparedView prepared_view;
 };
 
@@ -106,6 +111,24 @@ class CandidateRigidCouponAccess {
                 result.prepared_view, storage.prepared))
             throw std::runtime_error(
                 "Accepted-assembly coupon differs from owner identity");
+        const auto* stages = dynamic_cast<
+            const detail::SelfContactStages*>(
+                storage.self_contact.get());
+        if (!stages)
+            throw std::runtime_error(
+                "Accepted-assembly coupon has no self-contact stages");
+        const auto certificates =
+            tlfea::contact::self_contact_transaction::
+                QualificationAccess::AcceptedCertificates(
+                    stages->contact.data_->transaction);
+        if (!certificates.complete ||
+            (certificates.count && !certificates.data))
+            throw std::runtime_error(
+                "Accepted certificate ledger is incomplete");
+        if (certificates.count)
+            result.accepted_certificates.assign(
+                certificates.data,
+                certificates.data + certificates.count);
         return result;
     }
 };
@@ -127,6 +150,8 @@ constexpr std::uint64_t NonlinearLinearEid = 2100124;
 constexpr std::uint64_t NonlinearMixedEid = 2209533;
 constexpr std::uint64_t ExhaustedLinearFirstEid = 2100002;
 constexpr std::uint64_t ExhaustedLinearSecondEid = 2288690;
+constexpr std::uint64_t PersistentLinearFirstEid = 2100002;
+constexpr std::uint64_t PersistentLinearSecondEid = 2288693;
 constexpr unsigned CouponLocalFacet = 0;
 constexpr unsigned AffineMixedLocalFacet = 1;
 constexpr double PhysicalStepS = 2e-7;
@@ -422,8 +447,9 @@ EndpointGeometry Discover(
 
 double MinimumDistance(const EndpointGeometry& geometry) {
     double result = std::numeric_limits<double>::infinity();
-    for (const auto& feature : geometry.features)
+    for (const auto& feature : geometry.features) {
         result = std::min(result, feature.distance_m);
+    }
     return result;
 }
 
@@ -1401,17 +1427,17 @@ TEST(VehicleSelfContactCandidateCoupon,
 }
 
 TEST(VehicleSelfContactAcceptedAssemblyCoupon,
-     RoundedResidualPairUsesAuthenticatedPreparedBits) {
+     ResidualAndPersistentPairsUseAuthenticatedPreparedBits) {
     const auto& setup = LevelZeroSetup();
     const auto& active = setup.active_uses();
     const std::size_t parent_ordinals[2]{
-        ParentOrdinal(active, ExhaustedLinearFirstEid),
-        ParentOrdinal(active, ExhaustedLinearSecondEid)};
+        ParentOrdinal(active, PersistentLinearFirstEid),
+        ParentOrdinal(active, PersistentLinearSecondEid)};
     std::array<contact::FixedContactFacet, 2> facets;
     for (unsigned side = 0; side < 2; ++side) {
         const auto& parent = active.parents()[parent_ordinals[side]];
         ASSERT_EQ(setup.facets().Describe(
-                      parent.surface_parent, CouponLocalFacet,
+                      parent.surface_parent, AffineMixedLocalFacet,
                       &facets[side]).status,
                   contact::FixedContactFacetStatus::Ok);
     }
@@ -1468,14 +1494,32 @@ TEST(VehicleSelfContactAcceptedAssemblyCoupon,
             accepted[1], prepared[1],
             facets[1].reference_half_thickness_m,
             feature_view, intersection_view);
-    EXPECT_EQ(
+    EXPECT_NE(
         residual.status,
-        sct::LinearResidualSeparationStatus::
-            CertifiedSeparated);
-    EXPECT_FALSE(residual.exact_common_translation);
-    EXPECT_GT(residual.first_residual_upper_m, 0);
-    EXPECT_GT(residual.second_residual_upper_m, 0);
-    EXPECT_GT(residual.strict_gap_lower_m, 0);
+        sct::LinearResidualSeparationStatus::InvalidInput);
+    const auto persistent =
+        sct::CertifyPersistentLinearContact(
+            accepted[0], prepared[0],
+            facets[0].reference_half_thickness_m,
+            accepted[1], prepared[1],
+            facets[1].reference_half_thickness_m,
+            feature_view,
+            snapshot.accepted_certificates.data(),
+            snapshot.accepted_certificates.size());
+    EXPECT_EQ(
+        persistent.status,
+        sct::PersistentLinearContactStatus::CertifiedContact);
+    EXPECT_FALSE(persistent.exact_common_translation);
+    if (persistent.status ==
+        sct::PersistentLinearContactStatus::CertifiedContact) {
+        EXPECT_EQ(persistent.feature.kind,
+                  contact::RepresentedFeatureKind::EdgeEdge);
+        EXPECT_LT(persistent.accepted_certificate,
+                  snapshot.accepted_certificates.size());
+    }
+    EXPECT_GT(persistent.first_residual_upper_m, 0);
+    EXPECT_GT(persistent.second_residual_upper_m, 0);
+    EXPECT_GT(persistent.strict_thickness_margin_lower_m, 0);
 
     const std::array<contact::RepresentedTrianglePath, 2> paths{
         RepresentedPath(accepted[0], prepared[0]),
@@ -1487,9 +1531,171 @@ TEST(VehicleSelfContactAcceptedAssemblyCoupon,
     EXPECT_EQ(exact_cap_one.reason,
               contact::RepresentedIntervalReason::WorkExhausted);
     EXPECT_EQ(exact_cap_one.work, 1u);
+    const auto exact_full = Cross(paths, 4095, 20);
+    EXPECT_EQ(
+        exact_full.classification,
+        contact::RepresentedIntervalClassification::Unresolved);
+    EXPECT_EQ(exact_full.reason,
+              contact::RepresentedIntervalReason::WorkExhausted);
+    EXPECT_EQ(exact_full.work, 4095u);
+
+    unsigned shared_vertices = 0;
+    unsigned shared_edges = 0;
+    for (const auto& first : facets[0].vertex_keys)
+        for (const auto& second : facets[1].vertex_keys)
+            shared_vertices +=
+                contact::SameFacetVertexKey(first, second);
+    for (const auto& first : facets[0].edge_keys)
+        for (const auto& second : facets[1].edge_keys)
+            shared_edges +=
+                contact::SameFacetEdgeKey(first, second);
+    const auto same_triangle = [](const contact::FixedTriangleKey& first,
+                                  const contact::FixedTriangleKey& second) {
+        return contact::fixed_triangle_features::Compare(
+                   first, second) == 0;
+    };
+    std::size_t accepted_matches = 0;
+    for (std::size_t certificate_index = 0;
+         certificate_index <
+             snapshot.accepted_certificates.size();
+         ++certificate_index) {
+        const auto& certificate =
+            snapshot.accepted_certificates[
+                certificate_index];
+        const bool same_pair =
+            (same_triangle(certificate.discovery.triangles[0],
+                           accepted[0].key) &&
+             same_triangle(certificate.discovery.triangles[1],
+                           accepted[1].key)) ||
+            (same_triangle(certificate.discovery.triangles[0],
+                           accepted[1].key) &&
+             same_triangle(certificate.discovery.triangles[1],
+                           accepted[0].key));
+        if (!same_pair) continue;
+        ++accepted_matches;
+        std::cout << std::setprecision(17)
+                  << "V5_LINEAR_PERSISTENT_ACCEPTED"
+                  << " kind="
+                  << static_cast<unsigned>(
+                         certificate.discovery.key.kind)
+                  << " local="
+                  << certificate.discovery.local_features[0]
+                  << ","
+                  << certificate.discovery.local_features[1]
+                  << " distance_m="
+                  << certificate.discovery.distance_m
+                  << " error_m="
+                  << certificate.discovery.representation_error_m
+                  << " event_status="
+                  << static_cast<unsigned>(
+                         certificate.event.classification.status)
+                  << " certificate_kind="
+                  << static_cast<unsigned>(certificate.kind)
+                  << " event_kind="
+                  << static_cast<unsigned>(
+                         certificate.event.feature.kind)
+                  << " pair_kind="
+                  << static_cast<unsigned>(
+                         certificate.event.classification.kind)
+                  << " order=" << certificate.event.source_order
+                  << " index=" << certificate_index
+                  << " active="
+                  << certificate.event.classification.active[0]
+                  << ","
+                  << certificate.event.classification.active[1]
+                  << " excluded="
+                  << certificate.event.classification.excluded
+                  << " incidence="
+                  << certificate.event.classification.local_incidence
+                  << " edge_uses="
+                  << certificate.event.edge_use[0] << ","
+                  << certificate.event.edge_use[1]
+                  << " edge_facets="
+                  << certificate.edge_facet[0] << ","
+                  << certificate.edge_facet[1]
+                  << " parameters="
+                  << certificate.discovery.edge_parameters[0]
+                  << ","
+                  << certificate.discovery.edge_parameters[1]
+                  << " endpoints="
+                  << certificate.event.endpoints[0].count << ","
+                  << certificate.event.endpoints[1].count
+                  << " key=";
+        if (certificate.discovery.key.kind ==
+            contact::FixedTriangleCandidateKind::EdgeEdge) {
+            PrintEdgeKey(
+                certificate.discovery.key.edge_edge.edges[0]);
+            std::cout << "/";
+            PrintEdgeKey(
+                certificate.discovery.key.edge_edge.edges[1]);
+        } else {
+            PrintVertexKey(
+                certificate.discovery.key.vertex_face.vertex);
+            std::cout << "/target_kind="
+                      << static_cast<unsigned>(
+                             certificate.discovery.key.vertex_face.
+                                 target.kind);
+        }
+        std::cout << '\n';
+    }
+    for (const auto& feature : geometry.features) {
+        std::cout << std::setprecision(17)
+                  << "V5_LINEAR_PERSISTENT_PREPARED"
+                  << " kind="
+                  << static_cast<unsigned>(feature.key.kind)
+                  << " local=" << feature.local_features[0]
+                  << "," << feature.local_features[1]
+                  << " distance_m=" << feature.distance_m
+                  << " error_m="
+                  << feature.representation_error_m
+                  << " key=";
+        if (feature.key.kind ==
+            contact::FixedTriangleCandidateKind::EdgeEdge) {
+            PrintEdgeKey(feature.key.edge_edge.edges[0]);
+            std::cout << "/";
+            PrintEdgeKey(feature.key.edge_edge.edges[1]);
+        } else {
+            PrintVertexKey(feature.key.vertex_face.vertex);
+            std::cout << "/target_kind="
+                      << static_cast<unsigned>(
+                             feature.key.vertex_face.target.kind);
+        }
+        std::cout << '\n';
+    }
 
     std::cout << std::setprecision(17) << std::hexfloat
-              << "V5_LINEAR_RESIDUAL_CERTIFICATE"
+              << "V5_LINEAR_PERSISTENT_CERTIFICATE"
+              << " residual_status="
+              << static_cast<unsigned>(residual.status)
+              << " persistent_status="
+              << static_cast<unsigned>(persistent.status)
+              << " persistent_kind="
+              << static_cast<unsigned>(persistent.feature.kind)
+              << " persistent_accepted="
+              << persistent.accepted_certificate
+              << " persistent_margin_m="
+              << persistent.strict_thickness_margin_lower_m
+              << " persistent_bounded="
+              << persistent.bounded_feature_count
+              << " persistent_exact_accepted="
+              << persistent.exact_accepted_candidate_count
+              << " persistent_full_accepted="
+              << persistent.full_accepted_candidate_count
+              << " exact_common="
+              << residual.exact_common_translation
+              << " shared_vertices=" << shared_vertices
+              << " shared_edges=" << shared_edges
+              << " intersections="
+              << geometry.intersections.size()
+              << " accepted_matches=" << accepted_matches
+              << " half_thicknesses="
+              << facets[0].reference_half_thickness_m << ","
+              << facets[1].reference_half_thickness_m
+              << " full_classification="
+              << static_cast<unsigned>(exact_full.classification)
+              << " full_reason="
+              << static_cast<unsigned>(exact_full.reason)
+              << " full_work=" << exact_full.work
               << " reference="
               << residual.reference_translation.x << ","
               << residual.reference_translation.y << ","
@@ -1506,7 +1712,7 @@ TEST(VehicleSelfContactAcceptedAssemblyCoupon,
     for (unsigned side = 0; side < 2; ++side)
         for (unsigned vertex = 0; vertex < 3; ++vertex)
             std::cout << std::hexfloat
-                      << "V5_LINEAR_RESIDUAL_BITS"
+                      << "V5_LINEAR_PERSISTENT_BITS"
                       << " side=" << side
                       << " vertex=" << vertex
                       << " accepted="
@@ -1518,6 +1724,53 @@ TEST(VehicleSelfContactAcceptedAssemblyCoupon,
                       << prepared[side].vertices[vertex].y << ","
                       << prepared[side].vertices[vertex].z
                       << std::defaultfloat << '\n';
+
+    const std::size_t residual_parents[2]{
+        ParentOrdinal(active, ExhaustedLinearFirstEid),
+        ParentOrdinal(active, ExhaustedLinearSecondEid)};
+    std::array<contact::FixedContactFacet, 2> residual_facets;
+    std::array<contact::CurrentFixedTriangle, 2>
+        residual_accepted;
+    std::array<contact::CurrentFixedTriangle, 2>
+        residual_prepared;
+    for (unsigned side = 0; side < 2; ++side) {
+        const auto& parent = active.parents()[
+            residual_parents[side]];
+        ASSERT_EQ(setup.facets().Describe(
+                      parent.surface_parent, CouponLocalFacet,
+                      &residual_facets[side]).status,
+                  contact::FixedContactFacetStatus::Ok);
+        ASSERT_EQ(contact::EvaluateCurrentFixedTriangle(
+                      residual_facets[side], accepted_positions,
+                      &residual_accepted[side]),
+                  contact::Status::kOk);
+        ASSERT_EQ(contact::EvaluateCurrentFixedTriangle(
+                      residual_facets[side], prepared_positions,
+                      &residual_prepared[side]),
+                  contact::Status::kOk);
+    }
+    contact::FixedTriangleFeatureTaskMask residual_mask;
+    ASSERT_EQ(contact::BuildFixedTriangleFeatureTaskMask(
+                  residual_prepared[0], residual_prepared[1],
+                  &residual_mask),
+              contact::FixedTriangleDiscoveryStatus::Ok);
+    const auto residual_geometry =
+        Discover(residual_prepared, residual_mask);
+    const auto separated = sct::CertifyLinearResidualSeparation(
+        residual_accepted[0], residual_prepared[0],
+        residual_facets[0].reference_half_thickness_m,
+        residual_accepted[1], residual_prepared[1],
+        residual_facets[1].reference_half_thickness_m,
+        {residual_geometry.features.data(),
+         residual_geometry.features.size(), true},
+        {residual_geometry.intersections.data(),
+         residual_geometry.intersections.size(), true});
+    EXPECT_EQ(
+        separated.status,
+        sct::LinearResidualSeparationStatus::
+            CertifiedSeparated);
+    EXPECT_FALSE(separated.exact_common_translation);
+    EXPECT_GT(separated.strict_gap_lower_m, 0);
     dynamics.DiscardStep();
 }
 

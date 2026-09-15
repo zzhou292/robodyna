@@ -6,6 +6,8 @@
 
 namespace crash::cases::vehicle_self_contact {
 
+class CandidateRigidCouponAccess;
+
 inline constexpr double FirstProfileStiffnessPerAreaNPerM3 = 2e9;
 
 struct RuntimeConfig {
@@ -113,6 +115,7 @@ class VehicleSelfContactStartup {
     friend class SelfContactOnly;
     friend class LoadedWallSelfContact;
     friend class detail::SelfContactStages;
+    friend class CandidateRigidCouponAccess;
     struct Data;
     static VehicleSelfContactStartup PrepareUnconfigured(
         const VehicleSelfContactSetup&,

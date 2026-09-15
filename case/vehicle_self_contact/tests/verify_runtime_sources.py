@@ -224,12 +224,13 @@ def main() -> None:
         require(token in candidate_coupon,
                 f"candidate-2694 baseline coupon is missing {token}")
     for token in [
-            "RoundedResidualPairUsesAuthenticatedPreparedBits",
+            "ResidualAndPersistentPairsUseAuthenticatedPreparedBits",
             "PrepareAcceptedAssembly",
             "CertifyLinearResidualSeparation(",
-            "EXPECT_FALSE(residual.exact_common_translation)",
-            "V5_LINEAR_RESIDUAL_CERTIFICATE",
-            "V5_LINEAR_RESIDUAL_BITS"]:
+            "QualificationAccess::AcceptedCertificates(",
+            "V5_LINEAR_PERSISTENT_CERTIFICATE",
+            "V5_LINEAR_PERSISTENT_ACCEPTED",
+            "V5_LINEAR_PERSISTENT_BITS"]:
         require(token in candidate_coupon,
                 f"residual-translation coupon is missing {token}")
     require("CandidateRigidCouponTest.cpp" in fixture_cmake and
