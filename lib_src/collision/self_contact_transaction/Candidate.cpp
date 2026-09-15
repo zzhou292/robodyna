@@ -769,13 +769,6 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
                   state.storage_forecast.nonlinear_subdivision_depth)
             : sct::NonlinearSeparationResult{
                   sct::NonlinearSeparationStatus::WorkExhausted, 0, 0};
-        if (nonlinear.status ==
-            sct::NonlinearSeparationStatus::InvalidInput)
-          return state.Fail(Failure(
-              S::IdentityMismatch,
-              "Nonlinear subdivision certificate input is invalid",
-              value.first,
-              state.candidate_facet_pair_count + pair));
         state.buffers.chunk_nonlinear_results[pair] = nonlinear;
         ++summary.nonlinear_subdivision_pairs;
         if (nonlinear.work > SIZE_MAX - chunk_nonlinear_work ||

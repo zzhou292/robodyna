@@ -114,10 +114,11 @@ binary-compatible and retains its original face/edge-only meaning. Existing
 filter-category numeric values 0 through 4 are fixed; vertex-edge and
 vertex-vertex are appended as 5 and 6. This permits the vehicle census to adopt
 the new disjoint categories separately without changing the old ABI values.
-On the supported 64-bit ABI, the public summary is intentionally extended
-from 112 to 128 bytes: the two counters append at offsets 112 and 120 without
-moving the original prefix. Summary consumers must rebuild; host compilation
-freezes that new layout and both old/new function signatures.
+On the supported 64-bit ABI, the public summary retains the original
+112-byte prefix, appends the two axis counters at offsets 112 and 120, and
+then appends the nonlinear certificate diagnostics for a total of 176 bytes.
+Summary consumers must rebuild; host compilation freezes that new layout and
+both old/new function signatures.
 
 Exact closest-stratum predicates remain the feature identity authority.
 If an ordinary binary64 face projection rounds onto its exact boundary,

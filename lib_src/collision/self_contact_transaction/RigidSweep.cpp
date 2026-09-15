@@ -911,6 +911,19 @@ NonlinearSeparationStatus SubdivideSeparation(
     unsigned depth, unsigned max_depth,
     std::size_t max_work, std::size_t* work,
     unsigned* deepest) noexcept {
+  // Proof.  On one time interval, each vertex coordinate is a degree-two
+  // Bernstein polynomial whose exact-real controls lie in the stored directed
+  // intervals.  The Bernstein convex-hull property therefore puts every
+  // coordinate, and every fixed-axis projection, inside the hull tested by
+  // CoordinateSeparated.  Spherical half-thickness projects by at most
+  // thickness*|axis|_2 <= thickness*|axis|_1, so a strict projected interval
+  // gap separates both thickened facets for every u in this interval.
+  //
+  // Directed de Casteljau averages at 1/2 enclose the exact controls of the
+  // two dyadic children.  Thus a node proves its whole interval directly, or
+  // proves it inductively only after both synchronous children do.  Any
+  // arithmetic, work, or depth failure returns unresolved and can never
+  // become a separation certificate.
   if (!work || !deepest || *work >= max_work)
     return NonlinearSeparationStatus::WorkExhausted;
   ++*work;

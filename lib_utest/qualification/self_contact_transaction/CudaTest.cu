@@ -762,11 +762,23 @@ TEST(SelfContactTransactionCuda,
 
   const auto fixed = triangle(0, 0);
   const auto moving = triangle(0, 0);
+  auto elevated = moving;
+  for (auto& vertex : elevated.vertices) vertex.z = 1;
+  auto separated_q = coefficients(0);
+  for (unsigned vertex = 0; vertex < 3; ++vertex)
+    separated_q.q[vertex][2] = {4, 4};
+  const auto linear_quadratic =
+      sct::CertifyQuadraticFacetSeparation(
+          fixed, fixed, coefficients(0), .01,
+          elevated, elevated, separated_q, .01,
+          1, 4095, 20);
+  EXPECT_EQ(linear_quadratic.status,
+            sct::NonlinearSeparationStatus::CertifiedSeparated);
+  EXPECT_EQ(linear_quadratic.work, 3u);
+
   auto contact_q = coefficients(0);
   for (unsigned vertex = 0; vertex < 3; ++vertex)
     contact_q.q[vertex][2] = {8, 8};
-  auto elevated = moving;
-  for (auto& vertex : elevated.vertices) vertex.z = 1;
   EXPECT_NE(sct::CertifyQuadraticFacetSeparation(
                 fixed, fixed, coefficients(0), .01,
                 elevated, elevated, contact_q, .01,

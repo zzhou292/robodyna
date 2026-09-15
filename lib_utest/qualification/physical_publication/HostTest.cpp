@@ -99,8 +99,8 @@ TEST(PhysicalPublicationValues, ExactBudgetAndLateFailureRetry) {
   ASSERT_EQ(fe::ShellBatchPublication::ForecastPhysical(source.physical,1,limits,forecast).status,
       fe::ShellPublicationStatus::Success);
   EXPECT_EQ(forecast.device_bytes,0u);
-  EXPECT_EQ(forecast.owned_host_bytes,6880u);
-  EXPECT_EQ(forecast.startup_host_bytes,8704u);
+  EXPECT_EQ(forecast.owned_host_bytes,6888u);
+  EXPECT_EQ(forecast.startup_host_bytes,8712u);
   EXPECT_GT(forecast.startup_host_bytes,forecast.owned_host_bytes);
   RecordProperty("owned_host_bytes",std::to_string(forecast.owned_host_bytes));
   RecordProperty("tiny_startup_host_bytes",std::to_string(forecast.startup_host_bytes));
@@ -169,7 +169,7 @@ TEST(PhysicalPublicationValues,
   EXPECT_FALSE((std::is_convertible_v<fe::NodalValidationReceipt,Receipt>));
   EXPECT_FALSE(Receipt{}.valid());
   static_assert(sizeof(Issuer)==112);
-  static_assert(sizeof(Receipt)==280);
+  static_assert(sizeof(Receipt)==288);
   static_assert(sizeof(fe::ShellPhysicalScratchRoster)==32);
   RecordProperty("scratch_participation_issuer_bytes",std::to_string(sizeof(Issuer)));
   RecordProperty("scratch_participation_receipt_bytes",std::to_string(sizeof(Receipt)));

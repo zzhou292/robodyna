@@ -397,6 +397,24 @@ TEST(SelfContactRigidSweepBounds,
 }
 
 TEST(SelfContactRigidSweepBounds,
+     LinearVersusQuadraticPathCertifiesWholeIntervalSeparation) {
+  constexpr double Thickness = .01;
+  const auto linear = TriangleAt({0, 0, 0});
+  const auto quadratic = TriangleAt({0, 0, 1});
+  // The quadratic z controls are {1,0,1}, so the unsplit control hull touches
+  // the linear plane even though z(u)=1-2*u*(1-u) >= .5.  Certification must
+  // therefore cover both dyadic children rather than rely on endpoint boxes.
+  const auto result = sct::CertifyQuadraticFacetSeparation(
+      linear, linear, Coefficients({}), Thickness,
+      quadratic, quadratic, Coefficients({0, 0, 4}), Thickness,
+      1, 4095, 20);
+  EXPECT_EQ(result.status,
+            sct::NonlinearSeparationStatus::CertifiedSeparated);
+  EXPECT_EQ(result.work, 3u);
+  EXPECT_EQ(result.deepest, 1u);
+}
+
+TEST(SelfContactRigidSweepBounds,
      SmallDyadicOracleNeverFindsContactBehindSeparation) {
   constexpr double Thickness = .03125;
   const auto fixed = TriangleAt({0, 0, 0});

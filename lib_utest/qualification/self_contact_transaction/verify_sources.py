@@ -116,6 +116,8 @@ for token in (
     "CertifyQuadraticFacetSeparation(",
     "ExactCoefficientBounds(",
     "SubdivideSeparation(",
+    "Bernstein convex-hull property",
+    "both synchronous children",
     "represented_q[component]",
     "std::nextafter(",
     "R::RotationLimit",
@@ -306,6 +308,10 @@ for token in (
     "Quadratic subdivision did not certify rigid-arc separation",
 ):
     require(candidate, token, CANDIDATE)
+if "Nonlinear subdivision certificate input is invalid" in candidate:
+    raise RuntimeError(
+        f"{CANDIDATE}: inconclusive subdivision no longer preserves "
+        "UnsupportedMotion")
 if candidate.index("state.candidate_discovery.DiscoverMasked") > candidate.index(
         "Quadratic subdivision did not certify rigid-arc separation"):
     raise RuntimeError(
@@ -520,6 +526,7 @@ for token in (
     "ExactRepresentedAffineCertificateComposesWeightedCurvature",
     "DyadicQuadraticSubdivisionIsConservativeBoundedAndSymmetric",
     "PotentialNonlinearContactNeverCertifiesSeparated",
+    "LinearVersusQuadraticPathCertifiesWholeIntervalSeparation",
     "SmallDyadicOracleNeverFindsContactBehindSeparation",
     "CertifyRigidPointAffineMotion(",
     "CertifyRigidFacetAffineMotion(",
