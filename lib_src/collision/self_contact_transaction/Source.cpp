@@ -137,6 +137,8 @@ bool PointMotion(const WeightedSurfacePoint& point,
       return false;
     next.motion = SelfContactFacetMotion::PartialOrMixedRigid;
   }
+  next.certified_affine =
+      next.motion == SelfContactFacetMotion::LinearNodalV1;
   SortRigidGroups(&next);
   *output = next;
   return true;
@@ -185,6 +187,8 @@ bool FacetMotion(const SelfContactActiveUseBinding& active_use,
   } else {
     next.motion = SelfContactFacetMotion::PartialOrMixedRigid;
   }
+  next.certified_affine =
+      next.motion == SelfContactFacetMotion::LinearNodalV1;
   SortRigidGroups(&next);
   *output = next;
   return true;
@@ -220,6 +224,8 @@ bool ParentMotion(const SelfContactParentUse& parent,
   } else {
     next.motion = SelfContactFacetMotion::PartialOrMixedRigid;
   }
+  next.certified_affine =
+      next.motion == SelfContactFacetMotion::LinearNodalV1;
   SortRigidGroups(&next);
   *output = next;
   return true;

@@ -8,6 +8,7 @@ HEADER = ROOT / "lib_src/collision/SelfContactTransaction.h"
 TYPES = ROOT / "lib_src/collision/SelfContactTransactionTypes.h"
 CANDIDATE = ROOT / "lib_src/collision/self_contact_transaction/Candidate.cpp"
 RIGID_SWEEP = ROOT / "lib_src/collision/self_contact_transaction/RigidSweep.cpp"
+ARENA = ROOT / "lib_src/collision/self_contact_transaction/Arena.cpp"
 TRANSACTION = ROOT / "lib_src/collision/self_contact_transaction/Transaction.cpp"
 STREAMING = ROOT / "lib_src/collision/self_contact_transaction/Streaming.cpp"
 TASK_MASK = ROOT / "lib_src/collision/self_contact_transaction/TaskMask.cpp"
@@ -38,6 +39,7 @@ header = HEADER.read_text()
 types = TYPES.read_text()
 candidate = CANDIDATE.read_text()
 rigid_sweep = RIGID_SWEEP.read_text()
+arena = ARENA.read_text()
 transaction = TRANSACTION.read_text()
 task_mask = TASK_MASK.read_text()
 require(task_mask, "BuildFixedTriangleFeatureTaskMask(", TASK_MASK)
@@ -81,6 +83,7 @@ for token in (
     "FilterAcceptedFacetPairs(",
     "DescribeMotionFailure(",
     "BuildRigidMemberSweepBounds(",
+    "CertifyRigidFacetAffineMotion(",
 ):
     require(candidate if token != "FilterAcceptedFacetPairs(" else
             transaction, token,
@@ -93,10 +96,21 @@ for token in (
     "EndpointCorrectedSecondOrderDriftV1",
     "x(u) = (1-u)x0 + u*x1",
     "h^2*|q_i|/8",
+    "Every finite binary64 value is an integer multiple of 2^-1074",
+    "CertifyRigidPointAffineMotion(",
+    "CertifyRigidFacetAffineMotion(",
+    "represented_q[component]",
     "std::nextafter(",
-    "return R::RotationLimit",
+    "R::RotationLimit",
 ):
     require(rigid_sweep, token, RIGID_SWEEP)
+for token in ("first.certified_affine && second.certified_affine",
+              "ExcludedSameRigidGroup"):
+    require(arena, token, ARENA)
+require(candidate, "motion.certified_affine", CANDIDATE)
+if "motion.motion == SelfContactFacetMotion::LinearNodalV1" in candidate:
+    raise RuntimeError(
+        f"{CANDIDATE}: semantic motion label still selects endpoint prism")
 if BROADPHASE.exists() and BROADPHASE_TYPES.exists():
     for token in ("ConservativeSweptParentBounds",
                   "swept_parent_bounds", "staged_bounds"):
@@ -486,6 +500,9 @@ for token in (
     "EndpointsAndCompleteCertifiedQuadraticStayContained",
     "UnsupportedRotationAndNonfiniteInputsLeaveOutputUnchanged",
     "MotionCertificateIsPartOfPreparedOwnerIdentity",
+    "ExactRepresentedAffineCertificateComposesWeightedCurvature",
+    "CertifyRigidPointAffineMotion(",
+    "CertifyRigidFacetAffineMotion(",
 ):
     require(RIGID_SWEEP_TEST.read_text(), token, RIGID_SWEEP_TEST)
 for token in (
@@ -524,6 +541,7 @@ for token in (
     "ActualMergedRigidBodyExcludesDiscoveredVfBeforeForceOrSti",
     "ActualMergedPartAndPlainBodiesUseMergedWrenchesBeforeInverseResponse",
     "CertifiedRigidSweepsSeparateDistantBodiesButNotOverlappingArcs",
+    "ExactAffineMixedCertificateAndDecisionAreRepeatable",
     "ExactLocalIntersectionPrecedesOnlyUnsupportedMotion",
     "ContactConstraintLayout::SameMergedParts",
     "ContactConstraintLayout::MergedPartAndPlain",

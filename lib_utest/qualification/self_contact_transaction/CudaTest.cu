@@ -679,6 +679,54 @@ TEST(SelfContactTransactionCuda,
 }
 
 TEST(SelfContactTransactionCuda,
+     ExactAffineMixedCertificateAndDecisionAreRepeatable) {
+  const double accepted_values[]{1, 0, 0, 0, 2, 0, 0, 0, 3};
+  const double prepared_values[]{
+      1.01, 0, 0, .01, 2, 0, .01, 0, 3};
+  const c::VectorView accepted{accepted_values, 3, 3, 1};
+  const c::VectorView prepared{prepared_values, 3, 3, 1};
+  const std::uint32_t node_groups[]{0, UINT32_MAX, UINT32_MAX};
+  fe::NodalRigidGroupSnapshot accepted_group;
+  accepted_group.source_kind = fe::RigidBindingSourceKind::Part;
+  accepted_group.source_group_id = 91;
+  accepted_group.source_node_set_id = 92;
+  fe::NodalRigidGroupSnapshot prepared_group = accepted_group;
+  prepared_group.state.center = {.01, 0, 0};
+  prepared_group.state.omega = {};
+  c::WeightedSurfacePoint point;
+  point.count = 3;
+  point.nodes[0] = 0;
+  point.nodes[1] = 1;
+  point.nodes[2] = 2;
+  point.weights[0] = .25;
+  point.weights[1] = .75;
+  point.weights[2] = 0;
+  constexpr auto trajectory =
+      fe::NodalRigidMemberTrajectory::
+          EndpointCorrectedSecondOrderDriftV1;
+  const c::SelfContactSweptParentBounds overlap{
+      {-1, -1, -1}, {1, 1, 1}};
+  sct::MotionSupport ordinary;
+  ordinary.certified_affine = true;
+  sct::MotionSupport mixed;
+  mixed.motion = c::SelfContactFacetMotion::PartialOrMixedRigid;
+
+  for (unsigned repeat = 0; repeat < 64; ++repeat) {
+    bool affine = false;
+    ASSERT_EQ(sct::CertifyRigidPointAffineMotion(
+        point, accepted, prepared, node_groups,
+        &accepted_group, &prepared_group, 1,
+        trajectory, .01, &affine),
+        sct::RigidMemberSweepStatus::Ok);
+    ASSERT_TRUE(affine);
+    mixed.certified_affine = affine;
+    EXPECT_EQ(sct::ClassifyCandidatePairMotion(
+        ordinary, overlap, mixed, overlap),
+        sct::PairMotionAction::LinearNodalV1);
+  }
+}
+
+TEST(SelfContactTransactionCuda,
      ExactLocalIntersectionPrecedesOnlyUnsupportedMotion) {
   const c::RepresentedIntervalPairKey pair{{
       {17, 10, 0, 0}, {17, 20, 0, 0}}};

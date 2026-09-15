@@ -33,8 +33,11 @@ PairMotionAction ClassifyCandidatePairMotion(
       second_bounds.upper.y < first_bounds.lower.y ||
       first_bounds.upper.z < second_bounds.lower.z ||
       second_bounds.upper.z < first_bounds.lower.z;
-  if (first.motion == SelfContactFacetMotion::LinearNodalV1 &&
-      second.motion == SelfContactFacetMotion::LinearNodalV1)
+  // The represented endpoint prism is exact for any authenticated affine
+  // facet, including mixed/rigid source labels whose composed RigidSweep
+  // quadratic coefficient is exactly zero.  A semantic source label alone is
+  // never sufficient to enter represented linear crossing.
+  if (first.certified_affine && second.certified_affine)
     return separated ? PairMotionAction::CertifiedLinearSeparation
                      : PairMotionAction::LinearNodalV1;
   return separated ? PairMotionAction::CertifiedRigidArcSeparation

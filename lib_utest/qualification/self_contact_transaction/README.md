@@ -168,6 +168,23 @@ linear endpoint term retains the exact binary64 owner endpoint, including the
 two-member finite-velocity branch and recurrence roundoff, instead of guessing
 a different terminal rotation.
 
+Candidate sealing also evaluates the quadratic coefficient after each frozen
+represented point composition. Every finite binary64 coordinate and weight is
+decoded as an exact integer multiple of `2^-1074`; fixed 144-limb signed
+integer cross products evaluate
+`q_point=sum_j weight_j*(w_j x (w_j x (x0_j-c0_j)))` without allocation,
+tolerance, or floating-point zero tests. A represented facet is certified
+affine only when all three exact `q_point` vectors are zero. This includes
+ordinary plus authenticated zero-spin mixed support, an exactly arm-parallel
+spin, and exact weighted cancellation between virtual-vertex contributors.
+Same-rigid exclusion still has first priority. Only when both facets carry
+this certificate does candidate classification label their existing endpoint
+paths `LinearNodalV1` and use the existing exact prism, feature discovery, and
+represented interval crossing. Any nonzero component, invalid owner
+trajectory, arithmetic-envelope failure, or other unrepresentable curvature
+stays on the rigid-arc path and remains unsupported when its swept boxes
+overlap. The certificate does not substitute an endpoint chord for curvature.
+
 Each member AABB starts with its own endpoint coordinate hull and inflates
 coordinate `i` by only `h^2*|q_i|/8`, because
 `0 <= u*(1-u) <= 1/4`.  Interval cross products surround every binary64
@@ -191,8 +208,9 @@ each result proves
 representation_error`. Global feature deduplication that selects another
 producing pair is insufficient and remains rejected. The local pair's crossing
 record remains explicitly `Unresolved/UnsupportedMotion`; it is not rewritten
-as a linear or crossing certificate. Every other overlapping nonlinear pair
-still reports the exact parent/facet and actual group identities as
+as a linear or crossing certificate. Every other overlapping facet pair with
+nonzero or uncertified represented curvature still reports the exact
+parent/facet and actual group identities as
 `UnsupportedMotion`. No endpoint chord is passed to represented crossing.
 
 ## Vehicle-scale limits and memory

@@ -316,6 +316,7 @@ GeometryMetrics RunGeometryPipeline(
   const auto started = std::chrono::steady_clock::now();
   GeometryMetrics metrics;
   sct::MotionSupport linear;
+  linear.certified_affine = true;
   sct::MotionSupport rigid;
   rigid.motion = c::SelfContactFacetMotion::CompleteRigidGroup;
   rigid.complete_rigid_group = 7;
@@ -553,6 +554,7 @@ TEST(SelfContactTransactionMediumCoupon,
   const c::SelfContactSweptParentBounds touching{
       {1, 0, 0}, {2, 1, 1}};
   sct::MotionSupport linear;
+  linear.certified_affine = true;
   sct::MotionSupport rigid;
   rigid.motion = c::SelfContactFacetMotion::CompleteRigidGroup;
   rigid.complete_rigid_group = 7;

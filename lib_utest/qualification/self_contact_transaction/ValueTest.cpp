@@ -482,6 +482,7 @@ TEST(SelfContactTransactionValues,
   const c::SelfContactSweptParentBounds touching{
       {1, -1, -1}, {2, 1, 1}};
   sct::MotionSupport ordinary;
+  ordinary.certified_affine = true;
   sct::MotionSupport rigid_a;
   rigid_a.motion = c::SelfContactFacetMotion::CompleteRigidGroup;
   rigid_a.complete_rigid_group = 7;
@@ -494,6 +495,8 @@ TEST(SelfContactTransactionValues,
   partial.motion = c::SelfContactFacetMotion::PartialOrMixedRigid;
   partial.rigid_groups[0] = 7;
   partial.rigid_group_count = 1;
+  auto affine_partial = partial;
+  affine_partial.certified_affine = true;
 
   // An unrelated rigid facet elsewhere cannot change an ordinary pair.
   EXPECT_EQ(sct::ClassifyCandidatePairMotion(
@@ -520,6 +523,17 @@ TEST(SelfContactTransactionValues,
   EXPECT_EQ(sct::ClassifyCandidatePairMotion(
       partial, near, ordinary, far),
       sct::PairMotionAction::CertifiedRigidArcSeparation);
+  EXPECT_EQ(sct::ClassifyCandidatePairMotion(
+      affine_partial, near, ordinary, near),
+      sct::PairMotionAction::LinearNodalV1);
+  EXPECT_EQ(sct::ClassifyCandidatePairMotion(
+      affine_partial, near, ordinary, far),
+      sct::PairMotionAction::CertifiedLinearSeparation);
+  auto affine_same_rigid = rigid_a;
+  affine_same_rigid.certified_affine = true;
+  EXPECT_EQ(sct::ClassifyCandidatePairMotion(
+      affine_same_rigid, near, affine_same_rigid, near),
+      sct::PairMotionAction::ExcludedSameRigidGroup);
 
   // Numeric source-ID collisions do not merge different actual group rows.
   rigid_b.complete_rigid_group = 8;

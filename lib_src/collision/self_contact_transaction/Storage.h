@@ -38,6 +38,10 @@ struct MotionSupport {
   std::uint32_t rigid_groups[4]{
       UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX};
   std::uint8_t rigid_group_count = 0;
+  // Candidate-owner certificate over the represented facet polynomial.
+  // Static source classification sets this only for ordinary nodal motion;
+  // candidate sealing recomputes it from authenticated rigid snapshots.
+  bool certified_affine = false;
 };
 
 enum class PairMotionAction : std::uint8_t {
@@ -68,6 +72,24 @@ RigidMemberSweepStatus BuildRigidMemberSweepBounds(
     const tl::fea::NodalRigidGroupSnapshot& prepared_group,
     tl::fea::NodalRigidMemberTrajectory trajectory,
     double duration, SelfContactSweptParentBounds*) noexcept;
+
+RigidMemberSweepStatus CertifyRigidPointAffineMotion(
+    const WeightedSurfacePoint&, VectorView accepted, VectorView prepared,
+    const std::uint32_t* node_rigid_groups,
+    const tl::fea::NodalRigidGroupSnapshot* accepted_groups,
+    const tl::fea::NodalRigidGroupSnapshot* prepared_groups,
+    std::size_t group_count,
+    tl::fea::NodalRigidMemberTrajectory trajectory,
+    double duration, bool* affine) noexcept;
+
+RigidMemberSweepStatus CertifyRigidFacetAffineMotion(
+    const FixedContactFacet&, VectorView accepted, VectorView prepared,
+    const std::uint32_t* node_rigid_groups,
+    const tl::fea::NodalRigidGroupSnapshot* accepted_groups,
+    const tl::fea::NodalRigidGroupSnapshot* prepared_groups,
+    std::size_t group_count,
+    tl::fea::NodalRigidMemberTrajectory trajectory,
+    double duration, bool* affine) noexcept;
 
 struct FacetPairCursor {
   std::uint32_t first_begin = 0;

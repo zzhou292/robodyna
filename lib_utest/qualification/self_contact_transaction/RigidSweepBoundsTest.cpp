@@ -42,6 +42,25 @@ c::Vec3 TestSubtract(c::Vec3 first, c::Vec3 second) {
       first.z - second.z};
 }
 
+c::VectorView View(const double* values, std::uint32_t nodes) {
+  return {values, nodes, 3, 1};
+}
+
+c::WeightedSurfacePoint Point(
+    std::uint32_t a, double wa,
+    std::uint32_t b, double wb,
+    std::uint32_t c_node, double wc) {
+  c::WeightedSurfacePoint point;
+  point.count = 3;
+  point.nodes[0] = a;
+  point.nodes[1] = b;
+  point.nodes[2] = c_node;
+  point.weights[0] = wa;
+  point.weights[1] = wb;
+  point.weights[2] = wc;
+  return point;
+}
+
 double Component(c::Vec3 value, unsigned component) {
   return component == 0 ? value.x :
       (component == 1 ? value.y : value.z);
@@ -220,6 +239,71 @@ TEST(SelfContactRigidSweepBounds,
       certified, certified));
   EXPECT_FALSE(fe::trial_identity::SamePrepared(
       certified, forged));
+}
+
+TEST(SelfContactRigidSweepBounds,
+     ExactRepresentedAffineCertificateComposesWeightedCurvature) {
+  // Nodes 0 and 1 have opposite nonzero rigid curvature about the x axis;
+  // node 2 is ordinary.  Their weighted represented point cancels exactly.
+  const double accepted_values[]{
+      0, 1, 0,
+      0, -1, 0,
+      4, 0, 0,
+      2, 0, 0};
+  const double prepared_values[]{
+      .01, 1, 0,
+      .01, -1, 0,
+      4.01, 0, 0,
+      2.01, 0, 0};
+  const std::uint32_t node_groups[]{0, 0, UINT32_MAX, 0};
+  const auto accepted_group = Group({});
+  const auto prepared_group = Group({.01, 0, 0}, {1, 0, 0});
+  bool affine = false;
+
+  const auto weighted =
+      Point(0, .5, 1, .5, 2, 0);
+  ASSERT_EQ(sct::CertifyRigidPointAffineMotion(
+      weighted, View(accepted_values, 4), View(prepared_values, 4),
+      node_groups, &accepted_group, &prepared_group, 1,
+      Trajectory, .01, &affine), sct::RigidMemberSweepStatus::Ok);
+  EXPECT_TRUE(affine);
+
+  // A nonzero spin with an exactly parallel arm also has q=0.
+  const auto parallel = Point(3, 1, 2, 0, 1, 0);
+  ASSERT_EQ(sct::CertifyRigidPointAffineMotion(
+      parallel, View(accepted_values, 4), View(prepared_values, 4),
+      node_groups, &accepted_group, &prepared_group, 1,
+      Trajectory, .01, &affine), sct::RigidMemberSweepStatus::Ok);
+  EXPECT_TRUE(affine);
+
+  // One uncancelled component remains nonlinear and must fail closed.
+  const auto curved = Point(0, 1, 1, 0, 2, 0);
+  ASSERT_EQ(sct::CertifyRigidPointAffineMotion(
+      curved, View(accepted_values, 4), View(prepared_values, 4),
+      node_groups, &accepted_group, &prepared_group, 1,
+      Trajectory, .01, &affine), sct::RigidMemberSweepStatus::Ok);
+  EXPECT_FALSE(affine);
+
+  c::FixedContactFacet facet;
+  facet.vertices[0] = weighted;
+  facet.vertices[1] = parallel;
+  // Ordinary + zero-spin/mixed composition is affine.  Use a zero-spin
+  // snapshot for the third represented point.
+  facet.vertices[2] = Point(3, .25, 2, .75, 1, 0);
+  auto zero_spin = prepared_group;
+  zero_spin.state.omega = {};
+  ASSERT_EQ(sct::CertifyRigidFacetAffineMotion(
+      facet, View(accepted_values, 4), View(prepared_values, 4),
+      node_groups, &accepted_group, &zero_spin, 1,
+      Trajectory, .01, &affine), sct::RigidMemberSweepStatus::Ok);
+  EXPECT_TRUE(affine);
+
+  facet.vertices[2] = curved;
+  ASSERT_EQ(sct::CertifyRigidFacetAffineMotion(
+      facet, View(accepted_values, 4), View(prepared_values, 4),
+      node_groups, &accepted_group, &prepared_group, 1,
+      Trajectory, .01, &affine), sct::RigidMemberSweepStatus::Ok);
+  EXPECT_FALSE(affine);
 }
 
 }  // namespace

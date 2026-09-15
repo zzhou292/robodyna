@@ -46,7 +46,7 @@ void MakePath(const CurrentFixedTriangle& base,
   RepresentedTrianglePath next;
   next.key = PathKey(current.key);
   next.motion =
-      motion.motion == SelfContactFacetMotion::LinearNodalV1
+      motion.certified_affine
       ? RepresentedMotion::LinearNodalV1
       : RepresentedMotion::RigidArc;
   for (unsigned vertex = 0; vertex < 3; ++vertex) {
@@ -169,6 +169,7 @@ SelfContactTransactionReport BuildSweptBounds(
     const SelfContactActiveUseBinding& active_use,
     const FixedContactFacet* descriptors, std::size_t facets,
     const sct::MotionSupport* parent_motion,
+    sct::MotionSupport* facet_motion,
     const std::uint32_t* node_rigid_groups,
     const fe::NodalRigidGroupSnapshot* accepted_groups,
     const fe::NodalRigidGroupSnapshot* prepared_groups,
@@ -178,7 +179,7 @@ SelfContactTransactionReport BuildSweptBounds(
     SelfContactSweptParentBounds* facet_bounds,
     SelfContactSweptParentBounds* parent_bounds,
     std::size_t surface_parents) noexcept {
-  if (!descriptors || !facets || !parent_motion ||
+  if (!descriptors || !facets || !parent_motion || !facet_motion ||
       !node_rigid_groups ||
       !facet_bounds || !parent_bounds || !surface_parents)
     return Failure(S::InvalidInput,
@@ -195,6 +196,19 @@ SelfContactTransactionReport BuildSweptBounds(
     SelfContactSweptParentBounds next{
         {infinity, infinity, infinity},
         {-infinity, -infinity, -infinity}};
+    bool certified_affine = false;
+    const auto affine_status = sct::CertifyRigidFacetAffineMotion(
+        descriptors[facet], base, current, node_rigid_groups,
+        accepted_groups, prepared_groups, group_count,
+        rigid_trajectory, duration, &certified_affine);
+    facet_motion[facet].certified_affine =
+        affine_status == sct::RigidMemberSweepStatus::Ok &&
+        certified_affine;
+    if (facet_motion[facet].motion ==
+            SelfContactFacetMotion::LinearNodalV1 &&
+        !facet_motion[facet].certified_affine)
+      return Failure(S::IdentityMismatch,
+          "Ordinary facet failed affine motion authentication", facet);
     bool bounded = true;
     for (unsigned vertex = 0; vertex < 3; ++vertex) {
       SelfContactSweptParentBounds point;
@@ -617,6 +631,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
   auto bounded = BuildSweptBounds(
       state.active_use, state.buffers.facet_descriptors, triangles,
       state.buffers.parent_motion,
+      state.buffers.facet_motion,
       state.buffers.node_rigid_groups,
       state.buffers.accepted_rigid_groups,
       state.buffers.prepared_rigid_groups,
