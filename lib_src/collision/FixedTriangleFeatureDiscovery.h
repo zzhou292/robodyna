@@ -15,6 +15,15 @@ Status EvaluateCurrentFixedTriangle(const FixedContactFacet& facet,
                                     VectorView positions,
                                     CurrentFixedTriangle* output) noexcept;
 
+// Builds the authenticated local-incidence mask for one pair from immutable
+// current-triangle identity/topology only; coordinates are not inspected.
+// Pair side order is canonicalized by FixedTriangleKey. Equal triangle
+// identities and null output storage fail without changing the output.
+FixedTriangleDiscoveryStatus BuildFixedTriangleFeatureTaskMask(
+    const CurrentFixedTriangle& first,
+    const CurrentFixedTriangle& second,
+    FixedTriangleFeatureTaskMask* output) noexcept;
+
 // Bounded host discovery for fixed physical triangles.  Discover evaluates
 // all six VF orientations and all nine EE pairs for every supplied pair.
 // DiscoverMasked accepts one caller-owned 15-bit local-incidence mask per

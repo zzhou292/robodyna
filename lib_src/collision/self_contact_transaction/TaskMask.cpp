@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
-
-#include <algorithm>
+#include "../FixedTriangleFeatureDiscovery.h"
 
 namespace tlfea::contact::self_contact_transaction {
 namespace {
@@ -22,51 +21,13 @@ FixedTriangleKey Key(const FixedContactFacet& facet) noexcept {
           facet.level, facet.local_facet};
 }
 
-bool Same(const FacetVertexKey& a,
-          const FacetVertexKey& b) noexcept {
-  return fixed_triangle_features::Compare(a, b) == 0;
-}
-
-bool VertexInFacet(const FacetVertexKey& vertex,
-                   const FixedContactFacet& facet) noexcept {
-  for (const auto& candidate : facet.vertex_keys)
-    if (Same(vertex, candidate))
-      return true;
-  return false;
-}
-
-bool EdgesShareEndpoint(const FacetEdgeKey& a,
-                        const FacetEdgeKey& b) noexcept {
-  for (const auto& first : a.endpoints)
-    for (const auto& second : b.endpoints)
-      if (Same(first, second))
-        return true;
-  return false;
-}
-
-FixedTriangleFeatureTaskMask LocalMask(
-    const FixedContactFacet& input_a,
-    const FixedContactFacet& input_b) noexcept {
-  const FixedContactFacet* a = &input_a;
-  const FixedContactFacet* b = &input_b;
-  if (fixed_triangle_features::Compare(Key(*b), Key(*a)) < 0)
-    std::swap(a, b);
-
-  FixedTriangleFeatureTaskMask result;
-  for (unsigned vertex = 0; vertex < 3; ++vertex) {
-    if (VertexInFacet(a->vertex_keys[vertex], *b))
-      result.local_tasks |= FixedTriangleFeatureTaskBit(
-          FixedTriangleVertexFaceTaskSlot(0, vertex));
-    if (VertexInFacet(b->vertex_keys[vertex], *a))
-      result.local_tasks |= FixedTriangleFeatureTaskBit(
-          FixedTriangleVertexFaceTaskSlot(1, vertex));
+CurrentFixedTriangle Identity(const FixedContactFacet& facet) noexcept {
+  CurrentFixedTriangle result;
+  result.key = Key(facet);
+  for (unsigned local = 0; local < 3; ++local) {
+    result.vertex_keys[local] = facet.vertex_keys[local];
+    result.edge_keys[local] = facet.edge_keys[local];
   }
-  for (unsigned edge_a = 0; edge_a < 3; ++edge_a)
-    for (unsigned edge_b = 0; edge_b < 3; ++edge_b)
-      if (EdgesShareEndpoint(a->edge_keys[edge_a],
-                             b->edge_keys[edge_b]))
-        result.local_tasks |= FixedTriangleFeatureTaskBit(
-            FixedTriangleEdgeEdgeTaskSlot(edge_a, edge_b));
   return result;
 }
 
@@ -98,9 +59,16 @@ SelfContactTransactionReport BuildLocalFeatureTaskMasks(
           S::IdentityMismatch,
           "Local feature task mask pair identity is invalid", pair);
   }
-  for (std::size_t pair = 0; pair < pair_count; ++pair)
-    masks[pair] = LocalMask(
-        facets[pairs[pair].first], facets[pairs[pair].second]);
+  for (std::size_t pair = 0; pair < pair_count; ++pair) {
+    const auto first = Identity(facets[pairs[pair].first]);
+    const auto second = Identity(facets[pairs[pair].second]);
+    const auto status = BuildFixedTriangleFeatureTaskMask(
+        first, second, masks + pair);
+    if (status != FixedTriangleDiscoveryStatus::Ok)
+      return Failure(
+          S::IdentityMismatch,
+          "Local feature task mask pair identity is invalid", pair);
+  }
   return {};
 }
 

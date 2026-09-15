@@ -33,6 +33,46 @@ ct::FixedTriangleFeatureTaskMask Mask(
 }
 
 TEST(FixedTriangleTaskMask,
+     ProductionBuilderCoversAllSlotsCanonicalOrderAndDistinctIds) {
+  const ct::Vec3 points[3]{{0, 0, 0}, {2, 0, 0}, {0, 2, 0}};
+  const std::uint64_t ids[3]{1, 2, 3};
+  const auto first = ft::Triangle(100, 0, points, ids);
+  const auto second = ft::Triangle(200, 0, points, ids);
+
+  ct::FixedTriangleFeatureTaskMask forward{0x8000u};
+  ASSERT_EQ(ct::BuildFixedTriangleFeatureTaskMask(
+                first, second, &forward),
+            ct::FixedTriangleDiscoveryStatus::Ok);
+  EXPECT_EQ(forward.local_tasks, ct::FixedTriangleFeatureTaskBits);
+  for (unsigned slot = 0; slot < 15; ++slot)
+    EXPECT_NE(forward.local_tasks &
+                  ct::FixedTriangleFeatureTaskBit(slot),
+              0u) << slot;
+
+  ct::FixedTriangleFeatureTaskMask reverse;
+  ASSERT_EQ(ct::BuildFixedTriangleFeatureTaskMask(
+                second, first, &reverse),
+            ct::FixedTriangleDiscoveryStatus::Ok);
+  EXPECT_EQ(reverse.local_tasks, forward.local_tasks);
+
+  const auto other_source = ft::Triangle(100, 0, points, ids, 2);
+  ct::FixedTriangleFeatureTaskMask distinct_source{0x8000u};
+  ASSERT_EQ(ct::BuildFixedTriangleFeatureTaskMask(
+                first, other_source, &distinct_source),
+            ct::FixedTriangleDiscoveryStatus::Ok);
+  EXPECT_EQ(distinct_source.local_tasks, 0u);
+
+  ct::FixedTriangleFeatureTaskMask unchanged{0x1234u};
+  EXPECT_EQ(ct::BuildFixedTriangleFeatureTaskMask(
+                first, first, &unchanged),
+            ct::FixedTriangleDiscoveryStatus::IdentityMismatch);
+  EXPECT_EQ(unchanged.local_tasks, 0x1234u);
+  EXPECT_EQ(ct::BuildFixedTriangleFeatureTaskMask(
+                first, second, nullptr),
+            ct::FixedTriangleDiscoveryStatus::InvalidInput);
+}
+
+TEST(FixedTriangleTaskMask,
      AllFifteenSlotsMapAndIntersectionRemainsComplete) {
   const ct::Vec3 points[3]{{0, 0, 0}, {2, 0, 0}, {0, 2, 0}};
   const std::uint64_t ids[3]{1, 2, 3};

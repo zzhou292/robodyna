@@ -944,6 +944,24 @@ FixedTriangleFeatureTaskMask PairLocalFeatureTaskMask(
   return result;
 }
 
+}  // namespace fixed_triangle_features
+
+FixedTriangleDiscoveryStatus BuildFixedTriangleFeatureTaskMask(
+    const CurrentFixedTriangle& first,
+    const CurrentFixedTriangle& second,
+    FixedTriangleFeatureTaskMask* output) noexcept {
+  if (!output)
+    return FixedTriangleDiscoveryStatus::InvalidInput;
+  if (fixed_triangle_features::Compare(first.key, second.key) == 0)
+    return FixedTriangleDiscoveryStatus::IdentityMismatch;
+  const auto next =
+      fixed_triangle_features::PairLocalFeatureTaskMask(first, second);
+  *output = next;
+  return FixedTriangleDiscoveryStatus::Ok;
+}
+
+namespace fixed_triangle_features {
+
 FixedTriangleDiscoveryStatus EvaluatePairFeaturesMaskedOnce(
     const CurrentFixedTriangle& input_a,
     const CurrentFixedTriangle& input_b,

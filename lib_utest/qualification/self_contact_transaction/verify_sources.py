@@ -34,6 +34,10 @@ types = TYPES.read_text()
 candidate = CANDIDATE.read_text()
 transaction = TRANSACTION.read_text()
 task_mask = TASK_MASK.read_text()
+require(task_mask, "BuildFixedTriangleFeatureTaskMask(", TASK_MASK)
+if "VertexInFacet(" in task_mask or "EdgesShareEndpoint(" in task_mask:
+    raise RuntimeError(
+        f"{TASK_MASK}: chunk mask construction duplicates shared topology logic")
 layout_path = ROOT / "lib_src/collision/self_contact_transaction/Layout.cpp"
 layout = layout_path.read_text()
 for token in (
@@ -277,9 +281,8 @@ values = (
     ROOT / "lib_src/collision/self_contact_transaction/Values.cpp").read_text()
 require(source, "ClassifyAcceptedFacetPair(", source_path)
 for token in (
-    "FixedTriangleVertexFaceTaskSlot(",
-    "FixedTriangleEdgeEdgeTaskSlot(",
-    "EdgesShareEndpoint(",
+    "BuildFixedTriangleFeatureTaskMask(",
+    "CurrentFixedTriangle Identity(",
     "Validate the complete chunk before publishing any mask",
 ):
     require(task_mask, token, TASK_MASK)

@@ -26,11 +26,16 @@ static_assert(std::is_trivially_copyable_v<FixedTriangleFeatureCandidate>);
 static_assert(std::is_trivially_copyable_v<FixedTriangleIntersection>);
 int main() {
   FixedTriangleFeatureDiscovery discovery;
+  CurrentFixedTriangle triangles[2];
+  FixedTriangleFeatureTaskMask mask;
+  auto mask_status = BuildFixedTriangleFeatureTaskMask(
+      triangles[0], triangles[1], &mask);
   auto plan = FixedTriangleFeatureDiscovery::Preflight();
   auto report = discovery.Discover(nullptr, 0, nullptr, 0);
   auto f = discovery.features();
   auto x = discovery.intersections();
-  return int(plan.report.status) + int(report.feature_tasks) +
+  return int(mask_status) + int(plan.report.status) +
+         int(report.feature_tasks) +
          int(f.complete) + int(x.complete);
 }
 """

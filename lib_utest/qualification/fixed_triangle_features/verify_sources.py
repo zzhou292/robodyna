@@ -39,12 +39,15 @@ for forbidden in (
     assert forbidden not in text, forbidden
 
 geometry = production[5].read_text()
+public_header = production[1].read_text()
 assert "for (unsigned vertex = 0; vertex < 3; ++vertex)" in geometry
 assert geometry.count("AddVertexFace(") >= 3
 assert "for (unsigned edge_a = 0; edge_a < 3; ++edge_a)" in geometry
 assert "for (unsigned edge_b = 0; edge_b < 3; ++edge_b)" in geometry
 assert geometry.count("++result->feature_tasks;") == 3
 assert "PairLocalFeatureTaskMask(" in geometry
+assert "BuildFixedTriangleFeatureTaskMask(" in geometry
+assert "BuildFixedTriangleFeatureTaskMask(" in public_header
 assert "EvaluatePairFeaturesMaskedOnce(" in geometry
 assert "FixedTriangleVertexFaceTaskSlot(0, vertex)" in geometry
 assert "FixedTriangleEdgeEdgeTaskSlot(edge_a, edge_b)" in geometry
