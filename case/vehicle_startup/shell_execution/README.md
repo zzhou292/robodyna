@@ -122,10 +122,10 @@ The `vehicle_self_contact_real_geometry_coupon` is a separate bounded host
 bridge between those tiers. The existing authenticated source wrapper checks
 and extracts the pinned original member, and the existing `CanonicalSource`
 and `VehicleSourcePlan` readers authenticate the complete source authority.
-The focused fixture extracts only the three blocker parents and their
-edge-incident neighborhood from that backing. Coordinates, source node IDs,
-PID/MID/SID and section thickness are source-derived; diagnostic coordinates
-or edge parameters are not copied into the test.
+Each focused fixture extracts only its required parents (or the three blocker
+parents' edge-incident neighborhood) from that backing. Coordinates, source
+node IDs, PID/MID/SID and section thickness are source-derived; diagnostic
+coordinates or edge parameters are not copied into the test.
 
 The small function sends EID/facets `2100084:0` versus `2279821:1` and
 `2100084:0` versus `2288735:0` through typed `FixedContactFacet` evaluation and
@@ -137,10 +137,45 @@ The medium function adds only facets incident on the four discovered canonical
 edges. It checks deterministic seam deduplication while retaining a separate
 positive parent-local area owner for each source EID.
 
+The same coupon also qualifies the first nonlocal intersection reported by the
+262,144-pair accepted-V5 exact sample: EID/facets `2125365:0` and `2348922:0`,
+both source PID `2000546`. The authenticated Q4 source-node rows are
+`2120447,2352113,2352112,2352118` and
+`2352127,2352111,2352112,2352113`; the two selected facets share only canonical
+vertex `2352112`. Production local masking is exactly `0x6c30`: the two
+shared-vertex VF tasks and four edge pairs incident through that vertex are
+masked, while nine nonlocal tasks execute.
+
+Production exact intersection classification is `Transverse` with
+`local_exclusion=None`, so it requires later policy. An independent
+long-double plane-cut oracle finds a degenerate intersection segment: both
+endpoints are the source-derived position of vertex `2352112`; the two plane
+normals are nonparallel (normalized cross magnitude
+`0.999999999935844330616`). The conservative nonlocal classification is
+material: the long-double error-bounded plane cut classifies one
+selected-facet edge as lying in the other facet's plane, while the opposite
+cut reaches only the shared point, so production does not certify a
+shared-vertex-only exclusion.
+
+The nine unmasked candidates are three VF-to-edge, one VF-to-face, two strict
+interior EE and three boundary EE records. All representation errors and all
+zero-distance counts are zero. Distances range from
+`0.010458125808179189 m` to `0.016102177762525868 m`, above the authenticated
+`0.0025 m` sum of reference half-thicknesses, so there is no positive-distance
+thickness contact and no zero-distance nonlocal EE (parallel or nonparallel).
+Each record has a recognized VF/strict/boundary geometry class, but this coupon
+does not construct active-use authority and therefore does not claim an event
+admission. Swapped pair order and a permuted triangle catalog reproduce
+deterministic hash `4506431050749076252`.
+
 This coupon deliberately does not construct `VehiclePhysicalDynamics`.
 Complete area/force/STI policy remains in TL's synthetic physical
 `self_contact_active_uses` and `self_contact_transaction_cuda` coupons; the
 source proof binds those policy tests to this real source-ID/hash extraction.
+Current TL transaction policy rejects every
+`RequiresIntersectionAdmission` record before processing feature events, so
+this accepted-state pair is a candidate rejection under the existing policy;
+the geometry-class mapping above does not override that rule.
 Build and run the real bridge independently of shell execution and physical
 dynamics with:
 

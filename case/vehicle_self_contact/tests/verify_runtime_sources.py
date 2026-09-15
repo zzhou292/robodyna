@@ -197,9 +197,13 @@ def main() -> None:
         "self_contact" / "RealGeometryTest.cpp").read_text()
     for token in [
             "2100084", "2279821", "2288735",
+            "2125365", "2348922", "2352112", "0x6c30",
             "FixedContactFacet", "FixedTriangleFeatureDiscovery",
+            "DiscoverMasked", "TriangleIntersection",
+            "DiscoveryHash", "zero_nonparallel_ee",
             "StrictInteriorInteriorMinimum",
             "BoundaryVertexEdgeMinimum",
+            "FirstAcceptedNonlocalIntersectionIsTransverseAndPolicyUnresolved",
             "AdjacentFacetSeamsCanonicalizeWithoutDroppingParentLocalOwners",
             "c82f1886b8935d69ff7db4c29c700370e3a057579fab80d02664a253bc7af1c8",
             "a96bc12b9c8467253da0898565c7875ad80f58f963b45d1dc405f5dddab76b1d"]:
@@ -256,6 +260,10 @@ def main() -> None:
             "ClassifyAcceptedFacetPair(" in tl_filter_source and
             "ClassifyAcceptedFacetPair(" in tl_transaction_source,
             "app and transaction must share the production filter certificate")
+    require("RequiresIntersectionAdmission(" in tl_transaction_source and
+            "Accepted nonlocal triangle intersection is rejected" in
+            tl_transaction_source,
+            "current TL nonlocal-intersection rejection policy is missing")
     require("BuildFixedTriangleFeatureTaskMask(" in sample_source and
             ".DiscoverMasked(" in sample_source and
             "InitialExactFeatureSampleCapacity = 262144" in sample_header and
