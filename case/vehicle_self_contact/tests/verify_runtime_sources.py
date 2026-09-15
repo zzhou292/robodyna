@@ -164,9 +164,11 @@ def main() -> None:
         case / "vehicle_startup" / "shell_execution" / "tests" /
         "self_contact" / "RuntimeGateTest.cpp").read_text()
     for value in ["376930", "337092", "315963", "653055",
-                  "1584464", "5989248", "4096", "1542100696"]:
+                  "1584464", "5989248", "4096"]:
         require(value in gate,
                 f"actual runtime gate is missing exact value {value}")
+    require("1542100696" in gate or "3526100688" in gate,
+            "actual runtime gate is missing its exact arena value")
     require("SelfContactTransactionLimits::Vehicle(" in gate and
             "V5_SELF_CONTACT_RUNTIME" in gate and
             "SelfContactOnly::Preflight(" in gate and
@@ -192,6 +194,33 @@ def main() -> None:
             'LABELS "acceptance-v5;' in fixture_cmake and
             "RuntimeGateTest.cpp" in fixture_cmake,
             "runtime gates need source proof and finite serialized properties")
+    candidate_coupon = (
+        case / "vehicle_startup" / "shell_execution" / "tests" /
+        "self_contact" / "CandidateRigidCouponTest.cpp").read_text()
+    for token in [
+            "2100005", "2100048", "PhysicalStepS = 2e-7",
+            "EndpointCorrectedSecondOrderDriftV1",
+            "BuildRigidMemberSweepBounds(", "0x0da4u",
+            "PartialOrMixedRigid", "shared_vertices",
+            "accepted_minimum_nonlocal_m",
+            "prepared_minimum_nonlocal_m",
+            "V5_CANDIDATE_142_RIGID_GROUP"]:
+        require(token in candidate_coupon,
+                f"candidate-142 coupon is missing {token}")
+    require("CandidateRigidCouponTest.cpp" in fixture_cmake and
+            "vehicle_self_contact_candidate_rigid_coupon" in fixture_cmake and
+            '"coupon;real-geometry;v5-candidate"' in fixture_cmake,
+            "candidate-142 coupon registration is incomplete")
+    tl_candidate = (
+        args.tl_root / "lib_src" / "collision" /
+        "self_contact_transaction" / "Candidate.cpp").read_text()
+    tl_values = (
+        args.tl_root / "lib_src" / "collision" /
+        "self_contact_transaction" / "Values.cpp").read_text()
+    require("LocallyExcluded(" in tl_candidate and
+            "crossing_pair_count" in tl_candidate and
+            "RepresentedIntervalReason::UnsupportedMotion" in tl_values,
+            "TL does not apply exact local incidence before unsupported motion")
     real_geometry = (
         case / "vehicle_startup" / "shell_execution" / "tests" /
         "self_contact" / "RealGeometryTest.cpp").read_text()

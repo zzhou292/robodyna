@@ -186,7 +186,41 @@ only the shared `0.018139717452543137 m` segment with zero cut mismatch.
 Swapped pair order and triangle-catalog permutation reproduce deterministic
 hash `2184554811619657670`.
 
-This coupon deliberately does not construct `VehiclePhysicalDynamics`.
+The separate `vehicle_self_contact_candidate_rigid_coupon` reproduces the
+next full-V5 candidate failure without constructing or running the V5
+self-contact transaction. It advances the authenticated real-Yaris physical
+owner once at the preserved `200 ns` step, copies the owner-authenticated
+accepted/prepared nodal and rigid-group snapshots, and inspects only
+EID/facets `2100005:0` and `2100048:0`. Their active parent/facet-use ordinals
+are `4/8` and `47/94`; both are Q4 rows under PID/MID/SID `2000403`, with
+`0.00086 m` reference half-thickness each. The first facet is
+`LinearNodalV1`; the second is `PartialOrMixedRigid` because source node
+`2269331` (domain node `157735`) belongs to binding group `612`, nodal-group
+source/set `2200795`, while its other contributing nodes are ordinary.
+
+The exact facets share only canonical vertex `2159583`. Their local task mask
+is `0x0da4`, and exact accepted and prepared intersection classification
+retains the existing local exclusion at both endpoints. Every unmasked
+prepared closest feature remains separated: the minimum is
+`0.012724253647612101 m`, versus `0.00172 m` combined contact thickness.
+Their outward quadratic swept boxes overlap only because they both contain
+the shared vertex. The owner trajectory is
+`EndpointCorrectedSecondOrderDriftV1`,
+`x(u)=(1-u)x0+u*x1-.5*u(1-u)h^2 q`, but this contributing rigid node has
+prepared `omega=(0,0,0)` and therefore exact `q=omega x
+(omega x (x0-c0))=(0,0,0)`. The coupon reports every parent, vertex, edge,
+node/group identity, endpoint coordinate, group snapshot, and swept box; it
+does not infer a linear chord from the facet-level mixed-motion label.
+
+This proves the existing exact local-incidence policy is the legal resolution
+for this pair. TL applies that prepared-coordinate policy before reporting
+unsupported nonlinear motion. A nonlinear pair with no exact local
+intersection, with coordinate-only overlap, or with any nonlocal intersection
+continues to fail closed as `UnsupportedMotion`; work exhaustion is not
+converted to a local exclusion.
+
+The source-only real-geometry coupon deliberately does not construct
+`VehiclePhysicalDynamics`.
 Complete area/force/STI policy remains in TL's synthetic physical
 `self_contact_active_uses` and `self_contact_transaction_cuda` coupons; the
 source proof binds those policy tests to this real source-ID/hash extraction.

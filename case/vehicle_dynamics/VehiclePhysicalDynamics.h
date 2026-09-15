@@ -14,6 +14,7 @@ class VehicleSelfContactSetup;
 class SelfContactOnly;
 class LoadedWallSelfContact;
 class VehicleSelfContactInitialCensus;
+class CandidateRigidCouponAccess;
 struct RuntimeForecast;
 }
 namespace crash::cases::vehicle_dynamics {
@@ -96,6 +97,7 @@ class VehiclePhysicalDynamics {
     friend class vehicle_self_contact::SelfContactOnly;
     friend class vehicle_self_contact::LoadedWallSelfContact;
     friend class vehicle_self_contact::VehicleSelfContactInitialCensus;
+    friend class vehicle_self_contact::CandidateRigidCouponAccess;
     struct Storage;
     explicit VehiclePhysicalDynamics(std::unique_ptr<Storage>);
     std::unique_ptr<Storage> storage_;
