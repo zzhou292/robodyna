@@ -115,6 +115,7 @@ required = (
     "PerPairWorkExhaustionPublishesExplicitUnresolvedRecord",
     "CheckedTotalWorkExhaustionPreservesPublicationAndAllowsRetry",
     "CommonTranslationMinimalTotalCapRollsBackAndRetriesExactly",
+    "RoundedResidualMinimalCapFailureRollsBackExactly",
     "ResultCapMinusOneFailureIsAtomicAndSubsetRetrySucceeds",
     "DeepDyadicAffineContactUsesOwnedIterativeStack",
     "StaticDisjointTouchingBoxesUseExactGeometryCertificate",

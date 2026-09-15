@@ -77,11 +77,51 @@ enum class PairMotionAction : std::uint8_t {
   ExcludedSameRigidGroup,
   CertifiedRigidArcSeparation,
   UnsupportedRigidArc,
+  CertifiedResidualLinearSeparation,
 };
 
 PairMotionAction ClassifyCandidatePairMotion(
     const MotionSupport&, const SelfContactSweptParentBounds&,
     const MotionSupport&, const SelfContactSweptParentBounds&) noexcept;
+
+enum class LinearResidualSeparationStatus : std::uint8_t {
+  CertifiedSeparated,
+  PotentialContact,
+  IncompleteFeatureRoster,
+  InvalidInput,
+};
+
+// The reference is one exactly represented binary64 translation.  Residual
+// bounds are exact L1 upper bounds on each triangle's Hausdorff motion after
+// removing that reference.  The certificate requires the complete prepared
+// six-VF/nine-EE feature roster and compares exact represented-point dyadic
+// distances against representation error, both physical half-thicknesses and
+// both residual bounds.  Diagnostics are outward binary64 bounds only; the
+// decision itself is made with exact dyadic arithmetic.
+// For every prepared feature i it requires, strictly,
+//   d_i > representation_error_i + h0 + h1 + H0 + H1,
+// where Hk=max_vertex ||(x1-x0)-reference||_1.  Convex interpolation then
+// bounds each translated triangle's whole-interval Hausdorff motion by Hk.
+struct LinearResidualSeparationResult {
+  LinearResidualSeparationStatus status =
+      LinearResidualSeparationStatus::InvalidInput;
+  Vec3 reference_translation;
+  double first_residual_upper_m = 0;
+  double second_residual_upper_m = 0;
+  double prepared_distance_lower_m = 0;
+  double strict_gap_lower_m = 0;
+  bool exact_common_translation = false;
+};
+
+LinearResidualSeparationResult CertifyLinearResidualSeparation(
+    const CurrentFixedTriangle& first_base,
+    const CurrentFixedTriangle& first_prepared,
+    double first_half_thickness_m,
+    const CurrentFixedTriangle& second_base,
+    const CurrentFixedTriangle& second_prepared,
+    double second_half_thickness_m,
+    FixedTriangleFeatureView prepared_features,
+    FixedTriangleIntersectionView prepared_intersections) noexcept;
 
 enum class RigidMemberSweepStatus : std::uint8_t {
   Ok,

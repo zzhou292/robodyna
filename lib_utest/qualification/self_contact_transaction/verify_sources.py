@@ -435,8 +435,19 @@ for token in (
     "EE crossing lacks its exact accepted EE certificate",
     "input.crossings.data[pair].reason ==",
     "LocallyExcluded(\n              input.intersections",
+    "CertifyLinearResidualSeparation(",
+    "TriangleResidualL1(",
+    "SquaredDistance(",
+    "Multiply(margin, margin)",
+    "FixedTriangleFeatureTaskBits",
 ):
     require(values, token, storage_path)
+for token in (
+    "CertifiedResidualLinearSeparation",
+    "CertifyLinearResidualSeparation(",
+    "local_result.work = 1",
+):
+    require(candidate + storage, token, CANDIDATE)
 
 for wiring in (CMAKE, BAZEL):
     text = wiring.read_text()
@@ -515,6 +526,12 @@ for token in (
     "sizeof(c::SelfContactForceEventIdentity) == 240",
     "AcceptedEventsLowerBound",
     "MergeAcceptedEventIdentityChunk(",
+    "ResidualTranslationUsesOutwardBoundsAfterCancellation",
+    "ResidualTranslationRetainsSubnormalExactMotion",
+    "ResidualTranslationIsInvariantToVertexPermutation",
+    "ResidualTranslationFailsClosedOnOverflow",
+    "ResidualTranslationPreservesContactAndUnequalMotion",
+    "ResidualTranslationSubtractsRepresentationErrorStrictly",
 ):
     require(VALUE_TEST.read_text(), token, VALUE_TEST)
 for token in (
@@ -571,6 +588,7 @@ for token in (
     "ExactAffineMixedCertificateAndDecisionAreRepeatable",
     "NonlinearSubdivisionDecisionIsRepeatableAndFailClosed",
     "CommonTranslationCertificateIsDeterministicAtMinimalCap",
+    "ResidualTranslationCertificateIsDeterministic",
     "ExactLocalIntersectionPrecedesOnlyUnsupportedMotion",
     "ContactConstraintLayout::SameMergedParts",
     "ContactConstraintLayout::MergedPartAndPlain",

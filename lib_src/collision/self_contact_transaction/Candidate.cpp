@@ -448,6 +448,53 @@ bool LocalPolicyResolvesUnsupported(
   return observed == expected;
 }
 
+sct::LinearResidualSeparationResult
+ResidualLinearCertificate(
+    const CurrentFixedTriangle& first_base,
+    const CurrentFixedTriangle& first_prepared,
+    double first_half_thickness,
+    const CurrentFixedTriangle& second_base,
+    const CurrentFixedTriangle& second_prepared,
+    double second_half_thickness,
+    FixedTriangleFeatureTaskMask mask,
+    FixedTriangleFeatureView features,
+    FixedTriangleIntersectionView intersections) noexcept {
+  auto result = sct::CertifyLinearResidualSeparation(
+      first_base, first_prepared, first_half_thickness,
+      second_base, second_prepared, second_half_thickness,
+      features, intersections);
+  if (result.status !=
+          sct::LinearResidualSeparationStatus::
+              IncompleteFeatureRoster ||
+      mask.local_tasks)
+    return result;
+
+  // Publication deduplication may retain an identical canonical feature from
+  // another pair. Re-evaluate this exact nonlocal pair into bounded stack
+  // storage only when that prevents a complete 15-task distance proof.
+  FixedTriangleFeatureCandidate local_features[15];
+  fixed_triangle_features::PairFeatureResult feature_result;
+  if (fixed_triangle_features::EvaluatePairFeaturesOnce(
+          first_prepared, second_prepared,
+          local_features, 15, &feature_result) !=
+          FixedTriangleDiscoveryStatus::Ok ||
+      feature_result.feature_count != 15)
+    return result;
+  FixedTriangleIntersection local_intersection;
+  bool intersects = false;
+  if (fixed_triangle_features::ClassifyPairIntersection(
+          first_prepared, second_prepared,
+          &local_intersection, &intersects) !=
+      FixedTriangleDiscoveryStatus::Ok)
+    return result;
+  return sct::CertifyLinearResidualSeparation(
+      first_base, first_prepared, first_half_thickness,
+      second_base, second_prepared, second_half_thickness,
+      {local_features, 15, true},
+      {intersects ? &local_intersection : nullptr,
+       intersects ? 1u : 0u, true});
+}
+
 }  // namespace
 
 SelfContactTransactionReport SelfContactTransaction::SealCandidate(
@@ -925,6 +972,62 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
         const auto action =
             state.buffers.chunk_motion_actions[raw_pair];
         const auto facet_pair = state.buffers.facet_pair_chunk[pair];
+        if (action == sct::PairMotionAction::LinearNodalV1) {
+          const auto first_parent =
+              state.buffers.facet_motion[facet_pair.first].parent;
+          const auto second_parent =
+              state.buffers.facet_motion[facet_pair.second].parent;
+          if (first_parent >= parents.size() ||
+              second_parent >= parents.size())
+            return state.Fail(Failure(
+                S::IdentityMismatch,
+                "Residual linear certificate has no active parent",
+                SIZE_MAX,
+                state.candidate_facet_pair_count + raw_pair));
+          const auto residual =
+              ResidualLinearCertificate(
+                  state.buffers.accepted_triangles[
+                      facet_pair.first],
+                  state.buffers.prepared_triangles[
+                      facet_pair.first],
+                  parents[first_parent].
+                      reference_half_thickness_m,
+                  state.buffers.accepted_triangles[
+                      facet_pair.second],
+                  state.buffers.prepared_triangles[
+                      facet_pair.second],
+                  parents[second_parent].
+                      reference_half_thickness_m,
+                  state.buffers.chunk_feature_task_masks[pair],
+                  features, intersections);
+          if (residual.status ==
+              sct::LinearResidualSeparationStatus::InvalidInput)
+            return state.Fail(Failure(
+                S::IdentityMismatch,
+                "Residual linear certificate input is invalid",
+                SIZE_MAX,
+                state.candidate_facet_pair_count + raw_pair));
+          if (residual.status ==
+              sct::LinearResidualSeparationStatus::
+                  CertifiedSeparated) {
+            state.buffers.chunk_motion_actions[raw_pair] =
+                sct::PairMotionAction::
+                    CertifiedResidualLinearSeparation;
+            auto& local_result =
+                state.buffers.chunk_crossings[pair];
+            local_result = {};
+            local_result.key =
+                state.buffers.chunk_canonical_pairs[pair];
+            local_result.classification =
+                RepresentedIntervalClassification::
+                    CertifiedSeparated;
+            local_result.reason =
+                RepresentedIntervalReason::None;
+            local_result.work = 1;
+            ++raw_pair;
+            continue;
+          }
+        }
         if (action == sct::PairMotionAction::UnsupportedRigidArc) {
           const auto first_parent =
               state.buffers.facet_motion[facet_pair.first].parent;
@@ -1033,6 +1136,12 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
               SIZE_MAX, state.candidate_facet_pair_count + raw_pair));
         const auto action =
             state.buffers.chunk_motion_actions[raw_pair];
+        if (action ==
+            sct::PairMotionAction::
+                CertifiedResidualLinearSeparation) {
+          ++raw_pair;
+          continue;
+        }
         if (action == sct::PairMotionAction::UnsupportedRigidArc) {
           ++raw_pair;
           continue;

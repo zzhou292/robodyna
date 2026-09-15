@@ -222,6 +222,8 @@ c::CurrentFixedTriangle Triangle(
   for (unsigned i = 0; i < 3; ++i) {
     result.vertex_keys[i] = Vertex(vertices[i]);
     result.vertices[i] = points[i];
+  }
+  for (unsigned i = 0; i < 3; ++i) {
     auto a = result.vertex_keys[i];
     auto b = result.vertex_keys[(i + 1) % 3];
     if (c::fixed_triangle_features::Compare(b, a) < 0)
@@ -231,6 +233,50 @@ c::CurrentFixedTriangle Triangle(
     result.edge_keys[i].endpoints[1] = b;
   }
   return result;
+}
+
+struct PreparedPairFeatures {
+  std::array<c::FixedTriangleFeatureCandidate, 15> values{};
+  std::size_t count = 0;
+  std::array<c::FixedTriangleIntersection, 1> intersections{};
+  std::size_t intersection_count = 0;
+};
+
+PreparedPairFeatures DiscoverPreparedPair(
+    const c::CurrentFixedTriangle& first,
+    const c::CurrentFixedTriangle& second) {
+  PreparedPairFeatures output;
+  c::fixed_triangle_features::PairFeatureResult features;
+  EXPECT_EQ(
+      c::fixed_triangle_features::EvaluatePairFeaturesOnce(
+          first, second, output.values.data(),
+          output.values.size(), &features),
+      c::FixedTriangleDiscoveryStatus::Ok);
+  output.count = features.feature_count;
+  bool intersects = false;
+  EXPECT_EQ(
+      c::fixed_triangle_features::ClassifyPairIntersection(
+          first, second, output.intersections.data(),
+          &intersects),
+      c::FixedTriangleDiscoveryStatus::Ok);
+  output.intersection_count = intersects ? 1 : 0;
+  return output;
+}
+
+sct::LinearResidualSeparationResult ResidualCertificate(
+    const c::CurrentFixedTriangle& first_base,
+    const c::CurrentFixedTriangle& first_prepared,
+    const c::CurrentFixedTriangle& second_base,
+    const c::CurrentFixedTriangle& second_prepared,
+    double half_thickness = .1) {
+  const auto geometry =
+      DiscoverPreparedPair(first_prepared, second_prepared);
+  return sct::CertifyLinearResidualSeparation(
+      first_base, first_prepared, half_thickness,
+      second_base, second_prepared, half_thickness,
+      {geometry.values.data(), geometry.count, true},
+      {geometry.intersections.data(),
+       geometry.intersection_count, true});
 }
 
 sct::CandidateValidationInput Input(
@@ -249,6 +295,182 @@ sct::CandidateValidationInput Input(
   input.outcome_capacity = pair_count;
   input.outcome_count = outcome_count;
   return input;
+}
+
+TEST(SelfContactTransactionValues,
+     ResidualTranslationUsesOutwardBoundsAfterCancellation) {
+  const double translation = std::ldexp(1.0, -52);
+  const auto first_base = Triangle(
+      10, {1, 2, 3},
+      {{{0, 0, 0}, {2, 0, 0}, {0, 2, 0}}});
+  const auto second_base = Triangle(
+      20, {4, 5, 6},
+      {{{0, 0, 1}, {2, 0, 1}, {0, 2, 1}}});
+  auto first_prepared = first_base;
+  auto second_prepared = second_base;
+  for (auto* triangle : {&first_prepared, &second_prepared})
+    for (auto& vertex : triangle->vertices)
+      vertex.x += translation;
+
+  const auto result = ResidualCertificate(
+      first_base, first_prepared,
+      second_base, second_prepared);
+  EXPECT_EQ(
+      result.status,
+      sct::LinearResidualSeparationStatus::
+          CertifiedSeparated);
+  EXPECT_EQ(result.reference_translation.x, translation);
+  EXPECT_FALSE(result.exact_common_translation);
+  EXPECT_GE(result.first_residual_upper_m, translation);
+  EXPECT_GE(result.second_residual_upper_m, translation);
+  EXPECT_GT(result.prepared_distance_lower_m, .99);
+  EXPECT_GT(result.strict_gap_lower_m, .79);
+}
+
+TEST(SelfContactTransactionValues,
+     ResidualTranslationRetainsSubnormalExactMotion) {
+  const double translation =
+      std::numeric_limits<double>::denorm_min();
+  const auto first_base = Triangle(
+      10, {1, 2, 3},
+      {{{0, 0, 0}, {2, 0, 0}, {0, 2, 0}}});
+  const auto second_base = Triangle(
+      20, {4, 5, 6},
+      {{{0, 0, 1}, {2, 0, 1}, {0, 2, 1}}});
+  auto first_prepared = first_base;
+  auto second_prepared = second_base;
+  for (auto* triangle : {&first_prepared, &second_prepared})
+    for (auto& vertex : triangle->vertices)
+      vertex.x += translation;
+
+  const auto result = ResidualCertificate(
+      first_base, first_prepared,
+      second_base, second_prepared);
+  EXPECT_EQ(
+      result.status,
+      sct::LinearResidualSeparationStatus::
+          CertifiedSeparated);
+  EXPECT_FALSE(result.exact_common_translation);
+  EXPECT_GT(result.first_residual_upper_m, 0);
+  EXPECT_GT(result.second_residual_upper_m, 0);
+}
+
+TEST(SelfContactTransactionValues,
+     ResidualTranslationIsInvariantToVertexPermutation) {
+  const double translation = std::ldexp(1.0, -52);
+  const auto first_base = Triangle(
+      10, {1, 2, 3},
+      {{{0, 0, 0}, {2, 0, 0}, {0, 2, 0}}});
+  const auto second_base = Triangle(
+      20, {4, 5, 6},
+      {{{0, 0, 1}, {2, 0, 1}, {0, 2, 1}}});
+  auto first_prepared = first_base;
+  auto second_prepared = second_base;
+  for (auto* triangle : {&first_prepared, &second_prepared})
+    for (auto& vertex : triangle->vertices)
+      vertex.x += translation;
+  const auto original = ResidualCertificate(
+      first_base, first_prepared,
+      second_base, second_prepared);
+
+  const auto permute = [](c::CurrentFixedTriangle value) {
+    const auto old = value;
+    constexpr unsigned order[3]{1, 2, 0};
+    for (unsigned i = 0; i < 3; ++i) {
+      value.vertices[i] = old.vertices[order[i]];
+      value.vertex_keys[i] = old.vertex_keys[order[i]];
+      value.edge_keys[i] = old.edge_keys[order[i]];
+    }
+    return value;
+  };
+  const auto permuted = ResidualCertificate(
+      permute(first_base), permute(first_prepared),
+      permute(second_base), permute(second_prepared));
+  EXPECT_EQ(
+      original.status,
+      sct::LinearResidualSeparationStatus::
+          CertifiedSeparated);
+  EXPECT_EQ(permuted.status, original.status);
+  EXPECT_GT(permuted.strict_gap_lower_m, 0);
+  EXPECT_GT(original.strict_gap_lower_m, 0);
+}
+
+TEST(SelfContactTransactionValues,
+     ResidualTranslationFailsClosedOnOverflow) {
+  auto first_base = Triangle(
+      10, {1, 2, 3},
+      {{{0, 0, 0}, {2, 0, 0}, {0, 2, 0}}});
+  auto first_prepared = first_base;
+  const auto second = Triangle(
+      20, {4, 5, 6},
+      {{{0, 0, 1}, {2, 0, 1}, {0, 2, 1}}});
+  first_base.vertices[0].x =
+      -std::numeric_limits<double>::max();
+  first_prepared.vertices[0].x =
+      std::numeric_limits<double>::max();
+  const auto result = sct::CertifyLinearResidualSeparation(
+      first_base, first_prepared, .1,
+      second, second, .1,
+      {nullptr, 0, true}, {nullptr, 0, true});
+  EXPECT_EQ(
+      result.status,
+      sct::LinearResidualSeparationStatus::InvalidInput);
+}
+
+TEST(SelfContactTransactionValues,
+     ResidualTranslationPreservesContactAndUnequalMotion) {
+  const auto first = Triangle(
+      10, {1, 2, 3},
+      {{{0, 0, 0}, {2, 0, 0}, {0, 2, 0}}});
+  const auto close_second = Triangle(
+      20, {4, 5, 6},
+      {{{0, 0, .15}, {2, 0, .15}, {0, 2, .15}}});
+  EXPECT_EQ(
+      ResidualCertificate(
+          first, first, close_second, close_second)
+          .status,
+      sct::LinearResidualSeparationStatus::PotentialContact);
+
+  const auto second_base = Triangle(
+      20, {4, 5, 6},
+      {{{0, 0, 2}, {2, 0, 2}, {0, 2, 2}}});
+  const auto second_prepared = Triangle(
+      20, {4, 5, 6},
+      {{{0, 0, 1}, {2, 0, 1}, {0, 2, 1}}});
+  EXPECT_EQ(
+      ResidualCertificate(
+          first, first, second_base, second_prepared)
+          .status,
+      sct::LinearResidualSeparationStatus::PotentialContact);
+}
+
+TEST(SelfContactTransactionValues,
+     ResidualTranslationSubtractsRepresentationErrorStrictly) {
+  const auto first = Triangle(
+      10, {1, 2, 3},
+      {{{0, 0, 0}, {2, 0, 0}, {0, 2, 0}}});
+  const auto second = Triangle(
+      20, {4, 5, 6},
+      {{{0, 0, 1}, {2, 0, 1}, {0, 2, 1}}});
+  auto geometry = DiscoverPreparedPair(first, second);
+  ASSERT_EQ(geometry.count, 15u);
+  for (auto& feature : geometry.values)
+    feature.representation_error_m = .79;
+  EXPECT_EQ(
+      sct::CertifyLinearResidualSeparation(
+          first, first, .1, second, second, .1,
+          {geometry.values.data(), geometry.count, true},
+          {nullptr, 0, true}).status,
+      sct::LinearResidualSeparationStatus::
+          CertifiedSeparated);
+  for (auto& feature : geometry.values)
+    feature.representation_error_m = .8;
+  EXPECT_EQ(
+      sct::CertifyLinearResidualSeparation(
+          first, first, .1, second, second, .1,
+          {geometry.values.data(), geometry.count, true},
+          {nullptr, 0, true}).status,
+      sct::LinearResidualSeparationStatus::PotentialContact);
 }
 
 TEST(SelfContactTransactionValues,

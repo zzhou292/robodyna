@@ -3,7 +3,10 @@
 #include "../SelfContactForceValues.h"
 
 #include <algorithm>
+#include <boost/multiprecision/cpp_int.hpp>
 #include <cmath>
+#include <cstring>
+#include <limits>
 #include <tuple>
 
 namespace tlfea::contact::self_contact_transaction {
@@ -48,6 +51,201 @@ RepresentedIntervalPairKey PairKey(
           result.paths[1], result.paths[0]) < 0)
     std::swap(result.paths[0], result.paths[1]);
   return result;
+}
+
+using ExactBackend = boost::multiprecision::cpp_int_backend<
+    16384, 16384, boost::multiprecision::signed_magnitude,
+    boost::multiprecision::checked, void>;
+using ExactInteger =
+    boost::multiprecision::number<ExactBackend,
+                                  boost::multiprecision::et_off>;
+
+struct Dyadic {
+  ExactInteger numerator = 0;
+  int exponent = 0;
+};
+
+Dyadic Exact(double value) {
+  std::uint64_t bits = 0;
+  static_assert(sizeof(bits) == sizeof(value), "binary64 representation");
+  std::memcpy(&bits, &value, sizeof(bits));
+  const bool negative = (bits >> 63) != 0;
+  const unsigned encoded_exponent =
+      static_cast<unsigned>((bits >> 52) & 0x7ffu);
+  const std::uint64_t fraction =
+      bits & ((std::uint64_t{1} << 52) - 1);
+  Dyadic result;
+  if (encoded_exponent == 0) {
+    result.numerator = fraction;
+    result.exponent = -1074;
+  } else {
+    result.numerator = (std::uint64_t{1} << 52) | fraction;
+    result.exponent =
+        static_cast<int>(encoded_exponent) - 1023 - 52;
+  }
+  if (negative)
+    result.numerator = -result.numerator;
+  return result;
+}
+
+Dyadic Add(Dyadic a, Dyadic b) {
+  if (a.numerator == 0) return b;
+  if (b.numerator == 0) return a;
+  const int exponent = std::min(a.exponent, b.exponent);
+  const auto shift = [](ExactInteger* value, unsigned amount) {
+    const bool negative = *value < 0;
+    if (negative) *value = -*value;
+    *value <<= amount;
+    if (negative) *value = -*value;
+  };
+  shift(&a.numerator,
+        static_cast<unsigned>(a.exponent - exponent));
+  shift(&b.numerator,
+        static_cast<unsigned>(b.exponent - exponent));
+  return {a.numerator + b.numerator, exponent};
+}
+
+Dyadic Negate(Dyadic value) {
+  value.numerator = -value.numerator;
+  return value;
+}
+
+Dyadic Subtract(Dyadic a, Dyadic b) {
+  return Add(a, Negate(b));
+}
+
+Dyadic Multiply(const Dyadic& a, const Dyadic& b) {
+  return {a.numerator * b.numerator, a.exponent + b.exponent};
+}
+
+Dyadic Absolute(Dyadic value) {
+  if (value.numerator < 0)
+    value.numerator = -value.numerator;
+  return value;
+}
+
+int Compare(const Dyadic& a, const Dyadic& b) {
+  const auto difference = Subtract(a, b);
+  return difference.numerator < 0
+      ? -1
+      : (difference.numerator > 0 ? 1 : 0);
+}
+
+double Component(Vec3 value, unsigned component) noexcept {
+  return component == 0 ? value.x
+                        : (component == 1 ? value.y : value.z);
+}
+
+double NextDown(double value) noexcept {
+  return std::nextafter(
+      value, -std::numeric_limits<double>::infinity());
+}
+
+double NextUp(double value) noexcept {
+  return std::nextafter(
+      value, std::numeric_limits<double>::infinity());
+}
+
+double ResidualL1Upper(
+    Vec3 base, Vec3 prepared, Vec3 reference) noexcept {
+  double bound = 0;
+  for (unsigned component = 0; component < 3; ++component) {
+    const double displacement =
+        Component(prepared, component) - Component(base, component);
+    if (!std::isfinite(displacement))
+      return std::numeric_limits<double>::infinity();
+    const double lower =
+        NextDown(NextDown(displacement) -
+                 Component(reference, component));
+    const double upper =
+        NextUp(NextUp(displacement) -
+               Component(reference, component));
+    if (!std::isfinite(lower) || !std::isfinite(upper))
+      return std::numeric_limits<double>::infinity();
+    const double absolute =
+        std::max(std::fabs(lower), std::fabs(upper));
+    bound = NextUp(bound + absolute);
+  }
+  return bound;
+}
+
+Dyadic ResidualL1(
+    Vec3 base, Vec3 prepared, Vec3 reference) {
+  Dyadic bound;
+  for (unsigned component = 0; component < 3; ++component) {
+    const auto displacement = Subtract(
+        Exact(Component(prepared, component)),
+        Exact(Component(base, component)));
+    bound = Add(
+        bound,
+        Absolute(Subtract(
+            displacement,
+            Exact(Component(reference, component)))));
+  }
+  return bound;
+}
+
+Dyadic TriangleResidualL1(
+    const CurrentFixedTriangle& base,
+    const CurrentFixedTriangle& prepared,
+    Vec3 reference) {
+  Dyadic bound;
+  for (unsigned vertex = 0; vertex < 3; ++vertex) {
+    const auto residual = ResidualL1(
+        base.vertices[vertex], prepared.vertices[vertex], reference);
+    if (Compare(residual, bound) > 0)
+      bound = residual;
+  }
+  return bound;
+}
+
+double TriangleResidualL1Upper(
+    const CurrentFixedTriangle& base,
+    const CurrentFixedTriangle& prepared,
+    Vec3 reference) noexcept {
+  double bound = 0;
+  for (unsigned vertex = 0; vertex < 3; ++vertex)
+    bound = std::max(
+        bound, ResidualL1Upper(
+                   base.vertices[vertex],
+                   prepared.vertices[vertex], reference));
+  return bound;
+}
+
+Dyadic SquaredDistance(Vec3 first, Vec3 second) {
+  Dyadic result;
+  for (unsigned component = 0; component < 3; ++component) {
+    const auto difference = Subtract(
+        Exact(Component(first, component)),
+        Exact(Component(second, component)));
+    result = Add(result, Multiply(difference, difference));
+  }
+  return result;
+}
+
+unsigned FeatureTaskSlot(
+    const FixedTriangleFeatureCandidate& feature) noexcept {
+  if (feature.key.kind ==
+      FixedTriangleCandidateKind::VertexFace) {
+    const bool first_is_vertex =
+        feature.local_features[0] < 3 &&
+        feature.local_features[1] == 3;
+    const bool second_is_vertex =
+        feature.local_features[1] < 3 &&
+        feature.local_features[0] == 3;
+    if (first_is_vertex == second_is_vertex)
+      return 15;
+    const unsigned side = second_is_vertex ? 1 : 0;
+    return FixedTriangleVertexFaceTaskSlot(
+        side, feature.local_features[side]);
+  }
+  if (feature.key.kind ==
+          FixedTriangleCandidateKind::EdgeEdge &&
+      feature.local_features[0] < 3 &&
+      feature.local_features[1] < 3)
+    return FixedTriangleEdgeEdgeTaskSlot(
+        feature.local_features[0], feature.local_features[1]);
+  return 15;
 }
 
 bool PairPresent(const RepresentedIntervalPairKey* values,
@@ -459,6 +657,140 @@ bool ExactFacetPair(const FixedTriangleFeatureCandidate& a,
           same(a.triangles[1], b.triangles[1])) ||
       (same(a.triangles[0], b.triangles[1]) &&
        same(a.triangles[1], b.triangles[0]));
+}
+
+LinearResidualSeparationResult CertifyLinearResidualSeparation(
+    const CurrentFixedTriangle& first_base,
+    const CurrentFixedTriangle& first_prepared,
+    double first_half_thickness_m,
+    const CurrentFixedTriangle& second_base,
+    const CurrentFixedTriangle& second_prepared,
+    double second_half_thickness_m,
+    FixedTriangleFeatureView prepared_features,
+    FixedTriangleIntersectionView prepared_intersections) noexcept {
+  LinearResidualSeparationResult result;
+  if (!Same(first_base.key, first_prepared.key) ||
+      !Same(second_base.key, second_prepared.key) ||
+      !prepared_features.complete ||
+      !prepared_intersections.complete ||
+      (prepared_features.count && !prepared_features.data) ||
+      (prepared_intersections.count &&
+       !prepared_intersections.data) ||
+      !std::isfinite(first_half_thickness_m) ||
+      !(first_half_thickness_m > 0) ||
+      !std::isfinite(second_half_thickness_m) ||
+      !(second_half_thickness_m > 0))
+    return result;
+
+  result.reference_translation = {
+      first_prepared.vertices[0].x - first_base.vertices[0].x,
+      first_prepared.vertices[0].y - first_base.vertices[0].y,
+      first_prepared.vertices[0].z - first_base.vertices[0].z};
+  if (!IsFinite(result.reference_translation))
+    return result;
+
+  const auto key = PairKey(first_prepared.key, second_prepared.key);
+  for (std::size_t i = 0;
+       i < prepared_intersections.count; ++i) {
+    const auto& intersection = prepared_intersections.data[i];
+    if (Compare(PairKey(
+                    intersection.triangles[0],
+                    intersection.triangles[1]),
+                key) == 0) {
+      result.status =
+          LinearResidualSeparationStatus::PotentialContact;
+      return result;
+    }
+  }
+
+  try {
+    const auto first_residual = TriangleResidualL1(
+        first_base, first_prepared,
+        result.reference_translation);
+    const auto second_residual = TriangleResidualL1(
+        second_base, second_prepared,
+        result.reference_translation);
+    result.exact_common_translation =
+        first_residual.numerator == 0 &&
+        second_residual.numerator == 0;
+    result.first_residual_upper_m =
+        TriangleResidualL1Upper(
+            first_base, first_prepared,
+            result.reference_translation);
+    result.second_residual_upper_m =
+        TriangleResidualL1Upper(
+            second_base, second_prepared,
+            result.reference_translation);
+    if (!std::isfinite(result.first_residual_upper_m) ||
+        !std::isfinite(result.second_residual_upper_m))
+      return result;
+
+    auto exact_margin = Add(
+        Add(Exact(first_half_thickness_m),
+            Exact(second_half_thickness_m)),
+        Add(first_residual, second_residual));
+    std::uint16_t observed = 0;
+    double minimum_lower =
+        std::numeric_limits<double>::infinity();
+    for (std::size_t i = 0;
+         i < prepared_features.count; ++i) {
+      const auto& feature = prepared_features.data[i];
+      if (Compare(PairKey(
+                      feature.triangles[0],
+                      feature.triangles[1]),
+                  key) != 0)
+        continue;
+      const unsigned slot = FeatureTaskSlot(feature);
+      const auto bit = FixedTriangleFeatureTaskBit(slot);
+      if (!bit || (observed & bit) ||
+          !std::isfinite(feature.distance_m) ||
+          feature.distance_m < 0 ||
+          !std::isfinite(feature.representation_error_m) ||
+          feature.representation_error_m < 0) {
+        result.status =
+            LinearResidualSeparationStatus::
+                IncompleteFeatureRoster;
+        return result;
+      }
+      observed = static_cast<std::uint16_t>(observed | bit);
+      const auto margin = Add(
+          exact_margin,
+          Exact(feature.representation_error_m));
+      const auto squared_distance =
+          SquaredDistance(feature.points[0], feature.points[1]);
+      if (Compare(squared_distance,
+                  Multiply(margin, margin)) <= 0) {
+        result.status =
+            LinearResidualSeparationStatus::PotentialContact;
+        return result;
+      }
+      minimum_lower = std::min(
+          minimum_lower,
+          NextDown(feature.distance_m -
+                   feature.representation_error_m));
+    }
+    if (observed != FixedTriangleFeatureTaskBits) {
+      result.status =
+          LinearResidualSeparationStatus::
+              IncompleteFeatureRoster;
+      return result;
+    }
+    result.prepared_distance_lower_m = minimum_lower;
+    const double residual_upper = NextUp(
+        result.first_residual_upper_m +
+        result.second_residual_upper_m);
+    result.strict_gap_lower_m = NextDown(
+        NextDown(
+            NextDown(minimum_lower -
+                     first_half_thickness_m) -
+            second_half_thickness_m) -
+        residual_upper);
+    result.status =
+        LinearResidualSeparationStatus::CertifiedSeparated;
+    return result;
+  } catch (...) {
+    return result;
+  }
 }
 
 SelfContactTransactionReport ValidateCompleteTriangleIdentities(

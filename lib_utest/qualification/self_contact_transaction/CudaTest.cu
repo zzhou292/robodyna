@@ -870,6 +870,90 @@ TEST(SelfContactTransactionCuda,
 }
 
 TEST(SelfContactTransactionCuda,
+     ResidualTranslationCertificateIsDeterministic) {
+  const auto vertex = [](std::uint64_t id) {
+    c::FacetVertexKey result;
+    result.source_instance_id = 17;
+    result.first = id;
+    return result;
+  };
+  const auto triangle = [&](std::uint64_t eid,
+                            std::uint64_t first_vertex,
+                            double z) {
+    c::CurrentFixedTriangle result;
+    result.key = {17, eid, 0, 0};
+    const c::Vec3 points[3]{
+        {0, 0, z}, {2, 0, z}, {0, 2, z}};
+    for (unsigned i = 0; i < 3; ++i) {
+      result.vertices[i] = points[i];
+      result.vertex_keys[i] = vertex(first_vertex + i);
+    }
+    for (unsigned i = 0; i < 3; ++i) {
+      auto a = result.vertex_keys[i];
+      auto b = result.vertex_keys[(i + 1) % 3];
+      if (c::fixed_triangle_features::Compare(b, a) < 0)
+        std::swap(a, b);
+      result.edge_keys[i].parent_boundary = true;
+      result.edge_keys[i].endpoints[0] = a;
+      result.edge_keys[i].endpoints[1] = b;
+    }
+    return result;
+  };
+  const auto first_base = triangle(10, 100, 0);
+  const auto second_base = triangle(20, 200, 1);
+  auto first_prepared = first_base;
+  auto second_prepared = second_base;
+  const double translation = std::ldexp(1.0, -52);
+  for (auto* value : {&first_prepared, &second_prepared})
+    for (auto& point : value->vertices)
+      point.x += translation;
+
+  std::array<c::FixedTriangleFeatureCandidate, 15> features;
+  c::fixed_triangle_features::PairFeatureResult feature_result;
+  ASSERT_EQ(
+      c::fixed_triangle_features::EvaluatePairFeaturesOnce(
+          first_prepared, second_prepared,
+          features.data(), features.size(), &feature_result),
+      c::FixedTriangleDiscoveryStatus::Ok);
+  ASSERT_EQ(feature_result.feature_count, 15u);
+  bool intersects = false;
+  c::FixedTriangleIntersection intersection;
+  ASSERT_EQ(
+      c::fixed_triangle_features::ClassifyPairIntersection(
+          first_prepared, second_prepared,
+          &intersection, &intersects),
+      c::FixedTriangleDiscoveryStatus::Ok);
+  ASSERT_FALSE(intersects);
+
+  sct::LinearResidualSeparationResult reference;
+  for (unsigned repeat = 0; repeat < 64; ++repeat) {
+    const auto result =
+        sct::CertifyLinearResidualSeparation(
+            first_base, first_prepared, .1,
+            second_base, second_prepared, .1,
+            {features.data(), feature_result.feature_count, true},
+            {nullptr, 0, true});
+    ASSERT_EQ(
+        result.status,
+        sct::LinearResidualSeparationStatus::
+            CertifiedSeparated);
+    ASSERT_FALSE(result.exact_common_translation);
+    if (!repeat)
+      reference = result;
+    EXPECT_EQ(result.reference_translation.x,
+              reference.reference_translation.x);
+    EXPECT_EQ(result.first_residual_upper_m,
+              reference.first_residual_upper_m);
+    EXPECT_EQ(result.second_residual_upper_m,
+              reference.second_residual_upper_m);
+    EXPECT_EQ(result.prepared_distance_lower_m,
+              reference.prepared_distance_lower_m);
+    EXPECT_EQ(result.strict_gap_lower_m,
+              reference.strict_gap_lower_m);
+  }
+}
+
+TEST(SelfContactTransactionCuda,
      ExactLocalIntersectionPrecedesOnlyUnsupportedMotion) {
   const c::RepresentedIntervalPairKey pair{{
       {17, 10, 0, 0}, {17, 20, 0, 0}}};
