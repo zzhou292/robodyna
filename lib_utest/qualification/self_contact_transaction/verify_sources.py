@@ -316,6 +316,8 @@ for token in (
     "gap > feature.representation_error_m",
 ):
     require(source, token, source_path)
+for text, path in ((transaction, TRANSACTION), (candidate, CANDIDATE)):
+    require(text, "broadphase.required_pairs", path)
 require(source, "ClassifyAcceptedFacetPair(", source_path)
 for token in (
     "BuildFixedTriangleFeatureTaskMask(",

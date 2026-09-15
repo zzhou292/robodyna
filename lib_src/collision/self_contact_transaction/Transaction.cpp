@@ -420,7 +420,10 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
   if (broadphase.status != SelfContactBroadphaseStatus::Ok) {
     auto report = Failure(S::BroadphaseFailure, broadphase.message);
     report.broadphase_status = broadphase.status;
-    report.candidate = broadphase.parent;
+    report.candidate =
+        broadphase.status == SelfContactBroadphaseStatus::PairCapacity
+            ? static_cast<std::size_t>(broadphase.required_pairs)
+            : static_cast<std::size_t>(broadphase.parent);
     return state.Fail(report);
   }
   auto expanded = sct::ReadBroadphase(
