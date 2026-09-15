@@ -268,6 +268,17 @@ for token in (
     "participation.SealSelfContactCandidate",
 ):
     require(candidate, token, CANDIDATE)
+for token in (
+    "LocallyExcluded(",
+    "crossing_pair_count",
+    "RepresentedIntervalReason::UnsupportedMotion",
+    "Rigid-arc swept facet boxes overlap; exact arc crossing is unresolved",
+):
+    require(candidate, token, CANDIDATE)
+if candidate.index("state.candidate_discovery.DiscoverMasked") > candidate.index(
+        "Rigid-arc swept facet boxes overlap; exact arc crossing is unresolved"):
+    raise RuntimeError(
+        f"{CANDIDATE}: unsupported motion precedes exact local geometry")
 
 for forbidden in (
     "accepted_facet_pairs",
@@ -385,6 +396,8 @@ if "CoveredByAdmittedVertexFace" in source:
 for token in (
     "RepresentedByAcceptedEdgeEdge",
     "EE crossing lacks its exact accepted EE certificate",
+    "input.crossings.data[pair].reason ==",
+    "LocallyExcluded(\n              input.intersections",
 ):
     require(values, token, storage_path)
 
@@ -511,6 +524,7 @@ for token in (
     "ActualMergedRigidBodyExcludesDiscoveredVfBeforeForceOrSti",
     "ActualMergedPartAndPlainBodiesUseMergedWrenchesBeforeInverseResponse",
     "CertifiedRigidSweepsSeparateDistantBodiesButNotOverlappingArcs",
+    "ExactLocalIntersectionPrecedesOnlyUnsupportedMotion",
     "ContactConstraintLayout::SameMergedParts",
     "ContactConstraintLayout::MergedPartAndPlain",
     "CopyPreparedForceStage",

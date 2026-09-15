@@ -872,10 +872,31 @@ TEST(SelfContactTransactionValues,
   EXPECT_EQ(sct::ValidateCandidatePublications(input).status,
       c::SelfContactTransactionStatus::Ok);
 
+  result.classification =
+      c::RepresentedIntervalClassification::Unresolved;
+  result.reason = c::RepresentedIntervalReason::UnsupportedMotion;
+  EXPECT_EQ(sct::ValidateCandidatePublications(input).status,
+      c::SelfContactTransactionStatus::Ok);
+  EXPECT_EQ(outcome.disposition,
+      c::SelfContactCandidateDisposition::ExcludedLocalIntersection);
+
+  result.reason = c::RepresentedIntervalReason::WorkExhausted;
+  EXPECT_EQ(sct::ValidateCandidatePublications(input).status,
+      c::SelfContactTransactionStatus::UnresolvedCandidate);
+
+  result.classification =
+      c::RepresentedIntervalClassification::CertifiedCrossingContact;
+  result.reason = c::RepresentedIntervalReason::None;
   intersection.local_exclusion =
       c::FixedTriangleLocalExclusion::None;
   EXPECT_EQ(sct::ValidateCandidatePublications(input).status,
       c::SelfContactTransactionStatus::CandidateRejected);
+
+  result.classification =
+      c::RepresentedIntervalClassification::Unresolved;
+  result.reason = c::RepresentedIntervalReason::UnsupportedMotion;
+  EXPECT_EQ(sct::ValidateCandidatePublications(input).status,
+      c::SelfContactTransactionStatus::UnresolvedCandidate);
 }
 
 TEST(SelfContactTransactionValues,

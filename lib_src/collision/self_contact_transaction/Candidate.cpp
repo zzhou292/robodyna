@@ -350,6 +350,65 @@ bool PairPresent(const RepresentedIntervalPairKey* pairs,
   return lower < count && sct::Compare(pairs[lower], key) == 0;
 }
 
+bool LocallyExcluded(
+    FixedTriangleIntersectionView intersections,
+    const RepresentedIntervalPairKey& key) noexcept {
+  for (std::size_t i = 0; i < intersections.count; ++i) {
+    const auto& value = intersections.data[i];
+    if (sct::Compare(
+            PairKey(PathKey(value.triangles[0]),
+                    PathKey(value.triangles[1])),
+            key) == 0)
+      return !RequiresIntersectionAdmission(value);
+  }
+  return false;
+}
+
+bool LocalPolicyResolvesUnsupported(
+    FixedTriangleFeatureView features,
+    FixedTriangleIntersectionView intersections,
+    const RepresentedIntervalPairKey& key,
+    FixedTriangleFeatureTaskMask mask,
+    double first_thickness, double second_thickness) noexcept {
+  if (!features.complete || !intersections.complete ||
+      (features.count && !features.data) ||
+      (intersections.count && !intersections.data) ||
+      !std::isfinite(first_thickness) || !(first_thickness > 0) ||
+      !std::isfinite(second_thickness) || !(second_thickness > 0) ||
+      (mask.local_tasks & ~FixedTriangleFeatureTaskBits) ||
+      !LocallyExcluded(intersections, key))
+    return false;
+  std::size_t expected = 15;
+  for (unsigned task = 0; task < 15; ++task)
+    expected -= bool(
+        mask.local_tasks & FixedTriangleFeatureTaskBit(task));
+  std::size_t observed = 0;
+  for (std::size_t i = 0; i < features.count; ++i) {
+    const auto& feature = features.data[i];
+    if (sct::Compare(
+            PairKey(PathKey(feature.triangles[0]),
+                    PathKey(feature.triangles[1])),
+            key) != 0)
+      continue;
+    if (!std::isfinite(feature.distance_m) ||
+        feature.distance_m < 0 ||
+        !std::isfinite(feature.representation_error_m) ||
+        feature.representation_error_m < 0)
+      return false;
+    const double gap =
+        (feature.distance_m - first_thickness) -
+        second_thickness;
+    if (!std::isfinite(gap) ||
+        !(gap > feature.representation_error_m))
+      return false;
+    ++observed;
+  }
+  // Global feature deduplication can select another producing facet pair.
+  // That is insufficient evidence here: unsupported motion remains rejected
+  // unless this exact pair retained every unmasked closest-feature result.
+  return observed == expected;
+}
+
 }  // namespace
 
 SelfContactTransactionReport SelfContactTransaction::SealCandidate(
@@ -676,18 +735,6 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
         return state.Fail(Failure(S::IdentityMismatch,
             "Candidate chunk is not strict immutable pair order",
             SIZE_MAX, state.candidate_facet_pair_count + pair));
-      if (action == sct::PairMotionAction::UnsupportedRigidArc) {
-        auto report = Failure(
-            S::UnsupportedMotion,
-            "Rigid-arc swept facet boxes overlap; exact arc crossing is unresolved",
-            value.first, state.candidate_facet_pair_count + pair);
-        report.crossing_reason =
-            RepresentedIntervalReason::UnsupportedMotion;
-        DescribeMotionFailure(
-            state.active_use, state.buffers.prepared_triangles,
-            state.buffers.facet_motion, value, &report);
-        return state.Fail(report);
-      }
       if (action == sct::PairMotionAction::ExcludedSameRigidGroup) {
         ++summary.motion_excluded_same_rigid_group;
         continue;
@@ -697,17 +744,6 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
         continue;
       }
       state.buffers.facet_pair_chunk[pair_count] = value;
-      MakePath(state.buffers.accepted_triangles[value.first],
-               state.buffers.prepared_triangles[value.first],
-               state.buffers.facet_motion[value.first],
-               state.buffers.chunk_paths + 2 * pair_count);
-      MakePath(state.buffers.accepted_triangles[value.second],
-               state.buffers.prepared_triangles[value.second],
-               state.buffers.facet_motion[value.second],
-               state.buffers.chunk_paths + 2 * pair_count + 1);
-      state.buffers.chunk_represented_pairs[pair_count] = {
-          static_cast<std::uint32_t>(2 * pair_count),
-          static_cast<std::uint32_t>(2 * pair_count + 1)};
       state.buffers.chunk_canonical_pairs[pair_count] = key;
       ++pair_count;
     }
@@ -752,6 +788,80 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
       potential_tasks += discovery.potential_tasks;
       local_masked_tasks += discovery.local_masked_tasks;
       exact_executed_tasks += discovery.exact_executed_tasks;
+      const auto intersections =
+          state.candidate_discovery.intersections();
+      const auto features =
+          state.candidate_discovery.features();
+      std::size_t crossing_pair_count = 0;
+      std::size_t raw_pair = 0;
+      for (std::size_t pair = 0; pair < pair_count; ++pair) {
+        while (raw_pair < streamed_pair_count &&
+               (state.buffers.chunk_motion_actions[raw_pair] ==
+                    sct::PairMotionAction::ExcludedSameRigidGroup ||
+                state.buffers.chunk_motion_actions[raw_pair] ==
+                    sct::PairMotionAction::CertifiedLinearSeparation))
+          ++raw_pair;
+        if (raw_pair >= streamed_pair_count)
+          return state.Fail(Failure(
+              S::IdentityMismatch,
+              "Candidate motion roster ended before exact geometry",
+              SIZE_MAX, state.candidate_facet_pair_count + raw_pair));
+        const auto action =
+            state.buffers.chunk_motion_actions[raw_pair];
+        const auto facet_pair = state.buffers.facet_pair_chunk[pair];
+        if (action == sct::PairMotionAction::UnsupportedRigidArc) {
+          const auto first_parent =
+              state.buffers.facet_motion[facet_pair.first].parent;
+          const auto second_parent =
+              state.buffers.facet_motion[facet_pair.second].parent;
+          const bool locally_resolved =
+              first_parent < parents.size() &&
+              second_parent < parents.size() &&
+              LocalPolicyResolvesUnsupported(
+                  features, intersections,
+                  state.buffers.chunk_canonical_pairs[pair],
+                  state.buffers.chunk_feature_task_masks[pair],
+                  parents[first_parent].reference_half_thickness_m,
+                  parents[second_parent].reference_half_thickness_m);
+          if (!locally_resolved) {
+            auto report = Failure(
+                S::UnsupportedMotion,
+                "Rigid-arc swept facet boxes overlap; exact arc crossing is unresolved",
+                facet_pair.first,
+                state.candidate_facet_pair_count + raw_pair);
+            report.crossing_reason =
+                RepresentedIntervalReason::UnsupportedMotion;
+            DescribeMotionFailure(
+                state.active_use, state.buffers.prepared_triangles,
+                state.buffers.facet_motion, facet_pair, &report);
+            return state.Fail(report);
+          }
+          auto& local_result = state.buffers.chunk_crossings[pair];
+          local_result = {};
+          local_result.key = state.buffers.chunk_canonical_pairs[pair];
+          local_result.classification =
+              RepresentedIntervalClassification::Unresolved;
+          local_result.reason =
+              RepresentedIntervalReason::UnsupportedMotion;
+          ++raw_pair;
+          continue;
+        }
+        MakePath(
+            state.buffers.accepted_triangles[facet_pair.first],
+            state.buffers.prepared_triangles[facet_pair.first],
+            state.buffers.facet_motion[facet_pair.first],
+            state.buffers.chunk_paths + 2 * crossing_pair_count);
+        MakePath(
+            state.buffers.accepted_triangles[facet_pair.second],
+            state.buffers.prepared_triangles[facet_pair.second],
+            state.buffers.facet_motion[facet_pair.second],
+            state.buffers.chunk_paths + 2 * crossing_pair_count + 1);
+        state.buffers.chunk_represented_pairs[crossing_pair_count] = {
+            static_cast<std::uint32_t>(2 * crossing_pair_count),
+            static_cast<std::uint32_t>(2 * crossing_pair_count + 1)};
+        ++crossing_pair_count;
+        ++raw_pair;
+      }
       auto edge_policy = sct::ValidateCandidateEdgePolicy(
           state.active_use, state.regularity, regularity_receipt,
           state.candidate_discovery.features(),
@@ -762,8 +872,9 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
       if (edge_policy.status != S::Ok)
         return state.Fail(edge_policy);
       const auto crossing = state.crossing.Certify(
-          state.buffers.chunk_paths, 2 * pair_count,
-          state.buffers.chunk_represented_pairs, pair_count);
+          state.buffers.chunk_paths, 2 * crossing_pair_count,
+          state.buffers.chunk_represented_pairs,
+          crossing_pair_count);
       if (crossing.status != RepresentedIntervalStatus::Ok) {
         auto report = Failure(
             S::CrossingFailure, crossing.message,
@@ -773,20 +884,36 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
       }
       const auto raw_crossings = state.crossing.results();
       if (!raw_crossings.complete ||
-          raw_crossings.count != pair_count ||
-          (pair_count && !raw_crossings.data))
+          raw_crossings.count != crossing_pair_count ||
+          (crossing_pair_count && !raw_crossings.data))
         return state.Fail(Failure(S::CrossingFailure,
             "Crossing chunk publication is incomplete"));
-      std::size_t raw_pair = 0;
+      raw_pair = 0;
+      std::size_t crossing_pair = 0;
       for (std::size_t pair = 0; pair < pair_count; ++pair) {
-        while (state.buffers.chunk_motion_actions[raw_pair] ==
-                   sct::PairMotionAction::ExcludedSameRigidGroup ||
-               state.buffers.chunk_motion_actions[raw_pair] ==
-                   sct::PairMotionAction::CertifiedLinearSeparation)
+        while (raw_pair < streamed_pair_count &&
+               (state.buffers.chunk_motion_actions[raw_pair] ==
+                    sct::PairMotionAction::ExcludedSameRigidGroup ||
+                state.buffers.chunk_motion_actions[raw_pair] ==
+                    sct::PairMotionAction::CertifiedLinearSeparation))
           ++raw_pair;
+        if (raw_pair >= streamed_pair_count)
+          return state.Fail(Failure(
+              S::IdentityMismatch,
+              "Candidate motion roster ended before crossing publication",
+              SIZE_MAX, state.candidate_facet_pair_count + raw_pair));
         const auto action =
             state.buffers.chunk_motion_actions[raw_pair];
-        const auto& value = raw_crossings.data[pair];
+        if (action == sct::PairMotionAction::UnsupportedRigidArc) {
+          ++raw_pair;
+          continue;
+        }
+        if (crossing_pair >= raw_crossings.count)
+          return state.Fail(Failure(
+              S::IdentityMismatch,
+              "Candidate crossing publication ended before motion roster",
+              SIZE_MAX, state.candidate_facet_pair_count + raw_pair));
+        const auto& value = raw_crossings.data[crossing_pair++];
         if (action ==
             sct::PairMotionAction::CertifiedRigidArcSeparation) {
           if (value.classification !=
@@ -822,6 +949,10 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
         crossing_work += work;
         ++raw_pair;
       }
+      if (crossing_pair != raw_crossings.count)
+        return state.Fail(Failure(
+            S::IdentityMismatch,
+            "Candidate crossing publication exceeds motion roster"));
       auto validated = sct::ValidateCandidatePublications({
           state.buffers.chunk_canonical_pairs,
           pair_count,

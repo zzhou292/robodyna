@@ -679,6 +679,50 @@ TEST(SelfContactTransactionCuda,
 }
 
 TEST(SelfContactTransactionCuda,
+     ExactLocalIntersectionPrecedesOnlyUnsupportedMotion) {
+  const c::RepresentedIntervalPairKey pair{{
+      {17, 10, 0, 0}, {17, 20, 0, 0}}};
+  c::RepresentedIntervalResult crossing;
+  crossing.key = pair;
+  crossing.classification =
+      c::RepresentedIntervalClassification::Unresolved;
+  crossing.reason = c::RepresentedIntervalReason::UnsupportedMotion;
+  c::FixedTriangleIntersection intersection;
+  intersection.triangles[0] = {17, 10, 0, 0};
+  intersection.triangles[1] = {17, 20, 0, 0};
+  intersection.kind =
+      c::FixedTriangleIntersectionKind::Transverse;
+  intersection.local_exclusion =
+      c::FixedTriangleLocalExclusion::SharedVertexOnly;
+  c::SelfContactCandidatePolicyOutcome outcome;
+  std::size_t outcome_count = 0;
+  sct::CandidateValidationInput input;
+  input.canonical_pairs = &pair;
+  input.pair_count = 1;
+  input.features.complete = true;
+  input.intersections = {&intersection, 1, true};
+  input.crossings = {&crossing, 1, true};
+  input.outcomes = &outcome;
+  input.outcome_capacity = 1;
+  input.outcome_count = &outcome_count;
+  ASSERT_EQ(sct::ValidateCandidatePublications(input).status,
+            c::SelfContactTransactionStatus::Ok);
+  EXPECT_EQ(outcome_count, 1u);
+  EXPECT_EQ(outcome.disposition,
+            c::SelfContactCandidateDisposition::
+                ExcludedLocalIntersection);
+
+  crossing.reason = c::RepresentedIntervalReason::WorkExhausted;
+  EXPECT_EQ(sct::ValidateCandidatePublications(input).status,
+            c::SelfContactTransactionStatus::UnresolvedCandidate);
+  crossing.reason = c::RepresentedIntervalReason::UnsupportedMotion;
+  intersection.local_exclusion =
+      c::FixedTriangleLocalExclusion::None;
+  EXPECT_EQ(sct::ValidateCandidatePublications(input).status,
+            c::SelfContactTransactionStatus::UnresolvedCandidate);
+}
+
+TEST(SelfContactTransactionCuda,
      ExactForecastCapMinusOneAndRosterEntryAreStable) {
   Fixture fixture;
   ASSERT_TRUE(fixture.InitializeInfrastructure());

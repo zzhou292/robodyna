@@ -178,13 +178,22 @@ therefore scales as `O((h|w|)^2*|r0|)` rather than the former angle-independent
 translation endpoint hull.  Nonfinite arithmetic, a missing authenticated
 trajectory tag, and rotation increments outside the admitted `< pi` domain
 fail closed.
-A disjoint box is a conservative separation certificate only. Overlapping
-different-body or partial/mixed rigid boxes report the exact parent/facet and
-actual group identities as `UnsupportedMotion`; no endpoint chord is passed to
-the represented crossing code. The remaining limitation is deliberate:
-overlapping rigid arcs have no exact crossing/contact certificate yet, so a
-candidate containing one cannot commit even though accepted-state force still
-uses the actual rigid owner response.
+A disjoint box is a conservative separation certificate only. For an
+overlapping different-body or partial/mixed rigid pair, candidate discovery
+now runs the same authenticated local-task mask and exact prepared-coordinate
+intersection classifier before unsupported motion is reported. If and only if
+that exact intersection has an existing non-`None`
+`FixedTriangleLocalExclusion`, the pair publishes
+`ExcludedLocalIntersection` without entering represented crossing, but only
+after this exact facet pair retains every unmasked closest-feature result and
+each result proves
+`distance - half_thickness[0] - half_thickness[1] >
+representation_error`. Global feature deduplication that selects another
+producing pair is insufficient and remains rejected. The local pair's crossing
+record remains explicitly `Unresolved/UnsupportedMotion`; it is not rewritten
+as a linear or crossing certificate. Every other overlapping nonlinear pair
+still reports the exact parent/facet and actual group identities as
+`UnsupportedMotion`. No endpoint chord is passed to represented crossing.
 
 ## Vehicle-scale limits and memory
 
@@ -193,11 +202,15 @@ broadphase requirement of 648,295,598 parent pairs despite a 2,000,000-pair
 capacity.  That was not evidence for a larger cap: every rigid member had been
 replaced by a group-center box inflated by `12*arm`, independent of the tiny
 angular increment, so distant bodies acquired overlapping group-scale boxes.
-No pair cap, collision policy, timestep, or physics setting is changed here.
-A V5 retry must remeasure the candidate parent-pair census with these
-per-member quadratic bounds.  It can still stop deliberately at the first
-genuinely overlapping different-body rigid arc, because exact rigid-arc
-crossing/contact admission remains unsupported.
+No pair cap, timestep, or physics setting is changed here. A V5 retry must
+remeasure the candidate parent-pair census with these per-member quadratic
+bounds. It can still stop deliberately at the first genuinely overlapping
+nonlocal different-body rigid arc, because exact rigid-arc crossing/contact
+admission remains unsupported. Local handling is intentionally narrow: exact
+prepared geometry must prove the complete intersection is only an identical
+face, shared canonical vertex, or shared canonical edge under the existing
+policy. Coordinate coincidence, PID/EID equality, a task mask by itself, and
+work-exhausted nonlinear motion remain unresolved.
 
 `SelfContactTransactionLimits::Vehicle` takes caller-supplied exact census
 counts and explicit chunk/event/policy/work/byte caps. Its optional final

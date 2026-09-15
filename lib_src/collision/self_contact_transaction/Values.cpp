@@ -787,7 +787,11 @@ SelfContactTransactionReport ValidateCandidatePublications(
           "Represented interval results differ from the exact candidate roster",
           pair);
     if (input.crossings.data[pair].classification ==
-        RepresentedIntervalClassification::Unresolved)
+            RepresentedIntervalClassification::Unresolved &&
+        !(input.crossings.data[pair].reason ==
+              RepresentedIntervalReason::UnsupportedMotion &&
+          LocallyExcluded(
+              input.intersections, input.canonical_pairs[pair])))
       return Failure(SelfContactTransactionStatus::UnresolvedCandidate,
           "Represented interval candidate remains unresolved", pair,
           input.crossings.data[pair].reason);
