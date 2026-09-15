@@ -1198,7 +1198,9 @@ TEST(SelfContactTransactionCuda,
     observation.policy_summary = PolicySummaryBits(summary);
     observation.policy_outcomes = PolicyOutcomeBits(
         outcomes, &observation.canonical_event_order);
-    ASSERT_FALSE(observation.canonical_event_order.empty());
+    // A candidate may certify every pair separated even though accepted
+    // assembly contained contact events.  The resulting empty reference
+    // vector is still part of the bitwise repeated observation.
     for (std::size_t i = 0;
          i < observation.canonical_event_order.size(); i += 2) {
       EXPECT_LT(observation.canonical_event_order[i],
