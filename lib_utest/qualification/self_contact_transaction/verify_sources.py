@@ -312,6 +312,8 @@ if accepted_builder.count(
 for token in (
     "ActiveUseQueryAccess::ClassifyVertexFace(",
     "ActiveUseQueryAccess::ClassifyEdgeEdge(",
+    "SeparatedFromForceSupport(feature, classification, &separated)",
+    "gap > feature.representation_error_m",
 ):
     require(source, token, source_path)
 require(source, "ClassifyAcceptedFacetPair(", source_path)

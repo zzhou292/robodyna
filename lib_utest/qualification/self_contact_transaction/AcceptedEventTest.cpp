@@ -111,6 +111,34 @@ struct AcceptedFixture {
 };
 
 TEST(SelfContactAcceptedEvents,
+     VertexFaceAdmissionUsesConservativeThicknessDistance) {
+  AcceptedFixture fixture;
+  auto feature = fixture.admitted;
+  feature.distance_m = 1;
+
+  c::SelfContactForceEvent event;
+  sct::AcceptedEventCertificate certificate;
+  std::size_t count = 777;
+  ASSERT_EQ(fixture.Build(
+      &feature, 1, &event, &certificate, 1, &count).status,
+      c::SelfContactTransactionStatus::Ok);
+  EXPECT_EQ(count, 0u);
+
+  // Discovery's declared representation error prevents an unsafe separation
+  // when the exact distance may still lie within the physical thickness.
+  feature.representation_error_m = 1;
+  ASSERT_EQ(fixture.Build(
+      &feature, 1, &event, &certificate, 1, &count).status,
+      c::SelfContactTransactionStatus::Ok);
+  EXPECT_EQ(count, 1u);
+
+  feature.representation_error_m = -1;
+  EXPECT_EQ(fixture.Build(
+      &feature, 1, &event, &certificate, 1, &count).status,
+      c::SelfContactTransactionStatus::DiscoveryFailure);
+}
+
+TEST(SelfContactAcceptedEvents,
      OnePrivatePassRetainsLateFailurePriorityAndCountPublication) {
   AcceptedFixture fixture;
   const std::array<c::FixedTriangleFeatureCandidate, 2> late{

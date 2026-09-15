@@ -231,6 +231,27 @@ bool AllowedExclusion(SelfContactPairStatus status) noexcept {
       status == SelfContactPairStatus::ExcludedRegularOwnParent;
 }
 
+SelfContactTransactionReport SeparatedFromForceSupport(
+    const FixedTriangleFeatureCandidate& feature,
+    const SelfContactPairClassification& classification,
+    bool* separated) noexcept {
+  if (!separated || !std::isfinite(feature.distance_m) ||
+      feature.distance_m < 0 ||
+      !std::isfinite(feature.representation_error_m) ||
+      feature.representation_error_m < 0)
+    return Failure(SelfContactTransactionStatus::DiscoveryFailure,
+        "Feature distance certificate is invalid");
+  const double gap =
+      (feature.distance_m -
+       classification.reference_half_thickness_m[0]) -
+      classification.reference_half_thickness_m[1];
+  if (!std::isfinite(gap))
+    return Failure(SelfContactTransactionStatus::DiscoveryFailure,
+        "Feature represented gap is unrepresentable");
+  *separated = gap > feature.representation_error_m;
+  return {};
+}
+
 SelfContactTransactionReport VertexFaceEvent(
     const SelfContactActiveUseBinding& active_use,
     const SelfContactCurrentRegularity& regularity,
@@ -303,6 +324,12 @@ SelfContactTransactionReport VertexFaceEvent(
     }
     classification = excluded;
   }
+  bool separated = false;
+  const auto separation =
+      SeparatedFromForceSupport(feature, classification, &separated);
+  if (separation.status != SelfContactTransactionStatus::Ok)
+    return separation;
+  if (separated) return {};
   if (classification.status == SelfContactPairStatus::InactiveParent)
     return {};
   if (AllowedExclusion(classification.status)) return {};
@@ -437,18 +464,11 @@ SelfContactTransactionReport EdgeEdgeEvent(
     }
     classification = excluded;
   }
-  if (!std::isfinite(feature.distance_m) ||
-      feature.distance_m < 0)
-    return Failure(S::DiscoveryFailure,
-        "EE distance is invalid");
-  const double gap =
-      (feature.distance_m -
-       classification.reference_half_thickness_m[0]) -
-      classification.reference_half_thickness_m[1];
-  if (!std::isfinite(gap))
-    return Failure(S::DiscoveryFailure,
-        "EE represented gap is unrepresentable");
-  if (gap > 0 || AllowedExclusion(classification.status))
+  bool separated = false;
+  const auto separation =
+      SeparatedFromForceSupport(feature, classification, &separated);
+  if (separation.status != S::Ok) return separation;
+  if (separated || AllowedExclusion(classification.status))
     return {};
   if (classification.status == SelfContactPairStatus::InactiveParent)
     return {};
