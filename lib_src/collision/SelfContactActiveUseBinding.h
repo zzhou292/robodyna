@@ -5,6 +5,10 @@
 #include "FixedContactFacetBinding.h"
 
 namespace tlfea::contact {
+namespace self_contact_transaction {
+struct ActiveUseQueryAccess;
+}
+
 // Immutable parent-local physical-feature uses. Canonical feature keys provide
 // topology only: every parent use keeps its own thickness, certified reference
 // area, weighted map and support classification. No geometry query, force,
@@ -54,6 +58,7 @@ class SelfContactActiveUseBinding {
       SelfContactActivityView,
       SelfContactPairClassification*) const noexcept;
  private:
+  friend struct self_contact_transaction::ActiveUseQueryAccess;
   struct Impl;
   std::shared_ptr<const Impl> impl_;
 };

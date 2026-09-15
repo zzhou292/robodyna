@@ -36,12 +36,20 @@ and masks an EE task exactly when the two canonical edges share an endpoint.
 Every other VF/EE task executes. Triangle intersection classification still
 runs for every remaining pair, so nonlocal intersections still reject.
 Admitted VF and strict interior/zero-distance EE certificates merge
-through a fixed-capacity global hash ledger. Identity is the geometric feature
-plus both ordered active-parent ordinals. Thus shared boundary geometry under
-distinct parent-local area ownership remains distinct, while one repeated
-owner identity must agree in every immutable map, area and classification.
-The complete unique event count is known before the force cap is checked, then
-certificates are sorted and assigned global canonical source order. Only
+through a fixed-capacity global hash ledger. Each maximum-15-event discovery
+chunk is classified and written in one transaction-private pass; a short
+private capacity keeps validating without writing so a later canonical feature
+error retains priority, and no failed pass publishes a receipt or event count.
+The transaction authenticates the complete activity roster once per chunk,
+while every feature still reads both current parent states and runs the same
+support, tied, incidence, regularity and area policy.
+Identity is the geometric feature plus both ordered active-parent ordinals.
+Thus shared boundary geometry under distinct parent-local area ownership
+remains distinct, while one repeated owner identity must agree in every
+immutable map, area and classification. Global merge still deduplicates the
+complete stream, and finalization knows the complete unique event count before
+checking the exact force cap. Certificates are then sorted and assigned global
+canonical source order. Only
 then does it run the existing deterministic VF+EE force/STI implementation and
 record the same owner/token/view on the private issuer. There is no public
 event, triangle, pair, discovery, crossing, or source-order input.

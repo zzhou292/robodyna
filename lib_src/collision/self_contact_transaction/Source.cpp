@@ -2,6 +2,7 @@
 #include "Storage.h"
 
 #include "../FixedContactFacetValues.h"
+#include "../self_contact_active_use/Storage.h"
 
 #include <algorithm>
 #include <cmath>
@@ -285,9 +286,9 @@ SelfContactTransactionReport VertexFaceEvent(
     return Failure(S::DiscoveryFailure,
         "Directed VF face weights cannot be composed exactly");
   SelfContactPairClassification classification;
-  const auto classified = active_use.ClassifyVertexFace(
-      vertex_use, target_facet, face_point, activity,
-      &classification);
+  const auto classified = ActiveUseQueryAccess::ClassifyVertexFace(
+      active_use, vertex_use, target_facet, face_point,
+      activity, &classification);
   if (classified.status != SelfContactActiveUseStatus::Ok)
     return Failure(S::IdentityMismatch, classified.message);
   if (classification.status ==
@@ -311,7 +312,6 @@ SelfContactTransactionReport VertexFaceEvent(
         "Directed VF support is unresolved or unsupported by policy");
 
   *admitted = true;
-  if (!output) return {};
   SelfContactForceEvent event;
   event.feature = feature.key;
   event.source_order = source_order;
@@ -320,6 +320,7 @@ SelfContactTransactionReport VertexFaceEvent(
   event.endpoints[0] = active_use.vertex_uses()[vertex_use].point;
   event.endpoints[1] = face_point;
   event.classification = classification;
+  if (!output) return {};
   *output = event;
   certificate->kind = AcceptedEventCertificateKind::VertexFace;
   certificate->event = event;
@@ -419,9 +420,9 @@ SelfContactTransactionReport EdgeEdgeEvent(
                  ? SelfContactEdgeEdgeCase::StrictInteriorInteriorMinimum
                  : SelfContactEdgeEdgeCase::
                        BoundaryVertexEdgeMinimum);
-  const auto classified = active_use.ClassifyEdgeEdge(
-      edge_uses[0], points[0], edge_uses[1], points[1],
-      edge_case, activity, &classification);
+  const auto classified = ActiveUseQueryAccess::ClassifyEdgeEdge(
+      active_use, edge_uses[0], points[0], edge_uses[1],
+      points[1], edge_case, activity, &classification);
   if (classified.status != SelfContactActiveUseStatus::Ok)
     return Failure(S::IdentityMismatch, classified.message);
   if (classification.status ==
@@ -456,7 +457,6 @@ SelfContactTransactionReport EdgeEdgeEvent(
         "Nonlocal EE contact lacks strict authenticated edge-point area");
 
   *admitted = true;
-  if (!output) return {};
   if (edge_uses[0] > UINT32_MAX || edge_uses[1] > UINT32_MAX ||
       edge_facets[0] > UINT32_MAX || edge_facets[1] > UINT32_MAX)
     return Failure(S::ResourceLimit,
@@ -469,6 +469,7 @@ SelfContactTransactionReport EdgeEdgeEvent(
   event.endpoints[0] = points[0];
   event.endpoints[1] = points[1];
   event.classification = classification;
+  if (!output) return {};
   *output = event;
   certificate->kind = AcceptedEventCertificateKind::EdgeEdge;
   certificate->event = event;
@@ -898,58 +899,38 @@ SelfContactTransactionReport BuildAcceptedEvents(
       !capacity || !count)
     return Failure(S::InvalidInput,
         "Accepted discovery publication or event storage is incomplete");
+  if (!ActiveUseQueryAccess::ValidateActivity(
+          active_use, activity))
+    return Failure(S::InvalidInput,
+        "Accepted event activity publication is invalid");
   for (std::size_t i = 0; i < intersections.count; ++i)
     if (RequiresIntersectionAdmission(intersections.data[i]))
       return Failure(S::CandidateRejected,
           "Accepted nonlocal triangle intersection is rejected", i);
 
-  std::size_t required = 0;
+  // The chunk arrays are transaction-private maximum storage: discovery can
+  // publish at most one event for each of its 15 tasks per input pair.  Write
+  // each admitted feature once, but keep validating after a caller-supplied
+  // short capacity fills so the canonical earliest feature failure retains
+  // priority over the complete-count capacity rejection.
+  std::size_t required = 0, written = 0;
   for (std::size_t feature = 0; feature < features.count; ++feature) {
     const auto& value = features.data[feature];
+    const bool remaining = written < capacity;
     bool admitted = false;
     auto checked =
         value.key.kind == FixedTriangleCandidateKind::VertexFace
             ? VertexFaceEvent(
                   active_use, regularity, regularity_receipt, value,
                   descriptors, triangle_order, facet_count, activity,
-                  required, nullptr, nullptr, &admitted)
-            : EdgeEdgeEvent(
-                  active_use, regularity, regularity_receipt, value,
-                  descriptors, triangle_order, facet_count, activity,
-                  required, nullptr, nullptr, &admitted);
-    if (value.key.kind == FixedTriangleCandidateKind::EdgeEdge &&
-        checked.status == S::CandidateRejected) {
-      bool covered = false;
-      const auto coverage = CoveredByExactBoundaryVertexFace(
-          active_use, regularity, regularity_receipt, features, value,
-          descriptors, triangle_order, facet_count, activity, &covered);
-      if (coverage.status != S::Ok) return coverage;
-      if (covered) continue;
-    }
-    if (checked.status != S::Ok)
-      return FeatureFailure(checked, value, feature);
-    required += admitted;
-  }
-  if (required > capacity)
-    return Failure(S::ResourceLimit,
-        "Complete accepted VF+EE event set exceeds its exact capacity",
-        required);
-
-  std::size_t written = 0;
-  for (std::size_t feature = 0; feature < features.count; ++feature) {
-    const auto& value = features.data[feature];
-    bool admitted = false;
-    auto checked =
-        value.key.kind == FixedTriangleCandidateKind::VertexFace
-            ? VertexFaceEvent(
-                  active_use, regularity, regularity_receipt, value,
-                  descriptors, triangle_order, facet_count, activity,
-                  written, events + written, certificates + written,
+                  required, remaining ? events + written : nullptr,
+                  remaining ? certificates + written : nullptr,
                   &admitted)
             : EdgeEdgeEvent(
                   active_use, regularity, regularity_receipt, value,
                   descriptors, triangle_order, facet_count, activity,
-                  written, events + written, certificates + written,
+                  required, remaining ? events + written : nullptr,
+                  remaining ? certificates + written : nullptr,
                   &admitted);
     if (value.key.kind == FixedTriangleCandidateKind::EdgeEdge &&
         checked.status == S::CandidateRejected) {
@@ -962,11 +943,16 @@ SelfContactTransactionReport BuildAcceptedEvents(
     }
     if (checked.status != S::Ok)
       return FeatureFailure(checked, value, feature);
-    written += admitted;
+    required += admitted;
+    written += admitted && remaining;
   }
+  if (required > capacity)
+    return Failure(S::ResourceLimit,
+        "Complete accepted VF+EE event set exceeds its exact capacity",
+        required);
   if (written != required)
     return Failure(S::IdentityMismatch,
-        "Accepted event count changed between count and write");
+        "Accepted private event write did not cover its complete count");
   *count = written;
   return {};
 }
@@ -986,6 +972,10 @@ SelfContactTransactionReport ValidateCandidateEdgePolicy(
       (accepted_count && !accepted))
     return Failure(S::InvalidInput,
         "Candidate feature publication is incomplete");
+  if (!ActiveUseQueryAccess::ValidateActivity(
+          active_use, activity))
+    return Failure(S::InvalidInput,
+        "Candidate edge-policy activity publication is invalid");
   for (std::size_t feature = 0; feature < features.count; ++feature) {
     if (features.data[feature].key.kind !=
         FixedTriangleCandidateKind::EdgeEdge)

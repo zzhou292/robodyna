@@ -6,6 +6,7 @@ cc_library(
     hdrs = ["Fixture.h"],
     visibility = [
         "//lib_utest/qualification/self_contact_current_regularity:__pkg__",
+        "//lib_utest/qualification/self_contact_transaction:__pkg__",
     ],
     deps = [
         "//lib_src/assembly:shell_execution_binding",

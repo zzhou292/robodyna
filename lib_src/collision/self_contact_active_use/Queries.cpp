@@ -44,6 +44,16 @@ bool WitnessAuthenticates(const Inventory& inventory,
   }
   return false;
 }
+bool HasCinSecondary(const Inventory& inventory,
+    const SelfContactActiveUseForecast& forecast,
+    const WeightedSurfacePoint& point) noexcept {
+  for (unsigned slot = 0; slot < point.count; ++slot)
+    if (point.weights[slot] != 0 &&
+        point.nodes[slot] < forecast.node_roles &&
+        inventory.node_roles[point.nodes[slot]].cin_secondary)
+      return true;
+  return false;
+}
 SelfContactTiedStatus DirectionalTied(const Inventory& inventory,
     const SelfContactActiveUseForecast& forecast,
     const WeightedSurfacePoint& secondary,
@@ -85,10 +95,20 @@ SelfContactTiedStatus TiedStatus(const Inventory& inventory,
     const SelfContactActiveUseForecast& forecast,
     const SelfContactParentUse& first_parent, const WeightedSurfacePoint& first,
     const SelfContactParentUse& second_parent, const WeightedSurfacePoint& second) noexcept {
-  const auto a = DirectionalTied(inventory, forecast, first,
-      second_parent, second);
-  const auto b = DirectionalTied(inventory, forecast, second,
-      first_parent, first);
+  const bool first_secondary =
+      HasCinSecondary(inventory, forecast, first);
+  const bool second_secondary =
+      HasCinSecondary(inventory, forecast, second);
+  if (!first_secondary && !second_secondary)
+    return SelfContactTiedStatus::NotRelated;
+  const auto a = first_secondary
+      ? DirectionalTied(inventory, forecast, first,
+            second_parent, second)
+      : SelfContactTiedStatus::NotRelated;
+  const auto b = second_secondary
+      ? DirectionalTied(inventory, forecast, second,
+            first_parent, first)
+      : SelfContactTiedStatus::NotRelated;
   if (a == SelfContactTiedStatus::CompleteLocalSupportNeedsRuntimeActivity ||
       b == SelfContactTiedStatus::CompleteLocalSupportNeedsRuntimeActivity)
     return SelfContactTiedStatus::CompleteLocalSupportNeedsRuntimeActivity;
@@ -307,30 +327,42 @@ SelfContactActiveUseReport SelfContactActiveUseBinding::ResolveEdgeUse(
   return {};
 }
 
-SelfContactActiveUseReport SelfContactActiveUseBinding::ClassifyVertexFace(
+bool self_contact_transaction::ActiveUseQueryAccess::ValidateActivity(
+    const SelfContactActiveUseBinding& binding,
+    SelfContactActivityView activity) noexcept {
+  return active_use::ValidateActivity(
+      binding.impl_ ? binding.impl_->forecast :
+          SelfContactActiveUseForecast{},
+      activity);
+}
+
+SelfContactActiveUseReport
+self_contact_transaction::ActiveUseQueryAccess::ClassifyVertexFace(
+    const SelfContactActiveUseBinding& binding,
     std::size_t vertex_index, std::size_t facet_index,
     const WeightedSurfacePoint& face_point, SelfContactActivityView activity,
-    SelfContactPairClassification* output) const noexcept {
-  using tl::fea::trial_identity::Disjoint;
-  if (!output || !OutputDisjoint(output, sizeof(*output)) ||
-      !Disjoint(output, sizeof(*output), &face_point, sizeof(face_point)) ||
-      !active_use::ValidateActivity(impl_ ? impl_->forecast : SelfContactActiveUseForecast{},
-          activity) ||
-      !ActivityOutputDisjoint(output, sizeof(*output), activity))
+    SelfContactPairClassification* output) noexcept {
+  if (!binding.impl_ || !output)
     return Invalid("VF inputs/output/activity are invalid or alias");
-  if (vertex_index >= impl_->forecast.vertex_uses ||
-      facet_index >= impl_->forecast.facets)
+  if (vertex_index >= binding.impl_->forecast.vertex_uses ||
+      facet_index >= binding.impl_->forecast.facets)
     return {S::InvalidInput, SIZE_MAX, SIZE_MAX, "VF feature-use index is out of range"};
-  const auto& vertex = impl_->inventory.vertex_uses[vertex_index];
-  const auto& facet = impl_->inventory.facets[facet_index];
-  const auto& first_parent = impl_->inventory.parents[vertex.parent];
-  const auto& second_parent = impl_->inventory.parents[facet.parent];
+  const auto& vertex =
+      binding.impl_->inventory.vertex_uses[vertex_index];
+  const auto& facet =
+      binding.impl_->inventory.facets[facet_index];
+  const auto& first_parent =
+      binding.impl_->inventory.parents[vertex.parent];
+  const auto& second_parent =
+      binding.impl_->inventory.parents[facet.parent];
   if (!active_use::MapMatchesParent(second_parent, face_point) ||
-      ValidateWeightedSurfacePoint(face_point, impl_->forecast.node_roles) != Status::kOk)
+      ValidateWeightedSurfacePoint(
+          face_point, binding.impl_->forecast.node_roles) !=
+          Status::kOk)
     return {S::InvalidInput, facet.parent, facet_index,
         "VF face map does not match its parent-local original slots"};
   SelfContactPairClassification next;
-  next.binding_identity = impl_.get();
+  next.binding_identity = binding.impl_.get();
   next.activity_base_identity = activity.base;
   next.activity_current_identity = activity.current;
   next.activity_parent_count = activity.parent_count;
@@ -345,12 +377,14 @@ SelfContactActiveUseReport SelfContactActiveUseBinding::ClassifyVertexFace(
   if (next.active[1]) next.reference_half_thickness_m[1] =
       second_parent.reference_half_thickness_m;
   next.endpoint_support[0] = vertex.support;
-  auto report = active_use::Classify(impl_->inventory, impl_->forecast, face_point,
-      next.endpoint_support[1]);
+  auto report = active_use::Classify(
+      binding.impl_->inventory, binding.impl_->forecast,
+      face_point, next.endpoint_support[1]);
   if (report.status != S::Ok) return report;
   for (const auto feature : facet.vertex_features)
     if (feature == vertex.feature) next.local_incidence = true;
-  next.tied = active_use::TiedStatus(impl_->inventory, impl_->forecast,
+  next.tied = active_use::TiedStatus(
+      binding.impl_->inventory, binding.impl_->forecast,
       first_parent, vertex.point, second_parent, face_point);
   if (next.active[0] && next.active[1])
     next.candidate_directed_area_m2 = vertex.directed_vf_area_m2;
@@ -361,37 +395,60 @@ SelfContactActiveUseReport SelfContactActiveUseBinding::ClassifyVertexFace(
   return {};
 }
 
-SelfContactActiveUseReport SelfContactActiveUseBinding::ClassifyEdgeEdge(
-    std::size_t first_index, const WeightedSurfacePoint& first_point,
-    std::size_t second_index, const WeightedSurfacePoint& second_point,
-    SelfContactEdgeEdgeCase edge_case, SelfContactActivityView activity,
+SelfContactActiveUseReport SelfContactActiveUseBinding::ClassifyVertexFace(
+    std::size_t vertex_index, std::size_t facet_index,
+    const WeightedSurfacePoint& face_point,
+    SelfContactActivityView activity,
     SelfContactPairClassification* output) const noexcept {
   using tl::fea::trial_identity::Disjoint;
   if (!output || !OutputDisjoint(output, sizeof(*output)) ||
-      !Disjoint(output, sizeof(*output), &first_point, sizeof(first_point)) ||
-      !Disjoint(output, sizeof(*output), &second_point, sizeof(second_point)) ||
-      !active_use::ValidateActivity(impl_ ? impl_->forecast : SelfContactActiveUseForecast{},
-          activity) ||
-      !ActivityOutputDisjoint(output, sizeof(*output), activity))
+      !Disjoint(output, sizeof(*output),
+          &face_point, sizeof(face_point)) ||
+      !self_contact_transaction::ActiveUseQueryAccess::
+          ValidateActivity(*this, activity) ||
+      !ActivityOutputDisjoint(
+          output, sizeof(*output), activity))
+    return Invalid("VF inputs/output/activity are invalid or alias");
+  return self_contact_transaction::ActiveUseQueryAccess::
+      ClassifyVertexFace(*this, vertex_index, facet_index,
+          face_point, activity, output);
+}
+
+SelfContactActiveUseReport
+self_contact_transaction::ActiveUseQueryAccess::ClassifyEdgeEdge(
+    const SelfContactActiveUseBinding& binding,
+    std::size_t first_index, const WeightedSurfacePoint& first_point,
+    std::size_t second_index, const WeightedSurfacePoint& second_point,
+    SelfContactEdgeEdgeCase edge_case, SelfContactActivityView activity,
+    SelfContactPairClassification* output) noexcept {
+  if (!binding.impl_ || !output)
     return Invalid("EE inputs/output/activity are invalid or alias");
-  if (first_index >= impl_->forecast.edge_uses ||
-      second_index >= impl_->forecast.edge_uses)
+  if (first_index >= binding.impl_->forecast.edge_uses ||
+      second_index >= binding.impl_->forecast.edge_uses)
     return {S::InvalidInput, SIZE_MAX, SIZE_MAX, "EE feature-use index is out of range"};
-  const auto& first = impl_->inventory.edge_uses[first_index];
-  const auto& second = impl_->inventory.edge_uses[second_index];
-  const auto& first_parent = impl_->inventory.parents[first.parent];
-  const auto& second_parent = impl_->inventory.parents[second.parent];
+  const auto& first =
+      binding.impl_->inventory.edge_uses[first_index];
+  const auto& second =
+      binding.impl_->inventory.edge_uses[second_index];
+  const auto& first_parent =
+      binding.impl_->inventory.parents[first.parent];
+  const auto& second_parent =
+      binding.impl_->inventory.parents[second.parent];
   double edge_parameter[2]{};
   if (!active_use::MapMatchesParent(first_parent, first_point) ||
       !active_use::MapMatchesParent(second_parent, second_point) ||
-      ValidateWeightedSurfacePoint(first_point, impl_->forecast.node_roles) != Status::kOk ||
-      ValidateWeightedSurfacePoint(second_point, impl_->forecast.node_roles) != Status::kOk ||
+      ValidateWeightedSurfacePoint(
+          first_point, binding.impl_->forecast.node_roles) !=
+          Status::kOk ||
+      ValidateWeightedSurfacePoint(
+          second_point, binding.impl_->forecast.node_roles) !=
+          Status::kOk ||
       !EdgeParameter(first, first_point, edge_parameter) ||
       !EdgeParameter(second, second_point, edge_parameter + 1))
     return {S::InvalidInput, SIZE_MAX, SIZE_MAX,
         "EE point is not an exact authenticated point on its edge use"};
   SelfContactPairClassification next;
-  next.binding_identity = impl_.get();
+  next.binding_identity = binding.impl_.get();
   next.activity_base_identity = activity.base;
   next.activity_current_identity = activity.current;
   next.activity_parent_count = activity.parent_count;
@@ -405,17 +462,31 @@ SelfContactActiveUseReport SelfContactActiveUseBinding::ClassifyEdgeEdge(
       first_parent.reference_half_thickness_m;
   if (next.active[1]) next.reference_half_thickness_m[1] =
       second_parent.reference_half_thickness_m;
-  auto report = active_use::Classify(impl_->inventory, impl_->forecast,
-      first_point, next.endpoint_support[0]);
+  auto report = SelfContactActiveUseReport{};
+  if (SamePoint(first_point, first.endpoints[0]))
+    next.endpoint_support[0] = first.endpoint_support[0];
+  else if (SamePoint(first_point, first.endpoints[1]))
+    next.endpoint_support[0] = first.endpoint_support[1];
+  else
+    report = active_use::Classify(
+        binding.impl_->inventory, binding.impl_->forecast,
+        first_point, next.endpoint_support[0]);
   if (report.status != S::Ok) return report;
-  report = active_use::Classify(impl_->inventory, impl_->forecast,
-      second_point, next.endpoint_support[1]);
+  if (SamePoint(second_point, second.endpoints[0]))
+    next.endpoint_support[1] = second.endpoint_support[0];
+  else if (SamePoint(second_point, second.endpoints[1]))
+    next.endpoint_support[1] = second.endpoint_support[1];
+  else
+    report = active_use::Classify(
+        binding.impl_->inventory, binding.impl_->forecast,
+        second_point, next.endpoint_support[1]);
   if (report.status != S::Ok) return report;
-  const auto& a = impl_->inventory.edges[first.feature];
-  const auto& b = impl_->inventory.edges[second.feature];
+  const auto& a = binding.impl_->inventory.edges[first.feature];
+  const auto& b = binding.impl_->inventory.edges[second.feature];
   for (const auto av : a.vertices) for (const auto bv : b.vertices)
     if (av == bv) next.local_incidence = true;
-  next.tied = active_use::TiedStatus(impl_->inventory, impl_->forecast,
+  next.tied = active_use::TiedStatus(
+      binding.impl_->inventory, binding.impl_->forecast,
       first_parent, first_point, second_parent, second_point);
   next.status = CommonStatus(next, true);
   const bool area_case =
@@ -436,5 +507,30 @@ SelfContactActiveUseReport SelfContactActiveUseBinding::ClassifyEdgeEdge(
   }
   *output = next;
   return {};
+}
+
+SelfContactActiveUseReport SelfContactActiveUseBinding::ClassifyEdgeEdge(
+    std::size_t first_index,
+    const WeightedSurfacePoint& first_point,
+    std::size_t second_index,
+    const WeightedSurfacePoint& second_point,
+    SelfContactEdgeEdgeCase edge_case,
+    SelfContactActivityView activity,
+    SelfContactPairClassification* output) const noexcept {
+  using tl::fea::trial_identity::Disjoint;
+  if (!output || !OutputDisjoint(output, sizeof(*output)) ||
+      !Disjoint(output, sizeof(*output),
+          &first_point, sizeof(first_point)) ||
+      !Disjoint(output, sizeof(*output),
+          &second_point, sizeof(second_point)) ||
+      !self_contact_transaction::ActiveUseQueryAccess::
+          ValidateActivity(*this, activity) ||
+      !ActivityOutputDisjoint(
+          output, sizeof(*output), activity))
+    return Invalid("EE inputs/output/activity are invalid or alias");
+  return self_contact_transaction::ActiveUseQueryAccess::
+      ClassifyEdgeEdge(*this, first_index, first_point,
+          second_index, second_point, edge_case, activity,
+          output);
 }
 } // namespace tlfea::contact

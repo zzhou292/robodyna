@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #include "Fixture.h"
+#include "lib_src/collision/self_contact_active_use/Storage.h"
 
 #include <chrono>
 #include <cstring>
@@ -381,6 +382,56 @@ c::SelfContactPairStatus SlowCommonStatus(
   return c::SelfContactPairStatus::AdmittedVertexFace;
 }
 
+bool SameSupportFields(
+    const c::SelfContactSupportClassification& first,
+    const c::SelfContactSupportClassification& second) {
+  return first.status == second.status &&
+      first.complete_rigid_group == second.complete_rigid_group &&
+      first.nonzero_slots == second.nonzero_slots &&
+      first.rigid_slots == second.rigid_slots &&
+      first.cin_master_slots == second.cin_master_slots;
+}
+
+bool SameAreaFields(
+    c::Q4CertifiedIntegral first,
+    c::Q4CertifiedIntegral second) {
+  return first.value == second.value &&
+      first.lower == second.lower &&
+      first.upper == second.upper &&
+      first.error == second.error;
+}
+
+bool SamePairFields(
+    const c::SelfContactPairClassification& first,
+    const c::SelfContactPairClassification& second) {
+  if (first.binding_identity != second.binding_identity ||
+      first.activity_base_identity != second.activity_base_identity ||
+      first.activity_current_identity !=
+          second.activity_current_identity ||
+      first.activity_parent_count != second.activity_parent_count ||
+      first.kind != second.kind ||
+      first.edge_edge_case != second.edge_edge_case ||
+      first.status != second.status ||
+      first.tied != second.tied ||
+      first.local_incidence != second.local_incidence ||
+      first.excluded != second.excluded ||
+      !SameAreaFields(first.candidate_directed_area_m2,
+                      second.candidate_directed_area_m2) ||
+      !SameAreaFields(first.admitted_force_area_m2,
+                      second.admitted_force_area_m2))
+    return false;
+  for (unsigned endpoint = 0; endpoint < 2; ++endpoint)
+    if (!SameSupportFields(first.endpoint_support[endpoint],
+                           second.endpoint_support[endpoint]) ||
+        first.parent[endpoint] != second.parent[endpoint] ||
+        first.feature[endpoint] != second.feature[endpoint] ||
+        first.active[endpoint] != second.active[endpoint] ||
+        first.reference_half_thickness_m[endpoint] !=
+            second.reference_half_thickness_m[endpoint])
+      return false;
+  return true;
+}
+
 void SlowVertexFaceOracle(
     const c::SelfContactActiveUseBinding& uses,
     std::size_t vertex_index, std::size_t facet_index,
@@ -389,6 +440,7 @@ void SlowVertexFaceOracle(
     c::SelfContactTiedStatus tied_status,
     c::SelfContactPairClassification* output) {
   auto& pair = *output;
+  pair = {};
   const auto& vertex = uses.vertex_uses()[vertex_index];
   const auto& facet = uses.facet_uses()[facet_index];
   const auto& first_parent = uses.parents()[vertex.parent];
@@ -429,7 +481,7 @@ void SlowVertexFaceOracle(
 } // namespace
 
 TEST(SelfContactActiveUses,
-    CinSecondaryIndexMatchesSlowOracleAtMediumQueryCoupon) {
+    MixedCinAndOrdinaryEventsMatchSlowOracleAtMediumCoupon) {
   CinScaleFixture fixture(2);
   c::SelfContactActiveUseBinding uses;
   c::SelfContactActiveUseForecast forecast;
@@ -488,6 +540,8 @@ TEST(SelfContactActiveUses,
 
   const auto secondary = fixture.VertexUse(101, uses, 20);
   ASSERT_NE(secondary, SIZE_MAX);
+  const auto ordinary = fixture.VertexUse(101, uses, 21);
+  ASSERT_NE(ordinary, SIZE_MAX);
   const auto master_face = fixture.RemoteFacet(
       100, uses.vertex_uses()[secondary].feature, uses);
   ASSERT_NE(master_face, SIZE_MAX);
@@ -499,68 +553,89 @@ TEST(SelfContactActiveUses,
   const auto& secondary_use = uses.vertex_uses()[secondary];
   const auto& secondary_parent =
       uses.parents()[secondary_use.parent];
+  const auto& ordinary_use = uses.vertex_uses()[ordinary];
+  const auto& ordinary_parent =
+      uses.parents()[ordinary_use.parent];
   const auto& master_facet = uses.facet_uses()[master_face];
   const auto& master_parent =
       uses.parents()[master_facet.parent];
 
   std::uint64_t oracle_visits = 0;
-  c::SelfContactTiedStatus oracle =
-      c::SelfContactTiedStatus::NotRelated;
+  std::array<c::SelfContactTiedStatus, 2> oracle{
+      c::SelfContactTiedStatus::NotRelated,
+      c::SelfContactTiedStatus::NotRelated};
   const auto oracle_begin = std::chrono::steady_clock::now();
   bool oracle_stable = true;
   for (std::size_t query = 0; query < OracleSamples; ++query) {
-    const auto status = SlowTied(
+    const auto cin_status = SlowTied(
         uses.cin(), secondary_parent, secondary_use.point,
         master_parent, master_point, &oracle_visits);
-    if (!query) oracle = status;
-    else oracle_stable = oracle_stable && status == oracle;
+    const auto ordinary_status = SlowTied(
+        uses.cin(), ordinary_parent, ordinary_use.point,
+        master_parent, master_point, &oracle_visits);
+    if (!query) {
+      oracle[0] = cin_status;
+      oracle[1] = ordinary_status;
+    } else {
+      oracle_stable = oracle_stable &&
+          cin_status == oracle[0] &&
+          ordinary_status == oracle[1];
+    }
   }
   const auto oracle_us =
       std::chrono::duration_cast<std::chrono::microseconds>(
           std::chrono::steady_clock::now()-oracle_begin).count();
   ASSERT_TRUE(oracle_stable);
-  ASSERT_EQ(oracle,
+  ASSERT_EQ(oracle[0],
       c::SelfContactTiedStatus::
           CompleteLocalSupportNeedsRuntimeActivity);
+  ASSERT_EQ(oracle[1],
+      c::SelfContactTiedStatus::NotRelated);
   EXPECT_EQ(oracle_visits,
       OracleSamples*CinRows*
           (NonzeroSlots(secondary_use.point) +
-           NonzeroSlots(master_point)));
+           NonzeroSlots(ordinary_use.point) +
+           2*NonzeroSlots(master_point)));
 
-  c::SelfContactPairClassification oracle_pair;
-  std::memset(&oracle_pair, 0, sizeof(oracle_pair));
-  SlowVertexFaceOracle(
-      uses, secondary, master_face, master_point,
-      activity, oracle, &oracle_pair);
-  c::SelfContactPairClassification expected;
-  std::memset(&expected, 0, sizeof(expected));
-  ASSERT_EQ(uses.ClassifyVertexFace(
-      secondary, master_face, master_point, activity,
-      &expected).status, Code::Ok);
-  ASSERT_EQ(expected.tied, oracle);
-  ASSERT_EQ(expected.status, oracle_pair.status);
-  ASSERT_EQ(expected.endpoint_support[0].status,
-      oracle_pair.endpoint_support[0].status);
-  ASSERT_EQ(expected.endpoint_support[1].status,
-      oracle_pair.endpoint_support[1].status);
-  ASSERT_EQ(expected.excluded, oracle_pair.excluded);
+  std::array<c::SelfContactPairClassification, 2> oracle_pair;
+  std::array<c::SelfContactPairClassification, 2> expected;
+  std::memset(oracle_pair.data(), 0, sizeof(oracle_pair));
+  std::memset(expected.data(), 0, sizeof(expected));
+  const std::array<std::size_t, 2> vertex_use{
+      secondary, ordinary};
+  for (unsigned kind = 0; kind < 2; ++kind) {
+    SlowVertexFaceOracle(
+        uses, vertex_use[kind], master_face, master_point,
+        activity, oracle[kind], oracle_pair.data()+kind);
+    ASSERT_EQ(uses.ClassifyVertexFace(
+        vertex_use[kind], master_face, master_point, activity,
+        expected.data()+kind).status, Code::Ok);
+    ASSERT_TRUE(SamePairFields(
+        expected[kind], oracle_pair[kind])) << "kind=" << kind;
+  }
   bool exact = true;
   bool reports_ok = true;
+  ASSERT_TRUE(c::self_contact_transaction::ActiveUseQueryAccess::
+      ValidateActivity(uses, activity));
   const auto indexed_begin = std::chrono::steady_clock::now();
   for (std::size_t query = 0;
        query < MediumQueryCoupon; ++query) {
+    const auto kind = query & 1;
     c::SelfContactPairClassification actual;
     std::memset(&actual, 0, sizeof(actual));
     reports_ok = reports_ok &&
-        uses.ClassifyVertexFace(
-            secondary, master_face, master_point, activity,
-            &actual).status == Code::Ok;
+        c::self_contact_transaction::ActiveUseQueryAccess::
+            ClassifyVertexFace(
+                uses, vertex_use[kind], master_face,
+                master_point, activity, &actual).status ==
+            Code::Ok;
     if (exact && std::memcmp(
-            &actual, &expected, sizeof(actual)) != 0) {
+            &actual, expected.data()+kind, sizeof(actual)) != 0) {
       const auto* actual_bytes =
           reinterpret_cast<const unsigned char*>(&actual);
       const auto* expected_bytes =
-          reinterpret_cast<const unsigned char*>(&expected);
+          reinterpret_cast<const unsigned char*>(
+              expected.data()+kind);
       std::size_t mismatch = 0;
       while (mismatch < sizeof(actual) &&
           actual_bytes[mismatch] == expected_bytes[mismatch])
@@ -569,13 +644,15 @@ TEST(SelfContactActiveUses,
                 << " actual=" << unsigned(actual_bytes[mismatch])
                 << " expected=" << unsigned(expected_bytes[mismatch])
                 << " actual_status=" << unsigned(actual.status)
-                << " expected_status=" << unsigned(expected.status)
+                << " expected_status="
+                << unsigned(expected[kind].status)
                 << " actual_tied=" << unsigned(actual.tied)
-                << " expected_tied=" << unsigned(expected.tied)
+                << " expected_tied="
+                << unsigned(expected[kind].tied)
                 << '\n';
       exact = false;
     }
-    exact = exact && actual.tied == oracle;
+    exact = exact && actual.tied == oracle[kind];
   }
   const auto indexed_us =
       std::chrono::duration_cast<std::chrono::microseconds>(
@@ -587,6 +664,20 @@ TEST(SelfContactActiveUses,
       static_cast<std::int64_t>(OracleSamples);
   const auto projected_slow_row_visits =
       oracle_visits*MediumQueryCoupon/OracleSamples;
+  const auto cin_events = (MediumQueryCoupon+1)/2;
+  const auto ordinary_events = MediumQueryCoupon/2;
+  const auto directional_index_scans = cin_events;
+  const auto secondary_free_shortcuts = ordinary_events;
+  constexpr std::size_t activity_roster_validations = 1;
+  EXPECT_EQ(cin_events + ordinary_events, MediumQueryCoupon);
+  EXPECT_EQ(directional_index_scans +
+                secondary_free_shortcuts,
+            MediumQueryCoupon);
+  EXPECT_EQ(directional_index_scans, MediumQueryCoupon/2);
+  const auto events_per_second = indexed_us
+      ? MediumQueryCoupon*UINT64_C(1000000)/
+            static_cast<std::uint64_t>(indexed_us)
+      : 0;
   EXPECT_GT(projected_slow_row_visits, MediumQueryCoupon);
   EXPECT_GT(uses.forecast().cin_index_bytes, 0u);
   std::cout << "cin-tied-query-index rows=" << CinRows
@@ -594,6 +685,15 @@ TEST(SelfContactActiveUses,
             << " slow_sample_us=" << oracle_us
             << " slow_projected_us=" << projected_slow_us
             << " indexed_us=" << indexed_us
+            << " events_per_second=" << events_per_second
+            << " cin_events=" << cin_events
+            << " ordinary_events=" << ordinary_events
+            << " directional_index_scans="
+            << directional_index_scans
+            << " secondary_free_shortcuts="
+            << secondary_free_shortcuts
+            << " activity_roster_validations="
+            << activity_roster_validations
             << " slow_row_visits=" << oracle_visits
             << " slow_projected_row_visits="
             << projected_slow_row_visits << '\n';

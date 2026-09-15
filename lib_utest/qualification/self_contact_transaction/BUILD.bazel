@@ -21,11 +21,17 @@ cc_test(
         "prism-axis-certificate",
         "local-feature-task-mask",
     ],
-    srcs = ["MediumCouponTest.cpp"],
+    srcs = [
+        "AcceptedEventTest.cpp",
+        "MediumCouponTest.cpp",
+    ],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [
         "//lib_src/collision:represented_interval_crossing",
+        "//lib_src/collision:self_contact_current_regularity",
+        "//lib_src/collision:self_contact_transaction",
         "//lib_src/collision:self_contact_transaction_values",
+        "//lib_utest/qualification/self_contact_active_uses:fixture",
         "@googletest//:gtest_main",
     ],
 )
@@ -36,6 +42,7 @@ cc_test(
     tags = ["unit", "m2-rigid-cin-response", "symmetric-edge-area"],
     srcs = ["SourceProofTest.cpp"],
     data = [
+        "AcceptedEventTest.cpp",
         "BUILD.bazel",
         "CMakeLists.txt",
         "check_syntax.py",

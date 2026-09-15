@@ -78,3 +78,27 @@ struct SelfContactActiveUseBinding::Impl {
   SelfContactActiveUseForecast forecast;
 };
 } // namespace tlfea::contact
+
+namespace tlfea::contact::self_contact_transaction {
+
+// Internal batch seam: transaction-owned feature chunks authenticate one
+// activity view, then retain every per-query identity/support/tied check
+// without rescanning the complete parent roster for each feature.
+struct ActiveUseQueryAccess {
+  static bool ValidateActivity(
+      const SelfContactActiveUseBinding&,
+      SelfContactActivityView) noexcept;
+  static SelfContactActiveUseReport ClassifyVertexFace(
+      const SelfContactActiveUseBinding&, std::size_t vertex_use,
+      std::size_t facet_use, const WeightedSurfacePoint&,
+      SelfContactActivityView,
+      SelfContactPairClassification*) noexcept;
+  static SelfContactActiveUseReport ClassifyEdgeEdge(
+      const SelfContactActiveUseBinding&, std::size_t first_edge_use,
+      const WeightedSurfacePoint&, std::size_t second_edge_use,
+      const WeightedSurfacePoint&, SelfContactEdgeEdgeCase,
+      SelfContactActivityView,
+      SelfContactPairClassification*) noexcept;
+};
+
+} // namespace tlfea::contact::self_contact_transaction

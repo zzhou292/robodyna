@@ -77,6 +77,25 @@ directional = queries[
 assert 'inventory.cin_node_rows[node]' in directional
 assert 'inventory.cin_row_indices[i]' in directional
 assert 'r < forecast.cin_rows' not in directional
+tied = queries[
+    queries.index('SelfContactTiedStatus TiedStatus('):
+    queries.index('} // namespace tlfea::contact::active_use')]
+assert 'HasCinSecondary(inventory, forecast, first)' in tied
+assert 'HasCinSecondary(inventory, forecast, second)' in tied
+assert 'if (!first_secondary && !second_secondary)' in tied
+assert 'const auto a = first_secondary' in tied
+assert 'const auto b = second_secondary' in tied
+assert 'first.endpoint_support[0]' in queries
+assert 'second.endpoint_support[1]' in queries
+assert 'ActiveUseQueryAccess::ValidateActivity(' in queries
+assert 'ActiveUseQueryAccess::ClassifyVertexFace(' in queries
+assert 'ActiveUseQueryAccess::ClassifyEdgeEdge(' in queries
+public_vf = queries[
+    queries.index('SelfContactActiveUseBinding::ClassifyVertexFace('):
+    queries.index(
+        'ActiveUseQueryAccess::ClassifyEdgeEdge(')]
+assert 'OutputDisjoint(output, sizeof(*output))' in public_vf
+assert 'ActivityOutputDisjoint(' in public_vf
 assert 'A stable counting fill preserves source row order' in build
 assert 'cin_index_bytes' in types and 'cin_index_bytes' in layout
 assert queries.count('next.activity_base_identity = activity.base') == 2
@@ -112,6 +131,16 @@ assert "ScalingTest.cpp" in qualification_cmake
 assert "ScalingTest.cpp" in qualification_bazel
 assert "CinIndexTest.cpp" in qualification_cmake
 assert "CinIndexTest.cpp" in qualification_bazel
+cin_index_test = (here / "CinIndexTest.cpp").read_text()
+for token in (
+        "UnrelatedCinRows = 10000",
+        "MediumQueryCoupon = 100000",
+        "MixedCinAndOrdinaryEventsMatchSlowOracleAtMediumCoupon",
+        "events_per_second",
+        "directional_index_scans",
+        "secondary_free_shortcuts",
+        "activity_roster_validations = 1"):
+    assert token in cin_index_test
 assert 'name = "source_check"' in qualification_bazel
 assert "self-contact-refinement" in qualification_cmake
 assert "m2-self-contact-refinement" in qualification_bazel

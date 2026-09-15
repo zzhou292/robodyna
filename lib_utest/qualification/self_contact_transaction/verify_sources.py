@@ -20,6 +20,7 @@ QUAL_CMAKE = Path(__file__).resolve().parent / "CMakeLists.txt"
 QUAL_BAZEL = Path(__file__).resolve().parent / "BUILD.bazel"
 CUDA = Path(__file__).resolve().parent / "CudaTest.cu"
 MEDIUM = Path(__file__).resolve().parent / "MediumCouponTest.cpp"
+ACCEPTED_TEST = Path(__file__).resolve().parent / "AcceptedEventTest.cpp"
 VALUE_TEST = Path(__file__).resolve().parent / "ValueTest.cpp"
 OWNER = (Path(__file__).resolve().parent /
          "../physical_publication/OwnerStartup.cu").resolve()
@@ -281,6 +282,30 @@ source_path = ROOT / "lib_src/collision/self_contact_transaction/Source.cpp"
 source = source_path.read_text()
 values = (
     ROOT / "lib_src/collision/self_contact_transaction/Values.cpp").read_text()
+accepted_builder = source[
+    source.index("SelfContactTransactionReport BuildAcceptedEvents("):
+    source.index("SelfContactTransactionReport ValidateCandidateEdgePolicy(")]
+if accepted_builder.count(
+        "for (std::size_t feature = 0; feature < features.count; ++feature)") != 1:
+    raise RuntimeError(
+        f"{source_path}: accepted event construction is not one feature pass")
+for token in (
+    "ActiveUseQueryAccess::ValidateActivity(",
+    "const bool remaining = written < capacity",
+    "remaining ? events + written : nullptr",
+    "written += admitted && remaining",
+    "if (required > capacity)",
+):
+    require(accepted_builder, token, source_path)
+if accepted_builder.count(
+        "ActiveUseQueryAccess::ValidateActivity(") != 1:
+    raise RuntimeError(
+        f"{source_path}: accepted chunk does not authenticate activity once")
+for token in (
+    "ActiveUseQueryAccess::ClassifyVertexFace(",
+    "ActiveUseQueryAccess::ClassifyEdgeEdge(",
+):
+    require(source, token, source_path)
 require(source, "ClassifyAcceptedFacetPair(", source_path)
 for token in (
     "BuildFixedTriangleFeatureTaskMask(",
@@ -350,6 +375,7 @@ for wiring in (CMAKE, BAZEL):
 for token in (
     "SELF_CONTACT_TRANSACTION_CUDA",
     "CudaTest.cu",
+    "AcceptedEventTest.cpp",
     "MediumCouponTest.cpp",
     "self_contact_transaction_medium_coupon",
     "tl_self_contact_transaction",
@@ -358,7 +384,8 @@ for token in (
     'LABELS "coupon;',
 ):
     require(QUAL_CMAKE.read_text(), token, QUAL_CMAKE)
-for token in ("host_check", "source_check", "root_cuda_sources"):
+for token in ("host_check", "medium_coupon", "source_check",
+              "root_cuda_sources", "AcceptedEventTest.cpp"):
     require(QUAL_BAZEL.read_text(), token, QUAL_BAZEL)
 require(QUAL_BAZEL.read_text(), '":root_cuda_sources"', QUAL_BAZEL)
 require(QUAL_BAZEL.read_text(), "m2-rigid-cin-response", QUAL_BAZEL)
@@ -399,6 +426,14 @@ for token in (
     "sizeof(FixedStorage) < 512u * 1024u",
 ):
     require(MEDIUM.read_text(), token, MEDIUM)
+for token in (
+    "OnePrivatePassRetainsLateFailurePriorityAndCountPublication",
+    "ShortPrivateCapacityCountsCompletelyWithoutOverwritingGuard",
+    "EXPECT_EQ(count, 777u)",
+    "EXPECT_EQ(count, 888u)",
+    "EXPECT_EQ(short_report.candidate, 2u)",
+):
+    require(ACCEPTED_TEST.read_text(), token, ACCEPTED_TEST)
 
 cuda = CUDA.read_text()
 for token in (
