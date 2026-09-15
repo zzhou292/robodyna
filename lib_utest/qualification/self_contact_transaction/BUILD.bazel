@@ -32,6 +32,7 @@ cc_test(
         "//lib_src/collision:self_contact_transaction",
         "//lib_src/collision:self_contact_transaction_values",
         "//lib_utest/qualification/self_contact_active_uses:fixture",
+        "//lib_utest/qualification/self_contact_current_regularity:fixture",
         "@googletest//:gtest_main",
     ],
 )

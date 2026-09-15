@@ -629,27 +629,7 @@ TEST(SelfContactActiveUses,
                 uses, vertex_use[kind], master_face,
                 master_point, activity, &actual).status ==
             Code::Ok;
-    if (exact && std::memcmp(
-            &actual, expected.data()+kind, sizeof(actual)) != 0) {
-      const auto* actual_bytes =
-          reinterpret_cast<const unsigned char*>(&actual);
-      const auto* expected_bytes =
-          reinterpret_cast<const unsigned char*>(
-              expected.data()+kind);
-      std::size_t mismatch = 0;
-      while (mismatch < sizeof(actual) &&
-          actual_bytes[mismatch] == expected_bytes[mismatch])
-        ++mismatch;
-      std::cout << "cin-tied-oracle-mismatch byte=" << mismatch
-                << " actual=" << unsigned(actual_bytes[mismatch])
-                << " expected=" << unsigned(expected_bytes[mismatch])
-                << " actual_status=" << unsigned(actual.status)
-                << " expected_status="
-                << unsigned(expected[kind].status)
-                << " actual_tied=" << unsigned(actual.tied)
-                << " expected_tied="
-                << unsigned(expected[kind].tied)
-                << '\n';
+    if (exact && !SamePairFields(actual, expected[kind])) {
       exact = false;
     }
     exact = exact && actual.tied == oracle[kind];
