@@ -1420,7 +1420,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
                    accepted_feature_result.feature_count, true},
                   state.buffers.facet_descriptors,
                   state.buffers.triangle_order, triangles,
-                  assembly.activity_.activity(),
+                  activity,
                   accepted_exclusions, 15,
                   &accepted_exclusion_count);
           if (exclusions.status != S::Ok)
