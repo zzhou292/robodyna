@@ -1002,6 +1002,11 @@ struct CoverageOwner {
   unsigned vertex_side = 2;
   unsigned vertex = 3;
   unsigned target_side = 2;
+  FixedTriangleStratumKind target_kind =
+      FixedTriangleStratumKind::Face;
+  unsigned target_vertex = 3;
+  unsigned target_edge = 3;
+  double target_edge_parameter = 0;
   DirectedInterval face_weights[3]{};
   unsigned edge_side[2]{2, 2};
   unsigned edge[2]{3, 3};
@@ -1035,8 +1040,6 @@ bool BuildVertexFaceOwner(
           FixedTriangleCandidateKind::VertexFace ||
       certificate.discovery.key.kind !=
           FixedTriangleCandidateKind::VertexFace ||
-      certificate.discovery.key.vertex_face.target.kind !=
-          FixedTriangleStratumKind::Face ||
       certificate.event.classification.kind !=
           SelfContactPairKind::VertexFace ||
       certificate.event.classification.status !=
@@ -1050,40 +1053,74 @@ bool BuildVertexFaceOwner(
       certificate.discovery.local_features[0] < 3;
   if (first_target == second_target) return false;
   const unsigned discovery_target = first_target ? 0 : 1;
-  const auto& face =
-      certificate.discovery.key.vertex_face.target.face;
-  unsigned target = 2;
-  for (unsigned side = 0; side < 2; ++side)
-    if (Same(triangles[side].key, face)) {
-      if (target != 2) return false;
-      target = side;
+  const auto& stratum =
+      certificate.discovery.key.vertex_face.target;
+  const auto& source_key =
+      certificate.discovery.key.vertex_face.vertex;
+  unsigned source = 2;
+  unsigned source_vertex = 3;
+  unsigned target_local = 3;
+  for (unsigned side = 0; side < 2; ++side) {
+    const auto local = FindVertex(triangles[side], source_key);
+    if (local < 3) {
+      if (source != 2) return false;
+      source = side;
+      source_vertex = local;
     }
-  if (target == 2 ||
-      !Same(certificate.discovery.triangles[discovery_target],
-            face))
+  }
+  if (source == 2 || source_vertex >= 3) return false;
+  const unsigned target = 1 - source;
+  if (stratum.kind == FixedTriangleStratumKind::Face &&
+      Same(triangles[target].key, stratum.face))
+    target_local = 0;
+  if (stratum.kind == FixedTriangleStratumKind::Edge)
+    target_local = FindEdge(triangles[target], stratum.edge);
+  if (stratum.kind == FixedTriangleStratumKind::Vertex)
+    target_local = FindVertex(triangles[target], stratum.vertex);
+  if (target_local >= 3 ||
+      (stratum.kind == FixedTriangleStratumKind::Face &&
+       !Same(certificate.discovery.triangles[discovery_target],
+             stratum.face)))
     return false;
-  const unsigned source = 1 - target;
-  const unsigned vertex = FindVertex(
-      triangles[source],
-      certificate.discovery.key.vertex_face.vertex);
-  if (vertex >= 3 ||
-      FindVertex(triangles[target],
-                 certificate.discovery.key.vertex_face.vertex) < 3 ||
-      Compare(
-          Path(certificate.discovery.triangles[1 - discovery_target]),
-          Path(triangles[source].key)) > 0)
+  const auto accepted_pair = Pair(
+      certificate.discovery.triangles[0],
+      certificate.discovery.triangles[1]);
+  const auto candidate_pair =
+      Pair(triangles[0].key, triangles[1].key);
+  if (Compare(accepted_pair.paths[0],
+              candidate_pair.paths[0]) > 0 ||
+      Compare(accepted_pair.paths[1],
+              candidate_pair.paths[1]) > 0)
     return false;
   CoverageOwner next;
   next.kind = AcceptedEventCertificateKind::VertexFace;
   next.certificate = certificate_index;
   next.source_order = certificate.event.source_order;
-  next.feature.kind = RepresentedFeatureKind::VertexFace;
-  next.feature.vertex =
-      certificate.discovery.key.vertex_face.vertex;
-  next.feature.face = Path(face);
+  if (stratum.kind == FixedTriangleStratumKind::Face) {
+    next.feature.kind = RepresentedFeatureKind::VertexFace;
+    next.feature.vertex =
+        certificate.discovery.key.vertex_face.vertex;
+    next.feature.face = Path(stratum.face);
+  }
   next.vertex_side = source;
-  next.vertex = vertex;
+  next.vertex = source_vertex;
   next.target_side = target;
+  next.target_kind = stratum.kind;
+  if (stratum.kind == FixedTriangleStratumKind::Vertex)
+    next.target_vertex = target_local;
+  if (stratum.kind == FixedTriangleStratumKind::Edge) {
+    next.target_edge = target_local;
+    next.target_edge_parameter =
+        certificate.discovery.edge_parameters[0];
+    if (!std::isfinite(next.target_edge_parameter) ||
+        next.target_edge_parameter < 0 ||
+        next.target_edge_parameter > 1)
+      return false;
+  }
+  if (stratum.kind != FixedTriangleStratumKind::Face) {
+    *output = next;
+    return true;
+  }
   unsigned adjusted = 0;
   for (unsigned weight = 0; weight < 3; ++weight) {
     const double value = certificate.discovery.face_weights[weight];
@@ -1236,6 +1273,17 @@ bool OwnerDifference(
       points[0][component] =
           facets[owner.vertex_side].
               coordinate[owner.vertex][component];
+      if (owner.target_kind ==
+          FixedTriangleStratumKind::Vertex) {
+        if (owner.target_vertex >= 3) return false;
+        points[1][component] =
+            facets[owner.target_side].
+                coordinate[owner.target_vertex][component];
+        continue;
+      }
+      if (owner.target_kind ==
+          FixedTriangleStratumKind::Edge)
+        continue;
       BernsteinCoordinate sum{};
       bool have_sum = false;
       for (unsigned vertex = 0; vertex < 3; ++vertex) {
@@ -1254,6 +1302,13 @@ bool OwnerDifference(
       }
       points[1][component] = sum;
     }
+    if (owner.target_kind ==
+            FixedTriangleStratumKind::Edge &&
+        !EdgePoint(
+            facets, triangles, owner.target_side,
+            owner.target_edge, owner.target_edge_parameter,
+            points[1]))
+      return false;
   } else {
     if (!EdgePoint(
             facets, triangles, owner.edge_side[0],
@@ -1326,6 +1381,143 @@ void HashCoverageValue(
   }
 }
 
+bool CoordinateRange(
+    const BernsteinCoordinate& coordinate,
+    Interval* output) noexcept {
+  if (!output || !Valid(coordinate.control[0])) return false;
+  output->lower = coordinate.control[0].lower;
+  output->upper = coordinate.control[0].upper;
+  for (unsigned control = 1; control < 3; ++control) {
+    if (!Valid(coordinate.control[control])) return false;
+    output->lower = std::min(
+        output->lower, coordinate.control[control].lower);
+    output->upper = std::max(
+        output->upper, coordinate.control[control].upper);
+  }
+  return true;
+}
+
+bool VertexDifferenceRange(
+    const BernsteinFacet& facet,
+    unsigned first, unsigned second,
+    Interval output[3]) noexcept {
+  if (first >= 3 || second >= 3) return false;
+  for (unsigned component = 0; component < 3; ++component) {
+    Interval a, b;
+    if (!CoordinateRange(
+            facet.coordinate[first][component], &a) ||
+        !CoordinateRange(
+            facet.coordinate[second][component], &b) ||
+        !Subtract(a, b, output + component))
+      return false;
+  }
+  return true;
+}
+
+bool DotInterval(
+    const Interval first[3], const Interval second[3],
+    Interval* output) noexcept {
+  if (!output) return false;
+  Interval sum{};
+  for (unsigned component = 0; component < 3; ++component) {
+    Interval product;
+    if (!Product(
+            first[component], second[component], &product))
+      return false;
+    if (component == 0) {
+      sum = product;
+    } else {
+      const double lower = sum.lower + product.lower;
+      const double upper = sum.upper + product.upper;
+      if (!std::isfinite(lower) || !std::isfinite(upper))
+        return false;
+      sum = {Down(lower), Up(upper)};
+    }
+  }
+  *output = sum;
+  return true;
+}
+
+bool SameCoordinatePath(
+    const BernsteinFacet& first, unsigned first_vertex,
+    const BernsteinFacet& second, unsigned second_vertex) noexcept {
+  for (unsigned component = 0; component < 3; ++component)
+    for (unsigned control = 0; control < 3; ++control) {
+      const auto a =
+          first.coordinate[first_vertex][component].control[control];
+      const auto b =
+          second.coordinate[second_vertex][component].control[control];
+      if (a.lower != b.lower || a.upper != b.upper)
+        return false;
+    }
+  return true;
+}
+
+bool LocalSharedEdgeOnly(
+    const BernsteinFacet facets[2],
+    const CurrentFixedTriangle triangles[2],
+    bool* valid) noexcept {
+  if (!valid) return false;
+  *valid = false;
+  unsigned shared[2][2]{};
+  unsigned shared_count = 0;
+  for (unsigned first = 0; first < 3; ++first)
+    for (unsigned second = 0; second < 3; ++second)
+      if (fixed_triangle_features::Compare(
+              triangles[0].vertex_keys[first],
+              triangles[1].vertex_keys[second]) == 0) {
+        if (shared_count == 2) return false;
+        shared[0][shared_count] = first;
+        shared[1][shared_count] = second;
+        ++shared_count;
+      }
+  if (shared_count != 2 ||
+      !SameCoordinatePath(
+          facets[0], shared[0][0],
+          facets[1], shared[1][0]) ||
+      !SameCoordinatePath(
+          facets[0], shared[0][1],
+          facets[1], shared[1][1]))
+    return false;
+  unsigned opposite[2]{3, 3};
+  for (unsigned side = 0; side < 2; ++side)
+    for (unsigned vertex = 0; vertex < 3; ++vertex)
+      if (vertex != shared[side][0] &&
+          vertex != shared[side][1])
+        opposite[side] = vertex;
+  if (opposite[0] >= 3 || opposite[1] >= 3)
+    return false;
+
+  // Both facets contain the same exact moving edge. A strict nonzero
+  // tetrahedral volume proves their planes meet only on that edge. If volume
+  // can contain zero, strictly opposite edge-side normals prove that any
+  // coplanar limit is the nonoverlapping adjacent configuration. All interval
+  // products enclose the Bernstein coordinate hull of the complete cell.
+  Interval edge[3], first_arm[3], second_arm[3];
+  if (!VertexDifferenceRange(
+          facets[0], shared[0][1], shared[0][0], edge) ||
+      !VertexDifferenceRange(
+          facets[0], opposite[0], shared[0][0], first_arm) ||
+      !VertexDifferenceRange(
+          facets[1], opposite[1], shared[1][0], second_arm))
+    return false;
+  Interval first_normal[3], second_normal[3];
+  if (!Cross(edge, first_arm, first_normal) ||
+      !Cross(edge, second_arm, second_normal))
+    return false;
+  Interval volume;
+  if (!DotInterval(first_normal, second_arm, &volume))
+    return false;
+  *valid = true;
+  if (volume.lower > 0 || volume.upper < 0) return true;
+  Interval side;
+  if (!DotInterval(first_normal, second_normal, &side)) {
+    *valid = false;
+    return false;
+  }
+  return side.upper < 0;
+}
+
 NonlinearSeparationStatus SubdivideCoverage(
     const BernsteinFacet facets[2],
     const CurrentFixedTriangle triangles[2],
@@ -1334,7 +1526,8 @@ NonlinearSeparationStatus SubdivideCoverage(
     unsigned depth, unsigned max_depth, std::uint64_t path,
     std::size_t max_work, std::size_t* work,
     unsigned* deepest, NonlinearSeparationResult* result,
-    bool* used_coverage) noexcept {
+    bool* used_coverage,
+    bool require_geometric_safety) noexcept {
   if (!work || !deepest || !result || !used_coverage)
     return NonlinearSeparationStatus::InvalidInput;
   if (*work >= max_work) {
@@ -1361,7 +1554,13 @@ NonlinearSeparationStatus SubdivideCoverage(
       facets[0], 0, facets[1], 0, &zero_valid);
   if (!zero_valid)
     return NonlinearSeparationStatus::InvalidInput;
-  if (zero_separated) {
+  bool local_valid = false;
+  const bool local_safe = !zero_separated &&
+      LocalSharedEdgeOnly(facets, triangles, &local_valid);
+  if (!zero_separated && !local_valid)
+    local_valid = true;
+  if (!require_geometric_safety ||
+      zero_separated || local_safe) {
     for (std::size_t owner_index = 0;
          owner_index < owner_count; ++owner_index) {
       BernsteinCoordinate difference[3];
@@ -1398,7 +1597,8 @@ NonlinearSeparationStatus SubdivideCoverage(
     result->depth_exhausted = true;
     if (!owner_count)
       return NonlinearSeparationStatus::MissingAcceptedOwner;
-    return zero_separated
+    return !require_geometric_safety ||
+            zero_separated || local_safe
         ? NonlinearSeparationStatus::PotentialContact
         : NonlinearSeparationStatus::PossibleGeometricCrossing;
   }
@@ -1410,7 +1610,8 @@ NonlinearSeparationStatus SubdivideCoverage(
   const auto left_status = SubdivideCoverage(
       left, triangles, first_thickness, second_thickness,
       owners, owner_count, depth + 1, max_depth, path << 1,
-      max_work, work, deepest, result, used_coverage);
+      max_work, work, deepest, result, used_coverage,
+      require_geometric_safety);
   if (left_status != NonlinearSeparationStatus::CertifiedSeparated &&
       left_status !=
           NonlinearSeparationStatus::CertifiedAcceptedCoverage)
@@ -1420,7 +1621,7 @@ NonlinearSeparationStatus SubdivideCoverage(
       right, triangles, first_thickness, second_thickness,
       owners, owner_count, depth + 1, max_depth,
       (path << 1) | 1, max_work, work, deepest,
-      result, used_coverage);
+      result, used_coverage, require_geometric_safety);
   if (right_status != NonlinearSeparationStatus::CertifiedSeparated &&
       right_status !=
           NonlinearSeparationStatus::CertifiedAcceptedCoverage)
@@ -1509,7 +1710,7 @@ NonlinearSeparationResult CertifyQuadraticFacetSeparation(
   return result;
 }
 
-NonlinearSeparationResult CertifyQuadraticFacetCoverage(
+NonlinearSeparationResult CertifyQuadraticFacetCoverageImpl(
     const CurrentFixedTriangle& first_accepted,
     const CurrentFixedTriangle& first_prepared,
     const FacetQuadraticCoefficients& first_coefficients,
@@ -1520,7 +1721,8 @@ NonlinearSeparationResult CertifyQuadraticFacetCoverage(
     double second_thickness, double duration,
     const AcceptedEventCertificate* accepted,
     std::size_t accepted_count,
-    std::size_t max_work, unsigned max_depth) noexcept {
+    std::size_t max_work, unsigned max_depth,
+    bool require_geometric_safety) noexcept {
   NonlinearSeparationResult result;
   if (!max_work || max_depth > 52 ||
       (accepted_count && !accepted) ||
@@ -1586,7 +1788,7 @@ NonlinearSeparationResult CertifyQuadraticFacetCoverage(
       first_thickness, second_thickness,
       owners, owner_count, 0, max_depth, 0,
       max_work, &result.work, &result.deepest,
-      &result, &used_coverage);
+      &result, &used_coverage, require_geometric_safety);
   if (result.status ==
           NonlinearSeparationStatus::CertifiedAcceptedCoverage &&
       (!used_coverage ||
@@ -1594,6 +1796,133 @@ NonlinearSeparationResult CertifyQuadraticFacetCoverage(
        result.accepted_source_order == UINT64_MAX))
     result.status = NonlinearSeparationStatus::InvalidInput;
   return result;
+}
+
+NonlinearSeparationResult CertifyQuadraticFacetCoverage(
+    const CurrentFixedTriangle& first_accepted,
+    const CurrentFixedTriangle& first_prepared,
+    const FacetQuadraticCoefficients& first_coefficients,
+    double first_thickness,
+    const CurrentFixedTriangle& second_accepted,
+    const CurrentFixedTriangle& second_prepared,
+    const FacetQuadraticCoefficients& second_coefficients,
+    double second_thickness, double duration,
+    const AcceptedEventCertificate* accepted,
+    std::size_t accepted_count,
+    std::size_t max_work, unsigned max_depth) noexcept {
+  return CertifyQuadraticFacetCoverageImpl(
+      first_accepted, first_prepared, first_coefficients,
+      first_thickness,
+      second_accepted, second_prepared, second_coefficients,
+      second_thickness, duration, accepted, accepted_count,
+      max_work, max_depth, true);
+}
+
+NonlinearSeparationResult CertifyQuadraticFacetPolicyCoverage(
+    const CurrentFixedTriangle& first_accepted,
+    const CurrentFixedTriangle& first_prepared,
+    const FacetQuadraticCoefficients& first_coefficients,
+    double first_thickness,
+    const CurrentFixedTriangle& second_accepted,
+    const CurrentFixedTriangle& second_prepared,
+    const FacetQuadraticCoefficients& second_coefficients,
+    double second_thickness, double duration,
+    const AcceptedEventCertificate* accepted,
+    std::size_t accepted_count,
+    const AcceptedFeatureExclusionCertificate* exclusions,
+    std::size_t exclusion_count,
+    std::size_t max_work, unsigned max_depth) noexcept {
+  auto ledger = CertifyQuadraticFacetCoverage(
+      first_accepted, first_prepared, first_coefficients,
+      first_thickness,
+      second_accepted, second_prepared, second_coefficients,
+      second_thickness, duration, accepted, accepted_count,
+      max_work, max_depth);
+  if (ledger.status ==
+          NonlinearSeparationStatus::CertifiedSeparated ||
+      ledger.status ==
+          NonlinearSeparationStatus::CertifiedAcceptedCoverage ||
+      !exclusion_count)
+    return ledger;
+  if (!exclusions || exclusion_count > 64 ||
+      ledger.work >= max_work) {
+    if (!exclusions && exclusion_count)
+      ledger.status = NonlinearSeparationStatus::InvalidInput;
+    return ledger;
+  }
+  AcceptedEventCertificate synthetic[64];
+  for (std::size_t exclusion = 0;
+       exclusion < exclusion_count; ++exclusion) {
+    if (exclusions[exclusion].complete_rigid_group ==
+        UINT32_MAX) {
+      ledger.status = NonlinearSeparationStatus::InvalidInput;
+      return ledger;
+    }
+    if (exclusion &&
+        exclusions[exclusion].complete_rigid_group !=
+            exclusions[0].complete_rigid_group) {
+      ledger.status =
+          NonlinearSeparationStatus::OwnerAmbiguity;
+      return ledger;
+    }
+    auto& certificate = synthetic[exclusion];
+    certificate = {};
+    certificate.discovery = exclusions[exclusion].feature;
+    certificate.event.feature =
+        exclusions[exclusion].feature.key;
+    certificate.event.source_order = exclusion;
+    certificate.event.classification.active[0] = true;
+    certificate.event.classification.active[1] = true;
+    if (certificate.discovery.key.kind ==
+        FixedTriangleCandidateKind::VertexFace) {
+      certificate.kind =
+          AcceptedEventCertificateKind::VertexFace;
+      certificate.event.classification.kind =
+          SelfContactPairKind::VertexFace;
+      certificate.event.classification.status =
+          SelfContactPairStatus::AdmittedVertexFace;
+    } else {
+      certificate.kind =
+          AcceptedEventCertificateKind::EdgeEdge;
+      certificate.event.classification.kind =
+          SelfContactPairKind::EdgeEdge;
+      certificate.event.classification.status =
+          SelfContactPairStatus::AdmittedEdgeEdge;
+    }
+  }
+  auto excluded = CertifyQuadraticFacetCoverageImpl(
+      first_accepted, first_prepared, first_coefficients,
+      first_thickness,
+      second_accepted, second_prepared, second_coefficients,
+      second_thickness, duration, synthetic, exclusion_count,
+      max_work - ledger.work, max_depth, false);
+  if (excluded.work > SIZE_MAX - ledger.work) {
+    excluded.status = NonlinearSeparationStatus::InvalidInput;
+    return excluded;
+  }
+  excluded.work += ledger.work;
+  excluded.deepest =
+      std::max(excluded.deepest, ledger.deepest);
+  HashCoverageValue(
+      static_cast<unsigned>(ledger.status),
+      &excluded.proof_digest);
+  HashCoverageValue(ledger.work, &excluded.proof_digest);
+  if (excluded.status ==
+      NonlinearSeparationStatus::CertifiedAcceptedCoverage) {
+    if (excluded.accepted_certificate >= exclusion_count) {
+      excluded.status = NonlinearSeparationStatus::InvalidInput;
+      return excluded;
+    }
+    excluded.excluded_rigid_group =
+        exclusions[excluded.accepted_certificate].
+            complete_rigid_group;
+    excluded.accepted_certificate = SIZE_MAX;
+    excluded.accepted_source_order = UINT64_MAX;
+    excluded.feature = {};
+    excluded.status =
+        NonlinearSeparationStatus::CertifiedExactExclusion;
+  }
+  return excluded;
 }
 
 RigidMemberSweepStatus BuildRigidMemberSweepBounds(

@@ -1374,6 +1374,41 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
             ++raw_pair;
             continue;
           }
+          FixedTriangleFeatureCandidate
+              accepted_features[15];
+          fixed_triangle_features::PairFeatureResult
+              accepted_feature_result;
+          if (fixed_triangle_features::
+                  EvaluatePairFeaturesMaskedOnce(
+                      state.buffers.accepted_triangles[
+                          facet_pair.first],
+                      state.buffers.accepted_triangles[
+                          facet_pair.second],
+                      state.buffers.
+                          chunk_feature_task_masks[pair],
+                      accepted_features, 15,
+                      &accepted_feature_result) !=
+              FixedTriangleDiscoveryStatus::Ok)
+            return state.Fail(Failure(
+                S::DiscoveryFailure,
+                "Accepted nonlinear exclusion feature replay failed",
+                SIZE_MAX,
+                state.candidate_facet_pair_count + raw_pair));
+          sct::AcceptedFeatureExclusionCertificate
+              accepted_exclusions[15];
+          std::size_t accepted_exclusion_count = 0;
+          const auto exclusions =
+              sct::BuildAcceptedSameRigidExclusions(
+                  state.active_use,
+                  {accepted_features,
+                   accepted_feature_result.feature_count, true},
+                  state.buffers.facet_descriptors,
+                  state.buffers.triangle_order, triangles,
+                  assembly.activity_.activity(),
+                  accepted_exclusions, 15,
+                  &accepted_exclusion_count);
+          if (exclusions.status != S::Ok)
+            return state.Fail(exclusions);
           const auto prior_nonlinear =
               state.buffers.chunk_nonlinear_results[raw_pair];
           const auto pair_remaining =
@@ -1404,7 +1439,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
               pair_remaining, chunk_remaining, complete_remaining});
           sct::NonlinearSeparationResult coverage;
           if (coverage_allowed) {
-            coverage = sct::CertifyQuadraticFacetCoverage(
+            coverage = sct::CertifyQuadraticFacetPolicyCoverage(
                 state.buffers.accepted_triangles[
                     facet_pair.first],
                 state.buffers.prepared_triangles[
@@ -1424,6 +1459,8 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
                 duration,
                 state.buffers.accepted_certificates,
                 state.accepted_event_count,
+                accepted_exclusions,
+                accepted_exclusion_count,
                 coverage_allowed,
                 state.storage_forecast.
                     nonlinear_subdivision_depth);
@@ -1470,9 +1507,15 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
                   sct::NonlinearSeparationStatus::DepthExhausted;
           state.buffers.chunk_nonlinear_results[raw_pair] =
               coverage;
-          if (coverage.status ==
-              sct::NonlinearSeparationStatus::
-                  CertifiedAcceptedCoverage) {
+          const bool accepted_coverage =
+              coverage.status ==
+                  sct::NonlinearSeparationStatus::
+                      CertifiedAcceptedCoverage;
+          const bool exact_exclusion =
+              coverage.status ==
+                  sct::NonlinearSeparationStatus::
+                      CertifiedExactExclusion;
+          if (accepted_coverage || exact_exclusion) {
             if (!summary.nonlinear_subdivision_unresolved)
               return state.Fail(Failure(
                   S::IdentityMismatch,
@@ -1490,25 +1533,39 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
                         DepthExhausted &&
                 summary.nonlinear_subdivision_depth_exhausted)
               --summary.nonlinear_subdivision_depth_exhausted;
-            ++summary.
-                motion_certified_nonlinear_accepted_coverage;
+            summary.
+                motion_certified_nonlinear_accepted_coverage +=
+                    accepted_coverage;
+            summary.
+                motion_certified_nonlinear_exact_exclusion +=
+                    exact_exclusion;
             state.buffers.chunk_motion_actions[raw_pair] =
-                sct::PairMotionAction::
-                    CertifiedQuadraticAcceptedCoverage;
+                accepted_coverage
+                    ? sct::PairMotionAction::
+                          CertifiedQuadraticAcceptedCoverage
+                    : sct::PairMotionAction::
+                          CertifiedQuadraticExactExclusion;
             auto& local_result =
                 state.buffers.chunk_crossings[pair];
             local_result = {};
             local_result.key =
                 state.buffers.chunk_canonical_pairs[pair];
-            local_result.feature = coverage.feature;
             local_result.classification =
-                RepresentedIntervalClassification::
-                    CertifiedCrossingContact;
+                accepted_coverage
+                    ? RepresentedIntervalClassification::
+                          CertifiedCrossingContact
+                    : RepresentedIntervalClassification::
+                          CertifiedExactExclusion;
             local_result.reason =
                 RepresentedIntervalReason::None;
-            local_result.geometry =
-                RepresentedIntersectionGeometry::
-                    PersistentPhysicalContact;
+            if (accepted_coverage) {
+              local_result.feature = coverage.feature;
+              local_result.geometry =
+                  RepresentedIntersectionGeometry::
+                      PersistentAcceptedLedgerCoverage;
+              local_result.accepted_event =
+                  coverage.accepted_certificate;
+            }
             local_result.witness_time_numerator = 0;
             local_result.witness_time_depth = 0;
             local_result.work = coverage.work;
@@ -1626,7 +1683,10 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
                     CertifiedPersistentQuadraticContact ||
             action ==
                 sct::PairMotionAction::
-                    CertifiedQuadraticAcceptedCoverage) {
+                    CertifiedQuadraticAcceptedCoverage ||
+            action ==
+                sct::PairMotionAction::
+                    CertifiedQuadraticExactExclusion) {
           ++raw_pair;
           continue;
         }
@@ -1792,11 +1852,18 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
       summary.motion_certified_nonlinear_accepted_coverage >
           summary.nonlinear_subdivision_pairs -
               summary.motion_certified_nonlinear_separated ||
-      summary.nonlinear_subdivision_unresolved !=
+      summary.motion_certified_nonlinear_exact_exclusion >
           summary.nonlinear_subdivision_pairs -
               summary.motion_certified_nonlinear_separated -
               summary.
                   motion_certified_nonlinear_accepted_coverage ||
+      summary.nonlinear_subdivision_unresolved !=
+          summary.nonlinear_subdivision_pairs -
+              summary.motion_certified_nonlinear_separated -
+              summary.
+                  motion_certified_nonlinear_accepted_coverage -
+              summary.
+                  motion_certified_nonlinear_exact_exclusion ||
       summary.nonlinear_subdivision_work_exhausted >
           summary.nonlinear_subdivision_unresolved ||
       summary.nonlinear_subdivision_depth_exhausted >

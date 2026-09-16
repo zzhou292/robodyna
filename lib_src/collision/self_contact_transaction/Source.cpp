@@ -5,6 +5,7 @@
 #include "../self_contact_active_use/Storage.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <limits>
 
@@ -237,6 +238,45 @@ bool AllowedExclusion(SelfContactPairStatus status) noexcept {
       status == SelfContactPairStatus::ExcludedRegularOwnParent;
 }
 
+void CaptureClassification(
+    const SelfContactPairClassification& classification,
+    AcceptedFeaturePolicyEvidence* output) noexcept {
+  if (!output) return;
+  output->kind = classification.kind;
+  output->edge_edge_case = classification.edge_edge_case;
+  output->pair_status = classification.status;
+  output->tied = classification.tied;
+  output->endpoint_support[0] =
+      classification.endpoint_support[0];
+  output->endpoint_support[1] =
+      classification.endpoint_support[1];
+  output->parent[0] = classification.parent[0];
+  output->parent[1] = classification.parent[1];
+  output->feature[0] = classification.feature[0];
+  output->feature[1] = classification.feature[1];
+  output->classification_complete = true;
+  output->active[0] = classification.active[0];
+  output->active[1] = classification.active[1];
+  output->local_incidence = classification.local_incidence;
+  output->excluded = classification.excluded;
+  output->reference_half_thickness_m[0] =
+      classification.reference_half_thickness_m[0];
+  output->reference_half_thickness_m[1] =
+      classification.reference_half_thickness_m[1];
+  output->candidate_directed_area_m2 =
+      classification.candidate_directed_area_m2;
+  output->admitted_force_area_m2 =
+      classification.admitted_force_area_m2;
+}
+
+AcceptedFeatureDisposition ExclusionDisposition(
+    SelfContactPairStatus status) noexcept {
+  return status == SelfContactPairStatus::ExcludedSameRigidGroup
+      ? AcceptedFeatureDisposition::ExcludedSameRigidSupport
+      : AcceptedFeatureDisposition::
+            ExcludedLocalOrRegularOwnParent;
+}
+
 SelfContactTransactionReport SeparatedFromForceSupport(
     const FixedTriangleFeatureCandidate& feature,
     const SelfContactPairClassification& classification,
@@ -268,7 +308,9 @@ SelfContactTransactionReport VertexFaceEvent(
     SelfContactActivityView activity, std::uint64_t source_order,
     SelfContactForceEvent* output,
     AcceptedEventCertificate* certificate,
-    bool* admitted) noexcept {
+    bool* admitted,
+    AcceptedFeaturePolicyEvidence* evidence = nullptr) noexcept {
+  if (evidence) *evidence = {};
   *admitted = false;
   const bool first_vertex = feature.local_features[0] < 3;
   if (first_vertex == (feature.local_features[1] < 3))
@@ -309,15 +351,20 @@ SelfContactTransactionReport VertexFaceEvent(
   if (ComposeFacetPoint(descriptors[target_facet],
                         feature.face_weights,
                         static_cast<std::uint32_t>(nodes),
-                        &face_point) != Status::kOk)
+                        &face_point) != Status::kOk) {
+    if (evidence)
+      evidence->disposition =
+          AcceptedFeatureDisposition::FeatureWeightNormalization;
     return Failure(S::DiscoveryFailure,
         "Directed VF face weights cannot be composed exactly");
+  }
   SelfContactPairClassification classification;
   const auto classified = ActiveUseQueryAccess::ClassifyVertexFace(
       active_use, vertex_use, target_facet, face_point,
       activity, &classification);
   if (classified.status != SelfContactActiveUseStatus::Ok)
     return Failure(S::IdentityMismatch, classified.message);
+  CaptureClassification(classification, evidence);
   if (classification.status ==
       SelfContactPairStatus::SameParentNeedsCurrentRegularity) {
     SelfContactPairClassification excluded;
@@ -329,22 +376,47 @@ SelfContactTransactionReport VertexFaceEvent(
       return report;
     }
     classification = excluded;
+    CaptureClassification(classification, evidence);
   }
   bool separated = false;
   const auto separation =
       SeparatedFromForceSupport(feature, classification, &separated);
   if (separation.status != SelfContactTransactionStatus::Ok)
     return separation;
-  if (separated) return {};
-  if (classification.status == SelfContactPairStatus::InactiveParent)
+  if (evidence) evidence->distance_separated = separated;
+  if (separated) {
+    if (evidence)
+      evidence->disposition = AcceptedFeatureDisposition::
+          DistanceRepresentationSeparated;
     return {};
-  if (AllowedExclusion(classification.status)) return {};
+  }
+  if (classification.status == SelfContactPairStatus::InactiveParent) {
+    if (evidence)
+      evidence->disposition =
+          AcceptedFeatureDisposition::InactiveParent;
+    return {};
+  }
+  if (AllowedExclusion(classification.status)) {
+    if (evidence)
+      evidence->disposition =
+          ExclusionDisposition(classification.status);
+    return {};
+  }
   if (classification.status !=
-      SelfContactPairStatus::AdmittedVertexFace)
+      SelfContactPairStatus::AdmittedVertexFace) {
+    if (evidence)
+      evidence->disposition =
+          AcceptedFeatureDisposition::TiedOrCinPolicy;
     return Failure(S::CandidateRejected,
         "Directed VF support is unresolved or unsupported by policy");
+  }
 
   *admitted = true;
+  if (evidence) {
+    evidence->admitted = true;
+    evidence->disposition =
+        AcceptedFeatureDisposition::AdmittedLedgerCandidate;
+  }
   SelfContactForceEvent event;
   event.feature = feature.key;
   event.source_order = source_order;
@@ -429,7 +501,9 @@ SelfContactTransactionReport EdgeEdgeEvent(
     SelfContactActivityView activity, std::uint64_t source_order,
     SelfContactForceEvent* output,
     AcceptedEventCertificate* certificate,
-    bool* admitted) noexcept {
+    bool* admitted,
+    AcceptedFeaturePolicyEvidence* evidence = nullptr) noexcept {
+  if (evidence) *evidence = {};
   *admitted = false;
   WeightedSurfacePoint points[2];
   std::size_t edge_uses[2]{};
@@ -458,6 +532,7 @@ SelfContactTransactionReport EdgeEdgeEvent(
       points[1], edge_case, activity, &classification);
   if (classified.status != SelfContactActiveUseStatus::Ok)
     return Failure(S::IdentityMismatch, classified.message);
+  CaptureClassification(classification, evidence);
   if (classification.status ==
       SelfContactPairStatus::SameParentNeedsCurrentRegularity) {
     SelfContactPairClassification excluded;
@@ -469,20 +544,49 @@ SelfContactTransactionReport EdgeEdgeEvent(
       return report;
     }
     classification = excluded;
+    CaptureClassification(classification, evidence);
   }
   bool separated = false;
   const auto separation =
       SeparatedFromForceSupport(feature, classification, &separated);
   if (separation.status != S::Ok) return separation;
-  if (separated || AllowedExclusion(classification.status))
+  if (evidence) evidence->distance_separated = separated;
+  if (separated) {
+    if (evidence)
+      evidence->disposition = AcceptedFeatureDisposition::
+          DistanceRepresentationSeparated;
     return {};
-  if (classification.status == SelfContactPairStatus::InactiveParent)
+  }
+  if (AllowedExclusion(classification.status)) {
+    if (evidence)
+      evidence->disposition =
+          ExclusionDisposition(classification.status);
     return {};
-  if (classification.status != SelfContactPairStatus::AdmittedEdgeEdge)
+  }
+  if (classification.status == SelfContactPairStatus::InactiveParent) {
+    if (evidence)
+      evidence->disposition =
+          AcceptedFeatureDisposition::InactiveParent;
+    return {};
+  }
+  if (classification.status != SelfContactPairStatus::AdmittedEdgeEdge) {
+    if (evidence)
+      evidence->disposition =
+          classification.status ==
+                      SelfContactPairStatus::
+                          UnadmittedEdgeEdgeForceArea
+              ? AcceptedFeatureDisposition::UnsupportedForceArea
+              : AcceptedFeatureDisposition::TiedOrCinPolicy;
     return Failure(S::CandidateRejected,
         "Nonlocal EE contact lacks strict authenticated edge-point area");
+  }
 
   *admitted = true;
+  if (evidence) {
+    evidence->admitted = true;
+    evidence->disposition =
+        AcceptedFeatureDisposition::AdmittedLedgerCandidate;
+  }
   if (edge_uses[0] > UINT32_MAX || edge_uses[1] > UINT32_MAX ||
       edge_facets[0] > UINT32_MAX || edge_facets[1] > UINT32_MAX)
     return Failure(S::ResourceLimit,
@@ -991,6 +1095,126 @@ SelfContactTransactionReport BuildAcceptedEvents(
   return {};
 }
 
+SelfContactTransactionReport BuildAcceptedSameRigidExclusions(
+    const SelfContactActiveUseBinding& active_use,
+    FixedTriangleFeatureView features,
+    const FixedContactFacet* descriptors,
+    const std::uint32_t* triangle_order,
+    std::size_t facet_count, SelfContactActivityView activity,
+    AcceptedFeatureExclusionCertificate* output,
+    std::size_t capacity, std::size_t* count) noexcept {
+  if (!features.complete ||
+      (features.count && !features.data) ||
+      !descriptors || !triangle_order || !count ||
+      (capacity && !output) ||
+      !ActiveUseQueryAccess::ValidateActivity(
+          active_use, activity))
+    return Failure(S::InvalidInput,
+        "Accepted same-rigid exclusion input is invalid");
+  std::size_t written = 0;
+  for (std::size_t feature_index = 0;
+       feature_index < features.count; ++feature_index) {
+    const auto& feature = features.data[feature_index];
+    SelfContactPairClassification classification;
+    SelfContactActiveUseReport classified;
+    if (feature.key.kind ==
+        FixedTriangleCandidateKind::VertexFace) {
+      const bool first_vertex =
+          feature.local_features[0] < 3;
+      if (first_vertex ==
+          (feature.local_features[1] < 3))
+        return Failure(S::IdentityMismatch,
+            "Accepted exclusion VF provenance is ambiguous");
+      const unsigned vertex_side = first_vertex ? 0 : 1;
+      const unsigned target_side = 1 - vertex_side;
+      const auto vertex_facet = TriangleIndex(
+          descriptors, triangle_order, facet_count,
+          feature.triangles[vertex_side]);
+      const auto target_facet = TriangleIndex(
+          descriptors, triangle_order, facet_count,
+          feature.triangles[target_side]);
+      if (vertex_facet == SIZE_MAX ||
+          target_facet == SIZE_MAX ||
+          vertex_facet >= active_use.facet_uses().size() ||
+          target_facet >= active_use.facet_uses().size())
+        return Failure(S::IdentityMismatch,
+            "Accepted exclusion VF facet is absent");
+      const auto local = feature.local_features[vertex_side];
+      if (local >= 3)
+        return Failure(S::IdentityMismatch,
+            "Accepted exclusion VF local vertex is invalid");
+      const auto vertex_use =
+          active_use.facet_uses()[vertex_facet].
+              vertex_uses[local];
+      WeightedSurfacePoint face;
+      const auto nodes = active_use.facets()->surface()->
+          physical()->domain()->node_count();
+      if (ComposeFacetPoint(
+              descriptors[target_facet],
+              feature.face_weights,
+              static_cast<std::uint32_t>(nodes),
+              &face) != Status::kOk)
+        return Failure(S::DiscoveryFailure,
+            "Accepted exclusion VF weights are invalid");
+      classified = ActiveUseQueryAccess::ClassifyVertexFace(
+          active_use, vertex_use, target_facet,
+          face, activity, &classification);
+    } else {
+      WeightedSurfacePoint points[2];
+      std::size_t edge_uses[2]{};
+      std::size_t edge_facets[2]{};
+      if (!EdgePoint(
+              active_use, descriptors, triangle_order,
+              facet_count, feature, 0, points,
+              edge_uses, edge_facets) ||
+          !EdgePoint(
+              active_use, descriptors, triangle_order,
+              facet_count, feature, 1, points + 1,
+              edge_uses + 1, edge_facets + 1))
+        return Failure(S::IdentityMismatch,
+            "Accepted exclusion EE provenance is invalid");
+      const bool strict =
+          feature.edge_parameters[0] > 0 &&
+          feature.edge_parameters[0] < 1 &&
+          feature.edge_parameters[1] > 0 &&
+          feature.edge_parameters[1] < 1;
+      const auto edge_case =
+          feature.distance_m == 0
+              ? SelfContactEdgeEdgeCase::ZeroDistance
+              : (strict
+                    ? SelfContactEdgeEdgeCase::
+                          StrictInteriorInteriorMinimum
+                    : SelfContactEdgeEdgeCase::
+                          BoundaryVertexEdgeMinimum);
+      classified = ActiveUseQueryAccess::ClassifyEdgeEdge(
+          active_use, edge_uses[0], points[0],
+          edge_uses[1], points[1], edge_case,
+          activity, &classification);
+    }
+    if (classified.status != SelfContactActiveUseStatus::Ok)
+      return Failure(S::IdentityMismatch, classified.message);
+    if (classification.status !=
+        SelfContactPairStatus::ExcludedSameRigidGroup)
+      continue;
+    const auto group =
+        classification.endpoint_support[0].
+            complete_rigid_group;
+    if (group == SIZE_MAX || group > UINT32_MAX ||
+        group != classification.endpoint_support[1].
+            complete_rigid_group)
+      return Failure(S::IdentityMismatch,
+          "Accepted exclusion rigid support is inconsistent");
+    if (written == capacity)
+      return Failure(S::ResourceLimit,
+          "Accepted same-rigid exclusion capacity is exhausted",
+          feature_index);
+    output[written++] = {
+        feature, static_cast<std::uint32_t>(group)};
+  }
+  *count = written;
+  return {};
+}
+
 SelfContactTransactionReport ValidateCandidateEdgePolicy(
     const SelfContactActiveUseBinding& active_use,
     const SelfContactCurrentRegularity& regularity,
@@ -1034,6 +1258,129 @@ SelfContactTransactionReport ValidateCandidateEdgePolicy(
     }
     (void)admitted;
   }
+  return {};
+}
+
+SelfContactTransactionReport
+QualificationAccess::ClassifyAcceptedFeaturePolicies(
+    SelfContactTransaction& owner,
+    const SelfContactAcceptedAssemblyReceipt& assembly,
+    FixedTriangleFeatureView features,
+    AcceptedFeaturePolicyEvidence* output,
+    std::size_t capacity, std::size_t* count) noexcept {
+  if (!owner.impl_ || !count ||
+      !features.complete ||
+      (features.count && (!features.data || !output)) ||
+      features.count > capacity)
+    return Failure(S::InvalidInput,
+        "Accepted feature-policy qualification storage is invalid");
+  *count = 0;
+  auto& state = *owner.impl_;
+  if (state.phase != SelfContactTransaction::Impl::Phase::
+          AssemblyRecorded ||
+      !assembly.valid() ||
+      assembly.transaction_ != &owner ||
+      assembly.owner_ != state.owner ||
+      assembly.active_use_identity_ !=
+          state.active_use.identity() ||
+      assembly.owner_id_ != state.owner_id ||
+      assembly.base_epoch_ != state.base_epoch ||
+      assembly.attempt_ != state.attempt)
+    return Failure(S::IdentityMismatch,
+        "Accepted feature-policy qualification owner is stale");
+  const auto activity = assembly.activity_.activity();
+  const auto nodes = state.active_use.facets()->surface()->
+      physical()->domain()->node_count();
+  const VectorView accepted_positions{
+      state.buffers.accepted_positions,
+      static_cast<std::uint32_t>(nodes), 3, 1};
+  SelfContactCurrentRegularityReceipt regularity_receipt;
+  const auto regularity = state.regularity.Certify(
+      accepted_positions, activity, &regularity_receipt);
+  if (regularity.status !=
+          SelfContactCurrentRegularityStatus::Ok ||
+      !CompleteRegularity(
+          state.active_use, regularity_receipt,
+          state.regularity.results(), activity)) {
+    auto report = Failure(S::RegularityFailure,
+        "Accepted feature-policy regularity replay failed");
+    report.regularity_status = regularity.status;
+    return report;
+  }
+  const auto candidate_pair = [](
+      const FixedTriangleFeatureCandidate& value) {
+    FixedTriangleKey first = value.triangles[0];
+    FixedTriangleKey second = value.triangles[1];
+    if (fixed_triangle_features::Compare(second, first) < 0)
+      std::swap(first, second);
+    return std::array<FixedTriangleKey, 2>{first, second};
+  };
+  for (std::size_t feature = 0;
+       feature < features.count; ++feature) {
+    auto& evidence = output[feature];
+    evidence = {};
+    SelfContactForceEvent event;
+    AcceptedEventCertificate certificate;
+    bool admitted = false;
+    const auto checked =
+        features.data[feature].key.kind ==
+                FixedTriangleCandidateKind::VertexFace
+            ? VertexFaceEvent(
+                  state.active_use, state.regularity,
+                  regularity_receipt, features.data[feature],
+                  state.buffers.facet_descriptors,
+                  state.buffers.triangle_order,
+                  state.facet_count, activity, 0,
+                  &event, &certificate, &admitted, &evidence)
+            : EdgeEdgeEvent(
+                  state.active_use, state.regularity,
+                  regularity_receipt, features.data[feature],
+                  state.buffers.facet_descriptors,
+                  state.buffers.triangle_order,
+                  state.facet_count, activity, 0,
+                  &event, &certificate, &admitted, &evidence);
+    evidence.report_status = checked.status;
+    const auto direct_pair =
+        candidate_pair(features.data[feature]);
+    for (std::size_t ledger = 0;
+         ledger < state.accepted_event_count; ++ledger) {
+      const auto& accepted =
+          state.buffers.accepted_certificates[ledger];
+      if (!Same(accepted.event.feature,
+                features.data[feature].key))
+        continue;
+      ++evidence.ledger_key_matches;
+      if (evidence.first_ledger_source_order == UINT64_MAX) {
+        evidence.first_ledger_source_order =
+            accepted.event.source_order;
+        evidence.first_ledger_triangles[0] =
+            accepted.discovery.triangles[0];
+        evidence.first_ledger_triangles[1] =
+            accepted.discovery.triangles[1];
+        evidence.first_ledger_parent[0] =
+            accepted.event.classification.parent[0];
+        evidence.first_ledger_parent[1] =
+            accepted.event.classification.parent[1];
+      }
+      if (ExactFacetPair(
+              accepted.discovery,
+              features.data[feature])) {
+        ++evidence.ledger_exact_pair_matches;
+        continue;
+      }
+      const auto owner_pair = candidate_pair(accepted.discovery);
+      const bool canonical_lower =
+          fixed_triangle_features::Compare(
+              owner_pair[0], direct_pair[0]) <= 0 &&
+          fixed_triangle_features::Compare(
+              owner_pair[1], direct_pair[1]) <= 0;
+      if (canonical_lower)
+        ++evidence.ledger_canonical_lower_matches;
+      else
+        ++evidence.ledger_foreign_owner_matches;
+    }
+  }
+  *count = features.count;
   return {};
 }
 

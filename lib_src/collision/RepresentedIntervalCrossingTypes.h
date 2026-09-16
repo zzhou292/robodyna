@@ -69,6 +69,7 @@ enum class RepresentedIntervalClassification : std::uint8_t {
   CertifiedSeparated,
   CertifiedCrossingContact,
   Unresolved,
+  CertifiedExactExclusion,
 };
 
 enum class RepresentedIntervalReason : std::uint8_t {
@@ -84,6 +85,7 @@ enum class RepresentedIntersectionGeometry : std::uint8_t {
   Transverse,
   Coplanar,
   PersistentPhysicalContact,
+  PersistentAcceptedLedgerCoverage,
 };
 
 struct RepresentedIntervalResult {
@@ -100,6 +102,9 @@ struct RepresentedIntervalResult {
   std::uint64_t witness_time_numerator = 0;
   unsigned witness_time_depth = 0;
   std::size_t work = 0;
+  // Used only by PersistentAcceptedLedgerCoverage. The ordinal is validated
+  // against the live immutable accepted ledger before policy publication.
+  std::size_t accepted_event = SIZE_MAX;
 };
 
 enum class RepresentedIntervalStatus : std::uint8_t {

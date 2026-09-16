@@ -928,6 +928,54 @@ std::size_t PersistentAcceptedFeature(
   return SIZE_MAX;
 }
 
+bool AcceptedCoverageFeature(
+    const RepresentedIntervalResult& crossing,
+    FixedTriangleFeatureView features,
+    const AcceptedEventCertificate* events,
+    std::size_t event_count, bool* edge_edge) noexcept {
+  if (!edge_edge ||
+      crossing.accepted_event >= event_count ||
+      !events || !features.complete ||
+      (features.count && !features.data))
+    return false;
+  const auto& certificate =
+      events[crossing.accepted_event];
+  const auto& event = certificate.event;
+  if (event.source_order != crossing.accepted_event ||
+      fixed_triangle_features::Compare(
+          event.feature, certificate.discovery.key) != 0 ||
+      event.classification.excluded ||
+      event.classification.local_incidence ||
+      !event.classification.active[0] ||
+      !event.classification.active[1])
+    return false;
+  const bool accepted_vf =
+      certificate.kind ==
+          AcceptedEventCertificateKind::VertexFace &&
+      event.classification.kind ==
+          SelfContactPairKind::VertexFace &&
+      event.classification.status ==
+          SelfContactPairStatus::AdmittedVertexFace;
+  const bool accepted_ee =
+      certificate.kind ==
+          AcceptedEventCertificateKind::EdgeEdge &&
+      event.classification.kind ==
+          SelfContactPairKind::EdgeEdge &&
+      event.classification.status ==
+          SelfContactPairStatus::AdmittedEdgeEdge;
+  if (!accepted_vf && !accepted_ee) return false;
+  const auto owner = PairKey(
+      certificate.discovery.triangles[0],
+      certificate.discovery.triangles[1]);
+  if (::tlfea::contact::self_contact_transaction::Compare(
+          owner.paths[0], crossing.key.paths[0]) > 0 ||
+      ::tlfea::contact::self_contact_transaction::Compare(
+          owner.paths[1], crossing.key.paths[1]) > 0)
+    return false;
+  *edge_edge = accepted_ee;
+  return true;
+}
+
 bool QuadraticChordDeviationL1Upper(
     const FacetQuadraticCoefficients& coefficients,
     double duration, double* output) noexcept {
@@ -1820,6 +1868,36 @@ SelfContactTransactionReport ValidateCandidatePublications(
         RepresentedIntervalClassification::CertifiedSeparated) {
       outcome.disposition =
           SelfContactCandidateDisposition::CertifiedSeparated;
+      continue;
+    }
+    if (crossing.classification ==
+        RepresentedIntervalClassification::
+            CertifiedExactExclusion) {
+      outcome.disposition =
+          SelfContactCandidateDisposition::ExcludedSameRigidGroup;
+      continue;
+    }
+    if (crossing.geometry ==
+        RepresentedIntersectionGeometry::
+            PersistentAcceptedLedgerCoverage) {
+      bool edge_edge = false;
+      if (!AcceptedCoverageFeature(
+              crossing, input.features,
+              input.accepted_events,
+              input.accepted_event_count, &edge_edge))
+        return Failure(
+            SelfContactTransactionStatus::CandidateRejected,
+            "Quadratic coverage lacks its exact accepted ledger owner",
+            pair);
+      outcome.disposition = edge_edge
+          ? SelfContactCandidateDisposition::
+                RepresentedByAcceptedEdgeEdge
+          : SelfContactCandidateDisposition::
+                RepresentedByAcceptedVertexFace;
+      outcome.accepted_event = crossing.accepted_event;
+      outcome.source_order =
+          input.accepted_events[
+              crossing.accepted_event].event.source_order;
       continue;
     }
     if (LocallyExcluded(input.intersections, crossing.key)) {

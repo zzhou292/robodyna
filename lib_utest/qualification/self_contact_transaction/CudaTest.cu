@@ -170,7 +170,8 @@ std::vector<std::uint64_t> PolicySummaryBits(
       static_cast<std::uint64_t>(value.detailed_publication),
       value.vertex_edge_axis_separated,
       value.vertex_vertex_axis_separated,
-      value.motion_certified_nonlinear_accepted_coverage};
+      value.motion_certified_nonlinear_accepted_coverage,
+      value.motion_certified_nonlinear_exact_exclusion};
 }
 
 std::vector<std::uint64_t> PolicyOutcomeBits(
@@ -1122,6 +1123,28 @@ TEST(SelfContactTransactionCuda,
     EXPECT_EQ(
         result.proof_digest,
         coverage_reference.proof_digest);
+  }
+  const sct::AcceptedFeatureExclusionCertificate exclusion{
+      persistent_feature, 7};
+  sct::NonlinearSeparationResult exclusion_reference;
+  for (unsigned repeat = 0; repeat < 64; ++repeat) {
+    const auto result =
+        sct::CertifyQuadraticFacetPolicyCoverage(
+            first_base, first_prepared, zero_quadratic, .1,
+            close_base, close_prepared, zero_quadratic, .1,
+            1, nullptr, 0, &exclusion, 1, 4095, 20);
+    ASSERT_EQ(
+        result.status,
+        sct::NonlinearSeparationStatus::
+            CertifiedExactExclusion);
+    if (!repeat) exclusion_reference = result;
+    EXPECT_EQ(result.work, exclusion_reference.work);
+    EXPECT_EQ(
+        result.excluded_rigid_group,
+        exclusion_reference.excluded_rigid_group);
+    EXPECT_EQ(
+        result.proof_digest,
+        exclusion_reference.proof_digest);
   }
   accepted.discovery.triangles[0].parent_eid = 9;
   accepted.discovery.triangles[1].parent_eid = 19;

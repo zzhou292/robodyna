@@ -36,6 +36,54 @@ struct AcceptedEventCertificateView {
   bool complete = false;
 };
 
+enum class AcceptedFeatureDisposition : std::uint8_t {
+  AdmittedLedgerCandidate,
+  DistanceRepresentationSeparated,
+  InactiveParent,
+  ExcludedSameRigidSupport,
+  ExcludedLocalOrRegularOwnParent,
+  TiedOrCinPolicy,
+  UnsupportedForceArea,
+  FeatureWeightNormalization,
+  InvalidProvenance,
+};
+
+// Stable qualification record for one exact accepted endpoint feature. It
+// intentionally omits live pointer identities while retaining every value
+// that selected BuildAcceptedEvents' branch and the complete final-ledger
+// owner-search counts for the same canonical feature key.
+struct AcceptedFeaturePolicyEvidence {
+  AcceptedFeatureDisposition disposition =
+      AcceptedFeatureDisposition::InvalidProvenance;
+  SelfContactTransactionStatus report_status =
+      SelfContactTransactionStatus::Ok;
+  SelfContactPairKind kind = SelfContactPairKind::VertexFace;
+  SelfContactEdgeEdgeCase edge_edge_case =
+      SelfContactEdgeEdgeCase::StrictInteriorInteriorMinimum;
+  SelfContactPairStatus pair_status =
+      SelfContactPairStatus::InactiveParent;
+  SelfContactTiedStatus tied = SelfContactTiedStatus::NotRelated;
+  SelfContactSupportClassification endpoint_support[2];
+  std::uint32_t parent[2]{UINT32_MAX, UINT32_MAX};
+  std::uint32_t feature[2]{UINT32_MAX, UINT32_MAX};
+  bool classification_complete = false;
+  bool active[2]{};
+  bool local_incidence = false;
+  bool excluded = false;
+  bool distance_separated = false;
+  bool admitted = false;
+  double reference_half_thickness_m[2]{};
+  Q4CertifiedIntegral candidate_directed_area_m2;
+  Q4CertifiedIntegral admitted_force_area_m2;
+  std::size_t ledger_key_matches = 0;
+  std::size_t ledger_exact_pair_matches = 0;
+  std::size_t ledger_canonical_lower_matches = 0;
+  std::size_t ledger_foreign_owner_matches = 0;
+  std::uint64_t first_ledger_source_order = UINT64_MAX;
+  FixedTriangleKey first_ledger_triangles[2];
+  std::uint32_t first_ledger_parent[2]{UINT32_MAX, UINT32_MAX};
+};
+
 struct PreparedMotionCertificateView;
 struct NonlinearCandidateRosterEntry;
 struct NonlinearCandidateRosterSummary;
@@ -46,6 +94,13 @@ class QualificationAccess {
  public:
   static AcceptedEventCertificateView AcceptedCertificates(
       const SelfContactTransaction&) noexcept;
+  static SelfContactTransactionReport
+  ClassifyAcceptedFeaturePolicies(
+      SelfContactTransaction&,
+      const SelfContactAcceptedAssemblyReceipt&,
+      FixedTriangleFeatureView,
+      AcceptedFeaturePolicyEvidence*, std::size_t capacity,
+      std::size_t* count) noexcept;
   // Replays only authenticated motion construction, conservative broadphase
   // and nonlinear subdivision for a live accepted-assembly attempt. Ordinary
   // linear feature discovery and represented crossing are deliberately not
@@ -99,6 +154,7 @@ enum class NonlinearSeparationStatus : std::uint8_t {
   MissingAcceptedOwner = 6,
   OwnerAmbiguity = 7,
   PossibleGeometricCrossing = 8,
+  CertifiedExactExclusion = 9,
 };
 
 struct NonlinearSeparationResult {
@@ -114,6 +170,12 @@ struct NonlinearSeparationResult {
   std::uint64_t proof_digest = 1469598103934665603ull;
   bool work_exhausted = false;
   bool depth_exhausted = false;
+  std::uint32_t excluded_rigid_group = UINT32_MAX;
+};
+
+struct AcceptedFeatureExclusionCertificate {
+  FixedTriangleFeatureCandidate feature;
+  std::uint32_t complete_rigid_group = UINT32_MAX;
 };
 
 struct PreparedMotionCertificateView {
@@ -160,6 +222,7 @@ enum class PairMotionAction : std::uint8_t {
   CertifiedQuadraticResidualSeparation,
   CertifiedPersistentQuadraticContact,
   CertifiedQuadraticAcceptedCoverage,
+  CertifiedQuadraticExactExclusion,
 };
 
 PairMotionAction ClassifyCandidatePairMotion(
@@ -351,6 +414,19 @@ NonlinearSeparationResult CertifyQuadraticFacetCoverage(
     const FacetQuadraticCoefficients&, double second_thickness,
     double duration,
     const AcceptedEventCertificate*, std::size_t accepted_count,
+    std::size_t max_work, unsigned max_depth) noexcept;
+
+NonlinearSeparationResult CertifyQuadraticFacetPolicyCoverage(
+    const CurrentFixedTriangle& first_accepted,
+    const CurrentFixedTriangle& first_prepared,
+    const FacetQuadraticCoefficients&, double first_thickness,
+    const CurrentFixedTriangle& second_accepted,
+    const CurrentFixedTriangle& second_prepared,
+    const FacetQuadraticCoefficients&, double second_thickness,
+    double duration,
+    const AcceptedEventCertificate*, std::size_t accepted_count,
+    const AcceptedFeatureExclusionCertificate*,
+    std::size_t exclusion_count,
     std::size_t max_work, unsigned max_depth) noexcept;
 
 struct FacetPairCursor {
@@ -603,6 +679,13 @@ SelfContactTransactionReport BuildAcceptedEvents(
     const FixedContactFacet*, const std::uint32_t* triangle_order,
     std::size_t facet_count, SelfContactActivityView,
     SelfContactForceEvent*, AcceptedEventCertificate*,
+    std::size_t capacity, std::size_t* count) noexcept;
+SelfContactTransactionReport BuildAcceptedSameRigidExclusions(
+    const SelfContactActiveUseBinding&,
+    FixedTriangleFeatureView,
+    const FixedContactFacet*, const std::uint32_t* triangle_order,
+    std::size_t facet_count, SelfContactActivityView,
+    AcceptedFeatureExclusionCertificate*,
     std::size_t capacity, std::size_t* count) noexcept;
 SelfContactTransactionReport ValidateCandidateEdgePolicy(
     const SelfContactActiveUseBinding&,

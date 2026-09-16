@@ -47,6 +47,7 @@ for token in (
     "max_nonlinear_subdivision_depth",
     "motion_certified_nonlinear_separated",
     "motion_certified_nonlinear_accepted_coverage",
+    "motion_certified_nonlinear_exact_exclusion",
 ):
     require(types, token, TYPES)
 transaction = TRANSACTION.read_text()
@@ -174,6 +175,9 @@ for token in (
     "class QualificationAccess",
     "AcceptedEventCertificateView",
     "ClassifyPreparedNonlinearCandidates",
+    "ClassifyAcceptedFeaturePolicies",
+    "AcceptedFeaturePolicyEvidence",
+    "AcceptedFeatureDisposition",
     "NonlinearCandidateRosterSummary",
     "PreparedMotionCertificateView",
     "Impl::Phase::AssemblyRecorded",
@@ -287,7 +291,8 @@ for token in (
     "vertex_edge_axis_separated) == 112",
     "vertex_vertex_axis_separated) == 120",
     "motion_certified_nonlinear_accepted_coverage) == 176",
-    "sizeof(c::SelfContactCandidatePolicySummary) == 184",
+    "motion_certified_nonlinear_exact_exclusion) == 184",
+    "sizeof(c::SelfContactCandidatePolicySummary) == 192",
 ):
     require(VALUE_TEST.read_text(), token, VALUE_TEST)
 require(candidate, "sct::CertifiedLinearFacetPrismSeparation(", CANDIDATE)
@@ -326,7 +331,9 @@ for token in (
     "EvaluatePairFeaturesMaskedOnce(",
     "QuadraticResidualCertificate(",
     "PersistentQuadraticCertificate(",
-    "CertifyQuadraticFacetCoverage(",
+    "CertifyQuadraticFacetPolicyCoverage(",
+    "BuildAcceptedSameRigidExclusions(",
+    "CertifiedQuadraticExactExclusion",
     "Quadratic contact cell has no exact accepted VF/EE owner",
 ):
     require(candidate, token, CANDIDATE)
@@ -378,7 +385,8 @@ values = (
     ROOT / "lib_src/collision/self_contact_transaction/Values.cpp").read_text()
 accepted_builder = source[
     source.index("SelfContactTransactionReport BuildAcceptedEvents("):
-    source.index("SelfContactTransactionReport ValidateCandidateEdgePolicy(")]
+    source.index(
+        "SelfContactTransactionReport BuildAcceptedSameRigidExclusions(")]
 if accepted_builder.count(
         "for (std::size_t feature = 0; feature < features.count; ++feature)") != 1:
     raise RuntimeError(
@@ -472,6 +480,8 @@ for token in (
     "CertifyQuadraticResidualSeparation(",
     "QuadraticChordDeviationL1Upper(",
     "CertifyPersistentQuadraticContact(",
+    "AcceptedCoverageFeature(",
+    "PersistentAcceptedLedgerCoverage",
 ):
     require(values, token, storage_path)
 for token in (
@@ -573,6 +583,7 @@ for token in (
     "PersistentQuadraticContactRequiresCurvatureMargin",
     "QuadraticLedgerCoverageSubdividesAndFailsClosed",
     "TinyDyadicQuadraticCoverageOracleIsExhaustive",
+    "BoundaryVertexLedgerAndSameRigidExclusionCoverSharedEdge",
     "ExactCommonMotionPublishesMatchingPersistentEdgeEdge",
     "ExactCommonMotionPublishesMatchingPersistentVertexFace",
     "PersistentVertexFaceNormalizesDyadicWeightsExactly",

@@ -54,7 +54,10 @@ static_assert(offsetof(
 static_assert(offsetof(
     c::SelfContactCandidatePolicySummary,
     motion_certified_nonlinear_accepted_coverage) == 176);
-static_assert(sizeof(c::SelfContactCandidatePolicySummary) == 184);
+static_assert(offsetof(
+    c::SelfContactCandidatePolicySummary,
+    motion_certified_nonlinear_exact_exclusion) == 184);
+static_assert(sizeof(c::SelfContactCandidatePolicySummary) == 192);
 static_assert(
     std::is_trivially_copyable_v<c::SelfContactForceEventIdentity>);
 static_assert(sizeof(c::SelfContactForceEventIdentity) == 240);
@@ -708,6 +711,77 @@ TEST(SelfContactTransactionValues,
     }
   }
   EXPECT_GT(certified, 0u);
+}
+
+TEST(SelfContactTransactionValues,
+     BoundaryVertexLedgerAndSameRigidExclusionCoverSharedEdge) {
+  const auto first = Triangle(
+      10, {1, 2, 3},
+      {{{0, 0, 0}, {2, 0, 0}, {0, 1, 0}}});
+  const auto second = Triangle(
+      20, {1, 2, 4},
+      {{{0, 0, 0}, {2, 0, 0}, {0, -1, 0}}});
+  c::FixedTriangleFeatureCandidate boundary;
+  boundary.key.vertex_face.vertex = first.vertex_keys[2];
+  boundary.key.vertex_face.target.SetEdge(
+      second.edge_keys[0]);
+  boundary.triangles[0] = first.key;
+  boundary.triangles[1] = second.key;
+  boundary.local_features[0] = 2;
+  boundary.local_features[1] = 3;
+  boundary.edge_parameters[0] = .5;
+  boundary.points[0] = first.vertices[2];
+  boundary.points[1] = {1, 0, 0};
+  boundary.distance_m = std::sqrt(2.);
+  auto accepted = AcceptedCertificate(boundary);
+  accepted.event.source_order = 0;
+
+  const auto ledger = sct::CertifyQuadraticFacetCoverage(
+      first, first, Quadratic(0), 1,
+      second, second, Quadratic(0), 1, 1,
+      &accepted, 1, 4095, 20);
+  EXPECT_EQ(
+      ledger.status,
+      sct::NonlinearSeparationStatus::
+          CertifiedAcceptedCoverage);
+  EXPECT_EQ(ledger.accepted_certificate, 0u);
+
+  const sct::AcceptedFeatureExclusionCertificate exclusion{
+      boundary, 7};
+  const auto excluded =
+      sct::CertifyQuadraticFacetPolicyCoverage(
+          first, first, Quadratic(0), 1,
+          second, second, Quadratic(0), 1, 1,
+          nullptr, 0, &exclusion, 1, 4095, 20);
+  EXPECT_EQ(
+      excluded.status,
+      sct::NonlinearSeparationStatus::
+          CertifiedExactExclusion);
+  EXPECT_EQ(excluded.excluded_rigid_group, 7u);
+
+  c::RepresentedIntervalResult crossing;
+  crossing.key = Pair(10, 20);
+  crossing.classification =
+      c::RepresentedIntervalClassification::
+          CertifiedCrossingContact;
+  crossing.geometry =
+      c::RepresentedIntersectionGeometry::
+          PersistentAcceptedLedgerCoverage;
+  crossing.accepted_event = 0;
+  c::SelfContactCandidatePolicyOutcome outcome;
+  std::size_t count = 0;
+  auto input = Input(
+      &crossing.key, 1, &crossing, &outcome, &count);
+  input.features = {&boundary, 1, true};
+  input.accepted_events = &accepted;
+  input.accepted_event_count = 1;
+  EXPECT_EQ(
+      sct::ValidateCandidatePublications(input).status,
+      c::SelfContactTransactionStatus::Ok);
+  EXPECT_EQ(
+      outcome.disposition,
+      c::SelfContactCandidateDisposition::
+          RepresentedByAcceptedVertexFace);
 }
 
 TEST(SelfContactTransactionValues,
