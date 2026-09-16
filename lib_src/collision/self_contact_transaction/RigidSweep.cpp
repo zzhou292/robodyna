@@ -702,7 +702,7 @@ bool SplitFacet(
 bool FacetBounds(
     const BernsteinFacet& facet, unsigned component,
     double thickness, DirectedInterval* output) noexcept {
-  if (!output || !(thickness > 0) || !std::isfinite(thickness))
+  if (!output || thickness < 0 || !std::isfinite(thickness))
     return false;
   double lower =
       facet.coordinate[0][component].control[0].lower;
@@ -904,6 +904,532 @@ bool CoordinateSeparated(
   return false;
 }
 
+RepresentedTrianglePathKey Path(
+    const FixedTriangleKey& key) noexcept {
+  return {key.source_instance_id, key.parent_eid,
+          key.level, key.local_facet};
+}
+
+RepresentedIntervalPairKey Pair(
+    const FixedTriangleKey& first,
+    const FixedTriangleKey& second) noexcept {
+  RepresentedIntervalPairKey result{{Path(first), Path(second)}};
+  if (Compare(result.paths[1], result.paths[0]) < 0)
+    std::swap(result.paths[0], result.paths[1]);
+  return result;
+}
+
+unsigned FindVertex(
+    const CurrentFixedTriangle& triangle,
+    const FacetVertexKey& key) noexcept {
+  unsigned result = 3;
+  for (unsigned vertex = 0; vertex < 3; ++vertex)
+    if (fixed_triangle_features::Compare(
+            triangle.vertex_keys[vertex], key) == 0) {
+      if (result != 3) return 4;
+      result = vertex;
+    }
+  return result;
+}
+
+unsigned FindEdge(
+    const CurrentFixedTriangle& triangle,
+    const FacetEdgeKey& key) noexcept {
+  unsigned result = 3;
+  for (unsigned edge = 0; edge < 3; ++edge)
+    if (fixed_triangle_features::Compare(
+            triangle.edge_keys[edge], key) == 0) {
+      if (result != 3) return 4;
+      result = edge;
+    }
+  return result;
+}
+
+bool AddDirected(
+    DirectedInterval first, DirectedInterval second,
+    DirectedInterval* output) noexcept {
+  if (!output || !Valid(first) || !Valid(second)) return false;
+  *output = {
+      Down(first.lower + second.lower),
+      Up(first.upper + second.upper)};
+  return Valid(*output);
+}
+
+bool ScaleCoordinate(
+    const BernsteinCoordinate& input, DirectedInterval scale,
+    BernsteinCoordinate* output) noexcept {
+  if (!output || !Valid(scale)) return false;
+  for (unsigned control = 0; control < 3; ++control)
+    if (!MultiplyDirected(
+            input.control[control], scale,
+            output->control + control))
+      return false;
+  return true;
+}
+
+bool AddCoordinate(
+    const BernsteinCoordinate& first,
+    const BernsteinCoordinate& second,
+    BernsteinCoordinate* output) noexcept {
+  if (!output) return false;
+  for (unsigned control = 0; control < 3; ++control)
+    if (!AddDirected(
+            first.control[control], second.control[control],
+            output->control + control))
+      return false;
+  return true;
+}
+
+bool SubtractCoordinate(
+    const BernsteinCoordinate& first,
+    const BernsteinCoordinate& second,
+    BernsteinCoordinate* output) noexcept {
+  if (!output) return false;
+  for (unsigned control = 0; control < 3; ++control)
+    if (!SubtractDirected(
+            first.control[control], second.control[control],
+            output->control + control))
+      return false;
+  return true;
+}
+
+struct CoverageOwner {
+  AcceptedEventCertificateKind kind =
+      AcceptedEventCertificateKind::VertexFace;
+  std::size_t certificate = SIZE_MAX;
+  std::uint64_t source_order = UINT64_MAX;
+  RepresentedFeaturePathKey feature;
+  unsigned vertex_side = 2;
+  unsigned vertex = 3;
+  unsigned target_side = 2;
+  DirectedInterval face_weights[3]{};
+  unsigned edge_side[2]{2, 2};
+  unsigned edge[2]{3, 3};
+  double edge_parameter[2]{};
+};
+
+bool CommonAcceptedOwner(
+    const AcceptedEventCertificate& certificate) noexcept {
+  const auto& event = certificate.event;
+  return Same(event.feature, certificate.discovery.key) &&
+      event.source_order != UINT64_MAX &&
+      !event.classification.excluded &&
+      !event.classification.local_incidence &&
+      event.classification.active[0] &&
+      event.classification.active[1] &&
+      std::isfinite(certificate.discovery.distance_m) &&
+      certificate.discovery.distance_m >= 0 &&
+      std::isfinite(
+          certificate.discovery.representation_error_m) &&
+      certificate.discovery.representation_error_m >= 0;
+}
+
+bool BuildVertexFaceOwner(
+    const CurrentFixedTriangle triangles[2],
+    const AcceptedEventCertificate& certificate,
+    std::size_t certificate_index,
+    CoverageOwner* output) noexcept {
+  if (!output || !CommonAcceptedOwner(certificate) ||
+      certificate.kind != AcceptedEventCertificateKind::VertexFace ||
+      certificate.event.feature.kind !=
+          FixedTriangleCandidateKind::VertexFace ||
+      certificate.discovery.key.kind !=
+          FixedTriangleCandidateKind::VertexFace ||
+      certificate.discovery.key.vertex_face.target.kind !=
+          FixedTriangleStratumKind::Face ||
+      certificate.event.classification.kind !=
+          SelfContactPairKind::VertexFace ||
+      certificate.event.classification.status !=
+          SelfContactPairStatus::AdmittedVertexFace)
+    return false;
+  const bool first_target =
+      certificate.discovery.local_features[0] == 3 &&
+      certificate.discovery.local_features[1] < 3;
+  const bool second_target =
+      certificate.discovery.local_features[1] == 3 &&
+      certificate.discovery.local_features[0] < 3;
+  if (first_target == second_target) return false;
+  const unsigned discovery_target = first_target ? 0 : 1;
+  const auto& face =
+      certificate.discovery.key.vertex_face.target.face;
+  unsigned target = 2;
+  for (unsigned side = 0; side < 2; ++side)
+    if (Same(triangles[side].key, face)) {
+      if (target != 2) return false;
+      target = side;
+    }
+  if (target == 2 ||
+      !Same(certificate.discovery.triangles[discovery_target],
+            face))
+    return false;
+  const unsigned source = 1 - target;
+  const unsigned vertex = FindVertex(
+      triangles[source],
+      certificate.discovery.key.vertex_face.vertex);
+  if (vertex >= 3 ||
+      FindVertex(triangles[target],
+                 certificate.discovery.key.vertex_face.vertex) < 3 ||
+      Compare(
+          Path(certificate.discovery.triangles[1 - discovery_target]),
+          Path(triangles[source].key)) > 0)
+    return false;
+  CoverageOwner next;
+  next.kind = AcceptedEventCertificateKind::VertexFace;
+  next.certificate = certificate_index;
+  next.source_order = certificate.event.source_order;
+  next.feature.kind = RepresentedFeatureKind::VertexFace;
+  next.feature.vertex =
+      certificate.discovery.key.vertex_face.vertex;
+  next.feature.face = Path(face);
+  next.vertex_side = source;
+  next.vertex = vertex;
+  next.target_side = target;
+  unsigned adjusted = 0;
+  for (unsigned weight = 0; weight < 3; ++weight) {
+    const double value = certificate.discovery.face_weights[weight];
+    if (!std::isfinite(value) || value < 0 || value > 1)
+      return false;
+    next.face_weights[weight] = {value, value};
+    if (value > certificate.discovery.face_weights[adjusted] ||
+        (value == certificate.discovery.face_weights[adjusted] &&
+         fixed_triangle_features::Compare(
+             triangles[target].vertex_keys[weight],
+             triangles[target].vertex_keys[adjusted]) < 0))
+      adjusted = weight;
+  }
+  DirectedInterval other_sum{};
+  for (unsigned weight = 0; weight < 3; ++weight)
+    if (weight != adjusted) {
+      if (!AddDirected(
+              other_sum, next.face_weights[weight], &other_sum))
+        return false;
+    }
+  if (!SubtractDirected(
+          {1, 1}, other_sum, next.face_weights + adjusted) ||
+      next.face_weights[adjusted].lower < 0 ||
+      next.face_weights[adjusted].upper > 1)
+    return false;
+  *output = next;
+  return true;
+}
+
+bool BuildEdgeEdgeOwner(
+    const CurrentFixedTriangle triangles[2],
+    const AcceptedEventCertificate& certificate,
+    std::size_t certificate_index,
+    CoverageOwner* output) noexcept {
+  if (!output || !CommonAcceptedOwner(certificate) ||
+      certificate.kind != AcceptedEventCertificateKind::EdgeEdge ||
+      certificate.event.feature.kind !=
+          FixedTriangleCandidateKind::EdgeEdge ||
+      certificate.discovery.key.kind !=
+          FixedTriangleCandidateKind::EdgeEdge ||
+      certificate.event.classification.kind !=
+          SelfContactPairKind::EdgeEdge ||
+      certificate.event.classification.status !=
+          SelfContactPairStatus::AdmittedEdgeEdge)
+    return false;
+  CoverageOwner next;
+  next.kind = AcceptedEventCertificateKind::EdgeEdge;
+  next.certificate = certificate_index;
+  next.source_order = certificate.event.source_order;
+  next.feature.kind = RepresentedFeatureKind::EdgeEdge;
+  for (unsigned feature_edge = 0; feature_edge < 2; ++feature_edge) {
+    const auto& key =
+        certificate.discovery.key.edge_edge.edges[feature_edge];
+    next.feature.edges[feature_edge] = key;
+    unsigned side = 2;
+    unsigned local_edge = 3;
+    for (unsigned candidate_side = 0;
+         candidate_side < 2; ++candidate_side) {
+      const unsigned found =
+          FindEdge(triangles[candidate_side], key);
+      if (found < 3) {
+        if (side != 2) return false;
+        side = candidate_side;
+        local_edge = found;
+      } else if (found == 4) {
+        return false;
+      }
+    }
+    const double parameter =
+        certificate.discovery.edge_parameters[feature_edge];
+    if (side == 2 || !std::isfinite(parameter) ||
+        parameter < 0 || parameter > 1)
+      return false;
+    next.edge_side[feature_edge] = side;
+    next.edge[feature_edge] = local_edge;
+    next.edge_parameter[feature_edge] = parameter;
+  }
+  if (next.edge_side[0] == next.edge_side[1]) return false;
+  const auto accepted_pair = Pair(
+      certificate.discovery.triangles[0],
+      certificate.discovery.triangles[1]);
+  const auto candidate_pair =
+      Pair(triangles[0].key, triangles[1].key);
+  if (Compare(accepted_pair.paths[0], candidate_pair.paths[0]) > 0 ||
+      Compare(accepted_pair.paths[1], candidate_pair.paths[1]) > 0)
+    return false;
+  *output = next;
+  return true;
+}
+
+bool BuildCoverageOwner(
+    const CurrentFixedTriangle triangles[2],
+    const AcceptedEventCertificate& certificate,
+    std::size_t certificate_index,
+    CoverageOwner* output) noexcept {
+  return certificate.discovery.key.kind ==
+          FixedTriangleCandidateKind::VertexFace
+      ? BuildVertexFaceOwner(
+            triangles, certificate, certificate_index, output)
+      : BuildEdgeEdgeOwner(
+            triangles, certificate, certificate_index, output);
+}
+
+bool EdgePoint(
+    const BernsteinFacet facets[2],
+    const CurrentFixedTriangle triangles[2],
+    unsigned side, unsigned edge, double parameter,
+    BernsteinCoordinate output[3]) noexcept {
+  if (!output || side >= 2 || edge >= 3 ||
+      !std::isfinite(parameter) ||
+      parameter < 0 || parameter > 1)
+    return false;
+  const auto& key = triangles[side].edge_keys[edge];
+  const unsigned first = FindVertex(
+      triangles[side], key.endpoints[0]);
+  const unsigned second = FindVertex(
+      triangles[side], key.endpoints[1]);
+  if (first >= 3 || second >= 3 || first == second) return false;
+  const DirectedInterval second_weight{parameter, parameter};
+  DirectedInterval first_weight;
+  if (!SubtractDirected(
+          {1, 1}, second_weight, &first_weight))
+    return false;
+  for (unsigned component = 0; component < 3; ++component) {
+    BernsteinCoordinate a, b;
+    if (!ScaleCoordinate(
+            facets[side].coordinate[first][component],
+            first_weight, &a) ||
+        !ScaleCoordinate(
+            facets[side].coordinate[second][component],
+            second_weight, &b) ||
+        !AddCoordinate(a, b, output + component))
+      return false;
+  }
+  return true;
+}
+
+bool OwnerDifference(
+    const BernsteinFacet facets[2],
+    const CurrentFixedTriangle triangles[2],
+    const CoverageOwner& owner,
+    BernsteinCoordinate output[3]) noexcept {
+  BernsteinCoordinate points[2][3];
+  if (owner.kind == AcceptedEventCertificateKind::VertexFace) {
+    if (owner.vertex_side >= 2 || owner.target_side >= 2 ||
+        owner.vertex >= 3 ||
+        owner.vertex_side == owner.target_side)
+      return false;
+    for (unsigned component = 0; component < 3; ++component) {
+      points[0][component] =
+          facets[owner.vertex_side].
+              coordinate[owner.vertex][component];
+      BernsteinCoordinate sum{};
+      bool have_sum = false;
+      for (unsigned vertex = 0; vertex < 3; ++vertex) {
+        BernsteinCoordinate weighted;
+        if (!ScaleCoordinate(
+                facets[owner.target_side].
+                    coordinate[vertex][component],
+                owner.face_weights[vertex], &weighted))
+          return false;
+        if (!have_sum) {
+          sum = weighted;
+          have_sum = true;
+        } else if (!AddCoordinate(sum, weighted, &sum)) {
+          return false;
+        }
+      }
+      points[1][component] = sum;
+    }
+  } else {
+    if (!EdgePoint(
+            facets, triangles, owner.edge_side[0],
+            owner.edge[0], owner.edge_parameter[0],
+            points[0]) ||
+        !EdgePoint(
+            facets, triangles, owner.edge_side[1],
+            owner.edge[1], owner.edge_parameter[1],
+            points[1]))
+      return false;
+  }
+  for (unsigned component = 0; component < 3; ++component)
+    if (!SubtractCoordinate(
+            points[0][component], points[1][component],
+            output + component))
+      return false;
+  return true;
+}
+
+bool StrictlyWithinThickness(
+    const BernsteinCoordinate difference[3],
+    double first_thickness,
+    double second_thickness,
+    bool* valid) noexcept {
+  if (!difference || !valid ||
+      !(first_thickness > 0) ||
+      !(second_thickness > 0) ||
+      !std::isfinite(first_thickness) ||
+      !std::isfinite(second_thickness)) {
+    if (valid) *valid = false;
+    return false;
+  }
+  *valid = false;
+  double squared_upper = 0;
+  for (unsigned component = 0; component < 3; ++component) {
+    double lower = difference[component].control[0].lower;
+    double upper = difference[component].control[0].upper;
+    for (unsigned control = 0; control < 3; ++control) {
+      const auto value = difference[component].control[control];
+      if (!Valid(value)) return false;
+      lower = std::min(lower, value.lower);
+      upper = std::max(upper, value.upper);
+    }
+    const double magnitude =
+        std::max(std::fabs(lower), std::fabs(upper));
+    const double squared = magnitude * magnitude;
+    if (!std::isfinite(squared)) return false;
+    squared_upper = Up(squared_upper + Up(squared));
+    if (!std::isfinite(squared_upper)) return false;
+  }
+  const double thickness_lower =
+      Down(first_thickness + second_thickness);
+  if (!(thickness_lower > 0) ||
+      !std::isfinite(thickness_lower))
+    return false;
+  const double squared_thickness_lower =
+      Down(thickness_lower * thickness_lower);
+  if (!(squared_thickness_lower > 0) ||
+      !std::isfinite(squared_thickness_lower))
+    return false;
+  *valid = true;
+  return squared_upper < squared_thickness_lower;
+}
+
+void HashCoverageValue(
+    std::uint64_t value, std::uint64_t* hash) noexcept {
+  for (unsigned byte = 0; byte < 8; ++byte) {
+    *hash ^= static_cast<unsigned char>(value >> (8 * byte));
+    *hash *= 1099511628211ull;
+  }
+}
+
+NonlinearSeparationStatus SubdivideCoverage(
+    const BernsteinFacet facets[2],
+    const CurrentFixedTriangle triangles[2],
+    double first_thickness, double second_thickness,
+    const CoverageOwner* owners, std::size_t owner_count,
+    unsigned depth, unsigned max_depth, std::uint64_t path,
+    std::size_t max_work, std::size_t* work,
+    unsigned* deepest, NonlinearSeparationResult* result,
+    bool* used_coverage) noexcept {
+  if (!work || !deepest || !result || !used_coverage)
+    return NonlinearSeparationStatus::InvalidInput;
+  if (*work >= max_work) {
+    result->work_exhausted = true;
+    return NonlinearSeparationStatus::WorkExhausted;
+  }
+  ++*work;
+  *deepest = std::max(*deepest, depth);
+  bool valid = false;
+  if (CoordinateSeparated(
+          facets[0], first_thickness,
+          facets[1], second_thickness, &valid)) {
+    if (!valid) return NonlinearSeparationStatus::InvalidInput;
+    ++result->separated_cells;
+    HashCoverageValue(0, &result->proof_digest);
+    HashCoverageValue(depth, &result->proof_digest);
+    HashCoverageValue(path, &result->proof_digest);
+    return NonlinearSeparationStatus::CertifiedSeparated;
+  }
+  if (!valid) return NonlinearSeparationStatus::InvalidInput;
+
+  bool zero_valid = false;
+  const bool zero_separated = CoordinateSeparated(
+      facets[0], 0, facets[1], 0, &zero_valid);
+  if (!zero_valid)
+    return NonlinearSeparationStatus::InvalidInput;
+  if (zero_separated) {
+    for (std::size_t owner_index = 0;
+         owner_index < owner_count; ++owner_index) {
+      BernsteinCoordinate difference[3];
+      bool distance_valid = false;
+      if (!OwnerDifference(
+              facets, triangles, owners[owner_index],
+              difference))
+        return NonlinearSeparationStatus::InvalidInput;
+      const bool covered = StrictlyWithinThickness(
+              difference, first_thickness, second_thickness,
+              &distance_valid);
+      if (!distance_valid)
+        return NonlinearSeparationStatus::InvalidInput;
+      if (!covered) continue;
+      ++result->covered_cells;
+      *used_coverage = true;
+      const auto& owner = owners[owner_index];
+      if (result->accepted_source_order == UINT64_MAX ||
+          owner.source_order < result->accepted_source_order) {
+        result->accepted_certificate = owner.certificate;
+        result->accepted_source_order = owner.source_order;
+        result->feature = owner.feature;
+      }
+      HashCoverageValue(1, &result->proof_digest);
+      HashCoverageValue(depth, &result->proof_digest);
+      HashCoverageValue(path, &result->proof_digest);
+      HashCoverageValue(owner.source_order, &result->proof_digest);
+      return NonlinearSeparationStatus::
+          CertifiedAcceptedCoverage;
+    }
+  }
+
+  if (depth >= max_depth) {
+    result->depth_exhausted = true;
+    if (!owner_count)
+      return NonlinearSeparationStatus::MissingAcceptedOwner;
+    return zero_separated
+        ? NonlinearSeparationStatus::PotentialContact
+        : NonlinearSeparationStatus::PossibleGeometricCrossing;
+  }
+  BernsteinFacet children[2][2];
+  if (!SplitFacet(facets[0], &children[0][0], &children[0][1]) ||
+      !SplitFacet(facets[1], &children[1][0], &children[1][1]))
+    return NonlinearSeparationStatus::InvalidInput;
+  const BernsteinFacet left[2]{children[0][0], children[1][0]};
+  const auto left_status = SubdivideCoverage(
+      left, triangles, first_thickness, second_thickness,
+      owners, owner_count, depth + 1, max_depth, path << 1,
+      max_work, work, deepest, result, used_coverage);
+  if (left_status != NonlinearSeparationStatus::CertifiedSeparated &&
+      left_status !=
+          NonlinearSeparationStatus::CertifiedAcceptedCoverage)
+    return left_status;
+  const BernsteinFacet right[2]{children[0][1], children[1][1]};
+  const auto right_status = SubdivideCoverage(
+      right, triangles, first_thickness, second_thickness,
+      owners, owner_count, depth + 1, max_depth,
+      (path << 1) | 1, max_work, work, deepest,
+      result, used_coverage);
+  if (right_status != NonlinearSeparationStatus::CertifiedSeparated &&
+      right_status !=
+          NonlinearSeparationStatus::CertifiedAcceptedCoverage)
+    return right_status;
+  return *used_coverage
+      ? NonlinearSeparationStatus::CertifiedAcceptedCoverage
+      : NonlinearSeparationStatus::CertifiedSeparated;
+}
+
 NonlinearSeparationStatus SubdivideSeparation(
     const BernsteinFacet& first,
     const BernsteinFacet& second,
@@ -980,6 +1506,93 @@ NonlinearSeparationResult CertifyQuadraticFacetSeparation(
   result.status = SubdivideSeparation(
       first, second, first_thickness, second_thickness,
       0, max_depth, max_work, &result.work, &result.deepest);
+  return result;
+}
+
+NonlinearSeparationResult CertifyQuadraticFacetCoverage(
+    const CurrentFixedTriangle& first_accepted,
+    const CurrentFixedTriangle& first_prepared,
+    const FacetQuadraticCoefficients& first_coefficients,
+    double first_thickness,
+    const CurrentFixedTriangle& second_accepted,
+    const CurrentFixedTriangle& second_prepared,
+    const FacetQuadraticCoefficients& second_coefficients,
+    double second_thickness, double duration,
+    const AcceptedEventCertificate* accepted,
+    std::size_t accepted_count,
+    std::size_t max_work, unsigned max_depth) noexcept {
+  NonlinearSeparationResult result;
+  if (!max_work || max_depth > 52 ||
+      (accepted_count && !accepted) ||
+      !(first_thickness > 0) ||
+      !std::isfinite(first_thickness) ||
+      !(second_thickness > 0) ||
+      !std::isfinite(second_thickness) ||
+      !Same(first_accepted.key, first_prepared.key) ||
+      !Same(second_accepted.key, second_prepared.key))
+    return result;
+  const CurrentFixedTriangle accepted_triangles[2]{
+      first_accepted, second_accepted};
+  const CurrentFixedTriangle prepared_triangles[2]{
+      first_prepared, second_prepared};
+  if (Compare(Pair(
+                  accepted_triangles[0].key,
+                  accepted_triangles[1].key),
+              Pair(
+                  prepared_triangles[0].key,
+                  prepared_triangles[1].key)) != 0)
+    return result;
+
+  BernsteinFacet facets[2];
+  if (!BuildBernsteinFacet(
+          first_accepted, first_prepared, first_coefficients,
+          duration, facets) ||
+      !BuildBernsteinFacet(
+          second_accepted, second_prepared, second_coefficients,
+          duration, facets + 1))
+    return result;
+
+  constexpr std::size_t MaximumOwners = 64;
+  CoverageOwner owners[MaximumOwners];
+  std::size_t owner_count = 0;
+  for (std::size_t certificate = 0;
+       certificate < accepted_count; ++certificate) {
+    CoverageOwner owner;
+    if (!BuildCoverageOwner(
+            prepared_triangles, accepted[certificate],
+            certificate, &owner))
+      continue;
+    if (owner_count == MaximumOwners) {
+      result.status = NonlinearSeparationStatus::OwnerAmbiguity;
+      return result;
+    }
+    owners[owner_count++] = owner;
+  }
+  std::sort(
+      owners, owners + owner_count,
+      [](const CoverageOwner& first,
+         const CoverageOwner& second) {
+        return first.source_order < second.source_order;
+      });
+  for (std::size_t owner = 1; owner < owner_count; ++owner)
+    if (owners[owner - 1].source_order ==
+        owners[owner].source_order) {
+      result.status = NonlinearSeparationStatus::OwnerAmbiguity;
+      return result;
+    }
+  bool used_coverage = false;
+  result.status = SubdivideCoverage(
+      facets, prepared_triangles,
+      first_thickness, second_thickness,
+      owners, owner_count, 0, max_depth, 0,
+      max_work, &result.work, &result.deepest,
+      &result, &used_coverage);
+  if (result.status ==
+          NonlinearSeparationStatus::CertifiedAcceptedCoverage &&
+      (!used_coverage ||
+       result.accepted_certificate >= accepted_count ||
+       result.accepted_source_order == UINT64_MAX))
+    result.status = NonlinearSeparationStatus::InvalidInput;
   return result;
 }
 

@@ -313,6 +313,7 @@ struct SelfContactCandidatePolicySummary {
   std::size_t nonlinear_subdivision_unresolved = 0;
   std::size_t nonlinear_subdivision_work_exhausted = 0;
   std::size_t nonlinear_subdivision_depth_exhausted = 0;
+  std::size_t motion_certified_nonlinear_accepted_coverage = 0;
 };
 
 class SelfContactTransaction;

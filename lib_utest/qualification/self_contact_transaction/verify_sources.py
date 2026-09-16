@@ -46,6 +46,7 @@ for token in (
     "max_stream_nonlinear_subdivision_work",
     "max_nonlinear_subdivision_depth",
     "motion_certified_nonlinear_separated",
+    "motion_certified_nonlinear_accepted_coverage",
 ):
     require(types, token, TYPES)
 transaction = TRANSACTION.read_text()
@@ -116,10 +117,14 @@ for token in (
     "CertifyRigidFacetAffineMotion(",
     "BuildRigidFacetQuadraticCoefficients(",
     "CertifyQuadraticFacetSeparation(",
+    "CertifyQuadraticFacetCoverage(",
     "ExactCoefficientBounds(",
     "SubdivideSeparation(",
+    "SubdivideCoverage(",
     "Bernstein convex-hull property",
     "both synchronous children",
+    "MissingAcceptedOwner",
+    "PossibleGeometricCrossing",
     "represented_q[component]",
     "std::nextafter(",
     "R::RotationLimit",
@@ -281,7 +286,8 @@ for token in (
     "ExtendedPrismCertificateEntry",
     "vertex_edge_axis_separated) == 112",
     "vertex_vertex_axis_separated) == 120",
-    "sizeof(c::SelfContactCandidatePolicySummary) == 176",
+    "motion_certified_nonlinear_accepted_coverage) == 176",
+    "sizeof(c::SelfContactCandidatePolicySummary) == 184",
 ):
     require(VALUE_TEST.read_text(), token, VALUE_TEST)
 require(candidate, "sct::CertifiedLinearFacetPrismSeparation(", CANDIDATE)
@@ -316,10 +322,12 @@ for token in (
     "LocallyExcluded(",
     "crossing_pair_count",
     "RepresentedIntervalReason::UnsupportedMotion",
-    "possible rigid-arc crossing",
+    "Quadratic subdivision and ledger coverage remain unresolved",
     "EvaluatePairFeaturesMaskedOnce(",
     "QuadraticResidualCertificate(",
     "PersistentQuadraticCertificate(",
+    "CertifyQuadraticFacetCoverage(",
+    "Quadratic contact cell has no exact accepted VF/EE owner",
 ):
     require(candidate, token, CANDIDATE)
 if "Nonlinear subdivision certificate input is invalid" in candidate:
@@ -327,7 +335,7 @@ if "Nonlinear subdivision certificate input is invalid" in candidate:
         f"{CANDIDATE}: inconclusive subdivision no longer preserves "
         "UnsupportedMotion")
 if candidate.index("state.candidate_discovery.DiscoverMasked") > candidate.index(
-        "possible rigid-arc crossing"):
+        "Quadratic subdivision and ledger coverage remain unresolved"):
     raise RuntimeError(
         f"{CANDIDATE}: unsupported motion precedes exact local geometry")
 
@@ -563,6 +571,8 @@ for token in (
     "ResidualTranslationSubtractsRepresentationErrorStrictly",
     "QuadraticResidualSubtractsOutwardChordDeviation",
     "PersistentQuadraticContactRequiresCurvatureMargin",
+    "QuadraticLedgerCoverageSubdividesAndFailsClosed",
+    "TinyDyadicQuadraticCoverageOracleIsExhaustive",
     "ExactCommonMotionPublishesMatchingPersistentEdgeEdge",
     "ExactCommonMotionPublishesMatchingPersistentVertexFace",
     "PersistentVertexFaceNormalizesDyadicWeightsExactly",
@@ -628,6 +638,7 @@ for token in (
     "ExactAffineMixedCertificateAndDecisionAreRepeatable",
     "NonlinearSubdivisionDecisionIsRepeatableAndFailClosed",
     "QuadraticResidualCertificateIsBitwiseRepeatable",
+    "CertifyQuadraticFacetCoverage(",
     "CommonTranslationCertificateIsDeterministicAtMinimalCap",
     "ResidualTranslationCertificateIsDeterministic",
     "CertifyPersistentLinearContact(",

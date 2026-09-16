@@ -90,11 +90,15 @@ struct FacetQuadraticCoefficients {
 };
 
 enum class NonlinearSeparationStatus : std::uint8_t {
-  CertifiedSeparated,
-  PotentialContact,
-  WorkExhausted,
-  DepthExhausted,
-  InvalidInput,
+  CertifiedSeparated = 0,
+  PotentialContact = 1,
+  WorkExhausted = 2,
+  DepthExhausted = 3,
+  InvalidInput = 4,
+  CertifiedAcceptedCoverage = 5,
+  MissingAcceptedOwner = 6,
+  OwnerAmbiguity = 7,
+  PossibleGeometricCrossing = 8,
 };
 
 struct NonlinearSeparationResult {
@@ -102,6 +106,14 @@ struct NonlinearSeparationResult {
       NonlinearSeparationStatus::InvalidInput;
   std::size_t work = 0;
   unsigned deepest = 0;
+  std::size_t separated_cells = 0;
+  std::size_t covered_cells = 0;
+  std::size_t accepted_certificate = SIZE_MAX;
+  std::uint64_t accepted_source_order = UINT64_MAX;
+  RepresentedFeaturePathKey feature;
+  std::uint64_t proof_digest = 1469598103934665603ull;
+  bool work_exhausted = false;
+  bool depth_exhausted = false;
 };
 
 struct PreparedMotionCertificateView {
@@ -147,6 +159,7 @@ enum class PairMotionAction : std::uint8_t {
   CertifiedPersistentLinearContact,
   CertifiedQuadraticResidualSeparation,
   CertifiedPersistentQuadraticContact,
+  CertifiedQuadraticAcceptedCoverage,
 };
 
 PairMotionAction ClassifyCandidatePairMotion(
@@ -320,6 +333,25 @@ NonlinearSeparationResult CertifyQuadraticFacetSeparation(
     const FacetQuadraticCoefficients&, double second_thickness,
     double duration, std::size_t max_work,
     unsigned max_depth) noexcept;
+
+// Covers one complete quadratic time interval by a deterministic dyadic tree.
+// Every accepted leaf has either a strict thick-facet separating axis, or a
+// strict zero-thickness separating axis plus one exact accepted-ledger VF/EE
+// material feature whose represented distance remains strictly inside the
+// summed half-thickness. Canonical seam changes are admitted only through
+// independently valid accepted identities. Any missing/ambiguous owner,
+// possible geometric crossing, arithmetic failure, or finite cap exhaustion
+// remains an explicit fail-closed status.
+NonlinearSeparationResult CertifyQuadraticFacetCoverage(
+    const CurrentFixedTriangle& first_accepted,
+    const CurrentFixedTriangle& first_prepared,
+    const FacetQuadraticCoefficients&, double first_thickness,
+    const CurrentFixedTriangle& second_accepted,
+    const CurrentFixedTriangle& second_prepared,
+    const FacetQuadraticCoefficients&, double second_thickness,
+    double duration,
+    const AcceptedEventCertificate*, std::size_t accepted_count,
+    std::size_t max_work, unsigned max_depth) noexcept;
 
 struct FacetPairCursor {
   std::uint32_t first_begin = 0;

@@ -1374,9 +1374,162 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
             ++raw_pair;
             continue;
           }
+          const auto prior_nonlinear =
+              state.buffers.chunk_nonlinear_results[raw_pair];
+          const auto pair_remaining =
+              state.storage_forecast.
+                          nonlinear_subdivision_work_per_pair >
+                      prior_nonlinear.work
+                  ? state.storage_forecast.
+                            nonlinear_subdivision_work_per_pair -
+                        prior_nonlinear.work
+                  : 0;
+          const auto chunk_remaining =
+              state.storage_forecast.
+                          nonlinear_subdivision_work_per_chunk >
+                      chunk_nonlinear_work
+                  ? state.storage_forecast.
+                            nonlinear_subdivision_work_per_chunk -
+                        chunk_nonlinear_work
+                  : 0;
+          const auto complete_remaining =
+              state.storage_forecast.
+                          complete_nonlinear_subdivision_work_capacity >
+                      nonlinear_work
+                  ? state.storage_forecast.
+                            complete_nonlinear_subdivision_work_capacity -
+                        nonlinear_work
+                  : 0;
+          const auto coverage_allowed = std::min({
+              pair_remaining, chunk_remaining, complete_remaining});
+          sct::NonlinearSeparationResult coverage;
+          if (coverage_allowed) {
+            coverage = sct::CertifyQuadraticFacetCoverage(
+                state.buffers.accepted_triangles[
+                    facet_pair.first],
+                state.buffers.prepared_triangles[
+                    facet_pair.first],
+                state.buffers.facet_quadratic[
+                    facet_pair.first],
+                parents[first_parent].
+                    reference_half_thickness_m,
+                state.buffers.accepted_triangles[
+                    facet_pair.second],
+                state.buffers.prepared_triangles[
+                    facet_pair.second],
+                state.buffers.facet_quadratic[
+                    facet_pair.second],
+                parents[second_parent].
+                    reference_half_thickness_m,
+                duration,
+                state.buffers.accepted_certificates,
+                state.accepted_event_count,
+                coverage_allowed,
+                state.storage_forecast.
+                    nonlinear_subdivision_depth);
+          } else {
+            coverage.status =
+                sct::NonlinearSeparationStatus::WorkExhausted;
+            coverage.work_exhausted = true;
+          }
+          if (coverage.status ==
+              sct::NonlinearSeparationStatus::InvalidInput)
+            return state.Fail(Failure(
+                S::IdentityMismatch,
+                "Quadratic ledger coverage input is invalid",
+                SIZE_MAX,
+                state.candidate_facet_pair_count + raw_pair));
+          if (coverage.work > SIZE_MAX - chunk_nonlinear_work ||
+              coverage.work > SIZE_MAX - nonlinear_work ||
+              coverage.work > SIZE_MAX -
+                  summary.nonlinear_subdivision_work)
+            return state.Fail(Failure(
+                S::ResourceLimit,
+                "Quadratic ledger coverage work accounting overflowed",
+                facet_pair.first,
+                state.candidate_facet_pair_count + raw_pair));
+          chunk_nonlinear_work += coverage.work;
+          nonlinear_work += coverage.work;
+          summary.nonlinear_subdivision_work += coverage.work;
+          if (coverage.work > SIZE_MAX - prior_nonlinear.work)
+            return state.Fail(Failure(
+                S::ResourceLimit,
+                "Quadratic pair work accounting overflowed",
+                facet_pair.first,
+                state.candidate_facet_pair_count + raw_pair));
+          coverage.work += prior_nonlinear.work;
+          coverage.deepest = std::max(
+              coverage.deepest, prior_nonlinear.deepest);
+          coverage.work_exhausted =
+              coverage.work_exhausted ||
+              prior_nonlinear.status ==
+                  sct::NonlinearSeparationStatus::WorkExhausted;
+          coverage.depth_exhausted =
+              coverage.depth_exhausted ||
+              prior_nonlinear.status ==
+                  sct::NonlinearSeparationStatus::DepthExhausted;
+          state.buffers.chunk_nonlinear_results[raw_pair] =
+              coverage;
+          if (coverage.status ==
+              sct::NonlinearSeparationStatus::
+                  CertifiedAcceptedCoverage) {
+            if (!summary.nonlinear_subdivision_unresolved)
+              return state.Fail(Failure(
+                  S::IdentityMismatch,
+                  "Quadratic ledger coverage resolved no prior pair",
+                  facet_pair.first,
+                  state.candidate_facet_pair_count + raw_pair));
+            --summary.nonlinear_subdivision_unresolved;
+            if (prior_nonlinear.status ==
+                    sct::NonlinearSeparationStatus::
+                        WorkExhausted &&
+                summary.nonlinear_subdivision_work_exhausted)
+              --summary.nonlinear_subdivision_work_exhausted;
+            if (prior_nonlinear.status ==
+                    sct::NonlinearSeparationStatus::
+                        DepthExhausted &&
+                summary.nonlinear_subdivision_depth_exhausted)
+              --summary.nonlinear_subdivision_depth_exhausted;
+            ++summary.
+                motion_certified_nonlinear_accepted_coverage;
+            state.buffers.chunk_motion_actions[raw_pair] =
+                sct::PairMotionAction::
+                    CertifiedQuadraticAcceptedCoverage;
+            auto& local_result =
+                state.buffers.chunk_crossings[pair];
+            local_result = {};
+            local_result.key =
+                state.buffers.chunk_canonical_pairs[pair];
+            local_result.feature = coverage.feature;
+            local_result.classification =
+                RepresentedIntervalClassification::
+                    CertifiedCrossingContact;
+            local_result.reason =
+                RepresentedIntervalReason::None;
+            local_result.geometry =
+                RepresentedIntersectionGeometry::
+                    PersistentPhysicalContact;
+            local_result.witness_time_numerator = 0;
+            local_result.witness_time_depth = 0;
+            local_result.work = coverage.work;
+            ++raw_pair;
+            continue;
+          }
           auto report = Failure(
               S::UnsupportedMotion,
-              "Quadratic subdivision and residual/contact certificates leave a possible rigid-arc crossing",
+              coverage.status ==
+                      sct::NonlinearSeparationStatus::
+                          MissingAcceptedOwner
+                  ? "Quadratic contact cell has no exact accepted VF/EE owner"
+                  : coverage.status ==
+                            sct::NonlinearSeparationStatus::
+                                OwnerAmbiguity
+                        ? "Quadratic contact cell has ambiguous accepted ownership"
+                        : coverage.status ==
+                                  sct::NonlinearSeparationStatus::
+                                      PossibleGeometricCrossing
+                              ? "Quadratic contact coverage cannot exclude a true geometric crossing"
+                              : "Quadratic subdivision and ledger coverage remain unresolved",
               facet_pair.first,
               state.candidate_facet_pair_count + raw_pair);
           report.crossing_reason =
@@ -1386,11 +1539,13 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
           report.nonlinear_subdivision_work = nonlinear.work;
           report.nonlinear_subdivision_depth = nonlinear.deepest;
           report.nonlinear_subdivision_work_exhausted =
+              nonlinear.work_exhausted ||
               nonlinear.status ==
-              sct::NonlinearSeparationStatus::WorkExhausted;
+                  sct::NonlinearSeparationStatus::WorkExhausted;
           report.nonlinear_subdivision_depth_exhausted =
+              nonlinear.depth_exhausted ||
               nonlinear.status ==
-              sct::NonlinearSeparationStatus::DepthExhausted;
+                  sct::NonlinearSeparationStatus::DepthExhausted;
           DescribeMotionFailure(
               state.active_use, state.buffers.prepared_triangles,
               state.buffers.facet_motion,
@@ -1468,7 +1623,10 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
                     CertifiedQuadraticResidualSeparation ||
             action ==
                 sct::PairMotionAction::
-                    CertifiedPersistentQuadraticContact) {
+                    CertifiedPersistentQuadraticContact ||
+            action ==
+                sct::PairMotionAction::
+                    CertifiedQuadraticAcceptedCoverage) {
           ++raw_pair;
           continue;
         }
@@ -1631,9 +1789,14 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
               summary.motion_certified_linear_separated ||
       summary.motion_certified_nonlinear_separated >
           summary.nonlinear_subdivision_pairs ||
-      summary.nonlinear_subdivision_unresolved !=
+      summary.motion_certified_nonlinear_accepted_coverage >
           summary.nonlinear_subdivision_pairs -
               summary.motion_certified_nonlinear_separated ||
+      summary.nonlinear_subdivision_unresolved !=
+          summary.nonlinear_subdivision_pairs -
+              summary.motion_certified_nonlinear_separated -
+              summary.
+                  motion_certified_nonlinear_accepted_coverage ||
       summary.nonlinear_subdivision_work_exhausted >
           summary.nonlinear_subdivision_unresolved ||
       summary.nonlinear_subdivision_depth_exhausted >

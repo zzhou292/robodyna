@@ -51,7 +51,10 @@ static_assert(offsetof(
 static_assert(offsetof(
     c::SelfContactCandidatePolicySummary,
     vertex_vertex_axis_separated) == 120);
-static_assert(sizeof(c::SelfContactCandidatePolicySummary) == 176);
+static_assert(offsetof(
+    c::SelfContactCandidatePolicySummary,
+    motion_certified_nonlinear_accepted_coverage) == 176);
+static_assert(sizeof(c::SelfContactCandidatePolicySummary) == 184);
 static_assert(
     std::is_trivially_copyable_v<c::SelfContactForceEventIdentity>);
 static_assert(sizeof(c::SelfContactForceEventIdentity) == 240);
@@ -564,6 +567,147 @@ TEST(SelfContactTransactionValues,
   EXPECT_EQ(
       certify(.5).status,
       sct::PersistentLinearContactStatus::PotentialChange);
+}
+
+TEST(SelfContactTransactionValues,
+     QuadraticLedgerCoverageSubdividesAndFailsClosed) {
+  const auto first = Triangle(
+      10, {1, 2, 3},
+      {{{0, 0, 0}, {2, 0, 0}, {0, 2, 0}}});
+  const auto translated = [](double x, double y, double z) {
+    return Triangle(
+        20, {4, 5, 6},
+        {{{x, y, z}, {2 + x, y, z}, {x, 2 + y, z}}});
+  };
+  const auto second_accepted = translated(-.075, 0, .05);
+  const auto second_prepared = translated(.075, 0, .05);
+  const auto geometry =
+      DiscoverPreparedPair(first, second_accepted);
+  const auto accepted =
+      AcceptedCertificate(FirstEdgeEdge(geometry));
+  auto curved = Quadratic(0);
+  for (unsigned vertex = 0; vertex < 3; ++vertex)
+    curved.q[vertex][1] = {-1.2, -1.2};
+
+  const auto covered = sct::CertifyQuadraticFacetCoverage(
+      first, first, Quadratic(0), .1,
+      second_accepted, second_prepared, curved, .1, 1,
+      &accepted, 1, 4095, 20);
+  EXPECT_EQ(
+      covered.status,
+      sct::NonlinearSeparationStatus::
+          CertifiedAcceptedCoverage);
+  EXPECT_GT(covered.work, 1u);
+  EXPECT_GT(covered.covered_cells, 1u);
+  EXPECT_EQ(covered.accepted_source_order, 0u);
+  EXPECT_FALSE(covered.work_exhausted);
+  EXPECT_FALSE(covered.depth_exhausted);
+
+  const auto reversed = sct::CertifyQuadraticFacetCoverage(
+      second_accepted, second_prepared, curved, .1,
+      first, first, Quadratic(0), .1, 1,
+      &accepted, 1, 4095, 20);
+  EXPECT_EQ(reversed.status, covered.status);
+  EXPECT_EQ(reversed.work, covered.work);
+  EXPECT_EQ(reversed.deepest, covered.deepest);
+  EXPECT_EQ(reversed.proof_digest, covered.proof_digest);
+
+  const auto capped = sct::CertifyQuadraticFacetCoverage(
+      first, first, Quadratic(0), .1,
+      second_accepted, second_prepared, curved, .1, 1,
+      &accepted, 1, 1, 20);
+  EXPECT_EQ(
+      capped.status,
+      sct::NonlinearSeparationStatus::WorkExhausted);
+  EXPECT_TRUE(capped.work_exhausted);
+
+  const auto shallow = sct::CertifyQuadraticFacetCoverage(
+      first, first, Quadratic(0), .1,
+      second_accepted, second_prepared, curved, .1, 1,
+      &accepted, 1, 4095, 0);
+  EXPECT_EQ(
+      shallow.status,
+      sct::NonlinearSeparationStatus::PotentialContact);
+  EXPECT_TRUE(shallow.depth_exhausted);
+
+  const auto missing = sct::CertifyQuadraticFacetCoverage(
+      first, first, Quadratic(0), .1,
+      second_accepted, second_prepared, curved, .1, 1,
+      nullptr, 0, 4095, 8);
+  EXPECT_EQ(
+      missing.status,
+      sct::NonlinearSeparationStatus::MissingAcceptedOwner);
+  EXPECT_TRUE(missing.depth_exhausted);
+
+  const sct::AcceptedEventCertificate duplicate[]{
+      accepted, accepted};
+  EXPECT_EQ(
+      sct::CertifyQuadraticFacetCoverage(
+          first, first, Quadratic(0), .1,
+          second_accepted, second_prepared, curved, .1, 1,
+          duplicate, 2, 4095, 20).status,
+      sct::NonlinearSeparationStatus::OwnerAmbiguity);
+
+  auto crossing = curved;
+  for (unsigned vertex = 0; vertex < 3; ++vertex)
+    crossing.q[vertex][2] = {.8, .8};
+  const auto possible_crossing =
+      sct::CertifyQuadraticFacetCoverage(
+          first, first, Quadratic(0), .1,
+          second_accepted, second_prepared, crossing, .1, 1,
+          &accepted, 1, 4095, 16);
+  EXPECT_EQ(
+      possible_crossing.status,
+      sct::NonlinearSeparationStatus::
+          PossibleGeometricCrossing);
+  EXPECT_TRUE(possible_crossing.depth_exhausted);
+}
+
+TEST(SelfContactTransactionValues,
+     TinyDyadicQuadraticCoverageOracleIsExhaustive) {
+  const auto first = Triangle(
+      10, {1, 2, 3},
+      {{{0, 0, 0}, {2, 0, 0}, {0, 2, 0}}});
+  const auto translated = [](double x) {
+    return Triangle(
+        20, {4, 5, 6},
+        {{{x, 0, .05}, {2 + x, 0, .05}, {x, 2, .05}}});
+  };
+  const auto second_accepted = translated(-.0625);
+  const auto second_prepared = translated(.0625);
+  const auto geometry =
+      DiscoverPreparedPair(first, second_accepted);
+  const auto accepted =
+      AcceptedCertificate(FirstEdgeEdge(geometry));
+  std::size_t certified = 0;
+  for (int dyadic_q = -32; dyadic_q <= 32; ++dyadic_q) {
+    const double q = std::ldexp(
+        static_cast<double>(dyadic_q), -4);
+    auto coefficients = Quadratic(0);
+    for (unsigned vertex = 0; vertex < 3; ++vertex)
+      coefficients.q[vertex][1] = {q, q};
+    const auto result = sct::CertifyQuadraticFacetCoverage(
+        first, first, Quadratic(0), .1,
+        second_accepted, second_prepared,
+        coefficients, .1, 1,
+        &accepted, 1, 4095, 20);
+    if (result.status !=
+        sct::NonlinearSeparationStatus::
+            CertifiedAcceptedCoverage)
+      continue;
+    ++certified;
+    for (unsigned sample = 0; sample <= 256; ++sample) {
+      const double u = std::ldexp(
+          static_cast<double>(sample), -8);
+      const double x = .125 * u;
+      const double y = -.5 * u * (1 - u) * q;
+      const double distance =
+          std::sqrt(x * x + y * y + .05 * .05);
+      EXPECT_LT(distance, .2)
+          << "q=" << q << " u=" << u;
+    }
+  }
+  EXPECT_GT(certified, 0u);
 }
 
 TEST(SelfContactTransactionValues,
