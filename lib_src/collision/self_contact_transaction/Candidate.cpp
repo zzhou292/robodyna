@@ -1227,6 +1227,22 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
             continue;
           }
         }
+        if (action ==
+            sct::PairMotionAction::CertifiedRigidArcSeparation) {
+          auto& local_result =
+              state.buffers.chunk_crossings[pair];
+          local_result = {};
+          local_result.key =
+              state.buffers.chunk_canonical_pairs[pair];
+          local_result.classification =
+              RepresentedIntervalClassification::CertifiedSeparated;
+          local_result.reason = RepresentedIntervalReason::None;
+          local_result.work =
+              state.buffers.
+                  chunk_nonlinear_results[raw_pair].work;
+          ++raw_pair;
+          continue;
+        }
         if (action == sct::PairMotionAction::UnsupportedRigidArc) {
           const auto first_parent =
               state.buffers.facet_motion[facet_pair.first].parent;
@@ -1686,7 +1702,10 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
                     CertifiedQuadraticAcceptedCoverage ||
             action ==
                 sct::PairMotionAction::
-                    CertifiedQuadraticExactExclusion) {
+                    CertifiedQuadraticExactExclusion ||
+            action ==
+                sct::PairMotionAction::
+                    CertifiedRigidArcSeparation) {
           ++raw_pair;
           continue;
         }
@@ -1700,25 +1719,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
               "Candidate crossing publication ended before motion roster",
               SIZE_MAX, state.candidate_facet_pair_count + raw_pair));
         const auto& value = raw_crossings.data[crossing_pair++];
-        if (action ==
-            sct::PairMotionAction::CertifiedRigidArcSeparation) {
-          if (value.classification !=
-                  RepresentedIntervalClassification::Unresolved ||
-              value.reason !=
-                  RepresentedIntervalReason::UnsupportedMotion)
-            return state.Fail(Failure(S::IdentityMismatch,
-                "Rigid-arc separator did not replace one exact unsupported crossing",
-                SIZE_MAX,
-                state.candidate_facet_pair_count + raw_pair));
-          state.buffers.chunk_crossings[pair] = {};
-          state.buffers.chunk_crossings[pair].key = value.key;
-          state.buffers.chunk_crossings[pair].classification =
-              RepresentedIntervalClassification::CertifiedSeparated;
-          state.buffers.chunk_crossings[pair].reason =
-              RepresentedIntervalReason::None;
-        } else {
-          state.buffers.chunk_crossings[pair] = value;
-        }
+        state.buffers.chunk_crossings[pair] = value;
         const auto work = value.work;
         if (work >
             state.storage_forecast.complete_crossing_work_capacity -

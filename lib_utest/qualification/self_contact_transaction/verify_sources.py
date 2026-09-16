@@ -106,6 +106,10 @@ for token in (
             transaction, token,
             CANDIDATE if token != "FilterAcceptedFacetPairs(" else
             TRANSACTION)
+require(candidate, "chunk_nonlinear_results[raw_pair].work;", CANDIDATE)
+if "Rigid-arc separator did not replace one exact unsupported crossing" in candidate:
+    raise RuntimeError(
+        f"{CANDIDATE}: certified nonlinear separation still enters crossing")
 if "12 * arm" in candidate or "12*arm" in candidate:
     raise RuntimeError(
         f"{CANDIDATE}: retains group-scale rigid support-radius inflation")
@@ -658,7 +662,6 @@ for token in (
     "ContactConstraintLayout::MergedPartAndPlain",
     "CopyPreparedForceStage",
     "endpoint_inverse_sum",
-    "SelfContactTransactionStatus::UnsupportedMotion",
     "PairMotionAction::UnsupportedRigidArc",
     "PairMotionAction::CertifiedRigidArcSeparation",
     "common, prepared, accepted",

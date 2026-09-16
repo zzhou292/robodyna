@@ -201,6 +201,12 @@ must certify separation. Any overlapping leaf, arithmetic failure, depth
 limit, or work limit remains typed `UnsupportedMotion`; it is never converted
 to contact admission or a separated result.
 
+A completed quadratic separation publishes directly into the candidate policy
+stream. It does not enter the linear represented-crossing adapter, where a
+shared canonical vertex could otherwise acquire both rigid and linear path
+tags despite identical endpoint coordinates. Only unresolved affine/linear
+pairs enter that adapter.
+
 `max_nonlinear_subdivision_work_per_pair`,
 `max_nonlinear_subdivision_work_per_chunk`,
 `max_stream_nonlinear_subdivision_work`, and

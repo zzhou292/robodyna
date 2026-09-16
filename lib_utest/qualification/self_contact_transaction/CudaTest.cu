@@ -1649,12 +1649,12 @@ TEST(SelfContactTransactionCuda,
     Near({actual[g].angular_acceleration.x,actual[g].angular_acceleration.y,
           actual[g].angular_acceleration.z},expected_angular[g]);
   }
-  c::SelfContactTransactionReceipt unsupported;
+  c::SelfContactTransactionReceipt completed;
   const auto rigid_interval=fixture.transaction.SealCandidate(
-      fixture.rig.owner,token,common,prepared,accepted,&unsupported);
+      fixture.rig.owner,token,common,prepared,accepted,&completed);
   EXPECT_EQ(rigid_interval.status,
-            c::SelfContactTransactionStatus::UnsupportedMotion);
-  EXPECT_FALSE(unsupported.valid());
+            c::SelfContactTransactionStatus::Ok);
+  EXPECT_TRUE(completed.valid());
   fixture.Discard();
   EXPECT_EQ(fixture.rig.owner.accepted().epoch,0u);
 }
