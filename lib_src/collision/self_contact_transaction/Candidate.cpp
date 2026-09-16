@@ -404,6 +404,8 @@ bool LocallyExcluded(
 }
 
 bool LocalPolicyResolvesUnsupported(
+    const CurrentFixedTriangle& first,
+    const CurrentFixedTriangle& second,
     FixedTriangleFeatureView features,
     FixedTriangleIntersectionView intersections,
     const RepresentedIntervalPairKey& key,
@@ -415,37 +417,60 @@ bool LocalPolicyResolvesUnsupported(
       !std::isfinite(first_thickness) || !(first_thickness > 0) ||
       !std::isfinite(second_thickness) || !(second_thickness > 0) ||
       (mask.local_tasks & ~FixedTriangleFeatureTaskBits) ||
-      !LocallyExcluded(intersections, key))
+      !mask.local_tasks)
     return false;
   std::size_t expected = 15;
   for (unsigned task = 0; task < 15; ++task)
     expected -= bool(
         mask.local_tasks & FixedTriangleFeatureTaskBit(task));
-  std::size_t observed = 0;
-  for (std::size_t i = 0; i < features.count; ++i) {
-    const auto& feature = features.data[i];
-    if (sct::Compare(
-            PairKey(PathKey(feature.triangles[0]),
-                    PathKey(feature.triangles[1])),
-            key) != 0)
-      continue;
-    if (!std::isfinite(feature.distance_m) ||
-        feature.distance_m < 0 ||
-        !std::isfinite(feature.representation_error_m) ||
-        feature.representation_error_m < 0)
-      return false;
-    const double gap =
-        (feature.distance_m - first_thickness) -
-        second_thickness;
-    if (!std::isfinite(gap) ||
-        !(gap > feature.representation_error_m))
-      return false;
-    ++observed;
-  }
+  const auto separated =
+      [&](const FixedTriangleFeatureCandidate* data,
+          std::size_t count, bool exact_pair) noexcept {
+        std::size_t observed = 0;
+        for (std::size_t i = 0; i < count; ++i) {
+          const auto& feature = data[i];
+          if (!exact_pair &&
+              sct::Compare(
+                  PairKey(PathKey(feature.triangles[0]),
+                          PathKey(feature.triangles[1])),
+                  key) != 0)
+            continue;
+          if (!std::isfinite(feature.distance_m) ||
+              feature.distance_m < 0 ||
+              !std::isfinite(feature.representation_error_m) ||
+              feature.representation_error_m < 0)
+            return false;
+          const double gap =
+              (feature.distance_m - first_thickness) -
+              second_thickness;
+          if (!std::isfinite(gap) ||
+              !(gap > feature.representation_error_m))
+            return false;
+          ++observed;
+        }
+        return observed == expected;
+      };
+  if (LocallyExcluded(intersections, key) &&
+      separated(features.data, features.count, false))
+    return true;
+
   // Global feature deduplication can select another producing facet pair.
-  // That is insufficient evidence here: unsupported motion remains rejected
-  // unless this exact pair retained every unmasked closest-feature result.
-  return observed == expected;
+  // Re-evaluate only this already-unsupported pair into bounded stack storage.
+  FixedTriangleFeatureCandidate local_features[15];
+  fixed_triangle_features::PairFeatureResult local_result;
+  if (fixed_triangle_features::EvaluatePairFeaturesMaskedOnce(
+          first, second, mask, local_features, 15,
+          &local_result) != FixedTriangleDiscoveryStatus::Ok ||
+      local_result.feature_count != expected ||
+      !separated(local_features, local_result.feature_count, true))
+    return false;
+  FixedTriangleIntersection local_intersection;
+  bool intersects = false;
+  return fixed_triangle_features::ClassifyPairIntersection(
+             first, second, &local_intersection, &intersects) ==
+          FixedTriangleDiscoveryStatus::Ok &&
+      intersects &&
+      !RequiresIntersectionAdmission(local_intersection);
 }
 
 sct::LinearResidualSeparationResult
@@ -527,6 +552,94 @@ PersistentLinearCertificate(
   return sct::CertifyPersistentLinearContact(
       first_base, first_prepared, first_half_thickness,
       second_base, second_prepared, second_half_thickness,
+      {local_features, 15, true}, accepted, accepted_count);
+}
+
+sct::LinearResidualSeparationResult
+QuadraticResidualCertificate(
+    const CurrentFixedTriangle& first_base,
+    const CurrentFixedTriangle& first_prepared,
+    const sct::FacetQuadraticCoefficients& first_quadratic,
+    double first_half_thickness,
+    const CurrentFixedTriangle& second_base,
+    const CurrentFixedTriangle& second_prepared,
+    const sct::FacetQuadraticCoefficients& second_quadratic,
+    double second_half_thickness, double duration,
+    FixedTriangleFeatureTaskMask mask,
+    FixedTriangleFeatureView features,
+    FixedTriangleIntersectionView intersections) noexcept {
+  auto result = sct::CertifyQuadraticResidualSeparation(
+      first_base, first_prepared, first_quadratic,
+      first_half_thickness,
+      second_base, second_prepared, second_quadratic,
+      second_half_thickness, duration, features, intersections);
+  if (result.status !=
+          sct::LinearResidualSeparationStatus::
+              IncompleteFeatureRoster ||
+      mask.local_tasks)
+    return result;
+  FixedTriangleFeatureCandidate local_features[15];
+  fixed_triangle_features::PairFeatureResult feature_result;
+  if (fixed_triangle_features::EvaluatePairFeaturesOnce(
+          first_prepared, second_prepared,
+          local_features, 15, &feature_result) !=
+          FixedTriangleDiscoveryStatus::Ok ||
+      feature_result.feature_count != 15)
+    return result;
+  FixedTriangleIntersection local_intersection;
+  bool intersects = false;
+  if (fixed_triangle_features::ClassifyPairIntersection(
+          first_prepared, second_prepared,
+          &local_intersection, &intersects) !=
+      FixedTriangleDiscoveryStatus::Ok)
+    return result;
+  return sct::CertifyQuadraticResidualSeparation(
+      first_base, first_prepared, first_quadratic,
+      first_half_thickness,
+      second_base, second_prepared, second_quadratic,
+      second_half_thickness, duration,
+      {local_features, 15, true},
+      {intersects ? &local_intersection : nullptr,
+       intersects ? 1u : 0u, true});
+}
+
+sct::PersistentLinearContactResult
+PersistentQuadraticCertificate(
+    const CurrentFixedTriangle& first_base,
+    const CurrentFixedTriangle& first_prepared,
+    const sct::FacetQuadraticCoefficients& first_quadratic,
+    double first_half_thickness,
+    const CurrentFixedTriangle& second_base,
+    const CurrentFixedTriangle& second_prepared,
+    const sct::FacetQuadraticCoefficients& second_quadratic,
+    double second_half_thickness, double duration,
+    FixedTriangleFeatureTaskMask mask,
+    FixedTriangleFeatureView features,
+    const sct::AcceptedEventCertificate* accepted,
+    std::size_t accepted_count) noexcept {
+  auto result = sct::CertifyPersistentQuadraticContact(
+      first_base, first_prepared, first_quadratic,
+      first_half_thickness,
+      second_base, second_prepared, second_quadratic,
+      second_half_thickness, duration, features,
+      accepted, accepted_count);
+  if (result.status ==
+          sct::PersistentLinearContactStatus::CertifiedContact ||
+      mask.local_tasks)
+    return result;
+  FixedTriangleFeatureCandidate local_features[15];
+  fixed_triangle_features::PairFeatureResult feature_result;
+  if (fixed_triangle_features::EvaluatePairFeaturesOnce(
+          first_prepared, second_prepared,
+          local_features, 15, &feature_result) !=
+          FixedTriangleDiscoveryStatus::Ok ||
+      feature_result.feature_count != 15)
+    return result;
+  return sct::CertifyPersistentQuadraticContact(
+      first_base, first_prepared, first_quadratic,
+      first_half_thickness,
+      second_base, second_prepared, second_quadratic,
+      second_half_thickness, duration,
       {local_features, 15, true}, accepted, accepted_count);
 }
 
@@ -1123,46 +1236,168 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
               first_parent < parents.size() &&
               second_parent < parents.size() &&
               LocalPolicyResolvesUnsupported(
+                  state.buffers.prepared_triangles[
+                      facet_pair.first],
+                  state.buffers.prepared_triangles[
+                      facet_pair.second],
                   features, intersections,
                   state.buffers.chunk_canonical_pairs[pair],
                   state.buffers.chunk_feature_task_masks[pair],
                   parents[first_parent].reference_half_thickness_m,
                   parents[second_parent].reference_half_thickness_m);
-          if (!locally_resolved) {
-            auto report = Failure(
-                S::UnsupportedMotion,
-                "Quadratic subdivision did not certify rigid-arc separation; crossing remains unresolved",
-                facet_pair.first,
-                state.candidate_facet_pair_count + raw_pair);
-            report.crossing_reason =
+          if (locally_resolved) {
+            auto& local_result =
+                state.buffers.chunk_crossings[pair];
+            local_result = {};
+            local_result.key =
+                state.buffers.chunk_canonical_pairs[pair];
+            local_result.classification =
+                RepresentedIntervalClassification::Unresolved;
+            local_result.reason =
                 RepresentedIntervalReason::UnsupportedMotion;
-            const auto nonlinear =
-                state.buffers.chunk_nonlinear_results[raw_pair];
-            report.nonlinear_subdivision_work = nonlinear.work;
-            report.nonlinear_subdivision_depth = nonlinear.deepest;
-            report.nonlinear_subdivision_work_exhausted =
-                nonlinear.status ==
-                sct::NonlinearSeparationStatus::WorkExhausted;
-            report.nonlinear_subdivision_depth_exhausted =
-                nonlinear.status ==
-                sct::NonlinearSeparationStatus::DepthExhausted;
-            DescribeMotionFailure(
-                state.active_use, state.buffers.prepared_triangles,
-                state.buffers.facet_motion,
-                state.buffers.facet_quadratic,
-                state.buffers.swept_facet_bounds,
-                facet_pair, &report);
-            return state.Fail(report);
+            ++raw_pair;
+            continue;
           }
-          auto& local_result = state.buffers.chunk_crossings[pair];
-          local_result = {};
-          local_result.key = state.buffers.chunk_canonical_pairs[pair];
-          local_result.classification =
-              RepresentedIntervalClassification::Unresolved;
-          local_result.reason =
+          const auto quadratic_residual =
+              first_parent < parents.size() &&
+                      second_parent < parents.size()
+                  ? QuadraticResidualCertificate(
+                        state.buffers.accepted_triangles[
+                            facet_pair.first],
+                        state.buffers.prepared_triangles[
+                            facet_pair.first],
+                        state.buffers.facet_quadratic[
+                            facet_pair.first],
+                        parents[first_parent].
+                            reference_half_thickness_m,
+                        state.buffers.accepted_triangles[
+                            facet_pair.second],
+                        state.buffers.prepared_triangles[
+                            facet_pair.second],
+                        state.buffers.facet_quadratic[
+                            facet_pair.second],
+                        parents[second_parent].
+                            reference_half_thickness_m,
+                        duration,
+                        state.buffers.
+                            chunk_feature_task_masks[pair],
+                        features, intersections)
+                  : sct::LinearResidualSeparationResult{};
+          if (quadratic_residual.status ==
+              sct::LinearResidualSeparationStatus::
+                  InvalidInput) {
+            return state.Fail(Failure(
+                S::IdentityMismatch,
+                "Quadratic residual certificate input is invalid",
+                SIZE_MAX,
+                state.candidate_facet_pair_count + raw_pair));
+          }
+          if (quadratic_residual.status ==
+              sct::LinearResidualSeparationStatus::
+                  CertifiedSeparated) {
+            state.buffers.chunk_motion_actions[raw_pair] =
+                sct::PairMotionAction::
+                    CertifiedQuadraticResidualSeparation;
+            auto& local_result =
+                state.buffers.chunk_crossings[pair];
+            local_result = {};
+            local_result.key =
+                state.buffers.chunk_canonical_pairs[pair];
+            local_result.classification =
+                RepresentedIntervalClassification::
+                    CertifiedSeparated;
+            local_result.reason =
+                RepresentedIntervalReason::None;
+            local_result.work = 1;
+            ++raw_pair;
+            continue;
+          }
+          const auto quadratic_persistent =
+              first_parent < parents.size() &&
+                      second_parent < parents.size()
+                  ? PersistentQuadraticCertificate(
+                        state.buffers.accepted_triangles[
+                            facet_pair.first],
+                        state.buffers.prepared_triangles[
+                            facet_pair.first],
+                        state.buffers.facet_quadratic[
+                            facet_pair.first],
+                        parents[first_parent].
+                            reference_half_thickness_m,
+                        state.buffers.accepted_triangles[
+                            facet_pair.second],
+                        state.buffers.prepared_triangles[
+                            facet_pair.second],
+                        state.buffers.facet_quadratic[
+                            facet_pair.second],
+                        parents[second_parent].
+                            reference_half_thickness_m,
+                        duration,
+                        state.buffers.
+                            chunk_feature_task_masks[pair],
+                        features,
+                        state.buffers.accepted_certificates,
+                        state.accepted_event_count)
+                  : sct::PersistentLinearContactResult{};
+          if (quadratic_persistent.status ==
+              sct::PersistentLinearContactStatus::InvalidInput) {
+            return state.Fail(Failure(
+                S::IdentityMismatch,
+                "Persistent quadratic certificate input is invalid",
+                SIZE_MAX,
+                state.candidate_facet_pair_count + raw_pair));
+          }
+          if (quadratic_persistent.status ==
+              sct::PersistentLinearContactStatus::
+                  CertifiedContact) {
+            state.buffers.chunk_motion_actions[raw_pair] =
+                sct::PairMotionAction::
+                    CertifiedPersistentQuadraticContact;
+            auto& local_result =
+                state.buffers.chunk_crossings[pair];
+            local_result = {};
+            local_result.key =
+                state.buffers.chunk_canonical_pairs[pair];
+            local_result.feature =
+                quadratic_persistent.feature;
+            local_result.classification =
+                RepresentedIntervalClassification::
+                    CertifiedCrossingContact;
+            local_result.reason =
+                RepresentedIntervalReason::None;
+            local_result.geometry =
+                RepresentedIntersectionGeometry::
+                    PersistentPhysicalContact;
+            local_result.witness_time_numerator = 0;
+            local_result.witness_time_depth = 0;
+            local_result.work = 1;
+            ++raw_pair;
+            continue;
+          }
+          auto report = Failure(
+              S::UnsupportedMotion,
+              "Quadratic subdivision and residual/contact certificates leave a possible rigid-arc crossing",
+              facet_pair.first,
+              state.candidate_facet_pair_count + raw_pair);
+          report.crossing_reason =
               RepresentedIntervalReason::UnsupportedMotion;
-          ++raw_pair;
-          continue;
+          const auto nonlinear =
+              state.buffers.chunk_nonlinear_results[raw_pair];
+          report.nonlinear_subdivision_work = nonlinear.work;
+          report.nonlinear_subdivision_depth = nonlinear.deepest;
+          report.nonlinear_subdivision_work_exhausted =
+              nonlinear.status ==
+              sct::NonlinearSeparationStatus::WorkExhausted;
+          report.nonlinear_subdivision_depth_exhausted =
+              nonlinear.status ==
+              sct::NonlinearSeparationStatus::DepthExhausted;
+          DescribeMotionFailure(
+              state.active_use, state.buffers.prepared_triangles,
+              state.buffers.facet_motion,
+              state.buffers.facet_quadratic,
+              state.buffers.swept_facet_bounds,
+              facet_pair, &report);
+          return state.Fail(report);
         }
         MakePath(
             state.buffers.accepted_triangles[facet_pair.first],
@@ -1227,7 +1462,13 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
                     CertifiedResidualLinearSeparation ||
             action ==
                 sct::PairMotionAction::
-                    CertifiedPersistentLinearContact) {
+                    CertifiedPersistentLinearContact ||
+            action ==
+                sct::PairMotionAction::
+                    CertifiedQuadraticResidualSeparation ||
+            action ==
+                sct::PairMotionAction::
+                    CertifiedPersistentQuadraticContact) {
           ++raw_pair;
           continue;
         }
@@ -1463,6 +1704,374 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
   next.activity_ = activity_receipt;
   next.participation_ = participation;
   *output = next;
+  return {};
+}
+
+SelfContactTransactionReport
+self_contact_transaction::QualificationAccess::
+ClassifyPreparedNonlinearCandidates(
+    SelfContactTransaction& owner_transaction,
+    fe::FENodalState& owner,
+    const fe::NodalTrialToken& token,
+    const fe::NodalPreparedView& prepared,
+    const SelfContactAcceptedAssemblyReceipt& assembly,
+    sct::NonlinearCandidateRosterEntry* roster,
+    std::size_t roster_capacity,
+    std::size_t* roster_count,
+    sct::NonlinearCandidateRosterSummary* summary,
+    sct::PreparedMotionCertificateView* certificates) noexcept {
+  if (!roster_count || !summary || !certificates ||
+      (roster_capacity && !roster)) {
+    return Failure(S::InvalidInput,
+        "Nonlinear qualification roster storage is invalid");
+  }
+  *roster_count = 0;
+  *summary = {};
+  *certificates = {};
+  if (!owner_transaction.impl_)
+    return Failure(S::NotInitialized,
+        "Nonlinear qualification transaction is not initialized");
+  auto& state = *owner_transaction.impl_;
+  if (&owner != state.owner ||
+      state.phase != SelfContactTransaction::Impl::Phase::
+          AssemblyRecorded ||
+      !assembly.valid() ||
+      assembly.transaction_ != &owner_transaction ||
+      assembly.owner_ != &owner ||
+      assembly.active_use_identity_ !=
+          state.active_use.identity() ||
+      assembly.source_id_ != state.config.source_id ||
+      assembly.owner_id_ != state.owner_id ||
+      assembly.base_epoch_ != state.base_epoch ||
+      assembly.attempt_ != state.attempt ||
+      !state.OutputDisjoint(roster_count, sizeof(*roster_count)) ||
+      !state.OutputDisjoint(summary, sizeof(*summary)) ||
+      !state.OutputDisjoint(certificates, sizeof(*certificates)) ||
+      (roster_capacity &&
+       !state.OutputDisjoint(
+           roster, roster_capacity * sizeof(*roster)))) {
+    return Failure(S::InvalidInput,
+        "Nonlinear qualification owner, phase or output is invalid");
+  }
+  const auto activity = assembly.activity_.activity();
+
+  const auto node_count =
+      state.active_use.facets()->surface()->physical()->
+          domain()->node_count();
+  fe::NodalStamp accepted_stamp;
+  auto owner_report = owner.CopyAccepted(
+      {state.buffers.accepted_positions,
+       state.buffers.accepted_velocities, node_count},
+      &accepted_stamp);
+  if (owner_report.status != fe::NodalStatus::Ok) {
+    auto report = Failure(S::OwnerFailure, owner_report.message);
+    report.owner_status = owner_report.status;
+    return report;
+  }
+  fe::NodalPreparedView authentic;
+  owner_report = owner.CopyPrepared(
+      token,
+      {state.buffers.prepared_positions,
+       state.buffers.prepared_velocities, node_count},
+      &authentic);
+  if (owner_report.status != fe::NodalStatus::Ok) {
+    auto report = Failure(S::OwnerFailure, owner_report.message);
+    report.owner_status = owner_report.status;
+    return report;
+  }
+  if (!fe::trial_identity::SamePrepared(prepared, authentic) ||
+      accepted_stamp.owner_id != state.owner_id ||
+      accepted_stamp.epoch != state.base_epoch ||
+      authentic.owner_id != state.owner_id ||
+      authentic.kinematics.base_epoch != state.base_epoch ||
+      authentic.attempt != state.attempt ||
+      authentic.stream != state.stream) {
+    return Failure(S::IdentityMismatch,
+        "Nonlinear qualification owner identity differs from assembly");
+  }
+
+  if (state.rigid_group_count) {
+    const auto* rigid = state.active_use.rigid();
+    if (!rigid ||
+        rigid->groups().size() != state.rigid_group_count ||
+        authentic.temporal_scheme !=
+            fe::NodalTemporalScheme::StaggeredHalfKickStart) {
+      return Failure(S::IdentityMismatch,
+          "Nonlinear qualification rigid scope is invalid");
+    }
+    fe::NodalStamp rigid_accepted;
+    owner_report = owner.CopyAcceptedRigidGroups(
+        {state.buffers.accepted_rigid_groups,
+         state.rigid_group_count},
+        &rigid_accepted);
+    if (owner_report.status != fe::NodalStatus::Ok) {
+      auto report = Failure(S::OwnerFailure, owner_report.message);
+      report.owner_status = owner_report.status;
+      return report;
+    }
+    fe::NodalPreparedView rigid_prepared;
+    owner_report = owner.CopyPreparedRigidGroups(
+        token,
+        {state.buffers.prepared_rigid_groups,
+         state.rigid_group_count},
+        &rigid_prepared);
+    if (owner_report.status != fe::NodalStatus::Ok) {
+      auto report = Failure(S::OwnerFailure, owner_report.message);
+      report.owner_status = owner_report.status;
+      return report;
+    }
+    if (!fe::trial_identity::SameStamp(
+            accepted_stamp, rigid_accepted) ||
+        !fe::trial_identity::SamePrepared(
+            authentic, rigid_prepared)) {
+      return Failure(S::IdentityMismatch,
+          "Nonlinear qualification rigid snapshots differ");
+    }
+    for (std::size_t group = 0;
+         group < state.rigid_group_count; ++group) {
+      if (!SameRigidSnapshotIdentity(
+              rigid->groups()[group],
+              state.buffers.accepted_rigid_groups[group]) ||
+          !SameRigidSnapshotIdentity(
+              rigid->groups()[group],
+              state.buffers.prepared_rigid_groups[group])) {
+        return Failure(S::IdentityMismatch,
+            "Nonlinear qualification rigid group identity differs",
+            group);
+      }
+    }
+  }
+
+  const VectorView accepted_positions{
+      state.buffers.accepted_positions,
+      static_cast<std::uint32_t>(node_count), 3, 1};
+  const VectorView prepared_positions{
+      state.buffers.prepared_positions,
+      static_cast<std::uint32_t>(node_count), 3, 1};
+  auto evaluated = sct::EvaluateCompleteTriangles(
+      state.buffers.facet_descriptors, state.facet_count,
+      accepted_positions, state.buffers.accepted_triangles);
+  if (evaluated.status != S::Ok) return evaluated;
+  evaluated = sct::EvaluateCompleteTriangles(
+      state.buffers.facet_descriptors, state.facet_count,
+      prepared_positions, state.buffers.prepared_triangles);
+  if (evaluated.status != S::Ok) return evaluated;
+  evaluated = sct::ValidateCompleteTriangleIdentities(
+      state.buffers.prepared_triangles, state.facet_count,
+      state.buffers.vertex_identity_order,
+      state.buffers.edge_identity_order);
+  if (evaluated.status != S::Ok) return evaluated;
+  for (std::size_t facet = 0;
+       facet < state.facet_count; ++facet) {
+    if (!sct::Same(state.buffers.accepted_triangles[facet].key,
+                   state.buffers.prepared_triangles[facet].key)) {
+      return Failure(S::IdentityMismatch,
+          "Nonlinear qualification facet identity changed", facet);
+    }
+  }
+
+  const double duration =
+      authentic.proposed_time - authentic.base_time;
+  auto bounded = BuildSweptBounds(
+      state.active_use, state.buffers.facet_descriptors,
+      state.facet_count, state.buffers.parent_motion,
+      state.buffers.facet_motion, state.buffers.facet_quadratic,
+      state.buffers.node_rigid_groups,
+      state.buffers.accepted_rigid_groups,
+      state.buffers.prepared_rigid_groups,
+      state.rigid_group_count, accepted_positions,
+      prepared_positions, authentic.rigid_member_trajectory,
+      duration, authentic.kick_dt,
+      state.buffers.swept_facet_bounds,
+      state.buffers.swept_parent_bounds,
+      state.surface_parent_count);
+  if (bounded.status != S::Ok) return bounded;
+
+  for (std::size_t facet = 0;
+       facet < state.facet_count; ++facet) {
+    if (state.buffers.facet_motion[facet].motion ==
+        SelfContactFacetMotion::LinearNodalV1)
+      continue;
+    ++summary->rigid_or_mixed_facets;
+    summary->affine_rigid_or_mixed_facets +=
+        state.buffers.facet_motion[facet].certified_affine;
+  }
+
+  const auto broadphase = state.broadphase.Evaluate(
+      {{}, {}, SelfContactBoundsMotion::ConservativeSweptParentBounds,
+       state.config.broadphase_axis,
+       state.buffers.swept_parent_bounds,
+       state.surface_parent_count},
+      state.stream);
+  if (broadphase.status != SelfContactBroadphaseStatus::Ok) {
+    auto report = Failure(S::BroadphaseFailure, broadphase.message);
+    report.broadphase_status = broadphase.status;
+    report.candidate =
+        broadphase.status == SelfContactBroadphaseStatus::PairCapacity
+            ? static_cast<std::size_t>(broadphase.required_pairs)
+            : static_cast<std::size_t>(broadphase.parent);
+    return report;
+  }
+  std::size_t broadphase_count = 0;
+  auto streamed = sct::ReadBroadphase(
+      state.broadphase, state.stream,
+      state.buffers.broadphase_pairs,
+      state.storage_forecast.broadphase_pair_capacity,
+      &broadphase_count);
+  if (streamed.status != S::Ok) return streamed;
+  summary->broadphase_parent_pairs = broadphase_count;
+  const auto parents = state.active_use.parents();
+  streamed = state.candidate_source.Begin(
+      state.buffers.broadphase_pairs, broadphase_count,
+      state.buffers.surface_to_active, state.surface_parent_count,
+      state.buffers.parent_facet_offsets, parents.size(), activity);
+  if (streamed.status != S::Ok) return streamed;
+
+  std::size_t published = 0;
+  std::size_t nonlinear_work = 0;
+  for (;;) {
+    const FixedTrianglePair* pairs = nullptr;
+    std::size_t pair_count = 0;
+    streamed = state.candidate_source.Next(&pairs, &pair_count);
+    if (streamed.status != S::Ok) return streamed;
+    if (!pair_count) break;
+    if (pair_count >
+        SIZE_MAX - summary->streamed_facet_pairs) {
+      return Failure(S::ResourceLimit,
+          "Nonlinear qualification facet-pair count overflowed");
+    }
+    summary->streamed_facet_pairs += pair_count;
+    std::size_t chunk_work = 0;
+    for (std::size_t pair = 0; pair < pair_count; ++pair) {
+      const auto facets = pairs[pair];
+      const auto action = sct::ClassifyCandidatePairMotion(
+          state.buffers.facet_motion[facets.first],
+          state.buffers.swept_facet_bounds[facets.first],
+          state.buffers.facet_motion[facets.second],
+          state.buffers.swept_facet_bounds[facets.second]);
+      if (action != sct::PairMotionAction::UnsupportedRigidArc)
+        continue;
+      const auto first_parent =
+          state.buffers.facet_motion[facets.first].parent;
+      const auto second_parent =
+          state.buffers.facet_motion[facets.second].parent;
+      if (first_parent >= parents.size() ||
+          second_parent >= parents.size()) {
+        return Failure(S::IdentityMismatch,
+            "Nonlinear qualification pair has no active parent",
+            facets.first, summary->streamed_facet_pairs - pair_count + pair);
+      }
+      const auto chunk_remaining =
+          state.storage_forecast.
+                      nonlinear_subdivision_work_per_chunk > chunk_work
+              ? state.storage_forecast.
+                        nonlinear_subdivision_work_per_chunk - chunk_work
+              : 0;
+      const auto complete_remaining =
+          state.storage_forecast.
+                      complete_nonlinear_subdivision_work_capacity >
+                  nonlinear_work
+              ? state.storage_forecast.
+                        complete_nonlinear_subdivision_work_capacity -
+                    nonlinear_work
+              : 0;
+      const auto allowed = std::min({
+          state.storage_forecast.nonlinear_subdivision_work_per_pair,
+          chunk_remaining, complete_remaining});
+      const auto nonlinear = allowed
+          ? sct::CertifyQuadraticFacetSeparation(
+                state.buffers.accepted_triangles[facets.first],
+                state.buffers.prepared_triangles[facets.first],
+                state.buffers.facet_quadratic[facets.first],
+                parents[first_parent].reference_half_thickness_m,
+                state.buffers.accepted_triangles[facets.second],
+                state.buffers.prepared_triangles[facets.second],
+                state.buffers.facet_quadratic[facets.second],
+                parents[second_parent].reference_half_thickness_m,
+                duration, allowed,
+                state.storage_forecast.nonlinear_subdivision_depth)
+          : sct::NonlinearSeparationResult{
+                sct::NonlinearSeparationStatus::WorkExhausted, 0, 0};
+      if (nonlinear.status ==
+          sct::NonlinearSeparationStatus::InvalidInput) {
+        return Failure(S::IdentityMismatch,
+            "Nonlinear qualification certificate input is invalid",
+            facets.first, summary->streamed_facet_pairs - pair_count + pair);
+      }
+      if (nonlinear.work > SIZE_MAX - chunk_work ||
+          nonlinear.work > SIZE_MAX - nonlinear_work ||
+          nonlinear.work > SIZE_MAX - summary->work) {
+        return Failure(S::ResourceLimit,
+            "Nonlinear qualification work count overflowed");
+      }
+      chunk_work += nonlinear.work;
+      nonlinear_work += nonlinear.work;
+      summary->work += nonlinear.work;
+      ++summary->nonlinear_pairs;
+      if (nonlinear.status ==
+          sct::NonlinearSeparationStatus::CertifiedSeparated) {
+        ++summary->certified_separated;
+      } else {
+        ++summary->unresolved;
+        summary->potential_contact +=
+            nonlinear.status ==
+            sct::NonlinearSeparationStatus::PotentialContact;
+        summary->work_exhausted +=
+            nonlinear.status ==
+            sct::NonlinearSeparationStatus::WorkExhausted;
+        summary->depth_exhausted +=
+            nonlinear.status ==
+            sct::NonlinearSeparationStatus::DepthExhausted;
+      }
+      if (published < roster_capacity) {
+        roster[published] = {
+            facets,
+            PairKey(
+                PathKey(state.buffers.prepared_triangles[
+                            facets.first].key),
+                PathKey(state.buffers.prepared_triangles[
+                            facets.second].key)),
+            nonlinear};
+      }
+      ++published;
+    }
+  }
+  sct::StreamingCandidateSourceReceipt stream_receipt;
+  streamed = state.candidate_source.Finish(&stream_receipt);
+  if (streamed.status != S::Ok ||
+      !state.candidate_source.Authenticates(stream_receipt) ||
+      stream_receipt.parent_pairs() != broadphase_count ||
+      stream_receipt.facet_pairs() !=
+          summary->streamed_facet_pairs) {
+    return Failure(S::IdentityMismatch,
+        "Nonlinear qualification stream lacks its complete receipt");
+  }
+  if (summary->unresolved !=
+          summary->potential_contact + summary->work_exhausted +
+              summary->depth_exhausted ||
+      summary->nonlinear_pairs !=
+          summary->certified_separated + summary->unresolved) {
+    return Failure(S::IdentityMismatch,
+        "Nonlinear qualification census is inconsistent");
+  }
+  *roster_count = published;
+  summary->complete = true;
+  summary->roster_complete = published <= roster_capacity;
+  *certificates = {
+      state.buffers.facet_descriptors,
+      state.buffers.facet_motion,
+      state.buffers.facet_quadratic,
+      state.buffers.accepted_triangles,
+      state.buffers.prepared_triangles,
+      state.buffers.swept_facet_bounds,
+      state.facet_count,
+      true};
+  if (!summary->roster_complete) {
+    auto report = Failure(S::ResourceLimit,
+        "Nonlinear qualification roster exceeds caller capacity");
+    report.candidate = published;
+    return report;
+  }
   return {};
 }
 

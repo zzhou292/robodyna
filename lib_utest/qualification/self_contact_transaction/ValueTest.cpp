@@ -279,6 +279,14 @@ sct::LinearResidualSeparationResult ResidualCertificate(
        geometry.intersection_count, true});
 }
 
+sct::FacetQuadraticCoefficients Quadratic(double z) {
+  sct::FacetQuadraticCoefficients result;
+  result.complete = true;
+  for (unsigned vertex = 0; vertex < 3; ++vertex)
+    result.q[vertex][2] = {z, z};
+  return result;
+}
+
 sct::AcceptedEventCertificate AcceptedCertificate(
     const c::FixedTriangleFeatureCandidate& feature) {
   sct::AcceptedEventCertificate result =
@@ -499,6 +507,63 @@ TEST(SelfContactTransactionValues,
           {geometry.values.data(), geometry.count, true},
           {nullptr, 0, true}).status,
       sct::LinearResidualSeparationStatus::PotentialContact);
+}
+
+TEST(SelfContactTransactionValues,
+     QuadraticResidualSubtractsOutwardChordDeviation) {
+  const auto first = Triangle(
+      10, {1, 2, 3},
+      {{{0, 0, 0}, {2, 0, 0}, {0, 2, 0}}});
+  const auto second = Triangle(
+      20, {4, 5, 6},
+      {{{0, 0, 1}, {2, 0, 1}, {0, 2, 1}}});
+  const auto geometry = DiscoverPreparedPair(first, second);
+  const auto certify = [&](double curvature) {
+    return sct::CertifyQuadraticResidualSeparation(
+        first, first, Quadratic(curvature), .1,
+        second, second, Quadratic(0), .1, 1,
+        {geometry.values.data(), geometry.count, true},
+        {geometry.intersections.data(),
+         geometry.intersection_count, true});
+  };
+  const auto separated = certify(1);
+  EXPECT_EQ(
+      separated.status,
+      sct::LinearResidualSeparationStatus::CertifiedSeparated);
+  EXPECT_GT(separated.first_residual_upper_m, .125);
+  EXPECT_GT(separated.strict_gap_lower_m, 0);
+  EXPECT_EQ(
+      certify(8).status,
+      sct::LinearResidualSeparationStatus::PotentialContact);
+}
+
+TEST(SelfContactTransactionValues,
+     PersistentQuadraticContactRequiresCurvatureMargin) {
+  const auto first = Triangle(
+      10, {1, 2, 3},
+      {{{0, 0, 0}, {2, 0, 0}, {0, 2, 0}}});
+  const auto second = Triangle(
+      20, {4, 5, 6},
+      {{{0, 0, .15}, {2, 0, .15}, {0, 2, .15}}});
+  const auto geometry = DiscoverPreparedPair(first, second);
+  const auto accepted =
+      AcceptedCertificate(FirstEdgeEdge(geometry));
+  const auto certify = [&](double curvature) {
+    return sct::CertifyPersistentQuadraticContact(
+        first, first, Quadratic(curvature), .1,
+        second, second, Quadratic(0), .1, 1,
+        {geometry.values.data(), geometry.count, true},
+        &accepted, 1);
+  };
+  const auto persistent = certify(.1);
+  EXPECT_EQ(
+      persistent.status,
+      sct::PersistentLinearContactStatus::CertifiedContact);
+  EXPECT_GT(persistent.first_residual_upper_m, .0125);
+  EXPECT_GT(persistent.strict_thickness_margin_lower_m, 0);
+  EXPECT_EQ(
+      certify(.5).status,
+      sct::PersistentLinearContactStatus::PotentialChange);
 }
 
 TEST(SelfContactTransactionValues,

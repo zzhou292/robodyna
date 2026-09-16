@@ -14,6 +14,10 @@
 
 namespace tlfea::contact {
 
+namespace self_contact_transaction {
+class QualificationAccess;
+}
+
 enum class SelfContactTransactionStatus : std::uint8_t {
   Ok,
   AlreadyInitialized,
@@ -344,6 +348,7 @@ class SelfContactAcceptedAssemblyReceipt {
 
  private:
   friend class SelfContactTransaction;
+  friend class self_contact_transaction::QualificationAccess;
   const SelfContactTransaction* transaction_ = nullptr;
   const tl::fea::FENodalState* owner_ = nullptr;
   const void* active_use_identity_ = nullptr;

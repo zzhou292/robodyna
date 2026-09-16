@@ -788,6 +788,76 @@ TEST(SelfContactTransactionCuda,
 }
 
 TEST(SelfContactTransactionCuda,
+     QuadraticResidualCertificateIsBitwiseRepeatable) {
+  const auto triangle = [](std::uint64_t eid, double z) {
+    c::CurrentFixedTriangle value;
+    value.key = {17, eid, 0, 0};
+    value.vertices[0] = {0, 0, z};
+    value.vertices[1] = {2, 0, z};
+    value.vertices[2] = {0, 2, z};
+    for (unsigned vertex = 0; vertex < 3; ++vertex) {
+      value.vertex_keys[vertex].source_instance_id = 17;
+      value.vertex_keys[vertex].first =
+          10 * eid + vertex;
+      value.vertex_keys[vertex].denominator = 1;
+    }
+    for (unsigned edge = 0; edge < 3; ++edge) {
+      auto first_key = value.vertex_keys[edge];
+      auto second_key = value.vertex_keys[(edge + 1) % 3];
+      if (c::fixed_triangle_features::Compare(
+              second_key, first_key) < 0)
+        std::swap(first_key, second_key);
+      value.edge_keys[edge].parent_boundary = true;
+      value.edge_keys[edge].endpoints[0] = first_key;
+      value.edge_keys[edge].endpoints[1] = second_key;
+    }
+    return value;
+  };
+  const auto quadratic = [](double z) {
+    sct::FacetQuadraticCoefficients value;
+    value.complete = true;
+    for (unsigned vertex = 0; vertex < 3; ++vertex)
+      value.q[vertex][2] = {z, z};
+    return value;
+  };
+  const auto first = triangle(10, 0);
+  const auto second = triangle(20, 1);
+  std::array<c::FixedTriangleFeatureCandidate, 15> features;
+  c::fixed_triangle_features::PairFeatureResult geometry;
+  ASSERT_EQ(
+      c::fixed_triangle_features::EvaluatePairFeaturesOnce(
+          first, second, features.data(), features.size(),
+          &geometry),
+      c::FixedTriangleDiscoveryStatus::Ok);
+  ASSERT_EQ(geometry.feature_count, features.size());
+
+  sct::LinearResidualSeparationResult reference;
+  for (unsigned repeat = 0; repeat < 64; ++repeat) {
+    const auto result =
+        sct::CertifyQuadraticResidualSeparation(
+            first, first, quadratic(1), .1,
+            second, second, quadratic(0), .1, 1,
+            {features.data(), features.size(), true},
+            {nullptr, 0, true});
+    ASSERT_EQ(
+        result.status,
+        sct::LinearResidualSeparationStatus::
+            CertifiedSeparated);
+    if (!repeat) reference = result;
+    EXPECT_EQ(std::memcmp(
+                  &result, &reference, sizeof(result)),
+              0);
+  }
+  EXPECT_EQ(
+      sct::CertifyQuadraticResidualSeparation(
+          first, first, quadratic(8), .1,
+          second, second, quadratic(0), .1, 1,
+          {features.data(), features.size(), true},
+          {nullptr, 0, true}).status,
+      sct::LinearResidualSeparationStatus::PotentialContact);
+}
+
+TEST(SelfContactTransactionCuda,
      CommonTranslationCertificateIsDeterministicAtMinimalCap) {
   const auto vertex = [](std::uint64_t id) {
     c::FacetVertexKey result;

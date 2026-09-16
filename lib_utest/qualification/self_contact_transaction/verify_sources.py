@@ -73,6 +73,8 @@ for token in (
     "FinalizeAcceptedEventLedger(",
     "BuildLocalFeatureTaskMasks(",
     "accepted_discovery.DiscoverMasked(",
+    "const bool direct_ledger",
+    "? state.storage_forecast.event_hash_capacity",
 ):
     require(transaction, token, TRANSACTION)
 require(candidate, "state.force.Authenticates(assembly.force_)", CANDIDATE)
@@ -166,6 +168,9 @@ for token in ("SelfContactForceAssembly force",
 for token in (
     "class QualificationAccess",
     "AcceptedEventCertificateView",
+    "ClassifyPreparedNonlinearCandidates",
+    "NonlinearCandidateRosterSummary",
+    "PreparedMotionCertificateView",
     "Impl::Phase::AssemblyRecorded",
 ):
     require(storage, token, storage_path)
@@ -311,7 +316,10 @@ for token in (
     "LocallyExcluded(",
     "crossing_pair_count",
     "RepresentedIntervalReason::UnsupportedMotion",
-    "Quadratic subdivision did not certify rigid-arc separation",
+    "possible rigid-arc crossing",
+    "EvaluatePairFeaturesMaskedOnce(",
+    "QuadraticResidualCertificate(",
+    "PersistentQuadraticCertificate(",
 ):
     require(candidate, token, CANDIDATE)
 if "Nonlinear subdivision certificate input is invalid" in candidate:
@@ -319,7 +327,7 @@ if "Nonlinear subdivision certificate input is invalid" in candidate:
         f"{CANDIDATE}: inconclusive subdivision no longer preserves "
         "UnsupportedMotion")
 if candidate.index("state.candidate_discovery.DiscoverMasked") > candidate.index(
-        "Quadratic subdivision did not certify rigid-arc separation"):
+        "possible rigid-arc crossing"):
     raise RuntimeError(
         f"{CANDIDATE}: unsupported motion precedes exact local geometry")
 
@@ -453,6 +461,9 @@ for token in (
     "Multiply(available, available)",
     "first_owner <= 0 && second_owner <= 0",
     "crossing_target < 2",
+    "CertifyQuadraticResidualSeparation(",
+    "QuadraticChordDeviationL1Upper(",
+    "CertifyPersistentQuadraticContact(",
 ):
     require(values, token, storage_path)
 for token in (
@@ -462,6 +473,8 @@ for token in (
     "CertifiedPersistentLinearContact",
     "PersistentLinearCertificate(",
     "PersistentPhysicalContact",
+    "CertifiedQuadraticResidualSeparation",
+    "CertifiedPersistentQuadraticContact",
 ):
     require(candidate + storage, token, CANDIDATE)
 
@@ -548,6 +561,8 @@ for token in (
     "ResidualTranslationFailsClosedOnOverflow",
     "ResidualTranslationPreservesContactAndUnequalMotion",
     "ResidualTranslationSubtractsRepresentationErrorStrictly",
+    "QuadraticResidualSubtractsOutwardChordDeviation",
+    "PersistentQuadraticContactRequiresCurvatureMargin",
     "ExactCommonMotionPublishesMatchingPersistentEdgeEdge",
     "ExactCommonMotionPublishesMatchingPersistentVertexFace",
     "PersistentVertexFaceNormalizesDyadicWeightsExactly",
@@ -612,6 +627,7 @@ for token in (
     "CertifiedRigidSweepsSeparateDistantBodiesButNotOverlappingArcs",
     "ExactAffineMixedCertificateAndDecisionAreRepeatable",
     "NonlinearSubdivisionDecisionIsRepeatableAndFailClosed",
+    "QuadraticResidualCertificateIsBitwiseRepeatable",
     "CommonTranslationCertificateIsDeterministicAtMinimalCap",
     "ResidualTranslationCertificateIsDeterministic",
     "CertifyPersistentLinearContact(",

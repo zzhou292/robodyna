@@ -928,6 +928,41 @@ std::size_t PersistentAcceptedFeature(
   return SIZE_MAX;
 }
 
+bool QuadraticChordDeviationL1Upper(
+    const FacetQuadraticCoefficients& coefficients,
+    double duration, double* output) noexcept {
+  if (!output || !coefficients.complete ||
+      !(duration > 0) || !std::isfinite(duration))
+    return false;
+  const double duration_squared = duration * duration;
+  if (!std::isfinite(duration_squared)) return false;
+  const double h2_upper =
+      duration_squared == 0
+          ? std::numeric_limits<double>::denorm_min()
+          : NextUp(duration_squared);
+  double maximum = 0;
+  for (unsigned vertex = 0; vertex < 3; ++vertex) {
+    double l1 = 0;
+    for (unsigned component = 0; component < 3; ++component) {
+      const auto q = coefficients.q[vertex][component];
+      if (!std::isfinite(q.lower) || !std::isfinite(q.upper) ||
+          q.lower > q.upper)
+        return false;
+      const double magnitude =
+          std::max(std::fabs(q.lower), std::fabs(q.upper));
+      if (magnitude == 0) continue;
+      double deviation = h2_upper * magnitude;
+      if (!std::isfinite(deviation)) return false;
+      deviation = NextUp(NextUp(deviation) * .125);
+      l1 = NextUp(l1 + deviation);
+      if (!std::isfinite(l1)) return false;
+    }
+    maximum = std::max(maximum, l1);
+  }
+  *output = maximum;
+  return true;
+}
+
 SelfContactTransactionReport Failure(
     SelfContactTransactionStatus status, const char* message,
     std::size_t pair = SIZE_MAX,
@@ -1120,6 +1155,50 @@ LinearResidualSeparationResult CertifyLinearResidualSeparation(
   } catch (...) {
     return result;
   }
+}
+
+LinearResidualSeparationResult CertifyQuadraticResidualSeparation(
+    const CurrentFixedTriangle& first_base,
+    const CurrentFixedTriangle& first_prepared,
+    const FacetQuadraticCoefficients& first_quadratic,
+    double first_half_thickness_m,
+    const CurrentFixedTriangle& second_base,
+    const CurrentFixedTriangle& second_prepared,
+    const FacetQuadraticCoefficients& second_quadratic,
+    double second_half_thickness_m, double duration,
+    FixedTriangleFeatureView prepared_features,
+    FixedTriangleIntersectionView prepared_intersections) noexcept {
+  auto result = CertifyLinearResidualSeparation(
+      first_base, first_prepared, first_half_thickness_m,
+      second_base, second_prepared, second_half_thickness_m,
+      prepared_features, prepared_intersections);
+  if (result.status !=
+      LinearResidualSeparationStatus::CertifiedSeparated)
+    return result;
+  double first_curvature = 0;
+  double second_curvature = 0;
+  if (!QuadraticChordDeviationL1Upper(
+          first_quadratic, duration, &first_curvature) ||
+      !QuadraticChordDeviationL1Upper(
+          second_quadratic, duration, &second_curvature))
+    return {};
+  const double curvature =
+      NextUp(first_curvature + second_curvature);
+  if (!std::isfinite(curvature) ||
+      !(result.strict_gap_lower_m > curvature)) {
+    result.status =
+        LinearResidualSeparationStatus::PotentialContact;
+    return result;
+  }
+  result.first_residual_upper_m =
+      NextUp(result.first_residual_upper_m + first_curvature);
+  result.second_residual_upper_m =
+      NextUp(result.second_residual_upper_m + second_curvature);
+  result.strict_gap_lower_m =
+      NextDown(result.strict_gap_lower_m - curvature);
+  result.exact_common_translation =
+      result.exact_common_translation && curvature == 0;
+  return result;
 }
 
 PersistentLinearContactResult CertifyPersistentLinearContact(
@@ -1316,6 +1395,53 @@ PersistentLinearContactResult CertifyPersistentLinearContact(
   } catch (...) {
     return result;
   }
+}
+
+PersistentLinearContactResult CertifyPersistentQuadraticContact(
+    const CurrentFixedTriangle& first_base,
+    const CurrentFixedTriangle& first_prepared,
+    const FacetQuadraticCoefficients& first_quadratic,
+    double first_half_thickness_m,
+    const CurrentFixedTriangle& second_base,
+    const CurrentFixedTriangle& second_prepared,
+    const FacetQuadraticCoefficients& second_quadratic,
+    double second_half_thickness_m, double duration,
+    FixedTriangleFeatureView prepared_features,
+    const AcceptedEventCertificate* accepted_certificates,
+    std::size_t accepted_certificate_count) noexcept {
+  auto result = CertifyPersistentLinearContact(
+      first_base, first_prepared, first_half_thickness_m,
+      second_base, second_prepared, second_half_thickness_m,
+      prepared_features, accepted_certificates,
+      accepted_certificate_count);
+  if (result.status !=
+      PersistentLinearContactStatus::CertifiedContact)
+    return result;
+  double first_curvature = 0;
+  double second_curvature = 0;
+  if (!QuadraticChordDeviationL1Upper(
+          first_quadratic, duration, &first_curvature) ||
+      !QuadraticChordDeviationL1Upper(
+          second_quadratic, duration, &second_curvature))
+    return {};
+  const double curvature =
+      NextUp(first_curvature + second_curvature);
+  if (!std::isfinite(curvature) ||
+      !(result.strict_thickness_margin_lower_m > curvature)) {
+    result.status =
+        PersistentLinearContactStatus::PotentialChange;
+    return result;
+  }
+  result.first_residual_upper_m =
+      NextUp(result.first_residual_upper_m + first_curvature);
+  result.second_residual_upper_m =
+      NextUp(result.second_residual_upper_m + second_curvature);
+  result.strict_thickness_margin_lower_m =
+      NextDown(
+          result.strict_thickness_margin_lower_m - curvature);
+  result.exact_common_translation =
+      result.exact_common_translation && curvature == 0;
+  return result;
 }
 
 SelfContactTransactionReport ValidateCompleteTriangleIdentities(

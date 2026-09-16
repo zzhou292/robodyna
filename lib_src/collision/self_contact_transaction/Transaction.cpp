@@ -438,8 +438,15 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
       state.buffers.surface_to_active, state.surface_parent_count,
       state.buffers.parent_facet_offsets, parents, activity);
   if (streamed.status != S::Ok) return state.Fail(streamed);
+  const bool direct_ledger =
+      state.storage_forecast.accepted_event_capacity ==
+      state.storage_forecast.
+          accepted_event_identity_census_capacity;
   std::fill_n(state.buffers.accepted_event_hash,
-              state.storage_forecast.event_identity_hash_capacity,
+              direct_ledger
+                  ? state.storage_forecast.event_hash_capacity
+                  : state.storage_forecast.
+                        event_identity_hash_capacity,
               UINT32_MAX);
   std::size_t event_count = 0;
   SelfContactTransactionReport census_limit;
@@ -520,7 +527,22 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
       }
       return state.Fail(events);
     }
-    if (!census_exceeded) {
+    if (direct_ledger) {
+      events = sct::MergeAcceptedEventChunk(
+          state.buffers.chunk_certificates, chunk_events,
+          state.buffers.accepted_certificates,
+          state.storage_forecast.accepted_event_ledger_capacity,
+          state.buffers.accepted_event_hash,
+          state.storage_forecast.event_hash_capacity,
+          &event_count);
+      if (events.status == S::ResourceLimit) {
+        events.candidate = event_count + 1;
+        events.count_kind =
+            SelfContactTransactionCountKind::
+                AcceptedEventsLowerBound;
+      }
+      if (events.status != S::Ok) return state.Fail(events);
+    } else if (!census_exceeded) {
       for (std::size_t event = 0; event < chunk_events; ++event) {
         const auto identity = SelfContactForceEventIdentityOf(
             state.buffers.chunk_certificates[event].event);
@@ -568,26 +590,28 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
         SelfContactTransactionCountKind::ExactAcceptedEvents;
     return state.Fail(report);
   }
-  auto events = sct::CanonicalizeAcceptedEventIdentityCensus(
-      state.buffers.accepted_event_identities, event_count);
-  if (events.status != S::Ok) return state.Fail(events);
+  SelfContactTransactionReport events;
+  if (!direct_ledger) {
+    events = sct::CanonicalizeAcceptedEventIdentityCensus(
+        state.buffers.accepted_event_identities, event_count);
+    if (events.status != S::Ok) return state.Fail(events);
 
-  streamed = state.candidate_source.Begin(
-      state.buffers.broadphase_pairs,
-      state.accepted_broadphase_pair_count,
-      state.buffers.surface_to_active, state.surface_parent_count,
-      state.buffers.parent_facet_offsets, parents, activity);
-  if (streamed.status != S::Ok) return state.Fail(streamed);
-  std::fill_n(state.buffers.accepted_event_hash,
-              state.storage_forecast.event_hash_capacity,
-              UINT32_MAX);
-  std::size_t verified_event_count = 0;
-  std::size_t verified_facet_pair_count = 0;
-  std::size_t verified_feature_observations = 0;
-  std::size_t verified_potential_tasks = 0;
-  std::size_t verified_local_masked_tasks = 0;
-  std::size_t verified_exact_executed_tasks = 0;
-  for (;;) {
+    streamed = state.candidate_source.Begin(
+        state.buffers.broadphase_pairs,
+        state.accepted_broadphase_pair_count,
+        state.buffers.surface_to_active, state.surface_parent_count,
+        state.buffers.parent_facet_offsets, parents, activity);
+    if (streamed.status != S::Ok) return state.Fail(streamed);
+    std::fill_n(state.buffers.accepted_event_hash,
+                state.storage_forecast.event_hash_capacity,
+                UINT32_MAX);
+    std::size_t verified_event_count = 0;
+    std::size_t verified_facet_pair_count = 0;
+    std::size_t verified_feature_observations = 0;
+    std::size_t verified_potential_tasks = 0;
+    std::size_t verified_local_masked_tasks = 0;
+    std::size_t verified_exact_executed_tasks = 0;
+    for (;;) {
     const FixedTrianglePair* pairs = nullptr;
     std::size_t pair_count = 0;
     streamed = state.candidate_source.Next(&pairs, &pair_count);
@@ -671,30 +695,31 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
         &verified_event_count);
     if (events.status != S::Ok) return state.Fail(events);
     verified_facet_pair_count += streamed_pair_count;
+    }
+    sct::StreamingCandidateSourceReceipt verification_receipt;
+    streamed = state.candidate_source.Finish(&verification_receipt);
+    if (streamed.status != S::Ok ||
+        !state.candidate_source.Authenticates(
+            verification_receipt) ||
+        verification_receipt.parent_pairs() !=
+            state.accepted_broadphase_pair_count ||
+        verification_receipt.facet_pairs() !=
+            verified_facet_pair_count ||
+        verified_facet_pair_count !=
+            state.accepted_facet_pair_count ||
+        verified_event_count != event_count ||
+        verified_feature_observations != feature_observations ||
+        verified_potential_tasks != potential_tasks ||
+        verified_local_masked_tasks != local_masked_tasks ||
+        verified_exact_executed_tasks != exact_executed_tasks)
+      return state.Fail(Failure(S::IdentityMismatch,
+          "Accepted verification stream differs from its census"));
+    if (verified_local_masked_tasks > verified_potential_tasks ||
+        verified_exact_executed_tasks !=
+            verified_potential_tasks - verified_local_masked_tasks)
+      return state.Fail(Failure(S::IdentityMismatch,
+          "Accepted verification feature accounting is incomplete"));
   }
-  sct::StreamingCandidateSourceReceipt verification_receipt;
-  streamed = state.candidate_source.Finish(&verification_receipt);
-  if (streamed.status != S::Ok ||
-      !state.candidate_source.Authenticates(
-          verification_receipt) ||
-      verification_receipt.parent_pairs() !=
-          state.accepted_broadphase_pair_count ||
-      verification_receipt.facet_pairs() !=
-          verified_facet_pair_count ||
-      verified_facet_pair_count !=
-          state.accepted_facet_pair_count ||
-      verified_event_count != event_count ||
-      verified_feature_observations != feature_observations ||
-      verified_potential_tasks != potential_tasks ||
-      verified_local_masked_tasks != local_masked_tasks ||
-      verified_exact_executed_tasks != exact_executed_tasks)
-    return state.Fail(Failure(S::IdentityMismatch,
-        "Accepted verification stream differs from its census"));
-  if (verified_local_masked_tasks > verified_potential_tasks ||
-      verified_exact_executed_tasks !=
-          verified_potential_tasks - verified_local_masked_tasks)
-    return state.Fail(Failure(S::IdentityMismatch,
-        "Accepted verification feature accounting is incomplete"));
 
   events = sct::FinalizeAcceptedEventLedger(
       state.buffers.accepted_certificates, event_count,

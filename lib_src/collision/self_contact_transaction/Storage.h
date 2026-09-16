@@ -36,12 +36,31 @@ struct AcceptedEventCertificateView {
   bool complete = false;
 };
 
+struct PreparedMotionCertificateView;
+struct NonlinearCandidateRosterEntry;
+struct NonlinearCandidateRosterSummary;
+
 // Internal qualification-only read access. This never supplies authority to
 // production policy and is available only through this private storage header.
 class QualificationAccess {
  public:
   static AcceptedEventCertificateView AcceptedCertificates(
       const SelfContactTransaction&) noexcept;
+  // Replays only authenticated motion construction, conservative broadphase
+  // and nonlinear subdivision for a live accepted-assembly attempt. Ordinary
+  // linear feature discovery and represented crossing are deliberately not
+  // entered. Returned views borrow transaction scratch until candidate
+  // sealing, discard, failure or destruction.
+  static SelfContactTransactionReport
+  ClassifyPreparedNonlinearCandidates(
+      SelfContactTransaction&, tl::fea::FENodalState&,
+      const tl::fea::NodalTrialToken&,
+      const tl::fea::NodalPreparedView&,
+      const SelfContactAcceptedAssemblyReceipt&,
+      NonlinearCandidateRosterEntry*, std::size_t roster_capacity,
+      std::size_t* roster_count,
+      NonlinearCandidateRosterSummary*,
+      PreparedMotionCertificateView*) noexcept;
 };
 
 struct MotionSupport {
@@ -85,6 +104,39 @@ struct NonlinearSeparationResult {
   unsigned deepest = 0;
 };
 
+struct PreparedMotionCertificateView {
+  const FixedContactFacet* descriptors = nullptr;
+  const MotionSupport* motion = nullptr;
+  const FacetQuadraticCoefficients* quadratic = nullptr;
+  const CurrentFixedTriangle* accepted_triangles = nullptr;
+  const CurrentFixedTriangle* prepared_triangles = nullptr;
+  const SelfContactSweptParentBounds* swept_bounds = nullptr;
+  std::size_t facet_count = 0;
+  bool complete = false;
+};
+
+struct NonlinearCandidateRosterEntry {
+  FixedTrianglePair facets;
+  RepresentedIntervalPairKey key;
+  NonlinearSeparationResult separation;
+};
+
+struct NonlinearCandidateRosterSummary {
+  std::size_t broadphase_parent_pairs = 0;
+  std::size_t streamed_facet_pairs = 0;
+  std::size_t rigid_or_mixed_facets = 0;
+  std::size_t affine_rigid_or_mixed_facets = 0;
+  std::size_t nonlinear_pairs = 0;
+  std::size_t certified_separated = 0;
+  std::size_t unresolved = 0;
+  std::size_t potential_contact = 0;
+  std::size_t work_exhausted = 0;
+  std::size_t depth_exhausted = 0;
+  std::size_t work = 0;
+  bool complete = false;
+  bool roster_complete = false;
+};
+
 enum class PairMotionAction : std::uint8_t {
   LinearNodalV1,
   CertifiedLinearSeparation,
@@ -93,6 +145,8 @@ enum class PairMotionAction : std::uint8_t {
   UnsupportedRigidArc,
   CertifiedResidualLinearSeparation,
   CertifiedPersistentLinearContact,
+  CertifiedQuadraticResidualSeparation,
+  CertifiedPersistentQuadraticContact,
 };
 
 PairMotionAction ClassifyCandidatePairMotion(
@@ -138,6 +192,21 @@ LinearResidualSeparationResult CertifyLinearResidualSeparation(
     FixedTriangleFeatureView prepared_features,
     FixedTriangleIntersectionView prepared_intersections) noexcept;
 
+// Extends the exact linear residual proof by the outward Bernstein deviation
+// of each authenticated quadratic facet from its endpoint chord. The linear
+// strict-gap lower bound must exceed both curvature upper bounds.
+LinearResidualSeparationResult CertifyQuadraticResidualSeparation(
+    const CurrentFixedTriangle& first_base,
+    const CurrentFixedTriangle& first_prepared,
+    const FacetQuadraticCoefficients& first_quadratic,
+    double first_half_thickness_m,
+    const CurrentFixedTriangle& second_base,
+    const CurrentFixedTriangle& second_prepared,
+    const FacetQuadraticCoefficients& second_quadratic,
+    double second_half_thickness_m, double duration,
+    FixedTriangleFeatureView prepared_features,
+    FixedTriangleIntersectionView prepared_intersections) noexcept;
+
 enum class PersistentLinearContactStatus : std::uint8_t {
   CertifiedContact,
   PotentialChange,
@@ -178,6 +247,22 @@ PersistentLinearContactResult CertifyPersistentLinearContact(
     const CurrentFixedTriangle& second_base,
     const CurrentFixedTriangle& second_prepared,
     double second_half_thickness_m,
+    FixedTriangleFeatureView prepared_features,
+    const AcceptedEventCertificate* accepted_certificates,
+    std::size_t accepted_certificate_count) noexcept;
+
+// Accepted-ledger identity and seam ownership are unchanged. Certification
+// additionally subtracts both outward quadratic chord-deviation bounds from
+// the existing exact linear persistence margin.
+PersistentLinearContactResult CertifyPersistentQuadraticContact(
+    const CurrentFixedTriangle& first_base,
+    const CurrentFixedTriangle& first_prepared,
+    const FacetQuadraticCoefficients& first_quadratic,
+    double first_half_thickness_m,
+    const CurrentFixedTriangle& second_base,
+    const CurrentFixedTriangle& second_prepared,
+    const FacetQuadraticCoefficients& second_quadratic,
+    double second_half_thickness_m, double duration,
     FixedTriangleFeatureView prepared_features,
     const AcceptedEventCertificate* accepted_certificates,
     std::size_t accepted_certificate_count) noexcept;
