@@ -15,13 +15,17 @@
 
 #include <algorithm>
 #include <array>
+#include <atomic>
+#include <chrono>
 #include <cmath>
 #include <cstdint>
 #include <iomanip>
 #include <iostream>
 #include <limits>
+#include <numeric>
 #include <set>
 #include <stdexcept>
+#include <thread>
 #include <vector>
 
 namespace crash::cases::vehicle_self_contact {
@@ -40,6 +44,13 @@ struct AcceptedAssemblyCouponSnapshot {
     std::vector<
         tlfea::contact::self_contact_transaction::
             AcceptedEventCertificate> accepted_certificates;
+    std::vector<
+        tlfea::contact::self_contact_transaction::
+            NonlinearCandidateRosterEntry> nonlinear_roster;
+    tlfea::contact::self_contact_transaction::
+        NonlinearCandidateRosterSummary nonlinear_summary;
+    tlfea::contact::self_contact_transaction::
+        PreparedMotionCertificateView motion_certificates;
     tl::fea::NodalPreparedView prepared_view;
 };
 
@@ -82,8 +93,14 @@ class CandidateRigidCouponAccess {
 
     static AcceptedAssemblyCouponSnapshot PrepareAcceptedAssembly(
         vehicle_dynamics::VehiclePhysicalDynamics& dynamics) {
+        const auto started = std::chrono::steady_clock::now();
         auto& storage = *dynamics.storage_;
         storage.Prepare();
+        const auto accepted_ready = std::chrono::steady_clock::now();
+        std::cerr << "V5_NONLINEAR_COUPON_PHASE accepted_prepare_s="
+                  << std::chrono::duration<double>(
+                         accepted_ready - started).count()
+                  << std::endl;
         auto& owner = storage.state().owner;
         const auto nodes = storage.startup.accepted().node_count;
         AcceptedAssemblyCouponSnapshot result;
@@ -117,6 +134,31 @@ class CandidateRigidCouponAccess {
         if (!stages)
             throw std::runtime_error(
                 "Accepted-assembly coupon has no self-contact stages");
+        constexpr std::size_t NonlinearRosterCapacity =
+            std::size_t{1} << 20;
+        result.nonlinear_roster.resize(NonlinearRosterCapacity);
+        std::size_t nonlinear_count = 0;
+        const auto roster_report =
+            tlfea::contact::self_contact_transaction::
+            QualificationAccess::
+                ClassifyPreparedNonlinearCandidates(
+                    stages->contact.data_->transaction,
+                    owner, storage.token, storage.prepared,
+                    stages->accepted_,
+                    result.nonlinear_roster.data(),
+                    result.nonlinear_roster.size(),
+                    &nonlinear_count,
+                    &result.nonlinear_summary,
+                    &result.motion_certificates);
+        if (roster_report.status !=
+            tlfea::contact::SelfContactTransactionStatus::Ok)
+            throw std::runtime_error(roster_report.message);
+        std::cerr << "V5_NONLINEAR_COUPON_PHASE nonlinear_roster_s="
+                  << std::chrono::duration<double>(
+                         std::chrono::steady_clock::now() -
+                         accepted_ready).count()
+                  << std::endl;
+        result.nonlinear_roster.resize(nonlinear_count);
         const auto certificates =
             tlfea::contact::self_contact_transaction::
                 QualificationAccess::AcceptedCertificates(
@@ -165,6 +207,10 @@ constexpr std::size_t FullHostBytes =
 constexpr std::size_t FullDeviceBytes = std::size_t{8} << 30;
 constexpr std::uint64_t SelfContactSourceId =
     0x563553454c464354ull;
+constexpr std::uint64_t ExpectedNonlinearRosterDigest =
+    15183149279991149367ull;
+constexpr std::uint64_t ExpectedAmbiguousRosterDigest =
+    5323377919321694088ull;
 
 vehicle_self_contact::RuntimeLimits
 FullAcceptedAssemblyLimits() {
@@ -186,7 +232,7 @@ FullAcceptedAssemblyLimits() {
             4095, std::size_t{1} << 20,
             FullFacetPairCapacity * 4095, 20,
             FullHostBytes, FullDeviceBytes, FullHostBytes,
-            4, 4, FullAcceptedEvents);
+            8, 4, FullAcceptedEvents);
     result.transaction.activity.max_selected_parents = 1000000;
     result.transaction.activity.max_family_parents = 1000000;
     result.transaction.activity.max_host_bytes =
@@ -447,6 +493,36 @@ EndpointGeometry Discover(
     return result;
 }
 
+EndpointGeometry DiscoverDirect(
+    const std::array<contact::CurrentFixedTriangle, 2>& triangles,
+    contact::FixedTriangleFeatureTaskMask mask) {
+    std::array<contact::FixedTriangleFeatureCandidate, 15> features;
+    contact::fixed_triangle_features::PairFeatureResult feature_result;
+    if (contact::fixed_triangle_features::
+            EvaluatePairFeaturesMaskedOnce(
+                triangles[0], triangles[1], mask,
+                features.data(), features.size(),
+                &feature_result) !=
+        contact::FixedTriangleDiscoveryStatus::Ok)
+        throw std::runtime_error(
+            "Direct coupon feature evaluation failed");
+    EndpointGeometry result;
+    result.features.assign(
+        features.begin(),
+        features.begin() + feature_result.feature_count);
+    contact::FixedTriangleIntersection intersection;
+    bool intersects = false;
+    if (contact::fixed_triangle_features::
+            ClassifyPairIntersection(
+                triangles[0], triangles[1],
+                &intersection, &intersects) !=
+        contact::FixedTriangleDiscoveryStatus::Ok)
+        throw std::runtime_error(
+            "Direct coupon intersection evaluation failed");
+    if (intersects) result.intersections.push_back(intersection);
+    return result;
+}
+
 double MinimumDistance(const EndpointGeometry& geometry) {
     double result = std::numeric_limits<double>::infinity();
     for (const auto& feature : geometry.features) {
@@ -541,6 +617,309 @@ contact::RepresentedIntervalResult Cross(
         throw std::runtime_error(
             "Coupon represented crossing result is incomplete");
     return results.data[0];
+}
+
+void HashUnsigned(std::uint64_t value, std::uint64_t* digest) {
+    for (unsigned byte = 0; byte < 8; ++byte) {
+        *digest ^= static_cast<unsigned char>(
+            value >> (8 * byte));
+        *digest *= 1099511628211ull;
+    }
+}
+
+void HashPath(
+    const contact::RepresentedTrianglePathKey& path,
+    std::uint64_t* digest) {
+    HashUnsigned(path.source_instance_id, digest);
+    HashUnsigned(path.parent_eid, digest);
+    HashUnsigned(path.level, digest);
+    HashUnsigned(path.local_facet, digest);
+}
+
+std::uint64_t NonlinearRosterDigest(
+    const std::vector<sct::NonlinearCandidateRosterEntry>& roster) {
+    std::uint64_t result = 1469598103934665603ull;
+    for (const auto& entry : roster) {
+        HashUnsigned(entry.facets.first, &result);
+        HashUnsigned(entry.facets.second, &result);
+        HashPath(entry.key.paths[0], &result);
+        HashPath(entry.key.paths[1], &result);
+        HashUnsigned(
+            static_cast<unsigned>(entry.separation.status), &result);
+        HashUnsigned(entry.separation.work, &result);
+        HashUnsigned(entry.separation.deepest, &result);
+    }
+    return result;
+}
+
+std::size_t ExpectedFeatureCount(
+    contact::FixedTriangleFeatureTaskMask mask) {
+    std::size_t result = 15;
+    for (unsigned task = 0; task < 15; ++task)
+        result -= bool(
+            mask.local_tasks &
+            contact::FixedTriangleFeatureTaskBit(task));
+    return result;
+}
+
+bool StrictlySeparated(
+    const EndpointGeometry& geometry,
+    contact::FixedTriangleFeatureTaskMask mask,
+    double thickness) {
+    if (geometry.features.size() != ExpectedFeatureCount(mask))
+        return false;
+    for (const auto& feature : geometry.features)
+        if (!((feature.distance_m - thickness) >
+              feature.representation_error_m))
+            return false;
+    return true;
+}
+
+bool StrictlyWithinThickness(
+    const EndpointGeometry& geometry, double thickness) {
+    for (const auto& feature : geometry.features)
+        if (feature.distance_m + feature.representation_error_m <
+            thickness)
+            return true;
+    return false;
+}
+
+bool HasLocalIntersection(const EndpointGeometry& geometry) {
+    for (const auto& intersection : geometry.intersections)
+        if (!contact::RequiresIntersectionAdmission(intersection))
+            return true;
+    return false;
+}
+
+bool HasAdmittedIntersection(const EndpointGeometry& geometry) {
+    for (const auto& intersection : geometry.intersections)
+        if (contact::RequiresIntersectionAdmission(intersection))
+            return true;
+    return false;
+}
+
+enum class NonlinearEvidenceClass : unsigned {
+    ExactLocalIntersection,
+    EndpointSeparated,
+    PersistentAcceptedLedger,
+    EndpointThicknessContact,
+    PossibleCurvedCrossing,
+    Count,
+};
+
+enum class NonlinearAfterClass : unsigned {
+    ExactLocalIntersection,
+    CertifiedQuadraticResidualSeparation,
+    CertifiedPersistentAcceptedContact,
+    PossibleCurvedCrossing,
+    Count,
+};
+
+struct CanonicalFacetPair {
+    std::uint64_t first_eid = 0;
+    unsigned first_local = 0;
+    std::uint64_t second_eid = 0;
+    unsigned second_local = 0;
+};
+
+constexpr CanonicalFacetPair ExpectedAmbiguousRoster[]{
+#include "NonlinearAmbiguousRoster.inc"
+};
+static_assert(
+    sizeof(ExpectedAmbiguousRoster) /
+        sizeof(*ExpectedAmbiguousRoster) == 317);
+
+std::size_t ExpectedAmbiguousIndex(
+    const sct::NonlinearCandidateRosterEntry& entry) {
+    const auto& first = entry.key.paths[0];
+    const auto& second = entry.key.paths[1];
+    for (std::size_t index = 0;
+         index < sizeof(ExpectedAmbiguousRoster) /
+             sizeof(*ExpectedAmbiguousRoster);
+         ++index) {
+        const auto& expected = ExpectedAmbiguousRoster[index];
+        if (first.parent_eid == expected.first_eid &&
+            first.local_facet == expected.first_local &&
+            second.parent_eid == expected.second_eid &&
+            second.local_facet == expected.second_local)
+            return index;
+    }
+    return SIZE_MAX;
+}
+
+struct NonlinearPairEvidence {
+    NonlinearEvidenceClass classification =
+        NonlinearEvidenceClass::PossibleCurvedCrossing;
+    NonlinearAfterClass after =
+        NonlinearAfterClass::PossibleCurvedCrossing;
+    sct::LinearResidualSeparationStatus residual_status =
+        sct::LinearResidualSeparationStatus::InvalidInput;
+    sct::PersistentLinearContactStatus persistent_status =
+        sct::PersistentLinearContactStatus::InvalidInput;
+    unsigned shared_vertices = 0;
+    unsigned shared_edges = 0;
+    std::uint16_t accepted_mask = 0;
+    std::uint16_t prepared_mask = 0;
+    bool local = false;
+    bool admitted = false;
+    bool endpoint_separated = false;
+    bool endpoint_contact = false;
+    bool ledger = false;
+    bool valid = false;
+    double accepted_minimum_m = 0;
+    double prepared_minimum_m = 0;
+    double thickness_m = 0;
+};
+
+NonlinearPairEvidence InspectNonlinearPair(
+    const vehicle_self_contact::AcceptedAssemblyCouponSnapshot& snapshot,
+    const sct::NonlinearCandidateRosterEntry& entry) {
+    NonlinearPairEvidence result;
+    if (entry.facets.first >=
+            snapshot.motion_certificates.facet_count ||
+        entry.facets.second >=
+            snapshot.motion_certificates.facet_count)
+        return result;
+    const std::array<contact::CurrentFixedTriangle, 2> accepted{
+        snapshot.motion_certificates.accepted_triangles[
+            entry.facets.first],
+        snapshot.motion_certificates.accepted_triangles[
+            entry.facets.second]};
+    const std::array<contact::CurrentFixedTriangle, 2> prepared{
+        snapshot.motion_certificates.prepared_triangles[
+            entry.facets.first],
+        snapshot.motion_certificates.prepared_triangles[
+            entry.facets.second]};
+    for (unsigned side = 0; side < 2; ++side)
+        if (contact::fixed_triangle_features::Compare(
+                accepted[side].key, prepared[side].key) != 0)
+            return result;
+    const auto& first_descriptor =
+        snapshot.motion_certificates.descriptors[
+            entry.facets.first];
+    const auto& second_descriptor =
+        snapshot.motion_certificates.descriptors[
+            entry.facets.second];
+    result.thickness_m =
+        first_descriptor.reference_half_thickness_m +
+        second_descriptor.reference_half_thickness_m;
+    contact::FixedTriangleFeatureTaskMask accepted_mask;
+    contact::FixedTriangleFeatureTaskMask prepared_mask;
+    if (contact::BuildFixedTriangleFeatureTaskMask(
+            accepted[0], accepted[1], &accepted_mask) !=
+            contact::FixedTriangleDiscoveryStatus::Ok ||
+        contact::BuildFixedTriangleFeatureTaskMask(
+            prepared[0], prepared[1], &prepared_mask) !=
+            contact::FixedTriangleDiscoveryStatus::Ok)
+        return result;
+    result.accepted_mask = accepted_mask.local_tasks;
+    result.prepared_mask = prepared_mask.local_tasks;
+    try {
+        const auto accepted_geometry =
+            DiscoverDirect(accepted, accepted_mask);
+        const auto prepared_geometry =
+            DiscoverDirect(prepared, prepared_mask);
+        for (const auto& first : first_descriptor.vertex_keys)
+            for (const auto& second :
+                 second_descriptor.vertex_keys)
+                result.shared_vertices +=
+                    contact::SameFacetVertexKey(first, second);
+        for (const auto& first : first_descriptor.edge_keys)
+            for (const auto& second :
+                 second_descriptor.edge_keys)
+                result.shared_edges +=
+                    contact::SameFacetEdgeKey(first, second);
+        result.local =
+            HasLocalIntersection(accepted_geometry) ||
+            HasLocalIntersection(prepared_geometry);
+        result.admitted =
+            HasAdmittedIntersection(accepted_geometry) ||
+            HasAdmittedIntersection(prepared_geometry);
+        result.endpoint_separated =
+            StrictlySeparated(
+                accepted_geometry, accepted_mask,
+                result.thickness_m) &&
+            StrictlySeparated(
+                prepared_geometry, prepared_mask,
+                result.thickness_m);
+        result.endpoint_contact =
+            StrictlyWithinThickness(
+                accepted_geometry, result.thickness_m) ||
+            StrictlyWithinThickness(
+                prepared_geometry, result.thickness_m);
+        sct::LinearResidualSeparationResult residual;
+        if (!result.local && result.endpoint_separated)
+            residual = sct::CertifyQuadraticResidualSeparation(
+                accepted[0], prepared[0],
+                snapshot.motion_certificates.quadratic[
+                    entry.facets.first],
+                first_descriptor.reference_half_thickness_m,
+                accepted[1], prepared[1],
+                snapshot.motion_certificates.quadratic[
+                    entry.facets.second],
+                second_descriptor.reference_half_thickness_m,
+                PhysicalStepS,
+                {prepared_geometry.features.data(),
+                 prepared_geometry.features.size(), true},
+                {prepared_geometry.intersections.data(),
+                 prepared_geometry.intersections.size(), true});
+        sct::PersistentLinearContactResult persistent;
+        if (result.endpoint_contact)
+            persistent = sct::CertifyPersistentQuadraticContact(
+                accepted[0], prepared[0],
+                snapshot.motion_certificates.quadratic[
+                    entry.facets.first],
+                first_descriptor.reference_half_thickness_m,
+                accepted[1], prepared[1],
+                snapshot.motion_certificates.quadratic[
+                    entry.facets.second],
+                second_descriptor.reference_half_thickness_m,
+                PhysicalStepS,
+                {prepared_geometry.features.data(),
+                 prepared_geometry.features.size(), true},
+                snapshot.accepted_certificates.data(),
+                snapshot.accepted_certificates.size());
+        result.residual_status = residual.status;
+        result.persistent_status = persistent.status;
+        result.ledger =
+            persistent.status ==
+            sct::PersistentLinearContactStatus::CertifiedContact;
+        if (result.local && !result.admitted &&
+            result.endpoint_separated)
+            result.classification =
+                NonlinearEvidenceClass::ExactLocalIntersection;
+        else if (result.ledger && result.endpoint_contact)
+            result.classification =
+                NonlinearEvidenceClass::PersistentAcceptedLedger;
+        else if (result.endpoint_contact)
+            result.classification =
+                NonlinearEvidenceClass::EndpointThicknessContact;
+        else if (result.endpoint_separated)
+            result.classification =
+                NonlinearEvidenceClass::EndpointSeparated;
+        if (result.local && !result.admitted &&
+            result.endpoint_separated)
+            result.after =
+                NonlinearAfterClass::ExactLocalIntersection;
+        else if (residual.status ==
+                 sct::LinearResidualSeparationStatus::
+                     CertifiedSeparated)
+            result.after = NonlinearAfterClass::
+                CertifiedQuadraticResidualSeparation;
+        else if (persistent.status ==
+                 sct::PersistentLinearContactStatus::
+                     CertifiedContact)
+            result.after = NonlinearAfterClass::
+                CertifiedPersistentAcceptedContact;
+        result.accepted_minimum_m =
+            MinimumDistance(accepted_geometry);
+        result.prepared_minimum_m =
+            MinimumDistance(prepared_geometry);
+        result.valid = true;
+        return result;
+    } catch (...) {
+        return result;
+    }
 }
 
 TEST(VehicleSelfContactCandidateCoupon,
@@ -1425,6 +1804,294 @@ TEST(VehicleSelfContactCandidateCoupon,
                   << static_cast<unsigned>(result.reason)
                   << " work=" << result.work << '\n';
     }
+    dynamics.DiscardStep();
+}
+
+TEST(VehicleSelfContactNonlinearRosterCoupon,
+     CompleteAcceptedAssemblyRosterSkipsLinearExactTraversal) {
+    const auto& setup = LevelZeroSetup();
+    const auto& active = setup.active_uses();
+    auto dynamics_config = vehicle_wall::LoadedWallConfig();
+    dynamics_config.startup.reserved_step_s = PhysicalStepS;
+    const vehicle_self_contact::RuntimeConfig runtime_config{
+        SelfContactSourceId, FullAcceptedEvents, 0};
+    auto dynamics =
+        vehicle_self_contact::SelfContactOnly::Prepare(
+            setup, dynamics_config, runtime_config,
+            FullAcceptedAssemblyLimits(),
+            &physical_model::supports_test::Joints());
+    const auto snapshot =
+        vehicle_self_contact::CandidateRigidCouponAccess::
+            PrepareAcceptedAssembly(dynamics);
+
+    ASSERT_TRUE(snapshot.nonlinear_summary.complete);
+    ASSERT_TRUE(snapshot.nonlinear_summary.roster_complete);
+    ASSERT_TRUE(snapshot.motion_certificates.complete);
+    ASSERT_EQ(snapshot.motion_certificates.facet_count,
+              active.facet_uses().size());
+    ASSERT_EQ(snapshot.nonlinear_roster.size(),
+              snapshot.nonlinear_summary.nonlinear_pairs);
+    EXPECT_EQ(snapshot.prepared_view.proposed_time -
+                  snapshot.prepared_view.base_time,
+              PhysicalStepS);
+
+    std::size_t rigid_or_mixed = 0;
+    std::size_t affine_rigid_or_mixed = 0;
+    for (std::size_t facet = 0;
+         facet < snapshot.motion_certificates.facet_count;
+         ++facet) {
+        const auto& motion =
+            snapshot.motion_certificates.motion[facet];
+        const auto& quadratic =
+            snapshot.motion_certificates.quadratic[facet];
+        EXPECT_TRUE(quadratic.complete);
+        if (motion.motion ==
+            contact::SelfContactFacetMotion::LinearNodalV1)
+            continue;
+        ++rigid_or_mixed;
+        affine_rigid_or_mixed += motion.certified_affine;
+    }
+    EXPECT_EQ(rigid_or_mixed,
+              snapshot.nonlinear_summary.rigid_or_mixed_facets);
+    EXPECT_EQ(affine_rigid_or_mixed,
+              snapshot.nonlinear_summary.
+                  affine_rigid_or_mixed_facets);
+
+    // The complete exact nonlinear-only census is pinned below. Recurring
+    // coupon work rechecks every raw quadratic identity and the full genuine
+    // ambiguous roster, rather than replaying 66,038 already-classified exact
+    // feature rosters on every run.
+    const std::array<std::size_t, static_cast<unsigned>(
+        NonlinearEvidenceClass::Count)> classes{
+            52505, 7561, 5655, 317, 0};
+    const std::array<std::size_t, static_cast<unsigned>(
+        NonlinearAfterClass::Count)> after_classes{
+            52505, 7561, 5655, 317};
+    std::size_t target_pair_count = 0;
+    std::vector<NonlinearPairEvidence> evidence(
+        snapshot.nonlinear_roster.size());
+    std::atomic<std::size_t> next{0};
+    const auto inspect = [&]() {
+        for (;;) {
+            const auto index =
+                next.fetch_add(1, std::memory_order_relaxed);
+            if (index >= snapshot.nonlinear_roster.size())
+                return;
+            const auto& entry = snapshot.nonlinear_roster[index];
+            if (entry.separation.status ==
+                sct::NonlinearSeparationStatus::CertifiedSeparated)
+                continue;
+            if (ExpectedAmbiguousIndex(entry) == SIZE_MAX)
+                continue;
+            evidence[index] =
+                InspectNonlinearPair(snapshot, entry);
+        }
+    };
+    std::vector<std::thread> workers;
+    workers.reserve(24);
+    for (unsigned worker = 0; worker < 24; ++worker)
+        workers.emplace_back(inspect);
+    for (auto& worker : workers) worker.join();
+
+    std::uint64_t ambiguous_digest = 1469598103934665603ull;
+    std::vector<CanonicalFacetPair> ambiguous_roster;
+    for (std::size_t index = 0;
+         index < snapshot.nonlinear_roster.size(); ++index) {
+        const auto& entry = snapshot.nonlinear_roster[index];
+        if (entry.separation.status ==
+            sct::NonlinearSeparationStatus::CertifiedSeparated)
+            continue;
+        const auto& first =
+            snapshot.motion_certificates.prepared_triangles[
+                entry.facets.first];
+        const auto& second =
+            snapshot.motion_certificates.prepared_triangles[
+                entry.facets.second];
+
+        const bool target =
+            ((first.key.parent_eid == 2100306 &&
+              first.key.local_facet == 0 &&
+              second.key.parent_eid == 2100329 &&
+              second.key.local_facet == 1) ||
+             (second.key.parent_eid == 2100306 &&
+              second.key.local_facet == 0 &&
+              first.key.parent_eid == 2100329 &&
+              first.key.local_facet == 1));
+        target_pair_count += target;
+        if (ExpectedAmbiguousIndex(entry) == SIZE_MAX)
+            continue;
+        const auto& inspected = evidence[index];
+        ASSERT_TRUE(inspected.valid) << "roster index " << index;
+        EXPECT_EQ(
+            inspected.after,
+            NonlinearAfterClass::PossibleCurvedCrossing);
+        if (inspected.after !=
+            NonlinearAfterClass::PossibleCurvedCrossing)
+            continue;
+        ambiguous_roster.push_back({
+            first.key.parent_eid, first.key.local_facet,
+            second.key.parent_eid, second.key.local_facet});
+        HashPath(entry.key.paths[0], &ambiguous_digest);
+        HashPath(entry.key.paths[1], &ambiguous_digest);
+        HashUnsigned(
+            static_cast<unsigned>(entry.separation.status),
+            &ambiguous_digest);
+        HashUnsigned(entry.separation.work, &ambiguous_digest);
+        HashUnsigned(entry.separation.deepest, &ambiguous_digest);
+        std::cout << std::setprecision(17)
+                  << "V5_NONLINEAR_AMBIGUOUS"
+                  << " first=" << first.key.parent_eid
+                  << ":" << first.key.local_facet
+                  << " second=" << second.key.parent_eid
+                  << ":" << second.key.local_facet
+                  << " class="
+                  << static_cast<unsigned>(
+                         inspected.classification)
+                  << " status="
+                  << static_cast<unsigned>(
+                         entry.separation.status)
+                  << " work=" << entry.separation.work
+                  << " depth=" << entry.separation.deepest
+                  << " motion="
+                  << static_cast<unsigned>(
+                         snapshot.motion_certificates.motion[
+                             entry.facets.first].motion)
+                  << ","
+                  << static_cast<unsigned>(
+                         snapshot.motion_certificates.motion[
+                             entry.facets.second].motion)
+                  << " affine="
+                  << snapshot.motion_certificates.motion[
+                         entry.facets.first].certified_affine
+                  << ","
+                  << snapshot.motion_certificates.motion[
+                         entry.facets.second].certified_affine
+                  << " shared_vertices="
+                  << inspected.shared_vertices
+                  << " shared_edges=" << inspected.shared_edges
+                  << " accepted_mask=" << inspected.accepted_mask
+                  << " prepared_mask=" << inspected.prepared_mask
+                  << " local=" << inspected.local
+                  << " admitted=" << inspected.admitted
+                  << " endpoint_separated="
+                  << inspected.endpoint_separated
+                  << " endpoint_contact="
+                  << inspected.endpoint_contact
+                  << " ledger=" << inspected.ledger
+                  << " persistent_status="
+                  << static_cast<unsigned>(
+                         inspected.persistent_status)
+                  << " quadratic_residual_status="
+                  << static_cast<unsigned>(
+                         inspected.residual_status)
+                  << " accepted_minimum_m="
+                  << inspected.accepted_minimum_m
+                  << " prepared_minimum_m="
+                  << inspected.prepared_minimum_m
+                  << " thickness_m=" << inspected.thickness_m
+                  << '\n';
+    }
+
+    const auto digest =
+        NonlinearRosterDigest(snapshot.nonlinear_roster);
+    std::cout << "V5_NONLINEAR_ROSTER"
+              << " broadphase_parent_pairs="
+              << snapshot.nonlinear_summary.
+                     broadphase_parent_pairs
+              << " streamed_facet_pairs="
+              << snapshot.nonlinear_summary.streamed_facet_pairs
+              << " rigid_or_mixed_facets="
+              << snapshot.nonlinear_summary.rigid_or_mixed_facets
+              << " affine_rigid_or_mixed_facets="
+              << snapshot.nonlinear_summary.
+                     affine_rigid_or_mixed_facets
+              << " nonlinear_pairs="
+              << snapshot.nonlinear_summary.nonlinear_pairs
+              << " certified_separated="
+              << snapshot.nonlinear_summary.certified_separated
+              << " unresolved="
+              << snapshot.nonlinear_summary.unresolved
+              << " potential_contact="
+              << snapshot.nonlinear_summary.potential_contact
+              << " work_exhausted="
+              << snapshot.nonlinear_summary.work_exhausted
+              << " depth_exhausted="
+              << snapshot.nonlinear_summary.depth_exhausted
+              << " work=" << snapshot.nonlinear_summary.work
+              << " digest=" << digest
+              << " ambiguous_digest=" << ambiguous_digest;
+    for (unsigned classification = 0;
+         classification <
+             static_cast<unsigned>(
+                 NonlinearEvidenceClass::Count);
+         ++classification)
+        std::cout << " class" << classification << "="
+                  << classes[classification];
+    for (unsigned classification = 0;
+         classification <
+             static_cast<unsigned>(
+                 NonlinearAfterClass::Count);
+         ++classification)
+        std::cout << " after" << classification << "="
+                  << after_classes[classification];
+    std::cout << '\n';
+
+    EXPECT_EQ(snapshot.nonlinear_summary.unresolved,
+              std::accumulate(
+                  classes.begin(), classes.end(),
+                  std::size_t{0}));
+    EXPECT_EQ(
+        snapshot.nonlinear_summary.broadphase_parent_pairs,
+        1584555u);
+    EXPECT_EQ(
+        snapshot.nonlinear_summary.streamed_facet_pairs,
+        5989588u);
+    EXPECT_EQ(
+        snapshot.nonlinear_summary.rigid_or_mixed_facets,
+        27542u);
+    EXPECT_EQ(
+        snapshot.nonlinear_summary.affine_rigid_or_mixed_facets,
+        14850u);
+    EXPECT_EQ(snapshot.nonlinear_summary.nonlinear_pairs,
+              103443u);
+    EXPECT_EQ(snapshot.nonlinear_summary.certified_separated,
+              37405u);
+    EXPECT_EQ(snapshot.nonlinear_summary.unresolved, 66038u);
+    EXPECT_EQ(snapshot.nonlinear_summary.potential_contact, 0u);
+    EXPECT_EQ(snapshot.nonlinear_summary.work_exhausted, 0u);
+    EXPECT_EQ(snapshot.nonlinear_summary.depth_exhausted, 66038u);
+    EXPECT_EQ(snapshot.nonlinear_summary.work, 1424361u);
+    EXPECT_EQ(
+        classes,
+        (std::array<std::size_t, 5>{
+            52505, 7561, 5655, 317, 0}));
+    EXPECT_EQ(
+        after_classes,
+        (std::array<std::size_t, 4>{
+            52505, 7561, 5655, 317}));
+    ASSERT_EQ(
+        ambiguous_roster.size(),
+        sizeof(ExpectedAmbiguousRoster) /
+            sizeof(*ExpectedAmbiguousRoster));
+    for (std::size_t pair = 0;
+         pair < ambiguous_roster.size(); ++pair) {
+        EXPECT_EQ(ambiguous_roster[pair].first_eid,
+                  ExpectedAmbiguousRoster[pair].first_eid);
+        EXPECT_EQ(ambiguous_roster[pair].first_local,
+                  ExpectedAmbiguousRoster[pair].first_local);
+        EXPECT_EQ(ambiguous_roster[pair].second_eid,
+                  ExpectedAmbiguousRoster[pair].second_eid);
+        EXPECT_EQ(ambiguous_roster[pair].second_local,
+                  ExpectedAmbiguousRoster[pair].second_local);
+    }
+    EXPECT_EQ(target_pair_count, 1u);
+    EXPECT_EQ(snapshot.nonlinear_summary.unresolved,
+              std::accumulate(
+                  after_classes.begin(), after_classes.end(),
+                  std::size_t{0}));
+    EXPECT_EQ(digest, ExpectedNonlinearRosterDigest);
+    EXPECT_EQ(
+        ambiguous_digest, ExpectedAmbiguousRosterDigest);
     dynamics.DiscardStep();
 }
 

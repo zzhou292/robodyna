@@ -195,6 +195,11 @@ def main() -> None:
     candidate_coupon = (
         case / "vehicle_startup" / "shell_execution" / "tests" /
         "self_contact" / "CandidateRigidCouponTest.cpp").read_text()
+    ambiguous_roster = (
+        case / "vehicle_startup" / "shell_execution" / "tests" /
+        "self_contact" / "NonlinearAmbiguousRoster.inc").read_text()
+    require(ambiguous_roster.count("},") == 317,
+            "nonlinear ambiguous roster must pin exactly 317 pairs")
     for token in [
             "2100005", "2100048", "PhysicalStepS = 2e-7",
             "EndpointCorrectedSecondOrderDriftV1",
@@ -236,8 +241,30 @@ def main() -> None:
             "V5_LINEAR_FAMILY_UNRESOLVED"]:
         require(token in candidate_coupon,
                 f"residual-translation coupon is missing {token}")
+    for token in [
+            "CompleteAcceptedAssemblyRosterSkipsLinearExactTraversal",
+            "ClassifyPreparedNonlinearCandidates(",
+            "V5_NONLINEAR_ROSTER",
+            "V5_NONLINEAR_AMBIGUOUS",
+            "ExpectedNonlinearRosterDigest",
+            "ExpectedAmbiguousRosterDigest",
+            "ExpectedAmbiguousRoster",
+            'include "NonlinearAmbiguousRoster.inc"',
+            "15183149279991149367",
+            "CertifyQuadraticResidualSeparation(",
+            "CertifyPersistentQuadraticContact(",
+            "after_classes",
+            "std::atomic<std::size_t>",
+            "workers.reserve(24)",
+            "workers.emplace_back(inspect)"]:
+        require(token in candidate_coupon,
+                f"nonlinear roster coupon is missing {token}")
     require("CandidateRigidCouponTest.cpp" in fixture_cmake and
             "vehicle_self_contact_candidate_rigid_coupon" in fixture_cmake and
+            "vehicle_self_contact_nonlinear_roster_coupon" in
+            fixture_cmake and
+            "VehicleSelfContactNonlinearRosterCoupon.*" in fixture_cmake and
+            "accepted-assembly;nonlinear-roster" in fixture_cmake and
             "vehicle_self_contact_residual_translation_coupon" in
             fixture_cmake and
             "VehicleSelfContactAcceptedAssemblyCoupon.*" in fixture_cmake and

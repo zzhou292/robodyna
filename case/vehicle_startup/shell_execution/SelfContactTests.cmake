@@ -51,6 +51,18 @@ set_tests_properties(vehicle_self_contact_candidate_rigid_coupon PROPERTIES
   RESOURCE_LOCK vehicle_self_contact_gpu
   ENVIRONMENT "ROBO_VEHICLE_DECLARATIONS=${ROBO_DYNA_VEHICLE_DECLARATIONS};ROBO_VEHICLE_GLASS_RESOLUTION=${ROBO_DYNA_VEHICLE_GLASS_RESOLUTION};ROBO_VEHICLE_GLASS_SHA256=${ROBO_DYNA_VEHICLE_GLASS_SHA256};ROBO_DYNA_TYPE13_DECLARATION=${ROBO_DYNA_VEHICLE_TYPE13_DECLARATION}")
 
+add_test(NAME vehicle_self_contact_nonlinear_roster_coupon
+  COMMAND "${Python3_EXECUTABLE}" -B
+    "${CMAKE_CURRENT_LIST_DIR}/../../../modelio/self_contact/tests/actual_fixture.py"
+    "${ROBO_DYNA_VEHICLE_CANONICAL}" "${ROBO_DYNA_VEHICLE_SCOPE}"
+    "$<TARGET_FILE:robo_dyna_vehicle_self_contact_source_check>"
+    "VehicleSelfContactNonlinearRosterCoupon.*")
+set_tests_properties(vehicle_self_contact_nonlinear_roster_coupon PROPERTIES
+  TIMEOUT 600 RUN_SERIAL TRUE PROCESSORS 24
+  LABELS "coupon;real-geometry;v5-candidate;accepted-assembly;nonlinear-roster"
+  RESOURCE_LOCK vehicle_self_contact_gpu
+  ENVIRONMENT "ROBO_VEHICLE_DECLARATIONS=${ROBO_DYNA_VEHICLE_DECLARATIONS};ROBO_VEHICLE_GLASS_RESOLUTION=${ROBO_DYNA_VEHICLE_GLASS_RESOLUTION};ROBO_VEHICLE_GLASS_SHA256=${ROBO_DYNA_VEHICLE_GLASS_SHA256};ROBO_DYNA_TYPE13_DECLARATION=${ROBO_DYNA_VEHICLE_TYPE13_DECLARATION}")
+
 add_test(NAME vehicle_self_contact_residual_translation_coupon
   COMMAND "${Python3_EXECUTABLE}" -B
     "${CMAKE_CURRENT_LIST_DIR}/../../../modelio/self_contact/tests/actual_fixture.py"
