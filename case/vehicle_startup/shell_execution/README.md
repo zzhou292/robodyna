@@ -254,22 +254,28 @@ after that source-derived pass: canonical triangle/topology identities,
 accepted/prepared binary64 geometry, outward exact-dyadic quadratic
 coefficient intervals, both half-thicknesses, endpoint feature candidates and
 representation errors, local masks/intersections, and every matching accepted
-VF/EE owner certificate. Its schema caps the payload at 64 MiB; the current
-file is 4,456,432 bytes including its 96-byte header and has SHA-256
-`32f687a0a517d60f147b70d4f58cab7f81657c034edfae31a89a4814e24dab2a`.
+VF/EE owner certificate. Schema v2 also freezes each accepted feature's
+active-use status, endpoint support, force-area values, distance decision,
+canonical ledger search counts, and explicit accepted/prepared phase identity.
+Its schema caps the payload at 64 MiB; the current file is 5,634,400 bytes
+including its 208-byte header and has SHA-256
+`8d0a97d60d871e5bd524d66b8732f9655f6f5b66b53481c106c23e0ccc4cdcdb`.
 The pinned roster/payload/source/schema/profile/dt hashes are verified before
 any proof is run. The direct `vehicle_self_contact_nonlinear_fixture` test
 regenerates both endpoint feature publications, then reruns bounded quadratic
 coverage with pair, ledger, and repeated-call permutations in about 2.3
 seconds without loading the vehicle.
 
-The frozen result is intentionally fail-closed: all 317 pairs enter thickness
-at an endpoint and all 317 have an empty matching accepted-owner roster.
-Consequently every pair returns `MissingAcceptedOwner` at depth 20; subdivision
-cannot legally turn any of them into either strict separation or accepted
-contact. `NonlinearAmbiguousRoster.inc` is the complete irreducible roster.
-No tolerance, seam broadening, timestep change, or thickness inflation is
-used.
+The accepted-policy evidence resolves the apparent owner contradiction. All
+317 pairs do enter thickness at an accepted endpoint, but 312 have only exact
+same-rigid-group close features. Four locally incident shared-edge pairs have
+exact accepted boundary-VF events, and one pair has two canonical lower seam
+owners. The former fixture lookup incorrectly recognized only face-interior
+VF, so it reported `MissingAcceptedOwner` for exact edge-stratum events. The
+bounded replay now resolves 312 as exact authenticated support exclusions and
+five through accepted ledger coverage. No true nonexcluded accepted contact
+remains ownerless, and no tolerance, seam broadening, timestep change, or
+thickness inflation is used.
 
 The source-only real-geometry coupon deliberately does not construct
 `VehiclePhysicalDynamics`.

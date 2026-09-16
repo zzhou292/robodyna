@@ -54,7 +54,11 @@ struct AcceptedAssemblyCouponSnapshot {
         NonlinearCandidateRosterSummary nonlinear_summary;
     tlfea::contact::self_contact_transaction::
         PreparedMotionCertificateView motion_certificates;
+    tl::fea::NodalStamp accepted_stamp;
     tl::fea::NodalPreparedView prepared_view;
+    tlfea::contact::SelfContactTransaction* transaction = nullptr;
+    const tlfea::contact::SelfContactAcceptedAssemblyReceipt*
+        accepted_receipt = nullptr;
 };
 
 class CandidateRigidCouponAccess {
@@ -111,11 +115,10 @@ class CandidateRigidCouponAccess {
         result.prepared_positions.resize(3 * nodes);
         std::vector<double> accepted_velocities(3 * nodes);
         std::vector<double> prepared_velocities(3 * nodes);
-        tl::fea::NodalStamp accepted_stamp;
         auto report = owner.CopyAccepted(
             {result.accepted_positions.data(),
              accepted_velocities.data(), nodes},
-            &accepted_stamp);
+            &result.accepted_stamp);
         if (report.status != tl::fea::NodalStatus::Ok)
             throw std::runtime_error(report.message);
         report = owner.CopyPrepared(
@@ -126,7 +129,7 @@ class CandidateRigidCouponAccess {
         if (report.status != tl::fea::NodalStatus::Ok)
             throw std::runtime_error(report.message);
         if (!tl::fea::trial_identity::SameStamp(
-                accepted_stamp, storage.stamp) ||
+                result.accepted_stamp, storage.stamp) ||
             !tl::fea::trial_identity::SamePrepared(
                 result.prepared_view, storage.prepared))
             throw std::runtime_error(
@@ -137,6 +140,8 @@ class CandidateRigidCouponAccess {
         if (!stages)
             throw std::runtime_error(
                 "Accepted-assembly coupon has no self-contact stages");
+        result.transaction = &stages->contact.data_->transaction;
+        result.accepted_receipt = &stages->accepted_;
         constexpr std::size_t NonlinearRosterCapacity =
             std::size_t{1} << 20;
         result.nonlinear_roster.resize(NonlinearRosterCapacity);
@@ -823,6 +828,43 @@ nonlinear_fixture::Pair FreezeNonlinearPair(
     return result;
 }
 
+void FreezeAcceptedPolicies(
+    const vehicle_self_contact::AcceptedAssemblyCouponSnapshot& snapshot,
+    std::vector<nonlinear_fixture::Pair>* pairs) {
+    if (!pairs || !snapshot.transaction ||
+        !snapshot.accepted_receipt)
+        throw std::runtime_error(
+            "Nonlinear fixture accepted policy owner is absent");
+    std::vector<contact::FixedTriangleFeatureCandidate> features;
+    std::vector<std::size_t> offsets;
+    offsets.reserve(pairs->size() + 1);
+    offsets.push_back(0);
+    for (const auto& pair : *pairs) {
+        features.insert(
+            features.end(), pair.accepted_features.begin(),
+            pair.accepted_features.end());
+        offsets.push_back(features.size());
+    }
+    std::vector<sct::AcceptedFeaturePolicyEvidence>
+        policy(features.size());
+    std::size_t policy_count = 0;
+    const auto report =
+        sct::QualificationAccess::
+            ClassifyAcceptedFeaturePolicies(
+                *snapshot.transaction,
+                *snapshot.accepted_receipt,
+                {features.data(), features.size(), true},
+                policy.data(), policy.size(), &policy_count);
+    if (report.status !=
+            contact::SelfContactTransactionStatus::Ok ||
+        policy_count != policy.size())
+        throw std::runtime_error(report.message);
+    for (std::size_t pair = 0; pair < pairs->size(); ++pair)
+        (*pairs)[pair].accepted_policy.assign(
+            policy.begin() + offsets[pair],
+            policy.begin() + offsets[pair + 1]);
+}
+
 std::uint64_t FixtureProfileHash() {
     std::uint64_t hash = 1469598103934665603ull;
     for (const auto value : {
@@ -852,6 +894,45 @@ std::uint64_t FixtureDtHash(
             prepared.rigid_member_trajectory),
         &hash);
     return hash;
+}
+
+nonlinear_fixture::PhaseIdentity FixturePhaseIdentity(
+    const vehicle_self_contact::AcceptedAssemblyCouponSnapshot& snapshot) {
+    const auto bits = [](double value) {
+        std::uint64_t result = 0;
+        std::memcpy(&result, &value, sizeof(result));
+        return result;
+    };
+    nonlinear_fixture::PhaseIdentity result;
+    result.accepted_epoch = snapshot.accepted_stamp.epoch;
+    result.prepared_base_epoch =
+        snapshot.prepared_view.kinematics.base_epoch;
+    result.accepted_time_bits =
+        bits(snapshot.accepted_stamp.time);
+    result.prepared_base_time_bits =
+        bits(snapshot.prepared_view.base_time);
+    result.prepared_time_bits =
+        bits(snapshot.prepared_view.proposed_time);
+    result.accepted_velocity_time_bits =
+        bits(snapshot.accepted_stamp.velocity_time);
+    result.prepared_velocity_time_bits =
+        bits(snapshot.prepared_view.velocity_time);
+    result.accepted_temporal_scheme =
+        static_cast<unsigned>(
+            snapshot.accepted_stamp.temporal_scheme);
+    result.prepared_temporal_scheme =
+        static_cast<unsigned>(
+            snapshot.prepared_view.temporal_scheme);
+    result.accepted_velocity_phase =
+        static_cast<unsigned>(
+            snapshot.accepted_stamp.velocity_phase);
+    result.prepared_velocity_phase =
+        static_cast<unsigned>(
+            snapshot.prepared_view.velocity_phase);
+    result.prepared_trajectory =
+        static_cast<unsigned>(
+            snapshot.prepared_view.rigid_member_trajectory);
+    return result;
 }
 
 enum class NonlinearEvidenceClass : unsigned {
@@ -2311,6 +2392,7 @@ TEST(VehicleSelfContactNonlinearRosterCoupon,
     EXPECT_EQ(
         ambiguous_digest, ExpectedAmbiguousRosterDigest);
     ASSERT_EQ(fixture_pairs.size(), nonlinear_fixture::ExpectedPairs);
+    FreezeAcceptedPolicies(snapshot, &fixture_pairs);
     EXPECT_EQ(
         nonlinear_fixture::RosterDigest(fixture_pairs),
         nonlinear_fixture::ExpectedRosterDigest);
@@ -2329,7 +2411,8 @@ TEST(VehicleSelfContactNonlinearRosterCoupon,
         output && *output) {
         nonlinear_fixture::Write(
             output, fixture_pairs, FixtureProfileHash(),
-            FixtureDtHash(snapshot.prepared_view), digest);
+            FixtureDtHash(snapshot.prepared_view), digest,
+            FixturePhaseIdentity(snapshot));
         const auto fixture = nonlinear_fixture::Read(output);
         EXPECT_EQ(fixture.pairs.size(), fixture_pairs.size());
         EXPECT_EQ(

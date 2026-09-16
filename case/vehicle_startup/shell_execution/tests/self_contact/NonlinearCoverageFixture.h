@@ -19,7 +19,7 @@ namespace contact = tlfea::contact;
 namespace sct = tlfea::contact::self_contact_transaction;
 
 inline constexpr std::uint64_t Magic = 0x3158464c4e4353ull;
-inline constexpr std::uint64_t Version = 1;
+inline constexpr std::uint64_t Version = 2;
 inline constexpr std::uint64_t Endian = 0x0102030405060708ull;
 inline constexpr std::size_t ExpectedPairs = 317;
 inline constexpr std::size_t MaximumBytes = 64u << 20;
@@ -31,7 +31,7 @@ inline constexpr std::uint64_t ExpectedRosterDigest =
 inline constexpr std::uint64_t ExpectedNonlinearRosterDigest =
     15183149279991149367ull;
 inline constexpr std::uint64_t ExpectedSchemaHash =
-    12531969688427412911ull;
+    1586894878486140084ull;
 inline constexpr std::uint64_t ExpectedSourceHash =
     4825344264679849320ull;
 inline constexpr std::uint64_t ExpectedProfileHash =
@@ -39,8 +39,32 @@ inline constexpr std::uint64_t ExpectedProfileHash =
 inline constexpr std::uint64_t ExpectedDtHash =
     16186267176476366842ull;
 inline constexpr std::uint64_t ExpectedPayloadHash =
-    13000617660328267811ull;
-inline constexpr std::uint64_t ExpectedPayloadBytes = 4456336ull;
+    10280089436718511198ull;
+inline constexpr std::uint64_t ExpectedPayloadBytes = 5634192ull;
+inline constexpr std::uint64_t ExpectedPolicyResultDigest =
+    18118431942842192826ull;
+
+enum class PhaseLabel : std::uint64_t {
+    AcceptedOwner = 1,
+    PreparedCandidate = 2,
+};
+
+struct PhaseIdentity {
+    PhaseLabel accepted_label = PhaseLabel::AcceptedOwner;
+    PhaseLabel prepared_label = PhaseLabel::PreparedCandidate;
+    std::uint64_t accepted_epoch = 0;
+    std::uint64_t prepared_base_epoch = 0;
+    std::uint64_t accepted_time_bits = 0;
+    std::uint64_t prepared_base_time_bits = 0;
+    std::uint64_t prepared_time_bits = 0;
+    std::uint64_t accepted_velocity_time_bits = 0;
+    std::uint64_t prepared_velocity_time_bits = 0;
+    std::uint64_t accepted_temporal_scheme = 0;
+    std::uint64_t prepared_temporal_scheme = 0;
+    std::uint64_t accepted_velocity_phase = 0;
+    std::uint64_t prepared_velocity_phase = 0;
+    std::uint64_t prepared_trajectory = 0;
+};
 
 struct Pair {
     std::uint32_t facet[2]{};
@@ -56,6 +80,8 @@ struct Pair {
     std::uint16_t prepared_mask = 0;
     std::vector<contact::FixedTriangleFeatureCandidate>
         accepted_features;
+    std::vector<sct::AcceptedFeaturePolicyEvidence>
+        accepted_policy;
     std::vector<contact::FixedTriangleFeatureCandidate>
         prepared_features;
     std::vector<contact::FixedTriangleIntersection>
@@ -73,6 +99,7 @@ struct File {
     std::uint64_t payload_hash = 0;
     std::uint64_t payload_bytes = 0;
     std::uint64_t nonlinear_roster_digest = 0;
+    PhaseIdentity phase;
     std::vector<Pair> pairs;
 };
 
@@ -117,6 +144,11 @@ inline std::uint64_t SchemaHash() noexcept {
     HashUnsigned(sizeof(sct::AcceptedEventCertificate), &hash);
     HashUnsigned(
         alignof(sct::AcceptedEventCertificate), &hash);
+    HashUnsigned(
+        sizeof(sct::AcceptedFeaturePolicyEvidence), &hash);
+    HashUnsigned(
+        alignof(sct::AcceptedFeaturePolicyEvidence), &hash);
+    HashUnsigned(sizeof(PhaseIdentity), &hash);
     HashUnsigned(
         offsetof(
             contact::FixedTriangleFeatureCandidate,
@@ -286,6 +318,8 @@ class Reader {
 inline void AppendPair(Writer* writer, const Pair& pair) {
     if (!writer ||
         pair.accepted_features.size() > MaximumFeatures ||
+        pair.accepted_policy.size() !=
+            pair.accepted_features.size() ||
         pair.prepared_features.size() > MaximumFeatures ||
         pair.accepted_intersections.size() >
             MaximumIntersections ||
@@ -316,6 +350,7 @@ inline void AppendPair(Writer* writer, const Pair& pair) {
     writer->Object(pair.half_thickness[0]);
     writer->Object(pair.half_thickness[1]);
     writer->Objects(pair.accepted_features);
+    writer->Objects(pair.accepted_policy);
     writer->Objects(pair.prepared_features);
     writer->Objects(pair.accepted_intersections);
     writer->Objects(pair.prepared_intersections);
@@ -362,6 +397,9 @@ inline Pair ReadPair(Reader* reader) {
     pair.accepted_features = reader->Objects<
         contact::FixedTriangleFeatureCandidate>(
             accepted_features);
+    pair.accepted_policy = reader->Objects<
+        sct::AcceptedFeaturePolicyEvidence>(
+            accepted_features);
     pair.prepared_features = reader->Objects<
         contact::FixedTriangleFeatureCandidate>(
             prepared_features);
@@ -379,7 +417,8 @@ inline Pair ReadPair(Reader* reader) {
 inline void Write(
     const std::string& path, const std::vector<Pair>& pairs,
     std::uint64_t profile_hash, std::uint64_t dt_hash,
-    std::uint64_t nonlinear_roster_digest) {
+    std::uint64_t nonlinear_roster_digest,
+    const PhaseIdentity& phase) {
     if (pairs.size() != ExpectedPairs ||
         RosterDigest(pairs) != ExpectedRosterDigest ||
         nonlinear_roster_digest !=
@@ -409,6 +448,20 @@ inline void Write(
     header.U64(pairs.size());
     header.U64(payload.bytes().size());
     header.U64(payload_hash);
+    header.U64(static_cast<std::uint64_t>(phase.accepted_label));
+    header.U64(static_cast<std::uint64_t>(phase.prepared_label));
+    header.U64(phase.accepted_epoch);
+    header.U64(phase.prepared_base_epoch);
+    header.U64(phase.accepted_time_bits);
+    header.U64(phase.prepared_base_time_bits);
+    header.U64(phase.prepared_time_bits);
+    header.U64(phase.accepted_velocity_time_bits);
+    header.U64(phase.prepared_velocity_time_bits);
+    header.U64(phase.accepted_temporal_scheme);
+    header.U64(phase.prepared_temporal_scheme);
+    header.U64(phase.accepted_velocity_phase);
+    header.U64(phase.prepared_velocity_phase);
+    header.U64(phase.prepared_trajectory);
     std::ofstream output(
         path, std::ios::binary | std::ios::trunc);
     if (!output)
@@ -437,7 +490,7 @@ inline File Read(const std::string& path) {
     const auto end = input.tellg();
     if (end < 0 ||
         static_cast<std::uint64_t>(end) >
-            MaximumBytes + 96)
+            MaximumBytes + 208)
         throw std::runtime_error(
             "Nonlinear fixture size is invalid");
     std::vector<std::uint8_t> bytes(
@@ -467,13 +520,43 @@ inline File Read(const std::string& path) {
     const auto pair_count = reader.U64();
     result.payload_bytes = reader.U64();
     result.payload_hash = reader.U64();
+    result.phase.accepted_label =
+        static_cast<PhaseLabel>(reader.U64());
+    result.phase.prepared_label =
+        static_cast<PhaseLabel>(reader.U64());
+    result.phase.accepted_epoch = reader.U64();
+    result.phase.prepared_base_epoch = reader.U64();
+    result.phase.accepted_time_bits = reader.U64();
+    result.phase.prepared_base_time_bits = reader.U64();
+    result.phase.prepared_time_bits = reader.U64();
+    result.phase.accepted_velocity_time_bits = reader.U64();
+    result.phase.prepared_velocity_time_bits = reader.U64();
+    result.phase.accepted_temporal_scheme = reader.U64();
+    result.phase.prepared_temporal_scheme = reader.U64();
+    result.phase.accepted_velocity_phase = reader.U64();
+    result.phase.prepared_velocity_phase = reader.U64();
+    result.phase.prepared_trajectory = reader.U64();
     if (result.schema_hash != SchemaHash() ||
-        result.schema_hash != ExpectedSchemaHash ||
-        result.source_hash != ExpectedSourceHash ||
-        result.profile_hash != ExpectedProfileHash ||
-        result.dt_hash != ExpectedDtHash ||
-        result.payload_hash != ExpectedPayloadHash ||
-        result.payload_bytes != ExpectedPayloadBytes ||
+        (ExpectedSchemaHash &&
+         result.schema_hash != ExpectedSchemaHash) ||
+        (ExpectedSourceHash &&
+         result.source_hash != ExpectedSourceHash) ||
+        (ExpectedProfileHash &&
+         result.profile_hash != ExpectedProfileHash) ||
+        (ExpectedDtHash &&
+         result.dt_hash != ExpectedDtHash) ||
+        (ExpectedPayloadHash &&
+         result.payload_hash != ExpectedPayloadHash) ||
+        (ExpectedPayloadBytes &&
+         result.payload_bytes != ExpectedPayloadBytes) ||
+        result.phase.accepted_label !=
+            PhaseLabel::AcceptedOwner ||
+        result.phase.prepared_label !=
+            PhaseLabel::PreparedCandidate ||
+        result.phase.accepted_epoch !=
+            result.phase.prepared_base_epoch ||
+        result.phase.accepted_time_bits !=
+            result.phase.prepared_base_time_bits ||
         pair_count != ExpectedPairs ||
         result.nonlinear_roster_digest !=
             ExpectedNonlinearRosterDigest ||

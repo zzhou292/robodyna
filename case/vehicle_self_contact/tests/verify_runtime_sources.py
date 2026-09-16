@@ -212,10 +212,10 @@ def main() -> None:
         "NonlinearAmbiguousFixture.bin").read_bytes()
     require(ambiguous_roster.count("},") == 317,
             "nonlinear ambiguous roster must pin exactly 317 pairs")
-    require(len(nonlinear_fixture) == 4456432,
+    require(len(nonlinear_fixture) == 5634400,
             "nonlinear fixture size changed")
     require(hashlib.sha256(nonlinear_fixture).hexdigest() ==
-            "32f687a0a517d60f147b70d4f58cab7f81657c034edfae31a89a4814e24dab2a",
+            "8d0a97d60d871e5bd524d66b8732f9655f6f5b66b53481c106c23e0ccc4cdcdb",
             "nonlinear fixture SHA-256 changed")
     for token in [
             "ExpectedPairs = 317",
@@ -225,9 +225,12 @@ def main() -> None:
             "ExpectedProfileHash",
             "ExpectedDtHash",
             "ExpectedPayloadHash",
+            "ExpectedPolicyResultDigest",
             "MaximumBytes = 64u << 20",
             "FixedTriangleFeatureCandidate",
             "AcceptedEventCertificate",
+            "AcceptedFeaturePolicyEvidence",
+            "PhaseIdentity",
             "FacetQuadraticCoefficients",
             "representation_error_m",
             "RosterDigest(",
@@ -235,10 +238,13 @@ def main() -> None:
         require(token in nonlinear_fixture_header,
                 f"nonlinear fixture schema is missing {token}")
     for token in [
-            "FrozenRosterReturnsDeterministicIrreducibleReasons",
+            "FrozenRosterResolvesWithAuthenticatedPolicyEvidence",
             "VerifyEndpoint(",
-            "CertifyQuadraticFacetCoverage(",
+            "CertifyQuadraticFacetPolicyCoverage(",
+            "AcceptedOwnersFromPolicy(",
+            "AcceptedExclusionsFromPolicy(",
             "MissingAcceptedOwner",
+            "true_nonexcluded_ownerless=",
             "std::reverse(",
             "runtime_s="]:
         require(token in nonlinear_fixture_test,
@@ -302,6 +308,7 @@ def main() -> None:
             "workers.emplace_back(inspect)",
             "ROBO_NONLINEAR_FIXTURE_OUTPUT",
             "FreezeNonlinearPair(",
+            "FreezeAcceptedPolicies(",
             "V5_NONLINEAR_COVERAGE",
             "nonlinear_fixture::Write("]:
         require(token in candidate_coupon,
@@ -344,6 +351,7 @@ def main() -> None:
     require("CertifyQuadraticFacetSeparation(" in tl_rigid_sweep and
             "SubdivideSeparation(" in tl_rigid_sweep and
             "CertifyQuadraticFacetCoverage(" in tl_rigid_sweep and
+            "CertifyQuadraticFacetPolicyCoverage(" in tl_rigid_sweep and
             "SubdivideCoverage(" in tl_rigid_sweep and
             "MissingAcceptedOwner" in tl_rigid_sweep and
             "nonlinear_subdivision_work_per_pair" in tl_candidate,
