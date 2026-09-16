@@ -1,3 +1,8 @@
+// Frozen irreducible roster. For every canonical pair below, both accepted
+// and prepared exact feature geometry enter thickness, while the authenticated
+// accepted VF/EE ledger contains no matching canonical owner. The bounded
+// quadratic fixture therefore returns MissingAcceptedOwner at depth 20; no
+// tolerance or seam broadening may convert these pairs into accepted contact.
     {2102027, 0, 2389845, 1},
     {2102027, 1, 2389845, 1},
     {2102029, 0, 2162266, 1},

@@ -22,6 +22,24 @@ target_link_libraries(robo_dyna_vehicle_self_contact_source_check PRIVATE
   tl_self_contact_surface_binding tl_fixed_contact_facets
   tl_self_contact_current_regularity GTest::gtest_main)
 target_compile_options(robo_dyna_vehicle_self_contact_source_check PRIVATE -fno-fast-math -ffp-contract=off)
+add_executable(robo_dyna_vehicle_self_contact_nonlinear_fixture_check
+  tests/self_contact/NonlinearCoverageFixtureTest.cpp)
+target_link_libraries(
+  robo_dyna_vehicle_self_contact_nonlinear_fixture_check PRIVATE
+  tl_self_contact_transaction
+  tl_fixed_triangle_feature_discovery
+  GTest::gtest_main)
+target_compile_options(
+  robo_dyna_vehicle_self_contact_nonlinear_fixture_check PRIVATE
+  -fno-fast-math -ffp-contract=off)
+target_compile_definitions(
+  robo_dyna_vehicle_self_contact_nonlinear_fixture_check PRIVATE
+  ROBO_NONLINEAR_FIXTURE_PATH="${CMAKE_CURRENT_LIST_DIR}/tests/self_contact/NonlinearAmbiguousFixture.bin")
+add_test(NAME vehicle_self_contact_nonlinear_fixture
+  COMMAND robo_dyna_vehicle_self_contact_nonlinear_fixture_check)
+set_tests_properties(vehicle_self_contact_nonlinear_fixture PROPERTIES
+  TIMEOUT 30 RUN_SERIAL TRUE PROCESSORS 1
+  LABELS "unit;nonlinear-fixture;accepted-ledger;bounded-subdivision")
 add_test(NAME vehicle_self_contact_source_original COMMAND "${Python3_EXECUTABLE}" -B
   "${CMAKE_CURRENT_LIST_DIR}/../../../modelio/self_contact/tests/actual_fixture.py"
   "${ROBO_DYNA_VEHICLE_CANONICAL}" "${ROBO_DYNA_VEHICLE_SCOPE}"
@@ -58,7 +76,7 @@ add_test(NAME vehicle_self_contact_nonlinear_roster_coupon
     "$<TARGET_FILE:robo_dyna_vehicle_self_contact_source_check>"
     "VehicleSelfContactNonlinearRosterCoupon.*")
 set_tests_properties(vehicle_self_contact_nonlinear_roster_coupon PROPERTIES
-  TIMEOUT 600 RUN_SERIAL TRUE PROCESSORS 24
+  TIMEOUT 1800 RUN_SERIAL TRUE PROCESSORS 24
   LABELS "coupon;real-geometry;v5-candidate;accepted-assembly;nonlinear-roster"
   RESOURCE_LOCK vehicle_self_contact_gpu
   ENVIRONMENT "ROBO_VEHICLE_DECLARATIONS=${ROBO_DYNA_VEHICLE_DECLARATIONS};ROBO_VEHICLE_GLASS_RESOLUTION=${ROBO_DYNA_VEHICLE_GLASS_RESOLUTION};ROBO_VEHICLE_GLASS_SHA256=${ROBO_DYNA_VEHICLE_GLASS_SHA256};ROBO_DYNA_TYPE13_DECLARATION=${ROBO_DYNA_VEHICLE_TYPE13_DECLARATION}")

@@ -1,4 +1,5 @@
 #include "Source.h"
+#include "NonlinearCoverageFixture.h"
 
 #include "case/vehicle_dynamics/Storage.h"
 #include "case/vehicle_self_contact/RuntimeData.h"
@@ -18,7 +19,9 @@
 #include <atomic>
 #include <chrono>
 #include <cmath>
+#include <cstdlib>
 #include <cstdint>
+#include <cstring>
 #include <iomanip>
 #include <iostream>
 #include <limits>
@@ -696,6 +699,159 @@ bool HasAdmittedIntersection(const EndpointGeometry& geometry) {
         if (contact::RequiresIntersectionAdmission(intersection))
             return true;
     return false;
+}
+
+bool HasVertex(
+    const contact::CurrentFixedTriangle& triangle,
+    const contact::FacetVertexKey& key) {
+    for (const auto& candidate : triangle.vertex_keys)
+        if (contact::fixed_triangle_features::Compare(
+                candidate, key) == 0)
+            return true;
+    return false;
+}
+
+bool HasEdge(
+    const contact::CurrentFixedTriangle& triangle,
+    const contact::FacetEdgeKey& key) {
+    for (const auto& candidate : triangle.edge_keys)
+        if (contact::fixed_triangle_features::Compare(
+                candidate, key) == 0)
+            return true;
+    return false;
+}
+
+bool CouldOwnQuadraticPair(
+    const std::array<contact::CurrentFixedTriangle, 2>& triangles,
+    const sct::AcceptedEventCertificate& certificate) {
+    const auto& feature = certificate.discovery.key;
+    if (feature.kind ==
+        contact::FixedTriangleCandidateKind::VertexFace) {
+        if (feature.vertex_face.target.kind !=
+            contact::FixedTriangleStratumKind::Face)
+            return false;
+        unsigned target = 2;
+        for (unsigned side = 0; side < 2; ++side)
+            if (contact::fixed_triangle_features::Compare(
+                    triangles[side].key,
+                    feature.vertex_face.target.face) == 0)
+                target = target == 2 ? side : 3;
+        return target < 2 &&
+            HasVertex(
+                triangles[1 - target],
+                feature.vertex_face.vertex) &&
+            !HasVertex(
+                triangles[target],
+                feature.vertex_face.vertex);
+    }
+    unsigned sides[2]{2, 2};
+    for (unsigned edge = 0; edge < 2; ++edge) {
+        for (unsigned side = 0; side < 2; ++side)
+            if (HasEdge(
+                    triangles[side],
+                    feature.edge_edge.edges[edge]))
+                sides[edge] = sides[edge] == 2 ? side : 3;
+        if (sides[edge] >= 2) return false;
+    }
+    return sides[0] != sides[1];
+}
+
+nonlinear_fixture::Pair FreezeNonlinearPair(
+    const vehicle_self_contact::AcceptedAssemblyCouponSnapshot& snapshot,
+    const sct::NonlinearCandidateRosterEntry& entry) {
+    nonlinear_fixture::Pair result;
+    result.facet[0] = entry.facets.first;
+    result.facet[1] = entry.facets.second;
+    result.baseline_status = entry.separation.status;
+    result.baseline_work = entry.separation.work;
+    result.baseline_depth = entry.separation.deepest;
+    const std::uint32_t facets[2]{
+        entry.facets.first, entry.facets.second};
+    for (unsigned side = 0; side < 2; ++side) {
+        if (facets[side] >=
+            snapshot.motion_certificates.facet_count)
+            throw std::runtime_error(
+                "Nonlinear fixture facet is out of range");
+        result.accepted[side] =
+            snapshot.motion_certificates.accepted_triangles[
+                facets[side]];
+        result.prepared[side] =
+            snapshot.motion_certificates.prepared_triangles[
+                facets[side]];
+        result.quadratic[side] =
+            snapshot.motion_certificates.quadratic[facets[side]];
+        result.half_thickness[side] =
+            snapshot.motion_certificates.descriptors[
+                facets[side]].reference_half_thickness_m;
+    }
+    const std::array<contact::CurrentFixedTriangle, 2> accepted{
+        result.accepted[0], result.accepted[1]};
+    const std::array<contact::CurrentFixedTriangle, 2> prepared{
+        result.prepared[0], result.prepared[1]};
+    contact::FixedTriangleFeatureTaskMask accepted_mask;
+    contact::FixedTriangleFeatureTaskMask prepared_mask;
+    if (contact::BuildFixedTriangleFeatureTaskMask(
+            accepted[0], accepted[1], &accepted_mask) !=
+            contact::FixedTriangleDiscoveryStatus::Ok ||
+        contact::BuildFixedTriangleFeatureTaskMask(
+            prepared[0], prepared[1], &prepared_mask) !=
+            contact::FixedTriangleDiscoveryStatus::Ok)
+        throw std::runtime_error(
+            "Nonlinear fixture local mask failed");
+    result.accepted_mask = accepted_mask.local_tasks;
+    result.prepared_mask = prepared_mask.local_tasks;
+    auto accepted_geometry =
+        DiscoverDirect(accepted, accepted_mask);
+    auto prepared_geometry =
+        DiscoverDirect(prepared, prepared_mask);
+    result.accepted_features =
+        std::move(accepted_geometry.features);
+    result.prepared_features =
+        std::move(prepared_geometry.features);
+    result.accepted_intersections =
+        std::move(accepted_geometry.intersections);
+    result.prepared_intersections =
+        std::move(prepared_geometry.intersections);
+    for (const auto& certificate :
+         snapshot.accepted_certificates)
+        if (CouldOwnQuadraticPair(prepared, certificate))
+            result.accepted_owners.push_back(certificate);
+    if (result.accepted_owners.size() >
+        nonlinear_fixture::MaximumOwners)
+        throw std::runtime_error(
+            "Nonlinear fixture owner roster exceeds hard cap");
+    return result;
+}
+
+std::uint64_t FixtureProfileHash() {
+    std::uint64_t hash = 1469598103934665603ull;
+    for (const auto value : {
+             SelfContactSourceId,
+             static_cast<std::uint64_t>(FullAcceptedEvents),
+             static_cast<std::uint64_t>(FullParentPairCapacity),
+             static_cast<std::uint64_t>(FullFacetPairCapacity),
+             std::uint64_t{4095}, std::uint64_t{20}})
+        HashUnsigned(value, &hash);
+    return hash;
+}
+
+std::uint64_t FixtureDtHash(
+    const fe::NodalPreparedView& prepared) {
+    const auto bits = [](double value) {
+        std::uint64_t result = 0;
+        std::memcpy(&result, &value, sizeof(result));
+        return result;
+    };
+    std::uint64_t hash = 1469598103934665603ull;
+    HashUnsigned(
+        bits(prepared.proposed_time - prepared.base_time),
+        &hash);
+    HashUnsigned(bits(prepared.kick_dt), &hash);
+    HashUnsigned(
+        static_cast<unsigned>(
+            prepared.rigid_member_trajectory),
+        &hash);
+    return hash;
 }
 
 enum class NonlinearEvidenceClass : unsigned {
@@ -1895,6 +2051,11 @@ TEST(VehicleSelfContactNonlinearRosterCoupon,
 
     std::uint64_t ambiguous_digest = 1469598103934665603ull;
     std::vector<CanonicalFacetPair> ambiguous_roster;
+    std::vector<nonlinear_fixture::Pair> fixture_pairs;
+    std::array<std::size_t, 9> coverage_statuses{};
+    std::size_t coverage_work = 0;
+    unsigned coverage_depth = 0;
+    std::uint64_t coverage_digest = 1469598103934665603ull;
     for (std::size_t index = 0;
          index < snapshot.nonlinear_roster.size(); ++index) {
         const auto& entry = snapshot.nonlinear_roster[index];
@@ -1931,6 +2092,63 @@ TEST(VehicleSelfContactNonlinearRosterCoupon,
         ambiguous_roster.push_back({
             first.key.parent_eid, first.key.local_facet,
             second.key.parent_eid, second.key.local_facet});
+        auto frozen = FreezeNonlinearPair(snapshot, entry);
+        const auto frozen_coverage =
+            sct::CertifyQuadraticFacetCoverage(
+                frozen.accepted[0], frozen.prepared[0],
+                frozen.quadratic[0],
+                frozen.half_thickness[0],
+                frozen.accepted[1], frozen.prepared[1],
+                frozen.quadratic[1],
+                frozen.half_thickness[1],
+                PhysicalStepS,
+                frozen.accepted_owners.data(),
+                frozen.accepted_owners.size(), 4095, 20);
+        const auto coverage_status =
+            static_cast<unsigned>(frozen_coverage.status);
+        ASSERT_LT(coverage_status, coverage_statuses.size());
+        ++coverage_statuses[coverage_status];
+        coverage_work += frozen_coverage.work;
+        coverage_depth =
+            std::max(coverage_depth, frozen_coverage.deepest);
+        HashPath(entry.key.paths[0], &coverage_digest);
+        HashPath(entry.key.paths[1], &coverage_digest);
+        HashUnsigned(coverage_status, &coverage_digest);
+        HashUnsigned(frozen_coverage.work, &coverage_digest);
+        HashUnsigned(
+            frozen_coverage.deepest, &coverage_digest);
+        HashUnsigned(
+            frozen_coverage.accepted_source_order,
+            &coverage_digest);
+        HashUnsigned(
+            frozen_coverage.proof_digest, &coverage_digest);
+        if (frozen_coverage.status !=
+                sct::NonlinearSeparationStatus::
+                    CertifiedSeparated &&
+            frozen_coverage.status !=
+                sct::NonlinearSeparationStatus::
+                    CertifiedAcceptedCoverage)
+            std::cout
+                << "V5_NONLINEAR_COVERAGE_UNRESOLVED"
+                << " first=" << first.key.parent_eid
+                << ":" << first.key.local_facet
+                << " second=" << second.key.parent_eid
+                << ":" << second.key.local_facet
+                << " status=" << coverage_status
+                << " work=" << frozen_coverage.work
+                << " depth=" << frozen_coverage.deepest
+                << " owners="
+                << frozen.accepted_owners.size()
+                << " separated_cells="
+                << frozen_coverage.separated_cells
+                << " covered_cells="
+                << frozen_coverage.covered_cells
+                << " work_exhausted="
+                << frozen_coverage.work_exhausted
+                << " depth_exhausted="
+                << frozen_coverage.depth_exhausted
+                << '\n';
+        fixture_pairs.push_back(std::move(frozen));
         HashPath(entry.key.paths[0], &ambiguous_digest);
         HashPath(entry.key.paths[1], &ambiguous_digest);
         HashUnsigned(
@@ -2092,6 +2310,46 @@ TEST(VehicleSelfContactNonlinearRosterCoupon,
     EXPECT_EQ(digest, ExpectedNonlinearRosterDigest);
     EXPECT_EQ(
         ambiguous_digest, ExpectedAmbiguousRosterDigest);
+    ASSERT_EQ(fixture_pairs.size(), nonlinear_fixture::ExpectedPairs);
+    EXPECT_EQ(
+        nonlinear_fixture::RosterDigest(fixture_pairs),
+        nonlinear_fixture::ExpectedRosterDigest);
+    std::cout << "V5_NONLINEAR_COVERAGE"
+              << " pairs=" << fixture_pairs.size()
+              << " work=" << coverage_work
+              << " depth=" << coverage_depth
+              << " digest=" << coverage_digest;
+    for (std::size_t status = 0;
+         status < coverage_statuses.size(); ++status)
+        std::cout << " status" << status
+                  << "=" << coverage_statuses[status];
+    std::cout << '\n';
+    if (const char* output =
+            std::getenv("ROBO_NONLINEAR_FIXTURE_OUTPUT");
+        output && *output) {
+        nonlinear_fixture::Write(
+            output, fixture_pairs, FixtureProfileHash(),
+            FixtureDtHash(snapshot.prepared_view), digest);
+        const auto fixture = nonlinear_fixture::Read(output);
+        EXPECT_EQ(fixture.pairs.size(), fixture_pairs.size());
+        EXPECT_EQ(
+            fixture.source_hash,
+            nonlinear_fixture::SourceHash(fixture_pairs));
+        std::cout << "V5_NONLINEAR_FIXTURE"
+                  << " path=" << output
+                  << " payload_bytes="
+                  << fixture.payload_bytes
+                  << " payload_hash="
+                  << fixture.payload_hash
+                  << " source_hash="
+                  << fixture.source_hash
+                  << " schema_hash="
+                  << fixture.schema_hash
+                  << " profile_hash="
+                  << fixture.profile_hash
+                  << " dt_hash=" << fixture.dt_hash
+                  << '\n';
+    }
     dynamics.DiscardStep();
 }
 

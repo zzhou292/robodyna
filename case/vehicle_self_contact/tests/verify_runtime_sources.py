@@ -3,6 +3,7 @@
 
 from pathlib import Path
 import argparse
+import hashlib
 
 
 def require(condition: bool, message: str) -> None:
@@ -198,8 +199,50 @@ def main() -> None:
     ambiguous_roster = (
         case / "vehicle_startup" / "shell_execution" / "tests" /
         "self_contact" / "NonlinearAmbiguousRoster.inc").read_text()
+    nonlinear_fixture_dir = (
+        case / "vehicle_startup" / "shell_execution" / "tests" /
+        "self_contact")
+    nonlinear_fixture_header = (
+        nonlinear_fixture_dir / "NonlinearCoverageFixture.h").read_text()
+    nonlinear_fixture_test = (
+        nonlinear_fixture_dir /
+        "NonlinearCoverageFixtureTest.cpp").read_text()
+    nonlinear_fixture = (
+        nonlinear_fixture_dir /
+        "NonlinearAmbiguousFixture.bin").read_bytes()
     require(ambiguous_roster.count("},") == 317,
             "nonlinear ambiguous roster must pin exactly 317 pairs")
+    require(len(nonlinear_fixture) == 4456432,
+            "nonlinear fixture size changed")
+    require(hashlib.sha256(nonlinear_fixture).hexdigest() ==
+            "32f687a0a517d60f147b70d4f58cab7f81657c034edfae31a89a4814e24dab2a",
+            "nonlinear fixture SHA-256 changed")
+    for token in [
+            "ExpectedPairs = 317",
+            "ExpectedRosterDigest",
+            "ExpectedSchemaHash",
+            "ExpectedSourceHash",
+            "ExpectedProfileHash",
+            "ExpectedDtHash",
+            "ExpectedPayloadHash",
+            "MaximumBytes = 64u << 20",
+            "FixedTriangleFeatureCandidate",
+            "AcceptedEventCertificate",
+            "FacetQuadraticCoefficients",
+            "representation_error_m",
+            "RosterDigest(",
+            "SourceHash("]:
+        require(token in nonlinear_fixture_header,
+                f"nonlinear fixture schema is missing {token}")
+    for token in [
+            "FrozenRosterReturnsDeterministicIrreducibleReasons",
+            "VerifyEndpoint(",
+            "CertifyQuadraticFacetCoverage(",
+            "MissingAcceptedOwner",
+            "std::reverse(",
+            "runtime_s="]:
+        require(token in nonlinear_fixture_test,
+                f"nonlinear fixture replay is missing {token}")
     for token in [
             "2100005", "2100048", "PhysicalStepS = 2e-7",
             "EndpointCorrectedSecondOrderDriftV1",
@@ -256,12 +299,20 @@ def main() -> None:
             "after_classes",
             "std::atomic<std::size_t>",
             "workers.reserve(24)",
-            "workers.emplace_back(inspect)"]:
+            "workers.emplace_back(inspect)",
+            "ROBO_NONLINEAR_FIXTURE_OUTPUT",
+            "FreezeNonlinearPair(",
+            "V5_NONLINEAR_COVERAGE",
+            "nonlinear_fixture::Write("]:
         require(token in candidate_coupon,
                 f"nonlinear roster coupon is missing {token}")
     require("CandidateRigidCouponTest.cpp" in fixture_cmake and
             "vehicle_self_contact_candidate_rigid_coupon" in fixture_cmake and
             "vehicle_self_contact_nonlinear_roster_coupon" in
+            fixture_cmake and
+            "vehicle_self_contact_nonlinear_fixture" in
+            fixture_cmake and
+            "robo_dyna_vehicle_self_contact_nonlinear_fixture_check" in
             fixture_cmake and
             "VehicleSelfContactNonlinearRosterCoupon.*" in fixture_cmake and
             "accepted-assembly;nonlinear-roster" in fixture_cmake and
@@ -292,6 +343,9 @@ def main() -> None:
             "TL does not exactly certify represented affine rigid motion")
     require("CertifyQuadraticFacetSeparation(" in tl_rigid_sweep and
             "SubdivideSeparation(" in tl_rigid_sweep and
+            "CertifyQuadraticFacetCoverage(" in tl_rigid_sweep and
+            "SubdivideCoverage(" in tl_rigid_sweep and
+            "MissingAcceptedOwner" in tl_rigid_sweep and
             "nonlinear_subdivision_work_per_pair" in tl_candidate,
             "TL does not bound nonlinear represented separation")
     real_geometry = (

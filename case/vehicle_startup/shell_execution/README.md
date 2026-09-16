@@ -249,6 +249,28 @@ diagnostics now publish nonlinear work/depth exhaustion from the actual
 prepared owner, while the general exact-dyadic/subdivision tests cover the
 nonzero-curvature certificate without rerunning full V5.
 
+`NonlinearAmbiguousFixture.bin` freezes the exact 317-pair nonlinear input
+after that source-derived pass: canonical triangle/topology identities,
+accepted/prepared binary64 geometry, outward exact-dyadic quadratic
+coefficient intervals, both half-thicknesses, endpoint feature candidates and
+representation errors, local masks/intersections, and every matching accepted
+VF/EE owner certificate. Its schema caps the payload at 64 MiB; the current
+file is 4,456,432 bytes including its 96-byte header and has SHA-256
+`32f687a0a517d60f147b70d4f58cab7f81657c034edfae31a89a4814e24dab2a`.
+The pinned roster/payload/source/schema/profile/dt hashes are verified before
+any proof is run. The direct `vehicle_self_contact_nonlinear_fixture` test
+regenerates both endpoint feature publications, then reruns bounded quadratic
+coverage with pair, ledger, and repeated-call permutations in about 2.3
+seconds without loading the vehicle.
+
+The frozen result is intentionally fail-closed: all 317 pairs enter thickness
+at an endpoint and all 317 have an empty matching accepted-owner roster.
+Consequently every pair returns `MissingAcceptedOwner` at depth 20; subdivision
+cannot legally turn any of them into either strict separation or accepted
+contact. `NonlinearAmbiguousRoster.inc` is the complete irreducible roster.
+No tolerance, seam broadening, timestep change, or thickness inflation is
+used.
+
 The source-only real-geometry coupon deliberately does not construct
 `VehiclePhysicalDynamics`.
 Complete area/force/STI policy remains in TL's synthetic physical
