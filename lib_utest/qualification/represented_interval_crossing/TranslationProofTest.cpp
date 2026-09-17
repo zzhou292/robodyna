@@ -34,7 +34,9 @@ void CheckInvariantWitness(
   EXPECT_TRUE(ct::HasExactCommonTranslationProof(result.geometry));
   EXPECT_EQ(ct::BaseIntersectionGeometry(result.geometry), shape);
   EXPECT_NE(result.feature.kind, K::None);
-  EXPECT_EQ(result.accepted_event, SIZE_MAX);
+  // Native StoreResult leaves this unused field at its existing zero value.
+  // Only physical-ledger geometry can confer accepted-owner authority.
+  EXPECT_EQ(result.accepted_event, 0u);
   EXPECT_EQ(result.witness_time_numerator, 0u);
   EXPECT_EQ(result.witness_time_depth, 0u);
   EXPECT_EQ(result.work, 1u);
