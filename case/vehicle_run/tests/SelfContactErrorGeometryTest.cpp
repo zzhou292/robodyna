@@ -1,0 +1,99 @@
+#include "../SelfContactDocument.h"
+#include "case/vehicle_self_contact/SelfContactStageError.h"
+#include "chrono_thirdparty/rapidjson/stringbuffer.h"
+#include "chrono_thirdparty/rapidjson/writer.h"
+
+#include <gtest/gtest.h>
+#include <limits>
+
+namespace crash::cases::vehicle_run::test {
+namespace {
+
+namespace contact = tlfea::contact;
+namespace runtime = vehicle_self_contact;
+
+output::Document Encode(const contact::SelfContactTransactionReport& report) {
+    const auto document = detail::SelfContactErrorDocument(
+        runtime::SelfContactStageError(report,
+            runtime::SelfContactRuntimeStage::CandidateSeal, 65536));
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    EXPECT_TRUE(document.Accept(writer));
+    EXPECT_LT(buffer.GetSize(), 16u << 10);
+    output::Document decoded;
+    decoded.Parse<rapidjson::kParseFullPrecisionFlag>(buffer.GetString());
+    EXPECT_FALSE(decoded.HasParseError());
+    return decoded;
+}
+
+}  // namespace
+
+TEST(VehicleRunSelfContactError, SourceFacetIdentityAndBoundsSurviveJsonRoundTrip) {
+    contact::SelfContactTransactionReport report;
+    report.status = contact::SelfContactTransactionStatus::UnresolvedCandidate;
+    report.crossing_reason = contact::RepresentedIntervalReason::WorkExhausted;
+    report.pair = 2186;
+    auto& first = report.offending_motion[0];
+    first.facet = {19, 2142381, 0, 1};
+    first.active_parent = 71;
+    first.motion = contact::SelfContactFacetMotion::PartialOrMixedRigid;
+    first.rigid_group_count = 1;
+    first.rigid_groups[0].binding_group = 7;
+    first.rigid_groups[0].source_group_id = (std::uint64_t{1} << 60) + 31;
+    first.rigid_groups[0].source_node_set_id = 91;
+    report.offending_motion[1].facet = {19, 2230072, 0, 1};
+    report.offending_half_thickness_m[0] = .001;
+    report.offending_swept_bounds[0] = {{-1, -2, -3}, {4, 5, 6}};
+    report.offending_quadratic_lower[0][2] = {-.25, -.5, -.75};
+    report.offending_quadratic_upper[0][2] = {.25, .5, .75};
+    const auto json = Encode(report);
+    EXPECT_STREQ(json["schema"].GetString(), "robo_dyna.self_contact_stage_error.v2");
+    EXPECT_TRUE(json.HasMember("pair_ordinal_scope"));
+    EXPECT_TRUE(json.HasMember("crossing_reason_detail"));
+    const auto& facet = json["offending_facets"][0];
+    EXPECT_TRUE(facet["available"].GetBool());
+    EXPECT_EQ(facet["parent_eid"].GetUint64(), 2142381u);
+    EXPECT_EQ(facet["local_facet"].GetUint64(), 1u);
+    EXPECT_EQ(facet["active_parent_ordinal"].GetUint64(), 71u);
+    EXPECT_EQ(facet["rigid_groups"][0]["source_group_id"].GetUint64(),
+              (std::uint64_t{1} << 60) + 31);
+    EXPECT_EQ(facet["reported_half_thickness_m"]["binary64_bits"][0].GetUint64(),
+              output::Bits(.001));
+    EXPECT_EQ(facet["reported_swept_lower_m"]["values"][2].GetDouble(), -3);
+    EXPECT_EQ(facet["reported_quadratic_coefficients"][2]["upper"]["binary64_bits"][1].GetUint64(),
+              output::Bits(.5));
+}
+
+TEST(VehicleRunSelfContactError, NonfiniteDiagnosticsPreserveBitsWithoutInvalidJson) {
+    contact::SelfContactTransactionReport report;
+    report.offending_motion[0].facet = {1, 2, 0, 0};
+    const double nan = std::numeric_limits<double>::quiet_NaN();
+    report.offending_swept_bounds[0].lower = {-0.0, nan,
+        std::numeric_limits<double>::infinity()};
+    const auto json = Encode(report);
+    const auto& coordinates = json["offending_facets"][0]["reported_swept_lower_m"];
+    EXPECT_FALSE(coordinates["all_finite"].GetBool());
+    EXPECT_EQ(coordinates["binary64_bits"][0].GetUint64(), output::Bits(-0.0));
+    EXPECT_EQ(coordinates["binary64_bits"][1].GetUint64(), output::Bits(nan));
+    EXPECT_EQ(coordinates["binary64_bits"][2].GetUint64(),
+              output::Bits(std::numeric_limits<double>::infinity()));
+    EXPECT_TRUE(coordinates["values"][1].IsNull());
+    EXPECT_TRUE(coordinates["values"][2].IsNull());
+}
+
+TEST(VehicleRunSelfContactError, MissingMotionAndInvalidGroupCountRemainExplicitAndBounded) {
+    contact::SelfContactTransactionReport report;
+    const auto empty = Encode(report);
+    EXPECT_FALSE(empty["offending_facets"][0]["available"].GetBool());
+    EXPECT_FALSE(empty["offending_facets"][0].HasMember("parent_eid"));
+    EXPECT_FALSE(empty.HasMember("pair_ordinal_scope"));
+    report.offending_motion[0].facet = {1, 2, 0, 0};
+    report.offending_motion[0].rigid_group_count = SIZE_MAX;
+    const auto corrupt = Encode(report);
+    const auto& facet = corrupt["offending_facets"][0];
+    EXPECT_EQ(facet["rigid_group_count"].GetUint64(), SIZE_MAX);
+    EXPECT_FALSE(facet["rigid_groups_complete"].GetBool());
+    EXPECT_EQ(facet["rigid_groups"].Size(), 4u);
+}
+
+}  // namespace crash::cases::vehicle_run::test

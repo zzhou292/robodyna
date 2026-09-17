@@ -22,7 +22,8 @@ if(ROBO_DYNA_VEHICLE_RUN_REPORT_VALUES OR ROBO_DYNA_VEHICLE_RUN_LIVE)
   include("RunReports.cmake")
   add_executable(robo_dyna_vehicle_run_reports_check tests/ContactSummaryTest.cpp tests/SummaryTest.cpp
     tests/PhysicalSelectionTest.cpp tests/MechanicsSummaryTest.cpp tests/MechanicsDocumentTest.cpp
-    tests/SelfContactSummaryTest.cpp ../vehicle_self_contact/tests/SelfContactStageErrorTest.cpp)
+    tests/SelfContactSummaryTest.cpp tests/SelfContactErrorGeometryTest.cpp
+    ../vehicle_self_contact/tests/SelfContactStageErrorTest.cpp)
   target_link_libraries(robo_dyna_vehicle_run_reports_check PRIVATE robo_dyna_vehicle_run_reports GTest::gtest_main)
   add_test(NAME vehicle_run_reports COMMAND robo_dyna_vehicle_run_reports_check)
   include("${CMAKE_CURRENT_LIST_DIR}/../../output/physical_frames/PhysicalFrames.cmake")
