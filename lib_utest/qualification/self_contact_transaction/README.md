@@ -201,6 +201,29 @@ must certify separation. Any overlapping leaf, arithmetic failure, depth
 limit, or work limit remains typed `UnsupportedMotion`; it is never converted
 to contact admission or a separated result.
 
+For exactly one shared canonical vertex, the quadratic coverage path also
+requires that vertex's complete Bernstein coordinate path to match bitwise.
+It first tests deterministic fixed axes derived from the cell. If one axis
+puts both moving arms of one triangle strictly positive and both arms of the
+other strictly negative for the complete Bernstein cell, positive-combination
+geometry proves that their only common point is the shared vertex. Otherwise
+it forms every unmasked VF oriented-volume polynomial and EE coplanarity
+polynomial (degree at most six) using directed Bernstein products. A strict
+single-sign control hull for every nonlocal feature, plus a strict polynomial
+nondegeneracy component for both facets, proves that the shared vertex is the
+only possible intersection on the cell. A zero control, root boundary,
+degenerate facet, arithmetic failure, or unmatched shared path remains
+fail-closed and is subdivided, except that a boundary control may be ignored
+when the exact binary64 `Orient3D` predicate proves that determinant is zero
+and the complete endpoint intersection is exactly `SharedVertexOnly`. Strict
+same-sign controls for every remaining Bernstein basis then exclude roots on
+the open interval. This is a topology/no-root certificate, not an endpoint
+chord or geometric tolerance. Because the bit-identical shared path is itself
+a real midsurface intersection for every represented time, the certificate
+separately reports the canonical pair-keyed
+`TriangleIntersection` at the exact earliest dyadic time `0/2^0`; accepted
+VF/EE ownership remains a distinct field.
+
 A completed quadratic separation publishes directly into the candidate policy
 stream. It does not enter the linear represented-crossing adapter, where a
 shared canonical vertex could otherwise acquire both rigid and linear path

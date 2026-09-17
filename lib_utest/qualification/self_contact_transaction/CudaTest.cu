@@ -790,6 +790,95 @@ TEST(SelfContactTransactionCuda,
 }
 
 TEST(SelfContactTransactionCuda,
+     QuadraticSharedVertexCertificateIsRepeatedlyBitwiseStable) {
+  const auto vertex = [](std::uint64_t id) {
+    c::FacetVertexKey result;
+    result.source_instance_id = 17;
+    result.first = id;
+    result.denominator = 1;
+    return result;
+  };
+  const auto triangle = [&](std::uint64_t eid,
+                            std::array<std::uint64_t, 3> ids,
+                            std::array<c::Vec3, 3> points) {
+    c::CurrentFixedTriangle result;
+    result.key = {17, eid, 0, 0};
+    for (unsigned i = 0; i < 3; ++i) {
+      result.vertex_keys[i] = vertex(ids[i]);
+      result.vertices[i] = points[i];
+    }
+    for (unsigned edge = 0; edge < 3; ++edge) {
+      auto a = result.vertex_keys[edge];
+      auto b = result.vertex_keys[(edge + 1) % 3];
+      if (c::fixed_triangle_features::Compare(b, a) < 0)
+        std::swap(a, b);
+      result.edge_keys[edge].parent_boundary = true;
+      result.edge_keys[edge].endpoints[0] = a;
+      result.edge_keys[edge].endpoints[1] = b;
+    }
+    return result;
+  };
+  const auto first = triangle(
+      10, {1, 2, 3},
+      {{{0, 0, 0}, {1, 0, 0}, {1, 1, 0}}});
+  const auto second = triangle(
+      20, {1, 4, 5},
+      {{{0, 0, 0}, {0, -1, 1}, {0, -1, -1}}});
+  std::array<c::FixedTriangleFeatureCandidate, 15> features;
+  c::fixed_triangle_features::PairFeatureResult geometry;
+  ASSERT_EQ(
+      c::fixed_triangle_features::EvaluatePairFeaturesOnce(
+          first, second, features.data(), features.size(),
+          &geometry),
+      c::FixedTriangleDiscoveryStatus::Ok);
+  const auto found = std::find_if(
+      features.begin(), features.begin() + geometry.feature_count,
+      [](const auto& feature) {
+        return feature.key.kind ==
+            c::FixedTriangleCandidateKind::EdgeEdge;
+      });
+  ASSERT_NE(found, features.begin() + geometry.feature_count);
+  sct::AcceptedEventCertificate accepted;
+  accepted.kind = sct::AcceptedEventCertificateKind::EdgeEdge;
+  accepted.discovery = *found;
+  accepted.event.feature = found->key;
+  accepted.event.source_order = 7;
+  accepted.event.classification.kind =
+      c::SelfContactPairKind::EdgeEdge;
+  accepted.event.classification.status =
+      c::SelfContactPairStatus::AdmittedEdgeEdge;
+  accepted.event.classification.active[0] = true;
+  accepted.event.classification.active[1] = true;
+  sct::FacetQuadraticCoefficients curved;
+  curved.complete = true;
+  curved.q[1][2] = {.125, .125};
+  sct::FacetQuadraticCoefficients zero;
+  zero.complete = true;
+
+  sct::NonlinearSeparationResult reference;
+  for (unsigned repeat = 0; repeat < 128; ++repeat) {
+    const auto result = sct::CertifyQuadraticFacetCoverage(
+        first, first, curved, .75,
+        second, second, zero, .75, 1,
+        &accepted, 1, 1, 0);
+    ASSERT_EQ(
+        result.status,
+        sct::NonlinearSeparationStatus::
+            CertifiedAcceptedCoverage);
+    ASSERT_EQ(result.work, 1u);
+    ASSERT_TRUE(result.has_intersection);
+    ASSERT_EQ(
+        result.intersection_feature.kind,
+        c::RepresentedFeatureKind::TriangleIntersection);
+    ASSERT_EQ(result.intersection_time_numerator, 0u);
+    ASSERT_EQ(result.intersection_time_depth, 0u);
+    if (!repeat) reference = result;
+    EXPECT_EQ(
+        std::memcmp(&result, &reference, sizeof(result)), 0);
+  }
+}
+
+TEST(SelfContactTransactionCuda,
      QuadraticResidualCertificateIsBitwiseRepeatable) {
   const auto triangle = [](std::uint64_t eid, double z) {
     c::CurrentFixedTriangle value;

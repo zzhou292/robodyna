@@ -167,6 +167,14 @@ struct NonlinearSeparationResult {
   std::size_t accepted_certificate = SIZE_MAX;
   std::uint64_t accepted_source_order = UINT64_MAX;
   RepresentedFeaturePathKey feature;
+  // A real midsurface intersection proved by the geometry certificate,
+  // independent of the accepted physical-contact owner above.  The feature
+  // is canonical in the represented pair; time is the exact dyadic
+  // numerator / 2^depth.  It remains absent for separation-only proofs.
+  RepresentedFeaturePathKey intersection_feature;
+  std::uint64_t intersection_time_numerator = 0;
+  unsigned intersection_time_depth = 0;
+  bool has_intersection = false;
   std::uint64_t proof_digest = 1469598103934665603ull;
   bool work_exhausted = false;
   bool depth_exhausted = false;

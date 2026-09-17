@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
+#include "../fixed_triangle_features/ExactPredicates.h"
 
 #include <algorithm>
 #include <cmath>
@@ -1453,12 +1454,616 @@ bool SameCoordinatePath(
   return true;
 }
 
+struct BernsteinPolynomial {
+  DirectedInterval control[7]{};
+  unsigned degree = 0;
+};
+
+unsigned Binomial(unsigned degree, unsigned index) noexcept {
+  if (index > degree) return 0;
+  index = std::min(index, degree - index);
+  unsigned result = 1;
+  for (unsigned i = 1; i <= index; ++i)
+    result = result * (degree - index + i) / i;
+  return result;
+}
+
+bool BernsteinScale(
+    unsigned numerator, unsigned denominator,
+    DirectedInterval* output) noexcept {
+  if (!output || !denominator || numerator > denominator)
+    return false;
+  if (!numerator) {
+    *output = {};
+    return true;
+  }
+  if (numerator == denominator) {
+    *output = {1, 1};
+    return true;
+  }
+  const double value =
+      static_cast<double>(numerator) /
+      static_cast<double>(denominator);
+  if (!(value > 0) || !(value < 1) || !std::isfinite(value))
+    return false;
+  *output = {Down(value), Up(value)};
+  return Valid(*output);
+}
+
+bool AddPolynomial(
+    const BernsteinPolynomial& first,
+    const BernsteinPolynomial& second,
+    BernsteinPolynomial* output) noexcept {
+  if (!output || first.degree != second.degree ||
+      first.degree > 6)
+    return false;
+  BernsteinPolynomial result;
+  result.degree = first.degree;
+  for (unsigned i = 0; i <= result.degree; ++i)
+    if (!AddDirected(
+            first.control[i], second.control[i],
+            result.control + i))
+      return false;
+  *output = result;
+  return true;
+}
+
+bool SubtractPolynomial(
+    const BernsteinPolynomial& first,
+    const BernsteinPolynomial& second,
+    BernsteinPolynomial* output) noexcept {
+  if (!output || first.degree != second.degree ||
+      first.degree > 6)
+    return false;
+  BernsteinPolynomial result;
+  result.degree = first.degree;
+  for (unsigned i = 0; i <= result.degree; ++i)
+    if (!SubtractDirected(
+            first.control[i], second.control[i],
+            result.control + i))
+      return false;
+  *output = result;
+  return true;
+}
+
+bool MultiplyPolynomial(
+    const BernsteinPolynomial& first,
+    const BernsteinPolynomial& second,
+    BernsteinPolynomial* output) noexcept {
+  if (!output || first.degree + second.degree > 6)
+    return false;
+  BernsteinPolynomial result;
+  result.degree = first.degree + second.degree;
+  for (unsigned k = 0; k <= result.degree; ++k) {
+    bool have = false;
+    DirectedInterval sum{};
+    const unsigned begin =
+        k > second.degree ? k - second.degree : 0;
+    const unsigned end = std::min(k, first.degree);
+    for (unsigned i = begin; i <= end; ++i) {
+      const unsigned j = k - i;
+      const unsigned numerator =
+          Binomial(first.degree, i) *
+          Binomial(second.degree, j);
+      const unsigned denominator =
+          Binomial(result.degree, k);
+      DirectedInterval product, scale, term;
+      if (!MultiplyDirected(
+              first.control[i], second.control[j], &product) ||
+          !BernsteinScale(numerator, denominator, &scale) ||
+          !MultiplyDirected(product, scale, &term))
+        return false;
+      if (!have) {
+        sum = term;
+        have = true;
+      } else if (!AddDirected(sum, term, &sum)) {
+        return false;
+      }
+    }
+    if (!have) return false;
+    result.control[k] = sum;
+  }
+  *output = result;
+  return true;
+}
+
+bool CoordinatePolynomial(
+    const BernsteinFacet& facet, unsigned vertex,
+    unsigned component, BernsteinPolynomial* output) noexcept {
+  if (!output || vertex >= 3 || component >= 3)
+    return false;
+  BernsteinPolynomial result;
+  result.degree = 2;
+  for (unsigned control = 0; control < 3; ++control) {
+    result.control[control] =
+        facet.coordinate[vertex][component].control[control];
+    if (!Valid(result.control[control])) return false;
+  }
+  *output = result;
+  return true;
+}
+
+bool PolynomialVectorDifference(
+    const BernsteinFacet& first, unsigned first_vertex,
+    const BernsteinFacet& second, unsigned second_vertex,
+    BernsteinPolynomial output[3]) noexcept {
+  if (!output) return false;
+  for (unsigned component = 0; component < 3; ++component) {
+    BernsteinPolynomial a, b;
+    if (!CoordinatePolynomial(
+            first, first_vertex, component, &a) ||
+        !CoordinatePolynomial(
+            second, second_vertex, component, &b) ||
+        !SubtractPolynomial(a, b, output + component))
+      return false;
+  }
+  return true;
+}
+
+bool CrossPolynomial(
+    const BernsteinPolynomial first[3],
+    const BernsteinPolynomial second[3],
+    BernsteinPolynomial output[3]) noexcept {
+  if (!first || !second || !output) return false;
+  for (unsigned component = 0; component < 3; ++component) {
+    const unsigned a = (component + 1) % 3;
+    const unsigned b = (component + 2) % 3;
+    BernsteinPolynomial positive, negative;
+    if (!MultiplyPolynomial(
+            first[a], second[b], &positive) ||
+        !MultiplyPolynomial(
+            first[b], second[a], &negative) ||
+        !SubtractPolynomial(
+            positive, negative, output + component))
+      return false;
+  }
+  return true;
+}
+
+bool DotPolynomial(
+    const BernsteinPolynomial first[3],
+    const BernsteinPolynomial second[3],
+    BernsteinPolynomial* output) noexcept {
+  if (!first || !second || !output) return false;
+  BernsteinPolynomial sum;
+  for (unsigned component = 0; component < 3; ++component) {
+    BernsteinPolynomial product;
+    if (!MultiplyPolynomial(
+            first[component], second[component], &product))
+      return false;
+    if (!component) {
+      sum = product;
+    } else if (!AddPolynomial(sum, product, &sum)) {
+      return false;
+    }
+  }
+  *output = sum;
+  return true;
+}
+
+int StrictPolynomialOrientation(
+    const BernsteinPolynomial& value,
+    bool exact_lower_zero = false,
+    bool exact_upper_zero = false) noexcept {
+  if (value.degree > 6) return 0;
+  bool positive = true;
+  bool negative = true;
+  bool have_strict_control = false;
+  for (unsigned control = 0;
+       control <= value.degree; ++control) {
+    if (!Valid(value.control[control])) return 0;
+    if ((control == 0 && exact_lower_zero) ||
+        (control == value.degree && exact_upper_zero))
+      continue;
+    have_strict_control = true;
+    positive = positive && value.control[control].lower > 0;
+    negative = negative && value.control[control].upper < 0;
+  }
+  if (!have_strict_control) return 0;
+  return positive ? 1 : (negative ? -1 : 0);
+}
+
+bool StrictPolynomialSign(
+    const BernsteinPolynomial& value,
+    bool exact_lower_zero = false,
+    bool exact_upper_zero = false) noexcept {
+  return StrictPolynomialOrientation(
+      value, exact_lower_zero, exact_upper_zero) != 0;
+}
+
+bool ExactVertexFaceCoplanar(
+    const CurrentFixedTriangle triangles[2],
+    unsigned source_side, const FacetVertexKey& source) noexcept {
+  if (!triangles || source_side >= 2) return false;
+  const unsigned source_vertex =
+      FindVertex(triangles[source_side], source);
+  const auto& target = triangles[1 - source_side];
+  if (source_vertex >= 3) return false;
+  const auto sign = fixed_triangle_features::exact::Orient3D(
+      target.vertices[0], target.vertices[1], target.vertices[2],
+      triangles[source_side].vertices[source_vertex]);
+  return sign.valid && sign.value == 0;
+}
+
+bool ExactEdgeEdgeCoplanar(
+    const CurrentFixedTriangle triangles[2],
+    const FacetEdgeKey& first_key,
+    const FacetEdgeKey& second_key) noexcept {
+  if (!triangles) return false;
+  const unsigned first_edge = FindEdge(triangles[0], first_key);
+  const unsigned second_edge = FindEdge(triangles[1], second_key);
+  if (first_edge >= 3 || second_edge >= 3)
+    return false;
+  const unsigned first[2]{
+      FindVertex(triangles[0], first_key.endpoints[0]),
+      FindVertex(triangles[0], first_key.endpoints[1])};
+  const unsigned second[2]{
+      FindVertex(triangles[1], second_key.endpoints[0]),
+      FindVertex(triangles[1], second_key.endpoints[1])};
+  if (first[0] >= 3 || first[1] >= 3 ||
+      second[0] >= 3 || second[1] >= 3 ||
+      first[0] == first[1] || second[0] == second[1])
+    return false;
+  const auto sign = fixed_triangle_features::exact::Orient3D(
+      triangles[0].vertices[first[0]],
+      triangles[0].vertices[first[1]],
+      triangles[1].vertices[second[0]],
+      triangles[1].vertices[second[1]]);
+  return sign.valid && sign.value == 0;
+}
+
+bool DotPolynomialAxis(
+    const BernsteinPolynomial vector[3], Vec3 axis,
+    BernsteinPolynomial* output) noexcept {
+  if (!vector || !output || !IsFinite(axis) ||
+      vector[0].degree != vector[1].degree ||
+      vector[0].degree != vector[2].degree ||
+      vector[0].degree > 6)
+    return false;
+  BernsteinPolynomial result;
+  result.degree = vector[0].degree;
+  for (unsigned control = 0;
+       control <= result.degree; ++control) {
+    DirectedInterval sum{};
+    for (unsigned component = 0; component < 3; ++component) {
+      const double scale = Component(axis, component);
+      DirectedInterval term;
+      if (!MultiplyDirected(
+              vector[component].control[control],
+              {scale, scale}, &term))
+        return false;
+      if (!component) {
+        sum = term;
+      } else if (!AddDirected(sum, term, &sum)) {
+        return false;
+      }
+    }
+    result.control[control] = sum;
+  }
+  *output = result;
+  return true;
+}
+
+bool SharedVertexConeSeparated(
+    const BernsteinFacet facets[2],
+    const unsigned shared[2]) noexcept {
+  if (!shared || shared[0] >= 3 || shared[1] >= 3)
+    return false;
+  Vec3 representative[2][3];
+  if (!Representative(facets[0], representative[0]) ||
+      !Representative(facets[1], representative[1]))
+    return false;
+  unsigned remote[2][2]{};
+  Vec3 arms[4];
+  unsigned arm_count = 0;
+  for (unsigned side = 0; side < 2; ++side) {
+    unsigned count = 0;
+    for (unsigned vertex = 0; vertex < 3; ++vertex)
+      if (vertex != shared[side]) {
+        if (count >= 2) return false;
+        remote[side][count++] = vertex;
+        arms[arm_count++] = Difference(
+            representative[side][vertex],
+            representative[side][shared[side]]);
+      }
+    if (count != 2) return false;
+  }
+
+  Vec3 candidates[32]{};
+  unsigned candidate_count = 0;
+  candidates[candidate_count++] = {1, 0, 0};
+  candidates[candidate_count++] = {0, 1, 0};
+  candidates[candidate_count++] = {0, 0, 1};
+  for (const auto arm : arms)
+    candidates[candidate_count++] = arm;
+  for (unsigned first = 0; first < arm_count; ++first)
+    for (unsigned second = first + 1;
+         second < arm_count; ++second)
+      candidates[candidate_count++] =
+          CrossAxis(arms[first], arms[second]);
+  candidates[candidate_count++] = Difference(
+      {arms[0].x + arms[1].x,
+       arms[0].y + arms[1].y,
+       arms[0].z + arms[1].z},
+      {arms[2].x + arms[3].x,
+       arms[2].y + arms[3].y,
+       arms[2].z + arms[3].z});
+
+  for (unsigned candidate = 0;
+       candidate < candidate_count; ++candidate) {
+    int side_sign[2]{};
+    bool separated = true;
+    for (unsigned side = 0; side < 2 && separated; ++side)
+      for (unsigned arm = 0; arm < 2; ++arm) {
+        BernsteinPolynomial direction[3], projection;
+        if (!PolynomialVectorDifference(
+                facets[side], remote[side][arm],
+                facets[side], shared[side], direction) ||
+            !DotPolynomialAxis(
+                direction, candidates[candidate], &projection)) {
+          separated = false;
+          break;
+        }
+        const int sign = StrictPolynomialOrientation(projection);
+        if (!sign || (side_sign[side] &&
+                      side_sign[side] != sign)) {
+          separated = false;
+          break;
+        }
+        side_sign[side] = sign;
+      }
+    if (separated && side_sign[0] == -side_sign[1])
+      return true;
+  }
+  return false;
+}
+
+bool FacetNondegenerate(
+    const BernsteinFacet& facet) noexcept {
+  BernsteinPolynomial first[3], second[3], normal[3];
+  if (!PolynomialVectorDifference(
+          facet, 1, facet, 0, first) ||
+      !PolynomialVectorDifference(
+          facet, 2, facet, 0, second) ||
+      !CrossPolynomial(first, second, normal))
+    return false;
+  return StrictPolynomialSign(normal[0]) ||
+      StrictPolynomialSign(normal[1]) ||
+      StrictPolynomialSign(normal[2]);
+}
+
+bool VertexFaceNeverCoplanar(
+    const BernsteinFacet facets[2],
+    const CurrentFixedTriangle triangles[2],
+    const CurrentFixedTriangle lower_triangles[2],
+    const CurrentFixedTriangle upper_triangles[2],
+    bool allow_lower_root, bool allow_upper_root,
+    unsigned source_side, unsigned source_vertex) noexcept {
+  const unsigned target_side = 1 - source_side;
+  BernsteinPolynomial delta[3], first[3], second[3], normal[3];
+  BernsteinPolynomial determinant;
+  if (!triangles || source_vertex >= 3 ||
+      !PolynomialVectorDifference(
+             facets[source_side], source_vertex,
+             facets[target_side], 0, delta) ||
+      !PolynomialVectorDifference(
+             facets[target_side], 1,
+             facets[target_side], 0, first) ||
+      !PolynomialVectorDifference(
+             facets[target_side], 2,
+             facets[target_side], 0, second) ||
+      !CrossPolynomial(first, second, normal) ||
+      !DotPolynomial(delta, normal, &determinant))
+    return false;
+  const auto& key =
+      triangles[source_side].vertex_keys[source_vertex];
+  const bool lower_zero = allow_lower_root &&
+      ExactVertexFaceCoplanar(
+          lower_triangles, source_side, key);
+  const bool upper_zero = allow_upper_root &&
+      ExactVertexFaceCoplanar(
+          upper_triangles, source_side, key);
+  return StrictPolynomialSign(
+      determinant, lower_zero, upper_zero);
+}
+
+bool EdgeVertices(
+    const CurrentFixedTriangle& triangle, unsigned edge,
+    unsigned* first, unsigned* second) noexcept {
+  if (!first || !second || edge >= 3) return false;
+  *first = FindVertex(
+      triangle, triangle.edge_keys[edge].endpoints[0]);
+  *second = FindVertex(
+      triangle, triangle.edge_keys[edge].endpoints[1]);
+  return *first < 3 && *second < 3 && *first != *second;
+}
+
+bool EdgeContainsVertex(
+    const CurrentFixedTriangle& triangle, unsigned edge,
+    const FacetVertexKey& vertex) noexcept {
+  if (edge >= 3) return false;
+  return fixed_triangle_features::Compare(
+             triangle.edge_keys[edge].endpoints[0], vertex) == 0 ||
+      fixed_triangle_features::Compare(
+             triangle.edge_keys[edge].endpoints[1], vertex) == 0;
+}
+
+bool IncidentEdgesMeetOnlyAtSharedVertex(
+    const BernsteinFacet facets[2],
+    const CurrentFixedTriangle triangles[2],
+    const unsigned shared[2], unsigned first_edge,
+    unsigned second_edge) noexcept {
+  unsigned first[2], second[2];
+  if (!shared ||
+      !EdgeVertices(
+          triangles[0], first_edge, first, first + 1) ||
+      !EdgeVertices(
+          triangles[1], second_edge, second, second + 1))
+    return false;
+  const unsigned first_other =
+      first[0] == shared[0] ? first[1] : first[0];
+  const unsigned second_other =
+      second[0] == shared[1] ? second[1] : second[0];
+  if ((first[0] != shared[0] && first[1] != shared[0]) ||
+      (second[0] != shared[1] && second[1] != shared[1]))
+    return false;
+  BernsteinPolynomial first_direction[3], second_direction[3];
+  BernsteinPolynomial cross[3];
+  if (!PolynomialVectorDifference(
+          facets[0], first_other, facets[0], shared[0],
+          first_direction) ||
+      !PolynomialVectorDifference(
+          facets[1], second_other, facets[1], shared[1],
+          second_direction) ||
+      !CrossPolynomial(first_direction, second_direction, cross))
+    return false;
+  return StrictPolynomialSign(cross[0]) ||
+      StrictPolynomialSign(cross[1]) ||
+      StrictPolynomialSign(cross[2]);
+}
+
+bool EdgeEdgeNeverCoplanar(
+    const BernsteinFacet facets[2],
+    const CurrentFixedTriangle triangles[2],
+    const CurrentFixedTriangle lower_triangles[2],
+    const CurrentFixedTriangle upper_triangles[2],
+    bool allow_lower_root, bool allow_upper_root,
+    unsigned first_edge, unsigned second_edge) noexcept {
+  unsigned first[2], second[2];
+  if (!EdgeVertices(
+          triangles[0], first_edge, first, first + 1) ||
+      !EdgeVertices(
+          triangles[1], second_edge, second, second + 1))
+    return false;
+  BernsteinPolynomial delta[3], first_direction[3];
+  BernsteinPolynomial second_direction[3], normal[3];
+  BernsteinPolynomial determinant;
+  if (!PolynomialVectorDifference(
+          facets[0], first[0],
+          facets[1], second[0], delta) ||
+      !PolynomialVectorDifference(
+          facets[0], first[1],
+          facets[0], first[0], first_direction) ||
+      !PolynomialVectorDifference(
+          facets[1], second[1],
+          facets[1], second[0], second_direction) ||
+      !CrossPolynomial(
+          first_direction, second_direction, normal) ||
+      !DotPolynomial(delta, normal, &determinant))
+    return false;
+  const auto& first_key = triangles[0].edge_keys[first_edge];
+  const auto& second_key = triangles[1].edge_keys[second_edge];
+  const bool lower_zero = allow_lower_root &&
+      ExactEdgeEdgeCoplanar(
+          lower_triangles, first_key, second_key);
+  const bool upper_zero = allow_upper_root &&
+      ExactEdgeEdgeCoplanar(
+          upper_triangles, first_key, second_key);
+  return StrictPolynomialSign(
+      determinant, lower_zero, upper_zero);
+}
+
+bool LocalSharedVertexOnly(
+    const BernsteinFacet facets[2],
+    const CurrentFixedTriangle triangles[2],
+    const CurrentFixedTriangle lower_triangles[2],
+    const CurrentFixedTriangle upper_triangles[2],
+    bool allow_lower_root, bool allow_upper_root,
+    bool* valid) noexcept {
+  if (!valid) return false;
+  *valid = true;
+  const auto shared_vertex_endpoint = [](
+      const CurrentFixedTriangle endpoint[2]) noexcept {
+    FixedTriangleIntersection intersection;
+    bool intersects = false;
+    return endpoint &&
+        fixed_triangle_features::ClassifyPairIntersection(
+            endpoint[0], endpoint[1],
+            &intersection, &intersects) ==
+            FixedTriangleDiscoveryStatus::Ok &&
+        intersects &&
+        intersection.local_exclusion ==
+            FixedTriangleLocalExclusion::SharedVertexOnly;
+  };
+  allow_lower_root = allow_lower_root &&
+      shared_vertex_endpoint(lower_triangles);
+  allow_upper_root = allow_upper_root &&
+      shared_vertex_endpoint(upper_triangles);
+  unsigned shared[2]{3, 3};
+  unsigned shared_count = 0;
+  for (unsigned first = 0; first < 3; ++first)
+    for (unsigned second = 0; second < 3; ++second)
+      if (fixed_triangle_features::Compare(
+              triangles[0].vertex_keys[first],
+              triangles[1].vertex_keys[second]) == 0) {
+        if (shared_count++) return false;
+        shared[0] = first;
+        shared[1] = second;
+      }
+  if (shared_count != 1 ||
+      !SameCoordinatePath(
+          facets[0], shared[0], facets[1], shared[1]))
+    return false;
+  if (!FacetNondegenerate(facets[0]) ||
+      !FacetNondegenerate(facets[1]))
+    return false;
+
+  // Any nonlocal triangle contact contains a VF or EE feature.  A VF can
+  // contact only when its degree-six oriented-volume polynomial is zero; the
+  // same holds for the coplanarity polynomial of two EE segments.  Bernstein
+  // controls of products are enclosed with directed arithmetic.  Strictly
+  // one-sided controls therefore exclude every nonlocal root on this complete
+  // cell.  The masked VF at the common vertex and four incident-edge pairs
+  // are the exact local topology and are skipped only after proving that the
+  // shared quadratic coordinate path is bit-identical.
+  bool no_nonlocal_root = true;
+  for (unsigned side = 0; side < 2; ++side)
+    for (unsigned vertex = 0; vertex < 3; ++vertex) {
+      if (vertex == shared[side]) continue;
+      if (!VertexFaceNeverCoplanar(
+              facets, triangles,
+              lower_triangles, upper_triangles,
+              allow_lower_root, allow_upper_root,
+              side, vertex))
+        no_nonlocal_root = false;
+    }
+  const auto& shared_key =
+      triangles[0].vertex_keys[shared[0]];
+  for (unsigned first_edge = 0; first_edge < 3; ++first_edge)
+    for (unsigned second_edge = 0; second_edge < 3;
+         ++second_edge) {
+      const bool first_incident = EdgeContainsVertex(
+          triangles[0], first_edge, shared_key);
+      const bool second_incident = EdgeContainsVertex(
+          triangles[1], second_edge, shared_key);
+      if (first_incident && second_incident) {
+        if (!IncidentEdgesMeetOnlyAtSharedVertex(
+                facets, triangles, shared, first_edge, second_edge))
+          no_nonlocal_root = false;
+        continue;
+      }
+      if (!EdgeEdgeNeverCoplanar(
+              facets, triangles,
+              lower_triangles, upper_triangles,
+              allow_lower_root, allow_upper_root,
+              first_edge, second_edge))
+        no_nonlocal_root = false;
+    }
+  if (no_nonlocal_root) return true;
+
+  // A strict through-vertex separating axis is a complete alternative proof:
+  // every nonshared point of one triangle is a positive combination of its
+  // two arm vectors. Opposite strict arm signs therefore make a common
+  // nonzero point impossible for the whole Bernstein cell.
+  return SharedVertexConeSeparated(facets, shared);
+}
+
 bool LocalSharedEdgeOnly(
     const BernsteinFacet facets[2],
     const CurrentFixedTriangle triangles[2],
     bool* valid) noexcept {
   if (!valid) return false;
-  *valid = false;
+  *valid = true;
   unsigned shared[2][2]{};
   unsigned shared_count = 0;
   for (unsigned first = 0; first < 3; ++first)
@@ -1521,6 +2126,8 @@ bool LocalSharedEdgeOnly(
 NonlinearSeparationStatus SubdivideCoverage(
     const BernsteinFacet facets[2],
     const CurrentFixedTriangle triangles[2],
+    const CurrentFixedTriangle lower_triangles[2],
+    const CurrentFixedTriangle upper_triangles[2],
     double first_thickness, double second_thickness,
     const CoverageOwner* owners, std::size_t owner_count,
     unsigned depth, unsigned max_depth, std::uint64_t path,
@@ -1554,11 +2161,33 @@ NonlinearSeparationStatus SubdivideCoverage(
       facets[0], 0, facets[1], 0, &zero_valid);
   if (!zero_valid)
     return NonlinearSeparationStatus::InvalidInput;
-  bool local_valid = false;
-  const bool local_safe = !zero_separated &&
-      LocalSharedEdgeOnly(facets, triangles, &local_valid);
-  if (!zero_separated && !local_valid)
-    local_valid = true;
+  bool edge_valid = true;
+  bool vertex_valid = true;
+  const bool edge_local_safe = !zero_separated &&
+      LocalSharedEdgeOnly(facets, triangles, &edge_valid);
+  const bool lower_boundary = path == 0;
+  const bool upper_boundary =
+      path == ((std::uint64_t{1} << depth) - 1);
+  const bool vertex_local_safe = !zero_separated &&
+      LocalSharedVertexOnly(
+          facets, triangles,
+          lower_triangles, upper_triangles,
+          lower_boundary, upper_boundary, &vertex_valid);
+  if (!edge_valid || !vertex_valid)
+    return NonlinearSeparationStatus::InvalidInput;
+  const bool local_safe =
+      edge_local_safe || vertex_local_safe;
+  if (local_safe && !result->has_intersection) {
+    // The bit-identical shared vertex/edge path is an exact intersection at
+    // every u in this cell.  Report the canonical earliest global witness.
+    // TriangleIntersection is keyed by the already-canonical pair and avoids
+    // inventing an unmasked VF/EE owner for an exactly local feature.
+    result->intersection_feature.kind =
+        RepresentedFeatureKind::TriangleIntersection;
+    result->intersection_time_numerator = 0;
+    result->intersection_time_depth = 0;
+    result->has_intersection = true;
+  }
   if (!require_geometric_safety ||
       zero_separated || local_safe) {
     for (std::size_t owner_index = 0;
@@ -1608,7 +2237,8 @@ NonlinearSeparationStatus SubdivideCoverage(
     return NonlinearSeparationStatus::InvalidInput;
   const BernsteinFacet left[2]{children[0][0], children[1][0]};
   const auto left_status = SubdivideCoverage(
-      left, triangles, first_thickness, second_thickness,
+      left, triangles, lower_triangles, upper_triangles,
+      first_thickness, second_thickness,
       owners, owner_count, depth + 1, max_depth, path << 1,
       max_work, work, deepest, result, used_coverage,
       require_geometric_safety);
@@ -1618,7 +2248,8 @@ NonlinearSeparationStatus SubdivideCoverage(
     return left_status;
   const BernsteinFacet right[2]{children[0][1], children[1][1]};
   const auto right_status = SubdivideCoverage(
-      right, triangles, first_thickness, second_thickness,
+      right, triangles, lower_triangles, upper_triangles,
+      first_thickness, second_thickness,
       owners, owner_count, depth + 1, max_depth,
       (path << 1) | 1, max_work, work, deepest,
       result, used_coverage, require_geometric_safety);
@@ -1785,6 +2416,7 @@ NonlinearSeparationResult CertifyQuadraticFacetCoverageImpl(
   bool used_coverage = false;
   result.status = SubdivideCoverage(
       facets, prepared_triangles,
+      accepted_triangles, prepared_triangles,
       first_thickness, second_thickness,
       owners, owner_count, 0, max_depth, 0,
       max_work, &result.work, &result.deepest,

@@ -6,7 +6,9 @@
 
 #include <array>
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
+#include <cstring>
 #include <iostream>
 #include <limits>
 #include <type_traits>
@@ -664,6 +666,255 @@ TEST(SelfContactTransactionValues,
       sct::NonlinearSeparationStatus::
           PossibleGeometricCrossing);
   EXPECT_TRUE(possible_crossing.depth_exhausted);
+}
+
+TEST(SelfContactTransactionValues,
+     QuadraticSharedVertexNoRootCertificateMatchesDyadicOracle) {
+  const auto first = Triangle(
+      10, {1, 2, 3},
+      {{{0, 0, 0}, {1, 0, 0}, {1, 1, 0}}});
+  const auto second = Triangle(
+      20, {1, 4, 5},
+      {{{0, 0, 0}, {0, -1, 1}, {0, -1, -1}}});
+  const auto geometry = DiscoverPreparedPair(first, second);
+  ASSERT_EQ(geometry.intersection_count, 1u);
+  ASSERT_EQ(
+      geometry.intersections[0].local_exclusion,
+      c::FixedTriangleLocalExclusion::SharedVertexOnly);
+  const auto accepted =
+      AcceptedCertificate(FirstEdgeEdge(geometry));
+  for (int integer = -8; integer <= 8; ++integer) {
+    const double q = std::ldexp(
+        static_cast<double>(integer), -4);
+    auto curved = Quadratic(0);
+    curved.q[1][2] = {q, q};
+    const auto result = sct::CertifyQuadraticFacetCoverage(
+        first, first, curved, .75,
+        second, second, Quadratic(0), .75, 1,
+        &accepted, 1, 1, 0);
+    EXPECT_EQ(
+        result.status,
+        sct::NonlinearSeparationStatus::
+            CertifiedAcceptedCoverage)
+        << "q=" << q;
+    EXPECT_EQ(result.work, 1u);
+    EXPECT_EQ(result.deepest, 0u);
+    EXPECT_TRUE(result.has_intersection);
+    EXPECT_EQ(
+        result.intersection_feature.kind,
+        c::RepresentedFeatureKind::TriangleIntersection);
+    EXPECT_EQ(result.intersection_time_numerator, 0u);
+    EXPECT_EQ(result.intersection_time_depth, 0u);
+
+    for (unsigned sample = 0; sample <= 256; ++sample) {
+      const double u = std::ldexp(
+          static_cast<double>(sample), -8);
+      auto at = first;
+      at.vertices[1].z =
+          -.5 * q * u * (1 - u);
+      c::FixedTriangleIntersection intersection;
+      bool intersects = false;
+      ASSERT_EQ(
+          c::fixed_triangle_features::ClassifyPairIntersection(
+              at, second, &intersection, &intersects),
+          c::FixedTriangleDiscoveryStatus::Ok);
+      ASSERT_TRUE(intersects)
+          << "q=" << q << " sample=" << sample;
+      EXPECT_EQ(
+          intersection.local_exclusion,
+          c::FixedTriangleLocalExclusion::SharedVertexOnly)
+          << "q=" << q << " sample=" << sample;
+    }
+  }
+}
+
+TEST(SelfContactTransactionValues,
+     QuadraticSharedVertexExactEndpointRootIsCanonical) {
+  const auto boundary = Triangle(
+      10, {1, 2, 3},
+      {{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}}});
+  const auto interior = Triangle(
+      10, {1, 2, 3},
+      {{{0, 0, 0}, {1, 0, 0}, {1, 1, 0}}});
+  const auto second = Triangle(
+      20, {1, 4, 5},
+      {{{0, 0, 0}, {0, -1, 1}, {0, -1, -1}}});
+  for (const auto& endpoints :
+       {std::array<const c::CurrentFixedTriangle*, 2>{
+            &boundary, &interior},
+        std::array<const c::CurrentFixedTriangle*, 2>{
+            &interior, &boundary}}) {
+    for (const auto* endpoint : endpoints) {
+      const auto intersection =
+          DiscoverPreparedPair(*endpoint, second);
+      ASSERT_EQ(intersection.intersection_count, 1u);
+      ASSERT_EQ(
+          intersection.intersections[0].local_exclusion,
+          c::FixedTriangleLocalExclusion::SharedVertexOnly);
+    }
+    const auto geometry =
+        DiscoverPreparedPair(*endpoints[1], second);
+    const auto accepted =
+        AcceptedCertificate(FirstEdgeEdge(geometry));
+    const auto result = sct::CertifyQuadraticFacetCoverage(
+        *endpoints[0], *endpoints[1], Quadratic(0), .75,
+        second, second, Quadratic(0), .75, 1,
+        &accepted, 1, 1, 0);
+    EXPECT_EQ(
+        result.status,
+        sct::NonlinearSeparationStatus::
+            CertifiedAcceptedCoverage);
+    EXPECT_EQ(result.work, 1u);
+    EXPECT_TRUE(result.has_intersection);
+    EXPECT_EQ(
+        result.intersection_feature.kind,
+        c::RepresentedFeatureKind::TriangleIntersection);
+    EXPECT_EQ(result.intersection_time_numerator, 0u);
+    EXPECT_EQ(result.intersection_time_depth, 0u);
+  }
+}
+
+TEST(SelfContactTransactionValues,
+     QuadraticSharedVertexRootBoundaryDegeneracyAndCapsFailClosed) {
+  const auto first = Triangle(
+      10, {1, 2, 3},
+      {{{0, 0, 0}, {1, 0, 0}, {1, 1, 0}}});
+  const auto second = Triangle(
+      20, {1, 4, 5},
+      {{{0, 0, 0}, {0, -1, 1}, {0, -1, -1}}});
+  const auto geometry = DiscoverPreparedPair(first, second);
+  const auto accepted =
+      AcceptedCertificate(FirstEdgeEdge(geometry));
+  const auto zero = Quadratic(0);
+
+  auto root_boundary = second;
+  root_boundary.vertices[2] = {0, 1, -1};
+  const auto boundary = sct::CertifyQuadraticFacetCoverage(
+      first, first, zero, .75,
+      root_boundary, root_boundary, zero, .75, 1,
+      &accepted, 1, 4095, 0);
+  EXPECT_EQ(
+      boundary.status,
+      sct::NonlinearSeparationStatus::
+          PossibleGeometricCrossing);
+  EXPECT_EQ(boundary.work, 1u);
+  EXPECT_TRUE(boundary.depth_exhausted);
+  EXPECT_FALSE(boundary.has_intersection);
+
+  auto degenerate = first;
+  degenerate.vertices[1] = degenerate.vertices[0];
+  const auto invalid_geometry =
+      sct::CertifyQuadraticFacetCoverage(
+          degenerate, degenerate, zero, .75,
+          second, second, zero, .75, 1,
+          &accepted, 1, 4095, 0);
+  EXPECT_EQ(
+      invalid_geometry.status,
+      sct::NonlinearSeparationStatus::
+          PossibleGeometricCrossing);
+  EXPECT_TRUE(invalid_geometry.depth_exhausted);
+  EXPECT_FALSE(invalid_geometry.has_intersection);
+
+  // Cross-triangle edges incident to the shared vertex can overlap away from
+  // that vertex.  Shared topology alone must not classify that nonlocal
+  // segment as an exact local exclusion.
+  const auto collinear = Triangle(
+      20, {1, 4, 5},
+      {{{0, 0, 0}, {2, 0, 0}, {0, 0, 1}}});
+  const auto collinear_geometry =
+      DiscoverPreparedPair(first, collinear);
+  const auto collinear_owner =
+      AcceptedCertificate(FirstEdgeEdge(collinear_geometry));
+  const auto overlapping_incident =
+      sct::CertifyQuadraticFacetCoverage(
+          first, first, zero, .75,
+          collinear, collinear, zero, .75, 1,
+          &collinear_owner, 1, 4095, 0);
+  EXPECT_EQ(
+      overlapping_incident.status,
+      sct::NonlinearSeparationStatus::
+          PossibleGeometricCrossing);
+  EXPECT_TRUE(overlapping_incident.depth_exhausted);
+  EXPECT_FALSE(overlapping_incident.has_intersection);
+
+  const auto capped = sct::CertifyQuadraticFacetCoverage(
+      first, first, zero, .75,
+      root_boundary, root_boundary, zero, .75, 1,
+      &accepted, 1, 1, 20);
+  EXPECT_EQ(
+      capped.status,
+      sct::NonlinearSeparationStatus::WorkExhausted);
+  EXPECT_TRUE(capped.work_exhausted);
+}
+
+TEST(SelfContactTransactionValues,
+     QuadraticSharedVertexPermutationAndRetryPreserveInputs) {
+  const auto first = Triangle(
+      10, {1, 2, 3},
+      {{{0, 0, 0}, {1, 0, 0}, {1, 1, 0}}});
+  const auto second = Triangle(
+      20, {1, 4, 5},
+      {{{0, 0, 0}, {0, -1, 1}, {0, -1, -1}}});
+  const auto geometry = DiscoverPreparedPair(first, second);
+  const auto accepted =
+      AcceptedCertificate(FirstEdgeEdge(geometry));
+  const auto zero = Quadratic(0);
+  const auto reference = sct::CertifyQuadraticFacetCoverage(
+      first, first, zero, .75,
+      second, second, zero, .75, 1,
+      &accepted, 1, 1, 0);
+  ASSERT_EQ(
+      reference.status,
+      sct::NonlinearSeparationStatus::
+          CertifiedAcceptedCoverage);
+
+  const auto first_permuted = Triangle(
+      10, {2, 3, 1},
+      {{{1, 0, 0}, {1, 1, 0}, {0, 0, 0}}});
+  const auto second_permuted = Triangle(
+      20, {5, 1, 4},
+      {{{0, -1, -1}, {0, 0, 0}, {0, -1, 1}}});
+  const auto permuted = sct::CertifyQuadraticFacetCoverage(
+      second_permuted, second_permuted, zero, .75,
+      first_permuted, first_permuted, zero, .75, 1,
+      &accepted, 1, 1, 0);
+  EXPECT_EQ(permuted.status, reference.status);
+  EXPECT_EQ(permuted.work, reference.work);
+  EXPECT_EQ(permuted.deepest, reference.deepest);
+  EXPECT_EQ(permuted.proof_digest, reference.proof_digest);
+  EXPECT_EQ(
+      permuted.intersection_feature.kind,
+      reference.intersection_feature.kind);
+  EXPECT_EQ(
+      permuted.intersection_time_numerator,
+      reference.intersection_time_numerator);
+  EXPECT_EQ(
+      permuted.intersection_time_depth,
+      reference.intersection_time_depth);
+
+  const auto first_before = first;
+  const auto second_before = second;
+  const auto accepted_before = accepted;
+  auto crossing = second;
+  crossing.vertices[2] = {0, 1, -1};
+  EXPECT_EQ(
+      sct::CertifyQuadraticFacetCoverage(
+          first, first, zero, .75,
+          crossing, crossing, zero, .75, 1,
+          &accepted, 1, 1, 20).status,
+      sct::NonlinearSeparationStatus::WorkExhausted);
+  EXPECT_EQ(std::memcmp(&first, &first_before, sizeof(first)), 0);
+  EXPECT_EQ(std::memcmp(&second, &second_before, sizeof(second)), 0);
+  EXPECT_EQ(
+      std::memcmp(
+          &accepted, &accepted_before, sizeof(accepted)),
+      0);
+  const auto retry = sct::CertifyQuadraticFacetCoverage(
+      first, first, zero, .75,
+      second, second, zero, .75, 1,
+      &accepted, 1, 1, 0);
+  EXPECT_EQ(retry.status, reference.status);
+  EXPECT_EQ(retry.proof_digest, reference.proof_digest);
 }
 
 TEST(SelfContactTransactionValues,
