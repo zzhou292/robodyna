@@ -270,7 +270,8 @@ void CheckCandidate(
         self.policy_summary.certified_separated +
             self.policy_summary.excluded_same_rigid_group +
             self.policy_summary.excluded_local_intersection +
-            self.policy_summary.represented_by_accepted_vf,
+            self.policy_summary.represented_by_accepted_vf +
+            self.policy_summary.represented_by_accepted_ee,
         self.policy_summary.outcomes);
     EXPECT_EQ(self.policy_outcomes, self.policy_summary.outcomes);
     EXPECT_EQ(
@@ -326,7 +327,8 @@ void CheckCandidate(
         << " nonlocal_intersections=0"
         << " represented_vf="
         << self.policy_summary.represented_by_accepted_vf
-        << " ee_only=0"
+        << " represented_ee="
+        << self.policy_summary.represented_by_accepted_ee
         << " unresolved=0"
         << " unsupported_motion=0"
         << " crossing_outcomes=" << crossing_outcomes
