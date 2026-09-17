@@ -287,6 +287,27 @@ vertex path, and separately reports the canonical pair intersection at exact
 time `u=0/2^0`. No true nonexcluded accepted contact remains ownerless, and no
 tolerance, seam broadening, timestep change, or thickness inflation is used.
 
+The same authenticated no-force pass now censuses all 5,809,241 affine pairs:
+926,944 swept-bound separations, 1,362,216 prism separations, 60,841 residual
+separations, 25,705 persistent accepted owners, 53 represented separations,
+3,433,481 represented crossings, and one represented `WorkExhausted` result.
+There are no represented degeneracies or arithmetic-range failures. The sole
+pair is `2142381:1`/`2230072:1`; the complete roster digest is
+`6473154677596308446`.
+
+`LinearWorkExhaustedFixture.bin` freezes that pair's endpoint paths,
+half-thicknesses, zero affine quadratic coefficients, masks, features,
+intersections, three candidate accepted owners, and feature-specific exclusion
+evidence. It is 21,408 bytes including its 208-byte header and has SHA-256
+`4ffca5180edd06640c64ca7a8ec2c84b9b460dda174f845984d77e4d0ae15236`.
+Replay takes about 0.46 seconds. The pair has no common translation, residual
+separation, persistent exact-pair owner, shared topology, endpoint
+intersection, exact exclusion, degeneracy, or arithmetic-range failure. One
+canonical seam owner covers eight cells, but the same open physical-thickness
+boundary at exact dyadic time `u=10067/131072` remains unresolved from depth
+17 through 52. Production therefore retains `WorkExhausted`; this is genuine
+ambiguity, not a certificate failure that can safely be promoted.
+
 The source-only real-geometry coupon deliberately does not construct
 `VehiclePhysicalDynamics`.
 Complete area/force/STI policy remains in TL's synthetic physical

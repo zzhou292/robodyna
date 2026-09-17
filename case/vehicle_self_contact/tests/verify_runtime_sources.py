@@ -133,7 +133,7 @@ def main() -> None:
             "SingleParentZeroPairZeroEventStillParticipatesAndCommits",
             "AcceptedInteriorEeForceCandidateRetryAndRollbackKeepForceSti",
             "ActualT3RemovalFiltersCandidateAndLongInactiveRetryCommits",
-            "ExactPassThroughUnresolvedReasonRollsBackAndRetriesExactly"]:
+            "ExactFallbackRejectsNonlocalIntersectionAndRollsBackExactly"]:
         require(control in transaction_cuda,
                 f"qualified TL transaction control is missing: {control}")
     require("ParticipationFailure" in transaction_cuda and
@@ -218,7 +218,7 @@ def main() -> None:
             "9f9cc331d07ee0dd4b12a699ecda73d00a3333fdc5788aa38e4fa79415e04545",
             "nonlinear fixture SHA-256 changed")
     for token in [
-            "ExpectedPairs = 826",
+            "ROBO_COVERAGE_EXPECTED_PAIRS 826",
             "ExpectedRosterDigest",
             "ExpectedSchemaHash",
             "ExpectedSourceHash",
@@ -237,6 +237,41 @@ def main() -> None:
             "SourceHash("]:
         require(token in nonlinear_fixture_header,
                 f"nonlinear fixture schema is missing {token}")
+    linear_fixture_header = (
+        nonlinear_fixture_dir /
+        "LinearCoverageFixture.h").read_text()
+    linear_fixture_test = (
+        nonlinear_fixture_dir /
+        "LinearCoverageFixtureTest.cpp").read_text()
+    linear_fixture = (
+        nonlinear_fixture_dir /
+        "LinearWorkExhaustedFixture.bin").read_bytes()
+    require(len(linear_fixture) == 21408,
+            "linear WorkExhausted fixture size changed")
+    require(hashlib.sha256(linear_fixture).hexdigest() ==
+            "4ffca5180edd06640c64ca7a8ec2c84b9b460dda174f845984d77e4d0ae15236",
+            "linear WorkExhausted fixture SHA-256 changed")
+    for token in [
+            "ExpectedPairs", "ExpectedRosterDigest",
+            "ExpectedCensusDigest", "ExpectedSchemaHash",
+            "ExpectedSourceHash", "ExpectedProfileHash",
+            "ExpectedDtHash", "ExpectedPayloadHash",
+            "ExpectedPayloadBytes", "ExpectedPolicyResultDigest",
+            "enforce_pins"]:
+        require(
+            token in linear_fixture_header +
+                nonlinear_fixture_header,
+            f"linear fixture schema is missing {token}")
+    for token in [
+            "CompleteRosterHasNoUnexplainedWorkExhaustion",
+            "WorkExhausted", "CertifyQuadraticFacetPolicyCoverage",
+            "unexplained", "4095", "std::memcmp",
+            "runtime_s=", "2142381", "2230072",
+            "permuted_owners", "resolved.work - 1",
+            "unresolved_path", "std::uint64_t{10067}",
+            "SourceHash(data.pairs)"]:
+        require(token in linear_fixture_test,
+                f"linear fixture replay is missing {token}")
     for token in [
             "FrozenRosterResolvesWithAuthenticatedPolicyEvidence",
             "PartialMixedLinearCandidateIsFrozenExactly",
@@ -296,11 +331,13 @@ def main() -> None:
                 f"residual-translation coupon is missing {token}")
     for token in [
             "CompleteAcceptedAssemblyRosterSkipsLinearExactTraversal",
-            "ClassifyPreparedNonlinearCandidates(",
+            "ClassifyPreparedCandidateCensus(",
             "V5_NONLINEAR_ROSTER",
             "V5_NONLINEAR_AMBIGUOUS",
             "ExpectedNonlinearRosterDigest",
             "ExpectedAmbiguousRosterDigest",
+            "ExpectedLinearCensusDigest",
+            "ExpectedLinearFixtureRosterDigest",
             "ExpectedAmbiguousRoster",
             'include "NonlinearAmbiguousRoster.inc"',
             "15183149279991149367",
@@ -313,6 +350,11 @@ def main() -> None:
             "ROBO_NONLINEAR_FIXTURE_OUTPUT",
             "FreezeNonlinearPair(",
             "FreezeAcceptedPolicies(",
+            "V5_LINEAR_ROSTER",
+            "ROBO_LINEAR_FIXTURE_OUTPUT",
+            "ROBO_LINEAR_CENSUS_ONLY",
+            "5809241", "3433535", "3433481",
+            "6473154677596308446",
             "V5_NONLINEAR_COVERAGE",
             "nonlinear_fixture::Write("]:
         require(token in candidate_coupon,
@@ -322,6 +364,9 @@ def main() -> None:
             "vehicle_self_contact_nonlinear_roster_coupon" in
             fixture_cmake and
             "vehicle_self_contact_nonlinear_fixture" in
+            fixture_cmake and
+            "vehicle_self_contact_linear_fixture" in fixture_cmake and
+            "robo_dyna_vehicle_self_contact_linear_fixture_check" in
             fixture_cmake and
             "robo_dyna_vehicle_self_contact_nonlinear_fixture_check" in
             fixture_cmake and

@@ -12,8 +12,39 @@
 #include <type_traits>
 #include <vector>
 
+#ifndef ROBO_COVERAGE_FIXTURE_NAMESPACE
+#define ROBO_COVERAGE_FIXTURE_NAMESPACE nonlinear_fixture
+#endif
+#ifndef ROBO_COVERAGE_EXPECTED_PAIRS
+#define ROBO_COVERAGE_EXPECTED_PAIRS 826
+#endif
+#ifndef ROBO_COVERAGE_EXPECTED_ROSTER_DIGEST
+#define ROBO_COVERAGE_EXPECTED_ROSTER_DIGEST 2928523903779679127ull
+#endif
+#ifndef ROBO_COVERAGE_EXPECTED_SOURCE_DIGEST
+#define ROBO_COVERAGE_EXPECTED_SOURCE_DIGEST 15183149279991149367ull
+#endif
+#ifndef ROBO_COVERAGE_EXPECTED_SCHEMA_HASH
+#define ROBO_COVERAGE_EXPECTED_SCHEMA_HASH 1586894878486140084ull
+#endif
+#ifndef ROBO_COVERAGE_EXPECTED_SOURCE_HASH
+#define ROBO_COVERAGE_EXPECTED_SOURCE_HASH 15426552270166476538ull
+#endif
+#ifndef ROBO_COVERAGE_EXPECTED_PROFILE_HASH
+#define ROBO_COVERAGE_EXPECTED_PROFILE_HASH 5356721435267868170ull
+#endif
+#ifndef ROBO_COVERAGE_EXPECTED_DT_HASH
+#define ROBO_COVERAGE_EXPECTED_DT_HASH 16186267176476366842ull
+#endif
+#ifndef ROBO_COVERAGE_EXPECTED_PAYLOAD_HASH
+#define ROBO_COVERAGE_EXPECTED_PAYLOAD_HASH 6300036658283995026ull
+#endif
+#ifndef ROBO_COVERAGE_EXPECTED_PAYLOAD_BYTES
+#define ROBO_COVERAGE_EXPECTED_PAYLOAD_BYTES 12043040ull
+#endif
+
 namespace crash::cases::vehicle_startup::shell_execution::
-    self_contact_test::nonlinear_fixture {
+    self_contact_test::ROBO_COVERAGE_FIXTURE_NAMESPACE {
 
 namespace contact = tlfea::contact;
 namespace sct = tlfea::contact::self_contact_transaction;
@@ -21,26 +52,28 @@ namespace sct = tlfea::contact::self_contact_transaction;
 inline constexpr std::uint64_t Magic = 0x3158464c4e4353ull;
 inline constexpr std::uint64_t Version = 2;
 inline constexpr std::uint64_t Endian = 0x0102030405060708ull;
-inline constexpr std::size_t ExpectedPairs = 826;
+inline constexpr std::size_t ExpectedPairs =
+    ROBO_COVERAGE_EXPECTED_PAIRS;
 inline constexpr std::size_t MaximumBytes = 64u << 20;
 inline constexpr std::size_t MaximumFeatures = 15;
 inline constexpr std::size_t MaximumIntersections = 1;
 inline constexpr std::size_t MaximumOwners = 64;
 inline constexpr std::uint64_t ExpectedRosterDigest =
-    2928523903779679127ull;
+    ROBO_COVERAGE_EXPECTED_ROSTER_DIGEST;
 inline constexpr std::uint64_t ExpectedNonlinearRosterDigest =
-    15183149279991149367ull;
+    ROBO_COVERAGE_EXPECTED_SOURCE_DIGEST;
 inline constexpr std::uint64_t ExpectedSchemaHash =
-    1586894878486140084ull;
+    ROBO_COVERAGE_EXPECTED_SCHEMA_HASH;
 inline constexpr std::uint64_t ExpectedSourceHash =
-    15426552270166476538ull;
+    ROBO_COVERAGE_EXPECTED_SOURCE_HASH;
 inline constexpr std::uint64_t ExpectedProfileHash =
-    5356721435267868170ull;
+    ROBO_COVERAGE_EXPECTED_PROFILE_HASH;
 inline constexpr std::uint64_t ExpectedDtHash =
-    16186267176476366842ull;
+    ROBO_COVERAGE_EXPECTED_DT_HASH;
 inline constexpr std::uint64_t ExpectedPayloadHash =
-    6300036658283995026ull;
-inline constexpr std::uint64_t ExpectedPayloadBytes = 12043040ull;
+    ROBO_COVERAGE_EXPECTED_PAYLOAD_HASH;
+inline constexpr std::uint64_t ExpectedPayloadBytes =
+    ROBO_COVERAGE_EXPECTED_PAYLOAD_BYTES;
 inline constexpr std::uint64_t ExpectedPolicyResultDigest =
     940115079017839607ull;
 
@@ -98,6 +131,7 @@ struct File {
     std::uint64_t dt_hash = 0;
     std::uint64_t payload_hash = 0;
     std::uint64_t payload_bytes = 0;
+    std::uint64_t roster_digest = 0;
     std::uint64_t nonlinear_roster_digest = 0;
     PhaseIdentity phase;
     std::vector<Pair> pairs;
@@ -418,12 +452,15 @@ inline void Write(
     const std::string& path, const std::vector<Pair>& pairs,
     std::uint64_t profile_hash, std::uint64_t dt_hash,
     std::uint64_t nonlinear_roster_digest,
-    const PhaseIdentity& phase) {
+    const PhaseIdentity& phase, bool enforce_pins = true) {
     const auto roster_digest = RosterDigest(pairs);
-    if (pairs.size() != ExpectedPairs ||
-        roster_digest != ExpectedRosterDigest ||
-        nonlinear_roster_digest !=
-            ExpectedNonlinearRosterDigest)
+    if (enforce_pins &&
+        ((ExpectedPairs && pairs.size() != ExpectedPairs) ||
+        (ExpectedRosterDigest &&
+         roster_digest != ExpectedRosterDigest) ||
+        (ExpectedNonlinearRosterDigest &&
+         nonlinear_roster_digest !=
+             ExpectedNonlinearRosterDigest)))
         throw std::runtime_error(
             "Nonlinear fixture source roster is not pinned");
     Writer payload;
@@ -483,7 +520,8 @@ inline void Write(
             "Cannot write nonlinear fixture output");
 }
 
-inline File Read(const std::string& path) {
+inline File Read(
+    const std::string& path, bool enforce_pins = true) {
     std::ifstream input(path, std::ios::binary | std::ios::ate);
     if (!input)
         throw std::runtime_error(
@@ -514,7 +552,9 @@ inline File Read(const std::string& path) {
     result.source_hash = reader.U64();
     result.profile_hash = reader.U64();
     result.dt_hash = reader.U64();
-    if (reader.U64() != ExpectedRosterDigest)
+    result.roster_digest = reader.U64();
+    if (enforce_pins && ExpectedRosterDigest &&
+        result.roster_digest != ExpectedRosterDigest)
         throw std::runtime_error(
             "Nonlinear fixture roster digest changed");
     result.nonlinear_roster_digest = reader.U64();
@@ -538,17 +578,17 @@ inline File Read(const std::string& path) {
     result.phase.prepared_velocity_phase = reader.U64();
     result.phase.prepared_trajectory = reader.U64();
     if (result.schema_hash != SchemaHash() ||
-        (ExpectedSchemaHash &&
+        (enforce_pins && ExpectedSchemaHash &&
          result.schema_hash != ExpectedSchemaHash) ||
-        (ExpectedSourceHash &&
+        (enforce_pins && ExpectedSourceHash &&
          result.source_hash != ExpectedSourceHash) ||
-        (ExpectedProfileHash &&
+        (enforce_pins && ExpectedProfileHash &&
          result.profile_hash != ExpectedProfileHash) ||
-        (ExpectedDtHash &&
+        (enforce_pins && ExpectedDtHash &&
          result.dt_hash != ExpectedDtHash) ||
-        (ExpectedPayloadHash &&
+        (enforce_pins && ExpectedPayloadHash &&
          result.payload_hash != ExpectedPayloadHash) ||
-        (ExpectedPayloadBytes &&
+        (enforce_pins && ExpectedPayloadBytes &&
          result.payload_bytes != ExpectedPayloadBytes) ||
         result.phase.accepted_label !=
             PhaseLabel::AcceptedOwner ||
@@ -558,9 +598,11 @@ inline File Read(const std::string& path) {
             result.phase.prepared_base_epoch ||
         result.phase.accepted_time_bits !=
             result.phase.prepared_base_time_bits ||
-        pair_count != ExpectedPairs ||
-        result.nonlinear_roster_digest !=
-            ExpectedNonlinearRosterDigest ||
+        (enforce_pins && ExpectedPairs &&
+         pair_count != ExpectedPairs) ||
+        (enforce_pins && ExpectedNonlinearRosterDigest &&
+         result.nonlinear_roster_digest !=
+             ExpectedNonlinearRosterDigest) ||
         result.payload_bytes != reader.remaining())
         throw std::runtime_error(
             "Nonlinear fixture schema or count changed");
@@ -575,7 +617,7 @@ inline File Read(const std::string& path) {
     for (std::size_t pair = 0; pair < pair_count; ++pair)
         result.pairs.push_back(ReadPair(&reader));
     if (reader.remaining() ||
-        RosterDigest(result.pairs) != ExpectedRosterDigest ||
+        RosterDigest(result.pairs) != result.roster_digest ||
         SourceHash(result.pairs) != result.source_hash)
         throw std::runtime_error(
             "Nonlinear fixture payload verification failed");

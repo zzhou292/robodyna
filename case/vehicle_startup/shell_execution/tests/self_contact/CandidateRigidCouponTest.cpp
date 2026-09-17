@@ -1,5 +1,6 @@
 #include "Source.h"
 #include "NonlinearCoverageFixture.h"
+#include "LinearCoverageFixture.h"
 
 #include "case/vehicle_dynamics/Storage.h"
 #include "case/vehicle_self_contact/RuntimeData.h"
@@ -50,8 +51,13 @@ struct AcceptedAssemblyCouponSnapshot {
     std::vector<
         tlfea::contact::self_contact_transaction::
             NonlinearCandidateRosterEntry> nonlinear_roster;
+    std::vector<
+        tlfea::contact::self_contact_transaction::
+            LinearWorkExhaustedRosterEntry> linear_roster;
     tlfea::contact::self_contact_transaction::
         NonlinearCandidateRosterSummary nonlinear_summary;
+    tlfea::contact::self_contact_transaction::
+        LinearCandidateCensusSummary linear_summary;
     tlfea::contact::self_contact_transaction::
         PreparedMotionCertificateView motion_certificates;
     tl::fea::NodalStamp accepted_stamp;
@@ -145,11 +151,15 @@ class CandidateRigidCouponAccess {
         constexpr std::size_t NonlinearRosterCapacity =
             std::size_t{1} << 20;
         result.nonlinear_roster.resize(NonlinearRosterCapacity);
+        constexpr std::size_t LinearRosterCapacity =
+            std::size_t{1} << 20;
+        result.linear_roster.resize(LinearRosterCapacity);
         std::size_t nonlinear_count = 0;
+        std::size_t linear_count = 0;
         const auto roster_report =
             tlfea::contact::self_contact_transaction::
             QualificationAccess::
-                ClassifyPreparedNonlinearCandidates(
+                ClassifyPreparedCandidateCensus(
                     stages->contact.data_->transaction,
                     owner, storage.token, storage.prepared,
                     stages->accepted_,
@@ -157,6 +167,10 @@ class CandidateRigidCouponAccess {
                     result.nonlinear_roster.size(),
                     &nonlinear_count,
                     &result.nonlinear_summary,
+                    result.linear_roster.data(),
+                    result.linear_roster.size(),
+                    &linear_count,
+                    &result.linear_summary,
                     &result.motion_certificates);
         if (roster_report.status !=
             tlfea::contact::SelfContactTransactionStatus::Ok)
@@ -167,6 +181,7 @@ class CandidateRigidCouponAccess {
                          accepted_ready).count()
                   << std::endl;
         result.nonlinear_roster.resize(nonlinear_count);
+        result.linear_roster.resize(linear_count);
         const auto certificates =
             tlfea::contact::self_contact_transaction::
                 QualificationAccess::AcceptedCertificates(
@@ -219,6 +234,10 @@ constexpr std::uint64_t ExpectedNonlinearRosterDigest =
     15183149279991149367ull;
 constexpr std::uint64_t ExpectedAmbiguousRosterDigest =
     2928523903779679127ull;
+constexpr std::uint64_t ExpectedLinearCensusDigest =
+    6473154677596308446ull;
+constexpr std::uint64_t ExpectedLinearFixtureRosterDigest =
+    10312651066629367413ull;
 
 vehicle_self_contact::RuntimeLimits
 FullAcceptedAssemblyLimits() {
@@ -828,6 +847,97 @@ nonlinear_fixture::Pair FreezeNonlinearPair(
     return result;
 }
 
+linear_fixture::Pair FreezeLinearPair(
+    const vehicle_self_contact::AcceptedAssemblyCouponSnapshot& snapshot,
+    const sct::LinearWorkExhaustedRosterEntry& entry) {
+    linear_fixture::Pair result;
+    result.facet[0] = entry.facets.first;
+    result.facet[1] = entry.facets.second;
+    result.baseline_status =
+        sct::NonlinearSeparationStatus::WorkExhausted;
+    result.baseline_work = entry.crossing.work;
+    result.baseline_depth = 20;
+    const std::uint32_t facets[2]{
+        entry.facets.first, entry.facets.second};
+    for (unsigned side = 0; side < 2; ++side) {
+        if (facets[side] >=
+            snapshot.motion_certificates.facet_count)
+            throw std::runtime_error(
+                "Linear fixture facet is out of range");
+        result.accepted[side] =
+            snapshot.motion_certificates.accepted_triangles[
+                facets[side]];
+        result.prepared[side] =
+            snapshot.motion_certificates.prepared_triangles[
+                facets[side]];
+        result.quadratic[side] =
+            snapshot.motion_certificates.quadratic[facets[side]];
+        result.half_thickness[side] =
+            snapshot.motion_certificates.descriptors[
+                facets[side]].reference_half_thickness_m;
+    }
+    contact::FixedTriangleFeatureTaskMask accepted_mask;
+    contact::FixedTriangleFeatureTaskMask prepared_mask;
+    if (contact::BuildFixedTriangleFeatureTaskMask(
+            result.accepted[0], result.accepted[1],
+            &accepted_mask) !=
+            contact::FixedTriangleDiscoveryStatus::Ok ||
+        contact::BuildFixedTriangleFeatureTaskMask(
+            result.prepared[0], result.prepared[1],
+            &prepared_mask) !=
+            contact::FixedTriangleDiscoveryStatus::Ok)
+        throw std::runtime_error(
+            "Linear fixture local mask failed");
+    result.accepted_mask = accepted_mask.local_tasks;
+    result.prepared_mask = prepared_mask.local_tasks;
+    const std::array<contact::CurrentFixedTriangle, 2> accepted{
+        result.accepted[0], result.accepted[1]};
+    const std::array<contact::CurrentFixedTriangle, 2> prepared{
+        result.prepared[0], result.prepared[1]};
+    auto accepted_geometry =
+        DiscoverDirect(accepted, accepted_mask);
+    auto prepared_geometry =
+        DiscoverDirect(prepared, prepared_mask);
+    result.accepted_features =
+        std::move(accepted_geometry.features);
+    result.prepared_features =
+        std::move(prepared_geometry.features);
+    result.accepted_intersections =
+        std::move(accepted_geometry.intersections);
+    result.prepared_intersections =
+        std::move(prepared_geometry.intersections);
+    for (const auto& certificate :
+         snapshot.accepted_certificates)
+        if (CouldOwnQuadraticPair(prepared, certificate))
+            result.accepted_owners.push_back(certificate);
+    if (result.accepted_owners.size() >
+        nonlinear_fixture::MaximumOwners)
+        throw std::runtime_error(
+            "Linear fixture owner roster exceeds hard cap");
+    return result;
+}
+
+std::uint64_t LinearCensusDigest(
+    const vehicle_self_contact::AcceptedAssemblyCouponSnapshot& snapshot) {
+    std::uint64_t hash = 1469598103934665603ull;
+    for (const auto& entry : snapshot.linear_roster) {
+        HashPath(entry.key.paths[0], &hash);
+        HashPath(entry.key.paths[1], &hash);
+        HashUnsigned(entry.task_mask.local_tasks, &hash);
+        HashUnsigned(
+            static_cast<unsigned>(entry.residual.status), &hash);
+        HashUnsigned(
+            static_cast<unsigned>(entry.persistent.status), &hash);
+        HashUnsigned(
+            static_cast<unsigned>(entry.crossing.classification),
+            &hash);
+        HashUnsigned(
+            static_cast<unsigned>(entry.crossing.reason), &hash);
+        HashUnsigned(entry.crossing.work, &hash);
+    }
+    return hash;
+}
+
 void FreezeAcceptedPolicies(
     const vehicle_self_contact::AcceptedAssemblyCouponSnapshot& snapshot,
     std::vector<nonlinear_fixture::Pair>* pairs) {
@@ -863,6 +973,35 @@ void FreezeAcceptedPolicies(
         (*pairs)[pair].accepted_policy.assign(
             policy.begin() + offsets[pair],
             policy.begin() + offsets[pair + 1]);
+}
+
+std::vector<sct::AcceptedFeatureExclusionCertificate>
+FrozenSameRigidExclusions(
+    const nonlinear_fixture::Pair& pair) {
+    std::vector<sct::AcceptedFeatureExclusionCertificate> result;
+    for (std::size_t feature = 0;
+         feature < pair.accepted_features.size(); ++feature) {
+        const auto& evidence = pair.accepted_policy[feature];
+        if (evidence.pair_status !=
+                contact::SelfContactPairStatus::
+                    ExcludedSameRigidGroup ||
+            evidence.endpoint_support[0].status !=
+                contact::SelfContactSupportStatus::
+                    CompleteRigidGroup ||
+            evidence.endpoint_support[1].status !=
+                contact::SelfContactSupportStatus::
+                    CompleteRigidGroup ||
+            evidence.endpoint_support[0].complete_rigid_group !=
+                evidence.endpoint_support[1].
+                    complete_rigid_group)
+            continue;
+        result.push_back({
+            pair.accepted_features[feature],
+            static_cast<std::uint32_t>(
+                evidence.endpoint_support[0].
+                    complete_rigid_group)});
+    }
+    return result;
 }
 
 std::uint64_t FixtureProfileHash() {
@@ -2053,6 +2192,217 @@ TEST(VehicleSelfContactNonlinearRosterCoupon,
     EXPECT_EQ(snapshot.prepared_view.proposed_time -
                   snapshot.prepared_view.base_time,
               PhysicalStepS);
+    ASSERT_TRUE(snapshot.linear_summary.complete);
+    ASSERT_TRUE(snapshot.linear_summary.roster_complete);
+    ASSERT_EQ(
+        snapshot.linear_roster.size(),
+        snapshot.linear_summary.represented_work_exhausted);
+
+    std::vector<nonlinear_fixture::Pair> linear_fixture_pairs;
+    linear_fixture_pairs.reserve(snapshot.linear_roster.size());
+    for (const auto& entry : snapshot.linear_roster)
+        linear_fixture_pairs.push_back(
+            FreezeLinearPair(snapshot, entry));
+    FreezeAcceptedPolicies(snapshot, &linear_fixture_pairs);
+    std::array<std::size_t, 10> linear_after{};
+    std::size_t linear_after_work = 0;
+    std::size_t linear_shared_vertex = 0;
+    std::size_t linear_shared_edge = 0;
+    std::size_t linear_actual_intersection = 0;
+    for (std::size_t index = 0;
+         index < linear_fixture_pairs.size(); ++index) {
+        const auto& pair = linear_fixture_pairs[index];
+        for (const auto& first : pair.prepared[0].vertex_keys)
+            for (const auto& second :
+                 pair.prepared[1].vertex_keys)
+                linear_shared_vertex +=
+                    contact::SameFacetVertexKey(first, second);
+        for (const auto& first : pair.prepared[0].edge_keys)
+            for (const auto& second :
+                 pair.prepared[1].edge_keys)
+                linear_shared_edge +=
+                    contact::SameFacetEdgeKey(first, second);
+        linear_actual_intersection +=
+            !pair.prepared_intersections.empty() &&
+            contact::RequiresIntersectionAdmission(
+                pair.prepared_intersections[0]);
+        const auto exclusions =
+            FrozenSameRigidExclusions(pair);
+        const auto resolved =
+            sct::CertifyQuadraticFacetPolicyCoverage(
+                pair.accepted[0], pair.prepared[0],
+                pair.quadratic[0], pair.half_thickness[0],
+                pair.accepted[1], pair.prepared[1],
+                pair.quadratic[1], pair.half_thickness[1],
+                PhysicalStepS,
+                pair.accepted_owners.data(),
+                pair.accepted_owners.size(),
+                exclusions.data(), exclusions.size(),
+                4095, 20);
+        const auto status =
+            static_cast<unsigned>(resolved.status);
+        ASSERT_LT(status, linear_after.size());
+        ++linear_after[status];
+        linear_after_work += resolved.work;
+        if (resolved.status !=
+                sct::NonlinearSeparationStatus::
+                    CertifiedSeparated &&
+            resolved.status !=
+                sct::NonlinearSeparationStatus::
+                    CertifiedAcceptedCoverage &&
+            resolved.status !=
+                sct::NonlinearSeparationStatus::
+                    CertifiedExactExclusion) {
+            std::cout << "V5_LINEAR_ROSTER_UNRESOLVED"
+                      << " index=" << index
+                      << " first="
+                      << pair.prepared[0].key.parent_eid
+                      << ":"
+                      << pair.prepared[0].key.local_facet
+                      << " second="
+                      << pair.prepared[1].key.parent_eid
+                      << ":"
+                      << pair.prepared[1].key.local_facet
+                      << " status=" << status
+                      << " work=" << resolved.work
+                      << " depth=" << resolved.deepest
+                      << " owners="
+                      << pair.accepted_owners.size()
+                      << " exclusions=" << exclusions.size()
+                      << " accepted_features="
+                      << pair.accepted_features.size()
+                      << " prepared_features="
+                      << pair.prepared_features.size()
+                      << " accepted_mask="
+                      << pair.accepted_mask
+                      << " prepared_mask="
+                      << pair.prepared_mask
+                      << " actual_intersection="
+                      << (!pair.prepared_intersections.empty() &&
+                          contact::RequiresIntersectionAdmission(
+                              pair.prepared_intersections[0]))
+                      << '\n';
+        }
+    }
+    const auto linear_digest = LinearCensusDigest(snapshot);
+    std::cout << "V5_LINEAR_ROSTER"
+              << " affine_pairs="
+              << snapshot.linear_summary.affine_pairs
+              << " swept_separated="
+              << snapshot.linear_summary.swept_bounds_separated
+              << " prism_separated="
+              << snapshot.linear_summary.prism_separated
+              << " exact_geometry="
+              << snapshot.linear_summary.exact_geometry_pairs
+              << " common_translation="
+              << snapshot.linear_summary.common_translation
+              << " residual_separated="
+              << snapshot.linear_summary.residual_separated
+              << " persistent_accepted="
+              << snapshot.linear_summary.persistent_accepted
+              << " represented_pairs="
+              << snapshot.linear_summary.represented_pairs
+              << " represented_separated="
+              << snapshot.linear_summary.represented_separated
+              << " represented_crossing="
+              << snapshot.linear_summary.represented_crossing
+              << " represented_degenerate="
+              << snapshot.linear_summary.represented_degenerate
+              << " represented_work_exhausted="
+              << snapshot.linear_summary.represented_work_exhausted
+              << " represented_arithmetic="
+              << snapshot.linear_summary.
+                     represented_arithmetic_range
+              << " represented_work="
+              << snapshot.linear_summary.represented_work
+              << " roster_digest=" << linear_digest
+              << " fixture_roster_digest="
+              << nonlinear_fixture::RosterDigest(
+                     linear_fixture_pairs)
+              << " after_work=" << linear_after_work
+              << " shared_vertices=" << linear_shared_vertex
+              << " shared_edges=" << linear_shared_edge
+              << " actual_intersections="
+              << linear_actual_intersection;
+    for (std::size_t status = 0;
+         status < linear_after.size(); ++status)
+        std::cout << " after" << status
+                  << "=" << linear_after[status];
+    std::cout << '\n';
+    EXPECT_EQ(snapshot.linear_summary.affine_pairs, 5809241u);
+    EXPECT_EQ(
+        snapshot.linear_summary.swept_bounds_separated, 926944u);
+    EXPECT_EQ(snapshot.linear_summary.prism_separated, 1362216u);
+    EXPECT_EQ(
+        snapshot.linear_summary.exact_geometry_pairs, 3520081u);
+    EXPECT_EQ(snapshot.linear_summary.common_translation, 28447u);
+    EXPECT_EQ(snapshot.linear_summary.residual_separated, 60841u);
+    EXPECT_EQ(snapshot.linear_summary.persistent_accepted, 25705u);
+    EXPECT_EQ(snapshot.linear_summary.represented_pairs, 3433535u);
+    EXPECT_EQ(snapshot.linear_summary.represented_separated, 53u);
+    EXPECT_EQ(snapshot.linear_summary.represented_crossing, 3433481u);
+    EXPECT_EQ(snapshot.linear_summary.represented_degenerate, 0u);
+    EXPECT_EQ(
+        snapshot.linear_summary.represented_work_exhausted, 1u);
+    EXPECT_EQ(
+        snapshot.linear_summary.represented_arithmetic_range, 0u);
+    EXPECT_EQ(snapshot.linear_summary.represented_work, 3437629u);
+    EXPECT_EQ(linear_digest, ExpectedLinearCensusDigest);
+    ASSERT_EQ(linear_fixture_pairs.size(), 1u);
+    EXPECT_EQ(
+        nonlinear_fixture::RosterDigest(linear_fixture_pairs),
+        ExpectedLinearFixtureRosterDigest);
+    EXPECT_EQ(
+        linear_fixture_pairs[0].prepared[0].key.parent_eid,
+        2142381u);
+    EXPECT_EQ(
+        linear_fixture_pairs[0].prepared[0].key.local_facet, 1u);
+    EXPECT_EQ(
+        linear_fixture_pairs[0].prepared[1].key.parent_eid,
+        2230072u);
+    EXPECT_EQ(
+        linear_fixture_pairs[0].prepared[1].key.local_facet, 1u);
+    EXPECT_EQ(
+        linear_after,
+        (std::array<std::size_t, 10>{
+            0, 1, 0, 0, 0, 0, 0, 0, 0, 0}));
+    EXPECT_EQ(linear_after_work, 29u);
+    EXPECT_EQ(linear_shared_vertex, 0u);
+    EXPECT_EQ(linear_shared_edge, 0u);
+    EXPECT_EQ(linear_actual_intersection, 0u);
+    if (const char* output =
+            std::getenv("ROBO_LINEAR_FIXTURE_OUTPUT");
+        output && *output) {
+        linear_fixture::Write(
+            output, linear_fixture_pairs,
+            FixtureProfileHash(),
+            FixtureDtHash(snapshot.prepared_view),
+            linear_digest, FixturePhaseIdentity(snapshot));
+        const auto fixture = nonlinear_fixture::Read(
+            output, false);
+        std::cout << "V5_LINEAR_FIXTURE"
+                  << " path=" << output
+                  << " pairs=" << fixture.pairs.size()
+                  << " payload_bytes="
+                  << fixture.payload_bytes
+                  << " payload_hash="
+                  << fixture.payload_hash
+                  << " roster_digest="
+                  << fixture.roster_digest
+                  << " source_hash="
+                  << fixture.source_hash
+                  << " schema_hash="
+                  << fixture.schema_hash
+                  << " profile_hash="
+                  << fixture.profile_hash
+                  << " dt_hash="
+                  << fixture.dt_hash << '\n';
+    }
+    if (std::getenv("ROBO_LINEAR_CENSUS_ONLY")) {
+        std::cout << "V5_LINEAR_CENSUS_ONLY authenticated=1\n";
+        dynamics.DiscardStep();
+        return;
+    }
 
     std::size_t rigid_or_mixed = 0;
     std::size_t affine_rigid_or_mixed = 0;

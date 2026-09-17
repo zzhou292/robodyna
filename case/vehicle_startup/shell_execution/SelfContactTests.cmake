@@ -40,6 +40,25 @@ add_test(NAME vehicle_self_contact_nonlinear_fixture
 set_tests_properties(vehicle_self_contact_nonlinear_fixture PROPERTIES
   TIMEOUT 30 RUN_SERIAL TRUE PROCESSORS 1
   LABELS "unit;nonlinear-fixture;accepted-ledger;bounded-subdivision")
+add_executable(robo_dyna_vehicle_self_contact_linear_fixture_check
+  tests/self_contact/LinearCoverageFixtureTest.cpp)
+target_link_libraries(
+  robo_dyna_vehicle_self_contact_linear_fixture_check PRIVATE
+  tl_self_contact_transaction
+  tl_fixed_triangle_feature_discovery
+  tl_represented_interval_crossing
+  GTest::gtest_main)
+target_compile_options(
+  robo_dyna_vehicle_self_contact_linear_fixture_check PRIVATE
+  -fno-fast-math -ffp-contract=off)
+target_compile_definitions(
+  robo_dyna_vehicle_self_contact_linear_fixture_check PRIVATE
+  ROBO_LINEAR_FIXTURE_PATH="${CMAKE_CURRENT_LIST_DIR}/tests/self_contact/LinearWorkExhaustedFixture.bin")
+add_test(NAME vehicle_self_contact_linear_fixture
+  COMMAND robo_dyna_vehicle_self_contact_linear_fixture_check)
+set_tests_properties(vehicle_self_contact_linear_fixture PROPERTIES
+  TIMEOUT 30 RUN_SERIAL TRUE PROCESSORS 1
+  LABELS "unit;linear-fixture;accepted-ledger;bounded-work")
 add_test(NAME vehicle_self_contact_source_original COMMAND "${Python3_EXECUTABLE}" -B
   "${CMAKE_CURRENT_LIST_DIR}/../../../modelio/self_contact/tests/actual_fixture.py"
   "${ROBO_DYNA_VEHICLE_CANONICAL}" "${ROBO_DYNA_VEHICLE_SCOPE}"
