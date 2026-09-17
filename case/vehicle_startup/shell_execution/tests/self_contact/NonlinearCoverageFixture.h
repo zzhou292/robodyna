@@ -21,28 +21,28 @@ namespace sct = tlfea::contact::self_contact_transaction;
 inline constexpr std::uint64_t Magic = 0x3158464c4e4353ull;
 inline constexpr std::uint64_t Version = 2;
 inline constexpr std::uint64_t Endian = 0x0102030405060708ull;
-inline constexpr std::size_t ExpectedPairs = 317;
+inline constexpr std::size_t ExpectedPairs = 826;
 inline constexpr std::size_t MaximumBytes = 64u << 20;
 inline constexpr std::size_t MaximumFeatures = 15;
 inline constexpr std::size_t MaximumIntersections = 1;
 inline constexpr std::size_t MaximumOwners = 64;
 inline constexpr std::uint64_t ExpectedRosterDigest =
-    5323377919321694088ull;
+    2928523903779679127ull;
 inline constexpr std::uint64_t ExpectedNonlinearRosterDigest =
     15183149279991149367ull;
 inline constexpr std::uint64_t ExpectedSchemaHash =
     1586894878486140084ull;
 inline constexpr std::uint64_t ExpectedSourceHash =
-    4825344264679849320ull;
+    15426552270166476538ull;
 inline constexpr std::uint64_t ExpectedProfileHash =
     5356721435267868170ull;
 inline constexpr std::uint64_t ExpectedDtHash =
     16186267176476366842ull;
 inline constexpr std::uint64_t ExpectedPayloadHash =
-    10280089436718511198ull;
-inline constexpr std::uint64_t ExpectedPayloadBytes = 5634192ull;
+    6300036658283995026ull;
+inline constexpr std::uint64_t ExpectedPayloadBytes = 12043040ull;
 inline constexpr std::uint64_t ExpectedPolicyResultDigest =
-    18118431942842192826ull;
+    940115079017839607ull;
 
 enum class PhaseLabel : std::uint64_t {
     AcceptedOwner = 1,
@@ -419,8 +419,9 @@ inline void Write(
     std::uint64_t profile_hash, std::uint64_t dt_hash,
     std::uint64_t nonlinear_roster_digest,
     const PhaseIdentity& phase) {
+    const auto roster_digest = RosterDigest(pairs);
     if (pairs.size() != ExpectedPairs ||
-        RosterDigest(pairs) != ExpectedRosterDigest ||
+        roster_digest != ExpectedRosterDigest ||
         nonlinear_roster_digest !=
             ExpectedNonlinearRosterDigest)
         throw std::runtime_error(
@@ -443,7 +444,7 @@ inline void Write(
     header.U64(SourceHash(pairs));
     header.U64(profile_hash);
     header.U64(dt_hash);
-    header.U64(ExpectedRosterDigest);
+    header.U64(roster_digest);
     header.U64(nonlinear_roster_digest);
     header.U64(pairs.size());
     header.U64(payload.bytes().size());

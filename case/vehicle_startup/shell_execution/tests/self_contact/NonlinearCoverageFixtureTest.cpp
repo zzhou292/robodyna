@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <array>
 #include <chrono>
+#include <cmath>
 #include <cstdint>
 #include <cstring>
 #include <iomanip>
@@ -430,8 +431,8 @@ TEST(VehicleSelfContactNonlinearFixture,
         if (!pair_index) {
             EXPECT_EQ(
                 accepted_minimum,
-                0.00086444683106572876);
-            EXPECT_EQ(thickness, 0.001065);
+                0.00311983599422213);
+            EXPECT_EQ(thickness, 0.00336);
         }
         bool pair_nonexcluded_ownerless = false;
         const auto accepted_category =
@@ -665,6 +666,13 @@ TEST(VehicleSelfContactNonlinearFixture,
             static_cast<unsigned>(result.status);
         ASSERT_LT(status, statuses.size());
         ++statuses[status];
+        if (result.status ==
+            sct::NonlinearSeparationStatus::PotentialContact) {
+            EXPECT_EQ(pair.prepared[0].key.parent_eid, 2278266u);
+            EXPECT_EQ(pair.prepared[0].key.local_facet, 0u);
+            EXPECT_EQ(pair.prepared[1].key.parent_eid, 2278271u);
+            EXPECT_EQ(pair.prepared[1].key.local_facet, 0u);
+        }
         work += result.work;
         deepest = std::max(deepest, result.deepest);
         fixture::HashPath(pair.prepared[0].key, &result_digest);
@@ -713,9 +721,61 @@ TEST(VehicleSelfContactNonlinearFixture,
                 << " depth_exhausted="
                 << result.depth_exhausted
                 << '\n';
+        if (!resolved) {
+            for (unsigned phase = 0; phase < 2; ++phase)
+                for (unsigned side = 0; side < 2; ++side)
+                    for (unsigned vertex = 0; vertex < 3; ++vertex) {
+                        const auto& point =
+                            (phase ? pair.prepared : pair.accepted)[
+                                side].vertices[vertex];
+                        std::cout
+                            << "NONLINEAR_UNRESOLVED_VERTEX"
+                            << " phase=" << phase
+                            << " side=" << side
+                            << " vertex=" << vertex
+                            << " xyz=" << std::hexfloat
+                            << point.x << "," << point.y << ","
+                            << point.z << std::defaultfloat << '\n';
+                    }
+            for (unsigned side = 0; side < 2; ++side)
+                for (unsigned vertex = 0; vertex < 3; ++vertex)
+                    for (unsigned component = 0; component < 3;
+                         ++component)
+                        std::cout
+                            << "NONLINEAR_UNRESOLVED_Q"
+                            << " side=" << side
+                            << " vertex=" << vertex
+                            << " component=" << component
+                            << " interval=" << std::hexfloat
+                            << pair.quadratic[side].
+                                   q[vertex][component].lower
+                            << ","
+                            << pair.quadratic[side].
+                                   q[vertex][component].upper
+                            << std::defaultfloat << '\n';
+            for (unsigned phase = 0; phase < 2; ++phase) {
+                const auto& intersections = phase
+                    ? pair.prepared_intersections
+                    : pair.accepted_intersections;
+                for (const auto& intersection : intersections)
+                    std::cout
+                        << "NONLINEAR_UNRESOLVED_INTERSECTION"
+                        << " phase=" << phase
+                        << " kind="
+                        << static_cast<unsigned>(intersection.kind)
+                        << " local_exclusion="
+                        << static_cast<unsigned>(
+                               intersection.local_exclusion)
+                        << '\n';
+            }
+        }
     }
     EXPECT_EQ(fixture::SourceHash(data.pairs), source_before);
     EXPECT_EQ(unresolved, 0u);
+    EXPECT_EQ(
+        statuses[static_cast<unsigned>(
+            sct::NonlinearSeparationStatus::PotentialContact)],
+        0u);
     EXPECT_EQ(
         statuses[static_cast<unsigned>(
             sct::NonlinearSeparationStatus::
@@ -725,7 +785,7 @@ TEST(VehicleSelfContactNonlinearFixture,
         statuses[static_cast<unsigned>(
             sct::NonlinearSeparationStatus::
                 CertifiedAcceptedCoverage)],
-        5u);
+        514u);
     EXPECT_EQ(
         statuses[static_cast<unsigned>(
             sct::NonlinearSeparationStatus::
@@ -744,12 +804,12 @@ TEST(VehicleSelfContactNonlinearFixture,
     EXPECT_EQ(
         pair_categories[static_cast<unsigned>(
             AcceptedPairCategory::SeamOrDedupOwnerOutsidePair)],
-        1u);
+        262u);
     EXPECT_EQ(
         pair_categories[static_cast<unsigned>(
             AcceptedPairCategory::
                 ActualLedgerOmissionOrLookupBug)],
-        4u);
+        252u);
     EXPECT_EQ(
         result_digest,
         fixture::ExpectedPolicyResultDigest);
@@ -818,6 +878,254 @@ TEST(VehicleSelfContactNonlinearFixture,
               << " prepared_velocity_phase="
               << data.phase.prepared_velocity_phase;
     std::cout << '\n';
+}
+
+TEST(VehicleSelfContactNonlinearFixture,
+     PartialMixedLinearCandidateIsFrozenExactly) {
+    constexpr std::size_t ReceiptCandidatePair = 289078;
+    const auto data = fixture::Read(
+        ROBO_NONLINEAR_FIXTURE_PATH);
+    const auto found = std::find_if(
+        data.pairs.begin(), data.pairs.end(),
+        [](const fixture::Pair& pair) {
+            return pair.prepared[0].key.parent_eid == 2112794 &&
+                pair.prepared[0].key.local_facet == 0 &&
+                pair.prepared[1].key.parent_eid == 2113455 &&
+                pair.prepared[1].key.local_facet == 1;
+        });
+    ASSERT_NE(found, data.pairs.end());
+    const auto& pair = *found;
+    EXPECT_EQ(
+        pair.baseline_status,
+        sct::NonlinearSeparationStatus::DepthExhausted);
+    EXPECT_EQ(pair.baseline_work, 21u);
+    EXPECT_EQ(pair.baseline_depth, 20u);
+    EXPECT_EQ(pair.accepted_mask, 23058u);
+    EXPECT_EQ(pair.prepared_mask, 23058u);
+    EXPECT_TRUE(pair.quadratic[0].complete);
+    EXPECT_TRUE(pair.quadratic[1].complete);
+    EXPECT_NE(pair.quadratic[0].q[0][0].lower, 0);
+    for (unsigned vertex = 0; vertex < 3; ++vertex)
+        for (unsigned component = 0; component < 3; ++component)
+            if (vertex) {
+                EXPECT_EQ(
+                    pair.quadratic[0].q[vertex][component].lower,
+                    0);
+                EXPECT_EQ(
+                    pair.quadratic[0].q[vertex][component].upper,
+                    0);
+            }
+    for (unsigned vertex = 0; vertex < 3; ++vertex)
+        for (unsigned component = 0; component < 3; ++component) {
+            EXPECT_EQ(
+                pair.quadratic[1].q[vertex][component].lower, 0);
+            EXPECT_EQ(
+                pair.quadratic[1].q[vertex][component].upper, 0);
+        }
+    EXPECT_EQ(pair.accepted_intersections.size(), 1u);
+    EXPECT_EQ(pair.prepared_intersections.size(), 1u);
+    EXPECT_EQ(pair.accepted_owners.size(), 2u);
+    for (const auto feature : {1u, 4u})
+        for (unsigned side = 0; side < 2; ++side) {
+            EXPECT_TRUE(pair.accepted_policy[feature].active[side]);
+            EXPECT_EQ(
+                pair.accepted_policy[feature].
+                    endpoint_support[side].status,
+                contact::SelfContactSupportStatus::
+                    AdmittedOrdinary);
+            EXPECT_EQ(
+                pair.accepted_policy[feature].
+                    endpoint_support[side].
+                        complete_rigid_group,
+                SIZE_MAX);
+        }
+    EXPECT_EQ(
+        pair.accepted_intersections[0].kind,
+        contact::FixedTriangleIntersectionKind::Transverse);
+    EXPECT_EQ(
+        pair.accepted_intersections[0].local_exclusion,
+        contact::FixedTriangleLocalExclusion::SharedVertexOnly);
+    EXPECT_EQ(
+        pair.prepared_intersections[0].kind,
+        contact::FixedTriangleIntersectionKind::Transverse);
+    EXPECT_EQ(
+        pair.prepared_intersections[0].local_exclusion,
+        contact::FixedTriangleLocalExclusion::SharedVertexOnly);
+    EXPECT_EQ(
+        contact::fixed_triangle_features::Compare(
+            pair.accepted[0].vertex_keys[2],
+            pair.accepted[1].vertex_keys[0]),
+        0);
+    EXPECT_TRUE(SamePoint(
+        pair.accepted[0].vertices[2],
+        pair.accepted[1].vertices[0]));
+    EXPECT_TRUE(SamePoint(
+        pair.prepared[0].vertices[2],
+        pair.prepared[1].vertices[0]));
+    EXPECT_EQ(
+        std::memcmp(
+            pair.quadratic[0].q[2],
+            pair.quadratic[1].q[0],
+            sizeof(pair.quadratic[0].q[2])),
+        0);
+
+    const auto owners = AcceptedOwnersFromPolicy(pair);
+    const auto exclusions = AcceptedExclusionsFromPolicy(pair);
+    const auto raw_result =
+        sct::CertifyQuadraticFacetPolicyCoverage(
+            pair.accepted[0], pair.prepared[0],
+            pair.quadratic[0], pair.half_thickness[0],
+            pair.accepted[1], pair.prepared[1],
+            pair.quadratic[1], pair.half_thickness[1], 2e-7,
+            pair.accepted_owners.data(),
+            pair.accepted_owners.size(),
+            exclusions.data(), exclusions.size(), 4095, 20);
+    const auto result = sct::CertifyQuadraticFacetPolicyCoverage(
+        pair.accepted[0], pair.prepared[0],
+        pair.quadratic[0], pair.half_thickness[0],
+        pair.accepted[1], pair.prepared[1],
+        pair.quadratic[1], pair.half_thickness[1], 2e-7,
+        owners.data(), owners.size(),
+        exclusions.data(), exclusions.size(), 4095, 20);
+    EXPECT_EQ(
+        raw_result.status,
+        sct::NonlinearSeparationStatus::
+            CertifiedAcceptedCoverage);
+    EXPECT_EQ(
+        result.status,
+        sct::NonlinearSeparationStatus::
+            CertifiedAcceptedCoverage);
+    EXPECT_EQ(raw_result.accepted_source_order, 9421u);
+    EXPECT_EQ(result.accepted_source_order, 51u);
+    EXPECT_TRUE(raw_result.has_intersection);
+    EXPECT_TRUE(result.has_intersection);
+    EXPECT_EQ(
+        result.intersection_feature.kind,
+        contact::RepresentedFeatureKind::TriangleIntersection);
+    EXPECT_EQ(result.intersection_time_numerator, 0u);
+    EXPECT_EQ(result.intersection_time_depth, 0u);
+
+    std::cout << std::setprecision(17)
+              << "TARGET_PAIR"
+              << " candidate_pair=" << ReceiptCandidatePair
+              << " fixture_index="
+              << std::distance(data.pairs.begin(), found)
+              << " baseline_status="
+              << static_cast<unsigned>(pair.baseline_status)
+              << " baseline_work=" << pair.baseline_work
+              << " baseline_depth=" << pair.baseline_depth
+              << " inconclusive_u=[0,1/1048576]"
+              << " inconclusive_time_s=[0,"
+              << std::ldexp(2e-7, -20) << "]"
+              << " accepted_mask=" << pair.accepted_mask
+              << " prepared_mask=" << pair.prepared_mask
+              << " thickness=" << pair.half_thickness[0] +
+                     pair.half_thickness[1]
+              << " half_thickness=" << pair.half_thickness[0]
+              << "," << pair.half_thickness[1]
+              << " accepted_features="
+              << pair.accepted_features.size()
+              << " prepared_features="
+              << pair.prepared_features.size()
+              << " accepted_intersections="
+              << pair.accepted_intersections.size()
+              << " prepared_intersections="
+              << pair.prepared_intersections.size()
+              << " owners=" << owners.size()
+              << " exclusions=" << exclusions.size()
+              << " policy_status="
+              << static_cast<unsigned>(result.status)
+              << " raw_policy_status="
+              << static_cast<unsigned>(raw_result.status)
+              << " raw_policy_source_order="
+              << raw_result.accepted_source_order
+              << " intersection_feature="
+              << static_cast<unsigned>(
+                     result.intersection_feature.kind)
+              << " intersection_u="
+              << result.intersection_time_numerator
+              << "/2^" << result.intersection_time_depth
+              << " policy_work=" << result.work
+              << " policy_depth=" << result.deepest << '\n';
+    for (unsigned phase = 0; phase < 2; ++phase)
+        for (unsigned side = 0; side < 2; ++side)
+            for (unsigned vertex = 0; vertex < 3; ++vertex) {
+                const auto& point =
+                    (phase ? pair.prepared : pair.accepted)[side].
+                        vertices[vertex];
+                std::cout << "TARGET_VERTEX"
+                          << " phase=" << phase
+                          << " side=" << side
+                          << " vertex=" << vertex
+                          << " xyz=" << point.x << ","
+                          << point.y << "," << point.z << '\n';
+            }
+    for (unsigned side = 0; side < 2; ++side)
+        for (unsigned vertex = 0; vertex < 3; ++vertex)
+            for (unsigned component = 0; component < 3; ++component)
+                std::cout << "TARGET_Q"
+                          << " side=" << side
+                          << " vertex=" << vertex
+                          << " component=" << component
+                          << " interval="
+                          << std::hexfloat
+                          << pair.quadratic[side].q[vertex][component].
+                                 lower
+                          << ","
+                          << pair.quadratic[side].q[vertex][component].
+                                 upper
+                          << std::defaultfloat << '\n';
+    for (unsigned phase = 0; phase < 2; ++phase) {
+        const auto& intersections = phase
+            ? pair.prepared_intersections
+            : pair.accepted_intersections;
+        for (const auto& intersection : intersections)
+            std::cout << "TARGET_INTERSECTION"
+                      << " phase=" << phase
+                      << " kind="
+                      << static_cast<unsigned>(intersection.kind)
+                      << " local_exclusion="
+                      << static_cast<unsigned>(
+                             intersection.local_exclusion)
+                      << " requires_admission="
+                      << contact::RequiresIntersectionAdmission(
+                             intersection)
+                      << '\n';
+    }
+    for (std::size_t feature = 0;
+         feature < pair.accepted_features.size(); ++feature) {
+        const auto& value = pair.accepted_features[feature];
+        const auto& policy = pair.accepted_policy[feature];
+        std::cout << "TARGET_ACCEPTED_FEATURE"
+                  << " index=" << feature
+                  << " kind="
+                  << static_cast<unsigned>(value.key.kind)
+                  << " local=" << value.local_features[0]
+                  << "," << value.local_features[1]
+                  << " distance=" << value.distance_m
+                  << " error=" << value.representation_error_m
+                  << " pair_status="
+                  << static_cast<unsigned>(policy.pair_status)
+                  << " active=" << policy.active[0]
+                  << "," << policy.active[1]
+                  << " support="
+                  << static_cast<unsigned>(
+                         policy.endpoint_support[0].status)
+                  << ":"
+                  << policy.endpoint_support[0].
+                         complete_rigid_group
+                  << ","
+                  << static_cast<unsigned>(
+                         policy.endpoint_support[1].status)
+                  << ":"
+                  << policy.endpoint_support[1].
+                         complete_rigid_group
+                  << " local_incidence=" << policy.local_incidence
+                  << " ledger=" << policy.ledger_key_matches
+                  << ":" << policy.ledger_exact_pair_matches
+                  << ":" << policy.first_ledger_source_order
+                  << '\n';
+    }
 }
 
 }  // namespace

@@ -210,15 +210,15 @@ def main() -> None:
     nonlinear_fixture = (
         nonlinear_fixture_dir /
         "NonlinearAmbiguousFixture.bin").read_bytes()
-    require(ambiguous_roster.count("},") == 317,
-            "nonlinear ambiguous roster must pin exactly 317 pairs")
-    require(len(nonlinear_fixture) == 5634400,
+    require(ambiguous_roster.count("},") == 826,
+            "nonlinear ambiguous roster must pin exactly 826 pairs")
+    require(len(nonlinear_fixture) == 12043248,
             "nonlinear fixture size changed")
     require(hashlib.sha256(nonlinear_fixture).hexdigest() ==
-            "8d0a97d60d871e5bd524d66b8732f9655f6f5b66b53481c106c23e0ccc4cdcdb",
+            "9f9cc331d07ee0dd4b12a699ecda73d00a3333fdc5788aa38e4fa79415e04545",
             "nonlinear fixture SHA-256 changed")
     for token in [
-            "ExpectedPairs = 317",
+            "ExpectedPairs = 826",
             "ExpectedRosterDigest",
             "ExpectedSchemaHash",
             "ExpectedSourceHash",
@@ -239,6 +239,10 @@ def main() -> None:
                 f"nonlinear fixture schema is missing {token}")
     for token in [
             "FrozenRosterResolvesWithAuthenticatedPolicyEvidence",
+            "PartialMixedLinearCandidateIsFrozenExactly",
+            "ReceiptCandidatePair = 289078",
+            "inconclusive_u=[0,1/1048576]",
+            "intersection_time_numerator",
             "VerifyEndpoint(",
             "CertifyQuadraticFacetPolicyCoverage(",
             "AcceptedOwnersFromPolicy(",

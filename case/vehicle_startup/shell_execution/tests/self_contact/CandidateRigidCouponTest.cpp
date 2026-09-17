@@ -218,7 +218,7 @@ constexpr std::uint64_t SelfContactSourceId =
 constexpr std::uint64_t ExpectedNonlinearRosterDigest =
     15183149279991149367ull;
 constexpr std::uint64_t ExpectedAmbiguousRosterDigest =
-    5323377919321694088ull;
+    2928523903779679127ull;
 
 vehicle_self_contact::RuntimeLimits
 FullAcceptedAssemblyLimits() {
@@ -964,25 +964,7 @@ constexpr CanonicalFacetPair ExpectedAmbiguousRoster[]{
 };
 static_assert(
     sizeof(ExpectedAmbiguousRoster) /
-        sizeof(*ExpectedAmbiguousRoster) == 317);
-
-std::size_t ExpectedAmbiguousIndex(
-    const sct::NonlinearCandidateRosterEntry& entry) {
-    const auto& first = entry.key.paths[0];
-    const auto& second = entry.key.paths[1];
-    for (std::size_t index = 0;
-         index < sizeof(ExpectedAmbiguousRoster) /
-             sizeof(*ExpectedAmbiguousRoster);
-         ++index) {
-        const auto& expected = ExpectedAmbiguousRoster[index];
-        if (first.parent_eid == expected.first_eid &&
-            first.local_facet == expected.first_local &&
-            second.parent_eid == expected.second_eid &&
-            second.local_facet == expected.second_local)
-            return index;
-    }
-    return SIZE_MAX;
-}
+        sizeof(*ExpectedAmbiguousRoster) == 826);
 
 struct NonlinearPairEvidence {
     NonlinearEvidenceClass classification =
@@ -2094,17 +2076,16 @@ TEST(VehicleSelfContactNonlinearRosterCoupon,
               snapshot.nonlinear_summary.
                   affine_rigid_or_mixed_facets);
 
-    // The complete exact nonlinear-only census is pinned below. Recurring
-    // coupon work rechecks every raw quadratic identity and the full genuine
-    // ambiguous roster, rather than replaying 66,038 already-classified exact
-    // feature rosters on every run.
-    const std::array<std::size_t, static_cast<unsigned>(
-        NonlinearEvidenceClass::Count)> classes{
-            52505, 7561, 5655, 317, 0};
-    const std::array<std::size_t, static_cast<unsigned>(
-        NonlinearAfterClass::Count)> after_classes{
-            52505, 7561, 5655, 317};
-    std::size_t target_pair_count = 0;
+    // Inspect every unresolved quadratic pair before consulting the frozen
+    // roster. The fixture includes both pairs still unclassified after the
+    // residual/persistence passes and local-intersection+persistent-ledger
+    // pairs whose coverage path must independently exclude a nonlocal
+    // crossing. This scope prevents the pinned IDs from defining their own
+    // census while avoiding fixture replay for already proved classes.
+    std::array<std::size_t, static_cast<unsigned>(
+        NonlinearEvidenceClass::Count)> classes{};
+    std::array<std::size_t, static_cast<unsigned>(
+        NonlinearAfterClass::Count)> after_classes{};
     std::vector<NonlinearPairEvidence> evidence(
         snapshot.nonlinear_roster.size());
     std::atomic<std::size_t> next{0};
@@ -2117,8 +2098,6 @@ TEST(VehicleSelfContactNonlinearRosterCoupon,
             const auto& entry = snapshot.nonlinear_roster[index];
             if (entry.separation.status ==
                 sct::NonlinearSeparationStatus::CertifiedSeparated)
-                continue;
-            if (ExpectedAmbiguousIndex(entry) == SIZE_MAX)
                 continue;
             evidence[index] =
                 InspectNonlinearPair(snapshot, entry);
@@ -2150,25 +2129,18 @@ TEST(VehicleSelfContactNonlinearRosterCoupon,
             snapshot.motion_certificates.prepared_triangles[
                 entry.facets.second];
 
-        const bool target =
-            ((first.key.parent_eid == 2100306 &&
-              first.key.local_facet == 0 &&
-              second.key.parent_eid == 2100329 &&
-              second.key.local_facet == 1) ||
-             (second.key.parent_eid == 2100306 &&
-              second.key.local_facet == 0 &&
-              first.key.parent_eid == 2100329 &&
-              first.key.local_facet == 1));
-        target_pair_count += target;
-        if (ExpectedAmbiguousIndex(entry) == SIZE_MAX)
-            continue;
         const auto& inspected = evidence[index];
         ASSERT_TRUE(inspected.valid) << "roster index " << index;
-        EXPECT_EQ(
-            inspected.after,
-            NonlinearAfterClass::PossibleCurvedCrossing);
-        if (inspected.after !=
-            NonlinearAfterClass::PossibleCurvedCrossing)
+        ++classes[static_cast<unsigned>(
+            inspected.classification)];
+        ++after_classes[static_cast<unsigned>(
+            inspected.after)];
+        const bool geometry_result_class =
+            inspected.after ==
+                NonlinearAfterClass::PossibleCurvedCrossing ||
+            (inspected.local && inspected.ledger &&
+             inspected.endpoint_contact);
+        if (!geometry_result_class)
             continue;
         ambiguous_roster.push_back({
             first.key.parent_eid, first.key.local_facet,
@@ -2383,7 +2355,6 @@ TEST(VehicleSelfContactNonlinearRosterCoupon,
         EXPECT_EQ(ambiguous_roster[pair].second_local,
                   ExpectedAmbiguousRoster[pair].second_local);
     }
-    EXPECT_EQ(target_pair_count, 1u);
     EXPECT_EQ(snapshot.nonlinear_summary.unresolved,
               std::accumulate(
                   after_classes.begin(), after_classes.end(),

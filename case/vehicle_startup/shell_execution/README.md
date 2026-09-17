@@ -249,33 +249,43 @@ diagnostics now publish nonlinear work/depth exhaustion from the actual
 prepared owner, while the general exact-dyadic/subdivision tests cover the
 nonzero-curvature certificate without rerunning full V5.
 
-`NonlinearAmbiguousFixture.bin` freezes the exact 317-pair nonlinear input
-after that source-derived pass: canonical triangle/topology identities,
+`NonlinearAmbiguousFixture.bin` freezes the complete 826-pair nonlinear
+geometry-result class after that source-derived pass: all post-pass possible
+curved crossings plus every local-intersection/persistent-ledger pair whose
+quadratic coverage must exclude a nonlocal intersection. It stores canonical
+triangle/topology identities,
 accepted/prepared binary64 geometry, outward exact-dyadic quadratic
 coefficient intervals, both half-thicknesses, endpoint feature candidates and
 representation errors, local masks/intersections, and every matching accepted
 VF/EE owner certificate. Schema v2 also freezes each accepted feature's
 active-use status, endpoint support, force-area values, distance decision,
 canonical ledger search counts, and explicit accepted/prepared phase identity.
-Its schema caps the payload at 64 MiB; the current file is 5,634,400 bytes
+Its schema caps the payload at 64 MiB; the current file is 12,043,248 bytes
 including its 208-byte header and has SHA-256
-`8d0a97d60d871e5bd524d66b8732f9655f6f5b66b53481c106c23e0ccc4cdcdb`.
+`9f9cc331d07ee0dd4b12a699ecda73d00a3333fdc5788aa38e4fa79415e04545`.
 The pinned roster/payload/source/schema/profile/dt hashes are verified before
 any proof is run. The direct `vehicle_self_contact_nonlinear_fixture` test
 regenerates both endpoint feature publications, then reruns bounded quadratic
-coverage with pair, ledger, and repeated-call permutations in about 2.3
+coverage with pair, ledger, and repeated-call permutations in about 3.1
 seconds without loading the vehicle.
 
-The accepted-policy evidence resolves the apparent owner contradiction. All
-317 pairs do enter thickness at an accepted endpoint, but 312 have only exact
-same-rigid-group close features. Four locally incident shared-edge pairs have
-exact accepted boundary-VF events, and one pair has two canonical lower seam
-owners. The former fixture lookup incorrectly recognized only face-interior
-VF, so it reported `MissingAcceptedOwner` for exact edge-stratum events. The
-bounded replay now resolves 312 as exact authenticated support exclusions and
-five through accepted ledger coverage. No true nonexcluded accepted contact
-remains ownerless, and no tolerance, seam broadening, timestep change, or
-thickness inflation is used.
+The accepted-policy evidence resolves the reported owner contradiction.
+Of 826 pairs, 312 have only exact same-rigid-group close features and 514
+resolve through authenticated accepted-ledger coverage. The final endpoint-root
+case, `2278266:0`/`2278271:0`, is proved by a strict through-vertex separating
+axis over the complete quadratic cell; the axis places both moving arms of
+each triangle on opposite open half-spaces without a tolerance.
+`2112794:0`/`2113455:1` is an exact
+shared-vertex-only intersection. Its pair-local frozen owners select accepted
+source order 9421; replay of all authenticated policy matches restores the
+lower exact-pair source order 51, which is the canonical owner. Its prior
+zero-thickness SAT bound remained inconclusive on `[0,2^-20]` (physical time
+`[0,1.9073486328125e-13] s`) because only shared-edge topology had a
+whole-cell proof. The degree-six directed-Bernstein VF/EE no-root certificate
+now proves that no nonlocal feature can cross while retaining the exact local
+vertex path, and separately reports the canonical pair intersection at exact
+time `u=0/2^0`. No true nonexcluded accepted contact remains ownerless, and no
+tolerance, seam broadening, timestep change, or thickness inflation is used.
 
 The source-only real-geometry coupon deliberately does not construct
 `VehiclePhysicalDynamics`.
