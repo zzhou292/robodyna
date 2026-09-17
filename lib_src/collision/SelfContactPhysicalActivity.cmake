@@ -4,6 +4,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/../elements/ShellBatchPublication.cmake")
 
 add_library(tl_self_contact_physical_activity_values STATIC
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_physical_activity/Layout.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/self_contact_physical_activity/Selection.h"
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_physical_activity/Values.cpp")
 target_link_libraries(tl_self_contact_physical_activity_values PUBLIC
   tl_self_contact_active_uses

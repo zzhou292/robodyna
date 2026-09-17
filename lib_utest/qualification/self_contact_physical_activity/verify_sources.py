@@ -8,6 +8,7 @@ HEADER = ROOT / "lib_src/collision/SelfContactPhysicalActivity.h"
 TYPES = ROOT / "lib_src/collision/SelfContactPhysicalActivityTypes.h"
 ACTIVITY = ROOT / "lib_src/collision/self_contact_physical_activity/Activity.cpp"
 STORAGE = ROOT / "lib_src/collision/self_contact_physical_activity/Storage.h"
+SELECTION = ROOT / "lib_src/collision/self_contact_physical_activity/Selection.h"
 PUBLICATION = ROOT / "lib_src/elements/publication/PhysicalReadback.cpp"
 CMAKE = ROOT / "lib_src/collision/SelfContactPhysicalActivity.cmake"
 BAZEL = ROOT / "lib_src/collision/BUILD.bazel"
@@ -23,6 +24,7 @@ header = HEADER.read_text()
 types = TYPES.read_text()
 activity = ACTIVITY.read_text()
 storage = STORAGE.read_text()
+selection = SELECTION.read_text()
 publication = PUBLICATION.read_text()
 
 for token in (
@@ -34,6 +36,7 @@ for token in (
     "CopyPreparedParentActivity(",
     "source.family_index",
     "ValidateTransition(&base, &current, 1)",
+    "ValidateSelectionRows(",
 ):
     require(activity, token, ACTIVITY)
 
@@ -72,9 +75,10 @@ for token in (
 
 for forbidden in ("std::vector", "std::map", "std::function",
                   "cudaMalloc"):
-    if forbidden in activity:
-        raise RuntimeError(
-            f"{ACTIVITY}: forbidden per-attempt allocation token {forbidden!r}")
+    for source, path in ((activity, ACTIVITY), (selection, SELECTION)):
+        if forbidden in source:
+            raise RuntimeError(
+                f"{path}: forbidden per-attempt allocation token {forbidden!r}")
 
 for path in (CMAKE, BAZEL):
     text = path.read_text()
@@ -82,8 +86,12 @@ for path in (CMAKE, BAZEL):
         "self_contact_physical_activity/Activity.cpp",
         "self_contact_physical_activity/Layout.cpp",
         "self_contact_physical_activity/Values.cpp",
+        "self_contact_physical_activity/Selection.h",
     ):
         require(text, token, path)
+
+for path in (HERE / "CMakeLists.txt", HERE / "BUILD.bazel"):
+    require(path.read_text(), "SelectionTest.cpp", path)
 
 cuda = CUDA.read_text()
 for token in (

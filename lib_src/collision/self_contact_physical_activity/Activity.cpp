@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
+#include "Selection.h"
 
 #include "lib_src/solvers/NodalTrialIdentity.h"
 
@@ -100,40 +101,19 @@ SelfContactPhysicalActivityReport ValidateSelection(
         "Active-use and failure-capable physical source differ");
   const auto& shells = *physical.shells();
   const auto parents = active_use.parents();
-  if (!parents.size())
-    return Failure(S::InvalidInput,
-        "Self-contact activity selection is empty");
-  for (std::size_t parent = 0; parent < parents.size(); ++parent) {
-    const auto& source = parents[parent].source;
-    const auto count = FamilyCount(shells, source.family);
-    if ((source.family != fe::ShellBindingFamily::Qeph &&
-         source.family != fe::ShellBindingFamily::T3 &&
-         source.family != fe::ShellBindingFamily::Qbat) ||
-        source.family_index >= count ||
-        !source.source_parent_id ||
-        SourceParent(shells, source.family, source.family_index) !=
-            source.source_parent_id) {
-      auto report = Failure(S::IdentityMismatch,
-          "Selected parent is not an exact QEPH/T3/QBAT inventory row");
-      report.parent = parent;
-      report.family = source.family;
-      report.family_index = source.family_index;
-      return report;
-    }
-    for (std::size_t prior = 0; prior < parent; ++prior) {
-      const auto& other = parents[prior].source;
-      if (other.family == source.family &&
-          other.family_index == source.family_index) {
-        auto report = Failure(S::IdentityMismatch,
-            "Selected activity inventory repeats a physical family row");
-        report.parent = parent;
-        report.family = source.family;
-        report.family_index = source.family_index;
-        return report;
-      }
-    }
-  }
-  return {};
+  return activity::ValidateSelectionRows(parents.size(),
+      [&](std::size_t parent) noexcept -> const fe::ShellPlasticityParentInput& {
+        return parents[parent].source;
+      },
+      [&](const fe::ShellPlasticityParentInput& source) noexcept {
+        const auto count = FamilyCount(shells, source.family);
+        return (source.family == fe::ShellBindingFamily::Qeph ||
+                source.family == fe::ShellBindingFamily::T3 ||
+                source.family == fe::ShellBindingFamily::Qbat) &&
+            source.family_index < count && source.source_parent_id &&
+            SourceParent(shells, source.family, source.family_index) ==
+                source.source_parent_id;
+      });
 }
 
 const std::uint8_t* FamilyValues(

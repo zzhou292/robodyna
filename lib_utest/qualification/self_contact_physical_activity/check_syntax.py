@@ -15,6 +15,7 @@ output.mkdir(parents=True, exist_ok=True)
 probe = output / "PublicProbe.cpp"
 probe.write_text(
     '#include "lib_src/collision/SelfContactPhysicalActivity.h"\n'
+    '#include "lib_src/collision/self_contact_physical_activity/Selection.h"\n'
     "#include <type_traits>\n"
     "using namespace tlfea::contact;\n"
     "static_assert(!std::is_aggregate_v<SelfContactAcceptedActivityReceipt>);\n"
@@ -22,7 +23,12 @@ probe.write_text(
     "static_assert(!std::is_copy_constructible_v<SelfContactPhysicalActivity>);\n"
     "int main(){ SelfContactAcceptedActivityReceipt a; "
     "SelfContactPreparedActivityReceipt p; "
-    "return a.valid() || p.valid(); }\n"
+    "tl::fea::ShellPlasticityParentInput row; "
+    "const auto selection = self_contact_physical_activity::ValidateSelectionRows("
+    "0, [&](std::size_t) noexcept -> const tl::fea::ShellPlasticityParentInput& "
+    "{ return row; }, [](const auto&) noexcept { return false; }); "
+    "return a.valid() || p.valid() || "
+    "selection.status != SelfContactPhysicalActivityStatus::InvalidInput; }\n"
 )
 
 common = [

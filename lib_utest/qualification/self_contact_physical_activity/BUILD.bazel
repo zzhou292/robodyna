@@ -3,7 +3,7 @@ load("@rules_cc//cc:defs.bzl", "cc_test")
 cc_test(
     name = "host_check",
     size = "small",
-    srcs = ["ValueTest.cpp"],
+    srcs = ["SelectionTest.cpp", "ValueTest.cpp"],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [
         "//lib_src/collision:self_contact_physical_activity_values",
@@ -19,6 +19,7 @@ cc_test(
         "BUILD.bazel",
         "CMakeLists.txt",
         "CudaTest.cu",
+        "SelectionTest.cpp",
         "check_syntax.py",
         "verify_sources.py",
         "//lib_src/collision:self_contact_physical_activity_source_proof",

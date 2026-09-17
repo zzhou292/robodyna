@@ -236,6 +236,7 @@ filegroup(
         "SelfContactPhysicalActivityTypes.h",
         "self_contact_physical_activity/Activity.cpp",
         "self_contact_physical_activity/Layout.cpp",
+        "self_contact_physical_activity/Selection.h",
         "self_contact_physical_activity/Storage.h",
         "self_contact_physical_activity/Values.cpp",
         "//lib_src/elements:ShellBatchPublication.h",
@@ -252,6 +253,7 @@ cc_library(
     hdrs = [
         "SelfContactPhysicalActivity.h",
         "SelfContactPhysicalActivityTypes.h",
+        "self_contact_physical_activity/Selection.h",
         "self_contact_physical_activity/Storage.h",
     ],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],

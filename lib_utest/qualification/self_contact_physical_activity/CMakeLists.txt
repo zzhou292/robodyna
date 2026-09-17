@@ -8,6 +8,7 @@ get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
 
 add_executable(self_contact_physical_activity_values
   ValueTest.cpp
+  SelectionTest.cpp
   "${TL_ROOT}/lib_src/collision/self_contact_physical_activity/Layout.cpp"
   "${TL_ROOT}/lib_src/collision/self_contact_physical_activity/Values.cpp")
 target_include_directories(self_contact_physical_activity_values PRIVATE
