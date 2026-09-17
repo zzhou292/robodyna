@@ -133,6 +133,7 @@ def main() -> None:
             "SingleParentZeroPairZeroEventStillParticipatesAndCommits",
             "AcceptedInteriorEeForceCandidateRetryAndRollbackKeepForceSti",
             "ActualT3RemovalFiltersCandidateAndLongInactiveRetryCommits",
+            "ExactAffineClosedVfTransitionIsBitwiseDeterministic",
             "ExactFallbackRejectsNonlocalIntersectionAndRollsBackExactly"]:
         require(control in transaction_cuda,
                 f"qualified TL transaction control is missing: {control}")
@@ -267,8 +268,9 @@ def main() -> None:
             "WorkExhausted", "CertifyQuadraticFacetPolicyCoverage",
             "unexplained", "4095", "std::memcmp",
             "runtime_s=", "2142381", "2230072",
-            "permuted_owners", "resolved.work - 1",
-            "unresolved_path", "std::uint64_t{10067}",
+            "permuted_owners", "no_owner", "one_bit_owner",
+            "one_bit_geometry", "has_contact_transition",
+            "345915413587096", "std::uint64_t{10067}",
             "SourceHash(data.pairs)"]:
         require(token in linear_fixture_test,
                 f"linear fixture replay is missing {token}")

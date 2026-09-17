@@ -303,10 +303,23 @@ evidence. It is 21,408 bytes including its 208-byte header and has SHA-256
 Replay takes about 0.46 seconds. The pair has no common translation, residual
 separation, persistent exact-pair owner, shared topology, endpoint
 intersection, exact exclusion, degeneracy, or arithmetic-range failure. One
-canonical seam owner covers eight cells, but the same open physical-thickness
-boundary at exact dyadic time `u=10067/131072` remains unresolved from depth
-17 through 52. Production therefore retains `WorkExhausted`; this is genuine
-ambiguity, not a certificate failure that can safely be promoted.
+canonical seam VF owner, accepted source order 931 from
+`2142378:0`/`2230072:1`, maps onto the candidate's identical source vertex and
+target face; the other two candidate ledger rows do not map. Exact arithmetic
+shows that `u=10067/131072` is still inside this owner's closed contact set, so
+the old repeated cell was an outward-interval stall rather than an ownership
+change.
+
+The closed-set certificate proves over the complete affine interval that the
+target face stays nondegenerate, the moving closest point stays strictly in
+the same face interior, and the source vertex remains the unique support
+vertex on one strict side of the face. Its exact degree-six clearance
+polynomial is strictly decreasing with one contact-ending root isolated in
+`[345915413587096,345915413587097]/2^52`. Before and at the root the canonical
+VF is owned by source order 931; after it, the same face normal strictly
+separates the thickened triangles. Zero-thickness geometry is strictly
+separated throughout. The fixture now resolves in one work item with no
+tolerance or sampled closure assumption.
 
 The source-only real-geometry coupon deliberately does not construct
 `VehiclePhysicalDynamics`.

@@ -8,9 +8,11 @@
 #include <algorithm>
 #include <array>
 #include <chrono>
+#include <cmath>
 #include <cstdint>
 #include <cstring>
 #include <iostream>
+#include <limits>
 #include <numeric>
 #include <vector>
 
@@ -257,13 +259,34 @@ TEST(VehicleSelfContactLinearFixture,
             sct::PersistentLinearContactStatus::PotentialChange);
         EXPECT_EQ(
             resolved.status,
-            sct::NonlinearSeparationStatus::PotentialContact);
-        EXPECT_EQ(resolved.work, 29u);
-        EXPECT_EQ(resolved.deepest, 20u);
-        EXPECT_EQ(resolved.covered_cells, 8u);
+            sct::NonlinearSeparationStatus::
+                CertifiedAcceptedCoverage);
+        EXPECT_EQ(resolved.work, 1u);
+        EXPECT_EQ(resolved.deepest, 0u);
+        EXPECT_EQ(resolved.covered_cells, 1u);
+        EXPECT_EQ(resolved.closed_covered_cells, 1u);
         EXPECT_EQ(resolved.separated_cells, 0u);
         EXPECT_FALSE(resolved.has_intersection);
-        EXPECT_TRUE(resolved.has_unresolved_cell);
+        EXPECT_FALSE(resolved.has_unresolved_cell);
+        EXPECT_TRUE(resolved.has_contact_transition);
+        EXPECT_FALSE(resolved.transition_time_exact);
+        EXPECT_TRUE(
+            resolved.transition_zero_geometry_separated);
+        EXPECT_EQ(resolved.accepted_certificate, 0u);
+        EXPECT_EQ(resolved.accepted_source_order, 931u);
+        EXPECT_EQ(
+            resolved.transition_feature.kind,
+            contact::RepresentedFeatureKind::VertexFace);
+        EXPECT_EQ(resolved.transition_time_depth, 52u);
+        EXPECT_EQ(
+            resolved.transition_time_lower_numerator,
+            345915413587096ull);
+        EXPECT_GT(
+            resolved.transition_time_lower_numerator,
+            std::uint64_t{10067} << 35);
+        EXPECT_LT(
+            resolved.transition_time_lower_numerator,
+            std::uint64_t{10068} << 35);
         EXPECT_EQ(repeated.status, resolved.status);
         EXPECT_EQ(repeated.work, resolved.work);
         EXPECT_EQ(
@@ -271,6 +294,15 @@ TEST(VehicleSelfContactLinearFixture,
         EXPECT_EQ(reversed.status, resolved.status);
         EXPECT_EQ(reversed.work, resolved.work);
         EXPECT_EQ(reversed.deepest, resolved.deepest);
+        EXPECT_EQ(
+            reversed.accepted_source_order,
+            resolved.accepted_source_order);
+        EXPECT_EQ(
+            reversed.transition_time_lower_numerator,
+            resolved.transition_time_lower_numerator);
+        EXPECT_EQ(
+            reversed.transition_time_depth,
+            resolved.transition_time_depth);
         EXPECT_EQ(
             reversed.unresolved_path, resolved.unresolved_path);
         EXPECT_EQ(
@@ -291,8 +323,67 @@ TEST(VehicleSelfContactLinearFixture,
         EXPECT_EQ(permuted.work, resolved.work);
         EXPECT_EQ(permuted.proof_digest, resolved.proof_digest);
         EXPECT_EQ(
+            permuted.accepted_source_order,
+            resolved.accepted_source_order);
+        EXPECT_EQ(
+            permuted.transition_time_lower_numerator,
+            resolved.transition_time_lower_numerator);
+        EXPECT_EQ(
             permuted.unresolved_path, resolved.unresolved_path);
-        const auto capped =
+        const auto no_owner =
+            sct::CertifyQuadraticFacetPolicyCoverage(
+                pair.accepted[0], pair.prepared[0],
+                pair.quadratic[0], pair.half_thickness[0],
+                pair.accepted[1], pair.prepared[1],
+                pair.quadratic[1], pair.half_thickness[1],
+                2e-7, nullptr, 0,
+                exclusions.data(), exclusions.size(),
+                4095, 20);
+        EXPECT_EQ(
+            no_owner.status,
+            sct::NonlinearSeparationStatus::MissingAcceptedOwner);
+        auto one_bit_owner = pair.accepted_owners[0];
+        one_bit_owner.discovery.key.vertex_face.vertex.
+            source_instance_id ^= 1;
+        one_bit_owner.event.feature =
+            one_bit_owner.discovery.key;
+        const auto one_bit =
+            sct::CertifyQuadraticFacetPolicyCoverage(
+                pair.accepted[0], pair.prepared[0],
+                pair.quadratic[0], pair.half_thickness[0],
+                pair.accepted[1], pair.prepared[1],
+                pair.quadratic[1], pair.half_thickness[1],
+                2e-7, &one_bit_owner, 1,
+                exclusions.data(), exclusions.size(),
+                4095, 20);
+        EXPECT_EQ(
+            one_bit.status,
+            sct::NonlinearSeparationStatus::MissingAcceptedOwner);
+        const double perturbed_thickness = std::nextafter(
+            pair.half_thickness[0],
+            std::numeric_limits<double>::infinity());
+        const auto one_bit_geometry =
+            sct::CertifyQuadraticFacetPolicyCoverage(
+                pair.accepted[0], pair.prepared[0],
+                pair.quadratic[0], perturbed_thickness,
+                pair.accepted[1], pair.prepared[1],
+                pair.quadratic[1], pair.half_thickness[1],
+                2e-7, pair.accepted_owners.data(),
+                pair.accepted_owners.size(),
+                exclusions.data(), exclusions.size(),
+                4095, 20);
+        EXPECT_EQ(
+            one_bit_geometry.status,
+            sct::NonlinearSeparationStatus::
+                CertifiedAcceptedCoverage);
+        EXPECT_TRUE(one_bit_geometry.has_contact_transition);
+        EXPECT_NE(
+            one_bit_geometry.transition_time_lower_numerator,
+            resolved.transition_time_lower_numerator);
+        EXPECT_NE(
+            one_bit_geometry.proof_digest,
+            resolved.proof_digest);
+        const auto zero_budget =
             sct::CertifyQuadraticFacetPolicyCoverage(
                 pair.accepted[0], pair.prepared[0],
                 pair.quadratic[0], pair.half_thickness[0],
@@ -301,11 +392,10 @@ TEST(VehicleSelfContactLinearFixture,
                 2e-7, pair.accepted_owners.data(),
                 pair.accepted_owners.size(),
                 exclusions.data(), exclusions.size(),
-                resolved.work - 1, 20);
+                0, 20);
         EXPECT_EQ(
-            capped.status,
-            sct::NonlinearSeparationStatus::WorkExhausted);
-        EXPECT_EQ(capped.work, resolved.work - 1);
+            zero_budget.status,
+            sct::NonlinearSeparationStatus::InvalidInput);
         const auto status =
             static_cast<unsigned>(resolved.status);
         ASSERT_LT(status, after.size());
@@ -360,16 +450,21 @@ TEST(VehicleSelfContactLinearFixture,
                       << '\n';
             EXPECT_EQ(
                 deep.status,
-                sct::NonlinearSeparationStatus::PotentialContact);
-            EXPECT_EQ(deep.work, depth + 9u);
-            EXPECT_EQ(deep.deepest, depth);
-            EXPECT_EQ(deep.covered_cells, 8u);
+                sct::NonlinearSeparationStatus::
+                    CertifiedAcceptedCoverage);
+            EXPECT_EQ(deep.work, 1u);
+            EXPECT_EQ(deep.deepest, 0u);
+            EXPECT_EQ(deep.covered_cells, 1u);
+            EXPECT_EQ(deep.closed_covered_cells, 1u);
             EXPECT_EQ(deep.separated_cells, 0u);
-            EXPECT_TRUE(deep.has_unresolved_cell);
-            EXPECT_EQ(deep.unresolved_depth, depth);
+            EXPECT_FALSE(deep.has_unresolved_cell);
+            EXPECT_TRUE(deep.has_contact_transition);
+            EXPECT_TRUE(
+                deep.transition_zero_geometry_separated);
+            EXPECT_EQ(deep.transition_time_depth, 52u);
             EXPECT_EQ(
-                deep.unresolved_path,
-                std::uint64_t{10067} << (depth - 17));
+                deep.transition_time_lower_numerator,
+                resolved.transition_time_lower_numerator);
         }
         std::size_t seam_owners = 0;
         std::size_t exact_pair_owners = 0;
@@ -383,6 +478,87 @@ TEST(VehicleSelfContactLinearFixture,
         EXPECT_EQ(seam_owners, 1u);
         EXPECT_EQ(exact_pair_owners, 0u);
         EXPECT_TRUE(exclusions.empty());
+        for (std::size_t owner = 0;
+             owner < pair.accepted_owners.size(); ++owner) {
+            const auto& certificate = pair.accepted_owners[owner];
+            const auto single =
+                sct::CertifyQuadraticFacetPolicyCoverage(
+                    pair.accepted[0], pair.prepared[0],
+                    pair.quadratic[0], pair.half_thickness[0],
+                    pair.accepted[1], pair.prepared[1],
+                    pair.quadratic[1], pair.half_thickness[1],
+                    2e-7, &certificate, 1,
+                    nullptr, 0, 4095, 52);
+            if (owner == 0) {
+                EXPECT_EQ(
+                    certificate.kind,
+                    sct::AcceptedEventCertificateKind::VertexFace);
+                EXPECT_EQ(certificate.event.source_order, 931u);
+                EXPECT_EQ(
+                    certificate.discovery.triangles[0].parent_eid,
+                    2142378u);
+                EXPECT_EQ(
+                    certificate.discovery.triangles[0].local_facet,
+                    0u);
+                EXPECT_EQ(
+                    certificate.discovery.triangles[1].parent_eid,
+                    2230072u);
+                EXPECT_EQ(
+                    certificate.discovery.triangles[1].local_facet,
+                    1u);
+                EXPECT_EQ(
+                    certificate.discovery.local_features[0], 1u);
+                EXPECT_EQ(
+                    certificate.discovery.local_features[1], 3u);
+                ASSERT_EQ(
+                    certificate.discovery.key.kind,
+                    contact::FixedTriangleCandidateKind::VertexFace);
+                EXPECT_EQ(
+                    certificate.discovery.key.vertex_face.target.kind,
+                    contact::FixedTriangleStratumKind::Face);
+                EXPECT_EQ(
+                    contact::fixed_triangle_features::Compare(
+                        certificate.discovery.key.vertex_face.
+                            target.face,
+                        pair.prepared[1].key),
+                    0);
+                const auto prepared_feature = std::find_if(
+                    pair.prepared_features.begin(),
+                    pair.prepared_features.end(),
+                    [&](const auto& feature) {
+                        return contact::fixed_triangle_features::Compare(
+                                   feature.key,
+                                   certificate.discovery.key) == 0;
+                    });
+                ASSERT_NE(
+                    prepared_feature, pair.prepared_features.end());
+                for (const double weight :
+                     prepared_feature->face_weights)
+                    EXPECT_GT(weight, 0);
+                const auto& vertex_key =
+                    certificate.discovery.key.vertex_face.vertex;
+                unsigned source_vertex = 3;
+                for (unsigned vertex = 0; vertex < 3; ++vertex)
+                    if (contact::fixed_triangle_features::Compare(
+                            pair.prepared[0].vertex_keys[vertex],
+                            vertex_key) == 0)
+                        source_vertex = vertex;
+                ASSERT_LT(source_vertex, 3u);
+                EXPECT_EQ(
+                    single.status,
+                    sct::NonlinearSeparationStatus::
+                        CertifiedAcceptedCoverage);
+                EXPECT_TRUE(single.has_contact_transition);
+                EXPECT_EQ(
+                    single.transition_time_lower_numerator,
+                    345915413587096ull);
+            } else {
+                EXPECT_EQ(
+                    single.status,
+                    sct::NonlinearSeparationStatus::
+                        MissingAcceptedOwner);
+            }
+        }
         std::cout << "LINEAR_FIXTURE_DIAGNOSIS"
                   << " first="
                   << pair.prepared[0].key.parent_eid << ":"
@@ -424,7 +600,8 @@ TEST(VehicleSelfContactLinearFixture,
     EXPECT_EQ(unexplained, 0u);
     EXPECT_EQ(
         after[static_cast<unsigned>(
-            sct::NonlinearSeparationStatus::PotentialContact)],
+            sct::NonlinearSeparationStatus::
+                CertifiedAcceptedCoverage)],
         1u);
     EXPECT_EQ(
         std::accumulate(

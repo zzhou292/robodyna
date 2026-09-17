@@ -2244,6 +2244,13 @@ TEST(VehicleSelfContactNonlinearRosterCoupon,
         ASSERT_LT(status, linear_after.size());
         ++linear_after[status];
         linear_after_work += resolved.work;
+        EXPECT_TRUE(resolved.has_contact_transition);
+        EXPECT_EQ(resolved.accepted_source_order, 931u);
+        EXPECT_EQ(
+            resolved.transition_time_lower_numerator,
+            345915413587096ull);
+        EXPECT_EQ(resolved.transition_time_depth, 52u);
+        EXPECT_FALSE(resolved.transition_time_exact);
         if (resolved.status !=
                 sct::NonlinearSeparationStatus::
                     CertifiedSeparated &&
@@ -2365,8 +2372,8 @@ TEST(VehicleSelfContactNonlinearRosterCoupon,
     EXPECT_EQ(
         linear_after,
         (std::array<std::size_t, 10>{
-            0, 1, 0, 0, 0, 0, 0, 0, 0, 0}));
-    EXPECT_EQ(linear_after_work, 29u);
+            0, 0, 0, 0, 0, 1, 0, 0, 0, 0}));
+    EXPECT_EQ(linear_after_work, 1u);
     EXPECT_EQ(linear_shared_vertex, 0u);
     EXPECT_EQ(linear_shared_edge, 0u);
     EXPECT_EQ(linear_actual_intersection, 0u);

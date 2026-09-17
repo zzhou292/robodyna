@@ -29,7 +29,7 @@ inline constexpr std::uint64_t ExpectedPayloadHash =
     12401461440924532527ull;
 inline constexpr std::uint64_t ExpectedPayloadBytes = 21200;
 inline constexpr std::uint64_t ExpectedPolicyResultDigest =
-    12671290143471704819ull;
+    8720002814745006063ull;
 
 inline std::uint64_t RosterDigest(
     const std::vector<Pair>& pairs) noexcept {
