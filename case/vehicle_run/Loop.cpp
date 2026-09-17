@@ -34,6 +34,7 @@ LoopResult RunLoop(Operations& operations,const Horizon& plan,const std::vector<
     auto refresh=[&]() {
         progress.accepted=operations.Accepted();
         progress.contact=operations.Contact();
+        progress.self_contact=operations.SelfContact();
         progress.mechanics=operations.Mechanics();
         progress.sampled_shell_plasticity=operations.SampledShellPlasticity();
         progress.mechanics_timing=operations.MechanicsTiming();

@@ -37,8 +37,10 @@ struct WallSelfContactForecast {
     std::size_t device_bytes = 0;
 };
 
-// Opt-in loaded Yaris composition. It is intentionally not wired to the
-// long-run CLI until full-V5 overlap and exact-capacity gates are available.
+// Opt-in loaded composition used by vehicle_run::ContactComposition for the
+// explicit wall-self-contact-v1 controller profile. Source/capacity preflight
+// and common publication remain here; multi-step controller qualification is
+// separate from the accepted first-interval library/runtime gates.
 class LoadedWallSelfContact {
   public:
     static WallSelfContactForecast Preflight(

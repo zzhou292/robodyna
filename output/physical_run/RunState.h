@@ -17,7 +17,7 @@ struct RunArchive::Data {
     bool failed=false,closed=false,prefix_sample=false;
 };
 namespace detail {
-void ValidateRequest(const records::PlanRequest&,bool wall);
+void ValidateRequest(const records::PlanRequest&,Profile,bool wall);
 Forecast ForecastRun(const records::Context&,const physical_frames::Archive&,Profile,Limits,bool wall);
 }
 } // namespace crash::output::physical_run

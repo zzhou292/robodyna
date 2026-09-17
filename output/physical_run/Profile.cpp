@@ -2,29 +2,41 @@
 #include "output/BoundedArrayJson.h"
 namespace crash::output::physical_run {
 bool SameProfile(Profile a,Profile b) noexcept {
-    return a.type45==b.type45 && a.structural_limit==b.structural_limit && a.beam18==b.beam18;
+    return a.type45==b.type45 && a.structural_limit==b.structural_limit && a.beam18==b.beam18 && a.self_contact==b.self_contact;
 }
 Document ProfileDocument(Profile p) {
     Document d;d.SetObject();
-    String(d,"schema",ProfileSchema);
+    String(d,"schema",p.self_contact?SelfContactProfileSchema:ProfileSchema);
     String(d,"purpose","selected_physical_model_accepted_visualization_not_restart");
     std::string participants="qeph,t3,qbat,type25,type13,solids";
     if(p.type45)participants+=",type45";
     if(p.beam18)participants+=",beam18";
+    if(p.self_contact)participants+=",self_contact";
     String(d,"participants",participants);
     String(d,"structural_limit",p.structural_limit?"post_cin_local_physical_bound_s":"unavailable");
     for(const auto* name:{"kinetic_energy","total_energy","internal_work","contact_force","contact_penetration","contact_work","joint_work"})
         String(d,name,"unavailable");
+    if(p.self_contact)String(d,"self_contact","frictionless_fixed_triangles_v1_accepted_base_force_candidate_policy");
     return d;
 }
 Profile ReadProfile(const Value& v) {
     using namespace array_json;
-    Keys(v,{"schema","purpose","participants","structural_limit","kinetic_energy","total_energy","internal_work",
+    const bool self=v.IsObject() && v.HasMember("self_contact");
+    if(self)Keys(v,{"schema","purpose","participants","structural_limit","kinetic_energy","total_energy","internal_work",
+        "contact_force","contact_penetration","contact_work","joint_work","self_contact"});
+    else Keys(v,{"schema","purpose","participants","structural_limit","kinetic_energy","total_energy","internal_work",
         "contact_force","contact_penetration","contact_work","joint_work"});
-    Require(Text(v["schema"])==ProfileSchema && Text(v["purpose"])=="selected_physical_model_accepted_visualization_not_restart",
+    Require(Text(v["schema"])==(self?SelfContactProfileSchema:ProfileSchema) && Text(v["purpose"])=="selected_physical_model_accepted_visualization_not_restart",
         "Unsupported physical observation profile");
-    const auto roles=Text(v["participants"]);
+    auto roles=Text(v["participants"]);
     Profile p;
+    p.self_contact=self;
+    if(self) {
+        Require(Text(v["self_contact"])=="frictionless_fixed_triangles_v1_accepted_base_force_candidate_policy" &&
+            roles.size()>13 && roles.compare(roles.size()-13,13,",self_contact")==0,
+            "Unknown self-contact observation profile or participant order");
+        roles.resize(roles.size()-13);
+    }
     p.type45=roles=="qeph,t3,qbat,type25,type13,solids,type45" ||
              roles=="qeph,t3,qbat,type25,type13,solids,type45,beam18";
     p.beam18=roles=="qeph,t3,qbat,type25,type13,solids,beam18" ||

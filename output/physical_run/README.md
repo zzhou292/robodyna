@@ -189,3 +189,43 @@ mass bits, schema downgrade, source/count/phase corruption and retry. The actual
 V5 loaded archive gate belongs to `case/vehicle_run` and must run after the V5
 runtime/CaptureAccess integration; codec fixtures alone do not qualify a live
 beam trajectory. Root should retain the V1/V4 live regression alongside it.
+
+## Frictionless self-contact accepted observations
+
+`Profile.self_contact` defaults to false. Existing profiles and configuration
+files remain v1 with identical field order and bytes. Enabling self-contact
+selects profile/configuration v2 and appends `self_contact` to the participant
+list. Generic energies and total contact work remain unavailable: the new
+columns describe only the named contact participant and its actual phases.
+
+`CaptureAcceptedInterval` requires self-contact presence to match the live
+setup, runtime forecast and accepted observation. It checks physical source,
+owner/configuration/qualification, active-use identity, attempt and accepted-base
+force time/velocity phase, then requires complete candidate policy accounting.
+The enclosing committed owner stamp authenticates the candidate's publication.
+The pointer-free `SelfContactValues` stores 23 uint64 counts/identities and
+17 binary64 force/potential/phase values. Contact forces and potential are from
+the accepted **base**, while geometry policy and activity describe its validated
+candidate. No endpoint force estimate, work integral or restart state is invented.
+
+The existing interval integer/real files own every new column. There is no
+untracked diagnostic sidecar. Self-contact rows occupy 392 bytes with a structural
+limit, 384 without. `ExtraIntervalBytes` reserves 80/72 bytes beyond the existing
+312-byte conservative interval reservation, so the expanded row forecast is
+exact. Writer and reader share these chunk sizes and field lists. Preflight and
+preparation normalize an omitted extra reservation once; any conflicting
+explicit reservation rejects. Persisted v2 configuration requires the exact
+reservation and rejects schema/profile downgrade or hidden columns. Whole-run
+file-count forecasts retain the shared planner's conservative extra-file reserve.
+
+Replay verifies finite force values, overflow-safe event/policy/activity
+partitions, invariant source identity and exact previous-accepted velocity time.
+The renderer continues to use the same geometry/native-plasticity/activity
+frames; these additional interval columns do not alter displayed geometry.
+
+`PhysicalRunSelfContact.*` host tests cover typed multi-chunk roundtrips including
+integers above 2^53 and signed zero, profile/version/reservation corruption,
+exact-cap versus one-byte-short rejection, invalid or overflowing partitions,
+stale phase/source rejection, initial-only and sampled prefix validation, and
+legacy profile bytes. These codecs do not substitute for a live committed
+wall+self controller run.

@@ -1,17 +1,20 @@
 #pragma once
 #include "output/full_shell/activity/ActivityRecord.h"
 #include "output/full_shell/IntervalChunkPlan.h"
+#include "SelfContactValues.h"
 #include <optional>
 namespace crash::output::physical_run {
 namespace records=full_shell;
 inline constexpr const char* Schema="robo_dyna.physical_accepted_run.v1";
 inline constexpr const char* IndexSchema="robo_dyna.physical_accepted_index.v1";
 inline constexpr const char* ProfileSchema="robo_dyna.physical_observation_profile.v1";
+inline constexpr const char* SelfContactProfileSchema="robo_dyna.physical_observation_profile.v2";
 inline constexpr std::size_t MetadataCap=1024u<<10;
 struct Profile {
     bool type45=false;
     bool structural_limit=false;
     bool beam18=false;
+    bool self_contact=false;
 };
 bool SameProfile(Profile,Profile) noexcept;
 Document ProfileDocument(Profile);
@@ -20,14 +23,19 @@ struct Values {
     std::uint64_t owner=0;
     records::FrameStamp stamp;
     std::optional<double> structural_limit_s;
+    std::optional<SelfContactValues> self_contact;
 };
 struct Sequence {
     records::FrameStamp last;
+    std::uint64_t self_source_id=0,self_selected_parents=0;
 };
 void CheckValues(const records::Context&,Profile,const Values&);
 Sequence Advance(const records::Context&,Profile,std::uint64_t planned,const Sequence&,const Values&);
-std::vector<std::string> IntegerFields();
+std::vector<std::string> IntegerFields(Profile={});
 std::vector<std::string> RealFields(Profile);
+// Old profiles preserve their existing 312-byte conservative reservation.
+// The self-contact profile reserves the exact expanded typed row byte count.
+std::size_t ExtraIntervalBytes(Profile) noexcept;
 struct Segment {
     std::uint64_t first_epoch=0,rows=0;
     arrays::Descriptor integers,reals;

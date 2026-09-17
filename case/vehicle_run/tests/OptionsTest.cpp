@@ -1,5 +1,6 @@
 #include "../cli/Options.h"
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <vector>
 namespace crash::cases::vehicle_run::test {
 namespace {
@@ -109,5 +110,34 @@ TEST(VehicleRunOptions, HalfMillisecondPreviewSelectsFullHorizonWithUnchangedSam
         invalid.insert(invalid.end(),{"--duration-ms",value});
         EXPECT_THROW(Parse(invalid),std::exception)<<value;
     }
+}
+TEST(VehicleRunOptions, SelfContactRequiresExplicitSourceAndQualifiedPhysicalStep) {
+    auto args=Arguments();
+    args.insert(args.end(),{"--contact-profile","wall-self-contact-v1","--self-contact-member","combine.key",
+        "--physical-profile","vehicle-supports-v5","--fixed-dt-s","2e-7"});
+    const auto options=Parse(args);
+    EXPECT_EQ(options.config.contact_profile,ContactProfile::WallSelfContactV1);
+    EXPECT_EQ(options.source.self_contact_combine_member,"combine.key");
+    EXPECT_EQ(options.config.fixed_dt_s,2e-7);
+    EXPECT_EQ(options.config.resources,ResourceProfile::Normal);
+    for(const auto* omitted:{"--self-contact-member","--physical-profile","--fixed-dt-s"}) {
+        auto invalid=args;
+        const auto found=std::find(invalid.begin(),invalid.end(),omitted);
+        ASSERT_NE(found,invalid.end());
+        invalid.erase(found,found+2);
+        EXPECT_THROW(Parse(invalid),std::invalid_argument)<<omitted;
+    }
+    auto ignored=Arguments();
+    ignored.insert(ignored.end(),{"--self-contact-member","combine.key"});
+    EXPECT_THROW(Parse(ignored),std::invalid_argument);
+    auto unknown=Arguments();
+    unknown.insert(unknown.end(),{"--contact-profile","self"});
+    EXPECT_THROW(Parse(unknown),std::invalid_argument);
+    Config bad=options.config;
+    bad.fixed_dt_s=3e-7;
+    EXPECT_THROW(Plan(bad),std::invalid_argument);
+    bad=options.config;
+    bad.contact_profile=static_cast<ContactProfile>(999);
+    EXPECT_THROW(Plan(bad),std::invalid_argument);
 }
 } // namespace crash::cases::vehicle_run::test

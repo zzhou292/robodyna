@@ -2,9 +2,10 @@
 #include "ContactSummary.h"
 #include "MechanicsSummary.h"
 #include "SampledShellPlasticity.h"
+#include "SelfContactSummary.h"
 namespace crash::cases::vehicle_run {
 PreparedRun::Session::Session(const Data& input,const std::filesystem::path& directory)
-    : source(input),dynamics(vehicle_wall::LoadedWall::Prepare(input.setup,input.dynamics,{},&input.joints)),
+    : source(input),dynamics(input.contact.CreateDynamics(input.setup,input.dynamics,&input.joints)),
       capture(input.mapping,dynamics,input.identity),
       archive(output::physical_run::RunArchive::PrepareWithWall(directory,input.setup,input.mapping,
           capture.frames().context(),input.request,input.profile)) {}
@@ -23,6 +24,9 @@ void PreparedRun::Session::Prepare() {
         node=error.report().node;
         parent=error.report().parent;
         throw;
+    } catch(const vehicle_self_contact::SelfContactStageError& error) {
+        self_contact_error=error;
+        throw;
     }
 }
 void PreparedRun::Session::Commit() {dynamics.CommitStep();}
@@ -31,11 +35,15 @@ void PreparedRun::Session::Append() {
     const auto row=output::physical_run::CaptureAcceptedInterval(dynamics,capture.frames(),source.profile);
     auto next_contact = contact;
     auto next_mechanics = mechanics;
+    auto next_self_contact = self_contact;
     ObserveAcceptedContact(next_contact, dynamics.last_accepted_step(), dynamics.accepted());
     ObserveAcceptedMechanics(next_mechanics, dynamics.last_accepted_step(), dynamics.accepted());
+    if(source.profile.self_contact)
+        ObserveAcceptedSelfContact(next_self_contact,dynamics.last_accepted_step(),dynamics.accepted());
     archive.Append(row);
     contact = next_contact;
     mechanics = next_mechanics;
+    self_contact = next_self_contact;
 }
 void PreparedRun::Session::Capture() {capture.Capture(dynamics);}
 void PreparedRun::Session::SaveSample() {

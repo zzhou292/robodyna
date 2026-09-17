@@ -33,7 +33,7 @@ Replay Replay::Open(const std::filesystem::path& root,const records::RecordFile&
     Require(plan.archive.forecast_bytes==manifest.forecast_bytes,"Physical whole-run forecast differs");
     tl::util::BoundedArenaLayout budget(limits.host_bytes);tl::util::ArenaRegion region;
     const auto interval_bytes=std::min<std::uint64_t>(plan.archive.rows_per_chunk,config.request.intervals)*8*
-        (4+RealFields(config.profile).size());
+        (IntegerFields(config.profile).size()+RealFields(config.profile).size());
     const auto record_workspace=3*interval_bytes+3*sizeof(double)*(3*context.nodes()+context.points());
     Require(budget.Append<std::byte>(limits.source.host_bytes,region) &&
         budget.Append<std::byte>(context.retained_payload_bytes(),region) &&

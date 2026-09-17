@@ -82,4 +82,25 @@ TEST(VehicleRunSummary, AcceptedPrefixPreservesLimitContactAndViewerAuthority) {
     EXPECT_EQ(saved_shell["last_saved_positive_points"].GetUint64(), 1u);
     EXPECT_LT(file.bytes, SummaryByteCap);
 }
+TEST(VehicleRunSummary, SelfContactProfilePreservesTypedRejectionAndQualifiedStepBoundary) {
+    records::test::Directory directory;
+    Config config;
+    config.physical_profile=PhysicalProfile::VehicleSupportsV5;
+    config.contact_profile=ContactProfile::WallSelfContactV1;
+    config.fixed_dt_s=2e-7;
+    Result result;
+    result.loop.kind=StopKind::PhysicsRejected;
+    result.rejected_step_limit_s=1e-7;
+    Forecast forecast;
+    forecast.contact.device_bytes=1234;
+    const auto file=detail::WriteSummary(directory.path,config,Plan(config),forecast,result);
+    const auto document=Read(directory.path/file.file);
+    EXPECT_STREQ(document["schema"].GetString(),"robo_dyna.vehicle_run_summary.v2");
+    EXPECT_STREQ(document["contact_profile"].GetString(),"wall-self-contact-v1");
+    EXPECT_EQ(document["complete_device_bytes"].GetUint64(),1234u);
+    EXPECT_EQ(document["fixed_dt_s"].GetDouble(),2e-7);
+    EXPECT_STREQ(document["recovery"].GetString(),
+        "stop and qualify a revised contact/timestep profile before starting a new run");
+    EXPECT_FALSE(document.HasMember("accepted_self_contact"));
+}
 } // namespace crash::cases::vehicle_run::test

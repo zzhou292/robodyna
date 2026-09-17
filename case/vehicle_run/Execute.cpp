@@ -33,6 +33,7 @@ Result PreparedRun::Execute(const std::filesystem::path& destination,const Contr
     result.archive_manifest=session->manifest;
     result.rejected_step_limit_s=session->step_limit;
     result.rejected_contact_status=session->contact_status;
+    result.rejected_self_contact=session->self_contact_error;
     result.rejected_node=session->node;
     result.rejected_parent=session->parent;
     if(result.archive_manifest) {

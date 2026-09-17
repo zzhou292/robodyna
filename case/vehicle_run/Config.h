@@ -1,4 +1,5 @@
 #pragma once
+#include "ContactProfile.h"
 #include <cstddef>
 #include <cstdint>
 namespace crash::cases::vehicle_run {
@@ -12,6 +13,7 @@ struct Config {
     std::size_t samples=101;
     ResourceProfile resources=ResourceProfile::Normal;
     PhysicalProfile physical_profile=PhysicalProfile::RetainedShellAssembliesV1;
+    ContactProfile contact_profile=ContactProfile::WallOnly;
 };
 struct Horizon {
     std::uint64_t intervals=0;

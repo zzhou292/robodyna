@@ -1,5 +1,6 @@
 #include "AcceptedInterval.h"
 #include "AcceptedWall.h"
+#include "AcceptedSelfContact.h"
 #include "case/vehicle_dynamics/VehiclePhysicalDynamics.h"
 #include "output/physical_frames/PhysicalAcceptedFrames.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
@@ -39,6 +40,7 @@ AcceptedInterval CaptureAcceptedInterval(const cases::vehicle_dynamics::VehicleP
         stamp.reaction_time,stamp.velocity_time,stamp.reaction_kick_dt},std::nullopt};
     if(profile.structural_limit)value.structural_limit_s=step.structural_step_limit;
     else Require(step.structural_step_limit==0,"Physical profile hides an available structural bound");
+    detail::CaptureSelfContact(run,identity,profile,value);
     CheckValues(context,profile,value);
     CheckParticipant(d.qeph,stamp,value,identity);CheckParticipant(d.t3,stamp,value,identity);
     CheckParticipant(d.qbat,stamp,value,identity);CheckParticipant(d.type25,stamp,value,identity);

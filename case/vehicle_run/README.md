@@ -1,22 +1,28 @@
 # Original physical run controller
 
-`PreparedRun` orchestrates the existing `LoadedWall`/`VehiclePhysicalDynamics`,
+`PreparedRun` orchestrates the selected existing `LoadedWall` or
+`LoadedWallSelfContact` factory and `VehiclePhysicalDynamics`,
 accepted capture, and physical run archive. It creates one physical owner and
 uses its actual fixed step, acceptance stamp, constitutive histories and clock.
-The input is an immutable actual wall setup and its complete selected joint model.
+The input is an immutable actual wall setup and its complete selected joint model,
+plus the authenticated shared self-contact setup when explicitly selected.
 The named loaded profile requires `EnvelopeRectangleV1` and at least 0.25 m
 transverse margin, with the exact 35 mph source profile. The usual gap is 0.02 m;
 the two-interval original qualification deliberately uses 1 µm to reach contact.
 
-`Config` chooses a 0.5 ms preview or 5, 20, or 50 ms, a positive fixed step (default 3e-7 s) and 101 sampled
-frames by default. The shared archive predicate selects the first mathematical
+`Config` chooses a 0.5 ms preview or 5, 20, or 50 ms, a positive fixed step
+(wall-only default 3e-7 s) and 101 sampled frames by default. The explicit
+wall+self profile requires `vehicle-supports-v5` and exactly `2e-7` s; selecting
+it does not silently change either default. The shared archive predicate selects the first mathematical
 fixed-step endpoint at or beyond the requested duration. The last interval has
 the ordinary fixed step; actual saved times come from the owner. The summary
 keeps requested duration and actual completed time separate.
 
 Preparation authenticates source/configuration identities, retains the exact
 setup/joints/mapping, and forecasts before owner allocation. It checks the
-shared wall backing once within the loaded-owner reservation. Mapping startup
+shared wall backing once within the loaded-owner reservation. For wall+self,
+`ContactComposition` reuses the existing combined runtime budget and both
+factories retain the same physical source and attachment backing. Mapping startup
 has a 512 MiB cap; capture/writer retain their existing bounded utilities. The
 inclusive host reservation takes the larger mapping phase and simultaneous
 loaded-owner/capture/archive phase, plus 4 MiB controller/summary workspace.
@@ -24,7 +30,7 @@ The separate summary reserves 1 MiB and viewer-input receipt 64 KiB in addition 
 the strict archive. Normal limits remain 20 GB host and 2 GiB archive. An explicit
 `ConditionalExpandedFull` request selects up to 60 GB/6 GiB only when the complete
 forecast exceeds a normal cap. It does not weaken any participant's native cap.
-Device reservation is the actual loaded runtime forecast; no second device
+Device reservation is the actual selected runtime forecast; no second device
 state or copied source geometry is created.
 
 `Execute` requires a real empty destination directory. The strict archive lives
@@ -41,11 +47,18 @@ also requires the exact immutable setup from the actual loaded dynamics.
 
 A StepSizeError preserves its actual reported limit and physical node. The
 controller does not change the owner's fixed step or reuse visualization as
-restart state. Recovery is a new source-based run into another empty directory
-with an explicitly selected smaller fixed step; the old prefix remains intact.
-Contact rejection preserves the actual status/node/parent without inventing a
-step-size estimate. Caller progress/stop functions run at accepted boundaries;
-an elapsed-time limit starts after startup and cannot interrupt a CUDA stage.
+restart state. For wall-only, recovery can use a new source-based run into
+another empty directory with an explicitly selected smaller fixed step; the old
+prefix remains intact. The admitted wall+self profile is fixed at 200 ns. A
+different step requires separate profile qualification; its controller rejects
+that selection instead of silently changing the step or applying wall-only recovery.
+Wall rejection preserves the actual status/node/parent without inventing a
+step-size estimate. Self-contact rejection preserves its accepted-assembly or
+candidate-seal stage, typed status and source/pair diagnostics. Exact event
+requirements, lower bounds and ordinary ordinals remain distinct. Caller
+progress/stop functions run at accepted boundaries; an elapsed-time limit starts
+after startup and cannot interrupt a running preparation stage, including long
+host geometry certification.
 
 Progress includes elapsed wall time, accepted throughput, contact endpoint
 peaks and the existing StageTimer total/last-attempt snapshots. The summary also
@@ -54,8 +67,10 @@ counters. Inclusive PrepareStep must not be added to its child stage durations;
 use last-attempt or snapshot deltas to separate TT0/retry from later steps.
 Contact values are reported endpoint peaks, signed reported drift-work sum,
 separate same-mask/removal potential and actual/proposed activity counts.
-They are not continuous-time maxima or a total-energy balance. The current
-versioned interval schema still marks contact/energy columns unavailable.
+They are not continuous-time maxima or a total-energy balance. The original
+general contact/energy columns remain unavailable. The new self-contact profile
+adds separately labeled accepted-base force and candidate-policy observations;
+it does not reinterpret those older columns.
 
 The additive `accepted_mechanics` object in `run-summary.json` reports existing
 committed scalar diagnostics. It preserves the outer summary v1 fields and
@@ -82,7 +97,7 @@ The summary consumes `last_accepted_step()` after the existing actual interval
 authentication, without GPU readback or a new clock. Missing/stale participants,
 changed source/counts and nonfinite or overflowed values reject the update
 transactionally. Only a successful archive append publishes the new contact
-and mechanics summaries. Fixed scalar storage (at most 4 KiB per summary plus
+and mechanics/self-contact summaries. Fixed scalar storage (at most 4 KiB per summary plus
 bounded copies) fits the existing 4 MiB controller reservation and the existing
 summary byte cap. Normal 20 GB host and 2 GiB archive defaults are unchanged.
 
@@ -192,6 +207,102 @@ selection of the larger already authorized ceilings if the measured forecast
 requires them. Exit 0 means the whole planned horizon and its artifacts finished;
 exit 2 means a valid accepted prefix; exit 3 means capture/archive/summary/receipt
 failure; exit 1 means source/configuration/startup orchestration failed.
+
+## Explicit wall+self-contact controller profile
+
+`--contact-profile wall-self-contact-v1` selects the existing combined runtime
+through `ContactComposition`. It requires `--physical-profile vehicle-supports-v5`,
+`--fixed-dt-s 2e-7`, and `--self-contact-member /path/to/combine.key`, in addition
+to the existing source paths. The existing `--aux-member` supplies the original
+part-set source. `OriginalSelection` authenticates both members against the same
+canonical source used by the structural model; the frontend adds no deck parser.
+Wall and self-contact retain one execution/attachment backing and create one
+physical owner. The default contact profile is `wall-only`; supplying a self
+member with that profile is rejected instead of silently ignored.
+
+Example argument extension, after supplying the existing source path options
+and a run ID, first for guarded preflight:
+
+```text
+--physical-profile vehicle-supports-v5 --contact-profile wall-self-contact-v1
+--self-contact-member /path/to/combine.key --fixed-dt-s 2e-7
+--duration-ms 5 --samples 101 --gap-m .000001 --forecast-only
+```
+
+After preflight and focused gates, remove `--forecast-only`, supply a fresh empty
+`--output` directory and use `--diagnostic-intervals 2` for the first controller
+qualification. That requests two committed 200 ns intervals, or 400 ns total,
+within a declared 5 ms horizon; it does not request a completed 5 ms crash.
+The 1 µm wall gap is the explicit contact-gate setup, not a geometry modification
+inside the self-contact algorithm. Ordinary runs retain their explicitly selected
+gap. No physical restart from an earlier visualization archive is available.
+
+This first profile is frictionless level-0 fixed-triangle contact on the
+authenticated centered shell selection. Original friction, damping and soft-card
+fields remain provenance and are not applied. Solids/beams are structural
+participants but are not surface primitives in this contact profile. It is not
+exact bilinear-Q4 contact. Structural dynamics, broadphase and contact force/STI
+use CUDA; feature discovery and continuous-motion certification include host
+workers and host readback. Do not call the entire contact pipeline GPU-resident.
+
+The runtime reservation is 65,536 force events/identities, 131,072 event hash slots,
+2,000,000 parent pairs and 8,000,000 facet pairs streamed in chunks of 4,096.
+These are explicit resource capacities, not predicted contact counts. Discovery
+counts the complete set and fails closed on exhaustion; it does not truncate
+pairs. Existing combined preflight accounts for shared backing once. Native
+caps and the workstation guard still apply; an 8 GiB runtime device ceiling
+does not override the 6 GiB whole-device-growth guard.
+
+The prior one-interval combined gate observed 6,176,112,640 bytes of whole-device
+growth. The new forecast gate computes the exact reservation delta against its
+32,491-event capacity before admitting a controller run. This comparison estimates
+incremental headroom; other GPU processes and allocator behavior remain subject
+to live guard checks. The older wall-only throughput is not a wall+self estimate.
+
+For this opt-in profile, the run summary uses
+`robo_dyna.vehicle_run_summary.v2` and includes `accepted_self_contact`.
+Physical configuration and observation-profile descriptors use their v2 schemas,
+with explicitly forecast typed self-contact columns in the interval stream.
+The existing outer run/index formats and viewer receipt retain their own versions.
+Wall-only output keeps its previous v1 configuration/profile and summary shape.
+Old archives remain readable and are not rewritten.
+
+Each new self-contact row is captured only after the common physical commit and
+authenticates its owner/source/configuration and consecutive interval phase.
+Force, potential and STI belong to the accepted base; policy counts describe
+the sealed candidate interval. Saved rows retain the complete policy partition,
+event/activity counts, stable source ID and digest. The source and accepted-base
+velocity phase must stay consistent between consecutive rows. No live pointer
+or receipt authority is serialized. The summary updates only after successful
+archive append, and initial-only prefixes report unavailable observations.
+These data do not constitute a complete contact-work or total-energy ledger.
+
+Enable `ROBO_DYNA_VEHICLE_RUN_ORIGINAL` and
+`ROBO_DYNA_ENABLE_V5_SELF_CONTACT_CONTROLLER=ON` to register the additional gates:
+
+- `vehicle_run_contact_composition`: small host profile/source-requirement tests.
+- `vehicle_run_wall_self_contact_forecast`: authenticated complete-source
+  preflight and reservation delta. It creates no physical dynamics owner, but
+  source tied-search preparation still uses CUDA and requires the guard.
+- `vehicle_run_wall_self_contact_two_intervals`: exactly one production
+  `PreparedRun` execution, two commits, no physics rejection, closed prefix,
+  wall/self observations, authenticated typed row phases and replay. It logs
+  contact assembly/candidate timings. This is expensive final acceptance, not a
+  routine development coupon.
+
+The latter two reuse `modelio/self_contact/tests/actual_fixture.py` for the pinned
+main, auxiliary, combine and original-wall members. Existing CMake source/deck
+declarations supply the remaining paths. `ROBO_VEHICLE_RUN_OUTPUT` can preserve
+the result in a fresh, pre-created empty directory; otherwise it is temporary.
+Configure `ROBO_DYNA_TL_ROOT` to the actual accepted M2 worktree, rather than the
+older root TL baseline. Keep the shared guard/lock and numerical compiler flags.
+
+**Qualification status at introduction (2026-09-17):** the new live controller
+build and focused host/report checks pass; actual two-interval full-V5 controller
+acceptance remains pending. The earlier accepted self-only and combined
+first-interval library/runtime gates remain valid, and do not by themselves
+qualify this new controller/archive path, a longer trajectory, or its throughput.
+Update this status only from the final guard, executed test and replay receipts.
 
 ## Explicit expanded physical profile
 

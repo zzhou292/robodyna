@@ -2,6 +2,7 @@
 #include "case/vehicle_dynamics/StepTiming.h"
 #include "MechanicsTotals.h"
 #include "SampledShellPlasticityTotals.h"
+#include "SelfContactTotals.h"
 #include <cstdint>
 #include <functional>
 #include <string>
@@ -20,6 +21,7 @@ struct Progress {
     double elapsed_s=0,accepted_intervals_per_second=0;
     Timing timing;
     ContactTotals contact;
+    SelfContactTotals self_contact;
     MechanicsTotals mechanics;
     SampledShellPlasticityTotals sampled_shell_plasticity;
     vehicle_dynamics::StepTimingSnapshot mechanics_timing;

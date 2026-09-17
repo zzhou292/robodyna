@@ -22,15 +22,17 @@ int main(int argc,char** argv) {
         if(options.wall_stiffness_n_m3) settings.stiffness_per_area=*options.wall_stiffness_n_m3;
         if(options.penetration_limit_m) settings.maximum_penetration_m=*options.penetration_limit_m;
         std::cout<<std::setprecision(17)<<"Preparing pinned original source using existing bounded factories"<<std::endl;
-        const auto source=run::PrepareOriginalYaris(options.source,settings,options.config.physical_profile);
+        const auto source=run::PrepareOriginalYaris(options.source,settings,
+            options.config.physical_profile,options.config.contact_profile);
         run::records::Identity identity;
         identity.run=options.run_id;
         identity.topology=0x5941524953ULL;
-        const auto prepared=run::PreparedRun::Prepare(source.setup,source.joints,options.config,identity);
+        const auto prepared=run::PreparedRun::Prepare(source.setup,source.joints,options.config,identity,source.self_contact);
         const auto& forecast=prepared.forecast();
         std::cout<<"forecast physical_profile="<<run::PhysicalProfileName(options.config.physical_profile)
+                 <<" contact_profile="<<run::ContactProfileName(options.config.contact_profile)
                  <<" host_bytes="<<forecast.complete_host_bytes
-                 <<" device_bytes="<<forecast.wall.device_bytes
+                 <<" device_bytes="<<forecast.contact.device_bytes
                  <<" archive_bytes="<<forecast.complete_archive_bytes
                  <<" intervals="<<prepared.horizon().intervals
                  <<" conditional_allowance="<<forecast.caps.expanded<<std::endl;
@@ -55,6 +57,10 @@ int main(int argc,char** argv) {
                      <<" beam18_observations_available="<<(value.mechanics.available && value.mechanics.has_beam18)
                      <<" beam18_reported_plastic_work_sum_j="<<value.mechanics.beam18.plastic_work.work.accepted_increment_sum_j
                      <<" last_prepare_wall_s="<<value.mechanics_timing.last_step[0].wall_ns*1e-9;
+            if(value.self_contact.available)
+                std::cout<<" self_contact_events="<<value.self_contact.last_event_count
+                         <<" self_contact_policy_outcomes="<<value.self_contact.last_policy_outcomes
+                         <<" self_contact_policy_digest="<<value.self_contact.last_policy_digest;
             run::detail::WriteSampledShellPlasticityProgress(std::cout, value.sampled_shell_plasticity);
             std::cout << std::endl;
         };

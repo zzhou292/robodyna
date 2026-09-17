@@ -29,7 +29,10 @@ void CheckIndex(const records::Context& c,const Configuration& config,const Inde
     Require(off_cadence<=1,"Physical prefix frame reservation exceeded");
     for(auto epoch:plan.frame_epochs)if(epoch<=index.accepted_intervals)
         Require(std::binary_search(epochs.begin(),epochs.end(),epoch),"Physical accepted run omitted a scheduled frame");
-    const auto chunks=interval::PlanChunks(index.planned_intervals,config.request.file_byte_cap);
+    Require(config.request.extra_interval_bytes==ExtraIntervalBytes(config.profile),
+        "Physical index profile/interval reservation differs");
+    const auto chunks=interval::PlanChunks(index.planned_intervals,config.request.file_byte_cap,
+        config.request.total_byte_cap,ExtraIntervalBytes(config.profile));
     Require(index.segments.size()==index.accepted_intervals/chunks.rows_per_chunk+
         (index.accepted_intervals%chunks.rows_per_chunk!=0),"Physical accepted interval segments are incomplete");
 }

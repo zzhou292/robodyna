@@ -8,12 +8,12 @@ TEST(PhysicalRunWall, NamedReceiptAndReservationsRejectUnknownMissingAndAliasedF
     const auto c=Context();
     auto request=MakeWallRequest(c,4,.5,3);
     EXPECT_EQ(request.archive.static_files.size(),10u);
-    EXPECT_NO_THROW(detail::ValidateRequest(request.archive,true));
-    EXPECT_THROW(detail::ValidateRequest(request.archive,false),std::exception);
+    EXPECT_NO_THROW(detail::ValidateRequest(request.archive,{},true));
+    EXPECT_THROW(detail::ValidateRequest(request.archive,{},false),std::exception);
     auto bad=request;bad.archive.static_files.back().file="wall/unknown.obj";
-    EXPECT_THROW(detail::ValidateRequest(bad.archive,true),std::exception);
+    EXPECT_THROW(detail::ValidateRequest(bad.archive,{},true),std::exception);
     bad=request;--bad.archive.static_files.back().bytes;
-    EXPECT_THROW(detail::ValidateRequest(bad.archive,true),std::exception);
+    EXPECT_THROW(detail::ValidateRequest(bad.archive,{},true),std::exception);
     WallReceipt receipt{c.identity().source_instance,91,c.identity().source_mapping_sha256,{}};
     for(std::size_t i=0;i<WallFiles.size();++i)receipt.files[i]={WallFiles[i],Sha256("fixture"),7};
     EXPECT_EQ(ReadWallDocument(WallDocument(receipt)).wall_binding_id,91u);

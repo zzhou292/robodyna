@@ -1,6 +1,8 @@
 #pragma once
 #include "Config.h"
 #include "Progress.h"
+#include "ContactComposition.h"
+#include "case/vehicle_self_contact/SelfContactStageError.h"
 #include "case/vehicle_wall/LoadedWall.h"
 #include "case/vehicle_dynamics/output/VehicleAcceptedFrames.h"
 #include "output/physical_run/RunArchive.h"
@@ -12,6 +14,7 @@ inline constexpr std::size_t SummaryByteCap=1u<<20;
 inline constexpr std::size_t CompanionByteCap=SummaryByteCap+output::physical_run::ViewerInputByteCap;
 struct Forecast {
     vehicle_wall::RuntimeForecast wall;
+    ContactCompositionForecast contact;
     output::physical_frames::Forecast capture;
     output::physical_run::Forecast archive;
     ResourceCaps caps;
@@ -27,14 +30,16 @@ struct Result {
     std::optional<double> rejected_step_limit_s;
     std::uint32_t rejected_node=UINT32_MAX,rejected_parent=UINT32_MAX;
     std::optional<tlfea::contact::NodalWallDeviceStatus> rejected_contact_status;
+    std::optional<vehicle_self_contact::SelfContactStageError> rejected_self_contact;
     std::string viewer_input_error,summary_error;
 };
 // Source-bound preflight and run orchestration only. Physics always belongs to
-// the existing LoadedWall/Dynamics owner; visualization is not restart state.
+// the selected existing contact/Dynamics owner; visualization is not restart state.
 class PreparedRun {
   public:
     static PreparedRun Prepare(const vehicle_wall::VehicleWallSetup&,const vehicle_runtime::JointModel&,
-        Config,records::Identity);
+        Config,records::Identity,
+        std::shared_ptr<const vehicle_self_contact::VehicleSelfContactSetup> self_contact={});
     const Forecast& forecast() const noexcept;
     const Horizon& horizon() const noexcept;
     Result Execute(const std::filesystem::path& empty_destination,const Control& = {}) const;

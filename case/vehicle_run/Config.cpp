@@ -12,6 +12,10 @@ const char* PhysicalProfileName(PhysicalProfile profile) {
 }
 Horizon Plan(const Config& config) {
     PhysicalProfileName(config.physical_profile);
+    ContactProfileName(config.contact_profile);
+    if(config.contact_profile==ContactProfile::WallSelfContactV1 &&
+        (config.physical_profile!=PhysicalProfile::VehicleSupportsV5 || config.fixed_dt_s!=2e-7))
+        throw std::invalid_argument("The admitted wall+self contact run requires vehicle-supports-v5 at 200 ns");
     if((config.duration_s!=.0005 && config.duration_s!=.005 && config.duration_s!=.02 && config.duration_s!=.05) ||
         config.samples<2 || config.samples>1000 ||
         (config.resources!=ResourceProfile::Normal && config.resources!=ResourceProfile::ConditionalExpandedFull))

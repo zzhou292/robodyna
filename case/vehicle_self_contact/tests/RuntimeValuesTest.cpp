@@ -95,6 +95,7 @@ TEST(VehicleSelfContactRuntimeValues,
     report.status =
         tlfea::contact::SelfContactTransactionStatus::ResourceLimit;
     report.candidate = 37;
+    report.count_kind = tlfea::contact::SelfContactTransactionCountKind::ExactAcceptedEvents;
     report.pair = 91;
     report.message = "opaque";
     const SelfContactStageError error(

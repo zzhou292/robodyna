@@ -12,8 +12,9 @@ records::source::BundleRequest MakeRequest(const records::Context& c,std::uint64
     records::activity::PlanWithActivity(c,r,"parent-activity.json");return request;
 }
 namespace detail {
-void ValidateRequest(const records::PlanRequest& r,bool wall) {
-    Require(!r.extra_interval_bytes && !r.extra_frame_bytes,"Physical run has unsupported optional storage");
+void ValidateRequest(const records::PlanRequest& r,Profile p,bool wall) {
+    Require(r.extra_interval_bytes==ExtraIntervalBytes(p) && !r.extra_frame_bytes,
+        "Physical run optional storage differs from its observation profile");
     Require(r.static_files.size()==(wall?10u:3u),"Physical run static reservation count differs from named profile");
     for(const auto* name:{"manifest.json","frame-index.json","configuration.json"}) {
         bool found=false;
@@ -29,8 +30,9 @@ void ValidateRequest(const records::PlanRequest& r,bool wall) {
 Forecast ForecastRun(const records::Context& c,const physical_frames::Archive& a,Profile p,Limits limits,bool wall) {
     Require(limits.host_bytes && limits.host_bytes<=512u<<20,"Invalid physical run host cap");
     Forecast f;f.archive=a.plan();
-    const auto rows=std::min<std::uint64_t>(f.archive.archive.rows_per_chunk,f.archive.archive.interval_bytes/interval::RowBytes);
-    f.interval_staging_bytes=rows*8*(4+RealFields(p).size());
+    const auto rows=std::min<std::uint64_t>(f.archive.archive.rows_per_chunk,
+        f.archive.archive.interval_bytes/(interval::RowBytes+ExtraIntervalBytes(p)));
+    f.interval_staging_bytes=rows*8*(IntegerFields(p).size()+RealFields(p).size());
     tl::util::BoundedArenaLayout budget(limits.host_bytes);tl::util::ArenaRegion region;
     Require(budget.Append<std::byte>(a.startup_host_bytes(),region) &&
         budget.Append<std::byte>(3*f.interval_staging_bytes,region) &&
@@ -47,7 +49,8 @@ Forecast RunArchive::Preflight(const records::source::PreparedSourceMapping& map
 }
 Forecast RunArchive::PreflightCore(const records::source::PreparedSourceMapping& mapping,const records::Context& context,
     records::source::BundleRequest request,Profile profile,Limits limits,bool wall) {
-    detail::ValidateRequest(request.archive,wall);
+    if(!request.archive.extra_interval_bytes)request.archive.extra_interval_bytes=ExtraIntervalBytes(profile);
+    detail::ValidateRequest(request.archive,profile,wall);
     auto frame_archive=physical_frames::Archive::Prepare(mapping,context,std::move(request));
     return detail::ForecastRun(context,frame_archive,profile,limits,wall);
 }
@@ -57,7 +60,8 @@ RunArchive RunArchive::Prepare(const std::filesystem::path& root,const records::
 }
 RunArchive RunArchive::PrepareCore(const std::filesystem::path& root,const records::source::PreparedSourceMapping& mapping,
     const records::Context& context,records::source::BundleRequest request,Profile profile,Limits limits,bool wall) {
-    detail::ValidateRequest(request.archive,wall);
+    if(!request.archive.extra_interval_bytes)request.archive.extra_interval_bytes=ExtraIntervalBytes(profile);
+    detail::ValidateRequest(request.archive,profile,wall);
     auto frame_archive=physical_frames::Archive::Prepare(mapping,context,request);
     const auto forecast=detail::ForecastRun(context,frame_archive,profile,limits,wall);
     for(const auto& reserve:frame_archive.source_bundle().reservations())request.archive.static_files.push_back(reserve);

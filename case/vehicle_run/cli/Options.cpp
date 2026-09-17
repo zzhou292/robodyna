@@ -40,6 +40,7 @@ Options Parse(int argc,const char* const* argv) {
         else if(name=="--aux-member") result.source.auxiliary_member=value;
         else if(name=="--original-wall-member") result.source.original_wall_member=value;
         else if(name=="--wall-manifest") result.source.wall_manifest=value;
+        else if(name=="--self-contact-member") result.source.self_contact_combine_member=value;
         else if(name=="--output") result.output=value;
         else if(name=="--stop-file") result.stop_file=value;
         else if(name=="--physical-profile") {
@@ -50,6 +51,13 @@ Options Parse(int argc,const char* const* argv) {
             else if(value==PhysicalProfileName(PhysicalProfile::VehicleSupportsV5))
                 result.config.physical_profile=PhysicalProfile::VehicleSupportsV5;
             else throw std::invalid_argument("Unknown Yaris physical profile");
+        }
+        else if(name=="--contact-profile") {
+            if(value==ContactProfileName(ContactProfile::WallOnly))
+                result.config.contact_profile=ContactProfile::WallOnly;
+            else if(value==ContactProfileName(ContactProfile::WallSelfContactV1))
+                result.config.contact_profile=ContactProfile::WallSelfContactV1;
+            else throw std::invalid_argument("Unknown contact profile");
         }
         else if(name=="--duration-ms") result.config.duration_s=Real(value)/1000;
         else if(name=="--fixed-dt-s") result.config.fixed_dt_s=Real(value);
@@ -63,6 +71,12 @@ Options Parse(int argc,const char* const* argv) {
         else throw std::invalid_argument("Unknown CLI option: "+name);
     }
     Plan(result.config);
+    if(result.config.contact_profile==ContactProfile::WallSelfContactV1 &&
+        result.source.self_contact_combine_member.empty())
+        throw std::invalid_argument("Wall+self contact requires an explicit pinned --self-contact-member");
+    if(result.config.contact_profile==ContactProfile::WallOnly &&
+        !result.source.self_contact_combine_member.empty())
+        throw std::invalid_argument("A self-contact member cannot be silently ignored by the wall-only profile");
     for(const auto value:{result.wall_stiffness_n_m3,result.penetration_limit_m})
         if(value && *value<=0) throw std::invalid_argument("Wall stiffness and penetration limit must be positive");
     if(!result.run_id || result.gap_m<=0 || result.maximum_elapsed_s<0 || (!result.forecast_only && result.output.empty()))
@@ -79,6 +93,7 @@ const char* Usage() noexcept {
         "--glass-resolution FILE --type13 FILE --aux-member FILE --original-wall-member FILE "
         "--wall-manifest FILE --run-id UINT --output EMPTY_DIR "
         "[--physical-profile retained-shell-v1|extended-solids-v4|vehicle-supports-v5] "
+        "[--contact-profile wall-only|wall-self-contact-v1] [--self-contact-member FILE] "
         "[--duration-ms 0.5|5|20|50] [--fixed-dt-s 3e-7] [--gap-m .02] [--samples 101] "
         "[--wall-stiffness-n-m3 VALUE] [--penetration-limit-m VALUE] "
         "[--diagnostic-intervals N] [--maximum-elapsed-s SEC] [--stop-file PATH] [--forecast-only] [--conditional-full-limits]";

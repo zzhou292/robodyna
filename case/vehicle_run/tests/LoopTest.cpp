@@ -16,6 +16,13 @@ struct Fake final : detail::Operations {
     std::vector<std::string> calls;
     Endpoint Accepted() const noexcept override {return accepted;}
     SampledShellPlasticityTotals SampledShellPlasticity() const noexcept override {return sampled_shell;}
+    SelfContactTotals SelfContact() const noexcept override {
+        SelfContactTotals result;
+        result.available=logged!=0;
+        result.intervals=logged;
+        result.last_event_count=logged?17:0;
+        return result;
+    }
     MechanicsTotals Mechanics() const noexcept override {
         MechanicsTotals result;
         result.available = logged != 0;
@@ -113,6 +120,8 @@ TEST(VehicleRunLoop, RejectedAttemptDiscardsAndKeepsLoggedPrefixWithoutRetryOrCl
     EXPECT_EQ(std::count(fake.calls.begin(),fake.calls.end(),"prepare3"),1);
     EXPECT_TRUE(result.progress.mechanics.available);
     EXPECT_EQ(result.progress.mechanics.intervals, 2u);
+    EXPECT_EQ(result.progress.self_contact.intervals,2u);
+    EXPECT_EQ(result.progress.self_contact.last_event_count,17u);
     EXPECT_EQ(result.progress.mechanics.solids.metal_plastic_work.work.accepted_increment_sum_j, .25);
 }
 TEST(VehicleRunLoop, OutputAndReadbackFailuresNeverPublishFalsePrefix) {
@@ -127,6 +136,7 @@ TEST(VehicleRunLoop, OutputAndReadbackFailuresNeverPublishFalsePrefix) {
         EXPECT_EQ(fake.finished,0u);
         EXPECT_EQ(result.progress.sampled_shell_plasticity.last_epoch, fake.saved);
         EXPECT_EQ(result.progress.sampled_shell_plasticity.saved_samples, stage == 0 ? 2u : 1u);
+        EXPECT_EQ(result.progress.self_contact.intervals,fake.logged);
     }
 }
 TEST(VehicleRunLoop, LiveShellSampleTimesRemainAtLastWriteAcrossUnsampledAcceptedSteps) {

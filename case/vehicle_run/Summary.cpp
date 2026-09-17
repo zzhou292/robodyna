@@ -1,6 +1,7 @@
 #include "RunState.h"
 #include "MechanicsDocument.h"
 #include "SampledShellPlasticity.h"
+#include "SelfContactDocument.h"
 #include "output/ArtifactIO.h"
 namespace crash::cases::vehicle_run::detail {
 namespace {
@@ -53,7 +54,12 @@ records::RecordFile WriteSummary(const std::filesystem::path& root,const Config&
     using namespace output;
     Document document;
     document.SetObject();
-    String(document,"schema","robo_dyna.vehicle_run_summary.v1");
+    const bool self_contact=config.contact_profile==ContactProfile::WallSelfContactV1;
+    String(document,"schema",self_contact?"robo_dyna.vehicle_run_summary.v2":"robo_dyna.vehicle_run_summary.v1");
+    if(self_contact) {
+        String(document,"contact_profile",ContactProfileName(config.contact_profile));
+        Integer(document,"complete_device_bytes",forecast.contact.device_bytes);
+    }
     String(document,"status",Name(result.loop.kind));
     String(document,"physical_profile",PhysicalProfileName(config.physical_profile));
     if(forecast.joint_count) Integer(document,"selected_joints",forecast.joint_count);
@@ -90,6 +96,12 @@ records::RecordFile WriteSummary(const std::filesystem::path& root,const Config&
         Value sampled_value;
         sampled_value.CopyFrom(sampled,document.GetAllocator());
         document.AddMember("sampled_shell_plasticity",sampled_value,document.GetAllocator());
+        if(self_contact) {
+            auto self_document=SelfContactDocument(progress.self_contact);
+            Value self_value;
+            self_value.CopyFrom(self_document,document.GetAllocator());
+            document.AddMember("accepted_self_contact",self_value,document.GetAllocator());
+        }
         Boolean(document,"contact_observations_available",contact.available);
         if(contact.available) {
             Number(document,"peak_observed_force_n",contact.peak_observed_force_n);
@@ -104,9 +116,17 @@ records::RecordFile WriteSummary(const std::filesystem::path& root,const Config&
     }
     if(result.rejected_step_limit_s) {
         Number(document,"rejected_step_limit_s",*result.rejected_step_limit_s);
-        String(document,"recovery","new run from original source with an explicitly selected smaller fixed timestep");
+        String(document,"recovery",config.contact_profile==ContactProfile::WallSelfContactV1 ?
+            "stop and qualify a revised contact/timestep profile before starting a new run" :
+            "new run from original source with an explicitly selected smaller fixed timestep");
     }
     if(result.rejected_contact_status) Integer(document,"rejected_contact_status",static_cast<unsigned>(*result.rejected_contact_status));
+    if(result.rejected_self_contact) {
+        auto error=SelfContactErrorDocument(*result.rejected_self_contact);
+        Value error_value;
+        error_value.CopyFrom(error,document.GetAllocator());
+        document.AddMember("rejected_self_contact",error_value,document.GetAllocator());
+    }
     if(result.rejected_node!=UINT32_MAX) Integer(document,"rejected_physical_node",result.rejected_node);
     if(result.rejected_parent!=UINT32_MAX) Integer(document,"rejected_contact_parent",result.rejected_parent);
     if(result.archive_manifest) {
