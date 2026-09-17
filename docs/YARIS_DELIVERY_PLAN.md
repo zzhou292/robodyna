@@ -1,158 +1,120 @@
-# Robo-dyna: remaining Yaris work and product roadmap
+# Robo-dyna: Yaris delivery and product roadmap
 
-Updated 2026-09-12 from main sources, frozen drafts, the completed 10,000-step
-run, and independent contact/runtime/model reviews. The execution order lives in
-[CURRENT_EXECUTION_PLAN.md](../../planning/CURRENT_EXECUTION_PLAN.md); persistent
-project facts live in [WORKSPACE_MEMORY.md](../../planning/WORKSPACE_MEMORY.md).
+Updated 2026-09-17 after the accepted M2 source/evidence audit and local app
+consolidation. See [the active plan](../../planning/CURRENT_EXECUTION_PLAN.md),
+[acceptance audit](../../planning/handover/M2_ACCEPTANCE_AUDIT_2026-09-17.md), and
+[post-M2 design](../../planning/handover/POST_M2_EXECUTION_2026-09-17.md).
 
-## What is already delivered
+## Delivered and accepted
 
-The original coarse 2010 Yaris **selected V5 assembly** hits a finite triangle
-mesh wall at 35 mph using TL-FEA CUDA explicit dynamics, with one accepted/trial
-state and clock. QEPH/T3/QBAT shells, layered plasticity, five solid families,
-structural beams, joints, original connections, rigid groups and CIN ties are
-integrated. Chrono replays exact saved shell states with original part colors.
+The selected coarse 2010 Yaris V5 assembly already runs CUDA explicit structural
+dynamics with QEPH/T3/QBAT shells and plasticity, five solid families, beams,
+joints, connections, rigid groups and CIN. Chrono replays exact accepted shell
+states with original part colors. TL remains the physical state/clock owner.
 
-The completed run reached **10,000 steps / 2 ms**, at **200 ns**, in 102.44 minutes.
-Its 41 saved states occupy an approximately 815 MB run directory; peak sampled
-RSS was 3.736 GB. First saved positive shell plastic strain is at 0.55 ms; the
-final maximum is **1.94975% at 76 positive native points**. All 349,645 shell
-parents remain active; reported solid/structural-beam plastic work is zero.
-This demonstrates local shell plastic response, not fracture or a settled
-permanent shape. The configured 5 ms envelope was intentionally stopped at 2 ms.
+The longest archived run is still **wall-only**: 10,000 steps / about 2 ms at
+200 ns, 41 saved states, 102.44 minutes and approximately 815 MB. Peak local
+shell equivalent plastic strain is 1.94975%; 76 positive native points belong
+to 49 active parents of bumper PID 2000003. M0 analysis is complete. It does not
+prove rail load transfer, fracture, settled residual crush or the configured
+5 ms horizon's completion.
 
-Both 8.2-second, 1280x720/30 FPS videos pass exact replay, hashes, probe and full
-decoding. They use physical deformation scale 1 and actual timestamp overlays:
+The inspected existing videos remain available at
 [impact detail](../../crash-work/renders/yaris-wallremoval-10000-review-1/impact-detail-video/movie.mp4)
 and [overview](../../crash-work/renders/yaris-wallremoval-10000-review-1/overview-video/movie.mp4).
+Each is 8.2 s, 1280x720/30 FPS, physical scale 1, with saved-time overlays and
+no geometric interpolation. M2 has not produced a longer movie.
 
-The authenticated saved-response analyzer maps all 76 positive native points to
-49 active parents of PID/MID/SID 2000003 (`2_bumperplastic`), with the peak at
-EID 2324558. Their direct static incidence remains inside that bumper shell part;
-it does not establish reaction transfer into rails. The complete bounded report
-is `crash-work/reports/yaris-wallremoval-10000-impact-analysis-3.json`.
+**Functional M2 first-profile self-contact is accepted.** Full selected V5
+self-only prepares/seals/discards; combined wall+self seals both receipts and
+commits one 200 ns interval to epoch 1. Both final resource receipts pass with
+complete cleanup. This completes the named M2 integration milestone, not the
+whole crash deliverable or multi-step production controller integration.
 
-## Remaining capabilities
+Accepted TL source is `1cf575e6` in
+`crash-work/worktrees/self-contact-m2-final-integration`. App M2 source was
+`9606129`; local merge `de074ed` retains that runtime and newer M0 analysis.
+Root app and runtime worktree share the merged history, followed by docs-only
+updates. Accepted simulation sources did not change during consolidation.
+TL root remains the older `1e6a0a2`; configure accepted TL explicitly.
 
-| Priority / piece | Existing work to reuse | Work still required and owning modules | Completion gate |
+## Remaining capabilities and gates
+
+| Priority / slice | Reuse | Remaining implementation | Completion gate |
 | --- | --- | --- | --- |
-| P0: interpret the current response | The focused authenticated analyzer now reports sampled parent/part/material/section plasticity and direct static incidence from Replay/Context and the V5 graph. | TL/app diagnostics must add online connector/body reactions, scheme-correct energy/momentum and loaded force/moment paths; saved positions cannot establish residual shape. | M0 reproduces all 2 ms extrema and source joins. Remaining gate is measured transfer beyond the bumper skin in controlled/full-front loading; one weak graph component remains insufficient. |
-| P0: finish a bounded throughput pass | Two isolated CIN master-gather and solid-measurement drafts; existing incidence/gather, exact comparison and profiler. | TL `solvers/cin_advance` and `elements/solids/resident`: finish qualification and integration. Then profile the deformed workload before further optimization. | Frozen CPU/CUDA numerical equivalence including plastic/failure states, rollback/retry, exact cap accounting, affected owning gates and exact V5 outputs. Demonstrate measured whole-step benefit; no physics or timestep changes. |
-| P0: vehicle self-contact | Qualified S0/S1 plus locally composed pair/facet/broadphase and bounded approximation summary at TL `79bcf15`; app `34d58e5` qualifies the actual source intersection/facet inventory. Neither branch is merged or runtime-active. | TL `collision` implements feature discovery and a two-sided contributor; app `case/vehicle_dynamics` composes it into the existing transaction. | Complete current regularity/VF/EE/intersection/crossing discovery, equal/opposite force and virtual work, actual rigid/CIN response and STI, same-attempt receipt, no tunneling in covered motion, failure-atomic discard/retry and bounded storage. |
-| P0: contact coverage for folding | Existing finite planar mesh-wall law, physical source maps and weighted queries. | Qualify the named fixed physical-facet approximation, vertex-face and edge-edge queries, crossings, thickness/offsets, feature ownership, initial overlaps and local exclusions. Add friction/source-law support in a distinct increment. | Tiny exhaustive geometry oracle; grazing/crossing/degenerate cases; adjacent and tied features; removal changes ownership; wall/contact mesh and timestep refinement; sliding dissipation when friction is enabled. |
-| P0: energy and stability evidence | Native force/work/HG/plastic increments, contact/removal diagnostics, fixed-step limiter and source attribution. | TL exposes missing scheme-consistent observations; app `case/vehicle_run` and output assemble a TIME0-to-current energy/momentum ledger and histories. | Free-flight and elastic conservation, plastic unloading, contact work/impulse and removal accounting; count physical/rigid/CIN contributions once. Define tolerances before tests and show timestep refinement. Native plastic/HG work are included components, not additional energy to double-count. |
-| P1: damage and connection behavior | Constant/TAB1 shell failure; TYPE13 plastic/failure and TYPE25 force/couple failure; common activity/removal and rollback. | Report accepted connection/failure events through app output. Qualify loaded failure and changed load paths; explicitly resolve any new rupture/erosion policy. | Native failure-step/next-step timing, load transfer after failure, contact ownership after removal, no stale forces/history, source-policy provenance. Current TYPE25 huge default limits are not calibrated tearing. |
-| P1: physical checkpoint/restart | Source authentication, bounded binary I/O, typed participant state/history and one publisher. | New versioned checkpoint adapter spanning TL owner/participants and app run/output. Visualization archives and frozen executables are not restart checkpoints. | Uninterrupted versus resumed coordinates, staggered velocity phase, quaternions, all histories/activity/constraints and next accepted results agree; reject incompatible/corrupt files and incomplete writes. Forecast storage before allocation. |
-| P1: longer reviewed runs | Standalone run CLI, independent sampling, cooperative prefix closure and automated Chrono capture/encoding. | Complete 5 ms, then an admitted 10/20 ms trajectory; progress to 50/100/200 ms only as contact, output and runtime gates support it. Add explicit horizon admission where absent. | No unexplained energy growth/crossing/penetration failure; inspect deformation and load paths; preserve exact archives, stable memory and a useful part-colored video at each promotion. |
-| P2: richer engineering results | Shell geometry/plasticity/activity, part and plastic-color modes, solid/beam scalar summaries and typed accepted-result readers. | Bounded stress/strain, solid/beam geometry and point histories, connector-event/contact-force/energy charts; app output schemas and Chrono adapters. | Known-field export/replay checks, units and unavailable-field semantics, corruption tests, no fabricated fields or second solver in the viewer. |
+| P0: runnable wall+self controller | `LoadedWallSelfContact`, `PreparedRun`, existing source/setup factories and one dynamics owner | Explicit contact mode through source preparation, config/CLI and Session; current controller still calls `LoadedWall` | Small selection/identity tests, no hidden mode change, correct common publication across multiple commits |
+| P0: bounded multi-step budgets/output | Existing combined forecasts, `SelfContactObservation`, typed transaction reports and archive writers | Shared-source/phase-peak accounting, declared growing-contact capacities, compact accepted contact summaries, profile provenance and typed failure propagation | Exact caps and source identity, no duplicate memory charges, failed trials never become accepted output, bounded failure leaves valid diagnostic prefix |
+| P0: next-interval qualification | Existing TL two-step force/STI, discard/retry and removal CUDA coupons | App/controller wall+self fixture with several actual commits and archive capture, then bounded full V5 continuation beyond epoch 1 | No stale receipts, correct epochs/history, stable allocation and supported motion; final full vehicle stage/resource evidence |
+| P0: practical contact throughput | Accepted exact geometry and frozen source-authenticated fixtures | Measure host geometry/certification, state copies, broadphase and force phases; optimize generic scheduling/representation without changing admitted outcomes | Exact policy/force/failure regression; measured representative benefit under unchanged 200 ns and resource limits |
+| P0: energy/load-path evidence | Native work/plastic/hourglass terms, accepted force observations, M0 mapping | TIME0/current energy and momentum, contact impulse/work, connector/body reactions and loaded transfer | Correct phase/availability, no double-counted plastic/HG or rigid/CIN mass; free-flight, elastic, unloading/contact controls and stated tolerances |
+| P1: integrate separate optimizations | CIN `3bb0cb1`/`28d1f84`; solid `2c40dbb`/`b17fde2` | CIN into accepted contact branch; finish solid integrated/native/V5/exact/performance gates | One change at a time, owner/rollback/caps coverage and unchanged output where applicable; no claim of existing M2 speedup |
+| P1: damage/load history | Existing constant/TAB1 shell and TYPE13/TYPE25 failure mechanics, activity/removal | Accepted event export and loaded failure/load-path review | Correct failure/removal timing, changed ownership and no stale force/history; retain source limits |
+| P1: physical restart | Authenticated models, bounded I/O and typed accepted owner/participant state | Versioned checkpoint of staggered phase, coordinates/velocities/orientation, all histories/activity/constraints and new contact state | Uninterrupted/resumed next-step equivalence, compatibility/corruption/partial-write rejection and bounded storage |
+| P1: 5 ms and longer video | Existing CLI loop, exact archive, Chrono capture and video encoder | Complete a practical wall+self trajectory after preceding gates; admit later horizons explicitly | Reviewed scale-1 part colors, actual time, visible response, contact/energy/load evidence and stable resources |
+| P2: broader contact/model/results | Current centered-shell first profile and source provenance | Solid contact faces, exact bilinear Q4, friction/history, omitted source components and richer stress/force plots | Separately named physical profiles and independent owning qualification; no hidden expansion of first-profile claims |
 
-## Contact design decisions
+## First-profile contact scope
 
-The current participant is a **fixed-X finite planar mesh-wall penalty**, with
-zero thickness offset, friction and damping. The selected wall is an authenticated
-mesh; this is not an arbitrary mesh-to-mesh contact engine. It cannot stop car
-panels intersecting each other during folding.
+Current self-contact is frictionless, centered selected Q4/T3 shells, reference
+half-thickness and level-0 fixed physical triangles. Virtual facet vertices use
+original interpolation weights and add no mechanical nodes or mass. Original
+friction/damping/soft-card fields remain provenance, not applied physics.
 
-Keep the first self-contact scope explicit: frictionless, reference-thickness,
-fixed physical facets derived from Q4/T3 parents. Virtual facet vertices retain
-original-parent interpolation weights and introduce no new mechanical nodes or
-mass. Compose velocity and transpose-force maps consistently; measure/refine
-faceting error and retain its conservative search bounds. Reuse existing query
-and broadphase utilities. Display triangles do not become physical contact data.
-An exact bilinear profile is a later, separately qualified capability.
+Implemented: canonical feature/active-parent identity, complete bounded CUDA
+sweep, VF/EE discovery, local intersection ownership, same-rigid/CIN support,
+reference-area force, represented-Jacobian STI, exact linear/rigid-quadratic
+interval certificates, deterministic force reduction and common commit/discard.
+It is not exact bilinear-Q4 contact, and selected solids/beams are not surface
+primitives. Friction/history and broader contact semantics remain future scope.
 
-S0's all-shell census is **341,143 centered parents / 8,502 offset exclusions**.
-The authenticated original 861-PID automatic set resolves to 337,092 retained
-shell parents in 842 PIDs, all centered, plus 2,952 selected solids in 11
-non-shell PIDs and zero beams. The eight selected tire PIDs / 8,812 shells remain
-explicitly omitted. Levels 0/1/2 contain 653,055 / 2,612,220 / 10,448,880
-facets; maximum reference faceting bounds are 4.42058 / 1.10514 / 0.276286 mm.
-Solid exterior faces remain unsupported. Define active-use thickness/area
-ownership and narrow topology/tie/rigid exclusions. Same part ID or a shared
-corner cannot exclude whole parts.
+Combined first-interval evidence records 32,491 active events and 5,989,588
+candidate facet-policy outcomes, digest 5411954021770061371. The standalone
+self-only guard pass is verified; identical self-only printed counts remain
+handover-reported because its final log was not recovered. The audit preserves
+all provenance limitations and the exact partition.
 
-Pair `0ac4462` (weighted-map dependency `7a629e7`), physical facets `3bd26db`
-and broadphase `9bf7ab5` are composed and focused host/CUDA/Bazel-qualified on
-the local TL branch. Complete triangle vertex-face/edge-edge queries and bounded
-crossing checks next. Swept bounding boxes alone do not establish collision
-detection between endpoints; rigid arcs and feature changes need coverage too.
-Add force/STI before the existing kick/CIN screen and candidate validation before the common commit.
-Persistent friction/history must join that same publication protocol.
-See [the contact design](../../planning/DEFORMABLE_SELF_CONTACT_PLAN.md).
+The existing wall remains a fixed-X finite planar authenticated mesh penalty;
+self-contact adds panel-to-panel handling for its declared profile. Do not infer
+arbitrary moving-wall or full original LS-DYNA contact parity.
 
-## Selected-model coverage and failure limits
+## Performance and architecture constraints
+
+The contact pipeline is hybrid: CUDA structural dynamics/broadphase/force and
+host exact feature/crossing certification. The roughly 32-minute first-interval
+gates include startup and are not measured steady-state throughput. Do not use
+the old wall-only 1.63 steps/s rate for a wall+self ETA. The next representative
+continuation must report per-stage time and resource use before a long run.
+
+The harness's exact 32,491 event allocation is not a growth policy. Combined
+sampled whole-device GPU growth left only about 266 MB below the 6 GiB guard.
+Derive generic capacities and phase peaks before expanding storage. Keep normal
+20 GB application RAM / 2 GiB archive; conditional 60 GB / 6 GiB requires a
+complete forecast. All heavy work uses the shared guard/lock; no pushes.
+
+Preserve the single physical owner and Chrono-style modular composition. Several
+transaction/certificate files are now 1400–3200 lines; extract focused helpers
+as relevant work touches them, retaining exact operation order and fixtures.
+Avoid sweeping rewrites or making cosmetic cleanup block the runnable deliverable.
+
+## Selected model and failure boundary
 
 V5 includes 867 shell parts / 349,645 shells, 376,930 physical nodes, 4,980 solids,
-142 structural beams, 4,442 TYPE13 connections, 2,828 TYPE25 welds, 154 mass cards,
-44 joints, 779 rigid groups and 11,165 CIN rows. Its qualified graph has **one
-potential load-transfer component**, not seven disconnected components. It does
-not prove constrained-DOF rank or loaded transfer after changing activity.
+142 structural beams, 4,442 TYPE13 and 2,828 TYPE25 connections, 154 mass cards,
+44 joints, 779 rigid groups and 11,165 CIN rows. Selected mass is
+704.35196065175535 kg, not full vehicle curb mass. Its one static potential
+load-transfer component is not a DOF-rank or loaded-transfer proof.
 
-Selected mass is **704.35196065175535 kg**, not full vehicle curb mass. Original
-source omissions remain explicit: eight tire parts / 8,812 shells; 10,254 solids
-and 101 beam records across 14 non-shell PIDs; the orientation-only mass and
-auxiliary/setup dispositions. Original 4,685 beams include 4,442 TYPE13 records,
-142 structural beams and 101 omitted records. Tires remain optional for the
-requested shell demo. Complete original-deck coverage is a separate milestone.
+The original 861-PID contact selection resolves to 337,092 centered shell
+parents in 842 retained PIDs and 653,055 level-0 facets. The eight tire PIDs /
+8,812 shells remain omitted. It also selects 2,952 solids in 11 PIDs, whose
+contact faces are unsupported here; selected beam contact is absent.
 
-Material and damage scope is branch-specific. Solid LAW44 EPMAX behavior does
-not authorize general solid erosion. The airbag-solid execution choice retains
-original Isolid5 metadata while explicitly choosing Isolid18. Four seat-disk
-rigid groups retain their restricted policy. TYPE25 default rupture limits are
-huge finite values (+/-1e30 N and +/-1e27 N m); do not claim calibrated weld
-tearing. Existing TYPE13/TYPE25 event diagnostics should be exported before
-adding new failure mechanisms. Removed-shell degeneracy remains a numerical
-admission boundary requiring attention during severe collapse.
+Other source omissions and explicitly selected rubber HEPH/S6Z and airbag
+Isolid18 execution choices remain documented in modelio. Do not erase original
+Isolid1/Isolid5 provenance or claim original trajectory equivalence. Four seat
+rigid groups retain restricted policies. LAW44 EPMAX does not authorize generic
+solid erosion. TYPE25 huge default rupture limits are not calibrated tearing.
+Removed-shell degeneracy remains an admission boundary during severe collapse.
 
-## Runtime, timestep and output policy
-
-The measured 2 ms run sustained **1.630309 steps/s**. Prepare accounts for about
-612.196 ms/step; commit, archive and sampled capture together took 11.724 s out
-of 6,133.807 s after startup. Lowering video output quality is not the primary
-performance opportunity.
-
-| Physical duration | Approximate steps at 200 ns | Current-rate wall time |
-| --- | ---: | ---: |
-| 5 ms | 25,000 | 4.26 h |
-| 10 ms | 50,000 | 8.52 h |
-| 20 ms | 100,000 | 17.04 h |
-| 50 ms | 250,000 | 42.60 h |
-| 100 ms | 500,000 | 85.19 h |
-| 200 ms | 1,000,000 | 170.38 h |
-
-These are linear estimates, excluding startup/rendering and future contact cost;
-they are neither delivery ETAs nor evidence that those cases are admitted.
-The binary64 endpoint rule can add one step. The present CLI names only
-0.5/5/20/50 ms; 10/100/200 ms need configuration/output admission work.
-
-All 10,000 accepted rows admit 200 ns under the post-CIN scalar screen; its
-minimum is approximately 229.346729 ns. The separate native solid diagnostic is
-approximately 188.513 ns, and TYPE45 automatic stiffness depends on dt squared.
-The successful short-run source witness is a rear engine-mount tube, not proof
-of an unchanged winner throughout 2 ms. Resolve these scopes and perform
-sensitivity checks before any timestep change. No mass scaling, skipped checks,
-Yaris special cases or changed material/contact laws count as optimization.
-
-Use normal 20 GB host / 2 GiB archive limits; conditional 60 GB / 6 GiB only when
-a full-run forecast requires them. Keep the existing shared workstation guard,
-32 GiB available RAM and GPU limits. Runtime sampling and video playback cadence
-remain independent of the physical timestep. Add restart before routine multi-day
-runs; monitor allocation/soak behavior without claiming the absence of all leaks.
-
-## Broader robo-dyna product, after the selected Yaris demonstration
-
-The longer-term LS-DYNA-like goal also needs a reusable case/deck model beyond
-the currently source-pinned Yaris workflow, explicit support matrices for material,
-element, section, connection and contact options, and reproducible validation
-cases. Tire/road and omitted component mechanics, richer fracture/contact laws,
-general loads/boundaries and useful analysis workflows belong here when needed.
-Implicit/quasistatic or additional coupled-physics solvers would be separate
-algorithms with their own gates; they are not prerequisites for explicit Yaris
-impact. A general GUI/preprocessor and packaging can follow stable case APIs.
-Formal LS-DYNA/physical-test accuracy comparison remains deferred by the user.
-
-Retain TL-FEA ownership of CUDA mechanics, state and the single clock. Robo-dyna
-owns source/model/case/output composition. Chrono owns reused infrastructure and
-accepted-state visualization. OpenRadioss remains a pinned reference donor, not
-the runtime. Reuse existing utilities and add focused modules with meaningful
-tests; avoid a parallel solver hierarchy or one large integration script.
+Preserve the original 2 ms result and failed receipts. Visualization archives and
+folders of frozen binaries are not physical restart checkpoints.
