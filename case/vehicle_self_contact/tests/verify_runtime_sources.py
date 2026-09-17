@@ -203,6 +203,11 @@ def main() -> None:
     nonlinear_fixture_dir = (
         case / "vehicle_startup" / "shell_execution" / "tests" /
         "self_contact")
+    # Qualification helpers are shared by the original coupons and the actual
+    # second-interval capture; they no longer live in one giant test unit.
+    for helper in ("CandidateCapture.cpp", "CoverageFixtureCapture.cpp",
+                   "CoverageFixtureGeometry.cpp", "CoverageFixtureInspection.cpp"):
+        candidate_coupon += "\n" + (nonlinear_fixture_dir / helper).read_text()
     nonlinear_fixture_header = (
         nonlinear_fixture_dir / "NonlinearCoverageFixture.h").read_text()
     nonlinear_fixture_test = (

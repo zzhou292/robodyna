@@ -1,0 +1,63 @@
+#pragma once
+
+#include "case/vehicle_dynamics/VehiclePhysicalDynamics.h"
+#include "lib_src/collision/self_contact_transaction/Storage.h"
+
+#include <vector>
+
+namespace crash::cases::vehicle_self_contact {
+
+struct CandidateRigidCouponSnapshot {
+    const vehicle_dynamics::Fields* accepted = nullptr;
+    const vehicle_dynamics::Fields* prepared = nullptr;
+    tl::fea::NodalPreparedView prepared_view;
+    std::vector<tl::fea::NodalRigidGroupSnapshot> accepted_groups;
+    std::vector<tl::fea::NodalRigidGroupSnapshot> prepared_groups;
+};
+
+struct AcceptedAssemblyCouponSnapshot {
+    std::vector<double> accepted_positions;
+    std::vector<double> prepared_positions;
+    std::vector<
+        tlfea::contact::self_contact_transaction::
+            AcceptedEventCertificate> accepted_certificates;
+    std::vector<
+        tlfea::contact::self_contact_transaction::
+            NonlinearCandidateRosterEntry> nonlinear_roster;
+    std::vector<
+        tlfea::contact::self_contact_transaction::
+            LinearWorkExhaustedRosterEntry> linear_roster;
+    tlfea::contact::self_contact_transaction::
+        NonlinearCandidateRosterSummary nonlinear_summary;
+    tlfea::contact::self_contact_transaction::
+        LinearCandidateCensusSummary linear_summary;
+    tlfea::contact::self_contact_transaction::
+        PreparedMotionCertificateView motion_certificates;
+    tl::fea::NodalStamp accepted_stamp;
+    tl::fea::NodalPreparedView prepared_view;
+    tlfea::contact::SelfContactTransaction* transaction = nullptr;
+    const tlfea::contact::SelfContactAcceptedAssemblyReceipt*
+        accepted_receipt = nullptr;
+    tlfea::contact::self_contact_transaction::
+        QualificationPreparedCensusReceipt prepared_census_receipt;
+    bool prepared_census = false;
+    std::size_t diagnostic_host_upper_bound = 0;
+};
+
+// Qualification access only: source snapshots never grant publication authority.
+class CandidateRigidCouponAccess {
+  public:
+    static CandidateRigidCouponSnapshot Prepare(
+        vehicle_dynamics::VehiclePhysicalDynamics&);
+    static AcceptedAssemblyCouponSnapshot PrepareAcceptedAssembly(
+        vehicle_dynamics::VehiclePhysicalDynamics&);
+    // Reuses actual structural and wall candidate stages, then captures the
+    // second candidate census without sealing or committing self contact.
+    static AcceptedAssemblyCouponSnapshot PrepareCandidateCensus(
+        vehicle_dynamics::VehiclePhysicalDynamics&);
+  private:
+    static AcceptedAssemblyCouponSnapshot CaptureCensus(
+        vehicle_dynamics::VehiclePhysicalDynamics&, bool prepared_activity);
+};
+
+}  // namespace crash::cases::vehicle_self_contact

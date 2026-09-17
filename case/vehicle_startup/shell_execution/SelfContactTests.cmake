@@ -6,6 +6,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/../../vehicle_self_contact/VehicleSelfContact
 include("${CMAKE_CURRENT_LIST_DIR}/../../vehicle_self_contact/VehicleSelfContactInitialCensus.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../../vehicle_self_contact/VehicleSelfContactRuntime.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../joints/VehicleJointModel.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/tests/self_contact/CoverageFixtureCapture.cmake")
 add_executable(robo_dyna_vehicle_self_contact_source_check
   "${CMAKE_CURRENT_LIST_DIR}/../physical_model/tests/supports/Source.cpp"
   tests/self_contact/Source.cpp tests/self_contact/CensusTest.cpp
@@ -18,6 +19,7 @@ target_link_libraries(robo_dyna_vehicle_self_contact_source_check PRIVATE
   robo_dyna_vehicle_self_contact_setup
   robo_dyna_vehicle_self_contact_initial_census
   robo_dyna_vehicle_self_contact_runtime
+  robo_dyna_self_contact_fixture_capture
   robo_dyna_original_self_contact_selection
   tl_self_contact_surface_binding tl_fixed_contact_facets
   tl_self_contact_current_regularity GTest::gtest_main)
