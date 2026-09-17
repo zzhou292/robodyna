@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
+#include "ResidualTasks.h"
+#include "../FixedTriangleFeatureDiscovery.h"
 #include "../SelfContactForceValues.h"
 
 #include <algorithm>
@@ -1071,7 +1073,9 @@ bool ExactFacetPair(const FixedTriangleFeatureCandidate& a,
        same(a.triangles[1], b.triangles[0]));
 }
 
-LinearResidualSeparationResult CertifyLinearResidualSeparation(
+namespace {
+
+LinearResidualSeparationResult LinearResidualForTasks(
     const CurrentFixedTriangle& first_base,
     const CurrentFixedTriangle& first_prepared,
     double first_half_thickness_m,
@@ -1079,10 +1083,11 @@ LinearResidualSeparationResult CertifyLinearResidualSeparation(
     const CurrentFixedTriangle& second_prepared,
     double second_half_thickness_m,
     FixedTriangleFeatureView prepared_features,
-    FixedTriangleIntersectionView prepared_intersections) noexcept {
+    FixedTriangleIntersectionView prepared_intersections,
+    std::uint16_t required_tasks) noexcept {
   LinearResidualSeparationResult result;
-  if (!Same(first_base.key, first_prepared.key) ||
-      !Same(second_base.key, second_prepared.key) ||
+  if (!self_contact_transaction::Same(first_base.key, first_prepared.key) ||
+      !self_contact_transaction::Same(second_base.key, second_prepared.key) ||
       !prepared_features.complete ||
       !prepared_intersections.complete ||
       (prepared_features.count && !prepared_features.data) ||
@@ -1105,7 +1110,7 @@ LinearResidualSeparationResult CertifyLinearResidualSeparation(
   for (std::size_t i = 0;
        i < prepared_intersections.count; ++i) {
     const auto& intersection = prepared_intersections.data[i];
-    if (Compare(PairKey(
+    if (self_contact_transaction::Compare(PairKey(
                     intersection.triangles[0],
                     intersection.triangles[1]),
                 key) == 0) {
@@ -1147,14 +1152,14 @@ LinearResidualSeparationResult CertifyLinearResidualSeparation(
     for (std::size_t i = 0;
          i < prepared_features.count; ++i) {
       const auto& feature = prepared_features.data[i];
-      if (Compare(PairKey(
+      if (self_contact_transaction::Compare(PairKey(
                       feature.triangles[0],
                       feature.triangles[1]),
                   key) != 0)
         continue;
       const unsigned slot = FeatureTaskSlot(feature);
       const auto bit = FixedTriangleFeatureTaskBit(slot);
-      if (!bit || (observed & bit) ||
+      if (!bit || !(required_tasks & bit) || (observed & bit) ||
           !std::isfinite(feature.distance_m) ||
           feature.distance_m < 0 ||
           !std::isfinite(feature.representation_error_m) ||
@@ -1181,7 +1186,7 @@ LinearResidualSeparationResult CertifyLinearResidualSeparation(
           NextDown(feature.distance_m -
                    feature.representation_error_m));
     }
-    if (observed != FixedTriangleFeatureTaskBits) {
+    if (!required_tasks || observed != required_tasks) {
       result.status =
           LinearResidualSeparationStatus::
               IncompleteFeatureRoster;
@@ -1205,21 +1210,11 @@ LinearResidualSeparationResult CertifyLinearResidualSeparation(
   }
 }
 
-LinearResidualSeparationResult CertifyQuadraticResidualSeparation(
-    const CurrentFixedTriangle& first_base,
-    const CurrentFixedTriangle& first_prepared,
+LinearResidualSeparationResult AddQuadraticResidualBounds(
+    LinearResidualSeparationResult result,
     const FacetQuadraticCoefficients& first_quadratic,
-    double first_half_thickness_m,
-    const CurrentFixedTriangle& second_base,
-    const CurrentFixedTriangle& second_prepared,
     const FacetQuadraticCoefficients& second_quadratic,
-    double second_half_thickness_m, double duration,
-    FixedTriangleFeatureView prepared_features,
-    FixedTriangleIntersectionView prepared_intersections) noexcept {
-  auto result = CertifyLinearResidualSeparation(
-      first_base, first_prepared, first_half_thickness_m,
-      second_base, second_prepared, second_half_thickness_m,
-      prepared_features, prepared_intersections);
+    double duration) noexcept {
   if (result.status !=
       LinearResidualSeparationStatus::CertifiedSeparated)
     return result;
@@ -1247,6 +1242,117 @@ LinearResidualSeparationResult CertifyQuadraticResidualSeparation(
   result.exact_common_translation =
       result.exact_common_translation && curvature == 0;
   return result;
+}
+
+bool SameResidualTriangleIdentity(
+    const CurrentFixedTriangle& base,
+    const CurrentFixedTriangle& prepared) noexcept {
+  if (!self_contact_transaction::Same(base.key, prepared.key) ||
+      fixed_triangle_features::ValidateTriangle(base) !=
+          FixedTriangleDiscoveryStatus::Ok ||
+      fixed_triangle_features::ValidateTriangle(prepared) !=
+          FixedTriangleDiscoveryStatus::Ok)
+    return false;
+  for (unsigned local = 0; local < 3; ++local)
+    if (fixed_triangle_features::Compare(
+            base.vertex_keys[local], prepared.vertex_keys[local]) ||
+        fixed_triangle_features::Compare(
+            base.edge_keys[local], prepared.edge_keys[local]))
+      return false;
+  return true;
+}
+
+}  // namespace
+
+LinearResidualSeparationResult CertifyLinearResidualSeparation(
+    const CurrentFixedTriangle& first_base,
+    const CurrentFixedTriangle& first_prepared,
+    double first_half_thickness_m,
+    const CurrentFixedTriangle& second_base,
+    const CurrentFixedTriangle& second_prepared,
+    double second_half_thickness_m,
+    FixedTriangleFeatureView prepared_features,
+    FixedTriangleIntersectionView prepared_intersections) noexcept {
+  return LinearResidualForTasks(
+      first_base, first_prepared, first_half_thickness_m,
+      second_base, second_prepared, second_half_thickness_m,
+      prepared_features, prepared_intersections, FixedTriangleFeatureTaskBits);
+}
+
+LinearResidualSeparationResult CertifyQuadraticResidualSeparation(
+    const CurrentFixedTriangle& first_base,
+    const CurrentFixedTriangle& first_prepared,
+    const FacetQuadraticCoefficients& first_quadratic,
+    double first_half_thickness_m,
+    const CurrentFixedTriangle& second_base,
+    const CurrentFixedTriangle& second_prepared,
+    const FacetQuadraticCoefficients& second_quadratic,
+    double second_half_thickness_m, double duration,
+    FixedTriangleFeatureView prepared_features,
+    FixedTriangleIntersectionView prepared_intersections) noexcept {
+  return AddQuadraticResidualBounds(
+      CertifyLinearResidualSeparation(
+          first_base, first_prepared, first_half_thickness_m,
+          second_base, second_prepared, second_half_thickness_m,
+          prepared_features, prepared_intersections),
+      first_quadratic, second_quadratic, duration);
+}
+
+LinearResidualSeparationResult CertifyQuadraticUnmaskedSeparation(
+    const CurrentFixedTriangle& first_base,
+    const CurrentFixedTriangle& first_prepared,
+    const FacetQuadraticCoefficients& first_quadratic,
+    double first_half_thickness_m,
+    const CurrentFixedTriangle& second_base,
+    const CurrentFixedTriangle& second_prepared,
+    const FacetQuadraticCoefficients& second_quadratic,
+    double second_half_thickness_m, double duration,
+    FixedTriangleFeatureView prepared_features,
+    FixedTriangleFeatureTaskMask authenticated_mask) noexcept {
+  if (!SameResidualTriangleIdentity(first_base, first_prepared) ||
+      !SameResidualTriangleIdentity(second_base, second_prepared) ||
+      !prepared_features.complete || prepared_features.count > 15 ||
+      (prepared_features.count && !prepared_features.data) ||
+      (authenticated_mask.local_tasks & ~FixedTriangleFeatureTaskBits))
+    return {};
+  FixedTriangleFeatureTaskMask base_mask, prepared_mask;
+  if (BuildFixedTriangleFeatureTaskMask(first_base, second_base, &base_mask) !=
+          FixedTriangleDiscoveryStatus::Ok ||
+      BuildFixedTriangleFeatureTaskMask(first_prepared, second_prepared, &prepared_mask) !=
+          FixedTriangleDiscoveryStatus::Ok ||
+      base_mask.local_tasks != authenticated_mask.local_tasks ||
+      prepared_mask.local_tasks != authenticated_mask.local_tasks)
+    return {};
+  if (fixed_triangle_features::Compare(first_prepared.key, second_prepared.key) > 0)
+    return CertifyQuadraticUnmaskedSeparation(
+        second_base, second_prepared, second_quadratic, second_half_thickness_m,
+        first_base, first_prepared, first_quadratic, first_half_thickness_m,
+        duration, prepared_features, authenticated_mask);
+  const auto required = static_cast<std::uint16_t>(
+      FixedTriangleFeatureTaskBits & ~authenticated_mask.local_tasks);
+  LinearResidualSeparationResult incomplete;
+  incomplete.status = LinearResidualSeparationStatus::IncompleteFeatureRoster;
+  if (!required) return incomplete;
+  std::uint16_t observed = 0;
+  for (std::size_t i = 0; i < prepared_features.count; ++i) {
+    const auto& feature = prepared_features.data[i];
+    const auto bit = FixedTriangleFeatureTaskBit(FeatureTaskSlot(feature));
+    if (!Same(feature.triangles[0], first_prepared.key) ||
+        !Same(feature.triangles[1], second_prepared.key) ||
+        !bit || !(required & bit) || (observed & bit))
+      return incomplete;
+    if (!IsFinite(feature.points[0]) || !IsFinite(feature.points[1])) return {};
+    observed = static_cast<std::uint16_t>(observed | bit);
+  }
+  if (observed != required) return incomplete;
+  // Empty intersections are deliberate: this helper makes no geometric
+  // intersection claim. The separate continuous-local proof supplies that.
+  return AddQuadraticResidualBounds(
+      LinearResidualForTasks(
+          first_base, first_prepared, first_half_thickness_m,
+          second_base, second_prepared, second_half_thickness_m,
+          prepared_features, {nullptr, 0, true}, required),
+      first_quadratic, second_quadratic, duration);
 }
 
 PersistentLinearContactResult CertifyPersistentLinearContact(
@@ -1818,14 +1924,24 @@ SelfContactTransactionReport ValidateCandidatePublications(
           "Represented interval results differ from the exact candidate roster",
           pair);
     if (input.crossings.data[pair].classification ==
-            RepresentedIntervalClassification::Unresolved &&
-        !(input.crossings.data[pair].reason ==
-              RepresentedIntervalReason::UnsupportedMotion &&
-          LocallyExcluded(
-              input.intersections, input.canonical_pairs[pair])))
+        RepresentedIntervalClassification::Unresolved)
       return Failure(SelfContactTransactionStatus::UnresolvedCandidate,
           "Represented interval candidate remains unresolved", pair,
           input.crossings.data[pair].reason);
+    const auto& crossing = input.crossings.data[pair];
+    if (crossing.geometry ==
+            RepresentedIntersectionGeometry::CertifiedLocalTopology &&
+        (crossing.classification !=
+             RepresentedIntervalClassification::CertifiedCrossingContact ||
+         crossing.reason != RepresentedIntervalReason::None ||
+         crossing.feature.kind != RepresentedFeatureKind::TriangleIntersection ||
+         crossing.accepted_event != SIZE_MAX ||
+         crossing.witness_time_numerator != 0 ||
+         crossing.witness_time_depth != 0 ||
+         !LocallyExcluded(input.intersections, crossing.key)))
+      return Failure(SelfContactTransactionStatus::CandidateRejected,
+          "Continuous local topology publication lacks its exact local premise",
+          pair);
   }
 
   for (std::size_t feature = 0;
@@ -1901,6 +2017,10 @@ SelfContactTransactionReport ValidateCandidatePublications(
       continue;
     }
     if (LocallyExcluded(input.intersections, crossing.key)) {
+      if (crossing.geometry !=
+          RepresentedIntersectionGeometry::CertifiedLocalTopology)
+        return Failure(SelfContactTransactionStatus::CandidateRejected,
+            "Endpoint-local intersection lacks continuous topology proof", pair);
       outcome.disposition =
           SelfContactCandidateDisposition::ExcludedLocalIntersection;
       continue;

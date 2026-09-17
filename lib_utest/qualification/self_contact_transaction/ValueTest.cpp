@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 #include "lib_src/collision/self_contact_transaction/Storage.h"
+#include "lib_src/collision/self_contact_transaction/PolicyExclusions.h"
 #include "lib_src/collision/SelfContactForceValues.h"
+#include "lib_src/collision/SurfaceContactGeometry.h"
+#include "lib_src/collision/fixed_triangle_features/ExactPredicates.h"
 
 #include <gtest/gtest.h>
 
@@ -340,6 +343,11 @@ sct::CandidateValidationInput Input(
   input.outcome_count = outcome_count;
   return input;
 }
+
+#include "PersistentGeometryCases.h"
+#include "PolicyExclusionsCases.h"
+#include "RigidFeatureGeometryCases.h"
+#include "LocalEdgeRepresentationCases.h"
 
 TEST(SelfContactTransactionValues,
      ResidualTranslationUsesOutwardBoundsAfterCancellation) {
@@ -2152,15 +2160,17 @@ TEST(SelfContactTransactionValues,
       &pair, 1, &result, &outcome, &outcome_count);
   input.intersections = {&intersection, 1, true};
   EXPECT_EQ(sct::ValidateCandidatePublications(input).status,
+      c::SelfContactTransactionStatus::CandidateRejected);
+  result.geometry = c::RepresentedIntersectionGeometry::CertifiedLocalTopology;
+  result.reason = c::RepresentedIntervalReason::None;
+  EXPECT_EQ(sct::ValidateCandidatePublications(input).status,
       c::SelfContactTransactionStatus::Ok);
 
   result.classification =
       c::RepresentedIntervalClassification::Unresolved;
   result.reason = c::RepresentedIntervalReason::UnsupportedMotion;
   EXPECT_EQ(sct::ValidateCandidatePublications(input).status,
-      c::SelfContactTransactionStatus::Ok);
-  EXPECT_EQ(outcome.disposition,
-      c::SelfContactCandidateDisposition::ExcludedLocalIntersection);
+      c::SelfContactTransactionStatus::UnresolvedCandidate);
 
   result.reason = c::RepresentedIntervalReason::WorkExhausted;
   EXPECT_EQ(sct::ValidateCandidatePublications(input).status,

@@ -335,16 +335,16 @@ for token in (
 ):
     require(candidate, token, CANDIDATE)
 for token in (
-    "LocallyExcluded(",
     "crossing_pair_count",
     "RepresentedIntervalReason::UnsupportedMotion",
     "Quadratic subdivision and ledger coverage remain unresolved",
     "EvaluatePairFeaturesMaskedOnce(",
     "QuadraticResidualCertificate(",
-    "PersistentQuadraticCertificate(",
     "CertifyQuadraticFacetPolicyCoverage(",
-    "BuildAcceptedSameRigidExclusions(",
+    "exclusion_context.source()",
     "CertifiedQuadraticExactExclusion",
+    "CertifiedQuadraticLocalIntersection",
+    "CertifiedLocalTopology",
     "Quadratic contact cell has no exact accepted VF/EE owner",
 ):
     require(candidate, token, CANDIDATE)
@@ -474,8 +474,8 @@ if "CoveredByAdmittedVertexFace" in source:
 for token in (
     "RepresentedByAcceptedEdgeEdge",
     "EE crossing lacks its exact accepted EE certificate",
-    "input.crossings.data[pair].reason ==",
-    "LocallyExcluded(\n              input.intersections",
+    "Endpoint-local intersection lacks continuous topology proof",
+    "Continuous local topology publication lacks its exact local premise",
     "CertifyLinearResidualSeparation(",
     "TriangleResidualL1(",
     "SquaredDistance(",
@@ -501,7 +501,6 @@ for token in (
     "local_result.work = 1",
     "CertifiedPersistentLinearContact",
     "PersistentLinearCertificate(",
-    "PersistentPhysicalContact",
     "CertifiedQuadraticResidualSeparation",
     "CertifiedPersistentQuadraticContact",
     "ClassifyPreparedCandidateCensus(",
@@ -688,7 +687,7 @@ for token in (
     "CommonTranslationCertificateIsDeterministicAtMinimalCap",
     "ResidualTranslationCertificateIsDeterministic",
     "CertifyPersistentLinearContact(",
-    "ExactLocalIntersectionPrecedesOnlyUnsupportedMotion",
+    "LocalEndpointCannotAdmitUnsupportedContinuousMotion",
     "ContactConstraintLayout::SameMergedParts",
     "ContactConstraintLayout::MergedPartAndPlain",
     "CopyPreparedForceStage",
@@ -866,3 +865,52 @@ for token in (
     require(owner, token, OWNER)
 
 print("fixed self-contact transaction source proof: PASS")
+
+# Continuous local policy requires a real interval proof, never the old
+# endpoint-only exception. The runtime tests exercise actual geometry/owners.
+local_path = ROOT / "lib_src/collision/self_contact_transaction/LocalContact.cpp"
+local_source = local_path.read_text()
+for token in ("CertifyQuadraticUnmaskedSeparation(",
+              "CertifyQuadraticLocalTopology(",
+              "EvaluatePairFeaturesMaskedOnce("):
+    require(local_source, token, local_path)
+for token in ("CertifiedLocalIntersection", "lower_local && upper_local",
+              "local.work >= max_work", "max_work - local.work"):
+    require(rigid_sweep, token, RIGID_SWEEP)
+if "LocalPolicyResolvesUnsupported" in candidate:
+    raise RuntimeError(f"{CANDIDATE}: endpoint-only local bypass returned")
+if "PersistentQuadraticCertificate(" in candidate:
+    raise RuntimeError(f"{CANDIDATE}: thickness-only curved bypass returned")
+for build_path in (CMAKE, BAZEL):
+    require(build_path.read_text(), "self_contact_transaction/LocalContact.cpp", build_path)
+
+local_cases = Path(__file__).resolve().parent / "LocalPublicationCases.h"
+for token in ("AdjacentLocalFirstIntervalCommitsThenSecondIntervalRejectsRetryAtomically",
+              "fixture.transaction.SealCandidate(",
+              "EdgeInteriorRepresentation", "EXPECT_FALSE(receipt.valid())",
+              "p::Exact(before, after)", "EXPECT_EQ(geometry, first_geometry)",
+              "CheckSecondIntervalRepresentationCoordinates(prepared_facets)",
+              "fixture.Commit(token,prepared,common,receipt)"):
+    require(local_cases.read_text(), token, local_cases)
+# The original accepted-contact CUDA test retains the positive two-commit
+# lifecycle. The adjacent local coupon qualifies its first commit followed by
+# the exact second-interval representation rejection and rollback/retry.
+for token in ("AcceptedInteriorEeForceCandidateRetryAndRollbackKeepForceSti",
+              "for (unsigned interval = 0; interval < 2; ++interval)",
+              "fixture.Commit(token, prepared, common, receipt)"):
+    require(CUDA.read_text(), token, CUDA)
+
+exclusion_path = ROOT / "lib_src/collision/self_contact_transaction/CandidateExclusions.cpp"
+for token in ("EvaluatePairFeaturesMaskedOnce(", "BuildAcceptedSameRigidExclusions("):
+    require(exclusion_path.read_text(), token, exclusion_path)
+for token in ("deferred_exclusions->prepare(", "deferred_exclusions->report",
+              "exclusion_count > deferred_exclusions->capacity"):
+    require(rigid_sweep, token, RIGID_SWEEP)
+
+rigid_feature_cases = Path(__file__).resolve().parent / "RigidFeatureGeometryCases.h"
+require(rigid_feature_cases.read_text(),
+        "MixedFacetCannotHideInteriorCrossingBehindStationaryRigidVertexFace",
+        rigid_feature_cases)
+require(rigid_sweep, "max_work - ledger.work, max_depth, true)", RIGID_SWEEP)
+if "max_work - ledger.work, max_depth, false)" in rigid_sweep:
+    raise RuntimeError(f"{RIGID_SWEEP}: rigid feature waives whole-facet geometry")

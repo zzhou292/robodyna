@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <cstring>
 #include <new>
+#include <sstream>
 #include <type_traits>
 #include <vector>
 
@@ -22,6 +23,8 @@ namespace c = tlfea::contact;
 namespace fe = tl::fea;
 namespace sct = tlfea::contact::self_contact_transaction;
 namespace p = physical_publication_test;
+
+#include "PolicyAssertions.h"
 
 bool Good(c::SelfContactTransactionReport report) {
   EXPECT_EQ(report.status, c::SelfContactTransactionStatus::Ok)
@@ -625,6 +628,8 @@ struct Fixture {
     transaction.DiscardTrial();
   }
 };
+
+#include "LocalPublicationCases.h"
 
 TEST(SelfContactTransactionCuda,
      CertifiedRigidSweepsSeparateDistantBodiesButNotOverlappingArcs) {
@@ -1407,7 +1412,7 @@ TEST(SelfContactTransactionCuda,
 }
 
 TEST(SelfContactTransactionCuda,
-     ExactLocalIntersectionPrecedesOnlyUnsupportedMotion) {
+     LocalEndpointCannotAdmitUnsupportedContinuousMotion) {
   const c::RepresentedIntervalPairKey pair{{
       {17, 10, 0, 0}, {17, 20, 0, 0}}};
   c::RepresentedIntervalResult crossing;
@@ -1434,11 +1439,8 @@ TEST(SelfContactTransactionCuda,
   input.outcome_capacity = 1;
   input.outcome_count = &outcome_count;
   ASSERT_EQ(sct::ValidateCandidatePublications(input).status,
-            c::SelfContactTransactionStatus::Ok);
-  EXPECT_EQ(outcome_count, 1u);
-  EXPECT_EQ(outcome.disposition,
-            c::SelfContactCandidateDisposition::
-                ExcludedLocalIntersection);
+            c::SelfContactTransactionStatus::UnresolvedCandidate);
+  EXPECT_EQ(outcome_count, 0u);
 
   crossing.reason = c::RepresentedIntervalReason::WorkExhausted;
   EXPECT_EQ(sct::ValidateCandidatePublications(input).status,
@@ -1667,6 +1669,12 @@ TEST(SelfContactTransactionCuda,
           fixture.rig.owner, token, assembly, &accepted)));
       ASSERT_TRUE(fixture.Prepare(token, assembly, prepared, common));
     }
+    const auto owner_view =
+        sct::QualificationAccess::AcceptedCertificates(fixture.transaction);
+    ASSERT_TRUE(owner_view.complete);
+    ASSERT_GT(owner_view.count, 0u);
+    const std::vector<sct::AcceptedEventCertificate> policy_owners(
+        owner_view.data, owner_view.data + owner_view.count);
     c::SelfContactTransactionReceipt receipt;
     ASSERT_TRUE(Good(fixture.transaction.SealCandidate(
         fixture.rig.owner, token, common, prepared, accepted, &receipt)));
@@ -1689,7 +1697,29 @@ TEST(SelfContactTransactionCuda,
                   policy.edge_axis_certified_linear_separated -
                   policy.vertex_edge_axis_separated);
     EXPECT_GT(policy.exact_crossing_pairs,0u);
-    EXPECT_GT(policy.represented_by_accepted_ee, 0u);
+    // Positive finite-thickness VF/EE forces coexist with disjoint midsurfaces.
+    // The actual interval roster is all 4 T3 x 8 Q4 fixed-facet pairs; both
+    // coarse and exact geometry proofs certify separation without an owner.
+    CheckPolicyOwners(fixture.transaction.policy_outcomes(), policy,
+                      policy_owners);
+    const auto first_parent = fixture.Parent(102);
+    const auto second_parent = fixture.Parent(103);
+    ASSERT_NE(first_parent, SIZE_MAX);
+    ASSERT_NE(second_parent, SIZE_MAX);
+    EXPECT_EQ(fixture.facets.facet_count(first_parent), 4u);
+    EXPECT_EQ(fixture.facets.facet_count(second_parent), 8u);
+    EXPECT_EQ(policy.outcomes, 32u);
+    EXPECT_EQ(policy.certified_separated, policy.outcomes)
+        << DescribePolicyOwnerFailure(
+               fixture.transaction.policy_outcomes(), policy, policy_owners,
+               receipt.active_parents(), receipt.removing_parents(),
+               receipt.skipped_parents());
+    EXPECT_EQ(receipt.active_parents(), 2u);
+    EXPECT_EQ(receipt.removing_parents(), 0u);
+    EXPECT_EQ(receipt.skipped_parents(), 0u);
+    ASSERT_NO_FATAL_FAILURE(CheckSeparatedFacetProduct(
+        fixture.transaction.policy_outcomes(), policy, policy_owners,
+        fixture.facets, first_parent, second_parent));
     EXPECT_LT(policy.exact_crossing_pairs,policy.outcomes);
     EXPECT_EQ(
         policy.outcomes,
@@ -2016,6 +2046,12 @@ TEST(SelfContactTransactionCuda,
     EXPECT_EQ(accepted.diagnostics().last_source_order,
               accepted.diagnostics().event_count - 1);
 
+    const auto owner_view =
+        sct::QualificationAccess::AcceptedCertificates(fixture->transaction);
+    ASSERT_TRUE(owner_view.complete);
+    ASSERT_GT(owner_view.count, 0u);
+    const std::vector<sct::AcceptedEventCertificate> policy_owners(
+        owner_view.data, owner_view.data + owner_view.count);
     ASSERT_TRUE(fixture->Prepare(
         token, assembly, prepared, common));
     c::SelfContactTransactionReceipt receipt;
@@ -2029,6 +2065,7 @@ TEST(SelfContactTransactionCuda,
     ASSERT_TRUE(outcomes.complete);
     ASSERT_EQ(outcomes.count, summary.outcomes);
     ASSERT_GT(outcomes.count, 0u);
+    CheckPolicyOwners(outcomes, summary, policy_owners);
 
     DeterminismObservation observation;
     observation.fields = FieldBits(after);

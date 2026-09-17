@@ -226,6 +226,7 @@ enum class NonlinearSeparationStatus : std::uint8_t {
   OwnerAmbiguity = 7,
   PossibleGeometricCrossing = 8,
   CertifiedExactExclusion = 9,
+  CertifiedLocalIntersection = 10,
 };
 
 struct NonlinearSeparationResult {
@@ -315,6 +316,7 @@ enum class PairMotionAction : std::uint8_t {
   CertifiedPersistentQuadraticContact,
   CertifiedQuadraticAcceptedCoverage,
   CertifiedQuadraticExactExclusion,
+  CertifiedQuadraticLocalIntersection,
 };
 
 PairMotionAction ClassifyCandidatePairMotion(
@@ -391,6 +393,8 @@ enum class PersistentLinearContactStatus : std::uint8_t {
 // owner while retaining the exact target face. Crossed, target-face, or
 // noncanonical provenance is ambiguous.
 // Strictly, d_i + representation_error_i + H0 + H1 < h0 + h1.
+// This proves thickness persistence only. It cannot replace continuous
+// triangle-intersection validation, even for nonlocal pairs.
 struct PersistentLinearContactResult {
   PersistentLinearContactStatus status =
       PersistentLinearContactStatus::InvalidInput;
@@ -536,6 +540,11 @@ NonlinearSeparationResult CertifyQuadraticFacetCoverage(
     const AcceptedEventCertificate*, std::size_t accepted_count,
     std::size_t max_work, unsigned max_depth) noexcept;
 
+struct PolicyExclusionSource;
+
+// Eager certificates and deferred source are mutually exclusive. A deferred
+// provider runs at most once, after local/ledger failure and only if work
+// remains; its exact failure report must be inspected by transaction callers.
 NonlinearSeparationResult CertifyQuadraticFacetPolicyCoverage(
     const CurrentFixedTriangle& first_accepted,
     const CurrentFixedTriangle& first_prepared,
@@ -547,7 +556,8 @@ NonlinearSeparationResult CertifyQuadraticFacetPolicyCoverage(
     const AcceptedEventCertificate*, std::size_t accepted_count,
     const AcceptedFeatureExclusionCertificate*,
     std::size_t exclusion_count,
-    std::size_t max_work, unsigned max_depth) noexcept;
+    std::size_t max_work, unsigned max_depth,
+    PolicyExclusionSource* deferred_exclusions = nullptr) noexcept;
 
 struct FacetPairCursor {
   std::uint32_t first_begin = 0;

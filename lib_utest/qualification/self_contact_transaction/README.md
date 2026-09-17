@@ -124,9 +124,16 @@ Exact closest-stratum predicates remain the feature identity authority.
 If an ordinary binary64 face projection rounds onto its exact boundary,
 discovery publishes deterministic strictly interior represented weights and
 an explicit upper reconstruction error instead of calling the rounded point
-exact. An edge parameter for which no two positive binary64 endpoint weights
-exist remains an actionable `EdgeInteriorRepresentation` failure. Discovery
+exact. An edge parameter whose complementary binary64 weights do not both
+remain strictly interior yields `EdgeInteriorRepresentation`. Discovery
 reports the exact pair, directed task, and arithmetic reason.
+`LocalEdgeRepresentationCases.h` preserves coordinates from an actual prepared
+adjacent T3/Q4 patch where a tiny positive parameter has a complement rounded
+to one. `LocalPublicationCases.h` verifies the unchanged unconstrained patch
+commits its first continuously local interval, then reaches those exact
+coordinates in the second interval and rolls back every participant on two
+deterministic retries. This is a known representability limit; the coupon
+does not qualify two committed local intervals.
 
 An admitted EE contributes the sum of both authenticated directed edge-point
 dual areas, never line area or caller-provided scaling. A penetrating strict
@@ -251,23 +258,41 @@ therefore scales as `O((h|w|)^2*|r0|)` rather than the former angle-independent
 translation endpoint hull.  Nonfinite arithmetic, a missing authenticated
 trajectory tag, and rotation increments outside the admitted `< pi` domain
 fail closed.
-A disjoint box is a conservative separation certificate only. For an
-overlapping different-body or partial/mixed rigid pair, candidate discovery
-now runs the same authenticated local-task mask and exact prepared-coordinate
-intersection classifier before unsupported motion is reported. If and only if
-that exact intersection has an existing non-`None`
-`FixedTriangleLocalExclusion`, the pair publishes
-`ExcludedLocalIntersection` without entering represented crossing, but only
-after this exact facet pair retains every unmasked closest-feature result and
-each result proves
-`distance - half_thickness[0] - half_thickness[1] >
-representation_error`. Global feature deduplication that selects another
-producing pair is insufficient and remains rejected. The local pair's crossing
-record remains explicitly `Unresolved/UnsupportedMotion`; it is not rewritten
-as a linear or crossing certificate. Every other overlapping facet pair with
-nonzero or uncertified represented curvature still reports the exact
-parent/facet and actual group identities as
-`UnsupportedMotion`. No endpoint chord is passed to represented crossing.
+A disjoint box is a conservative separation certificate only. Overlapping
+pairs require continuous geometry. Endpoint-local classification never admits
+`Unresolved/UnsupportedMotion`. `LocalContact` composes native exact local-only
+intersection premises at both endpoints, strict whole-interval separation of
+every unmasked VF/EE thickness task, and bounded Bernstein shared-vertex or
+shared-edge topology proofs. The shared source identities and represented
+member trajectories remain authenticated; coordinate coincidence is not
+identity. Every subdivided child must succeed within the original work/depth
+limits. The proof also handles affine coefficients exactly equal to zero.
+
+Successful local proof publishes `CertifiedLocalIntersection` internally and
+`CertifiedLocalTopology`/`TriangleIntersection` in the represented record;
+the final disposition stays `ExcludedLocalIntersection`. Existing generic
+exact-exclusion work counters include both this proof and same-rigid support,
+while policy outcome counters keep the two dispositions separate. Thickness
+persistence helpers remain useful diagnostics but cannot bypass continuous
+geometry, for either affine or curved paths. An inconclusive local proof may
+fall through to actual accepted-owner coverage using the remaining original
+work budget; it never fabricates an owner or suppresses an unresolved pair.
+No endpoint chord is passed off as a curved-motion certificate.
+
+`CandidateExclusions` defers native support-exclusion preparation until both
+local and accepted-ledger proofs are unresolved and subdivision work remains.
+Its synchronous `PolicyExclusionSource` callback reuses the exact accepted
+feature discovery and current activity validator. Successful local/ledger
+proofs do not rescan the complete selected-parent activity array. The local
+proof, ledger proof and exclusion continuation each execute once and share
+the original bounded work total. Existing eager frozen-fixture inputs use the
+same continuation; provider failures preserve their typed source diagnostics.
+No retained allocation or device forecast changes.
+
+A same-rigid *feature* exclusion applies only to its two weighted endpoints.
+Its continuation requires the same continuous midsurface safety as physical
+accepted-owner coverage; other vertices of mixed facets may move independently.
+Whole-parent same-rigid broadphase exclusions remain a separate source contract.
 
 ## Vehicle-scale limits and memory
 
@@ -455,10 +480,17 @@ Qualification access can replay the complete affine frontier without force
 publication. It batches represented paths through the production worker pool,
 counts every swept/prism/residual/persistent/crossing class, and retains only
 the pairs whose unchanged per-pair 4095-visit traversal is `WorkExhausted`.
-Production gives those pairs one bounded exact geometry/policy proof using the
-authenticated accepted ledger and feature-specific same-rigid exclusions.
+Production gives exhausted and contacting represented pairs a bounded complete
+geometry/policy proof using the authenticated accepted ledger, continuously
+proved local topology, and feature-specific same-rigid exclusions. A feature
+exclusion also requires independent whole-facet geometric safety; whole-parent
+same-rigid exclusions retain their separate source-authenticated premise.
 Separation, accepted coverage, exact exclusion, and genuine ambiguity remain
-distinct; unresolved coverage leaves the original represented result intact.
+distinct; unresolved coverage cannot fall back to first-crossing acceptance.
+An exact nonlocal prepared intersection rejects before an inconclusive interval
+proof can overwrite that witness. Raw represented midsurface separation may
+coexist with finite-thickness accepted penalty forces; the EE CUDA coupon checks
+the complete separated source-facet product and positive force/STI separately.
 For an exact-affine accepted VF ending contact, a fixed-limb certificate
 constructs the target normal, source support, projection half-spaces, and
 degree-six thickness clearance as exact integer polynomials. Strict Bernstein

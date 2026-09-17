@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
+#include "CandidateExclusions.h"
 #include "QualificationRanges.h"
 
 #include "lib_src/solvers/NodalTrialIdentity.h"
@@ -38,6 +39,41 @@ RepresentedIntervalPairKey PairKey(
     RepresentedTrianglePathKey b) noexcept {
   if (sct::Compare(b, a) < 0) std::swap(a, b);
   return {{a, b}};
+}
+
+SelfContactTransactionReport ValidatePreparedIntersections(
+    FixedTriangleIntersectionView intersections,
+    const RepresentedIntervalPairKey* pairs,
+    std::size_t pair_count) noexcept {
+  if (!intersections.complete ||
+      (intersections.count && !intersections.data) ||
+      (pair_count && !pairs))
+    return Failure(S::DiscoveryFailure,
+        "Prepared intersection publication is incomplete");
+  for (std::size_t intersection = 0;
+       intersection < intersections.count; ++intersection) {
+    const auto& value = intersections.data[intersection];
+    if (!RequiresIntersectionAdmission(value)) continue;
+    if (!pair_count)
+      return Failure(S::IdentityMismatch,
+          "Prepared nonlocal intersection has no candidate pair");
+    const auto key = PairKey(
+        PathKey(value.triangles[0]), PathKey(value.triangles[1]));
+    const auto* found = std::lower_bound(
+        pairs, pairs + pair_count, key,
+        [](const auto& first, const auto& second) {
+          return sct::Compare(first, second) < 0;
+        });
+    if (found == pairs + pair_count || sct::Compare(*found, key) != 0)
+      return Failure(S::IdentityMismatch,
+          "Prepared nonlocal intersection belongs to a foreign candidate pair");
+    // An exact endpoint intersection already disproves the candidate. Do not
+    // replace this witness with an inconclusive whole-interval proof result.
+    return Failure(S::CandidateRejected,
+        "Nonlocal current triangle intersection is rejected", SIZE_MAX,
+        static_cast<std::size_t>(found - pairs));
+  }
+  return {};
 }
 
 void MakePath(const CurrentFixedTriangle& base,
@@ -390,90 +426,6 @@ bool PairPresent(const RepresentedIntervalPairKey* pairs,
   return lower < count && sct::Compare(pairs[lower], key) == 0;
 }
 
-bool LocallyExcluded(
-    FixedTriangleIntersectionView intersections,
-    const RepresentedIntervalPairKey& key) noexcept {
-  for (std::size_t i = 0; i < intersections.count; ++i) {
-    const auto& value = intersections.data[i];
-    if (sct::Compare(
-            PairKey(PathKey(value.triangles[0]),
-                    PathKey(value.triangles[1])),
-            key) == 0)
-      return !RequiresIntersectionAdmission(value);
-  }
-  return false;
-}
-
-bool LocalPolicyResolvesUnsupported(
-    const CurrentFixedTriangle& first,
-    const CurrentFixedTriangle& second,
-    FixedTriangleFeatureView features,
-    FixedTriangleIntersectionView intersections,
-    const RepresentedIntervalPairKey& key,
-    FixedTriangleFeatureTaskMask mask,
-    double first_thickness, double second_thickness) noexcept {
-  if (!features.complete || !intersections.complete ||
-      (features.count && !features.data) ||
-      (intersections.count && !intersections.data) ||
-      !std::isfinite(first_thickness) || !(first_thickness > 0) ||
-      !std::isfinite(second_thickness) || !(second_thickness > 0) ||
-      (mask.local_tasks & ~FixedTriangleFeatureTaskBits) ||
-      !mask.local_tasks)
-    return false;
-  std::size_t expected = 15;
-  for (unsigned task = 0; task < 15; ++task)
-    expected -= bool(
-        mask.local_tasks & FixedTriangleFeatureTaskBit(task));
-  const auto separated =
-      [&](const FixedTriangleFeatureCandidate* data,
-          std::size_t count, bool exact_pair) noexcept {
-        std::size_t observed = 0;
-        for (std::size_t i = 0; i < count; ++i) {
-          const auto& feature = data[i];
-          if (!exact_pair &&
-              sct::Compare(
-                  PairKey(PathKey(feature.triangles[0]),
-                          PathKey(feature.triangles[1])),
-                  key) != 0)
-            continue;
-          if (!std::isfinite(feature.distance_m) ||
-              feature.distance_m < 0 ||
-              !std::isfinite(feature.representation_error_m) ||
-              feature.representation_error_m < 0)
-            return false;
-          const double gap =
-              (feature.distance_m - first_thickness) -
-              second_thickness;
-          if (!std::isfinite(gap) ||
-              !(gap > feature.representation_error_m))
-            return false;
-          ++observed;
-        }
-        return observed == expected;
-      };
-  if (LocallyExcluded(intersections, key) &&
-      separated(features.data, features.count, false))
-    return true;
-
-  // Global feature deduplication can select another producing facet pair.
-  // Re-evaluate only this already-unsupported pair into bounded stack storage.
-  FixedTriangleFeatureCandidate local_features[15];
-  fixed_triangle_features::PairFeatureResult local_result;
-  if (fixed_triangle_features::EvaluatePairFeaturesMaskedOnce(
-          first, second, mask, local_features, 15,
-          &local_result) != FixedTriangleDiscoveryStatus::Ok ||
-      local_result.feature_count != expected ||
-      !separated(local_features, local_result.feature_count, true))
-    return false;
-  FixedTriangleIntersection local_intersection;
-  bool intersects = false;
-  return fixed_triangle_features::ClassifyPairIntersection(
-             first, second, &local_intersection, &intersects) ==
-          FixedTriangleDiscoveryStatus::Ok &&
-      intersects &&
-      !RequiresIntersectionAdmission(local_intersection);
-}
-
 sct::LinearResidualSeparationResult
 ResidualLinearCertificate(
     const CurrentFixedTriangle& first_base,
@@ -604,45 +556,6 @@ QuadraticResidualCertificate(
        intersects ? 1u : 0u, true});
 }
 
-sct::PersistentLinearContactResult
-PersistentQuadraticCertificate(
-    const CurrentFixedTriangle& first_base,
-    const CurrentFixedTriangle& first_prepared,
-    const sct::FacetQuadraticCoefficients& first_quadratic,
-    double first_half_thickness,
-    const CurrentFixedTriangle& second_base,
-    const CurrentFixedTriangle& second_prepared,
-    const sct::FacetQuadraticCoefficients& second_quadratic,
-    double second_half_thickness, double duration,
-    FixedTriangleFeatureTaskMask mask,
-    FixedTriangleFeatureView features,
-    const sct::AcceptedEventCertificate* accepted,
-    std::size_t accepted_count) noexcept {
-  auto result = sct::CertifyPersistentQuadraticContact(
-      first_base, first_prepared, first_quadratic,
-      first_half_thickness,
-      second_base, second_prepared, second_quadratic,
-      second_half_thickness, duration, features,
-      accepted, accepted_count);
-  if (result.status ==
-          sct::PersistentLinearContactStatus::CertifiedContact ||
-      mask.local_tasks)
-    return result;
-  FixedTriangleFeatureCandidate local_features[15];
-  fixed_triangle_features::PairFeatureResult feature_result;
-  if (fixed_triangle_features::EvaluatePairFeaturesOnce(
-          first_prepared, second_prepared,
-          local_features, 15, &feature_result) !=
-          FixedTriangleDiscoveryStatus::Ok ||
-      feature_result.feature_count != 15)
-    return result;
-  return sct::CertifyPersistentQuadraticContact(
-      first_base, first_prepared, first_quadratic,
-      first_half_thickness,
-      second_base, second_prepared, second_quadratic,
-      second_half_thickness, duration,
-      {local_features, 15, true}, accepted, accepted_count);
-}
 
 }  // namespace
 
@@ -1104,6 +1017,18 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
           state.candidate_discovery.intersections();
       const auto features =
           state.candidate_discovery.features();
+      auto intersection_policy = ValidatePreparedIntersections(
+          intersections, state.buffers.chunk_canonical_pairs, pair_count);
+      if (intersection_policy.status != S::Ok) {
+        if (intersection_policy.pair < pair_count)
+          DescribeMotionFailure(
+              state.active_use, state.buffers.prepared_triangles,
+              state.buffers.facet_motion, state.buffers.facet_quadratic,
+              state.buffers.swept_facet_bounds,
+              state.buffers.facet_pair_chunk[intersection_policy.pair],
+              &intersection_policy);
+        return state.Fail(intersection_policy);
+      }
       std::size_t crossing_pair_count = 0;
       std::size_t raw_pair = 0;
       for (std::size_t pair = 0; pair < pair_count; ++pair) {
@@ -1176,57 +1101,8 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
             ++raw_pair;
             continue;
           }
-          const auto persistent =
-              PersistentLinearCertificate(
-                  state.buffers.accepted_triangles[
-                      facet_pair.first],
-                  state.buffers.prepared_triangles[
-                      facet_pair.first],
-                  parents[first_parent].
-                      reference_half_thickness_m,
-                  state.buffers.accepted_triangles[
-                      facet_pair.second],
-                  state.buffers.prepared_triangles[
-                      facet_pair.second],
-                  parents[second_parent].
-                      reference_half_thickness_m,
-                  state.buffers.chunk_feature_task_masks[pair],
-                  features,
-                  state.buffers.accepted_certificates,
-                  state.accepted_event_count);
-          if (persistent.status ==
-              sct::PersistentLinearContactStatus::InvalidInput)
-            return state.Fail(Failure(
-                S::IdentityMismatch,
-                "Persistent linear contact input is invalid",
-                SIZE_MAX,
-                state.candidate_facet_pair_count + raw_pair));
-          if (persistent.status ==
-              sct::PersistentLinearContactStatus::
-                  CertifiedContact) {
-            state.buffers.chunk_motion_actions[raw_pair] =
-                sct::PairMotionAction::
-                    CertifiedPersistentLinearContact;
-            auto& local_result =
-                state.buffers.chunk_crossings[pair];
-            local_result = {};
-            local_result.key =
-                state.buffers.chunk_canonical_pairs[pair];
-            local_result.feature = persistent.feature;
-            local_result.classification =
-                RepresentedIntervalClassification::
-                    CertifiedCrossingContact;
-            local_result.reason =
-                RepresentedIntervalReason::None;
-            local_result.geometry =
-                RepresentedIntersectionGeometry::
-                    PersistentPhysicalContact;
-            local_result.witness_time_numerator = 0;
-            local_result.witness_time_depth = 0;
-            local_result.work = 1;
-            ++raw_pair;
-            continue;
-          }
+          // Thickness persistence alone does not certify continuous geometry.
+          // Every remaining pair passes the represented/policy geometry path.
         }
         if (action ==
             sct::PairMotionAction::CertifiedRigidArcSeparation) {
@@ -1249,32 +1125,6 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
               state.buffers.facet_motion[facet_pair.first].parent;
           const auto second_parent =
               state.buffers.facet_motion[facet_pair.second].parent;
-          const bool locally_resolved =
-              first_parent < parents.size() &&
-              second_parent < parents.size() &&
-              LocalPolicyResolvesUnsupported(
-                  state.buffers.prepared_triangles[
-                      facet_pair.first],
-                  state.buffers.prepared_triangles[
-                      facet_pair.second],
-                  features, intersections,
-                  state.buffers.chunk_canonical_pairs[pair],
-                  state.buffers.chunk_feature_task_masks[pair],
-                  parents[first_parent].reference_half_thickness_m,
-                  parents[second_parent].reference_half_thickness_m);
-          if (locally_resolved) {
-            auto& local_result =
-                state.buffers.chunk_crossings[pair];
-            local_result = {};
-            local_result.key =
-                state.buffers.chunk_canonical_pairs[pair];
-            local_result.classification =
-                RepresentedIntervalClassification::Unresolved;
-            local_result.reason =
-                RepresentedIntervalReason::UnsupportedMotion;
-            ++raw_pair;
-            continue;
-          }
           const auto quadratic_residual =
               first_parent < parents.size() &&
                       second_parent < parents.size()
@@ -1329,103 +1179,16 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
             ++raw_pair;
             continue;
           }
-          const auto quadratic_persistent =
-              first_parent < parents.size() &&
-                      second_parent < parents.size()
-                  ? PersistentQuadraticCertificate(
-                        state.buffers.accepted_triangles[
-                            facet_pair.first],
-                        state.buffers.prepared_triangles[
-                            facet_pair.first],
-                        state.buffers.facet_quadratic[
-                            facet_pair.first],
-                        parents[first_parent].
-                            reference_half_thickness_m,
-                        state.buffers.accepted_triangles[
-                            facet_pair.second],
-                        state.buffers.prepared_triangles[
-                            facet_pair.second],
-                        state.buffers.facet_quadratic[
-                            facet_pair.second],
-                        parents[second_parent].
-                            reference_half_thickness_m,
-                        duration,
-                        state.buffers.
-                            chunk_feature_task_masks[pair],
-                        features,
-                        state.buffers.accepted_certificates,
-                        state.accepted_event_count)
-                  : sct::PersistentLinearContactResult{};
-          if (quadratic_persistent.status ==
-              sct::PersistentLinearContactStatus::InvalidInput) {
-            return state.Fail(Failure(
-                S::IdentityMismatch,
-                "Persistent quadratic certificate input is invalid",
-                SIZE_MAX,
-                state.candidate_facet_pair_count + raw_pair));
-          }
-          if (quadratic_persistent.status ==
-              sct::PersistentLinearContactStatus::
-                  CertifiedContact) {
-            state.buffers.chunk_motion_actions[raw_pair] =
-                sct::PairMotionAction::
-                    CertifiedPersistentQuadraticContact;
-            auto& local_result =
-                state.buffers.chunk_crossings[pair];
-            local_result = {};
-            local_result.key =
-                state.buffers.chunk_canonical_pairs[pair];
-            local_result.feature =
-                quadratic_persistent.feature;
-            local_result.classification =
-                RepresentedIntervalClassification::
-                    CertifiedCrossingContact;
-            local_result.reason =
-                RepresentedIntervalReason::None;
-            local_result.geometry =
-                RepresentedIntersectionGeometry::
-                    PersistentPhysicalContact;
-            local_result.witness_time_numerator = 0;
-            local_result.witness_time_depth = 0;
-            local_result.work = 1;
-            ++raw_pair;
-            continue;
-          }
-          FixedTriangleFeatureCandidate
-              accepted_features[15];
-          fixed_triangle_features::PairFeatureResult
-              accepted_feature_result;
-          if (fixed_triangle_features::
-                  EvaluatePairFeaturesMaskedOnce(
-                      state.buffers.accepted_triangles[
-                          facet_pair.first],
-                      state.buffers.accepted_triangles[
-                          facet_pair.second],
-                      state.buffers.
-                          chunk_feature_task_masks[pair],
-                      accepted_features, 15,
-                      &accepted_feature_result) !=
-              FixedTriangleDiscoveryStatus::Ok)
-            return state.Fail(Failure(
-                S::DiscoveryFailure,
-                "Accepted nonlinear exclusion feature replay failed",
-                SIZE_MAX,
-                state.candidate_facet_pair_count + raw_pair));
-          sct::AcceptedFeatureExclusionCertificate
-              accepted_exclusions[15];
-          std::size_t accepted_exclusion_count = 0;
-          const auto exclusions =
-              sct::BuildAcceptedSameRigidExclusions(
-                  state.active_use,
-                  {accepted_features,
-                   accepted_feature_result.feature_count, true},
-                  state.buffers.facet_descriptors,
-                  state.buffers.triangle_order, triangles,
-                  activity,
-                  accepted_exclusions, 15,
-                  &accepted_exclusion_count);
-          if (exclusions.status != S::Ok)
-            return state.Fail(exclusions);
+          // Accepted thickness coverage is authenticated below together with
+          // continuous geometric safety, never as a stand-alone shortcut.
+          sct::CandidateExclusions exclusion_context{
+              state.active_use,
+              state.buffers.accepted_triangles[facet_pair.first],
+              state.buffers.accepted_triangles[facet_pair.second],
+              state.buffers.chunk_feature_task_masks[pair],
+              state.buffers.facet_descriptors, state.buffers.triangle_order,
+              triangles, activity, state.candidate_facet_pair_count + raw_pair};
+          auto exclusion_source = exclusion_context.source();
           const auto prior_nonlinear =
               state.buffers.chunk_nonlinear_results[raw_pair];
           const auto pair_remaining =
@@ -1476,16 +1239,16 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
                 duration,
                 state.buffers.accepted_certificates,
                 state.accepted_event_count,
-                accepted_exclusions,
-                accepted_exclusion_count,
-                coverage_allowed,
-                state.storage_forecast.
-                    nonlinear_subdivision_depth);
+                nullptr, 0, coverage_allowed,
+                state.storage_forecast.nonlinear_subdivision_depth,
+                &exclusion_source);
           } else {
             coverage.status =
                 sct::NonlinearSeparationStatus::WorkExhausted;
             coverage.work_exhausted = true;
           }
+          if (exclusion_source.report.status != S::Ok)
+            return state.Fail(exclusion_source.report);
           if (coverage.status ==
               sct::NonlinearSeparationStatus::InvalidInput)
             return state.Fail(Failure(
@@ -1532,7 +1295,10 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
               coverage.status ==
                   sct::NonlinearSeparationStatus::
                       CertifiedExactExclusion;
-          if (accepted_coverage || exact_exclusion) {
+          const bool local_topology =
+              coverage.status ==
+                  sct::NonlinearSeparationStatus::CertifiedLocalIntersection;
+          if (accepted_coverage || exact_exclusion || local_topology) {
             if (!summary.nonlinear_subdivision_unresolved)
               return state.Fail(Failure(
                   S::IdentityMismatch,
@@ -1555,20 +1321,21 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
                     accepted_coverage;
             summary.
                 motion_certified_nonlinear_exact_exclusion +=
-                    exact_exclusion;
+                    exact_exclusion || local_topology;
             state.buffers.chunk_motion_actions[raw_pair] =
                 accepted_coverage
                     ? sct::PairMotionAction::
                           CertifiedQuadraticAcceptedCoverage
-                    : sct::PairMotionAction::
-                          CertifiedQuadraticExactExclusion;
+                    : local_topology
+                        ? sct::PairMotionAction::CertifiedQuadraticLocalIntersection
+                        : sct::PairMotionAction::CertifiedQuadraticExactExclusion;
             auto& local_result =
                 state.buffers.chunk_crossings[pair];
             local_result = {};
             local_result.key =
                 state.buffers.chunk_canonical_pairs[pair];
             local_result.classification =
-                accepted_coverage
+                accepted_coverage || local_topology
                     ? RepresentedIntervalClassification::
                           CertifiedCrossingContact
                     : RepresentedIntervalClassification::
@@ -1582,6 +1349,11 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
                       PersistentAcceptedLedgerCoverage;
               local_result.accepted_event =
                   coverage.accepted_certificate;
+            } else if (local_topology) {
+              local_result.feature.kind =
+                  RepresentedFeatureKind::TriangleIntersection;
+              local_result.geometry =
+                  RepresentedIntersectionGeometry::CertifiedLocalTopology;
             }
             local_result.witness_time_numerator = 0;
             local_result.witness_time_depth = 0;
@@ -1705,6 +1477,8 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
                 sct::PairMotionAction::
                     CertifiedQuadraticExactExclusion ||
             action ==
+                sct::PairMotionAction::CertifiedQuadraticLocalIntersection ||
+            action ==
                 sct::PairMotionAction::
                     CertifiedRigidArcSeparation) {
           ++raw_pair;
@@ -1720,10 +1494,16 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
               "Candidate crossing publication ended before motion roster",
               SIZE_MAX, state.candidate_facet_pair_count + raw_pair));
         auto value = raw_crossings.data[crossing_pair++];
+        const auto represented_work = value.work;
+        // A first intersection identifies a feature, not geometric safety
+        // throughout the interval. All contacting pairs require the same
+        // continuous policy proof as an exhausted represented traversal.
         if (value.classification ==
+                RepresentedIntervalClassification::CertifiedCrossingContact ||
+            (value.classification ==
                 RepresentedIntervalClassification::Unresolved &&
             value.reason ==
-                RepresentedIntervalReason::WorkExhausted) {
+                RepresentedIntervalReason::WorkExhausted)) {
           const auto facet_pair =
               state.buffers.facet_pair_chunk[pair];
           const auto first_parent =
@@ -1737,38 +1517,14 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
                 "Linear policy coverage has no active parent",
                 SIZE_MAX,
                 state.candidate_facet_pair_count + raw_pair));
-          FixedTriangleFeatureCandidate accepted_features[15];
-          fixed_triangle_features::PairFeatureResult
-              accepted_feature_result;
-          if (fixed_triangle_features::
-                  EvaluatePairFeaturesMaskedOnce(
-                      state.buffers.accepted_triangles[
-                          facet_pair.first],
-                      state.buffers.accepted_triangles[
-                          facet_pair.second],
-                      state.buffers.chunk_feature_task_masks[pair],
-                      accepted_features, 15,
-                      &accepted_feature_result) !=
-              FixedTriangleDiscoveryStatus::Ok)
-            return state.Fail(Failure(
-                S::DiscoveryFailure,
-                "Accepted linear exclusion feature replay failed",
-                SIZE_MAX,
-                state.candidate_facet_pair_count + raw_pair));
-          sct::AcceptedFeatureExclusionCertificate
-              accepted_exclusions[15];
-          std::size_t accepted_exclusion_count = 0;
-          const auto exclusions =
-              sct::BuildAcceptedSameRigidExclusions(
-                  state.active_use,
-                  {accepted_features,
-                   accepted_feature_result.feature_count, true},
-                  state.buffers.facet_descriptors,
-                  state.buffers.triangle_order, triangles,
-                  activity, accepted_exclusions, 15,
-                  &accepted_exclusion_count);
-          if (exclusions.status != S::Ok)
-            return state.Fail(exclusions);
+          sct::CandidateExclusions exclusion_context{
+              state.active_use,
+              state.buffers.accepted_triangles[facet_pair.first],
+              state.buffers.accepted_triangles[facet_pair.second],
+              state.buffers.chunk_feature_task_masks[pair],
+              state.buffers.facet_descriptors, state.buffers.triangle_order,
+              triangles, activity, state.candidate_facet_pair_count + raw_pair};
+          auto exclusion_source = exclusion_context.source();
           const auto coverage =
               sct::CertifyQuadraticFacetPolicyCoverage(
                   state.buffers.accepted_triangles[
@@ -1790,10 +1546,11 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
                   duration,
                   state.buffers.accepted_certificates,
                   state.accepted_event_count,
-                  accepted_exclusions,
-                  accepted_exclusion_count,
+                  nullptr, 0,
                   state.storage_forecast.crossing_work_per_pair,
-                  state.storage_forecast.crossing_depth);
+                  state.storage_forecast.crossing_depth, &exclusion_source);
+          if (exclusion_source.report.status != S::Ok)
+            return state.Fail(exclusion_source.report);
           if (coverage.status ==
               sct::NonlinearSeparationStatus::InvalidInput)
             return state.Fail(Failure(
@@ -1810,6 +1567,11 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
                 SIZE_MAX,
                 state.candidate_facet_pair_count + raw_pair));
           summary.linear_policy_coverage_work += coverage.work;
+          if (coverage.work > SIZE_MAX - represented_work)
+            return state.Fail(Failure(
+                S::ResourceLimit, "Linear policy total work accounting overflowed",
+                SIZE_MAX, state.candidate_facet_pair_count + raw_pair));
+          const auto total_work = represented_work + coverage.work;
           if (coverage.status ==
               sct::NonlinearSeparationStatus::CertifiedSeparated) {
             value.classification =
@@ -1836,6 +1598,21 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
             ++summary.linear_policy_accepted_coverage;
           } else if (
               coverage.status ==
+              sct::NonlinearSeparationStatus::CertifiedLocalIntersection) {
+            value.classification =
+                RepresentedIntervalClassification::CertifiedCrossingContact;
+            value.reason = RepresentedIntervalReason::None;
+            value.feature = {};
+            value.feature.kind = RepresentedFeatureKind::TriangleIntersection;
+            value.geometry =
+                RepresentedIntersectionGeometry::CertifiedLocalTopology;
+            value.witness_time_numerator = 0;
+            value.witness_time_depth = 0;
+            value.accepted_event = SIZE_MAX;
+            value.work = coverage.work;
+            ++summary.linear_policy_exact_exclusion;
+          } else if (
+              coverage.status ==
               sct::NonlinearSeparationStatus::
                   CertifiedExactExclusion) {
             value.classification =
@@ -1845,6 +1622,9 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
             value.work = coverage.work;
             ++summary.linear_policy_exact_exclusion;
           } else {
+            value.classification =
+                RepresentedIntervalClassification::Unresolved;
+            value.reason = RepresentedIntervalReason::WorkExhausted;
             ++summary.linear_policy_unresolved;
             summary.linear_policy_potential_contact +=
                 coverage.status ==
@@ -1867,6 +1647,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
                 sct::NonlinearSeparationStatus::
                     PossibleGeometricCrossing;
           }
+          value.work = total_work;
         }
         state.buffers.chunk_crossings[pair] = value;
         const auto work = value.work;
@@ -2555,11 +2336,6 @@ ClassifyPreparedCandidateCensusImpl(
               facets.first,
               summary->streamed_facet_pairs - pair_count + pair);
         }
-        if (persistent.status ==
-            sct::PersistentLinearContactStatus::CertifiedContact) {
-          ++linear_summary->persistent_accepted;
-          continue;
-        }
 
         const auto crossing_index = linear_crossing_count++;
         if (crossing_index >=
@@ -2816,10 +2592,7 @@ ClassifyPreparedCandidateCensusImpl(
                 sct::PersistentLinearContactStatus::InvalidInput ||
             residual.status ==
                 sct::LinearResidualSeparationStatus::
-                    CertifiedSeparated ||
-            persistent.status ==
-                sct::PersistentLinearContactStatus::
-                    CertifiedContact) {
+                    CertifiedSeparated) {
           return Failure(
               S::IdentityMismatch,
               "Linear qualification exhausted pair replay changed class",

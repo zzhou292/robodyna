@@ -86,6 +86,7 @@ enum class RepresentedIntersectionGeometry : std::uint8_t {
   Coplanar,
   PersistentPhysicalContact,
   PersistentAcceptedLedgerCoverage,
+  CertifiedLocalTopology,
 };
 
 struct RepresentedIntervalResult {

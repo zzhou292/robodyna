@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
+#include "LocalContact.h"
+#include "PolicyExclusions.h"
 #include "../fixed_triangle_features/ExactPredicates.h"
 
 #include <algorithm>
@@ -2507,10 +2509,10 @@ bool LocalSharedVertexOnly(
         intersection.local_exclusion ==
             FixedTriangleLocalExclusion::SharedVertexOnly;
   };
-  allow_lower_root = allow_lower_root &&
-      shared_vertex_endpoint(lower_triangles);
-  allow_upper_root = allow_upper_root &&
-      shared_vertex_endpoint(upper_triangles);
+  const bool lower_local = shared_vertex_endpoint(lower_triangles);
+  const bool upper_local = shared_vertex_endpoint(upper_triangles);
+  allow_lower_root = allow_lower_root && lower_local;
+  allow_upper_root = allow_upper_root && upper_local;
   unsigned shared[2]{3, 3};
   unsigned shared_count = 0;
   for (unsigned first = 0; first < 3; ++first)
@@ -2571,7 +2573,10 @@ bool LocalSharedVertexOnly(
               first_edge, second_edge))
         no_nonlocal_root = false;
     }
-  if (no_nonlocal_root) return true;
+  // Absence of transition roots cannot remove a pre-existing nonlocal
+  // intersection. The ordered child traversal extends these authenticated
+  // endpoint-local premises only after every preceding cell was proved.
+  if (no_nonlocal_root && lower_local && upper_local) return true;
 
   // A strict through-vertex separating axis is a complete alternative proof:
   // every nonshared point of one triangle is a positive combination of its
@@ -2667,7 +2672,7 @@ NonlinearSeparationStatus SubdivideCoverage(
     unsigned* deepest, NonlinearSeparationResult* result,
     bool* used_coverage,
     bool require_geometric_safety,
-    bool exact_affine) noexcept {
+    bool exact_affine, bool local_topology_only) noexcept {
   if (!work || !deepest || !result || !used_coverage)
     return NonlinearSeparationStatus::InvalidInput;
   if (*work >= max_work) {
@@ -2726,6 +2731,12 @@ NonlinearSeparationStatus SubdivideCoverage(
   }
   const bool ordinary_geometric_safety =
       !require_geometric_safety || zero_separated || local_safe;
+  if (local_topology_only && local_safe) {
+    HashCoverageValue(4, &result->proof_digest);
+    HashCoverageValue(depth, &result->proof_digest);
+    HashCoverageValue(path, &result->proof_digest);
+    return NonlinearSeparationStatus::CertifiedLocalIntersection;
+  }
   if (ordinary_geometric_safety ||
       (exact_affine && depth == 0 && path == 0)) {
     for (std::size_t owner_index = 0;
@@ -2805,6 +2816,8 @@ NonlinearSeparationStatus SubdivideCoverage(
     result->unresolved_path = path;
     result->unresolved_depth = depth;
     result->has_unresolved_cell = true;
+    if (local_topology_only)
+      return NonlinearSeparationStatus::PossibleGeometricCrossing;
     if (!owner_count)
       return NonlinearSeparationStatus::MissingAcceptedOwner;
     return !require_geometric_safety ||
@@ -2822,8 +2835,9 @@ NonlinearSeparationStatus SubdivideCoverage(
       first_thickness, second_thickness,
       owners, owner_count, depth + 1, max_depth, path << 1,
       max_work, work, deepest, result, used_coverage,
-      require_geometric_safety, exact_affine);
+      require_geometric_safety, exact_affine, local_topology_only);
   if (left_status != NonlinearSeparationStatus::CertifiedSeparated &&
+      left_status != NonlinearSeparationStatus::CertifiedLocalIntersection &&
       left_status !=
           NonlinearSeparationStatus::CertifiedAcceptedCoverage)
     return left_status;
@@ -2833,11 +2847,15 @@ NonlinearSeparationStatus SubdivideCoverage(
       first_thickness, second_thickness,
       owners, owner_count, depth + 1, max_depth,
       (path << 1) | 1, max_work, work, deepest,
-      result, used_coverage, require_geometric_safety, exact_affine);
+      result, used_coverage, require_geometric_safety, exact_affine,
+      local_topology_only);
   if (right_status != NonlinearSeparationStatus::CertifiedSeparated &&
+      right_status != NonlinearSeparationStatus::CertifiedLocalIntersection &&
       right_status !=
           NonlinearSeparationStatus::CertifiedAcceptedCoverage)
     return right_status;
+  if (local_topology_only)
+    return NonlinearSeparationStatus::CertifiedLocalIntersection;
   return *used_coverage
       ? NonlinearSeparationStatus::CertifiedAcceptedCoverage
       : NonlinearSeparationStatus::CertifiedSeparated;
@@ -2934,13 +2952,16 @@ NonlinearSeparationResult CertifyQuadraticFacetCoverageImpl(
     const AcceptedEventCertificate* accepted,
     std::size_t accepted_count,
     std::size_t max_work, unsigned max_depth,
-    bool require_geometric_safety) noexcept {
+    bool require_geometric_safety,
+    bool local_topology_only = false) noexcept {
   NonlinearSeparationResult result;
   if (!max_work || max_depth > 52 ||
       (accepted_count && !accepted) ||
-      !(first_thickness > 0) ||
+      !(first_thickness > 0 ||
+        (local_topology_only && first_thickness == 0)) ||
       !std::isfinite(first_thickness) ||
-      !(second_thickness > 0) ||
+      !(second_thickness > 0 ||
+        (local_topology_only && second_thickness == 0)) ||
       !std::isfinite(second_thickness) ||
       !Same(first_accepted.key, first_prepared.key) ||
       !Same(second_accepted.key, second_prepared.key))
@@ -3003,7 +3024,7 @@ NonlinearSeparationResult CertifyQuadraticFacetCoverageImpl(
       max_work, &result.work, &result.deepest,
       &result, &used_coverage, require_geometric_safety,
       ExactAffine(first_coefficients) &&
-          ExactAffine(second_coefficients));
+          ExactAffine(second_coefficients), local_topology_only);
   if (result.status ==
           NonlinearSeparationStatus::CertifiedAcceptedCoverage &&
       (!used_coverage ||
@@ -3011,6 +3032,50 @@ NonlinearSeparationResult CertifyQuadraticFacetCoverageImpl(
        result.accepted_source_order == UINT64_MAX))
     result.status = NonlinearSeparationStatus::InvalidInput;
   return result;
+}
+
+NonlinearSeparationResult CertifyQuadraticLocalTopology(
+    const CurrentFixedTriangle& first_accepted,
+    const CurrentFixedTriangle& first_prepared,
+    const FacetQuadraticCoefficients& first_coefficients,
+    const CurrentFixedTriangle& second_accepted,
+    const CurrentFixedTriangle& second_prepared,
+    const FacetQuadraticCoefficients& second_coefficients,
+    double duration, std::size_t max_work, unsigned max_depth) noexcept {
+  NonlinearSeparationResult result;
+  if (!max_work || max_depth > 52) return result;
+  const CurrentFixedTriangle* base[]{&first_accepted, &second_accepted};
+  const CurrentFixedTriangle* next[]{&first_prepared, &second_prepared};
+  for (unsigned facet = 0; facet < 2; ++facet)
+    for (unsigned vertex = 0; vertex < 3; ++vertex)
+      if (fixed_triangle_features::Compare(
+              base[facet]->vertex_keys[vertex],
+              next[facet]->vertex_keys[vertex]) != 0 ||
+          fixed_triangle_features::Compare(
+              base[facet]->edge_keys[vertex],
+              next[facet]->edge_keys[vertex]) != 0)
+        return result;
+
+  // The shared-vertex no-root proof is a transition proof: it cannot turn a
+  // pre-existing nonlocal intersection into a local one. Authenticate both
+  // endpoint premises using native exact intersection classification.
+  for (unsigned endpoint = 0; endpoint < 2; ++endpoint) {
+    const auto* const* triangles = endpoint ? next : base;
+    FixedTriangleIntersection intersection;
+    bool intersects = false;
+    if (fixed_triangle_features::ClassifyPairIntersection(
+            *triangles[0], *triangles[1], &intersection, &intersects) !=
+        FixedTriangleDiscoveryStatus::Ok)
+      return result;
+    if (!intersects || RequiresIntersectionAdmission(intersection)) {
+      result.status = NonlinearSeparationStatus::PotentialContact;
+      return result;
+    }
+  }
+  return CertifyQuadraticFacetCoverageImpl(
+      first_accepted, first_prepared, first_coefficients, 0,
+      second_accepted, second_prepared, second_coefficients, 0,
+      duration, nullptr, 0, max_work, max_depth, true, true);
 }
 
 NonlinearSeparationResult CertifyQuadraticFacetCoverage(
@@ -3046,19 +3111,71 @@ NonlinearSeparationResult CertifyQuadraticFacetPolicyCoverage(
     std::size_t accepted_count,
     const AcceptedFeatureExclusionCertificate* exclusions,
     std::size_t exclusion_count,
-    std::size_t max_work, unsigned max_depth) noexcept {
+    std::size_t max_work, unsigned max_depth,
+    PolicyExclusionSource* deferred_exclusions) noexcept {
+  if (deferred_exclusions) {
+    deferred_exclusions->report = {};
+    if (!deferred_exclusions->prepare || !deferred_exclusions->context ||
+        exclusions || exclusion_count || deferred_exclusions->capacity > 64) {
+      deferred_exclusions->report.status =
+          SelfContactTransactionStatus::InvalidInput;
+      deferred_exclusions->report.message =
+          "Deferred policy exclusion source is invalid";
+      return {};
+    }
+  }
+  if ((accepted_count && !accepted) || (exclusion_count && !exclusions))
+    return {};
+  // Local topology is a separate whole-interval certificate, not an endpoint
+  // exemption and not an invented physical owner. Both this attempt and any
+  // subsequent ledger fallback share the caller's original work budget.
+  auto local = CertifyQuadraticLocalContact(
+      first_accepted, first_prepared, first_coefficients, first_thickness,
+      second_accepted, second_prepared, second_coefficients, second_thickness,
+      duration, max_work, max_depth);
+  if (local.status == NonlinearSeparationStatus::CertifiedLocalIntersection ||
+      local.status == NonlinearSeparationStatus::InvalidInput ||
+      local.work >= max_work)
+    return local;
   auto ledger = CertifyQuadraticFacetCoverage(
       first_accepted, first_prepared, first_coefficients,
       first_thickness,
       second_accepted, second_prepared, second_coefficients,
       second_thickness, duration, accepted, accepted_count,
-      max_work, max_depth);
+      max_work - local.work, max_depth);
+  ledger.work += local.work;
+  ledger.deepest = std::max(ledger.deepest, local.deepest);
+  if (local.work) {
+    HashCoverageValue(static_cast<unsigned>(local.status), &ledger.proof_digest);
+    HashCoverageValue(local.work, &ledger.proof_digest);
+  }
   if (ledger.status ==
           NonlinearSeparationStatus::CertifiedSeparated ||
       ledger.status ==
           NonlinearSeparationStatus::CertifiedAcceptedCoverage ||
-      !exclusion_count)
+      ledger.status == NonlinearSeparationStatus::InvalidInput ||
+      ledger.work >= max_work)
     return ledger;
+  AcceptedFeatureExclusionCertificate deferred_storage[64];
+  if (deferred_exclusions) {
+    exclusion_count = 0;
+    deferred_exclusions->report = deferred_exclusions->prepare(
+        deferred_exclusions->context, deferred_storage,
+        deferred_exclusions->capacity, &exclusion_count);
+    if (deferred_exclusions->report.status != SelfContactTransactionStatus::Ok) {
+      ledger.status = NonlinearSeparationStatus::InvalidInput;
+      return ledger;
+    }
+    if (exclusion_count > deferred_exclusions->capacity) {
+      deferred_exclusions->report.status = SelfContactTransactionStatus::ResourceLimit;
+      deferred_exclusions->report.message =
+          "Deferred policy exclusion count exceeds its bounded storage";
+      ledger.status = NonlinearSeparationStatus::InvalidInput;
+      return ledger;
+    }
+    exclusions = deferred_storage;
+  }
+  if (!exclusion_count) return ledger;
   if (!exclusions || exclusion_count > 64 ||
       ledger.work >= max_work) {
     if (!exclusions && exclusion_count)
@@ -3110,7 +3227,9 @@ NonlinearSeparationResult CertifyQuadraticFacetPolicyCoverage(
       first_thickness,
       second_accepted, second_prepared, second_coefficients,
       second_thickness, duration, synthetic, exclusion_count,
-      max_work - ledger.work, max_depth, false);
+      // A same-rigid feature constrains only its weighted endpoints. Other
+      // vertices of either mixed facet still require continuous geometry.
+      max_work - ledger.work, max_depth, true);
   if (excluded.work > SIZE_MAX - ledger.work) {
     excluded.status = NonlinearSeparationStatus::InvalidInput;
     return excluded;

@@ -316,11 +316,14 @@ struct SelfContactCandidatePolicySummary {
   std::size_t nonlinear_subdivision_work_exhausted = 0;
   std::size_t nonlinear_subdivision_depth_exhausted = 0;
   std::size_t motion_certified_nonlinear_accepted_coverage = 0;
+  // Exact same-rigid support or continuously proved local topology. Final
+  // policy outcomes retain their distinct rigid/local dispositions.
   std::size_t motion_certified_nonlinear_exact_exclusion = 0;
   std::size_t linear_policy_coverage_pairs = 0;
   std::size_t linear_policy_coverage_work = 0;
   std::size_t linear_policy_certified_separated = 0;
   std::size_t linear_policy_accepted_coverage = 0;
+  // Includes continuously proved local topology, as above.
   std::size_t linear_policy_exact_exclusion = 0;
   std::size_t linear_policy_potential_contact = 0;
   std::size_t linear_policy_work_exhausted = 0;
