@@ -84,6 +84,7 @@ filegroup(
     srcs = [
         "CMakeLists.txt",
         "CudaTest.cu",
+        "PreparedCensusCases.h",
         "README.md",
         "check_syntax.py",
     ],

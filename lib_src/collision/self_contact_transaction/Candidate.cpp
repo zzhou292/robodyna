@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
+#include "QualificationRanges.h"
 
 #include "lib_src/solvers/NodalTrialIdentity.h"
 
@@ -2100,7 +2101,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
 
 SelfContactTransactionReport
 self_contact_transaction::QualificationAccess::
-ClassifyPreparedCandidateCensus(
+ClassifyPreparedCandidateCensusImpl(
     SelfContactTransaction& owner_transaction,
     fe::FENodalState& owner,
     const fe::NodalTrialToken& token,
@@ -2114,16 +2115,65 @@ ClassifyPreparedCandidateCensus(
     std::size_t linear_capacity,
     std::size_t* linear_count,
     sct::LinearCandidateCensusSummary* linear_summary,
-    sct::PreparedMotionCertificateView* certificates) noexcept {
+    sct::PreparedMotionCertificateView* certificates,
+    const fe::ShellPhysicalDiagnostics* physical_diagnostics,
+    sct::QualificationPreparedCensusReceipt* census_receipt) noexcept {
   const bool collect_linear =
       linear_roster || linear_capacity || linear_count || linear_summary;
   if (!roster_count || !summary || !certificates ||
+      (bool(physical_diagnostics) != bool(census_receipt)) ||
       (roster_capacity && !roster) ||
       (collect_linear &&
        (!linear_count || !linear_summary ||
         (linear_capacity && !linear_roster)))) {
     return Failure(S::InvalidInput,
         "Candidate-census qualification storage is invalid");
+  }
+  if (!owner_transaction.impl_)
+    return Failure(S::NotInitialized,
+        "Nonlinear qualification transaction is not initialized");
+  auto& state = *owner_transaction.impl_;
+  using sct::QualificationBorrowedRange;
+  const sct::QualificationRange outputs[]{
+      QualificationBorrowedRange(roster_count),
+      QualificationBorrowedRange(summary),
+      QualificationBorrowedRange(certificates),
+      QualificationBorrowedRange(roster, roster_capacity),
+      QualificationBorrowedRange(linear_roster, linear_capacity),
+      QualificationBorrowedRange(linear_count, collect_linear ? 1u : 0u),
+      QualificationBorrowedRange(linear_summary, collect_linear ? 1u : 0u),
+      QualificationBorrowedRange(census_receipt, census_receipt ? 1u : 0u)};
+  const sct::QualificationRange inputs[]{
+      QualificationBorrowedRange(&owner_transaction),
+      QualificationBorrowedRange(&owner),
+      QualificationBorrowedRange(&assembly),
+      QualificationBorrowedRange(&token),
+      QualificationBorrowedRange(&prepared),
+      QualificationBorrowedRange(
+          physical_diagnostics, physical_diagnostics ? 1u : 0u)};
+  if (!sct::ValidateQualificationRanges(
+          outputs, inputs, [&](const void* data, std::size_t bytes) {
+            return state.OutputDisjoint(data, bytes);
+          }))
+    return Failure(S::InvalidInput,
+        "Candidate-census qualification output ranges are invalid");
+  if (&owner != state.owner ||
+      state.phase != SelfContactTransaction::Impl::Phase::
+          AssemblyRecorded ||
+      !assembly.valid() ||
+      (physical_diagnostics && !state.force.Authenticates(assembly.force_)) ||
+      assembly.transaction_ != &owner_transaction ||
+      assembly.owner_ != &owner ||
+      assembly.active_use_identity_ !=
+          state.active_use.identity() ||
+      assembly.source_id_ != state.config.source_id ||
+      assembly.configuration_id_ != state.config.force.configuration_id ||
+      assembly.qualification_id_ != state.config.force.qualification_id ||
+      assembly.owner_id_ != state.owner_id ||
+      assembly.base_epoch_ != state.base_epoch ||
+      assembly.attempt_ != state.attempt) {
+    return Failure(S::InvalidInput,
+        "Candidate-census owner, phase or output is invalid");
   }
   *roster_count = 0;
   *summary = {};
@@ -2132,36 +2182,8 @@ ClassifyPreparedCandidateCensus(
     *linear_summary = {};
   }
   *certificates = {};
-  if (!owner_transaction.impl_)
-    return Failure(S::NotInitialized,
-        "Nonlinear qualification transaction is not initialized");
-  auto& state = *owner_transaction.impl_;
-  if (&owner != state.owner ||
-      state.phase != SelfContactTransaction::Impl::Phase::
-          AssemblyRecorded ||
-      !assembly.valid() ||
-      assembly.transaction_ != &owner_transaction ||
-      assembly.owner_ != &owner ||
-      assembly.active_use_identity_ !=
-          state.active_use.identity() ||
-      assembly.source_id_ != state.config.source_id ||
-      assembly.owner_id_ != state.owner_id ||
-      assembly.base_epoch_ != state.base_epoch ||
-      assembly.attempt_ != state.attempt ||
-      !state.OutputDisjoint(roster_count, sizeof(*roster_count)) ||
-      !state.OutputDisjoint(summary, sizeof(*summary)) ||
-      !state.OutputDisjoint(certificates, sizeof(*certificates)) ||
-      (roster_capacity &&
-       !state.OutputDisjoint(
-           roster, roster_capacity * sizeof(*roster))) ||
-      (linear_capacity &&
-       !state.OutputDisjoint(
-           linear_roster,
-           linear_capacity * sizeof(*linear_roster)))) {
-    return Failure(S::InvalidInput,
-        "Candidate-census owner, phase or output is invalid");
-  }
-  const auto activity = assembly.activity_.activity();
+  if (census_receipt) *census_receipt = {};
+  auto activity = assembly.activity_.activity();
 
   const auto node_count =
       state.active_use.facets()->surface()->physical()->
@@ -2256,6 +2278,51 @@ ClassifyPreparedCandidateCensus(
   const VectorView prepared_positions{
       state.buffers.prepared_positions,
       static_cast<std::uint32_t>(node_count), 3, 1};
+  if (physical_diagnostics) {
+    SelfContactPreparedActivityReceipt prepared_activity;
+    const auto captured = state.physical_activity.CapturePrepared(
+        owner, token, *physical_diagnostics, prepared,
+        assembly.activity_, &prepared_activity);
+    if (captured.status != SelfContactPhysicalActivityStatus::Ok) {
+      auto report = Failure(S::ActivityFailure, captured.message);
+      report.activity_status = captured.status;
+      report.publication_status = captured.publication_status;
+      report.owner_status = captured.owner_status;
+      report.candidate = captured.parent;
+      return report;
+    }
+    activity = prepared_activity.activity();
+    if (!activity.base || !activity.current ||
+        activity.parent_count != state.active_use.parents().size())
+      return Failure(S::ActivityFailure,
+          "Prepared census physical activity receipt is incomplete");
+    SelfContactCurrentRegularityReceipt regularity_receipt;
+    const auto regularity = state.regularity.Certify(
+        prepared_positions, activity, &regularity_receipt);
+    if (regularity.status != SelfContactCurrentRegularityStatus::Ok ||
+        !sct::CompleteRegularity(
+            state.active_use, regularity_receipt,
+            state.regularity.results(), activity)) {
+      auto report = Failure(S::RegularityFailure,
+          "Prepared census current regularity is incomplete or unresolved");
+      report.regularity_status = regularity.status;
+      report.candidate = regularity.parent;
+      return report;
+    }
+    census_receipt->transaction_ = &owner_transaction;
+    census_receipt->assembly_ = assembly;
+    census_receipt->activity_ = prepared_activity;
+    auto& activity_summary = census_receipt->activity_summary_;
+    activity_summary.selected = activity.parent_count;
+    for (std::size_t parent = 0; parent < activity.parent_count; ++parent) {
+      activity_summary.accepted_active += activity.base[parent] != 0;
+      activity_summary.prepared_active += activity.current[parent] != 0;
+      activity_summary.removing +=
+          activity.base[parent] != 0 && activity.current[parent] == 0;
+      activity_summary.inactive += activity.base[parent] == 0;
+    }
+    activity_summary.complete = true;
+  }
   auto evaluated = sct::EvaluateCompleteTriangles(
       state.buffers.facet_descriptors, state.facet_count,
       accepted_positions, state.buffers.accepted_triangles);

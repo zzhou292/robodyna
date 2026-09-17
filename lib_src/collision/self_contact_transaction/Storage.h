@@ -5,6 +5,7 @@
 #include "../SelfContactFilterCertificates.h"
 #include "../SelfContactPhysicalActivity.h"
 #include "../fixed_triangle_features/Geometry.h"
+#include "QualificationReceipt.h"
 #include "lib_utils/BoundedArena.h"
 
 namespace tlfea::contact::self_contact_transaction {
@@ -103,6 +104,15 @@ class QualificationAccess {
       FixedTriangleFeatureView,
       AcceptedFeaturePolicyEvidence*, std::size_t capacity,
       std::size_t* count) noexcept;
+  // Replays accepted endpoint policy from the preserved base of an actual
+  // prepared census. The ordinary accepted receipt has been consumed.
+  static SelfContactTransactionReport
+  ClassifyAcceptedFeaturePolicies(
+      SelfContactTransaction&,
+      const QualificationPreparedCensusReceipt&,
+      FixedTriangleFeatureView,
+      AcceptedFeaturePolicyEvidence*, std::size_t capacity,
+      std::size_t* count) noexcept;
   // Replays only authenticated motion construction, conservative broadphase
   // and nonlinear subdivision for a live accepted-assembly attempt. Ordinary
   // linear feature discovery and represented crossing are deliberately not
@@ -135,6 +145,48 @@ class QualificationAccess {
       std::size_t* linear_count,
       LinearCandidateCensusSummary*,
       PreparedMotionCertificateView*) noexcept;
+  // Actual structural-candidate variant: authenticates common publication
+  // diagnostics, removal/activity and current regularity before traversing.
+  // Consumes accepted activity authority; the diagnostic candidate must be
+  // discarded after capture and cannot subsequently enter SealCandidate.
+  static SelfContactTransactionReport
+  ClassifyPreparedCandidateCensus(
+      SelfContactTransaction&, tl::fea::FENodalState&,
+      const tl::fea::NodalTrialToken&,
+      const tl::fea::ShellPhysicalDiagnostics&,
+      const tl::fea::NodalPreparedView&,
+      const SelfContactAcceptedAssemblyReceipt&,
+      NonlinearCandidateRosterEntry*, std::size_t nonlinear_capacity,
+      std::size_t* nonlinear_count,
+      NonlinearCandidateRosterSummary*,
+      LinearWorkExhaustedRosterEntry*, std::size_t linear_capacity,
+      std::size_t* linear_count,
+      LinearCandidateCensusSummary*,
+      PreparedMotionCertificateView*,
+      QualificationPreparedCensusReceipt*) noexcept;
+
+ private:
+  static SelfContactTransactionReport
+  ClassifyAcceptedFeaturePoliciesImpl(
+      SelfContactTransaction&,
+      const SelfContactAcceptedAssemblyReceipt&,
+      const QualificationPreparedCensusReceipt*,
+      FixedTriangleFeatureView,
+      AcceptedFeaturePolicyEvidence*, std::size_t,
+      std::size_t*) noexcept;
+  static SelfContactTransactionReport
+  ClassifyPreparedCandidateCensusImpl(
+      SelfContactTransaction&, tl::fea::FENodalState&,
+      const tl::fea::NodalTrialToken&,
+      const tl::fea::NodalPreparedView&,
+      const SelfContactAcceptedAssemblyReceipt&,
+      NonlinearCandidateRosterEntry*, std::size_t,
+      std::size_t*, NonlinearCandidateRosterSummary*,
+      LinearWorkExhaustedRosterEntry*, std::size_t,
+      std::size_t*, LinearCandidateCensusSummary*,
+      PreparedMotionCertificateView*,
+      const tl::fea::ShellPhysicalDiagnostics*,
+      QualificationPreparedCensusReceipt*) noexcept;
 };
 
 struct MotionSupport {

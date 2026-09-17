@@ -16,6 +16,7 @@ add_library(tl_self_contact_transaction STATIC
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/TaskMask.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/RigidSweep.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/Source.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/Qualification.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/Transaction.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/Candidate.cpp")
 target_link_libraries(tl_self_contact_transaction PUBLIC

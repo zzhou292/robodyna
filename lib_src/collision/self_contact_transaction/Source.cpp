@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
+#include "QualificationRanges.h"
 
 #include "../FixedContactFacetValues.h"
 #include "../self_contact_active_use/Storage.h"
@@ -1262,9 +1263,10 @@ SelfContactTransactionReport ValidateCandidateEdgePolicy(
 }
 
 SelfContactTransactionReport
-QualificationAccess::ClassifyAcceptedFeaturePolicies(
+QualificationAccess::ClassifyAcceptedFeaturePoliciesImpl(
     SelfContactTransaction& owner,
     const SelfContactAcceptedAssemblyReceipt& assembly,
+    const QualificationPreparedCensusReceipt* census,
     FixedTriangleFeatureView features,
     AcceptedFeaturePolicyEvidence* output,
     std::size_t capacity, std::size_t* count) noexcept {
@@ -1274,21 +1276,44 @@ QualificationAccess::ClassifyAcceptedFeaturePolicies(
       features.count > capacity)
     return Failure(S::InvalidInput,
         "Accepted feature-policy qualification storage is invalid");
-  *count = 0;
   auto& state = *owner.impl_;
+  const QualificationRange outputs[]{
+      QualificationBorrowedRange(output, features.count),
+      QualificationBorrowedRange(count)};
+  const QualificationRange inputs[]{
+      QualificationBorrowedRange(&owner),
+      QualificationBorrowedRange(&assembly),
+      QualificationBorrowedRange(census, census ? 1u : 0u),
+      QualificationBorrowedRange(features.data, features.count)};
+  if (!ValidateQualificationRanges(
+          outputs, inputs, [&](const void* data, std::size_t bytes) {
+            return state.OutputDisjoint(data, bytes);
+          }))
+    return Failure(S::InvalidInput,
+        "Accepted feature-policy qualification output ranges are invalid");
+  *count = 0;
   if (state.phase != SelfContactTransaction::Impl::Phase::
           AssemblyRecorded ||
-      !assembly.valid() ||
+      (census ? (!census->valid() || census->transaction_ != &owner)
+              : !assembly.valid()) ||
       assembly.transaction_ != &owner ||
       assembly.owner_ != state.owner ||
       assembly.active_use_identity_ !=
           state.active_use.identity() ||
+      assembly.source_id_ != state.config.source_id ||
+      assembly.configuration_id_ != state.config.force.configuration_id ||
+      assembly.qualification_id_ != state.config.force.qualification_id ||
       assembly.owner_id_ != state.owner_id ||
       assembly.base_epoch_ != state.base_epoch ||
       assembly.attempt_ != state.attempt)
     return Failure(S::IdentityMismatch,
         "Accepted feature-policy qualification owner is stale");
-  const auto activity = assembly.activity_.activity();
+  auto activity = census ? census->activity_.activity()
+                         : assembly.activity_.activity();
+  // Accepted policy uses the authenticated accepted endpoint, including for a
+  // parent removed by this prepared candidate. Current removal remains in the
+  // census and its filtering; it cannot rewrite accepted force provenance.
+  activity.current = activity.base;
   const auto nodes = state.active_use.facets()->surface()->
       physical()->domain()->node_count();
   const VectorView accepted_positions{
