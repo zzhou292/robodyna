@@ -303,7 +303,7 @@ for token in (
     "vertex_vertex_axis_separated) == 120",
     "motion_certified_nonlinear_accepted_coverage) == 176",
     "motion_certified_nonlinear_exact_exclusion) == 184",
-    "sizeof(c::SelfContactCandidatePolicySummary) == 192",
+    "sizeof(c::SelfContactCandidatePolicySummary) == 288",
 ):
     require(VALUE_TEST.read_text(), token, VALUE_TEST)
 require(candidate, "sct::CertifiedLinearFacetPrismSeparation(", CANDIDATE)
@@ -504,8 +504,21 @@ for token in (
     "PersistentPhysicalContact",
     "CertifiedQuadraticResidualSeparation",
     "CertifiedPersistentQuadraticContact",
+    "ClassifyPreparedCandidateCensus(",
+    "LinearWorkExhaustedRosterEntry",
+    "LinearCandidateCensusSummary",
+    "Linear policy coverage",
+    "CertifyQuadraticFacetPolicyCoverage(",
+    "linear_policy_potential_contact",
+    "linear_policy_possible_geometric_crossing",
 ):
     require(candidate + storage, token, CANDIDATE)
+for token in (
+    "unresolved_path",
+    "unresolved_depth",
+    "has_unresolved_cell",
+):
+    require(rigid_sweep + storage, token, RIGID_SWEEP)
 
 for wiring in (CMAKE, BAZEL):
     text = wiring.read_text()

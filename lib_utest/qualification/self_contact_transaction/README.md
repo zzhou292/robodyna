@@ -424,8 +424,8 @@ comparison; every other stamp/diagnostic field is compared by value or bits.
 That target uses real `FENodalState`, physical publication, current regularity,
 fixed discovery, represented crossing, VF+EE force and CIN STI. It covers missing
 mandatory receipt rollback/retry, initial half-kick, ordinary interval and
-allocation stability, plus an exact pass-through unresolved-reason rollback
-and deterministic retry. It also covers actual T3 removal, long-inactive
+allocation stability, plus exact fallback classification of a nonlocal
+intersection with rollback and deterministic retry. It also covers actual T3 removal, long-inactive
 participation, stale accepted authority, forged physical diagnostics, and
 exact rollback/retry. Dedicated accepted-stage rigid gates retain genuine execution-owned
 merged PART and plain declarations. Their contact-only source uses two
@@ -450,3 +450,12 @@ those separated linear pairs bypass represented-interval work while exact
 contact pairs still publish nonzero force and CIN STI. The same bounded CUDA
 binary retains the actual same-body exclusion and crossing rollback/retry
 controls; no canonical V5 data is loaded.
+
+Qualification access can replay the complete affine frontier without force
+publication. It batches represented paths through the production worker pool,
+counts every swept/prism/residual/persistent/crossing class, and retains only
+the pairs whose unchanged per-pair 4095-visit traversal is `WorkExhausted`.
+Production gives those pairs one bounded exact geometry/policy proof using the
+authenticated accepted ledger and feature-specific same-rigid exclusions.
+Separation, accepted coverage, exact exclusion, and genuine ambiguity remain
+distinct; unresolved coverage leaves the original represented result intact.

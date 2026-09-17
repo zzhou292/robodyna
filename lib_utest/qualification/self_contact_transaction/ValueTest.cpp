@@ -59,7 +59,7 @@ static_assert(offsetof(
 static_assert(offsetof(
     c::SelfContactCandidatePolicySummary,
     motion_certified_nonlinear_exact_exclusion) == 184);
-static_assert(sizeof(c::SelfContactCandidatePolicySummary) == 192);
+static_assert(sizeof(c::SelfContactCandidatePolicySummary) == 288);
 static_assert(
     std::is_trivially_copyable_v<c::SelfContactForceEventIdentity>);
 static_assert(sizeof(c::SelfContactForceEventIdentity) == 240);
@@ -800,6 +800,9 @@ TEST(SelfContactTransactionValues,
   EXPECT_EQ(boundary.work, 1u);
   EXPECT_TRUE(boundary.depth_exhausted);
   EXPECT_FALSE(boundary.has_intersection);
+  EXPECT_TRUE(boundary.has_unresolved_cell);
+  EXPECT_EQ(boundary.unresolved_path, 0u);
+  EXPECT_EQ(boundary.unresolved_depth, 0u);
 
   auto degenerate = first;
   degenerate.vertices[1] = degenerate.vertices[0];
@@ -814,6 +817,7 @@ TEST(SelfContactTransactionValues,
           PossibleGeometricCrossing);
   EXPECT_TRUE(invalid_geometry.depth_exhausted);
   EXPECT_FALSE(invalid_geometry.has_intersection);
+  EXPECT_TRUE(invalid_geometry.has_unresolved_cell);
 
   // Cross-triangle edges incident to the shared vertex can overlap away from
   // that vertex.  Shared topology alone must not classify that nonlocal
@@ -836,6 +840,7 @@ TEST(SelfContactTransactionValues,
           PossibleGeometricCrossing);
   EXPECT_TRUE(overlapping_incident.depth_exhausted);
   EXPECT_FALSE(overlapping_incident.has_intersection);
+  EXPECT_TRUE(overlapping_incident.has_unresolved_cell);
 
   const auto capped = sct::CertifyQuadraticFacetCoverage(
       first, first, zero, .75,
@@ -845,6 +850,9 @@ TEST(SelfContactTransactionValues,
       capped.status,
       sct::NonlinearSeparationStatus::WorkExhausted);
   EXPECT_TRUE(capped.work_exhausted);
+  EXPECT_TRUE(capped.has_unresolved_cell);
+  EXPECT_EQ(capped.unresolved_path, 0u);
+  EXPECT_EQ(capped.unresolved_depth, 1u);
 }
 
 TEST(SelfContactTransactionValues,

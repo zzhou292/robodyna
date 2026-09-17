@@ -1361,6 +1361,10 @@ TEST(SelfContactTransactionCuda,
       fixture.config, fixture.uses, fixture.rig.fixture.Identity(),
       limits);
   ASSERT_TRUE(Good(exact.report));
+  EXPECT_EQ(exact.forecast.crossing_work_per_pair,
+            limits.crossing.max_work_per_pair);
+  EXPECT_EQ(exact.forecast.crossing_depth,
+            limits.crossing.max_depth);
   EXPECT_EQ(exact.forecast.nonlinear_subdivision_work_per_pair,
             limits.max_nonlinear_subdivision_work_per_pair);
   EXPECT_EQ(exact.forecast.nonlinear_subdivision_work_per_chunk,
@@ -1978,7 +1982,7 @@ TEST(SelfContactTransactionCuda,
 }
 
 TEST(SelfContactTransactionCuda,
-     ExactPassThroughUnresolvedReasonRollsBackAndRetriesExactly) {
+     ExactFallbackRejectsNonlocalIntersectionAndRollsBackExactly) {
   Fixture fixture(false, true);
   auto limits = c::SelfContactTransactionLimits{};
   limits.crossing.max_depth = 4;
@@ -2005,10 +2009,11 @@ TEST(SelfContactTransactionCuda,
     c::SelfContactTransactionReceipt unchanged;
     const auto report = fixture.transaction.SealCandidate(
         fixture.rig.owner, token, common, prepared, accepted, &unchanged);
+    SCOPED_TRACE(report.message);
     EXPECT_EQ(report.status,
-              c::SelfContactTransactionStatus::UnresolvedCandidate);
+              c::SelfContactTransactionStatus::CandidateRejected);
     EXPECT_EQ(report.crossing_reason,
-              c::RepresentedIntervalReason::WorkExhausted);
+              c::RepresentedIntervalReason::None);
     EXPECT_FALSE(unchanged.valid());
     EXPECT_NE(report.pair, SIZE_MAX);
     if (!retry)

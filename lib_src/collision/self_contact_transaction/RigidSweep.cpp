@@ -2139,6 +2139,9 @@ NonlinearSeparationStatus SubdivideCoverage(
     return NonlinearSeparationStatus::InvalidInput;
   if (*work >= max_work) {
     result->work_exhausted = true;
+    result->unresolved_path = path;
+    result->unresolved_depth = depth;
+    result->has_unresolved_cell = true;
     return NonlinearSeparationStatus::WorkExhausted;
   }
   ++*work;
@@ -2224,6 +2227,9 @@ NonlinearSeparationStatus SubdivideCoverage(
 
   if (depth >= max_depth) {
     result->depth_exhausted = true;
+    result->unresolved_path = path;
+    result->unresolved_depth = depth;
+    result->has_unresolved_cell = true;
     if (!owner_count)
       return NonlinearSeparationStatus::MissingAcceptedOwner;
     return !require_geometric_safety ||

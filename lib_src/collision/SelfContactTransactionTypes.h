@@ -231,6 +231,8 @@ struct SelfContactTransactionForecast {
   std::size_t policy_outcome_capacity = 0;
   std::size_t policy_chunk_capacity = 0;
   std::size_t complete_crossing_work_capacity = 0;
+  std::size_t crossing_work_per_pair = 0;
+  unsigned crossing_depth = 0;
   std::size_t nonlinear_subdivision_work_per_pair = 0;
   std::size_t nonlinear_subdivision_work_per_chunk = 0;
   std::size_t complete_nonlinear_subdivision_work_capacity = 0;
@@ -315,6 +317,18 @@ struct SelfContactCandidatePolicySummary {
   std::size_t nonlinear_subdivision_depth_exhausted = 0;
   std::size_t motion_certified_nonlinear_accepted_coverage = 0;
   std::size_t motion_certified_nonlinear_exact_exclusion = 0;
+  std::size_t linear_policy_coverage_pairs = 0;
+  std::size_t linear_policy_coverage_work = 0;
+  std::size_t linear_policy_certified_separated = 0;
+  std::size_t linear_policy_accepted_coverage = 0;
+  std::size_t linear_policy_exact_exclusion = 0;
+  std::size_t linear_policy_potential_contact = 0;
+  std::size_t linear_policy_work_exhausted = 0;
+  std::size_t linear_policy_depth_exhausted = 0;
+  std::size_t linear_policy_missing_accepted_owner = 0;
+  std::size_t linear_policy_owner_ambiguity = 0;
+  std::size_t linear_policy_possible_geometric_crossing = 0;
+  std::size_t linear_policy_unresolved = 0;
 };
 
 class SelfContactTransaction;

@@ -1718,7 +1718,155 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
               S::IdentityMismatch,
               "Candidate crossing publication ended before motion roster",
               SIZE_MAX, state.candidate_facet_pair_count + raw_pair));
-        const auto& value = raw_crossings.data[crossing_pair++];
+        auto value = raw_crossings.data[crossing_pair++];
+        if (value.classification ==
+                RepresentedIntervalClassification::Unresolved &&
+            value.reason ==
+                RepresentedIntervalReason::WorkExhausted) {
+          const auto facet_pair =
+              state.buffers.facet_pair_chunk[pair];
+          const auto first_parent =
+              state.buffers.facet_motion[facet_pair.first].parent;
+          const auto second_parent =
+              state.buffers.facet_motion[facet_pair.second].parent;
+          if (first_parent >= parents.size() ||
+              second_parent >= parents.size())
+            return state.Fail(Failure(
+                S::IdentityMismatch,
+                "Linear policy coverage has no active parent",
+                SIZE_MAX,
+                state.candidate_facet_pair_count + raw_pair));
+          FixedTriangleFeatureCandidate accepted_features[15];
+          fixed_triangle_features::PairFeatureResult
+              accepted_feature_result;
+          if (fixed_triangle_features::
+                  EvaluatePairFeaturesMaskedOnce(
+                      state.buffers.accepted_triangles[
+                          facet_pair.first],
+                      state.buffers.accepted_triangles[
+                          facet_pair.second],
+                      state.buffers.chunk_feature_task_masks[pair],
+                      accepted_features, 15,
+                      &accepted_feature_result) !=
+              FixedTriangleDiscoveryStatus::Ok)
+            return state.Fail(Failure(
+                S::DiscoveryFailure,
+                "Accepted linear exclusion feature replay failed",
+                SIZE_MAX,
+                state.candidate_facet_pair_count + raw_pair));
+          sct::AcceptedFeatureExclusionCertificate
+              accepted_exclusions[15];
+          std::size_t accepted_exclusion_count = 0;
+          const auto exclusions =
+              sct::BuildAcceptedSameRigidExclusions(
+                  state.active_use,
+                  {accepted_features,
+                   accepted_feature_result.feature_count, true},
+                  state.buffers.facet_descriptors,
+                  state.buffers.triangle_order, triangles,
+                  activity, accepted_exclusions, 15,
+                  &accepted_exclusion_count);
+          if (exclusions.status != S::Ok)
+            return state.Fail(exclusions);
+          const auto coverage =
+              sct::CertifyQuadraticFacetPolicyCoverage(
+                  state.buffers.accepted_triangles[
+                      facet_pair.first],
+                  state.buffers.prepared_triangles[
+                      facet_pair.first],
+                  state.buffers.facet_quadratic[
+                      facet_pair.first],
+                  parents[first_parent].
+                      reference_half_thickness_m,
+                  state.buffers.accepted_triangles[
+                      facet_pair.second],
+                  state.buffers.prepared_triangles[
+                      facet_pair.second],
+                  state.buffers.facet_quadratic[
+                      facet_pair.second],
+                  parents[second_parent].
+                      reference_half_thickness_m,
+                  duration,
+                  state.buffers.accepted_certificates,
+                  state.accepted_event_count,
+                  accepted_exclusions,
+                  accepted_exclusion_count,
+                  state.storage_forecast.crossing_work_per_pair,
+                  state.storage_forecast.crossing_depth);
+          if (coverage.status ==
+              sct::NonlinearSeparationStatus::InvalidInput)
+            return state.Fail(Failure(
+                S::IdentityMismatch,
+                "Linear policy coverage input is invalid",
+                SIZE_MAX,
+                state.candidate_facet_pair_count + raw_pair));
+          ++summary.linear_policy_coverage_pairs;
+          if (coverage.work >
+              SIZE_MAX - summary.linear_policy_coverage_work)
+            return state.Fail(Failure(
+                S::ResourceLimit,
+                "Linear policy coverage work accounting overflowed",
+                SIZE_MAX,
+                state.candidate_facet_pair_count + raw_pair));
+          summary.linear_policy_coverage_work += coverage.work;
+          if (coverage.status ==
+              sct::NonlinearSeparationStatus::CertifiedSeparated) {
+            value.classification =
+                RepresentedIntervalClassification::
+                    CertifiedSeparated;
+            value.reason = RepresentedIntervalReason::None;
+            value.work = coverage.work;
+            ++summary.linear_policy_certified_separated;
+          } else if (
+              coverage.status ==
+              sct::NonlinearSeparationStatus::
+                  CertifiedAcceptedCoverage) {
+            value.classification =
+                RepresentedIntervalClassification::
+                    CertifiedCrossingContact;
+            value.reason = RepresentedIntervalReason::None;
+            value.feature = coverage.feature;
+            value.geometry =
+                RepresentedIntersectionGeometry::
+                    PersistentAcceptedLedgerCoverage;
+            value.accepted_event =
+                coverage.accepted_certificate;
+            value.work = coverage.work;
+            ++summary.linear_policy_accepted_coverage;
+          } else if (
+              coverage.status ==
+              sct::NonlinearSeparationStatus::
+                  CertifiedExactExclusion) {
+            value.classification =
+                RepresentedIntervalClassification::
+                    CertifiedExactExclusion;
+            value.reason = RepresentedIntervalReason::None;
+            value.work = coverage.work;
+            ++summary.linear_policy_exact_exclusion;
+          } else {
+            ++summary.linear_policy_unresolved;
+            summary.linear_policy_potential_contact +=
+                coverage.status ==
+                sct::NonlinearSeparationStatus::PotentialContact;
+            summary.linear_policy_work_exhausted +=
+                coverage.status ==
+                sct::NonlinearSeparationStatus::WorkExhausted;
+            summary.linear_policy_depth_exhausted +=
+                coverage.status ==
+                sct::NonlinearSeparationStatus::DepthExhausted;
+            summary.linear_policy_missing_accepted_owner +=
+                coverage.status ==
+                sct::NonlinearSeparationStatus::
+                    MissingAcceptedOwner;
+            summary.linear_policy_owner_ambiguity +=
+                coverage.status ==
+                sct::NonlinearSeparationStatus::OwnerAmbiguity;
+            summary.linear_policy_possible_geometric_crossing +=
+                coverage.status ==
+                sct::NonlinearSeparationStatus::
+                    PossibleGeometricCrossing;
+          }
+        }
         state.buffers.chunk_crossings[pair] = value;
         const auto work = value.work;
         if (work >
@@ -1880,7 +2028,19 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
       potential_tasks != 15 * summary.exact_crossing_pairs ||
       local_masked_tasks > potential_tasks ||
       exact_executed_tasks !=
-          potential_tasks - local_masked_tasks)
+          potential_tasks - local_masked_tasks ||
+      summary.linear_policy_coverage_pairs !=
+          summary.linear_policy_certified_separated +
+              summary.linear_policy_accepted_coverage +
+              summary.linear_policy_exact_exclusion +
+              summary.linear_policy_unresolved ||
+      summary.linear_policy_unresolved !=
+          summary.linear_policy_potential_contact +
+              summary.linear_policy_work_exhausted +
+              summary.linear_policy_depth_exhausted +
+              summary.linear_policy_missing_accepted_owner +
+              summary.linear_policy_owner_ambiguity +
+              summary.linear_policy_possible_geometric_crossing)
     return state.Fail(Failure(S::IdentityMismatch,
         "Candidate motion/local-task filter lacks complete work accounting"));
   summary.exact_crossing_work = crossing_work;
@@ -1940,7 +2100,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
 
 SelfContactTransactionReport
 self_contact_transaction::QualificationAccess::
-ClassifyPreparedNonlinearCandidates(
+ClassifyPreparedCandidateCensus(
     SelfContactTransaction& owner_transaction,
     fe::FENodalState& owner,
     const fe::NodalTrialToken& token,
@@ -1950,14 +2110,27 @@ ClassifyPreparedNonlinearCandidates(
     std::size_t roster_capacity,
     std::size_t* roster_count,
     sct::NonlinearCandidateRosterSummary* summary,
+    sct::LinearWorkExhaustedRosterEntry* linear_roster,
+    std::size_t linear_capacity,
+    std::size_t* linear_count,
+    sct::LinearCandidateCensusSummary* linear_summary,
     sct::PreparedMotionCertificateView* certificates) noexcept {
+  const bool collect_linear =
+      linear_roster || linear_capacity || linear_count || linear_summary;
   if (!roster_count || !summary || !certificates ||
-      (roster_capacity && !roster)) {
+      (roster_capacity && !roster) ||
+      (collect_linear &&
+       (!linear_count || !linear_summary ||
+        (linear_capacity && !linear_roster)))) {
     return Failure(S::InvalidInput,
-        "Nonlinear qualification roster storage is invalid");
+        "Candidate-census qualification storage is invalid");
   }
   *roster_count = 0;
   *summary = {};
+  if (collect_linear) {
+    *linear_count = 0;
+    *linear_summary = {};
+  }
   *certificates = {};
   if (!owner_transaction.impl_)
     return Failure(S::NotInitialized,
@@ -1980,9 +2153,13 @@ ClassifyPreparedNonlinearCandidates(
       !state.OutputDisjoint(certificates, sizeof(*certificates)) ||
       (roster_capacity &&
        !state.OutputDisjoint(
-           roster, roster_capacity * sizeof(*roster)))) {
+           roster, roster_capacity * sizeof(*roster))) ||
+      (linear_capacity &&
+       !state.OutputDisjoint(
+           linear_roster,
+           linear_capacity * sizeof(*linear_roster)))) {
     return Failure(S::InvalidInput,
-        "Nonlinear qualification owner, phase or output is invalid");
+        "Candidate-census owner, phase or output is invalid");
   }
   const auto activity = assembly.activity_.activity();
 
@@ -2159,6 +2336,7 @@ ClassifyPreparedNonlinearCandidates(
   if (streamed.status != S::Ok) return streamed;
 
   std::size_t published = 0;
+  std::size_t linear_published = 0;
   std::size_t nonlinear_work = 0;
   for (;;) {
     const FixedTrianglePair* pairs = nullptr;
@@ -2173,6 +2351,7 @@ ClassifyPreparedNonlinearCandidates(
     }
     summary->streamed_facet_pairs += pair_count;
     std::size_t chunk_work = 0;
+    std::size_t linear_crossing_count = 0;
     for (std::size_t pair = 0; pair < pair_count; ++pair) {
       const auto facets = pairs[pair];
       const auto action = sct::ClassifyCandidatePairMotion(
@@ -2180,6 +2359,166 @@ ClassifyPreparedNonlinearCandidates(
           state.buffers.swept_facet_bounds[facets.first],
           state.buffers.facet_motion[facets.second],
           state.buffers.swept_facet_bounds[facets.second]);
+      if (collect_linear &&
+          (action == sct::PairMotionAction::LinearNodalV1 ||
+           action ==
+               sct::PairMotionAction::CertifiedLinearSeparation)) {
+        ++linear_summary->affine_pairs;
+        if (action ==
+            sct::PairMotionAction::CertifiedLinearSeparation) {
+          ++linear_summary->swept_bounds_separated;
+          continue;
+        }
+        const auto first_parent =
+            state.buffers.facet_motion[facets.first].parent;
+        const auto second_parent =
+            state.buffers.facet_motion[facets.second].parent;
+        if (first_parent >= parents.size() ||
+            second_parent >= parents.size()) {
+          return Failure(
+              S::IdentityMismatch,
+              "Linear qualification pair has no active parent",
+              facets.first,
+              summary->streamed_facet_pairs - pair_count + pair);
+        }
+        bool valid = false;
+        sct::FacetPrismSeparationAxis axis =
+            sct::FacetPrismSeparationAxis::None;
+        if (sct::CertifiedLinearFacetPrismSeparation(
+                state.buffers.accepted_triangles[facets.first],
+                state.buffers.prepared_triangles[facets.first],
+                parents[first_parent].reference_half_thickness_m,
+                state.buffers.accepted_triangles[facets.second],
+                state.buffers.prepared_triangles[facets.second],
+                parents[second_parent].reference_half_thickness_m,
+                sct::FacetPrismAxisLimit::VertexVertex,
+                &axis, &valid)) {
+          ++linear_summary->prism_separated;
+          continue;
+        }
+        if (!valid) {
+          return Failure(
+              S::IdentityMismatch,
+              "Linear qualification prism input is invalid",
+              facets.first,
+              summary->streamed_facet_pairs - pair_count + pair);
+        }
+        ++linear_summary->exact_geometry_pairs;
+
+        FixedTriangleFeatureTaskMask mask;
+        if (BuildFixedTriangleFeatureTaskMask(
+                state.buffers.prepared_triangles[facets.first],
+                state.buffers.prepared_triangles[facets.second],
+                &mask) != FixedTriangleDiscoveryStatus::Ok) {
+          return Failure(
+              S::DiscoveryFailure,
+              "Linear qualification task mask failed",
+              facets.first,
+              summary->streamed_facet_pairs - pair_count + pair);
+        }
+        FixedTriangleFeatureCandidate direct_features[15];
+        fixed_triangle_features::PairFeatureResult feature_result;
+        if (fixed_triangle_features::EvaluatePairFeaturesMaskedOnce(
+                state.buffers.prepared_triangles[facets.first],
+                state.buffers.prepared_triangles[facets.second],
+                mask, direct_features, 15, &feature_result) !=
+            FixedTriangleDiscoveryStatus::Ok) {
+          return Failure(
+              S::DiscoveryFailure,
+              "Linear qualification feature replay failed",
+              facets.first,
+              summary->streamed_facet_pairs - pair_count + pair);
+        }
+        FixedTriangleIntersection direct_intersection;
+        bool intersects = false;
+        if (fixed_triangle_features::ClassifyPairIntersection(
+                state.buffers.prepared_triangles[facets.first],
+                state.buffers.prepared_triangles[facets.second],
+                &direct_intersection, &intersects) !=
+            FixedTriangleDiscoveryStatus::Ok) {
+          return Failure(
+              S::DiscoveryFailure,
+              "Linear qualification intersection replay failed",
+              facets.first,
+              summary->streamed_facet_pairs - pair_count + pair);
+        }
+        const FixedTriangleFeatureView direct_view{
+            direct_features, feature_result.feature_count, true};
+        const FixedTriangleIntersectionView intersection_view{
+            intersects ? &direct_intersection : nullptr,
+            intersects ? 1u : 0u, true};
+        const auto residual = ResidualLinearCertificate(
+            state.buffers.accepted_triangles[facets.first],
+            state.buffers.prepared_triangles[facets.first],
+            parents[first_parent].reference_half_thickness_m,
+            state.buffers.accepted_triangles[facets.second],
+            state.buffers.prepared_triangles[facets.second],
+            parents[second_parent].reference_half_thickness_m,
+            mask, direct_view, intersection_view);
+        if (residual.status ==
+            sct::LinearResidualSeparationStatus::InvalidInput) {
+          return Failure(
+              S::IdentityMismatch,
+              "Linear qualification residual input is invalid",
+              facets.first,
+              summary->streamed_facet_pairs - pair_count + pair);
+        }
+        linear_summary->common_translation +=
+            residual.exact_common_translation;
+        if (residual.status ==
+            sct::LinearResidualSeparationStatus::
+                CertifiedSeparated) {
+          ++linear_summary->residual_separated;
+          continue;
+        }
+        const auto persistent = PersistentLinearCertificate(
+            state.buffers.accepted_triangles[facets.first],
+            state.buffers.prepared_triangles[facets.first],
+            parents[first_parent].reference_half_thickness_m,
+            state.buffers.accepted_triangles[facets.second],
+            state.buffers.prepared_triangles[facets.second],
+            parents[second_parent].reference_half_thickness_m,
+            mask, direct_view, state.buffers.accepted_certificates,
+            state.accepted_event_count);
+        if (persistent.status ==
+            sct::PersistentLinearContactStatus::InvalidInput) {
+          return Failure(
+              S::IdentityMismatch,
+              "Linear qualification persistence input is invalid",
+              facets.first,
+              summary->streamed_facet_pairs - pair_count + pair);
+        }
+        if (persistent.status ==
+            sct::PersistentLinearContactStatus::CertifiedContact) {
+          ++linear_summary->persistent_accepted;
+          continue;
+        }
+
+        const auto crossing_index = linear_crossing_count++;
+        if (crossing_index >=
+            state.storage_forecast.candidate_crossing_capacity) {
+          return Failure(
+              S::ResourceLimit,
+              "Linear qualification crossing chunk overflowed",
+              facets.first,
+              summary->streamed_facet_pairs - pair_count + pair);
+        }
+        state.buffers.facet_pair_chunk[crossing_index] = facets;
+        MakePath(
+            state.buffers.accepted_triangles[facets.first],
+            state.buffers.prepared_triangles[facets.first],
+            state.buffers.facet_motion[facets.first],
+            state.buffers.chunk_paths + 2 * crossing_index);
+        MakePath(
+            state.buffers.accepted_triangles[facets.second],
+            state.buffers.prepared_triangles[facets.second],
+            state.buffers.facet_motion[facets.second],
+            state.buffers.chunk_paths + 2 * crossing_index + 1);
+        state.buffers.chunk_represented_pairs[crossing_index] = {
+            static_cast<std::uint32_t>(2 * crossing_index),
+            static_cast<std::uint32_t>(2 * crossing_index + 1)};
+        continue;
+      }
       if (action != sct::PairMotionAction::UnsupportedRigidArc)
         continue;
       const auto first_parent =
@@ -2266,6 +2605,167 @@ ClassifyPreparedNonlinearCandidates(
       }
       ++published;
     }
+    if (collect_linear && linear_crossing_count) {
+      const auto crossing_report = state.crossing.Certify(
+          state.buffers.chunk_paths, 2 * linear_crossing_count,
+          state.buffers.chunk_represented_pairs,
+          linear_crossing_count);
+      if (crossing_report.status != RepresentedIntervalStatus::Ok) {
+        auto report = Failure(
+            S::CrossingFailure,
+            "Linear qualification represented chunk failed",
+            crossing_report.input_path,
+            crossing_report.input_pair);
+        report.crossing_status = crossing_report.status;
+        return report;
+      }
+      const auto crossing_view = state.crossing.results();
+      if (!crossing_view.complete ||
+          crossing_view.count != linear_crossing_count ||
+          !crossing_view.data) {
+        return Failure(
+            S::CrossingFailure,
+            "Linear qualification crossing chunk is incomplete");
+      }
+      if (linear_crossing_count >
+          SIZE_MAX - linear_summary->represented_pairs) {
+        return Failure(
+            S::ResourceLimit,
+            "Linear qualification represented count overflows");
+      }
+      linear_summary->represented_pairs += linear_crossing_count;
+      for (std::size_t crossing = 0;
+           crossing < linear_crossing_count; ++crossing) {
+        const auto crossing_result = crossing_view.data[crossing];
+        if (crossing_result.work >
+            SIZE_MAX - linear_summary->represented_work) {
+          return Failure(
+              S::ResourceLimit,
+              "Linear qualification represented work overflows");
+        }
+        linear_summary->represented_work += crossing_result.work;
+        if (crossing_result.classification ==
+            RepresentedIntervalClassification::CertifiedSeparated) {
+          ++linear_summary->represented_separated;
+          continue;
+        }
+        if (crossing_result.classification ==
+            RepresentedIntervalClassification::
+                CertifiedCrossingContact) {
+          ++linear_summary->represented_crossing;
+          continue;
+        }
+        if (crossing_result.reason ==
+            RepresentedIntervalReason::DegenerateGeometry) {
+          ++linear_summary->represented_degenerate;
+          continue;
+        }
+        if (crossing_result.reason ==
+            RepresentedIntervalReason::ExactArithmeticRange) {
+          ++linear_summary->represented_arithmetic_range;
+          continue;
+        }
+        if (crossing_result.reason !=
+            RepresentedIntervalReason::WorkExhausted) {
+          return Failure(
+              S::IdentityMismatch,
+              "Linear qualification crossing status is unclassified");
+        }
+
+        ++linear_summary->represented_work_exhausted;
+        const auto facets =
+            state.buffers.facet_pair_chunk[crossing];
+        const auto first_parent =
+            state.buffers.facet_motion[facets.first].parent;
+        const auto second_parent =
+            state.buffers.facet_motion[facets.second].parent;
+        if (first_parent >= parents.size() ||
+            second_parent >= parents.size()) {
+          return Failure(
+              S::IdentityMismatch,
+              "Linear qualification exhausted pair has no active parent",
+              facets.first);
+        }
+        FixedTriangleFeatureTaskMask mask;
+        if (BuildFixedTriangleFeatureTaskMask(
+                state.buffers.prepared_triangles[facets.first],
+                state.buffers.prepared_triangles[facets.second],
+                &mask) != FixedTriangleDiscoveryStatus::Ok) {
+          return Failure(
+              S::DiscoveryFailure,
+              "Linear qualification exhausted mask replay failed",
+              facets.first);
+        }
+        FixedTriangleFeatureCandidate features[15];
+        fixed_triangle_features::PairFeatureResult feature_result;
+        if (fixed_triangle_features::EvaluatePairFeaturesMaskedOnce(
+                state.buffers.prepared_triangles[facets.first],
+                state.buffers.prepared_triangles[facets.second],
+                mask, features, 15, &feature_result) !=
+            FixedTriangleDiscoveryStatus::Ok) {
+          return Failure(
+              S::DiscoveryFailure,
+              "Linear qualification exhausted feature replay failed",
+              facets.first);
+        }
+        FixedTriangleIntersection intersection;
+        bool intersects = false;
+        if (fixed_triangle_features::ClassifyPairIntersection(
+                state.buffers.prepared_triangles[facets.first],
+                state.buffers.prepared_triangles[facets.second],
+                &intersection, &intersects) !=
+            FixedTriangleDiscoveryStatus::Ok) {
+          return Failure(
+              S::DiscoveryFailure,
+              "Linear qualification exhausted intersection replay failed",
+              facets.first);
+        }
+        const FixedTriangleFeatureView feature_view{
+            features, feature_result.feature_count, true};
+        const FixedTriangleIntersectionView intersection_view{
+            intersects ? &intersection : nullptr,
+            intersects ? 1u : 0u, true};
+        const auto residual = ResidualLinearCertificate(
+            state.buffers.accepted_triangles[facets.first],
+            state.buffers.prepared_triangles[facets.first],
+            parents[first_parent].reference_half_thickness_m,
+            state.buffers.accepted_triangles[facets.second],
+            state.buffers.prepared_triangles[facets.second],
+            parents[second_parent].reference_half_thickness_m,
+            mask, feature_view, intersection_view);
+        const auto persistent = PersistentLinearCertificate(
+            state.buffers.accepted_triangles[facets.first],
+            state.buffers.prepared_triangles[facets.first],
+            parents[first_parent].reference_half_thickness_m,
+            state.buffers.accepted_triangles[facets.second],
+            state.buffers.prepared_triangles[facets.second],
+            parents[second_parent].reference_half_thickness_m,
+            mask, feature_view,
+            state.buffers.accepted_certificates,
+            state.accepted_event_count);
+        if (residual.status ==
+                sct::LinearResidualSeparationStatus::InvalidInput ||
+            persistent.status ==
+                sct::PersistentLinearContactStatus::InvalidInput ||
+            residual.status ==
+                sct::LinearResidualSeparationStatus::
+                    CertifiedSeparated ||
+            persistent.status ==
+                sct::PersistentLinearContactStatus::
+                    CertifiedContact) {
+          return Failure(
+              S::IdentityMismatch,
+              "Linear qualification exhausted pair replay changed class",
+              facets.first);
+        }
+        if (linear_published < linear_capacity) {
+          linear_roster[linear_published] = {
+              facets, crossing_result.key, mask,
+              residual, persistent, crossing_result};
+        }
+        ++linear_published;
+      }
+    }
   }
   sct::StreamingCandidateSourceReceipt stream_receipt;
   streamed = state.candidate_source.Finish(&stream_receipt);
@@ -2288,6 +2788,28 @@ ClassifyPreparedNonlinearCandidates(
   *roster_count = published;
   summary->complete = true;
   summary->roster_complete = published <= roster_capacity;
+  if (collect_linear) {
+    if (linear_summary->exact_geometry_pairs !=
+            linear_summary->residual_separated +
+                linear_summary->persistent_accepted +
+                linear_summary->represented_pairs ||
+        linear_summary->represented_pairs !=
+            linear_summary->represented_separated +
+                linear_summary->represented_crossing +
+                linear_summary->represented_degenerate +
+                linear_summary->represented_work_exhausted +
+                linear_summary->represented_arithmetic_range ||
+        linear_published !=
+            linear_summary->represented_work_exhausted) {
+      return Failure(
+          S::IdentityMismatch,
+          "Linear qualification census is inconsistent");
+    }
+    *linear_count = linear_published;
+    linear_summary->complete = true;
+    linear_summary->roster_complete =
+        linear_published <= linear_capacity;
+  }
   *certificates = {
       state.buffers.facet_descriptors,
       state.buffers.facet_motion,
@@ -2303,7 +2825,33 @@ ClassifyPreparedNonlinearCandidates(
     report.candidate = published;
     return report;
   }
+  if (collect_linear && !linear_summary->roster_complete) {
+    auto report = Failure(
+        S::ResourceLimit,
+        "Linear WorkExhausted roster exceeds caller capacity");
+    report.candidate = linear_published;
+    return report;
+  }
   return {};
+}
+
+SelfContactTransactionReport
+self_contact_transaction::QualificationAccess::
+ClassifyPreparedNonlinearCandidates(
+    SelfContactTransaction& owner_transaction,
+    fe::FENodalState& owner,
+    const fe::NodalTrialToken& token,
+    const fe::NodalPreparedView& prepared,
+    const SelfContactAcceptedAssemblyReceipt& assembly,
+    sct::NonlinearCandidateRosterEntry* roster,
+    std::size_t roster_capacity,
+    std::size_t* roster_count,
+    sct::NonlinearCandidateRosterSummary* summary,
+    sct::PreparedMotionCertificateView* certificates) noexcept {
+  return ClassifyPreparedCandidateCensus(
+      owner_transaction, owner, token, prepared, assembly,
+      roster, roster_capacity, roster_count, summary,
+      nullptr, 0, nullptr, nullptr, certificates);
 }
 
 }  // namespace tlfea::contact

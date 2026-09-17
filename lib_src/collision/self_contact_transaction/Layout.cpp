@@ -259,6 +259,9 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
       limits.max_facet_pair_chunk;
   forecast.complete_crossing_work_capacity =
       limits.max_stream_crossing_work;
+  forecast.crossing_work_per_pair =
+      limits.crossing.max_work_per_pair;
+  forecast.crossing_depth = limits.crossing.max_depth;
   forecast.nonlinear_subdivision_work_per_pair =
       limits.max_nonlinear_subdivision_work_per_pair;
   forecast.nonlinear_subdivision_work_per_chunk =

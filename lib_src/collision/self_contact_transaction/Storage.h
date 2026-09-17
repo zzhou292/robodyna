@@ -87,6 +87,8 @@ struct AcceptedFeaturePolicyEvidence {
 struct PreparedMotionCertificateView;
 struct NonlinearCandidateRosterEntry;
 struct NonlinearCandidateRosterSummary;
+struct LinearWorkExhaustedRosterEntry;
+struct LinearCandidateCensusSummary;
 
 // Internal qualification-only read access. This never supplies authority to
 // production policy and is available only through this private storage header.
@@ -115,6 +117,23 @@ class QualificationAccess {
       NonlinearCandidateRosterEntry*, std::size_t roster_capacity,
       std::size_t* roster_count,
       NonlinearCandidateRosterSummary*,
+      PreparedMotionCertificateView*) noexcept;
+  // Extends the same no-force authenticated source pass with the complete
+  // affine frontier.  It exactly mirrors the production prism,
+  // residual/persistent and represented-interval stages, but publishes only
+  // pairs whose production 4095-work traversal returns WorkExhausted.
+  static SelfContactTransactionReport
+  ClassifyPreparedCandidateCensus(
+      SelfContactTransaction&, tl::fea::FENodalState&,
+      const tl::fea::NodalTrialToken&,
+      const tl::fea::NodalPreparedView&,
+      const SelfContactAcceptedAssemblyReceipt&,
+      NonlinearCandidateRosterEntry*, std::size_t nonlinear_capacity,
+      std::size_t* nonlinear_count,
+      NonlinearCandidateRosterSummary*,
+      LinearWorkExhaustedRosterEntry*, std::size_t linear_capacity,
+      std::size_t* linear_count,
+      LinearCandidateCensusSummary*,
       PreparedMotionCertificateView*) noexcept;
 };
 
@@ -178,6 +197,12 @@ struct NonlinearSeparationResult {
   std::uint64_t proof_digest = 1469598103934665603ull;
   bool work_exhausted = false;
   bool depth_exhausted = false;
+  // Canonical dyadic cell that prevented a conclusive proof.  The interval
+  // is [unresolved_path/2^unresolved_depth,
+  //     (unresolved_path+1)/2^unresolved_depth].
+  std::uint64_t unresolved_path = 0;
+  unsigned unresolved_depth = 0;
+  bool has_unresolved_cell = false;
   std::uint32_t excluded_rigid_group = UINT32_MAX;
 };
 
@@ -350,6 +375,34 @@ PersistentLinearContactResult CertifyPersistentQuadraticContact(
     FixedTriangleFeatureView prepared_features,
     const AcceptedEventCertificate* accepted_certificates,
     std::size_t accepted_certificate_count) noexcept;
+
+struct LinearWorkExhaustedRosterEntry {
+  FixedTrianglePair facets;
+  RepresentedIntervalPairKey key;
+  FixedTriangleFeatureTaskMask task_mask;
+  LinearResidualSeparationResult residual;
+  PersistentLinearContactResult persistent;
+  RepresentedIntervalResult crossing;
+};
+
+struct LinearCandidateCensusSummary {
+  std::size_t affine_pairs = 0;
+  std::size_t swept_bounds_separated = 0;
+  std::size_t prism_separated = 0;
+  std::size_t exact_geometry_pairs = 0;
+  std::size_t common_translation = 0;
+  std::size_t residual_separated = 0;
+  std::size_t persistent_accepted = 0;
+  std::size_t represented_pairs = 0;
+  std::size_t represented_separated = 0;
+  std::size_t represented_crossing = 0;
+  std::size_t represented_degenerate = 0;
+  std::size_t represented_work_exhausted = 0;
+  std::size_t represented_arithmetic_range = 0;
+  std::size_t represented_work = 0;
+  bool complete = false;
+  bool roster_complete = false;
+};
 
 enum class RigidMemberSweepStatus : std::uint8_t {
   Ok,
