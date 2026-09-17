@@ -183,6 +183,7 @@ struct NonlinearSeparationResult {
   unsigned deepest = 0;
   std::size_t separated_cells = 0;
   std::size_t covered_cells = 0;
+  std::size_t closed_covered_cells = 0;
   std::size_t accepted_certificate = SIZE_MAX;
   std::uint64_t accepted_source_order = UINT64_MAX;
   RepresentedFeaturePathKey feature;
@@ -203,6 +204,12 @@ struct NonlinearSeparationResult {
   std::uint64_t unresolved_path = 0;
   unsigned unresolved_depth = 0;
   bool has_unresolved_cell = false;
+  RepresentedFeaturePathKey transition_feature;
+  std::uint64_t transition_time_lower_numerator = 0;
+  unsigned transition_time_depth = 0;
+  bool transition_time_exact = false;
+  bool transition_zero_geometry_separated = false;
+  bool has_contact_transition = false;
   std::uint32_t excluded_rigid_group = UINT32_MAX;
 };
 

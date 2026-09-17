@@ -517,6 +517,12 @@ for token in (
     "unresolved_path",
     "unresolved_depth",
     "has_unresolved_cell",
+    "ExactAffineVertexFaceTransition(",
+    "ExactBernsteinSign(",
+    "transition_time_lower_numerator",
+    "transition_time_exact",
+    "transition_zero_geometry_separated",
+    "closed_covered_cells",
 ):
     require(rigid_sweep + storage, token, RIGID_SWEEP)
 

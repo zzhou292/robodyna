@@ -1009,6 +1009,8 @@ struct CoverageOwner {
   unsigned target_edge = 3;
   double target_edge_parameter = 0;
   DirectedInterval face_weights[3]{};
+  double exact_face_weights[3]{};
+  unsigned adjusted_face_weight = 3;
   unsigned edge_side[2]{2, 2};
   unsigned edge[2]{3, 3};
   double edge_parameter[2]{};
@@ -1128,6 +1130,7 @@ bool BuildVertexFaceOwner(
     if (!std::isfinite(value) || value < 0 || value > 1)
       return false;
     next.face_weights[weight] = {value, value};
+    next.exact_face_weights[weight] = value;
     if (value > certificate.discovery.face_weights[adjusted] ||
         (value == certificate.discovery.face_weights[adjusted] &&
          fixed_triangle_features::Compare(
@@ -1147,6 +1150,7 @@ bool BuildVertexFaceOwner(
       next.face_weights[adjusted].lower < 0 ||
       next.face_weights[adjusted].upper > 1)
     return false;
+  next.adjusted_face_weight = adjusted;
   *output = next;
   return true;
 }
@@ -1326,6 +1330,524 @@ bool OwnerDifference(
             points[0][component], points[1][component],
             output + component))
       return false;
+  return true;
+}
+
+ExactInteger RawUnsigned(std::uint64_t value) noexcept {
+  ExactInteger result;
+  if (value) {
+    result.limbs[0] = value;
+    result.used = 1;
+  }
+  return result;
+}
+
+ExactInteger ScaleUnsigned(
+    const ExactInteger& value, std::uint64_t scale) noexcept {
+  return Multiply(value, RawUnsigned(scale));
+}
+
+int ExactSign(const ExactInteger& value) noexcept {
+  if (value.overflow) return 2;
+  return value.used ? (value.negative ? -1 : 1) : 0;
+}
+
+bool ExactEdgePoint(
+    const CurrentFixedTriangle& triangle, unsigned edge,
+    double parameter, ExactInteger output[3]) noexcept {
+  if (!output || edge >= 3 || !std::isfinite(parameter) ||
+      parameter < 0 || parameter > 1)
+    return false;
+  const unsigned first = FindVertex(
+      triangle, triangle.edge_keys[edge].endpoints[0]);
+  const unsigned second = FindVertex(
+      triangle, triangle.edge_keys[edge].endpoints[1]);
+  if (first >= 3 || second >= 3 || first == second)
+    return false;
+  const auto second_weight = Exact(parameter);
+  const auto first_weight = Subtract(Exact(1), second_weight);
+  if (first_weight.overflow) return false;
+  for (unsigned component = 0; component < 3; ++component) {
+    output[component] = Add(
+        Multiply(
+            Exact(Component(triangle.vertices[first], component)),
+            first_weight),
+        Multiply(
+            Exact(Component(triangle.vertices[second], component)),
+            second_weight));
+    if (output[component].overflow) return false;
+  }
+  return true;
+}
+
+bool ExactOwnerPoint(
+    const CurrentFixedTriangle triangles[2],
+    const CoverageOwner& owner, unsigned point,
+    ExactInteger output[3]) noexcept {
+  if (!triangles || !output || point >= 2) return false;
+  const auto one = Exact(1);
+  if (owner.kind == AcceptedEventCertificateKind::EdgeEdge)
+    return ExactEdgePoint(
+        triangles[owner.edge_side[point]], owner.edge[point],
+        owner.edge_parameter[point], output);
+  if (!point) {
+    if (owner.vertex_side >= 2 || owner.vertex >= 3)
+      return false;
+    for (unsigned component = 0; component < 3; ++component)
+      output[component] = Multiply(
+          Exact(Component(
+              triangles[owner.vertex_side].vertices[owner.vertex],
+              component)),
+          one);
+    return true;
+  }
+  if (owner.target_side >= 2) return false;
+  if (owner.target_kind == FixedTriangleStratumKind::Vertex) {
+    if (owner.target_vertex >= 3) return false;
+    for (unsigned component = 0; component < 3; ++component)
+      output[component] = Multiply(
+          Exact(Component(
+              triangles[owner.target_side].
+                  vertices[owner.target_vertex],
+              component)),
+          one);
+    return true;
+  }
+  if (owner.target_kind == FixedTriangleStratumKind::Edge)
+    return ExactEdgePoint(
+        triangles[owner.target_side], owner.target_edge,
+        owner.target_edge_parameter, output);
+  if (owner.target_kind != FixedTriangleStratumKind::Face ||
+      owner.adjusted_face_weight >= 3)
+    return false;
+  ExactInteger weights[3];
+  ExactInteger other_sum;
+  for (unsigned weight = 0; weight < 3; ++weight)
+    if (weight != owner.adjusted_face_weight) {
+      weights[weight] = Exact(owner.exact_face_weights[weight]);
+      other_sum = Add(other_sum, weights[weight]);
+    }
+  weights[owner.adjusted_face_weight] =
+      Subtract(one, other_sum);
+  if (weights[owner.adjusted_face_weight].overflow ||
+      ExactSign(weights[owner.adjusted_face_weight]) < 0)
+    return false;
+  for (unsigned component = 0; component < 3; ++component) {
+    ExactInteger sum;
+    for (unsigned vertex = 0; vertex < 3; ++vertex)
+      sum = Add(
+          sum,
+          Multiply(
+              Exact(Component(
+                  triangles[owner.target_side].vertices[vertex],
+                  component)),
+              weights[vertex]));
+    if (sum.overflow) return false;
+    output[component] = sum;
+  }
+  return true;
+}
+
+bool ExactOwnerEndpointDifference(
+    const CurrentFixedTriangle triangles[2],
+    const CoverageOwner& owner,
+    ExactInteger output[3]) noexcept {
+  ExactInteger points[2][3];
+  if (!ExactOwnerPoint(triangles, owner, 0, points[0]) ||
+      !ExactOwnerPoint(triangles, owner, 1, points[1]))
+    return false;
+  for (unsigned component = 0; component < 3; ++component) {
+    output[component] =
+        Subtract(points[0][component], points[1][component]);
+    if (output[component].overflow) return false;
+  }
+  return true;
+}
+
+bool ExactClosedAffineOwnerCell(
+    const CurrentFixedTriangle accepted[2],
+    const CurrentFixedTriangle prepared[2],
+    const CoverageOwner& owner,
+    double first_thickness, double second_thickness,
+    std::uint64_t path, unsigned depth,
+    bool* valid) noexcept {
+  if (!valid) return false;
+  *valid = false;
+  if (!accepted || !prepared || depth > 52 ||
+      path >= (std::uint64_t{1} << depth) ||
+      !(first_thickness > 0) || !(second_thickness > 0) ||
+      !std::isfinite(first_thickness) ||
+      !std::isfinite(second_thickness))
+    return false;
+  ExactInteger endpoint[2][3];
+  if (!ExactOwnerEndpointDifference(accepted, owner, endpoint[0]) ||
+      !ExactOwnerEndpointDifference(prepared, owner, endpoint[1]))
+    return false;
+  const std::uint64_t denominator =
+      std::uint64_t{1} << (depth + 1);
+  const std::uint64_t samples[3]{
+      2 * path, 2 * path + 1, 2 * path + 2};
+  const auto one = Exact(1);
+  auto thickness = Add(
+      Exact(first_thickness), Exact(second_thickness));
+  auto thickness_squared = Multiply(
+      Multiply(thickness, thickness), Multiply(one, one));
+  thickness_squared = ScaleUnsigned(
+      ScaleUnsigned(thickness_squared, denominator),
+      denominator);
+  if (thickness_squared.overflow) return false;
+  ExactInteger clearance[3];
+  for (unsigned sample = 0; sample < 3; ++sample) {
+    ExactInteger squared_distance;
+    for (unsigned component = 0; component < 3; ++component) {
+      const auto numerator = Add(
+          ScaleUnsigned(
+              endpoint[0][component],
+              denominator - samples[sample]),
+          ScaleUnsigned(
+              endpoint[1][component], samples[sample]));
+      squared_distance = Add(
+          squared_distance, Multiply(numerator, numerator));
+    }
+    clearance[sample] =
+        Subtract(thickness_squared, squared_distance);
+    if (clearance[sample].overflow) return false;
+  }
+  // For a quadratic polynomial, twice the middle Bernstein control has
+  // the sign of 4*f(mid)-f(lower)-f(upper).
+  const auto middle_control = Subtract(
+      Subtract(
+          ScaleUnsigned(clearance[1], 4),
+          clearance[0]),
+      clearance[2]);
+  if (middle_control.overflow) return false;
+  *valid = true;
+  return ExactSign(clearance[0]) >= 0 &&
+      ExactSign(middle_control) >= 0 &&
+      ExactSign(clearance[2]) >= 0;
+}
+
+constexpr unsigned ExactPolynomialDegree = 6;
+unsigned Binomial(unsigned degree, unsigned index) noexcept;
+
+struct ExactPolynomial {
+  ExactInteger coefficient[ExactPolynomialDegree + 1]{};
+  unsigned degree = 0;
+  bool overflow = false;
+};
+
+ExactPolynomial ExactPolynomialAdd(
+    const ExactPolynomial& first,
+    const ExactPolynomial& second,
+    bool subtract = false) noexcept {
+  ExactPolynomial result;
+  result.degree = std::max(first.degree, second.degree);
+  result.overflow = first.overflow || second.overflow;
+  for (unsigned i = 0; i <= result.degree; ++i) {
+    const auto a = i <= first.degree
+        ? first.coefficient[i] : ExactInteger{};
+    const auto b = i <= second.degree
+        ? second.coefficient[i] : ExactInteger{};
+    result.coefficient[i] =
+        subtract ? Subtract(a, b) : Add(a, b);
+    result.overflow =
+        result.overflow || result.coefficient[i].overflow;
+  }
+  return result;
+}
+
+ExactPolynomial ExactPolynomialMultiply(
+    const ExactPolynomial& first,
+    const ExactPolynomial& second) noexcept {
+  ExactPolynomial result;
+  result.degree = first.degree + second.degree;
+  result.overflow = first.overflow || second.overflow ||
+      result.degree > ExactPolynomialDegree;
+  if (result.overflow) return result;
+  for (unsigned i = 0; i <= first.degree; ++i)
+    for (unsigned j = 0; j <= second.degree; ++j) {
+      result.coefficient[i + j] = Add(
+          result.coefficient[i + j],
+          Multiply(first.coefficient[i], second.coefficient[j]));
+      result.overflow = result.overflow ||
+          result.coefficient[i + j].overflow;
+    }
+  return result;
+}
+
+ExactPolynomial ExactPolynomialScale(
+    ExactPolynomial value, std::uint64_t scale) noexcept {
+  for (unsigned i = 0; i <= value.degree; ++i) {
+    value.coefficient[i] =
+        ScaleUnsigned(value.coefficient[i], scale);
+    value.overflow =
+        value.overflow || value.coefficient[i].overflow;
+  }
+  return value;
+}
+
+ExactPolynomial ExactCoordinatePath(
+    double accepted, double prepared) noexcept {
+  ExactPolynomial result;
+  result.degree = 1;
+  result.coefficient[0] = Exact(accepted);
+  result.coefficient[1] =
+      Subtract(Exact(prepared), result.coefficient[0]);
+  result.overflow = result.coefficient[1].overflow;
+  return result;
+}
+
+using ExactPolynomialVector =
+    std::array<ExactPolynomial, 3>;
+
+ExactPolynomialVector ExactVertexPath(
+    const CurrentFixedTriangle endpoints[2][2],
+    unsigned side, unsigned vertex) noexcept {
+  ExactPolynomialVector result;
+  if (!endpoints || side >= 2 || vertex >= 3) {
+    for (auto& value : result) value.overflow = true;
+    return result;
+  }
+  for (unsigned component = 0; component < 3; ++component)
+    result[component] = ExactCoordinatePath(
+        Component(endpoints[0][side].vertices[vertex], component),
+        Component(endpoints[1][side].vertices[vertex], component));
+  return result;
+}
+
+ExactPolynomialVector ExactVectorSubtract(
+    const ExactPolynomialVector& first,
+    const ExactPolynomialVector& second) noexcept {
+  ExactPolynomialVector result;
+  for (unsigned component = 0; component < 3; ++component)
+    result[component] =
+        ExactPolynomialAdd(first[component], second[component], true);
+  return result;
+}
+
+ExactPolynomialVector ExactVectorCross(
+    const ExactPolynomialVector& first,
+    const ExactPolynomialVector& second) noexcept {
+  ExactPolynomialVector result;
+  for (unsigned component = 0; component < 3; ++component) {
+    const unsigned a = (component + 1) % 3;
+    const unsigned b = (component + 2) % 3;
+    result[component] = ExactPolynomialAdd(
+        ExactPolynomialMultiply(first[a], second[b]),
+        ExactPolynomialMultiply(first[b], second[a]), true);
+  }
+  return result;
+}
+
+ExactPolynomial ExactVectorDot(
+    const ExactPolynomialVector& first,
+    const ExactPolynomialVector& second) noexcept {
+  ExactPolynomial result =
+      ExactPolynomialMultiply(first[0], second[0]);
+  for (unsigned component = 1; component < 3; ++component)
+    result = ExactPolynomialAdd(
+        result,
+        ExactPolynomialMultiply(
+            first[component], second[component]));
+  return result;
+}
+
+ExactInteger ExactPolynomialAtOne(
+    const ExactPolynomial& polynomial) noexcept {
+  ExactInteger result;
+  for (unsigned i = 0; i <= polynomial.degree; ++i)
+    result = Add(result, polynomial.coefficient[i]);
+  return result;
+}
+
+ExactInteger ExactPolynomialAtDyadic(
+    const ExactPolynomial& polynomial,
+    std::uint64_t numerator, unsigned depth) noexcept {
+  if (polynomial.overflow || depth > 52 ||
+      numerator > (std::uint64_t{1} << depth)) {
+    ExactInteger result;
+    result.overflow = true;
+    return result;
+  }
+  const std::uint64_t denominator =
+      std::uint64_t{1} << depth;
+  ExactInteger result;
+  // Powers above 2^63 are represented by repeated raw multiplication.
+  for (unsigned term = 0; term <= polynomial.degree; ++term) {
+    ExactInteger value = polynomial.coefficient[term];
+    for (unsigned i = 0; i < term; ++i)
+      value = ScaleUnsigned(value, numerator);
+    for (unsigned i = term; i < polynomial.degree; ++i)
+      value = ScaleUnsigned(value, denominator);
+    result = Add(result, value);
+  }
+  return result;
+}
+
+bool ExactBernsteinSign(
+    const ExactPolynomial& polynomial,
+    int sign, bool strict) noexcept {
+  if (polynomial.overflow || (sign != 1 && sign != -1))
+    return false;
+  std::uint64_t common = 1;
+  for (unsigned k = 0; k <= polynomial.degree; ++k)
+    common *= Binomial(polynomial.degree, k);
+  for (unsigned i = 0; i <= polynomial.degree; ++i) {
+    ExactInteger control;
+    for (unsigned k = 0; k <= i; ++k) {
+      const std::uint64_t scale =
+          static_cast<std::uint64_t>(Binomial(i, k)) *
+          (common / Binomial(polynomial.degree, k));
+      control = Add(
+          control,
+          ScaleUnsigned(polynomial.coefficient[k], scale));
+    }
+    const int value = ExactSign(control);
+    if (value == 2 || (strict ? value != sign
+                             : value && value != sign))
+      return false;
+  }
+  return true;
+}
+
+ExactPolynomial ExactDerivative(
+    const ExactPolynomial& polynomial) noexcept {
+  ExactPolynomial result;
+  result.overflow = polynomial.overflow;
+  result.degree = polynomial.degree ? polynomial.degree - 1 : 0;
+  for (unsigned i = 1; i <= polynomial.degree; ++i) {
+    result.coefficient[i - 1] =
+        ScaleUnsigned(polynomial.coefficient[i], i);
+    result.overflow = result.overflow ||
+        result.coefficient[i - 1].overflow;
+  }
+  return result;
+}
+
+// Closed-set affine VF proof. The exact target-face normal never vanishes;
+// the accepted source vertex is the unique support vertex on one strict side,
+// and its orthogonal projection remains strictly inside the same canonical
+// face. Therefore clearance >= 0 is owned by that accepted VF, including
+// equality, while clearance < 0 makes the same face normal a strict separating
+// axis for both thickened triangles. Exact Bernstein signs prove all support,
+// projection and monotonicity statements over [0,1], not at samples. The
+// unique contact-ending root is either an exact dyadic or the unique algebraic
+// root of the stored exact degree-six polynomial in its 52-bit bracket.
+bool ExactAffineVertexFaceTransition(
+    const CurrentFixedTriangle accepted[2],
+    const CurrentFixedTriangle prepared[2],
+    const CoverageOwner& owner,
+    double first_thickness, double second_thickness,
+    NonlinearSeparationResult* result) noexcept {
+  if (!accepted || !prepared || !result ||
+      owner.kind != AcceptedEventCertificateKind::VertexFace ||
+      owner.target_kind != FixedTriangleStratumKind::Face ||
+      owner.vertex_side >= 2 || owner.target_side >= 2 ||
+      owner.vertex_side == owner.target_side ||
+      owner.vertex >= 3)
+    return false;
+  const CurrentFixedTriangle endpoints[2][2]{
+      {accepted[0], accepted[1]},
+      {prepared[0], prepared[1]}};
+  const auto source = ExactVertexPath(
+      endpoints, owner.vertex_side, owner.vertex);
+  ExactPolynomialVector target[3];
+  for (unsigned vertex = 0; vertex < 3; ++vertex)
+    target[vertex] =
+        ExactVertexPath(endpoints, owner.target_side, vertex);
+  const auto target_edge0 =
+      ExactVectorSubtract(target[1], target[0]);
+  const auto target_edge1 =
+      ExactVectorSubtract(target[2], target[0]);
+  const auto normal =
+      ExactVectorCross(target_edge0, target_edge1);
+  const auto normal_squared = ExactVectorDot(normal, normal);
+  if (!ExactBernsteinSign(normal_squared, 1, true))
+    return false;
+  const auto source_delta =
+      ExactVectorSubtract(source, target[0]);
+  const auto owner_orientation =
+      ExactVectorDot(source_delta, normal);
+  int orientation = 0;
+  if (ExactBernsteinSign(owner_orientation, 1, true))
+    orientation = 1;
+  else if (ExactBernsteinSign(owner_orientation, -1, true))
+    orientation = -1;
+  if (!orientation) return false;
+
+  // The accepted source vertex remains the unique support vertex against the
+  // target face normal throughout the interval.
+  for (unsigned vertex = 0; vertex < 3; ++vertex) {
+    if (vertex == owner.vertex) continue;
+    const auto other = ExactVertexPath(
+        endpoints, owner.vertex_side, vertex);
+    const auto other_orientation = ExactVectorDot(
+        ExactVectorSubtract(other, target[0]), normal);
+    const auto support = orientation > 0
+        ? ExactPolynomialAdd(
+              other_orientation, owner_orientation, true)
+        : ExactPolynomialAdd(
+              owner_orientation, other_orientation, true);
+    if (!ExactBernsteinSign(support, 1, true))
+      return false;
+  }
+
+  // The moving orthogonal projection stays strictly inside the same
+  // canonical target face; no edge/vertex ownership normalization is needed.
+  for (unsigned edge = 0; edge < 3; ++edge) {
+    const unsigned next = (edge + 1) % 3;
+    const auto edge_vector =
+        ExactVectorSubtract(target[next], target[edge]);
+    const auto to_source =
+        ExactVectorSubtract(source, target[edge]);
+    const auto barycentric = ExactVectorDot(
+        ExactVectorCross(edge_vector, to_source), normal);
+    if (!ExactBernsteinSign(barycentric, 1, true))
+      return false;
+  }
+
+  const auto thickness = Add(
+      Exact(first_thickness), Exact(second_thickness));
+  ExactPolynomial thickness_squared;
+  thickness_squared.coefficient[0] =
+      Multiply(thickness, thickness);
+  const auto clearance = ExactPolynomialAdd(
+      ExactPolynomialMultiply(
+          thickness_squared, normal_squared),
+      ExactPolynomialMultiply(
+          owner_orientation, owner_orientation),
+      true);
+  if (clearance.overflow ||
+      ExactSign(clearance.coefficient[0]) < 0 ||
+      ExactSign(ExactPolynomialAtOne(clearance)) >= 0 ||
+      !ExactBernsteinSign(
+          ExactDerivative(clearance), -1, true))
+    return false;
+
+  std::uint64_t lower = 0;
+  for (unsigned depth = 1; depth <= 52; ++depth) {
+    const std::uint64_t middle = 2 * lower + 1;
+    const auto value =
+        ExactPolynomialAtDyadic(clearance, middle, depth);
+    const int value_sign = ExactSign(value);
+    if (value_sign == 2)
+      return false;
+    if (value_sign == 0) {
+      result->has_contact_transition = true;
+      result->transition_feature = owner.feature;
+      result->transition_time_lower_numerator = middle;
+      result->transition_time_depth = depth;
+      result->transition_time_exact = true;
+      result->transition_zero_geometry_separated = true;
+      return true;
+    }
+    lower = value_sign > 0 ? middle : 2 * lower;
+  }
+  result->has_contact_transition = true;
+  result->transition_feature = owner.feature;
+  result->transition_time_lower_numerator = lower;
+  result->transition_time_depth = 52;
+  result->transition_zero_geometry_separated = true;
   return true;
 }
 
@@ -2123,6 +2645,16 @@ bool LocalSharedEdgeOnly(
   return side.upper < 0;
 }
 
+bool ExactAffine(
+    const FacetQuadraticCoefficients& coefficients) noexcept {
+  if (!coefficients.complete) return false;
+  for (const auto& vertex : coefficients.q)
+    for (const auto& component : vertex)
+      if (component.lower != 0 || component.upper != 0)
+        return false;
+  return true;
+}
+
 NonlinearSeparationStatus SubdivideCoverage(
     const BernsteinFacet facets[2],
     const CurrentFixedTriangle triangles[2],
@@ -2134,7 +2666,8 @@ NonlinearSeparationStatus SubdivideCoverage(
     std::size_t max_work, std::size_t* work,
     unsigned* deepest, NonlinearSeparationResult* result,
     bool* used_coverage,
-    bool require_geometric_safety) noexcept {
+    bool require_geometric_safety,
+    bool exact_affine) noexcept {
   if (!work || !deepest || !result || !used_coverage)
     return NonlinearSeparationStatus::InvalidInput;
   if (*work >= max_work) {
@@ -2191,8 +2724,10 @@ NonlinearSeparationStatus SubdivideCoverage(
     result->intersection_time_depth = 0;
     result->has_intersection = true;
   }
-  if (!require_geometric_safety ||
-      zero_separated || local_safe) {
+  const bool ordinary_geometric_safety =
+      !require_geometric_safety || zero_separated || local_safe;
+  if (ordinary_geometric_safety ||
+      (exact_affine && depth == 0 && path == 0)) {
     for (std::size_t owner_index = 0;
          owner_index < owner_count; ++owner_index) {
       BernsteinCoordinate difference[3];
@@ -2201,13 +2736,38 @@ NonlinearSeparationStatus SubdivideCoverage(
               facets, triangles, owners[owner_index],
               difference))
         return NonlinearSeparationStatus::InvalidInput;
-      const bool covered = StrictlyWithinThickness(
-              difference, first_thickness, second_thickness,
-              &distance_valid);
+      const bool strictly_covered = StrictlyWithinThickness(
+          difference, first_thickness, second_thickness,
+          &distance_valid);
+      bool covered =
+          ordinary_geometric_safety && strictly_covered;
       if (!distance_valid)
         return NonlinearSeparationStatus::InvalidInput;
+      bool closed = false;
+      bool transition = false;
+      if (!covered && exact_affine && depth == 0 && path == 0) {
+        transition = ExactAffineVertexFaceTransition(
+            lower_triangles, upper_triangles,
+            owners[owner_index],
+            first_thickness, second_thickness, result);
+        covered = transition;
+        closed = transition;
+      }
+      if (!covered && exact_affine &&
+          ordinary_geometric_safety) {
+        bool exact_valid = false;
+        closed = ExactClosedAffineOwnerCell(
+            lower_triangles, upper_triangles,
+            owners[owner_index],
+            first_thickness, second_thickness,
+            path, depth, &exact_valid);
+        if (!exact_valid)
+          return NonlinearSeparationStatus::InvalidInput;
+        covered = closed;
+      }
       if (!covered) continue;
       ++result->covered_cells;
+      result->closed_covered_cells += closed;
       *used_coverage = true;
       const auto& owner = owners[owner_index];
       if (result->accepted_source_order == UINT64_MAX ||
@@ -2216,10 +2776,25 @@ NonlinearSeparationStatus SubdivideCoverage(
         result->accepted_source_order = owner.source_order;
         result->feature = owner.feature;
       }
-      HashCoverageValue(1, &result->proof_digest);
+      HashCoverageValue(transition ? 3 : (closed ? 2 : 1),
+                        &result->proof_digest);
       HashCoverageValue(depth, &result->proof_digest);
       HashCoverageValue(path, &result->proof_digest);
       HashCoverageValue(owner.source_order, &result->proof_digest);
+      if (transition) {
+        HashCoverageValue(
+            result->transition_time_lower_numerator,
+            &result->proof_digest);
+        HashCoverageValue(
+            result->transition_time_depth,
+            &result->proof_digest);
+        HashCoverageValue(
+            result->transition_time_exact,
+            &result->proof_digest);
+        HashCoverageValue(
+            result->transition_zero_geometry_separated,
+            &result->proof_digest);
+      }
       return NonlinearSeparationStatus::
           CertifiedAcceptedCoverage;
     }
@@ -2247,7 +2822,7 @@ NonlinearSeparationStatus SubdivideCoverage(
       first_thickness, second_thickness,
       owners, owner_count, depth + 1, max_depth, path << 1,
       max_work, work, deepest, result, used_coverage,
-      require_geometric_safety);
+      require_geometric_safety, exact_affine);
   if (left_status != NonlinearSeparationStatus::CertifiedSeparated &&
       left_status !=
           NonlinearSeparationStatus::CertifiedAcceptedCoverage)
@@ -2258,7 +2833,7 @@ NonlinearSeparationStatus SubdivideCoverage(
       first_thickness, second_thickness,
       owners, owner_count, depth + 1, max_depth,
       (path << 1) | 1, max_work, work, deepest,
-      result, used_coverage, require_geometric_safety);
+      result, used_coverage, require_geometric_safety, exact_affine);
   if (right_status != NonlinearSeparationStatus::CertifiedSeparated &&
       right_status !=
           NonlinearSeparationStatus::CertifiedAcceptedCoverage)
@@ -2426,7 +3001,9 @@ NonlinearSeparationResult CertifyQuadraticFacetCoverageImpl(
       first_thickness, second_thickness,
       owners, owner_count, 0, max_depth, 0,
       max_work, &result.work, &result.deepest,
-      &result, &used_coverage, require_geometric_safety);
+      &result, &used_coverage, require_geometric_safety,
+      ExactAffine(first_coefficients) &&
+          ExactAffine(second_coefficients));
   if (result.status ==
           NonlinearSeparationStatus::CertifiedAcceptedCoverage &&
       (!used_coverage ||

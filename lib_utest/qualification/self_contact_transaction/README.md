@@ -459,3 +459,12 @@ Production gives those pairs one bounded exact geometry/policy proof using the
 authenticated accepted ledger and feature-specific same-rigid exclusions.
 Separation, accepted coverage, exact exclusion, and genuine ambiguity remain
 distinct; unresolved coverage leaves the original represented result intact.
+For an exact-affine accepted VF ending contact, a fixed-limb certificate
+constructs the target normal, source support, projection half-spaces, and
+degree-six thickness clearance as exact integer polynomials. Strict Bernstein
+signs prove one nondegenerate face, one canonical interior VF owner, and a
+unique monotone transition. The closed owner covers the root while the same
+normal separates immediately afterward; a 52-bit dyadic bracket identifies a
+non-dyadic root, and an exactly dyadic root is published directly. Any
+projection seam, support change, missing owner, nonzero curvature, or
+arithmetic-envelope failure remains unresolved.

@@ -879,6 +879,110 @@ TEST(SelfContactTransactionCuda,
 }
 
 TEST(SelfContactTransactionCuda,
+     ExactAffineClosedVfTransitionIsBitwiseDeterministic) {
+  const auto vertex = [](std::uint64_t id) {
+    c::FacetVertexKey result;
+    result.source_instance_id = 17;
+    result.first = id;
+    result.denominator = 1;
+    return result;
+  };
+  const auto triangle = [&](std::uint64_t eid,
+                            std::array<std::uint64_t, 3> ids,
+                            std::array<c::Vec3, 3> points) {
+    c::CurrentFixedTriangle result;
+    result.key = {17, eid, 0, 0};
+    for (unsigned i = 0; i < 3; ++i) {
+      result.vertex_keys[i] = vertex(ids[i]);
+      result.vertices[i] = points[i];
+    }
+    for (unsigned edge = 0; edge < 3; ++edge) {
+      auto a = result.vertex_keys[edge];
+      auto b = result.vertex_keys[(edge + 1) % 3];
+      if (c::fixed_triangle_features::Compare(b, a) < 0)
+        std::swap(a, b);
+      result.edge_keys[edge].parent_boundary = true;
+      result.edge_keys[edge].endpoints[0] = a;
+      result.edge_keys[edge].endpoints[1] = b;
+    }
+    return result;
+  };
+  const auto target = triangle(
+      20, {4, 5, 6},
+      {{{0, 0, 0}, {1, 0, 0}, {0, 1, 0}}});
+  const auto source_accepted = triangle(
+      10, {1, 2, 3},
+      {{{.25, .25, .125}, {.75, .25, 1}, {.25, .75, 1}}});
+  auto source_prepared = source_accepted;
+  source_prepared.vertices[0].z = .375;
+
+  sct::AcceptedEventCertificate accepted;
+  accepted.kind = sct::AcceptedEventCertificateKind::VertexFace;
+  accepted.discovery.key.vertex_face.vertex =
+      source_accepted.vertex_keys[0];
+  accepted.discovery.key.vertex_face.target.SetFace(target.key);
+  accepted.discovery.triangles[0] = source_accepted.key;
+  accepted.discovery.triangles[1] = target.key;
+  accepted.discovery.local_features[0] = 0;
+  accepted.discovery.local_features[1] = 3;
+  accepted.discovery.points[0] = source_accepted.vertices[0];
+  accepted.discovery.points[1] = {.25, .25, 0};
+  accepted.discovery.face_weights[0] = .5;
+  accepted.discovery.face_weights[1] = .25;
+  accepted.discovery.face_weights[2] = .25;
+  accepted.discovery.distance_m = .125;
+  accepted.event.feature = accepted.discovery.key;
+  accepted.event.source_order = 41;
+  accepted.event.classification.kind =
+      c::SelfContactPairKind::VertexFace;
+  accepted.event.classification.status =
+      c::SelfContactPairStatus::AdmittedVertexFace;
+  accepted.event.classification.active[0] = true;
+  accepted.event.classification.active[1] = true;
+  sct::FacetQuadraticCoefficients zero;
+  zero.complete = true;
+
+  sct::NonlinearSeparationResult reference;
+  for (unsigned repeat = 0; repeat < 128; ++repeat) {
+    const auto result =
+        sct::CertifyQuadraticFacetPolicyCoverage(
+            source_accepted, source_prepared, zero, .125,
+            target, target, zero, .125, 1,
+            &accepted, 1, nullptr, 0, 4095, 20);
+    ASSERT_EQ(
+        result.status,
+        sct::NonlinearSeparationStatus::
+            CertifiedAcceptedCoverage);
+    ASSERT_EQ(result.work, 1u);
+    ASSERT_EQ(result.closed_covered_cells, 1u);
+    ASSERT_TRUE(result.has_contact_transition);
+    ASSERT_TRUE(result.transition_time_exact);
+    ASSERT_TRUE(result.transition_zero_geometry_separated);
+    ASSERT_EQ(result.transition_time_lower_numerator, 1u);
+    ASSERT_EQ(result.transition_time_depth, 1u);
+    ASSERT_EQ(result.accepted_source_order, 41u);
+    if (!repeat) reference = result;
+    EXPECT_EQ(std::memcmp(&result, &reference, sizeof(result)), 0);
+  }
+  const auto reversed =
+      sct::CertifyQuadraticFacetPolicyCoverage(
+          target, target, zero, .125,
+          source_accepted, source_prepared, zero, .125, 1,
+          &accepted, 1, nullptr, 0, 4095, 20);
+  EXPECT_EQ(reversed.status, reference.status);
+  EXPECT_EQ(reversed.proof_digest, reference.proof_digest);
+  EXPECT_EQ(
+      reversed.transition_time_lower_numerator,
+      reference.transition_time_lower_numerator);
+  EXPECT_EQ(
+      sct::CertifyQuadraticFacetPolicyCoverage(
+          source_accepted, source_prepared, zero, .125,
+          target, target, zero, .125, 1,
+          nullptr, 0, nullptr, 0, 4095, 20).status,
+      sct::NonlinearSeparationStatus::MissingAcceptedOwner);
+}
+
+TEST(SelfContactTransactionCuda,
      QuadraticResidualCertificateIsBitwiseRepeatable) {
   const auto triangle = [](std::uint64_t eid, double z) {
     c::CurrentFixedTriangle value;
