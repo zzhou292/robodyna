@@ -215,8 +215,7 @@ CensusFixtureExportResult ExportPreparedCensus(
         HashKey(entry.key.paths[0], &inspection_digest);
         HashKey(entry.key.paths[1], &inspection_digest);
         fixture::HashUnsigned(static_cast<unsigned>(inspected.after), &inspection_digest);
-        const bool remaining = inspected.after == NonlinearAfterClass::PossibleCurvedCrossing ||
-            (inspected.local && inspected.ledger && inspected.endpoint_contact);
+        const bool remaining = RequiresFrozenNonlinearReplay(inspected);
         fixture::HashUnsigned(remaining, &inspection_digest);
         if (remaining) {
             shards.Append("nonlinear", FreezeNonlinearPair(snapshot, entry));
@@ -253,6 +252,8 @@ CensusFixtureExportResult ExportPreparedCensus(
     output::Integer(manifest, "nonlinear_initial_separated", snapshot.nonlinear_summary.certified_separated);
     output::Integer(manifest, "nonlinear_initial_unresolved", snapshot.nonlinear_summary.unresolved);
     output::Integer(manifest, "nonlinear_exact_local", classes[0]);
+    output::String(manifest, "nonlinear_exact_local_scope",
+        "endpoint-only descriptive classification; all such rows retained for continuous replay");
     output::Integer(manifest, "nonlinear_residual_separated", classes[1]);
     output::Integer(manifest, "nonlinear_persistent_accepted", classes[2]);
     output::Integer(manifest, "nonlinear_remaining", classes[3]);

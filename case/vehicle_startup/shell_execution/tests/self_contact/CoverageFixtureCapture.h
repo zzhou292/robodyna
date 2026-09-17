@@ -90,5 +90,8 @@ nonlinear_fixture::PhaseIdentity FixturePhaseIdentity(
 NonlinearPairEvidence InspectNonlinearPair(
     const vehicle_self_contact::AcceptedAssemblyCouponSnapshot&,
     const tlfea::contact::self_contact_transaction::NonlinearCandidateRosterEntry&);
+// Endpoint-local classification is descriptive. Only an actual continuous
+// certificate permits omission from the frozen unknown roster.
+bool RequiresFrozenNonlinearReplay(const NonlinearPairEvidence&) noexcept;
 
 }  // namespace crash::cases::vehicle_startup::shell_execution::self_contact_test

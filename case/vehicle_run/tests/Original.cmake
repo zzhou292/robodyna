@@ -15,6 +15,7 @@ add_executable(robo_dyna_vehicle_run_original_check
   "${CMAKE_CURRENT_LIST_DIR}/SecondIntervalCensusTest.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/../../vehicle_startup/shell_execution/tests/self_contact/CoverageFixtureValuesTest.cpp")
 include("${CMAKE_CURRENT_LIST_DIR}/../../vehicle_startup/shell_execution/tests/self_contact/CoverageFixtureCapture.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../../vehicle_startup/shell_execution/tests/self_contact/PreparedCensusReplay.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../../vehicle_dynamics/StructuralLimiterReport.cmake")
 target_link_libraries(robo_dyna_vehicle_run_original_check PRIVATE robo_dyna_vehicle_run_original_source GTest::gtest_main)
 target_link_libraries(robo_dyna_vehicle_run_original_check PRIVATE robo_dyna_structural_limiter_report)

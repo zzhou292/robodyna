@@ -52,4 +52,31 @@ TEST(VehicleSelfContactFixtureCapture, EdgeOwnersPreserveOppositeFacetIdentity) 
     EXPECT_FALSE(CouldOwnFacetPairConservatively(triangles, owner));
 }
 
+TEST(VehicleSelfContactFixtureCapture, EndpointLocalSeparationNeverReplacesContinuousProof) {
+    NonlinearPairEvidence evidence;
+    evidence.valid = true;
+    evidence.after = NonlinearAfterClass::ExactLocalIntersection;
+    evidence.local = true;
+    evidence.admitted = false;
+    evidence.endpoint_separated = true;
+    EXPECT_TRUE(RequiresFrozenNonlinearReplay(evidence));
+
+    // Even a classification label cannot stand in for its actual certificate.
+    evidence.local = false;
+    evidence.after = NonlinearAfterClass::CertifiedQuadraticResidualSeparation;
+    EXPECT_TRUE(RequiresFrozenNonlinearReplay(evidence));
+    evidence.residual_status = sct::LinearResidualSeparationStatus::CertifiedSeparated;
+    EXPECT_FALSE(RequiresFrozenNonlinearReplay(evidence));
+
+    evidence.after = NonlinearAfterClass::CertifiedPersistentAcceptedContact;
+    evidence.endpoint_contact = evidence.ledger = true;
+    EXPECT_TRUE(RequiresFrozenNonlinearReplay(evidence));
+    evidence.persistent_status = sct::PersistentLinearContactStatus::CertifiedContact;
+    EXPECT_FALSE(RequiresFrozenNonlinearReplay(evidence));
+    evidence.local = true;
+    EXPECT_TRUE(RequiresFrozenNonlinearReplay(evidence));
+    evidence.valid = false;
+    EXPECT_TRUE(RequiresFrozenNonlinearReplay(evidence));
+}
+
 }  // namespace crash::cases::vehicle_startup::shell_execution::self_contact_test

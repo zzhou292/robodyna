@@ -13,6 +13,18 @@
 namespace crash::cases::vehicle_startup::shell_execution::self_contact_test {
 namespace contact = tlfea::contact;
 namespace sct = tlfea::contact::self_contact_transaction;
+bool RequiresFrozenNonlinearReplay(const NonlinearPairEvidence& evidence) noexcept {
+    if (!evidence.valid) return true;
+    if (evidence.after == NonlinearAfterClass::CertifiedQuadraticResidualSeparation &&
+        evidence.residual_status == sct::LinearResidualSeparationStatus::CertifiedSeparated)
+        return false;
+    if (evidence.after == NonlinearAfterClass::CertifiedPersistentAcceptedContact &&
+        evidence.persistent_status == sct::PersistentLinearContactStatus::CertifiedContact &&
+        evidence.ledger && evidence.endpoint_contact && !evidence.local)
+        return false;
+    return true;
+}
+
 NonlinearPairEvidence InspectNonlinearPair(
     const vehicle_self_contact::AcceptedAssemblyCouponSnapshot& snapshot,
     const sct::NonlinearCandidateRosterEntry& entry) {
