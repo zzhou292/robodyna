@@ -90,11 +90,21 @@ struct NonlinearCandidateRosterEntry;
 struct NonlinearCandidateRosterSummary;
 struct LinearWorkExhaustedRosterEntry;
 struct LinearCandidateCensusSummary;
+struct CandidateFailureObserver;
 
 // Internal qualification-only read access. This never supplies authority to
 // production policy and is available only through this private storage header.
 class QualificationAccess {
  public:
+  // Same production sealing path. Only a proved failing source pair is
+  // observed, synchronously before the ordinary complete rollback.
+  static SelfContactTransactionReport SealCandidateWithFailureObserver(
+      SelfContactTransaction&, tl::fea::FENodalState&,
+      const tl::fea::NodalTrialToken&,
+      const tl::fea::ShellPhysicalDiagnostics&,
+      const tl::fea::NodalPreparedView&,
+      const SelfContactAcceptedAssemblyReceipt&,
+      SelfContactTransactionReceipt*, const CandidateFailureObserver&);
   static AcceptedEventCertificateView AcceptedCertificates(
       const SelfContactTransaction&) noexcept;
   static SelfContactTransactionReport
@@ -166,6 +176,13 @@ class QualificationAccess {
       QualificationPreparedCensusReceipt*) noexcept;
 
  private:
+  friend class ::tlfea::contact::SelfContactTransaction;
+  static void ObserveCandidateFailure(
+      SelfContactTransaction&, const CandidateFailureObserver*,
+      const SelfContactTransactionReport&, FixedTrianglePair,
+      const tl::fea::NodalStamp&, const tl::fea::NodalPreparedView&,
+      const SelfContactAcceptedAssemblyReceipt&,
+      const SelfContactPreparedActivityReceipt&) noexcept;
   static SelfContactTransactionReport
   ClassifyAcceptedFeaturePoliciesImpl(
       SelfContactTransaction&,

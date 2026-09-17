@@ -9,6 +9,7 @@ namespace tlfea::contact {
 
 namespace self_contact_transaction {
 class QualificationAccess;
+struct CandidateFailureObserver;
 }
 
 // Fixed-capacity runtime composition for one self-contact source. It privately
@@ -88,6 +89,14 @@ class SelfContactTransaction {
 
  private:
   friend class self_contact_transaction::QualificationAccess;
+  SelfContactTransactionReport SealCandidateImpl(
+      tl::fea::FENodalState&,
+      const tl::fea::NodalTrialToken&,
+      const tl::fea::ShellPhysicalDiagnostics&,
+      const tl::fea::NodalPreparedView&,
+      const SelfContactAcceptedAssemblyReceipt&,
+      SelfContactTransactionReceipt*,
+      const self_contact_transaction::CandidateFailureObserver*);
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };

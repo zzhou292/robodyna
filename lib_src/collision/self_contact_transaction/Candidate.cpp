@@ -566,6 +566,18 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
     const fe::NodalPreparedView& prepared,
     const SelfContactAcceptedAssemblyReceipt& assembly,
     SelfContactTransactionReceipt* output) {
+  return SealCandidateImpl(owner, token, physical_diagnostics, prepared,
+                           assembly, output, nullptr);
+}
+
+SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
+    fe::FENodalState& owner,
+    const fe::NodalTrialToken& token,
+    const fe::ShellPhysicalDiagnostics& physical_diagnostics,
+    const fe::NodalPreparedView& prepared,
+    const SelfContactAcceptedAssemblyReceipt& assembly,
+    SelfContactTransactionReceipt* output,
+    const sct::CandidateFailureObserver* observer) {
   if (!impl_)
     return Failure(S::NotInitialized,
         "Self-contact transaction is not initialized");
@@ -1020,13 +1032,19 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
       auto intersection_policy = ValidatePreparedIntersections(
           intersections, state.buffers.chunk_canonical_pairs, pair_count);
       if (intersection_policy.status != S::Ok) {
-        if (intersection_policy.pair < pair_count)
+        if (intersection_policy.pair < pair_count) {
           DescribeMotionFailure(
               state.active_use, state.buffers.prepared_triangles,
               state.buffers.facet_motion, state.buffers.facet_quadratic,
               state.buffers.swept_facet_bounds,
               state.buffers.facet_pair_chunk[intersection_policy.pair],
               &intersection_policy);
+          if (observer)
+            sct::QualificationAccess::ObserveCandidateFailure(
+                *this, observer, intersection_policy,
+                state.buffers.facet_pair_chunk[intersection_policy.pair],
+                base_stamp, authentic, assembly, activity_receipt);
+        }
         return state.Fail(intersection_policy);
       }
       std::size_t crossing_pair_count = 0;
@@ -1691,6 +1709,10 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidate(
               state.buffers.facet_quadratic,
               state.buffers.swept_facet_bounds,
               facet_pair, &validated);
+          if (observer)
+            sct::QualificationAccess::ObserveCandidateFailure(
+                *this, observer, validated, facet_pair,
+                base_stamp, authentic, assembly, activity_receipt);
         }
         return state.Fail(validated);
       }

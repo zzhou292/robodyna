@@ -2170,3 +2170,4 @@ TEST(SelfContactTransactionCuda,
 }  // namespace self_contact_transaction_cuda_test
 
 #include "PreparedCensusCases.h"
+#include "FailureCaptureCases.h"

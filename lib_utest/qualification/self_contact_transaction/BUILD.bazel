@@ -99,6 +99,7 @@ filegroup(
         "CMakeLists.txt",
         "CudaTest.cu",
         "PreparedCensusCases.h",
+        "FailureCaptureCases.h",
         "LocalPublicationCases.h",
         "PolicyAssertions.h",
         "README.md",
