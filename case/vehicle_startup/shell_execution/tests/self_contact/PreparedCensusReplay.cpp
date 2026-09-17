@@ -49,7 +49,7 @@ PairResult Evaluate(const nonlinear_fixture::Pair& pair, const detail::Manifest&
         pair.accepted[1], pair.prepared[1], pair.quadratic[1], pair.half_thickness[1], manifest.duration,
         pair.accepted_owners.data(), pair.accepted_owners.size(), exclusions.data(), exclusions.size(),
         manifest.work, manifest.depth);
-    result.ledger = exclusions.empty() ? result.policy : sct::CertifyQuadraticFacetCoverage(
+    result.ledger = sct::CertifyQuadraticFacetCoverage(
         pair.accepted[0], pair.prepared[0], pair.quadratic[0], pair.half_thickness[0],
         pair.accepted[1], pair.prepared[1], pair.quadratic[1], pair.half_thickness[1], manifest.duration,
         pair.accepted_owners.data(), pair.accepted_owners.size(), manifest.work, manifest.depth);
@@ -59,7 +59,7 @@ PairResult Evaluate(const nonlinear_fixture::Pair& pair, const detail::Manifest&
 
 bool Certified(Status status) noexcept {
     return status == Status::CertifiedSeparated || status == Status::CertifiedAcceptedCoverage ||
-        status == Status::CertifiedExactExclusion;
+        status == Status::CertifiedExactExclusion || status == Status::CertifiedLocalIntersection;
 }
 const char* StatusName(Status status) noexcept {
     switch (status) {
@@ -73,6 +73,7 @@ const char* StatusName(Status status) noexcept {
         case Status::OwnerAmbiguity: return "owner_ambiguity";
         case Status::PossibleGeometricCrossing: return "possible_geometric_crossing";
         case Status::CertifiedExactExclusion: return "certified_exact_exclusion";
+        case Status::CertifiedLocalIntersection: return "certified_local_intersection";
     }
     return "unknown";
 }
@@ -95,6 +96,8 @@ Summary Replay(const std::filesystem::path& path, const std::string& expected_sh
                const std::function<void(const PairResult&)>& observe) {
     const auto manifest = detail::ReadManifest(path, expected_sha256);
     Summary summary; summary.bytes = manifest.bytes;
+    summary.omitted_nonlinear_persistent = manifest.omitted_nonlinear_persistent;
+    summary.omitted_linear_persistent = manifest.omitted_linear_persistent;
     nonlinear_fixture::PhaseIdentity phase;
     contact::FixedTriangleKey previous[2];
     bool have_phase = false, have_previous = false;

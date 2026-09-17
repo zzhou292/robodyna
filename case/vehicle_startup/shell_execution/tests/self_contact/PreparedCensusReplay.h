@@ -30,7 +30,9 @@ struct PairResult {
 struct Summary {
     std::size_t files = 0, bytes = 0, pairs = 0, linear = 0, nonlinear = 0;
     std::size_t noncertified = 0, total_work = 0;
-    std::array<std::size_t, 10> status_counts{};
+    std::size_t omitted_nonlinear_persistent = 0, omitted_linear_persistent = 0;
+    std::array<std::size_t, static_cast<unsigned>(
+        tlfea::contact::self_contact_transaction::NonlinearSeparationStatus::CertifiedLocalIntersection) + 1> status_counts{};
     std::uint64_t result_digest = 1469598103934665603ull;
     bool complete = false;
 };

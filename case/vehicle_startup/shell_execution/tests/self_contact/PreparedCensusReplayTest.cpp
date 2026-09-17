@@ -1,6 +1,7 @@
 #include "PreparedCensusReplay.h"
 #include "PreparedCensusReplayManifest.h"
 #include "output/BoundedArrayJson.h"
+#include "lib_src/collision/FixedTriangleFeatureDiscovery.h"
 
 #include <gtest/gtest.h>
 #include <chrono>
@@ -147,6 +148,92 @@ TEST(PreparedCensusReplay, NoncertifiedPairIsReportedWithoutDroppingLaterPairs) 
         }
     });
     EXPECT_EQ(seen, 3u); EXPECT_EQ(failed, 1u); EXPECT_EQ(result.noncertified, 1u); EXPECT_TRUE(result.complete);
+}
+
+TEST(PreparedCensusReplay, LocalTopologyUsesContinuousProofAndKeepsLedgerResultSeparate) {
+    Input input;
+    auto pair = SeparatedPair(100);
+    // Reuse the analytically separated shared-vertex geometry from the native
+    // continuous-local coupon. This tests codec/policy reporting, not an
+    // additional unresolved geometric class.
+    pair.accepted[0].vertices[1] = {1, 0, 0};
+    pair.accepted[0].vertices[2] = {1, 1, 0};
+    pair.accepted[1].vertices[0] = {0, 0, 0};
+    pair.accepted[1].vertices[1] = {0, -1, 1};
+    pair.accepted[1].vertices[2] = {0, -1, -1};
+    pair.accepted[1].vertex_keys[0] = pair.accepted[0].vertex_keys[0];
+    for (auto& triangle : pair.accepted) {
+        for (unsigned edge = 0; edge < 3; ++edge) {
+            auto& key = triangle.edge_keys[edge];
+            key.endpoints[0] = triangle.vertex_keys[edge];
+            key.endpoints[1] = triangle.vertex_keys[(edge + 1) % 3];
+            if (contact::fixed_triangle_features::Compare(key.endpoints[1], key.endpoints[0]) < 0)
+                std::swap(key.endpoints[0], key.endpoints[1]);
+        }
+    }
+    pair.prepared[0] = pair.accepted[0]; pair.prepared[1] = pair.accepted[1];
+    input.Append(100, nullptr, &pair);
+    const auto summary = Replay(input.root / "census.json", input.Seal(), [](const PairResult& result) {
+        EXPECT_EQ(result.policy.status, sct::NonlinearSeparationStatus::CertifiedLocalIntersection);
+        EXPECT_NE(result.ledger.status, sct::NonlinearSeparationStatus::CertifiedLocalIntersection);
+        EXPECT_EQ(result.owners, 0u); EXPECT_EQ(result.exclusions, 0u);
+        const auto report = PairDocument(result);
+        EXPECT_STREQ(report["policy"]["status"].GetString(), "certified_local_intersection");
+        EXPECT_TRUE(report["policy"]["certified"].GetBool());
+    });
+    EXPECT_TRUE(summary.complete); EXPECT_EQ(summary.noncertified, 0u);
+    EXPECT_EQ(summary.status_counts[static_cast<unsigned>(sct::NonlinearSeparationStatus::CertifiedLocalIntersection)], 1u);
+}
+
+TEST(PreparedCensusReplay, HistoricalPersistenceOmissionsRemainVisibleWithoutClaimingGeometry) {
+    Input input;
+    for (const auto* name : {"linear_affine_pairs", "linear_exact_geometry_pairs", "linear_persistent_accepted"})
+        input.manifest[name].SetUint64(1);
+    input.manifest["nonlinear_pairs"].SetUint64(1);
+    input.manifest["nonlinear_initial_unresolved"].SetUint64(1);
+    input.manifest["nonlinear_persistent_accepted"].SetUint64(1);
+    const auto hash = input.Seal();
+    const auto summary = Replay(input.root / "census.json", hash, {});
+    EXPECT_TRUE(summary.complete); EXPECT_EQ(summary.pairs, 0u);
+    EXPECT_EQ(summary.omitted_nonlinear_persistent, 1u);
+    EXPECT_EQ(summary.omitted_linear_persistent, 1u);
+    const auto report = SummaryDocument(summary, hash);
+    EXPECT_EQ(report["omitted_nonlinear_persistent_pairs"].GetUint64(), 1u);
+    EXPECT_EQ(report["omitted_linear_persistent_pairs"].GetUint64(), 1u);
+}
+
+TEST(PreparedCensusReplay, RetainedPersistenceMetadataStillRequiresActualPolicyProof) {
+    Input input;
+    auto pair = SeparatedPair(100);
+    for (unsigned vertex = 0; vertex < 3; ++vertex) {
+        pair.accepted[1].vertices[vertex].z = .001;
+        pair.prepared[1].vertices[vertex].z = .001;
+    }
+    pair.quadratic[1].q[0][2] = {1, 1};
+    input.Append(100, nullptr, &pair);
+    input.manifest["files"][0]["family"].SetString("nonlinear", input.manifest.GetAllocator());
+    for (const auto* name : {"linear_affine_pairs", "linear_exact_geometry_pairs", "linear_represented_pairs", "linear_work_exhausted_pairs"})
+        input.manifest[name].SetUint64(0);
+    for (const auto* name : {"nonlinear_pairs", "nonlinear_initial_unresolved", "nonlinear_persistent_accepted", "nonlinear_fixture_pairs"})
+        input.manifest[name].SetUint64(1);
+    const auto hash = input.Seal();
+    std::size_t visited = 0;
+    const auto summary = Replay(input.root / "census.json", hash, [&](const PairResult& result) {
+        ++visited;
+        EXPECT_EQ(result.family, "nonlinear"); EXPECT_FALSE(result.affine);
+        // This synthetic source classification supplies no real owner. Merely
+        // calling a row persistent must neither omit it nor certify contact.
+        EXPECT_EQ(result.owners, 0u);
+        EXPECT_FALSE(Certified(result.policy.status));
+    });
+    EXPECT_TRUE(summary.complete); EXPECT_EQ(visited, 1u);
+    EXPECT_EQ(summary.pairs, 1u); EXPECT_EQ(summary.nonlinear, 1u);
+    EXPECT_EQ(summary.noncertified, 1u);
+    EXPECT_EQ(summary.omitted_nonlinear_persistent, 0u);
+    EXPECT_EQ(summary.omitted_linear_persistent, 0u);
+    const auto report = SummaryDocument(summary, hash);
+    EXPECT_EQ(report["omitted_nonlinear_persistent_pairs"].GetUint64(), 0u);
+    EXPECT_EQ(report["omitted_linear_persistent_pairs"].GetUint64(), 0u);
 }
 
 TEST(PreparedCensusReplay, RejectsWrongManifestHashMissingShardAndTraversal) {

@@ -18,10 +18,8 @@ bool RequiresFrozenNonlinearReplay(const NonlinearPairEvidence& evidence) noexce
     if (evidence.after == NonlinearAfterClass::CertifiedQuadraticResidualSeparation &&
         evidence.residual_status == sct::LinearResidualSeparationStatus::CertifiedSeparated)
         return false;
-    if (evidence.after == NonlinearAfterClass::CertifiedPersistentAcceptedContact &&
-        evidence.persistent_status == sct::PersistentLinearContactStatus::CertifiedContact &&
-        evidence.ledger && evidence.endpoint_contact && !evidence.local)
-        return false;
+    // Thickness persistence does not certify absence of a midsurface crossing.
+    // Retain these rows even when an accepted owner covers their force response.
     return true;
 }
 

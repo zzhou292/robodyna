@@ -72,7 +72,7 @@ TEST(VehicleSelfContactFixtureCapture, EndpointLocalSeparationNeverReplacesConti
     evidence.endpoint_contact = evidence.ledger = true;
     EXPECT_TRUE(RequiresFrozenNonlinearReplay(evidence));
     evidence.persistent_status = sct::PersistentLinearContactStatus::CertifiedContact;
-    EXPECT_FALSE(RequiresFrozenNonlinearReplay(evidence));
+    EXPECT_TRUE(RequiresFrozenNonlinearReplay(evidence));
     evidence.local = true;
     EXPECT_TRUE(RequiresFrozenNonlinearReplay(evidence));
     evidence.valid = false;

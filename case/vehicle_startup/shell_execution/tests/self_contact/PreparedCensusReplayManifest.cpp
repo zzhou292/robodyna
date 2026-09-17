@@ -109,6 +109,13 @@ Manifest ReadManifest(const std::filesystem::path& path, const std::string& expe
         m.linear <= json::UInt(d["linear_affine_pairs"]) && m.nonlinear <= unresolved &&
         m.nonlinear >= Add(json::UInt(d["nonlinear_exact_local"]), json::UInt(d["nonlinear_remaining"])),
         "Prepared census fixture coverage differs");
+    const auto residual = json::UInt(d["nonlinear_residual_separated"]);
+    Require(residual <= unresolved && m.nonlinear <= unresolved - residual,
+        "Prepared census frozen and separated nonlinear partitions overlap");
+    m.omitted_nonlinear_persistent = unresolved - residual - m.nonlinear;
+    Require(m.omitted_nonlinear_persistent <= json::UInt(d["nonlinear_persistent_accepted"]),
+        "Prepared census omits an unproved nonlinear class");
+    m.omitted_linear_persistent = json::UInt(d["linear_persistent_accepted"]);
     const auto& files = d["files"];
     Require(files.IsArray() && files.Size() <= 8192, "Prepared census file roster exceeds metadata cap");
     std::set<std::string> seen;

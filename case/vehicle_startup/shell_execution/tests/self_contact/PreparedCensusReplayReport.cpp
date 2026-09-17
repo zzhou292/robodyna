@@ -87,6 +87,9 @@ output::Document SummaryDocument(const Summary& s, const std::string& manifest_s
     Integer(d, "files", s.files); Integer(d, "input_bytes", s.bytes); Integer(d, "pairs", s.pairs);
     Integer(d, "linear_pairs", s.linear); Integer(d, "nonlinear_pairs", s.nonlinear);
     Integer(d, "noncertified_pairs", s.noncertified); Integer(d, "policy_work", s.total_work);
+    Integer(d, "omitted_nonlinear_persistent_pairs", s.omitted_nonlinear_persistent);
+    Integer(d, "omitted_linear_persistent_pairs", s.omitted_linear_persistent);
+    String(d, "omission_scope", "thickness-persistent rows omitted by the source census have no continuous geometry qualification from this replay");
     Integer(d, "result_digest", s.result_digest);
     Document counts; counts.SetObject();
     for (unsigned status = 0; status < s.status_counts.size(); ++status)
