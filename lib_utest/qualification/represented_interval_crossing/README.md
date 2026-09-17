@@ -18,6 +18,25 @@ reported exact numerator and depth. A deterministic immutable VF or EE feature
 key is selected where one exists; a complete triangle-intersection key remains
 for transverse edge/face piercing.
 
+The existing exact common-translation branch compares exact dyadic endpoint
+displacements for all six vertices. When equal, every relative geometric
+predicate is constant throughout the represented interval. A crossing from
+this branch now carries `ExactCommonTranslationTransverse` or
+`ExactCommonTranslationCoplanar`. `HasExactCommonTranslationProof` reads that
+provenance; `BaseIntersectionGeometry` preserves the original witness shape.
+Classification, source feature, earliest witness and one-unit work charge are
+unchanged. Separated and unresolved results retain their previous geometry.
+The two tags append to the byte-sized enum; no result fields, forecast sizes
+or frozen fixture layouts change. Historic fixture enum ordinals remain valid.
+
+The tag proves geometric invariance, not local source topology, force ownership
+or transaction admission. Static nonlocal overlap receives the same invariance
+provenance and remains a crossing. A consumer needs its own authenticated
+topology and physical transaction obligations. This slice does not change the
+candidate controller or the standalone continuous-local thickness contract.
+Rounded-equal displacements are insufficient; declared curved/nonlinear paths
+remain unsupported even if their endpoint displacements match.
+
 Separation has a different proof. On each accepted time cell, exact quadratic
 Bernstein controls certify both triangle normals nonzero. Because every admitted
 vertex coordinate is linear, its extrema on that cell occur at the two

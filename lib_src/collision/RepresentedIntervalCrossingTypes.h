@@ -87,7 +87,32 @@ enum class RepresentedIntersectionGeometry : std::uint8_t {
   PersistentPhysicalContact,
   PersistentAcceptedLedgerCoverage,
   CertifiedLocalTopology,
+  // The native exact-dyadic common-translation proof preserves the complete
+  // relative geometry over the interval. These tags retain the first witness
+  // shape; they do not classify source-local topology or admit contact forces.
+  // Append only: prior ordinals and the result/fixture layout remain unchanged.
+  ExactCommonTranslationTransverse,
+  ExactCommonTranslationCoplanar,
 };
+
+constexpr bool HasExactCommonTranslationProof(
+    RepresentedIntersectionGeometry geometry) noexcept {
+  return geometry ==
+             RepresentedIntersectionGeometry::ExactCommonTranslationTransverse ||
+      geometry ==
+             RepresentedIntersectionGeometry::ExactCommonTranslationCoplanar;
+}
+
+constexpr RepresentedIntersectionGeometry BaseIntersectionGeometry(
+    RepresentedIntersectionGeometry geometry) noexcept {
+  if (geometry ==
+      RepresentedIntersectionGeometry::ExactCommonTranslationTransverse)
+    return RepresentedIntersectionGeometry::Transverse;
+  if (geometry ==
+      RepresentedIntersectionGeometry::ExactCommonTranslationCoplanar)
+    return RepresentedIntersectionGeometry::Coplanar;
+  return geometry;
+}
 
 struct RepresentedIntervalResult {
   RepresentedIntervalPairKey key;

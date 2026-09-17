@@ -17,7 +17,7 @@ test_bazel = (here / "BUILD.bazel").read_text()
 test_sources = (
     "GeometryTest.cpp", "InvarianceTest.cpp", "FailureTest.cpp",
     "IdentityTest.cpp", "DeepTest.cpp", "OracleTest.cpp",
-    "ParallelTest.cpp", "Oracle.cpp",
+    "ParallelTest.cpp", "TranslationProofTest.cpp", "Oracle.cpp",
 )
 tests = "\n".join((here / name).read_text() for name in test_sources)
 
@@ -50,6 +50,14 @@ assert "Compare(displacement, reference[component])" in source
 assert pair_body.index("CommonTranslation(a, b)") < pair_body.index(
     "while (dfs_size)"
 )
+translation_body = pair_body[pair_body.index("if (CommonTranslation(a, b))"):
+                             pair_body.index("while (dfs_size)")]
+for tag in ("ExactCommonTranslationTransverse", "ExactCommonTranslationCoplanar"):
+    assert tag in types
+    assert tag in translation_body
+    assert source.count(tag) == 1
+assert "HasExactCommonTranslationProof" in types
+assert "BaseIntersectionGeometry" in types
 assert "CertifiedCrossingContact" not in source[
     source.index("bool SweptBoxesSeparated"):
     source.index("int ReasonPriority")
@@ -122,6 +130,12 @@ required = (
     "StaticDisjointTouchingBoxesUseExactGeometryCertificate",
     "ExactCommonTranslationCertifiesSeparatedYarisGeometryInOneVisit",
     "ExactCommonTranslationKeepsActualContactAndFeatureRepresented",
+    "TranslationProofPreservesPriorEnumOrdinalsAndWitnessShape",
+    "ExactTranslationProofRetainsStaticAndMovingSharedTopologyWitnesses",
+    "TranslationProofDoesNotConvertNonlocalOverlapIntoLocalAuthority",
+    "EqualRoundedDisplacementsCannotForgeExactTranslationProof",
+    "UnsupportedCurvedMotionCannotBorrowTranslationProofFromEndpoints",
+    "TranslationProofPreservesSeparatedAndDegenerateClassifications",
     "NondyadicIsolatedContactRemainsUnresolvedNeverSeparated",
     "ExtremeBinary64ExponentsInterpolateWithoutFalseRangeResult",
     "IndependentExactRationalOracleChecksStaticSatAndFeatures",

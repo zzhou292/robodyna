@@ -742,6 +742,10 @@ RepresentedIntervalResult CertifyPair(
     if (CommonTranslation(a, b)) {
       auto evaluation = EvaluateCell(a, b, key, {}, scratch);
       if (evaluation.disposition == CellDisposition::Crossing) {
+        evaluation.crossing.geometry =
+            evaluation.crossing.geometry == RepresentedIntersectionGeometry::Coplanar
+                ? RepresentedIntersectionGeometry::ExactCommonTranslationCoplanar
+                : RepresentedIntersectionGeometry::ExactCommonTranslationTransverse;
         evaluation.crossing.work = 1;
         return evaluation.crossing;
       }

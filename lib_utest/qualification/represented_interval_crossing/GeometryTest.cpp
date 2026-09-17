@@ -127,7 +127,8 @@ TEST(RepresentedIntervalCrossing,
   const auto a = Static(10, BaseTriangle());
   const auto contact = One(owner, {a, Static(20, BaseTriangle(0))});
   EXPECT_EQ(contact.classification, C::CertifiedCrossingContact);
-  EXPECT_EQ(contact.geometry, G::Coplanar);
+  EXPECT_EQ(contact.geometry, G::ExactCommonTranslationCoplanar);
+  EXPECT_EQ(ct::BaseIntersectionGeometry(contact.geometry), G::Coplanar);
 
   const double above = std::nextafter(0.0, 1.0);
   const auto positive =

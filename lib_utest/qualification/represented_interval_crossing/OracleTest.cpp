@@ -14,7 +14,8 @@ void WitnessAgrees(const ct::RepresentedTrianglePath& a,
       a, b, result.witness_time_numerator, denominator);
   ASSERT_TRUE(oracle.valid);
   EXPECT_TRUE(oracle.intersects);
-  EXPECT_EQ(oracle.coplanar, result.geometry == G::Coplanar);
+  EXPECT_EQ(oracle.coplanar,
+            ct::BaseIntersectionGeometry(result.geometry) == G::Coplanar);
   if (result.feature.kind == K::VertexFace)
     EXPECT_TRUE(oracle.vertex_face);
   if (result.feature.kind == K::EdgeEdge)
@@ -73,7 +74,7 @@ TEST(RepresentedIntervalCrossing,
   const auto inside = Static(20, contained, 200);
   const auto inside_result = One(owner, {a, inside});
   EXPECT_EQ(inside_result.classification, C::CertifiedCrossingContact);
-  EXPECT_EQ(inside_result.geometry, G::Coplanar);
+  EXPECT_EQ(inside_result.geometry, G::ExactCommonTranslationCoplanar);
   WitnessAgrees(a, inside, inside_result);
 
   const std::array<ct::Vec3, 3> boundary{
@@ -81,7 +82,7 @@ TEST(RepresentedIntervalCrossing,
   const auto touch = Static(30, boundary, 300);
   const auto touch_result = One(owner, {a, touch});
   EXPECT_EQ(touch_result.classification, C::CertifiedCrossingContact);
-  EXPECT_EQ(touch_result.geometry, G::Coplanar);
+  EXPECT_EQ(touch_result.geometry, G::ExactCommonTranslationCoplanar);
   WitnessAgrees(a, touch, touch_result);
 }
 

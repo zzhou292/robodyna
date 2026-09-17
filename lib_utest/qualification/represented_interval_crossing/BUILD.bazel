@@ -14,6 +14,7 @@ cc_test(
         "Oracle.h",
         "OracleTest.cpp",
         "ParallelTest.cpp",
+        "TranslationProofTest.cpp",
     ],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [
@@ -39,6 +40,7 @@ cc_test(
         "Oracle.h",
         "OracleTest.cpp",
         "ParallelTest.cpp",
+        "TranslationProofTest.cpp",
         "//lib_src/collision:represented_interval_crossing_source_proof",
     ],
     deps = ["@googletest//:gtest_main"],
