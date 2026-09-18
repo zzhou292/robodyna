@@ -7,6 +7,7 @@ outside this profile. No command lines or environments are read.
 """
 
 from dataclasses import dataclass
+from itertools import islice
 import os
 from pathlib import Path
 import signal
@@ -109,6 +110,19 @@ class OwnedSession:
                 if row.sid == self.leader.sid]
         self._check_leader()
         return rows
+
+    def process_snapshot(self, max_rows):
+        """Bound optional diagnostic inventory; normal supervision is unchanged.
+
+        The pinned leader authenticates session identity across enumeration.
+        Missing/truncated rows cannot prove that a PID is outside this session.
+        """
+        if type(max_rows) is not int or not 0 < max_rows <= 4096:
+            raise ValueError('diagnostic process snapshot requires 1..4096 rows')
+        self._check_leader()
+        rows = list(islice(process_rows(self.proc_root), max_rows + 1))
+        self._check_leader()
+        return rows[:max_rows], len(rows) <= max_rows
 
     def usage(self):
         rows = self.members()

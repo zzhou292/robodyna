@@ -23,15 +23,22 @@ import time
 
 if __package__:
     from .bounded_history import SampleHistory
+    from .bounded_gpu import GpuProcessDiagnostics
     from .bounded_session import OwnedSession, preflight as session_preflight
     from .bounded_stop import CooperativeStop, GPU_GROWTH_REASON
 else:
     from bounded_history import SampleHistory
+    from bounded_gpu import GpuProcessDiagnostics
     from bounded_session import OwnedSession, preflight as session_preflight
     from bounded_stop import CooperativeStop, GPU_GROWTH_REASON
 
 MIB = 1024 * 1024
 GIB = 1024 * MIB
+
+
+class GuardInterrupted(BaseException):
+    """Do not let optional diagnostic Exception handlers consume SIGTERM."""
+
 
 
 def memory_info():
@@ -62,6 +69,8 @@ def main():
     parser.add_argument('--max-rss-gib', type=float, default=8)
     parser.add_argument('--timeout', type=float, default=600)
     parser.add_argument('--gpu', type=int, help='require and monitor this physical GPU')
+    parser.add_argument('--gpu-process-diagnostics', action='store_true',
+                        help='record bounded compute-process telemetry; never changes GPU guard limits')
     parser.add_argument('--min-gpu-free-gib', type=float, default=8)
     parser.add_argument('--max-gpu-growth-gib', type=float, default=4)
     parser.add_argument('--cooperative-stop-file', type=Path,
@@ -75,6 +84,8 @@ def main():
             value < 0 for value in [args.min_available_gib, args.max_rss_gib,
                                    args.min_gpu_free_gib, args.max_gpu_growth_gib]):
         parser.error('provide a command and positive CPU/timeout, nonnegative memory limits')
+    if args.gpu_process_diagnostics and args.gpu is None:
+        parser.error('--gpu-process-diagnostics requires --gpu')
     if args.cooperative_stop_file is None and args.cooperative_stop_grace_seconds is not None:
         parser.error('--cooperative-stop-grace-seconds requires --cooperative-stop-file')
     grace_seconds = args.cooperative_stop_grace_seconds
@@ -100,8 +111,9 @@ def main():
     session = None
     lock = None
     started = time.monotonic()
+    gpu_processes = GpuProcessDiagnostics(args.gpu, started) if args.gpu_process_diagnostics else None
     def interrupted(signum, _frame):
-        raise RuntimeError('runner interrupted by signal ' + str(signum))
+        raise GuardInterrupted('runner interrupted by signal ' + str(signum))
     previous_term = signal.signal(signal.SIGTERM, interrupted)
     try:
         lock = lock_path.open('a')
@@ -139,13 +151,17 @@ def main():
         session = OwnedSession(process)
         report['process_scope'] = session.record
         previous_gpu = initial_gpu
+        previous_gpu_poll_elapsed = 0.0
         next_gpu_poll = started
         while True:
             now = time.monotonic()
             mem = memory_info()
             usage = session.usage()
+            gpu_polled = False
             if args.gpu is not None and now >= next_gpu_poll:
                 previous_gpu = gpu_info(args.gpu)
+                previous_gpu_poll_elapsed = now - started
+                gpu_polled = True
                 next_gpu_poll = now + 2
             sample = dict(elapsed_seconds=round(now - started, 3),
                           available_bytes=mem['MemAvailable'],
@@ -180,6 +196,11 @@ def main():
                     raise RuntimeError('command timeout')
                 if cooperative.expired(elapsed):
                     raise RuntimeError('cooperative stop grace expired')
+            if gpu_processes is not None and gpu_polled:
+                try:
+                    gpu_processes.sample(session, 'poll', previous_gpu, previous_gpu_poll_elapsed)
+                except Exception as diagnostic_error:
+                    report['gpu_process_diagnostic_error'] = str(diagnostic_error)[:256]
             if session.exited():
                 break
             time.sleep(0.25)
@@ -192,13 +213,25 @@ def main():
             if process.returncode == 0:
                 report['status'] = 'cooperatively_stopped'
             report['reason'] = GPU_GROWTH_REASON
-    except (OSError, RuntimeError, ValueError, subprocess.SubprocessError, KeyboardInterrupt) as error:
+    except (OSError, RuntimeError, ValueError, subprocess.SubprocessError, KeyboardInterrupt, GuardInterrupted) as error:
         if cooperative is not None:
             cooperative.forced(time.monotonic() - started, str(error))
         if process is not None:
             try:
                 if session is not None:
-                    session.stop()
+                    # Snapshot the live process before cleanup destroys PID/GPU
+                    # evidence. Whole-device reason and enforcement are unchanged.
+                    growth_stop = (str(error) == GPU_GROWTH_REASON or
+                                   (cooperative is not None and cooperative.deadline is not None))
+                    try:
+                        if gpu_processes is not None and growth_stop:
+                            gpu_processes.sample(session, 'before_gpu_growth_stop',
+                                                 previous_gpu, previous_gpu_poll_elapsed)
+                    except (Exception, GuardInterrupted, KeyboardInterrupt) as diagnostic_error:
+                        # The selected hard-stop reason is already authoritative.
+                        report['gpu_process_diagnostic_error'] = str(diagnostic_error)[:256]
+                    finally:
+                        session.stop()
                 else:
                     # Authentication itself failed. This direct child remains
                     # unreaped and owned, but no broader session is claimed.
@@ -221,6 +254,12 @@ def main():
         report['peak_sampled_rss_bytes'] = history.peak_rss_bytes
         report['samples'] = history.samples()
         report['sample_history'] = history.metadata()
+        if gpu_processes is not None:
+            try:
+                report['gpu_process_diagnostics'] = gpu_processes.document()
+            except Exception as diagnostic_error:
+                report['gpu_process_diagnostics'] = dict(status='diagnostic_error',
+                    error=str(diagnostic_error)[:256])
         try:
             args.report.write_text(json.dumps(report, indent=2) + '\n')
         finally:

@@ -53,6 +53,45 @@ class SessionValuesTests(unittest.TestCase):
             live_cpu_ticks=39, threads=7))
         self.assertEqual({row.pgid for row in self.session.members()}, {100, 101})
 
+    def test_diagnostic_snapshot_caps_reads_and_preserves_normal_members(self):
+        self.write(101, ppid=100, sid=100)
+        self.write(102, ppid=1, sid=102)
+        rows = [scope.read_process(pid, self.root) for pid in (100, 101, 102)]
+        visited = []
+
+        def inventory(_root):
+            for row in rows:
+                visited.append(row.pid)
+                yield row
+
+        with mock.patch.object(scope, 'process_rows', side_effect=inventory), \
+                mock.patch.object(self.session, '_check_leader', wraps=self.session._check_leader) as check:
+            snapshot, complete = self.session.process_snapshot(1)
+        self.assertEqual([row.pid for row in snapshot], [100])
+        self.assertFalse(complete)
+        self.assertEqual(visited, [100, 101])
+        self.assertEqual(check.call_count, 2)
+        self.assertEqual({row.pid for row in self.session.members()}, {100, 101})
+        snapshot, complete = self.session.process_snapshot(3)
+        self.assertTrue(complete)
+        self.assertEqual({row.pid for row in snapshot}, {100, 101, 102})
+        for cap in (0, -1, 4097, 1.5, True):
+            with self.subTest(cap=cap), self.assertRaises(ValueError):
+                self.session.process_snapshot(cap)
+
+    def test_diagnostic_snapshot_rejects_lost_leader_after_enumeration(self):
+        row = scope.read_process(100, self.root)
+
+        def inventory(_root):
+            yield row
+            self.write(100, start=8)
+
+        with mock.patch.object(scope, 'process_rows', side_effect=inventory):
+            with self.assertRaisesRegex(RuntimeError, 'identity'):
+                self.session.process_snapshot(2)
+        with self.assertRaisesRegex(RuntimeError, 'identity'):
+            self.session.process_snapshot(2)
+
     def test_anchor_reuse_missing_session_or_parent_changes_reject(self):
         for values in (dict(start=8), dict(sid=101), dict(ppid=os.getpid() + 1)):
             with self.subTest(values=values):

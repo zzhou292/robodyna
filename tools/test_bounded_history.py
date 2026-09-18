@@ -77,7 +77,9 @@ class SampleHistoryTests(unittest.TestCase):
 
 
 class BoundedHistoryRunnerTests(unittest.TestCase):
-    def run_guard(self, *, breach=None, cooperative=False, preflight=False):
+    def run_guard(self, *, breach=None, cooperative=False, preflight=False,
+                  diagnostics=False, diagnostic_failure=None, final_failure=None,
+                  document_failure=False):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             report_path = root / 'report.json'
@@ -99,11 +101,28 @@ class BoundedHistoryRunnerTests(unittest.TestCase):
             session.record = dict(policy='owned_session_v1')
             session.exited.side_effect = lambda: process.poll() is not None
 
+            diagnostic_events = []
+
             def stop_session():
+                diagnostic_events.append('stop')
                 if process.returncode is None:
                     process.returncode = -15
 
             session.stop.side_effect = stop_session
+
+            gpu_processes = mock.Mock()
+
+            def capture(_session, trigger, _gpu, _poll_time):
+                self.assertIs(_session, session)
+                diagnostic_events.append(trigger)
+                failure = final_failure if trigger == 'before_gpu_growth_stop' else diagnostic_failure
+                if failure is not None:
+                    raise failure
+
+            gpu_processes.sample.side_effect = capture
+            gpu_processes.document.side_effect = (
+                RuntimeError('diagnostic serialization failed') if document_failure
+                else lambda: dict(events=diagnostic_events))
 
             def memory():
                 bad = preflight or (breach == 'RAM' and count >= 11)
@@ -130,8 +149,10 @@ class BoundedHistoryRunnerTests(unittest.TestCase):
             args = ['run_bounded.py', '--report', str(report_path), '--cpus', '1',
                     '--min-available-gib', '1', '--max-rss-gib', '1',
                     '--timeout', '10.5' if breach == 'timeout' else '1000']
-            if cooperative or breach in ('free', 'growth'):
+            if cooperative or diagnostics or breach in ('free', 'growth'):
                 args += ['--gpu', '0', '--max-gpu-growth-gib', '6']
+            if diagnostics:
+                args += ['--gpu-process-diagnostics']
             if cooperative:
                 args += ['--cooperative-stop-file', str(stop_path),
                          '--cooperative-stop-grace-seconds', '100']
@@ -144,6 +165,8 @@ class BoundedHistoryRunnerTests(unittest.TestCase):
                 session.usage.side_effect = usage
                 stack.enter_context(mock.patch.object(runner, 'OwnedSession', return_value=session))
                 stack.enter_context(mock.patch.object(runner, 'gpu_info', side_effect=gpu))
+                stack.enter_context(mock.patch.object(runner, 'GpuProcessDiagnostics',
+                                                      return_value=gpu_processes))
                 spawn = stack.enter_context(mock.patch.object(runner.subprocess, 'Popen', return_value=process))
                 stopped = session.stop
                 stack.enter_context(mock.patch.object(runner.time, 'monotonic', side_effect=itertools.count()))
@@ -196,6 +219,74 @@ class BoundedHistoryRunnerTests(unittest.TestCase):
         self.assertEqual(trigger['gpu']['used_bytes'], 8 * runner.GIB)
         self.assertNotIn(3, [s['live_cpu_ticks'] for s in report['samples']])
         self.assertEqual(report['cooperative_stop']['outcome'], 'cooperative_exit')
+
+    def test_gpu_diagnostics_require_gpu_before_child_launch(self):
+        args = ['run_bounded.py', '--report', '/unused/report.json',
+                '--gpu-process-diagnostics', '--', 'synthetic-child']
+        with mock.patch.object(sys, 'argv', args), \
+                mock.patch.object(runner.subprocess, 'Popen') as spawn, \
+                contextlib.redirect_stderr(io.StringIO()):
+            with self.assertRaises(SystemExit) as error:
+                runner.main()
+        self.assertEqual(error.exception.code, 2)
+        spawn.assert_not_called()
+
+    def test_optional_gpu_diagnostics_default_off_and_successful_poll_scope(self):
+        _, plain, *_ = self.run_guard()
+        self.assertNotIn('gpu_process_diagnostics', plain)
+        result, observed, _, _, stopped, _ = self.run_guard(diagnostics=True)
+        self.assertEqual(result, 0)
+        self.assertEqual(stopped, 1)
+        events = observed['gpu_process_diagnostics']['events']
+        self.assertIn('poll', events)
+        self.assertNotIn('before_gpu_growth_stop', events)
+        self.assertEqual(events[-1], 'stop')
+
+    def test_gpu_diagnostics_preserve_every_original_hard_guard(self):
+        for breach in ('RAM', 'RSS', 'free', 'growth', 'timeout'):
+            with self.subTest(breach=breach):
+                _, expected, *_ = self.run_guard(breach=breach)
+                result, actual, _, _, stopped, _ = self.run_guard(breach=breach, diagnostics=True)
+                self.assertEqual(result, 125)
+                self.assertEqual(actual['reason'], expected['reason'])
+                self.assertEqual(stopped, 1)
+                events = actual['gpu_process_diagnostics']['events']
+                if breach == 'growth':
+                    self.assertEqual(events[-2:], ['before_gpu_growth_stop', 'stop'])
+                else:
+                    self.assertNotIn('before_gpu_growth_stop', events)
+
+    def test_gpu_diagnostic_poll_and_document_errors_are_informational(self):
+        result, report, _, _, stopped, _ = self.run_guard(
+            diagnostics=True, diagnostic_failure=RuntimeError('optional query failed'))
+        self.assertEqual(result, 0)
+        self.assertEqual(stopped, 1)
+        self.assertEqual(report['gpu_process_diagnostic_error'], 'optional query failed')
+        result, report, _, _, stopped, _ = self.run_guard(diagnostics=True, document_failure=True)
+        self.assertEqual(result, 0)
+        self.assertEqual(stopped, 1)
+        self.assertEqual(report['gpu_process_diagnostics']['status'], 'diagnostic_error')
+
+    def test_final_diagnostic_failures_and_interruptions_cannot_skip_cleanup(self):
+        for failure in (RuntimeError('query error'), KeyboardInterrupt(),
+                        runner.GuardInterrupted('runner interrupted by signal 15')):
+            with self.subTest(failure=type(failure).__name__):
+                result, report, _, _, stopped, _ = self.run_guard(
+                    diagnostics=True, breach='growth', final_failure=failure)
+                self.assertEqual(result, 125)
+                self.assertEqual(report['reason'], runner.GPU_GROWTH_REASON)
+                self.assertEqual(stopped, 1)
+                self.assertNotIn('cleanup_error', report)
+                self.assertEqual(report['gpu_process_diagnostics']['events'][-1], 'stop')
+
+    def test_interrupt_during_optional_poll_preserves_signal_reason(self):
+        result, report, _, _, stopped, _ = self.run_guard(
+            diagnostics=True,
+            diagnostic_failure=runner.GuardInterrupted('runner interrupted by signal 15'))
+        self.assertEqual(result, 125)
+        self.assertEqual(report['reason'], 'runner interrupted by signal 15')
+        self.assertEqual(stopped, 1)
+        self.assertNotIn('cleanup_error', report)
 
     def test_preflight_report_has_zero_counters_and_never_launches(self):
         result, report, count, spawned, stopped, _ = self.run_guard(preflight=True)
