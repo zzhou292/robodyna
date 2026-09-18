@@ -630,6 +630,7 @@ struct Fixture {
 };
 
 #include "LocalPublicationCases.h"
+#include "TranslatedLocalCudaCases.h"
 
 TEST(SelfContactTransactionCuda,
      CertifiedRigidSweepsSeparateDistantBodiesButNotOverlappingArcs) {

@@ -958,3 +958,14 @@ for token in ("NativeStaticAndTranslatedLocalProofPreservesWorkAndPublishesLocal
               "LocalNormalizationRequiresCompleteMatchingNativeInputsWithoutPartialWrite",
               "TranslationProofDoesNotWeakenStandaloneUnownedThicknessContract"):
     require(translated_cases.read_text(), token, translated_cases)
+
+translated_cuda = Path(__file__).resolve().parent / "TranslatedLocalCudaCases.h"
+for token in ("OriginalAdjacentStaticAndTranslatedLocalDiscardRetryCommit",
+              "InitiallyCompressedFixedLocalContactRetainsForceAndReactionStiffness",
+              "speed_z * p::H", "diagnostics.maximum_force_norm_n",
+              "diagnostics.maximum_represented_stiffness_n_m",
+              "ASSERT_FALSE(positive_owner_pairs.empty())",
+              "EXPECT_GT(force_pairs_on_local_path, 0u)",
+              "EXPECT_GT(force_change, 0)", "p::Exact(initial, discarded)",
+              "fixture.Commit(token, prepared, common, receipt)"):
+    require(translated_cuda.read_text(), token, translated_cuda)

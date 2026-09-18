@@ -95,6 +95,7 @@ if(SELF_CONTACT_TRANSACTION_CUDA)
   add_executable(self_contact_transaction_cuda
     CudaTest.cu
     FailureCaptureCases.h
+    TranslatedLocalCudaCases.h
     "${CMAKE_CURRENT_LIST_DIR}/../physical_publication/OwnerStartup.cu"
     "${CMAKE_CURRENT_LIST_DIR}/../physical_publication/OwnerAttempt.cu"
     "${CMAKE_CURRENT_LIST_DIR}/../physical_publication/OwnerSnapshot.cu")

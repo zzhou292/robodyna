@@ -521,3 +521,15 @@ shared-vertex topology, ordinary/unsupported witnesses, nonlocal geometry,
 malformed provenance, and the distinction between invariant geometry and
 unowned thickness separation. Actual owner coupons qualify transaction
 authority and rollback; source checks alone do not establish runtime validity.
+
+`OriginalAdjacentStaticAndTranslatedLocalDiscardRetryCommit` uses the original
+T3/Q4 source and loads with zero or unit initial z velocity, verifies the exact
+prepared translation, and exercises discard/retry/commit. The separate
+`InitiallyCompressedFixedLocalContactRetainsForceAndReactionStiffness` coupon
+declares a shortened current T3 altitude and fixed translations for the five
+contact nodes. It preserves reference geometry and physical mass, requires
+real near-thickness force/potential/reaction stiffness, and checks stationary
+geometry and rollback. Fixed translation projects free normal STI to zero;
+the existing unconstrained VF/EE coupons retain their positive free-STI
+oracles. These are explicit test initial/boundary conditions, never changes to
+the vehicle profile or the original adjacent second-interval rejection test.

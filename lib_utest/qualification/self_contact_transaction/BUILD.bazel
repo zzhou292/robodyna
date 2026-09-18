@@ -104,6 +104,7 @@ filegroup(
         "PreparedCensusCases.h",
         "FailureCaptureCases.h",
         "LocalPublicationCases.h",
+        "TranslatedLocalCudaCases.h",
         "PolicyAssertions.h",
         "README.md",
         "check_syntax.py",
