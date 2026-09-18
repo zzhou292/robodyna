@@ -4,8 +4,15 @@
 #include "SampledShellPlasticity.h"
 #include "SelfContactSummary.h"
 namespace crash::cases::vehicle_run {
-PreparedRun::Session::Session(const Data& input,const std::filesystem::path& directory)
-    : source(input),dynamics(input.contact.CreateDynamics(input.setup,input.dynamics,&input.joints)),
+PreparedRun::Session::Session(const Data& input,const std::filesystem::path& directory,
+                             void* initialization_context,Initialization initialize)
+    : source(input),dynamics([&] {
+          auto value=input.contact.CreateDynamics(input.setup,input.dynamics,&input.joints);
+          // Qualification may decorate an existing contribution before capture
+          // or archive initialization. Normal execution supplies no operation.
+          if(initialize) initialize(initialization_context,value);
+          return value;
+      }()),
       capture(input.mapping,dynamics,input.identity),
       archive(output::physical_run::RunArchive::PrepareWithWall(directory,input.setup,input.mapping,
           capture.frames().context(),input.request,input.profile)) {}

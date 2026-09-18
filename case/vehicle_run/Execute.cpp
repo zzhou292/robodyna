@@ -3,6 +3,12 @@
 #include <chrono>
 namespace crash::cases::vehicle_run {
 Result PreparedRun::Execute(const std::filesystem::path& destination,const Control& control) const {
+    return ExecuteImpl(destination,control,nullptr,nullptr);
+}
+Result PreparedRun::ExecuteImpl(const std::filesystem::path& destination,const Control& control,
+                               void* initialization_context,Initialization initialize) const {
+    output::Require(bool(initialization_context)==bool(initialize),
+                    "Run initialization context and operation must be supplied together");
     output::Require(std::filesystem::symlink_status(destination).type()==std::filesystem::file_type::directory &&
         std::filesystem::is_empty(destination),"Run needs a real empty destination directory");
     detail::ValidateLoop(data_->horizon,data_->forecast.archive.archive.archive.frame_epochs,control);
@@ -15,7 +21,7 @@ Result PreparedRun::Execute(const std::filesystem::path& destination,const Contr
     const auto startup_elapsed=[&] {
         return std::chrono::duration<double>(std::chrono::steady_clock::now()-startup_begin).count();
     };
-    try {session=std::make_unique<Session>(*data_,destination/"archive");}
+    try {session=std::make_unique<Session>(*data_,destination/"archive",initialization_context,initialize);}
     catch(const std::exception& error) {
         result.startup_wall_s=startup_elapsed();
         result.loop.kind=StopKind::StartupFailure;

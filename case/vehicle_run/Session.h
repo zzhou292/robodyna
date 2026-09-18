@@ -3,7 +3,8 @@
 #include "Loop.h"
 namespace crash::cases::vehicle_run {
 struct PreparedRun::Session final : detail::Operations {
-    Session(const Data&,const std::filesystem::path& archive_directory);
+    Session(const Data&,const std::filesystem::path& archive_directory,
+            void* initialization_context,Initialization);
     const Data& source;
     vehicle_dynamics::VehiclePhysicalDynamics dynamics;
     vehicle_dynamics::capture::VehicleAcceptedFrames capture;
