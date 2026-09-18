@@ -12,6 +12,9 @@ prepared_replay::PairResult Evaluate(const nonlinear_fixture::Pair& pair, double
     r.file = "pair.bin";
     r.owners = count;
     r.affine = true;
+    r.baseline_status = pair.baseline_status;
+    r.baseline_work = pair.baseline_work;
+    r.baseline_depth = pair.baseline_depth;
     for (unsigned side = 0; side < 2; ++side) {
         r.facets[side] = pair.prepared[side].key;
         for (const auto& vertex : pair.quadratic[side].q)

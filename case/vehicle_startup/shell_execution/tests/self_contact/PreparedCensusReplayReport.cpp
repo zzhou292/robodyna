@@ -74,7 +74,9 @@ output::Document PairDocument(const PairResult& r) {
     array_json::Child(d, "first_facet", Facet(r.facets[0])); array_json::Child(d, "second_facet", Facet(r.facets[1]));
     String(d, "baseline_status", StatusName(r.baseline_status)); Integer(d, "baseline_work", r.baseline_work);
     Integer(d, "baseline_depth", r.baseline_depth); Boolean(d, "root_affine", r.affine);
-    String(d, "baseline_depth_scope", r.family == "linear" ? "unknown; zero is not a measured depth" : "captured subdivision depth");
+    String(d, "baseline_depth_scope", r.family == "failure"
+        ? "unreported; not a measured production subdivision depth"
+        : r.family == "linear" ? "unknown; zero is not a measured depth" : "captured subdivision depth");
     Integer(d, "accepted_owner_count", r.owners); Integer(d, "same_rigid_exclusion_count", r.exclusions);
     array_json::Child(d, "ledger", Coverage(r.ledger)); array_json::Child(d, "policy", Coverage(r.policy)); return d;
 }

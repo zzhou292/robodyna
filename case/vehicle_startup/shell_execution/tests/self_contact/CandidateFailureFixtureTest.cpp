@@ -40,6 +40,27 @@ TEST(CandidateFailureFixtureValues, HostReplayRequiresExplicitManifestPin) {
     EXPECT_THROW(ReplayCandidateFailure("not-opened", ""), std::runtime_error);
 }
 
+TEST(CandidateFailureFixtureValues, UnreportedBaselineIsNotPresentedAsCertifiedSeparation) {
+    // Empty geometry deliberately has no physical claim. This exercises only
+    // frozen baseline provenance through the existing evaluator/projector.
+    nonlinear_fixture::Pair pair;
+    const auto result = failure_detail::Evaluate(pair, 1, 1, 0, nullptr, 0);
+    EXPECT_EQ(result.baseline_status, pair.baseline_status);
+    EXPECT_EQ(result.baseline_work, pair.baseline_work);
+    EXPECT_EQ(result.baseline_depth, pair.baseline_depth);
+    const auto document = prepared_replay::PairDocument(result);
+    EXPECT_STREQ(document["baseline_status"].GetString(), "invalid_input");
+    EXPECT_STREQ(document["baseline_depth_scope"].GetString(),
+                 "unreported; not a measured production subdivision depth");
+
+    // Corrected labels can differ from a historical artifact while the exact
+    // numerical ledger/policy results remain identical.
+    auto legacy = result;
+    legacy.baseline_status = sct::NonlinearSeparationStatus::CertifiedSeparated;
+    EXPECT_TRUE(failure_detail::Equivalent(legacy, result));
+    EXPECT_FALSE(prepared_replay::PairDocument(legacy) == document);
+}
+
 TEST(CandidateFailureFixtureReplay, CallerPinnedCapturedPairReportsExactGeometryAndPolicy) {
     const auto* path = std::getenv("ROBO_SELF_CONTACT_FAILURE_MANIFEST");
     const auto* sha = std::getenv("ROBO_SELF_CONTACT_FAILURE_SHA256");
