@@ -91,6 +91,8 @@ filegroup(
         "RepresentedIntervalCrossing.cpp",
         "RepresentedIntervalCrossing.h",
         "RepresentedIntervalCrossingTypes.h",
+        "represented_interval_crossing/Batch.h",
+        "represented_interval_crossing/BatchExecution.h",
     ],
 )
 
@@ -100,6 +102,8 @@ cc_library(
     hdrs = [
         "RepresentedIntervalCrossing.h",
         "RepresentedIntervalCrossingTypes.h",
+        "represented_interval_crossing/Batch.h",
+        "represented_interval_crossing/BatchExecution.h",
     ],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     linkopts = ["-pthread"],

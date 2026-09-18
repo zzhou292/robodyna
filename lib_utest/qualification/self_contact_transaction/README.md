@@ -543,9 +543,14 @@ coupon does not claim substantial-force deformation or a vehicle-scale pass.
 
 Raw represented crossing now uses work-admitted subbatches without changing
 the 4,096-pair discovery cohort, seam-producer deduplication, or nonlinear
-chunk budget. The native per-call and per-pair limits remain unchanged. Each
-native call validates the entire original path roster; only its canonical
-pair slice changes. A separate forecasted host arena retains every raw result
+chunk budget. The native per-call and per-pair limits remain unchanged. The
+prospective isolated path-roster reuse delegates the complete traversal to
+the native owner: all original paths/vertices are authenticated once, and the
+immutable roster remains borrowed until every slice finishes. No prepared
+authority or callback escapes. Only redundant path/vertex authentication is
+removed; per-slice checks/work and native publication stay unchanged. This
+followup is authored only and still requires qualification and measurement.
+A separate forecasted host arena retains every raw result
 until the full cohort succeeds. A failed subbatch returns no complete view.
 The complete raw-plus-policy work cap still gates physical publication, and
 the qualification census also enforces its complete represented-work cap.

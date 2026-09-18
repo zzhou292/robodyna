@@ -2,6 +2,7 @@
 #pragma once
 
 #include "../RepresentedIntervalCrossing.h"
+#include "../represented_interval_crossing/Batch.h"
 
 namespace tlfea::contact {
 struct SelfContactCrossingDiagnostics;
@@ -21,27 +22,15 @@ constexpr std::size_t RawCrossingBatchPairCapacity(
   return count < pair_capacity ? count : pair_capacity;
 }
 
-struct CrossingBatchReport {
-  RepresentedIntervalStatus status = RepresentedIntervalStatus::Ok;
-  const char* message = "OK";
-  // Index in the complete caller pair roster, including adapter failures.
-  std::size_t input_pair = SIZE_MAX;
-  // Verbatim last native report; meaningful only when native_called is true.
-  RepresentedIntervalReport native_report;
-  bool native_called = false;
-  std::size_t batch_offset = 0;
-  std::size_t prior_work = 0;
-  std::size_t completed_pairs = 0;
-  std::size_t completed_batches = 0;
-  // Private staging is exposed only after the complete roster succeeds.
-  RepresentedIntervalResultView results;
-};
+using CrossingBatchReport = represented_interval_crossing::BatchReport;
 
 // Internal adapter for an already canonical, strictly increasing pair roster.
 // Discovery cohorts, feature/seam ownership, and nonlinear policy grouping are
-// unchanged. EVERY native call receives ALL original paths, including unused
-// paths, so cross-batch source/trajectory contradictions remain visible.
-// Native pair work, witnesses, and identities are copied without modification.
+// unchanged. A native-owned lexical traversal authenticates ALL original
+// paths, including unused paths, before any pair work. The full immutable
+// roster stays borrowed throughout all slices; only its redundant revalidation
+// is removed. Native pair work, witnesses, identities, range checks and each
+// slice's publication/admission remain unchanged.
 //
 // scratch is a separate caller-owned arena, bounded private attempt storage,
 // never a borrowed native buffer (including an expired native view), disjoint from the

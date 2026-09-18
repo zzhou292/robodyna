@@ -9,6 +9,7 @@ cc_test(
     name = "host_check",
     size = "small",
     srcs = [
+        "BatchRosterTest.cpp",
         "DeepTest.cpp",
         "FailureTest.cpp",
         "Fixture.h",
@@ -36,6 +37,7 @@ cc_test(
         "verify_sources.py",
         "BUILD.bazel",
         "CMakeLists.txt",
+        "BatchRosterTest.cpp",
         "DeepTest.cpp",
         "FailureTest.cpp",
         "GeometryTest.cpp",

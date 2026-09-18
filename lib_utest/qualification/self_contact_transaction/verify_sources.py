@@ -972,14 +972,19 @@ for token in ("OriginalAdjacentStaticAndUniformStartupUseTheirActualLocalProofs"
 
 batch_path = ROOT / "lib_src/collision/self_contact_transaction/CrossingBatch.cpp"
 batch = batch_path.read_text()
-for token in ("paths, path_count, pairs ? pairs + report.batch_offset",
+batch_execution_path = ROOT / "lib_src/collision/represented_interval_crossing/BatchExecution.h"
+batch_execution = batch_execution_path.read_text()
+require(batch, "represented_interval_crossing::BatchAccess::Certify(", batch_path)
+require(batch, "CrossingBatchDiagnostics(", batch_path)
+for token in ("pairs ? pairs + report.batch_offset",
               "scratch[report.batch_offset + pair] = current.data[pair]",
               "report.results = {scratch, pair_count, true}",
-              "Compare(preceding, key) >= 0", "CrossingBatchDiagnostics("):
-    require(batch, token, batch_path)
-for forbidden in ("new ", "malloc(", "reserve(", "resize(", "push_back("):
-    if forbidden in batch:
-        raise RuntimeError(f"{batch_path}: per-call allocation {forbidden}")
+              "compare(preceding, key) >= 0"):
+    require(batch_execution, token, batch_execution_path)
+for inspected, path in ((batch, batch_path), (batch_execution, batch_execution_path)):
+    for forbidden in ("new ", "malloc(", "reserve(", "resize(", "push_back("):
+        if forbidden in inspected:
+            raise RuntimeError(f"{path}: per-call allocation {forbidden}")
 for token in ("crossing_batch_pair_capacity", "raw_crossing_result_capacity",
               "raw_crossing_result_bytes"):
     require(TYPES.read_text(), token, TYPES)
