@@ -3,6 +3,8 @@
 #include "case/vehicle_dynamics/Storage.h"
 #include "case/vehicle_self_contact/RuntimeData.h"
 #include "case/vehicle_self_contact/runtime/Stages.h"
+#include "case/vehicle_self_contact/runtime/Operations.h"
+#include "output/ArtifactIO.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
 
 #include <chrono>
@@ -10,6 +12,50 @@
 #include <stdexcept>
 
 namespace crash::cases::vehicle_self_contact {
+tlfea::contact::SelfContactTransactionReport
+CandidateRigidCouponAccess::PrepareWithFailureObserver(
+    vehicle_dynamics::VehiclePhysicalDynamics& dynamics,
+    const tlfea::contact::self_contact_transaction::CandidateFailureObserver& observer) {
+    namespace c = tlfea::contact;
+    auto& storage = *dynamics.storage_;
+    output::Require(!storage.pending, "Discard or commit the existing diagnostic step first");
+    c::SelfContactTransactionReport result;
+    try {
+        storage.Prepare();
+        // Same candidate-stage reuse as CaptureCensus, without a census or
+        // full-node host copy. Only the final self-seal call is substituted.
+        auto retained_self = std::move(storage.self_contact);
+        try {
+            storage.Evaluate();
+        } catch (...) {
+            storage.self_contact = std::move(retained_self);
+            throw;
+        }
+        storage.self_contact = std::move(retained_self);
+        auto* stages = dynamic_cast<detail::SelfContactStages*>(storage.self_contact.get());
+        output::Require(stages != nullptr, "Failure observer requires actual self-contact stages");
+        stages->receipt_ = {};
+        runtime::CheckCandidateObservation(storage.candidate().self_contact, storage.prepared);
+        result = c::self_contact_transaction::QualificationAccess::SealCandidateWithFailureObserver(
+            stages->contact.data_->transaction, storage.state().owner, storage.token,
+            storage.candidate().mechanics, storage.prepared, stages->accepted_,
+            &stages->receipt_, observer);
+        if (result.status != c::SelfContactTransactionStatus::Ok) {
+            storage.Discard();
+            return result;
+        }
+        runtime::ObserveCandidate(storage.candidate().self_contact, storage.prepared,
+                                  stages->receipt_);
+        stages->accepted_ = {};
+        storage.Capture();
+        storage.pending = true;
+        return result;
+    } catch (...) {
+        storage.Discard();
+        throw;
+    }
+}
+
 CandidateRigidCouponSnapshot CandidateRigidCouponAccess::Prepare(
         vehicle_dynamics::VehiclePhysicalDynamics& dynamics) {
         dynamics.PrepareStep();

@@ -44,17 +44,9 @@ void Assemble(
     authority = accepted;
 }
 
-void SealCandidate(
-    tlfea::contact::SelfContactTransaction& transaction,
-    tl::fea::FENodalState& owner,
-    const tl::fea::NodalTrialToken& token,
-    const tl::fea::ShellPhysicalDiagnostics& common,
-    const tl::fea::NodalPreparedView& prepared,
-    std::size_t event_capacity,
-    vehicle_dynamics::SelfContactObservation& observation,
-    tlfea::contact::SelfContactAcceptedAssemblyReceipt& accepted,
-    tlfea::contact::SelfContactTransactionReceipt& authority) {
-    authority = {};
+void CheckCandidateObservation(
+    const vehicle_dynamics::SelfContactObservation& observation,
+    const tl::fea::NodalPreparedView& prepared) {
     output::Require(
         observation.enabled && observation.accepted_force.valid &&
             observation.accepted_force.owner_id == prepared.owner_id &&
@@ -62,12 +54,14 @@ void SealCandidate(
                 prepared.kinematics.base_epoch &&
             observation.accepted_force.attempt == prepared.attempt,
         "Prepared self-contact stage requires the same accepted attempt");
+}
+
+void ObserveCandidate(
+    vehicle_dynamics::SelfContactObservation& observation,
+    const tl::fea::NodalPreparedView& prepared,
+    const tlfea::contact::SelfContactTransactionReceipt& completed) {
+    CheckCandidateObservation(observation, prepared);
     auto next = observation;
-    tlfea::contact::SelfContactTransactionReceipt completed;
-    Check(transaction.SealCandidate(
-              owner, token, common, prepared, accepted, &completed),
-          SelfContactRuntimeStage::CandidateSeal,
-          event_capacity);
     next.regularity_generation =
         completed.regularity_generation();
     next.candidate_broadphase_pairs =
@@ -79,6 +73,26 @@ void SealCandidate(
     next.removing_parents = completed.removing_parents();
     next.skipped_parents = completed.skipped_parents();
     observation = next;
+}
+
+void SealCandidate(
+    tlfea::contact::SelfContactTransaction& transaction,
+    tl::fea::FENodalState& owner,
+    const tl::fea::NodalTrialToken& token,
+    const tl::fea::ShellPhysicalDiagnostics& common,
+    const tl::fea::NodalPreparedView& prepared,
+    std::size_t event_capacity,
+    vehicle_dynamics::SelfContactObservation& observation,
+    tlfea::contact::SelfContactAcceptedAssemblyReceipt& accepted,
+    tlfea::contact::SelfContactTransactionReceipt& authority) {
+    authority = {};
+    CheckCandidateObservation(observation, prepared);
+    tlfea::contact::SelfContactTransactionReceipt completed;
+    Check(transaction.SealCandidate(
+              owner, token, common, prepared, accepted, &completed),
+          SelfContactRuntimeStage::CandidateSeal,
+          event_capacity);
+    ObserveCandidate(observation, prepared, completed);
     authority = completed;
     accepted = {};
 }

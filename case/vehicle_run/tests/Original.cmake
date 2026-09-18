@@ -13,13 +13,15 @@ add_executable(robo_dyna_vehicle_run_original_check
   "${CMAKE_CURRENT_LIST_DIR}/ContactCompositionTest.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/SelfContactTest.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/SecondIntervalCensusTest.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/SelfContactFailureCaptureTest.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/../../vehicle_startup/shell_execution/tests/self_contact/CoverageFixtureValuesTest.cpp")
 include("${CMAKE_CURRENT_LIST_DIR}/../../vehicle_startup/shell_execution/tests/self_contact/CoverageFixtureCapture.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../../vehicle_startup/shell_execution/tests/self_contact/PreparedCensusReplay.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../../vehicle_startup/shell_execution/tests/self_contact/CandidateFailureFixture.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../../vehicle_dynamics/StructuralLimiterReport.cmake")
 target_link_libraries(robo_dyna_vehicle_run_original_check PRIVATE robo_dyna_vehicle_run_original_source GTest::gtest_main)
 target_link_libraries(robo_dyna_vehicle_run_original_check PRIVATE robo_dyna_structural_limiter_report)
-target_link_libraries(robo_dyna_vehicle_run_original_check PRIVATE robo_dyna_self_contact_fixture_capture)
+target_link_libraries(robo_dyna_vehicle_run_original_check PRIVATE robo_dyna_self_contact_fixture_capture robo_dyna_candidate_failure_fixture)
 add_test(NAME vehicle_limiter_values COMMAND robo_dyna_vehicle_run_original_check
   --gtest_filter=VehicleLimiterValues.*)
 add_test(NAME vehicle_run_contact_composition COMMAND robo_dyna_vehicle_run_original_check
@@ -62,6 +64,17 @@ endforeach()
 option(ROBO_DYNA_ENABLE_V5_SELF_CONTACT_CONTROLLER
   "Register expensive two-interval V5 wall+self controller acceptance" OFF)
 if(ROBO_DYNA_ENABLE_V5_SELF_CONTACT_CONTROLLER)
+  add_test(NAME vehicle_run_wall_self_contact_failure_capture
+    COMMAND "${Python3_EXECUTABLE}" -B
+      "${CMAKE_CURRENT_LIST_DIR}/../../../modelio/self_contact/tests/actual_fixture.py"
+      "${ROBO_DYNA_VEHICLE_CANONICAL}" "${ROBO_DYNA_VEHICLE_SCOPE}"
+      "$<TARGET_FILE:robo_dyna_vehicle_run_original_check>"
+      "VehicleRunWallSelfContactFailure.CaptureFirstNativeRejectionWithinTwoIntervals")
+  set_tests_properties(vehicle_run_wall_self_contact_failure_capture PROPERTIES
+    TIMEOUT 7200 RUN_SERIAL TRUE PROCESSORS 2
+    LABELS "diagnostic;acceptance-v5;wall-self-contact;GPU;failure-capture"
+    RESOURCE_LOCK vehicle_self_contact_gpu
+    ENVIRONMENT "ROBO_VEHICLE_DECLARATIONS=${ROBO_DYNA_VEHICLE_DECLARATIONS};ROBO_VEHICLE_GLASS_RESOLUTION=${ROBO_DYNA_VEHICLE_GLASS_RESOLUTION};ROBO_VEHICLE_GLASS_SHA256=${ROBO_DYNA_VEHICLE_GLASS_SHA256};ROBO_DYNA_TYPE13_DECLARATION=${ROBO_DYNA_VEHICLE_TYPE13_DECLARATION};ROBO_VEHICLE_WALL=${ROBO_DYNA_VEHICLE_WALL_MANIFEST}")
   add_test(NAME vehicle_run_wall_self_contact_second_census
     COMMAND "${Python3_EXECUTABLE}" -B
       "${CMAKE_CURRENT_LIST_DIR}/../../../modelio/self_contact/tests/actual_fixture.py"

@@ -13,6 +13,15 @@ void Assemble(
     vehicle_dynamics::SelfContactObservation&,
     tlfea::contact::SelfContactAcceptedAssemblyReceipt&);
 
+// Shared observation contract for production and qualification composition.
+void CheckCandidateObservation(
+    const vehicle_dynamics::SelfContactObservation&,
+    const tl::fea::NodalPreparedView&);
+void ObserveCandidate(
+    vehicle_dynamics::SelfContactObservation&,
+    const tl::fea::NodalPreparedView&,
+    const tlfea::contact::SelfContactTransactionReceipt&);
+
 void SealCandidate(
     tlfea::contact::SelfContactTransaction&,
     tl::fea::FENodalState&, const tl::fea::NodalTrialToken&,

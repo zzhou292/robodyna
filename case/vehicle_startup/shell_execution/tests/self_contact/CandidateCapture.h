@@ -2,6 +2,7 @@
 
 #include "case/vehicle_dynamics/VehiclePhysicalDynamics.h"
 #include "lib_src/collision/self_contact_transaction/Storage.h"
+#include "lib_src/collision/self_contact_transaction/CandidateFailureCapture.h"
 
 #include <vector>
 
@@ -55,6 +56,12 @@ class CandidateRigidCouponAccess {
     // second candidate census without sealing or committing self contact.
     static AcceptedAssemblyCouponSnapshot PrepareCandidateCensus(
         vehicle_dynamics::VehiclePhysicalDynamics&);
+    // Executes the real accepted/structural/wall stages and one production
+    // self seal with a bounded failure observer. Success remains a prepared
+    // step for CommitStep; failure preserves the native report and rolls back.
+    static tlfea::contact::SelfContactTransactionReport PrepareWithFailureObserver(
+        vehicle_dynamics::VehiclePhysicalDynamics&,
+        const tlfea::contact::self_contact_transaction::CandidateFailureObserver&);
   private:
     static AcceptedAssemblyCouponSnapshot CaptureCensus(
         vehicle_dynamics::VehiclePhysicalDynamics&, bool prepared_activity);
