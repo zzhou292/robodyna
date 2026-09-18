@@ -2,6 +2,25 @@
 
 **GPU-accelerated Total-Lagrangian finite element framework for flexible multibody dynamics.**
 
+## Explicit vehicle-crash development path
+
+This branch also contains the physical-node explicit mechanics used by
+**robo-dyna**. That path uses one `FENodalState` owner, shared structural
+publication, and modular wall/self-contact participants. The legacy
+ANCF/Newton/DEME paths documented below are separate from the current Yaris
+runtime.
+
+Start with the [self-contact architecture and reading map](lib_src/collision/self_contact_transaction/README.md),
+the [physical owner](lib_src/solvers/FENodalState.h), and
+the [physical publication qualification guide](lib_utest/qualification/physical_publication/README.md).
+robo-dyna owns vehicle-source selection, case orchestration, archives, and
+Chrono visualization; TL-FEA owns mechanics and the physical state/clock.
+Self-contact uses GPU broadphase and force assembly with host geometry
+certification. This is a hybrid implementation, not an entirely GPU collision
+pipeline. Qualification of an individual module or interval does not establish
+long-duration vehicle-crash acceptance; consult the workspace handover for
+current run evidence.
+
 This code accompanies the following publications:
 
 - **Part I — Formulation:** Zhenhao Zhou, Ganesh Arivoli, Dan Negrut. *A Total Lagrangian Finite Element Framework for Multibody Dynamics: Part I — Formulation.* [arXiv:2602.17002](https://arxiv.org/abs/2602.17002)
