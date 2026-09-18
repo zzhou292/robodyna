@@ -39,7 +39,16 @@ verify the real same-owner success/rejection and closed-prefix behavior.
 With the existing live/original CMake configuration, build target
 `robo_dyna_vehicle_run_observed_check`; focused CTest is
 `vehicle_run_observed_values`. All build and GPU execution remains serialized
-by the workstation guard. This authored change has not been compiled or run.
+by the workstation guard. The integrated app, including the observer and full
+gate wrapper, has compiled successfully against native raw-crossing batching
+(`crossing-batch-app-build-1`). Its six observer host tests passed. The first
+nine-CTest invocation passed eight checks; native replay stopped before work
+because its SHA environment variable was misspelled. The corrected native-only
+replay passed (`crossing-batch-app-native-replay-1`). Preserve the initial failed
+receipt `crossing-batch-app-host-tests-1`; it is not a numerical replay failure.
+The full observed two-interval controller gate remains pending. These build and
+host checks do not establish real observed-controller physics or archive
+qualification.
 
 
 The original and observed full gates share `tests/TwoIntervalAcceptance.cpp`.
@@ -70,6 +79,15 @@ Capture/export failures are additional test failures and cannot replace the
 controller rejection or bypass the shared commit/archive assertions.
 
 The current observer captures authenticated prepared-intersection and final
-candidate-policy failures. Other failures can have no captured pair (including
-the current native chunk-work admission failure); they still fail acceptance.
-No native budget fields or proof limits are invented or changed by this wrapper.
+candidate-policy failures. Native raw-crossing failures also reach the observer
+when their pair ordinal maps to an authenticated source facet pair. The native
+transaction maps the subbatch ordinal through the complete canonical roster
+before rollback; its report retains the native admitted work prefix, triggering
+pair work and limit when those fields are available. A work-limit failure is
+resource evidence, not a geometric rejection witness. Failures without an
+authenticated pair can still produce no fixture and still fail acceptance.
+No native proof limits are changed by this wrapper.
+
+Caller-pinned replay requires `ROBO_SELF_CONTACT_FAILURE_MANIFEST` and
+`ROBO_SELF_CONTACT_FAILURE_SHA256`. The latter is the exact manifest SHA returned
+by export; `ROBO_SELF_CONTACT_FAILURE_MANIFEST_SHA256` is not a recognized name.
