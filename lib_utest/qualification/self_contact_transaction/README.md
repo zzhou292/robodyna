@@ -522,18 +522,21 @@ malformed provenance, and the distinction between invariant geometry and
 unowned thickness separation. Actual owner coupons qualify transaction
 authority and rollback; source checks alone do not establish runtime validity.
 
-`OriginalAdjacentStaticAndTranslatedLocalDiscardRetryCommit` uses the original
-T3/Q4 reference source and loads. It declares zero or unit common z velocity
-for the whole owner and all six participants, verifies the exact prepared
-contact translation, and exercises discard/retry/commit. The separate
-`ShortAltitudeReferenceFixedLocalContactRetainsForceAndReactionStiffness` coupon
-declares a 0.25 mm reference T3 altitude with a separate physical contact Q4
-(node IDs 20--23, T3 sharing 21/22 and apex 14). Source constructors derive all
-matching coefficients; only these five contact nodes have fixed translation.
-The original free QEPH nodes 10--13 remain the actual CIN masters for 901,
-with exactly the two corresponding QEPH activity witnesses. The coupon requires
-real near-thickness force/potential/reaction stiffness on a pair that publishes
-a local interval outcome, and checks stationary geometry and exact rollback. Fixed translation projects free normal STI to zero;
-the existing unconstrained VF/EE coupons retain their positive free-STI
-oracles. These are explicit test initial/boundary conditions, never changes to
-the vehicle profile or the original adjacent second-interval rejection test.
+`OriginalAdjacentStaticAndUniformStartupUseTheirActualLocalProofs` keeps the
+original reference source and declares rest or complete unit z translation.
+The static case qualifies exact native common translation and no coverage
+fallback. Actual CIN arithmetic in the moving case perturbs x/y slightly;
+its exact prepared geometry repeats after discard, z is exactly H, and the
+full continuous local-coverage path must commit without unresolved outcomes.
+
+`ReferenceOnsetLocalContactRetainsPositiveForceAndFreeSti` declares a separate
+physical contact Q4 (20--23) and adjacent T3 sharing 21/22 with apex 14 at
+nextafter(.04+.0005,.04). The exact initial penetration is 15/2^61 m. Native
+constructors derive the corresponding coefficients; all DOFs remain free,
+and the genuine QEPH 10--13/CIN 901 source remains elsewhere in the same owner.
+The test requires positive contact force/potential/free STI, exact unchanged
+first-interval represented geometry, and a positive accepted owner whose same
+canonical pair publishes the exact local policy without coverage fallback.
+It must discard/retry exactly and commit. No force, step, mass, material or
+position correction is permitted if those assertions fail. This small onset
+coupon does not claim substantial-force deformation or a vehicle-scale pass.
