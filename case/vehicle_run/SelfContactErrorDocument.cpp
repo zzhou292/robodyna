@@ -1,8 +1,39 @@
 #include "SelfContactDocument.h"
 #include "SelfContactErrorGeometry.h"
+#include "output/BoundedArrayJson.h"
 #include "case/vehicle_self_contact/SelfContactStageError.h"
 
 namespace crash::cases::vehicle_run::detail {
+
+namespace {
+
+void AppendCrossingWork(output::Document& document,
+                        const tlfea::contact::SelfContactCrossingDiagnostics& value) {
+    if (!value.available) return;
+    using namespace output;
+    Document native;
+    native.SetObject();
+    String(native, "schema", "robo_dyna.native_crossing_failure.v1");
+    String(native, "scope", "Failed native call; work is the admitted canonical prefix, not total chunk work or a geometry certificate");
+    Integer(native, "batch_pair_offset", value.batch_pair_offset);
+    Integer(native, "prior_batch_work", value.prior_batch_work);
+    if (value.input_path != SIZE_MAX) Integer(native, "input_path", value.input_path);
+    if (value.input_pair != SIZE_MAX) Integer(native, "input_pair", value.input_pair);
+    Integer(native, "input_paths", value.input_paths);
+    Integer(native, "input_pairs", value.input_pairs);
+    Integer(native, "unique_pairs", value.unique_pairs);
+    Integer(native, "certified_separated", value.certified_separated);
+    Integer(native, "certified_crossing_contact", value.certified_crossing_contact);
+    Integer(native, "unresolved", value.unresolved);
+    Integer(native, "admitted_work", value.admitted_work);
+    if (value.total_work_limit) {
+        Integer(native, "total_work_limit", value.total_work_limit);
+        Integer(native, "rejected_pair_work", value.rejected_pair_work);
+    }
+    array_json::Child(document, "native_crossing_failure", native);
+}
+
+}  // namespace
 
 output::Document SelfContactErrorDocument(
     const vehicle_self_contact::SelfContactStageError& error) {
@@ -43,6 +74,7 @@ output::Document SelfContactErrorDocument(
     Integer(document, "nonlinear_subdivision_depth", report.nonlinear_subdivision_depth);
     Boolean(document, "nonlinear_subdivision_work_exhausted", report.nonlinear_subdivision_work_exhausted);
     Boolean(document, "nonlinear_subdivision_depth_exhausted", report.nonlinear_subdivision_depth_exhausted);
+    AppendCrossingWork(document, report.crossing_diagnostics);
     AppendSelfContactErrorGeometry(document, report);
     return document;
 }

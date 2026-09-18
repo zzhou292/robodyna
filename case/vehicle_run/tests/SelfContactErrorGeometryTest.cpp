@@ -28,6 +28,52 @@ output::Document Encode(const contact::SelfContactTransactionReport& report) {
 
 }  // namespace
 
+TEST(VehicleRunSelfContactError, NativeWorkFailureRetainsPrefixAndBatchScopesExactly) {
+    contact::SelfContactTransactionReport report;
+    report.status = contact::SelfContactTransactionStatus::CrossingFailure;
+    report.crossing_status = contact::RepresentedIntervalStatus::ResourceLimit;
+    report.pair = 9001;
+    auto& native = report.crossing_diagnostics;
+    native.available = true;
+    native.batch_pair_offset = 1024;
+    native.prior_batch_work = (std::size_t{1} << 54) + 17;
+    native.input_pair = 1;
+    native.input_paths = 3;
+    native.input_pairs = native.unique_pairs = 2;
+    native.unresolved = 1;
+    native.admitted_work = 3;
+    native.total_work_limit = 5;
+    native.rejected_pair_work = 3;
+    const auto json = Encode(report);
+    EXPECT_EQ(json["pair_ordinal"].GetUint64(), 9001u);
+    const auto& value = json["native_crossing_failure"];
+    EXPECT_STREQ(value["schema"].GetString(), "robo_dyna.native_crossing_failure.v1");
+    EXPECT_EQ(value["batch_pair_offset"].GetUint64(), 1024u);
+    EXPECT_EQ(value["prior_batch_work"].GetUint64(), native.prior_batch_work);
+    EXPECT_FALSE(value.HasMember("input_path"));
+    EXPECT_EQ(value["input_pair"].GetUint64(), 1u);
+    EXPECT_EQ(value["input_paths"].GetUint64(), 3u);
+    EXPECT_EQ(value["input_pairs"].GetUint64(), 2u);
+    EXPECT_EQ(value["unique_pairs"].GetUint64(), 2u);
+    EXPECT_EQ(value["unresolved"].GetUint64(), 1u);
+    EXPECT_EQ(value["admitted_work"].GetUint64(), 3u);
+    EXPECT_EQ(value["total_work_limit"].GetUint64(), 5u);
+    EXPECT_EQ(value["rejected_pair_work"].GetUint64(), 3u);
+    EXPECT_FALSE(value.HasMember("complete_chunk_work"));
+    EXPECT_FALSE(json.HasMember("required_force_events"));
+}
+
+TEST(VehicleRunSelfContactError, UnavailableNativeDiagnosticsAreNotInvented) {
+    contact::SelfContactTransactionReport report;
+    EXPECT_FALSE(Encode(report).HasMember("native_crossing_failure"));
+    report.crossing_diagnostics.available = true;
+    const auto json = Encode(report);
+    const auto& value = json["native_crossing_failure"];
+    EXPECT_FALSE(value.HasMember("input_pair"));
+    EXPECT_FALSE(value.HasMember("total_work_limit"));
+    EXPECT_FALSE(value.HasMember("rejected_pair_work"));
+}
+
 TEST(VehicleRunSelfContactError, SourceFacetIdentityAndBoundsSurviveJsonRoundTrip) {
     contact::SelfContactTransactionReport report;
     report.status = contact::SelfContactTransactionStatus::UnresolvedCandidate;
