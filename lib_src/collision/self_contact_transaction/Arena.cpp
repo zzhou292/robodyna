@@ -133,6 +133,8 @@ bool MakeLayout(std::size_t nodes, std::size_t surface_parents,
           pair_chunk_capacity, next.chunk_nonlinear_results) ||
       !builder.Append<RepresentedIntervalResult>(
           pair_chunk_capacity, next.chunk_crossings) ||
+      !builder.Append<RepresentedIntervalResult>(
+          pair_chunk_capacity, next.chunk_raw_crossings) ||
       !builder.Append<SelfContactCandidatePolicyOutcome>(
           pair_chunk_capacity, next.chunk_validated_outcomes) ||
       !builder.Append<SelfContactForceEvent>(
@@ -206,6 +208,8 @@ Buffers Bind(void* base, const Layout& layout) noexcept {
           base, layout.chunk_nonlinear_results),
       ArenaPointer<RepresentedIntervalResult>(
           base, layout.chunk_crossings),
+      ArenaPointer<RepresentedIntervalResult>(
+          base, layout.chunk_raw_crossings),
       ArenaPointer<SelfContactCandidatePolicyOutcome>(
           base, layout.chunk_validated_outcomes),
       ArenaPointer<SelfContactForceEvent>(base, layout.chunk_events),

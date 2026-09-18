@@ -270,6 +270,12 @@ struct SelfContactTransactionForecast {
   // One caller-owned fixed 15-bit mask per materialized facet-pair slot.
   std::size_t feature_task_mask_capacity = 0;
   std::size_t feature_task_mask_bytes = 0;
+  // Raw-only work-admitted crossing calls retain the complete discovery
+  // cohort. Their separate private result staging is fully charged to arena
+  // storage; no device allocation or source/feature grouping changes.
+  std::size_t raw_crossing_result_capacity = 0;
+  std::size_t raw_crossing_result_bytes = 0;
+  std::size_t crossing_batch_pair_capacity = 0;
 };
 
 struct SelfContactTransactionPreflight {

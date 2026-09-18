@@ -641,6 +641,7 @@ struct Layout {
   tl::util::ArenaRegion chunk_motion_actions;
   tl::util::ArenaRegion chunk_nonlinear_results;
   tl::util::ArenaRegion chunk_crossings;
+  tl::util::ArenaRegion chunk_raw_crossings;
   tl::util::ArenaRegion chunk_validated_outcomes;
   tl::util::ArenaRegion chunk_events;
   tl::util::ArenaRegion chunk_certificates;
@@ -686,6 +687,7 @@ struct Buffers {
   PairMotionAction* chunk_motion_actions = nullptr;
   NonlinearSeparationResult* chunk_nonlinear_results = nullptr;
   RepresentedIntervalResult* chunk_crossings = nullptr;
+  RepresentedIntervalResult* chunk_raw_crossings = nullptr;
   SelfContactCandidatePolicyOutcome* chunk_validated_outcomes = nullptr;
   SelfContactForceEvent* chunk_events = nullptr;
   AcceptedEventCertificate* chunk_certificates = nullptr;

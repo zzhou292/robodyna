@@ -290,6 +290,8 @@ filegroup(
         "self_contact_transaction/Candidate.cpp",
         "self_contact_transaction/CandidateExclusions.cpp",
         "self_contact_transaction/CandidateExclusions.h",
+        "self_contact_transaction/CrossingBatch.cpp",
+        "self_contact_transaction/CrossingBatch.h",
         "self_contact_transaction/Qualification.cpp",
         "self_contact_transaction/CandidateFailureCapture.cpp",
         "self_contact_transaction/CandidateFailureCapture.h",
@@ -317,6 +319,7 @@ filegroup(
 cc_library(
     name = "self_contact_transaction_values",
     srcs = [
+        "self_contact_transaction/CrossingBatch.cpp",
         "self_contact_transaction/Arena.cpp",
         "self_contact_transaction/Limits.cpp",
         "self_contact_transaction/Layout.cpp",
@@ -330,6 +333,7 @@ cc_library(
     hdrs = [
         "SelfContactTransaction.h",
         "SelfContactTransactionTypes.h",
+        "self_contact_transaction/CrossingBatch.h",
         "self_contact_transaction/QualificationRanges.h",
         "self_contact_transaction/QualificationReceipt.h",
         "self_contact_transaction/LocalContact.h",
@@ -348,6 +352,7 @@ cc_library(
         ":self_contact_force_assembly",
         ":self_contact_physical_activity",
         "//lib_src/elements:shell_batch_publication",
+        "//lib_src/solvers:nodal_trial_identity",
         "//lib_utils:bounded_arena",
     ],
 )

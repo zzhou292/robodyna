@@ -16,6 +16,20 @@ void ExactReport(const c::SelfContactTransactionReport& a,
   FIELD(nonlinear_subdivision_work_exhausted);
   FIELD(nonlinear_subdivision_depth_exhausted);
   FIELD(publication_status); FIELD(owner_status);
+  FIELD(crossing_diagnostics.available);
+  FIELD(crossing_diagnostics.batch_pair_offset);
+  FIELD(crossing_diagnostics.prior_batch_work);
+  FIELD(crossing_diagnostics.input_path);
+  FIELD(crossing_diagnostics.input_pair);
+  FIELD(crossing_diagnostics.input_paths);
+  FIELD(crossing_diagnostics.input_pairs);
+  FIELD(crossing_diagnostics.unique_pairs);
+  FIELD(crossing_diagnostics.certified_separated);
+  FIELD(crossing_diagnostics.certified_crossing_contact);
+  FIELD(crossing_diagnostics.unresolved);
+  FIELD(crossing_diagnostics.admitted_work);
+  FIELD(crossing_diagnostics.total_work_limit);
+  FIELD(crossing_diagnostics.rejected_pair_work);
 #undef FIELD
   EXPECT_STREQ(a.message, b.message);
   EXPECT_EQ(p::Bits(a.offending_feature_distance_m),

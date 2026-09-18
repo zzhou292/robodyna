@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
+#include "CrossingBatch.h"
 
 #include "lib_src/solvers/NodalTrialIdentity.h"
 
@@ -249,6 +250,12 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
   forecast.swept_facet_bound_capacity = facets;
   forecast.candidate_crossing_capacity =
       limits.max_facet_pair_chunk;
+  forecast.raw_crossing_result_capacity = limits.max_facet_pair_chunk;
+  forecast.crossing_batch_pair_capacity = sct::RawCrossingBatchPairCapacity(
+      std::min(limits.crossing.max_input_pairs, limits.crossing.max_results),
+      limits.crossing.max_work_per_pair, limits.crossing.max_total_work);
+  forecast.crossing_batch_pair_capacity = std::min(
+      forecast.crossing_batch_pair_capacity, limits.max_facet_pair_chunk);
   forecast.accepted_event_capacity =
       config.force.event_capacity;
   forecast.accepted_certificate_capacity =
@@ -281,7 +288,10 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
                &forecast.streaming_heap_bytes) ||
       !Product(forecast.feature_task_mask_capacity,
                sizeof(FixedTriangleFeatureTaskMask),
-               &forecast.feature_task_mask_bytes))
+               &forecast.feature_task_mask_bytes) ||
+      !Product(forecast.raw_crossing_result_capacity,
+               sizeof(RepresentedIntervalResult),
+               &forecast.raw_crossing_result_bytes))
     return Failure(S::ResourceLimit,
         "Transaction streaming byte forecast overflowed");
   forecast.candidate_arena_bytes = layout.bytes;

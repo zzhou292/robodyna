@@ -47,6 +47,7 @@ sources = [
     root / "lib_src/collision/self_contact_transaction/Values.cpp",
     root / "lib_src/collision/self_contact_transaction/LocalContact.cpp",
     root / "lib_src/collision/self_contact_transaction/TranslatedLocal.cpp",
+    root / "lib_src/collision/self_contact_transaction/CrossingBatch.cpp",
     root / "lib_src/collision/self_contact_transaction/RigidSweep.cpp",
     root / "lib_src/collision/self_contact_transaction/Streaming.cpp",
     root / "lib_src/collision/self_contact_transaction/TaskMask.cpp",

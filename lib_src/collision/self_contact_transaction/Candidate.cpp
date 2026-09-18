@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
 #include "CandidateExclusions.h"
+#include "CrossingBatch.h"
 #include "TranslatedLocal.h"
 #include "QualificationRanges.h"
 
@@ -1444,18 +1445,62 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
           state.accepted_event_count);
       if (edge_policy.status != S::Ok)
         return state.Fail(edge_policy);
-      const auto crossing = state.crossing.Certify(
+      const auto crossing = sct::CertifyCrossingBatches(
+          state.crossing,
           state.buffers.chunk_paths, 2 * crossing_pair_count,
           state.buffers.chunk_represented_pairs,
-          crossing_pair_count);
+          crossing_pair_count,
+          state.storage_forecast.crossing_batch_pair_capacity,
+          state.buffers.chunk_raw_crossings,
+          state.storage_forecast.raw_crossing_result_capacity);
       if (crossing.status != RepresentedIntervalStatus::Ok) {
         auto report = Failure(
             S::CrossingFailure, crossing.message,
-            crossing.input_path, crossing.input_pair);
+            crossing.native_called ? crossing.native_report.input_path
+                                   : SIZE_MAX,
+            crossing.input_pair);
         report.crossing_status = crossing.status;
+        report.crossing_diagnostics = sct::CrossingBatchDiagnostics(crossing);
+        // Native ordinals belong to a compact raw subbatch. Recover the
+        // original facet pair before revoking the live activity authority.
+        if (crossing.input_pair < crossing_pair_count) {
+          const auto input = state.buffers.chunk_represented_pairs[
+              crossing.input_pair];
+          if (input.first >= 2 * crossing_pair_count ||
+              input.second >= 2 * crossing_pair_count)
+            return state.Fail(report);
+          const auto key = PairKey(state.buffers.chunk_paths[input.first].key,
+                                   state.buffers.chunk_paths[input.second].key);
+          const auto* begin = state.buffers.chunk_canonical_pairs;
+          const auto* found = std::lower_bound(begin, begin + pair_count, key,
+              [](const auto& a, const auto& b) {
+                return sct::Compare(a, b) < 0;
+              });
+          if (found != begin + pair_count && sct::Compare(*found, key) == 0) {
+            const auto facet_pair = state.buffers.facet_pair_chunk[found - begin];
+            const auto* raw_begin = state.buffers.chunk_raw_canonical_pairs;
+            const auto* raw_found = std::lower_bound(
+                raw_begin, raw_begin + streamed_pair_count, key,
+                [](const auto& a, const auto& b) {
+                  return sct::Compare(a, b) < 0;
+                });
+            if (raw_found != raw_begin + streamed_pair_count &&
+                sct::Compare(*raw_found, key) == 0)
+              report.pair = state.candidate_facet_pair_count +
+                  static_cast<std::size_t>(raw_found - raw_begin);
+            DescribeMotionFailure(
+                state.active_use, state.buffers.prepared_triangles,
+                state.buffers.facet_motion, state.buffers.facet_quadratic,
+                state.buffers.swept_facet_bounds, facet_pair, &report);
+            if (observer)
+              sct::QualificationAccess::ObserveCandidateFailure(
+                  *this, observer, report, facet_pair,
+                  base_stamp, authentic, assembly, activity_receipt);
+          }
+        }
         return state.Fail(report);
       }
-      const auto raw_crossings = state.crossing.results();
+      const auto raw_crossings = crossing.results;
       if (!raw_crossings.complete ||
           raw_crossings.count != crossing_pair_count ||
           (crossing_pair_count && !raw_crossings.data))
@@ -2482,20 +2527,34 @@ ClassifyPreparedCandidateCensusImpl(
       ++published;
     }
     if (collect_linear && linear_crossing_count) {
-      const auto crossing_report = state.crossing.Certify(
+      const auto crossing_report = sct::CertifyCrossingBatches(
+          state.crossing,
           state.buffers.chunk_paths, 2 * linear_crossing_count,
           state.buffers.chunk_represented_pairs,
-          linear_crossing_count);
+          linear_crossing_count,
+          state.storage_forecast.crossing_batch_pair_capacity,
+          state.buffers.chunk_raw_crossings,
+          state.storage_forecast.raw_crossing_result_capacity);
       if (crossing_report.status != RepresentedIntervalStatus::Ok) {
         auto report = Failure(
             S::CrossingFailure,
             "Linear qualification represented chunk failed",
-            crossing_report.input_path,
+            crossing_report.native_called
+                ? crossing_report.native_report.input_path : SIZE_MAX,
             crossing_report.input_pair);
         report.crossing_status = crossing_report.status;
+        report.crossing_diagnostics =
+            sct::CrossingBatchDiagnostics(crossing_report);
+        if (crossing_report.input_pair < linear_crossing_count)
+          DescribeMotionFailure(
+              state.active_use, state.buffers.prepared_triangles,
+              state.buffers.facet_motion, state.buffers.facet_quadratic,
+              state.buffers.swept_facet_bounds,
+              state.buffers.facet_pair_chunk[crossing_report.input_pair],
+              &report);
         return report;
       }
-      const auto crossing_view = state.crossing.results();
+      const auto crossing_view = crossing_report.results;
       if (!crossing_view.complete ||
           crossing_view.count != linear_crossing_count ||
           !crossing_view.data) {
@@ -2513,11 +2572,14 @@ ClassifyPreparedCandidateCensusImpl(
       for (std::size_t crossing = 0;
            crossing < linear_crossing_count; ++crossing) {
         const auto crossing_result = crossing_view.data[crossing];
-        if (crossing_result.work >
-            SIZE_MAX - linear_summary->represented_work) {
+        if (linear_summary->represented_work >
+                state.storage_forecast.complete_crossing_work_capacity ||
+            crossing_result.work >
+                state.storage_forecast.complete_crossing_work_capacity -
+                    linear_summary->represented_work) {
           return Failure(
               S::ResourceLimit,
-              "Linear qualification represented work overflows");
+              "Linear qualification represented stream exceeds its hard work cap");
         }
         linear_summary->represented_work += crossing_result.work;
         if (crossing_result.classification ==

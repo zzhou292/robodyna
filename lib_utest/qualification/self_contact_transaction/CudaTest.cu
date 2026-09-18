@@ -2176,3 +2176,4 @@ TEST(SelfContactTransactionCuda,
 
 #include "PreparedCensusCases.h"
 #include "FailureCaptureCases.h"
+#include "CrossingBatchCudaCases.h"

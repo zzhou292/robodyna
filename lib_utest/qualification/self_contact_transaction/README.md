@@ -540,3 +540,32 @@ canonical pair publishes the exact local policy without coverage fallback.
 It must discard/retry exactly and commit. No force, step, mass, material or
 position correction is permitted if those assertions fail. This small onset
 coupon does not claim substantial-force deformation or a vehicle-scale pass.
+
+Raw represented crossing now uses work-admitted subbatches without changing
+the 4,096-pair discovery cohort, seam-producer deduplication, or nonlinear
+chunk budget. The native per-call and per-pair limits remain unchanged. Each
+native call validates the entire original path roster; only its canonical
+pair slice changes. A separate forecasted host arena retains every raw result
+until the full cohort succeeds. A failed subbatch returns no complete view.
+The complete raw-plus-policy work cap still gates physical publication, and
+the qualification census also enforces its complete represented-work cap.
+
+`CrossingBatchTest` compares native results field by field across subbatch
+sizes, validates cross-batch trajectory identity, and exercises late failure
+and storage admission. `CrossingBatchCudaCases` compares unchanged accepted
+force/STI, discovery and policy identity, final owner state, and discard/retry
+for raw capacities 1, 2, and 64. It also rejects a two-pair stream when the
+complete work cap is one. These newly authored cases require runtime
+qualification; their presence does not establish a vehicle-scale pass.
+
+Native failure diagnostics keep the exact native call's ordinal and admitted
+prefix work, plus the raw batch offset and work of previous completed batches.
+Candidate source-pair mapping uses the original canonical discovery roster
+before invoking the optional failure observer and discarding the attempt.
+The pair which crosses an aggregate budget is not necessarily geometrically
+ambiguous. No pair count, depth, physical timestep, or force cap is increased.
+The late native work-limit failure/offset case is a host test of the actual
+native engine. The small physical coupons qualify complete-stream rejection
+and rollback; they do not claim execution of the newly added raw-native-failure
+observer hook. Its canonical source mapping is reviewed, and the existing CUDA
+observer coupons continue to qualify live authority and report preservation.

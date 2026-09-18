@@ -105,6 +105,7 @@ filegroup(
         "FailureCaptureCases.h",
         "LocalPublicationCases.h",
         "TranslatedLocalCudaCases.h",
+        "CrossingBatchCudaCases.h",
         "PolicyAssertions.h",
         "README.md",
         "check_syntax.py",

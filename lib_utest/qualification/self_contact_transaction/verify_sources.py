@@ -325,7 +325,7 @@ for token in (
     "state.candidate_discovery.Discover",
     "state.candidate_discovery.DiscoverMasked",
     "BuildLocalFeatureTaskMasks(",
-    "state.crossing.Certify",
+    "sct::CertifyCrossingBatches",
     "state.broadphase.Evaluate",
     "ValidateCandidatePublications",
     "FoldPolicyOutcomes(",
@@ -969,3 +969,25 @@ for token in ("OriginalAdjacentStaticAndUniformStartupUseTheirActualLocalProofs"
               "EXPECT_GT(force_change, 0)", "p::Exact(initial, discarded)",
               "fixture.Commit(token, prepared, common, receipt)"):
     require(translated_cuda.read_text(), token, translated_cuda)
+
+batch_path = ROOT / "lib_src/collision/self_contact_transaction/CrossingBatch.cpp"
+batch = batch_path.read_text()
+for token in ("paths, path_count, pairs ? pairs + report.batch_offset",
+              "scratch[report.batch_offset + pair] = current.data[pair]",
+              "report.results = {scratch, pair_count, true}",
+              "Compare(preceding, key) >= 0", "CrossingBatchDiagnostics("):
+    require(batch, token, batch_path)
+for forbidden in ("new ", "malloc(", "reserve(", "resize(", "push_back("):
+    if forbidden in batch:
+        raise RuntimeError(f"{batch_path}: per-call allocation {forbidden}")
+for token in ("crossing_batch_pair_capacity", "raw_crossing_result_capacity",
+              "raw_crossing_result_bytes"):
+    require(TYPES.read_text(), token, TYPES)
+for token in ("sct::CrossingBatchDiagnostics(crossing)",
+              "Linear qualification represented stream exceeds its hard work cap",
+              "state.buffers.chunk_raw_crossings"):
+    require(candidate, token, CANDIDATE)
+for build_path in (ROOT / "lib_src/collision/BUILD.bazel",
+                   ROOT / "lib_src/collision/SelfContactTransaction.cmake",
+                   Path(__file__).resolve().parent / "CMakeLists.txt"):
+    require(build_path.read_text(), "self_contact_transaction/CrossingBatch.cpp", build_path)
