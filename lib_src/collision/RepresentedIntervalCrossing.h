@@ -6,6 +6,7 @@
 #include <memory>
 
 namespace tlfea::contact {
+namespace represented_interval_crossing { struct BatchAccess; }
 
 // Bounded host certificate for pairs of fixed physical triangles.  For the
 // explicitly declared LinearNodalV1 path, every vertex follows the exact real
@@ -23,7 +24,8 @@ namespace tlfea::contact {
 // immutable complete publication; a successful call replaces it atomically.
 // results() is borrowed: its view expires on the next successful Certify, move,
 // or destruction.  Every failed Certify preserves the prior view's address,
-// count, completeness and bytes.
+// count, completeness and bytes. Internal compound batching retains this
+// publication rule for each native slice while hiding live writes throughout.
 // Initialize creates and warms the configured bounded persistent worker pool.
 // Certify allocates no memory, creates no threads, and parallelizes only
 // independent pair certificates. The object is externally nonconcurrent;
@@ -52,6 +54,7 @@ class RepresentedIntervalCrossing {
   RepresentedIntervalResultView results() const noexcept;
 
  private:
+  friend struct represented_interval_crossing::BatchAccess;
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };

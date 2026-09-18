@@ -15,7 +15,7 @@ bazel = (collision / "BUILD.bazel").read_text()
 test_cmake = (here / "CMakeLists.txt").read_text()
 test_bazel = (here / "BUILD.bazel").read_text()
 test_sources = (
-    "GeometryTest.cpp", "InvarianceTest.cpp", "FailureTest.cpp",
+    "BatchRosterTest.cpp", "GeometryTest.cpp", "InvarianceTest.cpp", "FailureTest.cpp",
     "IdentityTest.cpp", "DeepTest.cpp", "OracleTest.cpp",
     "ParallelTest.cpp", "TranslationProofTest.cpp", "Oracle.cpp",
 )
@@ -98,6 +98,22 @@ assert certify_body.index("storage.pairs.size() > storage.limits.max_results") <
 assert "storage.RunWorkers" in certify_body
 assert "storage.busy.compare_exchange_strong" in certify_body
 assert "impl_->busy.load(std::memory_order_acquire)" in source
+batch_header = (collision / "represented_interval_crossing/Batch.h").read_text()
+batch_execution = (collision / "represented_interval_crossing/BatchExecution.h").read_text()
+for name in ("represented_interval_crossing/Batch.h",
+             "represented_interval_crossing/BatchExecution.h"):
+    assert name in cmake and name in bazel, name
+assert "struct PathRoster" in source
+assert "if (!roster.authenticated)" in source
+assert "roster.authenticated = true" in source
+assert "PathRosterWork" in batch_header
+assert "BatchAccess::Certify(" in source
+assert "storage.DisjointFromOwned(scratch, scratch_bytes)" in source
+assert "report.path_roster_work = roster.work" in source
+assert "report.results = {scratch, pair_count, true}" in batch_execution
+assert "scratch[report.batch_offset + pair] = current.data[pair]" in batch_execution
+for forbidden in ("malloc(", ".reserve(", "pthread_create", "new "):
+    assert forbidden not in batch_execution, forbidden
 assert "boost::multiprecision::cpp_rational" in (
     here / "Oracle.cpp").read_text()
 for required_parallel in (
@@ -149,6 +165,21 @@ required = (
 )
 found = set(re.findall(r"TEST\(RepresentedIntervalCrossing,\s*(\w+)\)", tests))
 assert set(required) <= found
+batch_found = set(re.findall(
+    r"TEST\(RepresentedIntervalBatchRoster,\s*(\w+)\)", tests))
+required_batch = (
+    "LegacySlicesMatchAtOneTwoAndFivePairs",
+    "WholeRosterAuthenticatesOnceAt256And257Boundary",
+    "EmptyPairsStillAuthenticateEveryUnusedPath",
+    "DistantIdentityConflictsPreserveNativeDiagnosticOrder",
+    "MalformedPairsPrecedeUnusedPathAuthentication",
+    "CompatibleUnusedDuplicateDoesNotChangeResults",
+    "LateWorkFailurePreservesLastNativeSliceAndLimits",
+    "SeparateCallsReauthenticateMutationFailureAndRetry",
+    "ExpiredNativeScratchIsRejectedWithoutPublicationChange",
+    "PerPairWorkExhaustionRemainsAnExplicitUnresolvedResult",
+)
+assert set(required_batch) <= batch_found
 
 for forbidden in (
     "SelfContactBroadphase",
@@ -163,6 +194,7 @@ print(json.dumps({
     "status": "passed",
     "production_translation_units": 1,
     "host_functions": len(found),
+    "batch_roster_functions": len(batch_found),
     "motion": "explicit represented LinearNodalV1 only",
     "numerical_execution": False,
 }, sort_keys=True))

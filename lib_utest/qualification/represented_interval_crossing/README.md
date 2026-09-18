@@ -75,6 +75,38 @@ This slice owns no broadphase, active parent-use policy, source selection,
 thickness/area/stiffness, force, rigid/CIN response, timestep choice, adaptive
 controller, CUDA operation, or physical-owner transaction.
 
+## Prospective lexical path-roster reuse
+
+This isolated change is authored for review; it has not been built, tested or
+timed. The active vehicle qualification continues on its unchanged binary.
+
+The internal generic `represented_interval_crossing::BatchAccess::Certify`
+owns one synchronous canonical batch traversal. Its native busy lease spans
+all slices. A lexical `PathRoster` authenticates the full original immutable
+path/vertex roster once before pair work; it is neither retained in the owner
+nor returned to the caller. No callback or caller-supplied validity flag crosses
+this API. Each slice keeps its original phase, pointer/range, pair/result and
+work admission, worker execution, canonical fold and publication swap.
+Public `Certify` constructs a fresh roster and retains its existing contract.
+
+The transaction adapter only delegates to this native entry. Its full
+canonical input checks keep their original priority. Private output scratch
+must be disjoint from inputs, the native owner object and every retained
+native region, including expired publication/staging capacity. A later failed
+slice preserves the last successful native slice; it returns no complete outer
+view. No extra retained arrays, worker threads, device memory, source owners,
+clock, numerical predicates or limits are introduced.
+
+`BatchReport::path_roster_work` records bounded stack-only authentication,
+path/vertex-row and sort counts. These are not certificate work, physical
+diagnostics or fixture fields. They support an operation-count regression;
+they make no timing or speedup claim. `BatchRosterTest` compares a separate
+legacy loop over public `Certify` with the compound operation field by field,
+including late failures, empty input, unused malformed paths, publication
+retention, retry reauthentication and expired-view rejection. Existing owning
+native tests, transaction batch/force/rollback tests, frozen replays and a
+guarded production continuation remain required before integration.
+
 ## Author host gate
 
 From a fresh build directory, with one CPU and a 512 MiB guard:

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "RepresentedIntervalCrossing.h"
+#include "represented_interval_crossing/BatchExecution.h"
 
 #include <algorithm>
 #include <atomic>
@@ -937,6 +938,11 @@ RepresentedIntervalReport Failure(RepresentedIntervalStatus status) noexcept {
   return result;
 }
 
+struct BusyRelease {
+  std::atomic<bool>* value;
+  ~BusyRelease() { value->store(false, std::memory_order_release); }
+};
+
 }  // namespace
 
 struct RepresentedIntervalCrossing::Impl {
@@ -962,6 +968,19 @@ struct RepresentedIntervalCrossing::Impl {
     bool started = false;
     bool failed = false;
   };
+
+  // Lexical to one native call/compound operation. No authority is exported
+  // or retained in Impl, and the borrowed roster cannot change between slices.
+  struct PathRoster {
+    const RepresentedTrianglePath* paths;
+    std::size_t count;
+    bool authenticated = false;
+    represented_interval_crossing::PathRosterWork work;
+  };
+  bool DisjointFromOwned(const void* data, std::size_t bytes) const noexcept;
+  RepresentedIntervalReport CertifySlice(
+      const RepresentedTrianglePath*, std::size_t,
+      const RepresentedTrianglePair*, std::size_t, PathRoster&) noexcept;
 
   explicit Impl(RepresentedIntervalLimits input) : limits(input) {}
   ~Impl() { Shutdown(); }
@@ -1311,10 +1330,63 @@ RepresentedIntervalReport RepresentedIntervalCrossing::Certify(
         "represented interval crossing does not accept concurrent calls";
     return report;
   }
-  struct BusyRelease {
-    std::atomic<bool>* value;
-    ~BusyRelease() { value->store(false, std::memory_order_release); }
-  } busy_release{&storage.busy};
+  BusyRelease busy_release{&storage.busy};
+  Impl::PathRoster roster{paths, path_count};
+  return storage.CertifySlice(paths, path_count, pairs, pair_count, roster);
+}
+
+bool RepresentedIntervalCrossing::Impl::DisjointFromOwned(
+    const void* data, std::size_t bytes) const noexcept {
+  const auto& storage = *this;
+  if (!RangeDisjoint(data, bytes, &storage, sizeof(storage)) ||
+      !RangeDisjoint(data, bytes, storage.exact_scratch.get(),
+                     storage.forecast.exact_scratch_bytes) ||
+      !RangeDisjoint(data, bytes, storage.dfs_frames.get(),
+                     storage.forecast.dfs_frame_bytes) ||
+      !RangeDisjoint(data, bytes, storage.pair_status.get(),
+                     storage.forecast.pair_status_bytes) ||
+      !RangeDisjoint(data, bytes, storage.workers.get(),
+                     storage.forecast.worker_metadata_bytes) ||
+      !storage.WorkerStacksDisjoint(data, bytes))
+    return false;
+  struct Range {
+    const void* data;
+    std::size_t count;
+    std::size_t element;
+  };
+  const Range ranges[]{
+      {storage.path_indices.data(), storage.path_indices.capacity(),
+       sizeof(std::uint32_t)},
+      {storage.pairs.data(), storage.pairs.capacity(),
+       sizeof(CanonicalPair)},
+      {storage.vertex_ledger.data(), storage.vertex_ledger.capacity(),
+       sizeof(VertexLedgerRow)},
+      {storage.published.data(), storage.published.capacity(),
+       sizeof(RepresentedIntervalResult)},
+      {storage.staging.data(), storage.staging.capacity(),
+       sizeof(RepresentedIntervalResult)}};
+  for (const auto& range : ranges) {
+    std::size_t owned_bytes = 0;
+    if (!MultiplySize(range.count, range.element, &owned_bytes) ||
+        !RangeDisjoint(data, bytes, range.data, owned_bytes))
+      return false;
+  }
+  return true;
+}
+
+RepresentedIntervalReport RepresentedIntervalCrossing::Impl::CertifySlice(
+    const RepresentedTrianglePath* paths, std::size_t path_count,
+    const RepresentedTrianglePair* pairs, std::size_t pair_count,
+    PathRoster& roster) noexcept {
+  auto& storage = *this;
+  RepresentedIntervalReport report = FreshReport();
+  report.input_paths = path_count;
+  report.input_pairs = pair_count;
+  if (roster.paths != paths || roster.count != path_count) {
+    report.status = RepresentedIntervalStatus::InvalidInput;
+    report.message = "native lexical path roster changed during batch traversal";
+    return report;
+  }
   if (storage.phase.load(std::memory_order_acquire) !=
       Impl::Phase::Warm) {
     report.status = RepresentedIntervalStatus::ResourceLimit;
@@ -1334,98 +1406,70 @@ RepresentedIntervalReport RepresentedIntervalCrossing::Certify(
     return report;
   }
   std::size_t path_bytes = 0, pair_bytes = 0;
-  const auto disjoint_from_owned = [&](const void* data,
-                                       std::size_t bytes) noexcept {
-    if (!RangeDisjoint(data, bytes, &storage, sizeof(storage)) ||
-        !RangeDisjoint(data, bytes, storage.exact_scratch.get(),
-                       storage.forecast.exact_scratch_bytes) ||
-        !RangeDisjoint(data, bytes, storage.dfs_frames.get(),
-                       storage.forecast.dfs_frame_bytes) ||
-        !RangeDisjoint(data, bytes, storage.pair_status.get(),
-                       storage.forecast.pair_status_bytes) ||
-        !RangeDisjoint(data, bytes, storage.workers.get(),
-                       storage.forecast.worker_metadata_bytes) ||
-        !storage.WorkerStacksDisjoint(data, bytes))
-      return false;
-    struct Range {
-      const void* data;
-      std::size_t count;
-      std::size_t element;
-    };
-    const Range ranges[]{
-        {storage.path_indices.data(), storage.path_indices.capacity(),
-         sizeof(std::uint32_t)},
-        {storage.pairs.data(), storage.pairs.capacity(),
-         sizeof(CanonicalPair)},
-        {storage.vertex_ledger.data(), storage.vertex_ledger.capacity(),
-         sizeof(VertexLedgerRow)},
-        {storage.published.data(), storage.published.capacity(),
-         sizeof(RepresentedIntervalResult)},
-        {storage.staging.data(), storage.staging.capacity(),
-         sizeof(RepresentedIntervalResult)}};
-    for (const auto& range : ranges) {
-      std::size_t owned_bytes = 0;
-      if (!MultiplySize(range.count, range.element, &owned_bytes) ||
-          !RangeDisjoint(data, bytes, range.data, owned_bytes))
-        return false;
-    }
-    return true;
-  };
   if (!MultiplySize(path_count, sizeof(*paths), &path_bytes) ||
       !MultiplySize(pair_count, sizeof(*pairs), &pair_bytes) ||
       !RangeDisjoint(paths, path_bytes, pairs, pair_bytes) ||
-      !disjoint_from_owned(paths, path_bytes) ||
-      !disjoint_from_owned(pairs, pair_bytes)) {
+      !storage.DisjointFromOwned(paths, path_bytes) ||
+      !storage.DisjointFromOwned(pairs, pair_bytes)) {
     report.status = RepresentedIntervalStatus::InvalidInput;
     report.message = Message(report.status);
     return report;
   }
 
-  storage.path_indices.clear();
-  storage.vertex_ledger.clear();
-  for (std::size_t i = 0; i < path_count; ++i) {
-    const auto status = ValidatePath(paths[i]);
-    if (status != RepresentedIntervalStatus::Ok) {
-      report.status = status;
-      report.input_path = i;
-      report.message = Message(status);
-      return report;
+  if (!roster.authenticated) {
+    ++roster.work.authentications;
+    storage.path_indices.clear();
+    storage.vertex_ledger.clear();
+    for (std::size_t i = 0; i < path_count; ++i) {
+      ++roster.work.path_rows;
+      const auto status = ValidatePath(paths[i]);
+      if (status != RepresentedIntervalStatus::Ok) {
+        report.status = status;
+        report.input_path = i;
+        report.message = Message(status);
+        return report;
+      }
+      storage.path_indices.push_back(static_cast<std::uint32_t>(i));
+      for (const auto& vertex : paths[i].vertices) {
+        storage.vertex_ledger.push_back(
+            {vertex.key, {vertex.endpoint[0], vertex.endpoint[1]},
+             paths[i].motion, i});
+        ++roster.work.vertex_rows;
+      }
     }
-    storage.path_indices.push_back(static_cast<std::uint32_t>(i));
-    for (const auto& vertex : paths[i].vertices)
-      storage.vertex_ledger.push_back(
-          {vertex.key, {vertex.endpoint[0], vertex.endpoint[1]},
-           paths[i].motion, i});
-  }
-  std::sort(storage.path_indices.begin(), storage.path_indices.end(),
-            [&](std::uint32_t a, std::uint32_t b) {
-              return Compare(paths[a].key, paths[b].key) < 0;
-            });
-  for (std::size_t i = 1; i < storage.path_indices.size(); ++i) {
-    const auto previous = storage.path_indices[i - 1];
-    const auto current = storage.path_indices[i];
-    if (Same(paths[previous].key, paths[current].key) &&
-        !CompatiblePath(paths[previous], paths[current])) {
-      report.status = RepresentedIntervalStatus::IdentityMismatch;
-      report.input_path = current;
-      report.message = Message(report.status);
-      return report;
+    ++roster.work.path_sorts;
+    std::sort(storage.path_indices.begin(), storage.path_indices.end(),
+              [&](std::uint32_t a, std::uint32_t b) {
+                return Compare(paths[a].key, paths[b].key) < 0;
+              });
+    for (std::size_t i = 1; i < storage.path_indices.size(); ++i) {
+      const auto previous = storage.path_indices[i - 1];
+      const auto current = storage.path_indices[i];
+      if (Same(paths[previous].key, paths[current].key) &&
+          !CompatiblePath(paths[previous], paths[current])) {
+        report.status = RepresentedIntervalStatus::IdentityMismatch;
+        report.input_path = current;
+        report.message = Message(report.status);
+        return report;
+      }
     }
-  }
-  std::sort(storage.vertex_ledger.begin(), storage.vertex_ledger.end(),
-            VertexLedgerLess);
-  for (std::size_t i = 1; i < storage.vertex_ledger.size(); ++i) {
-    const auto& previous = storage.vertex_ledger[i - 1];
-    const auto& current = storage.vertex_ledger[i];
-    if (Compare(previous.key, current.key) == 0 &&
-        (previous.motion != current.motion ||
-         !SameBits(previous.endpoint[0], current.endpoint[0]) ||
-         !SameBits(previous.endpoint[1], current.endpoint[1]))) {
-      report.status = RepresentedIntervalStatus::IdentityMismatch;
-      report.input_path = current.input_path;
-      report.message = "inconsistent vertex trajectory identity";
-      return report;
+    ++roster.work.vertex_sorts;
+    std::sort(storage.vertex_ledger.begin(), storage.vertex_ledger.end(),
+              VertexLedgerLess);
+    for (std::size_t i = 1; i < storage.vertex_ledger.size(); ++i) {
+      const auto& previous = storage.vertex_ledger[i - 1];
+      const auto& current = storage.vertex_ledger[i];
+      if (Compare(previous.key, current.key) == 0 &&
+          (previous.motion != current.motion ||
+           !SameBits(previous.endpoint[0], current.endpoint[0]) ||
+           !SameBits(previous.endpoint[1], current.endpoint[1]))) {
+        report.status = RepresentedIntervalStatus::IdentityMismatch;
+        report.input_path = current.input_path;
+        report.message = "inconsistent vertex trajectory identity";
+        return report;
+      }
     }
+    roster.authenticated = true;
   }
 
   storage.pairs.clear();
@@ -1511,6 +1555,75 @@ RepresentedIntervalReport RepresentedIntervalCrossing::Certify(
   storage.published.swap(storage.staging);
   storage.staging.clear();
   storage.complete = true;
+  return report;
+}
+
+represented_interval_crossing::BatchReport
+represented_interval_crossing::BatchAccess::Certify(
+    RepresentedIntervalCrossing& crossing,
+    const RepresentedTrianglePath* paths, std::size_t path_count,
+    const RepresentedTrianglePair* pairs, std::size_t pair_count,
+    std::size_t batch_pair_capacity,
+    RepresentedIntervalResult* scratch,
+    std::size_t scratch_capacity) noexcept {
+  const auto compare = [](const auto& first, const auto& second) {
+    return Compare(first, second);
+  };
+  auto report = detail::ValidateInput(
+      crossing.initialized(), crossing.forecast(), crossing.results(),
+      paths, path_count, pairs, pair_count, batch_pair_capacity,
+      scratch, scratch_capacity, compare, RangeDisjoint);
+  if (report.status != RepresentedIntervalStatus::Ok) return report;
+
+  auto& storage = *crossing.impl_;
+  // Keep the same native first-slice report on overlapping/unavailable calls.
+  const auto first_count = std::min(batch_pair_capacity, pair_count);
+  auto admission = FreshReport();
+  admission.input_paths = path_count;
+  admission.input_pairs = first_count;
+  bool expected_idle = false;
+  if (!storage.busy.compare_exchange_strong(
+          expected_idle, true, std::memory_order_acq_rel)) {
+    admission.status = RepresentedIntervalStatus::InvalidInput;
+    admission.message =
+        "represented interval crossing does not accept concurrent calls";
+    report.native_report = admission;
+    report.native_called = true;
+    return detail::Failure(report, admission.status, admission.message);
+  }
+  BusyRelease busy_release{&storage.busy};
+  if (storage.phase.load(std::memory_order_acquire) !=
+      RepresentedIntervalCrossing::Impl::Phase::Warm) {
+    admission.status = RepresentedIntervalStatus::ResourceLimit;
+    admission.message =
+        "represented interval crossing worker pool is unavailable";
+    report.native_report = admission;
+    report.native_called = true;
+    return detail::Failure(report, admission.status, admission.message);
+  }
+  // Caller scratch is private, not an expired/native result buffer. Unlike
+  // the old adapter's current-view check, authenticate every retained region.
+  std::size_t scratch_bytes = 0;
+  if (!detail::Bytes(scratch, scratch_capacity, &scratch_bytes) ||
+      !RangeDisjoint(scratch, scratch_bytes, &crossing, sizeof(crossing)) ||
+      !storage.DisjointFromOwned(scratch, scratch_bytes))
+    return detail::Failure(report, RepresentedIntervalStatus::InvalidInput,
+        "Crossing batch scratch aliases native owned storage");
+
+  RepresentedIntervalCrossing::Impl::PathRoster roster{paths, path_count};
+  report = detail::Execute(
+      paths, pairs, pair_count, batch_pair_capacity, scratch,
+      [&](const RepresentedTrianglePair* slice, std::size_t count) {
+        return storage.CertifySlice(paths, path_count, slice, count, roster);
+      },
+      [&]() {
+        // Public results() deliberately hides publication while busy. This
+        // native-owned view is consumed synchronously after workers join.
+        return RepresentedIntervalResultView{
+            storage.published.data(), storage.published.size(),
+            storage.complete};
+      }, compare);
+  report.path_roster_work = roster.work;
   return report;
 }
 
