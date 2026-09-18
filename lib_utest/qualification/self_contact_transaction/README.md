@@ -569,3 +569,31 @@ native engine. The small physical coupons qualify complete-stream rejection
 and rollback; they do not claim execution of the newly added raw-native-failure
 observer hook. Its canonical source mapping is reviewed, and the existing CUDA
 observer coupons continue to qualify live authority and report preservation.
+
+
+## Prospective shared-vertex cone diagonal coverage
+
+This isolated change is authored for review; numerical qualification is
+pending. Gate8's pinned failure fixture identifies an affine shared-vertex
+pair whose unmasked physical-thickness tasks are already separated. Its
+different nodal displacements correctly prevent exact-common-translation
+authority. The existing local geometry proof is reached but its finite
+separating-axis search misses a separating plane.
+
+Six signed coordinate-plane diagonals are appended after the original
+fourteen candidates in the existing 32-slot array. Every direction still
+passes the same directed Bernstein projection and strict opposite-sign
+checks for both arms of each triangle over the complete cell. The new
+directions supply no acceptance authority by themselves. This remains a
+bounded sufficient-certificate search, not a complete cone solver.
+Endpoint-local authentication, shared path identity, nondegeneracy, physical
+thickness separation, limits, force ownership and timestep are unchanged.
+
+The source-derived coupon retains the captured binary64 coordinates with
+generic source identities; the app's separate pinned codec replay retains
+actual artifact provenance. Coordinate permutations and proper quarter-turn
+rotations exercise the covered axis family. Near-boundary and curved
+nonlocal-overlap cases remain explicit rejection oracles. Projection values
+on the unnormalized normal (1,1,0) are dot products, not physical distances.
+Existing negative continuous-geometry, native owner/publication and frozen
+fixture gates remain required. No new vehicle acceptance or timing is claimed.

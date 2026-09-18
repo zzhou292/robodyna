@@ -2313,6 +2313,17 @@ bool SharedVertexConeSeparated(
        arms[2].y + arms[3].y,
        arms[2].z + arms[3].z});
 
+  // Additional bounded search directions, not geometry authority: every
+  // candidate still needs opposite strict Bernstein signs for all four arms.
+  // Append after the original directions to preserve every prior winner.
+  constexpr Vec3 coordinate_diagonals[]{
+      {1, 1, 0}, {1, -1, 0}, {1, 0, 1},
+      {1, 0, -1}, {0, 1, 1}, {0, 1, -1}};
+  static_assert(3 + 4 + 6 + 1 + 6 <= 32,
+                "shared-vertex cone candidate storage remains bounded");
+  for (const auto axis : coordinate_diagonals)
+    candidates[candidate_count++] = axis;
+
   for (unsigned candidate = 0;
        candidate < candidate_count; ++candidate) {
     int side_sign[2]{};

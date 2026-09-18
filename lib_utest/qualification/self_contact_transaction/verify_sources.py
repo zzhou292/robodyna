@@ -910,6 +910,28 @@ for token in ("AdjacentLocalFirstIntervalCommitsThenSecondIntervalRejectsRetryAt
               "CheckSecondIntervalRepresentationCoordinates(prepared_facets)",
               "fixture.Commit(token,prepared,common,receipt)"):
     require(local_cases.read_text(), token, local_cases)
+# The finite cone-axis search may add candidates, never authority: preserve
+# the old order and the same interval sign check within the existing storage.
+for token in ("constexpr Vec3 coordinate_diagonals[]",
+              "3 + 4 + 6 + 1 + 6 <= 32",
+              "for (const auto axis : coordinate_diagonals)",
+              "DotPolynomialAxis(", "StrictPolynomialOrientation(projection)"):
+    require(rigid_sweep, token, RIGID_SWEEP)
+cone_cases = Path(__file__).resolve().parent / "ConeDiagonalCases.h"
+for token in ("CapturedAffineCoordinatesNeedOneRootProofWithoutSourceSpecialCases",
+              "AllVertexOrdersRetainSharedIdentityAndRootProof",
+              "SignedCoordinatePermutationsAndQuarterTurnsRetainRootProof",
+              "DyadicBoundaryRequiresStrictConeSeparation",
+              "RotatedActualRigidMidintervalCrossingRemainsRejected",
+              "MalformedSharedTrajectoryDegeneracyAndZeroWorkFailClosed",
+              "CertifyQuadraticLocalTopology(", "RequiresIntersectionAdmission(intersection)"):
+    require(cone_cases.read_text(), token, cone_cases)
+require((cone_cases.parent / "ContinuousLocalTest.cpp").read_text(),
+        '#include "ConeDiagonalCases.h"', cone_cases)
+for name in ("CMakeLists.txt", "BUILD.bazel"):
+    require((cone_cases.parent / name).read_text(), cone_cases.name,
+            cone_cases.parent / name)
+
 # The original accepted-contact CUDA test retains the positive two-commit
 # lifecycle. The adjacent local coupon qualifies its first commit followed by
 # the exact second-interval representation rejection and rollback/retry.

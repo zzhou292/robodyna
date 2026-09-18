@@ -6,6 +6,8 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
+#include <cstdint>
 
 namespace {
 namespace c = tlfea::contact;
@@ -185,6 +187,8 @@ sct::NonlinearSeparationResult LocalPolicy(
       second, prepared, curved, thickness, Duration,
       nullptr, 0, nullptr, 0, work, depth);
 }
+
+#include "ConeDiagonalCases.h"
 
 TEST(SelfContactContinuousLocal, CurvedSharedVertexNeedsNoInventedOwner) {
   const auto first = Triangle(

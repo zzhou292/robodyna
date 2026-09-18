@@ -18,6 +18,7 @@ add_executable(self_contact_transaction_values
   LocalEdgeRepresentationCases.h
   TranslatedLocalCases.h
   ContinuousLocalTest.cpp
+  ConeDiagonalCases.h
   MaskedResidualTest.cpp
   CrossingBatchTest.cpp
   RigidSweepBoundsTest.cpp
