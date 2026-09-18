@@ -12,6 +12,8 @@ cc_test(
     srcs = [
         "ContinuousLocalTest.cpp",
         "MaskedResidualTest.cpp",
+        "CrossingBatchTest.cpp",
+        "//lib_utest/qualification/represented_interval_crossing:Fixture.h",
         "RigidSweepBoundsTest.cpp",
         "ValueTest.cpp",
         "PersistentGeometryCases.h",
@@ -70,6 +72,7 @@ cc_test(
         "AcceptedEventTest.cpp",
         "ContinuousLocalTest.cpp",
         "MaskedResidualTest.cpp",
+        "CrossingBatchTest.cpp",
         "PersistentGeometryCases.h",
         "PolicyExclusionsCases.h",
         "RigidFeatureGeometryCases.h",

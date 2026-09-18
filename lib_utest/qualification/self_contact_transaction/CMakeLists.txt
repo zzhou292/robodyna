@@ -19,6 +19,7 @@ add_executable(self_contact_transaction_values
   TranslatedLocalCases.h
   ContinuousLocalTest.cpp
   MaskedResidualTest.cpp
+  CrossingBatchTest.cpp
   RigidSweepBoundsTest.cpp
   "${TL_ROOT}/lib_src/collision/self_contact_transaction/Values.cpp"
   "${TL_ROOT}/lib_src/collision/self_contact_transaction/TranslatedLocal.cpp"
