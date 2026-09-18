@@ -12,6 +12,8 @@ add_executable(robo_dyna_vehicle_run_original_check
   "${CMAKE_CURRENT_LIST_DIR}/LimiterTest.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/ContactCompositionTest.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/SelfContactTest.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/TwoIntervalAcceptance.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/observed/AcceptanceTest.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/SecondIntervalCensusTest.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/SelfContactFailureCaptureTest.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/../../vehicle_startup/shell_execution/tests/self_contact/CoverageFixtureValuesTest.cpp")
@@ -23,6 +25,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/../../vehicle_dynamics/StructuralLimiterRepor
 target_link_libraries(robo_dyna_vehicle_run_original_check PRIVATE robo_dyna_vehicle_run_original_source GTest::gtest_main)
 target_link_libraries(robo_dyna_vehicle_run_original_check PRIVATE robo_dyna_structural_limiter_report)
 target_link_libraries(robo_dyna_vehicle_run_original_check PRIVATE robo_dyna_self_contact_fixture_capture robo_dyna_candidate_failure_fixture)
+target_link_libraries(robo_dyna_vehicle_run_original_check PRIVATE robo_dyna_vehicle_run_observed_qualification)
 add_test(NAME vehicle_limiter_values COMMAND robo_dyna_vehicle_run_original_check
   --gtest_filter=VehicleLimiterValues.*)
 add_test(NAME vehicle_run_contact_composition COMMAND robo_dyna_vehicle_run_original_check
@@ -107,6 +110,19 @@ if(ROBO_DYNA_ENABLE_V5_SELF_CONTACT_CONTROLLER)
   set_tests_properties(vehicle_run_wall_self_contact_two_intervals PROPERTIES
     TIMEOUT 7200 RUN_SERIAL TRUE PROCESSORS 2
     LABELS "acceptance-v5;controller;wall-self-contact;GPU"
+    RESOURCE_LOCK vehicle_self_contact_gpu
+    ENVIRONMENT "ROBO_VEHICLE_DECLARATIONS=${ROBO_DYNA_VEHICLE_DECLARATIONS};ROBO_VEHICLE_GLASS_RESOLUTION=${ROBO_DYNA_VEHICLE_GLASS_RESOLUTION};ROBO_VEHICLE_GLASS_SHA256=${ROBO_DYNA_VEHICLE_GLASS_SHA256};ROBO_DYNA_TYPE13_DECLARATION=${ROBO_DYNA_VEHICLE_TYPE13_DECLARATION};ROBO_VEHICLE_WALL=${ROBO_DYNA_VEHICLE_WALL_MANIFEST}")
+  # Requires inherited explicit run/failure output paths; never supplies a
+  # reusable default or treats an exported native rejection as test success.
+  add_test(NAME vehicle_run_wall_self_contact_observed_two_intervals
+    COMMAND "${Python3_EXECUTABLE}" -B
+      "${CMAKE_CURRENT_LIST_DIR}/../../../modelio/self_contact/tests/actual_fixture.py"
+      "${ROBO_DYNA_VEHICLE_CANONICAL}" "${ROBO_DYNA_VEHICLE_SCOPE}"
+      "$<TARGET_FILE:robo_dyna_vehicle_run_original_check>"
+      "VehicleRunWallSelfContactObserved.TwoCommittedV5IntervalsPreserveBothContactProfilesAndReplay")
+  set_tests_properties(vehicle_run_wall_self_contact_observed_two_intervals PROPERTIES
+    TIMEOUT 7200 RUN_SERIAL TRUE PROCESSORS 2
+    LABELS "acceptance-v5;controller;wall-self-contact;GPU;failure-observer"
     RESOURCE_LOCK vehicle_self_contact_gpu
     ENVIRONMENT "ROBO_VEHICLE_DECLARATIONS=${ROBO_DYNA_VEHICLE_DECLARATIONS};ROBO_VEHICLE_GLASS_RESOLUTION=${ROBO_DYNA_VEHICLE_GLASS_RESOLUTION};ROBO_VEHICLE_GLASS_SHA256=${ROBO_DYNA_VEHICLE_GLASS_SHA256};ROBO_DYNA_TYPE13_DECLARATION=${ROBO_DYNA_VEHICLE_TYPE13_DECLARATION};ROBO_VEHICLE_WALL=${ROBO_DYNA_VEHICLE_WALL_MANIFEST}")
 endif()

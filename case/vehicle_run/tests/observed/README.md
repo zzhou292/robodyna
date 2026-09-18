@@ -34,10 +34,42 @@ admission. They do not initialize physical owners or authenticate source setup.
 The `setup()` forwarder is reviewed structurally, because constructing its
 source requires the real startup factory. These checks do not prove physical
 controller or archive equivalence; a subsequent observed production gate must
-verify the real same-owner success/rejection and closed-prefix behavior. No
-full-vehicle export mode is registered by this staged change.
+verify the real same-owner success/rejection and closed-prefix behavior.
 
 With the existing live/original CMake configuration, build target
 `robo_dyna_vehicle_run_observed_check`; focused CTest is
 `vehicle_run_observed_values`. All build and GPU execution remains serialized
 by the workstation guard. This authored change has not been compiled or run.
+
+
+The original and observed full gates share `tests/TwoIntervalAcceptance.cpp`.
+Its source factory, 1 micrometre declared wall gap, 200 ns step, two-commit
+requirements and archive/ledger checks are identical; only execution dispatch
+varies. The ordinary wrapper calls `PreparedRun::Execute`. The observed wrapper
+calls `RunAccess::Execute`, publishes a captured rejection after normal closure,
+and returns the unmodified controller result to the same assertions. A native
+rejection therefore FAILS this acceptance test even if diagnostic export works.
+There is no expected-failure registration or success-on-capture path.
+
+With the existing `ROBO_DYNA_ENABLE_V5_SELF_CONTACT_CONTROLLER` option, the extra
+CTest is `vehicle_run_wall_self_contact_observed_two_intervals`, in the existing
+`robo_dyna_vehicle_run_original_check` executable. It requires two explicit
+inherited environment paths before source/owner construction:
+
+- `ROBO_VEHICLE_RUN_OUTPUT`: a pre-created empty real controller directory.
+- `ROBO_SELF_CONTACT_FAILURE_OUTPUT`: an absent directory with an existing real
+  parent, outside the controller directory. It remains absent if no pair is
+  captured; existing or partially exported evidence must never be overwritten.
+
+A captured pair is exported with `CandidateFailureFixture::Export`, which reads
+back its bounded native codec and returns the manifest SHA. The test records
+that hash/path and compares the captured typed report with the normal controller
+rejection. A subsequent bounded host call to `ReplayCandidateFailure` uses this
+explicit hash; its standalone classification is diagnostic, never acceptance.
+Capture/export failures are additional test failures and cannot replace the
+controller rejection or bypass the shared commit/archive assertions.
+
+The current observer captures authenticated prepared-intersection and final
+candidate-policy failures. Other failures can have no captured pair (including
+the current native chunk-work admission failure); they still fail acceptance.
+No native budget fields or proof limits are invented or changed by this wrapper.
