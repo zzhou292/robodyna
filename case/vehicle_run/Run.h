@@ -9,6 +9,7 @@
 #include "output/physical_run/ViewerInput.h"
 #include <optional>
 namespace crash::cases::vehicle_run {
+namespace observed { class RunAccess; }
 namespace records=output::full_shell;
 inline constexpr std::size_t SummaryByteCap=1u<<20;
 inline constexpr std::size_t CompanionByteCap=SummaryByteCap+output::physical_run::ViewerInputByteCap;
@@ -44,6 +45,10 @@ class PreparedRun {
     const Horizon& horizon() const noexcept;
     Result Execute(const std::filesystem::path& empty_destination,const Control& = {}) const;
   private:
+    friend class observed::RunAccess;
+    using Initialization = void (*)(void*, vehicle_dynamics::VehiclePhysicalDynamics&);
+    Result ExecuteImpl(const std::filesystem::path&, const Control&,
+                       void* initialization_context, Initialization) const;
     struct Data;
     struct Session;
     explicit PreparedRun(std::shared_ptr<const Data> data):data_(std::move(data)) {}

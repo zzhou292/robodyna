@@ -1,6 +1,7 @@
 #pragma once
 
 #include "case/vehicle_dynamics/VehiclePhysicalDynamics.h"
+#include "case/vehicle_dynamics/SelfContactContribution.h"
 #include "lib_src/collision/self_contact_transaction/Storage.h"
 #include "lib_src/collision/self_contact_transaction/CandidateFailureCapture.h"
 
@@ -48,6 +49,17 @@ struct AcceptedAssemblyCouponSnapshot {
 // Qualification access only: source snapshots never grant publication authority.
 class CandidateRigidCouponAccess {
   public:
+    // Test-only controller composition. The decorator remains inside the
+    // native dynamics owner and changes only its candidate-seal dispatch.
+    static void InstallFailureObserver(
+        vehicle_dynamics::VehiclePhysicalDynamics&,
+        const tlfea::contact::self_contact_transaction::CandidateFailureObserver&);
+    static void SealWithFailureObserver(
+        vehicle_dynamics::detail::SelfContactContribution&,
+        tl::fea::FENodalState&, const tl::fea::NodalTrialToken&,
+        const tl::fea::ShellPhysicalDiagnostics&,
+        const tl::fea::NodalPreparedView&, vehicle_dynamics::SelfContactObservation&,
+        const tlfea::contact::self_contact_transaction::CandidateFailureObserver&);
     static CandidateRigidCouponSnapshot Prepare(
         vehicle_dynamics::VehiclePhysicalDynamics&);
     static AcceptedAssemblyCouponSnapshot PrepareAcceptedAssembly(
