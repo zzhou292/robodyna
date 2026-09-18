@@ -154,6 +154,11 @@ struct RepresentedIntervalReport {
   std::size_t unresolved = 0;
   std::size_t work = 0;
   const char* message = "OK";
+  // Populated only when admitting the next canonical pair would exceed the
+  // per-call work limit. work is the admitted prefix, not the whole worker
+  // chunk; rejected_pair_work is excluded from it. Zero means unavailable.
+  std::size_t total_work_limit = 0;
+  std::size_t rejected_pair_work = 0;
 };
 
 inline constexpr unsigned RepresentedIntervalMaximumWorkerCount = 8;

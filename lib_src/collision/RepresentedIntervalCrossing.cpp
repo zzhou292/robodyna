@@ -1492,6 +1492,8 @@ RepresentedIntervalReport RepresentedIntervalCrossing::Certify(
     if (result.work > storage.limits.max_total_work - report.work) {
       report.status = RepresentedIntervalStatus::ResourceLimit;
       report.input_pair = pair.input_pair;
+      report.total_work_limit = storage.limits.max_total_work;
+      report.rejected_pair_work = result.work;
       report.message = Message(report.status);
       storage.staging.clear();
       return report;

@@ -68,6 +68,26 @@ struct SelfContactFacetMotionIdentity {
   SelfContactRigidGroupIdentity rigid_groups[4];
 };
 
+// Scalar diagnostics for a failed native crossing call. These fields describe
+// that call's admitted canonical prefix; they are not complete chunk work,
+// a geometry certificate, or authority to publish a candidate.
+struct SelfContactCrossingDiagnostics {
+  bool available = false;
+  std::size_t batch_pair_offset = 0;
+  std::size_t prior_batch_work = 0;
+  std::size_t input_path = SIZE_MAX;
+  std::size_t input_pair = SIZE_MAX;
+  std::size_t input_paths = 0;
+  std::size_t input_pairs = 0;
+  std::size_t unique_pairs = 0;
+  std::size_t certified_separated = 0;
+  std::size_t certified_crossing_contact = 0;
+  std::size_t unresolved = 0;
+  std::size_t admitted_work = 0;
+  std::size_t total_work_limit = 0;
+  std::size_t rejected_pair_work = 0;
+};
+
 struct SelfContactTransactionReport {
   SelfContactTransactionStatus status = SelfContactTransactionStatus::Ok;
   std::size_t candidate = SIZE_MAX;
@@ -109,6 +129,7 @@ struct SelfContactTransactionReport {
       tl::fea::ShellPublicationStatus::Success;
   tl::fea::NodalStatus owner_status = tl::fea::NodalStatus::Ok;
   const char* message = "OK";
+  SelfContactCrossingDiagnostics crossing_diagnostics;
 };
 
 enum class SelfContactTransactionNonlocalPolicy : std::uint8_t {

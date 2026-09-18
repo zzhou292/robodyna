@@ -134,6 +134,8 @@ TEST(RepresentedIntervalParallel,
   EXPECT_EQ(serial_report.status, S::ResourceLimit);
   EXPECT_EQ(serial_report.input_pair, 1u);
   EXPECT_EQ(serial_report.work, 3u);
+  EXPECT_EQ(serial_report.total_work_limit, 5u);
+  EXPECT_EQ(serial_report.rejected_pair_work, 3u);
 
   for (unsigned workers : {1u, 2u, 4u}) {
     SCOPED_TRACE(workers);

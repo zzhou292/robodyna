@@ -49,6 +49,14 @@ TEST(RepresentedIntervalCrossing,
       owner.Certify(expensive.data(), expensive.size(), pairs, 2);
   EXPECT_EQ(failed.status, S::ResourceLimit);
   EXPECT_EQ(failed.input_pair, 1u);
+  EXPECT_EQ(failed.input_paths, 3u);
+  EXPECT_EQ(failed.input_pairs, 2u);
+  EXPECT_EQ(failed.unique_pairs, 2u);
+  EXPECT_EQ(failed.work, 3u);
+  EXPECT_EQ(failed.unresolved, 1u);
+  EXPECT_EQ(failed.total_work_limit, 5u);
+  EXPECT_EQ(failed.rejected_pair_work, 3u);
+  EXPECT_GT(failed.work + failed.rejected_pair_work, failed.total_work_limit);
   const auto after = owner.results();
   EXPECT_TRUE(after.complete);
   EXPECT_EQ(after.count, before_view.count);
@@ -56,6 +64,12 @@ TEST(RepresentedIntervalCrossing,
 
   const auto retry = One(owner, initial);
   EXPECT_EQ(retry.classification, C::CertifiedSeparated);
+  const ct::RepresentedTrianglePair retry_pair{0, 1};
+  const auto retry_report = owner.Certify(
+      initial.data(), initial.size(), &retry_pair, 1);
+  EXPECT_EQ(retry_report.status, S::Ok);
+  EXPECT_EQ(retry_report.total_work_limit, 0u);
+  EXPECT_EQ(retry_report.rejected_pair_work, 0u);
 }
 
 TEST(RepresentedIntervalCrossing,
