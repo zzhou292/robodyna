@@ -10,7 +10,8 @@ import os
 from pathlib import Path
 import subprocess
 
-from .capture import metadata_dict, sha256_file, validate_capture
+from ..file_integrity import sha256_file
+from .capture import metadata_dict, validate_capture
 
 
 def hold_boundaries(sample_count, samples_per_second, output_fps):

@@ -11,6 +11,8 @@ import re
 import struct
 from types import MappingProxyType
 
+from ..file_integrity import sha256_file
+
 
 _SCHEMAS = {
     "robo_dyna.physical_replay_capture.v1": ("final_epoch", "final_time_s"),
@@ -37,14 +39,6 @@ class Capture:
     frames: tuple
     manifest_sha256: str
     frame_index_sha256: str
-
-
-def sha256_file(path):
-    digest = hashlib.sha256()
-    with Path(path).open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
 
 
 def _read_text(path):

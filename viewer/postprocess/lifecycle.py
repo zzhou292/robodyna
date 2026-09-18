@@ -1,18 +1,11 @@
 """Read-only simulation completion checks and durable postprocessing status."""
-import hashlib
 import json
 import os
 from pathlib import Path
 import subprocess
 import time
 
-
-def sha256(path):
-    digest = hashlib.sha256()
-    with Path(path).open('rb') as stream:
-        for block in iter(lambda: stream.read(1 << 20), b''):
-            digest.update(block)
-    return digest.hexdigest()
+from ..file_integrity import sha256_file as sha256
 
 
 def read_json(path):

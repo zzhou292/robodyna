@@ -1,5 +1,12 @@
 # Physical accepted replay
 
+For workspace builds, obtain the current explicit `ROBO_DYNA_TL_ROOT`, qualified
+binary and dependency pins from the
+[execution plan](../../../planning/CURRENT_EXECUTION_PLAN.md). Commands below
+retain their historical example paths; the root `Total-Lagrangian-FEA/` checkout
+is not necessarily the current qualified TL worktree. GPU/heavy execution is
+currently paused; these examples are reference instructions, not a launch request.
+
 `Scene` consumes the immutable physical-run reader, keeps physical scale, and
 publishes only exact archived samples. It reuses the source shell mapping,
 0/1/3/4-point native plasticity applicability, stable original PID colors, and
