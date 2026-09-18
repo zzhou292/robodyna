@@ -529,6 +529,7 @@ for wiring in (CMAKE, BAZEL):
     text = wiring.read_text()
     for token in ("self_contact_transaction/Arena.cpp",
                   "self_contact_transaction/Candidate.cpp",
+                  "self_contact_transaction/CandidateFailureCapture.cpp",
                   "self_contact_transaction/Limits.cpp",
                   "self_contact_transaction/RigidSweep.cpp",
                   "self_contact_transaction/Source.cpp",
@@ -865,6 +866,23 @@ for token in (
     require(owner, token, OWNER)
 
 print("fixed self-contact transaction source proof: PASS")
+
+# Qualification-only evidence observes the exact production failure before
+# rollback. It cannot route around policy or publish a candidate.
+capture_path = ROOT / "lib_src/collision/self_contact_transaction/CandidateFailureCapture.cpp"
+capture = capture_path.read_text()
+for token in ("SealCandidateImpl(", "ValidateQualificationRanges(outputs, inputs,",
+              "capture.activity.activity_ = activity", "observer->capture(observer->context, capture)"):
+    require(capture, token, capture_path)
+for token in ("assembly, output, nullptr)",
+              "QualificationAccess::ObserveCandidateFailure("):
+    require(candidate, token, CANDIDATE)
+failure_cases = Path(__file__).resolve().parent / "FailureCaptureCases.h"
+for token in ("CandidateFailureObserverSeesLiveSourceAndPreservesReportAndRollback",
+              "CandidateFailureObserverDoesNotRunOnSuccessOrUnauthenticatedFailure",
+              "CandidateFailureObserverRejectsAliasedAndOverflowedContextBeforeWrites",
+              "p::Exact(before, after)", "ExactReport(report, baseline)"):
+    require(failure_cases.read_text(), token, failure_cases)
 
 # Continuous local policy requires a real interval proof, never the old
 # endpoint-only exception. The runtime tests exercise actual geometry/owners.
