@@ -126,8 +126,10 @@ TEST(CandidateFailureConeReplay, PinnedAffineSharedVertexPairRetainsCompleteLoca
     ASSERT_FALSE(residual.exact_common_translation);
     ASSERT_GT(residual.strict_gap_lower_m, 0);
 
-    // The raw affine engine is unchanged. Reproduce its work-limited result;
-    // this pair needs the separate local-topology policy, not a translation tag.
+    // The raw affine engine proves the existing shared-vertex intersection
+    // at t=0. Candidate subsequently replaces an inconclusive whole-interval
+    // policy with Unresolved/WorkExhausted: the captured final reason is not
+    // the raw engine result. An ordinary first witness still needs local proof.
     contact::RepresentedIntervalLimits limits;
     limits.max_paths = 2;
     limits.max_input_pairs = 1;
@@ -144,8 +146,15 @@ TEST(CandidateFailureConeReplay, PinnedAffineSharedVertexPairRetainsCompleteLoca
     ASSERT_TRUE(raw.complete);
     ASSERT_EQ(raw.count, 1u);
     ASSERT_NE(raw.data, nullptr);
-    ASSERT_EQ(raw.data[0].classification, contact::RepresentedIntervalClassification::Unresolved);
-    ASSERT_EQ(raw.data[0].reason, contact::RepresentedIntervalReason::WorkExhausted);
+    ASSERT_EQ(raw.data[0].classification, contact::RepresentedIntervalClassification::CertifiedCrossingContact);
+    ASSERT_EQ(raw.data[0].reason, contact::RepresentedIntervalReason::None);
+    ASSERT_EQ(raw.data[0].work, 1u);
+    ASSERT_EQ(raw.data[0].witness_time_numerator, 0u);
+    ASSERT_EQ(raw.data[0].witness_time_depth, 0u);
+    ASSERT_EQ(raw.data[0].geometry,
+              pair.accepted_intersections.front().kind == contact::FixedTriangleIntersectionKind::Transverse
+                  ? contact::RepresentedIntersectionGeometry::Transverse
+                  : contact::RepresentedIntersectionGeometry::Coplanar);
     ASSERT_FALSE(contact::HasExactCommonTranslationProof(raw.data[0].geometry));
 
     const auto local = sct::CertifyQuadraticLocalContact(
