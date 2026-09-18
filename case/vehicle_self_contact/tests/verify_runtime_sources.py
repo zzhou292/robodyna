@@ -396,10 +396,63 @@ def main() -> None:
     tl_rigid_sweep = (
         args.tl_root / "lib_src" / "collision" /
         "self_contact_transaction" / "RigidSweep.cpp").read_text()
-    require("LocallyExcluded(" in tl_candidate and
-            "crossing_pair_count" in tl_candidate and
-            "RepresentedIntervalReason::UnsupportedMotion" in tl_values,
-            "TL does not apply exact local incidence before unsupported motion")
+    tl_local = (
+        args.tl_root / "lib_src" / "collision" /
+        "self_contact_transaction" / "LocalContact.cpp").read_text()
+    tl_translated_local = (
+        args.tl_root / "lib_src" / "collision" /
+        "self_contact_transaction" / "TranslatedLocal.cpp").read_text()
+    ordered(tl_local, [
+        "BuildFixedTriangleFeatureTaskMask(",
+        "EvaluatePairFeaturesMaskedOnce(",
+        "CertifyQuadraticUnmaskedSeparation(",
+        "LinearResidualSeparationStatus::CertifiedSeparated",
+        "return CertifyQuadraticLocalTopology("],
+        "local contact whole-interval thickness/topology proof")
+    topology = tl_rigid_sweep[
+        tl_rigid_sweep.find("NonlinearSeparationResult CertifyQuadraticLocalTopology("):
+        tl_rigid_sweep.find("NonlinearSeparationResult CertifyQuadraticFacetCoverage(")]
+    ordered(topology, [
+        "endpoint < 2", "ClassifyPairIntersection(",
+        "RequiresIntersectionAdmission(intersection)",
+        "return CertifyQuadraticFacetCoverageImpl("],
+        "local topology endpoint premises and continuous coverage")
+    require("max_work, max_depth, true, true" in topology,
+            "local topology must require bounded whole-interval geometry")
+    candidate_witness = tl_candidate[
+        tl_candidate.find("const auto translated_local ="):
+        tl_candidate.find("value.work = total_work;")]
+    ordered(candidate_witness, [
+        "NormalizeExactTranslatedLocal(",
+        "translated_local != sct::TranslatedLocalStatus::Certified",
+        "RepresentedIntervalClassification::CertifiedCrossingContact",
+        "RepresentedIntervalReason::WorkExhausted",
+        "CertifyQuadraticFacetPolicyCoverage(",
+        "NonlinearSeparationStatus::CertifiedLocalIntersection",
+        "RepresentedIntersectionGeometry::CertifiedLocalTopology"],
+        "candidate first witness requires complete continuous policy")
+    ordered(tl_translated_local, [
+        "HasExactCommonTranslationProof(result->geometry)",
+        "RequiresIntersectionAdmission(*intersection)",
+        "result->geometry = RepresentedIntersectionGeometry::CertifiedLocalTopology"],
+        "translated local normalization requires the native invariant-path proof")
+    local_start = tl_values.find(
+        "if (LocallyExcluded(input.intersections, crossing.key)) {")
+    local_publication = tl_values[
+        local_start:tl_values.find("bool edge_edge = false;", local_start)]
+    ordered(local_publication, [
+        "if (crossing.geometry !=",
+        "RepresentedIntersectionGeometry::CertifiedLocalTopology)",
+        "return Failure(SelfContactTransactionStatus::CandidateRejected",
+        "Endpoint-local intersection lacks continuous topology proof",
+        "SelfContactCandidateDisposition::ExcludedLocalIntersection"],
+        "local publication rejects an endpoint-only intersection witness")
+    require("raw_crossings.count != crossing_pair_count" in tl_candidate and
+            "S::UnsupportedMotion" in tl_candidate and
+            "RepresentedIntervalReason::UnsupportedMotion" in tl_candidate and
+            "input.crossings.count != input.pair_count" in tl_values and
+            "return Failure(SelfContactTransactionStatus::UnresolvedCandidate" in tl_values,
+            "TL must retain complete pair accounting and reject uncertified motion")
     require("first.certified_affine && second.certified_affine" in tl_arena and
             "CertifyRigidPointAffineMotion(" in tl_rigid_sweep and
             "represented_q[component]" in tl_rigid_sweep,
