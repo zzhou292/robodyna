@@ -4,12 +4,14 @@
 // Value-level composition tests use actual native geometry publications.
 // Physical assembly/activity/regularity authority is exercised separately by
 // the CUDA transaction coupons; this helper cannot manufacture that authority.
-c::RepresentedIntervalResult NativeLocalResult(
+std::vector<c::RepresentedIntervalResult> NativeLocalResults(
     const c::CurrentFixedTriangle& first,
     const c::CurrentFixedTriangle& first_next,
     const c::CurrentFixedTriangle& second,
     const c::CurrentFixedTriangle& second_next,
-    c::RepresentedMotion second_motion = c::RepresentedMotion::LinearNodalV1) {
+    c::RepresentedMotion second_motion = c::RepresentedMotion::LinearNodalV1,
+    c::RepresentedIntervalStatus expected_status = c::RepresentedIntervalStatus::Ok,
+    c::RepresentedMotion first_motion = c::RepresentedMotion::LinearNodalV1) {
   c::RepresentedTrianglePath paths[2];
   const c::CurrentFixedTriangle* base[]{&first, &second};
   const c::CurrentFixedTriangle* next[]{&first_next, &second_next};
@@ -17,7 +19,7 @@ c::RepresentedIntervalResult NativeLocalResult(
     auto& path = paths[row];
     const auto& key = base[row]->key;
     path.key = {key.source_instance_id, key.parent_eid, key.level, key.local_facet};
-    path.motion = row ? second_motion : c::RepresentedMotion::LinearNodalV1;
+    path.motion = row ? second_motion : first_motion;
     for (unsigned vertex = 0; vertex < 3; ++vertex) {
       path.vertices[vertex].key = base[row]->vertex_keys[vertex];
       path.vertices[vertex].endpoint[0] = base[row]->vertices[vertex];
@@ -34,11 +36,21 @@ c::RepresentedIntervalResult NativeLocalResult(
   c::RepresentedIntervalCrossing native;
   EXPECT_EQ(native.Initialize(limits).status, c::RepresentedIntervalStatus::Ok);
   const c::RepresentedTrianglePair pair{0, 1};
-  EXPECT_EQ(native.Certify(paths, 2, &pair, 1).status, c::RepresentedIntervalStatus::Ok);
+  const auto report = native.Certify(paths, 2, &pair, 1);
+  EXPECT_EQ(report.status, expected_status);
   const auto results = native.results();
+  if (expected_status != c::RepresentedIntervalStatus::Ok) {
+    EXPECT_FALSE(results.complete);
+    EXPECT_EQ(results.count, 0u);
+    return {};
+  }
   EXPECT_TRUE(results.complete);
   EXPECT_EQ(results.count, 1u);
-  return results.count == 1 ? results.data[0] : c::RepresentedIntervalResult{};
+  EXPECT_NE(results.data, nullptr);
+  if (report.status != c::RepresentedIntervalStatus::Ok ||
+      !results.complete || results.count != 1 || !results.data)
+    return {};
+  return {results.data[0]};
 }
 
 void CheckTranslatedLocalUnchanged(
@@ -74,7 +86,9 @@ TEST(SelfContactTransactionValues,
       ASSERT_FALSE(c::RequiresIntersectionAdmission(geometry.intersections[0]));
       const c::FixedTriangleIntersectionView intersections{
           geometry.intersections.data(), geometry.intersection_count, true};
-      auto value = NativeLocalResult(first, first_next, second, second_next);
+      const auto native = NativeLocalResults(first, first_next, second, second_next);
+      ASSERT_EQ(native.size(), 1u);
+      auto value = native.front();
       ASSERT_TRUE(c::HasExactCommonTranslationProof(value.geometry));
       const auto native_work = value.work;
       ASSERT_EQ(sct::NormalizeExactTranslatedLocal(intersections, &value),
@@ -122,7 +136,9 @@ TEST(SelfContactTransactionValues,
       first, first, Quadratic(0), .125,
       second, second, Quadratic(0), .125, 1, 127, 8);
   EXPECT_EQ(standalone.status, sct::NonlinearSeparationStatus::PotentialContact);
-  auto value = NativeLocalResult(first, first, second, second);
+  const auto native = NativeLocalResults(first, first, second, second);
+  ASSERT_EQ(native.size(), 1u);
+  auto value = native.front();
   ASSERT_TRUE(c::HasExactCommonTranslationProof(value.geometry));
   EXPECT_EQ(sct::NormalizeExactTranslatedLocal(
       {geometry.intersections.data(),1,true}, &value),
@@ -140,7 +156,9 @@ TEST(SelfContactTransactionValues,
     const auto geometry = DiscoverPreparedPair(first, second);
     ASSERT_EQ(geometry.intersection_count, 1u);
     ASSERT_TRUE(c::RequiresIntersectionAdmission(geometry.intersections[0]));
-    auto value = NativeLocalResult(first, first, second, second);
+    const auto native = NativeLocalResults(first, first, second, second);
+    ASSERT_EQ(native.size(), 1u);
+    auto value = native.front();
     ASSERT_TRUE(c::HasExactCommonTranslationProof(value.geometry));
     const auto before = value;
     const c::FixedTriangleIntersectionView intersections{geometry.intersections.data(), 1, true};
@@ -153,7 +171,7 @@ TEST(SelfContactTransactionValues,
     input.intersections = intersections;
     EXPECT_EQ(sct::ValidateCandidatePublications(input).status,
               c::SelfContactTransactionStatus::CandidateRejected);
-    EXPECT_EQ(count, 0u);
+    EXPECT_EQ(count, 9u);  // Failed publication preserves the caller's count.
   }
 }
 
@@ -164,22 +182,50 @@ TEST(SelfContactTransactionValues,
   const auto geometry = DiscoverPreparedPair(first, second);
   ASSERT_EQ(geometry.intersection_count, 1u);
   const c::FixedTriangleIntersectionView intersections{geometry.intersections.data(), 1, true};
-  for (unsigned mode = 0; mode < 3; ++mode) {
-    auto value = NativeLocalResult(first, first, second, second,
-        mode ? (mode == 1 ? c::RepresentedMotion::RigidArc : c::RepresentedMotion::Nonlinear)
-             : c::RepresentedMotion::LinearNodalV1);
-    if (!mode) value.geometry = c::BaseIntersectionGeometry(value.geometry);
-    const auto before = value;
-    EXPECT_EQ(sct::NormalizeExactTranslatedLocal(intersections, &value),
+  const auto native = NativeLocalResults(first, first, second, second);
+  ASSERT_EQ(native.size(), 1u);
+  auto value = native.front();
+  value.geometry = c::BaseIntersectionGeometry(value.geometry);
+  const auto before = value;
+  EXPECT_EQ(sct::NormalizeExactTranslatedLocal(intersections, &value),
+            sct::TranslatedLocalStatus::NotApplicable);
+  CheckTranslatedLocalUnchanged(before, value);
+  c::SelfContactCandidatePolicyOutcome outcome;
+  std::size_t count = 9;
+  auto input = Input(&value.key, 1, &value, &outcome, &count);
+  input.intersections = intersections;
+  EXPECT_EQ(sct::ValidateCandidatePublications(input).status,
+            c::SelfContactTransactionStatus::CandidateRejected);
+  EXPECT_EQ(count, 9u);  // No successful publication replaced the caller's count.
+
+  // A shared source vertex cannot simultaneously declare a linear trajectory
+  // in one facet and rigid/nonlinear motion in another. The native identity
+  // check rejects the entire call before any result exists to normalize.
+  for (const auto motion : {c::RepresentedMotion::RigidArc,
+                            c::RepresentedMotion::Nonlinear}) {
+    const auto rejected = NativeLocalResults(first, first, second, second,
+        motion, c::RepresentedIntervalStatus::IdentityMismatch);
+    EXPECT_TRUE(rejected.empty());
+
+    // Consistent source declarations are a distinct negative case: native
+    // publication succeeds with an explicit unsupported-motion result. Equal
+    // endpoints do not give curved paths an exact affine-translation proof.
+    const auto consistent = NativeLocalResults(first, first, second, second,
+        motion, c::RepresentedIntervalStatus::Ok, motion);
+    ASSERT_EQ(consistent.size(), 1u);
+    auto unsupported = consistent.front();
+    EXPECT_EQ(unsupported.classification, c::RepresentedIntervalClassification::Unresolved);
+    EXPECT_EQ(unsupported.reason, c::RepresentedIntervalReason::UnsupportedMotion);
+    EXPECT_EQ(unsupported.work, 0u);
+    EXPECT_FALSE(c::HasExactCommonTranslationProof(unsupported.geometry));
+    EXPECT_EQ(sct::NormalizeExactTranslatedLocal(intersections, &unsupported),
               sct::TranslatedLocalStatus::NotApplicable);
-    CheckTranslatedLocalUnchanged(before, value);
-    c::SelfContactCandidatePolicyOutcome outcome;
-    std::size_t count = 9;
-    auto input = Input(&value.key, 1, &value, &outcome, &count);
-    input.intersections = intersections;
-    EXPECT_NE(sct::ValidateCandidatePublications(input).status,
-              c::SelfContactTransactionStatus::Ok);
-    EXPECT_EQ(count, 0u);
+    CheckTranslatedLocalUnchanged(consistent.front(), unsupported);
+    auto unsupported_input = Input(&unsupported.key, 1, &unsupported, &outcome, &count);
+    unsupported_input.intersections = intersections;
+    EXPECT_EQ(sct::ValidateCandidatePublications(unsupported_input).status,
+              c::SelfContactTransactionStatus::UnresolvedCandidate);
+    EXPECT_EQ(count, 9u);
   }
 }
 
@@ -189,7 +235,9 @@ TEST(SelfContactTransactionValues,
   const auto second = Triangle(20, {1,2,4}, {{{0,0,0}, {2,0,0}, {0,-2,0}}});
   const auto geometry = DiscoverPreparedPair(first, second);
   ASSERT_EQ(geometry.intersection_count, 1u);
-  const auto original = NativeLocalResult(first, first, second, second);
+  const auto native = NativeLocalResults(first, first, second, second);
+  ASSERT_EQ(native.size(), 1u);
+  const auto original = native.front();
   for (unsigned mode = 0; mode < 10; ++mode) {
     auto value = original;
     auto intersection = geometry.intersections[0];
