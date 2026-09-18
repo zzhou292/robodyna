@@ -480,7 +480,7 @@ Qualification access can replay the complete affine frontier without force
 publication. It batches represented paths through the production worker pool,
 counts every swept/prism/residual/persistent/crossing class, and retains only
 the pairs whose unchanged per-pair 4095-visit traversal is `WorkExhausted`.
-Production gives exhausted and contacting represented pairs a bounded complete
+Production gives exhausted and ordinary contacting represented pairs a bounded complete
 geometry/policy proof using the authenticated accepted ledger, continuously
 proved local topology, and feature-specific same-rigid exclusions. A feature
 exclusion also requires independent whole-facet geometric safety; whole-parent
@@ -500,3 +500,24 @@ normal separates immediately afterward; a 52-bit dyadic bracket identifies a
 non-dyadic root, and an exactly dyadic root is published directly. Any
 projection seam, support change, missing owner, nonzero curvature, or
 arithmetic-envelope failure remains unresolved.
+
+The native represented engine now preserves its exact common-translation
+proof as append-only geometry tags, retaining the coplanar/transverse witness
+shape and all original result fields. `TranslatedLocal` consumes those tags
+only inside candidate composition after complete accepted assembly, current
+activity/regularity, prepared discovery, and edge-policy authentication. A
+complete native local-only intersection then remains local throughout the
+interval because all six affine vertex paths share exactly the same real
+displacement. Relative thickness gaps and the accepted force obligations are
+also invariant; this path invents no accepted VF/EE owner. It normalizes to
+the existing `CertifiedLocalTopology`/`ExcludedLocalIntersection` publication.
+
+The normalization preserves actual native work and does not increment
+quadratic policy-helper counters. Untagged first witnesses, nonlocal
+intersections, unsupported motion and nonzero curvature retain full proof or
+rejection. The standalone `LocalContact` API still requires separation of
+every unowned thickness task. Native host cases cover both shared-edge and
+shared-vertex topology, ordinary/unsupported witnesses, nonlocal geometry,
+malformed provenance, and the distinction between invariant geometry and
+unowned thickness separation. Actual owner coupons qualify transaction
+authority and rollback; source checks alone do not establish runtime validity.

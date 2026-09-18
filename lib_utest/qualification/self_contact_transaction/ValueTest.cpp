@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 #include "lib_src/collision/self_contact_transaction/Storage.h"
 #include "lib_src/collision/self_contact_transaction/PolicyExclusions.h"
+#include "lib_src/collision/self_contact_transaction/TranslatedLocal.h"
+#include "lib_src/collision/self_contact_transaction/LocalContact.h"
+#include "lib_src/collision/RepresentedIntervalCrossing.h"
 #include "lib_src/collision/SelfContactForceValues.h"
 #include "lib_src/collision/SurfaceContactGeometry.h"
 #include "lib_src/collision/fixed_triangle_features/ExactPredicates.h"
@@ -348,6 +351,7 @@ sct::CandidateValidationInput Input(
 #include "PolicyExclusionsCases.h"
 #include "RigidFeatureGeometryCases.h"
 #include "LocalEdgeRepresentationCases.h"
+#include "TranslatedLocalCases.h"
 
 TEST(SelfContactTransactionValues,
      ResidualTranslationUsesOutwardBoundsAfterCancellation) {

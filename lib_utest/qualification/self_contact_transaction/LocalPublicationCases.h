@@ -125,7 +125,13 @@ TEST(SelfContactTransactionCuda,
     const auto& policy=receipt.policy_summary();
     EXPECT_TRUE(policy.complete);
     EXPECT_GT(policy.excluded_local_intersection,0u);
-    EXPECT_GT(policy.linear_policy_exact_exclusion,0u);
+    // Native exact common translation supplies the local proof directly.
+    // Preserve actual work; no quadratic policy helper ran for these pairs.
+    EXPECT_GT(policy.exact_crossing_pairs,0u);
+    EXPECT_EQ(policy.exact_crossing_work,policy.exact_crossing_pairs);
+    EXPECT_EQ(policy.linear_policy_coverage_pairs,0u);
+    EXPECT_EQ(policy.linear_policy_coverage_work,0u);
+    EXPECT_EQ(policy.linear_policy_exact_exclusion,0u);
     EXPECT_EQ(policy.excluded_same_rigid_group,0u);
     EXPECT_EQ(policy.linear_policy_unresolved,0u);
     EXPECT_EQ(policy.nonlinear_subdivision_unresolved,0u);

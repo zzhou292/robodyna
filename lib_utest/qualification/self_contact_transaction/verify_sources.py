@@ -932,3 +932,29 @@ require(rigid_feature_cases.read_text(),
 require(rigid_sweep, "max_work - ledger.work, max_depth, true)", RIGID_SWEEP)
 if "max_work - ledger.work, max_depth, false)" in rigid_sweep:
     raise RuntimeError(f"{RIGID_SWEEP}: rigid feature waives whole-facet geometry")
+
+# Native exact translation is a whole-interval geometry premise, consumed
+# only after the transaction's unchanged physical and current-source gates.
+translated_path = ROOT / "lib_src/collision/self_contact_transaction/TranslatedLocal.cpp"
+translated = translated_path.read_text()
+for token in ("HasExactCommonTranslationProof(result->geometry)",
+              "!intersections.complete", "result->work != 1",
+              "FindPairIntersection(intersections, result->key)",
+              "RequiresIntersectionAdmission(*intersection)",
+              "RepresentedIntersectionGeometry::CertifiedLocalTopology",
+              "result->accepted_event = SIZE_MAX"):
+    require(translated, token, translated_path)
+for token in ("NormalizeExactTranslatedLocal(",
+              "translated_local != sct::TranslatedLocalStatus::Certified"):
+    require(candidate, token, CANDIDATE)
+if candidate.index("ValidateCandidateEdgePolicy(") > candidate.index("NormalizeExactTranslatedLocal("):
+    raise RuntimeError(f"{CANDIDATE}: translated local normalization precedes native edge policy")
+for build_path in (CMAKE, BAZEL):
+    require(build_path.read_text(), "self_contact_transaction/TranslatedLocal.cpp", build_path)
+translated_cases = Path(__file__).resolve().parent / "TranslatedLocalCases.h"
+for token in ("NativeStaticAndTranslatedLocalProofPreservesWorkAndPublishesLocalGeometry",
+              "TranslatedNonlocalGeometryCannotBorrowLocalPublication",
+              "LocalNormalizationCannotPromoteOrdinaryWitnessOrUnsupportedMotion",
+              "LocalNormalizationRequiresCompleteMatchingNativeInputsWithoutPartialWrite",
+              "TranslationProofDoesNotWeakenStandaloneUnownedThicknessContract"):
+    require(translated_cases.read_text(), token, translated_cases)

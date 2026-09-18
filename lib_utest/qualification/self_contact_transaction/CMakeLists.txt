@@ -16,10 +16,12 @@ add_executable(self_contact_transaction_values
   PolicyExclusionsCases.h
   RigidFeatureGeometryCases.h
   LocalEdgeRepresentationCases.h
+  TranslatedLocalCases.h
   ContinuousLocalTest.cpp
   MaskedResidualTest.cpp
   RigidSweepBoundsTest.cpp
   "${TL_ROOT}/lib_src/collision/self_contact_transaction/Values.cpp"
+  "${TL_ROOT}/lib_src/collision/self_contact_transaction/TranslatedLocal.cpp"
   "${TL_ROOT}/lib_src/collision/self_contact_transaction/Arena.cpp"
   "${TL_ROOT}/lib_src/collision/self_contact_transaction/Limits.cpp"
   "${TL_ROOT}/lib_src/collision/self_contact_transaction/LocalContact.cpp"
@@ -29,6 +31,7 @@ add_executable(self_contact_transaction_values
 target_include_directories(self_contact_transaction_values PRIVATE
   "${TL_ROOT}" "${CUDAToolkit_INCLUDE_DIRS}" "/usr/include/eigen3")
 target_link_libraries(self_contact_transaction_values PRIVATE
+  tl_represented_interval_crossing
   tl_fixed_triangle_feature_discovery
   tl_self_contact_filter_certificates GTest::gtest_main)
 target_compile_features(self_contact_transaction_values PRIVATE cxx_std_17)
@@ -42,6 +45,7 @@ add_executable(self_contact_transaction_medium_coupon
   MediumCouponTest.cpp
   "${TL_ROOT}/lib_src/collision/self_contact_transaction/Source.cpp"
   "${TL_ROOT}/lib_src/collision/self_contact_transaction/Values.cpp"
+  "${TL_ROOT}/lib_src/collision/self_contact_transaction/TranslatedLocal.cpp"
   "${TL_ROOT}/lib_src/collision/self_contact_transaction/Arena.cpp"
   "${TL_ROOT}/lib_src/collision/self_contact_transaction/TaskMask.cpp")
 target_include_directories(self_contact_transaction_medium_coupon PRIVATE

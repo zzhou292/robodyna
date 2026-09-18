@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
 #include "ResidualTasks.h"
+#include "TranslatedLocal.h"
 #include "../FixedTriangleFeatureDiscovery.h"
 #include "../SelfContactForceValues.h"
 
@@ -598,14 +599,8 @@ const RepresentedIntervalResult* Crossing(
 
 bool LocallyExcluded(FixedTriangleIntersectionView values,
                      const RepresentedIntervalPairKey& key) noexcept {
-  for (std::size_t i = 0; i < values.count; ++i) {
-    const auto& value = values.data[i];
-    if (self_contact_transaction::Compare(
-            PairKey(value.triangles[0], value.triangles[1]),
-            key) == 0)
-      return !RequiresIntersectionAdmission(value);
-  }
-  return false;
+  const auto* value = FindPairIntersection(values, key);
+  return value && !RequiresIntersectionAdmission(*value);
 }
 
 bool SameParentOwner(

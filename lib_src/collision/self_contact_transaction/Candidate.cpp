@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
 #include "CandidateExclusions.h"
+#include "TranslatedLocal.h"
 #include "QualificationRanges.h"
 
 #include "lib_src/solvers/NodalTrialIdentity.h"
@@ -1513,15 +1514,25 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
               SIZE_MAX, state.candidate_facet_pair_count + raw_pair));
         auto value = raw_crossings.data[crossing_pair++];
         const auto represented_work = value.work;
-        // A first intersection identifies a feature, not geometric safety
-        // throughout the interval. All contacting pairs require the same
-        // continuous policy proof as an exhausted represented traversal.
-        if (value.classification ==
+        // Complete same-attempt accepted assembly, prepared activity and
+        // regularity, and native edge policy are authenticated above. Exact
+        // common translation preserves all relative gaps and the complete
+        // local intersection set, including existing thickness obligations.
+        const auto translated_local = sct::NormalizeExactTranslatedLocal(
+            intersections, &value);
+        if (translated_local == sct::TranslatedLocalStatus::InvalidInput)
+          return state.Fail(Failure(
+              S::IdentityMismatch,
+              "Exact translated local proof has invalid native metadata",
+              SIZE_MAX, state.candidate_facet_pair_count + raw_pair));
+        // Every other first witness still requires a whole-interval proof.
+        if (translated_local != sct::TranslatedLocalStatus::Certified &&
+            (value.classification ==
                 RepresentedIntervalClassification::CertifiedCrossingContact ||
             (value.classification ==
                 RepresentedIntervalClassification::Unresolved &&
             value.reason ==
-                RepresentedIntervalReason::WorkExhausted)) {
+                RepresentedIntervalReason::WorkExhausted))) {
           const auto facet_pair =
               state.buffers.facet_pair_chunk[pair];
           const auto first_parent =
