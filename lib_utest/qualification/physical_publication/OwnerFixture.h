@@ -27,9 +27,13 @@ struct Rig {
                bool contact_geometry=false,
                ContactConstraintLayout constraints=
                    ContactConstraintLayout::Legacy,
-               bool interior_edge_contact=false)
+               bool interior_edge_contact=false,
+               double adjacent_apex_x=.05,
+               fe::ShellBatchStartup declared_startup={},
+               bool separate_adjacent_contact=false)
       : fixture(surface_rigid,t3_failure,contact_geometry,constraints,
-                interior_edge_contact) {}
+                interior_edge_contact,adjacent_apex_x,declared_startup,
+                separate_adjacent_contact) {}
   Fixture fixture;
   fe::FENodalState owner;
   fe::qeph::QephBatch qeph;

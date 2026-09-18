@@ -13,26 +13,31 @@ bool Rig::InitializeAgainst(const fe::ShellPhysicalBinding& physical,
       fixture.im.data(),{fixture.fixed.data(),fixture.rotation_fixed.data(),fixture.ij.data(),fixture.present.data()},
       fixture.rigid,&cin))) return false;
   fe::qeph::QephBatchConfig q;
+  q.startup = fixture.startup;
   q.owner = owner.accepted(); q.configuration_id = Configuration; q.qualification_id = Qualification;
   q.element_count = physical.shells()->qeph_count();
   q.usage = fe::qeph::BatchUsage::CoupledForces;
   if (!Good(qeph.InitializeMapped(q,physical,owner,fixture.WitnessSource()))) return false;
   fe::t3::T3BatchConfig t;
+  t.startup = fixture.startup;
   t.owner = owner.accepted(); t.configuration_id = Configuration; t.qualification_id = Qualification;
   t.element_count = physical.shells()->t3_count();
   t.usage = fe::t3::BatchUsage::CoupledForces;
   if (!Good(t3.InitializeMapped(t,physical,owner,fixture.WitnessSource()))) return false;
   fe::qbat::BatchConfig b;
+  b.startup = fixture.startup;
   b.owner = owner.accepted(); b.configuration_id = Configuration; b.qualification_id = Qualification;
   b.element_count = physical.shells()->qbat_count();
   b.usage = fe::qbat::BatchUsage::CoupledForces;
   if (!Good(qbat.InitializeMapped(b,physical,owner,fixture.WitnessSource()))) return false;
   fe::type25::BatchConfig w;
+  w.startup = fixture.startup;
   w.owner = owner.accepted(); w.configuration_id = Configuration; w.qualification_id = Qualification;
   w.element_count = 2;
   if (!Good(welds.InitializeMapped(w,physical,owner,fixture.WitnessSource(),fe::type25::CapacityProfile::Legacy)))
     return false;
   fe::type13::BatchConfig beam;
+  beam.startup = fixture.startup;
   beam.owner = owner.accepted(); beam.configuration_id = Configuration; beam.qualification_id = Qualification;
   beam.assembly = fe::type13::BatchAssembly::CinNativeStiffness;
   if (!Good(beams.InitializeMapped(beam,physical,fixture.rigid,owner,fixture.WitnessSource()))) return false;
@@ -53,12 +58,13 @@ bool Rig::InitializeAgainst(const fe::ShellPhysicalBinding& physical,
 }
 bool Rig::InitializeSolids() {
   fe::solids::BatchConfig config;
+  config.startup = fixture.startup;
   config.owner = owner.accepted();
   config.configuration_id = Configuration;
   config.qualification_id = Qualification;
   config.profile = fe::solids::BatchProfile::PhysicalCinV1;
   config.cin_attachment_count = fixture.ranges.size();
-  config.cin_witness_count = fixture.witnesses.size();
+  config.cin_witness_count = fixture.WitnessCount();
   return Good(solids.InitializeJoined(config,fixture.solids));
 }
 bool Rig::Attach() {

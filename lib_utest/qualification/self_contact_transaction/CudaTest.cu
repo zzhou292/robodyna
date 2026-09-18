@@ -296,9 +296,13 @@ struct Fixture {
                    p::ContactConstraintLayout constraints =
                        p::ContactConstraintLayout::Legacy,
                    unsigned facet_level = 0,
-                   unsigned input_permutation = 0)
+                   unsigned input_permutation = 0,
+                   double adjacent_apex_x = .05,
+                   fe::ShellBatchStartup declared_startup = {},
+                   bool separate_adjacent_contact = false)
       : rig(false, t3_failure, !single, constraints,
-            !single && constraints == p::ContactConstraintLayout::Legacy),
+            !single && constraints == p::ContactConstraintLayout::Legacy,
+            adjacent_apex_x, declared_startup, separate_adjacent_contact),
         single_parent(single), pass_through(crossing),
         t3_failure(t3_failure), facet_level(facet_level),
         input_permutation(input_permutation) {

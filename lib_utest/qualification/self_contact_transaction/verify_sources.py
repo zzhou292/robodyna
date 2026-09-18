@@ -961,7 +961,7 @@ for token in ("NativeStaticAndTranslatedLocalProofPreservesWorkAndPublishesLocal
 
 translated_cuda = Path(__file__).resolve().parent / "TranslatedLocalCudaCases.h"
 for token in ("OriginalAdjacentStaticAndTranslatedLocalDiscardRetryCommit",
-              "InitiallyCompressedFixedLocalContactRetainsForceAndReactionStiffness",
+              "ShortAltitudeReferenceFixedLocalContactRetainsForceAndReactionStiffness",
               "speed_z * p::H", "diagnostics.maximum_force_norm_n",
               "diagnostics.maximum_represented_stiffness_n_m",
               "ASSERT_FALSE(positive_owner_pairs.empty())",

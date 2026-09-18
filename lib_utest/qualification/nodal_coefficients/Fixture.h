@@ -24,12 +24,12 @@ struct Fixture {
   std::array<spring::ConnectionInput,2> spring_input;
   explicit Fixture(bool contact_geometry = false,
                    bool distinct_contact_t3 = false,
-                   bool interior_edge_contact = false)
+                   bool interior_edge_contact = false, double adjacent_apex_x = .05,
+                   bool separate_adjacent = false)
       : shell_input(contact_geometry,distinct_contact_t3,
-                    interior_edge_contact) {
+                    interior_edge_contact, adjacent_apex_x, separate_adjacent) {
     EXPECT_EQ(shells.InitializeFormulations(shell_input.Input()).status,fe::ShellBindingStatus::Success);
-    nodes.resize(distinct_contact_t3 ? 12 :
-        ((contact_geometry || interior_edge_contact) ? 9 : 7));
+    nodes.resize(shells.node_count() + 2);
     for(std::size_t n=0;n<shells.node_count();++n) {
       const auto destination = n < map.size() ? map[n] : 7 + n - map.size();
       nodes[destination]={shells.nodes()[n].source_id,shells.nodes()[n].position};

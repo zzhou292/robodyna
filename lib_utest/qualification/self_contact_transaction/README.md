@@ -523,13 +523,17 @@ unowned thickness separation. Actual owner coupons qualify transaction
 authority and rollback; source checks alone do not establish runtime validity.
 
 `OriginalAdjacentStaticAndTranslatedLocalDiscardRetryCommit` uses the original
-T3/Q4 source and loads with zero or unit initial z velocity, verifies the exact
-prepared translation, and exercises discard/retry/commit. The separate
-`InitiallyCompressedFixedLocalContactRetainsForceAndReactionStiffness` coupon
-declares a shortened current T3 altitude and fixed translations for the five
-contact nodes. It preserves reference geometry and physical mass, requires
-real near-thickness force/potential/reaction stiffness, and checks stationary
-geometry and rollback. Fixed translation projects free normal STI to zero;
+T3/Q4 reference source and loads. It declares zero or unit common z velocity
+for the whole owner and all six participants, verifies the exact prepared
+contact translation, and exercises discard/retry/commit. The separate
+`ShortAltitudeReferenceFixedLocalContactRetainsForceAndReactionStiffness` coupon
+declares a 0.25 mm reference T3 altitude with a separate physical contact Q4
+(node IDs 20--23, T3 sharing 21/22 and apex 14). Source constructors derive all
+matching coefficients; only these five contact nodes have fixed translation.
+The original free QEPH nodes 10--13 remain the actual CIN masters for 901,
+with exactly the two corresponding QEPH activity witnesses. The coupon requires
+real near-thickness force/potential/reaction stiffness on a pair that publishes
+a local interval outcome, and checks stationary geometry and exact rollback. Fixed translation projects free normal STI to zero;
 the existing unconstrained VF/EE coupons retain their positive free-STI
 oracles. These are explicit test initial/boundary conditions, never changes to
 the vehicle profile or the original adjacent second-interval rejection test.

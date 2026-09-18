@@ -49,16 +49,18 @@ struct Fixture {
   bool contact_geometry = false;
   bool distinct_contact_t3 = false;
   bool interior_edge_contact = false;
+  bool separate_adjacent_contact = false;
   explicit Fixture(bool contact = false, bool distinct_t3 = false,
-                   bool interior_ee = false)
+                   bool interior_ee = false, double adjacent_apex_x = .05,
+                   bool separate_adjacent = false)
       : contact_geometry(contact || interior_ee),
         distinct_contact_t3(distinct_t3),
-        interior_edge_contact(interior_ee) {
+        interior_edge_contact(interior_ee), separate_adjacent_contact(separate_adjacent) {
     const tl::math::Vec3 x[]{
         {0,0,0},{.04,0,0},{.04,.02,0},{0,.02,0},
         interior_ee ? tl::math::Vec3{-.01,.01,.00025}
                     : (contact ? tl::math::Vec3{.01,.003,.00025}
-                               : tl::math::Vec3{.05,.01,0}),
+                               : tl::math::Vec3{adjacent_apex_x,.01,0}),
         interior_ee ? tl::math::Vec3{.02,.01,.00025}
                     : tl::math::Vec3{.03,.003,.00025},
         interior_ee ? tl::math::Vec3{.01,.015,.00025}
@@ -102,6 +104,19 @@ struct Fixture {
       t.reference.node_ids[n] = contact_geometry
           ? 14 + n : 10 + t.nodes[n];
     }
+    if (separate_adjacent_contact) {
+      // Explicit independent contact Q4/T3; original QEPH 10--13 can remain
+      // genuine free CIN masters. Reference coordinates are shared by value,
+      // while 20--23 are distinct physical nodes with native coefficients.
+      EXPECT_FALSE(contact_geometry || distinct_contact_t3);
+      b.nodes = {5, 6, 7, 8};
+      for (unsigned node = 0; node < 4; ++node)
+        b.reference.quadrilateral.node_ids[node] = 20 + node;
+      t.nodes = {6, 4, 7};
+      t.reference.node_ids[0] = 21;
+      t.reference.node_ids[1] = 14;
+      t.reference.node_ids[2] = 22;
+    }
     contact_t[0]=t;
     contact_t[1]=t;
     contact_t[1].source_parent_id=104;
@@ -116,7 +131,7 @@ struct Fixture {
   fe::ShellFormulationCollectionInput Input() const {
     return {{q.data(),distinct_contact_t3 ? contact_t.data() : &t,
              2,distinct_contact_t3 ? 2u : 1u,
-             distinct_contact_t3 ? 10u : (contact_geometry ? 7u : 5u)},
+             distinct_contact_t3 ? 10u : (separate_adjacent_contact ? 9u : (contact_geometry ? 7u : 5u))},
             &b,1};
   }
 };

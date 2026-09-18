@@ -40,16 +40,21 @@ void CheckDeclaredLocalMotion(Fixture& fixture, const fe::NodalTrialToken& token
 TEST(SelfContactTransactionCuda, OriginalAdjacentStaticAndTranslatedLocalDiscardRetryCommit) {
   for (const double speed_z : {0.0, 1.0}) {
     SCOPED_TRACE(::testing::Message() << "declared initial contact velocity z=" << speed_z);
-    Fixture fixture(true);
+    fe::ShellBatchStartup startup;
+    if (speed_z != 0)
+      startup = {fe::ShellBatchStartupKind::ReferenceUniformTranslation, {0, 0, speed_z}};
+    Fixture fixture(true, false, 2.5, p::ContactConstraintLayout::Legacy,
+                    0, 0, .05, startup);
     fixture.single_parent = false;
-    // Original undeformed adjacent topology and original loads remain. The
-    // five contact nodes lie at exact z=0, so speed*H is a dyadic translation.
+    // Declare one complete reference uniform translation to the owner and
+    // every participant/publication. Contact z starts exactly at zero, so
+    // speed*H is an exact dyadic displacement; source geometry is unchanged.
     for (const std::uint64_t source : {10u, 11u, 12u, 13u, 14u}) {
       const auto node = fixture.rig.fixture.domain.Find(source);
       ASSERT_LT(node, fixture.rig.fixture.domain.node_count());
       ASSERT_EQ(fixture.rig.fixture.x[3 * node + 2], 0);
       ASSERT_EQ(fixture.rig.fixture.fixed[node], 0u);
-      fixture.rig.fixture.v[3 * node + 2] = speed_z;
+      ASSERT_EQ(fixture.rig.fixture.v[3 * node + 2], speed_z);
     }
     ASSERT_TRUE(fixture.Initialize());
     p::Snapshot initial, discarded;
@@ -90,18 +95,26 @@ TEST(SelfContactTransactionCuda, OriginalAdjacentStaticAndTranslatedLocalDiscard
   }
 }
 
-TEST(SelfContactTransactionCuda, InitiallyCompressedFixedLocalContactRetainsForceAndReactionStiffness) {
-  Fixture fixture(true);
+TEST(SelfContactTransactionCuda, ShortAltitudeReferenceFixedLocalContactRetainsForceAndReactionStiffness) {
+  Fixture fixture(true, false, 2.5, p::ContactConstraintLayout::Legacy,
+                  0, 0, .04025, {}, true);
   fixture.single_parent = false;
   const auto apex = fixture.rig.fixture.domain.Find(14);
   ASSERT_LT(apex, fixture.rig.fixture.domain.node_count());
-  ASSERT_EQ(fixture.rig.fixture.x[3 * apex], .05);
-  // Explicit coupon initial condition: shorten this existing T3's altitude
-  // from 10 mm to 0.25 mm. The original reference, material, physical mass, source
-  // IDs, adjacency, CIN and loads remain. Both midsurfaces share only the same
-  // original edge; the distinct apex is inside their finite thickness radius.
-  fixture.rig.fixture.x[3 * apex] = .04025;
-  for (const std::uint64_t source : {10u, 11u, 12u, 13u, 14u}) {
+  ASSERT_EQ(fixture.rig.fixture.x[3 * apex], .04025);
+  // Dedicated coupon reference declaration: T3 altitude is 0.25 mm. Native
+  // source constructors derive the matching shell reference, domain, mass,
+  // rigid/CIN bindings and every contributor. Contact Q4 nodes 20--23 are
+  // separate from actual free QEPH/CIN masters 10--13; T3 shares 21/22.
+  // No owner-only geometry edit, prestrain, physical coefficient override or
+  // user-model change occurs. The real CIN 901 attachment remains active.
+  ASSERT_EQ(fixture.rig.fixture.WitnessCount(), 2u);
+  for (const std::uint64_t source : {10u, 11u, 12u, 13u}) {
+    const auto node = fixture.rig.fixture.domain.Find(source);
+    ASSERT_LT(node, fixture.rig.fixture.domain.node_count());
+    ASSERT_EQ(fixture.rig.fixture.fixed[node], 0u);
+  }
+  for (const std::uint64_t source : {14u, 20u, 21u, 22u, 23u}) {
     const auto node = fixture.rig.fixture.domain.Find(source);
     ASSERT_LT(node, fixture.rig.fixture.domain.node_count());
     ASSERT_GT(fixture.rig.fixture.m[node], 0);

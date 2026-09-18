@@ -42,23 +42,31 @@ struct Fixture {
   tied::TiedCinAttachmentModel cin;
   std::array<tied::cin::WitnessRange,1> ranges{{{0,3}}};
   std::array<tied::cin::ActiveWitness,3> witnesses;
+  std::size_t witness_count = 3;
   std::vector<double> x,v,w,q,m,j,im,ij;
   std::vector<std::uint8_t> fixed,rotation_fixed,present;
+  // Optional qualification declarations. Defaults preserve original source
+  // geometry and reference/rest identity for every existing caller.
+  fe::ShellBatchStartup startup;
   bool surface_rigid=false;
   double t3_failure=2.5;
   ContactConstraintLayout contact_constraints=ContactConstraintLayout::Legacy;
   explicit Fixture(bool surface_rigid=false,double t3_failure=2.5,
                    bool contact_geometry=false,
                    ContactConstraintLayout=ContactConstraintLayout::Legacy,
-                   bool interior_edge_contact=false);
+                   bool interior_edge_contact=false,
+                   double adjacent_apex_x=.05,
+                   fe::ShellBatchStartup declared_startup={},
+                   bool separate_adjacent_contact=false);
   void PrepareSources();
   void PrepareConstraints();
   void PrepareMaterials();
+  std::size_t WitnessCount() const { return witness_count; }
   fe::NodalCinWitnessSource WitnessSource() const {
-    return {&cin,ranges.data(),witnesses.data(),ranges.size(),witnesses.size()};
+    return {&cin,ranges.data(),witnesses.data(),ranges.size(),WitnessCount()};
   }
   fe::NodalCinStartup CinStartup() const {
-    return {&cin,m.data(),j.data(),ranges.data(),witnesses.data(),witnesses.size(),Qualification};
+    return {&cin,m.data(),j.data(),ranges.data(),witnesses.data(),WitnessCount(),Qualification};
   }
   fe::NodalStateConfig OwnerConfig() const {
     fe::NodalStateConfig c;
@@ -71,6 +79,6 @@ struct Fixture {
         contact_constraints == ContactConstraintLayout::MergedPartAndPlain;
     return c;
   }
-  fe::ShellPhysicalPublicationIdentity Identity() const { return {Configuration,Qualification,{}}; }
+  fe::ShellPhysicalPublicationIdentity Identity() const { return {Configuration,Qualification,startup}; }
 };
 } // namespace physical_publication_test

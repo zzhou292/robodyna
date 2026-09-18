@@ -22,9 +22,9 @@ bool Rig::Advance(const fe::NodalTrialToken& token,const fe::NodalAssemblyView& 
   if (!Good(qeph.CopyAcceptedParentActivity(owner.accepted(),q,2,&qdiag)) ||
       !Good(qbat.CopyAcceptedParentActivity(owner.accepted(),b,1,&bdiag))) return false;
   const std::uint8_t activity[]{std::uint8_t(q[0] ? 1 : 2),std::uint8_t(q[1] ? 1 : 2),std::uint8_t(b[0] ? 1 : 2)};
-  // Exactly the retained Q/Q/B roster. All stiffness and internal loads were
+  // Exactly the retained Q/Q or Q/Q/B roster. All stiffness and internal loads were
   // assembled by the actual participants above; no fixture substitute exists.
-  if (cudaMemcpyAsync(cin.witness_activity,activity,sizeof(activity),cudaMemcpyHostToDevice,assembly.stream) != cudaSuccess)
+  if (cudaMemcpyAsync(cin.witness_activity,activity,fixture.WitnessCount()*sizeof(activity[0]),cudaMemcpyHostToDevice,assembly.stream) != cudaSuccess)
     return false;
   const auto node = fixture.domain.Find(9305);
   double force = 0;

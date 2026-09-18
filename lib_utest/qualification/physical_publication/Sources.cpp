@@ -6,18 +6,25 @@
 namespace physical_publication_test {
 Fixture::Fixture(bool surface,double failure,bool contact_geometry,
                  ContactConstraintLayout constraints,
-                 bool interior_edge_contact)
+                 bool interior_edge_contact, double adjacent_apex_x,
+                 fe::ShellBatchStartup declared_startup, bool separate_adjacent_contact)
     : source(contact_geometry,
              constraints == ContactConstraintLayout::SameMergedParts ||
              constraints == ContactConstraintLayout::MergedPartAndPlain,
-             interior_edge_contact),
-      surface_rigid(surface),t3_failure(failure),
+             interior_edge_contact, adjacent_apex_x, separate_adjacent_contact),
+      startup(declared_startup), surface_rigid(surface),t3_failure(failure),
       contact_constraints(constraints) {
   source.nodes.push_back({778,{.06,-.01,.003}});
   source.nodes.push_back({901,{.02,.01,.001}});
   EXPECT_TRUE(domain.Initialize({1,source.nodes.data(),source.nodes.size()}));
   EXPECT_TRUE(shells.Initialize(source.shells,domain));
   PrepareSources();
+  // Only the two actual QEPH parents witness 10--13 when contact QBAT has
+  // its own 20--23 source nodes. Keep the real CIN attachment and masters.
+  if (separate_adjacent_contact) {
+    ranges[0].count = 2;
+    witness_count = 2;
+  }
   PrepareConstraints();
   PrepareMaterials();
   const auto count = domain.node_count();
@@ -27,6 +34,9 @@ Fixture::Fixture(bool surface,double failure,bool contact_geometry,
   for (std::size_t node = 0; node < count; ++node) {
     const auto p = domain.nodes()[node].position;
     x[3*node] = p.x; x[3*node+1] = p.y; x[3*node+2] = p.z;
+    v[3*node] = startup.uniform_velocity.x;
+    v[3*node+1] = startup.uniform_velocity.y;
+    v[3*node+2] = startup.uniform_velocity.z;
     q[4*node] = 1;
     m[node] = ledger.nodes()[node].coefficients.mass;
     j[node] = ledger.nodes()[node].coefficients.isotropic_inertia;
