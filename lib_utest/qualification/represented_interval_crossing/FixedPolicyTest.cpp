@@ -86,7 +86,10 @@ TEST(RepresentedFixedPolicy, DomainBoundaryAndUnsupportedOrWideInputsRouteBefore
   }
   const auto mixed = MixedExponentPaths();
   EXPECT_FALSE(Compare({mixed[0], mixed[1]}).fixed_executed);
-  EXPECT_FALSE(Compare({Static(10, BaseTriangle()), Static(20, BaseTriangle())}).fixed_executed);
+  EXPECT_TRUE(Compare({Static(10, BaseTriangle()), Static(20, BaseTriangle())}).fixed_executed);
+  auto genuine_wide = Positive();
+  genuine_wide[0].z = std::ldexp(1., -900);
+  EXPECT_FALSE(Compare({Static(10, genuine_wide), Static(20, Positive())}).fixed_executed);
   auto unsupported = Static(20, Positive()); unsupported.motion = ct::RepresentedMotion::RigidArc;
   const auto result = Compare({Static(10, Positive()), unsupported});
   EXPECT_FALSE(result.fixed_executed);
