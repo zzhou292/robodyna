@@ -7,10 +7,10 @@ template <unsigned Bits, class IntegerPolicy = BoostIntegerPolicy<Bits>>
 struct Arithmetic {
   using ExactInteger = typename IntegerPolicy::Integer;
   static_assert(Bits == 512 || Bits == 16384);
-  explicit Arithmetic(ArithmeticContext& context) noexcept : context_(context), integers_(context) {}
+  TL_MATH_HOST_DEVICE explicit Arithmetic(ArithmeticContext& context) noexcept : context_(context), integers_(context) {}
   Arithmetic(const Arithmetic&) = delete;
   Arithmetic& operator=(const Arithmetic&) = delete;
-  bool Healthy() const noexcept {
+  TL_MATH_HOST_DEVICE bool Healthy() const noexcept {
     if constexpr (IntegerPolicy::TracksErrors) return context_.valid();
     else return true;
   }
@@ -21,10 +21,10 @@ struct Arithmetic {
     int exponent = 0;
   };
 
-  Dyadic Exact(double value) {
+  TL_MATH_HOST_DEVICE Dyadic Exact(double value) {
     std::uint64_t bits = 0;
     static_assert(sizeof(bits) == sizeof(value), "binary64 representation");
-    std::memcpy(&bits, &value, sizeof(bits));
+    portable::memcpy(&bits, &value, sizeof(bits));
     const bool negative = (bits >> 63) != 0;
     const unsigned encoded_exponent =
         static_cast<unsigned>((bits >> 52) & 0x7ffu);
@@ -42,12 +42,12 @@ struct Arithmetic {
     return result;
   }
 
-  Dyadic Add(Dyadic a, Dyadic b) {
+  TL_MATH_HOST_DEVICE Dyadic Add(Dyadic a, Dyadic b) {
     if (integers_.IsZero(a.numerator))
       return b;
     if (integers_.IsZero(b.numerator))
       return a;
-    const int exponent = std::min(a.exponent, b.exponent);
+    const int exponent = portable::min(a.exponent, b.exponent);
     const auto shift = [this](ExactInteger* value, unsigned amount) {
       const bool negative = integers_.IsNegative(*value);
       if (negative)
@@ -61,27 +61,27 @@ struct Arithmetic {
     return {integers_.Add(a.numerator, b.numerator), exponent};
   }
 
-  Dyadic Negate(Dyadic value) {
+  TL_MATH_HOST_DEVICE Dyadic Negate(Dyadic value) {
     value.numerator = integers_.Negate(value.numerator);
     return value;
   }
 
-  Dyadic Subtract(Dyadic a, Dyadic b) { return Add(a, Negate(b)); }
+  TL_MATH_HOST_DEVICE Dyadic Subtract(Dyadic a, Dyadic b) { return Add(a, Negate(b)); }
 
-  Dyadic Multiply(const Dyadic& a, const Dyadic& b) {
+  TL_MATH_HOST_DEVICE Dyadic Multiply(const Dyadic& a, const Dyadic& b) {
     return {integers_.Multiply(a.numerator, b.numerator), a.exponent + b.exponent};
   }
 
-  Dyadic Scale(Dyadic value, std::uint64_t factor) {
+  TL_MATH_HOST_DEVICE Dyadic Scale(Dyadic value, std::uint64_t factor) {
     integers_.Scale(value.numerator, factor);
     return value;
   }
 
-  int Sign(const Dyadic& value) noexcept {
+  TL_MATH_HOST_DEVICE int Sign(const Dyadic& value) noexcept {
     return integers_.Sign(value.numerator);
   }
 
-  int Compare(const Dyadic& a, const Dyadic& b) {
+  TL_MATH_HOST_DEVICE int Compare(const Dyadic& a, const Dyadic& b) {
     return Sign(Subtract(a, b));
   }
 
@@ -89,39 +89,39 @@ struct Arithmetic {
     Dyadic x, y, z;
   };
 
-  ExactVec3 Add(const ExactVec3& a, const ExactVec3& b) {
+  TL_MATH_HOST_DEVICE ExactVec3 Add(const ExactVec3& a, const ExactVec3& b) {
     return {Add(a.x, b.x), Add(a.y, b.y), Add(a.z, b.z)};
   }
 
-  ExactVec3 Subtract(const ExactVec3& a, const ExactVec3& b) {
+  TL_MATH_HOST_DEVICE ExactVec3 Subtract(const ExactVec3& a, const ExactVec3& b) {
     return {Subtract(a.x, b.x), Subtract(a.y, b.y),
             Subtract(a.z, b.z)};
   }
 
-  ExactVec3 Cross(const ExactVec3& a, const ExactVec3& b) {
+  TL_MATH_HOST_DEVICE ExactVec3 Cross(const ExactVec3& a, const ExactVec3& b) {
     return {Subtract(Multiply(a.y, b.z), Multiply(a.z, b.y)),
             Subtract(Multiply(a.z, b.x), Multiply(a.x, b.z)),
             Subtract(Multiply(a.x, b.y), Multiply(a.y, b.x))};
   }
 
-  Dyadic Dot(const ExactVec3& a, const ExactVec3& b) {
+  TL_MATH_HOST_DEVICE Dyadic Dot(const ExactVec3& a, const ExactVec3& b) {
     return Add(Add(Multiply(a.x, b.x), Multiply(a.y, b.y)),
                Multiply(a.z, b.z));
   }
 
-  bool Zero(const ExactVec3& value) noexcept {
+  TL_MATH_HOST_DEVICE bool Zero(const ExactVec3& value) noexcept {
     return Sign(value.x) == 0 && Sign(value.y) == 0 && Sign(value.z) == 0;
   }
 
-  Dyadic Component(const ExactVec3& value, unsigned component) {
+  TL_MATH_HOST_DEVICE Dyadic Component(const ExactVec3& value, unsigned component) {
     return component == 0 ? value.x : (component == 1 ? value.y : value.z);
   }
 
-  double Component(Vec3 value, unsigned component) noexcept {
+  TL_MATH_HOST_DEVICE double Component(Vec3 value, unsigned component) noexcept {
     return component == 0 ? value.x : (component == 1 ? value.y : value.z);
   }
 
-  ExactVec3 At(const RepresentedVertexPath& path, DyadicTime time) {
+  TL_MATH_HOST_DEVICE ExactVec3 At(const RepresentedVertexPath& path, DyadicTime time) {
     const std::uint64_t denominator = std::uint64_t{1} << time.depth;
     ExactVec3 result;
     Dyadic* target[3] = {&result.x, &result.y, &result.z};
@@ -141,14 +141,14 @@ struct Arithmetic {
     ExactVec3 vertex[3];
   };
 
-  ExactTriangle At(const RepresentedTrianglePath& path, DyadicTime time) {
+  TL_MATH_HOST_DEVICE ExactTriangle At(const RepresentedTrianglePath& path, DyadicTime time) {
     ExactTriangle result;
     for (unsigned i = 0; i < 3; ++i)
       result.vertex[i] = At(path.vertices[i], time);
     return result;
   }
 
-  bool CommonTranslation(
+  TL_MATH_HOST_DEVICE bool CommonTranslation(
       const RepresentedTrianglePath& a,
       const RepresentedTrianglePath& b) {
     Dyadic reference[3];

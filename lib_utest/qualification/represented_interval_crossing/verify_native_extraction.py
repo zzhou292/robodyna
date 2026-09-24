@@ -16,6 +16,13 @@ pattern = re.compile(
 def policy_baseline(name, value):
     # Exact, enumerated adapter spellings only. No generic statement stripping.
     replacements = {
+        # Execution-space standard-library equivalents; never geometry changes.
+        "portable::memcpy": "std::memcpy",
+        "portable::fill_n": "std::fill_n",
+        "portable::tie": "std::tie",
+        "portable::swap": "std::swap",
+        "portable::min": "std::min",
+        "constexprunsignedendpoint_indices[]{0,2};for(unsignedendpoint:endpoint_indices)": "for(unsignedendpoint:{0u,2u})",
         "integers_.Assign(result.numerator,fraction);": "result.numerator=fraction;",
         "integers_.Assign(result.numerator,(std::uint64_t{1}<<52)|fraction);": "result.numerator=(std::uint64_t{1}<<52)|fraction;",
         "integers_.Negate(result.numerator)": "-result.numerator",
@@ -57,6 +64,9 @@ def policy_baseline(name, value):
 
 def bodies(text):
     clean = re.sub(r"//[^\n]*|/\*.*?\*/", "", text, flags=re.S)
+    # Execution-space annotation only; constructors are outside the frozen
+    # numerical-body set and pinned by the owning source check.
+    clean = clean.replace("TL_MATH_HOST_DEVICE ", "")
     for match in pattern.finditer(clean):
         at = clean.find("{", match.end())
         stop = clean.find(";", match.end())

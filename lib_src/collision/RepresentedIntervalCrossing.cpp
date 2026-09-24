@@ -9,6 +9,8 @@
 #include "represented_interval_crossing/NativeStorageQualification.h"
 #include "represented_interval_crossing/FixedPolicyQualification.h"
 #include "represented_interval_crossing/native/FixedIntegerPolicy.h"
+#include "represented_interval_crossing/DeviceExecution.h"
+#include "represented_interval_crossing/BusyRelease.h"
 
 #include <algorithm>
 #include <atomic>
@@ -86,12 +88,7 @@ std::size_t PageBytes() noexcept {
   return value > 0 ? static_cast<std::size_t>(value) : 0;
 }
 
-struct CanonicalPair {
-  std::uint32_t first = 0;
-  std::uint32_t second = 0;
-  std::size_t input_pair = SIZE_MAX;
-  RepresentedIntervalPairKey key;
-};
+using represented_interval_crossing::CanonicalPair;
 
 struct VertexLedgerRow {
   FacetVertexKey key;
@@ -316,10 +313,7 @@ RepresentedIntervalReport Failure(RepresentedIntervalStatus status) noexcept {
   return result;
 }
 
-struct BusyRelease {
-  std::atomic<bool>* value;
-  ~BusyRelease() { value->store(false, std::memory_order_release); }
-};
+using represented_interval_crossing::BusyRelease;
 
 }  // namespace
 
@@ -332,9 +326,7 @@ struct RepresentedIntervalCrossing::Impl {
     Stopping,
   };
 
-  struct PairStatus {
-    bool complete = false;
-  };
+  using PairStatus = represented_interval_crossing::PairStatus;
 
   struct WorkerSlot {
     Impl* owner = nullptr;
@@ -358,7 +350,8 @@ struct RepresentedIntervalCrossing::Impl {
   bool DisjointFromOwned(const void* data, std::size_t bytes) const noexcept;
   RepresentedIntervalReport CertifySlice(
       const RepresentedTrianglePath*, std::size_t,
-      const RepresentedTrianglePair*, std::size_t, PathRoster&) noexcept;
+      const RepresentedTrianglePair*, std::size_t, PathRoster&,
+      represented_interval_crossing::DeviceExecution* = nullptr) noexcept;
 
   explicit Impl(RepresentedIntervalLimits input) : limits(input) {}
   ~Impl() { Shutdown(); }
@@ -438,6 +431,10 @@ struct RepresentedIntervalCrossing::Impl {
           next_pair.fetch_add(1, std::memory_order_relaxed);
       if (pair_index >= job_pair_count)
         return;
+      // Device writes finish synchronously before workers start. Every ordinal
+      // has exactly one numerical writer; CPU fallback owns only unset rows.
+      if (pair_status[pair_index].complete)
+        continue;
       // Scheduling affects only worker ownership. Each canonical pair index
       // has one staging/status writer and private DFS/exact scratch; the host
       // folds staging in increasing pair_index order after all workers join.
@@ -694,6 +691,13 @@ RepresentedIntervalReport RepresentedIntervalCrossing::Initialize(
 RepresentedIntervalReport RepresentedIntervalCrossing::Certify(
     const RepresentedTrianglePath* paths, std::size_t path_count,
     const RepresentedTrianglePair* pairs, std::size_t pair_count) noexcept {
+  return CertifyUsing(paths, path_count, pairs, pair_count, nullptr);
+}
+
+RepresentedIntervalReport RepresentedIntervalCrossing::CertifyUsing(
+    const RepresentedTrianglePath* paths, std::size_t path_count,
+    const RepresentedTrianglePair* pairs, std::size_t pair_count,
+    represented_interval_crossing::DeviceExecution* device) noexcept {
   if (!impl_)
     return Failure(RepresentedIntervalStatus::NotInitialized);
   auto& storage = *impl_;
@@ -710,7 +714,15 @@ RepresentedIntervalReport RepresentedIntervalCrossing::Certify(
   }
   BusyRelease busy_release{&storage.busy};
   Impl::PathRoster roster{paths, path_count};
-  return storage.CertifySlice(paths, path_count, pairs, pair_count, roster);
+  return storage.CertifySlice(paths, path_count, pairs, pair_count, roster, device);
+}
+
+RepresentedIntervalReport represented_interval_crossing::DeviceAccess::Certify(
+    RepresentedIntervalCrossing& crossing,
+    const RepresentedTrianglePath* paths, std::size_t path_count,
+    const RepresentedTrianglePair* pairs, std::size_t pair_count,
+    DeviceExecution& device) noexcept {
+  return crossing.CertifyUsing(paths, path_count, pairs, pair_count, &device);
 }
 
 bool RepresentedIntervalCrossing::Impl::DisjointFromOwned(
@@ -755,7 +767,7 @@ bool RepresentedIntervalCrossing::Impl::DisjointFromOwned(
 RepresentedIntervalReport RepresentedIntervalCrossing::Impl::CertifySlice(
     const RepresentedTrianglePath* paths, std::size_t path_count,
     const RepresentedTrianglePair* pairs, std::size_t pair_count,
-    PathRoster& roster) noexcept {
+    PathRoster& roster, represented_interval_crossing::DeviceExecution* device) noexcept {
   auto& storage = *this;
   RepresentedIntervalReport report = FreshReport();
   report.input_paths = path_count;
@@ -788,7 +800,9 @@ RepresentedIntervalReport RepresentedIntervalCrossing::Impl::CertifySlice(
       !MultiplySize(pair_count, sizeof(*pairs), &pair_bytes) ||
       !RangeDisjoint(paths, path_bytes, pairs, pair_bytes) ||
       !storage.DisjointFromOwned(paths, path_bytes) ||
-      !storage.DisjointFromOwned(pairs, pair_bytes)) {
+      !storage.DisjointFromOwned(pairs, pair_bytes) ||
+      (device && (!device->Disjoint(paths, path_bytes) ||
+                  !device->Disjoint(pairs, pair_bytes)))) {
     report.status = RepresentedIntervalStatus::InvalidInput;
     report.message = Message(report.status);
     return report;
@@ -892,6 +906,19 @@ RepresentedIntervalReport RepresentedIntervalCrossing::Impl::CertifySlice(
   }
   for (std::size_t pair = 0; pair < storage.pairs.size(); ++pair)
     storage.pair_status[pair].complete = false;
+  if (device) {
+    const represented_interval_crossing::AuthenticatedWork work(paths, path_count,
+        storage.pairs.data(), storage.pairs.size(), storage.limits,
+        storage.staging.data(), storage.pair_status.get());
+    const auto execution = device->Execute(work);
+    if (execution.status != RepresentedIntervalStatus::Ok) {
+      report.status = execution.status;
+      report.input_pair = execution.input_pair;
+      report.message = execution.message;
+      storage.staging.clear();
+      return report;
+    }
+  }
   if (!storage.RunWorkers(paths, storage.pairs.size())) {
     report.status = RepresentedIntervalStatus::ResourceLimit;
     report.message =

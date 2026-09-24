@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
+#include "PortableStd.h"
 #include "../NormalReuseQualification.h"
 #include "../ExactPathReuseQualification.h"
 #include "../CommonPointReuseQualification.h"
@@ -15,7 +16,7 @@ enum class SeparationProof { LegacyAabb, RelativeFaces };
 using ProjectionDomain = represented_interval_crossing::ExactProjectionDomain;
 using SeparationCounters = represented_interval_crossing::RelativeSeparationCounters;
 
-inline void CountSeparationOperation(
+TL_MATH_HOST_DEVICE inline void CountSeparationOperation(
     SeparationCounters* counters, std::size_t SeparationCounters::* field) noexcept {
   if (!counters) return;
   auto& value = counters->*field;
@@ -23,7 +24,7 @@ inline void CountSeparationOperation(
   else ++value;
 }
 
-inline void CountNormalOperation(
+TL_MATH_HOST_DEVICE inline void CountNormalOperation(
     NormalCounters* counters, std::size_t NormalCounters::* field) noexcept {
   if (!counters) return;
   auto& value = counters->*field;
@@ -31,7 +32,7 @@ inline void CountNormalOperation(
   else ++value;
 }
 
-inline void CountExactPathOperation(
+TL_MATH_HOST_DEVICE inline void CountExactPathOperation(
     ExactPathCounters* counters, std::size_t ExactPathCounters::* field) noexcept {
   if (!counters) return;
   auto& value = counters->*field;
@@ -39,7 +40,7 @@ inline void CountExactPathOperation(
   else ++value;
 }
 
-inline void CountCommonPointOperation(
+TL_MATH_HOST_DEVICE inline void CountCommonPointOperation(
     CommonPointCounters* counters, std::size_t CommonPointCounters::* field) noexcept {
   if (!counters) return;
   auto& value = counters->*field;
@@ -58,9 +59,9 @@ struct Cell {
   unsigned depth = 0;
 };
 
-inline DyadicTime Lower(const Cell& cell) { return {cell.lower, cell.depth}; }
-inline DyadicTime Upper(const Cell& cell) { return {cell.upper, cell.depth}; }
-inline DyadicTime Middle(const Cell& cell) {
+TL_MATH_HOST_DEVICE inline DyadicTime Lower(const Cell& cell) { return {cell.lower, cell.depth}; }
+TL_MATH_HOST_DEVICE inline DyadicTime Upper(const Cell& cell) { return {cell.upper, cell.depth}; }
+TL_MATH_HOST_DEVICE inline DyadicTime Middle(const Cell& cell) {
   return {cell.lower + cell.upper, cell.depth + 1};
 }
 

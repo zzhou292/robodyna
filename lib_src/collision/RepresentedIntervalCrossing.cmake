@@ -3,6 +3,8 @@ include("${CMAKE_CURRENT_LIST_DIR}/FixedContactFacetBinding.cmake")
 find_package(Threads REQUIRED)
 add_library(tl_represented_interval_crossing STATIC
   "${CMAKE_CURRENT_LIST_DIR}/RepresentedIntervalCrossing.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/DeviceExecution.h"
+  "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/BusyRelease.h"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/Batch.h"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/NormalReuseQualification.h"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/ExactPathReuseQualification.h"
@@ -14,6 +16,7 @@ add_library(tl_represented_interval_crossing STATIC
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native/FixedIntegerPolicy.h"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/NativeStorageDomain.h"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native/Modes.h"
+  "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native/PortableStd.h"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native/Identity.h"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native/Arithmetic.h"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native/Geometry.h"
