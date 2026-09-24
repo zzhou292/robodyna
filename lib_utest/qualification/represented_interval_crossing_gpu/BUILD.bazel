@@ -2,20 +2,24 @@ load("@rules_cc//cc:defs.bzl", "cc_test")
 _COMMON = [
     "Cases.h",
     "GpuFixture.h",
+    "NumericCohortCases.h",
     "//lib_utest/qualification/represented_interval_crossing:Fixture.h",
     "//lib_utest/qualification/represented_interval_crossing:ResultAssertions.h",
     "//lib_utest/qualification/represented_interval_crossing:BatchAssertions.h",
     "//lib_utest/qualification/represented_interval_crossing:BatchFixture.h",
 ]
 cc_test(
-    name = "host", size = "small", srcs = ["HostTest.cpp", "CapacityHostTest.cpp"] + _COMMON,
+    name = "host", size = "small",
+    srcs = ["HostTest.cpp", "CapacityHostTest.cpp", "NumericCohortHostTest.cpp"] + _COMMON,
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = ["//lib_src/collision:represented_interval_crossing_gpu", "@googletest//:gtest_main"],
 )
 cc_test(
     name = "cuda", size = "medium", timeout = "moderate",
-    srcs = ["GpuTest.cpp", "CompoundCudaTest.cpp", "CapacityCudaTest.cpp"] + _COMMON,
+    srcs = ["GpuTest.cpp", "CompoundCudaTest.cpp", "CapacityCudaTest.cpp",
+            "NumericCohortCudaTest.cpp", "CopyFault.cpp", "CopyFault.h"] + _COMMON,
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = ["//lib_src/collision:represented_interval_crossing_gpu", "@googletest//:gtest_main"],
     tags = ["exclusive", "gpu"],
+    linkopts = ["-Wl,--wrap=cudaMemcpyAsync"],
 )

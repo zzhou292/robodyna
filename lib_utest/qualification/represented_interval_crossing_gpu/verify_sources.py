@@ -8,7 +8,8 @@ public = (collision / "RepresentedIntervalCrossingGpu.h").read_text()
 facade = (collision / "RepresentedIntervalCrossingGpu.cpp").read_text()
 seam = (collision / "represented_interval_crossing/DeviceExecution.h").read_text()
 kernel = (collision / "represented_interval_crossing/native_device/Kernels.cu").read_text()
-workspace = (collision / "represented_interval_crossing/native_device/Workspace.cpp").read_text()
+workspace = "\n".join((collision / "represented_interval_crossing/native_device" / name).read_text()
+                      for name in ("Workspace.cpp", "Transport.cpp", "Cohort.cpp"))
 for token in ("RepresentedIntervalCrossingGpu", "device_workers = 128", "host_pairs", "device_pairs"):
     assert token in public, token
 assert "class AuthenticatedWork" in seam

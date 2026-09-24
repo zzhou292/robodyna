@@ -1,5 +1,9 @@
 # Standalone native CUDA certificates
 
+The optional numerical-cohort extension is documented separately in
+[Cohort.md](Cohort.md). It is off by default and remains unqualified until its
+owning receipts pass; it does not select a vehicle backend.
+
 This optional module executes the existing represented-linear native geometry
 kernel on CUDA with the qualified shared eight-limb integer core. It is a
 numerical executor, not a different contact profile, solver clock, contact law,

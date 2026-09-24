@@ -11,6 +11,7 @@
 #include "represented_interval_crossing/native/FixedIntegerPolicy.h"
 #include "represented_interval_crossing/DeviceExecution.h"
 #include "represented_interval_crossing/BusyRelease.h"
+#include "represented_interval_crossing/CohortAdmission.h"
 
 #include <algorithm>
 #include <atomic>
@@ -348,6 +349,9 @@ struct RepresentedIntervalCrossing::Impl {
     bool authenticated = false;
     represented_interval_crossing::PathRosterWork work;
     std::optional<represented_interval_crossing::AuthenticatedScene> device_scene;
+    const RepresentedTrianglePair* ordered_pairs = nullptr;
+    std::size_t ordered_pair_count = 0, slice_capacity = 0, slice_offset = 0;
+    bool prefetch_disjoint = false;
   };
   bool DisjointFromOwned(const void* data, std::size_t bytes) const noexcept;
   RepresentedIntervalReport CertifySlice(
@@ -785,7 +789,12 @@ RepresentedIntervalReport RepresentedIntervalCrossing::Impl::CertifySlice(
   RepresentedIntervalReport report = FreshReport();
   report.input_paths = path_count;
   report.input_pairs = pair_count;
-  if (roster.paths != paths || roster.count != path_count) {
+  if (roster.paths != paths || roster.count != path_count ||
+      (roster.slice_capacity &&
+       (roster.slice_offset > roster.ordered_pair_count ||
+        pair_count > roster.ordered_pair_count - roster.slice_offset ||
+        pair_count > roster.slice_capacity ||
+        pairs != (roster.ordered_pairs ? roster.ordered_pairs + roster.slice_offset : nullptr)))) {
     report.status = RepresentedIntervalStatus::InvalidInput;
     report.message = "native lexical path roster changed during batch traversal";
     return report;
@@ -887,14 +896,8 @@ RepresentedIntervalReport RepresentedIntervalCrossing::Impl::CertifySlice(
       report.message = Message(report.status);
       return report;
     }
-    CanonicalPair pair;
-    pair.first = pairs[i].first;
-    pair.second = pairs[i].second;
-    pair.input_pair = i;
-    if (Compare(paths[pair.second].key, paths[pair.first].key) < 0)
-      std::swap(pair.first, pair.second);
-    pair.key.paths[0] = paths[pair.first].key;
-    pair.key.paths[1] = paths[pair.second].key;
+    const auto pair = represented_interval_crossing::CanonicalizePair(
+        paths, pairs[i], i, [](const auto& a, const auto& b) { return Compare(a, b); });
     storage.pairs.push_back(pair);
   }
   std::sort(storage.pairs.begin(), storage.pairs.end(), PairLess);
@@ -923,10 +926,33 @@ RepresentedIntervalReport RepresentedIntervalCrossing::Impl::CertifySlice(
     if (!roster.device_scene)
       roster.device_scene.emplace(
           represented_interval_crossing::AuthenticatedScene::ConstructionKey{},
-          device, paths, path_count);
+          device, paths, path_count,
+          roster.prefetch_disjoint ? roster.ordered_pairs : nullptr,
+          roster.prefetch_disjoint ? roster.ordered_pair_count : 0,
+          roster.prefetch_disjoint ? roster.slice_capacity : 0);
+    auto& scene = *roster.device_scene;
+    const auto cohort_capacity = device->NumericCohortCapacity();
+    if (cohort_capacity && scene.slice_capacity_ && pair_count) {
+      if (cohort_capacity < pair_count) {
+        report.status = RepresentedIntervalStatus::ResourceLimit;
+        report.message = "Native CUDA numerical cohort cannot hold this publication slice";
+        storage.staging.clear();
+        return report;
+      }
+      if (!scene.cohort_ || roster.slice_offset >= scene.cohort_->begin_ + scene.cohort_->count_) {
+        const auto remaining = scene.ordered_pair_count_ - roster.slice_offset;
+        const auto window = remaining <= cohort_capacity ? remaining :
+            (cohort_capacity / scene.slice_capacity_) * scene.slice_capacity_;
+        // Align nonfinal windows with the original publication slices. No row
+        // is prefetched twice and no numerical budget is raised.
+        scene.cohort_.emplace(
+            represented_interval_crossing::AuthenticatedNumericCohort::ConstructionKey{},
+            roster.slice_offset, window);
+      }
+    }
     const represented_interval_crossing::AuthenticatedWork work(*roster.device_scene,
         storage.pairs.data(), storage.pairs.size(), storage.limits,
-        storage.staging.data(), storage.pair_status.get());
+        storage.staging.data(), storage.pair_status.get(), roster.slice_offset);
     const auto execution = device->Execute(work);
     if (execution.status != RepresentedIntervalStatus::Ok) {
       report.status = execution.status;
@@ -1048,9 +1074,24 @@ represented_interval_crossing::BatchAccess::CertifyUsing(
         "Crossing batch scratch aliases native owned storage");
 
   RepresentedIntervalCrossing::Impl::PathRoster roster{paths, path_count};
+  // detail::ValidateInput authenticated this complete immutable canonical pair
+  // roster before any slice. Its bounds stay lexical to this compound call.
+  roster.ordered_pairs = pairs;
+  roster.ordered_pair_count = pair_count;
+  roster.slice_capacity = batch_pair_capacity;
+  if (device && device->NumericCohortCapacity()) {
+    // Ordinary validation keeps its original per-slice alias/error boundary.
+    // A wider numerical borrow needs the stronger whole-roster proof. If that
+    // proof is unavailable, retain per-slice GPU execution and its exact error
+    // order; this is never a retry after a CUDA or arithmetic failure.
+    roster.prefetch_disjoint = detail::NumericCohortRanges(paths, path_count, pairs, pair_count,
+        [&](const void* data, std::size_t bytes) { return storage.DisjointFromOwned(data, bytes); },
+        RangeDisjoint);
+  }
   report = detail::Execute(
       paths, pairs, pair_count, batch_pair_capacity, scratch,
       [&](const RepresentedTrianglePair* slice, std::size_t count) {
+        roster.slice_offset = slice && pairs ? static_cast<std::size_t>(slice - pairs) : 0;
         return storage.CertifySlice(paths, path_count, slice, count, roster, device);
       },
       [&]() {

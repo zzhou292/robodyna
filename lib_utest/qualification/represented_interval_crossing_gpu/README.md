@@ -40,6 +40,14 @@ CUDA execution or authenticated input/domain disagreement poisons the GPU owner;
 mathematical outcomes retain the native result/report/failure-atomic fold.
 # Compound qualification
 
+The opt-in numerical-cohort slice adds three host and nine CUDA groups, using
+the same exact CPU and legacy GPU references. It also extends the actual C++17
+negative compilation gate to the cohort key. Query fault injection lives only
+in the owning CUDA test executable; the production library and benchmark do not
+link that probe. The numerical kernel and launch source remain frozen by the
+capacity source proof. Source checks have passed; compilation/runtime and the
+transfer-inclusive compound comparison remain required before promotion.
+
 `Compound.cmake` adds seven CUDA groups to the same executable. They reuse the
 existing native batch fixture and complete report/result assertions, including
 all path-roster counters. Private scene/work types are statically noncopyable

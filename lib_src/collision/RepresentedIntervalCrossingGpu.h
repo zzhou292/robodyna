@@ -15,6 +15,10 @@ struct RepresentedIntervalGpuLimits {
   std::size_t max_device_bytes = 64u << 20;
   std::size_t max_workspace_host_bytes = 16u << 20;
   unsigned device_workers = 128;
+  // Optional lookahead cache for compound calls only. Zero retains the legacy
+  // per-slice GPU execution. Explicit capacity is bounded at 4096 and must cover
+  // the caller's admitted publication slice; physical work limits do not change.
+  std::size_t numeric_cohort_pairs = 0;
 };
 struct RepresentedIntervalGpuForecast {
   RepresentedIntervalForecast native;
@@ -25,6 +29,8 @@ struct RepresentedIntervalGpuForecast {
   std::size_t owned_host_bytes = 0;
   std::size_t startup_host_bytes = 0;
   unsigned device_workers = 0;
+  std::size_t numeric_cohort_pairs = 0;
+  std::size_t numeric_cache_host_bytes = 0;
 };
 // Counts describe numerical routing, never physical work or an exclusion.
 struct RepresentedIntervalDeviceReport {
@@ -34,6 +40,14 @@ struct RepresentedIntervalDeviceReport {
   std::size_t host_pairs = 0;
   std::size_t batches = 0;
   std::size_t scene_uploads = 0;
+  // Device pairs counts admitted numerical jobs, including prefetched later
+  // slices; a failed transfer/launch may prevent execution. Consumed pairs
+  // reached native staging, not necessarily publication.
+  std::size_t consumed_device_pairs = 0;
+  std::size_t numeric_cohorts = 0;
+  std::size_t fault_cohort_begin = SIZE_MAX;
+  std::size_t fault_cohort_count = 0;
+  std::size_t fault_pair_ordinal = SIZE_MAX;
 };
 struct RepresentedIntervalGpuReport {
   RepresentedIntervalReport native;

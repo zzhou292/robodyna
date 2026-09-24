@@ -12,6 +12,8 @@ add_library(tl_represented_interval_crossing_gpu STATIC
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/DeviceExecution.h"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/DeviceBatch.h"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native_device/Workspace.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native_device/Cohort.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native_device/Transport.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native_device/Layout.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native_device/Kernels.cu"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native_device/Workspace.h"

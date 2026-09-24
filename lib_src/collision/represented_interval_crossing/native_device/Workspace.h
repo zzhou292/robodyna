@@ -16,9 +16,13 @@ struct DeviceResult {
   RepresentedIntervalResult value;
   PairExecution execution = PairExecution::Incomplete;
 };
+struct CachedPair {
+  RepresentedIntervalResult result;
+  bool device_complete = false;
+};
 struct Layout {
   tl::util::ArenaRegion paths, jobs, results, exact_scratch, dfs;
-  tl::util::ArenaRegion host_jobs, host_results;
+  tl::util::ArenaRegion host_jobs, host_results, host_cache;
   RepresentedIntervalGpuForecast forecast;
   std::size_t host_payload_bytes = 0;
   std::size_t dfs_capacity = 0;
@@ -43,12 +47,22 @@ class Workspace final : public DeviceExecution {
   RepresentedIntervalDeviceReport report() const noexcept { return report_; }
  private:
   bool Disjoint(const void*, std::size_t) const noexcept override;
+  std::size_t NumericCohortCapacity() const noexcept override {
+    return layout_.forecast.numeric_cohort_pairs;
+  }
   RepresentedIntervalReport Execute(const AuthenticatedWork&) noexcept override;
+  RepresentedIntervalReport ExecuteSlice(const AuthenticatedWork&) noexcept;
+  RepresentedIntervalReport ExecuteCohort(const AuthenticatedWork&) noexcept;
+  RepresentedIntervalReport Submit(const AuthenticatedWork&, std::size_t jobs) noexcept;
+  void FaultScope(const AuthenticatedWork&) noexcept;
+  RepresentedIntervalReport InvalidPublication(const AuthenticatedWork&,
+      const char*, std::size_t ordinal) noexcept;
   RepresentedIntervalReport DeviceFailure(cudaError_t) noexcept;
   Layout layout_;
   tl::util::HostArena host_;
   DeviceJob* jobs_ = nullptr;
   DeviceResult* results_ = nullptr;
+  CachedPair* cache_ = nullptr;
   void* device_ = nullptr;
   cudaStream_t stream_ = nullptr;
   int device_ordinal_ = -1;

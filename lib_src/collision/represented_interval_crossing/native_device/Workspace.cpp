@@ -48,6 +48,12 @@ RepresentedIntervalGpuReport Workspace::Initialize(const Layout& layout, cudaStr
     result.device = {RepresentedIntervalDeviceStatus::ResourceLimit, result.native.message};
     return result;
   }
+  if (layout.host_cache.count && !(cache_ = host_.Construct<CachedPair>(layout.host_cache))) {
+    result.native = Failure(RepresentedIntervalStatus::ResourceLimit,
+        "Native CUDA numerical cache construction failed");
+    result.device = {RepresentedIntervalDeviceStatus::ResourceLimit, result.native.message};
+    return result;
+  }
   error = cudaMalloc(&device_, layout.forecast.device_bytes);
   if (error != cudaSuccess) {
     result.native = DeviceFailure(error);
@@ -111,6 +117,9 @@ RepresentedIntervalReport Workspace::Execute(const AuthenticatedWork& work) noex
   }
   report_.status = RepresentedIntervalDeviceStatus::Ok;
   report_.message = "OK";
+  return work.scene_.cohort_ ? ExecuteCohort(work) : ExecuteSlice(work);
+}
+RepresentedIntervalReport Workspace::ExecuteSlice(const AuthenticatedWork& work) noexcept {
   std::size_t jobs = 0;
   for (std::size_t i = 0; i < work.pair_count(); ++i) {
     const auto& pair = work.pairs()[i];
@@ -122,46 +131,13 @@ RepresentedIntervalReport Workspace::Execute(const AuthenticatedWork& work) noex
     }
   }
   report_.device_pairs += jobs;
-  if (!jobs) return {};
-
-  auto error = cudaSuccess;
-  if (!work.scene_.uploaded_) {
-    error = cudaMemcpyAsync(tl::util::ArenaPointer<RepresentedTrianglePath>(device_, layout_.paths),
-        work.paths(), work.path_count() * sizeof(*work.paths()), cudaMemcpyHostToDevice, stream_);
-    if (error == cudaSuccess) ++report_.scene_uploads;
-  }
-  if (error == cudaSuccess)
-    error = cudaMemcpyAsync(tl::util::ArenaPointer<DeviceJob>(device_, layout_.jobs),
-        jobs_, jobs * sizeof(*jobs_), cudaMemcpyHostToDevice, stream_);
-  if (error == cudaSuccess) {
-    ++report_.batches;
-    error = Launch(device_, layout_, work.path_count(), jobs, work.limits(), stream_);
-  }
-  if (error == cudaSuccess)
-    error = cudaMemcpyAsync(results_, tl::util::ArenaPointer<DeviceResult>(device_, layout_.results),
-        jobs * sizeof(*results_), cudaMemcpyDeviceToHost, stream_);
-  // Drain every enqueued borrowed read even when a later operation failed.
-  // Keep the first error. No borrowed caller pointer survives this function.
-  const auto synchronized = cudaStreamSynchronize(stream_);
-  if (error == cudaSuccess) error = synchronized;
-  if (error != cudaSuccess) return DeviceFailure(error);
-  for (std::size_t i = 0; i < jobs; ++i) {
-    if (results_[i].execution != PairExecution::Complete) {
-      usable_ = false;
-      report_.status = RepresentedIntervalDeviceStatus::DeviceFailure;
-      report_.message = "Native CUDA input/domain validation disagreed with authenticated host work";
-      auto failure = Failure(RepresentedIntervalStatus::ResourceLimit, report_.message);
-      failure.input_pair = jobs_[i].pair.input_pair;
-      return failure;
-    }
-  }
-  // Only native lexical scene state records successful upload. The workspace
-  // retains neither an input pointer nor a proof/cache across outer calls.
-  work.scene_.uploaded_ = true;
+  const auto submitted = Submit(work, jobs);
+  if (submitted.status != RepresentedIntervalStatus::Ok) return submitted;
   for (std::size_t i = 0; i < jobs; ++i) {
     const auto ordinal = jobs_[i].ordinal;
     native::StoreResult(results_[i].value, work.staging() + ordinal);
     work.status()[ordinal].complete = true;
+    ++report_.consumed_device_pairs;
   }
   return {};
 }
