@@ -55,7 +55,13 @@ TEST(SelfContactNativeCrossingTransactionCuda, OptionalExecutorPreservesPhysical
     DeterminismObservation reference;
     for (unsigned mode = 0; mode < 3; ++mode) {
       SCOPED_TRACE(mode); // CPU, GPU native only, both optional GPU backends.
-      Fixture fixture(false, false, 2.5, p::ContactConstraintLayout::Legacy, 1);
+      // Reuse the independently qualified positive-force translated-local
+      // scene from CrossingBatchCudaCases: exactly two pairs must reach native
+      // certification, so an accidentally bypassed Candidate bridge cannot pass.
+      const double apex = std::nextafter(.04 + .0005, .04);
+      Fixture fixture(true, false, 2.5, p::ContactConstraintLayout::Legacy,
+                      0, 0, apex, {}, true);
+      fixture.single_parent = false;
       fixture.config.enable_diagnostics = true;
       fixture.config.enable_cuda_native_crossing = mode != 0;
       fixture.config.native_crossing_numeric_cohort_pairs = 4096;
@@ -78,7 +84,18 @@ TEST(SelfContactNativeCrossingTransactionCuda, OptionalExecutorPreservesPhysical
         ASSERT_TRUE(fixture.Prepare(token, assembly, prepared, common));
         c::SelfContactTransactionReceipt receipt;
         ASSERT_TRUE(Good(fixture.transaction.SealCandidate(fixture.rig.owner, token, common, prepared, accepted, &receipt)));
-        if (!mode) EXPECT_EQ(fixture.transaction.diagnostics().candidate.native_device.calls, 0u);
+        const auto diagnostics = fixture.transaction.diagnostics().candidate;
+        EXPECT_EQ(receipt.policy_summary().exact_crossing_pairs, 2u);
+        EXPECT_EQ(diagnostics.native_submitted_pairs, 2u);
+        if (!mode) EXPECT_EQ(diagnostics.native_device.calls, 0u);
+        else {
+          EXPECT_GT(diagnostics.native_device.calls, 0u);
+          EXPECT_EQ(diagnostics.native_device.admitted_pairs +
+                    diagnostics.native_device.host_pairs, 2u);
+          EXPECT_EQ(diagnostics.native_device.consumed_pairs,
+                    diagnostics.native_device.admitted_pairs);
+          EXPECT_EQ(diagnostics.native_device.failures, 0u);
+        }
         if (!retry) {
           fixture.Discard(); ASSERT_TRUE(fixture.rig.Read(after)); p::Exact(before, after);
           EXPECT_FALSE(fixture.transaction.policy_outcomes().complete);
