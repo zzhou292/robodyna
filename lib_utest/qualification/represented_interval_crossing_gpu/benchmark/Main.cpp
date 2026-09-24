@@ -27,17 +27,25 @@ struct Stream {
 };
 
 int main(int argc, char** argv) try {
-  if (argc != 5 || std::string_view(argv[1]) != "--backend" ||
-      std::string_view(argv[3]) != "--repeats")
-    throw std::invalid_argument("Use --backend cpu|gpu --repeats 1..10000");
-  const std::string_view backend(argv[2]);
+  if (argc < 5 || argc % 2 == 0)
+    throw std::invalid_argument("Use --backend cpu|gpu --repeats N [--pairs N] [--device-workers N]");
+  std::string_view backend;
+  unsigned repeats = 0, pair_count = b::PairCount, device_workers = 128;
+  for (int i = 1; i < argc; i += 2) {
+    const std::string_view option(argv[i]), value(argv[i + 1]);
+    if (option == "--backend") { backend = value; continue; }
+    unsigned* destination = option == "--repeats" ? &repeats :
+        option == "--pairs" ? &pair_count : option == "--device-workers" ? &device_workers : nullptr;
+    if (!destination) throw std::invalid_argument("Unknown benchmark option");
+    const auto parsed = std::from_chars(value.data(), value.data()+value.size(), *destination);
+    if (parsed.ec != std::errc{} || parsed.ptr != value.data()+value.size())
+      throw std::invalid_argument("Invalid numerical benchmark option");
+  }
   if (backend != "cpu" && backend != "gpu") throw std::invalid_argument("Unknown backend");
-  const std::string_view input(argv[4]); unsigned repeats = 0;
-  const auto parsed = std::from_chars(input.data(), input.data()+input.size(), repeats);
-  if (parsed.ec != std::errc{} || parsed.ptr != input.data()+input.size() ||
-      repeats == 0 || repeats > 10000) throw std::invalid_argument("Invalid repeat count");
+  if (repeats == 0 || repeats > 10000 || !device_workers || device_workers > 4096)
+    throw std::invalid_argument("Invalid repeat count or device worker count");
   const auto setup_start = Clock::now();
-  const auto cases = b::MakeCases(); const auto limits = b::Limits();
+  const auto cases = b::MakeCases(pair_count); const auto limits = b::Limits(pair_count);
   b::c::RepresentedIntervalCrossing reference_owner;
   auto report = reference_owner.Initialize(limits);
   if (report.status != b::c::RepresentedIntervalStatus::Ok) throw std::runtime_error(report.message);
@@ -48,6 +56,7 @@ int main(int argc, char** argv) try {
   const auto owner_start = Clock::now();
   if (backend == "gpu") {
     stream.Initialize(); b::c::RepresentedIntervalGpuLimits gpu_limits; gpu_limits.native = limits;
+    gpu_limits.device_workers = device_workers;
     const auto initialized = gpu.Initialize(gpu_limits, stream.value);
     if (initialized.native.status != b::c::RepresentedIntervalStatus::Ok)
       throw std::runtime_error(initialized.native.message);
@@ -85,7 +94,8 @@ int main(int argc, char** argv) try {
   std::cout << std::setprecision(17)
       << "{\"schema\":\"robo_dyna.native_gpu_batch_benchmark.v1\",\"backend\":\"" << backend
       << "\",\"pairs\":" << cases.pairs.size() << ",\"paths\":" << cases.paths.size()
-      << ",\"cpu_workers\":" << b::WorkerCount << ",\"device_workers\":128,\"warmups\":2,\"repeats\":" << repeats
+      << ",\"cpu_workers\":" << b::WorkerCount << ",\"device_workers\":" << device_workers
+      << ",\"warmups\":2,\"repeats\":" << repeats
       << ",\"input_digest\":" << b::InputDigest(cases) << ",\"result_digest\":" << reference.digest
       << ",\"report_digest\":" << reference.report_digest << ",\"proof_work_per_batch\":" << reference.work
       << ",\"device_pairs\":" << device_reference.device_pairs << ",\"host_pairs\":" << device_reference.host_pairs
@@ -99,7 +109,8 @@ int main(int argc, char** argv) try {
     const auto& value = reference.classes[i];
     std::cout << (i ? "," : "") << "{\"name\":\"" << b::Classes[i].name
         << "\",\"provenance\":\"" << b::Classes[i].provenance
-        << "\",\"pairs\":" << b::Classes[i].pairs << ",\"separated\":" << value.separated
+        << "\",\"pairs\":" << value.separated + value.crossing + value.unresolved
+        << ",\"separated\":" << value.separated
         << ",\"crossing\":" << value.crossing << ",\"unresolved\":" << value.unresolved
         << ",\"work\":" << value.work << "}";
   }

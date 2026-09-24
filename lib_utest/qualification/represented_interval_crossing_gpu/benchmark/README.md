@@ -2,8 +2,9 @@
 
 This driver directly reuses the maintained native benchmark's `Cases.cpp` and
 `Results.cpp` through the explicit `NATIVE_BENCHMARK_ROOT` CMake parameter. Pin
-that checkout at `96a79464` and record its input files' hashes with each run.
-The 256-pair corpus and all geometry provenance remain in that maintained
+the bounded-cohort helper checkout descended from `96a79464` and record its
+source pin and input files' hashes with each run, including `PathFixture.h` and
+`YarisGeometry.h`. The default 256-pair corpus and all geometry provenance remain in that maintained
 module: source-derived Yaris geometry with synthetic independent identities,
 plus small synthetic predicate families. This is not vehicle stepping.
 
@@ -24,3 +25,12 @@ sample, source/binary/compiler/flags pin, guard receipt and emitted result/work
 digest. Compare semantic fields before reporting timing. Backend route/storage
 fields legitimately differ; record them rather than presenting an all-device
 claim. Do not extrapolate the small cohort's speed to full-vehicle throughput.
+
+The bounded size/width sweep uses `--pairs 256|1024|4096` and
+`--device-workers 128|512|2048|4096`. These are numerical component workloads,
+not changes to physical transaction slice/work/publication capacities. Larger
+cohorts retain the exact geometry and proportions of the original six families
+with independent synthetic IDs. Device workers remain capped by the declared
+owner forecast and actual job count. Retain each GPU benchmark process for more
+than four seconds using the fixed repeat count: the guard polls GPU memory every
+two seconds while its more frequent RSS rows reuse the last GPU sample.
