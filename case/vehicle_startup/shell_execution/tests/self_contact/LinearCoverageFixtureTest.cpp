@@ -2,6 +2,8 @@
 
 #include "lib_src/collision/FixedTriangleFeatureDiscovery.h"
 #include "lib_src/collision/RepresentedIntervalCrossing.h"
+#include "lib_src/collision/represented_interval_crossing/RelativeSeparationQualification.h"
+#include "lib_utest/qualification/represented_interval_crossing/ResultAssertions.h"
 
 #include <gtest/gtest.h>
 
@@ -155,6 +157,7 @@ TEST(VehicleSelfContactLinearFixture,
     std::array<std::size_t, 10> after{};
     std::size_t unexplained = 0;
     std::size_t baseline_work = 0;
+    std::size_t native_work = 0;
     std::size_t policy_work = 0;
     std::uint64_t digest = 1469598103934665603ull;
     for (std::size_t index = 0;
@@ -191,17 +194,33 @@ TEST(VehicleSelfContactLinearFixture,
         ASSERT_EQ(
             crossing.Certify(paths, 2, &input, 1).status,
             contact::RepresentedIntervalStatus::Ok);
-        const auto baseline = crossing.results();
-        ASSERT_TRUE(baseline.complete);
-        ASSERT_EQ(baseline.count, 1u);
-        ASSERT_EQ(
-            baseline.data[0].classification,
+        const auto current = crossing.results();
+        ASSERT_TRUE(current.complete);
+        ASSERT_EQ(current.count, 1u);
+        const auto comparison = contact::represented_interval_crossing::CompareRelativeSeparation(
+            paths[0], paths[1], limits);
+        ASSERT_EQ(comparison.status, contact::RepresentedIntervalStatus::Ok);
+        ASSERT_TRUE(comparison.domain.eligible);
+        EXPECT_FALSE(comparison.counters.saturated);
+        EXPECT_GT(comparison.counters.first_face_separated, 0u);
+        // Preserve the authenticated historical exhaustion and compare the
+        // same native executor with/without the complete-cell face proof.
+        EXPECT_EQ(pair.baseline_status, sct::NonlinearSeparationStatus::WorkExhausted);
+        EXPECT_EQ(pair.baseline_work, 4095u);
+        ASSERT_EQ(comparison.legacy.classification,
             contact::RepresentedIntervalClassification::Unresolved);
-        ASSERT_EQ(
-            baseline.data[0].reason,
+        ASSERT_EQ(comparison.legacy.reason,
             contact::RepresentedIntervalReason::WorkExhausted);
-        ASSERT_EQ(baseline.data[0].work, 4095u);
-        baseline_work += baseline.data[0].work;
+        ASSERT_EQ(comparison.legacy.work, pair.baseline_work);
+        ASSERT_EQ(comparison.current.classification,
+            contact::RepresentedIntervalClassification::CertifiedSeparated);
+        ASSERT_EQ(comparison.current.reason, contact::RepresentedIntervalReason::None);
+        ASSERT_EQ(comparison.current.work, 1u);
+        represented_interval_test::SameResult(current.data[0], comparison.current);
+        baseline_work += comparison.legacy.work;
+        native_work += current.data[0].work;
+        // Zero-thickness separation does not replace the finite-thickness
+        // accepted-VF transition proof below; its complete assertions remain.
 
         const auto exclusions = Exclusions(pair);
         const auto certify = [&](bool reverse) {
@@ -616,6 +635,7 @@ TEST(VehicleSelfContactLinearFixture,
               << " pairs=" << data.pairs.size()
               << " unexplained=" << unexplained
               << " baseline_work=" << baseline_work
+              << " native_work=" << native_work
               << " policy_work=" << policy_work
               << " digest=" << digest
               << " payload_bytes=" << data.payload_bytes
