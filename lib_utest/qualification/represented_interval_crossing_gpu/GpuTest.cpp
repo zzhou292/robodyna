@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Cases.h"
 #include <cuda_runtime.h>
+#include <cmath>
 
 namespace native_gpu_test {
 struct Streams {
@@ -69,6 +70,47 @@ TEST(NativeGpuCuda, MultipleBlocksAndGridStrideReuseEveryWorkerOn257CanonicalJob
     EXPECT_EQ(current.device.batches, 1u); ASSERT_EQ(gpu.results().count, 257u);
     std::reverse(cases.pairs.begin(), cases.pairs.end());
     for (auto& pair : cases.pairs) std::swap(pair.first, pair.second);
+  }
+}
+TEST(NativeGpuCuda, ExactStorageBoundaryAndExtremeCoordinatesSelectAuthenticDeviceOrHostRows) {
+  Streams streams;
+  for (unsigned depth : {0u, 20u, 52u}) {
+    auto limits = Limits(); limits.native.max_depth = depth;
+    auto cpu = fixture::Owner(limits.native); c::RepresentedIntervalCrossingGpu gpu;
+    ASSERT_EQ(gpu.Initialize(limits, streams.first).native.status, S::Ok);
+    for (unsigned bits : {125u, 126u}) {
+      // Reuse NativeStorageTest's exact stored-exponent threshold construction.
+      auto triangle = Positive(); triangle[0].z = std::ldexp(1., 55 + int(depth + 1) - int(bits));
+      Cases cases; Add(cases, triangle, triangle, triangle);
+      const auto domain = c::represented_interval_crossing::NativeStorageDomain::FromPaths(
+          cases.paths[0], cases.paths[1], depth);
+      ASSERT_EQ(domain.report().projection.coordinate_bits, bits);
+      const auto result = Compare(cpu, gpu, cases, streams.first);
+      ASSERT_EQ(result.native.status, S::Ok); ASSERT_EQ(result.device.status, D::Ok);
+      EXPECT_EQ(result.device.device_pairs, bits == 125u ? 1u : 0u);
+      EXPECT_EQ(result.device.host_pairs, bits == 125u ? 0u : 1u);
+    }
+  }
+  auto limits = Limits(); auto cpu = fixture::Owner(limits.native);
+  c::RepresentedIntervalCrossingGpu gpu;
+  ASSERT_EQ(gpu.Initialize(limits, streams.first).native.status, S::Ok);
+  for (int exponent : {-1070, -1000, 700, 1020}) {
+    auto a = Positive(), b = Positive(3);
+    for (auto* triangle : {&a, &b}) for (auto& point : *triangle) {
+      point.x = std::ldexp(point.x, exponent); point.y = std::ldexp(point.y, exponent);
+      point.z = std::ldexp(point.z, exponent);
+    }
+    Cases cases; Add(cases, a, b, b);
+    ASSERT_EQ(DevicePairs(cases, limits.native.max_depth), 1u);
+    const auto result = Compare(cpu, gpu, cases, streams.first);
+    ASSERT_EQ(result.native.status, S::Ok); EXPECT_EQ(result.device.device_pairs, 1u);
+  }
+  for (double zero : {0., -0.}) {
+    auto a = Positive(), b = Positive(3); a[0].z = zero;
+    Cases cases; Add(cases, a, b, b);
+    ASSERT_EQ(DevicePairs(cases, limits.native.max_depth), 0u);
+    const auto result = Compare(cpu, gpu, cases, streams.first);
+    ASSERT_EQ(result.native.status, S::Ok); EXPECT_EQ(result.device.host_pairs, 1u);
   }
 }
 TEST(NativeGpuCuda, CanonicalDedupAndSameSourceIdentityAreAuthenticatedByOriginalFrontend) {

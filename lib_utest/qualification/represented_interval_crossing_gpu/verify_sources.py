@@ -23,5 +23,5 @@ here = Path(__file__).resolve().parent
 for name in ("HostTest.cpp", "GpuTest.cpp", "Cases.h"):
     assert name in (here / "CMakeLists.txt").read_text()
 assert len(re.findall(r"TEST\(NativeGpuForecast,", (here / "HostTest.cpp").read_text())) == 3
-assert len(re.findall(r"TEST\(NativeGpuCuda,", (here / "GpuTest.cpp").read_text())) == 8
+assert len(re.findall(r"TEST\(NativeGpuCuda,", (here / "GpuTest.cpp").read_text())) == 9
 print("PASS standalone native GPU ownership/source shape; no numerical execution")

@@ -8,14 +8,16 @@ comparisons consume public owner results on both sides, including field-wise
 StoreResult normalization; raw numerical records are not mixed with publications.
 
 Three host groups cover uninitialized behavior, native-first invalid admission,
-exact host/device cap boundaries and per-worker scratch/DFS forecasts. Eight GPU
+exact host/device cap boundaries and per-worker scratch/DFS forecasts. Nine GPU
 groups compare complete native reports and results across actual admitted and
 wide/unsupported paths, canonical duplicates/source identity, empty-after-nonempty,
 malformed unused/null inputs, total/result caps, changed streams, owned aliases and
 valid retry. A 257-unique-job mixed-result case exercises all 128 GPU workers,
 multiple 32-thread blocks and grid-stride reuse, with input order reversals.
 Origin-centered fixtures intentionally route to CPU; exactly shifted positive
-fixtures prove device use with explicit route counts.
+fixtures prove device use with explicit route counts. Exact B125/B126 boundaries,
+maximum depth52, uniformly subnormal/huge finite inputs and signed-zero routing
+are compared against the complete CPU result.
 
 Configure with an explicit CUDA compiler/architecture and the ordinary Release
 flags. Targets are represented_interval_crossing_gpu_host and

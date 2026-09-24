@@ -28,6 +28,6 @@ int main() {
             << ",\"device_stack_limit_bytes\":" << value.device_stack_limit_bytes
             << ",\"ptx_version\":" << value.function.ptxVersion
             << ",\"binary_version\":" << value.function.binaryVersion
-            << ",\"kernel_launched\":false,\"stack_limit_changed\":false}\n";
+            << ",\"kernel_launched\":false,\"stack_limit_setter_called\":false}\n";
   return std::cout ? 0 : 1;
 }
