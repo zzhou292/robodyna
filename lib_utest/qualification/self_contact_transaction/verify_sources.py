@@ -890,6 +890,18 @@ for token in ("SealCandidateImpl(", "ValidateQualificationRanges(outputs, inputs
 for token in ("assembly, output, nullptr)",
               "QualificationAccess::ObserveCandidateFailure("):
     require(candidate, token, CANDIDATE)
+for token in ("capture.has_nonlinear_baseline = true", "capture.nonlinear_baseline = *nonlinear_baseline",
+              "ObserveCandidateFeatureFailure(", "std::lower_bound(begin, end, key"):
+    require(capture, token, capture_path)
+require(candidate, "assembly, activity_receipt, &nonlinear)", CANDIDATE)
+require(candidate, "QualificationAccess::ObserveCandidateFeatureFailure(", CANDIDATE)
+nonlinear_failure_cases = Path(__file__).resolve().parent / "NonlinearFailureCaptureCases.h"
+for token in ("NonlinearTerminalObserverKeepsActualCurvatureRejectionAndRollback",
+              "ContactConstraintLayout::MergedPartAndPlain", "fixture.rig.external_force_z_n = 1000",
+              "max_nonlinear_subdivision_work_per_pair = 1", "max_nonlinear_subdivision_depth = 0",
+              "has_nonlinear_baseline", "observation.has_curvature", "std::bad_alloc{}",
+              "facet_capacity < 2", "p::Exact(before, after)"):
+    require(nonlinear_failure_cases.read_text(), token, nonlinear_failure_cases)
 failure_cases = Path(__file__).resolve().parent / "FailureCaptureCases.h"
 for token in ("CandidateFailureObserverSeesLiveSourceAndPreservesReportAndRollback",
               "CandidateFailureObserverDoesNotRunOnSuccessOrUnauthenticatedFailure",

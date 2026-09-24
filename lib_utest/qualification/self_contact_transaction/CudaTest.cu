@@ -1800,3 +1800,5 @@ TEST(SelfContactTransactionCuda,
 #include "CrossingBatchCudaCases.h"
 
 #include "DiagnosticsCudaCases.h"
+
+#include "NonlinearFailureCaptureCases.h"

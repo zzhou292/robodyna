@@ -109,6 +109,7 @@ if(SELF_CONTACT_TRANSACTION_CUDA)
     CudaTest.cu
     TransactionFixture.h
     FailureCaptureCases.h
+    NonlinearFailureCaptureCases.h
     TranslatedLocalCudaCases.h
     CrossingBatchCudaCases.h
     "${CMAKE_CURRENT_LIST_DIR}/../physical_publication/OwnerStartup.cu"

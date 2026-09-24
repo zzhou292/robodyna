@@ -172,6 +172,7 @@ TEST(SelfContactTransactionCuda,
       EXPECT_TRUE(observation.correct_phase);
       EXPECT_TRUE(observation.correct_pair);
       EXPECT_TRUE(observation.nonlocal_intersection);
+      EXPECT_FALSE(observation.retained.has_nonlinear_baseline);
       failure_capture_test::ExactReport(report, observation.retained.report);
       EXPECT_EQ(observation.policy_report.status, c::SelfContactTransactionStatus::Ok);
       EXPECT_EQ(observation.policy_count, 1u);
@@ -257,6 +258,7 @@ TEST(SelfContactTransactionCuda,
       EXPECT_TRUE(observation.correct_phase);
       EXPECT_TRUE(observation.correct_pair);
       EXPECT_TRUE(observation.nonlocal_intersection);
+      EXPECT_FALSE(observation.retained.has_nonlinear_baseline);
       EXPECT_EQ(observation.retained.accepted.epoch, 2u);
       EXPECT_EQ(observation.retained.prepared.owner_id, before.stamp.owner_id);
       EXPECT_EQ(observation.policy_report.status, c::SelfContactTransactionStatus::Ok);

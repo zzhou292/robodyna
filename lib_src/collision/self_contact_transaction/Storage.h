@@ -87,6 +87,7 @@ struct AcceptedFeaturePolicyEvidence {
 };
 
 struct PreparedMotionCertificateView;
+struct NonlinearSeparationResult;
 struct NonlinearCandidateRosterEntry;
 struct NonlinearCandidateRosterSummary;
 struct LinearWorkExhaustedRosterEntry;
@@ -183,6 +184,13 @@ class QualificationAccess {
   static void ObserveCandidateFailure(
       SelfContactTransaction&, const CandidateFailureObserver*,
       const SelfContactTransactionReport&, FixedTrianglePair,
+      const tl::fea::NodalStamp&, const tl::fea::NodalPreparedView&,
+      const SelfContactAcceptedAssemblyReceipt&,
+      const SelfContactPreparedActivityReceipt&,
+      const NonlinearSeparationResult* nonlinear_baseline = nullptr) noexcept;
+  static void ObserveCandidateFeatureFailure(
+      SelfContactTransaction&, const CandidateFailureObserver*,
+      const SelfContactTransactionReport&,
       const tl::fea::NodalStamp&, const tl::fea::NodalPreparedView&,
       const SelfContactAcceptedAssemblyReceipt&,
       const SelfContactPreparedActivityReceipt&) noexcept;

@@ -20,6 +20,11 @@ struct CandidateFailureCapture {
   PreparedMotionCertificateView motion;
   AcceptedEventCertificateView accepted_events;
   QualificationPreparedCensusReceipt activity;
+  // Present only when the terminal production path has this actual value.
+  // Work includes the initial nonlinear separation and subsequent coverage;
+  // it is not a replay with freshly reset standalone limits.
+  bool has_nonlinear_baseline = false;
+  NonlinearSeparationResult nonlinear_baseline;
 };
 
 // Borrowed output storage is checked before any production operation. The

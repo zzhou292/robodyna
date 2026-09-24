@@ -1435,6 +1435,10 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
               state.buffers.facet_quadratic,
               state.buffers.swept_facet_bounds,
               facet_pair, &report);
+          if (observer)
+            sct::QualificationAccess::ObserveCandidateFailure(
+                *this, observer, report, facet_pair, base_stamp, authentic,
+                assembly, activity_receipt, &nonlinear);
           return state.Fail(report);
         }
         MakePath(
@@ -1461,8 +1465,13 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
           state.buffers.triangle_order, triangles, activity,
           state.buffers.accepted_certificates,
           state.accepted_event_count);
-      if (edge_policy.status != S::Ok)
+      if (edge_policy.status != S::Ok) {
+        if (observer)
+          sct::QualificationAccess::ObserveCandidateFeatureFailure(
+              *this, observer, edge_policy, base_stamp, authentic,
+              assembly, activity_receipt);
         return state.Fail(edge_policy);
+      }
       diagnostics.Stage(Stage::NativeCrossing);
       const auto crossing = sct::CertifyCrossingBatches(
           state.crossing,

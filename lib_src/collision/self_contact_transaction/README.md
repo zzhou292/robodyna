@@ -329,3 +329,37 @@ native failure observer and is not represented by these generic tests. No claim
 that gate13 is resolved is permitted without its authenticated fixture and full
 policy replay. Capture repair, owning qualification and final vehicle acceptance
 remain mandatory. No vehicle IDs or fixture-specific directions enter production.
+
+## Terminal candidate-failure capture coverage
+
+The optional observer also covers the terminal UnsupportedRigidArc policy result,
+immediately after its report and motion diagnostics are finalized and before the
+unchanged `Fail` rollback. It copies the actual combined nonlinear value (initial
+separation work plus subsequent coverage work, maximum reached depth and status)
+into optional diagnostic metadata. Other failure paths leave that metadata absent;
+zero/unreported values are never guessed into an observed baseline. It is not a
+standalone replay with reset budgets and carries no publication authority.
+
+Paired edge-policy CandidateRejected reports also enter the existing observer.
+Their already-reported producer keys resolve by exact lookup in the authenticated
+sorted triangle inventory, under live activity/source phase checks. Missing or
+unmatched keys produce no capture; there is no ordinal guess or report mutation.
+The existing prepared-intersection, native crossing and final publication-policy
+hooks remain intact. Early identity/activity/source/resource failures, and reports
+without a paired source, do not manufacture geometry evidence. Complete stream
+work admission remains a resource failure, not a geometric classification.
+
+The owning CUDA coupon reuses the actual merged PART/plain/CIN fixture and a real
+external load to produce rigid curvature. A one-cell nonlinear budget causes the
+ordinary terminal rejection. Plain and observed attempts must keep identical
+reports and complete accepted rollback; bounded copying, insufficient capture
+capacity and caught allocation failure all leave that rejection unchanged.
+Callbacks remain synchronous, must catch their own errors, and cannot advance,
+continue, discard or reenter the physical attempt. Source/phase receipts expire
+on rollback; only copied values survive.
+
+2026-09-24 source checkpoint: core hook/key-lookup placement has independent source
+review; the actual-owner coupon is authored but unbuilt/unexecuted and its fixture
+premise remains subject to owning qualification. No full vehicle run is authorized
+by this change or document. App serialization reuses existing binary baseline
+fields and explicitly distinguishes an observed result from legacy unreported data.

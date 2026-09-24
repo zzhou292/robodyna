@@ -129,6 +129,7 @@ filegroup(
         "TransactionFixture.h",
         "PreparedCensusCases.h",
         "FailureCaptureCases.h",
+        "NonlinearFailureCaptureCases.h",
         "LocalPublicationCases.h",
         "TranslatedLocalCudaCases.h",
         "CrossingBatchCudaCases.h",
