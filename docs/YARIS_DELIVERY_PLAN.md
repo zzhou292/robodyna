@@ -1,52 +1,66 @@
 # Robo-dyna: Yaris delivery and product roadmap
 
-Updated 2026-09-24 17:09 UTC. The selected TL `17dc769e` / app `667bdd5` path passed a real
-200 ns public-CLI prefix and exact Chrono replay at 270.592557 s Prepare time,
-2.18146x faster than the matching gate 14 interval. The longest combined wall+self
-archive remains recovered gate 14 at 400 ns. These short checkpoints do not yet
-provide a useful self-contact crash movie or a sustained stepping rate.
+Updated 2026-09-24 20:27 UTC.
 
-The [execution plan](../../planning/CURRENT_EXECUTION_PLAN.md) owns sequencing and
-resources; the [GPU throughput plan](../../planning/GPU_THROUGHPUT_PLAN.md) owns
-measurements and promotion. Keep other GPU work running under the existing guards.
+**The optional native-GPU vehicle path is unqualified and unselected.** The
+combined TL `233558c3` / app `a6eb920d` probe reached its 1,800 s guard timeout
+without an observed completed interval. Guard elapsed was 1,800.344 s, exit 125,
+with complete cleanup. Only the initial epoch-0 frame exists; the archive is
+incomplete, with no summary/viewer input, frame comparison or Chrono replay.
 
-## Implemented result and next milestones
+The selected historical CPU vehicle baseline remains TL `17dc769e` / app
+`667bdd5`: one authenticated 200 ns prefix and exact Chrono replay, with
+270.592557 s Prepare. The longest combined wall+self checkpoint remains recovered
+gate 14 at 400 ns. The reviewed 10,000-step/~2 ms videos remain **wall-only**.
+Useful long-duration self-contact footage and physical restart are unfinished.
 
-The selected coarse 2010 Yaris V5 assembly runs CUDA explicit structural dynamics
-with QEPH/T3/QBAT shells and plasticity, solids, beams, joints, rigid groups and CIN.
-TL remains the single physical owner; Chrono replays accepted shell states with
-original part colors. Contact execution is still hybrid.
+## Latest result and next milestones
 
-The longest visible archive is **wall-only**: 10,000 steps/~2 ms, 41 saved states,
-about 815 MB, peak local shell equivalent plastic strain 1.94975%.
-Reviewed [impact detail](../../crash-work/renders/yaris-wallremoval-10000-review-1/impact-detail-video/movie.mp4)
+Combined TL owning qualification passed 253 host and 57 CUDA/determinism GTests,
+314 complete adaptive/wide discovery records, O0 forecast linkage, source/syntax/
+shape and seven Bazel targets. The app then passed 121 host and two GPU GTests,
+with a GTest-free CLI and byte-identical qualified native object. These results
+qualify interfaces and tested numerical behavior, not real-vehicle throughput.
+
+The full GPU-enabled vehicle timeout is preserved in
+[its diagnostic](../../crash-work/reports/wall-self-cli-combined-one-interval-1.timeout-diagnostic.json)
+and `wall-self-native-gpu-timeout-20260924-1`. Peak sampled RSS stayed below 10 GiB;
+the stop was the 30 min time guard. GPU time-busy is not occupancy evidence. No
+correct-frame comparison or Chrono replay exists for this incomplete attempt.
+
+1. Finish the **same-binary CPU-native control**, root-owned, using unchanged
+   TL `233558c3` / app `a6eb920d`, compact CUDA facet queries still enabled and the
+   native CUDA option off. Check the exact policy/state payload and actual Chrono
+   replay before claiming a new vehicle-qualified producer or performance gain.
+2. Use its coarse discovery/filter/policy timings to choose the next work. Output
+   feature ordinal sorting is a source-reviewed design only; do not implement it
+   unless measured output sorting matters. The earlier input-ledger experiment
+   stays unselected after mixed component results.
+3. Diagnose native CUDA on **representative bounded workloads** before another
+   vehicle GPU attempt. The earlier fast eligible benchmark had 3,072 pairs and
+   exactly 3,072 visits; it did not exercise multi-visit GPU jobs. Measure cohort
+   work distributions/maxima, kernel/transfer time and actual difficult-pair
+   replays. Canonical witness ordering may reduce contact predicates but cannot
+   shorten work-exhausted DFS tails. Zero-neutral storage is isolated and still
+   needs full qualification/measurement; it is not a fix proved by this timeout.
+4. Establish practical consecutive-step throughput with unchanged physics and
+   complete candidate/policy/rollback semantics. Then qualify the stricter wall
+   law, forecast the existing 5 ms/51-sample route, and render actual accepted
+   states with original part colors, scale 1, real timestamps and visible crush.
+
+The selected assembly already has CUDA explicit structural dynamics, shell
+plasticity, solids/beams, rigid/CIN/connection support and first-profile self-contact.
+Its practical full-vehicle runtime remains the delivery blocker. Use existing
+CLI/controller/archive and Chrono components; no new rendering engine is needed.
+
+Reviewed **wall-only** [impact detail](../../crash-work/renders/yaris-wallremoval-10000-review-1/impact-detail-video/movie.mp4)
 and [overview](../../crash-work/renders/yaris-wallremoval-10000-review-1/overview-video/movie.mp4)
-remain available. They do not prove a longer self-contact impact, settled crush,
-rail load transfer or fracture.
+remain available. They are not longer self-contact evidence.
 
-1. Qualify the optional CUDA facet-filter transaction adapter. Its source/syntax
-   review passes; owning runtime, ordering, rollback and resource gates are next.
-2. Measure the qualified discovery index-ledger change. Its 58 tests and 314-record
-   parity pass; its reviewed comparison benchmark has not yet established a gain.
-3. Advance bounded CUDA native numerical cohorts. Raw/compound/worker-capacity
-   parity is qualified, but mixed measurements showed at most 1.0135x, so it remains
-   unselected. Eligible-only diagnostic subsets show a useful larger-cohort effect;
-   every omitted pair/work amount is explicit and no production contact is removed.
-   A separate cache implementation needs exact per-slice semantics and measured
-   transfer-inclusive benefit before selection.
-4. Compose only measured winners and run a bounded combined vehicle probe.
-   Then qualify the stricter wall law and practical consecutive-step throughput.
-5. Run the existing 5 ms/51-sample delivery path and render actual states with
-   original part colors, scale 1, true timestamps and visible deformation. Require
-   a closed authenticated archive, exact Chrono replay and full video decode.
-
-The ordinary delivery proposal uses 20 mm gap and explicit 1e10 N/m³ stiffness /
-.002 m penetration limit. The regression control remains 1e7/.1 with 1 µm gap.
-The stricter combined law is not qualified yet. Follow the existing
-[readiness plan](../../planning/YARIS_WALL_SELF_LONG_RUN_READINESS_2026-09-24.md) and
-[wall-law proposal](../../crash-work/reports/yaris-wall-self-delivery-wall-law.proposed.json)
-with a fresh full forecast; no new controller or rendering engine is needed.
-There is no physical restart capability.
+The [execution plan](../../planning/CURRENT_EXECUTION_PLAN.md) and
+[GPU plan](../../planning/GPU_THROUGHPUT_PLAN.md) own sequencing, guards and current
+promotion decisions. Keep other GPU work running. The speed control stays1e7/.1
+with1µm gap; delivery proposes1e10/.002 and20 mm gap after separate strict qualification.
 
 ## First-profile contact scope
 
@@ -75,12 +89,12 @@ arbitrary moving-wall or full original LS-DYNA contact parity.
 
 ## Performance and architecture constraints
 
-The latest one-interval profile has several expensive stages: filtering 76.397 s,
+The historical selected CPU one-interval profile has several expensive stages: filtering 76.397 s,
 discovery 56.696 s, candidate policy 51.271 s and native verification 47.948 s.
 A useful long run is still impractical; component gains are not multiplied into
 an ETA. Keep the CPU reference path until measured replacements pass their gates.
-The native GPU facade must not create a second initialized CPU fallback pool when
-composed into transactions.
+The composed native GPU facade already preserves one initialized fallback pool;
+its vehicle runtime remains unqualified after the timeout.
 
 Preserve one TL owner/clock, complete candidate inventory, material/timestep,
 error order and rollback. Reuse modular math/geometry/batch utilities and owning
