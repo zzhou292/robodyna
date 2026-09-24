@@ -18,6 +18,7 @@ add_executable(robo_dyna_vehicle_run_original_check
   "${CMAKE_CURRENT_LIST_DIR}/SelfContactFailureCaptureTest.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/../../vehicle_startup/shell_execution/tests/self_contact/CoverageFixtureValuesTest.cpp")
 include("${CMAKE_CURRENT_LIST_DIR}/../../vehicle_startup/shell_execution/tests/self_contact/CoverageFixtureCapture.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../../vehicle_startup/shell_execution/tests/self_contact/FrozenGeometryTests.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../../vehicle_startup/shell_execution/tests/self_contact/PreparedCensusReplay.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../../vehicle_startup/shell_execution/tests/self_contact/CandidateFailureFixture.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/observed/Observed.cmake")

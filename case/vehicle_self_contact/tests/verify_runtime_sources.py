@@ -197,6 +197,31 @@ def main() -> None:
     fixture_cmake = (
         case / "vehicle_startup" / "shell_execution" /
         "SelfContactTests.cmake").read_text()
+    frozen_fixture_cmake = (
+        case / "vehicle_startup" / "shell_execution" / "tests" /
+        "self_contact" / "FrozenGeometryTests.cmake").read_text()
+    original_run_cmake = (case / "vehicle_run" / "tests" / "Original.cmake").read_text()
+    require('include("${CMAKE_CURRENT_LIST_DIR}/tests/self_contact/FrozenGeometryTests.cmake")'
+            in fixture_cmake and
+            'include("${CMAKE_CURRENT_LIST_DIR}/../../vehicle_startup/shell_execution/tests/self_contact/FrozenGeometryTests.cmake")'
+            in original_run_cmake,
+            "both owning app configurations must include the maintained frozen geometry gates")
+    require("include_guard(GLOBAL)" in frozen_fixture_cmake and
+            'include("${ROBO_DYNA_TL_ROOT}/lib_src/collision/SelfContactTransaction.cmake")'
+            in frozen_fixture_cmake and
+            frozen_fixture_cmake.count("-fno-fast-math -ffp-contract=off") == 2 and
+            frozen_fixture_cmake.count("TIMEOUT 30 RUN_SERIAL TRUE PROCESSORS 1") == 2,
+            "shared frozen geometry gates must retain owning TL linkage, precision and bounded execution")
+    for name, source, fixture, labels in (
+            ("nonlinear", "NonlinearCoverageFixtureTest.cpp", "NonlinearAmbiguousFixture.bin",
+             'LABELS "unit;nonlinear-fixture;accepted-ledger;bounded-subdivision"'),
+            ("linear", "LinearCoverageFixtureTest.cpp", "LinearWorkExhaustedFixture.bin",
+             'LABELS "unit;linear-fixture;accepted-ledger;bounded-work"')):
+        require('${CMAKE_CURRENT_LIST_DIR}/' + source in frozen_fixture_cmake and
+                '${CMAKE_CURRENT_LIST_DIR}/' + fixture in frozen_fixture_cmake and
+                labels in frozen_fixture_cmake and
+                "add_test(NAME vehicle_self_contact_" + name + "_fixture" in frozen_fixture_cmake,
+                f"shared {name} fixture must retain its original source, binary and named CTest")
     for name in [
             "vehicle_self_contact_acceptance_v5",
             "vehicle_wall_self_contact_acceptance_v5",
@@ -386,12 +411,12 @@ def main() -> None:
             "vehicle_self_contact_nonlinear_roster_coupon" in
             fixture_cmake and
             "vehicle_self_contact_nonlinear_fixture" in
-            fixture_cmake and
-            "vehicle_self_contact_linear_fixture" in fixture_cmake and
+            frozen_fixture_cmake and
+            "vehicle_self_contact_linear_fixture" in frozen_fixture_cmake and
             "robo_dyna_vehicle_self_contact_linear_fixture_check" in
-            fixture_cmake and
+            frozen_fixture_cmake and
             "robo_dyna_vehicle_self_contact_nonlinear_fixture_check" in
-            fixture_cmake and
+            frozen_fixture_cmake and
             "VehicleSelfContactNonlinearRosterCoupon.*" in fixture_cmake and
             "accepted-assembly;nonlinear-roster" in fixture_cmake and
             "vehicle_self_contact_residual_translation_coupon" in
