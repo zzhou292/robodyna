@@ -135,7 +135,7 @@ Integer SubtractMagnitude(const Integer& larger,
   return result;
 }
 
-Integer Add(Integer a, Integer b) noexcept {
+Integer Add(const Integer& a, const Integer& b) noexcept {
   if (a.negative == b.negative) {
     auto result = AddMagnitude(a, b);
     result.negative = a.negative && result.used;
@@ -160,7 +160,7 @@ Integer Negate(Integer value) noexcept {
   return value;
 }
 
-Integer Subtract(Integer a, Integer b) noexcept {
+Integer Subtract(const Integer& a, const Integer& b) noexcept {
   return Add(a, Negate(b));
 }
 
@@ -230,12 +230,12 @@ struct Integer3 {
   Integer z;
 };
 
-Integer3 Subtract(Integer3 a, Integer3 b) noexcept {
+Integer3 Subtract(const Integer3& a, const Integer3& b) noexcept {
   return {Subtract(a.x, b.x), Subtract(a.y, b.y),
           Subtract(a.z, b.z)};
 }
 
-Integer Dot(Integer3 a, Integer3 b) noexcept {
+Integer Dot(const Integer3& a, const Integer3& b) noexcept {
   return Add(Add(Multiply(a.x, b.x), Multiply(a.y, b.y)),
              Multiply(a.z, b.z));
 }
