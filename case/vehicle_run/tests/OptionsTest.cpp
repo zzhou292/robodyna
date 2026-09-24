@@ -111,7 +111,7 @@ TEST(VehicleRunOptions, HalfMillisecondPreviewSelectsFullHorizonWithUnchangedSam
         EXPECT_THROW(Parse(invalid),std::exception)<<value;
     }
 }
-TEST(VehicleRunOptions, SelfContactRequiresExplicitSourceAndQualifiedPhysicalStep) {
+TEST(VehicleRunOptions, SelfContactRequiresExplicitSourceAndPositiveScreenedStep) {
     auto args=Arguments();
     args.insert(args.end(),{"--contact-profile","wall-self-contact-v1","--self-contact-member","combine.key",
         "--physical-profile","vehicle-supports-v5","--fixed-dt-s","2e-7"});
@@ -120,7 +120,7 @@ TEST(VehicleRunOptions, SelfContactRequiresExplicitSourceAndQualifiedPhysicalSte
     EXPECT_EQ(options.source.self_contact_combine_member,"combine.key");
     EXPECT_EQ(options.config.fixed_dt_s,2e-7);
     EXPECT_EQ(options.config.resources,ResourceProfile::Normal);
-    for(const auto* omitted:{"--self-contact-member","--physical-profile","--fixed-dt-s"}) {
+    for(const auto* omitted:{"--self-contact-member","--physical-profile"}) {
         auto invalid=args;
         const auto found=std::find(invalid.begin(),invalid.end(),omitted);
         ASSERT_NE(found,invalid.end());
@@ -134,7 +134,9 @@ TEST(VehicleRunOptions, SelfContactRequiresExplicitSourceAndQualifiedPhysicalSte
     unknown.insert(unknown.end(),{"--contact-profile","self"});
     EXPECT_THROW(Parse(unknown),std::invalid_argument);
     Config bad=options.config;
-    bad.fixed_dt_s=3e-7;
+    bad.fixed_dt_s=2.25e-7;
+    EXPECT_EQ(Plan(bad).fixed_dt_s,2.25e-7); // Planning is not runtime stability admission.
+    bad.fixed_dt_s=0;
     EXPECT_THROW(Plan(bad),std::invalid_argument);
     bad=options.config;
     bad.contact_profile=static_cast<ContactProfile>(999);

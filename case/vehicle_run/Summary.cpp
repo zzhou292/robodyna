@@ -94,9 +94,10 @@ records::RecordFile WriteSummary(const std::filesystem::path& root,const Config&
     Boolean(document,"session_initialized",result.session_initialized);
     Boolean(document,"valid_archive_manifest",result.loop.valid_manifest);
     Number(document,"startup_wall_s",result.startup_wall_s);
-    Number(document,"requested_duration_s",config.duration_s);
+    Number(document,"requested_duration_s",horizon.requested_duration_s);
     Number(document,"fixed_dt_s",config.fixed_dt_s);
     Integer(document,"planned_intervals",horizon.intervals);
+    if(config.exact_steps) Integer(document,"requested_steps",config.exact_steps);
     Integer(document,"planned_samples",config.samples);
     Integer(document,"complete_host_upper_bound",forecast.complete_host_bytes);
     Integer(document,"complete_archive_upper_bound",forecast.complete_archive_bytes);

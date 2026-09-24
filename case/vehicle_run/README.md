@@ -430,3 +430,24 @@ scene uploads appear only in optional performance diagnostics. Consumed numerica
 rows are not physical commits. Device fault metadata carries compact-input
 window/ordinal context without inventing a physical collision. Standalone speed
 measurements do not qualify this option for a long vehicle run.
+
+
+## Exact step horizons and explicit timestep
+
+`--steps 6000 --fixed-dt-s 2.25e-7 --samples 51` requests exactly6,000
+physical intervals and saved epochs0,120,...,6000. `--steps` and an explicit
+`--duration-ms` are mutually exclusive. The single exact-count planner selects a
+nearby representable descriptive duration satisfying the existing archive horizon
+contract; wall setup, output, controller and summary all use that same duration.
+Saved times still come from the one physical owner. A completed exact-step run
+finishes its horizon normally; `--diagnostic-intervals` remains an optional earlier
+prefix stop and does not change the declared physical horizon.
+
+The wall+self CLI default remains200ns; an explicit finite positive timestep is
+allowed for fresh qualification. This is NOT permission to bypass admission:
+actual assembled wall/self stiffness, post-CIN structural screening with its
+existing factor, rotation, penetration, material/geometry and continuous contact
+checks all remain active. The timestep is fixed for each newly initialized owner;
+this option does not implement adaptive steps or restart. The225ns example needs
+fresh strict-wall combined qualification and is not a global stability guarantee.
+Existing200ns regression fixtures and their recorded receipts remain unchanged.

@@ -23,6 +23,7 @@ PreparedRun PreparedRun::Prepare(const vehicle_wall::VehicleWallSetup& setup,con
     Config config,records::Identity identity,
     std::shared_ptr<const vehicle_self_contact::VehicleSelfContactSetup> self_contact) {
     const auto horizon=Plan(config);
+    config.duration_s=horizon.requested_duration_s;
     const auto selected=detail::SelectPhysical(config.physical_profile);
     const bool has_beams=setup.execution().model().structural_beams()!=nullptr;
     output::Require(setup.execution().model().source_domain().policy()==selected.domain &&

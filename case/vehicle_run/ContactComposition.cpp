@@ -5,6 +5,7 @@
 #include "output/ArtifactIO.h"
 
 #include <algorithm>
+#include <cmath>
 #include <utility>
 
 namespace crash::cases::vehicle_run {
@@ -23,7 +24,6 @@ constexpr std::size_t FacetChunk = 4096;
 constexpr std::size_t WorkPerPair = 4095;
 constexpr std::size_t WorkPerChunk = std::size_t{1} << 20;
 constexpr unsigned WorkerCount = 4;
-constexpr double FirstProfileStepS = 2e-7;
 constexpr std::uint64_t SelfSourceId = 0x524453454c465631ull;  // RDSELFV1
 
 static_assert(FacetPairCapacity <= SIZE_MAX / WorkPerPair);
@@ -64,8 +64,8 @@ self::WallSelfContactLimits RuntimeLimits(
 }
 
 void CheckSelfStep(const vehicle_dynamics::Config& dynamics) {
-    output::Require(dynamics.startup.reserved_step_s == FirstProfileStepS,
-        "The wall+self-contact first profile requires the qualified 200 ns step");
+    output::Require(std::isfinite(dynamics.startup.reserved_step_s) && dynamics.startup.reserved_step_s>0,
+        "Wall+self contact requires a finite positive physical step");
 }
 
 }  // namespace

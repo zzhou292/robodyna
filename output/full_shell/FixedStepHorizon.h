@@ -1,6 +1,7 @@
 #pragma once
 #include <cmath>
 #include <cstdint>
+#include <initializer_list>
 namespace crash::output::full_shell {
 // Mathematical planning only. Saved times still come from the actual owner.
 inline bool MatchesFixedStepHorizon(std::uint64_t intervals,double fixed_dt,double duration) noexcept {
@@ -9,6 +10,24 @@ inline bool MatchesFixedStepHorizon(std::uint64_t intervals,double fixed_dt,doub
     const long double h=fixed_dt,target=duration;
     return std::isfinite(fixed_dt*static_cast<double>(intervals)) &&
         std::isfinite(h*intervals) && h*intervals>=target && h*(intervals-1)<target;
+}
+// Exact count is authoritative. Select a representable descriptive duration
+// inside ((count-1)*h,count*h], then verify with the same archive contract.
+// At most the rounded product and its immediate predecessor are considered;
+// if the interval contains no representable duration, reject rather than round
+// the requested number of physical steps or silently change h.
+inline bool PlanExactStepHorizon(double fixed_dt,std::uint64_t intervals,double& duration) noexcept {
+    if(!intervals || intervals>UINT64_MAX/2 || !std::isfinite(fixed_dt) || fixed_dt<=0) return false;
+    const long double endpoint=static_cast<long double>(fixed_dt)*intervals;
+    const double rounded=static_cast<double>(endpoint);
+    if(!std::isfinite(rounded) || rounded<=0) return false;
+    for(const double candidate:{rounded,std::nextafter(rounded,0.)}) {
+        if(MatchesFixedStepHorizon(intervals,fixed_dt,candidate)) {
+            duration=candidate;
+            return true;
+        }
+    }
+    return false;
 }
 inline bool PlanFixedStepHorizon(double fixed_dt,double duration,std::uint64_t& output) noexcept {
     if(!std::isfinite(fixed_dt) || fixed_dt<=0 || !std::isfinite(duration) || duration<=0) return false;

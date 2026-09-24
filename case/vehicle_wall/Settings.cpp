@@ -10,10 +10,8 @@ void CheckSettings(const Settings& settings) {
         settings.mesh_profile == WallMeshProfile::EnvelopeRectangleV1,"Unknown explicit wall mesh profile");
     output::Require(settings.initial_speed_mps == vehicle_runtime::InitialSpeedMps &&
         std::isfinite(settings.requested_duration_s) && settings.requested_duration_s > 0 &&
-        settings.requested_duration_s <= .05 &&
-        (settings.requested_duration_s == .0005 || settings.requested_duration_s == .005 || settings.requested_duration_s == .02 ||
-         settings.requested_duration_s == .05) && settings.wall_binding_id,
-        "Vehicle wall profile requires 35 mph and an explicit 0.5, 5, 20 or 50 ms duration");
+        settings.requested_duration_s <= .05 && settings.wall_binding_id,
+        "Vehicle wall profile requires 35 mph and a finite positive duration at most 50 ms");
     for (double value : {settings.leading_gap_m,settings.transverse_margin_m,settings.exposed_clearance_m,
                          settings.stiffness_per_area,settings.maximum_penetration_m,
                          settings.parent_force_error,settings.parent_energy_error}) {

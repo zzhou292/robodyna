@@ -10,6 +10,7 @@ const char* PhysicalProfileName(PhysicalProfile);
 // publication slice limits. Shared by composition and descriptive run metadata.
 inline constexpr unsigned NativeCrossingDeviceWorkers=4096;
 inline constexpr std::size_t NativeCrossingNumericCohortPairs=4096;
+inline constexpr double DefaultSelfContactStepS=2e-7;
 struct Config {
     // Explicit 0.5 ms preview or 5/20/50 ms run; all use the same fixed-step planner.
     double duration_s=.005;
@@ -21,6 +22,8 @@ struct Config {
     bool self_contact_diagnostics=false;
     bool self_contact_cuda_facet_filters=false;
     bool self_contact_cuda_native_crossing=false;
+    // Zero keeps the existing duration-selected horizon. Nonzero is authoritative.
+    std::uint64_t exact_steps=0;
 };
 struct Horizon {
     std::uint64_t intervals=0;

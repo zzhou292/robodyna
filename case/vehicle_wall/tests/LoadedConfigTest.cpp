@@ -11,7 +11,7 @@ TEST(VehicleLoadedWallValues, ExplicitDurationsRecomputeEnvelopeWithoutChangingS
     EXPECT_EQ(config.structural.profile,tl::fea::NodalCinStructuralProfile::NativeOrdinaryRigidTrace);
     EXPECT_TRUE(tl::fea::ValidCinStructuralStep(config.structural));
     double previous=0;
-    for (const auto duration : {.0005,.005,.02,.05}) {
+    for (const auto duration : {.0005,.00135,.005,.02,.05}) {
         settings.requested_duration_s=duration;
         const auto placement=Place({{{-2,-1,.05},{2,1,1.7}}},settings);
         EXPECT_GT(placement.nominal_forward_travel.lower,previous);
@@ -20,7 +20,7 @@ TEST(VehicleLoadedWallValues, ExplicitDurationsRecomputeEnvelopeWithoutChangingS
         EXPECT_GE(placement.declared_world_envelope.maximum.y,1.25);
         previous=placement.nominal_forward_travel.upper;
     }
-    for (const auto bad : {0.0,-.005,.000499,.000501,.006,.051,std::numeric_limits<double>::infinity()}) {
+    for (const auto bad : {0.0,-.005,.051,std::numeric_limits<double>::infinity(),std::numeric_limits<double>::quiet_NaN()}) {
         settings.requested_duration_s=bad;
         EXPECT_THROW(CheckSettings(settings),std::runtime_error);
     }

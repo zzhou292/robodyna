@@ -64,6 +64,7 @@ Options Parse(int argc,const char* const* argv) {
             else throw std::invalid_argument("Unknown contact profile");
         }
         else if(name=="--duration-ms") result.config.duration_s=Real(value)/1000;
+        else if(name=="--steps") result.config.exact_steps=Integer(value);
         else if(name=="--fixed-dt-s") result.config.fixed_dt_s=Real(value);
         else if(name=="--gap-m") result.gap_m=Real(value);
         else if(name=="--wall-stiffness-n-m3") result.wall_stiffness_n_m3=Real(value);
@@ -74,7 +75,11 @@ Options Parse(int argc,const char* const* argv) {
         else if(name=="--run-id") result.run_id=Integer(value);
         else throw std::invalid_argument("Unknown CLI option: "+name);
     }
-    Plan(result.config);
+    if(supplied.count("--steps") && (!result.config.exact_steps || supplied.count("--duration-ms")))
+        throw std::invalid_argument("--steps must be positive and cannot be combined with --duration-ms");
+    if(result.config.contact_profile==ContactProfile::WallSelfContactV1 && !supplied.count("--fixed-dt-s"))
+        result.config.fixed_dt_s=DefaultSelfContactStepS;
+    result.config.duration_s=Plan(result.config).requested_duration_s;
     if(result.config.contact_profile==ContactProfile::WallSelfContactV1 &&
         result.source.self_contact_combine_member.empty())
         throw std::invalid_argument("Wall+self contact requires an explicit pinned --self-contact-member");
@@ -103,7 +108,7 @@ const char* Usage() noexcept {
         "--wall-manifest FILE --run-id UINT --output EMPTY_DIR "
         "[--physical-profile retained-shell-v1|extended-solids-v4|vehicle-supports-v5] "
         "[--contact-profile wall-only|wall-self-contact-v1] [--self-contact-member FILE] "
-        "[--duration-ms 0.5|5|20|50] [--fixed-dt-s 3e-7] [--gap-m .02] [--samples 101] "
+        "[--duration-ms 0.5|5|20|50 | --steps UINT] [--fixed-dt-s VALUE (wall-only default3e-7, wall+self default2e-7)] [--gap-m .02] [--samples 101] "
         "[--wall-stiffness-n-m3 VALUE] [--penetration-limit-m VALUE] "
         "[--self-contact-diagnostics] [--self-contact-cuda-facet-filters] [--self-contact-cuda-native-crossing] [--self-contact-failure-output ABSENT_DIR] [--diagnostic-intervals N] [--maximum-elapsed-s SEC] [--stop-file PATH] [--forecast-only] [--conditional-full-limits]";
 }
