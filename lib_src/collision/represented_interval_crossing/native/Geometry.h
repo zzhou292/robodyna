@@ -17,6 +17,10 @@ struct Geometry : Arithmetic<Bits> {
   using Base::Compare;
   using Base::Component;
   using Base::Scale;
+  // Keep key ordering distinct from inherited dyadic numeric comparison.
+  static int Compare(const FacetEdgeKey& a, const FacetEdgeKey& b) noexcept {
+    return native::Compare(a, b);
+  }
   static ExactVec3 Edge(const ExactTriangle& triangle, unsigned edge) {
     return Subtract(triangle.vertex[(edge + 1) % 3],
                     triangle.vertex[edge]);
