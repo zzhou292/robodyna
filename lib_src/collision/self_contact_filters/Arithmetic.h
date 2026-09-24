@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "PrismQualification.h"
-#include <limits>
+#include <cmath>
 
 namespace tlfea::contact::self_contact_filters::detail {
 // Keep host classification behavior; CUDA supplies the matching scalar test.
@@ -19,12 +19,12 @@ TL_SURFACE_HD inline double OrderedMax(double a, double b) noexcept { return a <
 
 TL_SURFACE_HD inline double Down(double value) noexcept {
   return ::nextafter(
-      value, -std::numeric_limits<double>::infinity());
+      value, -HUGE_VAL);
 }
 
 TL_SURFACE_HD inline double Up(double value) noexcept {
   return ::nextafter(
-      value, std::numeric_limits<double>::infinity());
+      value, HUGE_VAL);
 }
 
 struct Interval {
@@ -201,7 +201,7 @@ template <class Triangle>
 TL_SURFACE_HD inline bool InflatedFacetBoundsSeparated(
     const Triangle& first, double first_thickness,
     const Triangle& second, double second_thickness) noexcept {
-  const double infinity = std::numeric_limits<double>::infinity();
+  const double infinity = HUGE_VAL;
   for (unsigned axis = 0; axis < 3; ++axis) {
     double first_lower = Component(first.vertices[0], axis);
     double first_upper = first_lower;

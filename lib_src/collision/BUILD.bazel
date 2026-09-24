@@ -116,6 +116,48 @@ cc_library(
     deps = [":fixed_contact_facets"],
 )
 
+cc_library(
+    name = "self_contact_filter_batch_values",
+    srcs = ["self_contact_filters/Layout.cpp"],
+    hdrs = [
+        "self_contact_filters/Types.h",
+        "self_contact_filters/Batch.h",
+        "self_contact_filters/Storage.h",
+        "self_contact_filters/Environment.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":self_contact_filter_certificates", "//lib_utils:bounded_arena"],
+)
+
+cuda_library(
+    name = "self_contact_filter_batch_device",
+    srcs = ["self_contact_filters/Kernels.cu"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    deps = [":self_contact_filter_batch_values"],
+)
+
+cc_library(
+    name = "self_contact_filter_batch",
+    srcs = ["self_contact_filters/Batch.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":self_contact_filter_batch_device", "//lib_src/solvers:nodal_trial_identity"],
+)
+
+filegroup(
+    name = "self_contact_filter_batch_sources",
+    srcs = [
+        ":self_contact_filter_certificate_sources",
+        "SelfContactFilterBatch.cmake",
+        "self_contact_filters/Types.h",
+        "self_contact_filters/Batch.h",
+        "self_contact_filters/Storage.h",
+        "self_contact_filters/Environment.h",
+        "self_contact_filters/Layout.cpp",
+        "self_contact_filters/Batch.cpp",
+        "self_contact_filters/Kernels.cu",
+    ],
+)
+
 filegroup(
     name = "represented_interval_crossing_source_proof",
     srcs = [
