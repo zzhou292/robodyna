@@ -62,6 +62,14 @@ output::Document SelfContactErrorDocument(
     if (report.discovery_task != SIZE_MAX) Integer(document, "discovery_task", report.discovery_task);
     if (report.filter_status != tlfea::contact::self_contact_filters::Status::Ok)
         Integer(document, "filter_status_code", static_cast<unsigned>(report.filter_status));
+    if (report.filter_scope != tlfea::contact::SelfContactFacetFilterFailureScope::None) {
+        String(document, "filter_failure_scope",
+            report.filter_scope == tlfea::contact::SelfContactFacetFilterFailureScope::CandidateChunkBeforeFold
+                ? "candidate_chunk_before_serial_fold" : "unknown");
+        if (report.filter_chunk_begin != SIZE_MAX)
+            Integer(document, "filter_chunk_begin", report.filter_chunk_begin);
+        Integer(document, "filter_chunk_pairs", report.filter_chunk_pairs);
+    }
     Integer(document, "force_status_code", static_cast<unsigned>(report.force_status));
     Integer(document, "activity_status_code", static_cast<unsigned>(report.activity_status));
     Integer(document, "broadphase_status_code", static_cast<unsigned>(report.broadphase_status));

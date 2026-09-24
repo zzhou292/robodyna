@@ -44,6 +44,28 @@ TEST(VehicleRunSelfContactError, OptionalFacetFilterStatusSurvivesWithoutInventi
     EXPECT_FALSE(document.HasMember("required_force_events"));
 }
 
+TEST(VehicleRunSelfContactError, CandidateChunkDeviceFailureDoesNotInventAnOffendingPair) {
+    contact::SelfContactTransactionReport report;
+    EXPECT_FALSE(Encode(report).HasMember("filter_failure_scope"));
+    EXPECT_FALSE(Encode(report).HasMember("filter_chunk_begin"));
+    EXPECT_FALSE(Encode(report).HasMember("filter_chunk_pairs"));
+    report.status=contact::SelfContactTransactionStatus::FacetFilterFailure;
+    report.filter_status=contact::self_contact_filters::Status::DeviceFailure;
+    report.filter_scope=contact::SelfContactFacetFilterFailureScope::CandidateChunkBeforeFold;
+    report.filter_chunk_begin=(std::size_t{1}<<54)+7;
+    report.filter_chunk_pairs=4096;
+    report.message="Actual CUDA transfer failure";
+    const auto document=Encode(report);
+    EXPECT_STREQ(document["filter_failure_scope"].GetString(),"candidate_chunk_before_serial_fold");
+    EXPECT_EQ(document["filter_chunk_begin"].GetUint64(),report.filter_chunk_begin);
+    EXPECT_EQ(document["filter_chunk_pairs"].GetUint64(),4096u);
+    EXPECT_EQ(document["filter_status_code"].GetUint(),static_cast<unsigned>(report.filter_status));
+    EXPECT_STREQ(document["message"].GetString(),report.message);
+    EXPECT_FALSE(document.HasMember("pair_ordinal"));
+    EXPECT_FALSE(document.HasMember("native_crossing_failure"));
+    EXPECT_FALSE(document.HasMember("required_force_events"));
+}
+
 TEST(VehicleRunSelfContactError, NativeWorkFailureRetainsPrefixAndBatchScopesExactly) {
     contact::SelfContactTransactionReport report;
     report.status = contact::SelfContactTransactionStatus::CrossingFailure;

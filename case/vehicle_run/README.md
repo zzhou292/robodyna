@@ -399,3 +399,10 @@ not a GPU-query count or a claim that every subsequent filter query ran on CUDA.
 The unchanged owning CUDA parity tests and a separately qualified live probe are
 needed to establish execution. No physical archive schema or restart capability
 is added. The default summary and CLI forecast output are unchanged.
+
+A compact candidate filter query may fail before that streamed chunk's original
+serial geometry fold. Optional error metadata records the explicit
+candidate_chunk_before_serial_fold scope, the original chunk offset/count, and
+the unchanged backend status/message. It does not invent an offending pair.
+Ordinary row failures still occur at their original serial positions; these
+nonphysical error fields do not change archive authority.
