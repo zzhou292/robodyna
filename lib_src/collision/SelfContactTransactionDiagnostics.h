@@ -45,6 +45,16 @@ struct SelfContactDiscoveryDiagnostics {
   FixedTriangleDiscoveryTimings timing;
 };
 
+// Optional execution observations. Admitted GPU jobs may include later cached
+// slices; consumed jobs only reached native staging, not necessarily commit.
+struct SelfContactNativeDeviceDiagnostics {
+  std::uint64_t calls = 0, failures = 0;
+  std::uint64_t admitted_pairs = 0, consumed_pairs = 0, host_pairs = 0;
+  std::uint64_t launches = 0, scene_uploads = 0, numeric_cohorts = 0;
+  std::size_t last_fault_cohort_begin = SIZE_MAX, last_fault_cohort_count = 0;
+  std::size_t last_fault_pair_ordinal = SIZE_MAX;
+};
+
 struct SelfContactAttemptDiagnostics {
   bool enabled = false, entered = false, finished = false, succeeded = false;
   // Stamp is the requested owner/base epoch/attempt until ordinary mechanics
@@ -64,6 +74,7 @@ struct SelfContactAttemptDiagnostics {
   std::uint64_t native_submitted_pairs = 0;
   // Admitted native report work only; excludes later linear policy coverage.
   std::uint64_t native_work = 0;
+  SelfContactNativeDeviceDiagnostics native_device;
 };
 
 // Value-only last-attempt observation. Discard retains it for failure analysis;

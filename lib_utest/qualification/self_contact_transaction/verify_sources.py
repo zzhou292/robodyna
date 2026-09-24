@@ -179,7 +179,7 @@ for token in ("SelfContactForceAssembly force",
               "FixedTriangleFeatureDiscovery candidate_discovery",
               "StreamingCandidateSource candidate_source",
               "SelfContactCurrentRegularity regularity",
-              "RepresentedIntervalCrossing crossing",
+              "self_contact_transaction::CrossingExecutor crossing",
               "ShellPhysicalScratchParticipation participation"):
     require(storage, token, storage_path)
 for token in (
@@ -344,7 +344,7 @@ for token in (
     "state.candidate_discovery.Discover",
     "state.candidate_discovery.DiscoverMasked",
     "BuildLocalFeatureTaskMasks(",
-    "sct::CertifyCrossingBatches",
+    "state.crossing.Certify(",
     "state.broadphase.Evaluate",
     "ValidateCandidatePublications",
     "FoldPolicyOutcomes(",
@@ -1220,3 +1220,6 @@ assert "RevokeChunk();" in filter_adapter
 assert begin_chunk.index("OutputDisjoint(pairs,") < begin_chunk.index("RevokeChunk();")
 assert begin_chunk.index("RevokeChunk();") < begin_chunk.index("if (!admitted)")
 print("PASS rejected chunk replacement revokes previous borrowed inputs")
+# Optional execution-owner architecture is checked in its own small module.
+import runpy
+runpy.run_path(str(Path(__file__).with_name("verify_crossing_executor_sources.py")))

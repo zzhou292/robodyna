@@ -6,7 +6,11 @@
 #include <memory>
 
 namespace tlfea::contact {
-namespace represented_interval_crossing { struct BatchAccess; }
+namespace represented_interval_crossing {
+struct BatchAccess;
+class DeviceAccess;
+class DeviceExecution;
+}
 
 // Bounded host certificate for pairs of fixed physical triangles.  For the
 // explicitly declared LinearNodalV1 path, every vertex follows the exact real
@@ -58,6 +62,10 @@ class RepresentedIntervalCrossing {
 
  private:
   friend struct represented_interval_crossing::BatchAccess;
+  friend class represented_interval_crossing::DeviceAccess;
+  RepresentedIntervalReport CertifyUsing(const RepresentedTrianglePath*, std::size_t,
+      const RepresentedTrianglePair*, std::size_t,
+      represented_interval_crossing::DeviceExecution*) noexcept;
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };

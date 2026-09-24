@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Fixture.h"
 #include "ResultAssertions.h"
+#include "BatchAssertions.h"
+#include "BatchFixture.h"
 #include "lib_src/collision/represented_interval_crossing/Batch.h"
 
 #include <tuple>
@@ -18,57 +20,10 @@ using native::SameResult;
 using native::SameNativeReport;
 using native::SameView;
 
-void SameBatch(const batch::BatchReport& first, const batch::BatchReport& second) {
-  EXPECT_EQ(std::tie(first.status, first.input_pair, first.native_called,
-                     first.batch_offset, first.prior_work,
-                     first.completed_pairs, first.completed_batches),
-            std::tie(second.status, second.input_pair, second.native_called,
-                     second.batch_offset, second.prior_work,
-                     second.completed_pairs, second.completed_batches));
-  EXPECT_STREQ(first.message, second.message);
-  SameNativeReport(first.native_report, second.native_report);
-  SameView(first.results, second.results);
-  if (!second.results.complete) EXPECT_EQ(second.results.data, nullptr);
-}
-
-struct Roster {
-  std::vector<c::RepresentedTrianglePath> paths;
-  std::vector<c::RepresentedTrianglePair> pairs;
-
-  explicit Roster(std::size_t count) {
-    paths.push_back(native::Static(10, native::BaseTriangle()));
-    for (std::size_t index = 0; index < count; ++index) {
-      const auto eid = 20 + index;
-      switch (index % 4) {
-        case 0:
-          paths.push_back(native::Static(eid, native::BaseTriangle(1)));
-          break;
-        case 1:
-          paths.push_back(native::Static(eid, native::BaseTriangle()));
-          break;
-        case 2:
-          paths.push_back(native::Path(eid, native::BaseTriangle(1),
-                                      native::BaseTriangle(-3)));
-          break;
-        default:
-          paths.push_back(native::Path(eid, native::BaseTriangle(1),
-              native::BaseTriangle(-1), 0, c::RepresentedMotion::RigidArc));
-          break;
-      }
-      pairs.push_back({0, static_cast<std::uint32_t>(index + 1)});
-    }
-  }
-};
-
-c::RepresentedIntervalLimits Limits(const Roster& roster, std::size_t capacity) {
-  c::RepresentedIntervalLimits result;
-  result.max_paths = roster.paths.size();
-  result.max_input_pairs = capacity;
-  result.max_results = capacity;
-  result.max_work_per_pair = 31;
-  result.max_total_work = capacity * result.max_work_per_pair;
-  return result;
-}
+using native::SameBatch;
+using native::OneFullAuthentication;
+using native::Roster;
+using native::Limits;
 
 struct LegacyResult {
   batch::BatchReport report;
@@ -120,14 +75,6 @@ batch::BatchReport Reused(c::RepresentedIntervalCrossing& owner,
   return batch::BatchAccess::Certify(owner, roster.paths.data(), roster.paths.size(),
       roster.pairs.empty() ? nullptr : roster.pairs.data(), roster.pairs.size(),
       capacity, scratch.data(), scratch.size());
-}
-
-void OneFullAuthentication(const batch::BatchReport& report, std::size_t paths) {
-  EXPECT_EQ(report.path_roster_work.authentications, 1u);
-  EXPECT_EQ(report.path_roster_work.path_rows, paths);
-  EXPECT_EQ(report.path_roster_work.vertex_rows, 3 * paths);
-  EXPECT_EQ(report.path_roster_work.path_sorts, 1u);
-  EXPECT_EQ(report.path_roster_work.vertex_sorts, 1u);
 }
 
 void Compare(std::size_t count, std::size_t capacity) {

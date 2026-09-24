@@ -8,6 +8,7 @@
 #include "SelfContactForceAssembly.h"
 #include "SelfContactPhysicalActivityTypes.h"
 #include "self_contact_filters/Types.h"
+#include "RepresentedIntervalCrossingGpu.h"
 #include "lib_src/elements/ShellBatchPublication.h"
 
 #include <cstddef>
@@ -150,6 +151,11 @@ struct SelfContactTransactionReport {
   self_contact_filters::Status filter_status = self_contact_filters::Status::Ok;
   SelfContactFacetFilterFailureScope filter_scope = SelfContactFacetFilterFailureScope::None;
   std::size_t filter_chunk_begin = SIZE_MAX, filter_chunk_pairs = 0;
+  // Numerical execution failure context only. It never identifies a physical
+  // collision by itself or changes native per-slice work/publication semantics.
+  RepresentedIntervalDeviceStatus crossing_device_status = RepresentedIntervalDeviceStatus::NotInvoked;
+  std::size_t crossing_fault_cohort_begin = SIZE_MAX, crossing_fault_cohort_count = 0;
+  std::size_t crossing_fault_pair_ordinal = SIZE_MAX;
 };
 
 enum class SelfContactTransactionNonlocalPolicy : std::uint8_t {
@@ -171,6 +177,10 @@ struct SelfContactTransactionConfig {
   bool enable_diagnostics = false;
   // Optional equivalent numerical backend; default CPU path stays selected.
   bool enable_cuda_facet_filters = false;
+  bool enable_cuda_native_crossing = false;
+  unsigned native_crossing_device_workers = 128;
+  // Explicit numerical lookahead capacity; zero preserves per-slice execution.
+  std::size_t native_crossing_numeric_cohort_pairs = 0;
 };
 
 struct SelfContactTransactionLimits {

@@ -5,6 +5,7 @@ add_library(tl_fixed_triangle_feature_discovery STATIC
   "${CMAKE_CURRENT_LIST_DIR}/DiagnosticClock.h"
   "${CMAKE_CURRENT_LIST_DIR}/FixedTriangleDiscoveryDiagnostics.h"
   "${CMAKE_CURRENT_LIST_DIR}/fixed_triangle_features/Diagnostics.h"
+  "${CMAKE_CURRENT_LIST_DIR}/../math/FixedInteger.h"
   "${CMAKE_CURRENT_LIST_DIR}/fixed_triangle_features/ExactPredicates.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/fixed_triangle_features/ExactInteger.h"
   "${CMAKE_CURRENT_LIST_DIR}/fixed_triangle_features/ExactPredicateKernel.h"

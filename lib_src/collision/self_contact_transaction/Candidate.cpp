@@ -1502,16 +1502,17 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
         return state.Fail(edge_policy);
       }
       diagnostics.Stage(Stage::NativeCrossing);
-      const auto crossing = sct::CertifyCrossingBatches(
-          state.crossing,
+      const auto execution = state.crossing.Certify(
           state.buffers.chunk_paths, 2 * crossing_pair_count,
           state.buffers.chunk_represented_pairs,
           crossing_pair_count,
           state.storage_forecast.crossing_batch_pair_capacity,
           state.buffers.chunk_raw_crossings,
           state.storage_forecast.raw_crossing_result_capacity);
+      const auto& crossing = execution.native;
       diagnostics.Crossing(crossing, crossing_pair_count,
           state.storage_forecast.crossing_batch_pair_capacity);
+      diagnostics.CrossingDevice(execution.device);
       if (crossing.status != RepresentedIntervalStatus::Ok) {
         auto report = Failure(
             S::CrossingFailure, crossing.message,
@@ -1520,6 +1521,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
             crossing.input_pair);
         report.crossing_status = crossing.status;
         report.crossing_diagnostics = sct::CrossingBatchDiagnostics(crossing);
+        sct::DescribeCrossingDeviceFailure(execution.device, report);
         // Native ordinals belong to a compact raw subbatch. Recover the
         // original facet pair before revoking the live activity authority.
         if (crossing.input_pair < crossing_pair_count) {
@@ -2588,14 +2590,14 @@ ClassifyPreparedCandidateCensusImpl(
       ++published;
     }
     if (collect_linear && linear_crossing_count) {
-      const auto crossing_report = sct::CertifyCrossingBatches(
-          state.crossing,
+      const auto execution = state.crossing.Certify(
           state.buffers.chunk_paths, 2 * linear_crossing_count,
           state.buffers.chunk_represented_pairs,
           linear_crossing_count,
           state.storage_forecast.crossing_batch_pair_capacity,
           state.buffers.chunk_raw_crossings,
           state.storage_forecast.raw_crossing_result_capacity);
+      const auto& crossing_report = execution.native;
       if (crossing_report.status != RepresentedIntervalStatus::Ok) {
         auto report = Failure(
             S::CrossingFailure,
@@ -2606,6 +2608,7 @@ ClassifyPreparedCandidateCensusImpl(
         report.crossing_status = crossing_report.status;
         report.crossing_diagnostics =
             sct::CrossingBatchDiagnostics(crossing_report);
+        sct::DescribeCrossingDeviceFailure(execution.device, report);
         if (crossing_report.input_pair < linear_crossing_count)
           DescribeMotionFailure(
               state.active_use, state.buffers.prepared_triangles,

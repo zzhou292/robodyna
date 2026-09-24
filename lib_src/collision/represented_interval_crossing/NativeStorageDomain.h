@@ -15,7 +15,7 @@ struct NativeStorageDomainReport {
 // See planning/NATIVE_EXACT_STORAGE_DOMAIN_AUDIT_2026-09-24.md.
 class NativeStorageDomain {
  public:
-  static NativeStorageDomain FromPaths(const RepresentedTrianglePath& a,
+  TL_MATH_HOST_DEVICE static NativeStorageDomain FromPaths(const RepresentedTrianglePath& a,
       const RepresentedTrianglePath& b, unsigned maximum_depth) noexcept {
     NativeStorageDomain result;
 #if !defined(__GNUC__) && !defined(__clang__)
@@ -35,10 +35,10 @@ class NativeStorageDomain {
         result.report_.maximum_product_limbs <= 8;
     return result;
   }
-  bool eligible() const noexcept { return report_.eligible; }
-  NativeStorageDomainReport report() const noexcept { return report_; }
+  TL_MATH_HOST_DEVICE bool eligible() const noexcept { return report_.eligible; }
+  TL_MATH_HOST_DEVICE NativeStorageDomainReport report() const noexcept { return report_; }
  private:
-  NativeStorageDomain() = default;
+  TL_MATH_HOST_DEVICE NativeStorageDomain() = default;
   NativeStorageDomainReport report_;
 };
 }  // namespace tlfea::contact::represented_interval_crossing

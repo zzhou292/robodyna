@@ -27,6 +27,7 @@ production = [
     COLLISION / "FixedTriangleDiscoveryDiagnostics.h",
     COLLISION / "DiagnosticClock.h",
     COLLISION / "fixed_triangle_features/Diagnostics.h",
+    ROOT / "lib_src/math/FixedInteger.h",
 ]
 for path in production:
     assert path.is_file(), path
@@ -179,7 +180,9 @@ for required in (
 # source-derived private domain may choose smaller storage; zeroing is retained.
 integer = (COLLISION / "fixed_triangle_features/ExactInteger.h").read_text()
 entry = (COLLISION / "fixed_triangle_features/ExactPredicates.cpp").read_text()
-assert "std::uint64_t limbs[kLimbs]{};" in integer
+integer_core = (ROOT / "lib_src/math/FixedInteger.h").read_text()
+assert "std::uint64_t limbs[kLimbs]{};" in integer_core
+assert "tl::math::fixed_integer::Arithmetic<LimbCount, Sign>" in integer
 assert "WideLimbs = 144" in integer and "SmallLimbs = 8" in integer
 assert "SmallCoordinateBits = 125" in integer
 assert "finite && coordinate_bits <= SmallCoordinateBits" in integer
@@ -188,7 +191,7 @@ assert entry.count("Storage::Adaptive") == 4
 assert "Storage::Wide" not in entry
 assert "WideAdapter.cpp" not in cmake
 for forbidden in ("thread_local", "getenv(", "malloc("):
-    assert forbidden not in integer + entry
+    assert forbidden not in integer + integer_core + entry
 
 print(json.dumps({
     "status": "passed",

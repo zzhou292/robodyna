@@ -285,10 +285,11 @@ SelfContactTransactionReport SelfContactTransaction::Initialize(
     return report;
   }
   const auto crossing =
-      next->crossing.Initialize(limits.crossing);
-  if (crossing.status != RepresentedIntervalStatus::Ok) {
-    auto report = Failure(S::CrossingFailure, crossing.message);
-    report.crossing_status = crossing.status;
+      next->crossing.Initialize(config, limits, owner_stream);
+  if (crossing.native.status != RepresentedIntervalStatus::Ok) {
+    auto report = Failure(S::CrossingFailure, crossing.native.message);
+    report.crossing_status = crossing.native.status;
+    sct::DescribeCrossingDeviceFailure(crossing.device, report);
     return report;
   }
   if (config.enable_cuda_facet_filters) {

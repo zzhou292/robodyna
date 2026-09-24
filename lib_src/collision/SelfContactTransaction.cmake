@@ -6,9 +6,13 @@ include("${CMAKE_CURRENT_LIST_DIR}/SelfContactFilterBatch.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/SelfContactCurrentRegularity.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/SelfContactPhysicalActivity.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/RepresentedIntervalCrossing.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/RepresentedIntervalCrossingGpu.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/../elements/ShellBatchPublication.cmake")
 
 add_library(tl_self_contact_transaction STATIC
+  "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/CrossingExecutor.h"
+  "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/CrossingExecutor.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/CrossingExecutorValues.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/FacetFilters.h"
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/AcceptedFacetFiltering.h"
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/FacetFilterValues.cpp"
@@ -42,6 +46,7 @@ target_link_libraries(tl_self_contact_transaction PUBLIC
   tl_self_contact_current_regularity
   tl_self_contact_physical_activity
   tl_represented_interval_crossing
+  tl_represented_interval_crossing_gpu
   tl_shell_batch_publication)
 target_compile_features(tl_self_contact_transaction PUBLIC cxx_std_17)
 target_compile_options(tl_self_contact_transaction PRIVATE

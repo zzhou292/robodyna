@@ -5,6 +5,7 @@
 #include "../DiagnosticClock.h"
 #include "../FixedTriangleFeatureTypes.h"
 #include "CrossingBatch.h"
+#include "../RepresentedIntervalCrossingGpu.h"
 
 #include <algorithm>
 #include <cerrno>
@@ -117,6 +118,24 @@ class DiagnosticAttempt {
     if (report.native_called) {
       Add(snapshot_.native_work, report.prior_work);
       Add(snapshot_.native_work, report.native_report.work);
+    }
+  }
+  void CrossingDevice(const RepresentedIntervalDeviceReport& report) noexcept {
+    if (!snapshot_.enabled || report.status == RepresentedIntervalDeviceStatus::NotInvoked) return;
+    auto& device = snapshot_.native_device;
+    Add(device.calls, 1);
+    Add(device.admitted_pairs, report.device_pairs);
+    Add(device.consumed_pairs, report.consumed_device_pairs);
+    Add(device.host_pairs, report.host_pairs);
+    Add(device.launches, report.batches);
+    Add(device.scene_uploads, report.scene_uploads);
+    Add(device.numeric_cohorts, report.numeric_cohorts);
+    if (report.status != RepresentedIntervalDeviceStatus::Ok) {
+      Add(device.failures, 1);
+      snapshot_.counts_complete = false;
+      device.last_fault_cohort_begin = report.fault_cohort_begin;
+      device.last_fault_cohort_count = report.fault_cohort_count;
+      device.last_fault_pair_ordinal = report.fault_pair_ordinal;
     }
   }
 
