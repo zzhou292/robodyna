@@ -45,3 +45,12 @@ propagation. `vehicle_run_values` covers option admission; existing observer and
 frozen-fixture tests retain ownership and codec coverage. Host publication tests
 use inert evidence and exporters and do not claim native physical acceptance.
 A native multi-step rejection remains a separate GPU qualification.
+
+The opt-in `ROBO_DYNA_VEHICLE_FAILURE_CUDA_COUPON` adds
+`vehicle_run_failure_later_epoch_cuda`. It reuses the small TL transaction/physical
+owner fixture, commits two intervals, then applies that fixture's existing
+pass-through load. The actual rejected third candidate is captured before rollback
+and exported/replayed with its real epoch, owner, attempt and phase bits. The
+fixture extraction must exist in the selected TL checkout. Set an absent
+`ROBO_LATER_EPOCH_FAILURE_OUTPUT` to preserve its evidence; otherwise its temporary
+artifacts are removed by the test. This coupon does not run full Yaris acceptance.
