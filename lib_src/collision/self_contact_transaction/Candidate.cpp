@@ -5,6 +5,7 @@
 #include "CrossingBatch.h"
 #include "TranslatedLocal.h"
 #include "SortedIntersections.h"
+#include "ResidualIntersectionLookup.h"
 #include "QualificationRanges.h"
 
 #include "lib_src/solvers/NodalTrialIdentity.h"
@@ -440,11 +441,17 @@ ResidualLinearCertificate(
     double second_half_thickness,
     FixedTriangleFeatureTaskMask mask,
     FixedTriangleFeatureView features,
-    FixedTriangleIntersectionView intersections) noexcept {
-  auto result = sct::CertifyLinearResidualSeparation(
-      first_base, first_prepared, first_half_thickness,
-      second_base, second_prepared, second_half_thickness,
-      features, intersections);
+    FixedTriangleIntersectionView intersections,
+    const sct::SortedIntersections* sorted_intersections = nullptr) noexcept {
+  auto result = sorted_intersections
+      ? sct::CertifyLinearResidualSeparation(
+          first_base, first_prepared, first_half_thickness,
+          second_base, second_prepared, second_half_thickness,
+          features, intersections, *sorted_intersections)
+      : sct::CertifyLinearResidualSeparation(
+          first_base, first_prepared, first_half_thickness,
+          second_base, second_prepared, second_half_thickness,
+          features, intersections);
   if (result.status !=
           sct::LinearResidualSeparationStatus::
               IncompleteFeatureRoster ||
@@ -524,12 +531,20 @@ QuadraticResidualCertificate(
     double second_half_thickness, double duration,
     FixedTriangleFeatureTaskMask mask,
     FixedTriangleFeatureView features,
-    FixedTriangleIntersectionView intersections) noexcept {
-  auto result = sct::CertifyQuadraticResidualSeparation(
-      first_base, first_prepared, first_quadratic,
-      first_half_thickness,
-      second_base, second_prepared, second_quadratic,
-      second_half_thickness, duration, features, intersections);
+    FixedTriangleIntersectionView intersections,
+    const sct::SortedIntersections* sorted_intersections = nullptr) noexcept {
+  auto result = sorted_intersections
+      ? sct::CertifyQuadraticResidualSeparation(
+          first_base, first_prepared, first_quadratic,
+          first_half_thickness,
+          second_base, second_prepared, second_quadratic,
+          second_half_thickness, duration,
+          features, intersections, *sorted_intersections)
+      : sct::CertifyQuadraticResidualSeparation(
+          first_base, first_prepared, first_quadratic,
+          first_half_thickness,
+          second_base, second_prepared, second_quadratic,
+          second_half_thickness, duration, features, intersections);
   if (result.status !=
           sct::LinearResidualSeparationStatus::
               IncompleteFeatureRoster ||
@@ -1140,7 +1155,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
                   parents[second_parent].
                       reference_half_thickness_m,
                   state.buffers.chunk_feature_task_masks[pair],
-                  features, intersections);
+                  features, intersections, &sorted_intersections);
           if (residual.status ==
               sct::LinearResidualSeparationStatus::InvalidInput)
             return state.Fail(Failure(
@@ -1215,7 +1230,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
                         duration,
                         state.buffers.
                             chunk_feature_task_masks[pair],
-                        features, intersections)
+                        features, intersections, &sorted_intersections)
                   : sct::LinearResidualSeparationResult{};
           if (quadratic_residual.status ==
               sct::LinearResidualSeparationStatus::

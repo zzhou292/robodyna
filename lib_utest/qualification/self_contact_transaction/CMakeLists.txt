@@ -39,6 +39,7 @@ add_executable(self_contact_transaction_values
   ProofOrderCoverageCases.h
   NonlinearResultAssertions.h
   MaskedResidualTest.cpp
+  ResidualIntersectionLookupTest.cpp
   CrossingBatchTest.cpp
   RigidSweepBoundsTest.cpp
   EndpointSeparationCases.h
