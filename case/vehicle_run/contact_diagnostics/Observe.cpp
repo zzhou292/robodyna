@@ -4,6 +4,15 @@ namespace crash::cases::vehicle_run::contact_diagnostics {
 namespace {
 using Native=tlfea::contact::SelfContactAttemptDiagnostics;
 using Stage=tlfea::contact::SelfContactDiagnosticStage;
+using DiscoveryStage=tlfea::contact::FixedTriangleDiscoveryStage;
+static_assert(DiscoveryStageCount==tlfea::contact::FixedTriangleDiscoveryStageCount);
+static_assert(static_cast<unsigned>(DiscoveryStage::InputLedger)==0 &&
+    static_cast<unsigned>(DiscoveryStage::InputSort)==1 &&
+    static_cast<unsigned>(DiscoveryStage::TaskPreparation)==2 &&
+    static_cast<unsigned>(DiscoveryStage::Geometry)==3 &&
+    static_cast<unsigned>(DiscoveryStage::ResultFold)==4 &&
+    static_cast<unsigned>(DiscoveryStage::OutputSort)==5 &&
+    static_cast<unsigned>(DiscoveryStage::Publication)==6);
 static_assert(StageCount==tlfea::contact::SelfContactDiagnosticStageCount);
 static_assert(static_cast<unsigned>(Stage::Setup)==0 && static_cast<unsigned>(Stage::Filtering)==1 &&
     static_cast<unsigned>(Stage::Discovery)==2 && static_cast<unsigned>(Stage::EventAssembly)==3 &&
@@ -38,6 +47,15 @@ Phase CopyPhase(const Native& source) noexcept {
     out.discovery.potential_tasks=source.discovery.potential_tasks;
     out.discovery.local_masked_tasks=source.discovery.local_masked_tasks;
     out.discovery.exact_executed_tasks=source.discovery.exact_executed_tasks;
+    out.discovery.timing.calls=source.discovery.timed_calls;
+    out.discovery.timing.clock_failures=source.discovery.timing.clock_failures;
+    out.discovery.timing.backward_samples=source.discovery.timing.backward_samples;
+    out.discovery.timing.counter_saturated=source.discovery.timing.counter_saturated;
+    for(std::size_t i=0;i<DiscoveryStageCount;++i) {
+        const auto& counter=source.discovery.timing.stages[i];
+        out.discovery.timing.stages[i]={counter.calls,counter.failures,counter.valid_samples,
+            counter.wall_ns,counter.maximum_ns};
+    }
     out.native_batches=source.native_batches;
     out.native_submitted_pairs=source.native_submitted_pairs;
     out.native_work=source.native_work;

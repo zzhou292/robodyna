@@ -11,6 +11,15 @@ inline constexpr std::size_t StageCount=9;
 inline constexpr const char* StageNames[]{"setup","filtering","discovery","event_assembly",
     "force_assembly","residual","native_crossing","policy","finalization"};
 static_assert(sizeof(StageNames)/sizeof(*StageNames)==StageCount);
+inline constexpr std::size_t DiscoveryStageCount=7;
+inline constexpr const char* DiscoveryStageNames[]{"input_ledger","input_sort","task_preparation",
+    "geometry","result_fold","output_sort","publication"};
+static_assert(sizeof(DiscoveryStageNames)/sizeof(*DiscoveryStageNames)==DiscoveryStageCount);
+struct DiscoveryTiming {
+    std::uint64_t calls=0,clock_failures=0,backward_samples=0;
+    bool counter_saturated=false;
+    std::array<benchmarks::StageCounter,DiscoveryStageCount> stages{};
+};
 struct Discovery {
     std::uint64_t calls=0;
     std::uint64_t failures=0;
@@ -27,6 +36,7 @@ struct Discovery {
     std::uint64_t potential_tasks=0;
     std::uint64_t local_masked_tasks=0;
     std::uint64_t exact_executed_tasks=0;
+    DiscoveryTiming timing;
 };
 struct Phase {
     bool enabled=false,entered=false,finished=false,succeeded=false,authenticated=false;

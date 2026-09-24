@@ -108,6 +108,11 @@ TEST(VehicleContactDiagnostics, FixedWorstCaseScalarDocumentFitsExistingSummaryA
         phase->discovery.potential_tasks=UINT64_MAX;
         phase->discovery.local_masked_tasks=UINT64_MAX;
         phase->discovery.exact_executed_tasks=UINT64_MAX;
+        phase->discovery.timed_calls=UINT64_MAX;
+        phase->discovery.timing.clock_failures=UINT64_MAX;
+        phase->discovery.timing.backward_samples=UINT64_MAX;
+        for(auto& counter:phase->discovery.timing.stages)
+            counter={UINT64_MAX,UINT64_MAX,UINT64_MAX,UINT64_MAX,UINT64_MAX};
         for(auto& counter:phase->stages)counter={UINT64_MAX,UINT64_MAX,UINT64_MAX,UINT64_MAX,UINT64_MAX};
     }
     const auto document=Document(Copy(source));
@@ -116,5 +121,38 @@ TEST(VehicleContactDiagnostics, FixedWorstCaseScalarDocumentFitsExistingSummaryA
     EXPECT_LT(buffer.GetSize(),16u<<10);
     EXPECT_LE(sizeof(Snapshot),2048u);
     EXPECT_LE(sizeof(SelfContactTotals),4096u);
+}
+TEST(VehicleContactDiagnostics, DiscoveryStagesExposeMissingSamplesWithoutInventingDurations) {
+    auto source=Input();
+    EXPECT_FALSE(Document(Copy(source))["candidate"]["discovery"].HasMember("timing"));
+    source.candidate.discovery.calls=2;
+    source.candidate.discovery.timed_calls=2;
+    source.candidate.discovery.timing.stages[3]={2,0,2,50,30};
+    source.candidate.discovery.timing.stages[4]={2,1,1,10,10};
+    source.candidate.discovery.timing.clock_failures=1;
+    source.candidate.discovery.timing.backward_samples=2;
+    const auto document=Document(Committed(source,7,2,9));
+    const auto& timing=document["candidate"]["discovery"]["timing"];
+    EXPECT_EQ(timing["calls"].GetUint64(),2u);
+    EXPECT_EQ(timing["clock_failures"].GetUint64(),1u);
+    EXPECT_EQ(timing["backward_samples"].GetUint64(),2u);
+    EXPECT_TRUE(timing["covers_reported_calls"].GetBool());
+    const auto& geometry=timing["stages"][3];
+    EXPECT_STREQ(geometry["stage"].GetString(),"geometry");
+    EXPECT_TRUE(geometry["timing_available"].GetBool());
+    EXPECT_EQ(geometry["host_wall_ns"].GetUint64(),50u);
+    EXPECT_EQ(geometry["maximum_host_ns"].GetUint64(),30u);
+    const auto& incomplete=timing["stages"][4];
+    EXPECT_FALSE(incomplete["timing_available"].GetBool());
+    EXPECT_FALSE(incomplete.HasMember("host_wall_ns"));
+    source.candidate.discovery.timing.counter_saturated=true;
+    const auto saturated=Document(Copy(source));
+    EXPECT_FALSE(saturated["candidate"]["discovery"]["timing"]["stages"][3].HasMember("host_wall_ns"));
+    EXPECT_FALSE(saturated["candidate"]["discovery"]["timing"]["covers_reported_calls"].GetBool());
+    source.candidate.discovery.calls=source.candidate.discovery.timed_calls=UINT64_MAX;
+    source.candidate.discovery.timing.counter_saturated=false;
+    source.candidate.counter_saturated=true;
+    const auto count_overflow=Document(Copy(source));
+    EXPECT_FALSE(count_overflow["candidate"]["discovery"]["timing"]["covers_reported_calls"].GetBool());
 }
 } // namespace crash::cases::vehicle_run::contact_diagnostics::test

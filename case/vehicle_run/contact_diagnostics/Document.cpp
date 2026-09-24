@@ -2,6 +2,23 @@
 #include "output/BoundedArrayJson.h"
 namespace crash::cases::vehicle_run::contact_diagnostics {
 namespace {
+template<std::size_t N>
+void Stages(output::Document& result,const std::array<benchmarks::StageCounter,N>& counters,
+            const char* const (&names)[N],bool saturated) {
+    using namespace output;
+    Value stages(rapidjson::kArrayType);
+    for(std::size_t i=0;i<N;++i) {
+        const auto& counter=counters[i];
+        output::Document stage;stage.SetObject();
+        String(stage,"stage",names[i]);Integer(stage,"calls",counter.calls);
+        Integer(stage,"failures",counter.failures);Integer(stage,"valid_samples",counter.valid_samples);
+        const bool timed=counter.calls && counter.valid_samples==counter.calls && !saturated;
+        Boolean(stage,"timing_available",timed);
+        if(timed) {Integer(stage,"host_wall_ns",counter.wall_ns);Integer(stage,"maximum_host_ns",counter.maximum_ns);}
+        Value value;value.CopyFrom(stage,result.GetAllocator());stages.PushBack(value,result.GetAllocator());
+    }
+    result.AddMember("stages",stages,result.GetAllocator());
+}
 output::Document PhaseDocument(const Phase& phase) {
     using namespace output;
     output::Document result;result.SetObject();
@@ -30,19 +47,20 @@ output::Document PhaseDocument(const Phase& phase) {
     Integer(discovery,"potential_tasks",phase.discovery.potential_tasks);
     Integer(discovery,"local_masked_tasks",phase.discovery.local_masked_tasks);
     Integer(discovery,"exact_executed_tasks",phase.discovery.exact_executed_tasks);
-    array_json::Child(result,"discovery",discovery);
-    Value stages(rapidjson::kArrayType);
-    for(std::size_t i=0;i<StageCount;++i) {
-        const auto& counter=phase.stages[i];
-        output::Document stage;stage.SetObject();
-        String(stage,"stage",StageNames[i]);Integer(stage,"calls",counter.calls);
-        Integer(stage,"failures",counter.failures);Integer(stage,"valid_samples",counter.valid_samples);
-        const bool timed=counter.calls && counter.valid_samples==counter.calls && !phase.counter_saturated;
-        Boolean(stage,"timing_available",timed);
-        if(timed) {Integer(stage,"host_wall_ns",counter.wall_ns);Integer(stage,"maximum_host_ns",counter.maximum_ns);}
-        Value value;value.CopyFrom(stage,result.GetAllocator());stages.PushBack(value,result.GetAllocator());
+    if(phase.discovery.timing.calls) {
+        const auto& source=phase.discovery.timing;
+        output::Document timing;timing.SetObject();
+        Integer(timing,"calls",source.calls);
+        Integer(timing,"clock_failures",source.clock_failures);
+        Integer(timing,"backward_samples",source.backward_samples);
+        Boolean(timing,"counter_saturated",source.counter_saturated);
+        Boolean(timing,"covers_reported_calls",!phase.counter_saturated &&
+            !source.counter_saturated && source.calls==phase.discovery.calls);
+        Stages(timing,source.stages,DiscoveryStageNames,source.counter_saturated);
+        array_json::Child(discovery,"timing",timing);
     }
-    result.AddMember("stages",stages,result.GetAllocator());
+    array_json::Child(result,"discovery",discovery);
+    Stages(result,phase.stages,StageNames,phase.counter_saturated);
     return result;
 }
 }
