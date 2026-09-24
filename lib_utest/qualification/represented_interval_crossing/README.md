@@ -48,7 +48,7 @@ depth/work, the result is `Unresolved/WorkExhausted`.
 
 Exact sampled degeneracy is `Unresolved/DegenerateGeometry`; an unsampled
 regularity uncertainty also cannot become a separation certificate. The exact
-predicate integer has a fixed 16,384-bit stack representation, enough for all
+predicate integer has a fixed 16,384-bit inline representation, enough for all
 binary64 exponent alignment and predicate products used here. A checked range
 failure is explicit `Unresolved/ExactArithmeticRange`.
 
@@ -144,8 +144,12 @@ flag or cache address is supplied by a caller.
 
 The native forecast/allocation/retained-alias checks already use
 `sizeof(ExactScratch)`, so all six normals and readiness flags are counted before
-admission. Caps are unchanged. Exact integers still use the fixed 16,384-bit
-checked backend without a heap allocator; normal reuse adds no per-pair allocation.
+admission. Caps are unchanged. Integer values have fixed 16,384-bit inline
+storage and allocation-free copies. On the qualified 64-bit-limb Boost build,
+normal construction itself stays below the Karatsuba threshold and adds no
+per-pair allocation. Higher-degree multiplications can allocate temporary Boost
+workspace even though the integer backend's allocator parameter is `void`; see
+the bounded-arithmetic audit below.
 
 `NormalReuseQualification.h` compares fixed compile-time recomputing and memoized
 executors on the same validated canonical pair. It returns the unchanged native
@@ -158,3 +162,72 @@ requires the original midpoint crossing and exactly three first-use normals;
 this specifically rejects eager six-normal evaluation. Forecast tests cover the
 exact enlarged scratch size and byte-cap-minus-one admission. Operation counts
 prove removed repeated calculations; throughput gains require measurement.
+
+## Exact integer range and allocation audit (2026-09-24)
+
+Scope: validated finite binary64 endpoints, represented affine paths, native DFS
+cell depth at most 52 and midpoint sample depth at most 53. This concerns the
+exact helpers in `RepresentedIntervalCrossing.cpp`, not other contact arithmetic.
+No backend, arithmetic, resource limit or error handling was changed by this audit.
+
+Let `M=2^1024` and `E=-1074-53=-1127`. Each sampled coordinate has magnitude below
+`M` and a stored dyadic exponent at least `E`. `At` uses nonnegative integer
+weights summing to `2^depth`, so both its aligned weighted operands and their sum
+fit the same 2,151-bit coefficient bound before the final exponent adjustment.
+No coordinate is converted through floating-point interpolation.
+
+| Quantity | Degree | Magnitude bound | Maximum magnitude bits at its lowest exponent |
+| --- | --- | --- | --- |
+| Sampled coordinate | 1 | `< M` | 2,151 |
+| Coordinate difference / edge | 1 | `< 2M` | 2,152 |
+| Normal / cross of two differences | 2 | `< 8M^2` per component | 4,305 |
+| Coplanar SAT axis `normal x edge` | 3 | `< 32M^3` per component | 6,458 |
+| Largest predicate comparison | 4 | `< 384M^4` | 8,613 |
+
+The degree-four maximum covers point-in-triangle orientation, segment normal
+squares/parameter comparisons and coplanar SAT projections. `RegularCell` only
+forms `4*n(mid)-n(lower)-n(upper)`, bounded by `48M^2`. Coordinate comparisons
+and common-translation checks are degree one. There is no exact division or
+unbounded denominator refinement in these helpers.
+
+`Add` aligns to the smaller existing exponent; at degree `k` it remains at least
+`kE`, so the aligned operands as well as the result obey the bounds. Zero shortcuts
+do not lower exponents. Negation preserves magnitude; multiplication adds degrees
+and exponents; integer scaling is limited to interpolation weights or four.
+Exponent values stay between -4,508 and 3,884, with alignment shifts at most 8,392;
+these fit the observed 32-bit `int`. Time shifts are at most 53 bits in `uint64_t`.
+The largest multiplication requests at most 136 64-bit result limbs (8,704 bits),
+including whole-limb rounding, below the 256-limb / 16,384-bit checked capacity.
+Thus admitted inputs cannot exhaust this integer range through these primitives.
+This does not remove any capacity, work, depth, degeneracy or unsupported-motion
+failure, nor establish that all caught `ExactArithmeticRange` errors are numeric.
+
+Dependency evidence on this workstation: `/usr/include/boost/version.hpp` reports
+Boost 1.74.0 (`BOOST_VERSION=107400`). The linked specialization uses 64-bit
+`unsigned long long` limbs; `cpp_int/cpp_int_config.hpp:61-65` selects them with
+128-bit intermediate support. `cpp_int/multiply.hpp:82-86` sets the default
+Karatsuba cutoff to 40 limbs, with no override in the qualified CMake flags.
+Degree-one operands of `Normal` have at most 34 limbs, so its products use the
+nonallocating schoolbook path. Fixed-backend copy constructors/assignment are
+`noexcept` and copy only inline storage and metadata; reference-parameter cleanup
+does not remove an arithmetic or allocator failure point.
+
+The broader no-heap claim is false for this Boost version. Its fixed-precision
+`setup_karatsuba` in `cpp_int/multiply.hpp:265-309` aliases values through an
+allocator-backed variable-precision type and obtains temporary workspace.
+`cpp_int.hpp:290-293` calls `allocator().allocate(len)`. The qualified binary also
+contains this specialization and calls to `operator new`. Valid degree-two
+operands can exceed 40 limbs, so later degree-four predicates can reach this path.
+A temporary allocation failure is caught by the existing `catch (...)` and
+reported as `Unresolved/ExactArithmeticRange`; the numeric bound does not exclude
+that failure. The normal cache preserves the remaining higher-degree evaluation
+order and existing forecast/guard policy; this audit does not qualify a complete
+library-temporary allocation budget.
+
+Single-sample common-translation evaluation and skipping EE feature work after
+all six VF tests found a canonical VF minimum remain deferred. Their geometric
+results are invariant, and `VertexFace` sorts before `EdgeEdge`, but skipping
+allocator-backed multiplications could remove a later resource failure. Absolute
+resource-error equivalence is not established by the integer bound. Revisit the
+allocation contract and qualify any such changes independently. Recheck this
+audit after changes to Boost, limb width, cutoff, path depth or predicate degree.
