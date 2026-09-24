@@ -1,73 +1,49 @@
 # Robo-dyna: Yaris delivery and product roadmap
 
-Updated 2026-09-18 for the architecture cleanup and user-requested pause of
-GPU/heavy execution. The [active plan](../../planning/CURRENT_EXECUTION_PLAN.md)
-owns current branches, receipts, resource limits and exact resume steps. The
-[architecture guide](ARCHITECTURE.md) owns the static source/module map.
-The [M2 audit](../../planning/handover/M2_ACCEPTANCE_AUDIT_2026-09-17.md) remains
-historical first-interval evidence. The previous version of this roadmap is
-preserved verbatim in [history](history/YARIS_DELIVERY_PLAN_2026-09-17.md).
+Updated 2026-09-24 15:20:13 UTC. The recovered two-consecutive-interval wall+self checkpoint,
+closed archive, exact readback and native Chrono replay are complete at 400 ns.
+The historical composite GTest failure remains recorded; recovery did not rerun
+physics. [Evidence](../../crash-work/reports/gate14-readback-recovery.json) establishes short correctness, not a useful
+crash video or long-duration validity. Heavy execution has been resumed; keep
+other GPU work running under the active guards.
 
-The next executable checkpoint is **two consecutive actual 200 ns wall+self
-commits, a closed authenticated archive, and exact Chrono replay**. It has not
-passed. The controller composition and focused corrections exist; recent full
-attempts stopped at resource guards before any recorded commit. There is no new
-wall+self trajectory or physics verdict from those resource stops. Resume only
-after the paused execution is authorized with a concrete shared-GPU resource
-plan. The discussed 12 GiB GPU-growth allowance has not been applied.
+The [current execution plan](../../planning/CURRENT_EXECUTION_PLAN.md) owns source pins/resources and
+[architecture guide](ARCHITECTURE.md) owns the source map.
+The historical first-interval M2 evidence and this [preserved previous version](../../planning/history/2026-09-24-before-gpu-certificate-priority-refresh/robo-dyna/docs/YARIS_DELIVERY_PLAN.md) remain preserved.
 
-## Implemented capabilities and historical acceptance
+## Implemented result and next milestones
 
-The selected coarse 2010 Yaris V5 assembly already runs CUDA explicit structural
-dynamics with QEPH/T3/QBAT shells and plasticity, five solid families, beams,
-joints, connections, rigid groups and CIN. Chrono replays exact accepted shell
-states with original part colors. TL remains the physical state/clock owner.
+The selected coarse 2010 Yaris V5 assembly runs CUDA explicit structural dynamics
+with QEPH/T3/QBAT shells and plasticity, solids, beams, joints, connections, rigid
+groups and CIN. TL remains the single physical owner; Chrono replays exact accepted
+shell states with original part colors. The contact pipeline remains hybrid;
+GPU native verification is active development, not an already GPU-complete solver.
 
-The longest archived run is still **wall-only**: 10,000 steps / about 2 ms at
-200 ns, 41 saved states, 102.44 minutes and approximately 815 MB. Peak local
-shell equivalent plastic strain is 1.94975%; 76 positive native points belong
-to 49 active parents of bumper PID 2000003. M0 analysis is complete. It does not
-prove rail load transfer, fracture, settled residual crush or the configured
-5 ms horizon's completion.
+The longest visible archive remains **wall-only**: 10,000 steps/~2 ms, 41 saved states,
+about 815 MB, peak local shell equivalent plastic strain 1.94975%. This does not
+prove settled crush, rail load transfer, fracture or a 5 ms wall+self trajectory.
+Reviewed [impact detail](../../crash-work/renders/yaris-wallremoval-10000-review-1/impact-detail-video/movie.mp4)
+and [overview](../../crash-work/renders/yaris-wallremoval-10000-review-1/overview-video/movie.mp4)
+remain available; no new useful self-contact movie exists yet.
 
-The inspected existing videos remain available at
-[impact detail](../../crash-work/renders/yaris-wallremoval-10000-review-1/impact-detail-video/movie.mp4)
-and [overview](../../crash-work/renders/yaris-wallremoval-10000-review-1/overview-video/movie.mp4).
-Each is 8.2 s, 1280x720/30 FPS, physical scale 1, with saved-time overlays and
-no geometric interpolation. M2 has not produced a longer movie.
+| Milestone | Current state | Completion gate |
+|---|---|---|
+| Two actual wall+self commits and replay | Recovered gate14 COMPLETE;400 ns | Preserve original failed receipt plus successful same-archive recovery |
+| CPU performance staging | 17dc includes common-point/narrow work and sorted lookup; coupled 171 host + 34 CUDA checks pass | Owning integrated host/CUDA/fixture/rollback gates |
+| General GPU native verification | Shared primitives and five Bazel targets pass; instance policy source underway; no native kernel/batch integrated | Exact CPU/GPU full results and fallback, source/phase, resource and publication qualification |
+| Standalone GPU facet filtering |3 host/6 CUDA tests and 16.15x component result; not integrated | Bounded transaction composition with exact parity and measured vehicle gain |
+| Canonical CPU witness search | DEFERRED despite110 tests/stack pass; benchmarks inconclusive | Do not select without reliable benefit; preserve evidence |
+| Strict delivery wall law | Explicit1e10 N/m³ /.002 m, pending combined qualification | Fresh forecast and nonzero response under unchanged stability/contact screens |
+| Useful 5 ms self-contact impact | NOT STARTED; current~600 s/step is impractical | Practical measured rate,25,001 accepted intervals, closed authenticated output |
+| Reviewed video | Existing wall-only video; new self-contact video incomplete | Exact Chrono replay, original part colors, scale1, true timestamps, visible deformation, full decode |
+| Later diagnostics/restart/contact profiles | Incomplete | Independent energy/load/failure ledgers, true restart parity and named new physical profiles |
 
-**Historical M2 first-profile single-interval self-contact is accepted.** Full selected V5
-self-only prepares/seals/discards; combined wall+self seals both receipts and
-commits one 200 ns interval to epoch 1. Both final resource receipts pass with
-complete cleanup. This completes the named M2 integration milestone, not the
-whole crash deliverable or repeated controller acceptance. Subsequent continuous
-geometry corrections and controller integration require their own current
-two-commit gate; the old M2 receipts do not substitute for it.
-
-Historical M2 TL source is `1cf575e6` in
-`crash-work/worktrees/self-contact-m2-final-integration`. App M2 source was
-`9606129`; local merge `de074ed` retains that runtime and newer M0 analysis.
-Root app and runtime worktree share the merged history, followed by docs-only
-updates. Historical M2 simulation sources did not change during that consolidation.
-Current continuation uses the `self-contact-continuous-local` TL worktree and
-the app's `work/wall-self-contact-controller` branch; consult the active plan for
-exact revisions and binary provenance. Do not configure against an assumed root
-TL checkout or replace a pinned binary during an acceptance attempt.
-
-## Remaining capabilities and gates
-
-| Priority / slice | Reuse | Remaining implementation | Completion gate |
-| --- | --- | --- | --- |
-| P0: runnable wall+self controller | Implemented explicit contact mode through `PreparedRun`, source/config/CLI, `Session`, and `LoadedWallSelfContact` | Complete acceptance of the existing controller path; focused selection/identity tests already pass | Two actual consecutive common commits with both contact profiles; no stale receipts or hidden mode change |
-| P0: bounded multi-step budgets/output | Implemented `ContactComposition`, shared forecasts, accepted contact summaries, typed failures and archive writers | Validate the complete actual run/closure path; qualify future contact growth before longer runs | Exact caps/source identity, no duplicate charges, failed trials absent from accepted output, authenticated archive/prefix |
-| P0: next-interval qualification | Existing owning transaction/publication tests, captured geometry replays and prepared full V5 fixture | Resume the pending two-interval fixture under an agreed resource plan; then verify actual closure and Chrono replay | Two commits at 200 ns each, final epoch 2/time 400 ns, expected saved frames and exact replay; current gate remains pending |
-| P0: practical contact throughput | Accepted exact geometry and frozen source-authenticated fixtures | Measure host geometry/certification, state copies, broadphase and force phases; optimize generic scheduling/representation without changing admitted outcomes | Exact policy/force/failure regression; measured representative benefit under unchanged 200 ns and resource limits |
-| P0: energy/load-path evidence | Native work/plastic/hourglass terms, accepted force observations, M0 mapping | TIME0/current energy and momentum, contact impulse/work, connector/body reactions and loaded transfer | Correct phase/availability, no double-counted plastic/HG or rigid/CIN mass; free-flight, elastic, unloading/contact controls and stated tolerances |
-| P1: integrate separate optimizations | Existing CIN/solid optimization branches and retained qualification receipts | Audit current ancestry before choosing remaining integrations; finish any outstanding integrated/native/V5/exact/performance gates | One change at a time, owner/rollback/caps coverage and unchanged output where applicable; no speedup claim without representative evidence |
-| P1: damage/load history | Existing constant/TAB1 shell and TYPE13/TYPE25 failure mechanics, activity/removal | Accepted event export and loaded failure/load-path review | Correct failure/removal timing, changed ownership and no stale force/history; retain source limits |
-| P1: physical restart | Authenticated models, bounded I/O and typed accepted owner/participant state | Versioned checkpoint of staggered phase, coordinates/velocities/orientation, all histories/activity/constraints and new contact state | Uninterrupted/resumed next-step equivalence, compatibility/corruption/partial-write rejection and bounded storage |
-| P1: 5 ms and longer video | Existing CLI loop, exact archive, Chrono capture and video encoder | Complete a practical wall+self trajectory after preceding gates; admit later horizons explicitly | Reviewed scale-1 part colors, actual time, visible response, contact/energy/load evidence and stable resources |
-| P2: broader contact/model/results | Current centered-shell first profile and source provenance | Solid contact faces, exact bilinear Q4, friction/history, omitted source components and richer stress/force plots | Separately named physical profiles and independent owning qualification; no hidden expansion of first-profile claims |
+The ordinary delivery configuration uses20 mm gap,51 samples and the explicit
+strict wall law. The gate14 speed-control defaults remain 1e7/0.1 and 1 µm gap.
+Do not mix their claims. The [existing CLI/readiness plan](../../planning/YARIS_WALL_SELF_LONG_RUN_READINESS_2026-09-24.md)
+and [separate wall-law proposal](../../crash-work/reports/yaris-wall-self-delivery-wall-law.proposed.json)
+require fresh combined qualification and forecast before launch. No new controller
+or rendering engine is required, and no physical restart is available.
 
 ## First-profile contact scope
 
@@ -93,29 +69,22 @@ The existing wall remains a fixed-X finite planar authenticated mesh penalty;
 self-contact adds panel-to-panel handling for its declared profile. Do not infer
 arbitrary moving-wall or full original LS-DYNA contact parity.
 
+
 ## Performance and architecture constraints
 
-The contact pipeline is hybrid: CUDA structural dynamics/broadphase/force and
-host exact feature/crossing certification. The roughly 32-minute historical
-first-interval gates include startup and are not measured steady-state throughput.
-Do not use the old wall-only 1.63 steps/s rate for a wall+self ETA. The next
-representative continuation must report per-stage time and resource use before
-a long run. Focused path-roster reuse and geometry-search changes have regression
-evidence; no full-vehicle throughput improvement has yet been demonstrated.
+GPU exact verification is the critical path: gate14 spent about 350 s/step in native
+certificates. Standalone filtering addresses less than 75 s and cannot by itself
+make the approximately 600 s step practical. Component ratios are not multiplied
+into a vehicle ETA. Do not launch 5 ms until measured consecutive steps justify it.
+Preserve one TL owner/clock, exact candidate inventory, original material/timestep,
+error order and rollback. Reuse coherent private math/geometry/batch modules and
+owning tests; avoid broad unqualified rewrites or vehicle-ID shortcuts.
 
-The historical harness's exact 32,491 event allocation is not a future growth
-policy. Derive generic capacities and phase peaks before expanding storage.
-Keep normal 20 GB application forecast / 2 GiB archive; conditional 60 GB / 6 GiB
-requires a complete forecast. The launch guard is a separate measured resource
-limit. Other GPU jobs must remain running; a future launch needs shared-device
-headroom and the unchanged free-GPU reserve. All heavy work uses the shared
-guard/lock and remains paused now; no pushes.
-
-Preserve the single physical owner and Chrono-style modular composition. The
-architecture cleanup improves entry documentation and shared host utilities;
-large numerical transaction/certificate decomposition is deferred. Extract
-focused private helpers only with exact operation-order/fixture evidence and
-resources for affected qualification. Avoid broad untested numerical rewrites.
+The [active resource rules](../../planning/CURRENT_EXECUTION_PLAN.md) retain 4 CPUs/10 GiB RSS for vehicle
+qualification, shared GPU0 with 8 GiB free reserve and 6 GiB growth, 32 GiB host
+reserve, normal 20 GB app forecast and 2 GiB archive/per-view capture caps. Heavy
+jobs are serialized through the shared guard/lock; other GPU work continues.
+No remote pushes. Conditional larger allowances are not an automatic cap increase.
 
 ## Selected model and failure boundary
 
