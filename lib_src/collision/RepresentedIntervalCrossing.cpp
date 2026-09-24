@@ -246,31 +246,31 @@ struct ExactVec3 {
   Dyadic x, y, z;
 };
 
-ExactVec3 Add(ExactVec3 a, ExactVec3 b) {
+ExactVec3 Add(const ExactVec3& a, const ExactVec3& b) {
   return {Add(a.x, b.x), Add(a.y, b.y), Add(a.z, b.z)};
 }
 
-ExactVec3 Subtract(ExactVec3 a, ExactVec3 b) {
+ExactVec3 Subtract(const ExactVec3& a, const ExactVec3& b) {
   return {Subtract(a.x, b.x), Subtract(a.y, b.y),
           Subtract(a.z, b.z)};
 }
 
-ExactVec3 Cross(ExactVec3 a, ExactVec3 b) {
+ExactVec3 Cross(const ExactVec3& a, const ExactVec3& b) {
   return {Subtract(Multiply(a.y, b.z), Multiply(a.z, b.y)),
           Subtract(Multiply(a.z, b.x), Multiply(a.x, b.z)),
           Subtract(Multiply(a.x, b.y), Multiply(a.y, b.x))};
 }
 
-Dyadic Dot(ExactVec3 a, ExactVec3 b) {
+Dyadic Dot(const ExactVec3& a, const ExactVec3& b) {
   return Add(Add(Multiply(a.x, b.x), Multiply(a.y, b.y)),
              Multiply(a.z, b.z));
 }
 
-bool Zero(ExactVec3 value) noexcept {
+bool Zero(const ExactVec3& value) noexcept {
   return Sign(value.x) == 0 && Sign(value.y) == 0 && Sign(value.z) == 0;
 }
 
-Dyadic Component(ExactVec3 value, unsigned component) {
+Dyadic Component(const ExactVec3& value, unsigned component) {
   return component == 0 ? value.x : (component == 1 ? value.y : value.z);
 }
 
@@ -360,7 +360,7 @@ bool Degenerate(const ExactTriangle& triangle, NormalCounters* counters = nullpt
 }
 
 bool SeparatedOnAxis(const ExactTriangle& a, const ExactTriangle& b,
-                     ExactVec3 axis) {
+                     const ExactVec3& axis) {
   if (Zero(axis))
     return false;
   Dyadic minimum_a = Dot(a.vertex[0], axis);
@@ -428,7 +428,7 @@ StaticIntersection Intersects(const ExactTriangle& a,
   return Intersects(a, b, normal_a, normal_b);
 }
 
-bool PointInClosedTriangle(ExactVec3 point,
+bool PointInClosedTriangle(const ExactVec3& point,
                            const ExactTriangle& triangle,
                            const ExactVec3& normal) {
   if (Sign(Dot(Subtract(point, triangle.vertex[0]), normal)) != 0)
@@ -448,15 +448,15 @@ bool PointInClosedTriangle(ExactVec3 point,
   return true;
 }
 
-bool PointInClosedTriangle(ExactVec3 point,
+bool PointInClosedTriangle(const ExactVec3& point,
                            const ExactTriangle& triangle,
                            NormalCounters* counters = nullptr) {
   const ExactVec3 normal = Normal(triangle, counters);
   return PointInClosedTriangle(point, triangle, normal);
 }
 
-bool SegmentsIntersect(ExactVec3 a0, ExactVec3 a1, ExactVec3 b0,
-                       ExactVec3 b1) {
+bool SegmentsIntersect(const ExactVec3& a0, const ExactVec3& a1,
+                       const ExactVec3& b0, const ExactVec3& b1) {
   const ExactVec3 a = Subtract(a1, a0);
   const ExactVec3 b = Subtract(b1, b0);
   const ExactVec3 delta = Subtract(b0, a0);
