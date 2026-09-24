@@ -15,7 +15,8 @@ facade = (collision / "RepresentedIntervalCrossingGpu.cpp").read_text()
 tests = (here / "CompoundCudaTest.cpp").read_text()
 assert "AuthenticatedScene(const AuthenticatedScene&) = delete" in lease
 assert "AuthenticatedScene& operator=(const AuthenticatedScene&) = delete" in lease
-assert "struct ConstructionKey" in lease and "ConstructionKey() = default" in lease
+assert "struct ConstructionKey" in lease and "ConstructionKey() noexcept {}" in lease
+assert "static_assert(!std::is_aggregate_v<ConstructionKey>)" in lease
 assert "DeviceExecution* const executor_" in lease
 assert "std::optional<represented_interval_crossing::AuthenticatedScene> device_scene" in native
 assert native.count("roster.device_scene.emplace(") == 1

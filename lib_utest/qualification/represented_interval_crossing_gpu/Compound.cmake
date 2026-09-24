@@ -7,3 +7,8 @@ add_test(NAME represented_interval_crossing_gpu_compound_source
   COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/verify_compound_sources.py")
 set_tests_properties(represented_interval_crossing_gpu_compound_source PROPERTIES
   RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30 LABELS "unit;source;cuda-native-compound")
+add_test(NAME represented_interval_crossing_gpu_scene_authority
+  COMMAND "${Python3_EXECUTABLE}" -B "${CMAKE_CURRENT_LIST_DIR}/check_scene_authority.py"
+          --compiler "${CMAKE_CXX_COMPILER}")
+set_tests_properties(represented_interval_crossing_gpu_scene_authority PROPERTIES
+  RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 45 LABELS "unit;syntax;cuda-native-authority")

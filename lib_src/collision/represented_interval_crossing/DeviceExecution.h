@@ -2,6 +2,7 @@
 #pragma once
 #include "../RepresentedIntervalCrossing.h"
 #include "Batch.h"
+#include <type_traits>
 
 namespace tlfea::contact {
 class RepresentedIntervalCrossingGpu;
@@ -29,8 +30,11 @@ class AuthenticatedScene {
   struct ConstructionKey {
    private:
     friend class ::tlfea::contact::RepresentedIntervalCrossing;
-    ConstructionKey() = default;
+    // A defaulted private constructor can still leave a C++17 aggregate and
+    // admit caller braced initialization. A user-provided constructor cannot.
+    ConstructionKey() noexcept {}
   };
+  static_assert(!std::is_aggregate_v<ConstructionKey>);
  public:
   AuthenticatedScene(ConstructionKey, DeviceExecution* executor,
       const RepresentedTrianglePath* paths, std::size_t count) noexcept
