@@ -44,3 +44,28 @@ GPU/CPU field checks. Output records original/selected/omitted pair and work
 counts, both input digests, and actual device/host routes. This does not omit
 difficult pairs in the production backend. Keep the mixed-cohort results visible;
 an eligible-only benefit is not a vehicle or mixed-cohort speed claim.
+
+## Compound publication comparison
+
+`native_gpu_compound_benchmark` compares CPU compound calls, ordinary GPU calls
+with `--numeric-cohort 0`, and optional numerical lookahead with
+`--numeric-cohort 4096`. Every mode retains the original 256-pair native
+input/result capacities and publication slices, 64 work visits per pair, and
+16384 total native work limit. It uses the same full source roster and supports
+the explicitly labeled mixed/eligible diagnostic views above.
+
+A complete raw CPU result supplies the immutable row oracle. A real CPU
+compound call supplies the complete compound report and last native report;
+no aggregate native report is fabricated. Every timed iteration checks all
+compound scalar fields, full native report fields, all outer result rows, the
+last published slice and exact path-authentication operation counts. Device
+checks distinguish submitted and consumed rows, launches, uploads, numerical
+cohorts and fault metadata. Consumed means native staging, not physical commit.
+
+The timer wraps the entire compound call, including authentication, upload,
+numerical preparation, readback, synchronization, CPU fallback and every original
+slice publication. Initialization, full source/selected CPU oracle construction
+and fieldwise verification are outside timing. Default benchmark worker width
+is explicitly 4096; production defaults remain 128 and cohort lookahead stays
+disabled. Retain source/toolchain/guard pins and compare CPU/GPU semantic fields
+before interpreting timings. This benchmark does not select a vehicle backend.

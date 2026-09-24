@@ -14,3 +14,10 @@ target_include_directories(native_gpu_batch_benchmark PRIVATE "${NATIVE_BENCHMAR
 target_link_libraries(native_gpu_batch_benchmark PRIVATE tl_represented_interval_crossing_gpu)
 target_compile_features(native_gpu_batch_benchmark PRIVATE cxx_std_17)
 target_compile_options(native_gpu_batch_benchmark PRIVATE -fno-fast-math -ffp-contract=off)
+
+add_executable(native_gpu_compound_benchmark CompoundMain.cpp CompoundResults.h Selection.h
+  "${NATIVE_BENCHMARK_ROOT}/Cases.cpp" "${NATIVE_BENCHMARK_ROOT}/Results.cpp")
+target_include_directories(native_gpu_compound_benchmark PRIVATE "${NATIVE_BENCHMARK_ROOT}")
+target_link_libraries(native_gpu_compound_benchmark PRIVATE tl_represented_interval_crossing_gpu)
+target_compile_features(native_gpu_compound_benchmark PRIVATE cxx_std_17)
+target_compile_options(native_gpu_compound_benchmark PRIVATE -fno-fast-math -ffp-contract=off)
