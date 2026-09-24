@@ -133,3 +133,6 @@ filegroup(
         "check_syntax.py",
     ],
 )
+
+# Pure unbounded rational arithmetic shared only by qualification modules.
+exports_files(["ConeDirectionOracle.h"], visibility = ["//lib_utest/qualification/fixed_triangle_features:__pkg__"])

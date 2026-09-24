@@ -1,4 +1,4 @@
-load("@rules_cc//cc:defs.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
 
 cc_test(
     name = "host",
@@ -7,6 +7,9 @@ cc_test(
         "AdapterTest.cpp",
         "CapacityTest.cpp",
         "ExhaustiveTest.cpp",
+        "ExactStorageTest.cpp",
+        "ExactStorageOracle.h",
+        "//lib_utest/qualification/self_contact_transaction:ConeDirectionOracle.h",
         "Fixture.h",
         "GeometryTest.cpp",
         "IntersectionTest.cpp",
@@ -35,6 +38,9 @@ cc_test(
         "CMakeLists.txt",
         "CapacityTest.cpp",
         "ExhaustiveTest.cpp",
+        "ExactStorageTest.cpp",
+        "ExactStorageOracle.h",
+        "//lib_utest/qualification/self_contact_transaction:ConeDirectionOracle.h",
         "Fixture.h",
         "GeometryTest.cpp",
         "IntersectionTest.cpp",
@@ -46,4 +52,48 @@ cc_test(
         "//lib_src/collision:fixed_triangle_feature_discovery_sources",
     ],
     deps = ["@googletest//:gtest_main"],
+)
+
+cc_library(
+    name = "exact_storage_wide",
+    testonly = True,
+    srcs = [
+        "exact_storage/WideAdapter.cpp",
+        "//lib_src/collision:fixed_triangle_feature_qualification_wide_sources",
+    ],
+    hdrs = ["//lib_src/collision:fixed_triangle_feature_qualification_wide_headers"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    linkopts = ["-pthread"],
+    deps = [
+        "//lib_src/collision:fixed_contact_facets",
+        "//lib_src/collision:surface_contact_primitives",
+        "//lib_src/collision/weighted_surface:mapping",
+    ],
+)
+
+cc_binary(
+    name = "exact_storage_adaptive_driver",
+    testonly = True,
+    srcs = ["exact_storage/DiscoveryParityDriver.cpp", "exact_storage/DiscoverySerialization.h", "Fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:fixed_triangle_feature_discovery"],
+)
+
+cc_binary(
+    name = "exact_storage_wide_driver",
+    testonly = True,
+    srcs = ["exact_storage/DiscoveryParityDriver.cpp", "exact_storage/DiscoverySerialization.h", "Fixture.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":exact_storage_wide"],
+)
+
+cc_test(
+    name = "exact_storage_discovery_parity",
+    size = "small",
+    timeout = "moderate",
+    srcs = ["exact_storage/BazelComparisonTest.cpp"],
+    data = ["exact_storage/compare_discovery.py", ":exact_storage_adaptive_driver", ":exact_storage_wide_driver"],
+    copts = ["-std=c++17"],
+    deps = ["@googletest//:gtest_main"],
+    tags = ["unit", "host", "exact-storage", "differential"],
 )

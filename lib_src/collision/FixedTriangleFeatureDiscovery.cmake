@@ -3,6 +3,8 @@ include("${CMAKE_CURRENT_LIST_DIR}/FixedContactFacetBinding.cmake")
 find_package(Threads REQUIRED)
 add_library(tl_fixed_triangle_feature_discovery STATIC
   "${CMAKE_CURRENT_LIST_DIR}/fixed_triangle_features/ExactPredicates.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/fixed_triangle_features/ExactInteger.h"
+  "${CMAKE_CURRENT_LIST_DIR}/fixed_triangle_features/ExactPredicateKernel.h"
   "${CMAKE_CURRENT_LIST_DIR}/fixed_triangle_features/Geometry.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/fixed_triangle_features/Discovery.cpp")
 target_link_libraries(tl_fixed_triangle_feature_discovery

@@ -22,6 +22,8 @@ production = [
     COLLISION / "fixed_triangle_features/ExactPredicates.cpp",
     COLLISION / "fixed_triangle_features/Geometry.cpp",
     COLLISION / "fixed_triangle_features/Discovery.cpp",
+    COLLISION / "fixed_triangle_features/ExactInteger.h",
+    COLLISION / "fixed_triangle_features/ExactPredicateKernel.h",
 ]
 for path in production:
     assert path.is_file(), path
@@ -115,7 +117,7 @@ assert discovery.index("unique_features >") < discovery.index(
 
 cmake = (COLLISION / "FixedTriangleFeatureDiscovery.cmake").read_text()
 bazel = (COLLISION / "BUILD.bazel").read_text()
-for source in ("ExactPredicates.cpp", "Geometry.cpp", "Discovery.cpp"):
+for source in ("ExactPredicates.cpp", "ExactInteger.h", "ExactPredicateKernel.h", "Geometry.cpp", "Discovery.cpp"):
     assert source in cmake and source in bazel
 assert "fixed_triangle_feature_discovery" in bazel
 assert "Threads::Threads" in cmake
@@ -168,6 +170,22 @@ for required in (
     "PreflightBoundsMetadataStacksAndRepeatedDestruction",
 ):
     assert required in tests, required
+
+
+# The public four-function API is independent of backend selection. Only the
+# source-derived private domain may choose smaller storage; zeroing is retained.
+integer = (COLLISION / "fixed_triangle_features/ExactInteger.h").read_text()
+entry = (COLLISION / "fixed_triangle_features/ExactPredicates.cpp").read_text()
+assert "std::uint64_t limbs[kLimbs]{};" in integer
+assert "WideLimbs = 144" in integer and "SmallLimbs = 8" in integer
+assert "SmallCoordinateBits = 125" in integer
+assert "finite && coordinate_bits <= SmallCoordinateBits" in integer
+assert "if (decoded.significand)" in integer
+assert entry.count("Storage::Adaptive") == 4
+assert "Storage::Wide" not in entry
+assert "WideAdapter.cpp" not in cmake
+for forbidden in ("thread_local", "getenv(", "malloc("):
+    assert forbidden not in integer + entry
 
 print(json.dumps({
     "status": "passed",

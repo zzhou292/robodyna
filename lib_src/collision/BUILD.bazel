@@ -35,9 +35,34 @@ filegroup(
         "fixed_triangle_features/Discovery.cpp",
         "fixed_triangle_features/ExactPredicates.cpp",
         "fixed_triangle_features/ExactPredicates.h",
+        "fixed_triangle_features/ExactInteger.h",
+        "fixed_triangle_features/ExactPredicateKernel.h",
         "fixed_triangle_features/Geometry.cpp",
         "fixed_triangle_features/Geometry.h",
     ],
+)
+
+# Source reuse by a separate qualification-only wide-adapter binary. There is
+# no runtime storage switch or qualification adapter in the production library.
+filegroup(
+    name = "fixed_triangle_feature_qualification_wide_sources",
+    srcs = [
+        "fixed_triangle_features/Discovery.cpp",
+        "fixed_triangle_features/Geometry.cpp",
+    ],
+    visibility = ["//lib_utest/qualification/fixed_triangle_features:__pkg__"],
+)
+filegroup(
+    name = "fixed_triangle_feature_qualification_wide_headers",
+    srcs = [
+        "FixedTriangleFeatureDiscovery.h",
+        "FixedTriangleFeatureTypes.h",
+        "fixed_triangle_features/Geometry.h",
+        "fixed_triangle_features/ExactPredicates.h",
+        "fixed_triangle_features/ExactInteger.h",
+        "fixed_triangle_features/ExactPredicateKernel.h",
+    ],
+    visibility = ["//lib_utest/qualification/fixed_triangle_features:__pkg__"],
 )
 
 cc_library(
@@ -51,6 +76,8 @@ cc_library(
         "FixedTriangleFeatureDiscovery.h",
         "FixedTriangleFeatureTypes.h",
         "fixed_triangle_features/ExactPredicates.h",
+        "fixed_triangle_features/ExactInteger.h",
+        "fixed_triangle_features/ExactPredicateKernel.h",
         "fixed_triangle_features/Geometry.h",
     ],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
