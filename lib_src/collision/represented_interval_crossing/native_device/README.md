@@ -83,13 +83,32 @@ caps, wrong-stream rejection, alias rejection, retry and prior publication.
 Existing CPU110 tests and frozen-body/source checks remain mandatory. Only a
 warmed bounded benchmark with full parity may establish a component speedup.
 
-## Deliberate integration boundary
+## Compound adapter and integration boundary
 
-This first slice offers standalone raw `Certify` only. A raw call authenticates
-and uploads its scene once. It is **not** wired into transaction/app code.
-Before integration, the private compound-batch adapter must preserve one
-lexical full-roster authentication and one scoped scene upload per outer cohort,
-while retaining native per-slice publication and failure semantics. Repeating
-raw `Certify` on the full scene for every small slice is not the integration
-design. Physics acceptance and crash-video progress cannot be inferred from
-standalone numerical parity or this module's benchmark.
+`DeviceBatchAccess` reuses the existing native compound helper with its fixed
+optional executor. It takes both owner leases for the whole cohort. Native
+range/cap checks and an extra workspace-disjoint admission precede any borrowed
+pair-key read. The complete roster authenticates once. After successful slice
+admission, its lexical `PathRoster` materializes one noncopyable
+`AuthenticatedScene` through a native-only construction key.
+
+The first eligible slice uploads the scene. Later slices upload only their
+compact jobs and return results. All-wide or empty cohorts upload no scene.
+The only uploaded bit belongs to the native lexical scene and is bound to the
+same executor, immutable path pointer and count. The workspace retains no input
+pointer, scene token or generation cache. A drained successful operation marks
+the scene uploaded; destruction of the native lexical object revokes this
+authority automatically at outer return, including failure. Reusing an input
+address on a later call requires authentication and upload again.
+
+The existing native per-slice publication, work-cap prefix and last-successful
+slice behavior remain in `BatchExecution.h`. Late failure keeps that native
+publication and never advertises the outer caller scratch as complete.
+Additional tests compare complete CPU/GPU batch reports and work at the
+256/257 boundary, delayed and absent uploads, changed input/retry, malformed
+unused paths, late work failure, aliases and canonical ordering/cap errors.
+
+Raw and compound entry points are still **not** wired into transaction/app
+code. The compound source is unqualified until its owning tests pass. Physics
+acceptance and crash-video progress cannot be inferred from standalone
+numerical parity or this module's benchmark.

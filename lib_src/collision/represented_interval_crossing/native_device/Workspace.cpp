@@ -94,19 +94,23 @@ RepresentedIntervalReport Workspace::Execute(const AuthenticatedWork& work) noex
   // The native owner authenticated all inputs and all staging capacities first.
   // This independent disjoint check covers the new workspace, including output
   // buffers, before any upload or host-staging write can read aliases.
-  if (!Disjoint(work.paths(), work.path_count() * sizeof(*work.paths())) ||
+  if (work.scene_.executor_ != this ||
+      !Disjoint(work.paths(), work.path_count() * sizeof(*work.paths())) ||
       !Disjoint(work.pairs(), work.pair_count() * sizeof(*work.pairs())) ||
       !Disjoint(work.staging(), work.pair_count() * sizeof(*work.staging())) ||
       !Disjoint(work.status(), work.pair_count() * sizeof(*work.status()))) {
-    report_ = {RepresentedIntervalDeviceStatus::InvalidInput, "Native CUDA work aliases its workspace"};
+    report_.status = RepresentedIntervalDeviceStatus::InvalidInput;
+    report_.message = "Native CUDA work aliases its workspace or has a foreign scene lease";
     return Failure(RepresentedIntervalStatus::InvalidInput, report_.message);
   }
   if (work.path_count() > layout_.paths.count || work.pair_count() > layout_.jobs.count ||
       work.limits().max_depth + 1 != layout_.dfs_capacity) {
-    report_ = {RepresentedIntervalDeviceStatus::ResourceLimit, "Native CUDA lexical workload exceeds its retained layout"};
+    report_.status = RepresentedIntervalDeviceStatus::ResourceLimit;
+    report_.message = "Native CUDA lexical workload exceeds its retained layout";
     return Failure(RepresentedIntervalStatus::ResourceLimit, report_.message);
   }
-  report_ = {RepresentedIntervalDeviceStatus::Ok, "OK"};
+  report_.status = RepresentedIntervalDeviceStatus::Ok;
+  report_.message = "OK";
   std::size_t jobs = 0;
   for (std::size_t i = 0; i < work.pair_count(); ++i) {
     const auto& pair = work.pairs()[i];
@@ -117,11 +121,15 @@ RepresentedIntervalReport Workspace::Execute(const AuthenticatedWork& work) noex
       ++report_.host_pairs;
     }
   }
-  report_.device_pairs = jobs;
+  report_.device_pairs += jobs;
   if (!jobs) return {};
 
-  auto error = cudaMemcpyAsync(tl::util::ArenaPointer<RepresentedTrianglePath>(device_, layout_.paths),
-      work.paths(), work.path_count() * sizeof(*work.paths()), cudaMemcpyHostToDevice, stream_);
+  auto error = cudaSuccess;
+  if (!work.scene_.uploaded_) {
+    error = cudaMemcpyAsync(tl::util::ArenaPointer<RepresentedTrianglePath>(device_, layout_.paths),
+        work.paths(), work.path_count() * sizeof(*work.paths()), cudaMemcpyHostToDevice, stream_);
+    if (error == cudaSuccess) ++report_.scene_uploads;
+  }
   if (error == cudaSuccess)
     error = cudaMemcpyAsync(tl::util::ArenaPointer<DeviceJob>(device_, layout_.jobs),
         jobs_, jobs * sizeof(*jobs_), cudaMemcpyHostToDevice, stream_);
@@ -147,6 +155,9 @@ RepresentedIntervalReport Workspace::Execute(const AuthenticatedWork& work) noex
       return failure;
     }
   }
+  // Only native lexical scene state records successful upload. The workspace
+  // retains neither an input pointer nor a proof/cache across outer calls.
+  work.scene_.uploaded_ = true;
   for (std::size_t i = 0; i < jobs; ++i) {
     const auto ordinal = jobs_[i].ordinal;
     native::StoreResult(results_[i].value, work.staging() + ordinal);

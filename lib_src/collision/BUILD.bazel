@@ -184,6 +184,7 @@ cc_library(
     srcs = ["represented_interval_crossing/native_device/Layout.cpp"],
     hdrs = [
         "RepresentedIntervalCrossingGpu.h",
+        "represented_interval_crossing/DeviceBatch.h",
         "represented_interval_crossing/native_device/Workspace.h",
         "represented_interval_crossing/native_device/KernelTypes.h",
     ],
@@ -218,6 +219,7 @@ filegroup(
         "BUILD.bazel", "RepresentedIntervalCrossingGpu.cmake",
         "RepresentedIntervalCrossingGpu.h", "RepresentedIntervalCrossingGpu.cpp",
         "represented_interval_crossing/DeviceExecution.h",
+        "represented_interval_crossing/DeviceBatch.h",
     ] + glob(["represented_interval_crossing/native_device/*"]),
 )
 

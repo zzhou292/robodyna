@@ -2,6 +2,7 @@
 #include "RepresentedIntervalCrossingGpu.h"
 #include "represented_interval_crossing/native_device/Workspace.h"
 #include "represented_interval_crossing/BusyRelease.h"
+#include "represented_interval_crossing/DeviceBatch.h"
 #include <new>
 #include <utility>
 
@@ -87,5 +88,38 @@ RepresentedIntervalGpuForecast RepresentedIntervalCrossingGpu::forecast() const 
 RepresentedIntervalResultView RepresentedIntervalCrossingGpu::results() const noexcept {
   return impl_ && !impl_->busy.load(std::memory_order_acquire)
       ? impl_->native.results() : RepresentedIntervalResultView{};
+}
+
+represented_interval_crossing::DeviceBatchReport
+represented_interval_crossing::DeviceBatchAccess::Certify(
+    RepresentedIntervalCrossingGpu& crossing,
+    const RepresentedTrianglePath* paths, std::size_t path_count,
+    const RepresentedTrianglePair* pairs, std::size_t pair_count,
+    std::size_t batch_pair_capacity, RepresentedIntervalResult* scratch,
+    std::size_t scratch_capacity, cudaStream_t stream) noexcept {
+  DeviceBatchReport result;
+  if (!crossing.impl_) {
+    result.native.status = RepresentedIntervalStatus::NotInitialized;
+    result.native.message = "Crossing batch owner is not initialized";
+    return result;
+  }
+  auto& owner = *crossing.impl_;
+  bool idle = false;
+  if (!owner.busy.compare_exchange_strong(idle, true, std::memory_order_acq_rel)) {
+    result.native.status = RepresentedIntervalStatus::InvalidInput;
+    result.native.message = "Native CUDA owner does not accept concurrent calls";
+    return result;
+  }
+  BusyRelease release{&owner.busy};
+  const auto admission = owner.workspace.BeginAttempt(stream);
+  if (admission.status != RepresentedIntervalStatus::Ok) {
+    result.native.status = admission.status;
+    result.native.message = admission.message;
+  } else {
+    result.native = DeviceAccess::CertifyBatch(owner.native, paths, path_count,
+        pairs, pair_count, batch_pair_capacity, scratch, scratch_capacity, owner.workspace);
+  }
+  result.device = owner.workspace.report();
+  return result;
 }
 }  // namespace tlfea::contact

@@ -5,6 +5,7 @@
 
 namespace tlfea::contact {
 namespace represented_interval_crossing::native_device { class Workspace; }
+namespace represented_interval_crossing { struct DeviceBatchAccess; }
 
 enum class RepresentedIntervalDeviceStatus : std::uint8_t {
   NotInvoked, Ok, InvalidInput, ResourceLimit, DeviceFailure,
@@ -32,6 +33,7 @@ struct RepresentedIntervalDeviceReport {
   std::size_t device_pairs = 0;
   std::size_t host_pairs = 0;
   std::size_t batches = 0;
+  std::size_t scene_uploads = 0;
 };
 struct RepresentedIntervalGpuReport {
   RepresentedIntervalReport native;
@@ -67,6 +69,7 @@ class RepresentedIntervalCrossingGpu {
   RepresentedIntervalGpuForecast forecast() const noexcept;
   RepresentedIntervalResultView results() const noexcept;
  private:
+  friend struct represented_interval_crossing::DeviceBatchAccess;
   struct Impl;
   std::unique_ptr<Impl> impl_;
 };

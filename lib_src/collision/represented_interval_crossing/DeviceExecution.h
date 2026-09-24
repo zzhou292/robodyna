@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "../RepresentedIntervalCrossing.h"
+#include "Batch.h"
 
 namespace tlfea::contact {
 class RepresentedIntervalCrossingGpu;
 namespace represented_interval_crossing {
 namespace native_device { class Workspace; }
+class DeviceExecution;
+struct DeviceBatchAccess;
 
 // Same retained CPU row layouts; no pointer-sized executor field is added to
 // the native owner and its forecast does not change.
@@ -16,6 +19,33 @@ struct CanonicalPair {
 };
 struct PairStatus { bool complete = false; };
 
+// Materialized once, only after native roster validation and slice admission.
+// This noncopyable object lives inside the native lexical PathRoster. Device
+// bytes may remain allocated after it dies, but no upload authority survives.
+class AuthenticatedScene {
+ private:
+  friend class ::tlfea::contact::RepresentedIntervalCrossing;
+  friend class native_device::Workspace;
+  struct ConstructionKey {
+   private:
+    friend class ::tlfea::contact::RepresentedIntervalCrossing;
+    ConstructionKey() = default;
+  };
+ public:
+  AuthenticatedScene(ConstructionKey, DeviceExecution* executor,
+      const RepresentedTrianglePath* paths, std::size_t count) noexcept
+      : executor_(executor), paths_(paths), count_(count) {}
+  AuthenticatedScene(const AuthenticatedScene&) = delete;
+  AuthenticatedScene& operator=(const AuthenticatedScene&) = delete;
+  const RepresentedTrianglePath* paths() const noexcept { return paths_; }
+  std::size_t count() const noexcept { return count_; }
+ private:
+  DeviceExecution* const executor_;
+  const RepresentedTrianglePath* const paths_;
+  const std::size_t count_;
+  bool uploaded_ = false;
+};
+
 // A synchronous lexical borrow, created only by the native owner after its
 // complete path/identity/canonical-pair validation. Never retained by a device
 // owner or exposed as caller-provided eligibility authority.
@@ -23,8 +53,8 @@ class AuthenticatedWork {
  public:
   AuthenticatedWork(const AuthenticatedWork&) = delete;
   AuthenticatedWork& operator=(const AuthenticatedWork&) = delete;
-  const RepresentedTrianglePath* paths() const noexcept { return paths_; }
-  std::size_t path_count() const noexcept { return path_count_; }
+  const RepresentedTrianglePath* paths() const noexcept { return scene_.paths(); }
+  std::size_t path_count() const noexcept { return scene_.count(); }
   const CanonicalPair* pairs() const noexcept { return pairs_; }
   std::size_t pair_count() const noexcept { return pair_count_; }
   RepresentedIntervalLimits limits() const noexcept { return limits_; }
@@ -32,13 +62,13 @@ class AuthenticatedWork {
   PairStatus* status() const noexcept { return status_; }
  private:
   friend class ::tlfea::contact::RepresentedIntervalCrossing;
-  AuthenticatedWork(const RepresentedTrianglePath* paths, std::size_t path_count,
+  friend class native_device::Workspace;
+  AuthenticatedWork(AuthenticatedScene& scene,
       const CanonicalPair* pairs, std::size_t pair_count, RepresentedIntervalLimits limits,
       RepresentedIntervalResult* staging, PairStatus* status) noexcept
-      : paths_(paths), path_count_(path_count), pairs_(pairs), pair_count_(pair_count),
+      : scene_(scene), pairs_(pairs), pair_count_(pair_count),
         limits_(limits), staging_(staging), status_(status) {}
-  const RepresentedTrianglePath* paths_;
-  std::size_t path_count_;
+  AuthenticatedScene& scene_;
   const CanonicalPair* pairs_;
   std::size_t pair_count_;
   RepresentedIntervalLimits limits_;
@@ -52,6 +82,7 @@ class AuthenticatedWork {
 class DeviceExecution {
  private:
   friend class ::tlfea::contact::RepresentedIntervalCrossing;
+  friend struct BatchAccess;
   friend class native_device::Workspace;
   DeviceExecution() = default;
   virtual ~DeviceExecution() = default;
@@ -61,9 +92,14 @@ class DeviceExecution {
 class DeviceAccess {
  private:
   friend class ::tlfea::contact::RepresentedIntervalCrossingGpu;
+  friend struct DeviceBatchAccess;
   static RepresentedIntervalReport Certify(RepresentedIntervalCrossing&,
       const RepresentedTrianglePath*, std::size_t, const RepresentedTrianglePair*,
       std::size_t, DeviceExecution&) noexcept;
+  static BatchReport CertifyBatch(RepresentedIntervalCrossing&,
+      const RepresentedTrianglePath*, std::size_t, const RepresentedTrianglePair*,
+      std::size_t, std::size_t, RepresentedIntervalResult*, std::size_t,
+      DeviceExecution&) noexcept;
 };
 }  // namespace represented_interval_crossing
 }  // namespace tlfea::contact

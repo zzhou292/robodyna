@@ -19,6 +19,7 @@
 #include <cstring>
 #include <limits>
 #include <new>
+#include <optional>
 #include <pthread.h>
 #include <semaphore.h>
 #include <sys/mman.h>
@@ -346,6 +347,7 @@ struct RepresentedIntervalCrossing::Impl {
     std::size_t count;
     bool authenticated = false;
     represented_interval_crossing::PathRosterWork work;
+    std::optional<represented_interval_crossing::AuthenticatedScene> device_scene;
   };
   bool DisjointFromOwned(const void* data, std::size_t bytes) const noexcept;
   RepresentedIntervalReport CertifySlice(
@@ -725,6 +727,17 @@ RepresentedIntervalReport represented_interval_crossing::DeviceAccess::Certify(
   return crossing.CertifyUsing(paths, path_count, pairs, pair_count, &device);
 }
 
+represented_interval_crossing::BatchReport
+represented_interval_crossing::DeviceAccess::CertifyBatch(
+    RepresentedIntervalCrossing& crossing,
+    const RepresentedTrianglePath* paths, std::size_t path_count,
+    const RepresentedTrianglePair* pairs, std::size_t pair_count,
+    std::size_t batch_pair_capacity, RepresentedIntervalResult* scratch,
+    std::size_t scratch_capacity, DeviceExecution& device) noexcept {
+  return BatchAccess::CertifyUsing(crossing, paths, path_count, pairs, pair_count,
+      batch_pair_capacity, scratch, scratch_capacity, &device);
+}
+
 bool RepresentedIntervalCrossing::Impl::DisjointFromOwned(
     const void* data, std::size_t bytes) const noexcept {
   const auto& storage = *this;
@@ -907,7 +920,11 @@ RepresentedIntervalReport RepresentedIntervalCrossing::Impl::CertifySlice(
   for (std::size_t pair = 0; pair < storage.pairs.size(); ++pair)
     storage.pair_status[pair].complete = false;
   if (device) {
-    const represented_interval_crossing::AuthenticatedWork work(paths, path_count,
+    if (!roster.device_scene)
+      roster.device_scene.emplace(
+          represented_interval_crossing::AuthenticatedScene::ConstructionKey{},
+          device, paths, path_count);
+    const represented_interval_crossing::AuthenticatedWork work(*roster.device_scene,
         storage.pairs.data(), storage.pairs.size(), storage.limits,
         storage.staging.data(), storage.pair_status.get());
     const auto execution = device->Execute(work);
@@ -971,13 +988,28 @@ represented_interval_crossing::BatchAccess::Certify(
     std::size_t batch_pair_capacity,
     RepresentedIntervalResult* scratch,
     std::size_t scratch_capacity) noexcept {
+  return CertifyUsing(crossing, paths, path_count, pairs, pair_count,
+      batch_pair_capacity, scratch, scratch_capacity, nullptr);
+}
+
+represented_interval_crossing::BatchReport
+represented_interval_crossing::BatchAccess::CertifyUsing(
+    RepresentedIntervalCrossing& crossing,
+    const RepresentedTrianglePath* paths, std::size_t path_count,
+    const RepresentedTrianglePair* pairs, std::size_t pair_count,
+    std::size_t batch_pair_capacity, RepresentedIntervalResult* scratch,
+    std::size_t scratch_capacity, DeviceExecution* device) noexcept {
   const auto compare = [](const auto& first, const auto& second) {
     return Compare(first, second);
   };
   auto report = detail::ValidateInput(
       crossing.initialized(), crossing.forecast(), crossing.results(),
       paths, path_count, pairs, pair_count, batch_pair_capacity,
-      scratch, scratch_capacity, compare, RangeDisjoint);
+      scratch, scratch_capacity, compare, RangeDisjoint,
+      [&](std::size_t path_bytes, std::size_t pair_bytes, std::size_t scratch_bytes) {
+        return !device || (device->Disjoint(paths, path_bytes) &&
+            device->Disjoint(pairs, pair_bytes) && device->Disjoint(scratch, scratch_bytes));
+      });
   if (report.status != RepresentedIntervalStatus::Ok) return report;
 
   auto& storage = *crossing.impl_;
@@ -1019,7 +1051,7 @@ represented_interval_crossing::BatchAccess::Certify(
   report = detail::Execute(
       paths, pairs, pair_count, batch_pair_capacity, scratch,
       [&](const RepresentedTrianglePair* slice, std::size_t count) {
-        return storage.CertifySlice(paths, path_count, slice, count, roster);
+        return storage.CertifySlice(paths, path_count, slice, count, roster, device);
       },
       [&]() {
         // Public results() deliberately hides publication while busy. This
