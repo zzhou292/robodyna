@@ -2,6 +2,7 @@
 #pragma once
 
 #include "FixedTriangleFeatureTypes.h"
+#include "FixedTriangleDiscoveryDiagnostics.h"
 #include "SurfaceContactTypes.h"
 
 #include <memory>
@@ -75,6 +76,7 @@ class FixedTriangleFeatureDiscovery {
 
   bool initialized() const noexcept { return bool(impl_); }
   FixedTriangleFeatureForecast forecast() const noexcept;
+  FixedTriangleDiscoveryDiagnostics diagnostics() const noexcept;
   FixedTriangleFeatureView features() const noexcept;
   FixedTriangleIntersectionView intersections() const noexcept;
 

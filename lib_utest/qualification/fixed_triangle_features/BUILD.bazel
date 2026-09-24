@@ -4,6 +4,8 @@ cc_test(
     name = "host",
     size = "small",
     srcs = [
+        "DiagnosticsTest.cpp",
+        "exact_storage/DiscoverySerialization.h",
         "AdapterTest.cpp",
         "CapacityTest.cpp",
         "ExhaustiveTest.cpp",
@@ -33,6 +35,8 @@ cc_test(
     srcs = ["SourceProofTest.cpp"],
     data = [
         "verify_sources.py",
+        "DiagnosticsTest.cpp",
+        "exact_storage/DiscoverySerialization.h",
         "AdapterTest.cpp",
         "BUILD.bazel",
         "CMakeLists.txt",
