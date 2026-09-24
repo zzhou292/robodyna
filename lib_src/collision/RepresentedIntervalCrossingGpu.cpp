@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "RepresentedIntervalCrossingGpu.h"
-#include "represented_interval_crossing/native_device/Workspace.h"
+#include "represented_interval_crossing/native_device/OwnerStorage.h"
 #include "represented_interval_crossing/BusyRelease.h"
 #include "represented_interval_crossing/DeviceBatch.h"
 #include <new>
@@ -8,20 +8,9 @@
 
 namespace tlfea::contact {
 namespace device = represented_interval_crossing::native_device;
-struct RepresentedIntervalCrossingGpu::Impl {
-  RepresentedIntervalCrossing native;
-  device::Workspace workspace;
-  RepresentedIntervalGpuForecast forecast;
-  std::atomic<bool> busy{false};
-};
 RepresentedIntervalCrossingGpu::RepresentedIntervalCrossingGpu() noexcept = default;
 RepresentedIntervalCrossingGpu::~RepresentedIntervalCrossingGpu() = default;
 
-RepresentedIntervalGpuPreflight RepresentedIntervalCrossingGpu::Preflight(
-    RepresentedIntervalGpuLimits limits) noexcept {
-  device::Layout layout;
-  return device::MakeLayout(limits, sizeof(RepresentedIntervalCrossingGpu) + sizeof(Impl), layout);
-}
 RepresentedIntervalGpuReport RepresentedIntervalCrossingGpu::Initialize(
     RepresentedIntervalGpuLimits limits, cudaStream_t stream) noexcept try {
   if (impl_) {

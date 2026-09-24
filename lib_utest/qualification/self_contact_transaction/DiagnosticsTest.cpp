@@ -191,4 +191,61 @@ TEST(SelfContactDiagnostics, ActualNativeBatchReportsCountExactlyOnceIncludingEm
   EXPECT_EQ(value.native_work, expected_work);
   EXPECT_TRUE(value.counts_complete);
 }
+
+TEST(SelfContactDiagnostics, DeviceRoutingDistinguishesPrefetchedConsumedAndHostPairs) {
+  Clock clock; clock.ticks = {1, 2};
+  c::SelfContactAttemptDiagnostics value;
+  {
+    sct::DiagnosticAttempt attempt(value, true, 1, 0, 1, clock.reader());
+    attempt.CrossingDevice({}); // CPU executor: absent, not a zero-sized GPU call.
+    c::RepresentedIntervalDeviceReport report;
+    report.status = c::RepresentedIntervalDeviceStatus::Ok;
+    report.device_pairs = 4096;
+    report.consumed_device_pairs = 256;
+    report.host_pairs = 3;
+    report.batches = 1; report.scene_uploads = 1; report.numeric_cohorts = 1;
+    attempt.CrossingDevice(report);
+    attempt.Success();
+  }
+  EXPECT_EQ(value.native_device.calls, 1u);
+  EXPECT_EQ(value.native_device.admitted_pairs, 4096u);
+  EXPECT_EQ(value.native_device.consumed_pairs, 256u);
+  EXPECT_EQ(value.native_device.host_pairs, 3u);
+  EXPECT_EQ(value.native_device.launches, 1u);
+  EXPECT_EQ(value.native_device.scene_uploads, 1u);
+  EXPECT_EQ(value.native_device.numeric_cohorts, 1u);
+  EXPECT_EQ(value.native_batches, 0u);
+  EXPECT_EQ(value.native_work, 0u);
+  EXPECT_EQ(clock.calls, 2u); // No per-pair or extra routing clock read.
+  EXPECT_TRUE(value.counts_complete);
+}
+TEST(SelfContactDiagnostics, DeviceRoutingFailureAndSaturationNeverBecomePhysicalAuthority) {
+  c::SelfContactAttemptDiagnostics value;
+  c::RepresentedIntervalDeviceReport report;
+  report.status = c::RepresentedIntervalDeviceStatus::DeviceFailure;
+  report.device_pairs = 17;
+  report.fault_cohort_begin = 4096; report.fault_cohort_count = 17;
+  report.fault_pair_ordinal = 4100;
+  {
+    sct::DiagnosticAttempt attempt(value, true, 1, 0, 1);
+    value.native_device.admitted_pairs = UINT64_MAX;
+    attempt.CrossingDevice(report);
+    attempt.Success(); // Numerical result is not changed by diagnostic failure.
+  }
+  EXPECT_TRUE(value.succeeded && value.counter_saturated);
+  EXPECT_FALSE(value.counts_complete);
+  EXPECT_EQ(value.native_device.admitted_pairs, UINT64_MAX);
+  EXPECT_EQ(value.native_device.failures, 1u);
+  EXPECT_EQ(value.native_device.last_fault_cohort_begin, 4096u);
+  EXPECT_EQ(value.native_device.last_fault_cohort_count, 17u);
+  EXPECT_EQ(value.native_device.last_fault_pair_ordinal, 4100u);
+  Clock clock;
+  {
+    sct::DiagnosticAttempt disabled(value, false, 1, 0, 2, clock.reader());
+    disabled.CrossingDevice(report);
+  }
+  EXPECT_EQ(clock.calls, 0u);
+  EXPECT_EQ(value.native_device.calls, 0u);
+  EXPECT_EQ(value.native_device.last_fault_cohort_begin, SIZE_MAX);
+}
 }  // namespace

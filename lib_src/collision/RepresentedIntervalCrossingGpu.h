@@ -23,6 +23,7 @@ struct RepresentedIntervalGpuLimits {
 struct RepresentedIntervalGpuForecast {
   RepresentedIntervalForecast native;
   std::size_t device_bytes = 0;
+  std::size_t device_allocations = 0;
   std::size_t device_scratch_bytes = 0;
   std::size_t device_dfs_bytes = 0;
   std::size_t workspace_host_bytes = 0;

@@ -232,13 +232,15 @@ cc_library(
 
 cc_library(
     name = "represented_interval_crossing_gpu_values",
-    srcs = ["represented_interval_crossing/native_device/Layout.cpp"],
+    srcs = ["represented_interval_crossing/native_device/Layout.cpp",
+            "represented_interval_crossing/native_device/Forecast.cpp"],
     hdrs = [
         "RepresentedIntervalCrossingGpu.h",
         "represented_interval_crossing/DeviceBatch.h",
         "represented_interval_crossing/native_device/Workspace.h",
         "represented_interval_crossing/native_device/KernelTypes.h",
         "represented_interval_crossing/native_device/Resources.h",
+        "represented_interval_crossing/native_device/OwnerStorage.h",
     ],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [":represented_interval_crossing", "//lib_utils:bounded_arena"],
@@ -270,7 +272,7 @@ cc_library(
 filegroup(
     name = "represented_interval_crossing_gpu_sources",
     srcs = [
-        "BUILD.bazel", "RepresentedIntervalCrossingGpu.cmake",
+        "BUILD.bazel", "RepresentedIntervalCrossingGpu.cmake", "RepresentedIntervalCrossingGpuValues.cmake",
         "RepresentedIntervalCrossingGpu.h", "RepresentedIntervalCrossingGpu.cpp",
         "represented_interval_crossing/DeviceExecution.h",
         "represented_interval_crossing/DeviceBatch.h",
@@ -452,6 +454,12 @@ cc_library(
 filegroup(
     name = "self_contact_transaction_source_proof",
     srcs = [
+        ":represented_interval_crossing_gpu_sources",
+        "RepresentedIntervalCrossingGpu.cmake",
+        "RepresentedIntervalCrossingGpuValues.cmake",
+        "self_contact_transaction/CrossingExecutor.h",
+        "self_contact_transaction/CrossingExecutor.cpp",
+        "self_contact_transaction/CrossingExecutorValues.cpp",
         "SelfContactFilterBatch.cmake",
         "SelfContactFilterBatchValues.cmake",
         "self_contact_transaction/FacetFilters.h",
@@ -509,6 +517,7 @@ filegroup(
 cc_library(
     name = "self_contact_transaction_values",
     srcs = [
+        "self_contact_transaction/CrossingExecutorValues.cpp",
         "self_contact_transaction/FacetFilterValues.cpp",
         "self_contact_transaction/CrossingBatch.cpp",
         "self_contact_transaction/Arena.cpp",
@@ -522,6 +531,7 @@ cc_library(
         "self_contact_transaction/TranslatedLocal.cpp",
     ],
     hdrs = [
+        "self_contact_transaction/CrossingExecutor.h",
         "self_contact_transaction/FacetFilters.h",
         "self_contact_transaction/AcceptedFacetFiltering.h",
         "SelfContactTransaction.h",
@@ -543,6 +553,7 @@ cc_library(
     ],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [
+        ":represented_interval_crossing_gpu_values",
         ":self_contact_filter_batch_values",
         ":fixed_triangle_feature_discovery",
         ":represented_interval_crossing",
@@ -560,6 +571,7 @@ cc_library(
 cc_library(
     name = "self_contact_transaction",
     srcs = [
+        "self_contact_transaction/CrossingExecutor.cpp",
         "self_contact_transaction/FacetFilters.cpp",
         "self_contact_transaction/FacetFilterAccepted.cpp",
         "self_contact_transaction/Candidate.cpp",
@@ -571,6 +583,7 @@ cc_library(
         "self_contact_transaction/Transaction.cpp",
     ],
     hdrs = [
+        "self_contact_transaction/CrossingExecutor.h",
         "self_contact_transaction/FacetFilters.h",
         "self_contact_transaction/AcceptedFacetFiltering.h",
         "SelfContactTransaction.h",
@@ -592,6 +605,7 @@ cc_library(
     ],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [
+        ":represented_interval_crossing_gpu",
         ":self_contact_filter_batch",
         ":fixed_contact_facets",
         ":self_contact_force_assembly",

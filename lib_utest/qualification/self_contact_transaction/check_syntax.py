@@ -39,6 +39,11 @@ common = [
     "-fsyntax-only",
 ]
 sources = [
+    root / "lib_src/collision/self_contact_transaction/CrossingExecutor.cpp",
+    root / "lib_src/collision/self_contact_transaction/CrossingExecutorValues.cpp",
+    root / "lib_src/collision/represented_interval_crossing/native_device/Forecast.cpp",
+    root / "lib_utest/qualification/self_contact_transaction/CrossingExecutorValueTest.cpp",
+    root / "lib_utest/qualification/self_contact_transaction/CrossingForecastLink.cpp",
     root / "lib_src/collision/self_contact_transaction/FacetFilterValues.cpp",
     root / "lib_src/collision/self_contact_transaction/FacetFilters.cpp",
     root / "lib_src/collision/self_contact_transaction/FacetFilterAccepted.cpp",    probe,

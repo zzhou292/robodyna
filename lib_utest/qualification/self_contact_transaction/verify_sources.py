@@ -179,7 +179,7 @@ for token in ("SelfContactForceAssembly force",
               "FixedTriangleFeatureDiscovery candidate_discovery",
               "StreamingCandidateSource candidate_source",
               "SelfContactCurrentRegularity regularity",
-              "RepresentedIntervalCrossing crossing",
+              "self_contact_transaction::CrossingExecutor crossing",
               "ShellPhysicalScratchParticipation participation"):
     require(storage, token, storage_path)
 for token in (
@@ -344,7 +344,7 @@ for token in (
     "state.candidate_discovery.Discover",
     "state.candidate_discovery.DiscoverMasked",
     "BuildLocalFeatureTaskMasks(",
-    "sct::CertifyCrossingBatches",
+    "state.crossing.Certify(",
     "state.broadphase.Evaluate",
     "ValidateCandidatePublications",
     "FoldPolicyOutcomes(",
@@ -1201,3 +1201,7 @@ for entry in ("Report FacetFilters::Initialize", "Report FacetFilters::PrepareSc
 query = filter_adapter[filter_adapter.index("FacetPrismReply FacetFilters::PrismAt"):]
 assert query.index("ordinal >= chunk_count_") < query.index("CompatibleHostArithmetic()")
 assert "ObserveFailure(report); Discard()" in filter_accepted
+
+# Optional execution-owner architecture is checked in its own small module.
+import runpy
+runpy.run_path(str(Path(__file__).with_name("verify_crossing_executor_sources.py")))

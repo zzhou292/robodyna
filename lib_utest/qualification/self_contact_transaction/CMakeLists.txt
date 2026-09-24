@@ -8,10 +8,13 @@ get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
 
 include("${TL_ROOT}/lib_src/collision/FixedTriangleFeatureDiscovery.cmake")
 include("${TL_ROOT}/lib_src/collision/RepresentedIntervalCrossing.cmake")
+include("${TL_ROOT}/lib_src/collision/RepresentedIntervalCrossingGpuValues.cmake")
 include("${TL_ROOT}/lib_src/collision/SelfContactFilterCertificates.cmake")
 include("${TL_ROOT}/lib_src/collision/SelfContactFilterBatchValues.cmake")
 include("${TL_ROOT}/lib_src/collision/SelfContactCurrentRegularity.cmake")
 add_executable(self_contact_transaction_values
+  "${TL_ROOT}/lib_src/collision/self_contact_transaction/CrossingExecutorValues.cpp"
+  CrossingExecutorValueTest.cpp
   FacetFilterValueTest.cpp
   "${TL_ROOT}/lib_src/collision/self_contact_transaction/FacetFilterValues.cpp"
   DiagnosticsTest.cpp
@@ -51,6 +54,7 @@ target_include_directories(self_contact_transaction_values PRIVATE
   "${TL_ROOT}" "${CUDAToolkit_INCLUDE_DIRS}" "/usr/include/eigen3")
 target_link_libraries(self_contact_transaction_values PRIVATE
   tl_represented_interval_crossing
+  tl_represented_interval_crossing_gpu_values
   tl_fixed_triangle_feature_discovery
   tl_self_contact_filter_certificates tl_self_contact_filter_batch_values GTest::gtest_main)
 target_compile_features(self_contact_transaction_values PRIVATE cxx_std_17)
@@ -58,6 +62,19 @@ target_compile_options(self_contact_transaction_values PRIVATE
   -fno-fast-math -ffp-contract=off)
 add_test(NAME self_contact_transaction_values
   COMMAND self_contact_transaction_values)
+
+# Forecast-only executable: O0 prevents the compiler hiding accidental runtime
+# dependencies. It intentionally has neither CUDA language sources nor cudart.
+add_executable(self_contact_crossing_forecast_link CrossingForecastLink.cpp
+  "${TL_ROOT}/lib_src/collision/self_contact_transaction/CrossingExecutorValues.cpp")
+target_include_directories(self_contact_crossing_forecast_link PRIVATE
+  "${TL_ROOT}" "${CUDAToolkit_INCLUDE_DIRS}" "/usr/include/eigen3")
+target_compile_features(self_contact_crossing_forecast_link PRIVATE cxx_std_17)
+target_compile_options(self_contact_crossing_forecast_link PRIVATE -O0 -fno-fast-math -ffp-contract=off)
+target_link_libraries(self_contact_crossing_forecast_link PRIVATE tl_represented_interval_crossing_gpu_values)
+add_test(NAME self_contact_crossing_forecast_link COMMAND self_contact_crossing_forecast_link)
+set_tests_properties(self_contact_crossing_forecast_link PROPERTIES
+  RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30 LABELS "host;forecast;no-cuda-execution")
 
 add_executable(self_contact_transaction_medium_coupon
   AcceptedEventTest.cpp
@@ -113,6 +130,8 @@ if(SELF_CONTACT_TRANSACTION_CUDA)
   include("${TL_ROOT}/lib_src/collision/SelfContactTransaction.cmake")
   add_executable(self_contact_transaction_cuda
     CudaTest.cu
+    CrossingExecutorCudaCases.h
+    NativeCrossingTransactionCudaCases.h
     FacetFilterCudaProbe.cpp
     FacetFilterCudaProbe.h
     FacetFilterAdapterCudaCases.h

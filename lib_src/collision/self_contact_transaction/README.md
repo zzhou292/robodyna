@@ -396,3 +396,41 @@ construction. The complete report assertion helper is shared with existing CUDA
 failure-capture tests rather than copied. Existing owning CUDA transaction gates
 remain required. This slice is source-only and has no measured vehicle speedup;
 the old 96s/updated74s policy stage also includes other work.
+
+
+### Optional native CUDA execution owner
+
+`CrossingExecutor` selects one native execution owner during startup. The default
+uses the original CPU owner; an explicit CUDA option initializes the existing GPU
+facade and its single CPU fallback pool. It does not initialize a second CPU pool.
+Candidate orchestration retains the original compound batch validation, canonical
+work fold, publication slices, and complete-attempt physical publication. The two
+candidate entry points share the same adapter. This is execution configuration,
+not a material, contact, clock, or physical state option.
+
+`CrossingExecutorValues.cpp` maps the same limits for forecast and startup. Native
+per-pair/depth/slice budgets are unchanged. Optional worker/cohort capacities size
+only the retained CUDA workspace. The default remains 128 workers and zero
+lookahead; explicit cohorts are bounded at 4096. The host forecast counts the GPU
+facade's one CPU pool and complete staging; it subtracts only the already embedded
+GPU handle. `RepresentedIntervalCrossingGpuValues.cmake` provides CXX-only forecast
+linkage, tested at O0 without a CUDA runtime link or numerical execution.
+
+Only actual input-derived fixed-integer domains run on the GPU; remaining rows
+use the unchanged CPU kernel before the native canonical fold. A typed unresolved
+arithmetic outcome keeps its native work/reason; CUDA failure poisons the selected
+owner without a CPU retry. A larger launch can fail before a logical slice has
+published. Its cohort bounds and known failing ordinal are execution diagnostics,
+not a physical pair accusation. Earlier complete publications remain intact;
+transaction physical publication remains all-or-nothing.
+
+Optional counters distinguish admitted/prefetched device jobs, consumed device
+rows, host fallback rows, launches, scene uploads, and numerical cohorts. Consumed
+means native staging, not accepted physical publication. CPU-default execution
+produces no device diagnostic call. Counters never enter physical work budgets.
+
+This integration is source-only and unqualified at authoring. Owning gates cover
+forecast caps and O0 linkage, direct 4097-row mixed CPU/GPU routing and failure
+publication, physical force/receipt/policy/discard/commit equality, and paired
+optional backend configurations. Standalone kernel/cohort qualification and
+synthetic throughput are not evidence of a vehicle routing rate or speedup.

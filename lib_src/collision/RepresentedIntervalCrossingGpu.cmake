@@ -1,5 +1,5 @@
 include_guard(GLOBAL)
-include("${CMAKE_CURRENT_LIST_DIR}/RepresentedIntervalCrossing.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/RepresentedIntervalCrossingGpuValues.cmake")
 get_property(_native_gpu_languages GLOBAL PROPERTY ENABLED_LANGUAGES)
 if(NOT "CUDA" IN_LIST _native_gpu_languages)
   enable_language(CUDA)
@@ -14,13 +14,12 @@ add_library(tl_represented_interval_crossing_gpu STATIC
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native_device/Workspace.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native_device/Cohort.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native_device/Transport.cpp"
-  "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native_device/Layout.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native_device/Kernels.cu"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native_device/Workspace.h"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native_device/KernelTypes.h"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native_device/Resources.h")
 target_link_libraries(tl_represented_interval_crossing_gpu
-  PUBLIC tl_represented_interval_crossing CUDA::cudart)
+  PUBLIC tl_represented_interval_crossing_gpu_values CUDA::cudart)
 target_compile_features(tl_represented_interval_crossing_gpu PUBLIC cxx_std_17)
 set_target_properties(tl_represented_interval_crossing_gpu PROPERTIES
   CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)

@@ -49,6 +49,7 @@ RepresentedIntervalGpuPreflight MakeLayout(RepresentedIntervalGpuLimits limits,
   auto& forecast = next.forecast;
   forecast.native = cpu.forecast;
   forecast.device_bytes = device.bytes();
+  forecast.device_allocations = 1;
   forecast.device_scratch_bytes = next.exact_scratch.bytes;
   forecast.device_dfs_bytes = next.dfs.bytes;
   forecast.device_workers = limits.device_workers;

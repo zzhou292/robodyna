@@ -1805,3 +1805,6 @@ TEST(SelfContactTransactionCuda,
 
 #include "FacetFilterAdapterCudaCases.h"
 #include "FacetFilterTransactionCudaCases.h"
+
+#include "CrossingExecutorCudaCases.h"
+#include "NativeCrossingTransactionCudaCases.h"

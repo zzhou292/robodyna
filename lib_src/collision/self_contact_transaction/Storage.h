@@ -3,6 +3,7 @@
 
 #include "../SelfContactTransaction.h"
 #include "FacetFilters.h"
+#include "CrossingExecutor.h"
 #include "../SelfContactFilterCertificates.h"
 #include "../SelfContactPhysicalActivity.h"
 #include "../fixed_triangle_features/Geometry.h"
@@ -915,7 +916,7 @@ struct SelfContactTransaction::Impl {
   FixedTriangleFeatureDiscovery accepted_discovery;
   FixedTriangleFeatureDiscovery candidate_discovery;
   SelfContactCurrentRegularity regularity;
-  RepresentedIntervalCrossing crossing;
+  self_contact_transaction::CrossingExecutor crossing;
   SelfContactForceAssembly force;
   tl::fea::ShellPhysicalScratchParticipation participation;
   SelfContactPreparedActivityReceipt prepared_activity;

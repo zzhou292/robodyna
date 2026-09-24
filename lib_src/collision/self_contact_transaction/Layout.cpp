@@ -165,11 +165,12 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
     return result;
   }
   const auto crossing =
-      RepresentedIntervalCrossing::Preflight(limits.crossing);
+      sct::CrossingExecutor::Preflight(config, limits);
   if (crossing.report.status != RepresentedIntervalStatus::Ok) {
     auto result = Failure(S::CrossingFailure,
                           crossing.report.message);
     result.report.crossing_status = crossing.report.status;
+    result.report.crossing_device_status = crossing.device_status;
     return result;
   }
 
@@ -219,7 +220,7 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
   forecast.accepted_discovery = accepted_discovery.forecast;
   forecast.candidate_discovery = candidate_discovery.forecast;
   forecast.regularity = regularity.forecast;
-  forecast.crossing = crossing.forecast;
+  forecast.crossing = crossing.native;
   forecast.participation = participation;
   forecast.surface_parent_map_capacity = surface_parents;
   forecast.parent_facet_offset_count = parents + 1;
@@ -313,6 +314,8 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
       !Add(1, &forecast.device_allocations) ||
       !Add(facet_filters.device_bytes, &forecast.device_bytes) ||
       !Add(facet_filters.device_allocations, &forecast.device_allocations) ||
+      !Add(crossing.device_bytes, &forecast.device_bytes) ||
+      !Add(crossing.device_allocations, &forecast.device_allocations) ||
       forecast.device_bytes > limits.max_device_bytes)
     return Failure(S::ResourceLimit,
         "Transaction device payload exceeds its complete cap");
@@ -340,8 +343,7 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
           broadphase.forecast.owned_host_bytes ||
       regularity.forecast.startup_payload_bytes <
           regularity.forecast.owned_payload_bytes ||
-      crossing.forecast.startup_host_bytes <
-          crossing.forecast.owned_host_bytes)
+      crossing.startup_host_bytes < crossing.owned_host_bytes)
     return Failure(S::ResourceLimit,
         "A component forecast is smaller than its retained handle");
   forecast.owned_host_bytes =
@@ -364,7 +366,7 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
       !Add(regularity.forecast.owned_payload_bytes -
                sizeof(SelfContactCurrentRegularity),
            &forecast.owned_host_bytes) ||
-      !Add(crossing.forecast.owned_host_bytes,
+      !Add(crossing.owned_host_bytes,
            &forecast.owned_host_bytes) ||
       !Add(participation.publication_host_bytes,
            &forecast.owned_host_bytes) ||
@@ -403,8 +405,7 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
       !Add(candidate_discovery.forecast.startup_host_bytes -
                candidate_discovery.forecast.owned_host_bytes,
            &forecast.startup_host_bytes) ||
-      !Add(crossing.forecast.startup_host_bytes -
-               crossing.forecast.owned_host_bytes,
+      !Add(crossing.startup_host_bytes - crossing.owned_host_bytes,
            &forecast.startup_host_bytes) ||
       !Add(startup_scratch, &forecast.startup_host_bytes) ||
       forecast.startup_host_bytes > limits.max_startup_host_bytes)
