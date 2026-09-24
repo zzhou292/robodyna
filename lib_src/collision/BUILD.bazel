@@ -83,6 +83,7 @@ cc_library(
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     linkopts = ["-pthread"],
     deps = [
+        "//lib_src/math:fixed_integer",
         ":fixed_contact_facets",
         ":surface_contact_primitives",
         "//lib_src/collision/weighted_surface:mapping",

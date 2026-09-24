@@ -10,3 +10,6 @@ cc_library(
     hdrs = ["NativeSymmetricEigen3.h"] + glob(["native_symmetric_eigen3/*.h"]),
     deps = [":fixed3", ":quaternion"],
 )
+
+cc_library(name = "fixed_integer", hdrs = ["FixedInteger.h"])
+filegroup(name = "fixed_integer_sources", srcs = ["FixedInteger.h", "fixed_integer/ExtractionManifest.json"])
