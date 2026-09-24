@@ -86,6 +86,7 @@ cc_library(
 filegroup(
     name = "represented_interval_crossing_source_proof",
     srcs = [
+        "represented_interval_crossing/RootIntervalFilter.cpp",
         "BUILD.bazel",
         "RepresentedIntervalCrossing.cmake",
         "RepresentedIntervalCrossing.cpp",
@@ -95,13 +96,15 @@ filegroup(
         "represented_interval_crossing/NormalReuseQualification.h",
         "represented_interval_crossing/ExactProjectionDomain.h",
         "represented_interval_crossing/RelativeSeparationQualification.h",
+        "represented_interval_crossing/RootIntervalFilter.h",
+        "represented_interval_crossing/RootIntervalQualification.h",
         "represented_interval_crossing/BatchExecution.h",
     ],
 )
 
 cc_library(
     name = "represented_interval_crossing",
-    srcs = ["RepresentedIntervalCrossing.cpp"],
+    srcs = ["RepresentedIntervalCrossing.cpp", "represented_interval_crossing/RootIntervalFilter.cpp"],
     hdrs = [
         "RepresentedIntervalCrossing.h",
         "RepresentedIntervalCrossingTypes.h",
@@ -109,11 +112,13 @@ cc_library(
         "represented_interval_crossing/NormalReuseQualification.h",
         "represented_interval_crossing/ExactProjectionDomain.h",
         "represented_interval_crossing/RelativeSeparationQualification.h",
+        "represented_interval_crossing/RootIntervalFilter.h",
+        "represented_interval_crossing/RootIntervalQualification.h",
         "represented_interval_crossing/BatchExecution.h",
     ],
-    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off", "-frounding-math"],
     linkopts = ["-pthread"],
-    deps = [":fixed_contact_facets"],
+    deps = [":fixed_contact_facets", ":surface_material_measure"],
 )
 
 filegroup(

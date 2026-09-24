@@ -15,7 +15,7 @@ bazel = (collision / "BUILD.bazel").read_text()
 test_cmake = (here / "CMakeLists.txt").read_text()
 test_bazel = (here / "BUILD.bazel").read_text()
 test_sources = (
-    "BatchRosterTest.cpp", "NormalReuseTest.cpp", "RelativeSeparationTest.cpp", "ResultAssertions.h", "GeometryTest.cpp", "InvarianceTest.cpp", "FailureTest.cpp",
+    "BatchRosterTest.cpp", "NormalReuseTest.cpp", "RelativeSeparationTest.cpp", "RootIntervalTest.cpp", "ResultAssertions.h", "GeometryTest.cpp", "InvarianceTest.cpp", "FailureTest.cpp",
     "IdentityTest.cpp", "DeepTest.cpp", "OracleTest.cpp",
     "ParallelTest.cpp", "TranslationProofTest.cpp", "Oracle.cpp",
 )
@@ -198,7 +198,7 @@ for token in ("ExactVec3 normal_a[3]", "ExactVec3 normal_b[3]",
               "bool ready_a[3]", "bool ready_b[3]", "scratch->BeginCell()",
               "normal = Normal(second ? b[sample] : a[sample], counters)",
               "ready = true", "template <NormalReuse reuse = NormalReuse::Memoize,",
-              "CertifyPair<NormalReuse::Recompute>", "sizeof(ExactScratch)"):
+              "CertifyPair<NormalReuse::Recompute, SeparationProof::RelativeFaces, RootFilter::Disabled>", "sizeof(ExactScratch)"):
     if token not in normal_implementation:
         raise RuntimeError(f"Missing lazy normal cache contract: {token}")
 normal_cell = normal_implementation[normal_implementation.index("CellEvaluation EvaluateCell("):
@@ -224,9 +224,25 @@ assert relative_cell.index("SweptBoxesSeparated(scratch->a, scratch->b)") < rela
 assert relative_cell.index("!domain->eligible()") < relative_cell.index("RelativeCoordinatesSeparated(*scratch, anchor)")
 assert "scratch->NormalAt(side != 0, 0, counters)" in relative_cell
 
+# The optional fast proof is wholly native, guarded and otherwise transparent.
+root_filter = (collision / "represented_interval_crossing/RootIntervalFilter.cpp").read_text()
+for token in ("SurfaceMaterialBounds.h", "material_detail::Cross", "q4_bounds::Scale",
+              "first.upper<second.lower || second.upper<first.lower",
+              "std::fegetround()==FE_TONEAREST", "_mm_getcsr()", "FLT_EVAL_METHOD == 0",
+              "std::feholdexcept", "std::fesetenv", "errno=previous_errno"):
+    assert token in root_filter, token
+for token in ("RootFilter root_filter = RootFilter::Enabled", "filter_domain.eligible()",
+              "ProveRootIntervalSeparation(CanonicalRootInput(a,b))", "CompareRootIntervalFilter"):
+    assert token in source, token
+assert pair_body.index("SharedSourceVertex(a,b)") < pair_body.index("filter_domain.eligible()")
+assert pair_body.index("filter_domain.eligible()") < pair_body.index("CommonTranslation(a, b)")
+for wiring in (cmake,bazel):
+    assert "represented_interval_crossing/RootIntervalFilter.cpp" in wiring
+    assert "-frounding-math" in wiring
+
 print(json.dumps({
     "status": "passed",
-    "production_translation_units": 1,
+    "production_translation_units": 2,
     "host_functions": len(found),
     "batch_roster_functions": len(batch_found),
     "motion": "explicit represented LinearNodalV1 only",
