@@ -21,7 +21,7 @@ inline c::SelfContactTransactionConfig Config(bool gpu) {
   result.native_crossing_numeric_cohort_pairs = 4096;
   return result;
 }
-inline c::SelfContactTransactionLimits Limits(const native::Roster& source,
+inline c::SelfContactTransactionLimits ExecutorLimits(const native::Roster& source,
     std::size_t slice) {
   c::SelfContactTransactionLimits result;
   result.crossing = native::Limits(source, slice);
@@ -42,7 +42,7 @@ inline void Same(const sct::CrossingBatchReport& expected,
 TEST(SelfContactCrossingExecutorCuda, SelectedOwnerKeepsAll4097RowsAnd256PublicationSlices) {
   native_gpu_test::Streams streams;
   const auto source = fixture::Roster(4097);
-  const auto limits = Limits(source, 256);
+  const auto limits = ExecutorLimits(source, 256);
   auto oracle = native::Owner(limits.crossing);
   std::vector<c::RepresentedIntervalResult> expected(source.pairs.size());
   const auto reference = fixture::CertifyCohort(oracle, source, 256, expected);
@@ -77,7 +77,7 @@ TEST(SelfContactCrossingExecutorCuda, LateNativeWorkFailurePreservesLastSliceAnd
   native_gpu_test::Streams streams;
   for (bool gpu : {false, true}) {
     auto source = fixture::Roster(6);
-    auto limits = Limits(source, 1);
+    auto limits = ExecutorLimits(source, 1);
     limits.crossing.max_total_work = 1;
     auto oracle = native::Owner(limits.crossing);
     sct::CrossingExecutor owner;
@@ -110,7 +110,7 @@ TEST(SelfContactCrossingExecutorCuda, LateNativeWorkFailurePreservesLastSliceAnd
 TEST(SelfContactCrossingExecutorCuda, FailedUnusedSourceValidationCannotReusePreviousGpuScene) {
   native_gpu_test::Streams streams;
   auto source = fixture::Roster(5);
-  const auto limits = Limits(source, 2);
+  const auto limits = ExecutorLimits(source, 2);
   auto oracle = native::Owner(limits.crossing);
   sct::CrossingExecutor owner;
   ASSERT_EQ(owner.Initialize(Config(true), limits, streams.first).native.status, S::Ok);
@@ -136,7 +136,7 @@ TEST(SelfContactCrossingExecutorCuda, FailedUnusedSourceValidationCannotReusePre
 
 TEST(SelfContactCrossingExecutorCuda, InvalidGpuStartupIsTypedAndCannotSilentlyUseCpu) {
   const auto source = fixture::Roster(1);
-  const auto limits = Limits(source, 1);
+  const auto limits = ExecutorLimits(source, 1);
   sct::CrossingExecutor owner;
   const auto failed = owner.Initialize(Config(true), limits, nullptr);
   EXPECT_EQ(failed.native.status, S::InvalidInput);
@@ -154,7 +154,7 @@ TEST(SelfContactCrossingExecutorCuda, InvalidGpuStartupIsTypedAndCannotSilentlyU
 TEST(SelfContactCrossingExecutorCuda, CudaCopyFailureRetainsPublicationAndPoisonsSelectedOwner) {
   native_gpu_test::Streams streams;
   const auto source = fixture::Roster(5);
-  const auto limits = Limits(source, 1);
+  const auto limits = ExecutorLimits(source, 1);
   sct::CrossingExecutor owner;
   ASSERT_EQ(owner.Initialize(Config(true), limits, streams.first).native.status, S::Ok);
   auto prefix = source;
