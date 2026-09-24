@@ -98,16 +98,35 @@ TEST(SelfContactAffineCone, NewProofResolvesLocalGeometryAfterBothOriginalAltern
   sct::test::ExpectResult(actual,compared.current.report);
   const auto contact=sct::CertifyQuadraticLocalContact(geometry.first,first_next,ZeroQuadratic(),.001,
       geometry.second,second_next,ZeroQuadratic(),.001,1,255,8);
-  EXPECT_EQ(contact.status,sct::NonlinearSeparationStatus::CertifiedLocalIntersection);
+  // The large dilation is topologically local, but the independent conservative
+  // residual/thickness screen cannot certify its unmasked features. A geometry
+  // certificate must never override that separate physical contact obligation.
+  EXPECT_EQ(contact.status,sct::NonlinearSeparationStatus::PotentialContact);
   const auto policy=sct::CertifyQuadraticFacetPolicyCoverage(geometry.first,first_next,ZeroQuadratic(),.001,
       geometry.second,second_next,ZeroQuadratic(),.001,1,nullptr,0,nullptr,0,255,8);
-  sct::test::ExpectResult(policy,contact);
+  EXPECT_EQ(policy.status,sct::NonlinearSeparationStatus::MissingAcceptedOwner);
   // A known rational halfspace is an independent oracle for the fixture only.
   const c::Vec3 axis{2,-1,0};
   for(const auto* triangles:std::array<const c::CurrentFixedTriangle*,2>{&geometry.first,&first_next})for(unsigned v=1;v<3;++v)
     EXPECT_GT(cone_direction_test::ArmDot(triangles->vertices[v],triangles->vertices[0],axis),0);
   for(const auto* triangles:std::array<const c::CurrentFixedTriangle*,2>{&geometry.second,&second_next})for(unsigned v=1;v<3;++v)
     EXPECT_LT(cone_direction_test::ArmDot(triangles->vertices[v],triangles->vertices[0],axis),0);
+}
+
+TEST(SelfContactAffineCone, StaticGeometryPassesBothTopologyAndPositiveThicknessObligations) {
+  const AffineConeGeometry geometry;
+  // Static endpoints have no residual motion bound. Keep the same source
+  // geometry and positive shell half-thickness as the large-motion negative.
+  const auto contact = sct::CertifyQuadraticLocalContact(
+      geometry.first, geometry.first, ZeroQuadratic(), .001,
+      geometry.second, geometry.second, ZeroQuadratic(), .001, 1, 255, 8);
+  ASSERT_EQ(contact.status, sct::NonlinearSeparationStatus::CertifiedLocalIntersection);
+  EXPECT_EQ(contact.work, 1u);
+  const auto policy = sct::CertifyQuadraticFacetPolicyCoverage(
+      geometry.first, geometry.first, ZeroQuadratic(), .001,
+      geometry.second, geometry.second, ZeroQuadratic(), .001, 1,
+      nullptr, 0, nullptr, 0, 255, 8);
+  sct::test::ExpectResult(policy, contact);
 }
 
 TEST(SelfContactAffineCone, ExtremeRoundedDirectionsRemainBoundedAndInconclusive) {
