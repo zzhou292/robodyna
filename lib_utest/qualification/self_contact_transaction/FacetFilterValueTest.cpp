@@ -8,14 +8,6 @@ namespace sct = c::self_contact_transaction;
 namespace f = c::self_contact_filters;
 TEST(FacetFilterIntegrationValues, OptionalBackendIsDisabledByDefault) {
   EXPECT_FALSE(c::SelfContactTransactionConfig{}.enable_cuda_facet_filters);
-  bool valid=false; c::SelfContactFacetPrismSeparationAxis axis{};
-  f::Report report; unsigned calls=0;
-  const bool separated=sct::OptionalFacetPrism(nullptr, 0, [&] {
-    ++calls;valid=true;axis=c::SelfContactFacetPrismSeparationAxis::VertexEdge;return true;
-  }, &axis, &valid, &report);
-  EXPECT_TRUE(separated && valid);EXPECT_EQ(calls,1u);
-  EXPECT_EQ(axis,c::SelfContactFacetPrismSeparationAxis::VertexEdge);
-  EXPECT_EQ(report.status,f::Status::Ok);
 }
 TEST(FacetFilterIntegrationValues, ForecastIncludesOneCompactSceneAndOneBoundedBatch) {
   constexpr std::size_t facets=17,pairs=5,cap=1u<<20;

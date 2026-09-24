@@ -52,6 +52,25 @@ struct NumericFixture {
   }
 };
 }
+TEST(SelfContactFacetFilterAdapterCuda, NullBackendPreservesScalarDispatch) {
+  using namespace facet_filter_adapter_test;
+  // This runtime template references PrismAt even for a null pointer in an
+  // unoptimized build, so qualify it in the adapter's owning executable.
+  bool valid = false;
+  c::SelfContactFacetPrismSeparationAxis axis{};
+  filters::Report report;
+  unsigned calls = 0;
+  const bool separated = sct::OptionalFacetPrism(nullptr, 0, [&] {
+    ++calls;
+    valid = true;
+    axis = c::SelfContactFacetPrismSeparationAxis::VertexEdge;
+    return true;
+  }, &axis, &valid, &report);
+  EXPECT_TRUE(separated && valid);
+  EXPECT_EQ(calls, 1u);
+  EXPECT_EQ(axis, c::SelfContactFacetPrismSeparationAxis::VertexEdge);
+  EXPECT_EQ(report.status, filters::Status::Ok);
+}
 TEST(SelfContactFacetFilterAdapterCuda, AcceptedNumericErrorPrecedesLaterInvalidOrdinalAndRetry) {
   using namespace facet_filter_adapter_test;
   NumericFixture f;ASSERT_TRUE(f.Geometry());ASSERT_TRUE(f.Initialize());
