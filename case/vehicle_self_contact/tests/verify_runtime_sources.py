@@ -34,6 +34,47 @@ def definition(text: str, signature: str) -> tuple[str, str]:
     return text[start:brace], text[brace + 1:end - 1]
 
 
+
+def candidate_publication_contract(values: str) -> str:
+    """Follow both checked lookup wrappers into their single policy body."""
+    indexed = "ValidateCandidatePublicationsImpl(" in values
+    if indexed:
+        _, body = definition(values,
+            "static SelfContactTransactionReport ValidateCandidatePublicationsImpl(")
+        raw = "SelfContactTransactionReport ValidateCandidatePublications(const CandidateValidationInput& input) noexcept"
+        lookup = "SelfContactTransactionReport ValidateCandidatePublications(const CandidateValidationInput& input,\n    const SortedIntersections& index) noexcept"
+        for signature, argument in ((raw, "nullptr"), (lookup, "&index")):
+            _, wrapper = definition(values, signature)
+            require("".join(wrapper.split()) ==
+                    "returnValidateCandidatePublicationsImpl(input," + argument + ");",
+                    "candidate publication wrapper must delegate exactly once without bypass")
+        _, local = definition(values, "bool LocallyExcluded(")
+        require("index ? index->Find(values, key) : FindPairIntersection(values, key)" in local and
+                "return value && !RequiresIntersectionAdmission(*value);" in local,
+                "indexed local lookup must retain exact raw fallback and admission policy")
+        local_call = "if (LocallyExcluded(input.intersections, crossing.key, index))"
+    else:
+        _, body = definition(values,
+            "SelfContactTransactionReport ValidateCandidatePublications(")
+        local_call = "if (LocallyExcluded(input.intersections, crossing.key))"
+    _, local_publication = definition(body, local_call)
+    ordered(local_publication, [
+        "if (crossing.geometry !=",
+        "RepresentedIntersectionGeometry::CertifiedLocalTopology)",
+        "return Failure(SelfContactTransactionStatus::CandidateRejected",
+        "Endpoint-local intersection lacks continuous topology proof",
+        "SelfContactCandidateDisposition::ExcludedLocalIntersection"],
+        "local publication rejects an endpoint-only intersection witness")
+    ordered(body, [
+        "input.crossings.count != input.pair_count",
+        "Compare(input.crossings.data[pair].key,",
+        "input.canonical_pairs[pair]) != 0)",
+        "SelfContactTransactionStatus::IdentityMismatch",
+        "SelfContactTransactionStatus::UnresolvedCandidate"],
+        "candidate publication retains complete exact source roster and unresolved rejection")
+    return body
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("app_root", type=Path)
@@ -574,21 +615,21 @@ def main() -> None:
         "RequiresIntersectionAdmission(*intersection)",
         "result->geometry = RepresentedIntersectionGeometry::CertifiedLocalTopology"],
         "translated local normalization requires the native invariant-path proof")
-    local_start = tl_values.find(
-        "if (LocallyExcluded(input.intersections, crossing.key)) {")
-    local_publication = tl_values[
-        local_start:tl_values.find("bool edge_edge = false;", local_start)]
-    ordered(local_publication, [
-        "if (crossing.geometry !=",
-        "RepresentedIntersectionGeometry::CertifiedLocalTopology)",
-        "return Failure(SelfContactTransactionStatus::CandidateRejected",
-        "Endpoint-local intersection lacks continuous topology proof",
-        "SelfContactCandidateDisposition::ExcludedLocalIntersection"],
-        "local publication rejects an endpoint-only intersection witness")
+    publication = candidate_publication_contract(tl_values)
+    if "ValidateCandidatePublicationsImpl(" in tl_values:
+        require("ValidateCandidatePublicationsImpl" not in
+                (args.tl_root / "lib_src/collision/self_contact_transaction/Storage.h").read_text(),
+                "shared candidate publication implementation remains private")
+        ordered(tl_candidate, [
+            "ValidatePreparedIntersections(",
+            "const sct::SortedIntersections sorted_intersections(state.candidate_discovery)",
+            "sct::ValidateCandidatePublications({",
+            "&validated_count}, sorted_intersections)"],
+            "indexed candidate publication uses its actual retained discovery cohort")
     require("raw_crossings.count != crossing_pair_count" in tl_candidate and
             "S::UnsupportedMotion" in tl_candidate and
             "RepresentedIntervalReason::UnsupportedMotion" in tl_candidate and
-            "input.crossings.count != input.pair_count" in tl_values and
+            "input.crossings.count != input.pair_count" in publication and
             "return Failure(SelfContactTransactionStatus::UnresolvedCandidate" in tl_values,
             "TL must retain complete pair accounting and reject uncertified motion")
     require("first.certified_affine && second.certified_affine" in tl_arena and

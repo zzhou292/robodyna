@@ -39,3 +39,13 @@ the additional search. All three Bernstein arm controls propose directions;
 bounds. Neither public headers nor production callers expose private selection or
 comparison entry points. Historical direct, cone-first-only and affine-only source
 layouts remain supported under their original obligations.
+
+The candidate-publication check follows either the original direct definition or
+both raw/indexed wrappers into the same private `ValidateCandidatePublicationsImpl`.
+Both wrappers must be exact single delegates. The indexed local lookup retains
+its raw fallback and `RequiresIntersectionAdmission` decision; canonical pair
+accounting, source-key identity and unresolved rejection precede publication.
+The local exclusion branch must still reject every endpoint-only witness before
+publishing `ExcludedLocalIntersection`. The lexical index comes from the actual
+candidate discovery cohort after prepared-intersection validation. No numerical
+policy, tolerance, authority or old recovery source is changed by this adaptation.
