@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <limits>
+#include <sstream>
 #include <type_traits>
 #include <vector>
 
@@ -68,6 +69,13 @@ vehicle_dynamics::StepObservation SelfStep(std::uint64_t epoch) {
     policy.represented_by_accepted_vf = 6;
     policy.represented_by_accepted_ee = 2;
     policy.digest = 5411954021770061371ull;
+    policy.exact_crossing_pairs = 9 + epoch;
+    policy.exact_crossing_work = 99 + epoch;
+    policy.motion_certified_linear_separated = 8 - epoch;
+    policy.linear_policy_coverage_pairs = 4 + epoch;
+    policy.linear_policy_coverage_work = 199 + epoch;
+    policy.nonlinear_subdivision_pairs = 2 + epoch;
+    policy.nonlinear_subdivision_work = 299 + epoch;
     return step;
 }
 
@@ -121,6 +129,40 @@ TEST(VehicleRunSelfContact, TwoCommittedIntervalsKeepBaseForceAndCandidatePolicy
     EXPECT_FALSE(document.HasMember("total_energy_j"));
     EXPECT_FALSE(document.HasMember("contact_work_j"));
     RecordProperty("self_contact_totals_bytes", sizeof(SelfContactTotals));
+}
+
+TEST(VehicleRunSelfContact, NativeWorkCountersDescribeOnlyLastPublishedInterval) {
+    SelfContactTotals totals;
+    std::ostringstream initial_progress;
+    detail::WriteSelfContactWorkProgress(initial_progress, totals);
+    EXPECT_TRUE(initial_progress.str().empty());
+    const auto initial = detail::SelfContactDocument(totals);
+    for (const auto* name : {"last_exact_crossing_pairs", "last_exact_crossing_work",
+             "last_motion_certified_linear_separated", "last_linear_policy_coverage_pairs",
+             "last_linear_policy_coverage_work", "last_nonlinear_subdivision_pairs",
+             "last_nonlinear_subdivision_work"})
+        EXPECT_FALSE(initial.HasMember(name));
+    ObserveAcceptedSelfContact(totals, SelfStep(1), SelfStamp(1));
+    EXPECT_EQ(totals.last_exact_crossing_work, 100u);
+    EXPECT_EQ(totals.last_linear_policy_coverage_work, 200u);
+    EXPECT_EQ(totals.last_nonlinear_subdivision_work, 300u);
+    ObserveAcceptedSelfContact(totals, SelfStep(2), SelfStamp(2));
+    const auto document = detail::SelfContactDocument(totals);
+    EXPECT_EQ(document["last_exact_crossing_pairs"].GetUint64(), 11u);
+    EXPECT_EQ(document["last_exact_crossing_work"].GetUint64(), 101u);
+    EXPECT_EQ(document["last_motion_certified_linear_separated"].GetUint64(), 6u);
+    EXPECT_EQ(document["last_linear_policy_coverage_pairs"].GetUint64(), 6u);
+    EXPECT_EQ(document["last_linear_policy_coverage_work"].GetUint64(), 201u);
+    EXPECT_EQ(document["last_nonlinear_subdivision_pairs"].GetUint64(), 4u);
+    EXPECT_EQ(document["last_nonlinear_subdivision_work"].GetUint64(), 301u);
+    std::ostringstream progress;
+    detail::WriteSelfContactWorkProgress(progress, totals);
+    EXPECT_EQ(progress.str(),
+        " self_contact_exact_crossing_pairs=11 self_contact_exact_crossing_work=101"
+        " self_contact_motion_certified_linear_separated=6"
+        " self_contact_linear_policy_coverage_pairs=6 self_contact_linear_policy_coverage_work=201"
+        " self_contact_nonlinear_subdivision_pairs=4 self_contact_nonlinear_subdivision_work=301");
+    EXPECT_LE(sizeof(SelfContactTotals), 4096u);
 }
 
 TEST(VehicleRunSelfContact, StaleOwnerPhaseAttemptAndIncompletePolicyPreserveThenRetry) {

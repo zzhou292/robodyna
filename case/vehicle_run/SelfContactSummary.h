@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SelfContactTotals.h"
+#include <iosfwd>
 #include "case/vehicle_dynamics/VehiclePhysicalDynamics.h"
 
 namespace crash::cases::vehicle_run {
@@ -11,5 +12,10 @@ namespace crash::cases::vehicle_run {
 // preserves the prior totals, including when a late scalar is invalid.
 void ObserveAcceptedSelfContact(SelfContactTotals&,
     const vehicle_dynamics::StepObservation&, const tl::fea::NodalStamp& accepted);
+
+namespace detail {
+// Fixed seven scalar fields, emitted only when an interval has been published.
+void WriteSelfContactWorkProgress(std::ostream&, const SelfContactTotals&);
+}
 
 }  // namespace crash::cases::vehicle_run

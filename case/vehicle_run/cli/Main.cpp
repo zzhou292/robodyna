@@ -2,6 +2,7 @@
 #include "../Run.h"
 #include "../diagnostics/FailureRun.h"
 #include "../SampledShellPlasticity.h"
+#include "../SelfContactSummary.h"
 #include "../source/OriginalYaris.h"
 #include <iomanip>
 #include <iostream>
@@ -74,6 +75,7 @@ int main(int argc,char** argv) {
                 std::cout<<" self_contact_events="<<value.self_contact.last_event_count
                          <<" self_contact_policy_outcomes="<<value.self_contact.last_policy_outcomes
                          <<" self_contact_policy_digest="<<value.self_contact.last_policy_digest;
+            run::detail::WriteSelfContactWorkProgress(std::cout, value.self_contact);
             run::detail::WriteSampledShellPlasticityProgress(std::cout, value.sampled_shell_plasticity);
             std::cout << std::endl;
         };
@@ -88,6 +90,7 @@ int main(int argc,char** argv) {
         std::cout<<"finished session_initialized="<<result.session_initialized<<" accepted="<<result.loop.progress.accepted.epoch
                  <<" actual_time_s="<<result.loop.progress.accepted.time_s
                  <<" valid_prefix="<<result.loop.valid_manifest<<" reason="<<result.loop.reason;
+        run::detail::WriteSelfContactWorkProgress(std::cout, result.loop.progress.self_contact);
         run::detail::WriteSampledShellPlasticityProgress(std::cout, result.loop.progress.sampled_shell_plasticity);
         std::cout << std::endl;
         if(result.viewer_input) std::cout<<"viewer_descriptor="<<(options.output/result.viewer_input->file)

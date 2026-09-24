@@ -35,6 +35,13 @@ output::Document SelfContactDocument(const SelfContactTotals& totals) {
     Integer(document, "last_candidate_facet_pairs", totals.last_candidate_facet_pairs);
     Integer(document, "last_policy_outcomes", totals.last_policy_outcomes);
     Integer(document, "last_policy_digest", totals.last_policy_digest);
+    Integer(document, "last_exact_crossing_pairs", totals.last_exact_crossing_pairs);
+    Integer(document, "last_exact_crossing_work", totals.last_exact_crossing_work);
+    Integer(document, "last_motion_certified_linear_separated", totals.last_motion_certified_linear_separated);
+    Integer(document, "last_linear_policy_coverage_pairs", totals.last_linear_policy_coverage_pairs);
+    Integer(document, "last_linear_policy_coverage_work", totals.last_linear_policy_coverage_work);
+    Integer(document, "last_nonlinear_subdivision_pairs", totals.last_nonlinear_subdivision_pairs);
+    Integer(document, "last_nonlinear_subdivision_work", totals.last_nonlinear_subdivision_work);
     Integer(document, "last_certified_separated", totals.last_certified_separated);
     Integer(document, "last_same_rigid_exclusions", totals.last_same_rigid_exclusions);
     Integer(document, "last_local_intersections", totals.last_local_intersections);

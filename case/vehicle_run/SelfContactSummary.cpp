@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <initializer_list>
+#include <ostream>
 #include <stdexcept>
 
 namespace crash::cases::vehicle_run {
@@ -133,6 +134,13 @@ void ObserveAcceptedSelfContact(SelfContactTotals& output,
     next.last_candidate_facet_pairs = contact.candidate_facet_pairs;
     next.last_policy_outcomes = policy.outcomes;
     next.last_policy_digest = policy.digest;
+    next.last_exact_crossing_pairs = policy.exact_crossing_pairs;
+    next.last_exact_crossing_work = policy.exact_crossing_work;
+    next.last_motion_certified_linear_separated = policy.motion_certified_linear_separated;
+    next.last_linear_policy_coverage_pairs = policy.linear_policy_coverage_pairs;
+    next.last_linear_policy_coverage_work = policy.linear_policy_coverage_work;
+    next.last_nonlinear_subdivision_pairs = policy.nonlinear_subdivision_pairs;
+    next.last_nonlinear_subdivision_work = policy.nonlinear_subdivision_work;
     next.last_certified_separated = policy.certified_separated;
     next.last_same_rigid_exclusions = policy.excluded_same_rigid_group;
     next.last_local_intersections = policy.excluded_local_intersection;
@@ -155,6 +163,18 @@ void ObserveAcceptedSelfContact(SelfContactTotals& output,
     next.last_global_moment_n_m = {force.global_moment_n_m.x,
         force.global_moment_n_m.y, force.global_moment_n_m.z};
     output = next;
+}
+
+void detail::WriteSelfContactWorkProgress(std::ostream& output, const SelfContactTotals& totals) {
+    if (!totals.available) return;
+    output
+        << " self_contact_exact_crossing_pairs=" << totals.last_exact_crossing_pairs
+        << " self_contact_exact_crossing_work=" << totals.last_exact_crossing_work
+        << " self_contact_motion_certified_linear_separated=" << totals.last_motion_certified_linear_separated
+        << " self_contact_linear_policy_coverage_pairs=" << totals.last_linear_policy_coverage_pairs
+        << " self_contact_linear_policy_coverage_work=" << totals.last_linear_policy_coverage_work
+        << " self_contact_nonlinear_subdivision_pairs=" << totals.last_nonlinear_subdivision_pairs
+        << " self_contact_nonlinear_subdivision_work=" << totals.last_nonlinear_subdivision_work;
 }
 
 }  // namespace crash::cases::vehicle_run

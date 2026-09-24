@@ -1,5 +1,6 @@
 #include "TwoIntervalAcceptance.h"
 #include "OriginalFixture.h"
+#include "../SelfContactSummary.h"
 #include "case/vehicle_self_contact/VehicleSelfContactSetup.h"
 #include "output/physical_run/IntervalIO.h"
 #include "output/physical_run/Replay.h"
@@ -28,6 +29,7 @@ void PrintProgress(const Progress& progress) {
         << " events=" << progress.self_contact.last_event_count
         << " policy_outcomes=" << progress.self_contact.last_policy_outcomes
         << " policy_digest=" << progress.self_contact.last_policy_digest;
+    detail::WriteSelfContactWorkProgress(std::cout, progress.self_contact);
     for (const auto stage : {
              vehicle_dynamics::StepStage::AssembleSelfContact,
              vehicle_dynamics::StepStage::EvaluateSelfContact,

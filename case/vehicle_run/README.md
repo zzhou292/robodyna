@@ -100,6 +100,13 @@ transactionally. Only a successful archive append publishes the new contact
 and mechanics/self-contact summaries. Fixed scalar storage (at most 4 KiB per summary plus
 bounded copies) fits the existing 4 MiB controller reservation and the existing
 summary byte cap. Normal 20 GB host and 2 GiB archive defaults are unchanged.
+The accepted self-contact summary and progress also retain seven existing native
+counters for the last published interval: exact crossing pairs/work, motion
+linear separation, linear policy coverage pairs/work, and nonlinear subdivision
+pairs/work. They add 56 bytes of fixed storage. They are not accumulated totals,
+CPU elapsed times or physical work. Stale/rejected attempts and failed archive
+appends do not advance these published observations. The interval archive schema
+and physical acceptance rules are unchanged.
 
 Detailed solid/beam point-history export remains separate work. Current frame
 plasticity covers shells only. Diagnostic stop

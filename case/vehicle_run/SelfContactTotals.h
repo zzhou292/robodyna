@@ -21,6 +21,15 @@ struct SelfContactTotals {
     std::uint64_t last_discovered_features = 0;
     std::uint64_t last_candidate_parent_pairs = 0, last_candidate_facet_pairs = 0;
     std::uint64_t last_policy_outcomes = 0, last_policy_digest = 0;
+    // Seven existing native work counters (56 bytes), last committed interval
+    // only. Operation counts are not elapsed timings or physical energy/work.
+    std::uint64_t last_exact_crossing_pairs = 0;
+    std::uint64_t last_exact_crossing_work = 0;
+    std::uint64_t last_motion_certified_linear_separated = 0;
+    std::uint64_t last_linear_policy_coverage_pairs = 0;
+    std::uint64_t last_linear_policy_coverage_work = 0;
+    std::uint64_t last_nonlinear_subdivision_pairs = 0;
+    std::uint64_t last_nonlinear_subdivision_work = 0;
     std::uint64_t last_certified_separated = 0, last_same_rigid_exclusions = 0;
     std::uint64_t last_local_intersections = 0;
     std::uint64_t last_represented_vf = 0, last_represented_ee = 0;
@@ -33,5 +42,7 @@ struct SelfContactTotals {
     std::array<double, 3> last_equal_opposite_residual_n{};
     std::array<double, 3> last_global_moment_n_m{};
 };
+
+static_assert(sizeof(SelfContactTotals) <= 4096);
 
 }  // namespace crash::cases::vehicle_run

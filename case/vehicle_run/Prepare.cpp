@@ -11,6 +11,7 @@ constexpr std::size_t MappingCap=512u<<20,ControllerReserve=4u<<20;
 // the existing controller allowance; no per-parent summary array is allocated.
 static_assert(8 * sizeof(SampledShellPlasticityTotals) <= 2048 && 2048 < ControllerReserve);
 static_assert(sizeof(ContactComposition) < 4096 && sizeof(PreparedRun) < 4096);
+static_assert(8 * sizeof(SelfContactTotals) < ControllerReserve);
 std::size_t Sum(std::size_t cap,std::initializer_list<std::size_t> values) {
     tl::util::BoundedArenaLayout budget(cap);
     tl::util::ArenaRegion region;

@@ -21,6 +21,15 @@ struct Fake final : detail::Operations {
         result.available=logged!=0;
         result.intervals=logged;
         result.last_event_count=logged?17:0;
+        // The test double exposes only successfully appended observations,
+        // matching Session's staged-then-append-then-publish contract.
+        result.last_exact_crossing_pairs=logged?10+logged:0;
+        result.last_exact_crossing_work=logged?100+logged:0;
+        result.last_motion_certified_linear_separated=logged?20+logged:0;
+        result.last_linear_policy_coverage_pairs=logged?30+logged:0;
+        result.last_linear_policy_coverage_work=logged?200+logged:0;
+        result.last_nonlinear_subdivision_pairs=logged?40+logged:0;
+        result.last_nonlinear_subdivision_work=logged?300+logged:0;
         return result;
     }
     MechanicsTotals Mechanics() const noexcept override {
@@ -122,6 +131,9 @@ TEST(VehicleRunLoop, RejectedAttemptDiscardsAndKeepsLoggedPrefixWithoutRetryOrCl
     EXPECT_EQ(result.progress.mechanics.intervals, 2u);
     EXPECT_EQ(result.progress.self_contact.intervals,2u);
     EXPECT_EQ(result.progress.self_contact.last_event_count,17u);
+    EXPECT_EQ(result.progress.self_contact.last_exact_crossing_work,102u);
+    EXPECT_EQ(result.progress.self_contact.last_linear_policy_coverage_work,202u);
+    EXPECT_EQ(result.progress.self_contact.last_nonlinear_subdivision_work,302u);
     EXPECT_EQ(result.progress.mechanics.solids.metal_plastic_work.work.accepted_increment_sum_j, .25);
 }
 TEST(VehicleRunLoop, OutputAndReadbackFailuresNeverPublishFalsePrefix) {
@@ -137,6 +149,17 @@ TEST(VehicleRunLoop, OutputAndReadbackFailuresNeverPublishFalsePrefix) {
         EXPECT_EQ(result.progress.sampled_shell_plasticity.last_epoch, fake.saved);
         EXPECT_EQ(result.progress.sampled_shell_plasticity.saved_samples, stage == 0 ? 2u : 1u);
         EXPECT_EQ(result.progress.self_contact.intervals,fake.logged);
+        EXPECT_EQ(result.progress.self_contact.last_exact_crossing_pairs,12u);
+        EXPECT_EQ(result.progress.self_contact.last_exact_crossing_work,102u);
+        EXPECT_EQ(result.progress.self_contact.last_motion_certified_linear_separated,22u);
+        EXPECT_EQ(result.progress.self_contact.last_linear_policy_coverage_pairs,32u);
+        EXPECT_EQ(result.progress.self_contact.last_linear_policy_coverage_work,202u);
+        EXPECT_EQ(result.progress.self_contact.last_nonlinear_subdivision_pairs,42u);
+        EXPECT_EQ(result.progress.self_contact.last_nonlinear_subdivision_work,302u);
+        if(stage==0) {
+            EXPECT_EQ(result.progress.accepted.epoch,3u);
+            EXPECT_EQ(result.progress.self_contact.intervals,2u);
+        }
     }
 }
 TEST(VehicleRunLoop, LiveShellSampleTimesRemainAtLastWriteAcrossUnsampledAcceptedSteps) {
