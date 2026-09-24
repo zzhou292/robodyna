@@ -25,18 +25,20 @@ filters::Report FacetFilters::Initialize(const SelfContactActiveUseBinding& sour
   // An unsupported initial environment keeps this adapter on CPU for its lifetime.
   const bool compatible = filters::CompatibleHostArithmetic();
   if (compatible) {
-    if (!arena_.Initialize(forecast.scene.bytes))
+    if (!arena_.Initialize(forecast.storage.bytes))
       return {filters::Status::ResourceLimit, "Facet-filter compact host scene allocation failed"};
-    accepted_ = arena_.Construct<filters::TriangleGeometry>(forecast.scene.accepted);
-    prepared_ = arena_.Construct<filters::TriangleGeometry>(forecast.scene.prepared);
-    properties_ = arena_.Construct<filters::FacetProperties>(forecast.scene.properties);
-    if (!accepted_ || !prepared_ || !properties_)
+    accepted_ = arena_.Construct<filters::TriangleGeometry>(forecast.storage.accepted);
+    prepared_ = arena_.Construct<filters::TriangleGeometry>(forecast.storage.prepared);
+    properties_ = arena_.Construct<filters::FacetProperties>(forecast.storage.properties);
+    packed_pairs_ = arena_.Construct<FixedTrianglePair>(forecast.storage.packed_pairs);
+    original_to_packed_ = arena_.Construct<std::uint32_t>(forecast.storage.original_to_packed);
+    if (!accepted_ || !prepared_ || !properties_ || !packed_pairs_ || !original_to_packed_)
       return {filters::Status::ResourceLimit, "Facet-filter compact host scene construction failed"};
     const auto initialized = batch_.Initialize({count, pairs, device_cap, host_cap}, stream);
     if (initialized.status != filters::Status::Ok) { ObserveFailure(initialized); return initialized; }
   }
   source_ = &source; facets_ = count; pairs_ = pairs; stream_ = stream;
-  layout_ = forecast.scene;
+  layout_ = forecast.storage;
   reserved_device_bytes_ = forecast.device_bytes;
   reserved_device_allocations_ = forecast.device_allocations;
   initialized_ = true; device_available_ = compatible;
@@ -53,8 +55,8 @@ bool FacetFilters::OutputDisjoint(const void* output, std::size_t bytes) const n
 void FacetFilters::Discard() noexcept {
   batch_.DiscardScene();
   base_input_ = next_input_ = nullptr;
-  motion_ = nullptr; bounds_ = nullptr; chunk_ = nullptr;
-  chunk_count_ = 0; span_begin_ = SIZE_MAX; span_end_ = 0;
+  motion_ = nullptr; bounds_ = nullptr;
+  RevokeChunk();
   scene_generation_ = 0; device_scene_ = false; phase_ = Phase::None;
 }
 filters::Report FacetFilters::PrepareScene(const CurrentFixedTriangle* base,
@@ -106,56 +108,5 @@ filters::Report FacetFilters::CandidateScene(const CurrentFixedTriangle* accepte
     const CurrentFixedTriangle* prepared, const MotionSupport* motion,
     const SelfContactSweptParentBounds* bounds) noexcept {
   return PrepareScene(accepted, prepared, motion, bounds, Phase::Candidate);
-}
-void FacetFilters::BeginCandidateChunk(const FixedTrianglePair* pairs, std::size_t count) noexcept {
-  chunk_ = pairs; chunk_count_ = count; span_begin_ = SIZE_MAX; span_end_ = 0;
-}
-FacetPrismReply FacetFilters::PrismAt(std::size_t ordinal) noexcept {
-  FacetPrismReply result;
-  result.supplied = true;
-  if (device_failure_.status == filters::Status::DeviceFailure) {
-    result.report = device_failure_; return result;
-  }
-  if (!initialized_) {
-    result.report = {filters::Status::NotInitialized, "Facet-filter adapter is not initialized"};
-    return result;
-  }
-  if (phase_ != Phase::Candidate) {
-    result.report = {filters::Status::NoScene, "Facet-filter candidate scene is not current"};
-    return result;
-  }
-  if (!chunk_ || chunk_count_ > pairs_ || ordinal >= chunk_count_ ||
-      !OutputDisjoint(chunk_, chunk_count_*sizeof(*chunk_))) {
-    result.report = Invalid("Facet-filter candidate chunk is not a current disjoint borrow");
-    Discard(); return result;
-  }
-  if (!device_scene_ || !filters::CompatibleHostArithmetic()) {
-    span_begin_ = SIZE_MAX; span_end_ = 0;
-    result.supplied = false;
-    return result;
-  }
-  if (span_begin_ == SIZE_MAX || ordinal < span_begin_ || ordinal >= span_end_) {
-    const auto end = LinearFacetSpanEnd(chunk_, chunk_count_, ordinal, motion_, bounds_,
-                                        facets_, source_->parents().size());
-    if (end == ordinal) {
-      result.report = Invalid("Facet-filter linear span does not begin with an admitted affine pair");
-      Discard(); return result;
-    }
-    result.report = batch_.Linear({chunk_+ordinal, end-ordinal}, FacetPrismAxisLimit::VertexVertex, stream_);
-    if (result.report.status == filters::Status::UnsupportedEnvironment) {
-      result.report = {}; result.supplied = false; span_begin_ = SIZE_MAX; span_end_ = 0;
-      return result;
-    }
-    if (result.report.status != filters::Status::Ok) { ObserveFailure(result.report); Discard(); return result; }
-    span_begin_ = ordinal; span_end_ = end;
-  }
-  const auto view = batch_.results();
-  if (!view.complete || view.count != span_end_-span_begin_ ||
-      view.scene_generation != scene_generation_) {
-    result.report = Invalid("Facet-filter linear publication differs from the current scene/span");
-    Discard(); return result;
-  }
-  result.value = view.data[ordinal-span_begin_];
-  return result;
 }
 }  // namespace tlfea::contact::self_contact_transaction

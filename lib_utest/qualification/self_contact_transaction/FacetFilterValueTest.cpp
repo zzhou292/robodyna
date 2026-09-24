@@ -15,10 +15,10 @@ TEST(FacetFilterIntegrationValues, ForecastIncludesOneCompactSceneAndOneBoundedB
   static_assert(sizeof(f::PairResult)==4 && sizeof(c::FixedTrianglePair)==8);
   const auto forecast=sct::FacetFilters::Preflight(facets,pairs,cap,cap);
   ASSERT_EQ(forecast.report.status,f::Status::Ok);
-  EXPECT_EQ(forecast.scene.bytes,160*facets);
+  EXPECT_EQ(forecast.storage.bytes,160*facets+12*pairs);
   EXPECT_EQ(forecast.device_bytes,160*facets+12*pairs);
   EXPECT_EQ(forecast.device_allocations,1u);
-  EXPECT_EQ(forecast.owned_host_bytes,sizeof(sct::FacetFilters)+forecast.scene.bytes+
+  EXPECT_EQ(forecast.owned_host_bytes,sizeof(sct::FacetFilters)+forecast.storage.bytes+
       forecast.batch.owned_host_bytes-sizeof(f::Batch));
   EXPECT_GT(forecast.startup_host_bytes,forecast.owned_host_bytes);
   EXPECT_EQ(sct::FacetFilters::Preflight(facets,pairs,forecast.startup_host_bytes,
@@ -58,5 +58,38 @@ TEST(FacetFilterIntegrationValues, LinearSpanLeavesExclusionsAndMalformedOrdinal
   EXPECT_EQ(sct::LinearFacetSpanEnd(pairs,4,2,motion.data(),bounds.data(),4,4),2u);
   EXPECT_EQ(sct::LinearFacetSpanEnd(pairs,4,3,motion.data(),bounds.data(),4,4),4u);
   EXPECT_EQ(pairs[2].second,UINT32_MAX); // Lookahead does not mutate or compact.
+}
+TEST(FacetFilterIntegrationValues, CompactPackingLeavesNonlinearExclusionsAndMalformedRowsAtTheirOrdinals) {
+  std::array<sct::MotionSupport,5> motion;
+  std::array<c::SelfContactSweptParentBounds,5> bounds;
+  for (unsigned i=0;i<motion.size();++i) {
+    motion[i].parent=i;motion[i].certified_affine=true;
+    bounds[i]={{-1,-1,-1},{1,1,1}};
+  }
+  motion[3].certified_affine=false;
+  motion[2].motion=motion[3].motion=c::SelfContactFacetMotion::CompleteRigidGroup;
+  motion[2].complete_rigid_group=motion[3].complete_rigid_group=7;
+  motion[4].parent=99;
+  const c::FixedTrianglePair pairs[]{{0,1},{0,3},{2,3},{0,2},{0,4},{0,UINT32_MAX},{0,1},{1,0}};
+  std::array<c::FixedTrianglePair,8> packed{};
+  std::array<std::uint32_t,8> slots{};
+  ASSERT_EQ(sct::PackCandidateLinearPairs(pairs,8,motion.data(),bounds.data(),5,5,
+      packed.data(),slots.data()),4u);
+  const std::array<std::uint32_t,8> expected{{0,UINT32_MAX,UINT32_MAX,1,UINT32_MAX,UINT32_MAX,2,3}};
+  EXPECT_EQ(slots,expected);
+  for (unsigned i:{0u,3u,6u,7u}) {
+    EXPECT_EQ(packed[slots[i]].first,pairs[i].first);
+    EXPECT_EQ(packed[slots[i]].second,pairs[i].second);
+  }
+  EXPECT_EQ(pairs[5].second,UINT32_MAX);
+  EXPECT_EQ(motion[4].parent,99u);
+  EXPECT_FALSE(motion[3].certified_affine);
+}
+TEST(FacetFilterIntegrationValues, EmptyAndInvalidPackingAdmissionDoNotTouchCallerStorage) {
+  c::FixedTrianglePair packed{11,13};
+  std::uint32_t slot=17;
+  EXPECT_EQ(sct::PackCandidateLinearPairs(nullptr,0,nullptr,nullptr,0,0,&packed,&slot),0u);
+  EXPECT_EQ(sct::PackCandidateLinearPairs(nullptr,1,nullptr,nullptr,0,0,&packed,&slot),SIZE_MAX);
+  EXPECT_EQ(packed.first,11u);EXPECT_EQ(packed.second,13u);EXPECT_EQ(slot,17u);
 }
 }  // namespace

@@ -391,6 +391,7 @@ filegroup(
         "self_contact_transaction/FacetFilters.h",
         "self_contact_transaction/FacetFilterValues.cpp",
         "self_contact_transaction/FacetFilters.cpp",
+        "self_contact_transaction/FacetFilterCandidate.cpp",
         "self_contact_transaction/FacetFilterAccepted.cpp",
         "self_contact_transaction/AcceptedFacetFiltering.h",
         ":self_contact_filter_batch_sources",
@@ -495,6 +496,7 @@ cc_library(
     name = "self_contact_transaction",
     srcs = [
         "self_contact_transaction/FacetFilters.cpp",
+        "self_contact_transaction/FacetFilterCandidate.cpp",
         "self_contact_transaction/FacetFilterAccepted.cpp",
         "self_contact_transaction/Candidate.cpp",
         "self_contact_transaction/CandidateExclusions.cpp",

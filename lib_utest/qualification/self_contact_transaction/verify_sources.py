@@ -561,6 +561,7 @@ for wiring in (CMAKE, BAZEL):
                   "self_contact_transaction/Source.cpp",
                   "self_contact_transaction/FacetFilterValues.cpp",
                   "self_contact_transaction/FacetFilters.cpp",
+                  "self_contact_transaction/FacetFilterCandidate.cpp",
                   "self_contact_transaction/FacetFilterAccepted.cpp",
                   "self_contact_transaction/Streaming.cpp",
                   "self_contact_transaction/TaskMask.cpp",
@@ -1161,6 +1162,7 @@ print("fixed self-contact transaction source proof: PASS")
 # Optional numerical facet filters preserve one shared scalar/error fold and
 # stream affine spans around the existing serial nonlinear budget decisions.
 filter_adapter = (ROOT / "lib_src/collision/self_contact_transaction/FacetFilters.cpp").read_text()
+filter_candidate = (ROOT / "lib_src/collision/self_contact_transaction/FacetFilterCandidate.cpp").read_text()
 filter_accepted = (ROOT / "lib_src/collision/self_contact_transaction/FacetFilterAccepted.cpp").read_text()
 filter_values = (ROOT / "lib_src/collision/self_contact_transaction/FacetFilterValues.cpp").read_text()
 filter_header = (ROOT / "lib_src/collision/self_contact_transaction/FacetFilters.h").read_text()
@@ -1173,18 +1175,18 @@ assert candidate.count("sct::OptionalFacetPrism(") == 1
 assert filter_adapter.index("filters::CompatibleHostArithmetic()") < filter_adapter.index("batch_.Initialize(")
 assert "void FacetFilters::Discard()" in filter_adapter and "batch_.DiscardScene()" in filter_adapter
 assert "base_input_ = next_input_ = nullptr" in filter_adapter
-assert "view.scene_generation != scene_generation_" in filter_adapter + filter_accepted
+assert "view.scene_generation != scene_generation_" in filter_adapter + filter_candidate + filter_accepted
 assert "view.count != prefix" in filter_accepted and "prefix < *count" in filter_accepted
 assert "detail::FilterAcceptedFacetPairsWith" in filter_accepted
 assert "ClassifyCandidatePairMotion" in filter_values and "PairMotionAction::LinearNodalV1)" in filter_values
-assert "CertifyQuadratic" not in filter_values + filter_adapter
+assert "CertifyQuadratic" not in filter_values + filter_adapter + filter_candidate
 for token in ("facet_filters.owned_host_bytes", "facet_filters.device_bytes",
               "facet_filters.startup_host_bytes", "if (config.enable_cuda_facet_filters)"):
     assert token in layout
 assert "facet_filters->OutputDisjoint" in transaction and "facet_filters->Discard()" in transaction
 assert "if (!reply.supplied) return scalar()" in filter_header
 assert "reply.report.status != self_contact_filters::Status::Ok) return false" in filter_header
-for source_name in ("FacetFilters.h", "FacetFilterValues.cpp", "FacetFilters.cpp", "FacetFilterAccepted.cpp", "AcceptedFacetFiltering.h"):
+for source_name in ("FacetFilters.h", "FacetFilterValues.cpp", "FacetFilters.cpp", "FacetFilterCandidate.cpp", "FacetFilterAccepted.cpp", "AcceptedFacetFiltering.h"):
     content=(ROOT / "lib_src/collision/self_contact_transaction" / source_name).read_text()
     for forbidden in ("std::vector", "std::map", "std::function", "cudaMalloc", "thread_local"):
         assert forbidden not in content,(source_name,forbidden)
@@ -1194,10 +1196,27 @@ for test_name in ("FacetFilterValueTest.cpp", "FacetFilterAdapterCudaCases.h",
 print("PASS optional facet-filter source/lifetime/streaming dependency boundary")
 
 assert "device_failure_ = report" in filter_header
-for entry in ("Report FacetFilters::Initialize", "Report FacetFilters::PrepareScene", "FacetPrismReply FacetFilters::PrismAt"):
-    begin = filter_adapter.index(entry)
-    tail = filter_adapter[begin:]
+for entry in ("Report FacetFilters::Initialize", "Report FacetFilters::PrepareScene", "Report FacetFilters::BeginCandidateChunk", "FacetPrismReply FacetFilters::PrismAt"):
+    implementation = filter_candidate if entry in filter_candidate else filter_adapter
+    begin = implementation.index(entry)
+    tail = implementation[begin:]
     assert tail.index("device_failure_.status == filters::Status::DeviceFailure") < tail.index("CompatibleHostArithmetic()")
-query = filter_adapter[filter_adapter.index("FacetPrismReply FacetFilters::PrismAt"):]
+query = filter_candidate[filter_candidate.index("FacetPrismReply FacetFilters::PrismAt"):]
 assert query.index("ordinal >= chunk_count_") < query.index("CompatibleHostArithmetic()")
 assert "ObserveFailure(report); Discard()" in filter_accepted
+
+assert filter_candidate.count("batch_.Linear(") == 1
+begin_chunk = filter_candidate[:filter_candidate.index("FacetPrismReply FacetFilters::PrismAt")]
+assert "PackCandidateLinearPairs(" in begin_chunk and "batch_.Linear(" not in query
+assert "packed_pairs_[slot].first != pair.first" in query and "packed_pairs_[slot].second != pair.second" in query
+assert "chunk_cpu_ = true" in query and query.index("if (chunk_cpu_)") < query.index("const auto slot")
+assert "CandidateChunkBeforeFold" in candidate and "report.filter_chunk_pairs = streamed_pair_count" in candidate
+assert candidate.index("->BeginCandidateChunk(") < candidate.index("std::size_t chunk_nonlinear_work")
+assert "original_to_packed[ordinal] = UINT32_MAX" in filter_values
+print("PASS compact linear chunk mapping and explicit before-fold device failure scope")
+
+assert "void RevokeChunk() noexcept" in filter_header
+assert "RevokeChunk();" in filter_adapter
+assert begin_chunk.index("OutputDisjoint(pairs,") < begin_chunk.index("RevokeChunk();")
+assert begin_chunk.index("RevokeChunk();") < begin_chunk.index("if (!admitted)")
+print("PASS rejected chunk replacement revokes previous borrowed inputs")

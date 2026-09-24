@@ -50,6 +50,12 @@ enum class SelfContactFacetFilterInitialization : std::uint8_t {
   UnsupportedHostArithmetic,
 };
 
+// A candidate chunk query may fail before its original serial geometry fold.
+// This is nonphysical failure context, never an offending-pair certificate.
+enum class SelfContactFacetFilterFailureScope : std::uint8_t {
+  None, CandidateChunkBeforeFold,
+};
+
 enum class SelfContactTransactionCountKind : std::uint8_t {
   None,
   ExactAcceptedEvents,
@@ -142,6 +148,8 @@ struct SelfContactTransactionReport {
   const char* message = "OK";
   SelfContactCrossingDiagnostics crossing_diagnostics;
   self_contact_filters::Status filter_status = self_contact_filters::Status::Ok;
+  SelfContactFacetFilterFailureScope filter_scope = SelfContactFacetFilterFailureScope::None;
+  std::size_t filter_chunk_begin = SIZE_MAX, filter_chunk_pairs = 0;
 };
 
 enum class SelfContactTransactionNonlocalPolicy : std::uint8_t {

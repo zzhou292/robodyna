@@ -89,18 +89,21 @@ TEST(SelfContactFacetFilterAdapterCuda, AcceptedNumericErrorPrecedesLaterInvalid
   ASSERT_EQ(actual_count,expected_count);
   for(std::size_t i=0;i<actual_count;++i){EXPECT_EQ(actual[i].first,original[i].first);EXPECT_EQ(actual[i].second,original[i].second);}
 }
-TEST(SelfContactFacetFilterAdapterCuda, CachedSpanEnvironmentChangeAndDiscardRequireCorrectReentry) {
+TEST(SelfContactFacetFilterAdapterCuda, CachedChunkEnvironmentChangeAndDiscardRequireCorrectReentry) {
   using namespace facet_filter_adapter_test;
   NumericFixture f;ASSERT_TRUE(f.Geometry());ASSERT_TRUE(f.Initialize());ASSERT_TRUE(f.Candidate());
-  f.adapter.BeginCandidateChunk(f.pairs.data(),f.pairs.size());
+  ASSERT_EQ(f.adapter.BeginCandidateChunk(f.pairs.data(),f.pairs.size()).status,filters::Status::Ok);
   f.Compare(0,f.adapter.PrismAt(0));
   const auto copies=facet_filter_cuda_probe::Copies();
   {RestoreEnvironment restore;ASSERT_EQ(std::fesetround(FE_UPWARD),0);
    const auto reply=f.adapter.PrismAt(1);EXPECT_FALSE(reply.supplied);EXPECT_EQ(reply.report.status,filters::Status::Ok);
    EXPECT_EQ(facet_filter_cuda_probe::Copies(),copies);}
-  f.Compare(1,f.adapter.PrismAt(1));EXPECT_GT(facet_filter_cuda_probe::Copies(),copies);
+  EXPECT_FALSE(f.adapter.PrismAt(1).supplied);
+  EXPECT_EQ(facet_filter_cuda_probe::Copies(),copies);
+  ASSERT_EQ(f.adapter.BeginCandidateChunk(f.pairs.data(),f.pairs.size()).status,filters::Status::Ok);
+  f.Compare(1,f.adapter.PrismAt(1));EXPECT_EQ(facet_filter_cuda_probe::Copies(),copies+2);
   f.adapter.Discard();EXPECT_EQ(f.adapter.PrismAt(0).report.status,filters::Status::NoScene);
-  ASSERT_TRUE(f.Candidate());f.adapter.BeginCandidateChunk(f.pairs.data(),f.pairs.size());f.Compare(0,f.adapter.PrismAt(0));
+  ASSERT_TRUE(f.Candidate());ASSERT_EQ(f.adapter.BeginCandidateChunk(f.pairs.data(),f.pairs.size()).status,filters::Status::Ok);f.Compare(0,f.adapter.PrismAt(0));
 }
 TEST(SelfContactFacetFilterAdapterCuda, UnsupportedStartupMathUsesCpuWithoutFilterCommandsOrAllocations) {
   using namespace facet_filter_adapter_test;
@@ -108,7 +111,7 @@ TEST(SelfContactFacetFilterAdapterCuda, UnsupportedStartupMathUsesCpuWithoutFilt
   const auto copies=facet_filter_cuda_probe::Copies();
   {RestoreEnvironment restore;ASSERT_EQ(std::fesetround(FE_UPWARD),0);ASSERT_TRUE(f.Initialize());}
   EXPECT_EQ(facet_filter_cuda_probe::Allocations(),allocations);
-  ASSERT_TRUE(f.Candidate());f.adapter.BeginCandidateChunk(f.pairs.data(),f.pairs.size());
+  ASSERT_TRUE(f.Candidate());ASSERT_EQ(f.adapter.BeginCandidateChunk(f.pairs.data(),f.pairs.size()).status,filters::Status::Ok);
   EXPECT_FALSE(f.adapter.PrismAt(0).supplied);EXPECT_EQ(facet_filter_cuda_probe::Copies(),copies);
   EXPECT_GT(f.adapter.UnallocatedDevice().device_bytes,0u);
   EXPECT_EQ(f.adapter.initialization_mode(),c::SelfContactFacetFilterInitialization::UnsupportedHostArithmetic);
@@ -116,10 +119,10 @@ TEST(SelfContactFacetFilterAdapterCuda, UnsupportedStartupMathUsesCpuWithoutFilt
 TEST(SelfContactFacetFilterAdapterCuda, QueryCudaFailureIsExplicitPoisonsStorageAndNeverFallsBack) {
   using namespace facet_filter_adapter_test;
   NumericFixture f;ASSERT_TRUE(f.Geometry());ASSERT_TRUE(f.Initialize());ASSERT_TRUE(f.Candidate());
-  f.adapter.BeginCandidateChunk(f.pairs.data(),f.pairs.size());
   facet_filter_cuda_probe::FailNextHostToDeviceCopy();
-  const auto failed=f.adapter.PrismAt(0);
-  EXPECT_TRUE(failed.supplied);EXPECT_EQ(failed.report.status,filters::Status::DeviceFailure);
+  const auto failed=f.adapter.BeginCandidateChunk(f.pairs.data(),f.pairs.size());
+  EXPECT_EQ(failed.status,filters::Status::DeviceFailure);
+  EXPECT_EQ(failed.pair,SIZE_MAX); // The failed chunk query names no physical pair.
   EXPECT_EQ(f.adapter.PrismAt(1).report.status,filters::Status::DeviceFailure);
   f.adapter.Discard();
   EXPECT_EQ(f.adapter.initialization_mode(),c::SelfContactFacetFilterInitialization::Cuda);
@@ -140,9 +143,98 @@ TEST(SelfContactFacetFilterAdapterCuda, MissingLifecycleOrChunkCannotBecomeEnvir
   ASSERT_TRUE(f.Initialize());
   {RestoreEnvironment restore;ASSERT_EQ(std::fesetround(FE_UPWARD),0);
    EXPECT_EQ(f.adapter.PrismAt(0).report.status,filters::Status::NoScene);}
-  ASSERT_TRUE(f.Candidate());f.adapter.BeginCandidateChunk(nullptr,1);
+  ASSERT_TRUE(f.Candidate());
+  EXPECT_EQ(f.adapter.BeginCandidateChunk(nullptr,1).status,filters::Status::InvalidInput);
   {RestoreEnvironment restore;ASSERT_EQ(std::fesetround(FE_UPWARD),0);
    const auto missing=f.adapter.PrismAt(0);
    EXPECT_TRUE(missing.supplied);EXPECT_EQ(missing.report.status,filters::Status::InvalidInput);}
+}
+TEST(SelfContactFacetFilterAdapterCuda, CompactChunkUsesOneQueryAcrossNonlinearAndExcludedGaps) {
+  using namespace facet_filter_adapter_test;
+  NumericFixture f;ASSERT_TRUE(f.Geometry());ASSERT_GE(f.motion.size(),4u);
+  f.motion[3].certified_affine=false;
+  f.motion[2].motion=f.motion[3].motion=c::SelfContactFacetMotion::CompleteRigidGroup;
+  f.motion[2].complete_rigid_group=f.motion[3].complete_rigid_group=9;
+  f.pairs={{0,1},{0,3},{2,3},{0,2},{0,1},{1,0}};
+  ASSERT_TRUE(f.Initialize());ASSERT_TRUE(f.Candidate());
+  const auto copies=facet_filter_cuda_probe::Copies();
+  ASSERT_EQ(f.adapter.BeginCandidateChunk(f.pairs.data(),f.pairs.size()).status,filters::Status::Ok);
+  EXPECT_EQ(facet_filter_cuda_probe::Copies(),copies+2);
+  for (unsigned i:{0u,3u,4u,5u}) f.Compare(i,f.adapter.PrismAt(i));
+  EXPECT_EQ(facet_filter_cuda_probe::Copies(),copies+2);
+}
+TEST(SelfContactFacetFilterAdapterCuda, FutureMalformedMetadataAndGeometryAreNotEagerQueryFailures) {
+  using namespace facet_filter_adapter_test;
+  NumericFixture f;ASSERT_TRUE(f.Geometry());ASSERT_GE(f.motion.size(),5u);
+  f.motion[3].certified_affine=false;
+  f.motion[4].parent=UINT32_MAX;
+  f.base[2].vertices[0].x=std::numeric_limits<double>::quiet_NaN();
+  f.pairs={{0,3},{0,1},{0,4},{0,UINT32_MAX},{0,2}};
+  ASSERT_TRUE(f.Initialize());ASSERT_TRUE(f.Candidate());
+  ASSERT_EQ(f.adapter.BeginCandidateChunk(f.pairs.data(),f.pairs.size()).status,filters::Status::Ok);
+  // Preparation cannot preempt whatever the original nonlinear row0 will
+  // report. Its untouched motion/bounds remain owned by that original fold.
+  EXPECT_EQ(sct::ClassifyCandidatePairMotion(f.motion[0],f.bounds[0],f.motion[3],f.bounds[3]),
+      sct::PairMotionAction::UnsupportedRigidArc);
+  f.Compare(1,f.adapter.PrismAt(1));
+  const auto numeric=f.adapter.PrismAt(4);
+  ASSERT_EQ(numeric.report.status,filters::Status::Ok);
+  EXPECT_EQ(numeric.value.status,c::SelfContactFacetFilterStatus::InvalidInput);
+  EXPECT_EQ(f.adapter.PrismAt(2).report.status,filters::Status::InvalidInput);
+  ASSERT_TRUE(f.Candidate());
+  ASSERT_EQ(f.adapter.BeginCandidateChunk(f.pairs.data(),f.pairs.size()).status,filters::Status::Ok);
+  EXPECT_EQ(f.adapter.PrismAt(3).report.status,filters::Status::InvalidInput);
+}
+TEST(SelfContactFacetFilterAdapterCuda, EmptyAndNoLinearChunksIssueNoQueryAndDiscardRevokesMap) {
+  using namespace facet_filter_adapter_test;
+  NumericFixture f;ASSERT_TRUE(f.Geometry());
+  for(auto& motion:f.motion)motion.certified_affine=false;
+  ASSERT_TRUE(f.Initialize());ASSERT_TRUE(f.Candidate());
+  const auto copies=facet_filter_cuda_probe::Copies();
+  EXPECT_EQ(f.adapter.BeginCandidateChunk(nullptr,0).status,filters::Status::Ok);
+  EXPECT_EQ(f.adapter.BeginCandidateChunk(f.pairs.data(),f.pairs.size()).status,filters::Status::Ok);
+  EXPECT_EQ(facet_filter_cuda_probe::Copies(),copies);
+  f.adapter.Discard();
+  EXPECT_EQ(f.adapter.PrismAt(0).report.status,filters::Status::NoScene);
+  for(auto& motion:f.motion)motion.certified_affine=true;
+  ASSERT_TRUE(f.Candidate());
+  ASSERT_EQ(f.adapter.BeginCandidateChunk(f.pairs.data(),f.pairs.size()).status,filters::Status::Ok);
+  f.Compare(0,f.adapter.PrismAt(0));
+}
+TEST(SelfContactFacetFilterAdapterCuda, ChangedOriginalPairCannotConsumeAStalePackedSlotAndRetryIsValid) {
+  using namespace facet_filter_adapter_test;
+  NumericFixture f;ASSERT_TRUE(f.Geometry());ASSERT_TRUE(f.Initialize());ASSERT_TRUE(f.Candidate());
+  ASSERT_EQ(f.adapter.BeginCandidateChunk(f.pairs.data(),f.pairs.size()).status,filters::Status::Ok);
+  f.pairs[0]={0,2};
+  EXPECT_EQ(f.adapter.PrismAt(0).report.status,filters::Status::InvalidInput);
+  EXPECT_EQ(f.adapter.PrismAt(1).report.status,filters::Status::NoScene);
+  ASSERT_TRUE(f.Candidate());
+  ASSERT_EQ(f.adapter.BeginCandidateChunk(f.pairs.data(),f.pairs.size()).status,filters::Status::Ok);
+  f.Compare(0,f.adapter.PrismAt(0));
+}
+TEST(SelfContactFacetFilterAdapterCuda, RejectedReplacementRevokesTheOldBorrowBeforeItCanExpire) {
+  using namespace facet_filter_adapter_test;
+  NumericFixture f;ASSERT_TRUE(f.Geometry());ASSERT_TRUE(f.Initialize());ASSERT_TRUE(f.Candidate());
+  ASSERT_EQ(f.adapter.BeginCandidateChunk(f.pairs.data(),f.pairs.size()).status,filters::Status::Ok);
+  f.Compare(0,f.adapter.PrismAt(0));
+  EXPECT_EQ(f.adapter.BeginCandidateChunk(nullptr,1).status,filters::Status::InvalidInput);
+  f.pairs.clear();f.pairs.shrink_to_fit();
+  EXPECT_EQ(f.adapter.PrismAt(0).report.status,filters::Status::InvalidInput);
+  // PrismAt rejection discards its scene; normal reentry can publish again.
+  f.pairs={{0,1},{0,2}};
+  ASSERT_TRUE(f.Candidate());
+  ASSERT_EQ(f.adapter.BeginCandidateChunk(f.pairs.data(),f.pairs.size()).status,filters::Status::Ok);
+  f.Compare(0,f.adapter.PrismAt(0));
+}
+TEST(SelfContactFacetFilterAdapterCuda, AliasedReplacementRevokesMappingBeforeAnyPackingOrTransfer) {
+  using namespace facet_filter_adapter_test;
+  NumericFixture f;ASSERT_TRUE(f.Geometry());ASSERT_TRUE(f.Initialize());ASSERT_TRUE(f.Candidate());
+  ASSERT_EQ(f.adapter.BeginCandidateChunk(f.pairs.data(),f.pairs.size()).status,filters::Status::Ok);
+  const auto copies=facet_filter_cuda_probe::Copies();
+  const auto* aliased=reinterpret_cast<const c::FixedTrianglePair*>(&f.adapter);
+  EXPECT_EQ(f.adapter.BeginCandidateChunk(aliased,1).status,filters::Status::InvalidInput);
+  EXPECT_EQ(facet_filter_cuda_probe::Copies(),copies);
+  EXPECT_EQ(f.adapter.PrismAt(0).report.status,filters::Status::InvalidInput);
+  EXPECT_EQ(f.adapter.initialization_mode(),c::SelfContactFacetFilterInitialization::Cuda);
 }
 }  // namespace self_contact_transaction_cuda_test

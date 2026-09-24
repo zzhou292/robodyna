@@ -9,12 +9,13 @@ struct MotionSupport;
 namespace filters = self_contact_filters;
 struct FacetFilterLayout {
   tl::util::ArenaRegion accepted, prepared, properties;
+  tl::util::ArenaRegion packed_pairs, original_to_packed;
   std::size_t bytes = 0;
 };
 struct FacetFilterForecast {
   filters::Report report;
   filters::Forecast batch;
-  FacetFilterLayout scene;
+  FacetFilterLayout storage;
   std::size_t owned_host_bytes = 0, startup_host_bytes = 0;
   std::size_t device_bytes = 0, device_allocations = 0;
 };
@@ -36,7 +37,7 @@ class FacetFilters {
   filters::Report CandidateScene(const CurrentFixedTriangle*, const CurrentFixedTriangle*,
       const MotionSupport*, const SelfContactSweptParentBounds*) noexcept;
   SelfContactTransactionReport AcceptedPairs(FixedTrianglePair*, std::size_t*) noexcept;
-  void BeginCandidateChunk(const FixedTrianglePair*, std::size_t) noexcept;
+  filters::Report BeginCandidateChunk(const FixedTrianglePair*, std::size_t) noexcept;
   FacetPrismReply PrismAt(std::size_t ordinal) noexcept;
   void Discard() noexcept;
   SelfContactFacetFilterInitialization initialization_mode() const noexcept {
@@ -53,6 +54,11 @@ class FacetFilters {
   bool OutputDisjoint(const void*, std::size_t) const noexcept;
  private:
   enum class Phase { None, Accepted, Candidate };
+  void RevokeChunk() noexcept {
+    chunk_ = nullptr;
+    chunk_count_ = packed_count_ = 0;
+    chunk_ready_ = chunk_cpu_ = false;
+  }
   filters::Report PrepareScene(const CurrentFixedTriangle*, const CurrentFixedTriangle*,
       const MotionSupport*, const SelfContactSweptParentBounds*, Phase) noexcept;
   void ObserveFailure(const filters::Report& report) noexcept {
@@ -73,16 +79,26 @@ class FacetFilters {
   const MotionSupport* motion_ = nullptr;
   const SelfContactSweptParentBounds* bounds_ = nullptr;
   const FixedTrianglePair* chunk_ = nullptr;
+  FixedTrianglePair* packed_pairs_ = nullptr;
+  std::uint32_t* original_to_packed_ = nullptr;
   std::size_t facets_ = 0, pairs_ = 0, chunk_count_ = 0;
   std::size_t reserved_device_bytes_ = 0, reserved_device_allocations_ = 0;
-  std::size_t span_begin_ = SIZE_MAX, span_end_ = 0;
+  std::size_t packed_count_ = 0;
+  bool chunk_ready_ = false, chunk_cpu_ = false;
   std::uint64_t scene_generation_ = 0;
   cudaStream_t stream_ = nullptr;
   bool initialized_ = false, device_available_ = false, device_scene_ = false;
   Phase phase_ = Phase::None;
 };
-// Pure lookahead stops before any nonlinear/excluded/error row. It does not
-// consume work, validate a policy or reorder the caller's serial decisions.
+// Private value-only packing into caller-owned bounded/disjoint storage. Invalid
+// future metadata gets the missing-slot sentinel; only the original serial fold
+// may reject it. This grants no physical/source authority and spends no work.
+std::size_t PackCandidateLinearPairs(const FixedTrianglePair*, std::size_t count,
+    const MotionSupport*, const SelfContactSweptParentBounds*,
+    std::size_t facets, std::size_t parents,
+    FixedTrianglePair* packed, std::uint32_t* original_to_packed) noexcept;
+// Retained scalar span helper for qualification of the old query granularity.
+// It consumes no work and does not reorder the caller's serial decisions.
 std::size_t LinearFacetSpanEnd(const FixedTrianglePair*, std::size_t count,
     std::size_t first, const MotionSupport*, const SelfContactSweptParentBounds*,
     std::size_t facets, std::size_t parents) noexcept;
@@ -90,8 +106,8 @@ SelfContactTransactionReport FacetFilterFailure(const filters::Report&,
     std::size_t pair = SIZE_MAX) noexcept;
 
 // The scalar lambda is the original call at its original serial position.
-// Device execution is confined to a current contiguous linear span; a failure
-// never silently selects the scalar path.
+// Mapped results come from one current compact chunk query. Ordinary row errors
+// remain at this serial position; a device failure never selects the scalar path.
 template <class Scalar>
 bool OptionalFacetPrism(FacetFilters* filters, std::size_t ordinal,
     Scalar scalar, SelfContactFacetPrismSeparationAxis* axis, bool* valid,

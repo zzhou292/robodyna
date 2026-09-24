@@ -855,8 +855,16 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
         &pairs, &streamed_pair_count);
     if (streamed.status != S::Ok) return state.Fail(streamed);
     if (!streamed_pair_count) break;
-    if (state.facet_filters)
-      state.facet_filters->BeginCandidateChunk(pairs, streamed_pair_count);
+    if (state.facet_filters) {
+      const auto query = state.facet_filters->BeginCandidateChunk(pairs, streamed_pair_count);
+      if (query.status != self_contact_filters::Status::Ok) {
+        auto report = sct::FacetFilterFailure(query);
+        report.filter_scope = SelfContactFacetFilterFailureScope::CandidateChunkBeforeFold;
+        report.filter_chunk_begin = state.candidate_facet_pair_count;
+        report.filter_chunk_pairs = streamed_pair_count;
+        return state.Fail(report);
+      }
+    }
 
     std::size_t pair_count = 0;
     std::size_t chunk_nonlinear_work = 0;

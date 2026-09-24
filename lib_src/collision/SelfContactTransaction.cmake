@@ -13,6 +13,7 @@ add_library(tl_self_contact_transaction STATIC
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/AcceptedFacetFiltering.h"
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/FacetFilterValues.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/FacetFilters.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/FacetFilterCandidate.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/FacetFilterAccepted.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/Arena.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/Limits.cpp"

@@ -41,6 +41,7 @@ common = [
 sources = [
     root / "lib_src/collision/self_contact_transaction/FacetFilterValues.cpp",
     root / "lib_src/collision/self_contact_transaction/FacetFilters.cpp",
+    root / "lib_src/collision/self_contact_transaction/FacetFilterCandidate.cpp",
     root / "lib_src/collision/self_contact_transaction/FacetFilterAccepted.cpp",    probe,
     root / "lib_src/collision/SelfContactFilterCertificates.cpp",
     root / "lib_src/collision/self_contact_transaction/Arena.cpp",

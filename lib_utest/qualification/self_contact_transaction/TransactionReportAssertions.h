@@ -23,6 +23,7 @@ inline void ExpectTransactionReport(const c::SelfContactTransactionReport& a,
   FIELD(nonlinear_subdivision_work_exhausted);
   FIELD(nonlinear_subdivision_depth_exhausted);
   FIELD(publication_status); FIELD(owner_status); FIELD(filter_status);
+  FIELD(filter_scope); FIELD(filter_chunk_begin); FIELD(filter_chunk_pairs);
   FIELD(crossing_diagnostics.available);
   FIELD(crossing_diagnostics.batch_pair_offset);
   FIELD(crossing_diagnostics.prior_batch_work);
