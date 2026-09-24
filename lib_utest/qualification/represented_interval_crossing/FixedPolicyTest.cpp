@@ -128,7 +128,11 @@ TEST(RepresentedFixedPolicy, StickyErrorSurvivesSignAndZeroAssignmentAndOnlyPair
   const Paths paths{Static(10, Positive()), Static(20, Positive())};
   const auto result = Direct(kernel, scratch, paths);
   EXPECT_TRUE(context.valid());
-  SameResult(result, Compare(paths).original);
+  // This coupon calls the numerical kernel directly. Compare against the raw
+  // Boost result too; StoreResult separately normalizes unused publication fields.
+  numeric::ArithmeticContext boost_context;
+  Boost boost(boost_context); Boost::ExactScratch boost_scratch;
+  SameResult(result, Direct(boost, boost_scratch, paths));
 }
 
 TEST(RepresentedFixedPolicy, OverflowBoundariesMatchCheckedBoostWorkZeroAndWorkOne) {
