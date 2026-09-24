@@ -39,28 +39,33 @@ bool Rig::Read(Snapshot& output) {
     Vector(next,group.state.omega);
     Append(next,group.state.principal_axes.v);
   }
-  std::vector<fe::qeph::ForceTrial> q(2);
-  std::vector<fe::t3::ForceTrial> t(1);
+  const auto qcount = fixture.physical.shells()->qeph_count();
+  const auto tcount = fixture.physical.shells()->t3_count();
+  std::vector<fe::qeph::ForceTrial> q(qcount);
+  std::vector<fe::t3::ForceTrial> t(tcount);
   fe::qeph::BatchDiagnostics qd;
   fe::t3::BatchDiagnostics td;
   if (!Good(qeph.CopyAcceptedResults(next.stamp,q.data(),q.size(),&qd)) ||
       !Good(t3.CopyAcceptedResults(next.stamp,t.data(),t.size(),&td))) return false;
   Append(next,qt_mapped_test::Values(q));
   Append(next,qt_mapped_test::Values(t));
-  std::vector<fe::ShellBatchLayeredSection> qsection(2),tsection(1);
-  std::vector<fe::ShellBatchFailureState> qfailure(2);
-  if (!Good(qeph.CopyAcceptedLayeredSectionHistory(next.stamp,qsection.data(),2,&qd)) ||
-      !Good(t3.CopyAcceptedLayeredSectionHistory(next.stamp,tsection.data(),1,&td)) ||
-      !Good(qeph.CopyAcceptedFailureHistory(next.stamp,qfailure.data(),2,&qd))) return false;
+  std::vector<fe::ShellBatchLayeredSection> qsection(qcount),tsection(tcount);
+  std::vector<fe::ShellBatchFailureState> qfailure(qcount);
+  if (!Good(qeph.CopyAcceptedLayeredSectionHistory(next.stamp,qsection.data(),qcount,&qd)) ||
+      !Good(t3.CopyAcceptedLayeredSectionHistory(next.stamp,tsection.data(),tcount,&td)) ||
+      !Good(qeph.CopyAcceptedFailureHistory(next.stamp,qfailure.data(),qcount,&qd))) return false;
   for (const auto& value : qsection) qt_mapped_test::Add(next.values,value);
   for (const auto& value : tsection) qt_mapped_test::Add(next.values,value);
   for (const auto& value : qfailure) qt_mapped_test::Add(next.values,value);
-  std::uint8_t qa[2]{},ta[1]{},ba[1]{};
+  std::vector<std::uint8_t> qa(qcount),ta(tcount);
+  std::uint8_t ba[1]{};
   fe::qbat::BatchDiagnostics bd;
-  if (!Good(qeph.CopyAcceptedParentActivity(next.stamp,qa,2,&qd)) ||
-      !Good(t3.CopyAcceptedParentActivity(next.stamp,ta,1,&td)) ||
+  if (!Good(qeph.CopyAcceptedParentActivity(next.stamp,qa.data(),qcount,&qd)) ||
+      !Good(t3.CopyAcceptedParentActivity(next.stamp,ta.data(),tcount,&td)) ||
       !Good(qbat.CopyAcceptedParentActivity(next.stamp,ba,1,&bd))) return false;
-  next.values.insert(next.values.end(),{qa[0],qa[1],ta[0],ba[0]});
+  next.values.insert(next.values.end(),qa.begin(),qa.end());
+  next.values.insert(next.values.end(),ta.begin(),ta.end());
+  next.values.push_back(ba[0]);
   fe::qbat::BatchResult b;
   if (!Good(qbat.CopyAcceptedResults(next.stamp,&b,1,&bd))) return false;
   const auto bvalues = qbat_resident_test::ResultValues(b);
