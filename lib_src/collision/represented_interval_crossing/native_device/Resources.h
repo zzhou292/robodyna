@@ -12,8 +12,10 @@ struct KernelResources {
   int device_ordinal = -1;
   int active_blocks_per_multiprocessor = 0;
   unsigned worker_limit = 0;
+  unsigned default_workers = 0;
   unsigned threads_per_block = 0;
   unsigned full_pool_blocks = 0;
+  unsigned default_pool_blocks = 0;
   std::size_t device_stack_limit_bytes = 0;
   // Compiler-reported local memory times hardware resident-thread capacity.
   // This is a component bound, not total driver/context/stack memory usage.

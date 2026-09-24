@@ -69,9 +69,13 @@ reported. Query calls do not allocate or resize retained storage. CUDA runtime
 bookkeeping and compiler-managed device call frames remain subject to the
 outer RSS/whole-device guard and actual compiler resource review.
 
-The initial configuration permits 1 through 128 device workers in blocks of
-32. Each worker visits its grid-stride subset with unique output ownership.
-This deliberately bounded starting width is not a production throughput
+The default remains 128 device workers in blocks of 32. An isolated capacity
+extension admits 1 through 4096 workers for a guarded size/width benchmark;
+every extra scratch and DFS row remains under the original explicit arena cap.
+The default launches at most four blocks; the maximum can launch 128 blocks.
+Each worker visits its grid-stride subset with unique output ownership. No
+numerical work budget, frame, block size or publication rule changes with the
+width. This is unselected experimental capacity, not a production throughput
 claim. `--resource-usage` records registers, spills and call frames. No global
 CUDA stack limit is changed. Qualification must record worker/block width,
 scratch/DFS forecasts, actual device growth and compiler-reported local memory.

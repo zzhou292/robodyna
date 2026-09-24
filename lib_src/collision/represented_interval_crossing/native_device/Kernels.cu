@@ -93,8 +93,10 @@ cudaError_t QueryKernelResources(KernelResources* output) noexcept {
     return cudaErrorInvalidValue;
   next.resident_thread_local_bytes = next.function.localSizeBytes * resident_threads;
   next.worker_limit = MaximumDeviceWorkers;
+  next.default_workers = DefaultDeviceWorkers;
   next.threads_per_block = ThreadsPerBlock;
   next.full_pool_blocks = (MaximumDeviceWorkers + ThreadsPerBlock - 1) / ThreadsPerBlock;
+  next.default_pool_blocks = (DefaultDeviceWorkers + ThreadsPerBlock - 1) / ThreadsPerBlock;
   *output = next;
   return cudaSuccess;
 }

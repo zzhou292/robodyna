@@ -18,8 +18,10 @@ int main() {
             << ",\"max_threads_per_multiprocessor\":" << value.device.maxThreadsPerMultiProcessor
             << ",\"active_blocks_per_multiprocessor\":" << value.active_blocks_per_multiprocessor
             << ",\"worker_limit\":" << value.worker_limit
+            << ",\"default_workers\":" << value.default_workers
             << ",\"threads_per_block\":" << value.threads_per_block
             << ",\"full_pool_blocks\":" << value.full_pool_blocks
+            << ",\"default_pool_blocks\":" << value.default_pool_blocks
             << ",\"registers_per_thread\":" << value.function.numRegs
             << ",\"function_max_threads_per_block\":" << value.function.maxThreadsPerBlock
             << ",\"shared_bytes_per_block\":" << value.function.sharedSizeBytes
