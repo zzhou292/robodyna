@@ -12,7 +12,7 @@ import time
 
 OUTPUT_CAP = 16 * 1024 * 1024
 ERROR_CAP = 1024 * 1024
-TIMEOUT_SECONDS = 120
+TIMEOUT_SECONDS = 30
 
 
 def require(value, message):
@@ -97,7 +97,7 @@ def read_complete(path):
     require(footer.get('complete') is True, 'Driver did not finish its complete corpus')
     require(type(footer.get('records')) is int and footer['records'] == len(lines) - 2,
             'Discovery record count differs from completed stream')
-    require(footer['records'] >= 200, 'Expected bounded permutation/recovery corpus did not execute')
+    require(footer['records'] == 314, 'Expected complete314-record permutation/recovery corpus did not execute')
     for line in lines[1:-1]:
         record = json.loads(line)
         require(set(record) == {'scenario', 'workers', 'permutation', 'action', 'report', 'publication'},

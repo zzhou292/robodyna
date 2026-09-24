@@ -58,6 +58,11 @@ std::vector<Scene> Corpus() {
     const ct::Vec3 qv{4294963947.,-4294969411.,2147487132.};
     const ct::Vec3 source_vertex[]{qv,{qv.x+100,qv.y,qv.z},{qv.x,qv.y+100,qv.z}};
     result.push_back(Pair("rounded_boundary_exact_vertex",source_vertex,is,target_vertex,ia));
+    // Regular parallel facets with a finite strict gap and wide exponent
+    // spread exercise the production wide fallback in closest-stratum work.
+    const double tiny=std::ldexp(1.,-100);
+    const ct::Vec3 wide_gap[]{{0,0,tiny},{2,0,tiny},{0,2,tiny}};
+    result.push_back(Pair("wide_exponent_parallel_gap",a,ia,wide_gap,ib));
     return result;
 }
 Scene Permuted(Scene scene,unsigned permutation) {
@@ -130,13 +135,19 @@ void FailureQueries(unsigned workers,serial::Writer& writer) {
     auto report=Query(owner,good,false);Success(report,owner,good);
     writer.Emit("recovery",workers,0,"published_baseline",report,owner);
     const auto before=serial::Publication(owner);
+    auto* before_features=owner.features().data;
+    auto* before_intersections=owner.intersections().data;
     const auto failure=[&](const char* name,const ct::FixedTriangleDiscoveryReport& failed,ct::FixedTriangleDiscoveryStatus expected) {
         writer.Emit("recovery",workers,0,name,failed,owner);
         serial::Require(failed.status==expected,"Unexpected recovery failure class");
         serial::Require(serial::Publication(owner)==before,"Failed query changed previous complete publication");
+        serial::Require(owner.features().data==before_features && owner.intersections().data==before_intersections,
+            "Failed query switched the retained publication buffers");
         const auto retried=Query(owner,good,false);Success(retried,owner,good);
         writer.Emit("recovery",workers,0,"retry",retried,owner);
         serial::Require(serial::Publication(owner)==before,"Recovery retry changed baseline publication");
+        // Reborrow after success: success may legitimately swap publication buffers.
+        before_features=owner.features().data;before_intersections=owner.intersections().data;
     };
     auto malformed=good;malformed.pairs.push_back({0,2});
     failure("late_out_of_range",Query(owner,malformed,false),ct::FixedTriangleDiscoveryStatus::OutOfRange);
@@ -149,6 +160,8 @@ void FailureQueries(unsigned workers,serial::Writer& writer) {
     writer.Emit("recovery",workers,0,"nonfinite_geometry",report,owner);
     serial::Require(report.status!=ct::FixedTriangleDiscoveryStatus::Ok,"Nonfinite geometry was accepted");
     serial::Require(serial::Publication(owner)==before,"Nonfinite input replaced old publication");
+    serial::Require(owner.features().data==before_features && owner.intersections().data==before_intersections,
+        "Nonfinite input switched retained publication buffers");
     report=Query(owner,good,false);Success(report,owner,good);
     writer.Emit("recovery",workers,0,"nonfinite_retry",report,owner);
 
@@ -162,10 +175,14 @@ void FailureQueries(unsigned workers,serial::Writer& writer) {
     writer.Emit("capacity",workers,0,"published_nine",report,tight);
     serial::Require(tight.features().count==9,"Capacity fixture did not publish nine features");
     const auto retained=serial::Publication(tight);
+    const auto* retained_features=tight.features().data;
+    const auto* retained_intersections=tight.intersections().data;
     report=Query(tight,good,false);
     writer.Emit("capacity",workers,0,"complete_count_failure",report,tight);
     serial::Require(report.status==ct::FixedTriangleDiscoveryStatus::ResourceLimit && report.feature_candidates==15,"Expected complete feature-cap failure absent");
     serial::Require(serial::Publication(tight)==retained,"Feature-cap failure replaced old publication");
+    serial::Require(tight.features().data==retained_features && tight.intersections().data==retained_intersections,
+        "Feature-cap failure switched retained publication buffers");
     report=Query(tight,adjacent,true);Success(report,tight,adjacent);
     writer.Emit("capacity",workers,0,"masked_retry",report,tight);
     serial::Require(serial::Publication(tight)==retained,"Masked retry changed equivalent retained feature/intersection values");
