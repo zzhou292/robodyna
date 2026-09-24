@@ -18,6 +18,7 @@ add_library(tl_self_contact_transaction STATIC
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/TaskMask.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/LocalContact.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/RigidSweep.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/ConeDirections.h"
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/Source.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/Qualification.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/self_contact_transaction/CandidateFailureCapture.cpp"

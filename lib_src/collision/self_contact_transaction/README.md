@@ -236,3 +236,52 @@ actual native split/empty calls and failure counting. CUDA coupons compare force
 bits, accepted/candidate receipts, policy outcomes and committed owner state with
 observation disabled, enabled and an always-failing clock, and verify failed
 candidate rollback plus retained/reset observations across retries.
+
+## Bounded affine shared-vertex cone directions
+
+The dedicated local-topology phase may now search a complete finite family of
+constant separating directions after both existing alternatives fail. The original
+20 directions, their order, and the polynomial proof keep every existing successful
+short-circuit. Source-key equality, identical shared-coordinate paths, endpoint-local
+classification and whole-cell nondegeneracy remain prerequisites. Unmasked positive
+thickness separation is still checked by `CertifyQuadraticLocalContact` before this
+phase; the new helper supplies no force, friction, ownership or exclusion shortcut.
+
+For an affine pair, form eight signed endpoint arms: A's two nonshared arms at each
+endpoint and the negated arms of B. A strict constant separator exists exactly when
+the origin is outside their convex hull. The closest point p then satisfies
+p dot r >= p dot p > 0 for every ray. Its supporting face has dimension at most two,
+so a vertex, edge or triangle subset recovers a suitable direction. `ConeDirections`
+streams those candidates: a, e cross (a cross e) for e=b-a, and (b-a) cross (c-a).
+This is at most 8+28+56=92 additional directions, with only eight rays and a cursor
+retained. The original 32-slot candidate array is unchanged.
+
+Candidate construction uses represented binary64 arithmetic and grants no authority.
+The original `DotPolynomialAxis` and strict Bernstein signs verify each proposed
+axis against all four arm trajectories. Zero, nonfinite or uncertain directions
+cannot certify anything; there is no epsilon, geometry perturbation, or cap increase.
+The finite-family completeness statement is exact-arithmetic mathematics, not a
+promise that rounded candidates always find an axis. Extremely scaled but feasible
+sets can remain inconclusive and follow the original failure path.
+
+The new search is enabled only at depth zero/path zero of an authenticated affine
+`local_topology_only` traversal. `CertifyQuadraticFacetPolicyCoverageImpl` invokes
+`CertifyQuadraticLocalContact` once; that method invokes local topology at most once.
+Recursive children have positive depth. Ordinary accepted-ledger and synthetic
+exclusion continuations use `local_topology_only=false`. Thus one complete policy
+attempt generates at most 92 additional directions, including its fallbacks.
+No external budget or caller-supplied valid-geometry flag is introduced. Subdivision
+work/depth accounting and failure priorities remain unchanged apart from newly
+proved local geometry.
+
+Qualification adds independent unbounded rational feasibility and exact arm-dot
+helpers in `ConeDirectionOracle.h`, iterator ordering/rank/touch/overlap tests,
+rotated/scaled families, bounded inconclusive extremes, a generic coplanar geometry
+missed by both old proofs, unchanged old successes, real curved-crossing negatives,
+and source/path rejection. A common invertible affine rotation has no constant root
+separator and checks that the exhausted 92-direction search runs once even when
+subdivision follows. The app owns the separately pinned gate12 fixture/full-policy
+regression; no original vehicle IDs or fixture axis appear in production.
+
+This source slice is unbuilt and unexecuted at authoring. Owning host/source/CUDA
+gates, frozen replay, and real vehicle acceptance remain required before promotion.

@@ -12,6 +12,8 @@ cc_test(
     srcs = [
         "ContinuousLocalTest.cpp",
         "ConeDiagonalCases.h",
+        "AffineConeCases.h",
+        "ConeDirectionOracle.h",
         "OwnerRangeCases.h",
         "FinalizedCoverageLedgerTestAccess.h",
         "ProofOrderCases.h",
@@ -79,6 +81,8 @@ cc_test(
         "AcceptedEventTest.cpp",
         "ContinuousLocalTest.cpp",
         "ConeDiagonalCases.h",
+        "AffineConeCases.h",
+        "ConeDirectionOracle.h",
         "OwnerRangeCases.h",
         "FinalizedCoverageLedgerTestAccess.h",
         "ProofOrderCases.h",

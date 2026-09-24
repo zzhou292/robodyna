@@ -1048,7 +1048,7 @@ for token in ("enum class SharedVertexOrder { PolynomialFirst, ConeFirst }",
               "if constexpr (order == SharedVertexOrder::PolynomialFirst)",
               "CertifyQuadraticLocalTopologyImpl<SharedVertexOrder::ConeFirst>",
               "CertifyQuadraticLocalTopologyImpl<SharedVertexOrder::PolynomialFirst>",
-              "SubdivideCoverage<order>", "LocalSharedVertexOnly<order>"):
+              "SubdivideCoverage<order, search>", "LocalSharedVertexOnly<order>"):
     require(rigid_sweep, token, RIGID_SWEEP)
 local_proof = rigid_sweep[rigid_sweep.index("bool LocalSharedVertexOnly("):
                           rigid_sweep.index("bool LocalSharedEdgeOnly(")]
@@ -1064,5 +1064,20 @@ for token in ("SharedVertexProofOrderComparison", "CompareSharedVertexTopologyOr
     require(qualification_header, token, RIGID_SWEEP)
 if "SharedVertexOrder" in qualification_header:
     raise RuntimeError(f"{RIGID_SWEEP}: private proof order escaped as caller configuration")
+
+# Streamed candidates never replace the existing strict whole-cell verifier.
+cone_direction_path = RIGID_SWEEP.with_name("ConeDirections.h")
+cone_direction = cone_direction_path.read_text()
+for token in ("MaximumDirections = 8 + 28 + 56", "std::array<Vec3, RayCount>",
+              "edge, geometry_detail::Cross"):
+    require(cone_direction, token, cone_direction_path)
+for token in ("SharedVertexAxisSeparated(facets, shared, remote, axis)",
+              "search == AffineConeSearch::Extended && depth == 0 && path == 0",
+              "local_topology_only && exact_affine", "extend_affine_root && lower_local && upper_local",
+              "AffineConeSearch::Original", "CompareAffineConeSearch"):
+    require(rigid_sweep, token, RIGID_SWEEP)
+if not (local_proof.index("if (no_nonlocal_root && lower_local && upper_local) return true") <
+        local_proof.index("AffineRootConeSeparated(")):
+    raise RuntimeError("Generic cone search displaced an existing polynomial success")
 
 print("fixed self-contact transaction source proof: PASS")

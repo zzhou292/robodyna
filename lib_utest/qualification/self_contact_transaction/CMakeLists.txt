@@ -22,6 +22,8 @@ add_executable(self_contact_transaction_values
   TranslatedLocalCases.h
   ContinuousLocalTest.cpp
   ConeDiagonalCases.h
+  AffineConeCases.h
+  ConeDirectionOracle.h
   ProofOrderCases.h
   ProofOrderCoverageCases.h
   NonlinearResultAssertions.h

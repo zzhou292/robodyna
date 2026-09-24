@@ -2,6 +2,8 @@
 #include "lib_src/collision/self_contact_transaction/Storage.h"
 #include "lib_src/collision/self_contact_transaction/SharedVertexProofQualification.h"
 #include "NonlinearResultAssertions.h"
+#include "lib_src/collision/self_contact_transaction/ConeDirections.h"
+#include "ConeDirectionOracle.h"
 #include "lib_src/collision/self_contact_transaction/LocalContact.h"
 
 #include <gtest/gtest.h>
@@ -192,6 +194,7 @@ sct::NonlinearSeparationResult LocalPolicy(
 
 #include "ConeDiagonalCases.h"
 #include "ProofOrderCases.h"
+#include "AffineConeCases.h"
 
 TEST(SelfContactContinuousLocal, CurvedSharedVertexNeedsNoInventedOwner) {
   const auto first = Triangle(

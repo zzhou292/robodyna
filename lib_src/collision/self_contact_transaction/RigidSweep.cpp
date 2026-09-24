@@ -2,6 +2,7 @@
 #include "Storage.h"
 #include "FinalizedCoverageLedger.h"
 #include "SharedVertexProofQualification.h"
+#include "ConeDirections.h"
 #include "LocalContact.h"
 #include "PolicyExclusions.h"
 #include "../fixed_triangle_features/ExactPredicates.h"
@@ -16,6 +17,7 @@ namespace tlfea::contact::self_contact_transaction {
 namespace {
 
 enum class SharedVertexOrder { PolynomialFirst, ConeFirst };
+enum class AffineConeSearch { Original, Extended };
 
 void CountProofOperation(
     SharedVertexProofCounters* counters,
@@ -2281,6 +2283,31 @@ bool DotPolynomialAxis(
   return true;
 }
 
+bool SharedVertexAxisSeparated(
+    const BernsteinFacet facets[2], const unsigned shared[2],
+    const unsigned remote[2][2], Vec3 axis) noexcept {
+  int side_sign[2]{};
+  bool separated = true;
+  for (unsigned side = 0; side < 2 && separated; ++side)
+    for (unsigned arm = 0; arm < 2; ++arm) {
+      BernsteinPolynomial direction[3], projection;
+      if (!PolynomialVectorDifference(
+              facets[side], remote[side][arm],
+              facets[side], shared[side], direction) ||
+          !DotPolynomialAxis(direction, axis, &projection)) {
+        separated = false;
+        break;
+      }
+      const int sign = StrictPolynomialOrientation(projection);
+      if (!sign || (side_sign[side] && side_sign[side] != sign)) {
+        separated = false;
+        break;
+      }
+      side_sign[side] = sign;
+    }
+  return separated && side_sign[0] == -side_sign[1];
+}
+
 bool SharedVertexConeSeparated(
     const BernsteinFacet facets[2],
     const unsigned shared[2],
@@ -2342,29 +2369,39 @@ bool SharedVertexConeSeparated(
   for (unsigned candidate = 0;
        candidate < candidate_count; ++candidate) {
     CountProofOperation(counters, &SharedVertexProofCounters::cone_axes);
-    int side_sign[2]{};
-    bool separated = true;
-    for (unsigned side = 0; side < 2 && separated; ++side)
+    if (SharedVertexAxisSeparated(facets, shared, remote, candidates[candidate])) return true;
+  }
+  return false;
+}
+
+bool AffineRootConeSeparated(
+    const BernsteinFacet facets[2], const CurrentFixedTriangle lower[2],
+    const CurrentFixedTriangle upper[2], const unsigned shared[2],
+    SharedVertexProofCounters* counters) noexcept {
+  if (!lower || !upper || shared[0] >= 3 || shared[1] >= 3) return false;
+  unsigned remote[2][2]{};
+  for (unsigned side = 0; side < 2; ++side) {
+    unsigned arm = 0;
+    for (unsigned vertex = 0; vertex < 3; ++vertex)
+      if (vertex != shared[side]) remote[side][arm++] = vertex;
+  }
+  Vec3 rays[ConeDirections::RayCount];
+  unsigned count = 0;
+  const CurrentFixedTriangle* endpoints[]{lower, upper};
+  for (const auto* triangles : endpoints)
+    for (unsigned side = 0; side < 2; ++side)
       for (unsigned arm = 0; arm < 2; ++arm) {
-        BernsteinPolynomial direction[3], projection;
-        if (!PolynomialVectorDifference(
-                facets[side], remote[side][arm],
-                facets[side], shared[side], direction) ||
-            !DotPolynomialAxis(
-                direction, candidates[candidate], &projection)) {
-          separated = false;
-          break;
-        }
-        const int sign = StrictPolynomialOrientation(projection);
-        if (!sign || (side_sign[side] &&
-                      side_sign[side] != sign)) {
-          separated = false;
-          break;
-        }
-        side_sign[side] = sign;
+        const auto ray = Difference(
+            triangles[side].vertices[remote[side][arm]],
+            triangles[side].vertices[shared[side]]);
+        rays[count++] = side ? Vec3{-ray.x, -ray.y, -ray.z} : ray;
       }
-    if (separated && side_sign[0] == -side_sign[1])
-      return true;
+  CountProofOperation(counters, &SharedVertexProofCounters::affine_searches);
+  ConeDirections directions(rays);
+  Vec3 axis;
+  while (directions.Next(&axis)) {
+    CountProofOperation(counters, &SharedVertexProofCounters::affine_directions);
+    if (SharedVertexAxisSeparated(facets, shared, remote, axis)) return true;
   }
   return false;
 }
@@ -2521,7 +2558,8 @@ bool LocalSharedVertexOnly(
     const CurrentFixedTriangle lower_triangles[2],
     const CurrentFixedTriangle upper_triangles[2],
     bool allow_lower_root, bool allow_upper_root,
-    bool* valid, SharedVertexProofCounters* counters = nullptr) noexcept {
+    bool* valid, SharedVertexProofCounters* counters = nullptr,
+    bool extend_affine_root = false) noexcept {
   if (!valid) return false;
   CountProofOperation(counters, &SharedVertexProofCounters::cells);
   *valid = true;
@@ -2626,8 +2664,12 @@ bool LocalSharedVertexOnly(
   // two arm vectors. Opposite strict arm signs therefore make a common
   // nonzero point impossible for the whole Bernstein cell.
   if constexpr (order == SharedVertexOrder::PolynomialFirst)
-    return SharedVertexConeSeparated(facets, shared, counters);
-  return false;
+    if (SharedVertexConeSeparated(facets, shared, counters)) return true;
+  // Preserve every original successful short-circuit. Additional directions
+  // are admitted once, only in the dedicated affine root topology phase.
+  return extend_affine_root && lower_local && upper_local &&
+      AffineRootConeSeparated(
+          facets, lower_triangles, upper_triangles, shared, counters);
 }
 
 bool LocalSharedEdgeOnly(
@@ -2705,7 +2747,8 @@ bool ExactAffine(
   return true;
 }
 
-template <SharedVertexOrder order = SharedVertexOrder::ConeFirst>
+template <SharedVertexOrder order = SharedVertexOrder::ConeFirst,
+          AffineConeSearch search = AffineConeSearch::Extended>
 NonlinearSeparationStatus SubdivideCoverage(
     const BernsteinFacet facets[2],
     const CurrentFixedTriangle triangles[2],
@@ -2760,7 +2803,9 @@ NonlinearSeparationStatus SubdivideCoverage(
       LocalSharedVertexOnly<order>(
           facets, triangles,
           lower_triangles, upper_triangles,
-          lower_boundary, upper_boundary, &vertex_valid, counters);
+          lower_boundary, upper_boundary, &vertex_valid, counters,
+          search == AffineConeSearch::Extended && depth == 0 && path == 0 &&
+              local_topology_only && exact_affine);
   if (!edge_valid || !vertex_valid)
     return NonlinearSeparationStatus::InvalidInput;
   const bool local_safe =
@@ -2877,7 +2922,7 @@ NonlinearSeparationStatus SubdivideCoverage(
       !SplitFacet(facets[1], &children[1][0], &children[1][1]))
     return NonlinearSeparationStatus::InvalidInput;
   const BernsteinFacet left[2]{children[0][0], children[1][0]};
-  const auto left_status = SubdivideCoverage<order>(
+  const auto left_status = SubdivideCoverage<order, search>(
       left, triangles, lower_triangles, upper_triangles,
       first_thickness, second_thickness,
       owners, owner_count, depth + 1, max_depth, path << 1,
@@ -2889,7 +2934,7 @@ NonlinearSeparationStatus SubdivideCoverage(
           NonlinearSeparationStatus::CertifiedAcceptedCoverage)
     return left_status;
   const BernsteinFacet right[2]{children[0][1], children[1][1]};
-  const auto right_status = SubdivideCoverage<order>(
+  const auto right_status = SubdivideCoverage<order, search>(
       right, triangles, lower_triangles, upper_triangles,
       first_thickness, second_thickness,
       owners, owner_count, depth + 1, max_depth,
@@ -2987,7 +3032,8 @@ NonlinearSeparationResult CertifyQuadraticFacetSeparation(
   return result;
 }
 
-template <SharedVertexOrder order = SharedVertexOrder::ConeFirst>
+template <SharedVertexOrder order = SharedVertexOrder::ConeFirst,
+          AffineConeSearch search = AffineConeSearch::Extended>
 NonlinearSeparationResult CertifyQuadraticFacetCoverageImpl(
     const CurrentFixedTriangle& first_accepted,
     const CurrentFixedTriangle& first_prepared,
@@ -3079,7 +3125,7 @@ NonlinearSeparationResult CertifyQuadraticFacetCoverageImpl(
       return result;
     }
   bool used_coverage = false;
-  result.status = SubdivideCoverage<order>(
+  result.status = SubdivideCoverage<order, search>(
       facets, prepared_triangles,
       accepted_triangles, prepared_triangles,
       first_thickness, second_thickness,
@@ -3097,7 +3143,8 @@ NonlinearSeparationResult CertifyQuadraticFacetCoverageImpl(
   return result;
 }
 
-template <SharedVertexOrder order = SharedVertexOrder::ConeFirst>
+template <SharedVertexOrder order = SharedVertexOrder::ConeFirst,
+          AffineConeSearch search = AffineConeSearch::Extended>
 NonlinearSeparationResult CertifyQuadraticLocalTopologyImpl(
     const CurrentFixedTriangle& first_accepted,
     const CurrentFixedTriangle& first_prepared,
@@ -3137,7 +3184,7 @@ NonlinearSeparationResult CertifyQuadraticLocalTopologyImpl(
       return result;
     }
   }
-  return CertifyQuadraticFacetCoverageImpl<order>(
+  return CertifyQuadraticFacetCoverageImpl<order, search>(
       first_accepted, first_prepared, first_coefficients, 0,
       second_accepted, second_prepared, second_coefficients, 0,
       duration, nullptr, 0, max_work, max_depth, true, true, nullptr, counters);
@@ -3201,6 +3248,26 @@ SharedVertexProofOrderComparison CompareSharedVertexCoverageOrders(
           second_accepted, second_prepared, second_coefficients, second_thickness,
           duration, accepted, accepted_count, max_work, max_depth, true, false,
           nullptr, &result.cone_first.counters);
+  return result;
+}
+
+AffineConeSearchComparison CompareAffineConeSearch(
+    const CurrentFixedTriangle& first_accepted, const CurrentFixedTriangle& first_prepared,
+    const FacetQuadraticCoefficients& first_coefficients,
+    const CurrentFixedTriangle& second_accepted, const CurrentFixedTriangle& second_prepared,
+    const FacetQuadraticCoefficients& second_coefficients,
+    double duration, std::size_t max_work, unsigned max_depth) noexcept {
+  AffineConeSearchComparison result;
+  result.original.report = CertifyQuadraticLocalTopologyImpl<
+      SharedVertexOrder::ConeFirst, AffineConeSearch::Original>(
+          first_accepted, first_prepared, first_coefficients,
+          second_accepted, second_prepared, second_coefficients,
+          duration, max_work, max_depth, &result.original.counters);
+  result.current.report = CertifyQuadraticLocalTopologyImpl<
+      SharedVertexOrder::ConeFirst, AffineConeSearch::Extended>(
+          first_accepted, first_prepared, first_coefficients,
+          second_accepted, second_prepared, second_coefficients,
+          duration, max_work, max_depth, &result.current.counters);
   return result;
 }
 

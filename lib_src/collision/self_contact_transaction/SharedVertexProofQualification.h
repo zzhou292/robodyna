@@ -16,6 +16,8 @@ struct SharedVertexProofCounters {
   std::size_t vertex_face_tasks = 0;
   std::size_t nonincident_edge_tasks = 0;
   std::size_t incident_edge_tasks = 0;
+  std::size_t affine_searches = 0;
+  std::size_t affine_directions = 0;
   bool saturated = false;
 };
 
@@ -43,5 +45,17 @@ SharedVertexProofOrderComparison CompareSharedVertexCoverageOrders(
     const FacetQuadraticCoefficients&, double second_thickness,
     double duration, const AcceptedEventCertificate*, std::size_t accepted_count,
     std::size_t max_work, unsigned max_depth) noexcept;
+
+struct AffineConeSearchComparison {
+  SharedVertexProofOrderResult original, current;
+};
+// Source/value qualification only, preserving the original 20-axis search as
+// an independent disabled-extension reference. No runtime profile is exposed.
+AffineConeSearchComparison CompareAffineConeSearch(
+    const CurrentFixedTriangle&, const CurrentFixedTriangle&,
+    const FacetQuadraticCoefficients&,
+    const CurrentFixedTriangle&, const CurrentFixedTriangle&,
+    const FacetQuadraticCoefficients&,
+    double duration, std::size_t max_work, unsigned max_depth) noexcept;
 
 }  // namespace tlfea::contact::self_contact_transaction
