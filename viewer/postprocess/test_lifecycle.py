@@ -6,6 +6,8 @@ from unittest.mock import patch
 
 from .lifecycle import closed_run, guard_alive, read_json, sha256, wait_for_run
 from .job import bounded_command, run_job
+from .replay_evidence import EXACT_REPLAY_TEST
+from .test_replay_evidence import VALID_REPORT
 
 
 class CompletionTests(unittest.TestCase):
@@ -100,7 +102,7 @@ class CompletionTests(unittest.TestCase):
         def step(config, directory, label, command, gpu=False):
             if label == 'archive-replay':
                 (directory / 'archive-replay.xml').write_text(
-                    '<testsuites tests="1" failures="0" errors="0" disabled="0"/>')
+                    VALID_REPORT)
             elif label == 'overview-encode':
                 dest = directory / 'overview-video'
                 dest.mkdir()
@@ -117,6 +119,39 @@ class CompletionTests(unittest.TestCase):
         self.assertEqual(status['stage'], 'failed')
         self.assertEqual(len(status['videos']), 1)
         self.assertTrue(Path(status['videos'][0]).is_file())
+
+    def test_job_rejects_invalid_replay_before_capture(self):
+        self.save('launch.json', self.launch)
+        invalid_reports = (
+            '<testsuites tests="1" failures="0" errors="0" disabled="0"/>',
+            VALID_REPORT.replace('result="completed"', 'result="skipped"'),
+            VALID_REPORT.replace('ExactOriginalArchiveWallActivityAndFailedSeekPreserveDisplay',
+                                 'DifferentTest'),
+        )
+        for number, report in enumerate(invalid_reports):
+            with self.subTest(number=number):
+                directory = self.root / f'rejected-job-{number}'
+                config = dict(job_directory=str(directory),
+                    launch_receipt=str(self.root / 'launch.json'), run=str(self.root),
+                    wait_timeout_s=1, requested_steps=25, pinned_files={}, environment={},
+                    scene_checker='checker', viewer='viewer', ffmpeg='ffmpeg',
+                    views=[dict(name='overview', camera_arguments=[])])
+
+                def step(config, directory, label, command, gpu=False):
+                    self.assertEqual(label, 'archive-replay')
+                    self.assertIn('--gtest_filter=' + EXACT_REPLAY_TEST, command)
+                    (directory / 'archive-replay.xml').write_text(report)
+
+                with patch('viewer.postprocess.job.wait_for_run',
+                           return_value=closed_run(self.launch)), \
+                     patch('viewer.postprocess.job.bounded_command', side_effect=step) as execute, \
+                     patch('viewer.postprocess.job.notify', return_value=dict(sent=True)):
+                    with self.assertRaises(ValueError):
+                        run_job(config)
+                execute.assert_called_once()
+                status = read_json(directory / 'status.json')
+                self.assertEqual(status['stage'], 'failed')
+                self.assertEqual(status['videos'], [])
 
     def test_bounded_stage_uses_shared_lock_and_explicit_limits(self):
         config = dict(guard='guard', workstation_lock='shared.lock', environment={},

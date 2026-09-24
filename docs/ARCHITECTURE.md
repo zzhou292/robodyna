@@ -141,7 +141,7 @@ limits; a discussed allowance is not an applied launch configuration.
 | Physical stage composition | Focused transaction/publication/rollback tests, then affected original-source acceptance |
 | Contact geometry/formula | TL owning unit/frozen-pair tests, CUDA deterministic coupons when applicable, then source-derived and full acceptance tiers |
 | Archive schema or reader | Owning physical frame/run roundtrip, corruption, cap and prefix tests; exact Chrono replay |
-| Host capture/postprocessing utility | `viewer.postprocess.test_lifecycle`, `viewer.video.tests.test_capture`, `viewer.video.tests.test_encode` |
+| Host capture/postprocessing utility | `viewer.postprocess.test_lifecycle`, `viewer.postprocess.test_replay_evidence`, `viewer.video.tests.test_capture`, `viewer.video.tests.test_encode` |
 | Documentation only | Verify source paths, current-state claims and links; no full vehicle gate |
 
 The Python viewer tests run without a GPU, renderer, or simulation:
@@ -149,7 +149,7 @@ The Python viewer tests run without a GPU, renderer, or simulation:
 ```sh
 # From the application directory, within the workspace's bounded host runner:
 python3 -B -m unittest viewer.postprocess.test_lifecycle \
-  viewer.video.tests.test_capture viewer.video.tests.test_encode -v
+  viewer.postprocess.test_replay_evidence viewer.video.tests.test_capture viewer.video.tests.test_encode -v
 ```
 
 The root CMake file exposes historical coupon options alongside current

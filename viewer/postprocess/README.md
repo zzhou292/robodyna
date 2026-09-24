@@ -22,6 +22,10 @@ Only a closed, hash-consistent accepted archive is renderable. Exit code 2 is
 valid for an intentional diagnostic prefix. A shorter closed run is labeled as
 stopped early, rather than reported as the requested step count. The exact
 all-node/part-color/activity replay test must execute and pass before capture.
+`replay_evidence.py` verifies the named completed GoogleTest case and consistent
+suite/report counts; empty aggregate reports, skipped cases and other test
+identities cannot authorize rendering. The same test identifier selects the
+checker invocation and validates its report.
 No recovered samples are inferred automatically from missing final output.
 
 Each view keeps original part colors, physical deformation scale 1, the finite
@@ -37,4 +41,5 @@ They are local desktop notifications, not scheduled chat messages. Notification
 failure is recorded separately from simulation or video validity. Source
 archives are never modified.
 
-Host tests: `python3 -B -m unittest viewer.postprocess.test_lifecycle -v`.
+Host tests: `python3 -B -m unittest viewer.postprocess.test_lifecycle
+viewer.postprocess.test_replay_evidence -v` (one command).

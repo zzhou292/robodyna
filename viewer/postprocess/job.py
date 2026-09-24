@@ -4,9 +4,9 @@ import os
 from pathlib import Path
 import subprocess
 import sys
-import xml.etree.ElementTree as ET
 
 from .lifecycle import notify, read_json, sha256, wait_for_run, write_status
+from .replay_evidence import EXACT_REPLAY_TEST, require_exact_replay
 
 
 def bounded_command(config, directory, label, command, gpu=False):
@@ -59,12 +59,9 @@ def run_job(config):
                     raise ValueError(f'Prepared tool changed before postprocessing: {path}')
             test_report = directory / 'archive-replay.xml'
             bounded_command(config, directory, 'archive-replay', [config['scene_checker'],
-                '--gtest_filter=PhysicalSceneArchive.ExactOriginalArchiveWallActivityAndFailedSeekPreserveDisplay',
+                '--gtest_filter=' + EXACT_REPLAY_TEST,
                 '--gtest_output=xml:' + str(test_report)])
-            tests = ET.parse(test_report).getroot()
-            if (int(tests.get('tests', '0')) != 1 or int(tests.get('failures', '1')) or
-                    int(tests.get('disabled', '1')) or int(tests.get('errors', '1'))):
-                raise ValueError('Exact archive replay test was missing, skipped, or failed')
+            require_exact_replay(test_report)
             for view in config['views']:
                 name = view['name']
                 capture = directory / (name + '-capture')
