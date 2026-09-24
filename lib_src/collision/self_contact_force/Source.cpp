@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
 #include "SourceQueries.h"
+#include "lib_src/solvers/NodalTrialIdentity.h"
 #include "../fixed_triangle_features/Geometry.h"
 
 namespace tlfea::contact::self_contact_force {
