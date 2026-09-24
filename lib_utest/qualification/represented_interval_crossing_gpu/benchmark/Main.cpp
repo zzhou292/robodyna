@@ -1,0 +1,110 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+#include "Cases.h"
+#include "Results.h"
+#include "lib_src/collision/RepresentedIntervalCrossingGpu.h"
+#include <cuda_runtime_api.h>
+#include <algorithm>
+#include <charconv>
+#include <chrono>
+#include <iomanip>
+#include <iostream>
+#include <limits>
+#include <stdexcept>
+#include <string_view>
+
+namespace b = native_batch_benchmark;
+using Clock = std::chrono::steady_clock;
+double Seconds(Clock::time_point begin) {
+  return std::chrono::duration<double>(Clock::now() - begin).count();
+}
+struct Stream {
+  cudaStream_t value = nullptr;
+  void Initialize() {
+    if (cudaStreamCreateWithFlags(&value, cudaStreamNonBlocking) != cudaSuccess)
+      throw std::runtime_error("CUDA stream creation failed");
+  }
+  ~Stream() { if (value) { cudaStreamSynchronize(value); cudaStreamDestroy(value); } }
+};
+
+int main(int argc, char** argv) try {
+  if (argc != 5 || std::string_view(argv[1]) != "--backend" ||
+      std::string_view(argv[3]) != "--repeats")
+    throw std::invalid_argument("Use --backend cpu|gpu --repeats 1..10000");
+  const std::string_view backend(argv[2]);
+  if (backend != "cpu" && backend != "gpu") throw std::invalid_argument("Unknown backend");
+  const std::string_view input(argv[4]); unsigned repeats = 0;
+  const auto parsed = std::from_chars(input.data(), input.data()+input.size(), repeats);
+  if (parsed.ec != std::errc{} || parsed.ptr != input.data()+input.size() ||
+      repeats == 0 || repeats > 10000) throw std::invalid_argument("Invalid repeat count");
+  const auto setup_start = Clock::now();
+  const auto cases = b::MakeCases(); const auto limits = b::Limits();
+  b::c::RepresentedIntervalCrossing reference_owner;
+  auto report = reference_owner.Initialize(limits);
+  if (report.status != b::c::RepresentedIntervalStatus::Ok) throw std::runtime_error(report.message);
+  report = reference_owner.Certify(cases.paths.data(), cases.paths.size(), cases.pairs.data(), cases.pairs.size());
+  const auto reference = b::Verify(cases, report, reference_owner.results(), nullptr);
+  const double reference_setup_s = Seconds(setup_start);
+  Stream stream; b::c::RepresentedIntervalCrossingGpu gpu;
+  const auto owner_start = Clock::now();
+  if (backend == "gpu") {
+    stream.Initialize(); b::c::RepresentedIntervalGpuLimits gpu_limits; gpu_limits.native = limits;
+    const auto initialized = gpu.Initialize(gpu_limits, stream.value);
+    if (initialized.native.status != b::c::RepresentedIntervalStatus::Ok)
+      throw std::runtime_error(initialized.native.message);
+  }
+  const double owner_setup_s = Seconds(owner_start);
+  b::c::RepresentedIntervalDeviceReport device_reference{};
+  double total = 0, minimum = std::numeric_limits<double>::infinity(), maximum = 0;
+  for (unsigned i = 0; i < repeats + 2; ++i) {
+    const auto start = Clock::now();
+    b::c::RepresentedIntervalResultView view;
+    b::c::RepresentedIntervalDeviceReport device;
+    if (backend == "gpu") {
+      const auto result = gpu.Certify(cases.paths.data(), cases.paths.size(),
+          cases.pairs.data(), cases.pairs.size(), stream.value);
+      report = result.native; device = result.device; view = gpu.results();
+    } else {
+      report = reference_owner.Certify(cases.paths.data(), cases.paths.size(),
+          cases.pairs.data(), cases.pairs.size());
+      view = reference_owner.results();
+    }
+    const double elapsed = Seconds(start);
+    b::Verify(cases, report, view, &reference);
+    if (backend == "gpu") {
+      if (device.status != b::c::RepresentedIntervalDeviceStatus::Ok || !device.device_pairs ||
+          device.device_pairs + device.host_pairs != cases.pairs.size() || device.batches != 1)
+        throw std::runtime_error("Device route is incomplete or unexercised");
+      if (i && (device.device_pairs != device_reference.device_pairs ||
+                device.host_pairs != device_reference.host_pairs ||
+                device.batches != device_reference.batches))
+        throw std::runtime_error("Device route changed across repetitions");
+      device_reference = device;
+    }
+    if (i >= 2) { total += elapsed; minimum = std::min(minimum, elapsed); maximum = std::max(maximum, elapsed); }
+  }
+  std::cout << std::setprecision(17)
+      << "{\"schema\":\"robo_dyna.native_gpu_batch_benchmark.v1\",\"backend\":\"" << backend
+      << "\",\"pairs\":" << cases.pairs.size() << ",\"paths\":" << cases.paths.size()
+      << ",\"cpu_workers\":" << b::WorkerCount << ",\"device_workers\":128,\"warmups\":2,\"repeats\":" << repeats
+      << ",\"input_digest\":" << b::InputDigest(cases) << ",\"result_digest\":" << reference.digest
+      << ",\"report_digest\":" << reference.report_digest << ",\"proof_work_per_batch\":" << reference.work
+      << ",\"device_pairs\":" << device_reference.device_pairs << ",\"host_pairs\":" << device_reference.host_pairs
+      << ",\"device_batches\":" << device_reference.batches
+      << ",\"reference_setup_s\":" << reference_setup_s << ",\"owner_setup_s\":" << owner_setup_s
+      << ",\"mean_certify_s\":" << total/repeats << ",\"minimum_certify_s\":" << minimum
+      << ",\"maximum_certify_s\":" << maximum << ",\"total_certify_s\":" << total
+      << ",\"device_bytes\":" << (backend == "gpu" ? gpu.forecast().device_bytes : 0)
+      << ",\"classes\":[";
+  for (unsigned i = 0; i < b::ClassCount; ++i) {
+    const auto& value = reference.classes[i];
+    std::cout << (i ? "," : "") << "{\"name\":\"" << b::Classes[i].name
+        << "\",\"provenance\":\"" << b::Classes[i].provenance
+        << "\",\"pairs\":" << b::Classes[i].pairs << ",\"separated\":" << value.separated
+        << ",\"crossing\":" << value.crossing << ",\"unresolved\":" << value.unresolved
+        << ",\"work\":" << value.work << "}";
+  }
+  std::cout << "]}\n";
+  return std::cout ? 0 : 1;
+} catch (const std::exception& error) {
+  std::cerr << "Native GPU batch benchmark failed: " << error.what() << '\n'; return 1;
+}

@@ -29,3 +29,8 @@ target_link_libraries(represented_interval_crossing_gpu_resources PRIVATE
   tl_represented_interval_crossing_gpu CUDA::cudart)
 target_compile_features(represented_interval_crossing_gpu_resources PRIVATE cxx_std_17)
 include("${CMAKE_CURRENT_LIST_DIR}/Compound.cmake")
+
+# Optional maintained corpus; ordinary qualification has no external fixture dependency.
+if(NATIVE_BENCHMARK_ROOT)
+  add_subdirectory(benchmark)
+endif()
