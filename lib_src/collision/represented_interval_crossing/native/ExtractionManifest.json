@@ -274,6 +274,10 @@
     {
       "name": "CoordinateBits",
       "sha256": "1cb7440abae70a78cc9639f1eb32213dbd64dbc34aa4deaab2e46f6b1e584fcd"
+    },
+    {
+      "name": "CanonicalAnchor",
+      "sha256": "bb265bbc225e68e69baec91f54fe8e501b821ec119976ad6c3255d152273a06d"
     }
   ]
 }

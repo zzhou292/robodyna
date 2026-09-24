@@ -172,7 +172,7 @@ inline RepresentedIntervalResult Unresolved(const RepresentedIntervalPairKey& ke
   return result;
 }
 
-unsigned CanonicalAnchor(const RepresentedTrianglePath& path) noexcept {
+inline unsigned CanonicalAnchor(const RepresentedTrianglePath& path) noexcept {
   unsigned result = 0;
   for (unsigned vertex = 1; vertex < 3; ++vertex)
     if (Compare(path.vertices[vertex].key, path.vertices[result].key) < 0) result = vertex;
