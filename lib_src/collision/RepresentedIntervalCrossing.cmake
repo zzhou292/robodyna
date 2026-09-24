@@ -5,6 +5,8 @@ add_library(tl_represented_interval_crossing STATIC
   "${CMAKE_CURRENT_LIST_DIR}/RepresentedIntervalCrossing.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/Batch.h"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/NormalReuseQualification.h"
+  "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/ExactProjectionDomain.h"
+  "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/RelativeSeparationQualification.h"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/BatchExecution.h")
 target_link_libraries(tl_represented_interval_crossing
   PUBLIC tl_fixed_contact_facets Threads::Threads)

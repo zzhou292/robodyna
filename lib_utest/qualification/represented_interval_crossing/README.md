@@ -231,3 +231,50 @@ allocator-backed multiplications could remove a later resource failure. Absolute
 resource-error equivalence is not established by the integer bound. Revisit the
 allocation contract and qualify any such changes independently. Recheck this
 audit after changes to Boost, limb width, cutoff, path depth or predicate degree.
+
+## Relative coordinates and two fixed face axes
+
+After the original sampled intersections, sampled degeneracy rejection, both
+`RegularCell` proofs and world AABB test, production may certify another strict
+whole-cell gap. It first subtracts the affine path of the lowest immutable vertex
+key in the canonical first facet and tests coordinate endpoint hulls. If needed,
+it projects those same relative endpoints on the first and second facets' exact
+normals at the **lower sample**, in that order. The axes are fixed throughout the
+cell. No edge-cross or coplanar in-plane axis search is added in this slice.
+
+For a fixed axis n and common affine reference r(t), every vertex projection
+n dot (x(t)-r(t)) is affine. A strict gap between endpoint hulls therefore separates
+both triangles at every simultaneous time. Equality never certifies separation.
+The original nondegeneracy requirement remains mandatory. Selecting the reference
+by immutable source key makes it independent of winding; reversing a face normal
+cannot change the symmetric strict-gap result. Common-translation handling
+explicitly uses the legacy cell path because it already has a complete certificate.
+
+A private immutable `ExactProjectionDomain` is derived from the actual pair's 36
+endpoint components. It mirrors `Exact(double)` exponents, including zeros and
+unnormalized mantissas. With D=max_depth+1, B=53+(emax-emin)+D bounds sampled
+coordinate integers. Additional proofs run only when 2B+3 <= (cutoff-1)*limb_bits.
+On Boost 1.74 / 64-bit limbs / cutoff 40 this means B<=1246, so degree-two operands
+occupy at most 39 limbs. All added products stay below the allocator-backed
+Karatsuba path, and the native 16,384-bit range proof still applies. The supported
+library version is explicit; re-audit another version before enabling it. The
+entire added bundle is disabled for an unsupported/wide domain. Such inputs retain
+the original proof traversal and error policy. No caller supplies a valid flag.
+
+This is an improvement in proof completeness and work, not a promise of identical
+old unresolved statuses. Native `RelativeSeparationTest.cpp` covers bounded exact
+gaps, touching and one-ULP offsets, true non-dyadic crossings, sampled/interior
+degeneracy, an anchor-sensitive deformation/permutation case, domain boundaries,
+wide fallback, scheduling, work limits and failed-publication retry. The private
+`CompareRelativeSeparation` adapter runs one executor with two compile-time proof
+choices; runtime production is fixed to the new choice. Diagnostic counters are
+separate from physical proof work. A source-authenticated app fixture retains its
+captured 4,095-visit exhaustion while comparing the legacy traversal with the new
+one-visit face-normal certificate; accepted-owner/transition proofs remain separate.
+
+Evidence motivating this slice is the guarded feasibility probe
+`crash-work/reports/native-relative-probe-run-1.result.jsonl` in the workspace.
+For source facets 2142381:1 / 2230072:1 it found a strict lower-face-axis gap and
+passed both regularity/sample checks. The x+y-only separated control remains
+outside this deliberately small axis set; genuine t=1/3 contact receives no gap.
+No timestep, force law, thickness, source geometry, work cap or depth cap changes.

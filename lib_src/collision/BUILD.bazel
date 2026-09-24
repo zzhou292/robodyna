@@ -93,6 +93,8 @@ filegroup(
         "RepresentedIntervalCrossingTypes.h",
         "represented_interval_crossing/Batch.h",
         "represented_interval_crossing/NormalReuseQualification.h",
+        "represented_interval_crossing/ExactProjectionDomain.h",
+        "represented_interval_crossing/RelativeSeparationQualification.h",
         "represented_interval_crossing/BatchExecution.h",
     ],
 )
@@ -105,6 +107,8 @@ cc_library(
         "RepresentedIntervalCrossingTypes.h",
         "represented_interval_crossing/Batch.h",
         "represented_interval_crossing/NormalReuseQualification.h",
+        "represented_interval_crossing/ExactProjectionDomain.h",
+        "represented_interval_crossing/RelativeSeparationQualification.h",
         "represented_interval_crossing/BatchExecution.h",
     ],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],

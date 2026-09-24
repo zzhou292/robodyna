@@ -15,7 +15,7 @@ bazel = (collision / "BUILD.bazel").read_text()
 test_cmake = (here / "CMakeLists.txt").read_text()
 test_bazel = (here / "BUILD.bazel").read_text()
 test_sources = (
-    "BatchRosterTest.cpp", "NormalReuseTest.cpp", "ResultAssertions.h", "GeometryTest.cpp", "InvarianceTest.cpp", "FailureTest.cpp",
+    "BatchRosterTest.cpp", "NormalReuseTest.cpp", "RelativeSeparationTest.cpp", "ResultAssertions.h", "GeometryTest.cpp", "InvarianceTest.cpp", "FailureTest.cpp",
     "IdentityTest.cpp", "DeepTest.cpp", "OracleTest.cpp",
     "ParallelTest.cpp", "TranslationProofTest.cpp", "Oracle.cpp",
 )
@@ -197,7 +197,7 @@ normal_implementation = (root / "lib_src/collision/RepresentedIntervalCrossing.c
 for token in ("ExactVec3 normal_a[3]", "ExactVec3 normal_b[3]",
               "bool ready_a[3]", "bool ready_b[3]", "scratch->BeginCell()",
               "normal = Normal(second ? b[sample] : a[sample], counters)",
-              "ready = true", "template <NormalReuse reuse = NormalReuse::Memoize>",
+              "ready = true", "template <NormalReuse reuse = NormalReuse::Memoize,",
               "CertifyPair<NormalReuse::Recompute>", "sizeof(ExactScratch)"):
     if token not in normal_implementation:
         raise RuntimeError(f"Missing lazy normal cache contract: {token}")
@@ -205,6 +205,24 @@ normal_cell = normal_implementation[normal_implementation.index("CellEvaluation 
                                     normal_implementation.index("void RaiseReason(")]
 if normal_cell.index("scratch->BeginCell()") > normal_cell.index("scratch->a[sample] = At("):
     raise RuntimeError("Exact normal readiness survives cell coordinate replacement")
+
+
+
+projection_header = (collision / "represented_interval_crossing/ExactProjectionDomain.h").read_text()
+for token in ("BOOST_VERSION == 107400", "encoded ? static_cast<int>(encoded) - 1023 - 52 : -1074",
+              "(report.karatsuba_cutoff - 1) * report.limb_bits", "maximum_cell_depth + 1",
+              "ExactProjectionDomain() = default"):
+    assert token in projection_header, token
+for token in ("SeparationProof::RelativeFaces", "SeparationProof::LegacyAabb",
+              "EvaluateCell<reuse, SeparationProof::LegacyAabb>",
+              "ProjectionDomain::FromPaths(a, b, limits.max_depth)",
+              "CanonicalAnchor(a)", "RelativeCoordinatesSeparated", "RelativeAxisSeparated"):
+    assert token in source, token
+relative_cell = source[source.index("CellEvaluation EvaluateCell("):source.index("void RaiseReason(")]
+assert relative_cell.index("if (degenerate)") < relative_cell.index("if (regular(false) && regular(true))")
+assert relative_cell.index("SweptBoxesSeparated(scratch->a, scratch->b)") < relative_cell.index("!domain->eligible()")
+assert relative_cell.index("!domain->eligible()") < relative_cell.index("RelativeCoordinatesSeparated(*scratch, anchor)")
+assert "scratch->NormalAt(side != 0, 0, counters)" in relative_cell
 
 print(json.dumps({
     "status": "passed",

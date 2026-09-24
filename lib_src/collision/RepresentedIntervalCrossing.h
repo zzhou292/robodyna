@@ -15,7 +15,8 @@ namespace represented_interval_crossing { struct BatchAccess; }
 // A crossing/contact certificate contains an exact dyadic time at which exact
 // predicates prove the two closed triangles intersect.  A separation
 // certificate covers the complete interval with iteratively partitioned,
-// linear-path endpoint enclosures and a nondegeneracy proof.  Those enclosures
+// linear-path endpoint projection enclosures (world or a common affine
+// reference frame) and a nondegeneracy proof. Those enclosures
 // are separation-only evidence: swept AABB overlap is never called a crossing.
 //
 // Unsupported motion, unresolved degeneracy and bounded-work exhaustion are
@@ -27,8 +28,10 @@ namespace represented_interval_crossing { struct BatchAccess; }
 // count, completeness and bytes. Internal compound batching retains this
 // publication rule for each native slice while hiding live writes throughout.
 // Initialize creates and warms the configured bounded persistent worker pool.
-// Certify allocates no memory, creates no threads, and parallelizes only
-// independent pair certificates. The object is externally nonconcurrent;
+// Certify reuses retained storage, creates no threads, and parallelizes only
+// independent pair certificates. Boost higher-degree products can use temporary
+// workspace for wide arithmetic; see the qualification allocation audit.
+// The object is externally nonconcurrent;
 // overlapping calls fail closed and results() does not expose a live write.
 class RepresentedIntervalCrossing {
  public:

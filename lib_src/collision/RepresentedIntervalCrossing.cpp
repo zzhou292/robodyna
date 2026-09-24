@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "RepresentedIntervalCrossing.h"
 #include "represented_interval_crossing/NormalReuseQualification.h"
+#include "represented_interval_crossing/RelativeSeparationQualification.h"
 #include "represented_interval_crossing/BatchExecution.h"
 
 #include <algorithm>
@@ -25,6 +26,17 @@ constexpr std::size_t kWorkerStackBytes = 2u << 20;
 
 using NormalCounters = represented_interval_crossing::NormalReuseCounters;
 enum class NormalReuse { Recompute, Memoize };
+enum class SeparationProof { LegacyAabb, RelativeFaces };
+using ProjectionDomain = represented_interval_crossing::ExactProjectionDomain;
+using SeparationCounters = represented_interval_crossing::RelativeSeparationCounters;
+
+void CountSeparationOperation(
+    SeparationCounters* counters, std::size_t SeparationCounters::* field) noexcept {
+  if (!counters) return;
+  auto& value = counters->*field;
+  if (value == SIZE_MAX) counters->saturated = true;
+  else ++value;
+}
 
 void CountNormalOperation(
     NormalCounters* counters, std::size_t NormalCounters::* field) noexcept {
@@ -172,6 +184,8 @@ using ExactBackend = boost::multiprecision::cpp_int_backend<
 using ExactInteger =
     boost::multiprecision::number<ExactBackend,
                                   boost::multiprecision::et_off>;
+static_assert(std::numeric_limits<ExactInteger>::digits >= 16384,
+    "Re-audit the projection-domain range proof before reducing exact storage");
 
 struct Dyadic {
   ExactInteger numerator = 0;
@@ -724,6 +738,59 @@ struct ExactScratch {
   }
 };
 
+struct ProjectionHull { Dyadic minimum, maximum; };
+
+template <class Project>
+ProjectionHull RelativeEndpointHull(
+    const ExactTriangle samples[3], const ExactTriangle reference[3],
+    unsigned anchor, const Project& project) {
+  ProjectionHull result;
+  bool first = true;
+  for (unsigned endpoint : {0u, 2u})
+    for (const auto& vertex : samples[endpoint].vertex) {
+      const auto value = project(vertex, reference[endpoint].vertex[anchor]);
+      if (first) { result.minimum = result.maximum = value; first = false; }
+      else {
+        if (Compare(value, result.minimum) < 0) result.minimum = value;
+        if (Compare(value, result.maximum) > 0) result.maximum = value;
+      }
+    }
+  return result;
+}
+
+bool StrictHullGap(const ProjectionHull& a, const ProjectionHull& b) {
+  return Compare(a.maximum, b.minimum) < 0 || Compare(b.maximum, a.minimum) < 0;
+}
+
+bool RelativeCoordinatesSeparated(const ExactScratch& scratch, unsigned anchor) {
+  for (unsigned coordinate = 0; coordinate < 3; ++coordinate) {
+    const auto project = [coordinate](const ExactVec3& point, const ExactVec3& reference) {
+      return Subtract(Component(point, coordinate), Component(reference, coordinate));
+    };
+    const auto first = RelativeEndpointHull(scratch.a, scratch.a, anchor, project);
+    const auto second = RelativeEndpointHull(scratch.b, scratch.a, anchor, project);
+    if (StrictHullGap(first, second)) return true;
+  }
+  return false;
+}
+
+bool RelativeAxisSeparated(const ExactScratch& scratch, unsigned anchor, const ExactVec3& axis) {
+  if (Zero(axis)) return false;
+  const auto project = [&axis](const ExactVec3& point, const ExactVec3& reference) {
+    return Dot(Subtract(point, reference), axis);
+  };
+  const auto first = RelativeEndpointHull(scratch.a, scratch.a, anchor, project);
+  const auto second = RelativeEndpointHull(scratch.b, scratch.a, anchor, project);
+  return StrictHullGap(first, second);
+}
+
+unsigned CanonicalAnchor(const RepresentedTrianglePath& path) noexcept {
+  unsigned result = 0;
+  for (unsigned vertex = 1; vertex < 3; ++vertex)
+    if (Compare(path.vertices[vertex].key, path.vertices[result].key) < 0) result = vertex;
+  return result;
+}
+
 enum class CellDisposition : std::uint8_t {
   Separated,
   Crossing,
@@ -737,12 +804,16 @@ struct CellEvaluation {
   RepresentedIntervalResult crossing;
 };
 
-template <NormalReuse reuse = NormalReuse::Memoize>
+template <NormalReuse reuse = NormalReuse::Memoize,
+          SeparationProof separation = SeparationProof::RelativeFaces>
 CellEvaluation EvaluateCell(const RepresentedTrianglePath& path_a,
                             const RepresentedTrianglePath& path_b,
                             const RepresentedIntervalPairKey& key, Cell cell,
                             ExactScratch* scratch,
-                            NormalCounters* counters = nullptr) {
+                            NormalCounters* counters = nullptr,
+                            const ProjectionDomain* domain = nullptr,
+                            unsigned anchor = 0,
+                            SeparationCounters* separation_counters = nullptr) {
   scratch->BeginCell();
   CountNormalOperation(counters, &NormalCounters::evaluated_cells);
   const auto degenerate_at = [&](bool second, unsigned sample) {
@@ -805,9 +876,42 @@ CellEvaluation EvaluateCell(const RepresentedTrianglePath& path_a,
     else
       return RegularCell(second ? scratch->b : scratch->a, counters);
   };
-  if (regular(false) && regular(true) &&
-      SweptBoxesSeparated(scratch->a, scratch->b)) {
-    return {CellDisposition::Separated, RepresentedIntervalReason::None, {}};
+  if (regular(false) && regular(true)) {
+    if (SweptBoxesSeparated(scratch->a, scratch->b))
+      return {CellDisposition::Separated, RepresentedIntervalReason::None, {}};
+    if constexpr (separation == SeparationProof::RelativeFaces) {
+      if (!domain || !domain->eligible()) {
+        CountSeparationOperation(separation_counters, &SeparationCounters::domain_fallback_cells);
+        return {};
+      }
+      CountSeparationOperation(separation_counters, &SeparationCounters::eligible_cells);
+      // All relative vertex projections are affine over this cell. Subtracting
+      // the same canonical anchor path preserves simultaneous intersection.
+      // Strictly disjoint endpoint hulls therefore certify the entire cell;
+      // equality/touching never succeeds. Original sampled checks and both
+      // whole-cell nondegeneracy proofs above remain mandatory.
+      if (RelativeCoordinatesSeparated(*scratch, anchor)) {
+        CountSeparationOperation(separation_counters, &SeparationCounters::relative_aabb_separated);
+        return {CellDisposition::Separated, RepresentedIntervalReason::None, {}};
+      }
+      // These two axes are fixed at the lower sample. Facet order is canonical;
+      // winding only reverses an axis and cannot change a symmetric strict gap.
+      for (unsigned side = 0; side < 2; ++side) {
+        bool separated = false;
+        if constexpr (reuse == NormalReuse::Memoize) {
+          const auto& axis = scratch->NormalAt(side != 0, 0, counters);
+          separated = RelativeAxisSeparated(*scratch, anchor, axis);
+        } else {
+          const auto axis = Normal(side ? scratch->b[0] : scratch->a[0], counters);
+          separated = RelativeAxisSeparated(*scratch, anchor, axis);
+        }
+        if (separated) {
+          CountSeparationOperation(separation_counters, side
+              ? &SeparationCounters::second_face_separated : &SeparationCounters::first_face_separated);
+          return {CellDisposition::Separated, RepresentedIntervalReason::None, {}};
+        }
+      }
+    }
   }
   return {};
 }
@@ -818,12 +922,14 @@ void RaiseReason(RepresentedIntervalReason candidate,
     *current = candidate;
 }
 
-template <NormalReuse reuse = NormalReuse::Memoize>
+template <NormalReuse reuse = NormalReuse::Memoize,
+          SeparationProof separation = SeparationProof::RelativeFaces>
 RepresentedIntervalResult CertifyPair(
     const RepresentedTrianglePath& a, const RepresentedTrianglePath& b,
     RepresentedIntervalLimits limits, RepresentedIntervalPairKey key,
     Cell* dfs, std::size_t dfs_capacity, ExactScratch* scratch,
-    NormalCounters* counters = nullptr) noexcept {
+    NormalCounters* counters = nullptr,
+    SeparationCounters* separation_counters = nullptr) noexcept {
   if (a.motion != RepresentedMotion::LinearNodalV1 ||
       b.motion != RepresentedMotion::LinearNodalV1)
     return Unresolved(key, RepresentedIntervalReason::UnsupportedMotion, 0);
@@ -839,7 +945,7 @@ RepresentedIntervalResult CertifyPair(
     // differences: a single static exact evaluation is then a whole-interval
     // certificate, even when the absolute swept AABBs overlap.
     if (CommonTranslation(a, b)) {
-      auto evaluation = EvaluateCell<reuse>(a, b, key, {}, scratch, counters);
+      auto evaluation = EvaluateCell<reuse, SeparationProof::LegacyAabb>(a, b, key, {}, scratch, counters);
       if (evaluation.disposition == CellDisposition::Crossing) {
         evaluation.crossing.geometry =
             evaluation.crossing.geometry == RepresentedIntersectionGeometry::Coplanar
@@ -858,6 +964,8 @@ RepresentedIntervalResult CertifyPair(
       result.work = 1;
       return result;
     }
+    const auto domain = ProjectionDomain::FromPaths(a, b, limits.max_depth);
+    const auto anchor = CanonicalAnchor(a);
     while (dfs_size) {
       if (work >= limits.max_work_per_pair) {
         all_leaves_separated = false;
@@ -866,7 +974,8 @@ RepresentedIntervalResult CertifyPair(
       }
       const Cell cell = dfs[--dfs_size];
       ++work;
-      auto evaluation = EvaluateCell<reuse>(a, b, key, cell, scratch, counters);
+      auto evaluation = EvaluateCell<reuse, separation>(a, b, key, cell, scratch, counters,
+                                                       &domain, anchor, separation_counters);
       if (evaluation.disposition == CellDisposition::Crossing) {
         evaluation.crossing.work = work;
         return evaluation.crossing;
@@ -998,6 +1107,25 @@ RepresentedIntervalStatus ValidatePath(
         !parent_matches)
       return RepresentedIntervalStatus::InvalidInput;
   }
+  return RepresentedIntervalStatus::Ok;
+}
+
+RepresentedIntervalStatus QualifyPairInputs(
+    const RepresentedTrianglePath& first, const RepresentedTrianglePath& second,
+    RepresentedIntervalLimits limits, const RepresentedTrianglePath** a,
+    const RepresentedTrianglePath** b) noexcept {
+  if (!a || !b || !limits.max_work_per_pair || limits.max_depth > 52 ||
+      ValidatePath(first) != RepresentedIntervalStatus::Ok ||
+      ValidatePath(second) != RepresentedIntervalStatus::Ok || Same(first.key, second.key))
+    return RepresentedIntervalStatus::InvalidInput;
+  for (const auto& x : first.vertices)
+    for (const auto& y : second.vertices)
+      if (Same(x.key, y.key) &&
+          (first.motion != second.motion || !SameTrajectory(x, y)))
+        return RepresentedIntervalStatus::IdentityMismatch;
+  const bool reverse = Compare(first.key, second.key) > 0;
+  *a = reverse ? &second : &first;
+  *b = reverse ? &first : &second;
   return RepresentedIntervalStatus::Ok;
 }
 
@@ -1744,23 +1872,12 @@ represented_interval_crossing::CompareNormalReuse(
   NormalReuseComparison result;
   result.worker_exact_scratch_bytes = sizeof(ExactScratch);
   result.normal_storage_bytes = 6 * sizeof(ExactVec3);
-  if (!limits.max_work_per_pair || limits.max_depth > 52 ||
-      ValidatePath(first) != RepresentedIntervalStatus::Ok ||
-      ValidatePath(second) != RepresentedIntervalStatus::Ok ||
-      Same(first.key, second.key))
-    return result;
-  // Reuse native identity rules before the private pair executor. This adapter
-  // qualifies one canonical pair, not batch admission/publication authority.
-  for (const auto& a : first.vertices)
-    for (const auto& b : second.vertices)
-      if (Same(a.key, b.key) &&
-          (first.motion != second.motion || !SameTrajectory(a, b))) {
-        result.status = RepresentedIntervalStatus::IdentityMismatch;
-        return result;
-      }
-  const bool reverse = Compare(first.key, second.key) > 0;
-  const auto& a = reverse ? second : first;
-  const auto& b = reverse ? first : second;
+  const RepresentedTrianglePath* first_canonical = nullptr;
+  const RepresentedTrianglePath* second_canonical = nullptr;
+  result.status = QualifyPairInputs(first, second, limits, &first_canonical, &second_canonical);
+  if (result.status != RepresentedIntervalStatus::Ok) return result;
+  const auto& a = *first_canonical;
+  const auto& b = *second_canonical;
   const RepresentedIntervalPairKey key{{a.key, b.key}};
   Cell dfs[53];
   const auto dfs_capacity = static_cast<std::size_t>(limits.max_depth) + 1;
@@ -1774,6 +1891,28 @@ represented_interval_crossing::CompareNormalReuse(
   StoreResult(recomputed, &result.recomputed.result);
   StoreResult(memoized, &result.memoized.result);
   result.status = RepresentedIntervalStatus::Ok;
+  return result;
+}
+
+represented_interval_crossing::RelativeSeparationComparison
+represented_interval_crossing::CompareRelativeSeparation(
+    const RepresentedTrianglePath& first, const RepresentedTrianglePath& second,
+    RepresentedIntervalLimits limits) noexcept {
+  RelativeSeparationComparison result;
+  const RepresentedTrianglePath* a = nullptr;
+  const RepresentedTrianglePath* b = nullptr;
+  result.status = QualifyPairInputs(first, second, limits, &a, &b);
+  if (result.status != RepresentedIntervalStatus::Ok) return result;
+  result.domain = ProjectionDomain::FromPaths(*a, *b, limits.max_depth).report();
+  const RepresentedIntervalPairKey key{{a->key, b->key}};
+  Cell dfs[53]; ExactScratch scratch;
+  const auto capacity = static_cast<std::size_t>(limits.max_depth) + 1;
+  const auto legacy = CertifyPair<NormalReuse::Memoize, SeparationProof::LegacyAabb>(
+      *a, *b, limits, key, dfs, capacity, &scratch);
+  const auto current = CertifyPair<NormalReuse::Memoize, SeparationProof::RelativeFaces>(
+      *a, *b, limits, key, dfs, capacity, &scratch, nullptr, &result.counters);
+  StoreResult(legacy, &result.legacy);
+  StoreResult(current, &result.current);
   return result;
 }
 
