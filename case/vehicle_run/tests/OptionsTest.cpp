@@ -221,4 +221,41 @@ TEST(VehicleRunOptions, NativeCudaRequestIsExplicitAndSharesForecastConfiguratio
     EXPECT_THROW(Parse(args),std::invalid_argument);
 }
 
+TEST(VehicleRunOptions, ExactStepsNormalizeDurationAndPreserveProfileDefaults) {
+    auto wall = Arguments();
+    wall.insert(wall.end(), {"--steps", "6000", "--samples", "51"});
+    const auto wall_options = Parse(wall);
+    EXPECT_EQ(wall_options.config.fixed_dt_s, 3e-7);
+    EXPECT_EQ(wall_options.config.exact_steps, 6000u);
+    EXPECT_EQ(wall_options.config.duration_s, Plan(wall_options.config).requested_duration_s);
+    auto self = wall;
+    self.insert(self.end(), {"--contact-profile", "wall-self-contact-v1",
+        "--self-contact-member", "combine.key", "--physical-profile", "vehicle-supports-v5"});
+    const auto defaults = Parse(self);
+    EXPECT_EQ(defaults.config.fixed_dt_s, 2e-7);
+    EXPECT_EQ(Plan(defaults.config).intervals, 6000u);
+    self.insert(self.end(), {"--fixed-dt-s", "2.25e-7"});
+    const auto candidate = Parse(self);
+    EXPECT_EQ(candidate.config.fixed_dt_s, 2.25e-7);
+    EXPECT_EQ(candidate.config.duration_s, Plan(candidate.config).requested_duration_s);
+    EXPECT_EQ(Plan(candidate.config).intervals, 6000u);
+    EXPECT_EQ(candidate.diagnostic_intervals, 0u);
+}
+TEST(VehicleRunOptions, ExactStepConflictsAndInvalidCountsRejectBeforeSourceRead) {
+    for (const auto& tail : std::vector<std::vector<std::string>>{
+        {"--steps", "0"}, {"--steps", "-1"}, {"--steps", "1.5"},
+        {"--steps", "18446744073709551616"},
+        {"--steps", "6000", "--steps", "6000"},
+        {"--steps", "6000", "--duration-ms", "5"},
+        {"--duration-ms", "5", "--steps", "6000"},
+        {"--steps", "6000", "--fixed-dt-s", "0"},
+        {"--steps", "6000", "--fixed-dt-s", "-1"},
+        {"--steps", "6000", "--fixed-dt-s", "nan"},
+        {"--steps", "6000", "--fixed-dt-s", "inf"}}) {
+        auto args = Arguments();
+        args.insert(args.end(), tail.begin(), tail.end());
+        EXPECT_THROW(Parse(args), std::exception);
+    }
+}
+
 } // namespace crash::cases::vehicle_run::test
