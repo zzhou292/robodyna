@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 
+#include "FixedTriangleDiscoveryDiagnostics.h"
+
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -39,6 +41,8 @@ struct SelfContactDiscoveryDiagnostics {
   std::uint64_t raw_intersections = 0, intersections = 0;
   std::uint64_t potential_tasks = 0, local_masked_tasks = 0;
   std::uint64_t exact_executed_tasks = 0;
+  std::uint64_t timed_calls = 0;
+  FixedTriangleDiscoveryTimings timing;
 };
 
 struct SelfContactAttemptDiagnostics {

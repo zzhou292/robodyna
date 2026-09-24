@@ -6,6 +6,8 @@ find_package(Python3 REQUIRED COMPONENTS Interpreter)
 get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
 include("${TL_ROOT}/lib_src/collision/FixedTriangleFeatureDiscovery.cmake")
 add_executable(fixed_triangle_features_host
+  DiagnosticsTest.cpp
+  exact_storage/DiscoverySerialization.h
   AdapterTest.cpp
   CapacityTest.cpp
   ExhaustiveTest.cpp

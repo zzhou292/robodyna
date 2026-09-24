@@ -2,6 +2,7 @@
 #pragma once
 
 #include "../SelfContactTransactionDiagnostics.h"
+#include "../DiagnosticClock.h"
 #include "../FixedTriangleFeatureTypes.h"
 #include "CrossingBatch.h"
 
@@ -11,26 +12,9 @@
 
 namespace tlfea::contact::self_contact_transaction {
 
-// Reuses robo-dyna benchmarks/stage_timing/StageTimer's per-instance monotonic
-// clock, errno preservation, valid-sample accounting and saturation pattern.
-// Kept private here to avoid a TL -> app dependency or a new app host dependency.
-// Only qualification installs another reader; production uses this clock.
-struct DiagnosticClock {
-  using Read = bool (*)(void*, std::uint64_t*) noexcept;
-  Read read = nullptr;
-  void* context = nullptr;
-};
-
-inline bool DiagnosticNanoseconds(void*, std::uint64_t* output) noexcept {
-  timespec value{};
-  if (clock_gettime(CLOCK_MONOTONIC, &value) != 0 || value.tv_sec < 0 ||
-      value.tv_nsec < 0 || value.tv_nsec >= 1000000000) return false;
-  const auto seconds = static_cast<std::uint64_t>(value.tv_sec);
-  const auto fraction = static_cast<std::uint64_t>(value.tv_nsec);
-  if (seconds > (UINT64_MAX - fraction) / 1000000000) return false;
-  *output = seconds * 1000000000 + fraction;
-  return true;
-}
+using DiagnosticClock = diagnostic::Clock;
+using diagnostic::Nanoseconds;
+inline constexpr auto DiagnosticNanoseconds = Nanoseconds;
 
 // One serialized coordinator, nonoverlapping coarse stages. No allocations,
 // CUDA calls, physical work accounting, callbacks into mechanics or exceptions.
@@ -71,7 +55,8 @@ class DiagnosticAttempt {
     Finish(false);
     Start(stage);
   }
-  void Discovery(const FixedTriangleDiscoveryReport& report) noexcept {
+  void Discovery(const FixedTriangleDiscoveryReport& report,
+                 const FixedTriangleDiscoveryDiagnostics& child = {}) noexcept {
     if (!snapshot_.enabled) return;
     auto& counts = snapshot_.discovery;
     Add(counts.calls, 1);
@@ -92,6 +77,26 @@ class DiagnosticAttempt {
     Add(counts.potential_tasks, report.potential_tasks);
     Add(counts.local_masked_tasks, report.local_masked_tasks);
     Add(counts.exact_executed_tasks, report.exact_executed_tasks);
+    if (child.enabled && child.finished) {
+      auto& total = counts.timing;
+      const auto& timing = child.timing;
+      total.counter_saturated |= timing.counter_saturated;
+      // Use a child-specific saturation flag as well as the enclosing attempt.
+      const auto add = [&](std::uint64_t& target, std::uint64_t value) {
+        if (value > UINT64_MAX - target) total.counter_saturated = true;
+        Add(target, value);
+      };
+      add(counts.timed_calls, 1);
+      add(total.clock_failures, timing.clock_failures);
+      add(total.backward_samples, timing.backward_samples);
+      for (std::size_t i = 0; i < total.stages.size(); ++i) {
+        auto& dst = total.stages[i];
+        const auto& src = timing.stages[i];
+        add(dst.calls, src.calls); add(dst.failures, src.failures);
+        add(dst.valid_samples, src.valid_samples); add(dst.wall_ns, src.wall_ns);
+        dst.maximum_ns = std::max(dst.maximum_ns, src.maximum_ns);
+      }
+    }
   }
   void Crossing(const CrossingBatchReport& report, std::size_t requested_pairs,
                 std::size_t batch_capacity) noexcept {

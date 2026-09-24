@@ -191,4 +191,44 @@ TEST(SelfContactDiagnostics, ActualNativeBatchReportsCountExactlyOnceIncludingEm
   EXPECT_EQ(value.native_work, expected_work);
   EXPECT_TRUE(value.counts_complete);
 }
+TEST(SelfContactDiagnostics, DiscoveryTimingsAggregatePartialAndSaturatedSamples) {
+  c::SelfContactAttemptDiagnostics value;
+  c::FixedTriangleDiscoveryDiagnostics child;
+  child.enabled = child.finished = true;
+  child.timing.clock_failures = 1;
+  child.timing.backward_samples = 2;
+  const auto geometry = static_cast<std::size_t>(c::FixedTriangleDiscoveryStage::Geometry);
+  auto& counter = child.timing.stages[geometry];
+  counter.calls = 2; counter.failures = 1; counter.valid_samples = 1;
+  counter.wall_ns = 8; counter.maximum_ns = 8;
+  {
+    sct::DiagnosticAttempt attempt(value, true, 1, 0, 1);
+    attempt.Discovery({}, child);
+    counter.wall_ns = UINT64_MAX; counter.maximum_ns = UINT64_MAX;
+    attempt.Discovery({}, child);
+    child.enabled = false;
+    attempt.Discovery({}, child); // Count report, but not an absent child timer.
+    attempt.Success();
+  }
+  EXPECT_EQ(value.discovery.calls, 3u);
+  EXPECT_EQ(value.discovery.timed_calls, 2u);
+  EXPECT_EQ(value.discovery.timing.clock_failures, 2u);
+  EXPECT_EQ(value.discovery.timing.backward_samples, 4u);
+  EXPECT_TRUE(value.discovery.timing.counter_saturated);
+  const auto& sum = value.discovery.timing.stages[geometry];
+  EXPECT_EQ(sum.calls, 4u); EXPECT_EQ(sum.failures, 2u);
+  EXPECT_EQ(sum.valid_samples, 2u);
+  EXPECT_EQ(sum.wall_ns, UINT64_MAX); EXPECT_EQ(sum.maximum_ns, UINT64_MAX);
+  c::SelfContactAttemptDiagnostics overflow;
+  {
+    sct::DiagnosticAttempt attempt(overflow, true, 1, 0, 2);
+    overflow.discovery.timed_calls = UINT64_MAX;
+    child.enabled = true;
+    attempt.Discovery({}, child);
+    attempt.Success();
+  }
+  EXPECT_EQ(overflow.discovery.timed_calls, UINT64_MAX);
+  EXPECT_TRUE(overflow.counter_saturated);
+  EXPECT_TRUE(overflow.discovery.timing.counter_saturated);
+}
 }  // namespace

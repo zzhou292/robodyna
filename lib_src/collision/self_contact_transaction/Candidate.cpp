@@ -1047,7 +1047,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
           state.buffers.prepared_triangles, triangles,
           state.buffers.facet_pair_chunk, pair_count,
           state.buffers.chunk_feature_task_masks);
-      diagnostics.Discovery(discovery);
+      diagnostics.Discovery(discovery, state.candidate_discovery.diagnostics());
       if (discovery.status != FixedTriangleDiscoveryStatus::Ok) {
         auto report = Failure(
             S::DiscoveryFailure, discovery.message,

@@ -262,9 +262,12 @@ SelfContactTransactionReport SelfContactTransaction::Initialize(
     report.regularity_status = regularity.status;
     return report;
   }
+  auto accepted_discovery_limits = limits.accepted_discovery;
+  accepted_discovery_limits.enable_diagnostics = config.enable_diagnostics;
+  auto candidate_discovery_limits = limits.candidate_discovery;
+  candidate_discovery_limits.enable_diagnostics = config.enable_diagnostics;
   const auto accepted_discovery =
-      next->accepted_discovery.Initialize(
-          limits.accepted_discovery);
+      next->accepted_discovery.Initialize(accepted_discovery_limits);
   if (accepted_discovery.status !=
       FixedTriangleDiscoveryStatus::Ok) {
     auto report =
@@ -273,8 +276,7 @@ SelfContactTransactionReport SelfContactTransaction::Initialize(
     return report;
   }
   const auto candidate_discovery =
-      next->candidate_discovery.Initialize(
-          limits.candidate_discovery);
+      next->candidate_discovery.Initialize(candidate_discovery_limits);
   if (candidate_discovery.status !=
       FixedTriangleDiscoveryStatus::Ok) {
     auto report =
@@ -501,7 +503,7 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
     const auto discovery = state.accepted_discovery.DiscoverMasked(
         state.buffers.accepted_triangles, state.facet_count,
         pairs, pair_count, state.buffers.chunk_feature_task_masks);
-    diagnostics.Discovery(discovery);
+    diagnostics.Discovery(discovery, state.accepted_discovery.diagnostics());
     if (discovery.status != FixedTriangleDiscoveryStatus::Ok) {
       auto report = Failure(S::DiscoveryFailure, discovery.message);
       report.discovery_status = discovery.status;
@@ -664,7 +666,7 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
     const auto discovery = state.accepted_discovery.DiscoverMasked(
         state.buffers.accepted_triangles, state.facet_count,
         pairs, pair_count, state.buffers.chunk_feature_task_masks);
-    diagnostics.Discovery(discovery);
+    diagnostics.Discovery(discovery, state.accepted_discovery.diagnostics());
     if (discovery.status != FixedTriangleDiscoveryStatus::Ok) {
       auto report = Failure(S::DiscoveryFailure, discovery.message);
       report.discovery_status = discovery.status;

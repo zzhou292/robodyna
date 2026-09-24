@@ -2,6 +2,7 @@
 #include "../FixedTriangleFeatureDiscovery.h"
 
 #include "Geometry.h"
+#include "Diagnostics.h"
 
 #include <algorithm>
 #include <atomic>
@@ -201,6 +202,7 @@ struct FixedTriangleFeatureDiscovery::Impl {
 
   FixedTriangleFeatureLimits limits;
   FixedTriangleFeatureForecast forecast;
+  FixedTriangleDiscoveryDiagnostics diagnostics;
   std::unique_ptr<TriangleLedgerEntry[]> triangle_ledger;
   std::unique_ptr<VertexLedgerEntry[]> vertex_ledger;
   std::unique_ptr<EdgeLedgerEntry[]> edge_ledger;
@@ -657,6 +659,9 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::DiscoverImpl(
     std::atomic<bool>* value;
     ~BusyRelease() { value->store(false, std::memory_order_release); }
   } busy_release{&impl_->busy};
+  ft::DiscoveryTiming timing(impl_->diagnostics,
+                             impl_->limits.enable_diagnostics, report);
+  using Stage = FixedTriangleDiscoveryStage;
   if (impl_->phase.load(std::memory_order_acquire) !=
       Impl::Phase::Warm) {
     report.status = FixedTriangleDiscoveryStatus::ResourceLimit;
@@ -666,6 +671,7 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::DiscoverImpl(
   // All previously borrowed views expire at this entry.  Staging remains
   // separate, so every failure below preserves the last complete publication.
   if (pair_count == 0) {
+    timing.Stage(Stage::Publication);
     impl_->PublishEmpty();
     return report;
   }
@@ -732,9 +738,11 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::DiscoverImpl(
     impl_->triangle_ledger[triangle_write++].value =
         triangles[pairs[i].second];
   }
+  timing.Stage(Stage::InputSort);
   std::sort(impl_->triangle_ledger.get(),
             impl_->triangle_ledger.get() + triangle_write,
             TriangleLedgerLess);
+  timing.Stage(Stage::InputLedger);
   std::size_t unique_triangles = 0;
   for (std::size_t i = 0; i < triangle_write; ++i) {
     if (unique_triangles &&
@@ -795,9 +803,11 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::DiscoverImpl(
                         triangle.edge_keys[local].endpoints[1])}};
     }
   }
+  timing.Stage(Stage::InputSort);
   std::sort(impl_->vertex_ledger.get(),
             impl_->vertex_ledger.get() + vertex_write,
             VertexLedgerLess);
+  timing.Stage(Stage::InputLedger);
   std::size_t unique_vertices = 0;
   for (std::size_t i = 0; i < vertex_write; ++i) {
     if (unique_vertices &&
@@ -818,8 +828,10 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::DiscoverImpl(
   }
   report.vertices = unique_vertices;
 
+  timing.Stage(Stage::InputSort);
   std::sort(impl_->edge_ledger.get(),
             impl_->edge_ledger.get() + edge_write, EdgeLedgerLess);
+  timing.Stage(Stage::InputLedger);
   std::size_t unique_edges = 0;
   for (std::size_t i = 0; i < edge_write; ++i) {
     if (unique_edges &&
@@ -840,6 +852,7 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::DiscoverImpl(
     ++unique_edges;
   }
   report.edges = unique_edges;
+  timing.Stage(Stage::TaskPreparation);
 
   for (std::size_t i = 0; i < pair_count; ++i) {
     auto& stage = impl_->pair_status[i];
@@ -889,6 +902,7 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::DiscoverImpl(
     return report;
   }
 
+  timing.Stage(Stage::Geometry);
   if (!impl_->RunWorkers(triangles, pairs, pair_count)) {
     report.status = FixedTriangleDiscoveryStatus::ResourceLimit;
     report.message =
@@ -896,6 +910,7 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::DiscoverImpl(
     return report;
   }
 
+  timing.Stage(Stage::ResultFold);
   std::size_t feature_write = 0;
   for (std::size_t i = 0; i < pair_count; ++i) {
     const auto& stage = impl_->pair_status[i];
@@ -966,8 +981,10 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::DiscoverImpl(
       impl_->raw_intersections[intersection_write++] =
           impl_->pair_status[i].intersection;
 
+  timing.Stage(Stage::OutputSort);
   std::sort(impl_->raw_features.get(),
             impl_->raw_features.get() + feature_write, ft::FeatureLess);
+  timing.Stage(Stage::ResultFold);
   std::size_t unique_features = 0;
   for (std::size_t i = 0; i < feature_write; ++i) {
     if (unique_features &&
@@ -986,9 +1003,11 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::DiscoverImpl(
     ++unique_features;
   }
 
+  timing.Stage(Stage::OutputSort);
   std::sort(impl_->raw_intersections.get(),
             impl_->raw_intersections.get() + intersection_write,
             ft::IntersectionLess);
+  timing.Stage(Stage::ResultFold);
   std::size_t unique_intersections = 0;
   for (std::size_t i = 0; i < intersection_write; ++i) {
     if (unique_intersections &&
@@ -1020,6 +1039,7 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::DiscoverImpl(
     report.message = Message(report.status);
     return report;
   }
+  timing.Stage(Stage::Publication);
   for (std::size_t i = 0; i < unique_features; ++i)
     impl_->features[i] = impl_->raw_features[i];
   for (std::size_t i = 0; i < unique_intersections; ++i)
@@ -1033,6 +1053,12 @@ FixedTriangleDiscoveryReport FixedTriangleFeatureDiscovery::DiscoverImpl(
 FixedTriangleFeatureForecast FixedTriangleFeatureDiscovery::forecast()
     const noexcept {
   return impl_ ? impl_->forecast : FixedTriangleFeatureForecast{};
+}
+
+FixedTriangleDiscoveryDiagnostics FixedTriangleFeatureDiscovery::diagnostics()
+    const noexcept {
+  if (!impl_ || impl_->busy.load(std::memory_order_acquire)) return {};
+  return impl_->diagnostics;
 }
 
 FixedTriangleFeatureView FixedTriangleFeatureDiscovery::features()

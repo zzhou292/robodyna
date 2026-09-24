@@ -24,6 +24,9 @@ production = [
     COLLISION / "fixed_triangle_features/Discovery.cpp",
     COLLISION / "fixed_triangle_features/ExactInteger.h",
     COLLISION / "fixed_triangle_features/ExactPredicateKernel.h",
+    COLLISION / "FixedTriangleDiscoveryDiagnostics.h",
+    COLLISION / "DiagnosticClock.h",
+    COLLISION / "fixed_triangle_features/Diagnostics.h",
 ]
 for path in production:
     assert path.is_file(), path

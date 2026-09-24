@@ -251,6 +251,8 @@ struct FixedTriangleFeatureLimits {
   // Total persistent startup worker threads. The caller only stages and
   // canonically reduces pair results; it is not counted as a worker.
   unsigned worker_count = 1;
+  // Diagnostic-only; no per-pair clocks or physical report changes.
+  bool enable_diagnostics = false;
 };
 
 struct FixedTriangleFeatureForecast {
