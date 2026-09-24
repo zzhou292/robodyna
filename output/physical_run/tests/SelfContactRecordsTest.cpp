@@ -141,6 +141,40 @@ TEST(PhysicalRunSelfContact, InitialOnlyPrefixAndSampledActivityReplayUseExpande
     }
 }
 
+TEST(PhysicalRunSelfContact, LongHorizonPrefixUsesExactReadStagingAndRejectsOneByteShort) {
+    const auto context=Context();const auto profile=SelfProfile();ft::Directory directory;
+    constexpr std::uint64_t Planned=25001;
+    const auto required=IntervalReadStagingBytes(profile,Planned,kArtifactFileCap);
+    ASSERT_EQ(required,29401176u); //49 typed columns,25001 declared rows,three staging copies.
+    ASSERT_GT(required,16u<<20);
+    ASSERT_LT(required,256u<<20);
+    IntervalWriter writer(directory.path,context,profile,Planned,kArtifactFileCap,required);
+    writer.Append(SelfRow(context,1));writer.Append(SelfRow(context,2));
+    const auto segments=writer.Finish();ASSERT_EQ(segments.size(),1u);
+    ASSERT_EQ(segments.front().rows,2u);
+    std::size_t visited=0;
+    const auto observe=[&](const Values&) {++visited;};
+    EXPECT_THROW(ReadIntervals(directory.path,context,profile,Planned,2,segments,
+        kArtifactFileCap,16u<<20,observe),std::exception);
+    EXPECT_EQ(visited,0u);
+    EXPECT_THROW(ReadIntervals(directory.path,context,profile,Planned,2,segments,
+        kArtifactFileCap,required-1,observe),std::exception);
+    EXPECT_EQ(visited,0u);
+    const auto complete=ReadIntervals(directory.path,context,profile,Planned,2,segments,
+        kArtifactFileCap,required,[&](const Values& row) {
+            const auto expected=SelfRow(context,++visited);
+            EXPECT_TRUE(records::SameStamp(row.stamp,expected.stamp));
+            ASSERT_TRUE(row.self_contact);Exact(*row.self_contact,*expected.self_contact);
+        });
+    EXPECT_EQ(visited,2u);EXPECT_EQ(complete.last.epoch,2u);
+    // The existing conservative empty-prefix contract also stays unchanged.
+    EXPECT_THROW(ReadIntervals(directory.path,context,profile,Planned,0,{},
+        kArtifactFileCap,required-1,{}),std::exception);
+    EXPECT_EQ(ReadIntervals(directory.path,context,profile,Planned,0,{},
+        kArtifactFileCap,required,{}).last.epoch,0u);
+    EXPECT_THROW(IntervalReadStagingBytes(profile,UINT64_MAX,kArtifactFileCap),std::exception);
+}
+
 TEST(PhysicalRunSelfContact, LegacyProfileBytesAndColumnsRemainUnchanged) {
     ft::Directory dir;const auto document=ProfileDocument({});
     const auto file=WriteDocument(dir.path,"legacy.json",document,MetadataCap);

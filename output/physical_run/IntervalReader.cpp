@@ -1,5 +1,22 @@
 #include "IntervalIO.h"
+#include <algorithm>
+#include <limits>
 namespace crash::output::physical_run {
+namespace {
+std::size_t StagingBytes(Profile profile,const interval::ChunkPlan& plan) {
+    const auto columns=IntegerFields(profile).size()+RealFields(profile).size();
+    const auto rows=std::min(plan.rows_per_chunk,plan.intervals);
+    constexpr std::size_t CopiesAndScalarBytes=3*8;
+    Require(columns && columns<=std::numeric_limits<std::size_t>::max()/CopiesAndScalarBytes &&
+        rows<=std::numeric_limits<std::size_t>::max()/(CopiesAndScalarBytes*columns),
+        "Physical interval read staging size is unrepresentable");
+    return static_cast<std::size_t>(rows)*CopiesAndScalarBytes*columns;
+}
+} // namespace
+std::size_t IntervalReadStagingBytes(Profile profile,std::uint64_t planned,std::size_t file_cap) {
+    return StagingBytes(profile,interval::PlanChunks(
+        planned,file_cap,kArtifactMaximumTotalCap,ExtraIntervalBytes(profile)));
+}
 Sequence ReadIntervals(const std::filesystem::path& root,const records::Context& c,Profile p,
     std::uint64_t planned,std::uint64_t accepted,const std::vector<Segment>& segments,
     std::size_t file_cap,std::size_t host_cap,const std::function<void(const Values&)>& visit) {
@@ -8,7 +25,7 @@ Sequence ReadIntervals(const std::filesystem::path& root,const records::Context&
         "Incomplete physical interval segment coverage");
     const auto cols=RealFields(p).size();
     const auto ints=IntegerFields(p).size();
-    Require(host_cap && host_cap<=256u<<20 && std::min(plan.rows_per_chunk,planned)<=host_cap/(3*8*(ints+cols)),
+    Require(host_cap && host_cap<=256u<<20 && StagingBytes(p,plan)<=host_cap,
         "Physical interval read staging exceeds host cap");
     const arrays::Limits limits{file_cap,UINT32_MAX,64};
     Sequence sequence;

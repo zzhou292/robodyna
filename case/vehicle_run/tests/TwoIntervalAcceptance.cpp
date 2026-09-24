@@ -1,4 +1,5 @@
 #include "TwoIntervalAcceptance.h"
+#include "retained_archive/TwoIntervalReplay.h"
 #include "OriginalFixture.h"
 #include "../SelfContactSummary.h"
 #include "../contact_diagnostics/Document.h"
@@ -49,39 +50,6 @@ void PrintProgress(const Progress& progress) {
     std::cout << '\n';
 }
 
-void CheckContactRow(const archive::Values& row,
-                     const records::Context& context,
-                     std::uint64_t epoch,
-                     std::uint64_t source_id,
-                     std::size_t selected_parents,
-                     std::size_t event_capacity) {
-    EXPECT_EQ(row.owner, context.identity().owner);
-    EXPECT_EQ(row.stamp.epoch, epoch);
-    EXPECT_EQ(row.stamp.base_epoch, epoch - 1);
-    EXPECT_EQ(output::Bits(row.stamp.time), output::Bits(epoch * FixedStepS));
-    EXPECT_EQ(output::Bits(row.stamp.base_time),
-              output::Bits((epoch - 1) * FixedStepS));
-    EXPECT_GT(row.stamp.attempt, 0u);
-    ASSERT_TRUE(row.structural_limit_s);
-    EXPECT_GE(*row.structural_limit_s, FixedStepS);
-    ASSERT_TRUE(row.self_contact);
-    const auto& contact = *row.self_contact;
-    EXPECT_NO_THROW(archive::CheckSelfContactValues(contact));
-    EXPECT_EQ(contact.source_id, source_id);
-    EXPECT_EQ(contact.selected_parents, selected_parents);
-    EXPECT_GT(contact.events, 0u);
-    EXPECT_LE(contact.events, event_capacity);
-    EXPECT_GT(contact.active_events, 0u);
-    EXPECT_EQ(contact.events, contact.vertex_face_events + contact.edge_edge_events);
-    EXPECT_EQ(contact.policy_outcomes, contact.candidate_facet_pairs);
-    EXPECT_EQ(contact.policy_outcomes,
-        contact.certified_separated + contact.same_rigid_exclusions +
-        contact.local_intersections + contact.represented_vf + contact.represented_ee);
-    EXPECT_EQ(contact.selected_parents,
-        contact.active_parents + contact.removing_parents + contact.skipped_parents);
-    EXPECT_GT(contact.maximum_force_n, 0);
-    EXPECT_GT(contact.maximum_sti_n_m, 0);
-}
 
 } // namespace
 
@@ -149,72 +117,14 @@ void CheckTwoCommittedV5Intervals(const TwoIntervalExecution& execute) {
     EXPECT_GT(progress.contact.peak_observed_penetration_m, 0);
     EXPECT_EQ(progress.mechanics.intervals, 2u);
 
-    const auto descriptor = archive::ReadViewerInput(destination, *result.viewer_input);
-    const auto archive_path = archive::ViewerArchivePath(destination, descriptor);
-    const auto replay = archive::Replay::Open(
-        archive_path, descriptor.manifest, descriptor.source, descriptor.mapping_sha256);
-    const auto& configuration = replay.configuration();
-    const auto& index = replay.index();
-    EXPECT_TRUE(configuration.wall);
-    EXPECT_TRUE(configuration.profile.self_contact);
-    EXPECT_TRUE(configuration.profile.type45);
-    EXPECT_TRUE(configuration.profile.beam18);
-    EXPECT_TRUE(configuration.profile.structural_limit);
-    ASSERT_TRUE(replay.wall());
-    ASSERT_TRUE(replay.wall_composition());
-    EXPECT_EQ(replay.wall_composition()->profile,
-              archive::CompositionProfile::VehicleSupportsV5);
-    EXPECT_EQ(replay.wall_composition()->physical_nodes, 376930u);
-    EXPECT_EQ(replay.context().parents().size(), 349645u);
-    EXPECT_EQ(index.accepted_intervals, 2u);
-    EXPECT_FALSE(index.horizon_complete);
-    EXPECT_EQ(index.stop_reason, result.loop.reason);
+    static_assert(SummaryByteCap == archive::MetadataCap);
+    ASSERT_NO_FATAL_FAILURE(retained::CheckTwoIntervalArchive(
+        destination, *result.viewer_input, *result.summary,
+        {forecast.contact.self_contact->identity.source_id,
+         source.self_contact->active_uses().parents().size(), event_capacity,
+         progress.self_contact.last_event_count, progress.self_contact.last_policy_digest,
+         progress.self_contact.last_accepted_base_potential_j, result.loop.reason}));
 
-    std::array<archive::Values, 2> rows;
-    std::size_t count = 0;
-    const auto sequence = archive::ReadIntervals(
-        archive_path, replay.context(), configuration.profile,
-        index.planned_intervals, index.accepted_intervals, index.segments,
-        configuration.request.file_byte_cap, 16u << 20,
-        [&](const archive::Values& row) {
-            EXPECT_LT(count, rows.size());
-            if (count < rows.size()) rows[count++] = row;
-        });
-    ASSERT_EQ(count, 2u);
-    for (std::size_t i = 0; i < rows.size(); ++i)
-        ASSERT_NO_FATAL_FAILURE(CheckContactRow(rows[i], replay.context(), i + 1,
-            forecast.contact.self_contact->identity.source_id,
-            source.self_contact->active_uses().parents().size(), event_capacity));
-    EXPECT_LT(rows[0].stamp.attempt, rows[1].stamp.attempt);
-    EXPECT_EQ(output::Bits(rows[0].self_contact->base_velocity_time), output::Bits(0.0));
-    EXPECT_EQ(output::Bits(rows[1].self_contact->base_velocity_time),
-              output::Bits(rows[0].stamp.velocity_time));
-    EXPECT_EQ(rows[1].self_contact->events, progress.self_contact.last_event_count);
-    EXPECT_EQ(rows[1].self_contact->policy_digest, progress.self_contact.last_policy_digest);
-    EXPECT_EQ(output::Bits(rows[1].self_contact->potential_j),
-              output::Bits(progress.self_contact.last_accepted_base_potential_j));
-    EXPECT_TRUE(records::SameStamp(sequence.last, index.final));
-    EXPECT_EQ(sequence.self_source_id, rows[1].self_contact->source_id);
-
-    ASSERT_EQ(index.frames.size(), 2u);
-    const auto saved = replay.ReadSample(1);
-    EXPECT_TRUE(records::SameStamp(saved.frame.stamp, rows[1].stamp));
-    EXPECT_TRUE(records::SameStamp(saved.activity.stamp(), rows[1].stamp));
-    const auto summary_bytes = archive::ReadFile(destination, *result.summary, SummaryByteCap);
-    output::Document summary;
-    summary.Parse(summary_bytes.c_str());
-    ASSERT_FALSE(summary.HasParseError());
-    ASSERT_TRUE(summary.HasMember("accepted_self_contact"));
-    EXPECT_STREQ(summary["contact_profile"].GetString(), "wall-self-contact-v1");
-    EXPECT_EQ(summary["accepted_self_contact"]["accepted_intervals"].GetUint64(), 2u);
-    EXPECT_EQ(summary["accepted_self_contact"]["last_policy_digest"].GetUint64(),
-              rows[1].self_contact->policy_digest);
-
-    ::testing::Test::RecordProperty("accepted_intervals", "2");
-    ::testing::Test::RecordProperty("completed_seconds", "0.0000004");
-    ::testing::Test::RecordProperty("archive_manifest_sha256", result.archive_manifest->sha256);
-    ::testing::Test::RecordProperty("viewer_input_sha256", result.viewer_input->sha256);
-    ::testing::Test::RecordProperty("scope", "two committed 200 ns V5 wall+self intervals; no longer-crash claim");
 }
 
 } // namespace crash::cases::vehicle_run::test
