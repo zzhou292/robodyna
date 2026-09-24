@@ -307,6 +307,15 @@ for token in (
 ):
     require(VALUE_TEST.read_text(), token, VALUE_TEST)
 require(candidate, "sct::CertifiedLinearFacetPrismSeparation(", CANDIDATE)
+
+prism_impl = filter_source[filter_source.index("bool CertifiedLinearFacetPrismSeparationImpl("):
+                           filter_source.index("}  // namespace", filter_source.index("bool CertifiedLinearFacetPrismSeparationImpl("))]
+assert prism_impl.index("if (!valid)") < prism_impl.index("*separated_axis =")
+assert prism_impl.index("if (!*valid)") < prism_impl.index("EndpointHullsShareVertex<observe>(")
+assert prism_impl.index("EndpointHullsShareVertex<observe>(") < prism_impl.index("const Vec3 axes[4]")
+assert "CertifiedLinearFacetPrismSeparationImpl<true, false>" in filter_source
+assert "CertifiedLinearFacetPrismSeparationImpl<false, true>" in filter_source
+
 for token in (
     "sct::FacetPrismAxisLimit::VertexVertex",
     "summary.vertex_edge_axis_separated",

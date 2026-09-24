@@ -23,6 +23,7 @@ add_executable(self_contact_transaction_values
   ContinuousLocalTest.cpp
   ConeDiagonalCases.h
   AffineConeCases.h
+  PrismCoincidenceCases.h
   ConeDirectionOracle.h
   ProofOrderCases.h
   ProofOrderCoverageCases.h

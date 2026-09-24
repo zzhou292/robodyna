@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "SelfContactFilterCertificates.h"
+#include "self_contact_filters/PrismQualification.h"
 
 #include <algorithm>
 #include <cmath>
@@ -151,13 +152,15 @@ bool InflateProjection(
   return true;
 }
 
+template <bool observe>
 bool AxisSeparates(
     const CurrentFixedTriangle& first_base,
     const CurrentFixedTriangle& first_current,
     const CurrentFixedTriangle& second_base,
     const CurrentFixedTriangle& second_current,
     double first_thickness, double second_thickness,
-    Vec3 axis) noexcept {
+    Vec3 axis, self_contact_filters::PrismCounts* counts) noexcept {
+  if constexpr (observe) ++counts->axis_tests;
   if (!IsFinite(axis))
     return false;
   const double norm_l1 = Up(Up(
@@ -212,16 +215,37 @@ bool InflatedFacetBoundsSeparated(
   return false;
 }
 
-}  // namespace
+// This is a necessary-no-separator check for the existing endpoint HULLS,
+// not a contact/topology certificate. Even cross-time coincidence prevents
+// any strictly disjoint projection hulls. All geometry was validated first;
+// numeric equality intentionally includes signed zero and ignores source IDs.
+template <bool observe>
+bool EndpointHullsShareVertex(
+    const CurrentFixedTriangle& first_base, const CurrentFixedTriangle& first_current,
+    const CurrentFixedTriangle& second_base, const CurrentFixedTriangle& second_current,
+    self_contact_filters::PrismCounts* counts) noexcept {
+  const CurrentFixedTriangle* first[]{&first_base, &first_current};
+  const CurrentFixedTriangle* second[]{&second_base, &second_current};
+  for (const auto* a : first) for (const auto* b : second)
+    for (const auto p : a->vertices) for (const auto q : b->vertices) {
+      if constexpr (observe) ++counts->coordinate_tests;
+      if (p.x == q.x && p.y == q.y && p.z == q.z) {
+        if constexpr (observe) counts->hull_coincidence = true;
+        return true;
+      }
+    }
+  return false;
+}
 
-bool CertifiedLinearFacetPrismSeparation(
+template <bool reject_coincident_hulls, bool observe>
+bool CertifiedLinearFacetPrismSeparationImpl(
     const CurrentFixedTriangle& first_base,
     const CurrentFixedTriangle& first_current, double first_thickness,
     const CurrentFixedTriangle& second_base,
     const CurrentFixedTriangle& second_current, double second_thickness,
     SelfContactFacetPrismAxisLimit axis_limit,
     SelfContactFacetPrismSeparationAxis* separated_axis,
-    bool* valid) noexcept {
+    bool* valid, self_contact_filters::PrismCounts* counts) noexcept {
   if (!valid)
     return false;
   if (separated_axis)
@@ -235,6 +259,10 @@ bool CertifiedLinearFacetPrismSeparation(
       Finite(second_base) && Finite(second_current);
   if (!*valid)
     return false;
+  if constexpr (reject_coincident_hulls)
+    if (EndpointHullsShareVertex<observe>(first_base, first_current,
+                                       second_base, second_current, counts))
+      return false;
   // For LinearNodalV1, every vertex projection lies in the hull of its two
   // endpoint projections. The intervals enclose all rounded dot operations,
   // and each half-thickness*|axis|_1 overbounds its Euclidean projection.
@@ -246,9 +274,9 @@ bool CertifiedLinearFacetPrismSeparation(
       FaceAxis(first_base), FaceAxis(first_current),
       FaceAxis(second_base), FaceAxis(second_current)};
   for (const auto axis : axes) {
-    if (AxisSeparates(
+    if (AxisSeparates<observe>(
             first_base, first_current, second_base, second_current,
-            first_thickness, second_thickness, axis)) {
+            first_thickness, second_thickness, axis, counts)) {
       if (separated_axis)
         *separated_axis =
             SelfContactFacetPrismSeparationAxis::FaceNormal;
@@ -280,10 +308,10 @@ bool CertifiedLinearFacetPrismSeparation(
         for (unsigned second_edge = 0; second_edge < 3; ++second_edge) {
           const auto axis = CrossAxis(
               first_axis, EdgeAxis(*second_state, second_edge));
-          if (AxisSeparates(
+          if (AxisSeparates<observe>(
                   first_base, first_current,
                   second_base, second_current,
-                  first_thickness, second_thickness, axis)) {
+                  first_thickness, second_thickness, axis, counts)) {
             if (separated_axis)
               *separated_axis =
                   SelfContactFacetPrismSeparationAxis::EdgeCross;
@@ -311,11 +339,11 @@ bool CertifiedLinearFacetPrismSeparation(
         for (unsigned edge = 0; edge < 3; ++edge) {
           const auto first_vertex_axis = VertexEdgeAxis(
               first_state->vertices[vertex], *second_state, edge);
-          if (AxisSeparates(
+          if (AxisSeparates<observe>(
                   first_base, first_current,
                   second_base, second_current,
                   first_thickness, second_thickness,
-                  first_vertex_axis)) {
+                  first_vertex_axis, counts)) {
             if (separated_axis)
               *separated_axis =
                   SelfContactFacetPrismSeparationAxis::VertexEdge;
@@ -323,11 +351,11 @@ bool CertifiedLinearFacetPrismSeparation(
           }
           const auto second_vertex_axis = VertexEdgeAxis(
               second_state->vertices[vertex], *first_state, edge);
-          if (AxisSeparates(
+          if (AxisSeparates<observe>(
                   first_base, first_current,
                   second_base, second_current,
                   first_thickness, second_thickness,
-                  second_vertex_axis)) {
+                  second_vertex_axis, counts)) {
             if (separated_axis)
               *separated_axis =
                   SelfContactFacetPrismSeparationAxis::VertexEdge;
@@ -352,10 +380,10 @@ bool CertifiedLinearFacetPrismSeparation(
       for (const auto first_vertex : first_state->vertices) {
         for (const auto second_vertex : second_state->vertices) {
           const auto axis = Difference(first_vertex, second_vertex);
-          if (AxisSeparates(
+          if (AxisSeparates<observe>(
                   first_base, first_current,
                   second_base, second_current,
-                  first_thickness, second_thickness, axis)) {
+                  first_thickness, second_thickness, axis, counts)) {
             if (separated_axis)
               *separated_axis =
                   SelfContactFacetPrismSeparationAxis::VertexVertex;
@@ -366,6 +394,40 @@ bool CertifiedLinearFacetPrismSeparation(
     }
   }
   return false;
+}
+
+}  // namespace
+
+bool CertifiedLinearFacetPrismSeparation(
+    const CurrentFixedTriangle& first_base,
+    const CurrentFixedTriangle& first_current, double first_thickness,
+    const CurrentFixedTriangle& second_base,
+    const CurrentFixedTriangle& second_current, double second_thickness,
+    SelfContactFacetPrismAxisLimit axis_limit,
+    SelfContactFacetPrismSeparationAxis* separated_axis,
+    bool* valid) noexcept {
+  return CertifiedLinearFacetPrismSeparationImpl<true, false>(
+      first_base, first_current, first_thickness,
+      second_base, second_current, second_thickness,
+      axis_limit, separated_axis, valid, nullptr);
+}
+
+self_contact_filters::PrismComparison self_contact_filters::ComparePrismHullCoincidence(
+    const CurrentFixedTriangle& first_base,
+    const CurrentFixedTriangle& first_current, double first_thickness,
+    const CurrentFixedTriangle& second_base,
+    const CurrentFixedTriangle& second_current, double second_thickness,
+    SelfContactFacetPrismAxisLimit axis_limit) noexcept {
+  PrismComparison result;
+  result.original.separated = CertifiedLinearFacetPrismSeparationImpl<false, true>(
+      first_base, first_current, first_thickness,
+      second_base, second_current, second_thickness,
+      axis_limit, &result.original.axis, &result.original.valid, &result.original.counts);
+  result.current.separated = CertifiedLinearFacetPrismSeparationImpl<true, true>(
+      first_base, first_current, first_thickness,
+      second_base, second_current, second_thickness,
+      axis_limit, &result.current.axis, &result.current.valid, &result.current.counts);
+  return result;
 }
 
 bool CertifiedLinearFacetPrismSeparation(

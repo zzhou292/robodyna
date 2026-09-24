@@ -5,6 +5,8 @@
 #include "lib_src/collision/self_contact_transaction/ConeDirections.h"
 #include "ConeDirectionOracle.h"
 #include "lib_src/collision/self_contact_transaction/LocalContact.h"
+#include "lib_src/collision/self_contact_filters/PrismQualification.h"
+#include <limits>
 
 #include <gtest/gtest.h>
 
@@ -195,6 +197,7 @@ sct::NonlinearSeparationResult LocalPolicy(
 #include "ConeDiagonalCases.h"
 #include "ProofOrderCases.h"
 #include "AffineConeCases.h"
+#include "PrismCoincidenceCases.h"
 
 TEST(SelfContactContinuousLocal, CurvedSharedVertexNeedsNoInventedOwner) {
   const auto first = Triangle(
