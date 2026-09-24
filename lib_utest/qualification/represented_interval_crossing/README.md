@@ -415,3 +415,17 @@ malformed inputs. Existing rational/frozen fixture and owner gates remain requir
 A warmed benchmark must compare actual `3edbf971` and this source using one maintained
 driver and identical inputs/flags/affinity; no speed or full-vehicle claim is made
 by authoring this source. Domain-hit counts are included in private qualification.
+
+## Private checked integer-policy seam (source-only)
+
+`FixedPolicyTest.cpp` adds eight host groups for the first reusable GPU-kernel
+seam, not a GPU executor. One per-pair instance shares the same geometry/traversal
+across Boost and the existing fixed8 core. Failure is sticky even when a temporary
+is consumed by Sign or replaced with zero; explicit fences preserve static work0
+and sampled work1 failure semantics and prevent failed normal-cache readiness.
+The qualification adapter admits fixed8 only through the actual B<=125 domain;
+all other inputs execute wide CPU arithmetic first. Public CPU default, retained
+wide scratch and forecast remain unchanged. The deferred canonical witness search
+is not included. See native/PolicySeam.md for exact ownership, explicit body-proof
+transforms and the required refreshed compiler-stack/CPU-performance gates.
+No seam build/test or GPU execution has been performed by the source author.

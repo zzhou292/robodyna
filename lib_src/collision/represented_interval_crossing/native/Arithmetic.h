@@ -1,26 +1,27 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 #include "Identity.h"
-#include <boost/multiprecision/cpp_int.hpp>
-#include <limits>
+#include "BoostIntegerPolicy.h"
 namespace tlfea::contact::represented_interval_crossing::native {
-template <unsigned Bits>
+template <unsigned Bits, class IntegerPolicy = BoostIntegerPolicy<Bits>>
 struct Arithmetic {
-  using ExactBackend = boost::multiprecision::cpp_int_backend<
-      Bits, Bits, boost::multiprecision::signed_magnitude,
-      boost::multiprecision::checked, void>;
-  using ExactInteger =
-      boost::multiprecision::number<ExactBackend,
-                                    boost::multiprecision::et_off>;
+  using ExactInteger = typename IntegerPolicy::Integer;
   static_assert(Bits == 512 || Bits == 16384);
-  static_assert(std::numeric_limits<ExactInteger>::digits >= Bits);
+  explicit Arithmetic(ArithmeticContext& context) noexcept : context_(context), integers_(context) {}
+  Arithmetic(const Arithmetic&) = delete;
+  Arithmetic& operator=(const Arithmetic&) = delete;
+  bool Healthy() const noexcept {
+    if constexpr (IntegerPolicy::TracksErrors) return context_.valid();
+    else return true;
+  }
+
 
   struct Dyadic {
-    ExactInteger numerator = 0;
+    ExactInteger numerator{};
     int exponent = 0;
   };
 
-  static Dyadic Exact(double value) {
+  Dyadic Exact(double value) {
     std::uint64_t bits = 0;
     static_assert(sizeof(bits) == sizeof(value), "binary64 representation");
     std::memcpy(&bits, &value, sizeof(bits));
@@ -30,57 +31,57 @@ struct Arithmetic {
     const std::uint64_t fraction = bits & ((std::uint64_t{1} << 52) - 1);
     Dyadic result;
     if (encoded_exponent == 0) {
-      result.numerator = fraction;
+      integers_.Assign(result.numerator, fraction);
       result.exponent = -1074;
     } else {
-      result.numerator = (std::uint64_t{1} << 52) | fraction;
+      integers_.Assign(result.numerator, (std::uint64_t{1} << 52) | fraction);
       result.exponent = static_cast<int>(encoded_exponent) - 1023 - 52;
     }
     if (negative)
-      result.numerator = -result.numerator;
+      result.numerator = integers_.Negate(result.numerator);
     return result;
   }
 
-  static Dyadic Add(Dyadic a, Dyadic b) {
-    if (a.numerator == 0)
+  Dyadic Add(Dyadic a, Dyadic b) {
+    if (integers_.IsZero(a.numerator))
       return b;
-    if (b.numerator == 0)
+    if (integers_.IsZero(b.numerator))
       return a;
     const int exponent = std::min(a.exponent, b.exponent);
-    const auto shift = [](ExactInteger* value, unsigned amount) {
-      const bool negative = *value < 0;
+    const auto shift = [this](ExactInteger* value, unsigned amount) {
+      const bool negative = integers_.IsNegative(*value);
       if (negative)
-        *value = -*value;
-      *value <<= amount;
+        *value = integers_.Negate(*value);
+      integers_.Shift(*value, amount);
       if (negative)
-        *value = -*value;
+        *value = integers_.Negate(*value);
     };
     shift(&a.numerator, static_cast<unsigned>(a.exponent - exponent));
     shift(&b.numerator, static_cast<unsigned>(b.exponent - exponent));
-    return {a.numerator + b.numerator, exponent};
+    return {integers_.Add(a.numerator, b.numerator), exponent};
   }
 
-  static Dyadic Negate(Dyadic value) {
-    value.numerator = -value.numerator;
+  Dyadic Negate(Dyadic value) {
+    value.numerator = integers_.Negate(value.numerator);
     return value;
   }
 
-  static Dyadic Subtract(Dyadic a, Dyadic b) { return Add(a, Negate(b)); }
+  Dyadic Subtract(Dyadic a, Dyadic b) { return Add(a, Negate(b)); }
 
-  static Dyadic Multiply(const Dyadic& a, const Dyadic& b) {
-    return {a.numerator * b.numerator, a.exponent + b.exponent};
+  Dyadic Multiply(const Dyadic& a, const Dyadic& b) {
+    return {integers_.Multiply(a.numerator, b.numerator), a.exponent + b.exponent};
   }
 
-  static Dyadic Scale(Dyadic value, std::uint64_t factor) {
-    value.numerator *= factor;
+  Dyadic Scale(Dyadic value, std::uint64_t factor) {
+    integers_.Scale(value.numerator, factor);
     return value;
   }
 
-  static int Sign(const Dyadic& value) noexcept {
-    return value.numerator < 0 ? -1 : (value.numerator > 0 ? 1 : 0);
+  int Sign(const Dyadic& value) noexcept {
+    return integers_.Sign(value.numerator);
   }
 
-  static int Compare(const Dyadic& a, const Dyadic& b) {
+  int Compare(const Dyadic& a, const Dyadic& b) {
     return Sign(Subtract(a, b));
   }
 
@@ -88,39 +89,39 @@ struct Arithmetic {
     Dyadic x, y, z;
   };
 
-  static ExactVec3 Add(const ExactVec3& a, const ExactVec3& b) {
+  ExactVec3 Add(const ExactVec3& a, const ExactVec3& b) {
     return {Add(a.x, b.x), Add(a.y, b.y), Add(a.z, b.z)};
   }
 
-  static ExactVec3 Subtract(const ExactVec3& a, const ExactVec3& b) {
+  ExactVec3 Subtract(const ExactVec3& a, const ExactVec3& b) {
     return {Subtract(a.x, b.x), Subtract(a.y, b.y),
             Subtract(a.z, b.z)};
   }
 
-  static ExactVec3 Cross(const ExactVec3& a, const ExactVec3& b) {
+  ExactVec3 Cross(const ExactVec3& a, const ExactVec3& b) {
     return {Subtract(Multiply(a.y, b.z), Multiply(a.z, b.y)),
             Subtract(Multiply(a.z, b.x), Multiply(a.x, b.z)),
             Subtract(Multiply(a.x, b.y), Multiply(a.y, b.x))};
   }
 
-  static Dyadic Dot(const ExactVec3& a, const ExactVec3& b) {
+  Dyadic Dot(const ExactVec3& a, const ExactVec3& b) {
     return Add(Add(Multiply(a.x, b.x), Multiply(a.y, b.y)),
                Multiply(a.z, b.z));
   }
 
-  static bool Zero(const ExactVec3& value) noexcept {
+  bool Zero(const ExactVec3& value) noexcept {
     return Sign(value.x) == 0 && Sign(value.y) == 0 && Sign(value.z) == 0;
   }
 
-  static Dyadic Component(const ExactVec3& value, unsigned component) {
+  Dyadic Component(const ExactVec3& value, unsigned component) {
     return component == 0 ? value.x : (component == 1 ? value.y : value.z);
   }
 
-  static double Component(Vec3 value, unsigned component) noexcept {
+  double Component(Vec3 value, unsigned component) noexcept {
     return component == 0 ? value.x : (component == 1 ? value.y : value.z);
   }
 
-  static ExactVec3 At(const RepresentedVertexPath& path, DyadicTime time) {
+  ExactVec3 At(const RepresentedVertexPath& path, DyadicTime time) {
     const std::uint64_t denominator = std::uint64_t{1} << time.depth;
     ExactVec3 result;
     Dyadic* target[3] = {&result.x, &result.y, &result.z};
@@ -140,14 +141,14 @@ struct Arithmetic {
     ExactVec3 vertex[3];
   };
 
-  static ExactTriangle At(const RepresentedTrianglePath& path, DyadicTime time) {
+  ExactTriangle At(const RepresentedTrianglePath& path, DyadicTime time) {
     ExactTriangle result;
     for (unsigned i = 0; i < 3; ++i)
       result.vertex[i] = At(path.vertices[i], time);
     return result;
   }
 
-  static bool CommonTranslation(
+  bool CommonTranslation(
       const RepresentedTrianglePath& a,
       const RepresentedTrianglePath& b) {
     Dyadic reference[3];
@@ -169,6 +170,9 @@ struct Arithmetic {
     return true;
   }
 
+ protected:
+  ArithmeticContext& context_;
+  IntegerPolicy integers_;
 };
 
 }  // namespace tlfea::contact::represented_interval_crossing::native

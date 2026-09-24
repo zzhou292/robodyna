@@ -2,9 +2,13 @@
 #pragma once
 #include "Geometry.h"
 namespace tlfea::contact::represented_interval_crossing::native {
-template <unsigned Bits>
-struct CellKernel : Geometry<Bits> {
-  using Base = Geometry<Bits>;
+template <unsigned Bits, class IntegerPolicy = BoostIntegerPolicy<Bits>>
+struct CellKernel : Geometry<Bits, IntegerPolicy> {
+  using Base = Geometry<Bits, IntegerPolicy>;
+  using Base::Base;
+  using Base::Healthy;
+  using Base::context_;
+  using Base::integers_;
   using typename Base::Dyadic;
   using typename Base::ExactVec3;
   using typename Base::ExactTriangle;
@@ -35,12 +39,13 @@ struct CellKernel : Geometry<Bits> {
       std::fill_n(ready_b, 3, false);
     }
 
-    const ExactVec3& NormalAt(bool second, unsigned sample, NormalCounters* counters) {
+    const ExactVec3& NormalAt(CellKernel& kernel, bool second, unsigned sample, NormalCounters* counters) {
       auto& ready = second ? ready_b[sample] : ready_a[sample];
       auto& normal = second ? normal_b[sample] : normal_a[sample];
       if (!ready) {
         // Publish readiness only after the original checked arithmetic succeeds.
-        normal = Normal(second ? b[sample] : a[sample], counters);
+        normal = kernel.Normal(second ? b[sample] : a[sample], counters);
+        if (!kernel.Healthy()) return normal;
         ready = true;
       } else {
         CountNormalOperation(counters, &NormalCounters::cache_hits);
@@ -48,19 +53,19 @@ struct CellKernel : Geometry<Bits> {
       return normal;
     }
 
-    bool Regular(bool second, NormalCounters* counters) {
+    bool Regular(CellKernel& kernel, bool second, NormalCounters* counters) {
       // Preserve original first-use order, including its exception boundary.
-      NormalAt(second, 0, counters);
-      NormalAt(second, 1, counters);
-      NormalAt(second, 2, counters);
-      return RegularCell(second ? normal_b : normal_a);
+      NormalAt(kernel, second, 0, counters);
+      NormalAt(kernel, second, 1, counters);
+      NormalAt(kernel, second, 2, counters);
+      return kernel.RegularCell(second ? normal_b : normal_a);
     }
   };
 
   struct ProjectionHull { Dyadic minimum, maximum; };
 
   template <class Project>
-  static ProjectionHull RelativeEndpointHull(
+  ProjectionHull RelativeEndpointHull(
       const ExactTriangle samples[3], const ExactTriangle reference[3],
       unsigned anchor, const Project& project) {
     ProjectionHull result;
@@ -77,13 +82,13 @@ struct CellKernel : Geometry<Bits> {
     return result;
   }
 
-  static bool StrictHullGap(const ProjectionHull& a, const ProjectionHull& b) {
+  bool StrictHullGap(const ProjectionHull& a, const ProjectionHull& b) {
     return Compare(a.maximum, b.minimum) < 0 || Compare(b.maximum, a.minimum) < 0;
   }
 
-  static bool RelativeCoordinatesSeparated(const ExactScratch& scratch, unsigned anchor) {
+  bool RelativeCoordinatesSeparated(const ExactScratch& scratch, unsigned anchor) {
     for (unsigned coordinate = 0; coordinate < 3; ++coordinate) {
-      const auto project = [coordinate](const ExactVec3& point, const ExactVec3& reference) {
+      const auto project = [this, coordinate](const ExactVec3& point, const ExactVec3& reference) {
         return Subtract(Component(point, coordinate), Component(reference, coordinate));
       };
       const auto first = RelativeEndpointHull(scratch.a, scratch.a, anchor, project);
@@ -93,9 +98,9 @@ struct CellKernel : Geometry<Bits> {
     return false;
   }
 
-  static bool RelativeAxisSeparated(const ExactScratch& scratch, unsigned anchor, const ExactVec3& axis) {
+  bool RelativeAxisSeparated(const ExactScratch& scratch, unsigned anchor, const ExactVec3& axis) {
     if (Zero(axis)) return false;
-    const auto project = [&axis](const ExactVec3& point, const ExactVec3& reference) {
+    const auto project = [this, &axis](const ExactVec3& point, const ExactVec3& reference) {
       return Dot(Subtract(point, reference), axis);
     };
     const auto first = RelativeEndpointHull(scratch.a, scratch.a, anchor, project);
@@ -121,7 +126,7 @@ struct CellKernel : Geometry<Bits> {
             ExactPathReuse path_reuse = ExactPathReuse::Optimized,
             bool single_sample = false,
             CommonPointReuse point_reuse = CommonPointReuse::Original>
-  static CellEvaluation EvaluateCell(const RepresentedTrianglePath& path_a,
+  CellEvaluation EvaluateCell(const RepresentedTrianglePath& path_a,
                               const RepresentedTrianglePath& path_b,
                               const RepresentedIntervalPairKey& key, Cell cell,
                               ExactScratch* scratch,
@@ -138,7 +143,7 @@ struct CellKernel : Geometry<Bits> {
     CountNormalOperation(counters, &NormalCounters::evaluated_cells);
     const auto degenerate_at = [&](bool second, unsigned sample) {
       if constexpr (reuse == NormalReuse::Memoize)
-        return Zero(scratch->NormalAt(second, sample, counters));
+        return Zero(scratch->NormalAt(*this, second, sample, counters));
       else
         return Degenerate(second ? scratch->b[sample] : scratch->a[sample], counters);
     };
@@ -163,8 +168,8 @@ struct CellKernel : Geometry<Bits> {
           common_endpoint = CommonEndpointPoint(path_a, path_b, times[sample], common_point_counters);
       StaticIntersection intersection;
       if constexpr (reuse == NormalReuse::Memoize) {
-        const auto& normal_a = scratch->NormalAt(false, sample, counters);
-        const auto& normal_b = scratch->NormalAt(true, sample, counters);
+        const auto& normal_a = scratch->NormalAt(*this, false, sample, counters);
+        const auto& normal_b = scratch->NormalAt(*this, true, sample, counters);
         intersection = Intersects(scratch->a[sample], scratch->b[sample], normal_a, normal_b,
                                  common_endpoint, common_point_counters);
       } else {
@@ -179,8 +184,8 @@ struct CellKernel : Geometry<Bits> {
       const bool skip_dominated_edges = path_reuse == ExactPathReuse::Optimized &&
           domain && domain->eligible();
       if constexpr (reuse == NormalReuse::Memoize) {
-        const auto& normal_a = scratch->NormalAt(false, sample, counters);
-        const auto& normal_b = scratch->NormalAt(true, sample, counters);
+        const auto& normal_a = scratch->NormalAt(*this, false, sample, counters);
+        const auto& normal_b = scratch->NormalAt(*this, true, sample, counters);
         result.feature = IntersectionFeature(path_a, path_b,
             scratch->a[sample], scratch->b[sample], &normal_a, &normal_b, counters,
             skip_dominated_edges, path_counters);
@@ -208,7 +213,7 @@ struct CellKernel : Geometry<Bits> {
       return {CellDisposition::Separated, RepresentedIntervalReason::None, {}};
     const auto regular = [&](bool second) {
       if constexpr (reuse == NormalReuse::Memoize)
-        return scratch->Regular(second, counters);
+        return scratch->Regular(*this, second, counters);
       else
         return RegularCell(second ? scratch->b : scratch->a, counters);
     };
@@ -235,7 +240,7 @@ struct CellKernel : Geometry<Bits> {
         for (unsigned side = 0; side < 2; ++side) {
           bool separated = false;
           if constexpr (reuse == NormalReuse::Memoize) {
-            const auto& axis = scratch->NormalAt(side != 0, 0, counters);
+            const auto& axis = scratch->NormalAt(*this, side != 0, 0, counters);
             separated = RelativeAxisSeparated(*scratch, anchor, axis);
           } else {
             const auto axis = Normal(side ? scratch->b[0] : scratch->a[0], counters);
@@ -252,7 +257,7 @@ struct CellKernel : Geometry<Bits> {
     return {};
   }
 
-  static void RaiseReason(RepresentedIntervalReason candidate,
+  void RaiseReason(RepresentedIntervalReason candidate,
                    RepresentedIntervalReason* current) noexcept {
     if (ReasonPriority(candidate) > ReasonPriority(*current))
       *current = candidate;
@@ -262,7 +267,7 @@ struct CellKernel : Geometry<Bits> {
             SeparationProof separation = SeparationProof::RelativeFaces,
             ExactPathReuse path_reuse = ExactPathReuse::Optimized,
             CommonPointReuse point_reuse = CommonPointReuse::Optimized>
-  static RepresentedIntervalResult CertifyPair(
+  RepresentedIntervalResult CertifyPair(
       const RepresentedTrianglePath& a, const RepresentedTrianglePath& b,
       RepresentedIntervalLimits limits, RepresentedIntervalPairKey key,
       Cell* dfs, std::size_t dfs_capacity, ExactScratch* scratch,
@@ -270,21 +275,24 @@ struct CellKernel : Geometry<Bits> {
       SeparationCounters* separation_counters = nullptr,
       ExactPathCounters* path_counters = nullptr,
       CommonPointCounters* common_point_counters = nullptr) noexcept {
+    context_.BeginPair();
     if (a.motion != RepresentedMotion::LinearNodalV1 ||
         b.motion != RepresentedMotion::LinearNodalV1)
       return Unresolved(key, RepresentedIntervalReason::UnsupportedMotion, 0);
     std::size_t work = 0;
-    std::size_t dfs_size = 0;
-    bool all_leaves_separated = true;
-    RepresentedIntervalReason unresolved = RepresentedIntervalReason::None;
-    dfs[dfs_size++] = {};
-    try {
+    return integers_.Protect([&]() -> RepresentedIntervalResult {
+      std::size_t dfs_size = 0;
+      bool all_leaves_separated = true;
+      RepresentedIntervalReason unresolved = RepresentedIntervalReason::None;
+      dfs[dfs_size++] = {};
       // A bit-exact common translation preserves every relative point,
       // segment and triangle predicate over the complete represented interval.
       // Test the exact binary64-real displacements rather than rounded double
       // differences: a single static exact evaluation is then a whole-interval
       // certificate, even when the absolute swept AABBs overlap.
-      if (CommonTranslation(a, b)) {
+      const bool common_translation = CommonTranslation(a, b);
+      if (!Healthy()) return Unresolved(key, RepresentedIntervalReason::ExactArithmeticRange, work);
+      if (common_translation) {
         CellEvaluation evaluation;
         if constexpr (path_reuse == ExactPathReuse::Optimized) {
           const auto domain = ProjectionDomain::FromPaths(a, b, limits.max_depth);
@@ -299,6 +307,7 @@ struct CellKernel : Geometry<Bits> {
           evaluation = EvaluateCell<reuse, SeparationProof::LegacyAabb, ExactPathReuse::Original, false, point_reuse>(
               a, b, key, {}, scratch, counters, nullptr, 0, nullptr, path_counters, common_point_counters);
         }
+        if (!Healthy()) return Unresolved(key, RepresentedIntervalReason::ExactArithmeticRange, work);
         if (evaluation.disposition == CellDisposition::Crossing) {
           evaluation.crossing.geometry =
               evaluation.crossing.geometry == RepresentedIntersectionGeometry::Coplanar
@@ -329,6 +338,7 @@ struct CellKernel : Geometry<Bits> {
         ++work;
         auto evaluation = EvaluateCell<reuse, separation, path_reuse, false, point_reuse>(a, b, key, cell, scratch, counters,
                                                          &domain, anchor, separation_counters, path_counters, common_point_counters);
+        if (!Healthy()) return Unresolved(key, RepresentedIntervalReason::ExactArithmeticRange, work);
         if (evaluation.disposition == CellDisposition::Crossing) {
           evaluation.crossing.work = work;
           return evaluation.crossing;
@@ -358,22 +368,22 @@ struct CellKernel : Geometry<Bits> {
         dfs[dfs_size++] = right;
         dfs[dfs_size++] = left;
       }
-    } catch (...) {
-      return Unresolved(key, RepresentedIntervalReason::ExactArithmeticRange,
-                        work);
-    }
-    if (all_leaves_separated) {
-      RepresentedIntervalResult result;
-      result.key = key;
-      result.classification =
-          RepresentedIntervalClassification::CertifiedSeparated;
-      result.reason = RepresentedIntervalReason::None;
-      result.work = work;
-      return result;
-    }
-    if (unresolved == RepresentedIntervalReason::None)
-      unresolved = RepresentedIntervalReason::WorkExhausted;
-    return Unresolved(key, unresolved, work);
+
+      if (all_leaves_separated) {
+        RepresentedIntervalResult result;
+        result.key = key;
+        result.classification =
+            RepresentedIntervalClassification::CertifiedSeparated;
+        result.reason = RepresentedIntervalReason::None;
+        result.work = work;
+        return result;
+      }
+      if (unresolved == RepresentedIntervalReason::None)
+        unresolved = RepresentedIntervalReason::WorkExhausted;
+      return Unresolved(key, unresolved, work);
+    }, [&]() {
+      return Unresolved(key, RepresentedIntervalReason::ExactArithmeticRange, work);
+    });
   }
 
 };

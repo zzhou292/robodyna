@@ -7,6 +7,8 @@
 #include "represented_interval_crossing/BatchExecution.h"
 #include "represented_interval_crossing/native/CellKernel.h"
 #include "represented_interval_crossing/NativeStorageQualification.h"
+#include "represented_interval_crossing/FixedPolicyQualification.h"
+#include "represented_interval_crossing/native/FixedIntegerPolicy.h"
 
 #include <algorithm>
 #include <atomic>
@@ -136,7 +138,9 @@ RepresentedIntervalResult CertifyNarrow(
   static_assert(std::is_nothrow_default_constructible_v<NarrowKernel::ExactScratch>);
   static_assert(std::is_nothrow_destructible_v<NarrowKernel::ExactScratch>);
   NarrowKernel::ExactScratch scratch;
-  return NarrowKernel::template CertifyPair<reuse, separation, path_reuse, point_reuse>(
+  native::ArithmeticContext context;
+  NarrowKernel kernel(context);
+  return kernel.template CertifyPair<reuse, separation, path_reuse, point_reuse>(
       a, b, limits, key, dfs, dfs_capacity, &scratch, counters,
       separation_counters, path_counters, common_point_counters);
 }
@@ -164,7 +168,9 @@ RepresentedIntervalResult CertifyPair(
     }
   }
   CountStorage(storage_counters, false);
-  return WideKernel::template CertifyPair<reuse, separation, path_reuse, point_reuse>(
+  native::ArithmeticContext context;
+  WideKernel kernel(context);
+  return kernel.template CertifyPair<reuse, separation, path_reuse, point_reuse>(
       a, b, limits, key, dfs, dfs_capacity, scratch, counters,
       separation_counters, path_counters, common_point_counters);
 }
@@ -1135,6 +1141,45 @@ represented_interval_crossing::CompareNativeStorage(
       &result.current.counters);
   StoreResult(original, &result.original.result);
   StoreResult(current, &result.current.result);
+  return result;
+}
+
+represented_interval_crossing::FixedPolicyComparison
+represented_interval_crossing::CompareFixedIntegerPolicy(
+    const RepresentedTrianglePath& first, const RepresentedTrianglePath& second,
+    RepresentedIntervalLimits limits) noexcept {
+  FixedPolicyComparison result;
+  using FixedKernel = native::CellKernel<512, native::FixedIntegerPolicy<512>>;
+  result.fixed_scratch_bytes = sizeof(FixedKernel::ExactScratch);
+  static_assert(sizeof(FixedKernel::ExactScratch) <= 8192);
+  const RepresentedTrianglePath* a = nullptr;
+  const RepresentedTrianglePath* b = nullptr;
+  result.status = QualifyPairInputs(first, second, limits, &a, &b);
+  if (result.status != RepresentedIntervalStatus::Ok) return result;
+  result.domain = NativeStorageDomain::FromPaths(*a, *b, limits.max_depth).report();
+  const RepresentedIntervalPairKey key{{a->key, b->key}};
+  Cell dfs[53]; ExactScratch wide_scratch;
+  const auto capacity = static_cast<std::size_t>(limits.max_depth) + 1;
+  const auto original = CertifyPair<NormalReuse::Memoize, SeparationProof::RelativeFaces,
+      ExactPathReuse::Optimized, CommonPointReuse::Optimized, NativeStorage::Wide>(
+          *a, *b, limits, key, dfs, capacity, &wide_scratch);
+  StoreResult(original, &result.original);
+  if (result.domain.eligible) {
+    native::ArithmeticContext context;
+    FixedKernel kernel(context);
+    FixedKernel::ExactScratch scratch;
+    const auto current = kernel.CertifyPair(*a, *b, limits, key, dfs, capacity, &scratch);
+    result.fixed_executed = true;
+    result.arithmetic_failed = !context.valid();
+    StoreResult(current, &result.current);
+  } else {
+    // Deliberately execute the wide route independently; never retry an
+    // already-executed fixed result or reuse the comparison's reference value.
+    const auto current = CertifyPair<NormalReuse::Memoize, SeparationProof::RelativeFaces,
+        ExactPathReuse::Optimized, CommonPointReuse::Optimized, NativeStorage::Wide>(
+            *a, *b, limits, key, dfs, capacity, &wide_scratch);
+    StoreResult(current, &result.current);
+  }
   return result;
 }
 

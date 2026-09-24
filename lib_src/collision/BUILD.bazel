@@ -127,6 +127,10 @@ filegroup(
         "represented_interval_crossing/ExactPathReuseQualification.h",
         "represented_interval_crossing/CommonPointReuseQualification.h",
         "represented_interval_crossing/NativeStorageQualification.h",
+        "represented_interval_crossing/FixedPolicyQualification.h",
+        "represented_interval_crossing/native/ArithmeticContext.h",
+        "represented_interval_crossing/native/BoostIntegerPolicy.h",
+        "represented_interval_crossing/native/FixedIntegerPolicy.h",
         "represented_interval_crossing/NativeStorageDomain.h",
         "represented_interval_crossing/native/Modes.h",
         "represented_interval_crossing/native/Identity.h",
@@ -150,6 +154,10 @@ cc_library(
         "represented_interval_crossing/ExactPathReuseQualification.h",
         "represented_interval_crossing/CommonPointReuseQualification.h",
         "represented_interval_crossing/NativeStorageQualification.h",
+        "represented_interval_crossing/FixedPolicyQualification.h",
+        "represented_interval_crossing/native/ArithmeticContext.h",
+        "represented_interval_crossing/native/BoostIntegerPolicy.h",
+        "represented_interval_crossing/native/FixedIntegerPolicy.h",
         "represented_interval_crossing/NativeStorageDomain.h",
         "represented_interval_crossing/native/Modes.h",
         "represented_interval_crossing/native/Identity.h",
@@ -162,7 +170,7 @@ cc_library(
     ],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     linkopts = ["-pthread"],
-    deps = [":fixed_contact_facets"],
+    deps = [":fixed_contact_facets", "//lib_src/math:fixed_integer"],
 )
 
 filegroup(

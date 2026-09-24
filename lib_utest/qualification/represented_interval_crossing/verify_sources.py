@@ -7,7 +7,7 @@ import re
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 collision = root / "lib_src/collision"
-numerical_headers = ("Modes.h", "Identity.h", "Arithmetic.h", "Geometry.h", "CellKernel.h")
+numerical_headers = ("Modes.h", "Identity.h", "Arithmetic.h", "Geometry.h", "CellKernel.h", "ArithmeticContext.h", "BoostIntegerPolicy.h", "FixedIntegerPolicy.h")
 source = "\n".join((collision / "represented_interval_crossing/native" / name).read_text()
                    for name in numerical_headers) + "\n" + (collision / "RepresentedIntervalCrossing.cpp").read_text()
 public = (collision / "RepresentedIntervalCrossing.h").read_text()
@@ -17,7 +17,7 @@ bazel = (collision / "BUILD.bazel").read_text()
 test_cmake = (here / "CMakeLists.txt").read_text()
 test_bazel = (here / "BUILD.bazel").read_text()
 test_sources = (
-    "BatchRosterTest.cpp", "NormalReuseTest.cpp", "RelativeSeparationTest.cpp", "ExactPathReuseTest.cpp", "CommonPointReuseTest.cpp", "NativeStorageTest.cpp", "ResultAssertions.h", "GeometryTest.cpp", "InvarianceTest.cpp", "FailureTest.cpp",
+    "BatchRosterTest.cpp", "NormalReuseTest.cpp", "RelativeSeparationTest.cpp", "ExactPathReuseTest.cpp", "CommonPointReuseTest.cpp", "NativeStorageTest.cpp", "FixedPolicyTest.cpp", "ResultAssertions.h", "GeometryTest.cpp", "InvarianceTest.cpp", "FailureTest.cpp",
     "IdentityTest.cpp", "DeepTest.cpp", "OracleTest.cpp",
     "ParallelTest.cpp", "TranslationProofTest.cpp", "Oracle.cpp",
 )
@@ -52,7 +52,7 @@ assert "Compare(displacement, reference[component])" in source
 assert pair_body.index("CommonTranslation(a, b)") < pair_body.index(
     "while (dfs_size)"
 )
-translation_body = pair_body[pair_body.index("if (CommonTranslation(a, b))"):
+translation_body = pair_body[pair_body.index("if (common_translation)"):
                              pair_body.index("while (dfs_size)")]
 for tag in ("ExactCommonTranslationTransverse", "ExactCommonTranslationCoplanar"):
     assert tag in types
@@ -196,7 +196,7 @@ for forbidden in (
 normal_implementation = source
 for token in ("ExactVec3 normal_a[3]", "ExactVec3 normal_b[3]",
               "bool ready_a[3]", "bool ready_b[3]", "scratch->BeginCell()",
-              "normal = Normal(second ? b[sample] : a[sample], counters)",
+              "normal = kernel.Normal(second ? b[sample] : a[sample], counters)",
               "ready = true", "template <NormalReuse reuse = NormalReuse::Memoize,",
               "CertifyPair<NormalReuse::Recompute, SeparationProof::RelativeFaces, ExactPathReuse::Original, CommonPointReuse::Original, NativeStorage::Wide>", "sizeof(ExactScratch)"):
     if token not in normal_implementation:
@@ -222,7 +222,7 @@ relative_cell = source[source.index("CellEvaluation EvaluateCell("):source.index
 assert relative_cell.index("if (degenerate)") < relative_cell.index("if (regular(false) && regular(true))")
 assert relative_cell.index("SweptBoxesSeparated(scratch->a, scratch->b)") < relative_cell.index("!domain->eligible()")
 assert relative_cell.index("!domain->eligible()") < relative_cell.index("RelativeCoordinatesSeparated(*scratch, anchor)")
-assert "scratch->NormalAt(side != 0, 0, counters)" in relative_cell
+assert "scratch->NormalAt(*this, side != 0, 0, counters)" in relative_cell
 
 # Exact path reuse stays behind native-derived arithmetic and translation
 # proofs; no caller profile or early arbitrary feature witness is introduced.
@@ -263,6 +263,45 @@ for token in ("using ExactScratch = WideKernel::ExactScratch", "__attribute__((n
               "NativeStorage::Wide", "NativeStorage::Adaptive"):
     assert token in source, token
 assert "NativeStorage" not in public + types
+# Per-pair instance state is explicit and cannot be cleared by a predicate.
+assert "FixedIntegerPolicy" not in public + types
+context = (collision / "represented_interval_crossing/native/ArithmeticContext.h").read_text()
+fixed = (collision / "represented_interval_crossing/native/FixedIntegerPolicy.h").read_text()
+boost = (collision / "represented_interval_crossing/native/BoostIntegerPolicy.h").read_text()
+assert "template <unsigned, class> friend struct CellKernel" in context
+assert "failed_ = failed_ || !valid" in context
+assert source.count("context_.BeginPair()") == 1
+assert "if (!kernel.Healthy()) return normal" in source
+assert "context_.Observe(result.valid)" in fixed
+assert "context_.Observe(!value.overflow)" in fixed
+assert "TracksErrors = false" in boost and "TracksErrors = true" in fixed
+boost_compact = re.sub(r"\s+", "", boost)
+fixed_compact = re.sub(r"\s+", "", fixed)
+for method in (
+    "voidAssign(Integer&output,std::uint64_tvalue){output=value;}",
+    "boolIsZero(constInteger&value)constnoexcept{returnvalue==0;}",
+    "boolIsNegative(constInteger&value)constnoexcept{returnvalue<0;}",
+    "IntegerAdd(constInteger&a,constInteger&b){returna+b;}",
+    "IntegerNegate(constInteger&value){return-value;}",
+    "IntegerMultiply(constInteger&a,constInteger&b){returna*b;}",
+    "voidShift(Integer&value,unsignedamount){value<<=amount;}",
+    "voidScale(Integer&value,std::uint64_tfactor){value*=factor;}",
+    "intSign(constInteger&value)constnoexcept{returnvalue<0?-1:(value>0?1:0);}",
+):
+    assert method in boost_compact, method
+for method in (
+    "IntegerAdd(constInteger&a,constInteger&b)noexcept{returnChecked(Core::Add(a,b));}",
+    "IntegerNegate(constInteger&value)noexcept{returnChecked(Core::Negate(value));}",
+    "IntegerMultiply(constInteger&a,constInteger&b)noexcept{returnChecked(Core::Multiply(a,b));}",
+    "voidShift(Integer&value,unsignedamount)noexcept{value=Checked(Core::ShiftLeft(value,amount));}",
+    "voidScale(Integer&value,std::uint64_tfactor)noexcept{value=Checked(Core::Multiply(value,Core::FromU64(factor)));}",
+):
+    assert method in fixed_compact, method
+assert "try { return body(); }" in boost and "catch (...)" in boost
+assert "catch" not in fixed
+assert "FixedKernel kernel(context)" in source
+assert "WideKernel kernel(context)" in source and "NarrowKernel kernel(context)" in source
+assert "thread_local" not in context + fixed + boost
 import runpy
 runpy.run_path(str(here / "verify_native_extraction.py"), run_name="__main__")
 
