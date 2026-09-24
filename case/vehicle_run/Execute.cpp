@@ -1,4 +1,5 @@
 #include "Session.h"
+#include "contact_diagnostics/Observe.h"
 #include "output/ArtifactIO.h"
 #include <chrono>
 namespace crash::cases::vehicle_run {
@@ -36,6 +37,7 @@ Result PreparedRun::ExecuteImpl(const std::filesystem::path& destination,const C
     const auto clock=[&] {return std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();};
     result.loop=detail::RunLoop(*session,data_->horizon,session->archive.forecast().archive.archive.frame_epochs,control,clock);
     result.mechanics_timing=session->dynamics.timing();
+    result.last_contact_attempt=contact_diagnostics::Copy(session->dynamics.self_contact_diagnostics());
     result.archive_manifest=session->manifest;
     result.rejected_step_limit_s=session->step_limit;
     result.rejected_contact_status=session->contact_status;

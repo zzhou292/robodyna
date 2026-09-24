@@ -24,7 +24,8 @@ class ContactComposition {
     ContactComposition() = default;
     static ContactComposition Prepare(
         ContactProfile,
-        std::shared_ptr<const vehicle_self_contact::VehicleSelfContactSetup> = {});
+        std::shared_ptr<const vehicle_self_contact::VehicleSelfContactSetup> = {},
+        bool enable_diagnostics = false);
 
     ContactCompositionForecast Preflight(
         const vehicle_wall::VehicleWallSetup&,

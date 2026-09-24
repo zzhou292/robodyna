@@ -30,6 +30,10 @@ struct Fake final : detail::Operations {
         result.last_linear_policy_coverage_work=logged?200+logged:0;
         result.last_nonlinear_subdivision_pairs=logged?40+logged:0;
         result.last_nonlinear_subdivision_work=logged?300+logged:0;
+        result.performance.enabled=logged!=0;
+        result.performance.committed_scope=result.performance.phase_matches=logged!=0;
+        result.performance.candidate.base_epoch=logged?logged-1:0;
+        result.performance.candidate.native_submitted_pairs=logged?100+logged:0;
         return result;
     }
     MechanicsTotals Mechanics() const noexcept override {
@@ -156,6 +160,9 @@ TEST(VehicleRunLoop, OutputAndReadbackFailuresNeverPublishFalsePrefix) {
         EXPECT_EQ(result.progress.self_contact.last_linear_policy_coverage_work,202u);
         EXPECT_EQ(result.progress.self_contact.last_nonlinear_subdivision_pairs,42u);
         EXPECT_EQ(result.progress.self_contact.last_nonlinear_subdivision_work,302u);
+        EXPECT_TRUE(result.progress.self_contact.performance.phase_matches);
+        EXPECT_EQ(result.progress.self_contact.performance.candidate.base_epoch,1u);
+        EXPECT_EQ(result.progress.self_contact.performance.candidate.native_submitted_pairs,102u);
         if(stage==0) {
             EXPECT_EQ(result.progress.accepted.epoch,3u);
             EXPECT_EQ(result.progress.self_contact.intervals,2u);

@@ -3,6 +3,7 @@
 #include "../diagnostics/FailureRun.h"
 #include "../SampledShellPlasticity.h"
 #include "../SelfContactSummary.h"
+#include "../contact_diagnostics/Document.h"
 #include "../source/OriginalYaris.h"
 #include <iomanip>
 #include <iostream>
@@ -91,6 +92,8 @@ int main(int argc,char** argv) {
                  <<" actual_time_s="<<result.loop.progress.accepted.time_s
                  <<" valid_prefix="<<result.loop.valid_manifest<<" reason="<<result.loop.reason;
         run::detail::WriteSelfContactWorkProgress(std::cout, result.loop.progress.self_contact);
+        if(result.loop.kind==run::StopKind::PhysicsRejected)
+            run::contact_diagnostics::WriteProgress(std::cout,result.last_contact_attempt);
         run::detail::WriteSampledShellPlasticityProgress(std::cout, result.loop.progress.sampled_shell_plasticity);
         std::cout << std::endl;
         if(result.viewer_input) std::cout<<"viewer_descriptor="<<(options.output/result.viewer_input->file)

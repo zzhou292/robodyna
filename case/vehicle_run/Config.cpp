@@ -13,6 +13,8 @@ const char* PhysicalProfileName(PhysicalProfile profile) {
 Horizon Plan(const Config& config) {
     PhysicalProfileName(config.physical_profile);
     ContactProfileName(config.contact_profile);
+    if(config.self_contact_diagnostics && config.contact_profile!=ContactProfile::WallSelfContactV1)
+        throw std::invalid_argument("Self-contact diagnostics require the explicit wall+self profile");
     if(config.contact_profile==ContactProfile::WallSelfContactV1 &&
         (config.physical_profile!=PhysicalProfile::VehicleSupportsV5 || config.fixed_dt_s!=2e-7))
         throw std::invalid_argument("The admitted wall+self contact run requires vehicle-supports-v5 at 200 ns");

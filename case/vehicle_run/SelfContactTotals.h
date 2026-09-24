@@ -1,5 +1,6 @@
 #pragma once
 
+#include "contact_diagnostics/Values.h"
 #include <array>
 #include <cstdint>
 
@@ -41,6 +42,7 @@ struct SelfContactTotals {
     double last_max_represented_stiffness_n_m = 0;
     std::array<double, 3> last_equal_opposite_residual_n{};
     std::array<double, 3> last_global_moment_n_m{};
+    contact_diagnostics::Snapshot performance;
 };
 
 static_assert(sizeof(SelfContactTotals) <= 4096);

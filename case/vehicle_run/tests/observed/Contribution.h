@@ -32,6 +32,7 @@ class ObservedContribution final : public Contribution {
                        vehicle_dynamics::SelfContactObservation&) override;
     tl::fea::ShellPhysicalScratchReceiptRoster scratch_receipts() const noexcept override;
     void Discard() noexcept override;
+    tlfea::contact::SelfContactTransactionDiagnostics diagnostics() const noexcept override;
     const vehicle_self_contact::VehicleSelfContactSetup& setup() const noexcept override;
     const vehicle_self_contact::RuntimeForecast& forecast() const noexcept override;
     tlfea::contact::SelfContactTransactionAllocationInfo allocations() const noexcept override;

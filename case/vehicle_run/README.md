@@ -370,3 +370,8 @@ the companion absent; a supported rejected pair is frozen before rollback and
 exported after normal prefix closure. Unsupported capture stages are reported
 honestly without fabricating a pair. See [diagnostics](diagnostics/README.md) for
 ownership, output states and qualification boundaries.
+
+Optional [contact substage diagnostics](contact_diagnostics/README.md) expose existing
+native discovery work and actual crossing-slice counts with bounded host timings.
+Enable `--self-contact-diagnostics` only for an explicitly selected wall+self run.
+The physical archive format and disabled output are unchanged.

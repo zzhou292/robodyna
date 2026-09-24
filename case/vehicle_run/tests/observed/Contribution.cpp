@@ -46,6 +46,8 @@ void ObservedContribution::SealCandidate(
 tl::fea::ShellPhysicalScratchReceiptRoster
 ObservedContribution::scratch_receipts() const noexcept { return original_->scratch_receipts(); }
 void ObservedContribution::Discard() noexcept { original_->Discard(); }
+tlfea::contact::SelfContactTransactionDiagnostics
+ObservedContribution::diagnostics() const noexcept {return original_->diagnostics();}
 const vehicle_self_contact::VehicleSelfContactSetup&
 ObservedContribution::setup() const noexcept { return original_->setup(); }
 const vehicle_self_contact::RuntimeForecast&

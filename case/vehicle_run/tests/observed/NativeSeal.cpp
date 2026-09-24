@@ -42,7 +42,7 @@ void CandidateRigidCouponAccess::SealWithFailureObserver(
     if (report.status != tlfea::contact::SelfContactTransactionStatus::Ok)
         throw SelfContactStageError(report, SelfContactRuntimeStage::CandidateSeal,
                                    stages->budget_.transaction.accepted_event_capacity);
-    runtime::ObserveCandidate(observation, prepared, completed);
+    runtime::ObserveCandidate(observation, prepared, completed, stages->contact.data_->transaction.diagnostics());
     stages->receipt_ = completed;
     stages->accepted_ = {};
 }

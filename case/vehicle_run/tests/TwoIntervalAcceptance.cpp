@@ -1,6 +1,8 @@
 #include "TwoIntervalAcceptance.h"
 #include "OriginalFixture.h"
 #include "../SelfContactSummary.h"
+#include "../contact_diagnostics/Document.h"
+#include <cstdlib>
 #include "case/vehicle_self_contact/VehicleSelfContactSetup.h"
 #include "output/physical_run/IntervalIO.h"
 #include "output/physical_run/Replay.h"
@@ -16,6 +18,11 @@ Config CombinedConfig() {
     result.physical_profile = PhysicalProfile::VehicleSupportsV5;
     result.contact_profile = ContactProfile::WallSelfContactV1;
     result.fixed_dt_s = FixedStepS;
+    if(const auto* enabled=std::getenv("ROBO_SELF_CONTACT_DIAGNOSTICS")) {
+        output::Require((enabled[0]=='0' || enabled[0]=='1') && enabled[1]=='\0',
+            "ROBO_SELF_CONTACT_DIAGNOSTICS must be 0 or 1");
+        result.self_contact_diagnostics=enabled[0]=='1';
+    }
     return result;
 }
 
@@ -115,6 +122,11 @@ void CheckTwoCommittedV5Intervals(const TwoIntervalExecution& execute) {
     control.progress = PrintProgress;
     const auto result = execute(plan, destination, control);
     PrintProgress(result.loop.progress);
+    if(result.last_contact_attempt.enabled) {
+        std::cout<<"V5_CONTACT_LAST_ATTEMPT";
+        contact_diagnostics::WriteProgress(std::cout,result.last_contact_attempt);
+        std::cout<<'\n';
+    }
     ASSERT_TRUE(result.session_initialized) << result.loop.reason;
     ASSERT_EQ(result.loop.kind, StopKind::IntervalLimit) << result.loop.reason;
     ASSERT_TRUE(result.loop.valid_manifest) << result.loop.reason;

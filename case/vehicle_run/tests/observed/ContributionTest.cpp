@@ -17,7 +17,7 @@ using Error = vehicle_self_contact::SelfContactStageError;
 struct Calls {
     std::string order;
     unsigned destroyed = 0, bridge = 0, callbacks = 0;
-    unsigned scratch = 0, forecast = 0, allocations = 0;
+    unsigned scratch = 0, forecast = 0, allocations = 0, diagnostic_reads = 0;
     std::array<const void*, 5> arguments{};
     std::exception_ptr rejection;
 };
@@ -44,6 +44,14 @@ class Fake final : public Contribution {
         return {};
     }
     void Discard() noexcept override { calls.order += 'D'; }
+    contact::SelfContactTransactionDiagnostics diagnostics() const noexcept override {
+        ++calls.diagnostic_reads;
+        contact::SelfContactTransactionDiagnostics result;
+        result.accepted.enabled=result.candidate.enabled=true;
+        result.candidate.owner_id=19;result.candidate.native_submitted_pairs=23;
+        result.candidate.finished=true;result.candidate.succeeded=false;
+        return result;
+    }
     const vehicle_self_contact::VehicleSelfContactSetup& setup() const noexcept override {
         // A real setup needs authenticated source construction. These dispatch
         // tests deliberately neither manufacture one nor initialize a GPU owner.
@@ -120,8 +128,15 @@ TEST(ObservedContribution, ForwardsOriginalOperationsAndRetainsContextThroughOwn
     EXPECT_EQ(allocations.device.device_bytes, 79u);
     EXPECT_EQ(allocations.device.device_allocations, 3u);
     EXPECT_EQ(calls.allocations, 1u);
+    const auto diagnostics=observed->diagnostics();
+    EXPECT_TRUE(diagnostics.candidate.enabled);
+    EXPECT_EQ(diagnostics.candidate.owner_id,19u);
+    EXPECT_EQ(diagnostics.candidate.native_submitted_pairs,23u);
+    EXPECT_EQ(calls.diagnostic_reads,1u);
     observed->Discard();
     EXPECT_EQ(calls.order, "ASD");
+    EXPECT_EQ(observed->diagnostics().candidate.native_submitted_pairs,23u);
+    EXPECT_FALSE(observed->diagnostics().candidate.succeeded);
     EXPECT_EQ(calls.destroyed, 0u);
     observed.reset();
     EXPECT_EQ(calls.destroyed, 1u);

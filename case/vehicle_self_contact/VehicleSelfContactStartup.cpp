@@ -49,6 +49,7 @@ c::SelfContactTransactionConfig TransactionConfig(
     result.force.qualification_id = identity.qualification_id;
     result.source_id = config.source_id;
     result.broadphase_axis = config.broadphase_axis;
+    result.enable_diagnostics = config.enable_diagnostics;
     return result;
 }
 

@@ -1,4 +1,6 @@
 #include "SelfContactDocument.h"
+#include "contact_diagnostics/Document.h"
+#include "output/BoundedArrayJson.h"
 
 namespace crash::cases::vehicle_run::detail {
 
@@ -62,6 +64,8 @@ output::Document SelfContactDocument(const SelfContactTotals& totals) {
         totals.last_equal_opposite_residual_n.data(), totals.last_equal_opposite_residual_n.size());
     FiniteArray(document, "last_global_moment_n_m",
         totals.last_global_moment_n_m.data(), totals.last_global_moment_n_m.size());
+    if(totals.performance.enabled)
+        array_json::Child(document,"performance_diagnostics",contact_diagnostics::Document(totals.performance));
     return document;
 }
 

@@ -1,4 +1,6 @@
 #include "SelfContactSummary.h"
+#include "contact_diagnostics/Observe.h"
+#include "contact_diagnostics/Document.h"
 
 #include "lib_src/solvers/NodalTrialIdentity.h"
 #include "output/ArtifactIO.h"
@@ -162,6 +164,8 @@ void ObserveAcceptedSelfContact(SelfContactTotals& output,
         force.equal_opposite_residual_n.y, force.equal_opposite_residual_n.z};
     next.last_global_moment_n_m = {force.global_moment_n_m.x,
         force.global_moment_n_m.y, force.global_moment_n_m.z};
+    next.performance = contact_diagnostics::Committed(
+        contact.diagnostics, accepted.owner_id, step.base.epoch, force.attempt);
     output = next;
 }
 
@@ -175,6 +179,7 @@ void detail::WriteSelfContactWorkProgress(std::ostream& output, const SelfContac
         << " self_contact_linear_policy_coverage_work=" << totals.last_linear_policy_coverage_work
         << " self_contact_nonlinear_subdivision_pairs=" << totals.last_nonlinear_subdivision_pairs
         << " self_contact_nonlinear_subdivision_work=" << totals.last_nonlinear_subdivision_work;
+    contact_diagnostics::WriteProgress(output, totals.performance);
 }
 
 }  // namespace crash::cases::vehicle_run

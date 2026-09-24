@@ -2,6 +2,7 @@
 #include "../SelfContactDocument.h"
 #include "case/vehicle_self_contact/SelfContactStageError.h"
 #include "MechanicsFixture.h"
+#include "../contact_diagnostics/tests/Fixture.h"
 
 #include <gtest/gtest.h>
 
@@ -163,6 +164,36 @@ TEST(VehicleRunSelfContact, NativeWorkCountersDescribeOnlyLastPublishedInterval)
         " self_contact_linear_policy_coverage_pairs=6 self_contact_linear_policy_coverage_work=201"
         " self_contact_nonlinear_subdivision_pairs=4 self_contact_nonlinear_subdivision_work=301");
     EXPECT_LE(sizeof(SelfContactTotals), 4096u);
+}
+
+TEST(VehicleRunSelfContact, DiagnosticsPublishWithAcceptedTotalsWithoutGatingPhysics) {
+    const auto diagnostic_step=[](std::uint64_t epoch) {
+        auto step=SelfStep(epoch);
+        step.self_contact.diagnostics=contact_diagnostics::test::Input(
+            step.base.owner_id,step.base.epoch,step.self_contact.accepted_force.attempt);
+        return step;
+    };
+    SelfContactTotals totals;
+    ObserveAcceptedSelfContact(totals,diagnostic_step(1),SelfStamp(1));
+    ASSERT_TRUE(totals.performance.phase_matches);
+    const auto before=Json(totals);
+    auto rejected=diagnostic_step(2);
+    rejected.self_contact.diagnostics.candidate.native_submitted_pairs=999;
+    rejected.self_contact.accepted_force.potential_j=-1;
+    EXPECT_THROW(ObserveAcceptedSelfContact(totals,rejected,SelfStamp(2)),std::invalid_argument);
+    EXPECT_EQ(Json(totals),before);
+    auto clock_failure=diagnostic_step(2);
+    clock_failure.self_contact.diagnostics.candidate.clock_failures=1;
+    clock_failure.self_contact.diagnostics.candidate.stages[6].valid_samples=1;
+    EXPECT_NO_THROW(ObserveAcceptedSelfContact(totals,clock_failure,SelfStamp(2)));
+    EXPECT_EQ(totals.intervals,2u);EXPECT_TRUE(totals.performance.phase_matches);
+    const auto document=detail::SelfContactDocument(totals);
+    EXPECT_FALSE(document["performance_diagnostics"]["candidate"]["stages"][6]["timing_available"].GetBool());
+    auto foreign=diagnostic_step(3);
+    ++foreign.self_contact.diagnostics.candidate.owner_id;
+    EXPECT_NO_THROW(ObserveAcceptedSelfContact(totals,foreign,SelfStamp(3)));
+    EXPECT_EQ(totals.intervals,3u);EXPECT_FALSE(totals.performance.phase_matches);
+    EXPECT_EQ(totals.last_event_count,7u);
 }
 
 TEST(VehicleRunSelfContact, StaleOwnerPhaseAttemptAndIncompletePolicyPreserveThenRetry) {

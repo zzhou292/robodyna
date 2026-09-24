@@ -84,6 +84,7 @@ class VehiclePhysicalDynamics {
         self_contact_forecast() const noexcept;
     tlfea::contact::SelfContactTransactionAllocationInfo
         self_contact_allocations() const noexcept;
+    tlfea::contact::SelfContactTransactionDiagnostics self_contact_diagnostics() const noexcept;
     const StepObservation& PrepareStep();
     void CommitStep();
     void DiscardStep() noexcept;

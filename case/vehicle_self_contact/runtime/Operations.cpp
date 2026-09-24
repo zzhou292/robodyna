@@ -59,7 +59,8 @@ void CheckCandidateObservation(
 void ObserveCandidate(
     vehicle_dynamics::SelfContactObservation& observation,
     const tl::fea::NodalPreparedView& prepared,
-    const tlfea::contact::SelfContactTransactionReceipt& completed) {
+    const tlfea::contact::SelfContactTransactionReceipt& completed,
+    const tlfea::contact::SelfContactTransactionDiagnostics& diagnostics) {
     CheckCandidateObservation(observation, prepared);
     auto next = observation;
     next.regularity_generation =
@@ -72,6 +73,9 @@ void ObserveCandidate(
     next.active_parents = completed.active_parents();
     next.removing_parents = completed.removing_parents();
     next.skipped_parents = completed.skipped_parents();
+    // Native seal has returned and closed its timing scopes. This copy is
+    // descriptive; the controller matches its phase only when publishing totals.
+    next.diagnostics = diagnostics;
     observation = next;
 }
 
@@ -92,7 +96,7 @@ void SealCandidate(
               owner, token, common, prepared, accepted, &completed),
           SelfContactRuntimeStage::CandidateSeal,
           event_capacity);
-    ObserveCandidate(observation, prepared, completed);
+    ObserveCandidate(observation, prepared, completed, transaction.diagnostics());
     authority = completed;
     accepted = {};
 }

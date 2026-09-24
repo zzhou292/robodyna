@@ -2,6 +2,8 @@
 #include "MechanicsDocument.h"
 #include "SampledShellPlasticity.h"
 #include "SelfContactDocument.h"
+#include "contact_diagnostics/Document.h"
+#include "output/BoundedArrayJson.h"
 #include "output/ArtifactIO.h"
 namespace crash::cases::vehicle_run::detail {
 namespace {
@@ -138,6 +140,11 @@ records::RecordFile WriteSummary(const std::filesystem::path& root,const Config&
         String(document,"viewer_input_sha256",result.viewer_input->sha256);
     }
     if(!result.viewer_input_error.empty()) String(document,"viewer_input_error",result.viewer_input_error);
+    if(config.self_contact_diagnostics) {
+        Boolean(document,"self_contact_diagnostics_requested",true);
+        array_json::Child(document,"last_self_contact_attempt_diagnostics",
+            contact_diagnostics::Document(result.last_contact_attempt));
+    }
     auto timing=Timings(result.mechanics_timing);
     Value value;
     value.CopyFrom(timing,document.GetAllocator());

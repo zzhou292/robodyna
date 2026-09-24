@@ -1,4 +1,6 @@
 #include "../RunState.h"
+#include "../contact_diagnostics/Observe.h"
+#include "../contact_diagnostics/tests/Fixture.h"
 #include "output/full_shell/tests/TestSupport.h"
 #include <gtest/gtest.h>
 #include <fstream>
@@ -76,6 +78,8 @@ TEST(VehicleRunSummary, AcceptedPrefixPreservesLimitContactAndViewerAuthority) {
     EXPECT_STREQ(document["archive_manifest_file"].GetString(),"archive/manifest.json");
     EXPECT_STREQ(document["viewer_input_file"].GetString(),"viewer-input.json");
     EXPECT_FALSE(document.HasMember("total_energy_j"));
+    EXPECT_FALSE(document.HasMember("last_self_contact_attempt_diagnostics"));
+    EXPECT_FALSE(document.HasMember("self_contact_diagnostics_requested"));
     const auto& saved_shell = document["sampled_shell_plasticity"];
     EXPECT_EQ(saved_shell["last_saved_epoch"].GetUint64(), 2u);
     EXPECT_EQ(saved_shell["first_positive_saved_time_s"].GetDouble(), 6e-7);
@@ -102,5 +106,34 @@ TEST(VehicleRunSummary, SelfContactProfilePreservesTypedRejectionAndQualifiedSte
     EXPECT_STREQ(document["recovery"].GetString(),
         "stop and qualify a revised contact/timestep profile before starting a new run");
     EXPECT_FALSE(document.HasMember("accepted_self_contact"));
+}
+TEST(VehicleRunSummary, OptionalFailedContactAttemptCannotReplaceCommittedSummary) {
+    records::test::Directory directory;
+    Config config;
+    config.physical_profile=PhysicalProfile::VehicleSupportsV5;
+    config.contact_profile=ContactProfile::WallSelfContactV1;
+    config.fixed_dt_s=2e-7;config.self_contact_diagnostics=true;
+    Result result;
+    result.session_initialized=true;result.loop.kind=StopKind::PhysicsRejected;
+    result.loop.progress.accepted={1,2e-7};
+    result.loop.progress.self_contact.available=true;
+    result.loop.progress.self_contact.intervals=1;
+    result.loop.progress.self_contact.performance=contact_diagnostics::Committed(
+        contact_diagnostics::test::Input(7,0,2),7,0,2);
+    auto failed=contact_diagnostics::test::Input(7,1,3);
+    failed.candidate.succeeded=false;failed.candidate.counts_complete=false;
+    failed.candidate.native_submitted_pairs=91;
+    result.last_contact_attempt=contact_diagnostics::Copy(failed);
+    const auto file=detail::WriteSummary(directory.path,config,Plan(config),{},result);
+    const auto document=Read(directory.path/file.file);
+    EXPECT_EQ(document["accepted_intervals"].GetUint64(),1u);
+    EXPECT_TRUE(document["self_contact_diagnostics_requested"].GetBool());
+    EXPECT_EQ(document["accepted_self_contact"]["performance_diagnostics"]["candidate"]["attempt"].GetUint64(),2u);
+    const auto& candidate=document["last_self_contact_attempt_diagnostics"]["candidate"];
+    EXPECT_EQ(candidate["attempt"].GetUint64(),3u);
+    EXPECT_EQ(candidate["native_submitted_pairs"].GetUint64(),91u);
+    EXPECT_FALSE(candidate["succeeded"].GetBool());
+    EXPECT_FALSE(candidate["counts_complete"].GetBool());
+    EXPECT_LT(file.bytes,SummaryByteCap);
 }
 } // namespace crash::cases::vehicle_run::test

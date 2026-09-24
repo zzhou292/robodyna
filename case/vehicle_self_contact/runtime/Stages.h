@@ -29,6 +29,7 @@ class SelfContactStages final
     tl::fea::ShellPhysicalScratchReceiptRoster
         scratch_receipts() const noexcept override;
     void Discard() noexcept override;
+    tlfea::contact::SelfContactTransactionDiagnostics diagnostics() const noexcept override;
     const VehicleSelfContactSetup& setup() const noexcept override {
         return contact.setup();
     }

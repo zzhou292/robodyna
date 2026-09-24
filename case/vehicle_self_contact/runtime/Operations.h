@@ -20,7 +20,8 @@ void CheckCandidateObservation(
 void ObserveCandidate(
     vehicle_dynamics::SelfContactObservation&,
     const tl::fea::NodalPreparedView&,
-    const tlfea::contact::SelfContactTransactionReceipt&);
+    const tlfea::contact::SelfContactTransactionReceipt&,
+    const tlfea::contact::SelfContactTransactionDiagnostics& = {});
 
 void SealCandidate(
     tlfea::contact::SelfContactTransaction&,

@@ -27,6 +27,7 @@ struct Result {
     double startup_wall_s=0;
     LoopResult loop;
     vehicle_dynamics::StepTimingSnapshot mechanics_timing;
+    contact_diagnostics::Snapshot last_contact_attempt;
     std::optional<records::RecordFile> archive_manifest,viewer_input,summary;
     std::optional<double> rejected_step_limit_s;
     std::uint32_t rejected_node=UINT32_MAX,rejected_parent=UINT32_MAX;

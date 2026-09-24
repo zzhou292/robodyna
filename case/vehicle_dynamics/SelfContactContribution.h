@@ -25,6 +25,8 @@ class SelfContactContribution {
     virtual tl::fea::ShellPhysicalScratchReceiptRoster
         scratch_receipts() const noexcept = 0;
     virtual void Discard() noexcept = 0;
+    // Value-only observation; never a publication receipt or acceptance input.
+    virtual tlfea::contact::SelfContactTransactionDiagnostics diagnostics() const noexcept {return {};}
     virtual const vehicle_self_contact::VehicleSelfContactSetup&
         setup() const noexcept = 0;
     virtual const vehicle_self_contact::RuntimeForecast&

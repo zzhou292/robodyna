@@ -36,6 +36,9 @@ SelfContactStages::scratch_receipts() const noexcept {
     return receipt_.scratch_receipts();
 }
 
+tlfea::contact::SelfContactTransactionDiagnostics
+SelfContactStages::diagnostics() const noexcept {return contact.data_->transaction.diagnostics();}
+
 void SelfContactStages::Discard() noexcept {
     accepted_ = {};
     receipt_ = {};

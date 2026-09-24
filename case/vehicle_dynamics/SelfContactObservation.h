@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lib_src/collision/SelfContactTransactionTypes.h"
+#include "lib_src/collision/SelfContactTransactionDiagnostics.h"
 
 namespace crash::cases::vehicle_dynamics {
 
@@ -20,6 +21,7 @@ struct SelfContactObservation {
     std::size_t active_parents = 0;
     std::size_t removing_parents = 0;
     std::size_t skipped_parents = 0;
+    tlfea::contact::SelfContactTransactionDiagnostics diagnostics;
 };
 
 }  // namespace crash::cases::vehicle_dynamics

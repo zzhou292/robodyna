@@ -14,6 +14,7 @@ struct Config {
     ResourceProfile resources=ResourceProfile::Normal;
     PhysicalProfile physical_profile=PhysicalProfile::RetainedShellAssembliesV1;
     ContactProfile contact_profile=ContactProfile::WallOnly;
+    bool self_contact_diagnostics=false;
 };
 struct Horizon {
     std::uint64_t intervals=0;

@@ -16,6 +16,7 @@ struct RuntimeConfig {
     std::uint64_t source_id = 0;
     std::size_t event_capacity = 0;
     unsigned broadphase_axis = 0;
+    bool enable_diagnostics = false;
 };
 
 struct RuntimeLimits {

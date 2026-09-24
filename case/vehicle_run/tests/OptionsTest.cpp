@@ -160,4 +160,18 @@ TEST(VehicleRunOptions, OptionalFailureDiagnosticsRequiresSelfContactAndExplicit
     args.insert(args.end(),{"--self-contact-failure-output","duplicate"});
     EXPECT_THROW(Parse(args),std::invalid_argument);
 }
+TEST(VehicleRunOptions, SelfContactDiagnosticsIsExplicitAndNeverIgnoredByWallOnly) {
+    auto args=Arguments();
+    EXPECT_FALSE(Parse(args).config.self_contact_diagnostics);
+    args.push_back("--self-contact-diagnostics");
+    EXPECT_THROW(Parse(args),std::invalid_argument);
+    args.insert(args.end(),{"--contact-profile","wall-self-contact-v1","--self-contact-member","combine.key",
+        "--physical-profile","vehicle-supports-v5","--fixed-dt-s","2e-7"});
+    const auto observed=Parse(args);
+    EXPECT_TRUE(observed.config.self_contact_diagnostics);
+    EXPECT_EQ(observed.config.fixed_dt_s,2e-7);
+    EXPECT_EQ(observed.config.resources,ResourceProfile::Normal);
+    args.push_back("--self-contact-diagnostics");
+    EXPECT_THROW(Parse(args),std::invalid_argument);
+}
 } // namespace crash::cases::vehicle_run::test

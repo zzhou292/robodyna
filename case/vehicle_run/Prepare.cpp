@@ -11,7 +11,7 @@ constexpr std::size_t MappingCap=512u<<20,ControllerReserve=4u<<20;
 // the existing controller allowance; no per-parent summary array is allocated.
 static_assert(8 * sizeof(SampledShellPlasticityTotals) <= 2048 && 2048 < ControllerReserve);
 static_assert(sizeof(ContactComposition) < 4096 && sizeof(PreparedRun) < 4096);
-static_assert(8 * sizeof(SelfContactTotals) < ControllerReserve);
+static_assert(8 * sizeof(SelfContactTotals) + 4 * sizeof(contact_diagnostics::Snapshot) < ControllerReserve);
 std::size_t Sum(std::size_t cap,std::initializer_list<std::size_t> values) {
     tl::util::BoundedArenaLayout budget(cap);
     tl::util::ArenaRegion region;
@@ -42,7 +42,7 @@ PreparedRun PreparedRun::Prepare(const vehicle_wall::VehicleWallSetup& setup,con
         "Run identity conflicts with actual source/configuration/qualification");
     dynamics.startup.reserved_step_s=config.fixed_dt_s;
     dynamics.timing.enabled=true;
-    auto contact=ContactComposition::Prepare(config.contact_profile,std::move(self_contact));
+    auto contact=ContactComposition::Prepare(config.contact_profile,std::move(self_contact),config.self_contact_diagnostics);
     const auto composition=contact.Preflight(setup,dynamics,&joints);
     const auto maximum_host=config.resources==ResourceProfile::Normal?20ull*1000*1000*1000:60ull*1000*1000*1000;
     const auto mapping_phase=Sum(maximum_host,{composition.peak_host_upper_bound,MappingCap,ControllerReserve});

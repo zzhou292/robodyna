@@ -11,5 +11,9 @@ target_sources(robo_dyna_vehicle_run_reports PRIVATE
   "${CMAKE_CURRENT_LIST_DIR}/SelfContactErrorGeometry.cpp")
 target_include_directories(robo_dyna_vehicle_run_reports PUBLIC "${ROBO_DYNA_TL_ROOT}" "${ROBO_DYNA_TL_ROOT}/lib_src" "${CUDAToolkit_INCLUDE_DIRS}")
 target_link_libraries(robo_dyna_vehicle_run_reports PUBLIC robo_dyna_vehicle_run_values robo_dyna_physical_run_records)
+target_sources(robo_dyna_vehicle_run_reports PRIVATE
+  "${CMAKE_CURRENT_LIST_DIR}/contact_diagnostics/Observe.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/contact_diagnostics/Document.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/contact_diagnostics/Progress.cpp")
 target_compile_features(robo_dyna_vehicle_run_reports PUBLIC cxx_std_17)
 target_compile_options(robo_dyna_vehicle_run_reports PRIVATE -fno-fast-math -ffp-contract=off)
