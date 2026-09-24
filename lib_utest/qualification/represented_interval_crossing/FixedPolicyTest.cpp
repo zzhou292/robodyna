@@ -33,12 +33,13 @@ policy::FixedPolicyComparison Compare(const Paths& paths, ct::RepresentedInterva
 }
 template <class Kernel>
 ct::RepresentedIntervalResult Direct(Kernel& kernel, typename Kernel::ExactScratch& scratch,
-    const Paths& paths, ct::RepresentedIntervalLimits limits = {}) {
+    const Paths& paths, ct::RepresentedIntervalLimits limits = {},
+    numeric::NormalCounters* counters = nullptr) {
   // Internal numerical fault/instance testing only. Production fixed admission
   // is exercised separately by CompareFixedIntegerPolicy above.
   numeric::Cell dfs[53];
   return kernel.CertifyPair(paths[0], paths[1], limits,
-      {{paths[0].key, paths[1].key}}, dfs, limits.max_depth + 1, &scratch);
+      {{paths[0].key, paths[1].key}}, dfs, limits.max_depth + 1, &scratch, counters);
 }
 }  // namespace fixed_policy_test
 
@@ -156,6 +157,26 @@ TEST(RepresentedFixedPolicy, OverflowBoundariesMatchCheckedBoostWorkZeroAndWorkO
     SameResult(Direct(fixed, fixed_scratch, retry), Direct(boost, boost_scratch, retry));
     EXPECT_TRUE(boost_context.valid()); EXPECT_TRUE(fixed_context.valid());
   }
+}
+
+TEST(RepresentedFixedPolicy, CommonTranslationOverflowStopsBeforeAnyCellOrWorkAdmission) {
+  using namespace fixed_policy_test;
+  auto start = Positive(); start[0].x = std::ldexp(1., -900);
+  const Paths paths{Path(10, start, Positive()), Static(20, Positive(3))};
+  ASSERT_FALSE(Compare(paths).domain.eligible);
+  numeric::ArithmeticContext boost_context, fixed_context;
+  Boost boost(boost_context); Fixed fixed(fixed_context);
+  Boost::ExactScratch boost_scratch; Fixed::ExactScratch fixed_scratch;
+  numeric::NormalCounters original_counts, current_counts;
+  const auto original = Direct(boost, boost_scratch, paths, {}, &original_counts);
+  const auto current = Direct(fixed, fixed_scratch, paths, {}, &current_counts);
+  SameResult(current, original);
+  EXPECT_EQ(current.classification, C::Unresolved);
+  EXPECT_EQ(current.reason, R::ExactArithmeticRange);
+  EXPECT_EQ(current.work, 0u);
+  EXPECT_EQ(original_counts.evaluated_cells, 0u);
+  EXPECT_EQ(current_counts.evaluated_cells, 0u);
+  EXPECT_FALSE(boost_context.valid()); EXPECT_FALSE(fixed_context.valid());
 }
 
 TEST(RepresentedFixedPolicy, DazFtzDoesNotAlterIntegerPolicyOrItsHostEnvironment) {

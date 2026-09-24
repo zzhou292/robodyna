@@ -50,7 +50,7 @@ Its retained wide scratch, DFS and worker stack forecasts are unchanged; kernel
 instances/context add only scoped execution state. Compiler stack qualification
 still must be refreshed for the changed call graph before production promotion.
 
-Eight host groups compare complete stored results across VF/EE, nonuniform motion,
+Nine host groups compare complete stored results across VF/EE, nonuniform motion,
 degeneracy, bounds, extreme scales, canonical permutations, DAZ/FTZ and malformed
 inputs. Separate private numerical tests deliberately run out-of-domain data through
 both checked512 implementations to prove work0/work1 rejection, cache safety and

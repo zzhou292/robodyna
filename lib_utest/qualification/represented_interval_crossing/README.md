@@ -418,7 +418,7 @@ by authoring this source. Domain-hit counts are included in private qualificatio
 
 ## Private checked integer-policy seam (source-only)
 
-`FixedPolicyTest.cpp` adds eight host groups for the first reusable GPU-kernel
+`FixedPolicyTest.cpp` adds nine host groups for the first reusable GPU-kernel
 seam, not a GPU executor. One per-pair instance shares the same geometry/traversal
 across Boost and the existing fixed8 core. Failure is sticky even when a temporary
 is consumed by Sign or replaced with zero; explicit fences preserve static work0
