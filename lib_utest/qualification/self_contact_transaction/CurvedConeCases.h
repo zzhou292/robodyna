@@ -117,9 +117,12 @@ TEST(SelfContactCurvedCone, InteriorControlsFindWholeCurveProofThatEndpointDirec
 
 TEST(SelfContactCurvedCone, LocalGeometryCannotOverridePositiveThicknessAndSmallCurvatureCanPassBoth) {
   const curved_cone_test::Geometry geometry;
+  // The fixture has metre-scale arms. Deliberately overlapping thick surfaces
+  // cannot become admissible merely because zero-thickness topology is local.
+  constexpr double overlapping_half_thickness = 10;
   const auto contact = sct::CertifyQuadraticLocalContact(
-      geometry.first, geometry.first, geometry.coefficients[0], .001,
-      geometry.second, geometry.second, geometry.coefficients[1], .001, 1, 255, 8);
+      geometry.first, geometry.first, geometry.coefficients[0], overlapping_half_thickness,
+      geometry.second, geometry.second, geometry.coefficients[1], overlapping_half_thickness, 1, 255, 8);
   EXPECT_NE(contact.status, sct::NonlinearSeparationStatus::CertifiedLocalIntersection);
   auto small = ZeroQuadratic();
   small.q[1][0] = {-std::ldexp(geometry.first.vertices[1].x, -30),
