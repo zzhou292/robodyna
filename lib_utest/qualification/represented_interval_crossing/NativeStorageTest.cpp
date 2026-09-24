@@ -3,6 +3,9 @@
 #include "Oracle.h"
 #include "ResultAssertions.h"
 #include "lib_src/collision/represented_interval_crossing/NativeStorageQualification.h"
+// A second linked translation unit includes the private identity definitions,
+// preventing accidental strong duplicate definitions in this shared header.
+#include "lib_src/collision/represented_interval_crossing/native/Identity.h"
 #if defined(__x86_64__) || defined(__i386__)
 #include <xmmintrin.h>
 #endif

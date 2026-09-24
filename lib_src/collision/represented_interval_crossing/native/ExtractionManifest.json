@@ -270,6 +270,10 @@
     {
       "name": "CertifyPair",
       "sha256": "96adb6cf2a210ff3a1b63e0a12db654b58d9e94bf9f5796262cfc53130a487a5"
+    },
+    {
+      "name": "CoordinateBits",
+      "sha256": "1cb7440abae70a78cc9639f1eb32213dbd64dbc34aa4deaab2e46f6b1e584fcd"
     }
   ]
 }

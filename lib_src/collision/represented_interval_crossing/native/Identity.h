@@ -55,7 +55,7 @@ inline bool Same(const RepresentedTrianglePathKey& a,
   return Compare(a, b) == 0;
 }
 
-std::uint64_t CoordinateBits(double value) noexcept {
+inline std::uint64_t CoordinateBits(double value) noexcept {
   std::uint64_t bits = 0;
   std::memcpy(&bits, &value, sizeof(bits));
   return bits;

@@ -374,8 +374,8 @@ The numerical code is extracted into private `native/Arithmetic.h`,
 `Geometry.h` and `CellKernel.h`, with source identity/modes kept separately.
 The unchanged Boost checked signed-magnitude backend is instantiated at 512 and
 16384 bits. Public owner/roster/scheduling/publication remain in the original
-translation unit. A manifest pins all 67 moved function bodies to `3edbf971`,
-normalizing comments and whitespace only; no formula or token substitutions.
+translation unit. A manifest pins all 68 moved function bodies to `3edbf971`,
+including the shared CoordinateBits helper; normalizing comments and whitespace only; no formula or token substitutions.
 
 `NativeStorageDomain` derives B from every actual finite endpoint component,
 including zero's stored exponent, and the configured maximum sample depth. It

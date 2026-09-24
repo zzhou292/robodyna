@@ -11,7 +11,7 @@ directory = root / "lib_src/collision/represented_interval_crossing/native"
 manifest = json.loads((directory / "ExtractionManifest.json").read_text())
 assert manifest["baseline_commit"] == "3edbf971242ff3c011b5b0f6433b356609b09fc4"
 pattern = re.compile(
-    r"^[ \t]*(?:(?:static|inline)\s+)*(?:const\s+)?(?:int|bool|void|double|Dyadic|ExactVec3|ExactTriangle|StaticIntersection|RepresentedFeaturePathKey|RepresentedIntervalResult|CellEvaluation|ProjectionHull|DyadicTime)[ \t&]+(?P<name>\w+)\s*\(", re.M)
+    r"^[ \t]*(?:(?:static|inline)\s+)*(?:const\s+)?(?:int|bool|void|double|std::uint64_t|Dyadic|ExactVec3|ExactTriangle|StaticIntersection|RepresentedFeaturePathKey|RepresentedIntervalResult|CellEvaluation|ProjectionHull|DyadicTime)[ \t&]+(?P<name>\w+)\s*\(", re.M)
 
 def bodies(text):
     clean = re.sub(r"//[^\n]*|/\*.*?\*/", "", text, flags=re.S)
@@ -42,7 +42,7 @@ assert actual[bridge] == 1
 actual.subtract([bridge])
 actual += Counter()  # Remove the now-zero bridge entry before exact comparison.
 expected = Counter((record["name"], record["sha256"]) for record in manifest["functions"])
-assert len(manifest["functions"]) == 67
+assert len(manifest["functions"]) == 68
 if actual != expected:
     raise RuntimeError("Native body extraction changed: missing=" + str(expected - actual) +
                        "; unexpected=" + str(actual - expected))
