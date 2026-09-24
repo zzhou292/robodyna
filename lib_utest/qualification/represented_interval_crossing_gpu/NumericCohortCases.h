@@ -18,6 +18,7 @@ inline test::Roster Roster(std::size_t count, bool admitted = true) {
         for (auto& point : vertex.endpoint) {
           point.x += 8; point.y += 8; point.z += 8;
         }
+  else native_gpu_test::RequireNonzeroWideStorage(result.paths);
   return result;
 }
 inline c::RepresentedIntervalGpuLimits Limits(const test::Roster& source,

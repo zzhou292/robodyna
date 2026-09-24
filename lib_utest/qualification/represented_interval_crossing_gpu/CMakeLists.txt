@@ -12,7 +12,7 @@ target_link_libraries(represented_interval_crossing_gpu_host PRIVATE
 target_compile_features(represented_interval_crossing_gpu_host PRIVATE cxx_std_17)
 target_compile_options(represented_interval_crossing_gpu_host PRIVATE -fno-fast-math -ffp-contract=off)
 add_executable(represented_interval_crossing_gpu_cuda
-  GpuTest.cpp GpuFixture.h CapacityCudaTest.cpp NumericCohortCudaTest.cpp
+  GpuTest.cpp GpuFixture.h ZeroStorageCudaTest.cpp WideStorageCases.h CapacityCudaTest.cpp NumericCohortCudaTest.cpp
   NumericCohortCases.h CopyFault.cpp CopyFault.h Cases.h)
 target_link_libraries(represented_interval_crossing_gpu_cuda PRIVATE
   tl_represented_interval_crossing_gpu CUDA::cudart GTest::gtest_main)
