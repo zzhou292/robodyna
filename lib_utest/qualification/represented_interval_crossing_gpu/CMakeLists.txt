@@ -28,3 +28,4 @@ add_executable(represented_interval_crossing_gpu_resources Resources.cpp)
 target_link_libraries(represented_interval_crossing_gpu_resources PRIVATE
   tl_represented_interval_crossing_gpu CUDA::cudart)
 target_compile_features(represented_interval_crossing_gpu_resources PRIVATE cxx_std_17)
+include("${CMAKE_CURRENT_LIST_DIR}/Compound.cmake")

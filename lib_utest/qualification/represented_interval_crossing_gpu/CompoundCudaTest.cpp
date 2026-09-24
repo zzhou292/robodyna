@@ -2,7 +2,9 @@
 #include "../represented_interval_crossing/BatchAssertions.h"
 #include "../represented_interval_crossing/BatchFixture.h"
 #include "lib_src/collision/represented_interval_crossing/DeviceBatch.h"
+#include "lib_src/collision/represented_interval_crossing/DeviceExecution.h"
 #include <limits>
+#include <type_traits>
 
 namespace {
 namespace c = tlfea::contact;
@@ -10,6 +12,11 @@ namespace batch = c::represented_interval_crossing;
 namespace test = represented_interval_test;
 using S = c::RepresentedIntervalStatus;
 using D = c::RepresentedIntervalDeviceStatus;
+static_assert(!std::is_default_constructible_v<batch::AuthenticatedScene>);
+static_assert(!std::is_copy_constructible_v<batch::AuthenticatedScene>);
+static_assert(!std::is_move_constructible_v<batch::AuthenticatedScene>);
+static_assert(!std::is_default_constructible_v<batch::AuthenticatedWork>);
+static_assert(!std::is_copy_constructible_v<batch::AuthenticatedWork>);
 
 void AdmitCoordinates(test::Roster& roster) {
   // Exact common offset preserves the fixture while removing stored zero

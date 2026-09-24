@@ -1,7 +1,7 @@
 load("@rules_cc//cc:defs.bzl", "cc_test")
 
 exports_files(
-    ["Fixture.h", "ResultAssertions.h"],
+    ["Fixture.h", "ResultAssertions.h", "BatchAssertions.h", "BatchFixture.h"],
     visibility = ["//lib_utest/qualification/self_contact_transaction:__pkg__",
                   "//lib_utest/qualification/represented_interval_crossing_gpu:__pkg__"],
 )

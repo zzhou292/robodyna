@@ -36,3 +36,12 @@ A completed numerical row can be Unresolved/ExactArithmeticRange with its origin
 work; it is not a geometry acceptance. Such an outcome is never retried on CPU.
 CUDA execution or authenticated input/domain disagreement poisons the GPU owner;
 mathematical outcomes retain the native result/report/failure-atomic fold.
+# Compound qualification
+
+`Compound.cmake` adds seven CUDA groups to the same executable. They reuse the
+existing native batch fixture and complete report/result assertions, including
+all path-roster counters. Private scene/work types are statically noncopyable
+and cannot be default-constructed by a caller. `verify_compound_sources.py`
+checks the native-only construction, single lexical upload authority and
+shared admission/publication structure without running CUDA. The compound
+branch is unqualified until its owning host/source/CUDA receipts pass.
