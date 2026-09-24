@@ -72,15 +72,18 @@ TEST(SelfContactRigidSweepBounds, SignedZeroMatchesButAdjacentRepresentableEndpo
     sct::test::ExpectResult(result.current, result.original);
   }
 #if defined(__SSE2__)
-  struct RestoreMxcsr {
-    unsigned value = _mm_getcsr();
-    ~RestoreMxcsr() { _mm_setcsr(value); }
-  } restore;
   auto near = first;
   for (auto& vertex : near.vertices) vertex.z = std::numeric_limits<double>::denorm_min();
-  _mm_setcsr(restore.value | 0x8040u);
-  const auto result = sct::CompareRigidSeparationEndpointWitness(
-      first, first, zero, .01, near, near, zero, .01, 1, 64, 8);
+  sct::RigidSeparationComparison result;
+  {
+    struct RestoreMxcsr {
+      unsigned value = _mm_getcsr();
+      ~RestoreMxcsr() { _mm_setcsr(value); }
+    } restore;
+    _mm_setcsr(restore.value | 0x8040u);
+    result = sct::CompareRigidSeparationEndpointWitness(
+        first, first, zero, .01, near, near, zero, .01, 1, 64, 8);
+  }
   EXPECT_NE(result.current.status, sct::NonlinearSeparationStatus::PotentialContact);
   sct::test::ExpectResult(result.current, result.original);
 #endif
