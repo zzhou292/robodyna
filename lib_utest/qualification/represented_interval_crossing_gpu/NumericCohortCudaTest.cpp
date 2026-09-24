@@ -15,9 +15,9 @@ TEST(NativeGpuNumericCohortCuda, Windows257And4097KeepOriginal256SliceReportsAnd
     limits.numeric_cohort_pairs = 0;
     ASSERT_EQ(legacy.Initialize(limits, streams.first).native.status, S::Ok);
     std::vector<c::RepresentedIntervalResult> expected(count), old_rows(count), rows(count);
-    const auto reference = Run(cpu, source, 256, expected);
-    const auto old = Run(legacy, source, 256, old_rows, streams.first);
-    const auto actual = Run(cached, source, 256, rows, streams.first);
+    const auto reference = CertifyCohort(cpu, source, 256, expected);
+    const auto old = CertifyCohort(legacy, source, 256, old_rows, streams.first);
+    const auto actual = CertifyCohort(cached, source, 256, rows, streams.first);
     ASSERT_EQ(actual.native.status, S::Ok);
     Equal(reference, old); Equal(reference, actual);
     test::SameView(cpu.results(), cached.results());
@@ -41,8 +41,8 @@ TEST(NativeGpuNumericCohortCuda, NonmultipleCapacityAlignsWindowsWithoutRepeated
   c::RepresentedIntervalCrossingGpu gpu;
   ASSERT_EQ(gpu.Initialize(limits, streams.first).native.status, S::Ok);
   std::vector<c::RepresentedIntervalResult> expected(17), rows(17);
-  const auto actual = Run(gpu, source, 4, rows, streams.first);
-  Equal(Run(cpu, source, 4, expected), actual);
+  const auto actual = CertifyCohort(gpu, source, 4, rows, streams.first);
+  Equal(CertifyCohort(cpu, source, 4, expected), actual);
   ASSERT_EQ(actual.native.status, S::Ok);
   EXPECT_EQ(actual.native.completed_batches, 5u);
   EXPECT_EQ(actual.device.numeric_cohorts, 4u);
@@ -61,8 +61,8 @@ TEST(NativeGpuNumericCohortCuda, LateNativeWorkFailureSuppressesPrefetchedLaterS
   c::RepresentedIntervalCrossingGpu gpu;
   ASSERT_EQ(gpu.Initialize(limits, streams.first).native.status, S::Ok);
   std::vector<c::RepresentedIntervalResult> expected(6), rows(6);
-  const auto actual = Run(gpu, source, 1, rows, streams.first);
-  Equal(Run(cpu, source, 1, expected), actual);
+  const auto actual = CertifyCohort(gpu, source, 1, rows, streams.first);
+  Equal(CertifyCohort(cpu, source, 1, expected), actual);
   ASSERT_EQ(actual.native.status, S::ResourceLimit);
   EXPECT_EQ(actual.native.completed_pairs, 2u);
   EXPECT_EQ(actual.native.input_pair, 2u);
@@ -76,8 +76,8 @@ TEST(NativeGpuNumericCohortCuda, LateNativeWorkFailureSuppressesPrefetchedLaterS
   test::SameView(cpu.results(), gpu.results());
   for (auto& path : source.paths)
     for (auto& vertex : path.vertices) vertex.endpoint[1] = vertex.endpoint[0];
-  const auto retry = Run(gpu, source, 1, rows, streams.first);
-  Equal(Run(cpu, source, 1, expected), retry);
+  const auto retry = CertifyCohort(gpu, source, 1, rows, streams.first);
+  Equal(CertifyCohort(cpu, source, 1, expected), retry);
   ASSERT_EQ(retry.native.status, S::Ok);
   EXPECT_EQ(retry.device.scene_uploads, 1u);
   EXPECT_EQ(retry.device.consumed_device_pairs, 5u);
@@ -93,8 +93,8 @@ TEST(NativeGpuNumericCohortCuda, TypedUnresolvedAndHostFallbackKeepOriginalWorkA
     c::RepresentedIntervalCrossingGpu gpu;
     ASSERT_EQ(gpu.Initialize(limits, streams.first).native.status, S::Ok);
     std::vector<c::RepresentedIntervalResult> expected(9), rows(9);
-    const auto actual = Run(gpu, source, 2, rows, streams.first);
-    Equal(Run(cpu, source, 2, expected), actual);
+    const auto actual = CertifyCohort(gpu, source, 2, rows, streams.first);
+    Equal(CertifyCohort(cpu, source, 2, expected), actual);
     ASSERT_EQ(actual.native.status, S::Ok);
     EXPECT_EQ(rows[2].classification, c::RepresentedIntervalClassification::Unresolved);
     EXPECT_EQ(rows[2].reason, c::RepresentedIntervalReason::WorkExhausted);
@@ -116,11 +116,11 @@ TEST(NativeGpuNumericCohortCuda, ChangedAndMalformedScenesCannotReuseCachedAutho
   c::RepresentedIntervalCrossingGpu gpu;
   ASSERT_EQ(gpu.Initialize(limits, streams.first).native.status, S::Ok);
   std::vector<c::RepresentedIntervalResult> expected(5), rows(5);
-  Equal(Run(cpu, source, 2, expected), Run(gpu, source, 2, rows, streams.first));
+  Equal(CertifyCohort(cpu, source, 2, expected), CertifyCohort(gpu, source, 2, rows, streams.first));
   for (auto& vertex : source.paths[1].vertices)
     vertex.endpoint[0].z = vertex.endpoint[1].z = 8;
-  const auto changed = Run(gpu, source, 2, rows, streams.first);
-  Equal(Run(cpu, source, 2, expected), changed);
+  const auto changed = CertifyCohort(gpu, source, 2, rows, streams.first);
+  Equal(CertifyCohort(cpu, source, 2, expected), changed);
   ASSERT_EQ(changed.native.status, S::Ok);
   EXPECT_EQ(rows[0].classification, c::RepresentedIntervalClassification::CertifiedCrossingContact);
   EXPECT_EQ(changed.device.scene_uploads, 1u);
@@ -128,8 +128,8 @@ TEST(NativeGpuNumericCohortCuda, ChangedAndMalformedScenesCannotReuseCachedAutho
   const auto saved = native_gpu_test::Copy(prior);
   source.paths.back().vertices[0].endpoint[1].x = std::numeric_limits<double>::infinity();
   source.pairs.resize(1);
-  const auto malformed = Run(gpu, source, 2, rows, streams.first);
-  Equal(Run(cpu, source, 2, expected), malformed);
+  const auto malformed = CertifyCohort(gpu, source, 2, rows, streams.first);
+  Equal(CertifyCohort(cpu, source, 2, expected), malformed);
   EXPECT_NE(malformed.native.status, S::Ok);
   EXPECT_EQ(malformed.device.status, D::NotInvoked);
   native_gpu_test::Preserved(prior, saved, gpu.results());
@@ -144,8 +144,8 @@ TEST(NativeGpuNumericCohortCuda, AllHostInitialWindowDoesNotPreventLaterEligible
   c::RepresentedIntervalCrossingGpu gpu;
   ASSERT_EQ(gpu.Initialize(limits, streams.first).native.status, S::Ok);
   std::vector<c::RepresentedIntervalResult> expected(9), rows(9);
-  const auto actual = Run(gpu, source, 2, rows, streams.first);
-  Equal(Run(cpu, source, 2, expected), actual);
+  const auto actual = CertifyCohort(gpu, source, 2, rows, streams.first);
+  Equal(CertifyCohort(cpu, source, 2, expected), actual);
   ASSERT_EQ(actual.native.status, S::Ok);
   EXPECT_EQ(actual.device.numeric_cohorts, 3u);
   EXPECT_EQ(actual.device.scene_uploads, 1u);
@@ -163,16 +163,16 @@ TEST(NativeGpuNumericCohortCuda, TooSmallCohortRejectsWithoutChangingNativeSlice
   ASSERT_EQ(gpu.Initialize(limits, streams.first).native.status, S::Ok);
   auto prefix = source; prefix.pairs.resize(1);
   std::vector<c::RepresentedIntervalResult> rows(3);
-  ASSERT_EQ(Run(gpu, prefix, 2, rows, streams.first).native.status, S::Ok);
+  ASSERT_EQ(CertifyCohort(gpu, prefix, 2, rows, streams.first).native.status, S::Ok);
   const auto prior = gpu.results(); const auto values = native_gpu_test::Copy(prior);
-  const auto rejected = Run(gpu, source, 2, rows, streams.first);
+  const auto rejected = CertifyCohort(gpu, source, 2, rows, streams.first);
   EXPECT_EQ(rejected.native.status, S::ResourceLimit);
   EXPECT_EQ(rejected.native.native_report.input_pairs, 2u);
   EXPECT_EQ(rejected.native.completed_pairs, 0u);
   EXPECT_EQ(rejected.device.status, D::NotInvoked);
   EXPECT_EQ(rejected.device.batches, 0u);
   native_gpu_test::Preserved(prior, values, gpu.results());
-  EXPECT_EQ(Run(gpu, prefix, 2, rows, streams.first).native.status, S::Ok);
+  EXPECT_EQ(CertifyCohort(gpu, prefix, 2, rows, streams.first).native.status, S::Ok);
 }
 
 TEST(NativeGpuNumericCohortCuda, EmptyCallRevokesCacheAndOwnedScratchStillRejects) {
@@ -183,7 +183,7 @@ TEST(NativeGpuNumericCohortCuda, EmptyCallRevokesCacheAndOwnedScratchStillReject
   c::RepresentedIntervalCrossingGpu gpu;
   ASSERT_EQ(gpu.Initialize(limits, streams.first).native.status, S::Ok);
   std::vector<c::RepresentedIntervalResult> expected(1), rows(1);
-  Equal(Run(cpu, source, 1, expected), Run(gpu, source, 1, rows, streams.first));
+  Equal(CertifyCohort(cpu, source, 1, expected), CertifyCohort(gpu, source, 1, rows, streams.first));
   const auto prior = gpu.results(); const auto values = native_gpu_test::Copy(prior);
   const auto alias = batch::DeviceBatchAccess::Certify(gpu, source.paths.data(), source.paths.size(),
       source.pairs.data(), 1, 1, const_cast<c::RepresentedIntervalResult*>(prior.data), prior.count, streams.first);
@@ -191,8 +191,8 @@ TEST(NativeGpuNumericCohortCuda, EmptyCallRevokesCacheAndOwnedScratchStillReject
   EXPECT_EQ(alias.device.status, D::NotInvoked);
   native_gpu_test::Preserved(prior, values, gpu.results());
   source.pairs.clear(); expected.clear(); rows.clear();
-  const auto empty = Run(gpu, source, 1, rows, streams.first);
-  Equal(Run(cpu, source, 1, expected), empty);
+  const auto empty = CertifyCohort(gpu, source, 1, rows, streams.first);
+  Equal(CertifyCohort(cpu, source, 1, expected), empty);
   EXPECT_EQ(empty.device.numeric_cohorts, 0u);
   EXPECT_EQ(empty.device.scene_uploads, 0u);
   EXPECT_EQ(empty.device.batches, 0u);
@@ -210,11 +210,11 @@ TEST(NativeGpuNumericCohortCuda, CudaFaultPreservesOnlyTheLastPreCohortPublicati
     ASSERT_EQ(gpu.Initialize(limits, streams.first).native.status, S::Ok);
     auto prefix = source; prefix.pairs.resize(1);
     std::vector<c::RepresentedIntervalResult> expected(5), rows(5);
-    Equal(Run(cpu, prefix, 1, expected), Run(gpu, prefix, 1, rows, streams.first));
+    Equal(CertifyCohort(cpu, prefix, 1, expected), CertifyCohort(gpu, prefix, 1, rows, streams.first));
     batch::DeviceBatchReport failed;
     {
       native_gpu_copy_fault::Scope inject(successful_copies);
-      failed = Run(gpu, source, 1, rows, streams.first);
+      failed = CertifyCohort(gpu, source, 1, rows, streams.first);
     }
     EXPECT_EQ(failed.native.status, S::ResourceLimit);
     EXPECT_EQ(failed.device.status, D::DeviceFailure);
@@ -226,11 +226,11 @@ TEST(NativeGpuNumericCohortCuda, CudaFaultPreservesOnlyTheLastPreCohortPublicati
     EXPECT_EQ(failed.device.fault_pair_ordinal, SIZE_MAX);
     if (completed) {
       prefix.pairs = {source.pairs[0], source.pairs[1]};
-      ASSERT_EQ(Run(cpu, prefix, 1, expected).status, S::Ok);
+      ASSERT_EQ(CertifyCohort(cpu, prefix, 1, expected).status, S::Ok);
     }
     test::SameView(cpu.results(), gpu.results());
     const auto prior = gpu.results(); const auto values = native_gpu_test::Copy(prior);
-    const auto retry = Run(gpu, source, 1, rows, streams.first);
+    const auto retry = CertifyCohort(gpu, source, 1, rows, streams.first);
     EXPECT_EQ(retry.device.status, D::DeviceFailure);
     EXPECT_EQ(retry.device.batches, 0u);
     native_gpu_test::Preserved(prior, values, gpu.results());

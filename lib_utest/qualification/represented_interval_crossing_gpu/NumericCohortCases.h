@@ -27,13 +27,13 @@ inline c::RepresentedIntervalGpuLimits Limits(const test::Roster& source,
   result.numeric_cohort_pairs = cohort;
   return result;
 }
-inline batch::BatchReport Run(c::RepresentedIntervalCrossing& owner,
+inline batch::BatchReport CertifyCohort(c::RepresentedIntervalCrossing& owner,
     const test::Roster& source, std::size_t slice,
     std::vector<c::RepresentedIntervalResult>& output) {
   return batch::BatchAccess::Certify(owner, source.paths.data(), source.paths.size(),
       source.pairs.data(), source.pairs.size(), slice, output.data(), output.size());
 }
-inline batch::DeviceBatchReport Run(c::RepresentedIntervalCrossingGpu& owner,
+inline batch::DeviceBatchReport CertifyCohort(c::RepresentedIntervalCrossingGpu& owner,
     const test::Roster& source, std::size_t slice,
     std::vector<c::RepresentedIntervalResult>& output, cudaStream_t stream) {
   return batch::DeviceBatchAccess::Certify(owner, source.paths.data(), source.paths.size(),
