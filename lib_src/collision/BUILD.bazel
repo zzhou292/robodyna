@@ -148,6 +148,7 @@ filegroup(
     srcs = [
         ":self_contact_filter_certificate_sources",
         "SelfContactFilterBatch.cmake",
+        "SelfContactFilterBatchValues.cmake",
         "self_contact_filters/Types.h",
         "self_contact_filters/Batch.h",
         "self_contact_filters/Storage.h",
@@ -385,6 +386,14 @@ cc_library(
 filegroup(
     name = "self_contact_transaction_source_proof",
     srcs = [
+        "SelfContactFilterBatch.cmake",
+        "SelfContactFilterBatchValues.cmake",
+        "self_contact_transaction/FacetFilters.h",
+        "self_contact_transaction/FacetFilterValues.cpp",
+        "self_contact_transaction/FacetFilters.cpp",
+        "self_contact_transaction/FacetFilterAccepted.cpp",
+        "self_contact_transaction/AcceptedFacetFiltering.h",
+        ":self_contact_filter_batch_sources",
         "BUILD.bazel",
         "SelfContactTransaction.cmake",
         "SelfContactTransaction.h",
@@ -434,6 +443,7 @@ filegroup(
 cc_library(
     name = "self_contact_transaction_values",
     srcs = [
+        "self_contact_transaction/FacetFilterValues.cpp",
         "self_contact_transaction/CrossingBatch.cpp",
         "self_contact_transaction/Arena.cpp",
         "self_contact_transaction/Limits.cpp",
@@ -446,6 +456,8 @@ cc_library(
         "self_contact_transaction/TranslatedLocal.cpp",
     ],
     hdrs = [
+        "self_contact_transaction/FacetFilters.h",
+        "self_contact_transaction/AcceptedFacetFiltering.h",
         "SelfContactTransaction.h",
         "SelfContactTransactionTypes.h",
         "SelfContactTransactionDiagnostics.h",
@@ -465,6 +477,7 @@ cc_library(
     ],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [
+        ":self_contact_filter_batch_values",
         ":fixed_triangle_feature_discovery",
         ":represented_interval_crossing",
         ":self_contact_broadphase",
@@ -481,6 +494,8 @@ cc_library(
 cc_library(
     name = "self_contact_transaction",
     srcs = [
+        "self_contact_transaction/FacetFilters.cpp",
+        "self_contact_transaction/FacetFilterAccepted.cpp",
         "self_contact_transaction/Candidate.cpp",
         "self_contact_transaction/CandidateExclusions.cpp",
         "self_contact_transaction/CandidateExclusions.h",
@@ -490,6 +505,8 @@ cc_library(
         "self_contact_transaction/Transaction.cpp",
     ],
     hdrs = [
+        "self_contact_transaction/FacetFilters.h",
+        "self_contact_transaction/AcceptedFacetFiltering.h",
         "SelfContactTransaction.h",
         "SelfContactTransactionTypes.h",
         "SelfContactTransactionDiagnostics.h",
@@ -509,6 +526,7 @@ cc_library(
     ],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [
+        ":self_contact_filter_batch",
         ":fixed_contact_facets",
         ":self_contact_force_assembly",
         ":self_contact_broadphase",

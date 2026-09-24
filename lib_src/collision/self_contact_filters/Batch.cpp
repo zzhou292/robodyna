@@ -32,13 +32,6 @@ bool Outside(const void* input, std::size_t bytes, const void* owner,
 Batch::Impl::~Impl() { if (device) cudaFree(device); }
 Batch::Batch() = default;
 Batch::~Batch() = default;
-Preflight Batch::PreflightLimits(Limits limits) noexcept {
-  Layout layout;
-  Preflight result;
-  result.report = MakeLayout(limits, sizeof(Batch) + sizeof(Impl), layout);
-  if (result.report.status == Status::Ok) result.forecast = layout.forecast;
-  return result;
-}
 Report Batch::Initialize(Limits limits, cudaStream_t stream) noexcept try {
   if (impl_) return {Status::AlreadyInitialized, "Filter batch is already initialized"};
   if (!ExplicitStream(stream)) return {Status::InvalidInput, "Filter batch requires an explicit stream"};
@@ -160,5 +153,22 @@ Forecast Batch::forecast() const noexcept { return impl_ ? impl_->layout.forecas
 ResultView Batch::results() const noexcept {
   if (!impl_ || !impl_->complete || !impl_->scene_ready || !impl_->usable) return {};
   return {impl_->staging, impl_->result_count, impl_->generation, true};
+}
+void Batch::DiscardScene() noexcept {
+  if (!impl_) return;
+  impl_->complete = false;
+  impl_->scene_ready = false;
+  impl_->result_count = impl_->scene_count = 0;
+  // No borrowed host input survives a synchronous Upload/query. Keep storage
+  // and poison state; a later scene must pass Upload before another query.
+}
+bool Batch::OutputDisjoint(const void* output, std::size_t bytes) const noexcept {
+  using tl::fea::trial_identity::Disjoint;
+  if (!bytes) return true;
+  if (!output || !Disjoint(output, bytes, this, sizeof(*this))) return false;
+  if (!impl_) return true;
+  return Disjoint(output, bytes, impl_.get(), sizeof(*impl_)) &&
+      Disjoint(output, bytes, impl_->host.data(), impl_->host.bytes()) &&
+      Disjoint(output, bytes, impl_->device, impl_->layout.forecast.device_bytes);
 }
 }  // namespace tlfea::contact::self_contact_filters

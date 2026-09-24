@@ -23,6 +23,11 @@ class Batch {
   Report Accepted(PairView, cudaStream_t) noexcept;
   Report Linear(PairView, SelfContactFacetPrismAxisLimit, cudaStream_t) noexcept;
   Forecast forecast() const noexcept;
+  // Revoke scene/results without freeing capacity or recovering a CUDA error.
+  // This is host-only because Upload/query always drained their borrowed inputs.
+  void DiscardScene() noexcept;
+  // Enclosing owners must reject aliased output before writing a receipt.
+  bool OutputDisjoint(const void*, std::size_t) const noexcept;
   // Upload invocation also revokes the old scene, including rejected uploads.
   // Every Upload/query invocation revokes the prior borrowed publication,
   // including invalid-input failures. Values may remain in storage but are not

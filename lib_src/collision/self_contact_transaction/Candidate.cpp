@@ -829,6 +829,14 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
   // then physical ownership. Same-assembly checks above authenticate its epoch
   // and attempt. This synchronous borrow is never accessed after discard
   // and never retained for another attempt.
+  if (state.facet_filters) {
+    diagnostics.Stage(Stage::Filtering);
+    const auto filters = state.facet_filters->CandidateScene(
+        state.buffers.accepted_triangles, state.buffers.prepared_triangles,
+        state.buffers.facet_motion, state.buffers.swept_facet_bounds);
+    if (filters.status != self_contact_filters::Status::Ok)
+      return state.Fail(sct::FacetFilterFailure(filters));
+  }
   const sct::FinalizedCoverageLedger coverage_ledger(
       state.buffers.accepted_certificates, state.accepted_event_count);
   SelfContactCandidatePolicySummary summary;
@@ -847,6 +855,8 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
         &pairs, &streamed_pair_count);
     if (streamed.status != S::Ok) return state.Fail(streamed);
     if (!streamed_pair_count) break;
+    if (state.facet_filters)
+      state.facet_filters->BeginCandidateChunk(pairs, streamed_pair_count);
 
     std::size_t pair_count = 0;
     std::size_t chunk_nonlinear_work = 0;
@@ -948,7 +958,10 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
         bool valid = false;
         sct::FacetPrismSeparationAxis separated_axis =
             sct::FacetPrismSeparationAxis::None;
-        if (sct::CertifiedLinearFacetPrismSeparation(
+        self_contact_filters::Report filter_report;
+        const bool separated = sct::OptionalFacetPrism(
+            state.facet_filters.get(), pair, [&]() noexcept {
+              return sct::CertifiedLinearFacetPrismSeparation(
                 state.buffers.accepted_triangles[value.first],
                 state.buffers.prepared_triangles[value.first],
                 parents[first_parent].reference_half_thickness_m,
@@ -956,7 +969,11 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
                 state.buffers.prepared_triangles[value.second],
                 parents[second_parent].reference_half_thickness_m,
                 sct::FacetPrismAxisLimit::VertexVertex,
-                &separated_axis, &valid)) {
+                &separated_axis, &valid);
+            }, &separated_axis, &valid, &filter_report);
+        if (filter_report.status != self_contact_filters::Status::Ok)
+          return state.Fail(sct::FacetFilterFailure(filter_report));
+        if (separated) {
           action = sct::PairMotionAction::CertifiedLinearSeparation;
           ++summary.axis_certified_linear_separated;
           switch (separated_axis) {

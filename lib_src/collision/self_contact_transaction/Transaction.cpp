@@ -32,10 +32,12 @@ bool SelfContactTransaction::Impl::OutputDisjoint(
   return output && active_use.OutputDisjoint(output, bytes) &&
       Disjoint(output, bytes, this, sizeof(*this)) &&
       Disjoint(output, bytes, arena.data(), arena.bytes()) &&
+      (!facet_filters || facet_filters->OutputDisjoint(output, bytes)) &&
       publication && publication->PhysicalOutputDisjoint(output, bytes);
 }
 
 void SelfContactTransaction::Impl::DiscardLocal() noexcept {
+  if (facet_filters) facet_filters->Discard();
   physical_activity.DiscardTrial();
   force.DiscardTrial();
   participation.DiscardTrial();
@@ -287,6 +289,13 @@ SelfContactTransactionReport SelfContactTransaction::Initialize(
     report.crossing_status = crossing.status;
     return report;
   }
+  if (config.enable_cuda_facet_filters) {
+    next->facet_filters = std::make_unique<sct::FacetFilters>();
+    const auto filters = next->facet_filters->Initialize(next->active_use,
+        limits.max_facet_pair_chunk, limits.max_host_bytes, limits.max_device_bytes, owner_stream);
+    if (filters.status != self_contact_filters::Status::Ok)
+      return sct::FacetFilterFailure(filters);
+  }
   impl_ = std::move(next);
   return {};
 } catch (const std::bad_alloc&) {
@@ -444,6 +453,13 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
       state.buffers.surface_to_active, state.surface_parent_count,
       state.buffers.parent_facet_offsets, parents, activity);
   if (streamed.status != S::Ok) return state.Fail(streamed);
+  if (state.facet_filters) {
+    diagnostics.Stage(Stage::Filtering);
+    const auto filters = state.facet_filters->AcceptedScene(
+        state.buffers.accepted_triangles, state.buffers.facet_motion);
+    if (filters.status != self_contact_filters::Status::Ok)
+      return state.Fail(sct::FacetFilterFailure(filters));
+  }
   const bool direct_ledger =
       state.storage_forecast.accepted_event_capacity ==
       state.storage_forecast.
@@ -469,10 +485,12 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
     if (streamed.status != S::Ok) return state.Fail(streamed);
     if (!pair_count) break;
     const auto streamed_pair_count = pair_count;
-    auto filtered = sct::FilterAcceptedFacetPairs(
-        state.active_use, state.buffers.accepted_triangles,
-        state.buffers.facet_motion, state.facet_count,
-        state.buffers.facet_pair_chunk, &pair_count);
+    auto filtered = state.facet_filters
+        ? state.facet_filters->AcceptedPairs(state.buffers.facet_pair_chunk, &pair_count)
+        : sct::FilterAcceptedFacetPairs(
+            state.active_use, state.buffers.accepted_triangles,
+            state.buffers.facet_motion, state.facet_count,
+            state.buffers.facet_pair_chunk, &pair_count);
     if (filtered.status != S::Ok) return state.Fail(filtered);
     auto masked = sct::BuildLocalFeatureTaskMasks(
         state.buffers.facet_descriptors, state.facet_count,
@@ -630,10 +648,12 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
     if (streamed.status != S::Ok) return state.Fail(streamed);
     if (!pair_count) break;
     const auto streamed_pair_count = pair_count;
-    auto filtered = sct::FilterAcceptedFacetPairs(
-        state.active_use, state.buffers.accepted_triangles,
-        state.buffers.facet_motion, state.facet_count,
-        state.buffers.facet_pair_chunk, &pair_count);
+    auto filtered = state.facet_filters
+        ? state.facet_filters->AcceptedPairs(state.buffers.facet_pair_chunk, &pair_count)
+        : sct::FilterAcceptedFacetPairs(
+            state.active_use, state.buffers.accepted_triangles,
+            state.buffers.facet_motion, state.facet_count,
+            state.buffers.facet_pair_chunk, &pair_count);
     if (filtered.status != S::Ok) return state.Fail(filtered);
     auto masked = sct::BuildLocalFeatureTaskMasks(
         state.buffers.facet_descriptors, state.facet_count,
@@ -827,11 +847,12 @@ SelfContactTransactionForecast SelfContactTransaction::forecast()
 
 SelfContactTransactionAllocationInfo SelfContactTransaction::allocations()
     const noexcept {
-  return impl_ ? SelfContactTransactionAllocationInfo{
-      impl_->physical_activity.allocations(),
-      {impl_->storage_forecast.device_bytes,
-       impl_->storage_forecast.device_allocations}}
-      : SelfContactTransactionAllocationInfo{};
+  if (!impl_) return {};
+  const auto unused = impl_->facet_filters
+      ? impl_->facet_filters->UnallocatedDevice() : fe::NodalAllocationInfo{};
+  return {impl_->physical_activity.allocations(),
+      {impl_->storage_forecast.device_bytes - unused.device_bytes,
+       impl_->storage_forecast.device_allocations - unused.device_allocations}};
 }
 
 SelfContactCandidatePolicyView

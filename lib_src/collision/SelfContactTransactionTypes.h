@@ -7,6 +7,7 @@
 #include "SelfContactCurrentRegularity.h"
 #include "SelfContactForceAssembly.h"
 #include "SelfContactPhysicalActivityTypes.h"
+#include "self_contact_filters/Types.h"
 #include "lib_src/elements/ShellBatchPublication.h"
 
 #include <cstddef>
@@ -37,6 +38,7 @@ enum class SelfContactTransactionStatus : std::uint8_t {
   CrossingFailure,
   UnresolvedCandidate,
   CandidateRejected,
+  FacetFilterFailure,
 };
 
 enum class SelfContactTransactionCountKind : std::uint8_t {
@@ -130,6 +132,7 @@ struct SelfContactTransactionReport {
   tl::fea::NodalStatus owner_status = tl::fea::NodalStatus::Ok;
   const char* message = "OK";
   SelfContactCrossingDiagnostics crossing_diagnostics;
+  self_contact_filters::Status filter_status = self_contact_filters::Status::Ok;
 };
 
 enum class SelfContactTransactionNonlocalPolicy : std::uint8_t {
@@ -149,6 +152,8 @@ struct SelfContactTransactionConfig {
           AcceptedSymmetricVfEeRejectIntersectionV2;
   // Optional host substage observation. Never participates in physical identity.
   bool enable_diagnostics = false;
+  // Optional equivalent numerical backend; default CPU path stays selected.
+  bool enable_cuda_facet_filters = false;
 };
 
 struct SelfContactTransactionLimits {

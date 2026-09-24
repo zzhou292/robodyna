@@ -9,8 +9,11 @@ get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
 include("${TL_ROOT}/lib_src/collision/FixedTriangleFeatureDiscovery.cmake")
 include("${TL_ROOT}/lib_src/collision/RepresentedIntervalCrossing.cmake")
 include("${TL_ROOT}/lib_src/collision/SelfContactFilterCertificates.cmake")
+include("${TL_ROOT}/lib_src/collision/SelfContactFilterBatchValues.cmake")
 include("${TL_ROOT}/lib_src/collision/SelfContactCurrentRegularity.cmake")
 add_executable(self_contact_transaction_values
+  FacetFilterValueTest.cpp
+  "${TL_ROOT}/lib_src/collision/self_contact_transaction/FacetFilterValues.cpp"
   DiagnosticsTest.cpp
   ValueTest.cpp
   OwnerRangeCases.h
@@ -49,7 +52,7 @@ target_include_directories(self_contact_transaction_values PRIVATE
 target_link_libraries(self_contact_transaction_values PRIVATE
   tl_represented_interval_crossing
   tl_fixed_triangle_feature_discovery
-  tl_self_contact_filter_certificates GTest::gtest_main)
+  tl_self_contact_filter_certificates tl_self_contact_filter_batch_values GTest::gtest_main)
 target_compile_features(self_contact_transaction_values PRIVATE cxx_std_17)
 target_compile_options(self_contact_transaction_values PRIVATE
   -fno-fast-math -ffp-contract=off)
@@ -110,6 +113,10 @@ if(SELF_CONTACT_TRANSACTION_CUDA)
   include("${TL_ROOT}/lib_src/collision/SelfContactTransaction.cmake")
   add_executable(self_contact_transaction_cuda
     CudaTest.cu
+    FacetFilterCudaProbe.cpp
+    FacetFilterCudaProbe.h
+    FacetFilterAdapterCudaCases.h
+    FacetFilterTransactionCudaCases.h
     TransactionFixture.h
     FailureCaptureCases.h
     TransactionReportAssertions.h
@@ -127,6 +134,7 @@ if(SELF_CONTACT_TRANSACTION_CUDA)
     CUDA_STANDARD 17 CUDA_STANDARD_REQUIRED YES)
   target_compile_options(self_contact_transaction_cuda PRIVATE
     "$<$<COMPILE_LANGUAGE:CUDA>:--fmad=false;--prec-div=true;--prec-sqrt=true;--ftz=false;-Xcompiler=-fno-fast-math,-ffp-contract=off>")
+  target_link_options(self_contact_transaction_cuda PRIVATE -Wl,--wrap=cudaMalloc -Wl,--wrap=cudaMemcpyAsync)
   add_test(NAME self_contact_transaction_cuda
     COMMAND self_contact_transaction_cuda
       "--gtest_filter=-SelfContactTransactionCuda.AlgorithmicDeterminismAcrossSchedulingWorkersAndLifetimes")

@@ -275,11 +275,19 @@ for token in (
     "SelfContactFacetPrismSeparationAxis::VertexEdge",
     "SelfContactFacetPrismSeparationAxis::VertexVertex",
     "SelfContactFacetPrismAxisLimit::VertexVertex",
-    "std::nextafter(",
+    "::nextafter(",
     "thickness * norm_l1",
     "first_thickness, second_thickness, axis",
 ):
     require(filter_source, token, FILTER_SOURCE)
+# Shared HD adapters preserve explicit outward directions; the owning filter
+# extraction gate additionally pins all20 arithmetic bodies to21941d20.
+shared_arithmetic = FILTER_SOURCE.with_name("self_contact_filters").joinpath("Arithmetic.h").read_text()
+for signature, direction in (("double Down(double value)", "-HUGE_VAL"),
+                             ("double Up(double value)", "HUGE_VAL")):
+    begin = shared_arithmetic.index(signature)
+    body = shared_arithmetic[shared_arithmetic.index("{", begin)+1:shared_arithmetic.index("}", begin)]
+    assert re.sub(r"\s+", "", body) == "return::nextafter(value," + direction + ");"
 for token in (
     "SelfContactFacetFilterCategory",
     "CoordinateAabbSeparated",
@@ -434,7 +442,14 @@ for token in (
     require(source, token, source_path)
 for text, path in ((transaction, TRANSACTION), (candidate, CANDIDATE)):
     require(text, "broadphase.required_pairs", path)
-require(source, "ClassifyAcceptedFacetPair(", source_path)
+accepted_fold_path = ROOT / "lib_src/collision/self_contact_transaction/AcceptedFacetFiltering.h"
+accepted_fold = accepted_fold_path.read_text()
+require(source, "detail::FilterAcceptedFacetPairsWith(active_use, triangles, motion,", source_path)
+require(source, "&::tlfea::contact::ClassifyAcceptedFacetPair", source_path)
+for token in ("ClassifyAcceptedFacetPair(", "first_parent >= parents.size()",
+              "filtered.status != SelfContactFacetFilterStatus::Ok",
+              "SelfContactFacetFilterCategory::ExactRemaining", "pairs[write++] = value"):
+    require(accepted_fold, token, accepted_fold_path)
 for token in (
     "BuildFixedTriangleFeatureTaskMask(",
     "CurrentFixedTriangle Identity(",
@@ -544,6 +559,9 @@ for wiring in (CMAKE, BAZEL):
                   "self_contact_transaction/Limits.cpp",
                   "self_contact_transaction/RigidSweep.cpp",
                   "self_contact_transaction/Source.cpp",
+                  "self_contact_transaction/FacetFilterValues.cpp",
+                  "self_contact_transaction/FacetFilters.cpp",
+                  "self_contact_transaction/FacetFilterAccepted.cpp",
                   "self_contact_transaction/Streaming.cpp",
                   "self_contact_transaction/TaskMask.cpp",
                   "self_contact_transaction/Transaction.cpp",
@@ -1139,3 +1157,47 @@ require(values, "ValidateCandidatePublicationsImpl(input, nullptr)", translated_
 require(values, "ValidateCandidatePublicationsImpl(input, &index)", translated_path.with_name("Values.cpp"))
 
 print("fixed self-contact transaction source proof: PASS")
+
+# Optional numerical facet filters preserve one shared scalar/error fold and
+# stream affine spans around the existing serial nonlinear budget decisions.
+filter_adapter = (ROOT / "lib_src/collision/self_contact_transaction/FacetFilters.cpp").read_text()
+filter_accepted = (ROOT / "lib_src/collision/self_contact_transaction/FacetFilterAccepted.cpp").read_text()
+filter_values = (ROOT / "lib_src/collision/self_contact_transaction/FacetFilterValues.cpp").read_text()
+filter_header = (ROOT / "lib_src/collision/self_contact_transaction/FacetFilters.h").read_text()
+require(types, "bool enable_cuda_facet_filters = false", TYPES)
+assert transaction.count("->AcceptedScene(") == 1
+assert transaction.count("->AcceptedPairs(") == 2
+assert candidate.count("->CandidateScene(") == 1
+assert candidate.count("->BeginCandidateChunk(") == 1
+assert candidate.count("sct::OptionalFacetPrism(") == 1
+assert filter_adapter.index("filters::CompatibleHostArithmetic()") < filter_adapter.index("batch_.Initialize(")
+assert "void FacetFilters::Discard()" in filter_adapter and "batch_.DiscardScene()" in filter_adapter
+assert "base_input_ = next_input_ = nullptr" in filter_adapter
+assert "view.scene_generation != scene_generation_" in filter_adapter + filter_accepted
+assert "view.count != prefix" in filter_accepted and "prefix < *count" in filter_accepted
+assert "detail::FilterAcceptedFacetPairsWith" in filter_accepted
+assert "ClassifyCandidatePairMotion" in filter_values and "PairMotionAction::LinearNodalV1)" in filter_values
+assert "CertifyQuadratic" not in filter_values + filter_adapter
+for token in ("facet_filters.owned_host_bytes", "facet_filters.device_bytes",
+              "facet_filters.startup_host_bytes", "if (config.enable_cuda_facet_filters)"):
+    assert token in layout
+assert "facet_filters->OutputDisjoint" in transaction and "facet_filters->Discard()" in transaction
+assert "if (!reply.supplied) return scalar()" in filter_header
+assert "reply.report.status != self_contact_filters::Status::Ok) return false" in filter_header
+for source_name in ("FacetFilters.h", "FacetFilterValues.cpp", "FacetFilters.cpp", "FacetFilterAccepted.cpp", "AcceptedFacetFiltering.h"):
+    content=(ROOT / "lib_src/collision/self_contact_transaction" / source_name).read_text()
+    for forbidden in ("std::vector", "std::map", "std::function", "cudaMalloc", "thread_local"):
+        assert forbidden not in content,(source_name,forbidden)
+for test_name in ("FacetFilterValueTest.cpp", "FacetFilterAdapterCudaCases.h",
+                  "FacetFilterTransactionCudaCases.h", "FacetFilterCudaProbe.cpp", "FacetFilterCudaProbe.h"):
+    assert test_name in QUAL_CMAKE.read_text() and test_name in QUAL_BAZEL.read_text(),test_name
+print("PASS optional facet-filter source/lifetime/streaming dependency boundary")
+
+assert "device_failure_ = report" in filter_header
+for entry in ("Report FacetFilters::Initialize", "Report FacetFilters::PrepareScene", "FacetPrismReply FacetFilters::PrismAt"):
+    begin = filter_adapter.index(entry)
+    tail = filter_adapter[begin:]
+    assert tail.index("device_failure_.status == filters::Status::DeviceFailure") < tail.index("CompatibleHostArithmetic()")
+query = filter_adapter[filter_adapter.index("FacetPrismReply FacetFilters::PrismAt"):]
+assert query.index("ordinal >= chunk_count_") < query.index("CompatibleHostArithmetic()")
+assert "ObserveFailure(report); Discard()" in filter_accepted

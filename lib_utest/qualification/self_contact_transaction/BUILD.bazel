@@ -26,6 +26,7 @@ cc_test(
         "//lib_utest/qualification/represented_interval_crossing:Fixture.h",
         "RigidSweepBoundsTest.cpp",
         "ValueTest.cpp",
+        "FacetFilterValueTest.cpp",
         "DiagnosticsTest.cpp",
         "PersistentGeometryCases.h",
         "PolicyExclusionsCases.h",
@@ -131,6 +132,10 @@ filegroup(
     srcs = [
         "CMakeLists.txt",
         "CudaTest.cu",
+        "FacetFilterCudaProbe.cpp",
+        "FacetFilterCudaProbe.h",
+        "FacetFilterAdapterCudaCases.h",
+        "FacetFilterTransactionCudaCases.h",
         "DiagnosticsCudaCases.h",
         "TransactionFixture.h",
         "PreparedCensusCases.h",

@@ -101,6 +101,29 @@ TEST_F(SelfContactFilterBatchCuda, SceneReplacementAndInvalidUploadCannotReuseAn
   EXPECT_EQ(batch.results().data, old.data);
 }
 
+TEST_F(SelfContactFilterBatchCuda, DiscardRevokesBorrowedResultsAndRequiresFreshScene) {
+  Check(corpus.input(), true, c::SelfContactFacetPrismAxisLimit::VertexVertex);
+  const auto old = batch.results();
+  batch.DiscardScene();
+  EXPECT_FALSE(batch.results().complete);
+  EXPECT_EQ(batch.Accepted(corpus.input(), stream).status, f::Status::NoScene);
+  ASSERT_EQ(batch.Upload(corpus.scene(), stream).status, f::Status::Ok);
+  Check(corpus.input(), true, c::SelfContactFacetPrismAxisLimit::VertexVertex);
+  EXPECT_EQ(batch.results().data, old.data);
+  EXPECT_EQ(batch.results().scene_generation, old.scene_generation + 1);
+}
+TEST_F(SelfContactFilterBatchCuda, EnclosingReceiptOutputsCannotAliasBatchOrBorrowedResults) {
+  Check(corpus.input(), true, c::SelfContactFacetPrismAxisLimit::VertexVertex);
+  const auto values = batch.results();
+  EXPECT_FALSE(batch.OutputDisjoint(&batch, sizeof(batch)));
+  EXPECT_FALSE(batch.OutputDisjoint(values.data, sizeof(f::PairResult)));
+  f::PairResult outside;
+  EXPECT_TRUE(batch.OutputDisjoint(&outside, sizeof(outside)));
+  batch.DiscardScene();
+  // Revocation changes authority, not ownership of the retained allocation.
+  EXPECT_FALSE(batch.OutputDisjoint(values.data, sizeof(f::PairResult)));
+}
+
 TEST(SelfContactFilterBatchAdmission, ForecastCapsAndExplicitStreamPrecedeAllocation) {
   f::Batch batch;
   f::Limits limits;

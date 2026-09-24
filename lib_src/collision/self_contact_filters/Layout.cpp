@@ -35,4 +35,11 @@ Report MakeLayout(Limits limits, std::size_t owner_bytes, Layout& output) noexce
   output = next;
   return {};
 }
+Preflight Batch::PreflightLimits(Limits limits) noexcept {
+  Layout layout;
+  Preflight result;
+  result.report = MakeLayout(limits, sizeof(Batch) + sizeof(Impl), layout);
+  if (result.report.status == Status::Ok) result.forecast = layout.forecast;
+  return result;
+}
 }  // namespace tlfea::contact::self_contact_filters

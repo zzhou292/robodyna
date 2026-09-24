@@ -1802,3 +1802,6 @@ TEST(SelfContactTransactionCuda,
 #include "DiagnosticsCudaCases.h"
 
 #include "NonlinearFailureCaptureCases.h"
+
+#include "FacetFilterAdapterCudaCases.h"
+#include "FacetFilterTransactionCudaCases.h"

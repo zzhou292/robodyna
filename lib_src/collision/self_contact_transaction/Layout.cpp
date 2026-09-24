@@ -202,6 +202,16 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
     return Failure(S::ResourceLimit,
         "Transaction candidate arena exceeds its fixed profile");
 
+  sct::FacetFilterForecast facet_filters;
+  if (config.enable_cuda_facet_filters) {
+    facet_filters = sct::FacetFilters::Preflight(facets, limits.max_facet_pair_chunk,
+        limits.max_host_bytes, limits.max_device_bytes);
+    if (facet_filters.report.status != self_contact_filters::Status::Ok) {
+      SelfContactTransactionPreflight result;
+      result.report = sct::FacetFilterFailure(facet_filters.report);
+      return result;
+    }
+  }
   SelfContactTransactionForecast forecast;
   forecast.activity = activity.forecast;
   forecast.force = force.forecast;
@@ -301,6 +311,8 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
       !Add(force.forecast.device_allocations,
            &forecast.device_allocations) ||
       !Add(1, &forecast.device_allocations) ||
+      !Add(facet_filters.device_bytes, &forecast.device_bytes) ||
+      !Add(facet_filters.device_allocations, &forecast.device_allocations) ||
       forecast.device_bytes > limits.max_device_bytes)
     return Failure(S::ResourceLimit,
         "Transaction device payload exceeds its complete cap");
@@ -356,6 +368,7 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
            &forecast.owned_host_bytes) ||
       !Add(participation.publication_host_bytes,
            &forecast.owned_host_bytes) ||
+      !Add(facet_filters.owned_host_bytes, &forecast.owned_host_bytes) ||
       forecast.owned_host_bytes > limits.max_host_bytes)
     return Failure(S::ResourceLimit,
         "Transaction complete host payload exceeds its cap");
@@ -381,6 +394,9 @@ SelfContactTransactionPreflight SelfContactTransaction::Forecast(
       regularity.forecast.startup_payload_bytes -
           regularity.forecast.owned_payload_bytes});
   forecast.startup_host_bytes = forecast.owned_host_bytes;
+  if (!Add(facet_filters.startup_host_bytes - facet_filters.owned_host_bytes,
+           &forecast.startup_host_bytes))
+    return Failure(S::ResourceLimit, "Optional facet-filter startup forecast overflowed");
   if (!Add(accepted_discovery.forecast.startup_host_bytes -
                accepted_discovery.forecast.owned_host_bytes,
            &forecast.startup_host_bytes) ||

@@ -2,6 +2,7 @@
 #pragma once
 
 #include "../SelfContactTransaction.h"
+#include "FacetFilters.h"
 #include "../SelfContactFilterCertificates.h"
 #include "../SelfContactPhysicalActivity.h"
 #include "../fixed_triangle_features/Geometry.h"
@@ -901,6 +902,7 @@ struct SelfContactTransaction::Impl {
   tl::fea::FENodalState* owner = nullptr;
   tl::fea::ShellBatchPublication* publication = nullptr;
   SelfContactTransactionConfig config;
+  std::unique_ptr<self_contact_transaction::FacetFilters> facet_filters;
   SelfContactTransactionDiagnostics diagnostics;
   self_contact_transaction::DiagnosticClock diagnostic_clock;
   SelfContactTransactionForecast storage_forecast;
