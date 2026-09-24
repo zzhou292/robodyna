@@ -27,3 +27,15 @@ nonlocal intersections before whole-interval coverage. The public signature has
 no runtime order selector; production callers cannot invoke the private helper
 or the comparison-only old-order entry points. These are source obligations,
 not a substitute for numerical equivalence and CUDA qualification.
+
+The same check also accepts the private `RootConeSearch {Original, AffineOnly,
+Full}` template, whose public cone-first wrapper defaults to `Full`. It follows
+`<order, search>` through coverage while requiring both search extensions to stay
+at depth/path zero in the dedicated local-topology phase: affine paths use the
+existing affine extension and non-affine paths use the curved extension. Original
+successes, exact shared paths, nondegeneracy and both endpoint premises precede
+the additional search. All three Bernstein arm controls propose directions;
+`SharedVertexAxisSeparated` must still prove opposite strict signs over the full
+bounds. Neither public headers nor production callers expose private selection or
+comparison entry points. Historical direct, cone-first-only and affine-only source
+layouts remain supported under their original obligations.

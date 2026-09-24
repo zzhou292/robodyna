@@ -478,27 +478,73 @@ def main() -> None:
         affine_template = ("template <SharedVertexOrder order = SharedVertexOrder::ConeFirst,"
                            "AffineConeSearch search = AffineConeSearch::Extended>"
                            "NonlinearSeparationResult CertifyQuadraticLocalTopologyImpl(")
+        root_template = ("template <SharedVertexOrder order = SharedVertexOrder::ConeFirst,"
+                         "RootConeSearch search = RootConeSearch::Full>"
+                         "NonlinearSeparationResult CertifyQuadraticLocalTopologyImpl(")
         has_affine_search = compact(affine_template) in compact(tl_rigid_sweep)
-        require(has_affine_search or compact(legacy_template) in compact(tl_rigid_sweep),
+        has_root_search = compact(root_template) in compact(tl_rigid_sweep)
+        require(has_affine_search or has_root_search or
+                compact(legacy_template) in compact(tl_rigid_sweep),
                 "local topology order/search must remain private compile-time choices")
         if has_affine_search:
             require(compact("search == AffineConeSearch::Extended && depth == 0 && path == 0 && "
                             "local_topology_only && exact_affine") in compact(tl_rigid_sweep),
                     "derived cone search must stay in the dedicated affine local root")
+        if has_root_search:
+            require(compact("enum class RootConeSearch { Original, AffineOnly, Full };")
+                    in compact(tl_rigid_sweep),
+                    "root cone search choices must remain private and compile-time")
+            _, subdivision = definition(tl_rigid_sweep,
+                "NonlinearSeparationStatus SubdivideCoverage(")
+            for gate, label in [
+                    ("search != RootConeSearch::Original && depth == 0 && path == 0 && "
+                     "local_topology_only && exact_affine", "affine"),
+                    ("search == RootConeSearch::Full && depth == 0 && path == 0 && "
+                     "local_topology_only && !exact_affine", "curved")]:
+                require(compact(gate) in compact(subdivision),
+                        f"derived {label} cone search must stay in its dedicated local root")
+            _, curved_search = definition(tl_rigid_sweep, "bool CurvedRootConeSeparated(")
+            ordered(curved_search, [
+                "PolynomialVectorDifference(", "control < 3", "Valid(value)",
+                "std::isfinite(representative)", "CurvedConeDirections directions(rays)",
+                "directions.Next(&axis)",
+                "if (SharedVertexAxisSeparated(facets, shared, remote, axis)) return true;"],
+                "curved directions require the existing strict verifier")
+            require(curved_search.strip().endswith("return false;"),
+                    "exhausted curved direction search must remain inconclusive")
+            _, vertex_only = definition(tl_rigid_sweep, "bool LocalSharedVertexOnly(")
+            ordered(vertex_only, [
+                "SameCoordinatePath(", "FacetNondegenerate(",
+                "SharedVertexConeSeparated(",
+                "if (no_nonlocal_root && lower_local && upper_local) return true;",
+                "if (!lower_local || !upper_local) return false;",
+                "if (extend_affine_root)", "AffineRootConeSeparated(",
+                "return extend_curved_root && CurvedRootConeSeparated("],
+                "curved root search preserves original successes and endpoint premises")
+            _, axis_verifier = definition(tl_rigid_sweep, "bool SharedVertexAxisSeparated(")
+            ordered(axis_verifier, [
+                "PolynomialVectorDifference(", "DotPolynomialAxis(",
+                "StrictPolynomialOrientation(projection)",
+                "!sign || (side_sign[side] && side_sign[side] != sign)",
+                "return separated && side_sign[0] == -side_sign[1];"],
+                "searched directions require opposite strict signs for complete Bernstein arms")
         _, topology = definition(tl_rigid_sweep,
             "NonlinearSeparationResult CertifyQuadraticLocalTopologyImpl(")
         coverage_call = ("CertifyQuadraticFacetCoverageImpl<order, search>("
-                         if has_affine_search else "CertifyQuadraticFacetCoverageImpl<order>(")
+                         if has_affine_search or has_root_search
+                         else "CertifyQuadraticFacetCoverageImpl<order>(")
         local_header = (args.tl_root / "lib_src" / "collision" /
             "self_contact_transaction" / "LocalContact.h").read_text()
         require("SharedVertexOrder" not in local_header and
                 "AffineConeSearch" not in local_header and
+                "RootConeSearch" not in local_header and
                 "CertifyQuadraticLocalTopologyImpl" not in local_header,
                 "local topology header must not expose the private order implementation")
         require(all(token not in source for source in (tl_candidate, tl_local)
                     for token in ("PolynomialFirst", "CompareSharedVertexTopologyOrders(",
                                   "CompareSharedVertexCoverageOrders(",
-                                  "CompareAffineConeSearch(", "AffineConeSearch::Original",
+                                  "CompareAffineConeSearch(", "CompareCurvedConeSearch(",
+                                  "AffineConeSearch::Original", "RootConeSearch",
                                   "CertifyQuadraticLocalTopologyImpl")),
                 "production callers must not bypass the fixed public topology path")
     ordered(topology, [
