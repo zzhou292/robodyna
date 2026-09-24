@@ -19,6 +19,21 @@ def ordered(text: str, names: list[str], context: str) -> None:
             f"{context}: stages are out of order {names}")
 
 
+def definition(text: str, signature: str) -> tuple[str, str]:
+    """Select one concrete definition, without absorbing adjacent wrappers."""
+    require(text.count(signature) == 1, f"expected one definition of {signature}")
+    start = text.index(signature)
+    brace = text.find("{", start)
+    require(brace >= 0, f"missing function body for {signature}")
+    depth = 1
+    end = brace + 1
+    while end < len(text) and depth:
+        depth += (text[end] == "{") - (text[end] == "}")
+        end += 1
+    require(depth == 0, f"unclosed function body for {signature}")
+    return text[start:brace], text[brace + 1:end - 1]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("app_root", type=Path)
@@ -409,14 +424,54 @@ def main() -> None:
         "LinearResidualSeparationStatus::CertifiedSeparated",
         "return CertifyQuadraticLocalTopology("],
         "local contact whole-interval thickness/topology proof")
-    topology = tl_rigid_sweep[
-        tl_rigid_sweep.find("NonlinearSeparationResult CertifyQuadraticLocalTopology("):
-        tl_rigid_sweep.find("NonlinearSeparationResult CertifyQuadraticFacetCoverage(")]
+    topology_header, topology = definition(tl_rigid_sweep,
+        "NonlinearSeparationResult CertifyQuadraticLocalTopology(")
+    # Both the historical direct body and the compile-time cone-first wrapper
+    # must retain the same public parameters, without a runtime order selector.
+    expected_header = """NonlinearSeparationResult CertifyQuadraticLocalTopology(
+        const CurrentFixedTriangle& first_accepted,
+        const CurrentFixedTriangle& first_prepared,
+        const FacetQuadraticCoefficients& first_coefficients,
+        const CurrentFixedTriangle& second_accepted,
+        const CurrentFixedTriangle& second_prepared,
+        const FacetQuadraticCoefficients& second_coefficients,
+        double duration, std::size_t max_work, unsigned max_depth) noexcept"""
+    compact = lambda value: "".join(value.split())
+    require(compact(topology_header) == compact(expected_header),
+            "public local topology signature must not expose proof-order controls")
+    coverage_call = "CertifyQuadraticFacetCoverageImpl("
+    if "NonlinearSeparationResult CertifyQuadraticLocalTopologyImpl(" in tl_rigid_sweep:
+        expected_wrapper = """return
+            CertifyQuadraticLocalTopologyImpl<SharedVertexOrder::ConeFirst>(
+                first_accepted, first_prepared, first_coefficients,
+                second_accepted, second_prepared, second_coefficients,
+                duration, max_work, max_depth);"""
+        require(compact(topology) == compact(expected_wrapper),
+                "public local topology must call only the fixed cone-first implementation")
+        require("template <SharedVertexOrder order = SharedVertexOrder::ConeFirst>\n"
+                "NonlinearSeparationResult CertifyQuadraticLocalTopologyImpl(" in tl_rigid_sweep,
+                "local topology order must be a private compile-time choice")
+        _, topology = definition(tl_rigid_sweep,
+            "NonlinearSeparationResult CertifyQuadraticLocalTopologyImpl(")
+        coverage_call = "CertifyQuadraticFacetCoverageImpl<order>("
+        local_header = (args.tl_root / "lib_src" / "collision" /
+            "self_contact_transaction" / "LocalContact.h").read_text()
+        require("SharedVertexOrder" not in local_header and
+                "CertifyQuadraticLocalTopologyImpl" not in local_header,
+                "local topology header must not expose the private order implementation")
+        require(all(token not in source for source in (tl_candidate, tl_local)
+                    for token in ("PolynomialFirst", "CompareSharedVertexTopologyOrders(",
+                                  "CompareSharedVertexCoverageOrders(",
+                                  "CertifyQuadraticLocalTopologyImpl")),
+                "production callers must not bypass the fixed public topology path")
     ordered(topology, [
+        "if (!max_work || max_depth > 52)",
+        "base[facet]->vertex_keys[vertex]", "next[facet]->vertex_keys[vertex]",
+        "base[facet]->edge_keys[vertex]", "next[facet]->edge_keys[vertex]",
         "endpoint < 2", "ClassifyPairIntersection(",
         "RequiresIntersectionAdmission(intersection)",
-        "return CertifyQuadraticFacetCoverageImpl("],
-        "local topology endpoint premises and continuous coverage")
+        "return " + coverage_call],
+        "local topology source identity, endpoint premises and continuous coverage")
     require("max_work, max_depth, true, true" in topology,
             "local topology must require bounded whole-interval geometry")
     candidate_witness = tl_candidate[

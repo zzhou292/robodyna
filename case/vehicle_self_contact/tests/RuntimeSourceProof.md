@@ -16,3 +16,14 @@ removed endpoint-only shortcut. The combined cone/roster qualification exposed
 that stale assertion after all three legacy frozen replays passed. Updating this
 source check restores the current ownership contract; it changes no numerical
 implementation, geometry, force, work limit or historical evidence.
+
+The local-topology check accepts the original direct implementation and the
+private templated implementation used for cone-first search. For the latter it
+follows the public wrapper's fixed `SharedVertexOrder::ConeFirst` call into
+`CertifyQuadraticLocalTopologyImpl<order>` and then bounded
+`CertifyQuadraticFacetCoverageImpl<order>`. Both layouts must retain exact source
+vertex/edge identity, both endpoint intersection classifications and rejection of
+nonlocal intersections before whole-interval coverage. The public signature has
+no runtime order selector; production callers cannot invoke the private helper
+or the comparison-only old-order entry points. These are source obligations,
+not a substitute for numerical equivalence and CUDA qualification.
