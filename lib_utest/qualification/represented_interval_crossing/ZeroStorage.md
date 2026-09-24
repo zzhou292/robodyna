@@ -40,6 +40,17 @@ uses the scalar zero return before any resize/Karatsuba path. Newly admitted
 nonzero intermediates fit8limbs and cannot allocate in the original or selected
 backend. The existing version/64-bit/cutoff40 gates remain.
 
+
+The degree induction also covers cancellation-created zeros: Add can retain the
+lower input exponent when a-b cancels, but any later Add bypasses that zero and
+any later product stays zero. The only nonzero constants entering arithmetic
+are uint64 interpolation factors (<=2^53) and RegularCell's factor4 via Scale;
+they preserve spatial degree and do not introduce a separate dyadic lattice.
+There is no dyadic nonzero constant added to a geometric homogeneous polynomial.
+Default scratch/hull values are zero and are overwritten or stay neutral. Thus
+neither zero provenance nor scalar constants create a hidden lower exponent for
+a nonzero degree-k term. Future nonhomogeneous helpers need a fresh audit.
+
 ## Keep storage and shortcut authority separate
 
 ExactProjectionDomain::FromPaths remains the original stored-exponent calculation

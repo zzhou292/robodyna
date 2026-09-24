@@ -25,6 +25,9 @@ inline native::NativeStorageComparison Compare(const Paths& paths,
   SameResult(result.original.result, result.current.result);
   const auto fixed = native::CompareFixedIntegerPolicy(paths[0], paths[1], limits);
   EXPECT_EQ(fixed.status, S::Ok);
+  EXPECT_EQ(fixed.fixed_executed, result.domain.eligible);
+  EXPECT_FALSE(fixed.arithmetic_failed);
+  SameProjection(fixed.domain.storage, result.domain.storage);
   SameResult(result.original.result, fixed.current);
   SameProjection(result.domain.projection,
       native::ExactProjectionDomain::FromPaths(paths[0], paths[1], limits.max_depth).report());
@@ -110,6 +113,27 @@ TEST(RepresentedZeroNeutralStorage, NonfiniteAndUnsupportedPathsNeverObtainZeroA
   EXPECT_EQ(unsupported.current.result.reason,R::UnsupportedMotion);
   EXPECT_EQ(unsupported.current.result.work,0u);
   EXPECT_FALSE(native::NativeStorageDomain::FromPaths(paths[0],paths[0],53).eligible());
+}
+
+TEST(RepresentedZeroNeutralStorage, PublicProjectionRetainsItsOriginalCompleteReports) {
+  for (unsigned depth : {0u,20u,52u}) for (int scale : {0,700}) {
+    auto triangle=BaseTriangle();
+    for(auto& point:triangle) {point.x=std::ldexp(point.x,scale);point.y=std::ldexp(point.y,scale);}
+    const Paths paths{Static(10,triangle),Static(20,triangle)};
+    native::ExactProjectionDomainReport expected;
+    expected.supported=true;expected.sample_depth=depth+1;
+    expected.coordinate_bits=1076+depth+1+scale;
+    expected.degree_two_bits=2*expected.coordinate_bits+3;
+    expected.limb_bits=64;expected.karatsuba_cutoff=40;
+    expected.eligible=expected.degree_two_bits<=39*64;
+    SameProjection(native::ExactProjectionDomain::FromPaths(paths[0],paths[1],depth).report(),expected);
+    ct::RepresentedIntervalLimits limits;limits.max_depth=depth;
+    const auto result=Compare(paths,limits);
+    SameProjection(result.domain.projection,expected);
+    EXPECT_EQ(result.domain.storage.coordinate_bits,53+depth+1);
+    EXPECT_EQ(result.current.result.work,1u);
+    EXPECT_EQ(result.current.result.geometry,G::ExactCommonTranslationCoplanar);
+  }
 }
 } // namespace zero_storage
 } // namespace represented_interval_test
