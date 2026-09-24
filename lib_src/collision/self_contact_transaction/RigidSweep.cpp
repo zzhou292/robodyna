@@ -2,6 +2,8 @@
 #include "Storage.h"
 #include "FinalizedCoverageLedger.h"
 #include "SharedVertexProofQualification.h"
+#include "RigidSeparationQualification.h"
+#include "../represented_interval_crossing/native/Identity.h"
 #include "ConeDirections.h"
 #include "LocalContact.h"
 #include "PolicyExclusions.h"
@@ -3002,6 +3004,34 @@ NonlinearSeparationStatus SubdivideCoverage(
       : NonlinearSeparationStatus::CertifiedSeparated;
 }
 
+// An exact common point at the SAME closed endpoint prevents strict
+// separation of the complete interval. Equal overlapping enclosures do not
+// suffice: each coordinate must be an exact singleton. Reuse the existing
+// integer-bit identity helper so FTZ/DAZ cannot turn distinct subnormals into
+// an invented common point; signed zeros still represent the same real zero.
+bool SharedEndpointSingleton(const BernsteinFacet& first,
+                             const BernsteinFacet& second) noexcept {
+  using represented_interval_crossing::native::SameFiniteCoordinate;
+  for (unsigned endpoint : {0u, 2u})
+    for (unsigned a = 0; a < 3; ++a)
+      for (unsigned b = 0; b < 3; ++b) {
+        bool same = true;
+        for (unsigned component = 0; component < 3; ++component) {
+          const auto x = first.coordinate[a][component].control[endpoint];
+          const auto y = second.coordinate[b][component].control[endpoint];
+          if (!SameFiniteCoordinate(x.lower, x.upper) ||
+              !SameFiniteCoordinate(y.lower, y.upper) ||
+              !SameFiniteCoordinate(x.lower, y.lower)) {
+            same = false;
+            break;
+          }
+        }
+        if (same) return true;
+      }
+  return false;
+}
+
+template <bool endpoint_witness>
 NonlinearSeparationStatus SubdivideSeparation(
     const BernsteinFacet& first,
     const BernsteinFacet& second,
@@ -3032,25 +3062,31 @@ NonlinearSeparationStatus SubdivideSeparation(
     return valid ? NonlinearSeparationStatus::CertifiedSeparated
                  : NonlinearSeparationStatus::InvalidInput;
   if (!valid) return NonlinearSeparationStatus::InvalidInput;
+  if constexpr (endpoint_witness) {
+    // This is an inconclusive separation result, never a contact/locality
+    // permission. The root visit above is real work; all subsequent ownership
+    // and continuous-contact policy checks remain mandatory in the caller.
+    if (depth == 0 && SharedEndpointSingleton(first, second))
+      return NonlinearSeparationStatus::PotentialContact;
+  }
   if (depth >= max_depth)
     return NonlinearSeparationStatus::DepthExhausted;
   BernsteinFacet first_left, first_right, second_left, second_right;
   if (!SplitFacet(first, &first_left, &first_right) ||
       !SplitFacet(second, &second_left, &second_right))
     return NonlinearSeparationStatus::InvalidInput;
-  const auto left = SubdivideSeparation(
+  const auto left = SubdivideSeparation<endpoint_witness>(
       first_left, second_left, first_thickness, second_thickness,
       depth + 1, max_depth, max_work, work, deepest);
   if (left != NonlinearSeparationStatus::CertifiedSeparated)
     return left;
-  return SubdivideSeparation(
+  return SubdivideSeparation<endpoint_witness>(
       first_right, second_right, first_thickness, second_thickness,
       depth + 1, max_depth, max_work, work, deepest);
 }
 
-}  // namespace
-
-NonlinearSeparationResult CertifyQuadraticFacetSeparation(
+template <bool endpoint_witness>
+NonlinearSeparationResult CertifyQuadraticFacetSeparationImpl(
     const CurrentFixedTriangle& first_accepted,
     const CurrentFixedTriangle& first_prepared,
     const FacetQuadraticCoefficients& first_coefficients,
@@ -3075,10 +3111,48 @@ NonlinearSeparationResult CertifyQuadraticFacetSeparation(
           second_accepted, second_prepared, second_coefficients,
           duration, &second))
     return result;
-  result.status = SubdivideSeparation(
+  result.status = SubdivideSeparation<endpoint_witness>(
       first, second, first_thickness, second_thickness,
       0, max_depth, max_work, &result.work, &result.deepest);
   return result;
+}
+
+}  // namespace
+
+NonlinearSeparationResult CertifyQuadraticFacetSeparation(
+    const CurrentFixedTriangle& first_accepted,
+    const CurrentFixedTriangle& first_prepared,
+    const FacetQuadraticCoefficients& first_coefficients,
+    double first_thickness,
+    const CurrentFixedTriangle& second_accepted,
+    const CurrentFixedTriangle& second_prepared,
+    const FacetQuadraticCoefficients& second_coefficients,
+    double second_thickness, double duration,
+    std::size_t max_work, unsigned max_depth) noexcept {
+  return CertifyQuadraticFacetSeparationImpl<true>(
+      first_accepted, first_prepared, first_coefficients, first_thickness,
+      second_accepted, second_prepared, second_coefficients, second_thickness,
+      duration, max_work, max_depth);
+}
+
+RigidSeparationComparison CompareRigidSeparationEndpointWitness(
+    const CurrentFixedTriangle& first_accepted,
+    const CurrentFixedTriangle& first_prepared,
+    const FacetQuadraticCoefficients& first_coefficients,
+    double first_thickness,
+    const CurrentFixedTriangle& second_accepted,
+    const CurrentFixedTriangle& second_prepared,
+    const FacetQuadraticCoefficients& second_coefficients,
+    double second_thickness, double duration,
+    std::size_t max_work, unsigned max_depth) noexcept {
+  return {CertifyQuadraticFacetSeparationImpl<false>(
+      first_accepted, first_prepared, first_coefficients, first_thickness,
+      second_accepted, second_prepared, second_coefficients, second_thickness,
+      duration, max_work, max_depth),
+          CertifyQuadraticFacetSeparationImpl<true>(
+      first_accepted, first_prepared, first_coefficients, first_thickness,
+      second_accepted, second_prepared, second_coefficients, second_thickness,
+      duration, max_work, max_depth)};
 }
 
 template <SharedVertexOrder order = SharedVertexOrder::ConeFirst,
