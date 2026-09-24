@@ -15,7 +15,7 @@ bazel = (collision / "BUILD.bazel").read_text()
 test_cmake = (here / "CMakeLists.txt").read_text()
 test_bazel = (here / "BUILD.bazel").read_text()
 test_sources = (
-    "BatchRosterTest.cpp", "NormalReuseTest.cpp", "RelativeSeparationTest.cpp", "ExactPathReuseTest.cpp", "ResultAssertions.h", "GeometryTest.cpp", "InvarianceTest.cpp", "FailureTest.cpp",
+    "BatchRosterTest.cpp", "NormalReuseTest.cpp", "RelativeSeparationTest.cpp", "ExactPathReuseTest.cpp", "CommonPointReuseTest.cpp", "ResultAssertions.h", "GeometryTest.cpp", "InvarianceTest.cpp", "FailureTest.cpp",
     "IdentityTest.cpp", "DeepTest.cpp", "OracleTest.cpp",
     "ParallelTest.cpp", "TranslationProofTest.cpp", "Oracle.cpp",
 )
@@ -198,7 +198,7 @@ for token in ("ExactVec3 normal_a[3]", "ExactVec3 normal_b[3]",
               "bool ready_a[3]", "bool ready_b[3]", "scratch->BeginCell()",
               "normal = Normal(second ? b[sample] : a[sample], counters)",
               "ready = true", "template <NormalReuse reuse = NormalReuse::Memoize,",
-              "CertifyPair<NormalReuse::Recompute, SeparationProof::RelativeFaces, ExactPathReuse::Original>", "sizeof(ExactScratch)"):
+              "CertifyPair<NormalReuse::Recompute, SeparationProof::RelativeFaces, ExactPathReuse::Original, CommonPointReuse::Original>", "sizeof(ExactScratch)"):
     if token not in normal_implementation:
         raise RuntimeError(f"Missing lazy normal cache contract: {token}")
 normal_cell = normal_implementation[normal_implementation.index("CellEvaluation EvaluateCell("):
@@ -214,7 +214,7 @@ for token in ("BOOST_VERSION == 107400", "encoded ? static_cast<int>(encoded) - 
               "ExactProjectionDomain() = default"):
     assert token in projection_header, token
 for token in ("SeparationProof::RelativeFaces", "SeparationProof::LegacyAabb",
-              "EvaluateCell<reuse, SeparationProof::LegacyAabb, ExactPathReuse::Original>",
+              "EvaluateCell<reuse, SeparationProof::LegacyAabb, ExactPathReuse::Original, false, point_reuse>",
               "ProjectionDomain::FromPaths(a, b, limits.max_depth)",
               "CanonicalAnchor(a)", "RelativeCoordinatesSeparated", "RelativeAxisSeparated"):
     assert token in source, token
@@ -233,11 +233,24 @@ for token in ("ExactPathReuse path_reuse = ExactPathReuse::Optimized",
     assert token in source, token
 assert "ExactPathReuse" not in public + types
 assert translation_body.index("domain.eligible()") < translation_body.index(
-    "EvaluateCell<reuse, SeparationProof::LegacyAabb, path_reuse, true>")
+    "EvaluateCell<reuse, SeparationProof::LegacyAabb, path_reuse, true, point_reuse>")
 feature_body = source[source.index("RepresentedFeaturePathKey IntersectionFeature("):
                       source.index("bool RegularCell(")]
 assert feature_body.index("PointInClosedTriangle(b.vertex[vertex]") < feature_body.index(
     "if (skip_dominated_edges && have") < feature_body.index("for (unsigned edge_a")
+
+# Common-point reuse is a private value fact derived from actual endpoint
+# coordinates after unchanged sample regularity and arithmetic-domain gates.
+assert "CommonPointReuse" not in public + types
+assert "CommonEndpointPoint(path_a, path_b, times[sample]" in relative_cell
+assert relative_cell.index("if (degenerate_at(false, sample)") < relative_cell.index("CommonEndpointPoint(")
+assert relative_cell.index("if (domain && domain->eligible())") < relative_cell.index("CommonEndpointPoint(")
+static_body = source[source.index("StaticIntersection Intersects("):source.index("bool PointInClosedTriangle(")]
+assert static_body.index("result.coplanar &&") < static_body.index("if (common_endpoint)")
+assert static_body.index("if (common_endpoint)") < static_body.index("if (SeparatedOnAxis(")
+assert "CompareCommonPointReuse" in source
+assert "SameFiniteCoordinate(p.x, q.x)" in source
+assert "first == second || ((first & magnitude) == 0 && (second & magnitude) == 0)" in source
 
 print(json.dumps({
     "status": "passed",

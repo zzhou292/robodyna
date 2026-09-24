@@ -331,3 +331,38 @@ No build, test, benchmark or vehicle run has been performed by this source autho
 Promotion requires owning native/source/Bazel checks, affected transaction/CUDA
 and frozen app regressions, then a controlled warmed batch measurement and actual
 vehicle substage data. Removed operation counts are not a measured speedup.
+
+
+## Guarded common endpoint reuse
+
+The private native optimization checks integer bit equality of finite input points
+only at represented time zero or one, after unchanged sample construction and
+nondegeneracy checks. The two signed-zero encodings are merged; nonzero subnormal encodings remain
+distinct under ambient DAZ/FTZ. Coordinate equality does not
+require equal source keys. Such a point belongs to both closed triangles, so no
+static separating axis can separate their projection sets. The exact original
+coplanarity loop and complete canonical feature-witness search remain unchanged.
+Only the static SAT loops are bypassed. Interior dyadic samples and noncoincident
+pairs retain the original traversal. Cross-time endpoint coincidence never admits
+this fact.
+
+Skipping exact predicates is admitted only by the existing private
+`ExactProjectionDomain` proof. It establishes that skipped checked operations
+cannot independently allocate or overflow under the audited Boost backend;
+wide or unsupported domains retain original execution and resource-error
+behavior. There is no new arithmetic formula, timestep, physical exclusion,
+contact ledger, work/depth change, or caller execution flag. The public native
+API/publication is unchanged. Original normal, relative-separation and exact-path
+qualification adapters keep this reuse disabled to preserve their own references.
+
+`CommonPointReuseTest.cpp` compares all stored native result fields using one
+shared exact implementation with private compile-time selection. Ten groups
+cover distinct/shared source identity, signed zero, ambient DAZ/FTZ, exact/near/cross-time
+coincidence, transverse/coplanar and EE-only witnesses, final/interior samples,
+degeneracy priority, domain boundaries/extremes, all vertex/pair permutations,
+one/four workers, complete reports/work caps/preserved publication/retry, and
+malformed inputs. Diagnostic endpoint-query/point-comparison/SAT-bypass counters
+are separate from proof work and are absent from physical receipts. The
+maintained native batch benchmark can compare actual selected source roots
+without timing test adapters or setup. This slice is unqualified until its owning
+host/source tests and controlled benchmark execute; no speedup is asserted here.
