@@ -46,3 +46,10 @@ set_tests_properties(represented_interval_crossing_gpu_cohort_source PROPERTIES
 if(NATIVE_BENCHMARK_ROOT)
   add_subdirectory(benchmark)
 endif()
+
+# Optional complete CPU oracle qualification shares the already-built native
+# library; no production flags, backend or numerical source is changed.
+option(NATIVE_INCLUDE_CPU_QUALIFICATION "Also build the existing CPU native owning tests" OFF)
+if(NATIVE_INCLUDE_CPU_QUALIFICATION)
+  add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../represented_interval_crossing" native-cpu-qualification)
+endif()

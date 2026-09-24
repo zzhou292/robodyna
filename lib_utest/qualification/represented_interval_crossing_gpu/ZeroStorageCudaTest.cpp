@@ -39,7 +39,8 @@ TEST(NativeGpuZeroStorageCuda, OriginalZeroFamiliesMatchIndependentWideResultsAt
   Streams streams;
   const std::array<c::Vec3,3> point{};
   for (unsigned depth:{0u,20u,52u}) for(std::size_t work:{1u,31u}) {
-    SCOPED_TRACE(depth);SCOPED_TRACE(work);
+    SCOPED_TRACE(depth);
+    SCOPED_TRACE(work);
     auto limits=native_gpu_test::Limits();
     limits.native.max_depth=depth;
     limits.native.max_work_per_pair=work;
@@ -101,7 +102,8 @@ TEST(NativeGpuZeroStorageCuda, NonzeroBitBoundaryRemains125Versus126WhenOtherCoo
     auto cpu=fixture::Owner(limits.native);c::RepresentedIntervalCrossingGpu gpu;
     ASSERT_EQ(gpu.Initialize(limits,streams.first).native.status,S::Ok);
     for(unsigned bits:{125u,126u}) {
-      SCOPED_TRACE(depth);SCOPED_TRACE(bits);
+      SCOPED_TRACE(depth);
+      SCOPED_TRACE(bits);
       auto triangle=Positive();
       triangle[0].z=std::ldexp(1.,55+int(depth+1)-int(bits));
       triangle[1].z=0;

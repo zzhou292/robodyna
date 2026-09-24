@@ -44,7 +44,8 @@ TEST(RepresentedZeroNeutralStorage, OriginalZeroCoordinateFamiliesKeepWitnessAnd
       Path(20,BaseTriangle(1),BaseTriangle(1-4096)),
       Static(20,{{{2,0,0},{3,0,0},{2,-1,0}}}),Static(20,point)}) {
     for (unsigned depth : {0u,20u,52u}) for (std::size_t work : {1u,31u}) {
-      SCOPED_TRACE(depth); SCOPED_TRACE(work);
+      SCOPED_TRACE(depth);
+      SCOPED_TRACE(work);
       ct::RepresentedIntervalLimits limits;limits.max_depth=depth;limits.max_work_per_pair=work;
       const auto result=Compare({first,second},limits);
       ASSERT_TRUE(result.domain.eligible);
