@@ -261,7 +261,9 @@ for forbidden in (
 arena_path = ROOT / "lib_src/collision/self_contact_transaction/Arena.cpp"
 arena = arena_path.read_text()
 filter_header = FILTER_HEADER.read_text()
-filter_source = FILTER_SOURCE.read_text()
+filter_source = (FILTER_SOURCE.read_text() +
+                 FILTER_SOURCE.with_name("self_contact_filters").joinpath("Prism.h").read_text() +
+                 FILTER_SOURCE.with_name("self_contact_filters").joinpath("Arithmetic.h").read_text())
 for token in (
     "CertifiedLinearFacetPrismSeparation(",
     "ProjectionBounds(",

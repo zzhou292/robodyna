@@ -97,6 +97,8 @@ filegroup(
         "SelfContactFilterCertificates.cpp",
         "SelfContactFilterCertificates.h",
         "self_contact_filters/PrismQualification.h",
+        "self_contact_filters/Arithmetic.h",
+        "self_contact_filters/Prism.h",
     ],
 )
 
@@ -107,6 +109,8 @@ cc_library(
         "FixedTriangleFeatureTypes.h",
         "SelfContactFilterCertificates.h",
         "self_contact_filters/PrismQualification.h",
+        "self_contact_filters/Arithmetic.h",
+        "self_contact_filters/Prism.h",
     ],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [":fixed_contact_facets"],
@@ -349,6 +353,8 @@ filegroup(
         "SelfContactFilterCertificates.cpp",
         "SelfContactFilterCertificates.h",
         "self_contact_filters/PrismQualification.h",
+        "self_contact_filters/Arithmetic.h",
+        "self_contact_filters/Prism.h",
         "self_contact_transaction/Arena.cpp",
         "self_contact_transaction/Candidate.cpp",
         "self_contact_transaction/CandidateExclusions.cpp",
