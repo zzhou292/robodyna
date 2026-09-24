@@ -20,8 +20,4 @@ ExactOracleResult ExactOracleAt(
     const ct::RepresentedTrianglePath& b, std::uint64_t numerator,
     std::uint64_t denominator);
 
-// Unlimited rational arithmetic independently checks whole-root nondegeneracy
-// and a strict fixed-axis endpoint hull gap in the shared affine reference frame.
-bool ExactRootIntervalCertificate(const ct::Vec3 (&vertices)[2][2][3], ct::Vec3 axis);
-
 }  // namespace represented_interval_test

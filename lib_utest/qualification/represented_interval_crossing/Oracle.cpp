@@ -202,41 +202,4 @@ ExactOracleResult ExactOracleAt(
   return result;
 }
 
-bool ExactRootIntervalCertificate(const ct::Vec3 (&vertices)[2][2][3], ct::Vec3 axis) {
-  const auto direction=Value(axis);
-  if (Zero(direction)) return false;
-  T endpoint[2][2];
-  for (unsigned side=0; side<2; ++side) {
-    T middle;
-    for (unsigned vertex=0; vertex<3; ++vertex) {
-      for (unsigned time=0; time<2; ++time)
-        endpoint[side][time].vertex[vertex]=Value(vertices[side][time][vertex]);
-      middle.vertex[vertex]=Scale(Add(endpoint[side][0].vertex[vertex],
-                                     endpoint[side][1].vertex[vertex]),Rational(1)/2);
-    }
-    const V first=Normal(endpoint[side][0]),last=Normal(endpoint[side][1]);
-    // Independent midpoint interpolation, rather than the production mixed
-    // endpoint-edge formula, constructs twice the middle Bernstein control.
-    const V control=Subtract(Subtract(Scale(Normal(middle),4),first),last);
-    const Rational* a[]{&first.x,&first.y,&first.z};
-    const Rational* b[]{&control.x,&control.y,&control.z};
-    const Rational* c[]{&last.x,&last.y,&last.z};
-    bool regular=false;
-    for (unsigned component=0; component<3; ++component)
-      regular=regular || (*a[component]>0 && *b[component]>0 && *c[component]>0) ||
-          (*a[component]<0 && *b[component]<0 && *c[component]<0);
-    if (!regular) return false;
-  }
-  Rational lower[2],upper[2];
-  for (unsigned side=0; side<2; ++side)
-    for (unsigned time=0; time<2; ++time)
-      for (unsigned vertex=0; vertex<3; ++vertex) {
-        const Rational value=Dot(Subtract(endpoint[side][time].vertex[vertex],
-                                          endpoint[0][time].vertex[0]),direction);
-        if (!time && !vertex) lower[side]=upper[side]=value;
-        else { lower[side]=std::min(lower[side],value); upper[side]=std::max(upper[side],value); }
-      }
-  return upper[0]<lower[1] || upper[1]<lower[0];
-}
-
 }  // namespace represented_interval_test

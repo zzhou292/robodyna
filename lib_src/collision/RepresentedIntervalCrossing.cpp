@@ -2,7 +2,6 @@
 #include "RepresentedIntervalCrossing.h"
 #include "represented_interval_crossing/NormalReuseQualification.h"
 #include "represented_interval_crossing/RelativeSeparationQualification.h"
-#include "represented_interval_crossing/RootIntervalQualification.h"
 #include "represented_interval_crossing/BatchExecution.h"
 
 #include <algorithm>
@@ -28,7 +27,6 @@ constexpr std::size_t kWorkerStackBytes = 2u << 20;
 using NormalCounters = represented_interval_crossing::NormalReuseCounters;
 enum class NormalReuse { Recompute, Memoize };
 enum class SeparationProof { LegacyAabb, RelativeFaces };
-enum class RootFilter { Disabled, Enabled };
 using ProjectionDomain = represented_interval_crossing::ExactProjectionDomain;
 using SeparationCounters = represented_interval_crossing::RelativeSeparationCounters;
 
@@ -793,32 +791,6 @@ unsigned CanonicalAnchor(const RepresentedTrianglePath& path) noexcept {
   return result;
 }
 
-represented_interval_crossing::RootIntervalInput CanonicalRootInput(
-    const RepresentedTrianglePath& a, const RepresentedTrianglePath& b) noexcept {
-  represented_interval_crossing::RootIntervalInput result;
-  const RepresentedTrianglePath* paths[]{&a,&b};
-  for (unsigned side=0; side<2; ++side) {
-    unsigned order[]{0,1,2};
-    std::sort(order,order+3,[&](unsigned x,unsigned y) {
-      return Compare(paths[side]->vertices[x].key,paths[side]->vertices[y].key)<0;
-    });
-    for (unsigned endpoint=0; endpoint<2; ++endpoint)
-      for (unsigned vertex=0; vertex<3; ++vertex)
-        result.vertices[side][endpoint][vertex]=paths[side]->vertices[order[vertex]].endpoint[endpoint];
-  }
-  return result;
-}
-
-bool SharedSourceVertex(const RepresentedTrianglePath& a,
-                        const RepresentedTrianglePath& b) noexcept {
-  // Native roster authentication already requires identical trajectories for
-  // equal complete source keys. A shared point makes a strict gap impossible;
-  // bypassing the filter grants neither contact nor local-exclusion authority.
-  for (const auto& first:a.vertices) for (const auto& second:b.vertices)
-    if (Same(first.key,second.key)) return true;
-  return false;
-}
-
 enum class CellDisposition : std::uint8_t {
   Separated,
   Crossing,
@@ -951,15 +923,13 @@ void RaiseReason(RepresentedIntervalReason candidate,
 }
 
 template <NormalReuse reuse = NormalReuse::Memoize,
-          SeparationProof separation = SeparationProof::RelativeFaces,
-          RootFilter root_filter = RootFilter::Enabled>
+          SeparationProof separation = SeparationProof::RelativeFaces>
 RepresentedIntervalResult CertifyPair(
     const RepresentedTrianglePath& a, const RepresentedTrianglePath& b,
     RepresentedIntervalLimits limits, RepresentedIntervalPairKey key,
     Cell* dfs, std::size_t dfs_capacity, ExactScratch* scratch,
     NormalCounters* counters = nullptr,
-    SeparationCounters* separation_counters = nullptr,
-    represented_interval_crossing::RootIntervalCounters* root_counters = nullptr) noexcept {
+    SeparationCounters* separation_counters = nullptr) noexcept {
   if (a.motion != RepresentedMotion::LinearNodalV1 ||
       b.motion != RepresentedMotion::LinearNodalV1)
     return Unresolved(key, RepresentedIntervalReason::UnsupportedMotion, 0);
@@ -969,28 +939,6 @@ RepresentedIntervalResult CertifyPair(
   RepresentedIntervalReason unresolved = RepresentedIntervalReason::None;
   dfs[dfs_size++] = {};
   try {
-    if constexpr (root_filter == RootFilter::Enabled) {
-      // Admission is native/path-derived. Within this audited arithmetic domain,
-      // skipped exact predicates cannot introduce a checked-range/Boost allocator
-      // failure. Ambiguous interval arithmetic leaves the original path intact.
-      if (SharedSourceVertex(a,b)) {
-        if (root_counters) ++root_counters->shared_vertex_bypasses;
-      } else {
-        const auto filter_domain=ProjectionDomain::FromPaths(a,b,limits.max_depth);
-        if (filter_domain.eligible()) {
-          if (root_counters) ++root_counters->attempts;
-          if (represented_interval_crossing::
-              ProveRootIntervalSeparation(CanonicalRootInput(a,b)).separated) {
-            RepresentedIntervalResult result;
-            result.key=key;
-            result.classification=RepresentedIntervalClassification::CertifiedSeparated;
-            result.reason=RepresentedIntervalReason::None;
-            result.work=1;
-            return result;
-          }
-        }
-      }
-    }
     // A bit-exact common translation preserves every relative point,
     // segment and triangle predicate over the complete represented interval.
     // Test the exact binary64-real displacements rather than rounded double
@@ -1934,9 +1882,9 @@ represented_interval_crossing::CompareNormalReuse(
   Cell dfs[53];
   const auto dfs_capacity = static_cast<std::size_t>(limits.max_depth) + 1;
   ExactScratch scratch;
-  const auto recomputed = CertifyPair<NormalReuse::Recompute, SeparationProof::RelativeFaces, RootFilter::Disabled>(
+  const auto recomputed = CertifyPair<NormalReuse::Recompute>(
       a, b, limits, key, dfs, dfs_capacity, &scratch, &result.recomputed.counters);
-  const auto memoized = CertifyPair<NormalReuse::Memoize, SeparationProof::RelativeFaces, RootFilter::Disabled>(
+  const auto memoized = CertifyPair<NormalReuse::Memoize>(
       a, b, limits, key, dfs, dfs_capacity, &scratch, &result.memoized.counters);
   // Compare the exact existing native publication representation, including
   // its field-wise initialization, without changing the publication format.
@@ -1959,39 +1907,12 @@ represented_interval_crossing::CompareRelativeSeparation(
   const RepresentedIntervalPairKey key{{a->key, b->key}};
   Cell dfs[53]; ExactScratch scratch;
   const auto capacity = static_cast<std::size_t>(limits.max_depth) + 1;
-  const auto legacy = CertifyPair<NormalReuse::Memoize, SeparationProof::LegacyAabb, RootFilter::Disabled>(
+  const auto legacy = CertifyPair<NormalReuse::Memoize, SeparationProof::LegacyAabb>(
       *a, *b, limits, key, dfs, capacity, &scratch);
-  const auto current = CertifyPair<NormalReuse::Memoize, SeparationProof::RelativeFaces, RootFilter::Disabled>(
+  const auto current = CertifyPair<NormalReuse::Memoize, SeparationProof::RelativeFaces>(
       *a, *b, limits, key, dfs, capacity, &scratch, nullptr, &result.counters);
   StoreResult(legacy, &result.legacy);
   StoreResult(current, &result.current);
-  return result;
-}
-
-represented_interval_crossing::RootIntervalComparison
-represented_interval_crossing::CompareRootIntervalFilter(
-    const RepresentedTrianglePath& first,const RepresentedTrianglePath& second,
-    RepresentedIntervalLimits limits) noexcept {
-  RootIntervalComparison result;
-  const RepresentedTrianglePath* a=nullptr;
-  const RepresentedTrianglePath* b=nullptr;
-  result.status=QualifyPairInputs(first,second,limits,&a,&b);
-  if (result.status!=RepresentedIntervalStatus::Ok) return result;
-  result.domain=ProjectionDomain::FromPaths(*a,*b,limits.max_depth).report();
-  result.input=CanonicalRootInput(*a,*b);
-  if (result.domain.eligible && !SharedSourceVertex(*a,*b))
-    result.filter=ProveRootIntervalSeparation(result.input);
-  const RepresentedIntervalPairKey key{{a->key,b->key}};
-  Cell dfs[53]; ExactScratch scratch;
-  const auto capacity=static_cast<std::size_t>(limits.max_depth)+1;
-  NormalCounters original_counts,current_counts;
-  const auto original=CertifyPair<NormalReuse::Memoize,SeparationProof::RelativeFaces,RootFilter::Disabled>(
-      *a,*b,limits,key,dfs,capacity,&scratch,&original_counts);
-  const auto current=CertifyPair<NormalReuse::Memoize,SeparationProof::RelativeFaces,RootFilter::Enabled>(
-      *a,*b,limits,key,dfs,capacity,&scratch,&current_counts,nullptr,&result.counters);
-  StoreResult(original,&result.original); StoreResult(current,&result.current);
-  result.original_exact_cells=original_counts.evaluated_cells;
-  result.current_exact_cells=current_counts.evaluated_cells;
   return result;
 }
 
