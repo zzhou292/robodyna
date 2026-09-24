@@ -1114,4 +1114,26 @@ for token in ("control < 3", "PolynomialVectorDifference(",
 if "RootConeSearch" in qualification_header:
     raise RuntimeError("Root cone proof mode escaped as caller configuration")
 
+# Sorted lookup is a private lexical borrow of an authenticated completed
+# discovery cohort. Public raw arrays retain their original first-match scan.
+sorted_path = translated_path.with_name("SortedIntersections.h")
+sorted_header = sorted_path.read_text()
+for token in ("friend class ::tlfea::contact::SelfContactTransaction",
+              "SortedIntersections(const SortedIntersections&) = delete",
+              "SortedIntersections(SortedIntersections&&) = delete",
+              "explicit SortedIntersections(const FixedTriangleFeatureDiscovery&)"):
+    require(sorted_header, token, sorted_path)
+for token in ("!fixed_triangle_features::IntersectionLess(view.data[row - 1], value)",
+              "if (!matches(view)) return FindRaw(view, pair, counts)",
+              "return NormalizeImpl(intersections, result, nullptr)",
+              "return NormalizeImpl(intersections, result, &index)"):
+    require(translated, token, translated_path)
+require(candidate, "const sct::SortedIntersections sorted_intersections(state.candidate_discovery)", CANDIDATE)
+if candidate.index("const sct::SortedIntersections sorted_intersections") < candidate.index("ValidatePreparedIntersections(", candidate.index("state.candidate_discovery.DiscoverMasked(")):
+    raise RuntimeError("Sorted borrow precedes completed prepared-intersection policy")
+require(candidate, "intersections, &value, sorted_intersections)", CANDIDATE)
+require(candidate, "&validated_count}, sorted_intersections)", CANDIDATE)
+require(values, "ValidateCandidatePublicationsImpl(input, nullptr)", translated_path.with_name("Values.cpp"))
+require(values, "ValidateCandidatePublicationsImpl(input, &index)", translated_path.with_name("Values.cpp"))
+
 print("fixed self-contact transaction source proof: PASS")

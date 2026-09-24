@@ -626,3 +626,12 @@ checked separately. Twelve-ray iterator ordering, endpoint-search insufficiency,
 uncertainty/extremes, source premises and the one-root 298-direction bound are
 explicit. These tests do not contain the uncaptured gate13 curved pair and do not
 constitute vehicle acceptance. No build or test has been run by this source author.
+
+`SortedIntersectionCases.h` has seven source-only groups comparing the original
+arbitrary-order lookup/normalizer/publication validator against a private sorted
+cohort borrow. The 4,096-row deterministic coupon counts raw and indexed visits;
+actual native geometry covers local and nonlocal outcomes. Malformed keys,
+incomplete/foreign views, duplicate/reversed rows, publication errors, sentinel
+output counts and full report fields retain the raw behavior. The extracted
+`TransactionReportAssertions.h` preserves the existing CUDA capture comparisons
+and is reused by these host cases. No build or execution by the source author.

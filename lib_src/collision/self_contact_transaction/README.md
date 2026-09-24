@@ -363,3 +363,36 @@ review; the actual-owner coupon is authored but unbuilt/unexecuted and its fixtu
 premise remains subject to owning qualification. No full vehicle run is authorized
 by this change or document. App serialization reuses existing binary baseline
 fields and explicitly distinguishes an observed result from legacy unreported data.
+
+## Reusing one sorted intersection cohort (unqualified source)
+
+Native feature discovery sorts intersections by the complete ordered source-facet
+pair and removes duplicate pairs before publishing. The transaction's candidate
+policy previously scanned that whole cohort for each translated/local crossing,
+sometimes again in both publication-validation passes. `SortedIntersections`
+borrows the same immutable publication after successful discovery and prepared
+intersection validation, verifies its canonical strict ordering once, and uses a
+lower-bound search. It allocates no index and retains no geometry across cohorts.
+The borrowed object is private-constructible, noncopyable and nonmovable, and its
+lexical scope ends before the next discovery call expires the native publication.
+It is a lookup aid, not a physical receipt or a new current-state owner.
+
+The original raw-array `FindPairIntersection`, normalization and validation entry
+points retain canonicalized first-match scanning for arbitrary arrays. Indexed
+overloads share the same complete normalization/policy bodies and use the index
+only when pointer/count/completeness match its validated cohort. Unsorted rows,
+reversed per-row producers, duplicate pairs, incomplete or foreign views decline
+the optimization and retain the raw behavior, including first-match/error order.
+No new failure priority is introduced by index admission. Identical source-key
+comparison tuples are used by native sorting and represented-pair lookup. Source
+geometry, witness/work fields, thickness obligations, outcomes and digest folding
+are unchanged. No accepted-owner index or feature-production order is rebuilt.
+
+`CompareIntersectionLookup` counts inspected rows only in qualification. Seven
+host groups check logarithmic lookup counts and exact original ordinals, complete
+source keys, malformed/raw fallbacks, actual native local/nonlocal publications,
+normalization and complete policy-report/output parity, and inaccessible public
+construction. The complete report assertion helper is shared with existing CUDA
+failure-capture tests rather than copied. Existing owning CUDA transaction gates
+remain required. This slice is source-only and has no measured vehicle speedup;
+the old 96s/updated74s policy stage also includes other work.

@@ -4,6 +4,7 @@
 #include "CandidateExclusions.h"
 #include "CrossingBatch.h"
 #include "TranslatedLocal.h"
+#include "SortedIntersections.h"
 #include "QualificationRanges.h"
 
 #include "lib_src/solvers/NodalTrialIdentity.h"
@@ -1066,6 +1067,9 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
         }
         return state.Fail(intersection_policy);
       }
+      // Successful native publication and prepared-intersection policy above
+      // authenticate this lexical cohort. No Discover occurs before it dies.
+      const sct::SortedIntersections sorted_intersections(state.candidate_discovery);
       diagnostics.Stage(Stage::Residual);
       std::size_t crossing_pair_count = 0;
       std::size_t raw_pair = 0;
@@ -1595,7 +1599,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
         // common translation preserves all relative gaps and the complete
         // local intersection set, including existing thickness obligations.
         const auto translated_local = sct::NormalizeExactTranslatedLocal(
-            intersections, &value);
+            intersections, &value, sorted_intersections);
         if (translated_local == sct::TranslatedLocalStatus::InvalidInput)
           return state.Fail(Failure(
               S::IdentityMismatch,
@@ -1784,7 +1788,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
           state.accepted_event_count,
           state.buffers.chunk_validated_outcomes,
           state.storage_forecast.policy_chunk_capacity,
-          &validated_count});
+          &validated_count}, sorted_intersections);
       if (validated.status != S::Ok) {
         if (validated.pair < pair_count) {
           const auto facet_pair =

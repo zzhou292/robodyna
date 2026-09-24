@@ -2,6 +2,7 @@
 #include "Storage.h"
 #include "ResidualTasks.h"
 #include "TranslatedLocal.h"
+#include "SortedIntersections.h"
 #include "../FixedTriangleFeatureDiscovery.h"
 #include "../SelfContactForceValues.h"
 
@@ -598,8 +599,8 @@ const RepresentedIntervalResult* Crossing(
 }
 
 bool LocallyExcluded(FixedTriangleIntersectionView values,
-                     const RepresentedIntervalPairKey& key) noexcept {
-  const auto* value = FindPairIntersection(values, key);
+                     const RepresentedIntervalPairKey& key, const SortedIntersections* index) noexcept {
+  const auto* value = index ? index->Find(values, key) : FindPairIntersection(values, key);
   return value && !RequiresIntersectionAdmission(*value);
 }
 
@@ -1893,8 +1894,8 @@ void FoldPolicyOutcomes(
   }
 }
 
-SelfContactTransactionReport ValidateCandidatePublications(
-    const CandidateValidationInput& input) noexcept {
+static SelfContactTransactionReport ValidateCandidatePublicationsImpl(
+    const CandidateValidationInput& input, const SortedIntersections* index) noexcept {
   if ((input.pair_count && !input.canonical_pairs) ||
       !input.features.complete || !input.intersections.complete ||
       !input.crossings.complete ||
@@ -1933,7 +1934,7 @@ SelfContactTransactionReport ValidateCandidatePublications(
          crossing.accepted_event != SIZE_MAX ||
          crossing.witness_time_numerator != 0 ||
          crossing.witness_time_depth != 0 ||
-         !LocallyExcluded(input.intersections, crossing.key)))
+         !LocallyExcluded(input.intersections, crossing.key, index)))
       return Failure(SelfContactTransactionStatus::CandidateRejected,
           "Continuous local topology publication lacks its exact local premise",
           pair);
@@ -2011,7 +2012,7 @@ SelfContactTransactionReport ValidateCandidatePublications(
               crossing.accepted_event].event.source_order;
       continue;
     }
-    if (LocallyExcluded(input.intersections, crossing.key)) {
+    if (LocallyExcluded(input.intersections, crossing.key, index)) {
       if (crossing.geometry !=
           RepresentedIntersectionGeometry::CertifiedLocalTopology)
         return Failure(SelfContactTransactionStatus::CandidateRejected,
@@ -2144,6 +2145,14 @@ SelfContactTransactionReport ExpandFacetPairs(
           "Complete facet expansion contains a duplicate pair", pair);
   *output_count = write;
   return {};
+}
+
+SelfContactTransactionReport ValidateCandidatePublications(const CandidateValidationInput& input) noexcept {
+  return ValidateCandidatePublicationsImpl(input, nullptr);
+}
+SelfContactTransactionReport ValidateCandidatePublications(const CandidateValidationInput& input,
+    const SortedIntersections& index) noexcept {
+  return ValidateCandidatePublicationsImpl(input, &index);
 }
 
 }  // namespace tlfea::contact::self_contact_transaction

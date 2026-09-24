@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 #include "lib_src/collision/self_contact_transaction/Storage.h"
 #include "FinalizedCoverageLedgerTestAccess.h"
+#include "SortedIntersectionsTestAccess.h"
+#include "TransactionReportAssertions.h"
 #include "lib_src/collision/self_contact_transaction/SharedVertexProofQualification.h"
 #include "NonlinearResultAssertions.h"
 #include "lib_src/collision/self_contact_transaction/PolicyExclusions.h"
@@ -357,6 +359,7 @@ sct::CandidateValidationInput Input(
 #include "RigidFeatureGeometryCases.h"
 #include "LocalEdgeRepresentationCases.h"
 #include "TranslatedLocalCases.h"
+#include "SortedIntersectionCases.h"
 
 TEST(SelfContactTransactionValues,
      ResidualTranslationUsesOutwardBoundsAfterCancellation) {

@@ -778,6 +778,8 @@ bool Same(const FixedTriangleIntersection&,
 bool Same(const FixedTriangleFeatureKey&,
           const FixedTriangleFeatureKey&) noexcept;
 
+class SortedIntersections;
+
 struct CandidateValidationInput {
   const RepresentedIntervalPairKey* canonical_pairs = nullptr;
   std::size_t pair_count = 0;
@@ -793,6 +795,8 @@ struct CandidateValidationInput {
 
 SelfContactTransactionReport ValidateCandidatePublications(
     const CandidateValidationInput&) noexcept;
+SelfContactTransactionReport ValidateCandidatePublications(
+    const CandidateValidationInput&, const SortedIntersections&) noexcept;
 
 SelfContactTransactionReport ExpandFacetPairs(
     const SelfContactPairKey*, std::size_t,

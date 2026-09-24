@@ -4,9 +4,10 @@
 #include "../RepresentedIntervalCrossingTypes.h"
 
 namespace tlfea::contact::self_contact_transaction {
+class SortedIntersections;
 
-// Native intersection publications have canonical producer identities. Keep
-// the same first-match lookup for publication validation and normalization.
+// Arbitrary borrowed arrays retain their original canonicalized first-match
+// full scan, including unsorted rows and reversed producer orientation.
 const FixedTriangleIntersection* FindPairIntersection(
     FixedTriangleIntersectionView intersections,
     const RepresentedIntervalPairKey& pair) noexcept;
@@ -26,5 +27,9 @@ enum class TranslatedLocalStatus { NotApplicable, Certified, InvalidInput };
 TranslatedLocalStatus NormalizeExactTranslatedLocal(
     FixedTriangleIntersectionView intersections,
     RepresentedIntervalResult* result) noexcept;
+
+TranslatedLocalStatus NormalizeExactTranslatedLocal(
+    FixedTriangleIntersectionView, RepresentedIntervalResult*,
+    const SortedIntersections&) noexcept;
 
 }  // namespace tlfea::contact::self_contact_transaction

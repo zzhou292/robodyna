@@ -20,6 +20,9 @@ add_executable(self_contact_transaction_values
   RigidFeatureGeometryCases.h
   LocalEdgeRepresentationCases.h
   TranslatedLocalCases.h
+  SortedIntersectionCases.h
+  SortedIntersectionsTestAccess.h
+  TransactionReportAssertions.h
   ContinuousLocalTest.cpp
   ConeDiagonalCases.h
   AffineConeCases.h
@@ -109,6 +112,7 @@ if(SELF_CONTACT_TRANSACTION_CUDA)
     CudaTest.cu
     TransactionFixture.h
     FailureCaptureCases.h
+    TransactionReportAssertions.h
     NonlinearFailureCaptureCases.h
     TranslatedLocalCudaCases.h
     CrossingBatchCudaCases.h
