@@ -198,6 +198,7 @@ sct::NonlinearSeparationResult LocalPolicy(
 #include "ProofOrderCases.h"
 #include "AffineConeCases.h"
 #include "PrismCoincidenceCases.h"
+#include "CurvedConeCases.h"
 
 TEST(SelfContactContinuousLocal, CurvedSharedVertexNeedsNoInventedOwner) {
   const auto first = Triangle(

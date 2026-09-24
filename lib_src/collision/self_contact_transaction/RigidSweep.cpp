@@ -17,7 +17,7 @@ namespace tlfea::contact::self_contact_transaction {
 namespace {
 
 enum class SharedVertexOrder { PolynomialFirst, ConeFirst };
-enum class AffineConeSearch { Original, Extended };
+enum class RootConeSearch { Original, AffineOnly, Full };
 
 void CountProofOperation(
     SharedVertexProofCounters* counters,
@@ -2406,6 +2406,48 @@ bool AffineRootConeSeparated(
   return false;
 }
 
+bool CurvedRootConeSeparated(
+    const BernsteinFacet facets[2], const unsigned shared[2],
+    SharedVertexProofCounters* counters) noexcept {
+  if (!shared || shared[0] >= 3 || shared[1] >= 3) return false;
+  unsigned remote[2][2]{};
+  Vec3 rays[CurvedConeDirections::RayCount];
+  unsigned count = 0;
+  for (unsigned side = 0; side < 2; ++side) {
+    unsigned arm = 0;
+    for (unsigned vertex = 0; vertex < 3; ++vertex) {
+      if (vertex == shared[side]) continue;
+      remote[side][arm++] = vertex;
+      BernsteinPolynomial direction[3];
+      if (!PolynomialVectorDifference(
+              facets[side], vertex, facets[side], shared[side], direction))
+        return false;
+      // All three controls, including the interior control, participate in
+      // candidate construction. Midpoints of interval controls are heuristic
+      // directions only: the unchanged verifier below checks the full bounds.
+      for (unsigned control = 0; control < 3; ++control) {
+        Vec3 ray;
+        for (unsigned component = 0; component < 3; ++component) {
+          const auto value = direction[component].control[control];
+          if (!Valid(value)) return false;
+          const double representative = .5 * value.lower + .5 * value.upper;
+          if (!std::isfinite(representative)) return false;
+          SetComponent(&ray, component, side ? -representative : representative);
+        }
+        rays[count++] = ray;
+      }
+    }
+  }
+  CountProofOperation(counters, &SharedVertexProofCounters::curved_searches);
+  CurvedConeDirections directions(rays);
+  Vec3 axis;
+  while (directions.Next(&axis)) {
+    CountProofOperation(counters, &SharedVertexProofCounters::curved_directions);
+    if (SharedVertexAxisSeparated(facets, shared, remote, axis)) return true;
+  }
+  return false;
+}
+
 bool FacetNondegenerate(
     const BernsteinFacet& facet) noexcept {
   BernsteinPolynomial first[3], second[3], normal[3];
@@ -2559,7 +2601,8 @@ bool LocalSharedVertexOnly(
     const CurrentFixedTriangle upper_triangles[2],
     bool allow_lower_root, bool allow_upper_root,
     bool* valid, SharedVertexProofCounters* counters = nullptr,
-    bool extend_affine_root = false) noexcept {
+    bool extend_affine_root = false,
+    bool extend_curved_root = false) noexcept {
   if (!valid) return false;
   CountProofOperation(counters, &SharedVertexProofCounters::cells);
   *valid = true;
@@ -2666,10 +2709,14 @@ bool LocalSharedVertexOnly(
   if constexpr (order == SharedVertexOrder::PolynomialFirst)
     if (SharedVertexConeSeparated(facets, shared, counters)) return true;
   // Preserve every original successful short-circuit. Additional directions
-  // are admitted once, only in the dedicated affine root topology phase.
-  return extend_affine_root && lower_local && upper_local &&
-      AffineRootConeSeparated(
-          facets, lower_triangles, upper_triangles, shared, counters);
+  // are admitted once, only in the dedicated root topology phase. Exactly
+  // affine paths keep their prior eight-ray search and ordering. Curved paths
+  // instead use all twelve signed Bernstein arm controls.
+  if (!lower_local || !upper_local) return false;
+  if (extend_affine_root)
+    return AffineRootConeSeparated(
+        facets, lower_triangles, upper_triangles, shared, counters);
+  return extend_curved_root && CurvedRootConeSeparated(facets, shared, counters);
 }
 
 bool LocalSharedEdgeOnly(
@@ -2748,7 +2795,7 @@ bool ExactAffine(
 }
 
 template <SharedVertexOrder order = SharedVertexOrder::ConeFirst,
-          AffineConeSearch search = AffineConeSearch::Extended>
+          RootConeSearch search = RootConeSearch::Full>
 NonlinearSeparationStatus SubdivideCoverage(
     const BernsteinFacet facets[2],
     const CurrentFixedTriangle triangles[2],
@@ -2804,8 +2851,10 @@ NonlinearSeparationStatus SubdivideCoverage(
           facets, triangles,
           lower_triangles, upper_triangles,
           lower_boundary, upper_boundary, &vertex_valid, counters,
-          search == AffineConeSearch::Extended && depth == 0 && path == 0 &&
-              local_topology_only && exact_affine);
+          search != RootConeSearch::Original && depth == 0 && path == 0 &&
+              local_topology_only && exact_affine,
+          search == RootConeSearch::Full && depth == 0 && path == 0 &&
+              local_topology_only && !exact_affine);
   if (!edge_valid || !vertex_valid)
     return NonlinearSeparationStatus::InvalidInput;
   const bool local_safe =
@@ -3033,7 +3082,7 @@ NonlinearSeparationResult CertifyQuadraticFacetSeparation(
 }
 
 template <SharedVertexOrder order = SharedVertexOrder::ConeFirst,
-          AffineConeSearch search = AffineConeSearch::Extended>
+          RootConeSearch search = RootConeSearch::Full>
 NonlinearSeparationResult CertifyQuadraticFacetCoverageImpl(
     const CurrentFixedTriangle& first_accepted,
     const CurrentFixedTriangle& first_prepared,
@@ -3144,7 +3193,7 @@ NonlinearSeparationResult CertifyQuadraticFacetCoverageImpl(
 }
 
 template <SharedVertexOrder order = SharedVertexOrder::ConeFirst,
-          AffineConeSearch search = AffineConeSearch::Extended>
+          RootConeSearch search = RootConeSearch::Full>
 NonlinearSeparationResult CertifyQuadraticLocalTopologyImpl(
     const CurrentFixedTriangle& first_accepted,
     const CurrentFixedTriangle& first_prepared,
@@ -3259,12 +3308,32 @@ AffineConeSearchComparison CompareAffineConeSearch(
     double duration, std::size_t max_work, unsigned max_depth) noexcept {
   AffineConeSearchComparison result;
   result.original.report = CertifyQuadraticLocalTopologyImpl<
-      SharedVertexOrder::ConeFirst, AffineConeSearch::Original>(
+      SharedVertexOrder::ConeFirst, RootConeSearch::Original>(
           first_accepted, first_prepared, first_coefficients,
           second_accepted, second_prepared, second_coefficients,
           duration, max_work, max_depth, &result.original.counters);
   result.current.report = CertifyQuadraticLocalTopologyImpl<
-      SharedVertexOrder::ConeFirst, AffineConeSearch::Extended>(
+      SharedVertexOrder::ConeFirst, RootConeSearch::AffineOnly>(
+          first_accepted, first_prepared, first_coefficients,
+          second_accepted, second_prepared, second_coefficients,
+          duration, max_work, max_depth, &result.current.counters);
+  return result;
+}
+
+CurvedConeSearchComparison CompareCurvedConeSearch(
+    const CurrentFixedTriangle& first_accepted, const CurrentFixedTriangle& first_prepared,
+    const FacetQuadraticCoefficients& first_coefficients,
+    const CurrentFixedTriangle& second_accepted, const CurrentFixedTriangle& second_prepared,
+    const FacetQuadraticCoefficients& second_coefficients,
+    double duration, std::size_t max_work, unsigned max_depth) noexcept {
+  CurvedConeSearchComparison result;
+  result.original.report = CertifyQuadraticLocalTopologyImpl<
+      SharedVertexOrder::ConeFirst, RootConeSearch::AffineOnly>(
+          first_accepted, first_prepared, first_coefficients,
+          second_accepted, second_prepared, second_coefficients,
+          duration, max_work, max_depth, &result.original.counters);
+  result.current.report = CertifyQuadraticLocalTopologyImpl<
+      SharedVertexOrder::ConeFirst, RootConeSearch::Full>(
           first_accepted, first_prepared, first_coefficients,
           second_accepted, second_prepared, second_coefficients,
           duration, max_work, max_depth, &result.current.counters);

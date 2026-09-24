@@ -615,3 +615,14 @@ groups are authored but unbuilt and unexecuted. Independent core review accepted
 the lifetime/counting boundaries and requested an accepted census-sort attribution
 fix, which is included. Independent review of the new test groups remains pending.
 This checkpoint is not numerical or runtime qualification evidence.
+
+`CurvedConeCases.h` adds nine generic source-only groups for the bounded root
+curved-control cone extension. The private oracle retains the accepted affine
+implementation as baseline and compares every result field on unchanged winners
+and inconclusive cases. New successes require an independent exact signed-control
+halfspace and the existing whole-interval verifier; identical local endpoints
+with a real interior contact must still reject. Physical positive thickness is
+checked separately. Twelve-ray iterator ordering, endpoint-search insufficiency,
+uncertainty/extremes, source premises and the one-root 298-direction bound are
+explicit. These tests do not contain the uncaptured gate13 curved pair and do not
+constitute vehicle acceptance. No build or test has been run by this source author.

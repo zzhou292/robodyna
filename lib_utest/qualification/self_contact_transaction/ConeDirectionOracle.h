@@ -31,20 +31,22 @@ inline Rational Dot(const V& a,const V& b) {return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]
 inline Rational ArmDot(tlfea::contact::Vec3 point,tlfea::contact::Vec3 origin,tlfea::contact::Vec3 axis) {
   return Dot(Subtract(Exact(point),Exact(origin)),Exact(axis));
 }
-inline bool Strict(const Rays& rays,const V& axis) {
+template <std::size_t Count>
+inline bool Strict(const std::array<V, Count>& rays,const V& axis) {
   bool positive=true,negative=true;
   for(const auto& ray:rays){const auto dot=Dot(axis,ray);positive=positive&&dot>0;negative=negative&&dot<0;}
   return positive||negative;
 }
-inline bool Feasible(const Rays& rays) {
+template <std::size_t Count>
+inline bool Feasible(const std::array<V, Count>& rays) {
   // Independent nested subset enumeration of exact closest-face directions.
   // No production iterator, rounded construction or tolerance is involved.
-  for(unsigned i=0;i<8;++i)if(Strict(rays,rays[i]))return true;
-  for(unsigned i=0;i<8;++i)for(unsigned j=i+1;j<8;++j) {
+  for(unsigned i=0;i<Count;++i)if(Strict(rays,rays[i]))return true;
+  for(unsigned i=0;i<Count;++i)for(unsigned j=i+1;j<Count;++j) {
     const auto e=Subtract(rays[j],rays[i]);
     if(Strict(rays,Cross(e,Cross(rays[i],e))))return true;
   }
-  for(unsigned i=0;i<8;++i)for(unsigned j=i+1;j<8;++j)for(unsigned k=j+1;k<8;++k)
+  for(unsigned i=0;i<Count;++i)for(unsigned j=i+1;j<Count;++j)for(unsigned k=j+1;k<Count;++k)
     if(Strict(rays,Cross(Subtract(rays[j],rays[i]),Subtract(rays[k],rays[i]))))return true;
   return false;
 }

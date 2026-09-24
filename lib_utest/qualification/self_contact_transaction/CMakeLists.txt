@@ -24,6 +24,7 @@ add_executable(self_contact_transaction_values
   ConeDiagonalCases.h
   AffineConeCases.h
   PrismCoincidenceCases.h
+  CurvedConeCases.h
   ConeDirectionOracle.h
   ProofOrderCases.h
   ProofOrderCoverageCases.h

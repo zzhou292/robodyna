@@ -285,3 +285,47 @@ regression; no original vehicle IDs or fixture axis appear in production.
 
 This source slice is unbuilt and unexecuted at authoring. Owning host/source/CUDA
 gates, frozen replay, and real vehicle acceptance remain required before promotion.
+
+## Bounded curved shared-vertex cone directions (unqualified source)
+
+Curved paths may use the same final strict cone certificate with a larger, still
+fixed candidate family. The existing affine helper and its eight-ray ordering are
+unchanged. A curved root instead forms twelve signed arm controls: the three
+quadratic Bernstein controls for each of A's two arms, and the negated controls
+for B's two arms. Interval-control midpoints select directions only. No midpoint,
+endpoint, iterator, or feasibility result grants physical or geometry authority.
+Each proposed direction is checked by the same `SharedVertexAxisSeparated`,
+`DotPolynomialAxis` and strict whole-interval directed Bernstein sign tests.
+
+`ConeDirectionStream<12>` retains twelve rays and a cursor and streams at most
+12 singleton + 66 edge + 220 triangle directions, or 298 total. For exact control
+vectors, the same closest-convex-hull-face argument gives a complete finite family
+for strict constant separation of those vectors. Interval midpoint selection and
+rounded candidate arithmetic are heuristic. Even feasible exact curves may have
+no strict control-hull separator, or the interval enclosures/rounded directions
+may fail to find one. In every such case, the original subdivision/failure path
+remains available. There is no completeness claim for all curved local geometry.
+
+Only the dedicated local-topology root may attempt this extension, after existing
+coordinate, source/shared-path, whole-cell regularity, old cone and polynomial
+proofs. Endpoint-local premises are retained. Exactly affine input takes the old
+92-direction branch; nonaffine input takes the new 298-direction branch. Children
+and ordinary accepted-ledger/synthetic-exclusion fallbacks cannot rerun either
+search. Thus the additional family is at most 298 per complete policy attempt,
+not 298 per cell. Positive-thickness/residual obligations remain separate and
+unchanged, as do proof work/depth limits and every previous successful winner.
+
+Private `CompareCurvedConeSearch` compares the accepted affine-only executor with
+the full executor; there is no public runtime mode. Tests include an exact narrow
+curved control family for which all endpoint-generated directions fail, genuine
+interior nonlocal contact with identical local endpoints, uncertain coefficients,
+rotations/extreme scales, affine/curved old winners, source/budget rejection, and
+an exhausted root search followed by unchanged recursion. The unlimited rational
+oracle is independent of directed arithmetic and candidate construction.
+
+This slice is source-only, unbuilt and unexecuted. It was motivated by a new curved
+pair reported in gate13, but that failed pair has not yet been captured by the
+native failure observer and is not represented by these generic tests. No claim
+that gate13 is resolved is permitted without its authenticated fixture and full
+policy replay. Capture repair, owning qualification and final vehicle acceptance
+remain mandatory. No vehicle IDs or fixture-specific directions enter production.

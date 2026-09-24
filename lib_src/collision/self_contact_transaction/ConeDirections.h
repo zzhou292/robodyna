@@ -7,12 +7,16 @@
 namespace tlfea::contact::self_contact_transaction {
 // Search directions only. The caller must verify every candidate against all
 // exact represented arm trajectories; no direction or iterator grants authority.
-// For eight rays, stream all singleton/edge/triangle supporting directions.
-class ConeDirections {
+// Stream singleton/edge/triangle supporting directions with fixed small ray
+// storage, without materializing the quadratic/cubic candidate family.
+template <unsigned Count>
+class ConeDirectionStream {
  public:
-  static constexpr unsigned RayCount = 8;
-  static constexpr unsigned MaximumDirections = 8 + 28 + 56;
-  explicit ConeDirections(const Vec3 (&rays)[RayCount]) noexcept {
+  static_assert(Count >= 3 && Count <= 12, "bounded cone search storage");
+  static constexpr unsigned RayCount = Count;
+  static constexpr unsigned MaximumDirections =
+      Count + Count * (Count - 1) / 2 + Count * (Count - 1) * (Count - 2) / 6;
+  explicit ConeDirectionStream(const Vec3 (&rays)[RayCount]) noexcept {
     std::copy_n(rays, RayCount, rays_.begin());
   }
   bool Next(Vec3* output) noexcept {
@@ -53,4 +57,8 @@ class ConeDirections {
   std::array<Vec3, RayCount> rays_;
   unsigned phase_ = 1, first_ = 0, second_ = 1, third_ = 2, emitted_ = 0;
 };
+using ConeDirections = ConeDirectionStream<8>;
+using CurvedConeDirections = ConeDirectionStream<12>;
+static_assert(ConeDirections::MaximumDirections == 92);
+static_assert(CurvedConeDirections::MaximumDirections == 298);
 }  // namespace tlfea::contact::self_contact_transaction

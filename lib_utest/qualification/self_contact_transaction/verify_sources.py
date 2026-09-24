@@ -1077,16 +1077,29 @@ if "SharedVertexOrder" in qualification_header:
 # Streamed candidates never replace the existing strict whole-cell verifier.
 cone_direction_path = RIGID_SWEEP.with_name("ConeDirections.h")
 cone_direction = cone_direction_path.read_text()
-for token in ("MaximumDirections = 8 + 28 + 56", "std::array<Vec3, RayCount>",
+for token in ("ConeDirections::MaximumDirections == 92", "CurvedConeDirections::MaximumDirections == 298", "std::array<Vec3, RayCount>",
               "edge, geometry_detail::Cross"):
     require(cone_direction, token, cone_direction_path)
 for token in ("SharedVertexAxisSeparated(facets, shared, remote, axis)",
-              "search == AffineConeSearch::Extended && depth == 0 && path == 0",
-              "local_topology_only && exact_affine", "extend_affine_root && lower_local && upper_local",
-              "AffineConeSearch::Original", "CompareAffineConeSearch"):
+              "search != RootConeSearch::Original && depth == 0 && path == 0",
+              "search == RootConeSearch::Full && depth == 0 && path == 0",
+              "local_topology_only && exact_affine", "local_topology_only && !exact_affine",
+              "if (!lower_local || !upper_local) return false",
+              "RootConeSearch::Original", "RootConeSearch::AffineOnly", "CompareAffineConeSearch",
+              "CompareCurvedConeSearch", "CurvedRootConeSeparated",
+              "SharedVertexProofCounters::curved_directions"):
     require(rigid_sweep, token, RIGID_SWEEP)
 if not (local_proof.index("if (no_nonlocal_root && lower_local && upper_local) return true") <
         local_proof.index("AffineRootConeSeparated(")):
     raise RuntimeError("Generic cone search displaced an existing polynomial success")
+
+curved_search = rigid_sweep[rigid_sweep.index("bool CurvedRootConeSeparated("):
+                            rigid_sweep.index("bool FacetNondegenerate(")]
+for token in ("control < 3", "PolynomialVectorDifference(",
+              ".5 * value.lower + .5 * value.upper",
+              "SharedVertexAxisSeparated(facets, shared, remote, axis)"):
+    require(curved_search, token, RIGID_SWEEP)
+if "RootConeSearch" in qualification_header:
+    raise RuntimeError("Root cone proof mode escaped as caller configuration")
 
 print("fixed self-contact transaction source proof: PASS")
