@@ -473,20 +473,32 @@ def main() -> None:
                 duration, max_work, max_depth);"""
         require(compact(topology) == compact(expected_wrapper),
                 "public local topology must call only the fixed cone-first implementation")
-        require("template <SharedVertexOrder order = SharedVertexOrder::ConeFirst>\n"
-                "NonlinearSeparationResult CertifyQuadraticLocalTopologyImpl(" in tl_rigid_sweep,
-                "local topology order must be a private compile-time choice")
+        legacy_template = ("template <SharedVertexOrder order = SharedVertexOrder::ConeFirst>"
+                           "NonlinearSeparationResult CertifyQuadraticLocalTopologyImpl(")
+        affine_template = ("template <SharedVertexOrder order = SharedVertexOrder::ConeFirst,"
+                           "AffineConeSearch search = AffineConeSearch::Extended>"
+                           "NonlinearSeparationResult CertifyQuadraticLocalTopologyImpl(")
+        has_affine_search = compact(affine_template) in compact(tl_rigid_sweep)
+        require(has_affine_search or compact(legacy_template) in compact(tl_rigid_sweep),
+                "local topology order/search must remain private compile-time choices")
+        if has_affine_search:
+            require(compact("search == AffineConeSearch::Extended && depth == 0 && path == 0 && "
+                            "local_topology_only && exact_affine") in compact(tl_rigid_sweep),
+                    "derived cone search must stay in the dedicated affine local root")
         _, topology = definition(tl_rigid_sweep,
             "NonlinearSeparationResult CertifyQuadraticLocalTopologyImpl(")
-        coverage_call = "CertifyQuadraticFacetCoverageImpl<order>("
+        coverage_call = ("CertifyQuadraticFacetCoverageImpl<order, search>("
+                         if has_affine_search else "CertifyQuadraticFacetCoverageImpl<order>(")
         local_header = (args.tl_root / "lib_src" / "collision" /
             "self_contact_transaction" / "LocalContact.h").read_text()
         require("SharedVertexOrder" not in local_header and
+                "AffineConeSearch" not in local_header and
                 "CertifyQuadraticLocalTopologyImpl" not in local_header,
                 "local topology header must not expose the private order implementation")
         require(all(token not in source for source in (tl_candidate, tl_local)
                     for token in ("PolynomialFirst", "CompareSharedVertexTopologyOrders(",
                                   "CompareSharedVertexCoverageOrders(",
+                                  "CompareAffineConeSearch(", "AffineConeSearch::Original",
                                   "CertifyQuadraticLocalTopologyImpl")),
                 "production callers must not bypass the fixed public topology path")
     ordered(topology, [
