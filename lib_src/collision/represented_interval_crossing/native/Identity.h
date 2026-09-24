@@ -6,21 +6,21 @@
 #include <tuple>
 namespace tlfea::contact::represented_interval_crossing::native {
 template <class T>
-inline int ScalarCompare(const T& a, const T& b) noexcept {
+TL_MATH_HOST_DEVICE inline int ScalarCompare(const T& a, const T& b) noexcept {
   return a < b ? -1 : (b < a ? 1 : 0);
 }
 
-inline int Compare(const FacetVertexKey& a, const FacetVertexKey& b) noexcept {
+TL_MATH_HOST_DEVICE inline int Compare(const FacetVertexKey& a, const FacetVertexKey& b) noexcept {
   const auto aa =
-      std::tie(a.source_instance_id, a.kind, a.first, a.second, a.numerator,
+      portable::tie(a.source_instance_id, a.kind, a.first, a.second, a.numerator,
                a.denominator, a.level, a.grid_i, a.grid_j);
   const auto bb =
-      std::tie(b.source_instance_id, b.kind, b.first, b.second, b.numerator,
+      portable::tie(b.source_instance_id, b.kind, b.first, b.second, b.numerator,
                b.denominator, b.level, b.grid_i, b.grid_j);
   return aa < bb ? -1 : (bb < aa ? 1 : 0);
 }
 
-inline int Compare(const FacetEdgeKey& a, const FacetEdgeKey& b) noexcept {
+TL_MATH_HOST_DEVICE inline int Compare(const FacetEdgeKey& a, const FacetEdgeKey& b) noexcept {
   int value = ScalarCompare(a.parent_boundary, b.parent_boundary);
   if (!value)
     value = ScalarCompare(a.parent_eid, b.parent_eid);
@@ -31,54 +31,54 @@ inline int Compare(const FacetEdgeKey& a, const FacetEdgeKey& b) noexcept {
   return value;
 }
 
-inline int Compare(const RepresentedTrianglePathKey& a,
+TL_MATH_HOST_DEVICE inline int Compare(const RepresentedTrianglePathKey& a,
             const RepresentedTrianglePathKey& b) noexcept {
   const auto aa =
-      std::tie(a.source_instance_id, a.parent_eid, a.level, a.local_facet);
+      portable::tie(a.source_instance_id, a.parent_eid, a.level, a.local_facet);
   const auto bb =
-      std::tie(b.source_instance_id, b.parent_eid, b.level, b.local_facet);
+      portable::tie(b.source_instance_id, b.parent_eid, b.level, b.local_facet);
   return aa < bb ? -1 : (bb < aa ? 1 : 0);
 }
 
-inline int Compare(const RepresentedIntervalPairKey& a,
+TL_MATH_HOST_DEVICE inline int Compare(const RepresentedIntervalPairKey& a,
             const RepresentedIntervalPairKey& b) noexcept {
   const int first = Compare(a.paths[0], b.paths[0]);
   return first ? first : Compare(a.paths[1], b.paths[1]);
 }
 
-inline bool Same(const FacetVertexKey& a, const FacetVertexKey& b) noexcept {
+TL_MATH_HOST_DEVICE inline bool Same(const FacetVertexKey& a, const FacetVertexKey& b) noexcept {
   return Compare(a, b) == 0;
 }
 
-inline bool Same(const RepresentedTrianglePathKey& a,
+TL_MATH_HOST_DEVICE inline bool Same(const RepresentedTrianglePathKey& a,
           const RepresentedTrianglePathKey& b) noexcept {
   return Compare(a, b) == 0;
 }
 
-inline std::uint64_t CoordinateBits(double value) noexcept {
+TL_MATH_HOST_DEVICE inline std::uint64_t CoordinateBits(double value) noexcept {
   std::uint64_t bits = 0;
-  std::memcpy(&bits, &value, sizeof(bits));
+  portable::memcpy(&bits, &value, sizeof(bits));
   return bits;
 }
 
-inline bool SameBits(double a, double b) noexcept {
+TL_MATH_HOST_DEVICE inline bool SameBits(double a, double b) noexcept {
   return CoordinateBits(a) == CoordinateBits(b);
 }
 
 // Unlike floating ==, this preserves a nonzero subnormal under ambient DAZ.
 // Inputs were authenticated finite; only the two real-zero encodings merge.
-inline bool SameFiniteCoordinate(double a, double b) noexcept {
+TL_MATH_HOST_DEVICE inline bool SameFiniteCoordinate(double a, double b) noexcept {
   const auto first = CoordinateBits(a), second = CoordinateBits(b);
   constexpr std::uint64_t magnitude = UINT64_MAX >> 1;
   return first == second || ((first & magnitude) == 0 && (second & magnitude) == 0);
 }
 
-inline bool SameBits(Vec3 a, Vec3 b) noexcept {
+TL_MATH_HOST_DEVICE inline bool SameBits(Vec3 a, Vec3 b) noexcept {
   return SameBits(a.x, b.x) && SameBits(a.y, b.y) &&
          SameBits(a.z, b.z);
 }
 
-inline bool FeatureLess(const RepresentedFeaturePathKey& a,
+TL_MATH_HOST_DEVICE inline bool FeatureLess(const RepresentedFeaturePathKey& a,
                  const RepresentedFeaturePathKey& b) noexcept {
   int value = ScalarCompare(a.kind, b.kind);
   if (!value && a.kind == RepresentedFeatureKind::VertexFace)
@@ -92,7 +92,7 @@ inline bool FeatureLess(const RepresentedFeaturePathKey& a,
   return value < 0;
 }
 
-inline void ConsiderFeature(const RepresentedFeaturePathKey& candidate,
+TL_MATH_HOST_DEVICE inline void ConsiderFeature(const RepresentedFeaturePathKey& candidate,
                      bool* have, RepresentedFeaturePathKey* result) noexcept {
   if (!*have || FeatureLess(candidate, *result)) {
     *result = candidate;
@@ -100,7 +100,7 @@ inline void ConsiderFeature(const RepresentedFeaturePathKey& candidate,
   }
 }
 
-inline int ReasonPriority(RepresentedIntervalReason reason) noexcept {
+TL_MATH_HOST_DEVICE inline int ReasonPriority(RepresentedIntervalReason reason) noexcept {
   switch (reason) {
     case RepresentedIntervalReason::ExactArithmeticRange:
       return 3;
@@ -113,7 +113,7 @@ inline int ReasonPriority(RepresentedIntervalReason reason) noexcept {
   }
 }
 
-inline void CopyKey(const FacetVertexKey& source,
+TL_MATH_HOST_DEVICE inline void CopyKey(const FacetVertexKey& source,
              FacetVertexKey* target) noexcept {
   target->source_instance_id = source.source_instance_id;
   target->first = source.first;
@@ -126,7 +126,7 @@ inline void CopyKey(const FacetVertexKey& source,
   target->grid_j = source.grid_j;
 }
 
-inline void CopyKey(const FacetEdgeKey& source,
+TL_MATH_HOST_DEVICE inline void CopyKey(const FacetEdgeKey& source,
              FacetEdgeKey* target) noexcept {
   CopyKey(source.endpoints[0], &target->endpoints[0]);
   CopyKey(source.endpoints[1], &target->endpoints[1]);
@@ -134,7 +134,7 @@ inline void CopyKey(const FacetEdgeKey& source,
   target->parent_boundary = source.parent_boundary;
 }
 
-inline void CopyKey(const RepresentedTrianglePathKey& source,
+TL_MATH_HOST_DEVICE inline void CopyKey(const RepresentedTrianglePathKey& source,
              RepresentedTrianglePathKey* target) noexcept {
   target->source_instance_id = source.source_instance_id;
   target->parent_eid = source.parent_eid;
@@ -142,9 +142,9 @@ inline void CopyKey(const RepresentedTrianglePathKey& source,
   target->local_facet = source.local_facet;
 }
 
-inline void StoreResult(const RepresentedIntervalResult& source,
+TL_MATH_HOST_DEVICE inline void StoreResult(const RepresentedIntervalResult& source,
                  RepresentedIntervalResult* target) noexcept {
-  std::fill_n(reinterpret_cast<unsigned char*>(target), sizeof(*target),
+  portable::fill_n(reinterpret_cast<unsigned char*>(target), sizeof(*target),
               static_cast<unsigned char>(0));
   CopyKey(source.key.paths[0], &target->key.paths[0]);
   CopyKey(source.key.paths[1], &target->key.paths[1]);
@@ -161,7 +161,7 @@ inline void StoreResult(const RepresentedIntervalResult& source,
   target->work = source.work;
 }
 
-inline RepresentedIntervalResult Unresolved(const RepresentedIntervalPairKey& key,
+TL_MATH_HOST_DEVICE inline RepresentedIntervalResult Unresolved(const RepresentedIntervalPairKey& key,
                                      RepresentedIntervalReason reason,
                                      std::size_t work) noexcept {
   RepresentedIntervalResult result;
@@ -172,7 +172,7 @@ inline RepresentedIntervalResult Unresolved(const RepresentedIntervalPairKey& ke
   return result;
 }
 
-inline unsigned CanonicalAnchor(const RepresentedTrianglePath& path) noexcept {
+TL_MATH_HOST_DEVICE inline unsigned CanonicalAnchor(const RepresentedTrianglePath& path) noexcept {
   unsigned result = 0;
   for (unsigned vertex = 1; vertex < 3; ++vertex)
     if (Compare(path.vertices[vertex].key, path.vertices[result].key) < 0) result = vertex;
@@ -184,7 +184,7 @@ inline unsigned CanonicalAnchor(const RepresentedTrianglePath& path) noexcept {
 // Only the original path endpoints are queried;
 // interior dyadic samples retain the original exact predicate traversal.
 // Source identities are deliberately irrelevant to this geometric fact.
-inline bool CommonEndpointPoint(const RepresentedTrianglePath& a,
+TL_MATH_HOST_DEVICE inline bool CommonEndpointPoint(const RepresentedTrianglePath& a,
                          const RepresentedTrianglePath& b, DyadicTime time,
                          CommonPointCounters* counters) noexcept {
   unsigned endpoint = 0;

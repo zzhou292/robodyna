@@ -7,7 +7,8 @@ get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
 include("${TL_ROOT}/lib_src/collision/RepresentedIntervalCrossing.cmake")
 
 add_executable(represented_interval_crossing_host
-  BatchRosterTest.cpp NormalReuseTest.cpp RelativeSeparationTest.cpp ExactPathReuseTest.cpp CommonPointReuseTest.cpp NativeStorageTest.cpp ResultAssertions.h GeometryTest.cpp InvarianceTest.cpp FailureTest.cpp IdentityTest.cpp
+  BatchAssertions.h BatchFixture.h
+  BatchRosterTest.cpp NormalReuseTest.cpp RelativeSeparationTest.cpp ExactPathReuseTest.cpp CommonPointReuseTest.cpp NativeStorageTest.cpp FixedPolicyTest.cpp ResultAssertions.h GeometryTest.cpp InvarianceTest.cpp FailureTest.cpp IdentityTest.cpp
   DeepTest.cpp OracleTest.cpp ParallelTest.cpp TranslationProofTest.cpp Oracle.cpp)
 target_link_libraries(represented_interval_crossing_host
   PRIVATE tl_represented_interval_crossing GTest::gtest_main)

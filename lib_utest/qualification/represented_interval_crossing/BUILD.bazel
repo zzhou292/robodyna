@@ -1,8 +1,9 @@
 load("@rules_cc//cc:defs.bzl", "cc_test")
 
 exports_files(
-    ["Fixture.h"],
-    visibility = ["//lib_utest/qualification/self_contact_transaction:__pkg__"],
+    ["Fixture.h", "ResultAssertions.h", "BatchAssertions.h", "BatchFixture.h"],
+    visibility = ["//lib_utest/qualification/self_contact_transaction:__pkg__",
+                  "//lib_utest/qualification/represented_interval_crossing_gpu:__pkg__"],
 )
 
 cc_test(
@@ -10,11 +11,14 @@ cc_test(
     size = "small",
     srcs = [
         "BatchRosterTest.cpp",
+        "BatchAssertions.h",
+        "BatchFixture.h",
         "NormalReuseTest.cpp",
         "RelativeSeparationTest.cpp",
         "ExactPathReuseTest.cpp",
         "CommonPointReuseTest.cpp",
         "NativeStorageTest.cpp",
+        "FixedPolicyTest.cpp",
         "ResultAssertions.h",
         "DeepTest.cpp",
         "FailureTest.cpp",
@@ -45,11 +49,14 @@ cc_test(
         "BUILD.bazel",
         "CMakeLists.txt",
         "BatchRosterTest.cpp",
+        "BatchAssertions.h",
+        "BatchFixture.h",
         "NormalReuseTest.cpp",
         "RelativeSeparationTest.cpp",
         "ExactPathReuseTest.cpp",
         "CommonPointReuseTest.cpp",
         "NativeStorageTest.cpp",
+        "FixedPolicyTest.cpp",
         "ResultAssertions.h",
         "DeepTest.cpp",
         "FailureTest.cpp",

@@ -50,6 +50,7 @@ cc_test(
         "StratumTest.cpp",
         "check_syntax.py",
         "//lib_src/collision:fixed_triangle_feature_discovery_sources",
+        "//lib_src/math:fixed_integer_sources",
     ],
     deps = ["@googletest//:gtest_main"],
 )
@@ -65,6 +66,7 @@ cc_library(
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     linkopts = ["-pthread"],
     deps = [
+        "//lib_src/math:fixed_integer",
         "//lib_src/collision:fixed_contact_facets",
         "//lib_src/collision:surface_contact_primitives",
         "//lib_src/collision/weighted_surface:mapping",

@@ -6,6 +6,8 @@
 namespace tlfea::contact {
 class RepresentedIntervalCrossing;
 namespace represented_interval_crossing {
+class DeviceExecution;
+class DeviceAccess;
 
 // Diagnostic operation counts only: never physical state or certificate work.
 struct PathRosterWork {
@@ -44,6 +46,12 @@ struct BatchAccess {
       std::size_t batch_pair_capacity,
       RepresentedIntervalResult* scratch,
       std::size_t scratch_capacity) noexcept;
+ private:
+  friend class DeviceAccess;
+  static BatchReport CertifyUsing(RepresentedIntervalCrossing&,
+      const RepresentedTrianglePath*, std::size_t, const RepresentedTrianglePair*,
+      std::size_t, std::size_t, RepresentedIntervalResult*, std::size_t,
+      DeviceExecution*) noexcept;
 };
 
 } // namespace represented_interval_crossing

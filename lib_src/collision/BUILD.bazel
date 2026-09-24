@@ -83,6 +83,7 @@ cc_library(
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     linkopts = ["-pthread"],
     deps = [
+        "//lib_src/math:fixed_integer",
         ":fixed_contact_facets",
         ":surface_contact_primitives",
         "//lib_src/collision/weighted_surface:mapping",
@@ -163,6 +164,11 @@ filegroup(
     name = "represented_interval_crossing_source_proof",
     srcs = [
         "represented_interval_crossing/native/ExtractionManifest.json",
+        "represented_interval_crossing/native/PortableStd.h",
+        "represented_interval_crossing/DeviceExecution.h",
+        "represented_interval_crossing/CanonicalPair.h",
+        "represented_interval_crossing/CohortAdmission.h",
+        "represented_interval_crossing/BusyRelease.h",
         "BUILD.bazel",
         "RepresentedIntervalCrossing.cmake",
         "RepresentedIntervalCrossing.cpp",
@@ -173,6 +179,10 @@ filegroup(
         "represented_interval_crossing/ExactPathReuseQualification.h",
         "represented_interval_crossing/CommonPointReuseQualification.h",
         "represented_interval_crossing/NativeStorageQualification.h",
+        "represented_interval_crossing/FixedPolicyQualification.h",
+        "represented_interval_crossing/native/ArithmeticContext.h",
+        "represented_interval_crossing/native/BoostIntegerPolicy.h",
+        "represented_interval_crossing/native/FixedIntegerPolicy.h",
         "represented_interval_crossing/NativeStorageDomain.h",
         "represented_interval_crossing/native/Modes.h",
         "represented_interval_crossing/native/Identity.h",
@@ -191,11 +201,20 @@ cc_library(
     hdrs = [
         "RepresentedIntervalCrossing.h",
         "RepresentedIntervalCrossingTypes.h",
+        "represented_interval_crossing/native/PortableStd.h",
+        "represented_interval_crossing/DeviceExecution.h",
+        "represented_interval_crossing/CanonicalPair.h",
+        "represented_interval_crossing/CohortAdmission.h",
+        "represented_interval_crossing/BusyRelease.h",
         "represented_interval_crossing/Batch.h",
         "represented_interval_crossing/NormalReuseQualification.h",
         "represented_interval_crossing/ExactPathReuseQualification.h",
         "represented_interval_crossing/CommonPointReuseQualification.h",
         "represented_interval_crossing/NativeStorageQualification.h",
+        "represented_interval_crossing/FixedPolicyQualification.h",
+        "represented_interval_crossing/native/ArithmeticContext.h",
+        "represented_interval_crossing/native/BoostIntegerPolicy.h",
+        "represented_interval_crossing/native/FixedIntegerPolicy.h",
         "represented_interval_crossing/NativeStorageDomain.h",
         "represented_interval_crossing/native/Modes.h",
         "represented_interval_crossing/native/Identity.h",
@@ -208,7 +227,54 @@ cc_library(
     ],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     linkopts = ["-pthread"],
-    deps = [":fixed_contact_facets"],
+    deps = [":fixed_contact_facets", "//lib_src/math:fixed_integer"],
+)
+
+cc_library(
+    name = "represented_interval_crossing_gpu_values",
+    srcs = ["represented_interval_crossing/native_device/Layout.cpp"],
+    hdrs = [
+        "RepresentedIntervalCrossingGpu.h",
+        "represented_interval_crossing/DeviceBatch.h",
+        "represented_interval_crossing/native_device/Workspace.h",
+        "represented_interval_crossing/native_device/KernelTypes.h",
+        "represented_interval_crossing/native_device/Resources.h",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":represented_interval_crossing", "//lib_utils:bounded_arena"],
+)
+
+cuda_library(
+    name = "represented_interval_crossing_gpu_device",
+    srcs = ["represented_interval_crossing/native_device/Kernels.cu"],
+    copts = [
+        "--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true",
+        "--ftz=false", "--expt-relaxed-constexpr", "--resource-usage",
+        "-Xcompiler=-fno-fast-math,-ffp-contract=off",
+    ],
+    deps = [":represented_interval_crossing_gpu_values"],
+)
+
+cc_library(
+    name = "represented_interval_crossing_gpu",
+    srcs = [
+        "RepresentedIntervalCrossingGpu.cpp",
+        "represented_interval_crossing/native_device/Workspace.cpp",
+        "represented_interval_crossing/native_device/Cohort.cpp",
+        "represented_interval_crossing/native_device/Transport.cpp",
+    ],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":represented_interval_crossing_gpu_device", "//lib_src/solvers:nodal_trial_identity"],
+)
+
+filegroup(
+    name = "represented_interval_crossing_gpu_sources",
+    srcs = [
+        "BUILD.bazel", "RepresentedIntervalCrossingGpu.cmake",
+        "RepresentedIntervalCrossingGpu.h", "RepresentedIntervalCrossingGpu.cpp",
+        "represented_interval_crossing/DeviceExecution.h",
+        "represented_interval_crossing/DeviceBatch.h",
+    ] + glob(["represented_interval_crossing/native_device/*"]),
 )
 
 filegroup(

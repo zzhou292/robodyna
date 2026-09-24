@@ -7,6 +7,11 @@
 #include "represented_interval_crossing/BatchExecution.h"
 #include "represented_interval_crossing/native/CellKernel.h"
 #include "represented_interval_crossing/NativeStorageQualification.h"
+#include "represented_interval_crossing/FixedPolicyQualification.h"
+#include "represented_interval_crossing/native/FixedIntegerPolicy.h"
+#include "represented_interval_crossing/DeviceExecution.h"
+#include "represented_interval_crossing/BusyRelease.h"
+#include "represented_interval_crossing/CohortAdmission.h"
 
 #include <algorithm>
 #include <atomic>
@@ -15,6 +20,7 @@
 #include <cstring>
 #include <limits>
 #include <new>
+#include <optional>
 #include <pthread.h>
 #include <semaphore.h>
 #include <sys/mman.h>
@@ -84,12 +90,7 @@ std::size_t PageBytes() noexcept {
   return value > 0 ? static_cast<std::size_t>(value) : 0;
 }
 
-struct CanonicalPair {
-  std::uint32_t first = 0;
-  std::uint32_t second = 0;
-  std::size_t input_pair = SIZE_MAX;
-  RepresentedIntervalPairKey key;
-};
+using represented_interval_crossing::CanonicalPair;
 
 struct VertexLedgerRow {
   FacetVertexKey key;
@@ -136,7 +137,9 @@ RepresentedIntervalResult CertifyNarrow(
   static_assert(std::is_nothrow_default_constructible_v<NarrowKernel::ExactScratch>);
   static_assert(std::is_nothrow_destructible_v<NarrowKernel::ExactScratch>);
   NarrowKernel::ExactScratch scratch;
-  return NarrowKernel::template CertifyPair<reuse, separation, path_reuse, point_reuse>(
+  native::ArithmeticContext context;
+  NarrowKernel kernel(context);
+  return kernel.template CertifyPair<reuse, separation, path_reuse, point_reuse>(
       a, b, limits, key, dfs, dfs_capacity, &scratch, counters,
       separation_counters, path_counters, common_point_counters);
 }
@@ -164,7 +167,9 @@ RepresentedIntervalResult CertifyPair(
     }
   }
   CountStorage(storage_counters, false);
-  return WideKernel::template CertifyPair<reuse, separation, path_reuse, point_reuse>(
+  native::ArithmeticContext context;
+  WideKernel kernel(context);
+  return kernel.template CertifyPair<reuse, separation, path_reuse, point_reuse>(
       a, b, limits, key, dfs, dfs_capacity, scratch, counters,
       separation_counters, path_counters, common_point_counters);
 }
@@ -310,10 +315,7 @@ RepresentedIntervalReport Failure(RepresentedIntervalStatus status) noexcept {
   return result;
 }
 
-struct BusyRelease {
-  std::atomic<bool>* value;
-  ~BusyRelease() { value->store(false, std::memory_order_release); }
-};
+using represented_interval_crossing::BusyRelease;
 
 }  // namespace
 
@@ -326,9 +328,7 @@ struct RepresentedIntervalCrossing::Impl {
     Stopping,
   };
 
-  struct PairStatus {
-    bool complete = false;
-  };
+  using PairStatus = represented_interval_crossing::PairStatus;
 
   struct WorkerSlot {
     Impl* owner = nullptr;
@@ -348,11 +348,16 @@ struct RepresentedIntervalCrossing::Impl {
     std::size_t count;
     bool authenticated = false;
     represented_interval_crossing::PathRosterWork work;
+    std::optional<represented_interval_crossing::AuthenticatedScene> device_scene;
+    const RepresentedTrianglePair* ordered_pairs = nullptr;
+    std::size_t ordered_pair_count = 0, slice_capacity = 0, slice_offset = 0;
+    bool prefetch_disjoint = false;
   };
   bool DisjointFromOwned(const void* data, std::size_t bytes) const noexcept;
   RepresentedIntervalReport CertifySlice(
       const RepresentedTrianglePath*, std::size_t,
-      const RepresentedTrianglePair*, std::size_t, PathRoster&) noexcept;
+      const RepresentedTrianglePair*, std::size_t, PathRoster&,
+      represented_interval_crossing::DeviceExecution* = nullptr) noexcept;
 
   explicit Impl(RepresentedIntervalLimits input) : limits(input) {}
   ~Impl() { Shutdown(); }
@@ -432,6 +437,10 @@ struct RepresentedIntervalCrossing::Impl {
           next_pair.fetch_add(1, std::memory_order_relaxed);
       if (pair_index >= job_pair_count)
         return;
+      // Device writes finish synchronously before workers start. Every ordinal
+      // has exactly one numerical writer; CPU fallback owns only unset rows.
+      if (pair_status[pair_index].complete)
+        continue;
       // Scheduling affects only worker ownership. Each canonical pair index
       // has one staging/status writer and private DFS/exact scratch; the host
       // folds staging in increasing pair_index order after all workers join.
@@ -688,6 +697,13 @@ RepresentedIntervalReport RepresentedIntervalCrossing::Initialize(
 RepresentedIntervalReport RepresentedIntervalCrossing::Certify(
     const RepresentedTrianglePath* paths, std::size_t path_count,
     const RepresentedTrianglePair* pairs, std::size_t pair_count) noexcept {
+  return CertifyUsing(paths, path_count, pairs, pair_count, nullptr);
+}
+
+RepresentedIntervalReport RepresentedIntervalCrossing::CertifyUsing(
+    const RepresentedTrianglePath* paths, std::size_t path_count,
+    const RepresentedTrianglePair* pairs, std::size_t pair_count,
+    represented_interval_crossing::DeviceExecution* device) noexcept {
   if (!impl_)
     return Failure(RepresentedIntervalStatus::NotInitialized);
   auto& storage = *impl_;
@@ -704,7 +720,26 @@ RepresentedIntervalReport RepresentedIntervalCrossing::Certify(
   }
   BusyRelease busy_release{&storage.busy};
   Impl::PathRoster roster{paths, path_count};
-  return storage.CertifySlice(paths, path_count, pairs, pair_count, roster);
+  return storage.CertifySlice(paths, path_count, pairs, pair_count, roster, device);
+}
+
+RepresentedIntervalReport represented_interval_crossing::DeviceAccess::Certify(
+    RepresentedIntervalCrossing& crossing,
+    const RepresentedTrianglePath* paths, std::size_t path_count,
+    const RepresentedTrianglePair* pairs, std::size_t pair_count,
+    DeviceExecution& device) noexcept {
+  return crossing.CertifyUsing(paths, path_count, pairs, pair_count, &device);
+}
+
+represented_interval_crossing::BatchReport
+represented_interval_crossing::DeviceAccess::CertifyBatch(
+    RepresentedIntervalCrossing& crossing,
+    const RepresentedTrianglePath* paths, std::size_t path_count,
+    const RepresentedTrianglePair* pairs, std::size_t pair_count,
+    std::size_t batch_pair_capacity, RepresentedIntervalResult* scratch,
+    std::size_t scratch_capacity, DeviceExecution& device) noexcept {
+  return BatchAccess::CertifyUsing(crossing, paths, path_count, pairs, pair_count,
+      batch_pair_capacity, scratch, scratch_capacity, &device);
 }
 
 bool RepresentedIntervalCrossing::Impl::DisjointFromOwned(
@@ -749,12 +784,17 @@ bool RepresentedIntervalCrossing::Impl::DisjointFromOwned(
 RepresentedIntervalReport RepresentedIntervalCrossing::Impl::CertifySlice(
     const RepresentedTrianglePath* paths, std::size_t path_count,
     const RepresentedTrianglePair* pairs, std::size_t pair_count,
-    PathRoster& roster) noexcept {
+    PathRoster& roster, represented_interval_crossing::DeviceExecution* device) noexcept {
   auto& storage = *this;
   RepresentedIntervalReport report = FreshReport();
   report.input_paths = path_count;
   report.input_pairs = pair_count;
-  if (roster.paths != paths || roster.count != path_count) {
+  if (roster.paths != paths || roster.count != path_count ||
+      (roster.slice_capacity &&
+       (roster.slice_offset > roster.ordered_pair_count ||
+        pair_count > roster.ordered_pair_count - roster.slice_offset ||
+        pair_count > roster.slice_capacity ||
+        pairs != (roster.ordered_pairs ? roster.ordered_pairs + roster.slice_offset : nullptr)))) {
     report.status = RepresentedIntervalStatus::InvalidInput;
     report.message = "native lexical path roster changed during batch traversal";
     return report;
@@ -782,7 +822,9 @@ RepresentedIntervalReport RepresentedIntervalCrossing::Impl::CertifySlice(
       !MultiplySize(pair_count, sizeof(*pairs), &pair_bytes) ||
       !RangeDisjoint(paths, path_bytes, pairs, pair_bytes) ||
       !storage.DisjointFromOwned(paths, path_bytes) ||
-      !storage.DisjointFromOwned(pairs, pair_bytes)) {
+      !storage.DisjointFromOwned(pairs, pair_bytes) ||
+      (device && (!device->Disjoint(paths, path_bytes) ||
+                  !device->Disjoint(pairs, pair_bytes)))) {
     report.status = RepresentedIntervalStatus::InvalidInput;
     report.message = Message(report.status);
     return report;
@@ -854,14 +896,8 @@ RepresentedIntervalReport RepresentedIntervalCrossing::Impl::CertifySlice(
       report.message = Message(report.status);
       return report;
     }
-    CanonicalPair pair;
-    pair.first = pairs[i].first;
-    pair.second = pairs[i].second;
-    pair.input_pair = i;
-    if (Compare(paths[pair.second].key, paths[pair.first].key) < 0)
-      std::swap(pair.first, pair.second);
-    pair.key.paths[0] = paths[pair.first].key;
-    pair.key.paths[1] = paths[pair.second].key;
+    const auto pair = represented_interval_crossing::CanonicalizePair(
+        paths, pairs[i], i, [](const auto& a, const auto& b) { return Compare(a, b); });
     storage.pairs.push_back(pair);
   }
   std::sort(storage.pairs.begin(), storage.pairs.end(), PairLess);
@@ -886,6 +922,46 @@ RepresentedIntervalReport RepresentedIntervalCrossing::Impl::CertifySlice(
   }
   for (std::size_t pair = 0; pair < storage.pairs.size(); ++pair)
     storage.pair_status[pair].complete = false;
+  if (device) {
+    if (!roster.device_scene)
+      roster.device_scene.emplace(
+          represented_interval_crossing::AuthenticatedScene::ConstructionKey{},
+          device, paths, path_count,
+          roster.prefetch_disjoint ? roster.ordered_pairs : nullptr,
+          roster.prefetch_disjoint ? roster.ordered_pair_count : 0,
+          roster.prefetch_disjoint ? roster.slice_capacity : 0);
+    auto& scene = *roster.device_scene;
+    const auto cohort_capacity = device->NumericCohortCapacity();
+    if (cohort_capacity && scene.slice_capacity_ && pair_count) {
+      if (cohort_capacity < pair_count) {
+        report.status = RepresentedIntervalStatus::ResourceLimit;
+        report.message = "Native CUDA numerical cohort cannot hold this publication slice";
+        storage.staging.clear();
+        return report;
+      }
+      if (!scene.cohort_ || roster.slice_offset >= scene.cohort_->begin_ + scene.cohort_->count_) {
+        const auto remaining = scene.ordered_pair_count_ - roster.slice_offset;
+        const auto window = remaining <= cohort_capacity ? remaining :
+            (cohort_capacity / scene.slice_capacity_) * scene.slice_capacity_;
+        // Align nonfinal windows with the original publication slices. No row
+        // is prefetched twice and no numerical budget is raised.
+        scene.cohort_.emplace(
+            represented_interval_crossing::AuthenticatedNumericCohort::ConstructionKey{},
+            roster.slice_offset, window);
+      }
+    }
+    const represented_interval_crossing::AuthenticatedWork work(*roster.device_scene,
+        storage.pairs.data(), storage.pairs.size(), storage.limits,
+        storage.staging.data(), storage.pair_status.get(), roster.slice_offset);
+    const auto execution = device->Execute(work);
+    if (execution.status != RepresentedIntervalStatus::Ok) {
+      report.status = execution.status;
+      report.input_pair = execution.input_pair;
+      report.message = execution.message;
+      storage.staging.clear();
+      return report;
+    }
+  }
   if (!storage.RunWorkers(paths, storage.pairs.size())) {
     report.status = RepresentedIntervalStatus::ResourceLimit;
     report.message =
@@ -938,13 +1014,28 @@ represented_interval_crossing::BatchAccess::Certify(
     std::size_t batch_pair_capacity,
     RepresentedIntervalResult* scratch,
     std::size_t scratch_capacity) noexcept {
+  return CertifyUsing(crossing, paths, path_count, pairs, pair_count,
+      batch_pair_capacity, scratch, scratch_capacity, nullptr);
+}
+
+represented_interval_crossing::BatchReport
+represented_interval_crossing::BatchAccess::CertifyUsing(
+    RepresentedIntervalCrossing& crossing,
+    const RepresentedTrianglePath* paths, std::size_t path_count,
+    const RepresentedTrianglePair* pairs, std::size_t pair_count,
+    std::size_t batch_pair_capacity, RepresentedIntervalResult* scratch,
+    std::size_t scratch_capacity, DeviceExecution* device) noexcept {
   const auto compare = [](const auto& first, const auto& second) {
     return Compare(first, second);
   };
   auto report = detail::ValidateInput(
       crossing.initialized(), crossing.forecast(), crossing.results(),
       paths, path_count, pairs, pair_count, batch_pair_capacity,
-      scratch, scratch_capacity, compare, RangeDisjoint);
+      scratch, scratch_capacity, compare, RangeDisjoint,
+      [&](std::size_t path_bytes, std::size_t pair_bytes, std::size_t scratch_bytes) {
+        return !device || (device->Disjoint(paths, path_bytes) &&
+            device->Disjoint(pairs, pair_bytes) && device->Disjoint(scratch, scratch_bytes));
+      });
   if (report.status != RepresentedIntervalStatus::Ok) return report;
 
   auto& storage = *crossing.impl_;
@@ -983,10 +1074,25 @@ represented_interval_crossing::BatchAccess::Certify(
         "Crossing batch scratch aliases native owned storage");
 
   RepresentedIntervalCrossing::Impl::PathRoster roster{paths, path_count};
+  // detail::ValidateInput authenticated this complete immutable canonical pair
+  // roster before any slice. Its bounds stay lexical to this compound call.
+  roster.ordered_pairs = pairs;
+  roster.ordered_pair_count = pair_count;
+  roster.slice_capacity = batch_pair_capacity;
+  if (device && device->NumericCohortCapacity()) {
+    // Ordinary validation keeps its original per-slice alias/error boundary.
+    // A wider numerical borrow needs the stronger whole-roster proof. If that
+    // proof is unavailable, retain per-slice GPU execution and its exact error
+    // order; this is never a retry after a CUDA or arithmetic failure.
+    roster.prefetch_disjoint = detail::NumericCohortRanges(paths, path_count, pairs, pair_count,
+        [&](const void* data, std::size_t bytes) { return storage.DisjointFromOwned(data, bytes); },
+        RangeDisjoint);
+  }
   report = detail::Execute(
       paths, pairs, pair_count, batch_pair_capacity, scratch,
       [&](const RepresentedTrianglePair* slice, std::size_t count) {
-        return storage.CertifySlice(paths, path_count, slice, count, roster);
+        roster.slice_offset = slice && pairs ? static_cast<std::size_t>(slice - pairs) : 0;
+        return storage.CertifySlice(paths, path_count, slice, count, roster, device);
       },
       [&]() {
         // Public results() deliberately hides publication while busy. This
@@ -1135,6 +1241,45 @@ represented_interval_crossing::CompareNativeStorage(
       &result.current.counters);
   StoreResult(original, &result.original.result);
   StoreResult(current, &result.current.result);
+  return result;
+}
+
+represented_interval_crossing::FixedPolicyComparison
+represented_interval_crossing::CompareFixedIntegerPolicy(
+    const RepresentedTrianglePath& first, const RepresentedTrianglePath& second,
+    RepresentedIntervalLimits limits) noexcept {
+  FixedPolicyComparison result;
+  using FixedKernel = native::CellKernel<512, native::FixedIntegerPolicy<512>>;
+  result.fixed_scratch_bytes = sizeof(FixedKernel::ExactScratch);
+  static_assert(sizeof(FixedKernel::ExactScratch) <= 8192);
+  const RepresentedTrianglePath* a = nullptr;
+  const RepresentedTrianglePath* b = nullptr;
+  result.status = QualifyPairInputs(first, second, limits, &a, &b);
+  if (result.status != RepresentedIntervalStatus::Ok) return result;
+  result.domain = NativeStorageDomain::FromPaths(*a, *b, limits.max_depth).report();
+  const RepresentedIntervalPairKey key{{a->key, b->key}};
+  Cell dfs[53]; ExactScratch wide_scratch;
+  const auto capacity = static_cast<std::size_t>(limits.max_depth) + 1;
+  const auto original = CertifyPair<NormalReuse::Memoize, SeparationProof::RelativeFaces,
+      ExactPathReuse::Optimized, CommonPointReuse::Optimized, NativeStorage::Wide>(
+          *a, *b, limits, key, dfs, capacity, &wide_scratch);
+  StoreResult(original, &result.original);
+  if (result.domain.eligible) {
+    native::ArithmeticContext context;
+    FixedKernel kernel(context);
+    FixedKernel::ExactScratch scratch;
+    const auto current = kernel.CertifyPair(*a, *b, limits, key, dfs, capacity, &scratch);
+    result.fixed_executed = true;
+    result.arithmetic_failed = !context.valid();
+    StoreResult(current, &result.current);
+  } else {
+    // Deliberately execute the wide route independently; never retry an
+    // already-executed fixed result or reuse the comparison's reference value.
+    const auto current = CertifyPair<NormalReuse::Memoize, SeparationProof::RelativeFaces,
+        ExactPathReuse::Optimized, CommonPointReuse::Optimized, NativeStorage::Wide>(
+            *a, *b, limits, key, dfs, capacity, &wide_scratch);
+    StoreResult(current, &result.current);
+  }
   return result;
 }
 

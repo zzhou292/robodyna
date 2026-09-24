@@ -2,9 +2,10 @@
 #pragma once
 #include "Arithmetic.h"
 namespace tlfea::contact::represented_interval_crossing::native {
-template <unsigned Bits>
-struct Geometry : Arithmetic<Bits> {
-  using Base = Arithmetic<Bits>;
+template <unsigned Bits, class IntegerPolicy = BoostIntegerPolicy<Bits>>
+struct Geometry : Arithmetic<Bits, IntegerPolicy> {
+  using Base = Arithmetic<Bits, IntegerPolicy>;
+  TL_MATH_HOST_DEVICE explicit Geometry(ArithmeticContext& context) noexcept : Base(context) {}
   using typename Base::Dyadic;
   using typename Base::ExactVec3;
   using typename Base::ExactTriangle;
@@ -18,25 +19,25 @@ struct Geometry : Arithmetic<Bits> {
   using Base::Component;
   using Base::Scale;
   // Keep key ordering distinct from inherited dyadic numeric comparison.
-  static int Compare(const FacetEdgeKey& a, const FacetEdgeKey& b) noexcept {
+  TL_MATH_HOST_DEVICE static int Compare(const FacetEdgeKey& a, const FacetEdgeKey& b) noexcept {
     return native::Compare(a, b);
   }
-  static ExactVec3 Edge(const ExactTriangle& triangle, unsigned edge) {
+  TL_MATH_HOST_DEVICE ExactVec3 Edge(const ExactTriangle& triangle, unsigned edge) {
     return Subtract(triangle.vertex[(edge + 1) % 3],
                     triangle.vertex[edge]);
   }
 
-  static ExactVec3 Normal(const ExactTriangle& triangle, NormalCounters* counters = nullptr) {
+  TL_MATH_HOST_DEVICE ExactVec3 Normal(const ExactTriangle& triangle, NormalCounters* counters = nullptr) {
     CountNormalOperation(counters, &NormalCounters::normal_evaluations);
     return Cross(Edge(triangle, 0),
                  Subtract(triangle.vertex[2], triangle.vertex[0]));
   }
 
-  static bool Degenerate(const ExactTriangle& triangle, NormalCounters* counters = nullptr) {
+  TL_MATH_HOST_DEVICE bool Degenerate(const ExactTriangle& triangle, NormalCounters* counters = nullptr) {
     return Zero(Normal(triangle, counters));
   }
 
-  static bool SeparatedOnAxis(const ExactTriangle& a, const ExactTriangle& b,
+  TL_MATH_HOST_DEVICE bool SeparatedOnAxis(const ExactTriangle& a, const ExactTriangle& b,
                        const ExactVec3& axis) {
     if (Zero(axis))
       return false;
@@ -65,7 +66,7 @@ struct Geometry : Arithmetic<Bits> {
     bool coplanar = false;
   };
 
-  static StaticIntersection Intersects(const ExactTriangle& a,
+  TL_MATH_HOST_DEVICE StaticIntersection Intersects(const ExactTriangle& a,
                                 const ExactTriangle& b,
                                 const ExactVec3& normal_a,
                                 const ExactVec3& normal_b,
@@ -106,7 +107,7 @@ struct Geometry : Arithmetic<Bits> {
     return result;
   }
 
-  static StaticIntersection Intersects(const ExactTriangle& a,
+  TL_MATH_HOST_DEVICE StaticIntersection Intersects(const ExactTriangle& a,
                                 const ExactTriangle& b,
                                 NormalCounters* counters = nullptr) {
     // Retained uncached oracle: these exact normal evaluations retain their
@@ -116,7 +117,7 @@ struct Geometry : Arithmetic<Bits> {
     return Intersects(a, b, normal_a, normal_b);
   }
 
-  static bool PointInClosedTriangle(const ExactVec3& point,
+  TL_MATH_HOST_DEVICE bool PointInClosedTriangle(const ExactVec3& point,
                              const ExactTriangle& triangle,
                              const ExactVec3& normal) {
     if (Sign(Dot(Subtract(point, triangle.vertex[0]), normal)) != 0)
@@ -136,14 +137,14 @@ struct Geometry : Arithmetic<Bits> {
     return true;
   }
 
-  static bool PointInClosedTriangle(const ExactVec3& point,
+  TL_MATH_HOST_DEVICE bool PointInClosedTriangle(const ExactVec3& point,
                              const ExactTriangle& triangle,
                              NormalCounters* counters = nullptr) {
     const ExactVec3 normal = Normal(triangle, counters);
     return PointInClosedTriangle(point, triangle, normal);
   }
 
-  static bool SegmentsIntersect(const ExactVec3& a0, const ExactVec3& a1,
+  TL_MATH_HOST_DEVICE bool SegmentsIntersect(const ExactVec3& a0, const ExactVec3& a1,
                          const ExactVec3& b0, const ExactVec3& b1) {
     const ExactVec3 a = Subtract(a1, a0);
     const ExactVec3 b = Subtract(b1, b0);
@@ -171,13 +172,13 @@ struct Geometry : Arithmetic<Bits> {
     Dyadic bb0 = Component(b0, component);
     Dyadic bb1 = Component(b1, component);
     if (Compare(aa1, aa0) < 0)
-      std::swap(aa0, aa1);
+      portable::swap(aa0, aa1);
     if (Compare(bb1, bb0) < 0)
-      std::swap(bb0, bb1);
+      portable::swap(bb0, bb1);
     return Compare(aa1, bb0) >= 0 && Compare(bb1, aa0) >= 0;
   }
 
-  static RepresentedFeaturePathKey IntersectionFeature(
+  TL_MATH_HOST_DEVICE RepresentedFeaturePathKey IntersectionFeature(
       const RepresentedTrianglePath& path_a,
       const RepresentedTrianglePath& path_b, const ExactTriangle& a,
       const ExactTriangle& b,
@@ -240,7 +241,7 @@ struct Geometry : Arithmetic<Bits> {
     return result;
   }
 
-  static bool RegularCell(const ExactVec3 normal[3]) {
+  TL_MATH_HOST_DEVICE bool RegularCell(const ExactVec3 normal[3]) {
     for (unsigned component = 0; component < 3; ++component) {
       const Dyadic first = Component(normal[0], component);
       const Dyadic middle = Component(normal[1], component);
@@ -258,13 +259,13 @@ struct Geometry : Arithmetic<Bits> {
     return false;
   }
 
-  static bool RegularCell(const ExactTriangle samples[3], NormalCounters* counters = nullptr) {
+  TL_MATH_HOST_DEVICE bool RegularCell(const ExactTriangle samples[3], NormalCounters* counters = nullptr) {
     ExactVec3 normal[3] = {Normal(samples[0], counters), Normal(samples[1], counters),
                            Normal(samples[2], counters)};
     return RegularCell(normal);
   }
 
-  static bool SweptBoxesSeparated(const ExactTriangle samples_a[3],
+  TL_MATH_HOST_DEVICE bool SweptBoxesSeparated(const ExactTriangle samples_a[3],
                            const ExactTriangle samples_b[3]) {
     for (unsigned component = 0; component < 3; ++component) {
       Dyadic minimum_a = Component(samples_a[0].vertex[0], component);

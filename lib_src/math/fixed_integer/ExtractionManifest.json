@@ -1,0 +1,52 @@
+{
+  "schema": "tl.fixed_integer_extraction.v1",
+  "original_commit": "ec51b6b75e230a300be9ec638e963d9aaa23431e",
+  "original_file": "lib_src/collision/fixed_triangle_features/ExactInteger.h",
+  "original_sha256": "1764184fd713b02b074cb2508c4490085c965054801593c2459e0652a5a9ef1b",
+  "functions": [
+    {
+      "declaration_prefix": "static void Normalize(",
+      "body_sha256": "5315c678579259fc45f77c38342d2ab3b9e6574c70281928644f1cc9b448f528"
+    },
+    {
+      "declaration_prefix": "static int CompareMagnitude(",
+      "body_sha256": "905ba05b8a76c925051c62b57cb93ae58b02cf770eea4ae5c5b0bd00674de1b2"
+    },
+    {
+      "declaration_prefix": "static Integer AddMagnitude(",
+      "body_sha256": "4c38b8ea62bd0e12a3bb32a8f4b1daa91ea9962b96630d8bd42afaf4591ec126"
+    },
+    {
+      "declaration_prefix": "static Integer SubtractMagnitude(",
+      "body_sha256": "a0e43cfb1e577816eec7025b0877e529b3a157c1134dabfd8e32edc59320dcc4"
+    },
+    {
+      "declaration_prefix": "static Integer Add(",
+      "body_sha256": "08e651cad083903fe7b893bdbbb1041c6a6ea80a80a233e6988816daebefb928"
+    },
+    {
+      "declaration_prefix": "static Integer Negate(",
+      "body_sha256": "5f9faa24712897b926380c124213dd8c6a7ae50c4e5fda41509e8c9c69e8e8cc"
+    },
+    {
+      "declaration_prefix": "static Integer Subtract(const Integer&",
+      "body_sha256": "711461c5c7891e5cf907b4955f50ec7d0ae6d6a6b6af8127731ba960816b11be"
+    },
+    {
+      "declaration_prefix": "static Integer Multiply(",
+      "body_sha256": "51453e14272298e4f4c7aaeb23544a84c544e5d7610496db980183bba369625e"
+    },
+    {
+      "declaration_prefix": "static Sign Result(",
+      "body_sha256": "c116f13da108ee5a7432e842df01cdb983747952acfa13841e369c2a77d9312b"
+    },
+    {
+      "declaration_prefix": "static Integer3 Subtract(",
+      "body_sha256": "4d89cc7baac76b615be6343445cffd88645c5b1344e248e35001628b920ea3d4"
+    },
+    {
+      "declaration_prefix": "static Integer Dot(",
+      "body_sha256": "6edfb79de541512459fe5aa3cf5cccdf4f66225c8aaa3dd03fc293ca16256111"
+    }
+  ]
+}

@@ -38,7 +38,7 @@ RepresentedIntervalPairKey Key(const RepresentedTrianglePath* paths,
 // These helpers are called only by the native-owned compound entry. Its
 // implementation supplies the fixed callbacks; callers of BatchAccess cannot
 // execute arbitrary code between path authentication and later pair slices.
-template <class Compare, class Disjoint>
+template <class Compare, class Disjoint, class ExtraAdmission>
 BatchReport ValidateInput(
     bool initialized, RepresentedIntervalForecast capacity,
     RepresentedIntervalResultView previous,
@@ -46,7 +46,7 @@ BatchReport ValidateInput(
     const RepresentedTrianglePair* pairs, std::size_t pair_count,
     std::size_t batch_pair_capacity, RepresentedIntervalResult* scratch,
     std::size_t scratch_capacity, const Compare& compare,
-    const Disjoint& range_disjoint) noexcept {
+    const Disjoint& range_disjoint, const ExtraAdmission& extra_admission) noexcept {
   using S = RepresentedIntervalStatus;
   BatchReport report;
   if (!initialized)
@@ -72,6 +72,11 @@ BatchReport ValidateInput(
       !disjoint(previous.data, previous_bytes))
     return Failure(report, S::InvalidInput,
                    "Crossing batch storage aliases inputs or has an invalid range");
+  // The native implementation supplies this fixed optional-workspace check.
+  // All count/range admission remains earlier; no borrowed row has been read.
+  if (!extra_admission(path_bytes, pair_bytes, scratch_bytes))
+    return Failure(report, S::InvalidInput,
+                   "Crossing batch ranges alias optional executor storage");
   RepresentedIntervalPairKey preceding;
   for (std::size_t pair = 0; pair < pair_count; ++pair) {
     if (pairs[pair].first >= path_count || pairs[pair].second >= path_count)

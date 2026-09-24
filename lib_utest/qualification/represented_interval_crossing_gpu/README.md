@@ -1,0 +1,57 @@
+# Standalone native GPU certificate qualification
+
+This package qualifies the optional GPU numerical executor behind the existing
+native owner. It is not a transaction/vehicle acceptance test or a crash run.
+The production frontend retains complete path identity validation, canonical pair
+sorting/deduplication, work folding and failure-atomic publication. CPU and GPU
+comparisons consume public owner results on both sides, including field-wise
+StoreResult normalization; raw numerical records are not mixed with publications.
+
+Three host groups cover uninitialized behavior, native-first invalid admission,
+exact host/device cap boundaries and per-worker scratch/DFS forecasts. Nine GPU
+groups compare complete native reports and results across actual admitted and
+wide/unsupported paths, canonical duplicates/source identity, empty-after-nonempty,
+malformed unused/null inputs, total/result caps, changed streams, owned aliases and
+valid retry. A 257-unique-job mixed-result case exercises all 128 GPU workers,
+multiple 32-thread blocks and grid-stride reuse, with input order reversals.
+Origin-centered fixtures intentionally route to CPU; exactly shifted positive
+fixtures prove device use with explicit route counts. Exact B125/B126 boundaries,
+maximum depth52, uniformly subnormal/huge finite inputs and signed-zero routing
+are compared against the complete CPU result.
+
+Configure with an explicit CUDA compiler/architecture and the ordinary Release
+flags. Targets are represented_interval_crossing_gpu_host and
+represented_interval_crossing_gpu_cuda. The source check is deliberately separate
+from numerical evidence. Before any device launch, inspect compiler resource usage
+and the owning resource introspection executable; keep the current device stack
+limit unchanged. Use the shared workstation guard: build 8 affinity CPUs/4 compiler
+workers/16 GiB RSS; GPU execution 2 affinity CPUs/10 GiB RSS, GPU0, 8 GiB free reserve,
+6 GiB whole-device-growth cap and 32 GiB available host RAM. No concurrent heavy job.
+
+Any compiler/runtime failure remains a new immutable receipt. Preserve existing
+CPU/frozen primitive evidence. Do not claim CUDA or performance success before the
+actual parity/resource/benchmark gates pass, and do not infer vehicle gain from a
+standalone component ratio. The native 69-body proof and original CPU 110-test suite
+remain owning regressions after portability changes.
+
+A completed numerical row can be Unresolved/ExactArithmeticRange with its original
+work; it is not a geometry acceptance. Such an outcome is never retried on CPU.
+CUDA execution or authenticated input/domain disagreement poisons the GPU owner;
+mathematical outcomes retain the native result/report/failure-atomic fold.
+# Compound qualification
+
+The opt-in numerical-cohort slice adds three host and nine CUDA groups, using
+the same exact CPU and legacy GPU references. It also extends the actual C++17
+negative compilation gate to the cohort key. Query fault injection lives only
+in the owning CUDA test executable; the production library and benchmark do not
+link that probe. The numerical kernel and launch source remain frozen by the
+capacity source proof. Source checks have passed; compilation/runtime and the
+transfer-inclusive compound comparison remain required before promotion.
+
+`Compound.cmake` adds seven CUDA groups to the same executable. They reuse the
+existing native batch fixture and complete report/result assertions, including
+all path-roster counters. Private scene/work types are statically noncopyable
+and cannot be default-constructed by a caller. `verify_compound_sources.py`
+checks the native-only construction, single lexical upload authority and
+shared admission/publication structure without running CUDA. The compound
+branch is unqualified until its owning host/source/CUDA receipts pass.
