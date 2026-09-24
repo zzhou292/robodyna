@@ -1223,3 +1223,14 @@ print("PASS rejected chunk replacement revokes previous borrowed inputs")
 # Optional execution-owner architecture is checked in its own small module.
 import runpy
 runpy.run_path(str(Path(__file__).with_name("verify_crossing_executor_sources.py")))
+
+# Residual math keeps the raw full scan; only this already-checked lexical
+# discovery borrow accelerates intersection-presence lookup in the main cohort.
+assert "const SortedIntersections* sorted_intersections = nullptr" in values
+assert "sorted_intersections->Find(prepared_intersections, key)" in values
+residual = values[values.index("LinearResidualSeparationResult LinearResidualForTasks("):values.index("LinearResidualSeparationResult AddQuadraticResidualBounds(")]
+assert residual.index("!prepared_intersections.complete") < residual.index("sorted_intersections->Find(")
+assert residual.index("!IsFinite(result.reference_translation)") < residual.index("sorted_intersections->Find(")
+assert "i < prepared_intersections.count" in residual  # Raw-array reference stays intact.
+assert candidate.count("features, intersections, &sorted_intersections)") == 2
+print("PASS checked residual intersection lookup with unchanged raw full scan")
