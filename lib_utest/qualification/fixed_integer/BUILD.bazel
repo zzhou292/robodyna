@@ -1,0 +1,24 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cuda//cuda:defs.bzl", "cuda_test")
+cc_library(
+    name = "oracle", testonly = True,
+    srcs = ["Oracle.cpp"], hdrs = ["Oracle.h", "Cases.h"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/math:fixed_integer", "@googletest//:gtest"],
+)
+cc_test(
+    name = "host", size = "small", srcs = ["HostTest.cpp"],
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":oracle", "@googletest//:gtest_main"],
+)
+cuda_test(
+    name = "cuda", size = "small", srcs = ["CudaTest.cu"],
+    copts = ["--std=c++17", "--fmad=false", "--prec-div=true", "--prec-sqrt=true", "--ftz=false"],
+    deps = [":oracle", "@googletest//:gtest_main"], tags = ["exclusive", "gpu"],
+)
+
+cc_test(
+    name = "source_proof", size = "small", srcs = ["SourceProofTest.cpp"],
+    data = ["verify_extraction.py", "//lib_src/math:fixed_integer_sources"],
+    copts = ["-std=c++17"], deps = ["@googletest//:gtest_main"],
+)
