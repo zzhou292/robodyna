@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: MIT
 #include "lib_src/collision/self_contact_transaction/Storage.h"
 #include "lib_src/solvers/NodalTrialIdentity.h"
+#include "lib_src/collision/self_contact_transaction/RigidSeparationQualification.h"
+#include "NonlinearResultAssertions.h"
+#if defined(__SSE2__)
+#include <xmmintrin.h>
+#endif
 
 #include <gtest/gtest.h>
 
@@ -437,5 +442,7 @@ TEST(SelfContactRigidSweepBounds,
       }
     }
 }
+
+#include "EndpointSeparationCases.h"
 
 }  // namespace

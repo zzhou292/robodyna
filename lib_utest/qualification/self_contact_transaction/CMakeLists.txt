@@ -38,6 +38,7 @@ add_executable(self_contact_transaction_values
   MaskedResidualTest.cpp
   CrossingBatchTest.cpp
   RigidSweepBoundsTest.cpp
+  EndpointSeparationCases.h
   "${TL_ROOT}/lib_src/collision/self_contact_transaction/Values.cpp"
   "${TL_ROOT}/lib_src/collision/self_contact_transaction/TranslatedLocal.cpp"
   "${TL_ROOT}/lib_src/collision/self_contact_transaction/CrossingBatch.cpp"
