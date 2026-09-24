@@ -28,6 +28,22 @@ output::Document Encode(const contact::SelfContactTransactionReport& report) {
 
 }  // namespace
 
+TEST(VehicleRunSelfContactError, OptionalFacetFilterStatusSurvivesWithoutInventingDefaultFailure) {
+    contact::SelfContactTransactionReport report;
+    EXPECT_FALSE(Encode(report).HasMember("filter_status_code"));
+    report.status=contact::SelfContactTransactionStatus::FacetFilterFailure;
+    report.pair=13;
+    report.message="Actual filter CUDA failure";
+    report.filter_status=contact::self_contact_filters::Status::DeviceFailure;
+    const auto document=Encode(report);
+    EXPECT_EQ(document["status_code"].GetUint(),static_cast<unsigned>(report.status));
+    EXPECT_EQ(document["filter_status_code"].GetUint(),static_cast<unsigned>(report.filter_status));
+    EXPECT_EQ(document["pair_ordinal"].GetUint64(),13u);
+    EXPECT_STREQ(document["message"].GetString(),report.message);
+    EXPECT_FALSE(document.HasMember("native_crossing_failure"));
+    EXPECT_FALSE(document.HasMember("required_force_events"));
+}
+
 TEST(VehicleRunSelfContactError, NativeWorkFailureRetainsPrefixAndBatchScopesExactly) {
     contact::SelfContactTransactionReport report;
     report.status = contact::SelfContactTransactionStatus::CrossingFailure;

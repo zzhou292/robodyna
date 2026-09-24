@@ -60,6 +60,8 @@ output::Document SelfContactErrorDocument(
         Integer(document, "required_events_lower_bound", error.required_events_lower_bound());
     if (report.pair != SIZE_MAX) Integer(document, "pair_ordinal", report.pair);
     if (report.discovery_task != SIZE_MAX) Integer(document, "discovery_task", report.discovery_task);
+    if (report.filter_status != tlfea::contact::self_contact_filters::Status::Ok)
+        Integer(document, "filter_status_code", static_cast<unsigned>(report.filter_status));
     Integer(document, "force_status_code", static_cast<unsigned>(report.force_status));
     Integer(document, "activity_status_code", static_cast<unsigned>(report.activity_status));
     Integer(document, "broadphase_status_code", static_cast<unsigned>(report.broadphase_status));
