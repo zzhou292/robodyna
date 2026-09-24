@@ -1,6 +1,7 @@
 #include "CandidateFailureFixture.h"
 
 #include "CandidateFailureValues.h"
+#include "FailureBaselineScope.h"
 #include "output/BoundedArrayJson.h"
 
 #include <cmath>
@@ -47,7 +48,8 @@ output::Document ReplayCandidateFailure(const std::filesystem::path& manifest_pa
     CheckFile(manifest_path);
     const auto manifest_bytes = ReadBounded(manifest_path, FailureFixtureManifestCap);
     Require(Sha256(manifest_bytes) == expected_sha256, "Failure manifest SHA-256 mismatch");
-    const auto manifest = Parse(manifest_bytes, FailureFixtureManifestCap);
+    auto manifest = Parse(manifest_bytes, FailureFixtureManifestCap);
+    const bool observed_baseline = failure_detail::ConsumeBaselineObserved(manifest);
     Keys(manifest, {"schema", "scope", "baseline_scope", "physics_accepted", "owners_equivalent",
                    "capture_storage_budget_bytes", "archive_byte_cap", "owner_id", "attempt", "accepted_epoch",
                    "duration_s", "kick_dt_s", "duration_bits", "kick_dt_bits", "crossing_work",
@@ -56,7 +58,8 @@ output::Document ReplayCandidateFailure(const std::filesystem::path& manifest_pa
                    "source_hash", "profile_hash", "dt_hash", "payload_hash", "roster_digest",
                    "activity", "native_report", "compact_replay", "full_ledger_replay",
                    "endpoint_counts", "native_residual", "geometry"});
-    Require(Text(manifest["schema"]) == "robo_dyna.self_contact_failure_fixture.v1" &&
+    Require((Text(manifest["schema"]) == failure_detail::LegacyFailureManifestSchema ||
+             Text(manifest["schema"]) == failure_detail::FailureManifestSchema) &&
                 Text(manifest["file"]) == "pair.bin" &&
                 manifest["physics_accepted"].IsBool() && !manifest["physics_accepted"].GetBool() &&
                 manifest["owners_equivalent"].IsBool() && manifest["owners_equivalent"].GetBool(),
@@ -118,7 +121,8 @@ output::Document ReplayCandidateFailure(const std::filesystem::path& manifest_pa
                 affine = affine && component.lower == 0 && component.upper == 0;
     const auto replay = failure_detail::Evaluate(pair, duration,
         affine ? work : nonlinear_work, affine ? depth : nonlinear_depth,
-        pair.accepted_owners.data(), pair.accepted_owners.size());
+        pair.accepted_owners.data(), pair.accepted_owners.size(),
+        observed_baseline);
     const auto actual = prepared_replay::PairDocument(replay);
     Document result;
     result.SetObject();

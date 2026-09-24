@@ -1,6 +1,7 @@
 #include "CandidateFailureFixture.h"
 
 #include "CandidateFailureValues.h"
+#include "FailureBaselineScope.h"
 #include "case/vehicle_run/SelfContactDocument.h"
 #include "case/vehicle_self_contact/SelfContactStageError.h"
 #include "output/BoundedArrayJson.h"
@@ -87,9 +88,11 @@ std::string CandidateFailureFixture::Export(const std::filesystem::path& directo
 
     Document manifest;
     manifest.SetObject();
-    String(manifest, "schema", "robo_dyna.self_contact_failure_fixture.v1");
+    String(manifest, "schema", failure_detail::FailureManifestSchema);
+    Boolean(manifest, "baseline_observed", compact_.observed_failure_baseline);
     String(manifest, "scope", "one authenticated rejected pair; diagnostic only; no complete census or physics acceptance; capture storage budget excludes native proof stack and allocator overhead, governed by outer RSS guard");
-    String(manifest, "baseline_scope", "baseline nonlinear status/depth/work unreported; original typed rejection retained separately; replay uses configured standalone limits, not observed remaining production budget");
+    String(manifest, "baseline_scope", compact_.observed_failure_baseline
+        ? failure_detail::ObservedBaselineScope : failure_detail::UnreportedBaselineScope);
     Boolean(manifest, "physics_accepted", false);
     Boolean(manifest, "owners_equivalent", owners_equivalent_);
     Integer(manifest, "capture_storage_budget_bytes", FailureCaptureHostCap);

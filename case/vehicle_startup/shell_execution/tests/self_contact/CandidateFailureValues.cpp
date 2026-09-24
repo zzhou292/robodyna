@@ -1,12 +1,39 @@
 #include "CandidateFailureValues.h"
+#include "FailureBaselineScope.h"
 #include "output/BoundedArrayJson.h"
 #include "chrono_thirdparty/rapidjson/stringbuffer.h"
 #include "chrono_thirdparty/rapidjson/writer.h"
 
 namespace crash::cases::vehicle_startup::shell_execution::self_contact_test::failure_detail {
+bool ConsumeBaselineObserved(output::Document& manifest) {
+    using namespace output;
+    Require(manifest.IsObject() && manifest.HasMember("schema"),
+            "Failure fixture metadata schema is absent");
+    const auto schema = array_json::Text(manifest["schema"]);
+    Require(schema == LegacyFailureManifestSchema || schema == FailureManifestSchema,
+            "Unsupported failure fixture metadata version");
+    unsigned occurrences = 0;
+    for (auto field = manifest.MemberBegin(); field != manifest.MemberEnd(); ++field)
+        occurrences += std::string_view(field->name.GetString(), field->name.GetStringLength()) ==
+                       "baseline_observed";
+    if (schema == LegacyFailureManifestSchema) {
+        Require(occurrences == 0, "Legacy failure fixture has unexpected baseline metadata");
+        return false;
+    }
+    Require(occurrences == 1 && manifest["baseline_observed"].IsBool(),
+            "Failure baseline_observed must occur once and be boolean");
+    const bool observed = manifest["baseline_observed"].GetBool();
+    manifest.RemoveMember("baseline_observed");
+    return observed;
+}
+sct::NonlinearSeparationResult CapturedNonlinearBaseline(
+    const sct::CandidateFailureCapture& input) noexcept {
+    return input.has_nonlinear_baseline ? input.nonlinear_baseline
+                                        : sct::NonlinearSeparationResult{};
+}
 prepared_replay::PairResult Evaluate(const nonlinear_fixture::Pair& pair, double duration,
     std::size_t work, unsigned depth, const sct::AcceptedEventCertificate* owners,
-    std::size_t count) {
+    std::size_t count, bool observed_nonlinear_baseline) {
     prepared_replay::PairResult r;
     r.family = "failure";
     r.file = "pair.bin";
@@ -15,6 +42,7 @@ prepared_replay::PairResult Evaluate(const nonlinear_fixture::Pair& pair, double
     r.baseline_status = pair.baseline_status;
     r.baseline_work = pair.baseline_work;
     r.baseline_depth = pair.baseline_depth;
+    r.observed_failure_baseline = observed_nonlinear_baseline;
     for (unsigned side = 0; side < 2; ++side) {
         r.facets[side] = pair.prepared[side].key;
         for (const auto& vertex : pair.quadratic[side].q)

@@ -13,3 +13,19 @@ Every frozen pair runs the existing `CertifyQuadraticFacetPolicyCoverage` with t
 The JSONL report contains every noncertified pair with source keys, both proof results, work/depth flags, dyadic cells, witnesses, and ownership information. The final summary counts all pairs, including certified ones. It also reports thickness-persistent rows omitted by the source census; those rows receive no continuous geometry qualification from this replay. Future nonlinear captures retain these rows. Exit zero and `complete:true` mean the diagnostic traversal completed; they do not mean all pairs certified or the physical run passed. An interrupted/failed traversal retains its partial report without a final complete summary. Existing report files are never replaced; the report has a separate 2 GiB cap.
 
 `MissingAcceptedOwner` or `PotentialContact` can accompany a depth-exhaustion flag. `PossibleGeometricCrossing` is not proof of penetration. Intersection/owner witnesses can refer to earlier or topologically local cells. Frozen certificate ordinals index the subset; `accepted_source_order` is the original live ledger identity. Linear baseline depth zero means unknown. The earlier pinned affine and nonlinear fixture tests remain unchanged.
+
+Failure captures use the same binary pair codec and its existing baseline
+status/work/depth fields. New failure-manifest v2 adds the explicit boolean
+`baseline_observed`; v1 artifacts remain readable with that flag false, including
+historical default statuses that were never measured. The updated reader validates
+version, flag type/uniqueness and every original common field. Older strict v1
+readers reject v2 metadata rather than guessing its meaning. No old fixture is
+rewritten. Human scope strings do not drive the flag.
+
+When the terminal nonlinear observer supplies a result, the stored baseline is
+its observed combined production result: work includes initial-root plus coverage
+work, depth is their maximum, and coverage used the remaining production budgets.
+Standalone diagnostic replay continues to use the configured limits; it is not an
+exact production-budget replay. Absent baseline values retain the exact old
+unreported labels. Changing provenance labels never changes numerical replay
+comparison or authorizes a physical step.

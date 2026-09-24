@@ -22,6 +22,9 @@ struct PairResult {
     std::size_t baseline_work = 0, owners = 0, exclusions = 0;
     unsigned baseline_depth = 0;
     bool affine = false;
+    // In-memory diagnostic provenance only; no binary fixture/schema field.
+    // Failure manifest v2 carries explicit baseline_observed; legacy v1 is false.
+    bool observed_failure_baseline = false;
     // The certificate ordinal addresses the frozen subset; source_order is the
     // retained live ledger identity. Neither result authorizes a physical step.
     tlfea::contact::self_contact_transaction::NonlinearSeparationResult ledger, policy;

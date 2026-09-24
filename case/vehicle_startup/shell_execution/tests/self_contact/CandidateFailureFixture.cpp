@@ -127,8 +127,10 @@ void CandidateFailureFixture::Freeze(const sct::CandidateFailureCapture& input) 
     }
     sct::NonlinearCandidateRosterEntry entry;
     entry.facets = input.facets;
-    // Native report has a crossing reason, not the final nonlinear result.
-    // Preserve that distinction; baseline InvalidInput means not reported.
+    // Most rejection branches expose no nonlinear baseline. The terminal
+    // quadratic branch can explicitly retain its combined root/coverage result;
+    // its work/depth are not a standalone replay at configured limits.
+    entry.separation = failure_detail::CapturedNonlinearBaseline(input);
     pairs_.push_back(FreezeNonlinearPair(snapshot, entry));
     FreezeAcceptedPolicies(snapshot, &pairs_);
     phase_ = FixturePhaseIdentity(snapshot);
@@ -141,10 +143,12 @@ void CandidateFailureFixture::Freeze(const sct::CandidateFailureCapture& input) 
     const auto replay_work = affine ? work_ : nonlinear_work_;
     const auto replay_depth = affine ? depth_ : nonlinear_depth_;
     compact_ = failure_detail::Evaluate(frozen, duration_, replay_work, replay_depth,
-                                      frozen.accepted_owners.data(), frozen.accepted_owners.size());
+                                      frozen.accepted_owners.data(), frozen.accepted_owners.size(),
+                                      input.has_nonlinear_baseline);
     full_owners_ = input.accepted_events.count;
     full_ = failure_detail::Evaluate(frozen, duration_, replay_work, replay_depth,
-                                   input.accepted_events.data, input.accepted_events.count);
+                                   input.accepted_events.data, input.accepted_events.count,
+                                   input.has_nonlinear_baseline);
     owners_equivalent_ = failure_detail::Equivalent(full_, compact_);
     output::Require(owners_equivalent_, "Compact owner replay differs from authenticated full ledger");
     residual_ = sct::CertifyQuadraticUnmaskedSeparation(

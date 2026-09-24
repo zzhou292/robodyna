@@ -1,4 +1,5 @@
 #include "PreparedCensusReplay.h"
+#include "FailureBaselineScope.h"
 #include "output/BoundedArrayJson.h"
 
 namespace crash::cases::vehicle_startup::shell_execution::self_contact_test::prepared_replay {
@@ -75,7 +76,8 @@ output::Document PairDocument(const PairResult& r) {
     String(d, "baseline_status", StatusName(r.baseline_status)); Integer(d, "baseline_work", r.baseline_work);
     Integer(d, "baseline_depth", r.baseline_depth); Boolean(d, "root_affine", r.affine);
     String(d, "baseline_depth_scope", r.family == "failure"
-        ? "unreported; not a measured production subdivision depth"
+        ? (r.observed_failure_baseline ? failure_detail::ObservedBaselineDepthScope
+                                       : failure_detail::UnreportedBaselineDepthScope)
         : r.family == "linear" ? "unknown; zero is not a measured depth" : "captured subdivision depth");
     Integer(d, "accepted_owner_count", r.owners); Integer(d, "same_rigid_exclusion_count", r.exclusions);
     array_json::Child(d, "ledger", Coverage(r.ledger)); array_json::Child(d, "policy", Coverage(r.policy)); return d;

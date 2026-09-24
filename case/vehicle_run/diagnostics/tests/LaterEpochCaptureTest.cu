@@ -140,6 +140,9 @@ TEST(VehicleFailureNative, RealEpochTwoRejectionExportsExactPhaseAfterRollback) 
     const auto bytes=output::ReadBounded(published.manifest,capture::FailureFixtureManifestCap);
     EXPECT_EQ(output::Sha256(bytes),published.sha256);
     const auto manifest=output::array_json::Parse(bytes,capture::FailureFixtureManifestCap);
+    EXPECT_STREQ(manifest["schema"].GetString(), "robo_dyna.self_contact_failure_fixture.v2");
+    ASSERT_TRUE(manifest["baseline_observed"].IsBool());
+    EXPECT_FALSE(manifest["baseline_observed"].GetBool());
     EXPECT_EQ(manifest["owner_id"].GetUint64(),after.stamp.owner_id);
     EXPECT_EQ(manifest["accepted_epoch"].GetUint64(),after.stamp.epoch);
     EXPECT_EQ(manifest["attempt"].GetUint64(),captured_prepared.attempt);
