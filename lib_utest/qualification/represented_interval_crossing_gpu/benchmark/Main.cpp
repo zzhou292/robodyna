@@ -81,11 +81,13 @@ int main(int argc, char** argv) try {
     b::Verify(cases, report, view, &reference);
     if (backend == "gpu") {
       if (device.status != b::c::RepresentedIntervalDeviceStatus::Ok || !device.device_pairs ||
-          device.device_pairs + device.host_pairs != cases.pairs.size() || device.batches != 1)
+          device.device_pairs + device.host_pairs != cases.pairs.size() || device.batches != 1 ||
+          device.scene_uploads != 1)
         throw std::runtime_error("Device route is incomplete or unexercised");
       if (i && (device.device_pairs != device_reference.device_pairs ||
                 device.host_pairs != device_reference.host_pairs ||
-                device.batches != device_reference.batches))
+                device.batches != device_reference.batches ||
+                device.scene_uploads != device_reference.scene_uploads))
         throw std::runtime_error("Device route changed across repetitions");
       device_reference = device;
     }
@@ -100,6 +102,7 @@ int main(int argc, char** argv) try {
       << ",\"report_digest\":" << reference.report_digest << ",\"proof_work_per_batch\":" << reference.work
       << ",\"device_pairs\":" << device_reference.device_pairs << ",\"host_pairs\":" << device_reference.host_pairs
       << ",\"device_batches\":" << device_reference.batches
+      << ",\"scene_uploads\":" << device_reference.scene_uploads
       << ",\"reference_setup_s\":" << reference_setup_s << ",\"owner_setup_s\":" << owner_setup_s
       << ",\"mean_certify_s\":" << total/repeats << ",\"minimum_certify_s\":" << minimum
       << ",\"maximum_certify_s\":" << maximum << ",\"total_certify_s\":" << total
