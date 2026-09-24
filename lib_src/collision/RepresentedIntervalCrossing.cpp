@@ -2,6 +2,7 @@
 #include "RepresentedIntervalCrossing.h"
 #include "represented_interval_crossing/NormalReuseQualification.h"
 #include "represented_interval_crossing/RelativeSeparationQualification.h"
+#include "represented_interval_crossing/ExactPathReuseQualification.h"
 #include "represented_interval_crossing/BatchExecution.h"
 
 #include <algorithm>
@@ -26,6 +27,8 @@ constexpr std::size_t kWorkerStackBytes = 2u << 20;
 
 using NormalCounters = represented_interval_crossing::NormalReuseCounters;
 enum class NormalReuse { Recompute, Memoize };
+enum class ExactPathReuse { Original, Optimized };
+using ExactPathCounters = represented_interval_crossing::ExactPathReuseCounters;
 enum class SeparationProof { LegacyAabb, RelativeFaces };
 using ProjectionDomain = represented_interval_crossing::ExactProjectionDomain;
 using SeparationCounters = represented_interval_crossing::RelativeSeparationCounters;
@@ -40,6 +43,14 @@ void CountSeparationOperation(
 
 void CountNormalOperation(
     NormalCounters* counters, std::size_t NormalCounters::* field) noexcept {
+  if (!counters) return;
+  auto& value = counters->*field;
+  if (value == SIZE_MAX) counters->saturated = true;
+  else ++value;
+}
+
+void CountExactPathOperation(
+    ExactPathCounters* counters, std::size_t ExactPathCounters::* field) noexcept {
   if (!counters) return;
   auto& value = counters->*field;
   if (value == SIZE_MAX) counters->saturated = true;
@@ -530,10 +541,12 @@ RepresentedFeaturePathKey IntersectionFeature(
     const RepresentedTrianglePath& path_b, const ExactTriangle& a,
     const ExactTriangle& b,
     const ExactVec3* normal_a = nullptr, const ExactVec3* normal_b = nullptr,
-    NormalCounters* counters = nullptr) {
+    NormalCounters* counters = nullptr, bool skip_dominated_edges = false,
+    ExactPathCounters* path_counters = nullptr) {
   bool have = false;
   RepresentedFeaturePathKey result;
   for (unsigned vertex = 0; vertex < 3; ++vertex) {
+    CountExactPathOperation(path_counters, &ExactPathCounters::vertex_face_tests);
     if (normal_b ? PointInClosedTriangle(a.vertex[vertex], b, *normal_b)
                  : PointInClosedTriangle(a.vertex[vertex], b, counters)) {
       RepresentedFeaturePathKey candidate;
@@ -542,6 +555,7 @@ RepresentedFeaturePathKey IntersectionFeature(
       candidate.face = path_b.key;
       ConsiderFeature(candidate, &have, &result);
     }
+    CountExactPathOperation(path_counters, &ExactPathCounters::vertex_face_tests);
     if (normal_a ? PointInClosedTriangle(b.vertex[vertex], a, *normal_a)
                  : PointInClosedTriangle(b.vertex[vertex], a, counters)) {
       RepresentedFeaturePathKey candidate;
@@ -551,8 +565,17 @@ RepresentedFeaturePathKey IntersectionFeature(
       ConsiderFeature(candidate, &have, &result);
     }
   }
+  // All six directed VF predicates have contributed to the canonical minimum.
+  // Every EE kind sorts after VF, so none can replace this witness. The caller
+  // admits skipping only within the independently proved nonallocating domain.
+  static_assert(RepresentedFeatureKind::VertexFace < RepresentedFeatureKind::EdgeEdge);
+  if (skip_dominated_edges && have && result.kind == RepresentedFeatureKind::VertexFace) {
+    CountExactPathOperation(path_counters, &ExactPathCounters::dominated_edge_loops);
+    return result;
+  }
   for (unsigned edge_a = 0; edge_a < 3; ++edge_a) {
     for (unsigned edge_b = 0; edge_b < 3; ++edge_b) {
+      CountExactPathOperation(path_counters, &ExactPathCounters::edge_edge_tests);
       if (!SegmentsIntersect(a.vertex[edge_a],
                              a.vertex[(edge_a + 1) % 3],
                              b.vertex[edge_b],
@@ -805,7 +828,9 @@ struct CellEvaluation {
 };
 
 template <NormalReuse reuse = NormalReuse::Memoize,
-          SeparationProof separation = SeparationProof::RelativeFaces>
+          SeparationProof separation = SeparationProof::RelativeFaces,
+          ExactPathReuse path_reuse = ExactPathReuse::Optimized,
+          bool single_sample = false>
 CellEvaluation EvaluateCell(const RepresentedTrianglePath& path_a,
                             const RepresentedTrianglePath& path_b,
                             const RepresentedIntervalPairKey& key, Cell cell,
@@ -813,7 +838,10 @@ CellEvaluation EvaluateCell(const RepresentedTrianglePath& path_a,
                             NormalCounters* counters = nullptr,
                             const ProjectionDomain* domain = nullptr,
                             unsigned anchor = 0,
-                            SeparationCounters* separation_counters = nullptr) {
+                            SeparationCounters* separation_counters = nullptr,
+                            ExactPathCounters* path_counters = nullptr) {
+  static_assert(!single_sample ||
+      (separation == SeparationProof::LegacyAabb && path_reuse == ExactPathReuse::Optimized));
   scratch->BeginCell();
   CountNormalOperation(counters, &NormalCounters::evaluated_cells);
   const auto degenerate_at = [&](bool second, unsigned sample) {
@@ -823,14 +851,17 @@ CellEvaluation EvaluateCell(const RepresentedTrianglePath& path_a,
       return Degenerate(second ? scratch->b[sample] : scratch->a[sample], counters);
   };
   const DyadicTime times[3] = {Lower(cell), Middle(cell), Upper(cell)};
+  constexpr unsigned sample_count = single_sample ? 1 : 3;
+  if constexpr (single_sample)
+    CountExactPathOperation(path_counters, &ExactPathCounters::single_sample_intervals);
   bool degenerate = false;
-  for (unsigned sample = 0; sample < 3; ++sample) {
+  for (unsigned sample = 0; sample < sample_count; ++sample) {
     scratch->a[sample] = At(path_a, times[sample]);
     scratch->b[sample] = At(path_b, times[sample]);
     degenerate = degenerate || degenerate_at(false, sample) ||
                  degenerate_at(true, sample);
   }
-  for (unsigned sample = 0; sample < 3; ++sample) {
+  for (unsigned sample = 0; sample < sample_count; ++sample) {
     if (degenerate_at(false, sample) ||
         degenerate_at(true, sample))
       continue;
@@ -848,14 +879,17 @@ CellEvaluation EvaluateCell(const RepresentedTrianglePath& path_a,
     evaluation.disposition = CellDisposition::Crossing;
     auto& result = evaluation.crossing;
     result.key = key;
+    const bool skip_dominated_edges = path_reuse == ExactPathReuse::Optimized &&
+        domain && domain->eligible();
     if constexpr (reuse == NormalReuse::Memoize) {
       const auto& normal_a = scratch->NormalAt(false, sample, counters);
       const auto& normal_b = scratch->NormalAt(true, sample, counters);
       result.feature = IntersectionFeature(path_a, path_b,
-          scratch->a[sample], scratch->b[sample], &normal_a, &normal_b, counters);
+          scratch->a[sample], scratch->b[sample], &normal_a, &normal_b, counters,
+          skip_dominated_edges, path_counters);
     } else {
       result.feature = IntersectionFeature(path_a, path_b,
-          scratch->a[sample], scratch->b[sample], nullptr, nullptr, counters);
+          scratch->a[sample], scratch->b[sample], nullptr, nullptr, counters, skip_dominated_edges, path_counters);
     }
     result.classification =
         RepresentedIntervalClassification::CertifiedCrossingContact;
@@ -870,6 +904,11 @@ CellEvaluation EvaluateCell(const RepresentedTrianglePath& path_a,
   if (degenerate)
     return {CellDisposition::Unresolved,
             RepresentedIntervalReason::DegenerateGeometry, {}};
+  // This specialization is reachable only after exact common-translation
+  // authentication and arithmetic-domain admission. Static nonintersection and
+  // nondegeneracy are then invariant over the entire represented interval.
+  if constexpr (single_sample)
+    return {CellDisposition::Separated, RepresentedIntervalReason::None, {}};
   const auto regular = [&](bool second) {
     if constexpr (reuse == NormalReuse::Memoize)
       return scratch->Regular(second, counters);
@@ -923,13 +962,15 @@ void RaiseReason(RepresentedIntervalReason candidate,
 }
 
 template <NormalReuse reuse = NormalReuse::Memoize,
-          SeparationProof separation = SeparationProof::RelativeFaces>
+          SeparationProof separation = SeparationProof::RelativeFaces,
+          ExactPathReuse path_reuse = ExactPathReuse::Optimized>
 RepresentedIntervalResult CertifyPair(
     const RepresentedTrianglePath& a, const RepresentedTrianglePath& b,
     RepresentedIntervalLimits limits, RepresentedIntervalPairKey key,
     Cell* dfs, std::size_t dfs_capacity, ExactScratch* scratch,
     NormalCounters* counters = nullptr,
-    SeparationCounters* separation_counters = nullptr) noexcept {
+    SeparationCounters* separation_counters = nullptr,
+    ExactPathCounters* path_counters = nullptr) noexcept {
   if (a.motion != RepresentedMotion::LinearNodalV1 ||
       b.motion != RepresentedMotion::LinearNodalV1)
     return Unresolved(key, RepresentedIntervalReason::UnsupportedMotion, 0);
@@ -945,7 +986,20 @@ RepresentedIntervalResult CertifyPair(
     // differences: a single static exact evaluation is then a whole-interval
     // certificate, even when the absolute swept AABBs overlap.
     if (CommonTranslation(a, b)) {
-      auto evaluation = EvaluateCell<reuse, SeparationProof::LegacyAabb>(a, b, key, {}, scratch, counters);
+      CellEvaluation evaluation;
+      if constexpr (path_reuse == ExactPathReuse::Optimized) {
+        const auto domain = ProjectionDomain::FromPaths(a, b, limits.max_depth);
+        if (domain.eligible()) {
+          evaluation = EvaluateCell<reuse, SeparationProof::LegacyAabb, path_reuse, true>(
+              a, b, key, {}, scratch, counters, &domain, 0, nullptr, path_counters);
+        } else {
+          evaluation = EvaluateCell<reuse, SeparationProof::LegacyAabb, ExactPathReuse::Original>(
+              a, b, key, {}, scratch, counters, nullptr, 0, nullptr, path_counters);
+        }
+      } else {
+        evaluation = EvaluateCell<reuse, SeparationProof::LegacyAabb, ExactPathReuse::Original>(
+            a, b, key, {}, scratch, counters, nullptr, 0, nullptr, path_counters);
+      }
       if (evaluation.disposition == CellDisposition::Crossing) {
         evaluation.crossing.geometry =
             evaluation.crossing.geometry == RepresentedIntersectionGeometry::Coplanar
@@ -974,8 +1028,8 @@ RepresentedIntervalResult CertifyPair(
       }
       const Cell cell = dfs[--dfs_size];
       ++work;
-      auto evaluation = EvaluateCell<reuse, separation>(a, b, key, cell, scratch, counters,
-                                                       &domain, anchor, separation_counters);
+      auto evaluation = EvaluateCell<reuse, separation, path_reuse>(a, b, key, cell, scratch, counters,
+                                                       &domain, anchor, separation_counters, path_counters);
       if (evaluation.disposition == CellDisposition::Crossing) {
         evaluation.crossing.work = work;
         return evaluation.crossing;
@@ -1882,9 +1936,9 @@ represented_interval_crossing::CompareNormalReuse(
   Cell dfs[53];
   const auto dfs_capacity = static_cast<std::size_t>(limits.max_depth) + 1;
   ExactScratch scratch;
-  const auto recomputed = CertifyPair<NormalReuse::Recompute>(
+  const auto recomputed = CertifyPair<NormalReuse::Recompute, SeparationProof::RelativeFaces, ExactPathReuse::Original>(
       a, b, limits, key, dfs, dfs_capacity, &scratch, &result.recomputed.counters);
-  const auto memoized = CertifyPair<NormalReuse::Memoize>(
+  const auto memoized = CertifyPair<NormalReuse::Memoize, SeparationProof::RelativeFaces, ExactPathReuse::Original>(
       a, b, limits, key, dfs, dfs_capacity, &scratch, &result.memoized.counters);
   // Compare the exact existing native publication representation, including
   // its field-wise initialization, without changing the publication format.
@@ -1907,12 +1961,34 @@ represented_interval_crossing::CompareRelativeSeparation(
   const RepresentedIntervalPairKey key{{a->key, b->key}};
   Cell dfs[53]; ExactScratch scratch;
   const auto capacity = static_cast<std::size_t>(limits.max_depth) + 1;
-  const auto legacy = CertifyPair<NormalReuse::Memoize, SeparationProof::LegacyAabb>(
+  const auto legacy = CertifyPair<NormalReuse::Memoize, SeparationProof::LegacyAabb, ExactPathReuse::Original>(
       *a, *b, limits, key, dfs, capacity, &scratch);
-  const auto current = CertifyPair<NormalReuse::Memoize, SeparationProof::RelativeFaces>(
+  const auto current = CertifyPair<NormalReuse::Memoize, SeparationProof::RelativeFaces, ExactPathReuse::Original>(
       *a, *b, limits, key, dfs, capacity, &scratch, nullptr, &result.counters);
   StoreResult(legacy, &result.legacy);
   StoreResult(current, &result.current);
+  return result;
+}
+
+represented_interval_crossing::ExactPathReuseComparison
+represented_interval_crossing::CompareExactPathReuse(
+    const RepresentedTrianglePath& first, const RepresentedTrianglePath& second,
+    RepresentedIntervalLimits limits) noexcept {
+  ExactPathReuseComparison result;
+  const RepresentedTrianglePath* a = nullptr;
+  const RepresentedTrianglePath* b = nullptr;
+  result.status = QualifyPairInputs(first, second, limits, &a, &b);
+  if (result.status != RepresentedIntervalStatus::Ok) return result;
+  result.domain = ProjectionDomain::FromPaths(*a, *b, limits.max_depth).report();
+  const RepresentedIntervalPairKey key{{a->key, b->key}};
+  Cell dfs[53]; ExactScratch scratch;
+  const auto capacity = static_cast<std::size_t>(limits.max_depth) + 1;
+  const auto original = CertifyPair<NormalReuse::Memoize, SeparationProof::RelativeFaces, ExactPathReuse::Original>(
+      *a, *b, limits, key, dfs, capacity, &scratch, &result.original.exact, nullptr, &result.original.reused);
+  const auto current = CertifyPair<NormalReuse::Memoize, SeparationProof::RelativeFaces, ExactPathReuse::Optimized>(
+      *a, *b, limits, key, dfs, capacity, &scratch, &result.current.exact, nullptr, &result.current.reused);
+  StoreResult(original, &result.original.result);
+  StoreResult(current, &result.current.result);
   return result;
 }
 

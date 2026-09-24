@@ -5,6 +5,7 @@ add_library(tl_represented_interval_crossing STATIC
   "${CMAKE_CURRENT_LIST_DIR}/RepresentedIntervalCrossing.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/Batch.h"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/NormalReuseQualification.h"
+  "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/ExactPathReuseQualification.h"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/ExactProjectionDomain.h"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/RelativeSeparationQualification.h"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/BatchExecution.h")

@@ -15,7 +15,7 @@ bazel = (collision / "BUILD.bazel").read_text()
 test_cmake = (here / "CMakeLists.txt").read_text()
 test_bazel = (here / "BUILD.bazel").read_text()
 test_sources = (
-    "BatchRosterTest.cpp", "NormalReuseTest.cpp", "RelativeSeparationTest.cpp", "ResultAssertions.h", "GeometryTest.cpp", "InvarianceTest.cpp", "FailureTest.cpp",
+    "BatchRosterTest.cpp", "NormalReuseTest.cpp", "RelativeSeparationTest.cpp", "ExactPathReuseTest.cpp", "ResultAssertions.h", "GeometryTest.cpp", "InvarianceTest.cpp", "FailureTest.cpp",
     "IdentityTest.cpp", "DeepTest.cpp", "OracleTest.cpp",
     "ParallelTest.cpp", "TranslationProofTest.cpp", "Oracle.cpp",
 )
@@ -198,7 +198,7 @@ for token in ("ExactVec3 normal_a[3]", "ExactVec3 normal_b[3]",
               "bool ready_a[3]", "bool ready_b[3]", "scratch->BeginCell()",
               "normal = Normal(second ? b[sample] : a[sample], counters)",
               "ready = true", "template <NormalReuse reuse = NormalReuse::Memoize,",
-              "CertifyPair<NormalReuse::Recompute>", "sizeof(ExactScratch)"):
+              "CertifyPair<NormalReuse::Recompute, SeparationProof::RelativeFaces, ExactPathReuse::Original>", "sizeof(ExactScratch)"):
     if token not in normal_implementation:
         raise RuntimeError(f"Missing lazy normal cache contract: {token}")
 normal_cell = normal_implementation[normal_implementation.index("CellEvaluation EvaluateCell("):
@@ -214,7 +214,7 @@ for token in ("BOOST_VERSION == 107400", "encoded ? static_cast<int>(encoded) - 
               "ExactProjectionDomain() = default"):
     assert token in projection_header, token
 for token in ("SeparationProof::RelativeFaces", "SeparationProof::LegacyAabb",
-              "EvaluateCell<reuse, SeparationProof::LegacyAabb>",
+              "EvaluateCell<reuse, SeparationProof::LegacyAabb, ExactPathReuse::Original>",
               "ProjectionDomain::FromPaths(a, b, limits.max_depth)",
               "CanonicalAnchor(a)", "RelativeCoordinatesSeparated", "RelativeAxisSeparated"):
     assert token in source, token
@@ -223,6 +223,21 @@ assert relative_cell.index("if (degenerate)") < relative_cell.index("if (regular
 assert relative_cell.index("SweptBoxesSeparated(scratch->a, scratch->b)") < relative_cell.index("!domain->eligible()")
 assert relative_cell.index("!domain->eligible()") < relative_cell.index("RelativeCoordinatesSeparated(*scratch, anchor)")
 assert "scratch->NormalAt(side != 0, 0, counters)" in relative_cell
+
+# Exact path reuse stays behind native-derived arithmetic and translation
+# proofs; no caller profile or early arbitrary feature witness is introduced.
+for token in ("ExactPathReuse path_reuse = ExactPathReuse::Optimized",
+              "constexpr unsigned sample_count = single_sample ? 1 : 3",
+              "domain && domain->eligible()", "CompareExactPathReuse",
+              "RepresentedFeatureKind::VertexFace < RepresentedFeatureKind::EdgeEdge"):
+    assert token in source, token
+assert "ExactPathReuse" not in public + types
+assert translation_body.index("domain.eligible()") < translation_body.index(
+    "EvaluateCell<reuse, SeparationProof::LegacyAabb, path_reuse, true>")
+feature_body = source[source.index("RepresentedFeaturePathKey IntersectionFeature("):
+                      source.index("bool RegularCell(")]
+assert feature_body.index("PointInClosedTriangle(b.vertex[vertex]") < feature_body.index(
+    "if (skip_dominated_edges && have") < feature_body.index("for (unsigned edge_a")
 
 print(json.dumps({
     "status": "passed",

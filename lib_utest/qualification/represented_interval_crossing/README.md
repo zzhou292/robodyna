@@ -278,3 +278,56 @@ For source facets 2142381:1 / 2230072:1 it found a strict lower-face-axis gap an
 passed both regularity/sample checks. The x+y-only separated control remains
 outside this deliberately small axis set; genuine t=1/3 contact receives no gap.
 No timestep, force law, thickness, source geometry, work cap or depth cap changes.
+
+## Proposed exact-path reuse (source-only, unqualified)
+
+The isolated `native-exact-path-reuse` slice starts from selected TL `b9957e84`.
+It removes two kinds of redundant exact work without changing the public API,
+predicates, canonical witnesses, result/report formats, work/depth accounting,
+worker scheduling, retained storage, resource caps, or physical state.
+
+After the existing exact `CommonTranslation` test succeeds, relative points,
+triangles, degeneracy and intersection features are invariant throughout the
+represented interval. Within the existing audited `ExactProjectionDomain`, a
+private single-sample specialization of the same `EvaluateCell` performs the
+original lower-endpoint interpolation, degeneracy/intersection predicates and
+canonical feature selection. A static separation, contact, or degeneracy then
+has the same whole-interval meaning as the original three-sample translation
+path. Witness time remains zero and admitted work remains one. Scratch readiness
+is reset on every call even though only sample zero is populated; no later
+three-sample call may reuse stale normals or coordinates.
+
+`IntersectionFeature` still evaluates all six directed VF predicates and chooses
+the complete canonical minimum. If a VF witness exists and the path-derived
+arithmetic domain is eligible, all EE kinds rank after it and cannot replace it.
+Only then are the nine EE feature predicates skipped. The preceding `Intersects`
+geometry test is unchanged, and edge-only intersections retain the complete EE
+traversal. No shared-point identity or arbitrary first witness substitutes for
+canonical feature selection.
+
+The arithmetic guard matters for error equivalence. The existing proof covers
+all skipped interpolation/predicate products, signed zeros, sample depth and
+checked range, and excludes Boost 1.74 temporary-allocation paths in this domain.
+It is derived from the actual immutable pair, never supplied by a caller.
+Wide inputs or unsupported dependencies keep the original sample and feature
+order, including existing allocation/error behavior. Unsupported motion and
+malformed identity/input still stop before these optimizations. There is no
+floating-point filter, new rounding assumption, reduced precision, or domain
+cap increase. The deferred root interval filter is not part of this slice.
+
+`ExactPathReuseQualification.h` exposes a value-only comparison of fixed original
+and optimized template instantiations. It returns complete canonical `StoreResult`
+values and separate saturating operation counters; production has no selectable
+mode. Existing normal-reuse and relative-separation qualification adapters retain
+the original traversal explicitly, so their old diagnostic counters remain useful.
+The new tests compare every result field, check all-six-VF ordering and EE-only
+fallback, static/translated/degenerate contacts, later witnesses, deep and
+non-dyadic intervals, domain thresholds and wide/unsupported fallback, permutations,
+worker reuse, full public report counts, total-work rejection, retained publication
+and retry. Public report expectations are folded from the original pair results;
+no clock or physical owner is introduced by the test adapter.
+
+No build, test, benchmark or vehicle run has been performed by this source author.
+Promotion requires owning native/source/Bazel checks, affected transaction/CUDA
+and frozen app regressions, then a controlled warmed batch measurement and actual
+vehicle substage data. Removed operation counts are not a measured speedup.
