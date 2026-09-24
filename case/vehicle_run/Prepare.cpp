@@ -42,7 +42,8 @@ PreparedRun PreparedRun::Prepare(const vehicle_wall::VehicleWallSetup& setup,con
         "Run identity conflicts with actual source/configuration/qualification");
     dynamics.startup.reserved_step_s=config.fixed_dt_s;
     dynamics.timing.enabled=true;
-    auto contact=ContactComposition::Prepare(config.contact_profile,std::move(self_contact),config.self_contact_diagnostics);
+    auto contact=ContactComposition::Prepare(config.contact_profile,std::move(self_contact),config.self_contact_diagnostics,
+        config.self_contact_cuda_facet_filters);
     const auto composition=contact.Preflight(setup,dynamics,&joints);
     const auto maximum_host=config.resources==ResourceProfile::Normal?20ull*1000*1000*1000:60ull*1000*1000*1000;
     const auto mapping_phase=Sum(maximum_host,{composition.peak_host_upper_bound,MappingCap,ControllerReserve});

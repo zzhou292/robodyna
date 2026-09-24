@@ -21,6 +21,16 @@ const char* Name(StopKind kind) {
     }
     throw std::invalid_argument("Unknown run stop kind");
 }
+const char* FilterInitializationName(tlfea::contact::SelfContactFacetFilterInitialization mode) {
+    using Mode = tlfea::contact::SelfContactFacetFilterInitialization;
+    switch (mode) {
+        case Mode::NotInitialized:return "not_initialized";
+        case Mode::Disabled:return "disabled";
+        case Mode::Cuda:return "cuda";
+        case Mode::UnsupportedHostArithmetic:return "unsupported_host_arithmetic";
+    }
+    return "unknown";
+}
 output::Document Timings(const vehicle_dynamics::StepTimingSnapshot& timing) {
     using namespace output;
     Document document;
@@ -61,6 +71,13 @@ records::RecordFile WriteSummary(const std::filesystem::path& root,const Config&
     if(self_contact) {
         String(document,"contact_profile",ContactProfileName(config.contact_profile));
         Integer(document,"complete_device_bytes",forecast.contact.device_bytes);
+    }
+    if (config.self_contact_cuda_facet_filters) {
+        Boolean(document,"self_contact_cuda_facet_filters_requested",true);
+        String(document,"self_contact_facet_filter_initialization",
+            FilterInitializationName(result.filter_initialization));
+        String(document,"self_contact_facet_filter_initialization_scope",
+            "initialization route only; not proof of CUDA query execution or exclusive runtime use");
     }
     String(document,"status",Name(result.loop.kind));
     String(document,"physical_profile",PhysicalProfileName(config.physical_profile));

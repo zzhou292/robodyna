@@ -375,3 +375,27 @@ Optional [contact substage diagnostics](contact_diagnostics/README.md) expose ex
 native discovery work and actual crossing-slice counts with bounded host timings.
 Enable `--self-contact-diagnostics` only for an explicitly selected wall+self run.
 The physical archive format and disabled output are unchanged.
+
+## Optional CUDA facet filters
+
+`--self-contact-cuda-facet-filters` explicitly requests the bounded CUDA facet
+filter backend for `wall-self-contact-v1`. It defaults off and uses the same
+request in source-bound forecasts and runtime initialization. It changes neither
+the physical profile nor the fixed 200 ns step, contact law, candidate roster,
+geometry certificate or serial nonlinear admission order. Other contact profiles
+reject the flag rather than silently ignore it.
+
+The transaction reports its actual initialization route. The app requires that
+route and exact activity/device allocation counts to match the corresponding
+same-source forecast. An unsupported host arithmetic environment can select the
+CPU route before filter device commands; an actual CUDA failure remains an error.
+The total startup bound includes optional filter scratch. Requested reservations
+remain upper bounds even if the optional device buffers were not allocated.
+
+For requested runs, `run-summary.json` records
+`self_contact_cuda_facet_filters_requested` separately from
+`self_contact_facet_filter_initialization`. This is initialization provenance,
+not a GPU-query count or a claim that every subsequent filter query ran on CUDA.
+The unchanged owning CUDA parity tests and a separately qualified live probe are
+needed to establish execution. No physical archive schema or restart capability
+is added. The default summary and CLI forecast output are unchanged.

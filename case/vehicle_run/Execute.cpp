@@ -33,6 +33,8 @@ Result PreparedRun::ExecuteImpl(const std::filesystem::path& destination,const C
     }
     result.startup_wall_s=startup_elapsed();
     result.session_initialized=true;
+    if (const auto* contact = session->dynamics.self_contact_forecast())
+        result.filter_initialization = contact->filter_initialization;
     const auto start=std::chrono::steady_clock::now();
     const auto clock=[&] {return std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();};
     result.loop=detail::RunLoop(*session,data_->horizon,session->archive.forecast().archive.archive.frame_epochs,control,clock);

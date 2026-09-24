@@ -17,6 +17,7 @@ struct RuntimeConfig {
     std::size_t event_capacity = 0;
     unsigned broadphase_axis = 0;
     bool enable_diagnostics = false;
+    bool enable_cuda_facet_filters = false;
 };
 
 struct RuntimeLimits {
@@ -36,6 +37,8 @@ struct RuntimeIdentity {
 };
 
 struct RuntimeForecast {
+    tlfea::contact::SelfContactFacetFilterInitialization filter_initialization =
+        tlfea::contact::SelfContactFacetFilterInitialization::NotInitialized;
     tlfea::contact::SelfContactTransactionForecast transaction;
     RuntimeIdentity identity;
     std::size_t retained_host_upper_bound = 0;

@@ -174,4 +174,28 @@ TEST(VehicleRunOptions, SelfContactDiagnosticsIsExplicitAndNeverIgnoredByWallOnl
     args.push_back("--self-contact-diagnostics");
     EXPECT_THROW(Parse(args),std::invalid_argument);
 }
+TEST(VehicleRunOptions, CudaFacetFiltersAreExplicitAndForecastUsesTheSameOption) {
+    auto args=Arguments();
+    EXPECT_FALSE(Parse(args).config.self_contact_cuda_facet_filters);
+    args.push_back("--self-contact-cuda-facet-filters");
+    EXPECT_THROW(Parse(args),std::invalid_argument);
+    args.insert(args.end(),{"--contact-profile","wall-self-contact-v1","--self-contact-member","combine.key",
+        "--physical-profile","vehicle-supports-v5","--fixed-dt-s","2e-7",
+        "--self-contact-diagnostics","--self-contact-failure-output","new-failure"});
+    const auto runtime=Parse(args);
+    EXPECT_TRUE(runtime.config.self_contact_cuda_facet_filters);
+    EXPECT_TRUE(runtime.config.self_contact_diagnostics);
+    EXPECT_EQ(runtime.config.resources,ResourceProfile::Normal);
+    EXPECT_EQ(runtime.config.fixed_dt_s,2e-7);
+    EXPECT_EQ(runtime.failure_output,"new-failure");
+    args.push_back("--forecast-only");
+    const auto forecast=Parse(args);
+    EXPECT_TRUE(forecast.forecast_only);
+    EXPECT_EQ(forecast.config.self_contact_cuda_facet_filters,runtime.config.self_contact_cuda_facet_filters);
+    EXPECT_EQ(Plan(forecast.config).intervals,Plan(runtime.config).intervals);
+    EXPECT_NE(std::string(cli::Usage()).find("--self-contact-cuda-facet-filters"),std::string::npos);
+    args.push_back("--self-contact-cuda-facet-filters");
+    EXPECT_THROW(Parse(args),std::invalid_argument);
+}
+
 } // namespace crash::cases::vehicle_run::test

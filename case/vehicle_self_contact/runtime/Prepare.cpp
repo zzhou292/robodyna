@@ -146,6 +146,7 @@ SelfContactOnly::Prepare(
     const auto entry = contact.roster_entry();
     auto installed_forecast = forecast;
     installed_forecast.identity = contact.forecast().identity;
+    installed_forecast.filter_initialization = contact.forecast().filter_initialization;
     auto stages = std::make_unique<detail::SelfContactStages>(
         std::move(contact), installed_forecast);
     auto& state = dynamics.storage_->state();
@@ -163,7 +164,8 @@ SelfContactOnly::Prepare(
         forecast.peak_host_upper_bound;
     output::Require(
         dynamics.allocations().device_bytes ==
-            forecast.device_bytes,
+            detail::EffectiveCombinedDeviceBytes(forecast.device_bytes,
+                forecast.transaction.device_bytes, dynamics.self_contact_allocations().device.device_bytes),
         "Self-contact factory allocation differs from exact forecast");
     return dynamics;
 }
@@ -230,6 +232,7 @@ LoadedWallSelfContact::Prepare(
     auto installed_self_forecast = forecast.self_contact;
     installed_self_forecast.identity =
         self_contact.forecast().identity;
+    installed_self_forecast.filter_initialization = self_contact.forecast().filter_initialization;
     auto self_stages =
         std::make_unique<detail::SelfContactStages>(
             std::move(self_contact), installed_self_forecast);
@@ -250,7 +253,8 @@ LoadedWallSelfContact::Prepare(
         forecast.peak_host_upper_bound;
     output::Require(
         dynamics.allocations().device_bytes ==
-            forecast.device_bytes,
+            detail::EffectiveCombinedDeviceBytes(forecast.device_bytes,
+                forecast.self_contact.transaction.device_bytes, dynamics.self_contact_allocations().device.device_bytes),
         "Wall+self factory allocation differs from exact forecast");
     return dynamics;
 }

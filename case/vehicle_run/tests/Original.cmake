@@ -11,6 +11,7 @@ add_executable(robo_dyna_vehicle_run_original_check
   "${CMAKE_CURRENT_LIST_DIR}/OriginalTest.cpp" "${CMAKE_CURRENT_LIST_DIR}/SupportsTest.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/LimiterTest.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/ContactCompositionTest.cpp"
+  "${CMAKE_CURRENT_LIST_DIR}/../../vehicle_self_contact/tests/RuntimeValuesTest.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/SelfContactTest.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/TwoIntervalAcceptance.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/observed/AcceptanceTest.cpp"
@@ -29,6 +30,11 @@ target_link_libraries(robo_dyna_vehicle_run_original_check PRIVATE robo_dyna_two
 target_link_libraries(robo_dyna_vehicle_run_original_check PRIVATE robo_dyna_structural_limiter_report)
 target_link_libraries(robo_dyna_vehicle_run_original_check PRIVATE robo_dyna_self_contact_fixture_capture robo_dyna_candidate_failure_fixture)
 target_link_libraries(robo_dyna_vehicle_run_original_check PRIVATE robo_dyna_vehicle_run_observed_qualification robo_dyna_vehicle_failure_diagnostics)
+add_test(NAME vehicle_run_self_contact_runtime_values
+  COMMAND robo_dyna_vehicle_run_original_check
+    --gtest_filter=VehicleSelfContactRuntimeValues.*:VehicleSelfContactRuntimeCoupon.*)
+set_tests_properties(vehicle_run_self_contact_runtime_values PROPERTIES
+  TIMEOUT 30 RUN_SERIAL TRUE PROCESSORS 1 LABELS "unit;self-contact;runtime-budget")
 add_test(NAME vehicle_limiter_values COMMAND robo_dyna_vehicle_run_original_check
   --gtest_filter=VehicleLimiterValues.*)
 add_test(NAME vehicle_run_contact_composition COMMAND robo_dyna_vehicle_run_original_check

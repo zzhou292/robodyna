@@ -28,6 +28,8 @@ TEST(VehicleRunSummary, StartupFailureDoesNotInventAcceptedTimeOrContactObservat
     EXPECT_FALSE(document.HasMember("actual_completed_time_s"));
     EXPECT_FALSE(document.HasMember("contact_observations_available"));
     EXPECT_FALSE(document.HasMember("archive_manifest_file"));
+    EXPECT_FALSE(document.HasMember("self_contact_cuda_facet_filters_requested"));
+    EXPECT_FALSE(document.HasMember("self_contact_facet_filter_initialization"));
     EXPECT_LE(record.bytes,SummaryByteCap);
     EXPECT_THROW(detail::WriteSummary(directory.path,config,Plan(config),{},result),std::exception);
 }
@@ -136,4 +138,30 @@ TEST(VehicleRunSummary, OptionalFailedContactAttemptCannotReplaceCommittedSummar
     EXPECT_FALSE(candidate["counts_complete"].GetBool());
     EXPECT_LT(file.bytes,SummaryByteCap);
 }
+TEST(VehicleRunSummary, RequestedFiltersAndActualInitializationAreDistinctNonphysicalMetadata) {
+    using Mode=tlfea::contact::SelfContactFacetFilterInitialization;
+    Config config;
+    config.physical_profile=PhysicalProfile::VehicleSupportsV5;
+    config.contact_profile=ContactProfile::WallSelfContactV1;
+    config.fixed_dt_s=2e-7;
+    config.self_contact_cuda_facet_filters=true;
+    for (const auto mode:{Mode::NotInitialized,Mode::Disabled,Mode::Cuda,Mode::UnsupportedHostArithmetic}) {
+        records::test::Directory directory;
+        Result result;
+        result.filter_initialization=mode;
+        result.session_initialized=mode!=Mode::NotInitialized;
+        result.loop.kind=result.session_initialized?StopKind::IntervalLimit:StopKind::StartupFailure;
+        const auto file=detail::WriteSummary(directory.path,config,Plan(config),{},result);
+        const auto document=Read(directory.path/file.file);
+        EXPECT_TRUE(document["self_contact_cuda_facet_filters_requested"].GetBool());
+        const char* expected=mode==Mode::NotInitialized?"not_initialized":
+            mode==Mode::Disabled?"disabled":mode==Mode::Cuda?"cuda":"unsupported_host_arithmetic";
+        EXPECT_STREQ(document["self_contact_facet_filter_initialization"].GetString(),expected);
+        EXPECT_STREQ(document["self_contact_facet_filter_initialization_scope"].GetString(),
+            "initialization route only; not proof of CUDA query execution or exclusive runtime use");
+        EXPECT_FALSE(document.HasMember("self_contact_cuda_queries"));
+        EXPECT_LT(file.bytes,SummaryByteCap);
+    }
+}
+
 } // namespace crash::cases::vehicle_run::test

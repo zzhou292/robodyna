@@ -50,7 +50,10 @@ int main(int argc,char** argv) {
                  <<" device_bytes="<<forecast.contact.device_bytes
                  <<" archive_bytes="<<reservation.archive_bytes
                  <<" intervals="<<prepared.horizon().intervals
-                 <<" conditional_allowance="<<forecast.caps.expanded<<std::endl;
+                 <<" conditional_allowance="<<forecast.caps.expanded;
+        if (options.config.self_contact_cuda_facet_filters)
+            std::cout<<" self_contact_cuda_facet_filters_requested=1";
+        std::cout<<std::endl;
         if(options.forecast_only) return 0;
         run::Control control;
         control.maximum_accepted_intervals=options.diagnostic_intervals;

@@ -141,6 +141,40 @@ def main() -> None:
             "ComposeCombinedBudget(" in prepare,
             "combined forecast must replace standalone publication charges")
 
+    # The optional acceleration request follows one value mapper into both
+    # forecasts and initialization; exact typed initialization selects a single
+    # corresponding footprint, never an OR of two plausible allocation sizes.
+    startup = (contact / "VehicleSelfContactStartup.cpp").read_text()
+    mapper = definition(budget, "SelfContactTransactionConfig TransactionConfig(")[1]
+    require("result.enable_cuda_facet_filters = config.enable_cuda_facet_filters;" in mapper,
+            "shared transaction mapper must preserve the explicit CUDA filter request")
+    require(startup.count("detail::TransactionConfig(") == 4 and
+            "TransactionConfig(" not in startup.replace("detail::TransactionConfig(", ""),
+            "preview, preflight, initialization and typed CPU fallback must use one mapper")
+    require("facet_filter_initialization()" in startup and
+            "TransactionAllocationsMatch(config, mode, forecast.transaction," in startup and
+            "next->forecast.filter_initialization = mode;" in startup,
+            "startup must validate and retain the actual typed initialization route")
+    exact_allocations = definition(budget, "bool TransactionAllocationsMatch(")[1]
+    for obligation in ("mode != Mode::Disabled", "mode == Mode::Cuda",
+                       "mode == Mode::UnsupportedHostArithmetic",
+                       "actual.device.device_bytes == expected->device_bytes",
+                       "actual.device.device_allocations == expected->device_allocations"):
+        require(obligation in exact_allocations,
+                "typed filter initialization must preserve exact allocation matching: " + obligation)
+    require("transaction.startup_host_bytes - transaction.owned_host_bytes" in
+            definition(budget, "std::size_t TransactionStartupScratch(")[1],
+            "runtime budget must include composed optional startup scratch")
+    require("installed_forecast.filter_initialization = contact.forecast().filter_initialization;" in prepare and
+            "installed_self_forecast.filter_initialization = self_contact.forecast().filter_initialization;" in prepare and
+            prepare.count("detail::EffectiveCombinedDeviceBytes(") == 2,
+            "both factories must preserve initialized route and compose exact effective device bytes")
+    run = case / "vehicle_run"
+    require("config.self_contact_cuda_facet_filters" in (run / "Prepare.cpp").read_text() and
+            "result.runtime_config_.enable_cuda_facet_filters = enable_cuda_facet_filters" in
+            (run / "ContactComposition.cpp").read_text(),
+            "public run request must reach the runtime configuration used by both factory calls")
+
     startup_header = (
         contact / "VehicleSelfContactStartup.h").read_text()
     private = startup_header.find("private:")
@@ -710,10 +744,30 @@ def main() -> None:
             "exact_tasks_per_second"]:
         require(token in sample_header + sample_source,
                 f"actual V5 exact sample is missing {token}")
+    shared_fold = args.tl_root / "lib_src/collision/self_contact_transaction/AcceptedFacetFiltering.h"
+    if shared_fold.exists():
+        _, scalar_filter = definition(tl_transaction_source,
+            "SelfContactTransactionReport FilterAcceptedFacetPairs(")
+        require("".join(scalar_filter.split()) ==
+                "returndetail::FilterAcceptedFacetPairsWith(active_use,triangles,motion,"
+                "facets,pairs,pair_count,&::tlfea::contact::ClassifyAcceptedFacetPair);",
+                "scalar transaction filter must delegate exactly to its original public certificate")
+        _, filtering = definition(shared_fold.read_text(),
+            "SelfContactTransactionReport FilterAcceptedFacetPairsWith(")
+        ordered(filtering, ["value.first >= facets", "first_parent >= parents.size()",
+            "ClassifyAcceptedFacetPair(", "filtered.status != SelfContactFacetFilterStatus::Ok",
+            "SelfContactFacetFilterCategory::ExactRemaining", "pairs[write++] = value",
+            "*pair_count = write"], "shared accepted filter validation and compaction")
+        require("parents[first_parent].reference_half_thickness_m" in filtering and
+                "parents[second_parent].reference_half_thickness_m" in filtering,
+                "shared fold must preserve both physical half-thickness sources")
+        production_classifier = "ClassifyAcceptedFacetPair(" in filtering
+    else:
+        production_classifier = "ClassifyAcceptedFacetPair(" in tl_transaction_source
     require("ClassifyAcceptedFacetPair(" in census_values and
             "ClassifyAcceptedFacetPair(" in tl_filter_header and
             "ClassifyAcceptedFacetPair(" in tl_filter_source and
-            "ClassifyAcceptedFacetPair(" in tl_transaction_source,
+            production_classifier,
             "app and transaction must share the production filter certificate")
     require("RequiresIntersectionAdmission(" in tl_transaction_source and
             "Accepted nonlocal triangle intersection is rejected" in

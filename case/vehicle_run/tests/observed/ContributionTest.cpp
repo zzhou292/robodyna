@@ -93,7 +93,7 @@ std::unique_ptr<Contribution> Original(Calls& calls) { return std::make_unique<F
 TEST(ObservedContribution, ForwardsOriginalOperationsAndRetainsContextThroughOwnedLifetime) {
     Calls calls;
     auto original = Original(calls);
-    const auto* concrete = static_cast<Fake*>(original.get());
+    auto* concrete = static_cast<Fake*>(original.get());
     auto descriptor = Observe(calls);
     auto observed = ObservedContribution::Wrap(original, descriptor, &Bridge);
     descriptor = {}; // The installed descriptor is copied; its external context is retained.
@@ -116,7 +116,11 @@ TEST(ObservedContribution, ForwardsOriginalOperationsAndRetainsContextThroughOwn
     EXPECT_EQ(observation.policy_outcomes, 37u);
     EXPECT_EQ(calls.bridge, 1u);
     EXPECT_EQ(calls.callbacks, 0u);
-    EXPECT_EQ(&observed->forecast(), &concrete->budget);
+    concrete->budget.filter_initialization=tlfea::contact::SelfContactFacetFilterInitialization::Cuda;
+    const auto& forwarded=observed->forecast();
+    EXPECT_EQ(&forwarded, &concrete->budget);
+    EXPECT_EQ(forwarded.filter_initialization,
+        tlfea::contact::SelfContactFacetFilterInitialization::Cuda);
     EXPECT_EQ(calls.forecast, 1u);
     const auto scratch = observed->scratch_receipts();
     EXPECT_EQ(scratch.mapped_wall, nullptr);

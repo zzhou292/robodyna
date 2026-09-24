@@ -4,6 +4,18 @@
 
 namespace crash::cases::vehicle_self_contact::detail {
 
+tlfea::contact::SelfContactTransactionConfig TransactionConfig(RuntimeConfig,
+    const tl::fea::NodalStamp&, const tl::fea::ShellPhysicalPublicationIdentity&) noexcept;
+// Select one exact component footprint using the owner's typed initialization route.
+bool TransactionAllocationsMatch(RuntimeConfig,
+    tlfea::contact::SelfContactFacetFilterInitialization,
+    const tlfea::contact::SelfContactTransactionForecast& requested,
+    const tlfea::contact::SelfContactTransactionAllocationInfo& actual,
+    const tlfea::contact::SelfContactTransactionForecast* cpu_fallback = nullptr) noexcept;
+// The initialized self component has already passed TransactionAllocationsMatch.
+std::size_t EffectiveCombinedDeviceBytes(std::size_t combined,
+    std::size_t requested_self, std::size_t initialized_self);
+
 std::size_t IncrementalSetupHost(
     const SetupForecast&);
 bool TransactionChargesBroadphaseBacking() noexcept;

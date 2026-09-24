@@ -15,6 +15,7 @@ struct Config {
     PhysicalProfile physical_profile=PhysicalProfile::RetainedShellAssembliesV1;
     ContactProfile contact_profile=ContactProfile::WallOnly;
     bool self_contact_diagnostics=false;
+    bool self_contact_cuda_facet_filters=false;
 };
 struct Horizon {
     std::uint64_t intervals=0;

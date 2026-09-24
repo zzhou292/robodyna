@@ -53,7 +53,7 @@ TEST(VehicleSelfContactRuntimeValues,
     transaction.participation.publication_host_bytes = 40;
     transaction.owned_host_bytes =
         detail::TransactionChargesBroadphaseBacking() ? 1000 : 900;
-    transaction.startup_host_bytes = 1700;
+    transaction.startup_host_bytes = transaction.owned_host_bytes + 700;
     transaction.device_bytes = 300;
 
     RuntimeLimits limits;
@@ -134,7 +134,7 @@ TEST(VehicleSelfContactRuntimeCoupon,
     transaction.participation.publication_host_bytes = 40;
     transaction.owned_host_bytes =
         detail::TransactionChargesBroadphaseBacking() ? 1000 : 900;
-    transaction.startup_host_bytes = 1700;
+    transaction.startup_host_bytes = transaction.owned_host_bytes + 700;
     transaction.device_bytes = 300;
     self.retained_host_upper_bound = 2500;
     self.peak_host_upper_bound = 2800;
@@ -179,6 +179,87 @@ TEST(VehicleSelfContactRuntimeCoupon,
             wall, self_contact);
     EXPECT_EQ(combined.mapped_wall, &wall_receipt);
     EXPECT_EQ(combined.self_contact, &self_receipt);
+}
+
+TEST(VehicleSelfContactRuntimeValues, SingleConfigMapperForwardsOptionalFiltersWithoutChangingPhysics) {
+    EXPECT_FALSE(RuntimeConfig{}.enable_cuda_facet_filters);
+    tl::fea::NodalStamp owner;
+    owner.owner_id=17;owner.epoch=3;owner.fixed_dt=2e-7;owner.time=6e-7;
+    tl::fea::ShellPhysicalPublicationIdentity identity;
+    identity.configuration_id=19;identity.qualification_id=23;
+    RuntimeConfig config;
+    config.source_id=29;config.event_capacity=31;config.broadphase_axis=2;
+    for (const bool enabled:{false,true}) {
+        config.enable_cuda_facet_filters=enabled;
+        for (const bool diagnostics:{false,true}) {
+            config.enable_diagnostics=diagnostics;
+            const auto actual=detail::TransactionConfig(config,owner,identity);
+            EXPECT_EQ(actual.enable_cuda_facet_filters,enabled);
+            EXPECT_EQ(actual.enable_diagnostics,diagnostics);
+            EXPECT_EQ(actual.source_id,29u);
+            EXPECT_EQ(actual.broadphase_axis,2u);
+            EXPECT_EQ(actual.force.event_capacity,31u);
+            EXPECT_EQ(actual.force.configuration_id,19u);
+            EXPECT_EQ(actual.force.qualification_id,23u);
+            EXPECT_EQ(actual.force.stiffness_per_area_n_m3,2e9);
+            EXPECT_EQ(actual.force.owner.owner_id,17u);
+            EXPECT_EQ(actual.force.owner.epoch,3u);
+            EXPECT_EQ(actual.force.owner.fixed_dt,2e-7);
+            EXPECT_EQ(actual.force.owner.time,6e-7);
+        }
+    }
+}
+
+TEST(VehicleSelfContactRuntimeValues, TypedInitializationMustMatchTheExactRequestedOrFallbackFootprint) {
+    namespace c=tlfea::contact;
+    using Mode=c::SelfContactFacetFilterInitialization;
+    RuntimeConfig config;
+    c::SelfContactTransactionForecast cpu,cuda;
+    cpu.activity.arena_bytes=cuda.activity.arena_bytes=101;
+    cpu.device_bytes=300;cpu.device_allocations=2;
+    cuda.device_bytes=500;cuda.device_allocations=3;
+    c::SelfContactTransactionAllocationInfo actual;
+    actual.activity.host_bytes=101;actual.device={300,2};
+    EXPECT_TRUE(detail::TransactionAllocationsMatch(config,Mode::Disabled,cpu,actual));
+    EXPECT_FALSE(detail::TransactionAllocationsMatch(config,Mode::NotInitialized,cpu,actual));
+    EXPECT_FALSE(detail::TransactionAllocationsMatch(config,Mode::Cuda,cpu,actual));
+    EXPECT_FALSE(detail::TransactionAllocationsMatch(config,Mode::Disabled,cpu,actual,&cpu));
+    config.enable_cuda_facet_filters=true;
+    EXPECT_FALSE(detail::TransactionAllocationsMatch(config,Mode::Disabled,cuda,actual));
+    EXPECT_FALSE(detail::TransactionAllocationsMatch(config,Mode::Cuda,cuda,actual));
+    EXPECT_FALSE(detail::TransactionAllocationsMatch(config,Mode::UnsupportedHostArithmetic,cuda,actual));
+    EXPECT_TRUE(detail::TransactionAllocationsMatch(config,Mode::UnsupportedHostArithmetic,cuda,actual,&cpu));
+    for (unsigned field=0;field<3;++field) {
+        auto corrupt=actual;
+        if(field==0)++corrupt.activity.host_bytes;
+        if(field==1)++corrupt.device.device_bytes;
+        if(field==2)++corrupt.device.device_allocations;
+        EXPECT_FALSE(detail::TransactionAllocationsMatch(config,Mode::UnsupportedHostArithmetic,cuda,corrupt,&cpu));
+    }
+    actual.device={500,3};
+    EXPECT_TRUE(detail::TransactionAllocationsMatch(config,Mode::Cuda,cuda,actual));
+    EXPECT_FALSE(detail::TransactionAllocationsMatch(config,Mode::Cuda,cuda,actual,&cpu));
+    EXPECT_FALSE(detail::TransactionAllocationsMatch(config,Mode::UnsupportedHostArithmetic,cuda,actual,&cuda));
+    auto different_activity=cpu;++different_activity.activity.arena_bytes;
+    EXPECT_FALSE(detail::TransactionAllocationsMatch(config,Mode::UnsupportedHostArithmetic,cuda,actual,&different_activity));
+    EXPECT_EQ(detail::EffectiveCombinedDeviceBytes(900,500,500),900u);
+    EXPECT_EQ(detail::EffectiveCombinedDeviceBytes(900,500,300),700u);
+    EXPECT_THROW(detail::EffectiveCombinedDeviceBytes(499,500,300),std::runtime_error);
+    EXPECT_THROW(detail::EffectiveCombinedDeviceBytes(900,500,501),std::runtime_error);
+}
+
+TEST(VehicleSelfContactRuntimeValues, TotalStartupScratchIncludesOptionalComponentsOutsideOldPartitions) {
+    tlfea::contact::SelfContactTransactionForecast transaction;
+    transaction.owned_host_bytes=1000;
+    transaction.startup_host_bytes=1800;
+    transaction.force.owned_host_bytes=100;
+    transaction.force.retained_active_use_bytes=200;
+    transaction.force.startup_host_bytes=1000;
+    EXPECT_EQ(detail::TransactionStartupScratch(transaction),800u);
+    transaction.startup_host_bytes=1700;
+    EXPECT_EQ(detail::TransactionStartupScratch(transaction),700u);
+    transaction.startup_host_bytes=999;
+    EXPECT_THROW(detail::TransactionStartupScratch(transaction),std::runtime_error);
 }
 
 }  // namespace crash::cases::vehicle_self_contact::test

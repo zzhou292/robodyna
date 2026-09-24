@@ -26,6 +26,52 @@ std::size_t Delta(std::size_t total, std::size_t retained,
 
 }  // namespace
 
+tlfea::contact::SelfContactTransactionConfig TransactionConfig(
+    RuntimeConfig config, const tl::fea::NodalStamp& owner,
+    const tl::fea::ShellPhysicalPublicationIdentity& identity) noexcept {
+    tlfea::contact::SelfContactTransactionConfig result;
+    result.force.owner = owner;
+    result.force.startup = identity.startup;
+    result.force.stiffness_per_area_n_m3 =
+        FirstProfileStiffnessPerAreaNPerM3;
+    result.force.event_capacity = config.event_capacity;
+    result.force.configuration_id = identity.configuration_id;
+    result.force.qualification_id = identity.qualification_id;
+    result.source_id = config.source_id;
+    result.broadphase_axis = config.broadphase_axis;
+    result.enable_diagnostics = config.enable_diagnostics;
+    result.enable_cuda_facet_filters = config.enable_cuda_facet_filters;
+    return result;
+}
+
+bool TransactionAllocationsMatch(RuntimeConfig config,
+    tlfea::contact::SelfContactFacetFilterInitialization mode,
+    const tlfea::contact::SelfContactTransactionForecast& requested,
+    const tlfea::contact::SelfContactTransactionAllocationInfo& actual,
+    const tlfea::contact::SelfContactTransactionForecast* cpu_fallback) noexcept {
+    using Mode = tlfea::contact::SelfContactFacetFilterInitialization;
+    const auto* expected = &requested;
+    if (!config.enable_cuda_facet_filters) {
+        if (mode != Mode::Disabled || cpu_fallback) return false;
+    } else if (mode == Mode::Cuda) {
+        if (cpu_fallback) return false;
+    } else if (mode == Mode::UnsupportedHostArithmetic) {
+        if (!cpu_fallback || cpu_fallback->activity.arena_bytes != requested.activity.arena_bytes ||
+            cpu_fallback->device_bytes >= requested.device_bytes ||
+            cpu_fallback->device_allocations >= requested.device_allocations) return false;
+        expected = cpu_fallback;
+    } else return false;
+    return actual.activity.host_bytes == expected->activity.arena_bytes &&
+        actual.device.device_bytes == expected->device_bytes &&
+        actual.device.device_allocations == expected->device_allocations;
+}
+std::size_t EffectiveCombinedDeviceBytes(std::size_t combined,
+    std::size_t requested_self, std::size_t initialized_self) {
+    output::Require(requested_self <= combined && initialized_self <= requested_self,
+        "Initialized self-contact allocation exceeds its composed reservation");
+    return combined - requested_self + initialized_self;
+}
+
 std::size_t IncrementalSetupHost(const SetupForecast& setup) {
     output::Require(
         setup.retained_setup_reservation_bytes >=
@@ -75,6 +121,7 @@ std::size_t TransactionStartupScratch(
         force_delta >= transaction.force.retained_active_use_bytes,
         "Self-contact force shared startup backing is invalid");
     return std::max({
+        transaction.startup_host_bytes - transaction.owned_host_bytes,
         force_delta - transaction.force.retained_active_use_bytes,
         Delta(transaction.activity.startup_host_bytes,
               transaction.activity.owned_host_bytes,

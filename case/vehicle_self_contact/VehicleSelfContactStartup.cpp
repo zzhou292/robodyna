@@ -36,23 +36,6 @@ tl::fea::ShellPhysicalPublicationIdentity Identity(
             vehicle_runtime::detail::InitialTranslation()};
 }
 
-c::SelfContactTransactionConfig TransactionConfig(
-    RuntimeConfig config, const tl::fea::NodalStamp& owner,
-    const tl::fea::ShellPhysicalPublicationIdentity& identity) noexcept {
-    c::SelfContactTransactionConfig result;
-    result.force.owner = owner;
-    result.force.startup = identity.startup;
-    result.force.stiffness_per_area_n_m3 =
-        FirstProfileStiffnessPerAreaNPerM3;
-    result.force.event_capacity = config.event_capacity;
-    result.force.configuration_id = identity.configuration_id;
-    result.force.qualification_id = identity.qualification_id;
-    result.source_id = config.source_id;
-    result.broadphase_axis = config.broadphase_axis;
-    result.enable_diagnostics = config.enable_diagnostics;
-    return result;
-}
-
 void CheckProfile(const VehicleSelfContactSetup& setup,
                   RuntimeConfig config,
                   const RuntimeLimits& limits) {
@@ -141,7 +124,7 @@ RuntimeForecast VehicleSelfContactStartup::Preview(
     const auto owner = vehicle_runtime::detail::DescriptiveStamp(
         dynamics_config.startup, setup.execution());
     const auto transaction = c::SelfContactTransaction::Forecast(
-        TransactionConfig(config, owner, identity),
+        detail::TransactionConfig(config, owner, identity),
         setup.active_uses(), identity, limits.transaction);
     Check(transaction.report);
     auto result = detail::ComposeForecast(
@@ -167,7 +150,7 @@ RuntimeForecast VehicleSelfContactStartup::Preflight(
     CheckSource(setup, state);
     const auto source = Source(state);
     const auto transaction = c::SelfContactTransaction::Forecast(
-        TransactionConfig(config, state.owner.accepted(), source.identity),
+        detail::TransactionConfig(config, state.owner.accepted(), source.identity),
         setup.active_uses(), source.identity, limits.transaction);
     Check(transaction.report);
     output::Require(
@@ -199,23 +182,33 @@ VehicleSelfContactStartup::PrepareUnconfigured(
         borrowed.status == tl::fea::NodalStatus::Ok,
         borrowed.message);
     Check(next->transaction.Initialize(
-        TransactionConfig(config, next->initial_stamp, source.identity),
+        detail::TransactionConfig(config, next->initial_stamp, source.identity),
         setup.active_uses(), state.owner, state.publication,
         *source.physical, source.participants, source.identity,
         owner_stream, limits.transaction));
     const auto entry = next->transaction.roster_entry();
     const auto allocations = next->transaction.allocations();
+    const auto mode = next->transaction.facet_filter_initialization();
+    c::SelfContactTransactionPreflight cpu;
+    const c::SelfContactTransactionForecast* cpu_fallback = nullptr;
+    if (config.enable_cuda_facet_filters &&
+        mode == c::SelfContactFacetFilterInitialization::UnsupportedHostArithmetic) {
+        auto cpu_config = config;
+        cpu_config.enable_cuda_facet_filters = false;
+        cpu = c::SelfContactTransaction::Forecast(
+            detail::TransactionConfig(cpu_config, next->initial_stamp, source.identity),
+            setup.active_uses(), source.identity, limits.transaction);
+        Check(cpu.report);
+        cpu_fallback = &cpu.forecast;
+    }
     output::Require(
         entry.issuer && entry.source_id == config.source_id &&
-            allocations.activity.host_bytes ==
-                forecast.transaction.activity.arena_bytes &&
-            allocations.device.device_bytes ==
-                forecast.transaction.device_bytes &&
-            allocations.device.device_allocations ==
-                forecast.transaction.device_allocations &&
+            detail::TransactionAllocationsMatch(config, mode, forecast.transaction,
+                allocations, cpu_fallback) &&
             tl::fea::trial_identity::SameStamp(
                 state.owner.accepted(), next->initial_stamp),
         "Self-contact initialization changed accepted state or disagreed with forecast");
+    next->forecast.filter_initialization = mode;
     return VehicleSelfContactStartup(std::move(next));
 }
 

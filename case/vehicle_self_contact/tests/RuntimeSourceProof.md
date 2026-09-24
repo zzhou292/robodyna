@@ -49,3 +49,17 @@ The local exclusion branch must still reject every endpoint-only witness before
 publishing `ExcludedLocalIntersection`. The lexical index comes from the actual
 candidate discovery cohort after prepared-intersection validation. No numerical
 policy, tolerance, authority or old recovery source is changed by this adaptation.
+
+The optional CUDA filter check follows the single `detail::TransactionConfig`
+mapper through preview, preflight, runtime initialization and the typed CPU
+fallback forecast. Both factories retain the actual initialization mode and
+compose exact effective device bytes only after mode-specific component checks.
+The full transaction startup delta must be included alongside the existing
+component partitions. This protects forwarding and budget composition without
+claiming that initialization provenance proves GPU query execution.
+
+When TL extracts accepted filtering into `AcceptedFacetFiltering.h`, the app
+proof follows the exact scalar delegate to `FilterAcceptedFacetPairsWith` and
+requires the unchanged public certificate, both source half-thickness values,
+ordered ordinal/parent/numeric checks and final compaction. The GPU adapter shares
+that same fold; its numerical parity and failure ordering remain TL owning gates.

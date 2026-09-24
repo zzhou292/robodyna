@@ -71,11 +71,12 @@ void CheckSelfStep(const vehicle_dynamics::Config& dynamics) {
 
 ContactComposition ContactComposition::Prepare(
     ContactProfile profile,
-    std::shared_ptr<const self::VehicleSelfContactSetup> source, bool enable_diagnostics) {
+    std::shared_ptr<const self::VehicleSelfContactSetup> source, bool enable_diagnostics, bool enable_cuda_facet_filters) {
     ContactProfileName(profile);
     ContactComposition result;
     result.profile_ = profile;
     if (profile == ContactProfile::WallOnly) {
+        output::Require(!enable_cuda_facet_filters, "CUDA facet filters cannot attach to wall-only composition");
         output::Require(!enable_diagnostics, "Self-contact diagnostics cannot attach to wall-only composition");
         output::Require(!source,
             "Wall-only composition cannot hide a retained self-contact source");
@@ -85,6 +86,7 @@ ContactComposition ContactComposition::Prepare(
         "Wall+self-contact requires the authenticated level-0 source setup");
     result.runtime_config_ = {SelfSourceId, EventCapacity, 0};
     result.runtime_config_.enable_diagnostics = enable_diagnostics;
+    result.runtime_config_.enable_cuda_facet_filters = enable_cuda_facet_filters;
     result.runtime_limits_ = RuntimeLimits(*source);
     result.self_contact_ = std::move(source);
     return result;

@@ -24,6 +24,8 @@ struct Forecast {
 };
 struct Result {
     bool session_initialized=false;
+    tlfea::contact::SelfContactFacetFilterInitialization filter_initialization =
+        tlfea::contact::SelfContactFacetFilterInitialization::NotInitialized;
     double startup_wall_s=0;
     LoopResult loop;
     vehicle_dynamics::StepTimingSnapshot mechanics_timing;
