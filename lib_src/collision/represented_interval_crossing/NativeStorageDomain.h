@@ -4,7 +4,9 @@
 
 namespace tlfea::contact::represented_interval_crossing {
 struct NativeStorageDomainReport {
+  // Preserve the original shortcut domain separately from storage capacity.
   ExactProjectionDomainReport projection;
+  ExactProjectionDomainReport storage;
   std::size_t maximum_coefficient_bits = 0;
   std::size_t maximum_product_limbs = 0;
   bool eligible = false;
@@ -23,7 +25,13 @@ class NativeStorageDomain {
     return result;
 #endif
     result.report_.projection = ExactProjectionDomain::FromPaths(a, b, maximum_depth).report();
-    const auto& proof = result.report_.projection;
+    result.report_.storage = result.report_.projection;
+    // Already-admitted pairs need no second scan. A zero coefficient never
+    // reaches Add's exponent alignment, so only nonzero endpoint exponents
+    // constrain the storage proof. Do not broaden CellKernel shortcut gates.
+    if (result.report_.storage.supported && result.report_.storage.coordinate_bits > 125)
+      result.report_.storage = ExactProjectionDomain::FromPathsImpl<true>(a, b, maximum_depth).report();
+    const auto& proof = result.report_.storage;
     if (!proof.supported || !proof.eligible || proof.limb_bits != 64 || proof.karatsuba_cutoff != 40 ||
         !proof.coordinate_bits || proof.coordinate_bits > 125) return result;
     result.report_.maximum_coefficient_bits = 4 * proof.coordinate_bits + 9;

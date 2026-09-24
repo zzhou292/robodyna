@@ -17,7 +17,7 @@ bazel = (collision / "BUILD.bazel").read_text()
 test_cmake = (here / "CMakeLists.txt").read_text()
 test_bazel = (here / "BUILD.bazel").read_text()
 test_sources = (
-    "BatchRosterTest.cpp", "NormalReuseTest.cpp", "RelativeSeparationTest.cpp", "ExactPathReuseTest.cpp", "CommonPointReuseTest.cpp", "NativeStorageTest.cpp", "FixedPolicyTest.cpp", "ResultAssertions.h", "GeometryTest.cpp", "InvarianceTest.cpp", "FailureTest.cpp",
+    "BatchRosterTest.cpp", "NormalReuseTest.cpp", "RelativeSeparationTest.cpp", "ExactPathReuseTest.cpp", "CommonPointReuseTest.cpp", "NativeStorageTest.cpp", "ZeroStorageTest.cpp", "FixedPolicyTest.cpp", "ResultAssertions.h", "GeometryTest.cpp", "InvarianceTest.cpp", "FailureTest.cpp",
     "IdentityTest.cpp", "DeepTest.cpp", "OracleTest.cpp",
     "ParallelTest.cpp", "TranslationProofTest.cpp", "Oracle.cpp",
 )
@@ -313,3 +313,29 @@ print(json.dumps({
     "motion": "explicit represented LinearNodalV1 only",
     "numerical_execution": False,
 }, sort_keys=True))
+
+# Preserve the exact legacy projection scanner while broadening storage only.
+# These two explicitly enumerated constexpr branches vanish from <false>.
+projection_text = (collision / "represented_interval_crossing/ExactProjectionDomain.h").read_text()
+assert "return FromPathsImpl<false>(first, second, maximum_cell_depth);" in projection_text
+assert "friend class NativeStorageDomain;" in projection_text
+assert projection_text.index(" private:") < projection_text.index("template <bool IgnoreExactZeros>")
+start = projection_text.index("{", projection_text.index("static ExactProjectionDomain FromPathsImpl("))
+depth = 0
+for end in range(start, len(projection_text)):
+    depth += (projection_text[end] == "{") - (projection_text[end] == "}")
+    if not depth:
+        scanner = projection_text[start:end + 1]
+        break
+scanner = re.sub(r"\s+", "", re.sub(r"//[^\n]*", "", scanner))
+for branch in (
+    "ifconstexpr(IgnoreExactZeros)if((bits&((std::uint64_t{1}<<63)-1))==0)continue;",
+    "ifconstexpr(IgnoreExactZeros)if(minimum==portable::numeric_limits<int>::max())minimum=maximum=0;",
+):
+    assert scanner.count(branch) == 1
+    scanner = scanner.replace(branch, "")
+import hashlib
+assert hashlib.sha256(scanner.encode()).hexdigest() == "75cb16e610891d8ce7667312162af76c247ae32fa57256998df796f7b2402fda"
+assert "const auto& proof = result.report_.storage;" in storage_domain
+assert "ExactProjectionDomain::FromPathsImpl<true>" in storage_domain
+print("PASS zero-neutral storage and frozen original projection scanner")
