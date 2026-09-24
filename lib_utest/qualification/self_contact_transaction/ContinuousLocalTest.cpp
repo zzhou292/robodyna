@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "lib_src/collision/self_contact_transaction/Storage.h"
+#include "lib_src/collision/self_contact_transaction/SharedVertexProofQualification.h"
+#include "NonlinearResultAssertions.h"
 #include "lib_src/collision/self_contact_transaction/LocalContact.h"
 
 #include <gtest/gtest.h>
@@ -189,6 +191,7 @@ sct::NonlinearSeparationResult LocalPolicy(
 }
 
 #include "ConeDiagonalCases.h"
+#include "ProofOrderCases.h"
 
 TEST(SelfContactContinuousLocal, CurvedSharedVertexNeedsNoInventedOwner) {
   const auto first = Triangle(

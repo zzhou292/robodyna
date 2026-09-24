@@ -151,3 +151,30 @@ checks seam/owner provenance, native VF strata and both orientations, EE identit
 malformed owners, duplicate source order, 0/64/65 owners, work/depth/geometry errors,
 deferred exclusion behavior and ordinal preservation. Deterministic lookup/visit
 counts show reduced search work on a sparse ledger; no wall-time speedup is claimed.
+
+## Shared-vertex proof ordering
+
+After the existing endpoint classification, source-key, shared-coordinate-path
+and whole-cell nondegeneracy checks, the shared-vertex geometry result is the
+logical OR of two existing proofs: no nonlocal polynomial transition roots, or
+strict opposite cone signs. Production evaluates the same bounded 20-direction
+cone first. A successful cone skips four VF, five nonincident EE and four incident
+EE polynomial tests; a failed cone retains the unchanged polynomial proof. No
+proof work/depth, axis order, geometry, thickness, tolerance or resource cap changes.
+Cone failure with polynomial success performs extra cone work, so this reordering
+requires measurement on representative families before any throughput claim.
+
+The private `SharedVertexProofQualification.h` adapter instantiates both orders at
+compile time and returns complete geometry results plus independent saturating
+operation counts. It cannot select a production order or mint a physical receipt.
+`ProofOrderCases.h` and `ProofOrderCoverageCases.h` compare every result field,
+including witnesses, source/certificate order, unresolved cells, work/depth flags
+and digests, and check that cone success actually eliminates the polynomial tasks.
+The common field-wise test utility is `NonlinearResultAssertions.h`.
+
+This equivalence concerns geometry outputs and solver state under the existing
+floating-point execution contract. Arithmetic and `nextafter` can change errno or
+sticky floating-point flags, and skipped operations need not set the same flags.
+The solver does not consume those flags as geometry authority; trapping-mode or
+errno equivalence is not asserted. Endpoint classification remains in its original
+position in this first optimization.

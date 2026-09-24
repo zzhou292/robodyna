@@ -21,6 +21,9 @@ add_executable(self_contact_transaction_values
   TranslatedLocalCases.h
   ContinuousLocalTest.cpp
   ConeDiagonalCases.h
+  ProofOrderCases.h
+  ProofOrderCoverageCases.h
+  NonlinearResultAssertions.h
   MaskedResidualTest.cpp
   CrossingBatchTest.cpp
   RigidSweepBoundsTest.cpp

@@ -1037,4 +1037,27 @@ for token in ("finalized->ForPair(prepared_triangles)",
               "certificate, &owner", "owners[owner - 1].source_order =="):
     require(rigid_sweep, token, RIGID_SWEEP)
 
+# Fixed production order and private legacy-order qualification are distinct.
+for token in ("enum class SharedVertexOrder { PolynomialFirst, ConeFirst }",
+              "if constexpr (order == SharedVertexOrder::ConeFirst)",
+              "if constexpr (order == SharedVertexOrder::PolynomialFirst)",
+              "CertifyQuadraticLocalTopologyImpl<SharedVertexOrder::ConeFirst>",
+              "CertifyQuadraticLocalTopologyImpl<SharedVertexOrder::PolynomialFirst>",
+              "SubdivideCoverage<order>", "LocalSharedVertexOnly<order>"):
+    require(rigid_sweep, token, RIGID_SWEEP)
+local_proof = rigid_sweep[rigid_sweep.index("bool LocalSharedVertexOnly("):
+                          rigid_sweep.index("bool LocalSharedEdgeOnly(")]
+if not (local_proof.index("shared_vertex_endpoint(lower_triangles)") <
+        local_proof.index("!SameCoordinatePath(") <
+        local_proof.index("!FacetNondegenerate(") <
+        local_proof.index("SharedVertexOrder::ConeFirst") <
+        local_proof.index("bool no_nonlocal_root = true")):
+    raise RuntimeError(f"{RIGID_SWEEP}: proof-order change bypasses original premises")
+qualification_header = RIGID_SWEEP.with_name("SharedVertexProofQualification.h").read_text()
+for token in ("SharedVertexProofOrderComparison", "CompareSharedVertexTopologyOrders",
+              "CompareSharedVertexCoverageOrders", "SharedVertexProofCounters"):
+    require(qualification_header, token, RIGID_SWEEP)
+if "SharedVertexOrder" in qualification_header:
+    raise RuntimeError(f"{RIGID_SWEEP}: private proof order escaped as caller configuration")
+
 print("fixed self-contact transaction source proof: PASS")

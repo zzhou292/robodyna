@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
 #include "FinalizedCoverageLedger.h"
+#include "SharedVertexProofQualification.h"
 #include "LocalContact.h"
 #include "PolicyExclusions.h"
 #include "../fixed_triangle_features/ExactPredicates.h"
@@ -13,6 +14,17 @@
 
 namespace tlfea::contact::self_contact_transaction {
 namespace {
+
+enum class SharedVertexOrder { PolynomialFirst, ConeFirst };
+
+void CountProofOperation(
+    SharedVertexProofCounters* counters,
+    std::size_t SharedVertexProofCounters::* field) noexcept {
+  if (!counters) return;
+  auto& value = counters->*field;
+  if (value == SIZE_MAX) counters->saturated = true;
+  else ++value;
+}
 
 struct Interval {
   double lower = 0;
@@ -2271,7 +2283,9 @@ bool DotPolynomialAxis(
 
 bool SharedVertexConeSeparated(
     const BernsteinFacet facets[2],
-    const unsigned shared[2]) noexcept {
+    const unsigned shared[2],
+    SharedVertexProofCounters* counters = nullptr) noexcept {
+  CountProofOperation(counters, &SharedVertexProofCounters::cone_calls);
   if (!shared || shared[0] >= 3 || shared[1] >= 3)
     return false;
   Vec3 representative[2][3];
@@ -2327,6 +2341,7 @@ bool SharedVertexConeSeparated(
 
   for (unsigned candidate = 0;
        candidate < candidate_count; ++candidate) {
+    CountProofOperation(counters, &SharedVertexProofCounters::cone_axes);
     int side_sign[2]{};
     bool separated = true;
     for (unsigned side = 0; side < 2 && separated; ++side)
@@ -2499,14 +2514,16 @@ bool EdgeEdgeNeverCoplanar(
       determinant, lower_zero, upper_zero);
 }
 
+template <SharedVertexOrder order = SharedVertexOrder::ConeFirst>
 bool LocalSharedVertexOnly(
     const BernsteinFacet facets[2],
     const CurrentFixedTriangle triangles[2],
     const CurrentFixedTriangle lower_triangles[2],
     const CurrentFixedTriangle upper_triangles[2],
     bool allow_lower_root, bool allow_upper_root,
-    bool* valid) noexcept {
+    bool* valid, SharedVertexProofCounters* counters = nullptr) noexcept {
   if (!valid) return false;
+  CountProofOperation(counters, &SharedVertexProofCounters::cells);
   *valid = true;
   const auto shared_vertex_endpoint = [](
       const CurrentFixedTriangle endpoint[2]) noexcept {
@@ -2521,7 +2538,9 @@ bool LocalSharedVertexOnly(
         intersection.local_exclusion ==
             FixedTriangleLocalExclusion::SharedVertexOnly;
   };
+  CountProofOperation(counters, &SharedVertexProofCounters::endpoint_classifications);
   const bool lower_local = shared_vertex_endpoint(lower_triangles);
+  CountProofOperation(counters, &SharedVertexProofCounters::endpoint_classifications);
   const bool upper_local = shared_vertex_endpoint(upper_triangles);
   allow_lower_root = allow_lower_root && lower_local;
   allow_upper_root = allow_upper_root && upper_local;
@@ -2544,6 +2563,15 @@ bool LocalSharedVertexOnly(
       !FacetNondegenerate(facets[1]))
     return false;
 
+  // The existing strict cone is an independent whole-cell proof. Once the
+  // same source/path/nondegeneracy premises above hold, the legacy return is
+  // (no_nonlocal_root && lower_local && upper_local) || cone. Both alternatives
+  // only read inputs and write local arithmetic scratch; neither changes valid,
+  // proof work or report fields. Trying the same cone first skips polynomial
+  // work on success without changing either proof, axis order or any budget.
+  if constexpr (order == SharedVertexOrder::ConeFirst)
+    if (SharedVertexConeSeparated(facets, shared, counters)) return true;
+
   // Any nonlocal triangle contact contains a VF or EE feature.  A VF can
   // contact only when its degree-six oriented-volume polynomial is zero; the
   // same holds for the coplanarity polynomial of two EE segments.  Bernstein
@@ -2556,6 +2584,7 @@ bool LocalSharedVertexOnly(
   for (unsigned side = 0; side < 2; ++side)
     for (unsigned vertex = 0; vertex < 3; ++vertex) {
       if (vertex == shared[side]) continue;
+      CountProofOperation(counters, &SharedVertexProofCounters::vertex_face_tasks);
       if (!VertexFaceNeverCoplanar(
               facets, triangles,
               lower_triangles, upper_triangles,
@@ -2573,11 +2602,13 @@ bool LocalSharedVertexOnly(
       const bool second_incident = EdgeContainsVertex(
           triangles[1], second_edge, shared_key);
       if (first_incident && second_incident) {
+        CountProofOperation(counters, &SharedVertexProofCounters::incident_edge_tasks);
         if (!IncidentEdgesMeetOnlyAtSharedVertex(
                 facets, triangles, shared, first_edge, second_edge))
           no_nonlocal_root = false;
         continue;
       }
+      CountProofOperation(counters, &SharedVertexProofCounters::nonincident_edge_tasks);
       if (!EdgeEdgeNeverCoplanar(
               facets, triangles,
               lower_triangles, upper_triangles,
@@ -2594,7 +2625,9 @@ bool LocalSharedVertexOnly(
   // every nonshared point of one triangle is a positive combination of its
   // two arm vectors. Opposite strict arm signs therefore make a common
   // nonzero point impossible for the whole Bernstein cell.
-  return SharedVertexConeSeparated(facets, shared);
+  if constexpr (order == SharedVertexOrder::PolynomialFirst)
+    return SharedVertexConeSeparated(facets, shared, counters);
+  return false;
 }
 
 bool LocalSharedEdgeOnly(
@@ -2672,6 +2705,7 @@ bool ExactAffine(
   return true;
 }
 
+template <SharedVertexOrder order = SharedVertexOrder::ConeFirst>
 NonlinearSeparationStatus SubdivideCoverage(
     const BernsteinFacet facets[2],
     const CurrentFixedTriangle triangles[2],
@@ -2684,7 +2718,8 @@ NonlinearSeparationStatus SubdivideCoverage(
     unsigned* deepest, NonlinearSeparationResult* result,
     bool* used_coverage,
     bool require_geometric_safety,
-    bool exact_affine, bool local_topology_only) noexcept {
+    bool exact_affine, bool local_topology_only,
+    SharedVertexProofCounters* counters = nullptr) noexcept {
   if (!work || !deepest || !result || !used_coverage)
     return NonlinearSeparationStatus::InvalidInput;
   if (*work >= max_work) {
@@ -2722,10 +2757,10 @@ NonlinearSeparationStatus SubdivideCoverage(
   const bool upper_boundary =
       path == ((std::uint64_t{1} << depth) - 1);
   const bool vertex_local_safe = !zero_separated &&
-      LocalSharedVertexOnly(
+      LocalSharedVertexOnly<order>(
           facets, triangles,
           lower_triangles, upper_triangles,
-          lower_boundary, upper_boundary, &vertex_valid);
+          lower_boundary, upper_boundary, &vertex_valid, counters);
   if (!edge_valid || !vertex_valid)
     return NonlinearSeparationStatus::InvalidInput;
   const bool local_safe =
@@ -2842,25 +2877,25 @@ NonlinearSeparationStatus SubdivideCoverage(
       !SplitFacet(facets[1], &children[1][0], &children[1][1]))
     return NonlinearSeparationStatus::InvalidInput;
   const BernsteinFacet left[2]{children[0][0], children[1][0]};
-  const auto left_status = SubdivideCoverage(
+  const auto left_status = SubdivideCoverage<order>(
       left, triangles, lower_triangles, upper_triangles,
       first_thickness, second_thickness,
       owners, owner_count, depth + 1, max_depth, path << 1,
       max_work, work, deepest, result, used_coverage,
-      require_geometric_safety, exact_affine, local_topology_only);
+      require_geometric_safety, exact_affine, local_topology_only, counters);
   if (left_status != NonlinearSeparationStatus::CertifiedSeparated &&
       left_status != NonlinearSeparationStatus::CertifiedLocalIntersection &&
       left_status !=
           NonlinearSeparationStatus::CertifiedAcceptedCoverage)
     return left_status;
   const BernsteinFacet right[2]{children[0][1], children[1][1]};
-  const auto right_status = SubdivideCoverage(
+  const auto right_status = SubdivideCoverage<order>(
       right, triangles, lower_triangles, upper_triangles,
       first_thickness, second_thickness,
       owners, owner_count, depth + 1, max_depth,
       (path << 1) | 1, max_work, work, deepest,
       result, used_coverage, require_geometric_safety, exact_affine,
-      local_topology_only);
+      local_topology_only, counters);
   if (right_status != NonlinearSeparationStatus::CertifiedSeparated &&
       right_status != NonlinearSeparationStatus::CertifiedLocalIntersection &&
       right_status !=
@@ -2952,6 +2987,7 @@ NonlinearSeparationResult CertifyQuadraticFacetSeparation(
   return result;
 }
 
+template <SharedVertexOrder order = SharedVertexOrder::ConeFirst>
 NonlinearSeparationResult CertifyQuadraticFacetCoverageImpl(
     const CurrentFixedTriangle& first_accepted,
     const CurrentFixedTriangle& first_prepared,
@@ -2966,7 +3002,8 @@ NonlinearSeparationResult CertifyQuadraticFacetCoverageImpl(
     std::size_t max_work, unsigned max_depth,
     bool require_geometric_safety,
     bool local_topology_only = false,
-    const FinalizedCoverageLedger* finalized = nullptr) noexcept {
+    const FinalizedCoverageLedger* finalized = nullptr,
+    SharedVertexProofCounters* counters = nullptr) noexcept {
   NonlinearSeparationResult result;
   if (!max_work || max_depth > 52 ||
       (accepted_count && !accepted) ||
@@ -3042,7 +3079,7 @@ NonlinearSeparationResult CertifyQuadraticFacetCoverageImpl(
       return result;
     }
   bool used_coverage = false;
-  result.status = SubdivideCoverage(
+  result.status = SubdivideCoverage<order>(
       facets, prepared_triangles,
       accepted_triangles, prepared_triangles,
       first_thickness, second_thickness,
@@ -3050,7 +3087,7 @@ NonlinearSeparationResult CertifyQuadraticFacetCoverageImpl(
       max_work, &result.work, &result.deepest,
       &result, &used_coverage, require_geometric_safety,
       ExactAffine(first_coefficients) &&
-          ExactAffine(second_coefficients), local_topology_only);
+          ExactAffine(second_coefficients), local_topology_only, counters);
   if (result.status ==
           NonlinearSeparationStatus::CertifiedAcceptedCoverage &&
       (!used_coverage ||
@@ -3060,14 +3097,16 @@ NonlinearSeparationResult CertifyQuadraticFacetCoverageImpl(
   return result;
 }
 
-NonlinearSeparationResult CertifyQuadraticLocalTopology(
+template <SharedVertexOrder order = SharedVertexOrder::ConeFirst>
+NonlinearSeparationResult CertifyQuadraticLocalTopologyImpl(
     const CurrentFixedTriangle& first_accepted,
     const CurrentFixedTriangle& first_prepared,
     const FacetQuadraticCoefficients& first_coefficients,
     const CurrentFixedTriangle& second_accepted,
     const CurrentFixedTriangle& second_prepared,
     const FacetQuadraticCoefficients& second_coefficients,
-    double duration, std::size_t max_work, unsigned max_depth) noexcept {
+    double duration, std::size_t max_work, unsigned max_depth,
+    SharedVertexProofCounters* counters = nullptr) noexcept {
   NonlinearSeparationResult result;
   if (!max_work || max_depth > 52) return result;
   const CurrentFixedTriangle* base[]{&first_accepted, &second_accepted};
@@ -3098,10 +3137,71 @@ NonlinearSeparationResult CertifyQuadraticLocalTopology(
       return result;
     }
   }
-  return CertifyQuadraticFacetCoverageImpl(
+  return CertifyQuadraticFacetCoverageImpl<order>(
       first_accepted, first_prepared, first_coefficients, 0,
       second_accepted, second_prepared, second_coefficients, 0,
-      duration, nullptr, 0, max_work, max_depth, true, true);
+      duration, nullptr, 0, max_work, max_depth, true, true, nullptr, counters);
+}
+
+NonlinearSeparationResult CertifyQuadraticLocalTopology(
+    const CurrentFixedTriangle& first_accepted,
+    const CurrentFixedTriangle& first_prepared,
+    const FacetQuadraticCoefficients& first_coefficients,
+    const CurrentFixedTriangle& second_accepted,
+    const CurrentFixedTriangle& second_prepared,
+    const FacetQuadraticCoefficients& second_coefficients,
+    double duration, std::size_t max_work, unsigned max_depth) noexcept {
+  return CertifyQuadraticLocalTopologyImpl<SharedVertexOrder::ConeFirst>(
+      first_accepted, first_prepared, first_coefficients,
+      second_accepted, second_prepared, second_coefficients,
+      duration, max_work, max_depth);
+}
+
+SharedVertexProofOrderComparison CompareSharedVertexTopologyOrders(
+    const CurrentFixedTriangle& first_accepted,
+    const CurrentFixedTriangle& first_prepared,
+    const FacetQuadraticCoefficients& first_coefficients,
+    const CurrentFixedTriangle& second_accepted,
+    const CurrentFixedTriangle& second_prepared,
+    const FacetQuadraticCoefficients& second_coefficients,
+    double duration, std::size_t max_work, unsigned max_depth) noexcept {
+  SharedVertexProofOrderComparison result;
+  result.polynomial_first.report =
+      CertifyQuadraticLocalTopologyImpl<SharedVertexOrder::PolynomialFirst>(
+          first_accepted, first_prepared, first_coefficients,
+          second_accepted, second_prepared, second_coefficients,
+          duration, max_work, max_depth, &result.polynomial_first.counters);
+  result.cone_first.report =
+      CertifyQuadraticLocalTopologyImpl<SharedVertexOrder::ConeFirst>(
+          first_accepted, first_prepared, first_coefficients,
+          second_accepted, second_prepared, second_coefficients,
+          duration, max_work, max_depth, &result.cone_first.counters);
+  return result;
+}
+
+SharedVertexProofOrderComparison CompareSharedVertexCoverageOrders(
+    const CurrentFixedTriangle& first_accepted,
+    const CurrentFixedTriangle& first_prepared,
+    const FacetQuadraticCoefficients& first_coefficients, double first_thickness,
+    const CurrentFixedTriangle& second_accepted,
+    const CurrentFixedTriangle& second_prepared,
+    const FacetQuadraticCoefficients& second_coefficients, double second_thickness,
+    double duration, const AcceptedEventCertificate* accepted,
+    std::size_t accepted_count, std::size_t max_work, unsigned max_depth) noexcept {
+  SharedVertexProofOrderComparison result;
+  result.polynomial_first.report =
+      CertifyQuadraticFacetCoverageImpl<SharedVertexOrder::PolynomialFirst>(
+          first_accepted, first_prepared, first_coefficients, first_thickness,
+          second_accepted, second_prepared, second_coefficients, second_thickness,
+          duration, accepted, accepted_count, max_work, max_depth, true, false,
+          nullptr, &result.polynomial_first.counters);
+  result.cone_first.report =
+      CertifyQuadraticFacetCoverageImpl<SharedVertexOrder::ConeFirst>(
+          first_accepted, first_prepared, first_coefficients, first_thickness,
+          second_accepted, second_prepared, second_coefficients, second_thickness,
+          duration, accepted, accepted_count, max_work, max_depth, true, false,
+          nullptr, &result.cone_first.counters);
+  return result;
 }
 
 NonlinearSeparationResult CertifyQuadraticFacetCoverage(
