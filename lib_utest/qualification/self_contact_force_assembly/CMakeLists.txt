@@ -7,13 +7,15 @@ find_package(CUDAToolkit REQUIRED)
 get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
 
 include("${TL_ROOT}/lib_src/collision/FixedTriangleFeatureDiscovery.cmake")
+include("${TL_ROOT}/lib_src/collision/SelfContactActiveUseBinding.cmake")
 add_executable(self_contact_force_values
-  ValueTest.cpp
-  "${TL_ROOT}/lib_src/collision/self_contact_force/Values.cpp")
+  ValueTest.cpp SourceTest.cpp
+  "${TL_ROOT}/lib_src/collision/self_contact_force/Values.cpp"
+  "${TL_ROOT}/lib_src/collision/self_contact_force/Source.cpp")
 target_include_directories(self_contact_force_values PRIVATE
   "${TL_ROOT}" "${CUDAToolkit_INCLUDE_DIRS}")
 target_link_libraries(self_contact_force_values PRIVATE
-  tl_fixed_triangle_feature_discovery GTest::gtest_main)
+  tl_fixed_triangle_feature_discovery tl_self_contact_active_uses GTest::gtest_main)
 target_compile_features(self_contact_force_values PRIVATE cxx_std_17)
 target_compile_options(self_contact_force_values PRIVATE
   -fno-fast-math -ffp-contract=off)

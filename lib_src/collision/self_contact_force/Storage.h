@@ -67,11 +67,17 @@ bool SamePoint(const WeightedSurfacePoint&,
 bool SameSupport(const SelfContactSupportClassification&,
                  const SelfContactSupportClassification&) noexcept;
 bool SameCertificate(Q4CertifiedIntegral, Q4CertifiedIntegral) noexcept;
+// Original checked single-event path retained for differential qualification.
 SelfContactForceReport ValidateEvent(
     const SelfContactActiveUseBinding&,
     const SelfContactForceEvent&,
     SelfContactActivityView,
     std::size_t canonical_event) noexcept;
+// Private batch boundary: exact same event checks, one owned scratch/cursor.
+SelfContactForceReport ValidateEvents(
+    const SelfContactActiveUseBinding&,
+    SelfContactActivityView,
+    SelfContactForceEventView) noexcept;
 
 }  // namespace tlfea::contact::self_contact_force
 

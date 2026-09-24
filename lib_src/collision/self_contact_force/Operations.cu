@@ -509,11 +509,9 @@ SelfContactForceReport SelfContactForceAssembly::AssembleAccepted(
         state.storage_forecast.touched_node_capacity,
         &incidence_summary);
     if (report.status != S::Ok) return report;
-    for (std::size_t event = 0; event < events.count; ++event) {
-      const auto report = scf::ValidateEvent(
-          state.binding, state.local.events[event], activity, event);
-      if (report.status != S::Ok) return report;
-    }
+    report = scf::ValidateEvents(
+        state.binding, activity, {state.local.events, events.count});
+    if (report.status != S::Ok) return report;
   }
 
   const auto source = state.binding.cin();

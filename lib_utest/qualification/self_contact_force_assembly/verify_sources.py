@@ -15,6 +15,7 @@ values = (COLLISION / "SelfContactForceValues.h").read_text()
 operations = (COLLISION / "self_contact_force/Operations.cu").read_text()
 penalty_values = (COLLISION / "penalty_pair/Values.h").read_text()
 source = (COLLISION / "self_contact_force/Source.cpp").read_text()
+queries = (COLLISION / "self_contact_force/SourceQueries.h").read_text()
 layout = (COLLISION / "self_contact_force/Layout.cpp").read_text()
 initialize = (COLLISION / "self_contact_force/Initialize.cpp").read_text()
 cmake = (COLLISION / "SelfContactForceAssembly.cmake").read_text()
@@ -72,6 +73,25 @@ assert "ClassifyEdgeEdge(" in source
 assert "event.edge_use[0]" in source
 assert "event.feature.edge_edge.edges[0]" in source
 assert "SameClassification(" in source
+assert "scf::ValidateEvents(" in operations
+assert "scf::ValidateEvent(" not in operations
+assert operations.index("for (std::size_t parent = 0; parent < parents; ++parent)") < operations.index("BuildSelfContactForceIncidence(")
+assert operations.index("BuildSelfContactForceIncidence(") < operations.index("scf::ValidateEvents(")
+assert "activity.current[parent] > activity.base[parent]" in operations
+assert "SourceQueries<false> queries(binding)" in source
+assert "SourceQueries<true> queries(binding)" in source
+assert "ValidateEventImpl(" in source
+batch = source[source.index("SelfContactForceReport ValidateEvents("):]
+assert batch.index("ActiveUseQueryAccess::ValidateActivity(") < batch.index("if (!events.count) return {};")
+assert batch.index("binding.OutputDisjoint(&queries, sizeof(queries))") < batch.index("queries.cursor.Initialize(")
+assert batch.index("queries.cursor.Initialize(") < batch.index("for (std::size_t event = 0;")
+for value in ("events.data, bytes", "activity.base, activity.parent_count", "activity.current, activity.parent_count"):
+    assert value in batch
+assert "template<bool Batched>" in queries
+assert "ActiveUseQueryAccess::ClassifyVertexFace(" in queries
+assert "ActiveUseQueryAccess::ClassifyEdgeEdge(" in queries
+assert "return cursor.Describe(parent, local)" in queries
+assert "FixedContactFacetReadCursor cursor" in queries
 assert "UnsupportedCinSecondary" in source
 assert "PositiveSelfContactArea" in source
 assert "exact discovered target stratum" in source
@@ -130,6 +150,20 @@ for proof in (
     "TIMEOUT 240",
 ):
     assert proof in qualification_cmake
+source_tests = (HERE / "SourceTest.cpp").read_text()
+activity_cuda = (HERE / "ActivityValidationCudaCases.h").read_text()
+for gate in (
+    "CheckedBatchMatchesPublicVfEeQueriesAndOrder",
+    "ForgedVfEeEventsKeepExactCanonicalFirstFailure",
+    "UnreferencedLastActivityRowRejectsEmptyAndNonemptyThenRetries",
+    "InvalidBatchExtentsFailBeforeAnyEventRead",
+):
+    assert gate in source_tests
+assert '#include "ActivityValidationCudaCases.h"' in cuda
+assert "LastActivityRowCorruptionPreservesAllChannelsReceiptAndSameAttemptRetry" in activity_cuda
+assert "DiagnosticBits(receipt.diagnostics()), held" in activity_cuda
+assert "after.values, before.values" in activity_cuda
+assert "SourceTest.cpp" in qualification_cmake
 qualification_bazel = (HERE / "BUILD.bazel").read_text()
 assert '":root_cuda_sources"' in qualification_bazel
 assert "m2-rigid-cin-response" in qualification_bazel

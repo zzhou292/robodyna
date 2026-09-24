@@ -8,6 +8,17 @@ It accepts only a bounded caller batch of already discovered/resolved
 broadphase, crossing query,
 candidate geometry, app setup, contact history or final participant receipt.
 
+Assembly retains its complete activity preflight before sorting, including
+empty batches. The private source batch then checks its view and authenticates
+one owned classification scratch and `FixedContactFacetReadCursor` against all
+retained source ranges and borrowed inputs. It uses the existing internal
+`ActiveUseQueryAccess` for each event, avoiding a full activity/source-range
+rescan per feature. Public standalone classifiers remain unchanged. The shared
+validation body has a private public-query reference adapter for differential
+qualification; production has no runtime path selector. Both paths retain the
+same canonical first event failure and exact comparisons. Scratch is local;
+retained/device forecasts and attempt allocation behavior are unchanged.
+
 Each VF event is reauthenticated against the retained parent/vertex/facet,
 weighted maps, support roles, activity identities, reference thickness and
 positive certified directed area. Each EE event regenerates both exact
@@ -105,3 +116,13 @@ committed partial/full fixed reactions; duplicate, stale,
 foreign, same-body-excluded and CIN-secondary rejection; final-event NaN,
 node-sum overflow, complete rollback/retry and stable allocations. CUDA
 execution remains a root-only gate. No energy-conservation claim is made.
+
+The six-parent host source fixture proves that malformed or reactivated last
+activity rows reject even when neither admitted VF/EE event references that
+parent, for empty and nonempty batches, and that repair permits retry. It also
+compares every report field/message against the original public-query adapter
+for forged identity, activity, support, map, thickness, area and feature inputs.
+The existing two-parent actual CUDA owner separately proves that late-row
+activity failure preserves all force/couple/STI channels, accepted stamp and
+prior receipt, then permits a valid retry in the same attempt, including an
+empty batch. No third physical fixture or alternate solver is introduced.

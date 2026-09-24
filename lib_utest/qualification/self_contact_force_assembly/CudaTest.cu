@@ -1438,4 +1438,6 @@ TEST(SelfContactForceCuda,
   }
 }
 
+#include "ActivityValidationCudaCases.h"
+
 }  // namespace self_contact_force_cuda_test

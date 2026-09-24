@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
+#include "SourceQueries.h"
 #include "../fixed_triangle_features/Geometry.h"
 
 namespace tlfea::contact::self_contact_force {
@@ -29,16 +30,17 @@ bool MapMatchesParent(const SelfContactParentUse& parent,
   return true;
 }
 
+template<bool Batched>
 bool TargetBelongsToFacet(const SelfContactActiveUseBinding& binding,
                           const SelfContactPairClassification& pair,
-                          const FixedTriangleStratumKey& target) noexcept {
+                          const FixedTriangleStratumKey& target,
+                          SourceQueries<Batched>& queries) noexcept {
   const auto& use = binding.facet_uses()[pair.feature[1]];
   const auto& parent = binding.parents()[use.parent];
-  FixedContactFacet facet;
-  if (binding.facets()->Describe(parent.surface_parent, use.local_facet,
-                                 &facet).status !=
-      FixedContactFacetStatus::Ok)
+  const auto described = queries.Describe(parent.surface_parent, use.local_facet);
+  if (described.report.status != FixedContactFacetStatus::Ok)
     return false;
+  const auto& facet = *described.facet;
   if (target.kind == FixedTriangleStratumKind::Vertex) {
     for (const auto& key : facet.vertex_keys)
       if (!fixed_triangle_features::Compare(target.vertex, key)) return true;
@@ -111,11 +113,14 @@ bool SameCertificate(Q4CertifiedIntegral a,
       SameBits(a.upper, b.upper) && SameBits(a.error, b.error);
 }
 
-SelfContactForceReport ValidateEvent(
+namespace {
+template<bool Batched>
+SelfContactForceReport ValidateEventImpl(
     const SelfContactActiveUseBinding& binding,
     const SelfContactForceEvent& event,
     SelfContactActivityView activity,
-    std::size_t canonical_event) noexcept {
+    std::size_t canonical_event,
+    SourceQueries<Batched>& queries) noexcept {
   const auto& pair = event.classification;
   const auto parents = binding.parents();
   const auto facets = binding.facet_uses();
@@ -130,11 +135,11 @@ SelfContactForceReport ValidateEvent(
       return Invalid(event, canonical_event,
                      "EE event ordinals or canonical edge order are invalid");
 
-    SelfContactPairClassification regenerated;
-    const auto classified = binding.ClassifyEdgeEdge(
+    const auto classified = queries.ClassifyEdgeEdge(
         event.edge_use[0], event.endpoints[0],
         event.edge_use[1], event.endpoints[1],
-        pair.edge_edge_case, activity, &regenerated);
+        pair.edge_edge_case, activity);
+    const auto& regenerated = queries.classification;
     if (classified.status != SelfContactActiveUseStatus::Ok)
       return Invalid(event, canonical_event,
                      "EE event cannot be regenerated from supplied activity",
@@ -196,10 +201,9 @@ SelfContactForceReport ValidateEvent(
     return Invalid(event, canonical_event,
                    "Event kind or exact active-use ordinals are invalid");
 
-  SelfContactPairClassification regenerated;
-  const auto classified = binding.ClassifyVertexFace(
-      event.vertex_use, event.facet_use, event.endpoints[1],
-      activity, &regenerated);
+  const auto classified = queries.ClassifyVertexFace(
+      event.vertex_use, event.facet_use, event.endpoints[1], activity);
+  const auto& regenerated = queries.classification;
   if (classified.status != SelfContactActiveUseStatus::Ok)
     return Invalid(event, canonical_event,
                    "Event cannot be regenerated from the supplied activity",
@@ -256,9 +260,68 @@ SelfContactForceReport ValidateEvent(
   // exact discovered target stratum still requires the discovery receipt that
   // intentionally lives outside this accepted-state force contributor.
   if (!TargetBelongsToFacet(binding, pair,
-                            event.feature.vertex_face.target))
+                            event.feature.vertex_face.target, queries))
     return Invalid(event, canonical_event,
                    "Event target stratum is foreign to its retained facet");
+  return {};
+}
+
+}  // namespace
+
+SelfContactForceReport ValidateEvent(
+    const SelfContactActiveUseBinding& binding,
+    const SelfContactForceEvent& event,
+    SelfContactActivityView activity,
+    std::size_t canonical_event) noexcept {
+  SourceQueries<false> queries(binding);
+  return ValidateEventImpl(binding, event, activity, canonical_event, queries);
+}
+
+SelfContactForceReport ValidateEvents(
+    const SelfContactActiveUseBinding& binding,
+    SelfContactActivityView activity,
+    SelfContactForceEventView events) noexcept {
+  using tl::fea::trial_identity::Disjoint;
+  const auto invalid = [](const char* message) {
+    return SelfContactForceReport{
+        S::InvalidInput, SIZE_MAX, UINT64_MAX, UINT32_MAX,
+        SurfacePenaltyStatus::InvalidInput, tl::fea::NodalStatus::Ok,
+        message};
+  };
+  if (!binding.prepared() || !binding.facets() ||
+      events.count > SIZE_MAX / sizeof(SelfContactForceEvent) ||
+      (events.count && !events.data))
+    return invalid("Force event batch source or range is invalid");
+  const auto bytes = events.count * sizeof(SelfContactForceEvent);
+  if (bytes > UINTPTR_MAX - reinterpret_cast<std::uintptr_t>(events.data))
+    return invalid("Force event batch range overflows");
+  // Assembly already performs this complete check before sorting, including
+  // empty batches. Keep this private host entry independently checked too;
+  // the extra single scan replaces one complete scan for every event.
+  if (!self_contact_transaction::ActiveUseQueryAccess::ValidateActivity(
+          binding, activity))
+    return {S::StaleAttempt, SIZE_MAX, UINT64_MAX, UINT32_MAX,
+            SurfacePenaltyStatus::InvalidInput,
+            tl::fea::NodalStatus::StaleTrial,
+            "Supplied activity source is stale or invalid"};
+  if (!events.count) return {};
+
+  SourceQueries<true> queries(binding);
+  // Authenticate the complete owned classification/descriptor scratch against
+  // every immutable source and borrowed input before either query can write.
+  if (!binding.OutputDisjoint(&queries, sizeof(queries)) ||
+      !Disjoint(&queries, sizeof(queries), events.data, bytes) ||
+      !Disjoint(&queries, sizeof(queries), activity.base, activity.parent_count) ||
+      !Disjoint(&queries, sizeof(queries), activity.current, activity.parent_count))
+    return invalid("Force event batch scratch aliases a borrowed source");
+  if (queries.cursor.Initialize(*binding.facets()).status !=
+      FixedContactFacetStatus::Ok)
+    return invalid("Force event batch facet cursor is unauthenticated");
+  for (std::size_t event = 0; event < events.count; ++event) {
+    const auto report = ValidateEventImpl(
+        binding, events.data[event], activity, event, queries);
+    if (report.status != S::Ok) return report;
+  }
   return {};
 }
 

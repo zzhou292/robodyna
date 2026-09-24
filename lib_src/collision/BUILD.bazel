@@ -204,6 +204,7 @@ filegroup(
         "self_contact_force/Operations.cu",
         "self_contact_force/Source.cpp",
         "self_contact_force/Storage.h",
+        "self_contact_force/SourceQueries.h",
         "self_contact_force/Values.cpp",
         "//lib_src/elements:ShellPhysicalOwnerAssembly.cpp",
         "//lib_src/solvers:nodal_assembly_authentication_source_proof",
@@ -221,6 +222,7 @@ cc_library(
         "SelfContactForceTypes.h",
         "SelfContactForceValues.h",
         "self_contact_force/Storage.h",
+        "self_contact_force/SourceQueries.h",
     ],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [
