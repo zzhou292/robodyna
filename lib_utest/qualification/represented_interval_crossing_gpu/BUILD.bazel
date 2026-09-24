@@ -1,0 +1,17 @@
+load("@rules_cc//cc:defs.bzl", "cc_test")
+_COMMON = [
+    "Cases.h",
+    "//lib_utest/qualification/represented_interval_crossing:Fixture.h",
+    "//lib_utest/qualification/represented_interval_crossing:ResultAssertions.h",
+]
+cc_test(
+    name = "host", size = "small", srcs = ["HostTest.cpp"] + _COMMON,
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:represented_interval_crossing_gpu", "@googletest//:gtest_main"],
+)
+cc_test(
+    name = "cuda", size = "moderate", srcs = ["GpuTest.cpp"] + _COMMON,
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = ["//lib_src/collision:represented_interval_crossing_gpu", "@googletest//:gtest_main"],
+    tags = ["exclusive", "gpu"],
+)
