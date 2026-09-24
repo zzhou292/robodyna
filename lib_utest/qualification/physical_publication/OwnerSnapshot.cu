@@ -77,10 +77,10 @@ bool Rig::Read(Snapshot& output) {
     Append(next,type25_test::EvaluationValues(value));
     next.values.push_back(value.history.active);
   }
-  fe::type13::Evaluation beam;
+  std::vector<fe::type13::Evaluation> beam(fixture.beams.connection_count());
   fe::type13::BatchDiagnostics beam_diagnostics;
-  if (!Good(beams.CopyAcceptedResults(next.stamp,&beam,1,&beam_diagnostics))) return false;
-  Append(next,type13_recurrence_test::Values(beam));
+  if (!Good(beams.CopyAcceptedResults(next.stamp,beam.data(),beam.size(),&beam_diagnostics))) return false;
+  for (const auto& value : beam) Append(next,type13_recurrence_test::Values(value));
   solid_resident_test::Results result;
   fe::solids::BatchDiagnostics solid_diagnostics;
   if (!Good(solids.CopyAcceptedResults(next.stamp,result.Buffers(),&solid_diagnostics))) return false;
