@@ -15,7 +15,8 @@ add_library(tl_represented_interval_crossing_gpu STATIC
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native_device/Layout.cpp"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native_device/Kernels.cu"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native_device/Workspace.h"
-  "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native_device/KernelTypes.h")
+  "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native_device/KernelTypes.h"
+  "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native_device/Resources.h")
 target_link_libraries(tl_represented_interval_crossing_gpu
   PUBLIC tl_represented_interval_crossing CUDA::cudart)
 target_compile_features(tl_represented_interval_crossing_gpu PUBLIC cxx_std_17)

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Workspace.h"
 #include "KernelTypes.h"
+#include "Resources.h"
+#include <limits>
 #include "../NativeStorageDomain.h"
 #include <new>
 
@@ -63,5 +65,37 @@ cudaError_t Launch(void* device, const Layout& layout, std::size_t path_count,
       tl::util::ArenaPointer<native::Cell>(device, layout.dfs), layout.dfs_capacity,
       tl::util::ArenaPointer<DeviceResult>(device, layout.results));
   return cudaPeekAtLastError();
+}
+cudaError_t QueryKernelResources(KernelResources* output) noexcept {
+  if (!output) return cudaErrorInvalidValue;
+  KernelResources next;
+  auto error = cudaGetDevice(&next.device_ordinal);
+  if (error == cudaSuccess)
+    error = cudaGetDeviceProperties(&next.device, next.device_ordinal);
+  if (error == cudaSuccess)
+    error = cudaFuncGetAttributes(&next.function, Certify);
+  if (error == cudaSuccess)
+    error = cudaOccupancyMaxActiveBlocksPerMultiprocessor(
+        &next.active_blocks_per_multiprocessor, Certify, ThreadsPerBlock, 0);
+  if (error == cudaSuccess)
+    error = cudaDeviceGetLimit(&next.device_stack_limit_bytes, cudaLimitStackSize);
+  if (error != cudaSuccess) return error;
+  if (next.device.multiProcessorCount <= 0 ||
+      next.device.maxThreadsPerMultiProcessor <= 0 ||
+      next.active_blocks_per_multiprocessor <= 0)
+    return cudaErrorInvalidValue;
+  const auto processors = static_cast<std::size_t>(next.device.multiProcessorCount);
+  const auto threads = static_cast<std::size_t>(next.device.maxThreadsPerMultiProcessor);
+  const auto maximum = std::numeric_limits<std::size_t>::max();
+  if (processors > maximum / threads) return cudaErrorInvalidValue;
+  const auto resident_threads = processors * threads;
+  if (next.function.localSizeBytes > maximum / resident_threads)
+    return cudaErrorInvalidValue;
+  next.resident_thread_local_bytes = next.function.localSizeBytes * resident_threads;
+  next.worker_limit = MaximumDeviceWorkers;
+  next.threads_per_block = ThreadsPerBlock;
+  next.full_pool_blocks = (MaximumDeviceWorkers + ThreadsPerBlock - 1) / ThreadsPerBlock;
+  *output = next;
+  return cudaSuccess;
 }
 }  // namespace tlfea::contact::represented_interval_crossing::native_device

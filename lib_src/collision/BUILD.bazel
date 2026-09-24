@@ -187,6 +187,7 @@ cc_library(
         "represented_interval_crossing/DeviceBatch.h",
         "represented_interval_crossing/native_device/Workspace.h",
         "represented_interval_crossing/native_device/KernelTypes.h",
+        "represented_interval_crossing/native_device/Resources.h",
     ],
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [":represented_interval_crossing", "//lib_utils:bounded_arena"],
