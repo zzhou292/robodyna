@@ -116,6 +116,7 @@ filegroup(
     srcs = [
         "CMakeLists.txt",
         "CudaTest.cu",
+        "TransactionFixture.h",
         "PreparedCensusCases.h",
         "FailureCaptureCases.h",
         "LocalPublicationCases.h",

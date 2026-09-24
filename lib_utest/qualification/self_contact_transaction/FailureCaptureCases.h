@@ -191,6 +191,88 @@ TEST(SelfContactTransactionCuda,
 }
 
 TEST(SelfContactTransactionCuda,
+     CandidateFailureObserverAfterTwoCommitsPreservesLatestAcceptedState) {
+  Fixture fixture(false, true);
+  const auto load_node = fixture.rig.external_force_source_node;
+  const auto load_force = fixture.rig.external_force_z_n;
+  fixture.rig.external_force_source_node = 0;
+  ASSERT_TRUE(fixture.Initialize());
+  for (unsigned interval = 0; interval < 2; ++interval) {
+    fe::NodalTrialToken token;
+    fe::NodalAssemblyView assembly;
+    ASSERT_TRUE(fixture.rig.Begin(token, assembly));
+    c::SelfContactAcceptedAssemblyReceipt accepted;
+    ASSERT_TRUE(Good(fixture.transaction.AssembleAccepted(
+        fixture.rig.owner, token, assembly, &accepted)));
+    fe::NodalPreparedView prepared;
+    fe::ShellPhysicalDiagnostics common;
+    ASSERT_TRUE(fixture.Prepare(token, assembly, prepared, common));
+    c::SelfContactTransactionReceipt receipt;
+    ASSERT_TRUE(Good(fixture.transaction.SealCandidate(
+        fixture.rig.owner, token, common, prepared, accepted, &receipt)));
+    ASSERT_TRUE(fixture.Commit(token, prepared, common, receipt));
+    ASSERT_EQ(fixture.rig.owner.accepted().epoch, interval + 1u);
+  }
+  p::Snapshot before, after;
+  ASSERT_TRUE(fixture.rig.Read(before));
+  ASSERT_EQ(before.stamp.epoch, 2u);
+  EXPECT_EQ(p::Bits(before.stamp.time), p::Bits(2 * p::H));
+  // Activate the existing pass-through coupon load only after two actual
+  // commits. No coordinates, velocities, stamps or proof outcomes are forged.
+  fixture.rig.external_force_source_node = load_node;
+  fixture.rig.external_force_z_n = load_force;
+  c::SelfContactTransactionReport baseline;
+  for (unsigned attempt = 0; attempt < 2; ++attempt) {
+    fe::NodalTrialToken token;
+    fe::NodalAssemblyView assembly;
+    ASSERT_TRUE(fixture.rig.Begin(token, assembly));
+    c::SelfContactAcceptedAssemblyReceipt accepted;
+    ASSERT_TRUE(Good(fixture.transaction.AssembleAccepted(
+        fixture.rig.owner, token, assembly, &accepted)));
+    fe::NodalPreparedView prepared;
+    fe::ShellPhysicalDiagnostics common;
+    ASSERT_TRUE(fixture.Prepare(token, assembly, prepared, common));
+    failure_capture_test::Observation observation;
+    observation.transaction = &fixture.transaction;
+    observation.expected_accepted = before.stamp;
+    observation.expected_prepared = prepared;
+    c::SelfContactTransactionReceipt receipt;
+    const auto report = attempt
+        ? sct::QualificationAccess::SealCandidateWithFailureObserver(
+              fixture.transaction, fixture.rig.owner, token, common, prepared,
+              accepted, &receipt, observation.observer())
+        : fixture.transaction.SealCandidate(
+              fixture.rig.owner, token, common, prepared, accepted, &receipt);
+    ASSERT_EQ(report.status, c::SelfContactTransactionStatus::CandidateRejected)
+        << report.message;
+    EXPECT_FALSE(receipt.valid());
+    EXPECT_FALSE(accepted.valid());
+    if (!attempt) baseline = report;
+    else {
+      failure_capture_test::ExactReport(report, baseline);
+      failure_capture_test::ExactReport(report, observation.retained.report);
+      EXPECT_EQ(observation.calls, 1u);
+      EXPECT_FALSE(observation.caught);
+      EXPECT_TRUE(observation.live);
+      EXPECT_TRUE(observation.correct_phase);
+      EXPECT_TRUE(observation.correct_pair);
+      EXPECT_TRUE(observation.nonlocal_intersection);
+      EXPECT_EQ(observation.retained.accepted.epoch, 2u);
+      EXPECT_EQ(observation.retained.prepared.owner_id, before.stamp.owner_id);
+      EXPECT_EQ(observation.policy_report.status, c::SelfContactTransactionStatus::Ok);
+      EXPECT_EQ(observation.policy_count, 1u);
+      EXPECT_FALSE(observation.retained.activity.valid());
+      EXPECT_EQ(sct::QualificationAccess::ClassifyAcceptedFeaturePolicies(
+          fixture.transaction, observation.retained.activity,
+          {&observation.feature, 1, true}, &observation.policy, 1,
+          &observation.policy_count).status, c::SelfContactTransactionStatus::IdentityMismatch);
+    }
+    ASSERT_TRUE(fixture.rig.Read(after));
+    p::Exact(before, after);
+  }
+}
+
+TEST(SelfContactTransactionCuda,
      CandidateFailureObserverDoesNotRunOnSuccessOrUnauthenticatedFailure) {
   Fixture fixture(true);
   ASSERT_TRUE(fixture.Initialize());

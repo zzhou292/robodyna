@@ -654,6 +654,11 @@ for token in (
     require(ACCEPTED_TEST.read_text(), token, ACCEPTED_TEST)
 
 cuda = CUDA.read_text()
+transaction_fixture = CUDA.parent / "TransactionFixture.h"
+require(cuda, '#include "TransactionFixture.h"', CUDA)
+for wiring in (QUAL_CMAKE, QUAL_BAZEL):
+    require(wiring.read_text(), "TransactionFixture.h", wiring)
+cuda += "\n" + transaction_fixture.read_text()
 for token in (
     "InitializeExecutionCatalog",
     "InitializeExecution",

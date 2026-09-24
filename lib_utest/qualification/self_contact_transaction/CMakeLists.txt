@@ -102,6 +102,7 @@ if(SELF_CONTACT_TRANSACTION_CUDA)
   include("${TL_ROOT}/lib_src/collision/SelfContactTransaction.cmake")
   add_executable(self_contact_transaction_cuda
     CudaTest.cu
+    TransactionFixture.h
     FailureCaptureCases.h
     TranslatedLocalCudaCases.h
     CrossingBatchCudaCases.h
