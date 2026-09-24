@@ -21,3 +21,6 @@ target_compile_options(robo_dyna_vehicle_run_original_source PRIVATE -fno-fast-m
 add_executable(robo_dyna_vehicle_run_cli "${CMAKE_CURRENT_LIST_DIR}/cli/Main.cpp")
 set_target_properties(robo_dyna_vehicle_run_cli PROPERTIES OUTPUT_NAME robo_dyna_vehicle_run)
 target_link_libraries(robo_dyna_vehicle_run_cli PRIVATE robo_dyna_vehicle_run_original_source)
+
+include("${CMAKE_CURRENT_LIST_DIR}/diagnostics/Diagnostics.cmake")
+target_link_libraries(robo_dyna_vehicle_run_cli PRIVATE robo_dyna_vehicle_failure_diagnostics)

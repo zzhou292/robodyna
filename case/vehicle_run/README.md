@@ -352,3 +352,14 @@ last gate requests 5 ms but deliberately ends at two accepted 2e-7 s intervals
 with a 1 µm gap, keeping the actual post-CIN timestep screen enabled. A rejection
 records the measured limit; this authoring does not certify the selected step.
 Normal host/archive/device caps and default/V4 selection remain unchanged.
+
+## Optional long-run rejection evidence
+
+`--self-contact-failure-output /absolute/new/companion` enables the existing
+bounded native failure observer for any explicitly selected wall+self run.
+The companion must be absent, outside the run/source inputs, and have an existing
+real parent. Forecasts include its host/archive allowance. A completed run leaves
+the companion absent; a supported rejected pair is frozen before rollback and
+exported after normal prefix closure. Unsupported capture stages are reported
+honestly without fabricating a pair. See [diagnostics](diagnostics/README.md) for
+ownership, output states and qualification boundaries.

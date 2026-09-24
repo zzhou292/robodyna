@@ -140,4 +140,24 @@ TEST(VehicleRunOptions, SelfContactRequiresExplicitSourceAndQualifiedPhysicalSte
     bad.contact_profile=static_cast<ContactProfile>(999);
     EXPECT_THROW(Plan(bad),std::invalid_argument);
 }
+TEST(VehicleRunOptions, OptionalFailureDiagnosticsRequiresSelfContactAndExplicitRunDestination) {
+    auto args=Arguments();
+    EXPECT_TRUE(Parse(args).failure_output.empty());
+    args.insert(args.end(),{"--self-contact-failure-output","new-failure"});
+    EXPECT_THROW(Parse(args),std::invalid_argument);
+    args.insert(args.end(),{"--contact-profile","wall-self-contact-v1","--self-contact-member","combine.key",
+        "--physical-profile","vehicle-supports-v5","--fixed-dt-s","2e-7"});
+    EXPECT_EQ(Parse(args).failure_output,"new-failure");
+    args.push_back("--forecast-only");
+    EXPECT_EQ(Parse(args).failure_output,"new-failure");
+    auto no_output=args;
+    const auto output=std::find(no_output.begin(),no_output.end(),"--output");
+    no_output.erase(output,output+2);
+    EXPECT_THROW(Parse(no_output),std::invalid_argument);
+    auto empty=args;
+    *(std::find(empty.begin(),empty.end(),"--self-contact-failure-output")+1)="";
+    EXPECT_THROW(Parse(empty),std::invalid_argument);
+    args.insert(args.end(),{"--self-contact-failure-output","duplicate"});
+    EXPECT_THROW(Parse(args),std::invalid_argument);
+}
 } // namespace crash::cases::vehicle_run::test

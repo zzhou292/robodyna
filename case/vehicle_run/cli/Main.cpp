@@ -1,9 +1,11 @@
 #include "Options.h"
 #include "../Run.h"
+#include "../diagnostics/FailureRun.h"
 #include "../SampledShellPlasticity.h"
 #include "../source/OriginalYaris.h"
 #include <iomanip>
 #include <iostream>
+#include <utility>
 namespace run=crash::cases::vehicle_run;
 int main(int argc,char** argv) {
     if(argc==2 && std::string(argv[1])=="--help") {
@@ -16,6 +18,14 @@ int main(int argc,char** argv) {
             (std::filesystem::symlink_status(options.output).type()!=std::filesystem::file_type::directory ||
              !std::filesystem::is_empty(options.output)))
             throw std::invalid_argument("Output must be a real pre-created empty directory");
+        std::filesystem::path failure_destination;
+        if(!options.failure_output.empty()) {
+            const auto& paths=options.source;
+            failure_destination=run::diagnostics::CheckDestination(options.failure_output,options.output,
+                {paths.canonical,paths.scope,paths.member,paths.declarations,paths.glass_resolution,
+                 paths.type13,paths.auxiliary_member,paths.original_wall_member,paths.wall_manifest,
+                 paths.self_contact_combine_member});
+        }
         auto settings=crash::cases::vehicle_wall::LoadedWallSettings();
         settings.requested_duration_s=options.config.duration_s;
         settings.leading_gap_m=options.gap_m;
@@ -29,11 +39,14 @@ int main(int argc,char** argv) {
         identity.topology=0x5941524953ULL;
         const auto prepared=run::PreparedRun::Prepare(source.setup,source.joints,options.config,identity,source.self_contact);
         const auto& forecast=prepared.forecast();
+        const auto reservation=failure_destination.empty()
+            ? run::diagnostics::Reservation{forecast.complete_host_bytes,forecast.complete_archive_bytes}
+            : run::diagnostics::Preflight(forecast);
         std::cout<<"forecast physical_profile="<<run::PhysicalProfileName(options.config.physical_profile)
                  <<" contact_profile="<<run::ContactProfileName(options.config.contact_profile)
-                 <<" host_bytes="<<forecast.complete_host_bytes
+                 <<" host_bytes="<<reservation.host_bytes
                  <<" device_bytes="<<forecast.contact.device_bytes
-                 <<" archive_bytes="<<forecast.complete_archive_bytes
+                 <<" archive_bytes="<<reservation.archive_bytes
                  <<" intervals="<<prepared.horizon().intervals
                  <<" conditional_allowance="<<forecast.caps.expanded<<std::endl;
         if(options.forecast_only) return 0;
@@ -64,7 +77,14 @@ int main(int argc,char** argv) {
             run::detail::WriteSampledShellPlasticityProgress(std::cout, value.sampled_shell_plasticity);
             std::cout << std::endl;
         };
-        const auto result=prepared.Execute(options.output,control);
+        run::Result result;
+        std::optional<run::diagnostics::FailureReport> failure_report;
+        if(failure_destination.empty()) result=prepared.Execute(options.output,control);
+        else {
+            auto observed=run::diagnostics::Execute(prepared,options.output,control,failure_destination);
+            result=std::move(observed.run);
+            failure_report=std::move(observed.diagnostic);
+        }
         std::cout<<"finished session_initialized="<<result.session_initialized<<" accepted="<<result.loop.progress.accepted.epoch
                  <<" actual_time_s="<<result.loop.progress.accepted.time_s
                  <<" valid_prefix="<<result.loop.valid_manifest<<" reason="<<result.loop.reason;
@@ -74,8 +94,19 @@ int main(int argc,char** argv) {
                                       <<" sha256="<<result.viewer_input->sha256<<std::endl;
         if(!result.summary_error.empty()) std::cerr<<"Summary error: "<<result.summary_error<<'\n';
         if(!result.viewer_input_error.empty()) std::cerr<<"Viewer receipt error: "<<result.viewer_input_error<<'\n';
+        if(failure_report) {
+            std::cout<<"self_contact_failure_diagnostic="
+                     <<run::diagnostics::FailureStatusName(failure_report->status);
+            if(!failure_report->manifest.empty())
+                std::cout<<" manifest="<<failure_report->manifest<<" sha256="<<failure_report->sha256;
+            std::cout<<std::endl;
+            if(!failure_report->error.empty())
+                std::cerr<<"Failure diagnostic error: "<<failure_report->error<<'\n';
+        }
         if(result.loop.kind==run::StopKind::StartupFailure) return 1;
         if(!result.loop.valid_manifest || !result.summary || !result.viewer_input) return 3;
+        if(failure_report && (failure_report->status==run::diagnostics::FailureStatus::CaptureIncomplete ||
+            failure_report->status==run::diagnostics::FailureStatus::ExportFailed)) return 3;
         return result.loop.kind==run::StopKind::Completed?0:2;
     } catch(const std::exception& error) {
         std::cerr<<error.what()<<'\n'<<run::cli::Usage()<<'\n';

@@ -5,7 +5,7 @@
 namespace crash::cases::vehicle_run::cli {
 struct Options {
     OriginalPaths source;
-    std::filesystem::path output,stop_file;
+    std::filesystem::path output,stop_file,failure_output;
     Config config;
     double gap_m=.02;
     // Absent values preserve the owning wall-case defaults.

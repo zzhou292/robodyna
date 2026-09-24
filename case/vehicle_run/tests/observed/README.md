@@ -1,9 +1,12 @@
 # Observed controller qualification
 
-This test-only composition lets an existing `PreparedRun` freeze a native
+This internal diagnostic composition lets an existing `PreparedRun` freeze a native
 self-contact rejection during its ordinary execution. It does not introduce a
 solver, owner, clock, alternate run loop, or global/environment solver setting.
-The production CLI and `PreparedRun::Execute` use the unchanged null-hook path.
+The ordinary CLI and `PreparedRun::Execute` use the unchanged null-hook path.
+The explicit CLI failure-output option uses the narrow
+[diagnostics facade](../../diagnostics/README.md); its public interface exposes no
+callback or publication authority.
 
 `RunAccess::Execute` first admits an additional 8 MiB capture allowance, 1 KiB
 contribution reserve and 2 MiB possible export against the configured complete

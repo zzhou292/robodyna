@@ -1,7 +1,6 @@
 #include "RunAccess.h"
+#include "case/vehicle_run/diagnostics/Publication.h"
 #include "../TwoIntervalAcceptance.h"
-#include "case/vehicle_run/SelfContactDocument.h"
-#include "case/vehicle_self_contact/SelfContactStageError.h"
 
 #include <gtest/gtest.h>
 #include <algorithm>
@@ -24,47 +23,20 @@ void PublishFailure(const ObservedResult& observed, const fs::path& directory) {
     ASSERT_TRUE(observed.failure);
     const auto& failure = *observed.failure;
     ::testing::Test::RecordProperty("failure_capture_seen", failure.seen() ? "true" : "false");
-    if (!failure.seen()) {
-        // Some native failures do not yet expose an authenticated pair. The
-        // unchanged acceptance contract still fails on the controller result.
-        ::testing::Test::RecordProperty("failure_capture_scope",
-            "no captured pair; native result remains authoritative");
-        EXPECT_EQ(fs::symlink_status(directory).type(), fs::file_type::not_found);
-        return;
-    }
-    if (!failure.complete() || !failure.owners_equivalent()) {
-        ADD_FAILURE() << "Native rejection retained; fixture capture incomplete: " << failure.error();
-        return;
-    }
-
-    // Export performs bounded codec readback and returns the exact manifest
-    // hash. Preserve the artifact before checking a changed failure identity.
-    try {
-        const auto digest = failure.Export(directory);
-        const auto manifest = directory / "failure.json";
-        ::testing::Test::RecordProperty("failure_manifest", manifest.string());
-        ::testing::Test::RecordProperty("failure_manifest_sha256", digest);
-        ::testing::Test::RecordProperty("failure_capture_scope",
-            "one authenticated rejected pair; no physics acceptance or complete census");
+    const auto published=diagnostics::detail::PublishFailure(observed.run,failure,directory);
+    ::testing::Test::RecordProperty("failure_capture_scope",diagnostics::FailureStatusName(published.status));
+    if(!published.manifest.empty()) {
+        ::testing::Test::RecordProperty("failure_manifest",published.manifest.string());
+        ::testing::Test::RecordProperty("failure_manifest_sha256",published.sha256);
         std::cout << "V5_OBSERVED_CONTROLLER native_rejected=1 accepted_epoch="
-                  << failure.phase().accepted_epoch << " manifest=" << manifest
-                  << " sha256=" << digest << std::endl;
-    } catch (const std::exception& error) {
-        ADD_FAILURE() << "Native rejection retained; fixture export failed: " << error.what();
-    } catch (...) {
-        ADD_FAILURE() << "Native rejection retained; fixture export threw an unknown exception";
+                  << failure.phase().accepted_epoch << " manifest=" << published.manifest
+                  << " sha256=" << published.sha256 << std::endl;
     }
+    if(!failure.seen())
+        EXPECT_EQ(fs::symlink_status(directory).type(),fs::file_type::not_found);
+    EXPECT_NE(published.status,diagnostics::FailureStatus::CaptureIncomplete) << published.error;
+    EXPECT_NE(published.status,diagnostics::FailureStatus::ExportFailed) << published.error;
 
-    EXPECT_EQ(observed.run.loop.kind, StopKind::PhysicsRejected);
-    EXPECT_EQ(failure.phase().accepted_epoch, observed.run.loop.progress.accepted.epoch);
-    ASSERT_TRUE(observed.run.rejected_self_contact);
-    const auto& rejected = *observed.run.rejected_self_contact;
-    EXPECT_EQ(rejected.stage(), vehicle_self_contact::SelfContactRuntimeStage::CandidateSeal);
-    const auto captured = detail::SelfContactErrorDocument(
-        vehicle_self_contact::SelfContactStageError(failure.report(),
-            vehicle_self_contact::SelfContactRuntimeStage::CandidateSeal, 0));
-    EXPECT_TRUE(captured == detail::SelfContactErrorDocument(rejected))
-        << "Captured typed failure differs from the normal controller rejection";
 }
 
 } // namespace

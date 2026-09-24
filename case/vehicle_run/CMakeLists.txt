@@ -13,6 +13,7 @@ if(ROBO_DYNA_VEHICLE_RUN_LIVE)
   find_package(CUDAToolkit REQUIRED)
   set(ROBO_DYNA_TL_ROOT "" CACHE PATH "Qualified TL source checkout")
   include("VehicleRun.cmake")
+  include("diagnostics/tests/Tests.cmake")
 endif()
 
 option(ROBO_DYNA_VEHICLE_RUN_REPORT_VALUES "Build host report/summary checks" OFF)
