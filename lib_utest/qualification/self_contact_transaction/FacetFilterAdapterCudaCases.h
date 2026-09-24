@@ -111,6 +111,7 @@ TEST(SelfContactFacetFilterAdapterCuda, UnsupportedStartupMathUsesCpuWithoutFilt
   ASSERT_TRUE(f.Candidate());f.adapter.BeginCandidateChunk(f.pairs.data(),f.pairs.size());
   EXPECT_FALSE(f.adapter.PrismAt(0).supplied);EXPECT_EQ(facet_filter_cuda_probe::Copies(),copies);
   EXPECT_GT(f.adapter.UnallocatedDevice().device_bytes,0u);
+  EXPECT_EQ(f.adapter.initialization_mode(),c::SelfContactFacetFilterInitialization::UnsupportedHostArithmetic);
 }
 TEST(SelfContactFacetFilterAdapterCuda, QueryCudaFailureIsExplicitPoisonsStorageAndNeverFallsBack) {
   using namespace facet_filter_adapter_test;
@@ -121,6 +122,7 @@ TEST(SelfContactFacetFilterAdapterCuda, QueryCudaFailureIsExplicitPoisonsStorage
   EXPECT_TRUE(failed.supplied);EXPECT_EQ(failed.report.status,filters::Status::DeviceFailure);
   EXPECT_EQ(f.adapter.PrismAt(1).report.status,filters::Status::DeviceFailure);
   f.adapter.Discard();
+  EXPECT_EQ(f.adapter.initialization_mode(),c::SelfContactFacetFilterInitialization::Cuda);
   {RestoreEnvironment restore;ASSERT_EQ(std::fesetround(FE_UPWARD),0);
    EXPECT_EQ(f.adapter.CandidateScene(f.base.data(),f.next.data(),f.motion.data(),f.bounds.data()).status,filters::Status::DeviceFailure);
    EXPECT_EQ(f.adapter.AcceptedScene(f.base.data(),f.motion.data()).status,filters::Status::DeviceFailure);
@@ -132,6 +134,7 @@ TEST(SelfContactFacetFilterAdapterCuda, QueryCudaFailureIsExplicitPoisonsStorage
 TEST(SelfContactFacetFilterAdapterCuda, MissingLifecycleOrChunkCannotBecomeEnvironmentFallback) {
   using namespace facet_filter_adapter_test;
   NumericFixture f;ASSERT_TRUE(f.Geometry());
+  EXPECT_EQ(f.adapter.initialization_mode(),c::SelfContactFacetFilterInitialization::NotInitialized);
   {RestoreEnvironment restore;ASSERT_EQ(std::fesetround(FE_UPWARD),0);
    EXPECT_EQ(f.adapter.PrismAt(0).report.status,filters::Status::NotInitialized);}
   ASSERT_TRUE(f.Initialize());

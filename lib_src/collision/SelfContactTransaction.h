@@ -80,6 +80,9 @@ class SelfContactTransaction {
   SelfContactCandidatePolicyView policy_outcomes() const noexcept;
   SelfContactCandidatePolicySummary policy_summary() const noexcept;
 
+  // Actual immutable initialization route; does not count or authorize queries.
+  SelfContactFacetFilterInitialization facet_filter_initialization() const noexcept;
+
   // Optional value-only host diagnostic snapshots; no publication authority.
   SelfContactTransactionDiagnostics diagnostics() const noexcept;
 

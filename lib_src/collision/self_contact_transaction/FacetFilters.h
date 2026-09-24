@@ -39,6 +39,11 @@ class FacetFilters {
   void BeginCandidateChunk(const FixedTrianglePair*, std::size_t) noexcept;
   FacetPrismReply PrismAt(std::size_t ordinal) noexcept;
   void Discard() noexcept;
+  SelfContactFacetFilterInitialization initialization_mode() const noexcept {
+    if (!initialized_) return SelfContactFacetFilterInitialization::NotInitialized;
+    return device_available_ ? SelfContactFacetFilterInitialization::Cuda
+                            : SelfContactFacetFilterInitialization::UnsupportedHostArithmetic;
+  }
   // Forecast includes optional capacity even when unsupported startup math
   // selected lifetime CPU fallback; allocation telemetry reports actual storage.
   tl::fea::NodalAllocationInfo UnallocatedDevice() const noexcept {

@@ -41,6 +41,15 @@ enum class SelfContactTransactionStatus : std::uint8_t {
   FacetFilterFailure,
 };
 
+// Value-only initialization route, not proof that any GPU query executed.
+// Cuda remains the initialization mode after discard or a later device error.
+enum class SelfContactFacetFilterInitialization : std::uint8_t {
+  NotInitialized,
+  Disabled,
+  Cuda,
+  UnsupportedHostArithmetic,
+};
+
 enum class SelfContactTransactionCountKind : std::uint8_t {
   None,
   ExactAcceptedEvents,

@@ -845,6 +845,15 @@ SelfContactTransactionForecast SelfContactTransaction::forecast()
       SelfContactTransactionForecast{};
 }
 
+SelfContactFacetFilterInitialization
+SelfContactTransaction::facet_filter_initialization() const noexcept {
+  if (!impl_) return SelfContactFacetFilterInitialization::NotInitialized;
+  if (!impl_->config.enable_cuda_facet_filters)
+    return SelfContactFacetFilterInitialization::Disabled;
+  return impl_->facet_filters ? impl_->facet_filters->initialization_mode()
+      : SelfContactFacetFilterInitialization::NotInitialized;
+}
+
 SelfContactTransactionAllocationInfo SelfContactTransaction::allocations()
     const noexcept {
   if (!impl_) return {};

@@ -7,6 +7,7 @@ TEST(SelfContactFacetFilterTransactionCuda, DisabledHasNoExtraDeviceAllocationAn
   namespace filters=c::self_contact_filters;
   for(bool enabled:{false,true}) {
     SCOPED_TRACE(enabled);Fixture fixture;ASSERT_TRUE(fixture.InitializeInfrastructure());
+    EXPECT_EQ(fixture.transaction.facet_filter_initialization(),c::SelfContactFacetFilterInitialization::NotInitialized);
     auto& config=fixture.config;
     config.force.owner=fixture.rig.owner.accepted();config.force.startup=fixture.rig.fixture.Identity().startup;
     config.force.stiffness_per_area_n_m3=2e9;config.force.event_capacity=512;
@@ -36,6 +37,9 @@ TEST(SelfContactFacetFilterTransactionCuda, DisabledHasNoExtraDeviceAllocationAn
     const auto before=facet_filter_cuda_probe::Allocations();
     ASSERT_TRUE(Good(fixture.transaction.Initialize(config,fixture.uses,fixture.rig.owner,fixture.rig.publication,
         fixture.physical,fixture.rig.Participants(),fixture.rig.fixture.Identity(),fixture.owner_stream,limits)));
+    EXPECT_EQ(fixture.transaction.facet_filter_initialization(),enabled
+        ? c::SelfContactFacetFilterInitialization::Cuda
+        : c::SelfContactFacetFilterInitialization::Disabled);
     EXPECT_EQ(facet_filter_cuda_probe::Allocations()-before,enabled?3u:2u);
     EXPECT_EQ(fixture.transaction.allocations().device.device_allocations,enabled?3u:2u);
     EXPECT_EQ(fixture.transaction.allocations().device.device_bytes,full.forecast.device_bytes);
