@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 #include "lib_src/collision/self_contact_transaction/Storage.h"
+#include "FinalizedCoverageLedgerTestAccess.h"
 #include "lib_src/collision/self_contact_transaction/PolicyExclusions.h"
 #include "lib_src/collision/self_contact_transaction/TranslatedLocal.h"
 #include "lib_src/collision/self_contact_transaction/LocalContact.h"
@@ -349,6 +350,7 @@ sct::CandidateValidationInput Input(
 
 #include "PersistentGeometryCases.h"
 #include "PolicyExclusionsCases.h"
+#include "OwnerRangeCases.h"
 #include "RigidFeatureGeometryCases.h"
 #include "LocalEdgeRepresentationCases.h"
 #include "TranslatedLocalCases.h"

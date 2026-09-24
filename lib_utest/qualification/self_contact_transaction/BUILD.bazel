@@ -12,6 +12,8 @@ cc_test(
     srcs = [
         "ContinuousLocalTest.cpp",
         "ConeDiagonalCases.h",
+        "OwnerRangeCases.h",
+        "FinalizedCoverageLedgerTestAccess.h",
         "MaskedResidualTest.cpp",
         "CrossingBatchTest.cpp",
         "//lib_utest/qualification/represented_interval_crossing:Fixture.h",
@@ -73,6 +75,8 @@ cc_test(
         "AcceptedEventTest.cpp",
         "ContinuousLocalTest.cpp",
         "ConeDiagonalCases.h",
+        "OwnerRangeCases.h",
+        "FinalizedCoverageLedgerTestAccess.h",
         "MaskedResidualTest.cpp",
         "CrossingBatchTest.cpp",
         "PersistentGeometryCases.h",

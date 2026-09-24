@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
+#include "FinalizedCoverageLedger.h"
 #include "LocalContact.h"
 #include "PolicyExclusions.h"
 #include "../fixed_triangle_features/ExactPredicates.h"
@@ -2964,10 +2965,13 @@ NonlinearSeparationResult CertifyQuadraticFacetCoverageImpl(
     std::size_t accepted_count,
     std::size_t max_work, unsigned max_depth,
     bool require_geometric_safety,
-    bool local_topology_only = false) noexcept {
+    bool local_topology_only = false,
+    const FinalizedCoverageLedger* finalized = nullptr) noexcept {
   NonlinearSeparationResult result;
   if (!max_work || max_depth > 52 ||
       (accepted_count && !accepted) ||
+      (finalized && (finalized->data() != accepted ||
+                     finalized->count() != accepted_count)) ||
       !(first_thickness > 0 ||
         (local_topology_only && first_thickness == 0)) ||
       !std::isfinite(first_thickness) ||
@@ -3001,18 +3005,29 @@ NonlinearSeparationResult CertifyQuadraticFacetCoverageImpl(
   constexpr std::size_t MaximumOwners = 64;
   CoverageOwner owners[MaximumOwners];
   std::size_t owner_count = 0;
-  for (std::size_t certificate = 0;
-       certificate < accepted_count; ++certificate) {
-    CoverageOwner owner;
-    if (!BuildCoverageOwner(
-            prepared_triangles, accepted[certificate],
-            certificate, &owner))
-      continue;
-    if (owner_count == MaximumOwners) {
-      result.status = NonlinearSeparationStatus::OwnerAmbiguity;
-      return result;
+  FinalizedCoverageLedger::Ranges ranges;
+  if (finalized) {
+    ranges = finalized->ForPair(prepared_triangles);
+  } else {
+    ranges.values[0] = {0, accepted_count};
+    ranges.count = accepted_count ? 1 : 0;
+  }
+  // Ranges are disjoint and in original certificate order. Owner construction,
+  // source order, the 65th-owner rejection and subsequent sort remain unchanged.
+  for (std::size_t range = 0; range < ranges.count; ++range) {
+    for (std::size_t certificate = ranges.values[range].begin;
+         certificate < ranges.values[range].end; ++certificate) {
+      CoverageOwner owner;
+      if (!BuildCoverageOwner(
+              prepared_triangles, accepted[certificate],
+              certificate, &owner))
+        continue;
+      if (owner_count == MaximumOwners) {
+        result.status = NonlinearSeparationStatus::OwnerAmbiguity;
+        return result;
+      }
+      owners[owner_count++] = owner;
     }
-    owners[owner_count++] = owner;
   }
   std::sort(
       owners, owners + owner_count,
@@ -3109,7 +3124,7 @@ NonlinearSeparationResult CertifyQuadraticFacetCoverage(
       max_work, max_depth, true);
 }
 
-NonlinearSeparationResult CertifyQuadraticFacetPolicyCoverage(
+static NonlinearSeparationResult CertifyQuadraticFacetPolicyCoverageImpl(
     const CurrentFixedTriangle& first_accepted,
     const CurrentFixedTriangle& first_prepared,
     const FacetQuadraticCoefficients& first_coefficients,
@@ -3123,7 +3138,8 @@ NonlinearSeparationResult CertifyQuadraticFacetPolicyCoverage(
     const AcceptedFeatureExclusionCertificate* exclusions,
     std::size_t exclusion_count,
     std::size_t max_work, unsigned max_depth,
-    PolicyExclusionSource* deferred_exclusions) noexcept {
+    PolicyExclusionSource* deferred_exclusions,
+    const FinalizedCoverageLedger* finalized) noexcept {
   if (deferred_exclusions) {
     deferred_exclusions->report = {};
     if (!deferred_exclusions->prepare || !deferred_exclusions->context ||
@@ -3148,12 +3164,12 @@ NonlinearSeparationResult CertifyQuadraticFacetPolicyCoverage(
       local.status == NonlinearSeparationStatus::InvalidInput ||
       local.work >= max_work)
     return local;
-  auto ledger = CertifyQuadraticFacetCoverage(
+  auto ledger = CertifyQuadraticFacetCoverageImpl(
       first_accepted, first_prepared, first_coefficients,
       first_thickness,
       second_accepted, second_prepared, second_coefficients,
       second_thickness, duration, accepted, accepted_count,
-      max_work - local.work, max_depth);
+      max_work - local.work, max_depth, true, false, finalized);
   ledger.work += local.work;
   ledger.deepest = std::max(ledger.deepest, local.deepest);
   if (local.work) {
@@ -3268,6 +3284,59 @@ NonlinearSeparationResult CertifyQuadraticFacetPolicyCoverage(
         NonlinearSeparationStatus::CertifiedExactExclusion;
   }
   return excluded;
+}
+
+NonlinearSeparationResult CertifyQuadraticFacetCoverage(
+    const CurrentFixedTriangle& first_accepted,
+    const CurrentFixedTriangle& first_prepared,
+    const FacetQuadraticCoefficients& first_coefficients, double first_thickness,
+    const CurrentFixedTriangle& second_accepted,
+    const CurrentFixedTriangle& second_prepared,
+    const FacetQuadraticCoefficients& second_coefficients, double second_thickness,
+    double duration, const FinalizedCoverageLedger& finalized,
+    std::size_t max_work, unsigned max_depth) noexcept {
+  return CertifyQuadraticFacetCoverageImpl(
+      first_accepted, first_prepared, first_coefficients, first_thickness,
+      second_accepted, second_prepared, second_coefficients, second_thickness,
+      duration, finalized.data(), finalized.count(), max_work, max_depth,
+      true, false, &finalized);
+}
+
+NonlinearSeparationResult CertifyQuadraticFacetPolicyCoverage(
+    const CurrentFixedTriangle& first_accepted,
+    const CurrentFixedTriangle& first_prepared,
+    const FacetQuadraticCoefficients& first_coefficients, double first_thickness,
+    const CurrentFixedTriangle& second_accepted,
+    const CurrentFixedTriangle& second_prepared,
+    const FacetQuadraticCoefficients& second_coefficients, double second_thickness,
+    double duration, const AcceptedEventCertificate* accepted,
+    std::size_t accepted_count,
+    const AcceptedFeatureExclusionCertificate* exclusions,
+    std::size_t exclusion_count, std::size_t max_work, unsigned max_depth,
+    PolicyExclusionSource* deferred_exclusions) noexcept {
+  return CertifyQuadraticFacetPolicyCoverageImpl(
+      first_accepted, first_prepared, first_coefficients, first_thickness,
+      second_accepted, second_prepared, second_coefficients, second_thickness,
+      duration, accepted, accepted_count, exclusions, exclusion_count,
+      max_work, max_depth, deferred_exclusions, nullptr);
+}
+
+NonlinearSeparationResult CertifyQuadraticFacetPolicyCoverage(
+    const CurrentFixedTriangle& first_accepted,
+    const CurrentFixedTriangle& first_prepared,
+    const FacetQuadraticCoefficients& first_coefficients, double first_thickness,
+    const CurrentFixedTriangle& second_accepted,
+    const CurrentFixedTriangle& second_prepared,
+    const FacetQuadraticCoefficients& second_coefficients, double second_thickness,
+    double duration, const FinalizedCoverageLedger& finalized,
+    const AcceptedFeatureExclusionCertificate* exclusions,
+    std::size_t exclusion_count, std::size_t max_work, unsigned max_depth,
+    PolicyExclusionSource* deferred_exclusions) noexcept {
+  return CertifyQuadraticFacetPolicyCoverageImpl(
+      first_accepted, first_prepared, first_coefficients, first_thickness,
+      second_accepted, second_prepared, second_coefficients, second_thickness,
+      duration, finalized.data(), finalized.count(), exclusions, exclusion_count,
+      max_work, max_depth, deferred_exclusions, &finalized);
 }
 
 RigidMemberSweepStatus BuildRigidMemberSweepBounds(

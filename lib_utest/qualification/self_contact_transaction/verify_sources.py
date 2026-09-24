@@ -865,7 +865,6 @@ for token in (
 ):
     require(owner, token, OWNER)
 
-print("fixed self-contact transaction source proof: PASS")
 
 # Qualification-only evidence observes the exact production failure before
 # rollback. It cannot route around policy or publish a candidate.
@@ -1018,3 +1017,24 @@ for build_path in (ROOT / "lib_src/collision/BUILD.bazel",
                    ROOT / "lib_src/collision/SelfContactTransaction.cmake",
                    Path(__file__).resolve().parent / "CMakeLists.txt"):
     require(build_path.read_text(), "self_contact_transaction/CrossingBatch.cpp", build_path)
+
+# Range lookup reuses transaction-owned finalized order without allowing callers
+# to claim that an arbitrary array is sorted. Runtime differential tests are the
+# semantic oracle; these checks pin the production authority/lifetime placement.
+ledger_path = RIGID_SWEEP.with_name("FinalizedCoverageLedger.h")
+ledger = ledger_path.read_text()
+for token in ("friend class ::tlfea::contact::SelfContactTransaction",
+              "FinalizedCoverageLedger(const FinalizedCoverageLedger&) = delete",
+              "std::array<Range, 12>", "fixed_triangle_features::Compare",
+              "feature.vertex_face.vertex", "feature.edge_edge.edges[0]"):
+    require(ledger, token, ledger_path)
+require(candidate, "const sct::FinalizedCoverageLedger coverage_ledger(", CANDIDATE)
+if candidate.index("const sct::FinalizedCoverageLedger coverage_ledger(") < candidate.index("!same_assembly"):
+    raise RuntimeError(f"{CANDIDATE}: finalized ledger borrowed before assembly authentication")
+for token in ("finalized->ForPair(prepared_triangles)",
+              "ranges.values[0] = {0, accepted_count}",
+              "BuildCoverageOwner(", "owner_count == MaximumOwners",
+              "certificate, &owner", "owners[owner - 1].source_order =="):
+    require(rigid_sweep, token, RIGID_SWEEP)
+
+print("fixed self-contact transaction source proof: PASS")

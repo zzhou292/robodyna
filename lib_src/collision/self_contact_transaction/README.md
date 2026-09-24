@@ -83,6 +83,7 @@ candidate diagnostics or reusing a geometry result.
 | `Transaction.cpp` | Accepted event census and staged force publication |
 | `Candidate.cpp` | Owner authentication, swept candidates, continuous policy, sealing, diagnostic census |
 | `RigidSweep.cpp` | Exact rigid/affine path coefficients, directed Bernstein bounds, interval topology and accepted-owner coverage; also used for affine nodal cases |
+| `FinalizedCoverageLedger.h` | Private lexical lookup ranges over the already finalized feature-first accepted ledger; raw geometry calls retain the full-scan oracle |
 | `LocalContact.*`, `TranslatedLocal.*`, `CandidateExclusions.*` | Local topology, exact translation normalization, authenticated support exclusions |
 | `CrossingBatch.*` | Native crossing slice admission and diagnostic adaptation |
 | `Qualification.cpp`, `CandidateFailureCapture.*`, `QualificationReceipt.h` | Authenticated diagnostic access and frozen failure evidence; no independent commit authority |
@@ -124,3 +125,29 @@ Preserve arithmetic order, first-error priority, cohort/seam ownership,
 work accounting, view lifetimes, and atomic publication during extraction.
 Do not combine a numerical change with a file move, or infer acceptance from
 a source-text check alone.
+
+## Accepted owner range lookup
+
+Candidate sealing borrows the transaction's finalized accepted ledger only after
+same-assembly, owner, epoch and attempt authentication. The lexical borrow is
+noncopyable and cannot be constructed by callers; it is never read after a failed
+seal discards scratch and never retained for another attempt. Finalization already
+sorts certificates by complete geometric feature before physical parent ownership.
+No new retained index or device buffer is allocated.
+
+A VF coverage owner must reference one of the candidate pair's six vertices; an EE
+owner's first canonical edge must be one of its six edges. At most twelve prefix
+searches therefore find a complete superset of possible owners. Prefix keys use
+all native source identity fields. The fixed stack ranges are unioned in original
+certificate ordinal order, and the unchanged exact owner builder applies its full
+feature/active-owner/seam tests. Distinct physical owners are never deduplicated.
+The original 64-owner bound, source-order sort, ambiguity checks, certificates,
+Bernstein geometry, subdivision/work accounting and failure policy are unchanged.
+Raw pointer/count coverage calls keep the original full scan, including unsorted
+qualification arrays and small synthetic exclusion arrays.
+
+`OwnerRangeCases.h` compares every result field against that raw full scan and
+checks seam/owner provenance, native VF strata and both orientations, EE identity,
+malformed owners, duplicate source order, 0/64/65 owners, work/depth/geometry errors,
+deferred exclusion behavior and ordinal preservation. Deterministic lookup/visit
+counts show reduced search work on a sparse ledger; no wall-time speedup is claimed.

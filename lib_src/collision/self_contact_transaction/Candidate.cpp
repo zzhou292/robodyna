@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Storage.h"
+#include "FinalizedCoverageLedger.h"
 #include "CandidateExclusions.h"
 #include "CrossingBatch.h"
 #include "TranslatedLocal.h"
@@ -818,6 +819,12 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
       state.buffers.surface_to_active, state.surface_parent_count,
       state.buffers.parent_facet_offsets, parents.size(), activity);
   if (streamed.status != S::Ok) return state.Fail(streamed);
+  // Finalization sorted this transaction-owned ledger by immutable feature,
+  // then physical ownership. Same-assembly checks above authenticate its epoch
+  // and attempt. This synchronous borrow is never accessed after discard
+  // and never retained for another attempt.
+  const sct::FinalizedCoverageLedger coverage_ledger(
+      state.buffers.accepted_certificates, state.accepted_event_count);
   SelfContactCandidatePolicySummary summary;
   std::size_t policy_outcomes = 0;
   std::size_t crossing_work = 0;
@@ -1257,8 +1264,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
                 parents[second_parent].
                     reference_half_thickness_m,
                 duration,
-                state.buffers.accepted_certificates,
-                state.accepted_event_count,
+                coverage_ledger,
                 nullptr, 0, coverage_allowed,
                 state.storage_forecast.nonlinear_subdivision_depth,
                 &exclusion_source);
@@ -1618,8 +1624,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
                   parents[second_parent].
                       reference_half_thickness_m,
                   duration,
-                  state.buffers.accepted_certificates,
-                  state.accepted_event_count,
+                  coverage_ledger,
                   nullptr, 0,
                   state.storage_forecast.crossing_work_per_pair,
                   state.storage_forecast.crossing_depth, &exclusion_source);
