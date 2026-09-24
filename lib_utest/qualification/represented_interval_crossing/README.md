@@ -128,3 +128,33 @@ fixed-feature discovery output and run the actual selected initial/short
 interval inventory. CUDA/device implementation, full-source counts,
 rigid/nonlinear path enclosures, force/STI and common publication remain
 separate gates.
+
+## Lazy exact normal reuse
+
+Each worker's existing `ExactScratch` retains six additional exact normals, one
+for each triangle at each of the three cell samples, plus six readiness flags.
+Every `EvaluateCell` resets all flags before replacing coordinates. A normal is
+computed only at its first original request; readiness becomes true only after
+checked arithmetic completes. The first At/degeneracy pass and later short-circuit
+checks remain in the original order. Intersections, all six VF feature tests and
+regularity consume const references to those same exact normals. EE traversal,
+common-translation evaluation, feature ordering, work/depth limits and publication
+remain unchanged. No cache is shared across workers or cells, and no cached-input
+flag or cache address is supplied by a caller.
+
+The native forecast/allocation/retained-alias checks already use
+`sizeof(ExactScratch)`, so all six normals and readiness flags are counted before
+admission. Caps are unchanged. Exact integers still use the fixed 16,384-bit
+checked backend without a heap allocator; normal reuse adds no per-pair allocation.
+
+`NormalReuseQualification.h` compares fixed compile-time recomputing and memoized
+executors on the same validated canonical pair. It returns the unchanged native
+`StoreResult` representation and separate saturating diagnostic counts, never a
+physical receipt or a runtime mode. `NormalReuseTest.cpp` compares all result
+fields against this original uncached oracle, then compares public owner and batch
+publication, one/four-worker scheduling, deep/degenerate/extreme-coordinate cases,
+cell/pair/call reuse, alias/cap failure and retry. The degenerate-first-sample case
+requires the original midpoint crossing and exactly three first-use normals;
+this specifically rejects eager six-normal evaluation. Forecast tests cover the
+exact enlarged scratch size and byte-cap-minus-one admission. Operation counts
+prove removed repeated calculations; throughput gains require measurement.

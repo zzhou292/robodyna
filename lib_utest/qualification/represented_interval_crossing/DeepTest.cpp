@@ -151,18 +151,9 @@ TEST(RepresentedIntervalCrossing,
   ct::RepresentedIntervalLimits limits;
   limits.max_depth = 52;
   auto owner = Owner(limits);
-  const double huge = std::ldexp(1.0, 900);
-  const double tiny = std::numeric_limits<double>::denorm_min();
-  const std::array<ct::Vec3, 3> base{
-      ct::Vec3{0, 0, 0}, {huge, 0, 0}, {0, huge, 0}};
-  const std::array<ct::Vec3, 3> first{
-      ct::Vec3{huge, 0, tiny}, {2 * huge, 0, tiny},
-      {huge, huge, tiny}};
-  const std::array<ct::Vec3, 3> second{
-      ct::Vec3{-huge, 0, tiny}, {0, 0, tiny},
-      {-huge, huge, tiny}};
-  const auto a = Static(10, base);
-  const auto b = Path(20, first, second);
+  const auto paths = MixedExponentPaths();
+  const auto& a = paths[0];
+  const auto& b = paths[1];
   const auto result = One(owner, {a, b});
   EXPECT_EQ(result.classification, C::CertifiedSeparated);
   EXPECT_EQ(result.reason, R::None);

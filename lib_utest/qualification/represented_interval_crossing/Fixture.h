@@ -90,6 +90,18 @@ inline std::array<ct::Vec3, 3> BaseTriangle(double z = 0) {
   return {{{0, 0, z}, {2, 0, z}, {0, 2, z}}};
 }
 
+inline std::array<ct::RepresentedTrianglePath, 2> MixedExponentPaths() {
+  const double huge = std::ldexp(1.0, 900);
+  const double tiny = std::numeric_limits<double>::denorm_min();
+  const std::array<ct::Vec3, 3> base{
+      ct::Vec3{0, 0, 0}, {huge, 0, 0}, {0, huge, 0}};
+  const std::array<ct::Vec3, 3> first{
+      ct::Vec3{huge, 0, tiny}, {2 * huge, 0, tiny}, {huge, huge, tiny}};
+  const std::array<ct::Vec3, 3> second{
+      ct::Vec3{-huge, 0, tiny}, {0, 0, tiny}, {-huge, huge, tiny}};
+  return {Static(10, base), Path(20, first, second)};
+}
+
 inline ct::RepresentedIntervalResult One(
     ct::RepresentedIntervalCrossing& owner,
     const std::vector<ct::RepresentedTrianglePath>& paths,

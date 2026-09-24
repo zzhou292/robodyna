@@ -15,7 +15,7 @@ bazel = (collision / "BUILD.bazel").read_text()
 test_cmake = (here / "CMakeLists.txt").read_text()
 test_bazel = (here / "BUILD.bazel").read_text()
 test_sources = (
-    "BatchRosterTest.cpp", "GeometryTest.cpp", "InvarianceTest.cpp", "FailureTest.cpp",
+    "BatchRosterTest.cpp", "NormalReuseTest.cpp", "ResultAssertions.h", "GeometryTest.cpp", "InvarianceTest.cpp", "FailureTest.cpp",
     "IdentityTest.cpp", "DeepTest.cpp", "OracleTest.cpp",
     "ParallelTest.cpp", "TranslationProofTest.cpp", "Oracle.cpp",
 )
@@ -189,6 +189,22 @@ for forbidden in (
     "adaptive_timestep",
 ):
     assert forbidden not in public + types + source
+
+
+
+# The retained exact normal cache is private, cell-local and fully forecast.
+normal_implementation = (root / "lib_src/collision/RepresentedIntervalCrossing.cpp").read_text()
+for token in ("ExactVec3 normal_a[3]", "ExactVec3 normal_b[3]",
+              "bool ready_a[3]", "bool ready_b[3]", "scratch->BeginCell()",
+              "normal = Normal(second ? b[sample] : a[sample], counters)",
+              "ready = true", "template <NormalReuse reuse = NormalReuse::Memoize>",
+              "CertifyPair<NormalReuse::Recompute>", "sizeof(ExactScratch)"):
+    if token not in normal_implementation:
+        raise RuntimeError(f"Missing lazy normal cache contract: {token}")
+normal_cell = normal_implementation[normal_implementation.index("CellEvaluation EvaluateCell("):
+                                    normal_implementation.index("void RaiseReason(")]
+if normal_cell.index("scratch->BeginCell()") > normal_cell.index("scratch->a[sample] = At("):
+    raise RuntimeError("Exact normal readiness survives cell coordinate replacement")
 
 print(json.dumps({
     "status": "passed",

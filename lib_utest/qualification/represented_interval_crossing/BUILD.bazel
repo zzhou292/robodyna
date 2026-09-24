@@ -10,6 +10,8 @@ cc_test(
     size = "small",
     srcs = [
         "BatchRosterTest.cpp",
+        "NormalReuseTest.cpp",
+        "ResultAssertions.h",
         "DeepTest.cpp",
         "FailureTest.cpp",
         "Fixture.h",
@@ -38,6 +40,8 @@ cc_test(
         "BUILD.bazel",
         "CMakeLists.txt",
         "BatchRosterTest.cpp",
+        "NormalReuseTest.cpp",
+        "ResultAssertions.h",
         "DeepTest.cpp",
         "FailureTest.cpp",
         "GeometryTest.cpp",
