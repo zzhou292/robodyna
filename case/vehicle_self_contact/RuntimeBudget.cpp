@@ -41,6 +41,9 @@ tlfea::contact::SelfContactTransactionConfig TransactionConfig(
     result.broadphase_axis = config.broadphase_axis;
     result.enable_diagnostics = config.enable_diagnostics;
     result.enable_cuda_facet_filters = config.enable_cuda_facet_filters;
+    result.enable_cuda_native_crossing = config.enable_cuda_native_crossing;
+    result.native_crossing_device_workers = config.native_crossing_device_workers;
+    result.native_crossing_numeric_cohort_pairs = config.native_crossing_numeric_cohort_pairs;
     return result;
 }
 

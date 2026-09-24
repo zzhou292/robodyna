@@ -38,6 +38,12 @@ struct Discovery {
     std::uint64_t exact_executed_tasks=0;
     DiscoveryTiming timing;
 };
+struct NativeDevice {
+    std::uint64_t calls=0,failures=0,admitted_pairs=0,consumed_pairs=0,host_pairs=0;
+    std::uint64_t launches=0,scene_uploads=0,numeric_cohorts=0;
+    std::size_t last_fault_cohort_begin=SIZE_MAX,last_fault_cohort_count=0;
+    std::size_t last_fault_pair_ordinal=SIZE_MAX;
+};
 struct Phase {
     bool enabled=false,entered=false,finished=false,succeeded=false,authenticated=false;
     std::uint64_t owner_id=0,base_epoch=0,attempt=0;
@@ -45,6 +51,7 @@ struct Phase {
     std::uint64_t clock_failures=0,backward_samples=0;
     std::array<benchmarks::StageCounter,StageCount> stages{};
     Discovery discovery;
+    NativeDevice native_device;
     std::uint64_t native_batches=0,native_submitted_pairs=0,native_work=0;
 };
 struct Snapshot {

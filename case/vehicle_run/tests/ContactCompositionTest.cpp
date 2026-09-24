@@ -28,6 +28,8 @@ TEST(VehicleContactComposition, SelfProfileCannotProceedWithoutItsSource) {
     EXPECT_EQ(wall.runtime_config().event_capacity, 0u);
     EXPECT_FALSE(wall.runtime_config().enable_diagnostics);
     EXPECT_FALSE(wall.runtime_config().enable_cuda_facet_filters);
+    EXPECT_FALSE(wall.runtime_config().enable_cuda_native_crossing);
+    EXPECT_THROW(ContactComposition::Prepare(ContactProfile::WallOnly,{},false,false,true),std::exception);
     EXPECT_THROW(ContactComposition::Prepare(ContactProfile::WallOnly,{},false,true),std::exception);
     EXPECT_THROW(ContactComposition::Prepare(ContactProfile::WallOnly,{},true),std::exception);
 }

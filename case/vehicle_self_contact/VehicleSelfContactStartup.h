@@ -18,6 +18,9 @@ struct RuntimeConfig {
     unsigned broadphase_axis = 0;
     bool enable_diagnostics = false;
     bool enable_cuda_facet_filters = false;
+    bool enable_cuda_native_crossing = false;
+    unsigned native_crossing_device_workers = 128;
+    std::size_t native_crossing_numeric_cohort_pairs = 0;
 };
 
 struct RuntimeLimits {

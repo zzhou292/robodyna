@@ -29,6 +29,7 @@ TEST(VehicleRunSummary, StartupFailureDoesNotInventAcceptedTimeOrContactObservat
     EXPECT_FALSE(document.HasMember("contact_observations_available"));
     EXPECT_FALSE(document.HasMember("archive_manifest_file"));
     EXPECT_FALSE(document.HasMember("self_contact_cuda_facet_filters_requested"));
+    EXPECT_FALSE(document.HasMember("self_contact_cuda_native_crossing_requested"));
     EXPECT_FALSE(document.HasMember("self_contact_facet_filter_initialization"));
     EXPECT_LE(record.bytes,SummaryByteCap);
     EXPECT_THROW(detail::WriteSummary(directory.path,config,Plan(config),{},result),std::exception);
@@ -162,6 +163,23 @@ TEST(VehicleRunSummary, RequestedFiltersAndActualInitializationAreDistinctNonphy
         EXPECT_FALSE(document.HasMember("self_contact_cuda_queries"));
         EXPECT_LT(file.bytes,SummaryByteCap);
     }
+}
+
+TEST(VehicleRunSummary, NativeGpuRequestDoesNotInventExecutionOnStartupFailure) {
+    records::test::Directory directory;
+    Config config;config.physical_profile=PhysicalProfile::VehicleSupportsV5;
+    config.contact_profile=ContactProfile::WallSelfContactV1;config.fixed_dt_s=2e-7;
+    config.self_contact_cuda_native_crossing=true;
+    Result result;result.loop.kind=StopKind::StartupFailure;
+    const auto file=detail::WriteSummary(directory.path,config,Plan(config),{},result);
+    const auto document=Read(directory.path/file.file);
+    EXPECT_TRUE(document["self_contact_cuda_native_crossing_requested"].GetBool());
+    EXPECT_EQ(document["self_contact_native_device_workers"].GetUint64(),4096u);
+    EXPECT_EQ(document["self_contact_native_numeric_cohort_pairs"].GetUint64(),4096u);
+    EXPECT_FALSE(document["session_initialized"].GetBool());
+    EXPECT_FALSE(document.HasMember("self_contact_cuda_queries"));
+    EXPECT_FALSE(document.HasMember("self_contact_native_crossing_initialized"));
+    EXPECT_LT(file.bytes,SummaryByteCap);
 }
 
 } // namespace crash::cases::vehicle_run::test

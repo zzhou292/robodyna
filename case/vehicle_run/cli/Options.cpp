@@ -26,6 +26,7 @@ Options Parse(int argc,const char* const* argv) {
         if(std::char_traits<char>::length(argv[i])>4096) throw std::invalid_argument("CLI option exceeds path/text cap");
         const std::string name=argv[i];
         if(!supplied.insert(name).second) throw std::invalid_argument("Duplicate CLI option");
+        if(name=="--self-contact-cuda-native-crossing") {result.config.self_contact_cuda_native_crossing=true;continue;}
         if(name=="--self-contact-cuda-facet-filters") {result.config.self_contact_cuda_facet_filters=true;continue;}
         if(name=="--self-contact-diagnostics") {result.config.self_contact_diagnostics=true;continue;}
         if(name=="--forecast-only") {result.forecast_only=true;continue;}
@@ -104,6 +105,6 @@ const char* Usage() noexcept {
         "[--contact-profile wall-only|wall-self-contact-v1] [--self-contact-member FILE] "
         "[--duration-ms 0.5|5|20|50] [--fixed-dt-s 3e-7] [--gap-m .02] [--samples 101] "
         "[--wall-stiffness-n-m3 VALUE] [--penetration-limit-m VALUE] "
-        "[--self-contact-diagnostics] [--self-contact-cuda-facet-filters] [--self-contact-failure-output ABSENT_DIR] [--diagnostic-intervals N] [--maximum-elapsed-s SEC] [--stop-file PATH] [--forecast-only] [--conditional-full-limits]";
+        "[--self-contact-diagnostics] [--self-contact-cuda-facet-filters] [--self-contact-cuda-native-crossing] [--self-contact-failure-output ABSENT_DIR] [--diagnostic-intervals N] [--maximum-elapsed-s SEC] [--stop-file PATH] [--forecast-only] [--conditional-full-limits]";
 }
 } // namespace crash::cases::vehicle_run::cli

@@ -198,4 +198,25 @@ TEST(VehicleRunOptions, CudaFacetFiltersAreExplicitAndForecastUsesTheSameOption)
     EXPECT_THROW(Parse(args),std::invalid_argument);
 }
 
+TEST(VehicleRunOptions, NativeCudaRequestIsExplicitAndSharesForecastConfiguration) {
+    auto args=Arguments();
+    EXPECT_FALSE(Parse(args).config.self_contact_cuda_native_crossing);
+    args.push_back("--self-contact-cuda-native-crossing");
+    EXPECT_THROW(Parse(args),std::invalid_argument);
+    args.insert(args.end(),{"--contact-profile","wall-self-contact-v1","--self-contact-member","combine.key",
+        "--physical-profile","vehicle-supports-v5","--fixed-dt-s","2e-7"});
+    const auto runtime=Parse(args);
+    EXPECT_TRUE(runtime.config.self_contact_cuda_native_crossing);
+    EXPECT_FALSE(runtime.config.self_contact_cuda_facet_filters);
+    EXPECT_EQ(runtime.config.fixed_dt_s,2e-7);
+    EXPECT_EQ(runtime.config.resources,ResourceProfile::Normal);
+    args.push_back("--forecast-only");
+    const auto forecast=Parse(args);
+    EXPECT_TRUE(forecast.forecast_only && forecast.config.self_contact_cuda_native_crossing);
+    EXPECT_EQ(Plan(runtime.config).intervals,Plan(forecast.config).intervals);
+    EXPECT_NE(std::string(cli::Usage()).find("--self-contact-cuda-native-crossing"),std::string::npos);
+    args.push_back("--self-contact-cuda-native-crossing");
+    EXPECT_THROW(Parse(args),std::invalid_argument);
+}
+
 } // namespace crash::cases::vehicle_run::test

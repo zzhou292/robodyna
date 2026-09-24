@@ -262,4 +262,34 @@ TEST(VehicleSelfContactRuntimeValues, TotalStartupScratchIncludesOptionalCompone
     EXPECT_THROW(detail::TransactionStartupScratch(transaction),std::runtime_error);
 }
 
+TEST(VehicleSelfContactRuntimeValues, NativeExecutionOptionsUseSharedMapperAndKeepForceIdentity) {
+    RuntimeConfig config;
+    EXPECT_FALSE(config.enable_cuda_native_crossing);
+    config.source_id=29;config.event_capacity=31;config.broadphase_axis=2;
+    config.native_crossing_device_workers=4096;config.native_crossing_numeric_cohort_pairs=4096;
+    tl::fea::NodalStamp owner;
+    owner.owner_id=17;owner.epoch=3;owner.fixed_dt=2e-7;owner.time=6e-7;
+    tl::fea::ShellPhysicalPublicationIdentity identity;
+    identity.configuration_id=19;identity.qualification_id=23;
+    for(bool native:{false,true})for(bool filters:{false,true}) {
+        config.enable_cuda_native_crossing=native;config.enable_cuda_facet_filters=filters;
+        const auto mapped=detail::TransactionConfig(config,owner,identity);
+        EXPECT_EQ(mapped.enable_cuda_native_crossing,native);
+        EXPECT_EQ(mapped.enable_cuda_facet_filters,filters);
+        EXPECT_EQ(mapped.native_crossing_device_workers,4096u);
+        EXPECT_EQ(mapped.native_crossing_numeric_cohort_pairs,4096u);
+        EXPECT_EQ(mapped.force.owner.fixed_dt,2e-7);
+        EXPECT_EQ(mapped.force.owner.epoch,3u);
+        EXPECT_EQ(mapped.force.owner.time,6e-7);
+        EXPECT_EQ(mapped.force.event_capacity,31u);
+        EXPECT_EQ(mapped.force.stiffness_per_area_n_m3,2e9);
+        EXPECT_EQ(mapped.force.configuration_id,19u);
+        EXPECT_EQ(mapped.force.qualification_id,23u);
+        auto filter_fallback=config;filter_fallback.enable_cuda_facet_filters=false;
+        const auto fallback=detail::TransactionConfig(filter_fallback,owner,identity);
+        EXPECT_EQ(fallback.enable_cuda_native_crossing,native);
+        EXPECT_EQ(fallback.native_crossing_numeric_cohort_pairs,4096u);
+    }
+}
+
 }  // namespace crash::cases::vehicle_self_contact::test

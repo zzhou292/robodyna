@@ -1,4 +1,5 @@
 #include "ContactComposition.h"
+#include "Config.h"
 
 #include "lib_src/elements/ShellBatchBinding.h"
 #include "output/ArtifactIO.h"
@@ -71,11 +72,13 @@ void CheckSelfStep(const vehicle_dynamics::Config& dynamics) {
 
 ContactComposition ContactComposition::Prepare(
     ContactProfile profile,
-    std::shared_ptr<const self::VehicleSelfContactSetup> source, bool enable_diagnostics, bool enable_cuda_facet_filters) {
+    std::shared_ptr<const self::VehicleSelfContactSetup> source, bool enable_diagnostics,
+    bool enable_cuda_facet_filters, bool enable_cuda_native_crossing) {
     ContactProfileName(profile);
     ContactComposition result;
     result.profile_ = profile;
     if (profile == ContactProfile::WallOnly) {
+        output::Require(!enable_cuda_native_crossing, "CUDA native crossing cannot attach to wall-only composition");
         output::Require(!enable_cuda_facet_filters, "CUDA facet filters cannot attach to wall-only composition");
         output::Require(!enable_diagnostics, "Self-contact diagnostics cannot attach to wall-only composition");
         output::Require(!source,
@@ -87,6 +90,11 @@ ContactComposition ContactComposition::Prepare(
     result.runtime_config_ = {SelfSourceId, EventCapacity, 0};
     result.runtime_config_.enable_diagnostics = enable_diagnostics;
     result.runtime_config_.enable_cuda_facet_filters = enable_cuda_facet_filters;
+    result.runtime_config_.enable_cuda_native_crossing = enable_cuda_native_crossing;
+    if (enable_cuda_native_crossing) {
+        result.runtime_config_.native_crossing_device_workers = NativeCrossingDeviceWorkers;
+        result.runtime_config_.native_crossing_numeric_cohort_pairs = NativeCrossingNumericCohortPairs;
+    }
     result.runtime_limits_ = RuntimeLimits(*source);
     result.self_contact_ = std::move(source);
     return result;

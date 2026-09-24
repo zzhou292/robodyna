@@ -72,6 +72,13 @@ records::RecordFile WriteSummary(const std::filesystem::path& root,const Config&
         String(document,"contact_profile",ContactProfileName(config.contact_profile));
         Integer(document,"complete_device_bytes",forecast.contact.device_bytes);
     }
+    if (config.self_contact_cuda_native_crossing) {
+        Boolean(document,"self_contact_cuda_native_crossing_requested",true);
+        Integer(document,"self_contact_native_device_workers",NativeCrossingDeviceWorkers);
+        Integer(document,"self_contact_native_numeric_cohort_pairs",NativeCrossingNumericCohortPairs);
+        String(document,"self_contact_native_execution_scope",
+            "requested numerical backend; actual device/host routing is in performance diagnostics");
+    }
     if (config.self_contact_cuda_facet_filters) {
         Boolean(document,"self_contact_cuda_facet_filters_requested",true);
         String(document,"self_contact_facet_filter_initialization",

@@ -59,6 +59,10 @@ Phase CopyPhase(const Native& source) noexcept {
     out.native_batches=source.native_batches;
     out.native_submitted_pairs=source.native_submitted_pairs;
     out.native_work=source.native_work;
+    const auto& device=source.native_device;
+    out.native_device={device.calls,device.failures,device.admitted_pairs,device.consumed_pairs,
+        device.host_pairs,device.launches,device.scene_uploads,device.numeric_cohorts,
+        device.last_fault_cohort_begin,device.last_fault_cohort_count,device.last_fault_pair_ordinal};
     return out;
 }
 bool Matches(const Phase& phase,std::uint64_t owner,std::uint64_t base,std::uint64_t attempt) noexcept {

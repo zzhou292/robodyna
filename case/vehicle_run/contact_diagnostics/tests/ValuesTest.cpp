@@ -108,6 +108,8 @@ TEST(VehicleContactDiagnostics, FixedWorstCaseScalarDocumentFitsExistingSummaryA
         phase->discovery.potential_tasks=UINT64_MAX;
         phase->discovery.local_masked_tasks=UINT64_MAX;
         phase->discovery.exact_executed_tasks=UINT64_MAX;
+        phase->native_device={UINT64_MAX,UINT64_MAX,UINT64_MAX,UINT64_MAX,UINT64_MAX,
+            UINT64_MAX,UINT64_MAX,UINT64_MAX,SIZE_MAX-1,SIZE_MAX,SIZE_MAX-1};
         phase->discovery.timed_calls=UINT64_MAX;
         phase->discovery.timing.clock_failures=UINT64_MAX;
         phase->discovery.timing.backward_samples=UINT64_MAX;
@@ -155,4 +157,30 @@ TEST(VehicleContactDiagnostics, DiscoveryStagesExposeMissingSamplesWithoutInvent
     const auto count_overflow=Document(Copy(source));
     EXPECT_FALSE(count_overflow["candidate"]["discovery"]["timing"]["covers_reported_calls"].GetBool());
 }
+TEST(VehicleContactDiagnostics, NativePrefetchConsumptionAndFaultsRemainDistinct) {
+    auto source=Input();
+    EXPECT_FALSE(Document(Copy(source))["candidate"].HasMember("native_device"));
+    auto& device=source.candidate.native_device;
+    device.calls=2;device.failures=1;device.admitted_pairs=4096;device.consumed_pairs=256;
+    device.host_pairs=17;device.launches=1;device.scene_uploads=1;device.numeric_cohorts=1;
+    device.last_fault_cohort_begin=4096;device.last_fault_cohort_count=257;
+    source.candidate.succeeded=false;
+    const auto document=Document(Copy(source));
+    const auto& output=document["candidate"]["native_device"];
+    EXPECT_EQ(output["admitted_pairs"].GetUint64(),4096u);
+    EXPECT_EQ(output["consumed_pairs"].GetUint64(),256u);
+    EXPECT_EQ(output["host_pairs"].GetUint64(),17u);
+    EXPECT_EQ(output["launches"].GetUint64(),1u);
+    EXPECT_EQ(output["scene_uploads"].GetUint64(),1u);
+    EXPECT_EQ(output["numeric_cohorts"].GetUint64(),1u);
+    EXPECT_EQ(output["last_fault_cohort_begin"].GetUint64(),4096u);
+    EXPECT_EQ(output["last_fault_cohort_count"].GetUint64(),257u);
+    EXPECT_FALSE(output.HasMember("last_fault_pair_ordinal"));
+    EXPECT_EQ(document["candidate"]["native_work"].GetUint64(),90u);
+    EXPECT_FALSE(Committed(source,7,2,9).phase_matches);
+    device.last_fault_pair_ordinal=(std::size_t{1}<<54)+7;
+    const auto known=Document(Copy(source));
+    EXPECT_EQ(known["candidate"]["native_device"]["last_fault_pair_ordinal"].GetUint64(),device.last_fault_pair_ordinal);
+}
+
 } // namespace crash::cases::vehicle_run::contact_diagnostics::test

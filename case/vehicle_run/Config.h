@@ -6,6 +6,10 @@ namespace crash::cases::vehicle_run {
 enum class ResourceProfile { Normal, ConditionalExpandedFull };
 enum class PhysicalProfile { RetainedShellAssembliesV1, ExtendedSolidsV4, VehicleSupportsV5 };
 const char* PhysicalProfileName(PhysicalProfile);
+// Execution capacity of the explicit native CUDA option, not physical work or
+// publication slice limits. Shared by composition and descriptive run metadata.
+inline constexpr unsigned NativeCrossingDeviceWorkers=4096;
+inline constexpr std::size_t NativeCrossingNumericCohortPairs=4096;
 struct Config {
     // Explicit 0.5 ms preview or 5/20/50 ms run; all use the same fixed-step planner.
     double duration_s=.005;
@@ -16,6 +20,7 @@ struct Config {
     ContactProfile contact_profile=ContactProfile::WallOnly;
     bool self_contact_diagnostics=false;
     bool self_contact_cuda_facet_filters=false;
+    bool self_contact_cuda_native_crossing=false;
 };
 struct Horizon {
     std::uint64_t intervals=0;

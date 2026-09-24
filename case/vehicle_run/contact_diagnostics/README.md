@@ -22,8 +22,8 @@ so a failed candidate is not mislabeled as the last committed interval.
 
 Summary/progress fields are omitted when disabled. Optional summary objects add
 no interval or physical archive fields, physical schema, solver clock, receipt
-or publication authority. Nine fixed stage counters and bounded scalar discovery
-counts fit the existing controller/summary allowances. No CUDA synchronization,
+or publication authority. Nine fixed outer stage counters, seven child discovery scopes and bounded
+native routing counts are checked against the controller/summary allowances. No CUDA synchronization,
 per-pair logging, dynamically growing sample list or physical branch is added.
 
 Times are coordinator host elapsed scopes, including waits already present;
@@ -40,3 +40,14 @@ Qualification reuses `vehicle_run_values`, `vehicle_run_reports`, and
 phase matching, clock failure, bounded JSON, failure/published separation,
 failed-append retention and decorator forwarding. Native instrumentation also
 requires its owning TL tests; none of these host observations proves performance.
+
+When child discovery timing is present, its seven scopes split admission/ledger,
+input sorting, task preparation, worker geometry including waits, ordered result
+fold, output sorting and publication. They are a breakdown of outer Discovery,
+not additional time to sum with it. Missing or saturated samples omit durations.
+`covers_reported_calls` is false when either count is saturated.
+
+`native_device` is omitted when no optional native backend call ran. Admitted
+jobs can include prefetched later slices; consumed jobs entered native staging.
+Neither means physical commit. Its fault ordinals are local to the compact
+native input cohort. Existing native work counters keep their original meaning.

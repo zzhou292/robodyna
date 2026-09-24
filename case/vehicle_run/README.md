@@ -406,3 +406,27 @@ candidate_chunk_before_serial_fold scope, the original chunk offset/count, and
 the unchanged backend status/message. It does not invent an offending pair.
 Ordinary row failures still occur at their original serial positions; these
 nonphysical error fields do not change archive authority.
+
+## Optional native CUDA certificates
+
+`--self-contact-cuda-native-crossing` selects the bounded native CUDA execution
+owner for `wall-self-contact-v1`. It is off by default and independent of CUDA
+facet filters. Composition passes the same choice into preview, preflight and
+runtime through the shared transaction mapper. The explicit app profile uses
+4,096 device workers and a 4,096-pair numerical cohort; original native
+publication slices and per-pair/per-slice work caps are unchanged.
+
+There is one crossing owner. Its authenticated supported numerical rows run on
+CUDA; unsupported rows use its existing CPU pool before numerical execution.
+Initialization or device execution failure never silently selects/retries a CPU
+backend. A failed larger numerical launch preserves publication preceding that
+cohort; native ordinary input and work failures retain their serial boundaries.
+
+The complete runtime forecast includes device staging/scratch, retained host
+storage and the one CPU fallback pool. Existing host/device/archive caps and
+workstation guards still apply. Requested settings appear in run metadata;
+actual calls, admitted/prefetched jobs, consumed jobs, CPU rows, launches and
+scene uploads appear only in optional performance diagnostics. Consumed numerical
+rows are not physical commits. Device fault metadata carries compact-input
+window/ordinal context without inventing a physical collision. Standalone speed
+measurements do not qualify this option for a long vehicle run.

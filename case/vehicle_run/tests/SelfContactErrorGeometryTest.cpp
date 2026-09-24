@@ -180,4 +180,25 @@ TEST(VehicleRunSelfContactError, MissingMotionAndInvalidGroupCountRemainExplicit
     EXPECT_EQ(facet["rigid_groups"].Size(), 4u);
 }
 
+TEST(VehicleRunSelfContactError, NativeDeviceWindowDoesNotFabricatePhysicalPair) {
+    contact::SelfContactTransactionReport report;
+    EXPECT_FALSE(Encode(report).HasMember("crossing_device_status_code"));
+    report.crossing_device_status=contact::RepresentedIntervalDeviceStatus::Ok;
+    EXPECT_FALSE(Encode(report).HasMember("crossing_device_status_code"));
+    report.status=contact::SelfContactTransactionStatus::CrossingFailure;
+    report.crossing_status=contact::RepresentedIntervalStatus::ResourceLimit;
+    report.crossing_device_status=contact::RepresentedIntervalDeviceStatus::DeviceFailure;
+    report.crossing_fault_cohort_begin=(std::size_t{1}<<54)+11;
+    report.crossing_fault_cohort_count=4096;
+    const auto document=Encode(report);
+    EXPECT_EQ(document["crossing_fault_cohort_begin"].GetUint64(),report.crossing_fault_cohort_begin);
+    EXPECT_EQ(document["crossing_fault_cohort_count"].GetUint64(),4096u);
+    EXPECT_FALSE(document.HasMember("crossing_fault_pair_ordinal"));
+    EXPECT_FALSE(document.HasMember("pair_ordinal"));
+    report.crossing_fault_pair_ordinal=report.crossing_fault_cohort_begin+2;
+    const auto known=Encode(report);
+    EXPECT_EQ(known["crossing_fault_pair_ordinal"].GetUint64(),report.crossing_fault_pair_ordinal);
+    EXPECT_FALSE(known.HasMember("pair_ordinal"));
+}
+
 }  // namespace crash::cases::vehicle_run::test

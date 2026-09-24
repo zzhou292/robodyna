@@ -60,6 +60,16 @@ output::Document SelfContactErrorDocument(
         Integer(document, "required_events_lower_bound", error.required_events_lower_bound());
     if (report.pair != SIZE_MAX) Integer(document, "pair_ordinal", report.pair);
     if (report.discovery_task != SIZE_MAX) Integer(document, "discovery_task", report.discovery_task);
+    if (report.crossing_device_status != tlfea::contact::RepresentedIntervalDeviceStatus::NotInvoked &&
+        report.crossing_device_status != tlfea::contact::RepresentedIntervalDeviceStatus::Ok) {
+        Integer(document,"crossing_device_status_code",static_cast<unsigned>(report.crossing_device_status));
+        String(document,"crossing_fault_scope","native CUDA initialization or execution; optional ordinals refer to compact input, not a physical collision");
+        if(report.crossing_fault_cohort_begin!=SIZE_MAX)
+            Integer(document,"crossing_fault_cohort_begin",report.crossing_fault_cohort_begin);
+        Integer(document,"crossing_fault_cohort_count",report.crossing_fault_cohort_count);
+        if(report.crossing_fault_pair_ordinal!=SIZE_MAX)
+            Integer(document,"crossing_fault_pair_ordinal",report.crossing_fault_pair_ordinal);
+    }
     if (report.filter_status != tlfea::contact::self_contact_filters::Status::Ok)
         Integer(document, "filter_status_code", static_cast<unsigned>(report.filter_status));
     if (report.filter_scope != tlfea::contact::SelfContactFacetFilterFailureScope::None) {

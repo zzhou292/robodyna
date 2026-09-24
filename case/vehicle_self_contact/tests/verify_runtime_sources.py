@@ -175,6 +175,15 @@ def main() -> None:
             (run / "ContactComposition.cpp").read_text(),
             "public run request must reach the runtime configuration used by both factory calls")
 
+    for field in ("enable_cuda_native_crossing", "native_crossing_device_workers",
+                  "native_crossing_numeric_cohort_pairs"):
+        require("result." + field + " = config." + field + ";" in mapper,
+                "native execution preview/startup must share exact mapper: " + field)
+    require("config.self_contact_cuda_native_crossing" in (run / "Prepare.cpp").read_text() and
+            "result.runtime_config_.enable_cuda_native_crossing = enable_cuda_native_crossing" in
+            (run / "ContactComposition.cpp").read_text(),
+            "public native CUDA request must reach the common composition")
+
     startup_header = (
         contact / "VehicleSelfContactStartup.h").read_text()
     private = startup_header.find("private:")

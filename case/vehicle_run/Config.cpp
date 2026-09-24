@@ -13,6 +13,8 @@ const char* PhysicalProfileName(PhysicalProfile profile) {
 Horizon Plan(const Config& config) {
     PhysicalProfileName(config.physical_profile);
     ContactProfileName(config.contact_profile);
+    if(config.self_contact_cuda_native_crossing && config.contact_profile!=ContactProfile::WallSelfContactV1)
+        throw std::invalid_argument("CUDA native crossing requires the explicit wall+self profile");
     if(config.self_contact_cuda_facet_filters && config.contact_profile!=ContactProfile::WallSelfContactV1)
         throw std::invalid_argument("CUDA facet filters require the explicit wall+self profile");
     if(config.self_contact_diagnostics && config.contact_profile!=ContactProfile::WallSelfContactV1)

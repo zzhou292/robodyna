@@ -31,6 +31,23 @@ output::Document PhaseDocument(const Phase& phase) {
     Integer(result,"clock_failures",phase.clock_failures);Integer(result,"backward_samples",phase.backward_samples);
     Integer(result,"native_batches",phase.native_batches);
     Integer(result,"native_submitted_pairs",phase.native_submitted_pairs);Integer(result,"native_work",phase.native_work);
+    if(phase.native_device.calls) {
+        const auto& source=phase.native_device;
+        output::Document device;device.SetObject();
+        String(device,"scope","numerical execution; admitted includes prefetch; consumed means native staging, not physical commit");
+        Integer(device,"calls",source.calls);Integer(device,"failures",source.failures);
+        Integer(device,"admitted_pairs",source.admitted_pairs);Integer(device,"consumed_pairs",source.consumed_pairs);
+        Integer(device,"host_pairs",source.host_pairs);Integer(device,"launches",source.launches);
+        Integer(device,"scene_uploads",source.scene_uploads);Integer(device,"numeric_cohorts",source.numeric_cohorts);
+        if(source.failures) {
+            if(source.last_fault_cohort_begin!=SIZE_MAX)
+                Integer(device,"last_fault_cohort_begin",source.last_fault_cohort_begin);
+            Integer(device,"last_fault_cohort_count",source.last_fault_cohort_count);
+            if(source.last_fault_pair_ordinal!=SIZE_MAX)
+                Integer(device,"last_fault_pair_ordinal",source.last_fault_pair_ordinal);
+        }
+        array_json::Child(result,"native_device",device);
+    }
     output::Document discovery;discovery.SetObject();
     Integer(discovery,"calls",phase.discovery.calls);
     Integer(discovery,"failures",phase.discovery.failures);
