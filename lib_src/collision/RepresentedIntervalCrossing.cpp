@@ -5,6 +5,8 @@
 #include "represented_interval_crossing/ExactPathReuseQualification.h"
 #include "represented_interval_crossing/CommonPointReuseQualification.h"
 #include "represented_interval_crossing/BatchExecution.h"
+#include "represented_interval_crossing/native/CellKernel.h"
+#include "represented_interval_crossing/NativeStorageQualification.h"
 
 #include <algorithm>
 #include <atomic>
@@ -17,6 +19,7 @@
 #include <semaphore.h>
 #include <sys/mman.h>
 #include <tuple>
+#include <type_traits>
 #include <unistd.h>
 #include <utility>
 #include <vector>
@@ -26,120 +29,17 @@ namespace {
 
 constexpr std::size_t kWorkerStackBytes = 2u << 20;
 
-using NormalCounters = represented_interval_crossing::NormalReuseCounters;
-enum class NormalReuse { Recompute, Memoize };
-enum class ExactPathReuse { Original, Optimized };
-enum class CommonPointReuse { Original, Optimized };
-using CommonPointCounters = represented_interval_crossing::CommonPointReuseCounters;
-using ExactPathCounters = represented_interval_crossing::ExactPathReuseCounters;
-enum class SeparationProof { LegacyAabb, RelativeFaces };
-using ProjectionDomain = represented_interval_crossing::ExactProjectionDomain;
-using SeparationCounters = represented_interval_crossing::RelativeSeparationCounters;
+// Private numerical templates retain the original arithmetic bodies. The owner
+// and forecast continue to hold the original wide scratch and DFS frame types.
+namespace native = represented_interval_crossing::native;
+using namespace native;
+using WideKernel = native::CellKernel<16384>;
+using NarrowKernel = native::CellKernel<512>;
+using ExactScratch = WideKernel::ExactScratch;
+using ExactVec3 = WideKernel::ExactVec3;
+enum class NativeStorage { Wide, Adaptive };
+using StorageCounters = represented_interval_crossing::NativeStorageCounters;
 
-void CountSeparationOperation(
-    SeparationCounters* counters, std::size_t SeparationCounters::* field) noexcept {
-  if (!counters) return;
-  auto& value = counters->*field;
-  if (value == SIZE_MAX) counters->saturated = true;
-  else ++value;
-}
-
-void CountNormalOperation(
-    NormalCounters* counters, std::size_t NormalCounters::* field) noexcept {
-  if (!counters) return;
-  auto& value = counters->*field;
-  if (value == SIZE_MAX) counters->saturated = true;
-  else ++value;
-}
-
-void CountExactPathOperation(
-    ExactPathCounters* counters, std::size_t ExactPathCounters::* field) noexcept {
-  if (!counters) return;
-  auto& value = counters->*field;
-  if (value == SIZE_MAX) counters->saturated = true;
-  else ++value;
-}
-
-void CountCommonPointOperation(
-    CommonPointCounters* counters, std::size_t CommonPointCounters::* field) noexcept {
-  if (!counters) return;
-  auto& value = counters->*field;
-  if (value == SIZE_MAX) counters->saturated = true;
-  else ++value;
-}
-
-template <class T>
-int ScalarCompare(const T& a, const T& b) noexcept {
-  return a < b ? -1 : (b < a ? 1 : 0);
-}
-
-int Compare(const FacetVertexKey& a, const FacetVertexKey& b) noexcept {
-  const auto aa =
-      std::tie(a.source_instance_id, a.kind, a.first, a.second, a.numerator,
-               a.denominator, a.level, a.grid_i, a.grid_j);
-  const auto bb =
-      std::tie(b.source_instance_id, b.kind, b.first, b.second, b.numerator,
-               b.denominator, b.level, b.grid_i, b.grid_j);
-  return aa < bb ? -1 : (bb < aa ? 1 : 0);
-}
-
-int Compare(const FacetEdgeKey& a, const FacetEdgeKey& b) noexcept {
-  int value = ScalarCompare(a.parent_boundary, b.parent_boundary);
-  if (!value)
-    value = ScalarCompare(a.parent_eid, b.parent_eid);
-  if (!value)
-    value = Compare(a.endpoints[0], b.endpoints[0]);
-  if (!value)
-    value = Compare(a.endpoints[1], b.endpoints[1]);
-  return value;
-}
-
-int Compare(const RepresentedTrianglePathKey& a,
-            const RepresentedTrianglePathKey& b) noexcept {
-  const auto aa =
-      std::tie(a.source_instance_id, a.parent_eid, a.level, a.local_facet);
-  const auto bb =
-      std::tie(b.source_instance_id, b.parent_eid, b.level, b.local_facet);
-  return aa < bb ? -1 : (bb < aa ? 1 : 0);
-}
-
-int Compare(const RepresentedIntervalPairKey& a,
-            const RepresentedIntervalPairKey& b) noexcept {
-  const int first = Compare(a.paths[0], b.paths[0]);
-  return first ? first : Compare(a.paths[1], b.paths[1]);
-}
-
-bool Same(const FacetVertexKey& a, const FacetVertexKey& b) noexcept {
-  return Compare(a, b) == 0;
-}
-
-bool Same(const RepresentedTrianglePathKey& a,
-          const RepresentedTrianglePathKey& b) noexcept {
-  return Compare(a, b) == 0;
-}
-
-std::uint64_t CoordinateBits(double value) noexcept {
-  std::uint64_t bits = 0;
-  std::memcpy(&bits, &value, sizeof(bits));
-  return bits;
-}
-
-bool SameBits(double a, double b) noexcept {
-  return CoordinateBits(a) == CoordinateBits(b);
-}
-
-// Unlike floating ==, this preserves a nonzero subnormal under ambient DAZ.
-// Inputs were authenticated finite; only the two real-zero encodings merge.
-bool SameFiniteCoordinate(double a, double b) noexcept {
-  const auto first = CoordinateBits(a), second = CoordinateBits(b);
-  constexpr std::uint64_t magnitude = UINT64_MAX >> 1;
-  return first == second || ((first & magnitude) == 0 && (second & magnitude) == 0);
-}
-
-bool SameBits(Vec3 a, Vec3 b) noexcept {
-  return SameBits(a.x, b.x) && SameBits(a.y, b.y) &&
-         SameBits(a.z, b.z);
-}
 
 bool AddSize(std::size_t a, std::size_t b, std::size_t* output) noexcept {
   if (a > SIZE_MAX - b)
@@ -211,824 +111,41 @@ bool SamePair(const CanonicalPair& a, const CanonicalPair& b) noexcept {
   return Compare(a.key, b.key) == 0;
 }
 
-using ExactBackend = boost::multiprecision::cpp_int_backend<
-    16384, 16384, boost::multiprecision::signed_magnitude,
-    boost::multiprecision::checked, void>;
-using ExactInteger =
-    boost::multiprecision::number<ExactBackend,
-                                  boost::multiprecision::et_off>;
-static_assert(std::numeric_limits<ExactInteger>::digits >= 16384,
-    "Re-audit the projection-domain range proof before reducing exact storage");
-
-struct Dyadic {
-  ExactInteger numerator = 0;
-  int exponent = 0;
-};
-
-Dyadic Exact(double value) {
-  std::uint64_t bits = 0;
-  static_assert(sizeof(bits) == sizeof(value), "binary64 representation");
-  std::memcpy(&bits, &value, sizeof(bits));
-  const bool negative = (bits >> 63) != 0;
-  const unsigned encoded_exponent =
-      static_cast<unsigned>((bits >> 52) & 0x7ffu);
-  const std::uint64_t fraction = bits & ((std::uint64_t{1} << 52) - 1);
-  Dyadic result;
-  if (encoded_exponent == 0) {
-    result.numerator = fraction;
-    result.exponent = -1074;
-  } else {
-    result.numerator = (std::uint64_t{1} << 52) | fraction;
-    result.exponent = static_cast<int>(encoded_exponent) - 1023 - 52;
-  }
-  if (negative)
-    result.numerator = -result.numerator;
-  return result;
+void CountStorage(StorageCounters* counters, bool narrow) noexcept {
+  if (!counters) return;
+  auto& value = narrow ? counters->narrow_pairs : counters->wide_pairs;
+  if (value == SIZE_MAX) counters->saturated = true;
+  else ++value;
 }
 
-Dyadic Add(Dyadic a, Dyadic b) {
-  if (a.numerator == 0)
-    return b;
-  if (b.numerator == 0)
-    return a;
-  const int exponent = std::min(a.exponent, b.exponent);
-  const auto shift = [](ExactInteger* value, unsigned amount) {
-    const bool negative = *value < 0;
-    if (negative)
-      *value = -*value;
-    *value <<= amount;
-    if (negative)
-      *value = -*value;
-  };
-  shift(&a.numerator, static_cast<unsigned>(a.exponent - exponent));
-  shift(&b.numerator, static_cast<unsigned>(b.exponent - exponent));
-  return {a.numerator + b.numerator, exponent};
-}
-
-Dyadic Negate(Dyadic value) {
-  value.numerator = -value.numerator;
-  return value;
-}
-
-Dyadic Subtract(Dyadic a, Dyadic b) { return Add(a, Negate(b)); }
-
-Dyadic Multiply(const Dyadic& a, const Dyadic& b) {
-  return {a.numerator * b.numerator, a.exponent + b.exponent};
-}
-
-Dyadic Scale(Dyadic value, std::uint64_t factor) {
-  value.numerator *= factor;
-  return value;
-}
-
-int Sign(const Dyadic& value) noexcept {
-  return value.numerator < 0 ? -1 : (value.numerator > 0 ? 1 : 0);
-}
-
-int Compare(const Dyadic& a, const Dyadic& b) {
-  return Sign(Subtract(a, b));
-}
-
-struct ExactVec3 {
-  Dyadic x, y, z;
-};
-
-ExactVec3 Add(const ExactVec3& a, const ExactVec3& b) {
-  return {Add(a.x, b.x), Add(a.y, b.y), Add(a.z, b.z)};
-}
-
-ExactVec3 Subtract(const ExactVec3& a, const ExactVec3& b) {
-  return {Subtract(a.x, b.x), Subtract(a.y, b.y),
-          Subtract(a.z, b.z)};
-}
-
-ExactVec3 Cross(const ExactVec3& a, const ExactVec3& b) {
-  return {Subtract(Multiply(a.y, b.z), Multiply(a.z, b.y)),
-          Subtract(Multiply(a.z, b.x), Multiply(a.x, b.z)),
-          Subtract(Multiply(a.x, b.y), Multiply(a.y, b.x))};
-}
-
-Dyadic Dot(const ExactVec3& a, const ExactVec3& b) {
-  return Add(Add(Multiply(a.x, b.x), Multiply(a.y, b.y)),
-             Multiply(a.z, b.z));
-}
-
-bool Zero(const ExactVec3& value) noexcept {
-  return Sign(value.x) == 0 && Sign(value.y) == 0 && Sign(value.z) == 0;
-}
-
-Dyadic Component(const ExactVec3& value, unsigned component) {
-  return component == 0 ? value.x : (component == 1 ? value.y : value.z);
-}
-
-struct DyadicTime {
-  std::uint64_t numerator = 0;
-  unsigned depth = 0;
-};
-
-struct Cell {
-  std::uint64_t lower = 0;
-  std::uint64_t upper = 1;
-  unsigned depth = 0;
-};
-
-DyadicTime Lower(const Cell& cell) { return {cell.lower, cell.depth}; }
-DyadicTime Upper(const Cell& cell) { return {cell.upper, cell.depth}; }
-DyadicTime Middle(const Cell& cell) {
-  return {cell.lower + cell.upper, cell.depth + 1};
-}
-
-double Component(Vec3 value, unsigned component) noexcept {
-  return component == 0 ? value.x : (component == 1 ? value.y : value.z);
-}
-
-ExactVec3 At(const RepresentedVertexPath& path, DyadicTime time) {
-  const std::uint64_t denominator = std::uint64_t{1} << time.depth;
-  ExactVec3 result;
-  Dyadic* target[3] = {&result.x, &result.y, &result.z};
-  for (unsigned component = 0; component < 3; ++component) {
-    const Dyadic a = Scale(Exact(Component(path.endpoint[0], component)),
-                           denominator - time.numerator);
-    const Dyadic b =
-        Scale(Exact(Component(path.endpoint[1], component)),
-              time.numerator);
-    *target[component] = Add(a, b);
-    target[component]->exponent -= static_cast<int>(time.depth);
-  }
-  return result;
-}
-
-struct ExactTriangle {
-  ExactVec3 vertex[3];
-};
-
-ExactTriangle At(const RepresentedTrianglePath& path, DyadicTime time) {
-  ExactTriangle result;
-  for (unsigned i = 0; i < 3; ++i)
-    result.vertex[i] = At(path.vertices[i], time);
-  return result;
-}
-
-bool CommonTranslation(
-    const RepresentedTrianglePath& a,
-    const RepresentedTrianglePath& b) {
-  Dyadic reference[3];
-  for (unsigned component = 0; component < 3; ++component) {
-    reference[component] = Subtract(
-        Exact(Component(a.vertices[0].endpoint[1], component)),
-        Exact(Component(a.vertices[0].endpoint[0], component)));
-  }
-  const RepresentedTrianglePath* paths[2]{&a, &b};
-  for (const auto* path : paths)
-    for (const auto& vertex : path->vertices)
-      for (unsigned component = 0; component < 3; ++component) {
-        const auto displacement = Subtract(
-            Exact(Component(vertex.endpoint[1], component)),
-            Exact(Component(vertex.endpoint[0], component)));
-        if (Compare(displacement, reference[component]) != 0)
-          return false;
-      }
-  return true;
-}
-
-ExactVec3 Edge(const ExactTriangle& triangle, unsigned edge) {
-  return Subtract(triangle.vertex[(edge + 1) % 3],
-                  triangle.vertex[edge]);
-}
-
-ExactVec3 Normal(const ExactTriangle& triangle, NormalCounters* counters = nullptr) {
-  CountNormalOperation(counters, &NormalCounters::normal_evaluations);
-  return Cross(Edge(triangle, 0),
-               Subtract(triangle.vertex[2], triangle.vertex[0]));
-}
-
-bool Degenerate(const ExactTriangle& triangle, NormalCounters* counters = nullptr) {
-  return Zero(Normal(triangle, counters));
-}
-
-bool SeparatedOnAxis(const ExactTriangle& a, const ExactTriangle& b,
-                     const ExactVec3& axis) {
-  if (Zero(axis))
-    return false;
-  Dyadic minimum_a = Dot(a.vertex[0], axis);
-  Dyadic maximum_a = minimum_a;
-  Dyadic minimum_b = Dot(b.vertex[0], axis);
-  Dyadic maximum_b = minimum_b;
-  for (unsigned i = 1; i < 3; ++i) {
-    const Dyadic pa = Dot(a.vertex[i], axis);
-    const Dyadic pb = Dot(b.vertex[i], axis);
-    if (Compare(pa, minimum_a) < 0)
-      minimum_a = pa;
-    if (Compare(pa, maximum_a) > 0)
-      maximum_a = pa;
-    if (Compare(pb, minimum_b) < 0)
-      minimum_b = pb;
-    if (Compare(pb, maximum_b) > 0)
-      maximum_b = pb;
-  }
-  return Compare(maximum_a, minimum_b) < 0 ||
-         Compare(maximum_b, minimum_a) < 0;
-}
-
-// Bit equality of finite binary64 coordinates (with signed zeros merged) is
-// exact real equality independent of ambient FTZ/DAZ or rounding modes.
-// Only the original path endpoints are queried;
-// interior dyadic samples retain the original exact predicate traversal.
-// Source identities are deliberately irrelevant to this geometric fact.
-bool CommonEndpointPoint(const RepresentedTrianglePath& a,
-                         const RepresentedTrianglePath& b, DyadicTime time,
-                         CommonPointCounters* counters) noexcept {
-  unsigned endpoint = 0;
-  if (time.numerator != 0) {
-    if (time.numerator != (std::uint64_t{1} << time.depth)) return false;
-    endpoint = 1;
-  }
-  CountCommonPointOperation(counters, &CommonPointCounters::endpoint_queries);
-  for (const auto& first : a.vertices) for (const auto& second : b.vertices) {
-    CountCommonPointOperation(counters, &CommonPointCounters::point_comparisons);
-    const auto p = first.endpoint[endpoint], q = second.endpoint[endpoint];
-    if (SameFiniteCoordinate(p.x, q.x) && SameFiniteCoordinate(p.y, q.y) &&
-        SameFiniteCoordinate(p.z, q.z)) return true;
-  }
-  return false;
-}
-
-struct StaticIntersection {
-  bool intersects = false;
-  bool coplanar = false;
-};
-
-StaticIntersection Intersects(const ExactTriangle& a,
-                              const ExactTriangle& b,
-                              const ExactVec3& normal_a,
-                              const ExactVec3& normal_b,
-                              bool common_endpoint = false,
-                              CommonPointCounters* common_point_counters = nullptr) {
-  StaticIntersection result;
-  result.coplanar = true;
-  for (unsigned i = 0; i < 3; ++i) {
-    result.coplanar =
-        result.coplanar &&
-        Sign(Dot(Subtract(b.vertex[i], a.vertex[0]), normal_a)) == 0 &&
-        Sign(Dot(Subtract(a.vertex[i], b.vertex[0]), normal_b)) == 0;
-  }
-  // The exact coplanarity classification above remains unchanged. A point
-  // contained in both closed triangles makes strict projection separation
-  // impossible on every SAT axis. The caller admits this only after original
-  // nondegeneracy checks and the existing no-allocation arithmetic-domain proof.
-  if (common_endpoint) {
-    CountCommonPointOperation(common_point_counters, &CommonPointCounters::static_sat_bypasses);
-    result.intersects = true;
-    return result;
-  }
-  if (SeparatedOnAxis(a, b, normal_a) ||
-      SeparatedOnAxis(a, b, normal_b))
-    return result;
-  for (unsigned i = 0; i < 3; ++i)
-    for (unsigned j = 0; j < 3; ++j)
-      if (SeparatedOnAxis(a, b, Cross(Edge(a, i), Edge(b, j))))
-        return result;
-  if (result.coplanar) {
-    for (unsigned i = 0; i < 3; ++i) {
-      if (SeparatedOnAxis(a, b, Cross(normal_a, Edge(a, i))) ||
-          SeparatedOnAxis(a, b, Cross(normal_a, Edge(b, i))))
-        return result;
-    }
-  }
-  result.intersects = true;
-  return result;
-}
-
-StaticIntersection Intersects(const ExactTriangle& a,
-                              const ExactTriangle& b,
-                              NormalCounters* counters = nullptr) {
-  // Retained uncached oracle: these exact normal evaluations retain their
-  // original sequence and checked-arithmetic failure boundary.
-  const ExactVec3 normal_a = Normal(a, counters);
-  const ExactVec3 normal_b = Normal(b, counters);
-  return Intersects(a, b, normal_a, normal_b);
-}
-
-bool PointInClosedTriangle(const ExactVec3& point,
-                           const ExactTriangle& triangle,
-                           const ExactVec3& normal) {
-  if (Sign(Dot(Subtract(point, triangle.vertex[0]), normal)) != 0)
-    return false;
-  int orientation = 0;
-  for (unsigned i = 0; i < 3; ++i) {
-    const int sign =
-        Sign(Dot(Cross(Edge(triangle, i),
-                       Subtract(point, triangle.vertex[i])),
-                 normal));
-    if (sign) {
-      if (orientation && sign != orientation)
-        return false;
-      orientation = sign;
-    }
-  }
-  return true;
-}
-
-bool PointInClosedTriangle(const ExactVec3& point,
-                           const ExactTriangle& triangle,
-                           NormalCounters* counters = nullptr) {
-  const ExactVec3 normal = Normal(triangle, counters);
-  return PointInClosedTriangle(point, triangle, normal);
-}
-
-bool SegmentsIntersect(const ExactVec3& a0, const ExactVec3& a1,
-                       const ExactVec3& b0, const ExactVec3& b1) {
-  const ExactVec3 a = Subtract(a1, a0);
-  const ExactVec3 b = Subtract(b1, b0);
-  const ExactVec3 delta = Subtract(b0, a0);
-  const ExactVec3 normal = Cross(a, b);
-  if (!Zero(normal)) {
-    if (Sign(Dot(delta, normal)) != 0)
-      return false;
-    const Dyadic denominator = Dot(normal, normal);
-    const Dyadic parameter_a = Dot(Cross(delta, b), normal);
-    const Dyadic parameter_b = Dot(Cross(delta, a), normal);
-    return Sign(parameter_a) >= 0 &&
-           Compare(parameter_a, denominator) <= 0 &&
-           Sign(parameter_b) >= 0 &&
-           Compare(parameter_b, denominator) <= 0;
-  }
-  if (!Zero(Cross(a, delta)))
-    return false;
-  unsigned component = 0;
-  for (unsigned i = 1; i < 3; ++i)
-    if (Sign(Component(a, component)) == 0)
-      component = i;
-  Dyadic aa0 = Component(a0, component);
-  Dyadic aa1 = Component(a1, component);
-  Dyadic bb0 = Component(b0, component);
-  Dyadic bb1 = Component(b1, component);
-  if (Compare(aa1, aa0) < 0)
-    std::swap(aa0, aa1);
-  if (Compare(bb1, bb0) < 0)
-    std::swap(bb0, bb1);
-  return Compare(aa1, bb0) >= 0 && Compare(bb1, aa0) >= 0;
-}
-
-bool FeatureLess(const RepresentedFeaturePathKey& a,
-                 const RepresentedFeaturePathKey& b) noexcept {
-  int value = ScalarCompare(a.kind, b.kind);
-  if (!value && a.kind == RepresentedFeatureKind::VertexFace)
-    value = Compare(a.vertex, b.vertex);
-  if (!value && a.kind == RepresentedFeatureKind::VertexFace)
-    value = Compare(a.face, b.face);
-  if (!value && a.kind == RepresentedFeatureKind::EdgeEdge)
-    value = Compare(a.edges[0], b.edges[0]);
-  if (!value && a.kind == RepresentedFeatureKind::EdgeEdge)
-    value = Compare(a.edges[1], b.edges[1]);
-  return value < 0;
-}
-
-void ConsiderFeature(const RepresentedFeaturePathKey& candidate,
-                     bool* have, RepresentedFeaturePathKey* result) noexcept {
-  if (!*have || FeatureLess(candidate, *result)) {
-    *result = candidate;
-    *have = true;
-  }
-}
-
-RepresentedFeaturePathKey IntersectionFeature(
-    const RepresentedTrianglePath& path_a,
-    const RepresentedTrianglePath& path_b, const ExactTriangle& a,
-    const ExactTriangle& b,
-    const ExactVec3* normal_a = nullptr, const ExactVec3* normal_b = nullptr,
-    NormalCounters* counters = nullptr, bool skip_dominated_edges = false,
-    ExactPathCounters* path_counters = nullptr) {
-  bool have = false;
-  RepresentedFeaturePathKey result;
-  for (unsigned vertex = 0; vertex < 3; ++vertex) {
-    CountExactPathOperation(path_counters, &ExactPathCounters::vertex_face_tests);
-    if (normal_b ? PointInClosedTriangle(a.vertex[vertex], b, *normal_b)
-                 : PointInClosedTriangle(a.vertex[vertex], b, counters)) {
-      RepresentedFeaturePathKey candidate;
-      candidate.kind = RepresentedFeatureKind::VertexFace;
-      candidate.vertex = path_a.vertices[vertex].key;
-      candidate.face = path_b.key;
-      ConsiderFeature(candidate, &have, &result);
-    }
-    CountExactPathOperation(path_counters, &ExactPathCounters::vertex_face_tests);
-    if (normal_a ? PointInClosedTriangle(b.vertex[vertex], a, *normal_a)
-                 : PointInClosedTriangle(b.vertex[vertex], a, counters)) {
-      RepresentedFeaturePathKey candidate;
-      candidate.kind = RepresentedFeatureKind::VertexFace;
-      candidate.vertex = path_b.vertices[vertex].key;
-      candidate.face = path_a.key;
-      ConsiderFeature(candidate, &have, &result);
-    }
-  }
-  // All six directed VF predicates have contributed to the canonical minimum.
-  // Every EE kind sorts after VF, so none can replace this witness. The caller
-  // admits skipping only within the independently proved nonallocating domain.
-  static_assert(RepresentedFeatureKind::VertexFace < RepresentedFeatureKind::EdgeEdge);
-  if (skip_dominated_edges && have && result.kind == RepresentedFeatureKind::VertexFace) {
-    CountExactPathOperation(path_counters, &ExactPathCounters::dominated_edge_loops);
-    return result;
-  }
-  for (unsigned edge_a = 0; edge_a < 3; ++edge_a) {
-    for (unsigned edge_b = 0; edge_b < 3; ++edge_b) {
-      CountExactPathOperation(path_counters, &ExactPathCounters::edge_edge_tests);
-      if (!SegmentsIntersect(a.vertex[edge_a],
-                             a.vertex[(edge_a + 1) % 3],
-                             b.vertex[edge_b],
-                             b.vertex[(edge_b + 1) % 3]))
-        continue;
-      RepresentedFeaturePathKey candidate;
-      candidate.kind = RepresentedFeatureKind::EdgeEdge;
-      if (Compare(path_a.edge_keys[edge_a],
-                  path_b.edge_keys[edge_b]) <= 0) {
-        candidate.edges[0] = path_a.edge_keys[edge_a];
-        candidate.edges[1] = path_b.edge_keys[edge_b];
-      } else {
-        candidate.edges[0] = path_b.edge_keys[edge_b];
-        candidate.edges[1] = path_a.edge_keys[edge_a];
-      }
-      ConsiderFeature(candidate, &have, &result);
-    }
-  }
-  if (!have)
-    result.kind = RepresentedFeatureKind::TriangleIntersection;
-  return result;
-}
-
-bool RegularCell(const ExactVec3 normal[3]) {
-  for (unsigned component = 0; component < 3; ++component) {
-    const Dyadic first = Component(normal[0], component);
-    const Dyadic middle = Component(normal[1], component);
-    const Dyadic last = Component(normal[2], component);
-    // Twice the middle Bernstein coefficient has the sign of
-    // 4*n(mid)-n(lower)-n(upper).
-    const Dyadic control =
-        Subtract(Subtract(Scale(middle, 4), first), last);
-    const int a = Sign(first);
-    const int b = Sign(control);
-    const int c = Sign(last);
-    if (a && a == b && b == c)
-      return true;
-  }
-  return false;
-}
-
-bool RegularCell(const ExactTriangle samples[3], NormalCounters* counters = nullptr) {
-  ExactVec3 normal[3] = {Normal(samples[0], counters), Normal(samples[1], counters),
-                         Normal(samples[2], counters)};
-  return RegularCell(normal);
-}
-
-bool SweptBoxesSeparated(const ExactTriangle samples_a[3],
-                         const ExactTriangle samples_b[3]) {
-  for (unsigned component = 0; component < 3; ++component) {
-    Dyadic minimum_a = Component(samples_a[0].vertex[0], component);
-    Dyadic maximum_a = minimum_a;
-    Dyadic minimum_b = Component(samples_b[0].vertex[0], component);
-    Dyadic maximum_b = minimum_b;
-    for (unsigned endpoint = 0; endpoint < 2; ++endpoint) {
-      const unsigned sample = endpoint * 2;
-      for (unsigned vertex = 0; vertex < 3; ++vertex) {
-        const Dyadic a =
-            Component(samples_a[sample].vertex[vertex], component);
-        const Dyadic b =
-            Component(samples_b[sample].vertex[vertex], component);
-        if (Compare(a, minimum_a) < 0)
-          minimum_a = a;
-        if (Compare(a, maximum_a) > 0)
-          maximum_a = a;
-        if (Compare(b, minimum_b) < 0)
-          minimum_b = b;
-        if (Compare(b, maximum_b) > 0)
-          maximum_b = b;
-      }
-    }
-    if (Compare(maximum_a, minimum_b) < 0 ||
-        Compare(maximum_b, minimum_a) < 0)
-      return true;
-  }
-  return false;
-}
-
-int ReasonPriority(RepresentedIntervalReason reason) noexcept {
-  switch (reason) {
-    case RepresentedIntervalReason::ExactArithmeticRange:
-      return 3;
-    case RepresentedIntervalReason::DegenerateGeometry:
-      return 2;
-    case RepresentedIntervalReason::WorkExhausted:
-      return 1;
-    default:
-      return 0;
-  }
-}
-
-void CopyKey(const FacetVertexKey& source,
-             FacetVertexKey* target) noexcept {
-  target->source_instance_id = source.source_instance_id;
-  target->first = source.first;
-  target->second = source.second;
-  target->kind = source.kind;
-  target->numerator = source.numerator;
-  target->denominator = source.denominator;
-  target->level = source.level;
-  target->grid_i = source.grid_i;
-  target->grid_j = source.grid_j;
-}
-
-void CopyKey(const FacetEdgeKey& source,
-             FacetEdgeKey* target) noexcept {
-  CopyKey(source.endpoints[0], &target->endpoints[0]);
-  CopyKey(source.endpoints[1], &target->endpoints[1]);
-  target->parent_eid = source.parent_eid;
-  target->parent_boundary = source.parent_boundary;
-}
-
-void CopyKey(const RepresentedTrianglePathKey& source,
-             RepresentedTrianglePathKey* target) noexcept {
-  target->source_instance_id = source.source_instance_id;
-  target->parent_eid = source.parent_eid;
-  target->level = source.level;
-  target->local_facet = source.local_facet;
-}
-
-void StoreResult(const RepresentedIntervalResult& source,
-                 RepresentedIntervalResult* target) noexcept {
-  std::fill_n(reinterpret_cast<unsigned char*>(target), sizeof(*target),
-              static_cast<unsigned char>(0));
-  CopyKey(source.key.paths[0], &target->key.paths[0]);
-  CopyKey(source.key.paths[1], &target->key.paths[1]);
-  target->feature.kind = source.feature.kind;
-  CopyKey(source.feature.vertex, &target->feature.vertex);
-  CopyKey(source.feature.face, &target->feature.face);
-  CopyKey(source.feature.edges[0], &target->feature.edges[0]);
-  CopyKey(source.feature.edges[1], &target->feature.edges[1]);
-  target->classification = source.classification;
-  target->reason = source.reason;
-  target->geometry = source.geometry;
-  target->witness_time_numerator = source.witness_time_numerator;
-  target->witness_time_depth = source.witness_time_depth;
-  target->work = source.work;
-}
-
-RepresentedIntervalResult Unresolved(const RepresentedIntervalPairKey& key,
-                                     RepresentedIntervalReason reason,
-                                     std::size_t work) noexcept {
-  RepresentedIntervalResult result;
-  result.key = key;
-  result.classification = RepresentedIntervalClassification::Unresolved;
-  result.reason = reason;
-  result.work = work;
-  return result;
-}
-
-struct ExactScratch {
-  ExactTriangle a[3];
-  ExactTriangle b[3];
-  ExactVec3 normal_a[3];
-  ExactVec3 normal_b[3];
-  bool ready_a[3]{};
-  bool ready_b[3]{};
-
-  void BeginCell() noexcept {
-    std::fill_n(ready_a, 3, false);
-    std::fill_n(ready_b, 3, false);
-  }
-
-  const ExactVec3& NormalAt(bool second, unsigned sample, NormalCounters* counters) {
-    auto& ready = second ? ready_b[sample] : ready_a[sample];
-    auto& normal = second ? normal_b[sample] : normal_a[sample];
-    if (!ready) {
-      // Publish readiness only after the original checked arithmetic succeeds.
-      normal = Normal(second ? b[sample] : a[sample], counters);
-      ready = true;
-    } else {
-      CountNormalOperation(counters, &NormalCounters::cache_hits);
-    }
-    return normal;
-  }
-
-  bool Regular(bool second, NormalCounters* counters) {
-    // Preserve original first-use order, including its exception boundary.
-    NormalAt(second, 0, counters);
-    NormalAt(second, 1, counters);
-    NormalAt(second, 2, counters);
-    return RegularCell(second ? normal_b : normal_a);
-  }
-};
-
-struct ProjectionHull { Dyadic minimum, maximum; };
-
-template <class Project>
-ProjectionHull RelativeEndpointHull(
-    const ExactTriangle samples[3], const ExactTriangle reference[3],
-    unsigned anchor, const Project& project) {
-  ProjectionHull result;
-  bool first = true;
-  for (unsigned endpoint : {0u, 2u})
-    for (const auto& vertex : samples[endpoint].vertex) {
-      const auto value = project(vertex, reference[endpoint].vertex[anchor]);
-      if (first) { result.minimum = result.maximum = value; first = false; }
-      else {
-        if (Compare(value, result.minimum) < 0) result.minimum = value;
-        if (Compare(value, result.maximum) > 0) result.maximum = value;
-      }
-    }
-  return result;
-}
-
-bool StrictHullGap(const ProjectionHull& a, const ProjectionHull& b) {
-  return Compare(a.maximum, b.minimum) < 0 || Compare(b.maximum, a.minimum) < 0;
-}
-
-bool RelativeCoordinatesSeparated(const ExactScratch& scratch, unsigned anchor) {
-  for (unsigned coordinate = 0; coordinate < 3; ++coordinate) {
-    const auto project = [coordinate](const ExactVec3& point, const ExactVec3& reference) {
-      return Subtract(Component(point, coordinate), Component(reference, coordinate));
-    };
-    const auto first = RelativeEndpointHull(scratch.a, scratch.a, anchor, project);
-    const auto second = RelativeEndpointHull(scratch.b, scratch.a, anchor, project);
-    if (StrictHullGap(first, second)) return true;
-  }
-  return false;
-}
-
-bool RelativeAxisSeparated(const ExactScratch& scratch, unsigned anchor, const ExactVec3& axis) {
-  if (Zero(axis)) return false;
-  const auto project = [&axis](const ExactVec3& point, const ExactVec3& reference) {
-    return Dot(Subtract(point, reference), axis);
-  };
-  const auto first = RelativeEndpointHull(scratch.a, scratch.a, anchor, project);
-  const auto second = RelativeEndpointHull(scratch.b, scratch.a, anchor, project);
-  return StrictHullGap(first, second);
-}
-
-unsigned CanonicalAnchor(const RepresentedTrianglePath& path) noexcept {
-  unsigned result = 0;
-  for (unsigned vertex = 1; vertex < 3; ++vertex)
-    if (Compare(path.vertices[vertex].key, path.vertices[result].key) < 0) result = vertex;
-  return result;
-}
-
-enum class CellDisposition : std::uint8_t {
-  Separated,
-  Crossing,
-  Split,
-  Unresolved,
-};
-
-struct CellEvaluation {
-  CellDisposition disposition = CellDisposition::Split;
-  RepresentedIntervalReason reason = RepresentedIntervalReason::None;
-  RepresentedIntervalResult crossing;
-};
-
-template <NormalReuse reuse = NormalReuse::Memoize,
-          SeparationProof separation = SeparationProof::RelativeFaces,
-          ExactPathReuse path_reuse = ExactPathReuse::Optimized,
-          bool single_sample = false,
-          CommonPointReuse point_reuse = CommonPointReuse::Original>
-CellEvaluation EvaluateCell(const RepresentedTrianglePath& path_a,
-                            const RepresentedTrianglePath& path_b,
-                            const RepresentedIntervalPairKey& key, Cell cell,
-                            ExactScratch* scratch,
-                            NormalCounters* counters = nullptr,
-                            const ProjectionDomain* domain = nullptr,
-                            unsigned anchor = 0,
-                            SeparationCounters* separation_counters = nullptr,
-                            ExactPathCounters* path_counters = nullptr,
-                            CommonPointCounters* common_point_counters = nullptr) {
-  static_assert(point_reuse == CommonPointReuse::Original || reuse == NormalReuse::Memoize);
-  static_assert(!single_sample ||
-      (separation == SeparationProof::LegacyAabb && path_reuse == ExactPathReuse::Optimized));
-  scratch->BeginCell();
-  CountNormalOperation(counters, &NormalCounters::evaluated_cells);
-  const auto degenerate_at = [&](bool second, unsigned sample) {
-    if constexpr (reuse == NormalReuse::Memoize)
-      return Zero(scratch->NormalAt(second, sample, counters));
-    else
-      return Degenerate(second ? scratch->b[sample] : scratch->a[sample], counters);
-  };
-  const DyadicTime times[3] = {Lower(cell), Middle(cell), Upper(cell)};
-  constexpr unsigned sample_count = single_sample ? 1 : 3;
-  if constexpr (single_sample)
-    CountExactPathOperation(path_counters, &ExactPathCounters::single_sample_intervals);
-  bool degenerate = false;
-  for (unsigned sample = 0; sample < sample_count; ++sample) {
-    scratch->a[sample] = At(path_a, times[sample]);
-    scratch->b[sample] = At(path_b, times[sample]);
-    degenerate = degenerate || degenerate_at(false, sample) ||
-                 degenerate_at(true, sample);
-  }
-  for (unsigned sample = 0; sample < sample_count; ++sample) {
-    if (degenerate_at(false, sample) ||
-        degenerate_at(true, sample))
-      continue;
-    bool common_endpoint = false;
-    if constexpr (point_reuse == CommonPointReuse::Optimized)
-      if (domain && domain->eligible())
-        common_endpoint = CommonEndpointPoint(path_a, path_b, times[sample], common_point_counters);
-    StaticIntersection intersection;
-    if constexpr (reuse == NormalReuse::Memoize) {
-      const auto& normal_a = scratch->NormalAt(false, sample, counters);
-      const auto& normal_b = scratch->NormalAt(true, sample, counters);
-      intersection = Intersects(scratch->a[sample], scratch->b[sample], normal_a, normal_b,
-                               common_endpoint, common_point_counters);
-    } else {
-      intersection = Intersects(scratch->a[sample], scratch->b[sample], counters);
-    }
-    if (!intersection.intersects)
-      continue;
-    CellEvaluation evaluation;
-    evaluation.disposition = CellDisposition::Crossing;
-    auto& result = evaluation.crossing;
-    result.key = key;
-    const bool skip_dominated_edges = path_reuse == ExactPathReuse::Optimized &&
-        domain && domain->eligible();
-    if constexpr (reuse == NormalReuse::Memoize) {
-      const auto& normal_a = scratch->NormalAt(false, sample, counters);
-      const auto& normal_b = scratch->NormalAt(true, sample, counters);
-      result.feature = IntersectionFeature(path_a, path_b,
-          scratch->a[sample], scratch->b[sample], &normal_a, &normal_b, counters,
-          skip_dominated_edges, path_counters);
-    } else {
-      result.feature = IntersectionFeature(path_a, path_b,
-          scratch->a[sample], scratch->b[sample], nullptr, nullptr, counters, skip_dominated_edges, path_counters);
-    }
-    result.classification =
-        RepresentedIntervalClassification::CertifiedCrossingContact;
-    result.reason = RepresentedIntervalReason::None;
-    result.geometry =
-        intersection.coplanar ? RepresentedIntersectionGeometry::Coplanar
-                              : RepresentedIntersectionGeometry::Transverse;
-    result.witness_time_numerator = times[sample].numerator;
-    result.witness_time_depth = times[sample].depth;
-    return evaluation;
-  }
-  if (degenerate)
-    return {CellDisposition::Unresolved,
-            RepresentedIntervalReason::DegenerateGeometry, {}};
-  // This specialization is reachable only after exact common-translation
-  // authentication and arithmetic-domain admission. Static nonintersection and
-  // nondegeneracy are then invariant over the entire represented interval.
-  if constexpr (single_sample)
-    return {CellDisposition::Separated, RepresentedIntervalReason::None, {}};
-  const auto regular = [&](bool second) {
-    if constexpr (reuse == NormalReuse::Memoize)
-      return scratch->Regular(second, counters);
-    else
-      return RegularCell(second ? scratch->b : scratch->a, counters);
-  };
-  if (regular(false) && regular(true)) {
-    if (SweptBoxesSeparated(scratch->a, scratch->b))
-      return {CellDisposition::Separated, RepresentedIntervalReason::None, {}};
-    if constexpr (separation == SeparationProof::RelativeFaces) {
-      if (!domain || !domain->eligible()) {
-        CountSeparationOperation(separation_counters, &SeparationCounters::domain_fallback_cells);
-        return {};
-      }
-      CountSeparationOperation(separation_counters, &SeparationCounters::eligible_cells);
-      // All relative vertex projections are affine over this cell. Subtracting
-      // the same canonical anchor path preserves simultaneous intersection.
-      // Strictly disjoint endpoint hulls therefore certify the entire cell;
-      // equality/touching never succeeds. Original sampled checks and both
-      // whole-cell nondegeneracy proofs above remain mandatory.
-      if (RelativeCoordinatesSeparated(*scratch, anchor)) {
-        CountSeparationOperation(separation_counters, &SeparationCounters::relative_aabb_separated);
-        return {CellDisposition::Separated, RepresentedIntervalReason::None, {}};
-      }
-      // These two axes are fixed at the lower sample. Facet order is canonical;
-      // winding only reverses an axis and cannot change a symmetric strict gap.
-      for (unsigned side = 0; side < 2; ++side) {
-        bool separated = false;
-        if constexpr (reuse == NormalReuse::Memoize) {
-          const auto& axis = scratch->NormalAt(side != 0, 0, counters);
-          separated = RelativeAxisSeparated(*scratch, anchor, axis);
-        } else {
-          const auto axis = Normal(side ? scratch->b[0] : scratch->a[0], counters);
-          separated = RelativeAxisSeparated(*scratch, anchor, axis);
-        }
-        if (separated) {
-          CountSeparationOperation(separation_counters, side
-              ? &SeparationCounters::second_face_separated : &SeparationCounters::first_face_separated);
-          return {CellDisposition::Separated, RepresentedIntervalReason::None, {}};
-        }
-      }
-    }
-  }
-  return {};
-}
-
-void RaiseReason(RepresentedIntervalReason candidate,
-                 RepresentedIntervalReason* current) noexcept {
-  if (ReasonPriority(candidate) > ReasonPriority(*current))
-    *current = candidate;
+template <NormalReuse reuse, SeparationProof separation,
+          ExactPathReuse path_reuse, CommonPointReuse point_reuse>
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((noinline))
+#endif
+RepresentedIntervalResult CertifyNarrow(
+    const RepresentedTrianglePath& a, const RepresentedTrianglePath& b,
+    RepresentedIntervalLimits limits, RepresentedIntervalPairKey key,
+    Cell* dfs, std::size_t dfs_capacity,
+    NormalCounters* counters, SeparationCounters* separation_counters,
+    ExactPathCounters* path_counters, CommonPointCounters* common_point_counters) noexcept {
+  // This is a new stack object only inside the eligible non-inlined callee.
+  // Existing retained wide storage and the 2 MiB prefaulted worker stack are
+  // unchanged. sizeof is necessary, not a full transitive stack-usage proof.
+  static_assert(sizeof(NarrowKernel::ExactScratch) <= 8192);
+  static_assert(std::is_nothrow_default_constructible_v<NarrowKernel::ExactScratch>);
+  static_assert(std::is_nothrow_destructible_v<NarrowKernel::ExactScratch>);
+  NarrowKernel::ExactScratch scratch;
+  return NarrowKernel::template CertifyPair<reuse, separation, path_reuse, point_reuse>(
+      a, b, limits, key, dfs, dfs_capacity, &scratch, counters,
+      separation_counters, path_counters, common_point_counters);
 }
 
 template <NormalReuse reuse = NormalReuse::Memoize,
           SeparationProof separation = SeparationProof::RelativeFaces,
           ExactPathReuse path_reuse = ExactPathReuse::Optimized,
-          CommonPointReuse point_reuse = CommonPointReuse::Optimized>
+          CommonPointReuse point_reuse = CommonPointReuse::Optimized,
+          NativeStorage storage = NativeStorage::Adaptive>
 RepresentedIntervalResult CertifyPair(
     const RepresentedTrianglePath& a, const RepresentedTrianglePath& b,
     RepresentedIntervalLimits limits, RepresentedIntervalPairKey key,
@@ -1036,111 +153,20 @@ RepresentedIntervalResult CertifyPair(
     NormalCounters* counters = nullptr,
     SeparationCounters* separation_counters = nullptr,
     ExactPathCounters* path_counters = nullptr,
-    CommonPointCounters* common_point_counters = nullptr) noexcept {
-  if (a.motion != RepresentedMotion::LinearNodalV1 ||
-      b.motion != RepresentedMotion::LinearNodalV1)
-    return Unresolved(key, RepresentedIntervalReason::UnsupportedMotion, 0);
-  std::size_t work = 0;
-  std::size_t dfs_size = 0;
-  bool all_leaves_separated = true;
-  RepresentedIntervalReason unresolved = RepresentedIntervalReason::None;
-  dfs[dfs_size++] = {};
-  try {
-    // A bit-exact common translation preserves every relative point,
-    // segment and triangle predicate over the complete represented interval.
-    // Test the exact binary64-real displacements rather than rounded double
-    // differences: a single static exact evaluation is then a whole-interval
-    // certificate, even when the absolute swept AABBs overlap.
-    if (CommonTranslation(a, b)) {
-      CellEvaluation evaluation;
-      if constexpr (path_reuse == ExactPathReuse::Optimized) {
-        const auto domain = ProjectionDomain::FromPaths(a, b, limits.max_depth);
-        if (domain.eligible()) {
-          evaluation = EvaluateCell<reuse, SeparationProof::LegacyAabb, path_reuse, true, point_reuse>(
-              a, b, key, {}, scratch, counters, &domain, 0, nullptr, path_counters, common_point_counters);
-        } else {
-          evaluation = EvaluateCell<reuse, SeparationProof::LegacyAabb, ExactPathReuse::Original, false, point_reuse>(
-              a, b, key, {}, scratch, counters, nullptr, 0, nullptr, path_counters, common_point_counters);
-        }
-      } else {
-        evaluation = EvaluateCell<reuse, SeparationProof::LegacyAabb, ExactPathReuse::Original, false, point_reuse>(
-            a, b, key, {}, scratch, counters, nullptr, 0, nullptr, path_counters, common_point_counters);
-      }
-      if (evaluation.disposition == CellDisposition::Crossing) {
-        evaluation.crossing.geometry =
-            evaluation.crossing.geometry == RepresentedIntersectionGeometry::Coplanar
-                ? RepresentedIntersectionGeometry::ExactCommonTranslationCoplanar
-                : RepresentedIntersectionGeometry::ExactCommonTranslationTransverse;
-        evaluation.crossing.work = 1;
-        return evaluation.crossing;
-      }
-      if (evaluation.disposition == CellDisposition::Unresolved)
-        return Unresolved(key, evaluation.reason, 1);
-      RepresentedIntervalResult result;
-      result.key = key;
-      result.classification =
-          RepresentedIntervalClassification::CertifiedSeparated;
-      result.reason = RepresentedIntervalReason::None;
-      result.work = 1;
-      return result;
+    CommonPointCounters* common_point_counters = nullptr,
+    StorageCounters* storage_counters = nullptr) noexcept {
+  if constexpr (storage == NativeStorage::Adaptive) {
+    if (represented_interval_crossing::NativeStorageDomain::FromPaths(a, b, limits.max_depth).eligible()) {
+      CountStorage(storage_counters, true);
+      return CertifyNarrow<reuse, separation, path_reuse, point_reuse>(
+          a, b, limits, key, dfs, dfs_capacity, counters,
+          separation_counters, path_counters, common_point_counters);
     }
-    const auto domain = ProjectionDomain::FromPaths(a, b, limits.max_depth);
-    const auto anchor = CanonicalAnchor(a);
-    while (dfs_size) {
-      if (work >= limits.max_work_per_pair) {
-        all_leaves_separated = false;
-        RaiseReason(RepresentedIntervalReason::WorkExhausted, &unresolved);
-        break;
-      }
-      const Cell cell = dfs[--dfs_size];
-      ++work;
-      auto evaluation = EvaluateCell<reuse, separation, path_reuse, false, point_reuse>(a, b, key, cell, scratch, counters,
-                                                       &domain, anchor, separation_counters, path_counters, common_point_counters);
-      if (evaluation.disposition == CellDisposition::Crossing) {
-        evaluation.crossing.work = work;
-        return evaluation.crossing;
-      }
-      if (evaluation.disposition == CellDisposition::Separated)
-        continue;
-      if (evaluation.disposition == CellDisposition::Unresolved) {
-        all_leaves_separated = false;
-        RaiseReason(evaluation.reason, &unresolved);
-        continue;
-      }
-      if (cell.depth >= limits.max_depth) {
-        all_leaves_separated = false;
-        RaiseReason(RepresentedIntervalReason::WorkExhausted, &unresolved);
-        continue;
-      }
-      const Cell right{cell.lower + cell.upper, cell.upper * 2,
-                       cell.depth + 1};
-      const Cell left{cell.lower * 2, cell.lower + cell.upper,
-                      cell.depth + 1};
-      if (dfs_size + 2 > dfs_capacity) {
-        all_leaves_separated = false;
-        RaiseReason(RepresentedIntervalReason::ExactArithmeticRange,
-                    &unresolved);
-        break;
-      }
-      dfs[dfs_size++] = right;
-      dfs[dfs_size++] = left;
-    }
-  } catch (...) {
-    return Unresolved(key, RepresentedIntervalReason::ExactArithmeticRange,
-                      work);
   }
-  if (all_leaves_separated) {
-    RepresentedIntervalResult result;
-    result.key = key;
-    result.classification =
-        RepresentedIntervalClassification::CertifiedSeparated;
-    result.reason = RepresentedIntervalReason::None;
-    result.work = work;
-    return result;
-  }
-  if (unresolved == RepresentedIntervalReason::None)
-    unresolved = RepresentedIntervalReason::WorkExhausted;
-  return Unresolved(key, unresolved, work);
+  CountStorage(storage_counters, false);
+  return WideKernel::template CertifyPair<reuse, separation, path_reuse, point_reuse>(
+      a, b, limits, key, dfs, dfs_capacity, scratch, counters,
+      separation_counters, path_counters, common_point_counters);
 }
 
 bool KnownMotion(RepresentedMotion motion) noexcept {
@@ -2002,9 +1028,9 @@ represented_interval_crossing::CompareNormalReuse(
   Cell dfs[53];
   const auto dfs_capacity = static_cast<std::size_t>(limits.max_depth) + 1;
   ExactScratch scratch;
-  const auto recomputed = CertifyPair<NormalReuse::Recompute, SeparationProof::RelativeFaces, ExactPathReuse::Original, CommonPointReuse::Original>(
+  const auto recomputed = CertifyPair<NormalReuse::Recompute, SeparationProof::RelativeFaces, ExactPathReuse::Original, CommonPointReuse::Original, NativeStorage::Wide>(
       a, b, limits, key, dfs, dfs_capacity, &scratch, &result.recomputed.counters);
-  const auto memoized = CertifyPair<NormalReuse::Memoize, SeparationProof::RelativeFaces, ExactPathReuse::Original, CommonPointReuse::Original>(
+  const auto memoized = CertifyPair<NormalReuse::Memoize, SeparationProof::RelativeFaces, ExactPathReuse::Original, CommonPointReuse::Original, NativeStorage::Wide>(
       a, b, limits, key, dfs, dfs_capacity, &scratch, &result.memoized.counters);
   // Compare the exact existing native publication representation, including
   // its field-wise initialization, without changing the publication format.
@@ -2027,9 +1053,9 @@ represented_interval_crossing::CompareRelativeSeparation(
   const RepresentedIntervalPairKey key{{a->key, b->key}};
   Cell dfs[53]; ExactScratch scratch;
   const auto capacity = static_cast<std::size_t>(limits.max_depth) + 1;
-  const auto legacy = CertifyPair<NormalReuse::Memoize, SeparationProof::LegacyAabb, ExactPathReuse::Original, CommonPointReuse::Original>(
+  const auto legacy = CertifyPair<NormalReuse::Memoize, SeparationProof::LegacyAabb, ExactPathReuse::Original, CommonPointReuse::Original, NativeStorage::Wide>(
       *a, *b, limits, key, dfs, capacity, &scratch);
-  const auto current = CertifyPair<NormalReuse::Memoize, SeparationProof::RelativeFaces, ExactPathReuse::Original, CommonPointReuse::Original>(
+  const auto current = CertifyPair<NormalReuse::Memoize, SeparationProof::RelativeFaces, ExactPathReuse::Original, CommonPointReuse::Original, NativeStorage::Wide>(
       *a, *b, limits, key, dfs, capacity, &scratch, nullptr, &result.counters);
   StoreResult(legacy, &result.legacy);
   StoreResult(current, &result.current);
@@ -2049,9 +1075,9 @@ represented_interval_crossing::CompareExactPathReuse(
   const RepresentedIntervalPairKey key{{a->key, b->key}};
   Cell dfs[53]; ExactScratch scratch;
   const auto capacity = static_cast<std::size_t>(limits.max_depth) + 1;
-  const auto original = CertifyPair<NormalReuse::Memoize, SeparationProof::RelativeFaces, ExactPathReuse::Original, CommonPointReuse::Original>(
+  const auto original = CertifyPair<NormalReuse::Memoize, SeparationProof::RelativeFaces, ExactPathReuse::Original, CommonPointReuse::Original, NativeStorage::Wide>(
       *a, *b, limits, key, dfs, capacity, &scratch, &result.original.exact, nullptr, &result.original.reused);
-  const auto current = CertifyPair<NormalReuse::Memoize, SeparationProof::RelativeFaces, ExactPathReuse::Optimized, CommonPointReuse::Original>(
+  const auto current = CertifyPair<NormalReuse::Memoize, SeparationProof::RelativeFaces, ExactPathReuse::Optimized, CommonPointReuse::Original, NativeStorage::Wide>(
       *a, *b, limits, key, dfs, capacity, &scratch, &result.current.exact, nullptr, &result.current.reused);
   StoreResult(original, &result.original.result);
   StoreResult(current, &result.current.result);
@@ -2072,12 +1098,40 @@ represented_interval_crossing::CompareCommonPointReuse(
   Cell dfs[53]; ExactScratch scratch;
   const auto capacity = static_cast<std::size_t>(limits.max_depth) + 1;
   const auto original = CertifyPair<NormalReuse::Memoize, SeparationProof::RelativeFaces,
-      ExactPathReuse::Optimized, CommonPointReuse::Original>(
+      ExactPathReuse::Optimized, CommonPointReuse::Original, NativeStorage::Wide>(
       *a, *b, limits, key, dfs, capacity, &scratch, nullptr, nullptr, nullptr,
       &result.original.counters);
   const auto current = CertifyPair<NormalReuse::Memoize, SeparationProof::RelativeFaces,
-      ExactPathReuse::Optimized, CommonPointReuse::Optimized>(
+      ExactPathReuse::Optimized, CommonPointReuse::Optimized, NativeStorage::Wide>(
       *a, *b, limits, key, dfs, capacity, &scratch, nullptr, nullptr, nullptr,
+      &result.current.counters);
+  StoreResult(original, &result.original.result);
+  StoreResult(current, &result.current.result);
+  return result;
+}
+
+represented_interval_crossing::NativeStorageComparison
+represented_interval_crossing::CompareNativeStorage(
+    const RepresentedTrianglePath& first, const RepresentedTrianglePath& second,
+    RepresentedIntervalLimits limits) noexcept {
+  NativeStorageComparison result;
+  result.wide_scratch_bytes = sizeof(ExactScratch);
+  result.narrow_scratch_bytes = sizeof(NarrowKernel::ExactScratch);
+  const RepresentedTrianglePath* a = nullptr;
+  const RepresentedTrianglePath* b = nullptr;
+  result.status = QualifyPairInputs(first, second, limits, &a, &b);
+  if (result.status != RepresentedIntervalStatus::Ok) return result;
+  result.domain = NativeStorageDomain::FromPaths(*a, *b, limits.max_depth).report();
+  const RepresentedIntervalPairKey key{{a->key, b->key}};
+  Cell dfs[53]; ExactScratch scratch;
+  const auto capacity = static_cast<std::size_t>(limits.max_depth) + 1;
+  const auto original = CertifyPair<NormalReuse::Memoize, SeparationProof::RelativeFaces,
+      ExactPathReuse::Optimized, CommonPointReuse::Optimized, NativeStorage::Wide>(
+      *a, *b, limits, key, dfs, capacity, &scratch, nullptr, nullptr, nullptr, nullptr,
+      &result.original.counters);
+  const auto current = CertifyPair<NormalReuse::Memoize, SeparationProof::RelativeFaces,
+      ExactPathReuse::Optimized, CommonPointReuse::Optimized, NativeStorage::Adaptive>(
+      *a, *b, limits, key, dfs, capacity, &scratch, nullptr, nullptr, nullptr, nullptr,
       &result.current.counters);
   StoreResult(original, &result.original.result);
   StoreResult(current, &result.current.result);

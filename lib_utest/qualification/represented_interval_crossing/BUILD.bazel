@@ -14,6 +14,7 @@ cc_test(
         "RelativeSeparationTest.cpp",
         "ExactPathReuseTest.cpp",
         "CommonPointReuseTest.cpp",
+        "NativeStorageTest.cpp",
         "ResultAssertions.h",
         "DeepTest.cpp",
         "FailureTest.cpp",
@@ -40,6 +41,7 @@ cc_test(
     srcs = ["SourceIdentityTest.cpp"],
     data = [
         "verify_sources.py",
+        "verify_native_extraction.py",
         "BUILD.bazel",
         "CMakeLists.txt",
         "BatchRosterTest.cpp",
@@ -47,6 +49,7 @@ cc_test(
         "RelativeSeparationTest.cpp",
         "ExactPathReuseTest.cpp",
         "CommonPointReuseTest.cpp",
+        "NativeStorageTest.cpp",
         "ResultAssertions.h",
         "DeepTest.cpp",
         "FailureTest.cpp",

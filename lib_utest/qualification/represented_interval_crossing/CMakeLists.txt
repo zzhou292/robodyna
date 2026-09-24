@@ -7,7 +7,7 @@ get_filename_component(TL_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../.." ABSOLUTE)
 include("${TL_ROOT}/lib_src/collision/RepresentedIntervalCrossing.cmake")
 
 add_executable(represented_interval_crossing_host
-  BatchRosterTest.cpp NormalReuseTest.cpp RelativeSeparationTest.cpp ExactPathReuseTest.cpp CommonPointReuseTest.cpp ResultAssertions.h GeometryTest.cpp InvarianceTest.cpp FailureTest.cpp IdentityTest.cpp
+  BatchRosterTest.cpp NormalReuseTest.cpp RelativeSeparationTest.cpp ExactPathReuseTest.cpp CommonPointReuseTest.cpp NativeStorageTest.cpp ResultAssertions.h GeometryTest.cpp InvarianceTest.cpp FailureTest.cpp IdentityTest.cpp
   DeepTest.cpp OracleTest.cpp ParallelTest.cpp TranslationProofTest.cpp Oracle.cpp)
 target_link_libraries(represented_interval_crossing_host
   PRIVATE tl_represented_interval_crossing GTest::gtest_main)
@@ -24,3 +24,7 @@ add_test(NAME represented_interval_crossing_identity
           "${CMAKE_CURRENT_LIST_DIR}/verify_sources.py")
 set_tests_properties(represented_interval_crossing_identity PROPERTIES
   RUN_SERIAL TRUE PROCESSORS 1 TIMEOUT 30)
+
+# Source-only function-body parity; invoked by the existing identity test.
+set_property(TEST represented_interval_crossing_identity APPEND PROPERTY
+  REQUIRED_FILES "${CMAKE_CURRENT_LIST_DIR}/verify_native_extraction.py")

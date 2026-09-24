@@ -366,3 +366,52 @@ are separate from proof work and are absent from physical receipts. The
 maintained native batch benchmark can compare actual selected source roots
 without timing test adapters or setup. This slice is unqualified until its owning
 host/source tests and controlled benchmark execute; no speedup is asserted here.
+
+
+## Optional bounded native integer storage (unqualified source)
+
+The numerical code is extracted into private `native/Arithmetic.h`,
+`Geometry.h` and `CellKernel.h`, with source identity/modes kept separately.
+The unchanged Boost checked signed-magnitude backend is instantiated at 512 and
+16384 bits. Public owner/roster/scheduling/publication remain in the original
+translation unit. A manifest pins all 67 moved function bodies to `3edbf971`,
+normalizing comments and whitespace only; no formula or token substitutions.
+
+`NativeStorageDomain` derives B from every actual finite endpoint component,
+including zero's stored exponent, and the configured maximum sample depth. It
+pins Boost 1.74, 64-bit limbs and Karatsuba cutoff 40. B<=125 bounds every native
+intermediate by 509 bits and every general multiply's rounded result request by
+eight limbs. The full helper/range/allocation audit is recorded in workspace
+`planning/NATIVE_EXACT_STORAGE_DOMAIN_AUDIT_2026-09-24.md`. This storage decision is
+independent of the existing `ExactProjectionDomain` geometric proof gates; wide
+pairs still use all previously admitted relative/common-translation/VF optimizations.
+
+The existing retained wide `ExactScratch`, forecast, DFS frames and 2 MiB
+prefaulted worker stacks are unchanged. Narrow scratch is automatic only in the
+separate non-inlined `CertifyNarrow` callee, bounded by an explicit 8 KiB sizeof
+assertion. There is no scratch overlay, extra heap allocation, owner resizing or
+fallback retry after a narrow result. Both executors retain the original exact
+arithmetic catch boundary and proof-work accounting. Earlier normal/relative/
+path/common-point comparison adapters continue to execute their original wide
+backend; a new private `CompareNativeStorage` compares the full stored results.
+
+**Resource qualification is still required:** the scratch sizeof assertion is
+not a transitive stack bound. Build the exact owning Release target with GCC
+`-fstack-usage -fdump-ipa-cgraph` (metadata flags only), retain compiler version,
+flags, object/binary hashes and `.su`/callgraph artifacts. Bound the maximum live
+stack from the worker entry through the eligible non-inlined callee, its
+instantiated arithmetic helpers and bounded library paths, within the existing
+2 MiB prefaulted stack. Check the actual generated wide branch reserves no
+narrow scratch and compare its live frame/callchain to `3edbf971`. No heap/error
+or recursive-Karatsuba edge may be waved away without the explicit domain proof.
+If the bound cannot be established, do not promote the slice or silently grow
+stacks/forecasts. Ordinary host tests alone cannot satisfy this resource gate.
+
+Nine new differential groups cover both storage selections, canonical VF/EE and
+coplanarity, actual whole-cell/deep work/degeneracy order, exact B=125/126 thresholds,
+uniform subnormal/huge scales, cancellation, mixed wide exponents, permutations,
+DAZ/FTZ, one/four worker reports, preserved publications/work rejection/retry and
+malformed inputs. Existing rational/frozen fixture and owner gates remain required.
+A warmed benchmark must compare actual `3edbf971` and this source using one maintained
+driver and identical inputs/flags/affinity; no speed or full-vehicle claim is made
+by authoring this source. Domain-hit counts are included in private qualification.

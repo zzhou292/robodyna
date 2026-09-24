@@ -7,7 +7,9 @@ import re
 here = Path(__file__).resolve().parent
 root = here.parents[2]
 collision = root / "lib_src/collision"
-source = (collision / "RepresentedIntervalCrossing.cpp").read_text()
+numerical_headers = ("Modes.h", "Identity.h", "Arithmetic.h", "Geometry.h", "CellKernel.h")
+source = "\n".join((collision / "represented_interval_crossing/native" / name).read_text()
+                   for name in numerical_headers) + "\n" + (collision / "RepresentedIntervalCrossing.cpp").read_text()
 public = (collision / "RepresentedIntervalCrossing.h").read_text()
 types = (collision / "RepresentedIntervalCrossingTypes.h").read_text()
 cmake = (collision / "RepresentedIntervalCrossing.cmake").read_text()
@@ -15,7 +17,7 @@ bazel = (collision / "BUILD.bazel").read_text()
 test_cmake = (here / "CMakeLists.txt").read_text()
 test_bazel = (here / "BUILD.bazel").read_text()
 test_sources = (
-    "BatchRosterTest.cpp", "NormalReuseTest.cpp", "RelativeSeparationTest.cpp", "ExactPathReuseTest.cpp", "CommonPointReuseTest.cpp", "ResultAssertions.h", "GeometryTest.cpp", "InvarianceTest.cpp", "FailureTest.cpp",
+    "BatchRosterTest.cpp", "NormalReuseTest.cpp", "RelativeSeparationTest.cpp", "ExactPathReuseTest.cpp", "CommonPointReuseTest.cpp", "NativeStorageTest.cpp", "ResultAssertions.h", "GeometryTest.cpp", "InvarianceTest.cpp", "FailureTest.cpp",
     "IdentityTest.cpp", "DeepTest.cpp", "OracleTest.cpp",
     "ParallelTest.cpp", "TranslationProofTest.cpp", "Oracle.cpp",
 )
@@ -58,10 +60,8 @@ for tag in ("ExactCommonTranslationTransverse", "ExactCommonTranslationCoplanar"
     assert source.count(tag) == 1
 assert "HasExactCommonTranslationProof" in types
 assert "BaseIntersectionGeometry" in types
-assert "CertifiedCrossingContact" not in source[
-    source.index("bool SweptBoxesSeparated"):
-    source.index("int ReasonPriority")
-]
+geometry_source = (collision / "represented_interval_crossing/native/Geometry.h").read_text()
+assert "CertifiedCrossingContact" not in geometry_source[geometry_source.index("bool SweptBoxesSeparated"): ]
 assert "swept AABB overlap is never called a crossing" in public
 assert "RigidArc" in types and "Nonlinear" in types
 assert "max_work_per_pair" in source and "max_total_work" in source
@@ -193,12 +193,12 @@ for forbidden in (
 
 
 # The retained exact normal cache is private, cell-local and fully forecast.
-normal_implementation = (root / "lib_src/collision/RepresentedIntervalCrossing.cpp").read_text()
+normal_implementation = source
 for token in ("ExactVec3 normal_a[3]", "ExactVec3 normal_b[3]",
               "bool ready_a[3]", "bool ready_b[3]", "scratch->BeginCell()",
               "normal = Normal(second ? b[sample] : a[sample], counters)",
               "ready = true", "template <NormalReuse reuse = NormalReuse::Memoize,",
-              "CertifyPair<NormalReuse::Recompute, SeparationProof::RelativeFaces, ExactPathReuse::Original, CommonPointReuse::Original>", "sizeof(ExactScratch)"):
+              "CertifyPair<NormalReuse::Recompute, SeparationProof::RelativeFaces, ExactPathReuse::Original, CommonPointReuse::Original, NativeStorage::Wide>", "sizeof(ExactScratch)"):
     if token not in normal_implementation:
         raise RuntimeError(f"Missing lazy normal cache contract: {token}")
 normal_cell = normal_implementation[normal_implementation.index("CellEvaluation EvaluateCell("):
@@ -251,6 +251,20 @@ assert static_body.index("if (common_endpoint)") < static_body.index("if (Separa
 assert "CompareCommonPointReuse" in source
 assert "SameFiniteCoordinate(p.x, q.x)" in source
 assert "first == second || ((first & magnitude) == 0 && (second & magnitude) == 0)" in source
+
+# Full native storage specialization retains immutable per-pair eligibility,
+# original wide arenas and a separate noinline automatic narrow frame.
+storage_domain = (collision / "represented_interval_crossing/NativeStorageDomain.h").read_text()
+for token in ("proof.limb_bits != 64", "proof.karatsuba_cutoff != 40",
+              "proof.coordinate_bits > 125", "maximum_product_limbs <= 8"):
+    assert token in storage_domain, token
+for token in ("using ExactScratch = WideKernel::ExactScratch", "__attribute__((noinline))",
+              "sizeof(NarrowKernel::ExactScratch) <= 8192", "NarrowKernel::ExactScratch scratch",
+              "NativeStorage::Wide", "NativeStorage::Adaptive"):
+    assert token in source, token
+assert "NativeStorage" not in public + types
+import runpy
+runpy.run_path(str(here / "verify_native_extraction.py"), run_name="__main__")
 
 print(json.dumps({
     "status": "passed",

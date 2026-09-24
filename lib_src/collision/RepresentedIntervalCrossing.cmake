@@ -7,6 +7,13 @@ add_library(tl_represented_interval_crossing STATIC
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/NormalReuseQualification.h"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/ExactPathReuseQualification.h"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/CommonPointReuseQualification.h"
+  "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/NativeStorageQualification.h"
+  "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/NativeStorageDomain.h"
+  "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native/Modes.h"
+  "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native/Identity.h"
+  "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native/Arithmetic.h"
+  "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native/Geometry.h"
+  "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/native/CellKernel.h"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/ExactProjectionDomain.h"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/RelativeSeparationQualification.h"
   "${CMAKE_CURRENT_LIST_DIR}/represented_interval_crossing/BatchExecution.h")
