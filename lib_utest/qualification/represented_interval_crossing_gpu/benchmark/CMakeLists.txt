@@ -8,7 +8,7 @@ foreach(source Cases.cpp Cases.h Results.cpp Results.h)
   endif()
 endforeach()
 include("${TL_ROOT}/lib_src/collision/RepresentedIntervalCrossingGpu.cmake")
-add_executable(native_gpu_batch_benchmark Main.cpp
+add_executable(native_gpu_batch_benchmark Main.cpp Selection.h
   "${NATIVE_BENCHMARK_ROOT}/Cases.cpp" "${NATIVE_BENCHMARK_ROOT}/Results.cpp")
 target_include_directories(native_gpu_batch_benchmark PRIVATE "${NATIVE_BENCHMARK_ROOT}")
 target_link_libraries(native_gpu_batch_benchmark PRIVATE tl_represented_interval_crossing_gpu)

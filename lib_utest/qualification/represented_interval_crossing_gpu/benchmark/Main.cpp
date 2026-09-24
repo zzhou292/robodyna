@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #include "Cases.h"
 #include "Results.h"
+#include "Selection.h"
 #include "lib_src/collision/RepresentedIntervalCrossingGpu.h"
 #include <cuda_runtime_api.h>
 #include <algorithm>
@@ -28,12 +29,13 @@ struct Stream {
 
 int main(int argc, char** argv) try {
   if (argc < 5 || argc % 2 == 0)
-    throw std::invalid_argument("Use --backend cpu|gpu --repeats N [--pairs N] [--device-workers N]");
-  std::string_view backend;
+    throw std::invalid_argument("Use --backend cpu|gpu --repeats N [--pairs N] [--device-workers N] [--view mixed|eligible]");
+  std::string_view backend, view_name = "mixed";
   unsigned repeats = 0, pair_count = b::PairCount, device_workers = 128;
   for (int i = 1; i < argc; i += 2) {
     const std::string_view option(argv[i]), value(argv[i + 1]);
     if (option == "--backend") { backend = value; continue; }
+    if (option == "--view") { view_name = value; continue; }
     unsigned* destination = option == "--repeats" ? &repeats :
         option == "--pairs" ? &pair_count : option == "--device-workers" ? &device_workers : nullptr;
     if (!destination) throw std::invalid_argument("Unknown benchmark option");
@@ -42,15 +44,26 @@ int main(int argc, char** argv) try {
       throw std::invalid_argument("Invalid numerical benchmark option");
   }
   if (backend != "cpu" && backend != "gpu") throw std::invalid_argument("Unknown backend");
+  if (view_name != "mixed" && view_name != "eligible") throw std::invalid_argument("Unknown diagnostic view");
   if (repeats == 0 || repeats > 10000 || !device_workers || device_workers > 4096)
     throw std::invalid_argument("Invalid repeat count or device worker count");
   const auto setup_start = Clock::now();
-  const auto cases = b::MakeCases(pair_count); const auto limits = b::Limits(pair_count);
+  const auto source = b::MakeCases(pair_count); const auto limits = b::Limits(pair_count);
   b::c::RepresentedIntervalCrossing reference_owner;
   auto report = reference_owner.Initialize(limits);
   if (report.status != b::c::RepresentedIntervalStatus::Ok) throw std::runtime_error(report.message);
-  report = reference_owner.Certify(cases.paths.data(), cases.paths.size(), cases.pairs.data(), cases.pairs.size());
-  const auto reference = b::Verify(cases, report, reference_owner.results(), nullptr);
+  report = reference_owner.Certify(source.paths.data(), source.paths.size(), source.pairs.data(), source.pairs.size());
+  const auto original = b::Verify(source, report, reference_owner.results(), nullptr);
+  const auto selection = native_gpu_benchmark::Select(source, original, limits.max_depth, view_name == "eligible");
+  const auto& cases = selection.cases;
+  auto reference = original;
+  if (view_name == "eligible") {
+    report = reference_owner.Certify(cases.paths.data(), cases.paths.size(), cases.pairs.data(), cases.pairs.size());
+    reference = b::Verify(cases, report, reference_owner.results(), nullptr);
+    b::VerifySubset(original, reference);
+    if (reference.work != selection.selected_work)
+      throw std::runtime_error("Pair selection changed native proof work");
+  }
   const double reference_setup_s = Seconds(setup_start);
   Stream stream; b::c::RepresentedIntervalCrossingGpu gpu;
   const auto owner_start = Clock::now();
@@ -84,6 +97,8 @@ int main(int argc, char** argv) try {
           device.device_pairs + device.host_pairs != cases.pairs.size() || device.batches != 1 ||
           device.scene_uploads != 1)
         throw std::runtime_error("Device route is incomplete or unexercised");
+      if (view_name == "eligible" && device.host_pairs)
+        throw std::runtime_error("Eligible diagnostic unexpectedly routed a pair to CPU");
       if (i && (device.device_pairs != device_reference.device_pairs ||
                 device.host_pairs != device_reference.host_pairs ||
                 device.batches != device_reference.batches ||
@@ -95,7 +110,12 @@ int main(int argc, char** argv) try {
   }
   std::cout << std::setprecision(17)
       << "{\"schema\":\"robo_dyna.native_gpu_batch_benchmark.v1\",\"backend\":\"" << backend
-      << "\",\"pairs\":" << cases.pairs.size() << ",\"paths\":" << cases.paths.size()
+      << "\",\"view\":\"" << view_name << "\",\"source_pairs\":" << source.pairs.size()
+      << ",\"selected_pairs\":" << cases.pairs.size() << ",\"omitted_pairs\":" << source.pairs.size()-cases.pairs.size()
+      << ",\"source_input_digest\":" << b::InputDigest(source)
+      << ",\"source_work\":" << original.work << ",\"selected_work\":" << selection.selected_work
+      << ",\"omitted_work\":" << selection.omitted_work
+      << ",\"pairs\":" << cases.pairs.size() << ",\"paths\":" << cases.paths.size()
       << ",\"cpu_workers\":" << b::WorkerCount << ",\"device_workers\":" << device_workers
       << ",\"warmups\":2,\"repeats\":" << repeats
       << ",\"input_digest\":" << b::InputDigest(cases) << ",\"result_digest\":" << reference.digest

@@ -34,3 +34,13 @@ with independent synthetic IDs. Device workers remain capped by the declared
 owner forecast and actual job count. Retain each GPU benchmark process for more
 than four seconds using the fixed repeat count: the guard polls GPU memory every
 two seconds while its more frequent RSS rows reuse the last GPU sample.
+
+`--view eligible` is an explicitly limited diagnostic view. It retains the full
+source path roster and selects only pair/kind entries whose actual
+`NativeStorageDomain` is eligible at the configured depth. No coordinate is
+translated or rounded to force admission. The full original CPU result is
+verified first, followed by an independent selected-pair CPU call and complete
+GPU/CPU field checks. Output records original/selected/omitted pair and work
+counts, both input digests, and actual device/host routes. This does not omit
+difficult pairs in the production backend. Keep the mixed-cohort results visible;
+an eligible-only benefit is not a vehicle or mixed-cohort speed claim.
