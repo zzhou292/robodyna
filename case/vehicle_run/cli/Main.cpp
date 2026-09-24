@@ -92,10 +92,13 @@ int main(int argc,char** argv) {
                  <<" actual_time_s="<<result.loop.progress.accepted.time_s
                  <<" valid_prefix="<<result.loop.valid_manifest<<" reason="<<result.loop.reason;
         run::detail::WriteSelfContactWorkProgress(std::cout, result.loop.progress.self_contact);
-        if(result.loop.kind==run::StopKind::PhysicsRejected)
-            run::contact_diagnostics::WriteProgress(std::cout,result.last_contact_attempt);
         run::detail::WriteSampledShellPlasticityProgress(std::cout, result.loop.progress.sampled_shell_plasticity);
         std::cout << std::endl;
+        if(result.loop.kind==run::StopKind::PhysicsRejected && result.last_contact_attempt.enabled) {
+            std::cout<<"self_contact_last_attempt";
+            run::contact_diagnostics::WriteProgress(std::cout,result.last_contact_attempt);
+            std::cout<<std::endl;
+        }
         if(result.viewer_input) std::cout<<"viewer_descriptor="<<(options.output/result.viewer_input->file)
                                       <<" sha256="<<result.viewer_input->sha256<<std::endl;
         if(!result.summary_error.empty()) std::cerr<<"Summary error: "<<result.summary_error<<'\n';
