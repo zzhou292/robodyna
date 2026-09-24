@@ -298,6 +298,8 @@ filegroup(
         "SelfContactTransaction.cmake",
         "SelfContactTransaction.h",
         "SelfContactTransactionTypes.h",
+        "SelfContactTransactionDiagnostics.h",
+        "self_contact_transaction/Diagnostics.h",
         "SelfContactFilterCertificates.cmake",
         "SelfContactFilterCertificates.cpp",
         "SelfContactFilterCertificates.h",
@@ -350,6 +352,8 @@ cc_library(
     hdrs = [
         "SelfContactTransaction.h",
         "SelfContactTransactionTypes.h",
+        "SelfContactTransactionDiagnostics.h",
+        "self_contact_transaction/Diagnostics.h",
         "self_contact_transaction/CrossingBatch.h",
         "self_contact_transaction/QualificationRanges.h",
         "self_contact_transaction/QualificationReceipt.h",
@@ -390,6 +394,8 @@ cc_library(
     hdrs = [
         "SelfContactTransaction.h",
         "SelfContactTransactionTypes.h",
+        "SelfContactTransactionDiagnostics.h",
+        "self_contact_transaction/Diagnostics.h",
         "self_contact_transaction/QualificationRanges.h",
         "self_contact_transaction/CandidateFailureCapture.h",
         "self_contact_transaction/QualificationReceipt.h",

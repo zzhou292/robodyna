@@ -178,3 +178,61 @@ sticky floating-point flags, and skipped operations need not set the same flags.
 The solver does not consume those flags as geometry authority; trapping-mode or
 errno equivalence is not asserted. Endpoint classification remains in its original
 position in this first optimization.
+
+## Optional host substage observations
+
+`SelfContactTransactionConfig::enable_diagnostics` defaults to false.
+`SelfContactTransaction::diagnostics()` copies bounded, nonphysical observations
+of the last accepted assembly and candidate sealing calls. The public value
+header has no CUDA dependency. No receipt, configuration identity, policy digest,
+force, proof work, limit, acceptance or publication decision reads these values.
+The fixed storage is included by the existing `sizeof(Impl)` host forecast.
+
+Private `DiagnosticAttempt` reuses the monotonic-clock, errno-preservation,
+valid-sample and saturating-counter pattern from robo-dyna's
+`benchmarks/stage_timing/StageTimer`. It deliberately does not add a TL-to-app
+link or make standalone app host tools depend on TL. Only private qualification
+can replace the per-instance clock; production always uses `CLOCK_MONOTONIC`.
+Disabled observation reads no clock and performs no aggregate counting.
+
+The single coordinator switches scopes at cohort boundaries, never inside a
+pair/feature arithmetic loop. Stages are disjoint host elapsed time, including
+existing worker/device waits; there are no new CUDA events or synchronizations.
+Setup includes authentication, source snapshots, regularity and broadphase.
+Accepted filtering includes streaming, pair rejection and task masks; discovery
+is the existing worker/reduction call; event assembly includes feature policy,
+identity census, ledger merging and sorting; force assembly and final participation
+are separate. Candidate filtering includes streaming, prism and nonlinear root
+proofs; discovery is separate; residual includes persistent/translated proofs,
+nonlinear owner coverage and path packing; native crossing includes the complete
+bounded adapter; policy includes intersection/edge checks, linear owner coverage,
+outcome validation and folding. Finalization covers complete census checks and
+participation sealing. Empty terminal stream calls still form filtering samples.
+Candidate task-mask construction is included with the adjacent policy bookkeeping.
+
+Discovery counters sum fields already returned by every executed call, including
+an optional second accepted census verification pass. They distinguish raw versus
+deduplicated records. Native counts derive from the existing compound batch report:
+completed slices plus a last invoked failing slice; an empty native slice counts
+as one batch and zero pairs. `native_work` sums admitted native work, excluding
+linear policy coverage. These counts are distinct from the older
+`exact_crossing_pairs` policy cohort and mixed `exact_crossing_work` summary.
+
+Every attempt resets its own record; a new accepted assembly also clears the old
+candidate record. Requested owner/base-epoch/attempt values are explicitly marked
+unauthenticated until ordinary owner checks succeed. Rollback/discard retain the
+record for inspection. Normal failure or exception closes the active scope,
+sets `finished`, leaves `succeeded` false and marks `counts_complete` false: a
+traversed prefix never claims the complete model census. A copied observation
+never becomes publication authority, including after a later commit or discard.
+
+Clock read failures/backward samples omit elapsed time and increment explicit
+fault counters. Consumers must use `calls`/`valid_samples`; unavailable time is
+not a zero-duration observation. Counter overflow saturates and marks the record
+incomplete. Timing and count faults never change a physical result or first error.
+No per-pair logs, dynamic storage, worker instrumentation or second startup pass
+are introduced. Host diagnostics tests exercise clock faults, unwind, saturation,
+actual native split/empty calls and failure counting. CUDA coupons compare force
+bits, accepted/candidate receipts, policy outcomes and committed owner state with
+observation disabled, enabled and an always-failing clock, and verify failed
+candidate rollback plus retained/reset observations across retries.

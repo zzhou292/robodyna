@@ -147,6 +147,8 @@ struct SelfContactTransactionConfig {
   SelfContactTransactionNonlocalPolicy nonlocal_policy =
       SelfContactTransactionNonlocalPolicy::
           AcceptedSymmetricVfEeRejectIntersectionV2;
+  // Optional host substage observation. Never participates in physical identity.
+  bool enable_diagnostics = false;
 };
 
 struct SelfContactTransactionLimits {

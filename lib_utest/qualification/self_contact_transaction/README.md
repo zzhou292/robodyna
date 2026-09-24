@@ -602,3 +602,16 @@ nonlocal-overlap cases remain explicit rejection oracles. Projection values
 on the unnormalized normal (1,1,0) are dot products, not physical distances.
 Existing negative continuous-geometry, native owner/publication and frozen
 fixture gates remain required. No new vehicle acceptance or timing is claimed.
+
+Optional contact telemetry qualification lives in `DiagnosticsTest.cpp` (host)
+and `DiagnosticsCudaCases.h` (owning transaction). It compares actual numerical
+outputs with diagnostics disabled/enabled/clock-failed, and verifies that rollback
+retains only an explicitly incomplete diagnostic record. Run these in the existing
+values and CUDA qualification targets; no vehicle startup or separate simulation
+is required. Host durations are diagnostic and are not deterministic physics.
+
+Source checkpoint (2026-09-24): the telemetry implementation and nine new test
+groups are authored but unbuilt and unexecuted. Independent core review accepted
+the lifetime/counting boundaries and requested an accepted census-sort attribution
+fix, which is included. Independent review of the new test groups remains pending.
+This checkpoint is not numerical or runtime qualification evidence.

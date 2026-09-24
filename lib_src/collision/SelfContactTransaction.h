@@ -2,6 +2,7 @@
 #pragma once
 
 #include "SelfContactTransactionTypes.h"
+#include "SelfContactTransactionDiagnostics.h"
 
 #include <memory>
 
@@ -78,6 +79,9 @@ class SelfContactTransaction {
   // only when the caller reserved the entire detailed outcome census.
   SelfContactCandidatePolicyView policy_outcomes() const noexcept;
   SelfContactCandidatePolicySummary policy_summary() const noexcept;
+
+  // Optional value-only host diagnostic snapshots; no publication authority.
+  SelfContactTransactionDiagnostics diagnostics() const noexcept;
 
   // Contact-local composition. Common transaction abandonment still calls the
   // owner and ShellBatchPublication discard operations.

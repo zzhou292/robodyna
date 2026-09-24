@@ -6,6 +6,7 @@
 #include "../SelfContactPhysicalActivity.h"
 #include "../fixed_triangle_features/Geometry.h"
 #include "QualificationReceipt.h"
+#include "Diagnostics.h"
 #include "lib_utils/BoundedArena.h"
 
 namespace tlfea::contact::self_contact_transaction {
@@ -96,6 +97,8 @@ struct CandidateFailureObserver;
 // production policy and is available only through this private storage header.
 class QualificationAccess {
  public:
+  // Observation-only qualification seam. Does not touch mechanics authority.
+  static void SetDiagnosticClock(SelfContactTransaction&, DiagnosticClock) noexcept;
   // Same production sealing path. Only a proved failing source pair is
   // observed, synchronously before the ordinary complete rollback.
   static SelfContactTransactionReport SealCandidateWithFailureObserver(
@@ -886,6 +889,8 @@ struct SelfContactTransaction::Impl {
   tl::fea::FENodalState* owner = nullptr;
   tl::fea::ShellBatchPublication* publication = nullptr;
   SelfContactTransactionConfig config;
+  SelfContactTransactionDiagnostics diagnostics;
+  self_contact_transaction::DiagnosticClock diagnostic_clock;
   SelfContactTransactionForecast storage_forecast;
   self_contact_transaction::Layout layout;
   tl::util::HostArena arena;

@@ -309,6 +309,11 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
     return Failure(S::NotInitialized,
         "Self-contact transaction is not initialized");
   auto& state = *impl_;
+  state.diagnostics.candidate = {};
+  sct::DiagnosticAttempt diagnostics(state.diagnostics.accepted,
+      state.config.enable_diagnostics, view.owner_id, view.accepted.base_epoch,
+      view.attempt, state.diagnostic_clock);
+  using Stage = SelfContactDiagnosticStage;
   using fe::trial_identity::Disjoint;
   const auto parents = state.active_use.parents().size();
   const auto authenticated = owner.AuthenticateAssemblyView(token, view);
@@ -382,6 +387,7 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
         "Accepted snapshot differs from assembly source identity"));
   }
 
+  diagnostics.Authenticate();
   const VectorView accepted_positions{
       state.buffers.accepted_positions,
       static_cast<std::uint32_t>(node_count), 3, 1};
@@ -458,6 +464,7 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
   for (;;) {
     const FixedTrianglePair* pairs = nullptr;
     std::size_t pair_count = 0;
+    diagnostics.Stage(Stage::Filtering);
     streamed = state.candidate_source.Next(&pairs, &pair_count);
     if (streamed.status != S::Ok) return state.Fail(streamed);
     if (!pair_count) break;
@@ -472,9 +479,11 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
         pairs, pair_count, state.buffers.chunk_feature_task_masks,
         state.storage_forecast.feature_task_mask_capacity);
     if (masked.status != S::Ok) return state.Fail(masked);
+    diagnostics.Stage(Stage::Discovery);
     const auto discovery = state.accepted_discovery.DiscoverMasked(
         state.buffers.accepted_triangles, state.facet_count,
         pairs, pair_count, state.buffers.chunk_feature_task_masks);
+    diagnostics.Discovery(discovery);
     if (discovery.status != FixedTriangleDiscoveryStatus::Ok) {
       auto report = Failure(S::DiscoveryFailure, discovery.message);
       report.discovery_status = discovery.status;
@@ -485,6 +494,7 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
       report.discovery_reason = discovery.arithmetic_reason;
       return state.Fail(report);
     }
+    diagnostics.Stage(Stage::EventAssembly);
     if (discovery.potential_tasks >
             SIZE_MAX - potential_tasks ||
         discovery.local_masked_tasks >
@@ -566,6 +576,7 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
     }
     state.accepted_facet_pair_count += streamed_pair_count;
   }
+  diagnostics.Stage(Stage::EventAssembly);
   sct::StreamingCandidateSourceReceipt stream_receipt;
   streamed = state.candidate_source.Finish(&stream_receipt);
   if (streamed.status != S::Ok ||
@@ -614,6 +625,7 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
     for (;;) {
     const FixedTrianglePair* pairs = nullptr;
     std::size_t pair_count = 0;
+    diagnostics.Stage(Stage::Filtering);
     streamed = state.candidate_source.Next(&pairs, &pair_count);
     if (streamed.status != S::Ok) return state.Fail(streamed);
     if (!pair_count) break;
@@ -628,9 +640,11 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
         pairs, pair_count, state.buffers.chunk_feature_task_masks,
         state.storage_forecast.feature_task_mask_capacity);
     if (masked.status != S::Ok) return state.Fail(masked);
+    diagnostics.Stage(Stage::Discovery);
     const auto discovery = state.accepted_discovery.DiscoverMasked(
         state.buffers.accepted_triangles, state.facet_count,
         pairs, pair_count, state.buffers.chunk_feature_task_masks);
+    diagnostics.Discovery(discovery);
     if (discovery.status != FixedTriangleDiscoveryStatus::Ok) {
       auto report = Failure(S::DiscoveryFailure, discovery.message);
       report.discovery_status = discovery.status;
@@ -641,6 +655,7 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
       report.discovery_reason = discovery.arithmetic_reason;
       return state.Fail(report);
     }
+    diagnostics.Stage(Stage::EventAssembly);
     if (discovery.potential_tasks >
             SIZE_MAX - verified_potential_tasks ||
         discovery.local_masked_tasks >
@@ -696,6 +711,7 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
     if (events.status != S::Ok) return state.Fail(events);
     verified_facet_pair_count += streamed_pair_count;
     }
+    diagnostics.Stage(Stage::EventAssembly);
     sct::StreamingCandidateSourceReceipt verification_receipt;
     streamed = state.candidate_source.Finish(&verification_receipt);
     if (streamed.status != S::Ok ||
@@ -721,12 +737,14 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
           "Accepted verification feature accounting is incomplete"));
   }
 
+  diagnostics.Stage(Stage::EventAssembly);
   events = sct::FinalizeAcceptedEventLedger(
       state.buffers.accepted_certificates, event_count,
       state.buffers.accepted_events,
       state.storage_forecast.accepted_event_capacity);
   if (events.status != S::Ok) return state.Fail(events);
   SelfContactForceAssemblyReceipt force_receipt;
+  diagnostics.Stage(Stage::ForceAssembly);
   const auto force = state.force.AssembleAccepted(
       owner, token, view, activity,
       {state.buffers.accepted_events, event_count},
@@ -737,6 +755,7 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
     report.owner_status = force.owner_status;
     return state.Fail(report);
   }
+  diagnostics.Stage(Stage::Finalization);
   const auto recorded =
       state.participation.RecordSelfContactAcceptedAssembly(
       state.config.source_id, owner, token, view);
@@ -783,7 +802,17 @@ SelfContactTransactionReport SelfContactTransaction::AssembleAccepted(
   next.activity_ = activity_receipt;
   next.force_ = force_receipt;
   *output = next;
+  diagnostics.Success();
   return {};
+}
+
+SelfContactTransactionDiagnostics SelfContactTransaction::diagnostics() const noexcept {
+  return impl_ ? impl_->diagnostics : SelfContactTransactionDiagnostics{};
+}
+
+void sct::QualificationAccess::SetDiagnosticClock(
+    SelfContactTransaction& transaction, sct::DiagnosticClock clock) noexcept {
+  if (transaction.impl_) transaction.impl_->diagnostic_clock = clock;
 }
 
 void SelfContactTransaction::DiscardTrial() noexcept {

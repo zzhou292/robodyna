@@ -11,6 +11,7 @@ include("${TL_ROOT}/lib_src/collision/RepresentedIntervalCrossing.cmake")
 include("${TL_ROOT}/lib_src/collision/SelfContactFilterCertificates.cmake")
 include("${TL_ROOT}/lib_src/collision/SelfContactCurrentRegularity.cmake")
 add_executable(self_contact_transaction_values
+  DiagnosticsTest.cpp
   ValueTest.cpp
   OwnerRangeCases.h
   FinalizedCoverageLedgerTestAccess.h

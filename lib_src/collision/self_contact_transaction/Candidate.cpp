@@ -585,6 +585,10 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
     return Failure(S::NotInitialized,
         "Self-contact transaction is not initialized");
   auto& state = *impl_;
+  sct::DiagnosticAttempt diagnostics(state.diagnostics.candidate,
+      state.config.enable_diagnostics, prepared.owner_id,
+      prepared.kinematics.base_epoch, prepared.attempt, state.diagnostic_clock);
+  using Stage = SelfContactDiagnosticStage;
   using fe::trial_identity::Disjoint;
   const auto& force_diagnostics = assembly.force_.diagnostics();
   const bool same_assembly =
@@ -670,6 +674,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
         "Candidate owner/token/view differs from accepted assembly"));
   }
 
+  diagnostics.Authenticate();
   if (state.rigid_group_count) {
     const auto* rigid = state.active_use.rigid();
     if (!rigid ||
@@ -836,6 +841,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
   for (;;) {
     const FixedTrianglePair* pairs = nullptr;
     std::size_t streamed_pair_count = 0;
+    diagnostics.Stage(Stage::Filtering);
     streamed = state.candidate_source.Next(
         &pairs, &streamed_pair_count);
     if (streamed.status != S::Ok) return state.Fail(streamed);
@@ -1000,6 +1006,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
           "Candidate exact crossing pair count overflowed"));
     summary.exact_crossing_pairs += pair_count;
 
+    diagnostics.Stage(Stage::Policy);
     std::size_t validated_count = 0;
     if (pair_count) {
       auto masked = sct::BuildLocalFeatureTaskMasks(
@@ -1009,10 +1016,12 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
           state.storage_forecast.feature_task_mask_capacity);
       if (masked.status != S::Ok)
         return state.Fail(masked);
+      diagnostics.Stage(Stage::Discovery);
       const auto discovery = state.candidate_discovery.DiscoverMasked(
           state.buffers.prepared_triangles, triangles,
           state.buffers.facet_pair_chunk, pair_count,
           state.buffers.chunk_feature_task_masks);
+      diagnostics.Discovery(discovery);
       if (discovery.status != FixedTriangleDiscoveryStatus::Ok) {
         auto report = Failure(
             S::DiscoveryFailure, discovery.message,
@@ -1022,6 +1031,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
         report.discovery_reason = discovery.arithmetic_reason;
         return state.Fail(report);
       }
+      diagnostics.Stage(Stage::Policy);
       if (discovery.potential_tasks >
               SIZE_MAX - potential_tasks ||
           discovery.local_masked_tasks >
@@ -1056,6 +1066,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
         }
         return state.Fail(intersection_policy);
       }
+      diagnostics.Stage(Stage::Residual);
       std::size_t crossing_pair_count = 0;
       std::size_t raw_pair = 0;
       for (std::size_t pair = 0; pair < pair_count; ++pair) {
@@ -1442,6 +1453,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
         ++crossing_pair_count;
         ++raw_pair;
       }
+      diagnostics.Stage(Stage::Policy);
       auto edge_policy = sct::ValidateCandidateEdgePolicy(
           state.active_use, state.regularity, regularity_receipt,
           state.candidate_discovery.features(),
@@ -1451,6 +1463,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
           state.accepted_event_count);
       if (edge_policy.status != S::Ok)
         return state.Fail(edge_policy);
+      diagnostics.Stage(Stage::NativeCrossing);
       const auto crossing = sct::CertifyCrossingBatches(
           state.crossing,
           state.buffers.chunk_paths, 2 * crossing_pair_count,
@@ -1459,6 +1472,8 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
           state.storage_forecast.crossing_batch_pair_capacity,
           state.buffers.chunk_raw_crossings,
           state.storage_forecast.raw_crossing_result_capacity);
+      diagnostics.Crossing(crossing, crossing_pair_count,
+          state.storage_forecast.crossing_batch_pair_capacity);
       if (crossing.status != RepresentedIntervalStatus::Ok) {
         auto report = Failure(
             S::CrossingFailure, crossing.message,
@@ -1506,6 +1521,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
         }
         return state.Fail(report);
       }
+      diagnostics.Stage(Stage::Policy);
       const auto raw_crossings = crossing.results;
       if (!raw_crossings.complete ||
           raw_crossings.count != crossing_pair_count ||
@@ -1835,6 +1851,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
     }
     state.candidate_facet_pair_count += streamed_pair_count;
   }
+  diagnostics.Stage(Stage::Finalization);
   sct::StreamingCandidateSourceReceipt stream_receipt;
   streamed = state.candidate_source.Finish(&stream_receipt);
   if (streamed.status != S::Ok ||
@@ -1960,6 +1977,7 @@ SelfContactTransactionReport SelfContactTransaction::SealCandidateImpl(
   next.activity_ = activity_receipt;
   next.participation_ = participation;
   *output = next;
+  diagnostics.Success();
   return {};
 }
 
