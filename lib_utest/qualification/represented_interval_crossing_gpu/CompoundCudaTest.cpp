@@ -3,6 +3,7 @@
 #include "../represented_interval_crossing/BatchFixture.h"
 #include "lib_src/collision/represented_interval_crossing/DeviceBatch.h"
 #include "lib_src/collision/represented_interval_crossing/DeviceExecution.h"
+#include "WideStorageCases.h"
 #include <limits>
 #include <type_traits>
 
@@ -86,7 +87,7 @@ TEST_F(NativeGpuCompound, WideOnlyAndInitiallyWideSlicesDoNotUploadEarly) {
     if (delay) {
       AdmitCoordinates(roster);
       roster.paths[1].motion = roster.paths[2].motion = c::RepresentedMotion::RigidArc;
-    }
+    } else native_gpu_test::RequireNonzeroWideStorage(roster.paths);
     const auto limits = test::Limits(roster, 2);
     auto cpu = test::Owner(limits);
     c::RepresentedIntervalCrossingGpu gpu;

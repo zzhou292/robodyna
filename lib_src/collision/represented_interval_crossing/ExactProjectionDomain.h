@@ -23,6 +23,15 @@ struct ExactProjectionDomainReport {
 class ExactProjectionDomain {
  public:
   TL_MATH_HOST_DEVICE static ExactProjectionDomain FromPaths(const RepresentedTrianglePath& first,
+      const RepresentedTrianglePath& second, unsigned maximum_cell_depth) noexcept {
+    return FromPathsImpl<false>(first, second, maximum_cell_depth);
+  }
+  TL_MATH_HOST_DEVICE bool eligible() const noexcept { return report_.eligible; }
+  TL_MATH_HOST_DEVICE ExactProjectionDomainReport report() const noexcept { return report_; }
+ private:
+  friend class NativeStorageDomain;
+  template <bool IgnoreExactZeros>
+  TL_MATH_HOST_DEVICE static ExactProjectionDomain FromPathsImpl(const RepresentedTrianglePath& first,
                                         const RepresentedTrianglePath& second,
                                         unsigned maximum_cell_depth) noexcept {
     ExactProjectionDomain result;
@@ -48,22 +57,27 @@ class ExactProjectionDomain {
             std::uint64_t bits = 0; portable::memcpy(&bits, &coordinate, sizeof(bits));
             const auto encoded = static_cast<unsigned>((bits >> 52) & 0x7ffu);
             if (encoded == 0x7ffu) return result;
-            // Mirror Exact(double), including zero and unnormalized mantissas.
+            // Only the private storage proof ignores zero. Public projection
+            // admission remains the original stored-exponent calculation.
+            if constexpr (IgnoreExactZeros)
+              if ((bits & ((std::uint64_t{1} << 63) - 1)) == 0) continue;
+            // Mirror Exact(double), retaining all nonzero subnormal significands.
             const int exponent = encoded ? static_cast<int>(encoded) - 1023 - 52 : -1074;
             if (exponent < minimum) minimum = exponent;
             if (exponent > maximum) maximum = exponent;
           }
         }
     }
+    // An all-zero pair has no nonzero coefficient to align. A conservative
+    // finite scale avoids sentinel arithmetic; ordinary degeneracy still runs.
+    if constexpr (IgnoreExactZeros)
+      if (minimum == portable::numeric_limits<int>::max()) minimum = maximum = 0;
     report.coordinate_bits = 53 + static_cast<unsigned>(maximum - minimum) + report.sample_depth;
     report.degree_two_bits = 2 * report.coordinate_bits + 3;
     report.eligible = report.degree_two_bits <=
         (report.karatsuba_cutoff - 1) * report.limb_bits;
     return result;
   }
-  TL_MATH_HOST_DEVICE bool eligible() const noexcept { return report_.eligible; }
-  TL_MATH_HOST_DEVICE ExactProjectionDomainReport report() const noexcept { return report_; }
- private:
   TL_MATH_HOST_DEVICE ExactProjectionDomain() = default;
   ExactProjectionDomainReport report_;
 };

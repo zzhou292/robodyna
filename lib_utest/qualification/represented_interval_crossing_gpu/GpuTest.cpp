@@ -84,9 +84,14 @@ TEST(NativeGpuCuda, ExactStorageBoundaryAndExtremeCoordinatesSelectAuthenticDevi
   for (double zero : {0., -0.}) {
     auto a = Positive(), b = Positive(3); a[0].z = zero;
     Cases cases; Add(cases, a, b, b);
-    ASSERT_EQ(DevicePairs(cases, limits.native.max_depth), 0u);
+    const auto domain=c::represented_interval_crossing::NativeStorageDomain::FromPaths(
+        cases.paths[0],cases.paths[1],limits.native.max_depth).report();
+    ASSERT_GT(domain.projection.coordinate_bits,125u);
+    ASSERT_LE(domain.storage.coordinate_bits,125u);
+    ASSERT_EQ(DevicePairs(cases, limits.native.max_depth), 1u);
     const auto result = Compare(cpu, gpu, cases, streams.first);
-    ASSERT_EQ(result.native.status, S::Ok); EXPECT_EQ(result.device.host_pairs, 1u);
+    ASSERT_EQ(result.native.status, S::Ok);
+    EXPECT_EQ(result.device.device_pairs, 1u);EXPECT_EQ(result.device.host_pairs, 0u);
   }
 }
 TEST(NativeGpuCuda, CanonicalDedupAndSameSourceIdentityAreAuthenticatedByOriginalFrontend) {
@@ -106,6 +111,13 @@ TEST(NativeGpuCuda, WideAndUnsupportedInputsUseHostBeforeAnyDeviceLaunch) {
   Streams streams; auto limits = Limits(); auto cpu = fixture::Owner(limits.native);
   c::RepresentedIntervalCrossingGpu gpu; ASSERT_EQ(gpu.Initialize(limits, streams.first).native.status, S::Ok);
   Cases cases; Add(cases, fixture::BaseTriangle(), fixture::BaseTriangle(1), fixture::BaseTriangle(1));
+  RequireNonzeroWideStorage(cases.paths);
+  const auto wide=c::represented_interval_crossing::NativeStorageDomain::FromPaths(
+      cases.paths[0],cases.paths[1],limits.native.max_depth).report();
+  ASSERT_GT(wide.storage.coordinate_bits,125u);
+  ASSERT_FALSE(wide.eligible);
+  for(const auto& path:cases.paths)for(const auto& vertex:path.vertices)for(const auto point:vertex.endpoint)
+    ASSERT_TRUE(point.x!=0 && point.y!=0 && point.z!=0);
   Add(cases, Positive(), Positive(), Positive(), c::RepresentedMotion::RigidArc);
   const auto result = Compare(cpu, gpu, cases, streams.first);
   ASSERT_EQ(result.native.status, S::Ok); EXPECT_EQ(result.device.status, D::Ok);

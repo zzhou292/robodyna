@@ -12,7 +12,7 @@ target_link_libraries(represented_interval_crossing_gpu_host PRIVATE
 target_compile_features(represented_interval_crossing_gpu_host PRIVATE cxx_std_17)
 target_compile_options(represented_interval_crossing_gpu_host PRIVATE -fno-fast-math -ffp-contract=off)
 add_executable(represented_interval_crossing_gpu_cuda
-  GpuTest.cpp GpuFixture.h CapacityCudaTest.cpp NumericCohortCudaTest.cpp
+  GpuTest.cpp GpuFixture.h ZeroStorageCudaTest.cpp WideStorageCases.h CapacityCudaTest.cpp NumericCohortCudaTest.cpp
   NumericCohortCases.h CopyFault.cpp CopyFault.h Cases.h)
 target_link_libraries(represented_interval_crossing_gpu_cuda PRIVATE
   tl_represented_interval_crossing_gpu CUDA::cudart GTest::gtest_main)
@@ -45,4 +45,11 @@ set_tests_properties(represented_interval_crossing_gpu_cohort_source PROPERTIES
 # Optional maintained corpus; ordinary qualification has no external fixture dependency.
 if(NATIVE_BENCHMARK_ROOT)
   add_subdirectory(benchmark)
+endif()
+
+# Optional complete CPU oracle qualification shares the already-built native
+# library; no production flags, backend or numerical source is changed.
+option(NATIVE_INCLUDE_CPU_QUALIFICATION "Also build the existing CPU native owning tests" OFF)
+if(NATIVE_INCLUDE_CPU_QUALIFICATION)
+  add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../represented_interval_crossing" native-cpu-qualification)
 endif()

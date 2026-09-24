@@ -1,6 +1,7 @@
 load("@rules_cc//cc:defs.bzl", "cc_test")
 _COMMON = [
     "Cases.h",
+    "WideStorageCases.h",
     "GpuFixture.h",
     "NumericCohortCases.h",
     "//lib_utest/qualification/represented_interval_crossing:Fixture.h",
@@ -16,7 +17,7 @@ cc_test(
 )
 cc_test(
     name = "cuda", size = "medium", timeout = "moderate",
-    srcs = ["GpuTest.cpp", "CompoundCudaTest.cpp", "CapacityCudaTest.cpp",
+    srcs = ["GpuTest.cpp", "ZeroStorageCudaTest.cpp", "CompoundCudaTest.cpp", "CapacityCudaTest.cpp",
             "NumericCohortCudaTest.cpp", "CopyFault.cpp", "CopyFault.h"] + _COMMON,
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = ["//lib_src/collision:represented_interval_crossing_gpu", "@googletest//:gtest_main"],

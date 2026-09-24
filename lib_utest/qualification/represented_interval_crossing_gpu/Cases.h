@@ -4,6 +4,7 @@
 #include "../represented_interval_crossing/ResultAssertions.h"
 #include "lib_src/collision/RepresentedIntervalCrossingGpu.h"
 #include "lib_src/collision/represented_interval_crossing/NativeStorageDomain.h"
+#include "WideStorageCases.h"
 #include <array>
 #include <vector>
 
@@ -44,6 +45,15 @@ inline Cases Mixed() {
   const std::array<c::Vec3,3> collapsed{{{2,2,2},{2,2,2},{2,2,2}}};
   Add(cases, Positive(), collapsed, collapsed);
   Add(cases, Positive(), Positive(3), Positive(1.5));
+  Cases wide;
+  Add(wide, fixture::BaseTriangle(), fixture::BaseTriangle(1), fixture::BaseTriangle(1));
+  RequireNonzeroWideStorage(wide.paths);
+  std::array<c::Vec3,3> a, b;
+  for (unsigned i=0;i<3;++i) {
+    a[i]=wide.paths[0].vertices[i].endpoint[0];
+    b[i]=wide.paths[1].vertices[i].endpoint[0];
+  }
+  Add(cases,a,b,b);
   return cases;
 }
 inline c::RepresentedIntervalGpuLimits Limits() {

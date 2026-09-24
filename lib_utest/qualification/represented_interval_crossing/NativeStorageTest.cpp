@@ -116,7 +116,7 @@ TEST(RepresentedNativeStorage, UniformExtremeScalesCancellationAndWideExponentMi
   EXPECT_FALSE(wide.domain.eligible);
   EXPECT_EQ(wide.current.counters.wide_pairs, 1u);
   const auto zeros = CompareStorage({Static(10, BaseTriangle()), Static(20, BaseTriangle())});
-  EXPECT_FALSE(zeros.domain.eligible); // Zero exponent remains deliberately conservative.
+  EXPECT_TRUE(zeros.domain.eligible); // Storage ignores zero only; projection policy stays original.
   EXPECT_TRUE(zeros.domain.projection.eligible);
 }
 
@@ -129,7 +129,7 @@ TEST(RepresentedNativeStorage, SourceAndVertexPermutationsRetainAllResultFields)
     SameResult(CompareStorage({Permute(paths[1], second), Permute(paths[0], first)}).current.result, expected);
 }
 
-TEST(RepresentedNativeStorage, DazFtzCannotChangeNarrowSubnormalResultsOrWideSignedZeros) {
+TEST(RepresentedNativeStorage, DazFtzCannotChangeNarrowSubnormalOrSignedZeroResults) {
 #if defined(__x86_64__) || defined(__i386__)
   auto first = PositiveTriangle(), second = PositiveTriangle(3);
   for (auto* triangle : {&first, &second}) for (auto& point : *triangle) {
@@ -147,7 +147,7 @@ TEST(RepresentedNativeStorage, DazFtzCannotChangeNarrowSubnormalResultsOrWideSig
     EXPECT_EQ(observed & ~0x3fu, (saved | mode) & ~0x3fu);
     ASSERT_EQ(narrow.status, S::Ok); EXPECT_TRUE(narrow.domain.eligible);
     SameResult(narrow.current.result, narrow.original.result);
-    ASSERT_EQ(wide.status, S::Ok); EXPECT_FALSE(wide.domain.eligible);
+    ASSERT_EQ(wide.status, S::Ok); EXPECT_TRUE(wide.domain.eligible);
     SameResult(wide.current.result, wide.original.result);
   }
 #else
