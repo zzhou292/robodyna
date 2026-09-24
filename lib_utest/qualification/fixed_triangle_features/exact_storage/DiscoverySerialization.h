@@ -106,7 +106,7 @@ inline std::string Publication(const ct::FixedTriangleFeatureDiscovery& owner) {
     out<<"]},\"intersections\":{\"complete\":"<<(intersections.complete?"true":"false")<<",\"count\":"<<intersections.count
        <<",\"data_present\":"<<(intersections.data?"true":"false")<<",\"values\":[";
     for(std::size_t i=0;i<intersections.count;++i){if(i)out<<',';Intersection(out,intersections.data[i]);}
-    out<<"]}";
+    out<<"]}}";
     return out.str();
 }
 class Writer {
