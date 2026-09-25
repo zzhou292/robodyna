@@ -82,7 +82,8 @@ struct ObservedSource {
   }
   static n::TransactionLimits Limits() {
     n::TransactionLimits l;l.inventory.max_nodes=18;l.inventory.max_secondaries=18;l.inventory.max_mains=8;
-    l.inventory.max_tasks=8;l.inventory.max_pairs=144;l.inventory.max_removals=0;
+    l.inventory.max_tasks=8;l.inventory.max_pairs=144;
+    l.inventory.max_removals=1; // Positive API capacity; actual genuine removal count remains zero.
     l.optimized_candidates=1024;l.sliding_entries=1024;l.max_device_bytes=16u<<20;l.max_host_bytes=16u<<20;return l;
   }
 };
