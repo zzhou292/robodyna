@@ -1213,7 +1213,7 @@ cc_library(
     srcs = glob(["radioss_type25/startup/*.cpp"]),
     hdrs = ["RadiossType25FixedMainStartup.h"] + glob(["radioss_type25/startup/*.h"]),
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
-    deps = [":radioss_type25_coefficients", ":radioss_type25_local_geometry",
+    deps = [":radioss_type25_coefficients", ":radioss_type25_local_geometry", ":radioss_type25_normal_math",
             ":radioss_type25_search_values", ":self_contact_filter_batch_values", "//lib_utils:bounded_arena"],
 )
 
@@ -1223,4 +1223,26 @@ cc_library(
     hdrs = ["RadiossType25SearchStartup.h"] + glob(["radioss_type25/search_startup/*.h"]),
     copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
     deps = [":radioss_type25_fixed_main_startup", "//lib_src/math:scalar_bits"],
+)
+
+# Current native TAGNOD/ACTNOR value producer; no float-normal or owner state.
+cc_library(
+    name = "radioss_type25_normal_activation",
+    hdrs = ["RadiossType25NormalActivation.h"] + glob(["radioss_type25/normal_activation/*.h"]),
+    deps = [":radioss_type25_lifecycle"],
+)
+
+# Shared native REAL4 leaves; no state owner or reference-library linkage.
+cc_library(
+    name = "radioss_type25_normal_math",
+    hdrs = glob(["radioss_type25/normal_math/*.h"]),
+    deps = [":radioss_type25_local_geometry"],
+)
+cc_library(
+    name = "radioss_type25_current_normals",
+    srcs = glob(["radioss_type25/current_normals/*.cpp"]),
+    hdrs = ["RadiossType25CurrentNormals.h"] + glob(["radioss_type25/current_normals/*.h"]),
+    copts = ["-std=c++17", "-fno-fast-math", "-ffp-contract=off"],
+    deps = [":radioss_type25_fixed_main_startup", ":radioss_type25_normal_activation",
+            ":radioss_type25_normal_math", ":self_contact_filter_batch_values", "//lib_utils:bounded_arena"],
 )

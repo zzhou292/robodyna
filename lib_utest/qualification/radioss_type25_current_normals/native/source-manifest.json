@@ -1,0 +1,38 @@
+{
+  "schema": "type25-current-normal-oracle-v1",
+  "scope": "Qualification-only serial complete NORMP FLAG1/FLAG2 over explicit prior cache and masks, original FREE_BOUND roster validation; no production helper computes expected values",
+  "parent_native": "lib_utest/qualification/radioss_type25_fixed_main_startup/native",
+  "donor_revision": "a62b27e6baa555d222a580d6218867d0be4d70b5",
+  "source_files": [
+    {
+      "path": "CurrentWrapper.F90",
+      "bytes": 3235,
+      "sha256": "622479d9bac8cfa4a0dc0d773702cbb853f691adec7567b20a809b8ccd3ebb02"
+    }
+  ],
+  "parent_reuse": [
+    "ReadyNormals.F",
+    "FreeMain.F",
+    "Constants.F90",
+    "Boundary.F90",
+    "NormalStorage.F90"
+  ],
+  "runtime_controls": {
+    "NSPMD": 1,
+    "NTHREAD": 1,
+    "JTASK": 1,
+    "IEDGE": 0,
+    "NEDGE": 0,
+    "SOL_EDGE": 0,
+    "ISHIFT": 0,
+    "engine_MVSIZ": 129
+  },
+  "fixture_bounds": {
+    "nodes": 256,
+    "primary_mains": 160,
+    "expanded_mains": 320,
+    "references": 1280
+  },
+  "undefined_channels": "Do not expose unused WNOD scratch. TAGE returns primary prefix only. Unused T3 face-slot3 bits are explicit prior-cache values, not fabricated fresh native observations.",
+  "parent_manifest_sha256": "2260ea62b5d307a3f97c531288085df1224e353151af5235e7f63895fd8e17bc"
+}
